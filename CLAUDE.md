@@ -31,7 +31,9 @@ src/core/save/       serialise / deserialise / migrate a save blob, and
                      reconcile a loaded one against the current kits
 src/core/sim/        headless combat runner used by tests and the balance report
 src/content/         all game data (see schemas.ts for the shapes)
-src/render/          Canvas 2D: camera, sprite cache, painters, Renderer
+src/render/          camera, sprite cache, painters, palettes, the Renderer
+                     facade, and backends/ — WebGL (Pixi + shaders) and the
+                     Canvas 2D fallback
 src/app/             scenes, HUD, input, hot-seat session, localStorage
 ```
 
@@ -89,7 +91,25 @@ Never run `npx playwright install` in the dev container — Chromium is already 
 - A 2-tile unit (the boss) occupies two cells; always go through
   `occupiedCells(unit)` rather than assuming one position.
 - The renderer must never read game state directly — it draws from a view model
-  built in `src/app/`.
+  built in `src/app/`. `Renderer` is a facade over two backends and picks one at
+  construction; nothing outside `src/render/backends/` should care which.
+- The backend choice asks whether WebGL is **accelerated**, not whether it
+  exists. Measured here, a software rasteriser runs the board at 6fps where
+  Canvas 2D holds 60 — and that is not the shader's fault, since removing it
+  entirely changes nothing. CI runners have no GPU, so they take the 2D path.
+  `?renderer=webgl` or `?renderer=canvas` forces one, which is how
+  `e2e/renderer.spec.ts` covers both.
+- Four Pixi v8 behaviours that fail **silently** — all four cost a debugging
+  cycle, and all four are commented at the point they bite:
+  - `GlProgram` picks GLSL ES 3.00 by string-matching `#version 300 es` in the
+    fragment source. Omit it and the shader links as WebGL1 and draws nothing.
+  - `UniformGroup.uniforms` is a plain object. Neither assignment nor in-place
+    mutation marks it dirty; you must call `update()` or every uniform keeps its
+    constructor default.
+  - A Filter renders only the clipped **visible** bounds of its target, so UVs
+    do not span an object that runs off screen.
+  - Assigning `filter.resources` after construction does not rebuild the bind
+    group; create the texture before the filter and update it in place.
 - Taps on the battlefield are ignored while the animator is playing. That is
   intentional, and it is why the e2e helpers have `waitForIdle`.
 - Statuses that skip a turn are read _before_ statuses tick, so a 1-round Freeze
