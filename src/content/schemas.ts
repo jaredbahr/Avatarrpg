@@ -392,8 +392,7 @@ export const mapSchema = z
         pos: vec2,
         sprite: z.string().min(1),
         node: id,
-        altFlag: z.string().optional(),
-        altNode: id.optional(),
+        routes: z.array(z.object({ when: conditionSchema, node: id })).optional(),
       }),
     ),
     props: z.array(propPlacement),
@@ -457,6 +456,24 @@ export const encounterSchema = z.object({
 /* Story                                                               */
 /* ------------------------------------------------------------------ */
 
+const dialogueVariant = z.object({
+  when: conditionSchema,
+  speaker: z.string().min(1).optional(),
+  portrait: z.string().min(1).optional(),
+  lines: z.array(z.string().min(1)).min(1),
+});
+
+/** Signed nation-standing deltas. Bounded so one choice cannot swing a nation. */
+const standingAdjust = z
+  .object({
+    fire: z.number().int().min(-3).max(3),
+    water: z.number().int().min(-3).max(3),
+    earth: z.number().int().min(-3).max(3),
+    air: z.number().int().min(-3).max(3),
+    nonbender: z.number().int().min(-3).max(3),
+  })
+  .partial();
+
 export const storyNodeSchema = z.discriminatedUnion('kind', [
   z.object({
     id,
@@ -465,6 +482,7 @@ export const storyNodeSchema = z.discriminatedUnion('kind', [
     portrait: z.string().min(1),
     lines: z.array(z.string().min(1)).min(1),
     next: id,
+    variants: z.array(dialogueVariant).optional(),
   }),
   z.object({
     id,
@@ -479,9 +497,17 @@ export const storyNodeSchema = z.discriminatedUnion('kind', [
           detail: z.string().min(1),
           next: id,
           setFlags: z.record(flagValue).optional(),
+          requires: conditionSchema.optional(),
+          speaker: z
+            .object({ element: elementId.optional(), characterId: id.optional() })
+            .optional(),
+          lockedHint: z.string().min(1).optional(),
+          adjust: standingAdjust.optional(),
         }),
       )
       .min(2),
+    variants: z.array(dialogueVariant).optional(),
+    footer: z.string().min(1).optional(),
   }),
   z.object({ id, kind: z.literal('battle'), encounterId: id, next: id, onDefeat: id }),
   z.object({
@@ -743,13 +769,12 @@ export function validateContent(bundle: ContentBundle): string[] {
       if (!storyIds.has(npc.node)) {
         problems.push(`map "${m.id}" npc "${npc.id}" points at unknown story node "${npc.node}"`);
       }
-      if (npc.altNode && !storyIds.has(npc.altNode)) {
-        problems.push(
-          `map "${m.id}" npc "${npc.id}" altNode "${npc.altNode}" is not a known story node`,
-        );
-      }
-      if (npc.altNode && !npc.altFlag) {
-        problems.push(`map "${m.id}" npc "${npc.id}" has an altNode but no altFlag to trigger it`);
+      for (const route of npc.routes ?? []) {
+        if (!storyIds.has(route.node)) {
+          problems.push(
+            `map "${m.id}" npc "${npc.id}" routes to "${route.node}", which is not a known story node`,
+          );
+        }
       }
     }
     if (m.kind === 'combat' && m.partySpawns.length < 6) {
@@ -885,7 +910,7 @@ export function validateContent(bundle: ContentBundle): string[] {
     // NPC nodes are entered by tapping, not by a link, so they count as roots.
     for (const m of bundle.maps) {
       for (const npc of m.npcs) {
-        for (const nodeId of [npc.node, npc.altNode]) {
+        for (const nodeId of [npc.node, ...(npc.routes ?? []).map((r) => r.node)]) {
           if (!nodeId || reachable.has(nodeId)) continue;
           reachable.add(nodeId);
           queue.push(nodeId);

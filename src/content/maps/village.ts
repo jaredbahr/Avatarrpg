@@ -48,8 +48,7 @@ export const BA_DAN_VILLAGE: MapDef = {
       pos: { x: 11, y: 5 },
       sprite: 'npc.elder',
       node: 'mira_intro',
-      altFlag: 'act1_complete',
-      altNode: 'mira_epilogue',
+      routes: [{ when: { kind: 'flag', key: 'act1_complete', op: 'set' }, node: 'mira_epilogue' }],
     },
     {
       id: 'shopkeeper_gao',
@@ -57,8 +56,7 @@ export const BA_DAN_VILLAGE: MapDef = {
       pos: { x: 7, y: 3 },
       sprite: 'npc.shopkeeper',
       node: 'gao_friendly',
-      altFlag: 'ruon_traded',
-      altNode: 'gao_cold',
+      routes: [{ when: { kind: 'flag', key: 'ruon_traded', op: 'set' }, node: 'gao_cold' }],
     },
     {
       id: 'kid_pella',

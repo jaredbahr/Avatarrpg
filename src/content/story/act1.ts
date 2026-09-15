@@ -172,7 +172,9 @@ export const ACT1_NODES: readonly StoryNode[] = [
     portrait: 'portrait.narrator',
     lines: [
       'The oil went up, and then everything went up, and then somebody dragged you back down the switchbacks.',
-      'Next time: wash the oil off the ground first, or make very sure of where you are standing before anybody lights anything.',
+      // Was "wash the oil off the ground first", which the rules refuse —
+      // water-into-oil leaves the oil exactly where it was.
+      'Next time: light it early, while the ground between you and them is still empty. Or shove the brazier and pick your moment.',
     ],
     next: 'battle_quarry_gate',
   },
@@ -202,6 +204,9 @@ export const ACT1_NODES: readonly StoryNode[] = [
           'The right thing, and the slow thing. Word will travel, and somebody will come out to meet you on the road.',
         next: 'escort_chosen',
         setFlags: { ruon_spared: true },
+        // Ba Dan is an Earth Kingdom village and Ruon was its province's guard.
+        // Handing him to a court rather than a mercenary is noticed.
+        adjust: { earth: 2 },
       },
       {
         label: 'Trade him to Jin for the quarry key',
@@ -209,8 +214,10 @@ export const ACT1_NODES: readonly StoryNode[] = [
           'The mercenary wants Ruon and will hand over the gate key. Fast, certain — and Ba Dan will hear about it.',
         next: 'trade_payment',
         setFlags: { ruon_traded: true },
+        adjust: { earth: -2 },
       },
     ],
+    footer: 'There is no right answer here. Both roads lead to the quarry.',
   },
 
   /* ----------------------------------------------------- Branch A: escort */

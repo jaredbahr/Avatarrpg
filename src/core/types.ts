@@ -462,11 +462,17 @@ export interface NpcDef {
   readonly name: string;
   readonly pos: Vec2;
   readonly sprite: string;
-  /** Story node entered when the NPC is tapped. */
+  /** Story node entered when the NPC is tapped, if no route matches. */
   readonly node: string;
-  /** Alternate node once this flag is set (the cold shopkeeper). */
-  readonly altFlag?: string;
-  readonly altNode?: string;
+  /**
+   * Conditional conversations, first match wins.
+   *
+   * This replaces the single `altFlag`/`altNode` pair, which could only ever
+   * express one binary swap. An NPC who greets a waterbender differently from a
+   * firebender, and differently again once you have spared somebody, needs more
+   * than one alternative.
+   */
+  readonly routes?: readonly { readonly when: Condition; readonly node: string }[];
 }
 
 export interface MapDef {
@@ -570,6 +576,45 @@ export interface StoryOption {
   readonly detail: string;
   readonly next: string;
   readonly setFlags?: Readonly<Record<string, FlagValue>>;
+  /** Unavailable until this passes. An absent condition is always available. */
+  readonly requires?: Condition;
+  /**
+   * Who in the party would say this.
+   *
+   * The UI resolves it against the real party and tags the option with their
+   * name, so choosing a fire-tagged line *is* choosing who walks up — the
+   * Speaker Choice needs no separate step. Purely presentational: gating is
+   * `requires`, and an option that only a firebender could say should say so in
+   * both places.
+   */
+  readonly speaker?: { readonly element?: ElementId; readonly characterId?: string };
+  /**
+   * Why this option is unavailable, in the author's own words.
+   *
+   * Every option is shown whether or not it can be taken, because seeing what
+   * you are missing is what makes a second playthrough interesting — but a
+   * greyed-out line with no reason is just a locked door. `describe()` generates
+   * a fallback; this is the better sentence.
+   */
+  readonly lockedHint?: string;
+  /** Signed nation-standing deltas applied when this option is taken. */
+  readonly adjust?: Partial<Record<ElementId, number>>;
+}
+
+/**
+ * An alternative reading of a dialogue node, chosen by the first matching
+ * condition.
+ *
+ * A fallback chain rather than a matrix, because five elements times ten
+ * characters times a growing pile of flags is not writable by hand. Authors
+ * write the line once and add a variant only where somebody would genuinely say
+ * something different.
+ */
+export interface DialogueVariant {
+  readonly when: Condition;
+  readonly speaker?: string;
+  readonly portrait?: string;
+  readonly lines: readonly string[];
 }
 
 export type StoryNode =
@@ -580,6 +625,8 @@ export type StoryNode =
       readonly portrait: string;
       readonly lines: readonly string[];
       readonly next: string;
+      /** First match wins; falls back to `lines` when none do. */
+      readonly variants?: readonly DialogueVariant[];
     }
   | {
       readonly id: string;
@@ -588,6 +635,9 @@ export type StoryNode =
       readonly portrait: string;
       readonly prompt: string;
       readonly options: readonly StoryOption[];
+      readonly variants?: readonly DialogueVariant[];
+      /** Line under the options. Act-specific colour, so it lives in the data. */
+      readonly footer?: string;
     }
   | {
       readonly id: string;
