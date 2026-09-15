@@ -23,7 +23,8 @@ Four Nations Tactics — a hot-seat tactical RPG. Read this before changing code
 src/core/rules/      grid, stats, damage, status, surfaces, turn order,
                      ability resolution, leveling, difficulty scaling,
                      line of sight, enemy AI
-src/core/state/      createGame, the reducer (apply), selectors
+src/core/state/      createGame, the reducer (apply), the battle draft,
+                     the combat log formatter
 src/core/story/      story graph traversal, flags, the rotating decider index
 src/core/save/       serialise / deserialise / migrate a save blob
 src/core/sim/        headless combat runner used by tests and the balance report
@@ -47,8 +48,8 @@ Never run `npx playwright install` in the dev container — Chromium is already 
 ## Conventions
 
 - TypeScript strict, including `noUncheckedIndexedAccess`. Array lookups return
-  `T | undefined`; there are helpers in `src/core/rules/grid.ts` and
-  `src/core/state/selectors.ts` — use them instead of `!`.
+  `T | undefined`; use the helpers in `src/core/rules/grid.ts` (`tileAt`,
+  `unitAt`, `occupiedCells`) and `BattleDraft.unit()` rather than `!`.
 - The reducer is `apply(state, command) => { state, events }`. It returns a new
   state; it never mutates the one passed in. Presentation reads the events.
 - New abilities: add the data in `src/content/abilities/`, add the id to the
