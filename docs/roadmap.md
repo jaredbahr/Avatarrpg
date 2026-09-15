@@ -45,7 +45,7 @@ entry kind the manifest already has.
 - [x] Gesture recogniser with pinch, wheel, drag, long press, hover; unit-tested
 - [x] `Camera.zoomAt`, `fitScale`, `fitted`, `MIN_TILE_PX` rule; unit-tested
 - [x] Map scenes wire zoom and pan; Recentre button; acting unit centred where the board cannot fit
-- [x] `ResizeObserver` on the map wrapper, `visualViewport`, coalesced through `App.requestResize`
+- [x] Refits driven by the renderer's canvas observer and `visualViewport`; a pinch zoom survives a HUD reflow
 - [x] iPad standalone metas; `-webkit-touch-callout`; portrait HUD layout
 - [x] Sprites rasterised at device pixels on both backends; LRU caches
 - [x] Elevation, blocked and cover markers on WebGL; `capabilities` on the backend interface

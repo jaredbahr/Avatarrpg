@@ -16,7 +16,7 @@
 - **iOS caps total canvas memory per page.** The sprite cache and the Pixi texture map are bounded LRUs (128 entries, 256 px cap).
 - **Textures stay at or under 2048×2048** so every iPad in the family accepts them without a fallback path.
 - **Safari's toolbars resize the visual viewport without a window resize.** `App.requestResize` listens to `visualViewport` and coalesces every signal into one refit per frame.
-- **The HUD reflow resizes the canvas with no event at all.** Each map scene watches `.map-wrap` with a `ResizeObserver`.
+- **The HUD reflow resizes the canvas with no event at all.** `Renderer` watches its canvas with a `ResizeObserver` and calls the scene's `onViewportChange`; combat keeps a pinch zoom across that refit.
 - **Home Screen apps on iOS 26 open every site as a web app**; the `apple-mobile-web-app-*` metas still set the title, the status bar and full-screen launch.
 
 ## Automated coverage

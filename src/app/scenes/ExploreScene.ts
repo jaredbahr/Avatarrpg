@@ -27,7 +27,6 @@ export class ExploreScene implements Scene {
   private map: MapDef | null = null;
   /** Built once per map, not once per frame: the village never changes shape. */
   private grid: Grid | null = null;
-  private observer: ResizeObserver | null = null;
 
   constructor(private app: App) {}
 
@@ -48,19 +47,12 @@ export class ExploreScene implements Scene {
 
     this.buildBanner(banner);
     this.setupRenderer();
-    const wrap = scene.querySelector<HTMLElement>('.map-wrap');
-    if (wrap && typeof ResizeObserver !== 'undefined') {
-      this.observer = new ResizeObserver(() => this.resize());
-      this.observer.observe(wrap);
-    }
     this.loop();
   }
 
   unmount(): void {
     if (this.frame) cancelAnimationFrame(this.frame);
     this.frame = 0;
-    this.observer?.disconnect();
-    this.observer = null;
     this.detach?.();
     this.detach = null;
     this.renderer?.destroy();

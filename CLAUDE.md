@@ -182,11 +182,11 @@ Never run `npx playwright install` in the dev container — Chromium is already 
   Pixi texture map are bounded LRUs because iOS caps canvas memory; do not
   hold a texture from `Texture.from` outside that map, and always pass
   `skipCache` so a destroyed texture is never handed back for its canvas.
-- **The HUD reflow resizes the canvas with no window event.** The map scenes
-  watch `.map-wrap` with a `ResizeObserver` and coalesce every signal through
-  `App.requestResize()`. Never call `camera.fit()` blindly from a resize path:
-  it resets a pinch zoom (`CombatScene.resize` keeps the zoom unless the board
-  was fitted).
+- **A refit must not eat a pinch zoom.** The `Renderer`'s observer calls the
+  scene's `onViewportChange` after every canvas box change, and the HUD
+  changes that box on most turns. `CombatScene.refit()` refits only when the
+  board was fitted, or a rotation has left it smaller than it could be, and
+  otherwise clamps; never wire `onViewportChange` straight to `camera.fit()`.
 - **iPadOS ignores the manifest's `orientation`.** Portrait has to work. Where
   the fitted tile would drop below `MIN_TILE_PX`, `Camera.fit()` fits to a
   tappable tile and pans instead; that is the one exception to "combat never

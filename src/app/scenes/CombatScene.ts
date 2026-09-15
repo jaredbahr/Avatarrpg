@@ -59,7 +59,8 @@ export class CombatScene implements Scene {
   private bannerShownFor: string | null = null;
   private lastActiveId: string | null = null;
   private recentreButton: HTMLButtonElement | null = null;
-  private observer: ResizeObserver | null = null;
+  /** True while the player has zoomed in past the fitted board; a reflow then keeps the zoom. */
+  private zoomed = false;
   /**
    * The reachable set and the target/area tiles are rebuilt only when the
    * inputs that decide them change, not every frame: on a tablet the
@@ -97,7 +98,6 @@ export class CombatScene implements Scene {
     host.appendChild(scene);
 
     this.setupRenderer();
-    this.observeMap(scene);
     this.loop();
     this.sync();
   }
@@ -105,8 +105,6 @@ export class CombatScene implements Scene {
   unmount(): void {
     if (this.frame) cancelAnimationFrame(this.frame);
     this.frame = 0;
-    this.observer?.disconnect();
-    this.observer = null;
     this.recentreButton = null;
     this.detach?.();
     this.detach = null;
@@ -118,33 +116,25 @@ export class CombatScene implements Scene {
     this.host = null;
   }
 
-  /**
-   * The HUD reflows as the turn changes (a confirm bar appears, the log opens),
-   * and each reflow resizes the canvas without any window event. Watching the
-   * wrapper keeps the backing store honest. The refit runs inside the
-   * observer callback, which the browser already delivers once per frame
-   * after layout, so the canvas is right in the same frame the HUD moved
-   * rather than stretched for a frame first.
-   */
-  private observeMap(scene: HTMLElement): void {
-    const wrap = scene.querySelector<HTMLElement>('.map-wrap');
-    if (!wrap || typeof ResizeObserver === 'undefined') return;
-    this.observer = new ResizeObserver(() => this.resize());
-    this.observer.observe(wrap);
-  }
-
   resize(): void {
     const battle = this.battle();
-    const camera = this.renderer?.camera;
-    const wasFitted = camera?.fitted ?? true;
     this.renderer?.resize(
       battle ? { width: battle.grid.width, height: battle.grid.height } : undefined,
     );
+    this.refit();
+  }
+
+  /**
+   * Re-fits after the canvas box changed. The HUD changes it on most turns (a
+   * confirm bar appears, the log opens) and the Renderer's observer reports
+   * each change through onViewportChange. A board the player zoomed keeps its
+   * zoom; a fitted one refits, and so does one a rotation has left smaller
+   * than it could be.
+   */
+  private refit(): void {
+    const camera = this.renderer?.camera;
     if (!camera) return;
-    // A board the player zoomed keeps its zoom through a HUD reflow; a fitted
-    // one refits, and so does one that a rotation has left smaller than it
-    // could be.
-    if (wasFitted || camera.scale < camera.fitScale()) this.recentre();
+    if (!this.zoomed || camera.scale < camera.fitScale()) this.recentre();
     else camera.clamp();
     this.syncRecentre();
   }
@@ -154,13 +144,17 @@ export class CombatScene implements Scene {
     const camera = this.renderer?.camera;
     if (!camera) return;
     camera.fit();
+    this.zoomed = false;
     const unit = this.active();
     if (!camera.fitted && unit) camera.centreOn(unit.pos);
     this.syncRecentre();
   }
 
   private zoomBy(factor: number, at: { x: number; y: number }): void {
-    this.renderer?.camera.zoomAt(at, factor);
+    const camera = this.renderer?.camera;
+    if (!camera) return;
+    camera.zoomAt(at, factor);
+    this.zoomed = !camera.fitted;
     this.syncRecentre();
   }
 
@@ -188,8 +182,9 @@ export class CombatScene implements Scene {
     // The map is the only thing that flexes, so it is still the wrong size
     // here: the turn strip and the HUD fill in after mount, and the log panel
     // and the Large-text setting move them again later. Re-fit whenever the
-    // canvas box actually changes, or the camera drifts from what is drawn.
-    this.renderer.onViewportChange = () => this.renderer?.camera.fit();
+    // canvas box actually changes, or the camera drifts from what is drawn —
+    // through refit(), so a pinch zoom survives the reflow.
+    this.renderer.onViewportChange = () => this.refit();
 
     this.detach = attachPointer(canvas, {
       onTap: (point) => this.onTap(point.x, point.y),
