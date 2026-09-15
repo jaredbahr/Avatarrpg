@@ -129,13 +129,17 @@ export function isValidTarget(
     const occupant = unitsOnTiles(battle.units, [target])[0];
     if (!occupant) {
       /*
-       * A prop is a legal target for anything that would take *anybody* — that is
-       * how Shove reaches a barrel, and how a bandit's club reaches the cart.
-       * Restricted to `allow: 'any'` on purpose: "attack an enemy" should not
-       * silently accept a crate, or every misplaced tap becomes a wasted turn.
+       * A prop is a legal target for anything that would take an enemy or
+       * anybody. "A firebender shooting a puddle of oil" is the whole point of
+       * the feature, and a single-target attack is the most natural way anyone
+       * reaches for it — a barrel is not "one of yours", so `enemy` is a fair
+       * fit. Only `ally` is refused: you cannot heal a crate.
+       *
+       * A misplaced tap is not a lost turn, because the confirm bar shows what
+       * is about to happen before anything is spent.
        */
       const prop = battle.props.find((p) => samePos(p.pos, target));
-      if (prop && ability.targeting.allow === 'any') return OK;
+      if (prop && ability.targeting.allow !== 'ally') return OK;
       return { ok: false, reason: 'Nobody there.' };
     }
     const allow = ability.targeting.allow;

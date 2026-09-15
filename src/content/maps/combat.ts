@@ -99,8 +99,22 @@ export const QUARRY_GATE: MapDef = {
     { propId: 'brazier', pos: { x: 10, y: 5 } },
     { propId: 'water_barrel', pos: { x: 14, y: 3 } },
     { propId: 'water_barrel', pos: { x: 14, y: 8 } },
-    { propId: 'oil_flask', pos: { x: 9, y: 4 } },
-    { propId: 'cabbage_cart', pos: { x: 13, y: 6 } },
+    /*
+     * Which SIDE of the oil channel a hazard sits on decides whether it is a
+     * tool or a trap, and the simulator was blunt about it. At (9,4), on the
+     * party's own approach lane, the flask spilled oil across the ground six
+     * players had to walk over and the full-table win rate fell to 40%. One
+     * tile group east, past the channel, and the same flask reads as 95% — it
+     * now extends the hazard toward the people you are fighting.
+     */
+    { propId: 'oil_flask', pos: { x: 12, y: 4 } },
+    /*
+     * Pella's cart, turned away at the gate, sitting on the road behind the
+     * party. Same lesson: at (13,6) it walled off the escape lane exactly when
+     * the oil caught (40%); behind the party it is cover on the approach, and
+     * average deaths at a full table drop from 4.1 to 3.2.
+     */
+    { propId: 'cabbage_cart', pos: { x: 6, y: 6 } },
   ],
 };
 
