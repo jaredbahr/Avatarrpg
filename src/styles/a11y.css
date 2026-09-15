@@ -1,0 +1,64 @@
+/*
+ * Accessibility switches. Each one is a single attribute on <html>, toggled by
+ * app/ui/Settings.ts, so nothing in the game has to know they exist.
+ */
+
+/* Large text: scales the root font size, and therefore every rem-based
+   dimension including the 48px minimum touch targets. */
+html[data-large-text='on'] {
+  --ui-scale: 1.25;
+}
+
+html[data-large-text='huge'] {
+  --ui-scale: 1.5;
+}
+
+/* Reduce motion: the animator reads --motion-scale and skips tweens when it
+   is 0, so this covers both CSS transitions and canvas playback. */
+html[data-reduce-motion='on'] {
+  --motion-scale: 0;
+}
+
+html[data-reduce-motion='on'] *,
+html[data-reduce-motion='on'] *::before,
+html[data-reduce-motion='on'] *::after {
+  animation-duration: 1ms !important;
+  animation-iteration-count: 1 !important;
+  transition-duration: 1ms !important;
+  scroll-behavior: auto !important;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  :root {
+    --motion-scale: 0;
+  }
+
+  *,
+  *::before,
+  *::after {
+    animation-duration: 1ms !important;
+    transition-duration: 1ms !important;
+  }
+}
+
+/*
+ * Colorblind support: surfaces are drawn with a hatch pattern on top of the
+ * fill when this is on. The renderer reads it once per frame from
+ * document.documentElement.dataset.hatch.
+ */
+html[data-hatch='on'] .legend-swatch {
+  background-image: repeating-linear-gradient(
+    45deg,
+    rgb(0 0 0 / 35%) 0,
+    rgb(0 0 0 / 35%) 2px,
+    transparent 2px,
+    transparent 5px
+  );
+}
+
+/* High-contrast panel edges for the tablet in bright light. */
+html[data-contrast='high'] {
+  --c-line: #a08a6e;
+  --c-ink-dim: #dfd0b8;
+  --c-panel: #221812;
+}
