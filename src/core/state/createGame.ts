@@ -237,9 +237,7 @@ export function encounterRoster(
   const authored = variant?.enemies ?? encounter.enemies;
   const dropped = enemiesToDrop(encounter.baselinePartySize, friendlyCount);
   const enemies =
-    dropped > 0
-      ? authored.slice(0, Math.max(1, authored.length - dropped))
-      : [...authored];
+    dropped > 0 ? authored.slice(0, Math.max(1, authored.length - dropped)) : [...authored];
 
   for (const group of encounter.conditionalEnemies) {
     const isSet = Boolean(flags[group.flag]);

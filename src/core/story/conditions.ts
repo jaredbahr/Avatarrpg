@@ -48,10 +48,7 @@ export function standingKey(nation: ElementId): string {
 }
 
 /** How `nation` feels about the party. Neutral, and the default, is 0. */
-export function getStanding(
-  flags: Readonly<Record<string, FlagValue>>,
-  nation: ElementId,
-): number {
+export function getStanding(flags: Readonly<Record<string, FlagValue>>, nation: ElementId): number {
   const raw = flags[standingKey(nation)];
   return typeof raw === 'number' ? raw : 0;
 }
@@ -129,7 +126,8 @@ function evaluateAt(state: GameState, condition: Condition, depth: number): bool
 
     case 'partyHas':
       return (
-        countParty(state, condition.element, condition.characterId) >= Math.max(1, condition.min ?? 1)
+        countParty(state, condition.element, condition.characterId) >=
+        Math.max(1, condition.min ?? 1)
       );
 
     case 'standing':

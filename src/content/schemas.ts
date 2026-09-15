@@ -876,7 +876,10 @@ export function validateContent(bundle: ContentBundle): string[] {
      * it is an unbalanced fight paying the wrong amount.
      */
     const budgetOf = (placements: readonly { enemyId: string }[]): number =>
-      placements.reduce((sum, p) => sum + (bundle.enemies.find((x) => x.id === p.enemyId)?.xp ?? 0), 0);
+      placements.reduce(
+        (sum, p) => sum + (bundle.enemies.find((x) => x.id === p.enemyId)?.xp ?? 0),
+        0,
+      );
 
     const baseBudget = budgetOf(e.enemies);
     const variantIds = new Set<string>();
@@ -888,7 +891,9 @@ export function validateContent(bundle: ContentBundle): string[] {
 
       for (const p of variant.enemies ?? []) {
         if (!enemyIds.has(p.enemyId)) {
-          problems.push(`encounter "${e.id}" variant "${variant.id}" places unknown unit "${p.enemyId}"`);
+          problems.push(
+            `encounter "${e.id}" variant "${variant.id}" places unknown unit "${p.enemyId}"`,
+          );
           continue;
         }
         const def = bundle.enemies.find((x) => x.id === p.enemyId);

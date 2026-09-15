@@ -186,15 +186,15 @@ identical XP by construction.
 sides. `BALANCE_SIZES` picks the table sizes and `BALANCE_VARIANTS=1` reports
 each roster variant separately. At 60 trials per encounter per table size:
 
-| Encounter               | 1 player | 3 players | 4 players | 6 players |
-| ----------------------- | -------- | --------- | --------- | --------- |
-| Forest Road (thugs)     | 100%     | 100%      | 100%      | 100%      |
-| Forest Road (slingers)  | 100%     | 100%      | 100%      | 100%      |
-| Forest Road (bruisers)  | 100%     | 100%      | 100%      | 100%      |
-| Quarry Gate             | 100%     | 99%       | **70%**   | 98%       |
-| Quarry Gate (bluffed)   | 100%     | 96%       | 48%       | 100%      |
-| The Cutting             | 100%     | 100%      | 100%      | 100%      |
-| **Grumbler**            | **57%**  | **50%**   | **63%**   | **60%**   |
+| Encounter              | 1 player | 3 players | 4 players | 6 players |
+| ---------------------- | -------- | --------- | --------- | --------- |
+| Forest Road (thugs)    | 100%     | 100%      | 100%      | 100%      |
+| Forest Road (slingers) | 100%     | 100%      | 100%      | 100%      |
+| Forest Road (bruisers) | 100%     | 100%      | 100%      | 100%      |
+| Quarry Gate            | 100%     | 99%       | **70%**   | 98%       |
+| Quarry Gate (bluffed)  | 100%     | 96%       | 48%       | 100%      |
+| The Cutting            | 100%     | 100%      | 100%      | 100%      |
+| **Grumbler**           | **57%**  | **50%**   | **63%**   | **60%**   |
 
 Rerun it and most figures shift a few points — the trial count picks the seeds —
 but the shape holds. The four-player quarry gate genuinely is the dip rather
@@ -248,7 +248,7 @@ Real tuning happens after the kids play it. These are the numbers to argue with.
   variants, speaker-aware dialogue with condition-gated options, nation standing,
   and defeat that branches the story instead of reloading. ✅
 - **Phase 2** — world map, Fire Nation outpost, Water Tribe and Air Temple arcs,
-  more enemy types, equipment. Planned. (Deliberately *after* 1.5: authoring
+  more enemy types, equipment. Planned. (Deliberately _after_ 1.5: authoring
   three arcs against the old schemas and retrofitting branching afterwards would
   mean authoring them twice.)
 - **Phase 3** — tweened animation, particle FX, audio, commissioned art, haptics.

@@ -402,7 +402,7 @@ export const ACT1_NODES: readonly StoryNode[] = [
     lines: [
       "Jin's people are professionals, and the cutting is narrow enough that being surrounded is a choice you made.",
       'Ruon gets three of you out through the scree and goes back for the rest, which is not what anybody expected of him.',
-      "Jin has what she came for. You have a captain who chose you over a clear road, and a long walk to think about it.",
+      'Jin has what she came for. You have a captain who chose you over a clear road, and a long walk to think about it.',
     ],
     next: 'lost_ambush',
   },

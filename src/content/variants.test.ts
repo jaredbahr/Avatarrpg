@@ -55,7 +55,11 @@ describe('the threat budget', () => {
             ...e,
             variants: [
               ...e.variants,
-              { id: 'freebie', weight: 1, enemies: [{ enemyId: 'bandit_thug', pos: { x: 17, y: 5 } }] },
+              {
+                id: 'freebie',
+                weight: 1,
+                enemies: [{ enemyId: 'bandit_thug', pos: { x: 17, y: 5 } }],
+              },
             ],
           }
         : e,
@@ -126,7 +130,9 @@ describe('drawing a variant', () => {
     const drawn = new Set<string | null>();
     for (let i = 0; i < 40; i++) {
       const state = game(`seed-${i}`);
-      drawn.add(createBattle(CONTENT, state, 'enc_forest_road', new RngCursor(state.rng)).variantId);
+      drawn.add(
+        createBattle(CONTENT, state, 'enc_forest_road', new RngCursor(state.rng)).variantId,
+      );
     }
     expect(drawn.size, 'the same fight spawned identically every time').toBeGreaterThan(1);
   });
@@ -180,7 +186,10 @@ describe('what the variants are for', () => {
     if (!encounter) throw new Error('no forest road');
 
     const rosters = encounter.variants.map((v) =>
-      (v.enemies ?? encounter.enemies).map((p) => p.enemyId).sort().join(','),
+      (v.enemies ?? encounter.enemies)
+        .map((p) => p.enemyId)
+        .sort()
+        .join(','),
     );
     expect(new Set(rosters).size, 'two variants spawn the same squad').toBe(rosters.length);
 

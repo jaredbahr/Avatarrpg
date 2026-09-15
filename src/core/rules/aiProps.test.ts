@@ -45,7 +45,12 @@ function clearing(draft: BattleDraft, radius = 2): Vec2 {
       for (let dy = -radius; dy <= radius && ok; dy++) {
         for (let dx = -radius; dx <= radius && ok; dx++) {
           const tile = tileAt(draft.grid, { x: x + dx, y: y + dy });
-          if (!tile || tile.blocked || tile.surface || taken.has(posKey({ x: x + dx, y: y + dy }))) {
+          if (
+            !tile ||
+            tile.blocked ||
+            tile.surface ||
+            taken.has(posKey({ x: x + dx, y: y + dy }))
+          ) {
             ok = false;
           }
         }

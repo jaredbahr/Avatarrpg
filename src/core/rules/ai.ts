@@ -506,7 +506,10 @@ function candidateTargets(draft: BattleDraft, caster: Unit, abilities: readonly 
    */
   const opponents = opponentsOf(draft, caster);
   for (const prop of draft.props) {
-    const nearest = opponents.reduce((best, o) => Math.min(best, distanceToUnit(prop.pos, o)), Infinity);
+    const nearest = opponents.reduce(
+      (best, o) => Math.min(best, distanceToUnit(prop.pos, o)),
+      Infinity,
+    );
     if (nearest > 2) continue;
     push(prop.pos);
   }

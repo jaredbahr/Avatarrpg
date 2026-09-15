@@ -32,7 +32,7 @@ const anomalies: string[] = [];
 for (const { size, report } of sweep) {
   console.log(`--- ${size} player${size === 1 ? '' : 's'} ---`);
   console.log(
-    `${pad("Encounter", 36)}${pad('Lv', 5)}${pad('Win %', 8)}${pad('Rounds', 9)}${pad('Deaths', 8)}HP left`,
+    `${pad('Encounter', 36)}${pad('Lv', 5)}${pad('Win %', 8)}${pad('Rounds', 9)}${pad('Deaths', 8)}HP left`,
   );
   for (const row of report.encounters) {
     console.log(

@@ -124,7 +124,10 @@ describe('gated choices', () => {
      * keyboard, or a test harness. The disabled attribute is not the guard.
      */
     const content = withNodes(GATE);
-    const state: GameState = { ...game(['bo']), story: { ...game(['bo']).story, nodeId: 'test_gate' } };
+    const state: GameState = {
+      ...game(['bo']),
+      story: { ...game(['bo']).story, nodeId: 'test_gate' },
+    };
 
     const result = chooseOption(content, state, 1);
     expect(result.state.story.nodeId, 'it should not have moved on').toBe('test_gate');

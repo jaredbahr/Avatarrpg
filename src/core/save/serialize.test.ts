@@ -205,9 +205,7 @@ describe('describeProgress', () => {
       party: [{ characterId: 'kaya', displayName: 'Lorelai' }],
       startNode: 'act1_open',
     });
-    expect(describeProgress(state, 'The Quarry Gate')).toBe(
-      'The Quarry Gate — level 1 — Lorelai',
-    );
+    expect(describeProgress(state, 'The Quarry Gate')).toBe('The Quarry Gate — level 1 — Lorelai');
   });
 
   it('falls back to a location when there is no story title', () => {

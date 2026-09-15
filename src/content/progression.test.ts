@@ -139,7 +139,9 @@ function walkOnce(decisions: ReadonlyMap<string, number>, party: readonly string
 
       case 'choice': {
         // Only options this party could actually take are on the table.
-        const open = node.options.filter((o) => evaluate(asState(flags, party, visited), o.requires));
+        const open = node.options.filter((o) =>
+          evaluate(asState(flags, party, visited), o.requires),
+        );
         if (open.length === 0) {
           truncated = true;
           nodeId = null;
@@ -222,7 +224,10 @@ function enumeratePaths(party: readonly string[]): Walk[] {
   const queue: Map<string, number>[] = [new Map()];
 
   const keyOf = (m: ReadonlyMap<string, number>) =>
-    [...m.entries()].sort(([a], [b]) => a.localeCompare(b)).map(([k, v]) => `${k}=${v}`).join('|');
+    [...m.entries()]
+      .sort(([a], [b]) => a.localeCompare(b))
+      .map(([k, v]) => `${k}=${v}`)
+      .join('|');
 
   while (queue.length > 0 && walks.length < MAX_PATHS) {
     const decisions = queue.shift();

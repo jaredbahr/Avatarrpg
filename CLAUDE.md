@@ -37,7 +37,7 @@ src/app/             scenes, HUD, input, hot-seat session, localStorage
 ## Commands
 
 ```bash
-npm run verify   # typecheck + lint + tests. Must pass before any push.
+npm run verify   # typecheck + lint + format + tests. Must pass before any push.
 npm test         # vitest
 npm run balance  # simulator win-rate report
 npm run e2e      # Playwright (builds first; uses the preinstalled Chromium)
@@ -75,7 +75,7 @@ Never run `npx playwright install` in the dev container — Chromium is already 
   `rules/difficulty.ts` (thinner enemies and a smaller roster below it, plus
   superlinear boss HP above it). XP deliberately does not scale.
 - **Roster variants are not a third scaling lever.** `EncounterDef.variants`
-  changes *which* enemies turn up, never how many relative to the table: the
+  changes _which_ enemies turn up, never how many relative to the table: the
   under-strength trim, flag-gated additions and reinforcements all still layer on
   top. `validateContent` holds every variant within 10% of the authored roster's
   summed enemy XP, which is what keeps them comparable — and because `xpRoster`
@@ -84,7 +84,7 @@ Never run `npx playwright install` in the dev container — Chromium is already 
 - New content gates go through `Condition` (`src/core/story/conditions.ts`),
   never through a bare flag lookup. It is plain data, so it validates, saves and
   can be described back to the player — which the dialogue UI needs, because it
-  draws options the party *cannot* take and has to say why.
+  draws options the party _cannot_ take and has to say why.
 - UI sizes go in `rem`, never `px`, so the Large-text setting scales them.
   Anything tappable must be at least `var(--tap)`.
 - Commit messages: imperative mood, one concern per commit.
@@ -115,7 +115,7 @@ Never run `npx playwright install` in the dev container — Chromium is already 
 - A prop bakes its `blocksMove` / `blocksSight` / `grantsCover` into the `Tile`
   and journals the tile it replaced, exactly as `raiseWall` does. That is why
   movement, sight, cover and AI positioning need no knowledge of props at all —
-  but it also means `paintSurface` will not paint a *solid* prop's own tile, so
+  but it also means `paintSurface` will not paint a _solid_ prop's own tile, so
   a burning prop reads its exposure from the neighbouring tiles.
 - Prop damage resolves **before** `draft.impact` in the damage effect. Reversed,
   a fireball that cracks an oil flask spills oil into a tile the flames have

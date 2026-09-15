@@ -21,7 +21,7 @@
     "sim": "vitest run src/core/sim",
     "balance": "tsx scripts/balance.ts",
     "e2e": "playwright test",
-    "verify": "npm run typecheck && npm run lint && npm run test"
+    "verify": "npm run typecheck && npm run lint && npm run format:check && npm run test"
   },
   "dependencies": {
     "zod": "^3.23.8"

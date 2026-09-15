@@ -221,7 +221,13 @@ suite('combinators', () => {
       evaluate(state, {
         kind: 'all',
         of: [
-          { kind: 'any', of: [{ kind: 'partyHas', element: 'fire' }, { kind: 'visited', nodeId: 'x' }] },
+          {
+            kind: 'any',
+            of: [
+              { kind: 'partyHas', element: 'fire' },
+              { kind: 'visited', nodeId: 'x' },
+            ],
+          },
           { kind: 'not', of: { kind: 'flag', key: 'betrayed', op: 'set' } },
         ],
       }),
