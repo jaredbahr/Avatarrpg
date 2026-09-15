@@ -37,6 +37,8 @@ import {
   tileAt,
 } from './grid';
 import { expectedDamage, healAmount, hitChance, rollDamage, rollHit } from './damage';
+import { forecastReactions } from './reactions';
+import type { ForecastEntry } from './reactions';
 import { canUseAbilities, effectiveStats, isAlive } from './stats';
 
 /* ------------------------------------------------------------------ */
@@ -197,9 +199,16 @@ export interface PreviewTarget {
 export interface AbilityPreview {
   readonly tiles: readonly Vec2[];
   readonly targets: readonly PreviewTarget[];
-  /** e.g. "Leaves Fire", shown as a chip under the target list. */
+  /**
+   * Non-terrain side effects — "Pushes 2", "+1 AP". What the ability does to
+   * the *ground* is no longer described here, because describing it without
+   * consulting the combo table is how the preview came to promise "Leaves
+   * Fire" over a puddle. See `reactions` below.
+   */
   readonly terrain: readonly string[];
-  /** True when at least one of the party is in the blast. */
+  /** What the combo table will actually do, forecast by running it. */
+  readonly reactions: readonly ForecastEntry[];
+  /** True when at least one of the party is in the blast or in a chain. */
   readonly hitsFriendly: boolean;
 }
 
@@ -260,9 +269,6 @@ export function previewAbility(
 
   for (const effect of ability.effects) {
     switch (effect.kind) {
-      case 'surface':
-        terrain.push(`Leaves ${content.surfaces.get(effect.surface)?.name ?? effect.surface}`);
-        break;
       case 'wall':
         terrain.push('Raises a stone wall');
         break;
@@ -291,11 +297,17 @@ export function previewAbility(
     }
   }
 
+  const forecast = forecastReactions(content, battle, caster, ability, target, tiles);
+
   return {
     tiles,
     targets,
     terrain,
-    hitsFriendly: targets.some((t) => t.friendly && t.damage > 0),
+    reactions: forecast.entries,
+    // A bolt of lightning that chains back through the puddle your own
+    // waterbender is standing in counts as hitting your own side, even though
+    // she is nowhere near the tile you aimed at.
+    hitsFriendly: targets.some((t) => t.friendly && t.damage > 0) || forecast.catchesFriendly,
   };
 }
 

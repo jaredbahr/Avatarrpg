@@ -6,6 +6,11 @@
  * to stand on a thing.
  *
  * `moveCost` is *extra* move points on top of the base 1 per step.
+ *
+ * `description` is **flavour only**. The reactions reference renders the
+ * mechanical line underneath it straight from the numbers in these fields
+ * (`describeFooting` in `core/rules/reactions.ts`), so restating a damage
+ * figure in the prose here only creates a second copy to forget to update.
  */
 
 import type { SurfaceDef, SurfaceId } from '../core/types';
@@ -40,7 +45,7 @@ export const SURFACES: readonly SurfaceDef[] = [
   {
     id: 'fire',
     name: 'Fire',
-    description: 'Open flame. 4 damage on entry and at the start of a turn spent in it.',
+    description: 'Open flame, and it does not care whose side anyone is on.',
     moveCost: 0,
     enterDamage: 4,
     enterDamageType: 'fire',

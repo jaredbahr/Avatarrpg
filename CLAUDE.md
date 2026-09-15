@@ -22,8 +22,8 @@ Four Nations Tactics — a hot-seat tactical RPG. Read this before changing code
 
 ```
 src/core/rules/      grid, stats, damage, status, surfaces, turn order,
-                     ability resolution, leveling and disciplines, difficulty
-                     scaling, line of sight, enemy AI
+                     ability resolution, reaction forecasting, leveling and
+                     disciplines, difficulty scaling, line of sight, enemy AI
 src/core/state/      createGame, the reducer (apply), the battle draft,
                      the combat log formatter
 src/core/story/      story graph traversal, flags, the rotating decider index
@@ -94,3 +94,11 @@ Never run `npx playwright install` in the dev container — Chromium is already 
   intentional, and it is why the e2e helpers have `waitForIdle`.
 - Statuses that skip a turn are read _before_ statuses tick, so a 1-round Freeze
   costs exactly one turn instead of expiring on the turn it should take away.
+- Anything that tells the player what an action _will_ do must run the real rule
+  on a throwaway copy, never describe it in parallel. `previewAbility` pairs
+  `expectedDamage` with `rollDamage`, and `forecastReactions` replays
+  `applyImpact` / `paintSurface` in effect order against a copied grid. The
+  terrain preview was written by hand for the whole of Phase 1 and announced
+  "Leaves Fire" over a puddle that was about to become steam. If you add an
+  effect kind that changes the world, forecast it by calling the same function
+  the reducer calls.

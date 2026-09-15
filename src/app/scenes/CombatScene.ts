@@ -31,6 +31,7 @@ import type { MapView, OverlayLayer, RenderUnit } from '../../render/renderer';
 import { resolvePainter } from '../../render/painters/registry';
 import { attachPointer } from '../input/pointer';
 import { announce, button, clear, el, painterCanvas } from '../ui/dom';
+import { reactionNotes } from '../ui/ReactionNote';
 import { UnitInspector } from '../ui/UnitInspector';
 
 type Mode =
@@ -648,6 +649,13 @@ export class CombatScene implements Scene {
     }
 
     const body = el('div', { class: 'stack tight' }, chips);
+
+    // What the ground is about to do, in the combo table's own words. This is
+    // the part that used to say "Leaves Fire" over a puddle.
+    for (const note of reactionNotes(this.app.content, preview.reactions)) {
+      body.appendChild(note);
+    }
+
     if (preview.hitsFriendly) {
       body.appendChild(
         el('span', { class: 'warn-note', text: 'This will also hit your own side.' }),
