@@ -50,7 +50,7 @@ export class ExploreScene implements Scene {
     this.setupRenderer();
     const wrap = scene.querySelector<HTMLElement>('.map-wrap');
     if (wrap && typeof ResizeObserver !== 'undefined') {
-      this.observer = new ResizeObserver(() => this.app.requestResize());
+      this.observer = new ResizeObserver(() => this.resize());
       this.observer.observe(wrap);
     }
     this.loop();

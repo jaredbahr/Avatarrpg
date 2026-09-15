@@ -39,6 +39,14 @@ import { DialogueScene } from './scenes/DialogueScene';
 import { ExploreScene } from './scenes/ExploreScene';
 import { CombatScene } from './scenes/CombatScene';
 
+/** What `rendererCamera()` reports: tile size and offset in CSS px, and whether the whole board is on screen. */
+export interface CameraInfo {
+  readonly tilePx: number;
+  readonly offsetX: number;
+  readonly offsetY: number;
+  readonly fitted: boolean;
+}
+
 export interface Scene {
   readonly name: string;
   mount(host: HTMLElement): void;
@@ -349,10 +357,8 @@ export class App {
    * and tap it the way a finger would, instead of guessing at fractions of the
    * canvas. Returns null when no map scene is mounted.
    */
-  rendererCamera(): { tilePx: number; offsetX: number; offsetY: number } | null {
-    const scene = this.scene as unknown as {
-      cameraInfo?: () => { tilePx: number; offsetX: number; offsetY: number } | null;
-    };
+  rendererCamera(): CameraInfo | null {
+    const scene = this.scene as unknown as { cameraInfo?: () => CameraInfo | null };
     return scene?.cameraInfo?.() ?? null;
   }
 

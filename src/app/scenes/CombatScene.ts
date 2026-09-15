@@ -120,13 +120,15 @@ export class CombatScene implements Scene {
   /**
    * The HUD reflows as the turn changes (a confirm bar appears, the log opens),
    * and each reflow resizes the canvas without any window event. Watching the
-   * wrapper keeps the backing store honest; the resize itself is coalesced
-   * by the app so a burst of layout lands as one refit.
+   * wrapper keeps the backing store honest. The refit runs inside the
+   * observer callback, which the browser already delivers once per frame
+   * after layout, so the canvas is right in the same frame the HUD moved
+   * rather than stretched for a frame first.
    */
   private observeMap(scene: HTMLElement): void {
     const wrap = scene.querySelector<HTMLElement>('.map-wrap');
     if (!wrap || typeof ResizeObserver === 'undefined') return;
-    this.observer = new ResizeObserver(() => this.app.requestResize());
+    this.observer = new ResizeObserver(() => this.resize());
     this.observer.observe(wrap);
   }
 
@@ -200,13 +202,14 @@ export class CombatScene implements Scene {
   }
 
   /** Camera geometry as plain numbers, for tests that need tile -> pixel. */
-  cameraInfo(): { tilePx: number; offsetX: number; offsetY: number } | null {
+  cameraInfo(): { tilePx: number; offsetX: number; offsetY: number; fitted: boolean } | null {
     const camera = this.renderer?.camera;
     if (!camera) return null;
     return {
       tilePx: TILE * camera.scale,
       offsetX: camera.offsetX,
       offsetY: camera.offsetY,
+      fitted: camera.fitted,
     };
   }
 
