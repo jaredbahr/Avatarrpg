@@ -8,11 +8,11 @@
  */
 
 import type { App, Scene } from '../App';
-import type { MapDef, Vec2 } from '../../core/types';
+import type { Grid, MapDef, Vec2 } from '../../core/types';
 import { buildGrid } from '../../core/rules/grid';
 import { Renderer } from '../../render/renderer';
 import type { MapView, NpcMarker, RenderUnit } from '../../render/renderer';
-import { attachPointer } from '../input/pointer';
+import { attachPointer, wheelZoomFactor } from '../input/pointer';
 import { button, clear, el } from '../ui/dom';
 
 export class ExploreScene implements Scene {
@@ -25,6 +25,9 @@ export class ExploreScene implements Scene {
   private frame = 0;
   private hover: Vec2 | null = null;
   private map: MapDef | null = null;
+  /** Built once per map, not once per frame: the village never changes shape. */
+  private grid: Grid | null = null;
+  private observer: ResizeObserver | null = null;
 
   constructor(private app: App) {}
 
@@ -45,12 +48,19 @@ export class ExploreScene implements Scene {
 
     this.buildBanner(banner);
     this.setupRenderer();
+    const wrap = scene.querySelector<HTMLElement>('.map-wrap');
+    if (wrap && typeof ResizeObserver !== 'undefined') {
+      this.observer = new ResizeObserver(() => this.app.requestResize());
+      this.observer.observe(wrap);
+    }
     this.loop();
   }
 
   unmount(): void {
     if (this.frame) cancelAnimationFrame(this.frame);
     this.frame = 0;
+    this.observer?.disconnect();
+    this.observer = null;
     this.detach?.();
     this.detach = null;
     this.renderer = null;
@@ -64,6 +74,7 @@ export class ExploreScene implements Scene {
     const map = this.app.content.maps.get(state.location.mapId);
     if (map && map.id !== this.map?.id) {
       this.map = map;
+      this.grid = buildGrid(map);
       this.renderer?.resize({ width: map.width, height: map.height });
       this.renderer?.camera.fitExplore();
       this.renderer?.camera.centreOn(state.location.pos);
@@ -74,8 +85,12 @@ export class ExploreScene implements Scene {
 
   resize(): void {
     const map = this.map;
+    const camera = this.renderer?.camera;
     this.renderer?.resize(map ? { width: map.width, height: map.height } : undefined);
-    this.renderer?.camera.fitExplore();
+    if (!camera) return;
+    camera.fitExplore();
+    const pos = this.app.state?.location.pos;
+    if (pos) camera.centreOn(pos);
   }
 
   /* ---------------------------------------------------------------- */
@@ -108,6 +123,7 @@ export class ExploreScene implements Scene {
     const map = this.app.content.maps.get(state.location.mapId);
     if (!map) return;
     this.map = map;
+    this.grid = buildGrid(map);
 
     this.renderer = new Renderer(canvas, { width: map.width, height: map.height });
     this.renderer.resize({ width: map.width, height: map.height });
@@ -119,6 +135,11 @@ export class ExploreScene implements Scene {
       onDrag: (delta) => {
         this.renderer?.camera.panBy(delta.x, delta.y);
       },
+      onPinch: (gesture) => {
+        this.renderer?.camera.zoomAt(gesture.centre, gesture.step);
+        this.renderer?.camera.panBy(gesture.delta.x, gesture.delta.y);
+      },
+      onWheel: (wheel) => this.renderer?.camera.zoomAt(wheel.point, wheelZoomFactor(wheel)),
       onHover: (point) => {
         this.hover = point ? (this.renderer?.camera.toTile(point.x, point.y) ?? null) : null;
       },
@@ -142,10 +163,11 @@ export class ExploreScene implements Scene {
     const renderer = this.renderer;
     const state = this.app.state;
     const map = this.map;
-    if (!renderer || !state || !map) return;
+    const grid = this.grid;
+    if (!renderer || !state || !map || !grid) return;
 
     const now = performance.now();
-    const grid = buildGrid(map);
+    this.app.stats?.frame(now);
 
     // The party is drawn as its leader — one figure to move around a village.
     const leader = state.party[0];

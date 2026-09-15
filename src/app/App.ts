@@ -29,6 +29,7 @@ import { reconcileDisciplines } from '../core/save/reconcile';
 import type { SessionMeta } from '../core/save/serialize';
 import { announce, clear, el } from './ui/dom';
 import { Toasts } from './ui/Toasts';
+import { Stats } from './ui/Stats';
 import { PauseMenu } from './ui/PauseMenu';
 import { LevelUpDialog } from './ui/LevelUpDialog';
 import { DisciplineDialog } from './ui/DisciplineDialog';
@@ -51,6 +52,8 @@ export class App {
   readonly animator: Animator;
   readonly session = new Session();
   readonly toasts: Toasts;
+  /** Frame-time readout, present only with `?stats=1`. */
+  readonly stats: Stats | null;
 
   settings: Settings;
   state: GameState | null = null;
@@ -63,6 +66,7 @@ export class App {
   private levelUp: LevelUpDialog | DisciplineDialog | null = null;
   /** Set while a battle is being resolved, so it cannot double-fire. */
   private resolving = false;
+  private resizeQueued = false;
 
   constructor(
     readonly content: ContentIndex,
@@ -81,9 +85,27 @@ export class App {
     root.appendChild(this.overlayHost);
 
     this.toasts = new Toasts(this.overlayHost);
+    this.stats = Stats.enabled() ? new Stats(this.overlayHost) : null;
 
-    window.addEventListener('resize', () => this.scene?.resize?.());
-    window.addEventListener('orientationchange', () => this.scene?.resize?.());
+    window.addEventListener('resize', () => this.requestResize());
+    window.addEventListener('orientationchange', () => this.requestResize());
+    // iOS Safari's toolbars come and go without a window resize; the visual
+    // viewport is what actually changed.
+    window.visualViewport?.addEventListener('resize', () => this.requestResize());
+  }
+
+  /**
+   * Resizes the mounted scene once per frame however many signals ask for it:
+   * a rotation fires resize, orientationchange, a visual-viewport change and
+   * the map wrapper's ResizeObserver within the same tick.
+   */
+  requestResize(): void {
+    if (this.resizeQueued) return;
+    this.resizeQueued = true;
+    requestAnimationFrame(() => {
+      this.resizeQueued = false;
+      this.scene?.resize?.();
+    });
   }
 
   /* ---------------------------------------------------------------- */

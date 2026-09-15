@@ -30,7 +30,7 @@ import { Renderer, TILE } from '../../render/renderer';
 import type { MapView, OverlayLayer, RenderProp, RenderUnit } from '../../render/renderer';
 import { CONTENT } from '../../content';
 import { resolvePainter } from '../../render/painters/registry';
-import { attachPointer } from '../input/pointer';
+import { attachPointer, wheelZoomFactor } from '../input/pointer';
 import { announce, button, clear, el, painterCanvas } from '../ui/dom';
 import { reactionNotes } from '../ui/ReactionNote';
 import { UnitInspector } from '../ui/UnitInspector';
@@ -58,6 +58,19 @@ export class CombatScene implements Scene {
   private handedOffTo: string | null = null;
   private bannerShownFor: string | null = null;
   private lastActiveId: string | null = null;
+  private recentreButton: HTMLButtonElement | null = null;
+  private observer: ResizeObserver | null = null;
+  /**
+   * The reachable set and the target/area tiles are rebuilt only when the
+   * inputs that decide them change, not every frame: on a tablet the
+   * flood-fill is the one per-frame cost that shows up.
+   */
+  private overlayMemo: {
+    battle: BattleState;
+    key: string;
+    overlays: OverlayLayer[];
+    path: readonly Vec2[];
+  } | null = null;
   private aiScheduled = false;
   private resultShown = false;
   private logOpen = false;
@@ -84,6 +97,7 @@ export class CombatScene implements Scene {
     host.appendChild(scene);
 
     this.setupRenderer();
+    this.observeMap(scene);
     this.loop();
     this.sync();
   }
@@ -91,6 +105,9 @@ export class CombatScene implements Scene {
   unmount(): void {
     if (this.frame) cancelAnimationFrame(this.frame);
     this.frame = 0;
+    this.observer?.disconnect();
+    this.observer = null;
+    this.recentreButton = null;
     this.detach?.();
     this.detach = null;
     this.inspector?.close();
@@ -100,12 +117,60 @@ export class CombatScene implements Scene {
     this.host = null;
   }
 
+  /**
+   * The HUD reflows as the turn changes (a confirm bar appears, the log opens),
+   * and each reflow resizes the canvas without any window event. Watching the
+   * wrapper keeps the backing store honest; the resize itself is coalesced
+   * by the app so a burst of layout lands as one refit.
+   */
+  private observeMap(scene: HTMLElement): void {
+    const wrap = scene.querySelector<HTMLElement>('.map-wrap');
+    if (!wrap || typeof ResizeObserver === 'undefined') return;
+    this.observer = new ResizeObserver(() => this.app.requestResize());
+    this.observer.observe(wrap);
+  }
+
   resize(): void {
     const battle = this.battle();
+    const camera = this.renderer?.camera;
+    const wasFitted = camera?.fitted ?? true;
     this.renderer?.resize(
       battle ? { width: battle.grid.width, height: battle.grid.height } : undefined,
     );
-    this.renderer?.camera.fit();
+    if (!camera) return;
+    // A board the player zoomed keeps its zoom through a HUD reflow; a fitted
+    // one refits, and so does one that a rotation has left smaller than it
+    // could be.
+    if (wasFitted || camera.scale < camera.fitScale()) this.recentre();
+    else camera.clamp();
+    this.syncRecentre();
+  }
+
+  /** Whole board back on screen, or the acting unit centred where it cannot fit. */
+  private recentre(): void {
+    const camera = this.renderer?.camera;
+    if (!camera) return;
+    camera.fit();
+    const unit = this.active();
+    if (!camera.fitted && unit) camera.centreOn(unit.pos);
+    this.syncRecentre();
+  }
+
+  private zoomBy(factor: number, at: { x: number; y: number }): void {
+    this.renderer?.camera.zoomAt(at, factor);
+    this.syncRecentre();
+  }
+
+  private pan(dx: number, dy: number): void {
+    this.renderer?.camera.panBy(dx, dy);
+  }
+
+  /** The Recentre button only exists while there is something off screen. */
+  private syncRecentre(): void {
+    const button = this.recentreButton;
+    if (!button) return;
+    const fitted = this.renderer?.camera.fitted ?? true;
+    if (button.hidden !== fitted) button.hidden = fitted;
   }
 
   private setupRenderer(): void {
@@ -120,6 +185,14 @@ export class CombatScene implements Scene {
     this.detach = attachPointer(canvas, {
       onTap: (point) => this.onTap(point.x, point.y),
       onLongPress: (point) => this.onLongPress(point.x, point.y),
+      // Panning is a no-op while the whole board fits: the camera clamps it
+      // away, so a stray drag at fit scale never moves anything.
+      onDrag: (delta) => this.pan(delta.x, delta.y),
+      onPinch: (gesture) => {
+        this.zoomBy(gesture.step, gesture.centre);
+        this.pan(gesture.delta.x, gesture.delta.y);
+      },
+      onWheel: (wheel) => this.zoomBy(wheelZoomFactor(wheel), wheel.point),
       onHover: (point) => {
         this.hover = point ? (this.renderer?.camera.toTile(point.x, point.y) ?? null) : null;
       },
@@ -273,6 +346,10 @@ export class CombatScene implements Scene {
         this.handedOffTo = null;
       }
       if (unit) announce(`${this.app.session.labelFor(unit)}'s turn.`);
+
+      // Where the board cannot fit, whoever is acting is what to look at.
+      const camera = this.renderer?.camera;
+      if (unit && camera && !camera.fitted) camera.centreOn(unit.pos);
     }
 
     if (battle.phase !== 'active' && !this.resultShown) {
@@ -325,6 +402,15 @@ export class CombatScene implements Scene {
       ),
     );
     bar.appendChild(el('div', { class: 'spacer' }));
+
+    const recentre = button('Recentre', () => this.recentre(), {
+      class: 'btn-ghost',
+      title: 'Show the whole battlefield again',
+    });
+    recentre.hidden = this.renderer?.camera.fitted ?? true;
+    this.recentreButton = recentre;
+    bar.appendChild(recentre);
+
     if (encounter) {
       bar.appendChild(
         button('Tip', () => this.app.toasts.show(encounter.tip, 'info', 6000), {
@@ -856,36 +942,28 @@ export class CombatScene implements Scene {
     if (!renderer || !battle) return;
 
     const now = performance.now();
+    this.app.stats?.frame(now);
     this.app.animator.prune(now);
 
     const unit = this.active();
-    const overlays: OverlayLayer[] = [];
+    let overlays: readonly OverlayLayer[] = [];
     let path: readonly Vec2[] = [];
 
     const interactive = this.isPlayerTurn() && !this.needsHandoff() && !this.app.animator.busy(now);
 
     if (interactive && unit) {
-      if (this.mode.kind === 'move') {
-        const cells = [...this.reachableCells().values()].filter((c) => c.cost > 0);
-        overlays.push({ kind: 'move', tiles: cells.map((c) => c.pos) });
-        if (this.pending) {
-          const chosen = this.reachableCells().get(posKey(this.pending));
-          if (chosen) path = chosen.path;
-        }
-      } else if (this.mode.kind === 'aim') {
-        const ability = this.app.content.abilities.get(this.mode.abilityId);
-        if (ability) {
-          overlays.push({
-            kind: 'target',
-            tiles: targetableTiles(this.app.content, battle, unit, ability),
-          });
-          if (this.pending) {
-            overlays.push({
-              kind: 'area',
-              tiles: affectedTiles(battle.grid, unit, ability, this.pending),
-            });
-          }
-        }
+      const key = `${this.mode.kind}|${this.mode.kind === 'aim' ? this.mode.abilityId : ''}|${
+        this.pending ? posKey(this.pending) : ''
+      }|${unit.id}`;
+      const memo = this.overlayMemo;
+      if (memo && memo.battle === battle && memo.key === key) {
+        overlays = memo.overlays;
+        path = memo.path;
+      } else {
+        const built = this.buildOverlays(battle, unit);
+        this.overlayMemo = { battle, key, ...built };
+        overlays = built.overlays;
+        path = built.path;
       }
     }
 
@@ -935,4 +1013,38 @@ export class CombatScene implements Scene {
 
     renderer.draw(view);
   };
+
+  private buildOverlays(
+    battle: BattleState,
+    unit: Unit,
+  ): { overlays: OverlayLayer[]; path: readonly Vec2[] } {
+    const overlays: OverlayLayer[] = [];
+    let path: readonly Vec2[] = [];
+
+    if (this.mode.kind === 'move') {
+      const reach = this.reachableCells();
+      const cells = [...reach.values()].filter((c) => c.cost > 0);
+      overlays.push({ kind: 'move', tiles: cells.map((c) => c.pos) });
+      if (this.pending) {
+        const chosen = reach.get(posKey(this.pending));
+        if (chosen) path = chosen.path;
+      }
+    } else if (this.mode.kind === 'aim') {
+      const ability = this.app.content.abilities.get(this.mode.abilityId);
+      if (ability) {
+        overlays.push({
+          kind: 'target',
+          tiles: targetableTiles(this.app.content, battle, unit, ability),
+        });
+        if (this.pending) {
+          overlays.push({
+            kind: 'area',
+            tiles: affectedTiles(battle.grid, unit, ability, this.pending),
+          });
+        }
+      }
+    }
+
+    return { overlays, path };
+  }
 }
