@@ -114,6 +114,17 @@ export function painterCanvas(
   return canvas;
 }
 
+/**
+ * A tooltip that also works under a finger. `title` shows on hover where there
+ * is a mouse; on a tablet nothing hovers, so a tap shows the same text as a
+ * toast. Harmless with a mouse: a click just repeats what the tooltip said.
+ */
+export function tip(node: HTMLElement, text: string, show: (text: string) => void): void {
+  if (!text) return;
+  node.title = text;
+  node.addEventListener('click', () => show(text));
+}
+
 /** Screen-reader announcement without moving focus. */
 export function announce(message: string): void {
   let region = document.getElementById('fnt-live');

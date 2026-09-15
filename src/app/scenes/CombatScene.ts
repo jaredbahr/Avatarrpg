@@ -31,7 +31,7 @@ import type { MapView, OverlayLayer, RenderProp, RenderUnit } from '../../render
 import { CONTENT } from '../../content';
 import { resolvePainter } from '../../render/painters/registry';
 import { attachPointer, wheelZoomFactor } from '../input/pointer';
-import { announce, button, clear, el, painterCanvas } from '../ui/dom';
+import { announce, button, clear, el, painterCanvas, tip } from '../ui/dom';
 import { reactionNotes } from '../ui/ReactionNote';
 import { UnitInspector } from '../ui/UnitInspector';
 
@@ -448,14 +448,16 @@ export class CombatScene implements Scene {
 
       const chip = el(
         'div',
-        {
-          class: `turn-chip faction-${unit.faction}${isActive ? ' active' : ''}`,
-          title: `${unit.name}${player ? ` (${player.name})` : ''} — ${unit.hp}/${unit.base.maxHp} HP`,
-        },
+        { class: `turn-chip faction-${unit.faction}${isActive ? ' active' : ''}` },
         painterCanvas(portraitKey, 2.4, (ctx, size) => {
           resolvePainter(portraitKey).draw(ctx, { x: 0, y: 0, size });
         }),
         el('span', { class: 'tiny', text: player?.name ?? unit.name }),
+      );
+      tip(
+        chip,
+        `${unit.name}${player ? ` (${player.name})` : ''} — ${unit.hp}/${unit.base.maxHp} HP`,
+        (text) => this.app.toasts.show(text),
       );
       strip.appendChild(chip);
     }
@@ -554,13 +556,12 @@ export class CombatScene implements Scene {
         { class: 'row row-wrap tight' },
         apPips,
         el('span', { class: 'chip', text: `Move ${unit.move}` }),
-        ...unit.statuses.map((s) =>
-          el('span', {
-            class: 'chip chip-status',
-            text: this.app.content.statuses.get(s.id)?.name ?? s.id,
-            title: this.app.content.statuses.get(s.id)?.description ?? '',
-          }),
-        ),
+        ...unit.statuses.map((s) => {
+          const def = this.app.content.statuses.get(s.id);
+          const chip = el('span', { class: 'chip chip-status', text: def?.name ?? s.id });
+          tip(chip, def?.description ?? '', (text) => this.app.toasts.show(text));
+          return chip;
+        }),
       ),
     );
   }
