@@ -10,6 +10,16 @@ const PREINSTALLED_CHROMIUM = '/opt/pw-browsers/chromium';
 const executablePath = existsSync(PREINSTALLED_CHROMIUM) ? PREINSTALLED_CHROMIUM : undefined;
 
 /**
+ * WebKit is what an iPad runs, and it is not in the dev container (never run
+ * `playwright install` there). The iPad projects therefore run in CI, where
+ * the workflow installs WebKit, and locally only when FNT_E2E_WEBKIT=1 says a
+ * WebKit build is present. Playwright's WebKit is the engine, not Safari:
+ * Home Screen install and iPadOS orientation quirks stay on the manual
+ * checklist in docs/device-matrix.md.
+ */
+const WEBKIT = Boolean(process.env.CI) || process.env.FNT_E2E_WEBKIT === '1';
+
+/**
  * The container ships Chromium at PLAYWRIGHT_BROWSERS_PATH; never run
  * `playwright install` here. Tests run against the *production* build so the
  * service worker and the PWA manifest are exercised the same way the Surface
@@ -40,6 +50,24 @@ export default defineConfig({
         launchOptions: executablePath ? { executablePath } : {},
       },
     },
+    ...(WEBKIT
+      ? [
+          {
+            // An iPad in landscape: WebKit, touch, DPR 2. The whole suite bar
+            // the service-worker spec, which Playwright supports in Chromium only.
+            name: 'ipad-landscape',
+            use: { ...devices['iPad Pro 11 landscape'] },
+            testIgnore: /offline\.spec\.ts/,
+          },
+          {
+            // Held upright: the board no longer fits at fingertip size, so the
+            // camera's tappable-tile rule and the stacked HUD are what is tested.
+            name: 'ipad-portrait',
+            use: { ...devices['iPad Pro 11'] },
+            testMatch: /(touch|gestures)\.spec\.ts/,
+          },
+        ]
+      : []),
   ],
   webServer: {
     command: 'npm run build && npm run preview -- --port 4173 --host 127.0.0.1',

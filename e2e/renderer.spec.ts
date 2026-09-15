@@ -32,8 +32,11 @@ test.describe('renderer backends', () => {
     expect(chosen, 'software WebGL should fall back to Canvas 2D').toBe('canvas');
   });
 
-  test('renders the board through the WebGL backend when forced', async ({ page }) => {
+  test('renders the board through the WebGL backend when forced', async ({ page, browserName }) => {
     test.setTimeout(120_000);
+    // WebKit on a Linux runner drives WebGL through Mesa's software path,
+    // which is slower again than SwiftShader; the budget above is for both.
+    if (browserName === 'webkit') test.slow();
 
     const errors: string[] = [];
     page.on('console', (message) => {
