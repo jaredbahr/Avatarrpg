@@ -158,4 +158,47 @@ export const NONBENDER_ABILITIES: readonly Ability[] = [
     fx: 'fx.non.cover',
     tags: ['buff'],
   }),
+
+  /* ------------------------------------------------------------------ */
+  /* Engineering discipline                                              */
+  /* ------------------------------------------------------------------ */
+
+  ability({
+    id: 'shock_mine',
+    name: 'Shock Mine',
+    element: 'nonbender',
+    apCost: 2,
+    range: 6,
+    targeting: blast(1),
+    cooldown: 3,
+    effects: [
+      { kind: 'damage', base: 7, scale: 0.5, damageType: 'lightning' },
+      { kind: 'status', status: 'shocked', duration: 2, chance: 0.8, to: 'hit' },
+      { kind: 'surface', surface: 'oil', duration: 3, area: 'center' },
+    ],
+    description:
+      'Thrown, then it goes off. The casing splits and leaks its fuel, so a firebender can follow it up.',
+    flavor: 'She keeps meaning to fix the leak. She has stopped meaning to.',
+    fx: 'fx.non.mine',
+    tags: ['attack', 'control', 'surface'],
+  }),
+  ability({
+    id: 'disruptor_array',
+    name: 'Disruptor Array',
+    element: 'nonbender',
+    apCost: 3,
+    range: 5,
+    targeting: blast(2),
+    cooldown: 5,
+    effects: [
+      { kind: 'damage', base: 9, scale: 0.7, damageType: 'lightning' },
+      { kind: 'status', status: 'chiBlocked', duration: 2, chance: 0.7, to: 'hit' },
+      { kind: 'status', status: 'shocked', duration: 2, chance: 0.6, to: 'hit' },
+    ],
+    description:
+      'Four emitters, thrown wide, firing together. Every bender caught inside is likely to stop being one for two rounds.',
+    flavor: 'No bending required. That was always the argument.',
+    fx: 'fx.non.array',
+    tags: ['attack', 'control', 'signature'],
+  }),
 ];

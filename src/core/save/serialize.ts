@@ -15,7 +15,7 @@
 import { z } from 'zod';
 import type { GameState } from '../types';
 
-export const SAVE_FORMAT_VERSION = 1;
+export const SAVE_FORMAT_VERSION = 2;
 export const SAVE_MAGIC = 'four-nations-tactics';
 
 /* ------------------------------------------------------------------ */
@@ -47,6 +47,7 @@ const unit = z.object({
   element: z.enum(['fire', 'water', 'earth', 'air', 'nonbender']),
   characterId: z.string().nullable(),
   enemyId: z.string().nullable(),
+  disciplineId: z.string().nullable(),
   level: z.number(),
   xp: z.number(),
   pos: vec2,
@@ -112,7 +113,8 @@ const gameState = z.object({
     z.object({
       unitId: z.string(),
       level: z.number(),
-      options: z.tuple([z.string(), z.string()]),
+      kind: z.enum(['ability', 'discipline']),
+      options: z.array(z.string()).min(1),
     }),
   ),
   location: z.object({ mapId: z.string(), pos: vec2 }),
@@ -187,15 +189,67 @@ export type LoadResult =
  */
 export function migrate(raw: unknown): unknown {
   if (typeof raw !== 'object' || raw === null) return raw;
-  const blob = raw as Record<string, unknown>;
+  let blob = raw as Record<string, unknown>;
 
   // Format 0 (never shipped) had no `summary`; synthesise one so old files
   // from a dev build still load.
   if (blob.format === 0 || blob.summary === undefined) {
-    return { ...blob, format: SAVE_FORMAT_VERSION, summary: blob.label ?? 'Saved game' };
+    blob = { ...blob, format: 1, summary: blob.label ?? 'Saved game' };
   }
 
+  if (typeof blob.format === 'number' && blob.format < 2) blob = migrateToFormat2(blob);
+
   return blob;
+}
+
+/**
+ * Format 1 -> 2: disciplines.
+ *
+ * Every unit gains `disciplineId`, and a pending choice gains the `kind` that
+ * tells an ability pick from a path pick. Both default the only way they can:
+ * a format 1 save predates the gate entirely, so nothing in it had a path and
+ * every choice it was holding was a technique.
+ *
+ * Note what this does *not* try to do. It cannot re-offer a pick that a newer
+ * kit would owe, because the migration only sees raw JSON and has no content
+ * to look a kit up in. `reconcileDisciplines` does that on load, with content
+ * in hand — so a party that is somehow already past a gate is handed its
+ * choice there rather than quietly losing it.
+ */
+function migrateToFormat2(blob: Record<string, unknown>): Record<string, unknown> {
+  const withDiscipline = (unit: unknown): unknown =>
+    typeof unit === 'object' && unit !== null ? { disciplineId: null, ...unit } : unit;
+
+  const state = blob.state;
+  if (typeof state !== 'object' || state === null) return { ...blob, format: 2 };
+  const s = state as Record<string, unknown>;
+
+  const battle = s.battle;
+  const nextBattle =
+    typeof battle === 'object' && battle !== null
+      ? {
+          ...(battle as Record<string, unknown>),
+          units: Array.isArray((battle as Record<string, unknown>).units)
+            ? ((battle as Record<string, unknown>).units as unknown[]).map(withDiscipline)
+            : (battle as Record<string, unknown>).units,
+        }
+      : battle;
+
+  return {
+    ...blob,
+    format: 2,
+    state: {
+      ...s,
+      version: 2,
+      party: Array.isArray(s.party) ? s.party.map(withDiscipline) : s.party,
+      battle: nextBattle,
+      pendingChoices: Array.isArray(s.pendingChoices)
+        ? s.pendingChoices.map((choice) =>
+            typeof choice === 'object' && choice !== null ? { kind: 'ability', ...choice } : choice,
+          )
+        : s.pendingChoices,
+    },
+  };
 }
 
 export function deserialize(json: string): LoadResult {

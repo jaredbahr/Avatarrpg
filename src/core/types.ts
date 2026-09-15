@@ -196,6 +196,8 @@ export interface Unit {
   readonly characterId: string | null;
   /** Set for enemies and story allies; indexes `ContentIndex.enemies`. */
   readonly enemyId: string | null;
+  /** The path taken at the discipline gate; null until then, and for enemies. */
+  readonly disciplineId: string | null;
 
   readonly level: number;
   readonly xp: number;
@@ -295,10 +297,52 @@ export interface Ability {
 /* Characters, enemies, encounters, maps                               */
 /* ------------------------------------------------------------------ */
 
-/** Either a flat unlock, or a choice of two presented at level-up. */
+/**
+ * One rung of a progression ladder.
+ *
+ *  - `ability`    handed over outright on arriving at the level.
+ *  - `choose`     two techniques, one of which the player picks.
+ *  - `specialize` the discipline gate: the player commits to one path, and
+ *                 that path's own kit supplies every level from here on.
+ *
+ * A character kit and a discipline kit are both lists of these, which is what
+ * lets `unlocksAtLevel` walk the two of them with one code path.
+ */
 export type KitEntry =
   | { readonly level: number; readonly ability: string }
-  | { readonly level: number; readonly choose: readonly [string, string] };
+  | { readonly level: number; readonly choose: readonly [string, string] }
+  | { readonly level: number; readonly specialize: readonly string[] };
+
+/**
+ * A rare art a bender narrows into — metalbending, healing, lightning — or,
+ * for a non-bender, a school of training. Deliberately *not* modelled as a
+ * separate concept per element: a discipline is a discipline, so the core
+ * never asks whether a unit bends.
+ *
+ * Rarity is expressed by `requiresFlag`, not by a roll. A story beat sets the
+ * flag (you found someone who could teach it) and the path opens. Every
+ * element must keep at least one discipline with `requiresFlag: null`, or a
+ * party that skipped the optional content would arrive at the gate with
+ * nothing to pick — `validateContent` enforces that.
+ */
+export interface DisciplineDef {
+  readonly id: string;
+  readonly name: string;
+  readonly element: ElementId;
+  /** One-line hook shown on the pick card. */
+  readonly blurb: string;
+  readonly description: string;
+  readonly flavor: string;
+  /** Story flag gating the pick. `null` means always offered. */
+  readonly requiresFlag: string | null;
+  /** Shown on a locked card so the path advertises how to earn it. */
+  readonly lockedHint: string;
+  /** Applied on top of the character's own mods once the path is taken. */
+  readonly statMods: Partial<UnitStats>;
+  readonly kit: readonly KitEntry[];
+  /** Asset manifest key, `fx.<element>.<name>`. */
+  readonly icon: string;
+}
 
 export interface CharacterDef {
   readonly id: string;
@@ -539,11 +583,21 @@ export interface BattleState {
   readonly nextUnitSerial: number;
 }
 
-/** A level-up waiting on a player to pick one of two abilities. */
+/**
+ * A level-up waiting on a player.
+ *
+ * `kind: 'ability'` offers two techniques; `kind: 'discipline'` offers the
+ * paths at the specialization gate. A discipline choice lists *every* path its
+ * element has, locked ones included — the dialog shows those greyed out with
+ * their hint, so a table can see what is out there and go looking for it. The
+ * reducer re-checks `requiresFlag` when the pick comes back, so listing a
+ * locked option here never makes it selectable.
+ */
 export interface PendingChoice {
   readonly unitId: string;
   readonly level: number;
-  readonly options: readonly [string, string];
+  readonly kind: 'ability' | 'discipline';
+  readonly options: readonly string[];
 }
 
 export type Screen = 'title' | 'setup' | 'explore' | 'dialogue' | 'combat' | 'ended';
@@ -586,6 +640,7 @@ export type Command =
   | { readonly type: 'runAiTurn' }
   | { readonly type: 'resolveBattle' }
   | { readonly type: 'chooseLevelUp'; readonly unitId: string; readonly abilityId: string }
+  | { readonly type: 'chooseDiscipline'; readonly unitId: string; readonly disciplineId: string }
   | { readonly type: 'setFlags'; readonly flags: Readonly<Record<string, FlagValue>> };
 
 export type GameEvent =
@@ -646,7 +701,18 @@ export type GameEvent =
   | {
       readonly type: 'levelChoiceOffered';
       readonly unitId: string;
-      readonly options: readonly [string, string];
+      readonly options: readonly string[];
+    }
+  | {
+      readonly type: 'disciplineOffered';
+      readonly unitId: string;
+      readonly options: readonly string[];
+    }
+  | {
+      readonly type: 'disciplineChosen';
+      readonly unitId: string;
+      readonly disciplineId: string;
+      readonly unlocked: readonly string[];
     }
   | { readonly type: 'battleEnded'; readonly outcome: 'victory' | 'defeat' }
   | { readonly type: 'screenChanged'; readonly screen: Screen };
@@ -670,6 +736,7 @@ export interface ContentIndex {
   readonly elements: ReadonlyMap<ElementId, ElementDef>;
   readonly abilities: ReadonlyMap<string, Ability>;
   readonly characters: ReadonlyMap<string, CharacterDef>;
+  readonly disciplines: ReadonlyMap<string, DisciplineDef>;
   readonly enemies: ReadonlyMap<string, EnemyDef>;
   readonly maps: ReadonlyMap<string, MapDef>;
   readonly encounters: ReadonlyMap<string, EncounterDef>;

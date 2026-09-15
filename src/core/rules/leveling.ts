@@ -9,9 +9,23 @@
  *
  * Growth per level: +4 max HP, +1 Power, and earthbenders get +1 Defence every
  * second level because being the wall is their whole job.
+ *
+ * From the discipline gate onward a unit climbs two ladders at once: the
+ * character kit it started on, and the kit of the path it committed to. See
+ * `combinedKit` — everything downstream treats that as one list, so nothing
+ * else in the rules has to know disciplines exist.
  */
 
-import type { CharacterDef, ContentIndex, ElementId, KitEntry, Unit, UnitStats } from '../types';
+import type {
+  CharacterDef,
+  ContentIndex,
+  DisciplineDef,
+  ElementId,
+  FlagValue,
+  KitEntry,
+  Unit,
+  UnitStats,
+} from '../types';
 
 export const MAX_LEVEL = 10;
 
@@ -94,23 +108,48 @@ export function scaleStats(base: UnitStats, element: ElementId, level: number): 
   };
 }
 
+/* ------------------------------------------------------------------ */
+/* Kits and disciplines                                                */
+/* ------------------------------------------------------------------ */
+
+/**
+ * The ladder a unit is actually climbing.
+ *
+ * A character kit runs to the specialization gate; the discipline kit picks up
+ * from there. Concatenating them is safe — entries are addressed by level, not
+ * by position, and the two are allowed to both have an entry at the gate level
+ * (the character's `specialize`, the discipline's first grant).
+ */
+export function combinedKit(
+  character: CharacterDef | undefined,
+  discipline: DisciplineDef | undefined,
+): readonly KitEntry[] {
+  if (!character) return discipline?.kit ?? [];
+  if (!discipline) return character.kit;
+  return [...character.kit, ...discipline.kit];
+}
+
 export interface KitUnlocks {
   /** Abilities granted outright at this level. */
   readonly granted: readonly string[];
-  /** Choices the player must resolve before the next battle. */
+  /** Technique choices the player must resolve before the next battle. */
   readonly choices: readonly (readonly [string, string])[];
+  /** Discipline gates reached at this level; each is a list of path ids. */
+  readonly specializations: readonly (readonly string[])[];
 }
 
 /** What a kit hands over on arriving at exactly `level`. */
 export function unlocksAtLevel(kit: readonly KitEntry[], level: number): KitUnlocks {
   const granted: string[] = [];
   const choices: (readonly [string, string])[] = [];
+  const specializations: (readonly string[])[] = [];
   for (const entry of kit) {
     if (entry.level !== level) continue;
     if ('ability' in entry) granted.push(entry.ability);
-    else choices.push(entry.choose);
+    else if ('choose' in entry) choices.push(entry.choose);
+    else specializations.push(entry.specialize);
   }
-  return { granted, choices };
+  return { granted, choices, specializations };
 }
 
 /** Every ability a kit grants outright up to and including `level`. */
@@ -123,11 +162,49 @@ export function grantedUpTo(kit: readonly KitEntry[], level: number): string[] {
   return out;
 }
 
+/** Every discipline gate at or below `level`, flattened. */
+export function specializationsUpTo(kit: readonly KitEntry[], level: number): string[] {
+  const out: string[] = [];
+  for (const entry of kit) {
+    if (entry.level > level || !('specialize' in entry)) continue;
+    out.push(...entry.specialize);
+  }
+  return out;
+}
+
+/**
+ * Whether a discipline is open to a party carrying these flags.
+ *
+ * Flags are read as truthy, matching how `branch` nodes read them, so a flag
+ * set to `false` gates the same as one that was never set at all.
+ */
+export function disciplineUnlocked(
+  discipline: DisciplineDef,
+  flags: Readonly<Record<string, FlagValue>>,
+): boolean {
+  if (!discipline.requiresFlag) return true;
+  return Boolean(flags[discipline.requiresFlag]);
+}
+
+/** Character mods with the discipline's stacked on top. */
+export function mergedStatMods(
+  character: CharacterDef | undefined,
+  discipline: DisciplineDef | undefined,
+): Partial<UnitStats> {
+  const merged: Record<string, number> = { ...(character?.statMods ?? {}) };
+  for (const [key, value] of Object.entries(discipline?.statMods ?? {})) {
+    merged[key] = (merged[key] ?? 0) + value;
+  }
+  return merged as Partial<UnitStats>;
+}
+
 export interface LevelGain {
   readonly unit: Unit;
   readonly levelsGained: number;
   readonly granted: readonly string[];
   readonly pendingChoices: readonly (readonly [string, string])[];
+  /** Discipline gates crossed on the way up, each a list of path ids. */
+  readonly pendingSpecializations: readonly (readonly string[])[];
 }
 
 /**
@@ -142,30 +219,28 @@ export function awardXp(
   unit: Unit,
   amount: number,
   character: CharacterDef | undefined,
+  discipline: DisciplineDef | undefined = undefined,
 ): LevelGain {
-  if (amount <= 0 || unit.level >= MAX_LEVEL) {
-    return { unit, levelsGained: 0, granted: [], pendingChoices: [] };
-  }
+  const none = { levelsGained: 0, granted: [], pendingChoices: [], pendingSpecializations: [] };
+  if (amount <= 0 || unit.level >= MAX_LEVEL) return { unit, ...none };
 
   const xp = unit.xp + amount;
   const newLevel = levelForXp(xp);
-  if (newLevel === unit.level) {
-    return { unit: { ...unit, xp }, levelsGained: 0, granted: [], pendingChoices: [] };
-  }
+  if (newLevel === unit.level) return { unit: { ...unit, xp }, ...none };
 
   const granted: string[] = [];
   const pendingChoices: (readonly [string, string])[] = [];
-  if (character) {
-    for (let level = unit.level + 1; level <= newLevel; level++) {
-      const unlocks = unlocksAtLevel(character.kit, level);
-      granted.push(...unlocks.granted);
-      pendingChoices.push(...unlocks.choices);
-    }
+  const pendingSpecializations: (readonly string[])[] = [];
+
+  const kit = combinedKit(character, discipline);
+  for (let level = unit.level + 1; level <= newLevel; level++) {
+    const unlocks = unlocksAtLevel(kit, level);
+    granted.push(...unlocks.granted);
+    pendingChoices.push(...unlocks.choices);
+    pendingSpecializations.push(...unlocks.specializations);
   }
 
-  const base = character
-    ? statsAtLevel(content, unit.element, newLevel, character.statMods)
-    : statsAtLevel(content, unit.element, newLevel);
+  const base = statsAtLevel(content, unit.element, newLevel, mergedStatMods(character, discipline));
 
   const hpGain = base.maxHp - unit.base.maxHp;
 
@@ -179,6 +254,60 @@ export function awardXp(
       abilities: [...new Set([...unit.abilities, ...granted])],
     },
     levelsGained: newLevel - unit.level,
+    granted,
+    pendingChoices,
+    pendingSpecializations,
+  };
+}
+
+export interface DisciplineAdoption {
+  readonly unit: Unit;
+  /** Abilities the path hands over immediately, for levels already reached. */
+  readonly granted: readonly string[];
+  /** Technique choices the path owes at levels already reached. */
+  readonly pendingChoices: readonly (readonly [string, string])[];
+}
+
+/**
+ * Commits a unit to a discipline and back-pays everything the path owes.
+ *
+ * A player reaches the gate at the same level the path's first ability sits
+ * at, so adopting has to grant retroactively rather than waiting for the next
+ * level-up — otherwise the reward for specialising would be nothing at all
+ * until the level after. The same loop covers a save migrated forward, where
+ * a unit can be several levels past the gate when it finally picks.
+ *
+ * Max HP moves by the discipline's stat mods and current HP moves with it, the
+ * same bargain `awardXp` makes: growth, not a free heal.
+ */
+export function adoptDiscipline(
+  content: ContentIndex,
+  unit: Unit,
+  character: CharacterDef | undefined,
+  discipline: DisciplineDef,
+): DisciplineAdoption {
+  const granted = grantedUpTo(discipline.kit, unit.level);
+  const pendingChoices: (readonly [string, string])[] = [];
+  for (let level = 1; level <= unit.level; level++) {
+    pendingChoices.push(...unlocksAtLevel(discipline.kit, level).choices);
+  }
+
+  const base = statsAtLevel(
+    content,
+    unit.element,
+    unit.level,
+    mergedStatMods(character, discipline),
+  );
+  const hpGain = base.maxHp - unit.base.maxHp;
+
+  return {
+    unit: {
+      ...unit,
+      disciplineId: discipline.id,
+      base,
+      hp: Math.max(1, Math.min(base.maxHp, unit.hp + hpGain)),
+      abilities: [...new Set([...unit.abilities, ...granted])],
+    },
     granted,
     pendingChoices,
   };

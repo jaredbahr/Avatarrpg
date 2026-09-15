@@ -11,7 +11,7 @@
  * better than these numbers, so treat the band as a floor, not a target.
  */
 
-import type { ContentIndex } from '../types';
+import type { ContentIndex, ElementId } from '../types';
 import type { PartySlot } from '../state/createGame';
 import { STANDARD_PARTY, runCombat, seedFor } from './runCombat';
 
@@ -71,6 +71,123 @@ export function runTableSizeSweep(
     size,
     report: runBalanceReport(content, { ...options, party: partyOfSize(size) }),
   }));
+}
+
+/* ------------------------------------------------------------------ */
+/* Discipline sweep                                                     */
+/* ------------------------------------------------------------------ */
+
+export interface DisciplineReport {
+  readonly disciplineId: string;
+  readonly label: string;
+  readonly element: ElementId;
+  readonly partyLevel: number;
+  readonly winRate: number;
+  readonly averageRounds: number;
+  readonly averagePartyDeaths: number;
+  readonly averageHpRemaining: number;
+}
+
+/** The path a party falls back to: an element's one ungated discipline. */
+export function defaultDisciplineFor(
+  content: ContentIndex,
+  element: ElementId,
+): string | undefined {
+  for (const discipline of content.disciplines.values()) {
+    if (discipline.element === element && discipline.requiresFlag === null) return discipline.id;
+  }
+  return undefined;
+}
+
+/**
+ * Builds a party in which everyone of `discipline`'s element has taken it and
+ * everybody else is on their element's default path. One variable at a time,
+ * so a win rate that moves can be blamed on one discipline.
+ */
+export function partyOnDiscipline(
+  content: ContentIndex,
+  party: readonly PartySlot[],
+  disciplineId: string,
+): PartySlot[] {
+  const subject = content.disciplines.get(disciplineId);
+  return party.map((slot) => {
+    const element = content.characters.get(slot.characterId)?.element;
+    if (!element) return slot;
+    const chosen =
+      subject && element === subject.element
+        ? disciplineId
+        : defaultDisciplineFor(content, element);
+    return chosen ? { ...slot, discipline: chosen } : slot;
+  });
+}
+
+/**
+ * Win rate per discipline, above the gate.
+ *
+ * Act 1's encounters are all tuned for level 3 or below, so the ordinary report
+ * never sees a discipline at all — this forces both sides to a level past the
+ * gate and swaps one path at a time. What it prints is a *shape* check (is one
+ * path miles ahead of the others?), not a statement about a fight anybody can
+ * currently reach: these are Act 1 rosters stretched to a level they were never
+ * written for.
+ *
+ * Read the spread, not the rows. At the default trial count one run is worth
+ * roughly three points, so anything under about ten points apart is noise. The
+ * first real measurement will come from Act 2 encounters actually tuned for
+ * level 5+; until those exist this is a tripwire for a path that is obviously
+ * broken, nothing finer.
+ */
+export function runDisciplineSweep(
+  content: ContentIndex,
+  options: BalanceOptions = {},
+): DisciplineReport[] {
+  const trials = options.trials ?? 40;
+  const party = options.party ?? STANDARD_PARTY;
+  const partyLevel = options.partyLevel ?? 7;
+
+  const reports: DisciplineReport[] = [];
+
+  for (const discipline of content.disciplines.values()) {
+    const roster = partyOnDiscipline(content, party, discipline.id);
+
+    let wins = 0;
+    let runs = 0;
+    let rounds = 0;
+    let deaths = 0;
+    let hp = 0;
+
+    for (const encounter of content.encounters.values()) {
+      for (let trial = 0; trial < trials; trial++) {
+        const result = runCombat(content, {
+          seed: seedFor(`${discipline.id}:${encounter.id}`, trial),
+          encounterId: encounter.id,
+          party: roster,
+          partyLevel,
+          // Level the opposition with the party, or a level 7 party walks
+          // through fights tuned for level 3 and every path reports 100%.
+          enemyLevel: partyLevel,
+        });
+        if (result.outcome === 'victory') wins++;
+        rounds += result.rounds;
+        deaths += result.partyDeaths;
+        hp += result.partyHpTotal > 0 ? result.partyHpRemaining / result.partyHpTotal : 0;
+        runs++;
+      }
+    }
+
+    reports.push({
+      disciplineId: discipline.id,
+      label: discipline.name,
+      element: discipline.element,
+      partyLevel,
+      winRate: runs > 0 ? wins / runs : 0,
+      averageRounds: runs > 0 ? rounds / runs : 0,
+      averagePartyDeaths: runs > 0 ? deaths / runs : 0,
+      averageHpRemaining: runs > 0 ? hp / runs : 0,
+    });
+  }
+
+  return reports;
 }
 
 export function runBalanceReport(
