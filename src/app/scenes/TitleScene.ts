@@ -1,0 +1,128 @@
+/**
+ * Title screen.
+ *
+ * Three things, in the order a family actually wants them: carry on from the
+ * autosave, start something new, or load a slot. Continue is first and
+ * largest because it is what gets tapped nine times out of ten.
+ */
+
+import type { App, Scene } from '../App';
+import { button, clear, el, painterCanvas } from '../ui/dom';
+import { AUTOSAVE_ID, listSlots, loadFromSlot } from '../storage/localSaves';
+import { SaveMenu } from '../ui/SaveMenu';
+import { SettingsPanel } from '../ui/SettingsPanel';
+import { resolvePainter } from '../../render/painters/registry';
+
+export class TitleScene implements Scene {
+  readonly name = 'title';
+  private host: HTMLElement | null = null;
+
+  constructor(private app: App) {}
+
+  mount(host: HTMLElement): void {
+    this.host = host;
+    this.render();
+  }
+
+  unmount(): void {
+    this.host = null;
+  }
+
+  sync(): void {
+    this.render();
+  }
+
+  private render(): void {
+    const host = this.host;
+    if (!host) return;
+    clear(host);
+
+    const auto = listSlots().find((slot) => slot.id === AUTOSAVE_ID);
+    const hasAuto = auto?.occupied === true && !auto.summary.startsWith('Damaged');
+
+    const mark = painterCanvas('portrait.narrator', 7, (ctx, size) => {
+      // The four-nations wheel, matching the app icon.
+      const quadrants = ['#d1462f', '#3e8fb0', '#6f9e4c', '#e8dcc0'];
+      const cx = size / 2;
+      const r = size * 0.46;
+      for (let i = 0; i < 4; i++) {
+        ctx.beginPath();
+        ctx.moveTo(cx, cx);
+        ctx.arc(cx, cx, r, (Math.PI / 2) * i - Math.PI / 2, (Math.PI / 2) * (i + 1) - Math.PI / 2);
+        ctx.closePath();
+        ctx.fillStyle = quadrants[i] ?? '#8d7d69';
+        ctx.fill();
+      }
+      ctx.beginPath();
+      ctx.arc(cx, cx, r, 0, Math.PI * 2);
+      ctx.strokeStyle = '#d9a441';
+      ctx.lineWidth = size * 0.05;
+      ctx.stroke();
+      ctx.beginPath();
+      ctx.arc(cx, cx, size * 0.12, 0, Math.PI * 2);
+      ctx.fillStyle = '#120d0a';
+      ctx.fill();
+    });
+
+    const actions = el(
+      'div',
+      { class: 'stack title-actions' },
+      hasAuto
+        ? button('Continue', () => this.continueGame(), { class: 'btn-primary btn-large' })
+        : null,
+      button('New game', () => this.app.goToSetup(), {
+        class: hasAuto ? '' : 'btn-primary btn-large',
+      }),
+      button('Load a save', () => this.openLoad()),
+      button('Settings', () => this.openSettings()),
+    );
+
+    if (hasAuto && auto) {
+      actions.appendChild(el('p', { class: 'muted tiny center', text: auto.summary }));
+    }
+
+    host.appendChild(
+      el(
+        'div',
+        { class: 'scene title-scene' },
+        el(
+          'div',
+          { class: 'title-card panel' },
+          mark,
+          el('h1', { text: 'Four Nations Tactics' }),
+          el('p', {
+            class: 'muted',
+            text: 'A hot-seat tactical RPG for one to six players, a few decades after Korra.',
+          }),
+          actions,
+          el('p', {
+            class: 'tiny muted center legal',
+            text: 'A non-commercial fan project. Avatar: The Last Airbender and The Legend of Korra are the property of Nickelodeon / Paramount. Original characters only.',
+          }),
+        ),
+      ),
+    );
+
+    // Warm the portrait painter cache so the first dialogue is not a stutter.
+    resolvePainter('portrait.narrator');
+  }
+
+  private continueGame(): void {
+    const result = loadFromSlot(AUTOSAVE_ID);
+    if (!result.ok) {
+      this.app.toasts.show(result.error, 'warn');
+      return;
+    }
+    this.app.adoptSave(result.save.state, result.save.session);
+  }
+
+  private openLoad(): void {
+    const menu = new SaveMenu(this.app, { mode: 'load' });
+    menu.open(document.querySelector('.overlay-host') ?? document.body);
+  }
+
+  private openSettings(): void {
+    const panel = new SettingsPanel(this.app);
+    panel.open(document.querySelector('.overlay-host') ?? document.body);
+  }
+}

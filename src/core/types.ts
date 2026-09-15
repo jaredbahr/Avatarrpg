@@ -475,6 +475,12 @@ export type StoryNode =
       readonly id: string;
       readonly kind: 'flags';
       readonly set: Readonly<Record<string, FlagValue>>;
+      /**
+       * XP granted to every party member, for story beats that are worth
+       * something without a fight — Jin paying for Ruon, say. Keeps branches
+       * that skip an encounter from arriving a level behind.
+       */
+      readonly grantXp?: number;
       readonly next: string;
     }
   | {

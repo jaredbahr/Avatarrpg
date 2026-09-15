@@ -89,7 +89,7 @@ export const ENCOUNTERS: readonly EncounterDef[] = [
     id: 'enc_grumbler',
     name: 'Grumbler',
     mapId: 'quarry_floor',
-    expectedLevel: 4,
+    expectedLevel: 3,
     enemies: [
       { enemyId: 'grumbler', pos: { x: 15, y: 5 } },
       { enemyId: 'bandit_earthbender', pos: { x: 16, y: 2 } },

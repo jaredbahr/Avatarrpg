@@ -389,7 +389,13 @@ export const storyNodeSchema = z.discriminatedUnion('kind', [
     objective: z.string().min(1),
     next: id,
   }),
-  z.object({ id, kind: z.literal('flags'), set: z.record(flagValue), next: id }),
+  z.object({
+    id,
+    kind: z.literal('flags'),
+    set: z.record(flagValue),
+    grantXp: z.number().int().min(0).max(2000).optional(),
+    next: id,
+  }),
   z.object({ id, kind: z.literal('branch'), flag: z.string().min(1), ifSet: id, ifUnset: id }),
   z.object({
     id,

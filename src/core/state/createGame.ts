@@ -244,6 +244,27 @@ export function encounterRoster(
 }
 
 /**
+ * The roster XP is calculated against: the authored enemies plus any
+ * flag-gated additions that are actually present.
+ *
+ * Deliberately *not* the roster the table will face. Reinforcements exist to
+ * keep a fight fair for a bigger group, not to pay it more, and a story ally
+ * pulling in an extra body should not quietly hand the party a level over the
+ * branch that skipped that fight. Every table earns the same, so every table
+ * meets each encounter at the level it was tuned for.
+ */
+export function xpRoster(
+  encounter: EncounterDef,
+  flags: Readonly<Record<string, FlagValue>>,
+): EncounterPlacement[] {
+  const enemies = [...encounter.enemies];
+  for (const group of encounter.conditionalEnemies) {
+    if (Boolean(flags[group.flag]) === group.whenSet) enemies.push(...group.placements);
+  }
+  return enemies;
+}
+
+/**
  * Assembles a battle: builds the grid from the map, drops the party on the
  * spawn points, places enemies (and any conditional reinforcements the story
  * flags call for), and rolls initiative once for the whole fight.

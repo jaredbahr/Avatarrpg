@@ -99,18 +99,27 @@ export function advanceTurn(battle: BattleState): TurnAdvance {
   return { turnIndex: index, round, roundAdvanced, unitId: undefined };
 }
 
-/** Upcoming turn order from the current position, for the portrait strip. */
+/**
+ * Upcoming turn order from the current position, for the portrait strip.
+ *
+ * Never repeats a unit: with six combatants and a strip asking for nine, the
+ * naive version wrapped and showed the same three people twice, which reads as
+ * "you act twice this round".
+ */
 export function upcomingOrder(battle: BattleState, count = 8): Unit[] {
   const out: Unit[] = [];
   const total = battle.order.length;
   if (total === 0) return out;
 
-  for (let step = 0; step < total * 2 && out.length < count; step++) {
+  const seen = new Set<string>();
+  for (let step = 0; step < total && out.length < count; step++) {
     const index = (battle.turnIndex + step) % total;
     const id = battle.order[index];
-    if (!id) continue;
+    if (!id || seen.has(id)) continue;
     const unit = battle.units.find((u) => u.id === id);
-    if (unit && isAlive(unit)) out.push(unit);
+    if (!unit || !isAlive(unit)) continue;
+    seen.add(id);
+    out.push(unit);
   }
   return out;
 }

@@ -11,10 +11,56 @@
  */
 
 import { RngCursor } from '../rng';
-import type { ContentIndex, GameEvent, GameState, StepResult, StoryNode } from '../types';
+import type {
+  ContentIndex,
+  GameEvent,
+  GameState,
+  PendingChoice,
+  StepResult,
+  StoryNode,
+} from '../types';
+import { awardXp } from '../rules/leveling';
 import { createBattle } from '../state/createGame';
 
 const MAX_CHAIN = 32;
+
+/**
+ * Awards XP to every party member outside a battle, levelling them up and
+ * queueing any technique choices exactly as a won fight would.
+ */
+function grantPartyXp(
+  content: ContentIndex,
+  state: GameState,
+  amount: number,
+  events: GameEvent[],
+): GameState {
+  const pendingChoices: PendingChoice[] = [...state.pendingChoices];
+
+  const party = state.party.map((member) => {
+    const character = member.characterId ? content.characters.get(member.characterId) : undefined;
+    const gain = awardXp(content, member, amount, character);
+    events.push({ type: 'xpGained', unitId: member.id, amount });
+    if (gain.levelsGained > 0) {
+      events.push({
+        type: 'leveledUp',
+        unitId: member.id,
+        level: gain.unit.level,
+        unlocked: gain.granted,
+      });
+      for (const options of gain.pendingChoices) {
+        pendingChoices.push({
+          unitId: member.id,
+          level: gain.unit.level,
+          options: options as readonly [string, string],
+        });
+        events.push({ type: 'levelChoiceOffered', unitId: member.id, options });
+      }
+    }
+    return gain.unit;
+  });
+
+  return { ...state, party, pendingChoices };
+}
 
 export function currentNode(content: ContentIndex, state: GameState): StoryNode | undefined {
   if (!state.story.nodeId) return undefined;
@@ -60,6 +106,9 @@ export function enterStoryNode(
           events.push({ type: 'flagSet', key, value });
         }
         current = { ...current, flags, story: { ...current.story, visited } };
+        if (node.grantXp && node.grantXp > 0) {
+          current = grantPartyXp(content, current, node.grantXp, events);
+        }
         target = node.next;
         continue;
       }

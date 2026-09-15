@@ -24,9 +24,9 @@ import type {
 } from '../types';
 import { BattleDraft } from './battleDraft';
 import { appendLog } from './log';
-import { absorbBattleResults, restAfterVictory, reviveParty } from './createGame';
+import { absorbBattleResults, restAfterVictory, reviveParty, xpRoster } from './createGame';
 import { canUseAbility, isValidTarget, resolveAbility } from '../rules/abilities';
-import { buildGrid, distance, pathCost, posKey, samePos, tileAt } from '../rules/grid';
+import { buildGrid, distance, findPath, pathCost, posKey, samePos, tileAt } from '../rules/grid';
 import { awardXp } from '../rules/leveling';
 import { advanceTurn, battleOutcome, endedOnTimeLimit } from '../rules/turnOrder';
 import { canMove, isAlive } from '../rules/stats';
@@ -259,8 +259,10 @@ function handleResolveBattle(content: ContentIndex, state: GameState): StepResul
     const encounter = content.encounters.get(battle.encounterId);
 
     /*
-     * XP comes from the *authored* roster and is divided by the encounter's
-     * baseline party size, not by how many people actually turned up.
+     * XP comes from the roster a *baseline-sized* party would face — the
+     * authored enemies plus any flag-gated additions (trade Ruon away and the
+     * mercenaries at the quarry floor count) — divided by that baseline, not
+     * by how many people actually turned up.
      *
      * This deliberately breaks the usual "split the pot" rule. Rosters scale
      * with the table (see rules/difficulty.ts), so splitting actual XP by
@@ -268,7 +270,8 @@ function handleResolveBattle(content: ContentIndex, state: GameState): StepResul
      * a table of three and arriving at the boss under-levelled. Every table
      * should reach the quarry floor at about level 4.
      */
-    const authoredXp = (encounter?.enemies ?? []).reduce(
+    const roster = encounter ? xpRoster(encounter, state.flags) : [];
+    const authoredXp = roster.reduce(
       (sum, placement) => sum + (content.enemies.get(placement.enemyId)?.xp ?? 0),
       0,
     );
@@ -357,8 +360,23 @@ function handleWalkTo(content: ContentIndex, state: GameState, pos: Vec2): StepR
     return enterStoryNode(content, state, target);
   }
 
-  const tile = tileAt(buildExploreGrid(content, state), pos);
+  const grid = buildExploreGrid(content, state);
+  const tile = tileAt(grid, pos);
   if (!tile || tile.blocked) return refuse(state, 'You cannot walk there.');
+
+  /*
+   * Walk, do not teleport. Without a path check, tapping the far side of a
+   * building puts the party inside it — the destination tile is walkable, but
+   * there is no way to reach it. The budget is generous because explore maps
+   * have no move points; it only has to bound the search.
+   */
+  const route = findPath(
+    { grid, blocked: new Set<string>(), surfaces: content.surfaces, size: 1 },
+    state.location.pos,
+    pos,
+    grid.width * grid.height,
+  );
+  if (!route) return refuse(state, 'There is no way through from here.');
 
   const moved: GameState = { ...state, location: { ...state.location, pos } };
 

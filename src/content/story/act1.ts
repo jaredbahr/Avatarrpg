@@ -207,7 +207,7 @@ export const ACT1_NODES: readonly StoryNode[] = [
         label: 'Trade him to Jin for the quarry key',
         detail:
           'The mercenary wants Ruon and will hand over the gate key. Fast, certain — and Ba Dan will hear about it.',
-        next: 'trade_chosen',
+        next: 'trade_payment',
         setFlags: { ruon_traded: true },
       },
     ],
@@ -259,6 +259,19 @@ export const ACT1_NODES: readonly StoryNode[] = [
   },
 
   /* ------------------------------------------------------ Branch B: trade */
+  /*
+   * Jin pays, and the payment is worth the same as the ambush the party just
+   * avoided. Without it this branch skips a whole fight's XP and arrives at
+   * the quarry floor a level down against a boss scaled for the other route.
+   * It also makes the choice land: you were paid, in coin, for a person.
+   */
+  {
+    id: 'trade_payment',
+    kind: 'flags',
+    set: { ruon_paid: true },
+    grantXp: 150,
+    next: 'trade_chosen',
+  },
   {
     id: 'trade_chosen',
     kind: 'dialogue',
