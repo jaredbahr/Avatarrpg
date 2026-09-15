@@ -115,6 +115,19 @@ Never run `npx playwright install` in the dev container — Chromium is already 
 - The renderer must never read game state directly — it draws from a view model
   built in `src/app/`. `Renderer` is a facade over two backends and picks one at
   construction; nothing outside `src/render/backends/` should care which.
+- **The camera must be measured from the canvas element, never once at mount.**
+  The map is the only thing that flexes, so its height is whatever the turn
+  strip and the HUD leave it — and both fill in _after_ the scene mounts, none of
+  it firing a window `resize`. A stale measurement is not just a stale camera:
+  `Renderer.resize` sizes the backing store from the same numbers, so the
+  browser scales the frame to the box it really has and everything drawn drifts
+  from the pointer coordinate it was computed for, by more the further down the
+  map you go. That is why the hover highlight sat two tiles above the cursor.
+  `Renderer` now keeps a `ResizeObserver` on the canvas and calls
+  `onViewportChange` so the scene can re-fit; do not replace it with an event
+  listener. `e2e/viewport.spec.ts` holds the line, and note why it has to: every
+  other spec maps tile -> pixel through the same camera the tap handler reads,
+  so both were wrong in the same direction and the taps still landed.
 - The backend choice asks whether WebGL is **accelerated**, not whether it
   exists. Measured here, a software rasteriser runs the board at 6fps where
   Canvas 2D holds 60 — and that is not the shader's fault, since removing it
