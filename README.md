@@ -24,7 +24,7 @@ Other scripts:
 
 | Command            | What it does                                                       |
 | ------------------ | ------------------------------------------------------------------ |
-| `npm run verify`   | typecheck + lint + unit/content/sim tests (run this before a PR)   |
+| `npm run verify`   | typecheck + lint + format + unit/content/sim tests (before a PR)   |
 | `npm test`         | vitest: rules, content validation, deterministic combat sim        |
 | `npm run balance`  | headless AI-vs-AI win-rate report per encounter                    |
 | `npm run build`    | production build into `dist/` (includes service worker + manifest) |
@@ -198,10 +198,33 @@ each roster variant separately. At 60 trials per encounter per table size:
 
 Rerun it and most figures shift a few points — the trial count picks the seeds —
 but the shape holds. The four-player quarry gate genuinely is the dip rather
-than noise: it reads 70%, 71%, 68% and 70% at 40, 80, 200 and 400 trials. That
-is inside the 70–85% target band, so it is the best-tuned size on the board
-rather than a problem; the fights either side of it are the ones sitting above
-band.
+than noise: it reads 70%, 71%, 68% and 70% at 40, 80, 200 and 400 trials.
+
+That dip is the props, and specifically the brazier. At four players the same
+fight reads 90% with an empty map and 70% with the props on it, and isolating
+them at 150 trials each puts almost all of it in one place:
+
+| Quarry gate, 4 players  | Win % |
+| ----------------------- | ----- |
+| all four props          | 70.0% |
+| without the cart        | 71.3% |
+| without the oil flask   | 72.7% |
+| **without the brazier** | 83.3% |
+| barrels only            | 82.0% |
+| no props at all         | 90.0% |
+
+It is being kept anyway, for two reasons. 70% is inside the target band — it is
+the best-tuned size on the board, and the table sizes either side of it are the
+ones sitting _above_ band. And the simulator is the worst possible user of a
+brazier: it will tip one into the oil while standing next to it, where a real
+party picks the moment. Props widen the gap between this floor and real play
+more than anything else in the game, so the number is both worse and less
+representative than it was before they existed.
+
+If it turns out to be genuinely unfair at the table, the cheap lever is moving
+the brazier one tile further from the oil — that makes lighting the channel a
+two-step setup instead of a single Shove, and `props.test.ts` asserts the play
+end to end, so it will fail loudly and tell you what you changed.
 
 The three forest-road variants all win, but they do not play alike — at six
 players the thugs cost 1.4 knockdowns, the all-ranged squad 2.5, and the two
