@@ -4,6 +4,15 @@
  * Everything sizeable is expressed in rem and the root font size is scaled by
  * --ui-scale, so the "Large text" setting scales the entire HUD (including the
  * 48px minimum touch targets) with one variable instead of a media query.
+ *
+ * Colour rules: every colour the UI uses is a token in :root. Nothing outside
+ * this block writes a hex literal, so the art bible can be checked against one
+ * list and a recolour is one edit here plus its mirror in
+ * src/render/palettes.ts (the canvas cannot read custom properties per frame).
+ * Alpha tints of a palette colour are derived with color-mix() rather than kept
+ * as a parallel set of rgb triplets, which would be a fourth copy of the
+ * palette to drift. Only scrims and shadows are plain black-alpha literals:
+ * they are not palette colours.
  */
 
 :root {
@@ -19,8 +28,13 @@
   --c-ink-dim: #bfae97;
   --c-ink-faint: #8d7d69;
   --c-line: #4a3a2c;
+  /* The outline every surface is drawn with: the art bible's brown ink, never black. */
+  --c-ink-line: #0f0a07;
   --c-gold: #d9a441;
   --c-gold-soft: #f0c674;
+  --c-gold-deep: #8a6420;
+  --c-gold-hi: #ffd98a;
+  --c-ink-on-gold: #241703;
 
   /* Nation palettes. Used by the renderer and by UI accents alike. */
   --c-fire: #d1462f;
@@ -38,6 +52,48 @@
   --c-ok: #6fbf73;
   --c-warn: #e0b23c;
 
+  /* Semantic colours: what a hostile chip, a friendly chip, a warning box and
+     a parchment note are drawn in. Mixed with transparent where a rule wants
+     a tint of one. */
+  --c-danger-line: #7a2c24;
+  --c-danger-bg: #40211c;
+  --c-danger-ink: #ffbdb4;
+  --c-danger-soft: #ffd0c8;
+  --c-friendly-line: #2f5f72;
+  --c-friendly-bg: #18303a;
+  --c-parchment-line: #6b5a3f;
+  --c-parchment-bg: #302616;
+  --c-warn-ink: #ffe4a8;
+  --c-warn-line: #7a4a24;
+  --c-warn-bg: #5a2d14;
+  --c-warn-deep: #422e10;
+  --c-ok-soft: #a8d98c;
+
+  /* Surfaces, from the panel floor up to a pressed button. */
+  --surface-0: var(--c-panel);
+  --surface-1: var(--c-panel-raised);
+  --surface-2: #43342a;
+  --surface-pressed: #241c16;
+  --surface-sunken: rgb(0 0 0 / 22%);
+  --scrim: rgb(9 6 4 / 78%);
+  --scrim-strong: rgb(9 6 4 / 90%);
+
+  /* The two hairlines drawn inside every panel edge: a gilt line and a lit
+     paper edge. Together with the ink outline they are what makes a panel
+     read as a card rather than a rectangle. */
+  --gold-hair: color-mix(in srgb, var(--c-gold) 16%, transparent);
+  --paper-hair: color-mix(in srgb, var(--c-ink) 6%, transparent);
+  --inset-edge: inset 0 0 0 1px var(--gold-hair), inset 0 1px 0 var(--paper-hair);
+
+  /* Type scale. Seven steps; nothing outside this file picks its own size. */
+  --fs-xs: 0.75rem;
+  --fs-sm: 0.85rem;
+  --fs-md: 1rem;
+  --fs-lg: 1.15rem;
+  --fs-xl: 1.5rem;
+  --fs-2xl: 2.25rem;
+  --fs-3xl: 3rem;
+
   --sp-1: 0.25rem;
   --sp-2: 0.5rem;
   --sp-3: 0.75rem;
@@ -53,13 +109,43 @@
      hairline beside 1.4x type. Was a scatter of 3px and 4px literals. */
   --accent-bar: 0.25rem;
 
+  /* Decorative edges are the one thing that must *not* scale with Large text:
+     a 1.5px outline beside 24px type is a smudge. px on purpose. */
+  --hairline: 1px;
+
   /* Minimum touch target. The e2e suite asserts every action button meets it. */
   --tap: 3rem; /* 48px at --ui-scale: 1 */
+
+  /* Motion. Every duration in the UI is one of these times --motion-scale, so
+     the Reduce-motion setting collapses all of it with one variable. */
+  --dur-fast: 120ms;
+  --dur-base: 200ms;
+  --dur-slow: 320ms;
+  --dur-drift: 48s;
+  --ease-out: cubic-bezier(0.2, 0.7, 0.2, 1);
+  --ease-ink: cubic-bezier(0.65, 0, 0.35, 1);
+
+  /* Stacking, bottom to top. */
+  --z-banner: 20;
+  --z-overlay: 40;
+  --z-overlay-host: 50;
+  --z-curtain: 55;
+  --z-toast: 60;
+  --z-stats: 70;
 
   --font-ui: 'Segoe UI', system-ui, -apple-system, 'Helvetica Neue', Arial, sans-serif;
   --font-display: 'Trebuchet MS', 'Segoe UI', system-ui, sans-serif;
 
-  --shadow-panel: 0 0.5rem 1.5rem rgb(0 0 0 / 55%);
+  --shadow-1: 0 0.125rem 0.375rem rgb(0 0 0 / 35%);
+  --shadow-2: 0 0.5rem 1.5rem rgb(0 0 0 / 55%);
+  --shadow-3: 0 1.25rem 3rem rgb(0 0 0 / 65%);
+  --shadow-panel: var(--shadow-2);
+
+  /* Paper grain: a 160px tile of fractal noise at up to 6% parchment, laid
+     over every panel. An SVG data URI because a bitmap tile is rasterised once
+     and cached, where a large repeating-gradient is repainted on WebKit. */
+  --tex-grain: url('data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" width="160" height="160"%3E%3Cfilter id="g" color-interpolation-filters="sRGB"%3E%3CfeTurbulence type="fractalNoise" baseFrequency="0.9" numOctaves="2" stitchTiles="stitch"/%3E%3CfeColorMatrix values="0 0 0 0 0.96 0 0 0 0 0.91 0 0 0 0 0.85 0 0 0 0.06 0"/%3E%3C/filter%3E%3Crect width="160" height="160" filter="url(%23g)"/%3E%3C/svg%3E');
+  --tex-grain-size: 160px 160px;
 
   color-scheme: dark;
 }
@@ -80,7 +166,7 @@ body {
   background: var(--c-bg-deep);
   color: var(--c-ink);
   font-family: var(--font-ui);
-  font-size: 1rem;
+  font-size: var(--fs-md);
   line-height: 1.45;
   -webkit-tap-highlight-color: transparent;
   -webkit-user-select: none;
@@ -116,13 +202,13 @@ h3 {
 }
 
 h1 {
-  font-size: 2.25rem;
+  font-size: var(--fs-2xl);
 }
 h2 {
-  font-size: 1.5rem;
+  font-size: var(--fs-xl);
 }
 h3 {
-  font-size: 1.15rem;
+  font-size: var(--fs-lg);
 }
 
 p {
@@ -133,6 +219,11 @@ p {
 /* Buttons                                                             */
 /* ------------------------------------------------------------------ */
 
+/*
+ * Buttons set background-color, never the background shorthand: a card that
+ * is also a button (.pick-card) carries a tinted header band in
+ * background-image, and the shorthand on :hover would wipe it.
+ */
 button {
   font: inherit;
   color: inherit;
@@ -140,18 +231,22 @@ button {
   min-height: var(--tap);
   min-width: var(--tap);
   padding: var(--sp-2) var(--sp-4);
-  border: 1px solid var(--c-line);
+  border: var(--hairline) solid var(--c-line);
   border-radius: var(--radius);
-  background: var(--c-panel-raised);
-  transition: background calc(120ms * var(--motion-scale)) ease-out;
+  background-color: var(--surface-1);
+  box-shadow: inset 0 1px 0 var(--paper-hair);
+  transition:
+    background-color calc(var(--dur-fast) * var(--motion-scale)) var(--ease-out),
+    border-color calc(var(--dur-fast) * var(--motion-scale)) var(--ease-out),
+    box-shadow calc(var(--dur-fast) * var(--motion-scale)) var(--ease-out);
 }
 
 button:hover:not(:disabled) {
-  background: #43342a;
+  background-color: var(--surface-2);
 }
 
 button:active:not(:disabled) {
-  background: #241c16;
+  background-color: var(--surface-pressed);
 }
 
 button:disabled {
@@ -166,31 +261,47 @@ button:focus-visible,
 }
 
 .btn-primary {
-  background: linear-gradient(180deg, var(--c-gold-soft), var(--c-gold));
-  border-color: #8a6420;
-  color: #241703;
+  background-color: var(--c-gold);
+  background-image: linear-gradient(180deg, var(--c-gold-soft), var(--c-gold));
+  border-color: var(--c-ink-line);
+  color: var(--c-ink-on-gold);
   font-weight: 700;
+  box-shadow:
+    inset 0 1px 0 rgb(255 255 255 / 35%),
+    inset 0 0 0 1px color-mix(in srgb, var(--c-gold-soft) 60%, transparent),
+    var(--shadow-1);
 }
 
 .btn-primary:hover:not(:disabled) {
-  background: linear-gradient(180deg, #ffd98a, #e5b355);
+  background-color: var(--c-gold-soft);
+  background-image: linear-gradient(
+    180deg,
+    var(--c-gold-hi),
+    color-mix(in srgb, var(--c-gold-soft) 50%, var(--c-gold))
+  );
+}
+
+.btn-primary:active:not(:disabled) {
+  background-color: var(--c-gold);
+  background-image: linear-gradient(180deg, var(--c-gold), var(--c-gold-deep));
 }
 
 .btn-ghost {
-  background: transparent;
+  background-color: transparent;
   border-color: transparent;
+  box-shadow: none;
   color: var(--c-ink-dim);
 }
 
 .btn-ghost:hover:not(:disabled) {
-  background: rgb(255 255 255 / 6%);
+  background-color: rgb(255 255 255 / 6%);
   color: var(--c-ink);
 }
 
 .btn-danger {
-  border-color: #7a2c24;
-  background: #40211c;
-  color: #ffbdb4;
+  border-color: var(--c-danger-line);
+  background-color: var(--c-danger-bg);
+  color: var(--c-danger-ink);
 }
 
 /* ------------------------------------------------------------------ */
@@ -205,11 +316,17 @@ button:focus-visible,
   overflow: hidden;
 }
 
+/*
+ * A panel is a sheet of aged paper: grain over a faint top-lit gradient, an
+ * ink outline, and the gilt and paper hairlines just inside it.
+ */
 .panel {
-  background: var(--c-panel);
-  border: 1px solid var(--c-line);
+  background-color: var(--surface-0);
+  background-image: var(--tex-grain), linear-gradient(180deg, var(--surface-1), var(--surface-0));
+  background-size: var(--tex-grain-size), auto;
+  border: var(--hairline) solid var(--c-ink-line);
   border-radius: var(--radius-lg);
-  box-shadow: var(--shadow-panel);
+  box-shadow: var(--inset-edge), var(--shadow-2);
   padding: var(--sp-4);
 }
 
@@ -244,15 +361,11 @@ button:focus-visible,
 }
 
 .tiny {
-  font-size: 0.8rem;
+  font-size: var(--fs-sm);
 }
 
 .center {
   text-align: center;
-}
-
-.hidden {
-  display: none !important;
 }
 
 /* Full-screen overlay used by the turn banner, dialogs and the pause menu. */
@@ -261,9 +374,9 @@ button:focus-visible,
   inset: 0;
   display: grid;
   place-items: center;
-  background: rgb(9 6 4 / 78%);
+  background: radial-gradient(ellipse at 50% 45%, rgb(9 6 4 / 60%), var(--scrim));
   padding: var(--sp-4);
-  z-index: 40;
+  z-index: var(--z-overlay);
 }
 
 .overlay > .panel {
@@ -278,7 +391,7 @@ input[type='number'] {
   font: inherit;
   color: var(--c-ink);
   background: var(--c-bg);
-  border: 1px solid var(--c-line);
+  border: var(--hairline) solid var(--c-line);
   border-radius: var(--radius);
   padding: var(--sp-2) var(--sp-3);
   min-height: var(--tap);
