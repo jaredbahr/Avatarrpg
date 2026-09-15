@@ -33,6 +33,46 @@ export const ENCOUNTERS: readonly EncounterDef[] = [
     allies: [],
     conditionalEnemies: [],
     baselinePartySize: 3,
+    /*
+     * Three rosters at an identical 300-XP budget, and this is the whole
+     * argument for XP-as-budget in one encounter: the same cost buys three
+     * completely different lessons.
+     *
+     *   thugs     100 + 100 + 100  two in your face, one throwing rocks
+     *   slingers  100 + 100 + 100  nothing melee at all; you have to close
+     *   bruisers  150 + 150        two heavies; you have to focus fire
+     *
+     * Because `xpRoster` always scores the *authored* roster whatever spawned,
+     * all three pay exactly the same and progression.test.ts never notices.
+     */
+    variants: [
+      {
+        id: 'thugs',
+        weight: 2,
+        intro: 'They step out of the trees. They were waiting for somebody.',
+      },
+      {
+        id: 'slingers',
+        weight: 1,
+        enemies: [
+          { enemyId: 'bandit_slinger', pos: { x: 17, y: 5 } },
+          { enemyId: 'bandit_slinger', pos: { x: 18, y: 3 } },
+          { enemyId: 'bandit_slinger', pos: { x: 18, y: 7 } },
+        ],
+        intro: 'Stones come out of the trees before anybody does.',
+        tip: 'Nobody up there wants to come close. Get among them — a slinger with somebody in its face is not much use.',
+      },
+      {
+        id: 'bruisers',
+        weight: 1,
+        enemies: [
+          { enemyId: 'bandit_bruiser', pos: { x: 17, y: 5 } },
+          { enemyId: 'bandit_bruiser', pos: { x: 17, y: 7 } },
+        ],
+        intro: 'Only two of them step out. They do not look worried about it.',
+        tip: 'Two big ones instead of three small ones. Everybody hit the same one — a bruiser at half health hits just as hard as a fresh one.',
+      },
+    ],
     // Deliberately short. This is the tutorial fight: a full table should be
     // able to make mistakes here and still walk away.
     reinforcements: [
@@ -55,6 +95,7 @@ export const ENCOUNTERS: readonly EncounterDef[] = [
     allies: [],
     conditionalEnemies: [],
     baselinePartySize: 3,
+    variants: [],
     // Also short: the oil is what makes this fight, not the head count.
     reinforcements: [
       { enemyId: 'bandit_slinger', pos: { x: 17, y: 9 } },
@@ -85,6 +126,7 @@ export const ENCOUNTERS: readonly EncounterDef[] = [
     allies: [{ enemyId: 'ruon_ally', pos: { x: 5, y: 5 } }],
     conditionalEnemies: [],
     baselinePartySize: 3,
+    variants: [],
     reinforcements: [
       { enemyId: 'merc_blade', pos: { x: 16, y: 7 } },
       { enemyId: 'merc_crossbow', pos: { x: 18, y: 8 } },
@@ -115,6 +157,7 @@ export const ENCOUNTERS: readonly EncounterDef[] = [
       },
     ],
     baselinePartySize: 3,
+    variants: [],
     reinforcements: [
       { enemyId: 'bandit_thug', pos: { x: 14, y: 3 } },
       { enemyId: 'bandit_thug', pos: { x: 14, y: 8 } },

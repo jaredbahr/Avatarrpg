@@ -446,6 +446,17 @@ export const encounterSchema = z.object({
     }),
   ),
   baselinePartySize: z.number().int().min(1).max(6),
+  variants: z.array(
+    z.object({
+      id,
+      weight: z.number().min(0).max(100),
+      when: conditionSchema.optional(),
+      enemies: z.array(placement).min(1).optional(),
+      extraProps: z.array(propPlacement).optional(),
+      intro: z.string().min(1).optional(),
+      tip: z.string().min(1).optional(),
+    }),
+  ),
   reinforcements: z.array(placement),
   expectedLevel: z.number().int().min(1).max(10),
   intro: z.string().min(1),
@@ -550,6 +561,15 @@ export interface ContentBundle {
   readonly combos: readonly ComboRule[];
   readonly story: readonly StoryNode[];
 }
+
+/**
+ * How far a roster variant may drift from the authored roster's XP cost.
+ *
+ * Ten percent is roughly "one thug either way on a three-bandit fight" — enough
+ * slack to build a genuinely different squad out of the pieces available, tight
+ * enough that no variant is secretly the easy route.
+ */
+export const VARIANT_BUDGET_TOLERANCE = 0.1;
 
 function duplicates(ids: readonly string[]): string[] {
   const seen = new Set<string>();
@@ -840,6 +860,61 @@ export function validateContent(bundle: ContentBundle): string[] {
         problems.push(
           `encounter "${e.id}" gates enemies on "${group.flag}": standing is numeric and 0 is ` +
             `falsy, so use a variant with a "standing" condition instead`,
+        );
+      }
+    }
+
+    /*
+     * The threat budget, and it lives here rather than in a test on purpose: a
+     * balance rule that only exists in a test file is a comment.
+     *
+     * XP is the currency because it is already the designer's own declared
+     * danger number, and because `xpRoster` scores the authored roster whatever
+     * actually spawned — so variants that cost the same *are* XP-identical, and
+     * progression.test.ts's level-on-arrival guarantee holds by construction
+     * instead of by vigilance. A variant that drifts is not "a harder version",
+     * it is an unbalanced fight paying the wrong amount.
+     */
+    const budgetOf = (placements: readonly { enemyId: string }[]): number =>
+      placements.reduce((sum, p) => sum + (bundle.enemies.find((x) => x.id === p.enemyId)?.xp ?? 0), 0);
+
+    const baseBudget = budgetOf(e.enemies);
+    const variantIds = new Set<string>();
+    for (const variant of e.variants) {
+      if (variantIds.has(variant.id)) {
+        problems.push(`encounter "${e.id}" has two variants called "${variant.id}"`);
+      }
+      variantIds.add(variant.id);
+
+      for (const p of variant.enemies ?? []) {
+        if (!enemyIds.has(p.enemyId)) {
+          problems.push(`encounter "${e.id}" variant "${variant.id}" places unknown unit "${p.enemyId}"`);
+          continue;
+        }
+        const def = bundle.enemies.find((x) => x.id === p.enemyId);
+        const cells = def?.size === 2 ? [p.pos, { x: p.pos.x + 1, y: p.pos.y }] : [p.pos];
+        for (const cell of cells) {
+          if (!isWalkable(map, cell.x, cell.y)) {
+            problems.push(
+              `encounter "${e.id}" variant "${variant.id}" places "${p.enemyId}" on a blocked tile (${cell.x},${cell.y})`,
+            );
+          }
+          if (map.partySpawns.some((s) => s.x === cell.x && s.y === cell.y)) {
+            problems.push(
+              `encounter "${e.id}" variant "${variant.id}" places "${p.enemyId}" on party spawn (${cell.x},${cell.y})`,
+            );
+          }
+        }
+      }
+
+      if (!variant.enemies || baseBudget === 0) continue;
+      const drift = Math.abs(budgetOf(variant.enemies) - baseBudget) / baseBudget;
+      if (drift > VARIANT_BUDGET_TOLERANCE) {
+        problems.push(
+          `encounter "${e.id}" variant "${variant.id}" costs ${budgetOf(variant.enemies)} XP against a ` +
+            `baseline of ${baseBudget} (${Math.round(drift * 100)}% off, limit ` +
+            `${Math.round(VARIANT_BUDGET_TOLERANCE * 100)}%) — variants must be comparable fights, ` +
+            `because XP is paid from the authored roster whichever one spawns`,
         );
       }
     }

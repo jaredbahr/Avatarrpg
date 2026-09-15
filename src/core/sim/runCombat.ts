@@ -33,10 +33,21 @@ export interface SimOptions {
   readonly maxRounds?: number;
   /** Retained for the determinism test; off by default to keep memory flat. */
   readonly recordEvents?: boolean;
+  /**
+   * Force one roster variant instead of letting the seed draw.
+   *
+   * Not optional for the balance report. Once an encounter has variants, an
+   * unpinned run samples whichever one the seed happened to draw and the win
+   * rates stop being comparable between runs — which is precisely when a
+   * variant that is budget-legal but win-rate-illegal would slip through.
+   */
+  readonly variantId?: string;
 }
 
 export interface SimResult {
   readonly outcome: SimOutcome;
+  /** Which roster actually spawned, so a surprising result is diagnosable. */
+  readonly variantId: string | null;
   readonly rounds: number;
   readonly turns: number;
   readonly partyDeaths: number;
@@ -91,7 +102,9 @@ export function runCombat(content: ContentIndex, options: SimOptions): SimResult
   });
 
   const rng = new RngCursor(seeded.rng);
-  const battle = createBattle(content, seeded, options.encounterId, rng);
+  const battle = createBattle(content, seeded, options.encounterId, rng, {
+    variantId: options.variantId,
+  });
 
   let state: GameState = drivePartyWithAi({
     ...seeded,
@@ -144,6 +157,7 @@ export function runCombat(content: ContentIndex, options: SimOptions): SimResult
 
   return {
     outcome,
+    variantId: final.variantId,
     rounds: final.round,
     turns,
     partyDeaths: party.filter((u) => u.hp <= 0).length,

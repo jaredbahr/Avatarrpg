@@ -81,6 +81,9 @@ const grid = z.object({
 
 const battle = z.object({
   encounterId: z.string(),
+  // `.default(null)` so a mid-battle save written before variants existed loads
+  // as the authored roster, which is exactly what it was.
+  variantId: z.string().nullable().default(null),
   mapId: z.string(),
   grid,
   units: z.array(unit),

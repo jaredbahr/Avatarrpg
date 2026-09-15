@@ -74,6 +74,7 @@ export class BattleDraft {
   props: PropInstance[];
   nextUnitSerial: number;
   readonly encounterId: string;
+  readonly variantId: string | null;
   readonly mapId: string;
   readonly events: GameEvent[] = [];
 
@@ -92,12 +93,14 @@ export class BattleDraft {
     this.props = [...battle.props];
     this.nextUnitSerial = battle.nextUnitSerial;
     this.encounterId = battle.encounterId;
+    this.variantId = battle.variantId;
     this.mapId = battle.mapId;
   }
 
   toBattle(): BattleState {
     return {
       encounterId: this.encounterId,
+      variantId: this.variantId,
       mapId: this.mapId,
       grid: this.grid,
       units: this.units,

@@ -334,6 +334,36 @@ export interface EncounterPlacement {
   readonly nameSuffix?: string;
 }
 
+/**
+ * An alternative roster for an encounter.
+ *
+ * The point is that the fight you remember is not quite the fight you get: three
+ * slingers play nothing like two bruisers, even though both cost the same. The
+ * seed picks between eligible variants, so a run is still perfectly
+ * reproducible — what changes between runs is which one the seed drew, and what
+ * changes between *playthroughs* is mostly what you did, which is where the
+ * replay value is meant to come from.
+ *
+ * `validateContent` enforces that every variant costs within 10% of the base
+ * roster in summed enemy XP. That is not bookkeeping: XP is the designer's own
+ * declared danger number, and because `xpRoster` always scores the base roster
+ * whatever spawned, budget-matched variants are XP-identical *by construction* —
+ * so the level-on-arrival guarantee in progression.test.ts is untouched.
+ */
+export interface EncounterVariant {
+  readonly id: string;
+  /** Relative weight in the seeded draw among eligible variants. */
+  readonly weight: number;
+  /** Only eligible when this passes. Absent means always eligible. */
+  readonly when?: Condition;
+  /** Replaces the authored roster. Omit to keep it and only change the trimmings. */
+  readonly enemies?: readonly EncounterPlacement[];
+  /** Props added on top of the map's own, for this variant only. */
+  readonly extraProps?: readonly PropPlacement[];
+  readonly intro?: string;
+  readonly tip?: string;
+}
+
 export interface EncounterDef {
   readonly id: string;
   readonly name: string;
@@ -355,6 +385,8 @@ export interface EncounterDef {
   readonly baselinePartySize: number;
   /** Consumed in order, one per party member above `baselinePartySize`. */
   readonly reinforcements: readonly EncounterPlacement[];
+  /** Alternative rosters, drawn by seed. Empty means this fight is always the same. */
+  readonly variants: readonly EncounterVariant[];
   readonly expectedLevel: number;
   readonly intro: string;
   /** Shown under the objective banner — a hint aimed at an 8-year-old. */
@@ -709,6 +741,8 @@ export interface TemporaryWall {
 
 export interface BattleState {
   readonly encounterId: string;
+  /** Which roster variant the seed drew, or null for the authored one. */
+  readonly variantId: string | null;
   readonly mapId: string;
   readonly grid: Grid;
   readonly units: readonly Unit[];
