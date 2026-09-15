@@ -6,6 +6,7 @@ import type { App } from '../App';
 import { Dialog } from './Dialog';
 import type { DialogOptions } from './Dialog';
 import { button, el } from './dom';
+import { ReactionsReference } from './ReactionsReference';
 import { SaveMenu } from './SaveMenu';
 import { SettingsPanel } from './SettingsPanel';
 
@@ -38,6 +39,7 @@ export class PauseMenu extends Dialog {
         button('Resume', () => this.close(), { class: 'btn-primary btn-large' }),
         button('Save game', () => this.openSave()),
         button('Load game', () => this.openLoad()),
+        button('How the elements react', () => this.openReactions()),
         button('Settings', () => this.openSettings()),
       ),
     );
@@ -94,6 +96,10 @@ export class PauseMenu extends Dialog {
 
   private openSettings(): void {
     new SettingsPanel(this.app).open(this.host());
+  }
+
+  private openReactions(): void {
+    new ReactionsReference(this.app).open(this.host());
   }
 
   private quit(): void {

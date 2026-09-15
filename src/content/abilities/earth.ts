@@ -152,4 +152,69 @@ export const EARTH_ABILITIES: readonly Ability[] = [
     fx: 'fx.earth.rubble',
     tags: ['surface'],
   }),
+
+  /* ------------------------------------------------------------------ */
+  /* Earth Shaping discipline                                            */
+  /* ------------------------------------------------------------------ */
+
+  ability({
+    id: 'fissure',
+    name: 'Fissure',
+    element: 'earth',
+    apCost: 3,
+    range: 6,
+    targeting: line(4),
+    cooldown: 4,
+    effects: [
+      { kind: 'damage', base: 12, scale: 1, damageType: 'earth' },
+      { kind: 'status', status: 'rooted', duration: 2, chance: 0.9, to: 'hit' },
+      { kind: 'surface', surface: 'rubble', duration: -1, area: 'area' },
+    ],
+    description:
+      'Split the ground open in a line. Everything above it drops, gets stuck, and the crack stays there as cover.',
+    flavor: 'The quarry taught her where stone wants to break.',
+    fx: 'fx.earth.fissure',
+    tags: ['attack', 'control', 'surface', 'signature'],
+  }),
+
+  /* ------------------------------------------------------------------ */
+  /* Metalbending discipline                                             */
+  /* ------------------------------------------------------------------ */
+
+  ability({
+    id: 'metal_cable',
+    name: 'Metal Cable',
+    element: 'earth',
+    apCost: 2,
+    range: 7,
+    targeting: enemyTarget,
+    cooldown: 2,
+    effects: [
+      { kind: 'damage', base: 6, scale: 0.6, damageType: 'physical' },
+      { kind: 'pull', distance: 3 },
+    ],
+    description:
+      'A spooled steel line, thrown and reeled. Drags them three tiles towards you and out of whatever they were hiding behind.',
+    flavor: 'Reach, then decide what to do with them.',
+    fx: 'fx.earth.cable',
+    tags: ['attack', 'control'],
+  }),
+  ability({
+    id: 'metal_armor',
+    name: 'Metal Armor',
+    element: 'earth',
+    apCost: 2,
+    range: 0,
+    targeting: selfTarget,
+    cooldown: 3,
+    effects: [
+      { kind: 'status', status: 'guarded', duration: 3, chance: 1, to: 'self' },
+      { kind: 'cleanse', statuses: ['rooted', 'slowed'] },
+    ],
+    description:
+      'Pull the metal on you into plate and wear it. Three rounds of armour, and nothing is holding your feet any more.',
+    flavor: 'It was a belt buckle a moment ago.',
+    fx: 'fx.earth.armor',
+    tags: ['buff'],
+  }),
 ];

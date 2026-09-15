@@ -41,7 +41,10 @@ function grantPartyXp(
 
   const party = state.party.map((member) => {
     const character = member.characterId ? content.characters.get(member.characterId) : undefined;
-    const gain = awardXp(content, member, amount, character);
+    const discipline = member.disciplineId
+      ? content.disciplines.get(member.disciplineId)
+      : undefined;
+    const gain = awardXp(content, member, amount, character, discipline);
     events.push({ type: 'xpGained', unitId: member.id, amount });
     if (gain.levelsGained > 0) {
       events.push({
@@ -54,9 +57,19 @@ function grantPartyXp(
         pendingChoices.push({
           unitId: member.id,
           level: gain.unit.level,
-          options: options as readonly [string, string],
+          kind: 'ability',
+          options,
         });
         events.push({ type: 'levelChoiceOffered', unitId: member.id, options });
+      }
+      for (const options of gain.pendingSpecializations) {
+        pendingChoices.push({
+          unitId: member.id,
+          level: gain.unit.level,
+          kind: 'discipline',
+          options,
+        });
+        events.push({ type: 'disciplineOffered', unitId: member.id, options });
       }
     }
     return gain.unit;

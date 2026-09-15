@@ -39,6 +39,13 @@ Install this site as an app** so it launches full-screen in landscape and works
 offline (the service worker caches the whole build — no network needed once it
 has loaded once).
 
+> A GitHub Pages site is served to **anyone who has the URL**, even when the
+> repository itself is private — private Pages needs Enterprise Cloud, not Pro.
+> The build therefore ships `robots.txt` (`Disallow: /`) and a `noindex` tag so
+> it stays out of search results. That is obscurity, not access control. If the
+> site must not be reachable at all, do not deploy: `npm run build` and copy
+> `dist/` onto the tablet, or run `npm run dev` on the home network.
+
 Recommended before handing it to kids:
 
 - **Pause → Settings → Large text** if the HUD reads small at 2736×1824.
@@ -64,8 +71,12 @@ switching devices or clearing browser data, and **Import save** on the other end
 
 ## Elemental reactions
 
-Terrain is a first-class weapon. The full table lives in
-`src/content/combos.ts`; the ones that matter most in Act 1:
+Terrain is a first-class weapon. **The game now explains this itself** — the
+full table is in **Pause → How the elements react**, and the confirm step names
+the reaction you are about to cause before you commit to it ("the oil catches —
+the fire is spreading!"). Nobody has to read this section to learn the system.
+
+The data lives in `src/content/combos.ts`; the ones that matter most in Act 1:
 
 | Combination              | Result                                        |
 | ------------------------ | --------------------------------------------- |
@@ -79,7 +90,10 @@ Terrain is a first-class weapon. The full table lives in
 | Air onto steam           | Disperses it                                  |
 
 Standing in fire costs 4 HP and applies Burning. Being **Wet** doubles lightning
-damage and makes freezing near-certain. Teach the kids that one first.
+damage and makes freezing near-certain. Teach the kids that one first — and if
+they forget, long-pressing a unit shows what they are standing in and what their
+statuses actually multiply (`lightning ×2`), read off the same numbers the
+damage roll uses.
 
 Water will _not_ wash oil away — it floats, and the log says so. To clear an oil
 slick you burn it off early, while nobody is standing in it.
@@ -259,8 +273,13 @@ Real tuning happens after the kids play it. These are the numbers to argue with.
   to the save schema would otherwise fail only on somebody else's tablet.
 - The e2e suite covers the parts that only break in a browser: a save/reload
   round-trip mid-fight, the service worker serving the app with the network
-  off, and every control measuring at least 48px — including at the largest
-  text setting.
+  off, every control measuring at least 48px — including at the largest text
+  setting — and the confirm step naming the reaction it is about to cause.
+- `src/core/rules/reactions.test.ts` asserts, for **every** rule in the combo
+  table, that the confirm-step forecast is identical to what the resolver then
+  does. The forecast is produced by running the real combo engine on a copy of
+  the grid rather than by describing it, so adding a rule needs no work here —
+  but changing one in a way the preview cannot express will fail the build.
 
 ## Status
 

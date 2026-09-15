@@ -3,6 +3,7 @@ import { CONTENT, CONTENT_BUNDLE, STORY_ENTRY } from './index';
 import { validateContent } from './schemas';
 import { ELEMENTS } from './elements';
 import { resolveAsset } from './assets/manifest';
+import { combinedKit } from '../core/rules/leveling';
 
 /**
  * The guard rail for every piece of game data. A dangling story link or a
@@ -75,34 +76,101 @@ describe('content', () => {
     }
   });
 
-  it('gives every character an unlock at levels 1, 3, 5, 7 and 10', () => {
+  it('gives every character an unlock at levels 1, 3 and 5', () => {
     for (const character of CONTENT_BUNDLE.characters) {
       const levels = character.kit.map((k) => k.level);
-      for (const required of [1, 3, 5, 7, 10]) {
+      for (const required of [1, 3, 5]) {
         expect(levels, `${character.id} level ${required}`).toContain(required);
       }
     }
   });
 
-  it('offers a choice at levels 3 and 7 and a flat unlock elsewhere', () => {
+  /*
+   * The cadence, since it moved when disciplines landed: a character kit runs
+   * 1, 2, 3, 5 and stops — a choice at 3, the discipline gate at 5, flat grants
+   * either side. Levels 7 and 10 belong to the path, not to the character.
+   */
+  it('offers a choice at level 3, the gate at level 5, and nothing above it', () => {
     for (const character of CONTENT_BUNDLE.characters) {
       for (const entry of character.kit) {
-        const isChoice = 'choose' in entry;
-        const shouldBeChoice = entry.level === 3 || entry.level === 7;
-        expect(isChoice, `${character.id} level ${entry.level}`).toBe(shouldBeChoice);
+        const where = `${character.id} level ${entry.level}`;
+        expect(entry.level, where).toBeLessThanOrEqual(5);
+        expect('choose' in entry, where).toBe(entry.level === 3);
+        expect('specialize' in entry, where).toBe(entry.level === 5);
       }
     }
   });
 
+  it('has every discipline supply levels 5, 7 and 10', () => {
+    for (const discipline of CONTENT_BUNDLE.disciplines) {
+      const levels = discipline.kit.map((k) => k.level);
+      expect(
+        levels.slice().sort((a, b) => a - b),
+        discipline.id,
+      ).toEqual([5, 7, 10]);
+    }
+  });
+
   it('keeps every party ability on-element for its kit', () => {
-    for (const character of CONTENT_BUNDLE.characters) {
-      for (const entry of character.kit) {
-        const refs = 'ability' in entry ? [entry.ability] : entry.choose;
+    const ladders = CONTENT_BUNDLE.characters.flatMap((character) =>
+      [undefined, ...CONTENT_BUNDLE.disciplines.filter((d) => d.element === character.element)].map(
+        (discipline) => ({ character, discipline }),
+      ),
+    );
+
+    for (const { character, discipline } of ladders) {
+      for (const entry of combinedKit(character, discipline)) {
+        const refs = 'ability' in entry ? [entry.ability] : 'choose' in entry ? entry.choose : [];
         for (const ref of refs) {
           const ability = CONTENT.abilities.get(ref);
           expect(ability, `${character.id} -> ${ref}`).toBeDefined();
           expect(ability?.element, `${ref} on ${character.id}`).toBe(character.element);
         }
+      }
+    }
+  });
+
+  /*
+   * The floor the whole gating model rests on. If an element ever loses its
+   * unconditional path, a table that skipped the optional story reaches level 5
+   * and is shown nothing it can take.
+   */
+  it('gives every element at least two paths, one of them ungated', () => {
+    for (const element of ELEMENTS) {
+      const paths = CONTENT_BUNDLE.disciplines.filter((d) => d.element === element.id);
+      expect(paths.length, `element ${element.id}`).toBeGreaterThanOrEqual(2);
+      expect(
+        paths.filter((d) => d.requiresFlag === null).length,
+        `element ${element.id} has no ungated path`,
+      ).toBeGreaterThanOrEqual(1);
+    }
+  });
+
+  it('offers every discipline at the gate of both characters of its element', () => {
+    for (const discipline of CONTENT_BUNDLE.disciplines) {
+      const offeredBy = CONTENT_BUNDLE.characters.filter((c) =>
+        c.kit.some((e) => 'specialize' in e && e.specialize.includes(discipline.id)),
+      );
+      expect(offeredBy.map((c) => c.id).sort(), discipline.id).toEqual(
+        CONTENT_BUNDLE.characters
+          .filter((c) => c.element === discipline.element)
+          .map((c) => c.id)
+          .sort(),
+      );
+    }
+  });
+
+  it('lands a level 10 character on six abilities whichever path they took', () => {
+    for (const character of CONTENT_BUNDLE.characters) {
+      for (const discipline of CONTENT_BUNDLE.disciplines.filter(
+        (d) => d.element === character.element,
+      )) {
+        const kit = combinedKit(character, discipline);
+        // Three flat grants below the gate plus three from the path, and one
+        // pick from each choice offered along the way.
+        const flat = kit.filter((e) => 'ability' in e).length;
+        const picks = kit.filter((e) => 'choose' in e).length;
+        expect(flat + picks, `${character.id} / ${discipline.id}`).toBe(6);
       }
     }
   });
@@ -113,6 +181,7 @@ describe('content', () => {
       keys.add(c.portrait);
       keys.add(c.sprite);
     }
+    for (const d of CONTENT_BUNDLE.disciplines) keys.add(d.icon);
     for (const e of CONTENT_BUNDLE.enemies) keys.add(e.sprite);
     for (const a of CONTENT_BUNDLE.abilities) keys.add(a.fx);
     for (const p of CONTENT_BUNDLE.props) keys.add(p.sprite);

@@ -97,6 +97,105 @@
   color: var(--c-warn);
 }
 
+/* ------------------------------------------------------------------ */
+/* Reaction notes — the terrain half of the confirm step.              */
+/*                                                                      */
+/* A sentence, not a chip: the combo table writes plain words and this  */
+/* shows them before the shot rather than only in the log afterwards.   */
+/* ------------------------------------------------------------------ */
+
+.reaction-note {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-1);
+  padding: var(--sp-2) var(--sp-3);
+  border: 1px solid #6b5a3f;
+  border-left-width: var(--accent-bar);
+  border-radius: var(--radius);
+  background: rgb(48 38 22 / 55%);
+}
+
+.reaction-label {
+  font-size: 0.95rem;
+  color: var(--c-gold-soft);
+  /* Sentences wrap; chips do not. That is the whole reason this is not one. */
+  white-space: normal;
+}
+
+.reaction-result,
+.reaction-reach {
+  color: var(--c-ink-dim);
+  white-space: normal;
+}
+
+/* A rule actually fired, rather than the surface just landing as authored. */
+.reaction-fires {
+  border-left-color: var(--c-gold);
+}
+
+/* Lightning through a puddle reaches past what you aimed at. Say so loudly. */
+.reaction-chain {
+  border-color: var(--c-warn);
+  border-left-color: var(--c-warn);
+  background: rgb(66 46 16 / 65%);
+}
+
+.reaction-chain .reaction-reach {
+  color: var(--c-warn);
+  font-weight: 700;
+}
+
+.reaction-caught {
+  margin-top: var(--sp-1);
+}
+
+/* ------------------------------------------------------------------ */
+/* The reactions reference (pause menu).                                */
+/* ------------------------------------------------------------------ */
+
+.reaction-group {
+  margin-bottom: var(--sp-3);
+}
+
+.reaction-group-head {
+  margin: 0;
+  font-size: 0.95rem;
+  color: var(--c-gold);
+}
+
+.reaction-row {
+  display: flex;
+  flex-direction: column;
+  gap: 0.1rem;
+  padding: var(--sp-2) var(--sp-3);
+  border-left: var(--accent-bar) solid var(--c-line);
+  background: rgb(0 0 0 / 22%);
+  border-radius: 0 var(--radius) var(--radius) 0;
+}
+
+.reaction-row + .reaction-row {
+  margin-top: var(--sp-1);
+}
+
+.reaction-row-arrow {
+  font-weight: 700;
+  color: var(--c-ink);
+}
+
+.reaction-row-label {
+  color: var(--c-gold-soft);
+}
+
+.reaction-row-notes {
+  color: var(--c-ink-dim);
+}
+
+/* Lightning through a puddle is the lesson worth finding first. */
+.reaction-row-chain {
+  border-left-color: var(--c-warn);
+  background: rgb(66 46 16 / 45%);
+}
+
 .warn-note {
   color: #ffc9a8;
   background: rgb(90 45 20 / 45%);
@@ -230,19 +329,19 @@
 }
 
 .element-fire {
-  border-left: 4px solid var(--c-fire);
+  border-left: var(--accent-bar) solid var(--c-fire);
 }
 .element-water {
-  border-left: 4px solid var(--c-water);
+  border-left: var(--accent-bar) solid var(--c-water);
 }
 .element-earth {
-  border-left: 4px solid var(--c-earth);
+  border-left: var(--accent-bar) solid var(--c-earth);
 }
 .element-air {
-  border-left: 4px solid var(--c-air);
+  border-left: var(--accent-bar) solid var(--c-air);
 }
 .element-nonbender {
-  border-left: 4px solid var(--c-nonbender);
+  border-left: var(--accent-bar) solid var(--c-nonbender);
 }
 
 .painter {
@@ -360,7 +459,7 @@
 }
 
 .teaser {
-  border-left: 3px solid var(--c-gold);
+  border-left: var(--accent-bar) solid var(--c-gold);
   padding-left: var(--sp-3);
   color: var(--c-ink-dim);
 }
@@ -757,6 +856,34 @@
   font-size: 0.85rem;
 }
 
+/* Discipline cards: the ability card, plus the ladder the path grants. A
+   locked path stays readable rather than being hidden — it is advertising. */
+.discipline-card {
+  border-color: var(--c-gold);
+}
+
+.discipline-card.is-locked {
+  border-color: var(--c-line);
+  background: rgb(0 0 0 / 34%);
+}
+
+.discipline-card.is-locked > *:not(.locked-hint) {
+  opacity: 0.55;
+}
+
+.discipline-grants {
+  margin: 0;
+  padding-left: 1.1rem;
+  color: var(--c-ink-dim);
+  font-size: 0.85rem;
+}
+
+.locked-hint {
+  margin: 0;
+  color: var(--c-gold);
+  font-size: 0.85rem;
+}
+
 .flavor {
   font-style: italic;
 }
@@ -772,7 +899,7 @@
   flex-direction: column;
   gap: 0.1rem;
   padding: var(--sp-2);
-  border-left: 3px solid var(--c-line);
+  border-left: var(--accent-bar) solid var(--c-line);
   background: rgb(0 0 0 / 20%);
 }
 
@@ -781,6 +908,17 @@
 }
 .status-buff {
   border-left-color: var(--c-ok);
+}
+
+/* What the ground under this unit is doing to them. */
+.status-footing {
+  border-left-color: var(--c-gold);
+}
+
+/* Read off the damage modifiers rather than the prose: "lightning ×2". */
+.status-incoming {
+  color: var(--c-gold-soft);
+  font-weight: 700;
 }
 
 /* ------------------------------------------------------------------ */

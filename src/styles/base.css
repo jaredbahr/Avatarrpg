@@ -48,6 +48,11 @@
   --radius: 0.5rem;
   --radius-lg: 1rem;
 
+  /* The left-edge accent bar: element rows, status rows, reaction notes. In
+     rem so it thickens with the Large-text setting instead of thinning into a
+     hairline beside 1.4x type. Was a scatter of 3px and 4px literals. */
+  --accent-bar: 0.25rem;
+
   /* Minimum touch target. The e2e suite asserts every action button meets it. */
   --tap: 3rem; /* 48px at --ui-scale: 1 */
 

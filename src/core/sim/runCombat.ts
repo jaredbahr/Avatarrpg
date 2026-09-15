@@ -29,6 +29,12 @@ export interface SimOptions {
   readonly party: readonly PartySlot[];
   /** Level every party member starts at. Defaults to the encounter's tuning. */
   readonly partyLevel?: number;
+  /**
+   * Levels the opposition too. Leave it unset to fight the encounter as
+   * authored; set it to `partyLevel` when the point of the run is to compare
+   * two party builds rather than to measure an encounter.
+   */
+  readonly enemyLevel?: number;
   /** A fight longer than this is a bug, not a close match. */
   readonly maxRounds?: number;
   /** Retained for the determinism test; off by default to keep memory flat. */
@@ -104,6 +110,7 @@ export function runCombat(content: ContentIndex, options: SimOptions): SimResult
   const rng = new RngCursor(seeded.rng);
   const battle = createBattle(content, seeded, options.encounterId, rng, {
     variantId: options.variantId,
+    enemyLevel: options.enemyLevel,
   });
 
   let state: GameState = drivePartyWithAi({

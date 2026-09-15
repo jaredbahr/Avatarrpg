@@ -49,6 +49,11 @@ jobs:
         run: npm run balance
         env:
           BALANCE_TRIALS: 40
+          # The per-path sweep runs every discipline against every encounter
+          # with both sides levelled past the gate, so its trial count costs
+          # 40 fights a go. It is a tripwire for an obviously broken path, not
+          # a measurement — keep it cheap here and raise it locally when tuning.
+          BALANCE_DISCIPLINE_TRIALS: 6
 
   e2e:
     name: End-to-end (Chromium, touch)

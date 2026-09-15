@@ -137,3 +137,24 @@ export function tickDamageType(content: ContentIndex, id: StatusId) {
 export function describeStatus(content: ContentIndex, id: StatusId): string {
   return content.statuses.get(id)?.name ?? id;
 }
+
+/**
+ * The damage multipliers a status carries, as "lightning ×2 · fire ×0.5".
+ *
+ * Every status already has a prose `description`, but prose is written once
+ * and the numbers get tuned forever. "Get them wet first" is the single most
+ * important lesson in the game, so the inspector shows the multipliers the
+ * rules will actually use rather than a sentence that agreed with them in
+ * January. Returns '' when the status changes nothing about incoming damage.
+ */
+export function describeIncoming(content: ContentIndex, id: StatusId): string {
+  const multipliers = content.statuses.get(id)?.modifiers.incomingMultiplier;
+  if (!multipliers) return '';
+
+  const parts: string[] = [];
+  for (const [type, value] of Object.entries(multipliers)) {
+    if (value === undefined || value === 1) continue;
+    parts.push(`${type} ×${value}`);
+  }
+  return parts.join(' · ');
+}
