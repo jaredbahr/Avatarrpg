@@ -134,10 +134,11 @@ export class Canvas2DBackend implements RenderBackend {
 
   private drawNpcs(view: MapView, camera: Camera): void {
     const { ctx } = this;
+    const { dpr } = camera.viewport;
     for (const npc of view.npcs) {
       const box = camera.toScreen(npc.pos);
       if (!camera.isVisible(npc.pos)) continue;
-      const sprite = sprites.get(npc.sprite, box.size, { facing: 1 });
+      const sprite = sprites.get(npc.sprite, box.size * dpr, { facing: 1 });
       ctx.drawImage(sprite, box.x, box.y, box.size, box.size);
 
       // A small "talk" pip so a child can tell an NPC from scenery.
@@ -153,11 +154,12 @@ export class Canvas2DBackend implements RenderBackend {
 
   private drawProps(view: MapView, camera: Camera): void {
     const { ctx } = this;
+    const { dpr } = camera.viewport;
 
     for (const prop of view.props) {
       if (!camera.isVisible(prop.pos)) continue;
       const box = camera.toScreen(prop.pos);
-      const sprite = sprites.get(prop.sprite, box.size, { facing: 1 });
+      const sprite = sprites.get(prop.sprite, box.size * dpr, { facing: 1 });
       ctx.drawImage(sprite, box.x, box.y, box.size, box.size);
 
       /*
@@ -180,6 +182,7 @@ export class Canvas2DBackend implements RenderBackend {
 
   private drawUnits(view: MapView, camera: Camera): void {
     const { ctx } = this;
+    const { dpr } = camera.viewport;
 
     // Draw back to front so a unit lower on the map overlaps one above it.
     const ordered = [...view.units].sort(
@@ -233,9 +236,10 @@ export class Canvas2DBackend implements RenderBackend {
 
       ctx.save();
       if (unit.fallen) ctx.globalAlpha = 0.35;
+      // Painted at device resolution, drawn at CSS size under the dpr transform.
       const sprite = sprites.get(
         unit.sprite,
-        box.size,
+        box.size * dpr,
         { facing: unit.faction === 'enemy' ? -1 : 1 },
         unit.size,
       );

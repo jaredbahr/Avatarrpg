@@ -31,7 +31,7 @@ import type { Grid, SurfaceId, TerrainId, Vec2 } from '../../core/types';
 import { TILE } from '../camera';
 import type { Camera, Viewport } from '../camera';
 import { FACTION_RING, OVERLAY, STATUS_BADGE, hpColor } from '../palettes';
-import { sprites } from '../spriteCache';
+import { MAX_SPRITE_PX, sprites } from '../spriteCache';
 import type { MapView, RenderUnit } from '../view';
 import type { RenderBackend } from './backend';
 import { overlayColors } from './canvas2d';
@@ -55,6 +55,16 @@ const GROUND_RESOLUTION = 0.5;
 
 /** How far firelight reaches, in tiles. */
 const GLOW_RADIUS = 2;
+
+/**
+ * Sprite textures are rasterised for the zoom actually on screen, in steps this
+ * coarse (device pixels per tile), so a pinch repaints the board's sprites a
+ * handful of times rather than on every frame of the gesture.
+ */
+const SPRITE_BUCKET = 32;
+
+/** Textures kept alive; older ones are destroyed rather than left on the GPU. */
+const MAX_TEXTURES = 128;
 
 /** 0 means no surface. Must match the surface branches in shaders.ts. */
 const SURFACE_INDEX: Record<SurfaceId, number> = {
@@ -207,7 +217,7 @@ export class PixiBackend implements RenderBackend {
 
   resize(viewport: Viewport): void {
     sprites.clear();
-    this.textureCache.clear();
+    this.dropTextures();
     this.viewport = viewport;
     this.applyViewport();
   }
@@ -227,7 +237,7 @@ export class PixiBackend implements RenderBackend {
     this.destroyed = true;
     this.app?.destroy(false, { children: true });
     this.app = null;
-    this.textureCache.clear();
+    this.dropTextures();
     this.unitSprites.clear();
     this.mapTexture.destroy(true);
   }
@@ -247,7 +257,7 @@ export class PixiBackend implements RenderBackend {
     this.drawOverlays(view);
     this.drawPath(view);
     this.drawDecor(view);
-    this.drawUnits(view);
+    this.drawUnits(view, camera);
     this.drawFx(view);
     this.drawFloaters(view);
 
@@ -440,17 +450,50 @@ export class PixiBackend implements RenderBackend {
   /* Units                                                             */
   /* ---------------------------------------------------------------- */
 
+  /**
+   * A texture per cached sprite canvas, least-recently-used first out. The
+   * global Pixi cache is skipped: it keys by the canvas object, and a texture
+   * destroyed here must not be handed back for the same canvas later.
+   */
   private texture(canvas: HTMLCanvasElement): Texture {
     const cached = this.textureCache.get(canvas);
-    if (cached) return cached;
-    const texture = Texture.from(canvas);
+    if (cached) {
+      this.textureCache.delete(canvas);
+      this.textureCache.set(canvas, cached);
+      return cached;
+    }
+    const texture = Texture.from(canvas, true);
     this.textureCache.set(canvas, texture);
+    while (this.textureCache.size > MAX_TEXTURES) {
+      const oldest = this.textureCache.keys().next().value;
+      if (!oldest) break;
+      this.textureCache.get(oldest)?.destroy(true);
+      this.textureCache.delete(oldest);
+    }
     return texture;
   }
 
-  private drawUnits(view: MapView): void {
+  private dropTextures(): void {
+    for (const texture of this.textureCache.values()) texture.destroy(true);
+    this.textureCache.clear();
+  }
+
+  /**
+   * Device pixels per tile to rasterise sprites at for the current zoom. The
+   * sprite itself stays TILE wide in world units; only the texture behind it
+   * gains pixels, which is what keeps a zoomed-in board crisp on a retina
+   * display instead of magnifying a 64px painting.
+   */
+  private spritePx(camera: Camera): number {
+    const wanted = TILE * camera.scale * this.viewport.dpr;
+    const bucketed = Math.max(SPRITE_BUCKET, Math.ceil(wanted / SPRITE_BUCKET) * SPRITE_BUCKET);
+    return Math.min(MAX_SPRITE_PX, bucketed);
+  }
+
+  private drawUnits(view: MapView, camera: Camera): void {
     const g = this.fxGfx;
     g.clear();
+    const px = this.spritePx(camera);
 
     const live = new Set<string>();
     // Back to front, so a unit lower on the map overlaps one above it.
@@ -464,7 +507,7 @@ export class PixiBackend implements RenderBackend {
       const key = `npc:${npc.pos.x},${npc.pos.y}`;
       live.add(key);
       const sprite = this.unitSprite(key);
-      sprite.texture = this.texture(sprites.get(npc.sprite, TILE, { facing: 1 }));
+      sprite.texture = this.texture(sprites.get(npc.sprite, px, { facing: 1 }));
       sprite.position.set(npc.pos.x * TILE, npc.pos.y * TILE);
       sprite.width = TILE;
       sprite.height = TILE;
@@ -482,7 +525,7 @@ export class PixiBackend implements RenderBackend {
       const key = `prop:${prop.id}`;
       live.add(key);
       const sprite = this.unitSprite(key);
-      sprite.texture = this.texture(sprites.get(prop.sprite, TILE, { facing: 1 }));
+      sprite.texture = this.texture(sprites.get(prop.sprite, px, { facing: 1 }));
       sprite.position.set(prop.pos.x * TILE, prop.pos.y * TILE);
       sprite.width = TILE;
       sprite.height = TILE;
@@ -512,7 +555,7 @@ export class PixiBackend implements RenderBackend {
       live.add(unit.id);
       const sprite = this.unitSprite(unit.id);
       sprite.texture = this.texture(
-        sprites.get(unit.sprite, TILE, { facing: unit.faction === 'enemy' ? -1 : 1 }, unit.size),
+        sprites.get(unit.sprite, px, { facing: unit.faction === 'enemy' ? -1 : 1 }, unit.size),
       );
       sprite.position.set(x, y);
       sprite.width = width;
