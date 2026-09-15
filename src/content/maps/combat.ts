@@ -85,7 +85,23 @@ export const QUARRY_GATE: MapDef = {
     { x: 3, y: 8 },
   ],
   npcs: [],
-  props: [],
+  /*
+   * The encounter's intro has promised "barrels stacked against the gatehouse"
+   * since Phase 1, and there were never any barrels. Now there are.
+   *
+   * The brazier is the interesting one. It sits at (10,5), one tile west of the
+   * oil stripe, so a single Shove — which every party member has — tips it into
+   * the oil and lights the whole channel. That is the play the map is built
+   * around: available to the least experienced person at the table, obvious once
+   * seen, and genuinely dangerous to whoever is standing too close.
+   */
+  props: [
+    { propId: 'brazier', pos: { x: 10, y: 5 } },
+    { propId: 'water_barrel', pos: { x: 14, y: 3 } },
+    { propId: 'water_barrel', pos: { x: 14, y: 8 } },
+    { propId: 'oil_flask', pos: { x: 9, y: 4 } },
+    { propId: 'cabbage_cart', pos: { x: 13, y: 6 } },
+  ],
 };
 
 export const AMBUSH_ROAD: MapDef = {

@@ -61,7 +61,16 @@ export const ENCOUNTERS: readonly EncounterDef[] = [
       { enemyId: 'bandit_thug', pos: { x: 17, y: 4 } },
     ],
     intro: 'Barrels are stacked against the gatehouse, and the ground around them is slick.',
-    tip: 'That dark stripe down the middle is spilled oil. Fire turns it into a spreading blaze — so either stay off it, or wash it away with water first.',
+    /*
+     * This used to say "or wash it away with water first". It does not work:
+     * `water-into-oil` in combos.ts keeps the oil and prints "The oil floats on
+     * the water, untouched." Teaching a child a plan the rules refuse is worse
+     * than teaching them nothing.
+     *
+     * Burning it off early *is* a real counter — fire on oil expires after a few
+     * rounds and leaves bare ground — so the tip now points at that.
+     */
+    tip: 'That dark stripe down the middle is spilled oil. Fire turns it into a spreading blaze that chases people — so either stay off it, or light it early, while nobody is standing in it.',
   },
   {
     id: 'enc_ambush',

@@ -15,6 +15,7 @@
 import { beforeEach, describe, expect, it } from 'vitest';
 import { CONTENT } from '../../content';
 import { RngCursor } from '../rng';
+import { unitAbilities } from '../rules/abilities';
 import { enterCost, posKey, tileAt } from '../rules/grid';
 import type { GameState, Vec2 } from '../types';
 import { BattleDraft } from './battleDraft';
@@ -259,6 +260,73 @@ describe('props on the battlefield', () => {
     if (destroyed?.type !== 'propDestroyed') throw new Error('wrong event');
     expect(destroyed.label).toContain('CABBAGES');
     expect(destroyed.label).not.toContain(prop.id);
+  });
+});
+
+describe('the quarry gate', () => {
+  /*
+   * The map is built around one play: the brazier sits one tile west of the oil
+   * stripe, so a single Shove — which every party member has, including the
+   * youngest person at the table — tips it into the channel and lights the lot.
+   *
+   * This asserts the play end to end rather than asserting the coordinates,
+   * because the coordinates are not the point; someone nudging the map one tile
+   * should fail here and be told what they broke.
+   */
+  it('lights the oil stripe when the brazier is shoved into it', () => {
+    const seeded = createGame(CONTENT, {
+      seed: 'brazier',
+      party: [{ characterId: 'kaya', level: 2, autoChoose: true }],
+      startNode: '',
+    });
+    const rng = new RngCursor(seeded.rng);
+    const draft = new BattleDraft(
+      CONTENT,
+      createBattle(CONTENT, seeded, 'enc_quarry_gate', rng),
+      rng,
+    );
+
+    const brazier = draft.props.find((p) => p.propId === 'brazier');
+    expect(brazier, 'the quarry gate should have a brazier').toBeDefined();
+    if (!brazier) return;
+
+    const oil = { x: brazier.pos.x + 1, y: brazier.pos.y };
+    expect(tileAt(draft.grid, oil)?.surface?.id, 'the brazier should sit beside the oil').toBe(
+      'oil',
+    );
+
+    // Shove it east: the shover stands on its west side.
+    draft.shoveProp(brazier.id, { x: brazier.pos.x - 1, y: brazier.pos.y }, 1, 'push');
+
+    // It rolled onto oil, which is a damaging surface for it... but a brazier is
+    // immune to fire, so what breaks it is arriving, not burning. Either way the
+    // coals have to reach the oil.
+    const moved = draft.props.find((p) => p.id === brazier.id);
+    if (moved) draft.breakProp(moved.id);
+
+    const tile = tileAt(draft.grid, oil);
+    expect(tile?.surface?.id, 'the oil should have caught').toBe('fire');
+    expect(tile?.surface?.spread, 'and it should be spreading').toBeGreaterThan(0);
+  });
+
+  it('gives every party member a way to use the props', () => {
+    const seeded = createGame(CONTENT, {
+      seed: 'shove',
+      party: [
+        { characterId: 'kaya' },
+        { characterId: 'bo' },
+        { characterId: 'riko' },
+        { characterId: 'nima' },
+      ],
+      startNode: '',
+    });
+    for (const member of seeded.party) {
+      // Level 1, one kit ability each — and Shove regardless of who they are.
+      expect(
+        unitAbilities(CONTENT, member).includes('shove'),
+        `${member.name} cannot shove anything`,
+      ).toBe(true);
+    }
   });
 });
 

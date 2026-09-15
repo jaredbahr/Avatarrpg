@@ -13,6 +13,7 @@ import type { Palette } from '../palettes';
 import { paletteFor } from '../palettes';
 import { paintImpact } from './fx';
 import { paintPortrait } from './portraits';
+import { paintProp } from './props';
 import type { PainterOptions, UnitPainter } from './units';
 import { UNIT_PAINTERS } from './units';
 import type { Box, Ctx } from './shapes';
@@ -66,6 +67,15 @@ export function resolvePainter(key: string): ResolvedPainter {
       palette,
       draw: (ctx, box, options) =>
         paintImpact(ctx, box, palette, { variant: options?.variant ?? variant }),
+    };
+  }
+
+  if (entry.painter === 'prop') {
+    return {
+      entry,
+      palette,
+      draw: (ctx, box, options) =>
+        paintProp(ctx, box, palette, { ...(options ?? {}), variant: options?.variant ?? variant }),
     };
   }
 

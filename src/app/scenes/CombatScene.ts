@@ -27,7 +27,8 @@ import { pathCost, posKey, reachable, samePos } from '../../core/rules/grid';
 import { effectiveStats, isAlive } from '../../core/rules/stats';
 import { activeUnit, upcomingOrder } from '../../core/rules/turnOrder';
 import { Renderer, TILE } from '../../render/renderer';
-import type { MapView, OverlayLayer, RenderUnit } from '../../render/renderer';
+import type { MapView, OverlayLayer, RenderProp, RenderUnit } from '../../render/renderer';
+import { CONTENT } from '../../content';
 import { resolvePainter } from '../../render/painters/registry';
 import { attachPointer } from '../input/pointer';
 import { announce, button, clear, el, painterCanvas } from '../ui/dom';
@@ -894,10 +895,24 @@ export class CombatScene implements Scene {
       renderPos: this.app.animator.renderPos(now, u.id),
     }));
 
+    // Resolved here, not in the renderer: the renderer never reads content.
+    const props: RenderProp[] = battle.props.map((p) => {
+      const def = CONTENT.props.get(p.propId);
+      return {
+        id: p.id,
+        pos: p.pos,
+        sprite: def?.sprite ?? 'prop.crate',
+        name: def?.name ?? 'Something',
+        hp: p.hp,
+        maxHp: def?.hp ?? p.hp,
+      };
+    });
+
     const view: MapView = {
       grid: battle.grid,
       units,
       npcs: [],
+      props,
       overlays,
       path,
       fx: this.app.animator.fx(now),
