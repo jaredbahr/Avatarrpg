@@ -185,15 +185,17 @@ void main(void) {
     q.y -= uTime * 1.15;
     vec2 warp = vec2(fbm(q + vec2(0.0, uTime * 0.4)), fbm(q + vec2(5.2, 1.3)));
     float n = fbm(q + warp * 1.3);
-    float flame = n * (0.55 + 0.9 * intensity) * 2.0;
-    vec3 fire = vec3(0.0);
-    fire = mix(fire, vec3(0.34, 0.045, 0.015), smoothstep(0.16, 0.38, flame));
-    fire = mix(fire, vec3(0.80, 0.26, 0.07), smoothstep(0.36, 0.60, flame));
-    fire = mix(fire, vec3(0.98, 0.62, 0.18), smoothstep(0.58, 0.84, flame));
-    fire = mix(fire, vec3(1.00, 0.90, 0.62), smoothstep(0.86, 1.06, flame));
-    col = mix(col * 0.55, col + fire, smoothstep(0.10, 0.34, flame));
-    float ember = smoothstep(0.93, 1.0, vnoise(w * vec2(26.0, 14.0) - vec2(0.0, uTime * 2.4)));
-    col += vec3(1.0, 0.72, 0.34) * ember * intensity;
+    // Kept inside 0..1 by construction. Letting flame run past the top of the
+    // ramp and then adding it to the ground blows the whole patch out to white.
+    float flame = clamp(n * 1.55 * (0.62 + 0.38 * intensity), 0.0, 1.0);
+    vec3 fire = vec3(0.30, 0.040, 0.012);
+    fire = mix(fire, vec3(0.78, 0.25, 0.06), smoothstep(0.24, 0.46, flame));
+    fire = mix(fire, vec3(0.96, 0.58, 0.16), smoothstep(0.44, 0.66, flame));
+    fire = mix(fire, vec3(1.00, 0.86, 0.52), smoothstep(0.70, 0.94, flame));
+    // Blended over the scorched ground, not added to it.
+    col = mix(col * 0.45, fire, smoothstep(0.06, 0.42, flame));
+    float ember = smoothstep(0.94, 1.0, vnoise(w * vec2(26.0, 14.0) - vec2(0.0, uTime * 2.4)));
+    col = mix(col, vec3(1.0, 0.80, 0.45), ember * 0.7 * intensity);
   } else if (surface == 4) {          // mud
     float churn = fbm(w * 5.0);
     col = mix(col, mix(vec3(0.247, 0.184, 0.110), vec3(0.353, 0.271, 0.161), churn), 0.7 * intensity);
@@ -222,7 +224,8 @@ void main(void) {
   // changes when fire does. Gathering it here instead would cost 25 texture
   // samples on every pixel of every frame, which is ruinous without a GPU.
   float flicker = 0.88 + 0.12 * vnoise(vec2(uTime * 2.3, cell.x * 0.7 + cell.y * 1.3));
-  col += vec3(1.0, 0.55, 0.22) * firelight * 0.8 * flicker;
+  col += vec3(1.0, 0.55, 0.22) * firelight * 0.42 * flicker;
+  col = min(col, vec3(1.0));
 
   /* ---------------- grid ---------------- */
 
