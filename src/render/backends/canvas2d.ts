@@ -24,9 +24,11 @@ import {
 import { paletteForAsset } from '../painters/registry';
 import { sprites } from '../spriteCache';
 import type { MapView, OverlayKind, RenderUnit } from '../view';
-import type { RenderBackend } from './backend';
+import type { BackendCapabilities, RenderBackend } from './backend';
 
 export class Canvas2DBackend implements RenderBackend {
+  readonly capabilities: BackendCapabilities = { name: 'canvas', shaders: false, particles: false };
+
   private ctx: CanvasRenderingContext2D;
 
   constructor(private canvas: HTMLCanvasElement) {

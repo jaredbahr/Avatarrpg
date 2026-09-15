@@ -30,10 +30,10 @@ import {
 import type { Grid, SurfaceId, TerrainId, Vec2 } from '../../core/types';
 import { TILE } from '../camera';
 import type { Camera, Viewport } from '../camera';
-import { FACTION_RING, OVERLAY, STATUS_BADGE, hpColor } from '../palettes';
+import { FACTION_RING, OVERLAY, STATUS_BADGE, TERRAIN_STYLES, hpColor } from '../palettes';
 import { MAX_SPRITE_PX, sprites } from '../spriteCache';
 import type { MapView, RenderUnit } from '../view';
-import type { RenderBackend } from './backend';
+import type { BackendCapabilities, RenderBackend } from './backend';
 import { overlayColors } from './canvas2d';
 import { FILTER_VERTEX, GROUND_FRAGMENT } from './shaders';
 
@@ -78,6 +78,8 @@ const SURFACE_INDEX: Record<SurfaceId, number> = {
 };
 
 export class PixiBackend implements RenderBackend {
+  readonly capabilities: BackendCapabilities = { name: 'webgl', shaders: true, particles: false };
+
   private app: Application | null = null;
   private destroyed = false;
 
@@ -86,6 +88,9 @@ export class PixiBackend implements RenderBackend {
 
   private root = new Container();
   private groundSprite = new Sprite(Texture.WHITE);
+  /** Elevation lips, wall blocks and cover stones: the rules-relevant tile marks. */
+  private markerGfx = new Graphics();
+  private markerSignature = '';
   private overlayGfx = new Graphics();
   private pathGfx = new Graphics();
   private decorGfx = new Graphics();
@@ -199,6 +204,7 @@ export class PixiBackend implements RenderBackend {
     this.applyViewport();
 
     this.root.addChild(
+      this.markerGfx,
       this.overlayGfx,
       this.pathGfx,
       this.decorGfx,
@@ -254,6 +260,7 @@ export class PixiBackend implements RenderBackend {
     this.root.scale.set(camera.scale);
 
     this.syncGround(view, camera);
+    this.syncMarkers(view.grid);
     this.drawOverlays(view);
     this.drawPath(view);
     this.drawDecor(view);
@@ -362,6 +369,57 @@ export class PixiBackend implements RenderBackend {
     // which would leave the filter's bind group pointing at the old one.
     if (resized) this.mapTexture.source.resize(grid.width, grid.height);
     this.mapTexture.source.update();
+  }
+
+  /**
+   * The marks a player plans by — high ground, walls, cover — drawn exactly as
+   * the Canvas 2D painter draws them (`painters/tiles.ts`), because a fight
+   * has to read the same on both backends. The shader knows nothing of them,
+   * so they are a Graphics layer rebuilt only when a tile's footing changes.
+   */
+  private syncMarkers(grid: Grid): void {
+    let signature = `${grid.width}x${grid.height}`;
+    for (const tile of grid.tiles) {
+      signature += `|${tile.elevation}${tile.blocked ? 'b' : ''}${tile.cover ? 'c' : ''}`;
+    }
+    if (signature === this.markerSignature) return;
+    this.markerSignature = signature;
+
+    const g = this.markerGfx;
+    g.clear();
+
+    for (let i = 0; i < grid.tiles.length; i++) {
+      const tile = grid.tiles[i];
+      if (!tile) continue;
+      const x = (i % grid.width) * TILE;
+      const y = Math.floor(i / grid.width) * TILE;
+
+      // Elevation: a lit top lip and a shadow underneath.
+      if (tile.elevation > 0) {
+        g.rect(x, y, TILE, Math.max(1, TILE * 0.09 * tile.elevation)).fill({
+          color: 'rgba(255,255,255,0.10)',
+        });
+        g.rect(x, y + TILE * 0.9, TILE, TILE * 0.1).fill({ color: 'rgba(0,0,0,0.22)' });
+      }
+
+      // Walls get a heavier block so they read as impassable, not just dark.
+      if (tile.blocked) {
+        g.rect(x, y, TILE, TILE).fill({ color: 'rgba(0,0,0,0.35)' });
+        g.rect(x + TILE * 0.06, y + TILE * 0.06, TILE * 0.88, TILE * 0.88).stroke({
+          width: Math.max(1, TILE * 0.05),
+          color: TERRAIN_STYLES[tile.terrain].edge,
+        });
+      }
+
+      // Cover: three little stones along the bottom edge.
+      if (tile.cover && !tile.blocked) {
+        for (let k = 0; k < 3; k++) {
+          g.circle(x + TILE * (0.28 + k * 0.22), y + TILE * 0.78, TILE * 0.07).fill({
+            color: 'rgba(255,255,255,0.22)',
+          });
+        }
+      }
+    }
   }
 
   /* ---------------------------------------------------------------- */
