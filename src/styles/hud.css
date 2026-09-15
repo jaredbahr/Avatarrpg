@@ -23,6 +23,36 @@
 }
 
 /* ------------------------------------------------------------------ */
+/* Curtain                                                             */
+/* ------------------------------------------------------------------ */
+
+/*
+ * The reveal-from-ink on a scene change (app/ui/Curtain.ts). It is dropped
+ * with .is-down, which commits an opaque frame with no transition, and lifted
+ * with .is-lifting, which fades over --dur-slow. It never takes a tap: the
+ * rule above re-enables pointer events on every overlay-host child, so this
+ * one is spelled out.
+ */
+.overlay-host > .curtain {
+  position: absolute;
+  inset: 0;
+  background: var(--c-bg-deep);
+  opacity: 0;
+  z-index: var(--z-curtain);
+  pointer-events: none;
+}
+
+.curtain.is-down {
+  opacity: 1;
+  transition: none;
+}
+
+.curtain.is-lifting {
+  opacity: 0;
+  transition: opacity calc(var(--dur-slow) * var(--motion-scale)) var(--ease-ink);
+}
+
+/* ------------------------------------------------------------------ */
 /* Backdrop                                                            */
 /* ------------------------------------------------------------------ */
 
@@ -1020,6 +1050,11 @@
   background: var(--scrim-strong);
   z-index: var(--z-banner);
   padding: var(--sp-4);
+  animation: overlay-in calc(var(--dur-base) * var(--motion-scale)) var(--ease-out) both;
+}
+
+.handoff-banner .panel {
+  animation: dialog-in calc(var(--dur-base) * var(--motion-scale)) var(--ease-out) both;
 }
 
 .handoff-banner .panel {
@@ -1053,6 +1088,40 @@
 /* ------------------------------------------------------------------ */
 /* Dialogs                                                             */
 /* ------------------------------------------------------------------ */
+
+/*
+ * Dialogs ease in: the scrim fades and the sheet settles up into place. Pure
+ * CSS, so every dialog gets it for free; there is deliberately no exit
+ * animation, because a closed dialog that lingers in the DOM is a node the
+ * e2e suite and screen readers can still find.
+ */
+.overlay {
+  animation: overlay-in calc(var(--dur-base) * var(--motion-scale)) var(--ease-out) both;
+}
+
+.overlay > .dialog {
+  animation: dialog-in calc(var(--dur-base) * var(--motion-scale)) var(--ease-out) both;
+}
+
+@keyframes overlay-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes dialog-in {
+  from {
+    opacity: 0;
+    transform: translateY(0.5rem) scale(0.98);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
 
 .dialog {
   max-width: min(36rem, 94vw);

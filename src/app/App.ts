@@ -38,6 +38,7 @@ import { announce, clear, el } from './ui/dom';
 import { WHEEL_LINES_SVG } from './ui/marks';
 import { Toasts } from './ui/Toasts';
 import { Stats } from './ui/Stats';
+import { Curtain } from './ui/Curtain';
 import { PauseMenu } from './ui/PauseMenu';
 import { LevelUpDialog } from './ui/LevelUpDialog';
 import { DisciplineDialog } from './ui/DisciplineDialog';
@@ -78,6 +79,8 @@ export class App {
   readonly toasts: Toasts;
   /** Frame-time readout, present only with `?stats=1`. */
   readonly stats: Stats | null;
+  /** The reveal-from-ink on every scene change. */
+  private readonly curtain: Curtain;
 
   settings: Settings;
   state: GameState | null = null;
@@ -125,6 +128,7 @@ export class App {
 
     this.toasts = new Toasts(this.overlayHost);
     this.stats = Stats.enabled() ? new Stats(this.overlayHost) : null;
+    this.curtain = new Curtain(this.overlayHost);
 
     window.addEventListener('resize', () => this.requestResize());
     window.addEventListener('orientationchange', () => this.requestResize());
@@ -163,6 +167,8 @@ export class App {
     this.setMood(this.defaultMood());
     scene.mount(this.sceneHost);
     scene.sync();
+    // After the swap, never instead of it: see Curtain.
+    this.curtain.reveal();
   }
 
   /** Tints the backdrop. Scenes call it when they know better than the map does. */
