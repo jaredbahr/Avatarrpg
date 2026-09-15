@@ -16,7 +16,7 @@
  */
 
 import { RngCursor, seedFromString } from '../rng';
-import type { ContentIndex, GameEvent, GameState, Unit } from '../types';
+import type { ContentIndex, FlagValue, GameEvent, GameState, Unit } from '../types';
 import { apply } from '../state/reducer';
 import type { PartySlot } from '../state/createGame';
 import { createBattle, createGame } from '../state/createGame';
@@ -48,6 +48,16 @@ export interface SimOptions {
    * variant that is budget-legal but win-rate-illegal would slip through.
    */
   readonly variantId?: string;
+  /**
+   * Story flags the fight starts with.
+   *
+   * Without this the sim only ever measured the *unflagged* roster, so an
+   * encounter's `conditionalEnemies` never spawned and a branch that adds
+   * bodies was reported at the head count of the branch that does not. The
+   * quarry floor is exactly that case: trading Ruon away puts two of Jin's
+   * mercenaries on the boss floor, and that fight had never been measured.
+   */
+  readonly flags?: Readonly<Record<string, FlagValue>>;
 }
 
 export interface SimResult {
@@ -105,6 +115,7 @@ export function runCombat(content: ContentIndex, options: SimOptions): SimResult
     seed: options.seed,
     party: options.party.map((slot) => ({ ...slot, level, autoChoose: true })),
     startNode: '',
+    ...(options.flags ? { flags: options.flags } : {}),
   });
 
   const rng = new RngCursor(seeded.rng);
