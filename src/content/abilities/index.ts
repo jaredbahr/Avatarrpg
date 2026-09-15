@@ -4,6 +4,7 @@ import { EARTH_ABILITIES } from './earth';
 import { ENEMY_ABILITIES } from './enemy';
 import { FIRE_ABILITIES } from './fire';
 import { NONBENDER_ABILITIES } from './nonbender';
+import { UNIVERSAL_ABILITIES } from './universal';
 import { WATER_ABILITIES } from './water';
 
 export const ALL_ABILITIES: readonly Ability[] = [
@@ -12,6 +13,7 @@ export const ALL_ABILITIES: readonly Ability[] = [
   ...EARTH_ABILITIES,
   ...AIR_ABILITIES,
   ...NONBENDER_ABILITIES,
+  ...UNIVERSAL_ABILITIES,
   ...ENEMY_ABILITIES,
 ];
 
@@ -27,3 +29,4 @@ export {
   NONBENDER_ABILITIES,
   WATER_ABILITIES,
 };
+export { UNIVERSAL_ABILITIES, UNIVERSAL_ABILITY_IDS } from './universal';

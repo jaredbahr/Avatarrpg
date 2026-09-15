@@ -19,10 +19,13 @@ import type {
   FlagValue,
   GameState,
   Grid,
+  MapDef,
+  PropInstance,
   Unit,
   Vec2,
 } from '../types';
-import { buildGrid, enterCost, occupiedCells, posKey } from '../rules/grid';
+import { evaluate } from '../story/conditions';
+import { buildGrid, enterCost, occupiedCells, posKey, tileAt, withTile } from '../rules/grid';
 import { enemiesToDrop, scaleForTable } from '../rules/difficulty';
 import { grantedUpTo, scaleStats, statsAtLevel } from '../rules/leveling';
 import { rollInitiative } from '../rules/turnOrder';
@@ -269,6 +272,55 @@ export function xpRoster(
  * spawn points, places enemies (and any conditional reinforcements the story
  * flags call for), and rolls initiative once for the whole fight.
  */
+/**
+ * Instantiates a map's authored props, baking each one's spatial flags into the
+ * tile it stands on and journalling the tile it replaced.
+ *
+ * This is the same trick `BattleDraft.raiseWall` uses, and it is why props cost
+ * almost nothing to integrate: movement, line of sight, cover and the AI's
+ * positional scoring all read `Tile`, so a prop that writes itself into the tile
+ * is visible to every one of them with no call site changed. Breaking it puts
+ * `previous` back.
+ */
+function placeMapProps(
+  content: ContentIndex,
+  map: MapDef,
+  grid: Grid,
+  state: GameState,
+  startSerial: number,
+): { grid: Grid; props: PropInstance[]; serial: number } {
+  const props: PropInstance[] = [];
+  let serial = startSerial;
+  let current = grid;
+
+  for (const placement of map.props) {
+    if (placement.when && !evaluate(state, placement.when)) continue;
+
+    const def = content.props.get(placement.propId);
+    const tile = tileAt(current, placement.pos);
+    if (!def || !tile) continue;
+
+    props.push({
+      id: `prop${serial++}`,
+      propId: placement.propId,
+      pos: placement.pos,
+      hp: def.hp,
+      previous: tile,
+    });
+
+    if (def.blocksMove || def.blocksSight || def.grantsCover) {
+      current = withTile(current, placement.pos, {
+        ...tile,
+        blocked: tile.blocked || def.blocksMove,
+        blocksSight: tile.blocksSight || def.blocksSight,
+        cover: tile.cover || def.grantsCover,
+      });
+    }
+  }
+
+  return { grid: current, props, serial };
+}
+
 export function createBattle(
   content: ContentIndex,
   state: GameState,
@@ -280,9 +332,24 @@ export function createBattle(
   const map = content.maps.get(encounter.mapId);
   if (!map) throw new Error(`Encounter "${encounterId}" uses unknown map "${encounter.mapId}"`);
 
-  const grid = buildGrid(map);
   const taken = new Set<string>();
   const units: Unit[] = [];
+  let serial = 1;
+
+  /*
+   * Props go down before anybody stands anywhere.
+   *
+   * A blocking prop bakes itself into the tile, so placing it first is what makes
+   * `placeAt` and every later pathing call see it without being told. It also
+   * means a barrel can never end up underneath a party member — `validateContent`
+   * rejects a prop on a spawn point, but reserving the cell here keeps the
+   * enemy spiral honest too.
+   */
+  const placed = placeMapProps(content, map, buildGrid(map), state, serial);
+  const grid = placed.grid;
+  const props = placed.props;
+  serial = placed.serial;
+  for (const prop of props) taken.add(posKey(prop.pos));
 
   // Party first: they get the authored spawn points.
   state.party.forEach((member, index) => {
@@ -306,7 +373,6 @@ export function createBattle(
     baselinePartySize: encounter.baselinePartySize,
     partySize: state.party.length + encounter.allies.length,
   };
-  let serial = 1;
 
   for (const placement of roster.allies) {
     const def = content.enemies.get(placement.enemyId);
@@ -338,6 +404,7 @@ export function createBattle(
     round: 1,
     phase: 'active',
     temporaryWalls: [],
+    props,
     nextUnitSerial: serial,
   };
 }

@@ -371,6 +371,92 @@ export interface TileTemplate {
   readonly surfaceDuration?: number;
 }
 
+/* ------------------------------------------------------------------ */
+/* Props                                                               */
+/* ------------------------------------------------------------------ */
+
+/**
+ * What a prop does when it breaks.
+ *
+ * Deliberately a *separate* union from `AbilityEffect`. A prop is not a caster —
+ * it has no power stat to scale from, no accuracy, and nothing to aim — so the
+ * shapes that make sense here are the ones with a blast radius and a flat number.
+ */
+export type PropEffect =
+  | {
+      readonly kind: 'surface';
+      readonly surface: SurfaceId;
+      readonly duration: number;
+      /** 0 paints the prop's own tile only. */
+      readonly radius: number;
+    }
+  | {
+      readonly kind: 'damage';
+      readonly base: number;
+      readonly damageType: DamageType;
+      readonly radius: number;
+    }
+  | {
+      readonly kind: 'status';
+      readonly status: StatusId;
+      readonly duration: number;
+      readonly chance: number;
+      readonly radius: number;
+    }
+  | { readonly kind: 'push'; readonly distance: number; readonly radius: number };
+
+/**
+ * Something on the battlefield you can shove, break, or set on fire.
+ *
+ * Props are the delivery mechanism for the reaction table in
+ * `src/content/combos.ts` — the chemistry was already written, it just had
+ * nothing to react to. A water barrel is one `surface` effect; the Wet status,
+ * the freezing, and the lightning chaining through the puddle all follow from
+ * rules that already existed.
+ */
+export interface PropDef {
+  readonly id: string;
+  readonly name: string;
+  readonly description: string;
+  readonly sprite: string;
+  readonly hp: number;
+  /** Solid enough to stand behind. Baked into the tile while the prop lives. */
+  readonly blocksMove: boolean;
+  readonly blocksSight: boolean;
+  readonly grantsCover: boolean;
+  readonly pushable: boolean;
+  /** Takes double damage from these — an oil flask is not fireproof. */
+  readonly vulnerableTo: readonly DamageType[];
+  /** Takes none from these — a stone block does not care about fire. */
+  readonly immuneTo: readonly DamageType[];
+  readonly onBreak: readonly PropEffect[];
+  /** Plain words for the combat log, exactly like a combo rule's label. */
+  readonly breakLabel: string;
+}
+
+/** A prop authored onto a map, optionally only on some routes. */
+export interface PropPlacement {
+  readonly propId: string;
+  readonly pos: Vec2;
+  readonly when?: Condition;
+}
+
+/**
+ * A live prop.
+ *
+ * `previous` is a restore journal, exactly as `TemporaryWall` uses it: a prop
+ * that blocks bakes its flags into the `Tile` when it is placed, so every
+ * existing consumer of blocking, sight and cover keeps working untouched, and
+ * breaking it puts the original tile back.
+ */
+export interface PropInstance {
+  readonly id: string;
+  readonly propId: string;
+  readonly pos: Vec2;
+  readonly hp: number;
+  readonly previous: Tile;
+}
+
 export interface NpcDef {
   readonly id: string;
   readonly name: string;
@@ -394,6 +480,8 @@ export interface MapDef {
   readonly legend: Readonly<Record<string, TileTemplate>>;
   readonly partySpawns: readonly Vec2[];
   readonly npcs: readonly NpcDef[];
+  /** Barrels, flasks, carts. Instantiated into `BattleState.props` per battle. */
+  readonly props: readonly PropPlacement[];
   readonly ambience: string;
   /** Explore maps only: stepping here advances the current story node. */
   readonly exit?: { readonly pos: Vec2; readonly label: string };
@@ -580,6 +668,7 @@ export interface BattleState {
   readonly round: number;
   readonly phase: BattlePhase;
   readonly temporaryWalls: readonly TemporaryWall[];
+  readonly props: readonly PropInstance[];
   /** Incremented for every unit created, so ids never collide across a battle. */
   readonly nextUnitSerial: number;
 }
@@ -681,6 +770,27 @@ export type GameEvent =
     }
   | { readonly type: 'unitPushed'; readonly unitId: string; readonly to: Vec2 }
   | { readonly type: 'unitDied'; readonly unitId: string }
+  | {
+      readonly type: 'propDamaged';
+      readonly propId: string;
+      readonly name: string;
+      readonly amount: number;
+      readonly pos: Vec2;
+    }
+  | {
+      readonly type: 'propDestroyed';
+      readonly propId: string;
+      readonly pos: Vec2;
+      /** The prop's own plain-words line, printed straight into the log. */
+      readonly label: string;
+    }
+  | { readonly type: 'propPushed'; readonly propId: string; readonly to: Vec2 }
+  | {
+      readonly type: 'standingChanged';
+      readonly nation: ElementId;
+      readonly value: number;
+      readonly delta: number;
+    }
   | { readonly type: 'xpGained'; readonly unitId: string; readonly amount: number }
   | {
       readonly type: 'leveledUp';
@@ -720,6 +830,13 @@ export interface ContentIndex {
   readonly encounters: ReadonlyMap<string, EncounterDef>;
   readonly statuses: ReadonlyMap<StatusId, StatusDef>;
   readonly surfaces: ReadonlyMap<SurfaceId, SurfaceDef>;
+  readonly props: ReadonlyMap<string, PropDef>;
   readonly combos: readonly ComboRule[];
   readonly story: ReadonlyMap<string, StoryNode>;
+  /**
+   * Abilities every party member has without spending a kit slot on them — the
+   * Shove that lets anybody push a barrel. Reached through the index because
+   * core may not import content values.
+   */
+  readonly universalAbilities: readonly string[];
 }

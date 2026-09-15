@@ -115,6 +115,7 @@ describe('content', () => {
     }
     for (const e of CONTENT_BUNDLE.enemies) keys.add(e.sprite);
     for (const a of CONTENT_BUNDLE.abilities) keys.add(a.fx);
+    for (const p of CONTENT_BUNDLE.props) keys.add(p.sprite);
     for (const m of CONTENT_BUNDLE.maps) for (const npc of m.npcs) keys.add(npc.sprite);
     for (const node of CONTENT_BUNDLE.story) {
       if (node.kind === 'dialogue' || node.kind === 'choice') keys.add(node.portrait);

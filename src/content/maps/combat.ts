@@ -51,6 +51,7 @@ export const FOREST_ROAD: MapDef = {
     { x: 3, y: 8 },
   ],
   npcs: [],
+  props: [],
 };
 
 export const QUARRY_GATE: MapDef = {
@@ -84,6 +85,7 @@ export const QUARRY_GATE: MapDef = {
     { x: 3, y: 8 },
   ],
   npcs: [],
+  props: [],
 };
 
 export const AMBUSH_ROAD: MapDef = {
@@ -117,6 +119,7 @@ export const AMBUSH_ROAD: MapDef = {
     { x: 3, y: 8 },
   ],
   npcs: [],
+  props: [],
 };
 
 export const QUARRY_FLOOR: MapDef = {
@@ -150,6 +153,7 @@ export const QUARRY_FLOOR: MapDef = {
     { x: 3, y: 8 },
   ],
   npcs: [],
+  props: [],
 };
 
 export const COMBAT_MAPS: readonly MapDef[] = [FOREST_ROAD, QUARRY_GATE, AMBUSH_ROAD, QUARRY_FLOOR];

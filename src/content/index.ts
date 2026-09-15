@@ -15,8 +15,10 @@ import { ENCOUNTERS, ENCOUNTER_BY_ID } from './encounters';
 import { ENEMIES, ENEMY_BY_ID } from './enemies';
 import { BA_DAN_VILLAGE } from './maps/village';
 import { COMBAT_MAPS } from './maps/combat';
+import { PROPS, PROP_BY_ID } from './props';
 import { STATUSES, STATUS_BY_ID } from './statuses';
 import { SURFACES, SURFACE_BY_ID } from './surfaces';
+import { UNIVERSAL_ABILITY_IDS } from './abilities';
 import { ACT1_NODES } from './story/act1';
 import type { ContentBundle } from './schemas';
 import type { MapDef, StoryNode } from '../core/types';
@@ -33,6 +35,7 @@ export const CONTENT_BUNDLE: ContentBundle = {
   encounters: ENCOUNTERS,
   statuses: STATUSES,
   surfaces: SURFACES,
+  props: PROPS,
   combos: COMBOS,
   story: ALL_STORY,
 };
@@ -47,14 +50,16 @@ export const CONTENT: ContentIndex = {
   encounters: ENCOUNTER_BY_ID,
   statuses: STATUS_BY_ID as ReadonlyMap<StatusId, (typeof STATUSES)[number]>,
   surfaces: SURFACE_BY_ID as ReadonlyMap<SurfaceId, (typeof SURFACES)[number]>,
+  props: PROP_BY_ID,
   combos: COMBOS,
   story: new Map(ALL_STORY.map((n) => [n.id, n])),
+  universalAbilities: UNIVERSAL_ABILITY_IDS,
 };
 
 /** The node a fresh game starts on. */
 export const STORY_ENTRY = 'act1_open';
 
-export { CHARACTERS, ENEMIES, ENCOUNTERS, STATUSES, SURFACES, COMBOS, ACT1_NODES };
+export { CHARACTERS, ENEMIES, ENCOUNTERS, STATUSES, SURFACES, PROPS, COMBOS, ACT1_NODES };
 export { ELEMENTS, ELEMENT_BY_ID, elementBase } from './elements';
 export { charactersForElement } from './characters';
 export { resolveAsset, ASSETS } from './assets/manifest';

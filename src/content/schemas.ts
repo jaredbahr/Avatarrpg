@@ -25,6 +25,7 @@ import type {
   EncounterDef,
   EnemyDef,
   MapDef,
+  PropDef,
   StatusDef,
   StoryNode,
   SurfaceDef,
@@ -308,6 +309,62 @@ export const enemySchema = z.object({
   description: z.string().min(1),
 });
 
+/* ------------------------------------------------------------------ */
+/* Props                                                               */
+/* ------------------------------------------------------------------ */
+
+const propEffect = z.discriminatedUnion('kind', [
+  z.object({
+    kind: z.literal('surface'),
+    surface: surfaceId,
+    duration: z.number().int().min(-1).max(8),
+    radius: z.number().int().min(0).max(2),
+  }),
+  z.object({
+    kind: z.literal('damage'),
+    // Capped low on purpose: the danger of a prop is the surface it leaves,
+    // not the hit. Nothing here should take a party member from healthy to down.
+    base: z.number().int().min(1).max(12),
+    damageType,
+    radius: z.number().int().min(0).max(2),
+  }),
+  z.object({
+    kind: z.literal('status'),
+    status: statusId,
+    duration: z.number().int().min(1).max(6),
+    chance: z.number().min(0).max(1),
+    radius: z.number().int().min(0).max(2),
+  }),
+  z.object({
+    kind: z.literal('push'),
+    distance: z.number().int().min(1).max(3),
+    radius: z.number().int().min(0).max(2),
+  }),
+]);
+
+export const propSchema = z.object({
+  id,
+  name: z.string().min(1),
+  description: z.string().min(1),
+  sprite: z.string().min(1),
+  // A prop should break when somebody decides to break it, not after three turns.
+  hp: z.number().int().min(1).max(20),
+  blocksMove: z.boolean(),
+  blocksSight: z.boolean(),
+  grantsCover: z.boolean(),
+  pushable: z.boolean(),
+  vulnerableTo: z.array(damageType),
+  immuneTo: z.array(damageType),
+  onBreak: z.array(propEffect).min(1),
+  breakLabel: z.string().min(8),
+});
+
+const propPlacement = z.object({
+  propId: id,
+  pos: vec2,
+  when: conditionSchema.optional(),
+});
+
 const tileTemplate = z.object({
   terrain: terrainId,
   elevation: z.number().int().min(0).max(3).optional(),
@@ -339,6 +396,7 @@ export const mapSchema = z
         altNode: id.optional(),
       }),
     ),
+    props: z.array(propPlacement),
     ambience: z.string().min(1),
     exit: z.object({ pos: vec2, label: z.string().min(1) }).optional(),
   })
@@ -462,6 +520,7 @@ export interface ContentBundle {
   readonly encounters: readonly EncounterDef[];
   readonly statuses: readonly StatusDef[];
   readonly surfaces: readonly SurfaceDef[];
+  readonly props: readonly PropDef[];
   readonly combos: readonly ComboRule[];
   readonly story: readonly StoryNode[];
 }
@@ -504,6 +563,7 @@ export function validateContent(bundle: ContentBundle): string[] {
     ['encounter', encounterSchema, bundle.encounters],
     ['status', statusSchema, bundle.statuses],
     ['surface', surfaceSchema, bundle.surfaces],
+    ['prop', propSchema, bundle.props],
     ['combo', comboSchema, bundle.combos],
     ['story node', storyNodeSchema, bundle.story],
   ];
@@ -529,6 +589,7 @@ export function validateContent(bundle: ContentBundle): string[] {
     ['enemy', bundle.enemies.map((e) => e.id)],
     ['map', bundle.maps.map((m) => m.id)],
     ['encounter', bundle.encounters.map((e) => e.id)],
+    ['prop', bundle.props.map((p) => p.id)],
     ['combo', bundle.combos.map((c) => c.id)],
     ['story node', bundle.story.map((n) => n.id)],
   ];
@@ -543,6 +604,7 @@ export function validateContent(bundle: ContentBundle): string[] {
   const storyIds = new Set(bundle.story.map((n) => n.id));
   const statusIds = new Set(bundle.statuses.map((s) => s.id));
   const surfaceIds = new Set(bundle.surfaces.map((s) => s.id));
+  const propIds = new Set(bundle.props.map((p) => p.id));
 
   /* --- abilities reference real statuses and surfaces --------------- */
   for (const a of bundle.abilities) {
@@ -561,6 +623,25 @@ export function validateContent(bundle: ContentBundle): string[] {
     }
     if (a.minRange > a.range) {
       problems.push(`ability "${a.id}" has minRange ${a.minRange} above range ${a.range}`);
+    }
+  }
+
+  /* --- props reference real surfaces and statuses ------------------- */
+  for (const p of bundle.props) {
+    for (const effect of p.onBreak) {
+      if (effect.kind === 'surface' && !surfaceIds.has(effect.surface)) {
+        problems.push(`prop "${p.id}" paints unknown surface "${effect.surface}"`);
+      }
+      if (effect.kind === 'status' && !statusIds.has(effect.status)) {
+        problems.push(`prop "${p.id}" applies unknown status "${effect.status}"`);
+      }
+    }
+    // Immune wins over vulnerable in the damage maths, so declaring both is a
+    // contradiction the author almost certainly did not mean.
+    for (const type of p.vulnerableTo) {
+      if (p.immuneTo.includes(type)) {
+        problems.push(`prop "${p.id}" is both vulnerable and immune to "${type}"`);
+      }
     }
   }
 
@@ -620,6 +701,40 @@ export function validateContent(bundle: ContentBundle): string[] {
     });
     if (m.exit && !isWalkable(m, m.exit.pos.x, m.exit.pos.y)) {
       problems.push(`map "${m.id}" exit at (${m.exit.pos.x},${m.exit.pos.y}) is blocked`);
+    }
+
+    /*
+     * Props are placed before the party is, and a blocking prop bakes itself into
+     * the tile. Put one on a spawn point and `placeAt` spirals a character
+     * somewhere else without a word — the sort of bug that reads as "the game put
+     * me in the wrong place" and never gets reported properly.
+     */
+    const propCells = new Set<string>();
+    const spawnCells = new Set(m.partySpawns.map((s) => `${s.x},${s.y}`));
+    for (const placement of m.props) {
+      if (!propIds.has(placement.propId)) {
+        problems.push(`map "${m.id}" places unknown prop "${placement.propId}"`);
+        continue;
+      }
+      const key = `${placement.pos.x},${placement.pos.y}`;
+      if (!isWalkable(m, placement.pos.x, placement.pos.y)) {
+        problems.push(
+          `map "${m.id}" places "${placement.propId}" on a blocked tile (${key}) — it would have nothing to stand on`,
+        );
+      }
+      if (spawnCells.has(key)) {
+        problems.push(`map "${m.id}" places "${placement.propId}" on party spawn (${key})`);
+      }
+      if (m.exit && key === `${m.exit.pos.x},${m.exit.pos.y}`) {
+        problems.push(`map "${m.id}" places "${placement.propId}" on the exit (${key})`);
+      }
+      if (m.npcs.some((n) => `${n.pos.x},${n.pos.y}` === key)) {
+        problems.push(`map "${m.id}" places "${placement.propId}" on an npc (${key})`);
+      }
+      if (propCells.has(key)) {
+        problems.push(`map "${m.id}" stacks two props on (${key})`);
+      }
+      propCells.add(key);
     }
     for (const npc of m.npcs) {
       if (!isWalkable(m, npc.pos.x, npc.pos.y)) {
@@ -684,6 +799,12 @@ export function validateContent(bundle: ContentBundle): string[] {
     for (const spawn of map.partySpawns) {
       if (taken.has(`${spawn.x},${spawn.y}`)) {
         problems.push(`encounter "${e.id}" places a unit on party spawn (${spawn.x},${spawn.y})`);
+      }
+    }
+    for (const placement of map.props) {
+      const key = `${placement.pos.x},${placement.pos.y}`;
+      if (taken.has(key)) {
+        problems.push(`encounter "${e.id}" places a unit on prop "${placement.propId}" (${key})`);
       }
     }
 

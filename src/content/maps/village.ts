@@ -75,4 +75,5 @@ export const BA_DAN_VILLAGE: MapDef = {
       node: 'dorin_directions',
     },
   ],
+  props: [],
 };
