@@ -95,7 +95,31 @@ export const ENCOUNTERS: readonly EncounterDef[] = [
     allies: [],
     conditionalEnemies: [],
     baselinePartySize: 3,
-    variants: [],
+    /*
+     * The firebender's bluff at the gate does not skip the fight — it changes
+     * who is in it. The deserter steps back rather than raise a hand to Fire
+     * Nation colours, and the quarry crew comes forward in his place, angrier
+     * for having been left to it.
+     *
+     * Same 450-XP cost as the authored roster (150 x 3 against 200 + 100 + 150),
+     * and a very different fight: no firebender on the field means the oil only
+     * lights if *you* light it.
+     */
+    variants: [
+      {
+        id: 'bluffed',
+        weight: 1,
+        when: { kind: 'flag', key: 'gate_fire_bluff', op: 'set' },
+        enemies: [
+          { enemyId: 'bandit_bruiser', pos: { x: 16, y: 3 } },
+          { enemyId: 'bandit_earthbender', pos: { x: 17, y: 6 } },
+          { enemyId: 'bandit_bruiser', pos: { x: 16, y: 8 } },
+        ],
+        intro:
+          'The deserter looks at your colours, looks at the ground, and steps back off the gate. The quarry crew does not.',
+        tip: 'Nobody up there bends fire any more — so the oil only goes up if you light it. That makes the brazier yours to spend.',
+      },
+    ],
     // Also short: the oil is what makes this fight, not the head count.
     reinforcements: [
       { enemyId: 'bandit_slinger', pos: { x: 17, y: 9 } },

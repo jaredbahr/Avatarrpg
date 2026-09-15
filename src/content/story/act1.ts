@@ -133,17 +133,38 @@ export const ACT1_NODES: readonly StoryNode[] = [
     next: 'after_forest',
     onDefeat: 'defeat_forest',
   },
+  /*
+   * Losing does not send you back to the start of the fight.
+   *
+   * A wipe used to point straight at the battle again, which makes defeat a
+   * chore and makes a five-year-old cry. Now it costs you something in the
+   * story and the story carries on: you lose the fight, you lose the cargo, and
+   * you go on up the hill anyway, carrying a flag that people will mention.
+   *
+   * The compensating XP is not generosity, it is arithmetic. All the XP for a
+   * fight is paid on victory (reducer.ts gates it behind `if (victory)`), so a
+   * defeat route that skipped it would arrive at the next fight under-levelled
+   * and progression.test.ts would fail — correctly. 100 is this encounter's
+   * 300-XP roster split across a baseline party of three.
+   */
   {
     id: 'defeat_forest',
     kind: 'dialogue',
     speaker: 'Ba Dan',
     portrait: 'portrait.narrator',
     lines: [
-      'You come round in the village, patched up and thoroughly embarrassed. Gao does not say a word about it, which is worse.',
-      'The road is still there. So are the bandits.',
-      'Try the puddles this time.',
+      'You come round on the verge with your pockets turned out and the cart wheel gone. They took the wheel. Who takes a wheel?',
+      'Nobody is dead. Everybody is furious. Pella will not stop apologising for something that was not her fault.',
+      'The road still goes up the hill, and you have nothing left worth robbing, which is its own kind of freedom.',
     ],
-    next: 'battle_forest_road',
+    next: 'lost_forest_road',
+  },
+  {
+    id: 'lost_forest_road',
+    kind: 'flags',
+    set: { lost_forest_road: true },
+    grantXp: 100,
+    next: 'after_forest',
   },
   {
     id: 'after_forest',
@@ -154,10 +175,107 @@ export const ACT1_NODES: readonly StoryNode[] = [
       'They are quarry workers. Look at the hands — every one of them has cut stone for a living.',
       'Whoever is up there did not bring an army. They took one.',
     ],
-    next: 'battle_quarry_gate',
+    // Straight into the parley now, rather than straight into the fight.
+    next: 'gate_parley',
+    variants: [
+      {
+        // Losing the road makes the same observation land very differently.
+        when: { kind: 'flag', key: 'lost_forest_road', op: 'set' },
+        speaker: 'Kaya',
+        lines: [
+          'They were quarry workers. Did you see the hands? Every one of them has cut stone for a living, and every one of them has just robbed us.',
+          'Whoever is up the hill did not bring an army. They took one, and they took it from people who had nothing left to say no with.',
+          'I want to be angry about the wheel. I am finding it difficult.',
+        ],
+      },
+    ],
   },
 
   /* ------------------------------------------------------------ The gate */
+  /*
+   * The Speaker Choice, and the first place the party's *composition* is the
+   * decision rather than its abilities.
+   *
+   * Avatar's whole argument is that difference is the problem and also the
+   * answer: the same gate opens differently for a firebender and for an
+   * earthbender, and a party with neither has to do it the hard way. Every
+   * option is shown to everyone, greyed with a reason when it is not yours to
+   * take, because seeing the road you cannot walk is what makes somebody want
+   * to come back with a different four people.
+   */
+  {
+    id: 'gate_parley',
+    kind: 'choice',
+    speaker: 'The Quarry Gate',
+    portrait: 'portrait.narrator',
+    prompt:
+      'The gate is shut and there are people on it. Somebody has to go first — and who goes first is going to matter.',
+    options: [
+      {
+        label: 'Walk up and knock',
+        detail:
+          'No angle, no leverage. Whatever is behind that gate, you meet it on its own terms.',
+        next: 'battle_quarry_gate',
+      },
+      {
+        label: 'Let the firebender do the talking',
+        detail:
+          'A deserter is still Fire Nation enough to flinch at the colours. He will stand down. His quarry crew will not, and they will be angrier for it.',
+        next: 'gate_bluff',
+        speaker: { element: 'fire' },
+        requires: { kind: 'partyHas', element: 'fire' },
+        lockedHint: 'Nobody here can sell it. You would need a firebender.',
+        // Trading on Fire Nation fear works, and it is remembered on both sides.
+        adjust: { fire: 1, earth: -1 },
+      },
+      {
+        label: 'Let the earthbender speak — these are quarry workers',
+        detail:
+          'They cut stone for a living and so did your grandmother. That is not nothing, and Ruon knows it is not nothing.',
+        next: 'gate_kinship',
+        speaker: { element: 'earth' },
+        requires: { kind: 'partyHas', element: 'earth' },
+        lockedHint: 'It would have to come from an earthbender to mean anything.',
+        adjust: { earth: 2 },
+      },
+    ],
+    footer: 'Who speaks changes what happens. It is meant to.',
+  },
+  {
+    id: 'gate_bluff',
+    kind: 'flags',
+    // Feeds the `bluffed` variant on enc_quarry_gate: the deserter steps back
+    // and the quarry crew comes forward in his place, at the same threat cost.
+    set: { gate_fire_bluff: true },
+    next: 'battle_quarry_gate',
+  },
+  {
+    id: 'gate_kinship',
+    kind: 'dialogue',
+    speaker: 'Captain Ruon',
+    portrait: 'portrait.ruon',
+    lines: [
+      'Stop. Stop — say that again. Say the part about the galleries.',
+      'You have cut stone. You know what it does to a back, and you know what it does to a village when the cutting stops.',
+      'Then you know exactly why my people are on this gate, and you know I cannot pay them either.',
+      'Put it down. All of you, put it down. I am not going to be the man who set quarry workers on quarry workers.',
+    ],
+    next: 'gate_talked_through',
+  },
+  {
+    id: 'gate_talked_through',
+    kind: 'flags',
+    /*
+     * A genuine non-combat resolution of a battle node — the gate opens and the
+     * fight never happens. 150 is enc_quarry_gate's 450-XP roster across a
+     * baseline of three, so talking your way in and fighting your way in arrive
+     * at the boss at exactly the same level. Different content, not an easier
+     * route; that is the whole point.
+     */
+    set: { gate_talked_through: true, ruon_respects_you: true },
+    grantXp: 150,
+    next: 'ruon_surrender',
+  },
   {
     id: 'battle_quarry_gate',
     kind: 'battle',
@@ -171,12 +289,20 @@ export const ACT1_NODES: readonly StoryNode[] = [
     speaker: 'The Quarry Gate',
     portrait: 'portrait.narrator',
     lines: [
-      'The oil went up, and then everything went up, and then somebody dragged you back down the switchbacks.',
-      // Was "wash the oil off the ground first", which the rules refuse —
-      // water-into-oil leaves the oil exactly where it was.
-      'Next time: light it early, while the ground between you and them is still empty. Or shove the brazier and pick your moment.',
+      'The oil went up, and then everything went up, and then somebody dragged you back down the switchbacks with your eyebrows gone.',
+      'When you come back the gate is open and nobody is on it. Not abandoned — opened. Somebody decided you were not worth the barrels.',
+      'Captain Ruon is waiting in the yard with his sword on the ground in front of him, which is somehow more insulting than the fight was.',
     ],
-    next: 'battle_quarry_gate',
+    next: 'lost_quarry_gate',
+  },
+  {
+    id: 'lost_quarry_gate',
+    kind: 'flags',
+    // 450 XP across a baseline of three. Ruon surrenders either way; losing
+    // changes who he thinks you are, not whether the story continues.
+    set: { lost_quarry_gate: true },
+    grantXp: 150,
+    next: 'ruon_surrender',
   },
   {
     id: 'ruon_surrender',
@@ -247,10 +373,19 @@ export const ACT1_NODES: readonly StoryNode[] = [
     portrait: 'portrait.narrator',
     lines: [
       "Jin's people are professionals, and the cutting is narrow enough that being surrounded is a choice you made.",
-      'Ruon hauls what is left of you back down the road, complaining the entire way.',
-      'Hold the gap next time. Nobody gets past a tile they cannot stand on.',
+      'Ruon gets three of you out through the scree and goes back for the rest, which is not what anybody expected of him.',
+      "Jin has what she came for. You have a captain who chose you over a clear road, and a long walk to think about it.",
     ],
-    next: 'battle_ambush',
+    next: 'lost_ambush',
+  },
+  {
+    id: 'lost_ambush',
+    kind: 'flags',
+    // 450 across three. `ruon_carried_you` is the sort of thing a later act
+    // should remember about him.
+    set: { lost_ambush: true, ruon_carried_you: true },
+    grantXp: 150,
+    next: 'after_ambush',
   },
   {
     id: 'after_ambush',
@@ -320,10 +455,34 @@ export const ACT1_NODES: readonly StoryNode[] = [
     portrait: 'portrait.narrator',
     lines: [
       'The driller does not celebrate. It simply goes back to idling, which is somehow worse.',
-      'You wake up on the switchback with every bone complaining.',
-      'Two things kill it: the oil it leaves behind, and the mud it churns up. Light the first. Freeze the second.',
+      'You wake up on the switchback with every bone complaining and the quarry still running behind you.',
+      'Elder Mira comes up the road herself to fetch you down. She does not say a word about the stone. She does not have to.',
     ],
-    next: 'battle_grumbler',
+    next: 'act1_lost',
+  },
+  {
+    /*
+     * The one defeat that genuinely ends the act rather than rejoining it.
+     * No compensating XP: there is no next fight in Act 1 to arrive at, and
+     * the two branches still land inside the level band the next act expects.
+     */
+    id: 'act1_lost',
+    kind: 'flags',
+    set: { act1_lost: true },
+    next: 'act1_epilogue_lost',
+  },
+  {
+    id: 'act1_epilogue_lost',
+    kind: 'end',
+    title: 'The Quarry Keeps Running',
+    lines: [
+      'Ba Dan does not fall. That is the strange part. The quarry keeps cutting, the carts keep going out, and nobody in the village is asked to leave.',
+      'They are simply not asked anything at all any more. Elder Mira still sets a place at her table for whoever is hungry, and there are more of them each week.',
+      'Grumbler never comes down the hill to gloat. Somebody else is paying him, and gloating is not in it.',
+      'The obvious question is still the obvious one: a mecha-driller is Republic City engineering, and nobody in this province could have built it, bought it, or driven it here.',
+    ],
+    teaser:
+      'Across the bay, a Fire Nation outpost that was decommissioned nine years ago has its lamps lit. Whoever lit them already knows your names.',
   },
   {
     id: 'act1_victory',
