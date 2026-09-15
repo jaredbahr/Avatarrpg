@@ -8,8 +8,10 @@
  *   the cutting  professionals, in a chokepoint     -> learn positioning
  *   quarry floor a two-tile boss rewriting the map  -> use everything at once
  *
- * `conditionalEnemies` is how the Act 1 choice reaches the boss fight: trade
- * Ruon away and Jin's mercenaries are standing in the quarry when you get there.
+ * A flag-gated `variant` is how the Act 1 choice reaches the boss fight: trade
+ * Ruon away and Jin's mercenaries are standing in the quarry when you get there,
+ * in place of the quarry crew rather than alongside them. Swapping the roster
+ * rather than adding to it is deliberate — see the note on that encounter.
  *
  * `reinforcements` scale the fight to the table. Every roster below is tuned
  * for a party of three; each player beyond that pulls in one more enemy. The
@@ -170,18 +172,63 @@ export const ENCOUNTERS: readonly EncounterDef[] = [
       { enemyId: 'bandit_earthbender', pos: { x: 16, y: 2 } },
     ],
     allies: [],
-    conditionalEnemies: [
+    /*
+     * Empty on purpose, and it is worth saying why rather than leaving a bare
+     * `[]` for somebody to helpfully fill in again.
+     *
+     * Trading Ruon away used to add *two* of Jin's mercenaries here on top of
+     * the authored roster. `conditionalEnemies` is the one roster lever with no
+     * budget rule on it — `validateContent` holds variants within 10% of the
+     * authored XP, but a conditional group can add whatever it likes — and on a
+     * boss floor that turned out to be catastrophic. Measured at a 3-player
+     * table the branch ran at a 9% win rate against the other branch's 62%, and
+     * nothing in the repo could see it: the balance harness never set a story
+     * flag, so every published number described the fight the *other* choice
+     * gets. A family that traded Ruon away hit a wall the simulator said was
+     * fine.
+     *
+     * It is not that two was one too many. This fight is extraordinarily
+     * sensitive to head count — a *single* extra body still measured 32-46%
+     * against 82% — because a boss plus one support is already the whole
+     * action-economy budget of the floor. Bodies are the wrong lever here, so
+     * the branch swaps the roster instead of growing it, below.
+     */
+    conditionalEnemies: [],
+    baselinePartySize: 3,
+    /*
+     * Jin said his people were already in the quarry, so they are — standing
+     * where the quarry crew would have been, not alongside it. Same 510-XP cost
+     * as the authored roster (360 + 150 either way), which is what makes the
+     * two branches comparable, and it is the same flag-gated variant the quarry
+     * gate already uses for the firebender's bluff.
+     *
+     * Being a variant rather than a conditional group is also what makes it
+     * *visible*: `BALANCE_VARIANTS=1` reports it on its own line, so the next
+     * person to touch this fight measures both branches instead of one.
+     *
+     * Honest caveat: at a matched budget this branch still measures easier than
+     * the authored one (roughly 97-100% against 78-82%). The quarry bender
+     * plays well above its 150 XP here — it is an earthbender, so it picks up
+     * the level scaling's earth defence bonus, and `raise_rubble` keeps feeding
+     * the boss cover. No 150-XP mercenary matches that, and the next one up
+     * (the sergeant, 210) breaks the 10% budget rule at 570. Erring toward
+     * "both roads are passable" is the right side to err on for a choice the
+     * story explicitly says has no right answer.
+     */
+    variants: [
       {
-        flag: 'ruon_traded',
-        whenSet: true,
-        placements: [
-          { enemyId: 'merc_blade', pos: { x: 16, y: 9 } },
-          { enemyId: 'merc_crossbow', pos: { x: 17, y: 6 } },
+        id: 'jins_people',
+        weight: 1,
+        when: { kind: 'flag', key: 'ruon_traded', op: 'set' },
+        enemies: [
+          { enemyId: 'grumbler', pos: { x: 15, y: 5 } },
+          { enemyId: 'merc_crossbow', pos: { x: 16, y: 2 } },
         ],
+        intro:
+          'The driller comes up out of the pit on two treads. One of Jin’s people is already on the rim above it, crossbow braced, and does not look surprised to see you.',
+        tip: 'No quarry bender up there raising cover this time — just a crossbow that outranges most of you. Close the distance or break line of sight, and the driller is still the driller.',
       },
     ],
-    baselinePartySize: 3,
-    variants: [],
     reinforcements: [
       { enemyId: 'bandit_thug', pos: { x: 14, y: 3 } },
       { enemyId: 'bandit_thug', pos: { x: 14, y: 8 } },
