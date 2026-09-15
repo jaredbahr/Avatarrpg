@@ -310,4 +310,50 @@ test.describe('a session', () => {
       )
       .toBe(true);
   });
+
+  /*
+   * The point of showing options you cannot take is that somebody reads them and
+   * wants to come back with a different party. That only works if they are
+   * legible, say why, and cannot be tapped by mistake — so all three are asserted
+   * rather than just the disabled attribute.
+   */
+  test('shows the roads this party cannot walk, and says why', async ({ page }) => {
+    await resetStorage(page);
+    // A waterbender and a nonbender: neither gated option at the gate is theirs.
+    await startGame(page, ['Elias', 'Lorelai'], ['nilak', 'riko'], 'locked-spec');
+    await enterNode(page, 'gate_parley');
+
+    const options = page.locator('.choice-option');
+    await expect(options).toHaveCount(3);
+
+    const locked = page.locator('.choice-option.is-locked');
+    await expect(locked).toHaveCount(2);
+
+    // Each locked option names who it would take and why it is closed.
+    await expect(locked.first().locator('.speaker-tag')).toHaveText(/firebender/i);
+    await expect(locked.first().locator('.locked-hint')).toContainText('firebender');
+    await expect(locked.nth(1).locator('.speaker-tag')).toHaveText(/earthbender/i);
+
+    // Still a full-size control, per the touch rules.
+    const box = await locked.first().boundingBox();
+    expect(box?.height ?? 0).toBeGreaterThanOrEqual(48);
+
+    // And tapping it does nothing at all.
+    const before = await page.evaluate(() => window.fnt?.app.state?.story.nodeId);
+    await locked.first().click({ force: true });
+    await page.waitForTimeout(150);
+    expect(await page.evaluate(() => window.fnt?.app.state?.story.nodeId)).toBe(before);
+  });
+
+  test('tags an available option with the party member who would say it', async ({ page }) => {
+    await resetStorage(page);
+    await startGame(page, ['Elias', 'Lorelai'], ['kaya', 'bo'], 'tagged-spec');
+    await enterNode(page, 'gate_parley');
+
+    await expect(page.locator('.choice-option.is-locked')).toHaveCount(0);
+    // Kaya is the firebender, Bo the earthbender: the tags name them, not their
+    // elements, because "who walks up" is the decision being made.
+    await expect(page.locator('.speaker-tag').first()).toContainText('Kaya');
+    await expect(page.locator('.speaker-tag').nth(1)).toContainText('Bo');
+  });
 });

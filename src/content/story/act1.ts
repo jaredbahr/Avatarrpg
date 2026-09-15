@@ -89,6 +89,15 @@ export const ACT1_NODES: readonly StoryNode[] = [
     ],
     next: 'village_explore',
   },
+  /*
+   * The side quest, and it is deliberately tiny.
+   *
+   * Talk to a child about her brother and a cabbage cart turns up on the boss
+   * map to help you — a real mechanical reward for a completely optional
+   * conversation, assembled entirely out of pieces that already exist: one flag,
+   * one conditional prop placement. Nobody is told it happened. The payoff is
+   * finding out three fights later that the funny thing you did mattered.
+   */
   {
     id: 'pella_tips',
     kind: 'dialogue',
@@ -98,6 +107,25 @@ export const ACT1_NODES: readonly StoryNode[] = [
       'Are you the ones going up the quarry? Can I come? No? Fine.',
       'My brother says the trick in a fight is that the ground does the work. Puddles, fire, mud — all of it counts.',
       'He says if someone is standing in water and you hit them with lightning, the whole puddle goes. He says he saw it once. I think he is lying, but you should check.',
+      'His name is Bo-shan. He drives the produce cart up to the quarry crews on a Tuesday and he has not come back either, and Elder Mira keeps saying "the four people" like he is not one of them.',
+      'If you see a cart with too many cabbages on it, that is his. He stacks them stupidly. Tell him I said so.',
+    ],
+    next: 'pella_asked',
+  },
+  {
+    id: 'pella_asked',
+    kind: 'flags',
+    set: { pella_asked: true },
+    next: 'village_explore',
+  },
+  {
+    id: 'pella_again',
+    kind: 'dialogue',
+    speaker: 'Pella',
+    portrait: 'portrait.pella',
+    lines: [
+      'Too many cabbages. You will know it when you see it.',
+      'And do not let anyone tell you the cabbages are not important.',
     ],
     next: 'village_explore',
   },

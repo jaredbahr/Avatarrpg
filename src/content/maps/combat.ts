@@ -183,7 +183,22 @@ export const QUARRY_FLOOR: MapDef = {
     { x: 3, y: 8 },
   ],
   npcs: [],
-  props: [],
+  /*
+   * Pella's side quest, paid out three fights later and never announced.
+   *
+   * Ask a child in the village about her missing brother and his produce cart is
+   * on the quarry floor when you get there — parked beside the mud the driller
+   * churns up, which is exactly where you want something that knocks people over
+   * and blinds them. A party that never spoke to her fights this without it, and
+   * nobody ever tells them what they missed.
+   */
+  props: [
+    {
+      propId: 'cabbage_cart',
+      pos: { x: 9, y: 6 },
+      when: { kind: 'flag', key: 'pella_asked', op: 'set' },
+    },
+  ],
 };
 
 export const COMBAT_MAPS: readonly MapDef[] = [FOREST_ROAD, QUARRY_GATE, AMBUSH_ROAD, QUARRY_FLOOR];

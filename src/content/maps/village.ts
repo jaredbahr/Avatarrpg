@@ -64,6 +64,8 @@ export const BA_DAN_VILLAGE: MapDef = {
       pos: { x: 12, y: 10 },
       sprite: 'npc.kid',
       node: 'pella_tips',
+      // Ask her twice and she is still on about the cabbages.
+      routes: [{ when: { kind: 'flag', key: 'pella_asked', op: 'set' }, node: 'pella_again' }],
     },
     {
       id: 'guard_dorin',

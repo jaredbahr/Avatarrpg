@@ -330,6 +330,60 @@ describe('the quarry gate', () => {
   });
 });
 
+describe("Pella's cabbage cart", () => {
+  /*
+   * The whole side quest is one flag and one conditional placement, which makes
+   * it exactly the sort of thing that breaks silently: the conversation still
+   * happens, the cart just quietly never appears, and nobody finds out because
+   * nobody was told it was coming.
+   */
+  function bossBattle(flags: Record<string, boolean>) {
+    const state = createGame(CONTENT, {
+      seed: 'cabbages',
+      party: [{ characterId: 'bo', level: 4, autoChoose: true }],
+      startNode: '',
+      flags,
+    });
+    return createBattle(CONTENT, state, 'enc_grumbler', new RngCursor(state.rng));
+  }
+
+  it('is not on the quarry floor for a party that never asked', () => {
+    expect(bossBattle({}).props.map((p) => p.propId)).not.toContain('cabbage_cart');
+  });
+
+  it('turns up on the quarry floor once you have asked about her brother', () => {
+    const battle = bossBattle({ pella_asked: true });
+    expect(battle.props.map((p) => p.propId)).toContain('cabbage_cart');
+  });
+
+  it('parks it somewhere it is actually useful', () => {
+    // Beside the mud the driller churns up is the point; a cart in a corner
+    // would be a joke nobody gets to tell.
+    const battle = bossBattle({ pella_asked: true });
+    const cart = battle.props.find((p) => p.propId === 'cabbage_cart');
+    expect(cart).toBeDefined();
+    if (!cart) return;
+
+    const nearMud = [
+      { x: cart.pos.x + 1, y: cart.pos.y },
+      { x: cart.pos.x - 1, y: cart.pos.y },
+      { x: cart.pos.x, y: cart.pos.y + 1 },
+      { x: cart.pos.x, y: cart.pos.y - 1 },
+    ].some((pos) => tileAt(battle.grid, pos)?.surface?.id === 'mud');
+    expect(nearMud, 'the cart should be parked beside the mud').toBe(true);
+  });
+
+  it('is reachable from the conversation that grants it', () => {
+    const node = CONTENT.story.get('pella_tips');
+    expect(node?.kind).toBe('dialogue');
+    if (node?.kind !== 'dialogue') return;
+    const grant = CONTENT.story.get(node.next);
+    expect(grant?.kind).toBe('flags');
+    if (grant?.kind !== 'flags') return;
+    expect(grant.set.pella_asked).toBe(true);
+  });
+});
+
 describe('props and the map', () => {
   it('instantiates props authored on the map, honouring their conditions', () => {
     const base: GameState = createGame(CONTENT, {
