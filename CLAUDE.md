@@ -36,6 +36,7 @@ src/render/          camera, sprite cache, painters, palettes, the Renderer
                      facade, and backends/ — WebGL (Pixi + shaders) and the
                      Canvas 2D fallback
 src/app/             scenes, HUD, input, hot-seat session, localStorage
+docs/                roadmap, ADRs, the art bible, the device matrix
 ```
 
 ## Commands
@@ -104,6 +105,13 @@ Never run `npx playwright install` in the dev container — Chromium is already 
 - UI sizes go in `rem`, never `px`, so the Large-text setting scales them.
   Anything tappable must be at least `var(--tap)`.
 - Commit messages: imperative mood, one concern per commit.
+- Anything that changes an engine, a rendering contract, an asset format or a
+  budget gets an ADR in `docs/adr/`. The phase plan is `docs/roadmap.md`; art
+  is generated against `docs/art-bible.md`; a new device is checked against
+  `docs/device-matrix.md`.
+- Backends: board-correctness parity is mandatory, fidelity parity is not
+  (`src/render/backends/backend.ts`). Draw anything the rules care about on
+  both backends; particles and shader effects are WebGL-only by design.
 
 ## Things that will bite you
 
@@ -156,6 +164,29 @@ Never run `npx playwright install` in the dev container — Chromium is already 
   already passed through and nothing lights.
 - `previewAbility` consumes no RNG, and the AI's `scoreAbility` must not either.
   That is why damage to props is flat, with no to-hit roll or crit.
+- **Sprite cache sizes are device pixels.** Pass CSS size × `dpr`, or the
+  sprite comes out soft on a Surface or an iPad. Both the sprite cache and the
+  Pixi texture map are bounded LRUs because iOS caps canvas memory; do not
+  hold a texture from `Texture.from` outside that map, and always pass
+  `skipCache` so a destroyed texture is never handed back for its canvas.
+- **The HUD reflow resizes the canvas with no window event.** The map scenes
+  watch `.map-wrap` with a `ResizeObserver` and coalesce every signal through
+  `App.requestResize()`. Never call `camera.fit()` blindly from a resize path:
+  it resets a pinch zoom (`CombatScene.resize` keeps the zoom unless the board
+  was fitted).
+- **iPadOS ignores the manifest's `orientation`.** Portrait has to work. Where
+  the fitted tile would drop below `MIN_TILE_PX`, `Camera.fit()` fits to a
+  tappable tile and pans instead; that is the one exception to "combat never
+  scrolls", and the camera header explains it.
+- **`navigator.vibrate` does not exist on iOS.** Keep it optional-chained; never
+  make a gesture depend on the buzz.
+- **The WebKit iPad Playwright projects exist only in CI** (or with
+  `FNT_E2E_WEBKIT=1`). The dev container has Chromium alone; never run
+  `playwright install` there. Playwright's WebKit is the engine, not Safari:
+  Home Screen behaviour stays on the manual checklist.
+- **Pinch cannot be synthesised by Playwright.** `e2e/gestures.spec.ts`
+  dispatches two-pointer `PointerEvent`s at the canvas instead, which is why
+  the pointer adapter guards `setPointerCapture` in a try/catch.
 - Anything that tells the player what an action _will_ do must run the real rule
   on a throwaway copy, never describe it in parallel. `previewAbility` pairs
   `expectedDamage` with `rollDamage`, and `forecastReactions` replays
