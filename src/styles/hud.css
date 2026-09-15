@@ -110,7 +110,7 @@
   gap: var(--sp-1);
   padding: var(--sp-2) var(--sp-3);
   border: 1px solid #6b5a3f;
-  border-left-width: 0.25rem;
+  border-left-width: var(--accent-bar);
   border-radius: var(--radius);
   background: rgb(48 38 22 / 55%);
 }
@@ -168,7 +168,7 @@
   flex-direction: column;
   gap: 0.1rem;
   padding: var(--sp-2) var(--sp-3);
-  border-left: 0.2rem solid var(--c-line);
+  border-left: var(--accent-bar) solid var(--c-line);
   background: rgb(0 0 0 / 22%);
   border-radius: 0 var(--radius) var(--radius) 0;
 }
@@ -329,19 +329,19 @@
 }
 
 .element-fire {
-  border-left: 4px solid var(--c-fire);
+  border-left: var(--accent-bar) solid var(--c-fire);
 }
 .element-water {
-  border-left: 4px solid var(--c-water);
+  border-left: var(--accent-bar) solid var(--c-water);
 }
 .element-earth {
-  border-left: 4px solid var(--c-earth);
+  border-left: var(--accent-bar) solid var(--c-earth);
 }
 .element-air {
-  border-left: 4px solid var(--c-air);
+  border-left: var(--accent-bar) solid var(--c-air);
 }
 .element-nonbender {
-  border-left: 4px solid var(--c-nonbender);
+  border-left: var(--accent-bar) solid var(--c-nonbender);
 }
 
 .painter {
@@ -422,7 +422,7 @@
 }
 
 .teaser {
-  border-left: 3px solid var(--c-gold);
+  border-left: var(--accent-bar) solid var(--c-gold);
   padding-left: var(--sp-3);
   color: var(--c-ink-dim);
 }
@@ -834,7 +834,7 @@
   flex-direction: column;
   gap: 0.1rem;
   padding: var(--sp-2);
-  border-left: 3px solid var(--c-line);
+  border-left: var(--accent-bar) solid var(--c-line);
   background: rgb(0 0 0 / 20%);
 }
 
