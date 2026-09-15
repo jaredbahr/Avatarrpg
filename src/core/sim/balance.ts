@@ -123,11 +123,17 @@ export function partyOnDiscipline(
  * Win rate per discipline, above the gate.
  *
  * Act 1's encounters are all tuned for level 3 or below, so the ordinary report
- * never sees a discipline at all — it has to be forced to a level past the gate
- * to measure one. The numbers this prints are therefore a *shape* check (is one
+ * never sees a discipline at all — this forces both sides to a level past the
+ * gate and swaps one path at a time. What it prints is a *shape* check (is one
  * path miles ahead of the others?), not a statement about a fight anybody can
- * currently reach. Healing is the one to watch: a party that can undo a bad
- * round is exactly what pushes a win rate through the top of the 70-85% band.
+ * currently reach: these are Act 1 rosters stretched to a level they were never
+ * written for.
+ *
+ * Read the spread, not the rows. At the default trial count one run is worth
+ * roughly three points, so anything under about ten points apart is noise. The
+ * first real measurement will come from Act 2 encounters actually tuned for
+ * level 5+; until those exist this is a tripwire for a path that is obviously
+ * broken, nothing finer.
  */
 export function runDisciplineSweep(
   content: ContentIndex,
