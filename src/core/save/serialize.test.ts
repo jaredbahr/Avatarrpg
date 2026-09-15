@@ -17,7 +17,9 @@ import { describe, expect, it } from 'vitest';
 import { CONTENT } from '../../content';
 import { RngCursor } from '../rng';
 import { apply } from '../state/reducer';
+import { unitAbilities } from '../rules/abilities';
 import { createBattle, createGame } from '../state/createGame';
+import { reconcileDisciplines } from './reconcile';
 import type { GameState } from '../types';
 import {
   SAVE_FORMAT_VERSION,
@@ -131,6 +133,39 @@ describe('save round trip', () => {
       tally: -2,
       token: 'jade',
     });
+  });
+
+  it('leaves the universal abilities usable after a load', () => {
+    /*
+     * Shove is granted through `ContentIndex.universalAbilities` and resolved by
+     * `unitAbilities()` at read time rather than written onto `Unit.abilities`,
+     * which is what lets a save made before it existed pick it up with no
+     * migration. The cost of that design is that nothing in the save proves it
+     * survived: the ability is not *in* the blob to check.
+     *
+     * So this asserts the property rather than the storage — after a real round
+     * trip and the load-time reconciliation, can everybody still shove a barrel?
+     * It fires if `unitAbilities` stops folding the universals in, if the list
+     * empties, or if the faction rule starts excluding somebody it should not.
+     * Verified by making `unitAbilities` return `unit.abilities` unchanged:
+     * "Kaya lost Shove across a save/load".
+     *
+     * Note what it deliberately does *not* need to catch: a future
+     * `reconcileDisciplines` that rebuilds a unit's ability list from its kit
+     * cannot drop Shove, because Shove was never in the list to drop. That is
+     * the design working, not a gap.
+     */
+    const before = midBattleState();
+    const result = deserialize(serialize(before, META));
+    if (!result.ok) throw new Error(result.error);
+
+    const loaded = reconcileDisciplines(CONTENT, stateFromBlob(result.blob));
+    for (const member of loaded.party) {
+      expect(
+        unitAbilities(CONTENT, member).includes('shove'),
+        `${member.name} lost Shove across a save/load`,
+      ).toBe(true);
+    }
   });
 
   it('exports the same state it serialises, just readable', () => {
