@@ -112,6 +112,7 @@ export class CombatScene implements Scene {
     this.detach = null;
     this.inspector?.close();
     this.inspector = null;
+    this.renderer?.destroy();
     this.renderer = null;
     this.canvas = null;
     this.host = null;
@@ -183,6 +184,12 @@ export class CombatScene implements Scene {
     this.renderer = new Renderer(canvas, { width: battle.grid.width, height: battle.grid.height });
     this.renderer.resize({ width: battle.grid.width, height: battle.grid.height });
     this.renderer.camera.fit();
+
+    // The map is the only thing that flexes, so it is still the wrong size
+    // here: the turn strip and the HUD fill in after mount, and the log panel
+    // and the Large-text setting move them again later. Re-fit whenever the
+    // canvas box actually changes, or the camera drifts from what is drawn.
+    this.renderer.onViewportChange = () => this.renderer?.camera.fit();
 
     this.detach = attachPointer(canvas, {
       onTap: (point) => this.onTap(point.x, point.y),

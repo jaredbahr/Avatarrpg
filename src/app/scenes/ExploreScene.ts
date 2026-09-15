@@ -63,6 +63,7 @@ export class ExploreScene implements Scene {
     this.observer = null;
     this.detach?.();
     this.detach = null;
+    this.renderer?.destroy();
     this.renderer = null;
     this.canvas = null;
     this.host = null;
@@ -85,8 +86,17 @@ export class ExploreScene implements Scene {
 
   resize(): void {
     const map = this.map;
-    const camera = this.renderer?.camera;
     this.renderer?.resize(map ? { width: map.width, height: map.height } : undefined);
+    this.refit();
+  }
+
+  /**
+   * Re-fits after the canvas box changed. `fitExplore` centres on the middle of
+   * the map, which on a village larger than the viewport would throw the party
+   * off screen, so put them back in the middle of the frame afterwards.
+   */
+  private refit(): void {
+    const camera = this.renderer?.camera;
     if (!camera) return;
     camera.fitExplore();
     const pos = this.app.state?.location.pos;
@@ -129,6 +139,11 @@ export class ExploreScene implements Scene {
     this.renderer.resize({ width: map.width, height: map.height });
     this.renderer.camera.fitExplore();
     this.renderer.camera.centreOn(state.location.pos);
+
+    // The banner above the map can still grow — a late web font, or a longer
+    // objective on the next node — and every pixel the camera reports has to
+    // keep matching the pixels the backend draws, or taps land a tile out.
+    this.renderer.onViewportChange = () => this.refit();
 
     this.detach = attachPointer(canvas, {
       onTap: (point) => this.handleTap(point.x, point.y),

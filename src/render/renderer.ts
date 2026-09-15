@@ -37,6 +37,14 @@ export type {
 export class Renderer {
   camera: Camera;
   private backend: RenderBackend;
+  private observer: ResizeObserver | null = null;
+
+  /**
+   * Called after the element's box changed and the camera has been re-measured,
+   * so the owning scene can re-fit the way that scene wants to. Combat fits the
+   * whole grid; explore keeps its tile size and recentres.
+   */
+  onViewportChange: (() => void) | null = null;
 
   constructor(
     private canvas: HTMLCanvasElement,
@@ -44,6 +52,7 @@ export class Renderer {
   ) {
     this.camera = new Camera(this.measure(), grid);
     this.backend = Renderer.createBackend(canvas);
+    this.observe();
   }
 
   /**
@@ -105,6 +114,45 @@ export class Renderer {
     this.backend.resize(viewport);
   }
 
+  /**
+   * Re-measures whenever the canvas element's own box changes.
+   *
+   * A window `resize` event is not enough, and relying on one is what put the
+   * hover highlight a tile or two off the cursor. The canvas is `100%` of a
+   * flexed wrapper, so its height is whatever the rest of the screen leaves it:
+   * the turn strip fills with portraits and the HUD with panels *after* the
+   * scene mounts, the log panel toggles, fonts land later still, and the
+   * Large-text setting moves all of it again. None of that fires a window
+   * resize.
+   *
+   * A stale measurement is not merely a stale camera. `resize` sizes the
+   * backing store from the same numbers, so the browser then scales the frame
+   * to the box it actually has — measured here, 830 backing pixels squashed
+   * into 622 CSS ones. Every pixel the renderer computes from a pointer
+   * coordinate is then drawn somewhere else, by more the further down the map
+   * you go, which is why the highlight drifted upwards rather than by a
+   * constant amount. Keeping the two in step is the fix; nothing in `toTile`
+   * needed changing.
+   */
+  private observe(): void {
+    if (typeof ResizeObserver === 'undefined') return;
+
+    this.observer = new ResizeObserver(() => {
+      const next = this.measure();
+      const current = this.camera.viewport;
+      if (
+        next.width === current.width &&
+        next.height === current.height &&
+        next.dpr === current.dpr
+      ) {
+        return;
+      }
+      this.resize();
+      this.onViewportChange?.();
+    });
+    this.observer.observe(this.canvas);
+  }
+
   get viewport(): Viewport {
     return this.camera.viewport;
   }
@@ -115,6 +163,9 @@ export class Renderer {
 
   /** Releases GPU resources. Safe to call more than once. */
   destroy(): void {
+    this.observer?.disconnect();
+    this.observer = null;
+    this.onViewportChange = null;
     this.backend.destroy();
     sprites.clear();
   }
