@@ -7,7 +7,7 @@
  * the duplication — if you change one, change both.
  */
 
-import type { ElementId, SurfaceId, TerrainId } from '../core/types';
+import type { ElementId, StatusId, SurfaceId, TerrainId } from '../core/types';
 
 export interface Palette {
   readonly base: string;
@@ -121,6 +121,29 @@ export const OVERLAY = {
   path: 'rgba(255, 255, 255, 0.8)',
   hover: 'rgba(255, 255, 255, 0.18)',
 } as const;
+
+/** Ring drawn under a unit, so faction is readable without reading names. */
+export const FACTION_RING: Record<'party' | 'enemy' | 'ally', string> = {
+  party: OVERLAY.friendly,
+  ally: 'rgba(160, 220, 170, 0.9)',
+  enemy: OVERLAY.hostile,
+};
+
+/** Short badges drawn under a unit so statuses are visible without a tooltip. */
+export const STATUS_BADGE: Record<StatusId, { letter: string; color: string }> = {
+  burning: { letter: 'B', color: '#e0521f' },
+  wet: { letter: 'W', color: '#3e8fb0' },
+  chilled: { letter: 'C', color: '#9fd8ea' },
+  frozen: { letter: 'F', color: '#cdeefb' },
+  shocked: { letter: 'S', color: '#f0c674' },
+  stunned: { letter: '!', color: '#f0c674' },
+  slowed: { letter: '↓', color: '#bfae97' },
+  blinded: { letter: '●', color: '#8d7d69' },
+  rooted: { letter: 'R', color: '#7c5d33' },
+  chiBlocked: { letter: 'X', color: '#c3a8d8' },
+  guarded: { letter: '■', color: '#6fbf73' },
+  inspired: { letter: '★', color: '#f0c674' },
+};
 
 export const HP_COLORS = {
   high: '#6fbf73',

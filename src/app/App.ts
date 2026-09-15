@@ -334,6 +334,17 @@ export class App {
     return scene?.cameraInfo?.() ?? null;
   }
 
+  /**
+   * Which rendering backend the mounted map scene chose. Null when no map is
+   * up. Exposed so the e2e suite can assert on the choice rather than infer it.
+   */
+  rendererBackend(): 'webgl' | 'canvas' | null {
+    const scene = this.scene as unknown as {
+      renderer?: { backendName: 'webgl' | 'canvas' };
+    };
+    return scene?.renderer?.backendName ?? null;
+  }
+
   /* ---------------------------------------------------------------- */
   /* Battle resolution                                                 */
   /* ---------------------------------------------------------------- */
