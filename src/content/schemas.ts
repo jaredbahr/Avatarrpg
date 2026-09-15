@@ -16,10 +16,12 @@
  */
 
 import { z } from 'zod';
+import { STANDING_PREFIX } from '../core/story/conditions';
 import type {
   Ability,
   CharacterDef,
   ComboRule,
+  Condition,
   EncounterDef,
   EnemyDef,
   MapDef,
@@ -101,6 +103,50 @@ const unitStatMods = z
     focus: statDelta(10),
   })
   .partial();
+
+/* ------------------------------------------------------------------ */
+/* Conditions                                                          */
+/* ------------------------------------------------------------------ */
+
+const flagValue = z.union([z.boolean(), z.number(), z.string()]);
+
+/**
+ * Recursive, so `z.lazy` with an explicit annotation. A plain `z.union` rather
+ * than `z.discriminatedUnion` because the latter cannot see through `z.lazy` to
+ * find the discriminator; the error messages are a little worse and the shapes
+ * are small enough that it does not matter.
+ */
+export const conditionSchema: z.ZodType<Condition> = z.lazy(() =>
+  z.union([
+    z.object({
+      kind: z.literal('flag'),
+      key: z.string().min(1),
+      op: z.enum(['set', 'unset', 'eq', 'gte', 'lte']),
+      value: flagValue.optional(),
+    }),
+    z.object({
+      kind: z.literal('partyHas'),
+      element: elementId.optional(),
+      characterId: id.optional(),
+      min: z.number().int().min(1).max(6).optional(),
+    }),
+    z.object({
+      kind: z.literal('standing'),
+      nation: elementId,
+      op: z.enum(['gte', 'lte']),
+      value: z.number().int().min(-5).max(5),
+    }),
+    z.object({ kind: z.literal('visited'), nodeId: id }),
+    z.object({
+      kind: z.literal('partySize'),
+      op: z.enum(['gte', 'lte']),
+      value: z.number().int().min(1).max(6),
+    }),
+    z.object({ kind: z.literal('all'), of: z.array(conditionSchema).min(1) }),
+    z.object({ kind: z.literal('any'), of: z.array(conditionSchema).min(1) }),
+    z.object({ kind: z.literal('not'), of: conditionSchema }),
+  ]),
+);
 
 /* ------------------------------------------------------------------ */
 /* Statuses and surfaces                                               */
@@ -352,8 +398,6 @@ export const encounterSchema = z.object({
 /* ------------------------------------------------------------------ */
 /* Story                                                               */
 /* ------------------------------------------------------------------ */
-
-const flagValue = z.union([z.boolean(), z.number(), z.string()]);
 
 export const storyNodeSchema = z.discriminatedUnion('kind', [
   z.object({
@@ -642,6 +686,17 @@ export function validateContent(bundle: ContentBundle): string[] {
         problems.push(`encounter "${e.id}" places a unit on party spawn (${spawn.x},${spawn.y})`);
       }
     }
+
+    // Same falsy-zero trap as `branch`: conditionalEnemies compares
+    // `Boolean(flags[flag])`, which reads neutral standing as absent.
+    for (const group of e.conditionalEnemies) {
+      if (group.flag.startsWith(STANDING_PREFIX)) {
+        problems.push(
+          `encounter "${e.id}" gates enemies on "${group.flag}": standing is numeric and 0 is ` +
+            `falsy, so use a variant with a "standing" condition instead`,
+        );
+      }
+    }
   }
 
   /* --- story graph -------------------------------------------------- */
@@ -664,6 +719,17 @@ export function validateContent(bundle: ContentBundle): string[] {
         break;
       case 'branch':
         links.push([node.id, node.ifSet], [node.id, node.ifUnset]);
+        /*
+         * `branch` tests the flag for truthiness, and a standing of 0 is falsy —
+         * a neutral nation would silently take the "unset" road. Anything that
+         * needs to read standing must use a Condition, which compares numbers.
+         */
+        if (node.flag.startsWith(STANDING_PREFIX)) {
+          problems.push(
+            `story node "${node.id}" branches on "${node.flag}": standing is numeric and 0 is ` +
+              `falsy, so use a condition with "standing" instead of a branch node`,
+          );
+        }
         break;
       case 'end':
         break;

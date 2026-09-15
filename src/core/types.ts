@@ -432,6 +432,51 @@ export interface ComboRule {
 
 export type FlagValue = boolean | number | string;
 
+/**
+ * A serialisable predicate over the current game.
+ *
+ * Content asks questions — "does the party have a firebender?", "has the Fire
+ * Nation forgiven us yet?" — and this is the only vocabulary it may ask them in.
+ * Plain data, no functions, so a condition round-trips through a save, validates
+ * with zod, and can be *described* back to the player in words. That last part
+ * is not a nicety: a greyed-out dialogue option that does not say why it is
+ * greyed out is just a locked door to an eight-year-old.
+ *
+ * Evaluated by `src/core/story/conditions.ts`.
+ */
+export type Condition =
+  /**
+   * `set`/`unset` are deliberately truthiness, matching every flag reader that
+   * came before them (`branch` nodes, `conditionalEnemies`). That makes them the
+   * wrong tool for a number: a standing of 0 is falsy. Use `eq`/`gte`/`lte`, or
+   * the `standing` kind, for anything numeric.
+   */
+  | {
+      readonly kind: 'flag';
+      readonly key: string;
+      readonly op: 'set' | 'unset' | 'eq' | 'gte' | 'lte';
+      readonly value?: FlagValue;
+    }
+  /** At least `min` (default 1) living party members matching the filter. */
+  | {
+      readonly kind: 'partyHas';
+      readonly element?: ElementId;
+      readonly characterId?: string;
+      readonly min?: number;
+    }
+  /** How a nation currently feels about the party. Neutral is 0. */
+  | {
+      readonly kind: 'standing';
+      readonly nation: ElementId;
+      readonly op: 'gte' | 'lte';
+      readonly value: number;
+    }
+  | { readonly kind: 'visited'; readonly nodeId: string }
+  | { readonly kind: 'partySize'; readonly op: 'gte' | 'lte'; readonly value: number }
+  | { readonly kind: 'all'; readonly of: readonly Condition[] }
+  | { readonly kind: 'any'; readonly of: readonly Condition[] }
+  | { readonly kind: 'not'; readonly of: Condition };
+
 export interface StoryOption {
   readonly label: string;
   readonly detail: string;
