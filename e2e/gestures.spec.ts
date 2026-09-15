@@ -16,6 +16,7 @@ interface CameraInfo {
   tilePx: number;
   offsetX: number;
   offsetY: number;
+  fitted: boolean;
 }
 
 interface Point {
@@ -139,6 +140,7 @@ test.describe('zoom and pan', () => {
   test('a pinch zooms in around the fingers and offers Recentre', async ({ page }) => {
     await openFight(page);
     const before = await camera(page);
+    expect(before.fitted).toBe(true);
     const { point, tile } = await centreTile(page);
     const recentre = page.getByRole('button', { name: /^Recentre$/ });
     await expect(recentre).toBeHidden();
@@ -157,6 +159,7 @@ test.describe('zoom and pan', () => {
 
     const after = await camera(page);
     expect(after.tilePx).toBeGreaterThan(before.tilePx * 1.5);
+    expect(after.fitted).toBe(false);
     // The tile that was under the pinch is still under it.
     expect(await tileAt(page, point)).toEqual(tile);
     await expect(recentre).toBeVisible();
@@ -208,8 +211,11 @@ test.describe('zoom and pan', () => {
     );
     const recentre = page.getByRole('button', { name: /^Recentre$/ });
     await expect(recentre).toBeVisible();
+    expect((await camera(page)).fitted).toBe(false);
+
     await recentre.click();
     const back = await camera(page);
+    expect(back.fitted).toBe(true);
     expect(back.tilePx).toBeCloseTo(fitted.tilePx, 3);
     await expect(recentre).toBeHidden();
   });

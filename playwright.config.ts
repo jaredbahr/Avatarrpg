@@ -20,6 +20,16 @@ const executablePath = existsSync(PREINSTALLED_CHROMIUM) ? PREINSTALLED_CHROMIUM
 const WEBKIT = Boolean(process.env.CI) || process.env.FNT_E2E_WEBKIT === '1';
 
 /**
+ * FNT_E2E_VIEWPORT=1194x834 runs the Chromium project at another size, which
+ * is how a height-limited iPad layout is reproduced in the dev container
+ * without WebKit.
+ */
+const viewportOverride = /^(\d+)x(\d+)$/.exec(process.env.FNT_E2E_VIEWPORT ?? '');
+const SURFACE_VIEWPORT = viewportOverride
+  ? { width: Number(viewportOverride[1]), height: Number(viewportOverride[2]) }
+  : { width: 1368, height: 912 };
+
+/**
  * The container ships Chromium at PLAYWRIGHT_BROWSERS_PATH; never run
  * `playwright install` here. Tests run against the *production* build so the
  * service worker and the PWA manifest are exercised the same way the Surface
@@ -46,7 +56,7 @@ export default defineConfig({
         // Approximates the Surface in landscape: touch-only, no mouse hover.
         hasTouch: true,
         isMobile: false,
-        viewport: { width: 1368, height: 912 },
+        viewport: SURFACE_VIEWPORT,
         launchOptions: executablePath ? { executablePath } : {},
       },
     },
