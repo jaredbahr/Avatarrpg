@@ -64,8 +64,12 @@ switching devices or clearing browser data, and **Import save** on the other end
 
 ## Elemental reactions
 
-Terrain is a first-class weapon. The full table lives in
-`src/content/combos.ts`; the ones that matter most in Act 1:
+Terrain is a first-class weapon. **The game now explains this itself** — the
+full table is in **Pause → How the elements react**, and the confirm step names
+the reaction you are about to cause before you commit to it ("the oil catches —
+the fire is spreading!"). Nobody has to read this section to learn the system.
+
+The data lives in `src/content/combos.ts`; the ones that matter most in Act 1:
 
 | Combination              | Result                                        |
 | ------------------------ | --------------------------------------------- |
@@ -79,7 +83,10 @@ Terrain is a first-class weapon. The full table lives in
 | Air onto steam           | Disperses it                                  |
 
 Standing in fire costs 4 HP and applies Burning. Being **Wet** doubles lightning
-damage and makes freezing near-certain. Teach the kids that one first.
+damage and makes freezing near-certain. Teach the kids that one first — and if
+they forget, long-pressing a unit shows what they are standing in and what their
+statuses actually multiply (`lightning ×2`), read off the same numbers the
+damage roll uses.
 
 ## Architecture
 
@@ -164,8 +171,13 @@ Real tuning happens after the kids play it. These are the numbers to argue with.
   branches. If you change an XP value or add an encounter, it will tell you.
 - The e2e suite covers the parts that only break in a browser: a save/reload
   round-trip mid-fight, the service worker serving the app with the network
-  off, and every control measuring at least 48px — including at the largest
-  text setting.
+  off, every control measuring at least 48px — including at the largest text
+  setting — and the confirm step naming the reaction it is about to cause.
+- `src/core/rules/reactions.test.ts` asserts, for **every** rule in the combo
+  table, that the confirm-step forecast is identical to what the resolver then
+  does. The forecast is produced by running the real combo engine on a copy of
+  the grid rather than by describing it, so adding a rule needs no work here —
+  but changing one in a way the preview cannot express will fail the build.
 
 ## Status
 
