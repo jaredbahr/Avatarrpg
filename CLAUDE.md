@@ -11,9 +11,10 @@ Four Nations Tactics — a hot-seat tactical RPG. Read this before changing code
 2. **Determinism is a feature.** The same seed plus the same command sequence
    must yield the same event log. Saves, the AI, and the balance simulator all
    depend on it. If you add a source of randomness, thread `RngState` through.
-3. **Content is data.** Abilities, characters, enemies, maps and story nodes live
-   in `src/content/` and are validated by zod schemas in `src/content/schemas.ts`.
-   Adding an ability should never require touching `src/core/`.
+3. **Content is data.** Abilities, characters, disciplines, enemies, maps and
+   story nodes live in `src/content/` and are validated by zod schemas in
+   `src/content/schemas.ts`. Adding an ability — or a whole discipline — should
+   never require touching `src/core/`.
 4. **Non-commercial fan work.** Original characters only — no canon names. Keep
    the disclaimer in `README.md` intact.
 
@@ -21,12 +22,13 @@ Four Nations Tactics — a hot-seat tactical RPG. Read this before changing code
 
 ```
 src/core/rules/      grid, stats, damage, status, surfaces, turn order,
-                     ability resolution, leveling, difficulty scaling,
-                     line of sight, enemy AI
+                     ability resolution, leveling and disciplines, difficulty
+                     scaling, line of sight, enemy AI
 src/core/state/      createGame, the reducer (apply), the battle draft,
                      the combat log formatter
 src/core/story/      story graph traversal, flags, the rotating decider index
-src/core/save/       serialise / deserialise / migrate a save blob
+src/core/save/       serialise / deserialise / migrate a save blob, and
+                     reconcile a loaded one against the current kits
 src/core/sim/        headless combat runner used by tests and the balance report
 src/content/         all game data (see schemas.ts for the shapes)
 src/render/          Canvas 2D: camera, sprite cache, painters, Renderer
@@ -53,8 +55,19 @@ Never run `npx playwright install` in the dev container — Chromium is already 
 - The reducer is `apply(state, command) => { state, events }`. It returns a new
   state; it never mutates the one passed in. Presentation reads the events.
 - New abilities: add the data in `src/content/abilities/`, add the id to the
-  owning character kit, and the content-validation test will tell you if you
-  missed something.
+  owning character kit or discipline kit, and the content-validation test will
+  tell you if you missed something.
+- **Disciplines** (`src/content/disciplines.ts`) are the paths a character
+  commits to at level 5. A character kit runs 1, 2, 3, 5 and stops — a flat
+  grant at 1 and 2, a choice at 3, the `specialize` gate at 5 — and the chosen
+  path supplies levels 5, 7 and 10. Two rules are enforced by
+  `validateContent`, not by convention: every element keeps at least one path
+  with `requiresFlag: null`, so a table that skipped the optional story still
+  has something to take; and no two paths grant the same ability. Rarity is a
+  story flag, never a roll.
+- A new discipline needs nothing in `src/core/`. It needs a `DisciplineDef`, its
+  abilities, and its id in the `specialize` list of both characters of its
+  element.
 - Touching XP, enemy rosters or `expectedLevel`? `progression.test.ts` walks the
   real story graph and asserts the party reaches every fight at the level that
   fight is tuned for, on both branches. Do not weaken it — the balance numbers

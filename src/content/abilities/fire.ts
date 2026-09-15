@@ -134,4 +134,46 @@ export const FIRE_ABILITIES: readonly Ability[] = [
     flavor: 'Standard issue, standard result.',
     fx: 'fx.fire.blast',
   }),
+
+  /* ------------------------------------------------------------------ */
+  /* Lightning discipline                                                */
+  /* ------------------------------------------------------------------ */
+
+  ability({
+    id: 'lightning_arc',
+    name: 'Lightning Arc',
+    element: 'fire',
+    apCost: 2,
+    range: 6,
+    targeting: line(5),
+    cooldown: 3,
+    effects: [
+      { kind: 'damage', base: 8, scale: 0.8, damageType: 'lightning' },
+      { kind: 'status', status: 'shocked', duration: 2, chance: 0.6, to: 'hit' },
+    ],
+    description:
+      'A line of lightning straight down the rank. Anything standing in water takes double, and the puddle carries it to whoever else is in there.',
+    flavor: 'Separate the energies. Then let them find each other again.',
+    fx: 'fx.fire.chain',
+    tags: ['attack', 'control'],
+  }),
+  ability({
+    id: 'lightning_storm',
+    name: 'Lightning Storm',
+    element: 'fire',
+    apCost: 3,
+    range: 8,
+    targeting: blast(2),
+    cooldown: 5,
+    effects: [
+      { kind: 'damage', base: 12, scale: 1, damageType: 'lightning' },
+      { kind: 'status', status: 'shocked', duration: 3, chance: 0.8, to: 'hit' },
+      { kind: 'status', status: 'stunned', duration: 1, chance: 0.3, to: 'hit' },
+    ],
+    description:
+      'Every strike at once, over a wide patch of ground. The longest cooldown any firebender has, and worth it.',
+    flavor: 'Cold-blooded fire, they used to call it. Nothing cold about it.',
+    fx: 'fx.fire.storm',
+    tags: ['attack', 'control', 'signature'],
+  }),
 ];

@@ -147,4 +147,65 @@ export const WATER_ABILITIES: readonly Ability[] = [
     fx: 'fx.water.path',
     tags: ['surface', 'control'],
   }),
+
+  /* ------------------------------------------------------------------ */
+  /* Healing discipline                                                  */
+  /* ------------------------------------------------------------------ */
+
+  ability({
+    id: 'healing_hands',
+    name: 'Healing Hands',
+    element: 'water',
+    apCost: 2,
+    range: 1,
+    targeting: allyTarget,
+    cooldown: 1,
+    effects: [
+      { kind: 'heal', base: 14, scale: 1 },
+      { kind: 'cleanse', statuses: ['burning', 'chilled', 'blinded'] },
+    ],
+    description:
+      'Hands on, water glowing. Nearly twice what Healing Stream gives, but you have to be standing next to them.',
+    flavor: 'Close enough to hear them breathing. That is the point.',
+    fx: 'fx.water.hands',
+    tags: ['heal'],
+  }),
+  ability({
+    id: 'purifying_mist',
+    name: 'Purifying Mist',
+    element: 'water',
+    apCost: 3,
+    range: 5,
+    targeting: blast(1),
+    cooldown: 3,
+    effects: [
+      { kind: 'heal', base: 8, scale: 0.6 },
+      { kind: 'cleanse', statuses: ['burning', 'blinded', 'shocked', 'chiBlocked'] },
+      { kind: 'surface', surface: 'steam', duration: 2, area: 'area' },
+    ],
+    description:
+      'A cloud of warm mist over the whole group: heals everyone friendly inside it, and clears a chi block.',
+    flavor: 'Breathe in. You are all right.',
+    fx: 'fx.water.mist',
+    tags: ['heal', 'surface'],
+  }),
+  ability({
+    id: 'life_tide',
+    name: 'Life Tide',
+    element: 'water',
+    apCost: 3,
+    range: 6,
+    targeting: blast(2),
+    cooldown: 5,
+    effects: [
+      { kind: 'heal', base: 18, scale: 1.2 },
+      { kind: 'cleanse', statuses: ['burning', 'wet', 'chilled', 'frozen', 'shocked', 'stunned', 'slowed', 'blinded', 'rooted', 'chiBlocked'] },
+      { kind: 'status', status: 'inspired', duration: 2, chance: 1, to: 'allies' },
+    ],
+    description:
+      'Everything the healer has, poured out at once: a large heal across the whole party, every debuff gone, and everyone hits harder for two rounds.',
+    flavor: 'Not a technique. A decision.',
+    fx: 'fx.water.tide',
+    tags: ['heal', 'buff', 'signature'],
+  }),
 ];

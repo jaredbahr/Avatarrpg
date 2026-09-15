@@ -27,7 +27,7 @@ import { appendLog } from './log';
 import { absorbBattleResults, restAfterVictory, reviveParty, xpRoster } from './createGame';
 import { canUseAbility, isValidTarget, resolveAbility } from '../rules/abilities';
 import { buildGrid, distance, findPath, pathCost, posKey, samePos, tileAt } from '../rules/grid';
-import { awardXp } from '../rules/leveling';
+import { adoptDiscipline, awardXp, disciplineUnlocked } from '../rules/leveling';
 import { advanceTurn, battleOutcome, endedOnTimeLimit } from '../rules/turnOrder';
 import { canMove, isAlive } from '../rules/stats';
 import { planAiTurn } from '../rules/ai';
@@ -283,7 +283,10 @@ function handleResolveBattle(content: ContentIndex, state: GameState): StepResul
 
     party = absorbed.map((member, index) => {
       const character = member.characterId ? content.characters.get(member.characterId) : undefined;
-      const gain = awardXp(content, member, shares[index] ?? 0, character);
+      const discipline = member.disciplineId
+        ? content.disciplines.get(member.disciplineId)
+        : undefined;
+      const gain = awardXp(content, member, shares[index] ?? 0, character, discipline);
       if ((shares[index] ?? 0) > 0) {
         events.push({ type: 'xpGained', unitId: member.id, amount: shares[index] ?? 0 });
       }
@@ -298,9 +301,19 @@ function handleResolveBattle(content: ContentIndex, state: GameState): StepResul
           pendingChoices.push({
             unitId: member.id,
             level: gain.unit.level,
-            options: options as readonly [string, string],
+            kind: 'ability',
+            options,
           });
           events.push({ type: 'levelChoiceOffered', unitId: member.id, options });
+        }
+        for (const options of gain.pendingSpecializations) {
+          pendingChoices.push({
+            unitId: member.id,
+            level: gain.unit.level,
+            kind: 'discipline',
+            options,
+          });
+          events.push({ type: 'disciplineOffered', unitId: member.id, options });
         }
       }
       return gain.unit;
@@ -436,7 +449,7 @@ function handleChooseLevelUp(
   abilityId: string,
 ): StepResult {
   const index = state.pendingChoices.findIndex(
-    (c) => c.unitId === unitId && c.options.includes(abilityId),
+    (c) => c.unitId === unitId && c.kind === 'ability' && c.options.includes(abilityId),
   );
   if (index === -1) return refuse(state, 'No level-up choice is waiting for that unit.');
 
@@ -454,6 +467,62 @@ function handleChooseLevelUp(
       text: `${state.party.find((u) => u.id === unitId)?.name ?? unitId} learns ${ability?.name ?? abilityId}.`,
     },
   ];
+
+  return {
+    state: { ...state, party, pendingChoices, log: appendLog(content, null, state.log, events) },
+    events,
+  };
+}
+
+/**
+ * Commits a unit to a discipline.
+ *
+ * The pending choice lists every path the element has, locked ones included,
+ * so the dialog can show what is out there — which means this is the place the
+ * flag actually gets checked. A locked pick is refused rather than silently
+ * substituted: the player is looking at the card, and quietly giving them a
+ * different path would be worse than saying no.
+ */
+function handleChooseDiscipline(
+  content: ContentIndex,
+  state: GameState,
+  unitId: string,
+  disciplineId: string,
+): StepResult {
+  const index = state.pendingChoices.findIndex(
+    (c) => c.unitId === unitId && c.kind === 'discipline' && c.options.includes(disciplineId),
+  );
+  if (index === -1) return refuse(state, 'No path is waiting for that unit to choose.');
+
+  const discipline = content.disciplines.get(disciplineId);
+  if (!discipline) return refuse(state, 'That path does not exist.');
+  if (!disciplineUnlocked(discipline, state.flags)) {
+    return refuse(state, `${discipline.name} is not open yet. ${discipline.lockedHint}`);
+  }
+
+  const member = state.party.find((u) => u.id === unitId);
+  if (!member) return refuse(state, 'That unit is not in the party.');
+
+  const character = member.characterId ? content.characters.get(member.characterId) : undefined;
+  const adoption = adoptDiscipline(content, member, character, discipline);
+
+  const pendingChoices = state.pendingChoices.filter((_, i) => i !== index);
+  const events: GameEvent[] = [
+    {
+      type: 'disciplineChosen',
+      unitId,
+      disciplineId,
+      unlocked: adoption.granted,
+    },
+  ];
+
+  // A path may owe a technique choice at a level already reached.
+  for (const options of adoption.pendingChoices) {
+    pendingChoices.push({ unitId, level: member.level, kind: 'ability', options });
+    events.push({ type: 'levelChoiceOffered', unitId, options });
+  }
+
+  const party = state.party.map((u) => (u.id === unitId ? adoption.unit : u));
 
   return {
     state: { ...state, party, pendingChoices, log: appendLog(content, null, state.log, events) },
@@ -510,6 +579,9 @@ export function apply(content: ContentIndex, state: GameState, command: Command)
 
     case 'chooseLevelUp':
       return handleChooseLevelUp(content, state, command.unitId, command.abilityId);
+
+    case 'chooseDiscipline':
+      return handleChooseDiscipline(content, state, command.unitId, command.disciplineId);
 
     case 'setFlags': {
       const events: GameEvent[] = Object.entries(command.flags).map(([key, value]) => ({

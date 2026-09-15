@@ -106,6 +106,21 @@ export class UnitInspector extends Dialog {
       .map((id) => this.app.content.abilities.get(id))
       .filter((a): a is NonNullable<typeof a> => a !== undefined);
 
+    const discipline = unit.disciplineId
+      ? this.app.content.disciplines.get(unit.disciplineId)
+      : undefined;
+    if (discipline) {
+      body.appendChild(el('h3', { text: 'Path' }));
+      body.appendChild(
+        el(
+          'div',
+          { class: 'stack tight' },
+          el('strong', { text: discipline.name }),
+          el('span', { class: 'tiny muted', text: discipline.blurb }),
+        ),
+      );
+    }
+
     if (abilities.length > 0) {
       body.appendChild(
         el('h3', { text: unit.faction === 'enemy' ? 'What it can do' : 'Techniques' }),

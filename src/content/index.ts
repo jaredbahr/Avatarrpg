@@ -9,6 +9,7 @@
 import type { ContentIndex, StatusId, SurfaceId } from '../core/types';
 import { ABILITY_BY_ID, ALL_ABILITIES } from './abilities';
 import { CHARACTERS, CHARACTER_BY_ID } from './characters';
+import { DISCIPLINES, DISCIPLINE_BY_ID } from './disciplines';
 import { COMBOS } from './combos';
 import { ELEMENT_BY_ID } from './elements';
 import { ENCOUNTERS, ENCOUNTER_BY_ID } from './encounters';
@@ -28,6 +29,7 @@ export const ALL_STORY: readonly StoryNode[] = ACT1_NODES;
 export const CONTENT_BUNDLE: ContentBundle = {
   abilities: ALL_ABILITIES,
   characters: CHARACTERS,
+  disciplines: DISCIPLINES,
   enemies: ENEMIES,
   maps: ALL_MAPS,
   encounters: ENCOUNTERS,
@@ -42,6 +44,7 @@ export const CONTENT: ContentIndex = {
   elements: ELEMENT_BY_ID,
   abilities: ABILITY_BY_ID,
   characters: CHARACTER_BY_ID,
+  disciplines: DISCIPLINE_BY_ID,
   enemies: ENEMY_BY_ID,
   maps: new Map(ALL_MAPS.map((m) => [m.id, m])),
   encounters: ENCOUNTER_BY_ID,
@@ -54,8 +57,9 @@ export const CONTENT: ContentIndex = {
 /** The node a fresh game starts on. */
 export const STORY_ENTRY = 'act1_open';
 
-export { CHARACTERS, ENEMIES, ENCOUNTERS, STATUSES, SURFACES, COMBOS, ACT1_NODES };
+export { CHARACTERS, DISCIPLINES, ENEMIES, ENCOUNTERS, STATUSES, SURFACES, COMBOS, ACT1_NODES };
 export { ELEMENTS, ELEMENT_BY_ID, elementBase } from './elements';
 export { charactersForElement } from './characters';
+export { DISCIPLINE_BY_ID, DISCIPLINE_FLAGS, disciplinesForElement } from './disciplines';
 export { resolveAsset, ASSETS } from './assets/manifest';
 export type { AssetEntry } from './assets/manifest';
