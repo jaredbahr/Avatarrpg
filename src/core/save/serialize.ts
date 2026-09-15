@@ -82,6 +82,9 @@ const grid = z.object({
 
 const battle = z.object({
   encounterId: z.string(),
+  // `.default(null)` so a mid-battle save written before variants existed loads
+  // as the authored roster, which is exactly what it was.
+  variantId: z.string().nullable().default(null),
   mapId: z.string(),
   grid,
   units: z.array(unit),
@@ -90,6 +93,24 @@ const battle = z.object({
   round: z.number(),
   phase: z.enum(['active', 'victory', 'defeat']),
   temporaryWalls: z.array(z.object({ pos: vec2, untilRound: z.number(), previous: tile })),
+  /*
+   * `.default([])` rather than a `migrate()` case. SAVE_FORMAT_VERSION is still
+   * 1, so a mid-battle save written before props existed would otherwise fail
+   * validation outright and greet a family with "This save looks damaged
+   * (state.battle.props)". Defaulting loads it as a battle with no props, which
+   * is exactly what it was.
+   */
+  props: z
+    .array(
+      z.object({
+        id: z.string(),
+        propId: z.string(),
+        pos: vec2,
+        hp: z.number(),
+        previous: tile,
+      }),
+    )
+    .default([]),
   nextUnitSerial: z.number(),
 });
 

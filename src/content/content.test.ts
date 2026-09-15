@@ -15,6 +15,47 @@ describe('content', () => {
     expect(problems, `\n${problems.join('\n')}\n`).toEqual([]);
   });
 
+  /*
+   * Standing is stored in `flags` as a number, and 0 is falsy. Every flag reader
+   * older than conditions tests truthiness, so a neutral nation would silently
+   * read as "no standing at all" and take the wrong road. The validator is where
+   * that gets caught, so the validator is what gets tested.
+   */
+  it('refuses a branch node that reads standing through truthiness', () => {
+    const problems = validateContent({
+      ...CONTENT_BUNDLE,
+      story: [
+        ...CONTENT_BUNDLE.story,
+        {
+          id: 'standing_trap',
+          kind: 'branch',
+          flag: 'standing.fire',
+          ifSet: STORY_ENTRY,
+          ifUnset: STORY_ENTRY,
+        },
+      ],
+    });
+    expect(problems.some((p) => p.includes('standing_trap') && p.includes('0 is'))).toBe(true);
+  });
+
+  it('refuses conditional enemies gated on standing', () => {
+    const [first, ...rest] = CONTENT_BUNDLE.encounters;
+    if (!first) throw new Error('no encounters to test against');
+    const problems = validateContent({
+      ...CONTENT_BUNDLE,
+      encounters: [
+        {
+          ...first,
+          conditionalEnemies: [
+            { flag: 'standing.earth', whenSet: true, placements: first.reinforcements.slice(0, 1) },
+          ],
+        },
+        ...rest,
+      ],
+    });
+    expect(problems.some((p) => p.includes('standing.earth'))).toBe(true);
+  });
+
   it('indexes every item exactly once', () => {
     expect(CONTENT.abilities.size).toBe(CONTENT_BUNDLE.abilities.length);
     expect(CONTENT.characters.size).toBe(CONTENT_BUNDLE.characters.length);
@@ -143,6 +184,7 @@ describe('content', () => {
     for (const d of CONTENT_BUNDLE.disciplines) keys.add(d.icon);
     for (const e of CONTENT_BUNDLE.enemies) keys.add(e.sprite);
     for (const a of CONTENT_BUNDLE.abilities) keys.add(a.fx);
+    for (const p of CONTENT_BUNDLE.props) keys.add(p.sprite);
     for (const m of CONTENT_BUNDLE.maps) for (const npc of m.npcs) keys.add(npc.sprite);
     for (const node of CONTENT_BUNDLE.story) {
       if (node.kind === 'dialogue' || node.kind === 'choice') keys.add(node.portrait);

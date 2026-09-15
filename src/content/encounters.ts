@@ -33,6 +33,46 @@ export const ENCOUNTERS: readonly EncounterDef[] = [
     allies: [],
     conditionalEnemies: [],
     baselinePartySize: 3,
+    /*
+     * Three rosters at an identical 300-XP budget, and this is the whole
+     * argument for XP-as-budget in one encounter: the same cost buys three
+     * completely different lessons.
+     *
+     *   thugs     100 + 100 + 100  two in your face, one throwing rocks
+     *   slingers  100 + 100 + 100  nothing melee at all; you have to close
+     *   bruisers  150 + 150        two heavies; you have to focus fire
+     *
+     * Because `xpRoster` always scores the *authored* roster whatever spawned,
+     * all three pay exactly the same and progression.test.ts never notices.
+     */
+    variants: [
+      {
+        id: 'thugs',
+        weight: 2,
+        intro: 'They step out of the trees. They were waiting for somebody.',
+      },
+      {
+        id: 'slingers',
+        weight: 1,
+        enemies: [
+          { enemyId: 'bandit_slinger', pos: { x: 17, y: 5 } },
+          { enemyId: 'bandit_slinger', pos: { x: 18, y: 3 } },
+          { enemyId: 'bandit_slinger', pos: { x: 18, y: 7 } },
+        ],
+        intro: 'Stones come out of the trees before anybody does.',
+        tip: 'Nobody up there wants to come close. Get among them — a slinger with somebody in its face is not much use.',
+      },
+      {
+        id: 'bruisers',
+        weight: 1,
+        enemies: [
+          { enemyId: 'bandit_bruiser', pos: { x: 17, y: 5 } },
+          { enemyId: 'bandit_bruiser', pos: { x: 17, y: 7 } },
+        ],
+        intro: 'Only two of them step out. They do not look worried about it.',
+        tip: 'Two big ones instead of three small ones. Everybody hit the same one — a bruiser at half health hits just as hard as a fresh one.',
+      },
+    ],
     // Deliberately short. This is the tutorial fight: a full table should be
     // able to make mistakes here and still walk away.
     reinforcements: [
@@ -55,13 +95,47 @@ export const ENCOUNTERS: readonly EncounterDef[] = [
     allies: [],
     conditionalEnemies: [],
     baselinePartySize: 3,
+    /*
+     * The firebender's bluff at the gate does not skip the fight — it changes
+     * who is in it. The deserter steps back rather than raise a hand to Fire
+     * Nation colours, and the quarry crew comes forward in his place, angrier
+     * for having been left to it.
+     *
+     * Same 450-XP cost as the authored roster (150 x 3 against 200 + 100 + 150),
+     * and a very different fight: no firebender on the field means the oil only
+     * lights if *you* light it.
+     */
+    variants: [
+      {
+        id: 'bluffed',
+        weight: 1,
+        when: { kind: 'flag', key: 'gate_fire_bluff', op: 'set' },
+        enemies: [
+          { enemyId: 'bandit_bruiser', pos: { x: 16, y: 3 } },
+          { enemyId: 'bandit_earthbender', pos: { x: 17, y: 6 } },
+          { enemyId: 'bandit_bruiser', pos: { x: 16, y: 8 } },
+        ],
+        intro:
+          'The deserter looks at your colours, looks at the ground, and steps back off the gate. The quarry crew does not.',
+        tip: 'Nobody up there bends fire any more — so the oil only goes up if you light it. That makes the brazier yours to spend.',
+      },
+    ],
     // Also short: the oil is what makes this fight, not the head count.
     reinforcements: [
       { enemyId: 'bandit_slinger', pos: { x: 17, y: 9 } },
       { enemyId: 'bandit_thug', pos: { x: 17, y: 4 } },
     ],
     intro: 'Barrels are stacked against the gatehouse, and the ground around them is slick.',
-    tip: 'That dark stripe down the middle is spilled oil. Fire turns it into a spreading blaze — so either stay off it, or wash it away with water first.',
+    /*
+     * This used to say "or wash it away with water first". It does not work:
+     * `water-into-oil` in combos.ts keeps the oil and prints "The oil floats on
+     * the water, untouched." Teaching a child a plan the rules refuse is worse
+     * than teaching them nothing.
+     *
+     * Burning it off early *is* a real counter — fire on oil expires after a few
+     * rounds and leaves bare ground — so the tip now points at that.
+     */
+    tip: 'That dark stripe down the middle is spilled oil. Fire turns it into a spreading blaze that chases people — so either stay off it, or light it early, while nobody is standing in it.',
   },
   {
     id: 'enc_ambush',
@@ -76,6 +150,7 @@ export const ENCOUNTERS: readonly EncounterDef[] = [
     allies: [{ enemyId: 'ruon_ally', pos: { x: 5, y: 5 } }],
     conditionalEnemies: [],
     baselinePartySize: 3,
+    variants: [],
     reinforcements: [
       { enemyId: 'merc_blade', pos: { x: 16, y: 7 } },
       { enemyId: 'merc_crossbow', pos: { x: 18, y: 8 } },
@@ -106,6 +181,7 @@ export const ENCOUNTERS: readonly EncounterDef[] = [
       },
     ],
     baselinePartySize: 3,
+    variants: [],
     reinforcements: [
       { enemyId: 'bandit_thug', pos: { x: 14, y: 3 } },
       { enemyId: 'bandit_thug', pos: { x: 14, y: 8 } },

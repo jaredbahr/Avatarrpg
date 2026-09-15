@@ -13,14 +13,17 @@
 import { RngCursor } from '../rng';
 import type {
   ContentIndex,
+  ElementId,
   GameEvent,
   GameState,
   PendingChoice,
   StepResult,
   StoryNode,
+  StoryOption,
 } from '../types';
 import { awardXp } from '../rules/leveling';
 import { createBattle } from '../state/createGame';
+import { adjustStanding, evaluate, getStanding } from './conditions';
 
 const MAX_CHAIN = 32;
 
@@ -78,6 +81,41 @@ function grantPartyXp(
 export function currentNode(content: ContentIndex, state: GameState): StoryNode | undefined {
   if (!state.story.nodeId) return undefined;
   return content.story.get(state.story.nodeId);
+}
+
+/**
+ * The lines a node actually says right now.
+ *
+ * A node carries its base text plus any number of variants, and the first
+ * variant whose condition holds wins. That is a fallback chain rather than a
+ * matrix on purpose: five elements times ten characters times a growing pile of
+ * flags is not something anyone can hand-author, so the base line is written
+ * once and a variant is added only where somebody would genuinely say something
+ * different. Presentation reads this; nothing else needs to know variants exist.
+ */
+export function resolveDialogue(
+  state: GameState,
+  node: Extract<StoryNode, { kind: 'dialogue' | 'choice' }>,
+): { speaker: string; portrait: string; lines: readonly string[] } {
+  const base = {
+    speaker: node.speaker,
+    portrait: node.portrait,
+    lines: node.kind === 'dialogue' ? node.lines : [node.prompt],
+  };
+  for (const variant of node.variants ?? []) {
+    if (!evaluate(state, variant.when)) continue;
+    return {
+      speaker: variant.speaker ?? base.speaker,
+      portrait: variant.portrait ?? base.portrait,
+      lines: variant.lines,
+    };
+  }
+  return base;
+}
+
+/** Is this option available to the party as it stands? */
+export function optionAvailable(state: GameState, option: StoryOption): boolean {
+  return evaluate(state, option.requires);
 }
 
 /** Spawn position for the party on an explore map. */
@@ -212,7 +250,7 @@ export function advanceDialogue(content: ContentIndex, state: GameState): StepRe
   if (!node || node.kind !== 'dialogue') return { state, events: [] };
 
   const nextLine = state.story.lineIndex + 1;
-  if (nextLine < node.lines.length) {
+  if (nextLine < resolveDialogue(state, node).lines.length) {
     return {
       state: { ...state, story: { ...state.story, lineIndex: nextLine } },
       events: [{ type: 'dialogueAdvanced', lineIndex: nextLine }],
@@ -243,12 +281,42 @@ export function chooseOption(
     };
   }
 
+  /*
+   * The UI draws locked options greyed out rather than hiding them, so a tap can
+   * still arrive here for one the party cannot take. Refuse it in the rules
+   * rather than trusting the button's disabled attribute.
+   */
+  if (!optionAvailable(state, option)) {
+    return {
+      state,
+      events: [
+        {
+          type: 'message',
+          text: option.lockedHint ?? 'Nobody in the party could say that.',
+        },
+      ],
+    };
+  }
+
   const events: GameEvent[] = [];
   let flags = state.flags;
   if (option.setFlags) {
     flags = { ...flags, ...option.setFlags };
     for (const [key, value] of Object.entries(option.setFlags)) {
       events.push({ type: 'flagSet', key, value });
+    }
+  }
+
+  if (option.adjust) {
+    flags = adjustStanding(flags, option.adjust);
+    for (const [nation, delta] of Object.entries(option.adjust)) {
+      if (!delta) continue;
+      events.push({
+        type: 'standingChanged',
+        nation: nation as ElementId,
+        value: getStanding(flags, nation as ElementId),
+        delta,
+      });
     }
   }
 
@@ -262,7 +330,7 @@ export function chooseOption(
   return { state: result.state, events: [...events, ...result.events] };
 }
 
-/** The story node an NPC opens, honouring its flag-gated alternative. */
+/** The story node an NPC opens, honouring its conditional routes. */
 export function npcNode(
   content: ContentIndex,
   state: GameState,
@@ -272,7 +340,9 @@ export function npcNode(
   const map = content.maps.get(mapId);
   const npc = map?.npcs.find((n) => n.id === npcId);
   if (!npc) return null;
-  if (npc.altFlag && npc.altNode && state.flags[npc.altFlag]) return npc.altNode;
+  for (const route of npc.routes ?? []) {
+    if (evaluate(state, route.when)) return route.node;
+  }
   return npc.node;
 }
 

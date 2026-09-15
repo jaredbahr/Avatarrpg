@@ -421,6 +421,43 @@
   font-size: 1.05rem;
 }
 
+/*
+ * Who in the party would say this. The Speaker Choice has no separate step —
+ * picking a fire-tagged line is picking the firebender — so the tag has to be
+ * the first thing read, before the words themselves.
+ */
+.speaker-tag {
+  font-size: 0.8rem;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--c-gold-soft);
+  border: 1px solid currentColor;
+  border-radius: 999px;
+  padding: 0.1rem var(--sp-2);
+}
+
+/*
+ * A locked option stays on screen, at full size, still legible. It is dimmed
+ * rather than hidden because seeing what a different party could have said is
+ * the thing that earns a second playthrough — and it keeps its full tap target,
+ * which e2e/touch.spec.ts enforces at 48px on every visible control.
+ */
+.choice-option.is-locked {
+  opacity: 0.55;
+  cursor: not-allowed;
+  border-style: dashed;
+}
+
+.choice-option.is-locked .speaker-tag {
+  color: var(--c-ink-dim);
+}
+
+.locked-hint {
+  font-size: 0.85rem;
+  color: var(--c-gold-soft);
+  font-style: italic;
+}
+
 .teaser {
   border-left: var(--accent-bar) solid var(--c-gold);
   padding-left: var(--sp-3);

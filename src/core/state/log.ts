@@ -73,6 +73,31 @@ export function describeEvent(
     case 'unitDied':
       return `${nameOf(units, event.unitId)} is down!`;
 
+    /*
+     * Props get their own cases rather than borrowing the unit ones, because
+     * `nameOf` falls back to the raw id and would print "prop3 is shoved back"
+     * into a log written for an eight-year-old.
+     */
+    case 'propDamaged':
+      return null;
+
+    case 'propDestroyed':
+      // The prop's own plain-words line, exactly like a combo rule's label.
+      return event.label;
+
+    case 'propPushed': {
+      const name = battle?.props.find((p) => p.id === event.propId)?.propId;
+      const def = name ? content.props.get(name) : undefined;
+      return `${def?.name ?? 'It'} slides across the ground.`;
+    }
+
+    case 'standingChanged': {
+      const nation = content.elements.get(event.nation)?.name ?? event.nation;
+      return event.delta > 0
+        ? `Word travels. ${nation} thinks a little better of you.`
+        : `Word travels. ${nation} will remember that.`;
+    }
+
     case 'xpGained':
       return null;
 

@@ -20,6 +20,8 @@ import type {
   DamageType,
   GameEvent,
   Grid,
+  PropDef,
+  PropInstance,
   StatusId,
   SurfaceId,
   TemporaryWall,
@@ -69,8 +71,10 @@ export class BattleDraft {
   round: number;
   phase: BattlePhase;
   temporaryWalls: TemporaryWall[];
+  props: PropInstance[];
   nextUnitSerial: number;
   readonly encounterId: string;
+  readonly variantId: string | null;
   readonly mapId: string;
   readonly events: GameEvent[] = [];
 
@@ -86,14 +90,17 @@ export class BattleDraft {
     this.round = battle.round;
     this.phase = battle.phase;
     this.temporaryWalls = [...battle.temporaryWalls];
+    this.props = [...battle.props];
     this.nextUnitSerial = battle.nextUnitSerial;
     this.encounterId = battle.encounterId;
+    this.variantId = battle.variantId;
     this.mapId = battle.mapId;
   }
 
   toBattle(): BattleState {
     return {
       encounterId: this.encounterId,
+      variantId: this.variantId,
       mapId: this.mapId,
       grid: this.grid,
       units: this.units,
@@ -102,6 +109,7 @@ export class BattleDraft {
       round: this.round,
       phase: this.phase,
       temporaryWalls: this.temporaryWalls,
+      props: this.props,
       nextUnitSerial: this.nextUnitSerial,
     };
   }
@@ -288,23 +296,26 @@ export class BattleDraft {
   }
 
   /**
-   * Shoves a unit directly away from (push) or toward (pull) an origin, one
-   * tile at a time, stopping at the first tile it cannot enter. Stopping early
-   * against a wall is deliberate: "shove them into the cliff" should do
-   * something, and something is better than nothing happening at all.
+   * Walks one tile at a time away from (push) or toward (pull) an origin,
+   * stopping at the first tile that cannot be entered. Shared by units and props
+   * so the two never drift apart on what "shoved into a wall" means.
+   *
+   * Stopping early against a wall is deliberate: "shove them into the cliff"
+   * should do something, and something is better than nothing happening at all.
    */
-  shove(unitId: string, origin: Vec2, tiles: number, mode: 'push' | 'pull'): void {
-    const unit = this.unit(unitId);
-    if (!unit || !isAlive(unit) || tiles <= 0) return;
-
+  private slideFrom(
+    ctx: MoveContext,
+    from: Vec2,
+    origin: Vec2,
+    tiles: number,
+    mode: 'push' | 'pull',
+  ): Vec2 {
     const sign = mode === 'push' ? 1 : -1;
-    const dx = Math.sign(unit.pos.x - origin.x) * sign;
-    const dy = Math.sign(unit.pos.y - origin.y) * sign;
-    if (dx === 0 && dy === 0) return;
+    const dx = Math.sign(from.x - origin.x) * sign;
+    const dy = Math.sign(from.y - origin.y) * sign;
+    if (dx === 0 && dy === 0) return from;
 
-    const ctx = this.moveContext(unit);
-    let current = unit.pos;
-
+    let current = from;
     for (let step = 0; step < tiles; step++) {
       const next = { x: current.x + dx, y: current.y + dy };
       if (!inBounds(this.grid, next)) break;
@@ -313,10 +324,252 @@ export class BattleDraft {
       if (enterCost(ctx, next) === null) break;
       current = next;
     }
+    return current;
+  }
 
+  shove(unitId: string, origin: Vec2, tiles: number, mode: 'push' | 'pull'): void {
+    const unit = this.unit(unitId);
+    if (!unit || !isAlive(unit) || tiles <= 0) return;
+
+    const current = this.slideFrom(this.moveContext(unit), unit.pos, origin, tiles, mode);
     if (samePos(current, unit.pos)) return;
     this.placeUnit(unitId, current);
     this.emit({ type: 'unitPushed', unitId, to: current });
+  }
+
+  /* ---------------------------------------------------------------- */
+  /* Props                                                             */
+  /* ---------------------------------------------------------------- */
+
+  propAt(pos: Vec2): PropInstance | undefined {
+    const key = posKey(pos);
+    return this.props.find((p) => posKey(p.pos) === key);
+  }
+
+  propsOnTiles(tiles: readonly Vec2[]): PropInstance[] {
+    const keys = new Set(tiles.map(posKey));
+    return this.props.filter((p) => keys.has(posKey(p.pos)));
+  }
+
+  propDef(prop: PropInstance): PropDef | undefined {
+    return this.content.props.get(prop.propId);
+  }
+
+  private replaceProp(prop: PropInstance): void {
+    const index = this.props.findIndex((p) => p.id === prop.id);
+    if (index === -1) this.props.push(prop);
+    else this.props[index] = prop;
+  }
+
+  /**
+   * Bakes a prop's spatial flags into the tile it stands on and journals the
+   * tile it replaced.
+   *
+   * This is the `raiseWall` pattern, and it is the whole reason props cost almost
+   * nothing to integrate: movement, line of sight, cover and the AI's positional
+   * scoring all read `Tile`, so a prop that writes itself into the tile is
+   * visible to every one of them without a single call site changing.
+   */
+  placeProp(propId: string, pos: Vec2): PropInstance | undefined {
+    const def = this.content.props.get(propId);
+    const tile = tileAt(this.grid, pos);
+    if (!def || !tile) return undefined;
+
+    const instance: PropInstance = {
+      id: `prop${this.nextUnitSerial++}`,
+      propId,
+      pos,
+      hp: def.hp,
+      previous: tile,
+    };
+    this.props.push(instance);
+    this.bakeProp(instance, def);
+    return instance;
+  }
+
+  private bakeProp(prop: PropInstance, def: PropDef): void {
+    if (!def.blocksMove && !def.blocksSight && !def.grantsCover) return;
+    const tile = tileAt(this.grid, prop.pos);
+    if (!tile) return;
+    this.grid = withTile(this.grid, prop.pos, {
+      ...tile,
+      blocked: tile.blocked || def.blocksMove,
+      blocksSight: tile.blocksSight || def.blocksSight,
+      cover: tile.cover || def.grantsCover,
+    });
+  }
+
+  /**
+   * Damage to a prop is flat: no to-hit roll, no crit, no defence.
+   *
+   * That is not laziness. `previewAbility` promises it "consumes no RNG, so
+   * opening and closing the preview a dozen times cannot change the outcome" —
+   * rolling against props would either break that promise or make the preview
+   * lie about what is going to happen.
+   */
+  damageProps(tiles: readonly Vec2[], amount: number, damageType: DamageType): void {
+    if (amount <= 0) return;
+    for (const prop of this.propsOnTiles(tiles)) {
+      this.damageProp(prop.id, amount, damageType);
+    }
+  }
+
+  damageProp(propId: string, amount: number, damageType: DamageType): void {
+    const prop = this.props.find((p) => p.id === propId);
+    if (!prop) return;
+    const def = this.propDef(prop);
+    if (!def) return;
+
+    if (def.immuneTo.includes(damageType)) return;
+    const dealt = def.vulnerableTo.includes(damageType) ? amount * 2 : amount;
+    const hp = prop.hp - dealt;
+
+    this.emit({ type: 'propDamaged', propId, name: def.name, amount: dealt, pos: prop.pos });
+
+    if (hp > 0) {
+      this.replaceProp({ ...prop, hp });
+      return;
+    }
+    this.breakProp(propId);
+  }
+
+  /**
+   * Breaks a prop and runs what it was holding.
+   *
+   * The tile is restored *first*. `paintSurface` and `applyImpact` both skip a
+   * blocked tile, so a barrel that is still standing when its own water is
+   * painted would be painting onto itself and getting nothing.
+   */
+  breakProp(propId: string): void {
+    const prop = this.props.find((p) => p.id === propId);
+    if (!prop) return;
+    const def = this.propDef(prop);
+
+    this.props = this.props.filter((p) => p.id !== propId);
+    this.grid = withTile(this.grid, prop.pos, prop.previous);
+    if (!def) return;
+
+    this.emit({ type: 'propDestroyed', propId, pos: prop.pos, label: def.breakLabel });
+
+    for (const effect of def.onBreak) {
+      const tiles = this.tilesAround(prop.pos, effect.radius);
+      switch (effect.kind) {
+        case 'surface':
+          this.paint(tiles, effect.surface, effect.duration, null);
+          break;
+        case 'damage':
+          for (const tile of tiles) {
+            const victim = this.unitAt(tile);
+            if (!victim) continue;
+            this.dealDamage(victim.id, effect.base, effect.damageType, null, {
+              applyMultiplier: true,
+            });
+          }
+          // The ground reacts too, so a brazier's coals can find the oil.
+          this.impact(tiles, effect.damageType, null);
+          break;
+        case 'status':
+          for (const tile of tiles) {
+            const victim = this.unitAt(tile);
+            if (!victim || !isAlive(victim)) continue;
+            if (!this.rng.chance(effect.chance)) continue;
+            this.applyStatusTo(victim.id, effect.status, effect.duration);
+          }
+          break;
+        case 'push':
+          for (const tile of tiles) {
+            const victim = this.unitAt(tile);
+            if (!victim) continue;
+            this.shove(victim.id, prop.pos, effect.distance, 'push');
+          }
+          break;
+      }
+    }
+  }
+
+  /** Shoves a prop, if it is the sort of prop that shoves. */
+  shoveProp(propId: string, origin: Vec2, tiles: number, mode: 'push' | 'pull'): void {
+    const prop = this.props.find((p) => p.id === propId);
+    if (!prop || tiles <= 0) return;
+    const def = this.propDef(prop);
+    if (!def || !def.pushable) return;
+
+    // Unbake before pathing, or a blocking prop's own tile reads as impassable
+    // and nothing can ever move.
+    this.grid = withTile(this.grid, prop.pos, prop.previous);
+
+    const ctx: MoveContext = {
+      grid: this.grid,
+      blocked: this.blockedCells(),
+      surfaces: this.content.surfaces,
+      size: 1,
+    };
+    const landing = this.slideFrom(ctx, prop.pos, origin, tiles, mode);
+
+    if (samePos(landing, prop.pos)) {
+      this.bakeProp(prop, def);
+      return;
+    }
+
+    const arriving = tileAt(this.grid, landing);
+    if (!arriving) {
+      this.bakeProp(prop, def);
+      return;
+    }
+
+    const moved: PropInstance = { ...prop, pos: landing, previous: arriving };
+    this.replaceProp(moved);
+    this.bakeProp(moved, def);
+    this.emit({ type: 'propPushed', propId, to: landing });
+
+    // A barrel rolled into a fire is the point of barrels.
+    const contact = contactEffects(this.content, this.grid, landing);
+    if (contact.damage > 0) this.damageProp(propId, contact.damage, contact.damageType);
+  }
+
+  /**
+   * The worst damaging surface a prop is standing in, or standing next to.
+   *
+   * The neighbour check exists because a solid prop bakes `blocked` into its own
+   * tile, and `paintSurface` refuses to paint a blocked tile — so fire can never
+   * appear *underneath* a hay bale. Physically that is right (there is a bale
+   * there, not ground), but "the fire reached the hay and nothing happened" is
+   * the wrong answer to the only question a player is asking. For a solid prop,
+   * the fire at its feet is in the next tile over, so that is where we look.
+   */
+  private surfaceExposure(
+    prop: PropInstance,
+  ): { damage: number; damageType: DamageType } | undefined {
+    const own = contactEffects(this.content, this.grid, prop.pos);
+    if (own.damage > 0) return { damage: own.damage, damageType: own.damageType };
+
+    const tile = tileAt(this.grid, prop.pos);
+    if (!tile?.blocked) return undefined;
+
+    let worst: { damage: number; damageType: DamageType } | undefined;
+    for (const dir of DIRECTIONS) {
+      const neighbour = { x: prop.pos.x + dir.x, y: prop.pos.y + dir.y };
+      if (!inBounds(this.grid, neighbour)) continue;
+      const contact = contactEffects(this.content, this.grid, neighbour);
+      if (contact.damage <= 0) continue;
+      if (!worst || contact.damage > worst.damage) {
+        worst = { damage: contact.damage, damageType: contact.damageType };
+      }
+    }
+    return worst;
+  }
+
+  /** Cells within `radius` of a centre, clamped to the grid. */
+  private tilesAround(centre: Vec2, radius: number): Vec2[] {
+    if (radius <= 0) return [centre];
+    const out: Vec2[] = [];
+    for (let dy = -radius; dy <= radius; dy++) {
+      for (let dx = -radius; dx <= radius; dx++) {
+        const pos = { x: centre.x + dx, y: centre.y + dy };
+        if (inBounds(this.grid, pos)) out.push(pos);
+      }
+    }
+    return out;
   }
 
   /* ---------------------------------------------------------------- */
@@ -422,6 +675,19 @@ export class BattleDraft {
       if (!change.to) continue;
       const occupant = this.unitAt(change.pos);
       if (occupant) this.applyContact(occupant.id);
+    }
+
+    /*
+     * Props burn too. Without this, fire creeping across the map stops dead at a
+     * hay bale, which is exactly backwards — and "light the oil at one end of the
+     * line of flasks" is the sort of plan the whole feature exists to reward.
+     *
+     * Snapshotted because breaking one prop can paint fire onto the next.
+     */
+    for (const prop of [...this.props]) {
+      if (!this.props.some((p) => p.id === prop.id)) continue;
+      const exposure = this.surfaceExposure(prop);
+      if (exposure) this.damageProp(prop.id, exposure.damage, exposure.damageType);
     }
   }
 

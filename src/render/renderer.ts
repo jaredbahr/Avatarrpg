@@ -66,11 +66,27 @@ export interface NpcMarker {
   readonly name: string;
 }
 
+/**
+ * A prop, flattened for drawing.
+ *
+ * `hp`/`maxHp` rather than a `PropDef`: the renderer never reads content, so the
+ * scene resolves the definition and hands over only what gets painted.
+ */
+export interface RenderProp {
+  readonly id: string;
+  readonly pos: Vec2;
+  readonly sprite: string;
+  readonly name: string;
+  readonly hp: number;
+  readonly maxHp: number;
+}
+
 export interface MapView {
   readonly grid: Grid;
   readonly units: readonly RenderUnit[];
   readonly overlays: readonly OverlayLayer[];
   readonly npcs: readonly NpcMarker[];
+  readonly props: readonly RenderProp[];
   readonly path: readonly Vec2[];
   readonly fx: readonly FxInstance[];
   readonly floaters: readonly Floater[];
@@ -161,6 +177,7 @@ export class Renderer {
     this.drawPath(view);
     this.drawExit(view);
     this.drawNpcs(view);
+    this.drawProps(view);
     this.drawUnits(view);
     this.drawFx(view);
     this.drawFloaters(view);
@@ -261,6 +278,33 @@ export class Renderer {
       ctx.beginPath();
       ctx.arc(box.x + box.size * 0.5, box.y + box.size * 0.08, box.size * 0.07, 0, Math.PI * 2);
       ctx.fill();
+      ctx.restore();
+    }
+  }
+
+  private drawProps(view: MapView): void {
+    const { ctx, camera } = this;
+
+    for (const prop of view.props) {
+      if (!camera.isVisible(prop.pos)) continue;
+      const box = camera.toScreen(prop.pos);
+      const sprite = sprites.get(prop.sprite, box.size, { facing: 1 });
+      ctx.drawImage(sprite, box.x, box.y, box.size, box.size);
+
+      /*
+       * A damage bar only once it has been hit. Showing a full bar on every
+       * barrel would read as "these are enemies"; showing a dented one reads as
+       * "this is nearly open", which is the only thing worth communicating.
+       */
+      if (prop.hp >= prop.maxHp || prop.maxHp <= 0) continue;
+      const w = box.size * 0.6;
+      const x = box.x + (box.size - w) / 2;
+      const y = box.y + box.size * 0.9;
+      ctx.save();
+      ctx.fillStyle = 'rgba(0, 0, 0, 0.55)';
+      ctx.fillRect(x, y, w, Math.max(2, box.size * 0.05));
+      ctx.fillStyle = '#d9a441';
+      ctx.fillRect(x, y, (w * prop.hp) / prop.maxHp, Math.max(2, box.size * 0.05));
       ctx.restore();
     }
   }

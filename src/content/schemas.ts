@@ -16,14 +16,17 @@
  */
 
 import { z } from 'zod';
+import { STANDING_PREFIX } from '../core/story/conditions';
 import type {
   Ability,
   CharacterDef,
   ComboRule,
+  Condition,
   DisciplineDef,
   EncounterDef,
   EnemyDef,
   MapDef,
+  PropDef,
   StatusDef,
   StoryNode,
   SurfaceDef,
@@ -102,6 +105,50 @@ const unitStatMods = z
     focus: statDelta(10),
   })
   .partial();
+
+/* ------------------------------------------------------------------ */
+/* Conditions                                                          */
+/* ------------------------------------------------------------------ */
+
+const flagValue = z.union([z.boolean(), z.number(), z.string()]);
+
+/**
+ * Recursive, so `z.lazy` with an explicit annotation. A plain `z.union` rather
+ * than `z.discriminatedUnion` because the latter cannot see through `z.lazy` to
+ * find the discriminator; the error messages are a little worse and the shapes
+ * are small enough that it does not matter.
+ */
+export const conditionSchema: z.ZodType<Condition> = z.lazy(() =>
+  z.union([
+    z.object({
+      kind: z.literal('flag'),
+      key: z.string().min(1),
+      op: z.enum(['set', 'unset', 'eq', 'gte', 'lte']),
+      value: flagValue.optional(),
+    }),
+    z.object({
+      kind: z.literal('partyHas'),
+      element: elementId.optional(),
+      characterId: id.optional(),
+      min: z.number().int().min(1).max(6).optional(),
+    }),
+    z.object({
+      kind: z.literal('standing'),
+      nation: elementId,
+      op: z.enum(['gte', 'lte']),
+      value: z.number().int().min(-5).max(5),
+    }),
+    z.object({ kind: z.literal('visited'), nodeId: id }),
+    z.object({
+      kind: z.literal('partySize'),
+      op: z.enum(['gte', 'lte']),
+      value: z.number().int().min(1).max(6),
+    }),
+    z.object({ kind: z.literal('all'), of: z.array(conditionSchema).min(1) }),
+    z.object({ kind: z.literal('any'), of: z.array(conditionSchema).min(1) }),
+    z.object({ kind: z.literal('not'), of: conditionSchema }),
+  ]),
+);
 
 /* ------------------------------------------------------------------ */
 /* Statuses and surfaces                                               */
@@ -282,6 +329,62 @@ export const enemySchema = z.object({
   description: z.string().min(1),
 });
 
+/* ------------------------------------------------------------------ */
+/* Props                                                               */
+/* ------------------------------------------------------------------ */
+
+const propEffect = z.discriminatedUnion('kind', [
+  z.object({
+    kind: z.literal('surface'),
+    surface: surfaceId,
+    duration: z.number().int().min(-1).max(8),
+    radius: z.number().int().min(0).max(2),
+  }),
+  z.object({
+    kind: z.literal('damage'),
+    // Capped low on purpose: the danger of a prop is the surface it leaves,
+    // not the hit. Nothing here should take a party member from healthy to down.
+    base: z.number().int().min(1).max(12),
+    damageType,
+    radius: z.number().int().min(0).max(2),
+  }),
+  z.object({
+    kind: z.literal('status'),
+    status: statusId,
+    duration: z.number().int().min(1).max(6),
+    chance: z.number().min(0).max(1),
+    radius: z.number().int().min(0).max(2),
+  }),
+  z.object({
+    kind: z.literal('push'),
+    distance: z.number().int().min(1).max(3),
+    radius: z.number().int().min(0).max(2),
+  }),
+]);
+
+export const propSchema = z.object({
+  id,
+  name: z.string().min(1),
+  description: z.string().min(1),
+  sprite: z.string().min(1),
+  // A prop should break when somebody decides to break it, not after three turns.
+  hp: z.number().int().min(1).max(20),
+  blocksMove: z.boolean(),
+  blocksSight: z.boolean(),
+  grantsCover: z.boolean(),
+  pushable: z.boolean(),
+  vulnerableTo: z.array(damageType),
+  immuneTo: z.array(damageType),
+  onBreak: z.array(propEffect).min(1),
+  breakLabel: z.string().min(8),
+});
+
+const propPlacement = z.object({
+  propId: id,
+  pos: vec2,
+  when: conditionSchema.optional(),
+});
+
 const tileTemplate = z.object({
   terrain: terrainId,
   elevation: z.number().int().min(0).max(3).optional(),
@@ -309,10 +412,10 @@ export const mapSchema = z
         pos: vec2,
         sprite: z.string().min(1),
         node: id,
-        altFlag: z.string().optional(),
-        altNode: id.optional(),
+        routes: z.array(z.object({ when: conditionSchema, node: id })).optional(),
       }),
     ),
+    props: z.array(propPlacement),
     ambience: z.string().min(1),
     exit: z.object({ pos: vec2, label: z.string().min(1) }).optional(),
   })
@@ -363,6 +466,17 @@ export const encounterSchema = z.object({
     }),
   ),
   baselinePartySize: z.number().int().min(1).max(6),
+  variants: z.array(
+    z.object({
+      id,
+      weight: z.number().min(0).max(100),
+      when: conditionSchema.optional(),
+      enemies: z.array(placement).min(1).optional(),
+      extraProps: z.array(propPlacement).optional(),
+      intro: z.string().min(1).optional(),
+      tip: z.string().min(1).optional(),
+    }),
+  ),
   reinforcements: z.array(placement),
   expectedLevel: z.number().int().min(1).max(10),
   intro: z.string().min(1),
@@ -373,7 +487,23 @@ export const encounterSchema = z.object({
 /* Story                                                               */
 /* ------------------------------------------------------------------ */
 
-const flagValue = z.union([z.boolean(), z.number(), z.string()]);
+const dialogueVariant = z.object({
+  when: conditionSchema,
+  speaker: z.string().min(1).optional(),
+  portrait: z.string().min(1).optional(),
+  lines: z.array(z.string().min(1)).min(1),
+});
+
+/** Signed nation-standing deltas. Bounded so one choice cannot swing a nation. */
+const standingAdjust = z
+  .object({
+    fire: z.number().int().min(-3).max(3),
+    water: z.number().int().min(-3).max(3),
+    earth: z.number().int().min(-3).max(3),
+    air: z.number().int().min(-3).max(3),
+    nonbender: z.number().int().min(-3).max(3),
+  })
+  .partial();
 
 export const storyNodeSchema = z.discriminatedUnion('kind', [
   z.object({
@@ -383,6 +513,7 @@ export const storyNodeSchema = z.discriminatedUnion('kind', [
     portrait: z.string().min(1),
     lines: z.array(z.string().min(1)).min(1),
     next: id,
+    variants: z.array(dialogueVariant).optional(),
   }),
   z.object({
     id,
@@ -397,9 +528,17 @@ export const storyNodeSchema = z.discriminatedUnion('kind', [
           detail: z.string().min(1),
           next: id,
           setFlags: z.record(flagValue).optional(),
+          requires: conditionSchema.optional(),
+          speaker: z
+            .object({ element: elementId.optional(), characterId: id.optional() })
+            .optional(),
+          lockedHint: z.string().min(1).optional(),
+          adjust: standingAdjust.optional(),
         }),
       )
       .min(2),
+    variants: z.array(dialogueVariant).optional(),
+    footer: z.string().min(1).optional(),
   }),
   z.object({ id, kind: z.literal('battle'), encounterId: id, next: id, onDefeat: id }),
   z.object({
@@ -439,9 +578,19 @@ export interface ContentBundle {
   readonly encounters: readonly EncounterDef[];
   readonly statuses: readonly StatusDef[];
   readonly surfaces: readonly SurfaceDef[];
+  readonly props: readonly PropDef[];
   readonly combos: readonly ComboRule[];
   readonly story: readonly StoryNode[];
 }
+
+/**
+ * How far a roster variant may drift from the authored roster's XP cost.
+ *
+ * Ten percent is roughly "one thug either way on a three-bandit fight" — enough
+ * slack to build a genuinely different squad out of the pieces available, tight
+ * enough that no variant is secretly the easy route.
+ */
+export const VARIANT_BUDGET_TOLERANCE = 0.1;
 
 function duplicates(ids: readonly string[]): string[] {
   const seen = new Set<string>();
@@ -482,6 +631,7 @@ export function validateContent(bundle: ContentBundle): string[] {
     ['encounter', encounterSchema, bundle.encounters],
     ['status', statusSchema, bundle.statuses],
     ['surface', surfaceSchema, bundle.surfaces],
+    ['prop', propSchema, bundle.props],
     ['combo', comboSchema, bundle.combos],
     ['story node', storyNodeSchema, bundle.story],
   ];
@@ -508,6 +658,7 @@ export function validateContent(bundle: ContentBundle): string[] {
     ['enemy', bundle.enemies.map((e) => e.id)],
     ['map', bundle.maps.map((m) => m.id)],
     ['encounter', bundle.encounters.map((e) => e.id)],
+    ['prop', bundle.props.map((p) => p.id)],
     ['combo', bundle.combos.map((c) => c.id)],
     ['story node', bundle.story.map((n) => n.id)],
   ];
@@ -522,6 +673,7 @@ export function validateContent(bundle: ContentBundle): string[] {
   const storyIds = new Set(bundle.story.map((n) => n.id));
   const statusIds = new Set(bundle.statuses.map((s) => s.id));
   const surfaceIds = new Set(bundle.surfaces.map((s) => s.id));
+  const propIds = new Set(bundle.props.map((p) => p.id));
 
   /* --- abilities reference real statuses and surfaces --------------- */
   for (const a of bundle.abilities) {
@@ -540,6 +692,25 @@ export function validateContent(bundle: ContentBundle): string[] {
     }
     if (a.minRange > a.range) {
       problems.push(`ability "${a.id}" has minRange ${a.minRange} above range ${a.range}`);
+    }
+  }
+
+  /* --- props reference real surfaces and statuses ------------------- */
+  for (const p of bundle.props) {
+    for (const effect of p.onBreak) {
+      if (effect.kind === 'surface' && !surfaceIds.has(effect.surface)) {
+        problems.push(`prop "${p.id}" paints unknown surface "${effect.surface}"`);
+      }
+      if (effect.kind === 'status' && !statusIds.has(effect.status)) {
+        problems.push(`prop "${p.id}" applies unknown status "${effect.status}"`);
+      }
+    }
+    // Immune wins over vulnerable in the damage maths, so declaring both is a
+    // contradiction the author almost certainly did not mean.
+    for (const type of p.vulnerableTo) {
+      if (p.immuneTo.includes(type)) {
+        problems.push(`prop "${p.id}" is both vulnerable and immune to "${type}"`);
+      }
     }
   }
 
@@ -691,6 +862,40 @@ export function validateContent(bundle: ContentBundle): string[] {
     if (m.exit && !isWalkable(m, m.exit.pos.x, m.exit.pos.y)) {
       problems.push(`map "${m.id}" exit at (${m.exit.pos.x},${m.exit.pos.y}) is blocked`);
     }
+
+    /*
+     * Props are placed before the party is, and a blocking prop bakes itself into
+     * the tile. Put one on a spawn point and `placeAt` spirals a character
+     * somewhere else without a word — the sort of bug that reads as "the game put
+     * me in the wrong place" and never gets reported properly.
+     */
+    const propCells = new Set<string>();
+    const spawnCells = new Set(m.partySpawns.map((s) => `${s.x},${s.y}`));
+    for (const placement of m.props) {
+      if (!propIds.has(placement.propId)) {
+        problems.push(`map "${m.id}" places unknown prop "${placement.propId}"`);
+        continue;
+      }
+      const key = `${placement.pos.x},${placement.pos.y}`;
+      if (!isWalkable(m, placement.pos.x, placement.pos.y)) {
+        problems.push(
+          `map "${m.id}" places "${placement.propId}" on a blocked tile (${key}) — it would have nothing to stand on`,
+        );
+      }
+      if (spawnCells.has(key)) {
+        problems.push(`map "${m.id}" places "${placement.propId}" on party spawn (${key})`);
+      }
+      if (m.exit && key === `${m.exit.pos.x},${m.exit.pos.y}`) {
+        problems.push(`map "${m.id}" places "${placement.propId}" on the exit (${key})`);
+      }
+      if (m.npcs.some((n) => `${n.pos.x},${n.pos.y}` === key)) {
+        problems.push(`map "${m.id}" places "${placement.propId}" on an npc (${key})`);
+      }
+      if (propCells.has(key)) {
+        problems.push(`map "${m.id}" stacks two props on (${key})`);
+      }
+      propCells.add(key);
+    }
     for (const npc of m.npcs) {
       if (!isWalkable(m, npc.pos.x, npc.pos.y)) {
         problems.push(`map "${m.id}" npc "${npc.id}" stands on a blocked tile`);
@@ -698,13 +903,12 @@ export function validateContent(bundle: ContentBundle): string[] {
       if (!storyIds.has(npc.node)) {
         problems.push(`map "${m.id}" npc "${npc.id}" points at unknown story node "${npc.node}"`);
       }
-      if (npc.altNode && !storyIds.has(npc.altNode)) {
-        problems.push(
-          `map "${m.id}" npc "${npc.id}" altNode "${npc.altNode}" is not a known story node`,
-        );
-      }
-      if (npc.altNode && !npc.altFlag) {
-        problems.push(`map "${m.id}" npc "${npc.id}" has an altNode but no altFlag to trigger it`);
+      for (const route of npc.routes ?? []) {
+        if (!storyIds.has(route.node)) {
+          problems.push(
+            `map "${m.id}" npc "${npc.id}" routes to "${route.node}", which is not a known story node`,
+          );
+        }
       }
     }
     if (m.kind === 'combat' && m.partySpawns.length < 6) {
@@ -756,6 +960,83 @@ export function validateContent(bundle: ContentBundle): string[] {
         problems.push(`encounter "${e.id}" places a unit on party spawn (${spawn.x},${spawn.y})`);
       }
     }
+    for (const placement of map.props) {
+      const key = `${placement.pos.x},${placement.pos.y}`;
+      if (taken.has(key)) {
+        problems.push(`encounter "${e.id}" places a unit on prop "${placement.propId}" (${key})`);
+      }
+    }
+
+    // Same falsy-zero trap as `branch`: conditionalEnemies compares
+    // `Boolean(flags[flag])`, which reads neutral standing as absent.
+    for (const group of e.conditionalEnemies) {
+      if (group.flag.startsWith(STANDING_PREFIX)) {
+        problems.push(
+          `encounter "${e.id}" gates enemies on "${group.flag}": standing is numeric and 0 is ` +
+            `falsy, so use a variant with a "standing" condition instead`,
+        );
+      }
+    }
+
+    /*
+     * The threat budget, and it lives here rather than in a test on purpose: a
+     * balance rule that only exists in a test file is a comment.
+     *
+     * XP is the currency because it is already the designer's own declared
+     * danger number, and because `xpRoster` scores the authored roster whatever
+     * actually spawned — so variants that cost the same *are* XP-identical, and
+     * progression.test.ts's level-on-arrival guarantee holds by construction
+     * instead of by vigilance. A variant that drifts is not "a harder version",
+     * it is an unbalanced fight paying the wrong amount.
+     */
+    const budgetOf = (placements: readonly { enemyId: string }[]): number =>
+      placements.reduce(
+        (sum, p) => sum + (bundle.enemies.find((x) => x.id === p.enemyId)?.xp ?? 0),
+        0,
+      );
+
+    const baseBudget = budgetOf(e.enemies);
+    const variantIds = new Set<string>();
+    for (const variant of e.variants) {
+      if (variantIds.has(variant.id)) {
+        problems.push(`encounter "${e.id}" has two variants called "${variant.id}"`);
+      }
+      variantIds.add(variant.id);
+
+      for (const p of variant.enemies ?? []) {
+        if (!enemyIds.has(p.enemyId)) {
+          problems.push(
+            `encounter "${e.id}" variant "${variant.id}" places unknown unit "${p.enemyId}"`,
+          );
+          continue;
+        }
+        const def = bundle.enemies.find((x) => x.id === p.enemyId);
+        const cells = def?.size === 2 ? [p.pos, { x: p.pos.x + 1, y: p.pos.y }] : [p.pos];
+        for (const cell of cells) {
+          if (!isWalkable(map, cell.x, cell.y)) {
+            problems.push(
+              `encounter "${e.id}" variant "${variant.id}" places "${p.enemyId}" on a blocked tile (${cell.x},${cell.y})`,
+            );
+          }
+          if (map.partySpawns.some((s) => s.x === cell.x && s.y === cell.y)) {
+            problems.push(
+              `encounter "${e.id}" variant "${variant.id}" places "${p.enemyId}" on party spawn (${cell.x},${cell.y})`,
+            );
+          }
+        }
+      }
+
+      if (!variant.enemies || baseBudget === 0) continue;
+      const drift = Math.abs(budgetOf(variant.enemies) - baseBudget) / baseBudget;
+      if (drift > VARIANT_BUDGET_TOLERANCE) {
+        problems.push(
+          `encounter "${e.id}" variant "${variant.id}" costs ${budgetOf(variant.enemies)} XP against a ` +
+            `baseline of ${baseBudget} (${Math.round(drift * 100)}% off, limit ` +
+            `${Math.round(VARIANT_BUDGET_TOLERANCE * 100)}%) — variants must be comparable fights, ` +
+            `because XP is paid from the authored roster whichever one spawns`,
+        );
+      }
+    }
   }
 
   /* --- story graph -------------------------------------------------- */
@@ -778,6 +1059,17 @@ export function validateContent(bundle: ContentBundle): string[] {
         break;
       case 'branch':
         links.push([node.id, node.ifSet], [node.id, node.ifUnset]);
+        /*
+         * `branch` tests the flag for truthiness, and a standing of 0 is falsy —
+         * a neutral nation would silently take the "unset" road. Anything that
+         * needs to read standing must use a Condition, which compares numbers.
+         */
+        if (node.flag.startsWith(STANDING_PREFIX)) {
+          problems.push(
+            `story node "${node.id}" branches on "${node.flag}": standing is numeric and 0 is ` +
+              `falsy, so use a condition with "standing" instead of a branch node`,
+          );
+        }
         break;
       case 'end':
         break;
@@ -812,7 +1104,7 @@ export function validateContent(bundle: ContentBundle): string[] {
     // NPC nodes are entered by tapping, not by a link, so they count as roots.
     for (const m of bundle.maps) {
       for (const npc of m.npcs) {
-        for (const nodeId of [npc.node, npc.altNode]) {
+        for (const nodeId of [npc.node, ...(npc.routes ?? []).map((r) => r.node)]) {
           if (!nodeId || reachable.has(nodeId)) continue;
           reachable.add(nodeId);
           queue.push(nodeId);

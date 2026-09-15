@@ -129,21 +129,51 @@ const WEIGHTS: Record<AiProfile, Weights> = {
 /** How unpleasant it is to stand on a tile: fire hurts, oil is a liability. */
 function tileDanger(draft: BattleDraft, pos: Vec2): number {
   const tile = tileAt(draft.grid, pos);
-  if (!tile?.surface) return 0;
+  let danger = propDanger(draft, pos);
+  if (!tile?.surface) return danger;
   switch (tile.surface.id) {
     case 'fire':
-      return 14;
+      danger += 14;
+      break;
     case 'oil':
-      return 5;
+      danger += 5;
+      break;
     case 'mud':
-      return 2;
+      danger += 2;
+      break;
     case 'water':
-      return 1;
+      danger += 1;
+      break;
     case 'ice':
-      return 1;
+      danger += 1;
+      break;
     default:
-      return 0;
+      break;
   }
+  return danger;
+}
+
+/**
+ * Standing next to something that is about to go off.
+ *
+ * Deliberately small. This pulls against `candidateTargets` — the AI has to walk
+ * into range of the barrel it wants to shoot, and a large penalty here makes it
+ * refuse to approach its own best plan. Enough to stop a unit lounging beside a
+ * brazier when a clear tile is right there, not enough to override wanting to
+ * break it.
+ */
+function propDanger(draft: BattleDraft, pos: Vec2): number {
+  let worst = 0;
+  for (const prop of draft.props) {
+    if (distance(prop.pos, pos) > 1) continue;
+    const def = draft.content.props.get(prop.propId);
+    if (!def) continue;
+    for (const effect of def.onBreak) {
+      if (effect.kind === 'damage') worst = Math.max(worst, effect.base * 0.4);
+      else if (effect.kind === 'surface' && effect.surface === 'fire') worst = Math.max(worst, 3);
+    }
+  }
+  return worst;
 }
 
 /**
@@ -303,10 +333,106 @@ function scoreAbility(
     }
   }
 
+  const propValue = scoreProps(draft, caster, ability, tiles, weights);
+  if (propValue !== 0) {
+    score += propValue;
+    // Without this the plan scores well and is then thrown away at the check
+    // below, which is the single easiest way to build a prop-blind AI.
+    touchedAnyone = true;
+  }
+
   if (!touchedAnyone) return -Infinity;
 
   // Spend AP where it buys the most.
   return score / Math.max(1, ability.apCost);
+}
+
+/**
+ * What breaking (or shoving) the props in `tiles` is worth.
+ *
+ * A prop is not a unit, so `unitsOnTiles` never sees one and none of the scoring
+ * above applies. What matters is not the prop but what it is holding: an oil
+ * flask beside three people is a good target and an identical flask in an empty
+ * corner is worthless, so everything here is valued by who is standing in the
+ * blast, using the same friendly/hostile weights as a direct hit.
+ *
+ * Pure arithmetic, no RNG — `scoreAbility` is called from the preview path and
+ * determinism depends on it staying that way.
+ */
+function scoreProps(
+  draft: BattleDraft,
+  caster: Unit,
+  ability: Ability,
+  tiles: readonly Vec2[],
+  weights: Weights,
+): number {
+  const props = draft.propsOnTiles(tiles);
+  if (props.length === 0) return 0;
+
+  const damage = ability.effects.find((e) => e.kind === 'damage');
+  const shoves = ability.effects.some((e) => e.kind === 'push' || e.kind === 'pull');
+  let total = 0;
+
+  for (const prop of props) {
+    const def = draft.content.props.get(prop.propId);
+    if (!def) continue;
+
+    // Would this actually open it? A plan that chips a barrel is worth much
+    // less than one that bursts it.
+    let breaks = false;
+    if (damage && damage.kind === 'damage' && !def.immuneTo.includes(damage.damageType)) {
+      const dealt = def.vulnerableTo.includes(damage.damageType) ? damage.base * 2 : damage.base;
+      breaks = dealt >= prop.hp;
+    }
+    if (!breaks && !shoves) continue;
+
+    let value = 0;
+    for (const effect of def.onBreak) {
+      const radius = Math.max(1, effect.radius);
+      for (const victim of draft.living()) {
+        if (victim.id === caster.id) continue;
+        if (distanceToUnit(prop.pos, victim) > radius) continue;
+        const friendly = sameSide(caster, victim);
+
+        switch (effect.kind) {
+          /*
+           * Each component carries its own weight and the total is NOT weighted
+           * again on the way out. Damage through a barrel is still damage: an
+           * earlier version multiplied the whole result by `terrain` as well,
+           * which halved it and made a brazier that hits two people score worse
+           * than a single club swing.
+           */
+          case 'damage':
+            value += friendly ? -effect.base * weights.friendlyFire : effect.base * weights.damage;
+            break;
+          case 'status': {
+            const worth = STATUS_VALUE[effect.status] * effect.chance;
+            value += friendly ? -worth * weights.friendlyFire : worth * weights.status;
+            break;
+          }
+          case 'push':
+            value += friendly ? -2 : 2;
+            break;
+          case 'surface': {
+            // Only the ground-shaping half is a terrain decision, so only this
+            // half takes the terrain weight.
+            const tile = tileAt(draft.grid, prop.pos);
+            const combo = findCombo(draft.content, tile?.surface?.id ?? null, effect.surface);
+            const worth = combo?.chainThroughExisting ? 8 : 3;
+            value += (friendly ? -worth : worth) * weights.terrain;
+            break;
+          }
+        }
+      }
+    }
+
+    // Shoving a barrel with nobody near it is still mildly useful — it is cover
+    // on the move — but it must never beat hitting a person.
+    if (shoves && value === 0) value = 0.5;
+    total += value;
+  }
+
+  return total;
 }
 
 /** Enemy units the caster would like to be near. */
@@ -367,6 +493,25 @@ function candidateTargets(draft: BattleDraft, caster: Unit, abilities: readonly 
         push({ x: opponent.pos.x + dx, y: opponent.pos.y + dy });
       }
     }
+  }
+
+  /*
+   * Props, but only ones that are near somebody.
+   *
+   * This is the gate the whole feature hangs on: `bestActionFrom` only scores
+   * targets this function emits, so a barrel that is never enumerated can never
+   * be scored, however clever the scoring is. The proximity rule mirrors the
+   * surface gate in `scoreAbility` — without it a unit will happily spend its
+   * turn shooting scenery on the far side of the map.
+   */
+  const opponents = opponentsOf(draft, caster);
+  for (const prop of draft.props) {
+    const nearest = opponents.reduce(
+      (best, o) => Math.min(best, distanceToUnit(prop.pos, o)),
+      Infinity,
+    );
+    if (nearest > 2) continue;
+    push(prop.pos);
   }
 
   // Allies matter for support profiles and for buff/heal abilities.

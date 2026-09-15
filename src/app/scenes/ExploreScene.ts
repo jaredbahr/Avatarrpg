@@ -178,6 +178,9 @@ export class ExploreScene implements Scene {
       grid,
       units,
       npcs,
+      // Props are a combat concern: they are instantiated into a BattleState,
+      // and there is no battle out here on the village map.
+      props: [],
       overlays: [],
       path: [],
       fx: [],
