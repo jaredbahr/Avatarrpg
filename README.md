@@ -67,7 +67,34 @@ switching devices or clearing browser data, and **Import save** on the other end
    chips, confirm. Unused AP banks (1 per turn, up to 6).
 4. **Story choices** — one player is named as the **decider** for each branch,
    and the role rotates. No votes, no arguments.
-5. **Level up** — at levels 3 and 7 the player chooses one of two abilities.
+5. **Level up** — at level 3 the player picks one of two abilities. At level 5
+   they commit the character to a **discipline**, which supplies everything from
+   there to level 10 and cannot be changed.
+
+## Committing to a path
+
+Up to level 5, the two characters of an element are the same character with
+different stats. At 5 they stop being: one earthbender takes the quarry road and
+shapes the ground, the other learns to bend the metal in a bandit's armour, and
+they never share a technique again. The commitment is permanent, and the path
+supplies levels 5, 7 and 10 — the back half of the character's kit.
+
+Each element offers two paths, and two rules keep the choice honest:
+
+- **One path is always open.** Exactly one path per element has no unlock
+  condition, so a table that skipped every optional beat still arrives at the
+  gate with something real to take. `validateContent` fails the build if an
+  element ever loses its unconditional path.
+- **A rare path is unlocked by a story flag, never by a roll.** Metalbending is
+  rare because somebody has to teach it. A kid who wants it can go and find the
+  teacher; a kid who rolls badly can do nothing at all — which is why we do not
+  roll.
+
+**Not reachable yet.** Act 1's four fights are tuned for levels 1, 2, 3 and 3, so
+a party finishes it around level 4 and the gate sits just past the end of the
+shipped story. The teacher scenes that set the rare flags are Act 2 beats. Until
+then the paths are reachable only through a save flag, a test fixture, or the
+balance simulator — the data and the dialog are written and waiting.
 
 ## Elemental reactions
 

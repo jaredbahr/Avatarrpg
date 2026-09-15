@@ -47,9 +47,11 @@ export interface PartySlot {
   readonly displayName?: string;
   readonly level?: number;
   /**
-   * Abilities already picked for the level 3 and 7 choices. Real play collects
-   * these through the level-up dialog; the simulator and tests pass them in so
-   * a level 4 party is not fighting with two abilities.
+   * Abilities already picked for a `choose` entry: the level-3 one every
+   * character kit offers, and the level-7 one on the three discipline paths
+   * that have it. Real play collects these through the level-up dialog; the
+   * simulator and tests pass them in so a level 4 party is not fighting with
+   * two abilities.
    */
   readonly chosen?: readonly string[];
   /**
