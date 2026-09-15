@@ -87,6 +87,8 @@ body {
   user-select: none;
   overscroll-behavior: none;
   touch-action: manipulation;
+  /* iOS: no "copy / share" sheet on a long press; the inspector owns it. */
+  -webkit-touch-callout: none;
 }
 
 .app-root {
@@ -287,6 +289,9 @@ input[type='number'] {
 canvas {
   display: block;
   touch-action: none;
+  -webkit-touch-callout: none;
+  -webkit-user-select: none;
+  user-select: none;
 }
 
 .visually-hidden {

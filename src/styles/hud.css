@@ -1027,6 +1027,26 @@
   }
 }
 
+/* A tablet held upright has height to spare and width to lose: the HUD stacks
+   under the map instead of scrolling sideways, and the map keeps the width.
+   iPadOS ignores the manifest's landscape request, so this is not optional. */
+@media (orientation: portrait) {
+  .hud {
+    flex-direction: column;
+    overflow-x: hidden;
+  }
+
+  .unit-panel,
+  .log-panel {
+    min-width: 0;
+    max-width: none;
+  }
+
+  .handoff-banner h1 {
+    font-size: 2rem;
+  }
+}
+
 /* An aim hint sits where the confirm bar would, so the eye already knows to
    look there, but reads as guidance rather than a decision. */
 .aim-hint {
