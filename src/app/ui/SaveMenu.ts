@@ -63,13 +63,24 @@ export class SaveMenu extends Dialog {
 
       const canUse = this.config.mode === 'save' ? !isAuto : slot.occupied && !damaged;
 
+      /*
+       * The slot's *number* is its identity and always leads. Showing the
+       * saved location as the heading instead made an occupied slot
+       * unidentifiable — "which one did I save in?" is not a question a save
+       * menu should raise.
+       */
+      const slotName = isAuto ? 'Autosave' : `Slot ${slot.id.slice(-1)}`;
+
       const row = el(
         'div',
         { class: `slot${slot.occupied ? ' slot-full' : ''}` },
         el(
           'div',
           { class: 'slot-text' },
-          el('strong', { text: isAuto ? 'Autosave' : slot.label }),
+          el('strong', { text: slotName }),
+          slot.occupied && !isAuto && slot.label !== slotName
+            ? el('span', { class: 'slot-place', text: slot.label })
+            : null,
           el('span', { class: 'muted tiny', text: slot.summary }),
           slot.savedAt > 0
             ? el('span', {

@@ -311,6 +311,20 @@ export class App {
     this.saveTo(AUTOSAVE_ID, `Autosave — ${this.placeLabel()}`);
   }
 
+  /**
+   * Current map camera, as plain numbers.
+   *
+   * Exposed so the e2e suite can work out which screen pixel a tile is under
+   * and tap it the way a finger would, instead of guessing at fractions of the
+   * canvas. Returns null when no map scene is mounted.
+   */
+  rendererCamera(): { tilePx: number; offsetX: number; offsetY: number } | null {
+    const scene = this.scene as unknown as {
+      cameraInfo?: () => { tilePx: number; offsetX: number; offsetY: number } | null;
+    };
+    return scene?.cameraInfo?.() ?? null;
+  }
+
   /* ---------------------------------------------------------------- */
   /* Battle resolution                                                 */
   /* ---------------------------------------------------------------- */

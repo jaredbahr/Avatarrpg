@@ -840,3 +840,8 @@
   border-color: var(--c-line);
   background: rgb(27 20 16 / 92%);
 }
+
+.slot-place {
+  color: var(--c-gold-soft);
+  font-size: 0.9rem;
+}

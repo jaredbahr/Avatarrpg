@@ -26,7 +26,7 @@ import {
 import { pathCost, posKey, reachable, samePos } from '../../core/rules/grid';
 import { effectiveStats, isAlive } from '../../core/rules/stats';
 import { activeUnit, upcomingOrder } from '../../core/rules/turnOrder';
-import { Renderer } from '../../render/renderer';
+import { Renderer, TILE } from '../../render/renderer';
 import type { MapView, OverlayLayer, RenderUnit } from '../../render/renderer';
 import { resolvePainter } from '../../render/painters/registry';
 import { attachPointer } from '../input/pointer';
@@ -122,6 +122,17 @@ export class CombatScene implements Scene {
         this.hover = point ? (this.renderer?.camera.toTile(point.x, point.y) ?? null) : null;
       },
     });
+  }
+
+  /** Camera geometry as plain numbers, for tests that need tile -> pixel. */
+  cameraInfo(): { tilePx: number; offsetX: number; offsetY: number } | null {
+    const camera = this.renderer?.camera;
+    if (!camera) return null;
+    return {
+      tilePx: TILE * camera.scale,
+      offsetX: camera.offsetX,
+      offsetY: camera.offsetY,
+    };
   }
 
   /* ---------------------------------------------------------------- */

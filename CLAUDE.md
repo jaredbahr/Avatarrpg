@@ -21,7 +21,8 @@ Four Nations Tactics — a hot-seat tactical RPG. Read this before changing code
 
 ```
 src/core/rules/      grid, stats, damage, status, surfaces, turn order,
-                     ability resolution, leveling, line of sight, enemy AI
+                     ability resolution, leveling, difficulty scaling,
+                     line of sight, enemy AI
 src/core/state/      createGame, the reducer (apply), selectors
 src/core/story/      story graph traversal, flags, the rotating decider index
 src/core/save/       serialise / deserialise / migrate a save blob
@@ -53,6 +54,14 @@ Never run `npx playwright install` in the dev container — Chromium is already 
 - New abilities: add the data in `src/content/abilities/`, add the id to the
   owning character kit, and the content-validation test will tell you if you
   missed something.
+- Touching XP, enemy rosters or `expectedLevel`? `progression.test.ts` walks the
+  real story graph and asserts the party reaches every fight at the level that
+  fight is tuned for, on both branches. Do not weaken it — the balance numbers
+  are meaningless if the party never arrives at the level they assume.
+- Encounter difficulty scales to the table in two places and only those two:
+  `reinforcements` in the encounter data (more bodies above the baseline) and
+  `rules/difficulty.ts` (thinner enemies and a smaller roster below it, plus
+  superlinear boss HP above it). XP deliberately does not scale.
 - UI sizes go in `rem`, never `px`, so the Large-text setting scales them.
   Anything tappable must be at least `var(--tap)`.
 - Commit messages: imperative mood, one concern per commit.
@@ -66,3 +75,7 @@ Never run `npx playwright install` in the dev container — Chromium is already 
   `occupiedCells(unit)` rather than assuming one position.
 - The renderer must never read game state directly — it draws from a view model
   built in `src/app/`.
+- Taps on the battlefield are ignored while the animator is playing. That is
+  intentional, and it is why the e2e helpers have `waitForIdle`.
+- Statuses that skip a turn are read _before_ statuses tick, so a 1-round Freeze
+  costs exactly one turn instead of expiring on the turn it should take away.

@@ -111,6 +111,47 @@ Every drawn thing goes through `src/content/assets/manifest.ts`. Today each entr
 points at a code-drawn painter (vector shapes on the nation palette). Pointing an
 entry at an image URL instead swaps that art in with **no code changes**.
 
+## Difficulty, and how it scales to your table
+
+Encounters are authored for a party of **three** and adjust from there:
+
+- **More than three** — one extra enemy per additional player, from a list
+  authored per map. Six players against three bandits is a queue, not a fight.
+- **Fewer than three** — one enemy leaves per missing player (the _last_ ones
+  listed; each encounter's teaching enemy is authored first, so the deserter
+  who sets the oil alight never disappears), and the rest are thinner.
+- **Bosses** scale faster than linearly, because doubling the party more than
+  doubles its effective output: everyone focuses the same target while the boss
+  still only answers one or two of them per turn.
+
+XP does _not_ scale. Every table earns the same per person, so everybody meets
+each fight at the level it was tuned for, whatever the turnout — and both sides
+of the Act 1 choice arrive at the boss with identical XP.
+
+### Where the numbers currently sit
+
+`npm run balance` runs every encounter many times with the AI driving both
+sides. At 40 trials per encounter per table size:
+
+| Encounter    | 1 player | 3 players | 6 players |
+| ------------ | -------- | --------- | --------- |
+| Forest Road  | 100%     | 100%      | 100%      |
+| Quarry Gate  | 98%      | 100%      | 93%       |
+| The Cutting  | 100%     | 100%      | 100%      |
+| **Grumbler** | **65%**  | **58%**   | **78%**   |
+
+Rerun it and the figures will shift a few points — the trial count picks the
+seeds — but the shape holds.
+
+That is a deliberate arc rather than a flat band: the first fight is a tutorial
+and should be a near-certain win for an eight-year-old, and the boss is the one
+that can actually go wrong. Note that both sides are driven by the _same_ AI,
+and that AI does not set up combos — it will never soak a target so the
+firebender can chain lightning through the puddle. A real party plays better
+than these numbers, so treat them as a floor.
+
+Real tuning happens after the kids play it. These are the numbers to argue with.
+
 ## Contributing notes
 
 - `npm run verify` must be green before pushing.
@@ -118,16 +159,20 @@ entry at an image URL instead swaps that art in with **no code changes**.
   references — a typo in `src/content/**` fails the build rather than the game.
 - The simulator test asserts every encounter terminates, produces no NaN or
   negative HP, and yields an identical event log for the same seed.
+- `src/content/progression.test.ts` walks the real story graph and asserts the
+  party arrives at every fight at the level that fight is tuned for, on both
+  branches. If you change an XP value or add an encounter, it will tell you.
+- The e2e suite covers the parts that only break in a browser: a save/reload
+  round-trip mid-fight, the service worker serving the app with the network
+  off, and every control measuring at least 48px — including at the largest
+  text setting.
 
 ## Status
 
 - **Phase 0** — scaffold, CI, GitHub Pages deploy. ✅
-- **Phase 1** — playable vertical slice: party creation, village, three fights,
+- **Phase 1** — playable vertical slice: party creation, village, four fights,
   one branching choice, a boss, save/load/export. ✅
 - **Phase 2** — world map, Fire Nation outpost, Water Tribe and Air Temple arcs,
   more enemy types, equipment. Planned.
 - **Phase 3** — tweened animation, particle FX, audio, commissioned art, haptics.
   Planned.
-
-Balance numbers are a first pass, tuned against the simulator. Real tuning
-happens after the kids play it.

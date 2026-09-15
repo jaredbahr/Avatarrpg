@@ -42,6 +42,14 @@ jobs:
       - name: Check bundle budget (300 KB gzipped)
         run: node scripts/check-bundle-size.mjs
 
+      - name: Balance report
+        # Prints win rates per encounter at every table size. Fails only on an
+        # anomaly (a stalemate, impossible HP); the tuning band is a target to
+        # read, not a gate.
+        run: npm run balance
+        env:
+          BALANCE_TRIALS: 40
+
   e2e:
     name: End-to-end (Chromium, touch)
     runs-on: ubuntu-latest
