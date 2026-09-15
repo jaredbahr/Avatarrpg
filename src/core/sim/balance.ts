@@ -98,11 +98,20 @@ export function runBalanceReport(
   let total = 0;
 
   for (const encounter of content.encounters.values()) {
-    // One pass per variant when asked, otherwise a single unpinned pass.
-    const passes: (string | null)[] =
-      options.perVariant && encounter.variants.length > 0
-        ? encounter.variants.map((v) => v.id)
-        : [null];
+    /*
+     * One pass per variant when asked, otherwise a single unpinned pass.
+     *
+     * The authored roster gets its own pass whenever it can still spawn — which
+     * is whenever every variant is conditional, since an encounter falls back to
+     * what it was written as when none of them are eligible. Reporting only the
+     * variants would have hidden the quarry gate's normal fight entirely behind
+     * the one that needs a firebender to trigger it.
+     */
+    const baseCanSpawn =
+      encounter.variants.length === 0 || encounter.variants.every((v) => v.when !== undefined);
+    const passes: (string | null)[] = options.perVariant
+      ? [...(baseCanSpawn ? [null] : []), ...encounter.variants.map((v) => v.id)]
+      : [null];
 
     for (const variantId of passes) {
       let encounterWins = 0;
