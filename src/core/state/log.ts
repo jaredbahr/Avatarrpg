@@ -87,6 +87,16 @@ export function describeEvent(
     case 'levelChoiceOffered':
       return `${nameOf(units, event.unitId)} has a new technique to choose.`;
 
+    case 'disciplineOffered':
+      return `${nameOf(units, event.unitId)} is ready to choose a path.`;
+
+    case 'disciplineChosen': {
+      const name = content.disciplines.get(event.disciplineId)?.name ?? event.disciplineId;
+      const unlocked = event.unlocked.map((id) => content.abilities.get(id)?.name ?? id);
+      const suffix = unlocked.length > 0 ? ` Learned ${unlocked.join(' and ')}.` : '';
+      return `${nameOf(units, event.unitId)} takes up ${name}.${suffix}`;
+    }
+
     case 'battleEnded':
       return event.outcome === 'victory' ? 'The fight is won.' : 'The party is overwhelmed.';
 

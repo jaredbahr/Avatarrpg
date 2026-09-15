@@ -20,6 +20,7 @@ import type {
   Ability,
   CharacterDef,
   ComboRule,
+  DisciplineDef,
   EncounterDef,
   EnemyDef,
   MapDef,
@@ -232,10 +233,29 @@ export const abilitySchema = z.object({
 /* Characters, enemies, maps, encounters                               */
 /* ------------------------------------------------------------------ */
 
+const kitLevel = z.number().int().min(1).max(10);
+
 const kitEntry = z.union([
-  z.object({ level: z.number().int().min(1).max(10), ability: id }),
-  z.object({ level: z.number().int().min(1).max(10), choose: z.tuple([id, id]) }),
+  z.object({ level: kitLevel, ability: id }),
+  z.object({ level: kitLevel, choose: z.tuple([id, id]) }),
+  // A gate with one option is not a choice; two is the floor.
+  z.object({ level: kitLevel, specialize: z.array(id).min(2).max(4) }),
 ]);
+
+export const disciplineSchema = z.object({
+  id,
+  name: z.string().min(1),
+  element: elementId,
+  blurb: z.string().min(1),
+  description: z.string().min(1),
+  flavor: z.string().min(1),
+  requiresFlag: z.string().min(1).nullable(),
+  /** Required for a gated path, and meaningless on an open one. */
+  lockedHint: z.string(),
+  statMods: unitStatMods,
+  kit: z.array(kitEntry).min(1),
+  icon: z.string().min(1),
+});
 
 export const characterSchema = z.object({
   id,
@@ -413,6 +433,7 @@ export const storyNodeSchema = z.discriminatedUnion('kind', [
 export interface ContentBundle {
   readonly abilities: readonly Ability[];
   readonly characters: readonly CharacterDef[];
+  readonly disciplines: readonly DisciplineDef[];
   readonly enemies: readonly EnemyDef[];
   readonly maps: readonly MapDef[];
   readonly encounters: readonly EncounterDef[];
@@ -455,6 +476,7 @@ export function validateContent(bundle: ContentBundle): string[] {
   const shapeChecks: [string, z.ZodTypeAny, readonly unknown[]][] = [
     ['ability', abilitySchema, bundle.abilities],
     ['character', characterSchema, bundle.characters],
+    ['discipline', disciplineSchema, bundle.disciplines],
     ['enemy', enemySchema, bundle.enemies],
     ['map', mapSchema, bundle.maps],
     ['encounter', encounterSchema, bundle.encounters],
@@ -482,6 +504,7 @@ export function validateContent(bundle: ContentBundle): string[] {
   const idGroups: [string, readonly string[]][] = [
     ['ability', bundle.abilities.map((a) => a.id)],
     ['character', bundle.characters.map((c) => c.id)],
+    ['discipline', bundle.disciplines.map((d) => d.id)],
     ['enemy', bundle.enemies.map((e) => e.id)],
     ['map', bundle.maps.map((m) => m.id)],
     ['encounter', bundle.encounters.map((e) => e.id)],
@@ -537,6 +560,12 @@ export function validateContent(bundle: ContentBundle): string[] {
   }
 
   /* --- character kits ----------------------------------------------- */
+  const disciplineIds = new Set(bundle.disciplines.map((d) => d.id));
+
+  /** Ability references in a kit entry; empty for a discipline gate. */
+  const abilityRefs = (entry: CharacterDef['kit'][number]): readonly string[] =>
+    'ability' in entry ? [entry.ability] : 'choose' in entry ? entry.choose : [];
+
   for (const c of bundle.characters) {
     const levels = new Set<number>();
     for (const entry of c.kit) {
@@ -544,15 +573,100 @@ export function validateContent(bundle: ContentBundle): string[] {
         problems.push(`character "${c.id}" has two kit entries at level ${entry.level}`);
       }
       levels.add(entry.level);
-      const refs = 'ability' in entry ? [entry.ability] : entry.choose;
-      for (const ref of refs) {
+      for (const ref of abilityRefs(entry)) {
         if (!abilityIds.has(ref)) {
           problems.push(`character "${c.id}" kit references unknown ability "${ref}"`);
         }
       }
+      if (!('specialize' in entry)) continue;
+
+      /*
+       * A gate has to be answerable. Every id must resolve, every path must
+       * belong to this character's element, and at least one must be open to a
+       * party carrying no flags at all — otherwise a table that skipped the
+       * optional content reaches level 5 and is offered nothing it can take.
+       */
+      let unconditional = 0;
+      for (const ref of entry.specialize) {
+        const discipline = bundle.disciplines.find((d) => d.id === ref);
+        if (!discipline) {
+          problems.push(`character "${c.id}" gate references unknown discipline "${ref}"`);
+          continue;
+        }
+        if (discipline.element !== c.element) {
+          problems.push(
+            `character "${c.id}" (${c.element}) is offered "${ref}", which is a ${discipline.element} path`,
+          );
+        }
+        if (!discipline.requiresFlag) unconditional++;
+      }
+      if (unconditional === 0) {
+        problems.push(
+          `character "${c.id}" gate at level ${entry.level} offers no path that is open without a flag`,
+        );
+      }
     }
     if (!c.kit.some((e) => e.level === 1)) {
       problems.push(`character "${c.id}" has no level 1 ability`);
+    }
+  }
+
+  /* --- disciplines --------------------------------------------------- */
+  for (const d of bundle.disciplines) {
+    const levels = new Set<number>();
+    for (const entry of d.kit) {
+      if (levels.has(entry.level)) {
+        problems.push(`discipline "${d.id}" has two kit entries at level ${entry.level}`);
+      }
+      levels.add(entry.level);
+      if ('specialize' in entry) {
+        problems.push(`discipline "${d.id}" nests another gate at level ${entry.level}`);
+        continue;
+      }
+      for (const ref of abilityRefs(entry)) {
+        const referenced = bundle.abilities.find((a) => a.id === ref);
+        if (!referenced) {
+          problems.push(`discipline "${d.id}" references unknown ability "${ref}"`);
+          continue;
+        }
+        if (referenced.element !== d.element) {
+          problems.push(
+            `discipline "${d.id}" (${d.element}) grants "${ref}", which is a ${referenced.element} ability`,
+          );
+        }
+      }
+    }
+    if (d.requiresFlag && d.lockedHint.trim().length === 0) {
+      problems.push(`discipline "${d.id}" is flag-gated but has no lockedHint to show on the card`);
+    }
+  }
+
+  // Two paths can share an ability only if one of them is meant to be a strict
+  // upgrade of the other; today none are, and a duplicate is far more likely to
+  // be a copy-paste than a decision.
+  const grantedBy = new Map<string, string[]>();
+  for (const d of bundle.disciplines) {
+    for (const entry of d.kit) {
+      for (const ref of abilityRefs(entry)) {
+        grantedBy.set(ref, [...(grantedBy.get(ref) ?? []), d.id]);
+      }
+    }
+  }
+  for (const [abilityId, owners] of grantedBy) {
+    if (owners.length > 1) {
+      problems.push(
+        `ability "${abilityId}" is granted by more than one path: ${owners.join(', ')}`,
+      );
+    }
+  }
+
+  for (const id of disciplineIds) {
+    if (
+      !bundle.characters.some((c) =>
+        c.kit.some((e) => 'specialize' in e && e.specialize.includes(id)),
+      )
+    ) {
+      problems.push(`discipline "${id}" is not offered at any character's gate`);
     }
   }
 

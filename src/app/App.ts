@@ -25,11 +25,13 @@ import {
   saveToSlot,
 } from './storage/localSaves';
 import { describeProgress } from '../core/save/serialize';
+import { reconcileDisciplines } from '../core/save/reconcile';
 import type { SessionMeta } from '../core/save/serialize';
 import { announce, clear, el } from './ui/dom';
 import { Toasts } from './ui/Toasts';
 import { PauseMenu } from './ui/PauseMenu';
 import { LevelUpDialog } from './ui/LevelUpDialog';
+import { DisciplineDialog } from './ui/DisciplineDialog';
 import { TitleScene } from './scenes/TitleScene';
 import { PartySetupScene } from './scenes/PartySetupScene';
 import { DialogueScene } from './scenes/DialogueScene';
@@ -58,7 +60,7 @@ export class App {
   private overlayHost: HTMLElement;
   private scene: Scene | null = null;
   private pause: PauseMenu | null = null;
-  private levelUp: LevelUpDialog | null = null;
+  private levelUp: LevelUpDialog | DisciplineDialog | null = null;
   /** Set while a battle is being resolved, so it cannot double-fire. */
   private resolving = false;
 
@@ -165,7 +167,9 @@ export class App {
 
   /** Installs a loaded save, replacing everything. */
   adoptSave(state: GameState, session: SessionMeta | undefined): void {
-    this.state = state;
+    // A save can predate a discipline gate the kits have since gained; this
+    // hands back any pick the party is owed rather than swallowing it.
+    this.state = reconcileDisciplines(this.content, state);
     this.session.setPlayers(Session.fromMeta(session).players);
     this.animator.clear();
     this.closePause();
@@ -223,11 +227,16 @@ export class App {
     const choice = state.pendingChoices[0];
     if (!choice) return;
 
-    this.levelUp = new LevelUpDialog(this, choice, () => {
+    const done = () => {
       this.levelUp = null;
       // More than one member may have levelled in the same fight.
       this.offerLevelUpIfPending();
-    });
+    };
+
+    this.levelUp =
+      choice.kind === 'discipline'
+        ? new DisciplineDialog(this, choice, done)
+        : new LevelUpDialog(this, choice, done);
     this.levelUp.open(this.overlayHost);
   }
 

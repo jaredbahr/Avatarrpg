@@ -819,6 +819,34 @@
   font-size: 0.85rem;
 }
 
+/* Discipline cards: the ability card, plus the ladder the path grants. A
+   locked path stays readable rather than being hidden — it is advertising. */
+.discipline-card {
+  border-color: var(--c-gold);
+}
+
+.discipline-card.is-locked {
+  border-color: var(--c-line);
+  background: rgb(0 0 0 / 34%);
+}
+
+.discipline-card.is-locked > *:not(.locked-hint) {
+  opacity: 0.55;
+}
+
+.discipline-grants {
+  margin: 0;
+  padding-left: 1.1rem;
+  color: var(--c-ink-dim);
+  font-size: 0.85rem;
+}
+
+.locked-hint {
+  margin: 0;
+  color: var(--c-gold);
+  font-size: 0.85rem;
+}
+
 .flavor {
   font-style: italic;
 }

@@ -9,7 +9,7 @@
  * `src/core/sim/runCombat.test.ts` so a regression fails the test suite too.
  */
 import { CONTENT } from '../src/content';
-import { runTableSizeSweep } from '../src/core/sim/balance';
+import { runDisciplineSweep, runTableSizeSweep } from '../src/core/sim/balance';
 
 const trials = Number(process.env.BALANCE_TRIALS ?? 80);
 const sizes = (process.env.BALANCE_SIZES ?? '1,3,6').split(',').map(Number);
@@ -40,6 +40,33 @@ for (const { size, report } of sweep) {
 
 console.log('Target band for a full table is 70-85%. Both sides are driven by the');
 console.log('same AI, which does not set up combos, so treat these as a floor.\n');
+
+/*
+ * Discipline sweep. Every Act 1 encounter is tuned for level 3 or below, so the
+ * table above never sees a path at all — this forces a level past the gate and
+ * swaps one discipline at a time. Read it for spread, not for absolute numbers:
+ * these are fights nobody can currently reach at this level.
+ */
+const disciplineLevel = Number(process.env.BALANCE_DISCIPLINE_LEVEL ?? 7);
+const disciplineTrials = Number(process.env.BALANCE_DISCIPLINE_TRIALS ?? 30);
+const paths = runDisciplineSweep(CONTENT, {
+  trials: disciplineTrials,
+  partyLevel: disciplineLevel,
+});
+
+console.log(
+  `--- disciplines, six players at level ${disciplineLevel}, ${disciplineTrials} trials per encounter ---`,
+);
+console.log(`${pad('Path', 20)}${pad('Element', 12)}${pad('Win %', 8)}${pad('Rounds', 9)}Deaths`);
+for (const row of [...paths].sort((a, b) => b.winRate - a.winRate)) {
+  console.log(
+    `${pad(row.label, 20)}${pad(row.element, 12)}` +
+      `${num(row.winRate * 100, 5)}   ${num(row.averageRounds, 6)}   ${num(row.averagePartyDeaths, 5)}`,
+  );
+}
+
+const spread = Math.max(...paths.map((p) => p.winRate)) - Math.min(...paths.map((p) => p.winRate));
+console.log(`  spread: ${(spread * 100).toFixed(1)} points between the best and worst path\n`);
 
 if (anomalies.length > 0) {
   console.error('Anomalies detected:');

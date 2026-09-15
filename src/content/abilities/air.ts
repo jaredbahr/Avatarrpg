@@ -144,4 +144,47 @@ export const AIR_ABILITIES: readonly Ability[] = [
     fx: 'fx.air.shield',
     tags: ['buff'],
   }),
+
+  /* ------------------------------------------------------------------ */
+  /* Sound discipline                                                    */
+  /* ------------------------------------------------------------------ */
+
+  ability({
+    id: 'deafening_shout',
+    name: 'Deafening Shout',
+    element: 'air',
+    apCost: 2,
+    range: 3,
+    targeting: cone(3),
+    cooldown: 3,
+    effects: [
+      { kind: 'damage', base: 7, scale: 0.6, damageType: 'air' },
+      { kind: 'status', status: 'slowed', duration: 2, chance: 0.8, to: 'hit' },
+      { kind: 'status', status: 'stunned', duration: 1, chance: 0.35, to: 'hit' },
+    ],
+    description:
+      'Compress the air in your chest and let it out as noise. Everything in the cone loses its footing and some of it loses its turn.',
+    flavor: 'Airbending is not always quiet.',
+    fx: 'fx.air.shout',
+    tags: ['attack', 'control'],
+  }),
+  ability({
+    id: 'shatterpoint',
+    name: 'Shatterpoint',
+    element: 'air',
+    apCost: 3,
+    range: 7,
+    targeting: blast(1),
+    cooldown: 4,
+    effects: [
+      { kind: 'damage', base: 13, scale: 1.1, damageType: 'air', ignoreDefense: true },
+      { kind: 'status', status: 'stunned', duration: 1, chance: 0.6, to: 'hit' },
+      { kind: 'push', distance: 2 },
+    ],
+    description:
+      'Two shockfronts, aimed to meet inside the target. Goes straight through armour, because armour is not what it is hitting.',
+    flavor: 'Find the note the thing is already singing. Then sing it louder.',
+    fx: 'fx.air.shatter',
+    tags: ['attack', 'control', 'signature'],
+  }),
 ];

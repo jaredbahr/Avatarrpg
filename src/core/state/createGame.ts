@@ -24,10 +24,18 @@ import type {
 } from '../types';
 import { buildGrid, enterCost, occupiedCells, posKey } from '../rules/grid';
 import { enemiesToDrop, scaleForTable } from '../rules/difficulty';
-import { grantedUpTo, scaleStats, statsAtLevel } from '../rules/leveling';
+import {
+  combinedKit,
+  grantedUpTo,
+  mergedStatMods,
+  scaleStats,
+  specializationsUpTo,
+  statsAtLevel,
+} from '../rules/leveling';
 import { rollInitiative } from '../rules/turnOrder';
 
-export const SAVE_VERSION = 1;
+/** 2 added `Unit.disciplineId` and widened `PendingChoice`. */
+export const SAVE_VERSION = 2;
 
 export interface PartySlot {
   readonly characterId: string;
@@ -41,8 +49,16 @@ export interface PartySlot {
    */
   readonly chosen?: readonly string[];
   /**
-   * Takes the first option of every unresolved choice at or below this level.
-   * Only the simulator uses this — a player always chooses for themselves.
+   * The discipline this member has committed to, if they are past the gate.
+   * Real play collects it through the pick dialog; the simulator and the
+   * balance sweep pass it in so a level 5+ party is not fighting without the
+   * half of its kit that the path supplies.
+   */
+  readonly discipline?: string;
+  /**
+   * Takes the first option of every unresolved choice at or below this level,
+   * and the first discipline the gate offers. Only the simulator uses this — a
+   * player always chooses for themselves.
    */
   readonly autoChoose?: boolean;
 }
@@ -61,12 +77,31 @@ export function createPartyUnit(
   index: number,
   level = 1,
   displayName?: string,
-  options: { chosen?: readonly string[]; autoChoose?: boolean } = {},
+  options: { chosen?: readonly string[]; discipline?: string; autoChoose?: boolean } = {},
 ): Unit {
-  const base = statsAtLevel(content, character.element, level, character.statMods);
+  /*
+   * Resolve the discipline first: it contributes stat mods and half the kit
+   * from the gate onward, so everything below has to see it. `autoChoose`
+   * takes the first path the gate offers *regardless of its flag* — the
+   * simulator has no story state to have set one, and a balance run that
+   * silently fell back to no discipline would measure the wrong party.
+   */
+  const gateOptions = specializationsUpTo(character.kit, level);
+  const pickedDisciplineId =
+    gateOptions.find((id) => id === options.discipline) ??
+    (options.autoChoose ? gateOptions[0] : undefined);
+  const discipline = pickedDisciplineId ? content.disciplines.get(pickedDisciplineId) : undefined;
 
-  const abilities = new Set(grantedUpTo(character.kit, level));
-  for (const entry of character.kit) {
+  const base = statsAtLevel(
+    content,
+    character.element,
+    level,
+    mergedStatMods(character, discipline),
+  );
+
+  const kit = combinedKit(character, discipline);
+  const abilities = new Set(grantedUpTo(kit, level));
+  for (const entry of kit) {
     if (entry.level > level || !('choose' in entry)) continue;
     const picked = entry.choose.find((id) => options.chosen?.includes(id));
     if (picked) abilities.add(picked);
@@ -80,6 +115,7 @@ export function createPartyUnit(
     element: character.element,
     characterId: character.id,
     enemyId: null,
+    disciplineId: discipline?.id ?? null,
     level,
     xp: 0,
     pos: { x: 0, y: 0 },
@@ -108,6 +144,7 @@ export function createGame(content: ContentIndex, options: NewGameOptions): Game
     party.push(
       createPartyUnit(content, character, index, slot.level ?? 1, slot.displayName, {
         chosen: slot.chosen,
+        discipline: slot.discipline,
         autoChoose: slot.autoChoose,
       }),
     );
@@ -192,6 +229,7 @@ function createUnitFromPlacement(
     element: def.element,
     characterId: null,
     enemyId: def.id,
+    disciplineId: null,
     level,
     xp: 0,
     pos,
@@ -269,11 +307,24 @@ export function xpRoster(
  * spawn points, places enemies (and any conditional reinforcements the story
  * flags call for), and rolls initiative once for the whole fight.
  */
+export interface BattleOptions {
+  /**
+   * Levels the opposition against this instead of the encounter's own
+   * `expectedLevel`. Only the simulator passes it: comparing two disciplines
+   * means running them above the level gate, and Act 1's fights are all tuned
+   * for level 3 or below, so without this every path wins every time and the
+   * comparison measures nothing. Real play never sets it — an encounter's
+   * tuning is the encounter's business.
+   */
+  readonly enemyLevel?: number;
+}
+
 export function createBattle(
   content: ContentIndex,
   state: GameState,
   encounterId: string,
   rng: RngCursor,
+  options: BattleOptions = {},
 ): BattleState {
   const encounter = content.encounters.get(encounterId);
   if (!encounter) throw new Error(`Unknown encounter "${encounterId}"`);
@@ -301,7 +352,7 @@ export function createBattle(
   });
 
   const roster = encounterRoster(encounter, state.flags, state.party.length);
-  const level = encounter.expectedLevel;
+  const level = options.enemyLevel ?? encounter.expectedLevel;
   const table = {
     baselinePartySize: encounter.baselinePartySize,
     partySize: state.party.length + encounter.allies.length,

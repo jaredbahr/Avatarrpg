@@ -7,55 +7,62 @@
  * an Avatar.
  *
  * Both characters of an element share a kit (the plan calls for element kits,
- * not class kits). They differ in stats, in voice, and in how they are drawn.
+ * not class kits). They differ in stats, in voice, and in how they are drawn —
+ * and, from level 5, in the discipline their player commits them to, which is
+ * where two earthbenders finally stop being the same earthbender.
  * `statMods` are deltas against the element archetype in `elements.ts`.
  */
 
 import type { CharacterDef, KitEntry } from '../core/types';
 
+/*
+ * A kit runs to the discipline gate and stops.
+ *
+ * Levels 1-3 are the element's fundamentals, shared by both characters of that
+ * element. Level 5 is the gate: the player commits to a path, and from there
+ * the path's own kit supplies levels 5, 7 and 10 (see `disciplines.ts`). That
+ * is why nothing below has an entry above level 5 any more — the abilities that
+ * used to sit at 5, 7 and 10 did not go away, they moved into the path each one
+ * belongs to.
+ *
+ * The level-3 choice is deliberately a taste of what is coming: a waterbender
+ * who takes Healing Stream at 3 has already met the discipline they can commit
+ * to at 5, and one who takes Water Pull has not lost the option.
+ */
+
 const FIRE_KIT: readonly KitEntry[] = [
   { level: 1, ability: 'fire_jab' },
   { level: 2, ability: 'fire_blast' },
   { level: 3, choose: ['flame_arc', 'fire_step'] },
-  { level: 5, ability: 'fire_wall' },
-  { level: 7, choose: ['lightning', 'heat_shield'] },
-  { level: 10, ability: 'dragon_breath' },
+  { level: 5, specialize: ['flame_shaping', 'lightning_path'] },
 ];
 
 const WATER_KIT: readonly KitEntry[] = [
   { level: 1, ability: 'water_whip' },
   { level: 2, ability: 'ice_path' },
   { level: 3, choose: ['healing_stream', 'water_pull'] },
-  { level: 5, ability: 'ice_spikes' },
-  { level: 7, choose: ['tidal_wave', 'ice_shield'] },
-  { level: 10, ability: 'octopus_form' },
+  { level: 5, specialize: ['ice_shaping', 'healing_path'] },
 ];
 
 const EARTH_KIT: readonly KitEntry[] = [
   { level: 1, ability: 'rock_throw' },
   { level: 2, ability: 'stone_stance' },
   { level: 3, choose: ['earth_wall', 'shockwave'] },
-  { level: 5, ability: 'mudslide' },
-  { level: 7, choose: ['seismic_sense', 'boulder'] },
-  { level: 10, ability: 'metalbending' },
+  { level: 5, specialize: ['earth_shaping', 'metalbending_path'] },
 ];
 
 const AIR_KIT: readonly KitEntry[] = [
   { level: 1, ability: 'air_blast' },
   { level: 2, ability: 'air_shield' },
   { level: 3, choose: ['air_scooter', 'gust'] },
-  { level: 5, ability: 'cyclone' },
-  { level: 7, choose: ['air_cushion', 'sonic_boom'] },
-  { level: 10, ability: 'tornado' },
+  { level: 5, specialize: ['air_shaping', 'sound_bending'] },
 ];
 
 const NONBENDER_KIT: readonly KitEntry[] = [
   { level: 1, ability: 'strike' },
   { level: 2, ability: 'take_cover' },
   { level: 3, choose: ['chi_block', 'bolas'] },
-  { level: 5, ability: 'smoke_bomb' },
-  { level: 7, choose: ['electrified_glove', 'shield_bash'] },
-  { level: 10, ability: 'pressure_points' },
+  { level: 5, specialize: ['field_craft', 'engineering'] },
 ];
 
 export const CHARACTERS: readonly CharacterDef[] = [
