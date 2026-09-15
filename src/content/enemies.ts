@@ -122,7 +122,16 @@ export const ENEMIES: readonly EnemyDef[] = [
     name: 'Grumbler',
     element: 'earth',
     size: 2,
-    stats: { maxHp: 86, maxAp: 5, maxMove: 3, power: 7, defense: 5, speed: 4, focus: 5 },
+    /*
+     * 100 HP rather than 86, and the extra bar is paid for by the cooldown on
+     * `driller_slam`. Capping the slam at one a turn took roughly a third of
+     * the boss's damage out of the fight, which put the win rate somewhere
+     * around 86-98% — a boss nobody can lose to is not a boss. Deepening the
+     * health bar spends that slack on *length* instead of on burst, which is
+     * the trade the fight wants: long enough for the oil and the mud to
+     * matter, without a cone that deletes a character in two rounds.
+     */
+    stats: { maxHp: 100, maxAp: 5, maxMove: 3, power: 7, defense: 5, speed: 4, focus: 5 },
     abilities: ['driller_slam', 'driller_debris', 'driller_spray', 'driller_churn', 'raise_rubble'],
     ai: 'boss',
     xp: 360,

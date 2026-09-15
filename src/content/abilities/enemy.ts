@@ -110,13 +110,28 @@ export const ENEMY_ABILITIES: readonly Ability[] = [
     element: 'earth',
     apCost: 2,
     range: 2,
+    /*
+     * Once a turn, and that cooldown is the whole reason the quarry floor is a
+     * fight rather than a wall.
+     *
+     * Grumbler has 5 AP and this costs 2, so uncapped it slammed *twice* a turn
+     * and still had AP to move. A cone that lands 14 or so at level 3 against a
+     * party with 40-odd HP means two rounds in front of the drill arm is a dead
+     * character, and the simulator agreed: 2.2 of a 3-player party died in an
+     * average run, and the wins came in at 13% health. The boss was killing the
+     * table before any of the terrain it exists to teach ever came up.
+     *
+     * With one slam a turn the remaining AP goes into oil, mud and debris —
+     * which is the fight the encounter is actually written around.
+     */
+    cooldown: 1,
     targeting: cone(2),
     effects: [
       { kind: 'damage', base: 8, scale: 0.7, damageType: 'earth' },
       { kind: 'push', distance: 1 },
     ],
     description: 'The drill arm comes down like a falling wall.',
-    flavor: 'Get out from in front of it.',
+    flavor: 'Get out from in front of it. It cannot swing twice in a turn.',
     fx: 'fx.enemy.slam',
   }),
   ability({
