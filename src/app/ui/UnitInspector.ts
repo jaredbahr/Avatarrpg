@@ -14,6 +14,9 @@ import type { DialogOptions } from './Dialog';
 import { button, el, painterCanvas } from './dom';
 import { abilityCard } from './AbilityCard';
 import { effectiveStats } from '../../core/rules/stats';
+import { describeIncoming } from '../../core/rules/status';
+import { describeFooting } from '../../core/rules/reactions';
+import { occupiedCells, tileAt } from '../../core/rules/grid';
 import { levelProgress, xpToNextLevel } from '../../core/rules/leveling';
 import { resolvePainter } from '../../render/painters/registry';
 
@@ -40,6 +43,33 @@ export class UnitInspector extends Dialog {
 
   protected override onClose(): void {
     this.onDismiss();
+  }
+
+  /**
+   * What this unit is standing in. A puddle under an enemy is a plan, and a
+   * puddle under your own firebender is a warning — neither was visible
+   * anywhere in the HUD before, only as a tint on the map.
+   */
+  private footingRow(): HTMLElement | null {
+    const battle = this.app.state?.battle;
+    if (!battle) return null;
+
+    // A 2-tile boss stands in whichever of its cells carries a surface; the
+    // first one is close enough for an at-a-glance readout.
+    const cell = occupiedCells(this.unit).find((c) => tileAt(battle.grid, c)?.surface);
+    const surface = cell ? tileAt(battle.grid, cell)?.surface : undefined;
+    if (!surface) return null;
+
+    const def = this.app.content.surfaces.get(surface.id);
+    return el(
+      'div',
+      { class: 'status-row status-footing' },
+      el('strong', { text: `Standing in ${def?.name ?? surface.id}` }),
+      el('span', {
+        class: 'tiny muted',
+        text: describeFooting(this.app.content, surface.id),
+      }),
+    );
   }
 
   protected build(body: HTMLElement): void {
@@ -84,20 +114,28 @@ export class UnitInspector extends Dialog {
       ),
     );
 
-    if (unit.statuses.length > 0) {
+    const footing = this.footingRow();
+
+    if (unit.statuses.length > 0 || footing) {
       const list = el('div', { class: 'stack tight status-list' });
       for (const status of unit.statuses) {
         const def = this.app.content.statuses.get(status.id);
         if (!def) continue;
+        // The prose says "lightning doubled"; this says "lightning ×2", read
+        // straight off the modifier the damage roll will use. If someone
+        // retunes Wet, this line moves and the prose does not.
+        const incoming = describeIncoming(this.app.content, status.id);
         list.appendChild(
           el(
             'div',
             { class: `status-row status-${def.kind}` },
             el('strong', { text: `${def.name} (${status.duration})` }),
             el('span', { class: 'tiny muted', text: def.description }),
+            incoming ? el('span', { class: 'tiny status-incoming', text: incoming }) : null,
           ),
         );
       }
+      if (footing) list.appendChild(footing);
       body.appendChild(el('h3', { text: 'Right now' }));
       body.appendChild(list);
     }
