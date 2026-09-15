@@ -97,15 +97,27 @@ describe('encounter rosters', () => {
   const boss = CONTENT.encounters.get('enc_grumbler');
   const gate = CONTENT.encounters.get('enc_quarry_gate');
 
-  it("adds Jin's mercenaries at the boss only when Ruon was traded", () => {
+  it("puts Jin's mercenary at the boss in place of the quarry crew, not beside it", () => {
     expect(boss).toBeDefined();
     if (!boss) return;
 
-    const spared = encounterRoster(boss, { ruon_spared: true }, 3);
-    const traded = encounterRoster(boss, { ruon_traded: true }, 3);
+    const jins = boss.variants.find((v) => v.id === 'jins_people');
+    expect(jins, 'the traded-Ruon roster should be a variant').toBeDefined();
+    if (!jins) return;
 
-    expect(traded.enemies.length).toBe(spared.enemies.length + 2);
-    expect(traded.enemies.filter((e) => e.enemyId.startsWith('merc_')).length).toBe(2);
+    const spared = encounterRoster(boss, { ruon_spared: true }, 3);
+    const traded = encounterRoster(boss, { ruon_traded: true }, 3, jins);
+
+    /*
+     * The head count is the assertion. Trading Ruon away once stacked two
+     * mercenaries on top of the authored roster and took the fight from a 62%
+     * win rate to 9% — and because the balance harness set no story flags,
+     * nothing measured it. A boss floor has no room for extra bodies: even one
+     * measured 32-46% against 82%.
+     */
+    expect(traded.enemies.length).toBe(spared.enemies.length);
+    expect(traded.enemies.filter((e) => e.enemyId.startsWith('merc_')).length).toBe(1);
+    expect(traded.enemies.filter((e) => e.enemyId === 'bandit_earthbender').length).toBe(0);
     expect(spared.enemies.filter((e) => e.enemyId.startsWith('merc_')).length).toBe(0);
   });
 
@@ -146,8 +158,17 @@ describe('encounter rosters', () => {
 });
 
 describe('balance', () => {
-  // A small trial count keeps the suite fast; the printed report in CI uses more.
-  const report = runBalanceReport(CONTENT, { trials: 24 });
+  /*
+   * A small trial count keeps the suite fast; the printed report in CI uses more.
+   *
+   * `perVariant` is not optional here. An unpinned pass samples whichever roster
+   * each seed happened to draw and never pins a *conditional* one at all, which
+   * is how the traded-Ruon boss floor sat at a 9% win rate through a green
+   * suite: every number published about that fight described the other branch.
+   * Pinning each variant is what makes a roster nobody can beat fail here rather
+   * than at somebody's kitchen table.
+   */
+  const report = runBalanceReport(CONTENT, { trials: 24, perVariant: true });
 
   it('reports no anomalies across every encounter', () => {
     expect(report.anomalies, `\n${report.anomalies.join('\n')}\n`).toEqual([]);
