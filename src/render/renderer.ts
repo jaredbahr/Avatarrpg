@@ -14,6 +14,7 @@ import { Camera, TILE } from './camera';
 import type { Viewport } from './camera';
 import { SURFACE_STYLES } from './palettes';
 import { Canvas2DBackend } from './backends/canvas2d';
+import { PixiBackend } from './backends/pixi';
 import type { RenderBackend } from './backends/backend';
 import { sprites } from './spriteCache';
 import type { MapView } from './view';
@@ -41,7 +42,44 @@ export class Renderer {
     grid: { width: number; height: number },
   ) {
     this.camera = new Camera(this.measure(), grid);
-    this.backend = new Canvas2DBackend(canvas);
+    this.backend = Renderer.createBackend(canvas);
+  }
+
+  /**
+   * Accelerated WebGL where there is a GPU, Canvas 2D otherwise. A construction
+   * failure falls back rather than propagating: a plainer board beats a black
+   * one, and the game is entirely playable on the 2D path.
+   *
+   * `?renderer=webgl` or `?renderer=canvas` forces one, which is how the e2e
+   * suite covers the WebGL path on runners that have no GPU, and how you can
+   * compare the two on a real device.
+   */
+  private static createBackend(canvas: HTMLCanvasElement): RenderBackend {
+    const forced = Renderer.forcedBackend();
+    if (forced === 'canvas') return new Canvas2DBackend(canvas);
+
+    if (forced === 'webgl' || PixiBackend.isSupported()) {
+      try {
+        return new PixiBackend(canvas);
+      } catch (error) {
+        console.warn('WebGL renderer unavailable; falling back to Canvas 2D.', error);
+      }
+    }
+    return new Canvas2DBackend(canvas);
+  }
+
+  private static forcedBackend(): 'webgl' | 'canvas' | null {
+    try {
+      const value = new URLSearchParams(window.location.search).get('renderer');
+      return value === 'webgl' || value === 'canvas' ? value : null;
+    } catch {
+      return null;
+    }
+  }
+
+  /** Which backend is actually running. Exposed for the e2e suite and Settings. */
+  get backendName(): 'webgl' | 'canvas' {
+    return this.backend instanceof PixiBackend ? 'webgl' : 'canvas';
   }
 
   private measure(): Viewport {
