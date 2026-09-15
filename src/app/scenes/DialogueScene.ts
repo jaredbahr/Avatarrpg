@@ -5,13 +5,19 @@
  * six-year-old watching over a shoulder expects it to work. Choices interrupt
  * that with the decider's name in large type — the whole point of the rotating
  * decider is that nobody has to argue about who picks.
+ *
+ * Staged like a visual novel: the speaker stands over the text box, which
+ * sits in the lower third of the screen, and the backdrop takes the colour
+ * of their element while they talk.
  */
 
-import type { App, Scene } from '../App';
+import type { App, Mood, Scene } from '../App';
 import type { ElementId, GameState, StoryNode, StoryOption } from '../../core/types';
+import { ELEMENT_IDS } from '../../core/types';
 import { describe as describeCondition } from '../../core/story/conditions';
 import { optionAvailable, resolveDialogue } from '../../core/story/storyEngine';
 import { CONTENT } from '../../content';
+import { resolveAsset } from '../../content/assets/manifest';
 import { button, clear, el, painterCanvas } from '../ui/dom';
 import { resolvePainter } from '../../render/painters/registry';
 
@@ -23,6 +29,21 @@ const BENDER_LABEL: Record<ElementId, string> = {
   air: 'An airbender',
   nonbender: 'Someone who does not bend',
 };
+
+/** Portraits in the HUD are 6rem; on the stage the speaker is nearly twice that. */
+const STAGE_PORTRAIT_REM = 11;
+
+/**
+ * The element a portrait is painted in. The manifest already tags every
+ * portrait with its palette, so a speaker's colour needs no story field.
+ */
+function moodFor(portraitKey: string): Mood {
+  const entry = resolveAsset(portraitKey);
+  if (entry.kind === 'painter' && (ELEMENT_IDS as readonly string[]).includes(entry.palette)) {
+    return entry.palette;
+  }
+  return 'neutral';
+}
 
 export class DialogueScene implements Scene {
   readonly name = 'dialogue';
@@ -71,13 +92,13 @@ export class DialogueScene implements Scene {
 
     switch (node.kind) {
       case 'dialogue':
-        scene.appendChild(this.dialoguePanel(node));
+        scene.appendChild(this.dialogueStage(node));
         break;
       case 'choice':
-        scene.appendChild(this.choicePanel(node));
+        scene.appendChild(this.choiceStage(node));
         break;
       case 'end':
-        scene.appendChild(this.endPanel(node));
+        scene.appendChild(this.stage('end', null, this.endPanel(node)));
         break;
       default:
         scene.appendChild(el('div', { class: 'panel' }, el('p', { text: 'Loading…' })));
@@ -85,6 +106,39 @@ export class DialogueScene implements Scene {
     }
 
     host.appendChild(scene);
+  }
+
+  /**
+   * The stage: a speaker's portrait and name plate standing over the text
+   * box. No speaker (the epilogue) means no head, and the backdrop keeps
+   * the colour of wherever the party is.
+   */
+  private stage(
+    kind: 'dialogue' | 'choice' | 'end',
+    speaker: { name: string; portrait: string; note?: HTMLElement | null } | null,
+    panel: HTMLElement,
+  ): HTMLElement {
+    let head: HTMLElement | null = null;
+    if (speaker) {
+      const mood = moodFor(speaker.portrait);
+      this.app.setMood(mood);
+      head = el(
+        'div',
+        { class: 'stage-head' },
+        el(
+          'div',
+          { class: `stage-portrait element-${mood}`, attrs: { 'aria-hidden': 'true' } },
+          this.portrait(speaker.portrait, STAGE_PORTRAIT_REM),
+        ),
+        el(
+          'div',
+          { class: `name-plate element-${mood}` },
+          el('h2', { class: 'display', text: speaker.name }),
+          speaker.note ?? null,
+        ),
+      );
+    }
+    return el('div', { class: 'stage', dataset: { kind } }, head, panel);
   }
 
   private topBar(): HTMLElement {
@@ -103,7 +157,7 @@ export class DialogueScene implements Scene {
     });
   }
 
-  private dialoguePanel(node: Extract<StoryNode, { kind: 'dialogue' }>): HTMLElement {
+  private dialogueStage(node: Extract<StoryNode, { kind: 'dialogue' }>): HTMLElement {
     const state = this.app.state;
     // Variants first: who is standing here changes what gets said.
     const said = state
@@ -128,20 +182,6 @@ export class DialogueScene implements Scene {
           }
         },
       },
-      el(
-        'div',
-        { class: 'row dialogue-head' },
-        this.portrait(said.portrait),
-        el(
-          'div',
-          { class: 'stack tight' },
-          el('h2', { text: said.speaker }),
-          el('span', {
-            class: 'muted tiny',
-            text: `${index + 1} of ${said.lines.length}`,
-          }),
-        ),
-      ),
       el('p', { class: 'dialogue-line', text: line }),
       el(
         'div',
@@ -151,10 +191,21 @@ export class DialogueScene implements Scene {
       ),
     );
 
-    return panel;
+    return this.stage(
+      'dialogue',
+      {
+        name: said.speaker,
+        portrait: said.portrait,
+        note: el('span', {
+          class: 'muted tiny line-count',
+          text: `${index + 1} of ${said.lines.length}`,
+        }),
+      },
+      panel,
+    );
   }
 
-  private choicePanel(node: Extract<StoryNode, { kind: 'choice' }>): HTMLElement {
+  private choiceStage(node: Extract<StoryNode, { kind: 'choice' }>): HTMLElement {
     const state = this.app.state;
     const decider = state ? this.app.session.decider(state) : undefined;
     const next = state ? this.app.session.nextDecider(state) : undefined;
@@ -202,20 +253,10 @@ export class DialogueScene implements Scene {
       );
     });
 
-    return el(
+    const panel = el(
       'div',
       { class: 'panel dialogue-panel choice-panel' },
-      el(
-        'div',
-        { class: 'row dialogue-head' },
-        this.portrait(node.portrait),
-        el(
-          'div',
-          { class: 'stack tight' },
-          el('h2', { text: node.speaker }),
-          el('p', { class: 'dialogue-line', text: node.prompt }),
-        ),
-      ),
+      el('p', { class: 'dialogue-line', text: node.prompt }),
       solo
         ? null
         : el(
@@ -230,6 +271,8 @@ export class DialogueScene implements Scene {
       options,
       node.footer ? el('p', { class: 'tiny muted center', text: node.footer }) : null,
     );
+
+    return this.stage('choice', { name: node.speaker, portrait: node.portrait }, panel);
   }
 
   /**

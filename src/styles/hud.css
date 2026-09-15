@@ -568,23 +568,96 @@
   flex-direction: column;
 }
 
+/*
+ * The stage. The speaker stands over the text box, which sits in the lower
+ * third of the screen the way a visual novel's does. The head overlaps the
+ * box's top edge from outside: the box scrolls, so nothing may hang out of
+ * it, and the head has to be a sibling drawn above it.
+ */
+.stage {
+  flex: 1 1 auto;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  align-items: center;
+  padding: var(--sp-4) var(--sp-4) calc(var(--sp-5) + env(safe-area-inset-bottom, 0px));
+}
+
+.stage-head {
+  flex: 0 0 auto;
+  position: relative;
+  z-index: 1;
+  width: min(56rem, 100%);
+  display: flex;
+  align-items: flex-end;
+  gap: var(--sp-3);
+  padding: 0 var(--sp-3);
+  margin-bottom: calc(-1 * var(--sp-3));
+}
+
+.stage-portrait {
+  position: relative;
+  flex: 0 0 auto;
+}
+
+/* The element class brings an accent bar; the medallion draws its own ring. */
+.stage-portrait[class*='element-'] {
+  border-left: 0;
+}
+
+/* A halo in the speaker's element behind the medallion. */
+.stage-portrait::before {
+  content: '';
+  position: absolute;
+  inset: -18%;
+  border-radius: 50%;
+  background: radial-gradient(
+    closest-side,
+    color-mix(in srgb, var(--el) 38%, transparent),
+    transparent
+  );
+}
+
+.stage-portrait .painter {
+  position: relative;
+  box-shadow:
+    0 0 0 2px var(--c-ink-line),
+    0 0 0 4px color-mix(in srgb, var(--el) 70%, transparent),
+    var(--shadow-2);
+}
+
+.name-plate {
+  display: flex;
+  flex-direction: column;
+  gap: 0.1rem;
+  padding: var(--sp-2) var(--sp-4);
+  margin-bottom: var(--sp-5);
+  background-color: var(--surface-1);
+  background-image: var(--tex-grain);
+  background-size: var(--tex-grain-size);
+  border: var(--hairline) solid var(--c-ink-line);
+  border-radius: var(--radius);
+  box-shadow: var(--inset-edge), var(--shadow-1);
+}
+
+.name-plate h2 {
+  margin: 0;
+  line-height: 1.1;
+}
+
+/* Takes whatever height the head leaves, and only then scrolls inside. */
 .dialogue-panel {
-  margin: auto;
-  width: min(52rem, 94%);
-  max-height: 84dvh;
+  width: min(56rem, 100%);
+  margin: 0;
+  flex: 0 1 auto;
+  min-height: 0;
   overflow-y: auto;
   display: flex;
   flex-direction: column;
   gap: var(--sp-3);
+  padding: var(--sp-5) var(--sp-5) var(--sp-4);
   cursor: pointer;
-}
-
-.dialogue-head {
-  align-items: flex-start;
-}
-
-.dialogue-head h2 {
-  margin: 0;
 }
 
 .dialogue-line {
@@ -1224,6 +1297,11 @@
     display: none;
   }
 
+  /* A phone, or a tablet at Largest text: the name plate alone is the head. */
+  .stage-portrait {
+    display: none;
+  }
+
   .hud {
     flex-direction: column;
   }
@@ -1245,6 +1323,10 @@
 
 @media (max-height: 34rem) {
   .turn-strip {
+    display: none;
+  }
+
+  .stage-portrait {
     display: none;
   }
 
