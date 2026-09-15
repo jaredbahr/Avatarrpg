@@ -134,7 +134,9 @@
   --z-stats: 70;
 
   --font-ui: 'Segoe UI', system-ui, -apple-system, 'Helvetica Neue', Arial, sans-serif;
-  --font-display: 'Trebuchet MS', 'Segoe UI', system-ui, sans-serif;
+  /* Headings and named display slots. The serif fallback is metrically the
+     closer stand-in while the woff2 loads, or for a blocked font. */
+  --font-display: 'Shippori Mincho', Georgia, 'Times New Roman', serif;
 
   --shadow-1: 0 0.125rem 0.375rem rgb(0 0 0 / 35%);
   --shadow-2: 0 0.5rem 1.5rem rgb(0 0 0 / 55%);
@@ -196,9 +198,27 @@ body {
 h1,
 h2,
 h3 {
-  font-family: var(--font-display);
   margin: 0 0 var(--sp-3);
   letter-spacing: 0.01em;
+}
+
+/*
+ * The display face carries h1, h2 and anything tagged .display (a speaker's
+ * name plate, the decider banner). h3 is a card label at 18px, where a Mincho
+ * reads thin, so it stays on the UI stack. font-synthesis: none so a missing
+ * weight is never faux-bolded.
+ */
+h1,
+h2,
+.display {
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-synthesis: none;
+}
+
+h3 {
+  font-family: var(--font-ui);
+  font-weight: 700;
 }
 
 h1 {

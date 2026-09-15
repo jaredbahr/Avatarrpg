@@ -22,6 +22,16 @@
     <meta name="robots" content="noindex, nofollow" />
     <link rel="icon" href="icons/favicon.svg" type="image/svg+xml" />
     <link rel="apple-touch-icon" href="icons/apple-touch-icon.png" />
+    <!-- The display face, fetched alongside the CSS rather than after it; the
+         crossorigin is not optional, fonts always load anonymously and a
+         preload without it is thrown away. -->
+    <link
+      rel="preload"
+      href="fonts/shippori-mincho-700-latin.woff2"
+      as="font"
+      type="font/woff2"
+      crossorigin
+    />
     <title>Four Nations Tactics</title>
   </head>
   <body>

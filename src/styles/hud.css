@@ -23,6 +23,123 @@
 }
 
 /* ------------------------------------------------------------------ */
+/* Backdrop                                                            */
+/* ------------------------------------------------------------------ */
+
+/*
+ * What every scene sits on: grain over a soft radial base, two blobs of the
+ * current mood colour, and the four-nations wheel as a faint line drawing.
+ * The mood is `data-mood` on the app root (App.setMood): a nation while a
+ * character is being picked or is speaking, a map's ambience while the party
+ * is somewhere, gold otherwise. An ambience the CSS does not know falls
+ * through to gold, so content can add one freely.
+ *
+ * Cost rules, because this is under everything on an iPad: no filter, no
+ * blend mode, no per-frame JS. The blobs drift only on the title, where
+ * nothing else moves, and both they and the wheel are hidden under the map
+ * scenes, whose canvas covers them anyway.
+ */
+.app-root {
+  --mood: var(--c-gold);
+  --wash-alpha: 0.16;
+}
+
+.app-root[data-mood='fire'] {
+  --mood: var(--c-fire);
+}
+.app-root[data-mood='water'] {
+  --mood: var(--c-water);
+}
+.app-root[data-mood='earth'],
+.app-root[data-mood='forest'] {
+  --mood: var(--c-earth);
+}
+.app-root[data-mood='air'] {
+  --mood: var(--c-air);
+}
+.app-root[data-mood='nonbender'] {
+  --mood: var(--c-nonbender);
+}
+.app-root[data-mood='quarry'] {
+  --mood: var(--c-ink-faint);
+}
+
+.backdrop {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  background-color: var(--c-bg-deep);
+  background-image:
+    var(--tex-grain), radial-gradient(120% 90% at 50% 30%, var(--c-bg), var(--c-bg-deep) 70%);
+  background-size: var(--tex-grain-size), auto;
+}
+
+.backdrop-wash {
+  position: absolute;
+  width: 60vmax;
+  height: 60vmax;
+  border-radius: 50%;
+  background: radial-gradient(closest-side, var(--mood), transparent);
+  opacity: var(--wash-alpha);
+}
+
+.wash-a {
+  top: -20vmax;
+  left: -15vmax;
+}
+
+.wash-b {
+  bottom: -25vmax;
+  right: -15vmax;
+  opacity: calc(var(--wash-alpha) * 0.7);
+}
+
+.backdrop-wheel {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 90vmin;
+  height: 90vmin;
+  transform: translate(-50%, -50%);
+  color: color-mix(in srgb, var(--c-ink) 5%, transparent);
+}
+
+.backdrop-wheel svg {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
+.app-root[data-scene='combat'] .backdrop-wash,
+.app-root[data-scene='combat'] .backdrop-wheel,
+.app-root[data-scene='explore'] .backdrop-wash,
+.app-root[data-scene='explore'] .backdrop-wheel {
+  display: none;
+}
+
+.app-root[data-scene='title'] .backdrop-wheel {
+  top: 44%;
+}
+
+.app-root[data-scene='title'] .backdrop-wash {
+  animation: wash-drift var(--dur-drift) ease-in-out infinite alternate;
+  will-change: transform;
+}
+
+.app-root[data-scene='title'] .wash-b {
+  animation-delay: calc(var(--dur-drift) * -0.5);
+}
+
+@keyframes wash-drift {
+  from {
+    transform: translate3d(0, 0, 0) scale(1);
+  }
+  to {
+    transform: translate3d(4vmax, 3vmax, 0) scale(1.08);
+  }
+}
+
+/* ------------------------------------------------------------------ */
 /* Shared chrome                                                       */
 /* ------------------------------------------------------------------ */
 
@@ -221,6 +338,8 @@
   overflow-y: auto;
 }
 
+/* Not a panel: the title sits straight on the backdrop, on a soft plate of
+   shadow so the type holds against the wash. */
 .title-card {
   max-width: 34rem;
   text-align: center;
@@ -228,11 +347,60 @@
   flex-direction: column;
   align-items: center;
   gap: var(--sp-3);
+  padding: var(--sp-5) var(--sp-4);
+  border-radius: var(--radius-lg);
+  background: radial-gradient(
+    ellipse closest-side at 50% 42%,
+    color-mix(in srgb, var(--c-bg-deep) 75%, transparent),
+    transparent
+  );
+}
+
+.title-mark {
+  position: relative;
+  width: 11rem;
+  height: 11rem;
+  /* The glow is a pseudo-element behind the wheel; isolating keeps its
+     negative z-index inside the mark instead of under the backdrop. */
+  isolation: isolate;
+}
+
+.title-mark::before {
+  content: '';
+  position: absolute;
+  inset: -30%;
+  border-radius: 50%;
+  background: radial-gradient(
+    closest-side,
+    color-mix(in srgb, var(--c-gold) 28%, transparent),
+    transparent
+  );
+  z-index: -1;
+}
+
+.title-mark svg {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
+.title-card h1 {
+  font-size: var(--fs-3xl);
+  line-height: 1.05;
+  margin: 0;
+  text-shadow: 0 2px 0 rgb(0 0 0 / 45%);
+}
+
+.tagline {
+  max-width: 26rem;
+  margin: 0;
 }
 
 .title-actions {
   width: 100%;
-  max-width: 22rem;
+  max-width: 20rem;
+  gap: var(--sp-2);
+  margin-top: var(--sp-2);
 }
 
 .btn-large {
@@ -243,6 +411,7 @@
 .legal {
   max-width: 28rem;
   opacity: 0.7;
+  font-size: var(--fs-xs);
 }
 
 /* ------------------------------------------------------------------ */

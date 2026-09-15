@@ -28,6 +28,11 @@ html[data-reduce-motion='on'] *::after {
   scroll-behavior: auto !important;
 }
 
+/* The backdrop's slow drift is the one animation that would otherwise loop. */
+html[data-reduce-motion='on'] .backdrop-wash {
+  animation: none;
+}
+
 @media (prefers-reduced-motion: reduce) {
   :root {
     --motion-scale: 0;
@@ -38,6 +43,10 @@ html[data-reduce-motion='on'] *::after {
   *::after {
     animation-duration: 1ms !important;
     transition-duration: 1ms !important;
+  }
+
+  .backdrop-wash {
+    animation: none;
   }
 }
 
@@ -58,4 +67,5 @@ html[data-contrast='high'] {
   --surface-1: #2c2018;
   --hairline: 2px;
   --tex-grain: none;
+  --wash-alpha: 0;
 }
