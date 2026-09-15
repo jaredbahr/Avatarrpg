@@ -51,7 +51,12 @@ function grantPartyXp(
         unlocked: gain.granted,
       });
       for (const options of gain.pendingChoices) {
-        pendingChoices.push({ unitId: member.id, level: gain.unit.level, kind: 'ability', options });
+        pendingChoices.push({
+          unitId: member.id,
+          level: gain.unit.level,
+          kind: 'ability',
+          options,
+        });
         events.push({ type: 'levelChoiceOffered', unitId: member.id, options });
       }
       for (const options of gain.pendingSpecializations) {

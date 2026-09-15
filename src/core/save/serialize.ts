@@ -245,9 +245,7 @@ function migrateToFormat2(blob: Record<string, unknown>): Record<string, unknown
       battle: nextBattle,
       pendingChoices: Array.isArray(s.pendingChoices)
         ? s.pendingChoices.map((choice) =>
-            typeof choice === 'object' && choice !== null
-              ? { kind: 'ability', ...choice }
-              : choice,
+            typeof choice === 'object' && choice !== null ? { kind: 'ability', ...choice } : choice,
           )
         : s.pendingChoices,
     },

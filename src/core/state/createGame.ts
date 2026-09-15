@@ -90,9 +90,7 @@ export function createPartyUnit(
   const pickedDisciplineId =
     gateOptions.find((id) => id === options.discipline) ??
     (options.autoChoose ? gateOptions[0] : undefined);
-  const discipline = pickedDisciplineId
-    ? content.disciplines.get(pickedDisciplineId)
-    : undefined;
+  const discipline = pickedDisciplineId ? content.disciplines.get(pickedDisciplineId) : undefined;
 
   const base = statsAtLevel(
     content,

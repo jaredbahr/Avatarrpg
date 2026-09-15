@@ -654,12 +654,18 @@ export function validateContent(bundle: ContentBundle): string[] {
   }
   for (const [abilityId, owners] of grantedBy) {
     if (owners.length > 1) {
-      problems.push(`ability "${abilityId}" is granted by more than one path: ${owners.join(', ')}`);
+      problems.push(
+        `ability "${abilityId}" is granted by more than one path: ${owners.join(', ')}`,
+      );
     }
   }
 
   for (const id of disciplineIds) {
-    if (!bundle.characters.some((c) => c.kit.some((e) => 'specialize' in e && e.specialize.includes(id)))) {
+    if (
+      !bundle.characters.some((c) =>
+        c.kit.some((e) => 'specialize' in e && e.specialize.includes(id)),
+      )
+    ) {
       problems.push(`discipline "${id}" is not offered at any character's gate`);
     }
   }

@@ -114,7 +114,9 @@ export function partyOnDiscipline(
     const element = content.characters.get(slot.characterId)?.element;
     if (!element) return slot;
     const chosen =
-      subject && element === subject.element ? disciplineId : defaultDisciplineFor(content, element);
+      subject && element === subject.element
+        ? disciplineId
+        : defaultDisciplineFor(content, element);
     return chosen ? { ...slot, discipline: chosen } : slot;
   });
 }

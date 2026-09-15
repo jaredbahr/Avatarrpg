@@ -65,8 +65,7 @@ for (const row of [...paths].sort((a, b) => b.winRate - a.winRate)) {
   );
 }
 
-const spread =
-  Math.max(...paths.map((p) => p.winRate)) - Math.min(...paths.map((p) => p.winRate));
+const spread = Math.max(...paths.map((p) => p.winRate)) - Math.min(...paths.map((p) => p.winRate));
 console.log(`  spread: ${(spread * 100).toFixed(1)} points between the best and worst path\n`);
 
 if (anomalies.length > 0) {

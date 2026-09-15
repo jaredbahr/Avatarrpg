@@ -20,7 +20,11 @@ import type { GameState, PendingChoice, Unit } from '../types';
 const EARTH = 'bo';
 const nilak = 'nilak';
 
-function gameAt(level: number, characterId = EARTH, flags: Record<string, boolean> = {}): GameState {
+function gameAt(
+  level: number,
+  characterId = EARTH,
+  flags: Record<string, boolean> = {},
+): GameState {
   return createGame(CONTENT, {
     seed: 'discipline-tests',
     party: [{ characterId, level }],
@@ -126,10 +130,10 @@ describe('the discipline gate', () => {
 
   it('applies the path stat mods on top of the character mods', () => {
     const plain = createPartyUnit(CONTENT, CONTENT.characters.get(nilak)!, 0, 5);
-    const state = withPendingGate(
-      gameAt(5, nilak, { [DISCIPLINE_FLAGS.healing]: true }),
-      ['ice_shaping', 'healing_path'],
-    );
+    const state = withPendingGate(gameAt(5, nilak, { [DISCIPLINE_FLAGS.healing]: true }), [
+      'ice_shaping',
+      'healing_path',
+    ]);
     const result = apply(CONTENT, state, {
       type: 'chooseDiscipline',
       unitId: member(state).id,
@@ -210,8 +214,9 @@ describe('the discipline gate', () => {
       autoChoose: true,
     });
     expect(unit.disciplineId).toBe('earth_shaping');
-    expect(combinedKit(CONTENT.characters.get(EARTH), CONTENT.disciplines.get('earth_shaping')))
-      .toHaveLength(7);
+    expect(
+      combinedKit(CONTENT.characters.get(EARTH), CONTENT.disciplines.get('earth_shaping')),
+    ).toHaveLength(7);
     expect(unit.abilities).toContain('fissure');
   });
 });
@@ -271,7 +276,12 @@ describe('saves across the discipline change', () => {
 
     const repaired = reconcileDisciplines(CONTENT, state);
     expect(repaired.pendingChoices).toEqual([
-      { unitId: 'p0', level: 5, kind: 'discipline', options: ['earth_shaping', 'metalbending_path'] },
+      {
+        unitId: 'p0',
+        level: 5,
+        kind: 'discipline',
+        options: ['earth_shaping', 'metalbending_path'],
+      },
     ]);
   });
 

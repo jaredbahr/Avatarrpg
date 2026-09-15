@@ -240,12 +240,7 @@ export function awardXp(
     pendingSpecializations.push(...unlocks.specializations);
   }
 
-  const base = statsAtLevel(
-    content,
-    unit.element,
-    newLevel,
-    mergedStatMods(character, discipline),
-  );
+  const base = statsAtLevel(content, unit.element, newLevel, mergedStatMods(character, discipline));
 
   const hpGain = base.maxHp - unit.base.maxHp;
 

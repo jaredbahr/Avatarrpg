@@ -63,7 +63,10 @@ describe('content', () => {
   it('has every discipline supply levels 5, 7 and 10', () => {
     for (const discipline of CONTENT_BUNDLE.disciplines) {
       const levels = discipline.kit.map((k) => k.level);
-      expect(levels.slice().sort((a, b) => a - b), discipline.id).toEqual([5, 7, 10]);
+      expect(
+        levels.slice().sort((a, b) => a - b),
+        discipline.id,
+      ).toEqual([5, 7, 10]);
     }
   });
 

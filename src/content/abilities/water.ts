@@ -199,7 +199,21 @@ export const WATER_ABILITIES: readonly Ability[] = [
     cooldown: 5,
     effects: [
       { kind: 'heal', base: 18, scale: 1.2 },
-      { kind: 'cleanse', statuses: ['burning', 'wet', 'chilled', 'frozen', 'shocked', 'stunned', 'slowed', 'blinded', 'rooted', 'chiBlocked'] },
+      {
+        kind: 'cleanse',
+        statuses: [
+          'burning',
+          'wet',
+          'chilled',
+          'frozen',
+          'shocked',
+          'stunned',
+          'slowed',
+          'blinded',
+          'rooted',
+          'chiBlocked',
+        ],
+      },
       { kind: 'status', status: 'inspired', duration: 2, chance: 1, to: 'allies' },
     ],
     description:

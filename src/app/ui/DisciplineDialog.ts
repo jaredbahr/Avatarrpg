@@ -87,9 +87,7 @@ export class DisciplineDialog extends Dialog {
           : 'choose' in entry
             ? [...entry.choose]
             : [...entry.specialize];
-      const label = names
-        .map((id) => this.app.content.abilities.get(id)?.name ?? id)
-        .join(' or ');
+      const label = names.map((id) => this.app.content.abilities.get(id)?.name ?? id).join(' or ');
       grants.appendChild(el('li', { text: `Level ${entry.level} — ${label}` }));
     }
     card.appendChild(grants);
@@ -104,9 +102,7 @@ export class DisciplineDialog extends Dialog {
       );
     } else {
       card.appendChild(el('p', { class: 'locked-hint', text: discipline.lockedHint }));
-      card.appendChild(
-        button('Locked', () => {}, { class: 'btn-ghost', disabled: true }),
-      );
+      card.appendChild(button('Locked', () => {}, { class: 'btn-ghost', disabled: true }));
     }
 
     return card;

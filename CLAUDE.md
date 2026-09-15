@@ -38,7 +38,8 @@ src/app/             scenes, HUD, input, hot-seat session, localStorage
 ## Commands
 
 ```bash
-npm run verify   # typecheck + lint + tests. Must pass before any push.
+npm run verify   # typecheck + lint + format:check + tests. Must pass before
+                 # any push — it is the same gate CI runs, minus the build.
 npm test         # vitest
 npm run balance  # simulator win-rate report
 npm run e2e      # Playwright (builds first; uses the preinstalled Chromium)
