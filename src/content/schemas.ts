@@ -342,6 +342,8 @@ export const encounterSchema = z.object({
       placements: z.array(placement).min(1),
     }),
   ),
+  baselinePartySize: z.number().int().min(1).max(6),
+  reinforcements: z.array(placement),
   expectedLevel: z.number().int().min(1).max(10),
   intro: z.string().min(1),
   tip: z.string().min(1),
@@ -601,9 +603,11 @@ export function validateContent(bundle: ContentBundle): string[] {
     }
     if (!mapIds.has(e.mapId)) problems.push(`encounter "${e.id}" uses unknown map "${e.mapId}"`);
 
+    // Every placement must be legal, including ones only some tables will see.
     const all = [
       ...e.enemies,
       ...e.allies,
+      ...e.reinforcements,
       ...e.conditionalEnemies.flatMap((group) => group.placements),
     ];
     const taken = new Set<string>();

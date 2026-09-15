@@ -10,6 +10,11 @@
  *
  * `conditionalEnemies` is how the Act 1 choice reaches the boss fight: trade
  * Ruon away and Jin's mercenaries are standing in the quarry when you get there.
+ *
+ * `reinforcements` scale the fight to the table. Every roster below is tuned
+ * for a party of three; each player beyond that pulls in one more enemy. The
+ * simulator put a six-player party at a 100% win rate in under three rounds
+ * before this existed.
  */
 
 import type { EncounterDef } from '../core/types';
@@ -27,7 +32,14 @@ export const ENCOUNTERS: readonly EncounterDef[] = [
     ],
     allies: [],
     conditionalEnemies: [],
-    intro: 'Three of them step out of the trees. They were waiting for somebody.',
+    baselinePartySize: 3,
+    // Deliberately short. This is the tutorial fight: a full table should be
+    // able to make mistakes here and still walk away.
+    reinforcements: [
+      { enemyId: 'bandit_thug', pos: { x: 18, y: 6 } },
+      { enemyId: 'bandit_slinger', pos: { x: 16, y: 2 } },
+    ],
+    intro: 'They step out of the trees. They were waiting for somebody.',
     tip: 'There are puddles in the road. Anything standing in water gets Wet — and Wet things freeze easily and take double lightning damage.',
   },
   {
@@ -42,6 +54,12 @@ export const ENCOUNTERS: readonly EncounterDef[] = [
     ],
     allies: [],
     conditionalEnemies: [],
+    baselinePartySize: 3,
+    // Also short: the oil is what makes this fight, not the head count.
+    reinforcements: [
+      { enemyId: 'bandit_slinger', pos: { x: 17, y: 9 } },
+      { enemyId: 'bandit_thug', pos: { x: 17, y: 4 } },
+    ],
     intro: 'Barrels are stacked against the gatehouse, and the ground around them is slick.',
     tip: 'That dark stripe down the middle is spilled oil. Fire turns it into a spreading blaze — so either stay off it, or wash it away with water first.',
   },
@@ -55,8 +73,15 @@ export const ENCOUNTERS: readonly EncounterDef[] = [
       { enemyId: 'merc_blade', pos: { x: 17, y: 6 } },
       { enemyId: 'merc_crossbow', pos: { x: 16, y: 3 } },
     ],
-    allies: [{ enemyId: 'ruon_ally', pos: { x: 3, y: 6 }, nameSuffix: '' }],
+    allies: [{ enemyId: 'ruon_ally', pos: { x: 5, y: 5 } }],
     conditionalEnemies: [],
+    baselinePartySize: 3,
+    reinforcements: [
+      { enemyId: 'merc_blade', pos: { x: 16, y: 7 } },
+      { enemyId: 'merc_crossbow', pos: { x: 18, y: 8 } },
+      { enemyId: 'merc_blade', pos: { x: 15, y: 8 } },
+      { enemyId: 'merc_sergeant', pos: { x: 17, y: 9 } },
+    ],
     intro: "Jin's people are already in the cutting. They knew which road you would take.",
     tip: 'The walls are high here, so there is only one way through. Push someone back into the gap and nobody gets past them.',
   },
@@ -79,6 +104,13 @@ export const ENCOUNTERS: readonly EncounterDef[] = [
           { enemyId: 'merc_crossbow', pos: { x: 17, y: 6 } },
         ],
       },
+    ],
+    baselinePartySize: 3,
+    reinforcements: [
+      { enemyId: 'bandit_thug', pos: { x: 14, y: 3 } },
+      { enemyId: 'bandit_thug', pos: { x: 14, y: 8 } },
+      { enemyId: 'bandit_slinger', pos: { x: 13, y: 1 } },
+      { enemyId: 'bandit_earthbender', pos: { x: 13, y: 10 } },
     ],
     intro:
       'The driller comes up out of the pit on two treads, dragging a plume of oil smoke behind it.',

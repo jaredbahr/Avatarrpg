@@ -62,13 +62,16 @@ export const COMBOS: readonly ComboRule[] = [
   }),
 
   /* --- Fire --------------------------------------------------------- */
+  // Spread 1, not 2. At two rings an oil flask plus a torch reliably engulfed
+  // a clustered party of six and killed five of them; the lesson "do not stand
+  // in the oil" only lands if there is somewhere to run to.
   rule({
     id: 'fire-into-oil',
     existing: 'oil',
     applied: 'fire',
     result: 'fire',
     duration: 3,
-    spread: 2,
+    spread: 1,
     status: 'burning',
     statusChance: 1,
     label: 'The oil catches — the fire is spreading!',

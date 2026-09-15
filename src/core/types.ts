@@ -36,6 +36,22 @@ export type DamageType =
 
 export type Faction = 'party' | 'enemy' | 'ally';
 
+/**
+ * A playable path and the level-1 archetype it starts from. Lives in core
+ * because `createGame` and `leveling` both need the base stats, and core may
+ * not import content values — it reaches them through `ContentIndex.elements`.
+ */
+export interface ElementDef {
+  readonly id: ElementId;
+  readonly name: string;
+  readonly tagline: string;
+  readonly description: string;
+  readonly playstyle: string;
+  readonly base: UnitStats;
+  /** CSS custom-property suffix: --c-fire, --c-water, ... */
+  readonly palette: string;
+}
+
 /* ------------------------------------------------------------------ */
 /* Terrain and surfaces                                                */
 /* ------------------------------------------------------------------ */
@@ -331,6 +347,14 @@ export interface EncounterDef {
     readonly whenSet: boolean;
     readonly placements: readonly EncounterPlacement[];
   }[];
+  /**
+   * Party size the authored roster is tuned for. Anything above this adds one
+   * reinforcement per extra member — six players against three bandits is not
+   * a fight, it is a queue.
+   */
+  readonly baselinePartySize: number;
+  /** Consumed in order, one per party member above `baselinePartySize`. */
+  readonly reinforcements: readonly EncounterPlacement[];
   readonly expectedLevel: number;
   readonly intro: string;
   /** Shown under the objective banner — a hint aimed at an 8-year-old. */
@@ -483,6 +507,17 @@ export interface StoryState {
 
 export type BattlePhase = 'active' | 'victory' | 'defeat';
 
+/**
+ * A tile an Earth Wall (or similar) is holding open. The tile is swapped for a
+ * blocking one and restored when the round arrives. Kept on BattleState rather
+ * than on Tile so a Tile stays a flat value.
+ */
+export interface TemporaryWall {
+  readonly pos: Vec2;
+  readonly untilRound: number;
+  readonly previous: Tile;
+}
+
 export interface BattleState {
   readonly encounterId: string;
   readonly mapId: string;
@@ -493,6 +528,9 @@ export interface BattleState {
   readonly turnIndex: number;
   readonly round: number;
   readonly phase: BattlePhase;
+  readonly temporaryWalls: readonly TemporaryWall[];
+  /** Incremented for every unit created, so ids never collide across a battle. */
+  readonly nextUnitSerial: number;
 }
 
 /** A level-up waiting on a player to pick one of two abilities. */
@@ -623,6 +661,7 @@ export interface StepResult {
  * from a test that supplies its own tiny fixture content instead.
  */
 export interface ContentIndex {
+  readonly elements: ReadonlyMap<ElementId, ElementDef>;
   readonly abilities: ReadonlyMap<string, Ability>;
   readonly characters: ReadonlyMap<string, CharacterDef>;
   readonly enemies: ReadonlyMap<string, EnemyDef>;

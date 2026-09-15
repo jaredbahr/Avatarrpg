@@ -1,0 +1,521 @@
+/**
+ * The reducer: `apply(content, state, command) -> { state, events }`.
+ *
+ * This is the only door into the rules. The UI never edits state; it sends a
+ * command and plays back the events it gets. That is what makes the simulator,
+ * the save format, and deterministic replay all fall out for free.
+ *
+ * Nothing here mutates the state it is given. Inside a step it works on a
+ * `BattleDraft`, which is a copy.
+ */
+
+import { RngCursor } from '../rng';
+import type {
+  BattleState,
+  Command,
+  ContentIndex,
+  GameEvent,
+  GameState,
+  Grid,
+  PendingChoice,
+  StepResult,
+  Unit,
+  Vec2,
+} from '../types';
+import { BattleDraft } from './battleDraft';
+import { appendLog } from './log';
+import { absorbBattleResults, restAfterVictory, reviveParty } from './createGame';
+import { canUseAbility, isValidTarget, resolveAbility } from '../rules/abilities';
+import { buildGrid, distance, pathCost, posKey, samePos, tileAt } from '../rules/grid';
+import { awardXp } from '../rules/leveling';
+import { advanceTurn, battleOutcome, endedOnTimeLimit } from '../rules/turnOrder';
+import { canMove, isAlive } from '../rules/stats';
+import { planAiTurn } from '../rules/ai';
+import {
+  advanceDialogue,
+  chooseOption,
+  currentNode,
+  enterStoryNode,
+  exploreNodeFor,
+  npcNode,
+} from '../story/storyEngine';
+
+/** Convenience: state unchanged, one explanatory message. */
+function refuse(state: GameState, text: string): StepResult {
+  return { state, events: [{ type: 'message', text }] };
+}
+
+function finish(
+  content: ContentIndex,
+  state: GameState,
+  battle: BattleState | null,
+  rng: RngCursor,
+  events: readonly GameEvent[],
+): StepResult {
+  return {
+    state: {
+      ...state,
+      rng: rng.state,
+      battle,
+      log: appendLog(content, battle, state.log, events),
+    },
+    events,
+  };
+}
+
+/**
+ * Moves the turn pointer on, runs round upkeep when it wraps, and starts the
+ * next unit's turn — skipping anyone who is Frozen or Stunned, which can chain
+ * through several units in a row.
+ */
+function advanceToNextTurn(draft: BattleDraft): void {
+  for (let guard = 0; guard <= draft.order.length + 1; guard++) {
+    const advance = advanceTurn(draft.toBattle());
+    draft.turnIndex = advance.turnIndex;
+
+    if (advance.roundAdvanced) {
+      draft.round = advance.round;
+      draft.expireWalls();
+      draft.tickTerrain();
+      draft.emit({ type: 'roundStarted', round: draft.round });
+    }
+
+    if (!advance.unitId) return;
+    if (battleOutcome(draft.toBattle()) !== 'active') return;
+
+    const skipped = draft.beginTurn(advance.unitId);
+    const unit = draft.unit(advance.unitId);
+
+    // Upkeep can kill (Burning, standing in fire) — move straight on if so.
+    if (!unit || !isAlive(unit)) continue;
+
+    if (skipped) {
+      draft.message(`${unit.name} cannot act this turn.`);
+      draft.emit({ type: 'turnEnded', unitId: unit.id });
+      continue;
+    }
+
+    draft.emit({ type: 'turnStarted', unitId: advance.unitId, round: draft.round });
+    return;
+  }
+}
+
+/** Seals the battle if one side has fallen. Idempotent. */
+function settleOutcome(draft: BattleDraft): void {
+  if (draft.phase !== 'active') return;
+  const battle = draft.toBattle();
+  const outcome = battleOutcome(battle);
+  if (outcome === 'active') return;
+  if (endedOnTimeLimit(battle)) {
+    draft.message('The fight has gone on too long — the party pulls back to regroup.');
+  }
+  draft.phase = outcome;
+  draft.emit({ type: 'battleEnded', outcome });
+}
+
+/* ------------------------------------------------------------------ */
+/* Command handlers                                                    */
+/* ------------------------------------------------------------------ */
+
+function handleMove(
+  content: ContentIndex,
+  state: GameState,
+  unitId: string,
+  path: readonly Vec2[],
+): StepResult {
+  const battle = state.battle;
+  if (!battle) return refuse(state, 'No battle in progress.');
+  if (battle.phase !== 'active') return refuse(state, 'The fight is over.');
+  if (battle.order[battle.turnIndex] !== unitId) return refuse(state, 'Not that unit’s turn.');
+
+  const unit = battle.units.find((u) => u.id === unitId);
+  if (!unit || !isAlive(unit)) return refuse(state, 'That unit cannot move.');
+  if (!canMove(content, unit)) return refuse(state, `${unit.name} cannot move right now.`);
+  if (path.length === 0) return refuse(state, 'Nowhere to go.');
+
+  const rng = new RngCursor(state.rng);
+  const draft = new BattleDraft(content, battle, rng);
+
+  const cost = pathCost(draft.moveContext(unit), unit.pos, path);
+  if (cost === null) return refuse(state, 'That path is blocked.');
+  if (cost > unit.move) return refuse(state, `Needs ${cost} move, has ${unit.move}.`);
+
+  // Walk it a tile at a time so fire, water and mud all get their say.
+  const walked: Vec2[] = [];
+  for (const step of path) {
+    const current = draft.unit(unitId);
+    if (!current || !isAlive(current)) break;
+    draft.placeUnit(unitId, step);
+    walked.push(step);
+  }
+
+  const moved = draft.unit(unitId);
+  if (moved) draft.replace({ ...moved, move: Math.max(0, moved.move - cost) });
+  draft.emit({ type: 'unitMoved', unitId, path: walked, cost });
+
+  settleOutcome(draft);
+  return finish(content, state, draft.toBattle(), rng, draft.events);
+}
+
+function handleUseAbility(
+  content: ContentIndex,
+  state: GameState,
+  unitId: string,
+  abilityId: string,
+  target: Vec2,
+): StepResult {
+  const battle = state.battle;
+  if (!battle) return refuse(state, 'No battle in progress.');
+  if (battle.phase !== 'active') return refuse(state, 'The fight is over.');
+  if (battle.order[battle.turnIndex] !== unitId) return refuse(state, 'Not that unit’s turn.');
+
+  const unit = battle.units.find((u) => u.id === unitId);
+  if (!unit) return refuse(state, 'No such unit.');
+
+  const ability = content.abilities.get(abilityId);
+  if (!ability) return refuse(state, `Unknown ability "${abilityId}".`);
+
+  const usable = canUseAbility(content, unit, ability);
+  if (!usable.ok) return refuse(state, usable.reason);
+
+  const valid = isValidTarget(content, battle, unit, ability, target);
+  if (!valid.ok) return refuse(state, valid.reason);
+
+  const rng = new RngCursor(state.rng);
+  const draft = new BattleDraft(content, battle, rng);
+
+  draft.spendAp(unitId, ability.apCost);
+  draft.setCooldown(unitId, abilityId, ability.cooldown);
+
+  const caster = draft.unit(unitId);
+  if (!caster) return refuse(state, 'No such unit.');
+  resolveAbility(draft, caster, ability, target, rng);
+
+  settleOutcome(draft);
+  return finish(content, state, draft.toBattle(), rng, draft.events);
+}
+
+function handleEndTurn(content: ContentIndex, state: GameState, unitId: string): StepResult {
+  const battle = state.battle;
+  if (!battle) return refuse(state, 'No battle in progress.');
+  if (battle.phase !== 'active') return refuse(state, 'The fight is over.');
+  if (battle.order[battle.turnIndex] !== unitId) return refuse(state, 'Not that unit’s turn.');
+
+  const rng = new RngCursor(state.rng);
+  const draft = new BattleDraft(content, battle, rng);
+  draft.endTurn(unitId);
+  advanceToNextTurn(draft);
+  settleOutcome(draft);
+  return finish(content, state, draft.toBattle(), rng, draft.events);
+}
+
+/**
+ * Runs one AI unit's entire turn and hands the turn on. The AI plans and acts
+ * in the same step because there is nobody to show a preview to.
+ */
+function handleAiTurn(content: ContentIndex, state: GameState): StepResult {
+  const battle = state.battle;
+  if (!battle) return refuse(state, 'No battle in progress.');
+  if (battle.phase !== 'active') return refuse(state, 'The fight is over.');
+
+  const unitId = battle.order[battle.turnIndex];
+  const unit = unitId ? battle.units.find((u) => u.id === unitId) : undefined;
+  if (!unit || !isAlive(unit)) {
+    const rng = new RngCursor(state.rng);
+    const draft = new BattleDraft(content, battle, rng);
+    advanceToNextTurn(draft);
+    settleOutcome(draft);
+    return finish(content, state, draft.toBattle(), rng, draft.events);
+  }
+  if (unit.ai === 'none') return refuse(state, `${unit.name} is not AI-controlled.`);
+
+  const rng = new RngCursor(state.rng);
+  const draft = new BattleDraft(content, battle, rng);
+  planAiTurn(draft, unit.id, rng);
+  draft.endTurn(unit.id);
+  advanceToNextTurn(draft);
+  settleOutcome(draft);
+  return finish(content, state, draft.toBattle(), rng, draft.events);
+}
+
+/**
+ * Closes out a finished battle: XP, level-ups, HP carried back to the party,
+ * and the story node that follows. Defeat revives the party and routes to the
+ * node's `onDefeat`, which loops back to the same fight.
+ */
+function handleResolveBattle(content: ContentIndex, state: GameState): StepResult {
+  const battle = state.battle;
+  if (!battle) return refuse(state, 'No battle to resolve.');
+  if (battle.phase === 'active') return refuse(state, 'The fight is not over yet.');
+
+  const node = currentNode(content, state);
+  const events: GameEvent[] = [];
+  const victory = battle.phase === 'victory';
+
+  let party: Unit[];
+  const pendingChoices: PendingChoice[] = [...state.pendingChoices];
+
+  if (victory) {
+    const encounter = content.encounters.get(battle.encounterId);
+
+    /*
+     * XP comes from the *authored* roster and is divided by the encounter's
+     * baseline party size, not by how many people actually turned up.
+     *
+     * This deliberately breaks the usual "split the pot" rule. Rosters scale
+     * with the table (see rules/difficulty.ts), so splitting actual XP by
+     * actual party size would leave a table of six levelling more slowly than
+     * a table of three and arriving at the boss under-levelled. Every table
+     * should reach the quarry floor at about level 4.
+     */
+    const authoredXp = (encounter?.enemies ?? []).reduce(
+      (sum, placement) => sum + (content.enemies.get(placement.enemyId)?.xp ?? 0),
+      0,
+    );
+    const baseline = Math.max(1, encounter?.baselinePartySize ?? 3);
+    const perMember = Math.max(1, Math.round(authoredXp / baseline));
+
+    const absorbed = absorbBattleResults(state, battle);
+    const shares = absorbed.map(() => perMember);
+
+    party = absorbed.map((member, index) => {
+      const character = member.characterId ? content.characters.get(member.characterId) : undefined;
+      const gain = awardXp(content, member, shares[index] ?? 0, character);
+      if ((shares[index] ?? 0) > 0) {
+        events.push({ type: 'xpGained', unitId: member.id, amount: shares[index] ?? 0 });
+      }
+      if (gain.levelsGained > 0) {
+        events.push({
+          type: 'leveledUp',
+          unitId: member.id,
+          level: gain.unit.level,
+          unlocked: gain.granted,
+        });
+        for (const options of gain.pendingChoices) {
+          pendingChoices.push({
+            unitId: member.id,
+            level: gain.unit.level,
+            options: options as readonly [string, string],
+          });
+          events.push({ type: 'levelChoiceOffered', unitId: member.id, options });
+        }
+      }
+      return gain.unit;
+    });
+
+    party = restAfterVictory(party);
+  } else {
+    party = reviveParty(absorbBattleResults(state, battle));
+  }
+
+  const nextNodeId = node?.kind === 'battle' ? (victory ? node.next : node.onDefeat) : null;
+
+  const staged: GameState = {
+    ...state,
+    party,
+    battle: null,
+    pendingChoices,
+  };
+
+  if (!nextNodeId) {
+    return {
+      state: { ...staged, log: appendLog(content, battle, state.log, events) },
+      events,
+    };
+  }
+
+  const moved = enterStoryNode(content, staged, nextNodeId);
+  const allEvents = [...events, ...moved.events];
+  return {
+    state: { ...moved.state, log: appendLog(content, battle, state.log, allEvents) },
+    events: allEvents,
+  };
+}
+
+/**
+ * Explore-map walking. Tapping an NPC opens their node; tapping the exit
+ * advances the current explore node; anything else is a step.
+ */
+function handleWalkTo(content: ContentIndex, state: GameState, pos: Vec2): StepResult {
+  if (state.screen !== 'explore') return refuse(state, 'Not exploring right now.');
+  const map = content.maps.get(state.location.mapId);
+  if (!map) return refuse(state, 'No map loaded.');
+
+  const npc = map.npcs.find((n) => samePos(n.pos, pos));
+  if (npc) {
+    if (distance(state.location.pos, pos) > 1) {
+      // Walk adjacent first rather than teleporting into a conversation.
+      const approach = findApproach(content, state, pos);
+      if (!approach) return refuse(state, 'You cannot reach them from here.');
+      const walked: GameState = { ...state, location: { ...state.location, pos: approach } };
+      const target = npcNode(content, walked, map.id, npc.id);
+      if (!target) return refuse(walked, 'They have nothing to say.');
+      return enterStoryNode(content, walked, target);
+    }
+    const target = npcNode(content, state, map.id, npc.id);
+    if (!target) return refuse(state, 'They have nothing to say.');
+    return enterStoryNode(content, state, target);
+  }
+
+  const tile = tileAt(buildExploreGrid(content, state), pos);
+  if (!tile || tile.blocked) return refuse(state, 'You cannot walk there.');
+
+  const moved: GameState = { ...state, location: { ...state.location, pos } };
+
+  if (map.exit && samePos(map.exit.pos, pos)) {
+    const node = currentNode(content, moved);
+    if (node?.kind === 'explore') return enterStoryNode(content, moved, node.next);
+  }
+
+  return { state: moved, events: [] };
+}
+
+/**
+ * Explore maps carry no battle, so their grid is derived from the map each
+ * time it is needed. Memoised by map id because the tiles never change outside
+ * combat and a 24x16 rebuild on every tap would be pure waste.
+ */
+const exploreGrids = new Map<string, Grid>();
+
+function buildExploreGrid(content: ContentIndex, state: GameState): Grid {
+  const map = content.maps.get(state.location.mapId);
+  if (!map) throw new Error(`Unknown map "${state.location.mapId}"`);
+  const cached = exploreGrids.get(map.id);
+  if (cached) return cached;
+  const built = buildGrid(map);
+  exploreGrids.set(map.id, built);
+  return built;
+}
+
+/** Nearest walkable tile adjacent to `target`, for approaching an NPC. */
+function findApproach(content: ContentIndex, state: GameState, target: Vec2): Vec2 | null {
+  const grid = buildExploreGrid(content, state);
+  const occupied = new Set<string>([posKey(target)]);
+  let best: Vec2 | null = null;
+  let bestDistance = Infinity;
+
+  for (let dy = -1; dy <= 1; dy++) {
+    for (let dx = -1; dx <= 1; dx++) {
+      if (dx === 0 && dy === 0) continue;
+      const candidate = { x: target.x + dx, y: target.y + dy };
+      if (occupied.has(posKey(candidate))) continue;
+      const tile = tileAt(grid, candidate);
+      if (!tile || tile.blocked) continue;
+      const d = distance(state.location.pos, candidate);
+      if (d < bestDistance) {
+        bestDistance = d;
+        best = candidate;
+      }
+    }
+  }
+  return best;
+}
+
+function handleChooseLevelUp(
+  content: ContentIndex,
+  state: GameState,
+  unitId: string,
+  abilityId: string,
+): StepResult {
+  const index = state.pendingChoices.findIndex(
+    (c) => c.unitId === unitId && c.options.includes(abilityId),
+  );
+  if (index === -1) return refuse(state, 'No level-up choice is waiting for that unit.');
+
+  const party = state.party.map((member) =>
+    member.id === unitId
+      ? { ...member, abilities: [...new Set([...member.abilities, abilityId])] }
+      : member,
+  );
+
+  const pendingChoices = state.pendingChoices.filter((_, i) => i !== index);
+  const ability = content.abilities.get(abilityId);
+  const events: GameEvent[] = [
+    {
+      type: 'message',
+      text: `${state.party.find((u) => u.id === unitId)?.name ?? unitId} learns ${ability?.name ?? abilityId}.`,
+    },
+  ];
+
+  return {
+    state: { ...state, party, pendingChoices, log: appendLog(content, null, state.log, events) },
+    events,
+  };
+}
+
+/* ------------------------------------------------------------------ */
+/* Entry point                                                         */
+/* ------------------------------------------------------------------ */
+
+export function apply(content: ContentIndex, state: GameState, command: Command): StepResult {
+  switch (command.type) {
+    case 'enterNode':
+      return enterStoryNode(content, state, command.nodeId);
+
+    case 'advanceDialogue': {
+      const node = currentNode(content, state);
+      if (node?.kind === 'dialogue') return advanceDialogue(content, state);
+      // Leaving a conversation that ends nowhere returns to the explore map.
+      const fallback = exploreNodeFor(content, state.location.mapId);
+      if (fallback) return enterStoryNode(content, state, fallback);
+      return { state, events: [] };
+    }
+
+    case 'chooseOption':
+      return chooseOption(content, state, command.optionIndex);
+
+    case 'walkTo':
+      return handleWalkTo(content, state, command.pos);
+
+    case 'startBattle': {
+      const node = [...content.story.values()].find(
+        (n) => n.kind === 'battle' && n.encounterId === command.encounterId,
+      );
+      if (!node) return refuse(state, `No story node runs encounter "${command.encounterId}".`);
+      return enterStoryNode(content, state, node.id);
+    }
+
+    case 'move':
+      return handleMove(content, state, command.unitId, command.path);
+
+    case 'useAbility':
+      return handleUseAbility(content, state, command.unitId, command.abilityId, command.target);
+
+    case 'endTurn':
+      return handleEndTurn(content, state, command.unitId);
+
+    case 'runAiTurn':
+      return handleAiTurn(content, state);
+
+    case 'resolveBattle':
+      return handleResolveBattle(content, state);
+
+    case 'chooseLevelUp':
+      return handleChooseLevelUp(content, state, command.unitId, command.abilityId);
+
+    case 'setFlags': {
+      const events: GameEvent[] = Object.entries(command.flags).map(([key, value]) => ({
+        type: 'flagSet' as const,
+        key,
+        value,
+      }));
+      return { state: { ...state, flags: { ...state.flags, ...command.flags } }, events };
+    }
+  }
+}
+
+/** Applies a list of commands in order. Used by the simulator and by tests. */
+export function applyAll(
+  content: ContentIndex,
+  state: GameState,
+  commands: readonly Command[],
+): StepResult {
+  let current = state;
+  const events: GameEvent[] = [];
+  for (const command of commands) {
+    const result = apply(content, current, command);
+    current = result.state;
+    events.push(...result.events);
+  }
+  return { state: current, events };
+}

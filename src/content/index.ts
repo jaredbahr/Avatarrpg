@@ -10,6 +10,7 @@ import type { ContentIndex, StatusId, SurfaceId } from '../core/types';
 import { ABILITY_BY_ID, ALL_ABILITIES } from './abilities';
 import { CHARACTERS, CHARACTER_BY_ID } from './characters';
 import { COMBOS } from './combos';
+import { ELEMENT_BY_ID } from './elements';
 import { ENCOUNTERS, ENCOUNTER_BY_ID } from './encounters';
 import { ENEMIES, ENEMY_BY_ID } from './enemies';
 import { BA_DAN_VILLAGE } from './maps/village';
@@ -38,6 +39,7 @@ export const CONTENT_BUNDLE: ContentBundle = {
 
 /** The indexed form, used by the rules. */
 export const CONTENT: ContentIndex = {
+  elements: ELEMENT_BY_ID,
   abilities: ABILITY_BY_ID,
   characters: CHARACTER_BY_ID,
   enemies: ENEMY_BY_ID,

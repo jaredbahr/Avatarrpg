@@ -10,20 +10,9 @@
  *   nonbender  the specialist — 5 AP, highest Focus, shuts benders off
  */
 
-import type { ElementId, UnitStats } from '../core/types';
+import type { ElementDef, ElementId, UnitStats } from '../core/types';
 
-export interface ElementDef {
-  readonly id: ElementId;
-  readonly name: string;
-  /** Shown on the element card during party setup. */
-  readonly tagline: string;
-  readonly description: string;
-  /** How it plays, in one sentence an eight-year-old can act on. */
-  readonly playstyle: string;
-  readonly base: UnitStats;
-  /** CSS custom-property suffix: --c-fire, --c-water, ... */
-  readonly palette: string;
-}
+export type { ElementDef };
 
 export const ELEMENTS: readonly ElementDef[] = [
   {

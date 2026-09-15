@@ -7,6 +7,14 @@
  *   quarry_gate   oil by the gatehouse   -> fire spreads
  *   ambush_road   a narrow cutting       -> chokepoints and pushes
  *   quarry_floor  ledges, oil and mud    -> the boss rewrites the ground
+ *
+ * Party spawns use the same staggered pattern on every map: two columns two
+ * tiles apart, alternating rows. Two measurements shaped it. Bunched into a
+ * 2x3 block, a party of six was a single blast template and the simulator
+ * wiped one on the oil map every other run. Strung out down the whole left
+ * edge, the opposite happened — the party reached the boss in ones and twos
+ * and the win rate collapsed. This is the middle: no 3x3 catches more than
+ * about three of them, and they still start as a group.
  */
 
 import type { MapDef } from '../../core/types';
@@ -35,12 +43,12 @@ export const FOREST_ROAD: MapDef = {
     'TT,,,,,,,,,,,,,,,,TT',
   ],
   partySpawns: [
+    { x: 1, y: 3 },
+    { x: 3, y: 4 },
     { x: 1, y: 5 },
-    { x: 1, y: 6 },
+    { x: 3, y: 6 },
     { x: 1, y: 7 },
-    { x: 2, y: 4 },
-    { x: 2, y: 8 },
-    { x: 0, y: 6 },
+    { x: 3, y: 8 },
   ],
   npcs: [],
 };
@@ -68,12 +76,12 @@ export const QUARRY_GATE: MapDef = {
     '^^^^######..######^^',
   ],
   partySpawns: [
+    { x: 1, y: 3 },
+    { x: 3, y: 4 },
     { x: 1, y: 5 },
-    { x: 1, y: 6 },
-    { x: 2, y: 4 },
-    { x: 2, y: 7 },
-    { x: 1, y: 4 },
+    { x: 3, y: 6 },
     { x: 1, y: 7 },
+    { x: 3, y: 8 },
   ],
   npcs: [],
 };
@@ -101,12 +109,12 @@ export const AMBUSH_ROAD: MapDef = {
     'AAAAAAA^^^^^^^AAAAAA',
   ],
   partySpawns: [
+    { x: 1, y: 3 },
+    { x: 3, y: 4 },
     { x: 1, y: 5 },
-    { x: 1, y: 6 },
-    { x: 2, y: 4 },
-    { x: 2, y: 7 },
-    { x: 0, y: 5 },
-    { x: 0, y: 6 },
+    { x: 3, y: 6 },
+    { x: 1, y: 7 },
+    { x: 3, y: 8 },
   ],
   npcs: [],
 };
@@ -134,12 +142,12 @@ export const QUARRY_FLOOR: MapDef = {
     'AAA^^..........^^AAA',
   ],
   partySpawns: [
-    { x: 2, y: 5 },
-    { x: 2, y: 6 },
+    { x: 1, y: 3 },
     { x: 3, y: 4 },
-    { x: 3, y: 7 },
-    { x: 2, y: 4 },
-    { x: 2, y: 7 },
+    { x: 1, y: 5 },
+    { x: 3, y: 6 },
+    { x: 1, y: 7 },
+    { x: 3, y: 8 },
   ],
   npcs: [],
 };

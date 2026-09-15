@@ -4,6 +4,14 @@
  * Stat blocks are deliberately legible: a bandit is a bandit, a slinger stands
  * at the back, and the deserter exists to teach one lesson (oil plus flame).
  * XP values are chosen so the slice takes a party from level 1 to about 4.
+ *
+ * HP is generous relative to party damage on purpose. The simulator showed
+ * fights ending in two or three rounds with thinner enemies, which is not long
+ * enough for terrain to matter — a puddle nobody survives to stand in teaches
+ * nothing. These numbers put a fight at roughly five rounds.
+ *
+ * Enemies also scale with the encounter's level (see `scaleStats`), so these
+ * are level-1 figures, not what the party meets at the quarry floor.
  */
 
 import type { EnemyDef } from '../core/types';
@@ -14,7 +22,7 @@ export const ENEMIES: readonly EnemyDef[] = [
     name: 'Bandit',
     element: 'nonbender',
     size: 1,
-    stats: { maxHp: 20, maxAp: 4, maxMove: 4, power: 5, defense: 1, speed: 5, focus: 5 },
+    stats: { maxHp: 28, maxAp: 4, maxMove: 4, power: 5, defense: 1, speed: 5, focus: 5 },
     abilities: ['club_swing', 'bandit_rush'],
     ai: 'aggressive',
     xp: 30,
@@ -26,7 +34,7 @@ export const ENEMIES: readonly EnemyDef[] = [
     name: 'Slinger',
     element: 'nonbender',
     size: 1,
-    stats: { maxHp: 16, maxAp: 4, maxMove: 4, power: 4, defense: 0, speed: 7, focus: 10 },
+    stats: { maxHp: 22, maxAp: 4, maxMove: 4, power: 4, defense: 0, speed: 7, focus: 10 },
     abilities: ['sling_stone'],
     ai: 'cautious',
     xp: 30,
@@ -38,7 +46,7 @@ export const ENEMIES: readonly EnemyDef[] = [
     name: 'Bruiser',
     element: 'nonbender',
     size: 1,
-    stats: { maxHp: 30, maxAp: 4, maxMove: 3, power: 6, defense: 3, speed: 4, focus: 5 },
+    stats: { maxHp: 42, maxAp: 4, maxMove: 3, power: 6, defense: 3, speed: 4, focus: 5 },
     abilities: ['club_swing', 'bandit_rush'],
     ai: 'aggressive',
     xp: 45,
@@ -50,7 +58,7 @@ export const ENEMIES: readonly EnemyDef[] = [
     name: 'Quarry Bender',
     element: 'earth',
     size: 1,
-    stats: { maxHp: 26, maxAp: 4, maxMove: 3, power: 6, defense: 3, speed: 4, focus: 5 },
+    stats: { maxHp: 36, maxAp: 4, maxMove: 3, power: 6, defense: 3, speed: 4, focus: 5 },
     abilities: ['rock_throw', 'raise_rubble'],
     ai: 'cautious',
     xp: 50,
@@ -62,7 +70,7 @@ export const ENEMIES: readonly EnemyDef[] = [
     name: 'Fire Nation Deserter',
     element: 'fire',
     size: 1,
-    stats: { maxHp: 24, maxAp: 4, maxMove: 4, power: 6, defense: 2, speed: 6, focus: 10 },
+    stats: { maxHp: 34, maxAp: 4, maxMove: 4, power: 6, defense: 2, speed: 6, focus: 10 },
     abilities: ['fire_blast', 'oil_flask', 'torch_toss'],
     ai: 'cautious',
     xp: 55,
@@ -75,7 +83,7 @@ export const ENEMIES: readonly EnemyDef[] = [
     name: 'Mercenary',
     element: 'nonbender',
     size: 1,
-    stats: { maxHp: 26, maxAp: 4, maxMove: 4, power: 6, defense: 2, speed: 6, focus: 10 },
+    stats: { maxHp: 36, maxAp: 4, maxMove: 4, power: 6, defense: 2, speed: 6, focus: 10 },
     abilities: ['merc_blade'],
     ai: 'aggressive',
     xp: 50,
@@ -87,7 +95,7 @@ export const ENEMIES: readonly EnemyDef[] = [
     name: 'Mercenary Crossbow',
     element: 'nonbender',
     size: 1,
-    stats: { maxHp: 20, maxAp: 4, maxMove: 4, power: 5, defense: 1, speed: 7, focus: 15 },
+    stats: { maxHp: 28, maxAp: 4, maxMove: 4, power: 5, defense: 1, speed: 7, focus: 15 },
     abilities: ['merc_crossbow'],
     ai: 'cautious',
     xp: 50,
@@ -99,7 +107,7 @@ export const ENEMIES: readonly EnemyDef[] = [
     name: 'Mercenary Sergeant',
     element: 'nonbender',
     size: 1,
-    stats: { maxHp: 32, maxAp: 5, maxMove: 4, power: 6, defense: 3, speed: 6, focus: 10 },
+    stats: { maxHp: 44, maxAp: 5, maxMove: 4, power: 6, defense: 3, speed: 6, focus: 10 },
     abilities: ['merc_blade', 'rally'],
     ai: 'support',
     xp: 70,
@@ -111,7 +119,7 @@ export const ENEMIES: readonly EnemyDef[] = [
     name: 'Grumbler',
     element: 'earth',
     size: 2,
-    stats: { maxHp: 90, maxAp: 5, maxMove: 3, power: 8, defense: 5, speed: 4, focus: 5 },
+    stats: { maxHp: 86, maxAp: 5, maxMove: 3, power: 7, defense: 5, speed: 4, focus: 5 },
     abilities: ['driller_slam', 'driller_debris', 'driller_spray', 'driller_churn', 'raise_rubble'],
     ai: 'boss',
     xp: 120,
@@ -129,7 +137,7 @@ export const ENEMIES: readonly EnemyDef[] = [
     name: 'Captain Ruon',
     element: 'nonbender',
     size: 1,
-    stats: { maxHp: 30, maxAp: 4, maxMove: 4, power: 7, defense: 3, speed: 6, focus: 10 },
+    stats: { maxHp: 40, maxAp: 4, maxMove: 4, power: 7, defense: 3, speed: 6, focus: 10 },
     abilities: ['ruon_sabre', 'ruon_order'],
     ai: 'aggressive',
     xp: 0,
