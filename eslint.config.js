@@ -55,6 +55,7 @@ export default tseslint.config(
       'coverage/**',
       'playwright-report/**',
       'test-results/**',
+      '.shots/**',
     ],
   },
   js.configs.recommended,

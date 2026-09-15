@@ -1,4 +1,13 @@
+import { existsSync } from 'node:fs';
 import { defineConfig, devices } from '@playwright/test';
+
+/**
+ * Dev containers ship a Chromium that may not match the revision this
+ * Playwright expects. Point at it when it is there; in CI, where
+ * `playwright install` has run, fall through to the bundled browser.
+ */
+const PREINSTALLED_CHROMIUM = '/opt/pw-browsers/chromium';
+const executablePath = existsSync(PREINSTALLED_CHROMIUM) ? PREINSTALLED_CHROMIUM : undefined;
 
 /**
  * The container ships Chromium at PLAYWRIGHT_BROWSERS_PATH; never run
@@ -28,6 +37,7 @@ export default defineConfig({
         hasTouch: true,
         isMobile: false,
         viewport: { width: 1368, height: 912 },
+        launchOptions: executablePath ? { executablePath } : {},
       },
     },
   ],

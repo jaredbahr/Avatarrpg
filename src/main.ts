@@ -1,18 +1,41 @@
+/**
+ * Entry point.
+ *
+ * Wires the content bundle to the app and starts it. Deliberately thin: if
+ * something here is more than a few lines, it belongs in `src/app`.
+ */
+
 import './styles/base.css';
+import './styles/hud.css';
 import './styles/a11y.css';
 
-const root = document.getElementById('app');
+import { CONTENT, CONTENT_BUNDLE, STORY_ENTRY } from './content';
+import { validateContent } from './content/schemas';
+import { App } from './app/App';
 
-if (!root) {
-  throw new Error('Missing #app mount point in index.html');
+const root = document.getElementById('app');
+if (!root) throw new Error('Missing #app mount point in index.html');
+
+/*
+ * Content is validated in CI, but a dev build can be run with a half-finished
+ * ability. Failing loudly here beats a blank screen ten minutes later — and in
+ * production this is a no-op that costs a millisecond.
+ */
+if (import.meta.env.DEV) {
+  const problems = validateContent(CONTENT_BUNDLE);
+  if (problems.length > 0) {
+    console.error(`Content validation found ${problems.length} problem(s):`);
+    for (const problem of problems) console.error(`  - ${problem}`);
+  }
 }
 
-root.dataset.scene = 'boot';
-root.innerHTML = `
-  <div class="scene" style="display:grid;place-items:center;text-align:center;padding:2rem">
-    <div>
-      <h1>Four Nations Tactics</h1>
-      <p class="muted">Booting…</p>
-    </div>
-  </div>
-`;
+const app = new App(CONTENT, root, STORY_ENTRY);
+app.start();
+
+// Handy from the browser console, and how the e2e suite drives setup quickly.
+declare global {
+  interface Window {
+    fnt?: { app: App };
+  }
+}
+window.fnt = { app };

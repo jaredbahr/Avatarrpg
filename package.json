@@ -19,6 +19,7 @@
     "test": "vitest run",
     "test:watch": "vitest",
     "sim": "vitest run src/core/sim",
+    "balance": "tsx scripts/balance.ts",
     "e2e": "playwright test",
     "verify": "npm run typecheck && npm run lint && npm run test"
   },

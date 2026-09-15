@@ -1,0 +1,147 @@
+/**
+ * Settings.
+ *
+ * Four switches, each one aimed at a specific person at the table rather than
+ * at a spec: text too small on a 2736x1824 screen, too much going on, can't
+ * tell the fire from the mud, or the panels washing out in daylight.
+ */
+
+import type { App } from '../App';
+import { Dialog } from './Dialog';
+import type { DialogOptions } from './Dialog';
+import { button, el } from './dom';
+
+export class SettingsPanel extends Dialog {
+  protected options: DialogOptions = {
+    title: 'Settings',
+    subtitle: 'These apply straight away and are remembered on this device.',
+  };
+
+  constructor(private app: App) {
+    super();
+  }
+
+  protected build(body: HTMLElement): void {
+    const settings = this.app.settings;
+
+    body.appendChild(
+      this.choiceRow(
+        'Text size',
+        'Scales the whole interface, including the size of every button.',
+        [
+          { label: 'Normal', value: 'off' },
+          { label: 'Large', value: 'on' },
+          { label: 'Largest', value: 'huge' },
+        ],
+        settings.largeText,
+        (value) => this.app.updateSettings({ largeText: value as 'off' | 'on' | 'huge' }),
+      ),
+    );
+
+    body.appendChild(
+      this.toggleRow(
+        'Reduce motion',
+        'Results appear immediately instead of playing out. Nothing is hidden.',
+        settings.reduceMotion,
+        (value) => this.app.updateSettings({ reduceMotion: value }),
+      ),
+    );
+
+    body.appendChild(
+      this.toggleRow(
+        'Patterned ground',
+        'Draws a distinct texture on water, fire, mud and oil, so they are told apart by shape as well as colour.',
+        settings.hatchSurfaces,
+        (value) => this.app.updateSettings({ hatchSurfaces: value }),
+      ),
+    );
+
+    body.appendChild(
+      this.toggleRow(
+        'Higher contrast',
+        'Brighter panel edges and text, for playing in daylight.',
+        settings.highContrast,
+        (value) => this.app.updateSettings({ highContrast: value }),
+      ),
+    );
+
+    body.appendChild(
+      el(
+        'div',
+        { class: 'row dialog-footer' },
+        el('div', { class: 'spacer' }),
+        button('Done', () => this.close(), { class: 'btn-primary' }),
+      ),
+    );
+  }
+
+  private toggleRow(
+    label: string,
+    hint: string,
+    value: boolean,
+    onChange: (next: boolean) => void,
+  ): HTMLElement {
+    const toggle = button(
+      value ? 'On' : 'Off',
+      () => {
+        onChange(!value);
+        this.refresh();
+      },
+      { class: value ? 'btn-primary' : '' },
+    );
+    toggle.setAttribute('role', 'switch');
+    toggle.setAttribute('aria-checked', String(value));
+    toggle.setAttribute('aria-label', label);
+
+    return el(
+      'div',
+      { class: 'setting-row' },
+      el(
+        'div',
+        { class: 'setting-text' },
+        el('strong', { text: label }),
+        el('span', { class: 'muted tiny', text: hint }),
+      ),
+      toggle,
+    );
+  }
+
+  private choiceRow(
+    label: string,
+    hint: string,
+    choices: readonly { label: string; value: string }[],
+    value: string,
+    onChange: (next: string) => void,
+  ): HTMLElement {
+    const group = el('div', {
+      class: 'row row-wrap',
+      attrs: { role: 'radiogroup', 'aria-label': label },
+    });
+    for (const choice of choices) {
+      const active = choice.value === value;
+      const node = button(
+        choice.label,
+        () => {
+          onChange(choice.value);
+          this.refresh();
+        },
+        { class: active ? 'btn-primary' : '' },
+      );
+      node.setAttribute('role', 'radio');
+      node.setAttribute('aria-checked', String(active));
+      group.appendChild(node);
+    }
+
+    return el(
+      'div',
+      { class: 'setting-row' },
+      el(
+        'div',
+        { class: 'setting-text' },
+        el('strong', { text: label }),
+        el('span', { class: 'muted tiny', text: hint }),
+      ),
+      group,
+    );
+  }
+}
