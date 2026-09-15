@@ -63,6 +63,14 @@ export const ASSETS: Readonly<Record<string, AssetEntry>> = {
   'npc.kid': painter('villager', 'air', 'kid'),
   'npc.guard': painter('villager', 'earth', 'guard'),
 
+  /* --------------------------------------------------------------- Props */
+  'prop.barrel': painter('prop', 'water', 'barrel'),
+  'prop.flask': painter('prop', 'earth', 'flask'),
+  'prop.brazier': painter('prop', 'fire', 'brazier'),
+  'prop.hay': painter('prop', 'air', 'hay'),
+  'prop.rubble': painter('prop', 'earth', 'rubble'),
+  'prop.cart': painter('prop', 'air', 'cart'),
+
   /* ---------------------------------------------------------- Portraits */
   'portrait.kaya': painter('portrait', 'fire', 'kaya'),
   'portrait.tenzo': painter('portrait', 'fire', 'tenzo'),
@@ -104,6 +112,13 @@ export function resolveAsset(key: string): AssetEntry {
 
   if (key.startsWith('portrait.')) {
     return { kind: 'painter', painter: 'portrait', palette: 'neutral', variant: 'unknown' };
+  }
+
+  // Without this a new prop would fall through to the generic 'bender' painter
+  // and draw a barrel as a person.
+  if (key.startsWith('prop.')) {
+    const variant = key.split('.')[1] ?? 'crate';
+    return { kind: 'painter', painter: 'prop', palette: 'neutral', variant };
   }
 
   return { kind: 'painter', painter: 'bender', palette: 'neutral' };

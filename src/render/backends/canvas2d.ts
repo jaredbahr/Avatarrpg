@@ -61,6 +61,7 @@ export class Canvas2DBackend implements RenderBackend {
     this.drawPath(view, camera);
     this.drawExit(view, camera);
     this.drawNpcs(view, camera);
+    this.drawProps(view, camera);
     this.drawUnits(view, camera);
     this.drawFx(view, camera);
     this.drawFloaters(view, camera);
@@ -146,6 +147,33 @@ export class Canvas2DBackend implements RenderBackend {
       ctx.beginPath();
       ctx.arc(box.x + box.size * 0.5, box.y + box.size * 0.08, box.size * 0.07, 0, Math.PI * 2);
       ctx.fill();
+      ctx.restore();
+    }
+  }
+
+  private drawProps(view: MapView, camera: Camera): void {
+    const { ctx } = this;
+
+    for (const prop of view.props) {
+      if (!camera.isVisible(prop.pos)) continue;
+      const box = camera.toScreen(prop.pos);
+      const sprite = sprites.get(prop.sprite, box.size, { facing: 1 });
+      ctx.drawImage(sprite, box.x, box.y, box.size, box.size);
+
+      /*
+       * A damage bar only once it has been hit. Showing a full bar on every
+       * barrel would read as "these are enemies"; showing a dented one reads as
+       * "this is nearly open", which is the only thing worth communicating.
+       */
+      if (prop.hp >= prop.maxHp || prop.maxHp <= 0) continue;
+      const w = box.size * 0.6;
+      const x = box.x + (box.size - w) / 2;
+      const y = box.y + box.size * 0.9;
+      ctx.save();
+      ctx.fillStyle = 'rgba(0, 0, 0, 0.55)';
+      ctx.fillRect(x, y, w, Math.max(2, box.size * 0.05));
+      ctx.fillStyle = '#d9a441';
+      ctx.fillRect(x, y, (w * prop.hp) / prop.maxHp, Math.max(2, box.size * 0.05));
       ctx.restore();
     }
   }

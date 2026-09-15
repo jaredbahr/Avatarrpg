@@ -34,9 +34,12 @@ import {
   lineTiles,
   occupiedCells,
   posKey,
+  samePos,
   tileAt,
 } from './grid';
 import { expectedDamage, healAmount, hitChance, rollDamage, rollHit } from './damage';
+import { forecastReactions } from './reactions';
+import type { ForecastEntry } from './reactions';
 import { canUseAbilities, effectiveStats, isAlive } from './stats';
 
 /* ------------------------------------------------------------------ */
@@ -87,7 +90,9 @@ const OK: UseCheck = { ok: true, reason: '' };
 /** Can this unit use this ability *at all* right now, ignoring the target? */
 export function canUseAbility(content: ContentIndex, unit: Unit, ability: Ability): UseCheck {
   if (!isAlive(unit)) return { ok: false, reason: 'Down.' };
-  if (!unit.abilities.includes(ability.id)) return { ok: false, reason: 'Not learned yet.' };
+  if (!unitAbilities(content, unit).includes(ability.id)) {
+    return { ok: false, reason: 'Not learned yet.' };
+  }
   if (!canUseAbilities(content, unit)) return { ok: false, reason: 'Chi-blocked — cannot bend.' };
 
   const cooldown = unit.cooldowns[ability.id] ?? 0;
@@ -124,7 +129,21 @@ export function isValidTarget(
 
   if (ability.targeting.shape === 'unit') {
     const occupant = unitsOnTiles(battle.units, [target])[0];
-    if (!occupant) return { ok: false, reason: 'Nobody there.' };
+    if (!occupant) {
+      /*
+       * A prop is a legal target for anything that would take an enemy or
+       * anybody. "A firebender shooting a puddle of oil" is the whole point of
+       * the feature, and a single-target attack is the most natural way anyone
+       * reaches for it — a barrel is not "one of yours", so `enemy` is a fair
+       * fit. Only `ally` is refused: you cannot heal a crate.
+       *
+       * A misplaced tap is not a lost turn, because the confirm bar shows what
+       * is about to happen before anything is spent.
+       */
+      const prop = battle.props.find((p) => samePos(p.pos, target));
+      if (prop && ability.targeting.allow !== 'ally') return OK;
+      return { ok: false, reason: 'Nobody there.' };
+    }
     const allow = ability.targeting.allow;
     if (allow === 'enemy' && sameSide(caster, occupant)) {
       return { ok: false, reason: 'That is one of yours.' };
@@ -197,9 +216,16 @@ export interface PreviewTarget {
 export interface AbilityPreview {
   readonly tiles: readonly Vec2[];
   readonly targets: readonly PreviewTarget[];
-  /** e.g. "Leaves Fire", shown as a chip under the target list. */
+  /**
+   * Non-terrain side effects — "Pushes 2", "+1 AP". What the ability does to
+   * the *ground* is no longer described here, because describing it without
+   * consulting the combo table is how the preview came to promise "Leaves
+   * Fire" over a puddle. See `reactions` below.
+   */
   readonly terrain: readonly string[];
-  /** True when at least one of the party is in the blast. */
+  /** What the combo table will actually do, forecast by running it. */
+  readonly reactions: readonly ForecastEntry[];
+  /** True when at least one of the party is in the blast or in a chain. */
   readonly hitsFriendly: boolean;
 }
 
@@ -260,9 +286,6 @@ export function previewAbility(
 
   for (const effect of ability.effects) {
     switch (effect.kind) {
-      case 'surface':
-        terrain.push(`Leaves ${content.surfaces.get(effect.surface)?.name ?? effect.surface}`);
-        break;
       case 'wall':
         terrain.push('Raises a stone wall');
         break;
@@ -291,11 +314,17 @@ export function previewAbility(
     }
   }
 
+  const forecast = forecastReactions(content, battle, caster, ability, target, tiles);
+
   return {
     tiles,
     targets,
     terrain,
-    hitsFriendly: targets.some((t) => t.friendly && t.damage > 0),
+    reactions: forecast.entries,
+    // A bolt of lightning that chains back through the puddle your own
+    // waterbender is standing in counts as hitting your own side, even though
+    // she is nowhere near the tile you aimed at.
+    hitsFriendly: targets.some((t) => t.friendly && t.damage > 0) || forecast.catchesFriendly,
   };
 }
 
@@ -380,6 +409,16 @@ function applyEffect(
           });
         }
       }
+      /*
+       * Props break *before* the ground reacts, and the order is load-bearing.
+       * A fireball that cracks an oil flask has to leave the oil on the ground
+       * while the fire is still arriving, or the flask spills into a tile the
+       * flames have already passed through and nothing lights.
+       *
+       * Flat damage, no roll: `previewAbility` promises to consume no RNG.
+       */
+      draft.damageProps(tiles, effect.base, effect.damageType);
+
       // The ground reacts wherever the ability landed, hit or miss.
       draft.impact(tiles, effect.damageType, caster.id);
       break;
@@ -419,6 +458,10 @@ function applyEffect(
       const mode = effect.kind;
       for (const id of hitIds) {
         draft.shove(id, origin, effect.distance, mode);
+      }
+      // Shoving a barrel is the whole reason Shove is a universal ability.
+      for (const prop of draft.propsOnTiles(tiles)) {
+        draft.shoveProp(prop.id, origin, effect.distance, mode);
       }
       break;
     }
@@ -463,10 +506,28 @@ function applyEffect(
 /* Small helpers used by the HUD and the AI                            */
 /* ------------------------------------------------------------------ */
 
+/**
+ * Every ability id this unit can use: what it learned, plus the universals.
+ *
+ * Resolved here rather than written onto `Unit.abilities` at creation, which
+ * means a save made before a universal existed picks it up on load instead of
+ * needing a migration, and adding a second universal later is one line of
+ * content. Party and allies only — enemies get a universal by naming it in their
+ * own list, so the balance report's measured enemy behaviour stays comparable.
+ */
+export function unitAbilities(content: ContentIndex, unit: Unit): readonly string[] {
+  if (unit.faction === 'enemy' || content.universalAbilities.length === 0) return unit.abilities;
+  const out = [...unit.abilities];
+  for (const id of content.universalAbilities) {
+    if (!out.includes(id)) out.push(id);
+  }
+  return out;
+}
+
 /** Abilities this unit knows, resolved to definitions, in kit order. */
 export function knownAbilities(content: ContentIndex, unit: Unit): Ability[] {
   const out: Ability[] = [];
-  for (const id of unit.abilities) {
+  for (const id of unitAbilities(content, unit)) {
     const ability = content.abilities.get(id);
     if (ability) out.push(ability);
   }

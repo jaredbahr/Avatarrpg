@@ -378,6 +378,36 @@ export interface EncounterPlacement {
   readonly nameSuffix?: string;
 }
 
+/**
+ * An alternative roster for an encounter.
+ *
+ * The point is that the fight you remember is not quite the fight you get: three
+ * slingers play nothing like two bruisers, even though both cost the same. The
+ * seed picks between eligible variants, so a run is still perfectly
+ * reproducible — what changes between runs is which one the seed drew, and what
+ * changes between *playthroughs* is mostly what you did, which is where the
+ * replay value is meant to come from.
+ *
+ * `validateContent` enforces that every variant costs within 10% of the base
+ * roster in summed enemy XP. That is not bookkeeping: XP is the designer's own
+ * declared danger number, and because `xpRoster` always scores the base roster
+ * whatever spawned, budget-matched variants are XP-identical *by construction* —
+ * so the level-on-arrival guarantee in progression.test.ts is untouched.
+ */
+export interface EncounterVariant {
+  readonly id: string;
+  /** Relative weight in the seeded draw among eligible variants. */
+  readonly weight: number;
+  /** Only eligible when this passes. Absent means always eligible. */
+  readonly when?: Condition;
+  /** Replaces the authored roster. Omit to keep it and only change the trimmings. */
+  readonly enemies?: readonly EncounterPlacement[];
+  /** Props added on top of the map's own, for this variant only. */
+  readonly extraProps?: readonly PropPlacement[];
+  readonly intro?: string;
+  readonly tip?: string;
+}
+
 export interface EncounterDef {
   readonly id: string;
   readonly name: string;
@@ -399,6 +429,8 @@ export interface EncounterDef {
   readonly baselinePartySize: number;
   /** Consumed in order, one per party member above `baselinePartySize`. */
   readonly reinforcements: readonly EncounterPlacement[];
+  /** Alternative rosters, drawn by seed. Empty means this fight is always the same. */
+  readonly variants: readonly EncounterVariant[];
   readonly expectedLevel: number;
   readonly intro: string;
   /** Shown under the objective banner — a hint aimed at an 8-year-old. */
@@ -415,16 +447,108 @@ export interface TileTemplate {
   readonly surfaceDuration?: number;
 }
 
+/* ------------------------------------------------------------------ */
+/* Props                                                               */
+/* ------------------------------------------------------------------ */
+
+/**
+ * What a prop does when it breaks.
+ *
+ * Deliberately a *separate* union from `AbilityEffect`. A prop is not a caster —
+ * it has no power stat to scale from, no accuracy, and nothing to aim — so the
+ * shapes that make sense here are the ones with a blast radius and a flat number.
+ */
+export type PropEffect =
+  | {
+      readonly kind: 'surface';
+      readonly surface: SurfaceId;
+      readonly duration: number;
+      /** 0 paints the prop's own tile only. */
+      readonly radius: number;
+    }
+  | {
+      readonly kind: 'damage';
+      readonly base: number;
+      readonly damageType: DamageType;
+      readonly radius: number;
+    }
+  | {
+      readonly kind: 'status';
+      readonly status: StatusId;
+      readonly duration: number;
+      readonly chance: number;
+      readonly radius: number;
+    }
+  | { readonly kind: 'push'; readonly distance: number; readonly radius: number };
+
+/**
+ * Something on the battlefield you can shove, break, or set on fire.
+ *
+ * Props are the delivery mechanism for the reaction table in
+ * `src/content/combos.ts` — the chemistry was already written, it just had
+ * nothing to react to. A water barrel is one `surface` effect; the Wet status,
+ * the freezing, and the lightning chaining through the puddle all follow from
+ * rules that already existed.
+ */
+export interface PropDef {
+  readonly id: string;
+  readonly name: string;
+  readonly description: string;
+  readonly sprite: string;
+  readonly hp: number;
+  /** Solid enough to stand behind. Baked into the tile while the prop lives. */
+  readonly blocksMove: boolean;
+  readonly blocksSight: boolean;
+  readonly grantsCover: boolean;
+  readonly pushable: boolean;
+  /** Takes double damage from these — an oil flask is not fireproof. */
+  readonly vulnerableTo: readonly DamageType[];
+  /** Takes none from these — a stone block does not care about fire. */
+  readonly immuneTo: readonly DamageType[];
+  readonly onBreak: readonly PropEffect[];
+  /** Plain words for the combat log, exactly like a combo rule's label. */
+  readonly breakLabel: string;
+}
+
+/** A prop authored onto a map, optionally only on some routes. */
+export interface PropPlacement {
+  readonly propId: string;
+  readonly pos: Vec2;
+  readonly when?: Condition;
+}
+
+/**
+ * A live prop.
+ *
+ * `previous` is a restore journal, exactly as `TemporaryWall` uses it: a prop
+ * that blocks bakes its flags into the `Tile` when it is placed, so every
+ * existing consumer of blocking, sight and cover keeps working untouched, and
+ * breaking it puts the original tile back.
+ */
+export interface PropInstance {
+  readonly id: string;
+  readonly propId: string;
+  readonly pos: Vec2;
+  readonly hp: number;
+  readonly previous: Tile;
+}
+
 export interface NpcDef {
   readonly id: string;
   readonly name: string;
   readonly pos: Vec2;
   readonly sprite: string;
-  /** Story node entered when the NPC is tapped. */
+  /** Story node entered when the NPC is tapped, if no route matches. */
   readonly node: string;
-  /** Alternate node once this flag is set (the cold shopkeeper). */
-  readonly altFlag?: string;
-  readonly altNode?: string;
+  /**
+   * Conditional conversations, first match wins.
+   *
+   * This replaces the single `altFlag`/`altNode` pair, which could only ever
+   * express one binary swap. An NPC who greets a waterbender differently from a
+   * firebender, and differently again once you have spared somebody, needs more
+   * than one alternative.
+   */
+  readonly routes?: readonly { readonly when: Condition; readonly node: string }[];
 }
 
 export interface MapDef {
@@ -438,6 +562,8 @@ export interface MapDef {
   readonly legend: Readonly<Record<string, TileTemplate>>;
   readonly partySpawns: readonly Vec2[];
   readonly npcs: readonly NpcDef[];
+  /** Barrels, flasks, carts. Instantiated into `BattleState.props` per battle. */
+  readonly props: readonly PropPlacement[];
   readonly ambience: string;
   /** Explore maps only: stepping here advances the current story node. */
   readonly exit?: { readonly pos: Vec2; readonly label: string };
@@ -476,11 +602,95 @@ export interface ComboRule {
 
 export type FlagValue = boolean | number | string;
 
+/**
+ * A serialisable predicate over the current game.
+ *
+ * Content asks questions — "does the party have a firebender?", "has the Fire
+ * Nation forgiven us yet?" — and this is the only vocabulary it may ask them in.
+ * Plain data, no functions, so a condition round-trips through a save, validates
+ * with zod, and can be *described* back to the player in words. That last part
+ * is not a nicety: a greyed-out dialogue option that does not say why it is
+ * greyed out is just a locked door to an eight-year-old.
+ *
+ * Evaluated by `src/core/story/conditions.ts`.
+ */
+export type Condition =
+  /**
+   * `set`/`unset` are deliberately truthiness, matching every flag reader that
+   * came before them (`branch` nodes, `conditionalEnemies`). That makes them the
+   * wrong tool for a number: a standing of 0 is falsy. Use `eq`/`gte`/`lte`, or
+   * the `standing` kind, for anything numeric.
+   */
+  | {
+      readonly kind: 'flag';
+      readonly key: string;
+      readonly op: 'set' | 'unset' | 'eq' | 'gte' | 'lte';
+      readonly value?: FlagValue;
+    }
+  /** At least `min` (default 1) living party members matching the filter. */
+  | {
+      readonly kind: 'partyHas';
+      readonly element?: ElementId;
+      readonly characterId?: string;
+      readonly min?: number;
+    }
+  /** How a nation currently feels about the party. Neutral is 0. */
+  | {
+      readonly kind: 'standing';
+      readonly nation: ElementId;
+      readonly op: 'gte' | 'lte';
+      readonly value: number;
+    }
+  | { readonly kind: 'visited'; readonly nodeId: string }
+  | { readonly kind: 'partySize'; readonly op: 'gte' | 'lte'; readonly value: number }
+  | { readonly kind: 'all'; readonly of: readonly Condition[] }
+  | { readonly kind: 'any'; readonly of: readonly Condition[] }
+  | { readonly kind: 'not'; readonly of: Condition };
+
 export interface StoryOption {
   readonly label: string;
   readonly detail: string;
   readonly next: string;
   readonly setFlags?: Readonly<Record<string, FlagValue>>;
+  /** Unavailable until this passes. An absent condition is always available. */
+  readonly requires?: Condition;
+  /**
+   * Who in the party would say this.
+   *
+   * The UI resolves it against the real party and tags the option with their
+   * name, so choosing a fire-tagged line *is* choosing who walks up — the
+   * Speaker Choice needs no separate step. Purely presentational: gating is
+   * `requires`, and an option that only a firebender could say should say so in
+   * both places.
+   */
+  readonly speaker?: { readonly element?: ElementId; readonly characterId?: string };
+  /**
+   * Why this option is unavailable, in the author's own words.
+   *
+   * Every option is shown whether or not it can be taken, because seeing what
+   * you are missing is what makes a second playthrough interesting — but a
+   * greyed-out line with no reason is just a locked door. `describe()` generates
+   * a fallback; this is the better sentence.
+   */
+  readonly lockedHint?: string;
+  /** Signed nation-standing deltas applied when this option is taken. */
+  readonly adjust?: Partial<Record<ElementId, number>>;
+}
+
+/**
+ * An alternative reading of a dialogue node, chosen by the first matching
+ * condition.
+ *
+ * A fallback chain rather than a matrix, because five elements times ten
+ * characters times a growing pile of flags is not writable by hand. Authors
+ * write the line once and add a variant only where somebody would genuinely say
+ * something different.
+ */
+export interface DialogueVariant {
+  readonly when: Condition;
+  readonly speaker?: string;
+  readonly portrait?: string;
+  readonly lines: readonly string[];
 }
 
 export type StoryNode =
@@ -491,6 +701,8 @@ export type StoryNode =
       readonly portrait: string;
       readonly lines: readonly string[];
       readonly next: string;
+      /** First match wins; falls back to `lines` when none do. */
+      readonly variants?: readonly DialogueVariant[];
     }
   | {
       readonly id: string;
@@ -499,6 +711,9 @@ export type StoryNode =
       readonly portrait: string;
       readonly prompt: string;
       readonly options: readonly StoryOption[];
+      readonly variants?: readonly DialogueVariant[];
+      /** Line under the options. Act-specific colour, so it lives in the data. */
+      readonly footer?: string;
     }
   | {
       readonly id: string;
@@ -570,6 +785,8 @@ export interface TemporaryWall {
 
 export interface BattleState {
   readonly encounterId: string;
+  /** Which roster variant the seed drew, or null for the authored one. */
+  readonly variantId: string | null;
   readonly mapId: string;
   readonly grid: Grid;
   readonly units: readonly Unit[];
@@ -579,6 +796,7 @@ export interface BattleState {
   readonly round: number;
   readonly phase: BattlePhase;
   readonly temporaryWalls: readonly TemporaryWall[];
+  readonly props: readonly PropInstance[];
   /** Incremented for every unit created, so ids never collide across a battle. */
   readonly nextUnitSerial: number;
 }
@@ -691,6 +909,27 @@ export type GameEvent =
     }
   | { readonly type: 'unitPushed'; readonly unitId: string; readonly to: Vec2 }
   | { readonly type: 'unitDied'; readonly unitId: string }
+  | {
+      readonly type: 'propDamaged';
+      readonly propId: string;
+      readonly name: string;
+      readonly amount: number;
+      readonly pos: Vec2;
+    }
+  | {
+      readonly type: 'propDestroyed';
+      readonly propId: string;
+      readonly pos: Vec2;
+      /** The prop's own plain-words line, printed straight into the log. */
+      readonly label: string;
+    }
+  | { readonly type: 'propPushed'; readonly propId: string; readonly to: Vec2 }
+  | {
+      readonly type: 'standingChanged';
+      readonly nation: ElementId;
+      readonly value: number;
+      readonly delta: number;
+    }
   | { readonly type: 'xpGained'; readonly unitId: string; readonly amount: number }
   | {
       readonly type: 'leveledUp';
@@ -742,6 +981,13 @@ export interface ContentIndex {
   readonly encounters: ReadonlyMap<string, EncounterDef>;
   readonly statuses: ReadonlyMap<StatusId, StatusDef>;
   readonly surfaces: ReadonlyMap<SurfaceId, SurfaceDef>;
+  readonly props: ReadonlyMap<string, PropDef>;
   readonly combos: readonly ComboRule[];
   readonly story: ReadonlyMap<string, StoryNode>;
+  /**
+   * Abilities every party member has without spending a kit slot on them — the
+   * Shove that lets anybody push a barrel. Reached through the index because
+   * core may not import content values.
+   */
+  readonly universalAbilities: readonly string[];
 }

@@ -52,11 +52,27 @@ export interface NpcMarker {
   readonly name: string;
 }
 
+/**
+ * A prop, flattened for drawing.
+ *
+ * `hp`/`maxHp` rather than a `PropDef`: the renderer never reads content, so the
+ * scene resolves the definition and hands over only what gets painted.
+ */
+export interface RenderProp {
+  readonly id: string;
+  readonly pos: Vec2;
+  readonly sprite: string;
+  readonly name: string;
+  readonly hp: number;
+  readonly maxHp: number;
+}
+
 export interface MapView {
   readonly grid: Grid;
   readonly units: readonly RenderUnit[];
   readonly overlays: readonly OverlayLayer[];
   readonly npcs: readonly NpcMarker[];
+  readonly props: readonly RenderProp[];
   readonly path: readonly Vec2[];
   readonly fx: readonly FxInstance[];
   readonly floaters: readonly Floater[];

@@ -51,6 +51,7 @@ export const FOREST_ROAD: MapDef = {
     { x: 3, y: 8 },
   ],
   npcs: [],
+  props: [],
 };
 
 export const QUARRY_GATE: MapDef = {
@@ -84,6 +85,37 @@ export const QUARRY_GATE: MapDef = {
     { x: 3, y: 8 },
   ],
   npcs: [],
+  /*
+   * The encounter's intro has promised "barrels stacked against the gatehouse"
+   * since Phase 1, and there were never any barrels. Now there are.
+   *
+   * The brazier is the interesting one. It sits at (10,5), one tile west of the
+   * oil stripe, so a single Shove — which every party member has — tips it into
+   * the oil and lights the whole channel. That is the play the map is built
+   * around: available to the least experienced person at the table, obvious once
+   * seen, and genuinely dangerous to whoever is standing too close.
+   */
+  props: [
+    { propId: 'brazier', pos: { x: 10, y: 5 } },
+    { propId: 'water_barrel', pos: { x: 14, y: 3 } },
+    { propId: 'water_barrel', pos: { x: 14, y: 8 } },
+    /*
+     * Which SIDE of the oil channel a hazard sits on decides whether it is a
+     * tool or a trap, and the simulator was blunt about it. At (9,4), on the
+     * party's own approach lane, the flask spilled oil across the ground six
+     * players had to walk over and the full-table win rate fell to 40%. One
+     * tile group east, past the channel, and the same flask reads as 95% — it
+     * now extends the hazard toward the people you are fighting.
+     */
+    { propId: 'oil_flask', pos: { x: 12, y: 4 } },
+    /*
+     * Pella's cart, turned away at the gate, sitting on the road behind the
+     * party. Same lesson: at (13,6) it walled off the escape lane exactly when
+     * the oil caught (40%); behind the party it is cover on the approach, and
+     * average deaths at a full table drop from 4.1 to 3.2.
+     */
+    { propId: 'cabbage_cart', pos: { x: 6, y: 6 } },
+  ],
 };
 
 export const AMBUSH_ROAD: MapDef = {
@@ -117,6 +149,7 @@ export const AMBUSH_ROAD: MapDef = {
     { x: 3, y: 8 },
   ],
   npcs: [],
+  props: [],
 };
 
 export const QUARRY_FLOOR: MapDef = {
@@ -150,6 +183,22 @@ export const QUARRY_FLOOR: MapDef = {
     { x: 3, y: 8 },
   ],
   npcs: [],
+  /*
+   * Pella's side quest, paid out three fights later and never announced.
+   *
+   * Ask a child in the village about her missing brother and his produce cart is
+   * on the quarry floor when you get there — parked beside the mud the driller
+   * churns up, which is exactly where you want something that knocks people over
+   * and blinds them. A party that never spoke to her fights this without it, and
+   * nobody ever tells them what they missed.
+   */
+  props: [
+    {
+      propId: 'cabbage_cart',
+      pos: { x: 9, y: 6 },
+      when: { kind: 'flag', key: 'pella_asked', op: 'set' },
+    },
+  ],
 };
 
 export const COMBAT_MAPS: readonly MapDef[] = [FOREST_ROAD, QUARRY_GATE, AMBUSH_ROAD, QUARRY_FLOOR];

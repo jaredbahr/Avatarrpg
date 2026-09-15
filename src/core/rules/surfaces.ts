@@ -33,12 +33,15 @@ export interface StatusHit {
   readonly pos: Vec2;
   readonly status: StatusId;
   readonly chance: number;
+  /** The rule that caused it, so the confirm-step preview can attribute it. */
+  readonly comboId: string;
 }
 
 export interface ChainHit {
   readonly pos: Vec2;
   readonly amount: number;
   readonly damageType: DamageType;
+  readonly comboId: string;
 }
 
 export interface SurfaceReaction {
@@ -106,10 +109,16 @@ export function applyImpact(
             pos: cell,
             amount: rule.chainDamage,
             damageType: typeof applied === 'string' ? toDamageType(applied) : 'pure',
+            comboId: rule.id,
           });
         }
         if (rule.status) {
-          statusHits.push({ pos: cell, status: rule.status, chance: rule.statusChance });
+          statusHits.push({
+            pos: cell,
+            status: rule.status,
+            chance: rule.statusChance,
+            comboId: rule.id,
+          });
         }
       }
     }
@@ -131,7 +140,12 @@ export function applyImpact(
     });
 
     if (rule.status && !rule.chainThroughExisting) {
-      statusHits.push({ pos, status: rule.status, chance: rule.statusChance });
+      statusHits.push({
+        pos,
+        status: rule.status,
+        chance: rule.statusChance,
+        comboId: rule.id,
+      });
     }
   }
 

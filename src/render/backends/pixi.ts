@@ -478,6 +478,31 @@ export class PixiBackend implements RenderBackend {
       });
     }
 
+    for (const prop of view.props) {
+      const key = `prop:${prop.id}`;
+      live.add(key);
+      const sprite = this.unitSprite(key);
+      sprite.texture = this.texture(sprites.get(prop.sprite, TILE, { facing: 1 }));
+      sprite.position.set(prop.pos.x * TILE, prop.pos.y * TILE);
+      sprite.width = TILE;
+      sprite.height = TILE;
+      sprite.alpha = 1;
+      sprite.visible = true;
+
+      /*
+       * A damage bar only once it has been hit. A full bar on every barrel
+       * would read as "these are enemies"; a dented one reads as "this is
+       * nearly open", which is the only thing worth communicating.
+       */
+      if (prop.hp >= prop.maxHp || prop.maxHp <= 0) continue;
+      const w = TILE * 0.6;
+      const x = prop.pos.x * TILE + (TILE - w) / 2;
+      const y = prop.pos.y * TILE + TILE * 0.9;
+      const h = Math.max(2, TILE * 0.05);
+      g.rect(x, y, w, h).fill({ color: 'rgba(0,0,0,0.55)' });
+      g.rect(x, y, (w * prop.hp) / prop.maxHp, h).fill({ color: '#d9a441' });
+    }
+
     for (const unit of ordered) {
       const pos = unit.renderPos ?? unit.pos;
       const x = pos.x * TILE;

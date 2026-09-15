@@ -17,6 +17,8 @@ import { STANDARD_PARTY, runCombat, seedFor } from './runCombat';
 
 export interface EncounterReport {
   readonly encounterId: string;
+  /** Null for the authored roster; set when one variant was pinned. */
+  readonly variantId: string | null;
   readonly label: string;
   readonly partyLevel: number;
   readonly winRate: number;
@@ -39,6 +41,16 @@ export interface BalanceOptions {
   readonly party?: readonly PartySlot[];
   /** Overrides each encounter's expected level, for a "what if" sweep. */
   readonly partyLevel?: number;
+  /**
+   * Report every roster variant separately instead of letting the seed draw.
+   *
+   * Without this, an encounter with variants samples whichever one each seed
+   * happened to pick, the win rate becomes an average over rosters, and a
+   * variant that is budget-legal but win-rate-illegal hides inside it. The
+   * budget rule in validateContent proves variants cost the same; only this
+   * proves they *play* the same.
+   */
+  readonly perVariant?: boolean;
 }
 
 /**
@@ -203,41 +215,60 @@ export function runBalanceReport(
   let total = 0;
 
   for (const encounter of content.encounters.values()) {
-    let encounterWins = 0;
-    let rounds = 0;
-    let deaths = 0;
-    let hp = 0;
-    let stalemates = 0;
+    /*
+     * One pass per variant when asked, otherwise a single unpinned pass.
+     *
+     * The authored roster gets its own pass whenever it can still spawn — which
+     * is whenever every variant is conditional, since an encounter falls back to
+     * what it was written as when none of them are eligible. Reporting only the
+     * variants would have hidden the quarry gate's normal fight entirely behind
+     * the one that needs a firebender to trigger it.
+     */
+    const baseCanSpawn =
+      encounter.variants.length === 0 || encounter.variants.every((v) => v.when !== undefined);
+    const passes: (string | null)[] = options.perVariant
+      ? [...(baseCanSpawn ? [null] : []), ...encounter.variants.map((v) => v.id)]
+      : [null];
 
-    for (let trial = 0; trial < trials; trial++) {
-      const result = runCombat(content, {
-        seed: seedFor(encounter.id, trial),
+    for (const variantId of passes) {
+      let encounterWins = 0;
+      let rounds = 0;
+      let deaths = 0;
+      let hp = 0;
+      let stalemates = 0;
+
+      for (let trial = 0; trial < trials; trial++) {
+        const result = runCombat(content, {
+          seed: seedFor(`${encounter.id}:${variantId ?? ''}`, trial),
+          encounterId: encounter.id,
+          party,
+          partyLevel: options.partyLevel ?? encounter.expectedLevel,
+          ...(variantId ? { variantId } : {}),
+        });
+
+        if (result.outcome === 'victory') encounterWins++;
+        if (result.outcome === 'stalemate') stalemates++;
+        rounds += result.rounds;
+        deaths += result.partyDeaths;
+        hp += result.partyHpTotal > 0 ? result.partyHpRemaining / result.partyHpTotal : 0;
+        anomalies.push(...result.anomalies);
+      }
+
+      encounters.push({
         encounterId: encounter.id,
-        party,
+        variantId,
+        label: variantId ? `${encounter.name} (${variantId})` : encounter.name,
         partyLevel: options.partyLevel ?? encounter.expectedLevel,
+        winRate: encounterWins / trials,
+        averageRounds: rounds / trials,
+        averagePartyDeaths: deaths / trials,
+        averageHpRemaining: hp / trials,
+        stalemates,
       });
 
-      if (result.outcome === 'victory') encounterWins++;
-      if (result.outcome === 'stalemate') stalemates++;
-      rounds += result.rounds;
-      deaths += result.partyDeaths;
-      hp += result.partyHpTotal > 0 ? result.partyHpRemaining / result.partyHpTotal : 0;
-      anomalies.push(...result.anomalies);
+      wins += encounterWins;
+      total += trials;
     }
-
-    encounters.push({
-      encounterId: encounter.id,
-      label: encounter.name,
-      partyLevel: options.partyLevel ?? encounter.expectedLevel,
-      winRate: encounterWins / trials,
-      averageRounds: rounds / trials,
-      averagePartyDeaths: deaths / trials,
-      averageHpRemaining: hp / trials,
-      stalemates,
-    });
-
-    wins += encounterWins;
-    total += trials;
   }
 
   return {

@@ -16,13 +16,17 @@ import type {
   ContentIndex,
   EncounterDef,
   EncounterPlacement,
+  EncounterVariant,
   FlagValue,
   GameState,
   Grid,
+  PropInstance,
+  PropPlacement,
   Unit,
   Vec2,
 } from '../types';
-import { buildGrid, enterCost, occupiedCells, posKey } from '../rules/grid';
+import { evaluate } from '../story/conditions';
+import { buildGrid, enterCost, occupiedCells, posKey, tileAt, withTile } from '../rules/grid';
 import { enemiesToDrop, scaleForTable } from '../rules/difficulty';
 import {
   combinedKit,
@@ -261,14 +265,17 @@ export function encounterRoster(
   encounter: EncounterDef,
   flags: Readonly<Record<string, FlagValue>>,
   partySize: number,
+  variant: EncounterVariant | null = null,
 ): { enemies: EncounterPlacement[]; allies: EncounterPlacement[] } {
   // Story allies fight on the party's side, so they count toward the scaling.
   const friendlyCount = partySize + encounter.allies.length;
+  // A variant swaps the authored roster; everything after it — under-strength
+  // trimming, flag-gated additions, reinforcements — still layers on top, so
+  // CLAUDE.md's "difficulty scales in two places and only those two" holds.
+  const authored = variant?.enemies ?? encounter.enemies;
   const dropped = enemiesToDrop(encounter.baselinePartySize, friendlyCount);
   const enemies =
-    dropped > 0
-      ? encounter.enemies.slice(0, Math.max(1, encounter.enemies.length - dropped))
-      : [...encounter.enemies];
+    dropped > 0 ? authored.slice(0, Math.max(1, authored.length - dropped)) : [...authored];
 
   for (const group of encounter.conditionalEnemies) {
     const isSet = Boolean(flags[group.flag]);
@@ -303,11 +310,95 @@ export function xpRoster(
 }
 
 /**
- * Assembles a battle: builds the grid from the map, drops the party on the
- * spawn points, places enemies (and any conditional reinforcements the story
- * flags call for), and rolls initiative once for the whole fight.
+ * Draws one of an encounter's roster variants.
+ *
+ * Eligible variants are filtered by condition, then drawn by weight from the
+ * cursor `createBattle` was handed — so the choice is part of the same seeded
+ * stream as everything else and a run stays perfectly reproducible. An encounter
+ * with no variants, or none eligible, keeps its authored roster and returns null.
+ *
+ * The RNG is consumed *only* when there is a real choice to make, so adding a
+ * variant to one encounter cannot shift the dice for every fight after it.
  */
+export function pickVariant(
+  encounter: EncounterDef,
+  state: GameState,
+  rng: RngCursor,
+): EncounterVariant | null {
+  const eligible = encounter.variants.filter(
+    (v) => v.weight > 0 && (!v.when || evaluate(state, v.when)),
+  );
+  if (eligible.length === 0) return null;
+  if (eligible.length === 1) return eligible[0] ?? null;
+
+  const total = eligible.reduce((sum, v) => sum + v.weight, 0);
+  let roll = rng.float() * total;
+  for (const variant of eligible) {
+    roll -= variant.weight;
+    if (roll < 0) return variant;
+  }
+  return eligible[eligible.length - 1] ?? null;
+}
+
+/**
+ * Instantiates a map's authored props, baking each one's spatial flags into the
+ * tile it stands on and journalling the tile it replaced.
+ *
+ * This is the same trick `BattleDraft.raiseWall` uses, and it is why props cost
+ * almost nothing to integrate: movement, line of sight, cover and the AI's
+ * positional scoring all read `Tile`, so a prop that writes itself into the tile
+ * is visible to every one of them with no call site changed. Breaking it puts
+ * `previous` back.
+ */
+function placeMapProps(
+  content: ContentIndex,
+  placements: readonly PropPlacement[],
+  grid: Grid,
+  state: GameState,
+  startSerial: number,
+): { grid: Grid; props: PropInstance[]; serial: number } {
+  const props: PropInstance[] = [];
+  const used = new Set<string>();
+  let serial = startSerial;
+  let current = grid;
+
+  for (const placement of placements) {
+    // A variant's extras are appended after the map's own, so a variant cannot
+    // silently stack a second barrel on an existing one.
+    const key = posKey(placement.pos);
+    if (used.has(key)) continue;
+    used.add(key);
+
+    if (placement.when && !evaluate(state, placement.when)) continue;
+
+    const def = content.props.get(placement.propId);
+    const tile = tileAt(current, placement.pos);
+    if (!def || !tile) continue;
+
+    props.push({
+      id: `prop${serial++}`,
+      propId: placement.propId,
+      pos: placement.pos,
+      hp: def.hp,
+      previous: tile,
+    });
+
+    if (def.blocksMove || def.blocksSight || def.grantsCover) {
+      current = withTile(current, placement.pos, {
+        ...tile,
+        blocked: tile.blocked || def.blocksMove,
+        blocksSight: tile.blocksSight || def.blocksSight,
+        cover: tile.cover || def.grantsCover,
+      });
+    }
+  }
+
+  return { grid: current, props, serial };
+}
+
 export interface BattleOptions {
+  /** Force a specific roster variant. The balance report pins one per run. */
+  readonly variantId?: string;
   /**
    * Levels the opposition against this instead of the encounter's own
    * `expectedLevel`. Only the simulator passes it: comparing two disciplines
@@ -331,9 +422,34 @@ export function createBattle(
   const map = content.maps.get(encounter.mapId);
   if (!map) throw new Error(`Encounter "${encounterId}" uses unknown map "${encounter.mapId}"`);
 
-  const grid = buildGrid(map);
+  const variant = options.variantId
+    ? (encounter.variants.find((v) => v.id === options.variantId) ?? null)
+    : pickVariant(encounter, state, rng);
+
   const taken = new Set<string>();
   const units: Unit[] = [];
+  let serial = 1;
+
+  /*
+   * Props go down before anybody stands anywhere.
+   *
+   * A blocking prop bakes itself into the tile, so placing it first is what makes
+   * `placeAt` and every later pathing call see it without being told. It also
+   * means a barrel can never end up underneath a party member — `validateContent`
+   * rejects a prop on a spawn point, but reserving the cell here keeps the
+   * enemy spiral honest too.
+   */
+  const placed = placeMapProps(
+    content,
+    [...map.props, ...(variant?.extraProps ?? [])],
+    buildGrid(map),
+    state,
+    serial,
+  );
+  const grid = placed.grid;
+  const props = placed.props;
+  serial = placed.serial;
+  for (const prop of props) taken.add(posKey(prop.pos));
 
   // Party first: they get the authored spawn points.
   state.party.forEach((member, index) => {
@@ -351,13 +467,12 @@ export function createBattle(
     });
   });
 
-  const roster = encounterRoster(encounter, state.flags, state.party.length);
+  const roster = encounterRoster(encounter, state.flags, state.party.length, variant);
   const level = options.enemyLevel ?? encounter.expectedLevel;
   const table = {
     baselinePartySize: encounter.baselinePartySize,
     partySize: state.party.length + encounter.allies.length,
   };
-  let serial = 1;
 
   for (const placement of roster.allies) {
     const def = content.enemies.get(placement.enemyId);
@@ -381,6 +496,7 @@ export function createBattle(
 
   return {
     encounterId,
+    variantId: variant?.id ?? null,
     mapId: encounter.mapId,
     grid,
     units,
@@ -389,6 +505,7 @@ export function createBattle(
     round: 1,
     phase: 'active',
     temporaryWalls: [],
+    props,
     nextUnitSerial: serial,
   };
 }

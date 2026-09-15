@@ -8,6 +8,12 @@ test-results/
 .vite/
 *.local
 .DS_Store
+
+# Throwaway probes run from the repo root, because `tsx` needs them inside the
+# project to resolve `./src/...`. They are not part of the game.
+*.tmp.ts
+*.tmp.mjs
+*.tmp.js
 .env
 .env.*
 !.env.example

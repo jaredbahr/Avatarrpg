@@ -30,6 +30,7 @@ export type {
   NpcMarker,
   OverlayKind,
   OverlayLayer,
+  RenderProp,
   RenderUnit,
 } from './view';
 
