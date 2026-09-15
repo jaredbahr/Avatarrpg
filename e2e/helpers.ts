@@ -106,7 +106,41 @@ export async function takeTurn(page: Page): Promise<boolean> {
 
   const ready = page.getByRole('button', { name: /I'm ready/i });
   if (await ready.count()) await ready.click();
+  await settleLayout(page);
   return true;
+}
+
+/**
+ * Waits for the map camera to hold still across two frames.
+ *
+ * Clearing the hand-off card reflows the HUD, which resizes the map a frame
+ * later through the ResizeObserver, and the refit runs a frame after that.
+ * On a viewport where the fit is height-limited (an iPad in landscape) the
+ * refit changes the tile size, so a camera read taken before it lands maps a
+ * tile to the wrong pixel. Slow frames (WebKit on software GL) open the gap
+ * wide enough to matter; three reads two frames apart close it.
+ */
+export async function settleLayout(page: Page): Promise<void> {
+  await page.waitForFunction(
+    () =>
+      new Promise<boolean>((resolve) => {
+        const read = () => JSON.stringify(window.fnt?.app.rendererCamera() ?? null);
+        const frames = (n: number, then: () => void) => {
+          if (n === 0) then();
+          else requestAnimationFrame(() => frames(n - 1, then));
+        };
+        const reads: string[] = [read()];
+        frames(2, () => {
+          reads.push(read());
+          frames(2, () => {
+            reads.push(read());
+            resolve(reads.every((r) => r === reads[0]));
+          });
+        });
+      }),
+    undefined,
+    { timeout: 10_000 },
+  );
 }
 
 /**

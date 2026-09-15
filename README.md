@@ -57,6 +57,22 @@ Saves live in `localStorage` (3 slots + an autosave). Because that is per-browse
 and per-device, use **Pause → Export save** to get a `.json` file before
 switching devices or clearing browser data, and **Import save** on the other end.
 
+## Playing on an iPad
+
+Open the deployed URL in Safari, then **Share → Add to Home Screen**. The icon
+launches the game full-screen and it keeps working offline. On the board:
+
+- **Pinch** to zoom in on a fight, **drag** to pan while zoomed, and tap
+  **Recentre** in the top bar to see the whole board again.
+- **Long-press** a unit for the inspector; the iOS copy sheet stays out of the way.
+- **Tap** a turn-strip chip or a status chip to read what a hover would show.
+- **Portrait** works: the HUD stacks under the map, and the board fits at a
+  tappable tile size or pans if it cannot. Landscape is still the better way to
+  play with six people round a table.
+
+iPads have no vibration motor the browser can reach, so the long-press buzz is
+Surface-only. The full checklist for a new device is in `docs/device-matrix.md`.
+
 ## How a session runs
 
 1. **Party setup** — pick 1–6 players; each enters a name, then picks an element
@@ -148,8 +164,12 @@ src/core/     Pure rules. No DOM, no Math.random, no Date.now.
               Runs in Node, which is what makes the simulator and tests possible.
 src/content/  Data only: abilities, characters, enemies, maps, story, assets.
               Validated by zod at load time *and* in a CI test.
-src/render/   Canvas 2D drawing. One Renderer interface owns the 2D context.
+src/render/   Drawing. One Renderer facade over two backends: WebGL (Pixi)
+              where it is accelerated, Canvas 2D otherwise. Draws a view
+              model built in src/app, never game state.
 src/app/      Scenes, HUD, hot-seat, storage. May import anything.
+docs/         The roadmap, the decision records, the art bible and the
+              device matrix.
 ```
 
 Data flows one way:
@@ -292,6 +312,11 @@ Real tuning happens after the kids play it. These are the numbers to argue with.
 - **Phase 2** — world map, Fire Nation outpost, Water Tribe and Air Temple arcs,
   more enemy types, equipment. Planned. (Deliberately _after_ 1.5: authoring
   three arcs against the old schemas and retrofitting branching afterwards would
-  mean authoring them twice.)
-- **Phase 3** — tweened animation, particle FX, audio, commissioned art, haptics.
-  Planned.
+  mean authoring them twice, and _after_ A2 below so new enemies are authored
+  against the asset contract.)
+- **Phase 3** — cross-device, art and animation, in stages (`docs/roadmap.md`):
+  **A1** device foundation — pinch and pan, iPad standalone, portrait,
+  device-resolution sprites, WebKit iPad tests. ✅ **A2** asset contract and
+  placeholder pipeline. **A3** choreography, camera and particle effects.
+  **B** pilot art (portraits, one hero, one enemy, fire). **C** full art pass.
+  **D** audio and polish. The engine stays Pixi v8 (`docs/adr/0001`).

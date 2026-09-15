@@ -83,7 +83,7 @@ test.describe('touch targets', () => {
     });
 
     const map = await page.locator('.map-canvas').boundingBox();
-    if (map) await page.mouse.click(map.x + map.width * 0.5, map.y + map.height * 0.5);
+    if (map) await page.touchscreen.tap(map.x + map.width * 0.5, map.y + map.height * 0.5);
 
     const after = await page.evaluate(() => {
       const battle = window.fnt?.app.state?.battle;

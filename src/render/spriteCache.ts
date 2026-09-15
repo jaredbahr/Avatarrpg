@@ -6,6 +6,12 @@
  * that never changes, so each (asset, variant, size, facing) is painted once
  * into an offscreen canvas and blitted thereafter.
  *
+ * Sizes are *device* pixels: the caller multiplies its CSS size by the display
+ * ratio, so a Surface or an iPad gets a sprite painted for its screen rather
+ * than one painted at CSS size and stretched two or three times. The cache is
+ * bounded and evicts least-recently-used entries, because iOS caps the total
+ * canvas memory a page may hold and a pinch to zoom walks through many sizes.
+ *
  * The cache also owns image loading, so pointing a manifest entry at a real
  * bitmap later needs no change anywhere else: the first draw shows the painted
  * placeholder, and the image takes over once it has loaded.
@@ -20,7 +26,16 @@ interface CacheEntry {
 }
 
 /** Sizes are bucketed so a slow zoom does not repaint every sprite per frame. */
-const SIZE_BUCKET = 4;
+const SIZE_BUCKET = 8;
+
+/**
+ * Past this many device pixels per tile a painter has no more detail to give,
+ * and a 2-tile boss at the cap is still only a 512x256 canvas.
+ */
+export const MAX_SPRITE_PX = 256;
+
+/** 128 entries at the cap is 32 MB of canvas: comfortably under the iOS limit. */
+const MAX_ENTRIES = 128;
 
 export class SpriteCache {
   private entries = new Map<string, CacheEntry>();
@@ -33,18 +48,25 @@ export class SpriteCache {
   }
 
   private bucket(size: number): number {
-    return Math.max(SIZE_BUCKET, Math.round(size / SIZE_BUCKET) * SIZE_BUCKET);
+    const bucketed = Math.max(SIZE_BUCKET, Math.round(size / SIZE_BUCKET) * SIZE_BUCKET);
+    return Math.min(MAX_SPRITE_PX, bucketed);
   }
 
   /**
-   * Returns a canvas of the requested sprite, painting it if necessary.
-   * `width` differs from `size` only for the 2-tile boss.
+   * Returns a canvas of the requested sprite, painting it if necessary. `size`
+   * is the tile's height in device pixels; `widthTiles` differs from 1 only
+   * for the 2-tile boss.
    */
   get(key: string, size: number, options: PainterOptions = {}, widthTiles = 1): HTMLCanvasElement {
     const bucketed = this.bucket(size);
     const cacheKey = `${key}|${options.variant ?? ''}|${options.facing ?? 1}|${bucketed}|${widthTiles}`;
     const existing = this.entries.get(cacheKey);
-    if (existing) return existing.canvas;
+    if (existing) {
+      // Re-insert so Map order doubles as recency.
+      this.entries.delete(cacheKey);
+      this.entries.set(cacheKey, existing);
+      return existing.canvas;
+    }
 
     const canvas = document.createElement('canvas');
     canvas.width = Math.max(1, Math.round(bucketed * widthTiles));
@@ -62,6 +84,11 @@ export class SpriteCache {
     }
 
     this.entries.set(cacheKey, { canvas });
+    while (this.entries.size > MAX_ENTRIES) {
+      const oldest = this.entries.keys().next().value;
+      if (oldest === undefined) break;
+      this.entries.delete(oldest);
+    }
     return canvas;
   }
 

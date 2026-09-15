@@ -1,10 +1,19 @@
 /**
  * The camera.
  *
- * Combat maps auto-fit: the whole 20x12 grid is always on screen with the HUD
- * docked, because a tactics fight where you have to scroll to see the enemy is
- * a tactics fight nobody can plan. Explore maps are larger than the viewport
- * and pan by drag, clamped so the map edge never leaves the frame.
+ * Combat maps auto-fit: the whole 20x12 grid is on screen with the HUD docked,
+ * because a tactics fight where you have to scroll to see the enemy is a
+ * tactics fight nobody can plan. Two things bend that rule, both on purpose:
+ *
+ *  - A viewport too narrow to show a tile at fingertip size (an iPad held in
+ *    portrait, a phone) fits the map at the smallest tappable tile instead and
+ *    lets it pan, centring on whoever is acting. Missing the enemy by scrolling
+ *    is recoverable; missing the tile you meant to tap costs a turn.
+ *  - The player can pinch or wheel in to look closer, and pan while zoomed.
+ *    "Recentre" in the HUD puts the whole board back.
+ *
+ * Explore maps are larger than the viewport and pan by drag, clamped so the
+ * map edge never leaves the frame.
  */
 
 import type { Grid, Vec2 } from '../core/types';
@@ -12,11 +21,23 @@ import type { Grid, Vec2 } from '../core/types';
 /** Logical tile size before the fit scale is applied. */
 export const TILE = 64;
 
+/**
+ * Smallest tile worth fitting to, in CSS pixels. Below this a fingertip covers
+ * more than one tile; `--tap` is 48px for buttons, but a tile has the confirm
+ * step behind it, so it can be a little smaller.
+ */
+export const MIN_TILE_PX = 40;
+
 export interface Viewport {
   readonly width: number;
   readonly height: number;
   /** devicePixelRatio, so the canvas is crisp on a Surface. */
   readonly dpr: number;
+}
+
+export interface ScreenPoint {
+  readonly x: number;
+  readonly y: number;
 }
 
 export class Camera {
@@ -42,16 +63,30 @@ export class Camera {
     return this.grid.height * TILE * this.scale;
   }
 
-  /**
-   * Scales so the entire grid fits inside the viewport with a small margin,
-   * then centres it. Used for every combat map on every resize.
-   */
-  fit(margin = 12): void {
+  /** The scale at which the whole grid fits inside the viewport with a margin. */
+  fitScale(margin = 12): number {
     const usableWidth = Math.max(1, this.viewport.width - margin * 2);
     const usableHeight = Math.max(1, this.viewport.height - margin * 2);
     const scaleX = usableWidth / (this.grid.width * TILE);
     const scaleY = usableHeight / (this.grid.height * TILE);
-    this.scale = Math.max(this.minScale, Math.min(this.maxScale, Math.min(scaleX, scaleY)));
+    return Math.max(this.minScale, Math.min(this.maxScale, Math.min(scaleX, scaleY)));
+  }
+
+  /** True while the whole grid is on screen, i.e. nothing is hidden by zoom. */
+  get fitted(): boolean {
+    return this.scale <= this.fitScale() + 1e-6;
+  }
+
+  /**
+   * Scales so the entire grid fits inside the viewport, then centres it. Used
+   * for every combat map on every resize. When fitting would make a tile
+   * smaller than a fingertip, fits to the smallest tappable tile instead and
+   * lets the map pan (see the header).
+   */
+  fit(margin = 12): void {
+    const fitScale = this.fitScale(margin);
+    const tappable = MIN_TILE_PX / TILE;
+    this.scale = Math.max(this.minScale, Math.min(this.maxScale, Math.max(fitScale, tappable)));
     this.centre();
   }
 
@@ -88,6 +123,23 @@ export class Camera {
   panBy(dx: number, dy: number): void {
     this.offsetX -= dx;
     this.offsetY -= dy;
+    this.clamp();
+  }
+
+  /**
+   * Multiplies the scale by `factor`, keeping whatever is under `at` (a screen
+   * point) where it is, which is what makes a pinch feel anchored to the
+   * fingers. Zooming out stops at the fitted board: further out shows nothing
+   * new, just a smaller map.
+   */
+  zoomAt(at: ScreenPoint, factor: number): void {
+    const lower = Math.min(this.fitScale(), this.maxScale);
+    const next = Math.max(lower, Math.min(this.maxScale, this.scale * factor));
+    const ratio = next / this.scale;
+    if (ratio === 1) return;
+    this.offsetX = (at.x + this.offsetX) * ratio - at.x;
+    this.offsetY = (at.y + this.offsetY) * ratio - at.y;
+    this.scale = next;
     this.clamp();
   }
 

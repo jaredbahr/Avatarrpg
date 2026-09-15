@@ -56,7 +56,7 @@ jobs:
           BALANCE_DISCIPLINE_TRIALS: 6
 
   e2e:
-    name: End-to-end (Chromium, touch)
+    name: End-to-end (Chromium touch, WebKit iPad)
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -68,8 +68,10 @@ jobs:
 
       - run: npm ci
 
-      - name: Install Chromium for Playwright
-        run: npx playwright install --with-deps chromium
+      - name: Install Chromium and WebKit for Playwright
+        # WebKit is the iPad's engine; the iPad projects in playwright.config.ts
+        # only exist when CI is set (or FNT_E2E_WEBKIT=1 locally).
+        run: npx playwright install --with-deps chromium webkit
 
       - name: Run e2e suite
         run: npm run e2e

@@ -15,7 +15,7 @@ import type { Viewport } from './camera';
 import { SURFACE_STYLES } from './palettes';
 import { Canvas2DBackend } from './backends/canvas2d';
 import { PixiBackend } from './backends/pixi';
-import type { RenderBackend } from './backends/backend';
+import type { BackendCapabilities, RenderBackend } from './backends/backend';
 import { sprites } from './spriteCache';
 import type { MapView } from './view';
 
@@ -89,7 +89,12 @@ export class Renderer {
 
   /** Which backend is actually running. Exposed for the e2e suite and Settings. */
   get backendName(): 'webgl' | 'canvas' {
-    return this.backend instanceof PixiBackend ? 'webgl' : 'canvas';
+    return this.backend.capabilities.name;
+  }
+
+  /** What the running backend can draw beyond the board itself. */
+  get capabilities(): BackendCapabilities {
+    return this.backend.capabilities;
   }
 
   private measure(): Viewport {

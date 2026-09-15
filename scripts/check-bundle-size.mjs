@@ -1,7 +1,9 @@
 /**
- * Fails the build if the shipped JS exceeds the budget. Keeping the bundle
- * small is the reason this game uses Canvas 2D + DOM instead of a game engine,
- * so the budget is a guard rail rather than a nice-to-have.
+ * Fails the build if the shipped JS exceeds the budget. The game ships one
+ * renderer (Pixi) and no game engine on top, and a tablet on a family's wifi
+ * should load it in a breath, so the budget is a guard rail rather than a
+ * nice-to-have. Art assets are budgeted separately (docs/roadmap.md); this
+ * gate is JavaScript only.
  */
 import { gzipSync } from 'node:zlib';
 import { readdirSync, readFileSync, statSync } from 'node:fs';
