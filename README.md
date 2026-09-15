@@ -39,6 +39,13 @@ Install this site as an app** so it launches full-screen in landscape and works
 offline (the service worker caches the whole build — no network needed once it
 has loaded once).
 
+> A GitHub Pages site is served to **anyone who has the URL**, even when the
+> repository itself is private — private Pages needs Enterprise Cloud, not Pro.
+> The build therefore ships `robots.txt` (`Disallow: /`) and a `noindex` tag so
+> it stays out of search results. That is obscurity, not access control. If the
+> site must not be reachable at all, do not deploy: `npm run build` and copy
+> `dist/` onto the tablet, or run `npm run dev` on the home network.
+
 Recommended before handing it to kids:
 
 - **Pause → Settings → Large text** if the HUD reads small at 2736×1824.
