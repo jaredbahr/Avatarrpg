@@ -1,0 +1,5 @@
+# This is a private, non-commercial family fan project. GitHub Pages sites are
+# reachable by anyone with the URL even when the repository is private, so keep
+# the game out of search indexes at least.
+User-agent: *
+Disallow: /
