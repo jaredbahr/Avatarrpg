@@ -64,10 +64,10 @@ export const HEROES: Readonly<Record<string, Make>> = {
       skin: '#c9a27a',
       hairStyle: 'sweptBack',
       garment: { base: '#b53a2a', dark: '#7a2419' },
-      hem: 0.08,
+      hem: 0.1,
+      sleeves: '#c9a27a',
       trousers: CHARCOAL,
-      apron: '#3a3532',
-      sash: { color: p.base, tails: false },
+      sash: { color: p.base, tails: true },
     }),
   nilak: (p) =>
     generic('robed', p, {

@@ -47,10 +47,9 @@ A full-body figure per character, three-quarter view, on parchment, is the
 single source of truth every pose is generated from: feed it back as the image
 reference (character consistency) for every frame. Keep the originals as
 `art/raw/reference/<assetKey>.png` (git ignores `art/raw/`); the key is the
-unit's manifest key, `unit.fire.kaya` and so on. Nine of the ten heroes'
-references exist as of 2026-09-16; Tenzo's and the bandit's sheet packs
-generate their own first, and the other enemies and the NPC speakers still
-need theirs.
+unit's manifest key, `unit.fire.kaya` and so on. All ten heroes' references
+exist as of 2026-09-16; the bandit's sheet pack generates its own first, and
+the other enemies and the NPC speakers still need theirs.
 
 ## Sprite sheets (available now)
 
@@ -62,8 +61,8 @@ the character has them. Every pose is one image, generated on a flat
 1. Open `prompts/sheets/<assetKey>.md`. Each pack is self-contained: a pose
    table with one prompt line per frame, the prompt paragraph that carries
    the style block and the frame rules, the negative prompt and the exact
-   commands. Nine heroes' packs are written from their reference figures;
-   Tenzo's and the bandit's generate their reference first.
+   commands. The ten heroes' packs are written from their reference figures;
+   the bandit's generates its reference first.
 2. Generate each pose at 4x (512×768 for a one-tile unit) and save it as
    `art/raw/<assetKey>/<clip>/<index>.png`, for example
    `art/raw/unit.fire.kaya/cast/1.png`. Indices start at 0 with no gaps.
