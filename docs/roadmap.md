@@ -129,6 +129,38 @@ road first), the first sheets (Kaya and the bandit), his go/no-go against
 the mockup on the device checklist, then the far-horizon renders' explore
 mode (a party walk with a roster panel) as its own milestone, and D.
 
+## Milestone 3: explore mode from the renders (2026-09-16)
+
+The owner's verdict on Milestone 2, in his words: the idea is solid, the
+visuals need flushing out, "I want this to look good not poor", and push
+what is done so he can test it. The branch was deployed to Pages as it
+stood, and the next milestone became the far-horizon render of explore
+mode: a painted world the whole party walks through, a roster beside it,
+actions along the bottom. On the same rules, with `src/core/` gaining one
+event and nothing else (ADR 0010).
+
+| Question   | Decision                                                                                                                                                      |
+| ---------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Direction  | Explore mode from the renders. Act 2, audio and the cast forms wait.                                                                                          |
+| World size | The village only, painted through the slot ADR 0009 built. No minimap until a map needs one.                                                                  |
+| Hotbar     | Party actions, all real: Talk, Party, Save, Pause. No fake ability buttons.                                                                                   |
+| Party walk | Followers trail the leader. Tap to walk as before; the others follow the walked route a tile apart, each in their own figure. Presentation only, never saved. |
+| Test build | Deploy the branch to Pages first, before any Milestone 3 code, so the owner tests Milestone 2 on the iPad while this is built.                                |
+
+| Slice | What it did                                                                                                                                                                                                                   |
+| ----- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| M3.0  | The branch deployed to Pages by workflow dispatch, CI on the Milestone 2 head confirmed green                                                                                                                                 |
+| M3.1  | A walk is an event: `partyWalked` from the reducer, a move track from the choreography, taps ignored mid-walk, the camera following the figure                                                                                |
+| M3.2  | The whole party walks: `PartyTrail` seats a line behind the leader and routes each follower along the walked tiles, pushed alongside the leader's track; every member a `RenderUnit`; a filmstrip beat of the walk            |
+| M3.3  | The roster beside the map and the hotbar under it, on the unit panel's pieces and the action bar's; the title plate with the objective and the gate's label; the touch spec in the village; the village beat on every project |
+| M3.4  | Proof on both backends: the explore spec checks the drawn party against the rules after a walk, Talk within reach, the gate; the animation spec plays a village walk and collapses it under reduce motion                     |
+| M3.5  | This record, ADR 0010, the gallery guide, device checklist rows 23 to 25                                                                                                                                                      |
+
+After this milestone: the owner's village painting through `art:map`, his
+walk through the village on the iPad (checklist rows 23 to 25), then the
+road between places as chained explore maps with a region graph in content,
+the first generated sheets, and D.
+
 ## Checklists
 
 ### A1 Device foundation
@@ -155,6 +187,7 @@ mode (a party walk with a roster panel) as its own milestone, and D.
 - [x] P1: curtain reveal after the synchronous swap; dialogs ease in; reduce-motion collapses both
 - [x] P2: unit-panel portrait and an element glyph on every ability; 48 px holds at Largest
 - [ ] P2: initiative timeline, confirm bar, log scroll (after the gate: they cost HUD height the viewport spec watches)
+- [x] Explore: the party walks the village as figures in a line; the roster and the hotbar on the same tokens as the fight (Milestone 3, ADR 0010)
 - [x] P3: edge shading and vignette on both backends, transparent clear and the map-margin wash; cliff bands, canopies, wall masses, pool banks, decals and ambience came with them (ADR 0008)
 - [x] Screenshot pass at 1368×912, 1194×834 and 834×1194, plus Largest text and High contrast: the gallery captures every slice on all five projects (ADR 0006)
 

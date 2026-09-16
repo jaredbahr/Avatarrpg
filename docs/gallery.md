@@ -26,7 +26,8 @@ runner without a GPU sees, and whether the board is still correct there.
 | Beat                  | What it is for                                                                     |
 | --------------------- | ---------------------------------------------------------------------------------- |
 | `01-title`            | The shell: the wheel, the display face, ink and parchment                          |
-| `02-village`          | Explore: does the village read as a place                                          |
+| `02-village`          | Explore: the village as a place, the party as a line in it, the roster and hotbar  |
+| `02b-village-walk`    | A six-tile village walk, the whole party through its playback                      |
 | `03-dialogue`         | The stage: portrait medallion, name plate, mood tint. Where portraits land         |
 | `04-board-idle`       | The board at rest with the HUD docked                                              |
 | `05-move-preview`     | Range, path and confirm bar: the grid feel                                         |
@@ -80,6 +81,11 @@ that question broken into parts.
   same world as the board? The acting unit's portrait sits in the unit panel
   and every ability carries its element's glyph: do they read as drawn, not
   as labels?
+- **The village.** Beats 02 and 02b after Milestone 3. Does the party read
+  as people walking through a place together, a tile apart, or as pieces
+  sliding? Does the roster read as the same HUD as the fight's, and does the
+  hotbar look like things you can do rather than things you cannot? Upright
+  (`portrait-canvas`), is the strip above the map still the party?
 - **The mockup.** Beats 04, 05, 06 and 18 after Milestone 2. The parchment
   HUD: the title plate, the element rings on the turn strip, the framed
   portrait with its badge, the ability header, the marks on every button,
@@ -101,6 +107,7 @@ Filled in by the owner after the milestone's last slice. One line each; a
 | The placeholder characters prove the pipeline; the art bible is the right target for the real ones |          |     |
 | I would keep writing story against this look                                                       |          |     |
 | The parchment HUD and the painting slot are the mockup, allowing for the real paintings and icons  |          |     |
+| The village with the party walking through it and the roster beside it is the explore mode I want  |          |     |
 
 A "no" on the first or the last line stops Phase 2 content until it is a
 "yes". A "no" elsewhere is a slice to revisit, not a stop.
