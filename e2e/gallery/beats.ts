@@ -184,7 +184,8 @@ export const BEATS: readonly Beat[] = [
   {
     id: '02-village',
     title: 'Ba Dan village',
-    note: 'Explore: the only walk-around map, with the whole party standing in it. Judge the ground, the buildings, the NPC markers and how much it feels like a place.',
+    note: 'Explore: the only walk-around map. The party stands in it as a line and down the side as a roster with health and action points; Talk, Party, Save and Pause sit along the bottom. Upright, the roster is a strip above the map. Judge the ground, the buildings, the villagers and how much it feels like a place.',
+    projects: PORTRAIT_TOO,
     async run(ctx) {
       await openVillage(ctx);
       await ctx.shoot(this.note);

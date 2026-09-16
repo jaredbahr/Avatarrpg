@@ -48,6 +48,16 @@ test.describe('touch targets', () => {
     await assertAllTappable(page.locator('.top-bar button'), 'combat top bar');
   });
 
+  test('every village control is tappable', async ({ page }) => {
+    await resetStorage(page);
+    await startGame(page, ['Elias', 'Lorelai'], ['kaya', 'bo'], 'touch-village');
+    await enterNode(page, 'village_explore');
+
+    await expect(page.locator('.explore-hud')).toBeVisible();
+    await assertAllTappable(page.locator('.explore-hud button'), 'village hotbar');
+    await assertAllTappable(page.locator('.roster [role="button"]'), 'village roster');
+  });
+
   test('stays tappable with the largest text setting', async ({ page }) => {
     await resetStorage(page);
 
@@ -60,6 +70,13 @@ test.describe('touch targets', () => {
       .toBe('huge');
 
     await startGame(page, ['Elias'], ['kaya'], 'touch-large');
+    await enterNode(page, 'village_explore');
+    await assertAllTappable(page.locator('.explore-hud button'), 'village hotbar at largest text');
+    await assertAllTappable(
+      page.locator('.roster [role="button"]'),
+      'village roster at largest text',
+    );
+
     await enterNode(page, 'battle_forest_road');
     await takeTurn(page);
 

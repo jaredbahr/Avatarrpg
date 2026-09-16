@@ -157,6 +157,11 @@ export const UI_MARKS = {
   cancel: svg('<path d="m6 6 12 12M18 6 6 18"/>'),
   log: svg('<path d="M6 4h12v14a2 2 0 0 1-2 2H4a2 2 0 0 0 2-2zM9 8h6M9 12h6"/>'),
   pause: svg('<path d="M9 5v14M15 5v14"/>'),
+  talk: svg('<path d="M4 5h16v10h-9l-5 4v-4H4z"/>'),
+  party: svg(
+    '<circle cx="9" cy="8" r="3"/><path d="M3 20a6 6 0 0 1 12 0"/><circle cx="17" cy="9" r="2.5"/><path d="M15.5 14.5a5 5 0 0 1 5.5 5.5"/>',
+  ),
+  save: svg('<path d="M12 4v10M8 10l4 4 4-4M4 16v3h16v-3"/>'),
   tip: svg('<path d="M9 18h6M10 21h4M8 10a4 4 0 1 1 8 0c0 2-2 3-2 5h-4c0-2-2-3-2-5z"/>'),
   recentre: svg(
     '<path d="M4 9V4h5M15 4h5v5M20 15v5h-5M9 20H4v-5"/><circle cx="12" cy="12" r="2"/>',

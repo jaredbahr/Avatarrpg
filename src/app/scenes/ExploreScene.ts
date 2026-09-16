@@ -1,23 +1,32 @@
 /**
  * The village.
  *
- * Tap a tile to walk, tap an NPC to talk, tap the glowing gate to leave. The
- * camera pans by drag because the village is bigger than the viewport, and the
- * objective sits in a banner at the top so nobody has to remember what they
- * were doing when they picked the tablet back up.
+ * Tap a tile to walk, tap someone to talk, tap the glowing gate to leave. The
+ * party stands down the side with their health and their action points, the
+ * things you can do out here sit along the bottom, and the objective sits in
+ * the banner at the top so nobody has to remember what they were doing when
+ * they picked the tablet back up. The camera pans by drag because the village
+ * is bigger than the viewport.
  */
 
 import type { App, Scene } from '../App';
-import type { GameEvent, GameState, Grid, MapDef, Unit, Vec2 } from '../../core/types';
-import { buildGrid, samePos } from '../../core/rules/grid';
+import type { GameEvent, GameState, Grid, MapDef, NpcDef, Unit, Vec2 } from '../../core/types';
+import { buildGrid, distance, samePos } from '../../core/rules/grid';
 import { Renderer } from '../../render/renderer';
 import type { MapView, NpcMarker, RenderUnit } from '../../render/renderer';
 import { attachPointer, wheelZoomFactor } from '../input/pointer';
 import { ambienceFx } from '../../content/fx';
 import { ambientEmitters } from '../anim/ambience';
 import { PartyTrail, placeParty } from '../anim/trail';
-import { button, clear, el, motionReduced } from '../ui/dom';
+import { button, clear, el, mark, motionReduced } from '../ui/dom';
+import { UI_MARKS } from '../ui/marks';
+import { partyRoster } from '../ui/PartyRoster';
+import { SaveMenu } from '../ui/SaveMenu';
+import { UnitInspector } from '../ui/UnitInspector';
 import { showGridLines } from '../storage/localSaves';
+
+/** How far Talk reaches, in tiles: across the square, not across the village. */
+const TALK_RANGE = 3;
 
 export class ExploreScene implements Scene {
   readonly name = 'explore';
@@ -33,8 +42,8 @@ export class ExploreScene implements Scene {
   private grid: Grid | null = null;
   /**
    * Where the followers stand: the leader's tile and the tiles it came from,
-   * one member each. Presentation only, never saved; stood up again round the
-   * leader whenever the party lands somewhere without walking there.
+   * one member each. Presentation only, never saved; stood up again behind
+   * the leader whenever the party lands somewhere without walking there.
    */
   private trail: PartyTrail | null = null;
 
@@ -45,18 +54,24 @@ export class ExploreScene implements Scene {
     clear(host);
 
     const scene = el('div', { class: 'scene explore-scene' });
-
-    const banner = el('div', { class: 'top-bar explore-bar' });
-    scene.appendChild(banner);
+    scene.appendChild(el('div', { class: 'top-bar explore-bar' }));
 
     const canvas = el('canvas', { class: 'map-canvas', attrs: { 'aria-label': 'Village map' } });
     this.canvas = canvas;
-    scene.appendChild(el('div', { class: 'map-wrap' }, canvas));
+    scene.appendChild(
+      el(
+        'div',
+        { class: 'explore-body' },
+        el('div', { class: 'roster' }),
+        el('div', { class: 'map-wrap' }, canvas),
+      ),
+    );
+    scene.appendChild(el('div', { class: 'hud explore-hud' }));
 
     host.appendChild(scene);
 
-    this.buildBanner(banner);
     this.setupRenderer();
+    this.renderChrome();
     this.loop();
   }
 
@@ -83,8 +98,7 @@ export class ExploreScene implements Scene {
       this.renderer?.camera.fitExplore();
       this.renderer?.camera.centreOn(state.location.pos);
     }
-    const banner = this.host?.querySelector<HTMLElement>('.explore-bar');
-    if (banner) this.buildBanner(banner);
+    this.renderChrome();
   }
 
   /**
@@ -120,7 +134,7 @@ export class ExploreScene implements Scene {
   }
 
   /**
-   * The line the party stands in, seated afresh round the leader when there
+   * The line the party stands in, seated afresh behind the leader when there
    * is none yet, the map changed, the party changed size, or the leader is
    * somewhere the line did not walk to (a loaded save, a story jump).
    */
@@ -160,26 +174,144 @@ export class ExploreScene implements Scene {
   }
 
   /* ---------------------------------------------------------------- */
+  /* Chrome: the banner, the roster, the hotbar                        */
+  /* ---------------------------------------------------------------- */
 
-  private buildBanner(banner: HTMLElement): void {
+  /** DOM, all of it, rebuilt whenever the state changes: it is cheap and it is right. */
+  private renderChrome(): void {
+    this.renderBanner();
+    this.renderRoster();
+    this.renderHud();
+  }
+
+  private renderBanner(): void {
+    const banner = this.host?.querySelector<HTMLElement>('.explore-bar');
+    if (!banner) return;
     clear(banner);
     const node = this.app.currentNode();
     const objective = node?.kind === 'explore' ? node.objective : '';
+    // At the gate the banner says where it leads, which the map cannot.
+    const line = this.atGate() ?? objective;
 
     banner.appendChild(
       el(
         'div',
-        { class: 'stack tight' },
-        el('strong', { text: this.app.placeLabel() }),
-        objective ? el('span', { class: 'muted tiny', text: objective }) : null,
+        { class: 'title-plate' },
+        el('strong', { class: 'title-plate-name', text: this.app.placeLabel() }),
+        line
+          ? el('span', { class: 'title-plate-objective', text: line, attrs: { title: line } })
+          : null,
       ),
     );
     banner.appendChild(el('div', { class: 'spacer' }));
     banner.appendChild(
       el('span', { class: 'muted tiny hide-narrow', text: 'Tap to walk. Tap someone to talk.' }),
     );
-    banner.appendChild(button('Pause', () => this.app.openPause(), { class: 'btn-ghost' }));
   }
+
+  /** The exit's label while the leader stands on or beside it. */
+  private atGate(): string | null {
+    const exit = this.map?.exit;
+    const pos = this.app.state?.location.pos;
+    if (!exit || !pos || distance(pos, exit.pos) > 1) return null;
+    return exit.label;
+  }
+
+  private renderRoster(): void {
+    const current = this.host?.querySelector<HTMLElement>('.roster');
+    const state = this.app.state;
+    if (!current || !state) return;
+    const leader = state.party[0];
+    current.replaceWith(
+      partyRoster(this.app, state.party, leader?.id ?? null, (unit) => this.inspect(unit)),
+    );
+  }
+
+  /** What the party can do out here: real actions, every one of them. */
+  private renderHud(): void {
+    const hud = this.host?.querySelector<HTMLElement>('.explore-hud');
+    const state = this.app.state;
+    if (!hud || !state) return;
+    clear(hud);
+
+    const bar = el('div', {
+      class: 'hud-panel action-bar',
+      attrs: { role: 'toolbar', 'aria-label': 'Party actions' },
+    });
+    const row = el('div', { class: 'action-row' });
+
+    const npc = this.nearestNpc(state.location.pos);
+    const talk = button('Talk', () => this.talkTo(npc), {
+      class: 'action-button',
+      disabled: !npc,
+      title: npc ? `Walk over and talk to ${npc.name}` : 'Nobody is close enough to talk to',
+    });
+    talk.prepend(mark(UI_MARKS.talk));
+    talk.appendChild(el('span', { class: 'action-sub', text: npc?.name ?? 'No one near' }));
+    row.appendChild(talk);
+
+    const leader = state.party[0];
+    const party = button(
+      'Party',
+      () => {
+        if (leader) this.inspect(leader);
+      },
+      { class: 'action-button', title: 'Who the party are and what they can do' },
+    );
+    party.prepend(mark(UI_MARKS.party));
+    party.appendChild(el('span', { class: 'action-sub', text: `${state.party.length} strong` }));
+    row.appendChild(party);
+
+    const save = button(
+      'Save',
+      () => new SaveMenu(this.app, { mode: 'save' }).open(this.overlayHost()),
+      { class: 'action-button', title: 'Save the game to a slot' },
+    );
+    save.prepend(mark(UI_MARKS.save));
+    row.appendChild(save);
+
+    const pause = button('Pause', () => this.app.openPause(), {
+      class: 'action-button',
+      title: 'Settings, saves, and the way out',
+    });
+    pause.prepend(mark(UI_MARKS.pause));
+    row.appendChild(pause);
+
+    bar.appendChild(row);
+    hud.appendChild(bar);
+  }
+
+  /** The villager nearest the leader within Talk's reach, if any. */
+  private nearestNpc(from: Vec2): NpcDef | null {
+    let best: NpcDef | null = null;
+    let nearest = TALK_RANGE + 1;
+    for (const npc of this.map?.npcs ?? []) {
+      const gap = distance(from, npc.pos);
+      if (gap < nearest) {
+        best = npc;
+        nearest = gap;
+      }
+    }
+    return best;
+  }
+
+  private talkTo(npc: NpcDef | null): void {
+    if (!npc || this.app.animator.busy(performance.now())) return;
+    // The rules walk the party up to the villager and open the conversation.
+    this.app.dispatch({ type: 'walkTo', pos: npc.pos });
+  }
+
+  private inspect(unit: Unit): void {
+    new UnitInspector(this.app, unit, () => undefined).open(this.overlayHost());
+  }
+
+  private overlayHost(): HTMLElement {
+    return document.querySelector<HTMLElement>('.overlay-host') ?? document.body;
+  }
+
+  /* ---------------------------------------------------------------- */
+  /* The map                                                           */
+  /* ---------------------------------------------------------------- */
 
   private setupRenderer(): void {
     const canvas = this.canvas;
@@ -196,9 +328,10 @@ export class ExploreScene implements Scene {
     this.renderer.camera.fitExplore();
     this.renderer.camera.centreOn(state.location.pos);
 
-    // The banner above the map can still grow — a late web font, or a longer
-    // objective on the next node — and every pixel the camera reports has to
-    // keep matching the pixels the backend draws, or taps land a tile out.
+    // The chrome round the map can still grow — a late web font, a longer
+    // objective on the next node, the roster becoming a strip — and every
+    // pixel the camera reports has to keep matching the pixels the backend
+    // draws, or taps land a tile out.
     this.renderer.onViewportChange = () => this.refit();
 
     this.detach = attachPointer(canvas, {

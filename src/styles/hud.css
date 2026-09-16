@@ -1622,3 +1622,96 @@ html[data-contrast='high'] .hud-panel::after {
     font-size: var(--fs-2xl);
   }
 }
+
+/* ------------------------------------------------------------------ */
+/* Explore: the roster, the map, the party's actions                   */
+/* ------------------------------------------------------------------ */
+
+/*
+ * The village reads like the fight: the party down the left, the map taking
+ * whatever is left, the things you can do along the bottom. Upright, or on
+ * a narrow screen, the roster becomes a strip above the map instead.
+ */
+.explore-body {
+  display: flex;
+  flex: 1 1 auto;
+  min-height: 0;
+}
+
+.roster {
+  flex: 0 0 14rem;
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-2);
+  padding: var(--sp-2);
+  overflow-y: auto;
+  background: linear-gradient(
+    90deg,
+    color-mix(in srgb, var(--c-bg-deep) 98%, transparent),
+    color-mix(in srgb, var(--c-bg-deep) 82%, transparent)
+  );
+  border-right: var(--hairline) solid var(--c-line);
+}
+
+/* A row is a button in all but its tag: it holds a canvas and a bar. */
+.roster-row {
+  flex: 0 0 auto;
+  min-height: var(--tap);
+  cursor: pointer;
+}
+
+.roster-row:focus-visible {
+  outline: 2px solid var(--c-gold-deep);
+  outline-offset: 2px;
+}
+
+/* The leader's row sits on the same gold plate as the acting turn chip. */
+.roster-row.active {
+  border-color: var(--c-gold-deep);
+  background: color-mix(in srgb, var(--c-gold) 16%, var(--surface-0));
+}
+
+.roster-name {
+  font-family: var(--font-display);
+  font-size: var(--fs-md);
+  line-height: 1.1;
+}
+
+.roster-level {
+  font-size: var(--fs-xs);
+  color: var(--c-ink-dim);
+  white-space: nowrap;
+}
+
+.explore-hud .action-bar {
+  flex: 1 1 auto;
+}
+
+/* The objective line grows a hint when the party stands at the gate. */
+.title-plate-objective {
+  font-size: var(--fs-xs);
+  color: var(--c-ink-dim);
+  max-width: 28rem;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+@media (max-width: 52rem), (orientation: portrait) {
+  .explore-body {
+    flex-direction: column;
+  }
+
+  .roster {
+    flex: 0 0 auto;
+    flex-direction: row;
+    overflow-x: auto;
+    overflow-y: hidden;
+    border-right: 0;
+    border-bottom: var(--hairline) solid var(--c-line);
+  }
+
+  .roster-row {
+    min-width: 12rem;
+  }
+}
