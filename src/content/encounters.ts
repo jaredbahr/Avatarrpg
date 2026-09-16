@@ -122,10 +122,32 @@ export const ENCOUNTERS: readonly EncounterDef[] = [
         tip: 'Nobody up there bends fire any more — so the oil only goes up if you light it. That makes the brazier yours to spend.',
       },
     ],
-    // Also short: the oil is what makes this fight, not the head count.
+    /*
+     * Also short: the oil is what makes this fight, not the head count.
+     *
+     * Order matters here, and it is the whole fix for a cliff that sat in this
+     * encounter for a while. `encounterRoster` takes reinforcements off the
+     * *front* of this list, so the first entry is what a table one player above
+     * the baseline receives — and this list used to lead with the slinger.
+     *
+     * One slinger measured a 30-point hole at a four-player table: 69.5% with
+     * it against 100% with no reinforcement at all, and 61.5% against 98% on
+     * the bluffed roster. A four-player table was having a *harder* time than a
+     * three-player one, which is the opposite of what a scaling lever is for.
+     *
+     * The slinger is the harshest possible single addition and its stat block
+     * is the reason it looks innocent: 22 HP and 4 power, but `cautious` and
+     * ranged, so it never closes, never presents a target, and simply extends
+     * the fight — and on a map whose whole point is a spreading oil fire, an
+     * extra round is expensive. The thug walks into the party's threat range
+     * and dies. Leading with it recovers the fight (94.5% / 99.5%).
+     *
+     * Every other encounter in the act already leads with a melee body; this
+     * one was the odd one out rather than the deliberate exception.
+     */
     reinforcements: [
-      { enemyId: 'bandit_slinger', pos: { x: 17, y: 9 } },
       { enemyId: 'bandit_thug', pos: { x: 17, y: 4 } },
+      { enemyId: 'bandit_slinger', pos: { x: 17, y: 9 } },
     ],
     intro: 'Barrels are stacked against the gatehouse, and the ground around them is slick.',
     /*
