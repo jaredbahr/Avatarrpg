@@ -86,7 +86,7 @@ async function openBattle(
   options: { node?: string; extra?: Record<string, string> } = {},
 ): Promise<void> {
   await resetStorage(ctx.page, ctx.query(options.extra));
-  await startGame(ctx.page, PLAYERS, PARTY, SEED);
+  await startGame(ctx.page, PLAYERS, PARTY, SEED, { reduceMotion: false });
   await enterNode(ctx.page, options.node ?? 'battle_forest_road');
   await takeTurn(ctx.page);
   await waitForIdle(ctx.page);
@@ -129,7 +129,7 @@ export const BEATS: readonly Beat[] = [
     note: 'Explore: the only walk-around map. Judge the ground, the buildings, the NPC markers and how much it feels like a place.',
     async run(ctx) {
       await resetStorage(ctx.page, ctx.query());
-      await startGame(ctx.page, PLAYERS, PARTY, SEED);
+      await startGame(ctx.page, PLAYERS, PARTY, SEED, { reduceMotion: false });
       await enterNode(ctx.page, 'village_explore');
       await ctx.page.locator('.explore-scene .map-canvas').waitFor();
       await settleLayout(ctx.page);
@@ -143,7 +143,7 @@ export const BEATS: readonly Beat[] = [
     projects: PORTRAIT_TOO,
     async run(ctx) {
       await resetStorage(ctx.page, ctx.query());
-      await startGame(ctx.page, PLAYERS, PARTY, SEED);
+      await startGame(ctx.page, PLAYERS, PARTY, SEED, { reduceMotion: false });
       await enterNode(ctx.page, 'mira_intro');
       await ctx.page.locator('.stage').waitFor();
       await ctx.shoot(this.note);

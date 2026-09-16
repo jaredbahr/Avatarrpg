@@ -60,24 +60,35 @@ export async function resetStorage(page: Page, query = ''): Promise<void> {
   await page.waitForFunction(() => Boolean(window.fnt?.app));
 }
 
+export interface StartOptions {
+  /**
+   * Reduce motion is on by default here: the suite tests rules and UI, not
+   * the playback, and a full cast plays for most of a second per enemy per
+   * round. A spec about motion turns it off.
+   */
+  readonly reduceMotion?: boolean;
+}
+
 /** Starts a game without walking the whole setup flow. */
 export async function startGame(
   page: Page,
   players: string[],
   characterIds: string[],
   seed = 'e2e-seed',
+  options: StartOptions = {},
 ): Promise<void> {
   await page.evaluate(
-    ({ players, characterIds, seed }) => {
+    ({ players, characterIds, seed, reduceMotion }) => {
       const app = window.fnt?.app;
       if (!app) throw new Error('The game has not finished booting.');
+      app.updateSettings({ reduceMotion });
       app.newGame(
         players.map((name) => ({ name, unitId: '' })),
         characterIds.map((characterId) => ({ characterId })),
         seed,
       );
     },
-    { players, characterIds, seed },
+    { players, characterIds, seed, reduceMotion: options.reduceMotion ?? true },
   );
 }
 
