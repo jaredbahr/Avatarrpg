@@ -41,14 +41,42 @@ sheet is attempted.
    draws in its place, so a typo in the path shows as the old drawn portrait
    rather than as nothing.
 
-## Sprite sheets (after the asset contract lands)
+## Reference figures (have them first)
 
-Unit sheets need the `sheet` manifest kind and the `scripts/art/` normalise,
-pack and validate tools from roadmap phase A2. The prompt packs for the pilot
-sheets (Kaya and the bandit thug) arrive with them under `prompts/sheets/`,
-along with the intake convention `art/raw/<assetKey>/<clip>/<index>.png`. The
-reference sheet for a character, one 2048×2048 image per the art bible, can be
-made any time; it is the single source of truth every pose is generated from.
+A full-body figure per character, three-quarter view, on parchment, is the
+single source of truth every pose is generated from: feed it back as the image
+reference (character consistency) for every frame. Keep the originals as
+`art/raw/reference/<assetKey>.png` (git ignores `art/raw/`); the key is the
+unit's manifest key, `unit.fire.kaya` and so on. The ten heroes' references
+exist as of 2026-09-16; enemies and NPC speakers still need theirs.
+
+## Sprite sheets (available now)
+
+A unit's animated art is a sheet of key poses (`../adr/0003-asset-contract.md`):
+two idle poses and three cast poses at least; walk, melee, hit and KO when
+the character has them. Every pose is one image, generated on a flat
+`#00ff00` background with the reference figure as the image reference.
+
+1. Generate each pose at 4x (512×768 for a one-tile unit) and save it as
+   `art/raw/<assetKey>/<clip>/<index>.png`, for example
+   `art/raw/unit.fire.kaya/cast/1.png`. Indices start at 0 with no gaps.
+2. `npm run art:normalise -- --unit unit.fire.kaya` keys the background out,
+   trims, scales the whole unit by one factor (the idle pose's height sets it,
+   so a crouch never comes out taller than a stand), stands the feet on the
+   baseline and pads to 128×192. Frames land in `art/normalised/<assetKey>/`.
+   `--key auto` reads the background from the corners when the generator
+   could not hold the exact hex; `--px 256` makes a sharper sheet.
+3. `npm run art:pack -- --unit unit.fire.kaya` writes
+   `public/art/units/kaya.png` and `kaya.json` and prints the manifest entry
+   to paste into `src/content/assets/manifest.ts`. Set its `palette`.
+4. `npm run art:validate` checks every sheet the manifest names against the
+   files: frames present, sizes right, the clear margin kept. CI runs it.
+5. `npm run verify`, then look at it in the game: the unit idles, walks,
+   casts and takes a hit through the same runtime the placeholders use, so
+   the only thing that changes is the art.
+
+`npm run check:assets` (also in CI) holds each family of art under 4 MB and
+everything precached under 25 MB.
 
 ## Layout
 
@@ -59,7 +87,12 @@ docs/art/
   prompts/checklist.md      pass/fail lines before anything is committed
   prompts/generator-notes.md  which generator features matter and why
   prompts/portraits/*.md    one pack per portrait key
-  prompts/sheets/*.md       one pack per pilot sprite sheet (A2)
-art/raw/                    generator output, ignored by git
-public/art/portraits/       what ships
+  prompts/sheets/*.md       one pack per sprite sheet
+art/raw/reference/          the reference figures, ignored by git
+art/raw/<assetKey>/         generated poses, ignored by git
+art/normalised/<assetKey>/  what normalise writes, ignored by git
+public/art/portraits/       portraits that ship
+public/art/units/           sheets that ship (PNG + JSON)
+public/art/test/            the probe atlas the e2e suite draws
+scripts/art/                normalise, pack, validate
 ```
