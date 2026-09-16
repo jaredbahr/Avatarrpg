@@ -28,6 +28,7 @@
     "art:validate": "tsx scripts/art/validate.ts",
     "art:map": "tsx scripts/art/map.ts",
     "art:map-pack": "tsx scripts/art/map-pack.ts",
+    "art:icons": "tsx scripts/art/icons.ts",
     "art:portrait": "tsx scripts/art/portrait.ts",
     "check:assets": "node scripts/check-asset-budget.mjs",
     "credits": "tsx scripts/credits.ts"
@@ -38,6 +39,7 @@
   },
   "devDependencies": {
     "@eslint/js": "^9.17.0",
+    "@iconify-json/game-icons": "^1.2.4",
     "@jsquash/webp": "^1.5.0",
     "@playwright/test": "^1.49.1",
     "@types/node": "^22.10.2",

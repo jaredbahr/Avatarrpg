@@ -58,6 +58,15 @@ export const CREDITS: readonly CreditEntry[] = [
     note: 'The licence travels with the font in public/fonts/OFL-ShipporiMincho.txt, as the OFL requires.',
   },
   {
+    what: 'The action icons',
+    work: 'Game Icons',
+    authors: 'the Game Icons contributors',
+    licence: 'CC BY 3.0',
+    source: 'https://github.com/game-icons/icons',
+    covers: ['art/icons'],
+    note: 'One icon per kind of action, chosen in src/app/ui/icons.ts and built into a sprite by npm run art:icons. Each icon is by a named contributor; they are listed in the licence file at the source above.',
+  },
+  {
     what: 'The app icons',
     work: 'Four Nations Tactics icons',
     authors: 'This project',
