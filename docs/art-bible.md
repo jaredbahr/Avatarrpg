@@ -75,6 +75,12 @@ Element in the hands is drawn in the character's clip only as a hint (a glow,
 a small flame). The bending itself is the FX layer, so the same cast pose
 serves every ability of that element.
 
+The placeholders draw this table as written: `src/render/painters/figure.ts`
+holds one pose per row, solved from the feet up so every frame stands on the
+baseline, and `cast.ts` gives each character the silhouette of their reference
+figure. They are stand-ins, readable at 40 px, and the choreography, the
+mirroring and the health bar are exercised by them before a real sheet lands.
+
 ## Portraits
 
 - 512×512, bust, three-quarter view, same ink and cel rules, flat parchment background `#f4e9d8`.
