@@ -12,15 +12,16 @@ Decisions this roadmap rests on live in `docs/adr/`. The art specification is
 
 ## Settled decisions
 
-| Question          | Decision                                                                                                                      | Record                              |
-| ----------------- | ----------------------------------------------------------------------------------------------------------------------------- | ----------------------------------- |
-| Engine            | Stay on Pixi v8 with the hand-written Canvas 2D fallback                                                                      | `adr/0001-stay-on-pixi-v8.md`       |
-| Backend parity    | Board-correctness parity mandatory, fidelity parity not                                                                       | `adr/0002-backend-parity-policy.md` |
-| Art tier          | Cel-shaded frame sheets: few key poses, motion from the animator                                                              | `adr/0003-asset-contract.md`        |
-| Art source        | AI-generated against the art bible, painters remain the fallback                                                              | `art-bible.md`                      |
-| Animation runtime | Evolve `src/app/animator.ts`; no tween library                                                                                | `adr/0004-animation-runtime.md`     |
-| Device tiers      | Surface and iPad landscape first; portrait and desktop second; phones work but are not tuned                                  | `device-matrix.md`                  |
-| Presentation      | One self-hosted display face; tokens with no literal outside `:root`; a CSS backdrop and a curtain, never an async scene swap | `adr/0005-presentation-layer.md`    |
+| Question          | Decision                                                                                                                      | Record                                |
+| ----------------- | ----------------------------------------------------------------------------------------------------------------------------- | ------------------------------------- |
+| Engine            | Stay on Pixi v8 with the hand-written Canvas 2D fallback                                                                      | `adr/0001-stay-on-pixi-v8.md`         |
+| Backend parity    | Board-correctness parity mandatory, fidelity parity not                                                                       | `adr/0002-backend-parity-policy.md`   |
+| Art tier          | Cel-shaded frame sheets: few key poses, motion from the animator                                                              | `adr/0003-asset-contract.md`          |
+| Art source        | AI-generated against the art bible, painters remain the fallback                                                              | `art-bible.md`                        |
+| Animation runtime | Evolve `src/app/animator.ts`; no tween library                                                                                | `adr/0004-animation-runtime.md`       |
+| Device tiers      | Surface and iPad landscape first; portrait and desktop second; phones work but are not tuned                                  | `device-matrix.md`                    |
+| Presentation      | One self-hosted display face; tokens with no literal outside `:root`; a CSS backdrop and a curtain, never an async scene swap | `adr/0005-presentation-layer.md`      |
+| Visual review     | `npm run gallery`: fixed beats captured from the production build on every project, published as a CI artefact and on Pages   | `adr/0006-gallery-review-artefact.md` |
 
 ## Phases
 
@@ -94,4 +95,5 @@ entry kind the manifest already has.
 - **Parity:** anything the rules care about is drawn on both backends (ADR 0002).
 - **Determinism:** presentation randomness (particles) is seeded per instance and never touches the game RNG.
 - **Art QA:** every generated asset passes the checklist in `docs/art-bible.md` before it is committed.
+- **Visual review:** every slice that changes what is drawn ships with its gallery (`npm run gallery`, ADR 0006); the pictures are the review, not a description of them.
 - **Device gate:** Tier 1 changes are checked on a real iPad against `docs/device-matrix.md` before a release tag.
