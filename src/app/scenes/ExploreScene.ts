@@ -8,13 +8,14 @@
  */
 
 import type { App, Scene } from '../App';
-import type { Grid, MapDef, Vec2 } from '../../core/types';
-import { buildGrid } from '../../core/rules/grid';
+import type { GameEvent, GameState, Grid, MapDef, Unit, Vec2 } from '../../core/types';
+import { buildGrid, samePos } from '../../core/rules/grid';
 import { Renderer } from '../../render/renderer';
 import type { MapView, NpcMarker, RenderUnit } from '../../render/renderer';
 import { attachPointer, wheelZoomFactor } from '../input/pointer';
 import { ambienceFx } from '../../content/fx';
 import { ambientEmitters } from '../anim/ambience';
+import { PartyTrail, placeParty } from '../anim/trail';
 import { button, clear, el, motionReduced } from '../ui/dom';
 import { showGridLines } from '../storage/localSaves';
 
@@ -30,6 +31,12 @@ export class ExploreScene implements Scene {
   private map: MapDef | null = null;
   /** Built once per map, not once per frame: the village never changes shape. */
   private grid: Grid | null = null;
+  /**
+   * Where the followers stand: the leader's tile and the tiles it came from,
+   * one member each. Presentation only, never saved; stood up again round the
+   * leader whenever the party lands somewhere without walking there.
+   */
+  private trail: PartyTrail | null = null;
 
   constructor(private app: App) {}
 
@@ -71,12 +78,66 @@ export class ExploreScene implements Scene {
     if (map && map.id !== this.map?.id) {
       this.map = map;
       this.grid = buildGrid(map);
+      this.trail = null;
       this.renderer?.resize({ width: map.width, height: map.height });
       this.renderer?.camera.fitExplore();
       this.renderer?.camera.centreOn(state.location.pos);
     }
     const banner = this.host?.querySelector<HTMLElement>('.explore-bar');
     if (banner) this.buildBanner(banner);
+  }
+
+  /**
+   * The walk the rules reported for the leader, played for the followers
+   * too: each takes the tiles the line held between its old place and its
+   * new one, laid alongside the leader's track so the whole party moves at
+   * once and stays a tile apart.
+   */
+  onEvents(events: readonly GameEvent[], now: number): void {
+    const state = this.app.state;
+    const grid = this.grid;
+    if (!state || !grid) return;
+    for (const event of events) {
+      if (event.type !== 'partyWalked') continue;
+      const trail = this.ensureTrail(state, grid, event.from);
+      const before = trail.positions(state.party.length);
+      const routes = trail.walk(event.path, state.party.length);
+      if (routes.length === 0) continue;
+      const unitsBefore: Unit[] = state.party.map((member, index) => ({
+        ...member,
+        pos: before[index] ?? event.from,
+        size: 1,
+      }));
+      // One push per follower: moves in a single push play one after another,
+      // and these all start where the leader's did.
+      for (const route of routes) {
+        const member = state.party[route.index];
+        if (!member) continue;
+        const move: GameEvent = { type: 'unitMoved', unitId: member.id, path: route.path, cost: 0 };
+        this.app.animator.push(now, [move], unitsBefore, { alongside: true });
+      }
+    }
+  }
+
+  /**
+   * The line the party stands in, seated afresh round the leader when there
+   * is none yet, the map changed, the party changed size, or the leader is
+   * somewhere the line did not walk to (a loaded save, a story jump).
+   */
+  private ensureTrail(state: GameState, grid: Grid, head = state.location.pos): PartyTrail {
+    const count = state.party.length;
+    const current = this.trail;
+    if (current?.head && samePos(current.head, head) && current.positions(count).length === count) {
+      return current;
+    }
+    const seated = new PartyTrail(
+      placeParty(grid, head, count, {
+        awayFrom: this.map?.exit?.pos,
+        avoid: this.map?.npcs.map((npc) => npc.pos) ?? [],
+      }),
+    );
+    this.trail = seated;
+    return seated;
   }
 
   resize(): void {
@@ -179,32 +240,30 @@ export class ExploreScene implements Scene {
     const now = performance.now();
     this.app.stats?.frame(now);
 
-    // The party is drawn as its leader — one figure to move around a village.
+    // The whole party walks the village: the leader on the rules' tile, the
+    // others in a line behind, each their own figure.
     const leader = state.party[0];
     const walking = leader ? this.app.animator.renderPos(now, leader.id) : undefined;
     // The camera follows the walk and rests where it ends; a drag afterwards stays.
     if (walking) renderer.camera.centreOn(walking);
-    const units: RenderUnit[] = leader
-      ? [
-          {
-            id: leader.id,
-            pos: state.location.pos,
-            size: 1,
-            sprite: leader.sprite,
-            name: leader.name,
-            faction: 'party',
-            hp: leader.hp,
-            maxHp: leader.base.maxHp,
-            statuses: [],
-            fallen: false,
-            // A health bar over someone strolling round a village is noise.
-            showHealth: false,
-            renderPos: walking,
-            offset: this.app.animator.offset(now, leader.id),
-            facing: this.app.animator.facing(leader.id) ?? 1,
-          },
-        ]
-      : [];
+    const seats = this.ensureTrail(state, grid).positions(state.party.length);
+    const units: RenderUnit[] = state.party.map((member, index) => ({
+      id: member.id,
+      pos: index === 0 ? state.location.pos : (seats[index] ?? state.location.pos),
+      size: 1,
+      sprite: member.sprite,
+      name: member.name,
+      faction: 'party',
+      hp: member.hp,
+      maxHp: member.base.maxHp,
+      statuses: [],
+      fallen: false,
+      // A health bar over someone strolling round a village is noise.
+      showHealth: false,
+      renderPos: index === 0 ? walking : this.app.animator.renderPos(now, member.id),
+      offset: this.app.animator.offset(now, member.id),
+      facing: this.app.animator.facing(member.id) ?? 1,
+    }));
 
     const npcs: NpcMarker[] = map.npcs.map((npc) => ({
       pos: npc.pos,

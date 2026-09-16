@@ -73,6 +73,13 @@ export interface Scene {
   /** Called after every state change. */
   sync(): void;
   resize?(): void;
+  /**
+   * The events a command produced, before the scene may be swapped for the
+   * one the new state calls for, with the clock the animator was given. A
+   * scene that keeps presentation of its own (the village's trailing
+   * followers) lays its playback alongside the animator's here.
+   */
+  onEvents?(events: readonly GameEvent[], now: number): void;
 }
 
 export class App {
@@ -302,6 +309,7 @@ export class App {
     const now = performance.now();
     if (result.events.length > 0) {
       this.animator.push(now, result.events, unitsBefore);
+      this.scene?.onEvents?.(result.events, now);
     }
 
     this.announceImportant(result.events);

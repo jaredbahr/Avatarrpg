@@ -46,6 +46,8 @@ export const PARTY = ['kaya', 'bo', 'nilak', 'nima'];
 
 /** Where a filmstrip samples the playback, in animator milliseconds after the act. */
 export const CAST_TIMES = [80, 200, 320, 560, 900];
+/** A six-tile village walk lasts 660 ms: mid-stride twice, arriving, settled. */
+export const WALK_TIMES = [120, 330, 540, 700, 1000];
 
 export interface BeatContext {
   readonly page: Page;
@@ -126,6 +128,15 @@ function shifted(pos: Vec2, dx: number, dy: number): Vec2 {
   return { x: pos.x + dx, y: pos.y + dy };
 }
 
+/** A fresh page, a fresh game, into the village with the layout settled. */
+async function openVillage(ctx: BeatContext): Promise<void> {
+  await resetStorage(ctx.page, ctx.query());
+  await startGame(ctx.page, PLAYERS, PARTY, SEED, { reduceMotion: false });
+  await enterNode(ctx.page, 'village_explore');
+  await ctx.page.locator('.explore-scene .map-canvas').waitFor();
+  await settleLayout(ctx.page, ctx.settleTimeout);
+}
+
 /** A fresh page, a fresh game, straight into a fight, with the layout settled. */
 async function openBattle(
   ctx: BeatContext,
@@ -173,14 +184,24 @@ export const BEATS: readonly Beat[] = [
   {
     id: '02-village',
     title: 'Ba Dan village',
-    note: 'Explore: the only walk-around map. Judge the ground, the buildings, the NPC markers and how much it feels like a place.',
+    note: 'Explore: the only walk-around map, with the whole party standing in it. Judge the ground, the buildings, the NPC markers and how much it feels like a place.',
     async run(ctx) {
-      await resetStorage(ctx.page, ctx.query());
-      await startGame(ctx.page, PLAYERS, PARTY, SEED, { reduceMotion: false });
-      await enterNode(ctx.page, 'village_explore');
-      await ctx.page.locator('.explore-scene .map-canvas').waitFor();
-      await settleLayout(ctx.page, ctx.settleTimeout);
+      await openVillage(ctx);
       await ctx.shoot(this.note);
+    },
+  },
+  {
+    id: '02b-village-walk',
+    title: 'The party walks the village',
+    note: 'Six tiles east along the road: the leader walks the route the rules gave and the others follow in a line a tile apart, each in their own figure, and settle behind.',
+    projects: SURFACES,
+    async run(ctx) {
+      await openVillage(ctx);
+      await ctx.filmstrip(this.note, WALK_TIMES, async () => {
+        await ctx.page.evaluate(() => {
+          window.fnt?.app.dispatch({ type: 'walkTo', pos: { x: 9, y: 7 } });
+        });
+      });
     },
   },
   {

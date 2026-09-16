@@ -71,6 +71,8 @@ export class Animator {
   /** Which way each unit last walked; a unit keeps facing that way when it stops. */
   private facings = new Map<string, 1 | -1>();
   private pushes = 0;
+  /** Where the most recent push started, so another can be laid alongside it. */
+  private lastCursor = 0;
 
   /** Multiplier applied to every duration; 0.02 when reduce-motion is on. */
   private get rate(): number {
@@ -97,10 +99,21 @@ export class Animator {
    * Schedules playback for a batch of events.
    *
    * `unitsBefore` is the battle roster as it was *before* the events applied,
-   * so a move can animate from where the unit actually was.
+   * so a move can animate from where the unit actually was. Playback queues
+   * after whatever is already playing; `alongside` starts it where the
+   * previous push started instead, for tracks that belong to the same
+   * moment (the followers of a walk the rules only reported for the leader).
    */
-  push(now: number, events: readonly GameEvent[], unitsBefore: readonly Unit[]): void {
-    const cursor = Math.max(now, this.timeline.finishesAt);
+  push(
+    now: number,
+    events: readonly GameEvent[],
+    unitsBefore: readonly Unit[],
+    options: { alongside?: boolean } = {},
+  ): void {
+    const cursor = options.alongside
+      ? Math.max(now, this.lastCursor)
+      : Math.max(now, this.timeline.finishesAt);
+    this.lastCursor = cursor;
     const result = choreograph({
       content: this.content,
       events,
