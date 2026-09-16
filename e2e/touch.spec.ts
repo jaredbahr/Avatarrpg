@@ -48,6 +48,24 @@ test.describe('touch targets', () => {
     await assertAllTappable(page.locator('.top-bar button'), 'combat top bar');
   });
 
+  test('the pause menu and the credits it opens are tappable', async ({ page }) => {
+    await resetStorage(page);
+    await startGame(page, ['Elias'], ['kaya'], 'touch-pause');
+    await enterNode(page, 'village_explore');
+
+    await page.getByRole('button', { name: /^Pause$/ }).click();
+    const pause = page.locator('.overlay .dialog');
+    await expect(pause).toBeVisible();
+    await assertAllTappable(pause.locator('button'), 'pause menu');
+
+    // Credits is where the attribution licences are honoured, so it has to open.
+    await pause.getByRole('button', { name: /^Credits$/ }).click();
+    const credits = page.locator('.overlay .dialog', { hasText: 'Credits' }).last();
+    await expect(credits.getByRole('heading', { name: 'Credits' })).toBeVisible();
+    await expect(credits.locator('.credit')).not.toHaveCount(0);
+    await assertAllTappable(credits.locator('button'), 'credits');
+  });
+
   test('every village control is tappable', async ({ page }) => {
     await resetStorage(page);
     await startGame(page, ['Elias', 'Lorelai'], ['kaya', 'bo'], 'touch-village');

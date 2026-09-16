@@ -1715,3 +1715,42 @@ html[data-contrast='high'] .hud-panel::after {
     min-width: 12rem;
   }
 }
+
+/* ------------------------------------------------------------------ */
+/* Credits: who made what                                              */
+/* ------------------------------------------------------------------ */
+
+/*
+ * One block per work, the same sunken plate the save slots use. The name of
+ * the maker is the point of the screen, so it reads at body size rather than
+ * as fine print, even though it sits under the work it belongs to.
+ */
+.credit-list {
+  gap: var(--sp-2);
+}
+
+.credit {
+  display: flex;
+  flex-direction: column;
+  gap: 0.1rem;
+  padding: var(--sp-2) var(--sp-3);
+  border: var(--hairline) solid var(--c-line);
+  border-radius: var(--radius);
+  background: var(--surface-sunken);
+}
+
+.credit-what {
+  font-family: var(--font-display);
+  font-size: var(--fs-md);
+}
+
+.credit-work {
+  font-size: var(--fs-sm);
+  overflow-wrap: anywhere;
+}
+
+.credit-by {
+  font-size: var(--fs-sm);
+  color: var(--c-ink-dim);
+  overflow-wrap: anywhere;
+}
