@@ -83,9 +83,9 @@ test.describe('the village', () => {
       expect(point, 'no camera to map the tile through').not.toBeNull();
       if (!point) return;
       await page.mouse.click(point.x, point.y);
-
-      const started = await page.evaluate(() => window.fnt?.app.animator.busy(performance.now()));
-      expect(started, 'the walk should be playing').toBe(true);
+      // Whether the walk *plays* is the animation spec's to prove, inside one
+      // evaluate with the dispatch: on CI's software WebGL a frame can take
+      // over a second, so a read after the click may find the walk finished.
       await waitForIdle(page);
 
       // The rules moved the party; the drawing agrees, a tile apart along the route.
