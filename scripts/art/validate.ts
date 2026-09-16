@@ -1,6 +1,6 @@
 /**
- * Every sheet the manifest names and every map painting the content names,
- * checked against the files on disk.
+ * Every sheet and image the manifest names and every map painting the
+ * content names, checked against the files on disk.
  *
  *   npx tsx scripts/art/validate.ts
  *
@@ -9,23 +9,36 @@
  * under `public/`, parses, names every frame the clips use at the size the
  * entry promises, points at a PNG that exists at the size the JSON claims,
  * stays inside 2048 px, and keeps the art bible's clear margin on every
- * frame's border; and every map's `backdrop` exists and measures the grid
- * times its pixels a tile (ADR 0009). Exit 1 on any problem, so CI can run it.
+ * frame's border; every `image` entry's file exists, is the PNG or WebP its
+ * name says, and measures what its kind of key promises (a portrait is
+ * 512x512), because the loader falls back to the drawn placeholder on a
+ * missing file and a typo would otherwise ship green; and every map's
+ * `backdrop` exists and measures the grid times its pixels a tile
+ * (ADR 0009). Exit 1 on any problem, so CI can run it.
  */
 
 import { existsSync, readFileSync } from 'node:fs';
 import { dirname, join, resolve } from 'node:path';
 import { ALL_MAPS } from '../../src/content';
 import { CLIP_NAMES } from '../../src/content/assets/clips';
+import type { AssetEntry } from '../../src/content/assets/manifest';
 import { ASSETS } from '../../src/content/assets/manifest';
 import { parseAtlasJson } from '../../src/render/sheets/atlasJson';
 import { MARGIN } from './lib/align';
 import type { Image } from './lib/image';
-import { readPng } from './lib/image';
+import { imageSize, readPng } from './lib/image';
 import { webpSize } from './lib/webp';
 
 /** The largest texture every device in the matrix takes. */
 const MAX_ATLAS = 2048;
+
+/** What an image entry's file must measure, by key prefix; any other image key just has to fit a texture. */
+export const IMAGE_SIZES: Readonly<Record<string, { width: number; height: number }>> = {
+  'portrait.': { width: 512, height: 512 },
+};
+
+/** Larger than this and it is not the flat-shaded 512 px picture the packs ask for. */
+export const MAX_IMAGE_BYTES = 512 * 1024;
 
 /** True if any pixel on the frame's outer `margin` rows and columns is opaque. */
 function borderTouched(
@@ -103,6 +116,57 @@ export function validateSheets(publicDir = 'public'): string[] {
   return problems;
 }
 
+/**
+ * Every `image` entry: a site-relative url, a file under `public/` that is
+ * the PNG or WebP its name says, at the size its kind of key promises.
+ */
+export function validateImages(
+  publicDir = 'public',
+  entries: Readonly<Record<string, AssetEntry>> = ASSETS,
+): string[] {
+  const problems: string[] = [];
+  for (const [key, entry] of Object.entries(entries)) {
+    if (entry.kind !== 'image') continue;
+    if (/^[a-z]+:/i.test(entry.url) || entry.url.startsWith('/')) {
+      problems.push(
+        `${key}: ${entry.url} must be relative to the site root (the loader adds the base)`,
+      );
+      continue;
+    }
+    const path = resolve(publicDir, entry.url);
+    if (!existsSync(path)) {
+      problems.push(`${key}: ${entry.url} is missing under ${publicDir}/`);
+      continue;
+    }
+    const bytes = new Uint8Array(readFileSync(path));
+    if (bytes.length > MAX_IMAGE_BYTES) {
+      problems.push(
+        `${key}: ${entry.url} is ${Math.round(bytes.length / 1024)} KB; the limit is ${MAX_IMAGE_BYTES / 1024} KB`,
+      );
+    }
+    const header = imageSize(bytes);
+    if (!header || header.format === 'jpeg') {
+      problems.push(`${key}: ${entry.url} must be a PNG or a WebP`);
+      continue;
+    }
+    if (!entry.url.toLowerCase().endsWith(`.${header.format}`)) {
+      problems.push(`${key}: ${entry.url} is a ${header.format} named as something else`);
+    }
+    const prefix = Object.keys(IMAGE_SIZES).find((candidate) => key.startsWith(candidate));
+    const want = prefix ? IMAGE_SIZES[prefix] : undefined;
+    if (want) {
+      if (header.width !== want.width || header.height !== want.height) {
+        problems.push(
+          `${key}: ${entry.url} is ${header.width}x${header.height}, expected ${want.width}x${want.height}`,
+        );
+      }
+    } else if (header.width > MAX_ATLAS || header.height > MAX_ATLAS) {
+      problems.push(`${key}: ${entry.url} exceeds the ${MAX_ATLAS} px texture limit`);
+    }
+  }
+  return problems;
+}
+
 /** Every map painting the content names: present, and the grid times its pixels a tile. */
 export function validateBackdrops(publicDir = 'public'): string[] {
   const problems: string[] = [];
@@ -141,9 +205,9 @@ export function validateBackdrops(publicDir = 'public'): string[] {
 }
 
 if (process.argv[1]?.endsWith('validate.ts')) {
-  const problems = [...validateSheets(), ...validateBackdrops()];
+  const problems = [...validateSheets(), ...validateImages(), ...validateBackdrops()];
   if (problems.length === 0) {
-    console.log('Every sheet in the manifest and every map painting checks out.');
+    console.log('Every sheet and image in the manifest and every map painting checks out.');
     process.exit(0);
   }
   for (const problem of problems) console.error(problem);
