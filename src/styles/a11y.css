@@ -28,6 +28,11 @@ html[data-reduce-motion='on'] *::after {
   scroll-behavior: auto !important;
 }
 
+/* The backdrop's slow drift is the one animation that would otherwise loop. */
+html[data-reduce-motion='on'] .backdrop-wash {
+  animation: none;
+}
+
 @media (prefers-reduced-motion: reduce) {
   :root {
     --motion-scale: 0;
@@ -39,26 +44,28 @@ html[data-reduce-motion='on'] *::after {
     animation-duration: 1ms !important;
     transition-duration: 1ms !important;
   }
+
+  .backdrop-wash {
+    animation: none;
+  }
 }
 
 /*
- * Colorblind support: surfaces are drawn with a hatch pattern on top of the
- * fill when this is on. The renderer reads it once per frame from
- * document.documentElement.dataset.hatch.
+ * Colorblind support is the hatch pattern the renderer draws on surfaces; it
+ * reads document.documentElement.dataset.hatch once per frame and needs no
+ * CSS. (A legend swatch rule used to live here with nothing feeding it.)
  */
-html[data-hatch='on'] .legend-swatch {
-  background-image: repeating-linear-gradient(
-    45deg,
-    rgb(0 0 0 / 35%) 0,
-    rgb(0 0 0 / 35%) 2px,
-    transparent 2px,
-    transparent 5px
-  );
-}
 
-/* High-contrast panel edges for the tablet in bright light. */
+/* High-contrast panel edges for the tablet in bright light: brighter lines,
+   a thicker outline, and no paper grain behind the text. */
 html[data-contrast='high'] {
   --c-line: #a08a6e;
   --c-ink-dim: #dfd0b8;
   --c-panel: #221812;
+  --c-ink-line: #c9b08a;
+  --gold-hair: color-mix(in srgb, var(--c-gold) 45%, transparent);
+  --surface-1: #2c2018;
+  --hairline: 2px;
+  --tex-grain: none;
+  --wash-alpha: 0;
 }

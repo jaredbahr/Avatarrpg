@@ -5,6 +5,7 @@
  * something here is more than a few lines, it belongs in `src/app`.
  */
 
+import './styles/fonts.css';
 import './styles/base.css';
 import './styles/hud.css';
 import './styles/a11y.css';

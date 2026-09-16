@@ -316,7 +316,10 @@ Real tuning happens after the kids play it. These are the numbers to argue with.
   against the asset contract.)
 - **Phase 3** — cross-device, art and animation, in stages (`docs/roadmap.md`):
   **A1** device foundation — pinch and pan, iPad standalone, portrait,
-  device-resolution sprites, WebKit iPad tests. ✅ **A2** asset contract and
+  device-resolution sprites, WebKit iPad tests. ✅ **P** presentation — a
+  display face, design tokens, ink-and-parchment surfaces, backdrops, dialogue
+  staged as a visual novel, scene motion (P1 ✅; P2 combat HUD and P3 board
+  atmosphere follow). **A2** asset contract and
   placeholder pipeline. **A3** choreography, camera and particle effects.
   **B** pilot art (portraits, one hero, one enemy, fire). **C** full art pass.
   **D** audio and polish. The engine stays Pixi v8 (`docs/adr/0001`).

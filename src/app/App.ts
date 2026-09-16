@@ -9,7 +9,14 @@
  *                                                  -> new state -> scene.sync()
  */
 
-import type { Command, ContentIndex, GameEvent, GameState, StoryNode } from '../core/types';
+import type {
+  Command,
+  ContentIndex,
+  ElementId,
+  GameEvent,
+  GameState,
+  StoryNode,
+} from '../core/types';
 import { apply } from '../core/state/reducer';
 import { createGame } from '../core/state/createGame';
 import type { PartySlot } from '../core/state/createGame';
@@ -28,8 +35,10 @@ import { describeProgress } from '../core/save/serialize';
 import { reconcileDisciplines } from '../core/save/reconcile';
 import type { SessionMeta } from '../core/save/serialize';
 import { announce, clear, el } from './ui/dom';
+import { WHEEL_LINES_SVG } from './ui/marks';
 import { Toasts } from './ui/Toasts';
 import { Stats } from './ui/Stats';
+import { Curtain } from './ui/Curtain';
 import { PauseMenu } from './ui/PauseMenu';
 import { LevelUpDialog } from './ui/LevelUpDialog';
 import { DisciplineDialog } from './ui/DisciplineDialog';
@@ -47,6 +56,14 @@ export interface CameraInfo {
   readonly fitted: boolean;
 }
 
+/**
+ * What colours the backdrop behind a scene: an element while a character is
+ * being picked or is speaking, a map's ambience while the party is somewhere,
+ * neutral otherwise. It is a word on the app root's dataset and CSS does the
+ * rest, so content can add an ambience without a code change here.
+ */
+export type Mood = ElementId | 'neutral' | (string & {});
+
 export interface Scene {
   readonly name: string;
   mount(host: HTMLElement): void;
@@ -62,6 +79,8 @@ export class App {
   readonly toasts: Toasts;
   /** Frame-time readout, present only with `?stats=1`. */
   readonly stats: Stats | null;
+  /** The reveal-from-ink on every scene change. */
+  private readonly curtain: Curtain;
 
   settings: Settings;
   state: GameState | null = null;
@@ -87,6 +106,21 @@ export class App {
     applySettings(this.settings);
 
     clear(root);
+    /*
+     * The backdrop sits under every scene: a grained base, two blobs of the
+     * current mood colour and the four-nations wheel as a line drawing. All
+     * of it is CSS; nothing runs per frame. The map scenes hide the blobs and
+     * the wheel, because the canvas covers them anyway.
+     */
+    root.appendChild(
+      el(
+        'div',
+        { class: 'backdrop', attrs: { 'aria-hidden': 'true' } },
+        el('div', { class: 'backdrop-wash wash-a' }),
+        el('div', { class: 'backdrop-wash wash-b' }),
+        el('div', { class: 'backdrop-wheel', html: WHEEL_LINES_SVG }),
+      ),
+    );
     this.sceneHost = el('div', { class: 'scene-host' });
     this.overlayHost = el('div', { class: 'overlay-host' });
     root.appendChild(this.sceneHost);
@@ -94,6 +128,7 @@ export class App {
 
     this.toasts = new Toasts(this.overlayHost);
     this.stats = Stats.enabled() ? new Stats(this.overlayHost) : null;
+    this.curtain = new Curtain(this.overlayHost);
 
     window.addEventListener('resize', () => this.requestResize());
     window.addEventListener('orientationchange', () => this.requestResize());
@@ -129,8 +164,24 @@ export class App {
     clear(this.sceneHost);
     this.scene = scene;
     this.host.dataset.scene = scene.name;
+    this.setMood(this.defaultMood());
     scene.mount(this.sceneHost);
     scene.sync();
+    // After the swap, never instead of it: see Curtain.
+    this.curtain.reveal();
+  }
+
+  /** Tints the backdrop. Scenes call it when they know better than the map does. */
+  setMood(mood: Mood): void {
+    this.host.dataset.mood = mood;
+  }
+
+  /** The mood the current place suggests: the map's ambience, or neutral off the map. */
+  private defaultMood(): Mood {
+    const state = this.state;
+    if (!state) return 'neutral';
+    const mapId = state.battle?.mapId ?? state.location.mapId;
+    return this.content.maps.get(mapId)?.ambience ?? 'neutral';
   }
 
   /** Picks the scene the current state calls for. Idempotent. */
@@ -148,6 +199,7 @@ export class App {
             : 'title';
 
     if (this.scene?.name === wanted) {
+      this.setMood(this.defaultMood());
       this.scene.sync();
       return;
     }

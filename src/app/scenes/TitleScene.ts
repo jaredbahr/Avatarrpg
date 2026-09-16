@@ -7,7 +7,8 @@
  */
 
 import type { App, Scene } from '../App';
-import { button, clear, el, painterCanvas } from '../ui/dom';
+import { button, clear, el } from '../ui/dom';
+import { WHEEL_SVG } from '../ui/marks';
 import { AUTOSAVE_ID, listSlots, loadFromSlot } from '../storage/localSaves';
 import { SaveMenu } from '../ui/SaveMenu';
 import { SettingsPanel } from '../ui/SettingsPanel';
@@ -40,28 +41,11 @@ export class TitleScene implements Scene {
     const auto = listSlots().find((slot) => slot.id === AUTOSAVE_ID);
     const hasAuto = auto?.occupied === true && !auto.summary.startsWith('Damaged');
 
-    const mark = painterCanvas('portrait.narrator', 7, (ctx, size) => {
-      // The four-nations wheel, matching the app icon.
-      const quadrants = ['#d1462f', '#3e8fb0', '#6f9e4c', '#e8dcc0'];
-      const cx = size / 2;
-      const r = size * 0.46;
-      for (let i = 0; i < 4; i++) {
-        ctx.beginPath();
-        ctx.moveTo(cx, cx);
-        ctx.arc(cx, cx, r, (Math.PI / 2) * i - Math.PI / 2, (Math.PI / 2) * (i + 1) - Math.PI / 2);
-        ctx.closePath();
-        ctx.fillStyle = quadrants[i] ?? '#8d7d69';
-        ctx.fill();
-      }
-      ctx.beginPath();
-      ctx.arc(cx, cx, r, 0, Math.PI * 2);
-      ctx.strokeStyle = '#d9a441';
-      ctx.lineWidth = size * 0.05;
-      ctx.stroke();
-      ctx.beginPath();
-      ctx.arc(cx, cx, size * 0.12, 0, Math.PI * 2);
-      ctx.fillStyle = '#120d0a';
-      ctx.fill();
+    // The four-nations wheel, the same drawing as the app icon.
+    const mark = el('div', {
+      class: 'title-mark',
+      html: WHEEL_SVG,
+      attrs: { 'aria-hidden': 'true' },
     });
 
     const actions = el(
@@ -87,11 +71,11 @@ export class TitleScene implements Scene {
         { class: 'scene title-scene' },
         el(
           'div',
-          { class: 'title-card panel' },
+          { class: 'title-card' },
           mark,
           el('h1', { text: 'Four Nations Tactics' }),
           el('p', {
-            class: 'muted',
+            class: 'muted tagline',
             text: 'A hot-seat tactical RPG for one to six players, a few decades after Korra.',
           }),
           actions,

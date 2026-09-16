@@ -107,10 +107,13 @@ Every asset passes all of these before it is committed.
 
 ## Fonts
 
-One display face for headings, self-hosted as woff2 (the service-worker glob
-already includes it), chosen from OFL-licensed faces with an East Asian
-brush or serif feel. Candidates to evaluate in Phase B: Zen Antique, Shippori
-Mincho, Cormorant. Body text stays on the system stack.
+Decided in ADR 0005. The display face is **Shippori Mincho 700**, self-hosted
+as the Latin-subset woff2 in `public/fonts/` (provenance and licence in the
+README beside it) and applied through `--font-display` to `h1`, `h2` and
+`.display` slots: the title, scene headings, a speaker's name plate, the
+decider banner. `h3` and body text stay on the system stack. Zen Antique was
+the runner-up, with the same brush-serif register but a single weight;
+Cormorant reads European and Cinzel Roman, so neither fits the world.
 
 ## Effects and terrain (later phases)
 

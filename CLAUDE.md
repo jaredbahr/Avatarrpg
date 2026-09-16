@@ -103,7 +103,18 @@ Never run `npx playwright install` in the dev container — Chromium is already 
   can be described back to the player — which the dialogue UI needs, because it
   draws options the party _cannot_ take and has to say why.
 - UI sizes go in `rem`, never `px`, so the Large-text setting scales them.
-  Anything tappable must be at least `var(--tap)`.
+  Anything tappable must be at least `var(--tap)`. The one exception is
+  `--hairline`, the decorative outline, which is px on purpose so it does not
+  thicken with the type.
+- Every colour, type size, z-index, duration and easing is a token in the
+  `:root` block of `src/styles/base.css`; nothing outside it writes a literal.
+  A tint of a palette colour is `color-mix(in srgb, var(--c-x) N%, transparent)`,
+  never a second copy of the value. Tag a component `.element-<id>` and draw
+  with `--el` rather than adding a rule per element (ADR 0005).
+- Scene changes go through `App.showScene`, which stays synchronous: the
+  curtain reveals _after_ the swap and never takes a tap. The backdrop's tint
+  is `app.setMood()`; a scene that knows better than the map (a speaker's
+  element, the path being picked) calls it from its `render()`.
 - Commit messages: imperative mood, one concern per commit.
 - Anything that changes an engine, a rendering contract, an asset format or a
   budget gets an ADR in `docs/adr/`. The phase plan is `docs/roadmap.md`; art

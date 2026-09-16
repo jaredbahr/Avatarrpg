@@ -95,7 +95,14 @@ export function button(
   });
 }
 
-/** Renders a painter into an <canvas> sized in rem, for portraits in the HUD. */
+/**
+ * Renders a painter into an <canvas> sized in rem, for portraits in the HUD.
+ *
+ * The backing store is the rem size at the root's *current* font size times
+ * the device pixel ratio, so a portrait stays crisp under the Large-text
+ * setting: sizing it from a fixed 16px drew an 11rem portrait at Largest
+ * from two thirds of the pixels it was shown at.
+ */
 export function painterCanvas(
   assetKey: string,
   remSize: number,
@@ -103,7 +110,8 @@ export function painterCanvas(
   extraClass = '',
 ): HTMLCanvasElement {
   const canvas = el('canvas', { class: `painter ${extraClass}`.trim() });
-  const px = Math.round(remSize * 16 * (window.devicePixelRatio || 1));
+  const rootPx = parseFloat(getComputedStyle(document.documentElement).fontSize) || 16;
+  const px = Math.round(remSize * rootPx * (window.devicePixelRatio || 1));
   canvas.width = px;
   canvas.height = px;
   canvas.style.width = `${remSize}rem`;

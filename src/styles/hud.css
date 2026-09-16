@@ -15,11 +15,158 @@
 
 .overlay-host {
   pointer-events: none;
-  z-index: 50;
+  z-index: var(--z-overlay-host);
 }
 
 .overlay-host > * {
   pointer-events: auto;
+}
+
+/* ------------------------------------------------------------------ */
+/* Curtain                                                             */
+/* ------------------------------------------------------------------ */
+
+/*
+ * The reveal-from-ink on a scene change (app/ui/Curtain.ts). It is dropped
+ * with .is-down, which commits an opaque frame with no transition, and lifted
+ * with .is-lifting, which fades over --dur-slow. It never takes a tap: the
+ * rule above re-enables pointer events on every overlay-host child, so this
+ * one is spelled out.
+ */
+.overlay-host > .curtain {
+  position: absolute;
+  inset: 0;
+  background: var(--c-bg-deep);
+  opacity: 0;
+  z-index: var(--z-curtain);
+  pointer-events: none;
+}
+
+.curtain.is-down {
+  opacity: 1;
+  transition: none;
+}
+
+.curtain.is-lifting {
+  opacity: 0;
+  transition: opacity calc(var(--dur-slow) * var(--motion-scale)) var(--ease-ink);
+}
+
+/* ------------------------------------------------------------------ */
+/* Backdrop                                                            */
+/* ------------------------------------------------------------------ */
+
+/*
+ * What every scene sits on: grain over a soft radial base, two blobs of the
+ * current mood colour, and the four-nations wheel as a faint line drawing.
+ * The mood is `data-mood` on the app root (App.setMood): a nation while a
+ * character is being picked or is speaking, a map's ambience while the party
+ * is somewhere, gold otherwise. An ambience the CSS does not know falls
+ * through to gold, so content can add one freely.
+ *
+ * Cost rules, because this is under everything on an iPad: no filter, no
+ * blend mode, no per-frame JS. The blobs drift only on the title, where
+ * nothing else moves, and both they and the wheel are hidden under the map
+ * scenes, whose canvas covers them anyway.
+ */
+.app-root {
+  --mood: var(--c-gold);
+  --wash-alpha: 0.16;
+}
+
+.app-root[data-mood='fire'] {
+  --mood: var(--c-fire);
+}
+.app-root[data-mood='water'] {
+  --mood: var(--c-water);
+}
+.app-root[data-mood='earth'],
+.app-root[data-mood='forest'] {
+  --mood: var(--c-earth);
+}
+.app-root[data-mood='air'] {
+  --mood: var(--c-air);
+}
+.app-root[data-mood='nonbender'] {
+  --mood: var(--c-nonbender);
+}
+.app-root[data-mood='quarry'] {
+  --mood: var(--c-ink-faint);
+}
+
+.backdrop {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  background-color: var(--c-bg-deep);
+  background-image:
+    var(--tex-grain), radial-gradient(120% 90% at 50% 30%, var(--c-bg), var(--c-bg-deep) 70%);
+  background-size: var(--tex-grain-size), auto;
+}
+
+.backdrop-wash {
+  position: absolute;
+  width: 60vmax;
+  height: 60vmax;
+  border-radius: 50%;
+  background: radial-gradient(closest-side, var(--mood), transparent);
+  opacity: var(--wash-alpha);
+}
+
+.wash-a {
+  top: -20vmax;
+  left: -15vmax;
+}
+
+.wash-b {
+  bottom: -25vmax;
+  right: -15vmax;
+  opacity: calc(var(--wash-alpha) * 0.7);
+}
+
+.backdrop-wheel {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 90vmin;
+  height: 90vmin;
+  transform: translate(-50%, -50%);
+  color: color-mix(in srgb, var(--c-ink) 5%, transparent);
+}
+
+.backdrop-wheel svg {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
+.app-root[data-scene='combat'] .backdrop-wash,
+.app-root[data-scene='combat'] .backdrop-wheel,
+.app-root[data-scene='explore'] .backdrop-wash,
+.app-root[data-scene='explore'] .backdrop-wheel {
+  display: none;
+}
+
+.app-root[data-scene='title'] .backdrop-wheel {
+  top: 44%;
+}
+
+.app-root[data-scene='title'] .backdrop-wash {
+  animation: wash-drift var(--dur-drift) ease-in-out infinite alternate;
+  will-change: transform;
+}
+
+.app-root[data-scene='title'] .wash-b {
+  animation-delay: calc(var(--dur-drift) * -0.5);
+}
+
+@keyframes wash-drift {
+  from {
+    transform: translate3d(0, 0, 0) scale(1);
+  }
+  to {
+    transform: translate3d(4vmax, 3vmax, 0) scale(1.08);
+  }
 }
 
 /* ------------------------------------------------------------------ */
@@ -31,8 +178,12 @@
   align-items: center;
   gap: var(--sp-3);
   padding: var(--sp-2) var(--sp-3);
-  background: linear-gradient(180deg, rgb(27 20 16 / 96%), rgb(27 20 16 / 78%));
-  border-bottom: 1px solid var(--c-line);
+  background: linear-gradient(
+    180deg,
+    color-mix(in srgb, var(--c-bg) 96%, transparent),
+    color-mix(in srgb, var(--c-bg) 78%, transparent)
+  );
+  border-bottom: var(--hairline) solid var(--c-line);
   flex: 0 0 auto;
   min-height: var(--tap);
 }
@@ -47,7 +198,7 @@
 
 .rule {
   border: 0;
-  border-top: 1px solid var(--c-line);
+  border-top: var(--hairline) solid var(--c-line);
   margin: var(--sp-2) 0;
   width: 100%;
 }
@@ -62,9 +213,9 @@
   gap: var(--sp-1);
   padding: 0.15rem var(--sp-2);
   border-radius: 999px;
-  border: 1px solid var(--c-line);
+  border: var(--hairline) solid var(--c-line);
   background: rgb(0 0 0 / 30%);
-  font-size: 0.8rem;
+  font-size: var(--fs-sm);
   white-space: nowrap;
 }
 
@@ -73,24 +224,24 @@
   color: var(--c-gold-soft);
 }
 .chip-hostile {
-  border-color: #7a2c24;
-  background: rgb(64 33 28 / 70%);
+  border-color: var(--c-danger-line);
+  background: color-mix(in srgb, var(--c-danger-bg) 70%, transparent);
 }
 .chip-friendly {
-  border-color: #2f5f72;
-  background: rgb(24 48 58 / 70%);
+  border-color: var(--c-friendly-line);
+  background: color-mix(in srgb, var(--c-friendly-bg) 70%, transparent);
 }
 .chip-lethal {
   border-color: var(--c-danger);
-  color: #ffd0c8;
+  color: var(--c-danger-soft);
   font-weight: 700;
 }
 .chip-terrain {
-  border-color: #6b5a3f;
+  border-color: var(--c-parchment-line);
   color: var(--c-gold-soft);
 }
 .chip-status {
-  border-color: #6b5a3f;
+  border-color: var(--c-parchment-line);
 }
 .chip-warn {
   border-color: var(--c-warn);
@@ -109,14 +260,14 @@
   flex-direction: column;
   gap: var(--sp-1);
   padding: var(--sp-2) var(--sp-3);
-  border: 1px solid #6b5a3f;
+  border: var(--hairline) solid var(--c-parchment-line);
   border-left-width: var(--accent-bar);
   border-radius: var(--radius);
-  background: rgb(48 38 22 / 55%);
+  background: color-mix(in srgb, var(--c-parchment-bg) 55%, transparent);
 }
 
 .reaction-label {
-  font-size: 0.95rem;
+  font-size: var(--fs-md);
   color: var(--c-gold-soft);
   /* Sentences wrap; chips do not. That is the whole reason this is not one. */
   white-space: normal;
@@ -137,7 +288,7 @@
 .reaction-chain {
   border-color: var(--c-warn);
   border-left-color: var(--c-warn);
-  background: rgb(66 46 16 / 65%);
+  background: color-mix(in srgb, var(--c-warn-deep) 65%, transparent);
 }
 
 .reaction-chain .reaction-reach {
@@ -159,7 +310,7 @@
 
 .reaction-group-head {
   margin: 0;
-  font-size: 0.95rem;
+  font-size: var(--fs-md);
   color: var(--c-gold);
 }
 
@@ -169,7 +320,7 @@
   gap: 0.1rem;
   padding: var(--sp-2) var(--sp-3);
   border-left: var(--accent-bar) solid var(--c-line);
-  background: rgb(0 0 0 / 22%);
+  background: var(--surface-sunken);
   border-radius: 0 var(--radius) var(--radius) 0;
 }
 
@@ -193,16 +344,16 @@
 /* Lightning through a puddle is the lesson worth finding first. */
 .reaction-row-chain {
   border-left-color: var(--c-warn);
-  background: rgb(66 46 16 / 45%);
+  background: color-mix(in srgb, var(--c-warn-deep) 45%, transparent);
 }
 
 .warn-note {
-  color: #ffc9a8;
-  background: rgb(90 45 20 / 45%);
-  border: 1px solid #7a4a24;
+  color: var(--c-warn-ink);
+  background: color-mix(in srgb, var(--c-warn-bg) 45%, transparent);
+  border: var(--hairline) solid var(--c-warn-line);
   border-radius: var(--radius);
   padding: var(--sp-2) var(--sp-3);
-  font-size: 0.85rem;
+  font-size: var(--fs-sm);
   margin: 0;
 }
 
@@ -217,6 +368,8 @@
   overflow-y: auto;
 }
 
+/* Not a panel: the title sits straight on the backdrop, on a soft plate of
+   shadow so the type holds against the wash. */
 .title-card {
   max-width: 34rem;
   text-align: center;
@@ -224,21 +377,71 @@
   flex-direction: column;
   align-items: center;
   gap: var(--sp-3);
+  padding: var(--sp-5) var(--sp-4);
+  border-radius: var(--radius-lg);
+  background: radial-gradient(
+    ellipse closest-side at 50% 42%,
+    color-mix(in srgb, var(--c-bg-deep) 75%, transparent),
+    transparent
+  );
+}
+
+.title-mark {
+  position: relative;
+  width: 11rem;
+  height: 11rem;
+  /* The glow is a pseudo-element behind the wheel; isolating keeps its
+     negative z-index inside the mark instead of under the backdrop. */
+  isolation: isolate;
+}
+
+.title-mark::before {
+  content: '';
+  position: absolute;
+  inset: -30%;
+  border-radius: 50%;
+  background: radial-gradient(
+    closest-side,
+    color-mix(in srgb, var(--c-gold) 28%, transparent),
+    transparent
+  );
+  z-index: -1;
+}
+
+.title-mark svg {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
+.title-card h1 {
+  font-size: var(--fs-3xl);
+  line-height: 1.05;
+  margin: 0;
+  text-shadow: 0 2px 0 rgb(0 0 0 / 45%);
+}
+
+.tagline {
+  max-width: 26rem;
+  margin: 0;
 }
 
 .title-actions {
   width: 100%;
-  max-width: 22rem;
+  max-width: 20rem;
+  gap: var(--sp-2);
+  margin-top: var(--sp-2);
 }
 
 .btn-large {
   min-height: 3.5rem;
-  font-size: 1.1rem;
+  font-size: var(--fs-lg);
 }
 
 .legal {
   max-width: 28rem;
   opacity: 0.7;
+  font-size: var(--fs-xs);
 }
 
 /* ------------------------------------------------------------------ */
@@ -268,7 +471,7 @@
 .setup-footer {
   margin-top: auto;
   padding-top: var(--sp-3);
-  border-top: 1px solid var(--c-line);
+  border-top: var(--hairline) solid var(--c-line);
 }
 
 .count-row {
@@ -278,7 +481,7 @@
 .btn-count {
   min-width: 3.5rem;
   min-height: 3.5rem;
-  font-size: 1.25rem;
+  font-size: var(--fs-lg);
 }
 
 .card-grid {
@@ -296,8 +499,9 @@
   padding: var(--sp-3);
   min-height: 8rem;
   border-radius: var(--radius-lg);
-  border: 2px solid var(--c-line);
-  background: var(--c-panel-raised);
+  border: 2px solid var(--c-ink-line);
+  background-color: var(--surface-1);
+  box-shadow: var(--inset-edge), var(--shadow-1);
 }
 
 .pick-card h3 {
@@ -307,7 +511,7 @@
 .pick-card .tagline {
   margin: 0;
   color: var(--c-gold-soft);
-  font-size: 0.9rem;
+  font-size: var(--fs-sm);
 }
 
 .pick-card p {
@@ -316,7 +520,10 @@
 
 .pick-card.selected {
   border-color: var(--c-gold);
-  box-shadow: 0 0 0 2px rgb(217 164 65 / 45%);
+  box-shadow:
+    var(--inset-edge),
+    0 0 0 2px color-mix(in srgb, var(--c-gold) 45%, transparent),
+    var(--shadow-1);
 }
 
 .pick-card.taken {
@@ -328,20 +535,53 @@
   text-align: center;
 }
 
+/*
+ * Element identity. A component tagged .element-<id> gets --el and --el-soft
+ * to draw with, plus the accent bar every element row carries. Cards and
+ * panels add a translucent header band in that colour; it lives in
+ * background-image so a button's hover background-color leaves it alone.
+ */
 .element-fire {
-  border-left: var(--accent-bar) solid var(--c-fire);
+  --el: var(--c-fire);
+  --el-soft: var(--c-fire-soft);
 }
 .element-water {
-  border-left: var(--accent-bar) solid var(--c-water);
+  --el: var(--c-water);
+  --el-soft: var(--c-water-soft);
 }
 .element-earth {
-  border-left: var(--accent-bar) solid var(--c-earth);
+  --el: var(--c-earth);
+  --el-soft: var(--c-earth-soft);
 }
 .element-air {
-  border-left: var(--accent-bar) solid var(--c-air);
+  --el: var(--c-air);
+  --el-soft: var(--c-air-soft);
 }
 .element-nonbender {
-  border-left: var(--accent-bar) solid var(--c-nonbender);
+  --el: var(--c-nonbender);
+  --el-soft: var(--c-nonbender-soft);
+}
+.element-neutral {
+  --el: var(--c-gold);
+  --el-soft: var(--c-gold-soft);
+}
+
+.element-fire,
+.element-water,
+.element-earth,
+.element-air,
+.element-nonbender,
+.element-neutral {
+  border-left: var(--accent-bar) solid var(--el);
+}
+
+.pick-card[class*='element-'],
+.unit-panel[class*='element-'] {
+  background-image: linear-gradient(
+    180deg,
+    color-mix(in srgb, var(--el) 22%, transparent),
+    transparent 3.25rem
+  );
 }
 
 .painter {
@@ -358,27 +598,100 @@
   flex-direction: column;
 }
 
+/*
+ * The stage. The speaker stands over the text box, which sits in the lower
+ * third of the screen the way a visual novel's does. The head overlaps the
+ * box's top edge from outside: the box scrolls, so nothing may hang out of
+ * it, and the head has to be a sibling drawn above it.
+ */
+.stage {
+  flex: 1 1 auto;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  align-items: center;
+  padding: var(--sp-4) var(--sp-4) calc(var(--sp-5) + env(safe-area-inset-bottom, 0px));
+}
+
+.stage-head {
+  flex: 0 0 auto;
+  position: relative;
+  z-index: 1;
+  width: min(56rem, 100%);
+  display: flex;
+  align-items: flex-end;
+  gap: var(--sp-3);
+  padding: 0 var(--sp-3);
+  margin-bottom: calc(-1 * var(--sp-3));
+}
+
+.stage-portrait {
+  position: relative;
+  flex: 0 0 auto;
+}
+
+/* The element class brings an accent bar; the medallion draws its own ring. */
+.stage-portrait[class*='element-'] {
+  border-left: 0;
+}
+
+/* A halo in the speaker's element behind the medallion. */
+.stage-portrait::before {
+  content: '';
+  position: absolute;
+  inset: -18%;
+  border-radius: 50%;
+  background: radial-gradient(
+    closest-side,
+    color-mix(in srgb, var(--el) 38%, transparent),
+    transparent
+  );
+}
+
+.stage-portrait .painter {
+  position: relative;
+  box-shadow:
+    0 0 0 2px var(--c-ink-line),
+    0 0 0 4px color-mix(in srgb, var(--el) 70%, transparent),
+    var(--shadow-2);
+}
+
+.name-plate {
+  display: flex;
+  flex-direction: column;
+  gap: 0.1rem;
+  padding: var(--sp-2) var(--sp-4);
+  margin-bottom: var(--sp-5);
+  background-color: var(--surface-1);
+  background-image: var(--tex-grain);
+  background-size: var(--tex-grain-size);
+  border: var(--hairline) solid var(--c-ink-line);
+  border-radius: var(--radius);
+  box-shadow: var(--inset-edge), var(--shadow-1);
+}
+
+.name-plate h2 {
+  margin: 0;
+  line-height: 1.1;
+}
+
+/* Takes whatever height the head leaves, and only then scrolls inside. */
 .dialogue-panel {
-  margin: auto;
-  width: min(52rem, 94%);
-  max-height: 84dvh;
+  width: min(56rem, 100%);
+  margin: 0;
+  flex: 0 1 auto;
+  min-height: 0;
   overflow-y: auto;
   display: flex;
   flex-direction: column;
   gap: var(--sp-3);
+  padding: var(--sp-5) var(--sp-5) var(--sp-4);
   cursor: pointer;
 }
 
-.dialogue-head {
-  align-items: flex-start;
-}
-
-.dialogue-head h2 {
-  margin: 0;
-}
-
 .dialogue-line {
-  font-size: 1.15rem;
+  font-size: var(--fs-lg);
   line-height: 1.6;
   margin: 0;
 }
@@ -394,12 +707,12 @@
   gap: var(--sp-1);
   padding: var(--sp-3);
   border-radius: var(--radius);
-  background: rgb(217 164 65 / 12%);
-  border: 1px solid var(--c-gold);
+  background: color-mix(in srgb, var(--c-gold) 12%, transparent);
+  border: var(--hairline) solid var(--c-gold);
 }
 
 .decider-banner strong {
-  font-size: 1.6rem;
+  font-size: var(--fs-xl);
   color: var(--c-gold-soft);
 }
 
@@ -418,7 +731,7 @@
 }
 
 .choice-option strong {
-  font-size: 1.05rem;
+  font-size: var(--fs-lg);
 }
 
 /*
@@ -427,11 +740,11 @@
  * the first thing read, before the words themselves.
  */
 .speaker-tag {
-  font-size: 0.8rem;
+  font-size: var(--fs-sm);
   letter-spacing: 0.04em;
   text-transform: uppercase;
   color: var(--c-gold-soft);
-  border: 1px solid currentColor;
+  border: var(--hairline) solid currentColor;
   border-radius: 999px;
   padding: 0.1rem var(--sp-2);
 }
@@ -452,8 +765,10 @@
   color: var(--c-ink-dim);
 }
 
+/* Declared once: the dialogue options and the discipline cards share it. */
 .locked-hint {
-  font-size: 0.85rem;
+  margin: 0;
+  font-size: var(--fs-sm);
   color: var(--c-gold-soft);
   font-style: italic;
 }
@@ -513,8 +828,8 @@
   gap: var(--sp-2);
   padding: var(--sp-2) var(--sp-3);
   overflow-x: auto;
-  background: rgb(18 13 10 / 85%);
-  border-bottom: 1px solid var(--c-line);
+  background: color-mix(in srgb, var(--c-bg-deep) 85%, transparent);
+  border-bottom: var(--hairline) solid var(--c-line);
   flex: 0 0 auto;
 }
 
@@ -533,7 +848,7 @@
 .turn-chip.active {
   border-color: var(--c-gold);
   opacity: 1;
-  background: rgb(217 164 65 / 12%);
+  background: color-mix(in srgb, var(--c-gold) 12%, transparent);
 }
 
 .turn-chip.faction-enemy .painter {
@@ -559,16 +874,21 @@
   display: flex;
   gap: var(--sp-2);
   padding: var(--sp-2) var(--sp-3) calc(var(--sp-2) + env(safe-area-inset-bottom, 0px));
-  background: linear-gradient(0deg, rgb(18 13 10 / 98%), rgb(18 13 10 / 82%));
-  border-top: 1px solid var(--c-line);
+  background: linear-gradient(
+    0deg,
+    color-mix(in srgb, var(--c-bg-deep) 98%, transparent),
+    color-mix(in srgb, var(--c-bg-deep) 82%, transparent)
+  );
+  border-top: var(--hairline) solid var(--c-line);
   align-items: stretch;
   flex: 0 0 auto;
   overflow-x: auto;
 }
 
 .hud-panel {
-  background: var(--c-panel);
-  border: 1px solid var(--c-line);
+  background-color: var(--surface-0);
+  border: var(--hairline) solid var(--c-ink-line);
+  box-shadow: var(--inset-edge);
   border-radius: var(--radius);
   padding: var(--sp-2);
   display: flex;
@@ -587,12 +907,12 @@
   border-radius: 999px;
   background: rgb(0 0 0 / 55%);
   overflow: hidden;
-  border: 1px solid var(--c-line);
+  border: var(--hairline) solid var(--c-line);
 }
 
 .bar-fill {
   height: 100%;
-  background: linear-gradient(90deg, #6fbf73, #a8d98c);
+  background: linear-gradient(90deg, var(--c-ok), var(--c-ok-soft));
 }
 
 .bar-label {
@@ -600,7 +920,7 @@
   inset: 0;
   display: grid;
   place-items: center;
-  font-size: 0.75rem;
+  font-size: var(--fs-xs);
   text-shadow: 0 1px 2px rgb(0 0 0 / 90%);
 }
 
@@ -614,12 +934,14 @@
   width: 0.7rem;
   height: 0.7rem;
   border-radius: 50%;
-  border: 1px solid var(--c-gold);
+  border: var(--hairline) solid var(--c-gold);
   background: transparent;
+  box-shadow: inset 0 0 0 1px rgb(0 0 0 / 40%);
 }
 
 .pip-on {
   background: var(--c-gold);
+  box-shadow: 0 0 0.35rem color-mix(in srgb, var(--c-gold) 50%, transparent);
 }
 
 .pips-small .pip {
@@ -645,18 +967,18 @@
   min-width: 6rem;
   min-height: var(--tap);
   padding: var(--sp-2);
-  font-size: 0.9rem;
+  font-size: var(--fs-md);
   line-height: 1.15;
 }
 
 .action-button.selected {
   border-color: var(--c-gold);
-  background: rgb(217 164 65 / 20%);
-  box-shadow: 0 0 0 2px rgb(217 164 65 / 40%);
+  background-color: color-mix(in srgb, var(--c-gold) 20%, transparent);
+  box-shadow: 0 0 0 2px color-mix(in srgb, var(--c-gold) 40%, transparent);
 }
 
 .action-sub {
-  font-size: 0.72rem;
+  font-size: var(--fs-xs);
   color: var(--c-ink-dim);
 }
 
@@ -664,7 +986,7 @@
   position: absolute;
   top: 0.15rem;
   right: 0.25rem;
-  font-size: 0.7rem;
+  font-size: var(--fs-xs);
   font-weight: 700;
   color: var(--c-warn);
 }
@@ -700,12 +1022,19 @@
   margin: var(--sp-3);
   padding: var(--sp-3);
   border-radius: var(--radius-lg);
-  background: rgb(27 20 16 / 97%);
-  border: 1px solid var(--c-gold);
-  box-shadow: var(--shadow-panel);
+  background: color-mix(in srgb, var(--c-bg) 97%, transparent);
+  border: var(--hairline) solid var(--c-gold);
+  box-shadow: var(--inset-edge), var(--shadow-2);
   display: flex;
   flex-direction: column;
   gap: var(--sp-2);
+}
+
+/* An aim hint sits where the confirm bar would, so the eye already knows to
+   look there, but reads as guidance rather than a decision. */
+.aim-hint {
+  border-color: var(--c-line);
+  background: color-mix(in srgb, var(--c-bg) 92%, transparent);
 }
 
 .preview-chips {
@@ -718,9 +1047,14 @@
   inset: 0;
   display: grid;
   place-items: center;
-  background: rgb(9 6 4 / 90%);
-  z-index: 20;
+  background: var(--scrim-strong);
+  z-index: var(--z-banner);
   padding: var(--sp-4);
+  animation: overlay-in calc(var(--dur-base) * var(--motion-scale)) var(--ease-out) both;
+}
+
+.handoff-banner .panel {
+  animation: dialog-in calc(var(--dur-base) * var(--motion-scale)) var(--ease-out) both;
 }
 
 .handoff-banner .panel {
@@ -732,7 +1066,7 @@
 }
 
 .handoff-banner h1 {
-  font-size: 2.6rem;
+  font-size: var(--fs-3xl);
   color: var(--c-gold-soft);
   margin: 0;
 }
@@ -742,8 +1076,8 @@
   margin-bottom: var(--sp-3);
   padding: var(--sp-2) var(--sp-4);
   border-radius: 999px;
-  background: rgb(27 20 16 / 92%);
-  border: 1px solid var(--c-line);
+  background: color-mix(in srgb, var(--c-bg) 92%, transparent);
+  border: var(--hairline) solid var(--c-line);
   color: var(--c-ink-dim);
 }
 
@@ -755,9 +1089,44 @@
 /* Dialogs                                                             */
 /* ------------------------------------------------------------------ */
 
+/*
+ * Dialogs ease in: the scrim fades and the sheet settles up into place. Pure
+ * CSS, so every dialog gets it for free; there is deliberately no exit
+ * animation, because a closed dialog that lingers in the DOM is a node the
+ * e2e suite and screen readers can still find.
+ */
+.overlay {
+  animation: overlay-in calc(var(--dur-base) * var(--motion-scale)) var(--ease-out) both;
+}
+
+.overlay > .dialog {
+  animation: dialog-in calc(var(--dur-base) * var(--motion-scale)) var(--ease-out) both;
+}
+
+@keyframes overlay-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes dialog-in {
+  from {
+    opacity: 0;
+    transform: translateY(0.5rem) scale(0.98);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
 .dialog {
   max-width: min(36rem, 94vw);
   width: 100%;
+  box-shadow: var(--inset-edge), var(--shadow-3);
   display: flex;
   flex-direction: column;
   gap: var(--sp-3);
@@ -779,7 +1148,7 @@
 
 .dialog-footer {
   padding-top: var(--sp-2);
-  border-top: 1px solid var(--c-line);
+  border-top: var(--hairline) solid var(--c-line);
 }
 
 .slot {
@@ -787,9 +1156,9 @@
   align-items: center;
   gap: var(--sp-3);
   padding: var(--sp-3);
-  border: 1px solid var(--c-line);
+  border: var(--hairline) solid var(--c-line);
   border-radius: var(--radius);
-  background: rgb(0 0 0 / 22%);
+  background: var(--surface-sunken);
   flex-wrap: wrap;
 }
 
@@ -805,6 +1174,11 @@
   overflow-wrap: anywhere;
 }
 
+.slot-place {
+  color: var(--c-gold-soft);
+  font-size: var(--fs-sm);
+}
+
 .slot-actions {
   flex: 0 0 auto;
 }
@@ -814,7 +1188,7 @@
   align-items: center;
   gap: var(--sp-3);
   padding: var(--sp-2) 0;
-  border-bottom: 1px solid var(--c-line);
+  border-bottom: var(--hairline) solid var(--c-line);
   flex-wrap: wrap;
 }
 
@@ -836,9 +1210,9 @@
   flex-direction: column;
   gap: var(--sp-2);
   padding: var(--sp-3);
-  border: 1px solid var(--c-line);
+  border: var(--hairline) solid var(--c-line);
   border-radius: var(--radius);
-  background: rgb(0 0 0 / 22%);
+  background: var(--surface-sunken);
 }
 
 .ability-card h3 {
@@ -853,7 +1227,7 @@
   margin: 0;
   padding-left: 1.1rem;
   color: var(--c-ink-dim);
-  font-size: 0.85rem;
+  font-size: var(--fs-sm);
 }
 
 /* Discipline cards: the ability card, plus the ladder the path grants. A
@@ -875,13 +1249,7 @@
   margin: 0;
   padding-left: 1.1rem;
   color: var(--c-ink-dim);
-  font-size: 0.85rem;
-}
-
-.locked-hint {
-  margin: 0;
-  color: var(--c-gold);
-  font-size: 0.85rem;
+  font-size: var(--fs-sm);
 }
 
 .flavor {
@@ -934,8 +1302,8 @@
   background: rgb(0 0 0 / 65%);
   color: var(--c-gold-soft);
   font-family: ui-monospace, Menlo, Consolas, monospace;
-  font-size: 0.8rem;
-  z-index: 70;
+  font-size: var(--fs-sm);
+  z-index: var(--z-stats);
   pointer-events: none;
 }
 
@@ -952,7 +1320,7 @@
   flex-direction: column;
   gap: var(--sp-2);
   align-items: center;
-  z-index: 60;
+  z-index: var(--z-toast);
   pointer-events: none;
   max-width: min(36rem, 92vw);
 }
@@ -960,22 +1328,22 @@
 .toast {
   padding: var(--sp-2) var(--sp-4);
   border-radius: 999px;
-  background: rgb(27 20 16 / 96%);
-  border: 1px solid var(--c-line);
-  box-shadow: var(--shadow-panel);
-  font-size: 0.9rem;
+  background: color-mix(in srgb, var(--c-bg) 96%, transparent);
+  border: var(--hairline) solid var(--c-line);
+  box-shadow: var(--inset-edge), var(--shadow-2);
+  font-size: var(--fs-sm);
   text-align: center;
-  animation: toast-in calc(180ms * var(--motion-scale)) ease-out;
+  animation: toast-in calc(var(--dur-base) * var(--motion-scale)) var(--ease-out);
 }
 
 .toast-warn {
   border-color: var(--c-warn);
-  color: #ffe4a8;
+  color: var(--c-warn-ink);
 }
 
 .toast-out {
   opacity: 0;
-  transition: opacity calc(300ms * var(--motion-scale)) ease-in;
+  transition: opacity calc(var(--dur-slow) * var(--motion-scale)) var(--ease-ink);
 }
 
 @keyframes toast-in {
@@ -998,6 +1366,11 @@
     display: none;
   }
 
+  /* A phone, or a tablet at Largest text: the name plate alone is the head. */
+  .stage-portrait {
+    display: none;
+  }
+
   .hud {
     flex-direction: column;
   }
@@ -1013,12 +1386,16 @@
   }
 
   .handoff-banner h1 {
-    font-size: 2rem;
+    font-size: var(--fs-2xl);
   }
 }
 
 @media (max-height: 34rem) {
   .turn-strip {
+    display: none;
+  }
+
+  .stage-portrait {
     display: none;
   }
 
@@ -1043,18 +1420,6 @@
   }
 
   .handoff-banner h1 {
-    font-size: 2rem;
+    font-size: var(--fs-2xl);
   }
-}
-
-/* An aim hint sits where the confirm bar would, so the eye already knows to
-   look there, but reads as guidance rather than a decision. */
-.aim-hint {
-  border-color: var(--c-line);
-  background: rgb(27 20 16 / 92%);
-}
-
-.slot-place {
-  color: var(--c-gold-soft);
-  font-size: 0.9rem;
 }

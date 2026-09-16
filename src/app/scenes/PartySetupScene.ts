@@ -70,6 +70,9 @@ export class PartySetupScene implements Scene {
     if (!host) return;
     clear(host);
 
+    // The backdrop takes the colour of the path being chosen.
+    this.app.setMood(this.drafts[this.current]?.element ?? 'neutral');
+
     const scene = el('div', { class: 'scene setup-scene' });
     const panel = el('div', { class: 'panel setup-panel scroll' });
 
