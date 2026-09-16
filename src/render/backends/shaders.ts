@@ -89,6 +89,7 @@ uniform vec2 uOffset;
 uniform float uTileSize;
 uniform float uTime;
 uniform float uHatch;
+uniform float uGridLines;
 // Set by Pixi's filter system, not by our uniform group: the pooled input
 // texture's logical size and the output frame, both in CSS pixels.
 uniform vec4 uInputSize;
@@ -240,11 +241,11 @@ void main(void) {
 
   /* ---------------- grid ---------------- */
 
-  // Kept legible: this is a tactical game before it is a pretty one.
+  // Off by default (ADR 0007); the Show grid setting and High contrast turn it on.
   vec2 gw = fwidth(tileUv) * 1.2;
   vec2 edge = min(f, 1.0 - f);
   float line = 1.0 - smoothstep(0.0, max(gw.x, gw.y), min(edge.x, edge.y));
-  col = mix(col, col * 0.58, line * 0.5);
+  col = mix(col, col * 0.58, line * 0.5 * uGridLines);
 
   fragColor = vec4(col, 1.0) * quad.a;
 }`;

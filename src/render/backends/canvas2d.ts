@@ -12,6 +12,9 @@
 
 import type { Vec2 } from '../../core/types';
 import type { Camera, Viewport } from '../camera';
+import { contourLoops } from '../geometry/contour';
+import type { Curve } from '../geometry/curve';
+import { sampleAt, smoothPath } from '../geometry/curve';
 import { FACTION_RING, OVERLAY, STATUS_BADGE, hpColor } from '../palettes';
 import { paintFloatingNumber, paintImpact, paintPathArrow, paintPathDot } from '../painters/fx';
 import {
@@ -23,13 +26,23 @@ import {
 } from '../painters/tiles';
 import { paletteForAsset } from '../painters/registry';
 import { sprites } from '../spriteCache';
-import type { MapView, OverlayKind, RenderUnit } from '../view';
+import type { MapView, OverlayKind, OverlayLayer, RenderUnit } from '../view';
 import type { BackendCapabilities, RenderBackend } from './backend';
+
+/** The rounded square a hovered tile gets, in tile units from its corner. */
+const HOVER_LOOP = contourLoops([{ x: 0, y: 0 }])[0] ?? [];
 
 export class Canvas2DBackend implements RenderBackend {
   readonly capabilities: BackendCapabilities = { name: 'canvas', shaders: false, particles: false };
 
   private ctx: CanvasRenderingContext2D;
+  /**
+   * Contours per overlay layer and the curve per path, keyed by identity: the
+   * scene memoises its overlays, so the same objects come back frame after
+   * frame until something changes, and a WeakMap forgets them with it.
+   */
+  private loops = new WeakMap<OverlayLayer, Vec2[][]>();
+  private curve: { path: readonly Vec2[]; from: Vec2; curve: Curve } | null = null;
 
   constructor(private canvas: HTMLCanvasElement) {
     const ctx = canvas.getContext('2d', { alpha: false });
@@ -84,12 +97,62 @@ export class Canvas2DBackend implements RenderBackend {
         const box = camera.toScreen(pos);
         paintTerrain(ctx, box, tile, pos);
         paintSurface(ctx, box, tile, pos, view.hatch);
-        paintGridLine(ctx, box, 'rgba(0,0,0,0.18)');
+        if (view.gridLines) paintGridLine(ctx, box, 'rgba(0,0,0,0.18)');
       }
     }
   }
 
   private drawOverlays(view: MapView, camera: Camera): void {
+    if (view.crispOverlays) {
+      this.drawCrispOverlays(view, camera);
+      return;
+    }
+
+    const { ctx } = this;
+    const origin = camera.toScreen({ x: 0, y: 0 });
+    const size = origin.size;
+
+    for (const layer of view.overlays) {
+      if (layer.tiles.length === 0) continue;
+      let loops = this.loops.get(layer);
+      if (!loops) {
+        loops = contourLoops(layer.tiles);
+        this.loops.set(layer, loops);
+      }
+      const [fill, edge] = overlayColors(layer.kind);
+
+      ctx.save();
+      ctx.beginPath();
+      for (const loop of loops) tracePolygon(ctx, loop, origin, size);
+      ctx.fillStyle = fill;
+      ctx.fill('evenodd');
+      if (edge) {
+        // A wide faint stroke under a thin crisp one: a soft edge with no blur.
+        ctx.lineJoin = 'round';
+        ctx.strokeStyle = edge;
+        ctx.globalAlpha = OVERLAY.softAlpha;
+        ctx.lineWidth = size * OVERLAY.softWidth;
+        ctx.stroke();
+        ctx.globalAlpha = 1;
+        ctx.lineWidth = Math.max(2, size * OVERLAY.edgeWidth);
+        ctx.stroke();
+      }
+      ctx.restore();
+    }
+
+    if (view.hoverTile) {
+      const box = camera.toScreen(view.hoverTile);
+      ctx.save();
+      ctx.beginPath();
+      tracePolygon(ctx, HOVER_LOOP, box, box.size);
+      ctx.fillStyle = OVERLAY.hover;
+      ctx.fill();
+      ctx.restore();
+    }
+  }
+
+  /** The pre-contour look, kept for High contrast: a square per tile, hard edges. */
+  private drawCrispOverlays(view: MapView, camera: Camera): void {
     const { ctx } = this;
 
     for (const layer of view.overlays) {
@@ -120,11 +183,61 @@ export class Canvas2DBackend implements RenderBackend {
   private drawPath(view: MapView, camera: Camera): void {
     if (view.path.length === 0) return;
     const { ctx } = this;
-    view.path.forEach((pos: Vec2, index: number) => {
-      const box = camera.toScreen(pos);
-      if (index === view.path.length - 1) paintPathArrow(ctx, box, OVERLAY.path);
-      else paintPathDot(ctx, box, OVERLAY.path);
+
+    if (!view.pathFrom || view.crispOverlays) {
+      view.path.forEach((pos: Vec2, index: number) => {
+        const box = camera.toScreen(pos);
+        if (index === view.path.length - 1) paintPathArrow(ctx, box, OVERLAY.path);
+        else paintPathDot(ctx, box, OVERLAY.path);
+      });
+      return;
+    }
+
+    const from = view.pathFrom;
+    if (!this.curve || this.curve.path !== view.path || this.curve.from !== from) {
+      this.curve = { path: view.path, from, curve: smoothPath(from, view.path) };
+    }
+    const curve = this.curve.curve;
+    const origin = camera.toScreen({ x: 0, y: 0 });
+    const size = origin.size;
+
+    ctx.save();
+    ctx.lineCap = 'round';
+    ctx.lineJoin = 'round';
+    ctx.beginPath();
+    curve.points.forEach((p, index) => {
+      const x = origin.x + p.x * size;
+      const y = origin.y + p.y * size;
+      if (index === 0) ctx.moveTo(x, y);
+      else ctx.lineTo(x, y);
     });
+    ctx.strokeStyle = OVERLAY.pathUnder;
+    ctx.lineWidth = Math.max(4, size * 0.11);
+    ctx.stroke();
+    ctx.strokeStyle = OVERLAY.path;
+    ctx.lineWidth = Math.max(2, size * 0.05);
+    // A slow crawl along the route, so the line reads as a direction of travel.
+    ctx.setLineDash([size * 0.22, size * 0.16]);
+    ctx.lineDashOffset = -((view.time / 30) % (size * 0.38));
+    ctx.stroke();
+    ctx.setLineDash([]);
+
+    // The arrowhead sits on the last tangent, pointing the way the walk ends.
+    const end = sampleAt(curve, curve.length);
+    const tip = { x: origin.x + end.pos.x * size, y: origin.y + end.pos.y * size };
+    const back = size * 0.22;
+    const half = size * 0.14;
+    const tx = end.tangent.x;
+    const ty = end.tangent.y;
+    ctx.fillStyle = OVERLAY.path;
+    ctx.beginPath();
+    ctx.moveTo(tip.x + tx * back * 0.45, tip.y + ty * back * 0.45);
+    ctx.lineTo(tip.x - tx * back + ty * half, tip.y - ty * back - tx * half);
+    ctx.lineTo(tip.x - tx * back * 0.55, tip.y - ty * back * 0.55);
+    ctx.lineTo(tip.x - tx * back - ty * half, tip.y - ty * back + tx * half);
+    ctx.closePath();
+    ctx.fill();
+    ctx.restore();
   }
 
   private drawExit(view: MapView, camera: Camera): void {
@@ -200,6 +313,13 @@ export class Canvas2DBackend implements RenderBackend {
         continue;
       }
 
+      // The bob lifts the drawing, never the sort: it is applied after ordering.
+      if (unit.offset) {
+        box.x += unit.offset.x * box.size;
+        box.y += unit.offset.y * box.size;
+      }
+      const facing = unit.facing ?? (unit.faction === 'enemy' ? -1 : 1);
+
       // Active-unit ring, drawn under the sprite.
       if (unit.id === view.activeUnitId) {
         ctx.save();
@@ -239,12 +359,7 @@ export class Canvas2DBackend implements RenderBackend {
       ctx.save();
       if (unit.fallen) ctx.globalAlpha = 0.35;
       // Painted at device resolution, drawn at CSS size under the dpr transform.
-      const sprite = sprites.get(
-        unit.sprite,
-        box.size * dpr,
-        { facing: unit.faction === 'enemy' ? -1 : 1 },
-        unit.size,
-      );
+      const sprite = sprites.get(unit.sprite, box.size * dpr, { facing }, unit.size);
       ctx.drawImage(sprite, box.x, box.y, width, box.size);
       ctx.restore();
 
@@ -340,6 +455,22 @@ export class Canvas2DBackend implements RenderBackend {
       paintFloatingNumber(ctx, box, floater.text, floater.color, floater.progress);
     }
   }
+}
+
+/** Adds a closed loop, in tile units, to the current path at screen scale. */
+function tracePolygon(
+  ctx: CanvasRenderingContext2D,
+  loop: readonly Vec2[],
+  origin: { x: number; y: number },
+  size: number,
+): void {
+  loop.forEach((p, index) => {
+    const x = origin.x + p.x * size;
+    const y = origin.y + p.y * size;
+    if (index === 0) ctx.moveTo(x, y);
+    else ctx.lineTo(x, y);
+  });
+  ctx.closePath();
 }
 
 export function overlayColors(kind: OverlayKind): [string, string | null] {

@@ -23,6 +23,13 @@ export interface RenderUnit {
   readonly renderPos?: Vec2;
   /** Off for the party strolling round a village. Defaults to on. */
   readonly showHealth?: boolean;
+  /** Which way the sprite faces: 1 is screen-right. Defaults to the faction's side. */
+  readonly facing?: 1 | -1;
+  /**
+   * Draw-time nudge in tile units (a walk bob, later a lunge or a recoil).
+   * Never part of the sort key: a unit mid-hop still sorts by where it stands.
+   */
+  readonly offset?: Vec2;
 }
 
 export type OverlayKind = 'move' | 'target' | 'area' | 'hover';
@@ -74,6 +81,8 @@ export interface MapView {
   readonly npcs: readonly NpcMarker[];
   readonly props: readonly RenderProp[];
   readonly path: readonly Vec2[];
+  /** Where `path` starts (the walker's tile), so it can be drawn as one curve. */
+  readonly pathFrom: Vec2 | null;
   readonly fx: readonly FxInstance[];
   readonly floaters: readonly Floater[];
   readonly activeUnitId: string | null;
@@ -82,6 +91,10 @@ export interface MapView {
   readonly exit: { readonly pos: Vec2; readonly label: string } | null;
   /** Colourblind hatch patterns on surfaces. */
   readonly hatch: boolean;
+  /** Tile lines over the ground. Off by default; a setting, and High contrast, turn them on. */
+  readonly gridLines: boolean;
+  /** Overlays as a square per tile instead of a rounded contour (High contrast). */
+  readonly crispOverlays: boolean;
   /** Milliseconds since start, for idle animation. */
   readonly time: number;
 }

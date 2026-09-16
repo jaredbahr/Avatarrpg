@@ -30,9 +30,12 @@ import {
 import type { Grid, SurfaceId, TerrainId, Vec2 } from '../../core/types';
 import { TILE } from '../camera';
 import type { Camera, Viewport } from '../camera';
+import { contourLoops, isHole } from '../geometry/contour';
+import type { Curve } from '../geometry/curve';
+import { sampleAt, smoothPath } from '../geometry/curve';
 import { FACTION_RING, OVERLAY, STATUS_BADGE, TERRAIN_STYLES, hpColor } from '../palettes';
 import { MAX_SPRITE_PX, sprites } from '../spriteCache';
-import type { MapView, RenderUnit } from '../view';
+import type { MapView, OverlayLayer, RenderUnit } from '../view';
 import type { BackendCapabilities, RenderBackend } from './backend';
 import { overlayColors } from './canvas2d';
 import { FILTER_VERTEX, GROUND_FRAGMENT } from './shaders';
@@ -67,6 +70,29 @@ const SPRITE_BUCKET = 32;
 const MAX_TEXTURES = 128;
 
 /** 0 means no surface. Must match the surface branches in shaders.ts. */
+/** The rounded square a hovered tile gets, in tile units from its corner. */
+const HOVER_LOOP = contourLoops([{ x: 0, y: 0 }])[0] ?? [];
+
+/** Tile-unit points to the flat pixel list Graphics wants. */
+function flatten(points: readonly Vec2[]): number[] {
+  const out: number[] = [];
+  for (const p of points) out.push(p.x * TILE, p.y * TILE);
+  return out;
+}
+
+/** Even-odd point-in-polygon, for pairing a hole with the outer loop it sits in. */
+function insideLoop(point: Vec2, loop: readonly Vec2[]): boolean {
+  let inside = false;
+  for (let i = 0, j = loop.length - 1; i < loop.length; j = i++) {
+    const a = loop[i];
+    const b = loop[j];
+    if (!a || !b) continue;
+    const crosses = a.y > point.y !== b.y > point.y;
+    if (crosses && point.x < ((b.x - a.x) * (point.y - a.y)) / (b.y - a.y) + a.x) inside = !inside;
+  }
+  return inside;
+}
+
 const SURFACE_INDEX: Record<SurfaceId, number> = {
   water: 1,
   ice: 2,
@@ -104,6 +130,7 @@ export class PixiBackend implements RenderBackend {
     uTileSize: { value: TILE, type: 'f32' },
     uTime: { value: 0, type: 'f32' },
     uHatch: { value: 0, type: 'f32' },
+    uGridLines: { value: 0, type: 'f32' },
   });
   private groundFilter: Filter | null = null;
 
@@ -124,6 +151,14 @@ export class PixiBackend implements RenderBackend {
   private textureCache = new Map<HTMLCanvasElement, Texture>();
   private floaters: Text[] = [];
   private badgeText: Text[] = [];
+
+  /**
+   * Contours per overlay layer and the curve per path, keyed by identity: the
+   * scene memoises its overlays, so the same objects come back frame after
+   * frame until something changes, and a WeakMap forgets them with it.
+   */
+  private loops = new WeakMap<OverlayLayer, Vec2[][]>();
+  private curve: { path: readonly Vec2[]; from: Vec2; curve: Curve } | null = null;
 
   constructor(private canvas: HTMLCanvasElement) {
     this.mapCanvas.width = 1;
@@ -284,6 +319,7 @@ export class PixiBackend implements RenderBackend {
       uTileSize: number;
       uTime: number;
       uHatch: number;
+      uGridLines: number;
     };
     uniforms.uGrid[0] = grid.width;
     uniforms.uGrid[1] = grid.height;
@@ -292,6 +328,7 @@ export class PixiBackend implements RenderBackend {
     uniforms.uTileSize = TILE * camera.scale;
     uniforms.uTime = view.time / 1000;
     uniforms.uHatch = view.hatch ? 1 : 0;
+    uniforms.uGridLines = view.gridLines ? 1 : 0;
 
     /*
      * UniformGroup.uniforms is a plain object, not a proxy: neither assigning a
@@ -426,6 +463,11 @@ export class PixiBackend implements RenderBackend {
     const g = this.overlayGfx;
     g.clear();
 
+    if (!view.crispOverlays) {
+      this.drawContourOverlays(view);
+      return;
+    }
+
     for (const layer of view.overlays) {
       if (layer.tiles.length === 0) continue;
       const members = new Set(layer.tiles.map((p) => `${p.x},${p.y}`));
@@ -459,10 +501,68 @@ export class PixiBackend implements RenderBackend {
     }
   }
 
+  /**
+   * Overlays as rounded contours (ADR 0007). Each layer's loops are traced
+   * once per layer object; holes are cut from the outer loop they sit in.
+   */
+  private drawContourOverlays(view: MapView): void {
+    const g = this.overlayGfx;
+
+    for (const layer of view.overlays) {
+      if (layer.tiles.length === 0) continue;
+      let loops = this.loops.get(layer);
+      if (!loops) {
+        loops = contourLoops(layer.tiles);
+        this.loops.set(layer, loops);
+      }
+      const [fill, edge] = overlayColors(layer.kind);
+
+      const outers = loops.filter((loop) => !isHole(loop));
+      const holes = loops.filter(isHole);
+      for (const outer of outers) {
+        g.poly(flatten(outer), true);
+        for (const hole of holes) {
+          const probe = hole[0];
+          if (probe && insideLoop(probe, outer)) g.poly(flatten(hole), true).cut();
+        }
+        g.fill({ color: fill });
+      }
+
+      if (edge) {
+        for (const loop of loops) {
+          g.poly(flatten(loop), true).stroke({
+            width: TILE * OVERLAY.softWidth,
+            color: edge,
+            alpha: OVERLAY.softAlpha,
+            join: 'round',
+          });
+          g.poly(flatten(loop), true).stroke({
+            width: Math.max(2, TILE * OVERLAY.edgeWidth),
+            color: edge,
+            join: 'round',
+          });
+        }
+      }
+    }
+
+    if (view.hoverTile) {
+      const { x, y } = view.hoverTile;
+      g.poly(
+        HOVER_LOOP.flatMap((p) => [(x + p.x) * TILE, (y + p.y) * TILE]),
+        true,
+      ).fill({ color: OVERLAY.hover });
+    }
+  }
+
   private drawPath(view: MapView): void {
     const g = this.pathGfx;
     g.clear();
     if (view.path.length === 0) return;
+
+    if (view.pathFrom && !view.crispOverlays) {
+      this.drawCurvedPath(view, view.pathFrom);
+      return;
+    }
 
     view.path.forEach((pos: Vec2, index: number) => {
       const cx = pos.x * TILE + TILE / 2;
@@ -476,6 +576,49 @@ export class PixiBackend implements RenderBackend {
         g.circle(cx, cy, TILE * 0.07).fill({ color: OVERLAY.path });
       }
     });
+  }
+
+  /** The route as one curve through the tile centres, with an arrowhead on its last tangent. */
+  private drawCurvedPath(view: MapView, from: Vec2): void {
+    const g = this.pathGfx;
+    if (!this.curve || this.curve.path !== view.path || this.curve.from !== from) {
+      this.curve = { path: view.path, from, curve: smoothPath(from, view.path) };
+    }
+    const curve = this.curve.curve;
+    const points = flatten(curve.points);
+
+    g.poly(points, false).stroke({
+      width: Math.max(4, TILE * 0.11),
+      color: OVERLAY.pathUnder,
+      cap: 'round',
+      join: 'round',
+    });
+    g.poly(points, false).stroke({
+      width: Math.max(2, TILE * 0.05),
+      color: OVERLAY.path,
+      cap: 'round',
+      join: 'round',
+    });
+
+    const end = sampleAt(curve, curve.length);
+    const tip = { x: end.pos.x * TILE, y: end.pos.y * TILE };
+    const back = TILE * 0.22;
+    const half = TILE * 0.14;
+    const tx = end.tangent.x;
+    const ty = end.tangent.y;
+    g.poly(
+      [
+        tip.x + tx * back * 0.45,
+        tip.y + ty * back * 0.45,
+        tip.x - tx * back + ty * half,
+        tip.y - ty * back - tx * half,
+        tip.x - tx * back * 0.55,
+        tip.y - ty * back * 0.55,
+        tip.x - tx * back - ty * half,
+        tip.y - ty * back + tx * half,
+      ],
+      true,
+    ).fill({ color: OVERLAY.path });
   }
 
   private drawDecor(view: MapView): void {
@@ -602,15 +745,15 @@ export class PixiBackend implements RenderBackend {
 
     for (const unit of ordered) {
       const pos = unit.renderPos ?? unit.pos;
-      const x = pos.x * TILE;
-      const y = pos.y * TILE;
+      // The bob lifts the drawing, never the sort: zIndex stays on the tile.
+      const x = (pos.x + (unit.offset?.x ?? 0)) * TILE;
+      const y = (pos.y + (unit.offset?.y ?? 0)) * TILE;
       const width = unit.size === 2 ? TILE * 2 : TILE;
+      const facing = unit.facing ?? (unit.faction === 'enemy' ? -1 : 1);
 
       live.add(unit.id);
       const sprite = this.unitSprite(unit.id);
-      sprite.texture = this.texture(
-        sprites.get(unit.sprite, px, { facing: unit.faction === 'enemy' ? -1 : 1 }, unit.size),
-      );
+      sprite.texture = this.texture(sprites.get(unit.sprite, px, { facing }, unit.size));
       sprite.position.set(x, y);
       sprite.width = width;
       sprite.height = TILE;
