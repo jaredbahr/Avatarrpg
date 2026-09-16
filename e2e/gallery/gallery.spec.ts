@@ -4,6 +4,7 @@ import type { Page } from '@playwright/test';
 import { test } from './fixtures';
 import { BEATS, capturedOn } from './beats';
 import type { Beat, BeatContext } from './beats';
+import { waitForIdle } from '../helpers';
 import { settleCurtain } from './stage';
 
 /**
@@ -80,11 +81,12 @@ class Stage implements BeatContext {
       await this.shoot(`${note} (${time} ms in)`, `f${index + 1}`);
     }
 
-    // Let the playback finish before the clock runs free again, so the next
-    // step never taps into the tail of this one.
-    await this.page.clock.runFor(4000);
+    // Let the clock run free again and wait the playback out in real time:
+    // fast-forwarding it under the fake clock would render a frame for every
+    // sixteen milliseconds of it, which on software GL is minutes.
     await this.page.clock.resume();
     this.paused = false;
+    await waitForIdle(this.page);
   }
 
   /**
