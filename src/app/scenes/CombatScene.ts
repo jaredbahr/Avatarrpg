@@ -32,7 +32,7 @@ import { CONTENT } from '../../content';
 import { attachPointer, wheelZoomFactor } from '../input/pointer';
 import { ambienceFx, resolveFx } from '../../content/fx';
 import { ambientEmitters } from '../anim/ambience';
-import { announce, button, clear, el, motionReduced, painterCanvas, tip } from '../ui/dom';
+import { announce, button, clear, el, mark, motionReduced, painterCanvas, tip } from '../ui/dom';
 import { assetCanvas } from '../ui/assetCanvas';
 import { UI_MARKS, markFor } from '../ui/marks';
 import { paletteFor } from '../../render/palettes';
@@ -421,7 +421,7 @@ export class CombatScene implements Scene {
       class: 'btn-ghost',
       title: 'Show the whole battlefield again',
     });
-    recentre.prepend(this.mark(UI_MARKS.recentre, 'mark-inline'));
+    recentre.prepend(mark(UI_MARKS.recentre, 'mark-inline'));
     recentre.hidden = this.renderer?.camera.fitted ?? true;
     this.recentreButton = recentre;
     bar.appendChild(recentre);
@@ -431,7 +431,7 @@ export class CombatScene implements Scene {
         class: 'btn-ghost',
         title: encounter.tip,
       });
-      tipButton.prepend(this.mark(UI_MARKS.tip, 'mark-inline'));
+      tipButton.prepend(mark(UI_MARKS.tip, 'mark-inline'));
       bar.appendChild(tipButton);
     }
     const logButton = button(
@@ -443,20 +443,11 @@ export class CombatScene implements Scene {
       },
       { class: 'btn-ghost' },
     );
-    logButton.prepend(this.mark(UI_MARKS.log, 'mark-inline'));
+    logButton.prepend(mark(UI_MARKS.log, 'mark-inline'));
     bar.appendChild(logButton);
     const pauseButton = button('Pause', () => this.app.openPause(), { class: 'btn-ghost' });
-    pauseButton.prepend(this.mark(UI_MARKS.pause, 'mark-inline'));
+    pauseButton.prepend(mark(UI_MARKS.pause, 'mark-inline'));
     bar.appendChild(pauseButton);
-  }
-
-  /** An inline mark, hidden from readers, so a button's name stays its text. */
-  private mark(svg: string, extra = ''): HTMLElement {
-    return el('span', {
-      class: extra ? `mark ${extra}` : 'mark',
-      html: svg,
-      attrs: { 'aria-hidden': 'true' },
-    });
   }
 
   private renderTurnStrip(): void {
@@ -634,7 +625,7 @@ export class CombatScene implements Scene {
       disabled: !canMoveNow,
       title: canMoveNow ? 'Walk to a highlighted tile' : 'No move points left this turn',
     });
-    moveButton.prepend(this.mark(UI_MARKS.move));
+    moveButton.prepend(mark(UI_MARKS.move));
     moveButton.appendChild(el('span', { class: 'action-sub', text: `${unit.move} left` }));
     row.appendChild(moveButton);
 
@@ -646,7 +637,7 @@ export class CombatScene implements Scene {
       class: 'action-button end-turn',
       title: 'Finish this turn. One unused AP carries over.',
     });
-    endButton.prepend(this.mark(UI_MARKS.end));
+    endButton.prepend(mark(UI_MARKS.end));
     if (unit.ap > 0)
       endButton.appendChild(el('span', { class: 'action-sub', text: `${unit.ap} AP left` }));
     row.appendChild(endButton);
@@ -668,7 +659,7 @@ export class CombatScene implements Scene {
       if (ability) {
         header.classList.add(`element-${ability.element}`);
         header.append(
-          this.mark(markFor(ability)),
+          mark(markFor(ability)),
           el('strong', { text: ability.name }),
           el('span', { class: 'header-cost', text: `· ${ability.apCost} AP` }),
           el('span', { class: 'header-desc', text: ability.description }),
@@ -678,7 +669,7 @@ export class CombatScene implements Scene {
     }
     if (this.mode.kind === 'move') {
       header.append(
-        this.mark(UI_MARKS.move),
+        mark(UI_MARKS.move),
         el('strong', { text: 'Move' }),
         el('span', { class: 'header-cost', text: `· ${unit.move} left` }),
         el('span', { class: 'header-desc', text: 'Walk to a highlighted tile.' }),
@@ -707,7 +698,7 @@ export class CombatScene implements Scene {
 
     // The ability's own mark above its name, in its element's colour; the
     // cost as words under it.
-    node.prepend(this.mark(markFor(ability)));
+    node.prepend(mark(markFor(ability)));
     node.appendChild(el('span', { class: 'action-sub', text: `${ability.apCost} AP` }));
 
     if (cooldown > 0) {
@@ -931,7 +922,7 @@ export class CombatScene implements Scene {
   /** The ghost Cancel with its cross, the same wherever a decision can be backed out of. */
   private cancelButton(onCancel: () => void): HTMLButtonElement {
     const node = button('Cancel', onCancel, { class: 'btn-ghost' });
-    node.prepend(this.mark(UI_MARKS.cancel, 'mark-inline'));
+    node.prepend(mark(UI_MARKS.cancel, 'mark-inline'));
     return node;
   }
 
@@ -940,7 +931,7 @@ export class CombatScene implements Scene {
       class: 'btn-primary btn-ok btn-large',
       disabled: onConfirm === null,
     });
-    confirm.prepend(this.mark(UI_MARKS.check, 'mark-inline'));
+    confirm.prepend(mark(UI_MARKS.check, 'mark-inline'));
     return el(
       'div',
       { class: 'confirm-bar' },
