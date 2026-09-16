@@ -515,6 +515,29 @@ export const BEATS: readonly Beat[] = [
       await ctx.shoot(`${this.note} (Show grid on)`, 'grid');
     },
   },
+  {
+    id: '19-icons',
+    title: 'Drawn marks, or a real icon set',
+    note: 'The same action bar twice: first with the drawn marks that have always shipped, then with Game Icons, one silhouette per kind of action, swapped in through the sprite. Both tint with the element. The question is which reads better on parchment at a glance, and whether the silhouettes sitting beside the line-drawn Move and End turn looks deliberate or unfinished.',
+    projects: SURFACES,
+    async run(ctx) {
+      // The drawn marks first, forced, so the pair is the same turn either way.
+      await openBattle(ctx, { extra: { icons: 'drawn' } });
+      const kaya = await partyUnit(ctx.page, 'kaya');
+      if (!kaya) throw new Error('Kaya is not in the party.');
+      await giveTurn(ctx.page, kaya.id);
+      await settleLayout(ctx.page, ctx.settleTimeout);
+      await ctx.shoot(this.note, 'drawn');
+
+      await openBattle(ctx);
+      const again = await partyUnit(ctx.page, 'kaya');
+      if (!again) throw new Error('Kaya is not in the party.');
+      await giveTurn(ctx.page, again.id);
+      await ctx.page.waitForFunction(() => document.querySelectorAll('svg use').length > 0);
+      await settleLayout(ctx.page, ctx.settleTimeout);
+      await ctx.shoot(`${this.note} (the icon set)`, 'icons');
+    },
+  },
 ];
 
 /** Whether a beat is captured on a project. */
