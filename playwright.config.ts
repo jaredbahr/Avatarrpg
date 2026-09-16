@@ -37,6 +37,8 @@ const SURFACE_VIEWPORT = viewportOverride
  */
 export default defineConfig({
   testDir: './e2e',
+  // The screenshot gallery has its own config and its own npm script.
+  testIgnore: /e2e\/gallery\//,
   timeout: 60_000,
   expect: { timeout: 10_000 },
   fullyParallel: false,

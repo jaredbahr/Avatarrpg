@@ -1,6 +1,6 @@
-# ADR 0006: The free-roam world model
+# ADR 0011: The free-roam world model
 
-**Status:** accepted, 2026-09-16 (lands in Phase W)
+**Status:** accepted, 2026-09-16 (lands in Phase W, after Milestone 3)
 
 ## Context
 
@@ -8,6 +8,12 @@ The target is a world that is full and fun to explore and live in — many
 regions, many people worth talking to, and fights that belong to places rather
 than to a script. The combat rules are not the constraint; they are close to
 where they need to be, and combos and tuning are a later pass.
+
+Milestone 3 (ADR 0010) has just put the whole party in the village: a walk is
+an event, the followers trail the leader, and a roster and hotbar sit around
+the map. That is the presentation half, and it is the half that was missing
+from the picture. It deliberately changed no state shape and no save schema,
+so everything below still stands exactly as it did.
 
 The constraint is that **the story graph currently owns the world**. Four
 places make that concrete:
@@ -59,6 +65,11 @@ An exit is a property of the map, not of the node the party happens to be on.
 A refused exit is drawn and explained rather than omitted, for the same reason
 the dialogue UI draws options the party cannot take: a locked door with no
 sign is not a choice, and a named reason is a reason to come back.
+
+Milestone 3's title plate reads the exit's label when the party stands beside
+the gate (ADR 0010). With more than one exit it reads the label of the exit
+the party is beside, and a refused one reads its `lockedHint` instead — the
+plate is where a refused exit says why, so no new surface is needed for it.
 
 ### 2. Nowhere-in-particular is a legal state
 
@@ -153,10 +164,11 @@ for — stated over a band instead of a point.
 
 ### Out of scope
 
-- **Traversal animation.** `handleWalkTo` validates a path and then places the
-  party on the destination tile. Across a region that will want to be a walk,
-  which is an `src/app/anim/` timeline and belongs to Phase A3's runtime, under
-  its own slice.
+- **Traversal animation.** Already done: Milestone 3 made a walk an event
+  (`partyWalked`) and the choreography plays it as a move track, with the
+  followers trailing on `PartyTrail` (ADR 0010). Phase W inherits it and adds
+  nothing — a walk across a region is the same walk, and crossing an exit is a
+  map change, not a longer track.
 - **Items, economy and loot.** Still out. Power comes from levels and
   disciplines. Revisit under a separate ADR if a region ever needs a merchant
   to be interesting.
@@ -183,5 +195,9 @@ for — stated over a band instead of a point.
   from the start under some sequence of conditions; no region is entered below
   its band on any route. Reachability moves from the story graph to the world
   graph and keeps the story graph check as well.
-- The asset budget tightens with every region. WebP moves forward from "an
-  optimisation for later" (ADR 0003) into Phase A2.
+- The asset budget tightens with every region, and each region wants a painted
+  backdrop through the `art:map` slot (ADR 0009). The 4 MB-per-family and 25 MB
+  precache gates in `scripts/check-asset-budget.mjs` are what will say when a
+  region has to start paging its art rather than precaching it.
+- Every W slice that changes what is drawn ships with its gallery beat, like
+  every other slice since ADR 0006.

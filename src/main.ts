@@ -13,6 +13,7 @@ import './styles/a11y.css';
 import { CONTENT, CONTENT_BUNDLE, STORY_ENTRY } from './content';
 import { validateContent } from './content/schemas';
 import { App } from './app/App';
+import { bakeReview } from './render/sheets/review';
 
 const root = document.getElementById('app');
 if (!root) throw new Error('Missing #app mount point in index.html');
@@ -34,9 +35,10 @@ const app = new App(CONTENT, root, STORY_ENTRY);
 app.start();
 
 // Handy from the browser console, and how the e2e suite drives setup quickly.
+// `bakeReview` is for the gallery's figure page: every placeholder sheet as a picture.
 declare global {
   interface Window {
-    fnt?: { app: App };
+    fnt?: { app: App; bakeReview?: typeof bakeReview };
   }
 }
-window.fnt = { app };
+window.fnt = { app, bakeReview };

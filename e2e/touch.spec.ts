@@ -12,7 +12,26 @@ import { enterNode, resetStorage, startGame, takeTurn } from './helpers';
  */
 const MIN_TAP_PX = 48;
 
+/**
+ * Waits for every finite animation in the page to finish.
+ *
+ * A dialog opens with `dialog-in`, which scales it from 0.98. Measured
+ * mid-flight a 48 px button reports 47.04, which is how this spec first went
+ * red on the iPad projects and stayed flaky on one of them: the failure was
+ * the measurement, not the button. The backdrop's drift loops forever, so
+ * anything with infinite iterations is left alone.
+ */
+async function settleAnimations(controls: Locator): Promise<void> {
+  await controls.page().evaluate(async () => {
+    const running = document
+      .getAnimations()
+      .filter((animation) => animation.effect?.getTiming().iterations !== Infinity);
+    await Promise.all(running.map((animation) => animation.finished.catch(() => undefined)));
+  });
+}
+
 async function assertAllTappable(controls: Locator, context: string): Promise<void> {
+  await settleAnimations(controls);
   const count = await controls.count();
   expect(count, `${context}: expected some controls`).toBeGreaterThan(0);
 
@@ -48,6 +67,34 @@ test.describe('touch targets', () => {
     await assertAllTappable(page.locator('.top-bar button'), 'combat top bar');
   });
 
+  test('the pause menu and the credits it opens are tappable', async ({ page }) => {
+    await resetStorage(page);
+    await startGame(page, ['Elias'], ['kaya'], 'touch-pause');
+    await enterNode(page, 'village_explore');
+
+    await page.getByRole('button', { name: /^Pause$/ }).click();
+    const pause = page.locator('.overlay .dialog');
+    await expect(pause).toBeVisible();
+    await assertAllTappable(pause.locator('button'), 'pause menu');
+
+    // Credits is where the attribution licences are honoured, so it has to open.
+    await pause.getByRole('button', { name: /^Credits$/ }).click();
+    const credits = page.locator('.overlay .dialog', { hasText: 'Credits' }).last();
+    await expect(credits.getByRole('heading', { name: 'Credits' })).toBeVisible();
+    await expect(credits.locator('.credit')).not.toHaveCount(0);
+    await assertAllTappable(credits.locator('button'), 'credits');
+  });
+
+  test('every village control is tappable', async ({ page }) => {
+    await resetStorage(page);
+    await startGame(page, ['Elias', 'Lorelai'], ['kaya', 'bo'], 'touch-village');
+    await enterNode(page, 'village_explore');
+
+    await expect(page.locator('.explore-hud')).toBeVisible();
+    await assertAllTappable(page.locator('.explore-hud button'), 'village hotbar');
+    await assertAllTappable(page.locator('.roster [role="button"]'), 'village roster');
+  });
+
   test('stays tappable with the largest text setting', async ({ page }) => {
     await resetStorage(page);
 
@@ -60,6 +107,13 @@ test.describe('touch targets', () => {
       .toBe('huge');
 
     await startGame(page, ['Elias'], ['kaya'], 'touch-large');
+    await enterNode(page, 'village_explore');
+    await assertAllTappable(page.locator('.explore-hud button'), 'village hotbar at largest text');
+    await assertAllTappable(
+      page.locator('.roster [role="button"]'),
+      'village roster at largest text',
+    );
+
     await enterNode(page, 'battle_forest_road');
     await takeTurn(page);
 

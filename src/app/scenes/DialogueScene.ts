@@ -18,8 +18,8 @@ import { describe as describeCondition } from '../../core/story/conditions';
 import { optionAvailable, resolveDialogue } from '../../core/story/storyEngine';
 import { CONTENT } from '../../content';
 import { resolveAsset } from '../../content/assets/manifest';
-import { button, clear, el, painterCanvas } from '../ui/dom';
-import { resolvePainter } from '../../render/painters/registry';
+import { button, clear, el } from '../ui/dom';
+import { assetCanvas } from '../ui/assetCanvas';
 
 /** What to call a bender the party does not have. */
 const BENDER_LABEL: Record<ElementId, string> = {
@@ -38,10 +38,8 @@ const STAGE_PORTRAIT_REM = 11;
  * portrait with its palette, so a speaker's colour needs no story field.
  */
 function moodFor(portraitKey: string): Mood {
-  const entry = resolveAsset(portraitKey);
-  if (entry.kind === 'painter' && (ELEMENT_IDS as readonly string[]).includes(entry.palette)) {
-    return entry.palette;
-  }
+  const palette = resolveAsset(portraitKey).palette;
+  if (palette && (ELEMENT_IDS as readonly string[]).includes(palette)) return palette;
   return 'neutral';
 }
 
@@ -152,9 +150,7 @@ export class DialogueScene implements Scene {
   }
 
   private portrait(key: string, size = 6): HTMLElement {
-    return painterCanvas(key, size, (ctx, px) => {
-      resolvePainter(key).draw(ctx, { x: 0, y: 0, size: px });
-    });
+    return assetCanvas(key, size);
   }
 
   private dialogueStage(node: Extract<StoryNode, { kind: 'dialogue' }>): HTMLElement {

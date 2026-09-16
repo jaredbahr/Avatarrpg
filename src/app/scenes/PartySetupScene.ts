@@ -15,8 +15,8 @@
 
 import type { App, Scene } from '../App';
 import type { CharacterDef, ElementId } from '../../core/types';
-import { button, clear, el, painterCanvas } from '../ui/dom';
-import { resolvePainter } from '../../render/painters/registry';
+import { button, clear, el } from '../ui/dom';
+import { assetCanvas } from '../ui/assetCanvas';
 import { defaultPlayerName } from '../session';
 
 type Step = 'count' | 'handoff' | 'name' | 'element' | 'character' | 'summary';
@@ -347,9 +347,7 @@ export class PartySetupScene implements Scene {
           this.render();
         },
       },
-      painterCanvas(character.portrait, 5, (ctx, size) => {
-        resolvePainter(character.portrait).draw(ctx, { x: 0, y: 0, size });
-      }),
+      assetCanvas(character.portrait, 5),
       el('h3', { text: character.name }),
       el('p', { class: 'tagline', text: character.blurb }),
       el('p', { class: 'tiny muted', text: character.bio }),
@@ -419,9 +417,7 @@ export class PartySetupScene implements Scene {
         el(
           'div',
           { class: `pick-card element-${character.element}` },
-          painterCanvas(character.portrait, 4, (ctx, size) => {
-            resolvePainter(character.portrait).draw(ctx, { x: 0, y: 0, size });
-          }),
+          assetCanvas(character.portrait, 4),
           el('h3', { text: character.name }),
           el('p', { class: 'tagline', text: draft.name }),
         ),

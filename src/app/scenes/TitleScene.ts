@@ -12,7 +12,7 @@ import { WHEEL_SVG } from '../ui/marks';
 import { AUTOSAVE_ID, listSlots, loadFromSlot } from '../storage/localSaves';
 import { SaveMenu } from '../ui/SaveMenu';
 import { SettingsPanel } from '../ui/SettingsPanel';
-import { resolvePainter } from '../../render/painters/registry';
+import { sprites } from '../../render/spriteCache';
 
 export class TitleScene implements Scene {
   readonly name = 'title';
@@ -87,8 +87,9 @@ export class TitleScene implements Scene {
       ),
     );
 
-    // Warm the portrait painter cache so the first dialogue is not a stutter.
-    resolvePainter('portrait.narrator');
+    // Start fetching the first speaker's portrait, if it is a bitmap, so the
+    // opening line is not a placeholder that pops into a face a beat later.
+    void sprites.whenLoaded('portrait.narrator');
   }
 
   private continueGame(): void {

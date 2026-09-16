@@ -85,14 +85,45 @@ in vec2 vTextureCoord;
 uniform sampler2D uTexture;
 uniform sampler2D uMap;
 uniform vec2 uGrid;
-uniform vec2 uViewport;
 uniform vec2 uOffset;
 uniform float uTileSize;
 uniform float uTime;
 uniform float uHatch;
+uniform float uGridLines;
+// 1 while a painting sits under the pass: the terrain is left to it and only
+// the surfaces, the hatch, the firelight and the grid are drawn, over it.
+uniform float uBackdrop;
+// Set by Pixi's filter system, not by our uniform group: the pooled input
+// texture's logical size and the output frame, both in CSS pixels.
+uniform vec4 uInputSize;
+uniform vec4 uOutputFrame;
 out vec4 fragColor;
 ${NOISE}
 ${TERRAIN_COLORS}
+
+/** The surface index packed into a map texel, or -1 off the map. */
+int surfaceAt(vec2 cell) {
+  if (cell.x < 0.0 || cell.y < 0.0 || cell.x >= uGrid.x || cell.y >= uGrid.y) return -1;
+  int packed = int(texture(uMap, (cell + 0.5) / uGrid).r * 255.0 + 0.5);
+  return packed - (packed / 8) * 8;
+}
+
+/*
+ * Everything the pass paints accumulates as premultiplied colour and
+ * coverage. Bare ground starts as the terrain at full coverage, so every step
+ * below is the plain mix it always was; over a painting it starts clear, and
+ * each step lays its tint over the painting with the same weight, so a puddle
+ * tints painted ground exactly as it tints procedural ground.
+ */
+void lay(inout vec4 acc, vec3 tint, float k) {
+  acc.rgb = mix(acc.rgb, tint, k);
+  acc.a = mix(acc.a, 1.0, k);
+}
+/** Scales everything under the pixel by m, the painting included. */
+void dim(inout vec4 acc, float m) {
+  acc.rgb *= m;
+  acc.a = 1.0 - m * (1.0 - acc.a);
+}
 
 /** Diagonal / cross / dot hatching, for the colourblind setting. */
 float hatchPattern(int s, vec2 p) {
@@ -116,8 +147,16 @@ void main(void) {
    * is attached to, so a world-sized quad running off the edge of the screen
    * would hand us UVs covering the visible part alone — which silently
    * rescales the whole board.
+   *
+   * Nor do the UVs span 0..1 over the quad. Pixi pools filter textures at the
+   * next power of two, so vTextureCoord runs from 0 to frame / texture on
+   * each axis: at 1368x912 and half resolution that is 0.67 by 0.89, and
+   * multiplying by the viewport drew the board wide, tall and offset on every
+   * device. uInputSize is the pooled texture's logical size and uOutputFrame
+   * the frame's origin, which together put the fragment back in CSS pixels.
    */
-  vec2 tileUv = (vTextureCoord * uViewport + uOffset) / uTileSize;
+  vec2 screen = vTextureCoord * uInputSize.xy + uOutputFrame.xy;
+  vec2 tileUv = (screen + uOffset) / uTileSize;
   vec2 cell = floor(tileUv);
   vec2 f = fract(tileUv);
 
@@ -142,29 +181,33 @@ void main(void) {
   // World-space noise coordinates, so texture does not swim when the map pans.
   vec2 w = (cell + f) * 0.5;
 
-  // One fbm and one cheap octave, reused by every terrain branch below. Each
-  // extra call here is paid on every pixel of the board.
-  vec3 col = terrainBase(terrain);
-  float macro = fbm(w * 0.7);
-  float detail = vnoise(w * 3.1);
-  col *= 0.82 + 0.36 * (macro * 0.6 + detail * 0.4);
+  vec4 acc = vec4(0.0);
+  if (uBackdrop < 0.5) {
+    // One fbm and one cheap octave, reused by every terrain branch below. Each
+    // extra call here is paid on every pixel of the board.
+    vec3 col = terrainBase(terrain);
+    float macro = fbm(w * 0.7);
+    float detail = vnoise(w * 3.1);
+    col *= 0.82 + 0.36 * (macro * 0.6 + detail * 0.4);
 
-  if (terrain == 0) {
-    // grass: blades run vertically, so stretch the noise
-    col += vec3(0.05, 0.08, 0.03) * (vnoise(w * vec2(3.0, 11.0)) - 0.5);
-  } else if (terrain == 1 || terrain == 2) {
-    // dirt and road: grit and the occasional pebble
-    float grit = vnoise(w * 20.0);
-    col *= 0.92 + 0.16 * grit;
-    col += vec3(0.05) * smoothstep(0.86, 1.0, grit);
-  } else if (terrain == 3 || terrain == 7) {
-    // stone and wall: cracks
-    float crack = smoothstep(0.42, 0.40, abs(macro - 0.5));
-    col *= 1.0 - 0.30 * crack;
-  } else if (terrain == 6) {
-    // deep water: slow swell
-    float swell = fbm(w * 2.0 + vec2(uTime * 0.06, uTime * 0.04));
-    col += vec3(0.02, 0.05, 0.07) * (swell - 0.4);
+    if (terrain == 0) {
+      // grass: blades run vertically, so stretch the noise
+      col += vec3(0.05, 0.08, 0.03) * (vnoise(w * vec2(3.0, 11.0)) - 0.5);
+    } else if (terrain == 1 || terrain == 2) {
+      // dirt and road: grit and the occasional pebble
+      float grit = vnoise(w * 20.0);
+      col *= 0.92 + 0.16 * grit;
+      col += vec3(0.05) * smoothstep(0.86, 1.0, grit);
+    } else if (terrain == 3 || terrain == 7) {
+      // stone and wall: cracks
+      float crack = smoothstep(0.42, 0.40, abs(macro - 0.5));
+      col *= 1.0 - 0.30 * crack;
+    } else if (terrain == 6) {
+      // deep water: slow swell
+      float swell = fbm(w * 2.0 + vec2(uTime * 0.06, uTime * 0.04));
+      col += vec3(0.02, 0.05, 0.07) * (swell - 0.4);
+    }
+    acc = vec4(col, 1.0);
   }
 
   /* ---------------- surfaces ---------------- */
@@ -172,14 +215,25 @@ void main(void) {
   if (surface == 1) {                 // water
     float ripple = fbm(w * 4.0 + vec2(uTime * 0.25, uTime * 0.17));
     vec3 tint = mix(vec3(0.153, 0.424, 0.482), vec3(0.243, 0.561, 0.690), ripple);
-    col = mix(col, tint, 0.55 * intensity);
-    col += vec3(0.10, 0.16, 0.18) * smoothstep(0.62, 0.92, ripple) * intensity;
+    lay(acc, tint, 0.55 * intensity);
+    acc.rgb += vec3(0.10, 0.16, 0.18) * smoothstep(0.62, 0.92, ripple) * intensity;
+    // Foam where the pool meets ground: only the sides whose neighbour is not
+    // water, so a puddle reads as one pool with a lapping bank, not a grid of
+    // rimmed squares. Four texel reads, paid on water pixels alone.
+    float bank = 0.0;
+    if (surfaceAt(cell - vec2(0.0, 1.0)) != 1) bank = max(bank, 1.0 - f.y / 0.2);
+    if (surfaceAt(cell + vec2(0.0, 1.0)) != 1) bank = max(bank, 1.0 - (1.0 - f.y) / 0.2);
+    if (surfaceAt(cell - vec2(1.0, 0.0)) != 1) bank = max(bank, 1.0 - f.x / 0.2);
+    if (surfaceAt(cell + vec2(1.0, 0.0)) != 1) bank = max(bank, 1.0 - (1.0 - f.x) / 0.2);
+    bank = clamp(bank, 0.0, 1.0);
+    float lap = 0.55 + 0.45 * vnoise(w * 9.0 + vec2(uTime * 0.6, -uTime * 0.3));
+    lay(acc, vec3(0.80, 0.92, 0.95), bank * bank * lap * 0.6 * intensity);
   } else if (surface == 2) {          // ice
     float facet = vnoise(floor(w * 7.0));
     vec3 tint = mix(vec3(0.600, 0.839, 0.898), vec3(0.878, 0.969, 1.0), facet);
-    col = mix(col, tint, 0.62 * intensity);
+    lay(acc, tint, 0.62 * intensity);
     float glint = smoothstep(0.90, 1.0, vnoise(w * 9.0 + facet * 5.0));
-    col += vec3(0.30) * glint * intensity;
+    acc.rgb += vec3(0.30) * glint * intensity;
   } else if (surface == 3) {          // fire
     vec2 q = w * vec2(2.4, 1.7);
     q.y -= uTime * 1.15;
@@ -193,29 +247,30 @@ void main(void) {
     fire = mix(fire, vec3(0.96, 0.58, 0.16), smoothstep(0.44, 0.66, flame));
     fire = mix(fire, vec3(1.00, 0.86, 0.52), smoothstep(0.70, 0.94, flame));
     // Blended over the scorched ground, not added to it.
-    col = mix(col * 0.45, fire, smoothstep(0.06, 0.42, flame));
+    dim(acc, 0.45);
+    lay(acc, fire, smoothstep(0.06, 0.42, flame));
     float ember = smoothstep(0.94, 1.0, vnoise(w * vec2(26.0, 14.0) - vec2(0.0, uTime * 2.4)));
-    col = mix(col, vec3(1.0, 0.80, 0.45), ember * 0.7 * intensity);
+    lay(acc, vec3(1.0, 0.80, 0.45), ember * 0.7 * intensity);
   } else if (surface == 4) {          // mud
     float churn = fbm(w * 5.0);
-    col = mix(col, mix(vec3(0.247, 0.184, 0.110), vec3(0.353, 0.271, 0.161), churn), 0.7 * intensity);
-    col *= 0.88 + 0.12 * vnoise(w * 16.0);
+    lay(acc, mix(vec3(0.247, 0.184, 0.110), vec3(0.353, 0.271, 0.161), churn), 0.7 * intensity);
+    dim(acc, 0.88 + 0.12 * vnoise(w * 16.0));
   } else if (surface == 5) {          // steam
     float billow = fbm(w * 2.2 + vec2(uTime * 0.16, -uTime * 0.22));
-    col = mix(col, vec3(0.85, 0.86, 0.87), (0.45 + 0.35 * billow) * intensity);
+    lay(acc, vec3(0.85, 0.86, 0.87), (0.45 + 0.35 * billow) * intensity);
   } else if (surface == 6) {          // oil
     float sheenBand = fbm(w * 3.0 + uTime * 0.03);
     vec3 sheen = 0.5 + 0.5 * cos(6.2831 * (sheenBand + vec3(0.0, 0.33, 0.67)));
-    col = mix(col, vec3(0.055, 0.051, 0.043), 0.78 * intensity);
-    col += sheen * 0.14 * smoothstep(0.45, 0.85, sheenBand) * intensity;
+    lay(acc, vec3(0.055, 0.051, 0.043), 0.78 * intensity);
+    acc.rgb += sheen * 0.14 * smoothstep(0.45, 0.85, sheenBand) * intensity;
   } else if (surface == 7) {          // rubble
     float chunk = vnoise(w * 11.0);
-    col = mix(col, vec3(0.431, 0.416, 0.388), 0.6 * intensity);
-    col *= 0.85 + 0.30 * step(0.55, chunk);
+    lay(acc, vec3(0.431, 0.416, 0.388), 0.6 * intensity);
+    dim(acc, 0.85 + 0.30 * step(0.55, chunk));
   }
 
   if (uHatch > 0.5 && surface > 0) {
-    col = mix(col, col * 0.55, hatchPattern(surface, w) * 0.5 * intensity);
+    dim(acc, 1.0 - 0.225 * hatchPattern(surface, w) * intensity);
   }
 
   /* ---------------- light thrown by nearby fire ---------------- */
@@ -224,16 +279,19 @@ void main(void) {
   // changes when fire does. Gathering it here instead would cost 25 texture
   // samples on every pixel of every frame, which is ruinous without a GPU.
   float flicker = 0.88 + 0.12 * vnoise(vec2(uTime * 2.3, cell.x * 0.7 + cell.y * 1.3));
-  col += vec3(1.0, 0.55, 0.22) * firelight * 0.42 * flicker;
-  col = min(col, vec3(1.0));
+  acc.rgb += vec3(1.0, 0.55, 0.22) * firelight * 0.42 * flicker;
+  acc.rgb = min(acc.rgb, vec3(1.0));
 
   /* ---------------- grid ---------------- */
 
-  // Kept legible: this is a tactical game before it is a pretty one.
+  // Off by default (ADR 0007); the Show grid setting and High contrast turn it
+  // on. A darkening, so it shows on a painting as it does on the terrain.
   vec2 gw = fwidth(tileUv) * 1.2;
   vec2 edge = min(f, 1.0 - f);
   float line = 1.0 - smoothstep(0.0, max(gw.x, gw.y), min(edge.x, edge.y));
-  col = mix(col, col * 0.58, line * 0.5);
+  dim(acc, 1.0 - 0.21 * line * uGridLines);
 
-  fragColor = vec4(col, 1.0) * quad.a;
+  // Premultiplied, as Pixi blends: over bare ground the coverage is 1 and this
+  // is the colour as ever; over a painting it is only what was laid on it.
+  fragColor = acc * quad.a;
 }`;

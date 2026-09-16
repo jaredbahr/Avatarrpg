@@ -22,14 +22,14 @@ survive being 40 pixels tall.
 
 ## Camera and frame
 
-| Rule       | Value                                                                                                            |
-| ---------- | ---------------------------------------------------------------------------------------------------------------- |
-| View       | Three-quarter top-down, about 30° above horizontal, character facing screen-right                                |
-| Frame      | One-tile unit: 128×192 px (1 tile wide, 1.5 tall). Boss: 256×192. Generate at 4× (512×768) and downscale         |
-| Baseline   | Feet on a line at 85% of frame height. The bottom 128×128 is the tile; the head overlaps the tile above          |
-| Background | Flat `#00ff00`, no ground shadow, no cast shadow. The game draws its own ground shadow under every unit          |
-| Facing     | One facing only. Enemies are mirrored, so no lettering or asymmetric emblems that would read wrong flipped       |
-| Margins    | At least 8 px of empty frame on every side after trim; effects that extend past the frame belong to the FX layer |
+| Rule       | Value                                                                                                                                 |
+| ---------- | ------------------------------------------------------------------------------------------------------------------------------------- |
+| View       | Three-quarter top-down, about 30° above horizontal, character facing screen-right                                                     |
+| Frame      | One-tile unit: 128×192 px (1 tile wide, 1.5 tall). Boss: 256×192. Generate at 4× (512×768) and downscale                              |
+| Baseline   | Feet on a line at 85% of frame height; the runtime stands that line 85% of the way down the tile, so the head overlaps the tile above |
+| Background | Flat `#00ff00`, no ground shadow, no cast shadow. The game draws its own ground shadow under every unit                               |
+| Facing     | One facing only. Enemies are mirrored, so no lettering or asymmetric emblems that would read wrong flipped                            |
+| Margins    | At least 8 px of empty frame on every side after trim; effects that extend past the frame belong to the FX layer                      |
 
 ## Palette
 
@@ -74,6 +74,21 @@ One row per clip from ADR 0003. A pose is one frame; the animator provides the m
 Element in the hands is drawn in the character's clip only as a hint (a glow,
 a small flame). The bending itself is the FX layer, so the same cast pose
 serves every ability of that element.
+
+Planned, not yet in the contract: element-specific forms for the cast,
+from the owner's four-panel storyboard (gather, strike, impact, recover).
+They would be optional clips `cast_fire`, `cast_water`, `cast_earth` and
+`cast_air` of four poses each, a fire punch, water's flowing arms, an earth
+stance, an air spin, picked by the ability's element when a sheet carries
+them and falling back to `cast` when it does not. They wait on the first
+generated sheet, so the forms are drawn against real frames
+(`docs/roadmap.md`, Milestone 2).
+
+The placeholders draw this table as written: `src/render/painters/figure.ts`
+holds one pose per row, solved from the feet up so every frame stands on the
+baseline, and `cast.ts` gives each character the silhouette of their reference
+figure. They are stand-ins, readable at 40 px, and the choreography, the
+mirroring and the health bar are exercised by them before a real sheet lands.
 
 ## Portraits
 
