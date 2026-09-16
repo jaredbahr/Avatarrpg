@@ -225,6 +225,7 @@ export class ExploreScene implements Scene {
       overlays: [],
       path: [],
       pathFrom: null,
+      aimArc: null,
       emitters: ambient,
       floaters: [],
       cameraNudge: { x: 0, y: 0 },

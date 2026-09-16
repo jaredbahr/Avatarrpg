@@ -27,10 +27,10 @@ import { pathCost, posKey, reachable, samePos } from '../../core/rules/grid';
 import { effectiveStats, isAlive } from '../../core/rules/stats';
 import { activeUnit, upcomingOrder } from '../../core/rules/turnOrder';
 import { Renderer, TILE } from '../../render/renderer';
-import type { MapView, OverlayLayer, RenderProp, RenderUnit } from '../../render/renderer';
+import type { AimArc, MapView, OverlayLayer, RenderProp, RenderUnit } from '../../render/renderer';
 import { CONTENT } from '../../content';
 import { attachPointer, wheelZoomFactor } from '../input/pointer';
-import { ambienceFx } from '../../content/fx';
+import { ambienceFx, resolveFx } from '../../content/fx';
 import { ambientEmitters } from '../anim/ambience';
 import { announce, button, clear, el, motionReduced, painterCanvas, tip } from '../ui/dom';
 import { assetCanvas } from '../ui/assetCanvas';
@@ -58,6 +58,8 @@ export class CombatScene implements Scene {
   private mode: Mode = { kind: 'idle' };
   private pending: Vec2 | null = null;
   private hover: Vec2 | null = null;
+  /** How high each ability's flight lobs, or null when nothing flies; read once from its recipe. */
+  private lobs = new Map<string, number | null>();
   private inspector: UnitInspector | null = null;
 
   /** Unit whose hand-off banner has been acknowledged. */
@@ -1066,6 +1068,28 @@ export class CombatScene implements Scene {
       }
     }
 
+    // The throw being aimed, drawn to the tapped target or, with a mouse, the
+    // hovered one, but only to a tile the ability can actually reach.
+    let aimArc: AimArc | null = null;
+    if (interactive && unit && this.mode.kind === 'aim') {
+      const ability = this.app.content.abilities.get(this.mode.abilityId);
+      const lob = ability ? this.lobFor(ability) : null;
+      if (ability && lob !== null) {
+        const targets = overlays.find((layer) => layer.kind === 'target')?.tiles ?? [];
+        const target = [this.pending, this.hover].find(
+          (p): p is Vec2 => p !== null && targets.some((t) => samePos(t, p)),
+        );
+        if (target) {
+          aimArc = {
+            from: { x: unit.pos.x + unit.size / 2, y: unit.pos.y + 0.5 },
+            to: { x: target.x + 0.5, y: target.y + 0.5 },
+            arc: lob,
+            color: paletteFor(ability.element).light,
+          };
+        }
+      }
+    }
+
     const units: RenderUnit[] = battle.units.map((u) => ({
       id: u.id,
       pos: u.pos,
@@ -1112,6 +1136,7 @@ export class CombatScene implements Scene {
       overlays,
       path,
       pathFrom: unit?.pos ?? null,
+      aimArc,
       emitters: [...this.app.animator.emitters(now), ...ambient],
       floaters: this.app.animator.floaters(now),
       cameraNudge: this.app.animator.cameraNudge(now),
@@ -1129,6 +1154,22 @@ export class CombatScene implements Scene {
 
     renderer.draw(view);
   };
+
+  /**
+   * The lob of an ability's flight in tiles, or null when nothing flies to
+   * the target: a strike up close, something cast on oneself, an effect that
+   * simply appears. Read from the same recipe the choreography plays, so the
+   * arc shown is the arc thrown.
+   */
+  private lobFor(ability: Ability): number | null {
+    const cached = this.lobs.get(ability.id);
+    if (cached !== undefined) return cached;
+    const melee = ability.range <= 1 && ability.targeting.shape === 'unit';
+    const travel = resolveFx(ability.fx).travel;
+    const lob = travel && ability.targeting.shape !== 'self' && !melee ? travel.arc : null;
+    this.lobs.set(ability.id, lob);
+    return lob;
+  }
 
   /** The animator's pose for a unit, as the view fields the renderer reads. */
   private poseFields(

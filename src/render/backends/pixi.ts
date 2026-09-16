@@ -34,6 +34,7 @@ import { TILE } from '../camera';
 import type { Camera, Viewport } from '../camera';
 import { DecorSheets } from '../decorSheets';
 import { ParticleLayer } from '../fx/particleLayer';
+import { aimArcPoints, arcHeading, arrowheadPolygon } from '../geometry/arc';
 import { DECOR_CHUNK, decorChunks } from '../geometry/board';
 import { contourLoops, isHole } from '../geometry/contour';
 import type { Curve } from '../geometry/curve';
@@ -43,7 +44,7 @@ import { FOOT_LINE } from '../sheets/bake';
 import type { ResolvedFrame } from '../sheets/store';
 import { idlePhase, sheets } from '../sheets/store';
 import { MAX_SPRITE_PX, sprites } from '../spriteCache';
-import type { MapView, OverlayLayer, RenderUnit } from '../view';
+import type { AimArc, MapView, OverlayLayer, RenderUnit } from '../view';
 import type { BackendCapabilities, RenderBackend } from './backend';
 import {
   EDGE_SHADE_ALPHA,
@@ -718,25 +719,51 @@ export class PixiBackend implements RenderBackend {
   private drawPath(view: MapView): void {
     const g = this.pathGfx;
     g.clear();
-    if (view.path.length === 0) return;
 
-    if (view.pathFrom && !view.crispOverlays) {
-      this.drawCurvedPath(view, view.pathFrom);
-      return;
+    if (view.path.length > 0) {
+      if (view.pathFrom && !view.crispOverlays) {
+        this.drawCurvedPath(view, view.pathFrom);
+      } else {
+        view.path.forEach((pos: Vec2, index: number) => {
+          const cx = pos.x * TILE + TILE / 2;
+          const cy = pos.y * TILE + TILE / 2;
+          if (index === view.path.length - 1) {
+            g.moveTo(cx - TILE * 0.18, cy + TILE * 0.12)
+              .lineTo(cx, cy - TILE * 0.18)
+              .lineTo(cx + TILE * 0.18, cy + TILE * 0.12)
+              .stroke({ width: Math.max(2, TILE * 0.07), color: OVERLAY.path });
+          } else {
+            g.circle(cx, cy, TILE * 0.07).fill({ color: OVERLAY.path });
+          }
+        });
+      }
     }
 
-    view.path.forEach((pos: Vec2, index: number) => {
-      const cx = pos.x * TILE + TILE / 2;
-      const cy = pos.y * TILE + TILE / 2;
-      if (index === view.path.length - 1) {
-        g.moveTo(cx - TILE * 0.18, cy + TILE * 0.12)
-          .lineTo(cx, cy - TILE * 0.18)
-          .lineTo(cx + TILE * 0.18, cy + TILE * 0.12)
-          .stroke({ width: Math.max(2, TILE * 0.07), color: OVERLAY.path });
-      } else {
-        g.circle(cx, cy, TILE * 0.07).fill({ color: OVERLAY.path });
-      }
+    if (view.aimArc) this.drawAimArc(view.aimArc);
+  }
+
+  /**
+   * The throw being aimed: the flight's own curve as dots in the element's
+   * light tone over an ink line, with an arrowhead where it lands. The same
+   * points the Canvas 2D backend draws (ADR 0002: a preview is board truth).
+   */
+  private drawAimArc(arc: AimArc): void {
+    const g = this.pathGfx;
+    const points = aimArcPoints(arc.from, arc.to, arc.arc);
+    g.poly(flatten(points), false).stroke({
+      width: Math.max(4, TILE * 0.1),
+      color: OVERLAY.pathUnder,
+      cap: 'round',
+      join: 'round',
     });
+    for (let i = 0; i < points.length - 1; i += 2) {
+      const p = points[i];
+      if (p) g.circle(p.x * TILE, p.y * TILE, TILE * 0.05).fill({ color: arc.color });
+    }
+    const last = points[points.length - 1];
+    if (!last) return;
+    const tip = { x: last.x * TILE, y: last.y * TILE };
+    g.poly(arrowheadPolygon(tip, arcHeading(points), TILE), true).fill({ color: arc.color });
   }
 
   /** The route as one curve through the tile centres, with an arrowhead on its last tangent. */
@@ -763,23 +790,7 @@ export class PixiBackend implements RenderBackend {
 
     const end = sampleAt(curve, curve.length);
     const tip = { x: end.pos.x * TILE, y: end.pos.y * TILE };
-    const back = TILE * 0.22;
-    const half = TILE * 0.14;
-    const tx = end.tangent.x;
-    const ty = end.tangent.y;
-    g.poly(
-      [
-        tip.x + tx * back * 0.45,
-        tip.y + ty * back * 0.45,
-        tip.x - tx * back + ty * half,
-        tip.y - ty * back - tx * half,
-        tip.x - tx * back * 0.55,
-        tip.y - ty * back * 0.55,
-        tip.x - tx * back - ty * half,
-        tip.y - ty * back + tx * half,
-      ],
-      true,
-    ).fill({ color: OVERLAY.path });
+    g.poly(arrowheadPolygon(tip, end.tangent, TILE), true).fill({ color: OVERLAY.path });
   }
 
   private drawDecor(view: MapView): void {

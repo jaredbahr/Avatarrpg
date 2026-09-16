@@ -14,6 +14,7 @@ import type { Grid, Vec2 } from '../../core/types';
 import type { Camera, Viewport } from '../camera';
 import type { TileRelief } from '../geometry/board';
 import { boardRelief, decorSignature, surfaceEdges } from '../geometry/board';
+import { aimArcPoints, arcHeading, arrowheadPolygon } from '../geometry/arc';
 import { contourLoops } from '../geometry/contour';
 import type { Curve } from '../geometry/curve';
 import { sampleAt, smoothPath } from '../geometry/curve';
@@ -32,7 +33,7 @@ import {
   paintTerrain,
 } from '../painters/tiles';
 import { sprites } from '../spriteCache';
-import type { MapView, OverlayKind, OverlayLayer, RenderUnit } from '../view';
+import type { AimArc, MapView, OverlayKind, OverlayLayer, RenderUnit } from '../view';
 import type { BackendCapabilities, RenderBackend } from './backend';
 
 /** The rounded square a hovered tile gets, in tile units from its corner. */
@@ -113,6 +114,7 @@ export class Canvas2DBackend implements RenderBackend {
     if (view.atmosphere) this.drawShade(view, camera);
     this.drawOverlays(view, camera);
     this.drawPath(view, camera);
+    if (view.aimArc) this.drawAimArc(view.aimArc, camera);
     this.drawFxLayer(view, camera, 'under');
     this.drawExit(view, camera);
     this.drawNpcs(view, camera);
@@ -345,19 +347,61 @@ export class Canvas2DBackend implements RenderBackend {
     // The arrowhead sits on the last tangent, pointing the way the walk ends.
     const end = sampleAt(curve, curve.length);
     const tip = { x: origin.x + end.pos.x * size, y: origin.y + end.pos.y * size };
-    const back = size * 0.22;
-    const half = size * 0.14;
-    const tx = end.tangent.x;
-    const ty = end.tangent.y;
-    ctx.fillStyle = OVERLAY.path;
+    this.fillPolygon(arrowheadPolygon(tip, end.tangent, size), OVERLAY.path);
+    ctx.restore();
+  }
+
+  /**
+   * The throw being aimed: the flight's own curve as dots in the element's
+   * light tone over an ink line, with an arrowhead where it lands. Still,
+   * so reduce motion needs nothing; nothing here is on the timeline.
+   */
+  private drawAimArc(arc: AimArc, camera: Camera): void {
+    const { ctx } = this;
+    const origin = camera.toScreen({ x: 0, y: 0 });
+    const size = origin.size;
+    const points = aimArcPoints(arc.from, arc.to, arc.arc).map((p) => ({
+      x: origin.x + p.x * size,
+      y: origin.y + p.y * size,
+    }));
+
+    ctx.save();
+    ctx.lineCap = 'round';
+    ctx.lineJoin = 'round';
     ctx.beginPath();
-    ctx.moveTo(tip.x + tx * back * 0.45, tip.y + ty * back * 0.45);
-    ctx.lineTo(tip.x - tx * back + ty * half, tip.y - ty * back - tx * half);
-    ctx.lineTo(tip.x - tx * back * 0.55, tip.y - ty * back * 0.55);
-    ctx.lineTo(tip.x - tx * back - ty * half, tip.y - ty * back + tx * half);
+    points.forEach((p, index) => {
+      if (index === 0) ctx.moveTo(p.x, p.y);
+      else ctx.lineTo(p.x, p.y);
+    });
+    ctx.strokeStyle = OVERLAY.pathUnder;
+    ctx.lineWidth = Math.max(4, size * 0.1);
+    ctx.stroke();
+
+    ctx.fillStyle = arc.color;
+    for (let i = 0; i < points.length - 1; i += 2) {
+      const p = points[i];
+      if (!p) continue;
+      ctx.beginPath();
+      ctx.arc(p.x, p.y, Math.max(1.5, size * 0.05), 0, Math.PI * 2);
+      ctx.fill();
+    }
+    const tip = points[points.length - 1];
+    if (tip) this.fillPolygon(arrowheadPolygon(tip, arcHeading(points), size), arc.color);
+    ctx.restore();
+  }
+
+  private fillPolygon(flat: readonly number[], color: string): void {
+    const { ctx } = this;
+    ctx.fillStyle = color;
+    ctx.beginPath();
+    for (let i = 0; i + 1 < flat.length; i += 2) {
+      const x = flat[i] ?? 0;
+      const y = flat[i + 1] ?? 0;
+      if (i === 0) ctx.moveTo(x, y);
+      else ctx.lineTo(x, y);
+    }
     ctx.closePath();
     ctx.fill();
-    ctx.restore();
   }
 
   private drawExit(view: MapView, camera: Camera): void {

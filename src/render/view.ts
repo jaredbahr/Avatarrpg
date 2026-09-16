@@ -101,6 +101,18 @@ export interface RenderProp {
   readonly maxHp: number;
 }
 
+/**
+ * The flight a hurled ability will take, shown while it is being aimed: from
+ * the caster's centre to the target's, lobbed `arc` tiles at the midpoint,
+ * in the element's light tone. Null when nothing is aimed or it does not fly.
+ */
+export interface AimArc {
+  readonly from: Vec2;
+  readonly to: Vec2;
+  readonly arc: number;
+  readonly color: string;
+}
+
 export interface MapView {
   readonly grid: Grid;
   readonly units: readonly RenderUnit[];
@@ -110,6 +122,8 @@ export interface MapView {
   readonly path: readonly Vec2[];
   /** Where `path` starts (the walker's tile), so it can be drawn as one curve. */
   readonly pathFrom: Vec2 | null;
+  /** The throw being aimed, or null. */
+  readonly aimArc: AimArc | null;
   readonly emitters: readonly EmitterInstance[];
   readonly floaters: readonly Floater[];
   /** How far the camera is knocked, in tiles. */
