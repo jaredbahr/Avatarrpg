@@ -366,7 +366,11 @@ function handleWalkTo(content: ContentIndex, state: GameState, pos: Vec2): StepR
       const walked: GameState = { ...state, location: { ...state.location, pos: approach } };
       const target = npcNode(content, walked, map.id, npc.id);
       if (!target) return refuse(walked, 'They have nothing to say.');
-      return enterStoryNode(content, walked, target);
+      const entered = enterStoryNode(content, walked, target);
+      return {
+        state: entered.state,
+        events: [...routeEvents(content, state, approach), ...entered.events],
+      };
     }
     const target = npcNode(content, state, map.id, npc.id);
     if (!target) return refuse(state, 'They have nothing to say.');
@@ -392,13 +396,44 @@ function handleWalkTo(content: ContentIndex, state: GameState, pos: Vec2): StepR
   if (!route) return refuse(state, 'There is no way through from here.');
 
   const moved: GameState = { ...state, location: { ...state.location, pos } };
+  const walk = partyWalked(state, route.path);
 
   if (map.exit && samePos(map.exit.pos, pos)) {
     const node = currentNode(content, moved);
-    if (node?.kind === 'explore') return enterStoryNode(content, moved, node.next);
+    if (node?.kind === 'explore') {
+      const entered = enterStoryNode(content, moved, node.next);
+      return { state: entered.state, events: [...walk, ...entered.events] };
+    }
   }
 
-  return { state: moved, events: [] };
+  return { state: moved, events: walk };
+}
+
+/**
+ * The walk as an event, so the party is seen crossing the tiles instead of
+ * appearing at the far end. Presentation plays it; nothing in the rules
+ * reads it. Standing still (an empty route) is no event.
+ */
+function partyWalked(state: GameState, path: readonly Vec2[]): GameEvent[] {
+  const leader = state.party[0];
+  if (!leader || path.length === 0) return [];
+  return [{ type: 'partyWalked', unitId: leader.id, from: state.location.pos, path }];
+}
+
+/**
+ * The route to a tile the party is about to stand on (an NPC's side), as
+ * events. An approach tile the pathfinder cannot reach still ends the walk
+ * there, as it always has; it just is not shown as a walk.
+ */
+function routeEvents(content: ContentIndex, state: GameState, to: Vec2): GameEvent[] {
+  const grid = buildExploreGrid(content, state);
+  const route = findPath(
+    { grid, blocked: new Set<string>(), surfaces: content.surfaces, size: 1 },
+    state.location.pos,
+    to,
+    grid.width * grid.height,
+  );
+  return route ? partyWalked(state, route.path) : [];
 }
 
 /**

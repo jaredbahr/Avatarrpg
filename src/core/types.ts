@@ -892,6 +892,17 @@ export type GameEvent =
       readonly cost: number;
     }
   | {
+      /**
+       * The party crossed tiles on an explore map: the leader's id, the tile
+       * it stood on and the route it walked, so the walk can be seen rather
+       * than the party appearing at the far end. Nothing in the rules reads it.
+       */
+      readonly type: 'partyWalked';
+      readonly unitId: string;
+      readonly from: Vec2;
+      readonly path: readonly Vec2[];
+    }
+  | {
       readonly type: 'abilityUsed';
       readonly unitId: string;
       readonly abilityId: string;

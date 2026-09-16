@@ -209,6 +209,26 @@ export function choreograph(input: ChoreographyInput): Choreography {
         break;
       }
 
+      case 'partyWalked': {
+        // The village walk: the leader's route from where it stood. The
+        // followers are the scene's, pushed onto the same timeline.
+        if (event.path.length === 0) break;
+        const duration = TIMING.step * event.path.length * rate;
+        tracks.push({
+          kind: 'move',
+          unitId: event.unitId,
+          curve: smoothPath(event.from, event.path),
+          ease: easeInOutCubic,
+          start: cursor,
+          duration,
+        });
+        const last = event.path[event.path.length - 1];
+        if (last) positions.set(event.unitId, last);
+        cursor += duration;
+        pending = null;
+        break;
+      }
+
       case 'abilityUsed': {
         const ability = content.abilities.get(event.abilityId);
         const casterPos = positions.get(event.unitId);

@@ -69,6 +69,30 @@ describe('choreograph', () => {
     expect(cursor).toBe(1000 + TIMING.step * 2);
   });
 
+  it('walks the party leader from where it stood, without needing the roster', () => {
+    const { tracks, cursor } = run(
+      [
+        {
+          type: 'partyWalked',
+          unitId: 'leader',
+          from: { x: 3, y: 7 },
+          path: [
+            { x: 4, y: 7 },
+            { x: 5, y: 7 },
+          ],
+        },
+      ],
+      1,
+    );
+    expect(kinds(tracks)).toEqual(['move']);
+    const [move] = tracks;
+    if (move?.kind !== 'move') throw new Error('expected a move track');
+    expect(move.unitId).toBe('leader');
+    expect(move.start).toBe(1000);
+    expect(move.duration).toBe(TIMING.step * 2);
+    expect(cursor).toBe(1000 + TIMING.step * 2);
+  });
+
   it('winds up, releases, sends something across and recovers for a ranged cast', () => {
     const { tracks } = run([
       {

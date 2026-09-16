@@ -160,10 +160,10 @@ export class ExploreScene implements Scene {
     const renderer = this.renderer;
     const state = this.app.state;
     if (!renderer || !state) return;
+    // A tap mid-walk would put the party ahead of its own figure.
+    if (this.app.animator.busy(performance.now())) return;
     const tile = renderer.camera.toTile(x, y);
     this.app.dispatch({ type: 'walkTo', pos: tile });
-    const after = this.app.state;
-    if (after) renderer.camera.centreOn(after.location.pos);
   }
 
   /* ---------------------------------------------------------------- */
@@ -181,6 +181,9 @@ export class ExploreScene implements Scene {
 
     // The party is drawn as its leader — one figure to move around a village.
     const leader = state.party[0];
+    const walking = leader ? this.app.animator.renderPos(now, leader.id) : undefined;
+    // The camera follows the walk and rests where it ends; a drag afterwards stays.
+    if (walking) renderer.camera.centreOn(walking);
     const units: RenderUnit[] = leader
       ? [
           {
@@ -196,7 +199,7 @@ export class ExploreScene implements Scene {
             fallen: false,
             // A health bar over someone strolling round a village is noise.
             showHealth: false,
-            renderPos: this.app.animator.renderPos(now, leader.id),
+            renderPos: walking,
             offset: this.app.animator.offset(now, leader.id),
             facing: this.app.animator.facing(leader.id) ?? 1,
           },

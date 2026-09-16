@@ -299,12 +299,27 @@ export class App {
     const result = apply(this.content, state, command);
     this.state = result.state;
 
+    const now = performance.now();
     if (result.events.length > 0) {
-      this.animator.push(performance.now(), result.events, unitsBefore);
+      this.animator.push(now, result.events, unitsBefore);
     }
 
     this.announceImportant(result.events);
-    this.routeToState();
+    if (
+      state.screen === 'explore' &&
+      result.state.screen !== 'explore' &&
+      this.animator.busy(now)
+    ) {
+      // The party walked up to someone, or out of the gate: let them finish
+      // crossing the tiles before the scene changes under them. Reduce motion
+      // collapses the walk, so this is a frame there.
+      window.setTimeout(
+        () => this.routeToState(),
+        Math.max(0, this.animator.finishesAt - performance.now()),
+      );
+    } else {
+      this.routeToState();
+    }
     this.offerLevelUpIfPending();
     this.autosaveIfWorthIt(command, result.events);
 
