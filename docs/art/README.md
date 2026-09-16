@@ -11,6 +11,33 @@ output licence permits non-commercial use. This is a private fan project; keep
 every prompt free of franchise and character names (the packs already are, and
 `src/content/prompts.test.ts` fails the build if one creeps in).
 
+## Where files land
+
+Generated pictures reach the repository on a branch, never on `main`: copy
+the folder into the repo as `art/incoming/` on a branch named `art-intake`
+and push it (a zip inside is fine; the GitHub web upload works too). From
+there:
+
+1. `git fetch origin art-intake` and
+   `git archive origin/art-intake art/incoming | tar -x -C art/raw/` puts the
+   files under `art/raw/incoming/`, which git ignores. The branch is never
+   merged: `npm run check:assets` fails a checkout that carries
+   `art/incoming/`, and `git ls-files art/` must print nothing before a push.
+2. `npm run art:inventory` lists every picture with its size and what the
+   game takes it for from its name and shape (a portrait, a sheet frame, a
+   reference figure, a map), the verdict (ok, needs a crop, too small, a JPEG
+   frame) and the command that takes it in. Its last lines say which
+   portraits, clips and maps are present and what it could not place: those
+   are the questions to settle before anything is processed.
+3. Run the command each line names. Raw candidates stay in `art/raw/`;
+   only what lands under `public/art/` is committed, one family per commit,
+   after the licence line of the checklist is confirmed.
+
+PNG is the delivery format. The scripts read a JPEG too (portraits and
+paintings through a pure-JS decoder), but a sheet frame must be a PNG: a
+lossy edge on the key colour fringes after keying, so `art:normalise` names
+a JPEG and passes it over.
+
 ## Portraits (available now)
 
 The 17 portraits are the first real art. Consistency is per image, so they are
@@ -25,9 +52,15 @@ sheet is attempted.
    flat parchment background the prompt names.
 3. Pick one with `prompts/checklist.md`. Anything that fails a line is
    regenerated, never retouched.
-4. Downscale to 512×512 and save it as `public/art/portraits/<name>.png`
-   (keep the raw candidate under `art/raw/portraits/`, which git ignores).
-5. Point the manifest at it in `src/content/assets/manifest.ts`:
+4. `npm run art:portrait -- --key kaya --in art/raw/incoming/<file>` cuts
+   the centre square if the candidate is not square (and says how much),
+   composites anything clear onto the parchment, downsizes with the box
+   filter to 512×512 (never up: a candidate under 512 is refused), writes
+   `public/art/portraits/kaya.png` and prints the manifest line with the
+   palette the manifest already carries. It warns when the corners are not
+   the parchment, because the medallion's rim will show them.
+5. Paste the printed line over the painter's in
+   `src/content/assets/manifest.ts`:
 
    ```ts
    'portrait.kaya': { kind: 'image', url: 'art/portraits/kaya.png', palette: 'fire' },
@@ -35,11 +68,12 @@ sheet is attempted.
 
    Keep the `palette`: it tints the dialogue backdrop and the HUD chrome.
 
-6. `npm run verify`, then look at it in the game: the dialogue stage, party
-   setup, the unit inspector and the turn strip all draw the same file at
-   different sizes. Until the file loads, or if it fails to load, the painter
-   draws in its place, so a typo in the path shows as the old drawn portrait
-   rather than as nothing.
+6. `npm run art:validate` checks the file is there, is a PNG, measures
+   512×512 and is not heavy (CI runs it: a typo in the path would otherwise
+   ship as the drawn placeholder). `npm run verify`, then look at it in the
+   game: the dialogue stage, party setup, the unit inspector, the roster and
+   the turn strip all draw the same file at different sizes. Until the file
+   loads, or if it fails to load, the painter draws in its place.
 
 ## Reference figures (have them first)
 
@@ -70,11 +104,14 @@ the character has them. Every pose is one image, generated on a flat
    trims, scales the whole unit by one factor (the idle pose's height sets it,
    so a crouch never comes out taller than a stand), stands the feet on the
    baseline and pads to 128×192. Frames land in `art/normalised/<assetKey>/`.
-   `--key auto` reads the background from the corners when the generator
-   could not hold the exact hex; `--px 256` makes a sharper sheet.
+   It stops when the corners are not the key colour (pass `--key auto`, which
+   reads the background from the corners, or the colour itself), reports an
+   idle figure too small to stand its height in the frame (the filter never
+   scales up: generate at 4x), and names any file it passed over (a loose
+   name, a JPEG). `--px 256` makes a sharper sheet.
 4. `npm run art:pack -- --unit unit.fire.kaya` writes
    `public/art/units/kaya.png` and `kaya.json` and prints the manifest entry
-   to paste into `src/content/assets/manifest.ts`. Set its `palette`.
+   to paste into `src/content/assets/manifest.ts`, with the unit's palette.
 5. `npm run art:validate` checks every sheet the manifest names against the
    files: frames present, sizes right, the clear margin kept. CI runs it.
 6. `npm run verify`, then look at it in the game: the unit idles, walks,
@@ -101,9 +138,13 @@ the painting is the ground and what stands on it, nothing else.
 2. Generate at the delivery size or a whole multiple of it (the pack names
    both), landscape, evenly lit, with no vignette, no characters, no props,
    no text and no border. Save it as `art/raw/maps/<mapId>.png`.
-3. `npm run art:map -- --map forest_road` checks the aspect, downsizes with
-   a box filter (never up) to the map's `width × pixelsPerTile`, writes
-   `public/art/maps/forest_road.webp` and prints the `backdrop` line.
+3. `npm run art:map -- --map forest_road` (or `--in <file>` for a PNG or
+   JPEG named loosely) checks the aspect, cutting a centred band off a near
+   miss of up to a tenth and saying how many tiles it cut, refusing anything
+   further off (the layout was not kept: regenerate from the layout image),
+   downsizes with a box filter (never up) to the map's
+   `width × pixelsPerTile`, writes `public/art/maps/forest_road.webp` and
+   prints the `backdrop` line.
 4. Put that line on the map in `src/content/maps/`. `npm run art:validate`
    checks the file measures the grid times its pixels a tile;
    `npm run check:assets` keeps the family under 4 MB (five paintings at
@@ -128,6 +169,7 @@ docs/art/
   prompts/portraits/*.md    one pack per portrait key
   prompts/sheets/*.md       one pack per sprite sheet, named by asset key
   prompts/maps/*.md         one pack per map painting, with its layout PNG
+art/raw/incoming/           what the art-intake branch delivered, ignored by git
 art/raw/reference/          the reference figures, ignored by git
 art/raw/<assetKey>/         generated poses, ignored by git
 art/raw/maps/<mapId>.png    generated paintings, ignored by git

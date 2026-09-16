@@ -147,3 +147,27 @@ why:
 - **Art scripts are the next slice**, in TypeScript under `tsx` rather than
   `.mjs`, sharing `layoutSheet` and the zod schema; the asset budget gate
   arrives with them.
+
+## Amendment, 2026-09-16: the scripts against real generator output
+
+- **JPEG is read, never written.** The scripts decode a JPEG through
+  `jpeg-js` (pure JavaScript, dev-only, beside `pngjs`; `sharp` stays
+  rejected for its native binary) for portraits and paintings, and read
+  any file's size from its header (`imageSize`) so an inventory decodes
+  nothing. Sheet frames stay PNG only: a lossy edge on the key colour
+  fringes after keying.
+- **Image entries are validated.** `art:validate` checks every `image`
+  entry the way it checks sheets: the file exists under `public/`, is the
+  PNG or WebP its name says, a `portrait.*` key measures 512×512 and no file
+  passes 512 KB. The loader falls back to the drawn placeholder on a missing
+  file, so without this a typo shipped green.
+- **`art:portrait`** makes the 512 px PNG from a candidate: the centre square,
+  anything clear composited onto the parchment, the box filter down, the
+  manifest line with the palette the manifest carries. **`art:inventory`**
+  lists a folder of loosely named pictures with what the game takes each
+  for and the command that takes it in. **`art:map`** crops a painting up to
+  a tenth off the map's aspect and reports the band in tiles, and refuses
+  further. **`art:normalise`** stops on a background that is not the key,
+  reports a figure too small to stand its height, and names files it passed
+  over. Raw pictures travel on an `art-intake` branch under `art/incoming/`,
+  which `check:assets` refuses in any checkout, so they never reach `main`.

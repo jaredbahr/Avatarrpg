@@ -20,7 +20,7 @@ regeneration, not a retouch: a retouched image drifts from its siblings.
 - [ ] Background is flat `#f4e9d8` edge to edge: no vignette, no border, no scenery, no gradient
 - [ ] The signature element named in the pack is present and reads at the turn-strip size (2.4rem, roughly 40 px)
 - [ ] The two characters of an element are distinct in silhouette, not only in colour (Kaya/Tenzo, Nilak/Sura, Bo/Lin Mei, Nima/Jinu, Riko/Wen)
-- [ ] Saved as 512×512 PNG at `public/art/portraits/<name>.png`, with the manifest entry carrying the right `palette`
+- [ ] `npm run art:portrait` accepted it (512 or larger, the medallion keeps the whole head after its centre-square cut) and `npm run art:validate` passes with the manifest entry it printed
 
 ## Sheets
 
@@ -38,11 +38,12 @@ regeneration, not a retouch: a retouched image drifts from its siblings.
 - [ ] Nothing the game draws itself is painted in: no characters, no barrels, carts or braziers, no UI, no grid
 - [ ] Evenly lit edge to edge: no vignette, no dark corners, no cast shadow longer than a tile
 - [ ] Still water where the map has water; the game tints it live, so a drained or frozen pond still reads
-- [ ] `npm run art:map` accepted it (right aspect, at least the delivery size), and `npm run art:validate` and `npm run check:assets` pass
+- [ ] `npm run art:map` accepted it (the aspect within a tenth, at least the delivery size) and any band it cut is under a tile, and `npm run art:validate` and `npm run check:assets` pass
 - [ ] Looked at in the game on both renderers, at the fitted zoom and pinched to the largest
 
 ## Before the commit
 
 - [ ] The generator's output licence permits non-commercial use
+- [ ] `git ls-files art/` prints nothing: raw pictures stay on the `art-intake` branch
 - [ ] `npm run verify` passes (the prompt test guards the packs; the content test guards the manifest)
 - [ ] Looked at in the game on the tablet: dialogue stage, party setup, unit inspector, turn strip
