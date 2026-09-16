@@ -1,0 +1,66 @@
+/**
+ * Fails the build if the shipped art exceeds its budget (ADR 0003).
+ *
+ * Two numbers: no family of art (a folder under public/art, e.g. units or
+ * portraits) over 4 MB, and everything the service worker precaches (the
+ * built dist, minus source maps) under 25 MB, so a first load on a tablet on
+ * a family's wifi stays a breath and a Home Screen install stays small.
+ */
+import { readdirSync, statSync } from 'node:fs';
+import { join, resolve, dirname, relative } from 'node:path';
+import { fileURLToPath } from 'node:url';
+
+const FAMILY_BUDGET_MB = 4;
+const PRECACHE_BUDGET_MB = 25;
+
+const root = resolve(dirname(fileURLToPath(import.meta.url)), '..');
+
+function walk(dir) {
+  let out = [];
+  let entries;
+  try {
+    entries = readdirSync(dir);
+  } catch {
+    return out;
+  }
+  for (const entry of entries) {
+    const full = join(dir, entry);
+    if (statSync(full).isDirectory()) out = out.concat(walk(full));
+    else out.push(full);
+  }
+  return out;
+}
+
+const mb = (bytes) => (bytes / (1024 * 1024)).toFixed(2);
+let failed = false;
+
+const artDir = join(root, 'public', 'art');
+const families = new Map();
+for (const file of walk(artDir)) {
+  const family = relative(artDir, file).split('/')[0] ?? '.';
+  families.set(family, (families.get(family) ?? 0) + statSync(file).size);
+}
+console.log('Art by family (budget %s MB each):', FAMILY_BUDGET_MB);
+for (const [family, bytes] of [...families].sort()) {
+  const over = bytes > FAMILY_BUDGET_MB * 1024 * 1024;
+  if (over) failed = true;
+  console.log(`  ${over ? 'OVER ' : '     '}${mb(bytes).padStart(7)} MB  ${family}`);
+}
+if (families.size === 0) console.log('  (no art shipped yet)');
+
+const dist = join(root, 'dist');
+const shipped = walk(dist).filter((f) => !f.endsWith('.map'));
+if (shipped.length === 0) {
+  console.error('dist/ not found; run `npm run build` first.');
+  process.exit(1);
+}
+const total = shipped.reduce((sum, f) => sum + statSync(f).size, 0);
+const over = total > PRECACHE_BUDGET_MB * 1024 * 1024;
+if (over) failed = true;
+console.log(`\nPrecache: ${mb(total)} MB of ${PRECACHE_BUDGET_MB} MB${over ? '  OVER' : ''}`);
+
+if (failed) {
+  console.error('\nAsset budget exceeded.');
+  process.exit(1);
+}
+console.log('Asset budget OK.');

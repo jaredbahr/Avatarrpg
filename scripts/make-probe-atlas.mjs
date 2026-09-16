@@ -6,7 +6,8 @@
  *   node scripts/make-probe-atlas.mjs
  *
  * Five frames of 128x192 in a row: two idle poses and three cast poses,
- * each a solid colour with a dark border so the frame's edges show too.
+ * each a solid colour with a dark border inside the art bible's clear
+ * margin, so the frame's edges show and the validator's margin rule holds.
  * `e2e/sheets.spec.ts` points a unit at `unit.test.probe` and reads the
  * colour back at the frame's centre.
  */
@@ -21,8 +22,11 @@ const outDir = resolve(here, '../public/art/test');
 const KEY = 'unit.test.probe';
 const FRAME_W = 128;
 const FRAME_H = 192;
+/** Clear pixels round every frame, as the art bible asks of real art. */
+const MARGIN = 8;
 const BORDER = 4;
 const INK = [0x1b, 0x14, 0x10, 0xff];
+const CLEAR = [0, 0, 0, 0];
 
 /** Pose colours, far apart so a sample cannot be mistaken for a neighbour. */
 export const PROBE_FRAMES = [
@@ -42,8 +46,13 @@ PROBE_FRAMES.forEach(([clip, index, color], slot) => {
   const x0 = slot * FRAME_W;
   for (let y = 0; y < FRAME_H; y++) {
     for (let x = 0; x < FRAME_W; x++) {
-      const edge = x < BORDER || y < BORDER || x >= FRAME_W - BORDER || y >= FRAME_H - BORDER;
-      const px = edge ? INK : color;
+      const outside = x < MARGIN || y < MARGIN || x >= FRAME_W - MARGIN || y >= FRAME_H - MARGIN;
+      const edge =
+        x < MARGIN + BORDER ||
+        y < MARGIN + BORDER ||
+        x >= FRAME_W - MARGIN - BORDER ||
+        y >= FRAME_H - MARGIN - BORDER;
+      const px = outside ? CLEAR : edge ? INK : color;
       const o = (y * width + x0 + x) * 4;
       rgba[o] = px[0];
       rgba[o + 1] = px[1];

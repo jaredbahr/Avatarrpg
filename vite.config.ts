@@ -30,7 +30,7 @@ export default defineConfig({
       injectRegister: 'auto',
       includeAssets: ['icons/apple-touch-icon.png', 'icons/favicon.svg'],
       workbox: {
-        globPatterns: ['**/*.{js,css,html,svg,png,woff2}'],
+        globPatterns: ['**/*.{js,css,html,svg,png,webp,json,woff2}'],
         cleanupOutdatedCaches: true,
         navigateFallback: `${base}index.html`,
       },
