@@ -24,8 +24,9 @@ import type { MapView } from './view';
  * them to `view.ts` was a file split, not an API change.
  */
 export type {
+  ClipName,
+  EmitterInstance,
   Floater,
-  FxInstance,
   MapView,
   NpcMarker,
   OverlayKind,

@@ -984,8 +984,7 @@ export class CombatScene implements Scene {
       statuses: u.statuses.map((s) => s.id),
       fallen: !isAlive(u),
       renderPos: this.app.animator.renderPos(now, u.id),
-      offset: this.app.animator.offset(now, u.id),
-      facing: this.app.animator.facing(u.id) ?? (u.faction === 'enemy' ? -1 : 1),
+      ...this.poseFields(now, u.id, u.faction === 'enemy' ? -1 : 1),
     }));
 
     // Resolved here, not in the renderer: the renderer never reads content.
@@ -1009,8 +1008,9 @@ export class CombatScene implements Scene {
       overlays,
       path,
       pathFrom: unit?.pos ?? null,
-      fx: this.app.animator.fx(now),
+      emitters: this.app.animator.emitters(now),
       floaters: this.app.animator.floaters(now),
+      cameraNudge: this.app.animator.cameraNudge(now),
       activeUnitId: unit?.id ?? null,
       selectedUnitId: null,
       hoverTile: interactive ? this.hover : null,
@@ -1023,6 +1023,26 @@ export class CombatScene implements Scene {
 
     renderer.draw(view);
   };
+
+  /** The animator's pose for a unit, as the view fields the renderer reads. */
+  private poseFields(
+    now: number,
+    unitId: string,
+    restFacing: 1 | -1,
+  ): Pick<RenderUnit, 'offset' | 'facing' | 'clip' | 'clipTime' | 'scale' | 'alpha' | 'flash'> {
+    const pose = this.app.animator.unitPose(now, unitId);
+    const walked = this.app.animator.facing(unitId);
+    if (!pose) return { facing: walked ?? restFacing };
+    return {
+      offset: pose.offset,
+      facing: pose.facing ?? walked ?? restFacing,
+      clip: pose.clip,
+      clipTime: pose.clipTime,
+      scale: pose.scale,
+      alpha: pose.alpha,
+      flash: pose.flash,
+    };
+  }
 
   private buildOverlays(
     battle: BattleState,

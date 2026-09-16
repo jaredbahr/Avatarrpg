@@ -3,7 +3,10 @@
  *
  * The reducer returns what happened; this decides how long the player watches
  * it. Everything is a timed track sampled per frame, so the renderer stays a
- * pure function of "what does the world look like at time T".
+ * pure function of "what does the world look like at time T". The tracks
+ * themselves are laid out by `anim/choreography.ts`; this owns the clock and
+ * answers the scenes' questions: where is a unit drawn, what pose is it in,
+ * which particles are live, how far has the camera been knocked.
  *
  * Reduce-motion collapses every duration to a single frame rather than
  * skipping the playback: the floating numbers and the combat log still appear,
@@ -11,43 +14,14 @@
  */
 
 import type { ContentIndex, GameEvent, Unit, Vec2 } from '../core/types';
-import type { FxInstance, Floater } from '../render/renderer';
-import type { Curve } from '../render/geometry/curve';
-import { sampleAt, smoothPath } from '../render/geometry/curve';
-import type { Easing } from './anim/easing';
-import { easeInOutCubic, easeOutQuad } from './anim/easing';
+import type { EmitterInstance, Floater } from '../render/view';
+import type { ClipName } from '../render/view';
+import { hashSeed, mulberry32 } from '../render/fx/rng';
+import { sampleAt } from '../render/geometry/curve';
+import { choreograph } from './anim/choreography';
+import { Timeline } from './anim/timeline';
+import type { MoveTrack, PoseTrack } from './anim/timeline';
 import { motionReduced } from './ui/dom';
-
-interface Track {
-  readonly start: number;
-  readonly duration: number;
-}
-
-interface FxTrack extends Track {
-  readonly pos: Vec2;
-  readonly assetKey: string;
-}
-
-interface FloaterTrack extends Track {
-  readonly pos: Vec2;
-  readonly text: string;
-  readonly color: string;
-}
-
-interface MoveTrack extends Track {
-  readonly unitId: string;
-  /** The route, smoothed through the tile centres, sampled by arc length. */
-  readonly curve: Curve;
-  readonly ease: Easing;
-}
-
-/** Base durations in milliseconds, before the motion setting is applied. */
-const TIMING = {
-  step: 110,
-  ability: 420,
-  floater: 900,
-  gap: 60,
-} as const;
 
 /** Height of the walk bob in tiles, once per tile of travel. */
 const BOB = 0.05;
@@ -55,9 +29,26 @@ const BOB = 0.05;
 /** How far off dead vertical the travel has to lean before the sprite turns. */
 const TURN_THRESHOLD = 0.2;
 
+/** How often the shake picks a new direction, in ms. */
+const SHAKE_STEP = 30;
+
 export interface AnimatorOptions {
   /** Overrides the reduce-motion lookup, so tests can run without a document. */
   readonly motionReduced?: () => boolean;
+}
+
+/** Everything the renderer needs to draw a unit mid-playback. */
+export interface UnitPose {
+  readonly clip: ClipName;
+  /** Ms into the clip. */
+  readonly clipTime: number;
+  /** Draw offset in tiles: the walk bob, a lunge, a recoil. */
+  readonly offset: Vec2;
+  readonly scale: number;
+  readonly alpha: number;
+  /** 0..1 white flash on a hit. */
+  readonly flash: number;
+  readonly facing?: 1 | -1;
 }
 
 export class Animator {
@@ -67,12 +58,10 @@ export class Animator {
     private options: AnimatorOptions = {},
   ) {}
 
-  private fxTracks: FxTrack[] = [];
-  private floaterTracks: FloaterTrack[] = [];
-  private moveTracks: MoveTrack[] = [];
+  private timeline = new Timeline();
   /** Which way each unit last walked; a unit keeps facing that way when it stops. */
   private facings = new Map<string, 1 | -1>();
-  private endsAt = 0;
+  private pushes = 0;
 
   /** Multiplier applied to every duration; 0.02 when reduce-motion is on. */
   private get rate(): number {
@@ -80,21 +69,19 @@ export class Animator {
   }
 
   clear(): void {
-    this.fxTracks = [];
-    this.floaterTracks = [];
-    this.moveTracks = [];
+    this.timeline.clear();
     this.facings.clear();
-    this.endsAt = 0;
+    this.pushes = 0;
   }
 
   /** True while there is still something to watch. */
   busy(now: number): boolean {
-    return now < this.endsAt;
+    return this.timeline.busy(now);
   }
 
   /** When the current playback finishes, in the same clock as `now`. */
   get finishesAt(): number {
-    return this.endsAt;
+    return this.timeline.finishesAt;
   }
 
   /**
@@ -104,167 +91,30 @@ export class Animator {
    * so a move can animate from where the unit actually was.
    */
   push(now: number, events: readonly GameEvent[], unitsBefore: readonly Unit[]): void {
-    const rate = this.rate;
-    let cursor = Math.max(now, this.endsAt);
-
-    const positions = new Map<string, Vec2>();
-    for (const unit of unitsBefore) positions.set(unit.id, unit.pos);
-
-    for (const event of events) {
-      switch (event.type) {
-        case 'unitMoved': {
-          if (event.path.length === 0) break;
-          const from = positions.get(event.unitId) ?? event.path[0];
-          const duration = TIMING.step * event.path.length * rate;
-          if (from) {
-            this.moveTracks.push({
-              unitId: event.unitId,
-              curve: smoothPath(from, event.path),
-              ease: easeInOutCubic,
-              start: cursor,
-              duration,
-            });
-          }
-          const last = event.path[event.path.length - 1];
-          if (last) positions.set(event.unitId, last);
-          cursor += duration;
-          break;
-        }
-
-        case 'abilityUsed': {
-          const duration = TIMING.ability * rate;
-          const assetKey = this.content.abilities.get(event.abilityId)?.fx ?? 'fx.impact';
-          // Cap the tile count: a 5x5 blast does not need 25 separate bursts.
-          for (const tile of event.tiles.slice(0, 24)) {
-            this.fxTracks.push({ pos: tile, assetKey, start: cursor, duration });
-          }
-          cursor += duration * 0.5;
-          break;
-        }
-
-        case 'damaged': {
-          const pos = positions.get(event.unitId);
-          if (pos) {
-            this.floaterTracks.push({
-              pos,
-              text: event.crit ? `${event.amount}!` : String(event.amount),
-              color: event.crit ? '#ffd98a' : '#ff9d8d',
-              start: cursor,
-              duration: TIMING.floater * rate,
-            });
-          }
-          cursor += TIMING.gap * rate;
-          break;
-        }
-
-        case 'healed': {
-          const pos = positions.get(event.unitId);
-          if (pos) {
-            this.floaterTracks.push({
-              pos,
-              text: `+${event.amount}`,
-              color: '#8fe39b',
-              start: cursor,
-              duration: TIMING.floater * rate,
-            });
-          }
-          cursor += TIMING.gap * rate;
-          break;
-        }
-
-        case 'attackMissed': {
-          const pos = positions.get(event.targetId);
-          if (pos) {
-            this.floaterTracks.push({
-              pos,
-              text: 'miss',
-              color: '#cfc3ae',
-              start: cursor,
-              duration: TIMING.floater * rate,
-            });
-          }
-          cursor += TIMING.gap * rate;
-          break;
-        }
-
-        case 'unitPushed': {
-          const from = positions.get(event.unitId);
-          if (from) {
-            const duration = TIMING.step * 2 * rate;
-            // A shove is a straight slide: quick off the mark, coasting to a stop.
-            this.moveTracks.push({
-              unitId: event.unitId,
-              curve: smoothPath(from, [event.to], 0),
-              ease: easeOutQuad,
-              start: cursor,
-              duration,
-            });
-            positions.set(event.unitId, event.to);
-            cursor += duration;
-          }
-          break;
-        }
-
-        case 'unitDied': {
-          const pos = positions.get(event.unitId);
-          if (pos) {
-            this.floaterTracks.push({
-              pos,
-              text: 'down',
-              color: '#e2584a',
-              start: cursor,
-              duration: TIMING.floater * rate,
-            });
-          }
-          cursor += TIMING.gap * 2 * rate;
-          break;
-        }
-
-        default:
-          break;
-      }
-    }
-
-    this.endsAt = Math.max(this.endsAt, cursor);
+    const cursor = Math.max(now, this.timeline.finishesAt);
+    const result = choreograph({
+      content: this.content,
+      events,
+      unitsBefore,
+      cursor,
+      rate: this.rate,
+      pushIndex: this.pushes++,
+    });
+    for (const track of result.tracks) this.timeline.add(track);
+    this.timeline.holdUntil(result.cursor);
   }
 
-  /** Active effect instances at `now`. */
-  fx(now: number): FxInstance[] {
-    const out: FxInstance[] = [];
-    for (const track of this.fxTracks) {
-      if (now < track.start || now > track.start + track.duration) continue;
-      out.push({
-        pos: track.pos,
-        assetKey: track.assetKey,
-        progress: (now - track.start) / Math.max(1, track.duration),
-      });
-    }
-    return out;
-  }
-
-  floaters(now: number): Floater[] {
-    const out: Floater[] = [];
-    for (const track of this.floaterTracks) {
-      if (now < track.start || now > track.start + track.duration) continue;
-      out.push({
-        pos: track.pos,
-        text: track.text,
-        color: track.color,
-        progress: (now - track.start) / Math.max(1, track.duration),
-      });
-    }
-    return out;
+  /** Drops finished tracks. Called once a frame so memory stays flat. */
+  prune(now: number): void {
+    this.timeline.prune(now);
   }
 
   /** The move track a unit is on at `now`, if any, with how far along it is in tiles. */
   private travel(now: number, unitId: string): { track: MoveTrack; distance: number } | null {
     let found: { track: MoveTrack; distance: number } | null = null;
-    for (const track of this.moveTracks) {
+    for (const track of this.timeline.active(now, 'move')) {
       if (track.unitId !== unitId) continue;
-      if (now < track.start) continue;
-      if (now > track.start + track.duration) continue;
-      const t = (now - track.start) / Math.max(1, track.duration);
-      found = { track, distance: track.ease(t) * track.curve.length };
+      found = { track, distance: track.ease(Timeline.progress(track, now)) * track.curve.length };
     }
     return found;
   }
@@ -304,11 +154,90 @@ export class Animator {
     return this.facings.get(unitId);
   }
 
-  /** Drops finished tracks. Called once a frame so memory stays flat. */
-  prune(now: number): void {
-    const alive = (track: Track) => now <= track.start + track.duration;
-    this.fxTracks = this.fxTracks.filter(alive);
-    this.floaterTracks = this.floaterTracks.filter(alive);
-    this.moveTracks = this.moveTracks.filter(alive);
+  /**
+   * The unit's pose at `now`, or undefined when nothing is playing on it: the
+   * latest-started pose track wins, the walk bob adds to it, and a hit's
+   * flash decays over its own track.
+   */
+  unitPose(now: number, unitId: string): UnitPose | undefined {
+    let pose: PoseTrack | undefined;
+    for (const track of this.timeline.active(now, 'pose')) {
+      if (track.unitId === unitId && (!pose || track.start >= pose.start)) pose = track;
+    }
+    const bob = this.offset(now, unitId);
+    let flash = 0;
+    for (const track of this.timeline.active(now, 'flash')) {
+      if (track.unitId !== unitId) continue;
+      flash = Math.max(flash, track.strength * (1 - Timeline.progress(track, now)));
+    }
+    if (!pose && !bob && flash === 0) return undefined;
+
+    const t = pose ? pose.ease(Timeline.progress(pose, now)) : 0;
+    const offset = pose
+      ? {
+          x: pose.offset.from.x + (pose.offset.to.x - pose.offset.from.x) * t + (bob?.x ?? 0),
+          y: pose.offset.from.y + (pose.offset.to.y - pose.offset.from.y) * t + (bob?.y ?? 0),
+        }
+      : (bob ?? { x: 0, y: 0 });
+    const scale = pose?.scale ? pose.scale.from + (pose.scale.to - pose.scale.from) * t : 1;
+    const alpha = pose?.alpha ? pose.alpha.from + (pose.alpha.to - pose.alpha.from) * t : 1;
+    const facing = pose?.facing;
+    return {
+      clip: pose ? pose.clip : bob ? 'walk' : 'idle',
+      clipTime: pose ? now - pose.start : 0,
+      offset,
+      scale,
+      alpha,
+      flash,
+      ...(facing !== undefined ? { facing } : {}),
+    };
+  }
+
+  /** Live particle and stroke emitters at `now`, with their age. */
+  emitters(now: number): EmitterInstance[] {
+    const out: EmitterInstance[] = [];
+    for (const track of this.timeline.active(now, 'emitter')) {
+      out.push({
+        def: track.def,
+        from: track.from,
+        to: track.to,
+        elapsed: now - track.start,
+        seed: track.seed,
+        palette: track.palette,
+        arc: track.arc,
+      });
+    }
+    return out;
+  }
+
+  floaters(now: number): Floater[] {
+    const out: Floater[] = [];
+    for (const track of this.timeline.active(now, 'floater')) {
+      out.push({
+        pos: track.pos,
+        text: track.text,
+        color: track.color,
+        progress: Timeline.progress(track, now),
+      });
+    }
+    return out;
+  }
+
+  /**
+   * How far the camera is knocked at `now`, in tiles: every live shake picks
+   * a fresh direction every few frames, seeded, and dies off over its track.
+   */
+  cameraNudge(now: number): Vec2 {
+    let x = 0;
+    let y = 0;
+    for (const track of this.timeline.active(now, 'shake')) {
+      const step = Math.floor((now - track.start) / SHAKE_STEP);
+      const r = mulberry32(hashSeed(track.seed, step));
+      const angle = r() * Math.PI * 2;
+      const strength = track.amplitude * (1 - Timeline.progress(track, now));
+      x += Math.cos(angle) * strength;
+      y += Math.sin(angle) * strength;
+    }
+    return { x, y };
   }
 }

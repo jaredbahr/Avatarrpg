@@ -7,6 +7,10 @@
  */
 
 import type { Grid, StatusId, Vec2 } from '../core/types';
+import type { EmitterDef } from '../content/fx';
+
+/** The pose vocabulary from ADR 0003; the sheet runtime maps these to frames. */
+export type ClipName = 'idle' | 'walk' | 'cast' | 'melee' | 'hit' | 'ko';
 
 export interface RenderUnit {
   readonly id: string;
@@ -26,10 +30,19 @@ export interface RenderUnit {
   /** Which way the sprite faces: 1 is screen-right. Defaults to the faction's side. */
   readonly facing?: 1 | -1;
   /**
-   * Draw-time nudge in tile units (a walk bob, later a lunge or a recoil).
-   * Never part of the sort key: a unit mid-hop still sorts by where it stands.
+   * Draw-time nudge in tile units (a walk bob, a lunge, a recoil). Never
+   * part of the sort key: a unit mid-hop still sorts by where it stands.
    */
   readonly offset?: Vec2;
+  /** Which pose the unit is in and how far into it, for the sheet runtime. */
+  readonly clip?: ClipName;
+  readonly clipTime?: number;
+  /** Draw scale about the feet; 1 at rest. */
+  readonly scale?: number;
+  /** Draw alpha; the backend applies the fallen fade on top. */
+  readonly alpha?: number;
+  /** 0..1 white flash on a hit. */
+  readonly flash?: number;
 }
 
 export type OverlayKind = 'move' | 'target' | 'area' | 'hover';
@@ -39,11 +52,22 @@ export interface OverlayLayer {
   readonly tiles: readonly Vec2[];
 }
 
-export interface FxInstance {
-  readonly pos: Vec2;
-  readonly assetKey: string;
-  /** 0 to 1 across the effect's lifetime. */
-  readonly progress: number;
+/**
+ * A live effect emitter: the recipe piece, where it plays, and how old it is.
+ * The definition travels resolved so the renderer never reads content.
+ */
+export interface EmitterInstance {
+  readonly def: EmitterDef;
+  /** Tile centres. */
+  readonly from: Vec2;
+  readonly to: Vec2;
+  /** Ms since the emitter started. */
+  readonly elapsed: number;
+  readonly seed: number;
+  /** Palette key the colour roles resolve through. */
+  readonly palette: string;
+  /** Lob height in tiles for a projectile flight. */
+  readonly arc: number;
 }
 
 export interface Floater {
@@ -83,8 +107,10 @@ export interface MapView {
   readonly path: readonly Vec2[];
   /** Where `path` starts (the walker's tile), so it can be drawn as one curve. */
   readonly pathFrom: Vec2 | null;
-  readonly fx: readonly FxInstance[];
+  readonly emitters: readonly EmitterInstance[];
   readonly floaters: readonly Floater[];
+  /** How far the camera is knocked, in tiles. */
+  readonly cameraNudge: Vec2;
   readonly activeUnitId: string | null;
   readonly selectedUnitId: string | null;
   readonly hoverTile: Vec2 | null;
