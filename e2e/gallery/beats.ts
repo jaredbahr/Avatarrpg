@@ -81,6 +81,8 @@ const PORTRAIT_TOO = [...LANDSCAPE, 'portrait-canvas'];
 const STATS = ['surface-canvas', 'surface-webgl', 'ipad-webgl'];
 /** The figure page is a Canvas 2D bake whichever backend draws the board; once per pixel density. */
 const FIGURES = ['surface-canvas', 'ipad-canvas'];
+/** The painting slot, once per backend: the 2x projects would show the same picture larger. */
+const SURFACES = ['surface-canvas', 'surface-webgl'];
 
 const HERO_ROWS: readonly FigureRow[] = [
   { key: 'unit.fire.kaya', label: 'Kaya · fire' },
@@ -464,6 +466,31 @@ export const BEATS: readonly Beat[] = [
       await settleLayout(ctx.page, ctx.settleTimeout);
       await waitForIdle(ctx.page);
       await ctx.shoot(this.note);
+    },
+  },
+  {
+    id: '18-backdrop',
+    title: 'A painting under the grid',
+    note: 'The painting slot with a flat stand-in for the forest road (the layout image the map packs ship, 32 px a tile, with the probe block): the puddle, the move contour, the units and the effects are drawn over the painting, and the decor that marked footing stands down. Then the same board with Show grid on: every edge in the painting sits on a tile line, which is the check a real painting must pass.',
+    projects: SURFACES,
+    async run(ctx) {
+      await openBattle(ctx);
+      const loaded = await ctx.page.evaluate(() =>
+        window.fnt?.app.overrideBackdrop('forest_road', {
+          url: 'art/test/backdrop.png',
+          pixelsPerTile: 32,
+        }),
+      );
+      if (!loaded) throw new Error('The probe painting did not load.');
+      const kaya = await partyUnit(ctx.page, 'kaya');
+      if (!kaya) throw new Error('Kaya is not in the party.');
+      await giveTurn(ctx.page, kaya.id);
+      await settleLayout(ctx.page, ctx.settleTimeout);
+      await ctx.page.getByRole('button', { name: /^Move/ }).click();
+      await ctx.shoot(this.note, 'painted');
+      await updateSettings(ctx.page, { showGrid: true });
+      await settleLayout(ctx.page, ctx.settleTimeout);
+      await ctx.shoot(`${this.note} (Show grid on)`, 'grid');
     },
   },
 ];
