@@ -186,7 +186,19 @@ That is deliberate: if we ever want phones-as-controllers, the rules do not chan
 
 Every drawn thing goes through `src/content/assets/manifest.ts`. Today each entry
 points at a code-drawn painter (vector shapes on the nation palette). Pointing an
-entry at an image URL instead swaps that art in with **no code changes**.
+entry at an image URL instead swaps that art in with **no code changes**:
+
+```ts
+'portrait.kaya': { kind: 'image', url: 'art/portraits/kaya.png', palette: 'fire' },
+```
+
+Put the file under `public/` (so `public/art/portraits/kaya.png` here) and keep the
+`palette`: it is what tints the dialogue backdrop and the HUD chrome to the
+speaker's element. Portraits are 512×512 busts on parchment, composed for a
+circular crop; the spec is `docs/art-bible.md` and the prompt packs are under
+`docs/art/prompts/`. While the bitmap loads, the painter draws in its place, and if
+it fails to load the painter stays, so a missing file never shows as nothing.
+Animated unit sheets are the next step (`docs/adr/0003-asset-contract.md`).
 
 ## Difficulty, and how it scales to your table
 

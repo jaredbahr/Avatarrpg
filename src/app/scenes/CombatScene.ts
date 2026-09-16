@@ -29,9 +29,9 @@ import { activeUnit, upcomingOrder } from '../../core/rules/turnOrder';
 import { Renderer, TILE } from '../../render/renderer';
 import type { MapView, OverlayLayer, RenderProp, RenderUnit } from '../../render/renderer';
 import { CONTENT } from '../../content';
-import { resolvePainter } from '../../render/painters/registry';
 import { attachPointer, wheelZoomFactor } from '../input/pointer';
-import { announce, button, clear, el, painterCanvas, tip } from '../ui/dom';
+import { announce, button, clear, el, tip } from '../ui/dom';
+import { assetCanvas } from '../ui/assetCanvas';
 import { reactionNotes } from '../ui/ReactionNote';
 import { UnitInspector } from '../ui/UnitInspector';
 
@@ -454,9 +454,7 @@ export class CombatScene implements Scene {
       const chip = el(
         'div',
         { class: `turn-chip faction-${unit.faction}${isActive ? ' active' : ''}` },
-        painterCanvas(portraitKey, 2.4, (ctx, size) => {
-          resolvePainter(portraitKey).draw(ctx, { x: 0, y: 0, size });
-        }),
+        assetCanvas(portraitKey, 2.4),
         el('span', { class: 'tiny', text: player?.name ?? unit.name }),
       );
       tip(

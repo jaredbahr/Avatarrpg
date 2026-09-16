@@ -10,9 +10,17 @@
  * or generated art later, change the entry:
  *
  *   'unit.fire.kaya': { kind: 'painter', painter: 'bender', palette: 'fire' }
- *   'unit.fire.kaya': { kind: 'image', url: 'art/kaya.png' }
+ *   'unit.fire.kaya': { kind: 'image', url: 'art/kaya.png', palette: 'fire' }
  *
  * ...and nothing else in the codebase changes. That is the whole contract.
+ *
+ * Portraits are the first real art (docs/art-bible.md): a 512x512 bust on
+ * parchment dropped into `public/art/portraits/<name>.png` and pointed at here:
+ *
+ *   'portrait.kaya': { kind: 'image', url: 'art/portraits/kaya.png', palette: 'fire' }
+ *
+ * Keep the `palette` on an image entry. It is how the dialogue backdrop knows
+ * which element to tint for the speaker, and how HUD chrome matches the art.
  */
 
 export type AssetEntry =
@@ -25,7 +33,13 @@ export type AssetEntry =
       /** Distinguishes the two characters of an element, or an enemy silhouette. */
       readonly variant?: string;
     }
-  | { readonly kind: 'image'; readonly url: string };
+  | {
+      readonly kind: 'image';
+      /** Relative to the site root (the `public/` folder), or an absolute URL. */
+      readonly url: string;
+      /** Palette key, so HUD chrome and the dialogue mood still know the element. */
+      readonly palette?: string;
+    };
 
 const painter = (painterName: string, palette: string, variant?: string): AssetEntry =>
   variant
