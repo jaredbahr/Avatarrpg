@@ -92,3 +92,58 @@ sheets replace baked ones key by key.
 - Adding a unit or an enemy needs a `sheet` entry and an atlas, never a change in `src/core/`.
 - Phase 2 content can be authored against the contract with painters as placeholders.
 - The art bible is a generation spec that produces frames in exactly this shape.
+
+## Amendment, 2026-09-16: as built
+
+The runtime landed with the look-gate milestone, ahead of any generated art.
+What it decided along the way, where it departs from the plan above, and
+why:
+
+- **Every unit already draws through the sheet path.** A key with a
+  `painter` entry gets a sheet baked from that painter's poses
+  (`src/render/sheets/bake.ts`): the full clip table, laid out by the same
+  pure `layoutSheet` the art scripts use, into an atlas of exactly the shape
+  a real sheet has. Real sheets replace baked ones key by key with no other
+  change, and both backends and the clip logic were exercised for weeks
+  before the first real frame existed.
+- **No Pixi `Assets` or `Spritesheet`.** One `fetch` for the JSON and one
+  `Image` for the PNG (`src/render/sheets/store.ts`), parsed by
+  `parseAtlasJson`, so the Canvas 2D backend reads the same file through the
+  same code and the WebGL backend makes frame textures as views onto one
+  uploaded texture (`new Texture({ source, frame })`), never through the
+  global cache.
+- **The anchor stands on the tile's foot line.** The frame's anchor
+  `(0.5, 0.85)` is placed 85% of the way down the tile the unit stands on,
+  centred on its footprint. A 192-tall frame therefore rises 0.425 tile above
+  the tile's top edge and dips 0.075 below its bottom; the head overlaps the
+  tile above. The health bar sits above the art's headroom, which is 0 for a
+  baked placeholder that lives inside the tile.
+- **A baked painter sits inside the tile.** The painter's square box is
+  placed in the frame so that its ground shadow (`0.86` of the box) lands on
+  the foot line; the top 0.415 tile of the frame is empty until the
+  cel-shaded figures use it. Baked at the zoom's sprite bucket, capped at
+  256 device pixels a tile, in a set bounded by bytes (48 MB) and cleared on
+  resize, for the iOS canvas cap.
+- **The choreography names the pose.** A pose track carries the frame it
+  shows (a cast's wind-up is frame 0, release 1, recover 2; a melee holds
+  its strike through the recover; hit and KO are frame 0), so a clip's
+  timing never has to be guessed from a phase's clock. A walk clip advances
+  by distance instead of time, two poses a tile at 4 fps, so a fast and a
+  slow unit both stride. Idle breathes on the map clock with a per-unit
+  phase so a row does not breathe in step.
+- **One facing, mirrored, at draw time.** Sheets face screen-right; the
+  backends flip about the anchor for the other side. `facing: 'both'` is
+  reserved and currently draws as `mirror`.
+- **Validation is in `validateContent`.** The manifest travels in the content
+  bundle: every entry parses, every sheet has `idle` and `cast`, frame counts
+  stay in the clip table's bounds, frame names are `<key>/<clip>/<index>`,
+  a sheet's footprint matches its unit's size, and every sprite key a
+  character, enemy, prop or NPC names has an entry.
+- **A probe atlas is committed.** `public/art/test/probe.png` and its JSON,
+  five flat-colour frames written by `scripts/make-probe-atlas.mjs`, sit
+  behind `unit.test.probe`; `e2e/sheets.spec.ts` points a unit at it and
+  reads the colour back on both backends, so the loader and the frame
+  drawing are covered before any generated art lands.
+- **Art scripts are the next slice**, in TypeScript under `tsx` rather than
+  `.mjs`, sharing `layoutSheet` and the zod schema; the asset budget gate
+  arrives with them.

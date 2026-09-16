@@ -198,7 +198,30 @@ speaker's element. Portraits are 512×512 busts on parchment, composed for a
 circular crop; the spec is `docs/art-bible.md` and the prompt packs are under
 `docs/art/prompts/`. While the bitmap loads, the painter draws in its place, and if
 it fails to load the painter stays, so a missing file never shows as nothing.
-Animated unit sheets are the next step (`docs/adr/0003-asset-contract.md`).
+
+A unit's animated art is a **sheet** (`docs/adr/0003-asset-contract.md`): an atlas
+PNG of key poses plus its JSON, two idle poses and three cast poses at least, drawn
+facing right and mirrored for the other side. Point the unit's key at it:
+
+```ts
+'unit.fire.kaya': {
+  kind: 'sheet',
+  atlas: 'art/units/kaya.json',
+  pixelsPerTile: 128,
+  footprint: { w: 1, h: 1 },
+  anchor: { x: 0.5, y: 0.85 },
+  facing: 'mirror',
+  palette: 'fire',
+  clips: {
+    idle: { frames: ['unit.fire.kaya/idle/0', 'unit.fire.kaya/idle/1'], fps: 1, loop: true },
+    cast: { frames: ['unit.fire.kaya/cast/0', 'unit.fire.kaya/cast/1', 'unit.fire.kaya/cast/2'], fps: 8, loop: false },
+  },
+},
+```
+
+Until a key has a sheet, the game bakes one from the key's painter, so every unit
+already animates through the same runtime; `unit.test.probe` is a committed atlas of
+flat colours the e2e suite draws to prove the path.
 
 ## Difficulty, and how it scales to your table
 
