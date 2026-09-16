@@ -34,7 +34,8 @@ import { ambienceFx, resolveFx } from '../../content/fx';
 import { ambientEmitters } from '../anim/ambience';
 import { announce, button, clear, el, mark, motionReduced, painterCanvas, tip } from '../ui/dom';
 import { assetCanvas } from '../ui/assetCanvas';
-import { UI_MARKS, markFor } from '../ui/marks';
+import { UI_MARKS, markKindFor } from '../ui/marks';
+import { iconMarkup } from '../ui/icons';
 import { paletteFor } from '../../render/palettes';
 import { paintElementGlyph } from '../../render/painters/glyphs';
 import { showGridLines } from '../storage/localSaves';
@@ -659,7 +660,7 @@ export class CombatScene implements Scene {
       if (ability) {
         header.classList.add(`element-${ability.element}`);
         header.append(
-          mark(markFor(ability)),
+          mark(iconMarkup(markKindFor(ability))),
           el('strong', { text: ability.name }),
           el('span', { class: 'header-cost', text: `· ${ability.apCost} AP` }),
           el('span', { class: 'header-desc', text: ability.description }),
@@ -698,7 +699,7 @@ export class CombatScene implements Scene {
 
     // The ability's own mark above its name, in its element's colour; the
     // cost as words under it.
-    node.prepend(mark(markFor(ability)));
+    node.prepend(mark(iconMarkup(markKindFor(ability))));
     node.appendChild(el('span', { class: 'action-sub', text: `${ability.apCost} AP` }));
 
     if (cooldown > 0) {

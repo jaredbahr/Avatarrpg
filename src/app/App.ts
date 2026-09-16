@@ -38,6 +38,7 @@ import { describeProgress } from '../core/save/serialize';
 import { reconcileDisciplines } from '../core/save/reconcile';
 import type { SessionMeta } from '../core/save/serialize';
 import { announce, clear, el } from './ui/dom';
+import { loadIcons } from './ui/icons';
 import { WHEEL_LINES_SVG } from './ui/marks';
 import { Toasts } from './ui/Toasts';
 import { Stats } from './ui/Stats';
@@ -173,6 +174,8 @@ export class App {
   /* ---------------------------------------------------------------- */
 
   start(): void {
+    // The real icon set, if it is there; every mark falls back to the drawn one.
+    loadIcons();
     this.showScene(new TitleScene(this));
   }
 

@@ -246,7 +246,12 @@ export function kindFor(ability: Markable): MarkKind {
   return 'bolt';
 }
 
-/** The mark for an ability: its signature if it has one, else by kind. */
+/** The kind an ability resolves to: its signature if it has one, else by what it does. */
+export function markKindFor(ability: Markable): MarkKind {
+  return SIGNATURE_MARKS[ability.fx] ?? kindFor(ability);
+}
+
+/** The drawn mark for an ability. `iconMarkup` in icons.ts prefers a real icon. */
 export function markFor(ability: Markable): string {
-  return ABILITY_MARKS[SIGNATURE_MARKS[ability.fx] ?? kindFor(ability)];
+  return ABILITY_MARKS[markKindFor(ability)];
 }
