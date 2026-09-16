@@ -6,7 +6,7 @@
  * built dist, minus source maps) under 25 MB, so a first load on a tablet on
  * a family's wifi stays a breath and a Home Screen install stays small.
  */
-import { readdirSync, statSync } from 'node:fs';
+import { existsSync, readdirSync, statSync } from 'node:fs';
 import { join, resolve, dirname, relative } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
@@ -33,6 +33,15 @@ function walk(dir) {
 
 const mb = (bytes) => (bytes / (1024 * 1024)).toFixed(2);
 let failed = false;
+
+// Raw generator output travels on the art-intake branch and is processed into
+// public/art/; a checkout that carries the folder has merged that branch.
+if (existsSync(join(root, 'art', 'incoming'))) {
+  console.error(
+    'art/incoming/ is raw intake and must never be committed: it lives on the art-intake branch only.',
+  );
+  process.exit(1);
+}
 
 const artDir = join(root, 'public', 'art');
 const families = new Map();
