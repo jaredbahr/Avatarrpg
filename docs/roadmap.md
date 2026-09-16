@@ -12,16 +12,17 @@ Decisions this roadmap rests on live in `docs/adr/`. The art specification is
 
 ## Settled decisions
 
-| Question          | Decision                                                                                                                      | Record                                |
-| ----------------- | ----------------------------------------------------------------------------------------------------------------------------- | ------------------------------------- |
-| Engine            | Stay on Pixi v8 with the hand-written Canvas 2D fallback                                                                      | `adr/0001-stay-on-pixi-v8.md`         |
-| Backend parity    | Board-correctness parity mandatory, fidelity parity not                                                                       | `adr/0002-backend-parity-policy.md`   |
-| Art tier          | Cel-shaded frame sheets: few key poses, motion from the animator                                                              | `adr/0003-asset-contract.md`          |
-| Art source        | AI-generated against the art bible, painters remain the fallback                                                              | `art-bible.md`                        |
-| Animation runtime | Evolve `src/app/animator.ts`; no tween library                                                                                | `adr/0004-animation-runtime.md`       |
-| Device tiers      | Surface and iPad landscape first; portrait and desktop second; phones work but are not tuned                                  | `device-matrix.md`                    |
-| Presentation      | One self-hosted display face; tokens with no literal outside `:root`; a CSS backdrop and a curtain, never an async scene swap | `adr/0005-presentation-layer.md`      |
-| Visual review     | `npm run gallery`: fixed beats captured from the production build on every project, published as a CI artefact and on Pages   | `adr/0006-gallery-review-artefact.md` |
+| Question          | Decision                                                                                                                                       | Record                                |
+| ----------------- | ---------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------- |
+| Engine            | Stay on Pixi v8 with the hand-written Canvas 2D fallback                                                                                       | `adr/0001-stay-on-pixi-v8.md`         |
+| Backend parity    | Board-correctness parity mandatory, fidelity parity not                                                                                        | `adr/0002-backend-parity-policy.md`   |
+| Art tier          | Cel-shaded frame sheets: few key poses, motion from the animator                                                                               | `adr/0003-asset-contract.md`          |
+| Art source        | AI-generated against the art bible, painters remain the fallback                                                                               | `art-bible.md`                        |
+| Animation runtime | Evolve `src/app/animator.ts`; no tween library                                                                                                 | `adr/0004-animation-runtime.md`       |
+| Device tiers      | Surface and iPad landscape first; portrait and desktop second; phones work but are not tuned                                                   | `device-matrix.md`                    |
+| Presentation      | One self-hosted display face; tokens with no literal outside `:root`; a CSS backdrop and a curtain, never an async scene swap                  | `adr/0005-presentation-layer.md`      |
+| Visual review     | `npm run gallery`: fixed beats captured from the production build on every project, published as a CI artefact and on Pages                    | `adr/0006-gallery-review-artefact.md` |
+| Grid              | Hidden in presentation, never removed from the rules: contours, a curved path, eased walking; a setting and High contrast bring the lines back | `adr/0007-hidden-grid.md`             |
 
 ## Phases
 
