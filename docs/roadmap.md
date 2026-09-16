@@ -1,10 +1,10 @@
-# Roadmap: cross-device, art and animation
+# Roadmap: cross-device, art, animation and the world
 
 Four Nations Tactics runs on a Surface in landscape as an installable PWA. The
 next targets are an iPad in the hand, art that fits the cel-shaded look of the
-source material, and animation that makes a fight worth watching — without
-giving up the pure rules core, the deterministic tests, or the balance
-simulator.
+source material, animation that makes a fight worth watching, and a free-roam
+world worth living in — without giving up the pure rules core, the
+deterministic tests, or the balance simulator.
 
 Decisions this roadmap rests on live in `docs/adr/`. The art specification is
 `docs/art-bible.md`. Device tiers and the manual checklist are
@@ -21,6 +21,8 @@ Decisions this roadmap rests on live in `docs/adr/`. The art specification is
 | Animation runtime | Evolve `src/app/animator.ts`; no tween library                                                                                | `adr/0004-animation-runtime.md`     |
 | Device tiers      | Surface and iPad landscape first; portrait and desktop second; phones work but are not tuned                                  | `device-matrix.md`                  |
 | Presentation      | One self-hosted display face; tokens with no literal outside `:root`; a CSS backdrop and a curtain, never an async scene swap | `adr/0005-presentation-layer.md`    |
+| World model       | Maps own their exits; the world fires the story; the journal is derived from flags                                            | `adr/0006-free-roam-world-model.md` |
+| Progression       | Hybrid: hard-gate region entry by condition, absorb ±2 levels inside a region with `difficulty.ts`                            | `adr/0006-free-roam-world-model.md` |
 
 ## Phases
 
@@ -33,10 +35,23 @@ Decisions this roadmap rests on live in `docs/adr/`. The art specification is
 | **B Pilot art**             | The 17 portraits, one hero (Kaya), one enemy (bandit thug), the fire effect set                                                                                                                                                                                                                                                                                                                                      | A2, art bible | Pilot assets pass `validateContent` and the QA checklist on a real iPad; regeneration rounds per hero recorded                                                                         |
 | **C Full art pass**         | Remaining 9 heroes, 9 enemies, 4 NPCs, 6 props, terrain decals over the shader ground, title screen                                                                                                                                                                                                                                                                                                                  | B             | Every manifest key resolves to real art; painters stay as the fallback; asset budget holds                                                                                             |
 | **D Polish**                | Audio through Web Audio with unlock on first gesture; camera work; haptics where the platform has them (not iOS)                                                                                                                                                                                                                                                                                                     | A3            | A fight reads as complete on an iPad and a Surface                                                                                                                                     |
+| **W1 World topology**       | `MapDef.exits` with `requires` and `lockedHint`; regions and their level bands; `location.world` memory and the save migration; `progression.test.ts` rewritten over the region graph                                                                                                                                                                                                                                | —             | Two maps connect both ways; a refused exit says why; a round trip restores the return position; the region test is green                                                               |
+| **W2 Free roam**            | `StoryState.nodeId: null` as the ordinary wandering state; leaving a node returns to the world; the explore HUD stops assuming an objective                                                                                                                                                                                                                                                                          | W1            | The party can wander with nothing active, talk to anyone, and leave a conversation back onto the map                                                                                   |
+| **W3 Triggers**             | `MapDef.triggers` (node and encounter kinds, `when`, `once`); `location.world.fired` and `cleared`; `startBattle` loses its story-graph search                                                                                                                                                                                                                                                                       | W2            | A tile fires a scene once and never again; a place-owned fight can be walked into and stays cleared                                                                                    |
+| **W4 Journal**              | `src/content/quests.ts` — stages and their completion `Condition`; the journal as a projection over flags; a journal panel in the HUD                                                                                                                                                                                                                                                                                | W2            | Quest state exists in exactly one place; the panel reads correctly after a save round trip                                                                                             |
+| **W5 First region**         | One region authored end to end against the new shape: its maps, exits, NPCs, triggers, encounters and dialogue, split as `src/content/story/<region>.ts`                                                                                                                                                                                                                                                             | W3, W4        | The region is genuinely explorable for an hour without a story node driving; what the authoring format still needs is written down                                                     |
+| **W6 World at scale**       | Remaining regions; `validateContent` world-graph checks; region content split; fast travel decided with the map in front of us                                                                                                                                                                                                                                                                                       | W5            | Every region reachable under some sequence of conditions; no region enterable below its band on any route                                                                              |
 
-Phase 2 content (world map, new arcs, new enemies) proceeds in parallel once
-A2 has frozen the asset contract, so new enemies are authored against the
-spec with placeholder painters. Portrait generation can start as soon as the
+Phase W runs in parallel with the art phases and blocks on neither: the
+inversion it makes touches `src/core/story/`, `location` and the content
+schemas, and `src/core/rules/` not at all, so combat, the balance simulator and
+the art pipeline are all unaffected by it. The one ordering rule is that
+**W1 lands before any region content is authored** — `progression.test.ts` is
+rewritten there, and content written against the old single-exit shape would
+have to be rewritten with it.
+
+New enemies and arcs are authored against the frozen asset contract once A2
+lands, with placeholder painters. Portrait generation can start as soon as the
 art bible is committed, in parallel with A2, because portraits use the `image`
 entry kind the manifest already has.
 
@@ -87,6 +102,20 @@ entry kind the manifest already has.
 - [ ] Hit-stop, flash, recoil; floater easing
 - [ ] Reduce-motion collapses everything; `busy()` and `finishesAt` unchanged
 
+### W Free-roam world
+
+- [ ] W1: `MapDef.exits` with `toMapId`, `toPos`, `requires`, `lockedHint`; `MapDef.exit` removed
+- [ ] W1: regions with `minLevel` / `maxLevel`; region membership on every map
+- [ ] W1: `GameState.location.world` (`returnPos`, `fired`, `cleared`) **and its zod schema in `serialize.ts`, same commit**
+- [ ] W1: save version bump and migration for the old single-exit shape
+- [ ] W1: `progression.test.ts` rewritten over the region graph — bands, not points; no global "pick option N" index
+- [ ] W2: `StoryState.nodeId: null` as the ordinary state; explore HUD without a mandatory objective
+- [ ] W3: `MapDef.triggers`; `once` honoured across a save; `startBattle` loses the story-graph search
+- [ ] W4: `src/content/quests.ts`; journal derived from flags, never stored; journal panel at Largest text
+- [ ] W5: one region authored end to end; authoring-format findings written down
+- [ ] W6: `validateContent` world-graph checks — exits resolve, triggers resolve, every region reachable, none enterable below its band
+- [ ] Screenshot pass per region at 1368×912, 1194×834 and 834×1194
+
 ## Governance
 
 - **ADRs** in `docs/adr/` for any decision that changes an engine, a contract or a budget.
@@ -95,3 +124,5 @@ entry kind the manifest already has.
 - **Determinism:** presentation randomness (particles) is seeded per instance and never touches the game RNG.
 - **Art QA:** every generated asset passes the checklist in `docs/art-bible.md` before it is committed.
 - **Device gate:** Tier 1 changes are checked on a real iPad against `docs/device-matrix.md` before a release tag.
+- **World gate:** a new region ships with its `validateContent` checks green — every exit resolves, every trigger resolves, the region is reachable, and no route enters it below its band (ADR 0006).
+- **Save schema:** a field added to `GameState` or `BattleState` lands in the zod schema in `src/core/save/serialize.ts` in the same commit. There is no follow-up commit for this.

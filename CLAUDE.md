@@ -31,7 +31,8 @@ src/core/story/      story graph traversal, flags, nation standing, the
 src/core/save/       serialise / deserialise / migrate a save blob, and
                      reconcile a loaded one against the current kits
 src/core/sim/        headless combat runner used by tests and the balance report
-src/content/         all game data (see schemas.ts for the shapes)
+src/content/         all game data (see schemas.ts for the shapes); story
+                     splits one file per region from Phase W5
 src/render/          camera, sprite cache, painters, palettes, the Renderer
                      facade, and backends/ — WebGL (Pixi + shaders) and the
                      Canvas 2D fallback
@@ -87,10 +88,17 @@ Never run `npx playwright install` in the dev container — Chromium is already 
   meaningless if the party never arrives at the level they assume. In particular
   do not reintroduce a single global "pick option N" index — with a three-option
   node it falls through to option 0 and the test passes while testing nothing.
+  ADR 0006 rewrites this test over the **region graph** when Phase W1 lands —
+  asserting the party enters each region inside its level band, rather than
+  reaching each fight at an exact level. That is a change of premise, not a
+  weakening: both warnings above survive it verbatim.
 - Encounter difficulty scales to the table in two places and only those two:
   `reinforcements` in the encounter data (more bodies above the baseline) and
   `rules/difficulty.ts` (thinner enemies and a smaller roster below it, plus
-  superlinear boss HP above it). XP deliberately does not scale.
+  superlinear boss HP above it). XP deliberately does not scale. From Phase W1,
+  `difficulty.ts` also absorbs the ±2 levels of slop a free-roam region allows
+  (ADR 0006) — that is the same file, not a third lever, and region entry stays
+  hard-gated by a `Condition` on the exit.
 - **Roster variants are not a third scaling lever.** `EncounterDef.variants`
   changes _which_ enemies turn up, never how many relative to the table: the
   under-strength trim, flag-gated additions and reinforcements all still layer on
