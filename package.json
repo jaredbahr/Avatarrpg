@@ -28,6 +28,7 @@
     "art:validate": "tsx scripts/art/validate.ts",
     "art:map": "tsx scripts/art/map.ts",
     "art:map-pack": "tsx scripts/art/map-pack.ts",
+    "art:portrait": "tsx scripts/art/portrait.ts",
     "check:assets": "node scripts/check-asset-budget.mjs"
   },
   "dependencies": {
