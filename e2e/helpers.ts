@@ -105,7 +105,10 @@ export async function enterNode(page: Page, nodeId: string): Promise<void> {
  * Returns false if the fight ended while waiting, so a spec that drives
  * several rounds can stop rather than time out on a turn that will never come.
  */
-export async function takeTurn(page: Page): Promise<boolean> {
+export async function takeTurn(
+  page: Page,
+  options: { settleTimeout?: number } = {},
+): Promise<boolean> {
   const result = await page.waitForFunction(
     () => {
       const battle = window.fnt?.app.state?.battle;
@@ -123,7 +126,7 @@ export async function takeTurn(page: Page): Promise<boolean> {
 
   const ready = page.getByRole('button', { name: /I'm ready/i });
   if (await ready.count()) await ready.click();
-  await settleLayout(page);
+  await settleLayout(page, options.settleTimeout);
   return true;
 }
 
@@ -136,8 +139,13 @@ export async function takeTurn(page: Page): Promise<boolean> {
  * refit changes the tile size, so a camera read taken before it lands maps a
  * tile to the wrong pixel. Slow frames (WebKit on software GL) open the gap
  * wide enough to matter; three reads two frames apart close it.
+ *
+ * `timeout` is the whole wait. The e2e suite keeps the default; the gallery
+ * passes 30 s on its WebGL projects, where a 2x frame on CI's software
+ * rasteriser can take over a second and three reads two frames apart have
+ * outlasted 10 s on a slow runner.
  */
-export async function settleLayout(page: Page): Promise<void> {
+export async function settleLayout(page: Page, timeout = 10_000): Promise<void> {
   await page.waitForFunction(
     () =>
       new Promise<boolean>((resolve) => {
@@ -156,7 +164,7 @@ export async function settleLayout(page: Page): Promise<void> {
         });
       }),
     undefined,
-    { timeout: 10_000 },
+    { timeout },
   );
 }
 

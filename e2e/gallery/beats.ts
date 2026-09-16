@@ -51,6 +51,8 @@ export interface BeatContext {
   readonly page: Page;
   readonly renderer: 'canvas' | 'webgl';
   readonly project: string;
+  /** How long a layout settle may take here: longer on WebGL under software GL. */
+  readonly settleTimeout: number;
   /** Builds the query string for a fresh page: the project's renderer plus anything extra. */
   query(extra?: Record<string, string>): string;
   /** One still. `suffix` distinguishes several stills in one beat. */
@@ -130,9 +132,9 @@ async function openBattle(
   await resetStorage(ctx.page, ctx.query(options.extra));
   await startGame(ctx.page, PLAYERS, PARTY, SEED, { reduceMotion: false });
   await enterNode(ctx.page, options.node ?? 'battle_forest_road');
-  await takeTurn(ctx.page);
+  await takeTurn(ctx.page, { settleTimeout: ctx.settleTimeout });
   await waitForIdle(ctx.page);
-  await settleLayout(ctx.page);
+  await settleLayout(ctx.page, ctx.settleTimeout);
 }
 
 /** Gives `characterId` the turn and stands the first enemy `dx,dy` from them. */
@@ -151,7 +153,7 @@ async function faceOff(
   await giveTurn(ctx.page, hero.id);
   await placeUnit(ctx.page, enemy.id, enemyPos);
   await loadDice(ctx.page);
-  await settleLayout(ctx.page);
+  await settleLayout(ctx.page, ctx.settleTimeout);
   return { hero: hero.id, heroPos: hero.pos, enemy: enemy.id, enemyPos };
 }
 
@@ -175,7 +177,7 @@ export const BEATS: readonly Beat[] = [
       await startGame(ctx.page, PLAYERS, PARTY, SEED, { reduceMotion: false });
       await enterNode(ctx.page, 'village_explore');
       await ctx.page.locator('.explore-scene .map-canvas').waitFor();
-      await settleLayout(ctx.page);
+      await settleLayout(ctx.page, ctx.settleTimeout);
       await ctx.shoot(this.note);
     },
   },
@@ -211,7 +213,7 @@ export const BEATS: readonly Beat[] = [
       const kaya = await partyUnit(ctx.page, 'kaya');
       if (!kaya) throw new Error('Kaya is not in the party.');
       await giveTurn(ctx.page, kaya.id);
-      await settleLayout(ctx.page);
+      await settleLayout(ctx.page, ctx.settleTimeout);
       await ctx.page.getByRole('button', { name: /^Move/ }).click();
       const target = shifted(kaya.pos, 2, 0);
       const point = await tileCentre(ctx.page, target);
@@ -232,7 +234,7 @@ export const BEATS: readonly Beat[] = [
       const kaya = await partyUnit(ctx.page, 'kaya');
       if (!kaya) throw new Error('Kaya is not in the party.');
       await giveTurn(ctx.page, kaya.id);
-      await settleLayout(ctx.page);
+      await settleLayout(ctx.page, ctx.settleTimeout);
       const route: Vec2[] = [
         shifted(kaya.pos, 1, 0),
         shifted(kaya.pos, 2, 0),
@@ -260,7 +262,7 @@ export const BEATS: readonly Beat[] = [
       await openBattle(ctx);
       const staged = await faceOff(ctx, 'kaya', 4, 0);
       await grantAbility(ctx.page, staged.hero, 'fire_blast');
-      await settleLayout(ctx.page);
+      await settleLayout(ctx.page, ctx.settleTimeout);
       await ctx.page.getByRole('button', { name: /fire blast/i }).click();
       const point = await tileCentre(ctx.page, staged.enemyPos);
       await ctx.page.mouse.click(point.x, point.y);
@@ -344,7 +346,7 @@ export const BEATS: readonly Beat[] = [
       await placeUnit(ctx.page, second.id, { x: 6, y: 5 });
       await grantAbility(ctx.page, kaya.id, 'lightning');
       await loadDice(ctx.page);
-      await settleLayout(ctx.page);
+      await settleLayout(ctx.page, ctx.settleTimeout);
       await ctx.filmstrip(this.note, CAST_TIMES, async () => {
         await cast(ctx.page, kaya.id, 'lightning', { x: 5, y: 6 });
       });
@@ -406,7 +408,7 @@ export const BEATS: readonly Beat[] = [
       if (await open(ctx.page, from)) await placeUnit(ctx.page, kaya.id, from);
       await grantAbility(ctx.page, kaya.id, 'lightning_storm');
       await loadDice(ctx.page);
-      await settleLayout(ctx.page);
+      await settleLayout(ctx.page, ctx.settleTimeout);
       await ctx.shoot('The quarry floor at rest, with the frame-time readout.', 'floor');
       await ctx.filmstrip(this.note, CAST_TIMES, async () => {
         await cast(ctx.page, kaya.id, 'lightning_storm', boss.pos);
@@ -423,7 +425,7 @@ export const BEATS: readonly Beat[] = [
       const kaya = await partyUnit(ctx.page, 'kaya');
       if (!kaya) throw new Error('Kaya is not in the party.');
       await giveTurn(ctx.page, kaya.id);
-      await settleLayout(ctx.page);
+      await settleLayout(ctx.page, ctx.settleTimeout);
       await ctx.page.getByRole('button', { name: /^Move/ }).click();
       await ctx.shoot(this.note);
     },
@@ -459,7 +461,7 @@ export const BEATS: readonly Beat[] = [
     async run(ctx) {
       await openBattle(ctx);
       await updateSettings(ctx.page, { largeText: 'huge', highContrast: true });
-      await settleLayout(ctx.page);
+      await settleLayout(ctx.page, ctx.settleTimeout);
       await waitForIdle(ctx.page);
       await ctx.shoot(this.note);
     },

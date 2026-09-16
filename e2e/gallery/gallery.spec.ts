@@ -32,6 +32,13 @@ class Stage implements BeatContext {
   private shots = 0;
   /** True between `pauseAt` and `resume`, when nothing frame-driven can be awaited. */
   private paused = false;
+  /**
+   * A 2x WebGL frame on CI's software rasteriser can take over a second, and
+   * `settleLayout` reads the camera three times two frames apart; on a slow
+   * runner that outlasted its 10 s on eight beats while the parallel runner
+   * passed. The same allowance `settleCurtain` has, for the same reason.
+   */
+  readonly settleTimeout: number;
 
   constructor(
     readonly page: Page,
@@ -39,7 +46,9 @@ class Stage implements BeatContext {
     readonly project: string,
     private readonly dir: string,
     private readonly beat: Beat,
-  ) {}
+  ) {
+    this.settleTimeout = renderer === 'webgl' ? 30_000 : 10_000;
+  }
 
   query(extra: Record<string, string> = {}): string {
     const params = new URLSearchParams();
