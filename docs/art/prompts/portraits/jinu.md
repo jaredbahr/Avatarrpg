@@ -1,0 +1,46 @@
+# Portrait: Jinu — `portrait.jinu`
+
+|              |                                                                                                                |
+| ------------ | -------------------------------------------------------------------------------------------------------------- |
+| **Palette**  | `air` — base `#e8dcc0`, light `#fdf6e3`, dark `#9a8e72`, accent `#fffdf5`, ink `#1b1410`, background `#f4e9d8` |
+| **Deliver**  | `art/raw/portraits/jinu.png` (1024×1024 or larger, PNG)                                                        |
+| **Ships as** | `public/art/portraits/jinu.png` (512×512)                                                                      |
+| **Manifest** | `'portrait.jinu': { kind: 'image', url: 'art/portraits/jinu.png', palette: 'air' }`                            |
+
+## Who
+
+A man in his thirties, caught mid-sentence with eyebrows raised, long unruly dark hair tied loosely at the neck with strands escaping, a pair of round brass flying goggles pushed up onto the forehead. Sun-browned skin.
+
+Layered cream and parchment travelling robes (base #e8dcc0, shadow #9a8e72) under a worn leather courier’s satchel strapped across the chest and stuffed with letters.
+
+A small curl of wind drawn as a single flat pale spiral beside one hand.
+
+## Signature
+
+The goggles on the forehead and the satchel. He must not be mistaken for Nima: hair everywhere, mouth open, more stuff on him.
+
+## Prompt
+
+Copy the whole paragraph. It carries the style block itself so nothing needs to be prepended.
+
+```text
+A man in his thirties, caught mid-sentence with eyebrows raised, long unruly dark hair tied loosely at the neck with strands escaping, a pair of round brass flying goggles pushed up onto the forehead. Sun-browned skin. Layered cream and parchment travelling robes (base #e8dcc0, shadow #9a8e72) under a worn leather courier’s satchel strapped across the chest and stuffed with letters. A small curl of wind drawn as a single flat pale spiral beside one hand. Flat cel-shaded illustration in the manner of a hand-drawn animated series: clean, uniform dark-brown ink outlines (#1b1410), never black and never tapered; every material in exactly two flat tones, a base and one shadow, plus a thin pale rim light along the edge facing the light; no gradients, no painted texture, no photographic detail, no lens effects, no soft shading. Bust portrait, head and shoulders, three-quarter view turned slightly toward the viewer’s right, eyes toward the viewer. Centred, the head filling about two thirds of the height, with clear space on every side because the game crops it to a circle. Flat, completely plain background of exactly #f4e9d8 (warm parchment) with no scenery, no vignette, no border and no texture. Square, 1024×1024, to be downscaled to 512×512. Colours: base #e8dcc0, shadow #9a8e72, highlight #fdf6e3, one accent #fffdf5; skin and hair in flat natural tones with one shadow each; ink #1b1410. Expression and bearing: Talkative, delighted, about to make a point.
+```
+
+## Negative prompt
+
+```text
+black outlines, tapered or sketchy lines, gradients, airbrushing, soft shading, painterly texture, photorealism, 3D render, background scenery, vignette, border, frame, text, lettering, watermark, signature, logo, tattoos or markings on the skin, any likeness of a known animated character, weapons pointed at the viewer, gore
+```
+
+## Variations
+
+Generate three candidates and pick by the checklist, not by which one is prettiest:
+
+1. As written.
+2. Turned a little further toward the viewer, expression one notch calmer.
+3. Tighter crop, head filling three quarters of the height, for how it reads in the 2.4rem turn-strip chip.
+
+## Check
+
+Run `checklist.md` before committing. For this portrait in particular: The goggles on the forehead and the satchel. He must not be mistaken for Nima: hair everywhere, mouth open, more stuff on him.
