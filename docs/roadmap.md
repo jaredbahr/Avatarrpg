@@ -64,7 +64,10 @@ entry kind the manifest already has.
 - [x] P1: backdrop with `data-scene` / `data-mood`; ambience, picked element and speaker element feed it
 - [x] P1: title on the SVG wheel; dialogue staged as a visual novel
 - [x] P1: curtain reveal after the synchronous swap; dialogs ease in; reduce-motion collapses both
-- [ ] P2: initiative timeline, ability glyph sprite, unit-panel portrait, confirm bar, log scroll; 48 px holds at Largest
+- [x] P2: initiative timeline with a round marker and per-chip health; element
+      glyphs on every action button (`painters/glyphs.ts`, keyed `glyph.<name>`);
+      unit-panel portrait medallion; the confirm card names and tints itself by
+      the action; the log fades its scrolled edge. 48 px holds at Largest
 - [ ] P3: ground-shader vignette and edge shading (WebGL), vignette only on Canvas 2D; transparent clear and `.map-wrap` wash (ADR)
 - [ ] Screenshot pass at 1368×912, 1194×834 and 834×1194, plus Largest text and High contrast, before each slice merges
 

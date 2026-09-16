@@ -92,6 +92,9 @@ export const ASSETS: Readonly<Record<string, AssetEntry>> = {
   'portrait.jin': painter('portrait', 'nonbender', 'jin'),
 };
 
+/** Palette names a glyph key may tint itself with; anything else is neutral. */
+const PALETTE_KEYS: ReadonlySet<string> = new Set(['fire', 'water', 'earth', 'air', 'nonbender']);
+
 /**
  * Ability effects are keyed `fx.<element>.<name>`. Rather than list forty
  * near-identical entries, unlisted fx keys fall back to the generic impact
@@ -108,6 +111,18 @@ export function resolveAsset(key: string): AssetEntry {
     const name = parts[2] ?? 'impact';
     const palette = element === 'non' || element === 'enemy' ? 'nonbender' : element;
     return { kind: 'painter', painter: 'impact', palette, variant: name };
+  }
+
+  /*
+   * Action glyphs are keyed `glyph.<name>`, tinted by the palette of the same
+   * name where there is one. An ability's mark is its element, so the mark and
+   * the bending it launches are the same colour; `glyph.move` and `glyph.end`
+   * are the action bar's own two and take the neutral palette.
+   */
+  if (key.startsWith('glyph.')) {
+    const name = key.split('.')[1] ?? 'unknown';
+    const palette = PALETTE_KEYS.has(name) ? name : 'neutral';
+    return { kind: 'painter', painter: 'glyph', palette, variant: name };
   }
 
   if (key.startsWith('portrait.')) {

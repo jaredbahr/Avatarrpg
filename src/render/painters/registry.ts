@@ -12,6 +12,7 @@ import { resolveAsset } from '../../content/assets/manifest';
 import type { Palette } from '../palettes';
 import { paletteFor } from '../palettes';
 import { paintImpact } from './fx';
+import { paintGlyph } from './glyphs';
 import { paintPortrait } from './portraits';
 import { paintProp } from './props';
 import type { PainterOptions, UnitPainter } from './units';
@@ -67,6 +68,15 @@ export function resolvePainter(key: string): ResolvedPainter {
       palette,
       draw: (ctx, box, options) =>
         paintImpact(ctx, box, palette, { variant: options?.variant ?? variant }),
+    };
+  }
+
+  if (entry.painter === 'glyph') {
+    return {
+      entry,
+      palette,
+      draw: (ctx, box, options) =>
+        paintGlyph(ctx, box, palette, { variant: options?.variant ?? variant }),
     };
   }
 

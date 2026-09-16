@@ -40,6 +40,39 @@ type Mode =
   | { readonly kind: 'move' }
   | { readonly kind: 'aim'; readonly abilityId: string };
 
+/**
+ * Which of the three health colours a bar is drawn in.
+ *
+ * Colour alone is not the signal — the bar's length says the same thing, and
+ * the number is written beside it on the unit panel — but it is the one a
+ * player picks up from across the table without reading anything.
+ */
+function healthBand(fraction: number): string {
+  if (fraction <= 0.25) return 'is-critical';
+  if (fraction <= 0.5) return 'is-hurt';
+  return 'is-well';
+}
+
+/**
+ * The mark on an action button.
+ *
+ * Decorative: the label beside it already says what the button does, and a
+ * screen reader reads that, so the canvas is hidden from the accessibility
+ * tree rather than given a label that would be read out twice.
+ */
+function glyph(key: string): HTMLElement {
+  const node = painterCanvas(
+    key,
+    1.4,
+    (ctx, size) => {
+      resolvePainter(key).draw(ctx, { x: 0, y: 0, size });
+    },
+    'action-glyph',
+  );
+  node.setAttribute('aria-hidden', 'true');
+  return node;
+}
+
 export class CombatScene implements Scene {
   readonly name = 'combat';
 
@@ -397,15 +430,10 @@ export class CombatScene implements Scene {
     if (!bar || !battle) return;
     clear(bar);
 
+    // The round moved to the timeline's marker, where the turn order it counts
+    // actually is; repeating it here was the same number twice in one corner.
     const encounter = this.app.content.encounters.get(battle.encounterId);
-    bar.appendChild(
-      el(
-        'div',
-        { class: 'stack tight' },
-        el('strong', { text: encounter?.name ?? 'Battle' }),
-        el('span', { class: 'muted tiny', text: `Round ${battle.round}` }),
-      ),
-    );
+    bar.appendChild(el('strong', { text: encounter?.name ?? 'Battle' }));
     bar.appendChild(el('div', { class: 'spacer' }));
 
     const recentre = button('Recentre', () => this.recentre(), {
@@ -438,11 +466,36 @@ export class CombatScene implements Scene {
     bar.appendChild(button('Pause', () => this.app.openPause(), { class: 'btn-ghost' }));
   }
 
+  /**
+   * The initiative timeline.
+   *
+   * It was a flat row of portraits at 60% opacity, which answered "who is next"
+   * and nothing else. Around a table the three questions actually being asked
+   * are whose turn it is, who is about to go, and who is nearly dead — the last
+   * one decides whether the waterbender heals now or hits now, and it used to
+   * cost a long-press on every chip in turn.
+   *
+   * So each chip carries its own health bar, the acting unit is anchored at the
+   * left under a round marker rather than merely outlined, and the faction
+   * reads from the chip's edge instead of a ring around the portrait. The rail
+   * behind them is what makes it a sequence rather than a row of buttons.
+   */
   private renderTurnStrip(): void {
     const strip = this.host?.querySelector<HTMLElement>('.turn-strip');
     const battle = this.battle();
     if (!strip || !battle) return;
     clear(strip);
+
+    strip.appendChild(
+      el(
+        'div',
+        { class: 'round-pill' },
+        el('span', { class: 'round-label', text: 'Round' }),
+        el('strong', { class: 'round-number display', text: String(battle.round) }),
+      ),
+    );
+
+    const rail = el('ol', { class: 'timeline', attrs: { 'aria-label': 'Turn order' } });
 
     for (const unit of upcomingOrder(battle, 9)) {
       const isActive = unit.id === this.active()?.id;
@@ -451,12 +504,19 @@ export class CombatScene implements Scene {
         ? (this.app.content.characters.get(unit.characterId)?.portrait ?? unit.sprite)
         : unit.sprite;
 
+      const fraction = Math.max(0, Math.min(1, unit.hp / Math.max(1, unit.base.maxHp)));
+
       const chip = el(
-        'div',
+        'li',
         { class: `turn-chip faction-${unit.faction}${isActive ? ' active' : ''}` },
-        painterCanvas(portraitKey, 2.4, (ctx, size) => {
+        painterCanvas(portraitKey, isActive ? 3 : 2.4, (ctx, size) => {
           resolvePainter(portraitKey).draw(ctx, { x: 0, y: 0, size });
         }),
+        el(
+          'div',
+          { class: `chip-hp ${healthBand(fraction)}` },
+          el('i', { style: { width: `${fraction * 100}%` } }),
+        ),
         el('span', { class: 'tiny', text: player?.name ?? unit.name }),
       );
       tip(
@@ -464,8 +524,10 @@ export class CombatScene implements Scene {
         `${unit.name}${player ? ` (${player.name})` : ''} — ${unit.hp}/${unit.base.maxHp} HP`,
         (text) => this.app.toasts.show(text),
       );
-      strip.appendChild(chip);
+      rail.appendChild(chip);
     }
+
+    strip.appendChild(rail);
   }
 
   /* ---------------------------------------------------------------- */
@@ -532,12 +594,29 @@ export class CombatScene implements Scene {
 
     const hpFraction = Math.max(0, unit.hp / Math.max(1, unit.base.maxHp));
 
+    /*
+     * The portrait is here so the panel and the timeline's leading chip are
+     * obviously the same character. Without it the only thing tying the two
+     * together was a name in 0.85rem type, and on a hot-seat game the panel is
+     * what the player who just picked the tablet up looks at first.
+     */
+    const portraitKey = unit.characterId
+      ? (this.app.content.characters.get(unit.characterId)?.portrait ?? unit.sprite)
+      : unit.sprite;
+
     return el(
       'div',
       { class: `hud-panel unit-panel element-${unit.element}` },
       el(
         'div',
         { class: 'row tight' },
+        el(
+          'div',
+          { class: 'unit-portrait' },
+          painterCanvas(portraitKey, 3, (ctx, size) => {
+            resolvePainter(portraitKey).draw(ctx, { x: 0, y: 0, size });
+          }),
+        ),
         el(
           'div',
           { class: 'stack tight' },
@@ -549,7 +628,7 @@ export class CombatScene implements Scene {
       ),
       el(
         'div',
-        { class: 'bar' },
+        { class: `bar ${healthBand(hpFraction)}` },
         el('div', {
           class: 'bar-fill',
           style: { width: `${hpFraction * 100}%` },
@@ -581,6 +660,7 @@ export class CombatScene implements Scene {
       disabled: !canMoveNow,
       title: canMoveNow ? 'Walk to a highlighted tile' : 'No move points left this turn',
     });
+    moveButton.prepend(glyph('glyph.move'));
     moveButton.appendChild(el('span', { class: 'action-sub', text: `${unit.move} left` }));
     bar.appendChild(moveButton);
 
@@ -592,6 +672,7 @@ export class CombatScene implements Scene {
       class: 'action-button end-turn',
       title: 'Finish this turn. One unused AP carries over.',
     });
+    endButton.prepend(glyph('glyph.end'));
     if (unit.ap > 0)
       endButton.appendChild(el('span', { class: 'action-sub', text: `${unit.ap} AP left` }));
     bar.appendChild(endButton);
@@ -609,6 +690,7 @@ export class CombatScene implements Scene {
       disabled: !check.ok,
       title: check.ok ? ability.description : check.reason,
     });
+    node.prepend(glyph(`glyph.${ability.element}`));
 
     const pips = el('span', { class: 'pips pips-small' });
     for (let i = 0; i < ability.apCost; i++) pips.appendChild(el('span', { class: 'pip pip-on' }));
@@ -702,6 +784,7 @@ export class CombatScene implements Scene {
           this.mode = { kind: 'idle' };
           this.renderHud();
         },
+        { text: `${unit.name} walks here`, element: unit.element },
       );
     }
 
@@ -755,17 +838,21 @@ export class CombatScene implements Scene {
       );
     }
 
-    return this.confirmShell(body, () => {
-      this.app.dispatch({
-        type: 'useAbility',
-        unitId: unit.id,
-        abilityId: ability.id,
-        target,
-      });
-      this.pending = null;
-      this.mode = { kind: 'idle' };
-      this.renderHud();
-    });
+    return this.confirmShell(
+      body,
+      () => {
+        this.app.dispatch({
+          type: 'useAbility',
+          unitId: unit.id,
+          abilityId: ability.id,
+          target,
+        });
+        this.pending = null;
+        this.mode = { kind: 'idle' };
+        this.renderHud();
+      },
+      { text: ability.name, element: ability.element },
+    );
   }
 
   /**
@@ -838,10 +925,27 @@ export class CombatScene implements Scene {
     );
   }
 
-  private confirmShell(body: HTMLElement, onConfirm: (() => void) | null): HTMLElement {
+  /**
+   * The confirm card.
+   *
+   * `heading` names the thing being committed to. The bar used to open
+   * straight into chips — "Bandit: 85% · ~9 dmg" with nothing above it saying
+   * which of the four abilities on the bar had produced them, which is fine
+   * for the player holding the tablet and no use at all to the rest of the
+   * table watching. The element tints the card so the heading and the button
+   * that launched it are the same colour.
+   */
+  private confirmShell(
+    body: HTMLElement,
+    onConfirm: (() => void) | null,
+    heading?: { readonly text: string; readonly element: string },
+  ): HTMLElement {
     return el(
       'div',
-      { class: 'confirm-bar' },
+      {
+        class: `confirm-bar${heading ? ` element-${heading.element}` : ''}`,
+      },
+      heading ? el('h3', { class: 'confirm-title display', text: heading.text }) : null,
       body,
       el(
         'div',
