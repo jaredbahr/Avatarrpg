@@ -12,7 +12,26 @@ import { enterNode, resetStorage, startGame, takeTurn } from './helpers';
  */
 const MIN_TAP_PX = 48;
 
+/**
+ * Waits for every finite animation in the page to finish.
+ *
+ * A dialog opens with `dialog-in`, which scales it from 0.98. Measured
+ * mid-flight a 48 px button reports 47.04, which is how this spec first went
+ * red on the iPad projects and stayed flaky on one of them: the failure was
+ * the measurement, not the button. The backdrop's drift loops forever, so
+ * anything with infinite iterations is left alone.
+ */
+async function settleAnimations(controls: Locator): Promise<void> {
+  await controls.page().evaluate(async () => {
+    const running = document
+      .getAnimations()
+      .filter((animation) => animation.effect?.getTiming().iterations !== Infinity);
+    await Promise.all(running.map((animation) => animation.finished.catch(() => undefined)));
+  });
+}
+
 async function assertAllTappable(controls: Locator, context: string): Promise<void> {
+  await settleAnimations(controls);
   const count = await controls.count();
   expect(count, `${context}: expected some controls`).toBeGreaterThan(0);
 
