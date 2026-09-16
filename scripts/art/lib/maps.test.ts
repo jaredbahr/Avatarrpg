@@ -3,7 +3,7 @@ import { describe, expect, it } from 'vitest';
 import { ALL_MAPS } from '../../../src/content';
 import { FOREST_ROAD } from '../../../src/content/maps/combat';
 import { LEGEND } from '../../../src/content/maps/legend';
-import { defaultPixelsPerTile } from '../map';
+import { defaultPixelsPerTile, fitPainting } from '../map';
 import { LAYOUT_PX, layoutPath, mapPack, packPath } from '../map-pack';
 import { PROBE_PATH, PROBE_PX, PROBE_TILES, probeBackdrop } from '../probe-backdrop';
 import { newImage, parseHex, pixelAt, readPng, setPixel } from './image';
@@ -211,5 +211,26 @@ describe('what is committed', () => {
     for (const tile of PROBE_TILES) {
       expect(rgb(onDisk, tile.x * PROBE_PX + 16, tile.y * PROBE_PX + 16)).toEqual([255, 0, 255]);
     }
+  });
+});
+
+describe('fitPainting', () => {
+  const road = { id: 'forest_road', width: 20, height: 12 };
+
+  it('takes the map aspect as is and crops a near miss to it', () => {
+    expect(fitPainting({ width: 1920, height: 1152 }, road, 96)).toEqual({
+      crop: null,
+      note: null,
+      problem: null,
+    });
+    const wide = fitPainting({ width: 2048, height: 1152 }, road, 96);
+    expect(wide.problem).toBeNull();
+    expect(wide.crop).toEqual({ x: 64, y: 0, width: 1920, height: 1152 });
+    expect(wide.note).toMatch(/128 px off the sides/);
+  });
+
+  it('refuses a painting far off the aspect or too small once cropped', () => {
+    expect(fitPainting({ width: 1920, height: 1920 }, road, 96).problem).toMatch(/off the map's/);
+    expect(fitPainting({ width: 1024, height: 614 }, road, 96).problem).toMatch(/never upscales/);
   });
 });
