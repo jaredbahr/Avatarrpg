@@ -72,9 +72,9 @@ export interface Beat {
   run(ctx: BeatContext): Promise<void>;
 }
 
-const LANDSCAPE = ['surface-canvas', 'ipad-canvas', 'ipad-webgl'];
+const LANDSCAPE = ['surface-canvas', 'surface-webgl', 'ipad-canvas', 'ipad-webgl'];
 const PORTRAIT_TOO = [...LANDSCAPE, 'portrait-canvas'];
-const STATS = ['surface-canvas', 'ipad-webgl'];
+const STATS = ['surface-canvas', 'surface-webgl', 'ipad-webgl'];
 
 function shifted(pos: Vec2, dx: number, dy: number): Vec2 {
   return { x: pos.x + dx, y: pos.y + dy };
@@ -178,6 +178,35 @@ export const BEATS: readonly Beat[] = [
         .filter({ hasText: /Confirm/ })
         .waitFor();
       await ctx.shoot(this.note);
+    },
+  },
+  {
+    id: '05b-walk',
+    title: 'Walking a route',
+    note: 'A four-tile walk with a turn in it, through its playback: the curve, the ease out of the tile and into the last one, the bob, the sprite turning to face the way it goes.',
+    async run(ctx) {
+      await openBattle(ctx);
+      const kaya = await partyUnit(ctx.page, 'kaya');
+      if (!kaya) throw new Error('Kaya is not in the party.');
+      await giveTurn(ctx.page, kaya.id);
+      await settleLayout(ctx.page);
+      const route: Vec2[] = [
+        shifted(kaya.pos, 1, 0),
+        shifted(kaya.pos, 2, 0),
+        shifted(kaya.pos, 3, 0),
+        shifted(kaya.pos, 3, 1),
+      ];
+      for (const tile of route) {
+        if (!(await open(ctx.page, tile))) throw new Error(`Tile ${tile.x},${tile.y} is not open.`);
+      }
+      await ctx.filmstrip(this.note, [60, 160, 260, 360, 430], async () => {
+        await ctx.page.evaluate(
+          ({ id, path }) => {
+            window.fnt?.app.dispatch({ type: 'move', unitId: id, path });
+          },
+          { id: kaya.id, path: route },
+        );
+      });
     },
   },
   {
@@ -336,6 +365,21 @@ export const BEATS: readonly Beat[] = [
       await ctx.filmstrip(this.note, CAST_TIMES, async () => {
         await cast(ctx.page, kaya.id, 'lightning_storm', boss.pos);
       });
+    },
+  },
+  {
+    id: '16-grid-on',
+    title: 'The grid, switched on',
+    note: 'The same board with the Show grid setting on: tile lines back over the ground, for anyone who counts squares.',
+    async run(ctx) {
+      await openBattle(ctx);
+      await updateSettings(ctx.page, { showGrid: true });
+      const kaya = await partyUnit(ctx.page, 'kaya');
+      if (!kaya) throw new Error('Kaya is not in the party.');
+      await giveTurn(ctx.page, kaya.id);
+      await settleLayout(ctx.page);
+      await ctx.page.getByRole('button', { name: /^Move/ }).click();
+      await ctx.shoot(this.note);
     },
   },
   {

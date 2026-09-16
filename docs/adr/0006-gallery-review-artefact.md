@@ -41,9 +41,12 @@ with a fixed seed, and publishes them where a tablet can open them.
   The capture can never block a deploy (`continue-on-error`).
 - **Not a test gate.** Nothing asserts on pixels. What the run asserts is that
   every beat can still be staged, which is a useful canary on its own.
-- **Projects.** The Surface at 1x, the iPad at 2x on Canvas 2D and on WebGL,
-  and the iPad upright for the two beats that care about a stacked HUD.
-  Chromium only; stills do not need WebKit.
+- **Projects.** The Surface at 1x on both backends, the iPad at 2x on both
+  backends, and the iPad upright for the two beats that care about a stacked
+  HUD. Filmstrips are captured on the 1x projects only: a filmstrip renders a
+  frame per sixteen milliseconds of fake clock, and a 2x WebGL frame on a
+  software rasteriser takes over a second. Chromium only; stills do not need
+  WebKit.
 
 ## Consequences
 

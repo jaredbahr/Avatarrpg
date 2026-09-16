@@ -12,6 +12,7 @@ deployed site. Scroll a strip sideways to step through a playback.
 | Project           | What it stands for                                |
 | ----------------- | ------------------------------------------------- |
 | `surface-canvas`  | The Surface in landscape at 1x, Canvas 2D         |
+| `surface-webgl`   | The Surface in landscape at 1x, the WebGL path    |
 | `ipad-canvas`     | The iPad in landscape at 2x, Canvas 2D            |
 | `ipad-webgl`      | The iPad in landscape at 2x, the WebGL path       |
 | `portrait-canvas` | The iPad held upright: the stacked HUD, two beats |
@@ -42,7 +43,7 @@ runner without a GPU sees, and whether the board is still correct there.
 
 Filmstrips (`-f1` to `-f5`) sample the playback at fixed milliseconds after
 the act, so the same frame comes back every run. They are captured on
-`surface-canvas` and `ipad-webgl`; the other projects keep one mid-playback
+`surface-canvas` and `surface-webgl`; the 2x projects keep one mid-playback
 still.
 
 ## The verdict

@@ -6,10 +6,11 @@ import type { GalleryOptions } from './e2e/gallery/fixtures';
  * The screenshot gallery: `npm run gallery`.
  *
  * Same production build and preview server as the e2e suite, Chromium only,
- * because stills do not need WebKit. Four projects: the Surface at 1x, the
- * iPad at 2x on both backends, and the iPad held upright for the beats that
- * care about a stacked HUD. Output goes to `gallery/`, which is gitignored
- * and published as a CI artefact and beside the site on Pages.
+ * because stills do not need WebKit. Five projects: the Surface at 1x on both
+ * backends (the filmstrips live here, cheap enough for software GL), the iPad
+ * at 2x on both backends for stills, and the iPad held upright for the beats
+ * that care about a stacked HUD. Output goes to `gallery/`, which is
+ * gitignored and published as a CI artefact and beside the site on Pages.
  */
 
 const PREINSTALLED_CHROMIUM = '/opt/pw-browsers/chromium';
@@ -41,6 +42,10 @@ export default defineConfig<GalleryOptions>({
     {
       name: 'surface-canvas',
       use: { ...chromium, viewport: { width: 1368, height: 912 } },
+    },
+    {
+      name: 'surface-webgl',
+      use: { ...chromium, viewport: { width: 1368, height: 912 }, renderer: 'webgl' },
     },
     {
       name: 'ipad-canvas',

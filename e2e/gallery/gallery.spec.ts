@@ -20,8 +20,13 @@ import { settleCurtain } from './stage';
 
 export const GALLERY_DIR = 'gallery';
 
-/** Filmstrips are worth the disk on one 1x project and the WebGL one; elsewhere one mid-playback still does. */
-const FILMSTRIP_PROJECTS = ['surface-canvas', 'ipad-webgl'];
+/**
+ * Filmstrips are captured at 1x on both backends; the 2x projects keep one
+ * mid-playback still. A filmstrip renders a frame for every sixteen
+ * milliseconds of fake clock, and on CI's software rasteriser a 2x WebGL
+ * frame takes over a second, which turned one beat into two minutes.
+ */
+const FILMSTRIP_PROJECTS = ['surface-canvas', 'surface-webgl'];
 
 class Stage implements BeatContext {
   private shots = 0;
