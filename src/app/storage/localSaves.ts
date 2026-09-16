@@ -250,6 +250,8 @@ export interface Settings {
   reduceMotion: boolean;
   hatchSurfaces: boolean;
   highContrast: boolean;
+  /** Tile lines over the ground. Off by default (ADR 0007); High contrast forces them on. */
+  showGrid: boolean;
 }
 
 export const DEFAULT_SETTINGS: Settings = {
@@ -257,6 +259,7 @@ export const DEFAULT_SETTINGS: Settings = {
   reduceMotion: false,
   hatchSurfaces: false,
   highContrast: false,
+  showGrid: false,
 };
 
 export function loadSettings(): Settings {
@@ -272,6 +275,7 @@ export function loadSettings(): Settings {
       reduceMotion: parsed.reduceMotion === true,
       hatchSurfaces: parsed.hatchSurfaces === true,
       highContrast: parsed.highContrast === true,
+      showGrid: parsed.showGrid === true,
     };
   } catch {
     return { ...DEFAULT_SETTINGS };
@@ -295,4 +299,10 @@ export function applySettings(settings: Settings): void {
   root.dataset.reduceMotion = settings.reduceMotion ? 'on' : 'off';
   root.dataset.hatch = settings.hatchSurfaces ? 'on' : 'off';
   root.dataset.contrast = settings.highContrast ? 'high' : 'normal';
+  root.dataset.grid = showGridLines(settings) ? 'on' : 'off';
+}
+
+/** Whether the board draws its tile lines: the setting, or High contrast, which needs them. */
+export function showGridLines(settings: Settings): boolean {
+  return settings.showGrid || settings.highContrast;
 }

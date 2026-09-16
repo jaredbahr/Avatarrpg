@@ -32,6 +32,7 @@ import { CONTENT } from '../../content';
 import { attachPointer, wheelZoomFactor } from '../input/pointer';
 import { announce, button, clear, el, tip } from '../ui/dom';
 import { assetCanvas } from '../ui/assetCanvas';
+import { showGridLines } from '../storage/localSaves';
 import { reactionNotes } from '../ui/ReactionNote';
 import { UnitInspector } from '../ui/UnitInspector';
 
@@ -983,6 +984,8 @@ export class CombatScene implements Scene {
       statuses: u.statuses.map((s) => s.id),
       fallen: !isAlive(u),
       renderPos: this.app.animator.renderPos(now, u.id),
+      offset: this.app.animator.offset(now, u.id),
+      facing: this.app.animator.facing(u.id) ?? (u.faction === 'enemy' ? -1 : 1),
     }));
 
     // Resolved here, not in the renderer: the renderer never reads content.
@@ -1005,6 +1008,7 @@ export class CombatScene implements Scene {
       props,
       overlays,
       path,
+      pathFrom: unit?.pos ?? null,
       fx: this.app.animator.fx(now),
       floaters: this.app.animator.floaters(now),
       activeUnitId: unit?.id ?? null,
@@ -1012,6 +1016,8 @@ export class CombatScene implements Scene {
       hoverTile: interactive ? this.hover : null,
       exit: null,
       hatch: this.app.settings.hatchSurfaces,
+      gridLines: showGridLines(this.app.settings),
+      crispOverlays: this.app.settings.highContrast,
       time: now,
     };
 

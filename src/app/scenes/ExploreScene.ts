@@ -14,6 +14,7 @@ import { Renderer } from '../../render/renderer';
 import type { MapView, NpcMarker, RenderUnit } from '../../render/renderer';
 import { attachPointer, wheelZoomFactor } from '../input/pointer';
 import { button, clear, el } from '../ui/dom';
+import { showGridLines } from '../storage/localSaves';
 
 export class ExploreScene implements Scene {
   readonly name = 'explore';
@@ -193,6 +194,9 @@ export class ExploreScene implements Scene {
             fallen: false,
             // A health bar over someone strolling round a village is noise.
             showHealth: false,
+            renderPos: this.app.animator.renderPos(now, leader.id),
+            offset: this.app.animator.offset(now, leader.id),
+            facing: this.app.animator.facing(leader.id) ?? 1,
           },
         ]
       : [];
@@ -212,6 +216,7 @@ export class ExploreScene implements Scene {
       props: [],
       overlays: [],
       path: [],
+      pathFrom: null,
       fx: [],
       floaters: [],
       activeUnitId: leader?.id ?? null,
@@ -219,6 +224,8 @@ export class ExploreScene implements Scene {
       hoverTile: this.hover,
       exit: map.exit ? { pos: map.exit.pos, label: map.exit.label } : null,
       hatch: this.app.settings.hatchSurfaces,
+      gridLines: showGridLines(this.app.settings),
+      crispOverlays: this.app.settings.highContrast,
       time: now,
     };
 
