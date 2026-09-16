@@ -1,5 +1,6 @@
 import type { Page } from '@playwright/test';
 import type { Settings } from '../../src/app/storage/localSaves';
+import { nextFloat } from '../../src/core/rng';
 import type { SurfaceId } from '../../src/core/types';
 
 /**
@@ -176,6 +177,31 @@ export async function paintSurface(page: Page, pos: Vec2, surface: SurfaceId): P
     },
     { p: pos, id: surface },
   );
+}
+
+/**
+ * Steps the game's dice to a state whose next draw succeeds at `chance`.
+ *
+ * Every beat starts from the same seed, so the first roll of every fight is
+ * the same roll, and on this seed it is a miss: five beats of "miss" say
+ * nothing about how a hit looks. Loading the dice keeps the game as
+ * deterministic as it was (the state is still one number, reached from the
+ * seed by a fixed walk) and picks the number so the picture shows the hit.
+ * Only the next draw is loaded; the variance and crit rolls after it fall
+ * where they fall.
+ */
+export async function loadDice(page: Page, chance = 0.5): Promise<void> {
+  const state = await page.evaluate(() => window.fnt?.app.state?.rng ?? null);
+  if (state === null) throw new Error('No game is running.');
+  let rng = state;
+  for (let step = 0; step < 64 && nextFloat(rng).value >= chance; step++) {
+    rng = nextFloat(rng).rng;
+  }
+  await page.evaluate((next) => {
+    const app = window.fnt?.app;
+    if (!app?.state) throw new Error('No game is running.');
+    app.state = { ...app.state, rng: next };
+  }, rng);
 }
 
 /** Fires an ability straight at the rules, returning the event types it produced. */

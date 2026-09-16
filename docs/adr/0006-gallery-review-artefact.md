@@ -57,6 +57,8 @@ with a fixed seed, and publishes them where a tablet can open them.
 - The beats fix the party (`kaya`, `bo`, `nilak`, `nima`, one player) and the
   seed `'gallery'`. Retuning an ability changes a floater's number, not the
   composition; changing a map's authored water moves the lightning beat, which
-  reads the puddle by coordinate and says so.
+  reads the puddle by coordinate and says so. The cast beats step the dice to
+  a hit first (`loadDice`), because the seed's first roll is a miss on every
+  beat and a miss shows nothing; the walk is fixed, so the frames still are.
 - The catalogue grows with the milestones: a grid-off beat with ADR 0007, a
   character-sheet grid with the asset contract.

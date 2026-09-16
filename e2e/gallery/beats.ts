@@ -15,6 +15,7 @@ import {
   fellEnemies,
   giveTurn,
   grantAbility,
+  loadDice,
   open,
   paintSurface,
   partyUnit,
@@ -108,6 +109,7 @@ async function faceOff(
   if (!(await open(ctx.page, enemyPos))) enemyPos = shifted(hero.pos, -dx, dy);
   await giveTurn(ctx.page, hero.id);
   await placeUnit(ctx.page, enemy.id, enemyPos);
+  await loadDice(ctx.page);
   await settleLayout(ctx.page);
   return { hero: hero.id, heroPos: hero.pos, enemy: enemy.id, enemyPos };
 }
@@ -300,6 +302,7 @@ export const BEATS: readonly Beat[] = [
       await placeUnit(ctx.page, first.id, { x: 5, y: 6 });
       await placeUnit(ctx.page, second.id, { x: 6, y: 5 });
       await grantAbility(ctx.page, kaya.id, 'lightning');
+      await loadDice(ctx.page);
       await settleLayout(ctx.page);
       await ctx.filmstrip(this.note, CAST_TIMES, async () => {
         await cast(ctx.page, kaya.id, 'lightning', { x: 5, y: 6 });
@@ -313,11 +316,12 @@ export const BEATS: readonly Beat[] = [
     async run(ctx) {
       await openBattle(ctx);
       const staged = await faceOff(ctx, 'bo', 3, 0);
-      // A 90% hit chance is not a promise, so try until the rock connects; the
-      // seeded roll moves on with every cast, the picture does not care which.
+      // The dice are loaded, but a hit chance is not a promise, so try until
+      // the rock connects; the picture does not care which roll it was.
       for (let attempt = 0; attempt < 8; attempt++) {
         await setHp(ctx.page, staged.enemy, 1);
         await giveTurn(ctx.page, staged.hero);
+        await loadDice(ctx.page);
         let died = false;
         await ctx.filmstrip(this.note, CAST_TIMES, async () => {
           const events = await cast(ctx.page, staged.hero, 'rock_throw', staged.enemyPos);
@@ -360,6 +364,7 @@ export const BEATS: readonly Beat[] = [
       const from = { x: Math.max(0, boss.pos.x - 5), y: boss.pos.y };
       if (await open(ctx.page, from)) await placeUnit(ctx.page, kaya.id, from);
       await grantAbility(ctx.page, kaya.id, 'lightning_storm');
+      await loadDice(ctx.page);
       await settleLayout(ctx.page);
       await ctx.shoot('The quarry floor at rest, with the frame-time readout.', 'floor');
       await ctx.filmstrip(this.note, CAST_TIMES, async () => {

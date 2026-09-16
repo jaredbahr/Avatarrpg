@@ -46,6 +46,13 @@ the act, so the same frame comes back every run. They are captured on
 `surface-canvas` and `surface-webgl`; the 2x projects keep one mid-playback
 still.
 
+Every beat starts from the same seed, so the first roll of every fight would
+be the same roll, and on this seed it is a miss. The cast beats load the dice
+first (`loadDice` in `e2e/gallery/stage.ts`): the RNG state is stepped to one
+whose next draw hits, which is still one number reached from the seed by a
+fixed walk, so the pictures stay reproducible. The variance and crit rolls
+after it fall where they fall.
+
 ## The verdict
 
 The gate question is one sentence: **would you be happy if the finished game
