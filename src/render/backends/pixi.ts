@@ -30,6 +30,7 @@ import {
 import type { Grid, SurfaceId, TerrainId, Vec2 } from '../../core/types';
 import { TILE } from '../camera';
 import type { Camera, Viewport } from '../camera';
+import { ParticleLayer } from '../fx/particleLayer';
 import { contourLoops, isHole } from '../geometry/contour';
 import type { Curve } from '../geometry/curve';
 import { sampleAt, smoothPath } from '../geometry/curve';
@@ -123,6 +124,9 @@ export class PixiBackend implements RenderBackend {
   private unitLayer = new Container();
   private fxGfx = new Graphics();
   private floaterLayer = new Container();
+  /** Particles and strokes: ground-level ones under the units, the rest over them. */
+  private fxUnder = new ParticleLayer('under');
+  private fxOver = new ParticleLayer('over');
 
   private groundUniforms = new UniformGroup({
     uGrid: { value: new Float32Array([1, 1]), type: 'vec2<f32>' },
@@ -241,8 +245,10 @@ export class PixiBackend implements RenderBackend {
       this.markerGfx,
       this.overlayGfx,
       this.pathGfx,
+      this.fxUnder.container,
       this.decorGfx,
       this.unitLayer,
+      this.fxOver.container,
       this.fxGfx,
       this.floaterLayer,
     );
@@ -275,6 +281,8 @@ export class PixiBackend implements RenderBackend {
 
   destroy(): void {
     this.destroyed = true;
+    this.fxUnder.destroy();
+    this.fxOver.destroy();
     this.app?.destroy(false, { children: true });
     this.app = null;
     this.dropTextures();
@@ -290,7 +298,12 @@ export class PixiBackend implements RenderBackend {
       return;
     }
 
-    this.root.position.set(-camera.offsetX, -camera.offsetY);
+    // The shake moves the world: a knocked camera shows the margin, as a fit does.
+    const nudge = TILE * camera.scale;
+    this.root.position.set(
+      -camera.offsetX + view.cameraNudge.x * nudge,
+      -camera.offsetY + view.cameraNudge.y * nudge,
+    );
     this.root.scale.set(camera.scale);
 
     this.syncGround(view, camera);
@@ -299,7 +312,8 @@ export class PixiBackend implements RenderBackend {
     this.drawPath(view);
     this.drawDecor(view);
     this.drawUnits(view, camera);
-    this.drawFx(view);
+    this.fxUnder.draw(view.emitters);
+    this.fxOver.draw(view.emitters);
     this.drawFloaters(view);
 
     app.renderer.render(app.stage);
@@ -754,12 +768,33 @@ export class PixiBackend implements RenderBackend {
       live.add(unit.id);
       const sprite = this.unitSprite(unit.id);
       sprite.texture = this.texture(sprites.get(unit.sprite, px, { facing }, unit.size));
-      sprite.position.set(x, y);
-      sprite.width = width;
-      sprite.height = TILE;
-      sprite.alpha = unit.fallen ? 0.35 : 1;
+      // A pose scales about the feet; the fallen fade sits on top of any alpha.
+      const scale = unit.scale ?? 1;
+      const drawWidth = width * scale;
+      const drawHeight = TILE * scale;
+      sprite.position.set(x + (width - drawWidth) / 2, y + (TILE - drawHeight));
+      sprite.width = drawWidth;
+      sprite.height = drawHeight;
+      sprite.alpha = (unit.alpha ?? 1) * (unit.fallen ? 0.35 : 1);
       sprite.visible = true;
       sprite.zIndex = pos.y;
+
+      // The hit flash: the same sprite again, white and additive, over the top.
+      const flash = unit.flash ?? 0;
+      if (flash > 0) {
+        const key = `flash:${unit.id}`;
+        live.add(key);
+        const glow = this.unitSprite(key);
+        glow.texture = sprite.texture;
+        glow.position.copyFrom(sprite.position);
+        glow.width = drawWidth;
+        glow.height = drawHeight;
+        glow.tint = 0xffffff;
+        glow.blendMode = 'add';
+        glow.alpha = Math.min(1, flash) * 0.9;
+        glow.visible = true;
+        glow.zIndex = pos.y + 0.001;
+      }
 
       if (unit.id === view.activeUnitId) {
         g.ellipse(x + width / 2, y + TILE * 0.86, width * 0.42, TILE * 0.14).stroke({
@@ -877,21 +912,6 @@ export class PixiBackend implements RenderBackend {
   /* ---------------------------------------------------------------- */
   /* Effects                                                           */
   /* ---------------------------------------------------------------- */
-
-  private drawFx(view: MapView): void {
-    const g = this.fxGfx;
-    for (const fx of view.fx) {
-      const cx = fx.pos.x * TILE + TILE / 2;
-      const cy = fx.pos.y * TILE + TILE / 2;
-      const grow = 0.2 + fx.progress * 0.5;
-      const fade = 1 - fx.progress;
-      g.circle(cx, cy, TILE * grow).stroke({
-        width: Math.max(2, TILE * 0.06 * fade),
-        color: '#f0c674',
-        alpha: fade * 0.8,
-      });
-    }
-  }
 
   private drawFloaters(view: MapView): void {
     view.floaters.forEach((floater, index) => {

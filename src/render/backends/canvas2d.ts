@@ -15,8 +15,9 @@ import type { Camera, Viewport } from '../camera';
 import { contourLoops } from '../geometry/contour';
 import type { Curve } from '../geometry/curve';
 import { sampleAt, smoothPath } from '../geometry/curve';
+import { CanvasFxLayer } from '../fx/canvasFx';
 import { FACTION_RING, OVERLAY, STATUS_BADGE, hpColor } from '../palettes';
-import { paintFloatingNumber, paintImpact, paintPathArrow, paintPathDot } from '../painters/fx';
+import { paintFloatingNumber, paintPathArrow, paintPathDot } from '../painters/fx';
 import {
   paintExitMarker,
   paintGridLine,
@@ -24,7 +25,6 @@ import {
   paintSurface,
   paintTerrain,
 } from '../painters/tiles';
-import { paletteForAsset } from '../painters/registry';
 import { sprites } from '../spriteCache';
 import type { MapView, OverlayKind, OverlayLayer, RenderUnit } from '../view';
 import type { BackendCapabilities, RenderBackend } from './backend';
@@ -43,6 +43,9 @@ export class Canvas2DBackend implements RenderBackend {
    */
   private loops = new WeakMap<OverlayLayer, Vec2[][]>();
   private curve: { path: readonly Vec2[]; from: Vec2; curve: Curve } | null = null;
+  private fx = new CanvasFxLayer();
+  /** White silhouettes of unit sprites, for the hit flash; forgotten with the sprite. */
+  private masks = new WeakMap<HTMLCanvasElement, HTMLCanvasElement>();
 
   constructor(private canvas: HTMLCanvasElement) {
     const ctx = canvas.getContext('2d', { alpha: false });
@@ -71,14 +74,20 @@ export class Canvas2DBackend implements RenderBackend {
     ctx.fillStyle = '#120d0a';
     ctx.fillRect(0, 0, camera.viewport.width, camera.viewport.height);
 
+    // The shake moves the world, not the clear: a knocked camera shows the
+    // same dark margin at its edge that the fit leaves anyway.
+    const tilePx = camera.toScreen({ x: 0, y: 0 }).size;
+    ctx.translate(view.cameraNudge.x * tilePx, view.cameraNudge.y * tilePx);
+
     this.drawGround(view, camera);
     this.drawOverlays(view, camera);
     this.drawPath(view, camera);
+    this.drawFxLayer(view, camera, 'under');
     this.drawExit(view, camera);
     this.drawNpcs(view, camera);
     this.drawProps(view, camera);
     this.drawUnits(view, camera);
-    this.drawFx(view, camera);
+    this.drawFxLayer(view, camera, 'over');
     this.drawFloaters(view, camera);
 
     ctx.restore();
@@ -357,10 +366,20 @@ export class Canvas2DBackend implements RenderBackend {
       }
 
       ctx.save();
-      if (unit.fallen) ctx.globalAlpha = 0.35;
+      // A pose scales about the feet; the fallen fade sits on top of any alpha.
+      const scale = unit.scale ?? 1;
+      const drawWidth = width * scale;
+      const drawHeight = box.size * scale;
+      const drawX = box.x + (width - drawWidth) / 2;
+      const drawY = box.y + (box.size - drawHeight);
+      ctx.globalAlpha = (unit.alpha ?? 1) * (unit.fallen ? 0.35 : 1);
       // Painted at device resolution, drawn at CSS size under the dpr transform.
       const sprite = sprites.get(unit.sprite, box.size * dpr, { facing }, unit.size);
-      ctx.drawImage(sprite, box.x, box.y, width, box.size);
+      ctx.drawImage(sprite, drawX, drawY, drawWidth, drawHeight);
+      if (unit.flash && unit.flash > 0) {
+        ctx.globalAlpha *= Math.min(1, unit.flash);
+        ctx.drawImage(this.mask(sprite), drawX, drawY, drawWidth, drawHeight);
+      }
       ctx.restore();
 
       if (!unit.fallen) {
@@ -436,16 +455,28 @@ export class Canvas2DBackend implements RenderBackend {
     ctx.restore();
   }
 
-  private drawFx(view: MapView, camera: Camera): void {
-    const { ctx } = this;
-    for (const fx of view.fx) {
-      const box = camera.toScreen(fx.pos);
-      if (!camera.isVisible(fx.pos)) continue;
-      paintImpact(ctx, box, paletteForAsset(fx.assetKey), {
-        variant: fx.assetKey.split('.')[2],
-        progress: fx.progress,
-      });
+  private drawFxLayer(view: MapView, camera: Camera, layer: 'under' | 'over'): void {
+    if (view.emitters.length === 0) return;
+    const origin = camera.toScreen({ x: 0, y: 0 });
+    this.fx.draw(this.ctx, view.emitters, layer, { x: origin.x, y: origin.y }, origin.size);
+  }
+
+  /** The sprite as a white silhouette, for the hit flash. */
+  private mask(sprite: HTMLCanvasElement): HTMLCanvasElement {
+    const existing = this.masks.get(sprite);
+    if (existing) return existing;
+    const canvas = document.createElement('canvas');
+    canvas.width = sprite.width;
+    canvas.height = sprite.height;
+    const ctx = canvas.getContext('2d');
+    if (ctx) {
+      ctx.drawImage(sprite, 0, 0);
+      ctx.globalCompositeOperation = 'source-in';
+      ctx.fillStyle = '#ffffff';
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
     }
+    this.masks.set(sprite, canvas);
+    return canvas;
   }
 
   private drawFloaters(view: MapView, camera: Camera): void {
