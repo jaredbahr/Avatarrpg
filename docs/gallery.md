@@ -42,6 +42,7 @@ runner without a GPU sees, and whether the board is still correct there.
 | `14-boss-blast`       | The quarry floor, the two-tile machine, the biggest effect, the frame-time readout |
 | `15-largest-contrast` | Largest text and High contrast: the board must still read                          |
 | `16-grid-on`          | The same board with the Show grid setting on                                       |
+| `17-figures`          | The placeholder rig, every unit in every pose, straight from the sheet baker       |
 
 Filmstrips (`-f1` to `-f5`) sample the playback at fixed milliseconds after
 the act, so the same frame comes back every run. They are captured on

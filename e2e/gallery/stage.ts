@@ -27,6 +27,94 @@ export interface StagedUnit {
   readonly abilities: readonly string[];
 }
 
+export interface FigureRow {
+  readonly key: string;
+  readonly label: string;
+  readonly widthTiles?: 1 | 2;
+}
+
+const POSE_CAPTIONS = [
+  'idle A',
+  'idle B',
+  'walk A',
+  'walk B',
+  'wind-up',
+  'release',
+  'recover',
+  'melee A',
+  'melee B',
+  'hit',
+  'KO',
+];
+
+/**
+ * Covers the page with every frame of each row's placeholder sheet, baked at
+ * `tileCss` CSS pixels a tile through `window.fnt.bakeReview`, one row per
+ * unit with a caption. The frames are views onto the atlas image, so what is
+ * shown is exactly what the baker wrote.
+ */
+export async function showFigureSheet(
+  page: Page,
+  rows: readonly FigureRow[],
+  tileCss: number,
+): Promise<void> {
+  await page.evaluate(
+    async ({ rows, tileCss, captions }) => {
+      document.getElementById('fnt-figures')?.remove();
+      const bake = window.fnt?.bakeReview;
+      if (!bake) throw new Error('window.fnt.bakeReview is not exposed.');
+      const dpr = window.devicePixelRatio || 1;
+      const host = document.createElement('div');
+      host.id = 'fnt-figures';
+      host.style.cssText =
+        'position:fixed;inset:0;z-index:99999;background:#120d0a;color:#f4e9d8;' +
+        'font:13px/1.2 system-ui,sans-serif;padding:10px 12px;overflow:hidden;' +
+        'display:flex;flex-direction:column;gap:5px;align-items:flex-start';
+      const header = document.createElement('div');
+      header.style.cssText = 'display:flex;gap:4px;color:#a89880;font-size:11px';
+      const spacer = document.createElement('div');
+      spacer.style.cssText = 'width:150px;flex:none';
+      header.append(spacer);
+      for (const caption of captions) {
+        const cell = document.createElement('div');
+        cell.textContent = caption;
+        cell.style.cssText = `width:${tileCss}px;flex:none;text-align:center;overflow:hidden`;
+        header.append(cell);
+      }
+      host.append(header);
+      const decodes: Promise<void>[] = [];
+      for (const row of rows) {
+        const sheet = bake(row.key, Math.round(tileCss * dpr), row.widthTiles ?? 1);
+        if (!sheet) continue;
+        const line = document.createElement('div');
+        line.style.cssText = 'display:flex;align-items:flex-end;gap:4px';
+        const label = document.createElement('div');
+        label.textContent = row.label;
+        label.style.cssText = 'width:150px;flex:none;color:#d9a441;padding-bottom:4px';
+        line.append(label);
+        for (const frame of sheet.frames) {
+          const cell = document.createElement('div');
+          cell.style.cssText =
+            `position:relative;overflow:hidden;flex:none;width:${frame.w / dpr}px;` +
+            `height:${frame.h / dpr}px;background:#1c1512;outline:1px solid #3a2d24`;
+          const img = new Image();
+          img.src = sheet.url;
+          img.style.cssText =
+            `position:absolute;left:${-frame.x / dpr}px;top:${-frame.y / dpr}px;` +
+            `width:${sheet.width / dpr}px;height:${sheet.height / dpr}px;max-width:none`;
+          decodes.push(img.decode().catch(() => undefined));
+          cell.append(img);
+          line.append(cell);
+        }
+        host.append(line);
+      }
+      document.body.append(host);
+      await Promise.all(decodes);
+    },
+    { rows, tileCss, captions: POSE_CAPTIONS },
+  );
+}
+
 /** The unit whose turn it is, or null outside a fight. */
 export async function actor(page: Page): Promise<StagedUnit | null> {
   return page.evaluate(() => {

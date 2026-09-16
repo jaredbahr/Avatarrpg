@@ -21,10 +21,11 @@ import {
   partyUnit,
   placeUnit,
   setHp,
+  showFigureSheet,
   tileCentre,
   updateSettings,
 } from './stage';
-import type { Vec2 } from './stage';
+import type { FigureRow, Vec2 } from './stage';
 
 /**
  * The beats: every picture the gallery takes, and what each one is for.
@@ -76,6 +77,46 @@ export interface Beat {
 const LANDSCAPE = ['surface-canvas', 'surface-webgl', 'ipad-canvas', 'ipad-webgl'];
 const PORTRAIT_TOO = [...LANDSCAPE, 'portrait-canvas'];
 const STATS = ['surface-canvas', 'surface-webgl', 'ipad-webgl'];
+/** The figure page is a Canvas 2D bake whichever backend draws the board; once per pixel density. */
+const FIGURES = ['surface-canvas', 'ipad-canvas'];
+
+const HERO_ROWS: readonly FigureRow[] = [
+  { key: 'unit.fire.kaya', label: 'Kaya · fire' },
+  { key: 'unit.fire.tenzo', label: 'Tenzo · fire' },
+  { key: 'unit.water.nilak', label: 'Nilak · water' },
+  { key: 'unit.water.sura', label: 'Sura · water' },
+  { key: 'unit.earth.bo', label: 'Bo · earth' },
+  { key: 'unit.earth.linmei', label: 'Lin Mei · earth' },
+  { key: 'unit.air.nima', label: 'Nima · air' },
+  { key: 'unit.air.jinu', label: 'Jinu · air' },
+  { key: 'unit.non.riko', label: 'Riko' },
+  { key: 'unit.non.wen', label: 'Wen' },
+];
+const ENEMY_ROWS: readonly FigureRow[] = [
+  { key: 'unit.enemy.thug', label: 'Bandit' },
+  { key: 'unit.enemy.slinger', label: 'Slinger' },
+  { key: 'unit.enemy.bruiser', label: 'Bruiser' },
+  { key: 'unit.enemy.quarrybender', label: 'Quarry bandit (earth)' },
+  { key: 'unit.enemy.deserter', label: 'Deserter (fire)' },
+  { key: 'unit.enemy.merc', label: 'Mercenary' },
+  { key: 'unit.enemy.crossbow', label: 'Crossbow' },
+  { key: 'unit.enemy.sergeant', label: 'Sergeant' },
+  { key: 'unit.enemy.grumbler', label: 'The Grumbler (2 tiles)', widthTiles: 2 },
+  { key: 'unit.ally.ruon', label: 'Captain Ruon (ally)' },
+];
+const VILLAGE_ROWS: readonly FigureRow[] = [
+  { key: 'npc.elder', label: 'Elder' },
+  { key: 'npc.shopkeeper', label: 'Shopkeeper' },
+  { key: 'npc.kid', label: 'Kid' },
+  { key: 'npc.guard', label: 'Gate guard' },
+];
+const CLOSE_ROWS: readonly FigureRow[] = [
+  { key: 'unit.fire.kaya', label: 'Kaya · fire' },
+  { key: 'unit.earth.bo', label: 'Bo · earth' },
+  { key: 'unit.water.nilak', label: 'Nilak · water' },
+  { key: 'unit.air.nima', label: 'Nima · air' },
+  { key: 'unit.enemy.thug', label: 'Bandit' },
+];
 
 function shifted(pos: Vec2, dx: number, dy: number): Vec2 {
   return { x: pos.x + dx, y: pos.y + dy };
@@ -385,6 +426,30 @@ export const BEATS: readonly Beat[] = [
       await settleLayout(ctx.page);
       await ctx.page.getByRole('button', { name: /^Move/ }).click();
       await ctx.shoot(this.note);
+    },
+  },
+  {
+    id: '17-figures',
+    title: 'Every figure, every pose',
+    note: 'The placeholder rig through the sheet baker, a row per unit: idle A and B, walk A and B, cast wind-up, release and recover, melee A and B, hit, KO. Real sheets replace these one key at a time.',
+    projects: FIGURES,
+    async run(ctx) {
+      await resetStorage(ctx.page, ctx.query());
+      await ctx.page.getByRole('button', { name: /new game/i }).waitFor();
+      const height = ctx.page.viewportSize()?.height ?? 900;
+      const pages: readonly (readonly [string, readonly FigureRow[]])[] = [
+        ['heroes', HERO_ROWS],
+        ['enemies', ENEMY_ROWS],
+        ['village', VILLAGE_ROWS],
+      ];
+      for (const [name, rows] of pages) {
+        // As large as the rows allow on this screen, up to a 64 px tile.
+        const tile = Math.min(64, Math.floor((height - 70) / rows.length / 1.62));
+        await showFigureSheet(ctx.page, rows, tile);
+        await ctx.shoot(`${this.note} (${name}, ${tile} px a tile)`, name);
+      }
+      await showFigureSheet(ctx.page, CLOSE_ROWS, 96);
+      await ctx.shoot(`${this.note} (the gallery party and a bandit at 96 px a tile)`, 'close');
     },
   },
   {
