@@ -22,7 +22,11 @@
     "balance": "tsx scripts/balance.ts",
     "e2e": "playwright test",
     "verify": "npm run typecheck && npm run lint && npm run format:check && npm run test",
-    "gallery": "playwright test -c playwright.gallery.config.ts && node scripts/gallery-index.mjs"
+    "gallery": "playwright test -c playwright.gallery.config.ts && node scripts/gallery-index.mjs",
+    "art:normalise": "tsx scripts/art/normalise.ts",
+    "art:pack": "tsx scripts/art/pack.ts",
+    "art:validate": "tsx scripts/art/validate.ts",
+    "check:assets": "node scripts/check-asset-budget.mjs"
   },
   "dependencies": {
     "pixi.js": "^8.20.1",
