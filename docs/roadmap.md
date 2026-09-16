@@ -82,12 +82,15 @@ entry kind the manifest already has.
 
 ### A3 Choreography
 
-- [ ] `src/app/anim/easing.ts`, `timeline.ts`, `choreography.ts`
-- [ ] Camera tracks (focus, shake) applied by the scene per frame
-- [ ] `src/content/fx.ts` particle recipes keyed `fx.<element>.<name>`, validated
-- [ ] `MapView.emitters`; seeded particle simulation in the Pixi backend; flash-only on Canvas 2D
-- [ ] Hit-stop, flash, recoil; floater easing
-- [ ] Reduce-motion collapses everything; `busy()` and `finishesAt` unchanged
+Shipped ahead of A2 in the look-gate milestone (ADR 0004, amendment): the
+gate is about the look, and the choreography needs no sheets.
+
+- [x] `src/app/anim/easing.ts`, `timeline.ts`, `choreography.ts`
+- [x] Camera shake as a nudge in the view, applied by both backends; focus waits for the gate
+- [x] `src/content/fx.ts` particle and stroke recipes keyed `fx.<element>.<name>`, validated, with a family fallback per element
+- [x] `MapView.emitters`; one stateless seeded sampler for both backends; Canvas 2D bounded, not flash-only
+- [x] Hit-stop, flash, recoil; floater easing
+- [x] Reduce-motion collapses everything; `busy()` and `finishesAt` unchanged
 
 ## Governance
 
