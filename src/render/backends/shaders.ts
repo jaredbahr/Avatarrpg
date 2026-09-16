@@ -98,6 +98,13 @@ out vec4 fragColor;
 ${NOISE}
 ${TERRAIN_COLORS}
 
+/** The surface index packed into a map texel, or -1 off the map. */
+int surfaceAt(vec2 cell) {
+  if (cell.x < 0.0 || cell.y < 0.0 || cell.x >= uGrid.x || cell.y >= uGrid.y) return -1;
+  int packed = int(texture(uMap, (cell + 0.5) / uGrid).r * 255.0 + 0.5);
+  return packed - (packed / 8) * 8;
+}
+
 /** Diagonal / cross / dot hatching, for the colourblind setting. */
 float hatchPattern(int s, vec2 p) {
   if (s == 1) return step(0.5, fract((p.x + p.y) * 7.0));            // water: diagonal
@@ -186,6 +193,17 @@ void main(void) {
     vec3 tint = mix(vec3(0.153, 0.424, 0.482), vec3(0.243, 0.561, 0.690), ripple);
     col = mix(col, tint, 0.55 * intensity);
     col += vec3(0.10, 0.16, 0.18) * smoothstep(0.62, 0.92, ripple) * intensity;
+    // Foam where the pool meets ground: only the sides whose neighbour is not
+    // water, so a puddle reads as one pool with a lapping bank, not a grid of
+    // rimmed squares. Four texel reads, paid on water pixels alone.
+    float bank = 0.0;
+    if (surfaceAt(cell - vec2(0.0, 1.0)) != 1) bank = max(bank, 1.0 - f.y / 0.2);
+    if (surfaceAt(cell + vec2(0.0, 1.0)) != 1) bank = max(bank, 1.0 - (1.0 - f.y) / 0.2);
+    if (surfaceAt(cell - vec2(1.0, 0.0)) != 1) bank = max(bank, 1.0 - f.x / 0.2);
+    if (surfaceAt(cell + vec2(1.0, 0.0)) != 1) bank = max(bank, 1.0 - (1.0 - f.x) / 0.2);
+    bank = clamp(bank, 0.0, 1.0);
+    float lap = 0.55 + 0.45 * vnoise(w * 9.0 + vec2(uTime * 0.6, -uTime * 0.3));
+    col = mix(col, vec3(0.80, 0.92, 0.95), bank * bank * lap * 0.6 * intensity);
   } else if (surface == 2) {          // ice
     float facet = vnoise(floor(w * 7.0));
     vec3 tint = mix(vec3(0.600, 0.839, 0.898), vec3(0.878, 0.969, 1.0), facet);

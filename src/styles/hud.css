@@ -66,8 +66,9 @@
  *
  * Cost rules, because this is under everything on an iPad: no filter, no
  * blend mode, no per-frame JS. The blobs drift only on the title, where
- * nothing else moves, and both they and the wheel are hidden under the map
- * scenes, whose canvas covers them anyway.
+ * nothing else moves. The wheel is hidden under the map scenes; the blobs
+ * stay, because the board's canvas is transparent round the map (ADR 0008)
+ * and the wash is what frames it.
  */
 .app-root {
   --mood: var(--c-gold);
@@ -140,9 +141,7 @@
   height: 100%;
 }
 
-.app-root[data-scene='combat'] .backdrop-wash,
 .app-root[data-scene='combat'] .backdrop-wheel,
-.app-root[data-scene='explore'] .backdrop-wash,
 .app-root[data-scene='explore'] .backdrop-wheel {
   display: none;
 }
@@ -794,10 +793,20 @@
   height: 100%;
 }
 
+/*
+ * The board's canvas clears to transparent (ADR 0008), so what shows round
+ * the edges of the map is the backdrop: its grain, its radial base and the
+ * mood wash, which stays visible under the map scenes for that reason. High
+ * contrast keeps the frame plain and the wash off.
+ */
 .map-wrap {
   position: relative;
   flex: 1 1 auto;
   min-height: 0;
+  background: transparent;
+}
+
+html[data-contrast='high'] .map-wrap {
   background: var(--c-bg-deep);
 }
 

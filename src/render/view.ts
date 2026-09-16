@@ -121,6 +121,8 @@ export interface MapView {
   readonly gridLines: boolean;
   /** Overlays as a square per tile instead of a rounded contour (High contrast). */
   readonly crispOverlays: boolean;
+  /** Edge shading and the vignette round the board; off under High contrast. */
+  readonly atmosphere: boolean;
   /** Milliseconds since start, for idle animation. */
   readonly time: number;
 }

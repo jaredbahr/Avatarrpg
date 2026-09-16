@@ -3,12 +3,14 @@
  *
  * Each tile is: a terrain fill, a deterministic scatter of detail so the
  * ground is not flat colour, an optional surface wash, and an optional hatch
- * pattern when the colourblind setting is on. Elevation is shown as a lighter
- * top edge and a cast shadow, which is enough to read "high ground" without a
- * second rendering pass.
+ * pattern when the colourblind setting is on. Everything that stands on the
+ * ground (cliff faces, walls, canopies, cover stones, decals) is the board
+ * decor in `board.ts`, drawn in a second pass over the whole visible board so
+ * a canopy can overhang its neighbours.
  */
 
 import type { Tile, Vec2 } from '../../core/types';
+import type { Edges } from '../geometry/board';
 import { SURFACE_STYLES, TERRAIN_STYLES } from '../palettes';
 import type { Box, Ctx } from './shapes';
 import { circle, polygon, tileNoise } from './shapes';
@@ -39,35 +41,21 @@ export function paintTerrain(ctx: Ctx, box: Box, tile: Tile, pos: Vec2): void {
     }
   }
   ctx.globalAlpha = 1;
-
-  // Elevation: a lit top lip and a shadow underneath.
-  if (tile.elevation > 0) {
-    ctx.fillStyle = 'rgba(255,255,255,0.10)';
-    ctx.fillRect(box.x, box.y, s + 1, Math.max(1, s * 0.09 * tile.elevation));
-    ctx.fillStyle = 'rgba(0,0,0,0.22)';
-    ctx.fillRect(box.x, box.y + s - s * 0.1, s + 1, Math.max(1, s * 0.1));
-  }
-
-  // Walls get a heavier block so they read as impassable, not just dark.
-  if (tile.blocked) {
-    ctx.fillStyle = 'rgba(0,0,0,0.35)';
-    ctx.fillRect(box.x, box.y, s + 1, s + 1);
-    ctx.strokeStyle = style.edge;
-    ctx.lineWidth = Math.max(1, s * 0.05);
-    ctx.strokeRect(box.x + s * 0.06, box.y + s * 0.06, s * 0.88, s * 0.88);
-  }
-
-  // Cover: three little stones along the bottom edge.
-  if (tile.cover && !tile.blocked) {
-    ctx.fillStyle = 'rgba(255,255,255,0.22)';
-    for (let i = 0; i < 3; i++) {
-      circle(ctx, box.x + s * (0.28 + i * 0.22), box.y + s * 0.78, s * 0.07);
-      ctx.fill();
-    }
-  }
 }
 
-export function paintSurface(ctx: Ctx, box: Box, tile: Tile, pos: Vec2, hatch: boolean): void {
+/**
+ * The surface wash, rimmed only where it meets something else (`edges`), so
+ * a puddle four tiles wide is one pool with a bank round it and not four
+ * squares with a border each.
+ */
+export function paintSurface(
+  ctx: Ctx,
+  box: Box,
+  tile: Tile,
+  pos: Vec2,
+  hatch: boolean,
+  edges: Edges,
+): void {
   if (!tile.surface) return;
   const style = SURFACE_STYLES[tile.surface.id];
   const s = box.size;
@@ -75,14 +63,45 @@ export function paintSurface(ctx: Ctx, box: Box, tile: Tile, pos: Vec2, hatch: b
   ctx.save();
   ctx.globalAlpha = style.alpha;
   ctx.fillStyle = style.fill;
-  ctx.fillRect(box.x, box.y, s + 1, s + 1);
+  // Snapped to whole pixels rather than overlapped by one: a translucent
+  // fill that overlaps its neighbour shows the seam as a darker line.
+  const x0 = Math.round(box.x);
+  const y0 = Math.round(box.y);
+  ctx.fillRect(x0, y0, Math.round(box.x + s) - x0, Math.round(box.y + s) - y0);
 
-  // A brighter rim so adjacent surface tiles read as one pool rather than a
-  // flat wash over half the map.
-  ctx.globalAlpha = style.alpha * 0.6;
+  // The bank: a wide faint band inside the edge under a thin bright line.
+  const inset = Math.max(1, s * 0.03);
+  const band = s * 0.12;
+  const sides: [boolean, number, number, number, number][] = [
+    [edges.n, box.x, box.y, s + 1, band],
+    [edges.s, box.x, box.y + s - band, s + 1, band],
+    [edges.w, box.x, box.y, band, s + 1],
+    [edges.e, box.x + s - band, box.y, band, s + 1],
+  ];
+  ctx.fillStyle = style.edge;
+  ctx.globalAlpha = style.alpha * 0.22;
+  for (const [on, x, y, w, h] of sides) if (on) ctx.fillRect(x, y, w, h);
+  ctx.globalAlpha = style.alpha * 0.75;
   ctx.strokeStyle = style.edge;
-  ctx.lineWidth = Math.max(1, s * 0.03);
-  ctx.strokeRect(box.x + 1, box.y + 1, s - 2, s - 2);
+  ctx.lineWidth = inset;
+  ctx.beginPath();
+  if (edges.n) {
+    ctx.moveTo(box.x, box.y + inset / 2);
+    ctx.lineTo(box.x + s, box.y + inset / 2);
+  }
+  if (edges.s) {
+    ctx.moveTo(box.x, box.y + s - inset / 2);
+    ctx.lineTo(box.x + s, box.y + s - inset / 2);
+  }
+  if (edges.w) {
+    ctx.moveTo(box.x + inset / 2, box.y);
+    ctx.lineTo(box.x + inset / 2, box.y + s);
+  }
+  if (edges.e) {
+    ctx.moveTo(box.x + s - inset / 2, box.y);
+    ctx.lineTo(box.x + s - inset / 2, box.y + s);
+  }
+  ctx.stroke();
 
   // A surface about to expire is drawn faintly, so "two rounds left" is
   // visible without anyone reading a number.

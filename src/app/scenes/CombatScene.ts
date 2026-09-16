@@ -1018,6 +1018,7 @@ export class CombatScene implements Scene {
       hatch: this.app.settings.hatchSurfaces,
       gridLines: showGridLines(this.app.settings),
       crispOverlays: this.app.settings.highContrast,
+      atmosphere: !this.app.settings.highContrast,
       time: now,
     };
 

@@ -10,13 +10,16 @@
  * context, they never own one.
  */
 
-import type { Vec2 } from '../../core/types';
+import type { Grid, Vec2 } from '../../core/types';
 import type { Camera, Viewport } from '../camera';
+import type { TileRelief } from '../geometry/board';
+import { boardRelief, decorSignature, surfaceEdges } from '../geometry/board';
 import { contourLoops } from '../geometry/contour';
 import type { Curve } from '../geometry/curve';
 import { sampleAt, smoothPath } from '../geometry/curve';
 import { CanvasFxLayer } from '../fx/canvasFx';
 import { FACTION_RING, OVERLAY, STATUS_BADGE, hpColor } from '../palettes';
+import { paintTileDecor } from '../painters/board';
 import { paintFloatingNumber, paintPathArrow, paintPathDot } from '../painters/fx';
 import {
   paintExitMarker,
@@ -32,6 +35,20 @@ import type { BackendCapabilities, RenderBackend } from './backend';
 /** The rounded square a hovered tile gets, in tile units from its corner. */
 const HOVER_LOOP = contourLoops([{ x: 0, y: 0 }])[0] ?? [];
 
+/** How far a unit is drawn up the screen per tier of ground it stands on, in tiles. */
+export const ELEVATION_LIFT = 0.06;
+
+/** How far in from the board's edge the shading reaches, in tiles. */
+export const EDGE_SHADE_TILES = 1.4;
+export const EDGE_SHADE_ALPHA = 0.42;
+export const VIGNETTE_ALPHA = 0.3;
+
+/** Elevation under a tile, 0 off the map. */
+export function elevationAt(grid: Grid, pos: Vec2): number {
+  if (pos.x < 0 || pos.y < 0 || pos.x >= grid.width || pos.y >= grid.height) return 0;
+  return grid.tiles[pos.y * grid.width + pos.x]?.elevation ?? 0;
+}
+
 export class Canvas2DBackend implements RenderBackend {
   readonly capabilities: BackendCapabilities = { name: 'canvas', shaders: false, particles: false };
 
@@ -46,9 +63,13 @@ export class Canvas2DBackend implements RenderBackend {
   private fx = new CanvasFxLayer();
   /** White silhouettes of unit sprites, for the hit flash; forgotten with the sprite. */
   private masks = new WeakMap<HTMLCanvasElement, HTMLCanvasElement>();
+  /** Cliffs, rims and wall outlines, rebuilt only when a tile's footing changes. */
+  private relief: ReadonlyMap<number, TileRelief> = new Map();
+  private reliefSignature = '';
 
   constructor(private canvas: HTMLCanvasElement) {
-    const ctx = canvas.getContext('2d', { alpha: false });
+    // Transparent, so the page's mood wash shows round the board (ADR 0008).
+    const ctx = canvas.getContext('2d', { alpha: true });
     if (!ctx) throw new Error('Canvas 2D is not available in this browser');
     this.ctx = ctx;
   }
@@ -70,16 +91,16 @@ export class Canvas2DBackend implements RenderBackend {
     ctx.save();
     ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
     ctx.imageSmoothingEnabled = true;
-
-    ctx.fillStyle = '#120d0a';
-    ctx.fillRect(0, 0, camera.viewport.width, camera.viewport.height);
+    ctx.clearRect(0, 0, camera.viewport.width, camera.viewport.height);
 
     // The shake moves the world, not the clear: a knocked camera shows the
-    // same dark margin at its edge that the fit leaves anyway.
+    // same margin at its edge that the fit leaves anyway.
     const tilePx = camera.toScreen({ x: 0, y: 0 }).size;
     ctx.translate(view.cameraNudge.x * tilePx, view.cameraNudge.y * tilePx);
 
     this.drawGround(view, camera);
+    this.drawDecor(view, camera);
+    if (view.atmosphere) this.drawShade(view, camera);
     this.drawOverlays(view, camera);
     this.drawPath(view, camera);
     this.drawFxLayer(view, camera, 'under');
@@ -105,10 +126,77 @@ export class Canvas2DBackend implements RenderBackend {
         const pos = { x, y };
         const box = camera.toScreen(pos);
         paintTerrain(ctx, box, tile, pos);
-        paintSurface(ctx, box, tile, pos, view.hatch);
+        paintSurface(ctx, box, tile, pos, view.hatch, surfaceEdges(view.grid, pos));
         if (view.gridLines) paintGridLine(ctx, box, 'rgba(0,0,0,0.18)');
       }
     }
+  }
+
+  /** Cliffs, canopies, walls, cover and decals: a second pass so overhangs land on neighbours. */
+  private drawDecor(view: MapView, camera: Camera): void {
+    const { ctx } = this;
+    const signature = decorSignature(view.grid);
+    if (signature !== this.reliefSignature) {
+      this.reliefSignature = signature;
+      this.relief = boardRelief(view.grid);
+    }
+    const bounds = camera.visibleBounds(view.grid);
+    for (let y = bounds.y0; y <= bounds.y1; y++) {
+      for (let x = bounds.x0; x <= bounds.x1; x++) {
+        const index = y * view.grid.width + x;
+        const tile = view.grid.tiles[index];
+        if (!tile) continue;
+        const pos = { x, y };
+        paintTileDecor(ctx, camera.toScreen(pos), tile, pos, this.relief.get(index));
+      }
+    }
+  }
+
+  /**
+   * The board's edges fall off into the dark and the corners of the view
+   * dim: four gradients along the board's sides and one radial across the
+   * viewport, over the ground and under everything that stands on it.
+   */
+  private drawShade(view: MapView, camera: Camera): void {
+    const { ctx } = this;
+    const origin = camera.toScreen({ x: 0, y: 0 });
+    const size = origin.size;
+    const w = view.grid.width * size;
+    const h = view.grid.height * size;
+    const reach = size * EDGE_SHADE_TILES;
+    const dark = `rgba(0,0,0,${EDGE_SHADE_ALPHA})`;
+    const clear = 'rgba(0,0,0,0)';
+
+    ctx.save();
+    ctx.beginPath();
+    ctx.rect(origin.x, origin.y, w, h);
+    ctx.clip();
+    const sides: [number, number, number, number][] = [
+      [origin.x, origin.y, origin.x, origin.y + reach],
+      [origin.x, origin.y + h, origin.x, origin.y + h - reach],
+      [origin.x, origin.y, origin.x + reach, origin.y],
+      [origin.x + w, origin.y, origin.x + w - reach, origin.y],
+    ];
+    for (const [x0, y0, x1, y1] of sides) {
+      const g = ctx.createLinearGradient(x0, y0, x1, y1);
+      g.addColorStop(0, dark);
+      g.addColorStop(1, clear);
+      ctx.fillStyle = g;
+      ctx.fillRect(origin.x, origin.y, w, h);
+    }
+    ctx.restore();
+
+    const { width, height } = camera.viewport;
+    const cx = width / 2;
+    const cy = height / 2;
+    const radius = Math.hypot(cx, cy);
+    const vignette = ctx.createRadialGradient(cx, cy, radius * 0.45, cx, cy, radius);
+    vignette.addColorStop(0, clear);
+    vignette.addColorStop(1, `rgba(0,0,0,${VIGNETTE_ALPHA})`);
+    ctx.save();
+    ctx.fillStyle = vignette;
+    ctx.fillRect(0, 0, width, height);
+    ctx.restore();
   }
 
   private drawOverlays(view: MapView, camera: Camera): void {
@@ -262,6 +350,7 @@ export class Canvas2DBackend implements RenderBackend {
     for (const npc of view.npcs) {
       const box = camera.toScreen(npc.pos);
       if (!camera.isVisible(npc.pos)) continue;
+      box.y -= elevationAt(view.grid, npc.pos) * ELEVATION_LIFT * box.size;
       const sprite = sprites.get(npc.sprite, box.size * dpr, { facing: 1 });
       ctx.drawImage(sprite, box.x, box.y, box.size, box.size);
 
@@ -283,6 +372,7 @@ export class Canvas2DBackend implements RenderBackend {
     for (const prop of view.props) {
       if (!camera.isVisible(prop.pos)) continue;
       const box = camera.toScreen(prop.pos);
+      box.y -= elevationAt(view.grid, prop.pos) * ELEVATION_LIFT * box.size;
       const sprite = sprites.get(prop.sprite, box.size * dpr, { facing: 1 });
       ctx.drawImage(sprite, box.x, box.y, box.size, box.size);
 
@@ -323,10 +413,12 @@ export class Canvas2DBackend implements RenderBackend {
       }
 
       // The bob lifts the drawing, never the sort: it is applied after ordering.
+      // So does the ground: a unit on a ledge stands a little higher on screen.
       if (unit.offset) {
         box.x += unit.offset.x * box.size;
         box.y += unit.offset.y * box.size;
       }
+      box.y -= elevationAt(view.grid, unit.pos) * ELEVATION_LIFT * box.size;
       const facing = unit.facing ?? (unit.faction === 'enemy' ? -1 : 1);
 
       // Active-unit ring, drawn under the sprite.
