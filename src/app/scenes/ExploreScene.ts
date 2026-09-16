@@ -13,7 +13,9 @@ import { buildGrid } from '../../core/rules/grid';
 import { Renderer } from '../../render/renderer';
 import type { MapView, NpcMarker, RenderUnit } from '../../render/renderer';
 import { attachPointer, wheelZoomFactor } from '../input/pointer';
-import { button, clear, el } from '../ui/dom';
+import { ambienceFx } from '../../content/fx';
+import { ambientEmitters } from '../anim/ambience';
+import { button, clear, el, motionReduced } from '../ui/dom';
 import { showGridLines } from '../storage/localSaves';
 
 export class ExploreScene implements Scene {
@@ -207,6 +209,12 @@ export class ExploreScene implements Scene {
       name: npc.name,
     }));
 
+    // The air over the village is fidelity: WebGL only, and still under reduce motion.
+    const ambient =
+      renderer.capabilities.shaders && !motionReduced()
+        ? ambientEmitters(ambienceFx(map.ambience), grid, now)
+        : [];
+
     const view: MapView = {
       grid,
       units,
@@ -217,7 +225,7 @@ export class ExploreScene implements Scene {
       overlays: [],
       path: [],
       pathFrom: null,
-      emitters: [],
+      emitters: ambient,
       floaters: [],
       cameraNudge: { x: 0, y: 0 },
       activeUnitId: leader?.id ?? null,

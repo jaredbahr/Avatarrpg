@@ -1,6 +1,16 @@
 import { describe, expect, it } from 'vitest';
 import { ALL_ABILITIES } from './abilities';
-import { ALL_FX, FX_FAMILIES, fxPalette, fxRecipeSchema, resolveFx } from './fx';
+import {
+  ALL_FX,
+  FX_AMBIENCE,
+  FX_FAMILIES,
+  ambienceFx,
+  fxPalette,
+  fxRecipeSchema,
+  particleEmitterSchema,
+  resolveFx,
+} from './fx';
+import { ALL_MAPS } from './index';
 
 /**
  * Effect recipes are content, so they are validated like content: every
@@ -60,5 +70,30 @@ describe('effect recipes', () => {
 
   it('still draw for a key of no known element', () => {
     expect(resolveFx('fx.mystery.thing').impact.length).toBeGreaterThan(0);
+  });
+});
+
+describe('ambience recipes', () => {
+  it('parse, stay light, and know a palette', () => {
+    for (const [key, recipe] of Object.entries(FX_AMBIENCE)) {
+      expect(PALETTES, `${key} palette`).toContain(recipe.palette);
+      let total = 0;
+      for (const emitter of recipe.emitters) {
+        const result = particleEmitterSchema.safeParse(emitter);
+        expect(result.success, `${key}: ${result.success ? '' : result.error.message}`).toBe(true);
+        expect(emitter.shape).toBe('drift');
+        total += emitter.count;
+      }
+      // Two loops of every emitter are live at once; keep the air thin.
+      expect(total, `${key} spawns ${total} motes`).toBeLessThanOrEqual(40);
+    }
+  });
+
+  it('resolve for every map, or say the air is still', () => {
+    for (const map of ALL_MAPS) {
+      const recipe = ambienceFx(map.ambience);
+      if (recipe) expect(recipe.emitters.length).toBeGreaterThan(0);
+    }
+    expect(ambienceFx('a cellar')).toBeNull();
   });
 });

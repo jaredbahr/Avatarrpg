@@ -30,7 +30,9 @@ import { Renderer, TILE } from '../../render/renderer';
 import type { MapView, OverlayLayer, RenderProp, RenderUnit } from '../../render/renderer';
 import { CONTENT } from '../../content';
 import { attachPointer, wheelZoomFactor } from '../input/pointer';
-import { announce, button, clear, el, tip } from '../ui/dom';
+import { ambienceFx } from '../../content/fx';
+import { ambientEmitters } from '../anim/ambience';
+import { announce, button, clear, el, motionReduced, tip } from '../ui/dom';
 import { assetCanvas } from '../ui/assetCanvas';
 import { showGridLines } from '../storage/localSaves';
 import { reactionNotes } from '../ui/ReactionNote';
@@ -1000,6 +1002,16 @@ export class CombatScene implements Scene {
       };
     });
 
+    // The air over the board is fidelity: WebGL only, and still under reduce motion.
+    const ambient =
+      renderer.capabilities.shaders && !motionReduced()
+        ? ambientEmitters(
+            ambienceFx(this.app.content.maps.get(battle.mapId)?.ambience ?? ''),
+            battle.grid,
+            now,
+          )
+        : [];
+
     const view: MapView = {
       grid: battle.grid,
       units,
@@ -1008,7 +1020,7 @@ export class CombatScene implements Scene {
       overlays,
       path,
       pathFrom: unit?.pos ?? null,
-      emitters: this.app.animator.emitters(now),
+      emitters: [...this.app.animator.emitters(now), ...ambient],
       floaters: this.app.animator.floaters(now),
       cameraNudge: this.app.animator.cameraNudge(now),
       activeUnitId: unit?.id ?? null,

@@ -144,6 +144,20 @@ export function sampleParticles(
         vy = Math.sin(angle) * speed;
         break;
       }
+      case 'drift': {
+        // Born anywhere in the rectangle from `from` to `to`, carried along
+        // the heading `spread` names with a slow sway across it: leaves on
+        // the wind, dust in a shaft of light.
+        x = lerp(from.x, to.x, a);
+        y = lerp(from.y, to.y, b);
+        const angle = def.spread + (c - 0.5) * 0.6;
+        vx = Math.cos(angle) * speed;
+        vy = Math.sin(angle) * speed;
+        const sway = Math.sin(s * 1.8 + rot0) * 0.12;
+        x += Math.cos(angle + Math.PI / 2) * sway;
+        y += Math.sin(angle + Math.PI / 2) * sway;
+        break;
+      }
     }
 
     if (free) {

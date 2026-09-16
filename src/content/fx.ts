@@ -63,6 +63,8 @@ export type FxColor = (typeof FX_COLORS)[number];
  *   swept forward, for waves and cones.
  * - `projectile`: rides the head from `from` to `to` over the emitter's life,
  *   lobbed by the travel's arc; the thrown stone itself.
+ * - `drift`: born anywhere in the rectangle from `from` to `to` and carried
+ *   along the heading `spread` names, swaying; a map's ambience.
  */
 export const PARTICLE_SHAPES = [
   'burst',
@@ -73,6 +75,7 @@ export const PARTICLE_SHAPES = [
   'spiral',
   'sheet',
   'projectile',
+  'drift',
 ] as const;
 export type ParticleShape = (typeof PARTICLE_SHAPES)[number];
 
@@ -99,15 +102,15 @@ export const particleEmitterSchema = z.object({
   cell: z.enum(FX_CELLS),
   /** How many, in total across the emitter's life. */
   count: z.number().int().min(1).max(120),
-  /** The emitter's own life in ms; particles born late are cut off by it. */
-  duration: z.number().int().min(40).max(1500),
+  /** The emitter's own life in ms; particles born late are cut off by it. An ambience loops for seconds. */
+  duration: z.number().int().min(40).max(12000),
   /** Each particle's life in ms, drawn between the two. */
   life: range,
   /** When each particle is born, ms into the emitter's life. */
   delay: range,
   /** Tiles per second at birth. */
   speed: range,
-  /** For directional shapes the cone half-angle in radians; for `rise`/`fall`/`spiral` the radius in tiles. */
+  /** For directional shapes the cone half-angle in radians; for `rise`/`fall`/`spiral` the radius in tiles; for `drift` the heading in radians. */
   spread: z.number().min(0),
   /** Tiles per second squared, positive is down the screen. */
   gravity: z.number(),
@@ -1212,6 +1215,79 @@ export const FX_RECIPES: Readonly<Record<string, FxRecipeInput>> = {
     flash: 0,
   },
 };
+
+/* ------------------------------------------------------------------ */
+/* Ambience                                                            */
+/* ------------------------------------------------------------------ */
+
+/** Something in the air over the whole board, looped for as long as the map is up. */
+const drifting = (
+  cell: FxCell,
+  count: number,
+  color: FxColor,
+  heading: number,
+  speed: [number, number],
+  size: [number, number],
+  blend: 'normal' | 'add' = 'normal',
+  spin = 2,
+): ParticleEmitterDef =>
+  particles({
+    shape: 'drift',
+    cell,
+    count,
+    duration: 8000,
+    life: [4000, 7000],
+    delay: [0, 8000],
+    speed,
+    spread: heading,
+    gravity: 0,
+    drag: 0,
+    size,
+    grow: 1,
+    spin,
+    color,
+    fade: 'in-out',
+    blend,
+    layer: 'over',
+  });
+
+export interface AmbienceRecipe {
+  /** Which palette colours the roles. */
+  readonly palette: string;
+  readonly emitters: readonly ParticleEmitterDef[];
+}
+
+/**
+ * What a map's `ambience` puts in the air, keyed by the ambience string. A
+ * map whose ambience is not here gets nothing, which is a valid answer for
+ * a cellar. WebGL-only and off under reduce motion: it is fidelity, not
+ * information (ADR 0002).
+ */
+export const FX_AMBIENCE: Readonly<Record<string, AmbienceRecipe>> = {
+  forest: {
+    palette: 'earth',
+    emitters: [
+      drifting('leaf', 14, 'light', 0.9, [0.25, 0.5], [0.08, 0.13]),
+      drifting('glow', 10, 'white', 4.98, [0.05, 0.12], [0.03, 0.05], 'add', 0),
+    ],
+  },
+  village: {
+    palette: 'air',
+    emitters: [
+      drifting('leaf', 8, 'base', 0.7, [0.2, 0.4], [0.07, 0.11]),
+      drifting('glow', 8, 'white', 4.88, [0.05, 0.1], [0.03, 0.05], 'add', 0),
+    ],
+  },
+  quarry: {
+    palette: 'neutral',
+    emitters: [drifting('glow', 16, 'stone', 3.88, [0.08, 0.18], [0.03, 0.06], 'add', 0)],
+  },
+};
+
+/** The ambience recipe for a map's ambience string, or null for still air. */
+export function ambienceFx(ambience: string): AmbienceRecipe | null {
+  return FX_AMBIENCE[ambience] ?? null;
+}
 
 /* ------------------------------------------------------------------ */
 /* Lookup                                                              */

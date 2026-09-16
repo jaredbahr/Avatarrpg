@@ -116,6 +116,37 @@ describe('sampleParticles', () => {
     expect(headAt(from, to, 1, 1).y).toBeCloseTo(to.y, 6);
   });
 
+  it('drifts across the rectangle between the two points', () => {
+    const leaves: ParticleEmitterDef = {
+      ...burst,
+      shape: 'drift',
+      count: 30,
+      duration: 4000,
+      life: [3000, 4000],
+      delay: [0, 4000],
+      speed: [0.2, 0.4],
+      spread: 0.8,
+      gravity: 0,
+      drag: 0,
+    };
+    const box = { from: { x: 0, y: 0 }, to: { x: 20, y: 12 } };
+    const out = new Float32Array(leaves.count * PARTICLE_STRIDE);
+    const n = sampleParticles(leaves, 2000, 3, box.from, box.to, out);
+    expect(n).toBeGreaterThan(5);
+    let spreadX = 0;
+    for (let i = 0; i < n; i++) {
+      const x = out[i * PARTICLE_STRIDE] ?? 0;
+      const y = out[i * PARTICLE_STRIDE + 1] ?? 0;
+      expect(x).toBeGreaterThan(-2);
+      expect(x).toBeLessThan(22);
+      expect(y).toBeGreaterThan(-2);
+      expect(y).toBeLessThan(14);
+      spreadX = Math.max(spreadX, Math.abs(x - 10));
+    }
+    // Not bunched at a point: the leaves are scattered over the board.
+    expect(spreadX).toBeGreaterThan(4);
+  });
+
   it('respects the output buffer', () => {
     const out = new Float32Array(PARTICLE_STRIDE * 3);
     const n = sampleParticles(burst, 150, 1, from, to, out);
