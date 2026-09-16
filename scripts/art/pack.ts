@@ -16,6 +16,7 @@ import { join, resolve } from 'node:path';
 import type { ClipName } from '../../src/content/assets/clips';
 import { CLIP_NAMES } from '../../src/content/assets/clips';
 import { atlasJsonText } from '../../src/render/sheets/atlasJson';
+import { ASSETS } from '../../src/content/assets/manifest';
 import { BAKED_CLIPS } from '../../src/render/sheets/bake';
 import { layoutSheet } from '../../src/render/sheets/layout';
 import type { Image } from './lib/image';
@@ -108,6 +109,10 @@ export function main(argv: readonly string[]): number {
   );
 
   const pixelsPerTile = frameHeight / 1.5;
+  // The manifest already knows the unit's palette; print it rather than a blank to fill.
+  const current = ASSETS[args.unit];
+  const palette =
+    current && 'palette' in current && current.palette ? current.palette : '<element>';
   const site = resolve(args.out).replace(`${resolve('public')}/`, '');
   console.log(`wrote ${pngPath} (${layout.width}x${layout.height}) and ${jsonPath}`);
   console.log(`\nManifest entry for src/content/assets/manifest.ts:\n`);
@@ -124,7 +129,7 @@ export function main(argv: readonly string[]): number {
       `    footprint: { w: ${Math.round(frameWidth / pixelsPerTile)}, h: 1 },`,
       `    anchor: { x: 0.5, y: 0.85 },`,
       `    facing: 'mirror',`,
-      `    palette: '<element>',`,
+      `    palette: '${palette}',`,
       `    clips: {`,
       ...clipLines,
       `    },`,
