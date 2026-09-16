@@ -17,3 +17,10 @@ test-results/
 .env
 .env.*
 !.env.example
+
+# Screenshot gallery output (`npm run gallery`); published as a CI artefact, never committed.
+/gallery/
+
+# Art intake: generator output and the normalised frames between it and a packed sheet.
+/art/raw/
+/art/normalised/

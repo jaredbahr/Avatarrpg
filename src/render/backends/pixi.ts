@@ -20,6 +20,7 @@ import {
   Filter,
   GlProgram,
   Graphics,
+  Rectangle,
   Sprite,
   Text,
   TextStyle,
@@ -28,13 +29,31 @@ import {
 } from 'pixi.js';
 
 import type { Grid, SurfaceId, TerrainId, Vec2 } from '../../core/types';
+import { backdrops } from '../backdrops';
 import { TILE } from '../camera';
 import type { Camera, Viewport } from '../camera';
-import { FACTION_RING, OVERLAY, STATUS_BADGE, TERRAIN_STYLES, hpColor } from '../palettes';
+import { DecorSheets } from '../decorSheets';
+import { ParticleLayer } from '../fx/particleLayer';
+import { aimArcPoints, arcHeading, arrowheadPolygon } from '../geometry/arc';
+import { DECOR_CHUNK, decorChunks } from '../geometry/board';
+import { contourLoops, isHole } from '../geometry/contour';
+import type { Curve } from '../geometry/curve';
+import { sampleAt, smoothPath } from '../geometry/curve';
+import { FACTION_RING, OVERLAY, STATUS_BADGE, hpColor } from '../palettes';
+import { FOOT_LINE } from '../sheets/bake';
+import type { ResolvedFrame } from '../sheets/store';
+import { idlePhase, sheets } from '../sheets/store';
 import { MAX_SPRITE_PX, sprites } from '../spriteCache';
-import type { MapView, RenderUnit } from '../view';
+import type { AimArc, MapView, OverlayLayer, RenderUnit } from '../view';
 import type { BackendCapabilities, RenderBackend } from './backend';
-import { overlayColors } from './canvas2d';
+import {
+  EDGE_SHADE_ALPHA,
+  EDGE_SHADE_TILES,
+  ELEVATION_LIFT,
+  VIGNETTE_ALPHA,
+  elevationAt,
+  overlayColors,
+} from './canvas2d';
 import { FILTER_VERTEX, GROUND_FRAGMENT } from './shaders';
 
 /** Must match terrainBase() in shaders.ts. */
@@ -65,8 +84,67 @@ const SPRITE_BUCKET = 32;
 
 /** Textures kept alive; older ones are destroyed rather than left on the GPU. */
 const MAX_TEXTURES = 128;
+/** Frame views onto those textures (one per pose per sheet); cheap, but bounded all the same. */
+const MAX_FRAME_TEXTURES = 512;
 
-/** 0 means no surface. Must match the surface branches in shaders.ts. */
+/** The rounded square a hovered tile gets, in tile units from its corner. */
+const HOVER_LOOP = contourLoops([{ x: 0, y: 0 }])[0] ?? [];
+
+/**
+ * A small canvas holding a black gradient, for the board's edge shading and
+ * the vignette: one texture each, stretched over whatever it has to cover.
+ * `side` is which edge of the canvas the dark end sits on.
+ */
+function gradientCanvas(kind: 'n' | 's' | 'w' | 'e' | 'radial', alpha: number): HTMLCanvasElement {
+  const size = 128;
+  const canvas = document.createElement('canvas');
+  canvas.width = size;
+  canvas.height = size;
+  const ctx = canvas.getContext('2d');
+  if (!ctx) return canvas;
+  const dark = `rgba(0,0,0,${alpha})`;
+  const clear = 'rgba(0,0,0,0)';
+  let g: CanvasGradient;
+  if (kind === 'radial') {
+    const r = Math.hypot(size / 2, size / 2);
+    g = ctx.createRadialGradient(size / 2, size / 2, r * 0.45, size / 2, size / 2, r);
+  } else {
+    const ends: Record<typeof kind, [number, number, number, number]> = {
+      n: [0, 0, 0, size],
+      s: [0, size, 0, 0],
+      w: [0, 0, size, 0],
+      e: [size, 0, 0, 0],
+    };
+    const [x0, y0, x1, y1] = ends[kind];
+    g = ctx.createLinearGradient(x0, y0, x1, y1);
+  }
+  g.addColorStop(0, kind === 'radial' ? clear : dark);
+  g.addColorStop(1, kind === 'radial' ? dark : clear);
+  ctx.fillStyle = g;
+  ctx.fillRect(0, 0, size, size);
+  return canvas;
+}
+
+/** Tile-unit points to the flat pixel list Graphics wants. */
+function flatten(points: readonly Vec2[]): number[] {
+  const out: number[] = [];
+  for (const p of points) out.push(p.x * TILE, p.y * TILE);
+  return out;
+}
+
+/** Even-odd point-in-polygon, for pairing a hole with the outer loop it sits in. */
+function insideLoop(point: Vec2, loop: readonly Vec2[]): boolean {
+  let inside = false;
+  for (let i = 0, j = loop.length - 1; i < loop.length; j = i++) {
+    const a = loop[i];
+    const b = loop[j];
+    if (!a || !b) continue;
+    const crosses = a.y > point.y !== b.y > point.y;
+    if (crosses && point.x < ((b.x - a.x) * (point.y - a.y)) / (b.y - a.y) + a.x) inside = !inside;
+  }
+  return inside;
+}
+
 const SURFACE_INDEX: Record<SurfaceId, number> = {
   water: 1,
   ice: 2,
@@ -87,24 +165,44 @@ export class PixiBackend implements RenderBackend {
   private pending: { view: MapView; camera: Camera } | null = null;
 
   private root = new Container();
+  /**
+   * The map's painting (ADR 0009), a screen-space sprite under the ground
+   * quad so the ground pass lays its surfaces over it. Its texture is made
+   * from the loaded image here and destroyed when the painting changes, never
+   * through `Texture.from`'s global cache.
+   */
+  private backdropSprite = new Sprite(Texture.EMPTY);
+  private backdrop: { image: HTMLImageElement; texture: Texture } | null = null;
   private groundSprite = new Sprite(Texture.WHITE);
-  /** Elevation lips, wall blocks and cover stones: the rules-relevant tile marks. */
-  private markerGfx = new Graphics();
-  private markerSignature = '';
+  /**
+   * Cliffs, canopies, walls, cover and decals, baked by the same painters the
+   * Canvas 2D backend draws with, one sprite per chunk of the board.
+   */
+  private decorLayer = new Container();
+  private decorSprites = new Map<string, Sprite>();
+  private decor = new DecorSheets();
+  private decorPx = 0;
+  /** Edge shading along the board's four sides and the vignette over the view. */
+  private shadeLayer = new Container();
+  private shadeSprites: Sprite[] = [];
   private overlayGfx = new Graphics();
   private pathGfx = new Graphics();
   private decorGfx = new Graphics();
   private unitLayer = new Container();
   private fxGfx = new Graphics();
   private floaterLayer = new Container();
+  /** Particles and strokes: ground-level ones under the units, the rest over them. */
+  private fxUnder = new ParticleLayer('under');
+  private fxOver = new ParticleLayer('over');
 
   private groundUniforms = new UniformGroup({
     uGrid: { value: new Float32Array([1, 1]), type: 'vec2<f32>' },
-    uViewport: { value: new Float32Array([1, 1]), type: 'vec2<f32>' },
     uOffset: { value: new Float32Array([0, 0]), type: 'vec2<f32>' },
     uTileSize: { value: TILE, type: 'f32' },
     uTime: { value: 0, type: 'f32' },
     uHatch: { value: 0, type: 'f32' },
+    uGridLines: { value: 0, type: 'f32' },
+    uBackdrop: { value: 0, type: 'f32' },
   });
   private groundFilter: Filter | null = null;
 
@@ -122,9 +220,18 @@ export class PixiBackend implements RenderBackend {
 
   /** Sprite pools, keyed so a unit keeps its object across frames. */
   private unitSprites = new Map<string, Sprite>();
-  private textureCache = new Map<HTMLCanvasElement, Texture>();
+  private textureCache = new Map<HTMLCanvasElement | HTMLImageElement, Texture>();
+  private frameTextures = new Map<string, Texture>();
   private floaters: Text[] = [];
   private badgeText: Text[] = [];
+
+  /**
+   * Contours per overlay layer and the curve per path, keyed by identity: the
+   * scene memoises its overlays, so the same objects come back frame after
+   * frame until something changes, and a WeakMap forgets them with it.
+   */
+  private loops = new WeakMap<OverlayLayer, Vec2[][]>();
+  private curve: { path: readonly Vec2[]; from: Vec2; curve: Curve } | null = null;
 
   constructor(private canvas: HTMLCanvasElement) {
     this.mapCanvas.width = 1;
@@ -162,7 +269,8 @@ export class PixiBackend implements RenderBackend {
     const app = new Application();
     await app.init({
       canvas: this.canvas,
-      background: '#120d0a',
+      // Transparent, so the page's mood wash shows round the board (ADR 0008).
+      backgroundAlpha: 0,
       antialias: false,
       width: this.viewport.width,
       height: this.viewport.height,
@@ -198,17 +306,31 @@ export class PixiBackend implements RenderBackend {
 
     // The ground quad is screen-sized and sits OUTSIDE the camera transform:
     // its shader derives tile coordinates from the camera uniforms instead.
-    app.stage.addChild(this.groundSprite);
+    // The painting sits under it, placed from the same camera numbers.
+    this.backdropSprite.visible = false;
+    app.stage.addChild(this.backdropSprite, this.groundSprite);
 
     // Any resize that arrived during init was dropped; apply the latest now.
     this.applyViewport();
 
+    for (const kind of ['n', 's', 'w', 'e'] as const) {
+      const sprite = new Sprite(Texture.from(gradientCanvas(kind, EDGE_SHADE_ALPHA), true));
+      this.shadeSprites.push(sprite);
+      this.shadeLayer.addChild(sprite);
+    }
+    const vignette = new Sprite(Texture.from(gradientCanvas('radial', VIGNETTE_ALPHA), true));
+    this.shadeSprites.push(vignette);
+    this.shadeLayer.addChild(vignette);
+
     this.root.addChild(
-      this.markerGfx,
+      this.decorLayer,
+      this.shadeLayer,
       this.overlayGfx,
       this.pathGfx,
+      this.fxUnder.container,
       this.decorGfx,
       this.unitLayer,
+      this.fxOver.container,
       this.fxGfx,
       this.floaterLayer,
     );
@@ -223,7 +345,10 @@ export class PixiBackend implements RenderBackend {
 
   resize(viewport: Viewport): void {
     sprites.clear();
+    sheets.clear();
     this.dropTextures();
+    this.decor.clear();
+    this.decorPx = 0;
     this.viewport = viewport;
     this.applyViewport();
   }
@@ -241,9 +366,12 @@ export class PixiBackend implements RenderBackend {
 
   destroy(): void {
     this.destroyed = true;
+    this.fxUnder.destroy();
+    this.fxOver.destroy();
     this.app?.destroy(false, { children: true });
     this.app = null;
     this.dropTextures();
+    this.dropBackdrop();
     this.unitSprites.clear();
     this.mapTexture.destroy(true);
   }
@@ -256,16 +384,27 @@ export class PixiBackend implements RenderBackend {
       return;
     }
 
-    this.root.position.set(-camera.offsetX, -camera.offsetY);
+    // The shake moves the world: a knocked camera shows the margin, as a fit does.
+    const nudge = TILE * camera.scale;
+    this.root.position.set(
+      -camera.offsetX + view.cameraNudge.x * nudge,
+      -camera.offsetY + view.cameraNudge.y * nudge,
+    );
     this.root.scale.set(camera.scale);
 
-    this.syncGround(view, camera);
-    this.syncMarkers(view.grid);
+    // A painting takes the terrain's place; the decor that marks footing
+    // over it comes back only under High contrast, where the rules must read
+    // without the picture.
+    const painted = this.syncBackdrop(view, camera);
+    this.syncGround(view, camera, painted);
+    this.syncDecor(view, camera, !painted || view.crispOverlays);
+    this.syncShade(view, camera);
     this.drawOverlays(view);
     this.drawPath(view);
     this.drawDecor(view);
     this.drawUnits(view, camera);
-    this.drawFx(view);
+    this.fxUnder.draw(view.emitters);
+    this.fxOver.draw(view.emitters);
     this.drawFloaters(view);
 
     app.renderer.render(app.stage);
@@ -275,27 +414,62 @@ export class PixiBackend implements RenderBackend {
   /* Ground                                                            */
   /* ---------------------------------------------------------------- */
 
-  private syncGround(view: MapView, camera: Camera): void {
+  /**
+   * Shows the map's painting under the ground pass once it has loaded, at the
+   * board's rectangle in screen space: the same offset and tile size the
+   * shader reconstructs its tiles from, so the surfaces land on the painting
+   * exactly where the painting's tiles are. Returns whether one is showing.
+   */
+  private syncBackdrop(view: MapView, camera: Camera): boolean {
+    const image = view.backdrop ? backdrops.get(view.backdrop.url) : null;
+    if (!image) {
+      this.backdropSprite.visible = false;
+      this.dropBackdrop();
+      return false;
+    }
+    if (this.backdrop?.image !== image) {
+      this.dropBackdrop();
+      const texture = Texture.from(image, true);
+      this.backdrop = { image, texture };
+      this.backdropSprite.texture = texture;
+    }
+    const size = TILE * camera.scale;
+    this.backdropSprite.visible = true;
+    this.backdropSprite.position.set(-camera.offsetX, -camera.offsetY);
+    this.backdropSprite.width = view.grid.width * size;
+    this.backdropSprite.height = view.grid.height * size;
+    return true;
+  }
+
+  private dropBackdrop(): void {
+    if (!this.backdrop) return;
+    this.backdropSprite.texture = Texture.EMPTY;
+    this.backdrop.texture.destroy(true);
+    this.backdrop = null;
+  }
+
+  private syncGround(view: MapView, camera: Camera, painted: boolean): void {
     const { grid } = view;
     this.uploadMap(grid);
 
     const uniforms = this.groundUniforms.uniforms as {
       uGrid: Float32Array;
-      uViewport: Float32Array;
       uOffset: Float32Array;
       uTileSize: number;
       uTime: number;
       uHatch: number;
+      uGridLines: number;
+      uBackdrop: number;
     };
     uniforms.uGrid[0] = grid.width;
     uniforms.uGrid[1] = grid.height;
-    uniforms.uViewport[0] = camera.viewport.width;
-    uniforms.uViewport[1] = camera.viewport.height;
     uniforms.uOffset[0] = camera.offsetX;
     uniforms.uOffset[1] = camera.offsetY;
     uniforms.uTileSize = TILE * camera.scale;
     uniforms.uTime = view.time / 1000;
     uniforms.uHatch = view.hatch ? 1 : 0;
+    uniforms.uGridLines = view.gridLines ? 1 : 0;
+    uniforms.uBackdrop = painted ? 1 : 0;
 
     /*
      * UniformGroup.uniforms is a plain object, not a proxy: neither assigning a
@@ -372,54 +546,75 @@ export class PixiBackend implements RenderBackend {
   }
 
   /**
-   * The marks a player plans by — high ground, walls, cover — drawn exactly as
-   * the Canvas 2D painter draws them (`painters/tiles.ts`), because a fight
-   * has to read the same on both backends. The shader knows nothing of them,
-   * so they are a Graphics layer rebuilt only when a tile's footing changes.
+   * The marks a player plans by — high ground, walls, cover — and the decor
+   * round them, drawn by the same painters as the Canvas 2D backend
+   * (`painters/board.ts`) because a fight has to read the same on both. The
+   * shader knows nothing of them: they are baked into chunk textures at the
+   * zoom's sprite bucket and re-baked only when the footing or the bucket
+   * changes.
    */
-  private syncMarkers(grid: Grid): void {
-    let signature = `${grid.width}x${grid.height}`;
-    for (const tile of grid.tiles) {
-      signature += `|${tile.elevation}${tile.blocked ? 'b' : ''}${tile.cover ? 'c' : ''}`;
-    }
-    if (signature === this.markerSignature) return;
-    this.markerSignature = signature;
+  private syncDecor(view: MapView, camera: Camera, shown: boolean): void {
+    this.decorLayer.visible = shown;
+    if (!shown) return;
+    const grid = view.grid;
+    const changed = this.decor.sync(grid);
+    const px = this.spritePx(camera);
+    if (!changed && px === this.decorPx) return;
+    this.decorPx = px;
 
-    const g = this.markerGfx;
-    g.clear();
-
-    for (let i = 0; i < grid.tiles.length; i++) {
-      const tile = grid.tiles[i];
-      if (!tile) continue;
-      const x = (i % grid.width) * TILE;
-      const y = Math.floor(i / grid.width) * TILE;
-
-      // Elevation: a lit top lip and a shadow underneath.
-      if (tile.elevation > 0) {
-        g.rect(x, y, TILE, Math.max(1, TILE * 0.09 * tile.elevation)).fill({
-          color: 'rgba(255,255,255,0.10)',
-        });
-        g.rect(x, y + TILE * 0.9, TILE, TILE * 0.1).fill({ color: 'rgba(0,0,0,0.22)' });
-      }
-
-      // Walls get a heavier block so they read as impassable, not just dark.
-      if (tile.blocked) {
-        g.rect(x, y, TILE, TILE).fill({ color: 'rgba(0,0,0,0.35)' });
-        g.rect(x + TILE * 0.06, y + TILE * 0.06, TILE * 0.88, TILE * 0.88).stroke({
-          width: Math.max(1, TILE * 0.05),
-          color: TERRAIN_STYLES[tile.terrain].edge,
-        });
-      }
-
-      // Cover: three little stones along the bottom edge.
-      if (tile.cover && !tile.blocked) {
-        for (let k = 0; k < 3; k++) {
-          g.circle(x + TILE * (0.28 + k * 0.22), y + TILE * 0.78, TILE * 0.07).fill({
-            color: 'rgba(255,255,255,0.22)',
-          });
+    const { cols, rows } = decorChunks(grid);
+    const live = new Set<string>();
+    for (let cy = 0; cy < rows; cy++) {
+      for (let cx = 0; cx < cols; cx++) {
+        const key = `${cx},${cy}`;
+        live.add(key);
+        let sprite = this.decorSprites.get(key);
+        if (!sprite) {
+          sprite = new Sprite();
+          this.decorLayer.addChild(sprite);
+          this.decorSprites.set(key, sprite);
         }
+        sprite.texture = this.texture(this.decor.get(grid, cx, cy, px));
+        sprite.position.set(cx * DECOR_CHUNK * TILE, cy * DECOR_CHUNK * TILE);
+        sprite.width = DECOR_CHUNK * TILE;
+        sprite.height = DECOR_CHUNK * TILE;
+        sprite.visible = true;
       }
     }
+    for (const [key, sprite] of this.decorSprites) {
+      if (!live.has(key)) sprite.visible = false;
+    }
+  }
+
+  /**
+   * The board's edges fall off into the dark and the corners of the view dim:
+   * four gradient sprites along the board's sides and one radial across the
+   * viewport, in world units so they ride the camera like everything else.
+   */
+  private syncShade(view: MapView, camera: Camera): void {
+    this.shadeLayer.visible = view.atmosphere;
+    if (!view.atmosphere) return;
+    const [n, s, w, e, vignette] = this.shadeSprites;
+    if (!n || !s || !w || !e || !vignette) return;
+    const width = view.grid.width * TILE;
+    const height = view.grid.height * TILE;
+    const reach = EDGE_SHADE_TILES * TILE;
+    n.position.set(0, 0);
+    n.width = width;
+    n.height = reach;
+    s.position.set(0, height - reach);
+    s.width = width;
+    s.height = reach;
+    w.position.set(0, 0);
+    w.width = reach;
+    w.height = height;
+    e.position.set(width - reach, 0);
+    e.width = reach;
+    e.height = height;
+    // The viewport, in world units: undo the root's camera transform.
+    vignette.position.set(camera.offsetX / camera.scale, camera.offsetY / camera.scale);
+    vignette.width = this.viewport.width / camera.scale;
+    vignette.height = this.viewport.height / camera.scale;
   }
 
   /* ---------------------------------------------------------------- */
@@ -429,6 +624,11 @@ export class PixiBackend implements RenderBackend {
   private drawOverlays(view: MapView): void {
     const g = this.overlayGfx;
     g.clear();
+
+    if (!view.crispOverlays) {
+      this.drawContourOverlays(view);
+      return;
+    }
 
     for (const layer of view.overlays) {
       if (layer.tiles.length === 0) continue;
@@ -463,23 +663,134 @@ export class PixiBackend implements RenderBackend {
     }
   }
 
+  /**
+   * Overlays as rounded contours (ADR 0007). Each layer's loops are traced
+   * once per layer object; holes are cut from the outer loop they sit in.
+   */
+  private drawContourOverlays(view: MapView): void {
+    const g = this.overlayGfx;
+
+    for (const layer of view.overlays) {
+      if (layer.tiles.length === 0) continue;
+      let loops = this.loops.get(layer);
+      if (!loops) {
+        loops = contourLoops(layer.tiles);
+        this.loops.set(layer, loops);
+      }
+      const [fill, edge] = overlayColors(layer.kind);
+
+      const outers = loops.filter((loop) => !isHole(loop));
+      const holes = loops.filter(isHole);
+      for (const outer of outers) {
+        g.poly(flatten(outer), true);
+        for (const hole of holes) {
+          const probe = hole[0];
+          if (probe && insideLoop(probe, outer)) g.poly(flatten(hole), true).cut();
+        }
+        g.fill({ color: fill });
+      }
+
+      if (edge) {
+        for (const loop of loops) {
+          g.poly(flatten(loop), true).stroke({
+            width: TILE * OVERLAY.softWidth,
+            color: edge,
+            alpha: OVERLAY.softAlpha,
+            join: 'round',
+          });
+          g.poly(flatten(loop), true).stroke({
+            width: Math.max(2, TILE * OVERLAY.edgeWidth),
+            color: edge,
+            join: 'round',
+          });
+        }
+      }
+    }
+
+    if (view.hoverTile) {
+      const { x, y } = view.hoverTile;
+      g.poly(
+        HOVER_LOOP.flatMap((p) => [(x + p.x) * TILE, (y + p.y) * TILE]),
+        true,
+      ).fill({ color: OVERLAY.hover });
+    }
+  }
+
   private drawPath(view: MapView): void {
     const g = this.pathGfx;
     g.clear();
-    if (view.path.length === 0) return;
 
-    view.path.forEach((pos: Vec2, index: number) => {
-      const cx = pos.x * TILE + TILE / 2;
-      const cy = pos.y * TILE + TILE / 2;
-      if (index === view.path.length - 1) {
-        g.moveTo(cx - TILE * 0.18, cy + TILE * 0.12)
-          .lineTo(cx, cy - TILE * 0.18)
-          .lineTo(cx + TILE * 0.18, cy + TILE * 0.12)
-          .stroke({ width: Math.max(2, TILE * 0.07), color: OVERLAY.path });
+    if (view.path.length > 0) {
+      if (view.pathFrom && !view.crispOverlays) {
+        this.drawCurvedPath(view, view.pathFrom);
       } else {
-        g.circle(cx, cy, TILE * 0.07).fill({ color: OVERLAY.path });
+        view.path.forEach((pos: Vec2, index: number) => {
+          const cx = pos.x * TILE + TILE / 2;
+          const cy = pos.y * TILE + TILE / 2;
+          if (index === view.path.length - 1) {
+            g.moveTo(cx - TILE * 0.18, cy + TILE * 0.12)
+              .lineTo(cx, cy - TILE * 0.18)
+              .lineTo(cx + TILE * 0.18, cy + TILE * 0.12)
+              .stroke({ width: Math.max(2, TILE * 0.07), color: OVERLAY.path });
+          } else {
+            g.circle(cx, cy, TILE * 0.07).fill({ color: OVERLAY.path });
+          }
+        });
       }
+    }
+
+    if (view.aimArc) this.drawAimArc(view.aimArc);
+  }
+
+  /**
+   * The throw being aimed: the flight's own curve as dots in the element's
+   * light tone over an ink line, with an arrowhead where it lands. The same
+   * points the Canvas 2D backend draws (ADR 0002: a preview is board truth).
+   */
+  private drawAimArc(arc: AimArc): void {
+    const g = this.pathGfx;
+    const points = aimArcPoints(arc.from, arc.to, arc.arc);
+    g.poly(flatten(points), false).stroke({
+      width: Math.max(4, TILE * 0.1),
+      color: OVERLAY.pathUnder,
+      cap: 'round',
+      join: 'round',
     });
+    for (let i = 0; i < points.length - 1; i += 2) {
+      const p = points[i];
+      if (p) g.circle(p.x * TILE, p.y * TILE, TILE * 0.05).fill({ color: arc.color });
+    }
+    const last = points[points.length - 1];
+    if (!last) return;
+    const tip = { x: last.x * TILE, y: last.y * TILE };
+    g.poly(arrowheadPolygon(tip, arcHeading(points), TILE), true).fill({ color: arc.color });
+  }
+
+  /** The route as one curve through the tile centres, with an arrowhead on its last tangent. */
+  private drawCurvedPath(view: MapView, from: Vec2): void {
+    const g = this.pathGfx;
+    if (!this.curve || this.curve.path !== view.path || this.curve.from !== from) {
+      this.curve = { path: view.path, from, curve: smoothPath(from, view.path) };
+    }
+    const curve = this.curve.curve;
+    const points = flatten(curve.points);
+
+    g.poly(points, false).stroke({
+      width: Math.max(4, TILE * 0.11),
+      color: OVERLAY.pathUnder,
+      cap: 'round',
+      join: 'round',
+    });
+    g.poly(points, false).stroke({
+      width: Math.max(2, TILE * 0.05),
+      color: OVERLAY.path,
+      cap: 'round',
+      join: 'round',
+    });
+
+    const end = sampleAt(curve, curve.length);
+    const tip = { x: end.pos.x * TILE, y: end.pos.y * TILE };
+    g.poly(arrowheadPolygon(tip, end.tangent, TILE), true).fill({ color: OVERLAY.path });
   }
 
   private drawDecor(view: MapView): void {
@@ -513,7 +824,7 @@ export class PixiBackend implements RenderBackend {
    * global Pixi cache is skipped: it keys by the canvas object, and a texture
    * destroyed here must not be handed back for the same canvas later.
    */
-  private texture(canvas: HTMLCanvasElement): Texture {
+  private texture(canvas: HTMLCanvasElement | HTMLImageElement): Texture {
     const cached = this.textureCache.get(canvas);
     if (cached) {
       this.textureCache.delete(canvas);
@@ -532,8 +843,36 @@ export class PixiBackend implements RenderBackend {
   }
 
   private dropTextures(): void {
+    for (const texture of this.frameTextures.values()) texture.destroy(false);
+    this.frameTextures.clear();
     for (const texture of this.textureCache.values()) texture.destroy(true);
     this.textureCache.clear();
+  }
+
+  /**
+   * One frame of a sheet as a texture: a view onto the sheet's texture with
+   * the frame rectangle, never a copy of the pixels. Keyed by the source
+   * texture's id so a re-uploaded sheet gets fresh views.
+   */
+  private frameTexture(frame: ResolvedFrame): Texture {
+    const base = this.texture(frame.source);
+    const f = frame.frame;
+    const key = `${base.uid}|${f.x},${f.y},${f.w},${f.h}`;
+    const cached = this.frameTextures.get(key);
+    if (cached && !cached.destroyed && !base.source.destroyed) {
+      this.frameTextures.delete(key);
+      this.frameTextures.set(key, cached);
+      return cached;
+    }
+    const texture = new Texture({ source: base.source, frame: new Rectangle(f.x, f.y, f.w, f.h) });
+    this.frameTextures.set(key, texture);
+    while (this.frameTextures.size > MAX_FRAME_TEXTURES) {
+      const oldest = this.frameTextures.keys().next().value;
+      if (!oldest) break;
+      this.frameTextures.get(oldest)?.destroy(false);
+      this.frameTextures.delete(oldest);
+    }
+    return texture;
   }
 
   /**
@@ -566,7 +905,10 @@ export class PixiBackend implements RenderBackend {
       live.add(key);
       const sprite = this.unitSprite(key);
       sprite.texture = this.texture(sprites.get(npc.sprite, px, { facing: 1 }));
-      sprite.position.set(npc.pos.x * TILE, npc.pos.y * TILE);
+      sprite.position.set(
+        npc.pos.x * TILE,
+        (npc.pos.y - elevationAt(view.grid, npc.pos) * ELEVATION_LIFT) * TILE,
+      );
       sprite.width = TILE;
       sprite.height = TILE;
       sprite.alpha = 1;
@@ -584,7 +926,10 @@ export class PixiBackend implements RenderBackend {
       live.add(key);
       const sprite = this.unitSprite(key);
       sprite.texture = this.texture(sprites.get(prop.sprite, px, { facing: 1 }));
-      sprite.position.set(prop.pos.x * TILE, prop.pos.y * TILE);
+      sprite.position.set(
+        prop.pos.x * TILE,
+        (prop.pos.y - elevationAt(view.grid, prop.pos) * ELEVATION_LIFT) * TILE,
+      );
       sprite.width = TILE;
       sprite.height = TILE;
       sprite.alpha = 1;
@@ -606,21 +951,67 @@ export class PixiBackend implements RenderBackend {
 
     for (const unit of ordered) {
       const pos = unit.renderPos ?? unit.pos;
-      const x = pos.x * TILE;
-      const y = pos.y * TILE;
+      // The bob lifts the drawing, never the sort: zIndex stays on the tile.
+      // So does the ground: a unit on a ledge stands a little higher on screen.
+      const lift = elevationAt(view.grid, unit.pos) * ELEVATION_LIFT;
+      const x = (pos.x + (unit.offset?.x ?? 0)) * TILE;
+      const y = (pos.y + (unit.offset?.y ?? 0) - lift) * TILE;
       const width = unit.size === 2 ? TILE * 2 : TILE;
+      const facing = unit.facing ?? (unit.faction === 'enemy' ? -1 : 1);
 
       live.add(unit.id);
       const sprite = this.unitSprite(unit.id);
-      sprite.texture = this.texture(
-        sprites.get(unit.sprite, px, { facing: unit.faction === 'enemy' ? -1 : 1 }, unit.size),
+      // A pose scales about the feet; the fallen fade sits on top of any alpha.
+      const scale = unit.scale ?? 1;
+      // The frame comes from the unit's sheet, real or baked from its painter
+      // at the zoom's bucket (ADR 0003); the anchor stands on the foot line.
+      const frame = sheets.frame(
+        unit.sprite,
+        unit.clip ?? 'idle',
+        unit.clipTime ?? view.time + idlePhase(unit.id),
+        unit.clipFrame,
+        px,
+        unit.size,
       );
-      sprite.position.set(x, y);
-      sprite.width = width;
-      sprite.height = TILE;
-      sprite.alpha = unit.fallen ? 0.35 : 1;
+      let headroom = 0;
+      if (frame) {
+        headroom = frame.headroom;
+        sprite.texture = this.frameTexture(frame);
+        sprite.anchor.set(frame.anchor.x, frame.anchor.y);
+        sprite.position.set(x + width / 2, y + FOOT_LINE * TILE);
+        sprite.width = (frame.frame.w / frame.pixelsPerTile) * TILE * scale;
+        sprite.height = (frame.frame.h / frame.pixelsPerTile) * TILE * scale;
+        sprite.scale.x = Math.abs(sprite.scale.x) * facing;
+      } else {
+        sprite.texture = this.texture(sprites.get(unit.sprite, px, { facing }, unit.size));
+        sprite.anchor.set(0, 0);
+        const drawWidth = width * scale;
+        const drawHeight = TILE * scale;
+        sprite.position.set(x + (width - drawWidth) / 2, y + (TILE - drawHeight));
+        sprite.width = drawWidth;
+        sprite.height = drawHeight;
+        sprite.scale.x = Math.abs(sprite.scale.x);
+      }
+      sprite.alpha = (unit.alpha ?? 1) * (unit.fallen ? 0.35 : 1);
       sprite.visible = true;
       sprite.zIndex = pos.y;
+
+      // The hit flash: the same sprite again, white and additive, over the top.
+      const flash = unit.flash ?? 0;
+      if (flash > 0) {
+        const key = `flash:${unit.id}`;
+        live.add(key);
+        const glow = this.unitSprite(key);
+        glow.texture = sprite.texture;
+        glow.anchor.copyFrom(sprite.anchor);
+        glow.position.copyFrom(sprite.position);
+        glow.scale.copyFrom(sprite.scale);
+        glow.tint = 0xffffff;
+        glow.blendMode = 'add';
+        glow.alpha = Math.min(1, flash) * 0.9;
+        glow.visible = true;
+        glow.zIndex = pos.y + 0.001;
+      }
 
       if (unit.id === view.activeUnitId) {
         g.ellipse(x + width / 2, y + TILE * 0.86, width * 0.42, TILE * 0.14).stroke({
@@ -645,7 +1036,7 @@ export class PixiBackend implements RenderBackend {
         continue;
       }
 
-      if (unit.showHealth !== false) this.drawHealthBar(g, unit, x, y, width);
+      if (unit.showHealth !== false) this.drawHealthBar(g, unit, x, y - headroom * TILE, width);
       badgeIndex = this.drawStatusBadges(g, unit, x, y, width, badgeIndex);
     }
 
@@ -738,21 +1129,6 @@ export class PixiBackend implements RenderBackend {
   /* ---------------------------------------------------------------- */
   /* Effects                                                           */
   /* ---------------------------------------------------------------- */
-
-  private drawFx(view: MapView): void {
-    const g = this.fxGfx;
-    for (const fx of view.fx) {
-      const cx = fx.pos.x * TILE + TILE / 2;
-      const cy = fx.pos.y * TILE + TILE / 2;
-      const grow = 0.2 + fx.progress * 0.5;
-      const fade = 1 - fx.progress;
-      g.circle(cx, cy, TILE * grow).stroke({
-        width: Math.max(2, TILE * 0.06 * fade),
-        color: '#f0c674',
-        alpha: fade * 0.8,
-      });
-    }
-  }
 
   private drawFloaters(view: MapView): void {
     view.floaters.forEach((floater, index) => {

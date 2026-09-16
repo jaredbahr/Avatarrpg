@@ -3,7 +3,10 @@
  *
  * The reducer returns what happened; this decides how long the player watches
  * it. Everything is a timed track sampled per frame, so the renderer stays a
- * pure function of "what does the world look like at time T".
+ * pure function of "what does the world look like at time T". The tracks
+ * themselves are laid out by `anim/choreography.ts`; this owns the clock and
+ * answers the scenes' questions: where is a unit drawn, what pose is it in,
+ * which particles are live, how far has the camera been knocked.
  *
  * Reduce-motion collapses every duration to a single frame rather than
  * skipping the playback: the floating numbers and the combat log still appear,
@@ -11,209 +14,225 @@
  */
 
 import type { ContentIndex, GameEvent, Unit, Vec2 } from '../core/types';
-import type { FxInstance, Floater } from '../render/renderer';
+import type { EmitterInstance, Floater } from '../render/view';
+import type { ClipName } from '../render/view';
+import { hashSeed, mulberry32 } from '../render/fx/rng';
+import { sampleAt } from '../render/geometry/curve';
+import { choreograph } from './anim/choreography';
+import { Timeline } from './anim/timeline';
+import type { MoveTrack, PoseTrack } from './anim/timeline';
 import { motionReduced } from './ui/dom';
 
-interface Track {
-  readonly start: number;
-  readonly duration: number;
+/** Height of the walk bob in tiles, once per tile of travel. */
+const BOB = 0.05;
+
+/**
+ * A walk clip advances by distance, not time: this many ms of clip per tile
+ * of travel, so at the sheets' 4 fps a stride is two poses a tile whatever
+ * the unit's speed.
+ */
+const WALK_MS_PER_TILE = 500;
+
+/** How far off dead vertical the travel has to lean before the sprite turns. */
+const TURN_THRESHOLD = 0.2;
+
+/** How often the shake picks a new direction, in ms. */
+const SHAKE_STEP = 30;
+
+export interface AnimatorOptions {
+  /** Overrides the reduce-motion lookup, so tests can run without a document. */
+  readonly motionReduced?: () => boolean;
 }
 
-interface FxTrack extends Track {
-  readonly pos: Vec2;
-  readonly assetKey: string;
+/** Everything the renderer needs to draw a unit mid-playback. */
+export interface UnitPose {
+  readonly clip: ClipName;
+  /** Ms into the clip. */
+  readonly clipTime: number;
+  /** Draw offset in tiles: the walk bob, a lunge, a recoil. */
+  readonly offset: Vec2;
+  readonly scale: number;
+  readonly alpha: number;
+  /** 0..1 white flash on a hit. */
+  readonly flash: number;
+  readonly facing?: 1 | -1;
+  /** The clip's frame, when the choreography named one. */
+  readonly frame?: number;
 }
-
-interface FloaterTrack extends Track {
-  readonly pos: Vec2;
-  readonly text: string;
-  readonly color: string;
-}
-
-interface MoveTrack extends Track {
-  readonly unitId: string;
-  readonly from: Vec2;
-  readonly path: readonly Vec2[];
-}
-
-/** Base durations in milliseconds, before the motion setting is applied. */
-const TIMING = {
-  step: 110,
-  ability: 420,
-  floater: 900,
-  gap: 60,
-} as const;
 
 export class Animator {
   /** Only used to turn an ability id into its manifest fx key. */
-  constructor(private content: ContentIndex) {}
+  constructor(
+    private content: ContentIndex,
+    private options: AnimatorOptions = {},
+  ) {}
 
-  private fxTracks: FxTrack[] = [];
-  private floaterTracks: FloaterTrack[] = [];
-  private moveTracks: MoveTrack[] = [];
-  private endsAt = 0;
+  private timeline = new Timeline();
+  /** Which way each unit last walked; a unit keeps facing that way when it stops. */
+  private facings = new Map<string, 1 | -1>();
+  private pushes = 0;
+  /** Where the most recent push started, so another can be laid alongside it. */
+  private lastCursor = 0;
 
   /** Multiplier applied to every duration; 0.02 when reduce-motion is on. */
   private get rate(): number {
-    return motionReduced() ? 0.02 : 1;
+    return (this.options.motionReduced ?? motionReduced)() ? 0.02 : 1;
   }
 
   clear(): void {
-    this.fxTracks = [];
-    this.floaterTracks = [];
-    this.moveTracks = [];
-    this.endsAt = 0;
+    this.timeline.clear();
+    this.facings.clear();
+    this.pushes = 0;
   }
 
   /** True while there is still something to watch. */
   busy(now: number): boolean {
-    return now < this.endsAt;
+    return this.timeline.busy(now);
   }
 
   /** When the current playback finishes, in the same clock as `now`. */
   get finishesAt(): number {
-    return this.endsAt;
+    return this.timeline.finishesAt;
   }
 
   /**
    * Schedules playback for a batch of events.
    *
    * `unitsBefore` is the battle roster as it was *before* the events applied,
-   * so a move can animate from where the unit actually was.
+   * so a move can animate from where the unit actually was. Playback queues
+   * after whatever is already playing; `alongside` starts it where the
+   * previous push started instead, for tracks that belong to the same
+   * moment (the followers of a walk the rules only reported for the leader).
    */
-  push(now: number, events: readonly GameEvent[], unitsBefore: readonly Unit[]): void {
-    const rate = this.rate;
-    let cursor = Math.max(now, this.endsAt);
-
-    const positions = new Map<string, Vec2>();
-    for (const unit of unitsBefore) positions.set(unit.id, unit.pos);
-
-    for (const event of events) {
-      switch (event.type) {
-        case 'unitMoved': {
-          if (event.path.length === 0) break;
-          const from = positions.get(event.unitId) ?? event.path[0];
-          const duration = TIMING.step * event.path.length * rate;
-          if (from) {
-            this.moveTracks.push({
-              unitId: event.unitId,
-              from,
-              path: event.path,
-              start: cursor,
-              duration,
-            });
-          }
-          const last = event.path[event.path.length - 1];
-          if (last) positions.set(event.unitId, last);
-          cursor += duration;
-          break;
-        }
-
-        case 'abilityUsed': {
-          const duration = TIMING.ability * rate;
-          const assetKey = this.content.abilities.get(event.abilityId)?.fx ?? 'fx.impact';
-          // Cap the tile count: a 5x5 blast does not need 25 separate bursts.
-          for (const tile of event.tiles.slice(0, 24)) {
-            this.fxTracks.push({ pos: tile, assetKey, start: cursor, duration });
-          }
-          cursor += duration * 0.5;
-          break;
-        }
-
-        case 'damaged': {
-          const pos = positions.get(event.unitId);
-          if (pos) {
-            this.floaterTracks.push({
-              pos,
-              text: event.crit ? `${event.amount}!` : String(event.amount),
-              color: event.crit ? '#ffd98a' : '#ff9d8d',
-              start: cursor,
-              duration: TIMING.floater * rate,
-            });
-          }
-          cursor += TIMING.gap * rate;
-          break;
-        }
-
-        case 'healed': {
-          const pos = positions.get(event.unitId);
-          if (pos) {
-            this.floaterTracks.push({
-              pos,
-              text: `+${event.amount}`,
-              color: '#8fe39b',
-              start: cursor,
-              duration: TIMING.floater * rate,
-            });
-          }
-          cursor += TIMING.gap * rate;
-          break;
-        }
-
-        case 'attackMissed': {
-          const pos = positions.get(event.targetId);
-          if (pos) {
-            this.floaterTracks.push({
-              pos,
-              text: 'miss',
-              color: '#cfc3ae',
-              start: cursor,
-              duration: TIMING.floater * rate,
-            });
-          }
-          cursor += TIMING.gap * rate;
-          break;
-        }
-
-        case 'unitPushed': {
-          const from = positions.get(event.unitId);
-          if (from) {
-            const duration = TIMING.step * 2 * rate;
-            this.moveTracks.push({
-              unitId: event.unitId,
-              from,
-              path: [event.to],
-              start: cursor,
-              duration,
-            });
-            positions.set(event.unitId, event.to);
-            cursor += duration;
-          }
-          break;
-        }
-
-        case 'unitDied': {
-          const pos = positions.get(event.unitId);
-          if (pos) {
-            this.floaterTracks.push({
-              pos,
-              text: 'down',
-              color: '#e2584a',
-              start: cursor,
-              duration: TIMING.floater * rate,
-            });
-          }
-          cursor += TIMING.gap * 2 * rate;
-          break;
-        }
-
-        default:
-          break;
-      }
-    }
-
-    this.endsAt = Math.max(this.endsAt, cursor);
+  push(
+    now: number,
+    events: readonly GameEvent[],
+    unitsBefore: readonly Unit[],
+    options: { alongside?: boolean } = {},
+  ): void {
+    const cursor = options.alongside
+      ? Math.max(now, this.lastCursor)
+      : Math.max(now, this.timeline.finishesAt);
+    this.lastCursor = cursor;
+    const result = choreograph({
+      content: this.content,
+      events,
+      unitsBefore,
+      cursor,
+      rate: this.rate,
+      pushIndex: this.pushes++,
+    });
+    for (const track of result.tracks) this.timeline.add(track);
+    this.timeline.holdUntil(result.cursor);
   }
 
-  /** Active effect instances at `now`. */
-  fx(now: number): FxInstance[] {
-    const out: FxInstance[] = [];
-    for (const track of this.fxTracks) {
-      if (now < track.start || now > track.start + track.duration) continue;
+  /** Drops finished tracks. Called once a frame so memory stays flat. */
+  prune(now: number): void {
+    this.timeline.prune(now);
+  }
+
+  /** The move track a unit is on at `now`, if any, with how far along it is in tiles. */
+  private travel(now: number, unitId: string): { track: MoveTrack; distance: number } | null {
+    let found: { track: MoveTrack; distance: number } | null = null;
+    for (const track of this.timeline.active(now, 'move')) {
+      if (track.unitId !== unitId) continue;
+      found = { track, distance: track.ease(Timeline.progress(track, now)) * track.curve.length };
+    }
+    return found;
+  }
+
+  /**
+   * Where a unit should be drawn at `now`, if it is mid-move. Returns
+   * undefined when the unit is not animating, so the caller uses `unit.pos`.
+   *
+   * The route is sampled by arc length under an ease, so a walk leaves the
+   * tile slowly, hurries through the middle and settles at the end instead
+   * of hopping tile to tile at one speed. Sampling also turns the sprite to
+   * face the way it is going, which it keeps once it has stopped.
+   */
+  renderPos(now: number, unitId: string): Vec2 | undefined {
+    const travel = this.travel(now, unitId);
+    if (!travel) return undefined;
+    const sample = sampleAt(travel.track.curve, travel.distance);
+    if (Math.abs(sample.tangent.x) > TURN_THRESHOLD) {
+      this.facings.set(unitId, sample.tangent.x > 0 ? 1 : -1);
+    }
+    // The curve runs through tile centres; positions are tile corners.
+    return { x: sample.pos.x - 0.5, y: sample.pos.y - 0.5 };
+  }
+
+  /**
+   * The walk bob: a small lift once per tile of travel, in tile units. Drawn
+   * as an offset so it never changes the order units are painted in.
+   */
+  offset(now: number, unitId: string): Vec2 | undefined {
+    const travel = this.travel(now, unitId);
+    if (!travel || travel.track.curve.length <= 0) return undefined;
+    return { x: 0, y: -BOB * Math.abs(Math.sin(Math.PI * travel.distance)) };
+  }
+
+  /** Which way a unit last walked, or undefined if it has not walked yet. */
+  facing(unitId: string): 1 | -1 | undefined {
+    return this.facings.get(unitId);
+  }
+
+  /**
+   * The unit's pose at `now`, or undefined when nothing is playing on it: the
+   * latest-started pose track wins, the walk bob adds to it, and a hit's
+   * flash decays over its own track.
+   */
+  unitPose(now: number, unitId: string): UnitPose | undefined {
+    let pose: PoseTrack | undefined;
+    for (const track of this.timeline.active(now, 'pose')) {
+      if (track.unitId === unitId && (!pose || track.start >= pose.start)) pose = track;
+    }
+    const travel = this.travel(now, unitId);
+    const bob =
+      travel && travel.track.curve.length > 0
+        ? { x: 0, y: -BOB * Math.abs(Math.sin(Math.PI * travel.distance)) }
+        : undefined;
+    let flash = 0;
+    for (const track of this.timeline.active(now, 'flash')) {
+      if (track.unitId !== unitId) continue;
+      flash = Math.max(flash, track.strength * (1 - Timeline.progress(track, now)));
+    }
+    if (!pose && !bob && flash === 0) return undefined;
+
+    const t = pose ? pose.ease(Timeline.progress(pose, now)) : 0;
+    const offset = pose
+      ? {
+          x: pose.offset.from.x + (pose.offset.to.x - pose.offset.from.x) * t + (bob?.x ?? 0),
+          y: pose.offset.from.y + (pose.offset.to.y - pose.offset.from.y) * t + (bob?.y ?? 0),
+        }
+      : (bob ?? { x: 0, y: 0 });
+    const scale = pose?.scale ? pose.scale.from + (pose.scale.to - pose.scale.from) * t : 1;
+    const alpha = pose?.alpha ? pose.alpha.from + (pose.alpha.to - pose.alpha.from) * t : 1;
+    const facing = pose?.facing;
+    const frame = pose?.frame;
+    return {
+      clip: pose ? pose.clip : bob ? 'walk' : 'idle',
+      clipTime: pose ? now - pose.start : travel ? travel.distance * WALK_MS_PER_TILE : 0,
+      offset,
+      scale,
+      alpha,
+      flash,
+      ...(facing !== undefined ? { facing } : {}),
+      ...(frame !== undefined ? { frame } : {}),
+    };
+  }
+
+  /** Live particle and stroke emitters at `now`, with their age. */
+  emitters(now: number): EmitterInstance[] {
+    const out: EmitterInstance[] = [];
+    for (const track of this.timeline.active(now, 'emitter')) {
       out.push({
-        pos: track.pos,
-        assetKey: track.assetKey,
-        progress: (now - track.start) / Math.max(1, track.duration),
+        def: track.def,
+        from: track.from,
+        to: track.to,
+        elapsed: now - track.start,
+        seed: track.seed,
+        palette: track.palette,
+        arc: track.arc,
       });
     }
     return out;
@@ -221,45 +240,32 @@ export class Animator {
 
   floaters(now: number): Floater[] {
     const out: Floater[] = [];
-    for (const track of this.floaterTracks) {
-      if (now < track.start || now > track.start + track.duration) continue;
+    for (const track of this.timeline.active(now, 'floater')) {
       out.push({
         pos: track.pos,
         text: track.text,
         color: track.color,
-        progress: (now - track.start) / Math.max(1, track.duration),
+        progress: Timeline.progress(track, now),
       });
     }
     return out;
   }
 
   /**
-   * Where a unit should be drawn at `now`, if it is mid-move. Returns
-   * undefined when the unit is not animating, so the caller uses `unit.pos`.
+   * How far the camera is knocked at `now`, in tiles: every live shake picks
+   * a fresh direction every few frames, seeded, and dies off over its track.
    */
-  renderPos(now: number, unitId: string): Vec2 | undefined {
-    let result: Vec2 | undefined;
-    for (const track of this.moveTracks) {
-      if (track.unitId !== unitId) continue;
-      if (now < track.start) continue;
-      if (now > track.start + track.duration) continue;
-
-      const t = (now - track.start) / Math.max(1, track.duration);
-      const steps = track.path.length;
-      const index = Math.min(steps - 1, Math.floor(t * steps));
-      const localT = t * steps - index;
-      const from = index === 0 ? track.from : (track.path[index - 1] ?? track.from);
-      const to = track.path[index] ?? from;
-      result = { x: from.x + (to.x - from.x) * localT, y: from.y + (to.y - from.y) * localT };
+  cameraNudge(now: number): Vec2 {
+    let x = 0;
+    let y = 0;
+    for (const track of this.timeline.active(now, 'shake')) {
+      const step = Math.floor((now - track.start) / SHAKE_STEP);
+      const r = mulberry32(hashSeed(track.seed, step));
+      const angle = r() * Math.PI * 2;
+      const strength = track.amplitude * (1 - Timeline.progress(track, now));
+      x += Math.cos(angle) * strength;
+      y += Math.sin(angle) * strength;
     }
-    return result;
-  }
-
-  /** Drops finished tracks. Called once a frame so memory stays flat. */
-  prune(now: number): void {
-    const alive = (track: Track) => now <= track.start + track.duration;
-    this.fxTracks = this.fxTracks.filter(alive);
-    this.floaterTracks = this.floaterTracks.filter(alive);
-    this.moveTracks = this.moveTracks.filter(alive);
+    return { x, y };
   }
 }

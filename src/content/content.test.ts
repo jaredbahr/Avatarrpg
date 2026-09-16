@@ -272,9 +272,15 @@ describe('content', () => {
       if (node.kind === 'dialogue' || node.kind === 'choice') keys.add(node.portrait);
     }
 
+    // The palette names `src/render/palettes.ts` knows. An unknown one falls
+    // through to neutral silently, which is exactly the kind of drift a real
+    // portrait dropped in with a typo would show as a grey ring in the HUD.
+    const palettes = ['fire', 'water', 'earth', 'air', 'nonbender', 'enemy', 'neutral'];
+
     for (const key of keys) {
       const entry = resolveAsset(key);
       expect(entry.kind === 'painter' || entry.kind === 'image', key).toBe(true);
+      if (entry.palette !== undefined) expect(palettes, `${key} palette`).toContain(entry.palette);
     }
   });
 

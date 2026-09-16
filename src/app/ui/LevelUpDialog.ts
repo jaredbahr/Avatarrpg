@@ -11,8 +11,8 @@ import type { App } from '../App';
 import type { PendingChoice } from '../../core/types';
 import { Dialog } from './Dialog';
 import type { DialogOptions } from './Dialog';
-import { button, el, painterCanvas } from './dom';
-import { resolvePainter } from '../../render/painters/registry';
+import { button, el } from './dom';
+import { assetCanvas } from './assetCanvas';
 import { abilityCard } from './AbilityCard';
 
 export class LevelUpDialog extends Dialog {
@@ -51,9 +51,7 @@ export class LevelUpDialog extends Dialog {
           el(
             'div',
             { class: 'row levelup-who' },
-            painterCanvas(character.portrait, 4, (ctx, size) => {
-              resolvePainter(character.portrait).draw(ctx, { x: 0, y: 0, size });
-            }),
+            assetCanvas(character.portrait, 4),
             el(
               'div',
               { class: 'stack tight' },

@@ -91,3 +91,43 @@ art, and it is where every later asset lands.
 - A recolour still touches `base.css`, `palettes.ts`, `shaders.ts` and
   `scripts/make-icons.mjs`; a generator that writes them from one source is a
   follow-up, not part of this phase.
+
+## Amendment, 2026-09-16: the parchment shell
+
+The shell was warm dark ink with panels of aged paper. The owner's target
+mockup of the combat screen exists in two colourways, dark ink and light
+parchment, and he chose the light one, alone: there is one colourway, no
+setting, and the dark shell is retired.
+
+What changed, all inside the `:root` block of `src/styles/base.css` and the
+rules that assumed a dark ground:
+
+- The shell tokens are paper: `--c-bg` and `--c-bg-deep` parchment, the
+  panels lighter sheets of it, `--c-ink` and its dim and faint steps brown
+  ink, `--c-line` tan, `--c-ink-line` the art bible's brown outline, never
+  black. The golds are deepened so `--c-ink-on-gold` still reads on a gold
+  button and gold reads as a line on cream; gold as _text_ is `--c-gold-deep`.
+- Status colours are deepened for cream (`--c-ok` is the mockup's confirm
+  green, `--c-danger`, `--c-warn`), and their tints are light with deep ink,
+  the reverse of the dark shell's.
+- Surfaces rise toward white, the pressed surface sinks toward the paper,
+  scrims are brown-tinted, shadows are lighter, the paper hairline is a
+  light edge (`--c-paper-light`) rather than an ink one, and the grain is
+  brown ink at 5% rather than parchment at 6%, so it shows on cream.
+- Air's accent (`--el` under `.element-air`) is inked down with `color-mix`:
+  air's parchment is the shell's own paper and would vanish on it. The
+  nation palettes themselves, and `src/render/palettes.ts`, are unchanged:
+  the board is not the shell.
+- High contrast is re-derived for a light shell: darker lines, whiter paper,
+  the 2 px hairline, no grain.
+- `color-scheme: light`; the theme-colour metas and the manifest follow;
+  the iOS status bar style is `default`, since white text over parchment
+  would not read.
+- A contrast check over the token pairs (ink on panel and on the ground, dim
+  and faint ink, ink on gold, paper on the confirm green, danger and warn on
+  paper, the semantic inks on their tints) is part of the slice's
+  verification; all pairs clear WCAG AA for their role.
+
+Consequences: the same tokens, one colourway; a recolour is still one edit
+here plus the canvas mirror. The gallery is the review of every scene under
+it.

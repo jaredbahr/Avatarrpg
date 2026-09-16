@@ -15,11 +15,14 @@ import type {
   ElementId,
   GameEvent,
   GameState,
+  MapBackdrop,
   StoryNode,
+  Vec2,
 } from '../core/types';
 import { apply } from '../core/state/reducer';
 import { createGame } from '../core/state/createGame';
 import type { PartySlot } from '../core/state/createGame';
+import { backdrops } from '../render/backdrops';
 import { Animator } from './animator';
 import { Session } from './session';
 import type { Player } from './session';
@@ -35,6 +38,7 @@ import { describeProgress } from '../core/save/serialize';
 import { reconcileDisciplines } from '../core/save/reconcile';
 import type { SessionMeta } from '../core/save/serialize';
 import { announce, clear, el } from './ui/dom';
+import { loadIcons } from './ui/icons';
 import { WHEEL_LINES_SVG } from './ui/marks';
 import { Toasts } from './ui/Toasts';
 import { Stats } from './ui/Stats';
@@ -71,6 +75,13 @@ export interface Scene {
   /** Called after every state change. */
   sync(): void;
   resize?(): void;
+  /**
+   * The events a command produced, before the scene may be swapped for the
+   * one the new state calls for, with the clock the animator was given. A
+   * scene that keeps presentation of its own (the village's trailing
+   * followers) lays its playback alongside the animator's here.
+   */
+  onEvents?(events: readonly GameEvent[], now: number): void;
 }
 
 export class App {
@@ -84,6 +95,13 @@ export class App {
 
   settings: Settings;
   state: GameState | null = null;
+
+  /**
+   * Paintings swapped under a map by the review hooks (null retires the
+   * map's own), so the e2e suite and the gallery can put the probe painting
+   * under the forest road without touching content.
+   */
+  private backdropOverride = new Map<string, MapBackdrop | null>();
 
   private host: HTMLElement;
   private sceneHost: HTMLElement;
@@ -156,6 +174,8 @@ export class App {
   /* ---------------------------------------------------------------- */
 
   start(): void {
+    // The real icon set, if it is there; every mark falls back to the drawn one.
+    loadIcons();
     this.showScene(new TitleScene(this));
   }
 
@@ -174,6 +194,23 @@ export class App {
   /** Tints the backdrop. Scenes call it when they know better than the map does. */
   setMood(mood: Mood): void {
     this.host.dataset.mood = mood;
+  }
+
+  /** The painting to draw under a map: an override if one is set, else the map's own. */
+  backdropFor(mapId: string): MapBackdrop | null {
+    const override = this.backdropOverride.get(mapId);
+    if (override !== undefined) return override;
+    return this.content.maps.get(mapId)?.backdrop ?? null;
+  }
+
+  /**
+   * Puts a painting under a map for this session, or none with null. The
+   * mounted scene picks it up on its next frame; the promise settles once the
+   * image has loaded (true) or failed (false), so a spec can wait for it.
+   */
+  overrideBackdrop(mapId: string, backdrop: MapBackdrop | null): Promise<boolean> {
+    this.backdropOverride.set(mapId, backdrop);
+    return backdrop ? backdrops.whenLoaded(backdrop.url) : Promise.resolve(true);
   }
 
   /** The mood the current place suggests: the map's ambience, or neutral off the map. */
@@ -273,12 +310,28 @@ export class App {
     const result = apply(this.content, state, command);
     this.state = result.state;
 
+    const now = performance.now();
     if (result.events.length > 0) {
-      this.animator.push(performance.now(), result.events, unitsBefore);
+      this.animator.push(now, result.events, unitsBefore);
+      this.scene?.onEvents?.(result.events, now);
     }
 
     this.announceImportant(result.events);
-    this.routeToState();
+    if (
+      state.screen === 'explore' &&
+      result.state.screen !== 'explore' &&
+      this.animator.busy(now)
+    ) {
+      // The party walked up to someone, or out of the gate: let them finish
+      // crossing the tiles before the scene changes under them. Reduce motion
+      // collapses the walk, so this is a frame there.
+      window.setTimeout(
+        () => this.routeToState(),
+        Math.max(0, this.animator.finishesAt - performance.now()),
+      );
+    } else {
+      this.routeToState();
+    }
     this.offerLevelUpIfPending();
     this.autosaveIfWorthIt(command, result.events);
 
@@ -403,6 +456,17 @@ export class App {
   }
 
   /**
+   * Re-syncs the mounted scene to `state` after something other than
+   * `dispatch` replaced it. The e2e and gallery specs stage a board by editing
+   * state directly (an enemy on a puddle, a unit at one HP) and the HUD has to
+   * be told; nothing in the game itself calls this.
+   */
+  resync(): void {
+    this.routeToState();
+    this.offerLevelUpIfPending();
+  }
+
+  /**
    * Current map camera, as plain numbers.
    *
    * Exposed so the e2e suite can work out which screen pixel a tile is under
@@ -412,6 +476,16 @@ export class App {
   rendererCamera(): CameraInfo | null {
     const scene = this.scene as unknown as { cameraInfo?: () => CameraInfo | null };
     return scene?.cameraInfo?.() ?? null;
+  }
+
+  /**
+   * Where the village draws each party member, leader first, as tiles.
+   * Exposed so the e2e suite can check the drawing against the rules after
+   * a walk. Null outside the village.
+   */
+  partyPositions(): readonly Vec2[] | null {
+    const scene = this.scene as unknown as { partyPositions?: () => readonly Vec2[] | null };
+    return scene?.partyPositions?.() ?? null;
   }
 
   /**

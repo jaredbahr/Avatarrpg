@@ -152,3 +152,12 @@ export function motionReduced(): boolean {
   if (document.documentElement.dataset.reduceMotion === 'on') return true;
   return window.matchMedia?.('(prefers-reduced-motion: reduce)').matches ?? false;
 }
+
+/** An inline mark, hidden from readers, so a button's name stays its text. */
+export function mark(svg: string, extra = ''): HTMLElement {
+  return el('span', {
+    class: extra ? `mark ${extra}` : 'mark',
+    html: svg,
+    attrs: { 'aria-hidden': 'true' },
+  });
+}

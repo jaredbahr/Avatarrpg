@@ -25,6 +25,16 @@ interface CacheEntry {
   readonly canvas: HTMLCanvasElement;
 }
 
+/**
+ * Manifest URLs are written relative to the site root. On GitHub Pages the
+ * site root is `/<repo>/`, so a bare `art/kaya.png` would 404 there; Vite
+ * knows the base, and this puts it in front. Absolute URLs pass through.
+ */
+export function assetUrl(url: string): string {
+  if (/^(?:[a-z]+:|\/)/i.test(url)) return url;
+  return `${import.meta.env.BASE_URL}${url}`;
+}
+
 /** Sizes are bucketed so a slow zoom does not repaint every sprite per frame. */
 const SIZE_BUCKET = 8;
 
@@ -40,6 +50,7 @@ const MAX_ENTRIES = 128;
 export class SpriteCache {
   private entries = new Map<string, CacheEntry>();
   private images = new Map<string, HTMLImageElement | null>();
+  private loading = new Map<string, Promise<boolean>>();
   private failed = new Set<string>();
 
   /** Painted sprites are cheap to rebuild; drop them all on a big resize. */
@@ -94,8 +105,23 @@ export class SpriteCache {
 
   /**
    * Loaded image for an asset key, or null while it loads (or forever, if the
-   * manifest entry is a painter). Kicks off the load on first ask.
+   * manifest entry is a painter). Kicks off the load on first ask. The DOM
+   * portraits draw from this directly, at full resolution.
    */
+  imageFor(key: string): HTMLImageElement | null {
+    return this.image(key);
+  }
+
+  /**
+   * Resolves true once the key's bitmap is in, false if the entry is a painter
+   * or the load failed. Lets a portrait repaint itself the moment the art
+   * arrives instead of waiting for the next HUD rebuild.
+   */
+  whenLoaded(key: string): Promise<boolean> {
+    if (this.image(key)) return Promise.resolve(true);
+    return this.loading.get(key) ?? Promise.resolve(false);
+  }
+
   private image(key: string): HTMLImageElement | null {
     const entry = resolveAsset(key);
     if (entry.kind !== 'image') return null;
@@ -107,18 +133,25 @@ export class SpriteCache {
     this.images.set(key, null);
     const img = new Image();
     img.decoding = 'async';
-    img.onload = () => {
-      this.images.set(key, img);
-      // Anything already painted with the placeholder must be repainted.
-      this.entries.clear();
-    };
-    img.onerror = () => {
-      // Fall back to the painter rather than showing nothing.
-      this.failed.add(key);
-      this.images.delete(key);
-      console.warn(`Asset "${key}" failed to load; using the drawn placeholder.`);
-    };
-    img.src = entry.url;
+    this.loading.set(
+      key,
+      new Promise<boolean>((resolve) => {
+        img.onload = () => {
+          this.images.set(key, img);
+          // Anything already painted with the placeholder must be repainted.
+          this.entries.clear();
+          resolve(true);
+        };
+        img.onerror = () => {
+          // Fall back to the painter rather than showing nothing.
+          this.failed.add(key);
+          this.images.delete(key);
+          console.warn(`Asset "${key}" failed to load; using the drawn placeholder.`);
+          resolve(false);
+        };
+      }),
+    );
+    img.src = assetUrl(entry.url);
     return null;
   }
 }

@@ -186,7 +186,54 @@ That is deliberate: if we ever want phones-as-controllers, the rules do not chan
 
 Every drawn thing goes through `src/content/assets/manifest.ts`. Today each entry
 points at a code-drawn painter (vector shapes on the nation palette). Pointing an
-entry at an image URL instead swaps that art in with **no code changes**.
+entry at an image URL instead swaps that art in with **no code changes**:
+
+```ts
+'portrait.kaya': { kind: 'image', url: 'art/portraits/kaya.png', palette: 'fire' },
+```
+
+Put the file under `public/` (so `public/art/portraits/kaya.png` here) and keep the
+`palette`: it is what tints the dialogue backdrop and the HUD chrome to the
+speaker's element. Portraits are 512×512 busts on parchment, composed for a
+circular crop; the spec is `docs/art-bible.md` and the prompt packs are under
+`docs/art/prompts/`. While the bitmap loads, the painter draws in its place, and if
+it fails to load the painter stays, so a missing file never shows as nothing.
+
+A unit's animated art is a **sheet** (`docs/adr/0003-asset-contract.md`): an atlas
+PNG of key poses plus its JSON, two idle poses and three cast poses at least, drawn
+facing right and mirrored for the other side. Point the unit's key at it:
+
+```ts
+'unit.fire.kaya': {
+  kind: 'sheet',
+  atlas: 'art/units/kaya.json',
+  pixelsPerTile: 128,
+  footprint: { w: 1, h: 1 },
+  anchor: { x: 0.5, y: 0.85 },
+  facing: 'mirror',
+  palette: 'fire',
+  clips: {
+    idle: { frames: ['unit.fire.kaya/idle/0', 'unit.fire.kaya/idle/1'], fps: 1, loop: true },
+    cast: { frames: ['unit.fire.kaya/cast/0', 'unit.fire.kaya/cast/1', 'unit.fire.kaya/cast/2'], fps: 8, loop: false },
+  },
+},
+```
+
+Until a key has a sheet, the game bakes one from the key's painter, so every unit
+already animates through the same runtime; `unit.test.probe` is a committed atlas of
+flat colours the e2e suite draws to prove the path.
+
+A map can carry a **painting** (`docs/adr/0009-map-paintings.md`), drawn under the
+rules grid in place of the procedural ground while the live surfaces, the grid lines,
+the units and the effects keep drawing over it:
+
+```ts
+backdrop: { url: 'art/maps/forest_road.webp', pixelsPerTile: 96 },
+```
+
+The prompt pack and the layout image for every map are under
+`docs/art/prompts/maps/`, and `npm run art:map` turns a generated painting into the
+WebP the line above points at.
 
 ## Difficulty, and how it scales to your table
 

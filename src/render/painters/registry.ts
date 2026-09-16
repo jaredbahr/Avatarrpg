@@ -31,21 +31,48 @@ const FALLBACK: UnitPainter = (ctx, box, palette) => {
   ctx.restore();
 };
 
+/** The stand-in while a bitmap loads: a disc in the entry's own colours, not a grey square. */
+const LOADING: UnitPainter = (ctx, box, palette) => {
+  ctx.save();
+  ctx.beginPath();
+  ctx.arc(box.x + box.size / 2, box.y + box.size / 2, box.size * 0.46, 0, Math.PI * 2);
+  ctx.fillStyle = palette.dark;
+  ctx.fill();
+  ctx.lineWidth = Math.max(1, box.size * 0.03);
+  ctx.strokeStyle = palette.base;
+  ctx.stroke();
+  ctx.restore();
+};
+
 /**
  * Resolves an asset key to something drawable.
  *
  * Image entries are handled by the sprite cache, not here — this returns a
  * painter that draws the placeholder until the image is ready, which is also
- * what gets drawn if the image fails to load.
+ * what gets drawn if the image fails to load. The placeholder takes the
+ * entry's palette so the chrome around it is already the right colour.
  */
 export function resolvePainter(key: string): ResolvedPainter {
   const entry = resolveAsset(key);
 
   if (entry.kind === 'image') {
+    const palette = paletteFor(entry.palette ?? 'neutral');
     return {
       entry,
-      palette: paletteFor('neutral'),
-      draw: (ctx, box, options) => FALLBACK(ctx, box, paletteFor('neutral'), options ?? {}),
+      palette,
+      draw: (ctx, box, options) => LOADING(ctx, box, palette, options ?? {}),
+    };
+  }
+
+  if (entry.kind === 'sheet') {
+    // The stand-in while the atlas loads, and the square path's answer for a
+    // sheet key: the generic figure in the sheet's own palette.
+    const palette = paletteFor(entry.palette);
+    const bender = UNIT_PAINTERS.bender ?? FALLBACK;
+    return {
+      entry,
+      palette,
+      draw: (ctx, box, options) => bender(ctx, box, palette, options ?? {}),
     };
   }
 
@@ -90,6 +117,5 @@ export function resolvePainter(key: string): ResolvedPainter {
 
 /** Palette an asset key resolves to, for tinting HUD chrome to match. */
 export function paletteForAsset(key: string): Palette {
-  const entry = resolveAsset(key);
-  return entry.kind === 'painter' ? paletteFor(entry.palette) : paletteFor('neutral');
+  return paletteFor(resolveAsset(key).palette ?? 'neutral');
 }
