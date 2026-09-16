@@ -220,7 +220,7 @@
 
 .chip-ap {
   border-color: var(--c-gold);
-  color: var(--c-gold-soft);
+  color: var(--c-gold-deep);
 }
 .chip-hostile {
   border-color: var(--c-danger-line);
@@ -237,7 +237,7 @@
 }
 .chip-terrain {
   border-color: var(--c-parchment-line);
-  color: var(--c-gold-soft);
+  color: var(--c-gold-deep);
 }
 .chip-status {
   border-color: var(--c-parchment-line);
@@ -267,7 +267,7 @@
 
 .reaction-label {
   font-size: var(--fs-md);
-  color: var(--c-gold-soft);
+  color: var(--c-gold-deep);
   /* Sentences wrap; chips do not. That is the whole reason this is not one. */
   white-space: normal;
 }
@@ -333,7 +333,7 @@
 }
 
 .reaction-row-label {
-  color: var(--c-gold-soft);
+  color: var(--c-gold-deep);
 }
 
 .reaction-row-notes {
@@ -509,7 +509,7 @@
 
 .pick-card .tagline {
   margin: 0;
-  color: var(--c-gold-soft);
+  color: var(--c-gold-deep);
   font-size: var(--fs-sm);
 }
 
@@ -553,7 +553,8 @@
   --el-soft: var(--c-earth-soft);
 }
 .element-air {
-  --el: var(--c-air);
+  /* Air's parchment is the shell's own paper; its accent is inked down to read on it. */
+  --el: color-mix(in srgb, var(--c-air) 45%, var(--c-ink-line));
   --el-soft: var(--c-air-soft);
 }
 .element-nonbender {
@@ -712,7 +713,7 @@
 
 .decider-banner strong {
   font-size: var(--fs-xl);
-  color: var(--c-gold-soft);
+  color: var(--c-gold-deep);
 }
 
 .choice-options {
@@ -742,7 +743,7 @@
   font-size: var(--fs-sm);
   letter-spacing: 0.04em;
   text-transform: uppercase;
-  color: var(--c-gold-soft);
+  color: var(--c-gold-deep);
   border: var(--hairline) solid currentColor;
   border-radius: 999px;
   padding: 0.1rem var(--sp-2);
@@ -768,7 +769,7 @@
 .locked-hint {
   margin: 0;
   font-size: var(--fs-sm);
-  color: var(--c-gold-soft);
+  color: var(--c-gold-deep);
   font-style: italic;
 }
 
@@ -779,7 +780,7 @@
 }
 
 .end-panel h1 {
-  color: var(--c-gold-soft);
+  color: var(--c-gold-deep);
 }
 
 /* ------------------------------------------------------------------ */
@@ -1106,7 +1107,7 @@ html[data-contrast='high'] .map-wrap {
 
 .handoff-banner h1 {
   font-size: var(--fs-3xl);
-  color: var(--c-gold-soft);
+  color: var(--c-gold-deep);
   margin: 0;
 }
 
@@ -1121,7 +1122,7 @@ html[data-contrast='high'] .map-wrap {
 }
 
 .result-panel h1 {
-  color: var(--c-gold-soft);
+  color: var(--c-gold-deep);
 }
 
 /* ------------------------------------------------------------------ */
@@ -1214,7 +1215,7 @@ html[data-contrast='high'] .map-wrap {
 }
 
 .slot-place {
-  color: var(--c-gold-soft);
+  color: var(--c-gold-deep);
   font-size: var(--fs-sm);
 }
 
@@ -1324,7 +1325,7 @@ html[data-contrast='high'] .map-wrap {
 
 /* Read off the damage modifiers rather than the prose: "lightning ×2". */
 .status-incoming {
-  color: var(--c-gold-soft);
+  color: var(--c-gold-deep);
   font-weight: 700;
 }
 
@@ -1339,7 +1340,7 @@ html[data-contrast='high'] .map-wrap {
   padding: 0.1rem 0.4rem;
   border-radius: var(--radius);
   background: rgb(0 0 0 / 65%);
-  color: var(--c-gold-soft);
+  color: var(--c-gold-deep);
   font-family: ui-monospace, Menlo, Consolas, monospace;
   font-size: var(--fs-sm);
   z-index: var(--z-stats);

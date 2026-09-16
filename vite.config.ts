@@ -43,8 +43,8 @@ export default defineConfig({
         short_name: 'FN Tactics',
         description:
           'A hot-seat turn-based tactical RPG set a few decades after Korra. Non-commercial fan work.',
-        theme_color: '#1b1410',
-        background_color: '#1b1410',
+        theme_color: '#e7d9bd',
+        background_color: '#e7d9bd',
         display: 'standalone',
         orientation: 'landscape',
         start_url: base,

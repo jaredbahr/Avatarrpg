@@ -19,21 +19,27 @@
   --ui-scale: 1;
   --motion-scale: 1;
 
-  /* Ink + parchment: the shell is warm dark, panels are aged paper. */
-  --c-bg: #1b1410;
-  --c-bg-deep: #120d0a;
-  --c-panel: #2a201a;
-  --c-panel-raised: #362a21;
-  --c-ink: #f4e9d8;
-  --c-ink-dim: #bfae97;
-  --c-ink-faint: #8d7d69;
-  --c-line: #4a3a2c;
+  /*
+   * Ink on parchment: the shell is aged paper, panels are lighter sheets of
+   * it, and everything is written in brown ink. The dark ink shell this
+   * replaced is recorded in ADR 0005's amendment; the owner picked the light
+   * one from the target mockup, and there is only one colourway.
+   */
+  --c-bg: #e7d9bd;
+  --c-bg-deep: #d8c7a3;
+  --c-panel: #f3ead7;
+  --c-panel-raised: #faf4e6;
+  --c-paper-light: #fffdf6;
+  --c-ink: #2b1d15;
+  --c-ink-dim: #5c4636;
+  --c-ink-faint: #8a6f55;
+  --c-line: #b79b73;
   /* The outline every surface is drawn with: the art bible's brown ink, never black. */
-  --c-ink-line: #0f0a07;
-  --c-gold: #d9a441;
-  --c-gold-soft: #f0c674;
-  --c-gold-deep: #8a6420;
-  --c-gold-hi: #ffd98a;
+  --c-ink-line: #3a271a;
+  --c-gold: #b9862a;
+  --c-gold-soft: #d4a544;
+  --c-gold-deep: #7d5a1c;
+  --c-gold-hi: #e9c46a;
   --c-ink-on-gold: #241703;
 
   /* Nation palettes. Used by the renderer and by UI accents alike. */
@@ -48,41 +54,41 @@
   --c-nonbender: #9b7bb8;
   --c-nonbender-soft: #c3a8d8;
 
-  --c-danger: #e2584a;
-  --c-ok: #6fbf73;
-  --c-warn: #e0b23c;
+  --c-danger: #b8382b;
+  --c-ok: #37704a;
+  --c-warn: #8a5d0e;
 
   /* Semantic colours: what a hostile chip, a friendly chip, a warning box and
      a parchment note are drawn in. Mixed with transparent where a rule wants
-     a tint of one. */
-  --c-danger-line: #7a2c24;
-  --c-danger-bg: #40211c;
-  --c-danger-ink: #ffbdb4;
-  --c-danger-soft: #ffd0c8;
-  --c-friendly-line: #2f5f72;
-  --c-friendly-bg: #18303a;
-  --c-parchment-line: #6b5a3f;
-  --c-parchment-bg: #302616;
-  --c-warn-ink: #ffe4a8;
-  --c-warn-line: #7a4a24;
-  --c-warn-bg: #5a2d14;
-  --c-warn-deep: #422e10;
-  --c-ok-soft: #a8d98c;
+     a tint of one. Tints on paper are light; their ink is deep. */
+  --c-danger-line: #b8382b;
+  --c-danger-bg: #f6d9d3;
+  --c-danger-ink: #7a2018;
+  --c-danger-soft: #d94a3a;
+  --c-friendly-line: #2f6f8a;
+  --c-friendly-bg: #d6e8ee;
+  --c-parchment-line: #b08a55;
+  --c-parchment-bg: #f7efdd;
+  --c-warn-ink: #5a3c0a;
+  --c-warn-line: #b8862a;
+  --c-warn-bg: #f7e6bf;
+  --c-warn-deep: #e9d39d;
+  --c-ok-soft: #6fa86f;
 
   /* Surfaces, from the panel floor up to a pressed button. */
   --surface-0: var(--c-panel);
   --surface-1: var(--c-panel-raised);
-  --surface-2: #43342a;
-  --surface-pressed: #241c16;
-  --surface-sunken: rgb(0 0 0 / 22%);
-  --scrim: rgb(9 6 4 / 78%);
-  --scrim-strong: rgb(9 6 4 / 90%);
+  --surface-2: var(--c-paper-light);
+  --surface-pressed: #e6d8bc;
+  --surface-sunken: rgb(0 0 0 / 8%);
+  --scrim: rgb(35 24 14 / 55%);
+  --scrim-strong: rgb(35 24 14 / 78%);
 
   /* The two hairlines drawn inside every panel edge: a gilt line and a lit
      paper edge. Together with the ink outline they are what makes a panel
      read as a card rather than a rectangle. */
-  --gold-hair: color-mix(in srgb, var(--c-gold) 16%, transparent);
-  --paper-hair: color-mix(in srgb, var(--c-ink) 6%, transparent);
+  --gold-hair: color-mix(in srgb, var(--c-gold) 24%, transparent);
+  --paper-hair: color-mix(in srgb, var(--c-paper-light) 70%, transparent);
   --inset-edge: inset 0 0 0 1px var(--gold-hair), inset 0 1px 0 var(--paper-hair);
 
   /* Type scale. Seven steps; nothing outside this file picks its own size. */
@@ -138,18 +144,18 @@
      closer stand-in while the woff2 loads, or for a blocked font. */
   --font-display: 'Shippori Mincho', Georgia, 'Times New Roman', serif;
 
-  --shadow-1: 0 0.125rem 0.375rem rgb(0 0 0 / 35%);
-  --shadow-2: 0 0.5rem 1.5rem rgb(0 0 0 / 55%);
-  --shadow-3: 0 1.25rem 3rem rgb(0 0 0 / 65%);
+  --shadow-1: 0 0.125rem 0.375rem rgb(40 25 10 / 18%);
+  --shadow-2: 0 0.5rem 1.5rem rgb(40 25 10 / 25%);
+  --shadow-3: 0 1.25rem 3rem rgb(40 25 10 / 30%);
   --shadow-panel: var(--shadow-2);
 
-  /* Paper grain: a 160px tile of fractal noise at up to 6% parchment, laid
+  /* Paper grain: a 160px tile of fractal noise at up to 5% brown ink, laid
      over every panel. An SVG data URI because a bitmap tile is rasterised once
      and cached, where a large repeating-gradient is repainted on WebKit. */
-  --tex-grain: url('data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" width="160" height="160"%3E%3Cfilter id="g" color-interpolation-filters="sRGB"%3E%3CfeTurbulence type="fractalNoise" baseFrequency="0.9" numOctaves="2" stitchTiles="stitch"/%3E%3CfeColorMatrix values="0 0 0 0 0.96 0 0 0 0 0.91 0 0 0 0 0.85 0 0 0 0.06 0"/%3E%3C/filter%3E%3Crect width="160" height="160" filter="url(%23g)"/%3E%3C/svg%3E');
+  --tex-grain: url('data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" width="160" height="160"%3E%3Cfilter id="g" color-interpolation-filters="sRGB"%3E%3CfeTurbulence type="fractalNoise" baseFrequency="0.9" numOctaves="2" stitchTiles="stitch"/%3E%3CfeColorMatrix values="0 0 0 0 0.35 0 0 0 0 0.24 0 0 0 0 0.13 0 0 0 0.05 0"/%3E%3C/filter%3E%3Crect width="160" height="160" filter="url(%23g)"/%3E%3C/svg%3E');
   --tex-grain-size: 160px 160px;
 
-  color-scheme: dark;
+  color-scheme: light;
 }
 
 html {
@@ -276,7 +282,7 @@ button:disabled {
 
 button:focus-visible,
 [tabindex]:focus-visible {
-  outline: 3px solid var(--c-gold-soft);
+  outline: 3px solid var(--c-gold-deep);
   outline-offset: 2px;
 }
 
@@ -314,7 +320,7 @@ button:focus-visible,
 }
 
 .btn-ghost:hover:not(:disabled) {
-  background-color: rgb(255 255 255 / 6%);
+  background-color: color-mix(in srgb, var(--c-ink) 6%, transparent);
   color: var(--c-ink);
 }
 
@@ -394,7 +400,7 @@ button:focus-visible,
   inset: 0;
   display: grid;
   place-items: center;
-  background: radial-gradient(ellipse at 50% 45%, rgb(9 6 4 / 60%), var(--scrim));
+  background: radial-gradient(ellipse at 50% 45%, var(--scrim), var(--scrim-strong));
   padding: var(--sp-4);
   z-index: var(--z-overlay);
 }
