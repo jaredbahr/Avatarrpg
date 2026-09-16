@@ -12,6 +12,10 @@
 
 import type { ContentIndex, GameEvent, Unit, Vec2 } from '../core/types';
 import type { FxInstance, Floater } from '../render/renderer';
+import type { Curve } from '../render/geometry/curve';
+import { sampleAt, smoothPath } from '../render/geometry/curve';
+import type { Easing } from './anim/easing';
+import { easeInOutCubic, easeOutQuad } from './anim/easing';
 import { motionReduced } from './ui/dom';
 
 interface Track {
@@ -32,8 +36,9 @@ interface FloaterTrack extends Track {
 
 interface MoveTrack extends Track {
   readonly unitId: string;
-  readonly from: Vec2;
-  readonly path: readonly Vec2[];
+  /** The route, smoothed through the tile centres, sampled by arc length. */
+  readonly curve: Curve;
+  readonly ease: Easing;
 }
 
 /** Base durations in milliseconds, before the motion setting is applied. */
@@ -44,24 +49,41 @@ const TIMING = {
   gap: 60,
 } as const;
 
+/** Height of the walk bob in tiles, once per tile of travel. */
+const BOB = 0.05;
+
+/** How far off dead vertical the travel has to lean before the sprite turns. */
+const TURN_THRESHOLD = 0.2;
+
+export interface AnimatorOptions {
+  /** Overrides the reduce-motion lookup, so tests can run without a document. */
+  readonly motionReduced?: () => boolean;
+}
+
 export class Animator {
   /** Only used to turn an ability id into its manifest fx key. */
-  constructor(private content: ContentIndex) {}
+  constructor(
+    private content: ContentIndex,
+    private options: AnimatorOptions = {},
+  ) {}
 
   private fxTracks: FxTrack[] = [];
   private floaterTracks: FloaterTrack[] = [];
   private moveTracks: MoveTrack[] = [];
+  /** Which way each unit last walked; a unit keeps facing that way when it stops. */
+  private facings = new Map<string, 1 | -1>();
   private endsAt = 0;
 
   /** Multiplier applied to every duration; 0.02 when reduce-motion is on. */
   private get rate(): number {
-    return motionReduced() ? 0.02 : 1;
+    return (this.options.motionReduced ?? motionReduced)() ? 0.02 : 1;
   }
 
   clear(): void {
     this.fxTracks = [];
     this.floaterTracks = [];
     this.moveTracks = [];
+    this.facings.clear();
     this.endsAt = 0;
   }
 
@@ -97,8 +119,8 @@ export class Animator {
           if (from) {
             this.moveTracks.push({
               unitId: event.unitId,
-              from,
-              path: event.path,
+              curve: smoothPath(from, event.path),
+              ease: easeInOutCubic,
               start: cursor,
               duration,
             });
@@ -169,10 +191,11 @@ export class Animator {
           const from = positions.get(event.unitId);
           if (from) {
             const duration = TIMING.step * 2 * rate;
+            // A shove is a straight slide: quick off the mark, coasting to a stop.
             this.moveTracks.push({
               unitId: event.unitId,
-              from,
-              path: [event.to],
+              curve: smoothPath(from, [event.to], 0),
+              ease: easeOutQuad,
               start: cursor,
               duration,
             });
@@ -233,26 +256,52 @@ export class Animator {
     return out;
   }
 
-  /**
-   * Where a unit should be drawn at `now`, if it is mid-move. Returns
-   * undefined when the unit is not animating, so the caller uses `unit.pos`.
-   */
-  renderPos(now: number, unitId: string): Vec2 | undefined {
-    let result: Vec2 | undefined;
+  /** The move track a unit is on at `now`, if any, with how far along it is in tiles. */
+  private travel(now: number, unitId: string): { track: MoveTrack; distance: number } | null {
+    let found: { track: MoveTrack; distance: number } | null = null;
     for (const track of this.moveTracks) {
       if (track.unitId !== unitId) continue;
       if (now < track.start) continue;
       if (now > track.start + track.duration) continue;
-
       const t = (now - track.start) / Math.max(1, track.duration);
-      const steps = track.path.length;
-      const index = Math.min(steps - 1, Math.floor(t * steps));
-      const localT = t * steps - index;
-      const from = index === 0 ? track.from : (track.path[index - 1] ?? track.from);
-      const to = track.path[index] ?? from;
-      result = { x: from.x + (to.x - from.x) * localT, y: from.y + (to.y - from.y) * localT };
+      found = { track, distance: track.ease(t) * track.curve.length };
     }
-    return result;
+    return found;
+  }
+
+  /**
+   * Where a unit should be drawn at `now`, if it is mid-move. Returns
+   * undefined when the unit is not animating, so the caller uses `unit.pos`.
+   *
+   * The route is sampled by arc length under an ease, so a walk leaves the
+   * tile slowly, hurries through the middle and settles at the end instead
+   * of hopping tile to tile at one speed. Sampling also turns the sprite to
+   * face the way it is going, which it keeps once it has stopped.
+   */
+  renderPos(now: number, unitId: string): Vec2 | undefined {
+    const travel = this.travel(now, unitId);
+    if (!travel) return undefined;
+    const sample = sampleAt(travel.track.curve, travel.distance);
+    if (Math.abs(sample.tangent.x) > TURN_THRESHOLD) {
+      this.facings.set(unitId, sample.tangent.x > 0 ? 1 : -1);
+    }
+    // The curve runs through tile centres; positions are tile corners.
+    return { x: sample.pos.x - 0.5, y: sample.pos.y - 0.5 };
+  }
+
+  /**
+   * The walk bob: a small lift once per tile of travel, in tile units. Drawn
+   * as an offset so it never changes the order units are painted in.
+   */
+  offset(now: number, unitId: string): Vec2 | undefined {
+    const travel = this.travel(now, unitId);
+    if (!travel || travel.track.curve.length <= 0) return undefined;
+    return { x: 0, y: -BOB * Math.abs(Math.sin(Math.PI * travel.distance)) };
+  }
+
+  /** Which way a unit last walked, or undefined if it has not walked yet. */
+  facing(unitId: string): 1 | -1 | undefined {
+    return this.facings.get(unitId);
   }
 
   /** Drops finished tracks. Called once a frame so memory stays flat. */
