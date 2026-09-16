@@ -236,6 +236,7 @@ export class ExploreScene implements Scene {
       gridLines: showGridLines(this.app.settings),
       crispOverlays: this.app.settings.highContrast,
       atmosphere: !this.app.settings.highContrast,
+      backdrop: this.app.backdropFor(map.id),
       time: now,
     };
 

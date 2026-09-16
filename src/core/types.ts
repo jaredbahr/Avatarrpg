@@ -567,6 +567,21 @@ export interface MapDef {
   readonly ambience: string;
   /** Explore maps only: stepping here advances the current story node. */
   readonly exit?: { readonly pos: Vec2; readonly label: string };
+  /**
+   * A painting drawn under the rules grid in place of the procedural ground,
+   * once one exists for the map (ADR 0009). Presentation only, like
+   * `ambience`: nothing in the rules reads it.
+   */
+  readonly backdrop?: MapBackdrop;
+}
+
+/**
+ * A map painting: a site-relative URL and how many of its pixels span one
+ * tile, so the image is `width * pixelsPerTile` by `height * pixelsPerTile`.
+ */
+export interface MapBackdrop {
+  readonly url: string;
+  readonly pixelsPerTile: number;
 }
 
 /* ------------------------------------------------------------------ */

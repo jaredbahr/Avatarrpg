@@ -15,11 +15,13 @@ import type {
   ElementId,
   GameEvent,
   GameState,
+  MapBackdrop,
   StoryNode,
 } from '../core/types';
 import { apply } from '../core/state/reducer';
 import { createGame } from '../core/state/createGame';
 import type { PartySlot } from '../core/state/createGame';
+import { backdrops } from '../render/backdrops';
 import { Animator } from './animator';
 import { Session } from './session';
 import type { Player } from './session';
@@ -84,6 +86,13 @@ export class App {
 
   settings: Settings;
   state: GameState | null = null;
+
+  /**
+   * Paintings swapped under a map by the review hooks (null retires the
+   * map's own), so the e2e suite and the gallery can put the probe painting
+   * under the forest road without touching content.
+   */
+  private backdropOverride = new Map<string, MapBackdrop | null>();
 
   private host: HTMLElement;
   private sceneHost: HTMLElement;
@@ -174,6 +183,23 @@ export class App {
   /** Tints the backdrop. Scenes call it when they know better than the map does. */
   setMood(mood: Mood): void {
     this.host.dataset.mood = mood;
+  }
+
+  /** The painting to draw under a map: an override if one is set, else the map's own. */
+  backdropFor(mapId: string): MapBackdrop | null {
+    const override = this.backdropOverride.get(mapId);
+    if (override !== undefined) return override;
+    return this.content.maps.get(mapId)?.backdrop ?? null;
+  }
+
+  /**
+   * Puts a painting under a map for this session, or none with null. The
+   * mounted scene picks it up on its next frame; the promise settles once the
+   * image has loaded (true) or failed (false), so a spec can wait for it.
+   */
+  overrideBackdrop(mapId: string, backdrop: MapBackdrop | null): Promise<boolean> {
+    this.backdropOverride.set(mapId, backdrop);
+    return backdrop ? backdrops.whenLoaded(backdrop.url) : Promise.resolve(true);
   }
 
   /** The mood the current place suggests: the map's ambience, or neutral off the map. */

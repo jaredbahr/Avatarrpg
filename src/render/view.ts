@@ -6,7 +6,7 @@
  * that is what lets the Canvas 2D and WebGL backends be interchangeable.
  */
 
-import type { Grid, StatusId, Vec2 } from '../core/types';
+import type { Grid, MapBackdrop, StatusId, Vec2 } from '../core/types';
 import type { ClipName } from '../content/assets/clips';
 import type { EmitterDef } from '../content/fx';
 
@@ -126,6 +126,11 @@ export interface MapView {
   readonly crispOverlays: boolean;
   /** Edge shading and the vignette round the board; off under High contrast. */
   readonly atmosphere: boolean;
+  /**
+   * The map's painting, drawn under the grid in place of the procedural
+   * ground once it has loaded (ADR 0009). Null draws the ground as ever.
+   */
+  readonly backdrop: MapBackdrop | null;
   /** Milliseconds since start, for idle animation. */
   readonly time: number;
 }

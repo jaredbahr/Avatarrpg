@@ -29,6 +29,7 @@ import {
 } from 'pixi.js';
 
 import type { Grid, SurfaceId, TerrainId, Vec2 } from '../../core/types';
+import { backdrops } from '../backdrops';
 import { TILE } from '../camera';
 import type { Camera, Viewport } from '../camera';
 import { DecorSheets } from '../decorSheets';
@@ -163,6 +164,14 @@ export class PixiBackend implements RenderBackend {
   private pending: { view: MapView; camera: Camera } | null = null;
 
   private root = new Container();
+  /**
+   * The map's painting (ADR 0009), a screen-space sprite under the ground
+   * quad so the ground pass lays its surfaces over it. Its texture is made
+   * from the loaded image here and destroyed when the painting changes, never
+   * through `Texture.from`'s global cache.
+   */
+  private backdropSprite = new Sprite(Texture.EMPTY);
+  private backdrop: { image: HTMLImageElement; texture: Texture } | null = null;
   private groundSprite = new Sprite(Texture.WHITE);
   /**
    * Cliffs, canopies, walls, cover and decals, baked by the same painters the
@@ -192,6 +201,7 @@ export class PixiBackend implements RenderBackend {
     uTime: { value: 0, type: 'f32' },
     uHatch: { value: 0, type: 'f32' },
     uGridLines: { value: 0, type: 'f32' },
+    uBackdrop: { value: 0, type: 'f32' },
   });
   private groundFilter: Filter | null = null;
 
@@ -295,7 +305,9 @@ export class PixiBackend implements RenderBackend {
 
     // The ground quad is screen-sized and sits OUTSIDE the camera transform:
     // its shader derives tile coordinates from the camera uniforms instead.
-    app.stage.addChild(this.groundSprite);
+    // The painting sits under it, placed from the same camera numbers.
+    this.backdropSprite.visible = false;
+    app.stage.addChild(this.backdropSprite, this.groundSprite);
 
     // Any resize that arrived during init was dropped; apply the latest now.
     this.applyViewport();
@@ -358,6 +370,7 @@ export class PixiBackend implements RenderBackend {
     this.app?.destroy(false, { children: true });
     this.app = null;
     this.dropTextures();
+    this.dropBackdrop();
     this.unitSprites.clear();
     this.mapTexture.destroy(true);
   }
@@ -378,8 +391,12 @@ export class PixiBackend implements RenderBackend {
     );
     this.root.scale.set(camera.scale);
 
-    this.syncGround(view, camera);
-    this.syncDecor(view, camera);
+    // A painting takes the terrain's place; the decor that marks footing
+    // over it comes back only under High contrast, where the rules must read
+    // without the picture.
+    const painted = this.syncBackdrop(view, camera);
+    this.syncGround(view, camera, painted);
+    this.syncDecor(view, camera, !painted || view.crispOverlays);
     this.syncShade(view, camera);
     this.drawOverlays(view);
     this.drawPath(view);
@@ -396,7 +413,41 @@ export class PixiBackend implements RenderBackend {
   /* Ground                                                            */
   /* ---------------------------------------------------------------- */
 
-  private syncGround(view: MapView, camera: Camera): void {
+  /**
+   * Shows the map's painting under the ground pass once it has loaded, at the
+   * board's rectangle in screen space: the same offset and tile size the
+   * shader reconstructs its tiles from, so the surfaces land on the painting
+   * exactly where the painting's tiles are. Returns whether one is showing.
+   */
+  private syncBackdrop(view: MapView, camera: Camera): boolean {
+    const image = view.backdrop ? backdrops.get(view.backdrop.url) : null;
+    if (!image) {
+      this.backdropSprite.visible = false;
+      this.dropBackdrop();
+      return false;
+    }
+    if (this.backdrop?.image !== image) {
+      this.dropBackdrop();
+      const texture = Texture.from(image, true);
+      this.backdrop = { image, texture };
+      this.backdropSprite.texture = texture;
+    }
+    const size = TILE * camera.scale;
+    this.backdropSprite.visible = true;
+    this.backdropSprite.position.set(-camera.offsetX, -camera.offsetY);
+    this.backdropSprite.width = view.grid.width * size;
+    this.backdropSprite.height = view.grid.height * size;
+    return true;
+  }
+
+  private dropBackdrop(): void {
+    if (!this.backdrop) return;
+    this.backdropSprite.texture = Texture.EMPTY;
+    this.backdrop.texture.destroy(true);
+    this.backdrop = null;
+  }
+
+  private syncGround(view: MapView, camera: Camera, painted: boolean): void {
     const { grid } = view;
     this.uploadMap(grid);
 
@@ -407,6 +458,7 @@ export class PixiBackend implements RenderBackend {
       uTime: number;
       uHatch: number;
       uGridLines: number;
+      uBackdrop: number;
     };
     uniforms.uGrid[0] = grid.width;
     uniforms.uGrid[1] = grid.height;
@@ -416,6 +468,7 @@ export class PixiBackend implements RenderBackend {
     uniforms.uTime = view.time / 1000;
     uniforms.uHatch = view.hatch ? 1 : 0;
     uniforms.uGridLines = view.gridLines ? 1 : 0;
+    uniforms.uBackdrop = painted ? 1 : 0;
 
     /*
      * UniformGroup.uniforms is a plain object, not a proxy: neither assigning a
@@ -499,7 +552,9 @@ export class PixiBackend implements RenderBackend {
    * zoom's sprite bucket and re-baked only when the footing or the bucket
    * changes.
    */
-  private syncDecor(view: MapView, camera: Camera): void {
+  private syncDecor(view: MapView, camera: Camera, shown: boolean): void {
+    this.decorLayer.visible = shown;
+    if (!shown) return;
     const grid = view.grid;
     const changed = this.decor.sync(grid);
     const px = this.spritePx(camera);

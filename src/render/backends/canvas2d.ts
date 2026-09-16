@@ -18,6 +18,7 @@ import { contourLoops } from '../geometry/contour';
 import type { Curve } from '../geometry/curve';
 import { sampleAt, smoothPath } from '../geometry/curve';
 import { CanvasFxLayer } from '../fx/canvasFx';
+import { backdrops } from '../backdrops';
 import { FACTION_RING, OVERLAY, STATUS_BADGE, hpColor } from '../palettes';
 import { paintTileDecor } from '../painters/board';
 import { paintFloatingNumber, paintPathArrow, paintPathDot } from '../painters/fx';
@@ -102,8 +103,13 @@ export class Canvas2DBackend implements RenderBackend {
     const tilePx = camera.toScreen({ x: 0, y: 0 }).size;
     ctx.translate(view.cameraNudge.x * tilePx, view.cameraNudge.y * tilePx);
 
-    this.drawGround(view, camera);
-    this.drawDecor(view, camera);
+    // A map's painting takes the terrain's place under everything else, once
+    // it has loaded; the decor that marks footing over it comes back only
+    // under High contrast, where the rules must read without the picture.
+    const painting = view.backdrop ? backdrops.get(view.backdrop.url) : null;
+    if (painting) this.drawBackdrop(painting, view, camera);
+    this.drawGround(view, camera, painting !== null);
+    if (!painting || view.crispOverlays) this.drawDecor(view, camera);
     if (view.atmosphere) this.drawShade(view, camera);
     this.drawOverlays(view, camera);
     this.drawPath(view, camera);
@@ -120,7 +126,20 @@ export class Canvas2DBackend implements RenderBackend {
 
   /* ---------------------------------------------------------------- */
 
-  private drawGround(view: MapView, camera: Camera): void {
+  /** The painting over the whole board's rectangle: one draw, scaled to the camera. */
+  private drawBackdrop(image: HTMLImageElement, view: MapView, camera: Camera): void {
+    const origin = camera.toScreen({ x: 0, y: 0 });
+    this.ctx.drawImage(
+      image,
+      origin.x,
+      origin.y,
+      view.grid.width * origin.size,
+      view.grid.height * origin.size,
+    );
+  }
+
+  /** Terrain, surfaces and tile lines; over a painting the terrain is the painting. */
+  private drawGround(view: MapView, camera: Camera, painted: boolean): void {
     const { ctx } = this;
     const bounds = camera.visibleBounds(view.grid);
     for (let y = bounds.y0; y <= bounds.y1; y++) {
@@ -129,7 +148,7 @@ export class Canvas2DBackend implements RenderBackend {
         if (!tile) continue;
         const pos = { x, y };
         const box = camera.toScreen(pos);
-        paintTerrain(ctx, box, tile, pos);
+        if (!painted) paintTerrain(ctx, box, tile, pos);
         paintSurface(ctx, box, tile, pos, view.hatch, surfaceEdges(view.grid, pos));
         if (view.gridLines) paintGridLine(ctx, box, 'rgba(0,0,0,0.18)');
       }

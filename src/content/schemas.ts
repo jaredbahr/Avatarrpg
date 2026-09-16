@@ -420,6 +420,11 @@ export const mapSchema = z
     props: z.array(propPlacement),
     ambience: z.string().min(1),
     exit: z.object({ pos: vec2, label: z.string().min(1) }).optional(),
+    // A painting under the grid (ADR 0009). Between 32 px a tile (the probe) and
+    // 256, so a 24-wide map stays inside the 2048 px texture every iPad takes.
+    backdrop: z
+      .object({ url: z.string().min(1), pixelsPerTile: z.number().int().min(32).max(256) })
+      .optional(),
   })
   .superRefine((map, ctx) => {
     if (map.rows.length !== map.height) {
