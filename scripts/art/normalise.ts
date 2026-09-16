@@ -19,7 +19,9 @@ import { CLIP_NAMES } from '../../src/content/assets/clips';
 import { placeOnBaseline, BASELINE, MARGIN } from './lib/align';
 import { readPng, writePng } from './lib/image';
 import type { KeyOptions } from './lib/key';
-import { DEFAULT_KEY, keyOut } from './lib/key';
+import { DEFAULT_KEY, keyDistance, keyOut } from './lib/key';
+import { cornerColor } from './lib/key';
+import { toHex } from './lib/image';
 import { scaleBy } from './lib/scale';
 import { alphaBounds, crop } from './lib/trim';
 
@@ -74,31 +76,58 @@ function parseArgs(argv: readonly string[]): Args {
   return args;
 }
 
-/** Every `<clip>/<index>.png` under the unit's raw folder, in clip-table order. */
-function rawFrames(dir: string): { clip: string; index: number; path: string }[] {
+/**
+ * Every `<clip>/<index>.png` under the unit's raw folder, in clip-table
+ * order, and the files that were passed over so a loose name ("Idle A.png",
+ * a JPG) is seen rather than silently skipped.
+ */
+function rawFrames(dir: string): {
+  frames: { clip: string; index: number; path: string }[];
+  ignored: string[];
+} {
   const frames: { clip: string; index: number; path: string }[] = [];
+  const ignored: string[] = [];
   for (const clip of CLIP_NAMES) {
     const clipDir = join(dir, clip);
     if (!existsSync(clipDir)) continue;
     for (const file of readdirSync(clipDir).sort()) {
       const match = /^(\d+)\.png$/.exec(file);
-      if (!match) continue;
+      if (!match) {
+        ignored.push(`${clip}/${file}`);
+        continue;
+      }
       frames.push({ clip, index: Number(match[1]), path: join(clipDir, file) });
     }
   }
-  return frames;
+  return { frames, ignored };
 }
 
 export function main(argv: readonly string[]): number {
   const args = parseArgs(argv);
   const rawDir = resolve(args.raw, args.unit);
-  const frames = rawFrames(rawDir);
+  const { frames, ignored } = rawFrames(rawDir);
+  for (const file of ignored) {
+    console.log(`  ignored ${file}: frames are <clip>/<index>.png, numbered from 0, PNG only`);
+  }
   if (frames.length === 0) {
     console.error(`No frames under ${rawDir}: expected <clip>/<index>.png, e.g. idle/0.png`);
     return 1;
   }
 
   const keyOptions: KeyOptions = { ...DEFAULT_KEY, color: args.key, tolerance: args.tolerance };
+  // A background that is not the key would be kept and the figure cut instead.
+  const first = frames[0];
+  if (first) {
+    const raw = readPng(first.path);
+    const distance = keyDistance(raw, keyOptions);
+    if (distance > keyOptions.tolerance + keyOptions.feather) {
+      console.error(
+        `${first.clip}/${first.index}: the corners are ${toHex(cornerColor(raw))}, not ${keyOptions.color} ` +
+          `(${Math.round(distance)} apart). Pass --key auto, or --key with the background's colour.`,
+      );
+      return 1;
+    }
+  }
   const frameWidth = Math.round(args.px * args.width);
   const frameHeight = Math.round(args.px * 1.5);
   const baseline = Math.round(frameHeight * BASELINE);
@@ -121,6 +150,14 @@ export function main(argv: readonly string[]): number {
   );
 
   let failures = 0;
+  // The filter never scales up, so a small figure lands short in every frame.
+  if (idle.height < target) {
+    failures += 1;
+    console.log(
+      `  idle/0: the figure is ${idle.height} px tall and would stand ${target} px in the frame; ` +
+        `generate at 4x (512x768 for a one-tile unit) so it can be scaled down, not up`,
+    );
+  }
   for (const frame of keyed) {
     const outDir = resolve(args.out, args.unit, frame.clip);
     mkdirSync(outDir, { recursive: true });
