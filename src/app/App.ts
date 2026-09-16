@@ -17,6 +17,7 @@ import type {
   GameState,
   MapBackdrop,
   StoryNode,
+  Vec2,
 } from '../core/types';
 import { apply } from '../core/state/reducer';
 import { createGame } from '../core/state/createGame';
@@ -472,6 +473,16 @@ export class App {
   rendererCamera(): CameraInfo | null {
     const scene = this.scene as unknown as { cameraInfo?: () => CameraInfo | null };
     return scene?.cameraInfo?.() ?? null;
+  }
+
+  /**
+   * Where the village draws each party member, leader first, as tiles.
+   * Exposed so the e2e suite can check the drawing against the rules after
+   * a walk. Null outside the village.
+   */
+  partyPositions(): readonly Vec2[] | null {
+    const scene = this.scene as unknown as { partyPositions?: () => readonly Vec2[] | null };
+    return scene?.partyPositions?.() ?? null;
   }
 
   /**

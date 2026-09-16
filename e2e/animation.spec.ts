@@ -61,6 +61,59 @@ test.describe('playback', () => {
     });
   }
 
+  test('a village walk plays out and settles', async ({ page }) => {
+    await resetStorage(page);
+    await startGame(page, ['Elias', 'Lorelai'], ['kaya', 'bo'], 'animation-walk', {
+      reduceMotion: false,
+    });
+    await enterNode(page, 'village_explore');
+    await page.locator('.explore-scene .map-canvas').waitFor();
+    await waitForIdle(page);
+
+    // Six tiles along the road: the leader and the follower walk together.
+    const walk = await page.evaluate(() => {
+      const app = window.fnt?.app;
+      const state = app?.state;
+      if (!app || !state) return null;
+      const started = performance.now();
+      const from = state.location.pos;
+      app.dispatch({ type: 'walkTo', pos: { x: from.x + 6, y: from.y } });
+      return {
+        started,
+        busy: app.animator.busy(performance.now()),
+        ends: app.animator.finishesAt,
+        moving: app.partyPositions()?.length ?? 0,
+      };
+    });
+    expect(walk).not.toBeNull();
+    if (!walk) return;
+    expect(walk.busy).toBe(true);
+    expect(walk.ends - walk.started).toBeGreaterThan(300);
+    expect(walk.ends - walk.started).toBeLessThan(5_000);
+    expect(walk.moving).toBe(2);
+    await waitForIdle(page);
+  });
+
+  test('reduce motion collapses a village walk to an instant', async ({ page }) => {
+    await resetStorage(page);
+    await startGame(page, ['Elias', 'Lorelai'], ['kaya', 'bo'], 'animation-walk-reduced');
+    await enterNode(page, 'village_explore');
+    await page.locator('.explore-scene .map-canvas').waitFor();
+    await waitForIdle(page);
+
+    const span = await page.evaluate(() => {
+      const app = window.fnt?.app;
+      const state = app?.state;
+      if (!app || !state) return null;
+      const started = performance.now();
+      const from = state.location.pos;
+      app.dispatch({ type: 'walkTo', pos: { x: from.x + 6, y: from.y } });
+      return app.animator.finishesAt - started;
+    });
+    expect(span).not.toBeNull();
+    expect(span ?? 999).toBeLessThan(100);
+  });
+
   test('reduce motion collapses a cast to an instant', async ({ page }) => {
     await resetStorage(page);
     await startGame(page, ['Elias'], ['kaya'], 'animation-reduced', { reduceMotion: true });

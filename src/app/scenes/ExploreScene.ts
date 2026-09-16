@@ -9,10 +9,10 @@
  * is bigger than the viewport.
  */
 
-import type { App, Scene } from '../App';
+import type { App, CameraInfo, Scene } from '../App';
 import type { GameEvent, GameState, Grid, MapDef, NpcDef, Unit, Vec2 } from '../../core/types';
 import { buildGrid, distance, samePos } from '../../core/rules/grid';
-import { Renderer } from '../../render/renderer';
+import { Renderer, TILE } from '../../render/renderer';
 import type { MapView, NpcMarker, RenderUnit } from '../../render/renderer';
 import { attachPointer, wheelZoomFactor } from '../input/pointer';
 import { ambienceFx } from '../../content/fx';
@@ -152,6 +152,27 @@ export class ExploreScene implements Scene {
     );
     this.trail = seated;
     return seated;
+  }
+
+  /** The camera as plain numbers, for the e2e suite to map a tile to a pixel. */
+  cameraInfo(): CameraInfo | null {
+    const camera = this.renderer?.camera;
+    if (!camera) return null;
+    return {
+      tilePx: TILE * camera.scale,
+      offsetX: camera.offsetX,
+      offsetY: camera.offsetY,
+      fitted: camera.fitted,
+    };
+  }
+
+  /** Where each member is drawn, leader first, for the e2e suite to check against the rules. */
+  partyPositions(): readonly Vec2[] | null {
+    const state = this.app.state;
+    const grid = this.grid;
+    if (!state || !grid) return null;
+    const seats = this.ensureTrail(state, grid).positions(state.party.length);
+    return seats.map((seat, index) => (index === 0 ? state.location.pos : seat));
   }
 
   resize(): void {
