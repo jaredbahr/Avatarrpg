@@ -1,30 +1,31 @@
 # Portrait: Sura — `portrait.sura`
 
-|              |                                                                                                                  |
-| ------------ | ---------------------------------------------------------------------------------------------------------------- |
-| **Palette**  | `water` — base `#3e8fb0`, light `#7ec8e3`, dark `#22566e`, accent `#cdeefb`, ink `#1b1410`, background `#f4e9d8` |
-| **Deliver**  | `art/raw/portraits/sura.png` (1024×1024 or larger, PNG)                                                          |
-| **Ships as** | `public/art/portraits/sura.png` (512×512)                                                                        |
-| **Manifest** | `'portrait.sura': { kind: 'image', url: 'art/portraits/sura.png', palette: 'water' }`                            |
+|               |                                                                                                                        |
+| ------------- | ---------------------------------------------------------------------------------------------------------------------- |
+| **Palette**   | `water` — base `#3e8fb0`, light `#7ec8e3`, dark `#22566e`, accent `#cdeefb`, ink `#1b1410`, background `#f4e9d8`       |
+| **Reference** | `art/raw/reference/unit.water.sura.png` — the full-body figure; the image reference, so the portrait matches the sheet |
+| **Deliver**   | `art/raw/portraits/sura.png` (1024×1024 or larger, PNG)                                                                |
+| **Ships as**  | `public/art/portraits/sura.png` (512×512)                                                                              |
+| **Manifest**  | `'portrait.sura': { kind: 'image', url: 'art/portraits/sura.png', palette: 'water' }`                                  |
 
 ## Who
 
-A woman in her late twenties with wind-reddened cheeks and a wide, cheerful grin. Dark hair in two short braids tied off with small bone beads. Broad shoulders from hauling nets.
+A young woman with dark hair in one long braid over the shoulder, tied off with a blue bead, and small blue beaded earrings. Deep brown skin, blue eyes, a set, determined smile.
 
-A fisher’s oilskin coat in deep blue (base #3e8fb0, shadow #22566e) with a high collar and a cream wool scarf; an ice pick with a plain wooden handle resting over one shoulder.
+A teal-and-navy wrap tunic with a white-edged cross-over collar and cream fur cuffs; a brown rope belt with a small round stone clasp; a navy skirt panel with a white-and-blue spiral motif at the hem; navy trousers; cream fur-topped boots cross-bound with straps. A stoppered water skin hangs in a net at the hip.
 
-A few flat white ice crystals forming along the pick’s head.
+A few flat white ice crystals forming on the back of one raised hand at the edge of the frame.
 
 ## Signature
 
-Two short braids and the ice pick over the shoulder. She must not be mistaken for Nilak: shorter hair, squarer build, bigger grin.
+The long braid and the water skin at the hip. She must not be mistaken for Nilak: braid down, no hood, a wider stance.
 
 ## Prompt
 
 Copy the whole paragraph. It carries the style block itself so nothing needs to be prepended.
 
 ```text
-A woman in her late twenties with wind-reddened cheeks and a wide, cheerful grin. Dark hair in two short braids tied off with small bone beads. Broad shoulders from hauling nets. A fisher’s oilskin coat in deep blue (base #3e8fb0, shadow #22566e) with a high collar and a cream wool scarf; an ice pick with a plain wooden handle resting over one shoulder. A few flat white ice crystals forming along the pick’s head. Flat cel-shaded illustration in the manner of a hand-drawn animated series: clean, uniform dark-brown ink outlines (#1b1410), never black and never tapered; every material in exactly two flat tones, a base and one shadow, plus a thin pale rim light along the edge facing the light; no gradients, no painted texture, no photographic detail, no lens effects, no soft shading. Bust portrait, head and shoulders, three-quarter view turned slightly toward the viewer’s right, eyes toward the viewer. Centred, the head filling about two thirds of the height, with clear space on every side because the game crops it to a circle. Flat, completely plain background of exactly #f4e9d8 (warm parchment) with no scenery, no vignette, no border and no texture. Square, 1024×1024, to be downscaled to 512×512. Colours: base #3e8fb0, shadow #22566e, highlight #7ec8e3, one accent #cdeefb; skin and hair in flat natural tones with one shadow each; ink #1b1410. Expression and bearing: Cheerful certainty; she thinks this is going to be fun.
+A young woman with dark hair in one long braid over the shoulder, tied off with a blue bead, and small blue beaded earrings. Deep brown skin, blue eyes, a set, determined smile. A teal-and-navy wrap tunic with a white-edged cross-over collar and cream fur cuffs; a brown rope belt with a small round stone clasp; a navy skirt panel with a white-and-blue spiral motif at the hem; navy trousers; cream fur-topped boots cross-bound with straps. A stoppered water skin hangs in a net at the hip. A few flat white ice crystals forming on the back of one raised hand at the edge of the frame. Flat cel-shaded illustration in the manner of a hand-drawn animated series: clean, uniform dark-brown ink outlines (#1b1410), never black and never tapered; every material in exactly two flat tones, a base and one shadow, plus a thin pale rim light along the edge facing the light; no gradients, no painted texture, no photographic detail, no lens effects, no soft shading. Bust portrait, head and shoulders, three-quarter view turned slightly toward the viewer’s right, eyes toward the viewer. Centred, the head filling about two thirds of the height, with clear space on every side because the game crops it to a circle. Flat, completely plain background of exactly #f4e9d8 (warm parchment) with no scenery, no vignette, no border and no texture. Square, 1024×1024, to be downscaled to 512×512. Colours: the water palette for the sash, the trim and the element hint — base #3e8fb0, shadow #22566e, highlight #7ec8e3, accent #cdeefb; every other garment keeps the colours of the reference image; skin and hair in flat natural tones with one shadow each; ink #1b1410. Expression and bearing: Cheerful certainty; she thinks this is going to be fun. Same character as the reference image: same face, hair and costume.
 ```
 
 ## Negative prompt
@@ -43,4 +44,4 @@ Generate three candidates and pick by the checklist, not by which one is prettie
 
 ## Check
 
-Run `checklist.md` before committing. For this portrait in particular: Two short braids and the ice pick over the shoulder. She must not be mistaken for Nilak: shorter hair, squarer build, bigger grin.
+Run `checklist.md` before committing. For this portrait in particular: The long braid and the water skin at the hip. She must not be mistaken for Nilak: braid down, no hood, a wider stance.

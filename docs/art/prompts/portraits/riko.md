@@ -1,30 +1,31 @@
 # Portrait: Riko — `portrait.riko`
 
-|              |                                                                                                                      |
-| ------------ | -------------------------------------------------------------------------------------------------------------------- |
-| **Palette**  | `nonbender` — base `#9b7bb8`, light `#c3a8d8`, dark `#5f4677`, accent `#e9dcf5`, ink `#1b1410`, background `#f4e9d8` |
-| **Deliver**  | `art/raw/portraits/riko.png` (1024×1024 or larger, PNG)                                                              |
-| **Ships as** | `public/art/portraits/riko.png` (512×512)                                                                            |
-| **Manifest** | `'portrait.riko': { kind: 'image', url: 'art/portraits/riko.png', palette: 'nonbender' }`                            |
+|               |                                                                                                                      |
+| ------------- | -------------------------------------------------------------------------------------------------------------------- |
+| **Palette**   | `nonbender` — base `#9b7bb8`, light `#c3a8d8`, dark `#5f4677`, accent `#e9dcf5`, ink `#1b1410`, background `#f4e9d8` |
+| **Reference** | `art/raw/reference/unit.non.riko.png` — the full-body figure; the image reference, so the portrait matches the sheet |
+| **Deliver**   | `art/raw/portraits/riko.png` (1024×1024 or larger, PNG)                                                              |
+| **Ships as**  | `public/art/portraits/riko.png` (512×512)                                                                            |
+| **Manifest**  | `'portrait.riko': { kind: 'image', url: 'art/portraits/riko.png', palette: 'nonbender' }`                            |
 
 ## Who
 
-A woman in her twenties with a level, knowing half-smile and sharp dark eyes. Dark hair in a tight, plain bun. Light-brown skin. Wiry build, shoulders relaxed.
+A young woman with jaw-length dark hair and one thin braid at the temple, brown eyes, tan skin and a level, knowing half-smile. Wiry, shoulders relaxed.
 
-A sleeveless wrap top in muted violet (base #9b7bb8, shadow #5f4677) with a high collar; both hands and forearms bound in dark leather wraps, one hand raised with two fingers extended.
+A fitted maroon jacket with a high collar, grey piping and a single toggle at the chest; grey cloth wraps on both forearms; a bright-red sash with long tails; loose black trousers with grey knee guards; dark-red leg wraps; split-toe dark shoes.
 
-No weapon and no element: the raised hand is the whole point.
+No weapon and no element: one hand raised with two fingers extended is the whole point.
 
 ## Signature
 
-The bound hands and the bun. Plain, controlled, nothing decorative; she must not read as an acrobat or a performer.
+The raised two-finger hand, the grey knee guards and the single thin braid. Plain, controlled, nothing decorative; she must not read as an acrobat or a performer.
 
 ## Prompt
 
 Copy the whole paragraph. It carries the style block itself so nothing needs to be prepended.
 
 ```text
-A woman in her twenties with a level, knowing half-smile and sharp dark eyes. Dark hair in a tight, plain bun. Light-brown skin. Wiry build, shoulders relaxed. A sleeveless wrap top in muted violet (base #9b7bb8, shadow #5f4677) with a high collar; both hands and forearms bound in dark leather wraps, one hand raised with two fingers extended. No weapon and no element: the raised hand is the whole point. Flat cel-shaded illustration in the manner of a hand-drawn animated series: clean, uniform dark-brown ink outlines (#1b1410), never black and never tapered; every material in exactly two flat tones, a base and one shadow, plus a thin pale rim light along the edge facing the light; no gradients, no painted texture, no photographic detail, no lens effects, no soft shading. Bust portrait, head and shoulders, three-quarter view turned slightly toward the viewer’s right, eyes toward the viewer. Centred, the head filling about two thirds of the height, with clear space on every side because the game crops it to a circle. Flat, completely plain background of exactly #f4e9d8 (warm parchment) with no scenery, no vignette, no border and no texture. Square, 1024×1024, to be downscaled to 512×512. Colours: base #9b7bb8, shadow #5f4677, highlight #c3a8d8, one accent #e9dcf5; skin and hair in flat natural tones with one shadow each; ink #1b1410. Expression and bearing: Dry, patient, unimpressed.
+A young woman with jaw-length dark hair and one thin braid at the temple, brown eyes, tan skin and a level, knowing half-smile. Wiry, shoulders relaxed. A fitted maroon jacket with a high collar, grey piping and a single toggle at the chest; grey cloth wraps on both forearms; a bright-red sash with long tails; loose black trousers with grey knee guards; dark-red leg wraps; split-toe dark shoes. No weapon and no element: one hand raised with two fingers extended is the whole point. Flat cel-shaded illustration in the manner of a hand-drawn animated series: clean, uniform dark-brown ink outlines (#1b1410), never black and never tapered; every material in exactly two flat tones, a base and one shadow, plus a thin pale rim light along the edge facing the light; no gradients, no painted texture, no photographic detail, no lens effects, no soft shading. Bust portrait, head and shoulders, three-quarter view turned slightly toward the viewer’s right, eyes toward the viewer. Centred, the head filling about two thirds of the height, with clear space on every side because the game crops it to a circle. Flat, completely plain background of exactly #f4e9d8 (warm parchment) with no scenery, no vignette, no border and no texture. Square, 1024×1024, to be downscaled to 512×512. Colours: the nonbender palette for the sash, the trim and the element hint — base #9b7bb8, shadow #5f4677, highlight #c3a8d8, accent #e9dcf5; every other garment keeps the colours of the reference image; skin and hair in flat natural tones with one shadow each; ink #1b1410. Expression and bearing: Dry, patient, unimpressed. Same character as the reference image: same face, hair and costume.
 ```
 
 ## Negative prompt
@@ -43,4 +44,4 @@ Generate three candidates and pick by the checklist, not by which one is prettie
 
 ## Check
 
-Run `checklist.md` before committing. For this portrait in particular: The bound hands and the bun. Plain, controlled, nothing decorative; she must not read as an acrobat or a performer.
+Run `checklist.md` before committing. For this portrait in particular: The raised two-finger hand, the grey knee guards and the single thin braid. Plain, controlled, nothing decorative; she must not read as an acrobat or a performer.
