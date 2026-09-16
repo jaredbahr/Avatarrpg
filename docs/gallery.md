@@ -30,6 +30,7 @@ runner without a GPU sees, and whether the board is still correct there.
 | `03-dialogue`         | The stage: portrait medallion, name plate, mood tint. Where portraits land         |
 | `04-board-idle`       | The board at rest with the HUD docked                                              |
 | `05-move-preview`     | Range, path and confirm bar: the grid feel                                         |
+| `05b-walk`            | A four-tile walk with a turn, through its playback                                 |
 | `06-aim-preview`      | Aiming: reach, area, hit and damage chips, the reaction sentence                   |
 | `07-fire-cast`        | Fire, through its playback                                                         |
 | `08-water-whip`       | Water                                                                              |
@@ -40,6 +41,7 @@ runner without a GPU sees, and whether the board is still correct there.
 | `13-victory`          | The result panel                                                                   |
 | `14-boss-blast`       | The quarry floor, the two-tile machine, the biggest effect, the frame-time readout |
 | `15-largest-contrast` | Largest text and High contrast: the board must still read                          |
+| `16-grid-on`          | The same board with the Show grid setting on                                       |
 
 Filmstrips (`-f1` to `-f5`) sample the playback at fixed milliseconds after
 the act, so the same frame comes back every run. They are captured on
@@ -66,7 +68,9 @@ that question broken into parts.
   sliding between squares? Does a hit land?
 - **Ground.** Beats 02, 04 and 14. Does the board read as terrain with
   regions on it, or as a chessboard? Do puddles, oil and ledges read from
-  across the table?
+  across the table? Do the trees, the huts and the quarry's ledges and pits
+  read as things with height, and does the board sit in the frame rather
+  than float on it?
 - **Characters.** Beats 03, 04 and 12. With the placeholders, is the
   silhouette language right (two per element, distinct, readable at 40 px)?
   With portraits in, does the stage feel like a scene?

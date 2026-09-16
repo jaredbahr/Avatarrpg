@@ -67,7 +67,7 @@ entry kind the manifest already has.
 - [x] P1: title on the SVG wheel; dialogue staged as a visual novel
 - [x] P1: curtain reveal after the synchronous swap; dialogs ease in; reduce-motion collapses both
 - [ ] P2: initiative timeline, ability glyph sprite, unit-panel portrait, confirm bar, log scroll; 48 px holds at Largest
-- [ ] P3: ground-shader vignette and edge shading (WebGL), vignette only on Canvas 2D; transparent clear and `.map-wrap` wash (ADR)
+- [x] P3: edge shading and vignette on both backends, transparent clear and the map-margin wash; cliff bands, canopies, wall masses, pool banks, decals and ambience came with them (ADR 0008)
 - [ ] Screenshot pass at 1368×912, 1194×834 and 834×1194, plus Largest text and High contrast, before each slice merges
 
 ### A2 Asset contract
