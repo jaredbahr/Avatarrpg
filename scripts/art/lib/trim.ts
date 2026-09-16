@@ -46,3 +46,19 @@ export function lowestOpaqueRow(image: Image, threshold = 8): number {
   const bounds = alphaBounds(image, threshold);
   return bounds ? bounds.y + bounds.height - 1 : -1;
 }
+
+/** The largest centred box with the aspect `w:h` that fits inside the image. */
+export function aspectCrop(image: { width: number; height: number }, w: number, h: number): Bounds {
+  const want = w / h;
+  if (image.width / image.height > want) {
+    const width = Math.min(image.width, Math.round(image.height * want));
+    return { x: Math.floor((image.width - width) / 2), y: 0, width, height: image.height };
+  }
+  const height = Math.min(image.height, Math.round(image.width / want));
+  return { x: 0, y: Math.floor((image.height - height) / 2), width: image.width, height };
+}
+
+/** The largest centred square that fits inside the image. */
+export function squareCrop(image: { width: number; height: number }): Bounds {
+  return aspectCrop(image, 1, 1);
+}

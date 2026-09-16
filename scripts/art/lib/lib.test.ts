@@ -1,10 +1,24 @@
+import { mkdtempSync, writeFileSync } from 'node:fs';
+import { tmpdir } from 'node:os';
+import { join } from 'node:path';
+import { encode as encodeJpeg } from 'jpeg-js';
+import { PNG } from 'pngjs';
 import { describe, expect, it } from 'vitest';
 import { placeOnBaseline } from './align';
-import { newImage, parseHex, pixelAt, setPixel, toHex } from './image';
-import { cornerColor, keyOut } from './key';
+import {
+  flatten,
+  imageSize,
+  newImage,
+  parseHex,
+  pixelAt,
+  readImage,
+  setPixel,
+  toHex,
+} from './image';
+import { cornerColor, keyDistance, keyOut } from './key';
 import { dominantColors } from './palette';
 import { scaleBy, scaleTo } from './scale';
-import { alphaBounds, crop, lowestOpaqueRow } from './trim';
+import { alphaBounds, aspectCrop, crop, lowestOpaqueRow, squareCrop } from './trim';
 
 /** A `w` x `h` image filled with `fill`, with a `[x, y, w, h]` box of `paint` on it. */
 function painted(
@@ -117,5 +131,91 @@ describe('dominantColors', () => {
     expect(hits.map((h) => h.nearest).sort()).toEqual(['#3e8fb0', '#d1462f']);
     expect(hits[0]?.distance).toBeLessThan(4);
     expect(hits[0]?.share).toBeCloseTo(0.5, 2);
+  });
+});
+
+describe('imageSize and readImage', () => {
+  const pngBytes = (w: number, h: number): Uint8Array => {
+    const png = new PNG({ width: w, height: h });
+    png.data = Buffer.from(painted(w, h, RED, [0, 0, 1, 1], RED).data);
+    return new Uint8Array(PNG.sync.write(png));
+  };
+  const jpegBytes = (w: number, h: number): Uint8Array => {
+    const image = painted(w, h, [244, 233, 216, 255], [w / 4, h / 4, w / 2, h / 2], RED);
+    return new Uint8Array(
+      encodeJpeg({ width: w, height: h, data: Buffer.from(image.data) }, 92).data,
+    );
+  };
+
+  it('reads a PNG and a JPEG size from the header alone', () => {
+    expect(imageSize(pngBytes(48, 20))).toEqual({ format: 'png', width: 48, height: 20 });
+    expect(imageSize(jpegBytes(64, 40))).toEqual({ format: 'jpeg', width: 64, height: 40 });
+    expect(imageSize(new Uint8Array([1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12]))).toBeNull();
+  });
+
+  it('decodes either from disk into the same RGBA image', () => {
+    const dir = mkdtempSync(join(tmpdir(), 'fnt-image-'));
+    writeFileSync(join(dir, 'a.png'), pngBytes(12, 8));
+    writeFileSync(join(dir, 'b.jpg'), jpegBytes(32, 32));
+    const png = readImage(join(dir, 'a.png'));
+    expect([png.width, png.height]).toEqual([12, 8]);
+    expect(pixelAt(png, 3, 3)).toEqual(RED);
+    const jpeg = readImage(join(dir, 'b.jpg'));
+    expect([jpeg.width, jpeg.height]).toEqual([32, 32]);
+    const centre = pixelAt(jpeg, 16, 16);
+    expect(centre[0]).toBeGreaterThan(180);
+    expect(centre[1]).toBeLessThan(90);
+    expect(centre[3]).toBe(255);
+    writeFileSync(join(dir, 'c.txt'), 'not a picture');
+    expect(() => readImage(join(dir, 'c.txt'))).toThrow(/PNG or a JPEG/);
+  });
+
+  it('flattens clear pixels onto a colour and leaves opaque ones alone', () => {
+    const image = painted(4, 4, [0, 0, 0, 0], [1, 1, 2, 2], RED);
+    setPixel(image, 0, 0, [255, 255, 255, 128]);
+    const flat = flatten(image, '#f4e9d8');
+    expect(pixelAt(flat, 3, 3)).toEqual([244, 233, 216, 255]);
+    expect(pixelAt(flat, 1, 1)).toEqual(RED);
+    expect(pixelAt(flat, 0, 0)).toEqual([250, 244, 236, 255]);
+  });
+});
+
+describe('aspect crops', () => {
+  it('cut the largest centred box in the asked aspect', () => {
+    expect(aspectCrop({ width: 2048, height: 1152 }, 20, 12)).toEqual({
+      x: 64,
+      y: 0,
+      width: 1920,
+      height: 1152,
+    });
+    expect(aspectCrop({ width: 1920, height: 1400 }, 24, 16)).toEqual({
+      x: 0,
+      y: 60,
+      width: 1920,
+      height: 1280,
+    });
+    expect(squareCrop({ width: 1024, height: 1536 })).toEqual({
+      x: 0,
+      y: 256,
+      width: 1024,
+      height: 1024,
+    });
+    expect(squareCrop({ width: 512, height: 512 })).toEqual({
+      x: 0,
+      y: 0,
+      width: 512,
+      height: 512,
+    });
+  });
+});
+
+describe('keyDistance', () => {
+  it('measures how far the corners sit from the key, and nothing for auto', () => {
+    expect(keyDistance(painted(8, 8, GREEN, [2, 2, 2, 2], RED))).toBe(0);
+    const parchment = painted(8, 8, [244, 233, 216, 255], [2, 2, 2, 2], RED);
+    expect(keyDistance(parchment)).toBeGreaterThan(200);
+    expect(
+      keyDistance(parchment, { color: 'auto', tolerance: 30, feather: 20, despill: false }),
+    ).toBe(0);
   });
 });

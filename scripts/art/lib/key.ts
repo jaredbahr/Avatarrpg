@@ -49,6 +49,19 @@ export function cornerColor(image: Image): [number, number, number] {
   return [Math.round(r / 4), Math.round(g / 4), Math.round(b / 4)];
 }
 
+/**
+ * How far the corners are from the key colour, in RGB distance: past the
+ * tolerance and the feather the background is not the key, and keying would
+ * cut the figure instead of the background. Zero for `auto`, which reads the
+ * corners as the key by definition.
+ */
+export function keyDistance(image: Image, options: KeyOptions = DEFAULT_KEY): number {
+  if (options.color === 'auto') return 0;
+  const key = parseHex(options.color);
+  const corner = cornerColor(image);
+  return Math.hypot(corner[0] - key[0], corner[1] - key[1], corner[2] - key[2]);
+}
+
 export function keyOut(image: Image, options: KeyOptions = DEFAULT_KEY): Image {
   const key = options.color === 'auto' ? cornerColor(image) : parseHex(options.color);
   const dominant = key.indexOf(Math.max(...key));
