@@ -31,6 +31,11 @@ Playwright's WebKit is the engine, not Safari. It catches pointer, canvas and
 WebGL breakage; it cannot install to the Home Screen or rotate a real device.
 Those stay below.
 
+The gallery (`npm run gallery`, ADR 0006) captures five Chromium projects,
+the Surface and the iPad on both backends and the iPad upright, from the
+production build. It is a review artefact published as a CI artefact and at
+`/gallery/` on Pages, never a gate.
+
 Never run `playwright install` in the dev container: Chromium is preinstalled at
 `PLAYWRIGHT_BROWSERS_PATH`. On a machine of your own, `npx playwright install
 webkit` once, then `FNT_E2E_WEBKIT=1 npm run e2e`.
@@ -52,3 +57,9 @@ model, iPadOS version and the `?stats=1` numbers in the PR.
 10. **Performance.** Add `?stats=1`. On the quarry map with the boss out, during a 5×5 blast: 55 fps or better in landscape.
 11. **Fallback.** Add `?renderer=canvas`: the fight is playable, high ground, walls and cover still read, effects are simpler.
 12. **Settings.** Largest text, Patterned ground, Reduce motion, Higher contrast each apply immediately and survive a relaunch.
+13. **Hidden grid.** A move range shows as one rounded contour and the path as a curve with an arrowhead; a tap on a tile inside the contour lands on that tile. Settings → Show grid brings the lines back and survives a relaunch.
+14. **Effects.** Cast fire, water, earth and air once each: four different things, each with a wind-up, a hit and an aftermath. A 5×5 storm on the quarry floor with `?stats=1` holds 55 fps. Reduce motion collapses a cast to an instant and the numbers still show.
+15. **Atmosphere.** The board sits in the dark frame with dimmed corners and holds 58 fps idle; the quarry's ledges and pits read as height from across the table; Higher contrast removes the shading and keeps the board readable.
+16. **Figures.** Every unit stands about a tile tall with its health bar clear of the head; the party faces right and the bandits face left. Pinch to the maximum zoom on the quarry with the boss out: every unit still draws (the canvas memory cap).
+17. **HUD.** The acting unit's portrait sits in the unit panel ringed in its element; every ability button shows its element glyph and stays 48 px tall at Largest text.
+18. **Gallery.** Open `/gallery/` from the Pages URL: every project's pictures load, and the figure page shows every unit in every pose.

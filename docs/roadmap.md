@@ -12,27 +12,31 @@ Decisions this roadmap rests on live in `docs/adr/`. The art specification is
 
 ## Settled decisions
 
-| Question          | Decision                                                                                                                                       | Record                                |
-| ----------------- | ---------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------- |
-| Engine            | Stay on Pixi v8 with the hand-written Canvas 2D fallback                                                                                       | `adr/0001-stay-on-pixi-v8.md`         |
-| Backend parity    | Board-correctness parity mandatory, fidelity parity not                                                                                        | `adr/0002-backend-parity-policy.md`   |
-| Art tier          | Cel-shaded frame sheets: few key poses, motion from the animator                                                                               | `adr/0003-asset-contract.md`          |
-| Art source        | AI-generated against the art bible, painters remain the fallback                                                                               | `art-bible.md`                        |
-| Animation runtime | Evolve `src/app/animator.ts`; no tween library                                                                                                 | `adr/0004-animation-runtime.md`       |
-| Device tiers      | Surface and iPad landscape first; portrait and desktop second; phones work but are not tuned                                                   | `device-matrix.md`                    |
-| Presentation      | One self-hosted display face; tokens with no literal outside `:root`; a CSS backdrop and a curtain, never an async scene swap                  | `adr/0005-presentation-layer.md`      |
-| Visual review     | `npm run gallery`: fixed beats captured from the production build on every project, published as a CI artefact and on Pages                    | `adr/0006-gallery-review-artefact.md` |
-| Grid              | Hidden in presentation, never removed from the rules: contours, a curved path, eased walking; a setting and High contrast bring the lines back | `adr/0007-hidden-grid.md`             |
+| Question          | Decision                                                                                                                                                                                  | Record                                   |
+| ----------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------- |
+| Engine            | Stay on Pixi v8 with the hand-written Canvas 2D fallback                                                                                                                                  | `adr/0001-stay-on-pixi-v8.md`            |
+| Backend parity    | Board-correctness parity mandatory, fidelity parity not                                                                                                                                   | `adr/0002-backend-parity-policy.md`      |
+| Art tier          | Cel-shaded frame sheets: few key poses, motion from the animator                                                                                                                          | `adr/0003-asset-contract.md`             |
+| Art source        | AI-generated against the art bible, painters remain the fallback                                                                                                                          | `art-bible.md`                           |
+| Animation runtime | Evolve `src/app/animator.ts`; no tween library                                                                                                                                            | `adr/0004-animation-runtime.md`          |
+| Device tiers      | Surface and iPad landscape first; portrait and desktop second; phones work but are not tuned                                                                                              | `device-matrix.md`                       |
+| Presentation      | One self-hosted display face; tokens with no literal outside `:root`; a CSS backdrop and a curtain, never an async scene swap                                                             | `adr/0005-presentation-layer.md`         |
+| Visual review     | `npm run gallery`: fixed beats captured from the production build on every project, published as a CI artefact and on Pages                                                               | `adr/0006-gallery-review-artefact.md`    |
+| Grid              | Hidden in presentation, never removed from the rules: contours, a curved path, eased walking; a setting and High contrast bring the lines back                                            | `adr/0007-hidden-grid.md`                |
+| Board atmosphere  | Height as cliff bands inside the lower tile, never shifted tiles; one decor painter for both backends; transparent clear and a wash; edge shading, vignette and ambience motes as content | `adr/0008-board-atmosphere.md`           |
+| Sheet loading     | One JSON parser and one `Image` for both backends, never Pixi `Assets`; painters baked into the same sheet shape; a byte-bounded store                                                    | `adr/0003-asset-contract.md`, amended    |
+| Particles         | Stateless, seeded per emitter, identical on both backends; Canvas 2D draws a bounded share rather than a flash                                                                            | `adr/0004-animation-runtime.md`, amended |
+| Review            | The gallery is the review; the owner's go/no-go in `gallery.md` gates Phase 2 content on the look                                                                                         | `gallery.md`                             |
 
 ## Phases
 
 | Phase                       | Scope                                                                                                                                                                                                                                                                                                                                                                                                                | Blocks on     | Exit criteria                                                                                                                                                                          |
 | --------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | **A1 Device foundation** ✅ | Pinch, wheel and pan; camera zoom and the tappable-tile rule; iPad standalone metas; portrait layout; device-resolution sprites with bounded caches; WebGL tile markers; touch tooltips; per-frame gating; `?stats=1`; WebKit iPad test projects; these documents                                                                                                                                                    | —             | CI green on Chromium and both WebKit projects; the manual iPad checklist passes                                                                                                        |
-| **P Presentation**          | **P1** identity and surfaces: tokens v2, the display face, the ink-and-parchment surface system, the backdrop and its mood, the title, dialogue staged as a visual novel, scene and dialog motion. **P2** combat HUD: initiative timeline, ability glyphs, unit-panel portrait, confirm bar, log scroll. **P3** board atmosphere: ground-shader vignette and edge shading, transparent clear and the map-margin wash | A1            | Every scene reads as one designed surface at Normal and Largest text on a Surface and an iPad; no colour literal outside `:root`; e2e green on all three projects; JS budget unchanged |
-| **A2 Asset contract**       | `sheet` entries in the manifest with zod validation; atlas loader for both backends; the placeholder baker that renders painters into the same sheet shape; clip runtime; asset budget gate; `scripts/art/` normalise, pack, validate                                                                                                                                                                                | A1            | Every unit animates through placeholder sheets on both backends; a real test atlas swaps in with no code change                                                                        |
-| **A3 Choreography**         | Easing and timelines; per-event choreography (approach, wind-up, cast, projectile, impact, recoil, floater, KO); camera focus and shake; particle recipes per element as content; hit-stop and flash                                                                                                                                                                                                                 | A2            | Every existing event kind plays through the new runtime; reduce-motion and `waitForIdle` unchanged; 60 fps on an iPad                                                                  |
-| **B Pilot art**             | The 17 portraits, one hero (Kaya), one enemy (bandit thug), the fire effect set                                                                                                                                                                                                                                                                                                                                      | A2, art bible | Pilot assets pass `validateContent` and the QA checklist on a real iPad; regeneration rounds per hero recorded                                                                         |
+| **P Presentation** 🔶       | **P1** identity and surfaces: tokens v2, the display face, the ink-and-parchment surface system, the backdrop and its mood, the title, dialogue staged as a visual novel, scene and dialog motion. **P2** combat HUD: initiative timeline, ability glyphs, unit-panel portrait, confirm bar, log scroll. **P3** board atmosphere: ground-shader vignette and edge shading, transparent clear and the map-margin wash | A1            | Every scene reads as one designed surface at Normal and Largest text on a Surface and an iPad; no colour literal outside `:root`; e2e green on all three projects; JS budget unchanged |
+| **A2 Asset contract** ✅    | `sheet` entries in the manifest with zod validation; atlas loader for both backends; the placeholder baker that renders painters into the same sheet shape; clip runtime; asset budget gate; `scripts/art/` normalise, pack, validate                                                                                                                                                                                | A1            | Every unit animates through placeholder sheets on both backends; a real test atlas swaps in with no code change                                                                        |
+| **A3 Choreography** ✅      | Easing and timelines; per-event choreography (approach, wind-up, cast, projectile, impact, recoil, floater, KO); camera focus and shake; particle recipes per element as content; hit-stop and flash                                                                                                                                                                                                                 | A2            | Every existing event kind plays through the new runtime; reduce-motion and `waitForIdle` unchanged; 60 fps on an iPad                                                                  |
+| **B Pilot art** 🔶          | The 17 portraits, one hero (Kaya), one enemy (bandit thug), the fire effect set; the prompt packs and the pipeline are in, generation is the owner's                                                                                                                                                                                                                                                                 | A2, art bible | Pilot assets pass `validateContent` and the QA checklist on a real iPad; regeneration rounds per hero recorded                                                                         |
 | **C Full art pass**         | Remaining 9 heroes, 9 enemies, 4 NPCs, 6 props, terrain decals over the shader ground, title screen                                                                                                                                                                                                                                                                                                                  | B             | Every manifest key resolves to real art; painters stay as the fallback; asset budget holds                                                                                             |
 | **D Polish**                | Audio through Web Audio with unlock on first gesture; camera work; haptics where the platform has them (not iOS)                                                                                                                                                                                                                                                                                                     | A3            | A fight reads as complete on an iPad and a Surface                                                                                                                                     |
 
@@ -41,6 +45,42 @@ A2 has frozen the asset contract, so new enemies are authored against the
 spec with placeholder painters. Portrait generation can start as soon as the
 art bible is committed, in parallel with A2, because portraits use the `image`
 entry kind the manifest already has.
+
+## The look gate (2026-09-16)
+
+No more story gets written until the owner has seen a semi-finished visual
+product and said the look is the one he wants. That reordered the phases
+above: the gate is about the look, so A3 (choreography) shipped before A2
+(sheets), P3 (atmosphere) before P2 (the HUD), and B's prompt packs before
+any generation. What shipped, each with its gallery, on PR #13:
+
+| Slice | What it proved                                                                                                                                                         |
+| ----- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| V0    | `npm run gallery`: the review loop (ADR 0006); real portraits render; the WebGL ground fix the first capture found                                                     |
+| V6a   | Seventeen portrait prompt packs, tested for palette hexes and for franchise names                                                                                      |
+| V1    | The hidden grid: contours, a curved path, eased walking, a setting (ADR 0007)                                                                                          |
+| V2    | Every event choreographed; bending as data; stateless seeded particles on both backends (ADR 0004, amended)                                                            |
+| V3    | Cliff bands, canopies, wall masses, pool banks, edge shading, vignette, ambience (ADR 0008)                                                                            |
+| V4    | The `sheet` entry live on both backends, painters baked into it, the probe atlas, the art scripts and the asset budget (ADR 0003, amended)                             |
+| V6b   | Eleven sheet prompt packs written from the reference figures; the hero portrait packs regenerated to match                                                             |
+| V5    | Posed placeholder figures through the baker: every unit in every pose, each hero in the silhouette of their reference figure, the health bar above a measured headroom |
+| V7    | The acting unit's portrait in the unit panel and an element glyph on every ability                                                                                     |
+
+Decisions taken on the way, beyond the ADR rows above: the art is generated
+by the owner from the prompt packs, with a full-body reference figure per
+character as the image reference (nine of the ten heroes have one; Tenzo's and
+the bandit's packs generate theirs first); the e2e suite runs under reduce
+motion by default now that a cast plays for most of a second; XP, the rules
+and `src/core/` were untouched throughout. Two things are still the owner's
+to decide: the HUD colourway (the shell is dark ink; the target mockup shows
+a light parchment HUD, and both exist as tokens), and whether the locked
+palette moves toward the reference figures' garments (navy, maroon, mustard,
+saffron) or stays as the element accent on sash, trim and effect.
+
+After the gate: the owner's go/no-go in `gallery.md`; B's generation (Kaya
+and the bandit first) through `docs/art/README.md`; painted map backdrops if
+the owner wants them (a `MapDef.art` entry under the rules grid, its own
+ADR); the rest of P2; then D.
 
 ## Checklists
 
@@ -66,19 +106,22 @@ entry kind the manifest already has.
 - [x] P1: backdrop with `data-scene` / `data-mood`; ambience, picked element and speaker element feed it
 - [x] P1: title on the SVG wheel; dialogue staged as a visual novel
 - [x] P1: curtain reveal after the synchronous swap; dialogs ease in; reduce-motion collapses both
-- [ ] P2: initiative timeline, ability glyph sprite, unit-panel portrait, confirm bar, log scroll; 48 px holds at Largest
+- [x] P2: unit-panel portrait and an element glyph on every ability; 48 px holds at Largest
+- [ ] P2: initiative timeline, confirm bar, log scroll (after the gate: they cost HUD height the viewport spec watches)
 - [x] P3: edge shading and vignette on both backends, transparent clear and the map-margin wash; cliff bands, canopies, wall masses, pool banks, decals and ambience came with them (ADR 0008)
-- [ ] Screenshot pass at 1368×912, 1194×834 and 834×1194, plus Largest text and High contrast, before each slice merges
+- [x] Screenshot pass at 1368×912, 1194×834 and 834×1194, plus Largest text and High contrast: the gallery captures every slice on all five projects (ADR 0006)
 
 ### A2 Asset contract
 
-- [ ] `AssetEntry` gains `sheet`; zod schema in `src/content/schemas.ts`; `validateContent` checks required clips
-- [ ] `src/render/sheets/` loader: Pixi `Assets` for WebGL, parsed JSON plus `drawImage` for Canvas 2D
-- [ ] Placeholder baker paints painter poses into an in-memory atlas of the same shape
-- [ ] `RenderUnit.clip` and `clipTime`; both backends pick frames from the sheet
-- [ ] `scripts/art/normalise.mjs`, `pack.mjs`, `validate.mjs`
-- [ ] Asset budget: 4 MB per scene bundle, 25 MB precache; `workbox.globPatterns` gains `webp,json`
-- [ ] README "Swapping in real art" rewritten for sheets
+- [x] `AssetEntry` gains `sheet`; zod schema in `src/content/schemas.ts`; `validateContent` checks required clips, frame counts and names
+- [x] `src/render/sheets/` loader: one parsed JSON plus `drawImage` on Canvas 2D and frame textures as views onto one upload on WebGL; no Pixi `Assets`
+- [x] Placeholder baker paints painter poses into an in-memory atlas of the same shape, byte-bounded, at the zoom's bucket
+- [x] `RenderUnit.clip`, `clipTime` and `clipFrame`; both backends pick frames from the sheet; the choreography names the frame
+- [x] `scripts/art/normalise.ts`, `pack.ts`, `validate.ts` under `tsx`, sharing the runtime's layout and schema
+- [x] Asset budget: 4 MB per art family, 25 MB precache (`scripts/check-asset-budget.mjs`); `workbox.globPatterns` gains `webp,json`
+- [x] README "Swapping in real art" rewritten for sheets; `docs/art/README.md` is the intake
+- [x] Posed placeholder figures through the baker, one pose per frame of the clip table, a silhouette per hero
+- [x] Sheet prompt packs for every hero and the bandit, held to the clip table by `prompts.test.ts`
 
 ### A3 Choreography
 
@@ -95,7 +138,8 @@ gate is about the look, and the choreography needs no sheets.
 ## Governance
 
 - **ADRs** in `docs/adr/` for any decision that changes an engine, a contract or a budget.
-- **Budgets checked in CI:** 300 KB gzipped JavaScript (`scripts/check-bundle-size.mjs`); asset budgets arrive with A2.
+- **Budgets checked in CI:** 300 KB gzipped JavaScript (`scripts/check-bundle-size.mjs`); 4 MB per art family and 25 MB precached (`scripts/check-asset-budget.mjs`); every sheet the manifest names validated against its files (`npm run art:validate`).
+- **Prompt hygiene:** nothing under `docs/art` names the franchise, a character or a faction, and every hex a pack quotes is a palette value (`src/content/prompts.test.ts`).
 - **Parity:** anything the rules care about is drawn on both backends (ADR 0002).
 - **Determinism:** presentation randomness (particles) is seeded per instance and never touches the game RNG.
 - **Art QA:** every generated asset passes the checklist in `docs/art-bible.md` before it is committed.
