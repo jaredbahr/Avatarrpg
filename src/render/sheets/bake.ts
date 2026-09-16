@@ -43,6 +43,8 @@ export interface BakedSheet {
   readonly pixelsPerTile: number;
   readonly footprint: { readonly w: number; readonly h: number };
   readonly anchor: { readonly x: number; readonly y: number };
+  /** Tiles above the tile's top edge the idle pose reaches, measured from the pixels. */
+  readonly headroom: number;
   /** Bytes of canvas the sheet holds, for the store's budget. */
   readonly bytes: number;
 }
@@ -101,10 +103,12 @@ export function bakeSheet(
       ctx.beginPath();
       ctx.rect(frame.x, frame.y, frame.w, frame.h);
       ctx.clip();
-      painter.draw(ctx, painterBox(frame, pixelsPerTile), {
+      const box = painterBox(frame, pixelsPerTile);
+      painter.draw(ctx, box, {
         ...(variant !== undefined ? { variant } : {}),
         facing: 1,
         pose: { clip, index },
+        headroom: (box.y - frame.y) / pixelsPerTile,
       });
       ctx.restore();
     });
@@ -117,6 +121,30 @@ export function bakeSheet(
     pixelsPerTile,
     footprint: { w: widthTiles, h: 1 },
     anchor: { x: 0.5, y: FOOT_LINE },
+    headroom: measureHeadroom(ctx, layout.frames.get(`${key}/idle/0`), pixelsPerTile),
     bytes: layout.width * layout.height * 4,
   };
+}
+
+/**
+ * How far above the tile's top edge the art reaches, in tiles, read from the
+ * idle frame's pixels: the health bar sits above it. The tile's top edge is
+ * 0.85 tile above the foot line the anchor stands on.
+ */
+function measureHeadroom(
+  ctx: CanvasRenderingContext2D,
+  frame: AtlasFrame | undefined,
+  pixelsPerTile: number,
+): number {
+  if (!frame || frame.w === 0 || frame.h === 0) return 0;
+  const tileTop = FOOT_LINE * frame.h - 0.85 * pixelsPerTile;
+  const data = ctx.getImageData(frame.x, frame.y, frame.w, frame.h).data;
+  for (let y = 0; y < frame.h; y++) {
+    for (let x = 0; x < frame.w; x++) {
+      if ((data[(y * frame.w + x) * 4 + 3] ?? 0) > 8) {
+        return Math.max(0, (tileTop - y) / pixelsPerTile);
+      }
+    }
+  }
+  return 0;
 }

@@ -102,8 +102,7 @@ export class SheetStore {
       pixelsPerTile: sheet.pixelsPerTile,
       footprint: sheet.footprint,
       anchor: sheet.anchor,
-      // The painter's figure sits inside the tile, so the bar stays where it was.
-      headroom: 0,
+      headroom: sheet.headroom,
       clip: resolved.clip,
       index,
       placeholder: true,

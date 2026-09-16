@@ -74,16 +74,17 @@ const painter = (painterName: string, palette: string, variant?: string): AssetE
 
 export const ASSETS: Readonly<Record<string, AssetEntry>> = {
   /* ------------------------------------------------------ Party sprites */
-  'unit.fire.kaya': painter('bender', 'fire', 'lean'),
-  'unit.fire.tenzo': painter('bender', 'fire', 'broad'),
-  'unit.water.nilak': painter('bender', 'water', 'robed'),
-  'unit.water.sura': painter('bender', 'water', 'lean'),
-  'unit.earth.bo': painter('bender', 'earth', 'broad'),
-  'unit.earth.linmei': painter('bender', 'earth', 'robed'),
-  'unit.air.nima': painter('bender', 'air', 'lean'),
-  'unit.air.jinu': painter('bender', 'air', 'robed'),
-  'unit.non.riko': painter('bender', 'nonbender', 'lean'),
-  'unit.non.wen': painter('bender', 'nonbender', 'broad'),
+  // The variant names the character: `src/render/painters/cast.ts` has a figure for each.
+  'unit.fire.kaya': painter('bender', 'fire', 'kaya'),
+  'unit.fire.tenzo': painter('bender', 'fire', 'tenzo'),
+  'unit.water.nilak': painter('bender', 'water', 'nilak'),
+  'unit.water.sura': painter('bender', 'water', 'sura'),
+  'unit.earth.bo': painter('bender', 'earth', 'bo'),
+  'unit.earth.linmei': painter('bender', 'earth', 'linmei'),
+  'unit.air.nima': painter('bender', 'air', 'nima'),
+  'unit.air.jinu': painter('bender', 'air', 'jinu'),
+  'unit.non.riko': painter('bender', 'nonbender', 'riko'),
+  'unit.non.wen': painter('bender', 'nonbender', 'wen'),
 
   /* ----------------------------------------------------- Enemy sprites */
   'unit.enemy.thug': painter('bandit', 'enemy', 'club'),
