@@ -26,6 +26,8 @@
     "art:normalise": "tsx scripts/art/normalise.ts",
     "art:pack": "tsx scripts/art/pack.ts",
     "art:validate": "tsx scripts/art/validate.ts",
+    "art:map": "tsx scripts/art/map.ts",
+    "art:map-pack": "tsx scripts/art/map-pack.ts",
     "check:assets": "node scripts/check-asset-budget.mjs"
   },
   "dependencies": {
@@ -34,6 +36,7 @@
   },
   "devDependencies": {
     "@eslint/js": "^9.17.0",
+    "@jsquash/webp": "^1.5.0",
     "@playwright/test": "^1.49.1",
     "@types/node": "^22.10.2",
     "@types/pngjs": "^6.0.5",

@@ -1,5 +1,6 @@
 /**
- * Every sheet the manifest names, checked against the files on disk.
+ * Every sheet the manifest names and every map painting the content names,
+ * checked against the files on disk.
  *
  *   npx tsx scripts/art/validate.ts
  *
@@ -8,18 +9,22 @@
  * under `public/`, parses, names every frame the clips use at the size the
  * entry promises, points at a PNG that exists at the size the JSON claims,
  * stays inside 2048 px, and keeps the art bible's clear margin on every
- * frame's border. Exit 1 on any problem, so CI can run it.
+ * frame's border; and every map's `backdrop` exists and measures the grid
+ * times its pixels a tile (ADR 0009). Exit 1 on any problem, so CI can run it.
  */
 
 import { existsSync, readFileSync } from 'node:fs';
 import { dirname, join, resolve } from 'node:path';
+import { ALL_MAPS } from '../../src/content';
 import { CLIP_NAMES } from '../../src/content/assets/clips';
 import { ASSETS } from '../../src/content/assets/manifest';
 import { parseAtlasJson } from '../../src/render/sheets/atlasJson';
 import { MARGIN } from './lib/align';
 import type { Image } from './lib/image';
 import { readPng } from './lib/image';
+import { webpSize } from './lib/webp';
 
+/** The largest texture every device in the matrix takes. */
 const MAX_ATLAS = 2048;
 
 /** True if any pixel on the frame's outer `margin` rows and columns is opaque. */
@@ -98,10 +103,47 @@ export function validateSheets(publicDir = 'public'): string[] {
   return problems;
 }
 
+/** Every map painting the content names: present, and the grid times its pixels a tile. */
+export function validateBackdrops(publicDir = 'public'): string[] {
+  const problems: string[] = [];
+  for (const map of ALL_MAPS) {
+    const backdrop = map.backdrop;
+    if (!backdrop) continue;
+    const path = resolve(publicDir, backdrop.url);
+    if (!existsSync(path)) {
+      problems.push(`${map.id}: ${backdrop.url} is missing under ${publicDir}/`);
+      continue;
+    }
+    let size: { width: number; height: number } | null = null;
+    if (backdrop.url.endsWith('.webp')) size = webpSize(new Uint8Array(readFileSync(path)));
+    else if (backdrop.url.endsWith('.png')) size = readPng(path);
+    else {
+      problems.push(`${map.id}: ${backdrop.url} must be a .webp or a .png`);
+      continue;
+    }
+    if (!size) {
+      problems.push(`${map.id}: ${backdrop.url} is not a readable image`);
+      continue;
+    }
+    const wantW = map.width * backdrop.pixelsPerTile;
+    const wantH = map.height * backdrop.pixelsPerTile;
+    if (size.width !== wantW || size.height !== wantH) {
+      problems.push(
+        `${map.id}: ${backdrop.url} is ${size.width}x${size.height}, expected ${wantW}x${wantH} ` +
+          `(${map.width}x${map.height} tiles at ${backdrop.pixelsPerTile} px)`,
+      );
+    }
+    if (size.width > MAX_ATLAS || size.height > MAX_ATLAS) {
+      problems.push(`${map.id}: ${backdrop.url} exceeds the ${MAX_ATLAS} px texture limit`);
+    }
+  }
+  return problems;
+}
+
 if (process.argv[1]?.endsWith('validate.ts')) {
-  const problems = validateSheets();
+  const problems = [...validateSheets(), ...validateBackdrops()];
   if (problems.length === 0) {
-    console.log('Every sheet in the manifest checks out.');
+    console.log('Every sheet in the manifest and every map painting checks out.');
     process.exit(0);
   }
   for (const problem of problems) console.error(problem);

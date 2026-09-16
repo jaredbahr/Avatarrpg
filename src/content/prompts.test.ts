@@ -4,26 +4,34 @@ import { describe, expect, it } from 'vitest';
 import { CLIP_FRAME_COUNTS, CLIP_NAMES } from './assets/clips';
 import { ASSETS } from './assets/manifest';
 import { CHARACTERS } from './characters';
-import { ELEMENT_PALETTES, ENEMY_PALETTE, NEUTRAL_PALETTE } from '../render/palettes';
+import { ALL_MAPS } from './index';
+import {
+  ELEMENT_PALETTES,
+  ENEMY_PALETTE,
+  NEUTRAL_PALETTE,
+  TERRAIN_STYLES,
+} from '../render/palettes';
 
 /**
  * The prompt packs under docs/art/prompts are content: they are what the art
  * gets generated from, so they get validated like the rest of the content.
  *
- * Four things are checked. Every portrait key in the manifest has a pack, so
+ * Five things are checked. Every portrait key in the manifest has a pack, so
  * a new speaker cannot ship without one. Every hero sprite, and the pilot
  * enemy, has a sheet pack whose pose table matches the clip vocabulary, so
- * the frames a pack asks for are the frames the runtime can play. Every hex a
- * pack quotes is a palette value, so a pack cannot drift from the colours the
- * game draws with. And no pack, note or checklist names the franchise or a
- * character from it: the art bible forbids it, and a generator steered by a
- * name produces a likeness the disclaimer in the README promises we do not
- * use.
+ * the frames a pack asks for are the frames the runtime can play. Every map
+ * has a painting pack and a layout image (`scripts/art/lib/maps.test.ts`
+ * holds them to what the content generates). Every hex a pack quotes is a
+ * palette value, so a pack cannot drift from the colours the game draws
+ * with. And no pack, note or checklist names the franchise or a character
+ * from it: the art bible forbids it, and a generator steered by a name
+ * produces a likeness the disclaimer in the README promises we do not use.
  */
 
 const ART = join(process.cwd(), 'docs', 'art');
 const PORTRAITS = join(ART, 'prompts', 'portraits');
 const SHEETS = join(ART, 'prompts', 'sheets');
+const MAPS = join(ART, 'prompts', 'maps');
 
 const REQUIRED_SECTIONS = [
   '**Palette**',
@@ -53,7 +61,21 @@ const SHEET_SECTIONS = [
   '## Check',
 ];
 
-/** Every colour a pack may quote: the palettes, ink, parchment and the UI gold. */
+const MAP_SECTIONS = [
+  '**Deliver**',
+  '**Ships as**',
+  '**Map**',
+  '**Layout**',
+  '**Palette**',
+  '## Where',
+  '## The grid',
+  '## Prompt',
+  '## Negative prompt',
+  '## Commands',
+  '## Check',
+];
+
+/** Every colour a pack may quote: the palettes, ink, parchment, the UI gold and the ground. */
 const ALLOWED_HEX = new Set<string>(
   [...Object.values(ELEMENT_PALETTES), NEUTRAL_PALETTE, ENEMY_PALETTE].flatMap((p) => [
     p.base,
@@ -63,6 +85,7 @@ const ALLOWED_HEX = new Set<string>(
     p.ink,
   ]),
 );
+for (const style of Object.values(TERRAIN_STYLES)) ALLOWED_HEX.add(style.fill);
 ALLOWED_HEX.add('#f4e9d8');
 ALLOWED_HEX.add('#d9a441');
 ALLOWED_HEX.add('#f0c674');
@@ -249,6 +272,35 @@ describe('sheet prompt packs', () => {
       'prompts/generator-notes.md',
     ]) {
       expect(existsSync(join(ART, name)), name).toBe(true);
+    }
+  });
+});
+
+describe('map painting packs', () => {
+  it('exist for every map, with the layout image beside them, and for nothing else', () => {
+    for (const map of ALL_MAPS) {
+      expect(existsSync(join(MAPS, `${map.id}.md`)), `${map.id} needs a map pack`).toBe(true);
+      expect(existsSync(join(MAPS, `${map.id}-layout.png`)), `${map.id} needs its layout`).toBe(
+        true,
+      );
+    }
+    const ids = new Set(ALL_MAPS.map((m) => m.id));
+    for (const entry of readdirSync(MAPS)) {
+      const id = entry.replace(/-layout\.png$|\.md$/, '');
+      expect(ids.has(id), `${entry} is not a map`).toBe(true);
+    }
+  });
+
+  it('carry every section a pack needs, and name their file, size and commands', () => {
+    for (const map of ALL_MAPS) {
+      const text = readFileSync(join(MAPS, `${map.id}.md`), 'utf8');
+      for (const section of MAP_SECTIONS) {
+        expect(text, `${map.id}: missing ${section}`).toContain(section);
+      }
+      expect(text).toContain(`url: 'art/maps/${map.id}.webp'`);
+      expect(text).toContain(`art/raw/maps/${map.id}.png`);
+      expect(text).toContain(`npm run art:map -- --map ${map.id}`);
+      expect(text).toContain(`${map.width} columns by ${map.height} rows`);
     }
   });
 });
