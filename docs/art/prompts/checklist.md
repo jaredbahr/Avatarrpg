@@ -22,6 +22,16 @@ regeneration, not a retouch: a retouched image drifts from its siblings.
 - [ ] The two characters of an element are distinct in silhouette, not only in colour (Kaya/Tenzo, Nilak/Sura, Bo/Lin Mei, Nima/Jinu, Riko/Wen)
 - [ ] Saved as 512×512 PNG at `public/art/portraits/<name>.png`, with the manifest entry carrying the right `palette`
 
+## Sheets
+
+- [ ] Same face, hair, build and costume in every frame; the reference figure is the truth, and a frame that drifts is regenerated
+- [ ] Full figure facing screen-right in every frame, feet on the 85% line, head inside the frame; nothing that reads wrong mirrored
+- [ ] Background keyed clean by `art:normalise`: no green fringe, no ground shadow, no cast shadow, no remnants
+- [ ] The element only as the small hint at the hand the pose names; no swirl, no floating rocks or leaves, because the effects layer draws those
+- [ ] Idle A and B differ only by the breath; cast wind-up, release and recover read as one motion; hit and KO show no wounds
+- [ ] Readable at 40 px in the game, and distinct in silhouette from the other character of the element
+- [ ] `npm run art:validate` and `npm run check:assets` pass; the manifest entry carries the right `palette`
+
 ## Before the commit
 
 - [ ] The generator's output licence permits non-commercial use
