@@ -91,6 +91,13 @@ test.describe('renderer backends', () => {
       await settleLayout(page);
       expect(await page.evaluate(() => window.fnt?.app.rendererBackend())).toBe(renderer);
 
+      // This is the procedural ground's test: every unpainted map and the
+      // fallback draw it, so take any painting the forest road may carry away.
+      await page.evaluate(() => window.fnt?.app.overrideBackdrop('forest_road', null));
+      await page.evaluate(
+        () => new Promise((done) => requestAnimationFrame(() => requestAnimationFrame(done))),
+      );
+
       // The forest road's puddle is authored at (5, 6); the top-left corner is grass.
       const water = await tileCentre(page, { x: 5, y: 6 });
       const grass = await tileCentre(page, { x: 3, y: 1 });
