@@ -30,6 +30,17 @@ jobs:
 
       - run: npm ci
 
+      - name: Install Chromium for Playwright
+        run: npx playwright install --with-deps chromium
+
+      - name: Capture the gallery
+        # Runs before the Pages build on purpose: the gallery builds and serves
+        # its own copy of the site at the root base, and the Pages build below
+        # replaces dist/ afterwards. A review artefact, never a gate, so a
+        # flaky capture must not hold up a deploy.
+        continue-on-error: true
+        run: npm run gallery
+
       - name: Build
         # Pages serves the site from /<repo>/, so the bundler base must match.
         env:
@@ -38,6 +49,11 @@ jobs:
 
       - name: SPA fallback for hash-free deep links
         run: cp dist/index.html dist/404.html
+
+      - name: Publish the gallery beside the site
+        # Reachable at /<repo>/gallery/ once deployed; skipped if the capture failed.
+        run: |
+          if [ -f gallery/index.html ]; then cp -r gallery dist/gallery; fi
 
       - uses: actions/configure-pages@v5
         with:

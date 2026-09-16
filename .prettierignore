@@ -6,3 +6,4 @@ test-results/
 .shots/
 node_modules/
 package-lock.json
+/gallery/

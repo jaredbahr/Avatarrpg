@@ -40,9 +40,15 @@ export async function snapshot(page: Page): Promise<AppSnapshot> {
   });
 }
 
-/** Clears saved games and settings so each spec starts from nothing. */
-export async function resetStorage(page: Page): Promise<void> {
-  await page.goto('/');
+/**
+ * Clears saved games and settings so each spec starts from nothing.
+ *
+ * `query` is kept across the reload, which is how a spec forces a renderer
+ * (`?renderer=webgl`) or the frame-time readout (`?stats=1`): both are read
+ * from `location.search` when the app boots.
+ */
+export async function resetStorage(page: Page, query = ''): Promise<void> {
+  await page.goto(`/${query}`);
   await page.evaluate(() => {
     try {
       localStorage.clear();

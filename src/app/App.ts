@@ -403,6 +403,17 @@ export class App {
   }
 
   /**
+   * Re-syncs the mounted scene to `state` after something other than
+   * `dispatch` replaced it. The e2e and gallery specs stage a board by editing
+   * state directly (an enemy on a puddle, a unit at one HP) and the HUD has to
+   * be told; nothing in the game itself calls this.
+   */
+  resync(): void {
+    this.routeToState();
+    this.offerLevelUpIfPending();
+  }
+
+  /**
    * Current map camera, as plain numbers.
    *
    * Exposed so the e2e suite can work out which screen pixel a tile is under

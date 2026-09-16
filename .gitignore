@@ -17,3 +17,6 @@ test-results/
 .env
 .env.*
 !.env.example
+
+# Screenshot gallery output (`npm run gallery`); published as a CI artefact, never committed.
+/gallery/
