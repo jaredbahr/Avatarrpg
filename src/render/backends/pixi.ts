@@ -100,7 +100,6 @@ export class PixiBackend implements RenderBackend {
 
   private groundUniforms = new UniformGroup({
     uGrid: { value: new Float32Array([1, 1]), type: 'vec2<f32>' },
-    uViewport: { value: new Float32Array([1, 1]), type: 'vec2<f32>' },
     uOffset: { value: new Float32Array([0, 0]), type: 'vec2<f32>' },
     uTileSize: { value: TILE, type: 'f32' },
     uTime: { value: 0, type: 'f32' },
@@ -281,7 +280,6 @@ export class PixiBackend implements RenderBackend {
 
     const uniforms = this.groundUniforms.uniforms as {
       uGrid: Float32Array;
-      uViewport: Float32Array;
       uOffset: Float32Array;
       uTileSize: number;
       uTime: number;
@@ -289,8 +287,6 @@ export class PixiBackend implements RenderBackend {
     };
     uniforms.uGrid[0] = grid.width;
     uniforms.uGrid[1] = grid.height;
-    uniforms.uViewport[0] = camera.viewport.width;
-    uniforms.uViewport[1] = camera.viewport.height;
     uniforms.uOffset[0] = camera.offsetX;
     uniforms.uOffset[1] = camera.offsetY;
     uniforms.uTileSize = TILE * camera.scale;

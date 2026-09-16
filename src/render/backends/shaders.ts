@@ -85,11 +85,14 @@ in vec2 vTextureCoord;
 uniform sampler2D uTexture;
 uniform sampler2D uMap;
 uniform vec2 uGrid;
-uniform vec2 uViewport;
 uniform vec2 uOffset;
 uniform float uTileSize;
 uniform float uTime;
 uniform float uHatch;
+// Set by Pixi's filter system, not by our uniform group: the pooled input
+// texture's logical size and the output frame, both in CSS pixels.
+uniform vec4 uInputSize;
+uniform vec4 uOutputFrame;
 out vec4 fragColor;
 ${NOISE}
 ${TERRAIN_COLORS}
@@ -116,8 +119,16 @@ void main(void) {
    * is attached to, so a world-sized quad running off the edge of the screen
    * would hand us UVs covering the visible part alone — which silently
    * rescales the whole board.
+   *
+   * Nor do the UVs span 0..1 over the quad. Pixi pools filter textures at the
+   * next power of two, so vTextureCoord runs from 0 to frame / texture on
+   * each axis: at 1368x912 and half resolution that is 0.67 by 0.89, and
+   * multiplying by the viewport drew the board wide, tall and offset on every
+   * device. uInputSize is the pooled texture's logical size and uOutputFrame
+   * the frame's origin, which together put the fragment back in CSS pixels.
    */
-  vec2 tileUv = (vTextureCoord * uViewport + uOffset) / uTileSize;
+  vec2 screen = vTextureCoord * uInputSize.xy + uOutputFrame.xy;
+  vec2 tileUv = (screen + uOffset) / uTileSize;
   vec2 cell = floor(tileUv);
   vec2 f = fract(tileUv);
 
