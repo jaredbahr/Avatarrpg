@@ -1,23 +1,29 @@
 import { existsSync, readdirSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { describe, expect, it } from 'vitest';
+import { CLIP_FRAME_COUNTS, CLIP_NAMES } from './assets/clips';
 import { ASSETS } from './assets/manifest';
+import { CHARACTERS } from './characters';
 import { ELEMENT_PALETTES, ENEMY_PALETTE, NEUTRAL_PALETTE } from '../render/palettes';
 
 /**
  * The prompt packs under docs/art/prompts are content: they are what the art
  * gets generated from, so they get validated like the rest of the content.
  *
- * Three things are checked. Every portrait key in the manifest has a pack, so
- * a new speaker cannot ship without one. Every hex a pack quotes is a palette
- * value, so a pack cannot drift from the colours the game draws with. And no
- * pack, note or checklist names the franchise or a character from it: the
- * art bible forbids it, and a generator steered by a name produces a likeness
- * the disclaimer in the README promises we do not use.
+ * Four things are checked. Every portrait key in the manifest has a pack, so
+ * a new speaker cannot ship without one. Every hero sprite, and the pilot
+ * enemy, has a sheet pack whose pose table matches the clip vocabulary, so
+ * the frames a pack asks for are the frames the runtime can play. Every hex a
+ * pack quotes is a palette value, so a pack cannot drift from the colours the
+ * game draws with. And no pack, note or checklist names the franchise or a
+ * character from it: the art bible forbids it, and a generator steered by a
+ * name produces a likeness the disclaimer in the README promises we do not
+ * use.
  */
 
 const ART = join(process.cwd(), 'docs', 'art');
 const PORTRAITS = join(ART, 'prompts', 'portraits');
+const SHEETS = join(ART, 'prompts', 'sheets');
 
 const REQUIRED_SECTIONS = [
   '**Palette**',
@@ -29,6 +35,21 @@ const REQUIRED_SECTIONS = [
   '## Prompt',
   '## Negative prompt',
   '## Variations',
+  '## Check',
+];
+
+const SHEET_SECTIONS = [
+  '**Palette**',
+  '**Reference**',
+  '**Deliver**',
+  '**Ships as**',
+  '**Manifest**',
+  '## Who',
+  '## Signature',
+  '## Poses',
+  '## Prompt',
+  '## Negative prompt',
+  '## Commands',
   '## Check',
 ];
 
@@ -154,6 +175,73 @@ describe('portrait prompt packs', () => {
   });
 
   it('ship the shared notes beside the packs', () => {
+    for (const name of [
+      'README.md',
+      'prompts/_style.md',
+      'prompts/checklist.md',
+      'prompts/generator-notes.md',
+    ]) {
+      expect(existsSync(join(ART, name)), name).toBe(true);
+    }
+  });
+});
+
+describe('sheet prompt packs', () => {
+  /** Every hero's sprite, and the bandit the art bible pairs with the first hero sheet. */
+  const sheetKeys = [...CHARACTERS.map((c) => c.sprite), 'unit.enemy.thug'];
+
+  it('exist for every hero sprite and the pilot enemy, and for nothing the manifest lacks', () => {
+    for (const key of sheetKeys) {
+      expect(existsSync(join(SHEETS, `${key}.md`)), `${key} needs a sheet pack`).toBe(true);
+    }
+    for (const entry of readdirSync(SHEETS)) {
+      const key = entry.replace(/\.md$/, '');
+      expect(ASSETS[key], `${entry} is not a manifest key`).toBeDefined();
+    }
+  });
+
+  it('carry every section a pack needs, and name their key, reference and commands', () => {
+    for (const key of sheetKeys) {
+      const text = readFileSync(join(SHEETS, `${key}.md`), 'utf8');
+      for (const section of SHEET_SECTIONS) {
+        expect(text, `${key}: missing ${section}`).toContain(section);
+      }
+      expect(text).toContain(`'${key}':`);
+      expect(text).toContain(`art/raw/reference/${key}.png`);
+      expect(text).toContain(`npm run art:normalise -- --unit ${key}`);
+      expect(text).toContain(`npm run art:pack -- --unit ${key}`);
+    }
+  });
+
+  it('ask for exactly the frames the clip table allows', () => {
+    for (const key of sheetKeys) {
+      const text = readFileSync(join(SHEETS, `${key}.md`), 'utf8');
+      for (const clip of CLIP_NAMES) {
+        const { min, max } = CLIP_FRAME_COUNTS[clip];
+        for (let index = 0; index < min; index++) {
+          expect(text, `${key}: ${clip}/${index}`).toContain(`\`${clip}/${index}.png\``);
+        }
+        expect(text, `${key}: ${clip} asks for more frames than the table allows`).not.toContain(
+          `\`${clip}/${max}.png\``,
+        );
+      }
+    }
+  });
+
+  it('never ship a hero sheet without its portrait pack describing the same figure', () => {
+    for (const character of CHARACTERS) {
+      const sheet = readFileSync(join(SHEETS, `${character.sprite}.md`), 'utf8');
+      const portrait = readFileSync(
+        join(PORTRAITS, `${character.portrait.slice('portrait.'.length)}.md`),
+        'utf8',
+      );
+      // Both packs point at the same reference figure, so sprite and portrait are one character.
+      expect(portrait).toContain(`art/raw/reference/${character.sprite}.png`);
+      expect(sheet).toContain(`art/raw/reference/${character.sprite}.png`);
+    }
+  });
+
+  it('are the only packs, beside the notes, under the prompts folder', () => {
     for (const name of [
       'README.md',
       'prompts/_style.md',
