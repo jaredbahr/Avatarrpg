@@ -63,3 +63,7 @@ model, iPadOS version and the `?stats=1` numbers in the PR.
 16. **Figures.** Every unit stands about a tile tall with its health bar clear of the head; the party faces right and the bandits face left. Pinch to the maximum zoom on the quarry with the boss out: every unit still draws (the canvas memory cap).
 17. **HUD.** The acting unit's portrait sits in the unit panel ringed in its element; every ability button shows its element glyph and stays 48 px tall at Largest text.
 18. **Gallery.** Open `/gallery/` from the Pages URL: every project's pictures load, and the figure page shows every unit in every pose.
+19. **The shell in daylight.** Outdoors or by a window: the parchment HUD's text reads on every panel, the confirm bar's green button reads, and Higher contrast still helps rather than hurts.
+20. **A painting under the grid.** On a map with a painting, Settings → Show grid: the road's edges and the pond's banks sit on the tile lines; the live puddle is tinted over the painting; Higher contrast brings the drawn tree, wall and ledge marks back over it.
+21. **Zoomed into a painting.** Pinch to the maximum on a painted map on both renderers (`?renderer=canvas`, `?renderer=webgl`): the painting stays sharp and every unit still draws; `?stats=1` idles at 58 fps or better.
+22. **The aim arc.** Aim a thrown ability (Rock Throw, Fire Blast) and tap a target: the arc lands on the tapped tile under the finger, ends in its arrowhead, and a strike up close or a self cast shows none.

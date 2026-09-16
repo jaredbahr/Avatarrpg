@@ -75,6 +75,15 @@ Element in the hands is drawn in the character's clip only as a hint (a glow,
 a small flame). The bending itself is the FX layer, so the same cast pose
 serves every ability of that element.
 
+Planned, not yet in the contract: element-specific forms for the cast,
+from the owner's four-panel storyboard (gather, strike, impact, recover).
+They would be optional clips `cast_fire`, `cast_water`, `cast_earth` and
+`cast_air` of four poses each, a fire punch, water's flowing arms, an earth
+stance, an air spin, picked by the ability's element when a sheet carries
+them and falling back to `cast` when it does not. They wait on the first
+generated sheet, so the forms are drawn against real frames
+(`docs/roadmap.md`, Milestone 2).
+
 The placeholders draw this table as written: `src/render/painters/figure.ts`
 holds one pose per row, solved from the feet up so every frame stands on the
 baseline, and `cast.ts` gives each character the silhouette of their reference

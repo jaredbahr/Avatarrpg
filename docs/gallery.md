@@ -80,6 +80,13 @@ that question broken into parts.
   same world as the board? The acting unit's portrait sits in the unit panel
   and every ability carries its element's glyph: do they read as drawn, not
   as labels?
+- **The mockup.** Beats 04, 05, 06 and 18 after Milestone 2. The parchment
+  HUD: the title plate, the element rings on the turn strip, the framed
+  portrait with its badge, the ability header, the marks on every button,
+  the green Confirm. In 06, the arc from the caster to the target is the
+  throw's own flight. In 18, the painting slot under the forest road: with
+  Show grid on, does every edge in the stand-in sit on a tile line? A real
+  painting through `art:map` replaces the stand-in in beats 04 to 12.
 
 ## Go / no-go
 
@@ -93,6 +100,7 @@ Filled in by the owner after the milestone's last slice. One line each; a
 | The ground and the hidden grid give the feel I described                                           |          |     |
 | The placeholder characters prove the pipeline; the art bible is the right target for the real ones |          |     |
 | I would keep writing story against this look                                                       |          |     |
+| The parchment HUD and the painting slot are the mockup, allowing for the real paintings and icons  |          |     |
 
 A "no" on the first or the last line stops Phase 2 content until it is a
 "yes". A "no" elsewhere is a slice to revisit, not a stop.

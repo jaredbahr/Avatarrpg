@@ -59,3 +59,17 @@ paths are rules-relevant (ADR 0002).
 - Anything that later draws a region of tiles (a reaction forecast, an
   ability's reach on hover) goes through `contourLoops`, never a square per
   tile.
+
+## Amendment, 2026-09-16: the aim arc
+
+The mockup draws the throw before it is thrown. `MapView.aimArc` carries the
+caster's centre, the target's centre, the lob and the element's light tone
+while a hurled ability is being aimed (the tapped target, or with a mouse
+the hovered one, and only a tile the ability can reach); both backends draw
+`aimArcPoints` in the path layer as dots over an ink line ending in the same
+arrowhead the walk's curve uses. The points are `headAt`, the projectile's
+own curve, sampled (`src/render/geometry/arc.ts`), so the preview and the
+flight cannot disagree. Nothing flies for a strike up close, a self cast or
+an instant effect, read from the recipe's `travel` the choreography plays.
+It is still, so reduce motion needs nothing, and it is not on the timeline,
+so `busy()` and `finishesAt` are untouched.

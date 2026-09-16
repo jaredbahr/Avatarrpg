@@ -61,4 +61,7 @@ with a fixed seed, and publishes them where a tablet can open them.
   a hit first (`loadDice`), because the seed's first roll is a miss on every
   beat and a miss shows nothing; the walk is fixed, so the frames still are.
 - The catalogue grows with the milestones: a grid-off beat with ADR 0007, a
-  character-sheet grid with the asset contract.
+  character-sheet grid with the asset contract, and with ADR 0009 a beat
+  (`18-backdrop`) that puts the probe painting under the forest road through
+  `App.overrideBackdrop`, so the painting slot is reviewed before any
+  painting exists and a real one simply shows up in the board beats.

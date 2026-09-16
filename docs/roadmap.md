@@ -82,6 +82,53 @@ and the bandit first) through `docs/art/README.md`; painted map backdrops if
 the owner wants them (a `MapDef.art` entry under the rules grid, its own
 ADR); the rest of P2; then D.
 
+## Milestone 2: from the gate to the mockup (2026-09-16)
+
+The owner answered the gate with a target rather than a verdict: ten
+full-body reference figures, two far-horizon renders (a painted temple
+explore scene with a walking party, a canal-town fight) and one realistic
+one, the forest road as a painting under the party with a parchment HUD,
+which he called where the game will likely get. This milestone takes the
+game to that picture on the same rules, the same grid and the same DOM.
+
+| Question               | Decision                                                                                                                                                                                                               |
+| ---------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| HUD colourway          | Light parchment only. The shell tokens moved to the clean mockup's set; the dark ink shell is retired (ADR 0005, amended). No setting, no second colourway. High contrast is re-derived on top of it.                  |
+| Painted map backdrops  | Built now, painted by the owner from generated packs. A painting is a field on the map, drawn under the rules grid with the live surfaces over it, on both backends (ADR 0009).                                        |
+| Per-ability icons      | Drawn now, generated later. An inline mark per kind of action ships as the placeholder, resolved by fx key then by what the ability does; a generated icon can replace one by key, the way a sheet replaces a painter. |
+| Palette                | Stays as the accent. Element colours on sashes, trim, effects and HUD chrome; garments follow the figures. Nothing recoloured.                                                                                         |
+| Element-specific forms | Recorded as the next design, not built: see below.                                                                                                                                                                     |
+
+What shipped, each with its gallery, on the same PR:
+
+| Slice | What it did                                                                                                                                                                                                                                                                     |
+| ----- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| M2.0  | The gallery's WebGL projects wait 30 s for a layout to settle (a flake on one CI runner); Tenzo's packs written from his figure, all ten in hand                                                                                                                                |
+| M2.1  | The parchment shell: every token retuned, the PWA colours, High contrast re-derived, a contrast pass (ADR 0005, amended)                                                                                                                                                        |
+| M2.2  | Painted map backdrops on both backends, the ground shader accumulating premultiplied coverage, decor standing down except under High contrast, the probe painting and its e2e spec, `art:map` (WebP through wasm), packs and layout images generated from the content, ADR 0009 |
+| M2.3  | The HUD to the mockup: marks for every ability and control, the title plate, element rings, the framed square portrait with its badge, the ability header, the green Confirm, corner brackets, on the existing DOM with every spec contract kept                                |
+| M2.4  | The aim arc: a hurled ability's flight, sampled from the projectile's own curve, drawn at aim time on both backends                                                                                                                                                             |
+
+**The storyboard, recorded as the next design.** The owner's four-panel
+board (Gather, Strike, Impact, Recover) is the choreography's wind-up,
+release, impact hold and recover, which every cast already plays. What it
+asks for beyond that is element-specific martial forms in the cast frames:
+a fire punch, water's flowing arms, an earth stance, an air spin. That is a
+sheet-contract question, not an animator one: optional clips `cast_fire`,
+`cast_water`, `cast_earth`, `cast_air` (four frames each: gather, strike,
+hold, recover) that the choreography picks by the ability's element when
+the sheet carries them and `resolveClip` falls back to `cast` when it does
+not. The costs are the clip table (`CLIP_NAMES`, `CLIP_FRAME_COUNTS`, the
+fallback table, `BAKED_CLIPS`), the exhaustive `POSES` of the placeholder
+rig, a pose row per element in the sheet packs, and the frame-4 hold in the
+choreography. It waits on the owner's first generated sheet, so the forms
+are drawn against real frames rather than the placeholders.
+
+After this milestone: the owner's paintings through `art:map` (the forest
+road first), the first sheets (Kaya and the bandit), his go/no-go against
+the mockup on the device checklist, then the far-horizon renders' explore
+mode (a party walk with a roster panel) as its own milestone, and D.
+
 ## Checklists
 
 ### A1 Device foundation
