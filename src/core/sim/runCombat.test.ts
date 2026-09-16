@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { CONTENT } from '../../content';
 import { DEFAULT_MAX_ROUNDS, SOLO_PARTY, STANDARD_PARTY, runCombat, seedFor } from './runCombat';
-import { runBalanceReport } from './balance';
+import { partyOfSize, runBalanceReport } from './balance';
 import { encounterRoster } from '../state/createGame';
 
 /**
@@ -199,5 +199,34 @@ describe('balance', () => {
     expect(opener).toBeDefined();
     if (!boss || !opener) return;
     expect(boss.averageRounds).toBeGreaterThan(opener.averageRounds);
+  });
+
+  /*
+   * The table one player above the baseline, which is the first size that pulls
+   * a reinforcement in — and the size this suite could not see.
+   *
+   * Everything above runs at STANDARD_PARTY, six players. The quarry gate spent
+   * a long time with a 30-point hole at exactly four: 72% against 99.5% at
+   * three, and 57.5% on the bluffed roster, because the reinforcement list led
+   * with a slinger. A `cautious` ranged unit never closes and never presents a
+   * target, so it just makes the fight longer, and on the oil map length is
+   * what kills. Six players were fine, so CI was fine, and a family of four
+   * walked into the one size nobody measured.
+   *
+   * Reinforcements are taken off the front of the list, so this is the pass
+   * that proves the first one is survivable.
+   */
+  const plusOne = runBalanceReport(CONTENT, {
+    trials: 20,
+    perVariant: true,
+    party: partyOfSize(4),
+  });
+
+  it('does not punish the table for bringing one more player', () => {
+    for (const row of plusOne.encounters) {
+      expect(row.winRate, `${row.label} at four players`).toBeGreaterThan(0.4);
+      expect(row.stalemates, row.label).toBe(0);
+    }
+    expect(plusOne.anomalies, `\n${plusOne.anomalies.join('\n')}\n`).toEqual([]);
   });
 });

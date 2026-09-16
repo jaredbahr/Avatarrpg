@@ -592,6 +592,30 @@ export interface ContentBundle {
  */
 export const VARIANT_BUDGET_TOLERANCE = 0.1;
 
+/**
+ * How much threat a flag-gated `conditionalEnemies` group may *add* on top of
+ * the authored roster.
+ *
+ * Variants swap and are held to 10% either way. Conditional groups only ever
+ * add, and until this rule existed they were the one roster lever with no
+ * budget on them at all — which is how the quarry floor boss came to put two
+ * extra mercenaries on the field for anyone who traded Ruon away. That branch
+ * measured a 9% win rate against the other branch's 62%, and because the
+ * balance harness set no story flags, nothing in the repo could see it.
+ *
+ * Twenty percent is drawn from what the simulator says extra bodies actually
+ * cost, which is far more than their XP suggests: on that boss floor a *single*
+ * 150-XP body (+29%) still measured 32-46% against 82%, and the pair that
+ * shipped (+59%) was unwinnable. A cap this tight means anything substantial
+ * has to be authored as a variant — swap the roster, do not grow it — which is
+ * the lesson that fight taught.
+ *
+ * It is a guardrail, not a proof of balance. XP is a coarse proxy for threat: a
+ * quarry bender and a mercenary cost the same 150 and do not play the same. The
+ * real check is `npm run balance` with BALANCE_VARIANTS=1.
+ */
+export const CONDITIONAL_BUDGET_TOLERANCE = 0.2;
+
 function duplicates(ids: readonly string[]): string[] {
   const seen = new Set<string>();
   const dupes = new Set<string>();
@@ -996,6 +1020,34 @@ export function validateContent(bundle: ContentBundle): string[] {
       );
 
     const baseBudget = budgetOf(e.enemies);
+
+    /*
+     * What the flags can add, worst case.
+     *
+     * Groups keyed on the same flag with opposite `whenSet` can never both
+     * fire, so the worst case is the heavier side of each flag, summed across
+     * distinct flags. Checking groups one at a time would let three 15% groups
+     * through and land a 45% roster on the table.
+     */
+    if (baseBudget > 0 && e.conditionalEnemies.length > 0) {
+      const heaviestPerFlag = new Map<string, number>();
+      for (const group of e.conditionalEnemies) {
+        const cost = budgetOf(group.placements);
+        heaviestPerFlag.set(group.flag, Math.max(heaviestPerFlag.get(group.flag) ?? 0, cost));
+      }
+      const added = [...heaviestPerFlag.values()].reduce((sum, cost) => sum + cost, 0);
+      const drift = added / baseBudget;
+      if (drift > CONDITIONAL_BUDGET_TOLERANCE) {
+        problems.push(
+          `encounter "${e.id}" can add ${added} XP of conditional enemies to a baseline of ` +
+            `${baseBudget} (${Math.round(drift * 100)}% more, limit ` +
+            `${Math.round(CONDITIONAL_BUDGET_TOLERANCE * 100)}%) — a story branch should change ` +
+            `who is on the field, not how many. Author it as a variant, which swaps the roster ` +
+            `and is reported separately by BALANCE_VARIANTS=1`,
+        );
+      }
+    }
+
     const variantIds = new Set<string>();
     for (const variant of e.variants) {
       if (variantIds.has(variant.id)) {
