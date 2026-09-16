@@ -21,7 +21,15 @@
  *
  * Keep the `palette` on an image entry. It is how the dialogue backdrop knows
  * which element to tint for the speaker, and how HUD chrome matches the art.
+ *
+ * A unit's animated art is a `sheet` (ADR 0003): a TexturePacker-style atlas
+ * of key poses, one clip per event kind, drawn facing screen-right and
+ * mirrored for the other side. Until a key has a sheet, the sheet runtime
+ * bakes the painter's poses into one of the same shape, so both backends and
+ * the clip logic run the same path whether the art is real or not.
  */
+
+import type { ClipDef, ClipName } from './clips';
 
 export type AssetEntry =
   | {
@@ -39,7 +47,25 @@ export type AssetEntry =
       readonly url: string;
       /** Palette key, so HUD chrome and the dialogue mood still know the element. */
       readonly palette?: string;
+    }
+  | {
+      readonly kind: 'sheet';
+      /** The atlas JSON, relative to the site root; its `meta.image` names the PNG beside it. */
+      readonly atlas: string;
+      /** Pixels a tile is drawn at in the atlas: 128, or 256 for a sharper sheet. */
+      readonly pixelsPerTile: number;
+      /** Tiles the unit stands on: 1x1, or 2x1 for the boss. */
+      readonly footprint: { readonly w: number; readonly h: number };
+      /** The point of the frame that stands on the tile's foot line, as fractions of the frame. */
+      readonly anchor: { readonly x: number; readonly y: number };
+      /** `mirror`: drawn facing screen-right and flipped for the other side. */
+      readonly facing: 'mirror' | 'both';
+      readonly clips: Partial<Record<ClipName, ClipDef>>;
+      /** Palette key, for the HUD chrome and for the placeholder drawn while the atlas loads. */
+      readonly palette: string;
     };
+
+export type SheetEntry = Extract<AssetEntry, { kind: 'sheet' }>;
 
 const painter = (painterName: string, palette: string, variant?: string): AssetEntry =>
   variant
@@ -104,6 +130,30 @@ export const ASSETS: Readonly<Record<string, AssetEntry>> = {
   'portrait.dorin': painter('portrait', 'earth', 'dorin'),
   'portrait.ruon': painter('portrait', 'neutral', 'ruon'),
   'portrait.jin': painter('portrait', 'nonbender', 'jin'),
+
+  /* ------------------------------------------------------------ Probe */
+  /*
+   * A real atlas of flat-colour frames, committed so the sheet path is
+   * exercised in CI before any generated art exists. Never assigned to a
+   * unit by content; the e2e suite points a unit at it and reads the pixels.
+   */
+  'unit.test.probe': {
+    kind: 'sheet',
+    atlas: 'art/test/probe.json',
+    pixelsPerTile: 128,
+    footprint: { w: 1, h: 1 },
+    anchor: { x: 0.5, y: 0.85 },
+    facing: 'mirror',
+    palette: 'neutral',
+    clips: {
+      idle: { frames: ['unit.test.probe/idle/0', 'unit.test.probe/idle/1'], fps: 1, loop: true },
+      cast: {
+        frames: ['unit.test.probe/cast/0', 'unit.test.probe/cast/1', 'unit.test.probe/cast/2'],
+        fps: 8,
+        loop: false,
+      },
+    },
+  },
 };
 
 /**

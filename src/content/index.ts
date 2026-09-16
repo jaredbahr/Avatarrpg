@@ -8,6 +8,7 @@
 
 import type { ContentIndex, StatusId, SurfaceId } from '../core/types';
 import { ABILITY_BY_ID, ALL_ABILITIES } from './abilities';
+import { ASSETS } from './assets/manifest';
 import { CHARACTERS, CHARACTER_BY_ID } from './characters';
 import { DISCIPLINES, DISCIPLINE_BY_ID } from './disciplines';
 import { COMBOS } from './combos';
@@ -34,6 +35,7 @@ export const CONTENT_BUNDLE: ContentBundle = {
   disciplines: DISCIPLINES,
   enemies: ENEMIES,
   maps: ALL_MAPS,
+  assets: ASSETS,
   encounters: ENCOUNTERS,
   statuses: STATUSES,
   surfaces: SURFACES,

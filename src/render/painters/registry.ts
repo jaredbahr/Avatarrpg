@@ -64,6 +64,18 @@ export function resolvePainter(key: string): ResolvedPainter {
     };
   }
 
+  if (entry.kind === 'sheet') {
+    // The stand-in while the atlas loads, and the square path's answer for a
+    // sheet key: the generic figure in the sheet's own palette.
+    const palette = paletteFor(entry.palette);
+    const bender = UNIT_PAINTERS.bender ?? FALLBACK;
+    return {
+      entry,
+      palette,
+      draw: (ctx, box, options) => bender(ctx, box, palette, options ?? {}),
+    };
+  }
+
   const palette = paletteFor(entry.palette);
   const variant = entry.variant;
 
