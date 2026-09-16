@@ -56,6 +56,88 @@ describe('content', () => {
     expect(problems.some((p) => p.includes('standing.earth'))).toBe(true);
   });
 
+  /*
+   * No shipping encounter uses `conditionalEnemies` any more, so without these
+   * the budget rule is unexercised and could rot into a no-op. The case it
+   * exists to catch is the one that shipped: two mercenaries added to the
+   * quarry floor boss, a 9% win rate, and nothing in the repo able to see it.
+   */
+  it('refuses a conditional group that piles bodies onto the authored roster', () => {
+    const boss = CONTENT_BUNDLE.encounters.find((e) => e.id === 'enc_grumbler');
+    if (!boss) throw new Error('the boss encounter should exist');
+    const problems = validateContent({
+      ...CONTENT_BUNDLE,
+      encounters: [
+        ...CONTENT_BUNDLE.encounters.filter((e) => e.id !== 'enc_grumbler'),
+        {
+          ...boss,
+          conditionalEnemies: [
+            {
+              flag: 'ruon_traded',
+              whenSet: true,
+              placements: [
+                { enemyId: 'merc_blade', pos: { x: 16, y: 9 } },
+                { enemyId: 'merc_crossbow', pos: { x: 17, y: 6 } },
+              ],
+            },
+          ],
+        },
+      ],
+    });
+    expect(problems.some((p) => p.includes('conditional enemies'))).toBe(true);
+  });
+
+  it('adds up conditional groups across flags rather than judging them one by one', () => {
+    const boss = CONTENT_BUNDLE.encounters.find((e) => e.id === 'enc_grumbler');
+    if (!boss) throw new Error('the boss encounter should exist');
+    // Three groups on distinct flags, each legal alone, illegal together.
+    const one = { enemyId: 'bandit_thug', pos: { x: 14, y: 3 } } as const;
+    const problems = validateContent({
+      ...CONTENT_BUNDLE,
+      encounters: [
+        ...CONTENT_BUNDLE.encounters.filter((e) => e.id !== 'enc_grumbler'),
+        {
+          ...boss,
+          conditionalEnemies: [
+            { flag: 'a', whenSet: true, placements: [one] },
+            { flag: 'b', whenSet: true, placements: [{ ...one, pos: { x: 14, y: 8 } }] },
+            { flag: 'c', whenSet: true, placements: [{ ...one, pos: { x: 13, y: 1 } }] },
+          ],
+        },
+      ],
+    });
+    expect(problems.some((p) => p.includes('conditional enemies'))).toBe(true);
+  });
+
+  it('allows a small conditional group, and ignores the branch that cannot also fire', () => {
+    const boss = CONTENT_BUNDLE.encounters.find((e) => e.id === 'enc_grumbler');
+    if (!boss) throw new Error('the boss encounter should exist');
+    const problems = validateContent({
+      ...CONTENT_BUNDLE,
+      encounters: [
+        ...CONTENT_BUNDLE.encounters.filter((e) => e.id !== 'enc_grumbler'),
+        {
+          ...boss,
+          // Same flag, opposite sides: only one of these can ever spawn, so the
+          // pair costs one thug (100 of 510, 20%), not two.
+          conditionalEnemies: [
+            {
+              flag: 'ruon_traded',
+              whenSet: true,
+              placements: [{ enemyId: 'bandit_thug', pos: { x: 14, y: 3 } }],
+            },
+            {
+              flag: 'ruon_traded',
+              whenSet: false,
+              placements: [{ enemyId: 'bandit_thug', pos: { x: 14, y: 8 } }],
+            },
+          ],
+        },
+      ],
+    });
+    expect(problems.filter((p) => p.includes('conditional enemies'))).toEqual([]);
+  });
+
   it('indexes every item exactly once', () => {
     expect(CONTENT.abilities.size).toBe(CONTENT_BUNDLE.abilities.length);
     expect(CONTENT.characters.size).toBe(CONTENT_BUNDLE.characters.length);
