@@ -78,4 +78,4 @@ Two things look tempting and are not:
 - [ ] `npm run credits` has been run and `npm run verify` passes
 - [ ] The work is named in the game, not only in the repository, if its licence asks
 - [ ] `npm run check:assets` still passes: art is budgeted per folder
-- [ ] `git ls-files art/` prints nothing
+- [ ] Nothing under `art/raw/` or `art/incoming/` is committed; a dated folder of original source art under `art/` is fine, and is not a shipped asset until it is under `public/`
