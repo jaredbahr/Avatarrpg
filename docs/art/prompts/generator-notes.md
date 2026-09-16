@@ -46,6 +46,17 @@ or emblem the prompt did not ask for. For a sheet frame, add: a ground shadow,
 a swirl of the element round the body, and a face that has drifted from the
 reference figure.
 
+## Maps
+
+A map painting is the one asset generated from a picture as much as from
+words: the pack's layout image is the grid as flat colour blocks, and the
+generator has to keep every edge in it where it is. Use image-to-image or a
+structure control with the layout upscaled to the delivery size first, at a
+strength high enough that the road, the pond and the ledges stay put and low
+enough that the blocks become painted ground. The prompt carries the scene;
+the layout carries the composition. Even light and no vignette are not
+taste, they are the contract: the game shades the board's edges itself.
+
 ## Where things go
 
 - Raw candidates: `art/raw/portraits/<name>-1.png`, `-2`, `-3` (git ignores `art/raw/`)

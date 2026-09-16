@@ -32,6 +32,15 @@ regeneration, not a retouch: a retouched image drifts from its siblings.
 - [ ] Readable at 40 px in the game, and distinct in silhouette from the other character of the element
 - [ ] `npm run art:validate` and `npm run check:assets` pass; the manifest entry carries the right `palette`
 
+## Maps
+
+- [ ] Every feature in the pack's grid section is there, and every edge that matters to the rules (road edges, banks, ledges, walls) sits on a tile line with Show grid on
+- [ ] Nothing the game draws itself is painted in: no characters, no barrels, carts or braziers, no UI, no grid
+- [ ] Evenly lit edge to edge: no vignette, no dark corners, no cast shadow longer than a tile
+- [ ] Still water where the map has water; the game tints it live, so a drained or frozen pond still reads
+- [ ] `npm run art:map` accepted it (right aspect, at least the delivery size), and `npm run art:validate` and `npm run check:assets` pass
+- [ ] Looked at in the game on both renderers, at the fitted zoom and pinched to the largest
+
 ## Before the commit
 
 - [ ] The generator's output licence permits non-commercial use

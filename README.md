@@ -223,6 +223,18 @@ Until a key has a sheet, the game bakes one from the key's painter, so every uni
 already animates through the same runtime; `unit.test.probe` is a committed atlas of
 flat colours the e2e suite draws to prove the path.
 
+A map can carry a **painting** (`docs/adr/0009-map-paintings.md`), drawn under the
+rules grid in place of the procedural ground while the live surfaces, the grid lines,
+the units and the effects keep drawing over it:
+
+```ts
+backdrop: { url: 'art/maps/forest_road.webp', pixelsPerTile: 96 },
+```
+
+The prompt pack and the layout image for every map are under
+`docs/art/prompts/maps/`, and `npm run art:map` turns a generated painting into the
+WebP the line above points at.
+
 ## Difficulty, and how it scales to your table
 
 Encounters are authored for a party of **three** and adjust from there:

@@ -84,6 +84,39 @@ the character has them. Every pose is one image, generated on a flat
 `npm run check:assets` (also in CI) holds each family of art under 4 MB and
 everything precached under 25 MB.
 
+## Map paintings (available now)
+
+A painting per map is drawn under the rules grid in place of the procedural
+ground (`../adr/0009-map-paintings.md`): the game keeps drawing the live
+surfaces, the grid lines, the units, the props and the effects over it, so
+the painting is the ground and what stands on it, nothing else.
+
+1. Open `prompts/maps/<mapId>.md`. Each pack is written from the map's own
+   rows: where the road, the pond, the trees and the ledges are, to the
+   tile, beside the scene in words, the prompt, the negative prompt and the
+   commands. `prompts/maps/<mapId>-layout.png` beside it is the same grid as
+   flat colour blocks with the grid drawn, 32 px a tile: hand it to the
+   generator as the composition reference (image-to-image or a structure
+   control) at a strength that keeps every edge where it is.
+2. Generate at the delivery size or a whole multiple of it (the pack names
+   both), landscape, evenly lit, with no vignette, no characters, no props,
+   no text and no border. Save it as `art/raw/maps/<mapId>.png`.
+3. `npm run art:map -- --map forest_road` checks the aspect, downsizes with
+   a box filter (never up) to the map's `width × pixelsPerTile`, writes
+   `public/art/maps/forest_road.webp` and prints the `backdrop` line.
+4. Put that line on the map in `src/content/maps/`. `npm run art:validate`
+   checks the file measures the grid times its pixels a tile;
+   `npm run check:assets` keeps the family under 4 MB (five paintings at
+   1920 wide land near 3 MB; if one will not fit, `--quality 75`).
+5. `npm run verify`, then look at it in the game with Show grid on: every
+   edge that matters to the rules sits on a tile line. Under High contrast
+   the drawn tree, wall, ledge and cover marks return over the painting so
+   the rules still read without it.
+
+The packs and layout images are generated (`npm run art:map-pack`, then
+`npx prettier --write docs/art/prompts/maps`); a test regenerates them from
+the content and fails if a map changed without them.
+
 ## Layout
 
 ```
@@ -94,11 +127,14 @@ docs/art/
   prompts/generator-notes.md  which generator features matter and why
   prompts/portraits/*.md    one pack per portrait key
   prompts/sheets/*.md       one pack per sprite sheet, named by asset key
+  prompts/maps/*.md         one pack per map painting, with its layout PNG
 art/raw/reference/          the reference figures, ignored by git
 art/raw/<assetKey>/         generated poses, ignored by git
+art/raw/maps/<mapId>.png    generated paintings, ignored by git
 art/normalised/<assetKey>/  what normalise writes, ignored by git
 public/art/portraits/       portraits that ship
 public/art/units/           sheets that ship (PNG + JSON)
-public/art/test/            the probe atlas the e2e suite draws
-scripts/art/                normalise, pack, validate
+public/art/maps/            paintings that ship (WebP)
+public/art/test/            the probe atlas and probe painting the e2e suite draws
+scripts/art/                normalise, pack, validate, map, map-pack, probe-backdrop
 ```
