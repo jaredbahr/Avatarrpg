@@ -75,8 +75,10 @@ that question broken into parts.
 - **Characters.** Beats 03, 04 and 12. With the placeholders, is the
   silhouette language right (two per element, distinct, readable at 40 px)?
   With portraits in, does the stage feel like a scene?
-- **Chrome.** Beats 01, 03, 13 and 15. Does the shell feel like the same
-  world as the board?
+- **Chrome.** Beats 01, 03, 04, 06, 13 and 15. Does the shell feel like the
+  same world as the board? The acting unit's portrait sits in the unit panel
+  and every ability carries its element's glyph: do they read as drawn, not
+  as labels?
 
 ## Go / no-go
 

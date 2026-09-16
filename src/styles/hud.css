@@ -906,8 +906,25 @@ html[data-contrast='high'] .map-wrap {
 }
 
 .unit-panel {
-  min-width: 13rem;
+  min-width: 16rem;
   flex: 0 0 auto;
+}
+
+.unit-panel-body {
+  align-items: center;
+}
+
+.unit-panel-body .grow {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+/* The acting unit's face, ringed in its element; the same file the turn strip draws. */
+.unit-portrait {
+  flex: 0 0 auto;
+  border-radius: 50%;
+  background: color-mix(in srgb, var(--el) 18%, transparent);
+  box-shadow: 0 0 0 2px var(--el);
 }
 
 .bar {
@@ -989,6 +1006,19 @@ html[data-contrast='high'] .map-wrap {
 .action-sub {
   font-size: var(--fs-xs);
   color: var(--c-ink-dim);
+}
+
+/* The ability's element, drawn rather than written, on the side the cooldown does not use. */
+.action-button.has-glyph {
+  padding-left: 1.8rem;
+}
+
+.action-glyph {
+  position: absolute;
+  top: 50%;
+  left: 0.35rem;
+  transform: translateY(-50%);
+  pointer-events: none;
 }
 
 .cooldown-ring {

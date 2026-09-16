@@ -32,8 +32,10 @@ import { CONTENT } from '../../content';
 import { attachPointer, wheelZoomFactor } from '../input/pointer';
 import { ambienceFx } from '../../content/fx';
 import { ambientEmitters } from '../anim/ambience';
-import { announce, button, clear, el, motionReduced, tip } from '../ui/dom';
+import { announce, button, clear, el, motionReduced, painterCanvas, tip } from '../ui/dom';
 import { assetCanvas } from '../ui/assetCanvas';
+import { paletteFor } from '../../render/palettes';
+import { paintElementGlyph } from '../../render/painters/glyphs';
 import { showGridLines } from '../storage/localSaves';
 import { reactionNotes } from '../ui/ReactionNote';
 import { UnitInspector } from '../ui/UnitInspector';
@@ -450,14 +452,11 @@ export class CombatScene implements Scene {
     for (const unit of upcomingOrder(battle, 9)) {
       const isActive = unit.id === this.active()?.id;
       const player = this.app.session.playerFor(unit.id);
-      const portraitKey = unit.characterId
-        ? (this.app.content.characters.get(unit.characterId)?.portrait ?? unit.sprite)
-        : unit.sprite;
 
       const chip = el(
         'div',
         { class: `turn-chip faction-${unit.faction}${isActive ? ' active' : ''}` },
-        assetCanvas(portraitKey, 2.4),
+        assetCanvas(this.portraitKey(unit), 2.4),
         el('span', { class: 'tiny', text: player?.name ?? unit.name }),
       );
       tip(
@@ -467,6 +466,13 @@ export class CombatScene implements Scene {
       );
       strip.appendChild(chip);
     }
+  }
+
+  /** A hero's portrait; an enemy or an ally is drawn from its own sprite. */
+  private portraitKey(unit: Unit): string {
+    return unit.characterId
+      ? (this.app.content.characters.get(unit.characterId)?.portrait ?? unit.sprite)
+      : unit.sprite;
   }
 
   /* ---------------------------------------------------------------- */
@@ -533,41 +539,52 @@ export class CombatScene implements Scene {
 
     const hpFraction = Math.max(0, unit.hp / Math.max(1, unit.base.maxHp));
 
+    // The portrait sits beside the readouts, not above them, so the panel
+    // keeps its height and the map keeps its rows.
     return el(
       'div',
       { class: `hud-panel unit-panel element-${unit.element}` },
       el(
         'div',
-        { class: 'row tight' },
+        { class: 'row tight unit-panel-body' },
+        assetCanvas(this.portraitKey(unit), 3.6, 'unit-portrait'),
         el(
           'div',
-          { class: 'stack tight' },
-          el('strong', { text: unit.name }),
-          player ? el('span', { class: 'tiny muted', text: player.name }) : null,
+          { class: 'stack tight grow' },
+          el(
+            'div',
+            { class: 'row tight' },
+            el(
+              'div',
+              { class: 'stack tight' },
+              el('strong', { text: unit.name }),
+              player ? el('span', { class: 'tiny muted', text: player.name }) : null,
+            ),
+            el('div', { class: 'spacer' }),
+            el('span', { class: 'tiny muted', text: `Level ${unit.level}` }),
+          ),
+          el(
+            'div',
+            { class: 'bar' },
+            el('div', {
+              class: 'bar-fill',
+              style: { width: `${hpFraction * 100}%` },
+            }),
+            el('span', { class: 'bar-label', text: `${unit.hp} / ${unit.base.maxHp}` }),
+          ),
+          el(
+            'div',
+            { class: 'row row-wrap tight' },
+            apPips,
+            el('span', { class: 'chip', text: `Move ${unit.move}` }),
+            ...unit.statuses.map((s) => {
+              const def = this.app.content.statuses.get(s.id);
+              const chip = el('span', { class: 'chip chip-status', text: def?.name ?? s.id });
+              tip(chip, def?.description ?? '', (text) => this.app.toasts.show(text));
+              return chip;
+            }),
+          ),
         ),
-        el('div', { class: 'spacer' }),
-        el('span', { class: 'tiny muted', text: `Level ${unit.level}` }),
-      ),
-      el(
-        'div',
-        { class: 'bar' },
-        el('div', {
-          class: 'bar-fill',
-          style: { width: `${hpFraction * 100}%` },
-        }),
-        el('span', { class: 'bar-label', text: `${unit.hp} / ${unit.base.maxHp}` }),
-      ),
-      el(
-        'div',
-        { class: 'row row-wrap tight' },
-        apPips,
-        el('span', { class: 'chip', text: `Move ${unit.move}` }),
-        ...unit.statuses.map((s) => {
-          const def = this.app.content.statuses.get(s.id);
-          const chip = el('span', { class: 'chip chip-status', text: def?.name ?? s.id });
-          tip(chip, def?.description ?? '', (text) => this.app.toasts.show(text));
-          return chip;
-        }),
       ),
     );
   }
@@ -606,10 +623,21 @@ export class CombatScene implements Scene {
     const cooldown = unit.cooldowns[ability.id] ?? 0;
 
     const node = button(ability.name, () => this.selectAbility(ability), {
-      class: `action-button element-${ability.element}${selected ? ' selected' : ''}`,
+      class: `action-button has-glyph element-${ability.element}${selected ? ' selected' : ''}`,
       disabled: !check.ok,
       title: check.ok ? ability.description : check.reason,
     });
+
+    // The element's glyph in the corner, where the cooldown ring is on the other side.
+    const palette = paletteFor(ability.element);
+    node.prepend(
+      painterCanvas(
+        `glyph.${ability.element}`,
+        1.2,
+        (ctx, px) => paintElementGlyph(ctx, { x: 0, y: 0, size: px }, palette, ability.element),
+        'action-glyph',
+      ),
+    );
 
     const pips = el('span', { class: 'pips pips-small' });
     for (let i = 0; i < ability.apCost; i++) pips.appendChild(el('span', { class: 'pip pip-on' }));
