@@ -158,6 +158,7 @@ export function choreograph(input: ChoreographyInput): Choreography {
       facing?: 1 | -1;
       scale?: { from: number; to: number };
       alpha?: { from: number; to: number };
+      frame?: number;
     } = {},
   ): void => {
     tracks.push({
@@ -171,6 +172,7 @@ export function choreograph(input: ChoreographyInput): Choreography {
       ...(extra.facing !== undefined ? { facing: extra.facing } : {}),
       ...(extra.scale ? { scale: extra.scale } : {}),
       ...(extra.alpha ? { alpha: extra.alpha } : {}),
+      ...(extra.frame !== undefined ? { frame: extra.frame } : {}),
     });
   };
 
@@ -231,14 +233,18 @@ export function choreograph(input: ChoreographyInput): Choreography {
         const forward = self ? { x: 0, y: 0.04 } : scaled(dir, melee ? MELEE_LUNGE : LUNGE);
         const clip: ClipName = melee ? 'melee' : 'cast';
 
+        // The sheet's poses: wind-up, release, recover for a cast; wind-up and
+        // strike for a melee, which holds the strike through the recover.
         pose(event.unitId, clip, cursor, windUp, { x: 0, y: 0 }, back, easeInCubic, {
           ...(facing !== undefined ? { facing } : {}),
           scale: { from: 1, to: 0.96 },
+          frame: 0,
         });
         const releaseAt = cursor + windUp;
         pose(event.unitId, clip, releaseAt, release, back, forward, easeOutQuad, {
           ...(facing !== undefined ? { facing } : {}),
           scale: { from: 0.96, to: 1.04 },
+          frame: 1,
         });
         // The element gathers through the wind-up and is out of the hands by the release.
         emit(recipe.cast, cursor + windUp * 0.4, caster, target, palette, eventIndex, 1);
@@ -277,6 +283,7 @@ export function choreograph(input: ChoreographyInput): Choreography {
         pose(event.unitId, clip, recoverAt, recover, forward, { x: 0, y: 0 }, easeInOutSine, {
           ...(facing !== undefined ? { facing } : {}),
           scale: { from: 1.04, to: 1 },
+          frame: melee ? 1 : 2,
         });
 
         const hitStop = recipe.hitStop * rate;
@@ -348,6 +355,7 @@ export function choreograph(input: ChoreographyInput): Choreography {
             { x: 0, y: 0 },
             out,
             easeOutQuad,
+            { frame: 0 },
           );
           pose(
             event.unitId,
@@ -357,6 +365,7 @@ export function choreograph(input: ChoreographyInput): Choreography {
             out,
             { x: 0, y: 0 },
             easeInOutSine,
+            { frame: 0 },
           );
           floater(
             pos,
@@ -424,7 +433,9 @@ export function choreograph(input: ChoreographyInput): Choreography {
             start: cursor,
             duration,
           });
-          pose(event.unitId, 'hit', cursor, duration, { x: 0, y: 0 }, { x: 0, y: 0 }, easeOutQuad);
+          pose(event.unitId, 'hit', cursor, duration, { x: 0, y: 0 }, { x: 0, y: 0 }, easeOutQuad, {
+            frame: 0,
+          });
           positions.set(event.unitId, event.to);
           cursor += duration;
         }
@@ -438,6 +449,7 @@ export function choreograph(input: ChoreographyInput): Choreography {
           const duration = TIMING.ko * rate;
           pose(event.unitId, 'ko', at, duration, { x: 0, y: 0 }, { x: 0, y: 0.08 }, easeOutQuad, {
             alpha: { from: 1, to: 0.35 },
+            frame: 0,
           });
           const { recipe, palette } = effect('fx.ko.fall');
           emit(

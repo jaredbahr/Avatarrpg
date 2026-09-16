@@ -21,6 +21,8 @@ import { CanvasFxLayer } from '../fx/canvasFx';
 import { FACTION_RING, OVERLAY, STATUS_BADGE, hpColor } from '../palettes';
 import { paintTileDecor } from '../painters/board';
 import { paintFloatingNumber, paintPathArrow, paintPathDot } from '../painters/fx';
+import { FOOT_LINE } from '../sheets/bake';
+import { idlePhase, sheets } from '../sheets/store';
 import {
   paintExitMarker,
   paintGridLine,
@@ -61,8 +63,8 @@ export class Canvas2DBackend implements RenderBackend {
   private loops = new WeakMap<OverlayLayer, Vec2[][]>();
   private curve: { path: readonly Vec2[]; from: Vec2; curve: Curve } | null = null;
   private fx = new CanvasFxLayer();
-  /** White silhouettes of unit sprites, for the hit flash; forgotten with the sprite. */
-  private masks = new WeakMap<HTMLCanvasElement, HTMLCanvasElement>();
+  /** White silhouettes of unit art, for the hit flash; forgotten with the source. */
+  private masks = new WeakMap<HTMLCanvasElement | HTMLImageElement, HTMLCanvasElement>();
   /** Cliffs, rims and wall outlines, rebuilt only when a tile's footing changes. */
   private relief: ReadonlyMap<number, TileRelief> = new Map();
   private reliefSignature = '';
@@ -78,10 +80,12 @@ export class Canvas2DBackend implements RenderBackend {
     this.canvas.width = Math.round(viewport.width * viewport.dpr);
     this.canvas.height = Math.round(viewport.height * viewport.dpr);
     sprites.clear();
+    sheets.clear();
   }
 
   destroy(): void {
     sprites.clear();
+    sheets.clear();
   }
 
   draw(view: MapView, camera: Camera): void {
@@ -460,23 +464,55 @@ export class Canvas2DBackend implements RenderBackend {
       ctx.save();
       // A pose scales about the feet; the fallen fade sits on top of any alpha.
       const scale = unit.scale ?? 1;
-      const drawWidth = width * scale;
-      const drawHeight = box.size * scale;
-      const drawX = box.x + (width - drawWidth) / 2;
-      const drawY = box.y + (box.size - drawHeight);
       ctx.globalAlpha = (unit.alpha ?? 1) * (unit.fallen ? 0.35 : 1);
-      // Painted at device resolution, drawn at CSS size under the dpr transform.
-      const sprite = sprites.get(unit.sprite, box.size * dpr, { facing }, unit.size);
-      ctx.drawImage(sprite, drawX, drawY, drawWidth, drawHeight);
-      if (unit.flash && unit.flash > 0) {
-        ctx.globalAlpha *= Math.min(1, unit.flash);
-        ctx.drawImage(this.mask(sprite), drawX, drawY, drawWidth, drawHeight);
+      // The frame comes from the unit's sheet, real or baked from its painter
+      // at device resolution (ADR 0003); the anchor stands on the foot line.
+      const frame = sheets.frame(
+        unit.sprite,
+        unit.clip ?? 'idle',
+        unit.clipTime ?? view.time + idlePhase(unit.id),
+        unit.clipFrame,
+        box.size * dpr,
+        unit.size,
+      );
+      let headroom = 0;
+      if (frame) {
+        headroom = frame.headroom;
+        const fw = (frame.frame.w / frame.pixelsPerTile) * box.size * scale;
+        const fh = (frame.frame.h / frame.pixelsPerTile) * box.size * scale;
+        const ax = box.x + width / 2;
+        const ay = box.y + FOOT_LINE * box.size;
+        const drawX = ax - frame.anchor.x * fw;
+        const drawY = ay - frame.anchor.y * fh;
+        if (facing === -1) {
+          ctx.translate(ax, 0);
+          ctx.scale(-1, 1);
+          ctx.translate(-ax, 0);
+        }
+        const f = frame.frame;
+        ctx.drawImage(frame.source, f.x, f.y, f.w, f.h, drawX, drawY, fw, fh);
+        if (unit.flash && unit.flash > 0) {
+          ctx.globalAlpha *= Math.min(1, unit.flash);
+          ctx.drawImage(this.mask(frame.source), f.x, f.y, f.w, f.h, drawX, drawY, fw, fh);
+        }
+      } else {
+        const drawWidth = width * scale;
+        const drawHeight = box.size * scale;
+        const drawX = box.x + (width - drawWidth) / 2;
+        const drawY = box.y + (box.size - drawHeight);
+        // Painted at device resolution, drawn at CSS size under the dpr transform.
+        const sprite = sprites.get(unit.sprite, box.size * dpr, { facing }, unit.size);
+        ctx.drawImage(sprite, drawX, drawY, drawWidth, drawHeight);
+        if (unit.flash && unit.flash > 0) {
+          ctx.globalAlpha *= Math.min(1, unit.flash);
+          ctx.drawImage(this.mask(sprite), drawX, drawY, drawWidth, drawHeight);
+        }
       }
       ctx.restore();
 
       if (!unit.fallen) {
         if (unit.showHealth !== false) {
-          this.drawHealthBar(unit, box.x, box.y, width, box.size);
+          this.drawHealthBar(unit, box.x, box.y - headroom * box.size, width, box.size);
         }
         this.drawStatusBadges(unit, box.x, box.y, width, box.size);
       } else {
@@ -553,13 +589,13 @@ export class Canvas2DBackend implements RenderBackend {
     this.fx.draw(this.ctx, view.emitters, layer, { x: origin.x, y: origin.y }, origin.size);
   }
 
-  /** The sprite as a white silhouette, for the hit flash. */
-  private mask(sprite: HTMLCanvasElement): HTMLCanvasElement {
+  /** The art as a white silhouette, for the hit flash. */
+  private mask(sprite: HTMLCanvasElement | HTMLImageElement): HTMLCanvasElement {
     const existing = this.masks.get(sprite);
     if (existing) return existing;
     const canvas = document.createElement('canvas');
-    canvas.width = sprite.width;
-    canvas.height = sprite.height;
+    canvas.width = sprite instanceof HTMLImageElement ? sprite.naturalWidth : sprite.width;
+    canvas.height = sprite instanceof HTMLImageElement ? sprite.naturalHeight : sprite.height;
     const ctx = canvas.getContext('2d');
     if (ctx) {
       ctx.drawImage(sprite, 0, 0);

@@ -10,6 +10,7 @@
  * `src/content/assets/manifest.ts` and none of this runs.
  */
 
+import type { ClipName } from '../../content/assets/clips';
 import type { Palette } from '../palettes';
 import type { Box, Ctx } from './shapes';
 import { circle, ellipse, groundShadow, outline, polygon, roundedRect } from './shapes';
@@ -20,6 +21,11 @@ export interface PainterOptions {
   readonly facing?: 1 | -1;
   /** Dimmed when the unit is down. */
   readonly fallen?: boolean;
+  /**
+   * Which key pose to draw, when the sheet baker asks for one (ADR 0003).
+   * A painter that ignores it draws its one figure into every frame.
+   */
+  readonly pose?: { readonly clip: ClipName; readonly index: number };
 }
 
 export type UnitPainter = (ctx: Ctx, box: Box, palette: Palette, options: PainterOptions) => void;

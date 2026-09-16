@@ -26,6 +26,13 @@ import { motionReduced } from './ui/dom';
 /** Height of the walk bob in tiles, once per tile of travel. */
 const BOB = 0.05;
 
+/**
+ * A walk clip advances by distance, not time: this many ms of clip per tile
+ * of travel, so at the sheets' 4 fps a stride is two poses a tile whatever
+ * the unit's speed.
+ */
+const WALK_MS_PER_TILE = 500;
+
 /** How far off dead vertical the travel has to lean before the sprite turns. */
 const TURN_THRESHOLD = 0.2;
 
@@ -49,6 +56,8 @@ export interface UnitPose {
   /** 0..1 white flash on a hit. */
   readonly flash: number;
   readonly facing?: 1 | -1;
+  /** The clip's frame, when the choreography named one. */
+  readonly frame?: number;
 }
 
 export class Animator {
@@ -164,7 +173,11 @@ export class Animator {
     for (const track of this.timeline.active(now, 'pose')) {
       if (track.unitId === unitId && (!pose || track.start >= pose.start)) pose = track;
     }
-    const bob = this.offset(now, unitId);
+    const travel = this.travel(now, unitId);
+    const bob =
+      travel && travel.track.curve.length > 0
+        ? { x: 0, y: -BOB * Math.abs(Math.sin(Math.PI * travel.distance)) }
+        : undefined;
     let flash = 0;
     for (const track of this.timeline.active(now, 'flash')) {
       if (track.unitId !== unitId) continue;
@@ -182,14 +195,16 @@ export class Animator {
     const scale = pose?.scale ? pose.scale.from + (pose.scale.to - pose.scale.from) * t : 1;
     const alpha = pose?.alpha ? pose.alpha.from + (pose.alpha.to - pose.alpha.from) * t : 1;
     const facing = pose?.facing;
+    const frame = pose?.frame;
     return {
       clip: pose ? pose.clip : bob ? 'walk' : 'idle',
-      clipTime: pose ? now - pose.start : 0,
+      clipTime: pose ? now - pose.start : travel ? travel.distance * WALK_MS_PER_TILE : 0,
       offset,
       scale,
       alpha,
       flash,
       ...(facing !== undefined ? { facing } : {}),
+      ...(frame !== undefined ? { frame } : {}),
     };
   }
 

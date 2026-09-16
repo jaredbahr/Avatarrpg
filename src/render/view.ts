@@ -7,10 +7,11 @@
  */
 
 import type { Grid, StatusId, Vec2 } from '../core/types';
+import type { ClipName } from '../content/assets/clips';
 import type { EmitterDef } from '../content/fx';
 
 /** The pose vocabulary from ADR 0003; the sheet runtime maps these to frames. */
-export type ClipName = 'idle' | 'walk' | 'cast' | 'melee' | 'hit' | 'ko';
+export type { ClipName };
 
 export interface RenderUnit {
   readonly id: string;
@@ -37,6 +38,8 @@ export interface RenderUnit {
   /** Which pose the unit is in and how far into it, for the sheet runtime. */
   readonly clip?: ClipName;
   readonly clipTime?: number;
+  /** The clip's frame, when the choreography knows it (a cast's wind-up is frame 0). */
+  readonly clipFrame?: number;
   /** Draw scale about the feet; 1 at rest. */
   readonly scale?: number;
   /** Draw alpha; the backend applies the fallen fade on top. */

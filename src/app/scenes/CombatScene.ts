@@ -1042,7 +1042,10 @@ export class CombatScene implements Scene {
     now: number,
     unitId: string,
     restFacing: 1 | -1,
-  ): Pick<RenderUnit, 'offset' | 'facing' | 'clip' | 'clipTime' | 'scale' | 'alpha' | 'flash'> {
+  ): Pick<
+    RenderUnit,
+    'offset' | 'facing' | 'clip' | 'clipTime' | 'clipFrame' | 'scale' | 'alpha' | 'flash'
+  > {
     const pose = this.app.animator.unitPose(now, unitId);
     const walked = this.app.animator.facing(unitId);
     if (!pose) return { facing: walked ?? restFacing };
@@ -1051,6 +1054,7 @@ export class CombatScene implements Scene {
       facing: pose.facing ?? walked ?? restFacing,
       clip: pose.clip,
       clipTime: pose.clipTime,
+      ...(pose.frame !== undefined ? { clipFrame: pose.frame } : {}),
       scale: pose.scale,
       alpha: pose.alpha,
       flash: pose.flash,

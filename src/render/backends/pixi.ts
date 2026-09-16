@@ -20,6 +20,7 @@ import {
   Filter,
   GlProgram,
   Graphics,
+  Rectangle,
   Sprite,
   Text,
   TextStyle,
@@ -37,6 +38,9 @@ import { contourLoops, isHole } from '../geometry/contour';
 import type { Curve } from '../geometry/curve';
 import { sampleAt, smoothPath } from '../geometry/curve';
 import { FACTION_RING, OVERLAY, STATUS_BADGE, hpColor } from '../palettes';
+import { FOOT_LINE } from '../sheets/bake';
+import type { ResolvedFrame } from '../sheets/store';
+import { idlePhase, sheets } from '../sheets/store';
 import { MAX_SPRITE_PX, sprites } from '../spriteCache';
 import type { MapView, OverlayLayer, RenderUnit } from '../view';
 import type { BackendCapabilities, RenderBackend } from './backend';
@@ -78,6 +82,8 @@ const SPRITE_BUCKET = 32;
 
 /** Textures kept alive; older ones are destroyed rather than left on the GPU. */
 const MAX_TEXTURES = 128;
+/** Frame views onto those textures (one per pose per sheet); cheap, but bounded all the same. */
+const MAX_FRAME_TEXTURES = 512;
 
 /** The rounded square a hovered tile gets, in tile units from its corner. */
 const HOVER_LOOP = contourLoops([{ x: 0, y: 0 }])[0] ?? [];
@@ -203,7 +209,8 @@ export class PixiBackend implements RenderBackend {
 
   /** Sprite pools, keyed so a unit keeps its object across frames. */
   private unitSprites = new Map<string, Sprite>();
-  private textureCache = new Map<HTMLCanvasElement, Texture>();
+  private textureCache = new Map<HTMLCanvasElement | HTMLImageElement, Texture>();
+  private frameTextures = new Map<string, Texture>();
   private floaters: Text[] = [];
   private badgeText: Text[] = [];
 
@@ -325,6 +332,7 @@ export class PixiBackend implements RenderBackend {
 
   resize(viewport: Viewport): void {
     sprites.clear();
+    sheets.clear();
     this.dropTextures();
     this.decor.clear();
     this.decorPx = 0;
@@ -750,7 +758,7 @@ export class PixiBackend implements RenderBackend {
    * global Pixi cache is skipped: it keys by the canvas object, and a texture
    * destroyed here must not be handed back for the same canvas later.
    */
-  private texture(canvas: HTMLCanvasElement): Texture {
+  private texture(canvas: HTMLCanvasElement | HTMLImageElement): Texture {
     const cached = this.textureCache.get(canvas);
     if (cached) {
       this.textureCache.delete(canvas);
@@ -769,8 +777,36 @@ export class PixiBackend implements RenderBackend {
   }
 
   private dropTextures(): void {
+    for (const texture of this.frameTextures.values()) texture.destroy(false);
+    this.frameTextures.clear();
     for (const texture of this.textureCache.values()) texture.destroy(true);
     this.textureCache.clear();
+  }
+
+  /**
+   * One frame of a sheet as a texture: a view onto the sheet's texture with
+   * the frame rectangle, never a copy of the pixels. Keyed by the source
+   * texture's id so a re-uploaded sheet gets fresh views.
+   */
+  private frameTexture(frame: ResolvedFrame): Texture {
+    const base = this.texture(frame.source);
+    const f = frame.frame;
+    const key = `${base.uid}|${f.x},${f.y},${f.w},${f.h}`;
+    const cached = this.frameTextures.get(key);
+    if (cached && !cached.destroyed && !base.source.destroyed) {
+      this.frameTextures.delete(key);
+      this.frameTextures.set(key, cached);
+      return cached;
+    }
+    const texture = new Texture({ source: base.source, frame: new Rectangle(f.x, f.y, f.w, f.h) });
+    this.frameTextures.set(key, texture);
+    while (this.frameTextures.size > MAX_FRAME_TEXTURES) {
+      const oldest = this.frameTextures.keys().next().value;
+      if (!oldest) break;
+      this.frameTextures.get(oldest)?.destroy(false);
+      this.frameTextures.delete(oldest);
+    }
+    return texture;
   }
 
   /**
@@ -859,14 +895,37 @@ export class PixiBackend implements RenderBackend {
 
       live.add(unit.id);
       const sprite = this.unitSprite(unit.id);
-      sprite.texture = this.texture(sprites.get(unit.sprite, px, { facing }, unit.size));
       // A pose scales about the feet; the fallen fade sits on top of any alpha.
       const scale = unit.scale ?? 1;
-      const drawWidth = width * scale;
-      const drawHeight = TILE * scale;
-      sprite.position.set(x + (width - drawWidth) / 2, y + (TILE - drawHeight));
-      sprite.width = drawWidth;
-      sprite.height = drawHeight;
+      // The frame comes from the unit's sheet, real or baked from its painter
+      // at the zoom's bucket (ADR 0003); the anchor stands on the foot line.
+      const frame = sheets.frame(
+        unit.sprite,
+        unit.clip ?? 'idle',
+        unit.clipTime ?? view.time + idlePhase(unit.id),
+        unit.clipFrame,
+        px,
+        unit.size,
+      );
+      let headroom = 0;
+      if (frame) {
+        headroom = frame.headroom;
+        sprite.texture = this.frameTexture(frame);
+        sprite.anchor.set(frame.anchor.x, frame.anchor.y);
+        sprite.position.set(x + width / 2, y + FOOT_LINE * TILE);
+        sprite.width = (frame.frame.w / frame.pixelsPerTile) * TILE * scale;
+        sprite.height = (frame.frame.h / frame.pixelsPerTile) * TILE * scale;
+        sprite.scale.x = Math.abs(sprite.scale.x) * facing;
+      } else {
+        sprite.texture = this.texture(sprites.get(unit.sprite, px, { facing }, unit.size));
+        sprite.anchor.set(0, 0);
+        const drawWidth = width * scale;
+        const drawHeight = TILE * scale;
+        sprite.position.set(x + (width - drawWidth) / 2, y + (TILE - drawHeight));
+        sprite.width = drawWidth;
+        sprite.height = drawHeight;
+        sprite.scale.x = Math.abs(sprite.scale.x);
+      }
       sprite.alpha = (unit.alpha ?? 1) * (unit.fallen ? 0.35 : 1);
       sprite.visible = true;
       sprite.zIndex = pos.y;
@@ -878,9 +937,9 @@ export class PixiBackend implements RenderBackend {
         live.add(key);
         const glow = this.unitSprite(key);
         glow.texture = sprite.texture;
+        glow.anchor.copyFrom(sprite.anchor);
         glow.position.copyFrom(sprite.position);
-        glow.width = drawWidth;
-        glow.height = drawHeight;
+        glow.scale.copyFrom(sprite.scale);
         glow.tint = 0xffffff;
         glow.blendMode = 'add';
         glow.alpha = Math.min(1, flash) * 0.9;
@@ -911,7 +970,7 @@ export class PixiBackend implements RenderBackend {
         continue;
       }
 
-      if (unit.showHealth !== false) this.drawHealthBar(g, unit, x, y, width);
+      if (unit.showHealth !== false) this.drawHealthBar(g, unit, x, y - headroom * TILE, width);
       badgeIndex = this.drawStatusBadges(g, unit, x, y, width, badgeIndex);
     }
 

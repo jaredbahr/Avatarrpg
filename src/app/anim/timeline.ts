@@ -40,6 +40,8 @@ export interface PoseTrack extends Track {
   readonly ease: Easing;
   /** Turn the sprite for the duration, e.g. to face a target. */
   readonly facing?: 1 | -1;
+  /** The clip's frame this track shows, when the choreography knows it (a wind-up is frame 0). */
+  readonly frame?: number;
 }
 
 export interface FlashTrack extends Track {
