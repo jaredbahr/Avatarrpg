@@ -137,14 +137,43 @@ function measureHeadroom(
   pixelsPerTile: number,
 ): number {
   if (!frame || frame.w === 0 || frame.h === 0) return 0;
-  const tileTop = FOOT_LINE * frame.h - 0.85 * pixelsPerTile;
   const data = ctx.getImageData(frame.x, frame.y, frame.w, frame.h).data;
-  for (let y = 0; y < frame.h; y++) {
-    for (let x = 0; x < frame.w; x++) {
-      if ((data[(y * frame.w + x) * 4 + 3] ?? 0) > 8) {
+  return headroomFromPixels(data, frame.w, frame.h, pixelsPerTile);
+}
+
+/**
+ * The headroom of one frame's RGBA pixels, `width` x `height`, whose foot
+ * line sits at `FOOT_LINE` of its height: the first row with any opaque
+ * pixel decides. Shared by baked sheets and fetched atlases, so a real
+ * sheet's health bar clears the head exactly as a placeholder's does.
+ */
+export function headroomFromPixels(
+  data: ArrayLike<number>,
+  width: number,
+  height: number,
+  pixelsPerTile: number,
+): number {
+  if (width === 0 || height === 0) return 0;
+  const tileTop = FOOT_LINE * height - 0.85 * pixelsPerTile;
+  for (let y = 0; y < height; y++) {
+    for (let x = 0; x < width; x++) {
+      if ((data[(y * width + x) * 4 + 3] ?? 0) > 8) {
         return Math.max(0, (tileTop - y) / pixelsPerTile);
       }
     }
   }
   return 0;
+}
+
+/**
+ * The headroom a frame would have if its art reached its top row: what a
+ * fetched atlas is given until its pixels can be read, and the most the
+ * bar can ever need to move.
+ */
+export function frameHeadroom(
+  frame: { readonly h: number },
+  anchorY: number,
+  pixelsPerTile: number,
+): number {
+  return Math.max(0, (anchorY * frame.h) / pixelsPerTile - 0.85);
 }

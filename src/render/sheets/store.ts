@@ -22,7 +22,7 @@ import { assetUrl } from '../spriteCache';
 import type { AtlasFrame, AtlasJson } from './atlasJson';
 import { parseAtlasJson } from './atlasJson';
 import type { BakedSheet } from './bake';
-import { FOOT_LINE, bakeSheet } from './bake';
+import { bakeSheet, frameHeadroom, headroomFromPixels } from './bake';
 import { frameIndex, resolveClip } from './resolveClip';
 
 export interface ResolvedFrame {
@@ -45,6 +45,34 @@ export interface ResolvedFrame {
 interface LoadedAtlas {
   readonly atlas: AtlasJson;
   readonly image: HTMLImageElement;
+  /** Read from the idle frame's pixels once the image is in, like a baked sheet's. */
+  readonly headroom: number;
+}
+
+/**
+ * The headroom of a fetched atlas: the idle frame's pixels, measured the way
+ * the baker measures a placeholder's, so the health bar clears the head by
+ * the same margin whichever the art is. Without a canvas to read them
+ * through (a test), or without an idle frame, the frame's own top row.
+ */
+export function atlasHeadroom(
+  entry: SheetEntry,
+  atlas: AtlasJson,
+  image: CanvasImageSource,
+): number {
+  const name = entry.clips.idle?.frames[0];
+  const frame = name ? atlas.frames.get(name) : undefined;
+  if (!frame) return 0;
+  const fallback = frameHeadroom(frame, entry.anchor.y, entry.pixelsPerTile);
+  if (typeof document === 'undefined' || frame.w === 0 || frame.h === 0) return fallback;
+  const scratch = document.createElement('canvas');
+  scratch.width = frame.w;
+  scratch.height = frame.h;
+  const ctx = scratch.getContext('2d');
+  if (!ctx) return fallback;
+  ctx.drawImage(image, frame.x, frame.y, frame.w, frame.h, 0, 0, frame.w, frame.h);
+  const data = ctx.getImageData(0, 0, frame.w, frame.h).data;
+  return headroomFromPixels(data, frame.w, frame.h, entry.pixelsPerTile);
 }
 
 /** Baked pixels kept, across every sheet: 48 MB is well under the iOS cap with sprites beside it. */
@@ -122,14 +150,13 @@ export class SheetStore {
     const name = resolved.def.frames[index];
     const frame = name ? loaded.atlas.frames.get(name) : undefined;
     if (!frame) return null;
-    const headroom = Math.max(0, (entry.anchor.y * frame.h) / entry.pixelsPerTile - FOOT_LINE);
     return {
       source: loaded.image,
       frame,
       pixelsPerTile: entry.pixelsPerTile,
       footprint: entry.footprint,
       anchor: entry.anchor,
-      headroom,
+      headroom: loaded.headroom,
       clip: resolved.clip,
       index,
       placeholder: false,
@@ -183,7 +210,8 @@ export class SheetStore {
         const atlas = parseAtlasJson(text);
         const image = new Image();
         image.decoding = 'async';
-        image.onload = () => this.loaded.set(key, { atlas, image });
+        image.onload = () =>
+          this.loaded.set(key, { atlas, image, headroom: atlasHeadroom(entry, atlas, image) });
         image.onerror = () => fail(`image ${atlas.image}`);
         image.src = assetUrl(
           `${entry.atlas.slice(0, entry.atlas.lastIndexOf('/') + 1)}${atlas.image}`,
