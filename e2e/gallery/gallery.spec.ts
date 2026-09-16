@@ -70,9 +70,7 @@ class Stage implements BeatContext {
      * frames on the way.
      */
     await settleCurtain(this.page);
-    const now = await this.page.evaluate(() => Date.now());
-    await this.page.clock.pauseAt(now + 100);
-    this.paused = true;
+    await this.pause();
     await act();
 
     let elapsed = 0;
@@ -87,6 +85,27 @@ class Stage implements BeatContext {
     await this.page.clock.runFor(4000);
     await this.page.clock.resume();
     this.paused = false;
+  }
+
+  /**
+   * `pauseAt` needs a moment that is still ahead of the fake clock, and the
+   * clock keeps pace with real time until it is paused. On software GL a
+   * frame takes a sixth of a second, so the gap between reading the clock
+   * and pausing it can be wider than any fixed margin; read, try, widen.
+   */
+  private async pause(): Promise<void> {
+    let margin = 500;
+    for (let attempt = 0; ; attempt++) {
+      const now = await this.page.evaluate(() => Date.now());
+      try {
+        await this.page.clock.pauseAt(now + margin);
+        this.paused = true;
+        return;
+      } catch (error) {
+        if (attempt >= 4) throw error;
+        margin *= 2;
+      }
+    }
   }
 }
 
