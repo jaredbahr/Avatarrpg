@@ -34,6 +34,7 @@ import { ambienceFx } from '../../content/fx';
 import { ambientEmitters } from '../anim/ambience';
 import { announce, button, clear, el, motionReduced, painterCanvas, tip } from '../ui/dom';
 import { assetCanvas } from '../ui/assetCanvas';
+import { UI_MARKS, markFor } from '../ui/marks';
 import { paletteFor } from '../../render/palettes';
 import { paintElementGlyph } from '../../render/painters/glyphs';
 import { showGridLines } from '../storage/localSaves';
@@ -403,12 +404,13 @@ export class CombatScene implements Scene {
     clear(bar);
 
     const encounter = this.app.content.encounters.get(battle.encounterId);
+    // The encounter's name on a plate, in the display face, with the round under it.
     bar.appendChild(
       el(
         'div',
-        { class: 'stack tight' },
-        el('strong', { text: encounter?.name ?? 'Battle' }),
-        el('span', { class: 'muted tiny', text: `Round ${battle.round}` }),
+        { class: 'title-plate' },
+        el('strong', { class: 'title-plate-name', text: encounter?.name ?? 'Battle' }),
+        el('span', { class: 'title-plate-round', text: `Round ${battle.round}` }),
       ),
     );
     bar.appendChild(el('div', { class: 'spacer' }));
@@ -417,30 +419,42 @@ export class CombatScene implements Scene {
       class: 'btn-ghost',
       title: 'Show the whole battlefield again',
     });
+    recentre.prepend(this.mark(UI_MARKS.recentre, 'mark-inline'));
     recentre.hidden = this.renderer?.camera.fitted ?? true;
     this.recentreButton = recentre;
     bar.appendChild(recentre);
 
     if (encounter) {
-      bar.appendChild(
-        button('Tip', () => this.app.toasts.show(encounter.tip, 'info', 6000), {
-          class: 'btn-ghost',
-          title: encounter.tip,
-        }),
-      );
+      const tipButton = button('Tip', () => this.app.toasts.show(encounter.tip, 'info', 6000), {
+        class: 'btn-ghost',
+        title: encounter.tip,
+      });
+      tipButton.prepend(this.mark(UI_MARKS.tip, 'mark-inline'));
+      bar.appendChild(tipButton);
     }
-    bar.appendChild(
-      button(
-        this.logOpen ? 'Hide log' : 'Log',
-        () => {
-          this.logOpen = !this.logOpen;
-          this.renderTopBar();
-          this.renderHud();
-        },
-        { class: 'btn-ghost' },
-      ),
+    const logButton = button(
+      this.logOpen ? 'Hide log' : 'Log',
+      () => {
+        this.logOpen = !this.logOpen;
+        this.renderTopBar();
+        this.renderHud();
+      },
+      { class: 'btn-ghost' },
     );
-    bar.appendChild(button('Pause', () => this.app.openPause(), { class: 'btn-ghost' }));
+    logButton.prepend(this.mark(UI_MARKS.log, 'mark-inline'));
+    bar.appendChild(logButton);
+    const pauseButton = button('Pause', () => this.app.openPause(), { class: 'btn-ghost' });
+    pauseButton.prepend(this.mark(UI_MARKS.pause, 'mark-inline'));
+    bar.appendChild(pauseButton);
+  }
+
+  /** An inline mark, hidden from readers, so a button's name stays its text. */
+  private mark(svg: string, extra = ''): HTMLElement {
+    return el('span', {
+      class: extra ? `mark ${extra}` : 'mark',
+      html: svg,
+      attrs: { 'aria-hidden': 'true' },
+    });
   }
 
   private renderTurnStrip(): void {
@@ -453,9 +467,12 @@ export class CombatScene implements Scene {
       const isActive = unit.id === this.active()?.id;
       const player = this.app.session.playerFor(unit.id);
 
+      // The element class puts the unit's colour in --el, for the party's ring.
       const chip = el(
         'div',
-        { class: `turn-chip faction-${unit.faction}${isActive ? ' active' : ''}` },
+        {
+          class: `turn-chip faction-${unit.faction} element-${unit.element}${isActive ? ' active' : ''}`,
+        },
         assetCanvas(this.portraitKey(unit), 2.4),
         el('span', { class: 'tiny', text: player?.name ?? unit.name }),
       );
@@ -540,14 +557,28 @@ export class CombatScene implements Scene {
     const hpFraction = Math.max(0, unit.hp / Math.max(1, unit.base.maxHp));
 
     // The portrait sits beside the readouts, not above them, so the panel
-    // keeps its height and the map keeps its rows.
+    // keeps its height and the map keeps its rows. Square, framed in ink and
+    // the element, with the element's glyph as a badge on its corner.
+    const palette = paletteFor(unit.element);
+    const portrait = el(
+      'div',
+      { class: 'unit-portrait-frame' },
+      assetCanvas(this.portraitKey(unit), 4.5, 'unit-portrait square'),
+      el(
+        'span',
+        { class: 'portrait-badge', attrs: { 'aria-hidden': 'true' } },
+        painterCanvas(`glyph.${unit.element}`, 1.1, (ctx, px) =>
+          paintElementGlyph(ctx, { x: 0, y: 0, size: px }, palette, unit.element),
+        ),
+      ),
+    );
     return el(
       'div',
       { class: `hud-panel unit-panel element-${unit.element}` },
       el(
         'div',
         { class: 'row tight unit-panel-body' },
-        assetCanvas(this.portraitKey(unit), 3.6, 'unit-portrait'),
+        portrait,
         el(
           'div',
           { class: 'stack tight grow' },
@@ -557,7 +588,7 @@ export class CombatScene implements Scene {
             el(
               'div',
               { class: 'stack tight' },
-              el('strong', { text: unit.name }),
+              el('strong', { class: 'unit-name', text: unit.name }),
               player ? el('span', { class: 'tiny muted', text: player.name }) : null,
             ),
             el('div', { class: 'spacer' }),
@@ -591,6 +622,8 @@ export class CombatScene implements Scene {
 
   private actionBar(unit: Unit): HTMLElement {
     const bar = el('div', { class: 'hud-panel action-bar', attrs: { role: 'toolbar' } });
+    bar.appendChild(this.abilityHeader(unit));
+    const row = el('div', { class: 'action-row' });
 
     const moveActive = this.mode.kind === 'move';
     const canMoveNow = unit.move > 0;
@@ -599,22 +632,64 @@ export class CombatScene implements Scene {
       disabled: !canMoveNow,
       title: canMoveNow ? 'Walk to a highlighted tile' : 'No move points left this turn',
     });
+    moveButton.prepend(this.mark(UI_MARKS.move));
     moveButton.appendChild(el('span', { class: 'action-sub', text: `${unit.move} left` }));
-    bar.appendChild(moveButton);
+    row.appendChild(moveButton);
 
     for (const ability of knownAbilities(this.app.content, unit)) {
-      bar.appendChild(this.abilityButton(unit, ability));
+      row.appendChild(this.abilityButton(unit, ability));
     }
 
     const endButton = button('End turn', () => this.endTurn(unit), {
       class: 'action-button end-turn',
       title: 'Finish this turn. One unused AP carries over.',
     });
+    endButton.prepend(this.mark(UI_MARKS.end));
     if (unit.ap > 0)
       endButton.appendChild(el('span', { class: 'action-sub', text: `${unit.ap} AP left` }));
-    bar.appendChild(endButton);
+    row.appendChild(endButton);
 
+    bar.appendChild(row);
     return bar;
+  }
+
+  /**
+   * What the player is doing, above the buttons: the chosen ability's mark,
+   * name, cost and what it does; the move left while walking; a prompt
+   * otherwise. Always present, so the HUD keeps its height and the board
+   * its rows whichever mode the turn is in.
+   */
+  private abilityHeader(unit: Unit): HTMLElement {
+    const header = el('div', { class: 'ability-header' });
+    if (this.mode.kind === 'aim') {
+      const ability = this.app.content.abilities.get(this.mode.abilityId);
+      if (ability) {
+        header.classList.add(`element-${ability.element}`);
+        header.append(
+          this.mark(markFor(ability)),
+          el('strong', { text: ability.name }),
+          el('span', { class: 'header-cost', text: `· ${ability.apCost} AP` }),
+          el('span', { class: 'header-desc', text: ability.description }),
+        );
+        return header;
+      }
+    }
+    if (this.mode.kind === 'move') {
+      header.append(
+        this.mark(UI_MARKS.move),
+        el('strong', { text: 'Move' }),
+        el('span', { class: 'header-cost', text: `· ${unit.move} left` }),
+        el('span', { class: 'header-desc', text: 'Walk to a highlighted tile.' }),
+      );
+      return header;
+    }
+    header.append(
+      el('span', {
+        class: 'header-desc',
+        text: `${unit.name}: choose an action, or end the turn.`,
+      }),
+    );
+    return header;
   }
 
   private abilityButton(unit: Unit, ability: Ability): HTMLElement {
@@ -623,25 +698,15 @@ export class CombatScene implements Scene {
     const cooldown = unit.cooldowns[ability.id] ?? 0;
 
     const node = button(ability.name, () => this.selectAbility(ability), {
-      class: `action-button has-glyph element-${ability.element}${selected ? ' selected' : ''}`,
+      class: `action-button element-${ability.element}${selected ? ' selected' : ''}`,
       disabled: !check.ok,
       title: check.ok ? ability.description : check.reason,
     });
 
-    // The element's glyph in the corner, where the cooldown ring is on the other side.
-    const palette = paletteFor(ability.element);
-    node.prepend(
-      painterCanvas(
-        `glyph.${ability.element}`,
-        1.2,
-        (ctx, px) => paintElementGlyph(ctx, { x: 0, y: 0, size: px }, palette, ability.element),
-        'action-glyph',
-      ),
-    );
-
-    const pips = el('span', { class: 'pips pips-small' });
-    for (let i = 0; i < ability.apCost; i++) pips.appendChild(el('span', { class: 'pip pip-on' }));
-    node.appendChild(pips);
+    // The ability's own mark above its name, in its element's colour; the
+    // cost as words under it.
+    node.prepend(this.mark(markFor(ability)));
+    node.appendChild(el('span', { class: 'action-sub', text: `${ability.apCost} AP` }));
 
     if (cooldown > 0) {
       node.appendChild(el('span', { class: 'cooldown-ring', text: String(cooldown) }));
@@ -818,24 +883,22 @@ export class CombatScene implements Scene {
     const ability = this.app.content.abilities.get(this.mode.abilityId);
     if (!ability) return null;
 
+    // The ability itself is described in the action bar's header; this only
+    // says what to do next, and offers the way out.
     const tiles = targetableTiles(this.app.content, battle, unit, ability);
     if (tiles.length > 0) {
       return el(
         'div',
         { class: 'confirm-bar aim-hint' },
-        el('span', { text: `${ability.name}: tap a highlighted tile.` }),
         el(
           'div',
           { class: 'row' },
+          el('span', { class: 'muted', text: 'Tap a highlighted tile.' }),
           el('div', { class: 'spacer' }),
-          button(
-            'Cancel',
-            () => {
-              this.mode = { kind: 'idle' };
-              this.renderHud();
-            },
-            { class: 'btn-ghost' },
-          ),
+          this.cancelButton(() => {
+            this.mode = { kind: 'idle' };
+            this.renderHud();
+          }),
         ),
       );
     }
@@ -855,19 +918,27 @@ export class CombatScene implements Scene {
         { class: 'row' },
         el('div', { class: 'spacer' }),
         button('Move instead', () => this.selectMove(), { disabled: unit.move <= 0 }),
-        button(
-          'Cancel',
-          () => {
-            this.mode = { kind: 'idle' };
-            this.renderHud();
-          },
-          { class: 'btn-ghost' },
-        ),
+        this.cancelButton(() => {
+          this.mode = { kind: 'idle' };
+          this.renderHud();
+        }),
       ),
     );
   }
 
+  /** The ghost Cancel with its cross, the same wherever a decision can be backed out of. */
+  private cancelButton(onCancel: () => void): HTMLButtonElement {
+    const node = button('Cancel', onCancel, { class: 'btn-ghost' });
+    node.prepend(this.mark(UI_MARKS.cancel, 'mark-inline'));
+    return node;
+  }
+
   private confirmShell(body: HTMLElement, onConfirm: (() => void) | null): HTMLElement {
+    const confirm = button('Confirm', () => onConfirm?.(), {
+      class: 'btn-primary btn-ok btn-large',
+      disabled: onConfirm === null,
+    });
+    confirm.prepend(this.mark(UI_MARKS.check, 'mark-inline'));
     return el(
       'div',
       { class: 'confirm-bar' },
@@ -875,19 +946,12 @@ export class CombatScene implements Scene {
       el(
         'div',
         { class: 'row' },
-        button(
-          'Cancel',
-          () => {
-            this.pending = null;
-            this.renderHud();
-          },
-          { class: 'btn-ghost' },
-        ),
-        el('div', { class: 'spacer' }),
-        button('Confirm', () => onConfirm?.(), {
-          class: 'btn-primary btn-large',
-          disabled: onConfirm === null,
+        this.cancelButton(() => {
+          this.pending = null;
+          this.renderHud();
         }),
+        el('div', { class: 'spacer' }),
+        confirm,
       ),
     );
   }
