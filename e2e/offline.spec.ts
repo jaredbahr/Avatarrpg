@@ -15,19 +15,25 @@ test.describe('offline', () => {
     await page.goto('/');
 
     // Wait for the worker to take control, not merely to be registered.
-    const controlled = await page.waitForFunction(
-      async () => {
+    await page.waitForFunction(
+      () => {
         if (!('serviceWorker' in navigator)) return false;
-        const registration = await navigator.serviceWorker.getRegistration();
-        return Boolean(registration?.active);
+        return navigator.serviceWorker.controller?.state === 'activated';
       },
       undefined,
       { timeout: 30_000 },
     );
-    expect(controlled).toBeTruthy();
-
-    // Give the precache a moment to finish before cutting the cord.
-    await page.waitForTimeout(1500);
+    // An active registration can precede clients.claim(). Cut the network only
+    // once this document is controlled and the navigation fallback is cached.
+    await expect
+      .poll(() =>
+        page.evaluate(async () =>
+          Boolean(
+            await caches.match(new URL('index.html', location.href).href, { ignoreSearch: true }),
+          ),
+        ),
+      )
+      .toBe(true);
 
     await context.setOffline(true);
     await page.reload();
