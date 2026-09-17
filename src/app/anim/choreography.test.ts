@@ -255,4 +255,102 @@ describe('choreograph', () => {
     expect(tracks.some((t) => t.kind === 'emitter')).toBe(true);
     expect(tracks.find((t) => t.kind === 'floater')?.text).toBe('down');
   });
+
+  /* ---------------------------------------------------------------- */
+  /* Sound cues                                                        */
+  /* ---------------------------------------------------------------- */
+
+  it('cue a footstep a tile along a walk', () => {
+    const { sounds } = run([
+      {
+        type: 'unitMoved',
+        unitId: 'p0',
+        path: [
+          { x: 2, y: 3 },
+          { x: 3, y: 3 },
+        ],
+        cost: 2,
+      },
+    ]);
+    expect(sounds.map((s) => s.key)).toEqual(['step', 'step']);
+    expect(sounds.map((s) => s.at)).toEqual([1000, 1000 + TIMING.step]);
+    // Different seeds, or a walk machine-guns one sample.
+    expect(sounds[0]?.seed).not.toBe(sounds[1]?.seed);
+  });
+
+  it("cue an ability's own fx key at the release, not the wind-up", () => {
+    const { sounds } = run([
+      {
+        type: 'abilityUsed',
+        unitId: 'p0',
+        abilityId: 'fire_jab',
+        target: { x: 5, y: 3 },
+        tiles: [],
+      },
+    ]);
+    const cast = sounds.find((s) => s.key === 'fx.fire.jab');
+    expect(cast, 'the cast should be cued by its fx key').toBeDefined();
+    expect(cast?.at).toBe(1000 + TIMING.windUp);
+  });
+
+  it('cue the hit where the projectile lands, not where it was thrown', () => {
+    const { sounds, tracks } = run([
+      {
+        type: 'abilityUsed',
+        unitId: 'p0',
+        abilityId: 'fire_jab',
+        target: { x: 5, y: 3 },
+        tiles: [],
+      },
+      { type: 'damaged', unitId: 'e0', amount: 6, crit: false, damageType: 'fire', sourceId: 'p0' },
+    ]);
+    const hit = sounds.find((s) => s.key === 'hit');
+    const flash = tracks.find((t) => t.kind === 'flash');
+    expect(hit).toBeDefined();
+    // The same instant the flash is on: the sound belongs to the impact.
+    expect(hit?.at).toBe(flash?.start);
+    // And the flight is real, so the hit is later than the cast.
+    const cast = sounds.find((s) => s.key === 'fx.fire.jab');
+    expect(hit?.at).toBeGreaterThan(cast?.at ?? 0);
+  });
+
+  it('cue going down', () => {
+    const { sounds } = run([{ type: 'unitDied', unitId: 'e0' }]);
+    expect(sounds.map((s) => s.key)).toContain('ko');
+  });
+
+  it('stay in time order, so the bus can schedule them as they come', () => {
+    const { sounds } = run([
+      {
+        type: 'abilityUsed',
+        unitId: 'p0',
+        abilityId: 'fire_jab',
+        target: { x: 5, y: 3 },
+        tiles: [],
+      },
+      { type: 'damaged', unitId: 'e0', amount: 6, crit: false, damageType: 'fire', sourceId: 'p0' },
+      { type: 'unitDied', unitId: 'e0' },
+    ]);
+    const times = sounds.map((s) => s.at);
+    expect([...times].sort((a, b) => a - b)).toEqual(times);
+  });
+
+  it('still cue under reduce motion, where the particles do not', () => {
+    // Motion is what the setting is about. A silent fight is not an
+    // accessibility win, and the bus coalesces the collapsed clump.
+    const { sounds, tracks } = run(
+      [
+        {
+          type: 'abilityUsed',
+          unitId: 'p0',
+          abilityId: 'fire_jab',
+          target: { x: 5, y: 3 },
+          tiles: [],
+        },
+      ],
+      0.02,
+    );
+    expect(tracks.some((t) => t.kind === 'emitter')).toBe(false);
+    expect(sounds.some((s) => s.key === 'fx.fire.jab')).toBe(true);
+  });
 });

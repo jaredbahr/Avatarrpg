@@ -19,6 +19,7 @@ import type { ClipName } from '../render/view';
 import { hashSeed, mulberry32 } from '../render/fx/rng';
 import { sampleAt } from '../render/geometry/curve';
 import { choreograph } from './anim/choreography';
+import type { SoundCue } from './anim/choreography';
 import { Timeline } from './anim/timeline';
 import type { MoveTrack, PoseTrack } from './anim/timeline';
 import { motionReduced } from './ui/dom';
@@ -42,6 +43,13 @@ const SHAKE_STEP = 30;
 export interface AnimatorOptions {
   /** Overrides the reduce-motion lookup, so tests can run without a document. */
   readonly motionReduced?: () => boolean;
+  /**
+   * Where a push's sound cues go. Presentation only and entirely optional: the
+   * animator never reads them back, nothing about `busy()` or `finishesAt`
+   * depends on them, and with no sink the game is silent and otherwise
+   * identical (ADR 0011).
+   */
+  readonly onSounds?: (cues: readonly SoundCue[], now: number) => void;
 }
 
 /** Everything the renderer needs to draw a unit mid-playback. */
@@ -124,6 +132,9 @@ export class Animator {
     });
     for (const track of result.tracks) this.timeline.add(track);
     this.timeline.holdUntil(result.cursor);
+    // The cues carry animator-clock times; `now` lets the sink convert them to
+    // its own clock, which for Web Audio is the only one that schedules exactly.
+    if (result.sounds.length > 0) this.options.onSounds?.(result.sounds, now);
   }
 
   /** Drops finished tracks. Called once a frame so memory stays flat. */

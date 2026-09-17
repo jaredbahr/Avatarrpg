@@ -59,8 +59,29 @@ export interface ChoreographyInput {
   readonly pushIndex: number;
 }
 
+/**
+ * A sound to play at a moment on the animator's clock.
+ *
+ * Cues are not tracks. A track is sampled every frame and pruned when it ends;
+ * a sound is an instant, and Web Audio schedules an instant far better than a
+ * frame loop can — hand it a time and the audio thread hits it whatever the
+ * renderer is doing. So the cues travel beside the tracks, the bus schedules
+ * them ahead on its own clock, and `busy()` and `finishesAt` keep meaning
+ * exactly what they meant (ADR 0004, ADR 0011).
+ */
+export interface SoundCue {
+  /** A key `resolveSound` understands: an fx key, or one of the named cues. */
+  readonly key: string;
+  /** When, on the animator's clock. */
+  readonly at: number;
+  /** Picks between a cue's variants, so a row of footsteps does not repeat. */
+  readonly seed: number;
+}
+
 export interface Choreography {
   readonly tracks: readonly AnyTrack[];
+  /** What to play and when. Presentation only; nothing reads it back. */
+  readonly sounds: readonly SoundCue[];
   /** Where the next push starts. */
   readonly cursor: number;
 }
@@ -95,6 +116,7 @@ const chebyshev = (a: Vec2, b: Vec2): number => Math.max(Math.abs(a.x - b.x), Ma
 export function choreograph(input: ChoreographyInput): Choreography {
   const { content, events, unitsBefore, rate, pushIndex } = input;
   const tracks: AnyTrack[] = [];
+  const sounds: SoundCue[] = [];
   let cursor = input.cursor;
 
   const positions = new Map<string, Vec2>();
@@ -180,6 +202,21 @@ export function choreograph(input: ChoreographyInput): Choreography {
     tracks.push({ kind: 'floater', pos, text, color, start: at, duration: TIMING.floater * rate });
   };
 
+  /**
+   * A sound at a moment. Always emitted, even under reduce motion, which
+   * collapses the clock and would otherwise turn a fight silent; the bus
+   * coalesces cues of one key that land together, which is what keeps a
+   * collapsed round — and a blast over twenty-five tiles — from machine-gunning.
+   */
+  const cue = (key: string, at: number, slot: number, eventIndex: number): void => {
+    sounds.push({ key, at, seed: hashSeed(pushIndex, eventIndex, slot, 0) });
+  };
+
+  /** One footstep a tile along a walk that starts at `at`. */
+  const footsteps = (at: number, tiles: number, eventIndex: number): void => {
+    for (let i = 0; i < tiles; i++) cue('step', at + TIMING.step * rate * i, 20 + i, eventIndex);
+  };
+
   /** A hit's timing: the aimed one if it is still fresh, else now. */
   const landing = (): { at: number; hitStop: number; flash: number } =>
     pending
@@ -202,6 +239,7 @@ export function choreograph(input: ChoreographyInput): Choreography {
             duration,
           });
         }
+        footsteps(cursor, event.path.length, eventIndex);
         const last = event.path[event.path.length - 1];
         if (last) positions.set(event.unitId, last);
         cursor += duration;
@@ -222,6 +260,9 @@ export function choreograph(input: ChoreographyInput): Choreography {
           start: cursor,
           duration,
         });
+        // Only the leader's route is cued: the followers walk the same tiles a
+        // beat behind, and four sets of boots on one road is a stampede.
+        footsteps(cursor, event.path.length, eventIndex);
         const last = event.path[event.path.length - 1];
         if (last) positions.set(event.unitId, last);
         cursor += duration;
@@ -268,6 +309,11 @@ export function choreograph(input: ChoreographyInput): Choreography {
         });
         // The element gathers through the wind-up and is out of the hands by the release.
         emit(recipe.cast, cursor + windUp * 0.4, caster, target, palette, eventIndex, 1);
+        // The voice goes with the release, not the wind-up: it is the sound of
+        // the element leaving the hands. `ability.fx` resolves through the same
+        // family segment the recipe does, so an element sounds like itself
+        // without a row per ability.
+        cue(ability.fx, releaseAt, 1, eventIndex);
 
         let impactAt = releaseAt + release * 0.5;
         if (recipe.travel && !self) {
@@ -349,6 +395,10 @@ export function choreograph(input: ChoreographyInput): Choreography {
       case 'damaged': {
         const pos = positions.get(event.unitId);
         const hit = landing();
+        // The blow landing, under whatever voice threw it. `landing()` is the
+        // aimed moment when a projectile is in flight, so the sound arrives
+        // with the projectile rather than with the command.
+        cue('hit', hit.at, 5, eventIndex);
         if (pos && hit.flash > 0) {
           tracks.push({
             kind: 'flash',
@@ -401,6 +451,7 @@ export function choreograph(input: ChoreographyInput): Choreography {
       case 'healed': {
         const pos = positions.get(event.unitId);
         const at = landing().at;
+        cue('heal', at, 6, eventIndex);
         if (pos) {
           const { recipe, palette } = effect('fx.heal.pulse');
           emit(recipe.impact, at, centre(pos), centre(pos), palette, eventIndex, 4);
@@ -414,6 +465,7 @@ export function choreograph(input: ChoreographyInput): Choreography {
         const pos = positions.get(event.targetId);
         const attacker = unitCentre(event.unitId);
         const at = landing().at;
+        cue('miss', at, 7, eventIndex);
         if (pos) {
           const away = attacker ? direction(attacker, centre(pos)) : { x: 0, y: -1 };
           const out = scaled(away, DODGE);
@@ -465,6 +517,7 @@ export function choreograph(input: ChoreographyInput): Choreography {
       case 'unitDied': {
         const pos = positions.get(event.unitId);
         const at = Math.max(cursor, landing().at + landing().hitStop);
+        cue('ko', at, 8, eventIndex);
         if (pos) {
           const duration = TIMING.ko * rate;
           pose(event.unitId, 'ko', at, duration, { x: 0, y: 0 }, { x: 0, y: 0.08 }, easeOutQuad, {
@@ -521,6 +574,7 @@ export function choreograph(input: ChoreographyInput): Choreography {
 
       case 'propDamaged': {
         const { recipe, palette } = effect('fx.prop.hit');
+        cue('prop', Math.max(cursor, landing().at), 9, eventIndex);
         emit(
           recipe.impact.slice(0, 1),
           Math.max(cursor, landing().at),
@@ -536,6 +590,7 @@ export function choreograph(input: ChoreographyInput): Choreography {
       case 'propDestroyed': {
         const { recipe, palette } = effect(`fx.prop.${event.propId}`);
         const at = Math.max(cursor, landing().at);
+        cue('propBroke', at, 10, eventIndex);
         emit(recipe.impact, at, centre(event.pos), centre(event.pos), palette, eventIndex, 10);
         if (recipe.shake > 0 && rate >= 1) {
           tracks.push({
@@ -561,5 +616,6 @@ export function choreograph(input: ChoreographyInput): Choreography {
     }
   });
 
-  return { tracks, cursor };
+  sounds.sort((a, b) => a.at - b.at);
+  return { tracks, sounds, cursor };
 }
