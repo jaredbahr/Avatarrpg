@@ -1,7 +1,7 @@
 /**
  * Raw generated poses to frames the packer can use.
  *
- *   npx tsx scripts/art/normalise.ts --unit unit.fire.kaya [--key 00ff00|auto]
+ *   npm run art:normalise -- --unit unit.fire.kaya [--key #00ff00|auto|alpha]
  *     [--tolerance 70] [--px 128] [--width 1] [--height 0.78] [--out art/normalised]
  *
  * Reads every `art/raw/<unit>/<clip>/<index>.png`, keys the background out,
@@ -114,10 +114,12 @@ export function main(argv: readonly string[]): number {
     return 1;
   }
 
-  const keyOptions: KeyOptions = { ...DEFAULT_KEY, color: args.key, tolerance: args.tolerance };
   // `--key alpha` preserves already-transparent generator output, including
   // green cloth: running that through chroma despill would recolour it.
   const useAlpha = args.key === 'alpha';
+  const keyOptions: KeyOptions = useAlpha
+    ? DEFAULT_KEY
+    : { ...DEFAULT_KEY, color: args.key, tolerance: args.tolerance };
   // A background that is not the key would be kept and the figure cut instead.
   const first = frames[0];
   if (first && !useAlpha) {

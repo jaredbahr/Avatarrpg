@@ -91,7 +91,7 @@ export function bakeSheet(
   const ctx = canvas.getContext('2d');
   if (!ctx) return null;
 
-  const variant = painter.entry.kind === 'painter' ? painter.entry.variant : undefined;
+  const variant = painter.variant;
   const clips: Partial<Record<ClipName, ClipDef>> = {};
   for (const [clip, names] of Object.entries(layout.clips) as [ClipName, string[]][]) {
     const timing = BAKED_CLIPS[clip];

@@ -72,197 +72,39 @@ const painter = (painterName: string, palette: string, variant?: string): AssetE
     ? { kind: 'painter', painter: painterName, palette, variant }
     : { kind: 'painter', painter: painterName, palette };
 
+/** The six-pose contract shared by the first generated hero sheets. */
+const heroSheet = (key: string, palette: string): SheetEntry => {
+  const name = key.slice(key.lastIndexOf('.') + 1);
+  const frames = (clip: ClipName, count: number): string[] =>
+    Array.from({ length: count }, (_, index) => `${key}/${clip}/${index}`);
+  return {
+    kind: 'sheet',
+    atlas: `art/units/${name}.json`,
+    pixelsPerTile: 128,
+    footprint: { w: 1, h: 1 },
+    anchor: { x: 0.5, y: 0.85 },
+    facing: 'mirror',
+    palette,
+    clips: {
+      idle: { frames: frames('idle', 2), fps: 1, loop: true },
+      cast: { frames: frames('cast', 3), fps: 8, loop: false },
+      ko: { frames: frames('ko', 1), fps: 1, loop: false },
+    },
+  };
+};
+
 export const ASSETS: Readonly<Record<string, AssetEntry>> = {
   /* ------------------------------------------------------ Party sprites */
-  // The variant names the character: `src/render/painters/cast.ts` has a figure for each.
-  'unit.fire.kaya': {
-    kind: 'sheet',
-    atlas: 'art/units/kaya.json',
-    pixelsPerTile: 128,
-    footprint: { w: 1, h: 1 },
-    anchor: { x: 0.5, y: 0.85 },
-    facing: 'mirror',
-    palette: 'fire',
-    clips: {
-      idle: { frames: ['unit.fire.kaya/idle/0', 'unit.fire.kaya/idle/1'], fps: 1, loop: true },
-      cast: {
-        frames: ['unit.fire.kaya/cast/0', 'unit.fire.kaya/cast/1', 'unit.fire.kaya/cast/2'],
-        fps: 8,
-        loop: false,
-      },
-      ko: { frames: ['unit.fire.kaya/ko/0'], fps: 1, loop: false },
-    },
-  },
-  'unit.fire.tenzo': {
-    kind: 'sheet',
-    atlas: 'art/units/tenzo.json',
-    pixelsPerTile: 128,
-    footprint: { w: 1, h: 1 },
-    anchor: { x: 0.5, y: 0.85 },
-    facing: 'mirror',
-    palette: 'fire',
-    clips: {
-      idle: { frames: ['unit.fire.tenzo/idle/0', 'unit.fire.tenzo/idle/1'], fps: 1, loop: true },
-      cast: {
-        frames: ['unit.fire.tenzo/cast/0', 'unit.fire.tenzo/cast/1', 'unit.fire.tenzo/cast/2'],
-        fps: 8,
-        loop: false,
-      },
-      ko: { frames: ['unit.fire.tenzo/ko/0'], fps: 1, loop: false },
-    },
-  },
-  'unit.water.nilak': {
-    kind: 'sheet',
-    atlas: 'art/units/nilak.json',
-    pixelsPerTile: 128,
-    footprint: { w: 1, h: 1 },
-    anchor: { x: 0.5, y: 0.85 },
-    facing: 'mirror',
-    palette: 'water',
-    clips: {
-      idle: { frames: ['unit.water.nilak/idle/0', 'unit.water.nilak/idle/1'], fps: 1, loop: true },
-      cast: {
-        frames: ['unit.water.nilak/cast/0', 'unit.water.nilak/cast/1', 'unit.water.nilak/cast/2'],
-        fps: 8,
-        loop: false,
-      },
-      ko: { frames: ['unit.water.nilak/ko/0'], fps: 1, loop: false },
-    },
-  },
-  'unit.water.sura': {
-    kind: 'sheet',
-    atlas: 'art/units/sura.json',
-    pixelsPerTile: 128,
-    footprint: { w: 1, h: 1 },
-    anchor: { x: 0.5, y: 0.85 },
-    facing: 'mirror',
-    palette: 'water',
-    clips: {
-      idle: { frames: ['unit.water.sura/idle/0', 'unit.water.sura/idle/1'], fps: 1, loop: true },
-      cast: {
-        frames: ['unit.water.sura/cast/0', 'unit.water.sura/cast/1', 'unit.water.sura/cast/2'],
-        fps: 8,
-        loop: false,
-      },
-      ko: { frames: ['unit.water.sura/ko/0'], fps: 1, loop: false },
-    },
-  },
-  'unit.earth.bo': {
-    kind: 'sheet',
-    atlas: 'art/units/bo.json',
-    pixelsPerTile: 128,
-    footprint: { w: 1, h: 1 },
-    anchor: { x: 0.5, y: 0.85 },
-    facing: 'mirror',
-    palette: 'earth',
-    clips: {
-      idle: { frames: ['unit.earth.bo/idle/0', 'unit.earth.bo/idle/1'], fps: 1, loop: true },
-      cast: {
-        frames: ['unit.earth.bo/cast/0', 'unit.earth.bo/cast/1', 'unit.earth.bo/cast/2'],
-        fps: 8,
-        loop: false,
-      },
-      ko: { frames: ['unit.earth.bo/ko/0'], fps: 1, loop: false },
-    },
-  },
-  'unit.earth.linmei': {
-    kind: 'sheet',
-    atlas: 'art/units/linmei.json',
-    pixelsPerTile: 128,
-    footprint: { w: 1, h: 1 },
-    anchor: { x: 0.5, y: 0.85 },
-    facing: 'mirror',
-    palette: 'earth',
-    clips: {
-      idle: {
-        frames: ['unit.earth.linmei/idle/0', 'unit.earth.linmei/idle/1'],
-        fps: 1,
-        loop: true,
-      },
-      cast: {
-        frames: [
-          'unit.earth.linmei/cast/0',
-          'unit.earth.linmei/cast/1',
-          'unit.earth.linmei/cast/2',
-        ],
-        fps: 8,
-        loop: false,
-      },
-      ko: { frames: ['unit.earth.linmei/ko/0'], fps: 1, loop: false },
-    },
-  },
-  'unit.air.nima': {
-    kind: 'sheet',
-    atlas: 'art/units/nima.json',
-    pixelsPerTile: 128,
-    footprint: { w: 1, h: 1 },
-    anchor: { x: 0.5, y: 0.85 },
-    facing: 'mirror',
-    palette: 'air',
-    clips: {
-      idle: { frames: ['unit.air.nima/idle/0', 'unit.air.nima/idle/1'], fps: 1, loop: true },
-      cast: {
-        frames: ['unit.air.nima/cast/0', 'unit.air.nima/cast/1', 'unit.air.nima/cast/2'],
-        fps: 8,
-        loop: false,
-      },
-      ko: { frames: ['unit.air.nima/ko/0'], fps: 1, loop: false },
-    },
-  },
-  'unit.air.jinu': {
-    kind: 'sheet',
-    atlas: 'art/units/jinu.json',
-    pixelsPerTile: 128,
-    footprint: { w: 1, h: 1 },
-    anchor: { x: 0.5, y: 0.85 },
-    facing: 'mirror',
-    palette: 'air',
-    clips: {
-      idle: { frames: ['unit.air.jinu/idle/0', 'unit.air.jinu/idle/1'], fps: 1, loop: true },
-      cast: {
-        frames: ['unit.air.jinu/cast/0', 'unit.air.jinu/cast/1', 'unit.air.jinu/cast/2'],
-        fps: 8,
-        loop: false,
-      },
-      ko: { frames: ['unit.air.jinu/ko/0'], fps: 1, loop: false },
-    },
-  },
-  'unit.non.riko': {
-    kind: 'sheet',
-    atlas: 'art/units/riko.json',
-    pixelsPerTile: 128,
-    footprint: { w: 1, h: 1 },
-    anchor: { x: 0.5, y: 0.85 },
-    facing: 'mirror',
-    palette: 'nonbender',
-    clips: {
-      idle: { frames: ['unit.non.riko/idle/0', 'unit.non.riko/idle/1'], fps: 1, loop: true },
-      cast: {
-        frames: ['unit.non.riko/cast/0', 'unit.non.riko/cast/1', 'unit.non.riko/cast/2'],
-        fps: 8,
-        loop: false,
-      },
-      ko: { frames: ['unit.non.riko/ko/0'], fps: 1, loop: false },
-    },
-  },
-  'unit.non.wen': {
-    kind: 'sheet',
-    atlas: 'art/units/wen.json',
-    pixelsPerTile: 128,
-    footprint: { w: 1, h: 1 },
-    anchor: { x: 0.5, y: 0.85 },
-    facing: 'mirror',
-    palette: 'nonbender',
-    clips: {
-      idle: { frames: ['unit.non.wen/idle/0', 'unit.non.wen/idle/1'], fps: 1, loop: true },
-      cast: {
-        frames: ['unit.non.wen/cast/0', 'unit.non.wen/cast/1', 'unit.non.wen/cast/2'],
-        fps: 8,
-        loop: false,
-      },
-      ko: { frames: ['unit.non.wen/ko/0'], fps: 1, loop: false },
-    },
-  },
+  'unit.fire.kaya': heroSheet('unit.fire.kaya', 'fire'),
+  'unit.fire.tenzo': heroSheet('unit.fire.tenzo', 'fire'),
+  'unit.water.nilak': heroSheet('unit.water.nilak', 'water'),
+  'unit.water.sura': heroSheet('unit.water.sura', 'water'),
+  'unit.earth.bo': heroSheet('unit.earth.bo', 'earth'),
+  'unit.earth.linmei': heroSheet('unit.earth.linmei', 'earth'),
+  'unit.air.nima': heroSheet('unit.air.nima', 'air'),
+  'unit.air.jinu': heroSheet('unit.air.jinu', 'air'),
+  'unit.non.riko': heroSheet('unit.non.riko', 'nonbender'),
+  'unit.non.wen': heroSheet('unit.non.wen', 'nonbender'),
 
   /* ----------------------------------------------------- Enemy sprites */
   'unit.enemy.thug': painter('bandit', 'enemy', 'club'),

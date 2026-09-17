@@ -33,8 +33,12 @@ interface RawAtlas {
   readonly meta: { image: string; size: { w: number; h: number } };
 }
 
-function isFinitePositive(value: unknown): value is number {
+function isFiniteNonNegative(value: unknown): value is number {
   return typeof value === 'number' && Number.isFinite(value) && value >= 0;
+}
+
+function isFinitePositive(value: unknown): value is number {
+  return typeof value === 'number' && Number.isFinite(value) && value > 0;
 }
 
 /** Throws on anything that is not an atlas; a bad file must never draw as nothing silently. */
@@ -46,7 +50,7 @@ export function parseAtlasJson(input: unknown): AtlasJson {
     throw new Error('Atlas JSON has no frames.');
   }
   const meta = atlas.meta;
-  if (!meta || typeof meta.image !== 'string' || !meta.size) {
+  if (!meta || typeof meta.image !== 'string' || meta.image.trim() === '' || !meta.size) {
     throw new Error('Atlas JSON has no meta.image or meta.size.');
   }
   if (!isFinitePositive(meta.size.w) || !isFinitePositive(meta.size.h)) {
@@ -58,8 +62,8 @@ export function parseAtlasJson(input: unknown): AtlasJson {
     const f = entry?.frame;
     if (
       !f ||
-      !isFinitePositive(f.x) ||
-      !isFinitePositive(f.y) ||
+      !isFiniteNonNegative(f.x) ||
+      !isFiniteNonNegative(f.y) ||
       !isFinitePositive(f.w) ||
       !isFinitePositive(f.h)
     ) {
