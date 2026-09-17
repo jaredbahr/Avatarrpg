@@ -67,12 +67,13 @@ describe('placeholder poses', () => {
 });
 
 describe('the cast', () => {
-  it('has a figure of its own for every hero', () => {
+  it('keeps the authored figure definition for every hero after sheets replace painters', () => {
     for (const character of CHARACTERS) {
       const entry = ASSETS[character.sprite];
-      expect(entry?.kind, character.id).toBe('painter');
-      if (entry?.kind !== 'painter') continue;
-      expect(HEROES[entry.variant ?? ''], `${character.id} needs a figure`).toBeDefined();
+      expect(entry, character.id).toBeDefined();
+      const variant =
+        entry?.kind === 'painter' ? entry.variant : character.sprite.split('.').at(-1);
+      expect(HEROES[variant ?? ''], `${character.id} needs a figure`).toBeDefined();
     }
   });
 

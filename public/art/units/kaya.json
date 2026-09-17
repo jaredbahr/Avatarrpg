@@ -1,0 +1,135 @@
+{
+  "frames": {
+    "unit.fire.kaya/idle/0": {
+      "frame": {
+        "x": 0,
+        "y": 0,
+        "w": 128,
+        "h": 192
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 128,
+        "h": 192
+      },
+      "sourceSize": {
+        "w": 128,
+        "h": 192
+      }
+    },
+    "unit.fire.kaya/idle/1": {
+      "frame": {
+        "x": 128,
+        "y": 0,
+        "w": 128,
+        "h": 192
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 128,
+        "h": 192
+      },
+      "sourceSize": {
+        "w": 128,
+        "h": 192
+      }
+    },
+    "unit.fire.kaya/cast/0": {
+      "frame": {
+        "x": 256,
+        "y": 0,
+        "w": 128,
+        "h": 192
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 128,
+        "h": 192
+      },
+      "sourceSize": {
+        "w": 128,
+        "h": 192
+      }
+    },
+    "unit.fire.kaya/cast/1": {
+      "frame": {
+        "x": 384,
+        "y": 0,
+        "w": 128,
+        "h": 192
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 128,
+        "h": 192
+      },
+      "sourceSize": {
+        "w": 128,
+        "h": 192
+      }
+    },
+    "unit.fire.kaya/cast/2": {
+      "frame": {
+        "x": 512,
+        "y": 0,
+        "w": 128,
+        "h": 192
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 128,
+        "h": 192
+      },
+      "sourceSize": {
+        "w": 128,
+        "h": 192
+      }
+    },
+    "unit.fire.kaya/ko/0": {
+      "frame": {
+        "x": 640,
+        "y": 0,
+        "w": 128,
+        "h": 192
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 128,
+        "h": 192
+      },
+      "sourceSize": {
+        "w": 128,
+        "h": 192
+      }
+    }
+  },
+  "meta": {
+    "app": "four-nations-tactics",
+    "version": "1",
+    "image": "kaya.png",
+    "format": "RGBA8888",
+    "size": {
+      "w": 768,
+      "h": 192
+    },
+    "scale": "1"
+  }
+}

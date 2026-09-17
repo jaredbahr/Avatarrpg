@@ -29,5 +29,6 @@ Notes:
 
 ## Made for this project
 
+- **The playable character art.** Generated from the project character references and prompt packs, then normalised and packed for the game. Output terms: https://openai.com/policies/terms-of-use/. This credit does not claim exclusive copyright in generated output.
 - **The app icons.** Drawn by scripts/make-icons.mjs.
 - **The test art.** Flat colour stand-ins the end-to-end tests read back; never seen in play.
