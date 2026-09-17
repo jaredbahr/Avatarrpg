@@ -22,6 +22,8 @@ export interface ResolvedPainter {
   readonly draw: (ctx: Ctx, box: Box, options?: PainterOptions) => void;
   readonly palette: Palette;
   readonly entry: AssetEntry;
+  /** Character or silhouette used when a sheet has not loaded. */
+  readonly variant?: string;
 }
 
 const FALLBACK: UnitPainter = (ctx, box, palette) => {
@@ -65,14 +67,17 @@ export function resolvePainter(key: string): ResolvedPainter {
   }
 
   if (entry.kind === 'sheet') {
-    // The stand-in while the atlas loads, and the square path's answer for a
-    // sheet key: the generic figure in the sheet's own palette.
+    // Keep the character's existing painted figure while the atlas loads or
+    // after a failed fetch. Unit keys end in the cast variant by convention.
     const palette = paletteFor(entry.palette);
+    const variant = key.slice(key.lastIndexOf('.') + 1);
     const bender = UNIT_PAINTERS.bender ?? FALLBACK;
     return {
       entry,
       palette,
-      draw: (ctx, box, options) => bender(ctx, box, palette, options ?? {}),
+      variant,
+      draw: (ctx, box, options) =>
+        bender(ctx, box, palette, { ...(options ?? {}), variant: options?.variant ?? variant }),
     };
   }
 
@@ -110,6 +115,7 @@ export function resolvePainter(key: string): ResolvedPainter {
   return {
     entry,
     palette,
+    ...(variant !== undefined ? { variant } : {}),
     draw: (ctx, box, options) =>
       painter(ctx, box, palette, { ...(options ?? {}), variant: options?.variant ?? variant }),
   };

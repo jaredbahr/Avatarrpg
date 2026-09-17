@@ -2,7 +2,7 @@ import { mkdirSync, mkdtempSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import { newImage, setPixel, writePng } from './lib/image';
+import { newImage, readPng, setPixel, writePng } from './lib/image';
 import { main } from './normalise';
 
 /** A `w` x `h` pose on `background` with a figure of `figure` px tall in the middle. */
@@ -48,6 +48,36 @@ describe('art:normalise on generator output', () => {
     const raw = unit('unit.test.short', GREEN, 40);
     expect(main(['--unit', 'unit.test.short', '--raw', raw, '--out', join(raw, 'out')])).toBe(1);
     expect(logs.join('\n')).toMatch(/40 px tall and would stand 121 px/);
+  });
+
+  it('preserves opaque green costume colours when the input already has alpha', () => {
+    const name = 'unit.test.alpha';
+    const raw = unit(name, [0, 0, 0, 0], 140);
+    const path = join(raw, name, 'idle', '0.png');
+    const source = readPng(path);
+    for (let i = 0; i < source.data.length; i += 4) {
+      if (source.data[i + 3] !== 255) continue;
+      source.data[i] = 111;
+      source.data[i + 1] = 158;
+      source.data[i + 2] = 76;
+    }
+    writePng(path, source);
+    expect(main(['--unit', name, '--raw', raw, '--out', join(raw, 'out'), '--key', 'alpha'])).toBe(
+      0,
+    );
+    const result = readPng(join(raw, 'out', name, 'idle', '0.png'));
+    let green = false;
+    for (let i = 0; i < result.data.length; i += 4) {
+      if (
+        result.data[i] === 111 &&
+        result.data[i + 1] === 158 &&
+        result.data[i + 2] === 76 &&
+        result.data[i + 3] === 255
+      )
+        green = true;
+    }
+    expect(green).toBe(true);
+    expect(result.data[3]).toBe(0);
   });
 
   it('names files it passed over instead of skipping them silently', () => {
