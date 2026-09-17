@@ -1687,6 +1687,36 @@ html[data-contrast='high'] .hud-panel::after {
   flex: 1 1 auto;
 }
 
+.walk-feedback {
+  position: absolute;
+  bottom: var(--sp-3);
+  left: var(--sp-3);
+  right: var(--sp-3);
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--sp-2);
+  padding: var(--sp-2) var(--sp-3);
+  border-radius: var(--radius);
+  background: color-mix(in srgb, var(--c-panel) 94%, transparent);
+  color: var(--c-ink);
+  font-size: var(--fs-sm);
+  pointer-events: none;
+}
+
+.walk-feedback[hidden] {
+  display: none;
+}
+
+.walk-feedback button[hidden] {
+  display: none;
+}
+
+.walk-feedback button {
+  pointer-events: auto;
+}
+
 /* The objective line grows a hint when the party stands at the gate. */
 .title-plate-objective {
   font-size: var(--fs-xs);
