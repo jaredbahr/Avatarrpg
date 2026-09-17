@@ -32,4 +32,19 @@ describe('parseAtlasJson', () => {
     expect(() => parseAtlasJson({ meta: sample.meta })).toThrow(/no frames/);
     expect(() => parseAtlasJson('not json')).toThrow();
   });
+
+  it('refuses empty image names and zero-sized images or frames', () => {
+    expect(() => parseAtlasJson({ ...sample, meta: { ...sample.meta, image: '  ' } })).toThrow(
+      /meta\.image/,
+    );
+    expect(() =>
+      parseAtlasJson({ ...sample, meta: { ...sample.meta, size: { w: 0, h: 192 } } }),
+    ).toThrow(/meta\.size/);
+    expect(() =>
+      parseAtlasJson({
+        ...sample,
+        frames: { empty: { frame: { x: 0, y: 0, w: 0, h: 192 } } },
+      }),
+    ).toThrow(/no rectangle/);
+  });
 });
