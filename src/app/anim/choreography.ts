@@ -435,6 +435,21 @@ export function choreograph(input: ChoreographyInput): Choreography {
           const away = source ? direction(source, centre(pos)) : { x: 0, y: -1 };
           const out = scaled(away, RECOIL * (event.crit ? 1.5 : 1));
           const recoilAt = hit.at + hit.hitStop;
+          // Hold the struck drawing at contact, then let the body recoil.
+          // Waiting until recoil left the victim idling through the hit-stop.
+          if (hit.hitStop > 0)
+            pose(
+              event.unitId,
+              'hit',
+              hit.at,
+              hit.hitStop,
+              { x: 0, y: 0 },
+              { x: 0, y: 0 },
+              easeOutQuad,
+              {
+                frame: 0,
+              },
+            );
           pose(
             event.unitId,
             'hit',

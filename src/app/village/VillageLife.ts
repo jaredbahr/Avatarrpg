@@ -5,7 +5,7 @@ import type { Camera } from '../../render/camera';
 import type { RenderUnit } from '../../render/view';
 import { VillageLayer } from '../../render/living/layer';
 import type { VillageActor } from '../../render/living/layer';
-import { FORM_DURATION } from '../../render/living/poses';
+import { FORM_DURATION, WAVE_DURATION } from '../../render/living/poses';
 import { RIVERSIDE_SPOTS } from '../../content/maps/riverside';
 import { button, el, motionReduced } from '../ui/dom';
 import { SettingsPanel } from '../ui/SettingsPanel';
@@ -39,7 +39,7 @@ export class VillageLife {
   busy(now: number): boolean {
     return (
       this.activity !== null &&
-      now < this.activity.started + (this.activity.kind === 'wave' ? 2200 : FORM_DURATION)
+      now < this.activity.started + (this.activity.kind === 'wave' ? WAVE_DURATION : FORM_DURATION)
     );
   }
   private say(text: string): void {
@@ -250,8 +250,8 @@ export class VillageLife {
       palette: 'neutral',
       villager: true,
       facing: 1,
-      motion: now - this.greeting < 2200 ? 'wave' : 'idle',
-      elapsed: now - this.greeting < 2200 ? now - this.greeting : time + 800,
+      motion: now - this.greeting < WAVE_DURATION ? 'wave' : 'idle',
+      elapsed: now - this.greeting < WAVE_DURATION ? now - this.greeting : time + 800,
       label: near ? 'Elder Mira' : '',
     });
     actors.push({

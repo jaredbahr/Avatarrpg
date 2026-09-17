@@ -193,13 +193,16 @@ describe('choreograph', () => {
     const recoil = tracks.filter((t): t is PoseTrack => t.kind === 'pose' && t.unitId === 'e0');
     const number = tracks.find((t) => t.kind === 'floater');
     expect(flash).toBeDefined();
-    expect(recoil).toHaveLength(2);
+    expect(recoil).toHaveLength(3);
     expect(number?.text).toBe('9');
     // The flash starts at the impact; the recoil and the number wait out the hold.
-    expect(recoil[0]?.start ?? 0).toBeGreaterThanOrEqual(flash?.start ?? Infinity);
+    expect(recoil[0]?.start).toBe(flash?.start);
+    expect(recoil[0]?.clip).toBe('hit');
+    expect(recoil[0]?.offset.to).toEqual({ x: 0, y: 0 });
+    expect(recoil[1]?.start).toBe((recoil[0]?.start ?? 0) + (recoil[0]?.duration ?? 0));
     expect(number?.start ?? 0).toBeGreaterThan(flash?.start ?? Infinity);
     // The recoil pushes the target away from the caster, to the right.
-    expect(recoil[0]?.offset.to.x ?? 0).toBeGreaterThan(0);
+    expect(recoil[1]?.offset.to.x ?? 0).toBeGreaterThan(0);
   });
 
   it('holds the cursor for the hit-stop', () => {

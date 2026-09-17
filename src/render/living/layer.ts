@@ -4,7 +4,7 @@ import type { Camera } from '../camera';
 import { paletteFor } from '../palettes';
 import { figureFor } from '../painters/cast';
 import { drawFigure } from '../painters/figure';
-import { formBeat, villagePose } from './poses';
+import { drawingTime, formBeat, villagePose, waveDrawing } from './poses';
 import type { VillageMotion } from './poses';
 import { backdrops } from '../backdrops';
 import { sheets } from '../sheets/store';
@@ -151,6 +151,9 @@ export class VillageLayer {
     c.save();
     // The environment's afternoon light comes from the upper right.
     const shade = sceneryShade(actor.pos.x + 0.5, actor.pos.y + 0.86);
+    const casting = actor.motion === 'water' || actor.motion === 'fire';
+    const beat = formBeat(reduced ? 0 : drawingTime(actor.elapsed), actor.motion === 'water');
+    const weight = casting && !reduced ? beat.weight : 0;
     const frame = this.actorFrame(actor, s, camera.viewport.dpr, reduced);
     if (frame && !frame.placeholder) {
       const ink = this.copyFrame(frame);
@@ -161,12 +164,10 @@ export class VillageLayer {
       const factor = (s * 1.45) / frame.pixelsPerTile;
       c.save();
       c.globalAlpha = 0.19 * (1 - shade * 0.65);
-      const casting = actor.motion === 'water' || actor.motion === 'fire';
-      const weight =
-        casting && !reduced ? formBeat(actor.elapsed, actor.motion === 'water').weight : 0;
       c.translate(x + weight * s * actor.facing, y);
       // Project the actual silhouette, keeping both boot contacts attached.
       c.transform(actor.facing, 0, 0.52, -0.19, 0, 0);
+      if (casting && !reduced) c.scale(1, 1 - beat.gather * (1 - beat.release) * 0.018);
       c.drawImage(
         this.tint,
         -frame.frame.w * factor * frame.anchor.x,
@@ -178,10 +179,9 @@ export class VillageLayer {
     }
     c.fillStyle = 'rgba(42,40,27,0.27)';
     c.beginPath();
-    c.ellipse(x, y, s * 0.25, s * 0.06, 0, 0, Math.PI * 2);
+    c.ellipse(x + weight * s * actor.facing, y, s * 0.25, s * 0.06, 0, 0, Math.PI * 2);
     c.fill();
     if (!reduced && (actor.motion === 'fire' || actor.motion === 'water')) {
-      const beat = formBeat(actor.elapsed, actor.motion === 'water');
       const alpha = beat.energy * 0.22;
       const light = c.createRadialGradient(x, y, 0, x, y, s * 1.8);
       light.addColorStop(
@@ -201,7 +201,8 @@ export class VillageLayer {
     reduced: boolean,
   ): ResolvedFrame | null {
     if (!actor.sprite) return null;
-    const elapsed = reduced ? 0 : Math.floor(actor.elapsed / (1000 / 12)) * (1000 / 12);
+    const elapsed = reduced ? 0 : drawingTime(actor.elapsed);
+    const wave = actor.motion === 'wave' ? waveDrawing(elapsed) : null;
     const casting = actor.motion === 'water' || actor.motion === 'fire';
     const beat = formBeat(elapsed, actor.motion === 'water');
     const clip =
@@ -209,12 +210,12 @@ export class VillageLayer {
         ? 'idle'
         : casting
           ? 'cast'
-          : actor.motion;
+          : (wave?.clip ?? actor.motion);
     return sheets.frame(
       actor.sprite,
       clip,
       elapsed,
-      casting && !reduced ? beat.frame : undefined,
+      reduced ? 0 : casting ? beat.frame : wave?.frame,
       size * dpr,
       1,
     );
@@ -253,7 +254,7 @@ export class VillageLayer {
     const s = box.size;
     const palette = paletteFor(actor.palette);
     // Twelve held drawings a second keeps the motion's deliberate animated feel.
-    const elapsed = reduced ? 0 : Math.floor(actor.elapsed / (1000 / 12)) * (1000 / 12);
+    const elapsed = reduced ? 0 : drawingTime(actor.elapsed);
     const pose = villagePose(reduced ? 'idle' : actor.motion, elapsed);
     const spec = figureFor(actor.villager ? 'villager' : 'bender', actor.variant, palette);
     const casting = actor.motion === 'water' || actor.motion === 'fire';
