@@ -407,7 +407,9 @@ export class ExploreScene implements Scene {
     // A tap mid-walk would put the party ahead of its own figure.
     if (this.app.animator.busy(performance.now())) return;
     const tile = renderer.camera.toTile(x, y);
-    if (this.life?.handleTap(tile, performance.now())) return;
+    const origin = renderer.camera.toScreen({ x: 0, y: 0 });
+    const point = { x: (x - origin.x) / origin.size, y: (y - origin.y) / origin.size };
+    if (this.life?.handleTap(point, performance.now())) return;
     this.app.dispatch({ type: 'walkTo', pos: tile });
   }
 

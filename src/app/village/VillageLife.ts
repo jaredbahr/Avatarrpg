@@ -6,7 +6,8 @@ import type { RenderUnit } from '../../render/view';
 import { VillageLayer } from '../../render/living/layer';
 import type { VillageActor } from '../../render/living/layer';
 import { FORM_DURATION, WAVE_DURATION } from '../../render/living/poses';
-import { RIVERSIDE_SPOTS } from '../../content/maps/riverside';
+import { hitsPebble, hitsVillager, riversideWalkTime } from '../../render/living/geometry';
+import { RIVERSIDE_ID, RIVERSIDE_SPOTS } from '../../content/maps/riverside';
 import { button, el, motionReduced } from '../ui/dom';
 import { SettingsPanel } from '../ui/SettingsPanel';
 
@@ -114,18 +115,21 @@ export class VillageLife {
     );
     host.appendChild(panel);
   }
-  handleTap(tile: Vec2, now: number): boolean {
+  handleTap(point: Vec2, now: number): boolean {
     if (this.busy(now)) return true;
-    if (distance(tile, this.creature) < 1.6) {
+    if (hitsPebble(point, this.creature)) {
       this.visit('otter');
       return true;
     }
-    if (distance(tile, RIVERSIDE_SPOTS.shrine) < 1.8) {
-      this.visit('shrine');
-      return true;
+    for (const npc of this.app.content.maps.get(RIVERSIDE_ID)?.npcs ?? []) {
+      if (npc.id === 'riverside_shrine') continue;
+      if (hitsVillager(point, npc.pos)) {
+        this.app.dispatch({ type: 'walkTo', pos: npc.pos });
+        return true;
+      }
     }
-    if (distance(tile, RIVERSIDE_SPOTS.tea) < 1.4) {
-      this.visit('tea');
+    if (Math.abs(point.x - 31) < 1 && point.y >= 3.1 && point.y <= 4.9) {
+      this.visit('shrine');
       return true;
     }
     this.pending = null;
@@ -239,7 +243,14 @@ export class VillageLife {
         palette: member?.element ?? 'water',
         facing: active ? 1 : (u.facing ?? 1),
         motion: active?.kind ?? (u.renderPos ? 'walk' : 'idle'),
-        elapsed: active ? now - active.started : u.renderPos ? (u.clipTime ?? 0) : time,
+        elapsed: active
+          ? now - active.started
+          : u.renderPos
+            ? riversideWalkTime(
+                u.clipTime ?? 0,
+                ['sura', 'kaya'].includes(member?.characterId ?? ''),
+              )
+            : time,
         label: u.name,
       };
     });

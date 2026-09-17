@@ -12,6 +12,7 @@ import type { ResolvedFrame } from '../sheets/store';
 import { RIVERSIDE_SCENERY, behindScenery, sceneryShade } from './scenery';
 import type { SceneryLayer } from './scenery';
 import { paintForm } from './forms';
+import { FOOT_Y } from './geometry';
 
 export interface VillageActor {
   readonly id: string;
@@ -76,7 +77,7 @@ export class VillageLayer {
     for (const actor of view.actors) this.groundContact(actor, camera, view.reduced);
     const entities = [
       ...view.actors.map((actor) => ({
-        y: actor.pos.y + 0.86,
+        y: actor.pos.y + FOOT_Y,
         draw: () => this.actor(actor, camera, view.reduced),
       })),
       { y: view.creature.y + 0.86, draw: () => this.otter(view, camera, t) },
@@ -111,7 +112,7 @@ export class VillageLayer {
         c.beginPath();
         c.ellipse(
           box.x + box.size / 2,
-          box.y + box.size * 0.86,
+          box.y + box.size * FOOT_Y,
           box.size * 0.22,
           box.size * 0.07,
           0,
@@ -147,10 +148,10 @@ export class VillageLayer {
       box = camera.toScreen(actor.pos),
       s = box.size;
     const x = box.x + s * 0.5,
-      y = box.y + s * 0.86;
+      y = box.y + s * FOOT_Y;
     c.save();
     // The environment's afternoon light comes from the upper right.
-    const shade = sceneryShade(actor.pos.x + 0.5, actor.pos.y + 0.86);
+    const shade = sceneryShade(actor.pos.x + 0.5, actor.pos.y + FOOT_Y);
     const casting = actor.motion === 'water' || actor.motion === 'fire';
     const beat = formBeat(reduced ? 0 : drawingTime(actor.elapsed), actor.motion === 'water');
     const weight = casting && !reduced ? beat.weight : 0;
@@ -201,7 +202,13 @@ export class VillageLayer {
     reduced: boolean,
   ): ResolvedFrame | null {
     if (!actor.sprite) return null;
-    const elapsed = reduced ? 0 : drawingTime(actor.elapsed);
+    // Walk elapsed is distance, not wall-clock time. Quantising it a second
+    // time makes the four contact/passing drawings alternate unevenly.
+    const elapsed = reduced
+      ? 0
+      : actor.motion === 'walk'
+        ? actor.elapsed
+        : drawingTime(actor.elapsed);
     const wave = actor.motion === 'wave' ? waveDrawing(elapsed) : null;
     const casting = actor.motion === 'water' || actor.motion === 'fire';
     const beat = formBeat(elapsed, actor.motion === 'water');
@@ -269,7 +276,7 @@ export class VillageLayer {
       ink.globalCompositeOperation = 'source-atop';
       ink.fillStyle = 'rgba(242,202,133,0.09)';
       ink.fillRect(0, 0, this.tint.width, this.tint.height);
-      const shade = sceneryShade(actor.pos.x + 0.5, actor.pos.y + 0.86);
+      const shade = sceneryShade(actor.pos.x + 0.5, actor.pos.y + FOOT_Y);
       ink.fillStyle = `rgba(37,65,68,${shade * 0.32})`;
       ink.fillRect(0, 0, this.tint.width, this.tint.height);
       if (casting && !reduced) {
@@ -281,7 +288,7 @@ export class VillageLayer {
       }
       ink.globalCompositeOperation = 'source-over';
       c.save();
-      c.translate(box.x + s * 0.5, box.y + s * 0.86);
+      c.translate(box.x + s * 0.5, box.y + s * FOOT_Y);
       c.scale(actor.facing, 1);
       if (casting && !reduced) {
         c.translate(beat.weight * s, 0);
@@ -302,7 +309,7 @@ export class VillageLayer {
     } else
       drawFigure(
         c,
-        { x: box.x - s * 0.1, y: box.y - s * 0.182, size: s * 1.2 },
+        { x: box.x - s * 0.1, y: box.y - s * 0.542, size: s * 1.2 },
         spec,
         pose,
         palette,

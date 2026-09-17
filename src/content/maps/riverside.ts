@@ -13,8 +13,9 @@ export const RIVERSIDE_SPOTS = {
   shrine: { x: 31, y: 5 },
 } as const;
 
-// Conservative walkable spans: roofs, the big banyan, cliffs and deep water
-// stay solid. The bridge is the only route across the stream.
+// Ground footprints, not canopy silhouettes: the shaded lane west of the
+// banyan is open. Only its trunk/stone planter blocks passage. Coordinates
+// refer to tile centres, the same points used by feet and pointer targeting.
 const spans: readonly (readonly (readonly [number, number])[])[] = [
   [],
   [],
@@ -35,29 +36,33 @@ const spans: readonly (readonly (readonly [number, number])[])[] = [
     [30, 32],
   ],
   [
-    [10, 18],
+    [5, 19],
     [30, 31],
   ],
   [
-    [13, 20],
+    [4, 20],
     [30, 31],
   ],
   [
-    [13, 21],
+    [5, 21],
     [30, 31],
   ],
   [
+    [5, 7],
     [13, 21],
     [29, 32],
   ],
-  [[12, 33]],
-  [[9, 33]],
   [
-    [7, 20],
+    [4, 7],
+    [13, 33],
+  ],
+  [[4, 33]],
+  [
+    [5, 20],
     [29, 33],
   ],
   [
-    [10, 18],
+    [9, 18],
     [29, 33],
   ],
   [
@@ -71,13 +76,17 @@ const spans: readonly (readonly (readonly [number, number])[])[] = [
   [
     [10, 12],
     [17, 18],
+    [30, 31],
   ],
+  [
+    [10, 11],
+    [30, 31],
+  ],
+  [[9, 10]],
+  [[9, 10]],
+  [[9, 10]],
   [[10, 11]],
-  [[9, 10]],
-  [[9, 10]],
-  [],
-  [],
-  [],
+  [[10, 11]],
 ];
 const rows = spans.map((row) =>
   Array.from({ length: 36 }, (_, x) => (row.some(([a, b]) => x >= a && x <= b) ? '=' : '#')).join(

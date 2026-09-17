@@ -3,6 +3,7 @@ import type { Vec2 } from '../../core/types';
 import type { VillageActor } from './layer';
 import { paletteFor } from '../palettes';
 import { drawingTime, formBeat } from './poses';
+import { FOOT_Y } from './geometry';
 
 export function paintForm(
   c: CanvasRenderingContext2D,
@@ -23,7 +24,7 @@ export function paintForm(
         accent: '#fff3bd',
       };
   c.save();
-  c.translate(box.x + box.size * 0.5, box.y + box.size * 0.04);
+  c.translate(box.x + box.size * 0.5, box.y + box.size * (FOOT_Y - 0.82));
   c.scale(box.size * actor.facing, box.size);
   c.translate(weight, 0);
   c.globalAlpha = beat.plume;

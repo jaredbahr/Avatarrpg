@@ -1,5 +1,40 @@
 import { expect, test } from '@playwright/test';
-import { enterNode, resetStorage, startGame } from './helpers';
+import { enterNode, resetStorage, startGame, waitForIdle } from './helpers';
+
+test('riverside painted paths and sprite picking', async ({ page }) => {
+  await resetStorage(page, '?renderer=canvas');
+  await page.getByRole('button', { name: 'Explore the riverside', exact: true }).click();
+  await page.evaluate(() => window.fnt!.app.updateSettings({ reduceMotion: true }));
+  const canvas = page.locator('.map-canvas');
+  await canvas.hover();
+  await page.mouse.wheel(0, 2000);
+  const tapWorld = async (x: number, y: number) => {
+    const camera = await page.evaluate(() => window.fnt!.app.rendererCamera());
+    if (!camera) throw new Error('Missing explore camera');
+    await canvas.tap({
+      position: {
+        x: x * camera.tilePx - camera.offsetX,
+        y: y * camera.tilePx - camera.offsetY,
+      },
+    });
+    await waitForIdle(page);
+  };
+  for (const [x, y] of [
+    [6, 12],
+    [6, 10],
+    [6, 8],
+    [14, 8],
+    [14, 12],
+  ] as const) {
+    await tapWorld(x + 0.5, y + 0.5);
+    await expect
+      .poll(() => page.evaluate(() => window.fnt!.app.state?.location.pos))
+      .toEqual({ x, y });
+  }
+  // The torso is visually above the NPC's navigation tile.
+  await tapWorld(15.5, 8.8);
+  await expect(page.locator('.dialogue-scene')).toBeVisible();
+});
 
 for (const renderer of ['canvas', 'webgl']) {
   test(`riverside discovery, forms and campaign preservation (${renderer})`, async ({ page }) => {
