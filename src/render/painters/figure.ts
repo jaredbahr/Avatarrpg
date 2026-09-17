@@ -19,7 +19,7 @@
  * lands on the same baseline the sheet contract expects.
  */
 
-import type { ClipName } from '../../content/assets/clips';
+import type { BaseClipName, ClipName } from '../../content/assets/clips';
 import type { Palette } from '../palettes';
 import type { Box, Ctx } from './shapes';
 import { circle, ellipse, groundShadow, polygon } from './shapes';
@@ -103,7 +103,7 @@ const rest = (over: Partial<Pose> = {}): Pose => ({
 });
 
 /** One pose per frame of the clip table, in the art bible's words. */
-export const POSES: Readonly<Record<ClipName, readonly Pose[]>> = {
+export const POSES: Readonly<Record<BaseClipName, readonly Pose[]>> = {
   wave: [rest({ frontArm: [2.35, 2.5] }), rest({ frontArm: [2.35, 3.05] })],
   // Weight on the back foot, hands ready, eyes on screen-right; B is a breath.
   idle: [rest(), rest({ breath: 1.03, lean: -0.02 })],
@@ -201,7 +201,13 @@ export const POSES: Readonly<Record<ClipName, readonly Pose[]>> = {
 
 /** The pose for a frame; a clip's last pose for an index past its end. */
 export function poseFor(clip: ClipName, index: number): Pose {
-  const poses = POSES[clip];
+  const base =
+    clip === 'walkNorth' || clip === 'walkSouth'
+      ? 'walk'
+      : clip === 'idleNorth' || clip === 'idleSouth'
+        ? 'idle'
+        : clip;
+  const poses = POSES[base];
   return poses[Math.max(0, Math.min(index, poses.length - 1))] ?? rest();
 }
 

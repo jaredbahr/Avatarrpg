@@ -20,6 +20,13 @@ current map. A landmark behind an active story crossing is withheld until the
 crossing is resolved. Visiting one walks the normal path; discovering a name
 does not set a flag or pay a reward.
 
+The integrated roaming build connects the riverside to the campaign paths,
+adds front and back walking poses for the whole roster, and gives each bending
+style its own anticipation and recovery. The travel journal also remembers
+the three roadside inspections alongside the riverside and traveller stories.
+Riverbank side-view poses keep their eight-frame cadence; front and back
+walks use the same distance-based four-frame cadence as the rest of the party.
+
 ## Playtest
 
 - In Ba Dan, tap down the road and tap a different nearby path before arriving.

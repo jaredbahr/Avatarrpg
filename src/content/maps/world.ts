@@ -1,6 +1,8 @@
 /** The first connected region. Encounters retain their authored level order. */
 import type { Condition, MapDef, MapExit, MapTrigger, Vec2 } from '../../core/types';
 
+import { discoveryMarkers } from './discoveries';
+
 const visited = (nodeId: string): Condition => ({ kind: 'visited', nodeId });
 const unvisited = (nodeId: string): Condition => ({ kind: 'not', of: visited(nodeId) });
 const route = (
@@ -48,7 +50,24 @@ export function connectAct1(map: MapDef): MapDef {
       return {
         ...map,
         objective: 'Meet the villagers, visit the riverside, or follow the east road.',
-        exits: [route({ x: 23, y: 7 }, 'forest_road', { x: 1, y: 4 }, 'East road → Forest Road')],
+        exits: [
+          route({ x: 23, y: 7 }, 'forest_road', { x: 1, y: 4 }, 'East road → Forest Road'),
+          route({ x: 19, y: 14 }, 'ba_dan_riverside', { x: 10, y: 19 }, 'River path → Riverside'),
+        ],
+      };
+    case 'ba_dan_riverside':
+      return {
+        ...map,
+        objective:
+          'Enjoy the riverside, or follow the southern path into Ba Dan and the wider valley.',
+        exits: [
+          route(
+            { x: 10, y: 20 },
+            'ba_dan_village',
+            { x: 18, y: 14 },
+            'South path → Ba Dan Village',
+          ),
+        ],
       };
     case 'forest_road':
       return {
@@ -87,6 +106,7 @@ export function connectAct1(map: MapDef): MapDef {
         ],
         npcs: [
           ...map.npcs,
+          ...discoveryMarkers('forest_road'),
           {
             id: 'dema',
             name: 'Dema, road keeper',
@@ -153,6 +173,7 @@ export function connectAct1(map: MapDef): MapDef {
         ],
         npcs: [
           ...map.npcs,
+          ...discoveryMarkers('ambush_road'),
           {
             id: 'rest_keeper',
             name: 'Sen, the tea keeper',

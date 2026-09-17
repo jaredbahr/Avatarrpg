@@ -5,10 +5,13 @@ import type { Camera } from '../../render/camera';
 import type { RenderUnit } from '../../render/view';
 import { VillageLayer } from '../../render/living/layer';
 import type { VillageActor } from '../../render/living/layer';
-import { FORM_DURATION } from '../../render/living/poses';
-import { RIVERSIDE_SPOTS } from '../../content/maps/riverside';
+import { FORM_DURATION, WAVE_DURATION } from '../../render/living/poses';
+import { hitsPebble, hitsVillager, riversideWalkTime } from '../../render/living/geometry';
+import { RIVERSIDE_ID, RIVERSIDE_SPOTS } from '../../content/maps/riverside';
 import { button, el, motionReduced } from '../ui/dom';
 import { SettingsPanel } from '../ui/SettingsPanel';
+import { TravelJournal } from '../ui/TravelJournal';
+import { verticalClip } from '../anim/direction';
 
 const distance = (a: Vec2, b: Vec2) => Math.hypot(a.x - b.x, a.y - b.y);
 type Activity = { kind: 'water' | 'fire' | 'wave'; unitId: string; started: number };
@@ -39,7 +42,7 @@ export class VillageLife {
   busy(now: number): boolean {
     return (
       this.activity !== null &&
-      now < this.activity.started + (this.activity.kind === 'wave' ? 2200 : FORM_DURATION)
+      now < this.activity.started + (this.activity.kind === 'wave' ? WAVE_DURATION : FORM_DURATION)
     );
   }
   private say(text: string): void {
@@ -67,6 +70,14 @@ export class VillageLife {
     action('Water form', () => this.perform('water'), !party.some((p) => p.element === 'water'));
     action('Fire form', () => this.perform('fire'), !party.some((p) => p.element === 'fire'));
     action('Wave', () => this.perform('wave'));
+    action('Travel journal', () =>
+      new TravelJournal(this.app).open(document.querySelector('.overlay-host') ?? document.body),
+    );
+    action('Walk to Ba Dan', () => {
+      this.pending = null;
+      this.drill = null;
+      this.app.dispatch({ type: 'walkTo', pos: { x: 10, y: 20 } });
+    });
     action('Under the banyan', () => this.visit('canopy'));
     action('Meet Pebble', () => this.visit('otter'));
     action('Visit the shrine', () => this.visit('shrine'));
@@ -92,9 +103,7 @@ export class VillageLife {
       ),
       this.app.previewActive
         ? button('Leave preview', () => this.app.endVillagePreview())
-        : button('Back to village', () =>
-            this.app.dispatch({ type: 'enterNode', nodeId: 'village_explore' }),
-          ),
+        : button('Pause', () => this.app.openPause()),
     );
     const discoveries = [
       this.app.state?.flags.riverside_pet,
@@ -114,18 +123,21 @@ export class VillageLife {
     );
     host.appendChild(panel);
   }
-  handleTap(tile: Vec2, now: number): boolean {
+  handleTap(point: Vec2, now: number): boolean {
     if (this.busy(now)) return true;
-    if (distance(tile, this.creature) < 1.6) {
+    if (hitsPebble(point, this.creature)) {
       this.visit('otter');
       return true;
     }
-    if (distance(tile, RIVERSIDE_SPOTS.shrine) < 1.8) {
-      this.visit('shrine');
-      return true;
+    for (const npc of this.app.content.maps.get(RIVERSIDE_ID)?.npcs ?? []) {
+      if (npc.id === 'riverside_shrine') continue;
+      if (hitsVillager(point, npc.pos)) {
+        this.app.dispatch({ type: 'walkTo', pos: npc.pos });
+        return true;
+      }
     }
-    if (distance(tile, RIVERSIDE_SPOTS.tea) < 1.4) {
-      this.visit('tea');
+    if (Math.abs(point.x - 31) < 1 && point.y >= 3.1 && point.y <= 4.9) {
+      this.visit('shrine');
       return true;
     }
     this.pending = null;
@@ -239,7 +251,16 @@ export class VillageLife {
         palette: member?.element ?? 'water',
         facing: active ? 1 : (u.facing ?? 1),
         motion: active?.kind ?? (u.renderPos ? 'walk' : 'idle'),
-        elapsed: active ? now - active.started : u.renderPos ? (u.clipTime ?? 0) : time,
+        ...(!active && u.clip ? { locomotionClip: u.clip } : {}),
+        elapsed: active
+          ? now - active.started
+          : u.renderPos
+            ? riversideWalkTime(
+                u.clipTime ?? 0,
+                ['sura', 'kaya'].includes(member?.characterId ?? ''),
+                u.clip !== undefined && verticalClip(u.clip),
+              )
+            : time,
         label: u.name,
       };
     });
@@ -250,8 +271,8 @@ export class VillageLife {
       palette: 'neutral',
       villager: true,
       facing: 1,
-      motion: now - this.greeting < 2200 ? 'wave' : 'idle',
-      elapsed: now - this.greeting < 2200 ? now - this.greeting : time + 800,
+      motion: now - this.greeting < WAVE_DURATION ? 'wave' : 'idle',
+      elapsed: now - this.greeting < WAVE_DURATION ? now - this.greeting : time + 800,
       label: near ? 'Elder Mira' : '',
     });
     actors.push({
@@ -277,7 +298,8 @@ export class VillageLife {
       {
         time,
         reduced,
-        backdrop: this.app.backdropFor(this.app.state?.location.mapId ?? ''),
+        // The reducer can already be in Ba Dan while this departing walk finishes.
+        backdrop: this.app.backdropFor(RIVERSIDE_ID),
         actors,
         creature: this.creature,
         friendly: Boolean(this.app.state?.flags.riverside_pet),

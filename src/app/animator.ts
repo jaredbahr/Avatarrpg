@@ -23,6 +23,8 @@ import type { SoundCue } from './anim/choreography';
 import { Timeline } from './anim/timeline';
 import type { MoveTrack, PoseTrack } from './anim/timeline';
 import { motionReduced } from './ui/dom';
+import { directionalClip, walkDirection, verticalClip } from './anim/direction';
+import type { WalkDirection } from './anim/direction';
 
 /** Height of the walk bob in tiles, once per tile of travel. */
 const BOB = 0.05;
@@ -78,6 +80,8 @@ export class Animator {
   private timeline = new Timeline();
   /** Which way each unit last walked; a unit keeps facing that way when it stops. */
   private facings = new Map<string, 1 | -1>();
+  private directions = new Map<string, WalkDirection>();
+  private pendingWalks: MoveTrack[] = [];
   private pushes = 0;
   /** Where the most recent push started, so another can be laid alongside it. */
   private lastCursor = 0;
@@ -90,6 +94,8 @@ export class Animator {
   clear(): void {
     this.timeline.clear();
     this.facings.clear();
+    this.directions.clear();
+    this.pendingWalks = [];
     this.pushes = 0;
   }
 
@@ -131,7 +137,10 @@ export class Animator {
       pushIndex: this.pushes++,
       silentSteps: options.alongside,
     });
-    for (const track of result.tracks) this.timeline.add(track);
+    for (const track of result.tracks) {
+      this.timeline.add(track);
+      if (track.kind === 'move') this.pendingWalks.push(track);
+    }
     this.timeline.holdUntil(result.cursor);
     // The cues carry animator-clock times; `now` lets the sink convert them to
     // its own clock, which for Web Audio is the only one that schedules exactly.
@@ -140,7 +149,28 @@ export class Animator {
 
   /** Drops finished tracks. Called once a frame so memory stays flat. */
   prune(now: number): void {
+    // A fast/reduced-motion walk may finish between rendered frames. Record
+    // its final heading before discarding it so idle does not turn sideways.
+    this.pendingWalks = this.pendingWalks.filter((track) => {
+      if (now < track.start + track.duration) return true;
+      this.rememberDirection(track.unitId, sampleAt(track.curve, track.curve.length).tangent);
+      return false;
+    });
     this.timeline.prune(now);
+  }
+
+  private rememberDirection(unitId: string, tangent: Vec2): void {
+    this.directions.set(unitId, walkDirection(tangent, this.directions.get(unitId)));
+    if (Math.abs(tangent.x) > TURN_THRESHOLD) this.facings.set(unitId, tangent.x > 0 ? 1 : -1);
+  }
+
+  /** Locomotion fields shared by the world, riverside and combat views. */
+  locomotion(now: number, unitId: string): { clip: ClipName; facing: 1 | -1 } {
+    const travel = this.travel(now, unitId);
+    if (travel)
+      this.rememberDirection(unitId, sampleAt(travel.track.curve, travel.distance).tangent);
+    const clip = directionalClip(travel ? 'walk' : 'idle', this.directions.get(unitId));
+    return { clip, facing: verticalClip(clip) ? 1 : (this.facings.get(unitId) ?? 1) };
   }
 
   /** The move track a unit is on at `now`, if any, with how far along it is in tiles. */
@@ -153,12 +183,26 @@ export class Animator {
     return found;
   }
 
+  /** Fade the lift at each end so a fractional final stride settles onto the path. */
+  private walkBob(now: number, travel: { track: MoveTrack; distance: number }): Vec2 {
+    const { track, distance } = travel;
+    const fade = Math.max(
+      0,
+      Math.min(
+        1,
+        (now - track.start) / (90 * this.rate),
+        (track.start + track.duration - now) / (90 * this.rate),
+      ),
+    );
+    return { x: 0, y: -BOB * Math.abs(Math.sin(Math.PI * distance)) * fade };
+  }
+
   /**
    * Where a unit should be drawn at `now`, if it is mid-move. Returns
    * undefined when the unit is not animating, so the caller uses `unit.pos`.
    *
    * The route is sampled by arc length under an ease, so a walk leaves the
-   * tile slowly, hurries through the middle and settles at the end instead
+   * tile gently, holds its pace through the middle and settles at the end instead
    * of hopping tile to tile at one speed. Sampling also turns the sprite to
    * face the way it is going, which it keeps once it has stopped.
    */
@@ -166,9 +210,7 @@ export class Animator {
     const travel = this.travel(now, unitId);
     if (!travel) return undefined;
     const sample = sampleAt(travel.track.curve, travel.distance);
-    if (Math.abs(sample.tangent.x) > TURN_THRESHOLD) {
-      this.facings.set(unitId, sample.tangent.x > 0 ? 1 : -1);
-    }
+    this.rememberDirection(unitId, sample.tangent);
     // The curve runs through tile centres; positions are tile corners.
     return { x: sample.pos.x - 0.5, y: sample.pos.y - 0.5 };
   }
@@ -180,7 +222,7 @@ export class Animator {
   offset(now: number, unitId: string): Vec2 | undefined {
     const travel = this.travel(now, unitId);
     if (!travel || travel.track.curve.length <= 0) return undefined;
-    return { x: 0, y: -BOB * Math.abs(Math.sin(Math.PI * travel.distance)) };
+    return this.walkBob(now, travel);
   }
 
   /** Which way a unit last walked, or undefined if it has not walked yet. */
@@ -199,10 +241,7 @@ export class Animator {
       if (track.unitId === unitId && (!pose || track.start >= pose.start)) pose = track;
     }
     const travel = this.travel(now, unitId);
-    const bob =
-      travel && travel.track.curve.length > 0
-        ? { x: 0, y: -BOB * Math.abs(Math.sin(Math.PI * travel.distance)) }
-        : undefined;
+    const bob = travel && travel.track.curve.length > 0 ? this.walkBob(now, travel) : undefined;
     let flash = 0;
     for (const track of this.timeline.active(now, 'flash')) {
       if (track.unitId !== unitId) continue;

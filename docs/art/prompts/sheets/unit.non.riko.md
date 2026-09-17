@@ -87,3 +87,27 @@ manifest names, and CI runs it.
 
 Run the **Sheets** section of `checklist.md` before committing. For this
 sheet in particular: The raised two-finger hand, the grey knee guards and the single thin braid. Plain, controlled, nothing decorative; she must not read as an acrobat or a performer.
+
+## Optional north and south locomotion
+
+For these frames, override the side-facing camera instruction above: south
+faces directly toward the viewer, north shows the back with no face visible.
+Keep the reference costume, physique, scale and foot line. Use transparent
+alpha with no ground shadow. Preserve anatomical accessory placement; never
+mirror these views. Generate a relaxed walk with modest arm counter-swing.
+
+| Frame             | Pose                                                   |
+| ----------------- | ------------------------------------------------------ |
+| `idleNorth/0.png` | Neutral standing back view, feet level.                |
+| `idleSouth/0.png` | Neutral standing front view, feet level.               |
+| `walkNorth/0.png` | Back view, left foot contact.                          |
+| `walkNorth/1.png` | Back view, right leg passing the supporting left leg.  |
+| `walkNorth/2.png` | Back view, right foot contact.                         |
+| `walkNorth/3.png` | Back view, left leg passing the supporting right leg.  |
+| `walkSouth/0.png` | Front view, left foot contact.                         |
+| `walkSouth/1.png` | Front view, right leg passing the supporting left leg. |
+| `walkSouth/2.png` | Front view, right foot contact.                        |
+| `walkSouth/3.png` | Front view, left leg passing the supporting right leg. |
+
+These clips are optional. Existing action poses keep the side-view contract.
+See `docs/art/directional-character-walks.md` for the hero grid importer.

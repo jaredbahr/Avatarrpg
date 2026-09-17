@@ -27,6 +27,7 @@ import { UI_MARKS } from '../ui/marks';
 import { partyRoster } from '../ui/PartyRoster';
 import { SaveMenu } from '../ui/SaveMenu';
 import { UnitInspector } from '../ui/UnitInspector';
+import { TravelJournal } from '../ui/TravelJournal';
 import { showGridLines } from '../storage/localSaves';
 import { NextWalk, previewWalk } from '../world/walking';
 import type { WalkPreview } from '../world/walking';
@@ -323,10 +324,13 @@ export class ExploreScene implements Scene {
     const row = el('div', { class: 'action-row' });
 
     const npc = this.nearestNpc(state.location.pos);
-    const talk = button('Talk', () => this.talkTo(npc), {
+    const inspect = npc?.sprite.startsWith('world.') ?? false;
+    const talk = button(inspect ? 'Inspect' : 'Talk', () => this.talkTo(npc), {
       class: 'action-button',
       disabled: !npc,
-      title: npc ? `Walk over and talk to ${npc.name}` : 'Nobody is close enough to talk to',
+      title: npc
+        ? `Walk over and ${inspect ? 'inspect' : 'talk to'} ${npc.name}`
+        : 'Nobody is close enough to talk to',
     });
     talk.prepend(mark(UI_MARKS.talk));
     talk.appendChild(el('span', { class: 'action-sub', text: npc?.name ?? 'No one near' }));
@@ -353,6 +357,16 @@ export class ExploreScene implements Scene {
     party.prepend(mark(UI_MARKS.party));
     party.appendChild(el('span', { class: 'action-sub', text: `${state.party.length} strong` }));
     row.appendChild(party);
+    row.appendChild(
+      button(
+        'Travel journal',
+        () => {
+          if (!this.app.animator.busy(performance.now()))
+            new TravelJournal(this.app).open(this.overlayHost());
+        },
+        { class: 'action-button' },
+      ),
+    );
 
     const save = button(
       'Save',
@@ -483,7 +497,9 @@ export class ExploreScene implements Scene {
       this.requestWalk(tile);
       return;
     }
-    if (this.life?.handleTap(tile, performance.now())) return;
+    const origin = renderer.camera.toScreen({ x: 0, y: 0 });
+    const point = { x: (x - origin.x) / origin.size, y: (y - origin.y) / origin.size };
+    if (this.life?.handleTap(point, performance.now())) return;
     this.requestWalk(tile);
   }
 
@@ -584,7 +600,7 @@ export class ExploreScene implements Scene {
       renderPos: index === 0 ? walking : this.app.animator.renderPos(now, member.id),
       offset: this.app.animator.offset(now, member.id),
       clipTime: this.app.animator.unitPose(now, member.id)?.clipTime,
-      facing: this.app.animator.facing(member.id) ?? 1,
+      ...this.app.animator.locomotion(now, member.id),
     }));
 
     const npcs: NpcMarker[] = [

@@ -1,5 +1,18 @@
 # Connected Act 1 playtest
 
+For a quick test without affecting your campaign, choose **Explore the riverside**.
+Meet Pebble, open **Travel journal**, then choose **Walk to Ba Dan**. From the
+village use **East road → Forest Road** to explore the connected region, or
+**River path → Riverside** to return. The journal remembers your discoveries
+and visited places during the preview. **Pause → Leave preview** restores your
+campaign; preview progress is intentionally temporary. Normal campaign saves
+retain discoveries and visited places across sessions.
+
+Compare short walks, long walks and diagonal paths: the middle pace should be
+consistent, starts/stops brief, and feet should settle onto the path at rest.
+Try the painted lane west of the banyan and tap Mira's visible body. Directional
+north/south artwork is a separate asset delivery.
+
 Start a new game and finish the opening. From Ba Dan, walk to the east gate or
 use **East road → Forest Road**. The party walks to the exit before changing maps.
 

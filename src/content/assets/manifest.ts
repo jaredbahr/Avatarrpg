@@ -79,7 +79,7 @@ const heroSheet = (key: string, palette: string): SheetEntry => {
     Array.from({ length: count }, (_, index) => `${key}/${clip}/${index}`);
   return {
     kind: 'sheet',
-    atlas: `art/units/${name}.json`,
+    atlas: `art/units/locomotion-${name}.json`,
     pixelsPerTile: 128,
     footprint: { w: 1, h: 1 },
     anchor: { x: 0.5, y: 0.85 },
@@ -89,6 +89,10 @@ const heroSheet = (key: string, palette: string): SheetEntry => {
       idle: { frames: frames('idle', 2), fps: 1, loop: true },
       cast: { frames: frames('cast', 3), fps: 8, loop: false },
       ko: { frames: frames('ko', 1), fps: 1, loop: false },
+      idleNorth: { frames: frames('idleNorth', 1), fps: 1, loop: true },
+      idleSouth: { frames: frames('idleSouth', 1), fps: 1, loop: true },
+      walkNorth: { frames: frames('walkNorth', 4), fps: 4, loop: true },
+      walkSouth: { frames: frames('walkSouth', 4), fps: 4, loop: true },
     },
   };
 };
@@ -100,7 +104,7 @@ function villageSheet(name: string, palette: string): SheetEntry {
     Array.from({ length: count }, (_, i) => `${key}/${clip}/${i}`);
   return {
     ...base,
-    atlas: `art/units/riverside-${name}.json`,
+    atlas: `art/units/riverside-locomotion-${name}.json`,
     clips: {
       ...base.clips,
       walk: { frames: frames('walk', 4), fps: 8, loop: true },
@@ -139,6 +143,9 @@ export const ASSETS: Readonly<Record<string, AssetEntry>> = {
   /* --------------------------------------------------------------- NPCs */
   'npc.elder': painter('villager', 'neutral', 'elder'),
   'npc.shopkeeper': painter('villager', 'earth', 'shopkeeper'),
+  'world.turtle_ducks': painter('discovery', 'earth', 'ducks'),
+  'world.runoff_marker': painter('discovery', 'neutral', 'marker'),
+  'world.tea_station': painter('discovery', 'earth', 'tea'),
   'npc.kid': painter('villager', 'air', 'kid'),
   'npc.guard': painter('villager', 'earth', 'guard'),
 

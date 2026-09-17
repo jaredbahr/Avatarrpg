@@ -117,8 +117,15 @@ export function main(argv: readonly string[]): number {
   console.log(`wrote ${pngPath} (${layout.width}x${layout.height}) and ${jsonPath}`);
   console.log(`\nManifest entry for src/content/assets/manifest.ts:\n`);
   const clipLines = (Object.entries(layout.clips) as [ClipName, string[]][]).map(
-    ([clip, names]) =>
-      `      ${clip}: { frames: ${JSON.stringify(names)}, fps: ${BAKED_CLIPS[clip].fps}, loop: ${BAKED_CLIPS[clip].loop} },`,
+    ([clip, names]) => {
+      const timing =
+        clip === 'walkNorth' || clip === 'walkSouth'
+          ? { fps: 4, loop: true }
+          : clip === 'idleNorth' || clip === 'idleSouth'
+            ? { fps: 1, loop: true }
+            : BAKED_CLIPS[clip];
+      return `      ${clip}: { frames: ${JSON.stringify(names)}, fps: ${timing.fps}, loop: ${timing.loop} },`;
+    },
   );
   console.log(
     [

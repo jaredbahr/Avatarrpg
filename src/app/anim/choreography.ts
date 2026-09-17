@@ -18,8 +18,10 @@ import type { EmitterDef, FxRecipe } from '../../content/fx';
 import { hashSeed } from '../../render/fx/rng';
 import { particleSpan } from '../../render/fx/simulate';
 import { smoothPath } from '../../render/geometry/curve';
-import { easeInCubic, easeInOutCubic, easeInOutSine, easeOutQuad, stroll } from './easing';
+import { easeInOutCubic, easeInOutSine, easeOutQuad } from './easing';
+import { strollTiming } from './stroll';
 import type { AnyTrack, ClipName } from './timeline';
+import { attackMotion } from './attackMotion';
 
 /** Base durations in milliseconds, before the motion setting is applied. */
 export const TIMING = {
@@ -260,18 +262,22 @@ export function choreograph(input: ChoreographyInput): Choreography {
         // The village walk: the leader's route from where it stood. The
         // followers are the scene's, pushed onto the same timeline.
         if (event.path.length === 0) break;
-        const duration = TIMING.strollStep * event.path.length * rate;
+        const curve = smoothPath(event.from, event.path);
+        const timing = strollTiming(curve.length, TIMING.strollStep);
+        const duration = timing.duration * rate;
         tracks.push({
           kind: 'move',
           unitId: event.unitId,
-          curve: smoothPath(event.from, event.path),
-          ease: stroll,
+          curve,
+          ease: timing.ease,
           start: cursor,
           duration,
         });
         // Only the leader's route is cued: the followers walk the same tiles a
         // beat behind, and four sets of boots on one road is a stampede.
-        footsteps(cursor, event.path.length, eventIndex, TIMING.strollStep);
+        if (!input.silentSteps)
+          for (let d = 0; d < curve.length; d++)
+            cue('step', cursor + timing.atDistance(d) * rate, 20 + d, eventIndex);
         const last = event.path[event.path.length - 1];
         if (last) positions.set(event.unitId, last);
         cursor += duration;
@@ -296,22 +302,25 @@ export function choreograph(input: ChoreographyInput): Choreography {
         const melee = ability.range <= 1 && ability.targeting.shape === 'unit';
         const facing = self ? undefined : facingFor(dir);
 
-        const windUp = TIMING.windUp * rate;
-        const release = TIMING.release * rate;
-        const recover = TIMING.recover * rate;
+        const motion = attackMotion(ability.fx, melee, self);
+        const windUp = TIMING.windUp * motion.windUp * rate;
+        const release = TIMING.release * motion.release * rate;
+        const recover = TIMING.recover * motion.recover * rate;
         const back = self ? { x: 0, y: -0.06 } : scaled(dir, -LEAN_BACK);
-        const forward = self ? { x: 0, y: 0.04 } : scaled(dir, melee ? MELEE_LUNGE : LUNGE);
+        const forward = self
+          ? { x: 0, y: 0.04 }
+          : scaled(dir, melee ? MELEE_LUNGE : LUNGE * motion.reach);
         const clip: ClipName = melee ? 'melee' : 'cast';
 
         // The sheet's poses: wind-up, release, recover for a cast; wind-up and
         // strike for a melee, which returns to its guarded wind-up stance.
-        pose(event.unitId, clip, cursor, windUp, { x: 0, y: 0 }, back, easeInCubic, {
+        pose(event.unitId, clip, cursor, windUp, { x: 0, y: 0 }, back, motion.gatherEase, {
           ...(facing !== undefined ? { facing } : {}),
           scale: { from: 1, to: 0.985 },
           frame: 0,
         });
         const releaseAt = cursor + windUp;
-        pose(event.unitId, clip, releaseAt, release, back, forward, easeOutQuad, {
+        pose(event.unitId, clip, releaseAt, release, back, forward, motion.releaseEase, {
           ...(facing !== undefined ? { facing } : {}),
           scale: { from: 0.985, to: 1.015 },
           frame: 1,
@@ -435,6 +444,21 @@ export function choreograph(input: ChoreographyInput): Choreography {
           const away = source ? direction(source, centre(pos)) : { x: 0, y: -1 };
           const out = scaled(away, RECOIL * (event.crit ? 1.5 : 1));
           const recoilAt = hit.at + hit.hitStop;
+          // Hold the struck drawing at contact, then let the body recoil.
+          // Waiting until recoil left the victim idling through the hit-stop.
+          if (hit.hitStop > 0)
+            pose(
+              event.unitId,
+              'hit',
+              hit.at,
+              hit.hitStop,
+              { x: 0, y: 0 },
+              { x: 0, y: 0 },
+              easeOutQuad,
+              {
+                frame: 0,
+              },
+            );
           pose(
             event.unitId,
             'hit',
