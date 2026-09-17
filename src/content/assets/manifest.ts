@@ -143,12 +143,12 @@ export const ASSETS: Readonly<Record<string, AssetEntry>> = {
   'npc.guard': painter('villager', 'earth', 'guard'),
 
   /* --------------------------------------------------------------- Props */
-  'prop.barrel': painter('prop', 'water', 'barrel'),
-  'prop.flask': painter('prop', 'earth', 'flask'),
-  'prop.brazier': painter('prop', 'fire', 'brazier'),
-  'prop.hay': painter('prop', 'air', 'hay'),
-  'prop.rubble': painter('prop', 'earth', 'rubble'),
-  'prop.cart': painter('prop', 'air', 'cart'),
+  'prop.barrel': { kind: 'image', url: 'art/props/barrel.png', palette: 'water' },
+  'prop.flask': { kind: 'image', url: 'art/props/flask.png', palette: 'earth' },
+  'prop.brazier': { kind: 'image', url: 'art/props/brazier.png', palette: 'fire' },
+  'prop.hay': { kind: 'image', url: 'art/props/hay.png', palette: 'air' },
+  'prop.rubble': { kind: 'image', url: 'art/props/rubble.png', palette: 'earth' },
+  'prop.cart': { kind: 'image', url: 'art/props/cart.png', palette: 'air' },
 
   /* ---------------------------------------------------------- Portraits */
   'portrait.kaya': { kind: 'image', url: 'art/portraits/kaya.png', palette: 'fire' },

@@ -1,10 +1,10 @@
 # Map painting: Ba Dan · The Riverside (`ba_dan_riverside`)
 
-**Deliver** one PNG of 1728×1152 pixels or a whole multiple of it (3456×2304 is the comfortable size to generate at), landscape 3:2, saved as `art/raw/maps/ba_dan_riverside.png`. `art:map` downsizes it with a box filter and never upscales.
+**Deliver** one PNG of 1440×960 pixels or a whole multiple of it (2880×1920 is the comfortable size to generate at), landscape 3:2, saved as `art/raw/maps/ba_dan_riverside.png`. `art:map` downsizes it with a box filter and never upscales.
 
-**Ships as** `public/art/maps/ba_dan_riverside.webp`, 48 px a tile, under 1 MB.
+**Ships as** `public/art/maps/ba_dan_riverside.webp`, 40 px a tile, under 1 MB.
 
-**Map** `backdrop: { url: 'art/maps/ba_dan_riverside.webp', pixelsPerTile: 48 },` on the map's definition in `src/content/maps/`.
+**Map** `backdrop: { url: 'art/maps/ba_dan_riverside.webp', pixelsPerTile: 40 },` on the map's definition in `src/content/maps/`.
 
 **Layout** `ba_dan_riverside-layout.png` beside this file: the tile grid as flat colour blocks at 32 px a tile, with the grid drawn. Hand it to the generator as the composition reference (image-to-image or a structure control) at a strength that keeps every edge where it is; upscale it to the delivery size first so the generator does not invent a border.
 
@@ -56,7 +56,7 @@ Legend: `#` stone walls; `=` road.
 
 ## Prompt
 
-> Top-down painted ground for a tactics battlefield, seen straight from above with the faintest three-quarter tilt so anything that stands up shows a sliver of its south face; north is up; every tile the same size; no perspective convergence, no horizon, no sky. A warm painted village of timber houses and terracotta roofs occupies the left bank. A great banyan shades a central open square. A stream flows from a waterfall at the north toward the south, crossed by a wooden footbridge through the middle. Across it, a little practice clearing opens to the east and a narrow path climbs north to an old stone shrine. A tea veranda overlooks the southwest path. Mossy stones, flowers and reeds soften the banks. Keep the central square, bridge and marked paths clear. Warm afternoon daylight, sage greens and cream earth, gently painted edges with dark brown ink accents. Painterly ground with soft transitions inside a region and clean edges between regions; a clean, uniform dark-brown ink line (`#1b1410`) only where an edge is drawn, never black; two flat tones plus a thin rim light per material on the things that stand up (rocks, trunks, walls, crates); evenly lit, no vignette, no darkened corners, no cast shadows longer than a tile. Nothing the game draws itself: no characters, no creatures, no barrels, carts or braziers, no user interface, no text, no border, no grid lines. Landscape 3:2, 3456×2304.
+> Top-down painted ground for a tactics battlefield, seen straight from above with the faintest three-quarter tilt so anything that stands up shows a sliver of its south face; north is up; every tile the same size; no perspective convergence, no horizon, no sky. A warm painted village of timber houses and terracotta roofs occupies the left bank. A great banyan shades a central open square. A stream flows from a waterfall at the north toward the south, crossed by a wooden footbridge through the middle. Across it, a little practice clearing opens to the east and a narrow path climbs north to an old stone shrine. A tea veranda overlooks the southwest path. Mossy stones, flowers and reeds soften the banks. Keep the central square, bridge and marked paths clear. Warm afternoon daylight, sage greens and cream earth, gently painted edges with dark brown ink accents. Painterly ground with soft transitions inside a region and clean edges between regions; a clean, uniform dark-brown ink line (`#1b1410`) only where an edge is drawn, never black; two flat tones plus a thin rim light per material on the things that stand up (rocks, trunks, walls, crates); evenly lit, no vignette, no darkened corners, no cast shadows longer than a tile. Nothing the game draws itself: no characters, no creatures, no barrels, carts or braziers, no user interface, no text, no border, no grid lines. Landscape 3:2, 2880×1920.
 
 ## Negative prompt
 
@@ -65,7 +65,7 @@ Legend: `#` stone walls; `=` road.
 ## Commands
 
 ```
-npm run art:map -- --map ba_dan_riverside
+npm run art:map -- --map ba_dan_riverside --px 40
 npm run art:validate
 npm run check:assets
 ```

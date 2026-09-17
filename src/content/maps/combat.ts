@@ -22,6 +22,7 @@ import { LEGEND } from './legend';
 
 export const FOREST_ROAD: MapDef = {
   id: 'forest_road',
+  backdrop: { url: 'art/maps/forest_road.webp', pixelsPerTile: 80 },
   name: 'The Forest Road',
   kind: 'combat',
   width: 20,
@@ -56,6 +57,7 @@ export const FOREST_ROAD: MapDef = {
 
 export const QUARRY_GATE: MapDef = {
   id: 'quarry_gate',
+  backdrop: { url: 'art/maps/quarry_gate.webp', pixelsPerTile: 80 },
   name: 'The Quarry Gate',
   kind: 'combat',
   width: 20,
@@ -120,6 +122,7 @@ export const QUARRY_GATE: MapDef = {
 
 export const AMBUSH_ROAD: MapDef = {
   id: 'ambush_road',
+  backdrop: { url: 'art/maps/ambush_road.webp', pixelsPerTile: 80 },
   name: 'The Cutting',
   kind: 'combat',
   width: 20,
@@ -154,6 +157,7 @@ export const AMBUSH_ROAD: MapDef = {
 
 export const QUARRY_FLOOR: MapDef = {
   id: 'quarry_floor',
+  backdrop: { url: 'art/maps/quarry_floor.webp', pixelsPerTile: 80 },
   name: 'The Quarry Floor',
   kind: 'combat',
   width: 20,

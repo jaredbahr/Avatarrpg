@@ -171,6 +171,29 @@ async function faceOff(
 }
 
 export const BEATS: readonly Beat[] = [
+  ...[
+    { map: 'quarry_gate', node: 'battle_quarry_gate', title: 'Quarry Gate' },
+    { map: 'ambush_road', node: 'battle_ambush', title: 'The Cutting' },
+    { map: 'quarry_floor', node: 'battle_grumbler', title: 'Quarry Floor' },
+  ].map(({ map, node, title }, index): Beat => ({
+    id: `21${String.fromCharCode(97 + index)}-${map.replaceAll('_', '-')}`,
+    title: `Act 1 environments · ${title}`,
+    note: 'Painted terrain, live surfaces and transparent props. Compare the clear board with the grid overlay: cover, ledges and lanes should agree with the authored cells.',
+    projects: SURFACES,
+    async run(ctx) {
+      await openBattle(ctx, { node });
+      const loaded = await ctx.page.evaluate((mapId) => {
+        const app = window.fnt!.app;
+        const backdrop = app.backdropFor(mapId);
+        return backdrop ? app.overrideBackdrop(mapId, backdrop) : false;
+      }, map);
+      if (!loaded) throw new Error(`The ${map} painting did not load.`);
+      await ctx.shoot(this.note);
+      await updateSettings(ctx.page, { showGrid: true });
+      await settleLayout(ctx.page, ctx.settleTimeout);
+      await ctx.shoot(this.note, 'grid');
+    },
+  })),
   ...['Water form', 'Fire form'].map((form, index): Beat => ({
     id: `20${index === 0 ? 'a' : 'b'}-riverside`,
     title: `A living riverside · ${form}`,

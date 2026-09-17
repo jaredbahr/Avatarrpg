@@ -65,6 +65,8 @@ export function resolvePainter(key: string): ResolvedPainter {
       draw: (ctx, box, options) => {
         if (key.startsWith('portrait.')) {
           paintPortrait(ctx, box, palette, { variant: key.slice('portrait.'.length) });
+        } else if (key.startsWith('prop.')) {
+          paintProp(ctx, box, palette, { ...(options ?? {}), variant: key.slice('prop.'.length) });
         } else {
           LOADING(ctx, box, palette, options ?? {});
         }
