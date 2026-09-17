@@ -72,19 +72,39 @@ const painter = (painterName: string, palette: string, variant?: string): AssetE
     ? { kind: 'painter', painter: painterName, palette, variant }
     : { kind: 'painter', painter: painterName, palette };
 
+/** The six-pose contract shared by the first generated hero sheets. */
+const heroSheet = (key: string, palette: string): SheetEntry => {
+  const name = key.slice(key.lastIndexOf('.') + 1);
+  const frames = (clip: ClipName, count: number): string[] =>
+    Array.from({ length: count }, (_, index) => `${key}/${clip}/${index}`);
+  return {
+    kind: 'sheet',
+    atlas: `art/units/${name}.json`,
+    pixelsPerTile: 128,
+    footprint: { w: 1, h: 1 },
+    anchor: { x: 0.5, y: 0.85 },
+    facing: 'mirror',
+    palette,
+    clips: {
+      idle: { frames: frames('idle', 2), fps: 1, loop: true },
+      cast: { frames: frames('cast', 3), fps: 8, loop: false },
+      ko: { frames: frames('ko', 1), fps: 1, loop: false },
+    },
+  };
+};
+
 export const ASSETS: Readonly<Record<string, AssetEntry>> = {
   /* ------------------------------------------------------ Party sprites */
-  // The variant names the character: `src/render/painters/cast.ts` has a figure for each.
-  'unit.fire.kaya': painter('bender', 'fire', 'kaya'),
-  'unit.fire.tenzo': painter('bender', 'fire', 'tenzo'),
-  'unit.water.nilak': painter('bender', 'water', 'nilak'),
-  'unit.water.sura': painter('bender', 'water', 'sura'),
-  'unit.earth.bo': painter('bender', 'earth', 'bo'),
-  'unit.earth.linmei': painter('bender', 'earth', 'linmei'),
-  'unit.air.nima': painter('bender', 'air', 'nima'),
-  'unit.air.jinu': painter('bender', 'air', 'jinu'),
-  'unit.non.riko': painter('bender', 'nonbender', 'riko'),
-  'unit.non.wen': painter('bender', 'nonbender', 'wen'),
+  'unit.fire.kaya': heroSheet('unit.fire.kaya', 'fire'),
+  'unit.fire.tenzo': heroSheet('unit.fire.tenzo', 'fire'),
+  'unit.water.nilak': heroSheet('unit.water.nilak', 'water'),
+  'unit.water.sura': heroSheet('unit.water.sura', 'water'),
+  'unit.earth.bo': heroSheet('unit.earth.bo', 'earth'),
+  'unit.earth.linmei': heroSheet('unit.earth.linmei', 'earth'),
+  'unit.air.nima': heroSheet('unit.air.nima', 'air'),
+  'unit.air.jinu': heroSheet('unit.air.jinu', 'air'),
+  'unit.non.riko': heroSheet('unit.non.riko', 'nonbender'),
+  'unit.non.wen': heroSheet('unit.non.wen', 'nonbender'),
 
   /* ----------------------------------------------------- Enemy sprites */
   'unit.enemy.thug': painter('bandit', 'enemy', 'club'),

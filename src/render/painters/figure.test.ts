@@ -6,6 +6,7 @@ import { paletteFor } from '../palettes';
 import { BAKED_CLIPS } from '../sheets/bake';
 import { HEROES, figureFor } from './cast';
 import { BUILDS, FOOT, POSES, figureScale, poseFor, solve } from './figure';
+import { resolvePainter } from './registry';
 
 /**
  * The placeholder rig is pure geometry until it meets a canvas, so the parts
@@ -67,12 +68,14 @@ describe('placeholder poses', () => {
 });
 
 describe('the cast', () => {
-  it('has a figure of its own for every hero', () => {
+  it('keeps the authored fallback figure for every hero after sheets replace painters', () => {
     for (const character of CHARACTERS) {
       const entry = ASSETS[character.sprite];
-      expect(entry?.kind, character.id).toBe('painter');
-      if (entry?.kind !== 'painter') continue;
-      expect(HEROES[entry.variant ?? ''], `${character.id} needs a figure`).toBeDefined();
+      expect(entry, character.id).toBeDefined();
+      const fallback = resolvePainter(character.sprite);
+      const authoredVariant = character.sprite.slice(character.sprite.lastIndexOf('.') + 1);
+      expect(fallback.variant, `${character.id} fallback variant`).toBe(authoredVariant);
+      expect(HEROES[fallback.variant ?? ''], `${character.id} needs a figure`).toBeDefined();
     }
   });
 

@@ -32,6 +32,11 @@ with a fixed seed, and publishes them where a tablet can open them.
   and advanced with `runFor` between captures, so a still at 200 ms into a
   cast is the same still every run. Nothing frame-driven is awaited while the
   clock is paused: a filmstrip's act is a dispatch, never a click.
+  Captures now fast-forward the unsaved interval and render its final frame
+  interval with `runFor`. Poses and effects sample absolute elapsed time;
+  rendering every intermediate frame on software WebGL added minutes without
+  adding any saved images. Due timers still run. Ambient decoration may have
+  fewer presentation ticks; it is not a frame-by-frame simulation reference.
 - **No video.** CI runners rasterise WebGL in software at a few frames a
   second; a recording would show the runner, not the game. Stills at exact
   animator times show the game.
