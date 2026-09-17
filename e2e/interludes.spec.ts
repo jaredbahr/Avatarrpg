@@ -31,7 +31,9 @@ test('each click advances one still caption and skip reaches the intended destin
   expect((await snapshot(page)).node).toBe('battle_grumbler');
 });
 
-test('playback pauses for menus and never starts a battle without Continue', async ({ page }) => {
+test('playback pauses for menus and returns to exploration before the road encounter', async ({
+  page,
+}) => {
   await enterNode(page, 'road_depart');
   await expect
     .poll(() =>
@@ -66,7 +68,14 @@ test('playback pauses for menus and never starts a battle without Continue', asy
   expect((await snapshot(page)).node).toBe('road_depart');
   await expect(page.getByRole('button', { name: 'Play scene', exact: true })).toBeVisible();
   await page.getByRole('button', { name: 'Continue', exact: true }).click();
-  expect((await snapshot(page)).node).toBe('battle_forest_road');
+  expect((await snapshot(page)).node).toBe('forest_explore');
+  await expect(page.locator('.explore-scene')).toBeVisible();
+  expect(await page.evaluate(() => window.fnt?.app.state?.battle)).toBeNull();
+  // Continue releases the party onto the road; crossing the visible group starts combat.
+  await page.evaluate(() => window.fnt?.app.dispatch({ type: 'walkTo', pos: { x: 18, y: 4 } }));
+  await expect
+    .poll(() => page.evaluate(() => window.fnt?.app.state?.battle?.encounterId))
+    .toBe('enc_forest_road');
 });
 
 for (const [node, title, art] of [
@@ -130,7 +139,9 @@ test('missing art leaves the caption and skip usable', async ({ page }) => {
   ).toBeVisible();
   await expect(page.locator('.dialogue-line')).toHaveText('Half a league up, the birds stop.');
   await page.getByRole('button', { name: 'Skip scene' }).click();
-  expect((await snapshot(page)).node).toBe('battle_forest_road');
+  expect((await snapshot(page)).node).toBe('forest_explore');
+  await expect(page.locator('.explore-scene')).toBeVisible();
+  expect(await page.evaluate(() => window.fnt?.app.state?.battle)).toBeNull();
 });
 
 test('a saved cutscene resumes at its caption with playback paused', async ({ page }) => {
