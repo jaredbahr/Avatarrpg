@@ -1140,11 +1140,30 @@
  * without spending a scrollbar the tablet does not draw anyway.
  */
 .log-lines {
-  max-height: 7rem;
+  /*
+   * A fixed height, not a max: the fade is measured from the top of the *box*,
+   * so under a max-height a two-line log is a two-line box and the fade eats
+   * the first line — at the start of a fight, which is when the log is
+   * shortest and most likely to be read. At a fixed height with the lines
+   * pushed to the bottom, a short log sits well clear of the fade and only a
+   * log that actually overflows meets it. It also stops the panel growing line
+   * by line, which resized the map through the canvas observer on most turns.
+   */
+  height: 7rem;
   display: flex;
   flex-direction: column;
   gap: 0.1rem;
   mask-image: linear-gradient(180deg, transparent, #000 1.25rem);
+}
+
+/*
+ * Pushes a short log to the bottom. `justify-content: flex-end` would say the
+ * same thing and is the obvious way to write it, but in a scroll container it
+ * puts the overflowing lines above the scrollable area, where they cannot be
+ * reached — an auto margin on the first item is the one that keeps scrolling.
+ */
+.log-lines > p:first-child {
+  margin-top: auto;
 }
 
 .log-lines p {
