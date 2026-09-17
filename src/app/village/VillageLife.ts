@@ -239,6 +239,7 @@ export class VillageLife {
         palette: member?.element ?? 'water',
         facing: active ? 1 : (u.facing ?? 1),
         motion: active?.kind ?? (u.renderPos ? 'walk' : 'idle'),
+        ...(!active && u.clip ? { locomotionClip: u.clip } : {}),
         elapsed: active ? now - active.started : u.renderPos ? (u.clipTime ?? 0) : time,
         label: u.name,
       };

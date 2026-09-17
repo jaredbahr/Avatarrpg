@@ -12,6 +12,7 @@ import type { ResolvedFrame } from '../sheets/store';
 import { RIVERSIDE_SCENERY, behindScenery, sceneryShade } from './scenery';
 import type { SceneryLayer } from './scenery';
 import { paintForm } from './forms';
+import type { ClipName } from '../../content/assets/clips';
 
 export interface VillageActor {
   readonly id: string;
@@ -22,6 +23,7 @@ export interface VillageActor {
   readonly villager?: boolean;
   readonly facing: 1 | -1;
   readonly motion: VillageMotion;
+  readonly locomotionClip?: ClipName;
   readonly elapsed: number;
   readonly label: string;
 }
@@ -201,15 +203,20 @@ export class VillageLayer {
     reduced: boolean,
   ): ResolvedFrame | null {
     if (!actor.sprite) return null;
-    const elapsed = reduced ? 0 : Math.floor(actor.elapsed / (1000 / 12)) * (1000 / 12);
+    const elapsed = reduced
+      ? 0
+      : actor.locomotionClip
+        ? actor.elapsed
+        : Math.floor(actor.elapsed / (1000 / 12)) * (1000 / 12);
     const casting = actor.motion === 'water' || actor.motion === 'fire';
     const beat = formBeat(elapsed, actor.motion === 'water');
     const clip =
-      reduced || (casting && (beat.t < 0.1 || beat.t > 0.96))
+      actor.locomotionClip ??
+      (reduced || (casting && (beat.t < 0.1 || beat.t > 0.96))
         ? 'idle'
         : casting
           ? 'cast'
-          : actor.motion;
+          : actor.motion);
     return sheets.frame(
       actor.sprite,
       clip,

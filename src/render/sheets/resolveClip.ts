@@ -18,6 +18,10 @@ const FALLBACK: Readonly<Record<ClipName, readonly ClipName[]>> = {
   melee: ['cast', 'idle'],
   hit: ['idle'],
   ko: ['hit', 'idle'],
+  idleNorth: ['idle'],
+  idleSouth: ['idle'],
+  walkNorth: ['walk', 'idle'],
+  walkSouth: ['walk', 'idle'],
 };
 
 export interface ResolvedClip {

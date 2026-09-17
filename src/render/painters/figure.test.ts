@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { CLIP_FRAME_COUNTS, CLIP_NAMES } from '../../content/assets/clips';
+import { CLIP_FRAME_COUNTS, BASE_CLIP_NAMES } from '../../content/assets/clips';
 import { ASSETS } from '../../content/assets/manifest';
 import { CHARACTERS } from '../../content/characters';
 import { paletteFor } from '../palettes';
@@ -17,7 +17,7 @@ import { resolvePainter } from './registry';
 
 describe('placeholder poses', () => {
   it('has one pose per frame of the clip table', () => {
-    for (const clip of CLIP_NAMES) {
+    for (const clip of BASE_CLIP_NAMES) {
       expect(POSES[clip].length, clip).toBe(CLIP_FRAME_COUNTS[clip].min);
       expect(POSES[clip].length, clip).toBe(BAKED_CLIPS[clip].count);
     }
@@ -25,7 +25,7 @@ describe('placeholder poses', () => {
 
   it('stands every pose on the foot line, inside the box, for every build', () => {
     for (const [name, build] of Object.entries(BUILDS)) {
-      for (const clip of CLIP_NAMES) {
+      for (const clip of BASE_CLIP_NAMES) {
         for (const [index, pose] of POSES[clip].entries()) {
           const label = `${name} ${clip}/${index}`;
           const joints = solve(pose, build);

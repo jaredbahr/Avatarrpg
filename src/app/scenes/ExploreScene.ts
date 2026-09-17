@@ -458,6 +458,7 @@ export class ExploreScene implements Scene {
 
     const now = performance.now();
     if (this.life?.update(now)) return;
+    this.app.animator.prune(now);
     this.app.stats?.frame(now);
 
     // The whole party walks the village: the leader on the rules' tile, the
@@ -483,7 +484,7 @@ export class ExploreScene implements Scene {
       renderPos: index === 0 ? walking : this.app.animator.renderPos(now, member.id),
       offset: this.app.animator.offset(now, member.id),
       clipTime: this.app.animator.unitPose(now, member.id)?.clipTime,
-      facing: this.app.animator.facing(member.id) ?? 1,
+      ...this.app.animator.locomotion(now, member.id),
     }));
 
     const npcs: NpcMarker[] = [
