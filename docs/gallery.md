@@ -94,6 +94,19 @@ that question broken into parts.
   Show grid on, does every edge in the stand-in sit on a tile line? A real
   painting through `art:map` replaces the stand-in in beats 04 to 12.
 
+## Sound is not in the gallery
+
+The gallery is pictures, and sound leaves no mark on one. There is no beat
+for it and there should not be: a filmstrip of a fire blast looks identical
+whether it roared or played in silence.
+
+So the sound verdict is the checklist's, not the gallery's — rows 26 to 28
+of `docs/device-matrix.md`, on the device, out loud. That matters more here
+than for anything else in these milestones, because the bending voices were
+written from descriptions of the elements and **never heard by whoever wrote
+them** (ADR 0012). There is no second opinion to fall back on. The table
+below has a line for it.
+
 ## Go / no-go
 
 Filled in by the owner after the milestone's last slice. One line each; a
@@ -108,6 +121,7 @@ Filled in by the owner after the milestone's last slice. One line each; a
 | I would keep writing story against this look                                                       |          |     |
 | The parchment HUD and the painting slot are the mockup, allowing for the real paintings and icons  |          |     |
 | The village with the party walking through it and the roster beside it is the explore mode I want  |          |     |
+| Each element sounds like itself, and the game is better with sound on than off                     |          |     |
 
 A "no" on the first or the last line stops Phase 2 content until it is a
 "yes". A "no" elsewhere is a slice to revisit, not a stop.
