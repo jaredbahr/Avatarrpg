@@ -7,6 +7,8 @@
  * off if building elements is terse, hence this file.
  */
 
+import { uiSound } from '../audio/ui';
+
 type Child = Node | string | null | undefined | false;
 
 export interface ElProps {
@@ -91,7 +93,13 @@ export function button(
     disabled: options.disabled,
     title: options.title,
     id: options.id,
-    onClick: () => onClick(),
+    onClick: () => {
+      // A primary button is the one that commits something, so it gets the
+      // heavier sound; everything else is a tap. The class is already the
+      // distinction the styles make, so there is no second list to keep.
+      uiSound(options.class?.includes('btn-primary') ? 'confirm' : 'tap');
+      onClick();
+    },
   });
 }
 
