@@ -11,6 +11,7 @@ import type { AssetEntry } from '../../content/assets/manifest';
 import { resolveAsset } from '../../content/assets/manifest';
 import type { Palette } from '../palettes';
 import { paletteFor } from '../palettes';
+import { paintDiscovery } from './discoveries';
 import { paintImpact } from './fx';
 import { paintPortrait } from './portraits';
 import { paintProp } from './props';
@@ -107,6 +108,15 @@ export function resolvePainter(key: string): ResolvedPainter {
       palette,
       draw: (ctx, box, options) =>
         paintImpact(ctx, box, palette, { variant: options?.variant ?? variant }),
+    };
+  }
+
+  if (entry.painter === 'discovery') {
+    return {
+      entry,
+      palette,
+      draw: (ctx, box, options) =>
+        paintDiscovery(ctx, box, palette, { ...(options ?? {}), variant }),
     };
   }
 
