@@ -111,7 +111,7 @@ export class App {
   private scene: Scene | null = null;
   private pause: PauseMenu | null = null;
   private levelUp: LevelUpDialog | DisciplineDialog | null = null;
-  /** Sound. Opens no context until a gesture unlocks it (ADR 0011). */
+  /** Sound. Opens no context until a gesture unlocks it (ADR 0012). */
   readonly audio: AudioBus;
   /** Set while a battle is being resolved, so it cannot double-fire. */
   private resolving = false;

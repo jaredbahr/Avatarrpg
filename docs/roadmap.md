@@ -41,7 +41,7 @@ Decisions this roadmap rests on live in `docs/adr/`. The art specification is
 | **A3 Choreography** ✅      | Easing and timelines; per-event choreography (approach, wind-up, cast, projectile, impact, recoil, floater, KO); camera focus and shake; particle recipes per element as content; hit-stop and flash                                                                                                                                                                                                                 | A2            | Every existing event kind plays through the new runtime; reduce-motion and `waitForIdle` unchanged; 60 fps on an iPad                                                                  |
 | **B Pilot art** 🔶          | The 17 portraits, one hero (Kaya), one enemy (bandit thug), the fire effect set; the prompt packs and the pipeline are in, generation is the owner's                                                                                                                                                                                                                                                                 | A2, art bible | Pilot assets pass `validateContent` and the QA checklist on a real iPad; regeneration rounds per hero recorded                                                                         |
 | **C Full art pass**         | Remaining 9 heroes, 9 enemies, 4 NPCs, 6 props, terrain decals over the shader ground, title screen                                                                                                                                                                                                                                                                                                                  | B             | Every manifest key resolves to real art; painters stay as the fallback; asset budget holds                                                                                             |
-| **D Polish**                | Audio through Web Audio with unlock on first gesture; camera work; haptics where the platform has them (not iOS)                                                                                                                                                                                                                                                                                                     | A3            | A fight reads as complete on an iPad and a Surface                                                                                                                                     |
+| **D Polish** 🔶             | Audio through Web Audio with unlock on first gesture ✅ (Milestone 5, ADR 0012: sampled world and interface, described bending voices, music still open); camera work; haptics where the platform has them (not iOS)                                                                                                                                                                                                 | A3            | A fight reads as complete on an iPad and a Surface                                                                                                                                     |
 | **W1 World topology**       | `MapDef.exits` with `requires` and `lockedHint`; regions and their level bands; `location.world` memory and the save migration; `progression.test.ts` rewritten over the region graph                                                                                                                                                                                                                                | Milestone 3   | Two maps connect both ways; a refused exit says why; a round trip restores the return position; the region test is green                                                               |
 | **W2 Free roam**            | `StoryState.nodeId: null` as the ordinary wandering state; leaving a node returns to the world; the explore banner stops assuming an objective                                                                                                                                                                                                                                                                       | W1            | The party can wander with nothing active, talk to anyone, and leave a conversation back onto the map                                                                                   |
 | **W3 Triggers**             | `MapDef.triggers` (node and encounter kinds, `when`, `once`); `location.world.fired` and `cleared`; `startBattle` loses its story-graph search                                                                                                                                                                                                                                                                       | W2            | A tile fires a scene once and never again; a place-owned fight can be walked into and stays cleared                                                                                    |
@@ -169,6 +169,69 @@ After this milestone: the owner's village painting through `art:map`, his
 walk through the village on the iPad (checklist rows 23 to 25), then the
 road between places as chained explore maps with a region graph in content —
 that is Phase W, specified in ADR 0011 — the first generated sheets, and D.
+
+## Milestone 5: what other people have already made (2026-09-17)
+
+The owner, on 2026-09-16: "it's also worth looking online for free assets
+that fit the vibe and aesthetic of our game. If nothing's out there then
+there isn't anything and we'll just have to make it but if there is, might
+be worth grabbing." So the milestone is a search and its consequences, and
+half of what it found was a refusal.
+
+| Question     | Decision                                                                                                                       |
+| ------------ | ------------------------------------------------------------------------------------------------------------------------------ |
+| Licence      | CC0 and CC BY both accepted. CC BY costs a `NOTICE` file and a Credits view in the game, which the icons were worth.           |
+| What to take | All four families considered: ability icons, terrain textures, audio, interface ornaments.                                     |
+| Sequencing   | After the owner's own art. This milestone never fills a slot his generated art is destined for; it fills ones that were empty. |
+
+**What the container can reach shaped everything.** The egress proxy allows
+npm and `git` against GitHub and refuses everything else — `game-icons.net`,
+`opengameart.org`, `ambientcg.com`, `kenney.nl`, `itch.io` and
+`api.iconify.design` are all blocked, and a plain HTTPS fetch of
+`github.com` is a 403. What works is an npm package and `git clone`. Every
+source below is one or the other; anything else has to come in on the
+`art-intake` branch the way generated art does.
+
+| Slice | What it did                                                                                                                                                                                                           |
+| ----- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| M5.0  | Credit before pixels: `src/content/credits.ts` as the one list feeding the in-game Credits screen, `NOTICE.md` and a test that walks `public/` and fails on any file no entry accounts for; `docs/art/third-party.md` |
+| M5.1  | Icons: the swap slot first with no new art, then the Game Icons sprite from `@iconify-json/game-icons` (CC BY 3.0) as an external SVG, budgeted as art and costing the script bundle nothing; gallery beat 19         |
+| M5.2  | **Rejected.** Terrain textures — see below                                                                                                                                                                            |
+| M5.3  | **Not attempted.** Interface ornaments were conditional on beating the CSS brackets already in the HUD, and nothing reachable did                                                                                     |
+| M5.4  | Sound, the engine and a starter set: Kenney's CC0 world and interface sounds, bending voices rendered in the Web Audio graph, cues from the choreography, a volume setting that closes the context (ADR 0012)         |
+| M5.5  | This record, device checklist rows 26 to 28, the gallery note                                                                                                                                                         |
+
+### The two refusals, so they are not re-litigated
+
+- **Photographic terrain textures (M5.2).** The only CC0 texture set reachable
+  here is `Calinou/seamless-textures`: 2048² and, in its own README's words,
+  "made from photos" — real lawn grass, asphalt, poured concrete, gravel, a
+  wood veneer, and no water at all. Under a cel-shaded board with brown ink
+  edges that is not a compromise, it is a different game. The slot is also
+  worth less than the plan assumed: a map with a painting skips the procedural
+  terrain entirely (ADR 0009), and every map is destined for a painting, so a
+  texture would only ever draw on the fallback path. If painterly ground is
+  wanted later it is a generation target with a prompt pack, not a download.
+- **Chiptune sounds for bending (M5.4).** Kenney's packs cover the world and
+  the interface well and contain nothing that sounds like bending. The nearest
+  free thing is a "zap" from an 8-bit pack, which under a hand-painted
+  lightning arc is the same mistake as the photographs. An element's voice is
+  described in `src/content/sounds.ts` and rendered instead.
+
+Both refusals share a rule worth keeping: **free is not the same as free of
+cost.** An asset that fights the art bible costs more to live with than it
+saves, and the fallback already in the codebase — a drawn mark, a painter
+figure, a procedural ground, a described voice — is usually better than the
+wrong real thing.
+
+### What is still open
+
+The bending voices were tuned **blind**: written from how each element is
+described, never heard, because nothing here can play audio. The numbers in
+`SOUND_FAMILIES` are a first guess. Whether bending sounds like bending is
+the owner's verdict on the device, checklist rows 26 to 28, exactly as the
+look gate was — and music waits behind that verdict, since there is no point
+scoring a game whose effects are still being argued about.
 
 ## Checklists
 

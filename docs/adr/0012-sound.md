@@ -1,10 +1,12 @@
-# ADR 0011: Sound
+# ADR 0012: Sound
 
 **Status:** accepted, 2026-09-16 (lands in Milestone 5, slice M5.4)
 
-> Numbered 0011 rather than the 0012 the Milestone 5 plan named: the terrain
-> textures that would have taken 0011 were rejected (see the Milestone 5
-> record), so the number was never spent.
+> This is the 0012 the Milestone 5 plan named. It was briefly written as 0011,
+> on the mistaken belief that the terrain-texture rejection had freed that
+> number; 0011 was already the free-roam world model, which landed on `main`
+> while this was being built. The reference in `src/app/` and the roadmap were
+> corrected with the rename.
 
 ## Context
 

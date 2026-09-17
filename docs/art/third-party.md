@@ -45,11 +45,14 @@ adds, so a forgotten regeneration fails just as loudly.
 This container can reach npm and GitHub and very little else, so a source that
 lives in one of those is one we can take ourselves:
 
-| Kind            | Where it lives                                          |
-| --------------- | ------------------------------------------------------- |
-| Icons           | an npm package of the icon set, read at build time only |
-| Ground textures | a public-domain texture repository on GitHub            |
-| Sound           | public-domain sound packs mirrored on GitHub            |
+| Kind            | Where it lives                                          | Outcome                                        |
+| --------------- | ------------------------------------------------------- | ---------------------------------------------- |
+| Icons           | an npm package of the icon set, read at build time only | Taken: Game Icons, CC BY 3.0, as an SVG sprite |
+| Sound           | public-domain sound packs cloned from a GitHub mirror   | Taken: Kenney's, CC0, for the world and the UI |
+| Ground textures | a public-domain texture repository on GitHub            | **Rejected**: photographic (see below)         |
+
+A plain HTTPS fetch of `github.com` is refused here, but `git clone` works,
+which is how the sound and texture sources were actually read.
 
 Anything else — a marketplace, an asset site, a download page — is blocked
 here. Fetch it yourself and bring it in the way generated art comes in: push
@@ -59,7 +62,7 @@ and the raw download never reaches the main branch.
 
 ## What is not worth taking
 
-Two things look tempting and are not:
+Four things look tempting and are not:
 
 - **Figures.** Ours are specific people with their own silhouettes, written
   down in the packs and drawn from reference figures. A stock set of poses
@@ -68,8 +71,18 @@ Two things look tempting and are not:
 - **Whole map paintings.** A painting here has to put every road edge and
   every bank on a tile line of one particular grid. Nothing made for someone
   else's map will, and nudging one until it does is more work than painting
-  it. Ground textures are the part of this that is worth taking, because they
-  sit under the grid rather than describing it.
+  it.
+- **Ground textures, in the end.** This was the part of the paintings problem
+  that looked worth taking, because a texture sits under the grid rather than
+  describing it. The only CC0 set reachable here is photographic — its README
+  says "made from photos" — so it is lawn grass and asphalt under a
+  cel-shaded board. Rejected; the reasoning is in the roadmap's Milestone 5
+  record so it is not re-argued.
+- **The sounds the elements make.** The free sound packs have none: they
+  cover footsteps, impacts and interface clicks well and have nothing for
+  fire taking hold or stone landing. The nearest free thing is an 8-bit
+  "zap". So each element's voice is described in `src/content/sounds.ts` and
+  rendered in the Web Audio graph instead (ADR 0012).
 
 ## Before the commit
 

@@ -47,7 +47,7 @@ export interface AnimatorOptions {
    * Where a push's sound cues go. Presentation only and entirely optional: the
    * animator never reads them back, nothing about `busy()` or `finishesAt`
    * depends on them, and with no sink the game is silent and otherwise
-   * identical (ADR 0011).
+   * identical (ADR 0012).
    */
   readonly onSounds?: (cues: readonly SoundCue[], now: number) => void;
 }
