@@ -2,7 +2,7 @@ import { expect, test } from '@playwright/test';
 import type { Page } from '@playwright/test';
 import { enterNode, resetStorage, settleLayout, startGame, waitForIdle } from './helpers';
 
-/** Pointer events use the live camera in the same browser task, even mid-follow. */
+/** Pointer events use the painted canvas geometry, even mid-follow and at high DPR. */
 async function tapPath(page: Page, x: number, y: number) {
   await page.evaluate(
     ({ x, y }) => {
@@ -10,9 +10,12 @@ async function tapPath(page: Page, x: number, y: number) {
       const canvas = document.querySelector('canvas.map-canvas');
       if (!camera || !(canvas instanceof HTMLCanvasElement)) throw new Error('No map');
       const box = canvas.getBoundingClientRect();
+      const dpr = window.devicePixelRatio || 1;
+      const stretchX = box.width / (canvas.width / dpr);
+      const stretchY = box.height / (canvas.height / dpr);
       const position = {
-        clientX: box.left + camera.offsetX + (x + 0.5) * camera.tilePx,
-        clientY: box.top + camera.offsetY + (y + 0.5) * camera.tilePx,
+        clientX: box.left + ((x + 0.5) * camera.tilePx - camera.offsetX) * stretchX,
+        clientY: box.top + ((y + 0.5) * camera.tilePx - camera.offsetY) * stretchY,
         bubbles: true,
         pointerId: 19,
         pointerType: 'touch',

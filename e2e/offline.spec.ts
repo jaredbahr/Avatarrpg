@@ -16,13 +16,24 @@ test.describe('offline', () => {
 
     // Wait for the worker to take control, not merely to be registered.
     await page.waitForFunction(
-      () =>
-        'serviceWorker' in navigator && navigator.serviceWorker.controller?.state === 'activated',
+      () => {
+        if (!('serviceWorker' in navigator)) return false;
+        return navigator.serviceWorker.controller?.state === 'activated';
+      },
       undefined,
       { timeout: 30_000 },
     );
-    // An active registration can exist before clientsClaim controls this page.
-    // Control follows the worker's completed install/precache, without a timed guess.
+    // An active registration can precede clients.claim(). Cut the network only
+    // once this document is controlled and the navigation fallback is cached.
+    await expect
+      .poll(() =>
+        page.evaluate(async () =>
+          Boolean(
+            await caches.match(new URL('index.html', location.href).href, { ignoreSearch: true }),
+          ),
+        ),
+      )
+      .toBe(true);
 
     await context.setOffline(true);
     await page.reload();
