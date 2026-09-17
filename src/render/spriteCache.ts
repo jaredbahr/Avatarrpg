@@ -19,6 +19,7 @@
 
 import { resolveAsset } from '../content/assets/manifest';
 import { resolvePainter } from './painters/registry';
+import { groundShadow } from './painters/shapes';
 import type { PainterOptions } from './painters/units';
 
 interface CacheEntry {
@@ -87,6 +88,10 @@ export class SpriteCache {
     if (ctx) {
       const image = this.image(key);
       if (image) {
+        // Prop PNGs contain no painted floor or shadow: retain ground contact
+        // on both backends, at the same baseline as their procedural fallback.
+        if (key.startsWith('prop.'))
+          groundShadow(ctx, { x: 0, y: 0, size: bucketed }, key === 'prop.flask' ? 0.34 : 0.5);
         ctx.drawImage(image, 0, 0, canvas.width, canvas.height);
       } else {
         const painter = resolvePainter(key);

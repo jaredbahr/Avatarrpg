@@ -10,6 +10,8 @@
  */
 
 import { RIVERSIDE_ID } from '../../content/maps/riverside';
+import { evaluate } from '../../core/story/conditions';
+import { activeTriggers } from '../../core/story/world';
 import { VillageLife } from '../village/VillageLife';
 import type { App, CameraInfo, Scene } from '../App';
 import type { GameEvent, GameState, Grid, MapDef, NpcDef, Unit, Vec2 } from '../../core/types';
@@ -49,6 +51,7 @@ export class ExploreScene implements Scene {
    * the leader whenever the party lands somewhere without walking there.
    */
   private trail: PartyTrail | null = null;
+  private departing: GameState | null = null;
 
   constructor(private app: App) {}
 
@@ -96,6 +99,8 @@ export class ExploreScene implements Scene {
     if (!state) return;
     const map = this.app.content.maps.get(state.location.mapId);
     if (map && map.id !== this.map?.id) {
+      this.departing = null;
+      this.app.animator.clear();
       this.map = map;
       this.setupLife();
       this.grid = buildGrid(map);
@@ -119,6 +124,12 @@ export class ExploreScene implements Scene {
     if (!state || !grid) return;
     for (const event of events) {
       if (event.type !== 'partyWalked') continue;
+      if (this.map && state.location.mapId !== this.map.id) {
+        this.departing = {
+          ...state,
+          location: { mapId: this.map.id, pos: event.path[event.path.length - 1] ?? event.from },
+        };
+      }
       const trail = this.ensureTrail(state, grid, event.from);
       const before = trail.positions(state.party.length);
       const routes = trail.walk(event.path, state.party.length);
@@ -201,7 +212,7 @@ export class ExploreScene implements Scene {
     const camera = this.renderer?.camera;
     if (!camera) return;
     camera.fitExplore();
-    const pos = this.app.state?.location.pos;
+    const pos = this.departing?.location.pos ?? this.app.state?.location.pos;
     if (pos) camera.centreOn(pos);
   }
 
@@ -221,7 +232,8 @@ export class ExploreScene implements Scene {
     if (!banner) return;
     clear(banner);
     const node = this.app.currentNode();
-    const objective = node?.kind === 'explore' ? node.objective : '';
+    const objective = this.map?.objective ?? (node?.kind === 'explore' ? node.objective : '');
+    this.canvas?.setAttribute('aria-label', `${this.map?.name ?? 'World'} map`);
     // At the gate the banner says where it leads, which the map cannot.
     const line = this.atGate() ?? objective;
 
@@ -243,10 +255,15 @@ export class ExploreScene implements Scene {
 
   /** The exit's label while the leader stands on or beside it. */
   private atGate(): string | null {
-    const exit = this.map?.exit;
-    const pos = this.app.state?.location.pos;
-    if (!exit || !pos || distance(pos, exit.pos) > 1) return null;
-    return exit.label;
+    const state = this.app.state;
+    if (!state) return null;
+    const exit = this.map?.exits?.find((item) => distance(state.location.pos, item.pos) <= 1);
+    if (exit)
+      return evaluate(state, exit.requires)
+        ? exit.label
+        : (exit.lockedHint ?? 'This route is not open yet.');
+    const legacy = this.map?.exit;
+    return legacy && distance(state.location.pos, legacy.pos) <= 1 ? legacy.label : null;
   }
 
   private renderRoster(): void {
@@ -319,6 +336,24 @@ export class ExploreScene implements Scene {
 
     bar.appendChild(row);
     hud.appendChild(bar);
+    const routes = el('div', {
+      class: 'action-row',
+      attrs: { role: 'navigation', 'aria-label': 'Routes from this area' },
+    });
+    for (const exit of this.map?.exits ?? []) {
+      const open = evaluate(state, exit.requires);
+      routes.appendChild(
+        button(
+          exit.label,
+          () => {
+            if (!this.app.animator.busy(performance.now()))
+              this.app.dispatch({ type: 'walkTo', pos: exit.pos });
+          },
+          { title: open ? `Walk to ${exit.label}` : exit.lockedHint, disabled: !open },
+        ),
+      );
+    }
+    if (routes.childElementCount) hud.appendChild(routes);
   }
 
   /** The villager nearest the leader within Talk's reach, if any. */
@@ -418,7 +453,7 @@ export class ExploreScene implements Scene {
   private loop = (): void => {
     this.frame = requestAnimationFrame(this.loop);
     const renderer = this.renderer;
-    const state = this.app.state;
+    const state = this.departing ?? this.app.state;
     const map = this.map;
     const grid = this.grid;
     if (!renderer || !state || !map || !grid) return;
@@ -453,11 +488,13 @@ export class ExploreScene implements Scene {
       facing: this.app.animator.facing(member.id) ?? 1,
     }));
 
-    const npcs: NpcMarker[] = map.npcs.map((npc) => ({
-      pos: npc.pos,
-      sprite: npc.sprite,
-      name: npc.name,
-    }));
+    const npcs: NpcMarker[] = [
+      ...map.npcs.map((npc) => ({ pos: npc.pos, sprite: npc.sprite, name: npc.name })),
+      ...activeTriggers(map, state).flatMap((trigger) => {
+        const pos = trigger.area[0];
+        return pos ? [{ pos, sprite: trigger.sprite, name: trigger.label }] : [];
+      }),
+    ];
 
     // The air over the village is fidelity: WebGL only, and still under reduce motion.
     const ambient =
@@ -483,6 +520,7 @@ export class ExploreScene implements Scene {
       selectedUnitId: null,
       hoverTile: this.hover,
       exit: map.exit ? { pos: map.exit.pos, label: map.exit.label } : null,
+      exits: map.exits,
       hatch: this.app.settings.hatchSurfaces,
       gridLines: showGridLines(this.app.settings),
       crispOverlays: this.app.settings.highContrast,

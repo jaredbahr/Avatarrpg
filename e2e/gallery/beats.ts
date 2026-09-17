@@ -1,3 +1,4 @@
+import { WORLD_BEATS } from './world-beats';
 import type { Page } from '@playwright/test';
 import {
   enterNode,
@@ -171,6 +172,30 @@ async function faceOff(
 }
 
 export const BEATS: readonly Beat[] = [
+  ...WORLD_BEATS,
+  ...[
+    { map: 'quarry_gate', node: 'battle_quarry_gate', title: 'Quarry Gate' },
+    { map: 'ambush_road', node: 'battle_ambush', title: 'The Cutting' },
+    { map: 'quarry_floor', node: 'battle_grumbler', title: 'Quarry Floor' },
+  ].map(({ map, node, title }, index): Beat => ({
+    id: `21${String.fromCharCode(97 + index)}-${map.replaceAll('_', '-')}`,
+    title: `Act 1 environments · ${title}`,
+    note: 'Painted terrain, live surfaces and transparent props. Compare the clear board with the grid overlay: cover, ledges and lanes should agree with the authored cells.',
+    projects: SURFACES,
+    async run(ctx) {
+      await openBattle(ctx, { node });
+      const loaded = await ctx.page.evaluate((mapId) => {
+        const app = window.fnt!.app;
+        const backdrop = app.backdropFor(mapId);
+        return backdrop ? app.overrideBackdrop(mapId, backdrop) : false;
+      }, map);
+      if (!loaded) throw new Error(`The ${map} painting did not load.`);
+      await ctx.shoot(this.note);
+      await updateSettings(ctx.page, { showGrid: true });
+      await settleLayout(ctx.page, ctx.settleTimeout);
+      await ctx.shoot(this.note, 'grid');
+    },
+  })),
   ...['Water form', 'Fire form'].map((form, index): Beat => ({
     id: `20${index === 0 ? 'a' : 'b'}-riverside`,
     title: `A living riverside · ${form}`,
@@ -257,6 +282,50 @@ export const BEATS: readonly Beat[] = [
       await startGame(ctx.page, PLAYERS, PARTY, SEED, { reduceMotion: false });
       await enterNode(ctx.page, 'mira_intro');
       await ctx.page.locator('.stage').waitFor();
+      await ctx.shoot(this.note);
+    },
+  },
+  {
+    id: '03b-illustrated-opening',
+    title: 'Illustrated opening',
+    note: 'Stationary village painting with readable captions underneath, manual advance and optional playback.',
+    projects: PORTRAIT_TOO,
+    async run(ctx) {
+      await resetStorage(ctx.page, ctx.query());
+      await startGame(ctx.page, PLAYERS, PARTY, SEED);
+      await ctx.page
+        .locator('.interlude-art')
+        .evaluate((image) => (image as HTMLImageElement).decode());
+      await ctx.shoot(this.note);
+    },
+  },
+  {
+    id: '03c-quarry-interlude',
+    title: 'The quarry in scale',
+    note: 'A held wide painting gives the quarry and the driller space before the tactical fight.',
+    projects: PORTRAIT_TOO,
+    async run(ctx) {
+      await resetStorage(ctx.page, ctx.query());
+      await startGame(ctx.page, PLAYERS, PARTY, SEED);
+      await enterNode(ctx.page, 'quarry_descent');
+      await ctx.page
+        .locator('.interlude-art')
+        .evaluate((image) => (image as HTMLImageElement).decode());
+      await ctx.shoot(this.note);
+    },
+  },
+  {
+    id: '03d-rescue-interlude',
+    title: 'The workers come home',
+    note: 'The victory-only painting shows the disabled machine and the workers leaving the galleries.',
+    projects: PORTRAIT_TOO,
+    async run(ctx) {
+      await resetStorage(ctx.page, ctx.query());
+      await startGame(ctx.page, PLAYERS, PARTY, SEED);
+      await enterNode(ctx.page, 'act1_victory');
+      await ctx.page
+        .locator('.interlude-art')
+        .evaluate((image) => (image as HTMLImageElement).decode());
       await ctx.shoot(this.note);
     },
   },

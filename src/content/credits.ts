@@ -47,25 +47,8 @@ export interface CreditEntry {
   readonly note?: string;
 }
 
-export const CREDITS: readonly CreditEntry[] = [
-  {
-    what: 'The character art',
-    work: 'Hero and NPC portraits, and hero combat and riverside motion sheets',
-    authors: 'This project, generated with OpenAI image generation',
-    licence: 'own work',
-    source: '',
-    covers: ['art/portraits', 'art/units'],
-    note: 'Generated from the project character references and prompt packs, then normalised and packed for the game. Dialogue portrait sources and packing notes are in docs/art/dialogue-portraits.md. Output terms: https://openai.com/policies/terms-of-use/. This credit does not claim exclusive copyright in generated output.',
-  },
-  {
-    what: 'The riverside painting',
-    work: 'Ba Dan riverside',
-    authors: 'This project, with OpenAI image generation',
-    licence: 'own work',
-    source: '',
-    covers: ['art/maps/ba_dan_riverside.webp'],
-    note: 'Original generated environment for the living-village prototype. Foreground silhouettes are composited at ground depth. Riverside hero walk and wave sheets are generated; animals and elemental effects are drawn by the game. See docs/art/riverside.md.',
-  },
+/** Kept separate so the game can omit build-only provenance from its bundle. */
+export const THIRD_PARTY_CREDITS: readonly CreditEntry[] = [
   {
     what: 'The heading typeface',
     work: 'Shippori Mincho 700, Latin subset',
@@ -93,6 +76,53 @@ export const CREDITS: readonly CreditEntry[] = [
     covers: ['audio'],
     note: 'Footsteps, impacts, splintering wood and the interface. The bending sounds are not here: these packs contain none, so an element’s voice is rendered in the Web Audio graph from the description in src/content/sounds.ts rather than played from a file.',
   },
+];
+
+export const CREDITS: readonly CreditEntry[] = [
+  {
+    what: 'The illustrated story scenes',
+    work: 'Ba Dan, the east road, the quarry and the distant outpost',
+    authors: 'This project, generated with OpenAI image generation',
+    licence: 'own work',
+    source: '',
+    covers: ['art/interludes'],
+    note: 'Stationary cutscene paintings generated for this project. Prompts and provenance: docs/art/interludes.md. Output terms: https://openai.com/policies/terms-of-use/. No exclusive copyright in generated output is claimed.',
+  },
+  {
+    what: 'The character art',
+    work: 'Hero and NPC portraits, and hero combat and riverside motion sheets',
+    authors: 'This project, generated with OpenAI image generation',
+    licence: 'own work',
+    source: '',
+    covers: ['art/portraits', 'art/units'],
+    note: 'Generated from the project character references and prompt packs, then normalised and packed for the game. Dialogue portrait sources and packing notes are in docs/art/dialogue-portraits.md. Output terms: https://openai.com/policies/terms-of-use/. This credit does not claim exclusive copyright in generated output.',
+  },
+  {
+    what: 'The riverside painting',
+    work: 'Ba Dan riverside',
+    authors: 'This project, with OpenAI image generation',
+    licence: 'own work',
+    source: '',
+    covers: ['art/maps/ba_dan_riverside.webp'],
+    note: 'Original generated environment for the living-village prototype. Foreground silhouettes are composited at ground depth. Riverside hero walk and wave sheets are generated; animals and elemental effects are drawn by the game. See docs/art/riverside.md.',
+  },
+  {
+    what: 'The Act 1 environments',
+    work: 'Five map paintings and six interactable prop sprites',
+    authors: 'This project, generated with OpenAI image generation',
+    licence: 'own work',
+    source: '',
+    covers: [
+      'art/maps/ba_dan_village.webp',
+      'art/maps/forest_road.webp',
+      'art/maps/quarry_gate.webp',
+      'art/maps/ambush_road.webp',
+      'art/maps/quarry_floor.webp',
+      'art/props',
+    ],
+    note: 'Original generated environments registered to the authored map layouts, with transparent props packed separately. Prompts and processing notes: docs/art/act1-environments.md. Output terms: https://openai.com/policies/row-terms-of-use/. No exclusive copyright in generated output is claimed.',
+  },
+  ...THIRD_PARTY_CREDITS,
   {
     what: 'The app icons',
     work: 'Four Nations Tactics icons',

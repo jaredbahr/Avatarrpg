@@ -289,6 +289,12 @@ gate is about the look, and the choreography needs no sheets.
 
 ### W Free-roam world
 
+The first connected Act 1 slice is implemented in ADR 0017: map-owned exits,
+walk-over story triggers, remembered discoveries, save format 3, and full return
+trips through the five Act 1 locations. This keeps ordered encounter levels and
+the exact progression audit; the broader region-band and direct-encounter work
+below remains open.
+
 - [ ] W1: `MapDef.exits` with `toMapId`, `toPos`, `requires`, `lockedHint`; `MapDef.exit` removed
 - [ ] W1: regions with `minLevel` / `maxLevel`; region membership on every map
 - [ ] W1: `GameState.location.world` (`returnPos`, `fired`, `cleared`) **and its zod schema in `serialize.ts`, same commit**

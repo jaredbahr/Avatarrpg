@@ -29,7 +29,9 @@ Notes:
 
 ## Made for this project
 
+- **The illustrated story scenes.** Stationary cutscene paintings generated for this project. Prompts and provenance: docs/art/interludes.md. Output terms: https://openai.com/policies/terms-of-use/. No exclusive copyright in generated output is claimed.
 - **The character art.** Generated from the project character references and prompt packs, then normalised and packed for the game. Dialogue portrait sources and packing notes are in docs/art/dialogue-portraits.md. Output terms: https://openai.com/policies/terms-of-use/. This credit does not claim exclusive copyright in generated output.
 - **The riverside painting.** Original generated environment for the living-village prototype. Foreground silhouettes are composited at ground depth. Riverside hero walk and wave sheets are generated; animals and elemental effects are drawn by the game. See docs/art/riverside.md.
+- **The Act 1 environments.** Original generated environments registered to the authored map layouts, with transparent props packed separately. Prompts and processing notes: docs/art/act1-environments.md. Output terms: https://openai.com/policies/row-terms-of-use/. No exclusive copyright in generated output is claimed.
 - **The app icons.** Drawn by scripts/make-icons.mjs.
 - **The test art.** Flat colour stand-ins the end-to-end tests read back; never seen in play.

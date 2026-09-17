@@ -132,6 +132,7 @@ export interface MapView {
   readonly selectedUnitId: string | null;
   readonly hoverTile: Vec2 | null;
   readonly exit: { readonly pos: Vec2; readonly label: string } | null;
+  readonly exits?: readonly { readonly pos: Vec2; readonly label: string }[];
   /** Colourblind hatch patterns on surfaces. */
   readonly hatch: boolean;
   /** Tile lines over the ground. Off by default; a setting, and High contrast, turn them on. */

@@ -387,7 +387,7 @@ export class App {
     this.announceImportant(result.events);
     if (
       state.screen === 'explore' &&
-      result.state.screen !== 'explore' &&
+      (result.state.screen !== 'explore' || state.location.mapId !== result.state.location.mapId) &&
       this.animator.busy(now)
     ) {
       // The party walked up to someone, or out of the gate: let them finish
@@ -526,7 +526,12 @@ export class App {
     if (!this.state || this.previewActive) return;
     const worthwhile =
       command.type === 'resolveBattle' ||
-      events.some((e) => e.type === 'storyNodeEntered' || e.type === 'battleEnded');
+      events.some(
+        (e) =>
+          e.type === 'storyNodeEntered' ||
+          e.type === 'battleEnded' ||
+          (e.type === 'screenChanged' && e.screen === 'explore'),
+      );
     if (!worthwhile) return;
     this.saveTo(AUTOSAVE_ID, `Autosave — ${this.placeLabel()}`);
   }

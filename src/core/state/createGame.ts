@@ -39,7 +39,7 @@ import {
 import { rollInitiative } from '../rules/turnOrder';
 
 /** 2 added `Unit.disciplineId` and widened `PendingChoice`. */
-export const SAVE_VERSION = 2;
+export const SAVE_VERSION = 3;
 
 export interface PartySlot {
   readonly characterId: string;
@@ -167,6 +167,7 @@ export function createGame(content: ContentIndex, options: NewGameOptions): Game
     flags: { ...(options.flags ?? {}) },
     pendingChoices: [],
     location: { mapId: '', pos: { x: 0, y: 0 } },
+    world: { returnPos: {}, fired: [], cleared: [] },
     log: [],
   };
 }

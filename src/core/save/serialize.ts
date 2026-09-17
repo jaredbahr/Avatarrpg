@@ -15,7 +15,7 @@
 import { z } from 'zod';
 import type { GameState } from '../types';
 
-export const SAVE_FORMAT_VERSION = 2;
+export const SAVE_FORMAT_VERSION = 3;
 export const SAVE_MAGIC = 'four-nations-tactics';
 
 /* ------------------------------------------------------------------ */
@@ -139,6 +139,11 @@ const gameState = z.object({
     }),
   ),
   location: z.object({ mapId: z.string(), pos: vec2 }),
+  world: z.object({
+    returnPos: z.record(vec2),
+    fired: z.array(z.string()),
+    cleared: z.array(z.string()),
+  }),
   log: z.array(z.string()),
 });
 
@@ -219,6 +224,17 @@ export function migrate(raw: unknown): unknown {
   }
 
   if (blob.format === 1) blob = migrateToFormat2(blob);
+  if (blob.format === 2) {
+    const state = blob.state;
+    blob = {
+      ...blob,
+      format: 3,
+      state:
+        typeof state === 'object' && state !== null
+          ? { ...state, version: 3, world: { returnPos: {}, fired: [], cleared: [] } }
+          : state,
+    };
+  }
 
   return blob;
 }

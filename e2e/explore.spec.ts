@@ -131,17 +131,17 @@ test.describe('the village', () => {
     await page.locator('.explore-scene .map-canvas').waitFor();
 
     const objective = page.locator('.explore-bar .title-plate-objective');
-    await expect(objective).toContainText('Elder Mira');
+    await expect(objective).toContainText('villagers');
 
     // Beside the gate the banner reads its label instead of the objective.
     await standAt(page, { x: 22, y: 7 });
-    await expect(objective).toHaveText('The east road, toward the quarry');
+    await expect(objective).toHaveText('East road → Forest Road');
 
     await page.evaluate(() => {
       window.fnt?.app.dispatch({ type: 'walkTo', pos: { x: 23, y: 7 } });
     });
     await expect
-      .poll(async () => page.evaluate(() => window.fnt?.app.state?.story.nodeId))
-      .toBe('road_depart');
+      .poll(async () => page.evaluate(() => window.fnt?.app.state?.location.mapId))
+      .toBe('forest_road');
   });
 });

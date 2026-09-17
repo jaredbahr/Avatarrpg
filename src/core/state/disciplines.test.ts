@@ -1,3 +1,4 @@
+import { SAVE_FORMAT_VERSION } from '../save/serialize';
 import { describe, expect, it } from 'vitest';
 import { CONTENT } from '../../content';
 import { DISCIPLINE_FLAGS } from '../../content/disciplines';
@@ -246,7 +247,7 @@ describe('saves across the discipline change', () => {
     expect(result.ok, result.ok ? '' : result.error).toBe(true);
     if (!result.ok) return;
 
-    expect(result.blob.format).toBe(2);
+    expect(result.blob.format).toBe(SAVE_FORMAT_VERSION);
     expect(result.blob.state.party[0]?.disciplineId).toBeNull();
     expect(result.blob.state.pendingChoices[0]?.kind).toBe('ability');
   });
