@@ -133,7 +133,12 @@ export class ExploreScene implements Scene {
       for (const route of routes) {
         const member = state.party[route.index];
         if (!member) continue;
-        const move: GameEvent = { type: 'unitMoved', unitId: member.id, path: route.path, cost: 0 };
+        const move: GameEvent = {
+          type: 'partyWalked',
+          unitId: member.id,
+          from: before[route.index] ?? event.from,
+          path: route.path,
+        };
         this.app.animator.push(now, [move], unitsBefore, { alongside: true });
       }
     }
@@ -442,6 +447,7 @@ export class ExploreScene implements Scene {
       showHealth: false,
       renderPos: index === 0 ? walking : this.app.animator.renderPos(now, member.id),
       offset: this.app.animator.offset(now, member.id),
+      clipTime: this.app.animator.unitPose(now, member.id)?.clipTime,
       facing: this.app.animator.facing(member.id) ?? 1,
     }));
 

@@ -6,13 +6,17 @@ restores the previous session. If you leave the area, **Pause → Leave preview*
 works too. Returning players can reach the area through Pella near the east path
 in Ba Dan village.
 
-1. Tap clear ground to walk. Drag to look around; pinch or scroll to zoom.
+1. Tap clear ground to stroll at the slower pace. Watch that steps match travel,
+   including when the party starts and stops. Drag to look around; pinch or scroll to zoom.
    **Follow party** brings the camera back.
 2. Walk near Elder Mira and watch her greeting; tap her to talk. Try **Wave**.
    Use **Under the banyan**, then tap the open square: branches should cover
-   your character and then reveal them as they step into sunlight.
+   your character and then reveal them as they step into sunlight. Walk along the
+   tree’s lower-left shadow and check the cooler character shading and attached
+   foot shadows. Party name cards stay out of the way while strolling.
 3. Try **Water form** and **Fire form**. Watch the feet settle, the hands gather,
-   the release and the recovery. Settings → Reduce motion must be off to see motion.
+   the release and the recovery. Water should circle behind the body; fire should
+   snap outward with a bright core. Settings → Reduce motion must be off to see motion.
 4. **Meet Pebble**, take a **Tea break**, then **Visit the shrine** and continue
    through its dialogue. Look for three discoveries and lights around the shrine.
 5. Try **Dorin's drill** across the bridge. Complete water, fire, water in order.
@@ -22,7 +26,9 @@ in Ba Dan village.
 
 **Try a battle** opens the existing forest-road tactical encounter with the
 preview party. **Pause → Return to the riverside** gets you back at any point.
-This encounter still uses the campaign's current combat art and animation.
+Combat now holds the release pose through projectile flight, with a clearer
+wind-up and recovery. Test a close-range attack too: its wind-up and strike
+drawings should differ even when the character uses a shared cast sheet.
 
 Tell us which form feels best, whether the characters feel alive or stiff,
 whether walking feels too fast or floaty, and whether you wanted to explore.

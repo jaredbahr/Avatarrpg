@@ -40,10 +40,17 @@ describe('frameIndex', () => {
     expect(frameIndex(cast, 0, 7)).toBe(2);
   });
 
-  it('takes the last frame of a fallback when a frame was named for the clip that is missing', () => {
+  it('plays the wind-up and strike when melee borrows compatible cast drawings', () => {
     const melee = resolveClip(minimal, 'melee');
     if (!melee) throw new Error('no melee');
-    expect(frameIndex(melee, 0, 0)).toBe(2);
+    expect(frameIndex(melee, 0, 0)).toBe(0);
+    expect(frameIndex(melee, 999, 1)).toBe(1);
+  });
+
+  it('holds the last drawing for an unrelated fallback, such as a cast borrowing idle', () => {
+    const idle = resolveClip({ idle: clip(2) }, 'cast');
+    if (!idle) throw new Error('no idle');
+    expect(frameIndex(idle, 0, 0)).toBe(1);
   });
 
   it('plays by time otherwise, looping or holding the last frame', () => {

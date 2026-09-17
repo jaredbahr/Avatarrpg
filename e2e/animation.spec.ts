@@ -88,7 +88,7 @@ test.describe('playback', () => {
     expect(walk).not.toBeNull();
     if (!walk) return;
     expect(walk.busy).toBe(true);
-    expect(walk.ends - walk.started).toBeGreaterThan(300);
+    expect(walk.ends - walk.started).toBeGreaterThan(1_500);
     expect(walk.ends - walk.started).toBeLessThan(5_000);
     expect(walk.moving).toBe(2);
     await waitForIdle(page);

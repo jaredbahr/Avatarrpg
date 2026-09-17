@@ -15,7 +15,7 @@
  */
 
 import {
-  Application,
+  WebGLRenderer,
   Container,
   Filter,
   GlProgram,
@@ -158,7 +158,7 @@ const SURFACE_INDEX: Record<SurfaceId, number> = {
 export class PixiBackend implements RenderBackend {
   readonly capabilities: BackendCapabilities = { name: 'webgl', shaders: true, particles: false };
 
-  private app: Application | null = null;
+  private app: { renderer: WebGLRenderer; stage: Container } | null = null;
   private destroyed = false;
 
   /** Latest view, drawn as soon as the async init finishes. */
@@ -266,8 +266,10 @@ export class PixiBackend implements RenderBackend {
   }
 
   private async init(): Promise<void> {
-    const app = new Application();
-    await app.init({
+    // The facade already chose WebGL. Avoid shipping Pixi's second backend
+    // chooser (and unused WebGPU/Canvas engines) or creating another ticker.
+    const app = { renderer: new WebGLRenderer(), stage: new Container() };
+    await app.renderer.init({
       canvas: this.canvas,
       // Transparent, so the page's mood wash shows round the board (ADR 0008).
       backgroundAlpha: 0,
@@ -278,16 +280,15 @@ export class PixiBackend implements RenderBackend {
       // The app's own CSS sizes the canvas; Pixi must not write inline styles
       // over it, which is also how the Canvas 2D backend behaves.
       autoDensity: false,
-      preference: 'webgl',
     });
 
     // `destroy()` can land while init is still in flight.
     if (this.destroyed) {
-      app.destroy(true);
+      app.stage.destroy({ children: true });
+      app.renderer.destroy(true);
       return;
     }
 
-    app.ticker.stop();
     this.app = app;
 
     this.groundFilter = new Filter({
@@ -371,7 +372,8 @@ export class PixiBackend implements RenderBackend {
     // Detach the painting while its sprite is alive: Pixi clears the sprite's
     // scale on destruction, and assigning a texture still updates its size.
     this.dropBackdrop();
-    this.app?.destroy(false, { children: true });
+    this.app?.stage.destroy({ children: true });
+    this.app?.renderer.destroy(false);
     this.app = null;
     this.dropTextures();
     this.unitSprites.clear();

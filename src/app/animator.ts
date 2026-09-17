@@ -129,6 +129,7 @@ export class Animator {
       cursor,
       rate: this.rate,
       pushIndex: this.pushes++,
+      silentSteps: options.alongside,
     });
     for (const track of result.tracks) this.timeline.add(track);
     this.timeline.holdUntil(result.cursor);

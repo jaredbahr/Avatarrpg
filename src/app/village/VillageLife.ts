@@ -239,7 +239,7 @@ export class VillageLife {
         palette: member?.element ?? 'water',
         facing: active ? 1 : (u.facing ?? 1),
         motion: active?.kind ?? (u.renderPos ? 'walk' : 'idle'),
-        elapsed: active ? now - active.started : time,
+        elapsed: active ? now - active.started : u.renderPos ? (u.clipTime ?? 0) : time,
         label: u.name,
       };
     });
