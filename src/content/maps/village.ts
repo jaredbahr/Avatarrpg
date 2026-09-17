@@ -43,6 +43,13 @@ export const BA_DAN_VILLAGE: MapDef = {
   exit: { pos: { x: 23, y: 7 }, label: 'The east road, toward the quarry' },
   npcs: [
     {
+      id: 'riverside_sign',
+      name: 'Riverside path',
+      pos: { x: 18, y: 12 },
+      sprite: 'npc.kid',
+      node: 'riverside_invitation',
+    },
+    {
       id: 'elder_mira',
       name: 'Elder Mira',
       pos: { x: 11, y: 5 },

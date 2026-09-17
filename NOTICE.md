@@ -30,5 +30,6 @@ Notes:
 ## Made for this project
 
 - **The playable character art.** Generated from the project character references and prompt packs, then normalised and packed for the game. Output terms: https://openai.com/policies/terms-of-use/. This credit does not claim exclusive copyright in generated output.
+- **The riverside painting.** Original generated environment for the living-village prototype. Characters, animals and animated effects are drawn by the game. See docs/art/riverside.md.
 - **The app icons.** Drawn by scripts/make-icons.mjs.
 - **The test art.** Flat colour stand-ins the end-to-end tests read back; never seen in play.

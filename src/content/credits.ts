@@ -58,6 +58,15 @@ export const CREDITS: readonly CreditEntry[] = [
     note: 'Generated from the project character references and prompt packs, then normalised and packed for the game. Output terms: https://openai.com/policies/terms-of-use/. This credit does not claim exclusive copyright in generated output.',
   },
   {
+    what: 'The riverside painting',
+    work: 'Ba Dan riverside',
+    authors: 'This project, with OpenAI image generation',
+    licence: 'own work',
+    source: '',
+    covers: ['art/maps/ba_dan_riverside.webp'],
+    note: 'Original generated environment for the living-village prototype. Characters, animals and animated effects are drawn by the game. See docs/art/riverside.md.',
+  },
+  {
     what: 'The heading typeface',
     work: 'Shippori Mincho 700, Latin subset',
     authors: 'The Shippori Mincho Project Authors',

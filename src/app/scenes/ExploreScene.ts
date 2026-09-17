@@ -9,6 +9,8 @@
  * is bigger than the viewport.
  */
 
+import { RIVERSIDE_ID } from '../../content/maps/riverside';
+import { VillageLife } from '../village/VillageLife';
 import type { App, CameraInfo, Scene } from '../App';
 import type { GameEvent, GameState, Grid, MapDef, NpcDef, Unit, Vec2 } from '../../core/types';
 import { buildGrid, distance, samePos } from '../../core/rules/grid';
@@ -31,6 +33,7 @@ const TALK_RANGE = 3;
 export class ExploreScene implements Scene {
   readonly name = 'explore';
 
+  private life: VillageLife | null = null;
   private host: HTMLElement | null = null;
   private canvas: HTMLCanvasElement | null = null;
   private renderer: Renderer | null = null;
@@ -76,6 +79,8 @@ export class ExploreScene implements Scene {
   }
 
   unmount(): void {
+    this.life?.destroy();
+    this.life = null;
     if (this.frame) cancelAnimationFrame(this.frame);
     this.frame = 0;
     this.detach?.();
@@ -92,6 +97,7 @@ export class ExploreScene implements Scene {
     const map = this.app.content.maps.get(state.location.mapId);
     if (map && map.id !== this.map?.id) {
       this.map = map;
+      this.setupLife();
       this.grid = buildGrid(map);
       this.trail = null;
       this.renderer?.resize({ width: map.width, height: map.height });
@@ -254,6 +260,10 @@ export class ExploreScene implements Scene {
     const state = this.app.state;
     if (!hud || !state) return;
     clear(hud);
+    if (this.life && this.renderer) {
+      this.life.renderControls(hud, this.renderer.camera);
+      return;
+    }
 
     const bar = el('div', {
       class: 'hud-panel action-bar',
@@ -286,7 +296,11 @@ export class ExploreScene implements Scene {
     const save = button(
       'Save',
       () => new SaveMenu(this.app, { mode: 'save' }).open(this.overlayHost()),
-      { class: 'action-button', title: 'Save the game to a slot' },
+      {
+        class: 'action-button',
+        title: 'Save the game to a slot',
+        disabled: this.app.previewActive,
+      },
     );
     save.prepend(mark(UI_MARKS.save));
     row.appendChild(save);
@@ -354,6 +368,7 @@ export class ExploreScene implements Scene {
     // pixel the camera reports has to keep matching the pixels the backend
     // draws, or taps land a tile out.
     this.renderer.onViewportChange = () => this.refit();
+    this.setupLife();
 
     this.detach = attachPointer(canvas, {
       onTap: (point) => this.handleTap(point.x, point.y),
@@ -371,6 +386,15 @@ export class ExploreScene implements Scene {
     });
   }
 
+  private setupLife(): void {
+    this.life?.destroy();
+    this.life = null;
+    const wrap = this.canvas?.parentElement;
+    const active = this.map?.id === RIVERSIDE_ID;
+    this.host?.querySelector('.explore-scene')?.classList.toggle('riverside-scene', active);
+    if (active && wrap) this.life = new VillageLife(this.app, wrap);
+  }
+
   private handleTap(x: number, y: number): void {
     const renderer = this.renderer;
     const state = this.app.state;
@@ -378,6 +402,7 @@ export class ExploreScene implements Scene {
     // A tap mid-walk would put the party ahead of its own figure.
     if (this.app.animator.busy(performance.now())) return;
     const tile = renderer.camera.toTile(x, y);
+    if (this.life?.handleTap(tile, performance.now())) return;
     this.app.dispatch({ type: 'walkTo', pos: tile });
   }
 
@@ -392,6 +417,7 @@ export class ExploreScene implements Scene {
     if (!renderer || !state || !map || !grid) return;
 
     const now = performance.now();
+    if (this.life?.update(now)) return;
     this.app.stats?.frame(now);
 
     // The whole party walks the village: the leader on the rules' tile, the
@@ -433,8 +459,8 @@ export class ExploreScene implements Scene {
 
     const view: MapView = {
       grid,
-      units,
-      npcs,
+      units: this.life ? [] : units,
+      npcs: this.life ? [] : npcs,
       // Props are a combat concern: they are instantiated into a BattleState,
       // and there is no battle out here on the village map.
       props: [],
@@ -452,11 +478,12 @@ export class ExploreScene implements Scene {
       hatch: this.app.settings.hatchSurfaces,
       gridLines: showGridLines(this.app.settings),
       crispOverlays: this.app.settings.highContrast,
-      atmosphere: !this.app.settings.highContrast,
+      atmosphere: !this.life && !this.app.settings.highContrast,
       backdrop: this.app.backdropFor(map.id),
       time: now,
     };
 
     renderer.draw(view);
+    this.life?.draw(units, renderer.camera, now);
   };
 }

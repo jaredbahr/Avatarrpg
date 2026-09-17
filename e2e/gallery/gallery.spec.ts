@@ -22,9 +22,8 @@ export const GALLERY_DIR = 'gallery';
 
 /**
  * Filmstrips are captured at 1x on both backends; the 2x projects keep one
- * mid-playback still. A filmstrip renders a frame for every sixteen
- * milliseconds of fake clock, and on CI's software rasteriser a 2x WebGL
- * frame takes over a second, which turned one beat into two minutes.
+ * mid-playback still. Skip unsaved intermediate frames on the software
+ * rasteriser: the renderer samples poses and effects from absolute time.
  */
 const FILMSTRIP_PROJECTS = ['surface-canvas', 'surface-webgl'];
 
@@ -90,7 +89,13 @@ class Stage implements BeatContext {
 
     let elapsed = 0;
     for (const [index, time] of frames.entries()) {
-      await this.page.clock.runFor(time - elapsed);
+      const delta = time - elapsed;
+      // Keep the final frame interval so the renderer paints at the sample.
+      // Advancing hundreds of unused frames costs minutes under software GL.
+      // Timers due in the skipped interval still fire through fastForward.
+      const settle = Math.min(17, delta);
+      if (delta > settle) await this.page.clock.fastForward(delta - settle);
+      await this.page.clock.runFor(settle);
       elapsed = time;
       await this.shoot(`${note} (${time} ms in)`, `f${index + 1}`);
     }

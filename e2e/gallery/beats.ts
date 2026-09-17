@@ -171,6 +171,33 @@ async function faceOff(
 }
 
 export const BEATS: readonly Beat[] = [
+  ...['Water form', 'Fire form'].map((form, index): Beat => ({
+    id: `20${index === 0 ? 'a' : 'b'}-riverside`,
+    title: `A living riverside · ${form}`,
+    note: 'A painted village, held bending poses, independently animated neighbors, river highlights and an otter-turtle.',
+    projects: SURFACES,
+    async run(ctx) {
+      await resetStorage(ctx.page, ctx.query());
+      await ctx.page.getByRole('button', { name: 'Explore the riverside', exact: true }).click();
+      await settleLayout(ctx.page, ctx.settleTimeout);
+      const loaded = await ctx.page.evaluate(() => {
+        const app = window.fnt!.app;
+        const backdrop = app.backdropFor('ba_dan_riverside');
+        return backdrop ? app.overrideBackdrop('ba_dan_riverside', backdrop) : false;
+      });
+      if (!loaded) throw new Error('The riverside painting did not load.');
+      await ctx.shoot(this.note);
+      await ctx.filmstrip(`${this.note} ${form}.`, [650, 1450, 1900, 2850, 3450], async () => {
+        await ctx.page.evaluate((label) => {
+          const control = [
+            ...document.querySelectorAll<HTMLButtonElement>('.village-actions button'),
+          ].find((b) => b.textContent === label);
+          if (!control) throw new Error(`Missing ${label}`);
+          control.click();
+        }, form);
+      });
+    },
+  })),
   {
     id: '01-title',
     title: 'Title screen',

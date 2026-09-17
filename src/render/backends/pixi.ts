@@ -368,10 +368,12 @@ export class PixiBackend implements RenderBackend {
     this.destroyed = true;
     this.fxUnder.destroy();
     this.fxOver.destroy();
+    // Detach the painting while its sprite is alive: Pixi clears the sprite's
+    // scale on destruction, and assigning a texture still updates its size.
+    this.dropBackdrop();
     this.app?.destroy(false, { children: true });
     this.app = null;
     this.dropTextures();
-    this.dropBackdrop();
     this.unitSprites.clear();
     this.mapTexture.destroy(true);
   }
