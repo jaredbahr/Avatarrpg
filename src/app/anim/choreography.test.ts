@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest';
 import type { Ability, ContentIndex, GameEvent, Unit } from '../../core/types';
 import { resolveFx } from '../../content/fx';
 import { TIMING, choreograph } from './choreography';
+import { attackMotion } from './attackMotion';
 import type { AnyTrack, EmitterTrack, PoseTrack } from './timeline';
 
 /**
@@ -122,7 +123,8 @@ describe('choreograph', () => {
     const emitters = tracks.filter((t) => t.kind === 'emitter');
     expect(emitters.length).toBeGreaterThan(0);
     // Something travels: an emitter starts at release and covers the flight.
-    const releaseAt = 1000 + TIMING.windUp;
+    const fire = attackMotion('fx.fire.jab', false, false);
+    const releaseAt = 1000 + TIMING.windUp + TIMING.release * fire.release * fire.launch;
     expect(emitters.some((e) => e.start === releaseAt)).toBe(true);
     // The impact lands after the flight, never before the release.
     const impact = Math.max(...emitters.map((e) => e.start));
@@ -140,7 +142,8 @@ describe('choreograph', () => {
         tiles: [{ x: 5, y: 3 }],
       },
     ]);
-    const releaseAt = 1000 + TIMING.windUp;
+    const water = attackMotion('fx.water.whip', false, false);
+    const releaseAt = 1000 + TIMING.windUp + TIMING.release * water.release * water.launch;
     const emitters = tracks.filter((t): t is EmitterTrack => t.kind === 'emitter');
     const travel = emitters.filter((t) => t.start === releaseAt);
     const heads = travel.filter((t) => t.def.kind === 'particles');
@@ -301,7 +304,8 @@ describe('choreograph', () => {
     ]);
     const cast = sounds.find((s) => s.key === 'fx.fire.jab');
     expect(cast, 'the cast should be cued by its fx key').toBeDefined();
-    expect(cast?.at).toBe(1000 + TIMING.windUp);
+    const fire = attackMotion('fx.fire.jab', false, false);
+    expect(cast?.at).toBe(1000 + TIMING.windUp + TIMING.release * fire.release * fire.launch);
   });
 
   it('cue the hit where the projectile lands, not where it was thrown', () => {

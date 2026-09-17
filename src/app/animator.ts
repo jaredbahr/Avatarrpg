@@ -42,6 +42,12 @@ const TURN_THRESHOLD = 0.2;
 /** How often the shake picks a new direction, in ms. */
 const SHAKE_STEP = 30;
 
+interface HeadingCue {
+  readonly unitId: string;
+  readonly at: number;
+  readonly tangent: Vec2;
+}
+
 export interface AnimatorOptions {
   /** Overrides the reduce-motion lookup, so tests can run without a document. */
   readonly motionReduced?: () => boolean;
@@ -81,7 +87,7 @@ export class Animator {
   /** Which way each unit last walked; a unit keeps facing that way when it stops. */
   private facings = new Map<string, 1 | -1>();
   private directions = new Map<string, WalkDirection>();
-  private pendingWalks: MoveTrack[] = [];
+  private pendingHeadings: HeadingCue[] = [];
   private pushes = 0;
   /** Where the most recent push started, so another can be laid alongside it. */
   private lastCursor = 0;
@@ -95,7 +101,7 @@ export class Animator {
     this.timeline.clear();
     this.facings.clear();
     this.directions.clear();
-    this.pendingWalks = [];
+    this.pendingHeadings = [];
     this.pushes = 0;
   }
 
@@ -139,8 +145,20 @@ export class Animator {
     });
     for (const track of result.tracks) {
       this.timeline.add(track);
-      if (track.kind === 'move') this.pendingWalks.push(track);
+      if (track.kind === 'move' && track.gait !== 'slide')
+        this.pendingHeadings.push({
+          unitId: track.unitId,
+          at: track.start + track.duration,
+          tangent: sampleAt(track.curve, track.curve.length).tangent,
+        });
+      if (track.kind === 'pose' && track.facing !== undefined)
+        this.pendingHeadings.push({
+          unitId: track.unitId,
+          at: track.start,
+          tangent: { x: track.facing, y: 0 },
+        });
     }
+    this.pendingHeadings.sort((a, b) => a.at - b.at);
     this.timeline.holdUntil(result.cursor);
     // The cues carry animator-clock times; `now` lets the sink convert them to
     // its own clock, which for Web Audio is the only one that schedules exactly.
@@ -149,14 +167,19 @@ export class Animator {
 
   /** Drops finished tracks. Called once a frame so memory stays flat. */
   prune(now: number): void {
-    // A fast/reduced-motion walk may finish between rendered frames. Record
-    // its final heading before discarding it so idle does not turn sideways.
-    this.pendingWalks = this.pendingWalks.filter((track) => {
-      if (now < track.start + track.duration) return true;
-      this.rememberDirection(track.unitId, sampleAt(track.curve, track.curve.length).tangent);
-      return false;
-    });
+    this.settleHeadings(now);
     this.timeline.prune(now);
+  }
+
+  /** Preserve turns even when playback skips a frame, in playback order. */
+  private settleHeadings(now: number): void {
+    let count = 0;
+    for (const cue of this.pendingHeadings) {
+      if (cue.at > now) break;
+      this.rememberDirection(cue.unitId, cue.tangent);
+      count++;
+    }
+    if (count > 0) this.pendingHeadings.splice(0, count);
   }
 
   private rememberDirection(unitId: string, tangent: Vec2): void {
@@ -166,7 +189,8 @@ export class Animator {
 
   /** Locomotion fields shared by the world, riverside and combat views. */
   locomotion(now: number, unitId: string): { clip: ClipName; facing: 1 | -1 } {
-    const travel = this.travel(now, unitId);
+    this.settleHeadings(now);
+    const travel = this.walkTravel(now, unitId);
     if (travel)
       this.rememberDirection(unitId, sampleAt(travel.track.curve, travel.distance).tangent);
     const clip = directionalClip(travel ? 'walk' : 'idle', this.directions.get(unitId));
@@ -181,6 +205,11 @@ export class Animator {
       found = { track, distance: track.ease(Timeline.progress(track, now)) * track.curve.length };
     }
     return found;
+  }
+
+  private walkTravel(now: number, unitId: string) {
+    const travel = this.travel(now, unitId);
+    return travel?.track.gait === 'slide' ? null : travel;
   }
 
   /** Fade the lift at each end so a fractional final stride settles onto the path. */
@@ -207,10 +236,11 @@ export class Animator {
    * face the way it is going, which it keeps once it has stopped.
    */
   renderPos(now: number, unitId: string): Vec2 | undefined {
+    this.settleHeadings(now);
     const travel = this.travel(now, unitId);
     if (!travel) return undefined;
     const sample = sampleAt(travel.track.curve, travel.distance);
-    this.rememberDirection(unitId, sample.tangent);
+    if (travel.track.gait !== 'slide') this.rememberDirection(unitId, sample.tangent);
     // The curve runs through tile centres; positions are tile corners.
     return { x: sample.pos.x - 0.5, y: sample.pos.y - 0.5 };
   }
@@ -220,7 +250,7 @@ export class Animator {
    * as an offset so it never changes the order units are painted in.
    */
   offset(now: number, unitId: string): Vec2 | undefined {
-    const travel = this.travel(now, unitId);
+    const travel = this.walkTravel(now, unitId);
     if (!travel || travel.track.curve.length <= 0) return undefined;
     return this.walkBob(now, travel);
   }
@@ -236,11 +266,12 @@ export class Animator {
    * flash decays over its own track.
    */
   unitPose(now: number, unitId: string): UnitPose | undefined {
+    this.settleHeadings(now);
     let pose: PoseTrack | undefined;
     for (const track of this.timeline.active(now, 'pose')) {
       if (track.unitId === unitId && (!pose || track.start >= pose.start)) pose = track;
     }
-    const travel = this.travel(now, unitId);
+    const travel = this.walkTravel(now, unitId);
     const bob = travel && travel.track.curve.length > 0 ? this.walkBob(now, travel) : undefined;
     let flash = 0;
     for (const track of this.timeline.active(now, 'flash')) {

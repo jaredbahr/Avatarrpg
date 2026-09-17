@@ -316,13 +316,13 @@ export function choreograph(input: ChoreographyInput): Choreography {
         // strike for a melee, which returns to its guarded wind-up stance.
         pose(event.unitId, clip, cursor, windUp, { x: 0, y: 0 }, back, motion.gatherEase, {
           ...(facing !== undefined ? { facing } : {}),
-          scale: { from: 1, to: 0.985 },
+          scale: { from: 1, to: motion.compression },
           frame: 0,
         });
         const releaseAt = cursor + windUp;
         pose(event.unitId, clip, releaseAt, release, back, forward, motion.releaseEase, {
           ...(facing !== undefined ? { facing } : {}),
-          scale: { from: 0.985, to: 1.015 },
+          scale: { from: motion.compression, to: motion.extension },
           frame: 1,
         });
         // The element gathers through the wind-up and is out of the hands by the release.
@@ -331,7 +331,10 @@ export function choreograph(input: ChoreographyInput): Choreography {
         // the element leaving the hands. `ability.fx` resolves through the same
         // family segment the recipe does, so an element sounds like itself
         // without a row per ability.
-        cue(ability.fx, releaseAt, 1, eventIndex);
+        // Let the weight transfer lead the element; the sound and projectile
+        // leave together once the striking pose has begun its extension.
+        const launchAt = releaseAt + release * motion.launch;
+        cue(ability.fx, launchAt, 1, eventIndex);
 
         let impactAt = releaseAt + release * 0.5;
         if (recipe.travel && !self) {
@@ -348,7 +351,11 @@ export function choreograph(input: ChoreographyInput): Choreography {
           // as the hit lands.
           const nominal = Math.max(40, Math.round(flight / rate));
           const stretched = recipe.travel.emitters.map((def): EmitterDef => {
-            if (def.kind === 'strokes') return { ...def, duration: nominal * 2 };
+            if (def.kind === 'strokes')
+              return {
+                ...def,
+                duration: nominal * (def.shape === 'gust' || def.shape === 'flame' ? 1 : 2),
+              };
             const k = nominal / def.duration;
             return {
               ...def,
@@ -359,8 +366,8 @@ export function choreograph(input: ChoreographyInput): Choreography {
                 : {}),
             };
           });
-          emit(stretched, releaseAt, caster, target, palette, eventIndex, 2, recipe.travel.arc);
-          impactAt = releaseAt + flight;
+          emit(stretched, launchAt, caster, target, palette, eventIndex, 2, recipe.travel.arc);
+          impactAt = launchAt + flight;
         }
 
         // Keep the extension through flight and impact. Without this track a
@@ -371,12 +378,12 @@ export function choreograph(input: ChoreographyInput): Choreography {
         if (recoverAt > holdAt)
           pose(event.unitId, clip, holdAt, recoverAt - holdAt, forward, forward, easeInOutSine, {
             ...(facing !== undefined ? { facing } : {}),
-            scale: { from: 1.015, to: 1.015 },
+            scale: { from: motion.extension, to: motion.extension },
             frame: 1,
           });
         pose(event.unitId, clip, recoverAt, recover, forward, { x: 0, y: 0 }, easeInOutSine, {
           ...(facing !== undefined ? { facing } : {}),
-          scale: { from: 1.015, to: 1 },
+          scale: { from: motion.extension, to: 1 },
           frame: melee ? 0 : 2,
         });
 
@@ -543,6 +550,7 @@ export function choreograph(input: ChoreographyInput): Choreography {
             kind: 'move',
             unitId: event.unitId,
             curve: smoothPath(from, [event.to], 0),
+            gait: 'slide',
             ease: easeOutQuad,
             start: cursor,
             duration,

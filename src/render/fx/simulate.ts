@@ -12,6 +12,7 @@
 import type { Vec2 } from '../../core/types';
 import type { ParticleEmitterDef, StrokeEmitterDef } from '../../content/fx';
 import { hashSeed, mulberry32 } from './rng';
+import { movingElement, taperedRibbon } from './elementalStrokes';
 
 /** Floats per particle in the output: x, y, size, rotation, alpha. */
 export const PARTICLE_STRIDE = 5;
@@ -203,6 +204,7 @@ export function sampleStrokes(
   seed: number,
   from: Vec2,
   to: Vec2,
+  arc = 0,
 ): Stroke[] {
   if (elapsed < 0 || elapsed > def.duration) return [];
   const t = elapsed / def.duration;
@@ -210,6 +212,9 @@ export function sampleStrokes(
   const strokes: Stroke[] = [];
 
   switch (def.shape) {
+    case 'gust':
+    case 'flame':
+      return movingElement(def, t, from, to, arc);
     case 'bolt': {
       boltStrokes(def, elapsed, t, seed, from, to, aim, strokes);
       break;
@@ -279,11 +284,11 @@ export function sampleStrokes(
         );
       }
       strokes.push({
-        points,
-        width: def.width,
+        points: taperedRibbon(points, def.width * reach * 0.5),
+        width: 0.01,
         alpha: t > 0.8 ? (1 - t) * 5 : 1,
-        closed: false,
-        fill: false,
+        closed: true,
+        fill: true,
       });
       break;
     }
