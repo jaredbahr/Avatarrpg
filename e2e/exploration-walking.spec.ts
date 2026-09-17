@@ -1,6 +1,6 @@
 import { expect, test } from '@playwright/test';
 import type { Page } from '@playwright/test';
-import { enterNode, resetStorage, startGame, waitForIdle } from './helpers';
+import { enterNode, resetStorage, settleLayout, startGame, waitForIdle } from './helpers';
 
 /** Pointer events use the live camera in the same browser task, even mid-follow. */
 async function tapPath(page: Page, x: number, y: number) {
@@ -25,22 +25,15 @@ async function tapPath(page: Page, x: number, y: number) {
   );
 }
 
-/** Start the walk through the public game command; the queued destination remains a real touch. */
-async function startWalk(page: Page, x: number, y: number) {
-  await page.evaluate(({ x, y }) => window.fnt?.app.dispatch({ type: 'walkTo', pos: { x, y } }), {
-    x,
-    y,
-  });
-}
-
 for (const renderer of ['canvas', 'webgl']) {
   test(`a second ground tap queues one visible walk on ${renderer}`, async ({ page }) => {
     await resetStorage(page, `?renderer=${renderer}`);
     await startGame(page, ['Explorer'], ['kaya', 'bo'], 'queued-walk', { reduceMotion: false });
     await enterNode(page, 'village_explore');
+    await settleLayout(page);
     await page.clock.install();
     await page.clock.pauseAt(new Date(Date.now() + 1000));
-    await startWalk(page, 9, 7);
+    await tapPath(page, 9, 7);
     await tapPath(page, 7, 8);
     await expect(page.locator('.walk-feedback')).toContainText('Next:');
     expect(await page.evaluate(() => window.fnt?.app.state?.location.pos)).toEqual({ x: 9, y: 7 });
@@ -59,9 +52,10 @@ test('cancel and pause discard queued walking without teleporting the current wa
   await resetStorage(page, '?renderer=canvas');
   await startGame(page, ['Explorer'], ['kaya'], 'cancel-walk', { reduceMotion: false });
   await enterNode(page, 'village_explore');
+  await settleLayout(page);
   await page.clock.install();
   await page.clock.pauseAt(new Date(Date.now() + 1000));
-  await startWalk(page, 9, 7);
+  await tapPath(page, 9, 7);
   await tapPath(page, 7, 8);
   await page.getByRole('button', { name: 'Cancel next walk' }).dispatchEvent('click');
   await expect(page.locator('.walk-feedback')).toContainText('Following the path');
