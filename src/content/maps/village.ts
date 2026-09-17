@@ -15,6 +15,7 @@ import { LEGEND } from './legend';
 
 export const BA_DAN_VILLAGE: MapDef = {
   id: 'ba_dan_village',
+  backdrop: { url: 'art/maps/ba_dan_village.webp', pixelsPerTile: 64 },
   name: 'Ba Dan Village',
   kind: 'explore',
   width: 24,

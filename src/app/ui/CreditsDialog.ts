@@ -9,7 +9,7 @@
  */
 
 import type { CreditEntry } from '../../content/credits';
-import { CREDITS, needsAttribution, thirdParty } from '../../content/credits';
+import { needsAttribution, THIRD_PARTY_CREDITS } from '../../content/credits';
 import { Dialog } from './Dialog';
 import type { DialogOptions } from './Dialog';
 import { button, el } from './dom';
@@ -23,7 +23,7 @@ export class CreditsDialog extends Dialog {
   };
 
   protected build(body: HTMLElement): void {
-    const outside = thirdParty(CREDITS);
+    const outside = THIRD_PARTY_CREDITS;
 
     if (outside.length === 0) {
       body.appendChild(

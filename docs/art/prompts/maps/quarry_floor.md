@@ -1,10 +1,10 @@
 # Map painting: The Quarry Floor (`quarry_floor`)
 
-**Deliver** one PNG of 1920×1152 pixels or a whole multiple of it (3840×2304 is the comfortable size to generate at), landscape 5:3, saved as `art/raw/maps/quarry_floor.png`. `art:map` downsizes it with a box filter and never upscales.
+**Deliver** one PNG of 1600×960 pixels or a whole multiple of it (3200×1920 is the comfortable size to generate at), landscape 5:3, saved as `art/raw/maps/quarry_floor.png`. `art:map` downsizes it with a box filter and never upscales.
 
-**Ships as** `public/art/maps/quarry_floor.webp`, 96 px a tile, under 1 MB.
+**Ships as** `public/art/maps/quarry_floor.webp`, 80 px a tile, under 1 MB.
 
-**Map** `backdrop: { url: 'art/maps/quarry_floor.webp', pixelsPerTile: 96 },` on the map's definition in `src/content/maps/`.
+**Map** `backdrop: { url: 'art/maps/quarry_floor.webp', pixelsPerTile: 80 },` on the map's definition in `src/content/maps/`.
 
 **Layout** `quarry_floor-layout.png` beside this file: the tile grid as flat colour blocks at 32 px a tile, with the grid drawn. Hand it to the generator as the composition reference (image-to-image or a structure control) at a strength that keeps every edge where it is; upscale it to the delivery size first so the generator does not invent a border.
 
@@ -47,7 +47,9 @@ Legend: `A` high ledges, two steps up; `^` ledges, one step up; `.` bare earth; 
 
 ## Prompt
 
-> Top-down painted ground for a tactics battlefield, seen straight from above with the faintest three-quarter tilt so anything that stands up shows a sliver of its south face; north is up; every tile the same size; no perspective convergence, no horizon, no sky. An open floor of bare earth with stepped stone terraces in all four corners, the outer step two tiles high and the inner one tile, so the corners rise like a shallow amphitheatre. Four square pools of spilled black oil, each two tiles across, sit in the earth in a ring round the centre, two above the middle and two below. A patch of churned mud two tiles across marks the exact centre. Six heaps of tumbled rock lie on the floor: one just above each of the two upper oil pools, one just below each of the two lower pools, and two on the left of the open floor, one above and one below the middle. Hard afternoon light into the pit; the terraces cast no shadow onto the floor. Painterly ground with soft transitions inside a region and clean edges between regions; a clean, uniform dark-brown ink line (`#1b1410`) only where an edge is drawn, never black; two flat tones plus a thin rim light per material on the things that stand up (rocks, trunks, walls, crates); evenly lit, no vignette, no darkened corners, no cast shadows longer than a tile. Nothing the game draws itself: no characters, no creatures, no barrels, carts or braziers, no user interface, no text, no border, no grid lines. Landscape 5:3, 3840×2304.
+**Live surfaces:** the layout marks water, oil, mud and rubble that the game draws. Paint dry earth beneath water and mud, clean flat stone beneath oil, and only the fixed cover silhouette beneath rubble. Do not bake liquid, flame or smoke into the painting. Keep interactable props separate. Village houses are open cutaways: walls fill their blocking cells and plank interiors remain visible and clear.
+
+> Top-down painted ground for a tactics battlefield, seen straight from above with the faintest three-quarter tilt so anything that stands up shows a sliver of its south face; north is up; every tile the same size; no perspective convergence, no horizon, no sky. An open floor of bare earth with stepped stone terraces in all four corners, the outer step two tiles high and the inner one tile, so the corners rise like a shallow amphitheatre. Four clean flat stone patches, each two tiles across, sit in the earth in a ring round the centre, two above the middle and two below; the game adds oil. A dry earth patch two tiles across marks the exact centre beneath live mud. Six heaps of tumbled rock lie on the floor: one just above each of the two upper stone patches, one just below each of the two lower stone patches, and two on the left of the open floor, one above and one below the middle. Hard afternoon light into the pit; the terraces cast no shadow onto the floor. Painterly ground with soft transitions inside a region and clean edges between regions; a clean, uniform dark-brown ink line (`#1b1410`) only where an edge is drawn, never black; two flat tones plus a thin rim light per material on the things that stand up (rocks, trunks, walls, crates); evenly lit, no vignette, no darkened corners, no cast shadows longer than a tile. Nothing the game draws itself: no characters, no creatures, no barrels, carts or braziers, no user interface, no text, no border, no grid lines. Landscape 5:3, 3200×1920.
 
 ## Negative prompt
 
@@ -56,7 +58,7 @@ Legend: `A` high ledges, two steps up; `^` ledges, one step up; `.` bare earth; 
 ## Commands
 
 ```
-npm run art:map -- --map quarry_floor
+npm run art:map -- --map quarry_floor --px 80
 npm run art:validate
 npm run check:assets
 ```

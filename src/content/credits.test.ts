@@ -3,7 +3,7 @@ import { join, relative, resolve } from 'node:path';
 import { describe, expect, it } from 'vitest';
 import { noticeText, sameNotice } from '../../scripts/credits';
 import type { CreditEntry } from './credits';
-import { CREDITS, needsAttribution, thirdParty } from './credits';
+import { CREDITS, needsAttribution, thirdParty, THIRD_PARTY_CREDITS } from './credits';
 import { readFileSync } from 'node:fs';
 
 const PUBLIC = resolve('public');
@@ -43,6 +43,10 @@ describe('credits', () => {
       if (entry.licence === 'own work') expect(entry.source, entry.what).toBe('');
       else expect(entry.source, `${entry.what} needs a source`).toMatch(/^https:\/\//);
     }
+  });
+
+  it('keeps every third-party attribution in the runtime list', () => {
+    expect(THIRD_PARTY_CREDITS).toEqual(thirdParty(CREDITS));
   });
 
   it('name an author for every work whose licence asks for one', () => {

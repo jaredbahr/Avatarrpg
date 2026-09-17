@@ -1,10 +1,10 @@
 # Map painting: Ba Dan Village (`ba_dan_village`)
 
-**Deliver** one PNG of 1920×1280 pixels or a whole multiple of it (3840×2560 is the comfortable size to generate at), landscape 3:2, saved as `art/raw/maps/ba_dan_village.png`. `art:map` downsizes it with a box filter and never upscales.
+**Deliver** one PNG of 1536×1024 pixels or a whole multiple of it (3072×2048 is the comfortable size to generate at), landscape 3:2, saved as `art/raw/maps/ba_dan_village.png`. `art:map` downsizes it with a box filter and never upscales.
 
-**Ships as** `public/art/maps/ba_dan_village.webp`, 80 px a tile, under 1 MB.
+**Ships as** `public/art/maps/ba_dan_village.webp`, 64 px a tile, under 1 MB.
 
-**Map** `backdrop: { url: 'art/maps/ba_dan_village.webp', pixelsPerTile: 80 },` on the map's definition in `src/content/maps/`.
+**Map** `backdrop: { url: 'art/maps/ba_dan_village.webp', pixelsPerTile: 64 },` on the map's definition in `src/content/maps/`.
 
 **Layout** `ba_dan_village-layout.png` beside this file: the tile grid as flat colour blocks at 32 px a tile, with the grid drawn. Hand it to the generator as the composition reference (image-to-image or a structure control) at a strength that keeps every edge where it is; upscale it to the delivery size first so the generator does not invent a border.
 
@@ -51,7 +51,9 @@ Legend: `T` trees; `,` grass; `B` timber walls; `w` plank floors; `=` road; `~` 
 
 ## Prompt
 
-> Top-down painted ground for a tactics battlefield, seen straight from above with the faintest three-quarter tilt so anything that stands up shows a sliver of its south face; north is up; every tile the same size; no perspective convergence, no horizon, no sky. A village clearing ringed by trees, thickest in the corners. A road of flagstones crosses the whole picture left to right through the middle, two tiles deep, and runs out through the east gate at the right edge where the flagstones give way to bare earth. Four timber houses, two above the road and two below, each a rectangle of timber walls round a floor of planks with a doorway opening onto a paved path that leads to the road. Between the houses above the road a paved yard opens off the road with a small rectangular pond in its middle; below the road a matching paved yard. Grass everywhere else, worn to paths near the doors. Soft mid-morning light, no long shadows. Painterly ground with soft transitions inside a region and clean edges between regions; a clean, uniform dark-brown ink line (`#1b1410`) only where an edge is drawn, never black; two flat tones plus a thin rim light per material on the things that stand up (rocks, trunks, walls, crates); evenly lit, no vignette, no darkened corners, no cast shadows longer than a tile. Nothing the game draws itself: no characters, no creatures, no barrels, carts or braziers, no user interface, no text, no border, no grid lines. Landscape 3:2, 3840×2560.
+**Live surfaces:** the layout marks water, oil, mud and rubble that the game draws. Paint dry earth beneath water and mud, clean flat stone beneath oil, and only the fixed cover silhouette beneath rubble. Do not bake liquid, flame or smoke into the painting. Keep interactable props separate. Village houses are open cutaways: walls fill their blocking cells and plank interiors remain visible and clear.
+
+> Top-down painted ground for a tactics battlefield, seen straight from above with the faintest three-quarter tilt so anything that stands up shows a sliver of its south face; north is up; every tile the same size; no perspective convergence, no horizon, no sky. A village clearing ringed by trees, thickest in the corners. A road of flagstones crosses the whole picture left to right through the middle, two tiles deep, and runs out through the east gate at the right edge where the flagstones give way to bare earth. Four timber houses, two above the road and two below, each an open cutaway rectangle of timber walls round a visible floor of planks with a doorway opening onto a paved path that leads to the road. Between the houses above the road a paved yard opens off the road with a small rectangular dry earth bed in its middle beneath live water; below the road a matching paved yard. Grass everywhere else, worn to paths near the doors. Soft mid-morning light, no long shadows. Painterly ground with soft transitions inside a region and clean edges between regions; a clean, uniform dark-brown ink line (`#1b1410`) only where an edge is drawn, never black; two flat tones plus a thin rim light per material on the things that stand up (rocks, trunks, walls, crates); evenly lit, no vignette, no darkened corners, no cast shadows longer than a tile. Nothing the game draws itself: no characters, no creatures, no barrels, carts or braziers, no user interface, no text, no border, no grid lines. Landscape 3:2, 3072×2048.
 
 ## Negative prompt
 
@@ -60,7 +62,7 @@ Legend: `T` trees; `,` grass; `B` timber walls; `w` plank floors; `=` road; `~` 
 ## Commands
 
 ```
-npm run art:map -- --map ba_dan_village
+npm run art:map -- --map ba_dan_village --px 64
 npm run art:validate
 npm run check:assets
 ```

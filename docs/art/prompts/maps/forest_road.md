@@ -1,10 +1,10 @@
 # Map painting: The Forest Road (`forest_road`)
 
-**Deliver** one PNG of 1920×1152 pixels or a whole multiple of it (3840×2304 is the comfortable size to generate at), landscape 5:3, saved as `art/raw/maps/forest_road.png`. `art:map` downsizes it with a box filter and never upscales.
+**Deliver** one PNG of 1600×960 pixels or a whole multiple of it (3200×1920 is the comfortable size to generate at), landscape 5:3, saved as `art/raw/maps/forest_road.png`. `art:map` downsizes it with a box filter and never upscales.
 
-**Ships as** `public/art/maps/forest_road.webp`, 96 px a tile, under 1 MB.
+**Ships as** `public/art/maps/forest_road.webp`, 80 px a tile, under 1 MB.
 
-**Map** `backdrop: { url: 'art/maps/forest_road.webp', pixelsPerTile: 96 },` on the map's definition in `src/content/maps/`.
+**Map** `backdrop: { url: 'art/maps/forest_road.webp', pixelsPerTile: 80 },` on the map's definition in `src/content/maps/`.
 
 **Layout** `forest_road-layout.png` beside this file: the tile grid as flat colour blocks at 32 px a tile, with the grid drawn. Hand it to the generator as the composition reference (image-to-image or a structure control) at a strength that keeps every edge where it is; upscale it to the delivery size first so the generator does not invent a border.
 
@@ -47,7 +47,9 @@ Legend: `T` trees; `,` grass; `^` ledges, one step up; `r` heaps of tumbled rock
 
 ## Prompt
 
-> Top-down painted ground for a tactics battlefield, seen straight from above with the faintest three-quarter tilt so anything that stands up shows a sliver of its south face; north is up; every tile the same size; no perspective convergence, no horizon, no sky. A wide road of packed earth crosses the whole picture left to right through the middle, five tiles deep. In its left half the ruts have flooded into a still pond just left of centre, a rough diamond of brown water with soft muddy banks. In its right half a grassy island splits the road into two lanes, one above it and one below. Grass fills the top and bottom thirds, meadow with the odd fallen branch. Trees with round canopies stand in all four corners, one alone near the top centre, and two more standing out from the right-hand corners, one near the top and one near the bottom. Along the right edge a low ledge of grey stone steps up out of the grass. Two heaps of tumbled rock sit in the open grass, one above the road toward the left, one below it near the middle. Late morning under thin cloud: even light, no long shadows. Painterly ground with soft transitions inside a region and clean edges between regions; a clean, uniform dark-brown ink line (`#1b1410`) only where an edge is drawn, never black; two flat tones plus a thin rim light per material on the things that stand up (rocks, trunks, walls, crates); evenly lit, no vignette, no darkened corners, no cast shadows longer than a tile. Nothing the game draws itself: no characters, no creatures, no barrels, carts or braziers, no user interface, no text, no border, no grid lines. Landscape 5:3, 3840×2304.
+**Live surfaces:** the layout marks water, oil, mud and rubble that the game draws. Paint dry earth beneath water and mud, clean flat stone beneath oil, and only the fixed cover silhouette beneath rubble. Do not bake liquid, flame or smoke into the painting. Keep interactable props separate. Village houses are open cutaways: walls fill their blocking cells and plank interiors remain visible and clear.
+
+> Top-down painted ground for a tactics battlefield, seen straight from above with the faintest three-quarter tilt so anything that stands up shows a sliver of its south face; north is up; every tile the same size; no perspective convergence, no horizon, no sky. A wide road of packed earth crosses the whole picture left to right through the middle, five tiles deep. In its left half a rough diamond of dry bare earth marks the substrate for a live pond just left of centre; leave its interior empty. In its right half a grassy island splits the road into two lanes, one above it and one below. Grass fills the top and bottom thirds, meadow with the odd fallen branch. Trees with round canopies stand in all four corners, one alone near the top centre, and two more standing out from the right-hand corners, one near the top and one near the bottom. Along the right edge a low ledge of grey stone steps up out of the grass. Two heaps of tumbled rock sit in the open grass, one above the road toward the left, one below it near the middle. Late morning under thin cloud: even light, no long shadows. Painterly ground with soft transitions inside a region and clean edges between regions; a clean, uniform dark-brown ink line (`#1b1410`) only where an edge is drawn, never black; two flat tones plus a thin rim light per material on the things that stand up (rocks, trunks, walls, crates); evenly lit, no vignette, no darkened corners, no cast shadows longer than a tile. Nothing the game draws itself: no characters, no creatures, no barrels, carts or braziers, no user interface, no text, no border, no grid lines. Landscape 5:3, 3200×1920.
 
 ## Negative prompt
 
@@ -56,7 +58,7 @@ Legend: `T` trees; `,` grass; `^` ledges, one step up; `r` heaps of tumbled rock
 ## Commands
 
 ```
-npm run art:map -- --map forest_road
+npm run art:map -- --map forest_road --px 80
 npm run art:validate
 npm run check:assets
 ```
