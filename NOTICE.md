@@ -29,5 +29,6 @@ Notes:
 
 ## Made for this project
 
+- **The riverside painting.** Original generated environment for the living-village prototype. Characters, animals and animated effects are drawn by the game. See docs/art/riverside.md.
 - **The app icons.** Drawn by scripts/make-icons.mjs.
 - **The test art.** Flat colour stand-ins the end-to-end tests read back; never seen in play.

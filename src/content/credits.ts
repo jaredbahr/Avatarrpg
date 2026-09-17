@@ -49,6 +49,15 @@ export interface CreditEntry {
 
 export const CREDITS: readonly CreditEntry[] = [
   {
+    what: 'The riverside painting',
+    work: 'Ba Dan riverside',
+    authors: 'This project, with OpenAI image generation',
+    licence: 'own work',
+    source: '',
+    covers: ['art/maps/ba_dan_riverside.webp'],
+    note: 'Original generated environment for the living-village prototype. Characters, animals and animated effects are drawn by the game. See docs/art/riverside.md.',
+  },
+  {
     what: 'The heading typeface',
     work: 'Shippori Mincho 700, Latin subset',
     authors: 'The Shippori Mincho Project Authors',

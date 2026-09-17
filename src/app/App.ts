@@ -48,6 +48,7 @@ import { Curtain } from './ui/Curtain';
 import { PauseMenu } from './ui/PauseMenu';
 import { LevelUpDialog } from './ui/LevelUpDialog';
 import { DisciplineDialog } from './ui/DisciplineDialog';
+import { RIVERSIDE_ENTRY } from '../content/maps/riverside';
 import { TitleScene } from './scenes/TitleScene';
 import { PartySetupScene } from './scenes/PartySetupScene';
 import { DialogueScene } from './scenes/DialogueScene';
@@ -95,6 +96,11 @@ export class App {
   /** The reveal-from-ink on every scene change. */
   private readonly curtain: Curtain;
 
+  private previewSnapshot: { state: GameState | null; session: SessionMeta } | null = null;
+  get previewActive(): boolean {
+    return this.previewSnapshot !== null;
+  }
+
   settings: Settings;
   state: GameState | null = null;
 
@@ -116,6 +122,12 @@ export class App {
   /** Set while a battle is being resolved, so it cannot double-fire. */
   private resolving = false;
   private resizeQueued = false;
+  private routeTimer: number | null = null;
+
+  private cancelRoute(): void {
+    if (this.routeTimer !== null) window.clearTimeout(this.routeTimer);
+    this.routeTimer = null;
+  }
 
   constructor(
     readonly content: ContentIndex,
@@ -202,6 +214,7 @@ export class App {
   }
 
   showScene(scene: Scene): void {
+    this.cancelRoute();
     this.scene?.unmount();
     clear(this.sceneHost);
     this.scene = scene;
@@ -279,6 +292,34 @@ export class App {
     }
   }
 
+  startVillagePreview(): void {
+    if (this.previewActive) return;
+    this.cancelRoute();
+    this.previewSnapshot = { state: this.state, session: this.session.toMeta() };
+    this.state = createGame(this.content, {
+      seed: 'riverside-first-afternoon',
+      party: [{ characterId: 'sura' }, { characterId: 'kaya' }],
+      startNode: RIVERSIDE_ENTRY,
+    });
+    this.session.setPlayers([]);
+    this.animator.clear();
+    this.dispatch({ type: 'enterNode', nodeId: RIVERSIDE_ENTRY });
+  }
+
+  endVillagePreview(): void {
+    const previous = this.previewSnapshot;
+    if (!previous) return;
+    this.cancelRoute();
+    this.previewSnapshot = null;
+    this.state = previous.state;
+    this.session.setPlayers(Session.fromMeta(previous.session).players);
+    this.animator.clear();
+    this.closePause();
+    this.levelUp?.close();
+    this.levelUp = null;
+    this.showScene(new TitleScene(this));
+  }
+
   goToSetup(): void {
     this.showScene(new PartySetupScene(this));
   }
@@ -288,6 +329,8 @@ export class App {
   /* ---------------------------------------------------------------- */
 
   newGame(players: readonly Player[], slots: readonly PartySlot[], seed?: string): void {
+    if (this.previewActive) this.endVillagePreview();
+    this.cancelRoute();
     const state = createGame(this.content, {
       seed: seed ?? `${Date.now()}-${players.map((p) => p.name).join('-')}`,
       party: slots,
@@ -308,6 +351,8 @@ export class App {
 
   /** Installs a loaded save, replacing everything. */
   adoptSave(state: GameState, session: SessionMeta | undefined): void {
+    if (this.previewActive) this.endVillagePreview();
+    this.cancelRoute();
     // A save can predate a discipline gate the kits have since gained; this
     // hands back any pick the party is owed rather than swallowing it.
     this.state = reconcileDisciplines(this.content, state);
@@ -325,6 +370,7 @@ export class App {
    * move animates from where the unit was rather than snapping.
    */
   dispatch(command: Command): readonly GameEvent[] {
+    this.cancelRoute();
     const state = this.state;
     if (!state) return [];
 
@@ -347,8 +393,11 @@ export class App {
       // The party walked up to someone, or out of the gate: let them finish
       // crossing the tiles before the scene changes under them. Reduce motion
       // collapses the walk, so this is a frame there.
-      window.setTimeout(
-        () => this.routeToState(),
+      this.routeTimer = window.setTimeout(
+        () => {
+          this.routeTimer = null;
+          this.routeToState();
+        },
         Math.max(0, this.animator.finishesAt - performance.now()),
       );
     } else {
@@ -458,7 +507,7 @@ export class App {
 
   saveTo(slot: SlotId, label?: string): boolean {
     const state = this.state;
-    if (!state) return false;
+    if (!state || this.previewActive) return false;
     const result = saveToSlot(slot, state, {
       label: label ?? this.placeLabel(),
       summary: this.saveSummary(),
@@ -474,7 +523,7 @@ export class App {
    * localStorage on every tile step would be wasteful and janky.
    */
   private autosaveIfWorthIt(command: Command, events: readonly GameEvent[]): void {
-    if (!this.state) return;
+    if (!this.state || this.previewActive) return;
     const worthwhile =
       command.type === 'resolveBattle' ||
       events.some((e) => e.type === 'storyNodeEntered' || e.type === 'battleEnded');

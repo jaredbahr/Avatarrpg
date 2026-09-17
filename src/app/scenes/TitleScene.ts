@@ -57,6 +57,7 @@ export class TitleScene implements Scene {
       button('New game', () => this.app.goToSetup(), {
         class: hasAuto ? '' : 'btn-primary btn-large',
       }),
+      button('Explore the riverside', () => this.app.startVillagePreview(), { class: 'btn-large' }),
       button('Load a save', () => this.openLoad()),
       button('Settings', () => this.openSettings()),
     );

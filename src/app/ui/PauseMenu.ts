@@ -31,6 +31,26 @@ export class PauseMenu extends Dialog {
   }
 
   protected build(body: HTMLElement): void {
+    if (this.app.previewActive) {
+      body.append(
+        el('p', { text: 'Riverside preview. Your campaign saves are untouched.' }),
+        el(
+          'div',
+          { class: 'stack' },
+          button('Resume', () => this.close(), { class: 'btn-primary btn-large' }),
+          button('Return to the riverside', () => {
+            this.close();
+            this.app.dispatch({ type: 'enterNode', nodeId: 'riverside_explore' });
+          }),
+          button('Settings', () => this.openSettings()),
+          button('Leave preview', () => {
+            this.close();
+            this.app.endVillagePreview();
+          }),
+        ),
+      );
+      return;
+    }
     body.appendChild(el('p', { class: 'muted', text: this.app.saveSummary() }));
 
     body.appendChild(
