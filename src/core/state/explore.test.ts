@@ -90,11 +90,12 @@ describe('walking the village', () => {
     expect(exit).toBeDefined();
     if (!exit) return;
     const { state: after, events } = apply(CONTENT, state, { type: 'walkTo', pos: exit.pos });
-    expect(after.story.nodeId).not.toBe('village_explore');
+    expect(after.story.nodeId).toBeNull();
+    expect(after.location.mapId).toBe('forest_road');
     const [walk] = walks(events);
     expect(walk?.path[walk.path.length - 1]).toEqual(exit.pos);
     expect(events.findIndex((e) => e.type === 'partyWalked')).toBeLessThan(
-      events.findIndex((e) => e.type === 'storyNodeEntered'),
+      events.findIndex((e) => e.type === 'screenChanged'),
     );
   });
 });

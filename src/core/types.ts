@@ -551,6 +551,25 @@ export interface NpcDef {
   readonly routes?: readonly { readonly when: Condition; readonly node: string }[];
 }
 
+export interface MapExit {
+  readonly pos: Vec2;
+  readonly toMapId: string;
+  readonly toPos: Vec2;
+  readonly label: string;
+  readonly requires?: Condition;
+  readonly lockedHint?: string;
+}
+
+export interface MapTrigger {
+  readonly id: string;
+  readonly area: readonly Vec2[];
+  readonly label: string;
+  readonly sprite: string;
+  readonly node: string;
+  readonly when?: Condition;
+  readonly once: boolean;
+}
+
 export interface MapDef {
   readonly id: string;
   readonly name: string;
@@ -565,6 +584,10 @@ export interface MapDef {
   /** Barrels, flasks, carts. Instantiated into `BattleState.props` per battle. */
   readonly props: readonly PropPlacement[];
   readonly ambience: string;
+  /** Map-owned routes and walk-over events; independent of the story cursor. */
+  readonly exits?: readonly MapExit[];
+  readonly triggers?: readonly MapTrigger[];
+  readonly objective?: string;
   /** Explore maps only: stepping here advances the current story node. */
   readonly exit?: { readonly pos: Vec2; readonly label: string };
   /**
@@ -848,6 +871,11 @@ export interface GameState {
   readonly flags: Readonly<Record<string, FlagValue>>;
   readonly pendingChoices: readonly PendingChoice[];
   readonly location: { readonly mapId: string; readonly pos: Vec2 };
+  readonly world: {
+    readonly returnPos: Readonly<Record<string, Vec2>>;
+    readonly fired: readonly string[];
+    readonly cleared: readonly string[];
+  };
   /** Human-readable combat log, newest last. Capped by the reducer. */
   readonly log: readonly string[];
 }

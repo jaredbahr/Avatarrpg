@@ -152,7 +152,7 @@ export const ACT1_NODES: readonly StoryNode[] = [
       'The road climbs out of the village and into pine. The rain has left the ruts full of standing water.',
       'Half a league up, the birds stop.',
     ],
-    next: 'battle_forest_road',
+    next: 'forest_explore',
   },
   {
     id: 'battle_forest_road',
@@ -203,8 +203,8 @@ export const ACT1_NODES: readonly StoryNode[] = [
       'They are quarry workers. Look at the hands — every one of them has cut stone for a living.',
       'Whoever is up there did not bring an army. They took one.',
     ],
-    // Straight into the parley now, rather than straight into the fight.
-    next: 'gate_parley',
+    // Back onto the road; reaching the quarry watch starts the parley.
+    next: 'forest_after_explore',
     variants: [
       {
         // Losing the road makes the same observation land very differently.
@@ -385,7 +385,7 @@ export const ACT1_NODES: readonly StoryNode[] = [
       'Understand what you have done: Jin wanted me, and now Jin does not have me. She will be along.',
       'Give me back my sabre when she is. I am not going to stand there and be a parcel.',
     ],
-    next: 'battle_ambush',
+    next: 'gate_escort_explore',
   },
   {
     id: 'battle_ambush',
@@ -425,7 +425,7 @@ export const ACT1_NODES: readonly StoryNode[] = [
       'The thing in the quarry is not Jin, though. That one is mine too, in a way — he was my quartermaster before he found the driller.',
       'His name is Grumbler. It was a joke once.',
     ],
-    next: 'quarry_descent',
+    next: 'cutting_after_explore',
   },
 
   /* ------------------------------------------------------ Branch B: trade */
@@ -453,7 +453,7 @@ export const ACT1_NODES: readonly StoryNode[] = [
       'Oh — do not look at me like that. He is worth more to the province than he is to you, and I am taking him to the province. Eventually.',
       'My people are already in the quarry, by the way. Do try not to get in their way.',
     ],
-    next: 'quarry_descent',
+    next: 'gate_trade_explore',
   },
 
   /* ------------------------------------------------------------ The boss */

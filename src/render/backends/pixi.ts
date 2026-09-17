@@ -801,10 +801,10 @@ export class PixiBackend implements RenderBackend {
     const g = this.decorGfx;
     g.clear();
 
-    if (view.exit) {
+    for (const exit of view.exits ?? (view.exit ? [view.exit] : [])) {
       const pulse = (Math.sin(view.time / 420) + 1) / 2;
-      const cx = view.exit.pos.x * TILE + TILE / 2;
-      const cy = view.exit.pos.y * TILE + TILE / 2;
+      const cx = exit.pos.x * TILE + TILE / 2;
+      const cy = exit.pos.y * TILE + TILE / 2;
       g.circle(cx, cy, TILE * (0.24 + 0.06 * pulse)).stroke({
         width: Math.max(2, TILE * 0.05),
         color: '#f0c674',
