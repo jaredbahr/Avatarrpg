@@ -12,6 +12,15 @@ const clamp01 = (t: number): number => (t < 0 ? 0 : t > 1 ? 1 : t);
 
 export const linear: Easing = (t) => clamp01(t);
 
+/** A stroll: brief acceleration and braking, with an even pace between them. */
+export const stroll: Easing = (t) => {
+  const x = clamp01(t),
+    ramp = 0.15;
+  if (x < ramp) return (x * x) / (2 * ramp * (1 - ramp));
+  if (x > 1 - ramp) return 1 - ((1 - x) * (1 - x)) / (2 * ramp * (1 - ramp));
+  return (x - ramp / 2) / (1 - ramp);
+};
+
 /** Walking: slow out of the tile, quick through the middle, settle at the end. */
 export const easeInOutCubic: Easing = (t) => {
   const x = clamp01(t);

@@ -18,15 +18,16 @@ import type { EmitterDef, FxRecipe } from '../../content/fx';
 import { hashSeed } from '../../render/fx/rng';
 import { particleSpan } from '../../render/fx/simulate';
 import { smoothPath } from '../../render/geometry/curve';
-import { easeInCubic, easeInOutCubic, easeInOutSine, easeOutQuad } from './easing';
+import { easeInCubic, easeInOutCubic, easeInOutSine, easeOutQuad, stroll } from './easing';
 import type { AnyTrack, ClipName } from './timeline';
 
 /** Base durations in milliseconds, before the motion setting is applied. */
 export const TIMING = {
   step: 110,
-  windUp: 140,
+  strollStep: 280,
+  windUp: 260,
   release: 120,
-  recover: 160,
+  recover: 280,
   floater: 900,
   gap: 60,
   recoilOut: 70,
@@ -57,6 +58,8 @@ export interface ChoreographyInput {
   readonly rate: number;
   /** Which push this is, so seeds never repeat across a fight. */
   readonly pushIndex: number;
+  /** Followers share the leader's footfalls rather than multiplying the sound. */
+  readonly silentSteps?: boolean;
 }
 
 /**
@@ -213,8 +216,14 @@ export function choreograph(input: ChoreographyInput): Choreography {
   };
 
   /** One footstep a tile along a walk that starts at `at`. */
-  const footsteps = (at: number, tiles: number, eventIndex: number): void => {
-    for (let i = 0; i < tiles; i++) cue('step', at + TIMING.step * rate * i, 20 + i, eventIndex);
+  const footsteps = (
+    at: number,
+    tiles: number,
+    eventIndex: number,
+    step: number = TIMING.step,
+  ): void => {
+    if (input.silentSteps) return;
+    for (let i = 0; i < tiles; i++) cue('step', at + step * rate * i, 20 + i, eventIndex);
   };
 
   /** A hit's timing: the aimed one if it is still fresh, else now. */
@@ -251,18 +260,18 @@ export function choreograph(input: ChoreographyInput): Choreography {
         // The village walk: the leader's route from where it stood. The
         // followers are the scene's, pushed onto the same timeline.
         if (event.path.length === 0) break;
-        const duration = TIMING.step * event.path.length * rate;
+        const duration = TIMING.strollStep * event.path.length * rate;
         tracks.push({
           kind: 'move',
           unitId: event.unitId,
           curve: smoothPath(event.from, event.path),
-          ease: easeInOutCubic,
+          ease: stroll,
           start: cursor,
           duration,
         });
         // Only the leader's route is cued: the followers walk the same tiles a
         // beat behind, and four sets of boots on one road is a stampede.
-        footsteps(cursor, event.path.length, eventIndex);
+        footsteps(cursor, event.path.length, eventIndex, TIMING.strollStep);
         const last = event.path[event.path.length - 1];
         if (last) positions.set(event.unitId, last);
         cursor += duration;
@@ -295,16 +304,16 @@ export function choreograph(input: ChoreographyInput): Choreography {
         const clip: ClipName = melee ? 'melee' : 'cast';
 
         // The sheet's poses: wind-up, release, recover for a cast; wind-up and
-        // strike for a melee, which holds the strike through the recover.
+        // strike for a melee, which returns to its guarded wind-up stance.
         pose(event.unitId, clip, cursor, windUp, { x: 0, y: 0 }, back, easeInCubic, {
           ...(facing !== undefined ? { facing } : {}),
-          scale: { from: 1, to: 0.96 },
+          scale: { from: 1, to: 0.985 },
           frame: 0,
         });
         const releaseAt = cursor + windUp;
         pose(event.unitId, clip, releaseAt, release, back, forward, easeOutQuad, {
           ...(facing !== undefined ? { facing } : {}),
-          scale: { from: 0.96, to: 1.04 },
+          scale: { from: 0.985, to: 1.015 },
           frame: 1,
         });
         // The element gathers through the wind-up and is out of the hands by the release.
@@ -345,14 +354,23 @@ export function choreograph(input: ChoreographyInput): Choreography {
           impactAt = releaseAt + flight;
         }
 
-        const recoverAt = Math.max(releaseAt + release, impactAt);
+        // Keep the extension through flight and impact. Without this track a
+        // long throw snaps to idle before its recovery starts.
+        const hitStop = recipe.hitStop * rate;
+        const recoverAt = Math.max(releaseAt + release, impactAt + hitStop);
+        const holdAt = releaseAt + release;
+        if (recoverAt > holdAt)
+          pose(event.unitId, clip, holdAt, recoverAt - holdAt, forward, forward, easeInOutSine, {
+            ...(facing !== undefined ? { facing } : {}),
+            scale: { from: 1.015, to: 1.015 },
+            frame: 1,
+          });
         pose(event.unitId, clip, recoverAt, recover, forward, { x: 0, y: 0 }, easeInOutSine, {
           ...(facing !== undefined ? { facing } : {}),
-          scale: { from: 1.04, to: 1 },
-          frame: melee ? 1 : 2,
+          scale: { from: 1.015, to: 1 },
+          frame: melee ? 0 : 2,
         });
 
-        const hitStop = recipe.hitStop * rate;
         emit(
           recipe.impact,
           impactAt + hitStop * 0.5,
@@ -388,7 +406,7 @@ export function choreograph(input: ChoreographyInput): Choreography {
         }
 
         pending = { at: impactAt, hitStop, flash: recipe.flash, casterId: event.unitId };
-        cursor = impactAt + hitStop + TIMING.gap * rate;
+        cursor = Math.max(recoverAt + recover, impactAt + hitStop) + TIMING.gap * rate;
         break;
       }
 

@@ -6,11 +6,27 @@ import {
   easeOutBack,
   easeOutQuad,
   linear,
+  stroll,
 } from './easing';
 
-const ALL = { linear, easeInOutCubic, easeOutQuad, easeOutBack, easeInOutSine, easeInCubic };
+const ALL = {
+  linear,
+  stroll,
+  easeInOutCubic,
+  easeOutQuad,
+  easeOutBack,
+  easeInOutSine,
+  easeInCubic,
+};
 
 describe('easing', () => {
+  it('keeps the middle of a stroll at an even pace instead of sprinting', () => {
+    const distances = [0.25, 0.4, 0.55, 0.7].map((t) => stroll(t + 0.05) - stroll(t));
+    for (const d of distances) {
+      expect(d).toBeCloseTo(distances[0] ?? 0, 9);
+      expect(d).toBeLessThan(0.065);
+    }
+  });
   it.each(Object.entries(ALL))('%s maps 0 to 0 and 1 to 1', (_name, ease) => {
     expect(ease(0)).toBeCloseTo(0, 9);
     expect(ease(1)).toBeCloseTo(1, 9);

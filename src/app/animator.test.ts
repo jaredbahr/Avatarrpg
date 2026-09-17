@@ -26,6 +26,42 @@ function animator(reduced = false): Animator {
 }
 
 describe('Animator', () => {
+  it('keeps a strolling follower in formation without duplicating footsteps', () => {
+    const heard: string[] = [];
+    const a = new Animator(content, {
+      motionReduced: () => false,
+      onSounds: (cues) => heard.push(...cues.map((cue) => cue.key)),
+    });
+    for (const [id, start] of [
+      ['leader', 1],
+      ['follower', 0],
+    ] as const) {
+      a.push(
+        1000,
+        [
+          {
+            type: 'partyWalked',
+            unitId: id,
+            from: { x: start, y: 3 },
+            path: Array.from({ length: 6 }, (_, i) => ({ x: start + i + 1, y: 3 })),
+          },
+        ],
+        [],
+        { alongside: id === 'follower' },
+      );
+    }
+    expect(a.finishesAt - 1000).toBeGreaterThan(1500);
+    for (const at of [1050, 1400, 1800, 2400]) {
+      const leader = a.renderPos(at, 'leader'),
+        follower = a.renderPos(at, 'follower');
+      expect((leader?.x ?? 0) - (follower?.x ?? 0)).toBeCloseTo(1, 6);
+      expect(a.unitPose(at, 'leader')?.clipTime).toBeCloseTo(
+        a.unitPose(at, 'follower')?.clipTime ?? 0,
+        6,
+      );
+    }
+    expect(heard).toEqual(Array(6).fill('step'));
+  });
   it('is idle until something is pushed, then busy for the walk', () => {
     const a = animator();
     expect(a.busy(0)).toBe(false);

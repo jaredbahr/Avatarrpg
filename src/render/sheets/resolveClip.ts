@@ -55,7 +55,9 @@ export function frameIndex(
 ): number {
   const count = resolved.def.frames.length;
   if (count <= 1) return 0;
-  if (clipFrame !== undefined && resolved.exact) {
+  // Melee borrows cast's compatible wind-up/release poses. Treating it as an
+  // unrelated fallback held the recovery drawing through the entire attack.
+  if (clipFrame !== undefined && (resolved.exact || resolved.clip === 'cast')) {
     return Math.max(0, Math.min(count - 1, Math.floor(clipFrame)));
   }
   if (clipFrame !== undefined) return count - 1;

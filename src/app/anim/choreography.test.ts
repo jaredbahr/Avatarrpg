@@ -89,8 +89,9 @@ describe('choreograph', () => {
     if (move?.kind !== 'move') throw new Error('expected a move track');
     expect(move.unitId).toBe('leader');
     expect(move.start).toBe(1000);
-    expect(move.duration).toBe(TIMING.step * 2);
-    expect(cursor).toBe(1000 + TIMING.step * 2);
+    expect(move.duration).toBe(TIMING.strollStep * 2);
+    expect(cursor).toBe(1000 + TIMING.strollStep * 2);
+    expect(move.duration).toBeGreaterThan(TIMING.step * 4);
   });
 
   it('winds up, releases, sends something across and recovers for a ranged cast', () => {
@@ -104,12 +105,19 @@ describe('choreograph', () => {
       },
     ]);
     const poses = tracks.filter((t) => t.kind === 'pose');
-    expect(poses).toHaveLength(3);
+    expect(poses).toHaveLength(4);
     expect(poses[0]?.start).toBe(1000);
     expect(poses[0]?.duration).toBe(TIMING.windUp);
     expect(poses[1]?.start).toBe(1000 + TIMING.windUp);
     // The caster turns to face the target on the right.
     expect(poses.every((p) => p.facing === 1)).toBe(true);
+    // No idle gap while the projectile travels; the extended pose is held
+    // through impact before the actor eases back onto their planted feet.
+    for (let i = 1; i < poses.length; i++) {
+      const previous = poses[i - 1];
+      expect(poses[i]?.start).toBe((previous?.start ?? 0) + (previous?.duration ?? 0));
+      expect(poses[i]?.offset.from).toEqual(previous?.offset.to);
+    }
 
     const emitters = tracks.filter((t) => t.kind === 'emitter');
     expect(emitters.length).toBeGreaterThan(0);

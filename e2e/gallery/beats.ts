@@ -174,7 +174,7 @@ export const BEATS: readonly Beat[] = [
   ...['Water form', 'Fire form'].map((form, index): Beat => ({
     id: `20${index === 0 ? 'a' : 'b'}-riverside`,
     title: `A living riverside · ${form}`,
-    note: 'An ink-painted village with drawn hero poses, ground shadows, foreground occlusion, river highlights and an otter-turtle.',
+    note: 'Drawn heroes with pose-shaped shadows and environmental shade. Bending gathers around the body, releases, and settles back into stance.',
     projects: SURFACES,
     async run(ctx) {
       await resetStorage(ctx.page, ctx.query());
@@ -188,7 +188,7 @@ export const BEATS: readonly Beat[] = [
       if (!loaded) throw new Error('The riverside painting did not load.');
       await ctx.page.locator('.village-life-canvas[data-illustrated-actors="2"]').waitFor();
       await ctx.shoot(this.note);
-      await ctx.filmstrip(`${this.note} ${form}.`, [650, 1450, 1900, 2850, 3450], async () => {
+      await ctx.filmstrip(`${this.note} ${form}.`, [700, 1500, 2200, 2950, 3800], async () => {
         await ctx.page.evaluate((label) => {
           const control = [
             ...document.querySelectorAll<HTMLButtonElement>('.village-actions button'),

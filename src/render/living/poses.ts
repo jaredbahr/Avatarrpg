@@ -3,12 +3,30 @@ import type { Pose } from '../painters/figure';
 import { poseFor } from '../painters/figure';
 
 export type VillageMotion = 'idle' | 'walk' | 'wave' | 'water' | 'fire';
-export const FORM_DURATION = 3400;
+export const FORM_DURATION = 3800;
 const clamp = (n: number) => Math.max(0, Math.min(1, n));
 const ease = (n: number) => {
   const t = clamp(n);
   return t * t * (3 - 2 * t);
 };
+
+/** One clock for the held drawing, weight shift, light and released element. */
+export function formBeat(elapsed: number, water: boolean) {
+  const t = clamp(elapsed / FORM_DURATION);
+  const releaseAt = water ? 0.42 : 0.46;
+  const gather = ease((t - 0.1) / (releaseAt - 0.1));
+  const release = ease((t - releaseAt) / (water ? 0.18 : 0.075));
+  const recover = ease((t - 0.7) / 0.3);
+  return {
+    t,
+    gather,
+    release,
+    recover,
+    frame: t < releaseAt ? 0 : t < 0.7 ? 1 : 2,
+    weight: (-0.06 * gather + 0.16 * release) * (1 - recover),
+    energy: gather * (1 - ease((t - 0.72) / 0.2)),
+  };
+}
 
 export function mixPose(a: Pose, b: Pose, t: number): Pose {
   const mix = (x: number, y: number) => x + (y - x) * ease(t);
