@@ -1689,6 +1689,7 @@ html[data-contrast='high'] .hud-panel::after {
 
 .walk-feedback {
   position: absolute;
+  z-index: var(--z-banner);
   bottom: var(--sp-3);
   left: var(--sp-3);
   right: var(--sp-3);

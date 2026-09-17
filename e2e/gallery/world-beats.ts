@@ -27,4 +27,37 @@ export const WORLD_BEATS: readonly Beat[] = [
       await ctx.shoot('A local invitation to explore, with the forest still behind it.');
     },
   },
+  {
+    id: '34-next-walk',
+    title: 'Plan the next stroll',
+    note: 'The party keeps walking while a dotted route and a cancelable next destination remain visible.',
+    projects: ['surface-canvas', 'surface-webgl', 'portrait-canvas'],
+    async run(ctx) {
+      await resetStorage(ctx.page, ctx.query());
+      await startGame(ctx.page, ['Elias'], ['kaya', 'bo'], 'gallery-next-walk', {
+        reduceMotion: false,
+      });
+      await enterNode(ctx.page, 'village_explore');
+      await ctx.filmstrip('Queued route and grounded party movement.', [150, 800], async () => {
+        await ctx.page.evaluate(() => {
+          const app = window.fnt?.app;
+          const canvas = document.querySelector('canvas.map-canvas');
+          const camera = app?.rendererCamera();
+          if (!app || !camera || !(canvas instanceof HTMLCanvasElement)) throw new Error('No map');
+          app.dispatch({ type: 'walkTo', pos: { x: 9, y: 7 } });
+          const box = canvas.getBoundingClientRect();
+          const point = {
+            clientX: box.left + camera.offsetX + 7.5 * camera.tilePx,
+            clientY: box.top + camera.offsetY + 8.5 * camera.tilePx,
+            bubbles: true,
+            pointerId: 19,
+            pointerType: 'touch',
+            isPrimary: true,
+          };
+          canvas.dispatchEvent(new PointerEvent('pointerdown', { ...point, buttons: 1 }));
+          canvas.dispatchEvent(new PointerEvent('pointerup', { ...point, buttons: 0 }));
+        });
+      });
+    },
+  },
 ];

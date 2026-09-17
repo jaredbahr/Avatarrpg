@@ -543,6 +543,8 @@ export class ExploreScene implements Scene {
     if (!renderer || !state || !map || !grid) return;
 
     const now = performance.now();
+    // Long roaming sessions must retire old walk tracks just as combat does.
+    this.app.animator.prune(now);
     // Never carry queued intent through a menu, a loaded save, or a story/map change.
     if (document.hidden || document.querySelector('[role="dialog"]')) this.clearNextWalk();
     if (!this.app.animator.busy(now)) {

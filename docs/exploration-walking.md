@@ -4,6 +4,8 @@ The connected region now gives ground taps visible feedback. The dotted route
 and destination use a preview of the real `walkTo` command, including NPC
 approaches and the first active encounter. Both renderers use their existing
 path drawing. This is presentation only: no save or combat rule changes.
+Exploration now retires completed animation tracks each frame, keeping long
+roaming sessions from accumulating every previous walk in the animator.
 
 While a stroll is playing, tap another walkable tile to queue one next walk.
 The latest valid tap replaces it; a wall tap explains the refusal without

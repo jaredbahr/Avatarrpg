@@ -15,19 +15,14 @@ test.describe('offline', () => {
     await page.goto('/');
 
     // Wait for the worker to take control, not merely to be registered.
-    const controlled = await page.waitForFunction(
-      async () => {
-        if (!('serviceWorker' in navigator)) return false;
-        const registration = await navigator.serviceWorker.getRegistration();
-        return Boolean(registration?.active);
-      },
+    await page.waitForFunction(
+      () =>
+        'serviceWorker' in navigator && navigator.serviceWorker.controller?.state === 'activated',
       undefined,
       { timeout: 30_000 },
     );
-    expect(controlled).toBeTruthy();
-
-    // Give the precache a moment to finish before cutting the cord.
-    await page.waitForTimeout(1500);
+    // An active registration can exist before clientsClaim controls this page.
+    // Control follows the worker's completed install/precache, without a timed guess.
 
     await context.setOffline(true);
     await page.reload();
