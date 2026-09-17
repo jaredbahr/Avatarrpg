@@ -25,6 +25,14 @@ async function tapPath(page: Page, x: number, y: number) {
   );
 }
 
+/** Start the walk through the public game command; the queued destination remains a real touch. */
+async function startWalk(page: Page, x: number, y: number) {
+  await page.evaluate(({ x, y }) => window.fnt?.app.dispatch({ type: 'walkTo', pos: { x, y } }), {
+    x,
+    y,
+  });
+}
+
 for (const renderer of ['canvas', 'webgl']) {
   test(`a second ground tap queues one visible walk on ${renderer}`, async ({ page }) => {
     await resetStorage(page, `?renderer=${renderer}`);
@@ -32,7 +40,7 @@ for (const renderer of ['canvas', 'webgl']) {
     await enterNode(page, 'village_explore');
     await page.clock.install();
     await page.clock.pauseAt(new Date(Date.now() + 1000));
-    await tapPath(page, 9, 7);
+    await startWalk(page, 9, 7);
     await tapPath(page, 7, 8);
     await expect(page.locator('.walk-feedback')).toContainText('Next:');
     expect(await page.evaluate(() => window.fnt?.app.state?.location.pos)).toEqual({ x: 9, y: 7 });
@@ -53,7 +61,7 @@ test('cancel and pause discard queued walking without teleporting the current wa
   await enterNode(page, 'village_explore');
   await page.clock.install();
   await page.clock.pauseAt(new Date(Date.now() + 1000));
-  await tapPath(page, 9, 7);
+  await startWalk(page, 9, 7);
   await tapPath(page, 7, 8);
   await page.getByRole('button', { name: 'Cancel next walk' }).dispatchEvent('click');
   await expect(page.locator('.walk-feedback')).toContainText('Following the path');
