@@ -1094,7 +1094,7 @@ export class CombatScene implements Scene {
       statuses: u.statuses.map((s) => s.id),
       fallen: !isAlive(u),
       renderPos: this.app.animator.renderPos(now, u.id),
-      ...this.poseFields(now, u.id, u.faction === 'enemy' ? -1 : 1),
+      ...this.poseFields(now, u.id, u.faction === 'enemy' ? -1 : 1, u.faction === 'party'),
     }));
 
     // Resolved here, not in the renderer: the renderer never reads content.
@@ -1168,13 +1168,15 @@ export class CombatScene implements Scene {
     now: number,
     unitId: string,
     restFacing: 1 | -1,
+    directional: boolean,
   ): Pick<
     RenderUnit,
     'offset' | 'facing' | 'clip' | 'clipTime' | 'clipFrame' | 'scale' | 'alpha' | 'flash'
   > {
     const pose = this.app.animator.unitPose(now, unitId);
     const walked = this.app.animator.facing(unitId);
-    if (!pose) return { facing: walked ?? restFacing };
+    const movement = directional ? this.app.animator.locomotion(now, unitId) : undefined;
+    if (!pose) return movement ?? { facing: walked ?? restFacing };
     return {
       offset: pose.offset,
       facing: pose.facing ?? walked ?? restFacing,
@@ -1184,6 +1186,7 @@ export class CombatScene implements Scene {
       scale: pose.scale,
       alpha: pose.alpha,
       flash: pose.flash,
+      ...(pose.clip === 'walk' && movement ? movement : {}),
     };
   }
 

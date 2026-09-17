@@ -12,7 +12,7 @@
  * does know them (the cel-shaded figures) tells them apart.
  */
 
-import type { ClipDef, ClipName } from '../../content/assets/clips';
+import type { BaseClipName, ClipDef, ClipName } from '../../content/assets/clips';
 import type { ResolvedPainter } from '../painters/registry';
 import type { AtlasFrame } from './atlasJson';
 import { layoutSheet } from './layout';
@@ -26,7 +26,7 @@ const PAINTER_FOOT = 0.86;
 
 /** Poses a baked sheet carries: the full clip table, so every fallback is exercised. */
 export const BAKED_CLIPS: Readonly<
-  Record<ClipName, { count: number; fps: number; loop: boolean }>
+  Record<BaseClipName, { count: number; fps: number; loop: boolean }>
 > = {
   idle: { count: 2, fps: 1, loop: true },
   walk: { count: 2, fps: 4, loop: true },
@@ -94,7 +94,7 @@ export function bakeSheet(
 
   const variant = painter.variant;
   const clips: Partial<Record<ClipName, ClipDef>> = {};
-  for (const [clip, names] of Object.entries(layout.clips) as [ClipName, string[]][]) {
+  for (const [clip, names] of Object.entries(layout.clips) as [BaseClipName, string[]][]) {
     const timing = BAKED_CLIPS[clip];
     clips[clip] = { frames: names, fps: timing.fps, loop: timing.loop };
     names.forEach((name, index) => {

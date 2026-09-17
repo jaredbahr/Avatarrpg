@@ -35,6 +35,41 @@ function gutter(image: Image, axis: 'x' | 'y', target: number, radius: number): 
   return best;
 }
 
+/** Isolate a regular grid without cutting through any visible pixel. */
+export function splitGrid(image: Image, columns: number, rows: number): Image[] {
+  if (!Number.isInteger(columns) || !Number.isInteger(rows) || columns < 1 || rows < 1)
+    throw new Error('Grid dimensions must be positive integers.');
+  const ys = [
+    0,
+    ...Array.from({ length: rows - 1 }, (_, i) =>
+      gutter(image, 'y', (image.height * (i + 1)) / rows, image.height / rows / 6),
+    ),
+    image.height,
+  ];
+  const cells: Image[] = [];
+  for (let row = 0; row < rows; row++) {
+    const top = ys[row],
+      bottom = ys[row + 1];
+    if (top === undefined || bottom === undefined || bottom <= top) throw new Error('Invalid row.');
+    const strip = crop(image, { x: 0, y: top, width: image.width, height: bottom - top });
+    const xs = [
+      0,
+      ...Array.from({ length: columns - 1 }, (_, i) =>
+        gutter(strip, 'x', (image.width * (i + 1)) / columns, image.width / columns / 6),
+      ),
+      image.width,
+    ];
+    for (let col = 0; col < columns; col++) {
+      const left = xs[col],
+        right = xs[col + 1];
+      if (left === undefined || right === undefined || right <= left)
+        throw new Error('Invalid column.');
+      cells.push(crop(strip, { x: left, y: 0, width: right - left, height: strip.height }));
+    }
+  }
+  return cells;
+}
+
 export function splitSheet(input: string, unit: string, out = 'art/raw'): void {
   const image = readPng(input);
   const mid = gutter(image, 'y', image.height / 2, image.height / 12);

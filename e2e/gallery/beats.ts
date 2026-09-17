@@ -1,4 +1,5 @@
 import { WORLD_BEATS } from './world-beats';
+import { DIRECTIONAL_BEATS } from './directional-beats';
 import type { Page } from '@playwright/test';
 import {
   enterNode,
@@ -173,6 +174,7 @@ async function faceOff(
 
 export const BEATS: readonly Beat[] = [
   ...WORLD_BEATS,
+  ...DIRECTIONAL_BEATS,
   ...[
     { map: 'quarry_gate', node: 'battle_quarry_gate', title: 'Quarry Gate' },
     { map: 'ambush_road', node: 'battle_ambush', title: 'The Cutting' },
