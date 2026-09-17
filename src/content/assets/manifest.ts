@@ -93,7 +93,25 @@ const heroSheet = (key: string, palette: string): SheetEntry => {
   };
 };
 
+function villageSheet(name: string, palette: string): SheetEntry {
+  const key = `unit.village.${name}`;
+  const base = heroSheet(key, palette);
+  const frames = (clip: ClipName, count: number) =>
+    Array.from({ length: count }, (_, i) => `${key}/${clip}/${i}`);
+  return {
+    ...base,
+    atlas: `art/units/riverside-${name}.json`,
+    clips: {
+      ...base.clips,
+      walk: { frames: frames('walk', 4), fps: 8, loop: true },
+      wave: { frames: frames('wave', 2), fps: 4, loop: true },
+    },
+  };
+}
+
 export const ASSETS: Readonly<Record<string, AssetEntry>> = {
+  'unit.village.sura': villageSheet('sura', 'water'),
+  'unit.village.kaya': villageSheet('kaya', 'fire'),
   /* ------------------------------------------------------ Party sprites */
   'unit.fire.kaya': heroSheet('unit.fire.kaya', 'fire'),
   'unit.fire.tenzo': heroSheet('unit.fire.tenzo', 'fire'),

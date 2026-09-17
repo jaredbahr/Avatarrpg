@@ -44,6 +44,8 @@ for the other side.
 | `melee/1.png` | Melee strike  | The kick landing: the lead leg extended straight toward screen-right, arms spread for balance, the body leaning back.                                                             |
 | `hit/0.png`   | Hit           | Recoiling away from screen-right: shoulders twisted back, eyes shut, one foot lifted off the ground, the arms thrown loose.                                                       |
 | `ko/0.png`    | KO            | Down on one knee with one hand on the ground and the head bowed; no wounds and no blood.                                                                                          |
+| `wave/0.png`  | Greeting A    | Relaxed standing stance, leading hand raised beside the head, open palm.                                                                                                          |
+| `wave/1.png`  | Greeting B    | Same planted feet and raised arm, hand tilted outward in a friendly wave.                                                                                                         |
 
 ## Prompt
 

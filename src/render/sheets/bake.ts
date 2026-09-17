@@ -34,6 +34,7 @@ export const BAKED_CLIPS: Readonly<
   melee: { count: 2, fps: 8, loop: false },
   hit: { count: 1, fps: 1, loop: false },
   ko: { count: 1, fps: 1, loop: false },
+  wave: { count: 2, fps: 4, loop: true },
 };
 
 export interface BakedSheet {

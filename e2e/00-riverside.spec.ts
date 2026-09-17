@@ -24,6 +24,19 @@ for (const renderer of ['canvas', 'webgl']) {
     await page.evaluate(() => window.fnt!.app.startVillagePreview());
     await expect(page.getByRole('button', { name: 'Water form', exact: true })).toBeVisible();
     await expect(page.locator('.village-life-canvas')).toHaveCount(1);
+    await expect(page.locator('.village-life-canvas')).toHaveAttribute(
+      'data-illustrated-actors',
+      '2',
+    );
+    await page.getByRole('button', { name: 'Under the banyan', exact: true }).click();
+    await expect(page.locator('.village-note')).toContainText('branches pass overhead');
+    await expect(page.locator('.village-life-canvas')).toHaveAttribute(
+      'data-occluded-actors',
+      /^[1-9]/,
+    );
+    await expect
+      .poll(() => page.evaluate(() => window.fnt!.app.state?.location.pos))
+      .toEqual({ x: 13, y: 9 });
     await page.getByRole('button', { name: 'Meet Pebble', exact: true }).click();
     await expect(page.locator('.village-note')).toContainText('Pebble leans');
     await page.getByRole('button', { name: 'Tea break', exact: true }).click();

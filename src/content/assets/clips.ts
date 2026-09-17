@@ -8,7 +8,7 @@
  * every event.
  */
 
-export const CLIP_NAMES = ['idle', 'walk', 'cast', 'melee', 'hit', 'ko'] as const;
+export const CLIP_NAMES = ['idle', 'walk', 'cast', 'melee', 'hit', 'ko', 'wave'] as const;
 export type ClipName = (typeof CLIP_NAMES)[number];
 
 export interface ClipDef {
@@ -29,6 +29,7 @@ export const CLIP_FRAME_COUNTS: Readonly<Record<ClipName, { min: number; max: nu
   melee: { min: 2, max: 2 },
   hit: { min: 1, max: 1 },
   ko: { min: 1, max: 1 },
+  wave: { min: 2, max: 2 },
 };
 
 /** Clips every sheet must have. */

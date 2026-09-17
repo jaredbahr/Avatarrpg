@@ -104,6 +104,7 @@ const rest = (over: Partial<Pose> = {}): Pose => ({
 
 /** One pose per frame of the clip table, in the art bible's words. */
 export const POSES: Readonly<Record<ClipName, readonly Pose[]>> = {
+  wave: [rest({ frontArm: [2.35, 2.5] }), rest({ frontArm: [2.35, 3.05] })],
   // Weight on the back foot, hands ready, eyes on screen-right; B is a breath.
   idle: [rest(), rest({ breath: 1.03, lean: -0.02 })],
   // Contact poses, opposite legs; arms counter-swing.

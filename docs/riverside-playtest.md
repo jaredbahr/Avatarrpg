@@ -9,6 +9,8 @@ in Ba Dan village.
 1. Tap clear ground to walk. Drag to look around; pinch or scroll to zoom.
    **Follow party** brings the camera back.
 2. Walk near Elder Mira and watch her greeting; tap her to talk. Try **Wave**.
+   Use **Under the banyan**, then tap the open square: branches should cover
+   your character and then reveal them as they step into sunlight.
 3. Try **Water form** and **Fire form**. Watch the feet settle, the hands gather,
    the release and the recovery. Settings → Reduce motion must be off to see motion.
 4. **Meet Pebble**, take a **Tea break**, then **Visit the shrine** and continue
@@ -27,7 +29,6 @@ whether walking feels too fast or floaty, and whether you wanted to explore.
 A screenshot of a spot where a character crosses a painted obstacle is useful.
 Include your device, browser and orientation if taps or animation behave oddly.
 
-This build tests the direction using the existing character rig. Finished drawn
-animation, directional character sheets, new combat animation and a connected
-large overworld are further work. It is enough to judge this direction in the
-current engine before committing to an engine migration.
+The two preview heroes now use drawn walk, wave and bending poses. NPCs and
+Pebble still use procedural art. More directions, animation cleanup, new combat
+animation and a connected large overworld remain further work.
