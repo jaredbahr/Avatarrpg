@@ -57,6 +57,23 @@ for (const [family, bytes] of [...families].sort()) {
 }
 if (families.size === 0) console.log('  (no art shipped yet)');
 
+/*
+ * Sound is budgeted as one family of its own. It is not under public/art/
+ * because it is not art: the art scripts, art:validate and the prompt packs
+ * all walk that folder and none of them has anything to say about an ogg.
+ */
+const audioDir = join(root, 'public', 'audio');
+let audioBytes = 0;
+for (const file of walk(audioDir)) audioBytes += statSync(file).size;
+const audioOver = audioBytes > FAMILY_BUDGET_MB * 1024 * 1024;
+if (audioOver) failed = true;
+console.log(
+  'Audio (budget %s MB):\n  %s%s MB  audio',
+  FAMILY_BUDGET_MB,
+  audioOver ? 'OVER ' : '     ',
+  mb(audioBytes).padStart(7),
+);
+
 const dist = join(root, 'dist');
 const shipped = walk(dist).filter((f) => !f.endsWith('.map'));
 if (shipped.length === 0) {

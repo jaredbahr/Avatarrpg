@@ -67,6 +67,15 @@ export const CREDITS: readonly CreditEntry[] = [
     note: 'One icon per kind of action, chosen in src/app/ui/icons.ts and built into a sprite by npm run art:icons. Each icon is by a named contributor; they are listed in the licence file at the source above.',
   },
   {
+    what: 'The sound effects',
+    work: 'Impact Sounds 1.0 and Interface Sounds 1.0',
+    authors: 'Kenney (kenney.nl)',
+    licence: 'CC0 1.0',
+    source: 'https://kenney.nl',
+    covers: ['audio'],
+    note: 'Footsteps, impacts, splintering wood and the interface. The bending sounds are not here: these packs contain none, so an element’s voice is rendered in the Web Audio graph from the description in src/content/sounds.ts rather than played from a file.',
+  },
+  {
     what: 'The app icons',
     work: 'Four Nations Tactics icons',
     authors: 'This project',
