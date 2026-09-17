@@ -257,7 +257,7 @@ describe('content', () => {
     }
   });
 
-  it('resolves every referenced asset key to a painter or an image', () => {
+  it('resolves every referenced asset key to a painter, image or sheet', () => {
     const keys = new Set<string>();
     for (const c of CONTENT_BUNDLE.characters) {
       keys.add(c.portrait);
@@ -279,7 +279,11 @@ describe('content', () => {
 
     for (const key of keys) {
       const entry = resolveAsset(key);
-      expect(entry.kind === 'painter' || entry.kind === 'image', key).toBe(true);
+      expect(['painter', 'image', 'sheet'], key).toContain(entry.kind);
+      if (entry.kind === 'sheet') {
+        expect(entry.clips.idle?.frames.length, `${key} idle`).toBeGreaterThanOrEqual(2);
+        expect(entry.clips.cast?.frames.length, `${key} cast`).toBe(3);
+      }
       if (entry.palette !== undefined) expect(palettes, `${key} palette`).toContain(entry.palette);
     }
   });
