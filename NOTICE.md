@@ -29,5 +29,6 @@ Notes:
 
 ## Made for this project
 
+- **The character portraits.** Original hero and NPC portraits generated from the project character briefs. Source notes and prompts are in docs/art/dialogue-portraits.md.
 - **The app icons.** Drawn by scripts/make-icons.mjs.
 - **The test art.** Flat colour stand-ins the end-to-end tests read back; never seen in play.

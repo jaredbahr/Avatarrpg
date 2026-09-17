@@ -5,7 +5,7 @@
  * and ability effects all carry an asset *key*, and this file decides what that
  * key resolves to.
  *
- * Today every key resolves to a code-drawn painter: a named vector routine in
+ * Keys can resolve to a code-drawn painter: a named vector routine in
  * `src/render/painters/` tinted from a nation palette. To drop in commissioned
  * or generated art later, change the entry:
  *
@@ -113,24 +113,24 @@ export const ASSETS: Readonly<Record<string, AssetEntry>> = {
   'prop.cart': painter('prop', 'air', 'cart'),
 
   /* ---------------------------------------------------------- Portraits */
-  'portrait.kaya': painter('portrait', 'fire', 'kaya'),
-  'portrait.tenzo': painter('portrait', 'fire', 'tenzo'),
-  'portrait.nilak': painter('portrait', 'water', 'nilak'),
-  'portrait.sura': painter('portrait', 'water', 'sura'),
-  'portrait.bo': painter('portrait', 'earth', 'bo'),
-  'portrait.linmei': painter('portrait', 'earth', 'linmei'),
-  'portrait.nima': painter('portrait', 'air', 'nima'),
-  'portrait.jinu': painter('portrait', 'air', 'jinu'),
-  'portrait.riko': painter('portrait', 'nonbender', 'riko'),
-  'portrait.wen': painter('portrait', 'nonbender', 'wen'),
+  'portrait.kaya': { kind: 'image', url: 'art/portraits/kaya.png', palette: 'fire' },
+  'portrait.tenzo': { kind: 'image', url: 'art/portraits/tenzo.png', palette: 'fire' },
+  'portrait.nilak': { kind: 'image', url: 'art/portraits/nilak.png', palette: 'water' },
+  'portrait.sura': { kind: 'image', url: 'art/portraits/sura.png', palette: 'water' },
+  'portrait.bo': { kind: 'image', url: 'art/portraits/bo.png', palette: 'earth' },
+  'portrait.linmei': { kind: 'image', url: 'art/portraits/linmei.png', palette: 'earth' },
+  'portrait.nima': { kind: 'image', url: 'art/portraits/nima.png', palette: 'air' },
+  'portrait.jinu': { kind: 'image', url: 'art/portraits/jinu.png', palette: 'air' },
+  'portrait.riko': { kind: 'image', url: 'art/portraits/riko.png', palette: 'nonbender' },
+  'portrait.wen': { kind: 'image', url: 'art/portraits/wen.png', palette: 'nonbender' },
 
   'portrait.narrator': painter('portrait', 'neutral', 'narrator'),
-  'portrait.mira': painter('portrait', 'earth', 'mira'),
-  'portrait.gao': painter('portrait', 'earth', 'gao'),
-  'portrait.pella': painter('portrait', 'air', 'pella'),
-  'portrait.dorin': painter('portrait', 'earth', 'dorin'),
-  'portrait.ruon': painter('portrait', 'neutral', 'ruon'),
-  'portrait.jin': painter('portrait', 'nonbender', 'jin'),
+  'portrait.mira': { kind: 'image', url: 'art/portraits/mira.png', palette: 'earth' },
+  'portrait.gao': { kind: 'image', url: 'art/portraits/gao.png', palette: 'earth' },
+  'portrait.pella': { kind: 'image', url: 'art/portraits/pella.png', palette: 'air' },
+  'portrait.dorin': { kind: 'image', url: 'art/portraits/dorin.png', palette: 'earth' },
+  'portrait.ruon': { kind: 'image', url: 'art/portraits/ruon.png', palette: 'neutral' },
+  'portrait.jin': { kind: 'image', url: 'art/portraits/jin.png', palette: 'nonbender' },
 
   /* ------------------------------------------------------------ Probe */
   /*

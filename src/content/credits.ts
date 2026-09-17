@@ -49,6 +49,15 @@ export interface CreditEntry {
 
 export const CREDITS: readonly CreditEntry[] = [
   {
+    what: 'The character portraits',
+    work: 'Four Nations Tactics dialogue portraits',
+    authors: 'This project, with OpenAI image generation',
+    licence: 'own work',
+    source: '',
+    covers: ['art/portraits'],
+    note: 'Original hero and NPC portraits generated from the project character briefs. Source notes and prompts are in docs/art/dialogue-portraits.md.',
+  },
+  {
     what: 'The heading typeface',
     work: 'Shippori Mincho 700, Latin subset',
     authors: 'The Shippori Mincho Project Authors',
