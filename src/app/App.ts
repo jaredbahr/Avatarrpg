@@ -39,6 +39,8 @@ import { reconcileDisciplines } from '../core/save/reconcile';
 import type { SessionMeta } from '../core/save/serialize';
 import { announce, clear, el } from './ui/dom';
 import { loadIcons } from './ui/icons';
+import { AudioBus } from './audio/bus';
+import { setUiSink } from './audio/ui';
 import { WHEEL_LINES_SVG } from './ui/marks';
 import { Toasts } from './ui/Toasts';
 import { Stats } from './ui/Stats';
@@ -109,6 +111,8 @@ export class App {
   private scene: Scene | null = null;
   private pause: PauseMenu | null = null;
   private levelUp: LevelUpDialog | DisciplineDialog | null = null;
+  /** Sound. Opens no context until a gesture unlocks it (ADR 0011). */
+  readonly audio: AudioBus;
   /** Set while a battle is being resolved, so it cannot double-fire. */
   private resolving = false;
   private resizeQueued = false;
@@ -119,8 +123,16 @@ export class App {
     readonly storyEntry: string,
   ) {
     this.host = root;
-    this.animator = new Animator(content);
     this.settings = loadSettings();
+    // The bus reads the volume through a closure rather than a copy, so the
+    // slider takes effect on the next cue with nothing to keep in step.
+    this.audio = new AudioBus({ volume: () => this.settings.volume });
+    // `button()` cannot see the app, so the bus is registered rather than
+    // passed; a control asks for a click without knowing what makes one.
+    setUiSink((key) => this.audio.play([{ key, at: 0, seed: 0 }], 0));
+    this.animator = new Animator(content, {
+      onSounds: (cues, now) => this.audio.play(cues, now),
+    });
     applySettings(this.settings);
 
     clear(root);
@@ -176,6 +188,16 @@ export class App {
   start(): void {
     // The real icon set, if it is there; every mark falls back to the drawn one.
     loadIcons();
+    /*
+     * Sound cannot start before a gesture, and on iOS the context suspends
+     * again whenever the page goes to the background — so this listens for
+     * every gesture rather than the first one, and `unlock()` is a no-op once
+     * the context is already running. `pointerdown` rather than `click`,
+     * because a tap that starts a drag on the board never becomes a click.
+     */
+    const unlock = (): void => this.audio.unlock();
+    window.addEventListener('pointerdown', unlock, { passive: true });
+    window.addEventListener('keydown', unlock, { passive: true });
     this.showScene(new TitleScene(this));
   }
 
@@ -396,6 +418,11 @@ export class App {
     this.settings = { ...this.settings, ...next };
     applySettings(this.settings);
     saveSettings(this.settings);
+    // Turning sound off gives the context back rather than leaving a silent
+    // graph running; turning it on needs no gesture, because changing the
+    // setting *is* one.
+    if (this.settings.volume <= 0) this.audio.close();
+    else this.audio.unlock();
     this.scene?.resize?.();
     this.scene?.sync();
   }

@@ -252,6 +252,11 @@ export interface Settings {
   highContrast: boolean;
   /** Tile lines over the ground. Off by default (ADR 0007); High contrast forces them on. */
   showGrid: boolean;
+  /**
+   * How loud the game is, 0 to 1. Zero opens no audio context at all, so
+   * "off" costs nothing rather than running a silent graph (ADR 0011).
+   */
+  volume: number;
 }
 
 export const DEFAULT_SETTINGS: Settings = {
@@ -260,6 +265,7 @@ export const DEFAULT_SETTINGS: Settings = {
   hatchSurfaces: false,
   highContrast: false,
   showGrid: false,
+  volume: 0.7,
 };
 
 export function loadSettings(): Settings {
@@ -276,6 +282,12 @@ export function loadSettings(): Settings {
       hatchSurfaces: parsed.hatchSurfaces === true,
       highContrast: parsed.highContrast === true,
       showGrid: parsed.showGrid === true,
+      // A save written before sound existed has no volume; it gets the default
+      // rather than silence, because a missing field is not a preference.
+      volume:
+        typeof parsed.volume === 'number' && parsed.volume >= 0 && parsed.volume <= 1
+          ? parsed.volume
+          : DEFAULT_SETTINGS.volume,
     };
   } catch {
     return { ...DEFAULT_SETTINGS };
