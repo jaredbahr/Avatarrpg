@@ -67,7 +67,7 @@ export interface ChoreographyInput {
  * frame loop can — hand it a time and the audio thread hits it whatever the
  * renderer is doing. So the cues travel beside the tracks, the bus schedules
  * them ahead on its own clock, and `busy()` and `finishesAt` keep meaning
- * exactly what they meant (ADR 0004, ADR 0011).
+ * exactly what they meant (ADR 0004, ADR 0012).
  */
 export interface SoundCue {
   /** A key `resolveSound` understands: an fx key, or one of the named cues. */

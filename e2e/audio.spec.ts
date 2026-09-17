@@ -11,7 +11,7 @@ import { enterNode, resetStorage, startGame, takeTurn, waitForIdle } from './hel
  * context back rather than leaving a silent graph running.
  *
  * It does **not** prove anything was audible, and no headless check can. That
- * verdict is the owner's, on the device (ADR 0011).
+ * verdict is the owner's, on the device (ADR 0012).
  */
 test.describe('sound', () => {
   test('a gesture unlocks the context, and Off closes it', async ({ page }) => {

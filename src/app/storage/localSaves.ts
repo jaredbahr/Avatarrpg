@@ -254,7 +254,7 @@ export interface Settings {
   showGrid: boolean;
   /**
    * How loud the game is, 0 to 1. Zero opens no audio context at all, so
-   * "off" costs nothing rather than running a silent graph (ADR 0011).
+   * "off" costs nothing rather than running a silent graph (ADR 0012).
    */
   volume: number;
 }

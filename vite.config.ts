@@ -35,7 +35,7 @@ export default defineConfig({
          * megabyte, and a footstep that arrives on the second walk is worse
          * than one that costs nothing to have ready. Music, when there is
          * any, must be excluded here — a first load on a tablet has to stay
-         * a breath (ADR 0011).
+         * a breath (ADR 0012).
          */
         globPatterns: ['**/*.{js,css,html,svg,png,webp,json,woff2,ogg}'],
         cleanupOutdatedCaches: true,
