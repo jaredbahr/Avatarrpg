@@ -115,9 +115,12 @@ export function main(argv: readonly string[]): number {
   }
 
   const keyOptions: KeyOptions = { ...DEFAULT_KEY, color: args.key, tolerance: args.tolerance };
+  // `--key alpha` preserves already-transparent generator output, including
+  // green cloth: running that through chroma despill would recolour it.
+  const useAlpha = args.key === 'alpha';
   // A background that is not the key would be kept and the figure cut instead.
   const first = frames[0];
-  if (first) {
+  if (first && !useAlpha) {
     const raw = readPng(first.path);
     const distance = keyDistance(raw, keyOptions);
     if (distance > keyOptions.tolerance + keyOptions.feather) {
@@ -134,7 +137,8 @@ export function main(argv: readonly string[]): number {
 
   // Key and trim everything first, so the scale can come from the idle pose.
   const keyed = frames.map((frame) => {
-    const image = keyOut(readPng(frame.path), keyOptions);
+    const raw = readPng(frame.path);
+    const image = useAlpha ? raw : keyOut(raw, keyOptions);
     const bounds = alphaBounds(image);
     return { ...frame, figure: bounds ? crop(image, bounds) : null };
   });
