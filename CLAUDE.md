@@ -130,6 +130,11 @@ Never run `npx playwright install` in the dev container — Chromium is already 
   with `main`, and any review comment on it is addressed — CI is the last gate,
   not a second opinion. Merge with a merge commit, not a squash: the history is
   one-concern commits and it stays that way.
+  This is Jared's standing instruction for **all agents**, also recorded in
+  `AGENTS.md`. Use the latest commit's checks, address conflicts and review
+  feedback, and never bypass a failing or missing check. A rejected auto-merge
+  request is a blocker to investigate, not a reason to ask for routine merge
+  approval again.
 - Anything that changes an engine, a rendering contract, an asset format or a
   budget gets an ADR in `docs/adr/`. The phase plan is `docs/roadmap.md`; art
   is generated against `docs/art-bible.md`; a new device is checked against
