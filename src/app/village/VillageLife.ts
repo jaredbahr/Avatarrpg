@@ -262,8 +262,8 @@ export class VillageLife {
     const t = time / 1000;
     const pet = now < this.petUntil;
     this.creature = {
-      x: 19.5 + (pet ? 0 : Math.sin(t * 0.35) * 0.4),
-      y: 15 + (pet ? 0 : Math.cos(t * 0.35) * 0.2),
+      x: RIVERSIDE_SPOTS.otter.x + 0.65 + (pet ? 0 : Math.sin(t * 0.35) * 0.4),
+      y: RIVERSIDE_SPOTS.otter.y - 0.3 + (pet ? 0 : Math.cos(t * 0.35) * 0.2),
     };
     this.stage.draw(
       {

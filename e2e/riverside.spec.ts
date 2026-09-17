@@ -3,6 +3,8 @@ import { enterNode, resetStorage, startGame } from './helpers';
 
 for (const renderer of ['canvas', 'webgl']) {
   test(`riverside discovery, forms and campaign preservation (${renderer})`, async ({ page }) => {
+    const errors: string[] = [];
+    page.on('pageerror', (error) => errors.push(error.message));
     await resetStorage(page, `?renderer=${renderer}`);
     await startGame(page, ['Jared'], ['bo'], 'campaign-to-preserve', { reduceMotion: false });
     const before = await page.evaluate(() => {
@@ -49,6 +51,7 @@ for (const renderer of ['canvas', 'webgl']) {
       };
     });
     expect(after).toEqual(before);
+    expect(errors).toEqual([]);
     await expect(
       page.getByRole('button', { name: 'Explore the riverside', exact: true }),
     ).toBeVisible();

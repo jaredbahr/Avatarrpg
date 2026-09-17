@@ -123,8 +123,8 @@ export class VillageLayer {
     for (let i = 0; i < 38; i++) {
       const y = (i * 0.67 + time * 0.48) % 24;
       if (y > 10.65 && y < 13.2) continue;
-      const centre = y < 11 ? 25.05 : 24.0 + Math.sin(y * 0.28) * 0.7;
-      const x = centre + Math.sin(i * 8.31) * 1.45;
+      const centre = y < 11 ? 25.05 : 24.4 + Math.max(0, y - 17) * 0.4;
+      const x = centre + Math.sin(i * 8.31) * 1.2;
       c.strokeStyle = i % 3 ? 'rgba(213,250,238,0.25)' : 'rgba(250,255,232,0.48)';
       c.lineWidth = 0.025 + (i % 3) * 0.012;
       c.beginPath();

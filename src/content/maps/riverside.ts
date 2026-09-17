@@ -6,7 +6,7 @@ export const RIVERSIDE_ID = 'ba_dan_riverside';
 export const RIVERSIDE_ENTRY = 'riverside_explore';
 export const RIVERSIDE_SPOTS = {
   mira: { x: 15, y: 9 },
-  otter: { x: 20, y: 15 },
+  otter: { x: 17, y: 15 },
   tea: { x: 10, y: 18 },
   practice: { x: 30, y: 13 },
   shrine: { x: 31, y: 5 },
@@ -34,7 +34,7 @@ const spans: readonly (readonly (readonly [number, number])[])[] = [
     [30, 32],
   ],
   [
-    [10, 20],
+    [10, 18],
     [30, 31],
   ],
   [
@@ -52,28 +52,31 @@ const spans: readonly (readonly (readonly [number, number])[])[] = [
   [[12, 33]],
   [[9, 33]],
   [
-    [7, 21],
+    [7, 20],
     [29, 33],
   ],
   [
-    [10, 20],
+    [10, 18],
     [29, 33],
   ],
   [
-    [10, 20],
+    [10, 18],
     [29, 32],
   ],
   [
     [10, 18],
     [29, 31],
   ],
-  [[10, 15]],
-  [[10, 13]],
-  [[9, 12]],
-  [[9, 11]],
-  [[9, 11]],
-  [[9, 11]],
-  [[9, 11]],
+  [
+    [10, 12],
+    [17, 18],
+  ],
+  [[10, 11]],
+  [[9, 10]],
+  [[9, 10]],
+  [],
+  [],
+  [],
 ];
 const rows = spans.map((row) =>
   Array.from({ length: 36 }, (_, x) => (row.some(([a, b]) => x >= a && x <= b) ? '=' : '#')).join(
@@ -99,7 +102,7 @@ export const RIVERSIDE: MapDef = {
     { x: 15, y: 13 },
     { x: 16, y: 13 },
   ],
-  exit: { pos: { x: 10, y: 23 }, label: 'Back to Ba Dan village' },
+  exit: { pos: { x: 10, y: 20 }, label: 'Back to Ba Dan village' },
   npcs: [
     {
       id: 'riverside_mira',

@@ -7,7 +7,7 @@ inform gesture, pauses, weight and effects. Their characters and assets are not
 used here.
 
 The background was generated for this project at 1536 by 1024. Composition:
-jade-roofed timber houses on the left bank, a banyan above an open village square,
+terracotta-roofed timber houses on the left bank, a banyan above an open village square,
 a stream and waterfall through the right third, a central wooden bridge,
 a practice clearing across it, a north-east shrine and a south-west tea veranda.
 Warm afternoon light, sage foliage, cream paths, mossy stone, gentle painted

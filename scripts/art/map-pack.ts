@@ -43,7 +43,7 @@ const SCENES: Readonly<Record<string, Scene>> = {
   ba_dan_riverside: {
     place: 'The riverside neighborhood of Ba Dan, a quiet afternoon beyond the village.',
     scene:
-      'A warm painted village of timber houses and jade roofs occupies the left bank. A great banyan shades a central open square. A stream flows from a waterfall at the north toward the south, crossed by a wooden footbridge through the middle. Across it, a little practice clearing opens to the east and a narrow path climbs north to an old stone shrine. A tea veranda overlooks the southwest path. Mossy stones, flowers and reeds soften the banks. Keep the central square, bridge and marked paths clear.',
+      'A warm painted village of timber houses and terracotta roofs occupies the left bank. A great banyan shades a central open square. A stream flows from a waterfall at the north toward the south, crossed by a wooden footbridge through the middle. Across it, a little practice clearing opens to the east and a narrow path climbs north to an old stone shrine. A tea veranda overlooks the southwest path. Mossy stones, flowers and reeds soften the banks. Keep the central square, bridge and marked paths clear.',
     light:
       'Warm afternoon daylight, sage greens and cream earth, gently painted edges with dark brown ink accents.',
   },
