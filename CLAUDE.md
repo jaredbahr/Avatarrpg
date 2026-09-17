@@ -116,6 +116,12 @@ Never run `npx playwright install` in the dev container — Chromium is already 
   is `app.setMood()`; a scene that knows better than the map (a speaker's
   element, the path being picked) calls it from its `render()`.
 - Commit messages: imperative mood, one concern per commit.
+- **Work auto-merges once it is ready.** Nothing waits on a human clicking the
+  button: open the PR, then turn on auto-merge so it lands the moment CI is
+  green. Ready means `npm run verify` passed locally, the PR has no conflict
+  with `main`, and any review comment on it is addressed — CI is the last gate,
+  not a second opinion. Merge with a merge commit, not a squash: the history is
+  one-concern commits and it stays that way.
 - Anything that changes an engine, a rendering contract, an asset format or a
   budget gets an ADR in `docs/adr/`. The phase plan is `docs/roadmap.md`; art
   is generated against `docs/art-bible.md`; a new device is checked against

@@ -56,15 +56,16 @@ html[data-reduce-motion='on'] .backdrop-wash {
  * CSS. (A legend swatch rule used to live here with nothing feeding it.)
  */
 
-/* High-contrast panel edges for the tablet in bright light: brighter lines,
-   a thicker outline, and no paper grain behind the text. */
+/* High-contrast panel edges for the tablet in bright light: darker lines on
+   whiter paper, a thicker outline, and no paper grain behind the text. */
 html[data-contrast='high'] {
-  --c-line: #a08a6e;
-  --c-ink-dim: #dfd0b8;
-  --c-panel: #221812;
-  --c-ink-line: #c9b08a;
+  --c-line: #6b4f33;
+  --c-ink-dim: #3a2a1f;
+  --c-ink-faint: #5c4636;
+  --c-panel: #fbf6ea;
+  --c-ink-line: #2a1a10;
   --gold-hair: color-mix(in srgb, var(--c-gold) 45%, transparent);
-  --surface-1: #2c2018;
+  --surface-1: #fffdf6;
   --hairline: 2px;
   --tex-grain: none;
   --wash-alpha: 0;

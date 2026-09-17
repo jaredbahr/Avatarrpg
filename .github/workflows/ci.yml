@@ -42,6 +42,12 @@ jobs:
       - name: Check bundle budget (300 KB gzipped)
         run: node scripts/check-bundle-size.mjs
 
+      - name: Check every sheet in the manifest against its files
+        run: npm run art:validate
+
+      - name: Check asset budget (4 MB a family, 25 MB precached)
+        run: npm run check:assets
+
       - name: Balance report
         # Prints win rates per encounter at every table size. Fails only on an
         # anomaly (a stalemate, impossible HP); the tuning band is a target to
@@ -82,3 +88,32 @@ jobs:
           name: playwright-report
           path: playwright-report/
           retention-days: 7
+
+  gallery:
+    name: Screenshot gallery
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - run: npm ci
+
+      - name: Install Chromium for Playwright
+        run: npx playwright install --with-deps chromium
+
+      - name: Capture the gallery
+        # Every beat on every project, against the production build, with a
+        # fixed seed. It is the review loop for anything visual: download the
+        # artefact and open index.html.
+        run: npm run gallery
+
+      - uses: actions/upload-artifact@v4
+        if: ${{ !cancelled() }}
+        with:
+          name: gallery
+          path: gallery/
+          retention-days: 14

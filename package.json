@@ -21,7 +21,17 @@
     "sim": "vitest run src/core/sim",
     "balance": "tsx scripts/balance.ts",
     "e2e": "playwright test",
-    "verify": "npm run typecheck && npm run lint && npm run format:check && npm run test"
+    "verify": "npm run typecheck && npm run lint && npm run format:check && npm run test",
+    "gallery": "playwright test -c playwright.gallery.config.ts && node scripts/gallery-index.mjs",
+    "art:normalise": "tsx scripts/art/normalise.ts",
+    "art:pack": "tsx scripts/art/pack.ts",
+    "art:validate": "tsx scripts/art/validate.ts",
+    "art:map": "tsx scripts/art/map.ts",
+    "art:map-pack": "tsx scripts/art/map-pack.ts",
+    "art:icons": "tsx scripts/art/icons.ts",
+    "art:portrait": "tsx scripts/art/portrait.ts",
+    "check:assets": "node scripts/check-asset-budget.mjs",
+    "credits": "tsx scripts/credits.ts"
   },
   "dependencies": {
     "pixi.js": "^8.20.1",
@@ -29,9 +39,14 @@
   },
   "devDependencies": {
     "@eslint/js": "^9.17.0",
+    "@iconify-json/game-icons": "^1.2.4",
+    "@jsquash/webp": "^1.5.0",
     "@playwright/test": "^1.49.1",
     "@types/node": "^22.10.2",
+    "@types/pngjs": "^6.0.5",
     "eslint": "^9.17.0",
+    "jpeg-js": "^0.4.4",
+    "pngjs": "^7.0.0",
     "prettier": "^3.4.2",
     "tsx": "^4.19.2",
     "typescript": "^5.7.2",

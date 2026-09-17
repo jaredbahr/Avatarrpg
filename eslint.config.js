@@ -56,6 +56,7 @@ export default tseslint.config(
       'playwright-report/**',
       'test-results/**',
       '.shots/**',
+      'gallery/**',
     ],
   },
   js.configs.recommended,

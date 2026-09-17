@@ -16,6 +16,8 @@
  */
 
 import { z } from 'zod';
+import { CLIP_FRAME_COUNTS, CLIP_NAMES, REQUIRED_CLIPS } from './assets/clips';
+import type { AssetEntry } from './assets/manifest';
 import { STANDING_PREFIX } from '../core/story/conditions';
 import type {
   Ability,
@@ -418,6 +420,11 @@ export const mapSchema = z
     props: z.array(propPlacement),
     ambience: z.string().min(1),
     exit: z.object({ pos: vec2, label: z.string().min(1) }).optional(),
+    // A painting under the grid (ADR 0009). Between 32 px a tile (the probe) and
+    // 256, so a 24-wide map stays inside the 2048 px texture every iPad takes.
+    backdrop: z
+      .object({ url: z.string().min(1), pixelsPerTile: z.number().int().min(32).max(256) })
+      .optional(),
   })
   .superRefine((map, ctx) => {
     if (map.rows.length !== map.height) {
@@ -569,7 +576,45 @@ export const storyNodeSchema = z.discriminatedUnion('kind', [
 /* Cross-reference validation                                          */
 /* ------------------------------------------------------------------ */
 
+/* ------------------------------------------------------------------ */
+/* Assets                                                              */
+/* ------------------------------------------------------------------ */
+
+const clipDef = z.object({
+  frames: z.array(z.string().min(1)).min(1),
+  fps: z.number().positive().max(60),
+  loop: z.boolean(),
+  events: z.object({ hit: z.number().int().min(0).optional() }).optional(),
+});
+
+/** The manifest's entries (ADR 0003): a painter, a still, or a pose sheet. */
+export const assetEntrySchema = z.discriminatedUnion('kind', [
+  z.object({
+    kind: z.literal('painter'),
+    painter: z.string().min(1),
+    palette: z.string().min(1),
+    variant: z.string().min(1).optional(),
+  }),
+  z.object({
+    kind: z.literal('image'),
+    url: z.string().min(1),
+    palette: z.string().min(1).optional(),
+  }),
+  z.object({
+    kind: z.literal('sheet'),
+    atlas: z.string().regex(/\.json$/, 'must point at the atlas JSON'),
+    pixelsPerTile: z.union([z.literal(128), z.literal(256)]),
+    footprint: z.object({ w: z.union([z.literal(1), z.literal(2)]), h: z.literal(1) }),
+    anchor: z.object({ x: z.number().min(0).max(1), y: z.number().min(0).max(1) }),
+    facing: z.enum(['mirror', 'both']),
+    clips: z.object(Object.fromEntries(CLIP_NAMES.map((clip) => [clip, clipDef.optional()]))),
+    palette: z.string().min(1),
+  }),
+]);
+
 export interface ContentBundle {
+  /** The art manifest, so every sprite key content names is checked against it. */
+  readonly assets?: Readonly<Record<string, AssetEntry>>;
   readonly abilities: readonly Ability[];
   readonly characters: readonly CharacterDef[];
   readonly disciplines: readonly DisciplineDef[];
@@ -644,6 +689,69 @@ function isWalkable(map: MapDef, x: number, y: number): boolean {
  */
 export function validateContent(bundle: ContentBundle): string[] {
   const problems: string[] = [];
+
+  /* --- assets ------------------------------------------------------- */
+  const assets = bundle.assets ?? {};
+  for (const [key, entry] of Object.entries(assets)) {
+    const parsed = assetEntrySchema.safeParse(entry);
+    if (!parsed.success) {
+      const issues = parsed.error.issues.map((i) => `${i.path.join('.')}: ${i.message}`);
+      problems.push(`asset ${key}: ${issues.join('; ')}`);
+      continue;
+    }
+    if (entry.kind !== 'sheet') continue;
+    for (const clip of REQUIRED_CLIPS) {
+      if (!entry.clips[clip]) problems.push(`asset ${key}: sheet has no ${clip} clip`);
+    }
+    for (const clip of CLIP_NAMES) {
+      const def = entry.clips[clip];
+      if (!def) continue;
+      const bounds = CLIP_FRAME_COUNTS[clip];
+      if (def.frames.length < bounds.min || def.frames.length > bounds.max) {
+        problems.push(
+          `asset ${key}: ${clip} has ${def.frames.length} frames, needs ${bounds.min}-${bounds.max}`,
+        );
+      }
+      def.frames.forEach((name, index) => {
+        const expected = `${key}/${clip}/${index}`;
+        if (name !== expected) {
+          problems.push(
+            `asset ${key}: ${clip} frame ${index} is "${name}", expected "${expected}"`,
+          );
+        }
+      });
+    }
+  }
+  if (bundle.assets) {
+    const wanted: [string, string, number | null][] = [
+      ...bundle.characters.map((c): [string, string, number | null] => [
+        `character ${c.id}`,
+        c.sprite,
+        1,
+      ]),
+      ...bundle.enemies.map((e): [string, string, number | null] => [
+        `enemy ${e.id}`,
+        e.sprite,
+        e.size,
+      ]),
+      ...bundle.props.map((p): [string, string, number | null] => [`prop ${p.id}`, p.sprite, null]),
+      ...bundle.maps.flatMap((m) =>
+        m.npcs.map((n): [string, string, number | null] => [`npc ${n.id}`, n.sprite, null]),
+      ),
+    ];
+    for (const [owner, key, size] of wanted) {
+      const entry = assets[key];
+      if (!entry) {
+        problems.push(`${owner}: sprite "${key}" has no entry in the asset manifest`);
+        continue;
+      }
+      if (entry.kind === 'sheet' && size !== null && entry.footprint.w !== size) {
+        problems.push(
+          `${owner}: sheet "${key}" is ${entry.footprint.w} tiles wide, the unit is ${size}`,
+        );
+      }
+    }
+  }
 
   /* --- shape ------------------------------------------------------- */
   const shapeChecks: [string, z.ZodTypeAny, readonly unknown[]][] = [

@@ -11,14 +11,14 @@ import type { App } from '../App';
 import type { Unit } from '../../core/types';
 import { Dialog } from './Dialog';
 import type { DialogOptions } from './Dialog';
-import { button, el, painterCanvas } from './dom';
+import { button, el } from './dom';
+import { assetCanvas } from './assetCanvas';
 import { abilityCard } from './AbilityCard';
 import { effectiveStats } from '../../core/rules/stats';
 import { describeIncoming } from '../../core/rules/status';
 import { describeFooting } from '../../core/rules/reactions';
 import { occupiedCells, tileAt } from '../../core/rules/grid';
 import { levelProgress, xpToNextLevel } from '../../core/rules/leveling';
-import { resolvePainter } from '../../render/painters/registry';
 
 export class UnitInspector extends Dialog {
   protected options: DialogOptions;
@@ -83,9 +83,7 @@ export class UnitInspector extends Dialog {
       el(
         'div',
         { class: 'row inspector-head' },
-        painterCanvas(portraitKey, 5, (ctx, size) => {
-          resolvePainter(portraitKey).draw(ctx, { x: 0, y: 0, size });
-        }),
+        assetCanvas(portraitKey, 5),
         el(
           'div',
           { class: 'stack tight' },

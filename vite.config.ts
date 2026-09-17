@@ -30,7 +30,7 @@ export default defineConfig({
       injectRegister: 'auto',
       includeAssets: ['icons/apple-touch-icon.png', 'icons/favicon.svg'],
       workbox: {
-        globPatterns: ['**/*.{js,css,html,svg,png,woff2}'],
+        globPatterns: ['**/*.{js,css,html,svg,png,webp,json,woff2}'],
         cleanupOutdatedCaches: true,
         navigateFallback: `${base}index.html`,
       },
@@ -43,8 +43,8 @@ export default defineConfig({
         short_name: 'FN Tactics',
         description:
           'A hot-seat turn-based tactical RPG set a few decades after Korra. Non-commercial fan work.',
-        theme_color: '#1b1410',
-        background_color: '#1b1410',
+        theme_color: '#e7d9bd',
+        background_color: '#e7d9bd',
         display: 'standalone',
         orientation: 'landscape',
         start_url: base,

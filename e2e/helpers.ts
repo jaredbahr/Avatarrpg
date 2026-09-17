@@ -40,9 +40,15 @@ export async function snapshot(page: Page): Promise<AppSnapshot> {
   });
 }
 
-/** Clears saved games and settings so each spec starts from nothing. */
-export async function resetStorage(page: Page): Promise<void> {
-  await page.goto('/');
+/**
+ * Clears saved games and settings so each spec starts from nothing.
+ *
+ * `query` is kept across the reload, which is how a spec forces a renderer
+ * (`?renderer=webgl`) or the frame-time readout (`?stats=1`): both are read
+ * from `location.search` when the app boots.
+ */
+export async function resetStorage(page: Page, query = ''): Promise<void> {
+  await page.goto(`/${query}`);
   await page.evaluate(() => {
     try {
       localStorage.clear();
@@ -54,24 +60,35 @@ export async function resetStorage(page: Page): Promise<void> {
   await page.waitForFunction(() => Boolean(window.fnt?.app));
 }
 
+export interface StartOptions {
+  /**
+   * Reduce motion is on by default here: the suite tests rules and UI, not
+   * the playback, and a full cast plays for most of a second per enemy per
+   * round. A spec about motion turns it off.
+   */
+  readonly reduceMotion?: boolean;
+}
+
 /** Starts a game without walking the whole setup flow. */
 export async function startGame(
   page: Page,
   players: string[],
   characterIds: string[],
   seed = 'e2e-seed',
+  options: StartOptions = {},
 ): Promise<void> {
   await page.evaluate(
-    ({ players, characterIds, seed }) => {
+    ({ players, characterIds, seed, reduceMotion }) => {
       const app = window.fnt?.app;
       if (!app) throw new Error('The game has not finished booting.');
+      app.updateSettings({ reduceMotion });
       app.newGame(
         players.map((name) => ({ name, unitId: '' })),
         characterIds.map((characterId) => ({ characterId })),
         seed,
       );
     },
-    { players, characterIds, seed },
+    { players, characterIds, seed, reduceMotion: options.reduceMotion ?? true },
   );
 }
 
@@ -88,7 +105,10 @@ export async function enterNode(page: Page, nodeId: string): Promise<void> {
  * Returns false if the fight ended while waiting, so a spec that drives
  * several rounds can stop rather than time out on a turn that will never come.
  */
-export async function takeTurn(page: Page): Promise<boolean> {
+export async function takeTurn(
+  page: Page,
+  options: { settleTimeout?: number } = {},
+): Promise<boolean> {
   const result = await page.waitForFunction(
     () => {
       const battle = window.fnt?.app.state?.battle;
@@ -106,7 +126,7 @@ export async function takeTurn(page: Page): Promise<boolean> {
 
   const ready = page.getByRole('button', { name: /I'm ready/i });
   if (await ready.count()) await ready.click();
-  await settleLayout(page);
+  await settleLayout(page, options.settleTimeout);
   return true;
 }
 
@@ -119,8 +139,13 @@ export async function takeTurn(page: Page): Promise<boolean> {
  * refit changes the tile size, so a camera read taken before it lands maps a
  * tile to the wrong pixel. Slow frames (WebKit on software GL) open the gap
  * wide enough to matter; three reads two frames apart close it.
+ *
+ * `timeout` is the whole wait. The e2e suite keeps the default; the gallery
+ * passes 30 s on its WebGL projects, where a 2x frame on CI's software
+ * rasteriser can take over a second and three reads two frames apart have
+ * outlasted 10 s on a slow runner.
  */
-export async function settleLayout(page: Page): Promise<void> {
+export async function settleLayout(page: Page, timeout = 10_000): Promise<void> {
   await page.waitForFunction(
     () =>
       new Promise<boolean>((resolve) => {
@@ -139,7 +164,7 @@ export async function settleLayout(page: Page): Promise<void> {
         });
       }),
     undefined,
-    { timeout: 10_000 },
+    { timeout },
   );
 }
 

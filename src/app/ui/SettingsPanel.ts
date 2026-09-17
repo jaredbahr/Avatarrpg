@@ -1,9 +1,10 @@
 /**
  * Settings.
  *
- * Four switches, each one aimed at a specific person at the table rather than
+ * Five switches, each one aimed at a specific person at the table rather than
  * at a spec: text too small on a 2736x1824 screen, too much going on, can't
- * tell the fire from the mud, or the panels washing out in daylight.
+ * tell the fire from the mud, the panels washing out in daylight, or a
+ * planner who counts squares.
  */
 
 import type { App } from '../App';
@@ -59,9 +60,18 @@ export class SettingsPanel extends Dialog {
     body.appendChild(
       this.toggleRow(
         'Higher contrast',
-        'Brighter panel edges and text, for playing in daylight.',
+        'Brighter panel edges and text, for playing in daylight. Also draws the grid.',
         settings.highContrast,
         (value) => this.app.updateSettings({ highContrast: value }),
+      ),
+    );
+
+    body.appendChild(
+      this.toggleRow(
+        'Show grid',
+        'Draws the tile lines over the ground, for anyone who plans by counting squares.',
+        settings.showGrid,
+        (value) => this.app.updateSettings({ showGrid: value }),
       ),
     );
 

@@ -34,6 +34,7 @@ export function describeEvent(
       return `${nameOf(units, event.unitId)}'s turn.`;
 
     case 'unitMoved':
+    case 'partyWalked':
       return null;
 
     case 'abilityUsed': {

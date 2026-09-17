@@ -66,8 +66,9 @@
  *
  * Cost rules, because this is under everything on an iPad: no filter, no
  * blend mode, no per-frame JS. The blobs drift only on the title, where
- * nothing else moves, and both they and the wheel are hidden under the map
- * scenes, whose canvas covers them anyway.
+ * nothing else moves. The wheel is hidden under the map scenes; the blobs
+ * stay, because the board's canvas is transparent round the map (ADR 0008)
+ * and the wash is what frames it.
  */
 .app-root {
   --mood: var(--c-gold);
@@ -140,9 +141,7 @@
   height: 100%;
 }
 
-.app-root[data-scene='combat'] .backdrop-wash,
 .app-root[data-scene='combat'] .backdrop-wheel,
-.app-root[data-scene='explore'] .backdrop-wash,
 .app-root[data-scene='explore'] .backdrop-wheel {
   display: none;
 }
@@ -192,6 +191,56 @@
   gap: var(--sp-1);
 }
 
+/* The encounter's name on a plate, in the display face, the round under it. */
+.title-plate {
+  display: flex;
+  flex-direction: column;
+  gap: 0.05rem;
+  padding: var(--sp-1) var(--sp-3);
+  border: var(--hairline) solid var(--c-ink-line);
+  border-radius: var(--radius);
+  background: var(--surface-1);
+  box-shadow: var(--inset-edge);
+}
+
+.title-plate-name {
+  font-family: var(--font-display);
+  font-size: var(--fs-lg);
+  line-height: 1.1;
+  color: var(--c-ink);
+}
+
+.title-plate-round {
+  font-size: var(--fs-xs);
+  color: var(--c-ink-dim);
+}
+
+/*
+ * Marks: the inline line drawings from app/ui/marks.ts. Drawn in the
+ * current colour, so a button's element tints them and High contrast inks
+ * them; sized in rem so they scale with the type.
+ */
+.mark {
+  display: inline-flex;
+  flex: 0 0 auto;
+  width: 1.5rem;
+  height: 1.5rem;
+}
+
+.mark svg {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
+/* Beside a button's text rather than above it. */
+.mark-inline {
+  width: 1.1rem;
+  height: 1.1rem;
+  margin-right: var(--sp-1);
+  vertical-align: -0.2em;
+}
+
 .stack.tight {
   gap: 0.1rem;
 }
@@ -221,7 +270,7 @@
 
 .chip-ap {
   border-color: var(--c-gold);
-  color: var(--c-gold-soft);
+  color: var(--c-gold-deep);
 }
 .chip-hostile {
   border-color: var(--c-danger-line);
@@ -238,7 +287,7 @@
 }
 .chip-terrain {
   border-color: var(--c-parchment-line);
-  color: var(--c-gold-soft);
+  color: var(--c-gold-deep);
 }
 .chip-status {
   border-color: var(--c-parchment-line);
@@ -268,7 +317,7 @@
 
 .reaction-label {
   font-size: var(--fs-md);
-  color: var(--c-gold-soft);
+  color: var(--c-gold-deep);
   /* Sentences wrap; chips do not. That is the whole reason this is not one. */
   white-space: normal;
 }
@@ -334,7 +383,7 @@
 }
 
 .reaction-row-label {
-  color: var(--c-gold-soft);
+  color: var(--c-gold-deep);
 }
 
 .reaction-row-notes {
@@ -510,7 +559,7 @@
 
 .pick-card .tagline {
   margin: 0;
-  color: var(--c-gold-soft);
+  color: var(--c-gold-deep);
   font-size: var(--fs-sm);
 }
 
@@ -554,7 +603,8 @@
   --el-soft: var(--c-earth-soft);
 }
 .element-air {
-  --el: var(--c-air);
+  /* Air's parchment is the shell's own paper; its accent is inked down to read on it. */
+  --el: color-mix(in srgb, var(--c-air) 45%, var(--c-ink-line));
   --el-soft: var(--c-air-soft);
 }
 .element-nonbender {
@@ -713,7 +763,7 @@
 
 .decider-banner strong {
   font-size: var(--fs-xl);
-  color: var(--c-gold-soft);
+  color: var(--c-gold-deep);
 }
 
 .choice-options {
@@ -743,7 +793,7 @@
   font-size: var(--fs-sm);
   letter-spacing: 0.04em;
   text-transform: uppercase;
-  color: var(--c-gold-soft);
+  color: var(--c-gold-deep);
   border: var(--hairline) solid currentColor;
   border-radius: 999px;
   padding: 0.1rem var(--sp-2);
@@ -769,7 +819,7 @@
 .locked-hint {
   margin: 0;
   font-size: var(--fs-sm);
-  color: var(--c-gold-soft);
+  color: var(--c-gold-deep);
   font-style: italic;
 }
 
@@ -780,7 +830,7 @@
 }
 
 .end-panel h1 {
-  color: var(--c-gold-soft);
+  color: var(--c-gold-deep);
 }
 
 /* ------------------------------------------------------------------ */
@@ -794,10 +844,20 @@
   height: 100%;
 }
 
+/*
+ * The board's canvas clears to transparent (ADR 0008), so what shows round
+ * the edges of the map is the backdrop: its grain, its radial base and the
+ * mood wash, which stays visible under the map scenes for that reason. High
+ * contrast keeps the frame plain and the wash off.
+ */
 .map-wrap {
   position: relative;
   flex: 1 1 auto;
   min-height: 0;
+  background: transparent;
+}
+
+html[data-contrast='high'] .map-wrap {
   background: var(--c-bg-deep);
 }
 
@@ -823,18 +883,9 @@
 /* Combat HUD                                                          */
 /* ------------------------------------------------------------------ */
 
-/*
- * The initiative timeline.
- *
- * A round marker, then the acting unit, then who follows — laid on a rail so
- * it reads left to right as a sequence. Each chip carries a health bar,
- * because "who is nearly dead" is the question the turn order is actually
- * consulted for mid-fight and it used to need a long-press per unit.
- */
 .turn-strip {
   display: flex;
-  align-items: stretch;
-  gap: var(--sp-3);
+  gap: var(--sp-2);
   padding: var(--sp-2) var(--sp-3);
   overflow-x: auto;
   background: color-mix(in srgb, var(--c-bg-deep) 85%, transparent);
@@ -842,89 +893,38 @@
   flex: 0 0 auto;
 }
 
-.round-pill {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  flex: 0 0 auto;
-  padding: 0 var(--sp-3) 0 0;
-  border-right: var(--hairline) solid var(--c-line);
-  line-height: 1.1;
-}
-
-.round-label {
-  font-size: var(--fs-xs);
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-  color: var(--c-ink-faint);
-}
-
-.round-number {
-  font-size: var(--fs-lg);
-  color: var(--c-gold-soft);
-}
-
-.timeline {
-  display: flex;
-  align-items: flex-end;
-  gap: var(--sp-2);
-  margin: 0;
-  padding: 0;
-  list-style: none;
-  flex: 1 1 auto;
-}
-
 .turn-chip {
-  position: relative;
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 0.15rem;
+  gap: 0.1rem;
   padding: var(--sp-1);
   border-radius: var(--radius);
-  border: var(--hairline) solid transparent;
-  /* The element accent comes from .element-<id>; faction rides the ring. */
+  border: 2px solid transparent;
   min-width: 3.5rem;
-  flex: 0 0 auto;
-  opacity: 0.62;
-  background: color-mix(in srgb, var(--c-bg) 55%, transparent);
+  opacity: 0.6;
 }
 
-/*
- * The acting unit. Larger portrait, full opacity, a gilt edge and a caret
- * pointing down at the board — the caret is what says "this one is happening
- * now" rather than "this one is merely highlighted".
- */
+/* Whose turn it is stands on a gold plate; the rest wait in the paper. */
 .turn-chip.active {
+  border-color: var(--c-ink-line);
   opacity: 1;
-  border-color: var(--c-gold);
-  background: color-mix(in srgb, var(--c-gold) 14%, transparent);
-  box-shadow: var(--inset-edge);
+  background: linear-gradient(180deg, var(--c-gold-soft), var(--c-gold));
+  box-shadow: var(--shadow-1);
 }
 
-.turn-chip.active::after {
-  content: '';
-  position: absolute;
-  bottom: calc(-1 * var(--sp-2));
-  left: 50%;
-  translate: -50% 0;
-  border-left: 0.35rem solid transparent;
-  border-right: 0.35rem solid transparent;
-  border-top: 0.35rem solid var(--c-gold);
-}
-
-/* Faction on the portrait ring: party, ally and enemy at a glance. */
-.turn-chip .painter {
-  box-shadow: 0 0 0 2px var(--c-ink-line);
+.turn-chip.active span {
+  color: var(--c-ink-on-gold);
+  font-weight: 700;
 }
 
 .turn-chip.faction-enemy .painter {
   box-shadow: 0 0 0 2px var(--c-danger);
 }
 
+/* A party member's ring is their element (the chip's .element-* sets --el). */
 .turn-chip.faction-party .painter {
-  box-shadow: 0 0 0 2px var(--c-water-soft);
+  box-shadow: 0 0 0 2px var(--el);
 }
 
 .turn-chip.faction-ally .painter {
@@ -936,31 +936,6 @@
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
-}
-
-/* The per-chip health bar. Deliberately small: it is a glance, not a readout,
-   and the unit panel carries the numbers. */
-.chip-hp {
-  width: 100%;
-  height: 0.35rem;
-  border-radius: 999px;
-  background: rgb(0 0 0 / 70%);
-  border: var(--hairline) solid var(--c-ink-line);
-  overflow: hidden;
-}
-
-.chip-hp i {
-  display: block;
-  height: 100%;
-  background: var(--c-ok);
-}
-
-.chip-hp.is-hurt i {
-  background: var(--c-warn);
-}
-
-.chip-hp.is-critical i {
-  background: var(--c-danger);
 }
 
 .hud {
@@ -979,6 +954,7 @@
 }
 
 .hud-panel {
+  position: relative;
   background-color: var(--surface-0);
   border: var(--hairline) solid var(--c-ink-line);
   box-shadow: var(--inset-edge);
@@ -989,23 +965,89 @@
   gap: var(--sp-2);
 }
 
+/* A gilt bracket on two corners of every panel, from the one mask token. */
+.hud-panel::before,
+.hud-panel::after {
+  content: '';
+  position: absolute;
+  width: 1rem;
+  height: 1rem;
+  background: var(--c-gold);
+  -webkit-mask: var(--orn-corner) center / contain no-repeat;
+  mask: var(--orn-corner) center / contain no-repeat;
+  pointer-events: none;
+}
+
+.hud-panel::before {
+  top: -0.3rem;
+  left: -0.3rem;
+}
+
+.hud-panel::after {
+  right: -0.3rem;
+  bottom: -0.3rem;
+  transform: rotate(180deg);
+}
+
+html[data-contrast='high'] .hud-panel::before,
+html[data-contrast='high'] .hud-panel::after {
+  display: none;
+}
+
 .unit-panel {
-  min-width: 15rem;
+  min-width: 16rem;
   flex: 0 0 auto;
 }
 
-/* A medallion, matching the dialogue stage's treatment so a character looks
-   the same to the player wherever they meet them. */
+.unit-panel-body {
+  align-items: center;
+}
+
+.unit-panel-body .grow {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+/* The acting unit's face, ringed in its element; the same file the turn strip draws. */
 .unit-portrait {
   flex: 0 0 auto;
   border-radius: 50%;
-  overflow: hidden;
-  border: var(--hairline) solid var(--c-ink-line);
+  background: color-mix(in srgb, var(--el) 18%, transparent);
+  box-shadow: 0 0 0 2px var(--el);
+}
+
+/* Square in the unit panel, framed in ink with the element outside it. */
+.unit-portrait-frame {
+  position: relative;
+  flex: 0 0 auto;
+}
+
+.unit-portrait.square {
+  border-radius: var(--radius);
   box-shadow:
-    0 0 0 2px color-mix(in srgb, var(--el, var(--c-gold)) 60%, transparent),
-    var(--shadow-1);
-  background: color-mix(in srgb, var(--el, var(--c-gold)) 18%, var(--surface-1));
-  line-height: 0;
+    0 0 0 2px var(--c-ink-line),
+    0 0 0 4px color-mix(in srgb, var(--el) 55%, transparent);
+}
+
+/* The element's glyph as a badge on the portrait's corner. */
+.portrait-badge {
+  position: absolute;
+  right: -0.45rem;
+  bottom: -0.45rem;
+  width: 1.5rem;
+  height: 1.5rem;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  background: var(--surface-1);
+  border: var(--hairline) solid var(--c-ink-line);
+  box-shadow: var(--shadow-1);
+}
+
+.unit-name {
+  font-family: var(--font-display);
+  font-size: var(--fs-lg);
+  line-height: 1.1;
 }
 
 .bar {
@@ -1020,16 +1062,6 @@
 .bar-fill {
   height: 100%;
   background: linear-gradient(90deg, var(--c-ok), var(--c-ok-soft));
-}
-
-/* The same three bands the timeline chips use, so a bar means the same thing
-   wherever it appears. */
-.bar.is-hurt .bar-fill {
-  background: linear-gradient(90deg, var(--c-warn), var(--c-gold-soft));
-}
-
-.bar.is-critical .bar-fill {
-  background: linear-gradient(90deg, var(--c-danger), var(--c-danger-soft));
 }
 
 .bar-label {
@@ -1061,51 +1093,79 @@
   box-shadow: 0 0 0.35rem color-mix(in srgb, var(--c-gold) 50%, transparent);
 }
 
-.pips-small .pip {
-  width: 0.45rem;
-  height: 0.45rem;
-}
-
 .action-bar {
   flex: 1 1 auto;
-  flex-direction: row;
+  gap: var(--sp-1);
+}
+
+.action-row {
+  display: flex;
   flex-wrap: wrap;
   align-content: flex-start;
   gap: var(--sp-2);
 }
 
+/*
+ * What the player is doing, above the buttons: one line that never wraps,
+ * so the HUD keeps its height whichever mode the turn is in.
+ */
+.ability-header {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-2);
+  min-height: 1.75rem;
+  padding: 0 var(--sp-1);
+  color: var(--c-ink-dim);
+  font-size: var(--fs-sm);
+  white-space: nowrap;
+  overflow: hidden;
+}
+
+.ability-header .mark {
+  width: 1.25rem;
+  height: 1.25rem;
+  color: var(--el, var(--c-ink-dim));
+}
+
+.ability-header strong {
+  color: var(--c-ink);
+  font-size: var(--fs-md);
+}
+
+.header-cost {
+  color: var(--c-gold-deep);
+  font-weight: 700;
+}
+
+.header-desc {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* Mark above, name, cost under: the mockup's large action buttons. */
 .action-button {
   position: relative;
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: 0.1rem;
+  gap: 0.05rem;
   min-width: 6rem;
   min-height: var(--tap);
-  padding: var(--sp-2);
+  padding: var(--sp-1) var(--sp-2) var(--sp-2);
   font-size: var(--fs-md);
   line-height: 1.15;
+}
+
+.action-button .mark {
+  color: var(--el, var(--c-ink));
 }
 
 .action-button.selected {
   border-color: var(--c-gold);
   background-color: color-mix(in srgb, var(--c-gold) 20%, transparent);
   box-shadow: 0 0 0 2px color-mix(in srgb, var(--c-gold) 40%, transparent);
-}
-
-/*
- * The mark on an action button. The button is a column, so the glyph sits
- * above its label; it is decorative and aria-hidden, and it must not steal
- * height from a control that has to stay at --tap.
- */
-.action-glyph {
-  flex: 0 0 auto;
-  opacity: 0.95;
-}
-
-.action-button:disabled .action-glyph {
-  opacity: 0.4;
 }
 
 .action-sub {
@@ -1122,9 +1182,17 @@
   color: var(--c-warn);
 }
 
+/* End turn stands apart: inked, at the far end of the row. */
 .end-turn {
   margin-left: auto;
-  border-color: var(--c-gold);
+  border-color: var(--c-ink-line);
+  box-shadow:
+    inset 0 0 0 1px var(--c-ink-line),
+    inset 0 1px 0 var(--paper-hair);
+}
+
+.end-turn .mark {
+  color: var(--c-ink);
 }
 
 .log-panel {
@@ -1133,47 +1201,16 @@
   flex: 0 0 auto;
 }
 
-/*
- * The log scrolls, and has to look like it does. It is pinned to the newest
- * line, so the only cue that there is anything above is the first line being
- * cut off — a mask fades the top edge instead, which reads as "more up there"
- * without spending a scrollbar the tablet does not draw anyway.
- */
 .log-lines {
-  /*
-   * A fixed height, not a max: the fade is measured from the top of the *box*,
-   * so under a max-height a two-line log is a two-line box and the fade eats
-   * the first line — at the start of a fight, which is when the log is
-   * shortest and most likely to be read. At a fixed height with the lines
-   * pushed to the bottom, a short log sits well clear of the fade and only a
-   * log that actually overflows meets it. It also stops the panel growing line
-   * by line, which resized the map through the canvas observer on most turns.
-   */
-  height: 7rem;
+  max-height: 7rem;
   display: flex;
   flex-direction: column;
   gap: 0.1rem;
-  mask-image: linear-gradient(180deg, transparent, #000 1.25rem);
-}
-
-/*
- * Pushes a short log to the bottom. `justify-content: flex-end` would say the
- * same thing and is the obvious way to write it, but in a scroll container it
- * puts the overflowing lines above the scrollable area, where they cannot be
- * reached — an auto margin on the first item is the one that keeps scrolling.
- */
-.log-lines > p:first-child {
-  margin-top: auto;
 }
 
 .log-lines p {
   margin: 0;
   color: var(--c-ink-dim);
-}
-
-/* The newest line, which is the one the player is looking for. */
-.log-lines p:last-child {
-  color: var(--c-ink);
 }
 
 /* ------------------------------------------------------------------ */
@@ -1190,23 +1227,6 @@
   display: flex;
   flex-direction: column;
   gap: var(--sp-2);
-}
-
-/* Tinted by the element of the ability being confirmed, so the card and the
-   button that opened it are the same colour. */
-.confirm-bar[class*='element-'] {
-  border-left-width: var(--accent-bar);
-  background-image: linear-gradient(
-    180deg,
-    color-mix(in srgb, var(--el) 20%, transparent),
-    transparent 3rem
-  );
-}
-
-.confirm-title {
-  margin: 0;
-  font-size: var(--fs-lg);
-  color: var(--el-soft, var(--c-gold-soft));
 }
 
 /* An aim hint sits where the confirm bar would, so the eye already knows to
@@ -1246,7 +1266,7 @@
 
 .handoff-banner h1 {
   font-size: var(--fs-3xl);
-  color: var(--c-gold-soft);
+  color: var(--c-gold-deep);
   margin: 0;
 }
 
@@ -1261,7 +1281,7 @@
 }
 
 .result-panel h1 {
-  color: var(--c-gold-soft);
+  color: var(--c-gold-deep);
 }
 
 /* ------------------------------------------------------------------ */
@@ -1354,7 +1374,7 @@
 }
 
 .slot-place {
-  color: var(--c-gold-soft);
+  color: var(--c-gold-deep);
   font-size: var(--fs-sm);
 }
 
@@ -1464,7 +1484,7 @@
 
 /* Read off the damage modifiers rather than the prose: "lightning ×2". */
 .status-incoming {
-  color: var(--c-gold-soft);
+  color: var(--c-gold-deep);
   font-weight: 700;
 }
 
@@ -1479,7 +1499,7 @@
   padding: 0.1rem 0.4rem;
   border-radius: var(--radius);
   background: rgb(0 0 0 / 65%);
-  color: var(--c-gold-soft);
+  color: var(--c-gold-deep);
   font-family: ui-monospace, Menlo, Consolas, monospace;
   font-size: var(--fs-sm);
   z-index: var(--z-stats);
@@ -1601,4 +1621,136 @@
   .handoff-banner h1 {
     font-size: var(--fs-2xl);
   }
+}
+
+/* ------------------------------------------------------------------ */
+/* Explore: the roster, the map, the party's actions                   */
+/* ------------------------------------------------------------------ */
+
+/*
+ * The village reads like the fight: the party down the left, the map taking
+ * whatever is left, the things you can do along the bottom. Upright, or on
+ * a narrow screen, the roster becomes a strip above the map instead.
+ */
+.explore-body {
+  display: flex;
+  flex: 1 1 auto;
+  min-height: 0;
+}
+
+.roster {
+  flex: 0 0 14rem;
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-2);
+  padding: var(--sp-2);
+  overflow-y: auto;
+  background: linear-gradient(
+    90deg,
+    color-mix(in srgb, var(--c-bg-deep) 98%, transparent),
+    color-mix(in srgb, var(--c-bg-deep) 82%, transparent)
+  );
+  border-right: var(--hairline) solid var(--c-line);
+}
+
+/* A row is a button in all but its tag: it holds a canvas and a bar. */
+.roster-row {
+  flex: 0 0 auto;
+  min-height: var(--tap);
+  cursor: pointer;
+}
+
+.roster-row:focus-visible {
+  outline: 2px solid var(--c-gold-deep);
+  outline-offset: 2px;
+}
+
+/* The leader's row sits on the same gold plate as the acting turn chip. */
+.roster-row.active {
+  border-color: var(--c-gold-deep);
+  background: color-mix(in srgb, var(--c-gold) 16%, var(--surface-0));
+}
+
+.roster-name {
+  font-family: var(--font-display);
+  font-size: var(--fs-md);
+  line-height: 1.1;
+}
+
+.roster-level {
+  font-size: var(--fs-xs);
+  color: var(--c-ink-dim);
+  white-space: nowrap;
+}
+
+.explore-hud .action-bar {
+  flex: 1 1 auto;
+}
+
+/* The objective line grows a hint when the party stands at the gate. */
+.title-plate-objective {
+  font-size: var(--fs-xs);
+  color: var(--c-ink-dim);
+  max-width: 28rem;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+@media (max-width: 52rem), (orientation: portrait) {
+  .explore-body {
+    flex-direction: column;
+  }
+
+  .roster {
+    flex: 0 0 auto;
+    flex-direction: row;
+    overflow-x: auto;
+    overflow-y: hidden;
+    border-right: 0;
+    border-bottom: var(--hairline) solid var(--c-line);
+  }
+
+  .roster-row {
+    min-width: 12rem;
+  }
+}
+
+/* ------------------------------------------------------------------ */
+/* Credits: who made what                                              */
+/* ------------------------------------------------------------------ */
+
+/*
+ * One block per work, the same sunken plate the save slots use. The name of
+ * the maker is the point of the screen, so it reads at body size rather than
+ * as fine print, even though it sits under the work it belongs to.
+ */
+.credit-list {
+  gap: var(--sp-2);
+}
+
+.credit {
+  display: flex;
+  flex-direction: column;
+  gap: 0.1rem;
+  padding: var(--sp-2) var(--sp-3);
+  border: var(--hairline) solid var(--c-line);
+  border-radius: var(--radius);
+  background: var(--surface-sunken);
+}
+
+.credit-what {
+  font-family: var(--font-display);
+  font-size: var(--fs-md);
+}
+
+.credit-work {
+  font-size: var(--fs-sm);
+  overflow-wrap: anywhere;
+}
+
+.credit-by {
+  font-size: var(--fs-sm);
+  color: var(--c-ink-dim);
+  overflow-wrap: anywhere;
 }

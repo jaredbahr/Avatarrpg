@@ -119,7 +119,12 @@ export const OVERLAY = {
   hostile: 'rgba(226, 88, 74, 0.9)',
   friendly: 'rgba(126, 200, 227, 0.9)',
   path: 'rgba(255, 255, 255, 0.8)',
+  pathUnder: 'rgba(18, 13, 10, 0.55)',
   hover: 'rgba(255, 255, 255, 0.18)',
+  /** The wide faint stroke under a contour's crisp edge, in tiles and alpha. */
+  softWidth: 0.3,
+  softAlpha: 0.28,
+  edgeWidth: 0.05,
 } as const;
 
 /** Ring drawn under a unit, so faction is readable without reading names. */

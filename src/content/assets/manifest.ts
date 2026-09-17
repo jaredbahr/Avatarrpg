@@ -10,10 +10,26 @@
  * or generated art later, change the entry:
  *
  *   'unit.fire.kaya': { kind: 'painter', painter: 'bender', palette: 'fire' }
- *   'unit.fire.kaya': { kind: 'image', url: 'art/kaya.png' }
+ *   'unit.fire.kaya': { kind: 'image', url: 'art/kaya.png', palette: 'fire' }
  *
  * ...and nothing else in the codebase changes. That is the whole contract.
+ *
+ * Portraits are the first real art (docs/art-bible.md): a 512x512 bust on
+ * parchment dropped into `public/art/portraits/<name>.png` and pointed at here:
+ *
+ *   'portrait.kaya': { kind: 'image', url: 'art/portraits/kaya.png', palette: 'fire' }
+ *
+ * Keep the `palette` on an image entry. It is how the dialogue backdrop knows
+ * which element to tint for the speaker, and how HUD chrome matches the art.
+ *
+ * A unit's animated art is a `sheet` (ADR 0003): a TexturePacker-style atlas
+ * of key poses, one clip per event kind, drawn facing screen-right and
+ * mirrored for the other side. Until a key has a sheet, the sheet runtime
+ * bakes the painter's poses into one of the same shape, so both backends and
+ * the clip logic run the same path whether the art is real or not.
  */
+
+import type { ClipDef, ClipName } from './clips';
 
 export type AssetEntry =
   | {
@@ -25,7 +41,31 @@ export type AssetEntry =
       /** Distinguishes the two characters of an element, or an enemy silhouette. */
       readonly variant?: string;
     }
-  | { readonly kind: 'image'; readonly url: string };
+  | {
+      readonly kind: 'image';
+      /** Relative to the site root (the `public/` folder), or an absolute URL. */
+      readonly url: string;
+      /** Palette key, so HUD chrome and the dialogue mood still know the element. */
+      readonly palette?: string;
+    }
+  | {
+      readonly kind: 'sheet';
+      /** The atlas JSON, relative to the site root; its `meta.image` names the PNG beside it. */
+      readonly atlas: string;
+      /** Pixels a tile is drawn at in the atlas: 128, or 256 for a sharper sheet. */
+      readonly pixelsPerTile: number;
+      /** Tiles the unit stands on: 1x1, or 2x1 for the boss. */
+      readonly footprint: { readonly w: number; readonly h: number };
+      /** The point of the frame that stands on the tile's foot line, as fractions of the frame. */
+      readonly anchor: { readonly x: number; readonly y: number };
+      /** `mirror`: drawn facing screen-right and flipped for the other side. */
+      readonly facing: 'mirror' | 'both';
+      readonly clips: Partial<Record<ClipName, ClipDef>>;
+      /** Palette key, for the HUD chrome and for the placeholder drawn while the atlas loads. */
+      readonly palette: string;
+    };
+
+export type SheetEntry = Extract<AssetEntry, { kind: 'sheet' }>;
 
 const painter = (painterName: string, palette: string, variant?: string): AssetEntry =>
   variant
@@ -34,16 +74,17 @@ const painter = (painterName: string, palette: string, variant?: string): AssetE
 
 export const ASSETS: Readonly<Record<string, AssetEntry>> = {
   /* ------------------------------------------------------ Party sprites */
-  'unit.fire.kaya': painter('bender', 'fire', 'lean'),
-  'unit.fire.tenzo': painter('bender', 'fire', 'broad'),
-  'unit.water.nilak': painter('bender', 'water', 'robed'),
-  'unit.water.sura': painter('bender', 'water', 'lean'),
-  'unit.earth.bo': painter('bender', 'earth', 'broad'),
-  'unit.earth.linmei': painter('bender', 'earth', 'robed'),
-  'unit.air.nima': painter('bender', 'air', 'lean'),
-  'unit.air.jinu': painter('bender', 'air', 'robed'),
-  'unit.non.riko': painter('bender', 'nonbender', 'lean'),
-  'unit.non.wen': painter('bender', 'nonbender', 'broad'),
+  // The variant names the character: `src/render/painters/cast.ts` has a figure for each.
+  'unit.fire.kaya': painter('bender', 'fire', 'kaya'),
+  'unit.fire.tenzo': painter('bender', 'fire', 'tenzo'),
+  'unit.water.nilak': painter('bender', 'water', 'nilak'),
+  'unit.water.sura': painter('bender', 'water', 'sura'),
+  'unit.earth.bo': painter('bender', 'earth', 'bo'),
+  'unit.earth.linmei': painter('bender', 'earth', 'linmei'),
+  'unit.air.nima': painter('bender', 'air', 'nima'),
+  'unit.air.jinu': painter('bender', 'air', 'jinu'),
+  'unit.non.riko': painter('bender', 'nonbender', 'riko'),
+  'unit.non.wen': painter('bender', 'nonbender', 'wen'),
 
   /* ----------------------------------------------------- Enemy sprites */
   'unit.enemy.thug': painter('bandit', 'enemy', 'club'),
@@ -90,10 +131,31 @@ export const ASSETS: Readonly<Record<string, AssetEntry>> = {
   'portrait.dorin': painter('portrait', 'earth', 'dorin'),
   'portrait.ruon': painter('portrait', 'neutral', 'ruon'),
   'portrait.jin': painter('portrait', 'nonbender', 'jin'),
-};
 
-/** Palette names a glyph key may tint itself with; anything else is neutral. */
-const PALETTE_KEYS: ReadonlySet<string> = new Set(['fire', 'water', 'earth', 'air', 'nonbender']);
+  /* ------------------------------------------------------------ Probe */
+  /*
+   * A real atlas of flat-colour frames, committed so the sheet path is
+   * exercised in CI before any generated art exists. Never assigned to a
+   * unit by content; the e2e suite points a unit at it and reads the pixels.
+   */
+  'unit.test.probe': {
+    kind: 'sheet',
+    atlas: 'art/test/probe.json',
+    pixelsPerTile: 128,
+    footprint: { w: 1, h: 1 },
+    anchor: { x: 0.5, y: 0.85 },
+    facing: 'mirror',
+    palette: 'neutral',
+    clips: {
+      idle: { frames: ['unit.test.probe/idle/0', 'unit.test.probe/idle/1'], fps: 1, loop: true },
+      cast: {
+        frames: ['unit.test.probe/cast/0', 'unit.test.probe/cast/1', 'unit.test.probe/cast/2'],
+        fps: 8,
+        loop: false,
+      },
+    },
+  },
+};
 
 /**
  * Ability effects are keyed `fx.<element>.<name>`. Rather than list forty
@@ -111,18 +173,6 @@ export function resolveAsset(key: string): AssetEntry {
     const name = parts[2] ?? 'impact';
     const palette = element === 'non' || element === 'enemy' ? 'nonbender' : element;
     return { kind: 'painter', painter: 'impact', palette, variant: name };
-  }
-
-  /*
-   * Action glyphs are keyed `glyph.<name>`, tinted by the palette of the same
-   * name where there is one. An ability's mark is its element, so the mark and
-   * the bending it launches are the same colour; `glyph.move` and `glyph.end`
-   * are the action bar's own two and take the neutral palette.
-   */
-  if (key.startsWith('glyph.')) {
-    const name = key.split('.')[1] ?? 'unknown';
-    const palette = PALETTE_KEYS.has(name) ? name : 'neutral';
-    return { kind: 'painter', painter: 'glyph', palette, variant: name };
   }
 
   if (key.startsWith('portrait.')) {

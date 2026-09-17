@@ -27,11 +27,18 @@ import { pathCost, posKey, reachable, samePos } from '../../core/rules/grid';
 import { effectiveStats, isAlive } from '../../core/rules/stats';
 import { activeUnit, upcomingOrder } from '../../core/rules/turnOrder';
 import { Renderer, TILE } from '../../render/renderer';
-import type { MapView, OverlayLayer, RenderProp, RenderUnit } from '../../render/renderer';
+import type { AimArc, MapView, OverlayLayer, RenderProp, RenderUnit } from '../../render/renderer';
 import { CONTENT } from '../../content';
-import { resolvePainter } from '../../render/painters/registry';
 import { attachPointer, wheelZoomFactor } from '../input/pointer';
-import { announce, button, clear, el, painterCanvas, tip } from '../ui/dom';
+import { ambienceFx, resolveFx } from '../../content/fx';
+import { ambientEmitters } from '../anim/ambience';
+import { announce, button, clear, el, mark, motionReduced, painterCanvas, tip } from '../ui/dom';
+import { assetCanvas } from '../ui/assetCanvas';
+import { UI_MARKS, markKindFor } from '../ui/marks';
+import { iconMarkup } from '../ui/icons';
+import { paletteFor } from '../../render/palettes';
+import { paintElementGlyph } from '../../render/painters/glyphs';
+import { showGridLines } from '../storage/localSaves';
 import { reactionNotes } from '../ui/ReactionNote';
 import { UnitInspector } from '../ui/UnitInspector';
 
@@ -39,39 +46,6 @@ type Mode =
   | { readonly kind: 'idle' }
   | { readonly kind: 'move' }
   | { readonly kind: 'aim'; readonly abilityId: string };
-
-/**
- * Which of the three health colours a bar is drawn in.
- *
- * Colour alone is not the signal — the bar's length says the same thing, and
- * the number is written beside it on the unit panel — but it is the one a
- * player picks up from across the table without reading anything.
- */
-function healthBand(fraction: number): string {
-  if (fraction <= 0.25) return 'is-critical';
-  if (fraction <= 0.5) return 'is-hurt';
-  return 'is-well';
-}
-
-/**
- * The mark on an action button.
- *
- * Decorative: the label beside it already says what the button does, and a
- * screen reader reads that, so the canvas is hidden from the accessibility
- * tree rather than given a label that would be read out twice.
- */
-function glyph(key: string): HTMLElement {
-  const node = painterCanvas(
-    key,
-    1.4,
-    (ctx, size) => {
-      resolvePainter(key).draw(ctx, { x: 0, y: 0, size });
-    },
-    'action-glyph',
-  );
-  node.setAttribute('aria-hidden', 'true');
-  return node;
-}
 
 export class CombatScene implements Scene {
   readonly name = 'combat';
@@ -85,6 +59,8 @@ export class CombatScene implements Scene {
   private mode: Mode = { kind: 'idle' };
   private pending: Vec2 | null = null;
   private hover: Vec2 | null = null;
+  /** How high each ability's flight lobs, or null when nothing flies; read once from its recipe. */
+  private lobs = new Map<string, number | null>();
   private inspector: UnitInspector | null = null;
 
   /** Unit whose hand-off banner has been acknowledged. */
@@ -430,93 +406,68 @@ export class CombatScene implements Scene {
     if (!bar || !battle) return;
     clear(bar);
 
-    // The round moved to the timeline's marker, where the turn order it counts
-    // actually is; repeating it here was the same number twice in one corner.
     const encounter = this.app.content.encounters.get(battle.encounterId);
-    bar.appendChild(el('strong', { text: encounter?.name ?? 'Battle' }));
+    // The encounter's name on a plate, in the display face, with the round under it.
+    bar.appendChild(
+      el(
+        'div',
+        { class: 'title-plate' },
+        el('strong', { class: 'title-plate-name', text: encounter?.name ?? 'Battle' }),
+        el('span', { class: 'title-plate-round', text: `Round ${battle.round}` }),
+      ),
+    );
     bar.appendChild(el('div', { class: 'spacer' }));
 
     const recentre = button('Recentre', () => this.recentre(), {
       class: 'btn-ghost',
       title: 'Show the whole battlefield again',
     });
+    recentre.prepend(mark(UI_MARKS.recentre, 'mark-inline'));
     recentre.hidden = this.renderer?.camera.fitted ?? true;
     this.recentreButton = recentre;
     bar.appendChild(recentre);
 
     if (encounter) {
-      bar.appendChild(
-        button('Tip', () => this.app.toasts.show(encounter.tip, 'info', 6000), {
-          class: 'btn-ghost',
-          title: encounter.tip,
-        }),
-      );
+      const tipButton = button('Tip', () => this.app.toasts.show(encounter.tip, 'info', 6000), {
+        class: 'btn-ghost',
+        title: encounter.tip,
+      });
+      tipButton.prepend(mark(UI_MARKS.tip, 'mark-inline'));
+      bar.appendChild(tipButton);
     }
-    bar.appendChild(
-      button(
-        this.logOpen ? 'Hide log' : 'Log',
-        () => {
-          this.logOpen = !this.logOpen;
-          this.renderTopBar();
-          this.renderHud();
-        },
-        { class: 'btn-ghost' },
-      ),
+    const logButton = button(
+      this.logOpen ? 'Hide log' : 'Log',
+      () => {
+        this.logOpen = !this.logOpen;
+        this.renderTopBar();
+        this.renderHud();
+      },
+      { class: 'btn-ghost' },
     );
-    bar.appendChild(button('Pause', () => this.app.openPause(), { class: 'btn-ghost' }));
+    logButton.prepend(mark(UI_MARKS.log, 'mark-inline'));
+    bar.appendChild(logButton);
+    const pauseButton = button('Pause', () => this.app.openPause(), { class: 'btn-ghost' });
+    pauseButton.prepend(mark(UI_MARKS.pause, 'mark-inline'));
+    bar.appendChild(pauseButton);
   }
 
-  /**
-   * The initiative timeline.
-   *
-   * It was a flat row of portraits at 60% opacity, which answered "who is next"
-   * and nothing else. Around a table the three questions actually being asked
-   * are whose turn it is, who is about to go, and who is nearly dead — the last
-   * one decides whether the waterbender heals now or hits now, and it used to
-   * cost a long-press on every chip in turn.
-   *
-   * So each chip carries its own health bar, the acting unit is anchored at the
-   * left under a round marker rather than merely outlined, and the faction
-   * reads from the chip's edge instead of a ring around the portrait. The rail
-   * behind them is what makes it a sequence rather than a row of buttons.
-   */
   private renderTurnStrip(): void {
     const strip = this.host?.querySelector<HTMLElement>('.turn-strip');
     const battle = this.battle();
     if (!strip || !battle) return;
     clear(strip);
 
-    strip.appendChild(
-      el(
-        'div',
-        { class: 'round-pill' },
-        el('span', { class: 'round-label', text: 'Round' }),
-        el('strong', { class: 'round-number display', text: String(battle.round) }),
-      ),
-    );
-
-    const rail = el('ol', { class: 'timeline', attrs: { 'aria-label': 'Turn order' } });
-
     for (const unit of upcomingOrder(battle, 9)) {
       const isActive = unit.id === this.active()?.id;
       const player = this.app.session.playerFor(unit.id);
-      const portraitKey = unit.characterId
-        ? (this.app.content.characters.get(unit.characterId)?.portrait ?? unit.sprite)
-        : unit.sprite;
 
-      const fraction = Math.max(0, Math.min(1, unit.hp / Math.max(1, unit.base.maxHp)));
-
+      // The element class puts the unit's colour in --el, for the party's ring.
       const chip = el(
-        'li',
-        { class: `turn-chip faction-${unit.faction}${isActive ? ' active' : ''}` },
-        painterCanvas(portraitKey, isActive ? 3 : 2.4, (ctx, size) => {
-          resolvePainter(portraitKey).draw(ctx, { x: 0, y: 0, size });
-        }),
-        el(
-          'div',
-          { class: `chip-hp ${healthBand(fraction)}` },
-          el('i', { style: { width: `${fraction * 100}%` } }),
-        ),
+        'div',
+        {
+          class: `turn-chip faction-${unit.faction} element-${unit.element}${isActive ? ' active' : ''}`,
+        },
+        assetCanvas(this.portraitKey(unit), 2.4),
         el('span', { class: 'tiny', text: player?.name ?? unit.name }),
       );
       tip(
@@ -524,10 +475,15 @@ export class CombatScene implements Scene {
         `${unit.name}${player ? ` (${player.name})` : ''} — ${unit.hp}/${unit.base.maxHp} HP`,
         (text) => this.app.toasts.show(text),
       );
-      rail.appendChild(chip);
+      strip.appendChild(chip);
     }
+  }
 
-    strip.appendChild(rail);
+  /** A hero's portrait; an enemy or an ally is drawn from its own sprite. */
+  private portraitKey(unit: Unit): string {
+    return unit.characterId
+      ? (this.app.content.characters.get(unit.characterId)?.portrait ?? unit.sprite)
+      : unit.sprite;
   }
 
   /* ---------------------------------------------------------------- */
@@ -594,64 +550,74 @@ export class CombatScene implements Scene {
 
     const hpFraction = Math.max(0, unit.hp / Math.max(1, unit.base.maxHp));
 
-    /*
-     * The portrait is here so the panel and the timeline's leading chip are
-     * obviously the same character. Without it the only thing tying the two
-     * together was a name in 0.85rem type, and on a hot-seat game the panel is
-     * what the player who just picked the tablet up looks at first.
-     */
-    const portraitKey = unit.characterId
-      ? (this.app.content.characters.get(unit.characterId)?.portrait ?? unit.sprite)
-      : unit.sprite;
-
+    // The portrait sits beside the readouts, not above them, so the panel
+    // keeps its height and the map keeps its rows. Square, framed in ink and
+    // the element, with the element's glyph as a badge on its corner.
+    const palette = paletteFor(unit.element);
+    const portrait = el(
+      'div',
+      { class: 'unit-portrait-frame' },
+      assetCanvas(this.portraitKey(unit), 4.5, 'unit-portrait square'),
+      el(
+        'span',
+        { class: 'portrait-badge', attrs: { 'aria-hidden': 'true' } },
+        painterCanvas(`glyph.${unit.element}`, 1.1, (ctx, px) =>
+          paintElementGlyph(ctx, { x: 0, y: 0, size: px }, palette, unit.element),
+        ),
+      ),
+    );
     return el(
       'div',
       { class: `hud-panel unit-panel element-${unit.element}` },
       el(
         'div',
-        { class: 'row tight' },
+        { class: 'row tight unit-panel-body' },
+        portrait,
         el(
           'div',
-          { class: 'unit-portrait' },
-          painterCanvas(portraitKey, 3, (ctx, size) => {
-            resolvePainter(portraitKey).draw(ctx, { x: 0, y: 0, size });
-          }),
+          { class: 'stack tight grow' },
+          el(
+            'div',
+            { class: 'row tight' },
+            el(
+              'div',
+              { class: 'stack tight' },
+              el('strong', { class: 'unit-name', text: unit.name }),
+              player ? el('span', { class: 'tiny muted', text: player.name }) : null,
+            ),
+            el('div', { class: 'spacer' }),
+            el('span', { class: 'tiny muted', text: `Level ${unit.level}` }),
+          ),
+          el(
+            'div',
+            { class: 'bar' },
+            el('div', {
+              class: 'bar-fill',
+              style: { width: `${hpFraction * 100}%` },
+            }),
+            el('span', { class: 'bar-label', text: `${unit.hp} / ${unit.base.maxHp}` }),
+          ),
+          el(
+            'div',
+            { class: 'row row-wrap tight' },
+            apPips,
+            el('span', { class: 'chip', text: `Move ${unit.move}` }),
+            ...unit.statuses.map((s) => {
+              const def = this.app.content.statuses.get(s.id);
+              const chip = el('span', { class: 'chip chip-status', text: def?.name ?? s.id });
+              tip(chip, def?.description ?? '', (text) => this.app.toasts.show(text));
+              return chip;
+            }),
+          ),
         ),
-        el(
-          'div',
-          { class: 'stack tight' },
-          el('strong', { text: unit.name }),
-          player ? el('span', { class: 'tiny muted', text: player.name }) : null,
-        ),
-        el('div', { class: 'spacer' }),
-        el('span', { class: 'tiny muted', text: `Level ${unit.level}` }),
-      ),
-      el(
-        'div',
-        { class: `bar ${healthBand(hpFraction)}` },
-        el('div', {
-          class: 'bar-fill',
-          style: { width: `${hpFraction * 100}%` },
-        }),
-        el('span', { class: 'bar-label', text: `${unit.hp} / ${unit.base.maxHp}` }),
-      ),
-      el(
-        'div',
-        { class: 'row row-wrap tight' },
-        apPips,
-        el('span', { class: 'chip', text: `Move ${unit.move}` }),
-        ...unit.statuses.map((s) => {
-          const def = this.app.content.statuses.get(s.id);
-          const chip = el('span', { class: 'chip chip-status', text: def?.name ?? s.id });
-          tip(chip, def?.description ?? '', (text) => this.app.toasts.show(text));
-          return chip;
-        }),
       ),
     );
   }
 
   private actionBar(unit: Unit): HTMLElement {
     const bar = el('div', { class: 'hud-panel action-bar', attrs: { role: 'toolbar' } });
+    bar.appendChild(this.abilityHeader(unit));
+    const row = el('div', { class: 'action-row' });
 
     const moveActive = this.mode.kind === 'move';
     const canMoveNow = unit.move > 0;
@@ -660,24 +626,64 @@ export class CombatScene implements Scene {
       disabled: !canMoveNow,
       title: canMoveNow ? 'Walk to a highlighted tile' : 'No move points left this turn',
     });
-    moveButton.prepend(glyph('glyph.move'));
+    moveButton.prepend(mark(UI_MARKS.move));
     moveButton.appendChild(el('span', { class: 'action-sub', text: `${unit.move} left` }));
-    bar.appendChild(moveButton);
+    row.appendChild(moveButton);
 
     for (const ability of knownAbilities(this.app.content, unit)) {
-      bar.appendChild(this.abilityButton(unit, ability));
+      row.appendChild(this.abilityButton(unit, ability));
     }
 
     const endButton = button('End turn', () => this.endTurn(unit), {
       class: 'action-button end-turn',
       title: 'Finish this turn. One unused AP carries over.',
     });
-    endButton.prepend(glyph('glyph.end'));
+    endButton.prepend(mark(UI_MARKS.end));
     if (unit.ap > 0)
       endButton.appendChild(el('span', { class: 'action-sub', text: `${unit.ap} AP left` }));
-    bar.appendChild(endButton);
+    row.appendChild(endButton);
 
+    bar.appendChild(row);
     return bar;
+  }
+
+  /**
+   * What the player is doing, above the buttons: the chosen ability's mark,
+   * name, cost and what it does; the move left while walking; a prompt
+   * otherwise. Always present, so the HUD keeps its height and the board
+   * its rows whichever mode the turn is in.
+   */
+  private abilityHeader(unit: Unit): HTMLElement {
+    const header = el('div', { class: 'ability-header' });
+    if (this.mode.kind === 'aim') {
+      const ability = this.app.content.abilities.get(this.mode.abilityId);
+      if (ability) {
+        header.classList.add(`element-${ability.element}`);
+        header.append(
+          mark(iconMarkup(markKindFor(ability))),
+          el('strong', { text: ability.name }),
+          el('span', { class: 'header-cost', text: `· ${ability.apCost} AP` }),
+          el('span', { class: 'header-desc', text: ability.description }),
+        );
+        return header;
+      }
+    }
+    if (this.mode.kind === 'move') {
+      header.append(
+        mark(UI_MARKS.move),
+        el('strong', { text: 'Move' }),
+        el('span', { class: 'header-cost', text: `· ${unit.move} left` }),
+        el('span', { class: 'header-desc', text: 'Walk to a highlighted tile.' }),
+      );
+      return header;
+    }
+    header.append(
+      el('span', {
+        class: 'header-desc',
+        text: `${unit.name}: choose an action, or end the turn.`,
+      }),
+    );
+    return header;
   }
 
   private abilityButton(unit: Unit, ability: Ability): HTMLElement {
@@ -690,11 +696,11 @@ export class CombatScene implements Scene {
       disabled: !check.ok,
       title: check.ok ? ability.description : check.reason,
     });
-    node.prepend(glyph(`glyph.${ability.element}`));
 
-    const pips = el('span', { class: 'pips pips-small' });
-    for (let i = 0; i < ability.apCost; i++) pips.appendChild(el('span', { class: 'pip pip-on' }));
-    node.appendChild(pips);
+    // The ability's own mark above its name, in its element's colour; the
+    // cost as words under it.
+    node.prepend(mark(iconMarkup(markKindFor(ability))));
+    node.appendChild(el('span', { class: 'action-sub', text: `${ability.apCost} AP` }));
 
     if (cooldown > 0) {
       node.appendChild(el('span', { class: 'cooldown-ring', text: String(cooldown) }));
@@ -784,7 +790,6 @@ export class CombatScene implements Scene {
           this.mode = { kind: 'idle' };
           this.renderHud();
         },
-        { text: `${unit.name} walks here`, element: unit.element },
       );
     }
 
@@ -838,21 +843,17 @@ export class CombatScene implements Scene {
       );
     }
 
-    return this.confirmShell(
-      body,
-      () => {
-        this.app.dispatch({
-          type: 'useAbility',
-          unitId: unit.id,
-          abilityId: ability.id,
-          target,
-        });
-        this.pending = null;
-        this.mode = { kind: 'idle' };
-        this.renderHud();
-      },
-      { text: ability.name, element: ability.element },
-    );
+    return this.confirmShell(body, () => {
+      this.app.dispatch({
+        type: 'useAbility',
+        unitId: unit.id,
+        abilityId: ability.id,
+        target,
+      });
+      this.pending = null;
+      this.mode = { kind: 'idle' };
+      this.renderHud();
+    });
   }
 
   /**
@@ -876,24 +877,22 @@ export class CombatScene implements Scene {
     const ability = this.app.content.abilities.get(this.mode.abilityId);
     if (!ability) return null;
 
+    // The ability itself is described in the action bar's header; this only
+    // says what to do next, and offers the way out.
     const tiles = targetableTiles(this.app.content, battle, unit, ability);
     if (tiles.length > 0) {
       return el(
         'div',
         { class: 'confirm-bar aim-hint' },
-        el('span', { text: `${ability.name}: tap a highlighted tile.` }),
         el(
           'div',
           { class: 'row' },
+          el('span', { class: 'muted', text: 'Tap a highlighted tile.' }),
           el('div', { class: 'spacer' }),
-          button(
-            'Cancel',
-            () => {
-              this.mode = { kind: 'idle' };
-              this.renderHud();
-            },
-            { class: 'btn-ghost' },
-          ),
+          this.cancelButton(() => {
+            this.mode = { kind: 'idle' };
+            this.renderHud();
+          }),
         ),
       );
     }
@@ -913,56 +912,40 @@ export class CombatScene implements Scene {
         { class: 'row' },
         el('div', { class: 'spacer' }),
         button('Move instead', () => this.selectMove(), { disabled: unit.move <= 0 }),
-        button(
-          'Cancel',
-          () => {
-            this.mode = { kind: 'idle' };
-            this.renderHud();
-          },
-          { class: 'btn-ghost' },
-        ),
+        this.cancelButton(() => {
+          this.mode = { kind: 'idle' };
+          this.renderHud();
+        }),
       ),
     );
   }
 
-  /**
-   * The confirm card.
-   *
-   * `heading` names the thing being committed to. The bar used to open
-   * straight into chips — "Bandit: 85% · ~9 dmg" with nothing above it saying
-   * which of the four abilities on the bar had produced them, which is fine
-   * for the player holding the tablet and no use at all to the rest of the
-   * table watching. The element tints the card so the heading and the button
-   * that launched it are the same colour.
-   */
-  private confirmShell(
-    body: HTMLElement,
-    onConfirm: (() => void) | null,
-    heading?: { readonly text: string; readonly element: string },
-  ): HTMLElement {
+  /** The ghost Cancel with its cross, the same wherever a decision can be backed out of. */
+  private cancelButton(onCancel: () => void): HTMLButtonElement {
+    const node = button('Cancel', onCancel, { class: 'btn-ghost' });
+    node.prepend(mark(UI_MARKS.cancel, 'mark-inline'));
+    return node;
+  }
+
+  private confirmShell(body: HTMLElement, onConfirm: (() => void) | null): HTMLElement {
+    const confirm = button('Confirm', () => onConfirm?.(), {
+      class: 'btn-primary btn-ok btn-large',
+      disabled: onConfirm === null,
+    });
+    confirm.prepend(mark(UI_MARKS.check, 'mark-inline'));
     return el(
       'div',
-      {
-        class: `confirm-bar${heading ? ` element-${heading.element}` : ''}`,
-      },
-      heading ? el('h3', { class: 'confirm-title display', text: heading.text }) : null,
+      { class: 'confirm-bar' },
       body,
       el(
         'div',
         { class: 'row' },
-        button(
-          'Cancel',
-          () => {
-            this.pending = null;
-            this.renderHud();
-          },
-          { class: 'btn-ghost' },
-        ),
-        el('div', { class: 'spacer' }),
-        button('Confirm', () => onConfirm?.(), {
-          class: 'btn-primary btn-large',
-          disabled: onConfirm === null,
+        this.cancelButton(() => {
+          this.pending = null;
+          this.renderHud();
         }),
+        el('div', { class: 'spacer' }),
+        confirm,
       ),
     );
   }
@@ -1077,6 +1060,28 @@ export class CombatScene implements Scene {
       }
     }
 
+    // The throw being aimed, drawn to the tapped target or, with a mouse, the
+    // hovered one, but only to a tile the ability can actually reach.
+    let aimArc: AimArc | null = null;
+    if (interactive && unit && this.mode.kind === 'aim') {
+      const ability = this.app.content.abilities.get(this.mode.abilityId);
+      const lob = ability ? this.lobFor(ability) : null;
+      if (ability && lob !== null) {
+        const targets = overlays.find((layer) => layer.kind === 'target')?.tiles ?? [];
+        const target = [this.pending, this.hover].find(
+          (p): p is Vec2 => p !== null && targets.some((t) => samePos(t, p)),
+        );
+        if (target) {
+          aimArc = {
+            from: { x: unit.pos.x + unit.size / 2, y: unit.pos.y + 0.5 },
+            to: { x: target.x + 0.5, y: target.y + 0.5 },
+            arc: lob,
+            color: paletteFor(ability.element).light,
+          };
+        }
+      }
+    }
+
     const units: RenderUnit[] = battle.units.map((u) => ({
       id: u.id,
       pos: u.pos,
@@ -1089,6 +1094,7 @@ export class CombatScene implements Scene {
       statuses: u.statuses.map((s) => s.id),
       fallen: !isAlive(u),
       renderPos: this.app.animator.renderPos(now, u.id),
+      ...this.poseFields(now, u.id, u.faction === 'enemy' ? -1 : 1),
     }));
 
     // Resolved here, not in the renderer: the renderer never reads content.
@@ -1104,6 +1110,16 @@ export class CombatScene implements Scene {
       };
     });
 
+    // The air over the board is fidelity: WebGL only, and still under reduce motion.
+    const ambient =
+      renderer.capabilities.shaders && !motionReduced()
+        ? ambientEmitters(
+            ambienceFx(this.app.content.maps.get(battle.mapId)?.ambience ?? ''),
+            battle.grid,
+            now,
+          )
+        : [];
+
     const view: MapView = {
       grid: battle.grid,
       units,
@@ -1111,18 +1127,65 @@ export class CombatScene implements Scene {
       props,
       overlays,
       path,
-      fx: this.app.animator.fx(now),
+      pathFrom: unit?.pos ?? null,
+      aimArc,
+      emitters: [...this.app.animator.emitters(now), ...ambient],
       floaters: this.app.animator.floaters(now),
+      cameraNudge: this.app.animator.cameraNudge(now),
       activeUnitId: unit?.id ?? null,
       selectedUnitId: null,
       hoverTile: interactive ? this.hover : null,
       exit: null,
       hatch: this.app.settings.hatchSurfaces,
+      gridLines: showGridLines(this.app.settings),
+      crispOverlays: this.app.settings.highContrast,
+      atmosphere: !this.app.settings.highContrast,
+      backdrop: this.app.backdropFor(battle.mapId),
       time: now,
     };
 
     renderer.draw(view);
   };
+
+  /**
+   * The lob of an ability's flight in tiles, or null when nothing flies to
+   * the target: a strike up close, something cast on oneself, an effect that
+   * simply appears. Read from the same recipe the choreography plays, so the
+   * arc shown is the arc thrown.
+   */
+  private lobFor(ability: Ability): number | null {
+    const cached = this.lobs.get(ability.id);
+    if (cached !== undefined) return cached;
+    const melee = ability.range <= 1 && ability.targeting.shape === 'unit';
+    const travel = resolveFx(ability.fx).travel;
+    const lob = travel && ability.targeting.shape !== 'self' && !melee ? travel.arc : null;
+    this.lobs.set(ability.id, lob);
+    return lob;
+  }
+
+  /** The animator's pose for a unit, as the view fields the renderer reads. */
+  private poseFields(
+    now: number,
+    unitId: string,
+    restFacing: 1 | -1,
+  ): Pick<
+    RenderUnit,
+    'offset' | 'facing' | 'clip' | 'clipTime' | 'clipFrame' | 'scale' | 'alpha' | 'flash'
+  > {
+    const pose = this.app.animator.unitPose(now, unitId);
+    const walked = this.app.animator.facing(unitId);
+    if (!pose) return { facing: walked ?? restFacing };
+    return {
+      offset: pose.offset,
+      facing: pose.facing ?? walked ?? restFacing,
+      clip: pose.clip,
+      clipTime: pose.clipTime,
+      ...(pose.frame !== undefined ? { clipFrame: pose.frame } : {}),
+      scale: pose.scale,
+      alpha: pose.alpha,
+      flash: pose.flash,
+    };
+  }
 
   private buildOverlays(
     battle: BattleState,

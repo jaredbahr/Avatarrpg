@@ -3,6 +3,7 @@
  */
 
 import type { App } from '../App';
+import { CreditsDialog } from './CreditsDialog';
 import { Dialog } from './Dialog';
 import type { DialogOptions } from './Dialog';
 import { button, el } from './dom';
@@ -41,6 +42,7 @@ export class PauseMenu extends Dialog {
         button('Load game', () => this.openLoad()),
         button('How the elements react', () => this.openReactions()),
         button('Settings', () => this.openSettings()),
+        button('Credits', () => this.openCredits()),
       ),
     );
 
@@ -100,6 +102,10 @@ export class PauseMenu extends Dialog {
 
   private openReactions(): void {
     new ReactionsReference(this.app).open(this.host());
+  }
+
+  private openCredits(): void {
+    new CreditsDialog().open(this.host());
   }
 
   private quit(): void {
