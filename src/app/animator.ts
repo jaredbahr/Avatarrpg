@@ -153,12 +153,26 @@ export class Animator {
     return found;
   }
 
+  /** Fade the lift at each end so a fractional final stride settles onto the path. */
+  private walkBob(now: number, travel: { track: MoveTrack; distance: number }): Vec2 {
+    const { track, distance } = travel;
+    const fade = Math.max(
+      0,
+      Math.min(
+        1,
+        (now - track.start) / (90 * this.rate),
+        (track.start + track.duration - now) / (90 * this.rate),
+      ),
+    );
+    return { x: 0, y: -BOB * Math.abs(Math.sin(Math.PI * distance)) * fade };
+  }
+
   /**
    * Where a unit should be drawn at `now`, if it is mid-move. Returns
    * undefined when the unit is not animating, so the caller uses `unit.pos`.
    *
    * The route is sampled by arc length under an ease, so a walk leaves the
-   * tile slowly, hurries through the middle and settles at the end instead
+   * tile gently, holds its pace through the middle and settles at the end instead
    * of hopping tile to tile at one speed. Sampling also turns the sprite to
    * face the way it is going, which it keeps once it has stopped.
    */
@@ -180,7 +194,7 @@ export class Animator {
   offset(now: number, unitId: string): Vec2 | undefined {
     const travel = this.travel(now, unitId);
     if (!travel || travel.track.curve.length <= 0) return undefined;
-    return { x: 0, y: -BOB * Math.abs(Math.sin(Math.PI * travel.distance)) };
+    return this.walkBob(now, travel);
   }
 
   /** Which way a unit last walked, or undefined if it has not walked yet. */
@@ -199,10 +213,7 @@ export class Animator {
       if (track.unitId === unitId && (!pose || track.start >= pose.start)) pose = track;
     }
     const travel = this.travel(now, unitId);
-    const bob =
-      travel && travel.track.curve.length > 0
-        ? { x: 0, y: -BOB * Math.abs(Math.sin(Math.PI * travel.distance)) }
-        : undefined;
+    const bob = travel && travel.track.curve.length > 0 ? this.walkBob(now, travel) : undefined;
     let flash = 0;
     for (const track of this.timeline.active(now, 'flash')) {
       if (track.unitId !== unitId) continue;

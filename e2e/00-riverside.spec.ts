@@ -6,8 +6,33 @@ test('riverside painted paths and sprite picking', async ({ page }) => {
   await page.getByRole('button', { name: 'Explore the riverside', exact: true }).click();
   await page.evaluate(() => window.fnt!.app.updateSettings({ reduceMotion: true }));
   const canvas = page.locator('.map-canvas');
-  await canvas.hover();
-  await page.mouse.wheel(0, 2000);
+  // Use the same two-pointer gesture as a tablet. Native mouse.wheel is
+  // unsupported by mobile WebKit; the actual picking assertions run on both.
+  await canvas.evaluate((element) => {
+    const box = element.getBoundingClientRect();
+    const fire = (type: string, id: number, dx: number) =>
+      element.dispatchEvent(
+        new PointerEvent(type, {
+          pointerId: id,
+          pointerType: 'touch',
+          isPrimary: id === 1,
+          clientX: box.left + box.width / 2 + dx,
+          clientY: box.top + box.height / 2,
+          button: 0,
+          buttons: 1,
+          bubbles: true,
+          cancelable: true,
+        }),
+      );
+    fire('pointerdown', 1, -150);
+    fire('pointerdown', 2, 150);
+    for (let d = 140; d >= 20; d -= 10) {
+      fire('pointermove', 1, -d);
+      fire('pointermove', 2, d);
+    }
+    fire('pointerup', 1, -20);
+    fire('pointerup', 2, 20);
+  });
   const tapWorld = async (x: number, y: number) => {
     const camera = await page.evaluate(() => window.fnt!.app.rendererCamera());
     if (!camera) throw new Error('Missing explore camera');

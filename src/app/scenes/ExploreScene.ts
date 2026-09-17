@@ -27,6 +27,7 @@ import { UI_MARKS } from '../ui/marks';
 import { partyRoster } from '../ui/PartyRoster';
 import { SaveMenu } from '../ui/SaveMenu';
 import { UnitInspector } from '../ui/UnitInspector';
+import { TravelJournal } from '../ui/TravelJournal';
 import { showGridLines } from '../storage/localSaves';
 
 /** How far Talk reaches, in tiles: across the square, not across the village. */
@@ -314,6 +315,16 @@ export class ExploreScene implements Scene {
     party.prepend(mark(UI_MARKS.party));
     party.appendChild(el('span', { class: 'action-sub', text: `${state.party.length} strong` }));
     row.appendChild(party);
+    row.appendChild(
+      button(
+        'Travel journal',
+        () => {
+          if (!this.app.animator.busy(performance.now()))
+            new TravelJournal(this.app).open(this.overlayHost());
+        },
+        { class: 'action-button' },
+      ),
+    );
 
     const save = button(
       'Save',

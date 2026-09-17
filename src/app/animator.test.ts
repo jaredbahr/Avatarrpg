@@ -26,6 +26,19 @@ function animator(reduced = false): Animator {
 }
 
 describe('Animator', () => {
+  it('settles a diagonal final stride onto the ground before going idle', () => {
+    const a = animator();
+    a.push(
+      1000,
+      [{ type: 'partyWalked', unitId: 'p0', from: { x: 1, y: 1 }, path: [{ x: 2, y: 2 }] }],
+      [],
+    );
+    const end = a.finishesAt;
+    expect(Math.abs(a.offset(end - 1, 'p0')?.y ?? 1)).toBeLessThan(0.001);
+    expect(a.offset(end, 'p0')?.y).toBeCloseTo(0, 9);
+    expect(a.unitPose(end, 'p0')?.offset.y).toBeCloseTo(0, 9);
+    expect(a.renderPos(end, 'p0')).toEqual({ x: 2, y: 2 });
+  });
   it('keeps a strolling follower in formation without duplicating footsteps', () => {
     const heard: string[] = [];
     const a = new Animator(content, {

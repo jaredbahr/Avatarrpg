@@ -10,6 +10,7 @@ import { hitsPebble, hitsVillager, riversideWalkTime } from '../../render/living
 import { RIVERSIDE_ID, RIVERSIDE_SPOTS } from '../../content/maps/riverside';
 import { button, el, motionReduced } from '../ui/dom';
 import { SettingsPanel } from '../ui/SettingsPanel';
+import { TravelJournal } from '../ui/TravelJournal';
 
 const distance = (a: Vec2, b: Vec2) => Math.hypot(a.x - b.x, a.y - b.y);
 type Activity = { kind: 'water' | 'fire' | 'wave'; unitId: string; started: number };
@@ -68,6 +69,14 @@ export class VillageLife {
     action('Water form', () => this.perform('water'), !party.some((p) => p.element === 'water'));
     action('Fire form', () => this.perform('fire'), !party.some((p) => p.element === 'fire'));
     action('Wave', () => this.perform('wave'));
+    action('Travel journal', () =>
+      new TravelJournal(this.app).open(document.querySelector('.overlay-host') ?? document.body),
+    );
+    action('Walk to Ba Dan', () => {
+      this.pending = null;
+      this.drill = null;
+      this.app.dispatch({ type: 'walkTo', pos: { x: 10, y: 20 } });
+    });
     action('Under the banyan', () => this.visit('canopy'));
     action('Meet Pebble', () => this.visit('otter'));
     action('Visit the shrine', () => this.visit('shrine'));
@@ -93,9 +102,7 @@ export class VillageLife {
       ),
       this.app.previewActive
         ? button('Leave preview', () => this.app.endVillagePreview())
-        : button('Back to village', () =>
-            this.app.dispatch({ type: 'enterNode', nodeId: 'village_explore' }),
-          ),
+        : button('Pause', () => this.app.openPause()),
     );
     const discoveries = [
       this.app.state?.flags.riverside_pet,
@@ -288,7 +295,8 @@ export class VillageLife {
       {
         time,
         reduced,
-        backdrop: this.app.backdropFor(this.app.state?.location.mapId ?? ''),
+        // The reducer can already be in Ba Dan while this departing walk finishes.
+        backdrop: this.app.backdropFor(RIVERSIDE_ID),
         actors,
         creature: this.creature,
         friendly: Boolean(this.app.state?.flags.riverside_pet),

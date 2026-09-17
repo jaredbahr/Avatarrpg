@@ -89,8 +89,8 @@ describe('choreograph', () => {
     if (move?.kind !== 'move') throw new Error('expected a move track');
     expect(move.unitId).toBe('leader');
     expect(move.start).toBe(1000);
-    expect(move.duration).toBe(TIMING.strollStep * 2);
-    expect(cursor).toBe(1000 + TIMING.strollStep * 2);
+    expect(move.duration).toBe(TIMING.strollStep * 2 + 120);
+    expect(cursor).toBe(1000 + move.duration);
     expect(move.duration).toBeGreaterThan(TIMING.step * 4);
   });
 

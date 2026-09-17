@@ -18,7 +18,8 @@ import type { EmitterDef, FxRecipe } from '../../content/fx';
 import { hashSeed } from '../../render/fx/rng';
 import { particleSpan } from '../../render/fx/simulate';
 import { smoothPath } from '../../render/geometry/curve';
-import { easeInCubic, easeInOutCubic, easeInOutSine, easeOutQuad, stroll } from './easing';
+import { easeInCubic, easeInOutCubic, easeInOutSine, easeOutQuad } from './easing';
+import { strollTiming } from './stroll';
 import type { AnyTrack, ClipName } from './timeline';
 
 /** Base durations in milliseconds, before the motion setting is applied. */
@@ -260,18 +261,22 @@ export function choreograph(input: ChoreographyInput): Choreography {
         // The village walk: the leader's route from where it stood. The
         // followers are the scene's, pushed onto the same timeline.
         if (event.path.length === 0) break;
-        const duration = TIMING.strollStep * event.path.length * rate;
+        const curve = smoothPath(event.from, event.path);
+        const timing = strollTiming(curve.length, TIMING.strollStep);
+        const duration = timing.duration * rate;
         tracks.push({
           kind: 'move',
           unitId: event.unitId,
-          curve: smoothPath(event.from, event.path),
-          ease: stroll,
+          curve,
+          ease: timing.ease,
           start: cursor,
           duration,
         });
         // Only the leader's route is cued: the followers walk the same tiles a
         // beat behind, and four sets of boots on one road is a stampede.
-        footsteps(cursor, event.path.length, eventIndex, TIMING.strollStep);
+        if (!input.silentSteps)
+          for (let d = 0; d < curve.length; d++)
+            cue('step', cursor + timing.atDistance(d) * rate, 20 + d, eventIndex);
         const last = event.path[event.path.length - 1];
         if (last) positions.set(event.unitId, last);
         cursor += duration;

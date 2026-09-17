@@ -48,7 +48,24 @@ export function connectAct1(map: MapDef): MapDef {
       return {
         ...map,
         objective: 'Meet the villagers, visit the riverside, or follow the east road.',
-        exits: [route({ x: 23, y: 7 }, 'forest_road', { x: 1, y: 4 }, 'East road → Forest Road')],
+        exits: [
+          route({ x: 23, y: 7 }, 'forest_road', { x: 1, y: 4 }, 'East road → Forest Road'),
+          route({ x: 19, y: 14 }, 'ba_dan_riverside', { x: 10, y: 19 }, 'River path → Riverside'),
+        ],
+      };
+    case 'ba_dan_riverside':
+      return {
+        ...map,
+        objective:
+          'Enjoy the riverside, or follow the southern path into Ba Dan and the wider valley.',
+        exits: [
+          route(
+            { x: 10, y: 20 },
+            'ba_dan_village',
+            { x: 18, y: 14 },
+            'South path → Ba Dan Village',
+          ),
+        ],
       };
     case 'forest_road':
       return {
