@@ -6,14 +6,15 @@ import type { MapView, RenderUnit } from '../src/render/view';
 for (const renderer of ['canvas', 'webgl'] as const) {
   test(`attack recovery and backward knockback stay grounded on ${renderer}`, async ({ page }) => {
     test.setTimeout(120_000);
+    // Capture the game's first RAF in the controlled clock, including on WebKit.
+    await page.clock.install();
     await resetStorage(page, `?renderer=${renderer}`);
     await startGame(page, ['Explorer'], ['kaya'], 'motion-transitions', { reduceMotion: false });
     await enterNode(page, 'battle_forest_road');
     await takeTurn(page);
     await waitForIdle(page);
     await settleLayout(page);
-    await page.clock.install();
-    await page.clock.pauseAt(new Date(Date.now() + 1000));
+    await page.clock.pauseAt((await page.evaluate(() => Date.now())) + 1000);
     await page.evaluate(() => {
       const win = window as Window & { motionUnits?: readonly RenderUnit[] };
       const scene = (
