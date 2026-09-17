@@ -66,6 +66,17 @@ export class DialogueScene implements Scene {
     const host = this.host;
     const state = this.app.state;
     if (!host || !state) return;
+    // A line refresh replaces the controls. Keep keyboard users on the same
+    // control so the next Enter/Space press still reaches the dialogue.
+    const focused = document.activeElement;
+    const focusTarget =
+      focused && host.contains(focused)
+        ? focused.matches('.dialogue-panel button')
+          ? '.dialogue-panel button'
+          : focused.matches('.dialogue-panel')
+            ? '.dialogue-panel'
+            : null
+        : null;
     clear(host);
 
     const node = this.app.currentNode();
@@ -104,6 +115,7 @@ export class DialogueScene implements Scene {
     }
 
     host.appendChild(scene);
+    if (focusTarget) scene.querySelector<HTMLElement>(focusTarget)?.focus({ preventScroll: true });
   }
 
   /**
@@ -171,14 +183,20 @@ export class DialogueScene implements Scene {
         class: 'panel dialogue-panel',
         attrs: { role: 'button', tabindex: '0', 'aria-label': 'Continue' },
         onClick: (event) => {
-          // The explicit Next button has already advanced. A bubbled click
-          // must not skip the following line as well.
+          // The native Next/Continue button already advances. Its click still
+          // bubbles through this old panel even after dispatch replaces the DOM.
           if (event.target instanceof Element && event.target.closest('button')) return;
           advance();
         },
         onKeyDown: (event) => {
-          if (event.target !== event.currentTarget) return;
           if (event.key === 'Enter' || event.key === ' ') {
+            if (event.repeat) {
+              event.preventDefault();
+              return;
+            }
+            // Let the nested native button synthesize its own click. Only the
+            // panel itself needs a keyboard equivalent for tap-anywhere.
+            if (event.target !== event.currentTarget) return;
             event.preventDefault();
             advance();
           }

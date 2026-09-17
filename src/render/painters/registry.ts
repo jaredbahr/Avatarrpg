@@ -62,7 +62,13 @@ export function resolvePainter(key: string): ResolvedPainter {
     return {
       entry,
       palette,
-      draw: (ctx, box, options) => LOADING(ctx, box, palette, options ?? {}),
+      draw: (ctx, box, options) => {
+        if (key.startsWith('portrait.')) {
+          paintPortrait(ctx, box, palette, { variant: key.slice('portrait.'.length) });
+        } else {
+          LOADING(ctx, box, palette, options ?? {});
+        }
+      },
     };
   }
 

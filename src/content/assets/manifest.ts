@@ -5,7 +5,7 @@
  * and ability effects all carry an asset *key*, and this file decides what that
  * key resolves to.
  *
- * Today every key resolves to a code-drawn painter: a named vector routine in
+ * Keys can resolve to a code-drawn painter: a named vector routine in
  * `src/render/painters/` tinted from a nation palette. To drop in commissioned
  * or generated art later, change the entry:
  *
@@ -145,12 +145,12 @@ export const ASSETS: Readonly<Record<string, AssetEntry>> = {
   'portrait.wen': { kind: 'image', url: 'art/portraits/wen.png', palette: 'nonbender' },
 
   'portrait.narrator': painter('portrait', 'neutral', 'narrator'),
-  'portrait.mira': painter('portrait', 'earth', 'mira'),
-  'portrait.gao': painter('portrait', 'earth', 'gao'),
-  'portrait.pella': painter('portrait', 'air', 'pella'),
-  'portrait.dorin': painter('portrait', 'earth', 'dorin'),
-  'portrait.ruon': painter('portrait', 'neutral', 'ruon'),
-  'portrait.jin': painter('portrait', 'nonbender', 'jin'),
+  'portrait.mira': { kind: 'image', url: 'art/portraits/mira.png', palette: 'earth' },
+  'portrait.gao': { kind: 'image', url: 'art/portraits/gao.png', palette: 'earth' },
+  'portrait.pella': { kind: 'image', url: 'art/portraits/pella.png', palette: 'air' },
+  'portrait.dorin': { kind: 'image', url: 'art/portraits/dorin.png', palette: 'earth' },
+  'portrait.ruon': { kind: 'image', url: 'art/portraits/ruon.png', palette: 'neutral' },
+  'portrait.jin': { kind: 'image', url: 'art/portraits/jin.png', palette: 'nonbender' },
 
   /* ------------------------------------------------------------ Probe */
   /*

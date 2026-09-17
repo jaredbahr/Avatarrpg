@@ -49,13 +49,13 @@ export interface CreditEntry {
 
 export const CREDITS: readonly CreditEntry[] = [
   {
-    what: 'The playable character art',
-    work: 'Hero portraits and combat pose sheets',
+    what: 'The character art',
+    work: 'Hero and NPC portraits, and hero combat pose sheets',
     authors: 'This project, generated with OpenAI image generation',
     licence: 'own work',
     source: '',
     covers: ['art/portraits', 'art/units'],
-    note: 'Generated from the project character references and prompt packs, then normalised and packed for the game. Output terms: https://openai.com/policies/terms-of-use/. This credit does not claim exclusive copyright in generated output.',
+    note: 'Generated from the project character references and prompt packs, then normalised and packed for the game. Dialogue portrait sources and packing notes are in docs/art/dialogue-portraits.md. Output terms: https://openai.com/policies/terms-of-use/. This credit does not claim exclusive copyright in generated output.',
   },
   {
     what: 'The riverside painting',

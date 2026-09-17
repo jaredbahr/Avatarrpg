@@ -198,7 +198,7 @@ export const ACT1_NODES: readonly StoryNode[] = [
     id: 'after_forest',
     kind: 'dialogue',
     speaker: 'Kaya',
-    portrait: 'portrait.narrator',
+    portrait: 'portrait.kaya',
     lines: [
       'They are quarry workers. Look at the hands — every one of them has cut stone for a living.',
       'Whoever is up there did not bring an army. They took one.',
