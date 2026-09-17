@@ -139,6 +139,9 @@ export const ASSETS: Readonly<Record<string, AssetEntry>> = {
   /* --------------------------------------------------------------- NPCs */
   'npc.elder': painter('villager', 'neutral', 'elder'),
   'npc.shopkeeper': painter('villager', 'earth', 'shopkeeper'),
+  'world.turtle_ducks': painter('discovery', 'earth', 'ducks'),
+  'world.runoff_marker': painter('discovery', 'neutral', 'marker'),
+  'world.tea_station': painter('discovery', 'earth', 'tea'),
   'npc.kid': painter('villager', 'air', 'kid'),
   'npc.guard': painter('villager', 'earth', 'guard'),
 

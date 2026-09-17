@@ -294,10 +294,13 @@ export class ExploreScene implements Scene {
     const row = el('div', { class: 'action-row' });
 
     const npc = this.nearestNpc(state.location.pos);
-    const talk = button('Talk', () => this.talkTo(npc), {
+    const inspect = npc?.sprite.startsWith('world.') ?? false;
+    const talk = button(inspect ? 'Inspect' : 'Talk', () => this.talkTo(npc), {
       class: 'action-button',
       disabled: !npc,
-      title: npc ? `Walk over and talk to ${npc.name}` : 'Nobody is close enough to talk to',
+      title: npc
+        ? `Walk over and ${inspect ? 'inspect' : 'talk to'} ${npc.name}`
+        : 'Nobody is close enough to talk to',
     });
     talk.prepend(mark(UI_MARKS.talk));
     talk.appendChild(el('span', { class: 'action-sub', text: npc?.name ?? 'No one near' }));

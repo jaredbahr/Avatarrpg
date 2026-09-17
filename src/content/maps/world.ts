@@ -1,6 +1,8 @@
 /** The first connected region. Encounters retain their authored level order. */
 import type { Condition, MapDef, MapExit, MapTrigger, Vec2 } from '../../core/types';
 
+import { discoveryMarkers } from './discoveries';
+
 const visited = (nodeId: string): Condition => ({ kind: 'visited', nodeId });
 const unvisited = (nodeId: string): Condition => ({ kind: 'not', of: visited(nodeId) });
 const route = (
@@ -87,6 +89,7 @@ export function connectAct1(map: MapDef): MapDef {
         ],
         npcs: [
           ...map.npcs,
+          ...discoveryMarkers('forest_road'),
           {
             id: 'dema',
             name: 'Dema, road keeper',
@@ -153,6 +156,7 @@ export function connectAct1(map: MapDef): MapDef {
         ],
         npcs: [
           ...map.npcs,
+          ...discoveryMarkers('ambush_road'),
           {
             id: 'rest_keeper',
             name: 'Sen, the tea keeper',
