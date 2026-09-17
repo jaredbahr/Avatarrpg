@@ -5,6 +5,13 @@ reveal ladder, and A World Worth Wandering companion draft 1.0. The current
 repository implements the quarry adventure only. This document separates the
 scenes wired into that adventure from placements for later missions.
 
+The owner's explicit lore direction also governs every later scene: preserve
+elemental limits, the era's established technology, the agency and limits of
+spirits, and the themes of balance, responsibility, compassion and community.
+Allow humor, hospitality and ordinary work alongside danger. Our people and
+plots remain original; no new Avatar powers, canon cameos, borrowed plot
+solutions or spirit-energy superweapons are introduced for spectacle.
+
 ## In the playable game
 
 | Story moment                             | Treatment                                                                              | Why here                                              | Continuity                                                                                   |

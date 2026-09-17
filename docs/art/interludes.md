@@ -11,6 +11,27 @@ under public/art/interludes/. No atlas, baked lettering or animation. The player
 shows the whole frame above DOM captions. Generated PNGs are production inputs,
 not shipped. Existing art and device budgets remain unchanged.
 
+## Visual review standard
+
+The owner's follow-up requires plausible scale as well as a consistent style.
+Review full-size art and the shipped WebP, including the whole image in tablet
+landscape and portrait. Check people against nearby doors, railings, chairs,
+bowls and cart wheels; distinguish foreground perspective from actual size.
+The driller is barn-sized, not a hand tool or a city-sized superweapon. Match its
+cabin, two treads and drill across the intact and disabled views. The detached
+arm belongs on the ground only after victory.
+
+Inspect faces, visible fingers and limbs, feet meeting paths, supported stairs,
+crane cables, wheel/axle attachments and repeated objects. Avoid fused bodies,
+extra anatomy, floating props, impossible intersections, decorative fake text,
+uniformly oversized furniture and unrelated architecture. Regenerate a specific
+defect rather than disguising it with blur, cropping or camera movement.
+
+World continuity: Ba Dan retains its timber, stone and restrained tiled roofs.
+The coastal outpost uses original East Asian inspired military architecture,
+not European church towers. Quarry skylines remain limestone and pine hills.
+These are illustrative views of the same places, not exact navigation maps.
+
 ## New scene prompts
 
 ### road
@@ -54,3 +75,17 @@ Create a NEW single cinematic film keyframe, widescreen16:9. First image is the 
 Reference: generated shot 1.
 
 NEW cinematic closing keyframe for a hand-drawn fantasy RPG prologue, widescreen16:9. Reference image defines the SAME limestone quarry, green pines and warm color world, now the camera is up the road looking at the quarry entrance. Eye-level view from a pine-lined stone path: two tall pale limestone cut walls form a narrow opening with a large CLOSED weathered wooden gate across it, dark iron crossbraces. An empty track leads the eye to the gate center-right. One simple weathered green cloth pennant on a pole at upper right, hanging still. Two SMALL distant adult guard silhouettes with ordinary spears, rust-brown and muted green layered uniforms, stand on a timber guard platform above the gate. Under the left gate post a single iron fire brazier with a SMALL flat stylized orange flame. Great terraces and a stationary timber lifting crane behind. Quiet, guarded, mysterious rather than evil fortress. Warm low afternoon sun crosses the path, cool teal shadows under the trees; subtle very light dusty air. Carefully composed empty foreground for slow camera approach. Painterly animation background with dark brown ink contours and clear flat shadow shapes, restrained green ochre parchment rust palette, 2D television animation feeling consistent with reference. No close characters or famous designs, no text, signs, captions, logos, borders, photographs, 3D, bloom, blur or lens effects. Beautiful original village quarry environment.
+
+## Lore and continuity correction prompts
+
+### bay
+
+Edit only the distant outpost buildings on the right headland. Preserve exactly the bay, horizon, foreground pines and rocks, twilight light, image size, perspective and quiet scale. Replace Mediterranean fortress/church architecture with an ORIGINAL East-Asian-inspired early-industrial coastal garrison: low dark volcanic-stone defensive terraces, simple warm ochre plaster barracks, dark timber pillars, restrained curved red tile roofs with broad eaves, ONE squat watch platform with a tiled roof. It is a modest decommissioned military outpost, not a sprawling palace, pagoda city or fantasy castle. Remove church-like bell towers and European crenellated towers. Doors about two meters tall, each storey about three meters, coherent stairs and railings, same consistent far-away perspective. Windows and a few lanterns give restrained warm gold light; do not make giant lanterns or glowing roof edges. No emblems, words, recognizable franchise building or canon characters. Retain the exact clean brown ink, cel shading and painted environment style. No other changes.
+
+### quarry
+
+Precise background-only edit. Preserve the entire foreground and quarry: EXACT same industrial tracked driller, drill arm, oil, treads, cranes, gallery openings, wooden ledges, limestone walls, perspective and all relative scales. Change ONLY the distant skyline along the uppermost edge: remove the European castle/city/aqueduct buildings beyond the quarry rim and replace them with matching limestone hills and pine forest. No new structures or objects. Keep the quarry and machine completely unchanged. Same widescreen full-bleed hand-inked cel-shaded painting, same daylight and palette, no text or borders.
+
+### rescue
+
+Precise background-only edit. Preserve ALL workers with their current normal adult human proportions, hands and feet, the foreground gallery, path and railing, the EXACT disabled driller with detached drill arm on the ground, and the entire quarry with its cranes, stone ledges and galleries. Change ONLY distant skyline along the uppermost edge: remove European castle/city/aqueduct buildings beyond quarry rim, replace them with limestone hills and pine forest. No other changes. Keep all object scales, distances, perspective and geometry unchanged. Same widescreen brown-ink cel-shaded painting and afternoon light. Do not add humans, machinery, roofs, symbols, text or borders.
