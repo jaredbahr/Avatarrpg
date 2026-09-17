@@ -20,6 +20,12 @@ import { CONTENT } from '../../content';
 import { resolveAsset } from '../../content/assets/manifest';
 import { button, clear, el } from '../ui/dom';
 import { assetCanvas } from '../ui/assetCanvas';
+import {
+  INTERLUDES,
+  INTERLUDE_ART,
+  interludeHoldMs,
+  type InterludeDef,
+} from '../../content/story/interludes';
 
 /** What to call a bender the party does not have. */
 const BENDER_LABEL: Record<ElementId, string> = {
@@ -46,15 +52,26 @@ function moodFor(portraitKey: string): Mood {
 export class DialogueScene implements Scene {
   readonly name = 'dialogue';
   private host: HTMLElement | null = null;
+  private interludeNode = '';
+  private endFrame = 0;
+  private endSummary = false;
+  private playing = false;
+  private timer: ReturnType<typeof setTimeout> | undefined;
+  private onVisibility = () => {
+    if (document.hidden) this.pauseInterlude();
+  };
 
   constructor(private app: App) {}
 
   mount(host: HTMLElement): void {
     this.host = host;
+    document.addEventListener('visibilitychange', this.onVisibility);
     this.render();
   }
 
   unmount(): void {
+    this.clearTimer();
+    document.removeEventListener('visibilitychange', this.onVisibility);
     this.host = null;
   }
 
@@ -63,6 +80,7 @@ export class DialogueScene implements Scene {
   }
 
   private render(): void {
+    this.clearTimer();
     const host = this.host;
     const state = this.app.state;
     if (!host || !state) return;
@@ -71,11 +89,13 @@ export class DialogueScene implements Scene {
     const focused = document.activeElement;
     const focusTarget =
       focused && host.contains(focused)
-        ? focused.matches('.dialogue-panel button')
-          ? '.dialogue-panel button'
-          : focused.matches('.dialogue-panel')
-            ? '.dialogue-panel'
-            : null
+        ? focused instanceof HTMLElement && focused.dataset.interludeControl
+          ? `[data-interlude-control="${focused.dataset.interludeControl}"]`
+          : focused.matches('.dialogue-panel button')
+            ? '.dialogue-panel button'
+            : focused.matches('.dialogue-panel')
+              ? '.dialogue-panel'
+              : null
         : null;
     clear(host);
 
@@ -99,6 +119,21 @@ export class DialogueScene implements Scene {
     const scene = el('div', { class: 'scene dialogue-scene' });
     scene.appendChild(this.topBar());
 
+    if (this.interludeNode !== node.id) {
+      this.interludeNode = node.id;
+      this.endFrame = 0;
+      this.endSummary = false;
+      this.playing = false;
+    }
+    const interlude = INTERLUDES[node.id];
+    if (interlude && (node.kind === 'dialogue' || (node.kind === 'end' && !this.endSummary))) {
+      scene.appendChild(this.interludeStage(node, interlude));
+      host.appendChild(scene);
+      if (focusTarget)
+        scene.querySelector<HTMLElement>(focusTarget)?.focus({ preventScroll: true });
+      return;
+    }
+
     switch (node.kind) {
       case 'dialogue':
         scene.appendChild(this.dialogueStage(node));
@@ -115,7 +150,12 @@ export class DialogueScene implements Scene {
     }
 
     host.appendChild(scene);
-    if (focusTarget) scene.querySelector<HTMLElement>(focusTarget)?.focus({ preventScroll: true });
+    if (focusTarget) {
+      const target =
+        scene.querySelector<HTMLElement>(focusTarget) ??
+        scene.querySelector<HTMLElement>('.end-panel button');
+      target?.focus({ preventScroll: true });
+    }
   }
 
   /**
@@ -157,12 +197,147 @@ export class DialogueScene implements Scene {
       { class: 'top-bar' },
       el('span', { class: 'muted tiny', text: this.app.placeLabel() }),
       el('div', { class: 'spacer' }),
-      button('Pause', () => this.app.openPause(), { class: 'btn-ghost' }),
+      button(
+        'Pause',
+        () => {
+          this.pauseInterlude();
+          this.app.openPause();
+        },
+        { class: 'btn-ghost' },
+      ),
     );
   }
 
   private portrait(key: string, size = 6): HTMLElement {
     return assetCanvas(key, size);
+  }
+
+  private clearTimer(): void {
+    if (this.timer !== undefined) clearTimeout(this.timer);
+    this.timer = undefined;
+  }
+
+  private pauseInterlude(): void {
+    this.clearTimer();
+    if (!this.playing) return;
+    this.playing = false;
+    this.render();
+  }
+
+  private interludeStage(
+    node: Extract<StoryNode, { kind: 'dialogue' | 'end' }>,
+    interlude: InterludeDef,
+  ): HTMLElement {
+    const state = this.app.state;
+    const lines =
+      node.kind === 'end'
+        ? [...node.lines, node.teaser]
+        : state
+          ? resolveDialogue(state, node).lines
+          : node.lines;
+    const index = Math.min(
+      node.kind === 'end' ? this.endFrame : (state?.story.lineIndex ?? 0),
+      lines.length - 1,
+    );
+    const text = lines[index] ?? '';
+    const last = index === lines.length - 1;
+    const art = INTERLUDE_ART[interlude.shots[index] ?? 'village'];
+    const next = () => {
+      this.clearTimer();
+      if (node.kind === 'dialogue') this.app.dispatch({ type: 'advanceDialogue' });
+      else {
+        if (last) {
+          this.endSummary = true;
+          this.playing = false;
+        } else this.endFrame++;
+        this.render();
+      }
+    };
+    const control = (id: string, label: string, action: () => void, primary = false) => {
+      const item = button(label, action, {
+        class: primary ? 'btn-primary btn-large' : 'btn-ghost',
+      });
+      item.dataset.interludeControl = id;
+      item.addEventListener('keydown', (event) => {
+        if (event.repeat && (event.key === 'Enter' || event.key === ' ')) event.preventDefault();
+      });
+      return item;
+    };
+    const picture = el('img', {
+      class: 'interlude-art',
+      attrs: {
+        src: `${import.meta.env.BASE_URL}art/interludes/${art.file}`,
+        alt: art.alt,
+        width: '1280',
+        height: '720',
+      },
+    });
+    // Slow or unavailable art must never strand the story or spend its reading time unseen.
+    const schedule = () => {
+      if (!this.playing || !this.host?.contains(picture) || document.hidden) return;
+      this.clearTimer();
+      this.timer = setTimeout(() => {
+        if (last) this.pauseInterlude();
+        else next();
+      }, interludeHoldMs(text));
+    };
+    picture.addEventListener('load', schedule, { once: true });
+    picture.addEventListener(
+      'error',
+      () => {
+        picture.replaceWith(el('p', { class: 'muted', text: art.alt }));
+        this.pauseInterlude();
+      },
+      { once: true },
+    );
+    const controls = el(
+      'div',
+      { class: 'interlude-controls' },
+      control('play', this.playing ? 'Pause scene' : 'Play scene', () => {
+        this.playing = !this.playing;
+        this.render();
+      }),
+      control('replay', 'Restart scene', () => {
+        this.endFrame = 0;
+        if (node.kind === 'dialogue') this.app.dispatch({ type: 'enterNode', nodeId: node.id });
+        else this.render();
+      }),
+      control('skip', node.kind === 'end' ? 'Read summary' : 'Skip scene', () => {
+        this.playing = false;
+        if (node.kind === 'dialogue') this.app.dispatch({ type: 'enterNode', nodeId: node.next });
+        else {
+          this.endSummary = true;
+          this.render();
+        }
+      }),
+      el('div', { class: 'spacer' }),
+      control('next', last ? 'Continue' : 'Next', next, true),
+    );
+    return el(
+      'div',
+      { class: 'interlude-stage', dataset: { interlude: node.id } },
+      el(
+        'div',
+        { class: 'interlude-content' },
+        picture,
+        el(
+          'div',
+          { class: 'panel interlude-caption' },
+          el(
+            'div',
+            { class: 'row row-wrap' },
+            el('h2', { text: interlude.title }),
+            el('span', { class: 'muted tiny line-count', text: `${index + 1} of ${lines.length}` }),
+          ),
+          el('p', {
+            class: 'dialogue-line',
+            text,
+            attrs: { 'aria-live': this.playing ? 'off' : 'polite' },
+          }),
+          controls,
+        ),
+      ),
+    );
   }
 
   private dialogueStage(node: Extract<StoryNode, { kind: 'dialogue' }>): HTMLElement {
@@ -349,6 +524,13 @@ export class DialogueScene implements Scene {
         'div',
         { class: 'row' },
         button('Save this game', () => this.app.openPause()),
+        INTERLUDES[node.id]
+          ? button('Replay scene', () => {
+              this.endFrame = 0;
+              this.endSummary = false;
+              this.render();
+            })
+          : null,
         el('div', { class: 'spacer' }),
         button('Back to the title', () => this.app.start(), { class: 'btn-primary btn-large' }),
       ),
