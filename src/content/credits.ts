@@ -80,6 +80,15 @@ export const THIRD_PARTY_CREDITS: readonly CreditEntry[] = [
 
 export const CREDITS: readonly CreditEntry[] = [
   {
+    what: 'The illustrated story scenes',
+    work: 'Ba Dan, the east road, the quarry and the distant outpost',
+    authors: 'This project, generated with OpenAI image generation',
+    licence: 'own work',
+    source: '',
+    covers: ['art/interludes'],
+    note: 'Stationary cutscene paintings generated for this project. Prompts and provenance: docs/art/interludes.md. Output terms: https://openai.com/policies/terms-of-use/. No exclusive copyright in generated output is claimed.',
+  },
+  {
     what: 'The character art',
     work: 'Hero and NPC portraits, and hero combat and riverside motion sheets',
     authors: 'This project, generated with OpenAI image generation',

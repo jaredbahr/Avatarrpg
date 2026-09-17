@@ -284,6 +284,50 @@ export const BEATS: readonly Beat[] = [
     },
   },
   {
+    id: '03b-illustrated-opening',
+    title: 'Illustrated opening',
+    note: 'Stationary village painting with readable captions underneath, manual advance and optional playback.',
+    projects: PORTRAIT_TOO,
+    async run(ctx) {
+      await resetStorage(ctx.page, ctx.query());
+      await startGame(ctx.page, PLAYERS, PARTY, SEED);
+      await ctx.page
+        .locator('.interlude-art')
+        .evaluate((image) => (image as HTMLImageElement).decode());
+      await ctx.shoot(this.note);
+    },
+  },
+  {
+    id: '03c-quarry-interlude',
+    title: 'The quarry in scale',
+    note: 'A held wide painting gives the quarry and the driller space before the tactical fight.',
+    projects: PORTRAIT_TOO,
+    async run(ctx) {
+      await resetStorage(ctx.page, ctx.query());
+      await startGame(ctx.page, PLAYERS, PARTY, SEED);
+      await enterNode(ctx.page, 'quarry_descent');
+      await ctx.page
+        .locator('.interlude-art')
+        .evaluate((image) => (image as HTMLImageElement).decode());
+      await ctx.shoot(this.note);
+    },
+  },
+  {
+    id: '03d-rescue-interlude',
+    title: 'The workers come home',
+    note: 'The victory-only painting shows the disabled machine and the workers leaving the galleries.',
+    projects: PORTRAIT_TOO,
+    async run(ctx) {
+      await resetStorage(ctx.page, ctx.query());
+      await startGame(ctx.page, PLAYERS, PARTY, SEED);
+      await enterNode(ctx.page, 'act1_victory');
+      await ctx.page
+        .locator('.interlude-art')
+        .evaluate((image) => (image as HTMLImageElement).decode());
+      await ctx.shoot(this.note);
+    },
+  },
+  {
     id: '04-board-idle',
     title: 'The board at rest',
     note: 'The forest road with the HUD docked: ground, puddles, trees, unit sprites, turn strip and action bar.',
