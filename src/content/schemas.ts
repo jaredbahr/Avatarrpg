@@ -420,6 +420,32 @@ export const mapSchema = z
     props: z.array(propPlacement),
     ambience: z.string().min(1),
     exit: z.object({ pos: vec2, label: z.string().min(1) }).optional(),
+    objective: z.string().min(1).optional(),
+    exits: z
+      .array(
+        z.object({
+          pos: vec2,
+          toMapId: id,
+          toPos: vec2,
+          label: z.string().min(1),
+          requires: conditionSchema.optional(),
+          lockedHint: z.string().min(1).optional(),
+        }),
+      )
+      .optional(),
+    triggers: z
+      .array(
+        z.object({
+          id,
+          area: z.array(vec2).min(1),
+          label: z.string().min(1),
+          sprite: z.string().min(1),
+          node: id,
+          when: conditionSchema.optional(),
+          once: z.boolean(),
+        }),
+      )
+      .optional(),
     // A painting under the grid (ADR 0009). Between 32 px a tile (the probe) and
     // 256, so a 24-wide map stays inside the 2048 px texture every iPad takes.
     backdrop: z
@@ -739,6 +765,10 @@ export function validateContent(bundle: ContentBundle): string[] {
         m.npcs.map((n): [string, string, number | null] => [`npc ${n.id}`, n.sprite, null]),
       ),
     ];
+    for (const map of bundle.maps)
+      for (const trigger of map.triggers ?? []) {
+        wanted.push([`trigger ${map.id}:${trigger.id}`, trigger.sprite, null]);
+      }
     for (const [owner, key, size] of wanted) {
       const entry = assets[key];
       if (!entry) {
@@ -991,6 +1021,31 @@ export function validateContent(bundle: ContentBundle): string[] {
         );
       }
     });
+    const exitCells = new Set<string>();
+    for (const exit of m.exits ?? []) {
+      const key = `${exit.pos.x},${exit.pos.y}`;
+      if (exitCells.has(key)) problems.push(`map "${m.id}" repeats exit (${key})`);
+      exitCells.add(key);
+      const target = bundle.maps.find((map) => map.id === exit.toMapId);
+      if (!isWalkable(m, exit.pos.x, exit.pos.y))
+        problems.push(`map "${m.id}" has a blocked world exit`);
+      if (!target || !isWalkable(target, exit.toPos.x, exit.toPos.y))
+        problems.push(`map "${m.id}" has an invalid exit destination "${exit.toMapId}"`);
+      if (exit.requires && !exit.lockedHint)
+        problems.push(`map "${m.id}" gated exit needs a lockedHint`);
+    }
+    const triggerIds = new Set<string>();
+    for (const trigger of m.triggers ?? []) {
+      if (triggerIds.has(trigger.id))
+        problems.push(`map "${m.id}" repeats trigger "${trigger.id}"`);
+      triggerIds.add(trigger.id);
+      if (!storyIds.has(trigger.node))
+        problems.push(`map "${m.id}" trigger links to missing node "${trigger.node}"`);
+      for (const pos of trigger.area) {
+        if (!isWalkable(m, pos.x, pos.y))
+          problems.push(`map "${m.id}" trigger "${trigger.id}" is blocked or off-map`);
+      }
+    }
     if (m.exit && !isWalkable(m, m.exit.pos.x, m.exit.pos.y)) {
       problems.push(`map "${m.id}" exit at (${m.exit.pos.x},${m.exit.pos.y}) is blocked`);
     }

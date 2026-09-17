@@ -405,10 +405,11 @@ export class Canvas2DBackend implements RenderBackend {
   }
 
   private drawExit(view: MapView, camera: Camera): void {
-    if (!view.exit) return;
-    const box = camera.toScreen(view.exit.pos);
-    const pulse = (Math.sin(view.time / 420) + 1) / 2;
-    paintExitMarker(this.ctx, box, '#f0c674', pulse);
+    for (const exit of view.exits ?? (view.exit ? [view.exit] : [])) {
+      const box = camera.toScreen(exit.pos);
+      const pulse = (Math.sin(view.time / 420) + 1) / 2;
+      paintExitMarker(this.ctx, box, '#f0c674', pulse);
+    }
   }
 
   private drawNpcs(view: MapView, camera: Camera): void {

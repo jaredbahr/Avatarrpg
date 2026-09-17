@@ -19,6 +19,8 @@ import { RIVERSIDE } from './maps/riverside';
 import { RIVERSIDE_STORY } from './story/riverside';
 import { BA_DAN_VILLAGE } from './maps/village';
 import { COMBAT_MAPS } from './maps/combat';
+import { connectAct1 } from './maps/world';
+import { WORLD_STORY } from './story/world';
 import { PROPS, PROP_BY_ID } from './props';
 import { STATUSES, STATUS_BY_ID } from './statuses';
 import { SURFACES, SURFACE_BY_ID } from './surfaces';
@@ -27,8 +29,10 @@ import { ACT1_NODES } from './story/act1';
 import type { ContentBundle } from './schemas';
 import type { MapDef, StoryNode } from '../core/types';
 
-export const ALL_MAPS: readonly MapDef[] = [BA_DAN_VILLAGE, RIVERSIDE, ...COMBAT_MAPS];
-export const ALL_STORY: readonly StoryNode[] = [...ACT1_NODES, ...RIVERSIDE_STORY];
+export const ALL_MAPS: readonly MapDef[] = [BA_DAN_VILLAGE, RIVERSIDE, ...COMBAT_MAPS].map(
+  connectAct1,
+);
+export const ALL_STORY: readonly StoryNode[] = [...ACT1_NODES, ...RIVERSIDE_STORY, ...WORLD_STORY];
 
 /** The flat form, used by the validation test and the balance report. */
 export const CONTENT_BUNDLE: ContentBundle = {
