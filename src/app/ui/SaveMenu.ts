@@ -59,9 +59,7 @@ export class SaveMenu extends Dialog {
 
     for (const slot of slots) {
       const isAuto = slot.id === AUTOSAVE_ID;
-      const damaged = slot.occupied && slot.summary.startsWith('Damaged');
-
-      const canUse = this.config.mode === 'save' ? !isAuto : slot.occupied && !damaged;
+      const canUse = this.config.mode === 'save' ? !isAuto : slot.occupied && !slot.error;
 
       /*
        * The slot's *number* is its identity and always leads. Showing the
@@ -137,8 +135,11 @@ export class SaveMenu extends Dialog {
   }
 
   private eraseSlot(slot: SlotId): void {
-    clearSlot(slot);
-    this.app.toasts.show('Slot erased.');
+    const result = clearSlot(slot);
+    this.app.toasts.show(
+      result.ok ? 'Slot erased.' : (result.error ?? 'Could not erase that slot.'),
+      result.ok ? 'info' : 'warn',
+    );
     this.refresh();
   }
 

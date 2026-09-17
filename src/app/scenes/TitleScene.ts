@@ -39,7 +39,7 @@ export class TitleScene implements Scene {
     clear(host);
 
     const auto = listSlots().find((slot) => slot.id === AUTOSAVE_ID);
-    const hasAuto = auto?.occupied === true && !auto.summary.startsWith('Damaged');
+    const hasAuto = auto?.occupied === true && !auto.error;
 
     // The four-nations wheel, the same drawing as the app icon.
     const mark = el('div', {

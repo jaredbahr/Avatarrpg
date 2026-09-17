@@ -212,13 +212,13 @@ export function migrate(raw: unknown): unknown {
   if (typeof raw !== 'object' || raw === null) return raw;
   let blob = raw as Record<string, unknown>;
 
-  // Format 0 (never shipped) had no `summary`; synthesise one so old files
-  // from a dev build still load.
-  if (blob.format === 0 || blob.summary === undefined) {
+  // Only known legacy formats may be upgraded. A missing summary on a
+  // current or future save is not evidence that it came from a dev build.
+  if (blob.format === 0 || (blob.format === 1 && blob.summary === undefined)) {
     blob = { ...blob, format: 1, summary: blob.label ?? 'Saved game' };
   }
 
-  if (typeof blob.format === 'number' && blob.format < 2) blob = migrateToFormat2(blob);
+  if (blob.format === 1) blob = migrateToFormat2(blob);
 
   return blob;
 }
@@ -281,28 +281,26 @@ export function deserialize(json: string): LoadResult {
     return { ok: false, error: 'That file is not valid JSON.' };
   }
 
-  const migrated = migrate(raw);
-
-  if (
-    typeof migrated === 'object' &&
-    migrated !== null &&
-    (migrated as Record<string, unknown>).magic !== SAVE_MAGIC
-  ) {
-    return { ok: false, error: 'That file is not a Four Nations Tactics save.' };
+  if (typeof raw === 'object' && raw !== null) {
+    const header = raw as Record<string, unknown>;
+    if (header.magic !== SAVE_MAGIC) {
+      return { ok: false, error: 'That file is not a Four Nations Tactics save.' };
+    }
+    // A newer format need not match today's schema at all. Check its header
+    // before migration or validation can mistake it for a damaged old save.
+    if (typeof header.format === 'number' && header.format > SAVE_FORMAT_VERSION) {
+      return {
+        ok: false,
+        error: 'This save was made by a newer version of the game. Update, then try again.',
+      };
+    }
   }
 
-  const parsed = saveBlobSchema.safeParse(migrated);
+  const parsed = saveBlobSchema.safeParse(migrate(raw));
   if (!parsed.success) {
     const first = parsed.error.issues[0];
     const where = first ? first.path.join('.') : 'the file';
     return { ok: false, error: `This save looks damaged (${where}).` };
-  }
-
-  if (parsed.data.format > SAVE_FORMAT_VERSION) {
-    return {
-      ok: false,
-      error: 'This save was made by a newer version of the game. Update, then try again.',
-    };
   }
 
   return { ok: true, blob: parsed.data };

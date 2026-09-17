@@ -32,6 +32,8 @@ export interface SlotSummary {
   readonly label: string;
   readonly summary: string;
   readonly savedAt: number;
+  /** Present when the slot could not be read or its save could not be loaded. */
+  readonly error?: string;
 }
 
 export interface StorageResult {
@@ -41,9 +43,8 @@ export interface StorageResult {
 
 function storage(): Storage | null {
   try {
-    const test = '__fnt_probe__';
-    window.localStorage.setItem(test, '1');
-    window.localStorage.removeItem(test);
+    // A full quota blocks writes, not reads or erases. Probing with setItem
+    // would hide recoverable saves precisely when the player needs them.
     return window.localStorage;
   } catch {
     return null;
@@ -51,7 +52,14 @@ function storage(): Storage | null {
 }
 
 export function storageAvailable(): boolean {
-  return storage() !== null;
+  try {
+    const store = storage();
+    if (!store) return false;
+    store.getItem(keyFor(AUTOSAVE_ID));
+    return true;
+  } catch {
+    return false;
+  }
 }
 
 function keyFor(slot: SlotId): string {
@@ -97,7 +105,15 @@ export function loadFromSlot(
   const store = storage();
   if (!store) return { ok: false, error: 'This browser is blocking site data.' };
 
-  const json = store.getItem(keyFor(slot));
+  let json: string | null;
+  try {
+    json = store.getItem(keyFor(slot));
+  } catch {
+    return {
+      ok: false,
+      error: 'Could not read that save. This browser may be blocking site data.',
+    };
+  }
   if (!json) return { ok: false, error: 'That slot is empty.' };
 
   const result = deserialize(json);
@@ -109,13 +125,17 @@ export function loadFromSlot(
   };
 }
 
-export function clearSlot(slot: SlotId): void {
+export function clearSlot(slot: SlotId): StorageResult {
   const store = storage();
-  if (!store) return;
+  if (!store) return { ok: false, error: 'This browser is blocking site data.' };
   try {
     store.removeItem(keyFor(slot));
+    return { ok: true };
   } catch {
-    // Nothing useful to do; the slot listing will still show it.
+    return {
+      ok: false,
+      error: 'Could not erase that slot. This browser may be blocking site data.',
+    };
   }
 }
 
@@ -130,14 +150,23 @@ export function listSlots(): SlotSummary[] {
       summary: 'Empty',
       savedAt: 0,
     };
-    if (!store) return empty;
+    if (!store) {
+      const error = 'This browser is blocking site data.';
+      return { ...empty, summary: error, error };
+    }
 
-    const json = store.getItem(keyFor(id));
+    let json: string | null;
+    try {
+      json = store.getItem(keyFor(id));
+    } catch {
+      const error = 'Could not read that save. This browser may be blocking site data.';
+      return { ...empty, summary: error, error };
+    }
     if (!json) return empty;
 
     const result = deserialize(json);
     if (!result.ok) {
-      return { ...empty, occupied: true, summary: `Damaged save — ${result.error}` };
+      return { ...empty, occupied: true, summary: result.error, error: result.error };
     }
     return {
       id,

@@ -538,6 +538,31 @@ export const BEATS: readonly Beat[] = [
       await ctx.shoot(`${this.note} (the icon set)`, 'icons');
     },
   },
+  {
+    id: '20-save-recovery',
+    title: 'Loadable, newer and damaged saves',
+    note: 'A valid save beside a newer-format save and a damaged file. Each refusal explains itself, only the valid save can load, and the messages must fit at Largest text without hiding Import or Close.',
+    projects: PORTRAIT_TOO,
+    async run(ctx) {
+      await resetStorage(ctx.page, ctx.query());
+      await startGame(ctx.page, PLAYERS, PARTY, SEED);
+      await ctx.page.evaluate(() => {
+        if (!window.fnt?.app.saveTo('slot1')) throw new Error('Could not seed the gallery save');
+        const json = localStorage.getItem('fnt.save.slot1');
+        if (!json) throw new Error('Missing gallery save');
+        const future = JSON.parse(json);
+        future.format += 1;
+        delete future.summary;
+        localStorage.setItem('fnt.save.slot2', JSON.stringify(future));
+        localStorage.setItem('fnt.save.slot3', '{broken');
+      });
+      await ctx.page.reload();
+      await ctx.page.getByRole('button', { name: 'Load a save' }).click();
+      await ctx.shoot(this.note);
+      await updateSettings(ctx.page, { largeText: 'huge' });
+      await ctx.shoot(`${this.note} (Largest text)`, 'largest');
+    },
+  },
 ];
 
 /** Whether a beat is captured on a project. */
