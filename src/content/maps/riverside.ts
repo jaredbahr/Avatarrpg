@@ -6,6 +6,7 @@ export const RIVERSIDE_ID = 'ba_dan_riverside';
 export const RIVERSIDE_ENTRY = 'riverside_explore';
 export const RIVERSIDE_SPOTS = {
   mira: { x: 15, y: 9 },
+  canopy: { x: 13, y: 9 },
   otter: { x: 17, y: 15 },
   tea: { x: 10, y: 18 },
   practice: { x: 30, y: 13 },

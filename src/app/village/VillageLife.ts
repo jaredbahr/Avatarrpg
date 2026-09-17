@@ -12,7 +12,7 @@ import { SettingsPanel } from '../ui/SettingsPanel';
 
 const distance = (a: Vec2, b: Vec2) => Math.hypot(a.x - b.x, a.y - b.y);
 type Activity = { kind: 'water' | 'fire' | 'wave'; unitId: string; started: number };
-type Visit = 'otter' | 'tea' | 'shrine' | 'practice';
+type Visit = 'otter' | 'tea' | 'shrine' | 'practice' | 'canopy';
 export class VillageLife {
   private stage: VillageLayer;
   private activity: Activity | null = null;
@@ -67,6 +67,7 @@ export class VillageLife {
     action('Water form', () => this.perform('water'), !party.some((p) => p.element === 'water'));
     action('Fire form', () => this.perform('fire'), !party.some((p) => p.element === 'fire'));
     action('Wave', () => this.perform('wave'));
+    action('Under the banyan', () => this.visit('canopy'));
     action('Meet Pebble', () => this.visit('otter'));
     action('Visit the shrine', () => this.visit('shrine'));
     action('Tea break', () => this.visit('tea'));
@@ -197,7 +198,11 @@ export class VillageLife {
         this.app.dispatch({ type: 'enterNode', nodeId: 'riverside_shrine' });
         return true;
       }
-      if (visit === 'otter') {
+      if (visit === 'canopy') {
+        this.say(
+          'The branches pass overhead. Walk back into the sunlight to see the depth change.',
+        );
+      } else if (visit === 'otter') {
         this.petUntil = now + 3200;
         this.app.dispatch({ type: 'setFlags', flags: { riverside_pet: true } });
         this.say(
@@ -228,6 +233,9 @@ export class VillageLife {
         id: u.id,
         pos: u.renderPos ?? u.pos,
         variant: member?.characterId ?? 'sura',
+        sprite: ['sura', 'kaya'].includes(member?.characterId ?? '')
+          ? `unit.village.${member?.characterId}`
+          : u.sprite,
         palette: member?.element ?? 'water',
         facing: active ? 1 : (u.facing ?? 1),
         motion: active?.kind ?? (u.renderPos ? 'walk' : 'idle'),
@@ -269,6 +277,7 @@ export class VillageLife {
       {
         time,
         reduced,
+        backdrop: this.app.backdropFor(this.app.state?.location.mapId ?? ''),
         actors,
         creature: this.creature,
         friendly: Boolean(this.app.state?.flags.riverside_pet),

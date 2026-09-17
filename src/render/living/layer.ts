@@ -1,16 +1,21 @@
 /** A shared transparent stage above either board backend; it never reads game state. */
-import type { Vec2 } from '../../core/types';
+import type { MapBackdrop, Vec2 } from '../../core/types';
 import type { Camera } from '../camera';
 import { paletteFor } from '../palettes';
 import { figureFor } from '../painters/cast';
 import { drawFigure } from '../painters/figure';
 import { FORM_DURATION, villagePose } from './poses';
 import type { VillageMotion } from './poses';
+import { backdrops } from '../backdrops';
+import { sheets } from '../sheets/store';
+import { RIVERSIDE_SCENERY, behindScenery } from './scenery';
+import type { SceneryLayer } from './scenery';
 
 export interface VillageActor {
   readonly id: string;
   readonly pos: Vec2;
   readonly variant: string;
+  readonly sprite?: string;
   readonly palette: string;
   readonly villager?: boolean;
   readonly facing: 1 | -1;
@@ -21,6 +26,7 @@ export interface VillageActor {
 export interface VillageView {
   readonly time: number;
   readonly reduced: boolean;
+  readonly backdrop: MapBackdrop | null;
   readonly actors: readonly VillageActor[];
   readonly creature: Vec2;
   readonly friendly: boolean;
@@ -62,15 +68,102 @@ export class VillageLayer {
     c.clearRect(0, 0, width, height);
     const t = view.reduced ? 0 : view.time / 1000;
     this.river(camera, t);
+    const painting = view.backdrop ? backdrops.get(view.backdrop.url) : null;
+    for (const actor of view.actors) this.groundContact(actor, camera, view.reduced);
     const entities = [
       ...view.actors.map((actor) => ({
-        y: actor.pos.y,
+        y: actor.pos.y + 0.86,
         draw: () => this.actor(actor, camera, view.reduced),
       })),
-      { y: view.creature.y, draw: () => this.otter(view, camera, t) },
+      { y: view.creature.y + 0.86, draw: () => this.otter(view, camera, t) },
+      ...(painting
+        ? RIVERSIDE_SCENERY.map((layer) => ({
+            y: layer.depth,
+            draw: () => this.scenery(layer, painting, camera),
+          }))
+        : []),
     ].sort((a, b) => a.y - b.y);
     for (const entity of entities) entity.draw();
+    this.canvas.dataset.illustratedActors = String(
+      view.actors.filter((a) => a.sprite && sheets.loadedFor(a.sprite)).length,
+    );
+    this.canvas.dataset.occludedActors = String(
+      painting
+        ? view.actors.filter((a) => a.sprite && behindScenery(a.pos.x + 0.5, a.pos.y + 0.3)).length
+        : 0,
+    );
+    // Names remain usable even when an actor is behind a foreground branch.
+    for (const actor of view.actors) {
+      if (!actor.label) continue;
+      const box = camera.toScreen(actor.pos);
+      if (painting && actor.sprite && behindScenery(actor.pos.x + 0.5, actor.pos.y + 0.3)) {
+        c.strokeStyle = '#ffe4a2';
+        c.lineWidth = 1.5;
+        c.beginPath();
+        c.ellipse(
+          box.x + box.size / 2,
+          box.y + box.size * 0.86,
+          box.size * 0.22,
+          box.size * 0.07,
+          0,
+          0,
+          Math.PI * 2,
+        );
+        c.stroke();
+      }
+      this.label(actor.label, box.x + box.size / 2, box.y + box.size * 1.16, box.size);
+    }
     if (!view.reduced) this.butterflies(camera, t, view.fireflies);
+  }
+  private scenery(layer: SceneryLayer, painting: HTMLImageElement, camera: Camera): void {
+    const c = this.ctx;
+    const origin = camera.toScreen({ x: 0, y: 0 });
+    c.save();
+    c.beginPath();
+    for (const points of layer.outlines) {
+      points.forEach(([x, y], i) => {
+        const px = origin.x + x * origin.size,
+          py = origin.y + y * origin.size;
+        if (i === 0) c.moveTo(px, py);
+        else c.lineTo(px, py);
+      });
+      c.closePath();
+    }
+    c.clip();
+    c.drawImage(painting, origin.x, origin.y, 36 * origin.size, 24 * origin.size);
+    c.restore();
+  }
+  private groundContact(actor: VillageActor, camera: Camera, reduced: boolean): void {
+    const c = this.ctx,
+      box = camera.toScreen(actor.pos),
+      s = box.size;
+    const x = box.x + s * 0.5,
+      y = box.y + s * 0.86;
+    c.save();
+    // The environment's afternoon light comes from the upper right.
+    c.filter = `blur(${s * 0.025}px)`;
+    c.fillStyle = 'rgba(30,44,49,0.13)';
+    c.beginPath();
+    c.ellipse(x - s * 0.32, y + s * 0.16, s * 0.62, s * 0.16, -0.35, 0, Math.PI * 2);
+    c.fill();
+    c.filter = 'none';
+    c.fillStyle = 'rgba(29,35,34,0.22)';
+    c.beginPath();
+    c.ellipse(x, y, s * 0.3, s * 0.1, 0, 0, Math.PI * 2);
+    c.fill();
+    if (!reduced && (actor.motion === 'fire' || actor.motion === 'water')) {
+      const p = actor.elapsed / FORM_DURATION;
+      const alpha = Math.max(0, Math.sin(p * Math.PI)) * 0.3;
+      const light = c.createRadialGradient(x, y, 0, x, y, s * 1.8);
+      light.addColorStop(
+        0,
+        actor.motion === 'fire' ? `rgba(255,161,54,${alpha})` : `rgba(132,226,239,${alpha})`,
+      );
+      light.addColorStop(1, 'rgba(255,211,139,0)');
+      c.fillStyle = light;
+      c.fillRect(x - s * 1.8, y - s * 1.8, s * 3.6, s * 3.6);
+    }
+    c.restore();
   }
   private actor(actor: VillageActor, camera: Camera, reduced: boolean): void {
     const box = camera.toScreen(actor.pos);
@@ -88,17 +181,49 @@ export class VillageLayer {
     const elapsed = reduced ? 0 : Math.floor(actor.elapsed / (1000 / 12)) * (1000 / 12);
     const pose = villagePose(reduced ? 'idle' : actor.motion, elapsed);
     const spec = figureFor(actor.villager ? 'villager' : 'bender', actor.variant, palette);
-    drawFigure(
-      c,
-      { x: box.x - s * 0.1, y: box.y - s * 0.182, size: s * 1.2 },
-      spec,
-      pose,
-      palette,
-      actor.facing,
-      0.36,
-    );
+    const casting = actor.motion === 'water' || actor.motion === 'fire';
+    const clip = reduced ? 'idle' : casting ? 'cast' : actor.motion;
+    const fraction = elapsed / FORM_DURATION;
+    const frame = actor.sprite
+      ? sheets.frame(
+          actor.sprite,
+          clip,
+          elapsed,
+          casting && !reduced ? (fraction < 0.45 ? 0 : fraction < 0.75 ? 1 : 2) : undefined,
+          s * camera.viewport.dpr,
+          1,
+        )
+      : null;
+    if (frame && !frame.placeholder) {
+      const factor = (s * 1.45) / frame.pixelsPerTile;
+      const w = frame.frame.w * factor,
+        h = frame.frame.h * factor;
+      c.save();
+      c.translate(box.x + s * 0.5, box.y + s * 0.86);
+      c.scale(actor.facing, 1);
+      c.drawImage(
+        frame.source,
+        frame.frame.x,
+        frame.frame.y,
+        frame.frame.w,
+        frame.frame.h,
+        -w * frame.anchor.x,
+        -h * frame.anchor.y,
+        w,
+        h,
+      );
+      c.restore();
+    } else
+      drawFigure(
+        c,
+        { x: box.x - s * 0.1, y: box.y - s * 0.182, size: s * 1.2 },
+        spec,
+        pose,
+        palette,
+        actor.facing,
+        0.36,
+      );
     if (actor.motion === 'water' || actor.motion === 'fire') this.form(actor, camera, reduced);
-    if (actor.label) this.label(actor.label, box.x + s / 2, box.y + s * 1.06, s);
   }
   private label(text: string, x: number, y: number, size: number): void {
     const c = this.ctx;
@@ -173,7 +298,7 @@ export class VillageLayer {
       for (let i = 0; i <= 40; i++) {
         const u = i / 40;
         points.push({
-          x: -0.15 + u * (0.5 + progress * 4.5),
+          x: 0.4 + u * (0.35 + progress * 4.5),
           y: -0.1 + Math.sin(u * 8 - p * 32) * (0.15 + u * 0.33) - u * 0.3,
         });
       }
@@ -185,10 +310,40 @@ export class VillageLayer {
       points.forEach((pt, i) => (i ? c.lineTo(pt.x, pt.y) : c.moveTo(pt.x, pt.y)));
       c.stroke();
     };
-    stroke(palette.dark, water ? 0.22 : 0.32);
-    stroke(palette.base, water ? 0.17 : 0.25);
-    stroke(palette.light, water ? 0.075 : 0.14);
-    stroke(palette.accent, 0.03);
+    if (water) {
+      stroke(palette.dark, 0.18);
+      stroke(palette.base, 0.13);
+      stroke(palette.light, 0.055);
+      stroke(palette.accent, 0.02);
+    } else {
+      // Pointed, overlapping tongues with bright cores, rather than a round tube.
+      for (let i = 0; i < 9; i++) {
+        const pt = points[i * 4];
+        if (!pt) continue;
+        const length = 0.3 + progress * 0.45;
+        const height = (0.16 + Math.sin(i * 2 + p * 29) * 0.06) * (1 - i / 14);
+        for (const [color, scale] of [
+          [palette.dark, 1.15],
+          [palette.base, 1],
+          [palette.light, 0.6],
+          [palette.accent, 0.28],
+        ] as const) {
+          c.fillStyle = color;
+          c.beginPath();
+          c.moveTo(pt.x - length * 0.3, pt.y);
+          c.quadraticCurveTo(
+            pt.x,
+            pt.y - height * scale * 1.8,
+            pt.x + length * scale,
+            pt.y - height * scale,
+          );
+          c.lineTo(pt.x + length * scale * 0.65, pt.y);
+          c.lineTo(pt.x + length * scale * 1.4, pt.y + height * scale * 0.3);
+          c.quadraticCurveTo(pt.x, pt.y + height * scale, pt.x - length * 0.3, pt.y);
+          c.fill();
+        }
+      }
+    }
     // Droplets and embers carry the motion beyond the silhouette.
     for (let i = 0; i < 12; i++) {
       const q = points[Math.min(points.length - 1, i * 3)];

@@ -50,7 +50,7 @@ export interface CreditEntry {
 export const CREDITS: readonly CreditEntry[] = [
   {
     what: 'The character art',
-    work: 'Hero and NPC portraits, and hero combat pose sheets',
+    work: 'Hero and NPC portraits, and hero combat and riverside motion sheets',
     authors: 'This project, generated with OpenAI image generation',
     licence: 'own work',
     source: '',
@@ -64,7 +64,7 @@ export const CREDITS: readonly CreditEntry[] = [
     licence: 'own work',
     source: '',
     covers: ['art/maps/ba_dan_riverside.webp'],
-    note: 'Original generated environment for the living-village prototype. Characters, animals and animated effects are drawn by the game. See docs/art/riverside.md.',
+    note: 'Original generated environment for the living-village prototype. Foreground silhouettes are composited at ground depth. Riverside hero walk and wave sheets are generated; animals and elemental effects are drawn by the game. See docs/art/riverside.md.',
   },
   {
     what: 'The heading typeface',

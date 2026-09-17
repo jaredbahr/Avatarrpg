@@ -174,7 +174,7 @@ export const BEATS: readonly Beat[] = [
   ...['Water form', 'Fire form'].map((form, index): Beat => ({
     id: `20${index === 0 ? 'a' : 'b'}-riverside`,
     title: `A living riverside · ${form}`,
-    note: 'A painted village, held bending poses, independently animated neighbors, river highlights and an otter-turtle.',
+    note: 'An ink-painted village with drawn hero poses, ground shadows, foreground occlusion, river highlights and an otter-turtle.',
     projects: SURFACES,
     async run(ctx) {
       await resetStorage(ctx.page, ctx.query());
@@ -186,6 +186,7 @@ export const BEATS: readonly Beat[] = [
         return backdrop ? app.overrideBackdrop('ba_dan_riverside', backdrop) : false;
       });
       if (!loaded) throw new Error('The riverside painting did not load.');
+      await ctx.page.locator('.village-life-canvas[data-illustrated-actors="2"]').waitFor();
       await ctx.shoot(this.note);
       await ctx.filmstrip(`${this.note} ${form}.`, [650, 1450, 1900, 2850, 3450], async () => {
         await ctx.page.evaluate((label) => {
@@ -198,6 +199,20 @@ export const BEATS: readonly Beat[] = [
       });
     },
   })),
+  {
+    id: '20c-riverside-depth',
+    title: 'Under the banyan',
+    note: 'The canopy covers the heroes while their name and ground marker remain readable. Walk into the square to emerge in front of it.',
+    projects: SURFACES,
+    async run(ctx) {
+      await resetStorage(ctx.page, ctx.query());
+      await ctx.page.getByRole('button', { name: 'Explore the riverside', exact: true }).click();
+      await ctx.page.getByRole('button', { name: 'Under the banyan', exact: true }).click();
+      await ctx.page.getByText('The branches pass overhead.', { exact: false }).waitFor();
+      await ctx.page.locator('.village-life-canvas[data-illustrated-actors="2"]').waitFor();
+      await ctx.shoot(this.note);
+    },
+  },
   {
     id: '01-title',
     title: 'Title screen',

@@ -12,6 +12,7 @@ import type { ClipDef, ClipName } from '../../content/assets/clips';
 
 const FALLBACK: Readonly<Record<ClipName, readonly ClipName[]>> = {
   idle: [],
+  wave: ['idle'],
   walk: ['idle'],
   cast: ['idle'],
   melee: ['cast', 'idle'],
