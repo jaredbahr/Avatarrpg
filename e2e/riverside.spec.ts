@@ -3,6 +3,10 @@ import { enterNode, resetStorage, startGame } from './helpers';
 
 for (const renderer of ['canvas', 'webgl']) {
   test(`riverside discovery, forms and campaign preservation (${renderer})`, async ({ page }) => {
+    // The WebGL CI runner rasterises in software; the same gallery form
+    // takes two minutes there and five seconds on Canvas.
+    if (renderer === 'webgl') test.slow();
+    const timeout = renderer === 'webgl' ? 30_000 : 10_000;
     const errors: string[] = [];
     page.on('pageerror', (error) => errors.push(error.message));
     await resetStorage(page, `?renderer=${renderer}`);
@@ -25,12 +29,14 @@ for (const renderer of ['canvas', 'webgl']) {
     await page.getByRole('button', { name: 'Tea break', exact: true }).click();
     await expect(page.locator('.village-note')).toContainText('jasmine tea');
     await page.getByRole('button', { name: 'Visit the shrine', exact: true }).click();
-    await expect(page.locator('.dialogue-scene')).toBeVisible();
-    for (let i = 0; i < 3; i++)
+    await expect(page.locator('.dialogue-scene')).toBeVisible({ timeout });
+    for (let i = 0; i < 3; i++) {
+      await expect(page.locator('.line-count')).toHaveText(`${i + 1} of 3`);
       await page
         .locator('button')
         .filter({ hasText: /^(Next|Continue)$/ })
         .click();
+    }
     await expect(page.locator('.village-caption')).toContainText('3/3');
     await page.getByRole('button', { name: "Dorin's drill", exact: true }).click();
     await expect(page.locator('.village-note')).toContainText('sets a rhythm');

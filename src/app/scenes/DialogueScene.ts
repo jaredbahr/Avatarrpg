@@ -170,8 +170,14 @@ export class DialogueScene implements Scene {
       {
         class: 'panel dialogue-panel',
         attrs: { role: 'button', tabindex: '0', 'aria-label': 'Continue' },
-        onClick: advance,
+        onClick: (event) => {
+          // The explicit Next button has already advanced. A bubbled click
+          // must not skip the following line as well.
+          if (event.target instanceof Element && event.target.closest('button')) return;
+          advance();
+        },
         onKeyDown: (event) => {
+          if (event.target !== event.currentTarget) return;
           if (event.key === 'Enter' || event.key === ' ') {
             event.preventDefault();
             advance();
