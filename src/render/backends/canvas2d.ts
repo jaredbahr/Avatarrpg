@@ -11,6 +11,7 @@
  */
 
 import type { Grid, Vec2 } from '../../core/types';
+import { resolveAsset } from '../../content/assets/manifest';
 import type { Camera, Viewport } from '../camera';
 import type { TileRelief } from '../geometry/board';
 import { boardRelief, decorSignature, surfaceEdges } from '../geometry/board';
@@ -419,15 +420,44 @@ export class Canvas2DBackend implements RenderBackend {
       const box = camera.toScreen(npc.pos);
       if (!camera.isVisible(npc.pos)) continue;
       box.y -= elevationAt(view.grid, npc.pos) * ELEVATION_LIFT * box.size;
-      const sprite = sprites.get(npc.sprite, box.size * dpr, { facing: 1 });
-      ctx.drawImage(sprite, box.x, box.y, box.size, box.size);
+      const entry = resolveAsset(npc.sprite);
+      const width = entry.kind === 'sheet' && entry.footprint.w === 2 ? 2 : 1;
+      const frame =
+        entry.kind === 'sheet'
+          ? sheets.frame(npc.sprite, 'idle', 0, 0, box.size * dpr, width)
+          : null;
+      if (frame) {
+        const fw = (frame.frame.w / frame.pixelsPerTile) * box.size;
+        const fh = (frame.frame.h / frame.pixelsPerTile) * box.size;
+        const f = frame.frame;
+        ctx.drawImage(
+          frame.source,
+          f.x,
+          f.y,
+          f.w,
+          f.h,
+          box.x + (width * box.size) / 2 - frame.anchor.x * fw,
+          box.y + FOOT_LINE * box.size - frame.anchor.y * fh,
+          fw,
+          fh,
+        );
+      } else {
+        const sprite = sprites.get(npc.sprite, box.size * dpr, { facing: 1 }, width);
+        ctx.drawImage(sprite, box.x, box.y, box.size * width, box.size);
+      }
 
       // A small "talk" pip so a child can tell an NPC from scenery.
       ctx.save();
       ctx.globalAlpha = 0.55 + 0.35 * ((Math.sin(view.time / 500) + 1) / 2);
       ctx.fillStyle = '#f0c674';
       ctx.beginPath();
-      ctx.arc(box.x + box.size * 0.5, box.y + box.size * 0.08, box.size * 0.07, 0, Math.PI * 2);
+      ctx.arc(
+        box.x + box.size * width * 0.5,
+        box.y + box.size * 0.08,
+        box.size * 0.07,
+        0,
+        Math.PI * 2,
+      );
       ctx.fill();
       ctx.restore();
     }
