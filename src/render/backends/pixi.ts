@@ -435,7 +435,7 @@ export class PixiBackend implements RenderBackend {
     const painted = camera.projection === 'oblique' && view.scene ? scenePainted : backdropPainted;
     this.syncGround(view, painted);
     this.syncDecor(view, camera, !painted || view.crispOverlays);
-    this.syncShade(view, camera);
+    this.syncShade(view, camera, scenePainted);
     this.drawOverlays(view);
     this.drawPath(view);
     this.drawDecor(view);
@@ -730,9 +730,11 @@ export class PixiBackend implements RenderBackend {
    * four gradient sprites along the board's sides and one radial across the
    * viewport, in world units so they ride the camera like everything else.
    */
-  private syncShade(view: MapView, camera: Camera): void {
-    this.shadeLayer.visible = view.atmosphere;
-    if (!view.atmosphere) return;
+  private syncShade(view: MapView, camera: Camera, scenePainted: boolean): void {
+    // Layered paintings extend beyond the logical diamond and carry their own
+    // lighting; board-edge gradients cut a dark diagonal through that scenery.
+    this.shadeLayer.visible = view.atmosphere && !scenePainted;
+    if (!this.shadeLayer.visible) return;
     const [n, s, w, e, vignette] = this.shadeSprites;
     if (!n || !s || !w || !e || !vignette) return;
     const width = view.grid.width * TILE;
@@ -917,13 +919,13 @@ export class PixiBackend implements RenderBackend {
     const points = flatten(curve.points);
 
     g.poly(points, false).stroke({
-      width: Math.max(4, TILE * 0.11),
+      width: Math.max(2, TILE * OVERLAY.pathUnderWidth),
       color: OVERLAY.pathUnder,
       cap: 'round',
       join: 'round',
     });
     g.poly(points, false).stroke({
-      width: Math.max(2, TILE * 0.05),
+      width: Math.max(1, TILE * OVERLAY.pathWidth),
       color: OVERLAY.path,
       cap: 'round',
       join: 'round',
@@ -931,7 +933,9 @@ export class PixiBackend implements RenderBackend {
 
     const end = sampleAt(curve, curve.length);
     const tip = { x: end.pos.x * TILE, y: end.pos.y * TILE };
-    g.poly(arrowheadPolygon(tip, end.tangent, TILE), true).fill({ color: OVERLAY.path });
+    g.poly(arrowheadPolygon(tip, end.tangent, TILE * OVERLAY.pathArrowScale), true).fill({
+      color: OVERLAY.path,
+    });
   }
 
   private drawDecor(view: MapView): void {

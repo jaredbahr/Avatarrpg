@@ -443,10 +443,10 @@ export class Canvas2DBackend implements RenderBackend {
       else ctx.lineTo(x, y);
     });
     ctx.strokeStyle = OVERLAY.pathUnder;
-    ctx.lineWidth = Math.max(4, size * 0.11);
+    ctx.lineWidth = Math.max(2, size * OVERLAY.pathUnderWidth);
     ctx.stroke();
     ctx.strokeStyle = OVERLAY.path;
-    ctx.lineWidth = Math.max(2, size * 0.05);
+    ctx.lineWidth = Math.max(1, size * OVERLAY.pathWidth);
     // A slow crawl along the route, so the line reads as a direction of travel.
     ctx.setLineDash([size * 0.22, size * 0.16]);
     ctx.lineDashOffset = -((view.time / 30) % (size * 0.38));
@@ -456,7 +456,10 @@ export class Canvas2DBackend implements RenderBackend {
     // The arrowhead sits on the last tangent, pointing the way the walk ends.
     const end = sampleAt(curve, curve.length);
     const tip = { x: origin.x + end.pos.x * size, y: origin.y + end.pos.y * size };
-    this.fillPolygon(arrowheadPolygon(tip, end.tangent, size), OVERLAY.path);
+    this.fillPolygon(
+      arrowheadPolygon(tip, end.tangent, size * OVERLAY.pathArrowScale),
+      OVERLAY.path,
+    );
     ctx.restore();
   }
 
