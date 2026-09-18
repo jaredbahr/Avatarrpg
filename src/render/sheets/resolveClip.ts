@@ -22,6 +22,9 @@ const FALLBACK: Readonly<Record<ClipName, readonly ClipName[]>> = {
   idleSouth: ['idle'],
   walkNorth: ['walk', 'idle'],
   walkSouth: ['walk', 'idle'],
+  rest: ['idle'],
+  restNorth: ['idleNorth', 'rest', 'idle'],
+  restSouth: ['idleSouth', 'rest', 'idle'],
 };
 
 export interface ResolvedClip {
