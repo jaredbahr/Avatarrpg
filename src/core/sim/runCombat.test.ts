@@ -91,6 +91,30 @@ describe('combat simulation', () => {
       expect(result.outcome, encounterId).not.toBe('stalemate');
     }
   });
+
+  it('keeps the quarry winnable with every character in a three-person party', () => {
+    for (const character of CONTENT.characters.values()) {
+      const companions =
+        character.element === 'air'
+          ? ['kaya', 'bo']
+          : ['nilak', 'bo', 'kaya'].includes(character.id)
+            ? ['nilak', 'bo', 'kaya'].filter((id) => id !== character.id)
+            : ['kaya', 'nilak'];
+      const roster = [character.id, ...companions].map((characterId) => ({ characterId }));
+      let victories = 0;
+      for (let trial = 0; trial < 8; trial++) {
+        const result = runCombat(CONTENT, {
+          seed: seedFor(`quarry-${character.id}`, trial),
+          encounterId: 'enc_grumbler',
+          party: roster,
+        });
+        expect(result.anomalies, `${character.id} trial ${trial}`).toEqual([]);
+        expect(result.outcome, `${character.id} trial ${trial}`).not.toBe('stalemate');
+        if (result.outcome === 'victory') victories++;
+      }
+      expect(victories, `${character.id} in the quarry`).toBeGreaterThan(0);
+    }
+  });
 });
 
 describe('encounter rosters', () => {

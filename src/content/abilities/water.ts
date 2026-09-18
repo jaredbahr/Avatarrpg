@@ -132,7 +132,7 @@ export const WATER_ABILITIES: readonly Ability[] = [
     fx: 'fx.water.octopus',
     tags: ['attack', 'buff', 'signature'],
   }),
-  // The level-2 utility unlock for both waterbenders.
+  // Sura's level-2 field control; Nilak can choose it at level 3.
   ability({
     id: 'ice_path',
     name: 'Ice Path',
