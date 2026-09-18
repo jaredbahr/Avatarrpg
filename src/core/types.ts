@@ -571,6 +571,9 @@ export interface MapTrigger {
 }
 
 export interface MapDef {
+  /** Draw-time projection; rule coordinates and saves stay on the logical grid. */
+  readonly projection?: 'oblique';
+  readonly scene?: MapScene;
   readonly id: string;
   readonly name: string;
   readonly kind: 'combat' | 'explore';
@@ -607,6 +610,35 @@ export interface MapDef {
 export interface MapBackdrop {
   readonly url: string;
   readonly pixelsPerTile: number;
+  /** Tagged oblique paintings are already projected, including upright scenery. */
+  readonly projection?: 'oblique';
+  readonly padding?: {
+    readonly left: number;
+    readonly top: number;
+    readonly right: number;
+    readonly bottom: number;
+  };
+}
+
+/** Calibrated projected pixel rectangles: upright art is never ground-skewed. */
+export interface SceneImage {
+  readonly url: string;
+  readonly x: number;
+  readonly y: number;
+  readonly width: number;
+  readonly height: number;
+}
+
+export interface SceneScenery extends SceneImage {
+  readonly id: string;
+  readonly footprint: readonly Vec2[];
+  readonly depth: Vec2;
+  readonly fadeWhenOccluding?: boolean;
+}
+
+export interface MapScene {
+  readonly ground: readonly SceneImage[];
+  readonly scenery: readonly SceneScenery[];
 }
 
 /* ------------------------------------------------------------------ */
