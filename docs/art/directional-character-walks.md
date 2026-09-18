@@ -6,7 +6,7 @@ atlases, used by the existing animation system.
 
 | Asset                       | Location                                                  |
 | --------------------------- | --------------------------------------------------------- |
-| Hero PNG and frame metadata | `public/art/units/locomotion-{name}.{png,json}`           |
+| Hero PNG and frame metadata | `public/art/units/walking-{name}.{png,json}`              |
 | Riverside Kaya and Sura     | `public/art/units/riverside-locomotion-{name}.{png,json}` |
 | Importer                    | `scripts/art/directional-motion.ts`                       |
 | Rendering contract          | `docs/adr/0018-directional-character-locomotion.md`       |
@@ -34,7 +34,15 @@ North/south frame sets must not be mirrored: Wen's gauntlet, hair, sashes and
 belts must remain on the same anatomical side. Matching the existing stylized
 art takes priority over adding costume details.
 
-Dedicated side walk art for the other eight heroes and north/south combat casts
-are not part of this delivery. Their existing fallback/action poses remain in
-use. A later animation pass can replace individual drawings using the same
-frame names and dimensions.
+All ten heroes now also have dedicated east/west walk cels. Kaya and Sura reuse
+their village walk art; the other eight have new four-cel loops. See
+[`side-walks.md`](side-walks.md) for prompts, packing and visual checks.
+North/south combat casts still use the existing action fallback.
+
+The importer now writes the hero north/south intermediate to
+`assets/reference/character-locomotion/locomotion-{name}.{png,json}`. Original
+six-pose and village walk/wave sources are in `assets/reference/character-poses/`.
+After updating north/south art, run `side-walk.ts` to rebuild the active hero
+sheet. Reference atlases stay tracked outside `public/` to avoid downloading
+and precaching superseded copies. The village directional outputs remain in
+`public/art/units/`.

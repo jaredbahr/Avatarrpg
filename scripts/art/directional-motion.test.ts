@@ -17,9 +17,9 @@ describe('directional art compatibility', () => {
         ? `riverside-${key.split('.').at(-1)}`
         : key.split('.').at(-1);
       const oldAtlas = parseAtlasJson(
-        readFileSync(`public/art/units/${originalStem}.json`, 'utf8'),
+        readFileSync(`assets/reference/character-poses/${originalStem}.json`, 'utf8'),
       );
-      const oldImage = readPng(`public/art/units/${originalStem}.png`);
+      const oldImage = readPng(`assets/reference/character-poses/${originalStem}.png`);
       const atlas = parseAtlasJson(readFileSync(`public/${entry.atlas}`, 'utf8'));
       const image = readPng(`public/art/units/${atlas.image}`);
       const extract = (im: typeof image, r: { x: number; y: number; w: number; h: number }) =>
