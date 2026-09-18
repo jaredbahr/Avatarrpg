@@ -2,7 +2,7 @@ name: CI
 
 on:
   push:
-    branches: ['**']
+    branches: [main]
   pull_request:
   workflow_dispatch:
 
@@ -63,6 +63,7 @@ jobs:
 
   e2e:
     name: End-to-end (Chromium touch, WebKit iPad)
+    needs: verify
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -91,6 +92,7 @@ jobs:
 
   gallery:
     name: Screenshot gallery
+    needs: verify
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -116,4 +118,4 @@ jobs:
         with:
           name: gallery
           path: gallery/
-          retention-days: 14
+          retention-days: 7

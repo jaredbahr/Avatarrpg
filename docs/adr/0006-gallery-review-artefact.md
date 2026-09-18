@@ -40,12 +40,15 @@ with a fixed seed, and publishes them where a tablet can open them.
 - **No video.** CI runners rasterise WebGL in software at a few frames a
   second; a recording would show the runner, not the game. Stills at exact
   animator times show the game.
-- **Where it lives.** `gallery/` is gitignored. CI uploads it as an artefact
-  for fourteen days; the Pages deploy captures it before the site build and
-  copies it to `dist/gallery/`, so it is one URL away from the game itself.
-  The capture can never block a deploy (`continue-on-error`).
-- **Not a test gate.** Nothing asserts on pixels. What the run asserts is that
-  every beat can still be staged, which is a useful canary on its own.
+- **Where it lives (updated September 2026).** `gallery/` is gitignored. CI
+  uploads it as an artifact for seven days. Normal Pages deployments omit it
+  to avoid repeating the full capture. A manual deployment can opt into capture
+  and publication at `dist/gallery/`; the next normal deployment removes that
+  optional gallery. An optional Pages capture cannot block deployment
+  (`continue-on-error`). See [the gallery guide](../gallery.md).
+- **Capture versus visual acceptance.** Successful CI capture is a required
+  check. Nothing asserts on pixels: the run asserts that every beat can still
+  be staged, while a reviewer must inspect the images to accept the result.
 - **Projects.** The Surface at 1x on both backends, the iPad at 2x on both
   backends, and the iPad upright for the two beats that care about a stacked
   HUD. Filmstrips are captured on the 1x projects only: a filmstrip renders a
