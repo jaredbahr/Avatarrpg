@@ -47,3 +47,9 @@ The65s audio lifecycle harness completed a99.36s recording on frozen `30871ae` w
 3. After shorter prop integration, run one paired resting/approach capture, including Gao visibility/Talk and depth ties; no repeated full recordings unless a new issue requires them. Recheck party spacing around the changed obstacles, complete verify, then update grouped evidence for the orchestrator.
 4. Keep runtime4190 stable during coordinated art captures. Port4189 is ephemeral Playwright; port4198 is production preview. Temporary configs/captures are ignored. Do not change runtime during an agreed freeze.
 5. No push until the local visual corrections are grouped. Latest pushed CI failures were302KB bundle and stale directional browser expectations; both have local fixes. Healthy galleries were not restarted. Require fresh CI when a final candidate is pushed.
+
+## Latest local candidate — fcfecf4
+
+Art height correction `70da74b` is preserved as `fcfecf4`; shorter table and one-course planter keep the same footprints, and props follow houses for equal-depth ties. Gao relocation `1e16f38` is integrated. Primary paired north captures now show an opaque merchant house, visible Gao and smaller fixtures. Actual walkTo Gao opens dialogue on both backends; five-person spacing still passes (11.2s including setup). Evidence: `.shots/ba-dan-{canvas,webgl}-north.png` and `-gao-talk.png`.
+
+Full verify passes689tests/72files. Production JS291.8KB/300; precache15.09MB/25; maps2.41MB. Worktree is clean. Art has the runtime frozen at `fcfecf4` for the requested(10,4) frontage still and a short Talk/encounter audio follow-up. Await that report and orchestrator composition review before any batched push. No broad visual/device/audible acceptance claim.
