@@ -80,7 +80,7 @@ export const WORLD_STORY: readonly StoryNode[] = [
     portrait: 'portrait.gao',
     lines: [
       'Cup? Mind the handle on the blue one. It comes off.',
-      'The crews built this bench out of offcuts. First version tipped you straight into the ditch. We had words about that.',
+      'The crews built this bench from offcuts. One shift started it and the next finished it. They never did agree on the height.',
       "I keep the kettle going in case they come down. Tea's getting a bit strong. Sit, please. Help me finish it.",
     ],
     next: 'cutting_tea_shared',

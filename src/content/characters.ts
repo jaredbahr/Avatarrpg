@@ -1,10 +1,9 @@
 /**
  * The ten playable characters — two per element.
  *
- * All original. The era is roughly forty years after Korra: Republic City has
- * airships and electrified gauntlets, the Earth Kingdom's outer provinces are
- * still putting themselves back together, and nobody in this story has ever met
- * an Avatar.
+ * All original. Set after Korra and before Seven Havens; exact dating remains
+ * open. Nobody in this story has met an Avatar. For dialogue and character
+ * humor, read docs/writing-guide.md.
  *
  * Both characters of an element share a kit (the plan calls for element kits,
  * not class kits). They differ in stats, in voice, and in how they are drawn —
@@ -96,7 +95,7 @@ export const CHARACTERS: readonly CharacterDef[] = [
     name: 'Nilak',
     element: 'water',
     blurb: 'Keeps watch over the wounded.',
-    bio: 'Nilak trained at a Northern healing house that promised to treat anyone. When the house turned away patients who could not pay, he took his medicine bag to them. He has been treating people on the road ever since.',
+    bio: 'Nilak trained at a Northern healing house that promised to treat anyone. When the house turned away people without residency papers or a sponsor, he took his medicine bag to them. He has been treating people on the road ever since.',
     statMods: { maxHp: 2, focus: 3, power: -1 },
     kit: WATER_KIT,
     portrait: 'portrait.nilak',
@@ -107,7 +106,7 @@ export const CHARACTERS: readonly CharacterDef[] = [
     name: 'Sura',
     element: 'water',
     blurb: 'An ice-fisher with a heavy hand.',
-    bio: 'Sura used to cut fishing holes for her Southern Water Tribe neighbours. She started making windbreaks too, then sheds. Misses home, but wants to see a sea that stays liquid all year.',
+    bio: 'Sura takes cold-storage work beyond her Southern Water Tribe family’s usual fishing routes. Confident on uncertain ice, she is learning to ask about the local waters. Wants to see a sea that stays liquid all year.',
     statMods: { power: 2, speed: 1, defense: -1 },
     kit: WATER_KIT,
     portrait: 'portrait.sura',
@@ -120,7 +119,7 @@ export const CHARACTERS: readonly CharacterDef[] = [
     name: 'Bo',
     element: 'earth',
     blurb: 'The foreman who holds the line.',
-    bio: 'Bo ran a quarry crew three towns over until the wages stopped. He took road work to keep them fed and checks for their letters in every town. Counts heads whenever the party sets off.',
+    bio: 'Bo ran a quarry crew three towns over until the wages stopped. He took road work to keep them fed and checks for their letters in every town. Counts heads whenever the party sets off and takes the heaviest load, even when someone offers.',
     statMods: { maxHp: 4, defense: 1, speed: -1 },
     kit: EARTH_KIT,
     portrait: 'portrait.bo',
@@ -168,7 +167,7 @@ export const CHARACTERS: readonly CharacterDef[] = [
     name: 'Riko',
     element: 'nonbender',
     blurb: 'Quick hands and chi-blocking training.',
-    bio: 'Riko learned chi-blocking in a borrowed practice room above a laundry. Her teacher made her practise escapes for months before teaching a strike. Still checks where the doors are when she sits down.',
+    bio: 'Riko works escort contracts using chi-blocking learned above a laundry. Her teacher made her practise escapes for months before teaching a strike. Values people who keep promises. Has a weakness for badly acted stage mysteries.',
     statMods: { speed: 2, focus: 5, maxHp: -2 },
     kit: NONBENDER_KIT,
     portrait: 'portrait.riko',

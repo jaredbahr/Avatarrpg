@@ -24,7 +24,7 @@ export const ACT1_NODES: readonly StoryNode[] = [
     speaker: 'Ba Dan',
     portrait: 'portrait.narrator',
     lines: [
-      'In the outer Earth Kingdom, Ba Dan keeps its own roads mended and sends its own complaints to the province. The replies seldom arrive.',
+      'Ba Dan lies below a limestone quarry, its houses built from the same pale stone as the hill.',
       'Every week, a cart of cut stone comes down from the quarry. Gao opens his shop early for the crew; by noon, the whole square is white with dust.',
       'The cart has not come for a month. This morning, Elder Mira is waiting for you instead.',
     ],
@@ -60,7 +60,7 @@ export const ACT1_NODES: readonly StoryNode[] = [
     portrait: 'portrait.mira',
     lines: [
       'The first cart came down this morning. Gao heard it and ran out in his slippers.',
-      'I have counted everyone twice. They keep telling me to stop.',
+      'Bo-shan and all four messengers are home. I have counted everyone twice. They keep telling me to stop.',
       'You can stay as long as you need. Leave your washing by the door.',
     ],
     next: 'village_explore',
@@ -71,9 +71,10 @@ export const ACT1_NODES: readonly StoryNode[] = [
     speaker: 'Gao the Shopkeeper',
     portrait: 'portrait.gao',
     lines: [
-      'For the quarry? Take these water skins. Bring them back when you can.',
-      'Keep them away from the pine needles. I patched one this morning. Give it a chance to dry.',
-      'The cutting will be full of puddles after that rain. Watch your footing if a fight starts.',
+      'For the quarry? Water skins are by the door. Take one. You can pay me when everyone is home.',
+      'Check the stopper. Dorin brought one back empty and told me it leaked. I filled it, turned it upside down, and we stood there watching it.',
+      'Then he asked if I had any more water.',
+      'The cutting is flooded in places. Mind your footing, especially if there is a fight.',
     ],
     next: 'village_explore',
   },
@@ -105,7 +106,7 @@ export const ACT1_NODES: readonly StoryNode[] = [
     portrait: 'portrait.pella',
     lines: [
       "You're going to the quarry? I can show you the way. I know it. Mira keeps saying I'm too little.",
-      'My brother takes vegetables up there. Bo-shan. He was supposed to be back on Tuesday.',
+      'My brother took vegetables up before Mira sent the others. Bo-shan. That makes five missing. He was supposed to be back on Tuesday.',
       'He says a lightning strike can go right across a puddle. He saw it happen to a whole crew. He also says he can lift an ostrich-horse, so I would ask someone else.',
       'Mira says “the missing people” every time. She could say his name. She knows his name.',
       "Look for the cart with cabbages piled above the seat. Tell him I'm not doing his chores again this week.",
@@ -197,23 +198,45 @@ export const ACT1_NODES: readonly StoryNode[] = [
   {
     id: 'after_forest',
     kind: 'dialogue',
-    speaker: 'Kaya',
-    portrait: 'portrait.kaya',
+    speaker: 'The East Road',
+    portrait: 'portrait.narrator',
     lines: [
-      'Quarry dust in their cuffs. My mother used to make the stonecutters shake it out before they came inside.',
-      'I thought we were going up there to get these people home. Why are they guarding the road?',
+      "Stone dust coats the attackers' cuffs. Their hands are calloused around the thumb, where a quarry hammer wears the skin.",
+      'These people worked the quarry. Something has put them on the road with weapons.',
     ],
     // Back onto the road; reaching the quarry watch starts the parley.
     next: 'forest_after_explore',
     variants: [
       {
+        when: {
+          kind: 'all',
+          of: [
+            { kind: 'partyHas', characterId: 'kaya' },
+            { kind: 'flag', key: 'lost_forest_road', op: 'set' },
+          ],
+        },
+        speaker: 'Kaya',
+        portrait: 'portrait.kaya',
+        lines: [
+          'They took our supplies. I saw quarry dust on their clothes.',
+          'I want to know who put them out here.',
+        ],
+      },
+      {
         // Losing the road makes the same observation land very differently.
         when: { kind: 'flag', key: 'lost_forest_road', op: 'set' },
-        speaker: 'Kaya',
         lines: [
-          'They had quarry dust all over them. One still had his lunch tin strapped to his belt.',
-          'Why rob us? If they need food, Gao would have given them food.',
-          'Come on. I want to hear what their captain has to say.',
+          "You remember stone dust on the attackers' clothes and the worn hands of people who cut rock for a living.",
+          'Quarry workers have robbed you. There is still no word from the people Mira sent.',
+        ],
+      },
+      {
+        when: { kind: 'partyHas', characterId: 'kaya' },
+        speaker: 'Kaya',
+        portrait: 'portrait.kaya',
+        lines: [
+          'Quarry dust in their cuffs. My mother used to make the stonecutters shake it out before they came inside.',
+          'I thought we were going up there to get these people home. Why are they guarding the road?',
         ],
       },
     ],
@@ -338,7 +361,7 @@ export const ACT1_NODES: readonly StoryNode[] = [
     lines: [
       'My sabre stays on the ground. Tell me if anyone needs a bandage.',
       'Captain Ruon, provincial guard. Nineteen years. I still give the rank, though I doubt they would claim me now.',
-      'The wages stopped. My quartermaster said we could hold the stone until we were paid. I let him shut the gate.',
+      'The crews stopped getting paid. Then our wages stopped too. My quartermaster said holding the stone would make somebody listen. I let him shut the gate.',
       'Then he locked people in the galleries. I kept my post. Their families will want to know that.',
     ],
     next: 'ruon_choice',
@@ -504,7 +527,7 @@ export const ACT1_NODES: readonly StoryNode[] = [
     lines: [
       'Stone carts leave the quarry again. At the fork, each one takes the coast road past Ba Dan.',
       'Mira stretches the evening rice with broth. Families still come to her door asking for news from the galleries.',
-      'At the gate, the guards turn Dorin away again. This time he has brought letters for the missing workers.',
+      'A worker gets a note to Dorin: Bo-shan, the four messengers and the crews are alive. Grumbler is still holding them in the quarry.',
       'The driller is still down there. Its parts came from Republic City; someone paid to bring them all this way.',
     ],
     teaser:

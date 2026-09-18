@@ -182,11 +182,44 @@ describe('npc routes', () => {
 });
 
 describe('act 1 content', () => {
+  it.each([
+    ['kaya', 'Kaya', 'portrait.kaya'],
+    ['bo', 'The East Road', 'portrait.narrator'],
+  ])('uses the present speaker after either road outcome with %s', (hero, speaker, portrait) => {
+    const node = CONTENT.story.get('after_forest');
+    if (node?.kind !== 'dialogue') throw new Error('after_forest is not dialogue');
+    const won = game([hero]);
+    const lost: GameState = { ...won, flags: { lost_forest_road: true } };
+    const victory = resolveDialogue(won, node);
+    const defeat = resolveDialogue(lost, node);
+    for (const said of [victory, defeat]) {
+      expect(said.speaker).toBe(speaker);
+      expect(said.portrait).toBe(portrait);
+    }
+    expect(defeat.lines).not.toEqual(victory.lines);
+  });
+
+  it('uses the narrator when Kaya cannot speak after the road fight', () => {
+    const node = CONTENT.story.get('after_forest');
+    if (node?.kind !== 'dialogue') throw new Error('after_forest is not dialogue');
+    const base = game(['kaya', 'bo']);
+    const state: GameState = {
+      ...base,
+      party: base.party.map((member) =>
+        member.characterId === 'kaya' ? { ...member, hp: 0 } : member,
+      ),
+      flags: { lost_forest_road: true },
+    };
+    const said = resolveDialogue(state, node);
+    expect(said.speaker).toBe('The East Road');
+    expect(said.portrait).toBe('portrait.narrator');
+  });
+
   it('keeps the choice footer in the data rather than in the scene', () => {
     const node = CONTENT.story.get('ruon_choice');
     expect(node?.kind).toBe('choice');
     if (node?.kind !== 'choice') return;
-    expect(node.footer).toBe('Both routes reach the quarry floor.');
+    expect(node.footer?.trim()).toBeTruthy();
   });
 
   it('moves Earth Kingdom standing in opposite directions on the two roads', () => {

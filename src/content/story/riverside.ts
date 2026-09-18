@@ -7,8 +7,8 @@ export const RIVERSIDE_STORY: readonly StoryNode[] = [
     speaker: 'Pella',
     portrait: 'portrait.pella',
     lines: [
-      'Come and see Pebble. He got his head stuck in Gao’s lunch basket. Ate everything before we could get it off.',
-      "He's by the river. Bring something he can put his whole face in.",
+      'I got six skips from one stone. Dorin only got three, but his went further.',
+      'We are still arguing about who won. Come down to the river and look.',
     ],
     next: 'riverside_explore',
   },
@@ -49,9 +49,9 @@ export const RIVERSIDE_STORY: readonly StoryNode[] = [
     speaker: 'The riverside shrine',
     portrait: 'portrait.narrator',
     lines: [
-      'Mira’s flowers stand in a chipped jar beside the inscription.',
+      'Fresh flowers stand in a chipped jar beside the inscription.',
       '“The river belongs to everyone downstream.”',
-      'Someone has added a smaller sign: “That includes the otter.”',
+      'The jar’s handle has been carefully mended with wire.',
     ],
     next: 'riverside_shrine_found',
   },

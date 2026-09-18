@@ -25,7 +25,7 @@ export const JOURNAL_NOTES: readonly JournalNote[] = [
     title: 'Everyone downstream',
     hint: 'Follow the narrow path north of the practice ground to the old shrine.',
     found:
-      'Fresh flowers by the river inscription. Someone added a sign to make sure the otter was included.',
+      'Fresh flowers by the river inscription. The jar’s broken handle has been mended with wire.',
     when: { kind: 'flag', key: 'riverside_shrine_found', op: 'set' },
   },
   {
