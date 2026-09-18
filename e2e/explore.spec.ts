@@ -113,12 +113,13 @@ test.describe('the village', () => {
     await enterNode(page, 'village_explore');
     await page.locator('.explore-scene .map-canvas').waitFor();
 
-    const objective = page.locator('.explore-bar .title-plate-objective');
+    const objective = page.locator('.explore-objective .title-plate-objective');
     await expect(objective).toContainText('Talk to Elder Mira');
 
-    // Beside the gate the banner reads its label instead of the objective.
+    // The dock retains the objective and adds the nearby gate's destination.
     await standAt(page, { x: 22, y: 7 });
-    await expect(objective).toHaveText('East road → Forest Road');
+    await expect(objective).toContainText('Talk to Elder Mira');
+    await expect(page.locator('.explore-objective')).toContainText('East road → Forest Road');
 
     await page.evaluate(() => {
       window.fnt?.app.dispatch({ type: 'walkTo', pos: { x: 23, y: 7 } });
