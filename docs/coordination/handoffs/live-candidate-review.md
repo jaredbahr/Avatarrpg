@@ -114,3 +114,24 @@ but sharp material masks, clean modularwalls, tinycart and healthbar overlap rem
 visible limitations. Registration/control tests do not grant final visualacceptance.
 Freeze the combined committed runtime for art's exactmask/highcontrast/control and
 realcast review; no newtarget/FX edits until that review releases it.
+
+## Bounded acceptance at38815cf
+
+Art released the freeze and accepted gate registration on both renderers: all six
+served asset hashes match disk, service worker controller null,96px,6groundpieces,
+32walls,12liveoilcells,5props. Actual UI Move reaches3,2; staged legal routes3,1
+through5,1 show sampled fade/depth; highcontrast matches timber/road/stone/oil.
+Evidence: `gallery/scene-audit/quarry-gate-mask-integrated/` in art worktree.
+Style remains unfinished: sharp fields, pristine repeated walls, tiny cart and
+legacy guard. No chain reaction, destruction, physical device or full gate route
+acceptance.
+
+Normal `moving-38815cf/webgl/` reaches target13,5 at1124,718 on exposedcanvas,
+FireJab hits9damage, then confirmed Endturn and AI turn; no old pan workaround.
+Canvas has a different random roster: Bruiser14,5 is projected1220,766 below the
+724px canvas edge. That capture stops before casting; this is an offviewport
+framing case, not recurrence of the in-canvas overlay obstruction. Bounded next
+check uses the actual initiative focus button and preserves ability selection.
+Do not claim paired fullcast success from this normal-route set. The separate
+staged target regression covers13,5 on both backends. Both runs have zero page
+errors. Runtime unchanged pending that bounded focus continuation.
