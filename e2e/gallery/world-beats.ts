@@ -14,7 +14,10 @@ export const WORLD_BEATS: readonly Beat[] = [
       await ctx.page.evaluate(() =>
         window.fnt!.app.dispatch({ type: 'setFlags', flags: { riverside_pet: true } }),
       );
-      await ctx.page.getByRole('button', { name: 'Travel journal', exact: true }).click();
+      await ctx.page
+        .locator('.explore-bar')
+        .getByRole('button', { name: 'Travel journal', exact: true })
+        .click();
       await ctx.shoot('The journal remembers Pebble and suggests the other riverside paths.');
     },
   },

@@ -161,3 +161,34 @@ Runtime freeze released. Art verdict NOT ACCEPTED; primary viewed `C:/Users/Jare
 Blocking: painted timber lies around(3,1) rather than authoredcover(5,3); other semantic groundfeatures disagree with rulemarkers. Preserved outer aspect/sceneanchors do not prove semantic feature registration. Before repair, audit all4cover cells,36walkableelevation,12oil and36road cells with exact mapoverlay. Remove false cover markings anywhere, not only reposition intendeddecals. Prefer row-authoritative deterministic masks of authored materials/shapes and separately registered lowcover pieces;2groundchunks+4coverpieces fit existing8-piece limit. Do not distort the whole plate to repair localdrift. Art must report fullaudit/plan before changedsource.
 
 Separate style gap: clean repeated sharp masonry does not match weathered quarry/gatehouse reference. Cart/guard/prop scale/style also remain visible inconsistencies; keep live entities separate from ground. No chain-reaction/destruction outcome or exhaustive occlusion was tested in this artreview. No cutting/floor expansion, generation, acceptance or push from this rejectedcandidate.
+
+## Courtyard current-head CI correction
+
+PR62 batched head04a3aa0 passedverify but E2E job105639450437 failed at the stale `.explore-bar .title-plate-objective` selector. CI44passed,241notrun due fail-fast; no claim about unrun suites. Failure log retrieved from completed job API while gallery ran; reportartifact10552932127 on run35356894572 retains evidence.
+
+Corrected only the exploration regression: objective lives in `.explore-objective` and persists near the gate, with destination added beside it. Assert both objective and gate label, then still perform actual walkTo(23,7) and require map=forest_road. All4 exploration tests pass locally11.1s. Search found no remaining stale topbar objective selectors. Orchestrator authorizes cancelling the superseded failing-head run once this correction is verified, then one replacement push; this is not a healthy-job restart. Full latest-head checks remain mandatory. Forest work remains separate/local.
+
+## PR62 software-WebGL timeout correction
+
+Head8c301c9 failed E2E run35359990220 at shopfront Talk after the combined test exhausted60seconds, twice. Trace artifact10555401626 shows each visual capture spending about16seconds plus locator resolution overhead; Followparty took9.6seconds.88tests passed,197didnotrun. This does not establish that Talk itself is broken.
+
+Separated real Talk interaction from the ring-occlusion pixel regression. The latter already freezes viewtime; now it presents each ring state once and waits for presentation acknowledgement, avoiding repeated identical software-WebGL draws during screenshot capture. Original15pixel RGB comparisons/tolerance3 remain; no timeout increase or forceclick. Both actual Talk tests retain dialogue visibility and Gao node assertions.
+
+Four focused tests pass on regularChrome (29.1seconds total); final acknowledgement version also passes forcedSwiftShaderChrome (32.7seconds total), at1368x912 withtouch. Fullverify required before correctionpush. Retain existing failureartifact; obsolete failed-head gallery may be cancelled under orchestratorcostpolicy aftervalidatedfix. Newhead still requires allCI and PRstaysdraft.
+
+## PR #62 travel-journal gallery selector correction
+
+Run 35363386023 on ce3b425 completed with verify and Chromium touch/WebKit E2E
+passing. Gallery had two failures, both `29-travel-journal` on surface-canvas
+and portrait-canvas; 199 passed and 139 were skipped. The exact `Travel journal`
+button selector matched both the persistent exploration header and Riverside's
+existing action toolbar. Scope the case to `.explore-bar`; retain both product
+controls and all gallery cases. This is a selector ambiguity, not a runtime
+failure or timeout. The completed run was not restarted or cancelled.
+
+Both affected gallery cases pass locally in 8.0 seconds on installed touch
+Chrome at their original desktop and portrait viewports. Failure log retained
+at the host's temporary `avatar-pr62-gallery-ce3b425.log`; CI run/job retain the
+original evidence. Run full verify before the single correction push; the new
+head still needs all three CI checks and remains draft. Gameplay/forest/resize
+integration stays in its separate local branch.
