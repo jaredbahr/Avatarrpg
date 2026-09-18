@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest';
 import type { Ability, ContentIndex, GameEvent, Unit } from '../../core/types';
 import { resolveFx } from '../../content/fx';
 import { TIMING, choreograph } from './choreography';
+import { attackMotion } from './attackMotion';
 import type { AnyTrack, EmitterTrack, PoseTrack } from './timeline';
 
 /**
@@ -89,8 +90,8 @@ describe('choreograph', () => {
     if (move?.kind !== 'move') throw new Error('expected a move track');
     expect(move.unitId).toBe('leader');
     expect(move.start).toBe(1000);
-    expect(move.duration).toBe(TIMING.strollStep * 2);
-    expect(cursor).toBe(1000 + TIMING.strollStep * 2);
+    expect(move.duration).toBe(TIMING.strollStep * 2 + 120);
+    expect(cursor).toBe(1000 + move.duration);
     expect(move.duration).toBeGreaterThan(TIMING.step * 4);
   });
 
@@ -122,7 +123,8 @@ describe('choreograph', () => {
     const emitters = tracks.filter((t) => t.kind === 'emitter');
     expect(emitters.length).toBeGreaterThan(0);
     // Something travels: an emitter starts at release and covers the flight.
-    const releaseAt = 1000 + TIMING.windUp;
+    const fire = attackMotion('fx.fire.jab', false, false);
+    const releaseAt = 1000 + TIMING.windUp + TIMING.release * fire.release * fire.launch;
     expect(emitters.some((e) => e.start === releaseAt)).toBe(true);
     // The impact lands after the flight, never before the release.
     const impact = Math.max(...emitters.map((e) => e.start));
@@ -140,7 +142,8 @@ describe('choreograph', () => {
         tiles: [{ x: 5, y: 3 }],
       },
     ]);
-    const releaseAt = 1000 + TIMING.windUp;
+    const water = attackMotion('fx.water.whip', false, false);
+    const releaseAt = 1000 + TIMING.windUp + TIMING.release * water.release * water.launch;
     const emitters = tracks.filter((t): t is EmitterTrack => t.kind === 'emitter');
     const travel = emitters.filter((t) => t.start === releaseAt);
     const heads = travel.filter((t) => t.def.kind === 'particles');
@@ -193,13 +196,16 @@ describe('choreograph', () => {
     const recoil = tracks.filter((t): t is PoseTrack => t.kind === 'pose' && t.unitId === 'e0');
     const number = tracks.find((t) => t.kind === 'floater');
     expect(flash).toBeDefined();
-    expect(recoil).toHaveLength(2);
+    expect(recoil).toHaveLength(3);
     expect(number?.text).toBe('9');
     // The flash starts at the impact; the recoil and the number wait out the hold.
-    expect(recoil[0]?.start ?? 0).toBeGreaterThanOrEqual(flash?.start ?? Infinity);
+    expect(recoil[0]?.start).toBe(flash?.start);
+    expect(recoil[0]?.clip).toBe('hit');
+    expect(recoil[0]?.offset.to).toEqual({ x: 0, y: 0 });
+    expect(recoil[1]?.start).toBe((recoil[0]?.start ?? 0) + (recoil[0]?.duration ?? 0));
     expect(number?.start ?? 0).toBeGreaterThan(flash?.start ?? Infinity);
     // The recoil pushes the target away from the caster, to the right.
-    expect(recoil[0]?.offset.to.x ?? 0).toBeGreaterThan(0);
+    expect(recoil[1]?.offset.to.x ?? 0).toBeGreaterThan(0);
   });
 
   it('holds the cursor for the hit-stop', () => {
@@ -298,7 +304,8 @@ describe('choreograph', () => {
     ]);
     const cast = sounds.find((s) => s.key === 'fx.fire.jab');
     expect(cast, 'the cast should be cued by its fx key').toBeDefined();
-    expect(cast?.at).toBe(1000 + TIMING.windUp);
+    const fire = attackMotion('fx.fire.jab', false, false);
+    expect(cast?.at).toBe(1000 + TIMING.windUp + TIMING.release * fire.release * fire.launch);
   });
 
   it('cue the hit where the projectile lands, not where it was thrown', () => {

@@ -2,7 +2,8 @@
 import type { Vec2 } from '../../core/types';
 import type { VillageActor } from './layer';
 import { paletteFor } from '../palettes';
-import { formBeat } from './poses';
+import { drawingTime, formBeat } from './poses';
+import { FOOT_Y } from './geometry';
 
 export function paintForm(
   c: CanvasRenderingContext2D,
@@ -11,7 +12,7 @@ export function paintForm(
   front: boolean,
 ): void {
   const water = actor.motion === 'water';
-  const beat = formBeat(actor.elapsed, water);
+  const beat = formBeat(drawingTime(actor.elapsed), water);
   if (beat.energy <= 0) return;
   const { t, gather, release, energy, weight } = beat;
   const palette = water
@@ -23,10 +24,10 @@ export function paintForm(
         accent: '#fff3bd',
       };
   c.save();
-  c.translate(box.x + box.size * 0.5, box.y + box.size * 0.04);
+  c.translate(box.x + box.size * 0.5, box.y + box.size * (FOOT_Y - 0.82));
   c.scale(box.size * actor.facing, box.size);
   c.translate(weight, 0);
-  c.globalAlpha = energy;
+  c.globalAlpha = beat.plume;
   c.lineJoin = 'round';
   c.lineCap = 'round';
   if (water) {

@@ -4,7 +4,7 @@ import type { Camera } from '../camera';
 import { paletteFor } from '../palettes';
 import { figureFor } from '../painters/cast';
 import { drawFigure } from '../painters/figure';
-import { formBeat, villagePose } from './poses';
+import { drawingTime, formBeat, villagePose, waveDrawing } from './poses';
 import type { VillageMotion } from './poses';
 import { backdrops } from '../backdrops';
 import { sheets } from '../sheets/store';
@@ -12,6 +12,7 @@ import type { ResolvedFrame } from '../sheets/store';
 import { RIVERSIDE_SCENERY, behindScenery, sceneryShade } from './scenery';
 import type { SceneryLayer } from './scenery';
 import { paintForm } from './forms';
+import { FOOT_Y } from './geometry';
 import type { ClipName } from '../../content/assets/clips';
 
 export interface VillageActor {
@@ -78,7 +79,7 @@ export class VillageLayer {
     for (const actor of view.actors) this.groundContact(actor, camera, view.reduced);
     const entities = [
       ...view.actors.map((actor) => ({
-        y: actor.pos.y + 0.86,
+        y: actor.pos.y + FOOT_Y,
         draw: () => this.actor(actor, camera, view.reduced),
       })),
       { y: view.creature.y + 0.86, draw: () => this.otter(view, camera, t) },
@@ -113,7 +114,7 @@ export class VillageLayer {
         c.beginPath();
         c.ellipse(
           box.x + box.size / 2,
-          box.y + box.size * 0.86,
+          box.y + box.size * FOOT_Y,
           box.size * 0.22,
           box.size * 0.07,
           0,
@@ -149,10 +150,13 @@ export class VillageLayer {
       box = camera.toScreen(actor.pos),
       s = box.size;
     const x = box.x + s * 0.5,
-      y = box.y + s * 0.86;
+      y = box.y + s * FOOT_Y;
     c.save();
     // The environment's afternoon light comes from the upper right.
-    const shade = sceneryShade(actor.pos.x + 0.5, actor.pos.y + 0.86);
+    const shade = sceneryShade(actor.pos.x + 0.5, actor.pos.y + FOOT_Y);
+    const casting = actor.motion === 'water' || actor.motion === 'fire';
+    const beat = formBeat(reduced ? 0 : drawingTime(actor.elapsed), actor.motion === 'water');
+    const weight = casting && !reduced ? beat.weight : 0;
     const frame = this.actorFrame(actor, s, camera.viewport.dpr, reduced);
     if (frame && !frame.placeholder) {
       const ink = this.copyFrame(frame);
@@ -163,12 +167,10 @@ export class VillageLayer {
       const factor = (s * 1.45) / frame.pixelsPerTile;
       c.save();
       c.globalAlpha = 0.19 * (1 - shade * 0.65);
-      const casting = actor.motion === 'water' || actor.motion === 'fire';
-      const weight =
-        casting && !reduced ? formBeat(actor.elapsed, actor.motion === 'water').weight : 0;
       c.translate(x + weight * s * actor.facing, y);
       // Project the actual silhouette, keeping both boot contacts attached.
       c.transform(actor.facing, 0, 0.52, -0.19, 0, 0);
+      if (casting && !reduced) c.scale(1, 1 - beat.gather * (1 - beat.release) * 0.018);
       c.drawImage(
         this.tint,
         -frame.frame.w * factor * frame.anchor.x,
@@ -180,10 +182,9 @@ export class VillageLayer {
     }
     c.fillStyle = 'rgba(42,40,27,0.27)';
     c.beginPath();
-    c.ellipse(x, y, s * 0.25, s * 0.06, 0, 0, Math.PI * 2);
+    c.ellipse(x + weight * s * actor.facing, y, s * 0.25, s * 0.06, 0, 0, Math.PI * 2);
     c.fill();
     if (!reduced && (actor.motion === 'fire' || actor.motion === 'water')) {
-      const beat = formBeat(actor.elapsed, actor.motion === 'water');
       const alpha = beat.energy * 0.22;
       const light = c.createRadialGradient(x, y, 0, x, y, s * 1.8);
       light.addColorStop(
@@ -203,11 +204,14 @@ export class VillageLayer {
     reduced: boolean,
   ): ResolvedFrame | null {
     if (!actor.sprite) return null;
+    // Walk elapsed is distance, not wall-clock time. Quantising it a second
+    // time makes the four contact/passing drawings alternate unevenly.
     const elapsed = reduced
       ? 0
-      : actor.locomotionClip
+      : actor.motion === 'walk' || actor.locomotionClip
         ? actor.elapsed
-        : Math.floor(actor.elapsed / (1000 / 12)) * (1000 / 12);
+        : drawingTime(actor.elapsed);
+    const wave = actor.motion === 'wave' ? waveDrawing(elapsed) : null;
     const casting = actor.motion === 'water' || actor.motion === 'fire';
     const beat = formBeat(elapsed, actor.motion === 'water');
     const clip =
@@ -216,12 +220,12 @@ export class VillageLayer {
         ? 'idle'
         : casting
           ? 'cast'
-          : actor.motion);
+          : (wave?.clip ?? actor.motion));
     return sheets.frame(
       actor.sprite,
       clip,
       elapsed,
-      casting && !reduced ? beat.frame : undefined,
+      reduced ? 0 : casting ? beat.frame : wave?.frame,
       size * dpr,
       1,
     );
@@ -260,7 +264,7 @@ export class VillageLayer {
     const s = box.size;
     const palette = paletteFor(actor.palette);
     // Twelve held drawings a second keeps the motion's deliberate animated feel.
-    const elapsed = reduced ? 0 : Math.floor(actor.elapsed / (1000 / 12)) * (1000 / 12);
+    const elapsed = reduced ? 0 : drawingTime(actor.elapsed);
     const pose = villagePose(reduced ? 'idle' : actor.motion, elapsed);
     const spec = figureFor(actor.villager ? 'villager' : 'bender', actor.variant, palette);
     const casting = actor.motion === 'water' || actor.motion === 'fire';
@@ -275,7 +279,7 @@ export class VillageLayer {
       ink.globalCompositeOperation = 'source-atop';
       ink.fillStyle = 'rgba(242,202,133,0.09)';
       ink.fillRect(0, 0, this.tint.width, this.tint.height);
-      const shade = sceneryShade(actor.pos.x + 0.5, actor.pos.y + 0.86);
+      const shade = sceneryShade(actor.pos.x + 0.5, actor.pos.y + FOOT_Y);
       ink.fillStyle = `rgba(37,65,68,${shade * 0.32})`;
       ink.fillRect(0, 0, this.tint.width, this.tint.height);
       if (casting && !reduced) {
@@ -287,7 +291,7 @@ export class VillageLayer {
       }
       ink.globalCompositeOperation = 'source-over';
       c.save();
-      c.translate(box.x + s * 0.5, box.y + s * 0.86);
+      c.translate(box.x + s * 0.5, box.y + s * FOOT_Y);
       c.scale(actor.facing, 1);
       if (casting && !reduced) {
         c.translate(beat.weight * s, 0);
@@ -308,7 +312,7 @@ export class VillageLayer {
     } else
       drawFigure(
         c,
-        { x: box.x - s * 0.1, y: box.y - s * 0.182, size: s * 1.2 },
+        { x: box.x - s * 0.1, y: box.y - s * 0.542, size: s * 1.2 },
         spec,
         pose,
         palette,

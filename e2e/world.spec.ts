@@ -1,6 +1,40 @@
 import { expect, test } from '@playwright/test';
 import { enterNode, resetStorage, startGame, waitForIdle } from './helpers';
 
+test('riverside roaming keeps the journal and campaign saves across a round trip', async ({
+  page,
+}) => {
+  await resetStorage(page, '?renderer=canvas');
+  await startGame(page, ['Jared'], ['bo'], 'roaming-preserves-campaign');
+  const before = await page.evaluate(() => {
+    const app = window.fnt!.app;
+    app.saveTo('slot1');
+    app.saveTo('auto');
+    return { state: JSON.stringify(app.state), storage: JSON.stringify(localStorage) };
+  });
+  await page.evaluate(() => window.fnt!.app.startVillagePreview());
+  await page.getByRole('button', { name: 'Meet Pebble', exact: true }).click();
+  await expect(page.locator('.village-note')).toContainText('Pebble leans');
+  await page.getByRole('button', { name: 'Walk to Ba Dan', exact: true }).click();
+  await expect(page.locator('.title-plate-name')).toHaveText('Ba Dan Village');
+  await page.getByRole('button', { name: 'Travel journal', exact: true }).click();
+  const journal = page.getByRole('dialog', { name: 'Travel journal', exact: true });
+  await expect(journal.getByRole('region', { name: 'Places', exact: true })).toContainText(
+    'Ba Dan · The Riverside · Visited',
+  );
+  await expect(journal).toContainText('Remembered · A very important otter-turtle');
+  await journal.getByRole('button', { name: 'Return to the path', exact: true }).click();
+  await page.getByRole('button', { name: 'River path → Riverside', exact: true }).click();
+  await expect(page.getByRole('button', { name: 'Water form', exact: true })).toBeVisible();
+  await page.getByRole('button', { name: 'Leave preview', exact: true }).click();
+  expect(
+    await page.evaluate(() => ({
+      state: JSON.stringify(window.fnt!.app.state),
+      storage: JSON.stringify(localStorage),
+    })),
+  ).toEqual(before);
+});
+
 for (const renderer of ['canvas', 'webgl']) {
   test(`connected exploration crosses maps and returns on ${renderer}`, async ({
     page,

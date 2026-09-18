@@ -173,9 +173,10 @@ describe('sampleStrokes', () => {
   it('reaches the target with a whip at its midpoint', () => {
     const whip: StrokeEmitterDef = { ...bolt, shape: 'whip', count: 1, duration: 400, ink: true };
     const mid = sampleStrokes(whip, 200, 1, from, to)[0];
-    expect(mid?.points[mid.points.length - 2]).toBeCloseTo(to.x, 6);
+    expect(Math.max(...(mid?.points.filter((_, i) => i % 2 === 0) ?? []))).toBeCloseTo(to.x, 6);
+    expect(mid?.fill).toBe(true);
     const early = sampleStrokes(whip, 20, 1, from, to)[0];
-    expect(early?.points[early.points.length - 2] ?? 99).toBeLessThan(to.x);
+    expect(Math.max(...(early?.points.filter((_, i) => i % 2 === 0) ?? []))).toBeLessThan(to.x);
   });
 
   it('centres a crack, a slab and an arc on the point it is born at, not the aim', () => {

@@ -27,7 +27,11 @@ import { UI_MARKS } from '../ui/marks';
 import { partyRoster } from '../ui/PartyRoster';
 import { SaveMenu } from '../ui/SaveMenu';
 import { UnitInspector } from '../ui/UnitInspector';
+import { TravelJournal } from '../ui/TravelJournal';
 import { showGridLines } from '../storage/localSaves';
+import { NextWalk, previewWalk } from '../world/walking';
+import type { WalkPreview } from '../world/walking';
+import { NearbyPlaces } from '../ui/NearbyPlaces';
 
 /** How far Talk reaches, in tiles: across the square, not across the village. */
 const TALK_RANGE = 3;
@@ -52,6 +56,11 @@ export class ExploreScene implements Scene {
    */
   private trail: PartyTrail | null = null;
   private departing: GameState | null = null;
+  private nextWalk = new NextWalk();
+  private walking: WalkPreview | null = null;
+  private feedback: HTMLElement | null = null;
+  private feedbackText: HTMLElement | null = null;
+  private cancelNext: HTMLButtonElement | null = null;
 
   constructor(private app: App) {}
 
@@ -76,12 +85,27 @@ export class ExploreScene implements Scene {
 
     host.appendChild(scene);
 
+    this.feedbackText = el('span', { attrs: { role: 'status', 'aria-live': 'polite' } });
+    this.cancelNext = button('Cancel next walk', () => this.clearNextWalk());
+    this.feedback = el('div', { class: 'walk-feedback' }, this.feedbackText, this.cancelNext);
+    this.feedback.hidden = true;
+    canvas.parentElement?.appendChild(this.feedback);
+    document.addEventListener('keydown', this.onKeyDown);
+    document.addEventListener('visibilitychange', this.onVisibility);
+
     this.setupRenderer();
     this.renderChrome();
     this.loop();
   }
 
   unmount(): void {
+    document.removeEventListener('keydown', this.onKeyDown);
+    document.removeEventListener('visibilitychange', this.onVisibility);
+    this.nextWalk.clear();
+    this.walking = null;
+    this.feedback = null;
+    this.feedbackText = null;
+    this.cancelNext = null;
     this.life?.destroy();
     this.life = null;
     if (this.frame) cancelAnimationFrame(this.frame);
@@ -99,6 +123,9 @@ export class ExploreScene implements Scene {
     if (!state) return;
     const map = this.app.content.maps.get(state.location.mapId);
     if (map && map.id !== this.map?.id) {
+      this.nextWalk.clear();
+      this.walking = null;
+      this.updateWalkFeedback();
       this.departing = null;
       this.app.animator.clear();
       this.map = map;
@@ -124,6 +151,9 @@ export class ExploreScene implements Scene {
     if (!state || !grid) return;
     for (const event of events) {
       if (event.type !== 'partyWalked') continue;
+      this.nextWalk.clear();
+      this.walking = { from: event.from, path: event.path, label: 'the path', refusal: null };
+      this.updateWalkFeedback();
       if (this.map && state.location.mapId !== this.map.id) {
         this.departing = {
           ...state,
@@ -306,6 +336,16 @@ export class ExploreScene implements Scene {
     talk.appendChild(el('span', { class: 'action-sub', text: npc?.name ?? 'No one near' }));
     row.appendChild(talk);
 
+    const look = button(
+      'Look around',
+      () => {
+        new NearbyPlaces(this.app, (pos) => this.requestWalk(pos)).open(this.overlayHost());
+      },
+      { class: 'action-button', title: 'Find nearby people and places along this path' },
+    );
+    look.prepend(mark(UI_MARKS.talk));
+    row.appendChild(look);
+
     const leader = state.party[0];
     const party = button(
       'Party',
@@ -317,6 +357,16 @@ export class ExploreScene implements Scene {
     party.prepend(mark(UI_MARKS.party));
     party.appendChild(el('span', { class: 'action-sub', text: `${state.party.length} strong` }));
     row.appendChild(party);
+    row.appendChild(
+      button(
+        'Travel journal',
+        () => {
+          if (!this.app.animator.busy(performance.now()))
+            new TravelJournal(this.app).open(this.overlayHost());
+        },
+        { class: 'action-button' },
+      ),
+    );
 
     const save = button(
       'Save',
@@ -349,8 +399,7 @@ export class ExploreScene implements Scene {
         button(
           exit.label,
           () => {
-            if (!this.app.animator.busy(performance.now()))
-              this.app.dispatch({ type: 'walkTo', pos: exit.pos });
+            this.requestWalk(exit.pos);
           },
           { title: open ? `Walk to ${exit.label}` : exit.lockedHint, disabled: !open },
         ),
@@ -374,9 +423,9 @@ export class ExploreScene implements Scene {
   }
 
   private talkTo(npc: NpcDef | null): void {
-    if (!npc || this.app.animator.busy(performance.now())) return;
+    if (!npc) return;
     // The rules walk the party up to the villager and open the conversation.
-    this.app.dispatch({ type: 'walkTo', pos: npc.pos });
+    this.requestWalk(npc.pos);
   }
 
   private inspect(unit: Unit): void {
@@ -442,11 +491,61 @@ export class ExploreScene implements Scene {
     const renderer = this.renderer;
     const state = this.app.state;
     if (!renderer || !state) return;
-    // A tap mid-walk would put the party ahead of its own figure.
-    if (this.app.animator.busy(performance.now())) return;
     const tile = renderer.camera.toTile(x, y);
-    if (this.life?.handleTap(tile, performance.now())) return;
-    this.app.dispatch({ type: 'walkTo', pos: tile });
+    // Ground taps can plan the next stroll without interrupting the current animation.
+    if (this.app.animator.busy(performance.now())) {
+      this.requestWalk(tile);
+      return;
+    }
+    const origin = renderer.camera.toScreen({ x: 0, y: 0 });
+    const point = { x: (x - origin.x) / origin.size, y: (y - origin.y) / origin.size };
+    if (this.life?.handleTap(point, performance.now())) return;
+    this.requestWalk(tile);
+  }
+
+  private requestWalk(pos: Vec2): void {
+    const state = this.app.state;
+    if (!state || state.screen !== 'explore' || state.location.mapId !== this.map?.id) return;
+    if (this.life?.busy(performance.now())) return;
+    if (this.app.animator.busy(performance.now())) {
+      const preview = this.nextWalk.set(this.app.content, state, pos);
+      if (preview.refusal) this.app.toasts.show(preview.refusal);
+    } else {
+      this.nextWalk.clear();
+      const preview = previewWalk(this.app.content, state, pos);
+      const events = this.app.dispatch({ type: 'walkTo', pos });
+      if (events.some((event) => event.type === 'partyWalked')) this.walking = preview;
+    }
+    this.updateWalkFeedback();
+  }
+
+  private clearNextWalk(): void {
+    this.nextWalk.clear();
+    this.updateWalkFeedback();
+  }
+
+  private onKeyDown = (event: KeyboardEvent): void => {
+    if (event.key === 'Escape' && !document.querySelector('[role="dialog"]')) this.clearNextWalk();
+  };
+
+  private onVisibility = (): void => {
+    if (document.hidden) this.clearNextWalk();
+  };
+
+  private updateWalkFeedback(): void {
+    if (!this.feedback || !this.feedbackText || !this.cancelNext) return;
+    const state = this.app.state;
+    const next = state ? this.nextWalk.preview(state) : null;
+    this.feedback.hidden = !next && !this.walking;
+    this.cancelNext.hidden = !next;
+    const text = next
+      ? `Next: ${next.label}`
+      : this.walking
+        ? this.walking.label === 'the path'
+          ? 'Following the path'
+          : `Walking to ${this.walking.label}`
+        : '';
+    if (this.feedbackText.textContent !== text) this.feedbackText.textContent = text;
   }
 
   /* ---------------------------------------------------------------- */
@@ -460,8 +559,22 @@ export class ExploreScene implements Scene {
     if (!renderer || !state || !map || !grid) return;
 
     const now = performance.now();
-    if (this.life?.update(now)) return;
+    // Long roaming sessions must retire old walk tracks just as combat does.
     this.app.animator.prune(now);
+    // Never carry queued intent through a menu, a loaded save, or a story/map change.
+    if (document.hidden || document.querySelector('[role="dialog"]')) this.clearNextWalk();
+    if (!this.app.animator.busy(now)) {
+      if (this.walking) {
+        this.walking = null;
+        this.updateWalkFeedback();
+      }
+      const next = this.nextWalk.take(state);
+      if (next) {
+        this.requestWalk(next);
+        return;
+      }
+    }
+    if (this.life?.update(now)) return;
     this.app.stats?.frame(now);
 
     // The whole party walks the village: the leader on the rules' tile, the
@@ -504,6 +617,7 @@ export class ExploreScene implements Scene {
         ? ambientEmitters(ambienceFx(map.ambience), grid, now)
         : [];
 
+    const cue = this.nextWalk.preview(state) ?? this.walking;
     const view: MapView = {
       grid,
       units: this.life ? [] : units,
@@ -512,8 +626,8 @@ export class ExploreScene implements Scene {
       // and there is no battle out here on the village map.
       props: [],
       overlays: [],
-      path: [],
-      pathFrom: null,
+      path: cue?.path ?? [],
+      pathFrom: motionReduced() ? null : (cue?.from ?? null),
       aimArc: null,
       emitters: ambient,
       floaters: [],

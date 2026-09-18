@@ -81,6 +81,7 @@ export class CanvasFxLayer {
           instance.seed,
           instance.from,
           instance.to,
+          instance.arc,
         );
         const color = roleColor(def.color, instance.palette);
         const ink = roleColor('ink', instance.palette);
