@@ -85,6 +85,19 @@ for sarcastic objects, elaborate bureaucracy for every animal, mock philosophy
 about chores, and a narrator who keeps grading the player's misfortune. These
 patterns call for editorial judgment, not a banned-word checker.
 
+Jared specifically rejected this Dema line: “Quiet feet. The turtle-ducks have
+right of way. I have explained this to the carts; the carts are taking it
+personally.” The carts have no motive or relationship in the scene; giving them
+offended feelings supplies a detachable punchline. Replacing “personally” with
+another word leaves the same weak joke.
+
+The replacement gives Dema an immediate concern: “Mind your feet. There are
+ducklings under that fern. Yes, the one you are about to step on.” Check the whole
+exchange for a specific listener, behaviour and consequence. Remove an unearned
+joke outright. Objects with opinions, mock officials among the animals and stock
+metaphorical punchlines should not fill the space left by a cut joke. Ordinary
+observations, sincere replies and silence are valid endings.
+
 ## Keep the fiction honest
 
 The setting is after Korra and before Seven Havens; the exact year remains
@@ -117,6 +130,33 @@ Keep node IDs, destinations, conditions, rewards, and interlude shot counts inta
 unless the task explicitly requires a behavior change.
 
 ## Review before integration
+
+### Contributions during the quarry run
+
+These scenes use existing character-presence conditions, which require positive
+HP. An absent or unconscious hero falls back to the NPC or narrator. Each hero
+has a separate moment so same-element companions do not compete for one variant.
+The optional scenes stay optional; there is no compulsory roll call.
+
+| Character | Node                     | Contribution and when to encounter it                                                                               |
+| --------- | ------------------------ | ------------------------------------------------------------------------------------------------------------------- |
+| Kaya      | `after_forest`           | Recognizes the attackers as quarry workers and questions why they are guarding the road; either road outcome        |
+| Tenzo     | `cutting_tea`            | Offers to help Sen feed the freed crews and wash cups; optional cutting rest stop                                   |
+| Nilak     | `riverside_mira`         | Arranges a place and supplies for aftercare, with room for families; optional riverside visit before the rescue     |
+| Sura      | `discover_runoff_marker` | Recognizes grit from fishing work and reads the clue about the settling pit; optional stream marker                 |
+| Bo        | `gate_kinship`           | Uses his crew experience to argue for stopping unsafe work and opening the gate; earthbender approach               |
+| Lin Mei   | `forest_dema`            | Proposes comparing the banks to locate incoming runoff; optional road-keeper conversation                           |
+| Nima      | `discover_duck_nest`     | Spots why the birds moved uphill and gives them room; optional woodland path                                        |
+| Jinu      | `dorin_directions`       | Applies courier route knowledge and arranges for Dorin to receive anyone sent home; optional departure conversation |
+| Riko      | `escort_chosen`          | Sets clear custody terms and plans for Jin's pursuit; escort branch                                                 |
+| Wen       | `quarry_assessment`      | Recognizes the damaged drive and keeps the escape ramp in mind; before the driller battle                           |
+
+All are available during Act 1 without advanced disciplines or extra XP. The
+content tests cover solo availability, unconscious/absent fallbacks and pairs;
+the integrated route playtest must still confirm that ordinary movement reaches
+these moments. Narrative observations and offers do not grant mechanical buffs.
+
+### Editorial review
 
 Identify the immediate want and the cause of the comic turn. Hide the names and
 check the voices. Cut a redundant final tag. Read the exchange aloud and check

@@ -1,5 +1,29 @@
 import { defineConfig } from 'vite';
 import { VitePWA } from 'vite-plugin-pwa';
+import { execFileSync } from 'node:child_process';
+import { fileURLToPath } from 'node:url';
+import { version } from './package.json';
+
+// Stamp the code being built so even an offline cached bundle identifies itself.
+function buildRevision(): string {
+  const cwd = fileURLToPath(new URL('.', import.meta.url));
+  try {
+    const options = {
+      cwd,
+      encoding: 'utf8' as const,
+      stdio: ['ignore', 'pipe', 'ignore'] as ['ignore', 'pipe', 'ignore'],
+    };
+    const revision = execFileSync('git', ['rev-parse', '--short=7', 'HEAD'], options).trim();
+    const modified = execFileSync(
+      'git',
+      ['status', '--porcelain', '--untracked-files=no'],
+      options,
+    ).trim();
+    return `${revision}${modified ? '-modified' : ''}`;
+  } catch {
+    return 'local';
+  }
+}
 
 /**
  * `GH_PAGES_BASE` is set by the deploy workflow to `/<repo>/` so that the
@@ -9,6 +33,10 @@ const base = process.env.GH_PAGES_BASE ?? '/';
 
 export default defineConfig({
   base,
+  define: {
+    __APP_VERSION__: JSON.stringify(version),
+    __BUILD_REVISION__: JSON.stringify(buildRevision()),
+  },
   build: {
     target: 'es2022',
     outDir: 'dist',
@@ -51,8 +79,7 @@ export default defineConfig({
       manifest: {
         name: 'Four Nations Tactics',
         short_name: 'FN Tactics',
-        description:
-          'A hot-seat turn-based tactical RPG set a few decades after Korra. Non-commercial fan work.',
+        description: 'A hot-seat turn-based tactical RPG set after Korra. Non-commercial fan work.',
         theme_color: '#e7d9bd',
         background_color: '#e7d9bd',
         display: 'standalone',

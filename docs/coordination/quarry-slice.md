@@ -12,41 +12,88 @@ for every playable character. This does not require all characters in one party.
 
 ## Active ownership
 
-Initial assignment snapshot: 18 September 2026 UTC. Verify live state before work.
+Checkpoint: 18 September 2026, 07:31 UTC. Verify live state before work.
 Session IDs locate conversations; PRs and Git remain the source for code status.
+The original three sessions reached task usage limits and transferred ownership
+with committed work preserved. Do not restart their assignments.
 
-| Track                 | Session                                | Owned outcome / next milestone                                                 |
-| --------------------- | -------------------------------------- | ------------------------------------------------------------------------------ |
-| Orchestration         | `01a0b2b4-1260-7551-a818-e7a85c0645f6` | Scope, coordination docs, integration order and final acceptance               |
-| Art and audio (Astra) | `01a0b291-2f6f-75a2-a93c-312f80543200` | Consistent party art, directional walks and sound; reconcile asset PRs #41–43  |
-| Writing               | `01a0b294-82fd-7f02-9b91-303660f2ca1a` | Integrate overlapping #38/#40; coherent departure, quarry and return responses |
-| Gameplay/integration  | `01a0b293-318a-7603-bd56-5b87e944054e` | Finish #39; playable return, objectives and distinct early character kits      |
+| Track                | Current session                        | Owned outcome / next milestone                                                   |
+| -------------------- | -------------------------------------- | -------------------------------------------------------------------------------- |
+| Orchestration        | `01a0b2b4-1260-7551-a818-e7a85c0645f6` | Scope, integration order, version label #47 and final acceptance                 |
+| Art/audio (Astra)    | `01a0b2ee-8d60-7643-be9b-340997ca4ae0` | Finish #50/#57/#58 checked integration; accepted visual evidence on #52          |
+| Writing              | `01a0b2e3-170e-7bb1-b2ab-d9e45dd780a9` | Finish #49 required CI and confirm merge; narrative route evidence recorded      |
+| Gameplay/integration | `01a0b300-e321-7670-aab3-f0aeaf624dc0` | Integrate sources, ready #48 kits and #52 route test, verify final combined head |
 
-No PR in this table is claimed merged. Live PR list:
-[jaredbahr/Avatarrpg](https://github.com/jaredbahr/Avatarrpg/pulls).
+Live PR list: [jaredbahr/Avatarrpg](https://github.com/jaredbahr/Avatarrpg/pulls).
+Do not infer deployment or current CI from this checkpoint.
 
-## Known gaps at the initial audit
+## Delivery and remaining gates
 
-- Gameplay reports the quarry ending currently reaches a terminal end node with
-  Save/Replay/Title only, blocking a playable return despite reciprocal map exits.
-  Gameplay owns generic continuation and navigation; writing owns the epilogue
-  link, return objective and NPC responses. Reuse existing story flags where valid.
-- Gameplay reports same-element pairs share their early abilities, leaving some
-  signature roles unavailable during this slice. Audit and differentiate early
-  kits with progression/balance evidence; do not change biographies concurrently.
-- Writing is consolidating two overlapping prose PRs, preserving functional
-  speaker-availability tests and useful continuity changes from both.
-- Art is developing side-walk frames and checking anatomy/identity against the
-  portrait corrections. A successful asset import alone is not visual acceptance.
+Confirmed merged by this checkpoint: camera/movement #39, writing consolidation
+#40 (including #45 continuation), bandit art/audio #41/#42, portrait corrections
+#43, coordination #44, ten-hero walks #46, audio scheduling/mute fix #51,
+inspector focus #53, exploration sheet markers #54, defeat wording #55 and NPC
+illustrations #56. See the respective PR for exact merge/check records.
 
-These are reported findings, not a complete audit or claims of implemented fixes.
-Task owners provide tested evidence; the orchestrator updates this record at
-milestones and removes resolved gaps with links to the resolving PRs.
+Ready source PRs still require live checks and merge confirmation: return writing
+#49, Grumbler #50, crossbow #57, slinger/bruiser/quarry earthbender #58. #50/#57/#58 need
+reconciliation with newly merged main. Character kits #48 have passed all six
+required checks on `41f4a2d`, but remain draft pending narrative integration.
+Combined route-test PR #52 remains draft until source changes are reconciled and
+its final head passes required checks. The title-screen version label #47 is
+not yet merged; a motion-transitions test clock race needs repair.
+
+Use existing tested implementations; do not regenerate accepted art or create
+competing implementations. Preserve optimized portraits, source credits and both
+renderer/gallery registrations during merges. The six-player boss win-rate rise
+was isolated to pre-kit movement behavior; no difficulty retuning is planned.
+Evidence and rationale are recorded on #48.
+
+Jared's editorial correction is in the writing guide: remove canned personification
+and metaphorical punchlines such as carts "taking it personally". Humor must earn
+its place through character and situation. A sincere line needs no joke. Naming is
+undecided: keep the existing name until Jared revisits it.
+
+## Evidence available before final acceptance
+
+These are tested branch results, not a claim that every change is deployed.
+
+- [#49 narrative acceptance](https://github.com/jaredbahr/Avatarrpg/pull/49#issuecomment-5725659955):
+  all ten character contributions and all five same-element pairs reached through
+  ordinary routes; actual terminal boss defeat checked. Source `634a642`; later
+  main reconciliation `af45425` passed 612 local tests.
+- [#48 kit handoff](https://github.com/jaredbahr/Avatarrpg/pull/48#issuecomment-5725817132):
+  `41f4a2d` passed 615 tests and the complete variant balance sweep, 80 trials per
+  encounter at 1/3/6 players plus discipline coverage. Matching controls show kits
+  do not cause the pre-existing six-player boss win-rate increase.
+- [#52 combined integration](https://github.com/jaredbahr/Avatarrpg/pull/52):
+  `2ab7e50` passed 619 tests and 20 focused browser checks, including full quarry
+  return on Canvas/WebGL at 1368x912 and 834x1194, combat save/reload, inspector
+  focus and previews. Setup uses `app.newGame`; combat uses legal planner commands,
+  without forced outcomes, teleportation or campaign-state mutation. It is not
+  proof of an entirely manual touchscreen playthrough.
+- Art reviewed the combined `2ab7e50` build, including additional Canvas/WebGL NPC
+  map captures, accepted-source PNG identity, correct fallbacks and asset budgets
+  (portraits 3.96 MB, units 3.84 MB, precache 13.98 MB). Later `9892581` changed six
+  gallery helper timeout arguments only; `bb66559` reconciled main without a tree
+  change. Recheck live heads before deciding whether evidence remains applicable.
+
+## Explicit remaining limitations
+
+Final integrated required CI, source merges, deployment confirmation and the
+orchestrator's final review are still outstanding. Physical Surface/iPad testing
+and actual audible listening review have not been performed; automated audio
+scheduling/mute coverage and browser emulation must not be described as those.
+Some NPCs intentionally still share archetypes (Dema/Mira and Sen/Gao). Optional
+mercenary variants and living-riverside figures retain painter fallbacks; do not
+claim universal asset replacement. Assess these against the chosen release route
+without silently expanding the world or concealing visible limitations.
 
 ## Acceptance checklist
 
-Every item starts unverified. Record evidence before checking it off; green PRs
-alone do not complete the slice.
+The evidence above supports provisional branch acceptance. Leave final release
+checkboxes open until the integrated revision is accepted; green PRs alone do not
+complete the slice.
 
 - [ ] A normal new campaign supports departure, road events, quarry resolution
       and walking back to Ba Dan without debug tools or restarting the campaign.
@@ -78,7 +125,7 @@ another competing set of navigation instructions here.
 
 ## Final acceptance evidence
 
-Not yet performed. The orchestrator records the tested commit, build/PR links,
+Final release sign-off is not yet performed. The orchestrator records the tested commit, build/PR links,
 party/seed/route, save checkpoints, device/browser/renderer settings, screenshots
 or recording links, observed results and unresolved limitations. Each character's
 story contribution and tactical role must be supported by concrete in-game evidence.

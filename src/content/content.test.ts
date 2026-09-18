@@ -25,7 +25,7 @@ describe('content', () => {
           node.id === ending.id ? { ...ending, next } : node,
         ),
       });
-    expect(withNext('village_explore')).toEqual([]);
+    expect(withNext(ending.next ?? 'village_explore')).toEqual([]);
     expect(withNext('battle_grumbler')).toContain(
       'story node "act1_epilogue" continues to "battle_grumbler", which is not an explore node',
     );

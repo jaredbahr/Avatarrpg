@@ -83,14 +83,22 @@ export function resolvePainter(key: string): ResolvedPainter {
     // after a failed fetch. Unit keys end in the cast variant by convention.
     const palette = paletteFor(entry.palette);
     const variant = key.slice(key.lastIndexOf('.') + 1);
-    const bender =
-      (key === 'unit.enemy.crossbow' ? UNIT_PAINTERS.mercenary : UNIT_PAINTERS.bender) ?? FALLBACK;
+    // Missing atlases retain each enemy's original silhouette and equipment.
+    const unitPainter =
+      (key === 'unit.enemy.grumbler'
+        ? UNIT_PAINTERS.driller
+        : key === 'unit.enemy.crossbow'
+          ? UNIT_PAINTERS.mercenary
+          : UNIT_PAINTERS.bender) ?? FALLBACK;
     return {
       entry,
       palette,
       variant,
       draw: (ctx, box, options) =>
-        bender(ctx, box, palette, { ...(options ?? {}), variant: options?.variant ?? variant }),
+        unitPainter(ctx, box, palette, {
+          ...(options ?? {}),
+          variant: options?.variant ?? variant,
+        }),
     };
   }
 

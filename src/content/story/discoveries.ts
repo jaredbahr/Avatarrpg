@@ -45,7 +45,7 @@ export const DISCOVERY_STORY: readonly StoryNode[] = DISCOVERIES.flatMap((item):
     id: `remember_${item.id}`,
     kind: 'flags',
     set: { [`world.discovered.${item.id}`]: true },
-    next: item.back,
+    next: `leave_${item.id}`,
   },
   {
     id: `revisit_${item.id}`,
@@ -53,6 +53,13 @@ export const DISCOVERY_STORY: readonly StoryNode[] = DISCOVERIES.flatMap((item):
     speaker: item.name,
     portrait: item.sprite,
     lines: TEXT[item.id].again,
-    next: item.back,
+    next: `leave_${item.id}`,
+  },
+  {
+    id: `leave_${item.id}`,
+    kind: 'branch',
+    flag: 'act1_complete',
+    ifSet: item.map === 'forest_road' ? 'forest_return_explore' : 'cutting_return_explore',
+    ifUnset: item.back,
   },
 ]);

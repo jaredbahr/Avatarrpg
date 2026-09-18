@@ -91,7 +91,7 @@ for (const renderer of ['canvas', 'webgl']) {
       '2',
     );
     await page.getByRole('button', { name: 'Under the banyan', exact: true }).click();
-    await expect(page.locator('.village-note')).toContainText('branches pass overhead', {
+    await expect(page.locator('.village-note')).toContainText('The banyan shades the path.', {
       timeout,
     });
     await expect(page.locator('.village-life-canvas')).toHaveAttribute(

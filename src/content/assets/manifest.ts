@@ -188,7 +188,38 @@ export const ASSETS: Readonly<Record<string, AssetEntry>> = {
     },
   },
   'unit.enemy.sergeant': painter('mercenary', 'enemy', 'sergeant'),
-  'unit.enemy.grumbler': painter('driller', 'enemy'),
+  'unit.enemy.grumbler': {
+    kind: 'sheet',
+    atlas: 'art/units/grumbler.json',
+    pixelsPerTile: 128,
+    footprint: { w: 2, h: 1 },
+    anchor: { x: 0.5, y: 0.85 },
+    facing: 'mirror',
+    palette: 'enemy',
+    clips: {
+      idle: {
+        frames: ['unit.enemy.grumbler/idle/0', 'unit.enemy.grumbler/idle/1'],
+        fps: 1,
+        loop: true,
+      },
+      walk: {
+        frames: ['unit.enemy.grumbler/walk/0', 'unit.enemy.grumbler/walk/1'],
+        fps: 4,
+        loop: true,
+      },
+      cast: {
+        frames: [
+          'unit.enemy.grumbler/cast/0',
+          'unit.enemy.grumbler/cast/1',
+          'unit.enemy.grumbler/cast/2',
+        ],
+        fps: 8,
+        loop: false,
+      },
+      hit: { frames: ['unit.enemy.grumbler/hit/0'], fps: 1, loop: false },
+      ko: { frames: ['unit.enemy.grumbler/ko/0'], fps: 1, loop: false },
+    },
+  },
   'unit.ally.ruon': painter('mercenary', 'neutral', 'sergeant'),
 
   /* --------------------------------------------------------------- NPCs */
@@ -216,6 +247,11 @@ export const ASSETS: Readonly<Record<string, AssetEntry>> = {
     palette: 'enemy',
   },
   'portrait.enemy.thug': { kind: 'image', url: 'art/portraits/enemy.thug.png', palette: 'enemy' },
+  'portrait.enemy.grumbler': {
+    kind: 'image',
+    url: 'art/portraits/enemy.grumbler.png',
+    palette: 'enemy',
+  },
   'portrait.kaya': { kind: 'image', url: 'art/portraits/kaya.png', palette: 'fire' },
   'portrait.tenzo': { kind: 'image', url: 'art/portraits/tenzo.png', palette: 'fire' },
   'portrait.nilak': { kind: 'image', url: 'art/portraits/nilak.png', palette: 'water' },
