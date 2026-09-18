@@ -208,11 +208,35 @@ export const ACT1_NODES: readonly StoryNode[] = [
     next: 'forest_after_explore',
     variants: [
       {
+        when: {
+          kind: 'all',
+          of: [
+            { kind: 'partyHas', characterId: 'kaya' },
+            { kind: 'flag', key: 'lost_forest_road', op: 'set' },
+          ],
+        },
+        speaker: 'Kaya',
+        portrait: 'portrait.kaya',
+        lines: [
+          'They took our supplies. I saw quarry dust on their clothes.',
+          'I want to know who put them out here.',
+        ],
+      },
+      {
         // Losing the road makes the same observation land very differently.
         when: { kind: 'flag', key: 'lost_forest_road', op: 'set' },
         lines: [
           "You remember stone dust on the attackers' clothes and the worn hands of people who cut rock for a living.",
           'Quarry workers have robbed you. There is still no word from the people Mira sent.',
+        ],
+      },
+      {
+        when: { kind: 'partyHas', characterId: 'kaya' },
+        speaker: 'Kaya',
+        portrait: 'portrait.kaya',
+        lines: [
+          'Look at their sleeves. That is stone dust. They are quarry workers.',
+          'Why are they out here robbing people?',
         ],
       },
     ],
