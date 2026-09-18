@@ -137,7 +137,9 @@ test('missing art leaves the caption and skip usable', async ({ page }) => {
   await expect(
     page.getByText('Rainwater fills the wheel ruts of a winding road through pine woods.'),
   ).toBeVisible();
-  await expect(page.locator('.dialogue-line')).toHaveText('Half a league up, the birds stop.');
+  await expect(page.locator('.dialogue-line')).toHaveText(
+    'At the bend, a boot scrapes on stone. Someone is standing behind the trees.',
+  );
   await page.getByRole('button', { name: 'Skip scene' }).click();
   expect((await snapshot(page)).node).toBe('forest_explore');
   await expect(page.locator('.explore-scene')).toBeVisible();

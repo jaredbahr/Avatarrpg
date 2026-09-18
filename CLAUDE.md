@@ -2,6 +2,10 @@
 
 Four Nations Tactics — a hot-seat tactical RPG. Read this before changing code.
 
+For dialogue, character biographies, banter, and story narration, read
+`docs/writing-guide.md`. Preserve the scene's branch facts and speaker availability
+when improving a line.
+
 For camera, interface, environment and character presentation work, also read
 `docs/player-view-target.md`: it records Jared's approved long-term player views,
 their interpretation and the staged delivery plan.
