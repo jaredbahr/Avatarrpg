@@ -9,11 +9,11 @@ Anything not listed here was made for this project.
 
 ## Third-party work
 
-| What                 | Work                                       | By                                  | Licence                   | Source                                             |
-| -------------------- | ------------------------------------------ | ----------------------------------- | ------------------------- | -------------------------------------------------- |
-| The heading typeface | Shippori Mincho 700, Latin subset          | The Shippori Mincho Project Authors | SIL Open Font License 1.1 | [link](https://github.com/fontdasu/ShipporiMincho) |
-| The action icons     | Game Icons                                 | the Game Icons contributors         | CC BY 3.0                 | [link](https://github.com/game-icons/icons)        |
-| The sound effects    | Impact Sounds 1.0 and Interface Sounds 1.0 | Kenney (kenney.nl)                  | CC0 1.0                   | [link](https://kenney.nl)                          |
+| What | Work | By | Licence | Source |
+| --- | --- | --- | --- | --- |
+| The heading typeface | Shippori Mincho 700, Latin subset | The Shippori Mincho Project Authors | SIL Open Font License 1.1 | [link](https://github.com/fontdasu/ShipporiMincho) |
+| The action icons | Game Icons | the Game Icons contributors | CC BY 3.0 | [link](https://github.com/game-icons/icons) |
+| The sound effects | Impact Sounds 1.0 and Interface Sounds 1.0 | Kenney (kenney.nl) | CC0 1.0 | [link](https://kenney.nl) |
 
 These licences ask for the author to be named wherever the work is used,
 which is why the game carries the same list on its own Credits screen:
@@ -31,8 +31,8 @@ Notes:
 
 - **The bending animation cels.** Hand-drawn-style effect sheets generated for this project, normalised into 48 transparent animation cels. Prompts and provenance: docs/art/elemental-cels.md. Output terms: https://openai.com/policies/row-terms-of-use/. No exclusive copyright in generated output is claimed.
 - **The illustrated story scenes.** Stationary cutscene paintings generated for this project. Prompts and provenance: docs/art/interludes.md. Output terms: https://openai.com/policies/terms-of-use/. No exclusive copyright in generated output is claimed.
-- **The Grumbler artwork.** Original quarry machine artwork, generated and packed into nine transparent poses and a UI portrait. Prompts and processing notes: docs/art/grumbler.md. Output terms: https://openai.com/policies/row-terms-of-use/. No exclusive copyright in generated output is claimed.
 - **The character art.** Generated from the project character references and prompt packs, then normalised and packed for the game. Dialogue portrait notes: docs/art/dialogue-portraits.md; bandit prompts: docs/art/bandit.md; hero walk prompts and review: docs/art/side-walks.md. Output terms: https://openai.com/policies/row-terms-of-use/. This credit does not claim exclusive copyright in generated output.
+- **The Grumbler artwork.** Original quarry machine artwork, generated and packed into nine transparent poses and a UI portrait. Prompts and processing notes: docs/art/grumbler.md. Output terms: https://openai.com/policies/row-terms-of-use/. No exclusive copyright in generated output is claimed.
 - **The riverside painting.** Original generated environment for the living-village prototype. Foreground silhouettes are composited at ground depth. Riverside hero walk and wave sheets are generated; animals and elemental effects are drawn by the game. See docs/art/riverside.md.
 - **The Act 1 environments.** Original generated environments registered to the authored map layouts, with transparent props packed separately. Prompts and processing notes: docs/art/act1-environments.md. Output terms: https://openai.com/policies/row-terms-of-use/. No exclusive copyright in generated output is claimed.
 - **The app icons.** Drawn by scripts/make-icons.mjs.
