@@ -20,7 +20,7 @@ class TestContext {
     TestContext.instances.push(this);
   }
   createGain() {
-    return { gain: { value: 0 }, connect() {} };
+    return { gain: { value: 0, setValueAtTime() {}, linearRampToValueAtTime() {} }, connect() {} };
   }
   createBufferSource() {
     return {
