@@ -3,6 +3,7 @@ import { PLAYER_VIEW_BEATS } from './player-view-beats';
 import { DIRECTIONAL_BEATS } from './directional-beats';
 import { ELEMENT_BEATS, MOTION_BEATS } from './motion-beats';
 import { BENDING_BEATS } from './bending-beats';
+import { ENEMY_BEATS } from './enemy-beats';
 import type { Page } from '@playwright/test';
 import {
   enterNode,
@@ -176,6 +177,7 @@ async function faceOff(
 }
 
 export const BEATS: readonly Beat[] = [
+  ...ENEMY_BEATS,
   ...PLAYER_VIEW_BEATS,
   ...WORLD_BEATS,
   ...DIRECTIONAL_BEATS,

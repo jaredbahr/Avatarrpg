@@ -1,71 +1,80 @@
 # Hand anatomy review — 2026-09-18
 
-Reviewed the shipping art on `main` at
-`3ca63b41725122bad06c55ad9f2d27c82f339ba3`: all 16 portraits, 24 combat and
-locomotion atlases, and seven illustrated interludes. Portraits were inspected
-at native resolution and hand close-ups; casting poses were enlarged to check
-wrist continuity and hand silhouettes. Small sprite hands, closed fists and
-occluded fingers were not treated as missing digits solely because their
-individual fingers cannot be resolved at delivery size.
+The initial review covered 16 portraits, 24 combat and locomotion atlases, and
+seven interlude paintings on `3ca63b41725122bad06c55ad9f2d27c82f339ba3`.
+That pass changed eight portraits, but its visual acceptance was insufficient:
+Jared identified a poor earth pose, malformed fingers, and reversed hands in
+four of the delivered portraits. The earlier per-hand descriptions are
+superseded by this follow-up.
 
-## Corrections
+This revision starts from `74db30a192950c58b40e9fade71c12961b3f6afa` and changes
+Linmei, Jinu, Nima and Sura from that feedback. Rechecking the earlier edits
+also exposed the same handedness error in Bo, Kaya and Riko, so those three
+are corrected in this revision as well. Their prompt packs are updated too.
 
-| Portrait | Correction                                                                        | Identity and gesture retained                                                   |
-| -------- | --------------------------------------------------------------------------------- | ------------------------------------------------------------------------------- |
-| Bo       | Restore the fourth finger to the cupped right hand.                               | Floating stone, broad hand, mustard sleeve and brown wraps.                     |
-| Jinu     | Replace the tangled finger arrangement with a readable right hand.                | Playful two-finger leaf gesture and relaxed arm.                                |
-| Kaya     | Give the left hand four fingers and a thumb, with a consistent back-of-hand view. | Curved fire-controlling gesture, flame and gold-trimmed cuff.                   |
-| Linmei   | Add the missing thumb and clarify its separation from the four fingers.           | Pebble balanced on the back of the left hand and original vertical wrist wraps. |
-| Nima     | Correct the left palm's thumb side and show the two curled fingers.               | Two raised fingers, air spiral and brown wraps.                                 |
-| Riko     | Correct the right palm's handedness.                                              | Paired upright index/middle fingers and wrapped wrist.                          |
-| Sura     | Restore a distinct right thumb beside four spread fingers.                        | Ice crystals on the back of the right hand.                                     |
-| Tenzo    | Separate all four fingers from the thumb in the cupped left hand.                 | Flame, palm-up gesture and red cuff.                                            |
+## Corrected poses
 
-The other eight portraits and the reviewed sprite/interlude assets had no
-additional hand defect clear enough at their shipping resolution to justify a
-replacement in this pass. This is a visual review, not an automated anatomy
-certification. No animation frames, atlas coordinates, character identities,
-story content or rendering contracts changed.
+| Portrait | Anatomical hand and view                                          | Correction                                                                                                                                                                                                             |
+| -------- | ----------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Bo       | Right palm; raised arm on image-left                              | Replace the reversed cupped hand with an open-palm casting pose. Four naturally graduated fingers, an image-right thumb, and the stone hovering clear above them.                                                      |
+| Kaya     | Left palm; raised arm on image-right                              | Replace dorsal marks with palm creases and fingertip pads. The thumb is on image-left and four naturally curved fingers guide the flame.                                                                               |
+| Riko     | Right palm; raised arm on image-left                              | Reverse the incorrect thumb/finger layout: index and middle raised, ring and little curled on image-left, thumb from image-right.                                                                                      |
+| Linmei   | Left fist, palm side toward the viewer; raised arm on image-right | Replace the drooping pebble-balancing pose with a straight wrist and an upright fist. Four fingers curl together; the thumb crosses them from image-left. A small stone floats above the fist.                         |
+| Jinu     | Right palm; raised arm on image-left                              | Two raised fingers, two separately curled fingers, and a thumb rooted on image-right. The index is beside the thumb; the middle is the other raised finger.                                                            |
+| Nima     | Left palm; raised arm on image-right                              | Move the thumb to image-left and the curled ring/little fingers to image-right. Retain the two-finger wind gesture.                                                                                                    |
+| Sura     | Right palm; raised arm on image-left                              | Replace the contradictory dorsal marks with a coherent palm view. Four spread fingers and an image-right thumb; middle longest, index and ring of comparable length, little shortest. Ice floats clear of the fingers. |
 
-## Editing and integration
+Handedness is checked from the character's shoulder through the elbow and
+wrist. The screen side occupied by an arm is not the hand's anatomical name.
+The upright-hand table in `prompts/_style.md` records the palm/back distinction
+that the first pass mishandled.
 
-Corrections use the built-in image editing tool, with the existing portrait or
-an enlarged crop as its edit target. Full-portrait attempts that repeated a
-defect were rejected. The final hand regions were fitted into the original
-512 × 512 portraits; surrounding faces and composition were retained. Wrist
-and sleeve joins were inspected after compositing. The runtime continues to
-load the same eight `public/art/portraits/<name>.png` paths.
+## Edit briefs and integration
 
-Common edit brief:
+The built-in image editing tool generated each replacement from its existing
+portrait. The shared brief was:
 
-> Repair only the hand anatomy. Preserve the established face, expression,
-> hairstyle, proportions, costume, palette, dark-brown ink, cel shading,
-> background, elemental motif and framing. Four fingers plus one opposable
-> thumb; correct anatomical arm, palm/back orientation, finger joints and
-> wrist connection. No character redesign, added props, labels or effects.
+> Redraw only the specified hand and forearm. Preserve the face, expression,
+> hairstyle, costume design, elemental motif, dark-brown outlines, cel shading,
+> warm palette, parchment background and framing. Trace the hand to its own
+> arm. Show four fingers and one opposable thumb with natural joints, lengths,
+> palm/back markings and wrist alignment. No character redesign or new props.
 
-Final localized instructions:
+Individual pose instructions:
 
-- **Bo:** add the missing fourth curved finger; retain the thumb at image-left
-  and the cupped right palm. Show fingertip pads rather than fingernails on the
-  palm side.
-- **Jinu:** anatomical right hand; index and middle gracefully raised, ring
-  and little curled, single opposable thumb on the correct radial side.
-- **Kaya:** back of the anatomical left hand; thumb on image-left, index
-  curved toward it, with distinct middle, ring and little fingers beyond it.
-- **Linmei:** add only the near-side left thumb. Retain all four fingers, the
-  pebble and the wrist emerging upward from the original vertical green wraps.
-- **Nima:** anatomical left palm; thumb on the outer image-right side, index
-  and middle raised, ring and little curled visibly into the palm.
-- **Riko:** mirror only the erroneous hand orientation. Right palm with the
-  thumb rooted at image-left, raised index and middle beside it, curled ring
-  and little toward image-right. Retain the cuff location.
-- **Sura:** back of the anatomical right hand; four distinct fingers with a
-  separate thumb on the inner image-right side, preserving the ice crystals.
-- **Tenzo:** restore the fourth curved fingertip along the image-right side
-  of the cupped left hand, keeping the separate upper-left thumb and flame.
+- **Bo:** right palm facing the viewer in a broad open casting gesture,
+  image-right thumb, middle finger longest and little shortest, rock floating
+  above the fingertips. Rejected cupped-hand variants with poor finger lengths.
+- **Kaya:** left palm toward the viewer, image-left thumb, four gently curved
+  fingers with palm-side markings, same flame and red/gold cuff.
+- **Riko:** right palm, index and middle raised together, ring and little
+  separately curled on image-left, thumb from image-right, same grey wraps.
 
-The art bible and shared review checklist now explicitly require digit count,
-handedness, palm/back consistency, wrist continuity, and checks at both source
-and game size. These remain visual checks; the asset validator verifies file
-and atlas compatibility rather than hand anatomy.
+- **Linmei:** a naturally closed left fist, palm side toward the viewer,
+  thumb from image-left across the folded fingers, straight wrist in the
+  olive wraps, small angular stone hovering above it.
+- **Jinu:** right palm, index and middle raised in a relaxed V, ring and
+  little curled separately on image-left, thumb from image-right across them;
+  retain the leaves and air arc.
+- **Nima:** left palm, index and middle raised, ring and little curled on
+  image-right, thumb from image-left across them; retain the white wind spiral.
+- **Sura:** right palm with four spread fingers and an image-right thumb,
+  palm creases and fingertip pads, natural graduated lengths, ice clear of
+  the digits. A follow-up edit lengthened an initially short index finger.
+
+Only the revised hand/arm regions are composited into the original portraits.
+The final assets remain 512 × 512 PNGs at the same seven
+`public/art/portraits/<name>.png` paths. They retain the established colors
+without forcing the new art into the old indexed palette, which introduced
+visible speckling during review. Faces are preserved from the original files.
+
+## Acceptance
+
+- Inspect the full portrait and enlarged hand, including every curled digit.
+- Confirm thumb side, palm/back markings, finger lengths and wrist continuity.
+- Compare the original and replacement for identity, costume and style.
+- Inspect the circular game crop and the captured party/battle presentation.
+- Run the repository verification, art validation and asset budgets. These
+  checks establish compatibility; they do not establish anatomical correctness.
+
+No animation atlas, gameplay, character identity or story change is included.

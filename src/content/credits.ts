@@ -99,12 +99,12 @@ export const CREDITS: readonly CreditEntry[] = [
   },
   {
     what: 'The character art',
-    work: 'Hero and NPC portraits, and hero combat and riverside motion sheets',
+    work: 'Hero and NPC portraits, hero motion sheets, and the bandit combat sheet',
     authors: 'This project, generated with OpenAI image generation',
     licence: 'own work',
     source: '',
     covers: ['art/portraits', 'art/units'],
-    note: 'Generated from the project character references and prompt packs, then normalised and packed for the game. Dialogue portrait sources and packing notes are in docs/art/dialogue-portraits.md. Output terms: https://openai.com/policies/terms-of-use/. This credit does not claim exclusive copyright in generated output.',
+    note: 'Generated from the project character references and prompt packs, then normalised and packed for the game. Dialogue portrait sources and packing notes are in docs/art/dialogue-portraits.md; bandit prompts and review notes are in docs/art/bandit.md. Output terms: https://openai.com/policies/row-terms-of-use/. This credit does not claim exclusive copyright in generated output.',
   },
   {
     what: 'The riverside painting',

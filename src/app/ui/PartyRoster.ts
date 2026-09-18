@@ -7,16 +7,18 @@
 
 import type { App } from '../App';
 import type { ContentIndex, Unit } from '../../core/types';
+import { ASSETS } from '../../content/assets/manifest';
 import { paletteFor } from '../../render/palettes';
 import { paintElementGlyph } from '../../render/painters/glyphs';
 import { assetCanvas } from './assetCanvas';
 import { el, painterCanvas } from './dom';
 
-/** A hero's portrait; anyone else is drawn from their own sprite. */
+/** Character portraits win; units may supply a matching portrait.<family>.<name> asset. */
 export function portraitKeyFor(content: ContentIndex, unit: Unit): string {
-  return unit.characterId
-    ? (content.characters.get(unit.characterId)?.portrait ?? unit.sprite)
-    : unit.sprite;
+  const character = unit.characterId ? content.characters.get(unit.characterId) : undefined;
+  if (character) return character.portrait;
+  const portrait = unit.sprite.replace(/^unit\./, 'portrait.');
+  return ASSETS[portrait] ? portrait : unit.sprite;
 }
 
 export function partyRoster(

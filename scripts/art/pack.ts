@@ -12,7 +12,7 @@
  */
 
 import { existsSync, mkdirSync, readdirSync, writeFileSync } from 'node:fs';
-import { join, resolve } from 'node:path';
+import { join, relative, resolve, sep } from 'node:path';
 import type { ClipName } from '../../src/content/assets/clips';
 import { CLIP_NAMES } from '../../src/content/assets/clips';
 import { atlasJsonText } from '../../src/render/sheets/atlasJson';
@@ -113,7 +113,7 @@ export function main(argv: readonly string[]): number {
   const current = ASSETS[args.unit];
   const palette =
     current && 'palette' in current && current.palette ? current.palette : '<element>';
-  const site = resolve(args.out).replace(`${resolve('public')}/`, '');
+  const site = relative(resolve('public'), resolve(args.out)).split(sep).join('/');
   console.log(`wrote ${pngPath} (${layout.width}x${layout.height}) and ${jsonPath}`);
   console.log(`\nManifest entry for src/content/assets/manifest.ts:\n`);
   const clipLines = (Object.entries(layout.clips) as [ClipName, string[]][]).map(
