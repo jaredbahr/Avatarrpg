@@ -1,7 +1,18 @@
 import { describe, expect, it } from 'vitest';
 import { BA_DAN_VILLAGE } from '../../content/maps/village';
-import { buildGrid, distance, posKey, tileAt, pathCost, samePos } from '../../core/rules/grid';
-import { PartyTrail, placeParty } from './trail';
+import {
+  buildGrid,
+  distance,
+  posKey,
+  tileAt,
+  pathCost,
+  samePos,
+  findPath,
+} from '../../core/rules/grid';
+import { PartyTrail, placeParty, temporalRoutes } from './trail';
+import type { FollowerRoute } from './trail';
+import { TIMING } from './choreography';
+import { strollTiming } from './stroll';
 import { smoothPath, sampleFraction } from '../../render/geometry/curve';
 
 const grid = buildGrid(BA_DAN_VILLAGE);
@@ -231,7 +242,9 @@ describe('reserved movement batches', () => {
     route: { from: { x: number; y: number }; path: readonly { x: number; y: number }[] },
     t: number,
   ) {
-    const pos = sampleFraction(smoothPath(route.from, route.path), t).pos;
+    const curve = smoothPath(route.from, route.path);
+    const timing = strollTiming(curve.length, TIMING.strollStep);
+    const pos = sampleFraction(curve, timing.ease(t / timing.duration)).pos;
     return { x: pos.x - 0.5, y: pos.y - 0.5 };
   }
 
@@ -269,10 +282,17 @@ describe('reserved movement batches', () => {
           ),
         ).not.toBeNull();
       }
-      for (let tick = 0; tick <= 40; tick++) {
+      const phaseEnd = Math.max(
+        ...batch.map(
+          (route) =>
+            (route.delayMs ?? 0) +
+            strollTiming(smoothPath(route.from, route.path).length, TIMING.strollStep).duration,
+        ),
+      );
+      for (let tick = 0; tick <= phaseEnd + 5; tick += 5) {
         const drawn = positions.map((position, index) => {
           const route = batch.find((candidate) => candidate.index === index);
-          return route ? sample(route, tick / 40) : position;
+          return route ? sample(route, tick - (route.delayMs ?? 0)) : position;
         });
         for (let i = 0; i < drawn.length; i++)
           for (let j = i + 1; j < drawn.length; j++) {
@@ -325,4 +345,174 @@ describe('reserved movement batches', () => {
     ).toBeNull();
     expect(trail.positions(3)).toEqual(before);
   });
+});
+
+describe('temporal movement reservations', () => {
+  it('follows a long shared corridor in parallel instead of adding every route duration', () => {
+    const seats = [
+      { x: 4, y: 2 },
+      { x: 3, y: 2 },
+      { x: 2, y: 2 },
+      { x: 1, y: 2 },
+      { x: 0, y: 2 },
+    ];
+    const routes = seats.map((from, index) => ({
+      index,
+      from,
+      path: Array.from({ length: 12 }, (_, i) => ({ x: from.x + i + 1, y: 2 })),
+    }));
+    const timed = temporalRoutes(routes, seats);
+    expect(timed).not.toBeNull();
+    expect(timed?.every((route) => (route.delayMs ?? 0) < 300)).toBe(true);
+    const ends =
+      timed?.map(
+        (route) =>
+          (route.delayMs ?? 0) +
+          strollTiming(smoothPath(route.from, route.path).length, TIMING.strollStep).duration,
+      ) ?? [];
+    expect(Math.max(...ends)).toBeLessThan(12 * TIMING.strollStep + 500);
+  });
+
+  it('delays crossing trajectories and keeps starts and final holds separated', () => {
+    const seats = [
+      { x: 1, y: 3 },
+      { x: 3, y: 1 },
+      { x: 7, y: 7 },
+    ];
+    const routes = [
+      {
+        index: 0,
+        from: seats[0] ?? { x: 1, y: 3 },
+        path: [
+          { x: 2, y: 3 },
+          { x: 3, y: 3 },
+          { x: 4, y: 3 },
+          { x: 5, y: 3 },
+        ],
+      },
+      {
+        index: 1,
+        from: seats[1] ?? { x: 3, y: 1 },
+        path: [
+          { x: 3, y: 2 },
+          { x: 3, y: 3 },
+          { x: 3, y: 4 },
+          { x: 3, y: 5 },
+        ],
+      },
+    ];
+    const timed = temporalRoutes(routes, seats);
+    expect(timed).not.toBeNull();
+    expect(timed?.[1]?.delayMs).toBeGreaterThan(0);
+    expect(timed?.[1]?.delayMs).toBeLessThan(4 * TIMING.strollStep);
+    const end = Math.max(
+      ...(timed ?? []).map(
+        (route) =>
+          (route.delayMs ?? 0) +
+          strollTiming(smoothPath(route.from, route.path).length, TIMING.strollStep).duration,
+      ),
+    );
+    for (let time = 0; time <= end + 5; time += 5) {
+      const positions = (timed ?? []).map((route) => {
+        const curve = smoothPath(route.from, route.path);
+        const timing = strollTiming(curve.length, TIMING.strollStep);
+        const pos = sampleFraction(
+          curve,
+          timing.ease((time - (route.delayMs ?? 0)) / timing.duration),
+        ).pos;
+        if (time < (route.delayMs ?? 0))
+          expect(pos).toEqual({ x: route.from.x + 0.5, y: route.from.y + 0.5 });
+        return pos;
+      });
+      const a = positions[0];
+      const b = positions[1];
+      if (a && b) expect(Math.hypot(a.x - b.x, a.y - b.y)).toBeGreaterThanOrEqual(0.8);
+    }
+  });
+
+  it('rejects a stationary final hold that can never clear another member', () => {
+    expect(
+      temporalRoutes(
+        [
+          {
+            index: 0,
+            from: { x: 0, y: 0 },
+            path: [
+              { x: 1, y: 0 },
+              { x: 2, y: 0 },
+            ],
+          },
+        ],
+        [
+          { x: 0, y: 0 },
+          { x: 2, y: 0 },
+        ],
+      ),
+    ).toBeNull();
+  });
+});
+
+it('keeps the five-leg courtyard audit separated without the serial cadence regression', () => {
+  const avoid = BA_DAN_VILLAGE.npcs.map((npc) => npc.pos);
+  const trail = new PartyTrail(
+    placeParty(grid, spawn, 5, { awayFrom: BA_DAN_VILLAGE.exit?.pos, avoid }),
+  );
+  trail.settle(grid, avoid);
+  let positions = trail.positions(5);
+  let total = 0;
+  const checkPhase = (routes: readonly FollowerRoute[]) => {
+    const tracks = routes.map((route) => {
+      const curve = smoothPath(route.from, route.path);
+      return { route, curve, timing: strollTiming(curve.length, TIMING.strollStep) };
+    });
+    const end = Math.max(
+      0,
+      ...tracks.map((track) => (track.route.delayMs ?? 0) + track.timing.duration),
+    );
+    for (let time = 0; time <= end + 5; time += 5) {
+      const drawn = positions.map((position, index) => {
+        const track = tracks.find((track) => track.route.index === index);
+        if (!track) return position;
+        const pos = sampleFraction(
+          track.curve,
+          track.timing.ease((time - (track.route.delayMs ?? 0)) / track.timing.duration),
+        ).pos;
+        return { x: pos.x - 0.5, y: pos.y - 0.5 };
+      });
+      for (let i = 0; i < drawn.length; i++)
+        for (let j = i + 1; j < drawn.length; j++) {
+          const a = drawn[i];
+          const b = drawn[j];
+          if (a && b) expect(Math.hypot(a.x - b.x, a.y - b.y)).toBeGreaterThanOrEqual(0.8);
+        }
+    }
+    positions = positions.map((position, index) => {
+      const route = routes.find((route) => route.index === index);
+      return route?.path.at(-1) ?? position;
+    });
+    total += end;
+  };
+  for (const target of [
+    { x: 10, y: 7 },
+    { x: 10, y: 3 },
+    { x: 11, y: 3 },
+    { x: 10, y: 5 },
+    { x: 10, y: 7 },
+  ]) {
+    const from = trail.head ?? spawn;
+    const walk = findPath(
+      { grid, blocked: new Set(avoid.map(posKey)), surfaces: new Map(), size: 1 },
+      from,
+      target,
+      grid.width * grid.height,
+    );
+    expect(walk).not.toBeNull();
+    const plan = trail.planWalk(walk?.path ?? [], 5, grid, avoid);
+    expect(plan).not.toBeNull();
+    for (const phase of plan?.batches ?? []) checkPhase(phase);
+    checkPhase(trail.settle(grid, avoid));
+    expect(positions).toEqual(trail.positions(5));
+    expect(trail.head).toEqual(target);
+  }
+  expect(total).toBeLessThan(12000);
 });

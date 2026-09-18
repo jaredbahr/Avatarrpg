@@ -10,7 +10,9 @@
  */
 
 import type { Grid, Vec2 } from '../../core/types';
-import { smoothPath } from '../../render/geometry/curve';
+import { TIMING } from './choreography';
+import { strollTiming } from './stroll';
+import { sampleAt, smoothPath } from '../../render/geometry/curve';
 import { distance, neighbors, posKey, samePos, tileAt, reachable } from '../../core/rules/grid';
 
 /** A follower's walk to its new place: from its old tile, through these tiles. */
@@ -20,6 +22,8 @@ export interface FollowerRoute {
   readonly path: readonly Vec2[];
   /** Routes with the same batch can animate together; later batches wait. */
   readonly batch?: number;
+  /** Offset within the phase in normal-motion milliseconds; scale with motion rate. */
+  readonly delayMs?: number;
 }
 
 /** How `placeParty` lays the line out. */
@@ -160,23 +164,23 @@ export class PartyTrail {
         .filter(
           ({ pos }) => distance(pos, head) <= 2 && !blocked.has(posKey(pos)) && drySeat(grid, pos),
         )
-        .sort((a, b) => distance(a.pos, head) - distance(b.pos, head) || a.cost - b.cost);
+        .sort((a, b) => a.cost - b.cost || distance(a.pos, head) - distance(b.pos, head));
       const choice = choices[0];
       if (!choice || choice.path.length === 0) continue;
       seats[index] = choice.pos;
       routes.push({ index, from, path: choice.path });
     }
+    const timed = temporalRoutes(routes, this.line);
+    if (!timed) return [];
     this.line = seats;
     this.formation = { grid, avoid: [...avoid] };
-    return movementBatches(routes).flatMap((batch, index) =>
-      batch.map((route) => ({ ...route, batch: index })),
-    );
+    return timed.map((route) => ({ ...route, batch: 0 }));
   }
 
   /**
    * A complete presentation plan, including the unchanged rules leader route.
-   * Clear its corridor first, then overlap only routes with disjoint swept
-   * segments. A failed clearance returns null without changing any seats.
+   * Clear its corridor first, then overlap routes whose timed trajectories
+   * stay separated, including their initial waits and final holds. A failed clearance returns null without changing any seats.
    * The caller schedules each batch after the previous batch fully finishes.
    */
   planWalk(
@@ -213,6 +217,7 @@ export class PartyTrail {
       positions[index] = choice.pos;
       clearance.push({ index, from, path: choice.path });
     }
+    const afterClearance = [...positions];
     const desired = [...[...path].reverse(), ...before];
     const routes: FollowerRoute[] = [leader];
     positions[0] = destination;
@@ -225,15 +230,31 @@ export class PartyTrail {
         ...reachable({ grid, blocked, surfaces: new Map(), size: 1 }, from, budget).values(),
       ]
         .filter((cell) => !blocked.has(posKey(cell.pos)))
-        .sort((a, b) => distance(a.pos, target) - distance(b.pos, target) || a.cost - b.cost);
+        .sort((a, b) => {
+          if (path.length <= count) {
+            // A short move should not pull a nearby companion out of a good
+            // resting seat merely to recreate a single-file breadcrumb chain.
+            const aGap = Math.max(0, distance(a.pos, destination) - 2);
+            const bGap = Math.max(0, distance(b.pos, destination) - 2);
+            return (
+              aGap - bGap ||
+              Number(!drySeat(grid, a.pos)) - Number(!drySeat(grid, b.pos)) ||
+              a.cost - b.cost
+            );
+          }
+          return distance(a.pos, target) - distance(b.pos, target) || a.cost - b.cost;
+        });
       const choice = candidates[0];
       if (!choice || !choice.path.length) continue;
       positions[index] = choice.pos;
       routes.push({ index, from, path: choice.path });
     }
+    const clearPhase = temporalRoutes(clearance, before);
+    const travelPhase = temporalRoutes(routes, afterClearance);
+    if (!clearPhase || !travelPhase) return null;
     this.line = positions;
     this.formation = { grid, avoid: [...avoid] };
-    return { batches: [...movementBatches(clearance), ...movementBatches(routes)] };
+    return { batches: [...(clearPhase.length ? [clearPhase] : []), travelPhase] };
   }
 
   /**
@@ -302,19 +323,6 @@ function pointSegmentDistance(point: Vec2, a: Vec2, b: Vec2): number {
     : 0;
   return Math.hypot(point.x - a.x - t * dx, point.y - a.y - t * dy);
 }
-function segmentsNear(a: Vec2, b: Vec2, c: Vec2, d: Vec2): boolean {
-  const cross = (u: Vec2, v: Vec2, w: Vec2) =>
-    (v.x - u.x) * (w.y - u.y) - (v.y - u.y) * (w.x - u.x);
-  if (cross(a, b, c) * cross(a, b, d) < 0 && cross(c, d, a) * cross(c, d, b) < 0) return true;
-  return (
-    Math.min(
-      pointSegmentDistance(a, c, d),
-      pointSegmentDistance(b, c, d),
-      pointSegmentDistance(c, a, b),
-      pointSegmentDistance(d, a, b),
-    ) < BODY_CLEARANCE
-  );
-}
 function routeNearPoint(route: FollowerRoute, point: Vec2): boolean {
   const steps = smoothPath(route.from, route.path).points;
   point = { x: point.x + 0.5, y: point.y + 0.5 };
@@ -323,31 +331,71 @@ function routeNearPoint(route: FollowerRoute, point: Vec2): boolean {
       pointSegmentDistance(point, steps[Math.max(0, index - 1)] ?? to, to) < BODY_CLEARANCE,
   );
 }
-function routesNear(a: FollowerRoute, b: FollowerRoute): boolean {
-  const left = smoothPath(a.from, a.path).points;
-  const right = smoothPath(b.from, b.path).points;
-  return left.some((to, index) =>
-    right.some((other, j) =>
-      segmentsNear(
-        left[Math.max(0, index - 1)] ?? to,
-        to,
-        right[Math.max(0, j - 1)] ?? other,
-        other,
-      ),
-    ),
-  );
-}
-function movementBatches(routes: readonly FollowerRoute[]): FollowerRoute[][] {
-  const assigned: { route: FollowerRoute; batch: number }[] = [];
-  const batches: FollowerRoute[][] = [];
-  for (const route of routes) {
-    let batch = 0;
-    for (const earlier of assigned)
-      if (routesNear(route, earlier.route)) batch = Math.max(batch, earlier.batch + 1);
-    (batches[batch] ??= []).push(route);
-    assigned.push({ route, batch });
+/**
+ * Reserve the actual eased curves, including start waits and final holds.
+ * A trajectory moves no faster than one tile per strollStep. Checking both
+ * ends of every 20ms interval bounds missed approach by at most one relative
+ * speed times half the interval; the extra margin is conservative.
+ */
+const RESERVATION_STEP_MS = 20;
+const RESERVATION_CLEARANCE = BODY_CLEARANCE + RESERVATION_STEP_MS / TIMING.strollStep;
+export function temporalRoutes(
+  routes: readonly FollowerRoute[],
+  seats: readonly Vec2[],
+): FollowerRoute[] | null {
+  const prepared = routes.map((route) => {
+    const curve = smoothPath(route.from, route.path);
+    const timing = strollTiming(curve.length, TIMING.strollStep);
+    const sample = (elapsed: number): Vec2 => {
+      const pos = sampleAt(
+        curve,
+        timing.ease(elapsed / Math.max(1, timing.duration)) * curve.length,
+      ).pos;
+      return { x: pos.x - 0.5, y: pos.y - 0.5 };
+    };
+    return { route, duration: timing.duration, sample };
+  });
+  const scheduled: { movement: (typeof prepared)[number]; delay: number }[] = [];
+  const movingIndices = new Set(routes.map((route) => route.index));
+  const fixed = seats.filter((_, index) => !movingIndices.has(index));
+  const apart = (a: Vec2, b: Vec2) => Math.hypot(a.x - b.x, a.y - b.y) >= RESERVATION_CLEARANCE;
+  for (const movement of prepared) {
+    // Static members cannot get out of the way at any delay.
+    for (
+      let time = 0;
+      time <= movement.duration + RESERVATION_STEP_MS;
+      time += RESERVATION_STEP_MS
+    ) {
+      if (fixed.some((seat) => !apart(movement.sample(time), seat))) return null;
+    }
+    const serialEnd = scheduled.reduce(
+      (end, item) => Math.max(end, item.delay + item.movement.duration),
+      0,
+    );
+    let accepted: number | undefined;
+    for (let delay = 0; delay <= serialEnd + RESERVATION_STEP_MS; delay += RESERVATION_STEP_MS) {
+      let safe = true;
+      for (const earlier of scheduled) {
+        const end = Math.max(delay + movement.duration, earlier.delay + earlier.movement.duration);
+        for (let time = 0; time <= end + RESERVATION_STEP_MS; time += RESERVATION_STEP_MS) {
+          if (
+            !apart(movement.sample(time - delay), earlier.movement.sample(time - earlier.delay))
+          ) {
+            safe = false;
+            break;
+          }
+        }
+        if (!safe) break;
+      }
+      if (safe) {
+        accepted = delay;
+        break;
+      }
+    }
+    if (accepted === undefined) return null;
+    scheduled.push({ movement, delay: accepted });
   }
-  return batches;
+  return scheduled.map(({ movement, delay }) => ({ ...movement.route, delayMs: delay }));
 }
 
 /** Water stays legal for travelling; a party stops on dry ground. */

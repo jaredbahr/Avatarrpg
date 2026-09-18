@@ -101,7 +101,7 @@ export class Animator {
   private directions = new Map<string, WalkDirection>();
   private pendingHeadings: HeadingCue[] = [];
   private pushes = 0;
-  /** Where the most recent push started, so another can be laid alongside it. */
+  /** Unshifted batch anchor, shared by alongside pushes with independent delays. */
   private lastCursor = 0;
 
   /** Multiplier applied to every duration; 0.02 when reduce-motion is on. */
@@ -140,18 +140,26 @@ export class Animator {
     now: number,
     events: readonly GameEvent[],
     unitsBefore: readonly Unit[],
-    options: { alongside?: boolean; silentSteps?: boolean } = {},
+    options: {
+      alongside?: boolean;
+      silentSteps?: boolean;
+      /** Delay from the shared batch anchor, in normal-motion milliseconds. */
+      delayMs?: number;
+    } = {},
   ): void {
-    const cursor = options.alongside
+    const base = options.alongside
       ? Math.max(now, this.lastCursor)
       : Math.max(now, this.timeline.finishesAt);
-    this.lastCursor = cursor;
+    // Followers each delay from the same batch anchor, never from the previous delay.
+    this.lastCursor = base;
+    const rate = this.rate;
+    const cursor = base + Math.max(0, options.delayMs ?? 0) * rate;
     const result = choreograph({
       content: this.content,
       events,
       unitsBefore,
       cursor,
-      rate: this.rate,
+      rate,
       pushIndex: this.pushes++,
       silentSteps: options.silentSteps ?? options.alongside,
       projection: this.projection,
