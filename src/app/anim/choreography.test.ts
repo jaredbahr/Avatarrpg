@@ -369,3 +369,41 @@ describe('choreograph', () => {
     expect(sounds.some((s) => s.key === 'fx.fire.jab')).toBe(true);
   });
 });
+
+it('projects attack and reaction poses without changing timing, particles or sound', () => {
+  const events: GameEvent[] = [
+    {
+      type: 'abilityUsed',
+      unitId: 'p0',
+      abilityId: 'fire_jab',
+      target: { x: 4, y: 6 },
+      tiles: [{ x: 4, y: 6 }],
+    },
+    { type: 'damaged', damageType: 'fire', unitId: 'e0', amount: 5, sourceId: 'p0', crit: false },
+  ];
+  const input = {
+    content,
+    events,
+    unitsBefore: [unit('p0', 4, 4), unit('e0', 4, 6)],
+    cursor: 0,
+    rate: 1,
+    pushIndex: 0,
+  };
+  const flat = choreograph(input);
+  const oblique = choreograph({ ...input, projection: 'oblique' });
+  expect(oblique.cursor).toBe(flat.cursor);
+  expect(oblique.sounds).toEqual(flat.sounds);
+  expect(oblique.tracks.filter((t) => t.kind !== 'pose')).toEqual(
+    flat.tracks.filter((t) => t.kind !== 'pose'),
+  );
+  const flatPoses = flat.tracks.filter((t) => t.kind === 'pose');
+  const poses = oblique.tracks.filter((t) => t.kind === 'pose');
+  expect(poses.map(({ offset: _offset, facing: _facing, ...rest }) => rest)).toEqual(
+    flatPoses.map(({ offset: _offset, facing: _facing, ...rest }) => rest),
+  );
+  const attacks = poses.filter((t) => t.unitId === 'p0');
+  expect(attacks.every((t) => t.facing === -1)).toBe(true);
+  expect(attacks.some((t) => t.offset.to.x < 0 && t.offset.to.y > 0)).toBe(true);
+  const recoil = poses.filter((t) => t.unitId === 'e0');
+  expect(recoil.some((t) => t.offset.to.x < 0 && t.offset.to.y > 0)).toBe(true);
+});

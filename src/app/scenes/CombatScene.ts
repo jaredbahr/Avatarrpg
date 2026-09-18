@@ -13,7 +13,7 @@
  * lightning does double. Nothing is committed until it has been shown.
  */
 
-import type { App, Scene } from '../App';
+import type { App, Scene, CameraInfo } from '../App';
 import type { Ability, BattleState, Unit, Vec2 } from '../../core/types';
 import {
   canUseAbility,
@@ -187,12 +187,15 @@ export class CombatScene implements Scene {
 
     this.renderer = new Renderer(canvas, { width: battle.grid.width, height: battle.grid.height });
     this.renderer.resize({ width: battle.grid.width, height: battle.grid.height });
+    this.renderer.camera.projection =
+      this.app.content.maps.get(battle.mapId)?.projection ?? 'orthographic';
+    this.app.animator.setProjection(this.renderer.camera.projection);
     this.renderer.camera.fit();
 
     // The map is the only thing that flexes, so it is still the wrong size
     // here: the turn strip and the HUD fill in after mount, and the log panel
     // and the Large-text setting move them again later. Re-fit whenever the
-    // canvas box actually changes, or the camera drifts from what is drawn —
+    // canvas box actually changes, or the camera drifts from what is drawn â€”
     // through refit(), so a pinch zoom survives the reflow.
     this.renderer.onViewportChange = () => this.refit();
 
@@ -214,10 +217,12 @@ export class CombatScene implements Scene {
   }
 
   /** Camera geometry as plain numbers, for tests that need tile -> pixel. */
-  cameraInfo(): { tilePx: number; offsetX: number; offsetY: number; fitted: boolean } | null {
+  cameraInfo(): CameraInfo | null {
     const camera = this.renderer?.camera;
     if (!camera) return null;
     return {
+      projection: camera.projection,
+      groundTransform: camera.groundMatrix(),
       tilePx: TILE * camera.scale,
       offsetX: camera.offsetX,
       offsetY: camera.offsetY,
@@ -379,7 +384,7 @@ export class CombatScene implements Scene {
 
   /**
    * Enemy and ally turns run themselves, but only once the current playback has
-   * finished — otherwise six bandits resolve in one frame and the table sees
+   * finished â€” otherwise six bandits resolve in one frame and the table sees
    * nothing but the aftermath.
    */
   private maybeRunAi(): void {
@@ -473,7 +478,7 @@ export class CombatScene implements Scene {
       );
       tip(
         chip,
-        `${unit.name}${player ? ` (${player.name})` : ''} — ${unit.hp}/${unit.base.maxHp} HP`,
+        `${unit.name}${player ? ` (${player.name})` : ''} â€” ${unit.hp}/${unit.base.maxHp} HP`,
         (text) => this.app.toasts.show(text),
       );
       strip.appendChild(chip);
@@ -512,7 +517,7 @@ export class CombatScene implements Scene {
           'div',
           { class: 'enemy-turn-banner' },
           el('span', {
-            text: unit.faction === 'enemy' ? 'Enemies are moving…' : `${unit.name} is moving…`,
+            text: unit.faction === 'enemy' ? 'Enemies are movingâ€¦' : `${unit.name} is movingâ€¦`,
           }),
         ),
       );
@@ -656,7 +661,7 @@ export class CombatScene implements Scene {
         header.append(
           mark(iconMarkup(markKindFor(ability))),
           el('strong', { text: ability.name }),
-          el('span', { class: 'header-cost', text: `· ${ability.apCost} AP` }),
+          el('span', { class: 'header-cost', text: `Â· ${ability.apCost} AP` }),
           el('span', { class: 'header-desc', text: ability.description }),
         );
         return header;
@@ -666,7 +671,7 @@ export class CombatScene implements Scene {
       header.append(
         mark(UI_MARKS.move),
         el('strong', { text: 'Move' }),
-        el('span', { class: 'header-cost', text: `· ${unit.move} left` }),
+        el('span', { class: 'header-cost', text: `Â· ${unit.move} left` }),
         el('span', { class: 'header-desc', text: 'Walk to a highlighted tile.' }),
       );
       return header;
@@ -815,7 +820,7 @@ export class CombatScene implements Scene {
       chips.appendChild(
         el('span', {
           class: `chip ${entry.friendly ? 'chip-friendly' : 'chip-hostile'}${entry.lethal ? ' chip-lethal' : ''}`,
-          text: `${entry.name}: ${parts.join(' · ')}${entry.lethal ? ' — lethal' : ''}`,
+          text: `${entry.name}: ${parts.join(' Â· ')}${entry.lethal ? ' â€” lethal' : ''}`,
         }),
       );
     }
@@ -1135,6 +1140,7 @@ export class CombatScene implements Scene {
       crispOverlays: this.app.settings.highContrast,
       atmosphere: !this.app.settings.highContrast,
       backdrop: this.app.backdropFor(battle.mapId),
+      scene: this.app.content.maps.get(battle.mapId)?.scene,
       time: now,
     };
 

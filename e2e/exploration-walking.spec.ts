@@ -13,9 +13,12 @@ async function tapPath(page: Page, x: number, y: number) {
       const dpr = window.devicePixelRatio || 1;
       const stretchX = box.width / (canvas.width / dpr);
       const stretchY = box.height / (canvas.height / dpr);
+      const m = camera.groundTransform;
+      const px = (x + 0.5) * 64,
+        py = (y + 0.5) * 64;
       const position = {
-        clientX: box.left + ((x + 0.5) * camera.tilePx - camera.offsetX) * stretchX,
-        clientY: box.top + ((y + 0.5) * camera.tilePx - camera.offsetY) * stretchY,
+        clientX: box.left + (m.a * px + m.c * py + m.tx) * stretchX,
+        clientY: box.top + (m.b * px + m.d * py + m.ty) * stretchY,
         bubbles: true,
         pointerId: 19,
         pointerType: 'touch',
@@ -37,6 +40,9 @@ for (const renderer of ['canvas', 'webgl']) {
     await page.clock.install();
     await page.clock.pauseAt(new Date(Date.now() + 1000));
     await tapPath(page, 9, 7);
+    await expect(page.getByRole('button', { name: /^Talk/ })).toBeDisabled();
+    await expect(page.locator('.map-wrap .walk-feedback')).toHaveCount(0);
+    await expect(page.locator('.explore-context .walk-feedback')).toBeVisible();
     await tapPath(page, 7, 8);
     await expect(page.locator('.walk-feedback')).toContainText('Next:');
     expect(await page.evaluate(() => window.fnt?.app.state?.location.pos)).toEqual({ x: 9, y: 7 });

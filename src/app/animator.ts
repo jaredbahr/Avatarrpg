@@ -17,13 +17,14 @@ import type { ContentIndex, GameEvent, Unit, Vec2 } from '../core/types';
 import type { EmitterInstance, Floater } from '../render/view';
 import type { ClipName } from '../render/view';
 import { hashSeed, mulberry32 } from '../render/fx/rng';
+import type { Projection } from '../render/projection';
 import { sampleAt } from '../render/geometry/curve';
 import { choreograph } from './anim/choreography';
 import type { SoundCue } from './anim/choreography';
 import { Timeline } from './anim/timeline';
 import type { MoveTrack, PoseTrack } from './anim/timeline';
 import { motionReduced } from './ui/dom';
-import { directionalClip, walkDirection, verticalClip } from './anim/direction';
+import { directionalClip, walkDirection, verticalClip, screenDirection } from './anim/direction';
 import type { WalkDirection } from './anim/direction';
 
 /** Height of the walk bob in tiles, once per tile of travel. */
@@ -46,6 +47,7 @@ interface HeadingCue {
   readonly unitId: string;
   readonly at: number;
   readonly tangent: Vec2;
+  readonly screenSpace?: boolean;
 }
 
 export interface AnimatorOptions {
@@ -65,7 +67,7 @@ export interface UnitPose {
   readonly clip: ClipName;
   /** Ms into the clip. */
   readonly clipTime: number;
-  /** Draw offset in tiles: the walk bob, a lunge, a recoil. */
+  /** Upright screen offset in tile-size units: walk bob, lunge or recoil. */
   readonly offset: Vec2;
   readonly scale: number;
   readonly alpha: number;
@@ -84,6 +86,16 @@ export class Animator {
   ) {}
 
   private timeline = new Timeline();
+  private projection: Projection = 'orthographic';
+
+  /** Set by the scene before scheduling playback; saves retain logical positions. */
+  setProjection(projection: Projection): void {
+    if (this.projection === projection) return;
+    this.projection = projection;
+    this.facings.clear();
+    this.directions.clear();
+  }
+
   /** Which way each unit last walked; a unit keeps facing that way when it stops. */
   private facings = new Map<string, 1 | -1>();
   private directions = new Map<string, WalkDirection>();
@@ -128,7 +140,7 @@ export class Animator {
     now: number,
     events: readonly GameEvent[],
     unitsBefore: readonly Unit[],
-    options: { alongside?: boolean } = {},
+    options: { alongside?: boolean; silentSteps?: boolean } = {},
   ): void {
     const cursor = options.alongside
       ? Math.max(now, this.lastCursor)
@@ -141,7 +153,8 @@ export class Animator {
       cursor,
       rate: this.rate,
       pushIndex: this.pushes++,
-      silentSteps: options.alongside,
+      silentSteps: options.silentSteps ?? options.alongside,
+      projection: this.projection,
     });
     for (const track of result.tracks) {
       this.timeline.add(track);
@@ -156,6 +169,7 @@ export class Animator {
           unitId: track.unitId,
           at: track.start,
           tangent: { x: track.facing, y: 0 },
+          screenSpace: true,
         });
     }
     this.pendingHeadings.sort((a, b) => a.at - b.at);
@@ -176,15 +190,16 @@ export class Animator {
     let count = 0;
     for (const cue of this.pendingHeadings) {
       if (cue.at > now) break;
-      this.rememberDirection(cue.unitId, cue.tangent);
+      this.rememberDirection(cue.unitId, cue.tangent, cue.screenSpace);
       count++;
     }
     if (count > 0) this.pendingHeadings.splice(0, count);
   }
 
-  private rememberDirection(unitId: string, tangent: Vec2): void {
-    this.directions.set(unitId, walkDirection(tangent, this.directions.get(unitId)));
-    if (Math.abs(tangent.x) > TURN_THRESHOLD) this.facings.set(unitId, tangent.x > 0 ? 1 : -1);
+  private rememberDirection(unitId: string, tangent: Vec2, screenSpace = false): void {
+    const screen = screenSpace ? tangent : screenDirection(tangent, this.projection);
+    this.directions.set(unitId, walkDirection(screen, this.directions.get(unitId)));
+    if (Math.abs(screen.x) > TURN_THRESHOLD) this.facings.set(unitId, screen.x > 0 ? 1 : -1);
   }
 
   /** Locomotion fields shared by the world, riverside and combat views. */
@@ -228,7 +243,8 @@ export class Animator {
 
   /**
    * Where a unit should be drawn at `now`, if it is mid-move. Returns
-   * undefined when the unit is not animating, so the caller uses `unit.pos`.
+   * its upcoming route's origin while waiting for a queued move. After the
+   * final move it returns undefined, so the caller uses `unit.pos`.
    *
    * The route is sampled by arc length under an ease, so a walk leaves the
    * tile gently, holds its pace through the middle and settles at the end instead
@@ -238,7 +254,14 @@ export class Animator {
   renderPos(now: number, unitId: string): Vec2 | undefined {
     this.settleHeadings(now);
     const travel = this.travel(now, unitId);
-    if (!travel) return undefined;
+    if (!travel) {
+      // State already holds final seats when several walking batches queue.
+      // Hold the upcoming route's origin without playing its gait or turn early.
+      const next = this.timeline.nextMove(now, unitId);
+      if (!next) return undefined;
+      const start = sampleAt(next.curve, 0).pos;
+      return { x: start.x - 0.5, y: start.y - 0.5 };
+    }
     const sample = sampleAt(travel.track.curve, travel.distance);
     if (travel.track.gait !== 'slide') this.rememberDirection(unitId, sample.tangent);
     // The curve runs through tile centres; positions are tile corners.

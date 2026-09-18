@@ -59,10 +59,14 @@ test.describe('unit sheets', () => {
       const centre = await page.evaluate((p) => {
         const camera = window.fnt?.app.rendererCamera?.();
         if (!camera) return null;
-        const size = camera.tilePx;
+        const m = camera.groundTransform;
+        const x = (p.x + 0.5) * 64,
+          y = (p.y + 0.5) * 64;
+        // Frame sample is upright: lift vertically from the projected foot.
+        const lift = camera.projection === 'oblique' ? 0.86 - 0.325 : 0.5 - 0.325;
         return {
-          x: p.x * size - camera.offsetX + size / 2,
-          y: p.y * size - camera.offsetY + size * 0.325,
+          x: m.a * x + m.c * y + m.tx,
+          y: m.b * x + m.d * y + m.ty - camera.tilePx * lift,
         };
       }, pos);
       expect(centre).not.toBeNull();

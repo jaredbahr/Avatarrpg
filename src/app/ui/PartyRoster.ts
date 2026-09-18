@@ -47,7 +47,7 @@ function rosterRow(
   const portrait = el(
     'div',
     { class: 'unit-portrait-frame' },
-    assetCanvas(portraitKeyFor(app.content, unit), 3, 'unit-portrait square'),
+    assetCanvas(portraitKeyFor(app.content, unit), 4.5, 'unit-portrait square'),
     el(
       'span',
       { class: 'portrait-badge', attrs: { 'aria-hidden': 'true' } },

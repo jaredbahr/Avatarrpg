@@ -1,16 +1,16 @@
 /**
  * The WebGL backend.
  *
- * Everything sits under one root container whose transform is the camera, so
- * children are positioned in world pixels (tile * TILE) and panning is a single
- * matrix update rather than a per-object recalculation.
+ * Ground marks share the camera affine; actors and text use projected world
+ * positions in a separate upright root. Ground art is never skewed underneath
+ * unchanged actor placement or picking.
  *
  * The ground is one draw call: a quad carrying a shader that reads per-tile
  * terrain and surface state out of a small data texture. That is what lets fire
  * burn, water ripple and light spill onto neighbouring tiles without the CPU
  * touching a tile between frames.
  *
- * Unit art is unchanged — `spriteCache` already rasterises the painters into
+ * Unit art is unchanged â€” `spriteCache` already rasterises the painters into
  * canvases, and a canvas uploads as a texture.
  */
 
@@ -20,6 +20,7 @@ import {
   Filter,
   GlProgram,
   Graphics,
+  Matrix,
   Rectangle,
   Sprite,
   Text,
@@ -31,6 +32,7 @@ import {
 import type { Grid, SurfaceId, TerrainId, Vec2 } from '../../core/types';
 import { resolveAsset } from '../../content/assets/manifest';
 import { backdrops } from '../backdrops';
+import { sceneImages, sceneryOpacity } from '../scene';
 import { TILE } from '../camera';
 import type { Camera, Viewport } from '../camera';
 import { DecorSheets } from '../decorSheets';
@@ -165,7 +167,17 @@ export class PixiBackend implements RenderBackend {
   /** Latest view, drawn as soon as the async init finishes. */
   private pending: { view: MapView; camera: Camera } | null = null;
 
+  /** Logical ground pixels; all ground marks share the camera affine. */
   private root = new Container();
+  /** Projected world pixels; actors and labels remain upright. */
+  private upright = new Container();
+  private labels = new Container();
+  private groundTransform = new Matrix();
+  private sceneGround = new Container();
+  private groundChunks = new Map<string, Sprite>();
+  private scenerySprites = new Map<string, Sprite>();
+  /** Scene textures live only as long as their manifest, independently of actor LRU. */
+  private sceneTextures = new Map<string, { image: HTMLImageElement; texture: Texture }>();
   /**
    * The map's painting (ADR 0009), a screen-space sprite under the ground
    * quad so the ground pass lays its surfaces over it. Its texture is made
@@ -198,7 +210,8 @@ export class PixiBackend implements RenderBackend {
 
   private groundUniforms = new UniformGroup({
     uGrid: { value: new Float32Array([1, 1]), type: 'vec2<f32>' },
-    uOffset: { value: new Float32Array([0, 0]), type: 'vec2<f32>' },
+    uGroundOrigin: { value: new Float32Array([0, 0]), type: 'vec2<f32>' },
+    uGroundInverse: { value: new Float32Array([1, 0, 0, 1]), type: 'vec4<f32>' },
     uTileSize: { value: TILE, type: 'f32' },
     uTime: { value: 0, type: 'f32' },
     uHatch: { value: 0, type: 'f32' },
@@ -243,12 +256,12 @@ export class PixiBackend implements RenderBackend {
   }
 
   /**
-   * WebGL being *present* is not the question — whether it is accelerated is.
+   * WebGL being *present* is not the question â€” whether it is accelerated is.
    *
    * Measured on this project: with a real GPU the shader path is what the whole
    * move is for, but against a software rasteriser (SwiftShader, llvmpipe) the
    * board runs at 6fps where Canvas 2D holds 60. That is not this shader being
-   * expensive — dropping it entirely changed nothing — it is software GL being
+   * expensive â€” dropping it entirely changed nothing â€” it is software GL being
    * an order of magnitude slower at the same work. So a machine without
    * acceleration is better served by the 2D path, and says so here.
    */
@@ -298,7 +311,7 @@ export class PixiBackend implements RenderBackend {
       padding: 0,
       /*
        * The ground is procedural texture and soft gradients, so running the
-       * pass at half resolution and letting it upscale is close to invisible —
+       * pass at half resolution and letting it upscale is close to invisible â€”
        * and it quarters the per-frame pixel cost, which is the single biggest
        * lever on machines without a GPU.
        */
@@ -310,7 +323,7 @@ export class PixiBackend implements RenderBackend {
     // its shader derives tile coordinates from the camera uniforms instead.
     // The painting sits under it, placed from the same camera numbers.
     this.backdropSprite.visible = false;
-    app.stage.addChild(this.backdropSprite, this.groundSprite);
+    app.stage.addChild(this.backdropSprite, this.sceneGround, this.groundSprite);
 
     // Any resize that arrived during init was dropped; apply the latest now.
     this.applyViewport();
@@ -331,12 +344,11 @@ export class PixiBackend implements RenderBackend {
       this.pathGfx,
       this.fxUnder.container,
       this.decorGfx,
-      this.unitLayer,
-      this.fxOver.container,
-      this.fxGfx,
-      this.floaterLayer,
     );
-    app.stage.addChild(this.root);
+    this.unitLayer.sortableChildren = true;
+    this.upright.addChild(this.unitLayer);
+    this.labels.addChild(this.fxGfx, this.floaterLayer);
+    app.stage.addChild(this.root, this.upright, this.fxOver.container, this.labels);
 
     if (this.pending) {
       const { view, camera } = this.pending;
@@ -378,6 +390,10 @@ export class PixiBackend implements RenderBackend {
     this.app = null;
     this.dropTextures();
     this.unitSprites.clear();
+    for (const { texture } of this.sceneTextures.values()) texture.destroy(true);
+    this.sceneTextures.clear();
+    this.groundChunks.clear();
+    this.scenerySprites.clear();
     this.mapTexture.destroy(true);
   }
 
@@ -391,17 +407,33 @@ export class PixiBackend implements RenderBackend {
 
     // The shake moves the world: a knocked camera shows the margin, as a fit does.
     const nudge = TILE * camera.scale;
-    this.root.position.set(
-      -camera.offsetX + view.cameraNudge.x * nudge,
-      -camera.offsetY + view.cameraNudge.y * nudge,
+    const m = camera.groundMatrix();
+    this.groundTransform.set(
+      m.a,
+      m.b,
+      m.c,
+      m.d,
+      m.tx + view.cameraNudge.x * nudge,
+      m.ty + view.cameraNudge.y * nudge,
     );
-    this.root.scale.set(camera.scale);
+    this.root.setFromMatrix(this.groundTransform);
+    this.fxOver.container.setFromMatrix(this.groundTransform);
+    for (const layer of [this.sceneGround, this.upright, this.labels]) {
+      layer.position.set(
+        -camera.offsetX + view.cameraNudge.x * nudge,
+        -camera.offsetY + view.cameraNudge.y * nudge,
+      );
+      layer.scale.set(camera.scale);
+    }
 
     // A painting takes the terrain's place; the decor that marks footing
     // over it comes back only under High contrast, where the rules must read
     // without the picture.
-    const painted = this.syncBackdrop(view, camera);
-    this.syncGround(view, camera, painted);
+    const backdropPainted = this.syncBackdrop(view, camera);
+    const scenePainted = this.syncScene(view, camera);
+    // An incomplete authored scene must keep its collision-marking fallback.
+    const painted = camera.projection === 'oblique' && view.scene ? scenePainted : backdropPainted;
+    this.syncGround(view, painted);
     this.syncDecor(view, camera, !painted || view.crispOverlays);
     this.syncShade(view, camera);
     this.drawOverlays(view);
@@ -410,7 +442,7 @@ export class PixiBackend implements RenderBackend {
     this.drawUnits(view, camera);
     this.fxUnder.draw(view.emitters);
     this.fxOver.draw(view.emitters);
-    this.drawFloaters(view);
+    this.drawFloaters(view, camera);
 
     app.renderer.render(app.stage);
   }
@@ -426,7 +458,11 @@ export class PixiBackend implements RenderBackend {
    * exactly where the painting's tiles are. Returns whether one is showing.
    */
   private syncBackdrop(view: MapView, camera: Camera): boolean {
-    const image = view.backdrop ? backdrops.get(view.backdrop.url) : null;
+    const compatible =
+      camera.projection === 'oblique'
+        ? view.backdrop?.projection === 'oblique'
+        : view.backdrop?.projection !== 'oblique';
+    const image = view.backdrop && compatible ? backdrops.get(view.backdrop.url) : null;
     if (!image) {
       this.backdropSprite.visible = false;
       this.dropBackdrop();
@@ -440,10 +476,100 @@ export class PixiBackend implements RenderBackend {
     }
     const size = TILE * camera.scale;
     this.backdropSprite.visible = true;
-    this.backdropSprite.position.set(-camera.offsetX, -camera.offsetY);
-    this.backdropSprite.width = view.grid.width * size;
-    this.backdropSprite.height = view.grid.height * size;
+    const padding = view.backdrop?.padding;
+    const left = padding?.left ?? 0;
+    const top = padding?.top ?? 0;
+    const right = padding?.right ?? 0;
+    const bottom = padding?.bottom ?? 0;
+    this.backdropSprite.position.set(
+      -camera.offsetX - left * camera.scale + view.cameraNudge.x * size,
+      -camera.offsetY - top * camera.scale + view.cameraNudge.y * size,
+    );
+    this.backdropSprite.width = camera.worldWidth + (left + right) * camera.scale;
+    this.backdropSprite.height = camera.worldHeight + (top + bottom) * camera.scale;
     return true;
+  }
+
+  /** Already-projected ground chunks and upright objects use only pan/zoom. */
+  private syncScene(view: MapView, camera: Camera): boolean {
+    const scene = camera.projection === 'oblique' ? view.scene : undefined;
+    const urls = new Set<string>();
+    const groundKeys = new Set<string>();
+    const sceneryKeys = new Set<string>();
+    let complete = Boolean(scene?.ground.length);
+    const textureFor = (url: string): Texture | null => {
+      urls.add(url);
+      const image = sceneImages.get(url);
+      if (!image) return null;
+      const cached = this.sceneTextures.get(url);
+      if (cached && cached.image === image) return cached.texture;
+      cached?.texture.destroy(true);
+      const texture = Texture.from(image, true);
+      this.sceneTextures.set(url, { image, texture });
+      return texture;
+    };
+    for (const [index, chunk] of (scene?.ground ?? []).entries()) {
+      const key = String(index);
+      groundKeys.add(key);
+      let sprite = this.groundChunks.get(key);
+      if (!sprite) {
+        sprite = new Sprite();
+        this.sceneGround.addChild(sprite);
+        this.groundChunks.set(key, sprite);
+      }
+      const texture = textureFor(chunk.url);
+      sprite.visible = Boolean(texture);
+      if (!texture) {
+        complete = false;
+        continue;
+      }
+      sprite.texture = texture;
+      sprite.position.set(chunk.x, chunk.y);
+      sprite.width = chunk.width;
+      sprite.height = chunk.height;
+    }
+    for (const item of scene?.scenery ?? []) {
+      sceneryKeys.add(item.id);
+      let sprite = this.scenerySprites.get(item.id);
+      if (!sprite) {
+        sprite = new Sprite();
+        this.unitLayer.addChild(sprite);
+        this.scenerySprites.set(item.id, sprite);
+      }
+      const texture = textureFor(item.url);
+      sprite.visible = Boolean(texture);
+      if (!texture) {
+        // Ground alone cannot explain a missing building's blocked footprint.
+        // Keep procedural terrain/decor until every required scene piece loads.
+        complete = false;
+        continue;
+      }
+      sprite.texture = texture;
+      sprite.position.set(item.x, item.y);
+      sprite.width = item.width;
+      sprite.height = item.height;
+      sprite.zIndex = camera.groundPoint(item.depth).y;
+      sprite.alpha = sceneryOpacity(item, view, camera);
+    }
+    for (const [key, sprite] of this.groundChunks) {
+      if (!groundKeys.has(key)) {
+        sprite.destroy();
+        this.groundChunks.delete(key);
+      }
+    }
+    for (const [key, sprite] of this.scenerySprites) {
+      if (!sceneryKeys.has(key)) {
+        sprite.destroy();
+        this.scenerySprites.delete(key);
+      }
+    }
+    for (const [url, entry] of this.sceneTextures) {
+      if (!urls.has(url)) {
+        entry.texture.destroy(true);
+        this.sceneTextures.delete(url);
+      }
+    }
+    return complete;
   }
 
   private dropBackdrop(): void {
@@ -453,13 +579,17 @@ export class PixiBackend implements RenderBackend {
     this.backdrop = null;
   }
 
-  private syncGround(view: MapView, camera: Camera, painted: boolean): void {
+  private syncGround(view: MapView, painted: boolean): void {
     const { grid } = view;
-    this.uploadMap(grid);
+    this.uploadMap(
+      grid,
+      painted && view.scene?.paintedWater === true && !view.hatch && !view.crispOverlays,
+    );
 
     const uniforms = this.groundUniforms.uniforms as {
       uGrid: Float32Array;
-      uOffset: Float32Array;
+      uGroundOrigin: Float32Array;
+      uGroundInverse: Float32Array;
       uTileSize: number;
       uTime: number;
       uHatch: number;
@@ -468,9 +598,12 @@ export class PixiBackend implements RenderBackend {
     };
     uniforms.uGrid[0] = grid.width;
     uniforms.uGrid[1] = grid.height;
-    uniforms.uOffset[0] = camera.offsetX;
-    uniforms.uOffset[1] = camera.offsetY;
-    uniforms.uTileSize = TILE * camera.scale;
+    const m = this.groundTransform;
+    const det = m.a * m.d - m.b * m.c;
+    uniforms.uGroundOrigin[0] = m.tx;
+    uniforms.uGroundOrigin[1] = m.ty;
+    uniforms.uGroundInverse.set([m.d / det, -m.c / det, -m.b / det, m.a / det]);
+    uniforms.uTileSize = TILE;
     uniforms.uTime = view.time / 1000;
     uniforms.uHatch = view.hatch ? 1 : 0;
     uniforms.uGridLines = view.gridLines ? 1 : 0;
@@ -479,7 +612,7 @@ export class PixiBackend implements RenderBackend {
     /*
      * UniformGroup.uniforms is a plain object, not a proxy: neither assigning a
      * field nor mutating an array in place marks the group dirty, and without
-     * this call nothing above is ever uploaded. It fails silently and totally —
+     * this call nothing above is ever uploaded. It fails silently and totally â€”
      * every uniform keeps its constructor default, which left uGrid at [1,1] and
      * rendered the whole board black.
      */
@@ -488,11 +621,11 @@ export class PixiBackend implements RenderBackend {
 
   /**
    * Writes per-tile state into the data texture, but only when it has actually
-   * changed — a signature comparison is far cheaper than a GPU upload every
+   * changed â€” a signature comparison is far cheaper than a GPU upload every
    * frame, and most frames change nothing on the ground.
    */
-  private uploadMap(grid: Grid): void {
-    let signature = `${grid.width}x${grid.height}`;
+  private uploadMap(grid: Grid, paintedWater: boolean): void {
+    let signature = `${grid.width}x${grid.height}:${paintedWater}`;
     for (const tile of grid.tiles) {
       signature += `|${tile.terrain}:${tile.surface?.id ?? ''}:${tile.surface?.duration ?? 0}`;
     }
@@ -511,7 +644,8 @@ export class PixiBackend implements RenderBackend {
     for (let i = 0; i < grid.tiles.length; i++) {
       const tile = grid.tiles[i];
       if (!tile) continue;
-      const surface = tile.surface ? (SURFACE_INDEX[tile.surface.id] ?? 0) : 0;
+      const baked = paintedWater && tile.surface?.id === 'water' && tile.surface.duration < 0;
+      const surface = tile.surface && !baked ? (SURFACE_INDEX[tile.surface.id] ?? 0) : 0;
       // Surfaces thin out as they burn down, so a dying fire visibly fades.
       // A negative duration is map-authored and permanent: always full strength.
       const duration = tile.surface?.duration ?? 0;
@@ -551,7 +685,7 @@ export class PixiBackend implements RenderBackend {
   }
 
   /**
-   * The marks a player plans by — high ground, walls, cover — and the decor
+   * The marks a player plans by â€” high ground, walls, cover â€” and the decor
    * round them, drawn by the same painters as the Canvas 2D backend
    * (`painters/board.ts`) because a fight has to read the same on both. The
    * shader knows nothing of them: they are baked into chunk textures at the
@@ -616,6 +750,8 @@ export class PixiBackend implements RenderBackend {
     e.position.set(width - reach, 0);
     e.width = reach;
     e.height = height;
+    // A screen-space vignette cannot inherit the oblique ground affine.
+    vignette.visible = camera.projection === 'orthographic';
     // The viewport, in world units: undo the root's camera transform.
     vignette.position.set(camera.offsetX / camera.scale, camera.offsetY / camera.scale);
     vignette.width = this.viewport.width / camera.scale;
@@ -899,9 +1035,21 @@ export class PixiBackend implements RenderBackend {
 
     const live = new Set<string>();
     // Back to front, so a unit lower on the map overlaps one above it.
+    const depth = (pos: Vec2, footprint = 1) =>
+      camera.groundPoint({
+        x: pos.x + footprint / 2,
+        y: pos.y + 0.5,
+      }).y;
     const ordered = [...view.units].sort(
-      (a, b) => (a.renderPos ?? a.pos).y - (b.renderPos ?? b.pos).y,
+      (a, b) => depth(a.renderPos ?? a.pos, a.size) - depth(b.renderPos ?? b.pos, b.size),
     );
+    const box = (pos: Vec2, footprint = 1) => {
+      const screen = camera.spriteBox(pos, footprint);
+      return {
+        x: (screen.x + camera.offsetX) / camera.scale,
+        y: (screen.y + camera.offsetY) / camera.scale,
+      };
+    };
 
     let badgeIndex = 0;
 
@@ -911,29 +1059,39 @@ export class PixiBackend implements RenderBackend {
       const sprite = this.unitSprite(key);
       const entry = resolveAsset(npc.sprite);
       const width = entry.kind === 'sheet' && entry.footprint.w === 2 ? 2 : 1;
+      const scale = npc.scale ?? 1;
       const frame =
-        entry.kind === 'sheet' ? sheets.frame(npc.sprite, 'idle', 0, 0, px, width) : null;
-      const x = npc.pos.x * TILE;
-      const y = (npc.pos.y - elevationAt(view.grid, npc.pos) * ELEVATION_LIFT) * TILE;
+        entry.kind === 'sheet' ? sheets.frame(npc.sprite, 'idle', 0, 0, px * scale, width) : null;
+      const anchor = box(npc.pos, width);
+      const x = anchor.x;
+      const y = anchor.y - elevationAt(view.grid, npc.pos) * ELEVATION_LIFT * TILE;
+      sprite.zIndex = depth(npc.pos, width);
       if (frame) {
         sprite.texture = this.frameTexture(frame);
         sprite.anchor.set(frame.anchor.x, frame.anchor.y);
         sprite.position.set(x + (width * TILE) / 2, y + FOOT_LINE * TILE);
-        sprite.width = (frame.frame.w / frame.pixelsPerTile) * TILE;
-        sprite.height = (frame.frame.h / frame.pixelsPerTile) * TILE;
+        sprite.width = (frame.frame.w / frame.pixelsPerTile) * TILE * scale;
+        sprite.height = (frame.frame.h / frame.pixelsPerTile) * TILE * scale;
       } else {
-        sprite.texture = this.texture(sprites.get(npc.sprite, px, { facing: 1 }, width));
+        sprite.texture = this.texture(sprites.get(npc.sprite, px * scale, { facing: 1 }, width));
         sprite.anchor.set(0, 0);
-        sprite.position.set(x, y);
-        sprite.width = width * TILE;
-        sprite.height = TILE;
+        sprite.position.set(
+          x + (width * TILE * (1 - scale)) / 2,
+          y + FOOT_LINE * TILE * (1 - scale),
+        );
+        sprite.width = width * TILE * scale;
+        sprite.height = TILE * scale;
       }
       sprite.scale.x = Math.abs(sprite.scale.x);
       sprite.alpha = 1;
       sprite.visible = true;
 
       // A small "talk" pip so a child can tell an NPC from scenery.
-      g.circle(x + TILE * width * 0.5, y + TILE * 0.08, TILE * 0.07).fill({
+      g.circle(
+        x + TILE * width * 0.5,
+        y + TILE * (FOOT_LINE - (FOOT_LINE - 0.08) * scale),
+        TILE * 0.07,
+      ).fill({
         color: '#f0c674',
         alpha: 0.55 + 0.35 * ((Math.sin(view.time / 500) + 1) / 2),
       });
@@ -944,10 +1102,13 @@ export class PixiBackend implements RenderBackend {
       live.add(key);
       const sprite = this.unitSprite(key);
       sprite.texture = this.texture(sprites.get(prop.sprite, px, { facing: 1 }));
+      const anchor = box(prop.pos);
+      sprite.anchor.set(0, 0);
       sprite.position.set(
-        prop.pos.x * TILE,
-        (prop.pos.y - elevationAt(view.grid, prop.pos) * ELEVATION_LIFT) * TILE,
+        anchor.x,
+        anchor.y - elevationAt(view.grid, prop.pos) * ELEVATION_LIFT * TILE,
       );
+      sprite.zIndex = depth(prop.pos);
       sprite.width = TILE;
       sprite.height = TILE;
       sprite.alpha = 1;
@@ -960,8 +1121,8 @@ export class PixiBackend implements RenderBackend {
        */
       if (prop.hp >= prop.maxHp || prop.maxHp <= 0) continue;
       const w = TILE * 0.6;
-      const x = prop.pos.x * TILE + (TILE - w) / 2;
-      const y = prop.pos.y * TILE + TILE * 0.9;
+      const x = anchor.x + (TILE - w) / 2;
+      const y = sprite.y + TILE * 0.9;
       const h = Math.max(2, TILE * 0.05);
       g.rect(x, y, w, h).fill({ color: 'rgba(0,0,0,0.55)' });
       g.rect(x, y, (w * prop.hp) / prop.maxHp, h).fill({ color: '#d9a441' });
@@ -972,8 +1133,9 @@ export class PixiBackend implements RenderBackend {
       // The bob lifts the drawing, never the sort: zIndex stays on the tile.
       // So does the ground: a unit on a ledge stands a little higher on screen.
       const lift = elevationAt(view.grid, unit.pos) * ELEVATION_LIFT;
-      const x = (pos.x + (unit.offset?.x ?? 0)) * TILE;
-      const y = (pos.y + (unit.offset?.y ?? 0) - lift) * TILE;
+      const anchor = box(pos, unit.size);
+      const x = anchor.x + (unit.offset?.x ?? 0) * TILE;
+      const y = anchor.y + ((unit.offset?.y ?? 0) - lift) * TILE;
       const width = unit.size === 2 ? TILE * 2 : TILE;
       const facing = unit.facing ?? (unit.faction === 'enemy' ? -1 : 1);
 
@@ -988,7 +1150,7 @@ export class PixiBackend implements RenderBackend {
         unit.clip ?? 'idle',
         unit.clipTime ?? view.time + idlePhase(unit.id),
         unit.clipFrame,
-        px,
+        px * scale,
         unit.size,
       );
       let headroom = 0;
@@ -1001,18 +1163,18 @@ export class PixiBackend implements RenderBackend {
         sprite.height = (frame.frame.h / frame.pixelsPerTile) * TILE * scale;
         sprite.scale.x = Math.abs(sprite.scale.x) * facing;
       } else {
-        sprite.texture = this.texture(sprites.get(unit.sprite, px, { facing }, unit.size));
+        sprite.texture = this.texture(sprites.get(unit.sprite, px * scale, { facing }, unit.size));
         sprite.anchor.set(0, 0);
         const drawWidth = width * scale;
         const drawHeight = TILE * scale;
-        sprite.position.set(x + (width - drawWidth) / 2, y + (TILE - drawHeight));
+        sprite.position.set(x + (width - drawWidth) / 2, y + FOOT_LINE * (TILE - drawHeight));
         sprite.width = drawWidth;
         sprite.height = drawHeight;
         sprite.scale.x = Math.abs(sprite.scale.x);
       }
       sprite.alpha = (unit.alpha ?? 1) * (unit.fallen ? 0.35 : 1);
       sprite.visible = true;
-      sprite.zIndex = pos.y;
+      sprite.zIndex = depth(pos, unit.size);
 
       // The hit flash: the same sprite again, white and additive, over the top.
       const flash = unit.flash ?? 0;
@@ -1028,7 +1190,7 @@ export class PixiBackend implements RenderBackend {
         glow.blendMode = 'add';
         glow.alpha = Math.min(1, flash) * 0.9;
         glow.visible = true;
-        glow.zIndex = pos.y + 0.001;
+        glow.zIndex = sprite.zIndex + 0.001;
       }
 
       if (unit.id === view.activeUnitId) {
@@ -1148,7 +1310,7 @@ export class PixiBackend implements RenderBackend {
   /* Effects                                                           */
   /* ---------------------------------------------------------------- */
 
-  private drawFloaters(view: MapView): void {
+  private drawFloaters(view: MapView, camera: Camera): void {
     view.floaters.forEach((floater, index) => {
       let text = this.floaters[index];
       if (!text) {
@@ -1168,10 +1330,8 @@ export class PixiBackend implements RenderBackend {
       text.text = floater.text;
       text.style.fill = floater.color;
       text.anchor.set(0.5);
-      text.position.set(
-        floater.pos.x * TILE + TILE / 2,
-        floater.pos.y * TILE + TILE * 0.4 - floater.progress * TILE * 0.7,
-      );
+      const center = camera.groundPoint({ x: floater.pos.x + 0.5, y: floater.pos.y + 0.5 });
+      text.position.set(center.x, center.y - TILE * 0.1 - floater.progress * TILE * 0.7);
       text.alpha = 1 - floater.progress;
       text.visible = true;
     });

@@ -1,3 +1,4 @@
+import { paintedTileCentre } from './projection';
 import { expect, test } from '@playwright/test';
 import { enterNode, resetStorage, settleLayout, startGame } from './helpers';
 
@@ -125,12 +126,16 @@ test('resizing exploration keeps zoom and map focus while taps follow the painte
       const camera = window.fnt?.app.rendererCamera();
       if (!canvas || !camera) throw new Error('No exploration camera');
       const rect = canvas.getBoundingClientRect();
+      const m = camera.groundTransform;
+      const x = rect.width / 2 - m.tx,
+        y = rect.height / 2 - m.ty;
+      const det = m.a * m.d - m.b * m.c;
       return {
         tilePx: camera.tilePx,
         width: rect.width,
         height: rect.height,
-        centreX: (camera.offsetX + rect.width / 2) / camera.tilePx,
-        centreY: (camera.offsetY + rect.height / 2) / camera.tilePx,
+        centreX: (m.d * x - m.c * y) / det / 64,
+        centreY: (m.a * y - m.b * x) / det / 64,
       };
     });
   const before = await view();
@@ -142,16 +147,8 @@ test('resizing exploration keeps zoom and map focus while taps follow the painte
   expect(after.centreX).toBeCloseTo(before.centreX, 1);
   expect(after.centreY).toBeCloseTo(before.centreY, 1);
 
-  const target = await page.evaluate(() => {
-    const canvas = document.querySelector<HTMLCanvasElement>('.map-canvas');
-    const camera = window.fnt?.app.rendererCamera();
-    if (!canvas || !camera) throw new Error('No exploration camera');
-    const rect = canvas.getBoundingClientRect();
-    return {
-      x: rect.left + (6.5 * camera.tilePx - camera.offsetX),
-      y: rect.top + (7.5 * camera.tilePx - camera.offsetY),
-    };
-  });
+  const target = await paintedTileCentre(page, { x: 6, y: 7 });
+  if (!target) throw new Error('No exploration camera');
   await page.mouse.click(target.x, target.y);
   await expect
     .poll(() => page.evaluate(() => window.fnt?.app.state?.location.pos))

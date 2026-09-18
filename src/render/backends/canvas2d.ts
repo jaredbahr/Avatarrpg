@@ -12,7 +12,8 @@
 
 import type { Grid, Vec2 } from '../../core/types';
 import { resolveAsset } from '../../content/assets/manifest';
-import type { Camera, Viewport } from '../camera';
+import { Camera } from '../camera';
+import type { Viewport } from '../camera';
 import type { TileRelief } from '../geometry/board';
 import { boardRelief, decorSignature, surfaceEdges } from '../geometry/board';
 import { aimArcPoints, arcHeading, arrowheadPolygon } from '../geometry/arc';
@@ -21,6 +22,7 @@ import type { Curve } from '../geometry/curve';
 import { sampleAt, smoothPath } from '../geometry/curve';
 import { CanvasFxLayer } from '../fx/canvasFx';
 import { backdrops } from '../backdrops';
+import { sceneImages, sceneryOpacity } from '../scene';
 import { FACTION_RING, OVERLAY, STATUS_BADGE, hpColor } from '../palettes';
 import { paintTileDecor } from '../painters/board';
 import { paintFloatingNumber, paintPathArrow, paintPathDot } from '../painters/fx';
@@ -108,20 +110,106 @@ export class Canvas2DBackend implements RenderBackend {
     // A map's painting takes the terrain's place under everything else, once
     // it has loaded; the decor that marks footing over it comes back only
     // under High contrast, where the rules must read without the picture.
-    const painting = view.backdrop ? backdrops.get(view.backdrop.url) : null;
+    const compatible =
+      camera.projection === 'oblique'
+        ? view.backdrop?.projection === 'oblique'
+        : !view.backdrop?.projection;
+    const painting = compatible && view.backdrop ? backdrops.get(view.backdrop.url) : null;
     if (painting) this.drawBackdrop(painting, view, camera);
-    this.drawGround(view, camera, painting !== null);
-    if (!painting || view.crispOverlays) this.drawDecor(view, camera);
-    if (view.atmosphere) this.drawShade(view, camera);
-    this.drawOverlays(view, camera);
-    this.drawPath(view, camera);
-    if (view.aimArc) this.drawAimArc(view.aimArc, camera);
-    this.drawFxLayer(view, camera, 'under');
-    this.drawExit(view, camera);
-    this.drawNpcs(view, camera);
-    this.drawProps(view, camera);
-    this.drawUnits(view, camera);
-    this.drawFxLayer(view, camera, 'over');
+    let sceneGround = false;
+    if (camera.projection === 'oblique' && view.scene) {
+      const ground = view.scene.ground.map((piece) => ({
+        piece,
+        image: sceneImages.get(piece.url),
+      }));
+      sceneGround =
+        ground.length > 0 &&
+        ground.every(({ image }) => image !== null) &&
+        view.scene.scenery.every((piece) => sceneImages.get(piece.url) !== null);
+      if (sceneGround)
+        for (const { piece, image } of ground) {
+          if (image)
+            ctx.drawImage(
+              image,
+              piece.x * camera.scale - camera.offsetX,
+              piece.y * camera.scale - camera.offsetY,
+              piece.width * camera.scale,
+              piece.height * camera.scale,
+            );
+        }
+    }
+    if (camera.projection === 'oblique') {
+      // Ground receives one affine transform. Upright scenery and actors never do.
+      const ground = new Camera(
+        { width: view.grid.width * 64, height: view.grid.height * 64, dpr },
+        camera.grid,
+      );
+      const m = camera.groundMatrix();
+      ctx.save();
+      ctx.transform(m.a, m.b, m.c, m.d, m.tx, m.ty);
+      const painted = view.scene ? sceneGround : painting !== null;
+      this.drawGround(view, ground, painted);
+      if (!painted || view.crispOverlays) this.drawDecor(view, ground);
+      this.drawOverlays(view, ground);
+      this.drawPath(view, ground);
+      if (view.aimArc) this.drawAimArc(view.aimArc, ground);
+      this.drawFxLayer(view, ground, 'under');
+      this.drawExit(view, ground);
+      ctx.restore();
+      // All upright occupants share depth order, including NPCs and props.
+      const occupants = [
+        ...(view.scene?.scenery ?? []).map((piece) => ({
+          pos: piece.depth,
+          draw: () => {
+            const image = sceneImages.get(piece.url);
+            if (!image) return;
+            ctx.save();
+            ctx.globalAlpha = sceneryOpacity(piece, view, camera);
+            ctx.drawImage(
+              image,
+              piece.x * camera.scale - camera.offsetX,
+              piece.y * camera.scale - camera.offsetY,
+              piece.width * camera.scale,
+              piece.height * camera.scale,
+            );
+            ctx.restore();
+          },
+        })),
+        ...view.npcs.map((npc) => ({
+          pos: { x: npc.pos.x + this.npcWidth(npc.sprite) / 2, y: npc.pos.y + 0.5 },
+          draw: () => this.drawNpcs({ ...view, npcs: [npc] }, camera),
+        })),
+        ...view.props.map((prop) => ({
+          pos: { x: prop.pos.x + 0.5, y: prop.pos.y + 0.5 },
+          draw: () => this.drawProps({ ...view, props: [prop] }, camera),
+        })),
+        ...view.units.map((unit) => ({
+          pos: {
+            x: (unit.renderPos ?? unit.pos).x + unit.size / 2,
+            y: (unit.renderPos ?? unit.pos).y + 0.5,
+          },
+          draw: () => this.drawUnits({ ...view, units: [unit] }, camera),
+        })),
+      ].sort((a, b) => camera.groundPoint(a.pos).y - camera.groundPoint(b.pos).y);
+      for (const occupant of occupants) occupant.draw();
+      ctx.save();
+      ctx.transform(m.a, m.b, m.c, m.d, m.tx, m.ty);
+      this.drawFxLayer(view, ground, 'over');
+      ctx.restore();
+    } else {
+      this.drawGround(view, camera, painting !== null);
+      if (!painting || view.crispOverlays) this.drawDecor(view, camera);
+      if (view.atmosphere) this.drawShade(view, camera);
+      this.drawOverlays(view, camera);
+      this.drawPath(view, camera);
+      if (view.aimArc) this.drawAimArc(view.aimArc, camera);
+      this.drawFxLayer(view, camera, 'under');
+      this.drawExit(view, camera);
+      this.drawNpcs(view, camera);
+      this.drawProps(view, camera);
+      this.drawUnits(view, camera);
+      this.drawFxLayer(view, camera, 'over');
+    }
     this.drawFloaters(view, camera);
 
     ctx.restore();
@@ -131,6 +219,18 @@ export class Canvas2DBackend implements RenderBackend {
 
   /** The painting over the whole board's rectangle: one draw, scaled to the camera. */
   private drawBackdrop(image: HTMLImageElement, view: MapView, camera: Camera): void {
+    if (camera.projection === 'oblique') {
+      const padding = view.backdrop?.padding;
+      const scale = (camera.scale * 64) / (view.backdrop?.pixelsPerTile ?? 64);
+      this.ctx.drawImage(
+        image,
+        -camera.offsetX - (padding?.left ?? 0) * camera.scale,
+        -camera.offsetY - (padding?.top ?? 0) * camera.scale,
+        image.naturalWidth * scale,
+        image.naturalHeight * scale,
+      );
+      return;
+    }
     const origin = camera.toScreen({ x: 0, y: 0 });
     this.ctx.drawImage(
       image,
@@ -152,7 +252,15 @@ export class Canvas2DBackend implements RenderBackend {
         const pos = { x, y };
         const box = camera.toScreen(pos);
         if (!painted) paintTerrain(ctx, box, tile, pos);
-        paintSurface(ctx, box, tile, pos, view.hatch, surfaceEdges(view.grid, pos));
+        if (!(
+          painted &&
+          view.scene?.paintedWater &&
+          !view.hatch &&
+          !view.crispOverlays &&
+          tile.surface?.id === 'water' &&
+          tile.surface.duration < 0
+        ))
+          paintSurface(ctx, box, tile, pos, view.hatch, surfaceEdges(view.grid, pos));
         if (view.gridLines) paintGridLine(ctx, box, 'rgba(0,0,0,0.18)');
       }
     }
@@ -413,18 +521,30 @@ export class Canvas2DBackend implements RenderBackend {
     }
   }
 
+  private npcWidth(sprite: string): 1 | 2 {
+    const entry = resolveAsset(sprite);
+    return entry.kind === 'sheet' && entry.footprint.w === 2 ? 2 : 1;
+  }
+
   private drawNpcs(view: MapView, camera: Camera): void {
     const { ctx } = this;
     const { dpr } = camera.viewport;
     for (const npc of view.npcs) {
-      const box = camera.toScreen(npc.pos);
-      if (!camera.isVisible(npc.pos)) continue;
+      const width = this.npcWidth(npc.sprite);
+      const box = camera.spriteBox(npc.pos, width);
       box.y -= elevationAt(view.grid, npc.pos) * ELEVATION_LIFT * box.size;
       const entry = resolveAsset(npc.sprite);
-      const width = entry.kind === 'sheet' && entry.footprint.w === 2 ? 2 : 1;
+      const scale = npc.scale ?? 1;
+      if (!uprightSpriteVisible(box, camera.viewport, width, scale)) continue;
+      const footX = box.x + (width * box.size) / 2;
+      const footY = box.y + FOOT_LINE * box.size;
+      ctx.save();
+      ctx.translate(footX, footY);
+      ctx.scale(scale, scale);
+      ctx.translate(-footX, -footY);
       const frame =
         entry.kind === 'sheet'
-          ? sheets.frame(npc.sprite, 'idle', 0, 0, box.size * dpr, width)
+          ? sheets.frame(npc.sprite, 'idle', 0, 0, box.size * dpr * scale, width)
           : null;
       if (frame) {
         const fw = (frame.frame.w / frame.pixelsPerTile) * box.size;
@@ -442,10 +562,11 @@ export class Canvas2DBackend implements RenderBackend {
           fh,
         );
       } else {
-        const sprite = sprites.get(npc.sprite, box.size * dpr, { facing: 1 }, width);
+        const sprite = sprites.get(npc.sprite, box.size * dpr * scale, { facing: 1 }, width);
         ctx.drawImage(sprite, box.x, box.y, box.size * width, box.size);
       }
 
+      ctx.restore();
       // A small "talk" pip so a child can tell an NPC from scenery.
       ctx.save();
       ctx.globalAlpha = 0.55 + 0.35 * ((Math.sin(view.time / 500) + 1) / 2);
@@ -453,7 +574,7 @@ export class Canvas2DBackend implements RenderBackend {
       ctx.beginPath();
       ctx.arc(
         box.x + box.size * width * 0.5,
-        box.y + box.size * 0.08,
+        footY - box.size * (FOOT_LINE - 0.08) * scale,
         box.size * 0.07,
         0,
         Math.PI * 2,
@@ -469,7 +590,7 @@ export class Canvas2DBackend implements RenderBackend {
 
     for (const prop of view.props) {
       if (!camera.isVisible(prop.pos)) continue;
-      const box = camera.toScreen(prop.pos);
+      const box = camera.spriteBox(prop.pos);
       box.y -= elevationAt(view.grid, prop.pos) * ELEVATION_LIFT * box.size;
       const sprite = sprites.get(prop.sprite, box.size * dpr, { facing: 1 });
       ctx.drawImage(sprite, box.x, box.y, box.size, box.size);
@@ -503,12 +624,8 @@ export class Canvas2DBackend implements RenderBackend {
 
     for (const unit of ordered) {
       const pos = unit.renderPos ?? unit.pos;
-      const box = camera.toScreen(pos);
+      const box = camera.spriteBox(pos, unit.size);
       const width = unit.size === 2 ? box.size * 2 : box.size;
-
-      if (!camera.isVisible(pos) && !camera.isVisible({ x: pos.x + unit.size - 1, y: pos.y })) {
-        continue;
-      }
 
       // The bob lifts the drawing, never the sort: it is applied after ordering.
       // So does the ground: a unit on a ledge stands a little higher on screen.
@@ -518,6 +635,8 @@ export class Canvas2DBackend implements RenderBackend {
       }
       box.y -= elevationAt(view.grid, unit.pos) * ELEVATION_LIFT * box.size;
       const facing = unit.facing ?? (unit.faction === 'enemy' ? -1 : 1);
+      const scale = unit.scale ?? 1;
+      if (!uprightSpriteVisible(box, camera.viewport, unit.size, scale)) continue;
 
       // Active-unit ring, drawn under the sprite.
       if (unit.id === view.activeUnitId) {
@@ -557,7 +676,6 @@ export class Canvas2DBackend implements RenderBackend {
 
       ctx.save();
       // A pose scales about the feet; the fallen fade sits on top of any alpha.
-      const scale = unit.scale ?? 1;
       ctx.globalAlpha = (unit.alpha ?? 1) * (unit.fallen ? 0.35 : 1);
       // The frame comes from the unit's sheet, real or baked from its painter
       // at device resolution (ADR 0003); the anchor stands on the foot line.
@@ -566,7 +684,7 @@ export class Canvas2DBackend implements RenderBackend {
         unit.clip ?? 'idle',
         unit.clipTime ?? view.time + idlePhase(unit.id),
         unit.clipFrame,
-        box.size * dpr,
+        box.size * dpr * scale,
         unit.size,
       );
       let headroom = 0;
@@ -593,9 +711,9 @@ export class Canvas2DBackend implements RenderBackend {
         const drawWidth = width * scale;
         const drawHeight = box.size * scale;
         const drawX = box.x + (width - drawWidth) / 2;
-        const drawY = box.y + (box.size - drawHeight);
+        const drawY = box.y + FOOT_LINE * (box.size - drawHeight);
         // Painted at device resolution, drawn at CSS size under the dpr transform.
-        const sprite = sprites.get(unit.sprite, box.size * dpr, { facing }, unit.size);
+        const sprite = sprites.get(unit.sprite, box.size * dpr * scale, { facing }, unit.size);
         ctx.drawImage(sprite, drawX, drawY, drawWidth, drawHeight);
         if (unit.flash && unit.flash > 0) {
           ctx.globalAlpha *= Math.min(1, unit.flash);
@@ -737,4 +855,24 @@ export function overlayColors(kind: OverlayKind): [string, string | null] {
     case 'hover':
       return [OVERLAY.hover, null];
   }
+}
+
+/** Conservative upright bounds include a 1.5-tile headroom above the base frame. */
+export function uprightSpriteVisible(
+  box: { x: number; y: number; size: number },
+  viewport: Pick<Viewport, 'width' | 'height'>,
+  footprint = 1,
+  scale = 1,
+): boolean {
+  const footX = box.x + (footprint * box.size) / 2;
+  const footY = box.y + FOOT_LINE * box.size;
+  const halfWidth = ((footprint + 0.5) * box.size * scale) / 2;
+  const top = footY - (FOOT_LINE + 1.5) * box.size * scale;
+  const bottom = footY + (1 - FOOT_LINE) * box.size * scale;
+  return (
+    footX + halfWidth >= 0 &&
+    footX - halfWidth <= viewport.width &&
+    bottom >= 0 &&
+    top <= viewport.height
+  );
 }

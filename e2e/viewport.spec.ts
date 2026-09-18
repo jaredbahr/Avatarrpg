@@ -1,6 +1,7 @@
+import { paintedTileCentre } from './projection';
 import { expect, test } from '@playwright/test';
 import type { Page } from '@playwright/test';
-import { enterNode, resetStorage, startGame, takeTurn, waitForIdle } from './helpers';
+import { enterNode, resetStorage, settleLayout, startGame, takeTurn, waitForIdle } from './helpers';
 
 /**
  * The camera has to measure the box the map actually got.
@@ -87,20 +88,7 @@ test.describe('map viewport', () => {
 
     // Where that tile is *painted*, which is the camera's own geometry put
     // through whatever scaling the element is applying to the backing store.
-    const point = await page.evaluate((pos) => {
-      const canvas = document.querySelector<HTMLCanvasElement>('.map-canvas');
-      const camera = window.fnt?.app.rendererCamera();
-      if (!canvas || !camera) return null;
-      const rect = canvas.getBoundingClientRect();
-      const dpr = window.devicePixelRatio || 1;
-      const stretchX = rect.width / (canvas.width / dpr);
-      const stretchY = rect.height / (canvas.height / dpr);
-      const centre = camera.tilePx / 2;
-      return {
-        x: rect.left + (pos.x * camera.tilePx - camera.offsetX + centre) * stretchX,
-        y: rect.top + (pos.y * camera.tilePx - camera.offsetY + centre) * stretchY,
-      };
-    }, target.pos);
+    const point = await paintedTileCentre(page, target.pos);
 
     expect(point, 'could not locate the painted tile').not.toBeNull();
     if (!point) return;
@@ -111,3 +99,74 @@ test.describe('map viewport', () => {
     await expect(page.getByRole('dialog', { name: target.name })).toBeVisible();
   });
 });
+
+/**
+ * Independent of groundTransform and camera.project: these clicks use the
+ * approved 2:1 diamond basis itself. Clicks do not follow a faulty exposed
+ * affine back to the same wrong tile. Off-centre samples cover both diamond edges.
+ */
+for (const renderer of ['canvas', 'webgl'] as const) {
+  test(`oblique village picks the expected diamond on ${renderer}`, async ({
+    page,
+    browserName,
+  }) => {
+    test.setTimeout(120_000);
+    if (renderer === 'webgl' && browserName === 'webkit') test.slow();
+    await resetStorage(page, `?renderer=${renderer}`);
+    await startGame(page, ['Explorer'], ['kaya'], 'oblique-picking');
+    await enterNode(page, 'village_explore');
+    await settleLayout(page);
+    expect(await page.evaluate(() => window.fnt?.app.rendererBackend())).toBe(renderer);
+
+    for (const target of [
+      { x: 4, y: 7, fx: 0.15, fy: 0.8 },
+      { x: 5, y: 7, fx: 0.85, fy: 0.2 },
+      { x: 6, y: 7, fx: 0.5, fy: 0.5 },
+    ]) {
+      if (target.x === 6) {
+        await page.setViewportSize({ width: 834, height: 1194 });
+        await settleLayout(page);
+      }
+      const view = await page.evaluate(() => {
+        const app = window.fnt?.app;
+        const camera = app?.rendererCamera();
+        const canvas = document.querySelector<HTMLCanvasElement>('.map-canvas');
+        const map = app?.content.maps.get('ba_dan_village');
+        if (!camera || !canvas || !map) throw new Error('No village view');
+        const rect = canvas.getBoundingClientRect();
+        return {
+          camera,
+          height: map.height,
+          rect: { x: rect.x, y: rect.y, width: rect.width, height: rect.height },
+          stretchX: rect.width / (canvas.width / devicePixelRatio),
+          stretchY: rect.height / (canvas.height / devicePixelRatio),
+        };
+      });
+      expect(view.camera.projection).toBe('oblique');
+      expect(view.height).toBe(16);
+      expect(view.stretchX).toBeCloseTo(1, 2);
+      expect(view.stretchY).toBeCloseTo(1, 2);
+      const tile = view.camera.tilePx;
+      const m = view.camera.groundTransform;
+      expect(m.a).toBeCloseTo(tile / 64, 8);
+      expect(m.b).toBeCloseTo(tile / 128, 8);
+      expect(m.c).toBeCloseTo(-tile / 64, 8);
+      expect(m.d).toBeCloseTo(tile / 128, 8);
+      expect(m.tx).toBeCloseTo(16 * tile - view.camera.offsetX, 6);
+      expect(m.ty).toBeCloseTo(-view.camera.offsetY, 6);
+      // Known basis, deliberately not the affine under test.
+      const px = (16 + target.x + target.fx - target.y - target.fy) * tile - view.camera.offsetX;
+      const py = ((target.x + target.fx + target.y + target.fy) * tile) / 2 - view.camera.offsetY;
+      expect(px).toBeGreaterThan(0);
+      expect(px).toBeLessThan(view.rect.width);
+      expect(py).toBeGreaterThan(0);
+      expect(py).toBeLessThan(view.rect.height);
+      await page.mouse.click(view.rect.x + px * view.stretchX, view.rect.y + py * view.stretchY);
+      await waitForIdle(page);
+      expect(await page.evaluate(() => window.fnt?.app.state?.location.pos)).toEqual({
+        x: target.x,
+        y: target.y,
+      });
+    }
+  });
+}

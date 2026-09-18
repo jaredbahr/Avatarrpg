@@ -57,6 +57,15 @@ import { CombatScene } from './scenes/CombatScene';
 
 /** What `rendererCamera()` reports: tile size and offset in CSS px, and whether the whole board is on screen. */
 export interface CameraInfo {
+  readonly projection: 'orthographic' | 'oblique';
+  readonly groundTransform: {
+    readonly a: number;
+    readonly b: number;
+    readonly c: number;
+    readonly d: number;
+    readonly tx: number;
+    readonly ty: number;
+  };
   readonly tilePx: number;
   readonly offsetX: number;
   readonly offsetY: number;
@@ -80,11 +89,10 @@ export interface Scene {
   resize?(): void;
   /**
    * The events a command produced, before the scene may be swapped for the
-   * one the new state calls for, with the clock the animator was given. A
-   * scene that keeps presentation of its own (the village's trailing
-   * followers) lays its playback alongside the animator's here.
+   * one the new state calls for. Return true when the scene schedules the
+   * full playback itself (including the leader and its sound cues).
    */
-  onEvents?(events: readonly GameEvent[], now: number): void;
+  onEvents?(events: readonly GameEvent[], now: number): boolean | void;
 }
 
 export class App {
@@ -380,8 +388,8 @@ export class App {
 
     const now = performance.now();
     if (result.events.length > 0) {
-      this.animator.push(now, result.events, unitsBefore);
-      this.scene?.onEvents?.(result.events, now);
+      if (this.scene?.onEvents?.(result.events, now) !== true)
+        this.animator.push(now, result.events, unitsBefore);
     }
 
     this.announceImportant(result.events);

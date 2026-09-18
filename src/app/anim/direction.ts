@@ -1,7 +1,17 @@
 import type { Vec2 } from '../../core/types';
+import { projectGround } from '../../render/projection';
+import type { Projection } from '../../render/projection';
 import type { ClipName } from '../../content/assets/clips';
 
 export type WalkDirection = 'north' | 'south' | 'east' | 'west';
+
+/** A unit heading in screen axes; translation never belongs in a direction. */
+export function screenDirection(tangent: Vec2, projection: Projection): Vec2 {
+  if (projection === 'orthographic') return tangent;
+  const projected = projectGround(tangent, projection);
+  const length = Math.hypot(projected.x, projected.y);
+  return length === 0 ? projected : { x: projected.x / length, y: projected.y / length };
+}
 
 /** Keep the current axis through a narrow diagonal band to avoid corner flicker. */
 export function walkDirection(tangent: Vec2, previous?: WalkDirection): WalkDirection {

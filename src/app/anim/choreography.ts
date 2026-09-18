@@ -22,6 +22,8 @@ import { easeInOutCubic, easeInOutSine, easeOutQuad } from './easing';
 import { strollTiming } from './stroll';
 import type { AnyTrack, ClipName } from './timeline';
 import { attackMotion } from './attackMotion';
+import { screenDirection } from './direction';
+import type { Projection } from '../../render/projection';
 
 /** Base durations in milliseconds, before the motion setting is applied. */
 export const TIMING = {
@@ -51,6 +53,7 @@ const RECOIL = 0.18;
 const DODGE = 0.2;
 
 export interface ChoreographyInput {
+  readonly projection?: Projection;
   readonly content: ContentIndex;
   readonly events: readonly GameEvent[];
   readonly unitsBefore: readonly Unit[];
@@ -300,16 +303,17 @@ export function choreograph(input: ChoreographyInput): Choreography {
           ability.targeting.shape === 'self' ||
           (event.target.x === casterPos.x && event.target.y === casterPos.y);
         const melee = ability.range <= 1 && ability.targeting.shape === 'unit';
-        const facing = self ? undefined : facingFor(dir);
+        const screenDir = screenDirection(dir, input.projection ?? 'orthographic');
+        const facing = self ? undefined : facingFor(screenDir);
 
         const motion = attackMotion(ability.fx, melee, self);
         const windUp = TIMING.windUp * motion.windUp * rate;
         const release = TIMING.release * motion.release * rate;
         const recover = TIMING.recover * motion.recover * rate;
-        const back = self ? { x: 0, y: -0.06 } : scaled(dir, -LEAN_BACK);
+        const back = self ? { x: 0, y: -0.06 } : scaled(screenDir, -LEAN_BACK);
         const forward = self
           ? { x: 0, y: 0.04 }
-          : scaled(dir, melee ? MELEE_LUNGE : LUNGE * motion.reach);
+          : scaled(screenDir, melee ? MELEE_LUNGE : LUNGE * motion.reach);
         const clip: ClipName = melee ? 'melee' : 'cast';
 
         // The sheet's poses: wind-up, release, recover for a cast; wind-up and
@@ -448,7 +452,9 @@ export function choreograph(input: ChoreographyInput): Choreography {
             : event.sourceId
               ? unitCentre(event.sourceId)
               : undefined;
-          const away = source ? direction(source, centre(pos)) : { x: 0, y: -1 };
+          const away = source
+            ? screenDirection(direction(source, centre(pos)), input.projection ?? 'orthographic')
+            : { x: 0, y: -1 };
           const out = scaled(away, RECOIL * (event.crit ? 1.5 : 1));
           const recoilAt = hit.at + hit.hitStop;
           // Hold the struck drawing at contact, then let the body recoil.
@@ -516,7 +522,9 @@ export function choreograph(input: ChoreographyInput): Choreography {
         const at = landing().at;
         cue('miss', at, 7, eventIndex);
         if (pos) {
-          const away = attacker ? direction(attacker, centre(pos)) : { x: 0, y: -1 };
+          const away = attacker
+            ? screenDirection(direction(attacker, centre(pos)), input.projection ?? 'orthographic')
+            : { x: 0, y: -1 };
           const out = scaled(away, DODGE);
           pose(
             event.targetId,

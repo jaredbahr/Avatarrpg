@@ -1,3 +1,5 @@
+import type { CameraInfo } from '../src/app/App';
+import { groundPoint, groundTile } from './projection';
 import { expect, test } from '@playwright/test';
 import type { Page } from '@playwright/test';
 import { enterNode, resetStorage, startGame, takeTurn, waitForIdle } from './helpers';
@@ -11,13 +13,6 @@ import { enterNode, resetStorage, startGame, takeTurn, waitForIdle } from './hel
  * the app. The recogniser's own state machine is unit-tested in vitest; what
  * this covers is the wiring from a gesture to the camera to the HUD.
  */
-
-interface CameraInfo {
-  tilePx: number;
-  offsetX: number;
-  offsetY: number;
-  fitted: boolean;
-}
 
 interface Point {
   x: number;
@@ -37,23 +32,14 @@ async function centreTile(page: Page): Promise<{ point: Point; tile: Point }> {
   expect(box).not.toBeNull();
   if (!box) throw new Error('no canvas');
   const mid = { x: box.width / 2, y: box.height / 2 };
-  const tile = {
-    x: Math.floor((mid.x + cam.offsetX) / cam.tilePx),
-    y: Math.floor((mid.y + cam.offsetY) / cam.tilePx),
-  };
-  const point = {
-    x: (tile.x + 0.5) * cam.tilePx - cam.offsetX,
-    y: (tile.y + 0.5) * cam.tilePx - cam.offsetY,
-  };
+  const tile = groundTile(cam, mid);
+  const point = groundPoint(cam, { x: tile.x + 0.5, y: tile.y + 0.5 });
   return { point, tile };
 }
 
 async function tileAt(page: Page, point: Point): Promise<Point> {
   const cam = await camera(page);
-  return {
-    x: Math.floor((point.x + cam.offsetX) / cam.tilePx),
-    y: Math.floor((point.y + cam.offsetY) / cam.tilePx),
-  };
+  return groundTile(cam, point);
 }
 
 /** Two fingers travelling from `from` to `to`, in canvas-local pixels. */
@@ -261,11 +247,15 @@ test.describe('zoom and pan', () => {
     });
     expect(pos).not.toBeNull();
     if (!pos) return;
-    const left = pos.x * cam.tilePx - cam.offsetX;
-    const top = pos.y * cam.tilePx - cam.offsetY;
-    expect(left).toBeGreaterThanOrEqual(-0.5);
-    expect(top).toBeGreaterThanOrEqual(-0.5);
-    expect(left + cam.tilePx).toBeLessThanOrEqual(box.width + 0.5);
-    expect(top + cam.tilePx).toBeLessThanOrEqual(box.height + 0.5);
+    const corners = [
+      { x: 0, y: 0 },
+      { x: 1, y: 0 },
+      { x: 0, y: 1 },
+      { x: 1, y: 1 },
+    ].map((p) => groundPoint(cam, { x: pos.x + p.x, y: pos.y + p.y }));
+    expect(Math.min(...corners.map((p) => p.x))).toBeGreaterThanOrEqual(-0.5);
+    expect(Math.min(...corners.map((p) => p.y))).toBeGreaterThanOrEqual(-0.5);
+    expect(Math.max(...corners.map((p) => p.x))).toBeLessThanOrEqual(box.width + 0.5);
+    expect(Math.max(...corners.map((p) => p.y))).toBeLessThanOrEqual(box.height + 0.5);
   });
 });

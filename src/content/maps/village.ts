@@ -11,9 +11,12 @@
 
 import type { MapDef } from '../../core/types';
 import { LEGEND } from './legend';
+import { BA_DAN_SCENE } from '../scenes/baDan';
 
 export const BA_DAN_VILLAGE: MapDef = {
   id: 'ba_dan_village',
+  projection: 'oblique',
+  scene: BA_DAN_SCENE,
   backdrop: { url: 'art/maps/ba_dan_village.webp', pixelsPerTile: 64 },
   name: 'Ba Dan Village',
   kind: 'explore',

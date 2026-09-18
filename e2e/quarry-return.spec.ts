@@ -134,6 +134,7 @@ async function walkTo(page: Page, x: number, y: number): Promise<void> {
 }
 
 async function takeRoute(page: Page, label: string, mapId: string): Promise<void> {
+  await page.getByRole('button', { name: 'Map', exact: true }).click();
   await page.getByRole('button', { name: label, exact: true }).click();
   await expect.poll(() => page.evaluate(() => window.fnt?.app.state?.location.mapId)).toBe(mapId);
   await waitForIdle(page);

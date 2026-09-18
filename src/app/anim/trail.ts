@@ -10,13 +10,16 @@
  */
 
 import type { Grid, Vec2 } from '../../core/types';
-import { distance, neighbors, posKey, samePos, tileAt } from '../../core/rules/grid';
+import { smoothPath } from '../../render/geometry/curve';
+import { distance, neighbors, posKey, samePos, tileAt, reachable } from '../../core/rules/grid';
 
 /** A follower's walk to its new place: from its old tile, through these tiles. */
 export interface FollowerRoute {
   readonly index: number;
   readonly from: Vec2;
   readonly path: readonly Vec2[];
+  /** Routes with the same batch can animate together; later batches wait. */
+  readonly batch?: number;
 }
 
 /** How `placeParty` lays the line out. */
@@ -109,6 +112,8 @@ function nearestFree(grid: Grid, tail: Vec2, taken: ReadonlySet<string>): Vec2 |
  */
 export class PartyTrail {
   private line: Vec2[];
+  /** Once clustered, seats are no longer an adjacent breadcrumb path. */
+  private formation: { grid: Grid; avoid: readonly Vec2[] } | null = null;
 
   /** `members` are the party's tiles, leader first, as `placeParty` seats them. */
   constructor(members: readonly Vec2[]) {
@@ -131,6 +136,107 @@ export class PartyTrail {
   }
 
   /**
+   * Gather on reachable ground within two tiles of the leader. Reservations
+   * retain every other member's current seat; a crowded pocket simply keeps
+   * its existing formation. Routes use the rules' diagonal/collision checks.
+   * The caller must animate these routes before accepting another walk.
+   */
+  settle(grid: Grid, avoid: readonly Vec2[] = []): FollowerRoute[] {
+    const head = this.head;
+    if (!head || this.line.length < 2) return [];
+    const seats = [...this.line];
+    const routes: FollowerRoute[] = [];
+    for (let index = 1; index < seats.length; index++) {
+      const from = seats[index];
+      if (!from) continue;
+      const blocked = new Set([...avoid, ...seats.filter((_, i) => i !== index)].map(posKey));
+      const choices = [
+        ...reachable(
+          { grid, blocked, surfaces: new Map(), size: 1 },
+          from,
+          grid.width * grid.height,
+        ).values(),
+      ]
+        .filter(
+          ({ pos }) => distance(pos, head) <= 2 && !blocked.has(posKey(pos)) && drySeat(grid, pos),
+        )
+        .sort((a, b) => distance(a.pos, head) - distance(b.pos, head) || a.cost - b.cost);
+      const choice = choices[0];
+      if (!choice || choice.path.length === 0) continue;
+      seats[index] = choice.pos;
+      routes.push({ index, from, path: choice.path });
+    }
+    this.line = seats;
+    this.formation = { grid, avoid: [...avoid] };
+    return movementBatches(routes).flatMap((batch, index) =>
+      batch.map((route) => ({ ...route, batch: index })),
+    );
+  }
+
+  /**
+   * A complete presentation plan, including the unchanged rules leader route.
+   * Clear its corridor first, then overlap only routes with disjoint swept
+   * segments. A failed clearance returns null without changing any seats.
+   * The caller schedules each batch after the previous batch fully finishes.
+   */
+  planWalk(
+    path: readonly Vec2[],
+    count: number,
+    grid: Grid,
+    avoid: readonly Vec2[] = [],
+  ): { readonly batches: readonly (readonly FollowerRoute[])[] } | null {
+    if (!path.length) return { batches: [] };
+    const before = this.positions(count);
+    const head = before[0];
+    const destination = path.at(-1);
+    if (!head || !destination) return null;
+    const leader: FollowerRoute = { index: 0, from: head, path };
+    const positions = [...before];
+    const clearance: FollowerRoute[] = [];
+    const budget = grid.width * grid.height;
+    for (let index = 1; index < count; index++) {
+      const from = positions[index];
+      if (!from || !routeNearPoint(leader, from)) continue;
+      const blocked = new Set([...avoid, ...positions.filter((_, i) => i !== index)].map(posKey));
+      const candidates = [
+        ...reachable({ grid, blocked, surfaces: new Map(), size: 1 }, from, budget).values(),
+      ]
+        .filter(
+          (cell) =>
+            !blocked.has(posKey(cell.pos)) &&
+            drySeat(grid, cell.pos) &&
+            !routeNearPoint(leader, cell.pos),
+        )
+        .sort((a, b) => a.cost - b.cost || distance(a.pos, head) - distance(b.pos, head));
+      const choice = candidates[0];
+      if (!choice) return null;
+      positions[index] = choice.pos;
+      clearance.push({ index, from, path: choice.path });
+    }
+    const desired = [...[...path].reverse(), ...before];
+    const routes: FollowerRoute[] = [leader];
+    positions[0] = destination;
+    for (let index = 1; index < count; index++) {
+      const from = positions[index];
+      const target = desired[Math.min(index, desired.length - 1)];
+      if (!from || !target) continue;
+      const blocked = new Set([...avoid, ...positions.filter((_, i) => i !== index)].map(posKey));
+      const candidates = [
+        ...reachable({ grid, blocked, surfaces: new Map(), size: 1 }, from, budget).values(),
+      ]
+        .filter((cell) => !blocked.has(posKey(cell.pos)))
+        .sort((a, b) => distance(a.pos, target) - distance(b.pos, target) || a.cost - b.cost);
+      const choice = candidates[0];
+      if (!choice || !choice.path.length) continue;
+      positions[index] = choice.pos;
+      routes.push({ index, from, path: choice.path });
+    }
+    this.line = positions;
+    this.formation = { grid, avoid: [...avoid] };
+    return { batches: [...movementBatches(clearance), ...movementBatches(routes)] };
+  }
+
+  /**
    * The leader walked `path` (the tiles after its old one, in order). Returns
    * the followers' routes; a follower whose place did not change has none.
    */
@@ -139,6 +245,33 @@ export class PartyTrail {
     const before = this.positions(count);
     const line = [...[...path].reverse(), ...this.line];
     const routes: FollowerRoute[] = [];
+    if (this.formation) {
+      const { grid, avoid } = this.formation;
+      const next = [...before];
+      next[0] = line[0] ?? before[0] ?? { x: 0, y: 0 };
+      for (let i = 1; i < count; i++) {
+        const from = before[i];
+        const to = line[Math.min(i, line.length - 1)];
+        if (!from || !to) continue;
+        const blocked = new Set([...avoid, ...next.filter((_, index) => index !== i)].map(posKey));
+        const reachableSeats = reachable(
+          { grid, blocked, surfaces: new Map(), size: 1 },
+          from,
+          grid.width * grid.height,
+        );
+        const route = reachableSeats.get(posKey(to));
+        // Keep a held seat if another member still occupies the destination.
+        // Serial playback makes these reservations true throughout the route.
+        if (route && !blocked.has(posKey(to))) {
+          next[i] = to;
+          if (route.path.length) {
+            routes.push({ index: i, from, path: route.path });
+          }
+        }
+      }
+      this.line = next;
+      return routes;
+    }
     for (let i = 1; i < count; i++) {
       const from = before[i];
       const to = line[Math.min(i, line.length - 1)];
@@ -156,4 +289,73 @@ export class PartyTrail {
     this.line = line.slice(0, Math.max(count, 1));
     return routes;
   }
+}
+
+/** Conservative ground-space clearance, including diagonal edge crossings. */
+const BODY_CLEARANCE = 0.8;
+function pointSegmentDistance(point: Vec2, a: Vec2, b: Vec2): number {
+  const dx = b.x - a.x;
+  const dy = b.y - a.y;
+  const span = dx * dx + dy * dy;
+  const t = span
+    ? Math.max(0, Math.min(1, ((point.x - a.x) * dx + (point.y - a.y) * dy) / span))
+    : 0;
+  return Math.hypot(point.x - a.x - t * dx, point.y - a.y - t * dy);
+}
+function segmentsNear(a: Vec2, b: Vec2, c: Vec2, d: Vec2): boolean {
+  const cross = (u: Vec2, v: Vec2, w: Vec2) =>
+    (v.x - u.x) * (w.y - u.y) - (v.y - u.y) * (w.x - u.x);
+  if (cross(a, b, c) * cross(a, b, d) < 0 && cross(c, d, a) * cross(c, d, b) < 0) return true;
+  return (
+    Math.min(
+      pointSegmentDistance(a, c, d),
+      pointSegmentDistance(b, c, d),
+      pointSegmentDistance(c, a, b),
+      pointSegmentDistance(d, a, b),
+    ) < BODY_CLEARANCE
+  );
+}
+function routeNearPoint(route: FollowerRoute, point: Vec2): boolean {
+  const steps = smoothPath(route.from, route.path).points;
+  point = { x: point.x + 0.5, y: point.y + 0.5 };
+  return steps.some(
+    (to, index) =>
+      pointSegmentDistance(point, steps[Math.max(0, index - 1)] ?? to, to) < BODY_CLEARANCE,
+  );
+}
+function routesNear(a: FollowerRoute, b: FollowerRoute): boolean {
+  const left = smoothPath(a.from, a.path).points;
+  const right = smoothPath(b.from, b.path).points;
+  return left.some((to, index) =>
+    right.some((other, j) =>
+      segmentsNear(
+        left[Math.max(0, index - 1)] ?? to,
+        to,
+        right[Math.max(0, j - 1)] ?? other,
+        other,
+      ),
+    ),
+  );
+}
+function movementBatches(routes: readonly FollowerRoute[]): FollowerRoute[][] {
+  const assigned: { route: FollowerRoute; batch: number }[] = [];
+  const batches: FollowerRoute[][] = [];
+  for (const route of routes) {
+    let batch = 0;
+    for (const earlier of assigned)
+      if (routesNear(route, earlier.route)) batch = Math.max(batch, earlier.batch + 1);
+    (batches[batch] ??= []).push(route);
+    assigned.push({ route, batch });
+  }
+  return batches;
+}
+
+/** Water stays legal for travelling; a party stops on dry ground. */
+function drySeat(grid: Grid, pos: Vec2): boolean {
+  const tile = tileAt(grid, pos);
+  return (
+    !!tile &&
+    tile.terrain !== 'water_deep' &&
+    !(tile.surface?.id === 'water' && tile.surface.duration === -1)
+  );
 }

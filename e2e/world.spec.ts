@@ -24,6 +24,7 @@ test('riverside roaming keeps the journal and campaign saves across a round trip
   );
   await expect(journal).toContainText('Remembered · Pebble by the river');
   await journal.getByRole('button', { name: 'Return to the path', exact: true }).click();
+  await page.getByRole('button', { name: 'Map', exact: true }).click();
   await page.getByRole('button', { name: 'River path → Riverside', exact: true }).click();
   await expect(page.getByRole('button', { name: 'Water form', exact: true })).toBeVisible();
   await page.getByRole('button', { name: 'Leave preview', exact: true }).click();
@@ -53,9 +54,11 @@ for (const renderer of ['canvas', 'webgl']) {
       app.state = { ...app.state, location: { mapId: 'ba_dan_village', pos: { x: 22, y: 7 } } };
       app.resync();
     });
+    await page.getByRole('button', { name: 'Map', exact: true }).click();
     await page.getByRole('button', { name: 'East road → Forest Road', exact: true }).click();
     await waitForIdle(page);
     await expect(page.locator('.title-plate-name')).toHaveText('The Forest Road');
+    await page.getByRole('button', { name: 'Map', exact: true }).click();
     await expect(
       page.getByRole('button', { name: 'East → Quarry Gate', exact: true }),
     ).toBeDisabled();
@@ -80,6 +83,7 @@ test('a long walk meets the road story and then its enemies', async ({ page }) =
   await resetStorage(page);
   await startGame(page, ['Elias'], ['kaya'], 'world-encounter');
   await enterNode(page, 'village_explore');
+  await page.getByRole('button', { name: 'Map', exact: true }).click();
   await page.getByRole('button', { name: 'East road → Forest Road', exact: true }).click();
   await waitForIdle(page);
   await page.evaluate(() => window.fnt?.app.dispatch({ type: 'walkTo', pos: { x: 18, y: 4 } }));

@@ -62,9 +62,15 @@ export const WORLD_BEATS: readonly Beat[] = [
           if (!app || !camera || !(canvas instanceof HTMLCanvasElement)) throw new Error('No map');
           app.dispatch({ type: 'walkTo', pos: { x: 9, y: 7 } });
           const box = canvas.getBoundingClientRect();
+          const m = camera.groundTransform;
+          const dpr = window.devicePixelRatio || 1;
           const point = {
-            clientX: box.left + camera.offsetX + 7.5 * camera.tilePx,
-            clientY: box.top + camera.offsetY + 8.5 * camera.tilePx,
+            clientX:
+              box.left +
+              ((m.a * 7.5 * 64 + m.c * 8.5 * 64 + m.tx) * box.width) / (canvas.width / dpr),
+            clientY:
+              box.top +
+              ((m.b * 7.5 * 64 + m.d * 8.5 * 64 + m.ty) * box.height) / (canvas.height / dpr),
             bubbles: true,
             pointerId: 19,
             pointerType: 'touch',

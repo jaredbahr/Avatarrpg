@@ -35,9 +35,14 @@ for (const renderer of ['canvas', 'webgl'] as const) {
       const pos = map?.triggers?.find((trigger) => trigger.sprite === 'unit.enemy.thug')?.area[0];
       const camera = app.rendererCamera();
       if (!pos || !camera) throw new Error('Missing encounter marker or camera');
+      const m = camera.groundTransform;
+      const x = (pos.x + 0.5) * 64,
+        y = (pos.y + 0.5) * 64;
+      // Frame sample is upright: lift vertically from the projected foot.
+      const lift = camera.projection === 'oblique' ? 0.86 - 0.325 : 0.5 - 0.325;
       return {
-        x: pos.x * camera.tilePx - camera.offsetX + camera.tilePx / 2,
-        y: pos.y * camera.tilePx - camera.offsetY + camera.tilePx * 0.325,
+        x: m.a * x + m.c * y + m.tx,
+        y: m.b * x + m.d * y + m.ty - camera.tilePx * lift,
       };
     });
     await expect
