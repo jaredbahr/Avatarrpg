@@ -2,6 +2,8 @@ import type { MapScene, SceneScenery, Vec2 } from '../../core/types';
 
 const root = 'art/maps/ba-dan-scene/';
 export const BA_DAN_POND = { x: 10, y: 6, width: 3, height: 1 } as const;
+/** Flat grass fringe across the northern lawn bay; both door approaches stay clear. */
+export const BA_DAN_NORTH_FRINGE = { x: 10.05, y: 3.9, width: 1.9, depth: 0.2 } as const;
 
 /** Gameplay applies these same footprints as low, solid courtyard boundaries. */
 export const BA_DAN_COURTYARD_PROPS = [
@@ -87,6 +89,13 @@ export const BA_DAN_SCENE: MapScene = {
   ground: [
     { url: `${root}ground-west.webp`, x: -128, y: -192, width: 1408, height: 1536 },
     { url: `${root}ground-east.webp`, x: 1280, y: -192, width: 1408, height: 1536 },
+    {
+      url: `${root}north-grass-fringe.webp`,
+      x: 1024 + (BA_DAN_NORTH_FRINGE.x - BA_DAN_NORTH_FRINGE.y - BA_DAN_NORTH_FRINGE.depth) * 64,
+      y: (BA_DAN_NORTH_FRINGE.x + BA_DAN_NORTH_FRINGE.y) * 32,
+      width: (BA_DAN_NORTH_FRINGE.width + BA_DAN_NORTH_FRINGE.depth) * 64,
+      height: ((BA_DAN_NORTH_FRINGE.width + BA_DAN_NORTH_FRINGE.depth) * 64 * 267) / 512,
+    },
     {
       url: `${root}pond.webp`,
       x: 1024 + (BA_DAN_POND.x - BA_DAN_POND.y - BA_DAN_POND.height) * 64,

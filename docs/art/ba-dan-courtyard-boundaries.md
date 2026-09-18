@@ -51,3 +51,19 @@ World width stays 192; front-corner anchors are 69.5% and 67.5% respectively.
 Frontage paints after houses on equal depth so the opaque shop does not bury
 the display. All six logical occupied cells remain unchanged. Gameplay moves
 Gao from the house interior to the visible door approach independently.
+
+## Restrained northern ground edge
+
+`north-grass-fringe.webp` is a flat grass/soil transition over the lawn bay's
+existing seam, nominal logical bounds x10.05–11.95, y3.9–4.1. The projected
+rectangle starts at (1404.8,446.4), width134.4 and height70.0875, preserving the
+source aspect ratio. It adds no collision, scenery depth, obstacle or new path.
+The neighboring door approaches at (9,4) and (12,4) remain clear. The main open
+stone plaza keeps its quiet material; this is a single authored seam treatment.
+
+Original OpenAI image-tool source `exec-81e160ec-6de4-4313-9268-6031490d518e.png`,
+18 September 2026. Generation requested a very thin, irregular transparent
+olive/celadon grass and warm soil fringe in a 2:1 ground plane, long axis slope
++0.5; quiet hand-painted texture, no raised geometry, rocks, flowers, shadows,
+characters or rectangular backing. Alpha bounds (49,209,1338,699), uniformly
+packed to512×267. Existing original-scene art provenance applies.
