@@ -1,12 +1,12 @@
 /** Pack one authored ground plate; retain registered substrate at rule-sensitive boundaries. */
 import { mkdirSync, writeFileSync } from 'node:fs';
 import { FOREST_ROAD } from '../../src/content/maps/combat';
-import { readImage, newImage, pixelAt, setPixel } from './lib/image';
+import { readImage, newImage, pixelAt, setPixel, writePng } from './lib/image';
 import { scaleTo } from './lib/scale';
 import { crop } from './lib/trim';
 import { encodeWebp } from './lib/webp';
 
-const [platePath, atlasPath] = process.argv.slice(2);
+const [platePath, atlasPath, auditDirectory] = process.argv.slice(2);
 if (!platePath || !atlasPath)
   throw new Error('Provide the authored plate and original material atlas.');
 const raw = readImage(platePath);
@@ -55,6 +55,76 @@ for (let py = 0; py < plate.height; py++) {
   }
 }
 const directory = 'public/art/maps/forest-scene';
+const prior = { ...output, data: output.data.slice() };
+const elevated = critical.filter(({ x, y }) => FOREST_ROAD.rows[y]?.[x] === '^');
+const logical = (px: number, py: number) => {
+  const dx = (((px + 0.5) * 2304) / plate.width - 896) / 64;
+  const dy = (((py + 0.5) * 1280) / plate.height - 192) / 32;
+  return { x: (dx + dy) / 2, y: (dy - dx) / 2 };
+};
+const elevationDistance = (x: number, y: number) =>
+  Math.min(...elevated.map((c) => Math.max(c.x - x, x - c.x - 1, c.y - y, y - c.y - 1, 0)));
+const terrain = (x: number, y: number) => FOREST_ROAD.rows[Math.floor(y)]?.[Math.floor(x)] ?? ',';
+let mattePixels = 0;
+for (let py = 0; py < plate.height; py++) {
+  for (let px = 0; px < plate.width; px++) {
+    const { x, y } = logical(px, py);
+    const distance = elevationDistance(x, y);
+    if (distance > 0.08) continue;
+    const key = terrain(x, y);
+    let sourceX = px,
+      sourceY = py;
+    // The observed source fringe extends 0.0161 cell outside stone. A 0.02
+    // exterior matte copies the nearest same-terrain authored pixel clear of
+    // that fringe. No colour synthesis, blurred edge or extra stone is added.
+    if (key !== '^' && distance <= 0.02) {
+      let best = Infinity;
+      for (let oy = -6; oy <= 6; oy++) {
+        for (let ox = -6; ox <= 6; ox++) {
+          const sx = px + ox,
+            sy = py + oy;
+          if (sx < 0 || sy < 0 || sx >= plate.width || sy >= plate.height) continue;
+          const candidate = logical(sx, sy);
+          const square = ox * ox + oy * oy;
+          if (
+            square < best &&
+            terrain(candidate.x, candidate.y) === key &&
+            elevationDistance(candidate.x, candidate.y) >= 0.04
+          ) {
+            best = square;
+            sourceX = sx;
+            sourceY = sy;
+          }
+        }
+      }
+      if (!Number.isFinite(best)) throw new Error('No same-terrain authored pixel for edge matte.');
+      mattePixels++;
+    }
+    setPixel(output, px, py, pixelAt(plate, sourceX, sourceY));
+  }
+}
+let elevationChangedPixels = 0;
+for (let py = 0; py < output.height; py++) {
+  for (let px = 0; px < output.width; px++) {
+    if (pixelAt(prior, px, py).every((value, i) => value === pixelAt(output, px, py)[i])) continue;
+    const wx = ((px + 0.5) * 2304) / output.width - 896;
+    const wy = ((py + 0.5) * 1280) / output.height - 192;
+    const x = wx / 128 + wy / 64,
+      y = wy / 64 - wx / 128;
+    if (
+      !elevated.some(
+        (c) => x >= c.x - 0.08 && x <= c.x + 1.08 && y >= c.y - 0.08 && y <= c.y + 1.08,
+      )
+    )
+      throw new Error('Elevation correction changed a pixel outside its approved envelope.');
+    elevationChangedPixels++;
+  }
+}
+if (auditDirectory) {
+  mkdirSync(auditDirectory, { recursive: true });
+  writePng(`${auditDirectory}/before.png`, prior);
+  writePng(`${auditDirectory}/after.png`, output);
+}
 // Independent colour audit of composed pixels: teal is unique among this
 // plate's earth/grass materials. This does not certify post-WebP edge colours.
 let sourceWaterSpill = 0,
@@ -90,4 +160,6 @@ console.log({
   guardedPixels,
   sourceWaterSpill,
   packedWaterSpill,
+  elevationChangedPixels,
+  mattePixels,
 });

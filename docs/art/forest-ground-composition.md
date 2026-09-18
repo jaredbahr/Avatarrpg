@@ -60,3 +60,29 @@ visual softness of elevation/road edges. Those require integrated inspection.
 The maps family is 2.86 MiB under the unchanged 4 MiB limit. Lower storage is
 from replacing this batch's repeated swatches, not reducing other asset quality.
 Candidate acceptance remains pending actual 96px gameplay review.
+
+## Local elevation packing correction
+
+The 0c7229b review found that the old atlas substituted across elevation created
+an overly sharp/grainy stone patch and dark rim. The correction reuses the current
+plate inside the existing elevation-plus-0.08-cell envelope. Exact map elevation
+cells remain authoritative; source material is copied without changing rules,
+scene registration or any water treatment.
+
+Inside `^`, the current plate supplies the softer authored limestone. Outside,
+the current plate supplies grass/road. A 0.02-cell exterior registration matte
+copies the nearest same-terrain authored pixel at least 0.04 cell clear of the
+stone boundary. This excludes the observed 0.01604-cell pale fringe without
+inventing painted pixels. The colour diagnostic is not collision proof.
+
+The pre-encoding before/after audit found 15,676 changed pixels, all inside the
+previous elevation envelope, and 752 matte pixels. It throws if any change lies
+outside that envelope. The separate water colour audit still reports zero spill;
+water and its distant guard are outside the changed envelope. Source/packed sizes,
+quality and world chunk placement remain unchanged. Lossy encoding can affect
+nearby block pixels; this audit describes the uncompressed composition.
+
+Before WebPs and pre-encoding before/after PNGs are preserved locally under
+`gallery/scene-audit/elevation-packing/`. Directly inspected boundary crops show
+the old grain/dark rim replaced by quieter warm stone. Final acceptance still
+requires the combined actual-96px review with gameplay's permanent-rubble fix.
