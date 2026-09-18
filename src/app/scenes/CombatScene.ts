@@ -71,7 +71,7 @@ export class CombatScene implements Scene {
   private lastActiveId: string | null = null;
   private recentreButton: HTMLButtonElement | null = null;
   private actorButton: HTMLButtonElement | null = null;
-  /** True while the player has zoomed in past the fitted board; a reflow then keeps the zoom. */
+  /** Retain manually chosen zoom, focus or pan when the HUD reflows. */
   private zoomed = false;
   /**
    * The reachable set and the target/area tiles are rebuilt only when the
@@ -173,7 +173,14 @@ export class CombatScene implements Scene {
   }
 
   private pan(dx: number, dy: number): void {
-    this.renderer?.camera.panBy(dx, dy);
+    const camera = this.renderer?.camera;
+    if (!camera) return;
+    const { offsetX, offsetY } = camera;
+    camera.panBy(dx, dy);
+    if (camera.offsetX !== offsetX || camera.offsetY !== offsetY) {
+      this.zoomed = !camera.fitted;
+      this.syncRecentre();
+    }
   }
 
   /** Camera navigation never selects a target or spends an action. */
