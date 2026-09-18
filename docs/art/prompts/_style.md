@@ -42,6 +42,24 @@ silhouette does not by itself establish correct handedness. Follow the
 shoulder, elbow and wrist before checking the thumb, and repeat this check
 for each view and animation frame.
 
+For a hand held upright, fingers up and wrist below, use this viewer-relative
+check before describing a pose. Rotate the check with the hand; these are not
+fixed screen coordinates for every gesture.
+
+| Anatomical hand | Surface facing the viewer | Thumb side in the image |
+| --------------- | ------------------------- | ----------------------- |
+| Right           | Palm                      | Right                   |
+| Left            | Palm                      | Left                    |
+| Right           | Back                      | Left                    |
+| Left            | Back                      | Right                   |
+
+Palm creases and fingertip pads must agree with a palm view. Dorsal knuckle
+marks and fingernails must agree with the visible finger surfaces. A curled
+thumb can show its nail across a palm; that does not make the extended fingers
+back-facing. In a two-finger gesture, account separately for the curled ring
+and little fingers as well as the thumb. Do not accept an implausibly short
+index finger merely because the total digit count is five.
+
 ## The frame, for portraits
 
 > Bust portrait, head and shoulders, three-quarter view turned slightly toward
