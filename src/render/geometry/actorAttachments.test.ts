@@ -19,7 +19,7 @@ const actor: ActorAttachment = {
   pos: { x: 9, y: 4 },
   sprite: 'unit.fire.kaya',
   size: 1,
-  socket: 'fire-release',
+  socket: 'cast-release',
   facing: 1,
   scale: 1.25,
   offset: { x: 0.1, y: -0.04 },
@@ -56,8 +56,8 @@ describe('actor attachment geometry', () => {
         ['unit.fire.tenzo', 90, 109],
       ] as const) {
         for (const [socket, x, y] of [
-          ['fire-gather', gatherX, 91],
-          ['fire-release', releaseX, 77],
+          ['cast-gather', gatherX, 91],
+          ['cast-release', releaseX, 77],
         ] as const) {
           for (const facing of [-1, 1] as const) {
             for (const scale of [0.93, 1.25, 1.35]) {
@@ -75,6 +75,35 @@ describe('actor attachment geometry', () => {
     }
   });
 
+  it.each([
+    ['unit.water.nilak', 95, 77, 105, 77],
+    ['unit.water.sura', 96, 82, 107, 72],
+    ['unit.air.nima', 94, 89, 106, 78],
+    ['unit.air.jinu', 95, 89, 102, 86],
+  ] as const)('calibrates both existing cast palms for %s', (sprite, gx, gy, rx, ry) => {
+    for (const [socket, x, y] of [
+      ['cast-gather', gx, gy],
+      ['cast-release', rx, ry],
+    ] as const) {
+      expect(socketOffset({ ...actor, sprite, socket }, frame)).toEqual({
+        x: (x - 64) / 128,
+        y: (y - 0.85 * 192) / 128,
+      });
+      for (const projection of ['orthographic', 'oblique'] as const) {
+        const right = projectGround(
+          attachmentPoint({ ...actor, sprite, socket }, projection, 0, frame),
+          projection,
+        );
+        const left = projectGround(
+          attachmentPoint({ ...actor, sprite, socket, facing: -1 }, projection, 0, frame),
+          projection,
+        );
+        expect(right.y).toBeCloseTo(left.y, 9);
+        expect(right.x - left.x).toBeCloseTo(((2 * (x - 64)) / 128) * actor.scale, 9);
+      }
+    }
+  });
+
   it('raises an oblique socket vertically without an unintended horizontal shift', () => {
     const low = projectGround(attachmentPoint(actor, 'oblique', 0, frame), 'oblique');
     const high = projectGround(attachmentPoint(actor, 'oblique', 3, frame), 'oblique');
@@ -87,10 +116,14 @@ describe('actor attachment geometry', () => {
     for (const [sprite, buildName] of [
       ['unit.fire.kaya', 'lean'],
       ['unit.fire.tenzo', 'broad'],
+      ['unit.water.nilak', 'robed'],
+      ['unit.air.jinu', 'robed'],
+      ['unit.water.sura', 'lean'],
+      ['unit.air.nima', 'lean'],
     ] as const) {
       for (const [socket, index] of [
-        ['fire-gather', 0],
-        ['fire-release', 1],
+        ['cast-gather', 0],
+        ['cast-release', 1],
       ] as const) {
         const build = BUILDS[buildName];
         const joints = solve(poseFor('cast', index), build);

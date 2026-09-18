@@ -307,9 +307,10 @@ export function choreograph(input: ChoreographyInput): Choreography {
           (event.target.x === casterPos.x && event.target.y === casterPos.y);
         const melee = ability.range <= 1 && ability.targeting.shape === 'unit';
         const screenDir = screenDirection(dir, input.projection ?? 'orthographic');
+        const attached = ['fire_jab', 'water_whip', 'air_blast'].includes(ability.id);
         const facing = self
           ? undefined
-          : ability.id === 'fire_jab'
+          : attached
             ? screenDir.x < 0
               ? -1
               : 1
@@ -324,9 +325,8 @@ export function choreograph(input: ChoreographyInput): Choreography {
           ? { x: 0, y: 0.04 }
           : scaled(screenDir, melee ? MELEE_LUNGE : LUNGE * motion.reach);
         const clip: ClipName = melee ? 'melee' : 'cast';
-        // Only this directed technique has calibrated hand sockets. Area,
-        // surface and all other techniques retain their ground contract.
-        const attached = ability.id === 'fire_jab';
+        // These directed fundamentals have calibrated cast palms. Earth,
+        // area and surface techniques retain their separate ground contract.
         const casterUnit = unitsBefore.find((unit) => unit.id === event.unitId);
         const victim = unitsBefore.find((unit) => {
           if (unit.hp <= 0) return false;
@@ -361,7 +361,7 @@ export function choreograph(input: ChoreographyInput): Choreography {
         const gather = attached
           ? snapshot(
               casterUnit,
-              'fire-gather',
+              'cast-gather',
               scaled(back, gatherT),
               1 + (motion.compression - 1) * gatherT,
               facing ?? (screenDir.x < 0 ? -1 : 1),
@@ -417,7 +417,7 @@ export function choreograph(input: ChoreographyInput): Choreography {
         const hand = attached
           ? snapshot(
               casterUnit,
-              'fire-release',
+              'cast-release',
               {
                 x: back.x + (forward.x - back.x) * launchT,
                 y: back.y + (forward.y - back.y) * launchT,
@@ -429,6 +429,7 @@ export function choreograph(input: ChoreographyInput): Choreography {
         cue(ability.fx, launchAt, 1, eventIndex);
 
         let impactAt = releaseAt + release * 0.5;
+        let returnAt = releaseAt + release;
         if (recipe.travel && !self) {
           const distance = Math.hypot(target.x - caster.x, target.y - caster.y);
           const flight =
@@ -470,12 +471,18 @@ export function choreograph(input: ChoreographyInput): Choreography {
             hand ? { from: hand, ...(torso ? { to: torso } : {}) } : undefined,
           );
           impactAt = launchAt + flight;
+          // Water Whip remains tethered on its return. Keep the striking palm
+          // out until that stroke has reeled in, rather than idling underneath it.
+          if (ability.id === 'water_whip')
+            for (const def of stretched)
+              if (def.kind === 'strokes' && def.shape === 'whip')
+                returnAt = Math.max(returnAt, launchAt + def.duration * rate);
         }
 
         // Keep the extension through flight and impact. Without this track a
         // long throw snaps to idle before its recovery starts.
         const hitStop = recipe.hitStop * rate;
-        const recoverAt = Math.max(releaseAt + release, impactAt + hitStop);
+        const recoverAt = Math.max(returnAt, impactAt + hitStop);
         const holdAt = releaseAt + release;
         if (recoverAt > holdAt)
           pose(event.unitId, clip, holdAt, recoverAt - holdAt, forward, forward, easeInOutSine, {

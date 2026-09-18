@@ -38,6 +38,7 @@ const content = {
     ['fire_jab', fireJab],
     ['strike', strike],
     ['water_whip', waterWhip],
+    ['air_blast', { ...waterWhip, id: 'air_blast', fx: 'fx.air.blast', range: 6 }],
   ]),
 } as unknown as ContentIndex;
 
@@ -82,8 +83,8 @@ describe('directed Fire Jab attachments', () => {
   it('attaches either boss footprint cell to the same torso while preserving logical trajectory', () => {
     const first = play([cast(5)]).tracks.filter((t): t is EmitterTrack => t.kind === 'emitter');
     const second = play([cast(6)]).tracks.filter((t): t is EmitterTrack => t.kind === 'emitter');
-    const a = first.find((t) => t.attachments?.from?.socket === 'fire-release');
-    const b = second.find((t) => t.attachments?.from?.socket === 'fire-release');
+    const a = first.find((t) => t.attachments?.from?.socket === 'cast-release');
+    const b = second.find((t) => t.attachments?.from?.socket === 'cast-release');
     expect(a?.attachments?.to).toEqual(b?.attachments?.to);
     expect(a?.attachments?.to).toMatchObject({
       pos: { x: 5, y: 3 },
@@ -97,6 +98,70 @@ describe('directed Fire Jab attachments', () => {
     expect(first.some((t) => t.attachments?.translateTogether)).toBe(true);
   });
 
+  it.each([
+    ['water_whip', 'unit.water.nilak'],
+    ['water_whip', 'unit.water.sura'],
+    ['air_blast', 'unit.air.nima'],
+    ['air_blast', 'unit.air.jinu'],
+  ])('attaches %s for %s and expires gather before release', (abilityId, sprite) => {
+    const tracks = play([cast(5, abilityId)], [{ ...caster, sprite }, boss]).tracks;
+    const emitters = tracks.filter((t): t is EmitterTrack => t.kind === 'emitter');
+    const gather = emitters.filter((t) => t.attachments?.from?.socket === 'cast-gather');
+    const flight = emitters.find((t) => t.attachments?.from?.socket === 'cast-release');
+    const release = tracks.find(
+      (t) => t.kind === 'pose' && t.unitId === caster.id && t.frame === 1,
+    );
+    expect(gather.length).toBeGreaterThan(0);
+    expect(flight?.attachments?.from?.sprite).toBe(sprite);
+    expect(flight?.attachments?.to?.socket).toBe('torso');
+    expect(
+      gather.every(
+        (t) =>
+          t.start + (t.def.kind === 'particles' ? t.def.delay[1] + t.def.life[1] : t.duration) <=
+          release!.start + 0.001,
+      ),
+    ).toBe(true);
+    const pushed = play(
+      [cast(5, abilityId), { type: 'unitPushed', unitId: boss.id, to: { x: 7, y: 3 } }],
+      [{ ...caster, sprite }, boss],
+    );
+    const pushedFlight = pushed.tracks.find(
+      (t) => t.kind === 'emitter' && t.attachments?.from?.socket === 'cast-release',
+    );
+    expect(pushedFlight?.kind === 'emitter' && pushedFlight.attachments?.to?.pos).toEqual({
+      x: 5,
+      y: 3,
+    });
+    expect(
+      play([cast(5, abilityId)], [{ ...caster, sprite }, boss], 0.02).tracks.some(
+        (t) => t.kind === 'emitter',
+      ),
+    ).toBe(false);
+  });
+
+  it('holds Water Whip release through its returning tether without postponing contact', () => {
+    const tracks = play(
+      [cast(5, 'water_whip')],
+      [{ ...caster, sprite: 'unit.water.nilak' }, boss],
+    ).tracks;
+    const whip = tracks.find(
+      (t): t is EmitterTrack =>
+        t.kind === 'emitter' &&
+        t.def.kind === 'strokes' &&
+        t.def.shape === 'whip' &&
+        t.attachments?.from?.socket === 'cast-release',
+    );
+    const recovery = tracks.find(
+      (t) => t.kind === 'pose' && t.unitId === caster.id && t.frame === 2,
+    );
+    expect(whip).toBeDefined();
+    expect(recovery!.start).toBeGreaterThanOrEqual(whip!.start + whip!.duration);
+    const impact = tracks.find(
+      (t): t is EmitterTrack => t.kind === 'emitter' && t.attachments?.translateTogether === true,
+    );
+    expect(impact!.start).toBeLessThan(recovery!.start);
+  });
+
   it('chooses the living recipient rather than a corpse sharing its tile', () => {
     const corpse = {
       ...unit('corpse', 5, 3),
@@ -106,7 +171,7 @@ describe('directed Fire Jab attachments', () => {
     };
     const tracks = play([cast()], [caster, corpse, boss]).tracks;
     const travel = tracks.find(
-      (t) => t.kind === 'emitter' && t.attachments?.from?.socket === 'fire-release',
+      (t) => t.kind === 'emitter' && t.attachments?.from?.socket === 'cast-release',
     );
     if (travel?.kind !== 'emitter') throw new Error('Missing flight');
     expect(travel.attachments?.to?.sprite).toBe(boss.sprite);
@@ -120,10 +185,10 @@ describe('directed Fire Jab attachments', () => {
       [{ ...caster, pos: origin }, boss],
     ).tracks;
     const release = tracks.find(
-      (t) => t.kind === 'emitter' && t.attachments?.from?.socket === 'fire-release',
+      (t) => t.kind === 'emitter' && t.attachments?.from?.socket === 'cast-release',
     );
     const gather = tracks.find(
-      (t) => t.kind === 'emitter' && t.attachments?.from?.socket === 'fire-gather',
+      (t) => t.kind === 'emitter' && t.attachments?.from?.socket === 'cast-gather',
     );
     if (release?.kind !== 'emitter' || gather?.kind !== 'emitter')
       throw new Error('Missing attached effects');
@@ -142,7 +207,7 @@ describe('directed Fire Jab attachments', () => {
       9,
     );
     expect(release.attachments?.from?.pos).toEqual({ x: 1, y: 3 });
-    expect(gather.attachments?.from?.socket).toBe('fire-gather');
+    expect(gather.attachments?.from?.socket).toBe('cast-gather');
     expect(tracks.some((t) => t.kind === 'pose' && t.frame === 2 && t.start > release.start)).toBe(
       true,
     );
@@ -151,7 +216,7 @@ describe('directed Fire Jab attachments', () => {
   });
 
   it('does not attach other techniques or revive suppressed reduced-motion emitters', () => {
-    for (const ability of ['water_whip', 'strike']) {
+    for (const ability of ['strike']) {
       const effects = play([cast(5, ability)]).tracks.filter(
         (t): t is EmitterTrack => t.kind === 'emitter',
       );
@@ -198,7 +263,7 @@ describe('directed Fire Jab attachments', () => {
     if (release?.kind !== 'pose') throw new Error('Missing release');
     const gathering = tracks.filter(
       (t): t is EmitterTrack =>
-        t.kind === 'emitter' && t.attachments?.from?.socket === 'fire-gather',
+        t.kind === 'emitter' && t.attachments?.from?.socket === 'cast-gather',
     );
     expect(gathering.length).toBeGreaterThan(0);
     for (const track of gathering) {

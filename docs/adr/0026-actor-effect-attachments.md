@@ -69,3 +69,27 @@ order plus canvas pixels in a microtask after resize and before paint. It covers
 Canvas/WebGL, ordinary/reduced motion and intentionally missing character sheets;
 the normal-motion cases also exercise a real window-size change. This complements
 moving review rather than relying on a settled screenshot to catch a transient.
+
+## Common directed fundamentals
+
+The next moving audit at ebcaa8e confirmed Water Whip leaving Nilak's feet and
+Air Blast gathering at Nima's ground ring, travelling low and striking the
+recipient's feet. Eight staged actual-Confirm captures covered Nilak, Bo, Nima
+and Riko on both backends. These are bounded presentation fixtures, not a
+continuous campaign or full-roster qualitative acceptance.
+
+Extend the explicit attachment opt-in to Water Whip and Air Blast. Rename the
+socket vocabulary to cast-gather/cast-release and calibrate the existing cast
+cels for Nilak, Sura, Nima and Jinu independently. Keep the same immutable pose,
+flight and recipient snapshots. Their gather disappears as the release pose
+begins. Nilak/Jinu's missing-sheet paths use the robed painter rig; Sura/Nima use
+lean. Fire Jab's calibration stays unchanged. Rock Throw's grounded gather and
+terrain debris, melee, area effects and surfaces are unchanged pending their
+own material/weapon decisions. Water's upstream pouch/source animation remains
+an art gap; hand attachment alone does not establish sourced-water presentation.
+
+The first attached Water Whip capture also exposed recovery starting while its
+returning stroke was still connected to the launch point. Keep the release pose
+through the returning whip; impact timing stays unchanged and recovery follows
+return. This is presentation-only and extends the serialized action animation,
+not AP, initiative, damage, cooldowns or saved state.

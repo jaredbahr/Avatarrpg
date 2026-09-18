@@ -15,7 +15,23 @@ type FrameGeometry = Pick<ResolvedFrame, 'frame' | 'anchor' | 'pixelsPerTile' | 
 const presented = new WeakMap<ActorAttachment, { projection: Projection; point: Vec2 }>();
 
 /** Measured palm centres in the existing 128x192 cast cels, facing right. */
-const FIRE_HANDS: Readonly<Record<string, readonly [Vec2, Vec2]>> = {
+const CAST_HANDS: Readonly<Record<string, readonly [Vec2, Vec2]>> = {
+  'unit.water.nilak': [
+    { x: 95, y: 77 },
+    { x: 105, y: 77 },
+  ],
+  'unit.water.sura': [
+    { x: 96, y: 82 },
+    { x: 107, y: 72 },
+  ],
+  'unit.air.nima': [
+    { x: 94, y: 89 },
+    { x: 106, y: 78 },
+  ],
+  'unit.air.jinu': [
+    { x: 95, y: 89 },
+    { x: 102, y: 86 },
+  ],
   'unit.fire.kaya': [
     { x: 59, y: 91 },
     { x: 99, y: 77 },
@@ -29,8 +45,8 @@ const FIRE_HANDS: Readonly<Record<string, readonly [Vec2, Vec2]>> = {
 /** Upright offset from the foot anchor, in unscaled tile units. */
 export function socketOffset(actor: ActorAttachment, frame?: FrameGeometry): Vec2 {
   const hand = actor.socket !== 'torso';
-  const index = actor.socket === 'fire-release' ? 1 : 0;
-  const point = FIRE_HANDS[actor.sprite]?.[index];
+  const index = actor.socket === 'cast-release' ? 1 : 0;
+  const point = CAST_HANDS[actor.sprite]?.[index];
   if (hand && point && frame && !frame.placeholder) {
     return {
       x: (point.x - frame.anchor.x * frame.frame.w) / frame.pixelsPerTile,
@@ -39,7 +55,13 @@ export function socketOffset(actor: ActorAttachment, frame?: FrameGeometry): Vec
   }
   if (hand) {
     // Painter fallback uses its actual rig, including the baker's growth.
-    const build = BUILDS[actor.sprite === 'unit.fire.tenzo' ? 'broad' : 'lean'];
+    const buildName =
+      actor.sprite === 'unit.fire.tenzo'
+        ? 'broad'
+        : actor.sprite === 'unit.water.nilak' || actor.sprite === 'unit.air.jinu'
+          ? 'robed'
+          : 'lean';
+    const build = BUILDS[buildName];
     const joints = solve(poseFor('cast', index), build);
     const palm = index === 0 ? joints.backArm[2] : joints.frontArm[2];
     const headroom = frame ? (frame.anchor.y * frame.frame.h) / frame.pixelsPerTile - FOOT : 0;
@@ -91,7 +113,7 @@ export function resolveActorEmitters(
       actor.sprite,
       clip,
       0,
-      actor.socket === 'fire-release' ? 1 : 0,
+      actor.socket === 'cast-release' ? 1 : 0,
       pixelsPerTile * actor.scale,
       actor.size,
     );
