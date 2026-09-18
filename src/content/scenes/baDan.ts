@@ -19,12 +19,13 @@ export const BA_DAN_COURTYARD_FOOTPRINTS: readonly Vec2[] = BA_DAN_COURTYARD_PRO
 
 function courtyardProp({ id, image, x, y }: (typeof BA_DAN_COURTYARD_PROPS)[number]): SceneScenery {
   const width = 192;
-  const height = (width * (image === 'low-planter' ? 362 : 431)) / 512;
+  const height = (width * (image === 'low-planter' ? 295 : 329)) / 512;
+  const frontAnchor = image === 'low-planter' ? 0.675 : 0.695;
   const front = { x: x + 2, y: y + 1 };
   return {
     id,
     url: `${root}${image}.webp`,
-    x: 1024 + (front.x - front.y) * 64 - width * 0.635,
+    x: 1024 + (front.x - front.y) * 64 - width * frontAnchor,
     y: (front.x + front.y) * 32 - height,
     width,
     height,
@@ -95,11 +96,12 @@ export const BA_DAN_SCENE: MapScene = {
     },
   ],
   scenery: [
-    ...BA_DAN_COURTYARD_PROPS.map(courtyardProp),
     house('gao-house', 6, 1, 4, 3),
     house('north-house', 12, 1, 4, 3, 'dwelling'),
     house('southwest-house', 6, 10, 4, 4, 'dwelling'),
     house('southeast-house', 13, 10, 4, 4),
+    // Equal-depth frontage must paint after the building behind it.
+    ...BA_DAN_COURTYARD_PROPS.map(courtyardProp),
     tree(0, 3),
     tree(0, 6, 400),
     tree(0, 10, 420),

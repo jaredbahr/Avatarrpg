@@ -35,3 +35,19 @@ display (288,113,951,801). Packed dimensions are 512×362 and 512×431. Both use
 These are composition candidates, not final visual acceptance. Review integrated
 art together with collision geometry on both backends. Remaining straight
 ground boundaries and worn door approaches still need assessment in that view.
+
+## Height correction after integrated review
+
+Runtime 30871ae showed oversized fruit and a counter near adult shoulder height.
+The planter also read too high. Image-tool edits rebuilt shorter structures
+instead of squashing images or shrinking collision footprints. The display uses
+six shallow trays of smaller produce, shortened legs, low boxes and a smaller
+jar; the planter uses one low masonry course and a flatter foliage mat.
+
+Replacement sources: display `exec-0dfd3738-1b77-4df6-a30f-bb8ffbbce66a.png`,
+planter `exec-24312925-8c29-4d28-aca0-797c356881b4.png`. Source alpha bounds are
+(222,168,1094,704) and (93,199,1287,741), packed uniformly to 512×329 and 512×295.
+World width stays 192; front-corner anchors are 69.5% and 67.5% respectively.
+Frontage paints after houses on equal depth so the opaque shop does not bury
+the display. All six logical occupied cells remain unchanged. Gameplay moves
+Gao from the house interior to the visible door approach independently.
