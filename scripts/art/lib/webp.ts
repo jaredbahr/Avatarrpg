@@ -25,12 +25,16 @@ function encoder(): Promise<unknown> {
   return ready;
 }
 
-/** Lossy WebP at `quality` (0-100). Paintings are opaque; alpha is forced to 255. */
-export async function encodeWebp(image: Image, quality: number): Promise<Uint8Array> {
+/** Lossy WebP; ordinary paintings are opaque, upright scene layers retain alpha. */
+export async function encodeWebp(
+  image: Image,
+  quality: number,
+  preserveAlpha = false,
+): Promise<Uint8Array> {
   await encoder();
   const data = new Uint8ClampedArray(image.data.length);
   data.set(image.data);
-  for (let i = 3; i < data.length; i += 4) data[i] = 255;
+  if (!preserveAlpha) for (let i = 3; i < data.length; i += 4) data[i] = 255;
   const pixels = { data, width: image.width, height: image.height, colorSpace: 'srgb' };
   const buffer = await encode(pixels as ImageData, { quality });
   return new Uint8Array(buffer);
