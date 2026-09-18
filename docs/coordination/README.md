@@ -86,6 +86,27 @@ and explain any superseded decision instead of leaving competing instructions.
 
 ## Verification and reporting
 
+### Keep CI work proportional
+
+CI runs once per pull-request revision, on `main` pushes, and on explicit manual
+dispatch. Do not dispatch a second run while the required PR run is active. The
+browser and gallery jobs wait for verification to pass; all required check names,
+suites and latest-head merge rules still apply, including to drafts.
+
+Batch related local edits and focused checks into a coherent verified milestone
+before pushing. Preserve a handoff before a session ends, but do not push every
+intermediate experiment or repeatedly update a branch merely to restart CI.
+Choose one landing PR for each change. Source PRs own their changes; use local
+combined branches for integration review and bring merged `main` into the final
+acceptance-test PR. Do not publish the same source changes in several competing
+integration PRs. When consolidation is necessary, explicitly transfer ownership
+and supersede the old PRs before starting another full run.
+
+CI gallery and browser-report artifacts expire after seven days. Record the
+tested revision and review findings in the durable handoff; download evidence
+needed beyond that window. Normal Pages deployments build only the game. See
+[the gallery guide](../gallery.md) for optional manual gallery publication.
+
 Follow `AGENTS.md` for verify-before-push, PR readiness, current-head CI and merge
 commits. Add focused tests for meaningful behavior changes; documentation alone
 does not need invented unit tests. Integration review checks the combined game,

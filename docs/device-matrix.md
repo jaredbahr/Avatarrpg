@@ -33,8 +33,10 @@ Those stay below.
 
 The gallery (`npm run gallery`, ADR 0006) captures five Chromium projects,
 the Surface and the iPad on both backends and the iPad upright, from the
-production build. It is a review artefact published as a CI artefact and at
-`/gallery/` on Pages, never a gate.
+production build. CI requires successful capture and publishes a downloadable
+artifact for seven days; visual acceptance still requires inspecting the images.
+Publishing `/gallery/` on Pages is an optional manual action described in the
+[gallery guide](gallery.md).
 
 Never run `playwright install` in the dev container: Chromium is preinstalled at
 `PLAYWRIGHT_BROWSERS_PATH`. On a machine of your own, `npx playwright install
@@ -62,7 +64,7 @@ model, iPadOS version and the `?stats=1` numbers in the PR.
 15. **Atmosphere.** The board sits in the dark frame with dimmed corners and holds 58 fps idle; the quarry's ledges and pits read as height from across the table; Higher contrast removes the shading and keeps the board readable.
 16. **Figures.** Every unit stands about a tile tall with its health bar clear of the head; the party faces right and the bandits face left. Pinch to the maximum zoom on the quarry with the boss out: every unit still draws (the canvas memory cap).
 17. **HUD.** The acting unit's portrait sits in the unit panel ringed in its element; every ability button shows its element glyph and stays 48 px tall at Largest text.
-18. **Gallery.** Open `/gallery/` from the Pages URL: every project's pictures load, and the figure page shows every unit in every pose.
+18. **Gallery.** Open the CI gallery artifact (or an explicitly published Pages gallery): every project's pictures load, and the figure page shows every unit in every pose.
 19. **The shell in daylight.** Outdoors or by a window: the parchment HUD's text reads on every panel, the confirm bar's green button reads, and Higher contrast still helps rather than hurts.
 20. **A painting under the grid.** On a map with a painting, Settings → Show grid: the road's edges and the pond's banks sit on the tile lines; the live puddle is tinted over the painting; Higher contrast brings the drawn tree, wall and ledge marks back over it.
 21. **Zoomed into a painting.** Pinch to the maximum on a painted map on both renderers (`?renderer=canvas`, `?renderer=webgl`): the painting stays sharp and every unit still draws; `?stats=1` idles at 58 fps or better.
