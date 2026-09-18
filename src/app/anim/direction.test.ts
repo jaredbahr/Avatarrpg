@@ -48,6 +48,10 @@ describe('directional walking', () => {
         clip: `idle${direction}`,
         facing: 1,
       });
+      expect(a.locomotion(a.finishesAt + 1, 'leader', 'rest')).toEqual({
+        clip: `rest${direction}`,
+        facing: 1,
+      });
       a.clear();
       expect(a.locomotion(9999, 'leader')).toEqual({ clip: 'idle', facing: 1 });
     });

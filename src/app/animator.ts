@@ -211,12 +211,16 @@ export class Animator {
   }
 
   /** Locomotion fields shared by the world, riverside and combat views. */
-  locomotion(now: number, unitId: string): { clip: ClipName; facing: 1 | -1 } {
+  locomotion(
+    now: number,
+    unitId: string,
+    resting: 'idle' | 'rest' = 'idle',
+  ): { clip: ClipName; facing: 1 | -1 } {
     this.settleHeadings(now);
     const travel = this.walkTravel(now, unitId);
     if (travel)
       this.rememberDirection(unitId, sampleAt(travel.track.curve, travel.distance).tangent);
-    const clip = directionalClip(travel ? 'walk' : 'idle', this.directions.get(unitId));
+    const clip = directionalClip(travel ? 'walk' : resting, this.directions.get(unitId));
     return { clip, facing: verticalClip(clip) ? 1 : (this.facings.get(unitId) ?? 1) };
   }
 

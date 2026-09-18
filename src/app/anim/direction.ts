@@ -25,14 +25,21 @@ export function walkDirection(tangent: Vec2, previous?: WalkDirection): WalkDire
 
 /** Actions retain their authored side poses; only locomotion has front/back art. */
 export function directionalClip(clip: ClipName, direction?: WalkDirection): ClipName {
-  if (clip !== 'walk' && clip !== 'idle') return clip;
-  if (direction === 'north') return clip === 'walk' ? 'walkNorth' : 'idleNorth';
-  if (direction === 'south') return clip === 'walk' ? 'walkSouth' : 'idleSouth';
+  if (clip !== 'walk' && clip !== 'idle' && clip !== 'rest') return clip;
+  if (direction === 'north')
+    return clip === 'walk' ? 'walkNorth' : clip === 'rest' ? 'restNorth' : 'idleNorth';
+  if (direction === 'south')
+    return clip === 'walk' ? 'walkSouth' : clip === 'rest' ? 'restSouth' : 'idleSouth';
   return clip;
 }
 
 export function verticalClip(clip: ClipName): boolean {
   return (
-    clip === 'walkNorth' || clip === 'walkSouth' || clip === 'idleNorth' || clip === 'idleSouth'
+    clip === 'walkNorth' ||
+    clip === 'walkSouth' ||
+    clip === 'idleNorth' ||
+    clip === 'idleSouth' ||
+    clip === 'restNorth' ||
+    clip === 'restSouth'
   );
 }

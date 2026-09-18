@@ -252,7 +252,7 @@ export class ExploreScene implements Scene {
             },
           ],
           [],
-          { alongside: index > 0, silentSteps: route.index !== 0 },
+          { alongside: index > 0, silentSteps: route.index !== 0, delayMs: route.delayMs },
         );
       }
     }
@@ -753,7 +753,7 @@ export class ExploreScene implements Scene {
       renderPos: index === 0 ? walking : this.app.animator.renderPos(now, member.id),
       offset: this.app.animator.offset(now, member.id),
       clipTime: this.app.animator.unitPose(now, member.id)?.clipTime,
-      ...this.app.animator.locomotion(now, member.id),
+      ...this.app.animator.locomotion(now, member.id, 'rest'),
     }));
 
     const npcs: NpcMarker[] = [
