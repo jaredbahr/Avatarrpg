@@ -23,6 +23,7 @@ import { sampleAt, smoothPath } from '../geometry/curve';
 import { CanvasFxLayer } from '../fx/canvasFx';
 import { backdrops } from '../backdrops';
 import { sceneImages, sceneryOpacity } from '../scene';
+import { surfaceIsPainted } from '../sceneSurfaces';
 import { FACTION_RING, OVERLAY, STATUS_BADGE, hpColor } from '../palettes';
 import { paintTileDecor } from '../painters/board';
 import { paintFloatingNumber, paintPathArrow, paintPathDot } from '../painters/fx';
@@ -254,14 +255,7 @@ export class Canvas2DBackend implements RenderBackend {
         const pos = { x, y };
         const box = camera.toScreen(pos);
         if (!painted) paintTerrain(ctx, box, tile, pos);
-        if (!(
-          painted &&
-          view.scene?.paintedWater &&
-          !view.hatch &&
-          !view.crispOverlays &&
-          tile.surface?.id === 'water' &&
-          tile.surface.duration < 0
-        ))
+        if (!surfaceIsPainted(view, painted, tile, pos))
           paintSurface(ctx, box, tile, pos, view.hatch, surfaceEdges(view.grid, pos));
         if (view.gridLines) paintGridLine(ctx, box, 'rgba(0,0,0,0.18)');
       }

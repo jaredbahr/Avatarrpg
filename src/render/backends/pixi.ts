@@ -29,10 +29,11 @@ import {
   UniformGroup,
 } from 'pixi.js';
 
-import type { Grid, SurfaceId, TerrainId, Vec2 } from '../../core/types';
+import type { SurfaceId, TerrainId, Vec2 } from '../../core/types';
 import { resolveAsset } from '../../content/assets/manifest';
 import { backdrops } from '../backdrops';
 import { sceneImages, sceneryOpacity } from '../scene';
+import { surfaceIsPainted } from '../sceneSurfaces';
 import { TILE } from '../camera';
 import type { Camera, Viewport } from '../camera';
 import { DecorSheets } from '../decorSheets';
@@ -582,10 +583,7 @@ export class PixiBackend implements RenderBackend {
 
   private syncGround(view: MapView, painted: boolean): void {
     const { grid } = view;
-    this.uploadMap(
-      grid,
-      painted && view.scene?.paintedWater === true && !view.hatch && !view.crispOverlays,
-    );
+    this.uploadMap(view, painted);
 
     const uniforms = this.groundUniforms.uniforms as {
       uGrid: Float32Array;
@@ -625,8 +623,15 @@ export class PixiBackend implements RenderBackend {
    * changed â€” a signature comparison is far cheaper than a GPU upload every
    * frame, and most frames change nothing on the ground.
    */
-  private uploadMap(grid: Grid, paintedWater: boolean): void {
-    let signature = `${grid.width}x${grid.height}:${paintedWater}`;
+  private uploadMap(view: MapView, painted: boolean): void {
+    const grid = view.grid;
+    const baked = grid.tiles.map((tile, i) =>
+      surfaceIsPainted(view, painted, tile, {
+        x: i % grid.width,
+        y: Math.floor(i / grid.width),
+      }),
+    );
+    let signature = `${grid.width}x${grid.height}:${baked.map((value) => (value ? '1' : '0')).join('')}`;
     for (const tile of grid.tiles) {
       signature += `|${tile.terrain}:${tile.surface?.id ?? ''}:${tile.surface?.duration ?? 0}`;
     }
@@ -645,8 +650,7 @@ export class PixiBackend implements RenderBackend {
     for (let i = 0; i < grid.tiles.length; i++) {
       const tile = grid.tiles[i];
       if (!tile) continue;
-      const baked = paintedWater && tile.surface?.id === 'water' && tile.surface.duration < 0;
-      const surface = tile.surface && !baked ? (SURFACE_INDEX[tile.surface.id] ?? 0) : 0;
+      const surface = tile.surface && !baked[i] ? (SURFACE_INDEX[tile.surface.id] ?? 0) : 0;
       // Surfaces thin out as they burn down, so a dying fire visibly fades.
       // A negative duration is map-authored and permanent: always full strength.
       const duration = tile.surface?.duration ?? 0;

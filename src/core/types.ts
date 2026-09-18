@@ -639,6 +639,8 @@ export interface SceneScenery extends SceneImage {
 export interface MapScene {
   /** Ground art includes the permanent water cells and their banks. Dynamic surfaces still draw. */
   readonly paintedWater?: boolean;
+  /** Exact cells whose permanent rubble is already represented by registered art. */
+  readonly paintedRubble?: readonly Vec2[];
   readonly ground: readonly SceneImage[];
   readonly scenery: readonly SceneScenery[];
 }

@@ -89,3 +89,15 @@ units are revalidated when activated. Recentre restores the readable default.
 The portrait HUD shares summary/actions where they fit; narrow huge-text layouts
 scroll the header and bound the HUD height so the battlefield retains space.
 No rule-grid, save, hit-test or enemy footprint changes accompany this framing.
+
+## Explicit painted rubble registration
+
+`MapScene.paintedRubble` lists exact cells already represented by ground art.
+Only matching permanent rubble in a complete scene suppresses the duplicate
+normal overlay; high contrast, crisp overlays, unavailable art, other cells,
+and changed surface types/durations retain the procedural treatment. Both
+backends use the same predicate and WebGL includes per-cell suppression in its
+texture invalidation signature. Forest opts in only(7,3)/(8,9). This changes no
+surface state, movement, cover or save data. A permanent rubble effect at an
+already registered permanent-rubble cell has the same representation; effects
+elsewhere and different/temporary surfaces still draw normally.

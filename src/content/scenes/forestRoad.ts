@@ -53,6 +53,7 @@ function pine({ x, y }: Vec2): SceneScenery {
 /** Already projected ground; gameplay opts the map into the matching projection. */
 export const FOREST_ROAD_SCENE: MapScene = {
   paintedWater: true,
+  paintedRubble: FOREST_RUBBLE_CELLS,
   ground: [
     { url: `${root}ground-west.webp`, x: -128, y: -192, width: 1152, height: 1280 },
     { url: `${root}ground-east.webp`, x: 1024, y: -192, width: 1152, height: 1280 },

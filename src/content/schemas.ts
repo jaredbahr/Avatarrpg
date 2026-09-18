@@ -463,6 +463,7 @@ export const mapSchema = z
     scene: z
       .object({
         paintedWater: z.boolean().optional(),
+        paintedRubble: z.array(vec2).optional(),
         ground: z.array(sceneImageSchema).max(8),
         scenery: z
           .array(
