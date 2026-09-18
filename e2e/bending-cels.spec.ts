@@ -17,7 +17,9 @@ for (const renderer of ['canvas', 'webgl'] as const) {
     await waitForIdle(page);
     await settleLayout(page);
     expect(await page.evaluate(() => window.fnt!.loadedFxCels())).toEqual([...FX_CELS]);
-    await page.clock.pauseAt((await page.evaluate(() => Date.now())) + 1000);
+    // The installed clock tracks real time until paused. Give the command room
+    // to reach the browser even when CI is busy loading every cel.
+    await page.clock.pauseAt(Date.now() + 30_000);
     const techniques = ALL_ABILITIES.filter((a) => /^fx\.(fire|water|earth|air)\./.test(a.fx));
     for (const ability of techniques) {
       await stageMotionTransition(page, 'cast', ability.id);
