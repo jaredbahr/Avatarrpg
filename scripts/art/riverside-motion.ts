@@ -13,8 +13,8 @@ const [name, input] = process.argv.slice(2);
 if (!name || !['sura', 'kaya'].includes(name) || !input)
   throw new Error('Supply sura or kaya, followed by the generated PNG.');
 const key = `unit.village.${name}`;
-const original = readPng(`public/art/units/${name}.png`);
-const atlas = parseAtlasJson(readFileSync(`public/art/units/${name}.json`, 'utf8'));
+const original = readPng(`assets/reference/character-poses/${name}.png`);
+const atlas = parseAtlasJson(readFileSync(`assets/reference/character-poses/${name}.json`, 'utf8'));
 const source = readPng(input);
 if (source.width % 3 || source.height % 2) throw new Error('Expected a 3×2 sheet.');
 const width = source.width / 3;
@@ -52,9 +52,9 @@ for (const [id, frame] of frames) {
   rectangles[id] = { frame: { x: x0, y: 0, w: 128, h: 192 } };
 }
 const stem = `riverside-${name}`;
-writePng(`public/art/units/${stem}.png`, output);
+writePng(`assets/reference/character-poses/${stem}.png`, output);
 writeFileSync(
-  `public/art/units/${stem}.json`,
+  `assets/reference/character-poses/${stem}.json`,
   JSON.stringify(
     {
       frames: rectangles,
