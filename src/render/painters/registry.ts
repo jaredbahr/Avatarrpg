@@ -80,7 +80,8 @@ export function resolvePainter(key: string): ResolvedPainter {
     // after a failed fetch. Unit keys end in the cast variant by convention.
     const palette = paletteFor(entry.palette);
     const variant = key.slice(key.lastIndexOf('.') + 1);
-    const bender = UNIT_PAINTERS.bender ?? FALLBACK;
+    const bender =
+      (key === 'unit.enemy.crossbow' ? UNIT_PAINTERS.mercenary : UNIT_PAINTERS.bender) ?? FALLBACK;
     return {
       entry,
       palette,

@@ -155,7 +155,38 @@ export const ASSETS: Readonly<Record<string, AssetEntry>> = {
   'unit.enemy.quarrybender': painter('bandit', 'earth', 'bender'),
   'unit.enemy.deserter': painter('bandit', 'fire', 'bender'),
   'unit.enemy.merc': painter('mercenary', 'enemy', 'blade'),
-  'unit.enemy.crossbow': painter('mercenary', 'enemy', 'crossbow'),
+  'unit.enemy.crossbow': {
+    kind: 'sheet',
+    atlas: 'art/units/crossbow.json',
+    pixelsPerTile: 128,
+    footprint: { w: 1, h: 1 },
+    anchor: { x: 0.5, y: 0.85 },
+    facing: 'mirror',
+    palette: 'enemy',
+    clips: {
+      idle: {
+        frames: ['unit.enemy.crossbow/idle/0', 'unit.enemy.crossbow/idle/1'],
+        fps: 1,
+        loop: true,
+      },
+      walk: {
+        frames: ['unit.enemy.crossbow/walk/0', 'unit.enemy.crossbow/walk/1'],
+        fps: 4,
+        loop: true,
+      },
+      cast: {
+        frames: [
+          'unit.enemy.crossbow/cast/0',
+          'unit.enemy.crossbow/cast/1',
+          'unit.enemy.crossbow/cast/2',
+        ],
+        fps: 8,
+        loop: false,
+      },
+      hit: { frames: ['unit.enemy.crossbow/hit/0'], fps: 1, loop: false },
+      ko: { frames: ['unit.enemy.crossbow/ko/0'], fps: 1, loop: false },
+    },
+  },
   'unit.enemy.sergeant': painter('mercenary', 'enemy', 'sergeant'),
   'unit.enemy.grumbler': painter('driller', 'enemy'),
   'unit.ally.ruon': painter('mercenary', 'neutral', 'sergeant'),
@@ -178,6 +209,11 @@ export const ASSETS: Readonly<Record<string, AssetEntry>> = {
   'prop.cart': { kind: 'image', url: 'art/props/cart.png', palette: 'air' },
 
   /* ---------------------------------------------------------- Portraits */
+  'portrait.enemy.crossbow': {
+    kind: 'image',
+    url: 'art/portraits/enemy.crossbow.png',
+    palette: 'enemy',
+  },
   'portrait.enemy.thug': { kind: 'image', url: 'art/portraits/enemy.thug.png', palette: 'enemy' },
   'portrait.kaya': { kind: 'image', url: 'art/portraits/kaya.png', palette: 'fire' },
   'portrait.tenzo': { kind: 'image', url: 'art/portraits/tenzo.png', palette: 'fire' },
