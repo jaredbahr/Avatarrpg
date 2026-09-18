@@ -526,11 +526,14 @@ export class ExploreScene implements Scene {
   private nearestNpc(from: Vec2): NpcDef | null {
     let best: NpcDef | null = null;
     let nearest = TALK_RANGE + 1;
+    let proximity = Infinity;
     for (const npc of this.map?.npcs ?? []) {
       const gap = distance(from, npc.pos);
-      if (gap < nearest) {
+      const groundGap = Math.hypot(from.x - npc.pos.x, from.y - npc.pos.y);
+      if (gap < nearest || (gap === nearest && gap <= TALK_RANGE && groundGap < proximity)) {
         best = npc;
         nearest = gap;
+        proximity = groundGap;
       }
     }
     return best;

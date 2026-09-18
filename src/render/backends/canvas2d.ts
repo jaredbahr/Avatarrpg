@@ -156,6 +156,7 @@ export class Canvas2DBackend implements RenderBackend {
       this.drawFxLayer(view, ground, 'under');
       this.drawExit(view, ground);
       ctx.restore();
+      this.drawUnitRings(view, camera);
       // All upright occupants share depth order, including NPCs and props.
       const occupants = [
         ...(view.scene?.scenery ?? []).map((piece) => ({
@@ -205,6 +206,7 @@ export class Canvas2DBackend implements RenderBackend {
       if (view.aimArc) this.drawAimArc(view.aimArc, camera);
       this.drawFxLayer(view, camera, 'under');
       this.drawExit(view, camera);
+      this.drawUnitRings(view, camera);
       this.drawNpcs(view, camera);
       this.drawProps(view, camera);
       this.drawUnits(view, camera);
@@ -616,31 +618,13 @@ export class Canvas2DBackend implements RenderBackend {
     }
   }
 
-  private drawUnits(view: MapView, camera: Camera): void {
+  /** Ground marks sit beneath every upright actor and scenery piece. */
+  private drawUnitRings(view: MapView, camera: Camera): void {
     const { ctx } = this;
-    const { dpr } = camera.viewport;
-
-    // Draw back to front so a unit lower on the map overlaps one above it.
-    const ordered = [...view.units].sort(
-      (a, b) => (a.renderPos ?? a.pos).y - (b.renderPos ?? b.pos).y,
-    );
-
-    for (const unit of ordered) {
-      const pos = unit.renderPos ?? unit.pos;
-      const box = camera.spriteBox(pos, unit.size);
-      const width = unit.size === 2 ? box.size * 2 : box.size;
-
-      // The bob lifts the drawing, never the sort: it is applied after ordering.
-      // So does the ground: a unit on a ledge stands a little higher on screen.
-      if (unit.offset) {
-        box.x += unit.offset.x * box.size;
-        box.y += unit.offset.y * box.size;
-      }
+    for (const unit of view.units) {
+      const box = camera.spriteBox(unit.renderPos ?? unit.pos, unit.size);
+      const width = box.size * unit.size;
       box.y -= elevationAt(view.grid, unit.pos) * ELEVATION_LIFT * box.size;
-      const facing = unit.facing ?? (unit.faction === 'enemy' ? -1 : 1);
-      const scale = unit.scale ?? 1;
-      if (!uprightSpriteVisible(box, camera.viewport, unit.size, scale)) continue;
-
       // Active-unit ring, drawn under the sprite.
       if (unit.id === view.activeUnitId) {
         ctx.save();
@@ -676,6 +660,33 @@ export class Canvas2DBackend implements RenderBackend {
         ctx.stroke();
         ctx.restore();
       }
+    }
+  }
+
+  private drawUnits(view: MapView, camera: Camera): void {
+    const { ctx } = this;
+    const { dpr } = camera.viewport;
+
+    // Draw back to front so a unit lower on the map overlaps one above it.
+    const ordered = [...view.units].sort(
+      (a, b) => (a.renderPos ?? a.pos).y - (b.renderPos ?? b.pos).y,
+    );
+
+    for (const unit of ordered) {
+      const pos = unit.renderPos ?? unit.pos;
+      const box = camera.spriteBox(pos, unit.size);
+      const width = unit.size === 2 ? box.size * 2 : box.size;
+
+      // The bob lifts the drawing, never the sort: it is applied after ordering.
+      // So does the ground: a unit on a ledge stands a little higher on screen.
+      if (unit.offset) {
+        box.x += unit.offset.x * box.size;
+        box.y += unit.offset.y * box.size;
+      }
+      box.y -= elevationAt(view.grid, unit.pos) * ELEVATION_LIFT * box.size;
+      const facing = unit.facing ?? (unit.faction === 'enemy' ? -1 : 1);
+      const scale = unit.scale ?? 1;
+      if (!uprightSpriteVisible(box, camera.viewport, unit.size, scale)) continue;
 
       ctx.save();
       // A pose scales about the feet; the fallen fade sits on top of any alpha.

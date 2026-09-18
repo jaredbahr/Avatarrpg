@@ -201,6 +201,7 @@ export class PixiBackend implements RenderBackend {
   private overlayGfx = new Graphics();
   private pathGfx = new Graphics();
   private decorGfx = new Graphics();
+  private groundRings = new Graphics();
   private unitLayer = new Container();
   private fxGfx = new Graphics();
   private floaterLayer = new Container();
@@ -346,7 +347,7 @@ export class PixiBackend implements RenderBackend {
       this.decorGfx,
     );
     this.unitLayer.sortableChildren = true;
-    this.upright.addChild(this.unitLayer);
+    this.upright.addChild(this.groundRings, this.unitLayer);
     this.labels.addChild(this.fxGfx, this.floaterLayer);
     app.stage.addChild(this.root, this.upright, this.fxOver.container, this.labels);
 
@@ -1035,6 +1036,8 @@ export class PixiBackend implements RenderBackend {
   private drawUnits(view: MapView, camera: Camera): void {
     const g = this.fxGfx;
     g.clear();
+    const rings = this.groundRings;
+    rings.clear();
     const px = this.spritePx(camera);
 
     const live = new Set<string>();
@@ -1198,16 +1201,20 @@ export class PixiBackend implements RenderBackend {
       }
 
       if (unit.id === view.activeUnitId) {
-        g.ellipse(x + width / 2, y + TILE * 0.86, width * 0.42, TILE * 0.14).stroke({
-          width: Math.max(2, TILE * 0.06),
-          color: OVERLAY.active,
-          alpha: 0.75 + 0.25 * ((Math.sin(view.time / 300) + 1) / 2),
-        });
+        rings
+          .ellipse(anchor.x + width / 2, anchor.y + (0.86 - lift) * TILE, width * 0.42, TILE * 0.14)
+          .stroke({
+            width: Math.max(2, TILE * 0.06),
+            color: OVERLAY.active,
+            alpha: 0.75 + 0.25 * ((Math.sin(view.time / 300) + 1) / 2),
+          });
       } else if (unit.id === view.selectedUnitId) {
-        g.ellipse(x + width / 2, y + TILE * 0.86, width * 0.4, TILE * 0.12).stroke({
-          width: Math.max(1, TILE * 0.03),
-          color: 'rgba(255,255,255,0.6)',
-        });
+        rings
+          .ellipse(anchor.x + width / 2, anchor.y + (0.86 - lift) * TILE, width * 0.4, TILE * 0.12)
+          .stroke({
+            width: Math.max(1, TILE * 0.03),
+            color: 'rgba(255,255,255,0.6)',
+          });
       }
 
       if (unit.fallen) {
