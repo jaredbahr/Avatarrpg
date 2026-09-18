@@ -10,7 +10,7 @@
  * context, they never own one.
  */
 
-import type { Grid, Vec2 } from '../../core/types';
+import type { Vec2 } from '../../core/types';
 import { resolveAsset } from '../../content/assets/manifest';
 import { Camera } from '../camera';
 import type { Viewport } from '../camera';
@@ -18,6 +18,9 @@ import type { TileRelief } from '../geometry/board';
 import { boardRelief, decorSignature, surfaceEdges } from '../geometry/board';
 import { aimArcPoints, arcHeading, arrowheadPolygon } from '../geometry/arc';
 import { actorHealthBar } from '../geometry/actorSilhouette';
+import { resolveActorEmitters } from '../geometry/actorAttachments';
+import { elevationAt, ELEVATION_LIFT } from '../geometry/elevation';
+export { elevationAt, ELEVATION_LIFT } from '../geometry/elevation';
 import { contourLoops } from '../geometry/contour';
 import type { Curve } from '../geometry/curve';
 import { sampleAt, smoothPath } from '../geometry/curve';
@@ -44,19 +47,10 @@ import type { BackendCapabilities, RenderBackend } from './backend';
 /** The rounded square a hovered tile gets, in tile units from its corner. */
 const HOVER_LOOP = contourLoops([{ x: 0, y: 0 }])[0] ?? [];
 
-/** How far a unit is drawn up the screen per tier of ground it stands on, in tiles. */
-export const ELEVATION_LIFT = 0.06;
-
 /** How far in from the board's edge the shading reaches, in tiles. */
 export const EDGE_SHADE_TILES = 1.4;
 export const EDGE_SHADE_ALPHA = 0.42;
 export const VIGNETTE_ALPHA = 0.3;
-
-/** Elevation under a tile, 0 off the map. */
-export function elevationAt(grid: Grid, pos: Vec2): number {
-  if (pos.x < 0 || pos.y < 0 || pos.x >= grid.width || pos.y >= grid.height) return 0;
-  return grid.tiles[pos.y * grid.width + pos.x]?.elevation ?? 0;
-}
 
 export class Canvas2DBackend implements RenderBackend {
   readonly capabilities: BackendCapabilities = { name: 'canvas', shaders: false, particles: false };
@@ -98,6 +92,15 @@ export class Canvas2DBackend implements RenderBackend {
   draw(view: MapView, camera: Camera): void {
     const { ctx } = this;
     const dpr = camera.viewport.dpr;
+    view = {
+      ...view,
+      emitters: resolveActorEmitters(
+        view.emitters,
+        view.grid,
+        camera.projection,
+        camera.toScreen({ x: 0, y: 0 }).size * dpr,
+      ),
+    };
 
     ctx.save();
     ctx.setTransform(dpr, 0, 0, dpr, 0, 0);

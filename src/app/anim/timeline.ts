@@ -11,7 +11,7 @@
 import type { Vec2 } from '../../core/types';
 import type { EmitterDef } from '../../content/fx';
 import type { Curve } from '../../render/geometry/curve';
-import type { ClipName } from '../../render/view';
+import type { ClipName, EmitterAttachments } from '../../render/view';
 import type { Easing } from './easing';
 
 export type { ClipName };
@@ -64,6 +64,7 @@ export interface EmitterTrack extends Track {
   readonly palette: string;
   /** Lob height in tiles for a projectile flight. */
   readonly arc: number;
+  readonly attachments?: EmitterAttachments;
 }
 
 export interface FloaterTrack extends Track {

@@ -352,6 +352,7 @@ export class Animator {
         seed: track.seed,
         palette: track.palette,
         arc: track.arc,
+        ...(track.attachments ? { attachments: track.attachments } : {}),
       });
     }
     // The fallback's 96-particle cap must not spend its budget on debris

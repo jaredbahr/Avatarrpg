@@ -2,12 +2,14 @@
 
 ## Builds and limits
 
-LIVE title independently displayed148843f at https://jaredbahr.github.io/Avatarrpg/.
-PR62 courtyard-only headce3b425 is draft; replacementCI35363386023 pending.
-Local integration52f60f5 contains forest/gate and portrait corrections; gate art
-remains rejected. These changes are not claimed deployed. Primary browser audit
-used1280x720, normal UI, soloKaya, default renderer (backend not independently
-identified). No physical-device or audio-listening acceptance.
+LIVE title independently displayed 148843f at https://jaredbahr.github.io/Avatarrpg/.
+PR #62 courtyard-only head ce3b425 remains draft. CI 35363386023 now passes
+typecheck/lint/unit and Chromium touch/WebKit E2E; gallery remains running.
+The local integration includes forest/gate, portraits, movement pacing and dock
+corrections. Gate registration has bounded acceptance below; overall art and
+experience remain unfinished. These changes are not claimed deployed. Primary
+live browser audit used 1280x720, normal UI, solo Kaya, default renderer (backend
+not independently identified). No physical-device or audio-listening acceptance.
 
 ## Bounded defect matrix
 
@@ -135,3 +137,23 @@ check uses the actual initiative focus button and preserves ability selection.
 Do not claim paired fullcast success from this normal-route set. The separate
 staged target regression covers13,5 on both backends. Both runs have zero page
 errors. Runtime unchanged pending that bounded focus continuation.
+
+## Focus continuation and attachment candidate
+
+The Canvas Bruiser continuation passed on runtime 0112e9a (docs head 75bd738).
+This is explicitly staged seed `focus-bruiser-5` plus legal move/turn replay,
+because the prior normal-route browser context had closed without an exported
+save. Actual UI Fire Jab → Focus Bruiser retained the ability, moved target 14,5
+from off-canvas 1220,766 to exposed canvas 836,439, and allowed preview/Confirm.
+The hit dealt 7 damage (HP 29→22), AP 5→4, with no forced outcome or page error.
+The service worker controller was null. Evidence: art worktree
+`gallery/scene-audit/focus-bruiser-38815cf/`, including metadata, screenshots and
+`staged-focus-cast.webm`. This closes that bounded focus check, not a normal-route
+Canvas cast claim. Centering the enemy can leave the caster outside the view.
+
+Art released the runtime freeze. The approved next correction is Fire Jab's
+hand/torso attachments and silhouette health bars. Healthbar source 7ef316a is
+local; [ADR 0026](../../adr/0026-actor-effect-attachments.md) records the shared
+presentation contract. Ground-area effects, rules and flight timing are retained.
+No new art frames. Combined validation and a new frozen paired moving review are
+required before acceptance or any combined landing decision.

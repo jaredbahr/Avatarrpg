@@ -46,6 +46,7 @@ import type { Curve } from '../geometry/curve';
 import { sampleAt, smoothPath } from '../geometry/curve';
 import { FACTION_RING, OVERLAY, STATUS_BADGE, hpColor } from '../palettes';
 import { FOOT_LINE } from '../sheets/bake';
+import { resolveActorEmitters } from '../geometry/actorAttachments';
 import type { ResolvedFrame } from '../sheets/store';
 import { idlePhase, sheets } from '../sheets/store';
 import { MAX_SPRITE_PX, sprites } from '../spriteCache';
@@ -443,8 +444,14 @@ export class PixiBackend implements RenderBackend {
     this.drawPath(view);
     this.drawDecor(view);
     this.drawUnits(view, camera);
-    this.fxUnder.draw(view.emitters);
-    this.fxOver.draw(view.emitters);
+    const emitters = resolveActorEmitters(
+      view.emitters,
+      view.grid,
+      camera.projection,
+      TILE * camera.scale * camera.viewport.dpr,
+    );
+    this.fxUnder.draw(emitters);
+    this.fxOver.draw(emitters);
     this.drawFloaters(view, camera);
 
     app.renderer.render(app.stage);

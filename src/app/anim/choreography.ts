@@ -24,6 +24,8 @@ import type { AnyTrack, ClipName } from './timeline';
 import { attackMotion } from './attackMotion';
 import { screenDirection } from './direction';
 import type { Projection } from '../../render/projection';
+import type { ActorAttachment, EmitterAttachments } from '../../render/view';
+import { partyScale } from './actorScale';
 
 /** Base durations in milliseconds, before the motion setting is applied. */
 export const TIMING = {
@@ -153,6 +155,7 @@ export function choreograph(input: ChoreographyInput): Choreography {
     eventIndex: number,
     slot: number,
     arc = 0,
+    attachments?: EmitterAttachments,
   ): void => {
     // Reduce motion collapses playback to a frame; particles would be a smear.
     if (rate < 1) return;
@@ -166,6 +169,7 @@ export function choreograph(input: ChoreographyInput): Choreography {
         seed: hashSeed(pushIndex, eventIndex, slot, i),
         palette,
         arc,
+        ...(attachments ? { attachments } : {}),
         start: at,
         duration,
       });
@@ -303,7 +307,13 @@ export function choreograph(input: ChoreographyInput): Choreography {
           (event.target.x === casterPos.x && event.target.y === casterPos.y);
         const melee = ability.range <= 1 && ability.targeting.shape === 'unit';
         const screenDir = screenDirection(dir, input.projection ?? 'orthographic');
-        const facing = self ? undefined : facingFor(screenDir);
+        const facing = self
+          ? undefined
+          : ability.id === 'fire_jab'
+            ? screenDir.x < 0
+              ? -1
+              : 1
+            : facingFor(screenDir);
 
         const motion = attackMotion(ability.fx, melee, self);
         const windUp = TIMING.windUp * motion.windUp * rate;
@@ -314,6 +324,49 @@ export function choreograph(input: ChoreographyInput): Choreography {
           ? { x: 0, y: 0.04 }
           : scaled(screenDir, melee ? MELEE_LUNGE : LUNGE * motion.reach);
         const clip: ClipName = melee ? 'melee' : 'cast';
+        // Only this directed technique has calibrated hand sockets. Area,
+        // surface and all other techniques retain their ground contract.
+        const attached = ability.id === 'fire_jab';
+        const casterUnit = unitsBefore.find((unit) => unit.id === event.unitId);
+        const victim = unitsBefore.find((unit) => {
+          if (unit.hp <= 0) return false;
+          const pos = positions.get(unit.id) ?? unit.pos;
+          return (
+            event.target.y === pos.y &&
+            event.target.x >= pos.x &&
+            event.target.x < pos.x + unit.size
+          );
+        });
+        const snapshot = (
+          unit: Unit | undefined,
+          socket: ActorAttachment['socket'],
+          offset: Vec2 = { x: 0, y: 0 },
+          poseScale = 1,
+          poseFacing?: 1 | -1,
+        ): ActorAttachment | undefined =>
+          unit
+            ? {
+                pos: { ...(positions.get(unit.id) ?? unit.pos) },
+                sprite: unit.sprite,
+                size: unit.size,
+                socket,
+                facing: poseFacing ?? (unit.faction === 'enemy' ? -1 : 1),
+                scale:
+                  unit.faction === 'party' ? partyScale(input.projection, poseScale) : poseScale,
+                offset,
+              }
+            : undefined;
+        const torso = attached ? snapshot(victim, 'torso') : undefined;
+        const gatherT = motion.gatherEase(0.4);
+        const gather = attached
+          ? snapshot(
+              casterUnit,
+              'fire-gather',
+              scaled(back, gatherT),
+              1 + (motion.compression - 1) * gatherT,
+              facing ?? (screenDir.x < 0 ? -1 : 1),
+            )
+          : undefined;
 
         // The sheet's poses: wind-up, release, recover for a cast; wind-up and
         // strike for a melee, which returns to its guarded wind-up stance.
@@ -329,7 +382,30 @@ export function choreograph(input: ChoreographyInput): Choreography {
           frame: 1,
         });
         // The element gathers through the wind-up and is out of the hands by the release.
-        emit(recipe.cast, cursor + windUp * 0.4, caster, target, palette, eventIndex, 1);
+        const gatherSpan = windUp * 0.6;
+        const castEmitters = attached
+          ? recipe.cast.map((def): EmitterDef =>
+              def.kind === 'particles'
+                ? {
+                    ...def,
+                    duration: Math.min(def.duration, gatherSpan),
+                    delay: [0, 0],
+                    life: [gatherSpan, gatherSpan],
+                  }
+                : { ...def, duration: Math.min(def.duration, gatherSpan) },
+            )
+          : recipe.cast;
+        emit(
+          castEmitters,
+          cursor + windUp * 0.4,
+          caster,
+          target,
+          palette,
+          eventIndex,
+          1,
+          0,
+          gather ? { from: gather, ...(torso ? { to: torso } : {}) } : undefined,
+        );
         // The voice goes with the release, not the wind-up: it is the sound of
         // the element leaving the hands. `ability.fx` resolves through the same
         // family segment the recipe does, so an element sounds like itself
@@ -337,6 +413,19 @@ export function choreograph(input: ChoreographyInput): Choreography {
         // Let the weight transfer lead the element; the sound and projectile
         // leave together once the striking pose has begun its extension.
         const launchAt = releaseAt + release * motion.launch;
+        const launchT = motion.releaseEase(motion.launch);
+        const hand = attached
+          ? snapshot(
+              casterUnit,
+              'fire-release',
+              {
+                x: back.x + (forward.x - back.x) * launchT,
+                y: back.y + (forward.y - back.y) * launchT,
+              },
+              motion.compression + (motion.extension - motion.compression) * launchT,
+              facing ?? (screenDir.x < 0 ? -1 : 1),
+            )
+          : undefined;
         cue(ability.fx, launchAt, 1, eventIndex);
 
         let impactAt = releaseAt + release * 0.5;
@@ -369,7 +458,17 @@ export function choreograph(input: ChoreographyInput): Choreography {
                 : {}),
             };
           });
-          emit(stretched, launchAt, caster, target, palette, eventIndex, 2, recipe.travel.arc);
+          emit(
+            stretched,
+            launchAt,
+            caster,
+            target,
+            palette,
+            eventIndex,
+            2,
+            recipe.travel.arc,
+            hand ? { from: hand, ...(torso ? { to: torso } : {}) } : undefined,
+          );
           impactAt = launchAt + flight;
         }
 
@@ -398,6 +497,8 @@ export function choreograph(input: ChoreographyInput): Choreography {
           palette,
           eventIndex,
           3,
+          0,
+          torso ? { from: torso, translateTogether: true } : undefined,
         );
         if (recipe.area.length > 0) {
           event.tiles.slice(0, 24).forEach((tile, i) => {

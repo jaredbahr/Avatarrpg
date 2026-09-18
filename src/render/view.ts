@@ -59,6 +59,24 @@ export interface OverlayLayer {
  * A live effect emitter: the recipe piece, where it plays, and how old it is.
  * The definition travels resolved so the renderer never reads content.
  */
+/** A presentation-only pose snapshot; later recovery/recoil cannot move its endpoint. */
+export interface ActorAttachment {
+  readonly pos: Vec2;
+  readonly sprite: string;
+  readonly size: 1 | 2;
+  readonly socket: 'fire-gather' | 'fire-release' | 'torso';
+  readonly facing: 1 | -1;
+  readonly scale: number;
+  readonly offset: Vec2;
+}
+
+export interface EmitterAttachments {
+  readonly from?: ActorAttachment;
+  readonly to?: ActorAttachment;
+  /** Impact direction retains its original vector while both ends move together. */
+  readonly translateTogether?: boolean;
+}
+
 export interface EmitterInstance {
   readonly def: EmitterDef;
   /** Tile centres. */
@@ -71,6 +89,7 @@ export interface EmitterInstance {
   readonly palette: string;
   /** Lob height in tiles for a projectile flight. */
   readonly arc: number;
+  readonly attachments?: EmitterAttachments;
 }
 
 export interface Floater {
