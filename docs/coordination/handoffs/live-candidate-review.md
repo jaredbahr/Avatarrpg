@@ -295,3 +295,39 @@ conflict; plan c095bf17 integrated asea86822. SourceRect atlas implementation is
 in progress for eight western cells within the existing32depth-owned slices.
 No atlas art is accepted yet; no cutting/floor expansion. Source PR62 remains
 eec68bd with current-head browser/gallery CI in progress; no restart or merge.
+
+## Usage-conservation checkpoint: atlas contract9033b4e
+
+Optional `SceneImage.sourceRect:{x,y,width,height}` is implemented in source-image
+integer pixels; destination world rectangles, footprints/depth and32independent
+instances remain. Whole-image compatibility retained. Loaded cropped pages must
+be≤2048and regions in-bounds. Canvas uses cropped drawImage; Pixi shares page
+sources across bounded rectangular views with child-before-source disposal.
+Cutaway crops before downsampling and uses at most32LRU masks per image.
+Thirty-nine focused tests pass, including32slices/onepage/threeframes requiring
+33texture allocations, replacement/disposal and independent shared-page alpha.
+Typecheck, focused lint/format pass. See ADR0028. Actual GPU seams/gutters,
+western traversal and structural visual quality have NOT been verified.
+
+Art's active western packing exposed a necessary follow-up: some rear cells
+are fully hidden behind the tall9,1pier in the continuouspainting. Fading only
+one visible slice leaves holes; connected-structure fadeGroup is proposed but
+UNIMPLEMENTED. Do not fake missing backfaces or claim the eight-cell western
+proof accepted. Art preserves guide/packing state separately; current runtime
+still has the weathered repeated-wall source, not new western atlas content.
+
+Root's latest usage instruction stops new agents/workstreams/polish passes.
+Finish this local contract validation checkpoint once, retain pending gaps and
+idle. No further continuous polling or captures. Final fullverify/build/budget
+results to be appended by integration owner. No push or deployment claimed;
+PR62 latest checked remotehead eec68bd remained draft with verifygreen and
+browser/gallery in progress. Required latest-head CI/merge rules still apply.
+
+Final combined checkpoint validation on9033b4e passes fullverify:746tests in
+81files, typecheck/lint/format. Production build passes; JS295.8KiB/300KiB,
+precache15.90MiB/25MiB, maps3.07MiB, props0.25MiB, portraits3.96MiB and
+units3.98MiB pass existing budgets. Build output now reflects9033b4e, replacing
+the earlier combat-only preview; saved ae8ba56 recordings remain authoritative
+for that separate checkpoint. No further capture/test cycle or push performed.
+Remaining atlasGPU/groupfade/structuralquality and perceptual audio gaps stay
+open. Resume from this handoff after checking actual heads, worktree and CI.
