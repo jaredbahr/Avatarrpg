@@ -1,4 +1,4 @@
-# ADR 0023: Courtyard environmental audio on the existing bus
+# ADR 0024: Courtyard environmental audio on the existing bus
 
 Status: accepted implementation contract; sound acceptance pending.
 

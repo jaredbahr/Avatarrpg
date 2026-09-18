@@ -8,7 +8,7 @@
   `bc20880`. This source commit must be integrated with the art branch and
   gameplay's hook; no competing standalone feature merge is intended.
 - **Completed:** `src/app/audio/environment.ts`, AudioBus ownership integration,
-  lifecycle/signal/proximity tests, ADR 0023 and source/capture documentation.
+  lifecycle/signal/proximity tests, ADR 0024 and source/capture documentation.
 - **Coordination:** gameplay accepted ExploreScene hook ownership. Import
   `courtyardEnvironment` from `../audio/environment`; call
   `app.audio.updateEnvironment(courtyardEnvironment(map.id, grid, walking ??

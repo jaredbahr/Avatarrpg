@@ -34,6 +34,7 @@ import { NextWalk, previewWalk } from '../world/walking';
 import type { WalkPreview } from '../world/walking';
 import { NearbyPlaces } from '../ui/NearbyPlaces';
 import { LocalMap, LocalMapDialog } from '../ui/LocalMap';
+import { courtyardEnvironment } from '../audio/environment';
 
 /** How far Talk reaches, in tiles: across the square, not across the village. */
 const TALK_RANGE = 3;
@@ -117,6 +118,7 @@ export class ExploreScene implements Scene {
   }
 
   unmount(): void {
+    this.app.audio.clearEnvironment();
     document.removeEventListener('keydown', this.onKeyDown);
     document.removeEventListener('visibilitychange', this.onVisibility);
     this.nextWalk.clear();
@@ -644,7 +646,10 @@ export class ExploreScene implements Scene {
   };
 
   private onVisibility = (): void => {
-    if (document.hidden) this.clearNextWalk();
+    if (document.hidden) {
+      this.clearNextWalk();
+      this.app.audio.clearEnvironment();
+    }
   };
 
   private updateWalkFeedback(): void {
@@ -716,6 +721,11 @@ export class ExploreScene implements Scene {
     // others in a line behind, each their own figure.
     const leader = state.party[0];
     const walking = leader ? this.app.animator.renderPos(now, leader.id) : undefined;
+    if (document.hidden) this.app.audio.clearEnvironment();
+    else
+      this.app.audio.updateEnvironment(
+        courtyardEnvironment(map.id, grid, walking ?? state.location.pos),
+      );
     // The camera follows the walk and rests where it ends; a drag afterwards stays.
     if (walking) renderer.camera.centreOn(walking);
     const seats = this.ensureTrail(state, grid).positions(state.party.length);
