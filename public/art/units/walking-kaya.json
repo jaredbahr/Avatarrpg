@@ -159,6 +159,30 @@
         "w": 128,
         "h": 192
       }
+    },
+    "unit.fire.kaya/rest/0": {
+      "frame": {
+        "x": 512,
+        "y": 384,
+        "w": 128,
+        "h": 192
+      }
+    },
+    "unit.fire.kaya/restNorth/0": {
+      "frame": {
+        "x": 640,
+        "y": 384,
+        "w": 128,
+        "h": 192
+      }
+    },
+    "unit.fire.kaya/restSouth/0": {
+      "frame": {
+        "x": 768,
+        "y": 384,
+        "w": 128,
+        "h": 192
+      }
     }
   },
   "meta": {

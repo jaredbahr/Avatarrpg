@@ -1,5 +1,5 @@
 /** Append three relaxed exploration poses; every existing frame stays pixel-identical.
- * npx tsx scripts/art/rest-poses.ts nima <three-column-transparent-sheet.png>
+ * npx tsx scripts/art/rest-poses.ts <hero> <three-column-transparent-sheet.png>
  */
 import { readFileSync, writeFileSync } from 'node:fs';
 import { readPng, writePng, newImage, pixelAt, setPixel } from './lib/image';
@@ -10,8 +10,8 @@ import { splitGrid } from './split-sheet';
 import { parseAtlasJson } from '../../src/render/sheets/atlasJson';
 
 const [name, input] = process.argv.slice(2);
-if (name !== 'nima' || !input)
-  throw new Error('Pilot accepts nima and a transparent three-column PNG.');
+if (!name || !['nima', 'kaya', 'sura', 'bo', 'wen'].includes(name) || !input)
+  throw new Error('Provide an approved courtyard hero and a transparent three-column PNG.');
 const stem = `public/art/units/walking-${name}`;
 const original = readPng(`${stem}.png`);
 const atlas = parseAtlasJson(readFileSync(`${stem}.json`, 'utf8'));
