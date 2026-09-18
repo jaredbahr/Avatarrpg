@@ -1,4 +1,5 @@
 import { WORLD_BEATS } from './world-beats';
+import { PLAYER_VIEW_BEATS } from './player-view-beats';
 import { DIRECTIONAL_BEATS } from './directional-beats';
 import type { Page } from '@playwright/test';
 import {
@@ -173,6 +174,7 @@ async function faceOff(
 }
 
 export const BEATS: readonly Beat[] = [
+  ...PLAYER_VIEW_BEATS,
   ...WORLD_BEATS,
   ...DIRECTIONAL_BEATS,
   ...[
@@ -253,7 +255,7 @@ export const BEATS: readonly Beat[] = [
   {
     id: '02-village',
     title: 'Ba Dan village',
-    note: 'Explore: the only walk-around map. The party stands in it as a line and down the side as a roster with health and action points; Talk, Party, Save and Pause sit along the bottom. Upright, the roster is a strip above the map. Judge the ground, the buildings, the villagers and how much it feels like a place.',
+    note: 'Explore: the party walks through the full-width village map. Portraits and health share a compact bottom dock with Talk, Party, Save and Pause; Follow party returns the camera to the leader. Judge the ground, the buildings, the villagers and how much it feels like a place.',
     projects: PORTRAIT_TOO,
     async run(ctx) {
       await openVillage(ctx);
