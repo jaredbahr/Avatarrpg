@@ -6,11 +6,23 @@ import { alphaBounds, crop } from './lib/trim';
 import { scaleTo } from './lib/scale';
 import { encodeWebp } from './lib/webp';
 
-const [materialPath, coverPath] = process.argv.slice(2);
+const [materialPath, coverPath, shoulderPath] = process.argv.slice(2);
 if (!materialPath || !coverPath)
   throw new Error('Provide three-panel materials and transparent timber PNGs.');
 const source = readImage(materialPath),
   timber = readImage(coverPath);
+const shoulderSource = shoulderPath ? readImage(shoulderPath) : null;
+if (shoulderSource) {
+  for (let y = 0; y < shoulderSource.height; y++)
+    for (let x = 0; x < shoulderSource.width; x++) {
+      const [r, g, b, a] = pixelAt(shoulderSource, x, y);
+      if (a && ((r - b > 100 && g - b > 100) || (r - g > 80 && r - b > 80)))
+        setPixel(shoulderSource, x, y, [0, 0, 0, 0]);
+    }
+}
+const shoulderBounds = shoulderSource && alphaBounds(shoulderSource);
+const shoulder =
+  shoulderSource && shoulderBounds ? scaleTo(crop(shoulderSource, shoulderBounds), 716, 24) : null;
 if (source.width !== source.height * 3)
   throw new Error('Expected three equal square material panels.');
 const fields = [0, 1, 2].map((index) =>
@@ -35,6 +47,7 @@ const mirror = (value: number, size: number) => {
 };
 const plate = newImage(2304, 1280);
 const counts: Record<string, number> = {};
+let shoulderPixels = 0;
 for (let py = 0; py < plate.height; py++)
   for (let px = 0; px < plate.width; px++) {
     // Pixel centers in world coordinates, inverted from X=(64,32), Y=(-64,32).
@@ -47,6 +60,32 @@ for (let py = 0; py < plate.height; py++)
     const field = fields[material];
     if (!field) throw new Error('Missing authored material.');
     setPixel(plate, px, py, pixelAt(field, mirror(px, field.width), mirror(py, field.height)));
+    // Western approach only. Dust straddles the real road/earth edges by at
+    // most12 world pixels; no raised geometry or rule-cell boundary is moved.
+    if (shoulder && gx >= 0 && gx < 10) {
+      for (const edge of [5, 7]) {
+        const normal = ((gy - edge) * 4096) / Math.hypot(64, 32);
+        if (Math.abs(normal) >= 12) continue;
+        const along = gx * Math.hypot(64, 32) - ((gy - edge) * 3072) / Math.hypot(64, 32);
+        if (along < 0 || along >= 716) continue;
+        const sample = pixelAt(
+          shoulder,
+          Math.floor(along),
+          Math.floor(12 + (edge === 5 ? normal : -normal)),
+        );
+        const base = pixelAt(plate, px, py),
+          a = sample[3] / 255;
+        if (a) {
+          setPixel(plate, px, py, [
+            Math.round(base[0] * (1 - a) + sample[0] * a),
+            Math.round(base[1] * (1 - a) + sample[1] * a),
+            Math.round(base[2] * (1 - a) + sample[2] * a),
+            255,
+          ]);
+          shoulderPixels++;
+        }
+      }
+    }
     counts[key] = (counts[key] ?? 0) + 1;
   }
 const bounds = alphaBounds(timber);
@@ -88,4 +127,12 @@ for (const output of outputs) writeFileSync(`${directory}/${output.name}.webp`, 
 mkdirSync('art/raw/quarry-gate', { recursive: true });
 writePng('art/raw/quarry-gate/masked-ground.png', plate);
 writePng('art/raw/quarry-gate/packed-cover.png', decal);
-console.log({ bytes, counts, clipped, coverBounds: bounds, ground: [864, 960], cover: [224, 96] });
+console.log({
+  bytes,
+  counts,
+  clipped,
+  shoulderPixels,
+  coverBounds: bounds,
+  ground: [864, 960],
+  cover: [224, 96],
+});
