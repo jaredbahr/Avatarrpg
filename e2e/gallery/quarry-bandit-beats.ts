@@ -25,7 +25,7 @@ export const QUARRY_BANDIT_BEATS: readonly Beat[] = CAST.map((spec) => ({
     await resetStorage(ctx.page, ctx.query());
     await startGame(ctx.page, ['Reviewer'], ['kaya'], 'quarry-art', { reduceMotion: false });
     await enterNode(ctx.page, 'battle_forest_road');
-    await takeTurn(ctx.page);
+    await takeTurn(ctx.page, { settleTimeout: ctx.settleTimeout });
     await waitForIdle(ctx.page);
     const unitId = await ctx.page.evaluate(({ enemy }) => {
       const app = window.fnt!.app;
