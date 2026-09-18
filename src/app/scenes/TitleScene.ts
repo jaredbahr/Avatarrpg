@@ -76,6 +76,11 @@ export class TitleScene implements Scene {
           mark,
           el('h1', { text: 'Four Nations Tactics' }),
           el('p', {
+            class: 'tiny muted center',
+            text: `v${__APP_VERSION__} · build ${__BUILD_REVISION__}`,
+            attrs: { 'aria-label': `Game version ${__APP_VERSION__}, build ${__BUILD_REVISION__}` },
+          }),
+          el('p', {
             class: 'muted tagline',
             text: 'A hot-seat tactical RPG for one to six players, a few decades after Korra.',
           }),

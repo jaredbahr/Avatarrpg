@@ -34,6 +34,14 @@ Other scripts:
 
 ## Playing on the Surface
 
+The title screen shows the package version and build commit, for example
+`v0.1.0 · build 5e9b206`. The commit changes with each deployed revision even when
+the package version stays the same. This label belongs to the code actually
+running, including an older offline-cached build; it is not a claim about the
+latest remote deployment. Compare it with the commit of a successful Pages
+deployment. Local builds with tracked edits append `-modified`; builds without
+Git metadata show `local`.
+
 The game is a PWA. After a deploy, open it in Edge, then **Settings → Apps →
 Install this site as an app** so it launches full-screen in landscape and works
 offline (the service worker caches the whole build — no network needed once it
