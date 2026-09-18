@@ -66,3 +66,51 @@ used Lookaround/VisitGao, reached the dialogue by walking, directly viewed the
 canonical portrait/title at1280x720 and390x844, and clickedNext once to advance
 1of4 to2of4. Phone portrait andNext remained visible. This session includes an
 HMR reload/Continue and is not the uninterrupted recording. Viewport reset.
+
+## Motion capture178bbc5 and current integration
+
+Freeze released. Immutable `moving-178bbc5/{canvas,webgl}/` under the same art
+evidence root includes normal-route video, separate audio, event logs and cast
+frames. Both normal UI routes reached Fire Jab; Canvas hit8damage, WebGL missed.
+Do not call both a hit. Four two-cell moves include a turn, not a longer4+cell
+walk. The final postcast Endturn only opened the unused-AP warning; a prior
+actual Endturn/AI turn is present. Art's final capture label is misleading and
+must not substitute for event evidence.
+
+The target13,5 at1124,718 was inside the canvas but under `.confirm-bar.aim-hint`.
+Actual user pan exposed it at844,498 and allowed selection. This is a real HUD
+obstruction plus a harness failure to account for it, not a game-rule failure.
+Approved remedy moves hint and pending-confirm panels into allocated actiondock
+space outside the map; keeps real Cancel/Moveinstead/Confirm controls and bounded
+scrolling. Camera ResizeObserver measures the remaining canvas. Focused target,
+zoom and huge-text regressions are required before acceptance.
+
+Gate source de623a7 is preserved as7a29093. Credit conflicts were resolved by
+retaining courtyard/forest credits and updating gate provenance, then regenerating
+NOTICE. All32 wall registrations and rule rows remain. Exactmask/control/visual
+review is pending on the combined candidate.
+
+Art reports directed Fire Jab originates at feet and ends at enemyfeet; healthbars
+cross the upper silhouette. These are explicit subsequent presentation defects:
+audit hand/torso attachment and actual scaled silhouette, preserving ground-area
+effects/rules. No newframes and no concurrent edits during the next frozen review.
+
+## Dock and mask validation
+
+Combined runtime passes698unit tests/75files and productionbuild; maps3.08MiB,
+precache15.88MiB, budgets pass. Bounded browser suite covers18cases across both
+renderers: target13,5 hit-test/preview/Cancel/Confirm/AP, customzoom retained through
+HUD reflow,390x844hugetext reachable44pxcontrols/positivecanvas, initiativefocus,
+gestures, independentpaintedpicking and gate32walls/12oil/5props registration.
+
+An initial parallel browser run collided in its temporary output/server and was
+discarded; serial rerun isolated those infrastructure errors. One independent
+viewport check then caught default300px backingstore before asynchronous automatic
+WebGL startup. The test now waits for a real camera before layoutsettling; unchanged
+independent geometry assertions pass. No runtime delay or loosened tolerance.
+
+Primary viewed updated staged gateCanvas entry: misplaced embedded timber is gone,
+but sharp material masks, clean modularwalls, tinycart and healthbar overlap remain
+visible limitations. Registration/control tests do not grant final visualacceptance.
+Freeze the combined committed runtime for art's exactmask/highcontrast/control and
+realcast review; no newtarget/FX edits until that review releases it.
