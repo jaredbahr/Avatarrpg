@@ -3,6 +3,39 @@ import type { MapScene, SceneScenery, Vec2 } from '../../core/types';
 const root = 'art/maps/ba-dan-scene/';
 export const BA_DAN_POND = { x: 10, y: 6, width: 3, height: 1 } as const;
 
+/** Gameplay applies these same footprints as low, solid courtyard boundaries. */
+export const BA_DAN_COURTYARD_PROPS = [
+  { id: 'west-planter', image: 'low-planter', x: 6, y: 5 },
+  { id: 'east-planter', image: 'low-planter', x: 14, y: 9 },
+  { id: 'gao-display', image: 'merchant-display', x: 7, y: 4 },
+] as const;
+
+export const BA_DAN_COURTYARD_FOOTPRINTS: readonly Vec2[] = BA_DAN_COURTYARD_PROPS.flatMap(
+  ({ x, y }) => [
+    { x, y },
+    { x: x + 1, y },
+  ],
+);
+
+function courtyardProp({ id, image, x, y }: (typeof BA_DAN_COURTYARD_PROPS)[number]): SceneScenery {
+  const width = 192;
+  const height = (width * (image === 'low-planter' ? 362 : 431)) / 512;
+  const front = { x: x + 2, y: y + 1 };
+  return {
+    id,
+    url: `${root}${image}.webp`,
+    x: 1024 + (front.x - front.y) * 64 - width * 0.635,
+    y: (front.x + front.y) * 32 - height,
+    width,
+    height,
+    footprint: [
+      { x, y },
+      { x: x + 1, y },
+    ],
+    depth: { x: x + 1.5, y: y + 0.5 },
+  };
+}
+
 /** Complete upright house: source foundation's foremost corner is at 43.2%, 99.5%. */
 function house(
   id: string,
@@ -62,6 +95,7 @@ export const BA_DAN_SCENE: MapScene = {
     },
   ],
   scenery: [
+    ...BA_DAN_COURTYARD_PROPS.map(courtyardProp),
     house('gao-house', 6, 1, 4, 3),
     house('north-house', 12, 1, 4, 3, 'dwelling'),
     house('southwest-house', 6, 10, 4, 4, 'dwelling'),
