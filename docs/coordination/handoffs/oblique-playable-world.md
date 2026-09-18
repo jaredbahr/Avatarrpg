@@ -73,3 +73,13 @@ Logical size20x12; oblique origin(768,0), extent2048x1024 at64worldpixels/tile. 
 Keep Dema(3,1), discoveries(2,9)/(16,9), west/east exits(0,4)/(19,4), crossings atx4/x8, and all authored party/enemy/reinforcement spawns clear and readable. Art owns textures/provenance/anchors; gameplay owns camera framing, tactical readability, tests and integration. Agree footprints and anchors with art before generation/integration. The continuous route also includes the existing cutting/ambush map between gate and floor; preserve that connector and flag its presentation continuity when staging later quarry work. No region is added.
 
 Acceptance: real village departure, forest optional conversation/discovery, triggered encounter, legal move/target/impact with water/elevation, save/reload, and return. Compare Canvas/WebGL and portrait touch picking; ensure combat refit/active-unit framing preserves zoom and target readability. Keep existing map coordinates, rules and save format. This is planning, not implementation or art acceptance.
+
+## Courtyard party checkpoint complete locally — 491c74d
+
+Final rest source `94d5ead` is preserved as `491c74d`. All five courtyard party members now have optional relaxed exploration poses; combat frames remain unchanged. Art reviewed/released paired three-leg stop/turn/rest captures at `C:/Users/Jared/.codex/worktrees/71bd/Avatar RPG/gallery/scene-audit/composition-491c74d`; primary viewed `webgl-rest-1.png`. Bo/Wen identity, costume, gauntlet, height and foot contact hold in the sampled views. No further assets are planned for this checkpoint.
+
+Full verify passes689/72. JavaScript292.1KB/300, precache15.23MB/25. Unit assets4,175,559bytes,18,745 below4MiB. Three latest spacing/shopfront browser tests pass26.7s. Worktree was clean before this handoff update. This is a bounded courtyard checkpoint, not final reference/world/device/listening acceptance.
+
+Only the external PR63 cost-workflow merge blocks the scheduled batched push: its unit check passed and E2E/gallery were still running on the last inspection. Do not restart healthy jobs. After orchestrator confirms merge, fetch/reconcile main, re-run verify/build/assets, push once and inspect new-head checks. Keep PR62 draft for the approved next continuity work. Do not introduce more courtyard art while waiting.
+
+Art agrees the planned forest projection/chunk math. Preserve walkable elevation1 cells marked^, exact cross-shaped8-cell water footprint and rubble cover(7,3)/(8,9). Before any generation, agree exact water guide/mask and scenery front/depth anchors for cover; existingT cells alone provide blocked pine footprints. No forest code or assets have changed.
