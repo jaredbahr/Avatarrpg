@@ -55,3 +55,17 @@ it('schema preserves optional integer source rectangles and existing scenes', ()
   ])
     expect(mapSchema.safeParse(withCrop(bad)).success).toBe(false);
 });
+
+it('schema retains connected fade groups and rejects empty names', () => {
+  const parsed = mapSchema.parse(QUARRY_GATE);
+  expect(
+    parsed.scene?.scenery.filter((piece) => piece.fadeGroup === 'quarry-west-structure'),
+  ).toHaveLength(8);
+  const piece = QUARRY_GATE.scene?.scenery[0];
+  expect(
+    mapSchema.safeParse({
+      ...QUARRY_GATE,
+      scene: { ground: [], scenery: [{ ...piece, fadeGroup: '' }] },
+    }).success,
+  ).toBe(false);
+});

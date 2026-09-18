@@ -2,7 +2,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import type { SceneScenery, Vec2 } from '../core/types';
 import { Camera } from './camera';
 import type { Projection } from './projection';
-import { sceneImages, sceneryOpacity } from './scene';
+import { sceneImages, sceneryOpacity, sceneryOpacities } from './scene';
 import type { MapView, RenderUnit } from './view';
 
 const SIZE = 128;
@@ -285,4 +285,26 @@ it('bounds masks to 32 slice regions per decoded page', () => {
   expect(raster.getImageData).toHaveBeenCalledTimes(33);
   expect(sceneryOpacity(slice(0), state, camera)).toBe(0.28);
   expect(raster.getImageData).toHaveBeenCalledTimes(34);
+});
+
+it('fades connected slices together only while an actual occupant occludes a member', () => {
+  installImage(() => 255);
+  const camera = new Camera(
+    { width: 800, height: 600, dpr: 1 },
+    { width: 8, height: 8 },
+    'oblique',
+  );
+  const a = { ...roof(camera), fadeGroup: 'west' };
+  const b = { ...a, id: 'distant-slice', x: a.x + 1000 };
+  const other = { ...b, id: 'other-mass', fadeGroup: 'east' };
+  const optOut = { ...b, id: 'opt-out', fadeWhenOccluding: false };
+  const pieces = [a, b, other, optOut];
+  const state = view({ units: [unit(origin)] });
+  expect(sceneryOpacity(b, state, camera)).toBe(1);
+  expect([...sceneryOpacities(pieces, state, camera).values()]).toEqual([0.28, 0.28, 1, 1]);
+  const moved = view({ units: [unit(origin, { renderPos: { x: 7, y: 7 } })], path: [origin] });
+  expect([...sceneryOpacities(pieces, moved, camera).values()]).toEqual([1, 1, 1, 1]);
+  expect(sceneryOpacities([b], state, camera).get(b)).toBe(1);
+  vi.mocked(sceneImages.get).mockReturnValue(null);
+  expect([...sceneryOpacities(pieces, state, camera).values()]).toEqual([1, 1, 1, 1]);
 });

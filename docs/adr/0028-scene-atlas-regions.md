@@ -45,3 +45,13 @@ missing-atlas fallback and composition still require the structural milestone's
 browser and visual review. No production build or budget acceptance is implied;
 the next integration build must retain the existing 300 KiB main-JS budget and
 art/precache limits.
+
+Connected artwork may set `SceneScenery.fadeGroup` to a nonempty scene-local
+identifier. Both backends compute each slice's existing alpha/depth/occupant
+cutaway once per draw, then apply the minimum opacity to every opted-in member
+of that group. Depth sorting and footprints remain independent. Opted-out pieces
+and other groups are unchanged; no opacity survives into the next frame or map.
+This prevents holes in a continuous painting whose rear cells have no visible
+backfaces. Missing regions retain procedural fallback and cannot trigger fading.
+The first eight western gate slices use this contract; artwork quality still
+requires actual traversal and both-backend visual review.

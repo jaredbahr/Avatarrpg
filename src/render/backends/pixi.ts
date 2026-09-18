@@ -32,7 +32,7 @@ import {
 import type { SurfaceId, TerrainId, Vec2 } from '../../core/types';
 import { resolveAsset } from '../../content/assets/manifest';
 import { backdrops } from '../backdrops';
-import { sceneryOpacity } from '../scene';
+import { sceneryOpacities } from '../scene';
 import { SceneTextures } from './sceneTextures';
 import { surfaceIsPainted } from '../sceneSurfaces';
 import { TILE } from '../camera';
@@ -527,6 +527,7 @@ export class PixiBackend implements RenderBackend {
       sprite.width = chunk.width;
       sprite.height = chunk.height;
     }
+    const opacities = sceneryOpacities(scene?.scenery ?? [], view, camera);
     for (const item of scene?.scenery ?? []) {
       sceneryKeys.add(item.id);
       let sprite = this.scenerySprites.get(item.id);
@@ -548,7 +549,7 @@ export class PixiBackend implements RenderBackend {
       sprite.width = item.width;
       sprite.height = item.height;
       sprite.zIndex = camera.groundPoint(item.depth).y;
-      sprite.alpha = sceneryOpacity(item, view, camera);
+      sprite.alpha = opacities.get(item) ?? 1;
     }
     for (const [key, sprite] of this.groundChunks) {
       if (!groundKeys.has(key)) {

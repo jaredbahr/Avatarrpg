@@ -331,3 +331,19 @@ the earlier combat-only preview; saved ae8ba56 recordings remain authoritative
 for that separate checkpoint. No further capture/test cycle or push performed.
 Remaining atlasGPU/groupfade/structuralquality and perceptual audio gaps stay
 open. Resume from this handoff after checking actual heads, worktree and CI.
+
+## Autonomous integration resumed after courtyard deployment
+
+The orchestrator superseded the idle checkpoint with plan-then-execute delivery.
+PR #62 merged as44ed3f60141b97dfcc2899c854846d7f02b4930c after all three required
+checks passed on eec68bd. Pages run35394389048 succeeded for that merge. This is
+a courtyard progress release; reference-target acceptance remains open.
+
+Combined branch codex/quarry-gate-integration reconciled main in ee50ab7,
+retaining both handoff histories. Source art fbdb86c and19754f6 now contributes
+the western atlas and exactly eight registered entries;24old wall entries,
+footprints, depth, collision, credits and gallery cases remain. Shared fadeGroup
+opacity is implemented on both backends with per-frame group minima. Focused
+registration, schema and cutaway tests pass28cases. Production traversal and
+art review are pending; the next publication is ONE draft integration PR.
+No new region, combat-rule or save-format changes are included.

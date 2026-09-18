@@ -26,7 +26,7 @@ import type { Curve } from '../geometry/curve';
 import { sampleAt, smoothPath } from '../geometry/curve';
 import { CanvasFxLayer } from '../fx/canvasFx';
 import { backdrops } from '../backdrops';
-import { sceneImage, drawSceneImage, sceneryOpacity } from '../scene';
+import { sceneImage, drawSceneImage, sceneryOpacities } from '../scene';
 import { surfaceIsPainted } from '../sceneSurfaces';
 import { FACTION_RING, OVERLAY, STATUS_BADGE, hpColor } from '../palettes';
 import { paintTileDecor } from '../painters/board';
@@ -165,6 +165,7 @@ export class Canvas2DBackend implements RenderBackend {
       ctx.restore();
       this.drawUnitRings(view, camera);
       // All upright occupants share depth order, including NPCs and props.
+      const opacities = sceneryOpacities(view.scene?.scenery ?? [], view, camera);
       const occupants = [
         ...(view.scene?.scenery ?? []).map((piece) => ({
           pos: piece.depth,
@@ -172,7 +173,7 @@ export class Canvas2DBackend implements RenderBackend {
             const image = sceneImage(piece);
             if (!image) return;
             ctx.save();
-            ctx.globalAlpha = sceneryOpacity(piece, view, camera);
+            ctx.globalAlpha = opacities.get(piece) ?? 1;
             drawSceneImage(
               ctx,
               image,

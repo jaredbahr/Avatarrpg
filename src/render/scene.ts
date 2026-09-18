@@ -133,3 +133,26 @@ export function sceneryOpacity(scenery: SceneScenery, view: MapView, camera: Cam
   }
   return 1;
 }
+
+/** Evaluate each slice once per frame, then fade connected artwork as one mass.
+ * Only opted-in slices participate; groups never cross the current scene.
+ */
+export function sceneryOpacities(
+  pieces: readonly SceneScenery[],
+  view: MapView,
+  camera: Camera,
+): ReadonlyMap<SceneScenery, number> {
+  const result = new Map<SceneScenery, number>();
+  const groups = new Map<string, number>();
+  for (const piece of pieces) {
+    const opacity = sceneryOpacity(piece, view, camera);
+    result.set(piece, opacity);
+    if (piece.fadeWhenOccluding && piece.fadeGroup)
+      groups.set(piece.fadeGroup, Math.min(groups.get(piece.fadeGroup) ?? 1, opacity));
+  }
+  for (const piece of pieces) {
+    if (piece.fadeWhenOccluding && piece.fadeGroup)
+      result.set(piece, groups.get(piece.fadeGroup) ?? 1);
+  }
+  return result;
+}

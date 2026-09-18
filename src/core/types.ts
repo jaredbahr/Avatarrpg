@@ -641,6 +641,8 @@ export interface SceneScenery extends SceneImage {
   readonly footprint: readonly Vec2[];
   readonly depth: Vec2;
   readonly fadeWhenOccluding?: boolean;
+  /** Connected depth slices share the lowest cutaway opacity within this scene. */
+  readonly fadeGroup?: string;
 }
 
 export interface MapScene {

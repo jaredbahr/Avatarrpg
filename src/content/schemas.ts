@@ -480,6 +480,7 @@ export const mapSchema = z
               footprint: z.array(vec2).min(1),
               depth: z.object({ x: z.number().finite(), y: z.number().finite() }),
               fadeWhenOccluding: z.boolean().optional(),
+              fadeGroup: id.optional(),
             }),
           )
           .max(32),
