@@ -4,6 +4,7 @@ import { validateContent } from './schemas';
 import { ELEMENTS } from './elements';
 import { resolveAsset } from './assets/manifest';
 import { combinedKit } from '../core/rules/leveling';
+import { createGame } from '../core/state/createGame';
 
 /**
  * The guard rail for every piece of game data. A dangling story link or a
@@ -163,6 +164,72 @@ describe('content', () => {
       const levels = character.kit.map((k) => k.level);
       for (const required of [1, 3, 5]) {
         expect(levels, `${character.id} level ${required}`).toContain(required);
+      }
+    }
+  });
+
+  it('gives every character a distinct level-2 job within their element', () => {
+    const tools = new Map([
+      ['kaya', 'flame_arc'],
+      ['tenzo', 'fire_blast'],
+      ['nilak', 'healing_stream'],
+      ['sura', 'ice_path'],
+      ['bo', 'stone_stance'],
+      ['lin_mei', 'shockwave'],
+      ['nima', 'air_scooter'],
+      ['jinu', 'gust'],
+      ['riko', 'chi_block'],
+      ['wen', 'gauntlet_spark'],
+    ]);
+    expect(tools.size).toBe(CONTENT_BUNDLE.characters.length);
+    for (const character of CONTENT_BUNDLE.characters) {
+      const levelTwo = character.kit.find((entry) => entry.level === 2);
+      expect(levelTwo, `${character.id} level 2`).toEqual({
+        level: 2,
+        ability: tools.get(character.id),
+      });
+      expect(CONTENT.abilities.has(tools.get(character.id) ?? '')).toBe(true);
+      const party = createGame(CONTENT, {
+        seed: `early-${character.id}`,
+        party: [{ characterId: character.id, level: 2 }],
+        startNode: '',
+      }).party;
+      expect(party[0]?.abilities, `${character.id} in a level-2 game`).toContain(
+        tools.get(character.id),
+      );
+    }
+    for (const element of ELEMENTS) {
+      const pair = CONTENT_BUNDLE.characters.filter(
+        (character) => character.element === element.id,
+      );
+      const defaultKits = pair.map((character) =>
+        createGame(CONTENT, {
+          seed: `boss-${character.id}`,
+          party: [{ characterId: character.id, level: 3, autoChoose: true }],
+          startNode: '',
+        })
+          .party[0]?.abilities.slice()
+          .sort()
+          .join(','),
+      );
+      expect(new Set(defaultKits).size, `${element.id} at the Act 1 boss`).toBe(2);
+    }
+  });
+
+  it('does not repeat an early technique at the discipline gate', () => {
+    for (const character of CONTENT_BUNDLE.characters) {
+      const early = character.kit.flatMap((entry) =>
+        'ability' in entry ? [entry.ability] : 'choose' in entry ? entry.choose : [],
+      );
+      for (const discipline of CONTENT_BUNDLE.disciplines.filter(
+        (path) => path.element === character.element,
+      )) {
+        const later = discipline.kit.flatMap((entry) =>
+          'ability' in entry ? [entry.ability] : 'choose' in entry ? entry.choose : [],
+        );
+        for (const ability of early) {
+          expect(later, `${character.id} / ${discipline.id}: ${ability}`).not.toContain(ability);
+        }
       }
     }
   });
