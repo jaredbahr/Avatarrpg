@@ -7,6 +7,7 @@ export const PLAYER_VIEW_BEATS: readonly Beat[] = [
     id: '36-player-view-exploration',
     title: 'Full-width exploration and party dock',
     note: 'First implementation toward the approved player views: real Ba Dan art, bottom portraits, health, actions and Follow party.',
+    projects: ['surface-canvas', 'surface-webgl', 'ipad-canvas', 'ipad-webgl', 'portrait-canvas'],
     async run(ctx) {
       await resetStorage(ctx.page, ctx.query());
       await startGame(ctx.page, ['Jared'], ['nima', 'kaya', 'sura', 'bo', 'wen', 'jinu']);
