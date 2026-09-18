@@ -20,7 +20,7 @@ export const WORLD_STORY: readonly StoryNode[] = [
     id: 'forest_explore',
     kind: 'explore',
     mapId: 'forest_road',
-    objective: 'Explore the pine road. Watch for the people ahead.',
+    objective: 'Explore the pine road towards the quarry gate, or return west to Ba Dan.',
     next: 'battle_forest_road',
   },
   {
@@ -41,7 +41,7 @@ export const WORLD_STORY: readonly StoryNode[] = [
     id: 'cutting_after_explore',
     kind: 'explore',
     mapId: 'ambush_road',
-    objective: 'The way is clear. Follow the east path to the quarry floor, or return to Ba Dan.',
+    objective: 'Follow the east path towards the quarry floor, or return west to Ba Dan.',
     next: 'quarry_descent',
   },
   {

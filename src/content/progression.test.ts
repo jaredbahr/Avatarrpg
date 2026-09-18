@@ -376,8 +376,8 @@ describe('progression', () => {
   it('reaches every story node the validator considers reachable', () => {
     /*
      * Turns "I added a branch and forgot to test it" into a failure. Anything
-     * only reachable by tapping an NPC is excluded — the walk follows links,
-     * and NPC conversations are entered from the explore map.
+     * reached through an NPC or the optional continuation of a reached ending
+     * is checked separately; the XP walk stops at the chapter ending.
      */
     const npcRoots = new Set<string>();
     for (const map of CONTENT_BUNDLE.maps) {
@@ -387,15 +387,22 @@ describe('progression', () => {
       }
     }
 
-    const walked = new Set(ALL.flatMap((w) => w.visited));
-    const missed = [...CONTENT.story.keys()].filter((id) => !walked.has(id) && !npcRoots.has(id));
+    const optionalRoots = new Set(npcRoots);
+    for (const walk of ALL) {
+      const ending = walk.endedAt ? CONTENT.story.get(walk.endedAt) : undefined;
+      if (ending?.kind === 'end' && ending.next) optionalRoots.add(ending.next);
+    }
 
-    // NPC conversations loop straight back to the explore node, so their own
-    // `next` targets are covered by the roots above.
+    const walked = new Set(ALL.flatMap((w) => w.visited));
+    const missed = [...CONTENT.story.keys()].filter(
+      (id) => !walked.has(id) && !optionalRoots.has(id),
+    );
+
+    // Follow every link from those real entry points, including the return walk.
     const trulyMissed = missed.filter((id) => {
       const node = CONTENT.story.get(id);
       if (!node) return true;
-      return ![...npcRoots].some((root) => reachableFrom(root, id));
+      return ![...optionalRoots].some((root) => reachableFrom(root, id));
     });
 
     expect(trulyMissed, `unreachable from any route: ${trulyMissed.join(', ')}`).toEqual([]);
@@ -426,7 +433,7 @@ describe('progression', () => {
   });
 });
 
-/** Plain link-following reachability, for the NPC-rooted coverage check. */
+/** Plain link-following reachability for optional conversations and continuations. */
 function reachableFrom(start: string, target: string): boolean {
   const seen = new Set<string>([start]);
   const queue = [start];
@@ -443,7 +450,9 @@ function reachableFrom(start: string, target: string): boolean {
           : node.kind === 'branch'
             ? [node.ifSet, node.ifUnset]
             : node.kind === 'end'
-              ? []
+              ? node.next
+                ? [node.next]
+                : []
               : [node.next];
     for (const id of next) {
       if (seen.has(id)) continue;

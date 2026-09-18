@@ -6,6 +6,7 @@ import { BENDING_BEATS } from './bending-beats';
 import { ENEMY_BEATS } from './enemy-beats';
 import { CROSSBOW_BEATS } from './crossbow-beats';
 import { QUARRY_BANDIT_BEATS } from './quarry-bandit-beats';
+import { GRUMBLER_BEATS } from './grumbler-beats';
 import { HERO_WALK_BEATS } from './hero-walk-beats';
 import type { Page } from '@playwright/test';
 import {
@@ -183,6 +184,7 @@ export const BEATS: readonly Beat[] = [
   ...ENEMY_BEATS,
   ...CROSSBOW_BEATS,
   ...QUARRY_BANDIT_BEATS,
+  ...GRUMBLER_BEATS,
   ...HERO_WALK_BEATS,
   ...PLAYER_VIEW_BEATS,
   ...WORLD_BEATS,
@@ -250,7 +252,7 @@ export const BEATS: readonly Beat[] = [
       await resetStorage(ctx.page, ctx.query());
       await ctx.page.getByRole('button', { name: 'Explore the riverside', exact: true }).click();
       await ctx.page.getByRole('button', { name: 'Under the banyan', exact: true }).click();
-      await ctx.page.getByText('The branches pass overhead.', { exact: false }).waitFor();
+      await ctx.page.getByText('The banyan shades the path.', { exact: false }).waitFor();
       await ctx.page.locator('.village-life-canvas[data-illustrated-actors="2"]').waitFor();
       await ctx.shoot(this.note);
     },
