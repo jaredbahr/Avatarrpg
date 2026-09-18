@@ -39,6 +39,7 @@ import type { Camera, Viewport } from '../camera';
 import { DecorSheets } from '../decorSheets';
 import { ParticleLayer } from '../fx/particleLayer';
 import { aimArcPoints, arcHeading, arrowheadPolygon } from '../geometry/arc';
+import { actorHealthBar } from '../geometry/actorSilhouette';
 import { DECOR_CHUNK, decorChunks } from '../geometry/board';
 import { contourLoops, isHole } from '../geometry/contour';
 import type { Curve } from '../geometry/curve';
@@ -1231,7 +1232,7 @@ export class PixiBackend implements RenderBackend {
         continue;
       }
 
-      if (unit.showHealth !== false) this.drawHealthBar(g, unit, x, y - headroom * TILE, width);
+      if (unit.showHealth !== false) this.drawHealthBar(g, unit, x, y, width, scale, headroom);
       badgeIndex = this.drawStatusBadges(g, unit, x, y, width, badgeIndex);
     }
 
@@ -1254,12 +1255,22 @@ export class PixiBackend implements RenderBackend {
     return sprite;
   }
 
-  private drawHealthBar(g: Graphics, unit: RenderUnit, x: number, y: number, width: number): void {
+  private drawHealthBar(
+    g: Graphics,
+    unit: RenderUnit,
+    x: number,
+    y: number,
+    width: number,
+    scale: number,
+    headroom: number,
+  ): void {
     const fraction = Math.max(0, Math.min(1, unit.hp / Math.max(1, unit.maxHp)));
-    const barWidth = width * 0.72;
-    const barHeight = Math.max(3, TILE * 0.075);
-    const barX = x + (width - barWidth) / 2;
-    const barY = y + TILE * 0.06;
+    const {
+      x: barX,
+      y: barY,
+      width: barWidth,
+      height: barHeight,
+    } = actorHealthBar(x, y, width, TILE, scale, headroom);
 
     g.rect(barX - 1, barY - 1, barWidth + 2, barHeight + 2).fill({ color: 'rgba(0,0,0,0.6)' });
     g.rect(barX, barY, barWidth * fraction, barHeight).fill({ color: hpColor(fraction) });

@@ -17,6 +17,7 @@ import type { Viewport } from '../camera';
 import type { TileRelief } from '../geometry/board';
 import { boardRelief, decorSignature, surfaceEdges } from '../geometry/board';
 import { aimArcPoints, arcHeading, arrowheadPolygon } from '../geometry/arc';
+import { actorHealthBar } from '../geometry/actorSilhouette';
 import { contourLoops } from '../geometry/contour';
 import type { Curve } from '../geometry/curve';
 import { sampleAt, smoothPath } from '../geometry/curve';
@@ -732,7 +733,7 @@ export class Canvas2DBackend implements RenderBackend {
 
       if (!unit.fallen) {
         if (unit.showHealth !== false) {
-          this.drawHealthBar(unit, box.x, box.y - headroom * box.size, width, box.size);
+          this.drawHealthBar(unit, box.x, box.y, width, box.size, scale, headroom);
         }
         this.drawStatusBadges(unit, box.x, box.y, width, box.size);
       } else {
@@ -751,13 +752,23 @@ export class Canvas2DBackend implements RenderBackend {
     }
   }
 
-  private drawHealthBar(unit: RenderUnit, x: number, y: number, width: number, size: number): void {
+  private drawHealthBar(
+    unit: RenderUnit,
+    x: number,
+    y: number,
+    width: number,
+    size: number,
+    scale: number,
+    headroom: number,
+  ): void {
     const { ctx } = this;
     const fraction = Math.max(0, Math.min(1, unit.hp / Math.max(1, unit.maxHp)));
-    const barWidth = width * 0.72;
-    const barHeight = Math.max(3, size * 0.075);
-    const barX = x + (width - barWidth) / 2;
-    const barY = y + size * 0.06;
+    const {
+      x: barX,
+      y: barY,
+      width: barWidth,
+      height: barHeight,
+    } = actorHealthBar(x, y, width, size, scale, headroom);
 
     ctx.fillStyle = 'rgba(0,0,0,0.6)';
     ctx.fillRect(barX - 1, barY - 1, barWidth + 2, barHeight + 2);
