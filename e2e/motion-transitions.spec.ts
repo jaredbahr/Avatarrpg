@@ -14,7 +14,9 @@ for (const renderer of ['canvas', 'webgl'] as const) {
     await takeTurn(page);
     await waitForIdle(page);
     await settleLayout(page);
-    await page.clock.pauseAt((await page.evaluate(() => Date.now())) + 1000);
+    // The clock advances until this command reaches the browser. Leave room
+    // for busy CI instead of racing a browser round trip against one second.
+    await page.clock.pauseAt(Date.now() + 30_000);
     await page.evaluate(() => {
       const win = window as Window & { motionUnits?: readonly RenderUnit[] };
       const scene = (
