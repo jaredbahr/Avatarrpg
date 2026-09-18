@@ -72,14 +72,14 @@ const painter = (painterName: string, palette: string, variant?: string): AssetE
     ? { kind: 'painter', painter: painterName, palette, variant }
     : { kind: 'painter', painter: painterName, palette };
 
-/** The six-pose contract shared by the first generated hero sheets. */
+/** Original combat poses plus idle and walking cels in every direction. */
 const heroSheet = (key: string, palette: string): SheetEntry => {
   const name = key.slice(key.lastIndexOf('.') + 1);
   const frames = (clip: ClipName, count: number): string[] =>
     Array.from({ length: count }, (_, index) => `${key}/${clip}/${index}`);
   return {
     kind: 'sheet',
-    atlas: `art/units/locomotion-${name}.json`,
+    atlas: `art/units/walking-${name}.json`,
     pixelsPerTile: 128,
     footprint: { w: 1, h: 1 },
     anchor: { x: 0.5, y: 0.85 },
@@ -87,6 +87,7 @@ const heroSheet = (key: string, palette: string): SheetEntry => {
     palette,
     clips: {
       idle: { frames: frames('idle', 2), fps: 1, loop: true },
+      walk: { frames: frames('walk', 4), fps: 4, loop: true },
       cast: { frames: frames('cast', 3), fps: 8, loop: false },
       ko: { frames: frames('ko', 1), fps: 1, loop: false },
       idleNorth: { frames: frames('idleNorth', 1), fps: 1, loop: true },
