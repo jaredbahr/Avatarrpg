@@ -20,6 +20,7 @@
 import type { MapDef } from '../../core/types';
 import { LEGEND } from './legend';
 import { FOREST_ROAD_SCENE } from '../scenes/forestRoad';
+import { QUARRY_GATE_SCENE } from '../scenes/quarryGate';
 
 export const FOREST_ROAD: MapDef = {
   id: 'forest_road',
@@ -60,6 +61,8 @@ export const FOREST_ROAD: MapDef = {
 
 export const QUARRY_GATE: MapDef = {
   id: 'quarry_gate',
+  projection: 'oblique',
+  scene: QUARRY_GATE_SCENE,
   backdrop: { url: 'art/maps/quarry_gate.webp', pixelsPerTile: 80 },
   name: 'The Quarry Gate',
   kind: 'combat',

@@ -154,7 +154,7 @@ test.describe('zoom and pan', () => {
 
   test('a drag pans only once the board no longer fits', async ({ page }) => {
     // Preserve the fitted orthographic contract alongside readable oblique views.
-    await openFight(page, 'battle_quarry_gate');
+    await openFight(page, 'battle_ambush');
     const fitted = await camera(page);
 
     await swipe(page, { x: 200, y: 200 }, { x: 120, y: 160 });
