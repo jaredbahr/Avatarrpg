@@ -52,7 +52,7 @@ function run(events: GameEvent[], rate = 1) {
 const kinds = (tracks: readonly AnyTrack[]) => tracks.map((t) => t.kind);
 
 describe('choreograph', () => {
-  it('walks a move for a step per tile', () => {
+  it('walks two combat tiles at a readable pace with brief acceleration and braking', () => {
     const { tracks, cursor } = run([
       {
         type: 'unitMoved',
@@ -66,8 +66,8 @@ describe('choreograph', () => {
     ]);
     expect(kinds(tracks)).toEqual(['move']);
     expect(tracks[0]?.start).toBe(1000);
-    expect(tracks[0]?.duration).toBe(TIMING.step * 2);
-    expect(cursor).toBe(1000 + TIMING.step * 2);
+    expect(tracks[0]?.duration).toBe(680);
+    expect(cursor).toBe(1680);
   });
 
   it('walks the party leader from where it stood, without needing the roster', () => {
@@ -93,6 +93,56 @@ describe('choreograph', () => {
     expect(move.duration).toBe(TIMING.strollStep * 2 + 120);
     expect(cursor).toBe(1000 + move.duration);
     expect(move.duration).toBeGreaterThan(TIMING.step * 4);
+  });
+
+  it('keeps short, long and diagonal combat walks at the same distance pace and sounds at footfalls', () => {
+    for (const [count, diagonal] of [
+      [2, false],
+      [12, false],
+      [6, true],
+    ] as const) {
+      const path = Array.from({ length: count }, (_, i) => ({
+        x: 2 + i,
+        y: diagonal ? 4 + i : 3,
+      }));
+      for (const rate of [1, 0.02]) {
+        const { tracks, sounds } = run(
+          [{ type: 'unitMoved', unitId: 'p0', path, cost: count }],
+          rate,
+        );
+        const [move] = tracks;
+        if (move?.kind !== 'move') throw new Error('expected movement');
+        const distanceAt = (elapsed: number) =>
+          move.ease(elapsed / move.duration) * move.curve.length;
+        expect(distanceAt(0)).toBe(0);
+        expect(distanceAt(move.duration)).toBeCloseTo(move.curve.length, 9);
+        if (rate === 1) expect(distanceAt(300) - distanceAt(200)).toBeCloseTo(100 / 280, 9);
+        else expect(move.duration).toBeCloseTo(count * 110 * rate, 9);
+        expect(sounds).toHaveLength(Math.ceil(move.curve.length));
+        sounds.forEach((sound, i) => {
+          expect(sound.key).toBe('step');
+          expect(distanceAt(sound.at - move.start)).toBeCloseTo(i, 9);
+        });
+      }
+    }
+  });
+
+  it('preserves the forced slide clock, easing and struck stance without footsteps', () => {
+    for (const rate of [1, 0.02]) {
+      const { tracks, sounds, cursor } = run(
+        [{ type: 'unitPushed', unitId: 'p0', to: { x: 4, y: 3 } }],
+        rate,
+      );
+      const [move, hit] = tracks;
+      if (move?.kind !== 'move' || hit?.kind !== 'pose') throw new Error('expected slide and hit');
+      expect(move.gait).toBe('slide');
+      expect(move.duration).toBe(220 * rate);
+      expect(move.ease(0.5)).toBe(0.75);
+      expect(hit.clip).toBe('hit');
+      expect(hit.duration).toBe(move.duration);
+      expect(cursor).toBe(1000 + 220 * rate);
+      expect(sounds).toEqual([]);
+    }
   });
 
   it('winds up, releases, sends something across and recovers for a ranged cast', () => {
@@ -287,7 +337,7 @@ describe('choreograph', () => {
       },
     ]);
     expect(sounds.map((s) => s.key)).toEqual(['step', 'step']);
-    expect(sounds.map((s) => s.at)).toEqual([1000, 1000 + TIMING.step]);
+    expect(sounds.map((s) => s.at)).toEqual([1000, 1340]);
     // Different seeds, or a walk machine-guns one sample.
     expect(sounds[0]?.seed).not.toBe(sounds[1]?.seed);
   });

@@ -18,7 +18,7 @@ import type { EmitterDef, FxRecipe } from '../../content/fx';
 import { hashSeed } from '../../render/fx/rng';
 import { particleSpan } from '../../render/fx/simulate';
 import { smoothPath } from '../../render/geometry/curve';
-import { easeInOutCubic, easeInOutSine, easeOutQuad } from './easing';
+import { easeInOutSine, easeOutQuad } from './easing';
 import { strollTiming } from './stroll';
 import type { AnyTrack, ClipName } from './timeline';
 import { attackMotion } from './attackMotion';
@@ -28,6 +28,7 @@ import type { Projection } from '../../render/projection';
 /** Base durations in milliseconds, before the motion setting is applied. */
 export const TIMING = {
   step: 110,
+  combatWalkStep: 280,
   strollStep: 280,
   windUp: 260,
   release: 120,
@@ -220,17 +221,6 @@ export function choreograph(input: ChoreographyInput): Choreography {
     sounds.push({ key, at, seed: hashSeed(pushIndex, eventIndex, slot, 0) });
   };
 
-  /** One footstep a tile along a walk that starts at `at`. */
-  const footsteps = (
-    at: number,
-    tiles: number,
-    eventIndex: number,
-    step: number = TIMING.step,
-  ): void => {
-    if (input.silentSteps) return;
-    for (let i = 0; i < tiles; i++) cue('step', at + step * rate * i, 20 + i, eventIndex);
-  };
-
   /** A hit's timing: the aimed one if it is still fresh, else now. */
   const landing = (): { at: number; hitStop: number; flash: number } =>
     pending
@@ -242,18 +232,27 @@ export function choreograph(input: ChoreographyInput): Choreography {
       case 'unitMoved': {
         if (event.path.length === 0) break;
         const from = positions.get(event.unitId) ?? event.path[0];
-        const duration = TIMING.step * event.path.length * rate;
-        if (from) {
-          tracks.push({
-            kind: 'move',
-            unitId: event.unitId,
-            curve: smoothPath(from, event.path),
-            ease: easeInOutCubic,
-            start: cursor,
-            duration,
-          });
-        }
-        footsteps(cursor, event.path.length, eventIndex);
+        if (!from) break;
+        const curve = smoothPath(from, event.path);
+        const timing = strollTiming(curve.length, TIMING.combatWalkStep);
+        // Reduced motion retains its existing abbreviated action lock.
+        const duration = (rate < 1 ? TIMING.step * event.path.length : timing.duration) * rate;
+        tracks.push({
+          kind: 'move',
+          unitId: event.unitId,
+          curve,
+          ease: timing.ease,
+          start: cursor,
+          duration,
+        });
+        if (!input.silentSteps)
+          for (let d = 0; d < curve.length; d++)
+            cue(
+              'step',
+              cursor + (timing.atDistance(d) / timing.duration) * duration,
+              20 + d,
+              eventIndex,
+            );
         const last = event.path[event.path.length - 1];
         if (last) positions.set(event.unitId, last);
         cursor += duration;
