@@ -101,3 +101,20 @@ Head8c301c9 failed E2E run35359990220 at shopfront Talk after the combined test 
 Separated real Talk interaction from the ring-occlusion pixel regression. The latter already freezes viewtime; now it presents each ring state once and waits for presentation acknowledgement, avoiding repeated identical software-WebGL draws during screenshot capture. Original15pixel RGB comparisons/tolerance3 remain; no timeout increase or forceclick. Both actual Talk tests retain dialogue visibility and Gao node assertions.
 
 Four focused tests pass on regularChrome (29.1seconds total); final acknowledgement version also passes forcedSwiftShaderChrome (32.7seconds total), at1368x912 withtouch. Fullverify required before correctionpush. Retain existing failureartifact; obsolete failed-head gallery may be cancelled under orchestratorcostpolicy aftervalidatedfix. Newhead still requires allCI and PRstaysdraft.
+
+## PR #62 travel-journal gallery selector correction
+
+Run 35363386023 on ce3b425 completed with verify and Chromium touch/WebKit E2E
+passing. Gallery had two failures, both `29-travel-journal` on surface-canvas
+and portrait-canvas; 199 passed and 139 were skipped. The exact `Travel journal`
+button selector matched both the persistent exploration header and Riverside's
+existing action toolbar. Scope the case to `.explore-bar`; retain both product
+controls and all gallery cases. This is a selector ambiguity, not a runtime
+failure or timeout. The completed run was not restarted or cancelled.
+
+Both affected gallery cases pass locally in 8.0 seconds on installed touch
+Chrome at their original desktop and portrait viewports. Failure log retained
+at the host's temporary `avatar-pr62-gallery-ce3b425.log`; CI run/job retain the
+original evidence. Run full verify before the single correction push; the new
+head still needs all three CI checks and remains draft. Gameplay/forest/resize
+integration stays in its separate local branch.
