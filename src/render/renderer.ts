@@ -43,8 +43,8 @@ export class Renderer {
 
   /**
    * Called after the element's box changed and the camera has been re-measured,
-   * so the owning scene can re-fit the way that scene wants to. Combat fits the
-   * whole grid; explore keeps its tile size and recentres.
+   * so the owning scene can adjust the view. Combat refits an unzoomed board;
+   * exploration keeps the player's zoom and map focus.
    */
   onViewportChange: (() => void) | null = null;
 
