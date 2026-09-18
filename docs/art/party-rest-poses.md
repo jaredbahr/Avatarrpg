@@ -27,3 +27,22 @@ Packing uses `rest-poses.ts`, uniform shared pose scale per hero from the origin
 idle height, then the established foot baseline. All forty pre-existing frames
 were unchanged. Unit family size after this batch: 3.92 MB of the 4 MB budget.
 Integrated stop/turn/walk review is still required before accepting this batch.
+
+Batch one was reviewed in runtime f142f72 on Canvas and WebGL at 1672×941 and
+820×1180, including sampled walking, turns and fully resting groups. Identity,
+body height and ground contact held in those views. This is bounded pose review,
+not approval of the whole reference target or a physical-device claim.
+
+## Batch two: Bo and Wen
+
+Same image-tool workflow, date and provenance, using each character's canonical
+pose reference. Bo source `exec-1f1d052b-608f-40df-9704-ae52561f7c3c.png` preserves
+his clean-shaven face, sturdy build, olive tunic, ochre sleeves, cream trousers
+and brown wraps. Wen source `exec-c4777a2c-f585-4bcf-bf1b-8dd6233310ce.png`
+preserves blond hair, goggles, blue-grey work jacket, pale shirt, tool belt,
+charcoal trousers and the mechanical gauntlet on his right arm in all views.
+
+Both prompts use the same three relaxed directional poses and visual constraints
+as batch one. Bo's hands stay low; Wen's heavy gauntlet rests beside his thigh.
+Packing again confirmed all forty previous frames unchanged. Integrated actual
+scale and transition review remains required for this second batch.
