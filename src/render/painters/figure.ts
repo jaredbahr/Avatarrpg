@@ -204,7 +204,11 @@ export function poseFor(clip: ClipName, index: number): Pose {
   const base =
     clip === 'walkNorth' || clip === 'walkSouth'
       ? 'walk'
-      : clip === 'idleNorth' || clip === 'idleSouth'
+      : clip === 'idleNorth' ||
+          clip === 'idleSouth' ||
+          clip === 'rest' ||
+          clip === 'restNorth' ||
+          clip === 'restSouth'
         ? 'idle'
         : clip;
   const poses = POSES[base];
