@@ -162,15 +162,116 @@ export const SOUND_FAMILIES: Readonly<Record<string, SoundDefInput>> = {
 };
 
 /* ------------------------------------------------------------------ */
-/* The recorded layer                                                  */
+/* Named cues                                                          */
 /* ------------------------------------------------------------------ */
 
 /**
- * Cues that are better as recordings than as descriptions: the ones that come
- * from the world rather than from bending. Every file here is Kenney's,
- * public domain, credited in `src/content/credits.ts`.
+ * Named techniques override the family when the material matters more than
+ * the faction. World and interface recordings are Kenney's, public domain,
+ * credited in `src/content/credits.ts`; weapon voices are original recipes.
  */
 export const SOUND_CUES: Readonly<Record<string, SoundDefInput>> = {
+  /* Weapons and machinery ------------------------------------------- */
+  // These play at release. A club's swish must not claim a hit before the
+  // separately scheduled hit/miss cue; only the crossbow's mechanism cracks.
+  'fx.enemy.club': voice(780, 190, {
+    noise: 'white',
+    q: 0.7,
+    attack: 28,
+    decay: 190,
+    gain: 0.55,
+  }),
+  'fx.enemy.sling': voice(3200, 850, {
+    noise: 'white',
+    q: 1.4,
+    attack: 10,
+    decay: 135,
+    gain: 0.38,
+  }),
+  'fx.enemy.rush': voice(360, 1150, {
+    noise: 'brown',
+    q: 0.7,
+    attack: 65,
+    decay: 260,
+    gain: 0.7,
+  }),
+  'fx.enemy.oil': voice(1100, 210, {
+    noise: 'brown',
+    q: 2.6,
+    attack: 25,
+    decay: 240,
+    gain: 0.6,
+  }),
+  // A burning torch keeps the fire material even though its key says enemy.
+  'fx.enemy.torch': voice(2300, 380, {
+    noise: 'white',
+    q: 1.1,
+    attack: 18,
+    decay: 310,
+    gain: 0.65,
+  }),
+  'fx.enemy.blade': voice(4200, 950, {
+    noise: 'white',
+    q: 1.8,
+    attack: 8,
+    decay: 165,
+    gain: 0.4,
+  }),
+  'fx.enemy.crossbow': voice(2600, 650, {
+    noise: 'white',
+    q: 2.4,
+    attack: 2,
+    decay: 115,
+    gain: 0.4,
+    crack: true,
+  }),
+  'fx.enemy.slam': voice(320, 65, {
+    noise: 'brown',
+    filter: 'lowpass',
+    q: 1.8,
+    attack: 14,
+    decay: 650,
+    gain: 1,
+  }),
+  'fx.enemy.spray': voice(1800, 800, {
+    noise: 'white',
+    q: 0.6,
+    attack: 45,
+    decay: 460,
+    gain: 0.45,
+  }),
+  'fx.enemy.debris': voice(650, 120, {
+    noise: 'brown',
+    filter: 'lowpass',
+    q: 1.4,
+    attack: 20,
+    decay: 430,
+    gain: 0.9,
+  }),
+  'fx.enemy.churn': voice(160, 480, {
+    noise: 'brown',
+    filter: 'lowpass',
+    q: 2.2,
+    attack: 85,
+    decay: 700,
+    gain: 0.85,
+  }),
+  'fx.enemy.sabre': voice(3400, 700, {
+    noise: 'white',
+    q: 1.6,
+    attack: 12,
+    decay: 210,
+    gain: 0.45,
+  }),
+  // A restrained rising support cue, not synthetic speech or a weapon hit.
+  'fx.enemy.order': voice(480, 1400, {
+    noise: 'brown',
+    q: 3,
+    attack: 35,
+    decay: 210,
+    gain: 0.4,
+  }),
+
   /* The world ------------------------------------------------------- */
   // A tile of walking. Four variants so a six-tile walk does not repeat.
   step: sample('audio/step-a.ogg', {

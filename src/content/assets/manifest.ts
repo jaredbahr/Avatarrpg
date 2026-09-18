@@ -129,7 +129,26 @@ export const ASSETS: Readonly<Record<string, AssetEntry>> = {
   'unit.non.wen': heroSheet('unit.non.wen', 'nonbender'),
 
   /* ----------------------------------------------------- Enemy sprites */
-  'unit.enemy.thug': painter('bandit', 'enemy', 'club'),
+  'unit.enemy.thug': {
+    kind: 'sheet',
+    atlas: 'art/units/thug.json',
+    pixelsPerTile: 128,
+    footprint: { w: 1, h: 1 },
+    anchor: { x: 0.5, y: 0.85 },
+    facing: 'mirror',
+    palette: 'enemy',
+    clips: {
+      idle: { frames: ['unit.enemy.thug/idle/0', 'unit.enemy.thug/idle/1'], fps: 1, loop: true },
+      walk: { frames: ['unit.enemy.thug/walk/0', 'unit.enemy.thug/walk/1'], fps: 4, loop: true },
+      cast: {
+        frames: ['unit.enemy.thug/cast/0', 'unit.enemy.thug/cast/1', 'unit.enemy.thug/cast/2'],
+        fps: 8,
+        loop: false,
+      },
+      hit: { frames: ['unit.enemy.thug/hit/0'], fps: 1, loop: false },
+      ko: { frames: ['unit.enemy.thug/ko/0'], fps: 1, loop: false },
+    },
+  },
   'unit.enemy.slinger': painter('bandit', 'enemy', 'sling'),
   'unit.enemy.bruiser': painter('bandit', 'enemy', 'broad'),
   'unit.enemy.quarrybender': painter('bandit', 'earth', 'bender'),

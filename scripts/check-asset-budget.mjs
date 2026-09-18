@@ -7,7 +7,7 @@
  * a family's wifi stays a breath and a Home Screen install stays small.
  */
 import { existsSync, readdirSync, statSync } from 'node:fs';
-import { join, resolve, dirname, relative } from 'node:path';
+import { join, resolve, dirname, relative, sep } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 const FAMILY_BUDGET_MB = 4;
@@ -46,7 +46,7 @@ if (existsSync(join(root, 'art', 'incoming'))) {
 const artDir = join(root, 'public', 'art');
 const families = new Map();
 for (const file of walk(artDir)) {
-  const family = relative(artDir, file).split('/')[0] ?? '.';
+  const family = relative(artDir, file).split(sep)[0] ?? '.';
   families.set(family, (families.get(family) ?? 0) + statSync(file).size);
 }
 console.log('Art by family (budget %s MB each):', FAMILY_BUDGET_MB);
