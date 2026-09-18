@@ -20,7 +20,7 @@ export const ENEMY_BEATS: readonly Beat[] = [
       await resetStorage(ctx.page, ctx.query());
       await startGame(ctx.page, ['Explorer'], ['kaya'], 'bandit-review');
       await enterNode(ctx.page, 'battle_forest_road');
-      await takeTurn(ctx.page);
+      await takeTurn(ctx.page, { settleTimeout: ctx.settleTimeout });
       await waitForIdle(ctx.page);
       await settleLayout(ctx.page, ctx.settleTimeout);
       const pos = await ctx.page.evaluate(() => {
@@ -45,7 +45,7 @@ export const ENEMY_BEATS: readonly Beat[] = [
       await resetStorage(ctx.page, ctx.query());
       await startGame(ctx.page, ['Explorer'], ['kaya'], 'bandit-review', { reduceMotion: false });
       await enterNode(ctx.page, 'battle_forest_road');
-      await takeTurn(ctx.page);
+      await takeTurn(ctx.page, { settleTimeout: ctx.settleTimeout });
       await waitForIdle(ctx.page);
       await settleLayout(ctx.page, ctx.settleTimeout);
       // Decode the real asset before freezing the clock for the filmstrip.
