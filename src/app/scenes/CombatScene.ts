@@ -70,6 +70,7 @@ export class CombatScene implements Scene {
   private bannerShownFor: string | null = null;
   private lastActiveId: string | null = null;
   private recentreButton: HTMLButtonElement | null = null;
+  private actorButton: HTMLButtonElement | null = null;
   /** True while the player has zoomed in past the fitted board; a reflow then keeps the zoom. */
   private zoomed = false;
   /**
@@ -117,6 +118,7 @@ export class CombatScene implements Scene {
     if (this.frame) cancelAnimationFrame(this.frame);
     this.frame = 0;
     this.recentreButton = null;
+    this.actorButton = null;
     this.detach?.();
     this.detach = null;
     this.inspector?.close();
@@ -173,12 +175,25 @@ export class CombatScene implements Scene {
     this.renderer?.camera.panBy(dx, dy);
   }
 
+  /** Camera navigation never selects a target or spends an action. */
+  private focusUnit(id: string): void {
+    const unit = this.battle()?.units.find(
+      (candidate) => candidate.id === id && isAlive(candidate),
+    );
+    const camera = this.renderer?.camera;
+    if (!unit || !camera) return;
+    camera.centreOn({ x: unit.pos.x + (unit.size - 1) / 2, y: unit.pos.y });
+    this.zoomed = !camera.fitted;
+    this.syncRecentre();
+  }
+
   /** The Recentre button only exists while there is something off screen. */
   private syncRecentre(): void {
     const button = this.recentreButton;
     if (!button) return;
     const fitted = this.renderer?.camera.fitted ?? true;
     if (button.hidden !== fitted) button.hidden = fitted;
+    if (this.actorButton) this.actorButton.hidden = fitted;
   }
 
   private setupRenderer(): void {
@@ -433,6 +448,17 @@ export class CombatScene implements Scene {
     recentre.hidden = this.renderer?.camera.fitted ?? true;
     this.recentreButton = recentre;
     bar.appendChild(recentre);
+    const actor = button(
+      'Acting unit',
+      () => {
+        const unit = this.active();
+        if (unit) this.focusUnit(unit.id);
+      },
+      { class: 'btn-ghost', title: 'Return to the acting unit without changing zoom' },
+    );
+    actor.hidden = this.renderer?.camera.fitted ?? true;
+    this.actorButton = actor;
+    bar.appendChild(actor);
 
     if (encounter) {
       const tipButton = button('Tip', () => this.app.toasts.show(encounter.tip, 'info', 6000), {
@@ -464,24 +490,22 @@ export class CombatScene implements Scene {
     if (!strip || !battle) return;
     clear(strip);
 
-    for (const unit of upcomingOrder(battle, 9)) {
+    for (const unit of upcomingOrder(battle, battle.units.length).filter(isAlive)) {
       const isActive = unit.id === this.active()?.id;
       const player = this.app.session.playerFor(unit.id);
 
       // The element class puts the unit's colour in --el, for the party's ring.
       const chip = el(
-        'div',
+        'button',
         {
           class: `turn-chip faction-${unit.faction} element-${unit.element}${isActive ? ' active' : ''}`,
+          attrs: { type: 'button', 'aria-label': `Focus ${unit.name}` },
+          onClick: () => this.focusUnit(unit.id),
         },
         assetCanvas(portraitKeyFor(this.app.content, unit), 2.4),
         el('span', { class: 'tiny', text: player?.name ?? unit.name }),
       );
-      tip(
-        chip,
-        `${unit.name}${player ? ` (${player.name})` : ''} â€” ${unit.hp}/${unit.base.maxHp} HP`,
-        (text) => this.app.toasts.show(text),
-      );
+      chip.title = `${unit.name}: ${unit.hp}/${unit.base.maxHp} HP. Focus on the battlefield.`;
       strip.appendChild(chip);
     }
   }

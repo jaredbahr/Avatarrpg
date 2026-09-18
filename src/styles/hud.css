@@ -191,6 +191,10 @@
   gap: var(--sp-1);
 }
 
+.combat-bar {
+  flex-wrap: wrap;
+}
+
 /* The encounter's name on a plate, in the display face, the round under it. */
 .title-plate {
   display: flex;
@@ -902,6 +906,8 @@ html[data-contrast='high'] .map-wrap {
   border-radius: var(--radius);
   border: 2px solid transparent;
   min-width: 3.5rem;
+  min-height: var(--tap);
+  flex-shrink: 0;
   opacity: 0.6;
 }
 
