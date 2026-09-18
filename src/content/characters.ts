@@ -1,10 +1,9 @@
 /**
  * The ten playable characters — two per element.
  *
- * All original. The era is roughly forty years after Korra: Republic City has
- * airships and electrified gauntlets, the Earth Kingdom's outer provinces are
- * still putting themselves back together, and nobody in this story has ever met
- * an Avatar.
+ * All original. Set after Korra and before Seven Havens; exact dating remains
+ * open. Nobody in this story has met an Avatar. For dialogue and character
+ * humor, read docs/writing-guide.md.
  *
  * Both characters of an element share a kit (the plan calls for element kits,
  * not class kits). They differ in stats, in voice, and in how they are drawn —
@@ -96,7 +95,7 @@ export const CHARACTERS: readonly CharacterDef[] = [
     name: 'Nilak',
     element: 'water',
     blurb: 'Healer first. Always watching the party.',
-    bio: 'Trained at a small Northern healing house that takes anyone who asks. Left because the house would not treat the people who needed it most, and has been travelling ever since.',
+    bio: 'Trained at a small Northern healing house that promised to take anyone who asked. Left when he found that people without residency papers or a sponsor were turned away. Now travels to communities short of care.',
     statMods: { maxHp: 2, focus: 3, power: -1 },
     kit: WATER_KIT,
     portrait: 'portrait.nilak',
@@ -107,7 +106,7 @@ export const CHARACTERS: readonly CharacterDef[] = [
     name: 'Sura',
     element: 'water',
     blurb: 'Ice first. Ask questions later.',
-    bio: 'A Southern Water Tribe ice-fisher who found out she was very good at turning a fishing hole into a wall. Cheerfully certain that most problems freeze.',
+    bio: "A Southern Water Tribe ice-fisher taking cold-storage work beyond her family's usual routes. Quick to act and confident on uncertain ice, she is learning when to ask someone who knows the local waters.",
     statMods: { power: 2, speed: 1, defense: -1 },
     kit: WATER_KIT,
     portrait: 'portrait.sura',
@@ -120,7 +119,7 @@ export const CHARACTERS: readonly CharacterDef[] = [
     name: 'Bo',
     element: 'earth',
     blurb: 'The wall. Nothing gets past.',
-    bio: 'Quarry foreman from three towns over, built like the thing he digs out of the ground. Joined up because the quarry stopped paying and his crew still had to eat.',
+    bio: 'Quarry foreman from three towns over. Joined up because the quarry stopped paying and his crew still had to eat. Takes the heaviest load himself, even when someone else offers.',
     statMods: { maxHp: 4, defense: 1, speed: -1 },
     kit: EARTH_KIT,
     portrait: 'portrait.bo',
@@ -168,7 +167,7 @@ export const CHARACTERS: readonly CharacterDef[] = [
     name: 'Riko',
     element: 'nonbender',
     blurb: 'Chi-blocker. Turns benders off.',
-    bio: 'Learned chi-blocking from a teacher who would not say where she learned it. Has no particular grudge against benders and no particular patience for them either.',
+    bio: 'Works escort contracts using chi-blocking learned from a teacher who kept her own past private. Values people who follow through on a promise. Has a weakness for badly acted stage mysteries.',
     statMods: { speed: 2, focus: 5, maxHp: -2 },
     kit: NONBENDER_KIT,
     portrait: 'portrait.riko',

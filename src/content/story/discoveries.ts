@@ -4,32 +4,32 @@ import { DISCOVERIES } from '../maps/discoveries';
 const TEXT = {
   duck_nest: {
     first: [
-      'A turtle-duck stands over a nest lined with reeds and one very familiar sock. Three small shells wobble behind her.',
-      'You give the family room to pass. The mother answers with a stern quack, as though this was her idea.',
-      'Below the bank, pale quarry silt coats the old nesting reeds. The uphill nest is shelter, not mischief.',
+      'A turtle-duck stands beside a nest lined with reeds. The heel of a woollen sock sticks out beneath three eggs.',
+      'She tugs the sock further into the nest, turns round twice, and settles over it.',
+      'Below the bank, pale quarry silt coats the reeds and several empty nests.',
     ],
     again: [
-      'The ducklings have settled into the sock. Their mother watches you from a respectful distance. You return the courtesy.',
+      'The turtle-duck lifts her head as you pass. You stay on the path; after a moment she settles again.',
     ],
   },
   runoff_marker: {
     first: [
       'Notches in this stone measure the stream after rain. Someone has tied a reed beside the old clear-water line.',
-      'Today, chalky sediment sits above that mark. A worker has scratched a note: “Ask upstream before blaming downstream.”',
-      'The quarry and the village share more than a road. Whatever happens above will eventually arrive here.',
+      'A second reed is tied higher up, level with a fresh band of chalky sediment.',
+      'Beside the upper mark, someone has scratched a date and the words “after the quarry wash”.',
     ],
     again: [
-      'The reed still marks the clear-water line. Reading the stone does not clean the stream; it tells you where to begin.',
+      'The two reeds remain tied to the marker. Fresh chalky sediment has gathered in the lower notches.',
     ],
   },
   tea_station: {
     first: [
-      'Six mismatched cups sit beside a squat kettle. The seventh is upside down beneath a sign: “For whoever washes up.”',
-      'A tally on the bench lists names from both quarry shifts. Beside a foreman’s name, somebody has written “Still owes two cups.”',
-      'You rinse the spare cup and leave it ready. A small responsibility, but now the next traveller has somewhere to start.',
+      'Six mismatched cups stand beside a squat kettle. A seventh has been rinsed and left upside down on a towel.',
+      'Someone has carved their name into the bench. Another hand has added “owes me a cup” underneath it.',
+      'There is clean water in a covered jug for washing up.',
     ],
     again: [
-      'The spare cup is waiting for the next traveller. Somebody has added a second towel. Apparently responsibility is catching.',
+      'A cup dries upside down beside the kettle. The towel has been hung over the back of the bench.',
     ],
   },
 } as const;

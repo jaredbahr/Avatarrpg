@@ -7,8 +7,8 @@ export const RIVERSIDE_STORY: readonly StoryNode[] = [
     speaker: 'Pella',
     portrait: 'portrait.pella',
     lines: [
-      'There is an otter-turtle by the river. He has stolen three lunches and been promoted to local celebrity.',
-      'Come on. Mira says even heroes are allowed an afternoon off.',
+      'I got six skips from one stone. Dorin only got three, but his went further.',
+      'We are still arguing about who won. Come down to the river and look.',
     ],
     next: 'riverside_explore',
   },
@@ -26,7 +26,7 @@ export const RIVERSIDE_STORY: readonly StoryNode[] = [
     portrait: 'portrait.mira',
     lines: [
       'I wondered when you would find our quieter corner.',
-      'Dorin practices on the far bank. He calls it discipline. Pella calls it splashing with excellent posture.',
+      'Dorin practices on the far bank. Pella has been trying to copy his stance when he is not looking.',
       'There is an old shrine beyond him. The path is narrow, but somebody still leaves flowers.',
     ],
     next: 'riverside_explore',
@@ -37,9 +37,9 @@ export const RIVERSIDE_STORY: readonly StoryNode[] = [
     speaker: 'Dorin',
     portrait: 'portrait.dorin',
     lines: [
-      'Feet first. Breath second. Dramatic shouting is optional.',
-      'Watch how the water follows the hands. Give it a direction, then let it travel.',
-      'Try your forms here. The otter-turtle is the only judge, and he accepts snacks.',
+      'Give yourself room. Set your feet before you start a form.',
+      'Slow it down once. It is easier to feel where you are losing your balance.',
+      'And check behind you. Pella has been leaving her skipping stones all over this bank.',
     ],
     next: 'riverside_explore',
   },
@@ -51,7 +51,7 @@ export const RIVERSIDE_STORY: readonly StoryNode[] = [
     lines: [
       'Fresh flowers rest beside an old stone inscription.',
       '“The river belongs to everyone downstream.”',
-      'Someone has added a smaller sign: “That includes the otter.”',
+      'A small jar holds the flowers upright. Its handle has been carefully mended with wire.',
     ],
     next: 'riverside_shrine_found',
   },
