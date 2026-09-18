@@ -48,3 +48,24 @@ pose scale, elevation, distinct palms, fallback, boss footprint, unchanged groun
 effects and reduced motion. A paired Canvas/WebGL actual hit recording must
 review gather, release, travel, contact, recovery and bar placement before this
 candidate is described as visually accepted. No new art frames or engine change.
+
+## Resize presentation follow-up
+
+The moving review at c6b46f2 accepted the bounded attachment/bar placements but
+recorded one blank WebGL battlefield as Confirm removed its preview. An actual
+Confirm regression on that production build reproduced a 499→619 backing-height
+change with zero opaque pixels and no draw after resize, before browser paint.
+This establishes a runtime gap, not merely an uncertain video capture artifact.
+
+Resize clears the backing store. Retain the last `MapView` and repaint it in the
+same resize transaction after the scene has adjusted the camera. Do not schedule
+another animation loop or advance animation time. Clear the retained view at
+destruction. Both canvas-box observation and explicit scene/window resizing need
+this ordering: the latter reproduced the same gap at 619→699 pixels even after
+the observer-only correction. Initial construction may resize without a view.
+
+The browser regression goes through actual aim/target/Confirm and inspects draw
+order plus canvas pixels in a microtask after resize and before paint. It covers
+Canvas/WebGL, ordinary/reduced motion and intentionally missing character sheets;
+the normal-motion cases also exercise a real window-size change. This complements
+moving review rather than relying on a settled screenshot to catch a transient.

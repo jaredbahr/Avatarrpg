@@ -157,3 +157,44 @@ local; [ADR 0026](../../adr/0026-actor-effect-attachments.md) records the shared
 presentation contract. Ground-area effects, rules and flight timing are retained.
 No new art frames. Combined validation and a new frozen paired moving review are
 required before acceptance or any combined landing decision.
+
+## Fire Jab placement and resize correction
+
+Art accepted the bounded hand gather/launch, Bruiser torso contact, stable
+recovery and healthbar clearance on c6b46f2. Four staged legal approaches with
+actual aim/Focus/pan/target/Confirm produced natural first-cast hits: Kaya 7 and
+Tenzo 6 on Canvas and WebGL. No browser errors, service worker null. Evidence:
+art worktree `gallery/scene-audit/fire-attachments-c6b46f2/README.md`, original
+`staged-cast.webm` and metadata in each case. Primary independently inspected
+Canvas Kaya and WebGL Tenzo contact sheets. This is neither overall visual
+acceptance nor audio/device/mirrored/boss visual signoff.
+
+Primary also resumed the normal solo Kaya campaign through Continue on c6b46f2,
+completed Gao/Mira dialogue, walked village→forest, triggered the pine interlude
+and roadblock, made two 4-point moves with a confirmed End turn/AI turn between,
+then used Fire Jab→Focus Bruiser→target→Confirm. The natural hit reduced Bruiser
+HP 29→22 and Kaya AP 5→4. This was actual UI with no state staging; renderer was
+not independently identified. It is a continuation after loading, not an
+uninterrupted recording. Bar clearance at rest was directly visible. Later HMR
+returned the tab to the title with the combat autosave intact.
+
+Art's WebGL Kaya recording showed one blank-map frame as Confirm collapsed the
+preview. Production c6b46f2 reproduced the defect: canvas height 499→619, no draw
+after resize, zero opaque pixels in a pre-paint microtask. Baseline failure is
+preserved locally under `test-results/resize-baseline/`. Observer-only correction
+b33dd62 fixed Confirm, but a real window resize still reproduced 619→699 with
+the same empty-buffer evidence (`test-results/resize-window-baseline/`). Final
+runtime ad13e4e applies synchronous resize→scene refit→cached view redraw to both
+observer and explicit combat/exploration resize paths. No new animation loop.
+
+Combined `npm run verify` passes 719 tests in 79 files plus typecheck/lint/format.
+Production build passes; total compressed JavaScript is 294.4 KiB of 300 KiB,
+precache 15.89 MiB of 25 MiB. Ten production browser checks pass in 21.2 seconds:
+Canvas/WebGL × normal/reduced/missing character sheets actual Confirm, real
+window resize on normal cases, and four viewport/painted-picking regressions.
+The permanent regression checks a redraw and nonempty canvas before presentation,
+not just a settled screenshot; AP spending also remains correct. Missing-sheet
+tests intercept the Kaya atlas request and exercise the painter fallback.
+
+Final WebGL moving recapture of the original Confirm flash remains pending.
+All work remains local and unpushed; PR #62 is still the separate courtyard head.
