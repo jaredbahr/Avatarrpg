@@ -26,7 +26,7 @@ export const ACT1_NODES: readonly StoryNode[] = [
     lines: [
       'Ba Dan lies below a limestone quarry, its houses built from the same pale stone as the hill.',
       'Every week, a cart of cut stone comes down from the quarry. Gao opens his shop early for the crew; by noon, the whole square is white with dust.',
-      'The cart has not come for a month. This morning, Elder Mira is waiting for you instead.',
+      'The cart has not come for a month. Elder Mira has asked you to find out why her messengers have not come home.',
     ],
     next: 'village_explore',
   },
@@ -59,11 +59,29 @@ export const ACT1_NODES: readonly StoryNode[] = [
     speaker: 'Elder Mira',
     portrait: 'portrait.mira',
     lines: [
-      'The first cart came down this morning. Gao heard it and ran out in his slippers.',
+      'Bo-shan came through the gate ahead of you. Pella has not let go of his sleeve.',
       'Bo-shan and all four messengers are home. I have counted everyone twice. They keep telling me to stop.',
       'You can stay as long as you need. Leave your washing by the door.',
     ],
-    next: 'village_explore',
+    next: 'village_return_explore',
+    variants: [
+      {
+        when: { kind: 'flag', key: 'ruon_spared', op: 'set' },
+        lines: [
+          'Bo-shan and all four messengers are home. I have counted everyone twice. They keep telling me to stop.',
+          'Dorin is taking Ruon’s statement. The families will hear it when they have had some rest.',
+          'You can stay too. Gao has food ready, and I will find you a bed.',
+        ],
+      },
+      {
+        when: { kind: 'flag', key: 'ruon_traded', op: 'set' },
+        lines: [
+          'Bo-shan and all four messengers are home. Thank you for bringing them out.',
+          'I wish Ruon were here to answer their questions. I will write to the province and ask where Jin delivered him.',
+          'For now, go and eat. There is room for you to stay.',
+        ],
+      },
+    ],
   },
   {
     id: 'gao_friendly',
@@ -488,6 +506,17 @@ export const ACT1_NODES: readonly StoryNode[] = [
       'A mecha-driller idles beside the lowest ramp, its cabin shaking between two broad treads.',
       'Oil drips from a split hose. The driver sees you and reaches for a lever.',
     ],
+    next: 'quarry_assessment',
+  },
+  {
+    id: 'quarry_assessment',
+    kind: 'dialogue',
+    speaker: 'The Quarry',
+    portrait: 'portrait.narrator',
+    lines: [
+      'Workers bang on the barred gallery doors. The driver turns towards the noise, then back to you.',
+      'The ramp behind you is clear. It is the way everyone will have to come out.',
+    ],
     next: 'battle_grumbler',
   },
   {
@@ -545,11 +574,12 @@ export const ACT1_NODES: readonly StoryNode[] = [
     title: 'The Quarry of Ba Dan',
     lines: [
       'The drill jams in the quarry floor. Grumbler tries the lever twice, then climbs out with his hands raised.',
-      'You pull the bars from the gallery doors. The workers help each other up the ramp; Mira waits at the top, calling their names.',
-      'Back in Ba Dan, Gao sets out everything he can cook before dark. Bo-shan falls asleep at the table while Pella argues that he needs another bowl.',
-      'The driller bears a Republic City maker’s plate. Mira sends a rubbing with her report to the province. She wants to know who paid for it.',
+      'You pull the bars from the gallery doors. Mira’s four messengers are there. Bo-shan follows them out and asks where Pella is.',
+      'The driller bears a Republic City maker’s plate. You take a rubbing for Mira’s report to the province.',
+      'The workers help each other up the ramp and start down the west road. It is time to take the news home to Ba Dan.',
     ],
     teaser:
       'Across the bay, lamps burn in a Fire Nation outpost closed nine years ago. A supply boat ties up at its jetty.',
+    next: 'quarry_after_explore',
   },
 ];

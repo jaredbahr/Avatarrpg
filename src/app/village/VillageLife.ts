@@ -212,17 +212,17 @@ export class VillageLife {
       }
       if (visit === 'canopy') {
         this.say(
-          'The branches pass overhead. Walk back into the sunlight to see the depth change.',
+          'The banyan shades the path. Sunlight reaches the paving stones beyond its branches.',
         );
       } else if (visit === 'otter') {
         this.petUntil = now + 3200;
         this.app.dispatch({ type: 'setFlags', flags: { riverside_pet: true } });
-        this.say(
-          'Pebble leans into your hand. His shell is warm. Your lunch is now under investigation.',
-        );
+        this.say('Pebble leans into your hand. His shell is warm. He sniffs at your food pouch.');
       } else if (visit === 'tea') {
         this.app.dispatch({ type: 'setFlags', flags: { riverside_tea: true } });
-        this.say('A cup of jasmine tea waits on the veranda. For a moment, nobody needs saving.');
+        this.say(
+          'You sit on the veranda with a cup of jasmine tea. The river runs below the steps.',
+        );
       } else if (visit === 'practice') {
         this.drill = 0;
         this.say('Dorin sets a rhythm: water, fire, water. Finish each form before the next.');

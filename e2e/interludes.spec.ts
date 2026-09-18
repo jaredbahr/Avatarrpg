@@ -28,6 +28,12 @@ test('each click advances one still caption and skip reaches the intended destin
   expect((await snapshot(page)).node).toBe('village_explore');
   await enterNode(page, 'quarry_descent');
   await page.getByRole('button', { name: 'Skip scene' }).click();
+  expect((await snapshot(page)).node).toBe('quarry_assessment');
+  await page.getByRole('button', { name: 'Next', exact: true }).click();
+  await page
+    .locator('button')
+    .filter({ hasText: /^Continue$/ })
+    .click();
   expect((await snapshot(page)).node).toBe('battle_grumbler');
 });
 
