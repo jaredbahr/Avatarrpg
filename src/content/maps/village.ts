@@ -5,9 +5,8 @@
  * camera panning by drag. Tapping an NPC opens their story node; walking onto
  * the east gate advances the current explore node.
  *
- * The shopkeeper has an `altNode`: once `ruon_traded` is set he is cold with
- * the party and his prices go up, which is the most visible consequence of the
- * Act 1 choice short of the boss fight itself.
+ * NPC routes remember the rescue and Ruon's custody. Gao can welcome the
+ * workers home while still disagreeing with the party about handing Ruon to Jin.
  */
 
 import type { MapDef } from '../../core/types';
@@ -64,7 +63,20 @@ export const BA_DAN_VILLAGE: MapDef = {
       pos: { x: 7, y: 3 },
       sprite: 'npc.shopkeeper',
       node: 'gao_friendly',
-      routes: [{ when: { kind: 'flag', key: 'ruon_traded', op: 'set' }, node: 'gao_cold' }],
+      routes: [
+        {
+          when: {
+            kind: 'all',
+            of: [
+              { kind: 'flag', key: 'act1_complete', op: 'set' },
+              { kind: 'flag', key: 'ruon_traded', op: 'set' },
+            ],
+          },
+          node: 'gao_home_cold',
+        },
+        { when: { kind: 'flag', key: 'act1_complete', op: 'set' }, node: 'gao_home' },
+        { when: { kind: 'flag', key: 'ruon_traded', op: 'set' }, node: 'gao_cold' },
+      ],
     },
     {
       id: 'kid_pella',
@@ -72,8 +84,10 @@ export const BA_DAN_VILLAGE: MapDef = {
       pos: { x: 12, y: 10 },
       sprite: 'npc.kid',
       node: 'pella_tips',
-      // Ask her twice and she is still on about the cabbages.
-      routes: [{ when: { kind: 'flag', key: 'pella_asked', op: 'set' }, node: 'pella_again' }],
+      routes: [
+        { when: { kind: 'flag', key: 'act1_complete', op: 'set' }, node: 'pella_home' },
+        { when: { kind: 'flag', key: 'pella_asked', op: 'set' }, node: 'pella_again' },
+      ],
     },
     {
       id: 'guard_dorin',
@@ -81,6 +95,7 @@ export const BA_DAN_VILLAGE: MapDef = {
       pos: { x: 20, y: 8 },
       sprite: 'npc.guard',
       node: 'dorin_directions',
+      routes: [{ when: { kind: 'flag', key: 'act1_complete', op: 'set' }, node: 'dorin_home' }],
     },
   ],
   props: [],

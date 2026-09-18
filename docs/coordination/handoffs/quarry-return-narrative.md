@@ -12,27 +12,35 @@
 - **Location:** `C:\Users\Jared\Documents\ChatGPT\Avatar RPG-return-writing`, branch
   `codex/quarry-return-narrative`, based on narrative integration `2bb426c` from
   [PR #40](https://github.com/jaredbahr/Avatarrpg/pull/40). No follow-up PR yet.
-- **Worktree state:** uncommitted content, focused tests, writing guide and three
-  narrative-string edits in `VillageLife.ts`. No local-only assets. Dependency
-  installation finished. No physical-device testing performed.
+- **Worktree state:** party voices are committed in `b816d4a`; the agreed engine
+  contract is integrated in merge commit `4e6ed49`. Return content and its tests
+  are authored locally and awaiting the follow-up commit. No local-only assets.
+  An ignored `.shots` config uses installed Chrome for local browser checks.
+  No physical-device testing performed.
 - **Completed locally:** party-specific variants at separate moments, Wen's
   pre-battle assessment, positive-HP speaker tests and same-element pair coverage;
   removed generic riverside punchlines; recorded Jared's rejected Dema example.
+  The victory summary now leaves the party at the quarry with a continuation;
+  post-victory NPC routes remember rescue, optional visits and Ruon's custody.
+  Homeward objectives survive roadside discoveries and repeat conversations.
   This work is not merged or deployed.
-- **Verification:** intermediate local `npm run verify` passed 594 tests. Later
-  journal/title edits still need final verification. Prior-head CI does not verify
-  this follow-up. The eventual PR description records the exact tested SHA.
+- **Verification:** local `npm run verify` passed 608 tests on the combined content
+  and engine contract. These include speaker availability, same-element pairs,
+  outcome-sensitive return routes, discovery revisits and chapter progression.
+  Prior-head CI does not verify this follow-up. The eventual PR description
+  records the exact tested SHA and browser results.
 - **Coordination:** writing owns story/content and NPC routes/objectives. Gameplay
   owns core/UI and navigation tests. Its contract is
   [PR #45](https://github.com/jaredbahr/Avatarrpg/pull/45), head `47d903f`, ADR 0022:
   optional `end.next` targets exploration; ordered map `objectiveVariants` use
   `{ when, text }`. No save field is added. Same-element kit work belongs to gameplay.
-- **Deferred dependency:** production return wiring awaits integration of #45's
-  types/schema/UI. Until it is included, this branch does not claim a playable
-  post-victory return. The dependency is available; it requires integration rather
-  than user input.
-- **Next actions:** finish and verify the independent dialogue commit; merge the
-  agreed #45 branch; wire `act1_epilogue.next` to `quarry_after_explore`, author
-  post-victory map objectives and NPC routes; test victory/escort/trade/revisits;
-  open one follow-up PR and report its exact head to gameplay for route testing.
+- **Deferred acceptance:** #40 and #45 must finish their required checks and merge.
+  This branch includes their exact implementations, but their production status
+  is not assumed. Gameplay owns the full continuous traversal/save-load browser
+  acceptance after this content is available. All ten contribution nodes must
+  also be visited through ordinary movement across suitable parties; content
+  resolution tests alone do not prove that playthrough.
+- **Next actions:** complete focused browser checks; commit/push and open one
+  follow-up PR; report its exact head to gameplay for continuous route testing;
+  mark ready after dependency integration, then confirm current-head CI and merge.
 - **Completion/transfer:** pending. Writing ownership remains with this task.

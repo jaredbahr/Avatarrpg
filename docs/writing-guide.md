@@ -141,8 +141,8 @@ The optional scenes stay optional; there is no compulsory roll call.
 | Character | Node                     | Contribution and when to encounter it                                                                               |
 | --------- | ------------------------ | ------------------------------------------------------------------------------------------------------------------- |
 | Kaya      | `after_forest`           | Recognizes the attackers as quarry workers and questions why they are guarding the road; either road outcome        |
-| Tenzo     | `cutting_tea`            | Offers to help Sen feed the freed crews and washes cups; optional cutting rest stop                                 |
-| Nilak     | `riverside_mira`         | Arranges a place and supplies for aftercare without papers or sponsors; optional riverside visit before the rescue  |
+| Tenzo     | `cutting_tea`            | Offers to help Sen feed the freed crews and wash cups; optional cutting rest stop                                   |
+| Nilak     | `riverside_mira`         | Arranges a place and supplies for aftercare, with room for families; optional riverside visit before the rescue     |
 | Sura      | `discover_runoff_marker` | Recognizes grit from fishing work and reads the clue about the settling pit; optional stream marker                 |
 | Bo        | `gate_kinship`           | Uses his crew experience to argue for stopping unsafe work and opening the gate; earthbender approach               |
 | Lin Mei   | `forest_dema`            | Proposes comparing the banks to locate incoming runoff; optional road-keeper conversation                           |

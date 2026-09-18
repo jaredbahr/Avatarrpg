@@ -28,6 +28,7 @@ import { SURFACES, SURFACE_BY_ID } from './surfaces';
 import { UNIVERSAL_ABILITY_IDS } from './abilities';
 import { ACT1_NODES } from './story/act1';
 import { withPartyVoices } from './story/partyVoices';
+import { RETURN_STORY } from './story/return';
 import type { ContentBundle } from './schemas';
 import type { MapDef, StoryNode } from '../core/types';
 
@@ -39,6 +40,7 @@ export const ALL_STORY: readonly StoryNode[] = withPartyVoices([
   ...RIVERSIDE_STORY,
   ...WORLD_STORY,
   ...DISCOVERY_STORY,
+  ...RETURN_STORY,
 ]);
 
 /** The flat form, used by the validation test and the balance report. */

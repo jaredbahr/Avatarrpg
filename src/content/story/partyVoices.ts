@@ -18,7 +18,7 @@ const VOICES = [
     lines: [
       'Mira, is there a room we can use when the workers come home? Somewhere with a table and clean water.',
       "Set aside some cloth, too. I'll check on anyone who needs help before they go back to their families.",
-      'Tell them where to find me. They do not need papers or a sponsor.',
+      'Their families can stay with them. We will need a few extra chairs.',
     ],
   },
   {
@@ -61,7 +61,7 @@ const VOICES = [
     node: 'dorin_directions',
     character: 'jinu',
     lines: [
-      "I've carried post up those switchbacks. Two hours, unless the mud has taken the steps again.",
+      "I've carried post up those switchbacks. Two hours. Allow longer when the steps are muddy.",
       'Dorin, stay at the village gate. If we send anyone down ahead of us, they will need someone watching for them.',
       "If we find anyone who can walk, I'll send them straight to you.",
     ],

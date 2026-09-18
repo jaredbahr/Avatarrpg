@@ -5,6 +5,7 @@ import { discoveryMarkers } from './discoveries';
 
 const visited = (nodeId: string): Condition => ({ kind: 'visited', nodeId });
 const unvisited = (nodeId: string): Condition => ({ kind: 'not', of: visited(nodeId) });
+const rescued: Condition = { kind: 'flag', key: 'act1_complete', op: 'set' };
 const route = (
   pos: Vec2,
   toMapId: string,
@@ -50,6 +51,12 @@ export function connectAct1(map: MapDef): MapDef {
       return {
         ...map,
         objective: 'Meet the villagers, visit the riverside, or follow the east road.',
+        objectiveVariants: [
+          {
+            when: rescued,
+            text: 'The workers are home. Talk with Mira, Pella and Gao, or visit the river.',
+          },
+        ],
         exits: [
           route({ x: 23, y: 7 }, 'forest_road', { x: 1, y: 4 }, 'East road → Forest Road'),
           route({ x: 19, y: 14 }, 'ba_dan_riverside', { x: 10, y: 19 }, 'River path → Riverside'),
@@ -60,6 +67,17 @@ export function connectAct1(map: MapDef): MapDef {
         ...map,
         objective:
           'Enjoy the riverside, or follow the southern path into Ba Dan and the wider valley.',
+        objectiveVariants: [
+          { when: rescued, text: 'Rest by the river, or follow the southern path back to Ba Dan.' },
+        ],
+        npcs: map.npcs.map((npc) =>
+          npc.id === 'riverside_mira'
+            ? {
+                ...npc,
+                routes: [{ when: rescued, node: 'riverside_mira_home' }, ...(npc.routes ?? [])],
+              }
+            : npc,
+        ),
         exits: [
           route(
             { x: 10, y: 20 },
@@ -73,6 +91,9 @@ export function connectAct1(map: MapDef): MapDef {
       return {
         ...map,
         objective: 'Explore the woodland paths. The quarry lies east; Ba Dan lies west.',
+        objectiveVariants: [
+          { when: rescued, text: 'The roadblock is gone. Follow the road west to Ba Dan.' },
+        ],
         exits: [
           route({ x: 0, y: 4 }, 'ba_dan_village', { x: 22, y: 7 }, 'West → Ba Dan Village'),
           route(
@@ -114,6 +135,7 @@ export function connectAct1(map: MapDef): MapDef {
             sprite: 'npc.elder',
             node: 'forest_dema',
             routes: [
+              { when: rescued, node: 'dema_home' },
               {
                 when: { kind: 'flag', key: 'world.ducks_seen', op: 'set' },
                 node: 'forest_dema_again',
@@ -126,6 +148,9 @@ export function connectAct1(map: MapDef): MapDef {
       return {
         ...map,
         objective: 'Approach the watch at the gate, or take the road back to Ba Dan.',
+        objectiveVariants: [
+          { when: rescued, text: 'The gate is open. Follow the forest road west to Ba Dan.' },
+        ],
         exits: [
           route({ x: 0, y: 5 }, 'forest_road', { x: 18, y: 4 }, 'West → Forest Road'),
           route(
@@ -154,6 +179,12 @@ export function connectAct1(map: MapDef): MapDef {
         ...map,
         objective:
           'Follow the cutting toward the quarry. Look for the old workers’ rest along the verge.',
+        objectiveVariants: [
+          {
+            when: rescued,
+            text: 'Ba Dan lies west, past the quarry gate. Sen is at the rest stop.',
+          },
+        ],
         exits: [
           route({ x: 0, y: 4 }, 'quarry_gate', { x: 18, y: 5 }, 'West → Quarry Gate'),
           route(
@@ -181,6 +212,7 @@ export function connectAct1(map: MapDef): MapDef {
             sprite: 'npc.shopkeeper',
             node: 'cutting_tea',
             routes: [
+              { when: rescued, node: 'sen_home' },
               {
                 when: { kind: 'flag', key: 'world.tea_shared', op: 'set' },
                 node: 'cutting_tea_again',
@@ -193,6 +225,12 @@ export function connectAct1(map: MapDef): MapDef {
       return {
         ...map,
         objective: 'The driller waits across the floor. You can still return to the village.',
+        objectiveVariants: [
+          {
+            when: rescued,
+            text: 'The workers are out. Take the west path through the cutting towards Ba Dan.',
+          },
+        ],
         exits: [route({ x: 0, y: 5 }, 'ambush_road', { x: 18, y: 4 }, 'West → The Cutting')],
         triggers: [
           crossing(map, 9, 5, 'quarry_descent', 'The mecha-driller', 'unit.enemy.grumbler', {
