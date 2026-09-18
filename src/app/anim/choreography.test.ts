@@ -4,6 +4,7 @@ import { resolveFx } from '../../content/fx';
 import { TIMING, choreograph } from './choreography';
 import { attackMotion } from './attackMotion';
 import type { AnyTrack, EmitterTrack, PoseTrack } from './timeline';
+import { PARTICLE_STRIDE, sampleParticles } from '../../render/fx/simulate';
 
 /**
  * The choreography is a pure function, so these pin the shape of a playback:
@@ -188,6 +189,45 @@ describe('directed Fire Jab attachments', () => {
       );
       expect(palms.length).toBeGreaterThan(0);
       expect(palms.every((t) => t.attachments?.from?.facing === facing)).toBe(true);
+    }
+  });
+
+  it('ends rear-palm gather particles before the extended release pose replaces that hand', () => {
+    const tracks = play([cast()]).tracks;
+    const release = tracks.find((t) => t.kind === 'pose' && t.unitId === 'p0' && t.frame === 1);
+    if (release?.kind !== 'pose') throw new Error('Missing release');
+    const gathering = tracks.filter(
+      (t): t is EmitterTrack =>
+        t.kind === 'emitter' && t.attachments?.from?.socket === 'fire-gather',
+    );
+    expect(gathering.length).toBeGreaterThan(0);
+    for (const track of gathering) {
+      if (track.def.kind === 'particles') {
+        expect(track.start + track.def.delay[1] + track.def.life[1]).toBeLessThanOrEqual(
+          release.start,
+        );
+        const scratch = new Float32Array(track.def.count * PARTICLE_STRIDE);
+        expect(
+          sampleParticles(
+            track.def,
+            release.start - track.start - 1,
+            track.seed,
+            track.from,
+            track.to,
+            scratch,
+          ),
+        ).toBeGreaterThan(0);
+        expect(
+          sampleParticles(
+            track.def,
+            release.start - track.start + 1,
+            track.seed,
+            track.from,
+            track.to,
+            scratch,
+          ),
+        ).toBe(0);
+      } else expect(track.start + track.duration).toBeLessThanOrEqual(release.start);
     }
   });
 });
