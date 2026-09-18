@@ -9,11 +9,11 @@ Anything not listed here was made for this project.
 
 ## Third-party work
 
-| What | Work | By | Licence | Source |
-| --- | --- | --- | --- | --- |
-| The heading typeface | Shippori Mincho 700, Latin subset | The Shippori Mincho Project Authors | SIL Open Font License 1.1 | [link](https://github.com/fontdasu/ShipporiMincho) |
-| The action icons | Game Icons | the Game Icons contributors | CC BY 3.0 | [link](https://github.com/game-icons/icons) |
-| The sound effects | Impact Sounds 1.0 and Interface Sounds 1.0 | Kenney (kenney.nl) | CC0 1.0 | [link](https://kenney.nl) |
+| What                 | Work                                       | By                                  | Licence                   | Source                                             |
+| -------------------- | ------------------------------------------ | ----------------------------------- | ------------------------- | -------------------------------------------------- |
+| The heading typeface | Shippori Mincho 700, Latin subset          | The Shippori Mincho Project Authors | SIL Open Font License 1.1 | [link](https://github.com/fontdasu/ShipporiMincho) |
+| The action icons     | Game Icons                                 | the Game Icons contributors         | CC BY 3.0                 | [link](https://github.com/game-icons/icons)        |
+| The sound effects    | Impact Sounds 1.0 and Interface Sounds 1.0 | Kenney (kenney.nl)                  | CC0 1.0                   | [link](https://kenney.nl)                          |
 
 These licences ask for the author to be named wherever the work is used,
 which is why the game carries the same list on its own Credits screen:
