@@ -1,5 +1,9 @@
 # Roadmap: cross-device, art, animation and the world
 
+The owner's approved visual destination and the current delivery sequence are in
+[Player-view target](player-view-target.md). Compare playable changes with its
+three reference views; they are design targets, not implemented-content claims.
+
 Four Nations Tactics runs on a Surface in landscape as an installable PWA. The
 next targets are an iPad in the hand, art that fits the cel-shaded look of the
 source material, animation that makes a fight worth watching, and a free-roam

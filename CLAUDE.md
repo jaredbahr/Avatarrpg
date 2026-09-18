@@ -2,6 +2,10 @@
 
 Four Nations Tactics — a hot-seat tactical RPG. Read this before changing code.
 
+For camera, interface, environment and character presentation work, also read
+`docs/player-view-target.md`: it records Jared's approved long-term player views,
+their interpretation and the staged delivery plan.
+
 ## Non-negotiables
 
 1. **`src/core/` is pure.** No DOM, no `Math.random`, no `Date.now`, no imports
