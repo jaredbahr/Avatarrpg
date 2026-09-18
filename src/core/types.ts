@@ -588,6 +588,8 @@ export interface MapDef {
   readonly exits?: readonly MapExit[];
   readonly triggers?: readonly MapTrigger[];
   readonly objective?: string;
+  /** First matching objective wins; the plain objective is the fallback. */
+  readonly objectiveVariants?: readonly { readonly when: Condition; readonly text: string }[];
   /** Explore maps only: stepping here advances the current story node. */
   readonly exit?: { readonly pos: Vec2; readonly label: string };
   /**
@@ -793,6 +795,8 @@ export type StoryNode =
       readonly title: string;
       readonly lines: readonly string[];
       readonly teaser: string;
+      /** Explore node offered after this chapter's summary; absent for a terminal ending. */
+      readonly next?: string;
     };
 
 export interface StoryState {
