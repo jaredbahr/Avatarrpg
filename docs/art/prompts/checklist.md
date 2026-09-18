@@ -11,6 +11,10 @@ regeneration, not a retouch: a retouched image drifts from its siblings.
 - [ ] No text, lettering, watermark, signature or logo anywhere
 - [ ] No likeness of any known animated character; nothing that would be recognised as a costume from a series
 - [ ] No markings, tattoos or emblems on skin
+- [ ] Four fingers and one thumb per hand; folded or hidden digits remain anatomically plausible, with no fused or extra digits
+- [ ] The thumb belongs to the correct arm after tracing shoulder, elbow and wrist; palm and back-of-hand details do not contradict each other
+- [ ] Natural wrist angles, finger lengths and knuckle bends; clear contact with held props and continuous wrist/cuff outlines
+- [ ] Review hands enlarged, at delivery size, and in the circular portrait crop; inspect all animation frames instead of approving one representative pose
 - [ ] Readable when shrunk to 40 pixels: squint, or downscale and look
 
 ## Portraits
