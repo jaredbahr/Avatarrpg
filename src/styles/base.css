@@ -122,6 +122,7 @@
   /* Minimum touch target. The e2e suite asserts every action button meets it. */
   --tap: 3rem; /* 48px at --ui-scale: 1 */
   --roster-card-width: 6.25rem;
+  --dialogue-portrait-compact: 4rem;
   --explore-actions-width: 26rem;
 
   /* Motion. Every duration in the UI is one of these times --motion-scale, so

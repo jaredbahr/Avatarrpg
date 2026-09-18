@@ -1572,11 +1572,6 @@ html[data-contrast='high'] .hud-panel::after {
     display: none;
   }
 
-  /* A phone, or a tablet at Largest text: the name plate alone is the head. */
-  .stage-portrait {
-    display: none;
-  }
-
   .hud {
     flex-direction: column;
   }
@@ -1601,12 +1596,35 @@ html[data-contrast='high'] .hud-panel::after {
     display: none;
   }
 
-  .stage-portrait {
-    display: none;
-  }
-
   .log-panel {
     display: none;
+  }
+}
+
+/* Keep the speaker visible beside their name when the full stage portrait
+   would crowd out dialogue. The text panel retains its own scroll area. */
+@media (max-width: 52rem), (max-height: 34rem) {
+  .stage-head {
+    align-items: center;
+    padding: 0;
+    margin-bottom: var(--sp-3);
+  }
+
+  .stage-portrait .painter {
+    max-width: var(--dialogue-portrait-compact);
+    max-height: var(--dialogue-portrait-compact);
+  }
+
+  .stage-head .name-plate {
+    flex: 1 1 auto;
+    min-width: 0;
+    margin-bottom: 0;
+    padding: var(--sp-2) var(--sp-3);
+    overflow-wrap: anywhere;
+  }
+
+  .stage-head .name-plate h2 {
+    font-size: var(--fs-lg);
   }
 }
 
