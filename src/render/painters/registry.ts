@@ -83,9 +83,13 @@ export function resolvePainter(key: string): ResolvedPainter {
     // after a failed fetch. Unit keys end in the cast variant by convention.
     const palette = paletteFor(entry.palette);
     const variant = key.slice(key.lastIndexOf('.') + 1);
-    // A missing machine atlas must retain its two-tile mechanical silhouette.
+    // Missing atlases retain each enemy's original silhouette and equipment.
     const unitPainter =
-      (key === 'unit.enemy.grumbler' ? UNIT_PAINTERS.driller : UNIT_PAINTERS.bender) ?? FALLBACK;
+      (key === 'unit.enemy.grumbler'
+        ? UNIT_PAINTERS.driller
+        : key === 'unit.enemy.crossbow'
+          ? UNIT_PAINTERS.mercenary
+          : UNIT_PAINTERS.bender) ?? FALLBACK;
     return {
       entry,
       palette,
