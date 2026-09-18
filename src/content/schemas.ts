@@ -399,6 +399,14 @@ const tileTemplate = z.object({
 
 const sceneImageSchema = z.object({
   url: z.string().min(1),
+  sourceRect: z
+    .object({
+      x: z.number().int().nonnegative(),
+      y: z.number().int().nonnegative(),
+      width: z.number().int().positive(),
+      height: z.number().int().positive(),
+    })
+    .optional(),
   x: z.number(),
   y: z.number(),
   width: z.number().positive(),

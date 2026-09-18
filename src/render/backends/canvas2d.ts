@@ -26,7 +26,7 @@ import type { Curve } from '../geometry/curve';
 import { sampleAt, smoothPath } from '../geometry/curve';
 import { CanvasFxLayer } from '../fx/canvasFx';
 import { backdrops } from '../backdrops';
-import { sceneImages, sceneryOpacity } from '../scene';
+import { sceneImage, drawSceneImage, sceneryOpacity } from '../scene';
 import { surfaceIsPainted } from '../sceneSurfaces';
 import { FACTION_RING, OVERLAY, STATUS_BADGE, hpColor } from '../palettes';
 import { paintTileDecor } from '../painters/board';
@@ -125,17 +125,19 @@ export class Canvas2DBackend implements RenderBackend {
     if (camera.projection === 'oblique' && view.scene) {
       const ground = view.scene.ground.map((piece) => ({
         piece,
-        image: sceneImages.get(piece.url),
+        image: sceneImage(piece),
       }));
       sceneGround =
         ground.length > 0 &&
         ground.every(({ image }) => image !== null) &&
-        view.scene.scenery.every((piece) => sceneImages.get(piece.url) !== null);
+        view.scene.scenery.every((piece) => sceneImage(piece) !== null);
       if (sceneGround)
         for (const { piece, image } of ground) {
           if (image)
-            ctx.drawImage(
+            drawSceneImage(
+              ctx,
               image,
+              piece,
               piece.x * camera.scale - camera.offsetX,
               piece.y * camera.scale - camera.offsetY,
               piece.width * camera.scale,
@@ -167,12 +169,14 @@ export class Canvas2DBackend implements RenderBackend {
         ...(view.scene?.scenery ?? []).map((piece) => ({
           pos: piece.depth,
           draw: () => {
-            const image = sceneImages.get(piece.url);
+            const image = sceneImage(piece);
             if (!image) return;
             ctx.save();
             ctx.globalAlpha = sceneryOpacity(piece, view, camera);
-            ctx.drawImage(
+            drawSceneImage(
+              ctx,
               image,
+              piece,
               piece.x * camera.scale - camera.offsetX,
               piece.y * camera.scale - camera.offsetY,
               piece.width * camera.scale,

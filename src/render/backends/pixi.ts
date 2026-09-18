@@ -32,7 +32,8 @@ import {
 import type { SurfaceId, TerrainId, Vec2 } from '../../core/types';
 import { resolveAsset } from '../../content/assets/manifest';
 import { backdrops } from '../backdrops';
-import { sceneImages, sceneryOpacity } from '../scene';
+import { sceneryOpacity } from '../scene';
+import { SceneTextures } from './sceneTextures';
 import { surfaceIsPainted } from '../sceneSurfaces';
 import { TILE } from '../camera';
 import type { Camera, Viewport } from '../camera';
@@ -180,7 +181,7 @@ export class PixiBackend implements RenderBackend {
   private groundChunks = new Map<string, Sprite>();
   private scenerySprites = new Map<string, Sprite>();
   /** Scene textures live only as long as their manifest, independently of actor LRU. */
-  private sceneTextures = new Map<string, { image: HTMLImageElement; texture: Texture }>();
+  private sceneTextures = new SceneTextures();
   /**
    * The map's painting (ADR 0009), a screen-space sprite under the ground
    * quad so the ground pass lays its surfaces over it. Its texture is made
@@ -394,7 +395,6 @@ export class PixiBackend implements RenderBackend {
     this.app = null;
     this.dropTextures();
     this.unitSprites.clear();
-    for (const { texture } of this.sceneTextures.values()) texture.destroy(true);
     this.sceneTextures.clear();
     this.groundChunks.clear();
     this.scenerySprites.clear();
@@ -503,21 +503,10 @@ export class PixiBackend implements RenderBackend {
   /** Already-projected ground chunks and upright objects use only pan/zoom. */
   private syncScene(view: MapView, camera: Camera): boolean {
     const scene = camera.projection === 'oblique' ? view.scene : undefined;
-    const urls = new Set<string>();
+    this.sceneTextures.begin();
     const groundKeys = new Set<string>();
     const sceneryKeys = new Set<string>();
     let complete = Boolean(scene?.ground.length);
-    const textureFor = (url: string): Texture | null => {
-      urls.add(url);
-      const image = sceneImages.get(url);
-      if (!image) return null;
-      const cached = this.sceneTextures.get(url);
-      if (cached && cached.image === image) return cached.texture;
-      cached?.texture.destroy(true);
-      const texture = Texture.from(image, true);
-      this.sceneTextures.set(url, { image, texture });
-      return texture;
-    };
     for (const [index, chunk] of (scene?.ground ?? []).entries()) {
       const key = String(index);
       groundKeys.add(key);
@@ -527,7 +516,7 @@ export class PixiBackend implements RenderBackend {
         this.sceneGround.addChild(sprite);
         this.groundChunks.set(key, sprite);
       }
-      const texture = textureFor(chunk.url);
+      const texture = this.sceneTextures.get(chunk);
       sprite.visible = Boolean(texture);
       if (!texture) {
         complete = false;
@@ -546,7 +535,7 @@ export class PixiBackend implements RenderBackend {
         this.unitLayer.addChild(sprite);
         this.scenerySprites.set(item.id, sprite);
       }
-      const texture = textureFor(item.url);
+      const texture = this.sceneTextures.get(item);
       sprite.visible = Boolean(texture);
       if (!texture) {
         // Ground alone cannot explain a missing building's blocked footprint.
@@ -573,12 +562,7 @@ export class PixiBackend implements RenderBackend {
         this.scenerySprites.delete(key);
       }
     }
-    for (const [url, entry] of this.sceneTextures) {
-      if (!urls.has(url)) {
-        entry.texture.destroy(true);
-        this.sceneTextures.delete(url);
-      }
-    }
+    this.sceneTextures.end();
     return complete;
   }
 

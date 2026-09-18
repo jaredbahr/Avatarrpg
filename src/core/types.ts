@@ -623,6 +623,13 @@ export interface MapBackdrop {
 /** Calibrated projected pixel rectangles: upright art is never ground-skewed. */
 export interface SceneImage {
   readonly url: string;
+  /** Optional atlas crop in source-image pixels; excludes packing gutters. */
+  readonly sourceRect?: {
+    readonly x: number;
+    readonly y: number;
+    readonly width: number;
+    readonly height: number;
+  };
   readonly x: number;
   readonly y: number;
   readonly width: number;

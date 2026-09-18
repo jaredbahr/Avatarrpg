@@ -71,7 +71,7 @@ function installImage(alpha: (x: number, y: number) => number) {
   const pixels = new Uint8ClampedArray(SIZE * SIZE * 4);
   for (let y = 0; y < SIZE; y++)
     for (let x = 0; x < SIZE; x++) pixels[(y * SIZE + x) * 4 + 3] = alpha(x, y);
-  const image = {} as HTMLImageElement;
+  const image = { naturalWidth: 256, naturalHeight: 256 } as HTMLImageElement;
   const drawImage = vi.fn();
   const getImageData = vi.fn(() => ({ data: pixels }));
   const createElement = vi.fn(() => ({
@@ -236,4 +236,53 @@ it('leaves an unloaded image opaque without rasterizing', () => {
   );
   expect(sceneryOpacity(roof(camera), view({ units: [unit(origin)] }), camera)).toBe(1);
   expect(raster.createElement).not.toHaveBeenCalled();
+});
+
+it('cuts away only the opaque slice on a shared page and reuses each cropped mask', () => {
+  const raster = installImage(() => 255);
+  const opaque = new Uint8ClampedArray(SIZE * SIZE * 4).fill(255);
+  const clear = new Uint8ClampedArray(SIZE * SIZE * 4);
+  raster.drawImage.mockImplementation((_image: unknown, sourceX: number) => {
+    raster.getImageData.mockReturnValue({ data: sourceX === 2 ? opaque : clear });
+  });
+  const camera = new Camera(
+    { width: 800, height: 600, dpr: 1 },
+    { width: 8, height: 8 },
+    'oblique',
+  );
+  const base = roof(camera),
+    state = view({ units: [unit(origin)] });
+  const a = { ...base, sourceRect: { x: 2, y: 2, width: 32, height: 64 } };
+  const b = { ...base, sourceRect: { x: 38, y: 2, width: 32, height: 64 } };
+  for (let i = 0; i < 3; i++) {
+    expect(sceneryOpacity(a, state, camera)).toBe(0.28);
+    expect(sceneryOpacity(b, state, camera)).toBe(1);
+  }
+  expect(raster.drawImage).toHaveBeenCalledTimes(2);
+  expect(raster.drawImage).toHaveBeenCalledWith(expect.anything(), 2, 2, 32, 64, 0, 0, SIZE, SIZE);
+  expect(raster.drawImage).toHaveBeenCalledWith(expect.anything(), 38, 2, 32, 64, 0, 0, SIZE, SIZE);
+  vi.mocked(sceneImages.get).mockReturnValue({
+    naturalWidth: 256,
+    naturalHeight: 256,
+  } as HTMLImageElement);
+  expect(sceneryOpacity(a, state, camera)).toBe(0.28);
+  expect(raster.drawImage).toHaveBeenCalledTimes(3);
+});
+
+it('bounds masks to 32 slice regions per decoded page', () => {
+  const raster = installImage(() => 255);
+  const camera = new Camera(
+    { width: 800, height: 600, dpr: 1 },
+    { width: 8, height: 8 },
+    'oblique',
+  );
+  const base = roof(camera),
+    state = view({ units: [unit(origin)] });
+  const slice = (x: number) => ({ ...base, sourceRect: { x, y: 0, width: 16, height: 64 } });
+  for (let x = 0; x < 33; x++) expect(sceneryOpacity(slice(x), state, camera)).toBe(0.28);
+  expect(raster.getImageData).toHaveBeenCalledTimes(33);
+  expect(sceneryOpacity(slice(32), state, camera)).toBe(0.28);
+  expect(raster.getImageData).toHaveBeenCalledTimes(33);
+  expect(sceneryOpacity(slice(0), state, camera)).toBe(0.28);
+  expect(raster.getImageData).toHaveBeenCalledTimes(34);
 });
