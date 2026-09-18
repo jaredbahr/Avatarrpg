@@ -68,6 +68,9 @@ export function resolvePainter(key: string): ResolvedPainter {
           paintPortrait(ctx, box, palette, { variant: key.slice('portrait.'.length) });
         } else if (key.startsWith('prop.')) {
           paintProp(ctx, box, palette, { ...(options ?? {}), variant: key.slice('prop.'.length) });
+        } else if (key.startsWith('npc.')) {
+          const variant = key === 'npc.dorin' ? 'guard' : key.slice('npc.'.length);
+          (UNIT_PAINTERS.villager ?? FALLBACK)(ctx, box, palette, { ...(options ?? {}), variant });
         } else {
           LOADING(ctx, box, palette, options ?? {});
         }

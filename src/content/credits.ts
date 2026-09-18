@@ -107,6 +107,15 @@ export const CREDITS: readonly CreditEntry[] = [
     note: 'Generated from the project character references and prompt packs, then normalised and packed for the game. Dialogue portrait notes: docs/art/dialogue-portraits.md; bandit prompts: docs/art/bandit.md; hero walk prompts and review: docs/art/side-walks.md. Output terms: https://openai.com/policies/row-terms-of-use/. This credit does not claim exclusive copyright in generated output.',
   },
   {
+    what: 'The village NPC sprites',
+    work: 'Mira, Gao, Pella and Dorin idle illustrations',
+    authors: 'This project, generated with OpenAI image generation',
+    licence: 'own work',
+    source: '',
+    covers: ['art/npcs'],
+    note: 'Original full-body illustrations based on the approved dialogue portraits. Prompts, packing and shared archetype limitations: docs/art/npc-idles.md. Output terms: https://openai.com/policies/row-terms-of-use/. No exclusive copyright in generated output is claimed.',
+  },
+  {
     what: 'The riverside painting',
     work: 'Ba Dan riverside',
     authors: 'This project, with OpenAI image generation',
