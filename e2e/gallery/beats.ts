@@ -4,9 +4,9 @@ import { DIRECTIONAL_BEATS } from './directional-beats';
 import { ELEMENT_BEATS, MOTION_BEATS } from './motion-beats';
 import { BENDING_BEATS } from './bending-beats';
 import { ENEMY_BEATS } from './enemy-beats';
-import { GRUMBLER_BEATS } from './grumbler-beats';
 import { CROSSBOW_BEATS } from './crossbow-beats';
 import { QUARRY_BANDIT_BEATS } from './quarry-bandit-beats';
+import { GRUMBLER_BEATS } from './grumbler-beats';
 import { HERO_WALK_BEATS } from './hero-walk-beats';
 import type { Page } from '@playwright/test';
 import {
@@ -182,9 +182,9 @@ async function faceOff(
 
 export const BEATS: readonly Beat[] = [
   ...ENEMY_BEATS,
-  ...GRUMBLER_BEATS,
   ...CROSSBOW_BEATS,
   ...QUARRY_BANDIT_BEATS,
+  ...GRUMBLER_BEATS,
   ...HERO_WALK_BEATS,
   ...PLAYER_VIEW_BEATS,
   ...WORLD_BEATS,
