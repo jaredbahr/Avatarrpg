@@ -215,3 +215,49 @@ correction eec68bd to PR #62; all checks must pass on that revision. Reconcile
 this local combined candidate with merged current main after the source lands;
 do not publish duplicate source changes in a competing integration PR.
 All work remains local and unpushed; PR #62 is still the separate courtyard head.
+
+## Common actions and camera framing — runtime b471939
+
+Baseline ebcaa8e actual casts confirmed Water Whip leaving Nilak's feet and Air
+Blast gathering/landing at ground level. Extend explicit attachments to Water
+Whip and Air Blast using separate measured cast palms for Nilak/Sura/Nima/Jinu;
+retain ground semantics for earth, melee, areas and surfaces. The first attached
+water capture exposed a returning tether after the actor dropped to idle; hold
+release until the whip returns, preserving impact timing. Source5782f29 and
+ADR0026 record decisions, fallback rigs and immutable endpoints.
+
+Camera source634abc reproduced a288px horizontal snap (1084→796) on selecting
+Fire Jab after an ordinary default-zoom drag. Manual pan now retains framing
+through aim, preview, Cancel and window resize, while Recentre and Focus work.
+Five focused browser checks and14camera/renderer tests passed. Baseline failure
+trace/screenshots: `gallery/scene-audit/manual-pan-regression`.
+
+Integrated audio source4513a6 as b471939: Fire Jab ignition/body and Rock Throw
+weight/grit, unchanged release/hit scheduling. ADR0027 and material-audio handoff
+retain source metrics and pending listening acceptance. No listening claim.
+
+Combined verify passes730tests/79files, typecheck/lint/format. Production build,
+294.8KiB/300KiB JS and15.89MiB/25MiB precache budgets pass. Twenty production
+browser cases pass:12real-Confirm staged actions,2manual-pan regressions and
+6normal/reduced/missing-sheet resize cases. A separate final12cast recording
+pass uses blocked service workers; all have null controllers and zero errors.
+Natural damage on both renderers: Nilak6, Sura8, Bo8, Nima4, Jinu5, Riko9.
+Evidence: `gallery/scene-audit/common-actions-b471939-network/README.md`, each
+case's original video, metadata, preview and frame/contact samples. These are
+staged presentation fixtures, not a continuous normal campaign. Primary viewed
+bounded air/water contacts and water-return correction; independent art review
+pending. Runtime freeze released for work after recordings finished.
+
+Open visible issues from the baseline audit: Rock Throw still reads as a low
+projectile with foot-level debris/contact; Riko's Strike gives ground dust rather
+than a clear weapon/body contact. Water lacks its upstream pouch/source action.
+These need distinct material decisions, not lifting every ground effect. Walking
+source retains projected headings through stops and hysteresis through turns;
+new continuous turn/stop qualitative evidence still needs capture. No all-action,
+audio, physical-device or overall reference-quality acceptance.
+
+Astra owns the next gate ground/wall/cart asset pass with exact map masks,
+32anchors and unchanged collision. Cart scale/contact and legacy guard remain
+visible review points; cutting/floor waits for gate qualitative review. Release
+path is unchanged: PR62 eec68bd latest-head CI, then one reconciled combined
+landing. No duplicate source PR or combined push; live remains148843f.
