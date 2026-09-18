@@ -15,6 +15,14 @@ import { CONTENT, CONTENT_BUNDLE, STORY_ENTRY } from './content';
 import { validateContent } from './content/schemas';
 import { App } from './app/App';
 import { bakeReview } from './render/sheets/review';
+import { fxCelsReady, celReady } from './render/fx/atlas';
+import { FX_CELS } from './content/fxCels';
+
+/** Gallery checks await decoded pixels, not just successful HTTP requests. */
+async function loadedFxCels() {
+  await fxCelsReady();
+  return FX_CELS.filter(celReady);
+}
 
 const root = document.getElementById('app');
 if (!root) throw new Error('Missing #app mount point in index.html');
@@ -39,7 +47,7 @@ app.start();
 // `bakeReview` is for the gallery's figure page: every placeholder sheet as a picture.
 declare global {
   interface Window {
-    fnt?: { app: App; bakeReview?: typeof bakeReview };
+    fnt?: { app: App; bakeReview?: typeof bakeReview; loadedFxCels: typeof loadedFxCels };
   }
 }
-window.fnt = { app, bakeReview };
+window.fnt = { app, bakeReview, loadedFxCels };

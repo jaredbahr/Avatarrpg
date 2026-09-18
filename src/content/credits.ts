@@ -80,6 +80,15 @@ export const THIRD_PARTY_CREDITS: readonly CreditEntry[] = [
 
 export const CREDITS: readonly CreditEntry[] = [
   {
+    what: 'The bending animation cels',
+    work: 'Fire, water, earth and air effects, with lightning, ice, healing and metal',
+    authors: 'This project, generated with OpenAI image generation',
+    licence: 'own work',
+    source: '',
+    covers: ['art/fx'],
+    note: 'Hand-drawn-style effect sheets generated for this project, normalised into 48 transparent animation cels. Prompts and provenance: docs/art/elemental-cels.md. Output terms: https://openai.com/policies/row-terms-of-use/. No exclusive copyright in generated output is claimed.',
+  },
+  {
     what: 'The illustrated story scenes',
     work: 'Ba Dan, the east road, the quarry and the distant outpost',
     authors: 'This project, generated with OpenAI image generation',

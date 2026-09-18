@@ -305,9 +305,11 @@ export class Animator {
 
   /** Live particle and stroke emitters at `now`, with their age. */
   emitters(now: number): EmitterInstance[] {
+    const cels: EmitterInstance[] = [];
     const out: EmitterInstance[] = [];
     for (const track of this.timeline.active(now, 'emitter')) {
-      out.push({
+      const target = track.def.kind === 'particles' && track.def.cel ? cels : out;
+      target.push({
         def: track.def,
         from: track.from,
         to: track.to,
@@ -317,7 +319,9 @@ export class Animator {
         arc: track.arc,
       });
     }
-    return out;
+    // The fallback's 96-particle cap must not spend its budget on debris
+    // before showing the authored silhouette on every affected tile.
+    return cels.length ? [...cels, ...out] : out;
   }
 
   floaters(now: number): Floater[] {

@@ -13,6 +13,8 @@ import type { Vec2 } from '../../core/types';
 import type { ParticleEmitterDef, StrokeEmitterDef } from '../../content/fx';
 import { hashSeed, mulberry32 } from './rng';
 import { movingElement, taperedRibbon } from './elementalStrokes';
+import { celAnchorY } from '../../content/fxCels';
+import { FOOT_LINE } from '../sheets/bake';
 
 /** Floats per particle in the output: x, y, size, rotation, alpha. */
 export const PARTICLE_STRIDE = 5;
@@ -80,7 +82,7 @@ export function sampleParticles(
     let vx = 0;
     let vy = 0;
     let free = true;
-    let rotBase = rot0;
+    let rotBase = def.cel === 'flame' || def.cel === 'wind' ? aim : def.cel ? 0 : rot0;
 
     switch (def.shape) {
       case 'burst': {
@@ -168,8 +170,22 @@ export function sampleParticles(
     }
 
     const size = size0 * (1 + (def.grow - 1) * t);
+    if (def.cel && def.shape !== 'projectile') {
+      const anchor = celAnchorY(def.cel);
+      y -= (anchor - 0.5) * size;
+      // Emitters aim at tile centres; ground eruptions stand on the same
+      // foot line as the character instead of floating behind its feet.
+      if (anchor > 0.5) y += FOOT_LINE - 0.5;
+    }
     const rotation = rotBase + spinSign * def.spin * s;
-    const alpha = def.fade === 'out' ? 1 - t : def.fade === 'in-out' ? Math.sin(Math.PI * t) : 1;
+    const alpha =
+      def.cel && def.shape !== 'projectile'
+        ? Math.min(1, (1 - t) * 5)
+        : def.fade === 'out'
+          ? 1 - t
+          : def.fade === 'in-out'
+            ? Math.sin(Math.PI * t)
+            : 1;
 
     const at = offset + written * PARTICLE_STRIDE;
     if (at + PARTICLE_STRIDE > out.length) break;
@@ -177,7 +193,8 @@ export function sampleParticles(
     out[at + 1] = y;
     out[at + 2] = size;
     out[at + 3] = rotation;
-    out[at + 4] = alpha;
+    const air = def.cel === 'wind' || def.cel === 'cyclone' || def.cel === 'cushion';
+    out[at + 4] = alpha * (air ? 0.62 : 1);
     written += 1;
   }
   return written;

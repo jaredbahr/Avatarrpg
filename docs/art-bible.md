@@ -132,5 +132,5 @@ Cormorant reads European and Cinzel Roman, so neither fits the world.
 
 ## Effects and terrain (later phases)
 
-- Bending effects are particle recipes in code and data (ADR 0004). Optional per-element burst sheets (6 frames, 128×128) can layer on top in Phase C.
+- Bending effects combine hand-drawn-style animation cels with aimed strokes and sparse debris (ADRs 0004 and 0021). Four transparent sheets supply twelve four-cel clips; every current technique has an authored assignment in `src/content/bendingCels.ts`. Fire has curling tongues, water has crests and ribbons, ice has pointed facets, earth has broad stone shapes, metal has folded bands, and air keeps open transparent space between its streamlines. Source prompts and registration notes are in `docs/art/elemental-cels.md`.
 - The ground stays the procedural shader; painted terrain decals (edges, stones, grass tufts, path wear) are sprites layered over it in Phase C, drawn in the same ink and palette.

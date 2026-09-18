@@ -28,6 +28,7 @@ import { MARGIN } from './lib/align';
 import type { Image } from './lib/image';
 import { imageSize, readPng } from './lib/image';
 import { webpSize } from './lib/webp';
+import { CEL_FRAMES, CEL_SIZE, FX_CEL_SHEETS } from '../../src/content/fxCels';
 
 /** The largest texture every device in the matrix takes. */
 const MAX_ATLAS = 2048;
@@ -204,8 +205,42 @@ export function validateBackdrops(publicDir = 'public'): string[] {
   return problems;
 }
 
+/** Cels need clear gutters so adjacent frames cannot bleed into a GPU sample. */
+export function validateFxCels(publicDir = 'public'): string[] {
+  const problems: string[] = [];
+  for (const sheet of FX_CEL_SHEETS) {
+    const path = resolve(publicDir, sheet.url);
+    if (!existsSync(path)) {
+      problems.push(`${sheet.url} is missing`);
+      continue;
+    }
+    const image = readPng(path);
+    if (image.width !== CEL_SIZE * CEL_FRAMES || image.height !== CEL_SIZE * sheet.clips.length) {
+      problems.push(`${sheet.url} does not match its cel grid`);
+      continue;
+    }
+    sheet.clips.forEach((clip, row) => {
+      for (let col = 0; col < CEL_FRAMES; col++) {
+        const frame = { x: col * CEL_SIZE, y: row * CEL_SIZE, w: CEL_SIZE, h: CEL_SIZE };
+        if (borderTouched(image, frame, MARGIN)) problems.push(`${clip}/${col} touches its gutter`);
+        let ink = 0;
+        for (let y = frame.y; y < frame.y + frame.h; y++)
+          for (let x = frame.x; x < frame.x + frame.w; x++)
+            if ((image.data[(y * image.width + x) * 4 + 3] ?? 0) > 128) ink++;
+        if (ink < 100) problems.push(`${clip}/${col} is empty or too faint`);
+      }
+    });
+  }
+  return problems;
+}
+
 if (process.argv[1]?.endsWith('validate.ts')) {
-  const problems = [...validateSheets(), ...validateImages(), ...validateBackdrops()];
+  const problems = [
+    ...validateSheets(),
+    ...validateImages(),
+    ...validateBackdrops(),
+    ...validateFxCels(),
+  ];
   if (problems.length === 0) {
     console.log('Every sheet and image in the manifest and every map painting checks out.');
     process.exit(0);
