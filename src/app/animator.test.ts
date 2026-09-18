@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import type { ContentIndex, GameEvent, Unit } from '../core/types';
 import { Animator } from './animator';
+import { CONTENT } from '../content';
 
 /**
  * The animator runs in Node here with the reduce-motion lookup injected, so
@@ -26,6 +27,97 @@ function animator(reduced = false): Animator {
 }
 
 describe('Animator', () => {
+  for (const reduced of [false, true]) {
+    it(`keeps the attack facing after recovery (reduced motion: ${reduced})`, () => {
+      const a = new Animator(CONTENT, { motionReduced: () => reduced });
+      a.push(0, [moved('p0', [4, 3])], [unit('p0', 4, 4)]);
+      a.prune(500);
+      expect(a.locomotion(500, 'p0').clip).toBe('idleNorth');
+      a.push(
+        1000,
+        [
+          {
+            type: 'abilityUsed',
+            unitId: 'p0',
+            abilityId: 'fire_jab',
+            target: { x: 1, y: 3 },
+            tiles: [{ x: 1, y: 3 }],
+          },
+        ],
+        [unit('p0', 4, 3)],
+      );
+      // A queued action cannot turn the character before it starts.
+      expect(a.locomotion(999, 'p0').clip).toBe('idleNorth');
+      expect(a.unitPose(1000, 'p0')?.facing).toBe(-1);
+      a.prune(a.finishesAt + 1);
+      expect(a.locomotion(a.finishesAt + 1, 'p0')).toEqual({ clip: 'idle', facing: -1 });
+      a.clear();
+      expect(a.locomotion(9999, 'p0')).toEqual({ clip: 'idle', facing: 1 });
+    });
+
+    it(`resolves skipped walk and attack headings in playback order (reduced motion: ${reduced})`, () => {
+      const a = new Animator(CONTENT, { motionReduced: () => reduced });
+      a.push(
+        0,
+        [
+          moved('p0', [4, 3]),
+          {
+            type: 'abilityUsed',
+            unitId: 'p0',
+            abilityId: 'fire_jab',
+            target: { x: 1, y: 3 },
+            tiles: [{ x: 1, y: 3 }],
+          },
+        ],
+        [unit('p0', 4, 4)],
+      );
+      // No intermediate rendered frame, as when returning from a hidden tab.
+      a.prune(a.finishesAt + 1);
+      expect(a.locomotion(a.finishesAt + 1, 'p0')).toEqual({ clip: 'idle', facing: -1 });
+      a.push(a.finishesAt + 10, [moved('p0', [4, 4])], [unit('p0', 4, 3)]);
+      a.prune(a.finishesAt + 1);
+      expect(a.locomotion(a.finishesAt + 1, 'p0')).toEqual({ clip: 'idleSouth', facing: 1 });
+    });
+  }
+
+  it('slides backward in the struck stance without a walking bounce or turn', () => {
+    const a = animator();
+    a.push(0, [moved('p0', [3, 4])], [unit('p0', 4, 4)]);
+    a.prune(500);
+    a.push(1000, [{ type: 'unitPushed', unitId: 'p0', to: { x: 5, y: 4 } }], [unit('p0', 3, 4)]);
+    for (const at of [1000, 1050, 1110, 1210]) {
+      expect(a.renderPos(at, 'p0')?.y).toBe(4);
+      expect(a.unitPose(at, 'p0')?.clip).toBe('hit');
+      expect(a.unitPose(at, 'p0')?.offset).toEqual({ x: 0, y: 0 });
+      expect(a.offset(at, 'p0')).toBeUndefined();
+      expect(a.locomotion(at, 'p0')).toEqual({ clip: 'idle', facing: -1 });
+    }
+    a.prune(a.finishesAt + 1);
+    expect(a.locomotion(a.finishesAt + 1, 'p0')).toEqual({ clip: 'idle', facing: -1 });
+    expect(a.renderPos(a.finishesAt + 1, 'p0')).toBeUndefined();
+  });
+
+  it('does not lose the north-facing idle when an unrendered push moves south', () => {
+    const a = animator(true);
+    a.push(0, [moved('p0', [4, 3])], [unit('p0', 4, 4)]);
+    a.push(100, [{ type: 'unitPushed', unitId: 'p0', to: { x: 4, y: 5 } }], [unit('p0', 4, 3)]);
+    a.prune(500);
+    expect(a.locomotion(500, 'p0')).toEqual({ clip: 'idleNorth', facing: 1 });
+  });
+
+  it('settles a diagonal final stride onto the ground before going idle', () => {
+    const a = animator();
+    a.push(
+      1000,
+      [{ type: 'partyWalked', unitId: 'p0', from: { x: 1, y: 1 }, path: [{ x: 2, y: 2 }] }],
+      [],
+    );
+    const end = a.finishesAt;
+    expect(Math.abs(a.offset(end - 1, 'p0')?.y ?? 1)).toBeLessThan(0.001);
+    expect(a.offset(end, 'p0')?.y).toBeCloseTo(0, 9);
+    expect(a.unitPose(end, 'p0')?.offset.y).toBeCloseTo(0, 9);
+    expect(a.renderPos(end, 'p0')).toEqual({ x: 2, y: 2 });
+  });
   it('keeps a strolling follower in formation without duplicating footsteps', () => {
     const heard: string[] = [];
     const a = new Animator(content, {

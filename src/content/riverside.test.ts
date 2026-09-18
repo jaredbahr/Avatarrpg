@@ -45,10 +45,29 @@ describe('the riverside paths', () => {
       { x: 25, y: 8 },
       { x: 25, y: 16 },
       { x: 5, y: 6 },
-      { x: 9, y: 9 },
+      { x: 10, y: 11 },
     ]) {
       const state = start();
       expect(apply(CONTENT, state, { type: 'walkTo', pos }).state.location).toEqual(state.location);
+    }
+  });
+  it('allows a loop around the banyan via the painted western lane', () => {
+    let state = start();
+    for (const pos of [
+      { x: 6, y: 12 },
+      { x: 6, y: 10 },
+      { x: 6, y: 8 },
+      { x: 11, y: 8 },
+      { x: 14, y: 10 },
+      { x: 14, y: 12 },
+    ]) {
+      const result = apply(CONTENT, state, { type: 'walkTo', pos });
+      expect(
+        result.events.filter((e) => e.type === 'message'),
+        JSON.stringify(pos),
+      ).toEqual([]);
+      expect(result.state.location.pos).toEqual(pos);
+      state = result.state;
     }
   });
   it('returns from the shrine to the same bank, with the discovery recorded', () => {

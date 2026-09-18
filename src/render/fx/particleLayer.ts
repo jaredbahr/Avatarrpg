@@ -121,6 +121,7 @@ export class ParticleLayer {
           instance.seed,
           instance.from,
           instance.to,
+          instance.arc,
         );
         const g = def.blend === 'add' ? this.strokesAdd : this.strokes;
         const color = roleColor(def.color, instance.palette);

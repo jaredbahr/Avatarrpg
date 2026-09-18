@@ -4,6 +4,10 @@ import { poseFor } from '../painters/figure';
 
 export type VillageMotion = 'idle' | 'walk' | 'wave' | 'water' | 'fire';
 export const FORM_DURATION = 3800;
+export const WAVE_DURATION = 2200;
+/** All parts of a held drawing share this clock, including its shadow and FX. */
+export const drawingTime = (elapsed: number) =>
+  Math.floor((Math.max(0, elapsed) * 12) / 1000) * (1000 / 12);
 const clamp = (n: number) => Math.max(0, Math.min(1, n));
 const ease = (n: number) => {
   const t = clamp(n);
@@ -19,16 +23,28 @@ export function formBeat(elapsed: number, water: boolean) {
   const recover = ease((t - 0.7) / 0.3);
   return {
     t,
+    releaseAt,
     gather,
     release,
     recover,
     frame: t < releaseAt ? 0 : t < 0.7 ? 1 : 2,
     weight: (-0.06 * gather + 0.16 * release) * (1 - recover),
     energy: gather * (1 - ease((t - 0.72) / 0.2)),
+    // Fire leaves the hand as a burst; its embers outlive the attached flame.
+    plume: gather * (1 - ease((t - (water ? 0.76 : 0.59)) / (water ? 0.16 : 0.13))),
   };
 }
 
+/** A greeting starts and ends with a lowered arm instead of snapping mid-wave. */
+export function waveDrawing(elapsed: number): { clip: 'idle' | 'wave'; frame: number } {
+  if (elapsed < 180 || elapsed >= WAVE_DURATION - 180) return { clip: 'idle', frame: 0 };
+  if (elapsed < 420 || elapsed >= WAVE_DURATION - 420) return { clip: 'wave', frame: 0 };
+  return { clip: 'wave', frame: Math.floor((elapsed - 420) / 220) % 2 };
+}
+
 export function mixPose(a: Pose, b: Pose, t: number): Pose {
+  if (t <= 0) return a;
+  if (t >= 1) return b;
   const mix = (x: number, y: number) => x + (y - x) * ease(t);
   const limb = (
     x: readonly [number, number],
@@ -70,7 +86,7 @@ export function villagePose(motion: VillageMotion, elapsed: number): Pose {
       frontArm: [2.35, 2.8 + Math.sin(elapsed / 115) * 0.35],
       backArm: [-0.15, 0.1],
     };
-    return mixPose(rest, raised, Math.min(elapsed / 300, (2200 - elapsed) / 300));
+    return mixPose(rest, raised, Math.min(elapsed / 300, (WAVE_DURATION - elapsed) / 300));
   }
   const t = clamp(elapsed / FORM_DURATION);
   const stance: Pose = {
@@ -90,9 +106,10 @@ export function villagePose(motion: VillageMotion, elapsed: number): Pose {
     hint: 'none',
     lean: motion === 'fire' ? 0.35 : 0.2,
   };
+  const beat = formBeat(elapsed, motion === 'water');
   if (t < 0.18) return mixPose(rest, stance, t / 0.18);
-  if (t < 0.45) return mixPose(stance, gather, (t - 0.18) / 0.27);
-  if (t < 0.62) return mixPose(gather, release, (t - 0.45) / 0.17);
-  if (t < 0.8) return mixPose(release, poseFor('cast', 2), (t - 0.62) / 0.18);
-  return mixPose(poseFor('cast', 2), rest, (t - 0.8) / 0.2);
+  if (t < beat.releaseAt) return mixPose(stance, gather, (t - 0.18) / (beat.releaseAt - 0.18));
+  if (t < 0.7) return mixPose(gather, release, beat.release);
+  if (t < 0.84) return mixPose(release, poseFor('cast', 2), (t - 0.7) / 0.14);
+  return mixPose(poseFor('cast', 2), rest, (t - 0.84) / 0.16);
 }

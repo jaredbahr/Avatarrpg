@@ -35,6 +35,15 @@ The backend owns a Container stage and explicitly destroys stage then renderer.
 The rendering contract and the Canvas fallback are unchanged. Both backends and
 scene destruction are covered by the required browser and screenshot checks.
 
+The follow-up pass samples effects, projected shadows and illustrated poses on
+the same twelve-drawings-per-second clock. Contact shadows follow the same
+weight offset and projected silhouettes share the anticipation compression.
+Procedural fallback forms use the element-specific release beat too. Fire's
+attached plume dies before its drifting embers; water retains its longer flow.
+Greetings hold a lowered arm at both ends and return through the first wave
+drawing. Combat victims now hold their struck pose at impact through hit-stop,
+before recoiling, instead of remaining idle until after the contact pause.
+
 Validation targets uniform cruise speed, slower exploration with synchronized
 followers, continuous attack poses, compatible melee fallbacks, form settlement,
 shade registration, the actual composed scene and both browser backends. Longer

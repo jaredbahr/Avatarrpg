@@ -27,6 +27,8 @@ export interface MoveTrack extends Track {
   /** The route, smoothed through the tile centres, sampled by arc length. */
   readonly curve: Curve;
   readonly ease: Easing;
+  /** Forced displacement keeps the struck stance instead of walking/turning. */
+  readonly gait?: 'slide';
 }
 
 export interface PoseTrack extends Track {

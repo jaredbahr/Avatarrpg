@@ -90,8 +90,20 @@ export type ParticleShape = (typeof PARTICLE_SHAPES)[number];
  * - `crack`: jagged lines radiating from `from` across the ground.
  * - `slab`: rectangles rising out of the ground at `from`.
  * - `arc`: a curved band sweeping across `from` towards `to`, for gusts and waves.
+ * - `gust`: tapered, open wind streaks carried from `from` to `to`.
+ * - `flame`: a pointed flame silhouette carried from `from` to `to`.
  */
-export const STROKE_SHAPES = ['bolt', 'strike', 'ribbon', 'whip', 'crack', 'slab', 'arc'] as const;
+export const STROKE_SHAPES = [
+  'bolt',
+  'strike',
+  'ribbon',
+  'whip',
+  'crack',
+  'slab',
+  'arc',
+  'gust',
+  'flame',
+] as const;
 export type StrokeShape = (typeof STROKE_SHAPES)[number];
 
 const range = z.tuple([z.number(), z.number()]);
@@ -647,14 +659,42 @@ const head = (
 /** A thrown rock and a chip off it, in stone grey whatever the element. */
 const stone = (): ParticleEmitterDef => head('square', 2, [0.36, 0.56], 'stone', 'normal', 4);
 
-/** A fireball: a stack of soft glows with a white-hot core. */
-const fireball = (): ParticleEmitterDef[] => [
-  head('glow', 3, [0.36, 0.64], 'light', 'add'),
-  head('glow', 1, [0.26, 0.26], 'white', 'add'),
-];
+/** Nested flame silhouettes keep the flame's point and direction legible. */
+const fireball = (): StrokeEmitterDef[] =>
+  (
+    [
+      ['base', 0.2],
+      ['light', 0.12],
+      ['accent', 0.045],
+    ] as const
+  ).map(([color, width]) =>
+    strokes({
+      shape: 'flame',
+      duration: 300,
+      count: 1,
+      width,
+      reach: 0.9,
+      color,
+      ink: false,
+      blend: 'normal',
+      layer: 'over',
+    }),
+  );
 
-/** A gust: two rings of pressure riding the flight. */
-const gust = (): ParticleEmitterDef[] => [head('ring', 2, [0.4, 0.6], 'white', 'add')];
+/** Air reads as flowing streaks, with the scene visible between them. */
+const gust = (): StrokeEmitterDef[] => [
+  strokes({
+    shape: 'gust',
+    duration: 300,
+    count: 3,
+    width: 0.035,
+    reach: 1.1,
+    color: 'white',
+    ink: false,
+    blend: 'normal',
+    layer: 'over',
+  }),
+];
 
 /* ------------------------------------------------------------------ */
 /* Families                                                            */
@@ -668,7 +708,10 @@ const gust = (): ParticleEmitterDef[] => [head('ring', 2, [0.4, 0.6], 'white', '
 export const FX_FAMILIES: Readonly<Record<string, FxRecipeInput>> = {
   fire: {
     cast: [glowBurst('light', 0.5), fireLicks(2, 300), embers(6)],
-    travel: { emitters: [...fireball(), trail('glow', 18, 'light', 'add')], speed: 22 },
+    travel: {
+      emitters: [...fireball(), trail('spark', 8, 'light', 'normal', [0.06, 0.12])],
+      speed: 22,
+    },
     impact: [glowBurst('accent', 0.9), fireBurst(14), fireLicks(4), embers(10), smokePuff(3)],
     shake: 0.04,
     hitStop: 40,
@@ -709,9 +752,9 @@ export const FX_FAMILIES: Readonly<Record<string, FxRecipeInput>> = {
     hitStop: 70,
   },
   air: {
-    cast: [airArc(0.4, 2), spirals(8, 0.35)],
-    travel: { emitters: [...gust(), trail('leaf', 8, 'base', 'normal', [0.1, 0.18])], speed: 28 },
-    impact: [airArc(0.9, 4), spirals(16, 0.7), dust(4, [0.1, 0.16])],
+    cast: [airArc(0.3, 1)],
+    travel: { emitters: [...gust(), trail('leaf', 3, 'light', 'normal', [0.04, 0.08])], speed: 20 },
+    impact: [airArc(0.7, 2), dust(4, [0.1, 0.16])],
     shake: 0.02,
     hitStop: 20,
   },
@@ -774,7 +817,10 @@ export const FX_RECIPES: Readonly<Record<string, FxRecipeInput>> = {
   'fx.fire.jab': {
     cast: [glowBurst('light', 0.4), fireLicks(1, 220)],
     travel: {
-      emitters: [head('glow', 2, [0.3, 0.44], 'light', 'add'), trail('glow', 14, 'light', 'add')],
+      emitters: [
+        ...fireball().map((def) => ({ ...def, reach: 0.65, width: def.width * 0.8 })),
+        trail('spark', 5, 'light', 'normal', [0.04, 0.09]),
+      ],
       speed: 26,
     },
     impact: [glowBurst('accent', 0.6), fireBurst(8), fireLicks(2), embers(6)],
@@ -783,7 +829,10 @@ export const FX_RECIPES: Readonly<Record<string, FxRecipeInput>> = {
   },
   'fx.fire.blast': {
     cast: [glowBurst('light', 0.55), fireLicks(3, 320), embers(8)],
-    travel: { emitters: [...fireball(), trail('glow', 22, 'light', 'add')], speed: 20 },
+    travel: {
+      emitters: [...fireball(), trail('spark', 10, 'light', 'normal', [0.06, 0.12])],
+      speed: 20,
+    },
     impact: [glowBurst('accent', 1.1), fireBurst(24), fireLicks(6), embers(14), smokePuff(5)],
     area: [fireBurst(6), embers(4)],
     shake: 0.07,
@@ -963,9 +1012,9 @@ export const FX_RECIPES: Readonly<Record<string, FxRecipeInput>> = {
   },
 
   'fx.air.blast': {
-    cast: [airArc(0.4, 2), spirals(8, 0.35)],
-    travel: { emitters: [...gust(), trail('leaf', 10, 'base', 'normal', [0.1, 0.18])], speed: 28 },
-    impact: [airArc(0.9, 4), spirals(14, 0.7), dust(4, [0.1, 0.16])],
+    cast: [airArc(0.3, 1)],
+    travel: { emitters: [...gust(), trail('leaf', 3, 'light', 'normal', [0.04, 0.08])], speed: 20 },
+    impact: [airArc(0.7, 2), dust(4, [0.1, 0.16])],
     shake: 0.03,
     hitStop: 30,
   },

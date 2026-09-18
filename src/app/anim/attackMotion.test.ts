@@ -50,12 +50,53 @@ describe('element attack rhythm', () => {
           expect(next.offset.from, ability.id).toEqual(previous.offset.to);
         }
         expect(poses.at(-1)?.offset.to, ability.id).toEqual({ x: 0, y: 0 });
-        expect(result.sounds.find((s) => s.key === ability.fx)?.at, ability.id).toBe(
-          poses[1]?.start,
-        );
+        const sound = result.sounds.find((s) => s.key === ability.fx);
+        const release = poses[1];
+        if (!sound || !release) throw new Error('Missing release');
+        expect(sound.at, ability.id).toBeGreaterThanOrEqual(release.start);
+        expect(sound.at, ability.id).toBeLessThanOrEqual(release.start + release.duration);
         if (rate < 1)
           expect(result.tracks.some((t) => t.kind === 'emitter' || t.kind === 'shake')).toBe(false);
       }
+    }
+  });
+
+  it('launches each element with its sound after the body starts extending', () => {
+    const unit = createGame(CONTENT, {
+      seed: 'launch',
+      startNode: 'village_explore',
+      party: [{ characterId: 'kaya' }],
+    }).party[0];
+    if (!unit) throw new Error('No actor');
+    for (const abilityId of ['fire_jab', 'water_whip', 'rock_throw', 'air_blast']) {
+      const result = choreograph({
+        content: CONTENT,
+        unitsBefore: [unit],
+        cursor: 0,
+        rate: 1,
+        pushIndex: 0,
+        events: [
+          {
+            type: 'abilityUsed',
+            unitId: unit.id,
+            abilityId,
+            target: { x: unit.pos.x + 4, y: unit.pos.y },
+            tiles: [],
+          },
+        ],
+      });
+      const release = result.tracks.filter((t) => t.kind === 'pose')[1];
+      const sound = result.sounds[0];
+      if (!release || !sound) throw new Error(`Missing ${abilityId}`);
+      expect(sound.at).toBeGreaterThan(release.start);
+      expect(sound.at).toBeLessThan(release.start + release.duration);
+      const flight = result.tracks.filter((t) => t.kind === 'emitter' && t.start === sound.at);
+      expect(flight.length, abilityId).toBeGreaterThan(0);
+      // Fire/air silhouettes travel once; only a water whip comes back.
+      for (const track of flight)
+        if (track.kind === 'emitter' && track.def.kind === 'strokes') {
+          expect(track.duration).toBe(track.def.duration);
+        }
     }
   });
 });
