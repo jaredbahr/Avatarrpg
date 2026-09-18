@@ -1,4 +1,5 @@
 import type { Beat } from './beats';
+import { tileCentre } from './stage';
 import {
   enterNode,
   resetStorage,
@@ -10,6 +11,31 @@ import {
 
 /** Exercise the shipped enemy sheet through both production renderers. */
 export const ENEMY_BEATS: readonly Beat[] = [
+  {
+    id: '34-bandit-portrait',
+    title: 'The bandit has the same face in combat and the inspector',
+    note: 'Matching rust head-rag, scarf and stubble in the circular turn strip and the larger inspector crop.',
+    projects: ['surface-canvas', 'surface-webgl', 'ipad-canvas', 'ipad-webgl', 'portrait-canvas'],
+    async run(ctx) {
+      await resetStorage(ctx.page, ctx.query());
+      await startGame(ctx.page, ['Explorer'], ['kaya'], 'bandit-review');
+      await enterNode(ctx.page, 'battle_forest_road');
+      await takeTurn(ctx.page);
+      await waitForIdle(ctx.page);
+      await settleLayout(ctx.page, ctx.settleTimeout);
+      const pos = await ctx.page.evaluate(() => {
+        const bandit = window.fnt?.app.state?.battle?.units.find(
+          (u) => u.sprite === 'unit.enemy.thug',
+        );
+        if (!bandit) throw new Error('Expected a bandit');
+        return bandit.pos;
+      });
+      const point = await tileCentre(ctx.page, pos);
+      await ctx.page.mouse.click(point.x, point.y, { button: 'right' });
+      await ctx.page.locator('.dialog canvas[data-asset="portrait.enemy.thug"]').waitFor();
+      await ctx.shoot(this.note);
+    },
+  },
   {
     id: '34-bandit-motion',
     title: 'Bandit steps into a club swing',
