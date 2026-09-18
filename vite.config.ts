@@ -52,7 +52,7 @@ export default defineConfig({
         name: 'Four Nations Tactics',
         short_name: 'FN Tactics',
         description:
-          'A hot-seat turn-based tactical RPG set a few decades after Korra. Non-commercial fan work.',
+          'A hot-seat turn-based tactical RPG set after Korra. Non-commercial fan work.',
         theme_color: '#e7d9bd',
         background_color: '#e7d9bd',
         display: 'standalone',

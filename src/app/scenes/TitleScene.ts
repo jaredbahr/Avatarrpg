@@ -77,7 +77,7 @@ export class TitleScene implements Scene {
           el('h1', { text: 'Four Nations Tactics' }),
           el('p', {
             class: 'muted tagline',
-            text: 'A hot-seat tactical RPG for one to six players, a few decades after Korra.',
+            text: 'A hot-seat tactical RPG for one to six players, set after Korra.',
           }),
           actions,
           el('p', {
