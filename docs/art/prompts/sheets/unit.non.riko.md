@@ -111,3 +111,17 @@ mirror these views. Generate a relaxed walk with modest arm counter-swing.
 
 These clips are optional. Existing action poses keep the side-view contract.
 See `docs/art/directional-character-walks.md` for the hero grid importer.
+
+## Optional exploration rest poses
+
+These are optional exploration drawings; combat keeps its existing idle poses.
+Only the Nima pilot currently supplies them. Preserve identity, body height and
+foot baseline, with arms hanging naturally and feet near hip width.
+
+| Frame             | Pose                                                |
+| ----------------- | --------------------------------------------------- |
+| `rest/0.png`      | Relaxed three-quarter view facing screen-right.     |
+| `restNorth/0.png` | Relaxed three-quarter back view facing up-right.    |
+| `restSouth/0.png` | Relaxed three-quarter front view facing down-right. |
+
+See ADR 0025 for fallbacks and `docs/art/nima-rest-pilot.md` for pilot provenance.

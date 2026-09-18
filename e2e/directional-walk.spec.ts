@@ -4,7 +4,7 @@ import type { MapView, RenderUnit } from '../src/render/view';
 
 for (const renderer of ['canvas', 'webgl'] as const) {
   for (const riverside of [false, true]) {
-    test(`north/south poses reach the ${riverside ? 'riverside' : 'world'} renderer (${renderer})`, async ({
+    test(`projected travel and resting poses reach the ${riverside ? 'riverside' : 'world'} renderer (${renderer})`, async ({
       page,
     }) => {
       test.setTimeout(120_000);
@@ -65,6 +65,11 @@ for (const renderer of ['canvas', 'webgl'] as const) {
         ['North', -4],
         ['South', 4],
       ] as const) {
+        // Logical north/south projects sideways on Ba Dan's oblique basis;
+        // riverside retains its orthographic front/back poses.
+        const walkClip = riverside ? `walk${direction}` : 'walk';
+        const restClip = riverside ? `rest${direction}` : 'rest';
+        const facing = riverside || dy < 0 ? 1 : -1;
         await page.evaluate((delta) => {
           const app = window.fnt!.app;
           const pos = app.state!.location.pos;
@@ -73,14 +78,17 @@ for (const renderer of ['canvas', 'webgl'] as const) {
         }, dy);
         await expect
           .poll(() =>
-            page.evaluate((wanted) => {
-              const frames =
-                (window as Window & { directionFrames?: { clip: string; facing: number }[][] })
-                  .directionFrames ?? [];
-              return frames.some(
-                (units) => units[0]?.clip === `walk${wanted}` && units[0]?.facing === 1,
-              );
-            }, direction),
+            page.evaluate(
+              ({ clip, facing }) => {
+                const frames =
+                  (window as Window & { directionFrames?: { clip: string; facing: number }[][] })
+                    .directionFrames ?? [];
+                return frames.some(
+                  (units) => units[0]?.clip === clip && units[0]?.facing === facing,
+                );
+              },
+              { clip: walkClip, facing },
+            ),
           )
           .toBe(true);
         await waitForIdle(page);
@@ -92,7 +100,7 @@ for (const renderer of ['canvas', 'webgl'] as const) {
               return frames?.at(-1)?.[0]?.clip;
             }),
           )
-          .toBe(`idle${direction}`);
+          .toBe(restClip);
       }
       expect(errors).toEqual([]);
     });

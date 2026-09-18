@@ -85,7 +85,8 @@ in vec2 vTextureCoord;
 uniform sampler2D uTexture;
 uniform sampler2D uMap;
 uniform vec2 uGrid;
-uniform vec2 uOffset;
+uniform vec2 uGroundOrigin;
+uniform vec4 uGroundInverse;
 uniform float uTileSize;
 uniform float uTime;
 uniform float uHatch;
@@ -156,7 +157,8 @@ void main(void) {
    * the frame's origin, which together put the fragment back in CSS pixels.
    */
   vec2 screen = vTextureCoord * uInputSize.xy + uOutputFrame.xy;
-  vec2 tileUv = (screen + uOffset) / uTileSize;
+  vec2 delta = screen - uGroundOrigin;
+  vec2 tileUv = vec2(dot(uGroundInverse.xy, delta), dot(uGroundInverse.zw, delta)) / uTileSize;
   vec2 cell = floor(tileUv);
   vec2 f = fract(tileUv);
 

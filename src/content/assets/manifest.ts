@@ -94,6 +94,13 @@ const heroSheet = (key: string, palette: string): SheetEntry => {
       idleSouth: { frames: frames('idleSouth', 1), fps: 1, loop: true },
       walkNorth: { frames: frames('walkNorth', 4), fps: 4, loop: true },
       walkSouth: { frames: frames('walkSouth', 4), fps: 4, loop: true },
+      ...(!key.startsWith('unit.village.') && ['nima', 'kaya', 'sura', 'bo', 'wen'].includes(name)
+        ? {
+            rest: { frames: frames('rest', 1), fps: 1, loop: true },
+            restNorth: { frames: frames('restNorth', 1), fps: 1, loop: true },
+            restSouth: { frames: frames('restSouth', 1), fps: 1, loop: true },
+          }
+        : {}),
     },
   };
 };

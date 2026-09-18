@@ -13,7 +13,8 @@
  * 2. **A frame loop cannot schedule a sound.** Web Audio has its own clock and
  *    starting a source at `currentTime + delay` is sample-accurate whatever the
  *    renderer is doing. So a cue is scheduled the moment it is known, and never
- *    polled. That is why nothing here runs per frame.
+ *    polled. Environment mix targets may update per frame; their loops and fades
+ *    still run on the audio clock.
  * 3. **Sounds arrive in clumps.** A blast over twenty-five tiles, or any round
  *    at all under reduce motion, delivers many cues at one instant. `COALESCE`
  *    drops a repeat of a key that lands on top of another, so a fight sounds
@@ -22,6 +23,9 @@
  * Nothing in `src/core/` knows this exists, nothing reads it back, and with the
  * sound setting off it opens no context at all.
  */
+
+import { CourtyardEnvironment } from './environment';
+import type { EnvironmentMix } from './environment';
 
 import type { SoundCue } from '../anim/choreography';
 import type { SampleDef, SoundDef, VoiceDef } from '../../content/sounds';
@@ -63,6 +67,7 @@ export class AudioBus {
   /** The last time each key was scheduled, on the context clock, for coalescing. */
   private lastPlayed = new Map<string, number>();
   private failed = false;
+  private environment: CourtyardEnvironment | null = null;
   /**
    * Two counters the end-to-end spec reads, because "did a sound happen" is
    * not a question a browser will answer. `cuesSeen` proves the wiring from
@@ -109,16 +114,43 @@ export class AudioBus {
     return this.ctx !== null && this.ctx.state === 'running';
   }
 
+  /** Called by exploration with a map-derived mix; never unlocks audio itself. */
+  updateEnvironment(mix: EnvironmentMix): void {
+    if (!mix.courtyard) {
+      this.clearEnvironment();
+      return;
+    }
+    if (!this.ctx || !this.master || this.ctx.state !== 'running') return;
+    const volume = this.options.volume();
+    if (!this.environment && volume > 0)
+      this.environment = new CourtyardEnvironment(this.ctx, this.master);
+    this.environment?.update(mix, volume);
+  }
+
+  /** Scene exit / hidden tab: fade and retire all environmental sources. */
+  clearEnvironment(): void {
+    this.environment?.stop();
+    this.environment = null;
+  }
+
   /** Stops everything and gives the context back. */
   close(): void {
+    this.clearEnvironment();
     const ctx = this.ctx;
+    const master = this.master;
     this.ctx = null;
     this.master = null;
     this.buffers.clear();
     this.loading.clear();
     this.noise.clear();
     this.lastPlayed.clear();
-    if (ctx) void ctx.close().catch(() => undefined);
+    if (ctx && master && ctx.state === 'running') {
+      // Retire ownership immediately, but release the output before closing so
+      // Off never cuts a non-zero waveform. A new context cannot revive this one.
+      master.gain.setValueAtTime(master.gain.value, ctx.currentTime);
+      master.gain.linearRampToValueAtTime(0, ctx.currentTime + 0.032);
+      setTimeout(() => void ctx.close().catch(() => undefined), 40);
+    } else if (ctx) void ctx.close().catch(() => undefined);
   }
 
   /**

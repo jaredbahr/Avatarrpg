@@ -6,7 +6,7 @@
  * that is what lets the Canvas 2D and WebGL backends be interchangeable.
  */
 
-import type { Grid, MapBackdrop, StatusId, Vec2 } from '../core/types';
+import type { Grid, MapBackdrop, MapScene, StatusId, Vec2 } from '../core/types';
 import type { ClipName } from '../content/assets/clips';
 import type { EmitterDef } from '../content/fx';
 
@@ -84,6 +84,8 @@ export interface NpcMarker {
   readonly pos: Vec2;
   readonly sprite: string;
   readonly name: string;
+  /** Presentation size about the ground-contact point; never changes the footprint. */
+  readonly scale?: number;
 }
 
 /**
@@ -114,6 +116,7 @@ export interface AimArc {
 }
 
 export interface MapView {
+  readonly scene?: MapScene;
   readonly grid: Grid;
   readonly units: readonly RenderUnit[];
   readonly overlays: readonly OverlayLayer[];

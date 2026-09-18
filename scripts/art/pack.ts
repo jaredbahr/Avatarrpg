@@ -121,7 +121,11 @@ export function main(argv: readonly string[]): number {
       const timing =
         clip === 'walkNorth' || clip === 'walkSouth'
           ? { fps: 4, loop: true }
-          : clip === 'idleNorth' || clip === 'idleSouth'
+          : clip === 'idleNorth' ||
+              clip === 'idleSouth' ||
+              clip === 'rest' ||
+              clip === 'restNorth' ||
+              clip === 'restSouth'
             ? { fps: 1, loop: true }
             : BAKED_CLIPS[clip];
       return `      ${clip}: { frames: ${JSON.stringify(names)}, fps: ${timing.fps}, loop: ${timing.loop} },`;

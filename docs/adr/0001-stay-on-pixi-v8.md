@@ -41,3 +41,18 @@ are app-layer work that fits the existing architecture.
 
 - Wanting a 3D or 2.5D presentation like the live-action series: Three.js, and a new ADR.
 - Wanting App Store distribution: wrap the same web build with Capacitor. Still not an engine change.
+
+## Optional registrations, 2026-09-18
+
+The production build omits Pixi's optional accessibility-overlay, federated-event
+and DOM-container registration modules. The app already owns native DOM controls,
+accessible dialogs, keyboard focus and canvas pointer handling; it does not use
+Pixi's corresponding systems. A narrowly scoped Vite transform marks only those
+three `init.mjs` modules as removable when their exports are unused. It does not
+change the package, disable tree-shaking globally or alter the 300 KB gate.
+
+Keep graphics, text, filters, particles and texture-source initialization. Both
+rendering backends and the app's accessible controls remain supported. Recheck
+production WebGL rendering, ground alignment and real pointer/inspector actions
+when updating Pixi or this list. Adding Pixi-based interaction, DOM containers or
+accessible display objects requires restoring the relevant registration first.

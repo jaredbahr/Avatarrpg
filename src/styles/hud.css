@@ -3,7 +3,7 @@
  *
  * Landscape-first: a top bar, the initiative strip, the map taking whatever is
  * left, and a docked HUD along the bottom. The map is the only thing that
- * flexes, so the action bar never moves between turns — muscle memory matters
+ * flexes, so the action bar never moves between turns â€” muscle memory matters
  * when six people are sharing one tablet.
  */
 
@@ -298,7 +298,7 @@
 }
 
 /* ------------------------------------------------------------------ */
-/* Reaction notes — the terrain half of the confirm step.              */
+/* Reaction notes â€” the terrain half of the confirm step.              */
 /*                                                                      */
 /* A sentence, not a chip: the combo table writes plain words and this  */
 /* shows them before the shot rather than only in the log afterwards.   */
@@ -785,8 +785,8 @@
 }
 
 /*
- * Who in the party would say this. The Speaker Choice has no separate step —
- * picking a fire-tagged line is picking the firebender — so the tag has to be
+ * Who in the party would say this. The Speaker Choice has no separate step â€”
+ * picking a fire-tagged line is picking the firebender â€” so the tag has to be
  * the first thing read, before the words themselves.
  */
 .speaker-tag {
@@ -802,7 +802,7 @@
 /*
  * A locked option stays on screen, at full size, still legible. It is dimmed
  * rather than hidden because seeing what a different party could have said is
- * the thing that earns a second playthrough — and it keeps its full tap target,
+ * the thing that earns a second playthrough â€” and it keeps its full tap target,
  * which e2e/touch.spec.ts enforces at 48px on every visible control.
  */
 .choice-option.is-locked {
@@ -1430,7 +1430,7 @@ html[data-contrast='high'] .hud-panel::after {
 }
 
 /* Discipline cards: the ability card, plus the ladder the path grants. A
-   locked path stays readable rather than being hidden — it is advertising. */
+   locked path stays readable rather than being hidden â€” it is advertising. */
 .discipline-card {
   border-color: var(--c-gold);
 }
@@ -1482,7 +1482,7 @@ html[data-contrast='high'] .hud-panel::after {
   border-left-color: var(--c-gold);
 }
 
-/* Read off the damage modifiers rather than the prose: "lightning ×2". */
+/* Read off the damage modifiers rather than the prose: "lightning Ã—2". */
 .status-incoming {
   color: var(--c-gold-deep);
   font-weight: 700;
@@ -1919,4 +1919,337 @@ html[data-contrast='high'] .hud-panel::after {
 .village-utilities button {
   min-height: var(--tap);
   font-size: var(--fs-sm);
+}
+
+/* Playable exploration: the world sits between one quiet header and one dock. */
+.explore-scene:not(.riverside-scene) .explore-bar {
+  gap: var(--sp-3);
+  padding: var(--sp-1) var(--sp-4);
+  min-height: var(--tap);
+  flex-wrap: nowrap;
+}
+.explore-bar .title-plate-name {
+  font-size: var(--fs-lg);
+}
+.explore-mode {
+  font-family: var(--font-display);
+  color: var(--c-ink-dim);
+}
+.explore-header-action {
+  background: transparent;
+  box-shadow: none;
+  border-color: transparent;
+  padding: var(--sp-1) var(--sp-2);
+}
+.explore-objective {
+  position: absolute;
+  left: var(--sp-4);
+  top: var(--sp-3);
+  z-index: var(--z-banner);
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-1);
+  max-width: min(27rem, 55%);
+  padding: var(--sp-2) var(--sp-3);
+  background: color-mix(in srgb, var(--c-panel-raised) 96%, transparent);
+  border: var(--hairline) solid var(--c-line);
+  border-radius: var(--radius);
+  box-shadow: var(--inset-edge);
+  pointer-events: none;
+}
+.explore-objective[hidden],
+.explore-map-corner[hidden] {
+  display: none;
+}
+.explore-objective .title-plate-objective {
+  white-space: normal;
+  font-size: var(--fs-md);
+  color: var(--c-ink);
+}
+.explore-map-corner {
+  position: absolute;
+  right: var(--sp-3);
+  top: var(--sp-3);
+  z-index: var(--z-banner);
+}
+.local-map-follow {
+  display: flex;
+  flex-direction: column;
+  position: relative;
+  width: 9rem;
+  padding: var(--sp-2);
+  gap: var(--sp-1);
+  font-size: var(--fs-xs);
+  border-radius: var(--radius);
+}
+.local-map {
+  display: block;
+  width: 100%;
+  max-height: 23rem;
+  background: var(--c-bg-deep);
+  border-radius: var(--radius);
+}
+.local-map-north {
+  position: absolute;
+  top: 0;
+  right: var(--sp-1);
+  color: var(--c-ink);
+  background: var(--c-panel);
+  padding: 0 var(--sp-1);
+  font-size: var(--fs-xs);
+}
+.local-ground {
+  fill: var(--c-bg);
+}
+.local-ground.terrain-grass {
+  fill: var(--c-earth);
+}
+.local-ground.terrain-wood,
+.local-ground.terrain-dirt {
+  fill: var(--c-line);
+}
+.local-ground.blocked {
+  fill: var(--c-ink-faint);
+}
+.local-ground.terrain-water_deep {
+  fill: var(--c-water);
+}
+.local-ground.terrain-pit {
+  fill: var(--c-ink);
+}
+.local-npc,
+.local-exit {
+  fill: var(--c-gold-hi);
+  stroke: var(--c-ink);
+  stroke-width: 0.12;
+}
+.local-exit.locked {
+  fill: var(--c-danger);
+}
+.local-party {
+  fill: var(--c-ok);
+  stroke: var(--c-paper-light);
+  stroke-width: 0.16;
+}
+.explore-scene:not(.riverside-scene) .explore-dock {
+  background: var(--c-panel);
+  padding: var(--sp-2);
+  gap: var(--sp-3);
+  box-shadow: var(--inset-edge);
+}
+.explore-scene:not(.riverside-scene) .roster {
+  flex: 1 1 50%;
+  background: none;
+  padding: 0;
+  gap: var(--sp-1);
+}
+.explore-scene:not(.riverside-scene) .roster-row {
+  padding: var(--sp-1);
+  flex-basis: 5.5rem;
+  min-width: 5.5rem;
+}
+.explore-scene:not(.riverside-scene) .roster-row .unit-portrait-frame {
+  margin-bottom: 0;
+}
+.explore-scene:not(.riverside-scene) .roster-player {
+  display: none;
+}
+.explore-scene:not(.riverside-scene) .roster-name {
+  font-size: var(--fs-sm);
+}
+.explore-scene:not(.riverside-scene) .explore-hud {
+  flex: 0 1 auto;
+  padding: 0;
+  background: none;
+}
+.explore-scene:not(.riverside-scene) .action-bar {
+  padding: 0;
+  border: 0;
+  background: none;
+  box-shadow: none;
+}
+.explore-scene:not(.riverside-scene) .action-row {
+  gap: var(--sp-2);
+  align-items: stretch;
+}
+.explore-scene:not(.riverside-scene) .action-button {
+  min-width: 5rem;
+  max-width: 8rem;
+  padding: var(--sp-2);
+}
+.explore-scene:not(.riverside-scene) .action-sub {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 100%;
+}
+@media (max-width: 52rem), (orientation: portrait) {
+  .explore-scene:not(.riverside-scene) .explore-bar {
+    gap: var(--sp-1);
+    padding-inline: var(--sp-2);
+    flex-wrap: wrap;
+  }
+  .explore-bar .title-plate-name {
+    flex: 1;
+  }
+  .explore-scene:not(.riverside-scene) .explore-dock {
+    gap: var(--sp-1);
+  }
+  .explore-scene:not(.riverside-scene) .roster {
+    flex: 0 0 auto;
+    border: 0;
+  }
+  .explore-scene:not(.riverside-scene) .explore-hud {
+    flex: 0 0 auto;
+  }
+  .explore-scene:not(.riverside-scene) .action-row > button {
+    flex: 1;
+    max-width: none;
+    min-width: var(--tap);
+  }
+  .explore-scene:not(.riverside-scene) .action-button .mark {
+    display: none;
+  }
+  .explore-objective {
+    left: var(--sp-2);
+    max-width: calc(100% - 8rem);
+    padding: var(--sp-2);
+  }
+  .explore-objective .title-plate-objective {
+    font-size: var(--fs-sm);
+  }
+  .local-map-follow {
+    width: 6.5rem;
+  }
+  .explore-map-corner {
+    right: var(--sp-2);
+  }
+}
+@media (max-width: 36rem) {
+  .explore-scene:not(.riverside-scene) .explore-bar {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 0;
+  }
+  .explore-bar .title-plate-name {
+    grid-column: 1 / -1;
+    padding: var(--sp-1) 0;
+  }
+  .explore-bar .spacer {
+    display: none;
+  }
+  .explore-header-action {
+    font-size: var(--fs-sm);
+    padding-inline: 0;
+  }
+  .explore-scene:not(.riverside-scene) .action-sub {
+    display: none;
+  }
+  .explore-scene:not(.riverside-scene) .roster-row .unit-portrait {
+    width: 2rem;
+    height: 2rem;
+  }
+}
+.local-ground.surface-water,
+.local-ground.surface-ice {
+  fill: var(--c-water-soft);
+}
+
+/* Portraits, contextual guidance and actions read as a single dock. */
+.explore-scene:not(.riverside-scene) .roster {
+  flex: 0 1 auto;
+  max-width: 52%;
+}
+.explore-scene:not(.riverside-scene) .roster-row {
+  flex-basis: 6.5rem;
+  min-width: 6.5rem;
+  text-align: center;
+}
+.explore-scene:not(.riverside-scene) .roster-row .unit-portrait {
+  width: 4.5rem;
+  height: 4.5rem;
+}
+.explore-scene:not(.riverside-scene) .roster-name {
+  font-size: var(--fs-md);
+}
+.explore-scene:not(.riverside-scene) .explore-hud {
+  flex: 1 1 0;
+  flex-direction: row;
+  align-items: center;
+  gap: var(--sp-4);
+}
+.explore-context {
+  display: flex;
+  flex: 1 1 10rem;
+  min-width: 0;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--sp-2);
+  text-align: center;
+  font-family: var(--font-display);
+  font-size: var(--fs-lg);
+}
+.explore-scene:not(.riverside-scene) .action-bar {
+  flex: 0 0 auto;
+}
+.explore-scene:not(.riverside-scene) .action-button {
+  min-height: 5.5rem;
+}
+@media (max-width: 72rem) and (orientation: landscape) {
+  .explore-context {
+    font-size: var(--fs-md);
+  }
+  .explore-context > .mark,
+  .explore-context > .tiny {
+    display: none;
+  }
+  .explore-scene:not(.riverside-scene) .roster {
+    max-width: 45%;
+  }
+  .explore-scene:not(.riverside-scene) .explore-hud {
+    gap: var(--sp-2);
+  }
+}
+@media (max-width: 52rem), (orientation: portrait) {
+  .explore-scene:not(.riverside-scene) .roster {
+    flex: 0 0 auto;
+    max-width: none;
+  }
+  .explore-scene:not(.riverside-scene) .explore-hud {
+    flex: 0 0 auto;
+    flex-direction: column;
+    gap: var(--sp-1);
+  }
+  .explore-context {
+    flex: 0 0 auto;
+    font-size: var(--fs-sm);
+  }
+  .explore-context > .mark,
+  .explore-context > .tiny {
+    display: none;
+  }
+  .explore-scene:not(.riverside-scene) .action-bar {
+    width: 100%;
+  }
+  .explore-scene:not(.riverside-scene) .action-button {
+    min-height: var(--tap);
+  }
+}
+@media (max-width: 36rem) {
+  .explore-scene:not(.riverside-scene) .roster-row {
+    flex-basis: 5.5rem;
+    min-width: 5.5rem;
+  }
+  .explore-scene:not(.riverside-scene) .roster-row .unit-portrait {
+    width: 3rem;
+    height: 3rem;
+  }
+}
+
+/* Movement status belongs in the decision dock, leaving the world unobstructed. */
+.explore-context .walk-feedback {
+  position: static;
+  padding: 0;
+  background: none;
+  justify-content: center;
+  font-size: var(--fs-md);
 }

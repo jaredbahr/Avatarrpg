@@ -134,6 +134,7 @@ async function walkTo(page: Page, x: number, y: number): Promise<void> {
 }
 
 async function takeRoute(page: Page, label: string, mapId: string): Promise<void> {
+  await page.getByRole('button', { name: 'Map', exact: true }).click();
   await page.getByRole('button', { name: label, exact: true }).click();
   await expect.poll(() => page.evaluate(() => window.fnt?.app.state?.location.mapId)).toBe(mapId);
   await waitForIdle(page);
@@ -279,7 +280,9 @@ for (const custody of ['trade', 'escort'] as const) {
       custody === 'trade' ? 'where Jin delivered him' : 'taking Ruon’s statement';
     await expect(page.locator('.dialogue-line')).toContainText(custodyResponse);
     await continueStory(page);
-    await walkTo(page, 7, 3);
+    const gao = CONTENT.maps.get('ba_dan_village')?.npcs.find((npc) => npc.id === 'shopkeeper_gao');
+    if (!gao) throw new Error('Missing canonical village merchant');
+    await walkTo(page, gao.pos.x, gao.pos.y);
     expect(await page.evaluate(() => window.fnt?.app.state?.story.nodeId)).toBe(
       custody === 'trade' ? 'gao_home_cold' : 'gao_home',
     );

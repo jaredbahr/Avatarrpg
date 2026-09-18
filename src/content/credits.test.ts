@@ -14,7 +14,7 @@ function shipped(dir = PUBLIC): string[] {
   for (const entry of readdirSync(dir)) {
     const full = join(dir, entry);
     if (statSync(full).isDirectory()) out.push(...shipped(full));
-    else out.push(relative(PUBLIC, full));
+    else out.push(relative(PUBLIC, full).replaceAll('\\', '/'));
   }
   return out;
 }
@@ -57,6 +57,7 @@ describe('credits', () => {
   });
 
   it('account for everything that ships under public/', () => {
+    expect(shipped().some((path) => path.startsWith('art/'))).toBe(true);
     const uncovered = shipped()
       // Loose files at the root of public/ are configuration, not art.
       .filter((path) => path.includes('/'))

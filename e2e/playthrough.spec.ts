@@ -1,3 +1,4 @@
+import { paintedTileCentre, groundPoint } from './projection';
 import { expect, test } from '@playwright/test';
 import { CONTENT } from '../src/content';
 import { RngCursor } from '../src/core/rng';
@@ -124,10 +125,8 @@ test.describe('a session', () => {
     );
     expect(target, 'no reachable tile changes the acting unit’s x position').toBeTruthy();
     if (!target) return;
-    await page.mouse.click(
-      view.rect.x + (target.pos.x + 0.5) * view.camera.tilePx - view.camera.offsetX,
-      view.rect.y + (target.pos.y + 0.5) * view.camera.tilePx - view.camera.offsetY,
-    );
+    const targetPoint = groundPoint(view.camera, { x: target.pos.x + 0.5, y: target.pos.y + 0.5 });
+    await page.mouse.click(view.rect.x + targetPoint.x, view.rect.y + targetPoint.y);
     await expect(page.locator('.confirm-bar')).toBeVisible();
     await expect(page.getByRole('button', { name: /^Confirm$/ })).toBeEnabled();
     await page.getByRole('button', { name: /^Confirm$/ }).click();
@@ -264,17 +263,7 @@ test.describe('a session', () => {
     if (!target) return;
 
     // Tap the enemy's tile on the canvas, exactly as a player would.
-    const screenPoint = await page.evaluate((pos) => {
-      const canvas = document.querySelector('.map-canvas');
-      const camera = window.fnt?.app.rendererCamera?.();
-      if (!canvas || !camera) return null;
-      const rect = canvas.getBoundingClientRect();
-      const size = camera.tilePx;
-      return {
-        x: rect.left + pos.x * size - camera.offsetX + size / 2,
-        y: rect.top + pos.y * size - camera.offsetY + size / 2,
-      };
-    }, target.pos);
+    const screenPoint = await paintedTileCentre(page, target.pos);
 
     expect(screenPoint, 'could not map the target tile to the screen').not.toBeNull();
     if (!screenPoint) return;

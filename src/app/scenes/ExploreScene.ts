@@ -22,6 +22,7 @@ import { attachPointer, wheelZoomFactor } from '../input/pointer';
 import { ambienceFx } from '../../content/fx';
 import { ambientEmitters } from '../anim/ambience';
 import { PartyTrail, placeParty } from '../anim/trail';
+import type { FollowerRoute } from '../anim/trail';
 import { button, clear, el, mark, motionReduced } from '../ui/dom';
 import { UI_MARKS } from '../ui/marks';
 import { partyRoster } from '../ui/PartyRoster';
@@ -32,6 +33,8 @@ import { showGridLines } from '../storage/localSaves';
 import { NextWalk, previewWalk } from '../world/walking';
 import type { WalkPreview } from '../world/walking';
 import { NearbyPlaces } from '../ui/NearbyPlaces';
+import { LocalMap, LocalMapDialog } from '../ui/LocalMap';
+import { courtyardEnvironment } from '../audio/environment';
 
 /** How far Talk reaches, in tiles: across the square, not across the village. */
 const TALK_RANGE = 3;
@@ -40,6 +43,7 @@ export class ExploreScene implements Scene {
   readonly name = 'explore';
 
   private life: VillageLife | null = null;
+  private localMap: LocalMap | null = null;
   private host: HTMLElement | null = null;
   private canvas: HTMLCanvasElement | null = null;
   private renderer: Renderer | null = null;
@@ -55,6 +59,8 @@ export class ExploreScene implements Scene {
    * the leader whenever the party lands somewhere without walking there.
    */
   private trail: PartyTrail | null = null;
+  private needsSettle = true;
+  private hudMoving = false;
   private departing: GameState | null = null;
   private nextWalk = new NextWalk();
   private walking: WalkPreview | null = null;
@@ -76,7 +82,17 @@ export class ExploreScene implements Scene {
     const canvas = el('canvas', { class: 'map-canvas', attrs: { 'aria-label': 'Village map' } });
     this.canvas = canvas;
     scene.appendChild(
-      el('div', { class: 'explore-body' }, el('div', { class: 'map-wrap' }, canvas)),
+      el(
+        'div',
+        { class: 'explore-body' },
+        el(
+          'div',
+          { class: 'map-wrap' },
+          canvas,
+          el('div', { class: 'explore-objective' }),
+          el('div', { class: 'explore-map-corner' }),
+        ),
+      ),
     );
     scene.appendChild(
       el(
@@ -93,7 +109,6 @@ export class ExploreScene implements Scene {
     this.cancelNext = button('Cancel next walk', () => this.clearNextWalk());
     this.feedback = el('div', { class: 'walk-feedback' }, this.feedbackText, this.cancelNext);
     this.feedback.hidden = true;
-    canvas.parentElement?.appendChild(this.feedback);
     document.addEventListener('keydown', this.onKeyDown);
     document.addEventListener('visibilitychange', this.onVisibility);
 
@@ -103,6 +118,7 @@ export class ExploreScene implements Scene {
   }
 
   unmount(): void {
+    this.app.audio.clearEnvironment();
     document.removeEventListener('keydown', this.onKeyDown);
     document.removeEventListener('visibilitychange', this.onVisibility);
     this.nextWalk.clear();
@@ -111,6 +127,7 @@ export class ExploreScene implements Scene {
     this.feedbackText = null;
     this.cancelNext = null;
     this.viewSize = null;
+    this.localMap = null;
     this.life?.destroy();
     this.life = null;
     if (this.frame) cancelAnimationFrame(this.frame);
@@ -134,11 +151,14 @@ export class ExploreScene implements Scene {
       this.departing = null;
       this.app.animator.clear();
       this.map = map;
+      this.app.animator.setProjection(map.projection ?? 'orthographic');
       this.setupLife();
       this.grid = buildGrid(map);
       this.trail = null;
+      this.needsSettle = true;
       this.renderer?.resize({ width: map.width, height: map.height });
-      this.renderer?.camera.fitExplore();
+      if (this.renderer) this.renderer.camera.projection = map.projection ?? 'orthographic';
+      this.renderer?.camera.fitExplore(map.projection ? 96 : 48);
       this.renderer?.camera.centreOn(state.location.pos);
       this.rememberViewSize();
     }
@@ -151,12 +171,13 @@ export class ExploreScene implements Scene {
    * new one, laid alongside the leader's track so the whole party moves at
    * once and stays a tile apart.
    */
-  onEvents(events: readonly GameEvent[], now: number): void {
+  onEvents(events: readonly GameEvent[], now: number): boolean {
     const state = this.app.state;
     const grid = this.grid;
-    if (!state || !grid) return;
+    if (!state || !grid || !events.some((event) => event.type === 'partyWalked')) return false;
     for (const event of events) {
       if (event.type !== 'partyWalked') continue;
+      this.needsSettle = true;
       this.nextWalk.clear();
       this.walking = { from: event.from, path: event.path, label: 'the path', refusal: null };
       this.updateWalkFeedback();
@@ -168,6 +189,20 @@ export class ExploreScene implements Scene {
       }
       const trail = this.ensureTrail(state, grid, event.from);
       const before = trail.positions(state.party.length);
+      const plan =
+        this.map?.projection === 'oblique'
+          ? trail.planWalk(
+              event.path,
+              state.party.length,
+              grid,
+              this.map.npcs.map((npc) => npc.pos),
+            )
+          : null;
+      if (plan) {
+        this.animatePartyBatches(plan.batches, state, now);
+        continue;
+      }
+      this.app.animator.push(now, [event], []);
       const routes = trail.walk(event.path, state.party.length);
       if (routes.length === 0) continue;
       const unitsBefore: Unit[] = state.party.map((member, index) => ({
@@ -187,6 +222,38 @@ export class ExploreScene implements Scene {
           path: route.path,
         };
         this.app.animator.push(now, [move], unitsBefore, { alongside: true });
+      }
+    }
+    this.app.animator.push(
+      now,
+      events.filter((event) => event.type !== 'partyWalked'),
+      [],
+    );
+    return true;
+  }
+
+  private animatePartyBatches(
+    batches: readonly (readonly FollowerRoute[])[],
+    state: GameState,
+    now: number,
+  ): void {
+    for (const batch of batches) {
+      for (const [index, route] of batch.entries()) {
+        const member = state.party[route.index];
+        if (!member) continue;
+        this.app.animator.push(
+          now,
+          [
+            {
+              type: 'partyWalked',
+              unitId: member.id,
+              from: route.from,
+              path: route.path,
+            },
+          ],
+          [],
+          { alongside: index > 0, silentSteps: route.index !== 0, delayMs: route.delayMs },
+        );
       }
     }
   }
@@ -217,6 +284,8 @@ export class ExploreScene implements Scene {
     const camera = this.renderer?.camera;
     if (!camera) return null;
     return {
+      projection: camera.projection,
+      groundTransform: camera.groundMatrix(),
       tilePx: TILE * camera.scale,
       offsetX: camera.offsetX,
       offsetY: camera.offsetY,
@@ -274,36 +343,64 @@ export class ExploreScene implements Scene {
     clear(banner);
     const objective = this.app.state ? worldObjective(this.app.content, this.app.state) : null;
     this.canvas?.setAttribute('aria-label', `${this.map?.name ?? 'World'} map`);
-    // At the gate the banner says where it leads, which the map cannot.
-    const line = this.atGate() ?? objective;
-
-    banner.appendChild(
-      el(
-        'div',
-        { class: 'title-plate' },
-        el('strong', { class: 'title-plate-name', text: this.app.placeLabel() }),
-        line
-          ? el('span', { class: 'title-plate-objective', text: line, attrs: { title: line } })
-          : null,
+    banner.append(
+      el('strong', { class: 'title-plate-name', text: this.app.placeLabel() }),
+      el('span', { class: 'explore-mode hide-narrow', text: 'Exploring' }),
+      el('div', { class: 'spacer' }),
+      button(
+        'Travel journal',
+        () => {
+          if (!this.app.animator.busy(performance.now()))
+            new TravelJournal(this.app).open(this.overlayHost());
+        },
+        { class: 'explore-header-action' },
       ),
+      button('Save', () => new SaveMenu(this.app, { mode: 'save' }).open(this.overlayHost()), {
+        class: 'explore-header-action',
+        disabled: this.app.previewActive,
+      }),
+      button('Pause', () => this.app.openPause(), { class: 'explore-header-action' }),
     );
-    banner.appendChild(el('div', { class: 'spacer' }));
-    banner.appendChild(
-      el('span', { class: 'muted tiny hide-narrow', text: 'Tap to walk. Tap someone to talk.' }),
-    );
-    if (!this.life) {
-      banner.appendChild(
-        button('Follow party', () => {
-          const state = this.departing ?? this.app.state;
-          if (!state) return;
-          const leader = state.party[0];
-          const pos = leader
-            ? (this.app.animator.renderPos(performance.now(), leader.id) ?? state.location.pos)
-            : state.location.pos;
-          this.renderer?.camera.centreOn(pos);
-        }),
-      );
+    const objectiveHost = this.host?.querySelector<HTMLElement>('.explore-objective');
+    if (objectiveHost) {
+      clear(objectiveHost);
+      objectiveHost.hidden = !objective;
+      if (objective)
+        objectiveHost.append(
+          el('strong', { class: 'tiny', text: 'Current objective' }),
+          el('span', { class: 'title-plate-objective', text: objective }),
+        );
+      const gate = this.atGate();
+      if (gate) objectiveHost.append(el('span', { class: 'tiny muted', text: gate }));
     }
+    const corner = this.host?.querySelector<HTMLElement>('.explore-map-corner');
+    const state = this.app.state;
+    if (corner && state && this.map && this.grid) {
+      clear(corner);
+      corner.hidden = !!this.life;
+      this.localMap = new LocalMap(this.map, this.grid, state);
+      this.localMap.update(this.partyPositions() ?? [state.location.pos]);
+      const follow = button('Follow party', () => this.followParty(), {
+        class: 'local-map-follow',
+        title: 'North-up map. Recenter the camera on your party.',
+      });
+      follow.setAttribute('aria-label', 'Follow party');
+      follow.prepend(
+        this.localMap.element,
+        el('span', { class: 'local-map-north', text: 'N ↑', attrs: { 'aria-hidden': 'true' } }),
+      );
+      corner.append(follow);
+    }
+  }
+
+  private followParty(): void {
+    const state = this.departing ?? this.app.state;
+    if (!state) return;
+    const leader = state.party[0];
+    const pos = leader
+      ? (this.app.animator.renderPos(performance.now(), leader.id) ?? state.location.pos)
+      : state.location.pos;
+    this.renderer?.camera.centreOn(pos);
   }
 
   /** The exit's label while the leader stands on or beside it. */
@@ -346,8 +443,30 @@ export class ExploreScene implements Scene {
     });
     const row = el('div', { class: 'action-row' });
 
-    const npc = this.nearestNpc(state.location.pos);
+    const moving = this.app.animator.busy(performance.now());
+    this.hudMoving = moving;
+    const npc = moving ? null : this.nearestNpc(state.location.pos);
     const inspect = npc?.sprite.startsWith('world.') ?? false;
+    const context = el(
+      'div',
+      { class: 'explore-context' },
+      mark(npc ? UI_MARKS.talk : UI_MARKS.move),
+      el('strong', {
+        text: npc ? `${inspect ? 'Inspect' : 'Speak with'} ${npc.name}` : 'Tap a path to move',
+      }),
+      el('span', {
+        class: 'tiny muted',
+        text:
+          this.atGate() ??
+          (npc
+            ? `Tap ${inspect ? 'Inspect' : 'Talk'}, or choose another path.`
+            : 'Drag to look around · Follow party to recenter'),
+      }),
+    );
+    if (moving) clear(context);
+    if (this.feedback) context.appendChild(this.feedback);
+    this.updateWalkFeedback();
+    hud.appendChild(context);
     const talk = button(inspect ? 'Inspect' : 'Talk', () => this.talkTo(npc), {
       class: 'action-button',
       disabled: !npc,
@@ -356,7 +475,9 @@ export class ExploreScene implements Scene {
         : 'Nobody is close enough to talk to',
     });
     talk.prepend(mark(UI_MARKS.talk));
-    talk.appendChild(el('span', { class: 'action-sub', text: npc?.name ?? 'No one near' }));
+    talk.appendChild(
+      el('span', { class: 'action-sub', text: moving ? 'Walking' : (npc?.name ?? 'No one near') }),
+    );
     row.appendChild(talk);
 
     const look = button(
@@ -380,66 +501,39 @@ export class ExploreScene implements Scene {
     party.prepend(mark(UI_MARKS.party));
     party.appendChild(el('span', { class: 'action-sub', text: `${state.party.length} strong` }));
     row.appendChild(party);
-    row.appendChild(
-      button(
-        'Travel journal',
-        () => {
-          if (!this.app.animator.busy(performance.now()))
-            new TravelJournal(this.app).open(this.overlayHost());
-        },
-        { class: 'action-button' },
-      ),
-    );
-
-    const save = button(
-      'Save',
-      () => new SaveMenu(this.app, { mode: 'save' }).open(this.overlayHost()),
-      {
-        class: 'action-button',
-        title: 'Save the game to a slot',
-        disabled: this.app.previewActive,
+    const map = button(
+      'Map',
+      () => {
+        if (!this.map || !this.grid) return;
+        new LocalMapDialog(
+          this.map,
+          this.grid,
+          state,
+          this.partyPositions() ?? [state.location.pos],
+          (pos) => this.requestWalk(pos),
+          () => this.followParty(),
+        ).open(this.overlayHost());
       },
+      { class: 'action-button', title: 'Local map and routes' },
     );
-    save.prepend(mark(UI_MARKS.save));
-    row.appendChild(save);
-
-    const pause = button('Pause', () => this.app.openPause(), {
-      class: 'action-button',
-      title: 'Settings, saves, and the way out',
-    });
-    pause.prepend(mark(UI_MARKS.pause));
-    row.appendChild(pause);
-
+    map.prepend(mark(UI_MARKS.recentre));
+    row.insertBefore(map, look);
     bar.appendChild(row);
     hud.appendChild(bar);
-    const routes = el('div', {
-      class: 'action-row',
-      attrs: { role: 'navigation', 'aria-label': 'Routes from this area' },
-    });
-    for (const exit of this.map?.exits ?? []) {
-      const open = evaluate(state, exit.requires);
-      routes.appendChild(
-        button(
-          exit.label,
-          () => {
-            this.requestWalk(exit.pos);
-          },
-          { title: open ? `Walk to ${exit.label}` : exit.lockedHint, disabled: !open },
-        ),
-      );
-    }
-    if (routes.childElementCount) hud.appendChild(routes);
   }
 
   /** The villager nearest the leader within Talk's reach, if any. */
   private nearestNpc(from: Vec2): NpcDef | null {
     let best: NpcDef | null = null;
     let nearest = TALK_RANGE + 1;
+    let proximity = Infinity;
     for (const npc of this.map?.npcs ?? []) {
       const gap = distance(from, npc.pos);
-      if (gap < nearest) {
+      const groundGap = Math.hypot(from.x - npc.pos.x, from.y - npc.pos.y);
+      if (gap < nearest || (gap === nearest && gap <= TALK_RANGE && groundGap < proximity)) {
         best = npc;
         nearest = gap;
+        proximity = groundGap;
       }
     }
     return best;
@@ -475,7 +569,9 @@ export class ExploreScene implements Scene {
 
     this.renderer = new Renderer(canvas, { width: map.width, height: map.height });
     this.renderer.resize({ width: map.width, height: map.height });
-    this.renderer.camera.fitExplore();
+    this.renderer.camera.projection = map.projection ?? 'orthographic';
+    this.app.animator.setProjection(this.renderer.camera.projection);
+    this.renderer.camera.fitExplore(map.projection ? 96 : 48);
     this.renderer.camera.centreOn(state.location.pos);
     this.rememberViewSize();
 
@@ -553,14 +649,18 @@ export class ExploreScene implements Scene {
   };
 
   private onVisibility = (): void => {
-    if (document.hidden) this.clearNextWalk();
+    if (document.hidden) {
+      this.clearNextWalk();
+      this.app.audio.clearEnvironment();
+    }
   };
 
   private updateWalkFeedback(): void {
     if (!this.feedback || !this.feedbackText || !this.cancelNext) return;
     const state = this.app.state;
     const next = state ? this.nextWalk.preview(state) : null;
-    this.feedback.hidden = !next && !this.walking;
+    const moving = this.app.animator.busy(performance.now());
+    this.feedback.hidden = !next && !this.walking && !moving;
     this.cancelNext.hidden = !next;
     const text = next
       ? `Next: ${next.label}`
@@ -568,7 +668,9 @@ export class ExploreScene implements Scene {
         ? this.walking.label === 'the path'
           ? 'Following the path'
           : `Walking to ${this.walking.label}`
-        : '';
+        : moving
+          ? 'Gathering the party'
+          : '';
     if (this.feedbackText.textContent !== text) this.feedbackText.textContent = text;
   }
 
@@ -597,17 +699,46 @@ export class ExploreScene implements Scene {
         this.requestWalk(next);
         return;
       }
+      if (
+        this.needsSettle &&
+        map.projection === 'oblique' &&
+        !this.departing &&
+        !document.querySelector('[role="dialog"]')
+      ) {
+        this.needsSettle = false;
+        const trail = this.ensureTrail(state, grid);
+        const routes = trail.settle(
+          grid,
+          map.npcs.map((npc) => npc.pos),
+        );
+        const batches: FollowerRoute[][] = [];
+        for (const route of routes) (batches[route.batch ?? 0] ??= []).push(route);
+        this.animatePartyBatches(batches, state, now);
+      }
     }
     if (this.life?.update(now)) return;
+    if (this.hudMoving !== this.app.animator.busy(now)) this.renderHud();
     this.app.stats?.frame(now);
 
     // The whole party walks the village: the leader on the rules' tile, the
     // others in a line behind, each their own figure.
     const leader = state.party[0];
     const walking = leader ? this.app.animator.renderPos(now, leader.id) : undefined;
+    if (document.hidden) this.app.audio.clearEnvironment();
+    else
+      this.app.audio.updateEnvironment(
+        courtyardEnvironment(map.id, grid, walking ?? state.location.pos),
+      );
     // The camera follows the walk and rests where it ends; a drag afterwards stays.
     if (walking) renderer.camera.centreOn(walking);
     const seats = this.ensureTrail(state, grid).positions(state.party.length);
+    this.localMap?.update(
+      seats.map(
+        (seat, index) =>
+          this.app.animator.renderPos(now, state.party[index]?.id ?? '') ??
+          (index === 0 ? state.location.pos : seat),
+      ),
+    );
     const units: RenderUnit[] = state.party.map((member, index) => ({
       id: member.id,
       pos: index === 0 ? state.location.pos : (seats[index] ?? state.location.pos),
@@ -621,14 +752,20 @@ export class ExploreScene implements Scene {
       fallen: false,
       // A health bar over someone strolling round a village is noise.
       showHealth: false,
+      scale: map.projection === 'oblique' ? 1.25 : 1,
       renderPos: index === 0 ? walking : this.app.animator.renderPos(now, member.id),
       offset: this.app.animator.offset(now, member.id),
       clipTime: this.app.animator.unitPose(now, member.id)?.clipTime,
-      ...this.app.animator.locomotion(now, member.id),
+      ...this.app.animator.locomotion(now, member.id, 'rest'),
     }));
 
     const npcs: NpcMarker[] = [
-      ...map.npcs.map((npc) => ({ pos: npc.pos, sprite: npc.sprite, name: npc.name })),
+      ...map.npcs.map((npc) => ({
+        pos: npc.pos,
+        sprite: npc.sprite,
+        name: npc.name,
+        scale: map.projection === 'oblique' ? 1.5 : 1,
+      })),
       ...activeTriggers(map, state).flatMap((trigger) => {
         const pos = trigger.area[0];
         return pos ? [{ pos, sprite: trigger.sprite, name: trigger.label }] : [];
@@ -666,6 +803,7 @@ export class ExploreScene implements Scene {
       crispOverlays: this.app.settings.highContrast,
       atmosphere: !this.life && !this.app.settings.highContrast,
       backdrop: this.app.backdropFor(map.id),
+      scene: map.scene,
       time: now,
     };
 

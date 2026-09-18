@@ -1,3 +1,4 @@
+import { smoothPath } from '../../render/geometry/curve';
 import { describe, expect, it } from 'vitest';
 import { linear } from './easing';
 import { Timeline } from './timeline';
@@ -70,4 +71,19 @@ describe('Timeline', () => {
     expect(t.busy(10)).toBe(false);
     expect(t.finishesAt).toBe(0);
   });
+});
+
+it('finds the earliest future movement by unit and ignores active/completed tracks', () => {
+  const t = new Timeline();
+  const curve = smoothPath({ x: 1, y: 1 }, [{ x: 2, y: 1 }]);
+  t.add({ kind: 'move', unitId: 'p', start: 500, duration: 100, ease: linear, curve });
+  t.add({ kind: 'move', unitId: 'other', start: 100, duration: 100, ease: linear, curve });
+  t.add({ kind: 'move', unitId: 'p', start: 200, duration: 100, ease: linear, curve });
+  expect(t.nextMove(0, 'p')?.start).toBe(200);
+  expect(t.nextMove(200, 'p')?.start).toBe(500);
+  t.prune(400);
+  expect(t.nextMove(400, 'p')?.start).toBe(500);
+  expect(t.nextMove(500, 'p')).toBeUndefined();
+  t.clear();
+  expect(t.nextMove(0, 'p')).toBeUndefined();
 });

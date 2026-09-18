@@ -1,3 +1,4 @@
+import { paintedTileCentre as tileCentre } from './projection';
 import { expect, test } from '@playwright/test';
 import type { Page } from '@playwright/test';
 import { enterNode, resetStorage, settleLayout, startGame, waitForIdle } from './helpers';
@@ -13,24 +14,6 @@ import { enterNode, resetStorage, settleLayout, startGame, waitForIdle } from '.
  */
 const PARTY = ['kaya', 'bo', 'nilak'];
 const PLAYERS = ['Elias', 'Lorelai', 'Frehley'];
-
-/** Where a tile is painted, through whatever scaling the canvas element applies. */
-async function tileCentre(page: Page, pos: { x: number; y: number }) {
-  return page.evaluate((pos) => {
-    const canvas = document.querySelector<HTMLCanvasElement>('.map-canvas');
-    const camera = window.fnt?.app.rendererCamera();
-    if (!canvas || !camera) return null;
-    const rect = canvas.getBoundingClientRect();
-    const dpr = window.devicePixelRatio || 1;
-    const stretchX = rect.width / (canvas.width / dpr);
-    const stretchY = rect.height / (canvas.height / dpr);
-    const centre = camera.tilePx / 2;
-    return {
-      x: rect.left + (pos.x * camera.tilePx - camera.offsetX + centre) * stretchX,
-      y: rect.top + (pos.y * camera.tilePx - camera.offsetY + centre) * stretchY,
-    };
-  }, pos);
-}
 
 /** Stands the party on `pos` without walking, as a loaded save would. */
 async function standAt(page: Page, pos: { x: number; y: number }) {
@@ -130,12 +113,13 @@ test.describe('the village', () => {
     await enterNode(page, 'village_explore');
     await page.locator('.explore-scene .map-canvas').waitFor();
 
-    const objective = page.locator('.explore-bar .title-plate-objective');
+    const objective = page.locator('.explore-objective .title-plate-objective');
     await expect(objective).toContainText('Talk to Elder Mira');
 
-    // Beside the gate the banner reads its label instead of the objective.
+    // The dock retains the objective and adds the nearby gate's destination.
     await standAt(page, { x: 22, y: 7 });
-    await expect(objective).toHaveText('East road → Forest Road');
+    await expect(objective).toContainText('Talk to Elder Mira');
+    await expect(page.locator('.explore-objective')).toContainText('East road → Forest Road');
 
     await page.evaluate(() => {
       window.fnt?.app.dispatch({ type: 'walkTo', pos: { x: 23, y: 7 } });

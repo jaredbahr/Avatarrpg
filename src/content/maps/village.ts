@@ -11,16 +11,19 @@
 
 import type { MapDef } from '../../core/types';
 import { LEGEND } from './legend';
+import { BA_DAN_SCENE, BA_DAN_COURTYARD_FOOTPRINTS } from '../scenes/baDan';
 
 export const BA_DAN_VILLAGE: MapDef = {
   id: 'ba_dan_village',
+  projection: 'oblique',
+  scene: BA_DAN_SCENE,
   backdrop: { url: 'art/maps/ba_dan_village.webp', pixelsPerTile: 64 },
   name: 'Ba Dan Village',
   kind: 'explore',
   width: 24,
   height: 16,
   ambience: 'village',
-  legend: LEGEND,
+  legend: { ...LEGEND, l: { terrain: 'stone', blocked: true, blocksSight: false } },
   rows: [
     'TTTT,,,,,,,,,,,,,,TTTTTT',
     'TT,,,,BBBB,,BBBB,,,,,,TT',
@@ -38,7 +41,13 @@ export const BA_DAN_VILLAGE: MapDef = {
     'T,,,,,BBBB,,,BBBB,,,,,,T',
     'TT,,,,,,,,,,,,,,,,,,,,TT',
     'TTTT,,,,,,,,,,,,,,TTTTTT',
-  ],
+  ].map((row, y) =>
+    [...row]
+      .map((tile, x) =>
+        BA_DAN_COURTYARD_FOOTPRINTS.some((p) => p.x === x && p.y === y) ? 'l' : tile,
+      )
+      .join(''),
+  ),
   partySpawns: [{ x: 3, y: 7 }],
   exit: { pos: { x: 23, y: 7 }, label: 'The east road, toward the quarry' },
   npcs: [
@@ -60,7 +69,7 @@ export const BA_DAN_VILLAGE: MapDef = {
     {
       id: 'shopkeeper_gao',
       name: 'Gao the Shopkeeper',
-      pos: { x: 7, y: 3 },
+      pos: { x: 9, y: 4 },
       sprite: 'npc.shopkeeper',
       node: 'gao_friendly',
       routes: [

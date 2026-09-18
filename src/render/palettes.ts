@@ -120,6 +120,9 @@ export const OVERLAY = {
   friendly: 'rgba(126, 200, 227, 0.9)',
   path: 'rgba(255, 255, 255, 0.8)',
   pathUnder: 'rgba(18, 13, 10, 0.55)',
+  pathWidth: 0.025,
+  pathUnderWidth: 0.045,
+  pathArrowScale: 0.65,
   hover: 'rgba(255, 255, 255, 0.18)',
   /** The wide faint stroke under a contour's crisp edge, in tiles and alpha. */
   softWidth: 0.3,

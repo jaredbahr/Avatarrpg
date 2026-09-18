@@ -17,6 +17,8 @@
  */
 
 import type { Grid, Vec2 } from '../core/types';
+import { groundBounds, projectGround, unprojectGround } from './projection';
+import type { Projection } from './projection';
 
 /** Logical tile size before the fit scale is applied. */
 export const TILE = 64;
@@ -53,22 +55,27 @@ export class Camera {
   constructor(
     public viewport: Viewport,
     public grid: { width: number; height: number },
+    public projection: Projection = 'orthographic',
   ) {}
 
+  private get bounds() {
+    return groundBounds(this.grid.width, this.grid.height, this.projection);
+  }
+
   get worldWidth(): number {
-    return this.grid.width * TILE * this.scale;
+    return this.bounds.width * TILE * this.scale;
   }
 
   get worldHeight(): number {
-    return this.grid.height * TILE * this.scale;
+    return this.bounds.height * TILE * this.scale;
   }
 
   /** The scale at which the whole grid fits inside the viewport with a margin. */
   fitScale(margin = 12): number {
     const usableWidth = Math.max(1, this.viewport.width - margin * 2);
     const usableHeight = Math.max(1, this.viewport.height - margin * 2);
-    const scaleX = usableWidth / (this.grid.width * TILE);
-    const scaleY = usableHeight / (this.grid.height * TILE);
+    const scaleX = usableWidth / (this.bounds.width * TILE);
+    const scaleY = usableHeight / (this.bounds.height * TILE);
     return Math.max(this.minScale, Math.min(this.maxScale, Math.min(scaleX, scaleY)));
   }
 
@@ -99,8 +106,8 @@ export class Camera {
     const usableWidth = Math.max(1, this.viewport.width - margin * 2);
     const usableHeight = Math.max(1, this.viewport.height - margin * 2);
     const fitScale = Math.min(
-      usableWidth / (this.grid.width * TILE),
-      usableHeight / (this.grid.height * TILE),
+      usableWidth / (this.bounds.width * TILE),
+      usableHeight / (this.bounds.height * TILE),
     );
     this.scale = Math.max(this.minScale, Math.min(this.maxScale, Math.max(wanted, fitScale)));
     this.centre();
@@ -145,30 +152,63 @@ export class Camera {
 
   /** Scrolls so a tile sits in the middle of the viewport, where possible. */
   centreOn(pos: Vec2): void {
-    const px = (pos.x + 0.5) * TILE * this.scale;
-    const py = (pos.y + 0.5) * TILE * this.scale;
+    const ground = this.groundPoint({ x: pos.x + 0.5, y: pos.y + 0.5 });
+    const px = ground.x * this.scale;
+    const py = ground.y * this.scale;
     this.offsetX = px - this.viewport.width / 2;
     this.offsetY = py - this.viewport.height / 2;
     this.clamp();
   }
 
-  /** Tile coordinate -> top-left screen pixel of that tile. */
-  toScreen(pos: Vec2): { x: number; y: number; size: number } {
-    const size = TILE * this.scale;
-    return {
-      x: pos.x * size - this.offsetX,
-      y: pos.y * size - this.offsetY,
-      size,
-    };
+  /** Continuous logical ground coordinate -> unscaled projected world pixels. */
+  groundPoint(pos: Vec2): ScreenPoint {
+    const point = projectGround(pos, this.projection);
+    return { x: (point.x - this.bounds.minX) * TILE, y: (point.y - this.bounds.minY) * TILE };
   }
 
-  /** Screen pixel -> tile coordinate. May be outside the grid; callers check. */
-  toTile(screenX: number, screenY: number): Vec2 {
+  /** The single forward transform shared by rendering, markers and pointer tests. */
+  project(pos: Vec2): ScreenPoint {
+    const point = this.groundPoint(pos);
+    return { x: point.x * this.scale - this.offsetX, y: point.y * this.scale - this.offsetY };
+  }
+
+  unproject(pos: ScreenPoint): Vec2 {
+    return unprojectGround(
+      {
+        x: (pos.x + this.offsetX) / (TILE * this.scale) + this.bounds.minX,
+        y: (pos.y + this.offsetY) / (TILE * this.scale) + this.bounds.minY,
+      },
+      this.projection,
+    );
+  }
+
+  /** Affine transform of logical world pixels, not of upright art. */
+  groundMatrix() {
+    const s = this.scale;
+    const origin = this.project({ x: 0, y: 0 });
+    return this.projection === 'oblique'
+      ? { a: s, b: s / 2, c: -s, d: s / 2, tx: origin.x, ty: origin.y }
+      : { a: s, b: 0, c: 0, d: s, tx: origin.x, ty: origin.y };
+  }
+
+  /** A centre-compatible box. For ground geometry use project(), not its square bounds. */
+  toScreen(pos: Vec2): { x: number; y: number; size: number } {
     const size = TILE * this.scale;
-    return {
-      x: Math.floor((screenX + this.offsetX) / size),
-      y: Math.floor((screenY + this.offsetY) / size),
-    };
+    const center = this.project({ x: pos.x + 0.5, y: pos.y + 0.5 });
+    return { x: center.x - size / 2, y: center.y - size / 2, size };
+  }
+
+  /** Upright art stands at the logical footprint centre, never at a skewed sprite corner. */
+  spriteBox(pos: Vec2, footprint = 1): { x: number; y: number; size: number } {
+    if (this.projection === 'orthographic') return this.toScreen(pos);
+    const size = TILE * this.scale;
+    const foot = this.project({ x: pos.x + footprint / 2, y: pos.y + 0.5 });
+    return { x: foot.x - (size * footprint) / 2, y: foot.y - size * 0.86, size };
+  }
+
+  toTile(screenX: number, screenY: number): Vec2 {
+    const point = this.unproject({ x: screenX, y: screenY });
+    return { x: Math.floor(point.x), y: Math.floor(point.y) };
   }
 
   /** True when any part of the tile is on screen. Used to skip drawing. */
@@ -179,13 +219,17 @@ export class Camera {
 
   /** Inclusive tile bounds currently on screen, clipped to the grid. */
   visibleBounds(grid: Grid): { x0: number; y0: number; x1: number; y1: number } {
-    const topLeft = this.toTile(0, 0);
-    const bottomRight = this.toTile(this.viewport.width, this.viewport.height);
+    const corners = [
+      this.toTile(0, 0),
+      this.toTile(this.viewport.width, 0),
+      this.toTile(0, this.viewport.height),
+      this.toTile(this.viewport.width, this.viewport.height),
+    ];
     return {
-      x0: Math.max(0, topLeft.x - 1),
-      y0: Math.max(0, topLeft.y - 1),
-      x1: Math.min(grid.width - 1, bottomRight.x + 1),
-      y1: Math.min(grid.height - 1, bottomRight.y + 1),
+      x0: Math.max(0, Math.min(...corners.map((p) => p.x)) - 2),
+      y0: Math.max(0, Math.min(...corners.map((p) => p.y)) - 2),
+      x1: Math.min(grid.width - 1, Math.max(...corners.map((p) => p.x)) + 2),
+      y1: Math.min(grid.height - 1, Math.max(...corners.map((p) => p.y)) + 2),
     };
   }
 }

@@ -1,3 +1,4 @@
+import { paintedTileCentre } from '../projection';
 import type { Page } from '@playwright/test';
 import type { Settings } from '../../src/app/storage/localSaves';
 import { nextFloat } from '../../src/core/rng';
@@ -340,17 +341,7 @@ export async function updateSettings(page: Page, next: Partial<Settings>): Promi
 
 /** Screen point at the centre of a tile, through the same camera the tap handler reads. */
 export async function tileCentre(page: Page, pos: Vec2): Promise<{ x: number; y: number }> {
-  const point = await page.evaluate((p) => {
-    const canvas = document.querySelector('.map-canvas');
-    const camera = window.fnt?.app.rendererCamera?.();
-    if (!canvas || !camera) return null;
-    const rect = canvas.getBoundingClientRect();
-    const size = camera.tilePx;
-    return {
-      x: rect.left + p.x * size - camera.offsetX + size / 2,
-      y: rect.top + p.y * size - camera.offsetY + size / 2,
-    };
-  }, pos);
+  const point = await paintedTileCentre(page, pos);
   if (!point) throw new Error(`Could not map tile ${pos.x},${pos.y} to the screen.`);
   return point;
 }

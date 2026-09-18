@@ -153,6 +153,15 @@ export const CREDITS: readonly CreditEntry[] = [
     ],
     note: 'Original generated environments registered to the authored map layouts, with transparent props packed separately. Prompts and processing notes: docs/art/act1-environments.md. Output terms: https://openai.com/policies/row-terms-of-use/. No exclusive copyright in generated output is claimed.',
   },
+  {
+    what: 'The layered Ba Dan courtyard',
+    work: 'Calibrated ground, low-rise houses, pond and village tree',
+    authors: 'This project, generated with OpenAI image generation',
+    licence: 'own work',
+    source: '',
+    covers: ['art/maps/ba-dan-scene'],
+    note: 'Original generated material and scenery art, packed against the logical village map. Exact prompts, processing and registration: docs/art/ba-dan-scene.md and docs/art/ba-dan-scene-prompts.json. Output terms: https://openai.com/policies/row-terms-of-use/. No exclusive copyright in generated output is claimed.',
+  },
   ...THIRD_PARTY_CREDITS,
   {
     what: 'The app icons',

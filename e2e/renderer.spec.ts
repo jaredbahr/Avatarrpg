@@ -126,8 +126,10 @@ async function tileCentre(
   const point = await page.evaluate((p) => {
     const camera = window.fnt?.app.rendererCamera?.();
     if (!camera) return null;
-    const size = camera.tilePx;
-    return { x: p.x * size - camera.offsetX + size / 2, y: p.y * size - camera.offsetY + size / 2 };
+    const m = camera.groundTransform;
+    const x = (p.x + 0.5) * 64,
+      y = (p.y + 0.5) * 64;
+    return { x: m.a * x + m.c * y + m.tx, y: m.b * x + m.d * y + m.ty };
   }, pos);
   if (!point) throw new Error('no map camera');
   return point;

@@ -129,6 +129,16 @@ export class Timeline {
     return out;
   }
 
+  /** Earliest queued movement for a unit, irrespective of insertion order. */
+  nextMove(now: number, unitId: string): MoveTrack | undefined {
+    let next: MoveTrack | undefined;
+    for (const track of this.tracks) {
+      if (track.kind !== 'move' || track.unitId !== unitId || track.start <= now) continue;
+      if (!next || track.start < next.start) next = track;
+    }
+    return next;
+  }
+
   /** 0..1 progress of a track at `now`, clamped. */
   static progress(track: Track, now: number): number {
     const t = (now - track.start) / Math.max(1, track.duration);

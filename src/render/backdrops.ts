@@ -20,6 +20,7 @@ type Entry = 'loading' | 'failed' | HTMLImageElement;
 const MAX_RESIDENT = 3;
 
 export class BackdropStore {
+  constructor(private readonly maxResident = MAX_RESIDENT) {}
   private entries = new Map<string, Entry>();
   private pending = new Map<string, Promise<boolean>>();
 
@@ -77,7 +78,7 @@ export class BackdropStore {
     const resident = [...this.entries].filter(
       ([, entry]) => entry !== 'loading' && entry !== 'failed',
     );
-    for (const [url] of resident.slice(0, Math.max(0, resident.length - MAX_RESIDENT))) {
+    for (const [url] of resident.slice(0, Math.max(0, resident.length - this.maxResident))) {
       this.entries.delete(url);
     }
   }

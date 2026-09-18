@@ -25,11 +25,10 @@ async function tilePoint(
     ({ p, f }) => {
       const camera = window.fnt?.app.rendererCamera?.();
       if (!camera) return null;
-      const size = camera.tilePx;
-      return {
-        x: (p.x + f.x) * size - camera.offsetX,
-        y: (p.y + f.y) * size - camera.offsetY,
-      };
+      const m = camera.groundTransform;
+      const x = (p.x + f.x) * 64,
+        y = (p.y + f.y) * 64;
+      return { x: m.a * x + m.c * y + m.tx, y: m.b * x + m.d * y + m.ty };
     },
     { p: pos, f: fraction },
   );

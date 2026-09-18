@@ -1,3 +1,4 @@
+import { paintedTileCentre } from './projection';
 import { expect, test } from '@playwright/test';
 import { enterNode, resetStorage, startGame, takeTurn, waitForIdle } from './helpers';
 
@@ -80,17 +81,7 @@ test.describe('elemental reactions are legible', () => {
     await expect(fireJab).toBeVisible();
     await fireJab.click();
 
-    const screenPoint = await page.evaluate((pos) => {
-      const canvas = document.querySelector('.map-canvas');
-      const camera = window.fnt?.app.rendererCamera?.();
-      if (!canvas || !camera) return null;
-      const rect = canvas.getBoundingClientRect();
-      const size = camera.tilePx;
-      return {
-        x: rect.left + pos.x * size - camera.offsetX + size / 2,
-        y: rect.top + pos.y * size - camera.offsetY + size / 2,
-      };
-    }, placed.spot);
+    const screenPoint = await paintedTileCentre(page, placed.spot);
 
     expect(screenPoint, 'could not map the oil tile to the screen').not.toBeNull();
     if (!screenPoint) return;

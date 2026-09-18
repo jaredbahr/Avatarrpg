@@ -397,6 +397,14 @@ const tileTemplate = z.object({
   surfaceDuration: z.number().int().min(-1).optional(),
 });
 
+const sceneImageSchema = z.object({
+  url: z.string().min(1),
+  x: z.number(),
+  y: z.number(),
+  width: z.number().positive(),
+  height: z.number().positive(),
+});
+
 export const mapSchema = z
   .object({
     id,
@@ -451,8 +459,37 @@ export const mapSchema = z
       .optional(),
     // A painting under the grid (ADR 0009). Between 32 px a tile (the probe) and
     // 256, so a 24-wide map stays inside the 2048 px texture every iPad takes.
+    projection: z.literal('oblique').optional(),
+    scene: z
+      .object({
+        paintedWater: z.boolean().optional(),
+        ground: z.array(sceneImageSchema).max(8),
+        scenery: z
+          .array(
+            sceneImageSchema.extend({
+              id,
+              footprint: z.array(vec2).min(1),
+              depth: z.object({ x: z.number().finite(), y: z.number().finite() }),
+              fadeWhenOccluding: z.boolean().optional(),
+            }),
+          )
+          .max(32),
+      })
+      .optional(),
     backdrop: z
-      .object({ url: z.string().min(1), pixelsPerTile: z.number().int().min(32).max(256) })
+      .object({
+        url: z.string().min(1),
+        pixelsPerTile: z.number().int().min(32).max(256),
+        projection: z.literal('oblique').optional(),
+        padding: z
+          .object({
+            left: z.number().nonnegative(),
+            top: z.number().nonnegative(),
+            right: z.number().nonnegative(),
+            bottom: z.number().nonnegative(),
+          })
+          .optional(),
+      })
       .optional(),
   })
   .superRefine((map, ctx) => {

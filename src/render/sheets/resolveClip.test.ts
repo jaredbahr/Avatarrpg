@@ -12,6 +12,19 @@ const minimal = { idle: clip(2, 1, true), cast: clip(3, 8) };
 const full = { ...minimal, walk: clip(4, 4, true), melee: clip(2), hit: clip(1), ko: clip(1) };
 
 describe('resolveClip', () => {
+  it('keeps optional exploration rests compatible with existing directional sheets', () => {
+    const directional = { ...minimal, idleNorth: clip(1), idleSouth: clip(1) };
+    expect(resolveClip(directional, 'restNorth')?.clip).toBe('idleNorth');
+    expect(resolveClip(directional, 'restSouth')?.clip).toBe('idleSouth');
+    expect(resolveClip(minimal, 'rest')?.clip).toBe('idle');
+    expect(resolveClip({ ...minimal, rest: clip(1) }, 'restNorth')?.clip).toBe('rest');
+    expect(resolveClip({ ...directional, restNorth: clip(1) }, 'restNorth')).toMatchObject({
+      clip: 'restNorth',
+      exact: true,
+    });
+    expect(resolveClip({ ...directional, rest: clip(1) }, 'idle')?.clip).toBe('idle');
+  });
+
   it('finds the clip itself when the sheet has it', () => {
     expect(resolveClip(full, 'melee')).toMatchObject({ clip: 'melee', exact: true });
   });

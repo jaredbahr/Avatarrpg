@@ -281,3 +281,129 @@ describe('Animator', () => {
     expect(p?.x ?? 0).toBeLessThan(5);
   });
 });
+
+it('holds a queued move origin without starting its turn, gait or bob early', () => {
+  const a = animator();
+  a.push(1000, [moved('p', [3, 5], [3, 6])], [unit('p', 3, 4)]);
+  expect(a.renderPos(999, 'p')).toEqual({ x: 3, y: 4 });
+  expect(a.locomotion(999, 'p')).toEqual({ clip: 'idle', facing: 1 });
+  expect(a.offset(999, 'p')).toBeUndefined();
+  expect(a.unitPose(999, 'p')).toBeUndefined();
+  expect(a.renderPos(999, 'other')).toBeUndefined();
+  expect(a.locomotion(1050, 'p').clip).toBe('walkSouth');
+  const done = a.finishesAt + 1;
+  a.prune(done);
+  expect(a.renderPos(done, 'p')).toBeUndefined();
+});
+
+it('holds the next route origin through a gap between batches, including after pruning', () => {
+  const a = animator();
+  a.push(0, [moved('p', [4, 4])], [unit('p', 3, 4)]);
+  const firstEnd = a.finishesAt;
+  a.push(2000, [moved('p', [4, 5])], [unit('p', 4, 4)]);
+  a.prune(firstEnd + 1);
+  expect(a.renderPos(1000, 'p')).toEqual({ x: 4, y: 4 });
+  expect(a.locomotion(1000, 'p')).toEqual({ clip: 'idle', facing: 1 });
+  expect(a.offset(1000, 'p')).toBeUndefined();
+  expect(a.renderPos(a.finishesAt + 1, 'p')).toBeUndefined();
+});
+
+it('silences a sequential follower batch without moving its start alongside the leader', () => {
+  const sounds: string[] = [];
+  const a = new Animator(content, {
+    motionReduced: () => false,
+    onSounds: (cues) => sounds.push(...cues.map((cue) => cue.key)),
+  });
+  const leader: GameEvent = {
+    type: 'partyWalked',
+    unitId: 'leader',
+    from: { x: 2, y: 4 },
+    path: [
+      { x: 3, y: 4 },
+      { x: 4, y: 4 },
+    ],
+  };
+  const follower: GameEvent = {
+    type: 'partyWalked',
+    unitId: 'follower',
+    from: { x: 1, y: 4 },
+    path: [
+      { x: 2, y: 4 },
+      { x: 3, y: 4 },
+    ],
+  };
+  a.push(0, [leader], []);
+  const firstEnd = a.finishesAt,
+    firstSounds = [...sounds];
+  expect(firstSounds.length).toBeGreaterThan(0);
+  a.push(0, [follower], [], { silentSteps: true });
+  expect(a.finishesAt).toBeGreaterThan(firstEnd);
+  expect(sounds).toEqual(firstSounds);
+  expect(a.renderPos(firstEnd / 2, 'follower')).toEqual({ x: 1, y: 4 });
+  expect(a.locomotion(firstEnd / 2, 'follower').clip).toBe('idle');
+  expect(a.locomotion(firstEnd + 50, 'follower').clip).toBe('walk');
+});
+
+describe('delayed movement batches', () => {
+  for (const reduced of [false, true]) {
+    it(`keeps independent follower delays and queues the next batch after the longest route, reduced=${reduced}`, () => {
+      const rate = reduced ? 0.02 : 1;
+      const sounds: string[] = [];
+      const a = new Animator(content, {
+        motionReduced: () => reduced,
+        onSounds: (cues) => sounds.push(...cues.map((cue) => cue.key)),
+      });
+      const walk = (unitId: string, y: number): GameEvent => ({
+        type: 'partyWalked',
+        unitId,
+        from: { x: 2, y },
+        path: [
+          { x: 3, y },
+          { x: 4, y },
+        ],
+      });
+      const base = 1000;
+      a.push(base, [walk('leader', 1)], [], { delayMs: 600 });
+      const latestEnd = a.finishesAt,
+        leaderSounds = [...sounds];
+      expect(leaderSounds.length).toBeGreaterThan(0);
+      a.push(base, [walk('first', 2)], [], { alongside: true, delayMs: 100, silentSteps: true });
+      a.push(base, [walk('second', 3)], [], { alongside: true, delayMs: 300, silentSteps: true });
+      expect(a.finishesAt).toBe(latestEnd);
+      expect(sounds).toEqual(leaderSounds);
+      for (const [id, y, delay] of [
+        ['first', 2, 100],
+        ['second', 3, 300],
+        ['leader', 1, 600],
+      ] as const) {
+        const start = base + delay * rate;
+        expect(a.renderPos(start - 0.01, id)).toEqual({ x: 2, y });
+        expect(a.locomotion(start - 0.01, id).clip).toBe('idle');
+        expect(a.offset(start - 0.01, id)).toBeUndefined();
+        expect(a.locomotion(start + 0.01, id).clip).toBe('walk');
+      }
+      a.push(base, [walk('next', 4)], [], { silentSteps: true });
+      expect(a.finishesAt).toBeGreaterThan(latestEnd);
+      expect(a.renderPos(latestEnd - 0.01, 'next')).toEqual({ x: 2, y: 4 });
+      expect(a.locomotion(latestEnd - 0.01, 'next').clip).toBe('idle');
+      expect(a.locomotion(latestEnd + 0.01, 'next').clip).toBe('walk');
+      expect(sounds).toEqual(leaderSounds);
+    });
+
+    it(`clamps negative delays and scales the requested delay once, reduced=${reduced}`, () => {
+      const baseline = animator(reduced),
+        delayed = animator(reduced),
+        negative = animator(reduced);
+      const events = [moved('p', [3, 4])];
+      const roster = [unit('p', 2, 4)];
+      baseline.push(100, events, roster);
+      negative.push(100, events, roster, { delayMs: -500 });
+      delayed.push(100, events, roster, { delayMs: 500 });
+      expect(negative.finishesAt).toBe(baseline.finishesAt);
+      expect(delayed.finishesAt - baseline.finishesAt).toBeCloseTo(500 * (reduced ? 0.02 : 1));
+      expect(delayed.renderPos(100, 'p')).toEqual({ x: 2, y: 4 });
+      expect(delayed.locomotion(100, 'p').clip).toBe('idle');
+      expect(delayed.offset(100, 'p')).toBeUndefined();
+    });
+  }
+});

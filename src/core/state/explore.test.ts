@@ -3,6 +3,8 @@ import { CONTENT } from '../../content';
 import type { GameEvent, GameState, Vec2 } from '../types';
 import { createGame } from './createGame';
 import { apply } from './reducer';
+import { serialize, deserialize, stateFromBlob } from '../save/serialize';
+import { buildGrid, tileAt } from '../rules/grid';
 
 /**
  * Walking the village. The rules of a walk have not changed: the reducer
@@ -28,6 +30,36 @@ const walks = (events: readonly GameEvent[]) =>
   events.filter((e): e is Extract<GameEvent, { type: 'partyWalked' }> => e.type === 'partyWalked');
 
 describe('walking the village', () => {
+  it('uses Gao’s shopfront after loading older village positions, including a new boundary cell', () => {
+    const map = CONTENT.maps.get('ba_dan_village');
+    const gao = map?.npcs.find((npc) => npc.id === 'shopkeeper_gao');
+    if (!map || !gao) throw new Error('Missing village merchant');
+    expect(gao.pos).toEqual({ x: 9, y: 4 });
+    for (const pos of [
+      { x: 7, y: 3 },
+      { x: 7, y: 4 },
+      { x: 10, y: 7 },
+    ]) {
+      const before = { ...inVillage(), location: { mapId: map.id, pos } };
+      const loaded = deserialize(
+        serialize(before, {
+          label: 'Village',
+          summary: 'Before shopfront placement',
+          savedAt: 1,
+          session: { players: [{ name: 'One', unitId: 'p0' }], soloPlay: false },
+        }),
+      );
+      if (!loaded.ok) throw new Error('Could not reload village save');
+      const restored = stateFromBlob(loaded.blob);
+      expect(restored.location).toEqual(before.location);
+      const result = apply(CONTENT, restored, { type: 'walkTo', pos: gao.pos });
+      expect(result.state.screen).toBe('dialogue');
+      expect(result.state.story.nodeId).toBe('gao_friendly');
+      expect(result.state.location.pos).not.toEqual(gao.pos);
+      for (const walk of walks(result.events))
+        for (const step of walk.path) expect(tileAt(buildGrid(map), step)?.blocked).toBe(false);
+    }
+  });
   it('reports the route from where the party stood to where it ends', () => {
     const state = inVillage();
     const start = state.location.pos;
