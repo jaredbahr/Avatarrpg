@@ -488,6 +488,17 @@ export const ACT1_NODES: readonly StoryNode[] = [
       'A mecha-driller idles beside the lowest ramp, its cabin shaking between two broad treads.',
       'Oil drips from a split hose. The driver sees you and reaches for a lever.',
     ],
+    next: 'quarry_assessment',
+  },
+  {
+    id: 'quarry_assessment',
+    kind: 'dialogue',
+    speaker: 'The Quarry',
+    portrait: 'portrait.narrator',
+    lines: [
+      'Workers bang on the barred gallery doors. The driver turns towards the noise, then back to you.',
+      'The ramp behind you is clear. It is the way everyone will have to come out.',
+    ],
     next: 'battle_grumbler',
   },
   {

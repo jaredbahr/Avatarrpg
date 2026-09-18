@@ -27,18 +27,19 @@ import { STATUSES, STATUS_BY_ID } from './statuses';
 import { SURFACES, SURFACE_BY_ID } from './surfaces';
 import { UNIVERSAL_ABILITY_IDS } from './abilities';
 import { ACT1_NODES } from './story/act1';
+import { withPartyVoices } from './story/partyVoices';
 import type { ContentBundle } from './schemas';
 import type { MapDef, StoryNode } from '../core/types';
 
 export const ALL_MAPS: readonly MapDef[] = [BA_DAN_VILLAGE, RIVERSIDE, ...COMBAT_MAPS].map(
   connectAct1,
 );
-export const ALL_STORY: readonly StoryNode[] = [
+export const ALL_STORY: readonly StoryNode[] = withPartyVoices([
   ...ACT1_NODES,
   ...RIVERSIDE_STORY,
   ...WORLD_STORY,
   ...DISCOVERY_STORY,
-];
+]);
 
 /** The flat form, used by the validation test and the balance report. */
 export const CONTENT_BUNDLE: ContentBundle = {

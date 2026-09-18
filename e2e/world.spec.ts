@@ -22,7 +22,7 @@ test('riverside roaming keeps the journal and campaign saves across a round trip
   await expect(journal.getByRole('region', { name: 'Places', exact: true })).toContainText(
     'Ba Dan · The Riverside · Visited',
   );
-  await expect(journal).toContainText('Remembered · A very important otter-turtle');
+  await expect(journal).toContainText('Remembered · Pebble by the river');
   await journal.getByRole('button', { name: 'Return to the path', exact: true }).click();
   await page.getByRole('button', { name: 'River path → Riverside', exact: true }).click();
   await expect(page.getByRole('button', { name: 'Water form', exact: true })).toBeVisible();
