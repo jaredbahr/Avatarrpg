@@ -6,18 +6,23 @@ import { scaleTo } from './lib/scale';
 import { encodeWebp } from './lib/webp';
 
 const [groundPath, wallPath] = process.argv.slice(2);
-if (!groundPath || !wallPath) throw new Error('Provide authored ground and three-panel wall PNGs.');
-const ground = readImage(groundPath),
+if (!groundPath || !wallPath)
+  throw new Error('Provide GROUND.png WALLS.png, or --walls-only WALLS.png.');
+const wallsOnly = groundPath === '--walls-only';
+const ground = wallsOnly ? null : readImage(groundPath),
   walls = readImage(wallPath);
-if (Math.abs(ground.width / ground.height - 1.8) > 0.002)
+if (ground && Math.abs(ground.width / ground.height - 1.8) > 0.002)
   throw new Error('Ground registration aspect changed.');
 if (Math.abs(walls.width / walls.height - 384 / 176) > 0.004)
   throw new Error('Wall sheet registration aspect changed.');
-const factor = Math.floor(Math.min(ground.width / 18, ground.height / 10, 2048 / 10));
-const plate = scaleTo(ground, factor * 18, factor * 10);
+const factor = ground ? Math.floor(Math.min(ground.width / 18, ground.height / 10, 2048 / 10)) : 0;
+const plate = ground ? scaleTo(ground, factor * 18, factor * 10) : null;
 const wallSheet = scaleTo(crop(walls, aspectCrop(walls, 384, 176)), 768, 352);
 const outputs: { name: string; bytes: Uint8Array }[] = [];
-for (const [i, side] of ['west', 'east'].entries()) {
+// Material-mask ground is packed separately; wall-only refreshes must not restore
+// the rejected wholeplate or overwrite its registered replacement.
+for (const [i, side] of (plate ? ['west', 'east'] : []).entries()) {
+  if (!plate) throw new Error('Missing ground plate');
   const chunk = crop(plate, {
     x: (i * plate.width) / 2,
     y: 0,
@@ -62,9 +67,9 @@ const directory = 'public/art/maps/quarry-gate-scene';
 mkdirSync(directory, { recursive: true });
 for (const output of outputs) writeFileSync(`${directory}/${output.name}.webp`, output.bytes);
 console.log({
-  groundSource: [ground.width, ground.height],
+  groundSource: ground ? [ground.width, ground.height] : null,
   wallSource: [walls.width, walls.height],
-  groundChunk: [plate.width / 2, plate.height],
+  groundChunk: plate ? [plate.width / 2, plate.height] : null,
   wall: [256, 352],
   clippedPixels,
   keyedFringePixels,

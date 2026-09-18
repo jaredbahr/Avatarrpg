@@ -14,13 +14,19 @@ const source = readImage(materialPath),
 if (source.width !== source.height * 3)
   throw new Error('Expected three equal square material panels.');
 const fields = [0, 1, 2].map((index) =>
-  crop(source, {
-    // Discard generation's panel-border contamination before repeating the field.
-    x: index * source.height + 8,
-    y: 8,
-    width: source.height - 16,
-    height: source.height - 16,
-  }),
+  // Normalize the authored marks to ground scale before sampling. Native panel
+  // scale made small chips read as knee-high obstacles at the 96px camera.
+  scaleTo(
+    crop(source, {
+      // Discard generation's panel-border contamination before repeating the field.
+      x: index * source.height + 8,
+      y: 8,
+      width: source.height - 16,
+      height: source.height - 16,
+    }),
+    284,
+    284,
+  ),
 );
 /** Reflected authored texels meet without seams; no upscaling or invented paint. */
 const mirror = (value: number, size: number) => {
