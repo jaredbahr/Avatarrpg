@@ -15,10 +15,15 @@ export async function stageMotionTransition(
       const enemy = battle?.units.find((u) => u.faction === 'enemy');
       if (!state || !battle || !hero || !enemy) throw new Error('Expected staged combat');
       const from = { x: 8, y: 8 };
-      const target = { x: 5, y: 8 };
+      const enemyPos = { x: 5, y: 8 };
+      const targeting = app.content.abilities.get(abilityId)?.targeting;
+      const target =
+        targeting?.shape === 'self' || (targeting?.shape === 'unit' && targeting.allow === 'ally')
+          ? from
+          : enemyPos;
       const destination = { x: 10, y: 8 };
       const before = battle.units.map((u) =>
-        u.id === hero.id ? { ...u, pos: from } : u.id === enemy.id ? { ...u, pos: target } : u,
+        u.id === hero.id ? { ...u, pos: from } : u.id === enemy.id ? { ...u, pos: enemyPos } : u,
       );
       app.state = {
         ...state,

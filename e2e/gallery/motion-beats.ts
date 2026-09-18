@@ -48,7 +48,7 @@ export const ELEMENT_BEATS: readonly Beat[] = (
 ).map(([element, character, ability, times]) => ({
   id: `32-element-${element}`,
   title: `${element} attack: body, release and recovery`,
-  note: 'Existing character art with revised weight transfer and procedural bending effects.',
+  note: 'Existing character art with hand-drawn elemental cels and aimed bending strokes.',
   projects: ['surface-canvas', 'surface-webgl'],
   async run(ctx) {
     await resetStorage(ctx.page, ctx.query());
@@ -57,6 +57,7 @@ export const ELEMENT_BEATS: readonly Beat[] = (
     await takeTurn(ctx.page);
     await waitForIdle(ctx.page);
     await settleLayout(ctx.page);
+    await ctx.page.evaluate(() => window.fnt!.loadedFxCels());
     await ctx.filmstrip(`${element} release follows the body's extension.`, times, async () => {
       await stageMotionTransition(ctx.page, 'cast', ability);
     });

@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest';
 import type { ContentIndex, GameEvent, Unit } from '../core/types';
 import { Animator } from './animator';
 import { CONTENT } from '../content';
+import { sampleParticles, PARTICLE_STRIDE } from '../render/fx/simulate';
 
 /**
  * The animator runs in Node here with the reduce-motion lookup injected, so
@@ -27,6 +28,43 @@ function animator(reduced = false): Animator {
 }
 
 describe('Animator', () => {
+  it('shows every area cel before debris spends the Canvas particle budget', () => {
+    for (const abilityId of ['shockwave', 'tidal_wave', 'tornado']) {
+      const a = new Animator(CONTENT, { motionReduced: () => false });
+      const tiles = Array.from({ length: 25 }, (_, i) => ({
+        x: 3 + (i % 5),
+        y: 3 + Math.floor(i / 5),
+      }));
+      a.push(
+        0,
+        [{ type: 'abilityUsed', unitId: 'p0', abilityId, target: { x: 5, y: 5 }, tiles }],
+        [unit('p0', 2, 5)],
+      );
+      let used = 0,
+        cels = 0,
+        drawn = 0;
+      for (const instance of a.emitters(650)) {
+        const def = instance.def;
+        if (def.kind !== 'particles' || def.layer !== 'over') continue;
+        const count = sampleParticles(
+          def,
+          instance.elapsed,
+          instance.seed,
+          instance.from,
+          instance.to,
+          new Float32Array(120 * PARTICLE_STRIDE),
+        );
+        if (def.cel && count) {
+          cels++;
+          if (used < 96) drawn++;
+        }
+        used += count;
+      }
+      expect(cels, abilityId).toBeGreaterThanOrEqual(24);
+      expect(drawn, abilityId).toBe(cels);
+    }
+  });
+
   for (const reduced of [false, true]) {
     it(`keeps the attack facing after recovery (reduced motion: ${reduced})`, () => {
       const a = new Animator(CONTENT, { motionReduced: () => reduced });

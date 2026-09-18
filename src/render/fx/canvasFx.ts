@@ -10,7 +10,8 @@
 
 import type { Vec2 } from '../../core/types';
 import type { FxCell } from '../../content/fx';
-import { ATLAS_CELL, cellFrame, fxAtlas } from './atlas';
+import { ATLAS_CELL, cellFrame, fxAtlas, celAtlasFrame, celReady } from './atlas';
+import { celFrameIndex } from '../../content/fxCels';
 import { roleColor } from './colors';
 import { PARTICLE_STRIDE, sampleParticles, sampleStrokes } from './simulate';
 import type { EmitterInstance } from '../view';
@@ -23,6 +24,9 @@ const MAX_STROKES = 60;
 const MAX_TINTED = 96;
 
 export class CanvasFxLayer {
+  constructor() {
+    fxAtlas();
+  }
   private tinted = new Map<string, HTMLCanvasElement>();
   private scratch = new Float32Array(MAX_PARTICLES * PARTICLE_STRIDE);
 
@@ -57,7 +61,13 @@ export class CanvasFxLayer {
           0,
           instance.arc,
         );
-        const cell = this.cell(def.cell, roleColor(def.color, instance.palette));
+        const frame =
+          def.cel && celReady(def.cel)
+            ? celAtlasFrame(def.cel, celFrameIndex(def.cel, instance.elapsed, def.duration))
+            : null;
+        const cell = frame
+          ? fxAtlas()
+          : this.cell(def.cell, roleColor(def.color, instance.palette));
         ctx.save();
         ctx.globalCompositeOperation = def.blend === 'add' ? 'lighter' : 'source-over';
         for (let i = 0; i < Math.min(n, room); i++) {
@@ -68,7 +78,9 @@ export class CanvasFxLayer {
           const rotation = this.scratch[at + 3] ?? 0;
           ctx.globalAlpha = Math.max(0, Math.min(1, this.scratch[at + 4] ?? 0));
           ctx.setTransform(ctx.getTransform().translate(px, py).rotate(rotation));
-          ctx.drawImage(cell, -s / 2, -s / 2, s, s);
+          if (frame)
+            ctx.drawImage(cell, frame.x, frame.y, frame.size, frame.size, -s / 2, -s / 2, s, s);
+          else ctx.drawImage(cell, -s / 2, -s / 2, s, s);
           ctx.setTransform(ctx.getTransform().rotate(-rotation).translate(-px, -py));
         }
         ctx.restore();

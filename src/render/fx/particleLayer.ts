@@ -14,7 +14,8 @@ import type { Vec2 } from '../../core/types';
 import type { FxCell } from '../../content/fx';
 import { FX_CELLS } from '../../content/fx';
 import { TILE } from '../camera';
-import { ATLAS_CELL, cellFrame, fxAtlas } from './atlas';
+import { ATLAS_CELL, cellFrame, fxAtlas, celAtlasFrame, celReady, onFxAtlasChange } from './atlas';
+import { CEL_FRAMES, FX_CELS, celFrameIndex } from '../../content/fxCels';
 import { hexToNumber, roleColor } from './colors';
 import { PARTICLE_STRIDE, sampleParticles, sampleStrokes } from './simulate';
 import type { EmitterInstance } from '../view';
@@ -31,6 +32,8 @@ export class ParticleLayer {
   private readonly strokesAdd = new Graphics();
   private readonly cells = new Map<FxCell, Texture>();
   private readonly source: CanvasSource;
+  private readonly celTextures = new Map<string, Texture>();
+  private readonly unsubscribe: () => void;
   private pool: Particle[] = [];
   private scratch = new Float32Array(MAX_PARTICLES * PARTICLE_STRIDE);
 
@@ -41,6 +44,18 @@ export class ParticleLayer {
       resource: fxAtlas(),
       alphaMode: 'premultiply-alpha-on-upload',
     });
+    this.unsubscribe = onFxAtlasChange(() => this.source.update());
+    for (const cel of FX_CELS)
+      for (let i = 0; i < CEL_FRAMES; i++) {
+        const frame = celAtlasFrame(cel, i);
+        this.celTextures.set(
+          `${cel}/${i}`,
+          new Texture({
+            source: this.source,
+            frame: new Rectangle(frame.x, frame.y, frame.size, frame.size),
+          }),
+        );
+      }
     const atlas = new Texture({ source: this.source });
     for (const cell of FX_CELLS) {
       const frame = cellFrame(cell);
@@ -67,8 +82,10 @@ export class ParticleLayer {
   }
 
   destroy(): void {
+    this.unsubscribe();
     this.container.destroy({ children: true });
     for (const texture of this.cells.values()) texture.destroy(false);
+    for (const texture of this.celTextures.values()) texture.destroy(false);
     this.source.destroy();
   }
 
@@ -96,9 +113,12 @@ export class ParticleLayer {
           0,
           instance.arc,
         );
-        const texture = this.cells.get(def.cell);
+        const cel = def.cel && celReady(def.cel) ? def.cel : undefined;
+        const texture = cel
+          ? this.celTextures.get(`${cel}/${celFrameIndex(cel, instance.elapsed, def.duration)}`)
+          : this.cells.get(def.cell);
         if (!texture) continue;
-        const tint = hexToNumber(roleColor(def.color, instance.palette));
+        const tint = cel ? 0xffffff : hexToNumber(roleColor(def.color, instance.palette));
         const list = def.blend === 'add' ? additive : normal;
         for (let i = 0; i < n && used < MAX_PARTICLES; i++) {
           const at = i * PARTICLE_STRIDE;

@@ -17,6 +17,8 @@
  */
 
 import { z } from 'zod';
+import { FX_CELS, type FxCel } from './fxCels';
+import { BENDING_CEL_CUES } from './bendingCels';
 
 /* ------------------------------------------------------------------ */
 /* Shapes                                                              */
@@ -112,6 +114,8 @@ export const particleEmitterSchema = z.object({
   kind: z.literal('particles'),
   shape: z.enum(PARTICLE_SHAPES),
   cell: z.enum(FX_CELLS),
+  /** Optional coloured animation cels; `cell` remains the loading/error fallback. */
+  cel: z.enum(FX_CELS).optional(),
   /** How many, in total across the emitter's life. */
   count: z.number().int().min(1).max(120),
   /** The emitter's own life in ms; particles born late are cut off by it. An ambience loops for seconds. */
@@ -656,8 +660,38 @@ const head = (
     layer: 'over',
   });
 
-/** A thrown rock and a chip off it, in stone grey whatever the element. */
-const stone = (): ParticleEmitterDef => head('square', 2, [0.36, 0.56], 'stone', 'normal', 4);
+/** One authored animation, keeping the particle clock and bounded shared atlas. */
+const cel = (clip: FxCel, size: number, duration = 480, projectile = false): ParticleEmitterDef =>
+  particles({
+    cel: clip,
+    shape: projectile ? 'projectile' : 'burst',
+    cell:
+      clip === 'boulder' || clip === 'earth-rise'
+        ? 'square'
+        : clip === 'ice' || clip === 'metal'
+          ? 'shard'
+          : clip === 'wind' || clip === 'cyclone' || clip === 'cushion' || clip === 'healing'
+            ? 'ring'
+            : 'spark',
+    count: 1,
+    duration,
+    life: [duration, duration],
+    delay: [0, 0],
+    speed: [0, 0],
+    spread: 0,
+    gravity: 0,
+    drag: 0,
+    size: [size, size],
+    grow: 1,
+    spin: 0,
+    color: clip === 'boulder' || clip === 'earth-rise' || clip === 'metal' ? 'stone' : 'light',
+    fade: 'none',
+    blend: 'normal',
+    layer: 'over',
+  });
+
+/** Faceted, tumbling stone in the same colours as its ground eruption. */
+const stone = (): ParticleEmitterDef => cel('boulder', 0.85, 300, true);
 
 /** Nested flame silhouettes keep the flame's point and direction legible. */
 const fireball = (): StrokeEmitterDef[] =>
@@ -813,7 +847,7 @@ export const FX_FAMILIES: Readonly<Record<string, FxRecipeInput>> = {
 /* ------------------------------------------------------------------ */
 
 /** Recipes for keys that need more than their family gives them. */
-export const FX_RECIPES: Readonly<Record<string, FxRecipeInput>> = {
+const DRAWN_RECIPES: Readonly<Record<string, FxRecipeInput>> = {
   'fx.fire.jab': {
     cast: [glowBurst('light', 0.4), fireLicks(1, 220)],
     travel: {
@@ -1264,6 +1298,56 @@ export const FX_RECIPES: Readonly<Record<string, FxRecipeInput>> = {
     flash: 0,
   },
 };
+
+/* ------------------------------------------------------------------ */
+/* Hand-drawn technique coverage                                       */
+/* ------------------------------------------------------------------ */
+
+/** Keep directional lines and small debris; coloured cels carry the silhouette. */
+function supportingFx(defs: readonly EmitterDef[]): EmitterDef[] {
+  return defs.flatMap((def): EmitterDef[] => {
+    if (def.kind === 'strokes') return def.shape === 'slab' || def.shape === 'ribbon' ? [] : [def];
+    if (
+      def.cel ||
+      ['glow', 'disc', 'square', 'ring'].includes(def.cell) ||
+      def.shape === 'projectile'
+    )
+      return [];
+    return [{ ...def, count: Math.min(def.count, 6) }];
+  });
+}
+
+export const FX_RECIPES: Readonly<Record<string, FxRecipeInput>> = Object.fromEntries(
+  Object.entries(DRAWN_RECIPES).map(([key, recipe]) => {
+    const cues = BENDING_CEL_CUES[key];
+    if (!cues) return [key, recipe];
+    const phase = (
+      cue: readonly [FxCel, number] | undefined,
+      defs: readonly EmitterDef[] = [],
+      duration = 480,
+    ): EmitterDef[] => [...(cue ? [cel(cue[0], cue[1], duration)] : []), ...supportingFx(defs)];
+    return [
+      key,
+      {
+        ...recipe,
+        cast: phase(cues.cast, recipe.cast, 300),
+        impact: phase(cues.impact, recipe.impact),
+        area: phase(cues.area, recipe.area, 420),
+        ...(recipe.travel && cues.travel
+          ? {
+              travel: {
+                ...recipe.travel,
+                emitters: [
+                  cel(cues.travel[0], cues.travel[1], 300, true),
+                  ...supportingFx(recipe.travel.emitters),
+                ],
+              },
+            }
+          : {}),
+      },
+    ];
+  }),
+);
 
 /* ------------------------------------------------------------------ */
 /* Ambience                                                            */

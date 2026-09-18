@@ -11,10 +11,11 @@
 
 import type { FxCell } from '../../content/fx';
 import { FX_CELLS } from '../../content/fx';
+import { CEL_FRAMES, CEL_SIZE, FX_CELS, FX_CEL_SHEETS, type FxCel } from '../../content/fxCels';
 
-/** Cells per row and the pixel size of each; 3 x 3 cells of 96 px fits 9 shapes. */
-export const ATLAS_COLUMNS = 3;
-export const ATLAS_CELL = 96;
+/** Nine tinted shapes plus 48 coloured animation cels in one 1024px texture. */
+export const ATLAS_COLUMNS = 8;
+export const ATLAS_CELL = 128;
 export const ATLAS_SIZE = ATLAS_COLUMNS * ATLAS_CELL;
 
 const INK = '#1b1410';
@@ -28,12 +29,39 @@ export interface CellFrame {
 /** Where a cell sits in the atlas, in pixels. */
 export function cellFrame(cell: FxCell): CellFrame {
   const index = FX_CELLS.indexOf(cell);
+  return frameAt(index);
+}
+
+function frameAt(index: number): CellFrame {
   const column = index % ATLAS_COLUMNS;
   const row = Math.floor(index / ATLAS_COLUMNS);
   return { x: column * ATLAS_CELL, y: row * ATLAS_CELL, size: ATLAS_CELL };
 }
 
 let cached: HTMLCanvasElement | null = null;
+let loading: Promise<void> | null = null;
+const ready = new Set<FxCel>();
+const listeners = new Set<() => void>();
+
+export function celAtlasFrame(cel: FxCel, frame: number): CellFrame {
+  return frameAt(FX_CELLS.length + FX_CELS.indexOf(cel) * CEL_FRAMES + frame);
+}
+
+export const celReady = (cel: FxCel): boolean => ready.has(cel);
+
+/** GPU sources must be refreshed when a sheet finishes loading. */
+export function onFxAtlasChange(listener: () => void): () => void {
+  listeners.add(listener);
+  return () => {
+    listeners.delete(listener);
+  };
+}
+
+/** A missing file leaves the existing shape fallback available on both backends. */
+export function fxCelsReady(): Promise<void> {
+  fxAtlas();
+  return loading ?? Promise.resolve();
+}
 
 /** The atlas canvas, painted on first use. */
 export function fxAtlas(): HTMLCanvasElement {
@@ -52,6 +80,43 @@ export function fxAtlas(): HTMLCanvasElement {
     }
   }
   cached = canvas;
+  loading = Promise.all(
+    FX_CEL_SHEETS.map(
+      (sheet) =>
+        new Promise<void>((resolve) => {
+          const image = new Image();
+          image.onload = () => {
+            if (
+              ctx &&
+              image.naturalWidth === CEL_SIZE * CEL_FRAMES &&
+              image.naturalHeight === CEL_SIZE * sheet.clips.length
+            ) {
+              sheet.clips.forEach((clip, row) => {
+                for (let col = 0; col < CEL_FRAMES; col++) {
+                  const frame = celAtlasFrame(clip, col);
+                  ctx.drawImage(
+                    image,
+                    col * CEL_SIZE,
+                    row * CEL_SIZE,
+                    CEL_SIZE,
+                    CEL_SIZE,
+                    frame.x,
+                    frame.y,
+                    frame.size,
+                    frame.size,
+                  );
+                }
+                ready.add(clip);
+              });
+              for (const listener of listeners) listener();
+            }
+            resolve();
+          };
+          image.onerror = () => resolve();
+          image.src = `${import.meta.env.BASE_URL}${sheet.url}`;
+        }),
+    ),
+  ).then(() => undefined);
   return canvas;
 }
 
