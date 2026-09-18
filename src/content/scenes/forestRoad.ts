@@ -1,0 +1,69 @@
+import type { MapScene, SceneScenery, Vec2 } from '../../core/types';
+
+const root = 'art/maps/forest-scene/';
+/** Asset footprints are checked against the authoritative map rows in forestRoad.test.ts. */
+export const FOREST_WATER_CELLS: readonly Vec2[] = [
+  { x: 5, y: 5 },
+  { x: 6, y: 5 },
+  { x: 4, y: 6 },
+  { x: 5, y: 6 },
+  { x: 6, y: 6 },
+  { x: 7, y: 6 },
+  { x: 5, y: 7 },
+  { x: 6, y: 7 },
+];
+export const FOREST_RUBBLE_CELLS: readonly Vec2[] = [
+  { x: 7, y: 3 },
+  { x: 8, y: 9 },
+];
+export const FOREST_PINE_CELLS: readonly Vec2[] = [
+  { x: 0, y: 0 },
+  { x: 1, y: 0 },
+  { x: 8, y: 0 },
+  { x: 18, y: 0 },
+  { x: 19, y: 0 },
+  { x: 0, y: 1 },
+  { x: 14, y: 1 },
+  { x: 19, y: 1 },
+  { x: 0, y: 10 },
+  { x: 14, y: 10 },
+  { x: 19, y: 10 },
+  { x: 0, y: 11 },
+  { x: 1, y: 11 },
+  { x: 18, y: 11 },
+  { x: 19, y: 11 },
+];
+
+function pine({ x, y }: Vec2): SceneScenery {
+  const height = 224,
+    width = (height * 512) / 1149;
+  return {
+    id: `forest-pine-${x}-${y}`,
+    url: `${root}pine.webp`,
+    x: 768 + (x - y) * 64 - width * 0.51,
+    y: (x + y + 1) * 32 - height * 0.99,
+    width,
+    height,
+    footprint: [{ x, y }],
+    depth: { x, y },
+    fadeWhenOccluding: true,
+  };
+}
+
+/** Already projected ground; gameplay opts the map into the matching projection. */
+export const FOREST_ROAD_SCENE: MapScene = {
+  paintedWater: true,
+  ground: [
+    { url: `${root}ground-west.webp`, x: -128, y: -192, width: 1152, height: 1280 },
+    { url: `${root}ground-east.webp`, x: 1024, y: -192, width: 1152, height: 1280 },
+    { url: `${root}water.webp`, x: 576, y: 320, width: 320, height: 160 },
+    ...FOREST_RUBBLE_CELLS.map(({ x, y }) => ({
+      url: `${root}rubble.webp`,
+      x: 768 + (x - y) * 64 - 64,
+      y: (x + y + 1) * 32 - 64 / 3,
+      width: 128,
+      height: 128 / 3,
+    })),
+  ],
+  scenery: FOREST_PINE_CELLS.map(pine),
+};
