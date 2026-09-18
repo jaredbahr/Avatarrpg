@@ -199,12 +199,14 @@ export function enterCost(ctx: MoveContext, p: Vec2): number | null {
   return cost;
 }
 
-/** A diagonal step may not squeeze between two blocked orthogonal neighbours. */
+/** A diagonal step may not squeeze between impassable orthogonal neighbours. */
 function diagonalAllowed(ctx: MoveContext, from: Vec2, to: Vec2): boolean {
   if (from.x === to.x || from.y === to.y) return true;
-  const a = tileAt(ctx.grid, { x: to.x, y: from.y });
-  const b = tileAt(ctx.grid, { x: from.x, y: to.y });
-  return !!a && !a.blocked && !!b && !b.blocked;
+  // Check the mover's whole footprint, including units standing in the gap.
+  return (
+    enterCost(ctx, { x: to.x, y: from.y }) !== null &&
+    enterCost(ctx, { x: from.x, y: to.y }) !== null
+  );
 }
 
 export interface ReachableCell {
