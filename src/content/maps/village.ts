@@ -93,7 +93,7 @@ export const BA_DAN_VILLAGE: MapDef = {
       id: 'guard_dorin',
       name: 'Gate Guard Dorin',
       pos: { x: 20, y: 8 },
-      sprite: 'npc.guard',
+      sprite: 'npc.dorin',
       node: 'dorin_directions',
       routes: [{ when: { kind: 'flag', key: 'act1_complete', op: 'set' }, node: 'dorin_home' }],
     },

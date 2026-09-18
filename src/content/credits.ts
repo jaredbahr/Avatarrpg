@@ -120,6 +120,15 @@ export const CREDITS: readonly CreditEntry[] = [
     note: 'Original quarry machine artwork, generated and packed into nine transparent poses and a UI portrait. Prompts and processing notes: docs/art/grumbler.md. Output terms: https://openai.com/policies/row-terms-of-use/. No exclusive copyright in generated output is claimed.',
   },
   {
+    what: 'The village NPC sprites',
+    work: 'Mira, Gao, Pella and Dorin idle illustrations',
+    authors: 'This project, generated with OpenAI image generation',
+    licence: 'own work',
+    source: '',
+    covers: ['art/npcs'],
+    note: 'Original full-body illustrations based on the approved dialogue portraits. Prompts, packing and shared archetype limitations: docs/art/npc-idles.md. Output terms: https://openai.com/policies/row-terms-of-use/. No exclusive copyright in generated output is claimed.',
+  },
+  {
     what: 'The riverside painting',
     work: 'Ba Dan riverside',
     authors: 'This project, with OpenAI image generation',
