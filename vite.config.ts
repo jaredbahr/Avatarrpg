@@ -56,6 +56,17 @@ export default defineConfig({
     port: 4173,
   },
   plugins: [
+    {
+      // Input, accessibility and HTML UI belong to the app's native DOM.
+      // These optional Pixi registration entry points are never used. Keep
+      // graphics/text/filter/particle/texture initialization intact (ADR 0001).
+      name: 'omit-unused-pixi-systems',
+      transform(code, id) {
+        if (/[/\\]pixi\.js[/\\]lib[/\\](accessibility|events|dom)[/\\]init\.mjs$/.test(id)) {
+          return { code, map: null, moduleSideEffects: false };
+        }
+      },
+    },
     VitePWA({
       registerType: 'autoUpdate',
       injectRegister: 'auto',
