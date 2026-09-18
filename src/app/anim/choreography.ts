@@ -13,7 +13,7 @@
  */
 
 import type { ContentIndex, GameEvent, Unit, Vec2 } from '../../core/types';
-import { fxPalette, resolveFx } from '../../content/fx';
+import { fxPalette, resolveFx, WATERSKIN_DRAW } from '../../content/fx';
 import type { EmitterDef, FxRecipe } from '../../content/fx';
 import { hashSeed } from '../../render/fx/rng';
 import { particleSpan } from '../../render/fx/simulate';
@@ -103,6 +103,7 @@ interface PendingHit {
   readonly hitStop: number;
   readonly flash: number;
   readonly casterId: string;
+  readonly pushIds?: readonly string[];
 }
 
 const centre = (p: Vec2): Vec2 => ({ x: p.x + 0.5, y: p.y + 0.5 });
@@ -308,9 +309,11 @@ export function choreograph(input: ChoreographyInput): Choreography {
         const melee = ability.range <= 1 && ability.targeting.shape === 'unit';
         const screenDir = screenDirection(dir, input.projection ?? 'orthographic');
         const attached = ['fire_jab', 'water_whip', 'air_blast'].includes(ability.id);
+        const rock = ability.id === 'rock_throw';
+        const strike = ability.id === 'strike';
         const facing = self
           ? undefined
-          : attached
+          : attached || rock || strike
             ? screenDir.x < 0
               ? -1
               : 1
@@ -356,7 +359,7 @@ export function choreograph(input: ChoreographyInput): Choreography {
                 offset,
               }
             : undefined;
-        const torso = attached ? snapshot(victim, 'torso') : undefined;
+        const torso = attached || rock || strike ? snapshot(victim, 'torso') : undefined;
         const gatherT = motion.gatherEase(0.4);
         const gather = attached
           ? snapshot(
@@ -414,18 +417,56 @@ export function choreograph(input: ChoreographyInput): Choreography {
         // leave together once the striking pose has begun its extension.
         const launchAt = releaseAt + release * motion.launch;
         const launchT = motion.releaseEase(motion.launch);
-        const hand = attached
-          ? snapshot(
-              casterUnit,
-              'cast-release',
-              {
-                x: back.x + (forward.x - back.x) * launchT,
-                y: back.y + (forward.y - back.y) * launchT,
-              },
-              motion.compression + (motion.extension - motion.compression) * launchT,
-              facing ?? (screenDir.x < 0 ? -1 : 1),
-            )
-          : undefined;
+        const hand =
+          attached || rock
+            ? snapshot(
+                casterUnit,
+                'cast-release',
+                {
+                  x: back.x + (forward.x - back.x) * launchT,
+                  y: back.y + (forward.y - back.y) * launchT,
+                },
+                motion.compression + (motion.extension - motion.compression) * launchT,
+                facing ?? (screenDir.x < 0 ? -1 : 1),
+              )
+            : undefined;
+        if (ability.id === 'water_whip' && casterUnit?.sprite === 'unit.water.sura' && gather) {
+          const source = { ...gather, socket: 'waterskin' as const };
+          emit(
+            [{ ...WATERSKIN_DRAW, duration: gatherSpan, life: [gatherSpan, gatherSpan] }],
+            cursor + windUp * 0.4,
+            caster,
+            caster,
+            palette,
+            eventIndex,
+            11,
+            0,
+            { from: source, to: gather },
+          );
+        }
+        if (rock && hand) {
+          const liftStart = cursor + windUp * 0.4;
+          const lift = launchAt - liftStart;
+          const stones =
+            recipe.travel?.emitters.filter(
+              (def) => def.kind === 'particles' && def.cel === 'boulder',
+            ) ?? [];
+          emit(
+            stones.map((def) =>
+              def.kind === 'particles'
+                ? { ...def, duration: lift, life: [lift, lift], delay: [0, 0] }
+                : def,
+            ),
+            liftStart,
+            caster,
+            caster,
+            palette,
+            eventIndex,
+            12,
+            0,
+            { from: snapshot(casterUnit, 'ground'), to: hand },
+          );
+        }
         cue(ability.fx, launchAt, 1, eventIndex);
 
         let impactAt = releaseAt + release * 0.5;
@@ -496,17 +537,26 @@ export function choreograph(input: ChoreographyInput): Choreography {
           frame: melee ? 0 : 2,
         });
 
-        emit(
-          recipe.impact,
-          impactAt + hitStop * 0.5,
-          target,
-          { x: target.x + dir.x, y: target.y + dir.y },
-          palette,
-          eventIndex,
-          3,
-          0,
-          torso ? { from: torso, translateTogether: true } : undefined,
-        );
+        // Contact fragments belong to the body; dust, cracks and rising earth
+        // still mark the struck ground. Do not lift the whole material recipe.
+        const bodily = (def: EmitterDef) =>
+          (!rock && !strike) ||
+          (def.kind === 'particles' &&
+            (rock ? def.cell === 'shard' : def.cell === 'spark' || def.cell === 'ring'));
+        for (const contact of [true, false]) {
+          const defs = recipe.impact.filter((def) => bodily(def) === contact);
+          emit(
+            defs,
+            impactAt + hitStop * 0.5,
+            target,
+            { x: target.x + dir.x, y: target.y + dir.y },
+            palette,
+            eventIndex,
+            contact ? 3 : 13,
+            0,
+            contact && torso ? { from: torso, translateTogether: true } : undefined,
+          );
+        }
         if (recipe.area.length > 0) {
           event.tiles.slice(0, 24).forEach((tile, i) => {
             const at =
@@ -532,7 +582,27 @@ export function choreograph(input: ChoreographyInput): Choreography {
           });
         }
 
-        pending = { at: impactAt, hitStop, flash: recipe.flash, casterId: event.unitId };
+        const pushIds: string[] = [];
+        if (ability.id === 'air_blast') {
+          for (const next of events.slice(eventIndex + 1)) {
+            if (
+              next.type === 'unitMoved' ||
+              next.type === 'partyWalked' ||
+              next.type === 'abilityUsed' ||
+              next.type === 'turnEnded' ||
+              next.type === 'turnStarted'
+            )
+              break;
+            if (next.type === 'unitPushed') pushIds.push(next.unitId);
+          }
+        }
+        pending = {
+          at: impactAt,
+          hitStop,
+          flash: recipe.flash,
+          casterId: event.unitId,
+          ...(pushIds.length ? { pushIds } : {}),
+        };
         cursor = Math.max(recoverAt + recover, impactAt + hitStop) + TIMING.gap * rate;
         break;
       }
@@ -579,26 +649,28 @@ export function choreograph(input: ChoreographyInput): Choreography {
                 frame: 0,
               },
             );
-          pose(
-            event.unitId,
-            'hit',
-            recoilAt,
-            TIMING.recoilOut * rate,
-            { x: 0, y: 0 },
-            out,
-            easeOutQuad,
-            { frame: 0 },
-          );
-          pose(
-            event.unitId,
-            'hit',
-            recoilAt + TIMING.recoilOut * rate,
-            TIMING.recoilBack * rate,
-            out,
-            { x: 0, y: 0 },
-            easeInOutSine,
-            { frame: 0 },
-          );
+          if (!pending?.pushIds?.includes(event.unitId)) {
+            pose(
+              event.unitId,
+              'hit',
+              recoilAt,
+              TIMING.recoilOut * rate,
+              { x: 0, y: 0 },
+              out,
+              easeOutQuad,
+              { frame: 0 },
+            );
+            pose(
+              event.unitId,
+              'hit',
+              recoilAt + TIMING.recoilOut * rate,
+              TIMING.recoilBack * rate,
+              out,
+              { x: 0, y: 0 },
+              easeInOutSine,
+              { frame: 0 },
+            );
+          }
           floater(
             pos,
             event.crit ? `${event.amount}!` : String(event.amount),
@@ -661,20 +733,23 @@ export function choreograph(input: ChoreographyInput): Choreography {
         const from = positions.get(event.unitId);
         if (from) {
           const duration = TIMING.step * 2 * rate;
+          const start = pending?.pushIds?.includes(event.unitId)
+            ? pending.at + pending.hitStop
+            : cursor;
           tracks.push({
             kind: 'move',
             unitId: event.unitId,
             curve: smoothPath(from, [event.to], 0),
             gait: 'slide',
             ease: easeOutQuad,
-            start: cursor,
+            start,
             duration,
           });
-          pose(event.unitId, 'hit', cursor, duration, { x: 0, y: 0 }, { x: 0, y: 0 }, easeOutQuad, {
+          pose(event.unitId, 'hit', start, duration, { x: 0, y: 0 }, { x: 0, y: 0 }, easeOutQuad, {
             frame: 0,
           });
           positions.set(event.unitId, event.to);
-          cursor += duration;
+          cursor = Math.max(cursor, start + duration);
         }
         break;
       }

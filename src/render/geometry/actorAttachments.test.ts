@@ -104,6 +104,26 @@ describe('actor attachment geometry', () => {
     }
   });
 
+  it('keeps the ground origin at the feet and reads Sura gear independently of her palm', () => {
+    const source = { ...actor, sprite: 'unit.water.sura', socket: 'waterskin' as const };
+    expect(socketOffset(source, frame)).toEqual({
+      x: (53 - 64) / 128,
+      y: (100 - 0.85 * 192) / 128,
+    });
+    expect(socketOffset({ ...source, socket: 'ground' }, frame)).toEqual({ x: 0, y: 0 });
+    const joints = solve(poseFor('cast', 0), BUILDS.lean);
+    const growth = figureScale((frame.anchor.y * frame.frame.h) / frame.pixelsPerTile - FOOT);
+    const fallback = socketOffset(source, { ...frame, placeholder: true });
+    expect(fallback.x).toBeCloseTo(
+      (joints.hip[0] - joints.across[0] * BUILDS.lean.hip * 1.1 - 0.5) * growth,
+      9,
+    );
+    expect(fallback.y).toBeCloseTo(
+      (joints.hip[1] - joints.across[1] * BUILDS.lean.hip * 1.1 + 0.02 - FOOT) * growth,
+      9,
+    );
+  });
+
   it('raises an oblique socket vertically without an unintended horizontal shift', () => {
     const low = projectGround(attachmentPoint(actor, 'oblique', 0, frame), 'oblique');
     const high = projectGround(attachmentPoint(actor, 'oblique', 3, frame), 'oblique');

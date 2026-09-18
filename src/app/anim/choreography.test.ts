@@ -37,6 +37,8 @@ const content = {
   abilities: new Map<string, Ability>([
     ['fire_jab', fireJab],
     ['strike', strike],
+    ['rock_throw', { ...waterWhip, id: 'rock_throw', fx: 'fx.earth.rock', range: 6 }],
+    ['earth_wall', { ...waterWhip, id: 'earth_wall', fx: 'fx.earth.wall', range: 6 }],
     ['water_whip', waterWhip],
     ['air_blast', { ...waterWhip, id: 'air_blast', fx: 'fx.air.blast', range: 6 }],
   ]),
@@ -162,6 +164,117 @@ describe('directed Fire Jab attachments', () => {
     expect(impact!.start).toBeLessThan(recovery!.start);
   });
 
+  it('lifts a stone from ground to release while separating body shards from ground debris', () => {
+    const tracks = play(
+      [cast(5, 'rock_throw')],
+      [{ ...caster, sprite: 'unit.earth.bo' }, boss],
+    ).tracks;
+    const effects = tracks.filter((t): t is EmitterTrack => t.kind === 'emitter');
+    const lift = effects.find((t) => t.attachments?.from?.socket === 'ground');
+    const flight = effects.find((t) => t.attachments?.from?.socket === 'cast-release');
+    expect(lift?.attachments?.to).toEqual(flight?.attachments?.from);
+    expect(lift?.def.kind === 'particles' && lift.start + lift.def.life[1]).toBeCloseTo(
+      flight!.start,
+      8,
+    );
+    const shards = effects.filter((t) => t.attachments?.from?.socket === 'torso');
+    expect(shards.length).toBeGreaterThan(0);
+    expect(shards.every((t) => t.def.kind === 'particles' && t.def.cell === 'shard')).toBe(true);
+    expect(
+      effects.some((t) => !t.attachments && t.def.kind === 'strokes' && t.def.shape === 'crack'),
+    ).toBe(true);
+    expect(
+      effects.some(
+        (t) => !t.attachments && t.def.kind === 'particles' && t.def.cel === 'earth-rise',
+      ),
+    ).toBe(true);
+  });
+
+  it('places Strike sparks at the body while dust stays grounded', () => {
+    const effects = play(
+      [cast(5, 'strike')],
+      [{ ...caster, sprite: 'unit.non.riko' }, boss],
+    ).tracks.filter((t): t is EmitterTrack => t.kind === 'emitter');
+    expect(
+      effects.some(
+        (t) =>
+          t.attachments?.from?.socket === 'torso' &&
+          t.def.kind === 'particles' &&
+          t.def.cell === 'spark',
+      ),
+    ).toBe(true);
+    expect(
+      effects.some((t) => !t.attachments && t.def.kind === 'particles' && t.def.cell === 'puff'),
+    ).toBe(true);
+  });
+
+  it('draws from Sura gear only and ends that source before release', () => {
+    for (const sprite of ['unit.water.sura', 'unit.water.nilak']) {
+      const tracks = play([cast(5, 'water_whip')], [{ ...caster, sprite }, boss]).tracks;
+      const source = tracks.find(
+        (t): t is EmitterTrack =>
+          t.kind === 'emitter' && t.attachments?.from?.socket === 'waterskin',
+      );
+      if (sprite.endsWith('sura')) {
+        expect(source?.attachments?.to?.socket).toBe('cast-gather');
+        const release = tracks.find(
+          (t) => t.kind === 'pose' && t.unitId === caster.id && t.frame === 1,
+        )!;
+        expect(
+          source?.def.kind === 'particles' && source.start + source.def.life[1],
+        ).toBeLessThanOrEqual(release.start);
+      } else expect(source).toBeUndefined();
+    }
+  });
+
+  it('starts an actual Air Blast shove after contact hold with no overlapping recoil', () => {
+    const damage: GameEvent = {
+      type: 'damaged',
+      unitId: boss.id,
+      amount: 4,
+      crit: false,
+      damageType: 'air',
+      sourceId: caster.id,
+    };
+    const pushed = play([
+      cast(5, 'air_blast'),
+      damage,
+      { type: 'unitPushed', unitId: boss.id, to: { x: 7, y: 3 } },
+    ]);
+    const slide = pushed.tracks.find((t) => t.kind === 'move' && t.unitId === boss.id)!;
+    expect(slide.start).toBeCloseTo(1000 + 536.8, 8);
+    expect(slide.duration).toBe(220);
+    const poses = pushed.tracks.filter(
+      (t): t is PoseTrack => t.kind === 'pose' && t.unitId === boss.id,
+    );
+    expect(poses).toHaveLength(2);
+    expect(poses.every((t) => t.offset.from.x === 0 && t.offset.to.x === 0)).toBe(true);
+    const blocked = play([cast(5, 'air_blast'), damage]);
+    expect(blocked.tracks.filter((t) => t.kind === 'pose' && t.unitId === boss.id)).toHaveLength(3);
+  });
+
+  it.each([1, 0.02])(
+    'keeps clipped Air Blast destinations and forced timing at rate %s',
+    (rate) => {
+      const events: GameEvent[] = [
+        cast(5, 'air_blast'),
+        { type: 'unitPushed', unitId: boss.id, to: { x: 6, y: 3 } },
+      ];
+      const result = play(events, [caster, boss], rate);
+      const slide = result.tracks.find((t) => t.kind === 'move');
+      expect(slide?.start).toBeCloseTo(1000 + 536.8 * rate, 8);
+      expect(slide?.duration).toBeCloseTo(220 * rate, 8);
+      expect(result.cursor).toBeGreaterThanOrEqual(slide!.start + slide!.duration);
+      const next = play(
+        [...events, cast(5, 'strike'), { type: 'unitPushed', unitId: boss.id, to: { x: 7, y: 3 } }],
+        [caster, boss],
+        rate,
+      );
+      const moves = next.tracks.filter((t) => t.kind === 'move');
+      expect(moves[1]!.start).toBeGreaterThan(moves[0]!.start + moves[0]!.duration);
+    },
+  );
+
   it('chooses the living recipient rather than a corpse sharing its tile', () => {
     const corpse = {
       ...unit('corpse', 5, 3),
@@ -216,7 +329,7 @@ describe('directed Fire Jab attachments', () => {
   });
 
   it('does not attach other techniques or revive suppressed reduced-motion emitters', () => {
-    for (const ability of ['strike']) {
+    for (const ability of ['earth_wall']) {
       const effects = play([cast(5, ability)]).tracks.filter(
         (t): t is EmitterTrack => t.kind === 'emitter',
       );

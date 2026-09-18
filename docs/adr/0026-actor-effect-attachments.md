@@ -93,3 +93,29 @@ returning stroke was still connected to the launch point. Keep the release pose
 through the returning whip; impact timing stays unchanged and recovery follows
 return. This is presentation-only and extends the serialized action animation,
 not AP, initiative, damage, cooldowns or saved state.
+
+## Ground lift, bodily contact and carried water
+
+Rock Throw retains its ground eruption, dust and cracks, but its boulder now
+rises from the actor's foot anchor to the measured release palm before the
+existing flight. Bo and Lin Mei use their own cast measurements. Flight ends
+at the recipient torso; impact shards attach there while terrain debris stays
+on the original ground. Strike attaches sparks/contact ring to the torso while
+keeping dust on the floor; the existing melee release pose and impact clock stay.
+
+Sura alone has an authored waterskin. A brief existing-particle draw connects its
+cast/0 upper attachment (approximately53,100 in128x192 art) to her gather palm.
+The procedural Sura also has a waterskin; fallback origin uses that exact hip,
+across-axis and neck geometry. Nilak has no visible pouch, so he receives no
+invented gear socket. This is presentation, not a water-consumption rule. Source
+opening is indistinct and requires moving review; flexible water material and
+Nilak's available source remain separate gaps.
+
+Exact resolved Air Blast at4tiles: launch306.8ms, contact506.8ms, hit-stop ends
+536.8ms (named recipe30ms, not family20ms). Previously damage/recovery scheduling
+postponed its shove until908.8ms,402ms after contact. Actual pushed victims now
+start their same220ms forced slide at536.8ms. Keep contact hold, suppress their
+ordinary recoil-out/back so it cannot override the slide, and retain the maximum
+of caster recovery/action cursor and slide end. No-push hits still recoil; other
+forced movement is unchanged. The reducer's destination/collisions, AP and sound
+contact scheduling remain authoritative. Reduced motion scales both clocks.

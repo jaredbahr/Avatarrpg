@@ -64,7 +64,7 @@ export interface ActorAttachment {
   readonly pos: Vec2;
   readonly sprite: string;
   readonly size: 1 | 2;
-  readonly socket: 'cast-gather' | 'cast-release' | 'torso';
+  readonly socket: 'cast-gather' | 'cast-release' | 'waterskin' | 'ground' | 'torso';
   readonly facing: 1 | -1;
   readonly scale: number;
   readonly offset: Vec2;

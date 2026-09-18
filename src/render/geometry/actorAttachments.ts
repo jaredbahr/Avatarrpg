@@ -16,6 +16,14 @@ const presented = new WeakMap<ActorAttachment, { projection: Projection; point: 
 
 /** Measured palm centres in the existing 128x192 cast cels, facing right. */
 const CAST_HANDS: Readonly<Record<string, readonly [Vec2, Vec2]>> = {
+  'unit.earth.bo': [
+    { x: 86, y: 86 },
+    { x: 105, y: 78 },
+  ],
+  'unit.earth.linmei': [
+    { x: 40, y: 86 },
+    { x: 100, y: 83 },
+  ],
   'unit.water.nilak': [
     { x: 95, y: 77 },
     { x: 105, y: 77 },
@@ -44,9 +52,11 @@ const CAST_HANDS: Readonly<Record<string, readonly [Vec2, Vec2]>> = {
 
 /** Upright offset from the foot anchor, in unscaled tile units. */
 export function socketOffset(actor: ActorAttachment, frame?: FrameGeometry): Vec2 {
+  if (actor.socket === 'ground') return { x: 0, y: 0 };
   const hand = actor.socket !== 'torso';
   const index = actor.socket === 'cast-release' ? 1 : 0;
-  const point = CAST_HANDS[actor.sprite]?.[index];
+  const point =
+    actor.socket === 'waterskin' ? { x: 53, y: 100 } : CAST_HANDS[actor.sprite]?.[index];
   if (hand && point && frame && !frame.placeholder) {
     return {
       x: (point.x - frame.anchor.x * frame.frame.w) / frame.pixelsPerTile,
@@ -56,17 +66,25 @@ export function socketOffset(actor: ActorAttachment, frame?: FrameGeometry): Vec
   if (hand) {
     // Painter fallback uses its actual rig, including the baker's growth.
     const buildName =
-      actor.sprite === 'unit.fire.tenzo'
+      actor.sprite === 'unit.fire.tenzo' || actor.sprite === 'unit.earth.bo'
         ? 'broad'
         : actor.sprite === 'unit.water.nilak' || actor.sprite === 'unit.air.jinu'
           ? 'robed'
           : 'lean';
     const build = BUILDS[buildName];
     const joints = solve(poseFor('cast', index), build);
-    const palm = index === 0 ? joints.backArm[2] : joints.frontArm[2];
+    const palm =
+      actor.socket === 'waterskin'
+        ? [
+            joints.hip[0] - joints.across[0] * build.hip * 1.1,
+            joints.hip[1] - joints.across[1] * build.hip * 1.1 + 0.02,
+          ]
+        : index === 0
+          ? joints.backArm[2]
+          : joints.frontArm[2];
     const headroom = frame ? (frame.anchor.y * frame.frame.h) / frame.pixelsPerTile - FOOT : 0;
     const growth = build.scale * figureScale(headroom);
-    return { x: (palm[0] - 0.5) * growth, y: (palm[1] - FOOT) * growth };
+    return { x: ((palm[0] ?? 0.5) - 0.5) * growth, y: ((palm[1] ?? FOOT) - FOOT) * growth };
   }
   // Torso is relative to the whole actor frame, including a two-cell boss;
   // selecting either occupied cell therefore lands on the same body.

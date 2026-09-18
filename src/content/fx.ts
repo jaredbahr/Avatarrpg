@@ -690,6 +690,27 @@ const cel = (clip: FxCel, size: number, duration = 480, projectile = false): Par
     layer: 'over',
   });
 
+/** A short carried-water draw; choreography opts in only where gear is visible. */
+export const WATERSKIN_DRAW: ParticleEmitterDef = particles({
+  shape: 'projectile',
+  cell: 'drop',
+  count: 3,
+  duration: 156,
+  life: [156, 156],
+  delay: [0, 0],
+  speed: [0, 0],
+  spread: 0,
+  gravity: 0,
+  drag: 0,
+  size: [0.035, 0.055],
+  grow: 1,
+  spin: 0,
+  color: 'light',
+  fade: 'none',
+  blend: 'normal',
+  layer: 'over',
+});
+
 /** Faceted, tumbling stone in the same colours as its ground eruption. */
 const stone = (): ParticleEmitterDef => cel('boulder', 0.85, 300, true);
 
