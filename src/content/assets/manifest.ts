@@ -72,14 +72,14 @@ const painter = (painterName: string, palette: string, variant?: string): AssetE
     ? { kind: 'painter', painter: painterName, palette, variant }
     : { kind: 'painter', painter: painterName, palette };
 
-/** The six-pose contract shared by the first generated hero sheets. */
+/** Original combat poses plus idle and walking cels in every direction. */
 const heroSheet = (key: string, palette: string): SheetEntry => {
   const name = key.slice(key.lastIndexOf('.') + 1);
   const frames = (clip: ClipName, count: number): string[] =>
     Array.from({ length: count }, (_, index) => `${key}/${clip}/${index}`);
   return {
     kind: 'sheet',
-    atlas: `art/units/locomotion-${name}.json`,
+    atlas: `art/units/walking-${name}.json`,
     pixelsPerTile: 128,
     footprint: { w: 1, h: 1 },
     anchor: { x: 0.5, y: 0.85 },
@@ -87,6 +87,7 @@ const heroSheet = (key: string, palette: string): SheetEntry => {
     palette,
     clips: {
       idle: { frames: frames('idle', 2), fps: 1, loop: true },
+      walk: { frames: frames('walk', 4), fps: 4, loop: true },
       cast: { frames: frames('cast', 3), fps: 8, loop: false },
       ko: { frames: frames('ko', 1), fps: 1, loop: false },
       idleNorth: { frames: frames('idleNorth', 1), fps: 1, loop: true },
@@ -156,7 +157,38 @@ export const ASSETS: Readonly<Record<string, AssetEntry>> = {
   'unit.enemy.merc': painter('mercenary', 'enemy', 'blade'),
   'unit.enemy.crossbow': painter('mercenary', 'enemy', 'crossbow'),
   'unit.enemy.sergeant': painter('mercenary', 'enemy', 'sergeant'),
-  'unit.enemy.grumbler': painter('driller', 'enemy'),
+  'unit.enemy.grumbler': {
+    kind: 'sheet',
+    atlas: 'art/units/grumbler.json',
+    pixelsPerTile: 128,
+    footprint: { w: 2, h: 1 },
+    anchor: { x: 0.5, y: 0.85 },
+    facing: 'mirror',
+    palette: 'enemy',
+    clips: {
+      idle: {
+        frames: ['unit.enemy.grumbler/idle/0', 'unit.enemy.grumbler/idle/1'],
+        fps: 1,
+        loop: true,
+      },
+      walk: {
+        frames: ['unit.enemy.grumbler/walk/0', 'unit.enemy.grumbler/walk/1'],
+        fps: 4,
+        loop: true,
+      },
+      cast: {
+        frames: [
+          'unit.enemy.grumbler/cast/0',
+          'unit.enemy.grumbler/cast/1',
+          'unit.enemy.grumbler/cast/2',
+        ],
+        fps: 8,
+        loop: false,
+      },
+      hit: { frames: ['unit.enemy.grumbler/hit/0'], fps: 1, loop: false },
+      ko: { frames: ['unit.enemy.grumbler/ko/0'], fps: 1, loop: false },
+    },
+  },
   'unit.ally.ruon': painter('mercenary', 'neutral', 'sergeant'),
 
   /* --------------------------------------------------------------- NPCs */
@@ -178,6 +210,11 @@ export const ASSETS: Readonly<Record<string, AssetEntry>> = {
 
   /* ---------------------------------------------------------- Portraits */
   'portrait.enemy.thug': { kind: 'image', url: 'art/portraits/enemy.thug.png', palette: 'enemy' },
+  'portrait.enemy.grumbler': {
+    kind: 'image',
+    url: 'art/portraits/enemy.grumbler.png',
+    palette: 'enemy',
+  },
   'portrait.kaya': { kind: 'image', url: 'art/portraits/kaya.png', palette: 'fire' },
   'portrait.tenzo': { kind: 'image', url: 'art/portraits/tenzo.png', palette: 'fire' },
   'portrait.nilak': { kind: 'image', url: 'art/portraits/nilak.png', palette: 'water' },

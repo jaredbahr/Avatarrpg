@@ -13,8 +13,10 @@ import { parseAtlasJson } from '../../src/render/sheets/atlasJson';
 export function packDirectional(name: string, input: string, village = false): void {
   const originalStem = village ? `riverside-${name}` : name;
   const outputStem = village ? `riverside-locomotion-${name}` : `locomotion-${name}`;
-  const original = readPng(`public/art/units/${originalStem}.png`);
-  const atlas = parseAtlasJson(readFileSync(`public/art/units/${originalStem}.json`, 'utf8'));
+  const original = readPng(`assets/reference/character-poses/${originalStem}.png`);
+  const atlas = parseAtlasJson(
+    readFileSync(`assets/reference/character-poses/${originalStem}.json`, 'utf8'),
+  );
   const idle = [...atlas.frames.entries()].find(([id]) => id.endsWith('/idle/0'));
   if (!idle) throw new Error('The existing sheet must have an idle pose.');
   const [idleId, rect] = idle;
@@ -58,9 +60,10 @@ export function packDirectional(name: string, input: string, village = false): v
       for (let x = 0; x < 128; x++) setPixel(output, x0 + x, y0 + y, pixelAt(frame, x, y));
     rectangles[id] = { frame: { x: x0, y: y0, w: 128, h: 192 } };
   }
-  writePng(`public/art/units/${outputStem}.png`, output);
+  const outputDir = village ? 'public/art/units' : 'assets/reference/character-locomotion';
+  writePng(`${outputDir}/${outputStem}.png`, output);
   writeFileSync(
-    `public/art/units/${outputStem}.json`,
+    `${outputDir}/${outputStem}.json`,
     JSON.stringify(
       {
         frames: rectangles,
