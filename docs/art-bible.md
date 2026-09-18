@@ -110,6 +110,9 @@ mirroring and the health bar are exercised by them before a real sheet lands.
 Every asset passes all of these before it is committed.
 
 - [ ] Same face, hair, build and costume across every pose of the character
+- [ ] Hands have four fingers and one thumb; any hidden digit has a believable occlusion, never an unexplained missing or fused finger
+- [ ] Trace each hand to its own shoulder: thumb side, palm/back view and wrist rotation agree with that anatomical arm
+- [ ] Fingers bend at their joints, wrists join the forearms naturally, and props meet the intended grip; check enlarged art as well as its game-size crop
 - [ ] Outline weight uniform and brown, no black, no tapering
 - [ ] Two tones per material plus rim light; no gradients, no texture
 - [ ] Colours match the palette table (spot-check the base and shadow of each material)

@@ -26,6 +26,22 @@ complete copy-and-paste. This is the reference copy, with the reasoning.
   painting or a photograph pasted into a cartoon. Grain and depth of field are
   the two most common ways a candidate fails the checklist.
 
+## Hand anatomy
+
+Apply this alongside the style paragraph whenever a hand is visible:
+
+> Each hand has four fingers and one opposable thumb, with natural joints,
+> graduated finger lengths and a continuous wrist-to-forearm connection. Trace
+> the hand to its anatomical arm; the thumb side must agree with whether the
+> palm or the back of the hand faces the viewer. Folded or occluded fingers are
+> allowed when the pose explains them. Preserve the character's gesture and
+> costume, and do not use an effect or prop to hide malformed anatomy.
+
+Review enlarged source art and the delivered image. A clean five-digit
+silhouette does not by itself establish correct handedness. Follow the
+shoulder, elbow and wrist before checking the thumb, and repeat this check
+for each view and animation frame.
+
 ## The frame, for portraits
 
 > Bust portrait, head and shoulders, three-quarter view turned slightly toward
