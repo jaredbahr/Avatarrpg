@@ -161,12 +161,13 @@ export const ASSETS: Readonly<Record<string, AssetEntry>> = {
   'unit.ally.ruon': painter('mercenary', 'neutral', 'sergeant'),
 
   /* --------------------------------------------------------------- NPCs */
-  'npc.elder': painter('villager', 'neutral', 'elder'),
-  'npc.shopkeeper': painter('villager', 'earth', 'shopkeeper'),
+  'npc.elder': { kind: 'image', url: 'art/npcs/mira.png', palette: 'neutral' },
+  'npc.shopkeeper': { kind: 'image', url: 'art/npcs/gao.png', palette: 'earth' },
   'world.turtle_ducks': painter('discovery', 'earth', 'ducks'),
   'world.runoff_marker': painter('discovery', 'neutral', 'marker'),
   'world.tea_station': painter('discovery', 'earth', 'tea'),
-  'npc.kid': painter('villager', 'air', 'kid'),
+  'npc.kid': { kind: 'image', url: 'art/npcs/pella.png', palette: 'air' },
+  'npc.dorin': { kind: 'image', url: 'art/npcs/dorin.png', palette: 'earth' },
   'npc.guard': painter('villager', 'earth', 'guard'),
 
   /* --------------------------------------------------------------- Props */
