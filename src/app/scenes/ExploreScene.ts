@@ -2,8 +2,8 @@
  * The village.
  *
  * Tap a tile to walk, tap someone to talk, tap the glowing gate to leave. The
- * party stands down the side with their health and their action points, the
- * things you can do out here sit along the bottom, and the objective sits in
+ * party and their health sit in the bottom dock beside the available actions.
+ * The world uses the full screen width, and the objective sits in
  * the banner at the top so nobody has to remember what they were doing when
  * they picked the tablet back up. The camera pans by drag because the village
  * is bigger than the viewport.
@@ -74,14 +74,16 @@ export class ExploreScene implements Scene {
     const canvas = el('canvas', { class: 'map-canvas', attrs: { 'aria-label': 'Village map' } });
     this.canvas = canvas;
     scene.appendChild(
+      el('div', { class: 'explore-body' }, el('div', { class: 'map-wrap' }, canvas)),
+    );
+    scene.appendChild(
       el(
         'div',
-        { class: 'explore-body' },
+        { class: 'explore-dock' },
         el('div', { class: 'roster' }),
-        el('div', { class: 'map-wrap' }, canvas),
+        el('div', { class: 'hud explore-hud' }),
       ),
     );
-    scene.appendChild(el('div', { class: 'hud explore-hud' }));
 
     host.appendChild(scene);
 
@@ -281,6 +283,19 @@ export class ExploreScene implements Scene {
     banner.appendChild(
       el('span', { class: 'muted tiny hide-narrow', text: 'Tap to walk. Tap someone to talk.' }),
     );
+    if (!this.life) {
+      banner.appendChild(
+        button('Follow party', () => {
+          const state = this.departing ?? this.app.state;
+          if (!state) return;
+          const leader = state.party[0];
+          const pos = leader
+            ? (this.app.animator.renderPos(performance.now(), leader.id) ?? state.location.pos)
+            : state.location.pos;
+          this.renderer?.camera.centreOn(pos);
+        }),
+      );
+    }
   }
 
   /** The exit's label while the leader stands on or beside it. */

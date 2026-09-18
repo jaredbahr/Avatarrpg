@@ -1628,34 +1628,49 @@ html[data-contrast='high'] .hud-panel::after {
 /* ------------------------------------------------------------------ */
 
 /*
- * The village reads like the fight: the party down the left, the map taking
- * whatever is left, the things you can do along the bottom. Upright, or on
- * a narrow screen, the roster becomes a strip above the map instead.
+ * The approved player view keeps the world full width and puts the party
+ * beside the actions. Narrow screens stack the two strips below the map;
+ * each remains independently reachable at the largest text setting.
  */
 .explore-body {
   display: flex;
   flex: 1 1 auto;
   min-height: 0;
+  min-width: 0;
+}
+
+.explore-dock {
+  display: flex;
+  flex: 0 0 auto;
+  min-height: 0;
+  max-height: 42%;
+  overflow-y: auto;
+  border-top: var(--hairline) solid var(--c-line);
+  background: var(--c-bg-deep);
 }
 
 .roster {
-  flex: 0 0 14rem;
+  flex: 1 1 50%;
+  min-width: 0;
   display: flex;
-  flex-direction: column;
+  flex-direction: row;
   gap: var(--sp-2);
-  padding: var(--sp-2);
-  overflow-y: auto;
+  padding: var(--sp-3);
+  padding-bottom: calc(var(--sp-3) + env(safe-area-inset-bottom, 0px));
+  overflow-x: auto;
+  overscroll-behavior-x: contain;
+  align-items: stretch;
   background: linear-gradient(
     90deg,
     color-mix(in srgb, var(--c-bg-deep) 98%, transparent),
     color-mix(in srgb, var(--c-bg-deep) 82%, transparent)
   );
-  border-right: var(--hairline) solid var(--c-line);
 }
 
 /* A row is a button in all but its tag: it holds a canvas and a bar. */
 .roster-row {
-  flex: 0 0 auto;
+  flex: 0 0 var(--roster-card-width);
+  min-width: var(--roster-card-width);
   min-height: var(--tap);
   cursor: pointer;
 }
@@ -1677,6 +1692,40 @@ html[data-contrast='high'] .hud-panel::after {
   line-height: 1.1;
 }
 
+.roster-row .unit-panel-body {
+  flex-direction: column;
+  align-items: stretch;
+}
+
+.roster-row .unit-portrait-frame {
+  align-self: center;
+  margin-bottom: var(--sp-2);
+}
+
+.roster-row .grow > .row {
+  min-width: 0;
+}
+
+.roster-row .grow > .row > .stack {
+  min-width: 0;
+  flex: 1;
+}
+
+.roster-name,
+.roster-player {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.roster-row .spacer {
+  display: none;
+}
+
+.roster-row .roster-level {
+  display: none;
+}
+
 .roster-level {
   font-size: var(--fs-xs);
   color: var(--c-ink-dim);
@@ -1685,6 +1734,32 @@ html[data-contrast='high'] .hud-panel::after {
 
 .explore-hud .action-bar {
   flex: 1 1 auto;
+}
+
+.explore-hud {
+  flex: 1 1 var(--explore-actions-width);
+  min-width: 0;
+  flex-direction: column;
+  justify-content: center;
+  border-top: 0;
+}
+
+.explore-hud .action-row {
+  flex-wrap: nowrap;
+  overflow-x: auto;
+  padding: var(--sp-1);
+}
+
+.explore-hud .action-row > button {
+  flex-shrink: 0;
+}
+
+.explore-bar .title-plate {
+  min-width: 0;
+}
+
+.explore-bar .title-plate-objective {
+  max-width: 100%;
 }
 
 .walk-feedback {
@@ -1729,7 +1804,7 @@ html[data-contrast='high'] .hud-panel::after {
 }
 
 @media (max-width: 52rem), (orientation: portrait) {
-  .explore-body {
+  .explore-dock {
     flex-direction: column;
   }
 
@@ -1738,12 +1813,12 @@ html[data-contrast='high'] .hud-panel::after {
     flex-direction: row;
     overflow-x: auto;
     overflow-y: hidden;
-    border-right: 0;
     border-bottom: var(--hairline) solid var(--c-line);
+    padding-bottom: var(--sp-2);
   }
 
-  .roster-row {
-    min-width: 12rem;
+  .explore-hud {
+    flex: 0 0 auto;
   }
 }
 

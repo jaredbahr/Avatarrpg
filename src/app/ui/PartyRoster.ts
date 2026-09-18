@@ -1,14 +1,12 @@
 /**
- * The party at a glance, out of combat: one row per member down the side of
- * the village, built from the same pieces as the fight's unit panel (the
- * square portrait with its element badge, the name, the level, the health
- * bar, the action pips) so the two read as one HUD. Tapping a row opens
+ * The party at a glance, out of combat: compact portrait cards beside the
+ * exploration actions, built from the same pieces as the fight's unit panel
+ * (portrait, element badge, name and health). Tapping a card opens
  * the member's inspector; the leader's row is plated.
  */
 
 import type { App } from '../App';
 import type { ContentIndex, Unit } from '../../core/types';
-import { effectiveStats } from '../../core/rules/stats';
 import { paletteFor } from '../../render/palettes';
 import { paintElementGlyph } from '../../render/painters/glyphs';
 import { assetCanvas } from './assetCanvas';
@@ -40,15 +38,9 @@ function rosterRow(
   active: boolean,
   onPick: (unit: Unit) => void,
 ): HTMLElement {
-  const stats = effectiveStats(app.content, unit);
   const player = app.session.playerFor(unit.id);
   const palette = paletteFor(unit.element);
-  const hpFraction = Math.max(0, unit.hp / Math.max(1, unit.base.maxHp));
-
-  const pips = el('div', { class: 'pips', attrs: { 'aria-label': `${unit.ap} action points` } });
-  for (let i = 0; i < Math.max(stats.maxAp, unit.ap); i++) {
-    pips.appendChild(el('span', { class: `pip${i < unit.ap ? ' pip-on' : ''}` }));
-  }
+  const hpFraction = Math.max(0, Math.min(1, unit.hp / Math.max(1, unit.base.maxHp)));
 
   const portrait = el(
     'div',
@@ -70,7 +62,7 @@ function rosterRow(
       attrs: {
         role: 'button',
         tabindex: '0',
-        'aria-label': `${unit.name}, level ${unit.level}, ${unit.hp} of ${unit.base.maxHp} health`,
+        'aria-label': `${unit.name}${player ? `, played by ${player.name}` : ''}, level ${unit.level}, ${unit.hp} of ${unit.base.maxHp} health`,
       },
       onClick: () => onPick(unit),
       onKeyDown: (event) => {
@@ -93,8 +85,14 @@ function rosterRow(
           el(
             'div',
             { class: 'stack tight' },
-            el('strong', { class: 'roster-name', text: unit.name }),
-            player ? el('span', { class: 'tiny muted', text: player.name }) : null,
+            el('strong', { class: 'roster-name', text: unit.name, title: unit.name }),
+            player
+              ? el('span', {
+                  class: 'roster-player tiny muted',
+                  text: player.name,
+                  title: player.name,
+                })
+              : null,
           ),
           el('div', { class: 'spacer' }),
           el('span', { class: 'roster-level', text: `Lv ${unit.level}` }),
@@ -105,7 +103,6 @@ function rosterRow(
           el('div', { class: 'bar-fill', style: { width: `${hpFraction * 100}%` } }),
           el('span', { class: 'bar-label', text: `${unit.hp} / ${unit.base.maxHp}` }),
         ),
-        pips,
       ),
     ),
   );

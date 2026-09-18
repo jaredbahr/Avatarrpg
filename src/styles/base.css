@@ -121,6 +121,8 @@
 
   /* Minimum touch target. The e2e suite asserts every action button meets it. */
   --tap: 3rem; /* 48px at --ui-scale: 1 */
+  --roster-card-width: 6.25rem;
+  --explore-actions-width: 26rem;
 
   /* Motion. Every duration in the UI is one of these times --motion-scale, so
      the Reduce-motion setting collapses all of it with one variable. */
