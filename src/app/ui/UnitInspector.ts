@@ -13,6 +13,7 @@ import { Dialog } from './Dialog';
 import type { DialogOptions } from './Dialog';
 import { button, el } from './dom';
 import { assetCanvas } from './assetCanvas';
+import { portraitKeyFor } from './PartyRoster';
 import { abilityCard } from './AbilityCard';
 import { effectiveStats } from '../../core/rules/stats';
 import { describeIncoming } from '../../core/rules/status';
@@ -75,9 +76,7 @@ export class UnitInspector extends Dialog {
   protected build(body: HTMLElement): void {
     const unit = this.unit;
     const stats = effectiveStats(this.app.content, unit);
-    const portraitKey = unit.characterId
-      ? (this.app.content.characters.get(unit.characterId)?.portrait ?? unit.sprite)
-      : unit.sprite;
+    const portraitKey = portraitKeyFor(this.app.content, unit);
 
     body.appendChild(
       el(

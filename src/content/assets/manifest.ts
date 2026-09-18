@@ -177,6 +177,7 @@ export const ASSETS: Readonly<Record<string, AssetEntry>> = {
   'prop.cart': { kind: 'image', url: 'art/props/cart.png', palette: 'air' },
 
   /* ---------------------------------------------------------- Portraits */
+  'portrait.enemy.thug': { kind: 'image', url: 'art/portraits/enemy.thug.png', palette: 'enemy' },
   'portrait.kaya': { kind: 'image', url: 'art/portraits/kaya.png', palette: 'fire' },
   'portrait.tenzo': { kind: 'image', url: 'art/portraits/tenzo.png', palette: 'fire' },
   'portrait.nilak': { kind: 'image', url: 'art/portraits/nilak.png', palette: 'water' },

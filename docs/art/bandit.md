@@ -22,6 +22,14 @@ copyright in generated output is claimed. Credits and NOTICE include it.
 The exact reference, nine-pose sheet and walk-correction prompts are in
 `bandit-prompts.json`.
 
+A matching 512-pixel portrait in `public/art/portraits/enemy.thug.png` uses
+the same reference and the `portrait` prompt in that file. The turn strip,
+combat HUD and inspector share `portraitKeyFor`: a character's authored
+portrait takes priority, then an explicitly registered portrait matching the
+unit key (`unit.enemy.thug` -> `portrait.enemy.thug`), then the original sprite.
+Enemies without portrait art retain their own silhouettes. This adds no
+field to units, enemies, saves or the asset format.
+
 The first walking candidate repeated the leading leg. The selected sheet
 corrects the second contact pose, crossing the near leg in front with the
 far foot trailing. Raw candidates remain in ignored `art/raw/`.

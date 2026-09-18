@@ -34,6 +34,7 @@ import { ambienceFx, resolveFx } from '../../content/fx';
 import { ambientEmitters } from '../anim/ambience';
 import { announce, button, clear, el, mark, motionReduced, painterCanvas, tip } from '../ui/dom';
 import { assetCanvas } from '../ui/assetCanvas';
+import { portraitKeyFor } from '../ui/PartyRoster';
 import { UI_MARKS, markKindFor } from '../ui/marks';
 import { iconMarkup } from '../ui/icons';
 import { paletteFor } from '../../render/palettes';
@@ -467,7 +468,7 @@ export class CombatScene implements Scene {
         {
           class: `turn-chip faction-${unit.faction} element-${unit.element}${isActive ? ' active' : ''}`,
         },
-        assetCanvas(this.portraitKey(unit), 2.4),
+        assetCanvas(portraitKeyFor(this.app.content, unit), 2.4),
         el('span', { class: 'tiny', text: player?.name ?? unit.name }),
       );
       tip(
@@ -477,13 +478,6 @@ export class CombatScene implements Scene {
       );
       strip.appendChild(chip);
     }
-  }
-
-  /** A hero's portrait; an enemy or an ally is drawn from its own sprite. */
-  private portraitKey(unit: Unit): string {
-    return unit.characterId
-      ? (this.app.content.characters.get(unit.characterId)?.portrait ?? unit.sprite)
-      : unit.sprite;
   }
 
   /* ---------------------------------------------------------------- */
@@ -557,7 +551,7 @@ export class CombatScene implements Scene {
     const portrait = el(
       'div',
       { class: 'unit-portrait-frame' },
-      assetCanvas(this.portraitKey(unit), 4.5, 'unit-portrait square'),
+      assetCanvas(portraitKeyFor(this.app.content, unit), 4.5, 'unit-portrait square'),
       el(
         'span',
         { class: 'portrait-badge', attrs: { 'aria-hidden': 'true' } },
