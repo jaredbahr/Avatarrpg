@@ -11,7 +11,7 @@
 
 import { RIVERSIDE_ID } from '../../content/maps/riverside';
 import { evaluate } from '../../core/story/conditions';
-import { activeTriggers } from '../../core/story/world';
+import { activeTriggers, worldObjective } from '../../core/story/world';
 import { VillageLife } from '../village/VillageLife';
 import type { App, CameraInfo, Scene } from '../App';
 import type { GameEvent, GameState, Grid, MapDef, NpcDef, Unit, Vec2 } from '../../core/types';
@@ -272,8 +272,7 @@ export class ExploreScene implements Scene {
     const banner = this.host?.querySelector<HTMLElement>('.explore-bar');
     if (!banner) return;
     clear(banner);
-    const node = this.app.currentNode();
-    const objective = this.map?.objective ?? (node?.kind === 'explore' ? node.objective : '');
+    const objective = this.app.state ? worldObjective(this.app.content, this.app.state) : null;
     this.canvas?.setAttribute('aria-label', `${this.map?.name ?? 'World'} map`);
     // At the gate the banner says where it leads, which the map cannot.
     const line = this.atGate() ?? objective;

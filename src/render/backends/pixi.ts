@@ -29,6 +29,7 @@ import {
 } from 'pixi.js';
 
 import type { Grid, SurfaceId, TerrainId, Vec2 } from '../../core/types';
+import { resolveAsset } from '../../content/assets/manifest';
 import { backdrops } from '../backdrops';
 import { TILE } from '../camera';
 import type { Camera, Viewport } from '../camera';
@@ -908,18 +909,31 @@ export class PixiBackend implements RenderBackend {
       const key = `npc:${npc.pos.x},${npc.pos.y}`;
       live.add(key);
       const sprite = this.unitSprite(key);
-      sprite.texture = this.texture(sprites.get(npc.sprite, px, { facing: 1 }));
-      sprite.position.set(
-        npc.pos.x * TILE,
-        (npc.pos.y - elevationAt(view.grid, npc.pos) * ELEVATION_LIFT) * TILE,
-      );
-      sprite.width = TILE;
-      sprite.height = TILE;
+      const entry = resolveAsset(npc.sprite);
+      const width = entry.kind === 'sheet' && entry.footprint.w === 2 ? 2 : 1;
+      const frame =
+        entry.kind === 'sheet' ? sheets.frame(npc.sprite, 'idle', 0, 0, px, width) : null;
+      const x = npc.pos.x * TILE;
+      const y = (npc.pos.y - elevationAt(view.grid, npc.pos) * ELEVATION_LIFT) * TILE;
+      if (frame) {
+        sprite.texture = this.frameTexture(frame);
+        sprite.anchor.set(frame.anchor.x, frame.anchor.y);
+        sprite.position.set(x + (width * TILE) / 2, y + FOOT_LINE * TILE);
+        sprite.width = (frame.frame.w / frame.pixelsPerTile) * TILE;
+        sprite.height = (frame.frame.h / frame.pixelsPerTile) * TILE;
+      } else {
+        sprite.texture = this.texture(sprites.get(npc.sprite, px, { facing: 1 }, width));
+        sprite.anchor.set(0, 0);
+        sprite.position.set(x, y);
+        sprite.width = width * TILE;
+        sprite.height = TILE;
+      }
+      sprite.scale.x = Math.abs(sprite.scale.x);
       sprite.alpha = 1;
       sprite.visible = true;
 
       // A small "talk" pip so a child can tell an NPC from scenery.
-      g.circle(npc.pos.x * TILE + TILE * 0.5, npc.pos.y * TILE + TILE * 0.08, TILE * 0.07).fill({
+      g.circle(x + TILE * width * 0.5, y + TILE * 0.08, TILE * 0.07).fill({
         color: '#f0c674',
         alpha: 0.55 + 0.35 * ((Math.sin(view.time / 500) + 1) / 2),
       });

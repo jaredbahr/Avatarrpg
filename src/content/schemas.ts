@@ -421,6 +421,9 @@ export const mapSchema = z
     ambience: z.string().min(1),
     exit: z.object({ pos: vec2, label: z.string().min(1) }).optional(),
     objective: z.string().min(1).optional(),
+    objectiveVariants: z
+      .array(z.object({ when: conditionSchema, text: z.string().min(1) }))
+      .optional(),
     exits: z
       .array(
         z.object({
@@ -595,6 +598,7 @@ export const storyNodeSchema = z.discriminatedUnion('kind', [
     title: z.string().min(1),
     lines: z.array(z.string().min(1)).min(1),
     teaser: z.string().min(1),
+    next: id.optional(),
   }),
 ]);
 
@@ -1287,6 +1291,15 @@ export function validateContent(bundle: ContentBundle): string[] {
         }
         break;
       case 'end':
+        if (node.next) {
+          links.push([node.id, node.next]);
+          const target = bundle.story.find((candidate) => candidate.id === node.next);
+          if (target && target.kind !== 'explore') {
+            problems.push(
+              `story node "${node.id}" continues to "${node.next}", which is not an explore node`,
+            );
+          }
+        }
         break;
     }
     if (node.kind === 'explore' && !mapIds.has(node.mapId)) {
