@@ -72,14 +72,14 @@ const painter = (painterName: string, palette: string, variant?: string): AssetE
     ? { kind: 'painter', painter: painterName, palette, variant }
     : { kind: 'painter', painter: painterName, palette };
 
-/** The six-pose contract shared by the first generated hero sheets. */
+/** Original combat poses plus idle and walking cels in every direction. */
 const heroSheet = (key: string, palette: string): SheetEntry => {
   const name = key.slice(key.lastIndexOf('.') + 1);
   const frames = (clip: ClipName, count: number): string[] =>
     Array.from({ length: count }, (_, index) => `${key}/${clip}/${index}`);
   return {
     kind: 'sheet',
-    atlas: `art/units/locomotion-${name}.json`,
+    atlas: `art/units/walking-${name}.json`,
     pixelsPerTile: 128,
     footprint: { w: 1, h: 1 },
     anchor: { x: 0.5, y: 0.85 },
@@ -87,6 +87,7 @@ const heroSheet = (key: string, palette: string): SheetEntry => {
     palette,
     clips: {
       idle: { frames: frames('idle', 2), fps: 1, loop: true },
+      walk: { frames: frames('walk', 4), fps: 4, loop: true },
       cast: { frames: frames('cast', 3), fps: 8, loop: false },
       ko: { frames: frames('ko', 1), fps: 1, loop: false },
       idleNorth: { frames: frames('idleNorth', 1), fps: 1, loop: true },
@@ -160,12 +161,13 @@ export const ASSETS: Readonly<Record<string, AssetEntry>> = {
   'unit.ally.ruon': painter('mercenary', 'neutral', 'sergeant'),
 
   /* --------------------------------------------------------------- NPCs */
-  'npc.elder': painter('villager', 'neutral', 'elder'),
-  'npc.shopkeeper': painter('villager', 'earth', 'shopkeeper'),
+  'npc.elder': { kind: 'image', url: 'art/npcs/mira.png', palette: 'neutral' },
+  'npc.shopkeeper': { kind: 'image', url: 'art/npcs/gao.png', palette: 'earth' },
   'world.turtle_ducks': painter('discovery', 'earth', 'ducks'),
   'world.runoff_marker': painter('discovery', 'neutral', 'marker'),
   'world.tea_station': painter('discovery', 'earth', 'tea'),
-  'npc.kid': painter('villager', 'air', 'kid'),
+  'npc.kid': { kind: 'image', url: 'art/npcs/pella.png', palette: 'air' },
+  'npc.dorin': { kind: 'image', url: 'art/npcs/dorin.png', palette: 'earth' },
   'npc.guard': painter('villager', 'earth', 'guard'),
 
   /* --------------------------------------------------------------- Props */
@@ -177,6 +179,7 @@ export const ASSETS: Readonly<Record<string, AssetEntry>> = {
   'prop.cart': { kind: 'image', url: 'art/props/cart.png', palette: 'air' },
 
   /* ---------------------------------------------------------- Portraits */
+  'portrait.enemy.thug': { kind: 'image', url: 'art/portraits/enemy.thug.png', palette: 'enemy' },
   'portrait.kaya': { kind: 'image', url: 'art/portraits/kaya.png', palette: 'fire' },
   'portrait.tenzo': { kind: 'image', url: 'art/portraits/tenzo.png', palette: 'fire' },
   'portrait.nilak': { kind: 'image', url: 'art/portraits/nilak.png', palette: 'water' },

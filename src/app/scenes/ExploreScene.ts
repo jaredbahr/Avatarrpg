@@ -11,7 +11,7 @@
 
 import { RIVERSIDE_ID } from '../../content/maps/riverside';
 import { evaluate } from '../../core/story/conditions';
-import { activeTriggers } from '../../core/story/world';
+import { activeTriggers, worldObjective } from '../../core/story/world';
 import { VillageLife } from '../village/VillageLife';
 import type { App, CameraInfo, Scene } from '../App';
 import type { GameEvent, GameState, Grid, MapDef, NpcDef, Unit, Vec2 } from '../../core/types';
@@ -61,6 +61,8 @@ export class ExploreScene implements Scene {
   private feedback: HTMLElement | null = null;
   private feedbackText: HTMLElement | null = null;
   private cancelNext: HTMLButtonElement | null = null;
+  /** The last canvas box, so a reflow keeps the same world point in view. */
+  private viewSize: { width: number; height: number } | null = null;
 
   constructor(private app: App) {}
 
@@ -108,6 +110,7 @@ export class ExploreScene implements Scene {
     this.feedback = null;
     this.feedbackText = null;
     this.cancelNext = null;
+    this.viewSize = null;
     this.life?.destroy();
     this.life = null;
     if (this.frame) cancelAnimationFrame(this.frame);
@@ -137,6 +140,7 @@ export class ExploreScene implements Scene {
       this.renderer?.resize({ width: map.width, height: map.height });
       this.renderer?.camera.fitExplore();
       this.renderer?.camera.centreOn(state.location.pos);
+      this.rememberViewSize();
     }
     this.renderChrome();
   }
@@ -235,17 +239,22 @@ export class ExploreScene implements Scene {
     this.refit();
   }
 
-  /**
-   * Re-fits after the canvas box changed. `fitExplore` centres on the middle of
-   * the map, which on a village larger than the viewport would throw the party
-   * off screen, so put them back in the middle of the frame afterwards.
-   */
+  /** Keep the player's map focus and tile size when the dock changes the canvas box. */
   private refit(): void {
     const camera = this.renderer?.camera;
     if (!camera) return;
-    camera.fitExplore();
-    const pos = this.departing?.location.pos ?? this.app.state?.location.pos;
-    if (pos) camera.centreOn(pos);
+    const previous = this.viewSize;
+    if (previous) {
+      camera.offsetX += (previous.width - camera.viewport.width) / 2;
+      camera.offsetY += (previous.height - camera.viewport.height) / 2;
+    }
+    camera.clamp();
+    this.rememberViewSize();
+  }
+
+  private rememberViewSize(): void {
+    const viewport = this.renderer?.camera.viewport;
+    if (viewport) this.viewSize = { width: viewport.width, height: viewport.height };
   }
 
   /* ---------------------------------------------------------------- */
@@ -263,8 +272,7 @@ export class ExploreScene implements Scene {
     const banner = this.host?.querySelector<HTMLElement>('.explore-bar');
     if (!banner) return;
     clear(banner);
-    const node = this.app.currentNode();
-    const objective = this.map?.objective ?? (node?.kind === 'explore' ? node.objective : '');
+    const objective = this.app.state ? worldObjective(this.app.content, this.app.state) : null;
     this.canvas?.setAttribute('aria-label', `${this.map?.name ?? 'World'} map`);
     // At the gate the banner says where it leads, which the map cannot.
     const line = this.atGate() ?? objective;
@@ -469,6 +477,7 @@ export class ExploreScene implements Scene {
     this.renderer.resize({ width: map.width, height: map.height });
     this.renderer.camera.fitExplore();
     this.renderer.camera.centreOn(state.location.pos);
+    this.rememberViewSize();
 
     // The chrome round the map can still grow — a late web font, a longer
     // objective on the next node, the roster becoming a strip — and every

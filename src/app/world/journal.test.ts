@@ -34,6 +34,34 @@ describe('travel journal and riverside routes', () => {
     expect(journal.discoveries.every((note) => !note.found)).toBe(true);
     expect(JSON.stringify(state)).toBe(before);
   });
+  it('uses the active story objective, then the matching world objective while roaming', () => {
+    const state = start();
+    const map = CONTENT.maps.get(state.location.mapId);
+    const node = CONTENT.story.get(state.story.nodeId ?? '');
+    if (!map || node?.kind !== 'explore') throw new Error('Missing riverside exploration');
+    const content = {
+      ...CONTENT,
+      maps: new Map(CONTENT.maps).set(map.id, {
+        ...map,
+        objective: 'Follow the river path.',
+        objectiveVariants: [
+          {
+            when: { kind: 'flag' as const, key: 'act1_complete', op: 'set' as const },
+            text: 'Bring the quarry news home.',
+          },
+        ],
+      }),
+    };
+    expect(travelJournal(content, state).objective).toBe(node.objective);
+    const roaming = { ...state, story: { ...state.story, nodeId: null } };
+    expect(travelJournal(content, roaming).objective).toBe('Follow the river path.');
+    expect(
+      travelJournal(content, {
+        ...roaming,
+        flags: { ...roaming.flags, act1_complete: true },
+      }).objective,
+    ).toBe('Bring the quarry news home.');
+  });
   it('walks the riverside/village loop with no story cursor and preserves discoveries after loading', () => {
     const initial = start();
     let state = apply(CONTENT, initial, { type: 'setFlags', flags: { riverside_pet: true } }).state;

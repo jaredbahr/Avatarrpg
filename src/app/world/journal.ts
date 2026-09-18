@@ -1,5 +1,6 @@
 import type { ContentIndex, GameState } from '../../core/types';
 import { evaluate } from '../../core/story/conditions';
+import { worldObjective } from '../../core/story/world';
 import { JOURNAL_NOTES } from '../../content/journal';
 
 export function travelJournal(content: ContentIndex, state: GameState) {
@@ -15,7 +16,7 @@ export function travelJournal(content: ContentIndex, state: GameState) {
   const map = content.maps.get(state.location.mapId);
   return {
     location: map?.name ?? 'On the road',
-    objective: map?.objective ?? 'Take your time and follow the paths.',
+    objective: worldObjective(content, state) ?? 'Take your time and follow the paths.',
     places: [...content.maps.values()]
       .filter((place) => known.has(place.id))
       .map((place) => ({
