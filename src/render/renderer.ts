@@ -40,6 +40,8 @@ export class Renderer {
   camera: Camera;
   private backend: RenderBackend;
   private observer: ResizeObserver | null = null;
+  private lastView: MapView | null = null;
+  private destroyed = false;
 
   /**
    * Called after the element's box changed and the camera has been re-measured,
@@ -110,6 +112,7 @@ export class Renderer {
 
   /** Re-reads the element size and resizes the backing store. Call on resize. */
   resize(grid?: { width: number; height: number }): void {
+    if (this.destroyed) return;
     const viewport = this.measure();
     this.camera.viewport = viewport;
     if (grid) this.camera.grid = grid;
@@ -140,6 +143,7 @@ export class Renderer {
     if (typeof ResizeObserver === 'undefined') return;
 
     this.observer = new ResizeObserver(() => {
+      if (this.destroyed) return;
       const next = this.measure();
       const current = this.camera.viewport;
       if (
@@ -151,6 +155,10 @@ export class Renderer {
       }
       this.resize();
       this.onViewportChange?.();
+      // An observer can run after this paint's animation callback. Resizing
+      // clears the backing store, so redraw synchronously after the scene has
+      // corrected its camera instead of exposing an empty frame until next RAF.
+      if (!this.destroyed && this.lastView) this.backend.draw(this.lastView, this.camera);
     });
     this.observer.observe(this.canvas);
   }
@@ -160,11 +168,16 @@ export class Renderer {
   }
 
   draw(view: MapView): void {
+    if (this.destroyed) return;
+    this.lastView = view;
     this.backend.draw(view, this.camera);
   }
 
   /** Releases GPU resources. Safe to call more than once. */
   destroy(): void {
+    if (this.destroyed) return;
+    this.destroyed = true;
+    this.lastView = null;
     this.observer?.disconnect();
     this.observer = null;
     this.onViewportChange = null;
