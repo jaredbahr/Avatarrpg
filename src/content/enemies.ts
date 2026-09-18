@@ -137,7 +137,7 @@ export const ENEMIES: readonly EnemyDef[] = [
     xp: 360,
     sprite: 'unit.enemy.grumbler',
     description:
-      'A bandit earthbender in a stolen mecha-driller. Two tiles wide, leaks oil, and churns the floor into mud.',
+      'A former quartermaster in a mecha-driller. Two tiles wide, leaks oil, and churns the floor into mud.',
   },
 
   /* --------------------------------------------------------------------- */

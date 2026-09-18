@@ -506,6 +506,7 @@ export class DialogueScene implements Scene {
   }
 
   private endPanel(node: Extract<StoryNode, { kind: 'end' }>): HTMLElement {
+    const next = node.next;
     const lines = el('div', { class: 'stack' });
     for (const line of node.lines) lines.appendChild(el('p', { text: line }));
 
@@ -517,12 +518,12 @@ export class DialogueScene implements Scene {
       el(
         'div',
         { class: 'teaser' },
-        el('span', { class: 'tiny muted', text: 'Next time' }),
+        el('span', { class: 'tiny muted', text: next ? 'What lies ahead' : 'Next time' }),
         el('p', { text: node.teaser }),
       ),
       el(
         'div',
-        { class: 'row' },
+        { class: 'row row-wrap' },
         button('Save this game', () => this.app.openPause()),
         INTERLUDES[node.id]
           ? button('Replay scene', () => {
@@ -532,7 +533,18 @@ export class DialogueScene implements Scene {
             })
           : null,
         el('div', { class: 'spacer' }),
-        button('Back to the title', () => this.app.start(), { class: 'btn-primary btn-large' }),
+        button('Back to the title', () => this.app.start(), {
+          class: next ? 'btn-ghost' : 'btn-primary btn-large',
+        }),
+        next
+          ? button(
+              'Continue exploring',
+              () => this.app.dispatch({ type: 'enterNode', nodeId: next }),
+              {
+                class: 'btn-primary btn-large',
+              },
+            )
+          : null,
       ),
     );
   }

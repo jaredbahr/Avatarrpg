@@ -164,12 +164,14 @@ export class AudioBus {
       this.startBuffer(buffer, when, def.gain * volume, def.rate);
       return;
     }
-    // Not decoded yet. Fetch it, and play it late rather than not at all: a
-    // first footstep that arrives a beat behind is better than a silent walk,
-    // and every one after it is already in the cache.
+    // Keep the cue's deadline while decoding. Closing the bus cancels pending
+    // cues even if another gesture opens a new context before decoding finishes.
+    const ctx = this.ctx;
     void this.load(pick).then((loaded) => {
-      if (!loaded || !this.ctx) return;
-      this.startBuffer(loaded, this.ctx.currentTime, def.gain * volume, def.rate);
+      if (!loaded || !ctx || this.ctx !== ctx || ctx.state !== 'running') return;
+      const currentVolume = this.options.volume();
+      if (currentVolume <= 0) return;
+      this.startBuffer(loaded, when, def.gain * currentVolume, def.rate);
     });
   }
 
@@ -199,6 +201,7 @@ export class AudioBus {
       })
       .then((bytes) => ctx.decodeAudioData(bytes))
       .then((buffer) => {
+        if (this.ctx !== ctx) return null;
         // A plain insertion-order bound: the oldest entry goes when full.
         if (this.buffers.size >= CACHE_LIMIT) {
           const oldest = this.buffers.keys().next();
@@ -212,7 +215,7 @@ export class AudioBus {
         return null;
       })
       .finally(() => {
-        this.loading.delete(url);
+        if (this.loading.get(url) === promise) this.loading.delete(url);
       });
     this.loading.set(url, promise);
     return promise;

@@ -992,9 +992,9 @@ export class CombatScene implements Scene {
           class: 'muted',
           text: victory
             ? 'Everyone who went down is patched up. The party keeps what it earned.'
-            : 'You wake up somewhere safe, whole and a little embarrassed. The road is still there.',
+            : 'The fight is lost. Continue to see what happens next.',
         }),
-        button(victory ? 'Continue' : 'Try again', () => this.app.resolveBattle(), {
+        button('Continue', () => this.app.resolveBattle(), {
           class: 'btn-primary btn-large',
         }),
       ),

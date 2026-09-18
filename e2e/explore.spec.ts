@@ -131,7 +131,7 @@ test.describe('the village', () => {
     await page.locator('.explore-scene .map-canvas').waitFor();
 
     const objective = page.locator('.explore-bar .title-plate-objective');
-    await expect(objective).toContainText('villagers');
+    await expect(objective).toContainText('Talk to Elder Mira');
 
     // Beside the gate the banner reads its label instead of the objective.
     await standAt(page, { x: 22, y: 7 });
