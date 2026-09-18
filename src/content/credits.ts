@@ -107,6 +107,19 @@ export const CREDITS: readonly CreditEntry[] = [
     note: 'Generated from the project character references and prompt packs, then normalised and packed for the game. Dialogue portrait sources and packing notes are in docs/art/dialogue-portraits.md; bandit prompts and review notes are in docs/art/bandit.md. Output terms: https://openai.com/policies/row-terms-of-use/. This credit does not claim exclusive copyright in generated output.',
   },
   {
+    what: 'The Grumbler artwork',
+    work: 'Quarry driller pose sheet and machine portrait',
+    authors: 'This project, generated with OpenAI image generation',
+    licence: 'own work',
+    source: '',
+    covers: [
+      'art/units/grumbler.png',
+      'art/units/grumbler.json',
+      'art/portraits/enemy.grumbler.png',
+    ],
+    note: 'Original quarry machine artwork, generated and packed into nine transparent poses and a UI portrait. Prompts and processing notes: docs/art/grumbler.md. Output terms: https://openai.com/policies/row-terms-of-use/. No exclusive copyright in generated output is claimed.',
+  },
+  {
     what: 'The riverside painting',
     work: 'Ba Dan riverside',
     authors: 'This project, with OpenAI image generation',
