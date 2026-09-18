@@ -69,7 +69,7 @@ export const BA_DAN_VILLAGE: MapDef = {
     {
       id: 'shopkeeper_gao',
       name: 'Gao the Shopkeeper',
-      pos: { x: 7, y: 3 },
+      pos: { x: 9, y: 4 },
       sprite: 'npc.shopkeeper',
       node: 'gao_friendly',
       routes: [
