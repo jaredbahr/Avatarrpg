@@ -347,3 +347,27 @@ opacity is implemented on both backends with per-frame group minima. Focused
 registration, schema and cutaway tests pass28cases. Production traversal and
 art review are pending; the next publication is ONE draft integration PR.
 No new region, combat-rule or save-format changes are included.
+
+## PR #64 CI correction and western review
+
+Western structural proof is accepted on runtime head 5d5952f within the limits
+in quarry-west-proof.md; source documentation cf14705 is now incorporated.
+The four continuous route/save checks and twelve focused production UI checks
+passed on that same runtime. Overall reference quality remains open, but these
+remaining aesthetic/audio gaps do not block a tested progress release.
+
+CI run 35395176837 exposed a stale legacy painting fixture: backdrop.spec put
+an orthographic probe on Forest Road after it became an oblique layered scene.
+The renderer correctly ignores incompatible backdrop projection and draws the
+registered scene. The probe test and gallery case 18 now explicitly remove the
+layered scene and restore orthographic projection before mounting their fixture.
+No product rendering change, threshold relaxation or assertion removal is needed.
+Five focused production backdrop/renderer tests pass; one software-GPU-only test
+skips because installed Chrome reports accelerated rendering. CI retains that
+software fallback check and full Chromium/WebKit coverage.
+
+This necessary test revision also batches the completed art handoff. Re-run full
+verify before its single push. Require all three new-head CI checks; do not reuse
+5d5952f checks for merging. With no outstanding regression or review, mark ready,
+merge with an expected-head merge commit and confirm Pages. Keep broader gate,
+water material, listening and physical-device quality work explicitly open.

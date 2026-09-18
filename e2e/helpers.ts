@@ -187,3 +187,15 @@ export async function waitForIdle(page: Page): Promise<void> {
 export async function battleActive(page: Page): Promise<boolean> {
   return page.evaluate(() => window.fnt?.app.state?.battle?.phase === 'active');
 }
+
+/** Isolate the legacy painting contract before mounting a now-layered map. */
+export async function useOrthographicBackdropFixture(page: Page, mapId: string): Promise<void> {
+  await page.evaluate((id) => {
+    const map = window.fnt?.app.content.maps.get(id);
+    if (!map) throw new Error(`Missing backdrop fixture map: ${id}`);
+    Object.defineProperties(map, {
+      projection: { value: undefined, configurable: true },
+      scene: { value: undefined, configurable: true },
+    });
+  }, mapId);
+}

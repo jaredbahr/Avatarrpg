@@ -16,6 +16,7 @@ import {
   startGame,
   takeTurn,
   waitForIdle,
+  useOrthographicBackdropFixture,
 } from '../helpers';
 import {
   actor,
@@ -150,10 +151,11 @@ async function openVillage(ctx: BeatContext): Promise<void> {
 /** A fresh page, a fresh game, straight into a fight, with the layout settled. */
 async function openBattle(
   ctx: BeatContext,
-  options: { node?: string; extra?: Record<string, string> } = {},
+  options: { node?: string; extra?: Record<string, string>; legacyBackdrop?: boolean } = {},
 ): Promise<void> {
   await resetStorage(ctx.page, ctx.query(options.extra));
   await startGame(ctx.page, PLAYERS, PARTY, SEED, { reduceMotion: false });
+  if (options.legacyBackdrop) await useOrthographicBackdropFixture(ctx.page, 'forest_road');
   await enterNode(ctx.page, options.node ?? 'battle_forest_road');
   await takeTurn(ctx.page, { settleTimeout: ctx.settleTimeout });
   await waitForIdle(ctx.page);
@@ -626,7 +628,7 @@ export const BEATS: readonly Beat[] = [
     note: 'The painting slot with a flat stand-in for the forest road (the layout image the map packs ship, 32 px a tile, with the probe block): the puddle, the move contour, the units and the effects are drawn over the painting, and the decor that marked footing stands down. Then the same board with Show grid on: every edge in the painting sits on a tile line, which is the check a real painting must pass.',
     projects: SURFACES,
     async run(ctx) {
-      await openBattle(ctx);
+      await openBattle(ctx, { legacyBackdrop: true });
       const loaded = await ctx.page.evaluate(() =>
         window.fnt?.app.overrideBackdrop('forest_road', {
           url: 'art/test/backdrop.png',
