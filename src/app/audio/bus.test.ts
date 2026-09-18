@@ -16,11 +16,31 @@ class TestContext {
   destination = {};
   decoded = deferred<AudioBuffer>();
   starts: number[] = [];
+  stops: number[] = [];
+  sampleRate = 48000;
   constructor() {
     TestContext.instances.push(this);
   }
   createGain() {
-    return { gain: { value: 0, setValueAtTime() {}, linearRampToValueAtTime() {} }, connect() {} };
+    return {
+      gain: {
+        value: 0,
+        setValueAtTime() {},
+        linearRampToValueAtTime() {},
+        exponentialRampToValueAtTime() {},
+      },
+      connect() {},
+    };
+  }
+  createBuffer(_channels: number, length: number) {
+    return { getChannelData: () => new Float32Array(length) };
+  }
+  createBiquadFilter() {
+    return {
+      Q: { value: 0 },
+      frequency: { setValueAtTime() {}, exponentialRampToValueAtTime() {} },
+      connect() {},
+    };
   }
   createBufferSource() {
     return {
@@ -28,6 +48,7 @@ class TestContext {
       playbackRate: { value: 1 },
       connect() {},
       start: (at: number) => this.starts.push(at),
+      stop: (at: number) => this.stops.push(at),
     };
   }
   decodeAudioData() {
@@ -63,6 +84,29 @@ describe('sample loading across the audio clock and mute', () => {
     ctx.decoded.resolve(buffer);
     await flush();
     expect(ctx.starts).toEqual([10.5]);
+  });
+
+  it('schedules material layers together and coalesces the whole cue', () => {
+    const bus = new AudioBus({ volume: () => 1 });
+    bus.unlock();
+    const material = { ...cue, key: 'fx.fire.jab' };
+    bus.play([material, { ...material, at: 510 }], 0);
+    const ctx = TestContext.instances[0]!;
+    expect(ctx.starts).toEqual([10.5, 10.5]);
+    expect(ctx.stops).toHaveLength(2);
+    expect(ctx.stops.every((at) => at > 10.5 && at < 11)).toBe(true);
+    expect(bus.scheduled).toBe(1);
+  });
+
+  it('does not schedule material layers before unlock or while muted', () => {
+    let volume = 1;
+    const bus = new AudioBus({ volume: () => volume });
+    bus.play([{ ...cue, key: 'fx.earth.rock' }], 0);
+    expect(TestContext.instances).toHaveLength(0);
+    bus.unlock();
+    volume = 0;
+    bus.play([{ ...cue, key: 'fx.earth.rock' }], 0);
+    expect(TestContext.instances[0]!.starts).toEqual([]);
   });
 
   it('plays an already elapsed cue at the current clock after a slow decode', async () => {
