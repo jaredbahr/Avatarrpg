@@ -4,32 +4,30 @@ import { DISCOVERIES } from '../maps/discoveries';
 const TEXT = {
   duck_nest: {
     first: [
-      'A turtle-duck stands over a nest lined with reeds and one very familiar sock. Three small shells wobble behind her.',
-      'You give the family room to pass. The mother answers with a stern quack, as though this was her idea.',
-      'Below the bank, pale quarry silt coats the old nesting reeds. The uphill nest is shelter, not mischief.',
+      'A turtle-duck stands over a nest lined with reeds and a woollen sock. Three ducklings crowd into the heel.',
+      'She spreads her wings when you get close. You step back. One duckling carries on pulling at a loose thread.',
+      'Down by the stream, white silt has dried over an empty nest. The reeds around it are bent flat.',
     ],
-    again: [
-      'The ducklings have settled into the sock. Their mother watches you from a respectful distance. You return the courtesy.',
-    ],
+    again: ['The ducklings are asleep in the sock. Their mother opens one eye as you pass.'],
   },
   runoff_marker: {
     first: [
-      'Notches in this stone measure the stream after rain. Someone has tied a reed beside the old clear-water line.',
-      'Today, chalky sediment sits above that mark. A worker has scratched a note: “Ask upstream before blaming downstream.”',
-      'The quarry and the village share more than a road. Whatever happens above will eventually arrive here.',
+      'Flood marks are cut into the stone beside the stream. A tied reed marks the usual water level.',
+      'Pale silt covers the lower notches. Someone has scratched an arrow towards the quarry and the words “Settling pit blocked?”',
+      'You dip a hand in the stream. The water leaves white grit between your fingers.',
     ],
     again: [
-      'The reed still marks the clear-water line. Reading the stone does not clean the stream; it tells you where to begin.',
+      'Another thin layer of silt has caught against the reed. The arrow on the stone points uphill.',
     ],
   },
   tea_station: {
     first: [
-      'Six mismatched cups sit beside a squat kettle. The seventh is upside down beneath a sign: “For whoever washes up.”',
-      'A tally on the bench lists names from both quarry shifts. Beside a foreman’s name, somebody has written “Still owes two cups.”',
-      'You rinse the spare cup and leave it ready. A small responsibility, but now the next traveller has somewhere to start.',
+      'Six cups stand beside the kettle. A seventh sits in the washing bowl with a tea leaf stuck to the bottom.',
+      'Both quarry shifts have scratched their names into the bench. Under the foreman’s name: “Wash your own cup, Hesh.”',
+      'You rinse the seventh cup and set it beside the others. The handle has been mended with wire.',
     ],
     again: [
-      'The spare cup is waiting for the next traveller. Somebody has added a second towel. Apparently responsibility is catching.',
+      'The mended cup is back in the washing bowl. This time, someone has left a cloth beside it.',
     ],
   },
 } as const;
@@ -47,7 +45,7 @@ export const DISCOVERY_STORY: readonly StoryNode[] = DISCOVERIES.flatMap((item):
     id: `remember_${item.id}`,
     kind: 'flags',
     set: { [`world.discovered.${item.id}`]: true },
-    next: item.back,
+    next: `leave_${item.id}`,
   },
   {
     id: `revisit_${item.id}`,
@@ -55,6 +53,13 @@ export const DISCOVERY_STORY: readonly StoryNode[] = DISCOVERIES.flatMap((item):
     speaker: item.name,
     portrait: item.sprite,
     lines: TEXT[item.id].again,
-    next: item.back,
+    next: `leave_${item.id}`,
+  },
+  {
+    id: `leave_${item.id}`,
+    kind: 'branch',
+    flag: 'act1_complete',
+    ifSet: item.map === 'forest_road' ? 'forest_return_explore' : 'cutting_return_explore',
+    ifUnset: item.back,
   },
 ]);

@@ -3,6 +3,7 @@ import { PLAYER_VIEW_BEATS } from './player-view-beats';
 import { DIRECTIONAL_BEATS } from './directional-beats';
 import { ELEMENT_BEATS, MOTION_BEATS } from './motion-beats';
 import { BENDING_BEATS } from './bending-beats';
+import { ENEMY_BEATS } from './enemy-beats';
 import type { Page } from '@playwright/test';
 import {
   enterNode,
@@ -176,6 +177,7 @@ async function faceOff(
 }
 
 export const BEATS: readonly Beat[] = [
+  ...ENEMY_BEATS,
   ...PLAYER_VIEW_BEATS,
   ...WORLD_BEATS,
   ...DIRECTIONAL_BEATS,
@@ -242,7 +244,7 @@ export const BEATS: readonly Beat[] = [
       await resetStorage(ctx.page, ctx.query());
       await ctx.page.getByRole('button', { name: 'Explore the riverside', exact: true }).click();
       await ctx.page.getByRole('button', { name: 'Under the banyan', exact: true }).click();
-      await ctx.page.getByText('The branches pass overhead.', { exact: false }).waitFor();
+      await ctx.page.getByText('The banyan shades the path.', { exact: false }).waitFor();
       await ctx.page.locator('.village-life-canvas[data-illustrated-actors="2"]').waitFor();
       await ctx.shoot(this.note);
     },

@@ -38,3 +38,36 @@ Check touch and mouse, portrait and landscape, reduced motion, large text, and
 Canvas/WebGL. Routes should remain named and tappable. Locked forward routes
 show their reason when approached (also in the button tooltip). The first slice
 uses visible encounter groups; moving patrols and additional regions are future work.
+
+## Quarry victory and the walk home
+
+Run both custody routes across suitable parties. After winning at the quarry,
+finish the summary and choose its continuation. The party should remain at the
+quarry with a westward objective. Save here, reload, and walk west through the
+cutting, gate and forest into Ba Dan using the ordinary route controls.
+
+- Speak to Sen and Dema on the return. They should know the crews have passed;
+  they should not repeat the original missing-worker setup.
+- Visit the roadside discoveries on the way home, including one not visited
+  before the rescue. Repeat a discovery and check the homeward objective remains.
+- In Ba Dan, visit Mira, Pella, Gao and Dorin. Mira's account must match Ruon's
+  custody. Gao still objects to the trade route while acknowledging the rescue.
+  Pella should remember an earlier conversation only if it happened.
+- Save in Ba Dan, reload, revisit the villagers and walk back towards the quarry.
+  Resolved fights, rewards and payments must not repeat. The party, discoveries
+  and rescue/custody state must survive.
+- Check the defeat ending separately: it remains terminal and must not offer a
+  successful homecoming or claim the workers have been freed.
+
+For the ten hero contributions, use the node/location table in
+[the writing guide](writing-guide.md). Cover them across multiple parties, with
+same-element companions together where practical. Reach each through ordinary
+movement and optional interactions; direct debug entry is only a diagnostic,
+not route acceptance. Include the riverside before departure, Dema and both
+forest discoveries, the earthbender gate approach, Sen's rest stop, the escort
+choice and the quarry approach. Record the actual speaker and whether a present
+hero is conscious. Absent or unconscious heroes must use the authored fallback.
+
+Record commit, party, seed, custody route, save checkpoints, renderer, viewport
+and observed results with the integration review. These instructions are a test
+plan, not a claim that the full playthrough has passed.

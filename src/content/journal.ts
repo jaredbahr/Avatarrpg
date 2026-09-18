@@ -14,8 +14,8 @@ export const JOURNAL_NOTES: readonly JournalNote[] = [
   {
     id: 'pebble',
     mapId: 'ba_dan_riverside',
-    title: 'A very important otter-turtle',
-    hint: 'Someone on the western riverbank is taking a suspicious interest in lunches.',
+    title: 'Pebble by the river',
+    hint: 'An otter-turtle rests on the western riverbank.',
     found: 'Pebble accepted a scratch behind the shell. Keep an eye on your lunch.',
     when: { kind: 'flag', key: 'riverside_pet', op: 'set' },
   },
@@ -24,15 +24,16 @@ export const JOURNAL_NOTES: readonly JournalNote[] = [
     mapId: 'ba_dan_riverside',
     title: 'Everyone downstream',
     hint: 'Follow the narrow path north of the practice ground to the old shrine.',
-    found: 'The shrine reminds us that the river belongs to everyone downstream. Even the otter.',
+    found:
+      'Fresh flowers by the river inscription. The jar’s broken handle has been mended with wire.',
     when: { kind: 'flag', key: 'riverside_shrine_found', op: 'set' },
   },
   {
     id: 'veranda',
     mapId: 'ba_dan_riverside',
     title: 'An afternoon off',
-    hint: 'There is a quiet veranda south of the banyan. Heroes can stop for tea.',
-    found: 'Jasmine tea on the veranda. For a moment, nobody needed saving.',
+    hint: 'A quiet veranda south of the banyan overlooks the river.',
+    found: 'Stopped for jasmine tea on the veranda.',
     when: { kind: 'flag', key: 'riverside_tea', op: 'set' },
   },
   {
@@ -46,10 +47,10 @@ export const JOURNAL_NOTES: readonly JournalNote[] = [
   {
     id: 'workers_tea',
     mapId: 'ambush_road',
-    title: 'A place for tired people',
+    title: 'The crews’ rest stop',
     hint: 'A little workers’ rest sits along the southern verge of the cutting.',
     found:
-      'Sen’s crews built their own rest. Put the kettle on before asking which side someone is on.',
+      'The quarry crews built the bench. Sen keeps tea ready while he waits for them to come back.',
     when: { kind: 'flag', key: 'world.tea_shared', op: 'set' },
   },
   {
@@ -58,16 +59,16 @@ export const JOURNAL_NOTES: readonly JournalNote[] = [
     title: 'A borrowed sock, a safer nest',
     hint: 'Look for a little nest beside the southwestern woodland path.',
     found:
-      'Quarry silt drove the turtle-ducks uphill. We gave the family room to pass; the sock is theirs for now.',
+      'Quarry silt covers the old nest by the stream. The ducklings have a dry nest uphill, lined with a sock.',
     when: { kind: 'flag', key: 'world.discovered.duck_nest', op: 'set' },
   },
   {
     id: 'runoff_marker',
     mapId: 'forest_road',
-    title: 'Ask upstream',
+    title: 'Silt at the marker',
     hint: 'Beyond the roadblock, a measuring stone stands beside the stream.',
     found:
-      'The stone remembers a clearer waterline. Reading the runoff tells us where to begin, but does not clean the stream.',
+      'Silt covers the stream marker. A scratched note asks whether the quarry settling pit is blocked.',
     when: { kind: 'flag', key: 'world.discovered.runoff_marker', op: 'set' },
   },
   {
@@ -75,8 +76,7 @@ export const JOURNAL_NOTES: readonly JournalNote[] = [
     mapId: 'ambush_road',
     title: 'The seventh cup',
     hint: 'Look beside Sen’s rest stop for a shared kettle and mismatched cups.',
-    found:
-      'We washed the spare cup for the next traveller. Someone has already left a second towel.',
+    found: 'Washed the seventh cup. Its handle is held on with wire.',
     when: { kind: 'flag', key: 'world.discovered.tea_station', op: 'set' },
   },
 ];

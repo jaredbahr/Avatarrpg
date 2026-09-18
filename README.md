@@ -1,7 +1,7 @@
 # Four Nations Tactics
 
 A hot-seat, turn-based tactical RPG for the family — grid combat, action points,
-and elemental terrain reactions, in an original era a few decades after Korra.
+and elemental terrain reactions, in an original setting after Korra.
 Up to six players share one tablet; each picks an element and a character and
 levels up across a branching story.
 

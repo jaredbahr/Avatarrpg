@@ -92,3 +92,71 @@ test('Follow party restores the view without moving the party or changing zoom',
   }));
   expect(after).toEqual(before);
 });
+
+test('resizing exploration keeps zoom and map focus while taps follow the painted tiles', async ({
+  page,
+}) => {
+  await page.setViewportSize({ width: 1368, height: 912 });
+  await resetStorage(page, '?renderer=canvas');
+  await startGame(page, ['Jared'], ['kaya'], 'explore-resize');
+  await enterNode(page, 'village_explore');
+  await settleLayout(page);
+
+  const canvas = page.locator('.map-canvas');
+  const box = await canvas.boundingBox();
+  if (!box) throw new Error('No exploration canvas');
+  await canvas.dispatchEvent('wheel', {
+    clientX: box.x + box.width / 2,
+    clientY: box.y + box.height / 2,
+    deltaY: -500,
+    bubbles: true,
+    cancelable: true,
+  });
+  await page.getByRole('button', { name: 'Follow party', exact: true }).click();
+  await page.mouse.move(box.x + box.width / 2, box.y + box.height / 2);
+  await page.mouse.down();
+  await page.mouse.move(box.x + box.width / 2 - 180, box.y + box.height / 2 - 100, { steps: 8 });
+  await page.mouse.up();
+  await settleLayout(page);
+
+  const view = () =>
+    page.evaluate(() => {
+      const canvas = document.querySelector<HTMLCanvasElement>('.map-canvas');
+      const camera = window.fnt?.app.rendererCamera();
+      if (!canvas || !camera) throw new Error('No exploration camera');
+      const rect = canvas.getBoundingClientRect();
+      return {
+        tilePx: camera.tilePx,
+        width: rect.width,
+        height: rect.height,
+        centreX: (camera.offsetX + rect.width / 2) / camera.tilePx,
+        centreY: (camera.offsetY + rect.height / 2) / camera.tilePx,
+      };
+    });
+  const before = await view();
+  await page.setViewportSize({ width: 1194, height: 834 });
+  await settleLayout(page);
+  const after = await view();
+  expect(after.width).toBeLessThan(before.width);
+  expect(after.tilePx).toBeCloseTo(before.tilePx, 3);
+  expect(after.centreX).toBeCloseTo(before.centreX, 1);
+  expect(after.centreY).toBeCloseTo(before.centreY, 1);
+
+  const target = await page.evaluate(() => {
+    const canvas = document.querySelector<HTMLCanvasElement>('.map-canvas');
+    const camera = window.fnt?.app.rendererCamera();
+    if (!canvas || !camera) throw new Error('No exploration camera');
+    const rect = canvas.getBoundingClientRect();
+    return {
+      x: rect.left + (6.5 * camera.tilePx - camera.offsetX),
+      y: rect.top + (7.5 * camera.tilePx - camera.offsetY),
+    };
+  });
+  await page.mouse.click(target.x, target.y);
+  await expect
+    .poll(() => page.evaluate(() => window.fnt?.app.state?.location.pos))
+    .toEqual({
+      x: 6,
+      y: 7,
+    });
+});
