@@ -1,4 +1,5 @@
 import type { MapScene, Vec2 } from '../../core/types';
+import { QUARRY_WEST_FRAMES } from './quarryWestFrames';
 
 const root = 'art/maps/quarry-gate-scene/';
 export const QUARRY_GATE_COVER_CELLS: readonly Vec2[] = [
@@ -35,15 +36,20 @@ export const QUARRY_GATE_SCENE: MapScene = {
       height: 48,
     })),
   ],
-  scenery: QUARRY_GATE_WALL_CELLS.map(({ x, y }) => ({
-    id: `quarry-wall-${x}-${y}`,
-    url: `${root}wall-${quarryWallVariant({ x, y })}.webp`,
-    x: 768 + (x - y) * 64 - 64,
-    y: (x + y + 1) * 32 - 144,
-    width: 128,
-    height: 176,
-    footprint: [{ x, y }],
-    depth: { x: x + 0.5, y: y + 0.5 },
-    fadeWhenOccluding: true,
-  })),
+  scenery: QUARRY_GATE_WALL_CELLS.map(
+    ({ x, y }) =>
+      QUARRY_WEST_FRAMES.find(
+        (piece) => piece.footprint[0].x === x && piece.footprint[0].y === y,
+      ) ?? {
+        id: `quarry-wall-${x}-${y}`,
+        url: `${root}wall-${quarryWallVariant({ x, y })}.webp`,
+        x: 768 + (x - y) * 64 - 64,
+        y: (x + y + 1) * 32 - 144,
+        width: 128,
+        height: 176,
+        footprint: [{ x, y }],
+        depth: { x: x + 0.5, y: y + 0.5 },
+        fadeWhenOccluding: true,
+      },
+  ),
 };
