@@ -31,5 +31,6 @@ it('keeps pine tips inside the agreed top bleed and all feet on projected cell c
     expect(tree.y).toBeGreaterThanOrEqual(-192);
     expect(tree.x + tree.width * 0.51).toBeCloseTo(768 + (cell.x - cell.y) * 64);
     expect(tree.y + tree.height * 0.99).toBeCloseTo((cell.x + cell.y + 1) * 32);
+    expect((tree.depth.x + tree.depth.y) * 32).toBeCloseTo(tree.y + tree.height * 0.99);
   }
 });

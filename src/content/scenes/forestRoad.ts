@@ -45,7 +45,7 @@ function pine({ x, y }: Vec2): SceneScenery {
     width,
     height,
     footprint: [{ x, y }],
-    depth: { x, y },
+    depth: { x: x + 0.5, y: y + 0.5 },
     fadeWhenOccluding: true,
   };
 }
