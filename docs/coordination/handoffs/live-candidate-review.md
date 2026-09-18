@@ -261,3 +261,37 @@ Astra owns the next gate ground/wall/cart asset pass with exact map masks,
 visible review points; cutting/floor waits for gate qualitative review. Release
 path is unchanged: PR62 eec68bd latest-head CI, then one reconciled combined
 landing. No duplicate source PR or combined push; live remains148843f.
+
+## Separate material/contact checkpoint ae8ba56
+
+Rock Throw now lifts its existing boulder from ground to measured Bo/Lin Mei
+release palms before the unchanged flight, ending at torso. Shards attach to the
+body; ground eruption, dust and cracks stay grounded. Strike moves contact
+sparks/ring to the recipient body and keeps dust on the ground. Sura alone has a
+visible waterskin: a small cue draws from its cast-frame upper attachment to her
+palm. Primary finds that cue too subtle for source-quality acceptance; Nilak has
+no visible waterskin and gets no invented gear. Water's rigid crescent material
+remains an explicit gap.
+
+Air Blast's resolved named recipe has30ms hit-stop, correcting the first audit's
+20ms family assumption. At4tiles launch306.8ms/contact506.8ms; original push
+908.8–1128.8 followed caster recovery. New actual-push slide536.8–756.8 begins
+after contact hold, retaining220ms forced duration/reducer destination. Suppress
+ordinary recoil only on actually pushed victims to prevent recoil-back overriding
+the slide. Blocked/no-push hits retain recoil; cursor still covers caster recovery.
+
+Full verify passed737tests/79files; build and295.3KiB/300KiB JS budget pass.
+Twelve staged production real-Confirm captures passed for Sura/Bo/Lin Mei/Nima/
+Riko/Wen on both renderers, blockedSW/no page errors. Evidence is under
+`gallery/scene-audit/material-contact-ae8ba56/README.md` with originals and sampled
+frames. Primary inspected bounded contacts and shove; independent art review
+pending. No continuous campaign/listening/device/performance claim. Earlier
+b471939 independent Astra review passed only water/air hand contact/return,
+explicitly leaving source/material quality and delayed push open.
+
+Next structural milestone is separate: art material3f2ffc4 integrated asf9d71fb,
+preserving both courtyard and forest NOTICE credits while resolving the source
+conflict; plan c095bf17 integrated asea86822. SourceRect atlas implementation is
+in progress for eight western cells within the existing32depth-owned slices.
+No atlas art is accepted yet; no cutting/floor expansion. Source PR62 remains
+eec68bd with current-head browser/gallery CI in progress; no restart or merge.
