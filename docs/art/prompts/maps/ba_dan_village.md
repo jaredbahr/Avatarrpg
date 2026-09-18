@@ -8,7 +8,7 @@
 
 **Layout** `ba_dan_village-layout.png` beside this file: the tile grid as flat colour blocks at 32 px a tile, with the grid drawn. Hand it to the generator as the composition reference (image-to-image or a structure control) at a strength that keeps every edge where it is; upscale it to the delivery size first so the generator does not invent a border.
 
-**Palette** hue anchors from the game's own ground (`src/render/palettes.ts`): grass `#41552f`, wood `#6b4f33`, road `#5b5044`, dirt `#4d3f2f`, still water `#3e8fb0`. The painting replaces those tones outright, so lighter and more saturated is fine; stay in the same families so the effects and the parchment HUD still read over it.
+**Palette** hue anchors from the game's own ground (`src/render/palettes.ts`): grass `#41552f`, wood `#6b4f33`, road `#5b5044`, stone `#565452`, dirt `#4d3f2f`, still water `#3e8fb0`. The painting replaces those tones outright, so lighter and more saturated is fine; stay in the same families so the effects and the parchment HUD still read over it.
 
 ## Where
 
@@ -22,8 +22,9 @@ Ba Dan, the small village the party sets out from: a clearing in the woods.
 - Still water (3 tiles): a 3×1 block at columns 10–12, row 6 (the centre).
 - Trees (48 tiles): 13 tiles (top right), row 0: columns 18–23; row 1: columns 22–23; rows 2–6: column 23; 13 tiles (bottom right), rows 9–13: column 23; row 14: columns 22–23; row 15: columns 18–23; 11 tiles (top left), row 0: columns 0–3; row 1: columns 0–1; rows 2–6: column 0; 11 tiles (bottom left), rows 9–13: column 0; row 14: columns 0–1; row 15: columns 0–3.
 - Timber walls (36 tiles): 10 tiles (bottom centre), row 10: columns 6–8; row 11: column 6; row 12: columns 6 and 9; row 13: columns 6–9; 7 tiles (top centre), row 1: columns 6–9; row 2: columns 6 and 9; row 3: column 6; 7 tiles (top centre), row 1: columns 12–15; row 2: columns 12 and 15; row 3: column 15; 6 tiles (bottom centre), row 10: columns 14–17; row 11: columns 14 and 17; 6 tiles (bottom centre), row 12: columns 13 and 16; row 13: columns 13–16.
+- Stone walls (6 tiles): 4 tiles (top left), row 4: columns 7–8; row 5: columns 6–7; a 2×1 block at columns 14–15, row 9 (the centre).
 - Plank floors (16 tiles): a 2×2 block at columns 7–8, rows 2–3 (top centre); a 2×2 block at columns 13–14, rows 2–3 (top centre); a 2×2 block at columns 7–8, rows 11–12 (bottom centre); 4 tiles (bottom centre), row 11: columns 15–16; row 12: columns 14–15.
-- Open ground everywhere else: grass (213 tiles), bare earth (4 tiles).
+- Open ground everywhere else: grass (207 tiles), bare earth (4 tiles).
 - The party enters from the left, standing at (3, 7); enemies come from the right. The exit is at (23, 7). Paint nothing there that would read as an object to walk round.
 
 The rows as the rules read them:
@@ -33,12 +34,12 @@ TTTT,,,,,,,,,,,,,,TTTTTT
 TT,,,,BBBB,,BBBB,,,,,,TT
 T,,,,,BwwB,,BwwB,,,,,,,T
 T,,,,,Bww=,,=wwB,,,,,,,T
-T,,,,,,,,=,,=,,,,,,,,,,T
-T,,,,,,,,=====,,,,,,,,,T
+T,,,,,,ll=,,=,,,,,,,,,,T
+T,,,,,ll,=====,,,,,,,,,T
 T,,,,,,,,=~~~=,,,,,,,,,T
 ======================..
 ======================..
-T,,,,,,,,=====,,,,,,,,,T
+T,,,,,,,,=====ll,,,,,,,T
 T,,,,,BBB=,,,=BBBB,,,,,T
 T,,,,,Bww=,,,=BwwB,,,,,T
 T,,,,,BwwB,,,BwwB,,,,,,T
@@ -47,7 +48,7 @@ TT,,,,,,,,,,,,,,,,,,,,TT
 TTTT,,,,,,,,,,,,,,TTTTTT
 ```
 
-Legend: `T` trees; `,` grass; `B` timber walls; `w` plank floors; `=` road; `~` still water; `.` bare earth.
+Legend: `T` trees; `,` grass; `B` timber walls; `w` plank floors; `=` road; `l` stone walls; `~` still water; `.` bare earth.
 
 ## Prompt
 
