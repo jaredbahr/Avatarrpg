@@ -1,6 +1,8 @@
 # Quarry gate registered art candidate
 
-Status: local source candidate; actual 96px gameplay review remains pending.
+Status: original wholeplate REJECTED on integrated runtime `4e7788b`.
+The replacement below repairs material registration; integrated gameplay and
+overall visual acceptance remain pending.
 Gate first, cutting and floor later. No legacy backdrop, map row, prop, hazard,
 spawn, route or save data changes are included here. Gameplay owns projection
 opt-in, live surfaces and props, picking and actor-aware wall occlusion.
@@ -20,13 +22,54 @@ on. End, corner and bonded-interior material variants use cardinal wall adjacenc
 No multi-cell depth sprite, source-rectangle atlas contract or overhang is added.
 
 The 36 elevation cells remain walkable, represented by shallow ground stone.
-Four wood-cover cells at (13,2),(5,3),(5,8),(14,9) have low timber offcuts painted
-inside their ground footprints. They remain passable. The 12 oil cells have
+Four wood-cover cells at (13,2),(5,3),(5,8),(14,9) have separate low timber decals
+centered inside their ground footprints. They remain passable. The 12 oil cells have
 neutral stone substrate, never baked oil or painted-surface suppression.
 Brazier (10,5), barrels (14,3)/(14,8), flask (12,4), cart (6,6), exits (0,5)/(19,5),
 parley crossing x8 and all party/enemy spawns remain gameplay-owned and unchanged.
 
 ## Sources and packing
+
+### Deterministic repair
+
+The original generated ground failed semantic registration despite matching
+the plate aspect ratio. For example, cover (5,3) appeared near logical
+(3.78,1.78). Roads and elevation were also displaced. The original source is
+retained for provenance, but neither its geometry nor its painted props are used.
+
+Built-in ImageGen produced `exec-bbd97582-db51-429f-879c-9f2345378cc5.png`
+(2172 × 724, three equal material panels) and
+`exec-99f58bdf-66be-4d8b-886c-ca9d8967e096.png` (transparent low timber).
+The material prompt requested even, unobstructed, edge-to-edge quarry dust,
+pale compacted road dust and warm-gray shallow limestone fields, with no map,
+objects, cliffs, oil, shadows or gameplay geometry. The cover prompt requested
+one ankle-high irregular heap of weathered timber, true alpha, isometric view,
+no floor patch or extra props. Both use the project's original painterly-ground
+and restrained ink/shading brief; no external downloaded art is used.
+
+`quarry-ground-pack.ts` crops an eight-pixel inset from each material panel,
+reflects authored texels without upscaling, and selects the material by inverting
+the agreed projection at every world pixel center. All 36 `=` cells select road;
+all 36 `^` and 12 `o` cells select stone; remaining cells and bleed select dirt.
+No generated region boundary determines game geometry. There is no wholeplate
+warp or procedural replacement painting. Two 864 × 960 WebPs cover the same
+world extent as before. Their downsampling may soften a boundary by one texel.
+
+One 224 × 96 transparent timber image is placed four times at 112 × 48 world
+size, centered on the real `c` cells and clipped to the true 128 × 64 cell diamond.
+The authored silhouette fits without removing any nontransparent pixels.
+There are six ground entries and the original 32 wall entries. All wall files,
+live oil, props, spawns, collision rules, actor depth and fade rules are unchanged.
+This is map-truth repair, not a claim that the material style meets the approved
+finished scene target. Sharp road/shelf boundaries and reflected material
+repetition require review at the actual gameplay camera.
+
+Repaired ground and cover total 168,142 bytes; retained walls total 66,614 bytes.
+The map family is 3.08 MiB of its existing 4 MiB budget. `npm run verify`
+passed 627 tests, and art validation and asset budget checks passed. The exact
+packed-image overlay was visually inspected against all four semantic classes.
+
+### Rejected wholeplate and retained wall provenance
 
 ImageGen sources in
 `C:/Users/Jared/.codex/generated_images/01a0b2ee-8d60-7643-be9b-340997ca4ae0/`:
@@ -60,7 +103,6 @@ do not establish visual acceptance. Inspect coherent wall runs versus repeated
 block appearance, exposed ends/corners, ground contact and occlusion while actors
 move on both sides. Check live oil/brazier/barrel/cart interactions and low cover
 readability on both backends at the actual 96px camera before extending maps.
-The source has darker neutral floor under the wall locations; verify these do
-not appear as visible skirts when walls fade. Minor authored silhouette insets
+Minor authored wall silhouette insets
 must not create distracting seams between adjacent cells. The quarry reference
 is a composition/material target, not authorization to invent new obstacles.

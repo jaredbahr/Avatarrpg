@@ -1,6 +1,12 @@
 import type { MapScene, Vec2 } from '../../core/types';
 
 const root = 'art/maps/quarry-gate-scene/';
+export const QUARRY_GATE_COVER_CELLS: readonly Vec2[] = [
+  { x: 13, y: 2 },
+  { x: 5, y: 3 },
+  { x: 5, y: 8 },
+  { x: 14, y: 9 },
+];
 export const QUARRY_GATE_WALL_CELLS: readonly Vec2[] = [0, 1, 10, 11].flatMap((y) =>
   (y === 0 || y === 11 ? [4, 5, 6, 7, 8, 9, 12, 13, 14, 15, 16, 17] : [4, 9, 12, 17]).map((x) => ({
     x,
@@ -21,6 +27,13 @@ export const QUARRY_GATE_SCENE: MapScene = {
   ground: [
     { url: `${root}ground-west.webp`, x: -128, y: -192, width: 1152, height: 1280 },
     { url: `${root}ground-east.webp`, x: 1024, y: -192, width: 1152, height: 1280 },
+    ...QUARRY_GATE_COVER_CELLS.map(({ x, y }) => ({
+      url: `${root}cover-timber.webp`,
+      x: 768 + (x - y) * 64 - 56,
+      y: (x + y + 1) * 32 - 24,
+      width: 112,
+      height: 48,
+    })),
   ],
   scenery: QUARRY_GATE_WALL_CELLS.map(({ x, y }) => ({
     id: `quarry-wall-${x}-${y}`,

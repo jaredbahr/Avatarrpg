@@ -172,13 +172,13 @@ export const CREDITS: readonly CreditEntry[] = [
     note: 'Original generated art registered to the existing terrain without collision changes. Source IDs, prompts, masking and anchors: docs/art/forest-scene-registration.md. Output terms: https://openai.com/policies/row-terms-of-use/. No exclusive copyright in generated output is claimed.',
   },
   {
-    what: 'Quarry gate scene',
-    work: 'Registered limestone ground and bonded wall variants',
+    what: 'The registered quarry gate art',
+    work: 'Quarry material textures, low timber cover and modular limestone walls',
     authors: 'This project, generated with OpenAI image generation',
     licence: 'own work',
     source: '',
     covers: ['art/maps/quarry-gate-scene'],
-    note: 'Original generated art registered to existing terrain. Source IDs, packing and anchors: docs/art/quarry-gate-registration.md. Output terms: https://openai.com/policies/row-terms-of-use/. No exclusive copyright in generated output is claimed.',
+    note: 'Original generated materials packed through authoritative map-cell masks, with separate transparent timber and wall pieces. The initial wholeplate was rejected for semantic drift. Prompts, provenance and repair notes: docs/art/quarry-gate-registration.md. Output terms: https://openai.com/policies/row-terms-of-use/. No exclusive copyright in generated output is claimed.',
   },
   ...THIRD_PARTY_CREDITS,
   {

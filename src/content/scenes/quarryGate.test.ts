@@ -2,6 +2,24 @@ import { expect, it } from 'vitest';
 import { QUARRY_GATE } from '../maps/combat';
 import { QUARRY_GATE_SCENE, QUARRY_GATE_WALL_CELLS, quarryWallVariant } from './quarryGate';
 
+it('centers four low cover decals on the actual passable cover cells', () => {
+  const cells = QUARRY_GATE.rows.flatMap((row, y) =>
+    [...row].flatMap((key, x) => (key === 'c' ? [{ x, y }] : [])),
+  );
+  expect(QUARRY_GATE_SCENE.ground).toHaveLength(6);
+  const decals = QUARRY_GATE_SCENE.ground.slice(2);
+  expect(decals).toHaveLength(cells.length);
+  for (const [index, cell] of cells.entries()) {
+    const decal = decals[index];
+    expect(decal).toMatchObject({
+      x: 768 + (cell.x - cell.y) * 64 - 56,
+      y: (cell.x + cell.y + 1) * 32 - 24,
+      width: 112,
+      height: 48,
+    });
+  }
+});
+
 it('uses exactly the existing 32 blocked wall cells and keeps their projected feet/depth aligned', () => {
   const cells = QUARRY_GATE.rows.flatMap((row, y) =>
     [...row].flatMap((key, x) => (key === '#' ? [{ x, y }] : [])),
