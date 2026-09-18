@@ -152,11 +152,12 @@ export class CombatScene implements Scene {
     this.syncRecentre();
   }
 
-  /** Whole board back on screen, or the acting unit centred where it cannot fit. */
+  /** Restore readable oblique framing, or the fitted orthographic board. */
   private recentre(): void {
     const camera = this.renderer?.camera;
     if (!camera) return;
-    camera.fit();
+    if (camera.projection === 'oblique') camera.fitExplore(96);
+    else camera.fit();
     this.zoomed = false;
     const unit = this.active();
     if (!camera.fitted && unit) camera.centreOn(unit.pos);
@@ -206,12 +207,13 @@ export class CombatScene implements Scene {
     this.renderer.camera.projection =
       this.app.content.maps.get(battle.mapId)?.projection ?? 'orthographic';
     this.app.animator.setProjection(this.renderer.camera.projection);
-    this.renderer.camera.fit();
+    if (this.renderer.camera.projection === 'oblique') this.renderer.camera.fitExplore(96);
+    else this.renderer.camera.fit();
 
     // The map is the only thing that flexes, so it is still the wrong size
     // here: the turn strip and the HUD fill in after mount, and the log panel
     // and the Large-text setting move them again later. Re-fit whenever the
-    // canvas box actually changes, or the camera drifts from what is drawn â€”
+    // canvas box actually changes, or the camera drifts from what is drawn —
     // through refit(), so a pinch zoom survives the reflow.
     this.renderer.onViewportChange = () => this.refit();
 
@@ -400,7 +402,7 @@ export class CombatScene implements Scene {
 
   /**
    * Enemy and ally turns run themselves, but only once the current playback has
-   * finished â€” otherwise six bandits resolve in one frame and the table sees
+   * finished — otherwise six bandits resolve in one frame and the table sees
    * nothing but the aftermath.
    */
   private maybeRunAi(): void {
@@ -442,7 +444,7 @@ export class CombatScene implements Scene {
 
     const recentre = button('Recentre', () => this.recentre(), {
       class: 'btn-ghost',
-      title: 'Show the whole battlefield again',
+      title: 'Reset the battlefield view around the acting unit',
     });
     recentre.prepend(mark(UI_MARKS.recentre, 'mark-inline'));
     recentre.hidden = this.renderer?.camera.fitted ?? true;
@@ -542,7 +544,7 @@ export class CombatScene implements Scene {
           'div',
           { class: 'enemy-turn-banner' },
           el('span', {
-            text: unit.faction === 'enemy' ? 'Enemies are movingâ€¦' : `${unit.name} is movingâ€¦`,
+            text: unit.faction === 'enemy' ? 'Enemies are moving…' : `${unit.name} is moving…`,
           }),
         ),
       );
@@ -607,7 +609,9 @@ export class CombatScene implements Scene {
               'div',
               { class: 'stack tight' },
               el('strong', { class: 'unit-name', text: unit.name }),
-              player ? el('span', { class: 'tiny muted', text: player.name }) : null,
+              player && player.name !== unit.name
+                ? el('span', { class: 'tiny muted', text: player.name })
+                : null,
             ),
             el('div', { class: 'spacer' }),
             el('span', { class: 'tiny muted', text: `Level ${unit.level}` }),
@@ -686,7 +690,7 @@ export class CombatScene implements Scene {
         header.append(
           mark(iconMarkup(markKindFor(ability))),
           el('strong', { text: ability.name }),
-          el('span', { class: 'header-cost', text: `Â· ${ability.apCost} AP` }),
+          el('span', { class: 'header-cost', text: `· ${ability.apCost} AP` }),
           el('span', { class: 'header-desc', text: ability.description }),
         );
         return header;
@@ -696,7 +700,7 @@ export class CombatScene implements Scene {
       header.append(
         mark(UI_MARKS.move),
         el('strong', { text: 'Move' }),
-        el('span', { class: 'header-cost', text: `Â· ${unit.move} left` }),
+        el('span', { class: 'header-cost', text: `· ${unit.move} left` }),
         el('span', { class: 'header-desc', text: 'Walk to a highlighted tile.' }),
       );
       return header;
@@ -845,7 +849,7 @@ export class CombatScene implements Scene {
       chips.appendChild(
         el('span', {
           class: `chip ${entry.friendly ? 'chip-friendly' : 'chip-hostile'}${entry.lethal ? ' chip-lethal' : ''}`,
-          text: `${entry.name}: ${parts.join(' Â· ')}${entry.lethal ? ' â€” lethal' : ''}`,
+          text: `${entry.name}: ${parts.join(' · ')}${entry.lethal ? ' — lethal' : ''}`,
         }),
       );
     }

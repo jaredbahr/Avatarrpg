@@ -114,10 +114,10 @@ async function swipe(page: Page, from: Point, to: Point): Promise<void> {
   );
 }
 
-async function openFight(page: Page): Promise<void> {
+async function openFight(page: Page, node = 'battle_forest_road'): Promise<void> {
   await resetStorage(page);
   await startGame(page, ['Elias'], ['kaya'], 'gestures-spec');
-  await enterNode(page, 'battle_forest_road');
+  await enterNode(page, node);
   await takeTurn(page);
   await waitForIdle(page);
 }
@@ -126,10 +126,11 @@ test.describe('zoom and pan', () => {
   test('a pinch zooms in around the fingers and offers Recentre', async ({ page }) => {
     await openFight(page);
     const before = await camera(page);
-    expect(before.fitted).toBe(true);
+    expect(before.fitted).toBe(false);
+    expect(before.tilePx).toBeGreaterThanOrEqual(96);
     const { point, tile } = await centreTile(page);
     const recentre = page.getByRole('button', { name: /^Recentre$/ });
-    await expect(recentre).toBeHidden();
+    await expect(recentre).toBeVisible();
 
     await pinch(
       page,
@@ -152,7 +153,8 @@ test.describe('zoom and pan', () => {
   });
 
   test('a drag pans only once the board no longer fits', async ({ page }) => {
-    await openFight(page);
+    // Preserve the fitted orthographic contract alongside readable oblique views.
+    await openFight(page, 'battle_quarry_gate');
     const fitted = await camera(page);
 
     await swipe(page, { x: 200, y: 200 }, { x: 120, y: 160 });
@@ -180,7 +182,7 @@ test.describe('zoom and pan', () => {
     expect(panned.offsetY).toBeGreaterThan(zoomed.offsetY);
   });
 
-  test('Recentre puts the whole board back and hides itself', async ({ page }) => {
+  test('Recentre restores readable oblique combat framing', async ({ page }) => {
     await openFight(page);
     const fitted = await camera(page);
     const { point } = await centreTile(page);
@@ -201,9 +203,9 @@ test.describe('zoom and pan', () => {
 
     await recentre.click();
     const back = await camera(page);
-    expect(back.fitted).toBe(true);
+    expect(back.fitted).toBe(false);
     expect(back.tilePx).toBeCloseTo(fitted.tilePx, 3);
-    await expect(recentre).toBeHidden();
+    await expect(recentre).toBeVisible();
   });
 
   test('a trackpad pinch (ctrl+wheel) zooms too', async ({ page }) => {

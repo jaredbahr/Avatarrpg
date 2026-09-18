@@ -85,6 +85,12 @@ test.describe('map viewport', () => {
 
     expect(target, 'no single-tile enemy to tap').not.toBeNull();
     if (!target) return;
+    // Readable oblique combat deliberately pans. Bring this enemy into view
+    // before testing the independent painted-pixel to tile conversion.
+    await page
+      .getByRole('button', { name: `Focus ${target.name}`, exact: true })
+      .first()
+      .click();
 
     // Where that tile is *painted*, which is the camera's own geometry put
     // through whatever scaling the element is applying to the backing store.

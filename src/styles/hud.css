@@ -193,6 +193,7 @@
 
 .combat-bar {
   flex-wrap: wrap;
+  gap: var(--sp-1);
 }
 
 /* The encounter's name on a plate, in the display face, the round under it. */
@@ -2258,4 +2259,32 @@ html[data-contrast='high'] .hud-panel::after {
   background: none;
   justify-content: center;
   font-size: var(--fs-md);
+}
+
+/* Keep combat controls beside the actor summary whenever touch targets fit. */
+.combat-scene .hud {
+  flex-direction: row;
+  flex-wrap: wrap;
+}
+.combat-scene .unit-panel {
+  flex: 1 1 12rem;
+  min-width: 0;
+}
+.combat-scene .action-bar {
+  flex: 3 1 24rem;
+  min-width: 0;
+}
+
+@media (max-width: 36rem) {
+  .combat-scene .combat-bar {
+    flex-wrap: nowrap;
+    overflow-x: auto;
+  }
+  .combat-scene .combat-bar > * {
+    flex-shrink: 0;
+  }
+  .combat-scene .hud {
+    max-height: 40dvh;
+    overflow-y: auto;
+  }
 }
