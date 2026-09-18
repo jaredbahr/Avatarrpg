@@ -35,6 +35,7 @@ import type { WalkPreview } from '../world/walking';
 import { NearbyPlaces } from '../ui/NearbyPlaces';
 import { LocalMap, LocalMapDialog } from '../ui/LocalMap';
 import { courtyardEnvironment } from '../audio/environment';
+import { partyScale } from '../anim/actorScale';
 
 /** How far Talk reaches, in tiles: across the square, not across the village. */
 const TALK_RANGE = 3;
@@ -752,7 +753,7 @@ export class ExploreScene implements Scene {
       fallen: false,
       // A health bar over someone strolling round a village is noise.
       showHealth: false,
-      scale: map.projection === 'oblique' ? 1.25 : 1,
+      scale: partyScale(map.projection),
       renderPos: index === 0 ? walking : this.app.animator.renderPos(now, member.id),
       offset: this.app.animator.offset(now, member.id),
       clipTime: this.app.animator.unitPose(now, member.id)?.clipTime,

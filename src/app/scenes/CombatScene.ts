@@ -42,6 +42,7 @@ import { paintElementGlyph } from '../../render/painters/glyphs';
 import { showGridLines } from '../storage/localSaves';
 import { reactionNotes } from '../ui/ReactionNote';
 import { UnitInspector } from '../ui/UnitInspector';
+import { partyScale } from '../anim/actorScale';
 
 type Mode =
   | { readonly kind: 'idle' }
@@ -1176,14 +1177,17 @@ export class CombatScene implements Scene {
     const pose = this.app.animator.unitPose(now, unitId);
     const walked = this.app.animator.facing(unitId);
     const movement = directional ? this.app.animator.locomotion(now, unitId) : undefined;
-    if (!pose) return movement ?? { facing: walked ?? restFacing };
+    const mapId = this.app.state?.battle?.mapId;
+    const projection = mapId ? this.app.content.maps.get(mapId)?.projection : undefined;
+    const scale = directional ? partyScale(projection, pose?.scale) : (pose?.scale ?? 1);
+    if (!pose) return { ...(movement ?? { facing: walked ?? restFacing }), scale };
     return {
       offset: pose.offset,
       facing: pose.facing ?? walked ?? restFacing,
       clip: pose.clip,
       clipTime: pose.clipTime,
       ...(pose.frame !== undefined ? { clipFrame: pose.frame } : {}),
-      scale: pose.scale,
+      scale,
       alpha: pose.alpha,
       flash: pose.flash,
       ...(pose.clip === 'walk' && movement ? movement : {}),

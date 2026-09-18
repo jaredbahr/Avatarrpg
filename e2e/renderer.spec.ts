@@ -93,7 +93,14 @@ test.describe('renderer backends', () => {
 
       // This is the procedural ground's test: every unpainted map and the
       // fallback draw it, so take any painting the forest road may carry away.
-      await page.evaluate(() => window.fnt?.app.overrideBackdrop('forest_road', null));
+      await page.evaluate(() => {
+        const app = window.fnt?.app;
+        const map = app?.content.maps.get('forest_road');
+        // Layered scenes supersede legacy backdrops. Remove both paintings to
+        // exercise procedural fallback, retaining its original color contract.
+        if (map) Object.defineProperty(map, 'scene', { value: undefined, configurable: true });
+        return app?.overrideBackdrop('forest_road', null);
+      });
       await page.evaluate(
         () => new Promise((done) => requestAnimationFrame(() => requestAnimationFrame(done))),
       );
