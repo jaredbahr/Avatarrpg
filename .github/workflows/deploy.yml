@@ -4,6 +4,11 @@ on:
   push:
     branches: [main]
   workflow_dispatch:
+    inputs:
+      publish_gallery:
+        description: Capture and publish the screenshot gallery (slow; CI already provides it)
+        type: boolean
+        default: false
 
 # Pages needs these; nothing else in the repo does.
 permissions:
@@ -31,9 +36,12 @@ jobs:
       - run: npm ci
 
       - name: Install Chromium for Playwright
+        if: ${{ github.event_name == 'workflow_dispatch' && inputs.publish_gallery }}
         run: npx playwright install --with-deps chromium
 
       - name: Capture the gallery
+        id: gallery
+        if: ${{ github.event_name == 'workflow_dispatch' && inputs.publish_gallery }}
         # Runs before the Pages build on purpose: the gallery builds and serves
         # its own copy of the site at the root base, and the Pages build below
         # replaces dist/ afterwards. A review artefact, never a gate, so a
@@ -51,7 +59,9 @@ jobs:
         run: cp dist/index.html dist/404.html
 
       - name: Publish the gallery beside the site
-        # Reachable at /<repo>/gallery/ once deployed; skipped if the capture failed.
+        if: ${{ github.event_name == 'workflow_dispatch' && inputs.publish_gallery && steps.gallery.outcome == 'success' }}
+        # Optional publication only. Normal deployments contain the game alone;
+        # the required CI gallery remains available as a downloadable artifact.
         run: |
           if [ -f gallery/index.html ]; then cp -r gallery dist/gallery; fi
 
