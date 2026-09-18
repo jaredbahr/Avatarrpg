@@ -19,9 +19,12 @@
 
 import type { MapDef } from '../../core/types';
 import { LEGEND } from './legend';
+import { FOREST_ROAD_SCENE } from '../scenes/forestRoad';
 
 export const FOREST_ROAD: MapDef = {
   id: 'forest_road',
+  projection: 'oblique',
+  scene: FOREST_ROAD_SCENE,
   backdrop: { url: 'art/maps/forest_road.webp', pixelsPerTile: 80 },
   name: 'The Forest Road',
   kind: 'combat',

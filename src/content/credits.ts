@@ -162,6 +162,15 @@ export const CREDITS: readonly CreditEntry[] = [
     covers: ['art/maps/ba-dan-scene'],
     note: 'Original generated material and scenery art, packed against the logical village map. Exact prompts, processing and registration: docs/art/ba-dan-scene.md and docs/art/ba-dan-scene-prompts.json. Output terms: https://openai.com/policies/row-terms-of-use/. No exclusive copyright in generated output is claimed.',
   },
+  {
+    what: 'The layered Forest Road',
+    work: 'Registered ground, eight-cell water, low rubble and upright pines',
+    authors: 'This project, generated with OpenAI image generation',
+    licence: 'own work',
+    source: '',
+    covers: ['art/maps/forest-scene'],
+    note: 'Original generated art registered to the existing terrain without collision changes. Source IDs, prompts, masking and anchors: docs/art/forest-scene-registration.md. Output terms: https://openai.com/policies/row-terms-of-use/. No exclusive copyright in generated output is claimed.',
+  },
   ...THIRD_PARTY_CREDITS,
   {
     what: 'The app icons',
