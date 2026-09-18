@@ -15,6 +15,25 @@ describe('content', () => {
     expect(problems, `\n${problems.join('\n')}\n`).toEqual([]);
   });
 
+  it('only resumes an end screen at an existing exploration node', () => {
+    const ending = CONTENT_BUNDLE.story.find((node) => node.id === 'act1_epilogue');
+    if (ending?.kind !== 'end') throw new Error('Missing Act 1 ending');
+    const withNext = (next: string) =>
+      validateContent({
+        ...CONTENT_BUNDLE,
+        story: CONTENT_BUNDLE.story.map((node) =>
+          node.id === ending.id ? { ...ending, next } : node,
+        ),
+      });
+    expect(withNext('village_explore')).toEqual([]);
+    expect(withNext('battle_grumbler')).toContain(
+      'story node "act1_epilogue" continues to "battle_grumbler", which is not an explore node',
+    );
+    expect(withNext('missing_explore')).toContain(
+      'story node "act1_epilogue" links to "missing_explore", which does not exist',
+    );
+  });
+
   /*
    * Standing is stored in `flags` as a number, and 0 is falsy. Every flag reader
    * older than conditions tests truthiness, so a neutral nation would silently
