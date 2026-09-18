@@ -4,8 +4,17 @@
 to reading them: what each beat is for, which ones carry the verdict on the
 look, and the questions to answer before more story gets written.
 
-Open `gallery/index.html` from a CI artefact, or `/gallery/` beside the
-deployed site. Scroll a strip sideways to step through a playback.
+Download the `gallery` artifact from the revision's CI run and open its
+`index.html`. Artifacts are retained for seven days. Scroll a strip sideways to
+step through a playback.
+
+Normal Pages deployments publish the game without recapturing the gallery.
+For a public review URL, manually run **Deploy to GitHub Pages** on `main` with
+`publish_gallery` enabled. A successful capture is then available at `/gallery/`
+beside the game until the next normal deployment replaces it. A failed optional
+capture does not block game deployment and does not publish a gallery. Use the
+CI artifact as the default review source, tied to its tested revision; do not
+assume `/gallery/` exists or reflects the latest commit.
 
 ## Projects
 

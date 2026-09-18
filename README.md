@@ -333,6 +333,12 @@ Real tuning happens after the kids play it. These are the numbers to argue with.
 ## Contributing notes
 
 - `npm run verify` must be green before pushing.
+- CI runs for pull requests, `main` pushes and manual dispatch; feature pushes
+  do not also start a duplicate run. Required browser/gallery suites wait for
+  verification to pass, and all three required checks still gate merging.
+- Normal Pages deployments build the game only. Download the seven-day CI
+  gallery artifact for review; optional manual Pages gallery publication is
+  described in [the gallery guide](docs/gallery.md).
 - Content is validated in CI, including dangling story `next` ids and ability
   references — a typo in `src/content/**` fails the build rather than the game.
 - The simulator test asserts every encounter terminates, produces no NaN or
