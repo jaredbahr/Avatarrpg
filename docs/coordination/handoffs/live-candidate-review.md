@@ -196,5 +196,22 @@ The permanent regression checks a redraw and nonempty canvas before presentation
 not just a settled screenshot; AP spending also remains correct. Missing-sheet
 tests intercept the Kaya atlas request and exercise the painter fallback.
 
-Final WebGL moving recapture of the original Confirm flash remains pending.
+Final WebGL Kaya moving recapture passed on clean ce853fc (runtime ad13e4e).
+Art inspected twelve consecutive 25 fps frames spanning actual Confirm: the map
+remains present through preview collapse; the earlier blank-map frame is absent.
+The staged legal approach and actual UI cast naturally dealt 7 damage, with no
+browser errors and no service worker controller. Primary independently inspected
+`confirm-every-frame.png`. Evidence: art worktree
+`gallery/scene-audit/fire-attachments-ce853fc/README.md` and
+`webgl-kaya/staged-cast.webm`. Art released the freeze. This bounded recording
+cannot exclude sub-frame events and adds no audio or physical-device signoff;
+the separate production pre-paint regressions cover both resize paths.
+
+Separate courtyard PR #62 gallery run 35363386023 completed with only two
+ambiguous Travel journal selector failures (199 passed, 139 skipped). Scoped the
+selector to the exploration header, preserving both controls and gallery cases.
+Both affected cases pass locally; full verify passes 689 tests/72 files. Pushed
+correction eec68bd to PR #62; all checks must pass on that revision. Reconcile
+this local combined candidate with merged current main after the source lands;
+do not publish duplicate source changes in a competing integration PR.
 All work remains local and unpushed; PR #62 is still the separate courtyard head.
