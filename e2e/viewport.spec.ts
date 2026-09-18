@@ -42,6 +42,9 @@ test.describe('map viewport', () => {
     // Explore first: the objective banner above the map sizes itself from text.
     await enterNode(page, 'village_explore');
     await expect(page.locator('.map-canvas')).toBeVisible();
+    // Automatic WebGL selection mounts the element before its async backend.
+    await page.waitForFunction(() => Boolean(window.fnt?.app.rendererCamera()));
+    await settleLayout(page);
     const explore = await backingStoreStretch(page);
     expect(explore.x).toBeCloseTo(1, 2);
     expect(explore.y).toBeCloseTo(1, 2);
@@ -59,6 +62,7 @@ test.describe('map viewport', () => {
     // The log panel is the HUD growing again, long after mount.
     await page.getByRole('button', { name: /^Log$/ }).click();
     await expect(page.locator('.log-panel')).toBeVisible();
+    await settleLayout(page);
     const withLog = await backingStoreStretch(page);
     expect(withLog.x).toBeCloseTo(1, 2);
     expect(withLog.y).toBeCloseTo(1, 2);

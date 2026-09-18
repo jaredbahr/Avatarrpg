@@ -551,14 +551,15 @@ export class CombatScene implements Scene {
     }
 
     hud.appendChild(this.unitPanel(unit));
-    hud.appendChild(this.actionBar(unit));
+    const actions = this.actionBar(unit);
+    hud.appendChild(actions);
     if (this.logOpen) hud.appendChild(this.logPanel());
 
     if (this.pending) {
-      overlays.appendChild(this.confirmBar(unit));
+      actions.appendChild(this.confirmBar(unit));
     } else {
       const hint = this.aimHint(unit);
-      if (hint) overlays.appendChild(hint);
+      if (hint) actions.appendChild(hint);
     }
   }
 

@@ -1236,8 +1236,7 @@ html[data-contrast='high'] .hud-panel::after {
   gap: var(--sp-2);
 }
 
-/* An aim hint sits where the confirm bar would, so the eye already knows to
-   look there, but reads as guidance rather than a decision. */
+/* Aim guidance and confirmation share allocated dock space, never the map. */
 .aim-hint {
   border-color: var(--c-line);
   background: color-mix(in srgb, var(--c-bg) 92%, transparent);
@@ -2283,6 +2282,12 @@ html[data-contrast='high'] .hud-panel::after {
 .combat-scene .hud {
   flex-direction: row;
   flex-wrap: wrap;
+  max-height: 40dvh;
+  overflow-y: auto;
+}
+.combat-scene .action-bar > .confirm-bar {
+  margin: 0;
+  flex-shrink: 0;
 }
 .combat-scene .unit-panel {
   flex: 1 1 12rem;
