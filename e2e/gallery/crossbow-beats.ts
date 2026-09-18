@@ -25,7 +25,7 @@ export const CROSSBOW_BEATS: readonly Beat[] = [
         'crossbow-review',
       );
       await enterNode(ctx.page, 'battle_ambush');
-      await takeTurn(ctx.page);
+      await takeTurn(ctx.page, { settleTimeout: ctx.settleTimeout });
       await waitForIdle(ctx.page);
       await settleLayout(ctx.page, ctx.settleTimeout);
       const pos = await ctx.page.evaluate(() => {
@@ -56,7 +56,7 @@ export const CROSSBOW_BEATS: readonly Beat[] = [
         { reduceMotion: false },
       );
       await enterNode(ctx.page, 'battle_ambush');
-      await takeTurn(ctx.page);
+      await takeTurn(ctx.page, { settleTimeout: ctx.settleTimeout });
       await waitForIdle(ctx.page);
       await settleLayout(ctx.page, ctx.settleTimeout);
       // Decode the real asset before freezing the clock for the filmstrip.
