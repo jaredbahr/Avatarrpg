@@ -119,6 +119,16 @@ export class Renderer {
     this.backend.resize(viewport);
   }
 
+  /** Resize, restore the scene's camera policy, and refill the backing store in one turn. */
+  resizeAndRedraw(refit: () => void, grid?: { width: number; height: number }): void {
+    if (this.destroyed) return;
+    this.resize(grid);
+    refit();
+    // Both observer delivery and an explicit scene resize can follow the
+    // current RAF draw. Never leave their cleared backing store until next RAF.
+    if (!this.destroyed && this.lastView) this.backend.draw(this.lastView, this.camera);
+  }
+
   /**
    * Re-measures whenever the canvas element's own box changes.
    *
@@ -153,12 +163,7 @@ export class Renderer {
       ) {
         return;
       }
-      this.resize();
-      this.onViewportChange?.();
-      // An observer can run after this paint's animation callback. Resizing
-      // clears the backing store, so redraw synchronously after the scene has
-      // corrected its camera instead of exposing an empty frame until next RAF.
-      if (!this.destroyed && this.lastView) this.backend.draw(this.lastView, this.camera);
+      this.resizeAndRedraw(() => this.onViewportChange?.());
     });
     this.observer.observe(this.canvas);
   }

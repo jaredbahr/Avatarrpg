@@ -131,10 +131,10 @@ export class CombatScene implements Scene {
 
   resize(): void {
     const battle = this.battle();
-    this.renderer?.resize(
+    this.renderer?.resizeAndRedraw(
+      () => this.refit(),
       battle ? { width: battle.grid.width, height: battle.grid.height } : undefined,
     );
-    this.refit();
   }
 
   /**

@@ -61,6 +61,41 @@ beforeEach(() => {
 afterEach(() => vi.unstubAllGlobals());
 
 describe('renderer observer repaint', () => {
+  it('repaints explicit scene resizing after refit even when the later observer sees no change', () => {
+    const renderer = new Renderer(canvas, { width: 20, height: 12 });
+    renderer.draw(view);
+    const refit = vi.fn(() => {
+      expect(framebuffer).toBe(false);
+      expect(renderer.camera.grid).toEqual({ width: 24, height: 16 });
+      expect(renderer.viewport.height).toBe(699);
+      renderer.camera.scale = 1.7;
+      renderer.camera.offsetX = 240;
+      renderer.camera.offsetY = 82;
+    });
+    backend.draw.mockImplementation((drawn: MapView, camera: Camera) => {
+      expect(drawn).toBe(view);
+      expect(camera.scale).toBe(1.7);
+      expect(camera.offsetX).toBe(240);
+      expect(camera.offsetY).toBe(82);
+      framebuffer = true;
+    });
+    box.height = 699;
+    renderer.resizeAndRedraw(refit, { width: 24, height: 16 });
+    expect(framebuffer).toBe(true);
+    expect(refit).toHaveBeenCalledOnce();
+    const observerRefit = vi.fn();
+    renderer.onViewportChange = observerRefit;
+    deliver();
+    expect(observerRefit).not.toHaveBeenCalled();
+    expect(backend.resize).toHaveBeenCalledOnce();
+    expect(backend.draw).toHaveBeenCalledTimes(2);
+    expect(requestAnimationFrame).not.toHaveBeenCalled();
+    renderer.destroy();
+    renderer.resizeAndRedraw(refit);
+    expect(refit).toHaveBeenCalledOnce();
+    expect(backend.draw).toHaveBeenCalledTimes(2);
+  });
+
   it('restores pixels before observer return using the resized viewport and post-refit camera', () => {
     const renderer = new Renderer(canvas, { width: 20, height: 12 });
     renderer.draw(view);

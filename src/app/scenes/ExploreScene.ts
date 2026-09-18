@@ -305,8 +305,10 @@ export class ExploreScene implements Scene {
 
   resize(): void {
     const map = this.map;
-    this.renderer?.resize(map ? { width: map.width, height: map.height } : undefined);
-    this.refit();
+    this.renderer?.resizeAndRedraw(
+      () => this.refit(),
+      map ? { width: map.width, height: map.height } : undefined,
+    );
   }
 
   /** Keep the player's map focus and tile size when the dock changes the canvas box. */
