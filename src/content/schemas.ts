@@ -462,13 +462,14 @@ export const mapSchema = z
     projection: z.literal('oblique').optional(),
     scene: z
       .object({
+        paintedWater: z.boolean().optional(),
         ground: z.array(sceneImageSchema).max(8),
         scenery: z
           .array(
             sceneImageSchema.extend({
               id,
               footprint: z.array(vec2).min(1),
-              depth: vec2,
+              depth: z.object({ x: z.number().finite(), y: z.number().finite() }),
               fadeWhenOccluding: z.boolean().optional(),
             }),
           )
