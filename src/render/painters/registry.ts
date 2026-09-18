@@ -82,14 +82,21 @@ export function resolvePainter(key: string): ResolvedPainter {
     // Keep the character's existing painted figure while the atlas loads or
     // after a failed fetch. Unit keys end in the cast variant by convention.
     const palette = paletteFor(entry.palette);
-    const variant = key.slice(key.lastIndexOf('.') + 1);
-    // Missing enemy atlases retain their original mechanical or mercenary silhouette.
+    const banditVariants: Readonly<Record<string, string>> = {
+      'unit.enemy.slinger': 'sling',
+      'unit.enemy.bruiser': 'broad',
+      'unit.enemy.quarrybender': 'bender',
+    };
+    const variant = banditVariants[key] ?? key.slice(key.lastIndexOf('.') + 1);
+    // Missing atlases retain each enemy's original silhouette and equipment.
     const unitPainter =
       (key === 'unit.enemy.grumbler'
         ? UNIT_PAINTERS.driller
-        : key === 'unit.enemy.crossbow'
-          ? UNIT_PAINTERS.mercenary
-          : UNIT_PAINTERS.bender) ?? FALLBACK;
+        : banditVariants[key]
+          ? UNIT_PAINTERS.bandit
+          : key === 'unit.enemy.crossbow'
+            ? UNIT_PAINTERS.mercenary
+            : UNIT_PAINTERS.bender) ?? FALLBACK;
     return {
       entry,
       palette,

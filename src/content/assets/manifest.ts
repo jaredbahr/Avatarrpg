@@ -114,6 +114,29 @@ function villageSheet(name: string, palette: string): SheetEntry {
   };
 }
 
+/** Compact illustrated enemy clips preserve the procedural clip rates. */
+function quarryEnemySheet(name: string, palette: string): SheetEntry {
+  const key = `unit.enemy.${name}`;
+  const frames = (clip: ClipName, count: number) =>
+    Array.from({ length: count }, (_, i) => `${key}/${clip}/${i}`);
+  return {
+    kind: 'sheet',
+    atlas: `art/units/${name}.json`,
+    pixelsPerTile: 128,
+    footprint: { w: 1, h: 1 },
+    anchor: { x: 0.5, y: 0.85 },
+    facing: 'mirror',
+    palette,
+    clips: {
+      idle: { frames: frames('idle', 2), fps: 1, loop: true },
+      walk: { frames: frames('walk', 2), fps: 4, loop: true },
+      cast: { frames: frames('cast', 3), fps: 8, loop: false },
+      hit: { frames: frames('hit', 1), fps: 1, loop: false },
+      ko: { frames: frames('ko', 1), fps: 1, loop: false },
+    },
+  };
+}
+
 export const ASSETS: Readonly<Record<string, AssetEntry>> = {
   'unit.village.sura': villageSheet('sura', 'water'),
   'unit.village.kaya': villageSheet('kaya', 'fire'),
@@ -150,9 +173,9 @@ export const ASSETS: Readonly<Record<string, AssetEntry>> = {
       ko: { frames: ['unit.enemy.thug/ko/0'], fps: 1, loop: false },
     },
   },
-  'unit.enemy.slinger': painter('bandit', 'enemy', 'sling'),
-  'unit.enemy.bruiser': painter('bandit', 'enemy', 'broad'),
-  'unit.enemy.quarrybender': painter('bandit', 'earth', 'bender'),
+  'unit.enemy.slinger': quarryEnemySheet('slinger', 'enemy'),
+  'unit.enemy.bruiser': quarryEnemySheet('bruiser', 'enemy'),
+  'unit.enemy.quarrybender': quarryEnemySheet('quarrybender', 'earth'),
   'unit.enemy.deserter': painter('bandit', 'fire', 'bender'),
   'unit.enemy.merc': painter('mercenary', 'enemy', 'blade'),
   'unit.enemy.crossbow': {
@@ -241,6 +264,21 @@ export const ASSETS: Readonly<Record<string, AssetEntry>> = {
   'prop.cart': { kind: 'image', url: 'art/props/cart.png', palette: 'air' },
 
   /* ---------------------------------------------------------- Portraits */
+  'portrait.enemy.slinger': {
+    kind: 'image',
+    url: 'art/portraits/enemy.slinger.png',
+    palette: 'enemy',
+  },
+  'portrait.enemy.bruiser': {
+    kind: 'image',
+    url: 'art/portraits/enemy.bruiser.png',
+    palette: 'enemy',
+  },
+  'portrait.enemy.quarrybender': {
+    kind: 'image',
+    url: 'art/portraits/enemy.quarrybender.png',
+    palette: 'earth',
+  },
   'portrait.enemy.crossbow': {
     kind: 'image',
     url: 'art/portraits/enemy.crossbow.png',
