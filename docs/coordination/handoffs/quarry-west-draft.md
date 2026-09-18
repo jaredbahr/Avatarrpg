@@ -1,6 +1,10 @@
 # Western quarry structure draft checkpoint
 
-Status: LOCAL DRAFT, not wired into QUARRY_GATE_SCENE, not ready for release or
+Historical checkpoint: superseded by the [integrated proof result](quarry-west-proof.md).
+The wiring and grouped-cutaway blocker below were resolved and reviewed there.
+The remaining text records the original draft, not current instructions.
+
+Original status: LOCAL DRAFT, not wired into QUARRY_GATE_SCENE, not ready for release or
 visual acceptance. Stop at this checkpoint under the usage-conservation request.
 Do not run another full capture or expand to other clusters this session.
 
