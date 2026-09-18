@@ -93,3 +93,24 @@ test('a failed canonical portrait image keeps a visible painted fallback', async
   await page.locator('.dialogue-panel button').tap();
   await expect(page.locator('.line-count')).toHaveText('2 of 4');
 });
+
+test('party speaker title agrees with the portrait and narration keeps its label', async ({
+  page,
+}) => {
+  await resetStorage(page, '?renderer=canvas');
+  await startGame(page, ['Elias'], ['jinu']);
+  await expect(page.locator('.top-bar > span')).toHaveText('Ba Dan');
+  await enterNode(page, 'dorin_directions');
+  await expect(page.locator('.name-plate h2')).toHaveText('Jinu');
+  await expect(page.locator('.top-bar > span')).toHaveText('Jinu');
+  await expect(page.locator('.stage-portrait canvas')).toHaveAttribute(
+    'data-asset',
+    'portrait.jinu',
+  );
+  await page.locator('.dialogue-panel button').tap();
+  await expect(page.locator('.top-bar > span')).toHaveText('Jinu');
+  await enterNode(page, 'ruon_choice');
+  await expect(page.locator('.top-bar > span')).toHaveText('Captain Ruon');
+  await enterNode(page, 'act1_open');
+  await expect(page.locator('.top-bar > span')).toHaveText('Ba Dan');
+});

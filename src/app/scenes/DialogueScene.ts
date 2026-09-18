@@ -192,10 +192,20 @@ export class DialogueScene implements Scene {
   }
 
   private topBar(): HTMLElement {
+    const node = this.app.currentNode();
+    const state = this.app.state;
+    // Match the visible speaker, including party contributions. Illustrated
+    // narration and endings keep their location label rather than inventing one.
+    const label =
+      node?.kind === 'dialogue' && state && !INTERLUDES[node.id]
+        ? resolveDialogue(state, node).speaker
+        : node?.kind === 'choice'
+          ? node.speaker
+          : this.app.placeLabel();
     return el(
       'div',
       { class: 'top-bar' },
-      el('span', { class: 'muted tiny', text: this.app.placeLabel() }),
+      el('span', { class: 'muted tiny', text: label }),
       el('div', { class: 'spacer' }),
       button(
         'Pause',

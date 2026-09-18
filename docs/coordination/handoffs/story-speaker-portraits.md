@@ -15,7 +15,7 @@
 - Validation: `npm run verify` passed (619 tests across 66 files), including
   typecheck, lint, and formatting.
 - Evidence: production build and local Chrome touch tests cover 390x844 normal and
-  largest text, 844x390 largest text, and 1368x912. Ten browser tests pass: five
+  largest text, 844x390 largest text, and 1368x912. Eleven browser tests pass: six
   portrait/layout/save cases plus the five existing click/tap/keyboard advance cases.
   Coverage includes Mira, long NPC names Gao/Dorin, Jinu party variant, Ruon choice,
   image-request failure with nonempty painter fallback, option scrolling, and
@@ -30,8 +30,18 @@
   Next; the portrait remains visible outside that scroll area.
 - Remaining art/identity gaps: Dema still uses authored Mira art, Sen uses Gao art.
   Distinct portraits are needed; this patch does not invent their appearance.
-  The existing top bar names the underlying node speaker (e.g. Dorin while Jinu's
-  authored variant speaks); the dialogue nameplate/portrait correctly show Jinu.
   Overall reference-quality presentation is not claimed.
 - Integration: cherry-pick the source commit, preserve other HUD edits, verify
   the combined candidate and run required latest-head CI when the integrator pushes.
+
+## Separate speaker-title follow-up
+
+Gameplay confirmed ownership of the narrow DialogueScene.topBar expression.
+The bar now uses the resolved dialogue speaker (including Jinu's party variant)
+and authored choice speaker. Illustrated narration/endings retain placeLabel;
+App.placeLabel and map/save/pause labels are unchanged. Added a browser check
+for Jinu title/nameplate/portrait agreement through advance, Ruon's choice, and
+Ba Dan narration fallback. No story content changed.
+
+The prior mismatch is visible in `.shots/portrait-after-jinu.png`; the corrected
+same-size view is `.shots/portrait-title-after-jinu.png` (390x844, largest text).
