@@ -1,11 +1,14 @@
 # Modular route follow-up
 
-Root owns `codex/modular-route-followup`; this batch is separate from PR64.
-Current tested product checkpoint: `b5a5435`. No push or follow-up PR yet.
-The release branch remains `e5bfcf8`, with visible unshipped version v0.2.1.
-Its CI run `35452987638` passed verification and 116 browser cases, then timed
-out during forced-WebGL water restoration. The remaining gallery was cancelled;
-the run is terminal. A separate test-only release repair is assigned below.
+Root owns `codex/modular-route-followup`; this v0.2.2 development batch is
+separate from PR64. Current built checkpoint `b247685` visibly shows v0.2.2
+after a normal reload, retaining the prior local save. Its production build
+passes; the latest full combined gameplay evidence is below. No follow-up push.
+
+PR64 remains v0.2.1 at `749fe3d`, auto-merge configured with current-head CI
+`35454608779` active. The previous water-test timeout was repaired by reusing
+verified screenshot samples, retaining every visual assertion; root verification
+passed 860 tests and six focused browser cases before that one checked push.
 
 ## Integrated result
 
@@ -47,17 +50,20 @@ Inline screenshots were reviewed but not saved as standalone artifacts.
 
 ## Live assignments and open gaps
 
-- Terra `partial_ground_validation`: isolated **release-only** sampling repair
-  based on `e5bfcf8`; preserve screenshot/color assertions, reuse successful
-  readiness samples. Trace showed roughly ten seconds per screenshot, duplicate
-  sampling, underwater assertions passing, restoration starting at 59.15s of
-  the 60s limit. Do not mix future renderer changes into PR64.
-- Terra `conversation_ci_repair`: fresh western Ba Dan approach material tree
-  based on `b5a5435`. Match existing atlas sampling, preserve runtime water,
-  keep a bounded transparent local patch and review spawn/join at actual scale.
-- Root: integration review and next release, including propagating any release
-  test repair into this branch and reviewing combined transitions.
+- Terra `partial_ground_validation`: local material regions for Cutting and
+  Driller, with existing surroundings, walls, props and grid preserved. The
+  earlier new-elevation input test correction is integrated as `b247685`.
+- Terra `conversation_ci_repair`: western Ba Dan approach. Draft `9a53e13` and
+  `9e8b307` remain unintegrated: root identified an incorrect historical atlas,
+  then grass sampling from stone cells and compounded feather opacity. Correct
+  material classification, fractional overlap coverage and actual capture review
+  are required before integration. Preserve the accepted courtyard asset.
+- Art `world_conversations`: isolated forest raised-shelf material/scenery pass;
+  keep exact eight elevated cells and exit (19,4) clear. No renderer/rules edits.
+- Root: integration, visual review, versioned releases, required CI and deployment.
 
+The old root preview on 4270 was positively identified and stopped. The v0.2.2
+version-check tab and owned preview 4304 were also closed after review.
 Forest raised tops now read as procedural stone slabs, still inconsistent with
 painted grass; this is functional relief, not final art acceptance. Ba Dan's
 western approach is visibly unfinished. Cutting and Driller modular composition,
