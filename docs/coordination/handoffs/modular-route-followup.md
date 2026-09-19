@@ -107,7 +107,9 @@ entry `index-B0DD_k-4.js`, gzip 291.72 kB, maps 3.53 MiB, precache 17.17 MiB.
   listening, and physical Surface/iPad verification remain open.
 - The forest nest correction is integrated and visually reviewed. Luna handled
   packaging and validation; root generated and reviewed the image. The dialogue
-  uses party portraits and needed no portrait change.
+  can use the discovery sprite as a fallback portrait; resolved party voices
+  may instead use character portraits. The manifest replacement covers that
+  fallback without a separate dialogue change.
 - Root completed the legal Air Blast capture and found early health-bar feedback.
   Terra's impact-timing fix is integrated and visually verified in both backends;
   all four normal/reduced legal-action captures pass. The permanent opt-in harness
@@ -122,3 +124,26 @@ The old root preview on 4270 and the v0.2.2 version-check tab and owned preview
 review and its route evidence. The full goal, audio listening and physical
 device gaps remain open; no final aesthetic acceptance is claimed and no wider
 world expansion is authorized by this slice.
+
+## Pages delivery checkpoint
+
+Jared explicitly requests the latest changes on Pages for testing. The live
+site still serves `v0.1.0 · build 44ed3f6` in a fresh network check. PR64 remains
+the sole v0.2.1 landing revision, `41b2d9d`, with CI `35460361910` running;
+no duplicate workflow was dispatched. After its checked merge, reconcile main
+into this branch and deliver the v0.2.2 batch through one checked landing PR.
+
+Built `625a491` passes a production build with `GH_PAGES_BASE=/Avatarrpg/`.
+Fresh local Chromium contexts, with service workers blocked, confirm title
+v0.2.2 and that build, forest combat on Canvas/WebGL, all observed asset
+responses 200, and no console/page errors. Evidence is under
+`.shots/pages-review/625a491/`. This establishes local Pages-path compatibility,
+not deployment. The preview on 4320 was stopped. Verify the actual served version
+and expected build after deployment; an existing installed PWA's update behavior
+is separate from a fresh-network check.
+
+The final bounded forest-bank scenery source `3f8b296` is integrated as
+`c9c769b` after root Canvas/WebGL visual review. See its
+[handoff](forest-bank-story.md). It is later than the Pages-path smoke above.
+Combined `npm run verify` now passes 873 tests / 105 files, typecheck, lint and
+formatting, including this final scenery source and delivery documentation.
