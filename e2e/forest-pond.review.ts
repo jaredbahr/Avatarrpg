@@ -97,10 +97,10 @@ for (const renderer of ['canvas', 'webgl'] as const) {
         }
       }
       if (mode === 'exploration') {
-        // Ordinary map taps cross onto permanent water and back to dry road.
+        // Ordinary approach stays west of the live Into the Pines story trigger.
         for (const pos of [
-          { x: 5, y: 6 },
-          { x: 7, y: 7 },
+          { x: 3, y: 6 },
+          { x: 3, y: 7 },
         ]) {
           await tapTile(page, pos.x, pos.y);
           await waitForIdle(page);
