@@ -146,3 +146,13 @@ over the destination/path end. Confirm remained functional. The selected tile
 should remain visible while manual zoom is preserved; a read-only camera audit
 is assigned before implementation. This is not covered by a claim that existing
 attack-target visibility tests prove movement-preview visibility.
+
+Final combined verification passes 817 tests in 92 files, typecheck, lint and
+formatting. Production build and art validation pass; total JavaScript is
+298.5 KiB /300 and precache 17.20 MiB /25. Four integrated forest captures
+passed on clean source `40f59ef` (Canvas/WebGL, illustrated/missing sheet, both
+64/96 scales and real nest taps). An initial capture attempt stopped at its
+provenance assertion because uncommitted documentation marked the build modified;
+no gameplay assertion failed. Its retry used the committed source. Port 4259
+ended normally. Tree review now also defaults to bundled Chromium and accepts
+`FNT_REVIEW_BROWSER_CHANNEL` for the installed local browser.
