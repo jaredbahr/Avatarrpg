@@ -7,6 +7,18 @@ outcome and return. The approved player-view references remain the quality bar.
 
 ## Current plan and owners
 
+Current work supersedes the historical checkpoints below: root owns integration
+in `codex/route-quality-followup`, based on PR64 head `82bcc78`. Tree framing,
+forest marker scale, opening/return guidance and the stale gesture test repair
+are integrated through `c1d4f0d`. See the [route review](route-quality-798bee8.md)
+for exact browser evidence and outstanding findings. PR64 remains the sole
+landing PR; its failed-head run `35430915536` is terminal and its remaining
+gallery was cancelled. Final combined verification precedes the next push.
+`combat_preview` audits lossless sheet budget for proper Riko contact poses;
+`world_conversations` audits movement-preview visibility without editing.
+Forest/tree source work is handed off and its preview servers are stopped.
+Root keeps the original 4210 playthrough preview and saves intact.
+
 Latest integration checkpoint: `798bee8`, v0.2.1. The lead integrated the final
 Cutting art source `c91504d` and bundle source `500f04d`, then regenerated the
 village layout references after the courtyard prop change. All 808 tests in

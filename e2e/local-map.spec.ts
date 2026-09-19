@@ -51,7 +51,9 @@ test('local map tracks a real walk and preserves the campaign when opened', asyn
   const total = Number((await page.locator('.line-count').textContent())?.split(' of ')[1]);
   for (let line = 0; line < total; line++) await lines.click();
   await expect(page.locator('.explore-scene')).toBeVisible();
-  await expect(page.locator('.explore-objective')).toContainText('Take the east road to the quarry.');
+  await expect(page.locator('.explore-objective')).toContainText(
+    'Take the east road to the quarry.',
+  );
   await page.getByRole('button', { name: 'Map', exact: true }).click();
   await expect(
     page.getByRole('dialog', { name: 'Local map', exact: true }).getByRole('button', {

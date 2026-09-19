@@ -124,3 +124,25 @@ The Riko contact solver was rejected after direct capture review: her body
 overlaps the victim and the original-tile marker is visibly detached. Source
 prototype was reverted by its owner. Evidence and minimum directional pose
 requirements are in source handoff `532fc15`; no runtime fix is accepted.
+
+## Follow-up integration checkpoint
+
+The failed-head gallery was cancelled in run `35430915536` to conserve CI
+minutes; cancellation is confirmed terminal. No checks are waived for the next
+revision. The full installed-Chrome suite on runtime `619f493` finished with
+141 passes, one accelerated-GPU premise skip, and one outdated case-sensitive
+objective assertion. `7672248` updates that assertion to the clarified route
+sentence. All eight local-map and world tests then passed, including the new
+rescued Riverside shrine/return regression. The strict 4257 server ended.
+
+Forest marker source `91b7db9` is integrated as `314ea49`, with its portable
+review runner and handoff through `c1d4f0d`. Root reviewed the actual 64-pixel
+entry and 96-pixel nest captures and accepted the bounded scale correction.
+The pond's hard border and the discovery's simpler art remain visible gaps.
+
+During normal two-person Sura/Riko opening play on `798bee8`, manually focusing
+the forest combat and previewing a four-move destination expanded the footer
+over the destination/path end. Confirm remained functional. The selected tile
+should remain visible while manual zoom is preserved; a read-only camera audit
+is assigned before implementation. This is not covered by a claim that existing
+attack-target visibility tests prove movement-preview visibility.
