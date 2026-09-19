@@ -1,1 +1,325 @@
-# Proposal: Make Every Fight a Party Puzzle## PurposeThe early combat draft risks becoming “click an attack until the enemy falls down.” The goal of this proposal is to make each encounter feel like a small, readable puzzle in which the party's different identities, the battlefield, and the order of actions matter as much as raw damage.This is not a proposal to make combat harder for its own sake. It is a proposal to make the player's choices more expressive: _Who acts first? Where do we stand? What can we exploit? What are we willing to set on fire?_## Design goals1. Every playable character should have a reason to be selected beyond their damage number.2. A good turn should create an advantage for a later turn, not only reduce an enemy's HP.3. The environment should be a usable part of the party's toolkit.4. Combat should remain legible on a touch screen: a player should be able to understand the likely result before confirming an action.5. Encounters should reward cooperation without requiring a prescribed party composition.## The core combat loopEach encounter should repeatedly ask the party to move through this loop:**Read → Set up → Exploit → Reposition → Respond**- **Read:** Identify enemy roles, hazards, cover, props, surfaces, and escape routes.- **Set up:** Apply Wet, expose a target, group enemies, create cover, block a lane, or move an ally into position.- **Exploit:** Convert that setup into a meaningful payoff: chain lightning, a fire spread, a push into danger, a chi-block, a stun, or a safe rescue.- **Reposition:** Leave the party in a better formation instead of ending every turn beside the target that was just hit.- **Respond:** Enemies and the battlefield change, so the next turn is not a repeat of the last one.Damage is still important, but it should usually be the payoff of the loop—not the only available verb.## Recognizable techniques as tactical verbsThe most exciting bending techniques are valuable because of what they do to afight, not only because of how much damage they deal. We should use familiarelemental-martial-arts ideas as inspiration for original abilities and makeeach one a tactical verb.- **Water freezes an enemy:** Frozen prevents movement and reactions for a short time. The ice can be shattered early, creating a choice between holding the target in place and cashing out the freeze for damage.- **Earth locks an enemy in place:** Rooted prevents movement, while an Earth Wall can divide the battlefield around the target and turn one enemy into a temporary prisoner.- **Air redirects enemies:** Push or pull an enemy into fire, water, rubble, a prop, or away from an endangered ally. Low damage is acceptable when the change in location is the real payoff.- **Fire creates denial zones:** Fire should make a route dangerous, forcing enemies to take the long way around or spend an action escaping the hazard.- **Lightning rewards setup:** Wet targets should be valuable targets because lightning can deal more damage or chain through nearby water, not because the lightning button is always the best attack.- **Non-benders disable a key threat:** Chi-blocking should feel like removing an enemy's defining option for a short time, not merely applying another damage-over-time effect.- **Water creates steam:** Steam can conceal allies, break line of sight, or interrupt a ranged enemy's plan instead of being treated only as damage.- **Earth creates cover:** A raised wall or rubble pile can protect the healer, split an enemy formation, or establish a temporary chokepoint.A useful design rule is:> Every element should have ways to damage, reposition, defend, and change the> battlefield—but each should do those things in its own style.Freeze, root, stun, blind, pull, push, cover, and surface reactions give us aclear vocabulary for making turns feel different. We can draw on recognizablebending-move archetypes while keeping the characters, names, and techniquesoriginal to this game.## Character identityThe five element paths already point toward distinct roles. We should make those roles visible in play with a small number of reliable “signature truths.”| Path | Player fantasy | Distinctive contribution | Example passive direction || ---------- | -------------------------------- | ---------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------- || Fire | High-risk damage dealer | Converts setup and props into burning zones; strongest finishers | **Heat Momentum:** bonus power against burning or exposed targets, but fire hazards remain dangerous to the party || Water | Party support and setup | Healing, cleansing, Wet, freezing, and rescue tools | **Flow State:** healing or applying Wet grants a small defensive/setup benefit to the next ally who acts || Earth | Anchor and battlefield architect | Walls, rubble, cover, chokepoints, and reliable control | **Rooted Strength:** gains defence while stationary or adjacent to created cover || Air | Mobility and enemy displacement | Pushes, pulls, escapes, hazard placement, and formation breaking | **Evasive Current:** improved evasion or reduced incoming accuracy while moving or when not adjacent to an enemy || Non-bender | Specialist and tactician | Chi-blocking, tools, extra AP, crits, and practical control | **Prepared:** gains a benefit when beginning a turn from cover or after using a tool/control action |These should be identity rules, not complicated talent trees. A player should notice them during the first fight and understand why that character feels different.### Individual charactersThe two characters within an element should eventually feel like two expressions of the same role. Their stats and later disciplines are a good foundation; a small personal perk can make the distinction apparent earlier.Examples:- Kaya: gains momentum after moving before attacking; rewards aggression.- Tenzo: gains a stronger defensive or accuracy benefit when he waits and fires from a safe position; rewards patience.- Nilak: stronger emergency healing or cleansing when an ally is in danger.- Sura: improves the payoff of Chilled, Frozen, and Ice surfaces.- Bo: protects adjacent allies or becomes harder to displace.- Lin Mei: gets better information about surfaces, props, and enemy movement.- Nima: can move through or out of danger more efficiently.- Jinu: turns movement or support actions into team tempo.- Riko: specializes in disabling benders and exploiting exposed targets.- Wen: deploys tools, mines, or props with better range and reliability.The exact numbers can be tuned later. The important rule is that a character's perk should change the decisions the player wants to make, not simply add a larger damage multiplier.## Environmental elementsThe existing surfaces and props are the right direction. They should become a deliberate encounter language with three categories.### 1. Surfaces: “where it is safe to stand”Water, ice, fire, mud, steam, oil, and rubble already create meaningful tradeoffs. Encounters should place them so that the party can use them, fear them, or transform them.Examples:- Water is safe-ish to enter but makes a target vulnerable to lightning and freezing.- Ice creates speed and control opportunities but can make formation unstable.- Fire is a threat, a zone-control tool, and a way to deny a route.- Mud slows pursuit and rewards holding a chokepoint.- Steam provides temporary cover and breaks line of sight.- Oil is an invitation to plan a future fire turn.- Rubble makes a location defensible and changes the shape of movement.### 2. Props: “what can be turned into an advantage”Props should be placed where they create decisions rather than simply filling the map. A player should be able to ask:- Do we break the barrel now for water, or preserve it as cover?- Do we push the cart into enemies, or leave it blocking the lane?- Do we ignite the hay and accept that the route will close?- Do we collapse the rubble to damage enemies, or keep the cover?The current low-HP, readable-label approach is strong. Props should stay quick to interact with: breaking one should feel like a tactical choice, not a second enemy health bar.### 3. Geometry: “what the battlefield makes possible”Each map should have at least two meaningful features beyond open floor:- a chokepoint or bridge;- high-value cover or a line-of-sight break;- a hazard that can be activated or redirected;- a route that rewards mobility;- a prop cluster with a clear elemental interaction.The map does not need a new mechanic every time. Recombining existing rules is enough: a narrow quarry gate plus rubble, a water barrel beside a metal enemy, or hay beside oil creates a different problem with the same vocabulary.## Ability design standardEach character should have access to abilities across three kinds of action:1. **Payoff:** direct damage or healing.2. **Setup/control:** statuses, movement, surfaces, cover, or disabling.3. **Expression:** an ability that only makes sense because of that character's identity.For example, Air Blast is more valuable than its damage suggests because it changes location. Water Pull creates a target for the rest of the party. Earth Wall changes the path enemies are allowed to take. Chi Block changes whether an enemy can use its defining threat. These are the kinds of abilities that prevent a turn from being interchangeable with “attack again.”As a practical target, a starting kit should give the player at least one interesting non-damage decision by level 2, and every character should gain a new way to alter positioning, status, defence, or the environment before the first major boss.## Encounter requirementsTo keep the depth from existing only on paper, encounter design should follow a small checklist:- At least one environmental feature can help the party.- At least one feature can punish careless positioning.- At least one enemy has a role other than “walk toward the nearest hero.”- At least one target can be controlled, redirected, isolated, or disabled.- The encounter has a reason to move after the opening turn.- The shortest path to victory is not always the safest path.Enemy roles could include a pursuer, ranged threat, controller, protector, prop-breaker, or hazard-maker. They do not all need complex AI; their purpose is to create a different question for the party.## Example: quarry-gate encounterThe party enters a gate with a water barrel near the entrance, a hay bale beside a side route, rubble in the centre, and an enemy bender behind cover.The obvious plan is to attack the nearest thug. The more interesting plans are:- Water breaks the barrel, Wetting the area. Fire then prepares lightning.- Air pushes a thug through the side route, or blows steam away to restore sight.- Earth raises a wall or preserves the rubble so the ranged enemy cannot reach the healer.- The non-bender chi-blocks the enemy bender before that enemy can create a new hazard.- Fire can ignite the hay to deny a flank, but that also removes the party's safest route.- Water can create steam to cover a retreat instead of healing immediately.The encounter is still winnable by dealing damage directly. The difference is that the party has several understandable plans, and each plan produces a different battlefield.## Passives and perks: guardrailsPassives should be:- easy to explain in one sentence;- visible in the combat log or preview when relevant;- useful at least once in an ordinary fight;- tied to movement, surfaces, statuses, positioning, or party support;- small enough that the character is not useless when the ideal condition is unavailable.Avoid passives that are only “+10% damage.” A passive is more interesting when it changes a decision: _stay mobile, protect an ally, wait in cover, create Wet, or spend AP on setup before the finisher._For implementation, passives and perks should remain content data wherever possible, like abilities, disciplines, surfaces, and props. If a new perk needs engine support, it should be added as a general rule that multiple characters or future content can use—not as a one-off character exception.## Recommended delivery plan### Phase 1: Make the existing systems readable- Add or confirm a clear passive for each path.- Ensure previews explain movement, surface changes, control, and reactions.- Add encounter layouts that deliberately showcase props and surfaces.- Give enemies readable roles and telegraphed threats.### Phase 2: Make each character distinct- Add one personal perk per character.- Review level-1 and level-2 kits for a damage option plus a setup/control option.- Use disciplines to deepen playstyle rather than only increase numbers.### Phase 3: Expand the encounter vocabulary- Add a few reusable environmental templates rather than many one-off rules.- Test mixed encounters where the same prop can help either side.- Add objectives such as hold a gate, rescue an ally, reach a position, or survive a hazard window when the story supports them.## How we will know it is workingIn playtests, ask:1. Can a player describe what makes each party member different after one fight?2. Did anyone use an ability for its movement, status, surface, cover, or setup value rather than its damage?3. Did the battlefield look meaningfully different at the end of the fight?4. Did players discuss a plan for the next turn?5. Did a loss feel attributable to a decision that could be improved, rather than simply needing more HP or damage?The success criterion is not that every turn is spectacular. It is that the player has a meaningful alternative to pressing the strongest attack, and that the party feels like a group of specialists solving a shared problem.## ProposalAdopt “party puzzle” as the combat design target. Keep the current elemental reaction, surface, prop, movement, status, and discipline systems as the core vocabulary. Prioritize a small set of clear passives, character-specific perks, and encounter layouts that make those systems necessary and visible.If we do that, the game can remain approachable while gaining the qualities that make party-based tactical RPGs engaging: complementary characters, emergent solutions, battlefield stories, and turns that feel chosen rather than repeated.## Supergiant-inspired design principlesSupergiant's games are a useful reference point—not because we should copytheir systems, but because they make actions feel authored, expressive, andconsequential. Across their games, the player is rarely asking only, “Whichattack does the most damage?” The more interesting question is, “What kind ofproblem do I want to create?”### Give every ability a second meaningAn ability should have its obvious use and at least one situational use:- Fire Blast damages an enemy, but also ignites oil.- Water Pull damages and Wets an enemy, but can also drag them into melee range.- Air Blast deals modest damage, but can push someone off a safe tile.- Earth Wall protects the party, but can also isolate a dangerous enemy.- Smoke Bomb blinds enemies, but can also buy time to reposition.This makes simple abilities worth remembering instead of making them obsolete assoon as a stronger attack appears.### Give each encounter a strong premiseAn encounter should be describable in one sentence:- “We are trapped in a burning storehouse.”- “The enemy controls the bridge.”- “Ranged attackers are protected by the quarry wall.”- “The battlefield is flooding.”- “The boss keeps rebuilding the arena.”That premise should affect the opening decision and continue changing as thefight progresses. A battle should feel like a situation, not just a collectionof enemy health bars.### Let builds change how abilities behaveDisciplines and perks should eventually let a player develop a style withoutturning a character into a completely different class. Examples include:- a fire technique leaving a longer-lasting flame trail;- a water technique freezing a larger area but healing for less;- an air technique pushing farther while dealing less damage;- an earth wall lasting longer at a higher AP cost;- chi-blocking spreading to nearby enemies for a shorter duration.The player should feel like they are developing a way of playing, not onlyunlocking larger numbers.### Make failure productive when the story supports itNot every loss needs to be permanent, but failure should sometimes create newcontent instead of only wasting time. A failed encounter might let an enemyescape and return later, damage a village, close a shortcut, or create a newrelationship scene. This makes the party's journey feel authored and giveslosses a place in the story.### Celebrate clever playsWhen a player freezes an enemy in a puddle, pushes several enemies into fire, orchains lightning through a group, the game should make the cause and effectfeel memorable. The combat log, animation timing, impact beat, charactercommentary, and reaction text should all reinforce the moment without hidingwhat actually happened.### Make party members feel like peopleCharacters should react to the way the party fights, not only appear as abilityloadouts. A character might comment when another party member sets the floor onfire, saves them from a finishing blow, disables a rival, or uses a techniqueassociated with their training. Small, specific reactions can give combat anemotional layer without requiring a large dialogue scene after every battle.### Keep powerful moves interactiveThe strongest abilities should create opportunities rather than simply erase anencounter. A boss move might freeze a group but leave them vulnerable toshattering, divide the arena with a wall, flood one side of the map, or gatherenemies for a counterattack. The player should still need to make a follow-updecision.The overall target is:> Every character should create a different kind of problem for the enemy, and> every environment should offer multiple ways to solve that problem.That gives the game the qualities we want from a party-based tactical RPG:compact encounters, strong identities, layered synergies, and moments where theplayer thinks, “That worked because I understood the system.”
+# Proposal: Make Every Fight a Party Puzzle
+
+## Purpose
+
+The early combat draft risks becoming “click an attack until the enemy falls down.” The goal of this proposal is to make each encounter feel like a small, readable puzzle in which the party's different identities, the battlefield, and the order of actions matter as much as raw damage.
+
+This is not a proposal to make combat harder for its own sake. It is a proposal to make the player's choices more expressive: _Who acts first? Where do we stand? What can we exploit? What are we willing to set on fire?_
+
+## Design goals
+
+1. Every playable character should have a reason to be selected beyond their damage number.
+2. A good turn should create an advantage for a later turn, not only reduce an enemy's HP.
+3. The environment should be a usable part of the party's toolkit.
+4. Combat should remain legible on a touch screen: a player should be able to understand the likely result before confirming an action.
+5. Encounters should reward cooperation without requiring a prescribed party composition.
+
+## The core combat loop
+
+Each encounter should repeatedly ask the party to move through this loop:
+
+**Read → Set up → Exploit → Reposition → Respond**
+
+- **Read:** Identify enemy roles, hazards, cover, props, surfaces, and escape routes.
+- **Set up:** Apply Wet, expose a target, group enemies, create cover, block a lane, or move an ally into position.
+- **Exploit:** Convert that setup into a meaningful payoff: chain lightning, a fire spread, a push into danger, a chi-block, a stun, or a safe rescue.
+- **Reposition:** Leave the party in a better formation instead of ending every turn beside the target that was just hit.
+- **Respond:** Enemies and the battlefield change, so the next turn is not a repeat of the last one.
+
+Damage is still important, but it should usually be the payoff of the loop—not the only available verb.
+
+## Recognizable techniques as tactical verbs
+
+The most exciting bending techniques are valuable because of what they do to a
+fight, not only because of how much damage they deal. We should use familiar
+elemental-martial-arts ideas as inspiration for original abilities and make
+each one a tactical verb.
+
+- **Water freezes an enemy:** Frozen prevents movement and reactions for a
+  short time. The ice can be shattered early, creating a choice between holding
+  the target in place and cashing out the freeze for damage.
+- **Earth locks an enemy in place:** Rooted prevents movement, while an Earth
+  Wall can divide the battlefield around the target and turn one enemy into a
+  temporary prisoner.
+- **Air redirects enemies:** Push or pull an enemy into fire, water, rubble, a
+  prop, or away from an endangered ally. Low damage is acceptable when the
+  change in location is the real payoff.
+- **Fire creates denial zones:** Fire should make a route dangerous, forcing
+  enemies to take the long way around or spend an action escaping the hazard.
+- **Lightning rewards setup:** Wet targets should be valuable targets because
+  lightning can deal more damage or chain through nearby water, not because the
+  lightning button is always the best attack.
+- **Non-benders disable a key threat:** Chi-blocking should feel like removing
+  an enemy's defining option for a short time, not merely applying another
+  damage-over-time effect.
+- **Water creates steam:** Steam can conceal allies, break line of sight, or
+  interrupt a ranged enemy's plan instead of being treated only as damage.
+- **Earth creates cover:** A raised wall or rubble pile can protect the healer,
+  split an enemy formation, or establish a temporary chokepoint.
+
+A useful design rule is:
+
+> Every element should have ways to damage, reposition, defend, and change the
+> battlefield—but each should do those things in its own style.
+
+Freeze, root, stun, blind, pull, push, cover, and surface reactions give us a
+clear vocabulary for making turns feel different. We can draw on recognizable
+bending-move archetypes while keeping the characters, names, and techniques
+original to this game.
+
+## Character identity
+
+The five element paths already point toward distinct roles. We should make those roles visible in play with a small number of reliable “signature truths.”
+
+| Path       | Player fantasy                   | Distinctive contribution                                         | Example passive direction                                                                                         |
+| ---------- | -------------------------------- | ---------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------- |
+| Fire       | High-risk damage dealer          | Converts setup and props into burning zones; strongest finishers | **Heat Momentum:** bonus power against burning or exposed targets, but fire hazards remain dangerous to the party |
+| Water      | Party support and setup          | Healing, cleansing, Wet, freezing, and rescue tools              | **Flow State:** healing or applying Wet grants a small defensive/setup benefit to the next ally who acts          |
+| Earth      | Anchor and battlefield architect | Walls, rubble, cover, chokepoints, and reliable control          | **Rooted Strength:** gains defence while stationary or adjacent to created cover                                  |
+| Air        | Mobility and enemy displacement  | Pushes, pulls, escapes, hazard placement, and formation breaking | **Evasive Current:** improved evasion or reduced incoming accuracy while moving or when not adjacent to an enemy  |
+| Non-bender | Specialist and tactician         | Chi-blocking, tools, extra AP, crits, and practical control      | **Prepared:** gains a benefit when beginning a turn from cover or after using a tool/control action               |
+
+These should be identity rules, not complicated talent trees. A player should notice them during the first fight and understand why that character feels different.
+
+### Individual characters
+
+The two characters within an element should eventually feel like two expressions of the same role. Their stats and later disciplines are a good foundation; a small personal perk can make the distinction apparent earlier.
+
+Examples:
+
+- Kaya: gains momentum after moving before attacking; rewards aggression.
+- Tenzo: gains a stronger defensive or accuracy benefit when he waits and fires from a safe position; rewards patience.
+- Nilak: stronger emergency healing or cleansing when an ally is in danger.
+- Sura: improves the payoff of Chilled, Frozen, and Ice surfaces.
+- Bo: protects adjacent allies or becomes harder to displace.
+- Lin Mei: gets better information about surfaces, props, and enemy movement.
+- Nima: can move through or out of danger more efficiently.
+- Jinu: turns movement or support actions into team tempo.
+- Riko: specializes in disabling benders and exploiting exposed targets.
+- Wen: deploys tools, mines, or props with better range and reliability.
+
+The exact numbers can be tuned later. The important rule is that a character's perk should change the decisions the player wants to make, not simply add a larger damage multiplier.
+
+## Environmental elements
+
+The existing surfaces and props are the right direction. They should become a deliberate encounter language with three categories.
+
+### 1. Surfaces: “where it is safe to stand”
+
+Water, ice, fire, mud, steam, oil, and rubble already create meaningful tradeoffs. Encounters should place them so that the party can use them, fear them, or transform them.
+
+Examples:
+
+- Water is safe-ish to enter but makes a target vulnerable to lightning and freezing.
+- Ice creates speed and control opportunities but can make formation unstable.
+- Fire is a threat, a zone-control tool, and a way to deny a route.
+- Mud slows pursuit and rewards holding a chokepoint.
+- Steam provides temporary cover and breaks line of sight.
+- Oil is an invitation to plan a future fire turn.
+- Rubble makes a location defensible and changes the shape of movement.
+
+### 2. Props: “what can be turned into an advantage”
+
+Props should be placed where they create decisions rather than simply filling the map. A player should be able to ask:
+
+- Do we break the barrel now for water, or preserve it as cover?
+- Do we push the cart into enemies, or leave it blocking the lane?
+- Do we ignite the hay and accept that the route will close?
+- Do we collapse the rubble to damage enemies, or keep the cover?
+
+The current low-HP, readable-label approach is strong. Props should stay quick to interact with: breaking one should feel like a tactical choice, not a second enemy health bar.
+
+### 3. Geometry: “what the battlefield makes possible”
+
+Each map should have at least two meaningful features beyond open floor:
+
+- a chokepoint or bridge;
+- high-value cover or a line-of-sight break;
+- a hazard that can be activated or redirected;
+- a route that rewards mobility;
+- a prop cluster with a clear elemental interaction.
+
+The map does not need a new mechanic every time. Recombining existing rules is enough: a narrow quarry gate plus rubble, a water barrel beside a metal enemy, or hay beside oil creates a different problem with the same vocabulary.
+
+## Ability design standard
+
+Each character should have access to abilities across three kinds of action:
+
+1. **Payoff:** direct damage or healing.
+2. **Setup/control:** statuses, movement, surfaces, cover, or disabling.
+3. **Expression:** an ability that only makes sense because of that character's identity.
+
+For example, Air Blast is more valuable than its damage suggests because it changes location. Water Pull creates a target for the rest of the party. Earth Wall changes the path enemies are allowed to take. Chi Block changes whether an enemy can use its defining threat. These are the kinds of abilities that prevent a turn from being interchangeable with “attack again.”
+
+As a practical target, a starting kit should give the player at least one interesting non-damage decision by level 2, and every character should gain a new way to alter positioning, status, defence, or the environment before the first major boss.
+
+## Encounter requirements
+
+To keep the depth from existing only on paper, encounter design should follow a small checklist:
+
+- At least one environmental feature can help the party.
+- At least one feature can punish careless positioning.
+- At least one enemy has a role other than “walk toward the nearest hero.”
+- At least one target can be controlled, redirected, isolated, or disabled.
+- The encounter has a reason to move after the opening turn.
+- The shortest path to victory is not always the safest path.
+
+Enemy roles could include a pursuer, ranged threat, controller, protector, prop-breaker, or hazard-maker. They do not all need complex AI; their purpose is to create a different question for the party.
+
+## Example: quarry-gate encounter
+
+The party enters a gate with a water barrel near the entrance, a hay bale beside a side route, rubble in the centre, and an enemy bender behind cover.
+
+The obvious plan is to attack the nearest thug. The more interesting plans are:
+
+- Water breaks the barrel, Wetting the area. Fire then prepares lightning.
+- Air pushes a thug through the side route, or blows steam away to restore sight.
+- Earth raises a wall or preserves the rubble so the ranged enemy cannot reach the healer.
+- The non-bender chi-blocks the enemy bender before that enemy can create a new hazard.
+- Fire can ignite the hay to deny a flank, but that also removes the party's safest route.
+- Water can create steam to cover a retreat instead of healing immediately.
+
+The encounter is still winnable by dealing damage directly. The difference is that the party has several understandable plans, and each plan produces a different battlefield.
+
+## Passives and perks: guardrails
+
+Passives should be:
+
+- easy to explain in one sentence;
+- visible in the combat log or preview when relevant;
+- useful at least once in an ordinary fight;
+- tied to movement, surfaces, statuses, positioning, or party support;
+- small enough that the character is not useless when the ideal condition is unavailable.
+
+Avoid passives that are only “+10% damage.” A passive is more interesting when it changes a decision: _stay mobile, protect an ally, wait in cover, create Wet, or spend AP on setup before the finisher._
+
+For implementation, passives and perks should remain content data wherever possible, like abilities, disciplines, surfaces, and props. If a new perk needs engine support, it should be added as a general rule that multiple characters or future content can use—not as a one-off character exception.
+
+## Recommended delivery plan
+
+### Phase 1: Make the existing systems readable
+
+- Add or confirm a clear passive for each path.
+- Ensure previews explain movement, surface changes, control, and reactions.
+- Add encounter layouts that deliberately showcase props and surfaces.
+- Give enemies readable roles and telegraphed threats.
+
+### Phase 2: Make each character distinct
+
+- Add one personal perk per character.
+- Review level-1 and level-2 kits for a damage option plus a setup/control option.
+- Use disciplines to deepen playstyle rather than only increase numbers.
+
+### Phase 3: Expand the encounter vocabulary
+
+- Add a few reusable environmental templates rather than many one-off rules.
+- Test mixed encounters where the same prop can help either side.
+- Add objectives such as hold a gate, rescue an ally, reach a position, or survive a hazard window when the story supports them.
+
+## How we will know it is working
+
+In playtests, ask:
+
+1. Can a player describe what makes each party member different after one fight?
+2. Did anyone use an ability for its movement, status, surface, cover, or setup value rather than its damage?
+3. Did the battlefield look meaningfully different at the end of the fight?
+4. Did players discuss a plan for the next turn?
+5. Did a loss feel attributable to a decision that could be improved, rather than simply needing more HP or damage?
+
+The success criterion is not that every turn is spectacular. It is that the player has a meaningful alternative to pressing the strongest attack, and that the party feels like a group of specialists solving a shared problem.
+
+## Proposal
+
+Adopt “party puzzle” as the combat design target. Keep the current elemental reaction, surface, prop, movement, status, and discipline systems as the core vocabulary. Prioritize a small set of clear passives, character-specific perks, and encounter layouts that make those systems necessary and visible.
+
+If we do that, the game can remain approachable while gaining the qualities that make party-based tactical RPGs engaging: complementary characters, emergent solutions, battlefield stories, and turns that feel chosen rather than repeated.
+
+## Supergiant-inspired design principles
+
+Supergiant's games are a useful reference point—not because we should copy
+their systems, but because they make actions feel authored, expressive, and
+consequential. Across their games, the player is rarely asking only, “Which
+attack does the most damage?” The more interesting question is, “What kind of
+problem do I want to create?”
+
+### Give every ability a second meaning
+
+An ability should have its obvious use and at least one situational use:
+
+- Fire Blast damages an enemy, but also ignites oil.
+- Water Pull damages and Wets an enemy, but can also drag them into melee range.
+- Air Blast deals modest damage, but can push someone off a safe tile.
+- Earth Wall protects the party, but can also isolate a dangerous enemy.
+- Smoke Bomb blinds enemies, but can also buy time to reposition.
+
+This makes simple abilities worth remembering instead of making them obsolete as
+soon as a stronger attack appears.
+
+### Give each encounter a strong premise
+
+An encounter should be describable in one sentence:
+
+- “We are trapped in a burning storehouse.”
+- “The enemy controls the bridge.”
+- “Ranged attackers are protected by the quarry wall.”
+- “The battlefield is flooding.”
+- “The boss keeps rebuilding the arena.”
+
+That premise should affect the opening decision and continue changing as the
+fight progresses. A battle should feel like a situation, not just a collection
+of enemy health bars.
+
+### Let builds change how abilities behave
+
+Disciplines and perks should eventually let a player develop a style without
+turning a character into a completely different class. Examples include:
+
+- a fire technique leaving a longer-lasting flame trail;
+- a water technique freezing a larger area but healing for less;
+- an air technique pushing farther while dealing less damage;
+- an earth wall lasting longer at a higher AP cost;
+- chi-blocking spreading to nearby enemies for a shorter duration.
+
+The player should feel like they are developing a way of playing, not only
+unlocking larger numbers.
+
+### Make failure productive when the story supports it
+
+Not every loss needs to be permanent, but failure should sometimes create new
+content instead of only wasting time. A failed encounter might let an enemy
+escape and return later, damage a village, close a shortcut, or create a new
+relationship scene. This makes the party's journey feel authored and gives
+losses a place in the story.
+
+### Celebrate clever plays
+
+When a player freezes an enemy in a puddle, pushes several enemies into fire, or
+chains lightning through a group, the game should make the cause and effect
+feel memorable. The combat log, animation timing, impact beat, character
+commentary, and reaction text should all reinforce the moment without hiding
+what actually happened.
+
+### Make party members feel like people
+
+Characters should react to the way the party fights, not only appear as ability
+loadouts. A character might comment when another party member sets the floor on
+fire, saves them from a finishing blow, disables a rival, or uses a technique
+associated with their training. Small, specific reactions can give combat an
+emotional layer without requiring a large dialogue scene after every battle.
+
+### Keep powerful moves interactive
+
+The strongest abilities should create opportunities rather than simply erase an
+encounter. A boss move might freeze a group but leave them vulnerable to
+shattering, divide the arena with a wall, flood one side of the map, or gather
+enemies for a counterattack. The player should still need to make a follow-up
+decision.
+
+The overall target is:
+
+> Every character should create a different kind of problem for the enemy, and
+> every environment should offer multiple ways to solve that problem.
+
+That gives the game the qualities we want from a party-based tactical RPG:
+compact encounters, strong identities, layered synergies, and moments where the
+player thinks, “That worked because I understood the system.”
