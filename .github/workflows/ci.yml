@@ -14,6 +14,7 @@ jobs:
   verify:
     name: Typecheck, lint, unit tests
     runs-on: ubuntu-latest
+    timeout-minutes: 10
     steps:
       - uses: actions/checkout@v4
 
@@ -65,6 +66,8 @@ jobs:
     name: End-to-end (Chromium touch, WebKit iPad)
     needs: verify
     runs-on: ubuntu-latest
+    # Recent successful jobs took 41-48 minutes; cap stalled runs with headroom.
+    timeout-minutes: 60
     steps:
       - uses: actions/checkout@v4
 
@@ -94,6 +97,8 @@ jobs:
     name: Screenshot gallery
     needs: verify
     runs-on: ubuntu-latest
+    # Recent successful captures took up to 62 minutes; retain every gallery case.
+    timeout-minutes: 75
     steps:
       - uses: actions/checkout@v4
 
