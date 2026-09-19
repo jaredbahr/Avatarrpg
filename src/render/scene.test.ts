@@ -1,8 +1,8 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import type { SceneScenery, Vec2 } from '../core/types';
+import type { Grid, MapScene, SceneScenery, Tile, Vec2 } from '../core/types';
 import { Camera } from './camera';
 import type { Projection } from './projection';
-import { sceneImages, sceneryOpacity, sceneryOpacities } from './scene';
+import { sceneForGrid, sceneImages, sceneryOpacity, sceneryOpacities } from './scene';
 import type { MapView, RenderUnit } from './view';
 
 const SIZE = 128;
@@ -49,6 +49,44 @@ function view(extra: Partial<MapView> = {}): MapView {
     time: 0,
     ...extra,
   };
+}
+
+function scenePiece(id: string, extra: Partial<SceneScenery> = {}): SceneScenery {
+  return {
+    id,
+    url: `${id}.webp`,
+    x: 0,
+    y: 0,
+    width: 64,
+    height: 64,
+    footprint: [{ x: 1, y: 1 }],
+    depth: { x: 1.5, y: 1.5 },
+    ...extra,
+  };
+}
+
+function scene(pieces: readonly SceneScenery[]): MapScene {
+  return { ground: [], scenery: pieces };
+}
+
+function gridWith(overrides: Record<string, Partial<Tile>> = {}): Grid {
+  const base: Tile = {
+    terrain: 'stone',
+    elevation: 0,
+    blocked: false,
+    blocksSight: false,
+    cover: false,
+    surface: null,
+  };
+  const tiles = Array.from({ length: 16 }, () => base);
+  for (const [key, override] of Object.entries(overrides)) {
+    const coordinates = key.split(',').map(Number);
+    const x = coordinates[0];
+    const y = coordinates[1];
+    if (x === undefined || y === undefined) throw new Error(`Invalid test tile key: ${key}`);
+    tiles[y * 4 + x] = { ...base, ...override };
+  }
+  return { width: 4, height: 4, tiles };
 }
 
 function roof(camera: Camera): SceneScenery {
@@ -236,6 +274,53 @@ it('leaves an unloaded image opaque without rasterizing', () => {
   );
   expect(sceneryOpacity(roof(camera), view({ units: [unit(origin)] }), camera)).toBe(1);
   expect(raster.createElement).not.toHaveBeenCalled();
+});
+
+it('filters wall scenery against the loaded grid without acquiring solid props', () => {
+  const wall = scenePiece('wall', { wall: true });
+  const propBlocked = scenePiece('prop-blocked', {
+    footprint: [{ x: 2, y: 1 }],
+    wall: true,
+  });
+  const exterior = scenePiece('exterior', {
+    footprint: [{ x: 20, y: -1 }],
+    exterior: true,
+    wall: true,
+  });
+  const decorative = scenePiece('decorative');
+  const authored = scene([wall, propBlocked, exterior, decorative]);
+
+  expect(sceneForGrid(authored, gridWith()).scenery.map((piece) => piece.id)).toEqual([
+    'exterior',
+    'decorative',
+  ]);
+  expect(
+    sceneForGrid(
+      authored,
+      gridWith({
+        '1,1': { terrain: 'wall', blocked: true, blocksSight: true },
+        '2,1': { blocked: true, blocksSight: true },
+      }),
+    ).scenery.map((piece) => piece.id),
+  ).toEqual(['wall', 'exterior', 'decorative']);
+});
+
+it('requires every cell of a multi-cell wall footprint to be an authored wall', () => {
+  const wall = scenePiece('two-cell-wall', {
+    footprint: [
+      { x: 1, y: 1 },
+      { x: 1, y: 2 },
+    ],
+    wall: true,
+  });
+  const authored = scene([wall]);
+  const oneWall = gridWith({ '1,1': { terrain: 'wall', blocked: true } });
+  const twoWalls = gridWith({
+    '1,1': { terrain: 'wall', blocked: true },
+    '1,2': { terrain: 'wall', blocked: true },
+  });
+  expect(sceneForGrid(authored, oneWall).scenery).toEqual([]);
+  expect(sceneForGrid(authored, twoWalls).scenery).toEqual([wall]);
 });
 
 it('cuts away only the opaque slice on a shared page and reuses each cropped mask', () => {

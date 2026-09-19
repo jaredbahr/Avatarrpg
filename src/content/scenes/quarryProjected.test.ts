@@ -53,6 +53,7 @@ describe('projected quarry scenes', () => {
         height: 176,
         footprint: [cell],
         depth: { x: cell.x + 0.5, y: cell.y + 0.5 },
+        wall: true,
         fadeWhenOccluding: true,
       });
     }

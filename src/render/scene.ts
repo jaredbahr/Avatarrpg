@@ -1,11 +1,36 @@
 import { resolveAsset } from '../content/assets/manifest';
-import type { SceneImage, SceneScenery } from '../core/types';
+import { tileAt } from '../core/rules/grid';
+import type { Grid, MapScene, SceneImage, SceneScenery } from '../core/types';
 import type { Camera } from './camera';
 import type { MapView } from './view';
 import { BackdropStore } from './backdrops';
 
 /** Separate bounded cache: multi-piece scenes must not evict their own ground each frame. */
 export const sceneImages = new BackdropStore(16);
+
+/**
+ * Keep stateful structure art aligned with the grid loaded from a save.
+ *
+ * A content scene can be newer than a saved battle. Most scenery is
+ * presentation-only and remains valid across that boundary, but a piece that
+ * opts into `wall` represents authored wall cells and must not
+ * appear on an older open tile. `terrain === 'wall'` is intentional: a stale
+ * save may contain a later solid prop on that coordinate without having the
+ * authored masonry that the scene describes. Exterior scenery has no tile to
+ * validate and remains visible.
+ */
+export function sceneForGrid(scene: MapScene, grid: Grid): MapScene {
+  const scenery = scene.scenery.filter(
+    (piece) =>
+      !piece.wall ||
+      piece.exterior ||
+      piece.footprint.every((cell) => {
+        const tile = tileAt(grid, cell);
+        return tile?.terrain === 'wall' && tile.blocked;
+      }),
+  );
+  return scenery.length < scene.scenery.length ? { ...scene, scenery } : scene;
+}
 
 // A small alpha mask avoids fading roofs when a figure is only inside the
 // transparent image padding. Weak keys release masks with evicted images.

@@ -485,6 +485,7 @@ export const mapSchema = z
                 footprint: z.array(sceneFootprintVec2).min(1),
                 depth: z.object({ x: z.number().finite(), y: z.number().finite() }),
                 exterior: z.boolean().optional(),
+                wall: z.boolean().optional(),
                 fadeWhenOccluding: z.boolean().optional(),
                 fadeGroup: id.optional(),
               })

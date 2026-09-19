@@ -648,6 +648,11 @@ export interface SceneScenery extends SceneImage {
   readonly depth: Vec2;
   /** True for decorative rim pieces whose logical footprint sits outside the map. */
   readonly exterior?: boolean;
+  /**
+   * When set, render only while every footprint tile is an authored wall in
+   * the loaded battle grid. This keeps newer scenery out of older saves.
+   */
+  readonly wall?: boolean;
   readonly fadeWhenOccluding?: boolean;
   /** Connected depth slices share the lowest cutaway opacity within this scene. */
   readonly fadeGroup?: string;

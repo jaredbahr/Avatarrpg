@@ -8,7 +8,9 @@
   `brazier` at `(10,3)`. Pella's conditional `(9,6)` cabbage cart is retained.
   The six authored party spawns and all enemy placements are unchanged. The
   approved shallow rear loading strip is registered as exterior scenery behind
-  x14..19/y=-1.
+  x14..19/y=-1. A legacy-save scene guard now hides only wall-marked masonry
+  whose footprint is absent from the loaded battle grid, so an older open tile
+  cannot acquire a newer static wall sprite.
 - **Acceptance:** Map and scene tests assert the exact wall cells, projection
   rectangles, footprints, depth and renderer scene registration. The quarry
   tests exercise six-party spawning, size-2 boss routing around both stacks,
@@ -28,18 +30,26 @@
   `src/content/maps/quarryFloor.test.ts` and
   `src/content/scenes/quarryProjected.test.ts` hold focused geometry, rules and
   save coverage. `docs/art/prompts/maps/quarry_floor.md` and its 32 px layout
-  were regenerated from the authoritative map rows.
+  were regenerated from the authoritative map rows. `src/render/scene.ts`
+  provides the shared loaded-grid filter used by both render backends;
+  `src/render/scene.test.ts` covers open, authored-wall, dynamic-prop,
+  multi-cell and exterior cases. ADR 0037 records the compatibility contract.
 - **Decisions:** The isolated stacks use `wall-end.webp` in both positions, as
   the existing gate variant resolver assigns `end` to a wall with no orthogonal
-  neighbor. No core rules, combat stats, XP, save schema, renderer or camera
-  code changed. The rear-loading asset is commit `505941c` from the art owner,
+  neighbor. No core rules, combat stats, XP, save schema or camera code changed.
+  The renderer change is limited to the shared scene filter and its two backend
+  call sites. The rear-loading asset is commit `505941c` from the art owner,
   cherry-picked here as `b4285db`; registration uses
   `x:1652, y:382, width:370, height:249`, an exterior footprint on
   x14..19/y=-1, fixed rear depth `{x:16.5,y:-0.5}`, and no playable collision
   cells.
-- **Verification:** `npm run verify` passed after registration (103 test files,
-  849 tests, plus typecheck, lint and format). `npm run build` passed. The
-  bundle check reports 299.9 KB gzipped JavaScript against the 300 KB budget.
+- **Verification:** `npm run verify` passed after the legacy guard (103 test
+  files, 851 tests, plus typecheck, lint and format). `npm run build` passed.
+  The current source-only follow-up emits 307,202 exact gzip bytes for shipped
+  JavaScript, two bytes above the strict 307,200-byte local cap; the root
+  integration owner's pending Vite budget optimization covers this without
+  weakening the checker. Earlier registration checks reported 299.9 KB before
+  this follow-up.
   `npm run art:validate` and `npm run check:assets` pass; maps are 4,058,450
   bytes (3.87 MiB of 4 MiB), units are 4.61 MiB of 4.75 MiB, and precache is
   17.47 MiB of 25 MiB. `BALANCE_VARIANTS=1 npm run balance` reports the seeded
@@ -59,6 +69,14 @@
   on both renderers. These are automated seeded encounter probes, not a claim
   of a complete village-to-quarry campaign route or physical-device acceptance;
   root's campaign playthrough remains the route evidence.
+- **Legacy-save evidence:** The supplied exported R3 Grumbler save was imported
+  through the real UI at 1280x720 with forced Canvas and WebGL. Both paths
+  preserved `quarry_floor`, round 3, RNG `1440260962`, Sura `(9,5)` HP 23,
+  Riko `(7,5)` HP 18, Grumbler `(12,5)` HP 42, their rooted/wet statuses and
+  an empty prop list, with no page or console errors. Its saved tiles at `(8,4)`
+  and `(11,7)` are dirt and unblocked, so the new wall scenery was absent while
+  the exterior rear strip remained. Frames are
+  `legacy-canvas-loaded.png` and `legacy-webgl-loaded.png` in the capture folder.
 - **Capture paths:** Durable artifacts are under
   `C:/Users/Jared/.codex/visualizations/2026/09/19/01a0b79f-a1e6-7fd0-a4d5-76e7944406f6/quarry-interior`.
   The unshaded rear Canvas/WebGL review frames after dismissing the hot-seat
@@ -68,11 +86,12 @@
   initial, ready, rear and removal frames plus JSON state traces for both
   backends, the Sura/Riko probe and the `jins_people` smoke.
 - **Coordination:** Ownership remains limited to the map, projected scene
-  registration and focused tests. Camera, renderer and core rules remain owned
-  by their existing tasks. The rear strip is decorative exterior scenery only;
+  registration, the shared legacy scene filter and focused tests. Camera and
+  core rules remain owned by their existing tasks. The rear strip is decorative
+  exterior scenery only;
   its logical footprint does not add walkable or collidable cells. The combined
   release owner should cherry-pick this branch's final local commit and retain
   the art source/provenance from `b4285db`.
 - **Completion/transfer:** This checkpoint is complete and editing ownership is
-  relinquished after the commit; combined release checks and versioning remain
-  with the integration owner.
+  relinquished after the follow-up commit; combined release checks and
+  versioning remain with the integration owner.

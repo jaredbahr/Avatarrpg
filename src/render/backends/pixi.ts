@@ -33,7 +33,7 @@ import { surfaceIntensity } from '../surfaceRendering';
 import type { SurfaceId, TerrainId, Vec2 } from '../../core/types';
 import { resolveAsset } from '../../content/assets/manifest';
 import { backdrops } from '../backdrops';
-import { sceneryOpacities } from '../scene';
+import { sceneForGrid, sceneryOpacities } from '../scene';
 import { SceneTextures } from './sceneTextures';
 import { surfaceIsPainted } from '../sceneSurfaces';
 import { TILE } from '../camera';
@@ -410,6 +410,10 @@ export class PixiBackend implements RenderBackend {
 
   draw(view: MapView, camera: Camera): void {
     const app = this.app;
+    view = {
+      ...view,
+      scene: view.scene ? sceneForGrid(view.scene, view.grid) : undefined,
+    };
     if (!app) {
       // Still initialising: keep only the newest frame.
       this.pending = { view, camera };

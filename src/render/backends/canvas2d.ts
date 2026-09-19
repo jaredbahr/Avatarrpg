@@ -26,7 +26,7 @@ import type { Curve } from '../geometry/curve';
 import { sampleAt, smoothPath } from '../geometry/curve';
 import { CanvasFxLayer } from '../fx/canvasFx';
 import { backdrops } from '../backdrops';
-import { sceneImage, drawSceneImage, sceneryOpacities } from '../scene';
+import { sceneForGrid, sceneImage, drawSceneImage, sceneryOpacities } from '../scene';
 import { surfaceIsPainted } from '../sceneSurfaces';
 import { FACTION_RING, OVERLAY, STATUS_BADGE, hpColor } from '../palettes';
 import { paintTileDecor } from '../painters/board';
@@ -101,6 +101,7 @@ export class Canvas2DBackend implements RenderBackend {
     const dpr = camera.viewport.dpr;
     view = {
       ...view,
+      scene: view.scene ? sceneForGrid(view.scene, view.grid) : undefined,
       emitters: resolveActorEmitters(
         view.emitters,
         view.grid,
