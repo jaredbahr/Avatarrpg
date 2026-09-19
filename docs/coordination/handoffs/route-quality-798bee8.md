@@ -62,6 +62,12 @@ tie is a further guidance inconsistency to review; it does not prove a blocked
 route. Current fresh-play checkpoint is beside Mira/Gao, level 1, Sura 26/26,
 Riko 28/28. The prior manual save slots remain on the separate origin.
 
+Revisiting Mira repeats her introduction. Source inspection confirms this is
+the authored graph (`mira_intro.next = village_explore`), with no separate
+thank-you action or acceptance choice. Correct the objective's nonexistent
+instruction; do not invent a lost story transition. The fresh review is now
+at the first line of the repeated Mira conversation.
+
 The read-only audits confirmed the riverside objective override and identified
 the village exit's sign NPC taking priority over its travel action. Guidance
 implementation is assigned to `world_conversations` in a separate worktree.
