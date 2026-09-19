@@ -347,7 +347,6 @@ claiming a clean exact-head runtime. The integration owner must produce a
 clean final snapshot. The root-only static preview processes for ports 4200
 and 4204 were retired after their useful saves were carried into 4210; their
 worktree and source commits remain preserved.
-
 ## Follow-up combined preview checks
 
 After the next service-worker update, the title visibly reported
