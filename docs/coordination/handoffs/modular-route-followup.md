@@ -147,3 +147,11 @@ The final bounded forest-bank scenery source `3f8b296` is integrated as
 [handoff](forest-bank-story.md). It is later than the Pages-path smoke above.
 Combined `npm run verify` now passes 873 tests / 105 files, typecheck, lint and
 formatting, including this final scenery source and delivery documentation.
+
+Pages-base build `1f7cffc` succeeds and passes asset budgets (17.31 MiB precache),
+but the separate total-JavaScript check fails: 300.8 KiB gzip / 300 KiB. The
+entry chunk alone is 292.44 decimal kB gzip; entry size must not be confused
+with the complete checked total, which includes workers and service-worker code.
+Terra owns a bounded optimization from this head in an isolated
+`codex/pages-bundle-trim` worktree. Do not push the v0.2.2 batch until the actual
+Pages-base total passes unchanged budgets and root reviews the optimization.
