@@ -167,9 +167,6 @@ are accepted for the next runtime integration review. Final packaging must
 remove any remaining guide-colored fringe and preserve the recorded transforms,
 playable-diamond exclusion and asset budgets. Actual actor/prop scale, both
 renderers and final scene composition remain unaccepted until tested in game.
-<<<<<<< HEAD
-=======
-
 ## Solo gate loss and continuation
 
 Sura moved four points onto the rear plank and banked AP. The deserter advanced
@@ -381,4 +378,3 @@ confirmation. Clicking the machine produces the correct four-tile footprint and
 camera improvement. The confirmation still has an oversized lower panel and
 scrollbar; its compact content correction remains in progress. Distant enemies
 in the separate forest fixture can remain offscreen with focus controls available.
->>>>>>> 10ad8f8 (Record clean preview camera acceptance)
