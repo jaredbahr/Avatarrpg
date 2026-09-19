@@ -340,7 +340,6 @@ across the explicitly recorded local source updates. It is not an exact-final-he
 release check or final visual/audio approval. Desktop exploration still shows
 unnecessary footer and one-member party scrollbars; the conversation/UI owner
 is correcting the overflow with portrait, Huge text and six-party checks.
-
 A full browser reload then visibly showed `v0.2.1 · build be67cef-modified`;
 Continue restored Ba Dan, Sura level 4 at 23/38, the homecoming objective and
 Gao's location. The displayed modified suffix is retained here rather than
