@@ -86,3 +86,34 @@ The tea-station owner's actual Canvas 96px and WebGL 64px captures were reviewed
 the grounded worktable, vessels, footline and interaction pip read coherently
 beside Sen. This accepts that bounded visual correction; source integration and
 the combined release checks remain pending. No overall art signoff is implied.
+
+## Combined follow-up validation
+
+Root integrated Riko directional contact and its elevation/provenance correction,
+the accepted tea table and semantic missing-image fallback, and the `pushes` /
+`pulls` preview wording repair. Ruon's `after_ambush` now explicitly retains the
+Cutting world, preserving the original lines and continuation. Both-backend
+production tests pass for that transition, forest aftermath save/reload, and
+gate choices at landscape and Huge portrait: eight checks total.
+
+At `37210c6`, full verification passes 831 tests in 97 files, typecheck, lint and
+formatting. The first combined run found formatting in the audit handoff and a
+franchise term in the art-review heading; both were corrected without weakening
+validation. Product build `8c91b74` passes art validation and asset budgets;
+JavaScript is 299.2 KiB / 300 KiB and precache 17.23 MiB / 25 MiB. Later commits
+only format/fix documentation. Strict production preview 4267 stopped when the
+eight-check browser batch completed.
+
+PR64's exact-head run `35435673189` is terminal cancelled: verification passed,
+E2E failed after 73 passing tests at the forced-WebGL forest-aftermath 60-second
+timeout, and root cancelled the still-running gallery to conserve usage. The
+retry timed out on the final party-state read. That is a diagnostic observation,
+not yet a proven root cause. `world_conversations` owns the isolated trace audit
+and repair; no replacement CI run has started. Root's job log is retained under
+`.shots/integration/ci-35435673189-e2e.log`.
+
+Deserter runtime art is a separate isolated follow-up. Root authorized a narrow
+units-family allocation from 4.5 to 4.75 MiB with an ADR; expected combined units
+are 4,837,007 bytes, leaving 143,729 bytes. All other family, total precache and
+JavaScript caps stay unchanged. Runtime walking/casting review remains required
+before accepting that asset. This is not yet in the combined source above.
