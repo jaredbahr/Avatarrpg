@@ -5,6 +5,10 @@ for (const renderer of ['canvas', 'webgl'] as const) {
   test(`forest aftermath retains the world and reloads its conversation on ${renderer}`, async ({
     page,
   }, testInfo) => {
+    // The CI software rasterizer spent 54–64 seconds across the retained-world
+    // screenshot, save/reload, and final camera settle. Keep this allowance
+    // scoped to the forced WebGL case instead of relaxing the E2E suite.
+    if (renderer === 'webgl') test.slow();
     await resetStorage(page, `?renderer=${renderer}`);
     await startGame(page, ['Sura', 'Riko'], ['sura', 'riko'], 'forest-aftermath');
     // Isolate presentation after battle results; the route suite owns winning the fight.
