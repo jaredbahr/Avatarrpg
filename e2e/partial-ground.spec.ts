@@ -125,6 +125,19 @@ async function reenterVillage(page: Page): Promise<void> {
   await waitForIdle(page);
 }
 
+async function waitForAuthoredColours(page: Page, includePatch = true): Promise<void> {
+  await expect
+    .poll(async () => {
+      const { patch: redPatch, valid } = await samples(page, { patch: PATCH, valid: VALID });
+      return (
+        valid.b > valid.r + 55 &&
+        valid.b > 170 &&
+        (!includePatch || (redPatch.r > redPatch.b + 55 && redPatch.r > 170))
+      );
+    })
+    .toBe(true);
+}
+
 for (const renderer of ['canvas', 'webgl'] as const) {
   test(`partial ground keeps an opaque patch under permanent water on ${renderer}`, async ({
     page,
@@ -134,18 +147,14 @@ for (const renderer of ['canvas', 'webgl'] as const) {
     await startGame(page, ['Kaya'], ['kaya'], 'partial-ground-water');
     await enterNode(page, 'village_explore');
     await page.locator('.explore-scene .map-canvas').waitFor();
-    await expect
-      .poll(async () => {
-        const { patch: loaded, valid } = await samples(page, { patch: PATCH, valid: VALID });
-        return loaded.r > loaded.b + 55 && valid.b > valid.r + 55;
-      })
-      .toBe(true);
+    await waitForAuthoredColours(page);
     const bare = await samples(page, { patch: PATCH, valid: VALID });
     expectRed(bare.patch);
     expectBlue(bare.valid);
 
     await setPermanentWater(page, PATCH, true);
     await reenterVillage(page);
+    await waitForAuthoredColours(page, false);
     const underwater = await samples(page, { patch: PATCH, valid: VALID });
     expectBlue(underwater.valid);
     // The red image is visible before the real grid's water surface is enabled;
@@ -155,6 +164,7 @@ for (const renderer of ['canvas', 'webgl'] as const) {
 
     await setPermanentWater(page, PATCH, false);
     await reenterVillage(page);
+    await waitForAuthoredColours(page);
     const restored = await samples(page, { patch: PATCH, valid: VALID });
     expectRed(restored.patch);
     expectBlue(restored.valid);
