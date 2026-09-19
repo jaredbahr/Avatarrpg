@@ -186,8 +186,8 @@ export const CREDITS: readonly CreditEntry[] = [
     authors: 'This project, generated with OpenAI image generation',
     licence: 'own work',
     source: '',
-    covers: ['art/maps/cutting-scene', 'art/maps/driller-floor-scene'],
-    note: 'Original generated full-scene ground sources and transparent rim candidates, measured and clipped to authoritative projected map geometry. Upright cliffs and live rules overlays remain separate. Provenance and registration: docs/art/cutting-driller-ground-registration.md, docs/art/exterior-quarry-rim-candidate-registration.md, and docs/coordination/handoffs/quarry-southwest-structure.md. Output terms: https://openai.com/policies/row-terms-of-use/. No exclusive copyright in generated output is claimed.',
+    covers: ['art/maps/cutting-scene', 'art/maps/driller-floor-scene', 'art/maps/quarry-surround'],
+    note: 'Original generated full-scene ground sources and transparent rim candidates, measured and clipped to authoritative projected map geometry. Upright cliffs and live rules overlays remain separate. Provenance and registration: docs/art/cutting-driller-ground-registration.md, docs/art/exterior-quarry-rim-candidate-registration.md, docs/art/quarry-terrace-composition.md, docs/art/quarry-surround-composition.md, and docs/coordination/handoffs/quarry-southwest-structure.md. Output terms: https://openai.com/policies/row-terms-of-use/. No exclusive copyright in generated output is claimed.',
   },
   ...THIRD_PARTY_CREDITS,
   {

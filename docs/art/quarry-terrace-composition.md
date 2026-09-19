@@ -79,3 +79,7 @@ This pass improves ground material, shallow contact and scale; it does not add
 industrial equipment, foreground framing or the reference's continuous inhabited
 stone mass. Those remain open visual review findings. Physical Surface/iPad review
 has not been performed.
+
+The later [exterior surround pass](quarry-surround-composition.md) addresses the
+detached exterior mass noted above and supersedes the Driller rim registration.
+The terrace sources, packer and raised-ground contact remain in use.
