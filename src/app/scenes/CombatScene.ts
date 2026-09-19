@@ -164,8 +164,12 @@ export class CombatScene implements Scene {
     const camera = this.renderer?.camera;
     if (!camera) return;
     this.manualCamera = false;
-    if (camera.projection === 'oblique') camera.fitExplore(96);
-    else camera.fit();
+    if (camera.projection === 'oblique') {
+      // Large text can leave a short combat canvas. Keep every target in the
+      // touch viewport there; the wide layout retains the preferred 96px tile.
+      if (camera.viewport.height < 360) camera.fit();
+      else camera.fitExplore(96);
+    } else camera.fit();
     const unit = this.active();
     if (!camera.fitted && unit) camera.centreOn(unit.pos);
     this.syncRecentre();
