@@ -2058,18 +2058,20 @@ html[data-contrast='high'] .hud-panel::after {
 .local-npc-label {
   fill: var(--c-paper-light);
   font-family: var(--font-body);
-  font-size: 0.65px;
+  font-size: var(--local-map-label-size);
   paint-order: stroke;
   stroke: var(--c-ink);
-  stroke-width: 0.12px;
+  stroke-width: var(--local-map-label-stroke);
   stroke-linejoin: round;
 }
-.explore-dock.solo-party {
-  overflow-y: hidden;
-}
 @media (min-width: 53rem) and (orientation: landscape) {
+  .explore-dock.solo-party {
+    max-height: none;
+    overflow-y: visible;
+  }
   [data-large-text='on'] .explore-dock.solo-party,
   [data-large-text='huge'] .explore-dock.solo-party {
+    max-height: 42%;
     overflow-y: auto;
   }
 }

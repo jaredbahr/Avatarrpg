@@ -25,9 +25,24 @@ test('local map tracks a real walk and preserves the campaign when opened', asyn
   await expect(
     dialog.getByRole('button', { name: 'East road → Forest Road', exact: true }),
   ).toBeEnabled();
-  await dialog.getByRole('button', { name: 'Follow party', exact: true }).click();
+  await dialog.getByRole('button', { name: 'Walk to Elder Mira', exact: true }).click();
   await expect(dialog).toHaveCount(0);
-  expect(await page.evaluate(() => JSON.stringify(window.fnt?.app.state))).toBe(before);
+  await expect
+    .poll(async () => page.evaluate(() => window.fnt?.app.state?.story.nodeId))
+    .toBe('mira_intro');
+  const lines = page.locator('.dialogue-panel button');
+  const total = Number((await page.locator('.line-count').textContent())?.split(' of ')[1]);
+  for (let line = 0; line < total; line++) await lines.click();
+  await expect(page.locator('.explore-scene')).toBeVisible();
+  await expect(page.locator('.explore-objective')).toContainText('take the east road');
+  await page.getByRole('button', { name: 'Map', exact: true }).click();
+  await expect(
+    page.getByRole('dialog', { name: 'Local map', exact: true }).getByRole('button', {
+      name: 'Walk to Elder Mira',
+      exact: true,
+    }),
+  ).toHaveCount(0);
+  expect(await page.evaluate(() => JSON.stringify(window.fnt?.app.state))).not.toBe(before);
 });
 
 test('a normal solo exploration dock has no phantom vertical scroll while large text keeps it available', async ({
@@ -38,18 +53,53 @@ test('a normal solo exploration dock has no phantom vertical scroll while large 
   await startGame(page, ['Explorer'], ['kaya'], 'solo-dock');
   await enterNode(page, 'village_explore');
   await settleLayout(page);
-  const normal = await page.locator('.explore-dock').evaluate((dock) => ({
-    className: dock.className,
-    overflowY: getComputedStyle(dock).overflowY,
-    scrollable: dock.scrollHeight > dock.clientHeight,
-  }));
+  const normal = await page.locator('.explore-dock').evaluate((dock) => {
+    const roster = dock.querySelector<HTMLElement>('.roster')?.getBoundingClientRect();
+    const hud = dock.querySelector<HTMLElement>('.explore-hud')?.getBoundingClientRect();
+    const bounds = dock.getBoundingClientRect();
+    return {
+      className: dock.className,
+      scrollable: dock.scrollHeight > dock.clientHeight,
+      bottom: bounds.bottom,
+      childrenFit: Boolean(
+        roster && hud && roster.bottom <= bounds.bottom + 1 && hud.bottom <= bounds.bottom + 1,
+      ),
+    };
+  });
   expect(normal.className).toContain('solo-party');
-  expect(normal.overflowY).toBe('hidden');
   expect(normal.scrollable).toBe(false);
+  expect(normal.childrenFit).toBe(true);
+  expect(normal.bottom).toBeLessThanOrEqual(720);
 
   await page.evaluate(() => window.fnt?.app.updateSettings({ largeText: 'huge' }));
-  const large = await page
-    .locator('.explore-dock')
-    .evaluate((dock) => getComputedStyle(dock).overflowY);
-  expect(large).toBe('auto');
+  const large = await page.locator('.explore-dock').evaluate((dock) => ({
+    overflowY: getComputedStyle(dock).overflowY,
+  }));
+  expect(large.overflowY).toBe('auto');
+
+  await page.setViewportSize({ width: 390, height: 844 });
+  await settleLayout(page);
+  const narrowHuge = await page.locator('.explore-dock').evaluate((dock) => ({
+    overflowY: getComputedStyle(dock).overflowY,
+    bottom: dock.getBoundingClientRect().bottom,
+  }));
+  expect(narrowHuge.overflowY).toBe('auto');
+  expect(narrowHuge.bottom).toBeLessThanOrEqual(844);
+
+  await resetStorage(page, '?renderer=canvas');
+  await startGame(
+    page,
+    ['A', 'B', 'C', 'D', 'E', 'F'],
+    ['kaya', 'bo', 'nilak', 'nima', 'tenzo', 'lin_mei'],
+    'crowded-dock',
+  );
+  await enterNode(page, 'village_explore');
+  await settleLayout(page);
+  const crowded = await page.locator('.explore-dock').evaluate((dock) => {
+    const roster = dock.querySelector<HTMLElement>('.roster');
+    return {
+      rosterScrollable: Boolean(roster && roster.scrollWidth > roster.clientWidth),
+    };
+  });
+  expect(crowded.rosterScrollable).toBe(true);
 });

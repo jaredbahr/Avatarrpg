@@ -11,7 +11,12 @@
 
 import { RIVERSIDE_ID } from '../../content/maps/riverside';
 import { evaluate } from '../../core/story/conditions';
-import { activeTriggers, worldObjective } from '../../core/story/world';
+import {
+  activeTriggers,
+  visibleNpcs,
+  worldObjective,
+  worldObjectiveNpcId,
+} from '../../core/story/world';
 import { VillageLife } from '../village/VillageLife';
 import type { App, CameraInfo, Scene } from '../App';
 import type { GameEvent, GameState, Grid, MapDef, NpcDef, Unit, Vec2 } from '../../core/types';
@@ -196,7 +201,7 @@ export class ExploreScene implements Scene {
               event.path,
               state.party.length,
               grid,
-              this.map.npcs.map((npc) => npc.pos),
+              visibleNpcs(this.map, state).map((npc) => npc.pos),
             )
           : null;
       if (plan) {
@@ -273,7 +278,7 @@ export class ExploreScene implements Scene {
     const seated = new PartyTrail(
       placeParty(grid, head, count, {
         awayFrom: this.map?.exit?.pos,
-        avoid: this.map?.npcs.map((npc) => npc.pos) ?? [],
+        avoid: this.map ? visibleNpcs(this.map, state).map((npc) => npc.pos) : [],
       }),
     );
     this.trail = seated;
@@ -517,7 +522,7 @@ export class ExploreScene implements Scene {
           this.partyPositions() ?? [state.location.pos],
           (pos) => this.requestWalk(pos),
           () => this.followParty(),
-          worldObjective(this.app.content, state),
+          worldObjectiveNpcId(this.app.content, state),
         ).open(this.overlayHost());
       },
       { class: 'action-button', title: 'Local map and routes' },
@@ -530,10 +535,12 @@ export class ExploreScene implements Scene {
 
   /** The villager nearest the leader within Talk's reach, if any. */
   private nearestNpc(from: Vec2): NpcDef | null {
+    const state = this.app.state;
+    if (!state || !this.map) return null;
     let best: NpcDef | null = null;
     let nearest = TALK_RANGE + 1;
     let proximity = Infinity;
-    for (const npc of this.map?.npcs ?? []) {
+    for (const npc of visibleNpcs(this.map, state)) {
       const gap = distance(from, npc.pos);
       const groundGap = Math.hypot(from.x - npc.pos.x, from.y - npc.pos.y);
       if (gap < nearest || (gap === nearest && gap <= TALK_RANGE && groundGap < proximity)) {
@@ -715,7 +722,7 @@ export class ExploreScene implements Scene {
         const trail = this.ensureTrail(state, grid);
         const routes = trail.settle(
           grid,
-          map.npcs.map((npc) => npc.pos),
+          visibleNpcs(map, state).map((npc) => npc.pos),
         );
         const batches: FollowerRoute[][] = [];
         for (const route of routes) (batches[route.batch ?? 0] ??= []).push(route);
@@ -766,7 +773,7 @@ export class ExploreScene implements Scene {
     }));
 
     const npcs: NpcMarker[] = [
-      ...map.npcs.map((npc) => ({
+      ...visibleNpcs(map, state).map((npc) => ({
         pos: npc.pos,
         sprite: npc.sprite,
         name: npc.name,

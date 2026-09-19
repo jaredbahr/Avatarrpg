@@ -538,6 +538,8 @@ export interface NpcDef {
   readonly name: string;
   readonly pos: Vec2;
   readonly sprite: string;
+  /** Optional story condition for maps that reveal a person or landmark later. */
+  readonly when?: Condition;
   /** Story node entered when the NPC is tapped, if no route matches. */
   readonly node: string;
   /**
@@ -812,6 +814,14 @@ export type StoryNode =
       readonly kind: 'explore';
       readonly mapId: string;
       readonly objective: string;
+      /** Optional structured target for objective-aware map guidance. */
+      readonly objectiveNpcId?: string;
+      /** First matching objective text/target wins after the node is revisited. */
+      readonly objectiveVariants?: readonly {
+        readonly when: Condition;
+        readonly text: string;
+        readonly objectiveNpcId?: string | null;
+      }[];
       /** Entered when the player reaches the map's exit marker. */
       readonly next: string;
     }

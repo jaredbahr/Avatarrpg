@@ -37,6 +37,14 @@ export const ACT1_NODES: readonly StoryNode[] = [
     kind: 'explore',
     mapId: 'ba_dan_village',
     objective: 'Talk to Elder Mira, then take the east road to the quarry.',
+    objectiveNpcId: 'elder_mira',
+    objectiveVariants: [
+      {
+        when: { kind: 'visited', nodeId: 'mira_intro' },
+        text: 'Thank Elder Mira, then take the east road to the quarry.',
+        objectiveNpcId: null,
+      },
+    ],
     next: 'road_depart',
   },
 

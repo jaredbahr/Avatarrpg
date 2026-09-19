@@ -1,5 +1,6 @@
 import type { ContentIndex, Grid, MapDef, Vec2, GameState } from '../../core/types';
 import { evaluate } from '../../core/story/conditions';
+import { visibleNpcs } from '../../core/story/world';
 import { previewWalk } from '../world/walking';
 import { Dialog } from './Dialog';
 import { button, el } from './dom';
@@ -37,7 +38,7 @@ export class LocalMap {
         }),
       );
     });
-    for (const npc of map.npcs) {
+    for (const npc of visibleNpcs(map, state)) {
       const dot = svgNode('circle', {
         cx: String(npc.pos.x + 0.5),
         cy: String(npc.pos.y + 0.5),
@@ -49,15 +50,13 @@ export class LocalMap {
       dot.append(label);
       this.element.append(dot);
       if (showLabels) {
-        this.element.append(
-          svgNode('text', {
-            x: String(npc.pos.x + 0.9),
-            y: String(npc.pos.y + 0.35),
-            class: 'local-npc-label',
-          }),
-        );
-        const visibleLabel = this.element.lastElementChild;
-        if (visibleLabel) visibleLabel.textContent = npc.name;
+        const visibleLabel = svgNode('text', {
+          x: String(npc.pos.x + 0.9),
+          y: String(npc.pos.y + 0.35),
+          class: 'local-npc-label',
+        });
+        visibleLabel.textContent = npc.name;
+        this.element.append(visibleLabel);
       }
     }
     for (const exit of map.exits ?? []) {
@@ -98,7 +97,7 @@ export class LocalMapDialog extends Dialog {
     private positions: readonly Vec2[],
     private walk: (pos: Vec2) => void,
     private recenter: () => void,
-    private objective: string | null = null,
+    private objectiveNpcId: string | null = null,
   ) {
     super();
   }
@@ -117,8 +116,8 @@ export class LocalMapDialog extends Dialog {
       class: 'stack',
       attrs: { role: 'navigation', 'aria-label': 'Routes from this area' },
     });
-    const target = this.objective
-      ? this.map.npcs.find((npc) => this.objective?.includes(npc.name))
+    const target = this.objectiveNpcId
+      ? visibleNpcs(this.map, this.state).find((npc) => npc.id === this.objectiveNpcId)
       : undefined;
     if (target) {
       const preview = previewWalk(this.content, this.state, target.pos);

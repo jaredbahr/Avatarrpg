@@ -429,6 +429,7 @@ export const mapSchema = z
         name: z.string().min(1),
         pos: vec2,
         sprite: z.string().min(1),
+        when: conditionSchema.optional(),
         node: id,
         routes: z.array(z.object({ when: conditionSchema, node: id })).optional(),
       }),
@@ -629,6 +630,16 @@ export const storyNodeSchema = z.discriminatedUnion('kind', [
     kind: z.literal('explore'),
     mapId: id,
     objective: z.string().min(1),
+    objectiveNpcId: id.optional(),
+    objectiveVariants: z
+      .array(
+        z.object({
+          when: conditionSchema,
+          text: z.string().min(1),
+          objectiveNpcId: id.nullable().optional(),
+        }),
+      )
+      .optional(),
     next: id,
   }),
   z.object({
@@ -1349,8 +1360,26 @@ export function validateContent(bundle: ContentBundle): string[] {
         }
         break;
     }
-    if (node.kind === 'explore' && !mapIds.has(node.mapId)) {
-      problems.push(`story node "${node.id}" uses unknown map "${node.mapId}"`);
+    if (node.kind === 'explore') {
+      const map = bundle.maps.find((candidate) => candidate.id === node.mapId);
+      if (!map) {
+        problems.push(`story node "${node.id}" uses unknown map "${node.mapId}"`);
+      } else if (node.objectiveNpcId && !map.npcs.some((npc) => npc.id === node.objectiveNpcId)) {
+        problems.push(
+          `story node "${node.id}" targets unknown npc "${node.objectiveNpcId}" on map "${node.mapId}"`,
+        );
+      } else {
+        for (const variant of node.objectiveVariants ?? []) {
+          if (
+            variant.objectiveNpcId &&
+            !map.npcs.some((npc) => npc.id === variant.objectiveNpcId)
+          ) {
+            problems.push(
+              `story node "${node.id}" objective variant targets unknown npc "${variant.objectiveNpcId}" on map "${node.mapId}"`,
+            );
+          }
+        }
+      }
     }
   }
 
