@@ -164,13 +164,16 @@ for (const renderer of ['canvas', 'webgl'] as const) {
               },
             ],
             before,
+            { alongside: subject.id !== subjects[0]?.id },
           );
           timings.push({ id: subject.id, sprite: subject.sprite, from: start.pos, to });
         }
         return { timings, duration: app.animator.finishesAt - time, camera: app.rendererCamera() };
       }, staged);
       let elapsed = 0;
-      for (const time of reduced ? [80, 500] : [50, 150, 300, 450, 620, 850, 1100, 1450]) {
+      for (const time of reduced
+        ? [80, 500]
+        : [50, 150, 300, 450, 650, 850, 1100, 1400, 1750, 2050, 2400]) {
         const delta = time - elapsed;
         if (delta > 17) await page.clock.fastForward(delta - 17);
         await page.clock.runFor(Math.min(delta, 17));
