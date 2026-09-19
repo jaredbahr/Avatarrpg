@@ -366,7 +366,6 @@ The Ice Path confirmation also consumes too much vertical space through
 redundant contact/surface prose; the lower combat-UI owner has that review
 finding after the practical party-combo check. Do not accept a tiny full-board
 camera merely because its geometry tests pass.
-
 The next static build visibly reports clean `v0.2.1 · build 42e2856` after the
 service-worker update. Normal Load of Slot 1 again preserved round 4, Sura
 23/34, Grumbler 41/54 and 5 AP. At 1280×720, the new intermediate default keeps
