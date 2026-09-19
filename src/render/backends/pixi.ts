@@ -208,6 +208,7 @@ export class PixiBackend implements RenderBackend {
   private decorSprites = new Map<string, Sprite>();
   private decor = new DecorSheets();
   private decorPx = 0;
+  private decorElevationOnly = false;
   /** Edge shading along the board's four sides and the vignette over the view. */
   private shadeLayer = new Container();
   private shadeSprites: Sprite[] = [];
@@ -496,10 +497,14 @@ export class PixiBackend implements RenderBackend {
     this.syncGround(view, painted, partialScene);
     // Complete partial ground owns its local relief, but unavailable scene
     // pieces and High contrast still require the procedural rule markers.
-    const showDecor = partialScene
+    const decorMode = partialScene
       ? !scenePainted || view.crispOverlays
-      : !painted || view.crispOverlays;
-    this.syncDecor(view, camera, showDecor);
+        ? 'full'
+        : 'elevation'
+      : !painted || view.crispOverlays
+        ? 'full'
+        : 'none';
+    this.syncDecor(view, camera, decorMode);
     this.syncShade(view, camera, scenePainted);
     this.drawOverlays(view);
     this.drawPath(view);
@@ -783,14 +788,16 @@ export class PixiBackend implements RenderBackend {
    * zoom's sprite bucket and re-baked only when the footing or the bucket
    * changes.
    */
-  private syncDecor(view: MapView, camera: Camera, shown: boolean): void {
-    this.decorLayer.visible = shown;
-    if (!shown) return;
+  private syncDecor(view: MapView, camera: Camera, mode: 'none' | 'elevation' | 'full'): void {
+    this.decorLayer.visible = mode !== 'none';
+    if (mode === 'none') return;
     const grid = view.grid;
     const changed = this.decor.sync(grid);
     const px = this.spritePx(camera);
-    if (!changed && px === this.decorPx) return;
+    const elevationOnly = mode === 'elevation';
+    if (!changed && px === this.decorPx && elevationOnly === this.decorElevationOnly) return;
     this.decorPx = px;
+    this.decorElevationOnly = elevationOnly;
 
     const { cols, rows } = decorChunks(grid);
     const live = new Set<string>();
@@ -804,7 +811,7 @@ export class PixiBackend implements RenderBackend {
           this.decorLayer.addChild(sprite);
           this.decorSprites.set(key, sprite);
         }
-        sprite.texture = this.texture(this.decor.get(grid, cx, cy, px));
+        sprite.texture = this.texture(this.decor.get(grid, cx, cy, px, elevationOnly));
         sprite.position.set(cx * DECOR_CHUNK * TILE, cy * DECOR_CHUNK * TILE);
         sprite.width = DECOR_CHUNK * TILE;
         sprite.height = DECOR_CHUNK * TILE;

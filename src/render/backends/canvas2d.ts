@@ -29,7 +29,7 @@ import { backdrops } from '../backdrops';
 import { sceneForGrid, sceneImage, drawSceneImage, sceneryOpacities } from '../scene';
 import { surfaceIsPainted } from '../sceneSurfaces';
 import { FACTION_RING, OVERLAY, STATUS_BADGE, hpColor } from '../palettes';
-import { paintTileDecor } from '../painters/board';
+import { paintElevationDecor, paintTileDecor } from '../painters/board';
 import { paintFloatingNumber, paintPathArrow, paintPathDot } from '../painters/fx';
 import { FOOT_LINE } from '../sheets/bake';
 import { idlePhase, sheets } from '../sheets/store';
@@ -192,6 +192,7 @@ export class Canvas2DBackend implements RenderBackend {
         // A complete partial scene owns its local relief, but accessibility
         // and an unavailable piece still need the procedural rule markers.
         if (!sceneGround || view.crispOverlays) this.drawDecor(view, ground);
+        else this.drawDecor(view, ground, true);
         this.drawOverlays(view, ground);
         this.drawPath(view, ground);
         if (view.aimArc) this.drawAimArc(view.aimArc, ground);
@@ -326,7 +327,7 @@ export class Canvas2DBackend implements RenderBackend {
   }
 
   /** Cliffs, canopies, walls, cover and decals: a second pass so overhangs land on neighbours. */
-  private drawDecor(view: MapView, camera: Camera): void {
+  private drawDecor(view: MapView, camera: Camera, elevationOnly = false): void {
     const { ctx } = this;
     const signature = decorSignature(view.grid);
     if (signature !== this.reliefSignature) {
@@ -340,7 +341,9 @@ export class Canvas2DBackend implements RenderBackend {
         const tile = view.grid.tiles[index];
         if (!tile) continue;
         const pos = { x, y };
-        paintTileDecor(ctx, camera.toScreen(pos), tile, pos, this.relief.get(index));
+        const box = camera.toScreen(pos);
+        if (elevationOnly) paintElevationDecor(ctx, box, tile, pos, this.relief.get(index));
+        else paintTileDecor(ctx, box, tile, pos, this.relief.get(index));
       }
     }
   }

@@ -17,6 +17,7 @@ import type { Tile, Vec2 } from '../../core/types';
 import type { Edges, TileRelief } from '../geometry/board';
 import { isCanopy } from '../geometry/board';
 import { TERRAIN_STYLES } from '../palettes';
+import { paintTerrain } from './tiles';
 import type { Box, Ctx } from './shapes';
 import { circle, ellipse, tileNoise } from './shapes';
 
@@ -44,12 +45,7 @@ export function paintTileDecor(
   if (tile.terrain === 'pit') paintPit(ctx, box, relief?.solid ?? null);
   else if (!tile.blocked) paintDecals(ctx, box, tile, pos);
 
-  if (relief) {
-    if (relief.westDrop > 0) paintLedgeSide(ctx, box, 'w');
-    if (relief.eastDrop > 0) paintLedgeSide(ctx, box, 'e');
-    if (relief.faceDrop > 0) paintCliffFace(ctx, box, relief.faceDrop, pos);
-    if (relief.rim) paintPlateauRim(ctx, box, relief.rim);
-  }
+  paintTileRelief(ctx, box, pos, relief);
 
   if (tile.cover && !tile.blocked) paintCoverStones(ctx, box, pos);
 
@@ -57,6 +53,61 @@ export function paintTileDecor(
     if (isCanopy(tile)) paintCanopy(ctx, box, pos);
     else if (tile.terrain !== 'pit') paintSolidMass(ctx, box, tile, pos, relief?.solid ?? null);
   }
+}
+
+/** Raised terrain remains rule-owned in a partial scene, including its rocky top and step faces. */
+export function paintElevationDecor(
+  ctx: Ctx,
+  box: Box,
+  tile: Tile,
+  pos: Vec2,
+  relief: TileRelief | undefined,
+): void {
+  if (tile.elevation > 0) {
+    paintTerrain(ctx, box, tile, pos);
+    paintStonePlateau(ctx, box, pos);
+    paintDecals(ctx, box, tile, pos);
+  }
+  paintTileRelief(ctx, box, pos, relief);
+}
+
+/** Broad, quiet stone variation keeps a raised plateau from reading as an empty shader tile. */
+function paintStonePlateau(ctx: Ctx, box: Box, pos: Vec2): void {
+  const s = box.size;
+  ctx.save();
+  ctx.globalAlpha = 0.34;
+  for (let i = 0; i < 2; i++) {
+    const cx = box.x + s * (0.28 + tileNoise(pos.x, pos.y, 81 + i) * 0.42);
+    const cy = box.y + s * (0.26 + tileNoise(pos.x, pos.y, 84 + i) * 0.44);
+    const rx = s * (0.16 + tileNoise(pos.x, pos.y, 87 + i) * 0.09);
+    const ry = s * (0.07 + tileNoise(pos.x, pos.y, 90 + i) * 0.05);
+    ctx.fillStyle = i === 0 ? shade('#565452', 0.22) : shade('#565452', -0.16);
+    ellipse(ctx, cx, cy, rx, ry);
+    ctx.fill();
+  }
+  ctx.globalAlpha = 0.38;
+  ctx.strokeStyle = 'rgba(27,20,16,0.52)';
+  ctx.lineWidth = Math.max(1, s * 0.018);
+  const y = box.y + s * (0.34 + tileNoise(pos.x, pos.y, 94) * 0.32);
+  ctx.beginPath();
+  ctx.moveTo(box.x + s * 0.12, y);
+  ctx.lineTo(box.x + s * 0.86, y + (tileNoise(pos.x, pos.y, 95) - 0.5) * s * 0.1);
+  ctx.stroke();
+  ctx.restore();
+}
+
+/** Cliff faces and rims can cross into an adjacent lower tile. */
+export function paintTileRelief(
+  ctx: Ctx,
+  box: Box,
+  pos: Vec2,
+  relief: TileRelief | undefined,
+): void {
+  if (!relief) return;
+  if (relief.westDrop > 0) paintLedgeSide(ctx, box, 'w');
+  if (relief.eastDrop > 0) paintLedgeSide(ctx, box, 'e');
+  if (relief.faceDrop > 0) paintCliffFace(ctx, box, relief.faceDrop, pos);
+  if (relief.rim) paintPlateauRim(ctx, box, relief.rim);
 }
 
 /* ------------------------------------------------------------------ */
