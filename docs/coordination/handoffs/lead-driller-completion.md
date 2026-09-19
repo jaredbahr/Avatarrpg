@@ -60,3 +60,89 @@ device/authoring/animation limitation; no speculative engine migration.
 v0.2.0 is not yet verified deployed by this lead and is an interim release.
 Last predecessor-observed live title was v0.1.0 build `44ed3f6`.
 Audio listening, physical devices and whole-run final presentation remain open.
+## Active source ownership update
+
+- Gameplay retains PR64 delivery and the separate guidance/camera source branch.
+  The camera regression must reproduce zooming OUT to the whole board followed
+  by targeting/confirmation reflow; a zoom-in/log-only test is insufficient.
+- Isolated `codex/combat-outcome-preview` agent owns rule-backed prop,
+  displacement and status forecasts plus lower CombatScene confirmation UI.
+  Gameplay owns only the camera methods in that shared file; integrate carefully.
+- Isolated `codex/world-conversations` agent owns contextual dialogue routing,
+  a compact shared panel and safe conversation mode in ExploreScene. Preserve
+  existing navigation edits. Explicit node/map metadata selects eligible world
+  conversations; authored interludes remain staged. Retain one renderer and stop
+  world interactions during dialogue. No hidden second simulation or new save
+  state is authorized merely for presentation.
+- Art owns the final exterior-rim source package and a bounded audit of quarry
+  paving scale and generic watch/discovery markers. Gameplay owns map opt-in;
+  the lead reviews the resulting runtime composition.
+- Isolated `codex/gate-threat-audit` preserves the legal-command audit in
+  `22746fa` and now owns a pure direct-attack reach helper and focused tests.
+  No battle UI or balance edits overlap the combat-preview owner. The helper
+  describes possible reach, not AI intent or comprehensive safety from chains.
+- Writing's corrected return-discovery source is `887b9dba`; it matches the
+  existing immediate aftermath rather than inventing completed recovery.
+
+All these are local sources for coherent integration, not separate CI releases.
+Use fresh visible versions for playable updates and preserve required checks.
+Root's normal-input old-preview run won the Cutting escort battle, reached
+Grumbler and reproduced a self-target Healing Stream no-op in round 2. The
+same ability had correctly healed Ruon earlier. The reviewed shared-recipient
+fix and richer forecasts are on `codex/combat-outcome-preview` at `3064e7c`
+(implementation `8037c2d`), with 698 tests and the focused Chrome touch check
+passing. Gameplay has the integration handoff; the preview owner now wires
+the reviewed direct-attack reach helper/adapter into movement confirmation.
+The audit owner is independently checking early party setup/payoff decisions.
+
+Autosave holds the Driller entry; Slots 1–3 hold village, forest and pre-gate
+checkpoints. The browser is paused at the failed self-heal pending a corrected
+combined preview. Boss completion and final-head route acceptance remain open.
+World-conversation browser/focus checks are active. Art's paving-scale source
+`c0918c8` is accepted for integration, while the floor-treatment follow-up
+`a01cfee` remains a guide for improving material transitions, not final art.
+Writing's concise corrected Driller tip is `e97ce311`.
+
+PR64 remains open at `0c04719` with merge-commit auto-merge enabled. Its
+verification check passed; E2E and gallery remain active on run `35421799207`.
+Do not restart healthy checks or publish a duplicate integration PR. The next
+combined playable batch targets visible version 0.2.1 before final verification.
+
+## 19 September integrated play and latest repair checkpoint
+
+This checkpoint supersedes the active-check and paused-boss statements above.
+PR64's `0c04719` E2E failed in the forced-WebGL lower-edge target test;
+verification passed. Independent installed-Chrome SwiftShader reproduction
+passed all four original cases and three repeated WebGL runs. It reproduced
+render/RAF cost but no deterministic bounding-box starvation. Gameplay owns
+CI-trace diagnosis and one coherent repair; no blind rerun or duplicate PR.
+Gallery status must be read from the owner rather than inferred here.
+
+The sole final combined worktree is `Avatar RPG-combined-0.2.1`, branch
+`codex/route-review-preview-combined`. It incorporates conversations, pending
+support AP, richer combat previews, truthful movement threats, return copy,
+projected Cutting/Driller scenes and the improved gate material package.
+Camera fix `be67cef` fits compact oblique combat viewports; its focused Huge
+text regression and full 790-test verification passed. `ca53dd9` then disables
+player action controls during enemy turns, also verified with focused browser
+coverage. Port 4210 is now a static preview of the `be67cef` build to protect
+ongoing play from HMR. Root's already-loaded page retains earlier source and
+must not be represented as testing every subsequent code change.
+
+Root's continuous normal-input solo Sura run has defeated Grumbler in round 7,
+reviewed the outcome, and is walking back to Ba Dan. Export/import and a real
+round-4 save/reload preserved the battle. See the route-presentation handoff
+for sequence and exact limitations. Final visual acceptance remains open.
+
+Preview owner completed reviewed `00c9805` plus handoff `9832fcb`, following
+`a1ea214` and `f8c96dc`: shared surface-contact journals cover lethal victims
+and two-cell contacts, and healing forecasts cap cumulative effects. Source
+verification passed 718 tests. Gameplay owns cherry-picking and combined
+verification. Writer `2e1bb8b` corrects the rescue interlude's mismatched shot.
+The surface-rendering owner now works separately on Canvas/WebGL mud, oil and
+ice integration; art reviews actual quarry rim/ground composition. Their
+source evidence still needs combined visual review before final delivery.
+
+Keep these local milestones batched. Preserve meaningful release version 0.2.1,
+required exact-head checks, merge commits, and deployment verification. No
+source milestone or legitimate boss victory closes the complete quality goal.
