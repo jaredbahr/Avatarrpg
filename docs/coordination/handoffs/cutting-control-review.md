@@ -451,3 +451,18 @@ can blank WebKit's forced-WebGL base painting while overlay actors remain. The
 tea owner is comparing the pre-tea compact dock on root's temporary port 4268
 with the frozen release on 4267. No renderer parity or platform-wide limitation
 is claimed. Root must preserve the 4268 dist while that comparison is active.
+
+## Ownership transfer: legacy walls and Riverside resize
+
+Integrated legacy-wall guard as `b69fa4e` after source review and the actual R3
+save import checks on Canvas/WebGL. The shared helper preserves old battle terrain
+and omits wall slices unless their footprint is blocked wall terrain. The quarry
+owner released the original assignment and now owns a new isolated WebKit resize
+fix from this integrated head. Tea owner proved the blank Riverside base painting
+on pre-tea production4268: Activities toggle alone causes it; tea art is not causal.
+
+Root's Windows-only WebKit diagnostic continuation is live on4266 with248 cases;
+its ignored config excludes audio because both Web Audio constructors are absent
+in this Windows engine. It retains all other iPad coverage. Required Linux CI and
+repository test configuration remain unchanged. Root dist/4268 stay frozen while
+this run and the independent resize comparison use them. No deployment is claimed.

@@ -75,24 +75,25 @@ and must not be used to close these requirements.
 Current ownership, checked 19 September 2026. Read the linked handoff and verify
 live branches and checks before editing; older assignments are historical.
 
-| Assignment                         | Owner                                | Boundary                                                                                                                 |
-| ---------------------------------- | ------------------------------------ | ------------------------------------------------------------------------------------------------------------------------ |
-| PR64 release v0.2.1                | Root orchestrator                    | `fc37c6a`; CI35438371967 terminal E2E failure; gallery cancelled; no new push until coherent local verification          |
-| Gesture CI repair                  | Integrated by root                   | `710128d`; 27 Chrome and 18 local WebKit cases pass; no product framing change                                           |
-| Next quality integration           | Root orchestrator                    | `codex/deserter-material-fx`; FX, scale, quarry narration and conversation framing integrated locally                    |
-| Quarry loading/rail art            | Source complete; gameplay integrates | Accepted source `505941c`; actual registration and occlusion review remain part of quarry interior work                  |
-| Quarry interior cover and props    | `combat_preview`                     | Approved bounded map/scene implementation based on `c8f8b06`; existing rules, connected approaches and meaningful props  |
-| Riverside activity dock            | Integrated by root                   | `a9699a9`; combined dock/framing 20 Chrome and WebKit cases pass; manual WebGL closed/open dock reviewed                 |
-| Riverside tea motion               | `gesture_ci_repair`                  | Isolated from `cc9e5ab`; honest seated-cup art and pose lifecycle within existing atlas capacity; no collision shortcuts |
-| Ba Dan neighborhood composition    | `world_conversations`                | Read-only audit of approved target, existing art and map geometry; no edits yet                                          |
-| Continuous gameplay and acceptance | Root orchestrator                    | Production4267 at `fc37c6a`; manual route and source review; no final aesthetic signoff                                  |
+| Assignment                         | Owner                 | Boundary                                                                                                                 |
+| ---------------------------------- | --------------------- | ------------------------------------------------------------------------------------------------------------------------ |
+| PR64 release v0.2.1                | Root orchestrator     | `fc37c6a`; CI35438371967 terminal E2E failure; gallery cancelled; no new push until coherent local verification          |
+| Gesture CI repair                  | Integrated by root    | `710128d`; 27 Chrome and 18 local WebKit cases pass; no product framing change                                           |
+| Next quality integration           | Root orchestrator     | `codex/deserter-material-fx`; through `b69fa4e`, including quarry, legacy-save walls and bundle headroom                 |
+| Quarry loading/rail art            | Integrated by root    | `ce175de`/`e7ac483`; closed rear rail reviewed in actual Canvas/WebGL captures                                           |
+| Quarry interior cover and props    | Integrated by root    | `95598af` plus `b69fa4e`; preserved actual older R3 save checked on Canvas/WebGL                                         |
+| Riverside activity dock            | Integrated by root    | `a9699a9`; combined dock/framing 20 Chrome and WebKit cases pass; manual WebGL closed/open dock reviewed                 |
+| Riverside tea motion               | `gesture_ci_repair`   | Isolated from `cc9e5ab`; honest seated-cup art and pose lifecycle within existing atlas capacity; no collision shortcuts |
+| Ba Dan neighborhood composition    | `world_conversations` | Isolated neighborhood implementation: lower-court market edge and seven-cell canal envelope with real bridge             |
+| WebKit Riverside painting resize   | `combat_preview`      | New isolated fix after reproducing blank base painting on Activities toggle; no tea-source overlap                       |
+| Continuous gameplay and acceptance | Root orchestrator     | Production4267 at `fc37c6a`; manual route and source review; no final aesthetic signoff                                  |
 
 The [current playthrough handoff](handoffs/cutting-control-review.md) records
 ownership, exact release validation and preserved saves. Release verification
 passes836 tests;14 focused production browser checks include complete trade and
 escort return routes. GitHub verification passed; E2E failed after240 passes on
 the iPad pinch test's starting-scale assertion. The remaining gallery was cancelled
-and the scoped repair is under local verification. Rooted AI and disabled movement controls have also been confirmed
+and the scoped repair passed local Chrome/WebKit verification. Rooted AI and disabled movement controls have also been confirmed
 through the original manual campaign on the corrected release build. The same
 Sura/Riko campaign subsequently lost with the boss at2 HP and reached its ending.
 Earlier solo Sura victory and homecoming evidence remains preserved. None of
