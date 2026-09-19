@@ -87,14 +87,21 @@ export function resolvePainter(key: string): ResolvedPainter {
       'unit.enemy.bruiser': 'broad',
       'unit.enemy.quarrybender': 'bender',
     };
-    const variant = banditVariants[key] ?? key.slice(key.lastIndexOf('.') + 1);
+    const mercenaryVariants: Readonly<Record<string, string>> = {
+      'unit.enemy.crossbow': 'crossbow',
+      'unit.enemy.merc': 'blade',
+      'unit.enemy.sergeant': 'sergeant',
+      'unit.ally.ruon': 'sergeant',
+    };
+    const variant =
+      banditVariants[key] ?? mercenaryVariants[key] ?? key.slice(key.lastIndexOf('.') + 1);
     // Missing atlases retain each enemy's original silhouette and equipment.
     const unitPainter =
       (key === 'unit.enemy.grumbler'
         ? UNIT_PAINTERS.driller
         : banditVariants[key]
           ? UNIT_PAINTERS.bandit
-          : key === 'unit.enemy.crossbow'
+          : mercenaryVariants[key]
             ? UNIT_PAINTERS.mercenary
             : UNIT_PAINTERS.bender) ?? FALLBACK;
     return {

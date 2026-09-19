@@ -11,6 +11,8 @@ import { join, resolve, dirname, relative, sep } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 const FAMILY_BUDGET_MB = 4;
+// ADR 0032: three illustrated live-route figures replace procedural stand-ins.
+const UNIT_BUDGET_MB = 4.5;
 const PRECACHE_BUDGET_MB = 25;
 
 const root = resolve(dirname(fileURLToPath(import.meta.url)), '..');
@@ -49,9 +51,10 @@ for (const file of walk(artDir)) {
   const family = relative(artDir, file).split(sep)[0] ?? '.';
   families.set(family, (families.get(family) ?? 0) + statSync(file).size);
 }
-console.log('Art by family (budget %s MB each):', FAMILY_BUDGET_MB);
+console.log('Art by family (budget %s MiB; units %s MiB):', FAMILY_BUDGET_MB, UNIT_BUDGET_MB);
 for (const [family, bytes] of [...families].sort()) {
-  const over = bytes > FAMILY_BUDGET_MB * 1024 * 1024;
+  const budget = family === 'units' ? UNIT_BUDGET_MB : FAMILY_BUDGET_MB;
+  const over = bytes > budget * 1024 * 1024;
   if (over) failed = true;
   console.log(`  ${over ? 'OVER ' : '     '}${mb(bytes).padStart(7)} MB  ${family}`);
 }

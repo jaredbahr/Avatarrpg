@@ -144,6 +144,25 @@ function quarryEnemySheet(name: string, palette: string): SheetEntry {
   };
 }
 
+/** Blade wind-up and contact reuse the authored cast cels at the existing rate. */
+function cuttingSheet(name: string, palette: string): SheetEntry {
+  const key = name === 'ruon' ? 'unit.ally.ruon' : `unit.enemy.${name}`;
+  const base = quarryEnemySheet(name, palette);
+  const frames = (clip: ClipName, count: number) =>
+    Array.from({ length: count }, (_, i) => `${key}/${clip}/${i}`);
+  return {
+    ...base,
+    clips: {
+      idle: { frames: frames('idle', 2), fps: 1, loop: true },
+      walk: { frames: frames('walk', 2), fps: 4, loop: true },
+      cast: { frames: frames('cast', 3), fps: 8, loop: false },
+      melee: { frames: frames('melee', 2), fps: 8, loop: false },
+      hit: { frames: frames('hit', 1), fps: 1, loop: false },
+      ko: { frames: frames('ko', 1), fps: 1, loop: false },
+    },
+  };
+}
+
 export const ASSETS: Readonly<Record<string, AssetEntry>> = {
   'unit.village.sura': villageSheet('sura', 'water'),
   'unit.village.kaya': villageSheet('kaya', 'fire'),
@@ -184,7 +203,7 @@ export const ASSETS: Readonly<Record<string, AssetEntry>> = {
   'unit.enemy.bruiser': quarryEnemySheet('bruiser', 'enemy'),
   'unit.enemy.quarrybender': quarryEnemySheet('quarrybender', 'earth'),
   'unit.enemy.deserter': painter('bandit', 'fire', 'bender'),
-  'unit.enemy.merc': painter('mercenary', 'enemy', 'blade'),
+  'unit.enemy.merc': cuttingSheet('merc', 'enemy'),
   'unit.enemy.crossbow': {
     kind: 'sheet',
     atlas: 'art/units/crossbow.json',
@@ -217,7 +236,7 @@ export const ASSETS: Readonly<Record<string, AssetEntry>> = {
       ko: { frames: ['unit.enemy.crossbow/ko/0'], fps: 1, loop: false },
     },
   },
-  'unit.enemy.sergeant': painter('mercenary', 'enemy', 'sergeant'),
+  'unit.enemy.sergeant': cuttingSheet('sergeant', 'enemy'),
   'unit.enemy.grumbler': {
     kind: 'sheet',
     atlas: 'art/units/grumbler.json',
@@ -250,7 +269,7 @@ export const ASSETS: Readonly<Record<string, AssetEntry>> = {
       ko: { frames: ['unit.enemy.grumbler/ko/0'], fps: 1, loop: false },
     },
   },
-  'unit.ally.ruon': painter('mercenary', 'neutral', 'sergeant'),
+  'unit.ally.ruon': cuttingSheet('ruon', 'neutral'),
 
   /* --------------------------------------------------------------- NPCs */
   'npc.elder': { kind: 'image', url: 'art/npcs/mira.png', palette: 'neutral' },
