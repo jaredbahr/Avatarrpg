@@ -4,6 +4,7 @@ import {
   FOREST_PINE_CELLS,
   FOREST_RAISED_SHELF,
   FOREST_RAISED_SHELF_CELLS,
+  FOREST_BANK_NEST_REEDS,
   FOREST_ROAD_SCENE,
   FOREST_RUBBLE_CELLS,
   FOREST_WATER_CELLS,
@@ -45,7 +46,7 @@ it('registers forest art only to the existing water, cover and blocked tree cell
 });
 
 it('keeps pine tips inside the agreed top bleed and all feet on projected cell centers', () => {
-  for (const tree of FOREST_ROAD_SCENE.scenery) {
+  for (const tree of FOREST_ROAD_SCENE.scenery.filter(({ id }) => id.startsWith('forest-pine-'))) {
     const cell = tree.footprint[0];
     if (!cell) throw new Error('Tree has no footprint');
     expect(tree.width).toBeLessThanOrEqual(144);
@@ -55,4 +56,21 @@ it('keeps pine tips inside the agreed top bleed and all feet on projected cell c
     expect(tree.y + tree.height * 0.99).toBeCloseTo((cell.x + cell.y + 1) * 32);
     expect((tree.depth.x + tree.depth.y) * 32).toBeCloseTo(tree.y + tree.height * 0.99);
   }
+});
+
+it('registers the passable flood-bank nest reeds at their authored depth', () => {
+  expect(FOREST_BANK_NEST_REEDS).toMatchObject({
+    id: 'forest-bank-nest-reeds',
+    url: 'art/maps/forest-scene/old-nest-reeds.webp',
+    x: 516,
+    y: 454,
+    width: 120,
+    height: 58,
+    footprint: [{ x: 6, y: 9 }],
+    depth: { x: 6.1, y: 9.08 },
+  });
+  expect(FOREST_ROAD.rows[9]?.[6]).toBe(',');
+  expect(FOREST_BANK_NEST_REEDS.fadeWhenOccluding).toBeUndefined();
+  expect(FOREST_BANK_NEST_REEDS.wall).toBeUndefined();
+  expect(FOREST_ROAD_SCENE.scenery).toContainEqual(FOREST_BANK_NEST_REEDS);
 });

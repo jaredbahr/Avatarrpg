@@ -64,6 +64,18 @@ function pine({ x, y }: Vec2): SceneScenery {
   };
 }
 
+/** A low, passable flood-bank remnant beside the southern woodland path. */
+export const FOREST_BANK_NEST_REEDS: SceneScenery = {
+  id: 'forest-bank-nest-reeds',
+  url: `${root}old-nest-reeds.webp`,
+  x: 516,
+  y: 454,
+  width: 120,
+  height: 58,
+  footprint: [{ x: 6, y: 9 }],
+  depth: { x: 6.1, y: 9.08 },
+};
+
 /** Already projected ground; gameplay opts the map into the matching projection. */
 export const FOREST_ROAD_SCENE: MapScene = {
   groundMode: 'partial',
@@ -82,5 +94,5 @@ export const FOREST_ROAD_SCENE: MapScene = {
       height: 128 / 3,
     })),
   ],
-  scenery: FOREST_PINE_CELLS.map(pine),
+  scenery: [...FOREST_PINE_CELLS.map(pine), FOREST_BANK_NEST_REEDS],
 };
