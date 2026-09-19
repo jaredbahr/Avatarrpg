@@ -5,8 +5,8 @@
   this patch during its running CI.
 - **Location:** `C:/Users/Jared/Documents/ChatGPT/Avatar RPG-deserter-material-fx`,
   branch `codex/deserter-material-fx`, original base `b036c59`. A local rebase onto
-  current release `fc37c6a` and final combined budget validation follow the bounded
-  implementation checkpoint; final results are appended below.
+  current release `fc37c6a` produced implementation commit `df5432f`; final combined
+  validation is recorded below. Only this isolated branch was rebased.
 - **Outcome:** Fire Blast and Oil Flask leave measured deserter palms; Fire Blast
   explosion/area and oil spill retain their exact ground destinations. Oil Flask
   reuses the existing terracotta prop as a small tumbling projectile, replacing
@@ -59,3 +59,35 @@
   bandit scale change. Root owns integration and final release. Physical tablet
   testing and complete route acceptance are not claimed. Port4265 stopped after
   each review run; no shared worktree was edited.
+
+## Final combined verification
+
+Implementation `df5432f` is based on release `fc37c6a`, including both movement UI
+and enemy AI repairs. `npm run verify` passes **841 tests in 101 files**, with
+typecheck, lint and formatting passing. `npm run build`, `npm run art:validate`,
+`npm run check:assets` and `node scripts/check-bundle-size.mjs` all pass.
+
+Measured production JavaScript is **306,811 B gzipped**, or 299.6 KiB, leaving
+**389 B** under the unchanged 307,200-byte cap. Read-only comparison with root's
+existing build, whose bundled identifier is verified as `fc37c6a`, gives
+306,706 B: the combined candidate is **105 B larger** including its current build
+identifier and service-worker asset registration. This is a measured combined
+result, not an extrapolation from the older base. CI must still check any future
+integration revision; no cap increase is authorized or needed here.
+
+The asset gate reports **17.43 MiB / 25 MiB**, FX **1.46 MiB / 4 MiB**. PWA lists
+158 precache entries / 17,813.43 KiB. Units, portraits and their limits are unchanged.
+The flask strip repacks to the identical SHA256 listed above.
+
+Fresh clean-build stationary review on `df5432f` passed both 96px normal backend
+cases. Evidence is `.shots/deserter-fx-final-df5432f/{canvas,webgl}-96-normal/`,
+with visible clean build identifier and `provenance.json` recording that exact
+revision. The full 64/96 and reduced/failure matrices above remain preserved;
+the rebase adds movement repairs without changing this FX implementation.
+Root reviewed the corrected source launches; impact and fallback frames are
+preserved for final review. This remains a bounded next-quality revision,
+not a whole-route acceptance claim.
+
+No server listens on 4265 after the final run. Worktree clean at transfer, apart
+from ignored local captures/build output and the shared dependency junction.
+Root owns integration; outgoing owner relinquishes editing after this handoff.
