@@ -26,6 +26,7 @@ import {
 import { pathCost, posKey, reachable, samePos } from '../../core/rules/grid';
 import { effectiveStats, isAlive } from '../../core/rules/stats';
 import { activeUnit, upcomingOrder } from '../../core/rules/turnOrder';
+import { encounterText } from '../../core/story/encounterText';
 import { Renderer, TILE } from '../../render/renderer';
 import type { AimArc, MapView, OverlayLayer, RenderProp, RenderUnit } from '../../render/renderer';
 import { CONTENT } from '../../content';
@@ -603,9 +604,10 @@ export class CombatScene implements Scene {
     bar.appendChild(actor);
 
     if (encounter) {
-      const tipButton = button('Tip', () => this.app.toasts.show(encounter.tip, 'info', 6000), {
+      const advice = encounterText(encounter, battle.variantId).tip;
+      const tipButton = button('Tip', () => this.app.toasts.show(advice, 'info', 6000), {
         class: 'btn-ghost',
-        title: encounter.tip,
+        title: advice,
       });
       tipButton.prepend(mark(UI_MARKS.tip, 'mark-inline'));
       bar.appendChild(tipButton);

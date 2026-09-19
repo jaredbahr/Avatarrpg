@@ -71,8 +71,8 @@ export const ENCOUNTERS: readonly EncounterDef[] = [
           { enemyId: 'bandit_bruiser', pos: { x: 17, y: 5 } },
           { enemyId: 'bandit_bruiser', pos: { x: 17, y: 7 } },
         ],
-        intro: 'Only two of them step out. They do not look worried about it.',
-        tip: 'Two big ones instead of three small ones. Everybody hit the same one — a bruiser at half health hits just as hard as a fresh one.',
+        intro: 'A bruiser steps out of the trees and plants heavy boots in the road.',
+        tip: 'Focus your attacks. A bruiser at half health hits just as hard as a fresh one.',
       },
     ],
     // Deliberately short. This is the tutorial fight: a full table should be

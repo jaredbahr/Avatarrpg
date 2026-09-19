@@ -283,6 +283,11 @@ for (const renderer of ['canvas', 'webgl'] as const) {
       ).toBe(true);
       expect(after.tilePx).toBeCloseTo(before.tilePx, 5);
 
+      if (process.env.FNT_REVIEW_DIR)
+        await page.screenshot({
+          path: `${process.env.FNT_REVIEW_DIR}/move-reveal-${renderer}-${largeText}.png`,
+        });
+
       await page.getByRole('button', { name: 'Confirm', exact: true }).click();
       await waitForIdle(page);
       await expect
