@@ -46,6 +46,18 @@ function alphaAt(
   return image.data[(y * image.width + x) * 4 + 3] ?? 0;
 }
 
+function alphaAtWorld(
+  piece: (typeof BA_DAN_SCENE.ground)[number],
+  pos: { x: number; y: number },
+): number {
+  const image = decodedGround.get(piece.url);
+  if (!image) return 0;
+  const x = Math.round(1024 + (pos.x - pos.y) * 64 - piece.x);
+  const y = Math.round((pos.x + pos.y) * 32 - piece.y);
+  if (x < 0 || y < 0 || x >= image.width || y >= image.height) return 0;
+  return image.data[(y * image.width + x) * 4 + 3] ?? 0;
+}
+
 function rgbAt(
   piece: (typeof BA_DAN_SCENE.ground)[number],
   pos: { x: number; y: number },
@@ -138,6 +150,13 @@ it('ships the western spawn approach as decoded material coverage with a courtya
   expect(western).toMatchObject(BA_DAN_WESTERN_APPROACH_GROUND);
   expect(courtyard).toBeDefined();
   if (!western || !courtyard) throw new Error('Missing registered Ba Dan material ground');
+  for (const pos of [
+    { x: 10, y: 4 },
+    { x: 11, y: 4 },
+  ]) {
+    expect(BA_DAN_VILLAGE.rows[pos.y]?.[pos.x], `grass source ${pos.x},${pos.y}`).toBe(',');
+    expect(alphaAt(courtyard, pos), `opaque grass source ${pos.x},${pos.y}`).toBeGreaterThan(240);
+  }
   for (let y = 6; y <= 9; y++) {
     for (let x = 0; x <= 6; x++) {
       const cell = BA_DAN_VILLAGE.rows[y]?.[x];
@@ -162,6 +181,11 @@ it('ships the western spawn approach as decoded material coverage with a courtya
         `RGB join ${pos.x},${pos.y}, channel ${channel}`,
       ).toBeLessThanOrEqual(4);
   }
+  for (const y of [7.5, 8.5])
+    for (const x of [5.05, 5.25, 5.5])
+      expect(alphaAtWorld(western, { x, y }), `opaque fractional join ${x},${y}`).toBeGreaterThan(
+        240,
+      );
 });
 
 it('covers the projected courtyard and southeast canal bank without clipping', () => {

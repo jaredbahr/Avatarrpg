@@ -66,7 +66,7 @@ for (let py = 0; py < height; py++) {
     if (alpha === 0) continue;
     const road = cell === '=' || cell === '.' || cell === 'B' || cell === 'l';
     // The overlap is an exact decoded copy of the accepted courtyard. West of
-    // it, repeat interior road cells x5..9,y7..8 and quiet grass x5..7,y9,
+    // it, repeat interior road cells x5..9,y7..8 and quiet grass x10..11,y4,
     // retaining the approved broad flagstone scale and meadow palette instead
     // of mixing in the unrelated historical raw atlas.
     const source =
@@ -75,15 +75,18 @@ for (let py = 0; py < height; py++) {
         : road
           ? { x: x + 5, y }
           : {
-              x: 5 + (((Math.floor(x) % 3) + 3) % 3) + (x - Math.floor(x)),
-              y: 9 + (y - Math.floor(y)),
+              x: 10 + (((Math.floor(x) % 2) + 2) % 2) + (x - Math.floor(x)),
+              y: 4 + (y - Math.floor(y)),
             };
     const rgba = colorAt(source.x, source.y);
     const to = (py * image.width + px) * 4;
     image.data[to] = rgba[0] ?? 0;
     image.data[to + 1] = rgba[1] ?? 0;
     image.data[to + 2] = rgba[2] ?? 0;
-    image.data[to + 3] = Math.round(((rgba[3] ?? 255) * alpha) / 255);
+    // Courtyard alpha is a feather for its outer silhouette, never opacity
+    // authority for this region's interior. Reuse its RGB, then apply only
+    // the western exterior feather so overlapping road cells remain opaque.
+    image.data[to + 3] = alpha;
   }
 }
 

@@ -65,10 +65,12 @@ The western pack derives from the tracked accepted local material source
 `public/art/maps/ba-dan-scene/courtyard-ground.webp` (1152×576 WebP,
 SHA-256 `691cadc6a8fd3a981aeafb18181eab0580ef62f89b51422c45165527367aac6a`).
 It decodes that already material-composed region, copies its actual pixels in
-the x5–6 overlap, and repeats interior quiet-grass and broad-flagstone swatches
-for the western cells. This is local material reuse, not a full-map crop or
-recolouring. The older ignored raw atlas is not the source of this pack and is
-not described as tracked.
+the x5–6 overlap, and repeats only verified interior quiet-grass (`x10..11,y4`)
+and broad-flagstone (`x5..9,y7..8`) swatches for the western cells. Courtyard
+feather alpha is never carried into the western interior: the local region uses
+its own exterior alpha feather. This is local material reuse, not a full-map
+crop or recolouring. The older ignored raw atlas is not the source of this pack
+and is not described as tracked.
 
 The original scenery layers continue to use `scripts/art/scene-image.ts` for
 alpha-trimmed WebP packing. The complete map encoder remains useful for old
