@@ -43,6 +43,7 @@ import { showGridLines } from '../storage/localSaves';
 import { reactionNotes } from '../ui/ReactionNote';
 import { UnitInspector } from '../ui/UnitInspector';
 import { partyScale } from '../anim/actorScale';
+import { createMovementThreatQuery } from '../ui/movementThreats';
 
 type Mode =
   | { readonly kind: 'idle' }
@@ -64,6 +65,7 @@ export class CombatScene implements Scene {
   /** How high each ability's flight lobs, or null when nothing flies; read once from its recipe. */
   private lobs = new Map<string, number | null>();
   private inspector: UnitInspector | null = null;
+  private readonly movementThreatQuery: ReturnType<typeof createMovementThreatQuery>;
 
   /** Unit whose hand-off banner has been acknowledged. */
   private handedOffTo: string | null = null;
@@ -88,7 +90,9 @@ export class CombatScene implements Scene {
   private resultShown = false;
   private logOpen = false;
 
-  constructor(private app: App) {}
+  constructor(private app: App) {
+    this.movementThreatQuery = createMovementThreatQuery(app.content);
+  }
 
   /* ---------------------------------------------------------------- */
   /* Lifecycle                                                         */
@@ -814,12 +818,29 @@ export class CombatScene implements Scene {
         );
       }
       const cost = pathCost(this.moveContext(unit), unit.pos, cell.path) ?? cell.cost;
+      const threat = this.movementThreatQuery(battle, unit.id, target);
+      const movementChips = el(
+        'div',
+        { class: 'row row-wrap chips' },
+        el('span', { class: 'chip', text: `${cost} move` }),
+        el('span', { class: 'chip', text: `${Math.max(0, unit.move - cost)} left after` }),
+      );
+      const threatNotice = threat.warning
+        ? el('span', { class: 'warn-note movement-threat-warning', text: threat.warning })
+        : el('span', {
+            class: 'tiny muted movement-threat-empty',
+            text: 'No immediate direct attack found',
+          });
       return this.confirmShell(
         el(
           'div',
-          { class: 'row row-wrap chips' },
-          el('span', { class: 'chip', text: `${cost} move` }),
-          el('span', { class: 'chip', text: `${Math.max(0, unit.move - cost)} left after` }),
+          { class: 'stack tight' },
+          movementChips,
+          threatNotice,
+          el('span', {
+            class: 'tiny muted movement-threat-qualification',
+            text: threat.qualification,
+          }),
         ),
         () => {
           this.app.dispatch({ type: 'move', unitId: unit.id, path: cell.path });
