@@ -1,0 +1,9 @@
+{
+  "tool": "Built-in OpenAI image generation",
+  "date": "2026-09-19",
+  "source": "assets/reference/tea-station/worktable-source.png",
+  "reference": "assets/reference/tea-station/source.png",
+  "generatorFilename": "exec-7897a88e-e62f-4dc4-a8f8-c535cc4b4fef.png",
+  "prompt": "Use case: precise-object-edit.\nEdit this exact original tea-station prop. Change ONLY the height of its wooden legs and lower bracing, making a waist-height standing WORKTABLE instead of a low sitting bench. Preserve the entire tabletop and every vessel EXACTLY: same six standing cups, same kettle, same washing bowl and seventh cup with wire-mended handle, same folded cloth, tabletop thickness/width/perspective and painted style. Do not add, remove, resize or rearrange any object on the tabletop.\nLengthen the four legs vertically to about1.8 times their present tabletop-to-foot height. Move/extend the lower horizontal brace and side rails so the construction remains mechanically credible and all joints meet. This is a compact standing-height tea table used by adult quarry workers, not a stool or bench. Keep the tabletop width identical; only the leg height and matching bracing change. Preserve the three-quarter camera and original simple warm timber materials.\nMake the canvas taller if needed so every foot is fully visible with a generous transparent margin. One prop only, genuinely transparent alpha background, no floor or ground shadow, no environment, no new vessel or ornaments, no text, no watermark, no background halo. Keep original clean dark-brown outlines and hand-painted game-prop style.",
+  "status": "Source checkpoint; not registered or shipped"
+}

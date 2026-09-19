@@ -66,6 +66,10 @@ export function resolvePainter(key: string): ResolvedPainter {
       draw: (ctx, box, options) => {
         if (key.startsWith('portrait.')) {
           paintPortrait(ctx, box, palette, { variant: key.slice('portrait.'.length) });
+        } else if (key === 'world.tea_station') {
+          // Preserve the discovery's semantic kettle while its image loads or
+          // fails; SpriteCache uses this same fallback on both backends.
+          paintDiscovery(ctx, box, palette, { ...(options ?? {}), variant: 'tea' });
         } else if (key.startsWith('prop.')) {
           paintProp(ctx, box, palette, { ...(options ?? {}), variant: key.slice('prop.'.length) });
         } else if (key.startsWith('npc.')) {

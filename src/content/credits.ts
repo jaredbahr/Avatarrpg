@@ -139,7 +139,7 @@ export const CREDITS: readonly CreditEntry[] = [
   },
   {
     what: 'The Act 1 environments',
-    work: 'Five map paintings and six interactable prop sprites',
+    work: 'Five map paintings, six combat props and the workers’ tea station',
     authors: 'This project, generated with OpenAI image generation',
     licence: 'own work',
     source: '',
@@ -151,7 +151,7 @@ export const CREDITS: readonly CreditEntry[] = [
       'art/maps/quarry_floor.webp',
       'art/props',
     ],
-    note: 'Original generated environments registered to the authored map layouts, with transparent props packed separately. Prompts and processing notes: docs/art/act1-environments.md; worn cart refresh: docs/art/quarry-gate-material-pass.md. Output terms: https://openai.com/policies/row-terms-of-use/. No exclusive copyright in generated output is claimed.',
+    note: 'Original generated environments registered to the authored map layouts, with transparent props packed separately. Prompts and processing notes: docs/art/act1-environments.md; worn cart refresh: docs/art/quarry-gate-material-pass.md; workers’ tea station: docs/art/tea-station.md. Output terms: https://openai.com/policies/row-terms-of-use/. No exclusive copyright in generated output is claimed.',
   },
   {
     what: 'The layered Ba Dan courtyard',
