@@ -580,3 +580,34 @@ Evidence: `C:/Users/Jared/.codex/worktrees/partial-ground-decor/.shots/final-bad
 Review found a conspicuous cyan water rim against the canal banks. That visual
 polish issue remains open despite functional passes. The prior art preview on
 4297 is stopped. No GitHub push, new CI run, merge or deployment is claimed.
+
+## Release batch review — 19 September
+
+Source `be4f4b4` adds the quieter water treatment (`612330c`) and explicit
+authored-art readiness after scene re-entry. Root reviewed the actual `(9,7)`
+canal approach in Canvas, WebGL and High contrast: the bright rim is reduced,
+the bridge/actor contact remains legible, and tactical geometry remains visible.
+Evidence is in the isolated `runtime-water-polish/.shots/water-polish/after`
+directory. This closes the bounded canal-rim correction, not the full visual,
+motion, listening or physical-device target.
+
+`npm run verify` passed 860 tests/103 files plus typecheck, lint and formatting
+on `be4f4b4`. The latest production output is `.shots/integration/release-dist`,
+entry `index-CIZnviAF.js`, with 306,055 gzip JavaScript bytes below the 307,200
+cap and PWA output present. Art validation and asset-family budgets pass.
+Frozen preview 4270 continues serving the earlier modular proof unchanged.
+
+The initial focused run correctly exposed a pixel assertion tied to the former
+water opacity. Test-only integration `e4cf28c` uses the new shader's minimum
+blue shift, retains the red-loss requirement, additionally proves the red ground
+remains beneath water, and checks RGB restoration after water removal. All six
+partial-ground cases passed twice on installed Chrome (12 passes). The separate
+renderer/rubble checks passed five cases with one software-renderer premise
+skip. The full 176-case Chrome pass above remains the full-route evidence;
+these later checks cover the small water/readiness changes.
+
+Windows headless WebKit still shows the documented pale-canvas presentation
+boundary after re-entry: Canvas water passes, WebGL fails authored-art readiness.
+No assertion is skipped and no renderer workaround is shipped. Required Linux
+Chromium/WebKit and gallery checks on the final pushed revision remain gates;
+this local limitation neither proves nor substitutes for their result.
