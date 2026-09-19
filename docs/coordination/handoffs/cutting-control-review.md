@@ -515,3 +515,28 @@ Grumbler's potential reach. Sura remains34/34, Riko18/36, boss64/64; no attack
 or outcome is claimed. Slot1 on4269 holds this state, exported through the UI as
 `C:/Users/Jared/Downloads/four-nations-tactics-lv3-2026-09-19 (4).json`
 (64,697 bytes). Active browser tab9 is marked for continuation, with Save open.
+
+## Manual prop setup on combined50b0ee0
+
+Continued that actual two-player campaign to round3, without state mutation.
+Riko moved beside the new brazier, shoved it onto oil, followed and used Strike
+to break it. The preview explicitly announced four fire tiles and friendly
+damage; the executed break reduced Riko11 to7 HP. Shoving alone correctly did
+not ignite the oil. Bolas then damaged Grumbler64 to63 and applied Rooted.
+
+Sura's Water Pull initially forecast zero displacement because the water barrel
+blocked the two-cell boss. Two Water Whips broke the barrel, removed its cover
+and applied Wet. The next pull forecast changed to three tiles, landing at
+displayed(11,5), and execution moved the boss and reduced it to61 HP. This is
+verified setup/displacement behavior, not a claim that the boss was pulled
+through fire or that the strategy won. Round3: Sura23/34, Riko7/36 Rooted,
+Grumbler61/64. Riko's Move correctly disables and melee correctly reports no
+target within one tile. The low-health imported party and this costly setup
+have not established encounter balance or tactical payoff.
+
+Slot2 on4269 preserves round3; slot1 preserves round1. The UI export is
+`C:/Users/Jared/Downloads/four-nations-tactics-lv3-2026-09-19 (5).json`.
+Tab9 remains marked for continuation with Save open. Canal owner is fixing the
+old baked pond mask with the original atlas; renderer owner has isolated the
+blank painting to Pixi base rendering after resize, independent of VillageLayer.
+Neither unfinished change has been integrated or pushed.
