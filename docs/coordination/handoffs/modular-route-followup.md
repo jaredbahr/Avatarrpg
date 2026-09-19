@@ -37,6 +37,12 @@ passed 860 tests and six focused browser cases before that one checked push.
   visual route review remain pending the remaining art batch. Root's full
   `npm run verify` at `2dbf064` passed 865 tests / 104 files, typecheck, lint
   and formatting.
+- Village neighborhood coverage: `b66f639` (source `966e009`) adds northwest
+  lawn, north/south house courts and east approach. Root reviewed actual source
+  Canvas/WebGL 96px spawn, house and east-road captures, then ran all eight
+  decoded Ba Dan tests in integration. Road/grass coverage is more coherent;
+  repeated grass swatches and the deliberate procedural perimeter remain visible.
+  This is an improvement, not whole-village aesthetic acceptance.
 
 ## Combined evidence
 
@@ -59,18 +65,21 @@ Inline screenshots were reviewed but not saved as standalone artifacts.
 
 ## Live assignments and open gaps
 
-- Terra `partial_ground_validation`: local material regions for Cutting and
-  Driller, with existing surroundings, walls, props and grid preserved. Sources
-  `54e2046`, `0154561`, `ffecaf1` remain unintegrated. Decoded dry centers and
+- Terra `partial_ground_validation`: stopped after quarry source `c5e9dc5`;
+  useful work preserved. Sources `54e2046`, `0154561`, `ffecaf1`, `c5e9dc5`
+  remain unintegrated. Decoded dry centers and
   fractional shared boundaries now have coverage tests; dynamic cell centers
-  remain transparent. Root's Cutting Canvas review found obvious mirrored
-  dirt/stone patterns. Complete Driller captures and material correction are
-  required. The capture harness's nonexistent `battle_quarry_floor` node was
-  corrected to actual `battle_grumbler`; incomplete captures are not acceptance.
-- Terra `conversation_ci_repair`: western approach integrated after source
-  `cdf9e49` review. New isolated assignment from `2dbf064`: coherent northwest
-  lawn, eastern approach and north/south house-court material coverage using
-  verified tracked swatches. Verify actual bounds; preserve grid and scenery.
+  remain transparent. Root completed all four midpoint Canvas/WebGL scene
+  captures plus high contrast at `c5e9dc5`, with actual map/backend/96px checks,
+  using staged `newGame/enterNode` and pointer-adapter pan. The Driller node is
+  `battle_grumbler`, not nonexistent `battle_quarry_floor`. Evidence is in that
+  owner's `.shots/quarry-route-capture/c5e9dc5/`; the successful root harness is
+  `midpoint.mjs`. Preview 4298 stopped after terminal capture success. Boss,
+  props, oil and mud are visible. Mirrored chevrons are gone, but a thin gray
+  dirt-region join remains in both backends; this prevents acceptance.
+- Terra `conversation_ci_repair`: village batch integrated; new isolated task
+  from `c5e9dc5` owns the quarry dirt-region join diagnosis/correction and actual
+  midpoint comparison. Preserve dynamic surface coverage and existing scenery.
 - Art `world_conversations`: isolated forest raised-shelf material/scenery pass;
   preserve the actual six elevated cells and keep exit (19,4) clear. The original
   eight-cell proposal overcounted (18,2) and (18,6); authoritative map rows and
