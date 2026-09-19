@@ -46,9 +46,10 @@ with real occlusion and runtime effects. Full paintings become supporting art.
 [player-view target](../player-view-target.md#official-world-construction-model)
 define this direction and the first acceptance gate.
 
-`world_conversations` owns the bounded Ba Dan courtyard/canal proof in its
-existing isolated tree, preserving useful canal and modular scenery work.
-Root owns shared contract review and integration. The WebKit resize investigation
+Root has integrated the bounded Ba Dan courtyard/canal proof (`74355b0`) and
+owns its release review; the former `world_conversations` assignment is stopped
+and its work preserved. Terra owns a bounded water-layer test follow-up; Luna
+handles routine release documentation in an isolated tree. The WebKit resize investigation
 is integrated as a diagnostic at `6e72cfd` (source `c4229e1`); it found a
 Windows headless presentation boundary and warranted no product workaround.
 Validate the proof without complete map paintings before extending the same
@@ -94,18 +95,18 @@ and must not be used to close these requirements.
 Current ownership, checked 19 September 2026. Read the linked handoff and verify
 live branches and checks before editing; older assignments are historical.
 
-| Assignment                         | Owner                 | Boundary                                                                                                                     |
-| ---------------------------------- | --------------------- | ---------------------------------------------------------------------------------------------------------------------------- |
-| PR64 release v0.2.1                | Root orchestrator     | `fc37c6a` OPEN, auto-merge configured but blocked; no new push until coherent local verification                             |
-| Gesture CI repair                  | Integrated by root    | `710128d`; 27 Chrome and 18 local WebKit cases pass; no product framing change                                               |
-| Next quality integration           | Root orchestrator     | `codex/deserter-material-fx`; through `6e72cfd`, including partial-ground contract `ebdbc3b` and water regressions `b7bb1ac` |
-| Quarry loading/rail art            | Integrated by root    | `ce175de`/`e7ac483`; closed rear rail reviewed in actual Canvas/WebGL captures                                               |
-| Quarry interior cover and props    | Integrated by root    | `95598af` plus `b69fa4e`; preserved actual older R3 save checked on Canvas/WebGL                                             |
-| Riverside activity dock            | Integrated by root    | `a9699a9`; combined dock/framing 20 Chrome and WebKit cases pass; manual WebGL closed/open dock reviewed                     |
-| Riverside tea motion               | Integrated by root    | `50b0ee0`; seated cup/sip poses, actual porch access and cancellation; combined 855 tests pass                               |
-| Ba Dan neighborhood composition    | `world_conversations` | Isolated neighborhood implementation: lower-court market edge and seven-cell canal envelope with real bridge                 |
-| WebKit Riverside painting resize   | Integrated diagnostic | `6e72cfd` / `c4229e1`; ports 4276 and 4268 confirmed stopped; no product workaround or hardware Safari claim                 |
-| Continuous gameplay and acceptance | Root orchestrator     | Production route integration; manual route and source review; no final aesthetic signoff                                     |
+| Assignment                         | Owner                 | Boundary                                                                                                                         |
+| ---------------------------------- | --------------------- | -------------------------------------------------------------------------------------------------------------------------------- |
+| PR64 release v0.2.1                | Root orchestrator     | `fc37c6a` OPEN, auto-merge configured but blocked; no new push until coherent local verification                                 |
+| Gesture CI repair                  | Integrated by root    | `710128d`; 27 Chrome and 18 local WebKit cases pass; no product framing change                                                   |
+| Next quality integration           | Root orchestrator     | `codex/deserter-material-fx`; through `be4f4b4`, modular Ba Dan and quieter runtime water; latest focused validation in progress |
+| Quarry loading/rail art            | Integrated by root    | `ce175de`/`e7ac483`; closed rear rail reviewed in actual Canvas/WebGL captures                                                   |
+| Quarry interior cover and props    | Integrated by root    | `95598af` plus `b69fa4e`; preserved actual older R3 save checked on Canvas/WebGL                                                 |
+| Riverside activity dock            | Integrated by root    | `a9699a9`; combined dock/framing 20 Chrome and WebKit cases pass; manual WebGL closed/open dock reviewed                         |
+| Riverside tea motion               | Integrated by root    | `50b0ee0`; seated cup/sip poses, actual porch access and cancellation; combined 855 tests pass                                   |
+| Ba Dan neighborhood composition    | Integrated by root    | `74355b0`; Canvas/WebGL crossing, conversation and save/reload reviewed; prior owner stopped, preview 4297 stopped               |
+| WebKit Riverside painting resize   | Integrated diagnostic | `6e72cfd` / `c4229e1`; ports 4276 and 4268 confirmed stopped; no product workaround or hardware Safari claim                     |
+| Continuous gameplay and acceptance | Root orchestrator     | Production route integration; manual route and source review; no final aesthetic signoff                                         |
 
 The [current playthrough handoff](handoffs/cutting-control-review.md) records
 ownership, exact release validation and preserved saves. Release verification

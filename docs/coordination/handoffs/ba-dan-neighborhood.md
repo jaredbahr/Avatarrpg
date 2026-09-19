@@ -5,7 +5,8 @@
 - **Branch:** `codex/ba-dan-neighborhood`
 - **Renderer commit:** `422eeac` (Canvas/Pixi partial-ground passes and shader split).
 - **Contract base:** Luna's `03a559bd99e91a2c7335ea59dbccda2220beee25` is already a separate local commit; root owns its integration.
-- **Preview:** local Chrome evidence used strict port `4297`; the server is still live as PID `15128` for root/Luna's final inspection and must be stopped after that review.
+- **Integration:** root preserved this work as `e83572d` and integrated it as `74355b0`; the prior owner is stopped and release review belongs to root.
+- **Preview:** local Chrome evidence used strict port `4297`; root stopped the verified preview process after integration. Frozen combined evidence is recorded in the current playthrough handoff.
 
 Ba Dan now has a bounded modular proof slice. `BA_DAN_SCENE.groundMode` is
 `partial`: the renderers paint procedural grid terrain, then local authored
@@ -63,7 +64,8 @@ from the reviewed material atlas with the two TypeScript art scripts. Do not
 reintroduce a complete-map painting to cover the partial scene or suppress live
 water to hide registration errors.
 
-Root should cherry-pick `422eeac` if it has not already integrated the renderer,
-then take the remaining Ba Dan source/art/doc files from this branch, run the
-combined asset/source checks, and stop PID `15128`. No push, PR, CI run, version
-bump, or physical-device claim was made by this task.
+Root integrated renderer source `422eeac` as `e4369ba` and the Ba Dan source/art
+as `74355b0`. Combined verification passed 860 tests and the full local Chrome
+suite passed 176 cases with one environment-premise skip. The current playthrough
+handoff owns subsequent water polish and release evidence. No physical-device
+or final aesthetic acceptance is implied by these checks.
