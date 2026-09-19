@@ -3,7 +3,7 @@ import { resetStorage, startGame, enterNode, takeTurn, waitForIdle } from './hel
 import { screenshotClipPixels, average } from './pixels';
 
 for (const renderer of ['canvas', 'webgl'])
-  test(`registered rubble retains live overlay fallback on ${renderer}`, async ({ page }) => {
+  test(`partial ground keeps rubble art and live overlays on ${renderer}`, async ({ page }) => {
     // On CI's software WebGL, a full-canvas readback took 15 seconds per capture
     // in run 35417898299. Keep the WebGL allowance even with the smaller probe.
     if (renderer === 'webgl') test.slow();
@@ -14,7 +14,7 @@ for (const renderer of ['canvas', 'webgl'])
     await takeTurn(page);
     await waitForIdle(page);
     await page.waitForTimeout(1000);
-    const sample = async () => {
+    const sample = async (regionSize = 7) => {
       await page.evaluate(
         () => new Promise((resolve) => requestAnimationFrame(() => requestAnimationFrame(resolve))),
       );
@@ -35,65 +35,91 @@ for (const renderer of ['canvas', 'webgl'])
       expect(point.x).toBeLessThan(rect.width - 3);
       expect(point.y).toBeGreaterThan(3);
       expect(point.y).toBeLessThan(rect.height - 3);
-      const left = Math.round(point.x) - 3;
-      const top = Math.round(point.y) - 3;
+      const half = Math.floor(regionSize / 2);
+      const left = Math.round(point.x) - half;
+      const top = Math.round(point.y) - half;
       const pixels = await screenshotClipPixels(page, {
         x: rect.x + left,
         y: rect.y + top,
-        width: 7,
-        height: 7,
+        width: regionSize,
+        height: regionSize,
       });
-      return average(pixels, point.x - left, point.y - top, 3);
+      return { ...average(pixels, point.x - left, point.y - top, 3), pixels };
     };
     const registered = await sample();
+    // Forest Road is a partial scene: its local rubble image remains visible
+    // even if the legacy complete-scene registration list is absent.
     await page.evaluate(() => {
       const scene = window.fnt!.app.content.maps.get('forest_road')!.scene!;
       Object.defineProperty(scene, 'paintedRubble', { value: [], configurable: true });
     });
-    const overlay = await sample();
-    expect(
-      Math.abs(overlay.r - registered.r) +
-        Math.abs(overlay.g - registered.g) +
-        Math.abs(overlay.b - registered.b),
-    ).toBeGreaterThan(10);
+    const unregistered = await sample();
+    expect(Math.abs(unregistered.r - registered.r)).toBeLessThan(3);
+    expect(Math.abs(unregistered.g - registered.g)).toBeLessThan(3);
+    expect(Math.abs(unregistered.b - registered.b)).toBeLessThan(3);
+
+    // A live material must still tint the authored rubble image.
     await page.evaluate(() => {
       const app = window.fnt!.app;
-      Object.defineProperty(app.content.maps.get('forest_road')!.scene!, 'paintedRubble', {
-        value: [
-          { x: 7, y: 3 },
-          { x: 8, y: 9 },
-        ],
-        configurable: true,
-      });
       const tile = app.state!.battle!.grid.tiles[3 * 20 + 7]!;
       Object.defineProperty(tile, 'surface', {
-        value: { id: 'rubble', duration: 3, spread: 0 },
+        value: { id: 'water', duration: 3, spread: 0 },
         configurable: true,
       });
     });
-    const dynamic = await sample();
+    const water = await sample();
+    expect(water.b - registered.b).toBeGreaterThan(10);
+    expect(water.g - registered.g).toBeGreaterThan(5);
+
+    // Hatch mode remains visible over the authored image for a live material.
+    await page.evaluate(() => {
+      const app = window.fnt!.app;
+      Object.defineProperty(app.state!.battle!.grid.tiles[3 * 20 + 7]!, 'surface', {
+        value: { id: 'water', duration: 3, spread: 0 },
+        configurable: true,
+      });
+      app.updateSettings({ hatchSurfaces: true });
+    });
+    const hatchedWater = await sample();
     expect(
-      Math.abs(dynamic.r - registered.r) +
-        Math.abs(dynamic.g - registered.g) +
-        Math.abs(dynamic.b - registered.b),
-    ).toBeGreaterThan(10);
+      Math.abs(hatchedWater.r - water.r) +
+        Math.abs(hatchedWater.g - water.g) +
+        Math.abs(hatchedWater.b - water.b),
+    ).toBeGreaterThan(1);
+
+    // High contrast restores procedural markers when authored pieces are unavailable.
     await page.evaluate(() => {
       const app = window.fnt!.app;
       Object.defineProperty(app.state!.battle!.grid.tiles[3 * 20 + 7]!, 'surface', {
         value: { id: 'rubble', duration: -1, spread: 0 },
         configurable: true,
       });
-      app.updateSettings({ highContrast: true });
+      app.updateSettings({ hatchSurfaces: false, highContrast: false });
     });
-    const accessible = await sample();
-    expect(
-      Math.abs(accessible.r - registered.r) +
-        Math.abs(accessible.g - registered.g) +
-        Math.abs(accessible.b - registered.b),
-    ).toBeGreaterThan(10);
+    const beforeContrast = await sample(96);
+    await page.evaluate(() => {
+      window.fnt!.app.updateSettings({ highContrast: true });
+    });
+    const accessible = await sample(96);
+    let changed = 0;
+    for (let y = 0; y < beforeContrast.pixels.height; y++) {
+      for (let x = 0; x < beforeContrast.pixels.width; x++) {
+        const before = beforeContrast.pixels.at(x, y);
+        const after = accessible.pixels.at(x, y);
+        if (
+          before &&
+          after &&
+          Math.abs(before.r - after.r) +
+            Math.abs(before.g - after.g) +
+            Math.abs(before.b - after.b) >
+            6
+        )
+          changed++;
+      }
+    }
+    expect(changed, `high-contrast changed pixels: ${changed}`).toBeGreaterThan(10);
     await page.evaluate(() => {
       const app = window.fnt!.app;
-      app.updateSettings({ highContrast: false });
       const scene = app.content.maps.get('forest_road')!.scene!;
       Object.defineProperty(scene, 'ground', {
         value: scene.ground.map((piece) => ({
@@ -103,6 +129,13 @@ for (const renderer of ['canvas', 'webgl'])
         configurable: true,
       });
     });
+    const fallbackAccessible = await sample();
+    expect(
+      Math.abs(fallbackAccessible.r - registered.r) +
+        Math.abs(fallbackAccessible.g - registered.g) +
+        Math.abs(fallbackAccessible.b - registered.b),
+    ).toBeGreaterThan(10);
+    await page.evaluate(() => window.fnt!.app.updateSettings({ highContrast: false }));
     const fallback = await sample();
     expect(
       Math.abs(fallback.r - registered.r) +
