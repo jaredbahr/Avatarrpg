@@ -1,9 +1,31 @@
-import type { MapScene, SceneScenery, Vec2 } from '../../core/types';
+import type { MapScene, SceneImage, SceneScenery, Vec2 } from '../../core/types';
 
 const root = 'art/maps/ba-dan-scene/';
-export const BA_DAN_POND = { x: 10, y: 6, width: 3, height: 1 } as const;
+/** The registered projected envelope for the central short canal. */
+export const BA_DAN_CANAL = { x: 6, y: 6, width: 7, height: 1 } as const;
+/** Permanent water cells; the paved bridge at x9 breaks the visual envelope. */
+export const BA_DAN_WATER_CELLS = [
+  { x: 6, y: 6 },
+  { x: 7, y: 6 },
+  { x: 8, y: 6 },
+  { x: 10, y: 6 },
+  { x: 11, y: 6 },
+  { x: 12, y: 6 },
+] as const;
+export const BA_DAN_CANAL_BRIDGE = { x: 9, y: 6 } as const;
 /** Flat grass fringe across the northern lawn bay; both door approaches stay clear. */
 export const BA_DAN_NORTH_FRINGE = { x: 10.05, y: 3.9, width: 1.9, depth: 0.2 } as const;
+/** Local authored ground proof slice; the grid remains procedural outside it. */
+export const BA_DAN_COURTYARD_GROUND = {
+  x: 640,
+  y: 256,
+  width: 1152,
+  height: 576,
+} as const;
+/** Outer metric radius of the transparent coping around runtime water. */
+export const BA_DAN_CANAL_BANK_RADIUS = 1.42;
+/** Transparent coping envelope around all six runtime water diamonds. */
+export const BA_DAN_CANAL_BANKS = { x: 928, y: 368, width: 576, height: 288 } as const;
 
 /** Two canopy wings frame the market court; only their trunks block walking. */
 export const BA_DAN_COURT_TREES = [
@@ -18,6 +40,8 @@ export const BA_DAN_COURTYARD_PROPS = [
   { id: 'gao-display', image: 'merchant-display', x: 7, y: 4 },
   { id: 'north-garden', image: 'low-planter', x: 16, y: 4 },
   { id: 'north-market-display', image: 'merchant-display', x: 13, y: 4 },
+  { id: 'south-market-display', image: 'merchant-display', x: 4, y: 9 },
+  { id: 'southwest-garden', image: 'low-planter', x: 6, y: 9 },
 ] as const;
 
 export const BA_DAN_COURTYARD_FOOTPRINTS: readonly Vec2[] = BA_DAN_COURTYARD_PROPS.flatMap(
@@ -44,6 +68,55 @@ function courtyardProp({ id, image, x, y }: (typeof BA_DAN_COURTYARD_PROPS)[numb
       { x: x + 1, y },
     ],
     depth: { x: x + 1.5, y: y + 0.5 },
+  };
+}
+
+/** Low crossing over the canal's dry centre, split at the near rail so actors
+ * can stand on the deck instead of disappearing behind one opaque sprite. */
+function canalBridge(): SceneScenery[] {
+  const width = 192;
+  const height = (width * 323) / 512;
+  const { x, y } = BA_DAN_CANAL_BRIDGE;
+  const image = {
+    // The isolated bridge art is a crossing centred on its logical road
+    // diamond. Keep the deck centre on (9,6); anchoring to its lower edge
+    // leaves most of the deck floating over the upstream water.
+    x: 1024 + (x - y) * 64 - width * 0.5,
+    y: (x + y + 1) * 32 - height * 0.5,
+    width,
+    height,
+  } as const;
+  return [
+    {
+      id: 'canal-bridge',
+      url: `${root}canal-bridge.webp`,
+      ...image,
+      footprint: [BA_DAN_CANAL_BRIDGE],
+      depth: { x: x + 0.5, y: y + 0.25 },
+    },
+    {
+      id: 'canal-bridge-front',
+      url: `${root}canal-bridge-front.webp`,
+      ...image,
+      // Keep the schema's scenery footprint contract on both depth slices;
+      // the map tile remains the sole collision authority.
+      footprint: [BA_DAN_CANAL_BRIDGE],
+      depth: { x: x + 0.5, y: y + 0.75 },
+    },
+  ];
+}
+
+function courtyardGround(): SceneImage {
+  return {
+    url: `${root}courtyard-ground.webp`,
+    ...BA_DAN_COURTYARD_GROUND,
+  };
+}
+
+function canalBanks(): SceneImage {
+  return {
+    url: `${root}canal-banks.webp`,
+    ...BA_DAN_CANAL_BANKS,
   };
 }
 
@@ -93,10 +166,9 @@ function tree(x: number, y: number, size = 360): SceneScenery {
 
 /** Calibrated projected pixels; textures are already painted in the target camera. */
 export const BA_DAN_SCENE: MapScene = {
-  paintedWater: true,
+  groundMode: 'partial',
   ground: [
-    { url: `${root}ground-west.webp`, x: -128, y: -192, width: 1408, height: 1536 },
-    { url: `${root}ground-east.webp`, x: 1280, y: -192, width: 1408, height: 1536 },
+    courtyardGround(),
     {
       url: `${root}north-grass-fringe.webp`,
       x: 1024 + (BA_DAN_NORTH_FRINGE.x - BA_DAN_NORTH_FRINGE.y - BA_DAN_NORTH_FRINGE.depth) * 64,
@@ -104,19 +176,14 @@ export const BA_DAN_SCENE: MapScene = {
       width: (BA_DAN_NORTH_FRINGE.width + BA_DAN_NORTH_FRINGE.depth) * 64,
       height: ((BA_DAN_NORTH_FRINGE.width + BA_DAN_NORTH_FRINGE.depth) * 64 * 267) / 512,
     },
-    {
-      url: `${root}pond.webp`,
-      x: 1024 + (BA_DAN_POND.x - BA_DAN_POND.y - BA_DAN_POND.height) * 64,
-      y: (BA_DAN_POND.x + BA_DAN_POND.y) * 32,
-      width: (BA_DAN_POND.width + BA_DAN_POND.height) * 64,
-      height: 132,
-    },
+    canalBanks(),
   ],
   scenery: [
     house('gao-house', 6, 1, 4, 3),
     house('north-house', 12, 1, 4, 3, 'dwelling'),
     house('southwest-house', 6, 10, 4, 4, 'dwelling'),
     house('southeast-house', 13, 10, 4, 4),
+    ...canalBridge(),
     // Equal-depth frontage must paint after the building behind it.
     ...BA_DAN_COURTYARD_PROPS.map(courtyardProp),
     ...BA_DAN_COURT_TREES.map(({ x, y }) => tree(x, y, 320)),

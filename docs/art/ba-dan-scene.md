@@ -1,68 +1,65 @@
-# Ba Dan courtyard layers
+# Ba Dan modular courtyard layers
 
-Built-in OpenAI image generation, 18 September 2026. Exact prompts and generated
-source filenames are in `ba-dan-scene-prompts.json`. Original roofed merchant
-house, terracotta dwelling variant and village tree share warm upper-left light
-and muted plaster/timber/roof materials. Sources are copied to ignored
-`art/raw/scenes/`; shipped files live in `public/art/maps/ba-dan-scene/`, counting
-against the existing maps family budget, not a new family.
+Built-in OpenAI image generation and deterministic material packing, 18–19
+September 2026. Exact source prompts and generated filenames remain in
+`ba-dan-scene-prompts.json`. Existing merchant houses, dwelling, village trees,
+planters, and displays keep their transparent scene layers and warm upper-left
+palette. They ship under `public/art/maps/ba-dan-scene/` and count against the
+existing map family budget.
 
-The first whole-ground painting was rejected after viewing the actual game:
-it displaced the pond and was too soft at the closer camera. The selected ground
-uses a four-quadrant painted material atlas, packed against the real logical
-rows by `scripts/art/ba-dan-ground.ts`. Two 1408 by 1536 textures share continuous
-material coordinates at their seam. The material atlas is sampled at a finer
-scale than the first candidate; no image enlargement supplies detail. Water
-stays at x10–12, y6, with a narrow coping inside that footprint. The courtyard
-spans x8–14, y4–10; surrounding slower ground remains visibly mossy.
+The active exploration proof is a partial authored scene. `BA_DAN_SCENE` sets
+`groundMode: 'partial'`; Canvas and WebGL paint the procedural grid terrain,
+then projected local ground pieces, then the live grid surfaces and overlays.
+The complete `ground-west.webp` and `ground-east.webp` pages remain historical
+assets and are not active Ba Dan exploration ground authority. The full-map
+backdrop is retained for presentations that still use it, while partial
+exploration suppresses it so modular scenery and the grid remain visible.
 
-Packing:
+The local courtyard piece is `courtyard-ground.webp`, 1152×576 projected pixels
+at `(640,256)`. It covers the logical `x5..15,y3..11` envelope with a half-cell
+alpha feather and samples the reviewed four-quadrant material atlas for grass,
+stone, and road. The image is already camera-projected; the renderer does not
+skew it again. Its irregular projected boundary blends into procedural terrain
+instead of ending at a rectangular opaque seam.
+
+The canal's water is runtime-owned. `canal-banks.webp` is a transparent
+576×288 coping piece at `(928,368)`, generated from the six exact water-cell
+centres and the shared 64/32 projected diamond. It supplies textured stone only;
+its interior is transparent. Permanent water remains the walkable `~` surface
+at `(6..8,6)` and `(10..12,6)`, and the dry road crossing is `(9,6)`. The
+coping is intentionally shallow and does not add a collision wall. The old
+water-bearing `canal.webp` candidate is superseded and is kept only in ignored
+local evidence; it is not referenced or shipped.
+
+The bridge is a transparent scenery layer registered to `(9,6)` with a single
+logical footprint. `canal-bridge.webp` is the deck/back layer and
+`canal-bridge-front.webp` is a near-bank mask derived by
+`scripts/art/ba-dan-bridge-front.py`. Both use the same projected rectangle
+(192×121.125 world pixels, centred at the crossing); depths `6.25` and `6.75`
+let actors render between the deck and near rail. Rows 5, 7, and 8 remain open
+for north/south approaches. The front mask is an occlusion aid, not a second
+collision object.
+
+The deterministic material and coping generators are:
 
 ```sh
-npx tsx scripts/art/ba-dan-ground.ts art/raw/scenes/ground-materials.png
-npx tsx scripts/art/scene-image.ts art/raw/scenes/merchant-house.png public/art/maps/ba-dan-scene/merchant-house.webp
-npx tsx scripts/art/scene-image.ts art/raw/scenes/dwelling.png public/art/maps/ba-dan-scene/dwelling.webp
-npx tsx scripts/art/scene-image.ts art/raw/scenes/village-tree.png public/art/maps/ba-dan-scene/village-tree.webp
-npx tsx scripts/art/scene-image.ts art/raw/scenes/pond.png public/art/maps/ba-dan-scene/pond.webp
+npx tsx scripts/art/ba-dan-courtyard-ground.ts art/raw/scenes/ground-materials.png
+npx tsx scripts/art/ba-dan-canal-banks.ts art/raw/scenes/ground-materials.png
+python scripts/art/ba-dan-bridge-front.py
 ```
 
-Scenery packing trims alpha bounds and uniformly downsizes to 768 pixels wide.
-Merchant output is 768 by 494, dwelling 768 by 495, tree 768 by 765. Their source
-alpha is retained, including partial-alpha antialiasing. The old map encoder
-forced alpha opaque; scene encoding now opts into retaining it. Legacy map
-encoding stays opaque. Browser decoding verified clear corners for all three
-scenery textures; a regression test distinguishes transparent and opaque output.
+The original scenery layers continue to use `scripts/art/scene-image.ts` for
+alpha-trimmed WebP packing. The complete map encoder remains useful for old
+art and other scenes; it is not used to fake coverage for this partial proof.
+The shader's partial base pass suppresses its terrain-surface effects until the
+overlay pass, so water, firelight, hatching, and grid marks are emitted once.
+The WebGL filters are destroyed without taking ownership of Pixi's shared
+program cache.
 
-The pond is a separate 768 by 396 ground layer, registered to projected
-(1216,512), 256 by 132 world pixels. The supplied geometric guide is preserved
-as `ba-dan-pond-guide.svg`; it was rasterized without changing geometry for the
-generator. Two earlier narrow-trough candidates failed registration and are not
-shipped. The selected guide-only generation keeps the three-by-one footprint;
-its low coping and recessed inner walls supply depth without a false obstacle.
-`paintedWater` lets the renderer retain live surfaces/high contrast while showing
-the painted permanent water at normal contrast.
+Browser evidence is recorded in
+`docs/coordination/handoffs/ba-dan-neighborhood.md` with exact Canvas/WebGL
+crossing and save/reload paths. It is technical local evidence only; it does
+not claim physical-device, listening, or final visual-quality acceptance.
 
-`src/content/scenes/baDan.ts` records projected image rectangles, logical
-footprints and foreground contact anchors. Four houses reuse two identities;
-tree trunks occupy existing blocked boundary cells. Decorative baskets/pots sit
-within the house visual footprint; none is an implied interactive game prop.
-
-The source-house floor angles remain an approximation: source-art geometry and
-footprint agreement must be assessed in the running scene, particularly around
-doorways. Repeated materials and houses need full-scene review; asset tests do
-not establish the approved visual target. See `scene-cohesion.md` for direct
-baseline audit and motion/listening acceptance. No physical-device or listening
-acceptance is claimed here.
-
-A real exploration sequence was captured through ordinary `walkTo` commands,
-with screenshots during movement and world-canvas video containing the actual
-Web Audio master stream. Local artifacts are in `gallery/scene-audit/motion`.
-It exposed follower overlap at turns and overly early whole-house fading;
-gameplay owns those fixes. The 12.84-second recording has a nonzero signal and
-no full-scale clipping (peak 0.346). This is technical evidence only. It does not
-establish loudness, sound quality, mixing or synchronization by ear. Environmental
-audio was absent at capture time; only existing event cues were available.
-
-Output terms were checked earlier on 18 September 2026:
-<https://openai.com/policies/row-terms-of-use/>. No exclusive copyright in
-generated output is claimed. Existing generated-map credits cover these files.
+No new destination or map family was added. The source contract keeps the
+existing roads, NPCs, exits, save positions, and walkable water behaviour.

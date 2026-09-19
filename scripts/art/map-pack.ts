@@ -75,7 +75,7 @@ const SCENES: Readonly<Record<string, Scene>> = {
   ba_dan_village: {
     place: 'Ba Dan, the small village the party sets out from: a clearing in the woods.',
     scene:
-      'A village clearing ringed by trees, thickest in the corners. A road of flagstones crosses the whole picture left to right through the middle, two tiles deep, and runs out through the east gate at the right edge where the flagstones give way to bare earth. Four timber houses, two above the road and two below, each an open cutaway rectangle of timber walls round a visible floor of planks with a doorway opening onto a paved path that leads to the road. Between the houses above the road a paved yard opens off the road with a small rectangular dry earth bed in its middle beneath live water; below the road a matching paved yard. Grass everywhere else, worn to paths near the doors.',
+      'A village clearing ringed by trees, thickest in the corners. A road of flagstones crosses the whole picture left to right through the middle, two tiles deep, and runs out through the east gate at the right edge where the flagstones give way to bare earth. Four timber houses, two above the road and two below, each an open cutaway rectangle of timber walls round a visible floor of planks with a doorway opening onto a paved path that leads to the road. Between the houses above the road a paved yard opens off the road with a short canal running across its lower edge: three shallow water cells, a dry stone footbridge, then three more water cells, all low enough to keep the crossing readable and walkable. Below the road a matching paved yard has small market and garden edges. Grass everywhere else, worn to paths near the doors.',
     light: 'Soft mid-morning light, no long shadows.',
   },
 };
