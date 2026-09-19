@@ -406,3 +406,21 @@ The Ba Dan read-only audit is complete. The owner now has a separate bounded
 neighborhood task: reuse market/planter art for the lower court and propose a
 coherent short canal/bank/bridge geometry before generating matching art. NPC,
 exit and save reachability remain mandatory; no new destination is authorized.
+
+## Combined quarry and download checkpoint
+
+Integrated quarry geometry, source art and registration as95598af/ce175de/e7ac483.
+Combined verification passes850 tests in103 files, production build and all art/
+asset checks. The initial JS total was307,232B,32B above the existing300KiB cap.
+Root's omission of unused Pixi video-texture registration (ADR0038) restores the
+budget to297.7KiB, with850 tests/build passing; renderer acceptance remains pending.
+No budget cap changed and no game content was removed.
+
+The first local full418-case Chrome/WebKit run stopped after97 passes at
+interludes.spec.ts: the new stone cover makes the actual quarry crossing(9,5)
+instead of(9,4). Root repaired the brittle coordinate expectation to capture the
+actual marker location and require the assessment to preserve it; exact saved
+state/reload assertions remain. Evidence is preserved under
+`.shots/integration/full-e7ac483-first-failure`. A new combined run follows.
+Legacy-save wall visibility, tea motion and Ba Dan neighborhood remain active
+isolated assignments. No new GitHub push/run or deployment occurred.

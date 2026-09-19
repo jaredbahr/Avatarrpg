@@ -48,6 +48,11 @@ test('the quarry marker assessment keeps the floor visible across save and reloa
     .poll(() => page.evaluate(() => window.fnt?.app.state?.story.nodeId))
     .toBe('quarry_descent');
   await expect(page.locator('.interlude-stage')).toBeVisible();
+  // Capture the actual crossing tile: authored cover can change the legal
+  // approach. Skipping the staged descent must preserve that world position.
+  const markerLocation = await page.evaluate(() => window.fnt?.app.state?.location);
+  expect(markerLocation?.mapId).toBe('quarry_floor');
+  expect(markerLocation?.pos.x).toBe(9);
   await page.getByRole('button', { name: 'Skip scene' }).click();
 
   await expect(page.locator('.explore-scene')).toBeVisible();
@@ -64,7 +69,7 @@ test('the quarry marker assessment keeps the floor visible across save and reloa
   ).toEqual({
     node: 'quarry_assessment',
     map: 'quarry_floor',
-    pos: { x: 9, y: 4 },
+    pos: markerLocation?.pos,
     screen: 'dialogue',
   });
 
