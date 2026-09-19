@@ -12,6 +12,7 @@ if (!materialPath || !coverPath)
 const FIELD_REPEAT_PX = [256, 128, 192] as const;
 const SOURCE_INSET_PX = 24;
 const EDGE_BAND_TILES = 0.15;
+const WALL_CONTACT_BAND_TILES = 0.075;
 const source = readImage(materialPath),
   timber = readImage(coverPath);
 const shoulderSource = shoulderPath ? readImage(shoulderPath) : null;
@@ -120,6 +121,8 @@ for (let py = 0; py < plate.height; py++)
         const index = transitionFor(current, groundClass(candidate.nx, candidate.ny));
         const wall = neighborKey === '#' && key !== '#';
         if (index === null && !wall) continue;
+        if (wall && Math.abs(candidate.t - 0.5) * EDGE_BAND_TILES * 2 > WALL_CONTACT_BAND_TILES)
+          continue;
         const dirtToOther = current === 'dirt' ? candidate.forward : !candidate.forward;
         const t = dirtToOther ? candidate.t : 1 - candidate.t;
         if (!edge || Math.abs(t - 0.5) < Math.abs(edge.t - 0.5))

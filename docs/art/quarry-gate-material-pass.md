@@ -109,3 +109,19 @@ The quarry watch and Workers' tea station remain procedural painter fallbacks.
 Sen intentionally shares Gao's person and portrait art in the current slice;
 dedicated watch, Sen and tea-rest assets remain a later quality gap rather than
 an identity reuse patch.
+
+## Edge-treatment candidate provenance
+
+Source: `C:/Users/Jared/.codex/generated_images/01a0b2ee-8d60-7643-be9b-340997ca4ae0/exec-8dcfcdb5-eeb3-485c-a1c7-5cfd6279580d.png`, SHA-256
+`d15b808ab498c4521d73892d887ce2fedc54243008e0c92f9750c976e67a64f9`.
+Repack with `node --import tsx scripts/art/quarry-ground-pack.ts art/raw/quarry-gate/floor-treatment-source-v1.png SOURCE/exec-99f58bdf-66be-4d8b-886c-ca9d8967e096.png`.
+The source is a 1536 by 1024 six-panel sheet. The packer crops a 24px panel
+frame, samples dirt/road/shelf at 256/128/192px repeats, and selects every
+base/transition pixel only from the authoritative rows. Material transitions
+remain within 12 world pixels; wall contact is independently limited to 6 world
+pixels, with unchanged wall footprints, cover anchors, pages and destinations.
+
+The isolated Canvas/WebGL actor review accepts the road and shelf transition
+direction, but does not claim final world-target acceptance: broad mirrored dirt
+chevrons remain a minor open quality issue. Repack deterministically before
+integration and retain the existing c0918c8 pages as fallback.
