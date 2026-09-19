@@ -3,6 +3,7 @@ import type { Ability, ContentIndex, GameEvent, Unit } from '../../core/types';
 import { resolveFx } from '../../content/fx';
 import { TIMING, choreograph } from './choreography';
 import { attackMotion } from './attackMotion';
+import { enemyScale } from './actorScale';
 import type { AnyTrack, EmitterTrack, PoseTrack } from './timeline';
 import { PARTICLE_STRIDE, sampleParticles } from '../../render/fx/simulate';
 
@@ -98,6 +99,31 @@ describe('directed Fire Jab attachments', () => {
     expect(a?.to).toEqual({ x: 5.5, y: 3.5 });
     expect(b?.to).toEqual({ x: 6.5, y: 3.5 });
     expect(first.some((t) => t.attachments?.translateTogether)).toBe(true);
+  });
+
+  it('matches route enemy torso sockets to the visible adult scale at either motion rate', () => {
+    for (const name of ['thug', 'bruiser', 'slinger', 'quarrybender', 'crossbow']) {
+      const target = { ...boss, sprite: `unit.enemy.${name}`, size: 1 as const };
+      for (const rate of [1, 0.02]) {
+        const tracks = play([cast()], [caster, target], rate).tracks;
+        if (rate < 1) {
+          // Reduced motion intentionally suppresses emitters, retaining the
+          // body poses and rule-owned impact instead of launching particles.
+          expect(tracks.some((t) => t.kind === 'emitter')).toBe(false);
+          continue;
+        }
+        const travel = tracks.find(
+          (t): t is EmitterTrack => t.kind === 'emitter' && t.attachments?.to?.socket === 'torso',
+        );
+        expect(travel?.attachments?.to).toMatchObject({
+          sprite: target.sprite,
+          pos: target.pos,
+          scale: enemyScale(target.sprite),
+          size: 1,
+        });
+        expect(travel?.to).toEqual({ x: 5.5, y: 3.5 });
+      }
+    }
   });
 
   it.each([

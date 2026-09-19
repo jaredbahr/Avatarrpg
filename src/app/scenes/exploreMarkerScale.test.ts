@@ -1,5 +1,6 @@
 import { expect, it } from 'vitest';
 import { CONTENT } from '../../content';
+import { enemyScale } from '../anim/actorScale';
 import { npcPresentationScale, triggerPresentationScale } from './exploreMarkerScale';
 
 it('sizes only the small animal discovery below adult NPCs', () => {
@@ -26,7 +27,9 @@ it('uses the existing forest attacker at both crossings without changing their a
     expect(trigger?.sprite).toBe('unit.enemy.thug');
     expect(trigger?.area[0]).toEqual({ x, y: 4 });
     expect(trigger?.area.every((pos) => pos.x === x)).toBe(true);
-    expect(triggerPresentationScale(map, trigger?.sprite ?? '')).toBe(1.25);
+    expect(triggerPresentationScale(map, trigger?.sprite ?? '')).toBe(
+      enemyScale('unit.enemy.thug'),
+    );
   }
   expect(map.npcs.find((npc) => npc.id === 'duck_nest')?.pos).toEqual({ x: 2, y: 9 });
   expect(triggerPresentationScale({ id: 'quarry_gate', projection: 'oblique' }, 'npc.guard')).toBe(
@@ -34,5 +37,5 @@ it('uses the existing forest attacker at both crossings without changing their a
   );
   expect(
     triggerPresentationScale({ id: 'ambush_road', projection: 'oblique' }, 'unit.enemy.thug'),
-  ).toBe(1);
+  ).toBe(enemyScale('unit.enemy.thug'));
 });

@@ -26,7 +26,7 @@ import { screenDirection, screenMeleeDirection } from './direction';
 import type { MeleeDirection } from '../../content/assets/clips';
 import type { Projection } from '../../render/projection';
 import type { ActorAttachment, EmitterAttachments } from '../../render/view';
-import { partyScale } from './actorScale';
+import { enemyScale, partyScale } from './actorScale';
 
 /** Base durations in milliseconds, before the motion setting is applied. */
 export const TIMING = {
@@ -361,7 +361,9 @@ export function choreograph(input: ChoreographyInput): Choreography {
                 socket,
                 facing: poseFacing ?? (unit.faction === 'enemy' ? -1 : 1),
                 scale:
-                  unit.faction === 'party' ? partyScale(input.projection, poseScale) : poseScale,
+                  unit.faction === 'party'
+                    ? partyScale(input.projection, poseScale)
+                    : enemyScale(unit.sprite, poseScale),
                 offset,
               }
             : undefined;

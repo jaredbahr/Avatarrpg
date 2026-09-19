@@ -1,4 +1,5 @@
 import type { MapDef } from '../../core/types';
+import { enemyScale } from '../anim/actorScale';
 
 /** A small animal discovery must not inherit the adult conversation-figure scale. */
 export function npcPresentationScale(sprite: string, projection: MapDef['projection']): number {
@@ -6,12 +7,10 @@ export function npcPresentationScale(sprite: string, projection: MapDef['project
   return projection === 'oblique' ? 1.5 : 1;
 }
 
-/** These two forest crossing figures use the same adult sheet scale as the party. */
+/** An encounter marker and its combat actor are the same adult at the same scale. */
 export function triggerPresentationScale(
-  map: Pick<MapDef, 'id' | 'projection'>,
+  _map: Pick<MapDef, 'id' | 'projection'>,
   sprite: string,
 ): number {
-  return map.id === 'forest_road' && map.projection === 'oblique' && sprite === 'unit.enemy.thug'
-    ? 1.25
-    : 1;
+  return enemyScale(sprite);
 }

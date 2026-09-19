@@ -44,7 +44,7 @@ import { showGridLines } from '../storage/localSaves';
 import { reactionNotes } from '../ui/ReactionNote';
 import { formatShoveMovement } from '../ui/combatPreviewText';
 import { UnitInspector } from '../ui/UnitInspector';
-import { partyScale } from '../anim/actorScale';
+import { enemyScale, partyScale } from '../anim/actorScale';
 import { createMovementThreatQuery } from '../ui/movementThreats';
 
 type Mode =
@@ -1456,7 +1456,13 @@ export class CombatScene implements Scene {
       statuses: u.statuses.map((s) => s.id),
       fallen: !isAlive(u),
       renderPos: this.app.animator.renderPos(now, u.id),
-      ...this.poseFields(now, u.id, u.faction === 'enemy' ? -1 : 1, u.faction === 'party'),
+      ...this.poseFields(
+        now,
+        u.id,
+        u.faction === 'enemy' ? -1 : 1,
+        u.faction === 'party',
+        u.sprite,
+      ),
     }));
 
     // Resolved here, not in the renderer: the renderer never reads content.
@@ -1532,6 +1538,7 @@ export class CombatScene implements Scene {
     unitId: string,
     restFacing: 1 | -1,
     directional: boolean,
+    sprite: string,
   ): Pick<
     RenderUnit,
     | 'offset'
@@ -1549,7 +1556,9 @@ export class CombatScene implements Scene {
     const movement = directional ? this.app.animator.locomotion(now, unitId) : undefined;
     const mapId = this.app.state?.battle?.mapId;
     const projection = mapId ? this.app.content.maps.get(mapId)?.projection : undefined;
-    const scale = directional ? partyScale(projection, pose?.scale) : (pose?.scale ?? 1);
+    const scale = directional
+      ? partyScale(projection, pose?.scale)
+      : enemyScale(sprite, pose?.scale);
     if (!pose) return { ...(movement ?? { facing: walked ?? restFacing }), scale };
     return {
       offset: pose.offset,
