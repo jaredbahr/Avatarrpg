@@ -76,6 +76,7 @@ describe('actor attachment geometry', () => {
   });
 
   it.each([
+    ['unit.enemy.deserter', 69, 64, 115, 54],
     ['unit.water.nilak', 95, 77, 105, 77],
     ['unit.water.sura', 96, 82, 107, 72],
     ['unit.air.nima', 94, 89, 106, 78],
@@ -140,6 +141,7 @@ describe('actor attachment geometry', () => {
       ['unit.air.jinu', 'robed'],
       ['unit.water.sura', 'lean'],
       ['unit.air.nima', 'lean'],
+      ['unit.enemy.deserter', 'lean'],
     ] as const) {
       for (const [socket, index] of [
         ['cast-gather', 0],

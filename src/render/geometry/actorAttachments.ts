@@ -16,6 +16,10 @@ const presented = new WeakMap<ActorAttachment, { projection: Projection; point: 
 
 /** Measured palm centres in the existing 128x192 cast cels, facing right. */
 const CAST_HANDS: Readonly<Record<string, readonly [Vec2, Vec2]>> = {
+  'unit.enemy.deserter': [
+    { x: 69, y: 64 },
+    { x: 115, y: 54 },
+  ],
   'unit.earth.bo': [
     { x: 86, y: 86 },
     { x: 105, y: 78 },

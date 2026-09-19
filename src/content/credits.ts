@@ -86,7 +86,7 @@ export const CREDITS: readonly CreditEntry[] = [
     licence: 'own work',
     source: '',
     covers: ['art/fx'],
-    note: 'Hand-drawn-style effect sheets generated for this project, normalised into 48 transparent animation cels. Prompts and provenance: docs/art/elemental-cels.md. Output terms: https://openai.com/policies/row-terms-of-use/. No exclusive copyright in generated output is claimed.',
+    note: 'Hand-drawn-style effect sheets generated for this project, normalised into 48 transparent animation cels, plus a reused flask prop. Prompts and provenance: docs/art/elemental-cels.md; docs/art/deserter-material-fx.md. Output terms: https://openai.com/policies/row-terms-of-use/. No exclusive copyright in generated output is claimed.',
   },
   {
     what: 'The illustrated story scenes',

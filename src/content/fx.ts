@@ -1194,7 +1194,14 @@ const DRAWN_RECIPES: Readonly<Record<string, FxRecipeInput>> = {
   },
   'fx.enemy.oil': {
     palette: 'enemy',
-    travel: { emitters: [stone(), droplets(3, 'dark')], speed: 16, arc: 0.7 },
+    travel: {
+      emitters: [
+        { ...cel('flask', 0.3, 300, true), cell: 'drop', color: 'dark', spin: 3 },
+        droplets(3, 'dark'),
+      ],
+      speed: 16,
+      arc: 0.7,
+    },
     impact: [droplets(14, 'dark'), shards(6, 'dark')],
     flash: 0,
   },

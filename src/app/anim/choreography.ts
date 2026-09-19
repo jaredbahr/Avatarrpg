@@ -313,11 +313,13 @@ export function choreograph(input: ChoreographyInput): Choreography {
         const screenDir = screenDirection(dir, input.projection ?? 'orthographic');
         const meleeDirection = melee ? screenMeleeDirection(screenDir) : undefined;
         const attached = ['fire_jab', 'water_whip', 'air_blast'].includes(ability.id);
+        // Lobbed oil and area fire leave a palm, but still land on the ground.
+        const castFromHand = attached || ability.id === 'fire_blast' || ability.id === 'oil_flask';
         const rock = ability.id === 'rock_throw';
         const strike = ability.id === 'strike';
         const facing = self
           ? undefined
-          : attached || rock || strike
+          : castFromHand || rock || strike
             ? screenDir.x < 0
               ? -1
               : 1
@@ -365,7 +367,7 @@ export function choreograph(input: ChoreographyInput): Choreography {
             : undefined;
         const torso = attached || rock || strike ? snapshot(victim, 'torso') : undefined;
         const gatherT = motion.gatherEase(0.4);
-        const gather = attached
+        const gather = castFromHand
           ? snapshot(
               casterUnit,
               'cast-gather',
@@ -392,7 +394,7 @@ export function choreograph(input: ChoreographyInput): Choreography {
         });
         // The element gathers through the wind-up and is out of the hands by the release.
         const gatherSpan = windUp * 0.6;
-        const castEmitters = attached
+        const castEmitters = castFromHand
           ? recipe.cast.map((def): EmitterDef =>
               def.kind === 'particles'
                 ? {
@@ -424,7 +426,7 @@ export function choreograph(input: ChoreographyInput): Choreography {
         const launchAt = releaseAt + release * motion.launch;
         const launchT = motion.releaseEase(motion.launch);
         const hand =
-          attached || rock
+          castFromHand || rock
             ? snapshot(
                 casterUnit,
                 'cast-release',
