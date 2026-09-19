@@ -64,3 +64,25 @@ solo Driller and completed homecoming saves.
 The next review should finish this encounter and the route, test the revised
 art in the follow-up build, and compare presentation against the approved player
 views. Physical Surface/iPad and subjective audio acceptance remain open.
+
+## Encounter completed
+
+The same manual campaign subsequently won on round 4. On round 3 Sura used
+three Water Whips on the nearer mercenary (41 to 13 HP), shoved him one tile,
+then retreated four movement points to a destination whose real preview found
+no immediate direct attack. Sura took no further damage. Ruon killed that
+mercenary and wounded the other. On round 4 Sura advanced two points to a
+similarly unthreatened tile and used four Water Whips to finish the remaining
+32-HP enemy. Ruon remained at full health.
+
+Continue played Ruon's three-line cutting/quartermaster/driller confession and
+returned to exploration with the east route open. Sura recovered to 34/34 HP;
+Riko recovered to 18/36. The postfight conversation used the standalone dialogue
+screen in this old runtime; retained-world presentation needs checking in the
+latest source. Slot 3 still preserves the earlier round-3 state rather than the
+victory. The live tab is now back in Cutting exploration.
+
+The tea-station owner's actual Canvas 96px and WebGL 64px captures were reviewed:
+the grounded worktable, vessels, footline and interaction pip read coherently
+beside Sen. This accepts that bounded visual correction; source integration and
+the combined release checks remain pending. No overall art signoff is implied.
