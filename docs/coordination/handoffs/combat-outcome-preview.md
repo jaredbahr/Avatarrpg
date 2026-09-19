@@ -3,8 +3,10 @@
 - **Updated:** 2026-09-18 UTC; outgoing owner `combat_preview`; integration owner `/root`.
 - **Outcome:** The combat confirm step forecasts live prop breaks, prop movement,
   reaction surfaces, landing hazards, shove destinations, and status upgrade or
-  cleanse results from the current rules. Chance outcomes remain probabilities.
-  Art, maps, navigation, kits, and balance are outside this handoff.
+  cleanse results from the current rules. Ally-target abilities can resolve on
+  their caster, while hostile area effects still exclude the caster. Chance
+  outcomes remain probabilities. Art, maps, navigation, kits, and balance are
+  outside this handoff.
 - **Acceptance:** A prop-only aim produces a named consequence; oil flask break
   reaches fire-on-oil; a water barrel reports cover removal and Wet collateral;
   Shove reports the brazier's oil landing; cabbage-cart break reports blind and
@@ -16,7 +18,7 @@
   `dac99826d02fb770bb53213168a9c4d9c5161854` was not edited. Local-only; no
   standalone PR or push.
 - **Worktree state:** Final implementation and focused tests are committed on
-  this branch at checked head `b0204e0`; the handoff documentation is the
+  this branch at checked head `8037c2d`; the handoff documentation is the
   follow-up commit on top of that implementation.
 - **Completed:**
   - `src/core/rules/reactions.ts` runs a bounded throwaway `BattleDraft`,
@@ -27,6 +29,8 @@
     existing RNG behavior.
   - `src/core/rules/abilities.ts` exposes additive prop, shove, and status data
     while retaining existing reaction and target fields.
+  - `src/core/rules/grid.ts` provides the shared caster-recipient rule used by
+    preview, resolution, and reaction forecasting.
   - `src/app/scenes/CombatScene.ts` names prop consequences, cover removal,
     destinations, landing hazards, upgrades, and clears in the confirmation bar.
   - `src/core/rules/combatPreview.test.ts` covers deterministic prop, reaction,
@@ -41,18 +45,17 @@
 - **Verification:**
   - `npm run typecheck` — passed.
   - `npm run lint` — passed.
-  - `npm test` — passed locally: 73 files, 697 tests on `b0204e0`.
-  - `npm test -- --run src/core/rules/combatPreview.test.ts src/core/rules/reactions.test.ts src/core/state/props.test.ts` — passed: 79 tests across the three focused files after the cross-effect status-order fix.
+  - `npm test` — passed locally: 73 files, 698 tests on `8037c2d`.
+  - `npm test -- --run src/core/rules/combatPreview.test.ts src/core/rules/reactions.test.ts src/core/state/props.test.ts` — passed: 80 tests across the three focused files after the cross-effect status-order and caster-recipient fixes.
   - `npx playwright test e2e/combat-preview.spec.ts --project=surface-touch` —
-    not run to completion because this host has no installed Playwright Chromium
-    executable; the test is committed for CI touch coverage.
-  - `npm run verify` — passed on `b0204e0`: 73 files, 697 tests.
+    passed: 1 test with the installed Chrome executable supplied through a
+    temporary untracked config; no machine path was committed.
+  - `npm run verify` — passed on `8037c2d`: 73 files, 698 tests.
 - **Coordination:** Core rules, `BattleDraft`, and the lower confirmation panel
   belong to this task. Camera methods in `CombatScene` remain owned by the
   separate gameplay guidance worktree. Root should integrate this branch's
   checked commits and resolve only any overlapping camera context.
-- **Next actions:** Verify the final head and handoff doc, then integrate the
-  branch into the release route. Re-run required combined browser and gallery
-  checks after integration.
+- **Next actions:** Integrate the branch into the release route. Re-run required
+  combined browser and gallery checks after integration.
 - **Completion/transfer:** Pending root integration; this owner relinquishes
   editing after the checked commit and handoff are sent.
