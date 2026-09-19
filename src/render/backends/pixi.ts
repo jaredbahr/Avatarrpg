@@ -198,6 +198,9 @@ export class PixiBackend implements RenderBackend {
   private backdropSprite = new Sprite(Texture.EMPTY);
   private backdrop: { image: HTMLImageElement; texture: Texture } | null = null;
   private groundSprite = new Sprite(Texture.WHITE);
+  /** Raised stone bases sit above procedural ground but below live surfaces. */
+  private elevationBaseLayer = new Container();
+  private elevationBaseSprites = new Map<string, Sprite>();
   /** A second ground pass is used only for partial authored scenes. */
   private groundOverlaySprite = new Sprite(Texture.WHITE);
   /**
@@ -208,7 +211,7 @@ export class PixiBackend implements RenderBackend {
   private decorSprites = new Map<string, Sprite>();
   private decor = new DecorSheets();
   private decorPx = 0;
-  private decorElevationOnly = false;
+  private elevationBasePx = 0;
   /** Edge shading along the board's four sides and the vignette over the view. */
   private shadeLayer = new Container();
   private shadeSprites: Sprite[] = [];
@@ -365,6 +368,7 @@ export class PixiBackend implements RenderBackend {
     app.stage.addChild(
       this.backdropSprite,
       this.groundSprite,
+      this.elevationBaseLayer,
       this.sceneGround,
       this.groundOverlaySprite,
     );
@@ -407,6 +411,7 @@ export class PixiBackend implements RenderBackend {
     this.dropTextures();
     this.decor.clear();
     this.decorPx = 0;
+    this.elevationBasePx = 0;
     this.viewport = viewport;
     this.applyViewport();
   }
@@ -475,6 +480,7 @@ export class PixiBackend implements RenderBackend {
       m.ty + view.cameraNudge.y * nudge,
     );
     this.root.setFromMatrix(this.groundTransform);
+    this.elevationBaseLayer.setFromMatrix(this.groundTransform);
     this.fxOver.container.setFromMatrix(this.groundTransform);
     for (const layer of [this.sceneGround, this.upright, this.labels]) {
       layer.position.set(
@@ -495,12 +501,13 @@ export class PixiBackend implements RenderBackend {
     this.setPartialGroundOrder(partialScene);
     this.groundOverlaySprite.visible = partialScene;
     this.syncGround(view, painted, partialScene);
-    // Complete partial ground owns its local relief, but unavailable scene
-    // pieces and High contrast still require the procedural rule markers.
+    // A complete partial scene needs only raised stone underlay here. Missing
+    // art and High contrast still require every procedural rule marker.
+    this.syncElevationBase(view, camera, partialScene && scenePainted && !view.crispOverlays);
     const decorMode = partialScene
       ? !scenePainted || view.crispOverlays
         ? 'full'
-        : 'elevation'
+        : 'none'
       : !painted || view.crispOverlays
         ? 'full'
         : 'none';
@@ -646,11 +653,24 @@ export class PixiBackend implements RenderBackend {
   private setPartialGroundOrder(partial: boolean): void {
     const app = this.app;
     if (!app) return;
-    const groundIndex = app.stage.getChildIndex(this.groundSprite);
-    const sceneIndex = app.stage.getChildIndex(this.sceneGround);
-    if (partial && groundIndex > sceneIndex) app.stage.setChildIndex(this.groundSprite, sceneIndex);
-    if (!partial && sceneIndex > groundIndex)
-      app.stage.setChildIndex(this.sceneGround, groundIndex);
+    // Put the raised base between the procedural ground and localized art in
+    // partial mode. Reorder every participant each switch: moving only two
+    // layers leaves the base above scene art after a complete-scene visit.
+    const layers = partial
+      ? [this.groundSprite, this.elevationBaseLayer, this.sceneGround, this.groundOverlaySprite]
+      : [this.sceneGround, this.groundSprite, this.elevationBaseLayer, this.groundOverlaySprite];
+    const first = app.stage.getChildIndex(this.backdropSprite) + 1;
+    for (const [offset, layer] of layers.entries()) app.stage.setChildIndex(layer, first + offset);
+  }
+
+  /** Both baked passes share a grid cache, so one grid change invalidates both sprite buckets. */
+  private syncDecorGrid(grid: MapView['grid']): boolean {
+    const changed = this.decor.sync(grid);
+    if (changed) {
+      this.decorPx = 0;
+      this.elevationBasePx = 0;
+    }
+    return changed;
   }
 
   private syncGround(view: MapView, painted: boolean, partialScene: boolean): void {
@@ -788,16 +808,47 @@ export class PixiBackend implements RenderBackend {
    * zoom's sprite bucket and re-baked only when the footing or the bucket
    * changes.
    */
-  private syncDecor(view: MapView, camera: Camera, mode: 'none' | 'elevation' | 'full'): void {
+  private syncElevationBase(view: MapView, camera: Camera, shown: boolean): void {
+    this.elevationBaseLayer.visible = shown;
+    if (!shown) return;
+    const grid = view.grid;
+    const changed = this.syncDecorGrid(grid);
+    const px = this.spritePx(camera);
+    if (!changed && px === this.elevationBasePx) return;
+    this.elevationBasePx = px;
+
+    const { cols, rows } = decorChunks(grid);
+    const live = new Set<string>();
+    for (let cy = 0; cy < rows; cy++) {
+      for (let cx = 0; cx < cols; cx++) {
+        const key = `${cx},${cy}`;
+        live.add(key);
+        let sprite = this.elevationBaseSprites.get(key);
+        if (!sprite) {
+          sprite = new Sprite();
+          this.elevationBaseLayer.addChild(sprite);
+          this.elevationBaseSprites.set(key, sprite);
+        }
+        sprite.texture = this.texture(this.decor.get(grid, cx, cy, px, true));
+        sprite.position.set(cx * DECOR_CHUNK * TILE, cy * DECOR_CHUNK * TILE);
+        sprite.width = DECOR_CHUNK * TILE;
+        sprite.height = DECOR_CHUNK * TILE;
+        sprite.visible = true;
+      }
+    }
+    for (const [key, sprite] of this.elevationBaseSprites) {
+      if (!live.has(key)) sprite.visible = false;
+    }
+  }
+
+  private syncDecor(view: MapView, camera: Camera, mode: 'none' | 'full'): void {
     this.decorLayer.visible = mode !== 'none';
     if (mode === 'none') return;
     const grid = view.grid;
-    const changed = this.decor.sync(grid);
+    const changed = this.syncDecorGrid(grid);
     const px = this.spritePx(camera);
-    const elevationOnly = mode === 'elevation';
-    if (!changed && px === this.decorPx && elevationOnly === this.decorElevationOnly) return;
+    if (!changed && px === this.decorPx) return;
     this.decorPx = px;
-    this.decorElevationOnly = elevationOnly;
 
     const { cols, rows } = decorChunks(grid);
     const live = new Set<string>();
@@ -811,7 +862,7 @@ export class PixiBackend implements RenderBackend {
           this.decorLayer.addChild(sprite);
           this.decorSprites.set(key, sprite);
         }
-        sprite.texture = this.texture(this.decor.get(grid, cx, cy, px, elevationOnly));
+        sprite.texture = this.texture(this.decor.get(grid, cx, cy, px));
         sprite.position.set(cx * DECOR_CHUNK * TILE, cy * DECOR_CHUNK * TILE);
         sprite.width = DECOR_CHUNK * TILE;
         sprite.height = DECOR_CHUNK * TILE;

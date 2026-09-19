@@ -16,7 +16,7 @@
 import type { Grid } from '../core/types';
 import type { TileRelief } from './geometry/board';
 import { DECOR_CHUNK, boardRelief, decorSignature } from './geometry/board';
-import { paintElevationDecor, paintTileDecor } from './painters/board';
+import { paintElevationBase, paintTileDecor } from './painters/board';
 
 /** Device pixels per tile at the sharpest bake. */
 export const DECOR_PX_CAP = 128;
@@ -95,7 +95,7 @@ export class DecorSheets {
         const tile = grid.tiles[index];
         if (!tile) continue;
         const box = { x: (x - x0) * size, y: (y - y0) * size, size };
-        if (elevationOnly) paintElevationDecor(ctx, box, tile, { x, y }, this.relief.get(index));
+        if (elevationOnly) paintElevationBase(ctx, box, tile, { x, y }, this.relief.get(index));
         else paintTileDecor(ctx, box, tile, { x, y }, this.relief.get(index));
       }
     }

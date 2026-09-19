@@ -56,7 +56,7 @@ export function paintTileDecor(
 }
 
 /** Raised terrain remains rule-owned in a partial scene, including its rocky top and step faces. */
-export function paintElevationDecor(
+export function paintElevationBase(
   ctx: Ctx,
   box: Box,
   tile: Tile,
@@ -65,13 +65,13 @@ export function paintElevationDecor(
 ): void {
   if (tile.elevation > 0) {
     paintTerrain(ctx, box, tile, pos);
-    paintStonePlateau(ctx, box, pos);
+    if (tile.terrain === 'stone') paintStonePlateau(ctx, box, pos);
     paintDecals(ctx, box, tile, pos);
   }
   paintTileRelief(ctx, box, pos, relief);
 }
 
-/** Broad, quiet stone variation keeps a raised plateau from reading as an empty shader tile. */
+/** Broad, quiet stone variation keeps a raised stone plateau from reading as an empty shader tile. */
 function paintStonePlateau(ctx: Ctx, box: Box, pos: Vec2): void {
   const s = box.size;
   ctx.save();
@@ -81,7 +81,8 @@ function paintStonePlateau(ctx: Ctx, box: Box, pos: Vec2): void {
     const cy = box.y + s * (0.26 + tileNoise(pos.x, pos.y, 84 + i) * 0.44);
     const rx = s * (0.16 + tileNoise(pos.x, pos.y, 87 + i) * 0.09);
     const ry = s * (0.07 + tileNoise(pos.x, pos.y, 90 + i) * 0.05);
-    ctx.fillStyle = i === 0 ? shade('#565452', 0.22) : shade('#565452', -0.16);
+    const stone = TERRAIN_STYLES.stone.fill;
+    ctx.fillStyle = i === 0 ? shade(stone, 0.22) : shade(stone, -0.16);
     ellipse(ctx, cx, cy, rx, ry);
     ctx.fill();
   }

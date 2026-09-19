@@ -29,7 +29,7 @@ import { backdrops } from '../backdrops';
 import { sceneForGrid, sceneImage, drawSceneImage, sceneryOpacities } from '../scene';
 import { surfaceIsPainted } from '../sceneSurfaces';
 import { FACTION_RING, OVERLAY, STATUS_BADGE, hpColor } from '../palettes';
-import { paintElevationDecor, paintTileDecor } from '../painters/board';
+import { paintElevationBase, paintTileDecor } from '../painters/board';
 import { paintFloatingNumber, paintPathArrow, paintPathDot } from '../painters/fx';
 import { FOOT_LINE } from '../sheets/bake';
 import { idlePhase, sheets } from '../sheets/store';
@@ -170,9 +170,10 @@ export class Canvas2DBackend implements RenderBackend {
         ctx.save();
         ctx.transform(m.a, m.b, m.c, m.d, m.tx, m.ty);
         this.drawGround(view, ground, false, true, false);
-        // Authored ground owns its local relief. Keeping procedural decor out
-        // of the partial pass prevents pebbles and rims from crossing the
-        // transparent edges or landing on the runtime water surface.
+        // A complete normal partial scene keeps raised rule terrain below its
+        // authored ground and live surfaces. Full decor handles fallbacks and
+        // High contrast later in the pass.
+        if (sceneGround && !view.crispOverlays) this.drawElevationBase(view, ground);
         ctx.restore();
         for (const { piece, image } of sceneGroundPieces) {
           if (!image) continue;
@@ -189,10 +190,9 @@ export class Canvas2DBackend implements RenderBackend {
         ctx.save();
         ctx.transform(m.a, m.b, m.c, m.d, m.tx, m.ty);
         this.drawGround(view, ground, false, false, true);
-        // A complete partial scene owns its local relief, but accessibility
-        // and an unavailable piece still need the procedural rule markers.
+        // A complete partial scene owns its local ground art; accessibility
+        // and unavailable pieces still need all procedural rule markers.
         if (!sceneGround || view.crispOverlays) this.drawDecor(view, ground);
-        else this.drawDecor(view, ground, true);
         this.drawOverlays(view, ground);
         this.drawPath(view, ground);
         if (view.aimArc) this.drawAimArc(view.aimArc, ground);
@@ -327,7 +327,24 @@ export class Canvas2DBackend implements RenderBackend {
   }
 
   /** Cliffs, canopies, walls, cover and decals: a second pass so overhangs land on neighbours. */
-  private drawDecor(view: MapView, camera: Camera, elevationOnly = false): void {
+  private drawElevationBase(view: MapView, camera: Camera): void {
+    const { ctx } = this;
+    const signature = decorSignature(view.grid);
+    if (signature !== this.reliefSignature) {
+      this.reliefSignature = signature;
+      this.relief = boardRelief(view.grid);
+    }
+    const bounds = camera.visibleBounds(view.grid);
+    for (let y = bounds.y0; y <= bounds.y1; y++)
+      for (let x = bounds.x0; x <= bounds.x1; x++) {
+        const index = y * view.grid.width + x;
+        const tile = view.grid.tiles[index];
+        if (!tile) continue;
+        paintElevationBase(ctx, camera.toScreen({ x, y }), tile, { x, y }, this.relief.get(index));
+      }
+  }
+
+  private drawDecor(view: MapView, camera: Camera): void {
     const { ctx } = this;
     const signature = decorSignature(view.grid);
     if (signature !== this.reliefSignature) {
@@ -341,9 +358,7 @@ export class Canvas2DBackend implements RenderBackend {
         const tile = view.grid.tiles[index];
         if (!tile) continue;
         const pos = { x, y };
-        const box = camera.toScreen(pos);
-        if (elevationOnly) paintElevationDecor(ctx, box, tile, pos, this.relief.get(index));
-        else paintTileDecor(ctx, box, tile, pos, this.relief.get(index));
+        paintTileDecor(ctx, camera.toScreen(pos), tile, pos, this.relief.get(index));
       }
     }
   }

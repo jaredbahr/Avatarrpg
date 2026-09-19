@@ -1,5 +1,5 @@
 import { expect, test, type Page } from '@playwright/test';
-import { enterNode, resetStorage, startGame, waitForIdle } from './helpers';
+import { enterNode, resetStorage, startGame, takeTurn, waitForIdle } from './helpers';
 import { average, screenshotPixels, type Rgb } from './pixels';
 
 const svg = (colour: string): string =>
@@ -44,7 +44,7 @@ async function samples<P extends Record<string, Pos>>(
   page: Page,
   probes: P,
 ): Promise<{ [K in keyof P]: Rgb }> {
-  const canvas = page.locator('.explore-scene .map-canvas');
+  const canvas = page.locator('.map-canvas');
   const [pixels, box, points] = await Promise.all([
     screenshotPixels(canvas),
     canvas.boundingBox(),
@@ -126,6 +126,52 @@ async function setMapTile(page: Page, pos: Pos, tile: string): Promise<void> {
 
 async function setPermanentWater(page: Page, pos: Pos, present: boolean): Promise<void> {
   await setMapTile(page, pos, present ? '~' : '=');
+}
+
+async function setBattleWater(page: Page, pos: Pos, present: boolean): Promise<void> {
+  await page.evaluate(
+    ({ pos, present }) => {
+      const app = window.fnt?.app;
+      const state = app?.state;
+      const battle = state?.battle;
+      if (!app || !state || !battle) throw new Error('Missing battle fixture');
+      const index = pos.y * battle.grid.width + pos.x;
+      app.state = {
+        ...state,
+        battle: {
+          ...battle,
+          grid: {
+            ...battle.grid,
+            tiles: battle.grid.tiles.map((tile, i) =>
+              i === index
+                ? { ...tile, surface: present ? { id: 'water', duration: -1, spread: 0 } : null }
+                : tile,
+            ),
+          },
+        },
+      };
+      app.resync();
+    },
+    { pos, present },
+  );
+}
+
+/** Pan the real camera until the target cell is safely sampleable. */
+async function focusTile(page: Page, pos: Pos): Promise<void> {
+  const canvas = page.locator('.map-canvas');
+  const box = await canvas.boundingBox();
+  if (!box) throw new Error('Map canvas has no bounding box');
+  const point = await tileCentres(page, { target: pos });
+  const target = point.target;
+  if (!target) throw new Error('Target tile has no screen point');
+  const start = { x: box.x + box.width / 2, y: box.y + box.height / 2 };
+  await page.mouse.move(start.x, start.y);
+  await page.mouse.down();
+  await page.mouse.move(start.x + box.width / 2 - target.x, start.y + box.height / 2 - target.y, {
+    steps: 8,
+  });
+  await page.mouse.up();
+  await waitForIdle(page);
 }
 
 async function reenterVillage(page: Page): Promise<void> {
@@ -224,7 +270,7 @@ for (const renderer of ['canvas', 'webgl'] as const) {
     await startGame(page, ['Kaya'], ['kaya'], 'partial-ground-decor');
     await enterNode(page, 'village_explore');
     await page.locator('.explore-scene .map-canvas').waitFor();
-    // A complete partial image normally owns this tile's relief.
+    // A complete partial image normally suppresses this tile's procedural decor.
     await expect
       .poll(async () => {
         const { patch: tile } = await samples(page, { patch: PATCH });
@@ -254,5 +300,68 @@ for (const renderer of ['canvas', 'webgl'] as const) {
       })
       .toBe(true);
     expectTreeDecor((await samples(page, { patch: PATCH })).patch);
+  });
+
+  test(`partial elevation keeps a live surface above its base on ${renderer}`, async ({ page }) => {
+    test.setTimeout(120_000);
+    const raised = { x: 19, y: 2 } as const;
+    await resetStorage(page, `?renderer=${renderer}`);
+    await startGame(page, ['Kaya'], ['kaya'], 'partial-elevation-surface');
+    await enterNode(page, 'battle_forest_road');
+    await takeTurn(page);
+    await waitForIdle(page);
+    await focusTile(page, raised);
+    await expect
+      .poll(() =>
+        page.evaluate(({ x, y }) => {
+          const grid = window.fnt?.app.state?.battle?.grid;
+          return grid?.tiles[y * grid.width + x]?.elevation;
+        }, raised),
+      )
+      .toBeGreaterThan(0);
+
+    const bare = (await samples(page, { raised })).raised;
+    await setBattleWater(page, raised, true);
+    await page.waitForTimeout(250);
+    const wet = (await samples(page, { raised })).raised;
+    // Real water's cool tint must be visible over the existing raised-base
+    // sample; a hidden surface leaves this identical to `bare`.
+    expect(wet.b - bare.b, `water blue shift: ${JSON.stringify({ bare, wet })}`).toBeGreaterThan(
+      12,
+    );
+    expect(wet.g - bare.g, `water green shift: ${JSON.stringify({ bare, wet })}`).toBeGreaterThan(
+      10,
+    );
+
+    await setBattleWater(page, raised, false);
+    await expect
+      .poll(async () => {
+        const restored = (await samples(page, { raised })).raised;
+        return (
+          Math.abs(restored.r - bare.r) < 12 &&
+          Math.abs(restored.g - bare.g) < 12 &&
+          Math.abs(restored.b - bare.b) < 12
+        );
+      })
+      .toBe(true);
+    expect(wet.b).toBeGreaterThan(bare.b + 12);
+
+    // Exercise the shared chunk cache across a complete partial map and an
+    // accessibility toggle before returning to forest's elevation base.
+    await enterNode(page, 'village_explore');
+    await page.locator('.map-canvas').waitFor();
+    await waitForIdle(page);
+    await page.evaluate(() => window.fnt?.app.updateSettings({ highContrast: true }));
+    await page.waitForTimeout(150);
+    await enterNode(page, 'battle_forest_road');
+    await takeTurn(page);
+    await waitForIdle(page);
+    await focusTile(page, raised);
+    await page.evaluate(() => window.fnt?.app.updateSettings({ highContrast: false }));
+    await page.waitForTimeout(150);
+    const reentered = (await samples(page, { raised })).raised;
+    expect(Math.abs(reentered.r - bare.r)).toBeLessThan(14);
+    expect(Math.abs(reentered.g - bare.g)).toBeLessThan(14);
+    expect(Math.abs(reentered.b - bare.b)).toBeLessThan(14);
   });
 }
