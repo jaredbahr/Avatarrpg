@@ -14,11 +14,13 @@ copy its campaign, assets or every mechanic.
 
 ## Delivery sequence
 
-1. **Make v0.2.0 available for play.** Gameplay owns PR #64. Reproduce and repair
+1. **Make v0.2.1 available for play.** The lead owns PR #64 after the recorded
+   integration transfer. The combined candidate supersedes the unshipped v0.2.0.
+   Reproduce and repair
    the failing browser/gallery families together, retain their meaningful
    assertions, validate once, and push one batch. Require all checks on that
    exact head, merge with a merge commit, and confirm the version actually
-   served by Pages. Keep the build hash beside the release number. v0.2.0 is
+   served by Pages. Keep the build hash beside the release number. v0.2.1 is
    an interim release, not reference-quality completion.
 2. **Close the technology decision before further renderer expansion.** Review
    what the shipped candidate still cannot deliver reliably. Prefer the current
@@ -72,8 +74,11 @@ copy its campaign, assets or every mechanic.
 
 ## Ownership and usage discipline
 
-Gameplay/integration: `01a0b300-e321-7670-aab3-f0aeaf624dc0`.
-Art/animation/audio: `01a0b2ee-8d60-7643-be9b-340997ca4ae0`.
+Gameplay/integration: lead `01a0b79f-a1e6-7fd0-a4d5-76e7944406f6`.
+The previous gameplay and art tasks have stopped; their useful work is preserved
+and the accepted quarry composition and water motion are integrated. The active
+isolated CI repair belongs to `world_conversations`; see the
+[lead handoff](handoffs/lead-driller-completion.md) for current checkpoints.
 The orchestrator owns this plan, priorities and cross-track acceptance. Writing
 is recalled only for a concrete uncovered narrative/presentation defect.
 
