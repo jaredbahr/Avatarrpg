@@ -42,6 +42,7 @@ import { paletteFor } from '../../render/palettes';
 import { paintElementGlyph } from '../../render/painters/glyphs';
 import { showGridLines } from '../storage/localSaves';
 import { reactionNotes } from '../ui/ReactionNote';
+import { formatShoveMovement } from '../ui/combatPreviewText';
 import { UnitInspector } from '../ui/UnitInspector';
 import { partyScale } from '../anim/actorScale';
 import { createMovementThreatQuery } from '../ui/movementThreats';
@@ -1119,7 +1120,7 @@ export class CombatScene implements Scene {
           class: `chip ${shove.friendly ? 'chip-friendly' : 'chip-terrain'}`,
           text: shove.blocked
             ? `${shove.name}: stops at ${destination} (${shove.movedDistance}/${shove.distance}; blocked)${landing}`
-            : `${shove.name}: ${shove.mode}s to ${destination}${landing}`,
+            : `${formatShoveMovement(shove.name, shove.mode, destination)}${landing}`,
         }),
       );
     }
