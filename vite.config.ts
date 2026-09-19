@@ -62,11 +62,14 @@ export default defineConfig({
   plugins: [
     {
       // Input, accessibility and HTML UI belong to the app's native DOM.
+      // Atlas JSON uses our shared loader, not Pixi's Assets/Spritesheet.
       // These optional Pixi registration entry points are never used. Keep
       // graphics/text/filter/particle/texture initialization intact (ADR 0001).
       name: 'omit-unused-pixi-systems',
       transform(code, id) {
-        if (/[/\\]pixi\.js[/\\]lib[/\\](accessibility|events|dom)[/\\]init\.mjs$/.test(id)) {
+        if (
+          /[/\\]pixi\.js[/\\]lib[/\\](accessibility|events|dom|spritesheet)[/\\]init\.mjs$/.test(id)
+        ) {
           return { code, map: null, moduleSideEffects: false };
         }
       },
