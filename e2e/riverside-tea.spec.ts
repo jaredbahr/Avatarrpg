@@ -4,6 +4,9 @@ import { enterNode, resetStorage, settleLayout, startGame, waitForIdle } from '.
 
 for (const backend of ['canvas', 'webgl']) {
   test(`tea holds on the porch and yields to walking and forms (${backend})`, async ({ page }) => {
+    // Install before navigation so setup runs on the real clock; pause only
+    // once the normal-motion tea pose is ready for the deterministic cel check.
+    await page.clock.install();
     await page.setViewportSize({ width: 1280, height: 720 });
     await resetStorage(page, `?renderer=${backend}`);
     await page.getByRole('button', { name: 'Explore the riverside', exact: true }).click();
@@ -54,8 +57,12 @@ for (const backend of ['canvas', 'webgl']) {
     await test
       .info()
       .attach(`tea-${backend}-hold`, { body: await page.screenshot(), contentType: 'image/png' });
+    const now = await page.evaluate(() => Date.now());
+    await page.clock.pauseAt(new Date(now + 1000));
     const hold = await teaPortrait();
-    await page.waitForTimeout(4300);
+    // The authored tea clip has two cels at 0.25 fps: exactly four seconds
+    // reaches the opposite cel without depending on wall-clock scheduling.
+    await page.clock.fastForward(4000);
     expect((await teaPortrait()).equals(hold)).toBe(false);
     await expect(stage).toHaveAttribute('data-tea-actors', '2');
     await test
