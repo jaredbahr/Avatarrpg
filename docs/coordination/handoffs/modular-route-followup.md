@@ -244,3 +244,34 @@ not an established cause. The renderer smoke's encoded-PNG-byte check cannot
 prove a nonblank frame; Luna owns correcting that assertion independently.
 The existing procedural-ground pixel tests remove the scene and therefore do
 not establish that the partial-scene path works on WebKit.
+
+## WebKit return-path diagnosis (root takeover)
+
+Terra's isolated worktree is `webkit-partial-ground-repair`, base `65808fa`.
+The original water test passes its initial authored red/blue frame and fails
+only after `riverside_explore` then `village_explore`. Disabling filtered quads,
+retaining texture sources, clearing TexturePool and changing renderer destruction
+all failed; every speculative product edit was reverted. Luna's lifecycle review
+confirmed this transition reuses ExploreScene and its renderer, rather than
+recreating them. The earlier filter/destruction explanations were hypotheses.
+
+Root also reproduced the failure with raster PNG fixtures, excluding SVG alone
+as the cause. A synchronous forced render plus WebGL readPixels found 2,726,468
+covered pixels and about 129,600 blue pixels, GL error zero, on the expected
+2388 by 1274 framebuffer. The immediately following browser screenshot remains
+blank. Computed canvas/ancestor opacity is 1, visibility is visible, and the
+canvas is topmost at its centre. This narrows investigation to presentation /
+compositing; it does not yet prove a fix or physical Safari behavior.
+
+Root owns the isolated diagnostic worktree and port 4338. Candidate test-only
+commit `a4e7336` replaces the encoded-PNG-byte smoke with actual authored-scene
+water pixels; typecheck/format pass, browser validation remains pending. The
+unverified Luna alpha/grid test source was not integrated.
+
+The compositing probes (translateZ and preserveDrawingBuffer) also failed;
+no diagnostic renderer change is accepted. The unchanged Linux CI suite is
+now the next independent environment check, rather than more speculative local
+renderer edits. The local Windows capture limitation remains explicitly open.
+Final root verification including `a4e7336` and this handoff passes 873 tests /
+105 files, typecheck, lint and formatting. Publish one consolidated revision to
+PR64, preserving every required exact-head check and merge-commit auto-merge.
