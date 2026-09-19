@@ -36,6 +36,21 @@ test('riverside roaming keeps the journal and campaign saves across a round trip
   ).toEqual(before);
 });
 
+test('Riverside preview can close while the party is walking', async ({ page }) => {
+  await resetStorage(page, '?renderer=canvas');
+  await startGame(page, ['Jared'], ['bo'], 'roaming-close-during-walk', { reduceMotion: false });
+  await page.evaluate(() => window.fnt!.app.startVillagePreview());
+
+  await page.getByRole('button', { name: 'Meet Pebble', exact: true }).click();
+  await expect
+    .poll(() => page.evaluate(() => window.fnt!.app.animator.busy(performance.now())))
+    .toBe(true);
+  await page.getByRole('button', { name: 'Leave preview', exact: true }).click();
+
+  await expect(page.locator('.title-scene')).toBeVisible();
+  expect(await page.evaluate(() => window.fnt!.app.previewActive)).toBe(false);
+});
+
 for (const renderer of ['canvas', 'webgl']) {
   test(`connected exploration crosses maps and returns on ${renderer}`, async ({
     page,

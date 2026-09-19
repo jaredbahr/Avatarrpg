@@ -172,18 +172,21 @@ export class CombatScene implements Scene {
     if (!camera) return;
     this.manualCamera = false;
     if (camera.projection === 'oblique') {
-      // Key off the browser viewport and text setting, rather than the canvas
-      // height: HUD panels change the latter during aim mode, while rotation
-      // and accessibility settings are genuine framing changes.
+      // Key off the browser viewport and text setting, then use the first
+      // settled canvas height to account for the full decision dock. HUD
+      // panels change the latter during aim mode, while rotation and
+      // accessibility settings are genuine framing changes.
       const frameKey = `${window.innerWidth}x${window.innerHeight}:${this.app.settings.largeText}`;
-      if (this.preferredCombatFrameKey !== frameKey) {
+      const hudAllowance = this.app.settings.largeText === 'huge' ? 220 : 200;
+      const decisionHeight = camera.viewport.height - hudAllowance;
+      const compact = decisionHeight < 360;
+      const firstSettledCompact =
+        this.mode.kind === 'idle' && compact && this.preferredCombatTilePx === 96;
+      if (this.preferredCombatFrameKey !== frameKey || firstSettledCompact) {
         this.preferredCombatFrameKey = frameKey;
         // The action/preview panel takes a predictable slice of the first
-        // settled canvas. Reserve that slice before choosing the readable
+        // settled canvas. Reserve that full dock before choosing the readable
         // 96px frame; Huge text needs the larger allowance.
-        const hudAllowance = this.app.settings.largeText === 'huge' ? 160 : 124;
-        const decisionHeight = camera.viewport.height - hudAllowance;
-        const compact = decisionHeight < 360;
         this.preferredCombatTilePx = compact
           ? this.app.settings.largeText === 'huge' || window.innerWidth < 600
             ? 40
@@ -436,6 +439,15 @@ export class CombatScene implements Scene {
     this.renderTurnStrip();
     this.renderHud();
     this.maybeRunAi();
+    // The first ResizeObserver delivery can happen before this sync fills the
+    // turn strip and decision dock. Measure once after those panels exist so a
+    // short tablet chooses its compact readable frame; otherwise the initial
+    // tall placeholder can lock in a 96px frame and leave lower targets under
+    // the dock.
+    this.renderer?.resizeAndRedraw(() => this.refit(), {
+      width: battle.grid.width,
+      height: battle.grid.height,
+    });
   }
 
   /**

@@ -491,6 +491,12 @@ export class ExploreScene implements Scene {
     const hud = this.host?.querySelector<HTMLElement>('.explore-hud');
     const state = this.app.state;
     if (!hud || !state) return;
+    // Keep the frame edge in sync even when Riverside owns the action panel.
+    // Village controls are updated in place while the animator runs, but the
+    // loop still uses this edge to decide when a HUD refresh is needed. If it
+    // stays false during a walk, every frame replaces the controls and a
+    // button such as Leave preview can never complete a DOM click.
+    this.hudMoving = this.app.animator.busy(performance.now());
     clear(hud);
     if (this.conversationMode) return;
     if (this.life && this.renderer) {
@@ -504,8 +510,7 @@ export class ExploreScene implements Scene {
     });
     const row = el('div', { class: 'action-row' });
 
-    const moving = this.app.animator.busy(performance.now());
-    this.hudMoving = moving;
+    const moving = this.hudMoving;
     const npc = moving ? null : this.nearestNpc(state.location.pos);
     const inspect = npc?.sprite.startsWith('world.') ?? false;
     const context = el(
