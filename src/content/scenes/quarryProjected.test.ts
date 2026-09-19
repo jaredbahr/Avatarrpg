@@ -1,6 +1,11 @@
 import { describe, expect, it } from 'vitest';
 import { AMBUSH_ROAD, QUARRY_FLOOR } from '../maps/combat';
-import { CUTTING_SCENE, DRILLER_FLOOR_SCENE } from './quarryProjected';
+import {
+  CUTTING_SCENE,
+  DRILLER_FLOOR_SCENE,
+  DRILLER_FLOOR_WALL_CELLS,
+  DRILLER_REAR_LOADING_CELLS,
+} from './quarryProjected';
 
 describe('projected quarry scenes', () => {
   it('shares only the exterior surround underneath the two live floors', () => {
@@ -28,7 +33,36 @@ describe('projected quarry scenes', () => {
       'art/maps/driller-floor-scene/ground-west.webp',
       'art/maps/driller-floor-scene/ground-east.webp',
     ]);
-    expect(DRILLER_FLOOR_SCENE.scenery).toHaveLength(0);
+    expect(DRILLER_FLOOR_SCENE.scenery).toHaveLength(2);
+    expect(DRILLER_FLOOR_SCENE.scenery.map((piece) => piece.footprint[0])).toEqual(
+      DRILLER_FLOOR_WALL_CELLS,
+    );
+    expect(DRILLER_FLOOR_SCENE.scenery.map((piece) => piece.url)).toEqual([
+      'art/maps/quarry-gate-scene/wall-end.webp',
+      'art/maps/quarry-gate-scene/wall-end.webp',
+    ]);
+    for (const [index, piece] of DRILLER_FLOOR_SCENE.scenery.entries()) {
+      const cell = DRILLER_FLOOR_WALL_CELLS[index];
+      expect(cell).toBeDefined();
+      if (!cell) continue;
+      expect(piece).toMatchObject({
+        x: 768 + (cell.x - cell.y) * 64 - 64,
+        y: (cell.x + cell.y + 1) * 32 - 144,
+        width: 128,
+        height: 176,
+        footprint: [cell],
+        depth: { x: cell.x + 0.5, y: cell.y + 0.5 },
+        fadeWhenOccluding: true,
+      });
+    }
+    expect(DRILLER_REAR_LOADING_CELLS).toEqual([
+      { x: 14, y: -1 },
+      { x: 15, y: -1 },
+      { x: 16, y: -1 },
+      { x: 17, y: -1 },
+      { x: 18, y: -1 },
+      { x: 19, y: -1 },
+    ]);
     expect(DRILLER_FLOOR_SCENE.paintedWater).toBeUndefined();
   });
 });

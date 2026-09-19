@@ -8,7 +8,7 @@
 
 **Layout** `quarry_floor-layout.png` beside this file: the tile grid as flat colour blocks at 32 px a tile, with the grid drawn. Hand it to the generator as the composition reference (image-to-image or a structure control) at a strength that keeps every edge where it is; upscale it to the delivery size first so the generator does not invent a border.
 
-**Palette** hue anchors from the game's own ground (`src/render/palettes.ts`): stone `#565452`, dirt `#4d3f2f`. The painting replaces those tones outright, so lighter and more saturated is fine; stay in the same families so the effects and the parchment HUD still read over it.
+**Palette** hue anchors from the game's own ground (`src/render/palettes.ts`): stone `#565452`, dirt `#4d3f2f`, wall `#3a352f`. The painting replaces those tones outright, so lighter and more saturated is fine; stay in the same families so the effects and the parchment HUD still read over it.
 
 ## Where
 
@@ -18,12 +18,13 @@ The floor of the quarry itself, an open pit of earth ringed by terraces.
 
 20 columns by 12 rows, counted from 0 at the top-left corner. The painting is the ground and what stands on it, nothing else: the game draws its own grid, movement contours, units, props and effects over it, so every edge in the painting that matters to the rules sits exactly on a tile edge.
 
+- Stone walls (2 tiles): one tile at column 8, row 4 (the centre); one tile at column 11, row 7 (the centre).
 - High ledges, two steps up (20 tiles): 5 tiles (top left), row 0: columns 0–2; row 1: columns 0–1; 5 tiles (top right), row 0: columns 17–19; row 1: columns 18–19; 5 tiles (bottom left), row 10: columns 0–1; row 11: columns 0–2; 5 tiles (bottom right), row 10: columns 18–19; row 11: columns 17–19.
 - Ledges, one step up (24 tiles): 4 tiles (top left), row 0: columns 3–4; row 1: columns 2–3; 4 tiles (top right), row 0: columns 15–16; row 1: columns 16–17; 4 tiles (bottom left), row 10: columns 2–3; row 11: columns 3–4; 4 tiles (bottom right), row 10: columns 16–17; row 11: columns 15–16; a 2×1 block at columns 0–1, row 2 (top left); a 2×1 block at columns 18–19, row 2 (top right); a 2×1 block at columns 0–1, row 9 (bottom left); a 2×1 block at columns 18–19, row 9 (bottom right).
 - Heaps of tumbled rock (6 tiles): one tile at column 8, row 1 (top centre); one tile at column 11, row 1 (top centre); one tile at column 2, row 4 (middle left); one tile at column 2, row 7 (middle left); one tile at column 8, row 10 (bottom centre); one tile at column 11, row 10 (bottom centre).
 - Spilled oil (16 tiles): a 2×2 block at columns 7–8, rows 2–3 (top centre); a 2×2 block at columns 11–12, rows 2–3 (top centre); a 2×2 block at columns 7–8, rows 8–9 (bottom centre); a 2×2 block at columns 11–12, rows 8–9 (bottom centre).
 - Churned mud (4 tiles): a 2×2 block at columns 10–11, rows 5–6 (the centre).
-- Open ground everywhere else: bare earth (170 tiles).
+- Open ground everywhere else: bare earth (168 tiles).
 - The party enters from the left, standing at (1, 3), (3, 4), (1, 5), (3, 6), (1, 7), (3, 8); enemies come from the right. Paint nothing there that would read as an object to walk round.
 
 The rows as the rules read them:
@@ -33,17 +34,17 @@ AAA^^..........^^AAA
 AA^^....r..r....^^AA
 ^^.....oo..oo.....^^
 .......oo..oo.......
-..r.................
+..r.....#...........
 ..........mm........
 ..........mm........
-..r.................
+..r........#........
 .......oo..oo.......
 ^^.....oo..oo.....^^
 AA^^....r..r....^^AA
 AAA^^..........^^AAA
 ```
 
-Legend: `A` high ledges, two steps up; `^` ledges, one step up; `.` bare earth; `r` heaps of tumbled rock; `o` spilled oil; `m` churned mud.
+Legend: `A` high ledges, two steps up; `^` ledges, one step up; `.` bare earth; `r` heaps of tumbled rock; `o` spilled oil; `#` stone walls; `m` churned mud.
 
 ## Prompt
 
