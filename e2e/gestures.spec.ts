@@ -1,8 +1,8 @@
 import type { CameraInfo } from '../src/app/App';
-import { groundPoint, groundTile } from './projection';
+import { groundPoint, groundTile, paintedTileCentre } from './projection';
 import { expect, test } from '@playwright/test';
 import type { Page } from '@playwright/test';
-import { enterNode, resetStorage, startGame, takeTurn, waitForIdle } from './helpers';
+import { enterNode, resetStorage, settleLayout, startGame, takeTurn, waitForIdle } from './helpers';
 
 /**
  * Pinch, pan and Recentre.
@@ -120,6 +120,45 @@ async function openFight(page: Page, node = 'battle_forest_road'): Promise<void>
   await enterNode(page, node);
   await takeTurn(page);
   await waitForIdle(page);
+}
+
+async function openWaterFight(page: Page): Promise<{ id: string; pos: Point }> {
+  await resetStorage(page);
+  await startGame(page, ['Elias'], ['nilak'], 'gestures-water-spec');
+  await enterNode(page, 'battle_forest_road');
+  await takeTurn(page);
+  await waitForIdle(page);
+
+  const target = await page.evaluate(() => {
+    const app = window.fnt?.app;
+    const state = app?.state;
+    const battle = state?.battle;
+    if (!app || !state || !battle) return null;
+    const actor = battle.units.find((u) => u.id === battle.order[battle.turnIndex]);
+    if (!actor) return null;
+
+    const index = (p: Point) => p.y * battle.grid.width + p.x;
+    const open = (p: Point) => {
+      if (p.x < 0 || p.y < 0 || p.x >= battle.grid.width || p.y >= battle.grid.height) {
+        return false;
+      }
+      const tile = battle.grid.tiles[index(p)];
+      return tile !== undefined && !tile.blocked;
+    };
+    const spot = open({ x: actor.pos.x + 3, y: actor.pos.y })
+      ? { x: actor.pos.x + 3, y: actor.pos.y }
+      : { x: actor.pos.x - 3, y: actor.pos.y };
+    if (!open(spot)) return null;
+
+    const victim = battle.units.find((u) => u.faction === 'enemy' && u.hp > 0);
+    if (!victim) return null;
+    const units = battle.units.map((u) => (u.id === victim.id ? { ...u, pos: spot } : u));
+    app.state = { ...state, battle: { ...battle, units } };
+    return { id: victim.id, pos: spot };
+  });
+
+  if (!target) throw new Error('could not stage a water target in range');
+  return target;
 }
 
 test.describe('zoom and pan', () => {
@@ -254,6 +293,100 @@ test.describe('zoom and pan', () => {
     await page.getByRole('button', { name: /^Hide log$/ }).click();
     const withoutLog = await camera(page);
     expect(withoutLog.tilePx).toBeCloseTo(zoomed.tilePx, 3);
+  });
+
+  test('fitted zoom-out keeps legal water targeting framed through footer reflow', async ({ page }) => {
+    const target = await openWaterFight(page);
+    const { point } = await centreTile(page);
+
+    // First establish a manual frame, then zoom back out to the whole-board
+    // fit. The old `zoomed = !camera.fitted` flag forgot that the player had
+    // chosen a frame as soon as this landed on the fit scale.
+    await pinch(
+      page,
+      [
+        { x: point.x - 30, y: point.y },
+        { x: point.x + 30, y: point.y },
+      ],
+      [
+        { x: point.x - 100, y: point.y },
+        { x: point.x + 100, y: point.y },
+      ],
+    );
+    await expect.poll(async () => (await camera(page)).fitted).toBe(false);
+    await pinch(
+      page,
+      [
+        { x: point.x - 100, y: point.y },
+        { x: point.x + 100, y: point.y },
+      ],
+      [
+        { x: point.x - 18, y: point.y },
+        { x: point.x + 18, y: point.y },
+      ],
+    );
+    await expect.poll(async () => (await camera(page)).fitted).toBe(true);
+    const fitted = await camera(page);
+
+    await page.getByRole('button', { name: /water whip/i }).click();
+    const targetPoint = await paintedTileCentre(page, target.pos);
+    expect(targetPoint).not.toBeNull();
+    if (!targetPoint) return;
+    await page.mouse.click(targetPoint.x, targetPoint.y);
+    await expect(page.locator('.confirm-bar').filter({ hasText: /Confirm/ })).toBeVisible();
+    const firstFooter = await camera(page);
+    expect(firstFooter.tilePx).toBeGreaterThanOrEqual(fitted.tilePx - 0.5);
+
+    await page.getByRole('button', { name: /^Cancel$/ }).click();
+    // The cancel affordance backs out of the target but leaves the ability in
+    // aim mode; toggle it off and on to model a real cancel/reselect.
+    const waterWhip = page.getByRole('button', { name: /water whip/i });
+    await waterWhip.click();
+    await waterWhip.click();
+    await settleLayout(page);
+    const secondTargetPoint = await paintedTileCentre(page, target.pos);
+    expect(secondTargetPoint).not.toBeNull();
+    if (!secondTargetPoint) return;
+    await page.mouse.click(secondTargetPoint.x, secondTargetPoint.y);
+    await expect(page.locator('.confirm-bar').filter({ hasText: /Confirm/ })).toBeVisible();
+    const secondFooter = await camera(page);
+    expect(secondFooter.tilePx).toBeCloseTo(firstFooter.tilePx, 3);
+  });
+
+  test('partial pan keeps its scale when the active actor changes', async ({ page }) => {
+    await openFight(page);
+    const { point } = await centreTile(page);
+    await pinch(
+      page,
+      [
+        { x: point.x - 30, y: point.y },
+        { x: point.x + 30, y: point.y },
+      ],
+      [
+        { x: point.x - 90, y: point.y },
+        { x: point.x + 90, y: point.y },
+      ],
+    );
+    await swipe(page, point, { x: point.x - 38, y: point.y - 24 });
+    const panned = await camera(page);
+    expect(panned.fitted).toBe(false);
+
+    const activeBefore = await page.evaluate(() => {
+      const battle = window.fnt?.app.state?.battle;
+      return battle ? battle.order[battle.turnIndex] : null;
+    });
+    expect(activeBefore).not.toBeNull();
+    await page.evaluate(() => {
+      const app = window.fnt?.app;
+      const battle = app?.state?.battle;
+      const unit = battle?.units.find((u) => u.id === battle.order[battle.turnIndex]);
+      if (app && unit) app.dispatch({ type: 'endTurn', unitId: unit.id });
+    });
+    await expect
+      .poll(async () => page.evaluate(() => window.fnt?.app.state?.battle?.order[window.fnt?.app.state?.battle?.turnIndex ?? -1]))
+      .not.toBe(activeBefore);
+    const afterActorChange = await camera(page);
+    expect(afterActorChange.tilePx).toBeCloseTo(panned.tilePx, 3);
   });
 
   test('the fitted tile is never smaller than a fingertip and the acting unit is on screen', async ({
