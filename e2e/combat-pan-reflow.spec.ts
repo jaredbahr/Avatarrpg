@@ -86,22 +86,46 @@ for (const renderer of ['canvas', 'webgl'] as const) {
     }, target);
     await page.getByRole('button', { name: 'Recentre', exact: true }).click();
     await settleLayout(page);
-    const initial = await page.evaluate(() => window.fnt!.app.rendererCamera()!);
-    const box = await page.locator('.map-canvas').boundingBox();
-    const point = await paintedTileCentre(page, target);
-    if (!box || !point) throw new Error('Missing battlefield');
+    const initialView = await page.evaluate((p) => {
+      const canvas = document.querySelector<HTMLCanvasElement>('.map-canvas');
+      const camera = window.fnt?.app.rendererCamera();
+      if (!canvas || !camera) return null;
+      const rect = canvas.getBoundingClientRect();
+      const m = camera.groundTransform;
+      const x = (p.x + 0.5) * 64,
+        y = (p.y + 0.5) * 64,
+        dpr = window.devicePixelRatio || 1;
+      return {
+        camera,
+        box: { x: rect.left, y: rect.top, width: rect.width, height: rect.height },
+        point: {
+          x: rect.left + ((m.a * x + m.c * y + m.tx) * rect.width) / (canvas.width / dpr),
+          y: rect.top + ((m.b * x + m.d * y + m.ty) * rect.height) / (canvas.height / dpr),
+        },
+      };
+    }, target);
+    if (!initialView) throw new Error('Missing battlefield');
+    const { camera: initial, box, point } = initialView;
     const from = { x: box.x + box.width * 0.7, y: box.y + box.height * 0.7 };
     const dx = box.x + box.width / 2 - point.x;
     const dy = box.y + box.height / 2 - point.y;
     await page.mouse.move(from.x, from.y);
     await page.mouse.down();
-    await page.mouse.move(from.x + dx, from.y + dy, { steps: 10 });
+    // One intermediate move is enough to exercise the real drag recognizer;
+    // multi-step gesture coverage lives in gestures.spec.ts. Keeping this
+    // bounded matters on software WebGL, where every input can trigger a slow
+    // frame and the ten-step version consumed most of the test budget.
+    await page.mouse.move(from.x + dx, from.y + dy, { steps: 2 });
     await page.mouse.up();
     await settleLayout(page);
-    const panned = await page.evaluate(() => window.fnt!.app.rendererCamera()!);
+    const afterDrag = await page.evaluate(() => ({
+      camera: window.fnt!.app.rendererCamera()!,
+      state: JSON.stringify(window.fnt!.app.state!.battle),
+    }));
+    const panned = afterDrag.camera;
     expect(Math.abs(panned.offsetX - initial.offsetX)).toBeGreaterThan(20);
     expect(panned.tilePx).toBe(initial.tilePx);
-    const state = await page.evaluate(() => JSON.stringify(window.fnt!.app.state!.battle));
+    const state = afterDrag.state;
 
     const expectPan = async () => {
       await settleLayout(page);
