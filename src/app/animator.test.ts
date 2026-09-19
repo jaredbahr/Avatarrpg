@@ -3,6 +3,7 @@ import type { ContentIndex, GameEvent, Unit } from '../core/types';
 import { Animator } from './animator';
 import { CONTENT } from '../content';
 import { sampleParticles, PARTICLE_STRIDE } from '../render/fx/simulate';
+import { choreograph } from './anim/choreography';
 
 /**
  * The animator runs in Node here with the reduce-motion lookup injected, so
@@ -27,7 +28,106 @@ function animator(reduced = false): Animator {
   return new Animator(content, { motionReduced: () => reduced });
 }
 
+const combatUnit = (id: string, x: number, y: number, hp: number, maxHp = 20): Unit =>
+  ({
+    ...unit(id, x, y),
+    hp,
+    base: { maxHp },
+    sprite: id === 'e0' ? 'unit.enemy.thug' : 'unit.air.nima',
+  }) as unknown as Unit;
+
+const airBlast: GameEvent = {
+  type: 'abilityUsed',
+  unitId: 'p0',
+  abilityId: 'air_blast',
+  target: { x: 5, y: 3 },
+  tiles: [{ x: 5, y: 3 }],
+};
+
 describe('Animator', () => {
+  it.each([false, true])('holds damage feedback until Air Blast impact, reduced=%s', (reduced) => {
+    const before = [combatUnit('p0', 1, 3, 20), combatUnit('e0', 5, 3, 20)];
+    const events: GameEvent[] = [
+      airBlast,
+      { type: 'damaged', unitId: 'e0', amount: 6, crit: false, damageType: 'air', sourceId: 'p0' },
+    ];
+    const choreography = choreograph({
+      content: CONTENT,
+      events,
+      unitsBefore: before,
+      cursor: 1000,
+      rate: reduced ? 0.02 : 1,
+      pushIndex: 0,
+    });
+    const impact = choreography.health.find((change) => change.unitId === 'e0');
+    if (!impact) throw new Error('expected Air Blast health impact');
+
+    const a = new Animator(CONTENT, { motionReduced: () => reduced });
+    a.push(1000, events, before);
+    const after = combatUnit('e0', 5, 3, 14);
+    expect(a.unitHealth(impact.at - 0.01, after)).toEqual({ hp: 20, fallen: false });
+    expect(a.unitHealth(impact.at, after)).toEqual({ hp: 14, fallen: false });
+  });
+
+  it('keeps queued damage and healing ordered, delays a KO to its fall, and clears presentation state', () => {
+    const a = new Animator(CONTENT, { motionReduced: () => false });
+    const roster = [combatUnit('p0', 1, 3, 20), combatUnit('e0', 5, 3, 20)];
+    const damage: GameEvent[] = [
+      airBlast,
+      { type: 'damaged', unitId: 'e0', amount: 6, crit: false, damageType: 'air', sourceId: 'p0' },
+    ];
+    const first = choreograph({
+      content: CONTENT,
+      events: damage,
+      unitsBefore: roster,
+      cursor: 0,
+      rate: 1,
+      pushIndex: 0,
+    }).health[0];
+    if (!first) throw new Error('expected damage health timing');
+    a.push(0, damage, roster);
+
+    const healedBefore = [combatUnit('p0', 1, 3, 20), combatUnit('e0', 5, 3, 14)];
+    a.push(1, [{ type: 'healed', unitId: 'e0', amount: 4 }], healedBefore);
+    const healed = combatUnit('e0', 5, 3, 18);
+    expect(a.unitHealth(first.at, healed)).toEqual({ hp: 14, fallen: false });
+    expect(a.unitHealth(a.finishesAt, healed)).toEqual({ hp: 18, fallen: false });
+
+    const lethalBefore = [combatUnit('p0', 1, 3, 20), combatUnit('e0', 5, 3, 18)];
+    const lethal: GameEvent[] = [
+      {
+        type: 'damaged',
+        unitId: 'e0',
+        amount: 18,
+        crit: false,
+        damageType: 'pure',
+        sourceId: 'p0',
+      },
+      { type: 'unitDied', unitId: 'e0' },
+    ];
+    const lethalTiming = choreograph({
+      content: CONTENT,
+      events: lethal,
+      unitsBefore: lethalBefore,
+      cursor: a.finishesAt,
+      rate: 1,
+      pushIndex: 2,
+    }).health;
+    const empty = lethalTiming[0],
+      fallen = lethalTiming[1];
+    if (!empty || !fallen) throw new Error('expected lethal health timing');
+    a.push(2, lethal, lethalBefore);
+    const dead = combatUnit('e0', 5, 3, 0);
+    expect(a.unitHealth(empty.at, dead)).toEqual({ hp: 0, fallen: false });
+    expect(a.unitHealth(fallen.at, dead)).toEqual({ hp: 0, fallen: true });
+    a.prune(a.finishesAt + 1);
+    expect(a.unitHealth(a.finishesAt + 1, dead)).toEqual({ hp: 0, fallen: true });
+    const refreshed = combatUnit('e0', 5, 3, 7, 30);
+    expect(a.unitHealth(a.finishesAt + 1, refreshed)).toEqual({ hp: 7, fallen: false });
+    a.clear();
+    expect(a.unitHealth(0, dead)).toEqual({ hp: 0, fallen: true });
+  });
+
   it('shows every area cel before debris spends the Canvas particle budget', () => {
     for (const abilityId of ['shockwave', 'tidal_wave', 'tornado']) {
       const a = new Animator(CONTENT, { motionReduced: () => false });

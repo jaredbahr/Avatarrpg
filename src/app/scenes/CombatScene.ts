@@ -1444,26 +1444,29 @@ export class CombatScene implements Scene {
       }
     }
 
-    const units: RenderUnit[] = battle.units.map((u) => ({
-      id: u.id,
-      pos: u.pos,
-      size: u.size,
-      sprite: u.sprite,
-      name: u.name,
-      faction: u.faction,
-      hp: u.hp,
-      maxHp: u.base.maxHp,
-      statuses: u.statuses.map((s) => s.id),
-      fallen: !isAlive(u),
-      renderPos: this.app.animator.renderPos(now, u.id),
-      ...this.poseFields(
-        now,
-        u.id,
-        u.faction === 'enemy' ? -1 : 1,
-        u.faction === 'party',
-        u.sprite,
-      ),
-    }));
+    const units: RenderUnit[] = battle.units.map((u) => {
+      const health = this.app.animator.unitHealth(now, u);
+      return {
+        id: u.id,
+        pos: u.pos,
+        size: u.size,
+        sprite: u.sprite,
+        name: u.name,
+        faction: u.faction,
+        hp: health.hp,
+        maxHp: u.base.maxHp,
+        statuses: u.statuses.map((s) => s.id),
+        fallen: health.fallen,
+        renderPos: this.app.animator.renderPos(now, u.id),
+        ...this.poseFields(
+          now,
+          u.id,
+          u.faction === 'enemy' ? -1 : 1,
+          u.faction === 'party',
+          u.sprite,
+        ),
+      };
+    });
 
     // Resolved here, not in the renderer: the renderer never reads content.
     const props: RenderProp[] = battle.props.map((p) => {

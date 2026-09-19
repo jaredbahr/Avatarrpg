@@ -96,6 +96,16 @@ export interface Choreography {
   readonly sounds: readonly SoundCue[];
   /** Where the next push starts. */
   readonly cursor: number;
+  /** Health changes at the same clock positions as their hit and heal effects. */
+  readonly health: readonly HealthChange[];
+}
+
+/** A logical unit health state, delayed only for presentation. */
+export interface HealthChange {
+  readonly unitId: string;
+  readonly hp: number;
+  readonly fallen: boolean;
+  readonly at: number;
 }
 
 /** A hit that has been aimed but whose damage events are still to come. */
@@ -130,13 +140,22 @@ export function choreograph(input: ChoreographyInput): Choreography {
   const { content, events, unitsBefore, rate, pushIndex } = input;
   const tracks: AnyTrack[] = [];
   const sounds: SoundCue[] = [];
+  const health: HealthChange[] = [];
   let cursor = input.cursor;
 
   const positions = new Map<string, Vec2>();
   const sizes = new Map<string, number>();
+  const unitHealth = new Map<string, { hp: number; maxHp: number; fallen: boolean }>();
   for (const unit of unitsBefore) {
     positions.set(unit.id, unit.pos);
     sizes.set(unit.id, unit.size);
+    // Choreography fixtures that only exercise movement use partial Units;
+    // damage/heal events always come from complete reducer units.
+    unitHealth.set(unit.id, {
+      hp: unit.hp,
+      maxHp: unit.base?.maxHp ?? Math.max(0, unit.hp),
+      fallen: unit.hp <= 0,
+    });
   }
   /** Draw centre of a unit, allowing for the two-tile boss. */
   const unitCentre = (id: string): Vec2 | undefined => {
@@ -634,6 +653,14 @@ export function choreograph(input: ChoreographyInput): Choreography {
       case 'damaged': {
         const pos = positions.get(event.unitId);
         const hit = landing();
+        const before = unitHealth.get(event.unitId);
+        if (before) {
+          const hp = Math.max(0, before.hp - event.amount);
+          // A death event owns the fallen mark and its KO pose. Keeping it
+          // separate lets the empty bar land with the hit before the body falls.
+          unitHealth.set(event.unitId, { ...before, hp });
+          health.push({ unitId: event.unitId, hp, fallen: before.fallen, at: hit.at });
+        }
         // The blow landing, under whatever voice threw it. `landing()` is the
         // aimed moment when a projectile is in flight, so the sound arrives
         // with the projectile rather than with the command.
@@ -709,6 +736,13 @@ export function choreograph(input: ChoreographyInput): Choreography {
       case 'healed': {
         const pos = positions.get(event.unitId);
         const at = landing().at;
+        const before = unitHealth.get(event.unitId);
+        if (before) {
+          const hp = Math.min(before.maxHp, before.hp + event.amount);
+          const fallen = hp <= 0 ? before.fallen : false;
+          unitHealth.set(event.unitId, { ...before, hp, fallen });
+          health.push({ unitId: event.unitId, hp, fallen, at });
+        }
         cue('heal', at, 6, eventIndex);
         if (pos) {
           const { recipe, palette } = effect('fx.heal.pulse');
@@ -781,6 +815,11 @@ export function choreograph(input: ChoreographyInput): Choreography {
       case 'unitDied': {
         const pos = positions.get(event.unitId);
         const at = Math.max(cursor, landing().at + landing().hitStop);
+        const before = unitHealth.get(event.unitId);
+        if (before) {
+          unitHealth.set(event.unitId, { ...before, hp: 0, fallen: true });
+          health.push({ unitId: event.unitId, hp: 0, fallen: true, at });
+        }
         cue('ko', at, 8, eventIndex);
         if (pos) {
           const duration = TIMING.ko * rate;
@@ -881,5 +920,5 @@ export function choreograph(input: ChoreographyInput): Choreography {
   });
 
   sounds.sort((a, b) => a.at - b.at);
-  return { tracks, sounds, cursor };
+  return { tracks, sounds, cursor, health };
 }

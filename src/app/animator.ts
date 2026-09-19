@@ -20,7 +20,7 @@ import { hashSeed, mulberry32 } from '../render/fx/rng';
 import type { Projection } from '../render/projection';
 import { sampleAt } from '../render/geometry/curve';
 import { choreograph } from './anim/choreography';
-import type { SoundCue } from './anim/choreography';
+import type { HealthChange, SoundCue } from './anim/choreography';
 import { Timeline } from './anim/timeline';
 import type { MoveTrack, PoseTrack } from './anim/timeline';
 import { motionReduced } from './ui/dom';
@@ -49,6 +49,15 @@ interface HeadingCue {
   readonly at: number;
   readonly tangent: Vec2;
   readonly screenSpace?: boolean;
+}
+
+interface HealthCue extends HealthChange {
+  readonly order: number;
+}
+
+export interface UnitHealthPresentation {
+  readonly hp: number;
+  readonly fallen: boolean;
 }
 
 export interface AnimatorOptions {
@@ -102,6 +111,10 @@ export class Animator {
   private facings = new Map<string, 1 | -1>();
   private directions = new Map<string, WalkDirection>();
   private pendingHeadings: HeadingCue[] = [];
+  /** Health events wait beside the tracks which make their impact visible. */
+  private healthCues: HealthCue[] = [];
+  private settledHealth = new Map<string, UnitHealthPresentation>();
+  private healthOrder = 0;
   private pushes = 0;
   /** Unshifted batch anchor, shared by alongside pushes with independent delays. */
   private lastCursor = 0;
@@ -116,6 +129,9 @@ export class Animator {
     this.facings.clear();
     this.directions.clear();
     this.pendingHeadings = [];
+    this.healthCues = [];
+    this.settledHealth.clear();
+    this.healthOrder = 0;
     this.pushes = 0;
   }
 
@@ -166,6 +182,23 @@ export class Animator {
       silentSteps: options.silentSteps ?? options.alongside,
       projection: this.projection,
     });
+    const affected = new Set(result.health.map((change) => change.unitId));
+    // State is already the reducer's final result. Seed each affected unit at
+    // this queued batch's start so the view keeps its prior health until the
+    // choreography says the hit or heal has landed.
+    for (const unit of unitsBefore) {
+      if (!affected.has(unit.id)) continue;
+      this.healthCues.push({
+        unitId: unit.id,
+        hp: unit.hp,
+        fallen: unit.hp <= 0,
+        at: cursor,
+        order: this.healthOrder++,
+      });
+    }
+    for (const change of result.health)
+      this.healthCues.push({ ...change, order: this.healthOrder++ });
+    this.healthCues.sort((a, b) => a.at - b.at || a.order - b.order);
     for (const track of result.tracks) {
       this.timeline.add(track);
       if (track.kind === 'move' && track.gait !== 'slide')
@@ -192,7 +225,45 @@ export class Animator {
   /** Drops finished tracks. Called once a frame so memory stays flat. */
   prune(now: number): void {
     this.settleHeadings(now);
+    this.settleHealth(now);
     this.timeline.prune(now);
+  }
+
+  /**
+   * The health/fallen fields to draw at this playback instant. Rules already
+   * own the final unit state; this only holds that feedback until its existing
+   * choreography impact or heal clock.
+   */
+  unitHealth(now: number, unit: Unit): UnitHealthPresentation {
+    let presentation = this.settledHealth.get(unit.id);
+    let future: UnitHealthPresentation | undefined;
+    for (const cue of this.healthCues) {
+      if (cue.unitId !== unit.id) continue;
+      const state = { hp: cue.hp, fallen: cue.fallen };
+      if (cue.at <= now) presentation = state;
+      else if (!future) future = state;
+    }
+    return presentation ?? future ?? { hp: unit.hp, fallen: unit.hp <= 0 };
+  }
+
+  /** Promote passed health cues before pruning them, retaining the settled view. */
+  private settleHealth(now: number): void {
+    let count = 0;
+    const settled = new Set<string>();
+    for (const cue of this.healthCues) {
+      if (cue.at > now) break;
+      this.settledHealth.set(cue.unitId, { hp: cue.hp, fallen: cue.fallen });
+      settled.add(cue.unitId);
+      count++;
+    }
+    if (count === 0) return;
+    this.healthCues.splice(0, count);
+    // Once a unit has no queued feedback left, reducer state is again the
+    // presentation authority. This avoids retaining an old bar across a
+    // later rules-owned change such as a refreshed max HP.
+    for (const unitId of settled) {
+      if (!this.healthCues.some((cue) => cue.unitId === unitId)) this.settledHealth.delete(unitId);
+    }
   }
 
   /** Preserve turns even when playback skips a frame, in playback order. */
