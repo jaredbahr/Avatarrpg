@@ -309,3 +309,20 @@ PR64 remains undeployed at remote a3ade76. CI35466666097 failed the surface-touc
 CI35470531294 at729b8f6 failed the WebGL pan case on both180second attempts at Cancel. Visible button resolution succeeded; trace showed expensive software-WebGL protocol actions. Root reviewed agent96c8e5d/f8bd435 and restored the missing post-touch, pre-Cancel camera assertion before accepting the revision. Existing settleLayout, real drag/click/touch, enabled Confirm, state equality and all camera/hit checks remain. Four independent read evaluations are consolidated; no timeout or required-check change.
 
 Fresh root verification after restoration passed873tests/105files, typecheck, lint, formatting. Focused local WebKit ipad-landscape Canvas11.2s and WebGL8.9s both passed (37.0s including setup). This is local evidence; the new exact-head Linux CI remains required. The public Pages deployment remains44ed3f6/v0.1.0. Version0.2.2 product unchanged by this test-only repair.
+
+## 19 September — measured software WebGL completion allowance
+
+CI35472567192 at `fdf32e7` failed after 23 passes; 420 cases did not run and
+gallery skipped. Both traces show progress through the same real interactions,
+not a layout deadlock: setup/camera took 69–71 seconds, drag/snapshot 30–33,
+Fire Jab click 24.4, aim/tap/confirm about 26, and Cancel about 18.5. The
+180-second test deadline expired during the post-Cancel snapshot. Resize and
+recentre still remained. The page-closed error followed the test timeout.
+
+Root integrated Luna's `c0aa639` as `e1c5e01`. Only this forced-WebGL test now
+has a 300-second total allowance; helper timeouts, viewport, real input and all
+assertions remain. This is not product performance acceptance: automatic backend
+selection uses Canvas on software-rendered devices. Further read batching is
+not being substituted for the remaining camera checks. The source's local
+WebKit landscape pan suite passed all 13 cases in 1.3 minutes. Root owns fresh
+release verification and one subsequent PR push; no deployment is yet proven.
