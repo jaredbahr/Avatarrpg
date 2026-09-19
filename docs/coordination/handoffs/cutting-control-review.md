@@ -466,3 +466,11 @@ its ignored config excludes audio because both Web Audio constructors are absent
 in this Windows engine. It retains all other iPad coverage. Required Linux CI and
 repository test configuration remain unchanged. Root dist/4268 stay frozen while
 this run and the independent resize comparison use them. No deployment is claimed.
+
+Village visual review rejected the first regenerated full ground pages: both Q11
+and Q82 crops change the existing soft painted grass/stone into darker, noisy
+texture. This is a source/material difference, not a justification to lower
+quality. The neighborhood owner must preserve the shipped ground outside the
+new canal envelope, preferably with an appropriately registered canal/bank slice.
+The approved direction remains the seven-cell water/bridge neighborhood feature,
+not merely a bridge over the former small pond. No rejected ground is integrated.
