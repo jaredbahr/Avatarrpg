@@ -63,9 +63,13 @@ contradictory current-status documents.
   recorded branch or an explicit branch based on its head. Do not cherry-pick or
   replay the same implementation into multiple competing PRs.
 - Use agents for bounded independent implementation, audits or reviews when
-  useful. More agents are not an objective: avoid duplicate work and concurrent
-  large test/art jobs that exhaust the host. Prefer Astra for art and audio;
-  otherwise retain configured model settings unless the task justifies a change.
+  useful. More agents are not an objective: split only genuinely independent
+  work, avoid duplicate assignments and arbitrary worker counts, and avoid
+  concurrent large test/art jobs that exhaust the host. Use Luna by default for
+  routine bounded implementation, tests and documentation; use a stronger model
+  when the complexity warrants it. Preserve the handoff before replacing a
+  session, and stop superseded owners from editing. Prefer Astra for art and
+  audio; complex art work may still justify a stronger model.
 - On completion, verify the merge, capture remaining issues, and transfer the next
   assignment. Remove old worktrees only after confirming all useful work is saved
   and no session or process still uses them.
