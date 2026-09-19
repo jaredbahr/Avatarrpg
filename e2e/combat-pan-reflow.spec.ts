@@ -139,3 +139,20 @@ test('real viewport resize recomputes compact oblique framing', async ({ page })
   const short = await page.evaluate(() => window.fnt!.app.rendererCamera()!);
   expect(short.tilePx).toBeLessThanOrEqual(40.01);
 });
+
+test('Huge text on a tall viewport reserves the expanded decision panel', async ({ page }) => {
+  await page.setViewportSize({ width: 1368, height: 912 });
+  await resetStorage(page, '?renderer=canvas');
+  await startGame(page, ['Kaya'], ['kaya'], 'compact-frame-tall-huge');
+  await page.evaluate(() => window.fnt!.app.updateSettings({ largeText: 'huge' }));
+  await enterNode(page, 'battle_forest_road');
+  await takeTurn(page);
+  await waitForIdle(page);
+  await settleLayout(page);
+  const before = await page.evaluate(() => window.fnt!.app.rendererCamera()!);
+  expect(before.tilePx).toBeLessThanOrEqual(40.01);
+  await page.getByRole('button', { name: /^Fire Jab/ }).click();
+  await settleLayout(page);
+  const aiming = await page.evaluate(() => window.fnt!.app.rendererCamera()!);
+  expect(aiming.tilePx).toBeCloseTo(before.tilePx, 5);
+});

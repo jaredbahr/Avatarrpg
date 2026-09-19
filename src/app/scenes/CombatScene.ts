@@ -178,7 +178,12 @@ export class CombatScene implements Scene {
       const frameKey = `${window.innerWidth}x${window.innerHeight}:${this.app.settings.largeText}`;
       if (this.preferredCombatFrameKey !== frameKey) {
         this.preferredCombatFrameKey = frameKey;
-        this.preferredCombatTilePx = window.innerWidth < 600 || window.innerHeight < 840 ? 40 : 96;
+        // The action/preview panel takes a predictable slice of the first
+        // settled canvas. Reserve that slice before choosing the readable
+        // 96px frame; Huge text needs the larger allowance.
+        const hudAllowance = this.app.settings.largeText === 'huge' ? 160 : 124;
+        const decisionHeight = camera.viewport.height - hudAllowance;
+        this.preferredCombatTilePx = decisionHeight < 360 ? 40 : 96;
       }
       camera.fitExplore(this.preferredCombatTilePx ?? 96);
     } else camera.fit();
