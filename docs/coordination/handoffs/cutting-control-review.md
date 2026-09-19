@@ -117,3 +117,19 @@ units-family allocation from 4.5 to 4.75 MiB with an ADR; expected combined unit
 are 4,837,007 bytes, leaving 143,729 bytes. All other family, total precache and
 JavaScript caps stay unchanged. Runtime walking/casting review remains required
 before accepting that asset. This is not yet in the combined source above.
+
+## Driller arrival
+
+The manual `798bee8` campaign walked east using the local map route, then across
+the quarry floor to the actual Driller marker. The three-panel descent and two
+quarry narrative lines led normally into Grumbler round 1. Current live state:
+Riko 18/36, Sura 34/34, Grumbler 64/64, Riko's ready handoff still open. The
+entrance floor remains visually bare relative to the approved reference; the
+surround and individual props do not close that composition gap. An isolated
+read-only audit is comparing the exploration machine/adult proportions with
+combat before deciding whether the landmark needs a scale correction.
+
+The old root preview listener was found stopped, though the cached game remained
+playable. Root restarted the same unchanged production dist at strict 4210
+(exec session 19819, PID35916 at this checkpoint). No rebuild or save overwrite
+was performed. Both manual campaign tabs are preserved for continuing review.
