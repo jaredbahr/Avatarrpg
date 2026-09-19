@@ -28,15 +28,15 @@ one shared per-key calibration in `src/app/anim/actorScale.ts`:
 These are projected alpha-body heights, not frame heights. The broad bruiser
 remains taller and wider, and the lean slinger slightly shorter. Source pose
 silhouettes and their variation are retained. Every cel still ends at the
-same source baseline (exclusive row163), and the 0.5/0.85 anchor stays fixed.
-Matched actual96 bruiser captures show the feet at the same ground position
-while the head rises from approximately372 to346 screen pixels.
+same source baseline (exclusive row 163), and the 0.5/0.85 anchor stays fixed.
+Matched actual 96-pixel bruiser captures show the feet at the same ground position
+while the head rises from approximately 372 to 346 screen pixels.
 
 `CombatScene.poseFields` applies the multiplier to the rendered body;
 `choreography.ts` applies the same multiplier to attachment snapshots. Existing
 pose scale still multiplies both, while logical positions and ground impact
 coordinates are unchanged. `exploreMarkerScale.ts` uses that helper once:
-the Forest Road thug marker changes from1.25 to1.23 rather than multiplying
+the Forest Road thug marker changes from 1.25 to 1.23 rather than multiplying
 two corrections. Its combat and exploration versions now share the same scale.
 The helper keeps its existing call signature to avoid unrelated scene edits.
 
@@ -44,7 +44,7 @@ Grumbler, Ruon, mercenary, sergeant, deserter and party scales are unchanged.
 All PNG/JSON art, manifest entries, timing, footsteps, abilities, map geometry,
 footprint, collision and schema are unchanged. No generation or repacking.
 An initially considered pixels-per-tile calibration was rejected before edits:
-the schema intentionally accepts only128 or256. No ADR is needed for reuse of
+the schema intentionally accepts only 128 or 256. No ADR is needed for reuse of
 the existing presentation-scale contract.
 
 ## Evidence and limits
@@ -53,7 +53,7 @@ The local harness is `e2e/enemy-scale.review.ts`, configured by
 `playwright.enemy-scale.config.ts`. It fails closed on build label, backend,
 tile size, missing actors and illegal commands. Optional browser channel
 comes from `FNT_REVIEW_BROWSER_CHANNEL`; default is bundled Chromium. Local
-review used `msedge`. Port4265 is strict and the Playwright server auto-stops.
+review used `msedge`. Port 4265 is strict and the Playwright server auto-stops.
 
 Each case first captures the original Forest Road exploration entry, then
 compares five authored enemies with Sura on the actual gate/Cutting maps.
@@ -73,22 +73,24 @@ Evidence under this worktree's `.shots`:
   candidate cases, build `d0d13c7-modified`.
 - `enemy-scale-fallback/{canvas,webgl}-96-normal`: two passing cases with all
   five PNG requests deliberately aborted. Existing painter dispatch remains.
+- `enemy-scale-final-c930970/canvas-96-normal`: clean implementation commit
+  `c930970`, one passing fresh case covering all five actors and the marker.
 
 Every folder contains `source-build.png`, `forest-marker.png`, each enemy's
 `*-idle.png`, motion samples and `provenance.json` with accepted commands,
-events, actor identities, camera and sampled poses. Normal samples90/300ms
-show walking contacts;550/730ms and the recorded ending show attack/recovery.
-Reduced samples16ms/end retain the existing short motion and suppression of
+events, actor identities, camera and sampled poses. Normal samples at 90/300 ms
+show walking contacts; 550/730 ms and the recorded ending show attack/recovery.
+Reduced samples at 16 ms/end retain the existing short motion and suppression of
 particle emitters. No blank actors or page errors occurred in the matrix.
 
-Root reviewed matched Canvas96 `bruiser-idle.png` and the candidate Forest
+Root reviewed matched Canvas 96 `bruiser-idle.png` and the candidate Forest
 marker, accepting this bounded scale correction. Local review also inspected
-WebGL96 thug walking and Canvas64 quarry worker attack. Atlas cels themselves
+WebGL 96 thug walking and Canvas 64 quarry worker attack. Atlas cels themselves
 were not retouched; this does not claim improved gait or complete route art.
 The fallback painters remain visibly procedural and their older body geometry
 is larger than the illustrated art after the same multiplier (bruiser roughly
-140px at96 versus illustrated116px). Fallback checks establish functional
-visibility, equipment and contact, not matched artistic stature.
+140px at 96 versus illustrated 116px). Root reviewed that fallback and accepted
+functional visibility, equipment and contact, not matched artistic stature.
 
 Reproduce the candidate matrix in PowerShell:
 
@@ -104,15 +106,20 @@ the required CI suite. Do not start this port if another owner has reserved it.
 
 ## Checks
 
-- `npm run verify`:843 tests in102 files pass, including typecheck/lint/format.
+- `npm run verify`: 843 tests in 102 files pass, including typecheck/lint/format.
 - Focused bounds tests decode every pose, retain the baseline/contract and
   compare adult heights; choreography tests cover matching torso scale with
   unchanged logical impact and reduced-motion emitter suppression.
 - `npm run build`, `npm run art:validate`, `npm run check:assets` and
   `node scripts/check-bundle-size.mjs` pass.
-- Candidate production JS306,884 bytes gzip: +73 bytes versus306,811-byte
-  base,316 bytes under the unchanged300KiB cap. Art bytes unchanged;
-  precache17.43MiB under25MiB; units remain within4.75MiB.
+- Clean `c930970` production JS: 306,885 bytes gzip, +74 bytes versus the
+  306,811-byte base, 315 bytes under the unchanged 300 KiB cap. The preceding
+  modified-build stamp measured one byte less. Art bytes are unchanged;
+  precache is 17.43 MiB under 25 MiB; units remain within 4.75 MiB.
+
+Implementation commit: `c930970`. All review servers have stopped; port 4265
+has no listener. Ownership is released to root for integration. This final
+handoff update changes documentation only and records the clean build/capture.
 
 No general scale framework, asset-schema change, additional art allocation or
 renderer branch was introduced. Root owns integration and subsequent combined
