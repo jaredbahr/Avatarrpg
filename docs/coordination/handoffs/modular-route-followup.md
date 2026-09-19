@@ -303,3 +303,9 @@ in their separate worktrees and are excluded from this revision. Pages remains
 at v0.1.0 / `44ed3f6` until a checked merge and successful deployment are verified.
 
 PR64 remains undeployed at remote a3ade76. CI35466666097 failed the surface-touch WebGL combat-focus test after20passes;423cases did not run, gallery skipped. Downloaded trace inspection by Luna found the test reached screenshot after about66.9seconds, with battlefield coordinate assertions already passing, beyond the60second default. Root integrated74466f9 as a6e397e: WebGL-only test.slow() grants180seconds, preserving every assertion. This is a timing correction, not a claimed browser pass; bundled local Chromium is absent. Fresh npm run verify at a6e397e passed873tests105files,typecheck,lint,format. No new push yet; pwa-preload-recovery owner is preparing user-controlled recovery for observed missing lazy chunk after local service-worker update. Root reviews before integration and one combined CI run.
+
+## 19 September — final read batching repair
+
+CI35470531294 at729b8f6 failed the WebGL pan case on both180second attempts at Cancel. Visible button resolution succeeded; trace showed expensive software-WebGL protocol actions. Root reviewed agent96c8e5d/f8bd435 and restored the missing post-touch, pre-Cancel camera assertion before accepting the revision. Existing settleLayout, real drag/click/touch, enabled Confirm, state equality and all camera/hit checks remain. Four independent read evaluations are consolidated; no timeout or required-check change.
+
+Fresh root verification after restoration passed873tests/105files, typecheck, lint, formatting. Focused local WebKit ipad-landscape Canvas11.2s and WebGL8.9s both passed (37.0s including setup). This is local evidence; the new exact-head Linux CI remains required. The public Pages deployment remains44ed3f6/v0.1.0. Version0.2.2 product unchanged by this test-only repair.

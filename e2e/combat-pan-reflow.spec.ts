@@ -172,6 +172,7 @@ for (const renderer of ['canvas', 'webgl'] as const) {
     expect(aimedSnapshot.target.hitCanvas).toBe(true);
     await page.touchscreen.tap(aimedSnapshot.target.point.x, aimedSnapshot.target.point.y);
     await expect(page.getByRole('button', { name: 'Confirm', exact: true })).toBeEnabled();
+    await expectPan();
     await page.getByRole('button', { name: 'Cancel', exact: true }).click();
     const cancelledState = await expectPan();
     expect(cancelledState.state).toBe(state);
