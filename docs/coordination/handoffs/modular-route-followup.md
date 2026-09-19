@@ -1,7 +1,7 @@
 # Modular route follow-up
 
 Root owns `codex/modular-route-followup`, the unpushed v0.2.2 development batch.
-Current source checkpoint is `2bc5ba1`. Separate v0.2.1 release PR64 is at
+Current tested checkpoint is `5f80ba5`. Separate v0.2.1 release PR64 is at
 `f5a4a87`; CI `35457611402` is active. The prior run
 `35454608779` was terminal-cancelled after 116 E2E passes and a readback
 failure. The screenshot readback repair `1fdae` and root follow-ups
@@ -32,14 +32,18 @@ retaining the elevation cases.
   Source `8facaab`; browser regression covers the same interaction.
 - Root verification, production build and asset budgets pass at `c676361`; 16
   browser cases passed in 1.9 minutes before the forest integration.
-- The three focused forest tests pass. The current full combined verification
-  after forest integration is pending.
+- The three focused forest tests pass. Final combined verification at `5f80ba5`
+  passes 869 tests / 105 files, typecheck, lint, formatting, build, art validation
+  and budgets. Entry `index-ZtfeYxSW.js` is 291.84 kB gzip; maps 3.54 MiB / 4,
+  precache 17.18 MiB / 25.
 
 ## Combined evidence
 
 At `c676361`, root verification, production build and asset budgets pass; 16
-browser cases passed in 1.9 minutes before the forest integration. The current
-combined check is pending at `2bc5ba1`.
+browser cases passed in 1.9 minutes before the forest integration. After forest
+integration, Luna independently ran eight partial-ground/elevation cases plus
+both complete quarry-return routes at `5f80ba5`: 10/10 passed in 1.1 minutes,
+with a passing `.last-run.json` and test-owned preview 4302 stopped.
 
 Sixteen installed-Chrome checks passed on that production build at 1280x720:
 eight partial-ground/elevated-water cases across Canvas/WebGL, six shopfront
@@ -73,6 +77,10 @@ entry `index-B0DD_k-4.js`, gzip 291.72 kB, maps 3.53 MiB, precache 17.17 MiB.
   the current combined verification and release coordination.
 - Source quality gaps, continuous reference and motion review, audible
   listening, and physical Surface/iPad verification remain open.
+- Next visible art gap: the forest nest's world/dialogue cartoon icon does not
+  match the illustrated scene. Root owns the next bounded correction; attempts
+  to reactivate the completed art worker hit the agent thread limit, so that
+  task has not been dispatched. Luna handled routine review/docs/validation.
 
 The old root preview on 4270 and the v0.2.2 version-check tab and owned preview
 4304 were stopped after review. Preserve the manual `a3c8d49` save/reload/nest
