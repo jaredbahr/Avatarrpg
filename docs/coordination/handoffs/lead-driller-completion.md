@@ -146,3 +146,38 @@ source evidence still needs combined visual review before final delivery.
 Keep these local milestones batched. Preserve meaningful release version 0.2.1,
 required exact-head checks, merge commits, and deployment verification. No
 source milestone or legitimate boss victory closes the complete quality goal.
+
+## Latest orchestration checkpoint
+
+This checkpoint supersedes the in-progress route and source-integration statuses
+above. The normal solo route is complete through all four Ba Dan homecoming
+conversations; Slot 1 retains the Driller review and Slot 2 the completed return.
+Combined source reached `c0fa812`, with active intermediate-camera revisions.
+The reviewed surface forecasts, material treatments and exploration-overflow
+corrections are integrated. Writer `2e1bb8b` still needs explicit integration
+confirmation. The owner must incorporate all outstanding root documentation.
+
+PR64's current pushed head is `0af1530`; the owner reported required run
+`35424656782` active. The repair gives only forced-WebGL visibility tests their
+appropriate slow-test allowance. Local installed-Chrome SwiftShader checks and
+verification passed; this does not establish current remote check success.
+
+`quarry_composition` owns the quarry art in its isolated worktree. Root reviewed
+the new continuous exterior stone surround in actual WebGL gameplay: connected
+cliffs and a rear recess substantially improve the former floating-card scene.
+Both-map/backend contact and mask validation, intermediate framing and the final
+source commit remain with that owner. No final aesthetic acceptance is implied.
+
+`combat_preview` demonstrated a same-seed Water Pull setup that made Bo's Rock
+Throw legal where the no-pull comparison remained out of range. A separate legal
+Fire Step ignition followed by ally Healing Stream demonstrated risk mitigation,
+not an enemy-damage payoff. These are automated reducer scenarios, not a manual
+all-character playthrough. Its next edit is compact confirmation content in
+ReactionNote and HUD styles, coordinated with gameplay's camera ownership.
+
+`world_conversations` now owns a bounded audio lifecycle capture: actual volume,
+mute, visibility and scene transitions, using a separate production preview.
+The completed synchronized village recordings and their limits are documented
+in [the audio handoff](village-audio-capture.md). Subjective listening and physical
+device review remain unverified. Existing recordings and temporary capture files
+are preserved; redundant root preview servers have stopped.
