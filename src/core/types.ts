@@ -211,6 +211,8 @@ export interface Unit {
   readonly move: number;
   /** Unused AP carried into the next turn: 1 per turn, capped at 6 total AP. */
   readonly bankedAp: number;
+  /** Off-turn support bonus, consumed at the next activation (including a skip). */
+  readonly pendingAp: number;
 
   readonly base: UnitStats;
   readonly abilities: readonly string[];

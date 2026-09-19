@@ -128,6 +128,7 @@ export function createPartyUnit(
     ap: base.maxAp,
     move: base.maxMove,
     bankedAp: 0,
+    pendingAp: 0,
     base,
     abilities: [...abilities],
     cooldowns: {},
@@ -243,6 +244,7 @@ function createUnitFromPlacement(
     ap: stats.maxAp,
     move: stats.maxMove,
     bankedAp: 0,
+    pendingAp: 0,
     base: stats,
     abilities: [...def.abilities],
     cooldowns: {},
@@ -463,6 +465,7 @@ export function createBattle(
       ap: member.base.maxAp,
       move: member.base.maxMove,
       bankedAp: 0,
+      pendingAp: 0,
       cooldowns: {},
       statuses: [],
     });
@@ -534,6 +537,7 @@ export function absorbBattleResults(state: GameState, battle: BattleState): Unit
       statuses: [],
       cooldowns: {},
       bankedAp: 0,
+      pendingAp: 0,
       ap: fought.base.maxAp,
       move: fought.base.maxMove,
     };
@@ -548,6 +552,7 @@ export function reviveParty(party: readonly Unit[]): Unit[] {
     ap: member.base.maxAp,
     move: member.base.maxMove,
     bankedAp: 0,
+    pendingAp: 0,
     statuses: [],
     cooldowns: {},
   }));

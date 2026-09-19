@@ -50,6 +50,7 @@ import {
   incomingMultiplier,
   isAlive,
   isSkippingTurn,
+  startingAp,
 } from '../rules/stats';
 import type { SurfaceReaction } from '../rules/surfaces';
 import { applyImpact, contactEffects, paintSurface, tickSurfaces } from '../rules/surfaces';
@@ -250,9 +251,12 @@ export class BattleDraft {
 
   grantAp(unitId: string, amount: number): void {
     const unit = this.unit(unitId);
-    if (!unit || !isAlive(unit) || amount <= 0) return;
-    const cap = effectiveStats(this.content, unit).maxAp + unit.bankedAp;
-    this.replace({ ...unit, ap: Math.min(cap + amount, unit.ap + amount) });
+    if (!unit || !isAlive(unit) || !Number.isFinite(amount) || amount <= 0) return;
+    if (this.order[this.turnIndex] === unitId) {
+      this.replace({ ...unit, ap: Math.min(MAX_TOTAL_AP, unit.ap + amount) });
+    } else {
+      this.replace({ ...unit, pendingAp: Math.min(MAX_TOTAL_AP, unit.pendingAp + amount) });
+    }
   }
 
   spendAp(unitId: string, amount: number): void {
@@ -761,9 +765,10 @@ export class BattleDraft {
     const stats = effectiveStats(this.content, refreshed);
     this.replace({
       ...refreshed,
-      ap: skipping ? 0 : Math.max(0, Math.min(MAX_TOTAL_AP, stats.maxAp + refreshed.bankedAp)),
+      ap: skipping ? 0 : startingAp(this.content, refreshed),
       move: skipping ? 0 : stats.maxMove,
       bankedAp: 0,
+      pendingAp: 0,
     });
     return skipping;
   }
