@@ -39,12 +39,12 @@ The reproducibility files are retained locally under the ignored directory
 
 ## Placement candidates
 
-| Deployment | Six authored spawns | Placement result |
-|---|---|---|
-| Current | `(1,3) (3,4) (1,5) (3,6) (1,7) (3,8)` | Valid |
-| East 3 | `(4,3) (6,4) (4,5) (6,6) (4,7) (6,8)` | **Rejected:** `(6,6)` is the authored cabbage cart |
-| East 4 | `(5,3) (7,4) (5,5) (7,6) (5,7) (7,8)` | Valid |
-| East 5 | `(6,3) (8,4) (6,5) (8,6) (6,7) (8,8)` | Valid |
+| Deployment | Six authored spawns                   | Placement result                                   |
+| ---------- | ------------------------------------- | -------------------------------------------------- |
+| Current    | `(1,3) (3,4) (1,5) (3,6) (1,7) (3,8)` | Valid                                              |
+| East 3     | `(4,3) (6,4) (4,5) (6,6) (4,7) (6,8)` | **Rejected:** `(6,6)` is the authored cabbage cart |
+| East 4     | `(5,3) (7,4) (5,5) (7,6) (5,7) (7,8)` | Valid                                              |
+| East 5     | `(6,3) (8,4) (6,5) (8,6) (6,7) (8,8)` | Valid                                              |
 
 East 3 pair-only trials were mechanically runnable because their first two
 spawns avoid the cart, but it is not a valid map deployment. In standard-six
@@ -56,25 +56,25 @@ standard results were rejected as candidate evidence.
 Each cell is `wins/20, total party deaths, mean final round, Riko first enemy
 action trials/20 @ mean round`.
 
-| Pair | Current | East 4 | East 5 |
-|---|---|---|---|
-| Sura/Riko | 0/20, 40, 2.85, 0/20 | 5/20, 30, 2.75, 17/20 @ r2 | **14/20, 19, 2.95, 18/20 @ r2** |
-| Kaya/Riko | 20/20, 0, 3.00, 20/20 @ r3 | 15/20, 10, 2.75, 17/20 @ r2 | 12/20, 17, 2.55, 19/20 @ r2 |
-| Nilak/Riko | 20/20, 1, 3.05, 20/20 @ r2 | 20/20, 0, 2.35, 20/20 @ r2 | 20/20, 6, 2.50, 20/20 @ r2 |
-| Bo/Riko | 20/20, 10, 3.05, 20/20 @ r2 | 16/20, 13, 2.70, 13/20 @ r2 | 20/20, 2, 2.25, 18/20 @ r2 |
-| Tenzo/Riko | 20/20, 2, 3.10, 20/20 @ r2 | 19/20, 4, 2.15, 17/20 @ r2 | 20/20, 2, 2.20, 20/20 @ r2 |
-| Sura/Kaya | 19/20, 2, 3.00 | 17/20, 8, 2.25 | 17/20, 8, 2.30 |
-| Sura/Bo | 20/20, 6, 2.55 | 18/20, 11, 2.45 | 8/20, 28, 3.10 |
+| Pair       | Current                     | East 4                      | East 5                          |
+| ---------- | --------------------------- | --------------------------- | ------------------------------- |
+| Sura/Riko  | 0/20, 40, 2.85, 0/20        | 5/20, 30, 2.75, 17/20 @ r2  | **14/20, 19, 2.95, 18/20 @ r2** |
+| Kaya/Riko  | 20/20, 0, 3.00, 20/20 @ r3  | 15/20, 10, 2.75, 17/20 @ r2 | 12/20, 17, 2.55, 19/20 @ r2     |
+| Nilak/Riko | 20/20, 1, 3.05, 20/20 @ r2  | 20/20, 0, 2.35, 20/20 @ r2  | 20/20, 6, 2.50, 20/20 @ r2      |
+| Bo/Riko    | 20/20, 10, 3.05, 20/20 @ r2 | 16/20, 13, 2.70, 13/20 @ r2 | 20/20, 2, 2.25, 18/20 @ r2      |
+| Tenzo/Riko | 20/20, 2, 3.10, 20/20 @ r2  | 19/20, 4, 2.15, 17/20 @ r2  | 20/20, 2, 2.20, 20/20 @ r2      |
+| Sura/Kaya  | 19/20, 2, 3.00              | 17/20, 8, 2.25              | 17/20, 8, 2.30                  |
+| Sura/Bo    | 20/20, 6, 2.55              | 18/20, 11, 2.45             | 8/20, 28, 3.10                  |
 
 ## Standard roster results
 
 Values are `wins/20, total party deaths, mean final round`.
 
-| Roster / variant | Current | East 4 | East 5 |
-|---|---:|---:|---:|
-| Standard 3, normal | 20/20, 0, 3.20 | 20/20, 23, 3.30 | 20/20, 21, 3.05 |
+| Roster / variant    |         Current |          East 4 |          East 5 |
+| ------------------- | --------------: | --------------: | --------------: |
+| Standard 3, normal  |  20/20, 0, 3.20 | 20/20, 23, 3.30 | 20/20, 21, 3.05 |
 | Standard 3, bluffed | 20/20, 16, 3.95 | 15/20, 43, 4.85 | 14/20, 43, 4.50 |
-| Standard 6, normal | 20/20, 44, 3.05 | 18/20, 65, 3.00 | 20/20, 39, 2.50 |
+| Standard 6, normal  | 20/20, 44, 3.05 | 18/20, 65, 3.00 | 20/20, 39, 2.50 |
 | Standard 6, bluffed | 20/20, 23, 3.20 | 20/20, 32, 2.90 | 20/20, 59, 3.80 |
 
 ## Findings and limits
