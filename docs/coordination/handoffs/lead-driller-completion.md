@@ -46,11 +46,11 @@ validation remain unchanged. Port4239 is reserved for its runtime review.
 
 The CI repair reproduced the iPad target at screen y625.72 below the canvas's
 y617.22 edge; the action bar received the tap. Compact 64px framing placed the
-same target inside the canvas. Source `76cb60d` addresses that and Riverside
-button replacement, but remains under revision: independent review requested
-initial/changed-viewport measurement instead of resizing every reducer sync,
-bidirectional settled-layout correction and explicit tablet/manual-camera tests.
-Do not integrate the first patch as final while that revision is active.
+same target inside the canvas. Source `76cb60d` addressed that and Riverside
+button replacement. Subsequent review corrections through `ef5f1ad` restrict
+measurement to initial/changed viewports, correct settled framing in both
+directions, account for visual viewport changes and test actual tablet targets.
+Those corrections are integrated and checked in the checkpoint above.
 
 The separate visual audit identifies sparse scene composition, inconsistent
 ground detail, procedural mercenaries beside painted heroes, and sampled melee
