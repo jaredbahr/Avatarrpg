@@ -381,14 +381,17 @@ for (const renderer of ['canvas', 'webgl'] as const) {
 
     await setBattleWater(page, raised, false);
     await expect
-      .poll(async () => {
-        const restored = (await samples(page, { raised })).raised;
-        return (
-          Math.abs(restored.r - bare.r) < 12 &&
-          Math.abs(restored.g - bare.g) < 12 &&
-          Math.abs(restored.b - bare.b) < 12
-        );
-      })
+      .poll(
+        async () => {
+          const restored = (await samples(page, { raised })).raised;
+          return (
+            Math.abs(restored.r - bare.r) < 12 &&
+            Math.abs(restored.g - bare.g) < 12 &&
+            Math.abs(restored.b - bare.b) < 12
+          );
+        },
+        { timeout: readbackTimeout },
+      )
       .toBe(true);
     expect(wet.b).toBeGreaterThan(bare.b + 12);
 
