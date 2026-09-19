@@ -51,3 +51,31 @@ real paired play before accepting a tuning change. Do not increase global move,
 weaken slingers, change XP or expand the ability system to hide a layout problem.
 
 No pacing or balance change is included in PR64's frozen v0.2.1 revision.
+
+## Paired local screen of a closer deployment
+
+An in-memory candidate shifted only forest party spawns six cells east, retaining
+the row pattern. Source content was not edited. The existing legal-command
+`runCombat` simulator compared current/candidate layouts for all three variants,
+solo Riko, Sura/Riko, and the standard three/six-character parties: 20 paired
+seeds per row (`pacing-paired-0` through `19`), 480 fights total. No anomalies.
+All sampled fights won; this small selected sample is not all-party balance proof.
+
+| Roster / variant          | First party ability round, current → candidate | Party deaths, current → candidate |
+| ------------------------- | ---------------------------------------------- | --------------------------------- |
+| Solo Riko / slingers      | 3 → 2                                          | 0 → 0                             |
+| Sura/Riko / slingers      | 2 → 1                                          | 0 → 0                             |
+| Standard three / slingers | 2 → 1                                          | 0 → 0.45                          |
+| Standard six / thugs      | 1.25 → 1                                       | 0.8 → 1.5                         |
+| Standard six / bruisers   | 1 → 1                                          | 0.15 → 0.6                        |
+
+Values are means. “First party ability” includes any ability, so this is only
+an approach proxy, not a measure of interesting decisions or individual Riko
+turns. Earlier engagement can increase casualties even when every fight wins.
+Do not accept the naive six-cell shift. Review cover, spread and the actual
+exploration-to-combat transition before proposing an authored placement.
+The local probe and full results remain in `.shots/pacing/probe.ts` and
+`.shots/pacing/paired-results.json` in the pacing-review worktree.
+
+Variant introduction helper `1561cf9` has 29 focused story/variant tests passing.
+CombatScene tip integration remains with the camera owner as a separate commit.
