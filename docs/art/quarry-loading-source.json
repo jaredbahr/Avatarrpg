@@ -1,0 +1,15 @@
+{
+  "date": "2026-09-19",
+  "tool": "Built-in OpenAI image generation",
+  "intent": "Original project scenery, one generation; no subsequent pixel correction",
+  "generatedFile": "C:/Users/Jared/.codex/generated_images/01a0b832-53b3-7b82-abe3-06487e40cd0d/exec-36901b54-033a-4ca3-8c26-c9a2e56beffe.png",
+  "source": "assets/reference/quarry-loading/source.png",
+  "sha256": "8a24e38a42ba82e58198ec5f9936f332d54985ae8fb806915caf339497c7fc75",
+  "inputImages": [],
+  "inspectedReferences": [
+    "assets/reference/player-view-2026-09-17/quarry-battle.png",
+    "public/art/maps/quarry-surround/east.webp",
+    "public/art/maps/driller-floor-scene/exterior-rim.webp"
+  ],
+  "prompt": "Use case: stylized-concept. Create ONE original transparent-background game scenery asset, a shallow old limestone quarry loading ledge, isolated on genuine alpha. This is a single coherent environmental strip, not a collection of icons. Elevated three-quarter oblique camera, parallel projection, NO perspective convergence. Long axis runs diagonally from upper-left to lower-right with precise ground slope +0.5 (640 pixels right,320 pixels down); short axis runs down-left with slope -0.5. Physical footprint is FIVE units long and ONE unit deep, very narrow. A pair of short, dull dark-iron loading rails is embedded in worn brown timber sleepers on a low cream/ochre stone shelf; both ends visibly stop at fixed low timber/stone buffers, so it is a closed disused loading stub, not a railway route continuing off the image. A restrained continuous bank of cut limestone offcuts and dark timber cribbing is integrated along the far/rear edge of this same shelf. Offcuts are fixed in the bank, not separate collectible crates or tactical cover props. Maximum upright relief is three-quarters of ONE unit; keep everything LOW and SHALLOW. The overall ground footprint is a long thin parallelogram, not a large diamond platform. Materials and style: warm hand-painted cel illustration with thin warm dark-brown ink contours, controlled cream/tan/ochre stone with two-tone cut planes, weathered brown timber and muted blue-grey iron, sparse olive moss in cracks, softly sunlit upper-left. Calm medium contrast, readable when the five-unit assembly is 400-600px wide in a game. No sky, surrounding landscape, floor outside the exact narrow shelf, diffuse shadow halo, background color, labels, text, grid or watermark. No people, carts, vehicles, hoists, cranes, machines, buildings, arches, doors, stairs, open passages, freestanding barrels or boxes. Do not imitate any franchise asset. Composition: generous transparent padding all sides; show entire source uncropped. The visible strip should extend along the diagonal across most of a landscape canvas. Make the transparent alpha real, not a checkerboard painting."
+}
