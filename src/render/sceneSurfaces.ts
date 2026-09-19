@@ -10,6 +10,7 @@ export function surfaceIsPainted(
 ): boolean {
   if (!ready || view.hatch || view.crispOverlays || !tile.surface || tile.surface.duration >= 0)
     return false;
+  if (view.scene?.groundMode === 'partial') return false;
   if (tile.surface.id === 'water') return view.scene?.paintedWater === true;
   return (
     tile.surface.id === 'rubble' &&

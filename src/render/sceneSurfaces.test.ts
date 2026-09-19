@@ -7,9 +7,14 @@ it('replaces only registered permanent rubble and restores all dynamic/accessibi
   const pos = { x: 7, y: 3 };
   const tile = tileAt(buildGrid(FOREST_ROAD), pos);
   if (!tile) throw new Error('Missing authored cover');
-  const view = { scene: FOREST_ROAD.scene, hatch: false, crispOverlays: false };
+  const scene = FOREST_ROAD.scene;
+  if (!scene) throw new Error('Missing authored scene');
+  const view = { scene, hatch: false, crispOverlays: false };
   expect(tile.surface?.id).toBe('rubble');
   expect(surfaceIsPainted(view, true, tile, pos)).toBe(true);
+  expect(
+    surfaceIsPainted({ ...view, scene: { ...view.scene, groundMode: 'partial' } }, true, tile, pos),
+  ).toBe(false);
   expect(surfaceIsPainted(view, false, tile, pos)).toBe(false);
   expect(surfaceIsPainted({ ...view, hatch: true }, true, tile, pos)).toBe(false);
   expect(surfaceIsPainted({ ...view, crispOverlays: true }, true, tile, pos)).toBe(false);

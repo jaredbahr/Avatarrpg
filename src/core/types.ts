@@ -661,6 +661,8 @@ export interface SceneScenery extends SceneImage {
 export interface MapScene {
   /** Ground art includes the permanent water cells and their banks. Dynamic surfaces still draw. */
   readonly paintedWater?: boolean;
+  /** Partial ground art does not claim coverage of any permanent surface. */
+  readonly groundMode?: 'partial';
   /** Exact cells whose permanent rubble is already represented by registered art. */
   readonly paintedRubble?: readonly Vec2[];
   readonly ground: readonly SceneImage[];

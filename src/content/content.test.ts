@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { CONTENT, CONTENT_BUNDLE, STORY_ENTRY } from './index';
-import { validateContent } from './schemas';
+import { mapSchema, validateContent } from './schemas';
 import { ELEMENTS } from './elements';
 import { resolveAsset } from './assets/manifest';
 import { combinedKit } from '../core/rules/leveling';
@@ -11,6 +11,21 @@ import { createGame } from '../core/state/createGame';
  * misspelled ability id fails here rather than stranding a family mid-session.
  */
 describe('content', () => {
+  it('accepts partial ground mode and rejects other ground modes', () => {
+    const source = CONTENT_BUNDLE.maps.find((map) => map.scene);
+    if (!source?.scene) throw new Error('Missing scene map');
+    const partial = mapSchema.safeParse({
+      ...source,
+      scene: { ...source.scene, groundMode: 'partial' },
+    });
+    expect(partial.success).toBe(true);
+    const invalid = mapSchema.safeParse({
+      ...source,
+      scene: { ...source.scene, groundMode: 'complete' },
+    });
+    expect(invalid.success).toBe(false);
+  });
+
   it('passes shape and cross-reference validation', () => {
     const problems = validateContent(CONTENT_BUNDLE);
     expect(problems, `\n${problems.join('\n')}\n`).toEqual([]);
