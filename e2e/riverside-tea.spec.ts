@@ -3,7 +3,11 @@ import { groundPoint } from './projection';
 import { enterNode, resetStorage, settleLayout, startGame, waitForIdle } from './helpers';
 
 for (const backend of ['canvas', 'webgl']) {
-  test(`tea holds on the porch and yields to walking and forms (${backend})`, async ({ page }) => {
+  test(`tea holds on the porch and yields to walking and forms (${backend})`, async ({
+    page,
+    browserName,
+  }) => {
+    if (backend === 'webgl' && browserName === 'webkit') test.slow();
     // Install before navigation so setup runs on the real clock; pause only
     // once the normal-motion tea pose is ready for the deterministic cel check.
     await page.clock.install();
@@ -60,10 +64,13 @@ for (const backend of ['canvas', 'webgl']) {
     const now = await page.evaluate(() => Date.now());
     // Leave room for the browser round trip before freezing the clock.
     await page.clock.pauseAt(now + 30_000);
+    // Publish the held frame before measuring the four-second cel interval.
+    await page.clock.runFor(17);
     const hold = await teaPortrait();
     // The authored tea clip has two cels at 0.25 fps: exactly four seconds
     // reaches the opposite cel without depending on wall-clock scheduling.
-    await page.clock.fastForward(4000);
+    // Run the full interval through RAF so WebKit publishes the opposite cel.
+    await page.clock.runFor(4000);
     expect((await teaPortrait()).equals(hold)).toBe(false);
     await expect(stage).toHaveAttribute('data-tea-actors', '2');
     await test

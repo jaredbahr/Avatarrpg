@@ -41,11 +41,16 @@ for (const renderer of ['canvas', 'webgl']) {
     await enterNode(page, 'village_explore');
     await settleLayout(page);
     await page.clock.pauseAt(Date.now() + 30_000);
+    // Publish the frozen map frame before dispatching synthetic touch input.
+    await page.clock.runFor(17);
     await tapPath(page, 9, 7);
+    // A paused WebKit RAF needs one deterministic tick to publish feedback.
+    await page.clock.runFor(17);
     await expect(page.getByRole('button', { name: /^Talk/ })).toBeDisabled();
     await expect(page.locator('.map-wrap .walk-feedback')).toHaveCount(0);
     await expect(page.locator('.explore-context .walk-feedback')).toBeVisible();
     await tapPath(page, 7, 8);
+    await page.clock.runFor(17);
     await expect(page.locator('.walk-feedback')).toContainText('Next:');
     expect(await page.evaluate(() => window.fnt?.app.state?.location.pos)).toEqual({ x: 9, y: 7 });
     await page.clock.resume();
@@ -67,8 +72,11 @@ test('cancel and pause discard queued walking without teleporting the current wa
   await enterNode(page, 'village_explore');
   await settleLayout(page);
   await page.clock.pauseAt(Date.now() + 30_000);
+  await page.clock.runFor(17);
   await tapPath(page, 9, 7);
+  await page.clock.runFor(17);
   await tapPath(page, 7, 8);
+  await page.clock.runFor(17);
   await page.getByRole('button', { name: 'Cancel next walk' }).dispatchEvent('click');
   await expect(page.locator('.walk-feedback')).toContainText('Following the path');
   await tapPath(page, 7, 8);
