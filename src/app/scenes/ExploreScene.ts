@@ -37,15 +37,13 @@ import { TravelJournal } from '../ui/TravelJournal';
 import { showGridLines } from '../storage/localSaves';
 import { NextWalk, previewWalk } from '../world/walking';
 import type { WalkPreview } from '../world/walking';
+import { nearbyExploreTarget } from '../world/guidance';
 import { NearbyPlaces } from '../ui/NearbyPlaces';
 import { LocalMap, LocalMapDialog } from '../ui/LocalMap';
 import { courtyardEnvironment } from '../audio/environment';
 import { partyScale } from '../anim/actorScale';
 import { worldConversationFor } from '../../content/story/presentations';
 import { conversationPanel } from '../ui/ConversationPanel';
-
-/** How far Talk reaches, in tiles: across the square, not across the village. */
-const TALK_RANGE = 3;
 
 export class ExploreScene implements Scene {
   readonly name = 'explore';
@@ -511,18 +509,26 @@ export class ExploreScene implements Scene {
     const row = el('div', { class: 'action-row' });
 
     const moving = this.hudMoving;
-    const npc = moving ? null : this.nearestNpc(state.location.pos);
-    const inspect = npc?.sprite.startsWith('world.') ?? false;
+    const target =
+      moving || !this.map ? null : nearbyExploreTarget(this.app.content, this.map, state);
+    const exit = target?.kind === 'exit' ? target : null;
+    const npc = target?.kind === 'npc' ? target.npc : null;
+    const inspect = target?.kind === 'npc' ? target.inspect : false;
     const context = el(
       'div',
       { class: 'explore-context' },
-      mark(npc ? UI_MARKS.talk : UI_MARKS.move),
+      mark(exit || !npc ? UI_MARKS.move : UI_MARKS.talk),
       el('strong', {
-        text: npc ? `${inspect ? 'Inspect' : 'Speak with'} ${npc.name}` : 'Tap a path to move',
+        text: exit
+          ? `Walk to ${exit.destination}`
+          : npc
+            ? `${inspect ? 'Inspect' : 'Speak with'} ${npc.name}`
+            : 'Tap a path to move',
       }),
       el('span', {
         class: 'tiny muted',
         text:
+          exit?.exit.label ??
           this.atGate() ??
           (npc
             ? `Tap ${inspect ? 'Inspect' : 'Talk'}, or choose another path.`
@@ -533,18 +539,26 @@ export class ExploreScene implements Scene {
     if (this.feedback) context.appendChild(this.feedback);
     this.updateWalkFeedback();
     hud.appendChild(context);
-    const talk = button(inspect ? 'Inspect' : 'Talk', () => this.talkTo(npc), {
-      class: 'action-button',
-      disabled: !npc,
-      title: npc
-        ? `Walk over and ${inspect ? 'inspect' : 'talk to'} ${npc.name}`
-        : 'Nobody is close enough to talk to',
-    });
-    talk.prepend(mark(UI_MARKS.talk));
-    talk.appendChild(
-      el('span', { class: 'action-sub', text: moving ? 'Walking' : (npc?.name ?? 'No one near') }),
+    const primary = exit
+      ? button('Walk', () => this.requestWalk(exit.exit.pos), {
+          class: 'action-button',
+          title: `Walk to ${exit.destination}`,
+        })
+      : button(inspect ? 'Inspect' : 'Talk', () => this.talkTo(npc), {
+          class: 'action-button',
+          disabled: !npc,
+          title: npc
+            ? `Walk over and ${inspect ? 'inspect' : 'talk to'} ${npc.name}`
+            : 'Nobody is close enough to talk to',
+        });
+    primary.prepend(mark(exit ? UI_MARKS.move : UI_MARKS.talk));
+    primary.appendChild(
+      el('span', {
+        class: 'action-sub',
+        text: moving ? 'Walking' : (exit?.destination ?? npc?.name ?? 'No one near'),
+      }),
     );
-    row.appendChild(talk);
+    row.appendChild(primary);
 
     const look = button(
       'Look around',
@@ -627,25 +641,6 @@ export class ExploreScene implements Scene {
           host.querySelector<HTMLElement>('.choice-option:not([disabled])') ??
           panel);
     target?.focus({ preventScroll: true });
-  }
-
-  /** The villager nearest the leader within Talk's reach, if any. */
-  private nearestNpc(from: Vec2): NpcDef | null {
-    const state = this.app.state;
-    if (!state || !this.map) return null;
-    let best: NpcDef | null = null;
-    let nearest = TALK_RANGE + 1;
-    let proximity = Infinity;
-    for (const npc of visibleNpcs(this.map, state)) {
-      const gap = distance(from, npc.pos);
-      const groundGap = Math.hypot(from.x - npc.pos.x, from.y - npc.pos.y);
-      if (gap < nearest || (gap === nearest && gap <= TALK_RANGE && groundGap < proximity)) {
-        best = npc;
-        nearest = gap;
-        proximity = groundGap;
-      }
-    }
-    return best;
   }
 
   private talkTo(npc: NpcDef | null): void {

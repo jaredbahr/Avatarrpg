@@ -41,7 +41,7 @@ export const ACT1_NODES: readonly StoryNode[] = [
     objectiveVariants: [
       {
         when: { kind: 'visited', nodeId: 'mira_intro' },
-        text: 'Thank Elder Mira, then take the east road to the quarry.',
+        text: 'Take the east road to the quarry. You can speak with the neighbors before you leave.',
         objectiveNpcId: null,
       },
     ],
