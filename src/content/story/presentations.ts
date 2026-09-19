@@ -45,6 +45,9 @@ const NPC_PRESENTATIONS: readonly (readonly [string, string])[] = [
   ['forest_dema_again', 'forest_road'],
   ['dema_home', 'forest_road'],
 
+  // The watch speaks at the gate before the party chooses its approach.
+  ['gate_parley', 'quarry_gate'],
+
   // The cutting.
   ['cutting_tea', 'ambush_road'],
   ['cutting_tea_again', 'ambush_road'],
