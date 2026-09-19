@@ -100,8 +100,8 @@ live branches and checks before editing; older assignments are historical.
 | ---------------------------- | --------- | ------------------------------------------------------------------------------------------------- |
 | PR64 release v0.2.1          | Root      | `749fe3d`, OPEN, auto-merge configured; current-head CI `35454608779` active at this checkpoint   |
 | Modular route integration    | Root      | `codex/modular-route-followup`; tested product `b5a5435`, later release sampling repair `3ab0aca` |
-| Western village approach     | Terra     | New local ground region matching existing courtyard materials; preserve water, grid and scenery   |
-| New elevation browser test   | Terra     | Bounded software-WebGL input robustness; no product or release-branch changes                     |
+| Village ground completion    | Terra     | Western approach integrated; coherent remaining lawn/house-court/east regions, preserving the map |
+| Cutting and Driller ground   | Terra     | Local material regions; decoded coverage and actual scene review before integration              |
 | Forest raised-bank art       | Art owner | Illustrated shelf material/scenery matching forest; no geometry or renderer changes               |
 | Combined review and delivery | Root      | Route, reference, motion and listening review; merge/deployment after required checks             |
 

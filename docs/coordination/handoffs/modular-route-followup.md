@@ -34,7 +34,9 @@ passed 860 tests and six focused browser cases before that one checked push.
   96px: the paved grass shoulders and dark diagonal join are corrected.
   Seven focused Ba Dan tests pass in integration; map assets are 3.42 MiB / 4
   after removing two unused complete-map ground pages. Combined rebuild and
-  full verification remain pending the remaining art batch.
+  visual route review remain pending the remaining art batch. Root's full
+  `npm run verify` at `2dbf064` passed 865 tests / 104 files, typecheck, lint
+  and formatting.
 
 ## Combined evidence
 
@@ -58,14 +60,23 @@ Inline screenshots were reviewed but not saved as standalone artifacts.
 ## Live assignments and open gaps
 
 - Terra `partial_ground_validation`: local material regions for Cutting and
-  Driller, with existing surroundings, walls, props and grid preserved. The
-  earlier new-elevation input test correction is integrated as `b247685`.
-- Terra `conversation_ci_repair`: western Ba Dan approach completed and
-  integrated after source `cdf9e49` capture review. Owned preview stopped.
+  Driller, with existing surroundings, walls, props and grid preserved. Sources
+  `54e2046`, `0154561`, `ffecaf1` remain unintegrated. Decoded dry centers and
+  fractional shared boundaries now have coverage tests; dynamic cell centers
+  remain transparent. Root's Cutting Canvas review found obvious mirrored
+  dirt/stone patterns. Complete Driller captures and material correction are
+  required. The capture harness's nonexistent `battle_quarry_floor` node was
+  corrected to actual `battle_grumbler`; incomplete captures are not acceptance.
+- Terra `conversation_ci_repair`: western approach integrated after source
+  `cdf9e49` review. New isolated assignment from `2dbf064`: coherent northwest
+  lawn, eastern approach and north/south house-court material coverage using
+  verified tracked swatches. Verify actual bounds; preserve grid and scenery.
 - Art `world_conversations`: isolated forest raised-shelf material/scenery pass;
   preserve the actual six elevated cells and keep exit (19,4) clear. The original
   eight-cell proposal overcounted (18,2) and (18,6); authoritative map rows and
   the focused test caught this before integration. No renderer/rules edits.
+  Root rejected an initial packed image with vertical sampling streaks and
+  flat-color patches; corrected packing and actual scene review remain open.
 - Root: integration, visual review, versioned releases, required CI and deployment.
 
 The old root preview on 4270 was positively identified and stopped. The v0.2.2
