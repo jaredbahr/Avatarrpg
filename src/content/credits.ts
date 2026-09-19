@@ -180,6 +180,15 @@ export const CREDITS: readonly CreditEntry[] = [
     covers: ['art/maps/quarry-gate-scene'],
     note: 'Original generated materials packed through authoritative map-cell masks, with separate transparent timber and wall pieces. The initial wholeplate was rejected for semantic drift. Prompts, provenance and repair notes: docs/art/quarry-gate-registration.md; weathered material refresh: docs/art/quarry-gate-material-pass.md. Output terms: https://openai.com/policies/row-terms-of-use/. No exclusive copyright in generated output is claimed.',
   },
+  {
+    what: 'The quarry exterior rim atlases',
+    work: 'Cutting and driller-floor rim textures',
+    authors: 'This project, generated with OpenAI image generation',
+    licence: 'own work',
+    source: '',
+    covers: ['art/maps/cutting-scene', 'art/maps/driller-floor-scene'],
+    note: 'Original generated rim candidates packed as transparent map overlays. Registration and review: docs/art/exterior-quarry-rim-candidate-registration.md and docs/coordination/handoffs/quarry-southwest-structure.md. Output terms: https://openai.com/policies/row-terms-of-use/. No exclusive copyright in generated output is claimed.',
+  },
   ...THIRD_PARTY_CREDITS,
   {
     what: 'The app icons',

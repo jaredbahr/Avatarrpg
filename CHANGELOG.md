@@ -1,5 +1,10 @@
 # Changelog
 
+## 0.2.1 — local combined preview
+
+- Combine the accepted quarry route guidance, truthful combat previews, return discoveries, driller copy, and quarry rim and paving source assets.
+- Preserve manual combat camera framing through HUD and log reflows while retaining the oblique exploration view.
+
 ## 0.2.0 — pending release
 
 - Add registered oblique Forest Road and Quarry Gate scenes, including a connected western gatehouse with shared cutaway and missing-art fallback.
