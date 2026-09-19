@@ -203,11 +203,15 @@ export class CombatScene implements Scene {
     if (!camera) return;
     this.manualCamera = false;
     if (camera.projection === 'oblique') {
-      // Key off the browser viewport and text setting, then use the first
-      // settled canvas height to account for the full decision dock. HUD
-      // panels change the latter during aim mode, while rotation and
-      // accessibility settings are genuine framing changes.
-      const frameKey = `${window.innerWidth}x${window.innerHeight}:${this.app.settings.largeText}`;
+      // Key off both the layout and visual viewports and the text setting,
+      // then use the first settled canvas height to account for the full
+      // decision dock. iOS toolbars can change the visual viewport while the
+      // layout viewport stays put; HUD panels change only the canvas during
+      // aim mode and must keep the player's framing.
+      const visualViewport = window.visualViewport;
+      const visualWidth = Math.round(visualViewport?.width ?? window.innerWidth);
+      const visualHeight = Math.round(visualViewport?.height ?? window.innerHeight);
+      const frameKey = `${window.innerWidth}x${window.innerHeight}:${visualWidth}x${visualHeight}:${this.app.settings.largeText}`;
       const hudAllowance = this.app.settings.largeText === 'huge' ? 220 : 200;
       const decisionHeight = camera.viewport.height - hudAllowance;
       const compact = decisionHeight < 360;
