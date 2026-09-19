@@ -46,13 +46,34 @@ settling. Both actors and the full landing remain visible. Reduced motion was
 functionally checked separately; detailed reduced-motion frame review is not
 claimed. The recordings do not include audio.
 
-One confirmed defect remains: the target's health bar updates to its final
+The baseline exposed a confirmed defect: the target's health bar updates to its final
 damaged value during wind-up/flight, before contact. Canvas 8.4s clearly shows
 the air projectile midway to the already-yellow target bar. Both normal
 sequences exhibit this. `CombatScene` supplies immediate reducer `u.hp` to the
 render view, so choreography does not yet time world-health feedback. Root
 assigned the bounded presentation fix to Terra in `codex/impact-health-timing`,
-starting from `5b94101`. Rules and saved health must remain immediate and correct.
+starting from `5b94101`.
+
+## Correction and after review
+
+Terra's `d5a840f` is integrated as `61991a9`; test follow-up `88243b6` is
+integrated as `752dd49`. World-unit HP and fallen presentation now follow
+existing choreography damage/heal/KO timestamps. Reducer health, AI, saves,
+events, FX timing and HUD remain unchanged. Queued intermediate health is
+retained only while future cues remain; pruning then restores rule-state
+authority. Tests cover normal/reduced impact, queued damage/heal, lethal KO,
+reset and fallback, and compare health timing to the existing hit-flash track.
+
+Root built product `61991a9` (`index-Bu-fwWde.js`, 292.30 kB gzip) and repeated
+the four legal capture cases at source `752dd49` (test-only difference): 4/4
+passed in 32.3 seconds. The root follow-up worktree retains before/after and
+event metadata in `.shots/air-displacement/752dd49`, videos in the adjacent
+`results` directory, and independently decoded full-size PNGs. Canvas at 8.4s
+shows full green target HP during flight; 8.8s shows damage and the pushed
+landing. WebGL at 9.1s shows green during flight, and 9.3s shows yellow at
+contact. Root inspected these frames and the final landing. This closes the
+observed early world-health feedback defect; no broad roster/audio/device
+acceptance is inferred. Preview 4319 terminated with the test run.
 
 Existing elemental sampled evidence remains separately documented in
 `elemental-motion-review.md`; this review adds real-time legal push playback

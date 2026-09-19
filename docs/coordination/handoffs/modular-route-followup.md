@@ -1,8 +1,13 @@
 # Modular route follow-up
 
 Root owns `codex/modular-route-followup`, the unpushed v0.2.2 development batch.
-Current tested product checkpoint is `fa9df5e`. Separate v0.2.1 release PR64 is at
-`f5a4a87`; CI `35457611402` is active. The prior run
+Current fully verified source is `41288cf`: 872 tests / 105 files, typecheck,
+lint and formatting pass. Health timing is integrated at `61991a9` with test
+follow-up `752dd49`. Separate v0.2.1 release PR64 is at
+`41b2d9d`; CI `35460361910` is active. Run `35457611402` is terminal-cancelled:
+144 E2E passes followed by the same tea screenshot assertion failing twice.
+Clock-controlled tea sampling and serial gallery gating are integrated here too.
+The earlier run
 `35454608779` was terminal-cancelled after 116 E2E passes and a readback
 failure. The screenshot readback repair `1fdae` and root follow-ups
 `1dfbbc0`/`2bc5ba1` are integrated; a minor comment conflict was resolved while
@@ -44,6 +49,14 @@ retaining the elevation cases.
   precache 17.18 MiB / 25.
 
 ## Combined evidence
+
+At `41288cf`, full root verification passes 872 tests / 105 files. Product build
+`61991a9` (later changes are tests, CI and docs) passes with entry
+`index-Bu-fwWde.js`, 292.30 kB gzip; asset budget is 17.25 MiB / 25.
+All four normal/reduced Canvas/WebGL legal Air Blast cases pass in 32.3 seconds,
+and independent video frames confirm green HP in flight, changed HP at contact.
+The earlier 10 full-route/surface and two nest-discovery checks remain scoped to
+their recorded heads below; they are not represented as newly repeated.
 
 At `fa9df5e`, root `npm run verify` passes 869 tests / 105 files, typecheck,
 lint and formatting after adding required nest artwork credits. Build passes:
@@ -95,11 +108,14 @@ entry `index-B0DD_k-4.js`, gzip 291.72 kB, maps 3.53 MiB, precache 17.17 MiB.
 - The forest nest correction is integrated and visually reviewed. Luna handled
   packaging and validation; root generated and reviewed the image. The dialogue
   uses party portraits and needed no portrait change.
-- Terra left an unexecuted draft `e2e/air-displacement.review.ts` in isolated
-  `codex/air-displacement-review` and has stopped. It does not yet verify target
-  legality or actual sample timing, so root has not accepted it as evidence.
-  The next motion task is a legal Air Blast capture through displacement and
-  recovery; existing gallery staging alone does not prove actual reducer play.
+- Root completed the legal Air Blast capture and found early health-bar feedback.
+  Terra's impact-timing fix is integrated and visually verified in both backends;
+  all four normal/reduced legal-action captures pass. The permanent opt-in harness
+  and [motion handoff](legal-air-motion-review.md) preserve commands and evidence.
+- All bounded workers are completed. Root owns final combined verification and
+  PR64 delivery. The next environment gap remains the sparse forest composition
+  and geometric pond bank; scenery should support the existing discovery story
+  while keeping runtime water and logical terrain authoritative.
 
 The old root preview on 4270 and the v0.2.2 version-check tab and owned preview
 4304 were stopped after review. Preserve the manual `a3c8d49` save/reload/nest

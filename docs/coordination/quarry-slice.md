@@ -98,11 +98,11 @@ live branches and checks before editing; older assignments are historical.
 
 | Assignment                      | Owner             | Boundary                                                                                        |
 | ------------------------------- | ----------------- | ----------------------------------------------------------------------------------------------- |
-| PR64 release v0.2.1             | Root              | `f5a4a87`, OPEN, merge-commit auto-merge configured; CI `35457611402` active at this checkpoint |
-| Modular route integration       | Root              | `codex/modular-route-followup`; fully checked product and nest credits `fa9df5e`                |
+| PR64 release v0.2.1             | Root              | `41b2d9d`, OPEN, merge-commit auto-merge configured; CI `35460361910` active at this checkpoint |
+| Modular route integration       | Root              | `codex/modular-route-followup`; verification passes 872 tests at `41288cf`                      |
 | Village and quarry ground       | Completed sources | Integrated and reviewed; source owners have stopped editing                                     |
 | Forest raised-bank and nest art | Root              | Integrated; source captures reviewed on Canvas/WebGL, no geometry changes                       |
-| Air displacement motion review  | Root              | Terra draft in isolated `codex/air-displacement-review`; execution and review pending           |
+| Air displacement motion review  | Root              | Legal continuous capture complete; early HP feedback fixed and reviewed on Canvas/WebGL         |
 | Combined review and delivery    | Root              | Route, reference, motion and listening review; merge/deployment after required checks           |
 
 The [modular route handoff](handoffs/modular-route-followup.md) records current
@@ -112,11 +112,11 @@ quarry-return routes. Prior `c676361` also passed six shopfront/follower cases.
 Production build and asset budgets pass. The nest addition `fc1a9bd` passes
 both Canvas/WebGL discovery/revisit checks. This follow-up is not part of PR64.
 
-PR64's separate release passes 860 verification tests and six focused
-software-WebGL/Canvas ground checks at `f5a4a87`. Previous CI `35454608779`
-failed a 10-second predicate while its first software screenshot took 24 seconds;
-its gallery was cancelled. The current revision aligns WebGL predicate budgets
-with screenshot budgets and reuses passing samples without weakening assertions.
+PR64's separate release passes 860 verification tests at `41b2d9d`, plus three
+tea cases in Chrome and explicit SwiftShader. CI `35457611402` passed 144 cases
+before a repeating tea-pose comparison failed; its remaining gallery was cancelled.
+The fixture now compares frozen-clock images one authored cel interval apart.
+Gallery remains required but waits for E2E success, conserving capture minutes.
 Current-head CI still determines merge eligibility; no deployment is claimed.
 
 The earlier [playthrough handoff](handoffs/cutting-control-review.md) preserves
