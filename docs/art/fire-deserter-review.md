@@ -1,4 +1,4 @@
-# Fire Nation Deserter source checkpoint
+# Fire deserter source checkpoint
 
 Base `380b3b5`, isolated branch `codex/fire-deserter-art`. This is a review source,
 not an integrated runtime replacement. No manifest, shipped art, budget, renderer,
