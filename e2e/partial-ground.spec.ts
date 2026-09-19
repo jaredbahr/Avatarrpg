@@ -156,21 +156,40 @@ async function setBattleWater(page: Page, pos: Pos, present: boolean): Promise<v
   );
 }
 
-/** Pan the real camera until the target cell is safely sampleable. */
+/**
+ * Pan through the canvas pointer adapter using one coherent DOM geometry read.
+ * `samples()` still checks that the resulting target is within canvas bounds.
+ */
 async function focusTile(page: Page, pos: Pos): Promise<void> {
-  const canvas = page.locator('.map-canvas');
-  const box = await canvas.boundingBox();
-  if (!box) throw new Error('Map canvas has no bounding box');
-  const point = await tileCentres(page, { target: pos });
-  const target = point.target;
-  if (!target) throw new Error('Target tile has no screen point');
-  const start = { x: box.x + box.width / 2, y: box.y + box.height / 2 };
-  await page.mouse.move(start.x, start.y);
-  await page.mouse.down();
-  await page.mouse.move(start.x + box.width / 2 - target.x, start.y + box.height / 2 - target.y, {
-    steps: 8,
-  });
-  await page.mouse.up();
+  await page.evaluate((target) => {
+    const canvas = document.querySelector<HTMLCanvasElement>('.map-canvas');
+    const camera = window.fnt?.app.rendererCamera?.();
+    if (!canvas || !camera) throw new Error('Missing map camera or canvas');
+    const rect = canvas.getBoundingClientRect();
+    const m = camera.groundTransform;
+    const x = (target.x + 0.5) * 64;
+    const y = (target.y + 0.5) * 64;
+    const point = { x: m.a * x + m.c * y + m.tx, y: m.b * x + m.d * y + m.ty };
+    const from = { x: rect.left + rect.width / 2, y: rect.top + rect.height / 2 };
+    const to = { x: from.x + rect.width / 2 - point.x, y: from.y + rect.height / 2 - point.y };
+    const fire = (type: string, at: { x: number; y: number }) =>
+      canvas.dispatchEvent(
+        new PointerEvent(type, {
+          pointerId: 1,
+          pointerType: 'mouse',
+          isPrimary: true,
+          clientX: at.x,
+          clientY: at.y,
+          button: 0,
+          buttons: type === 'pointerup' ? 0 : 1,
+          bubbles: true,
+          cancelable: true,
+        }),
+      );
+    fire('pointerdown', from);
+    fire('pointermove', to);
+    fire('pointerup', to);
+  }, pos);
   await waitForIdle(page);
 }
 
@@ -309,7 +328,7 @@ for (const renderer of ['canvas', 'webgl'] as const) {
   });
 
   test(`partial elevation keeps a live surface above its base on ${renderer}`, async ({ page }) => {
-    test.setTimeout(120_000);
+    if (renderer === 'webgl') test.slow();
     const raised = { x: 19, y: 2 } as const;
     await resetStorage(page, `?renderer=${renderer}`);
     await startGame(page, ['Kaya'], ['kaya'], 'partial-elevation-surface');
