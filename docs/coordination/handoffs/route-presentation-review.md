@@ -391,3 +391,20 @@ Manual zoom-out to 0.4 also showed the connected stone exterior, rear recess and
 raised terraces without floating-card geometry. This accepts the bounded camera,
 forecast, compact-confirmation and quarry-surround changes. Physical-device,
 subjective audio and remaining motion/role review stay separate acceptance work.
+
+## Current repaired build: village return
+
+On `v0.2.1 · build f9caa7a`, root reloaded the existing static preview twice to
+observe the service-worker update, then loaded preserved Slot 2 through the
+normal Load menu. Ba Dan restored Sura at level 4, 23/38 HP, beside Gao, with
+the workers-home objective. Gao's three homecoming lines played over the actual
+village scene; Next received initial focus and the final Continue returned
+keyboard focus to Talk Gao. The original manual slots remain preserved.
+
+Root compared this current 1280x720 view with the approved Ba Dan reference.
+The market frontage, painted actor scale and retained-world dialogue are
+coherent. Broad empty paving/lawn and limited background activity still make
+the village less inhabited than the target. This is fresh UI and reference
+review, not a claim that the entire latest route or sound has been accepted.
+Screenshots were inspected in the conversation; no separate persisted image
+artifact is claimed for this checkpoint.
