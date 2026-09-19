@@ -1,6 +1,7 @@
 # ADR 0039: Modular illustrated world on the gameplay grid
 
-**Status:** accepted direction, 2026-09-19; implementation proof pending.
+**Status:** accepted direction, 2026-09-19; partial-ground contract implemented,
+final Ba Dan proof and route acceptance pending.
 
 ## Context
 
@@ -50,9 +51,11 @@ The first contract extension is an optional `MapScene.groundMode: 'partial'`.
 Absent means the existing complete-ground behavior. Partial mode draws the
 procedural terrain base, then authored projected ground pieces, then dynamic
 surfaces, paths and effects. It must not globally suppress permanent water
-outside an explicitly represented area. This extension is approved for the
-proof but remains unimplemented at this decision checkpoint; source and visual
-parity tests must establish the eventual implementation.
+outside an explicitly represented area. When scene art is unavailable, or when
+High contrast requires readable tactical marks, procedural collision and decor
+remain visible; fully loaded normal partial scenes suppress decorative clutter
+that would conflict with authored ground. The contract is implemented, while
+the combined touch-sized Ba Dan proof and route acceptance remain pending.
 
 The proof comes before expanding this construction across the existing bounded
 village-to-quarry route. It does not replace the full route, encounter, outcome,
