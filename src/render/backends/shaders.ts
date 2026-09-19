@@ -106,6 +106,9 @@ uniform float uTileSize;
 uniform float uTime;
 uniform float uHatch;
 uniform float uGridLines;
+// Partial authored scenes use a terrain-only base pass, followed by a
+// surfaces-only pass over their localized ground regions.
+uniform float uSurfaces;
 // 1 while a painting sits under the pass: the terrain is left to it and only
 // the surfaces, the hatch, the firelight and the grid are drawn, over it.
 uniform float uBackdrop;
@@ -227,6 +230,7 @@ void main(void) {
     acc = vec4(col, 1.0);
   }
 
+  if (uSurfaces > 0.5) {
   /* ---------------- surfaces ---------------- */
 
   vec3 tint = vec3(0.0), rim = vec3(0.0), detail = vec3(0.0);
@@ -337,5 +341,6 @@ void main(void) {
 
   // Premultiplied, as Pixi blends: over bare ground the coverage is 1 and this
   // is the colour as ever; over a painting it is only what was laid on it.
+  }
   fragColor = acc * quad.a;
 }`;

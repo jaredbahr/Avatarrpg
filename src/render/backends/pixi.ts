@@ -198,6 +198,8 @@ export class PixiBackend implements RenderBackend {
   private backdropSprite = new Sprite(Texture.EMPTY);
   private backdrop: { image: HTMLImageElement; texture: Texture } | null = null;
   private groundSprite = new Sprite(Texture.WHITE);
+  /** A second ground pass is used only for partial authored scenes. */
+  private groundOverlaySprite = new Sprite(Texture.WHITE);
   /**
    * Cliffs, canopies, walls, cover and decals, baked by the same painters the
    * Canvas 2D backend draws with, one sprite per chunk of the board.
@@ -228,9 +230,22 @@ export class PixiBackend implements RenderBackend {
     uTime: { value: 0, type: 'f32' },
     uHatch: { value: 0, type: 'f32' },
     uGridLines: { value: 0, type: 'f32' },
+    uSurfaces: { value: 1, type: 'f32' },
     uBackdrop: { value: 0, type: 'f32' },
   });
+  private groundOverlayUniforms = new UniformGroup({
+    uGrid: { value: new Float32Array([1, 1]), type: 'vec2<f32>' },
+    uGroundOrigin: { value: new Float32Array([0, 0]), type: 'vec2<f32>' },
+    uGroundInverse: { value: new Float32Array([1, 0, 0, 1]), type: 'vec4<f32>' },
+    uTileSize: { value: TILE, type: 'f32' },
+    uTime: { value: 0, type: 'f32' },
+    uHatch: { value: 0, type: 'f32' },
+    uGridLines: { value: 0, type: 'f32' },
+    uSurfaces: { value: 1, type: 'f32' },
+    uBackdrop: { value: 1, type: 'f32' },
+  });
   private groundFilter: Filter | null = null;
+  private groundOverlayFilter: Filter | null = null;
 
   /** Applied once init finishes, since resize can land before the app exists. */
   private viewport: Viewport = { width: 1, height: 1, dpr: 1 };
@@ -329,13 +344,29 @@ export class PixiBackend implements RenderBackend {
        */
       resolution: GROUND_RESOLUTION,
     });
+    this.groundOverlayFilter = new Filter({
+      glProgram: GlProgram.from({ vertex: FILTER_VERTEX, fragment: GROUND_FRAGMENT }),
+      resources: {
+        groundUniforms: this.groundOverlayUniforms,
+        uMap: this.mapTexture.source,
+      },
+      padding: 0,
+      resolution: GROUND_RESOLUTION,
+    });
     this.groundSprite.filters = [this.groundFilter];
+    this.groundOverlaySprite.filters = [this.groundOverlayFilter];
 
     // The ground quad is screen-sized and sits OUTSIDE the camera transform:
     // its shader derives tile coordinates from the camera uniforms instead.
     // The painting sits under it, placed from the same camera numbers.
     this.backdropSprite.visible = false;
-    app.stage.addChild(this.backdropSprite, this.sceneGround, this.groundSprite);
+    this.groundOverlaySprite.visible = false;
+    app.stage.addChild(
+      this.backdropSprite,
+      this.groundSprite,
+      this.sceneGround,
+      this.groundOverlaySprite,
+    );
 
     // Any resize that arrived during init was dropped; apply the latest now.
     this.applyViewport();
@@ -388,6 +419,9 @@ export class PixiBackend implements RenderBackend {
     this.groundSprite.position.set(0, 0);
     this.groundSprite.width = this.viewport.width;
     this.groundSprite.height = this.viewport.height;
+    this.groundOverlaySprite.position.set(0, 0);
+    this.groundOverlaySprite.width = this.viewport.width;
+    this.groundOverlaySprite.height = this.viewport.height;
   }
 
   destroy(): void {
@@ -397,9 +431,17 @@ export class PixiBackend implements RenderBackend {
     // Detach the painting while its sprite is alive: Pixi clears the sprite's
     // scale on destruction, and assigning a texture still updates its size.
     this.dropBackdrop();
+    this.groundSprite.filters = null;
+    this.groundOverlaySprite.filters = null;
+    // Both filters are built from the renderer's cached program source; let
+    // the renderer own the shared GPU program and release only filter state.
+    this.groundFilter?.destroy();
+    this.groundOverlayFilter?.destroy();
     this.app?.stage.destroy({ children: true });
     this.app?.renderer.destroy(false);
     this.app = null;
+    this.groundFilter = null;
+    this.groundOverlayFilter = null;
     this.dropTextures();
     this.unitSprites.clear();
     this.sceneTextures.clear();
@@ -444,12 +486,19 @@ export class PixiBackend implements RenderBackend {
     // A painting takes the terrain's place; the decor that marks footing
     // over it comes back only under High contrast, where the rules must read
     // without the picture.
-    const backdropPainted = this.syncBackdrop(view, camera);
+    const partialScene =
+      camera.projection === 'oblique' && view.scene?.groundMode === 'partial';
+    const backdropPainted = this.syncBackdrop(view, camera, partialScene);
     const scenePainted = this.syncScene(view, camera);
     // An incomplete authored scene must keep its collision-marking fallback.
     const painted = camera.projection === 'oblique' && view.scene ? scenePainted : backdropPainted;
-    this.syncGround(view, painted);
-    this.syncDecor(view, camera, !painted || view.crispOverlays);
+    this.setPartialGroundOrder(partialScene);
+    this.groundOverlaySprite.visible = partialScene;
+    this.syncGround(view, painted, partialScene);
+    // Partial scene ground pieces own their local relief. Suppress the
+    // procedural decor layer there so its pebbles/rims cannot cross an
+    // authored edge or sit over the runtime water pass.
+    this.syncDecor(view, camera, !partialScene && (!painted || view.crispOverlays));
     this.syncShade(view, camera, scenePainted);
     this.drawOverlays(view);
     this.drawPath(view);
@@ -478,12 +527,12 @@ export class PixiBackend implements RenderBackend {
    * shader reconstructs its tiles from, so the surfaces land on the painting
    * exactly where the painting's tiles are. Returns whether one is showing.
    */
-  private syncBackdrop(view: MapView, camera: Camera): boolean {
+  private syncBackdrop(view: MapView, camera: Camera, partialScene = false): boolean {
     const compatible =
       camera.projection === 'oblique'
         ? view.backdrop?.projection === 'oblique'
         : view.backdrop?.projection !== 'oblique';
-    const image = view.backdrop && compatible ? backdrops.get(view.backdrop.url) : null;
+    const image = !partialScene && view.backdrop && compatible ? backdrops.get(view.backdrop.url) : null;
     if (!image) {
       this.backdropSprite.visible = false;
       this.dropBackdrop();
@@ -585,9 +634,22 @@ export class PixiBackend implements RenderBackend {
     this.backdrop = null;
   }
 
-  private syncGround(view: MapView, painted: boolean): void {
+  /** Keep the historical complete-scene order; partial scenes need their
+   * procedural base below localized scene ground and surfaces above it. */
+  private setPartialGroundOrder(partial: boolean): void {
+    const app = this.app;
+    if (!app) return;
+    const groundIndex = app.stage.getChildIndex(this.groundSprite);
+    const sceneIndex = app.stage.getChildIndex(this.sceneGround);
+    if (partial && groundIndex > sceneIndex) app.stage.setChildIndex(this.groundSprite, sceneIndex);
+    if (!partial && sceneIndex > groundIndex) app.stage.setChildIndex(this.sceneGround, groundIndex);
+  }
+
+  private syncGround(view: MapView, painted: boolean, partialScene: boolean): void {
     const { grid } = view;
-    this.uploadMap(view, painted);
+    // Partial mode must keep every permanent surface in the data texture;
+    // complete scenes retain their existing painted-surface suppression.
+    this.uploadMap(view, partialScene ? false : painted);
 
     const uniforms = this.groundUniforms.uniforms as {
       uGrid: Float32Array;
@@ -597,6 +659,7 @@ export class PixiBackend implements RenderBackend {
       uTime: number;
       uHatch: number;
       uGridLines: number;
+      uSurfaces: number;
       uBackdrop: number;
     };
     uniforms.uGrid[0] = grid.width;
@@ -610,7 +673,8 @@ export class PixiBackend implements RenderBackend {
     uniforms.uTime = view.time / 1000;
     uniforms.uHatch = view.hatch ? 1 : 0;
     uniforms.uGridLines = view.gridLines ? 1 : 0;
-    uniforms.uBackdrop = painted ? 1 : 0;
+    uniforms.uSurfaces = partialScene ? 0 : 1;
+    uniforms.uBackdrop = partialScene ? 0 : painted ? 1 : 0;
 
     /*
      * UniformGroup.uniforms is a plain object, not a proxy: neither assigning a
@@ -620,6 +684,21 @@ export class PixiBackend implements RenderBackend {
      * rendered the whole board black.
      */
     this.groundUniforms.update();
+
+    if (!partialScene) return;
+    const overlay = this.groundOverlayUniforms.uniforms as typeof uniforms;
+    overlay.uGrid[0] = grid.width;
+    overlay.uGrid[1] = grid.height;
+    overlay.uGroundOrigin[0] = m.tx;
+    overlay.uGroundOrigin[1] = m.ty;
+    overlay.uGroundInverse.set([m.d / det, -m.c / det, -m.b / det, m.a / det]);
+    overlay.uTileSize = TILE;
+    overlay.uTime = view.time / 1000;
+    overlay.uHatch = view.hatch ? 1 : 0;
+    overlay.uGridLines = view.gridLines ? 1 : 0;
+    overlay.uSurfaces = 1;
+    overlay.uBackdrop = 1;
+    this.groundOverlayUniforms.update();
   }
 
   /**

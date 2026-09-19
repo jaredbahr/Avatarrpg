@@ -10,7 +10,7 @@
  * context, they never own one.
  */
 
-import type { Vec2 } from '../../core/types';
+import type { SceneImage, Vec2 } from '../../core/types';
 import { resolveAsset } from '../../content/assets/manifest';
 import { Camera } from '../camera';
 import type { Viewport } from '../camera';
@@ -127,19 +127,24 @@ export class Canvas2DBackend implements RenderBackend {
       camera.projection === 'oblique'
         ? view.backdrop?.projection === 'oblique'
         : !view.backdrop?.projection;
-    const painting = compatible && view.backdrop ? backdrops.get(view.backdrop.url) : null;
+    const partialScene =
+      camera.projection === 'oblique' && view.scene?.groundMode === 'partial';
+    const painting =
+      !partialScene && compatible && view.backdrop ? backdrops.get(view.backdrop.url) : null;
     if (painting) this.drawBackdrop(painting, view, camera);
     let sceneGround = false;
+    let sceneGroundPieces: { piece: SceneImage; image: HTMLImageElement | null }[] = [];
     if (camera.projection === 'oblique' && view.scene) {
       const ground = view.scene.ground.map((piece) => ({
         piece,
         image: sceneImage(piece),
       }));
+      sceneGroundPieces = ground;
       sceneGround =
         ground.length > 0 &&
         ground.every(({ image }) => image !== null) &&
         view.scene.scenery.every((piece) => sceneImage(piece) !== null);
-      if (sceneGround)
+      if (sceneGround && !partialScene)
         for (const { piece, image } of ground) {
           if (image)
             drawSceneImage(
@@ -160,17 +165,50 @@ export class Canvas2DBackend implements RenderBackend {
         camera.grid,
       );
       const m = camera.groundMatrix();
-      ctx.save();
-      ctx.transform(m.a, m.b, m.c, m.d, m.tx, m.ty);
-      const painted = view.scene ? sceneGround : painting !== null;
-      this.drawGround(view, ground, painted);
-      if (!painted || view.crispOverlays) this.drawDecor(view, ground);
-      this.drawOverlays(view, ground);
-      this.drawPath(view, ground);
-      if (view.aimArc) this.drawAimArc(view.aimArc, ground);
-      this.drawFxLayer(view, ground, 'under');
-      this.drawExit(view, ground);
-      ctx.restore();
+      if (partialScene) {
+        // A local authored region is an overlay, so the grid's procedural
+        // terrain must be painted first and remain visible outside it.
+        ctx.save();
+        ctx.transform(m.a, m.b, m.c, m.d, m.tx, m.ty);
+        this.drawGround(view, ground, false, true, false);
+        // Authored ground owns its local relief. Keeping procedural decor out
+        // of the partial pass prevents pebbles and rims from crossing the
+        // transparent edges or landing on the runtime water surface.
+        ctx.restore();
+        for (const { piece, image } of sceneGroundPieces) {
+          if (!image) continue;
+          drawSceneImage(
+            ctx,
+            image,
+            piece,
+            piece.x * camera.scale - camera.offsetX,
+            piece.y * camera.scale - camera.offsetY,
+            piece.width * camera.scale,
+            piece.height * camera.scale,
+          );
+        }
+        ctx.save();
+        ctx.transform(m.a, m.b, m.c, m.d, m.tx, m.ty);
+        this.drawGround(view, ground, false, false, true);
+        this.drawOverlays(view, ground);
+        this.drawPath(view, ground);
+        if (view.aimArc) this.drawAimArc(view.aimArc, ground);
+        this.drawFxLayer(view, ground, 'under');
+        this.drawExit(view, ground);
+        ctx.restore();
+      } else {
+        ctx.save();
+        ctx.transform(m.a, m.b, m.c, m.d, m.tx, m.ty);
+        const painted = view.scene ? sceneGround : painting !== null;
+        this.drawGround(view, ground, painted);
+        if (!painted || view.crispOverlays) this.drawDecor(view, ground);
+        this.drawOverlays(view, ground);
+        this.drawPath(view, ground);
+        if (view.aimArc) this.drawAimArc(view.aimArc, ground);
+        this.drawFxLayer(view, ground, 'under');
+        this.drawExit(view, ground);
+        ctx.restore();
+      }
       this.drawUnitRings(view, camera);
       // All upright occupants share depth order, including NPCs and props.
       const opacities = sceneryOpacities(view.scene?.scenery ?? [], view, camera);
@@ -262,7 +300,13 @@ export class Canvas2DBackend implements RenderBackend {
   }
 
   /** Terrain, surfaces and tile lines; over a painting the terrain is the painting. */
-  private drawGround(view: MapView, camera: Camera, painted: boolean): void {
+  private drawGround(
+    view: MapView,
+    camera: Camera,
+    painted: boolean,
+    drawTerrain = true,
+    drawSurfaces = true,
+  ): void {
     const { ctx } = this;
     const bounds = camera.visibleBounds(view.grid);
     for (let y = bounds.y0; y <= bounds.y1; y++) {
@@ -271,10 +315,10 @@ export class Canvas2DBackend implements RenderBackend {
         if (!tile) continue;
         const pos = { x, y };
         const box = camera.toScreen(pos);
-        if (!painted) paintTerrain(ctx, box, tile, pos);
-        if (!surfaceIsPainted(view, painted, tile, pos))
+        if (drawTerrain && !painted) paintTerrain(ctx, box, tile, pos);
+        if (drawSurfaces && !surfaceIsPainted(view, painted, tile, pos))
           paintSurface(ctx, box, tile, pos, view.hatch, surfaceEdges(view.grid, pos));
-        if (view.gridLines) paintGridLine(ctx, box, 'rgba(0,0,0,0.18)');
+        if (drawSurfaces && view.gridLines) paintGridLine(ctx, box, 'rgba(0,0,0,0.18)');
       }
     }
   }
