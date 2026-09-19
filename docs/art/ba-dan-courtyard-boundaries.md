@@ -63,13 +63,20 @@ stone plaza keeps its quiet material; this is a single authored seam treatment.
 
 ## Additional garden and market edges
 
-The current composition candidate reuses the calibrated low planter at
-(16,4)–(17,4) and produce display at (17,9)–(18,9). These occupy lawn shoulders
-beside the northern and southeastern houses, leaving road rows 7–8 and named
-NPC approaches unchanged. The existing shared footprint contract makes both
-solid to movement and transparent to sight. No additional images or art bytes
-are introduced. Village reachability and content validation pass; runtime scale
-and occlusion review must precede acceptance of these placements.
+The composition reuses the calibrated low planter at (16,4)–(17,4) and produce
+display at (13,4)–(14,4). These frame the northern house frontage, leaving its
+(12,4) door approach, road rows 7–8 and named NPC approaches unchanged. The
+existing shared footprint contract makes both solid to movement and transparent
+to sight. No additional images or art bytes are introduced.
+
+Root rejected the first display location at (17,9): tree canopies hid most of
+it in normal play. The revised placement was reviewed on both forced Canvas
+and WebGL in `19a9b46-modified` (the only source change was moving that display
+to (13,4)). It remains visible alongside the house wall at the existing scale,
+with clear paving in front. Normal walking from Gao to Pella and the homecoming
+conversation still work; the shared reachability and content checks pass. This
+accepts the bounded placement improvement, not full village activity or final
+reference-target quality.
 
 Original OpenAI image-tool source `exec-81e160ec-6de4-4313-9268-6031490d518e.png`,
 18 September 2026. Generation requested a very thin, irregular transparent

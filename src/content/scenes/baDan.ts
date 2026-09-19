@@ -11,7 +11,7 @@ export const BA_DAN_COURTYARD_PROPS = [
   { id: 'east-planter', image: 'low-planter', x: 14, y: 9 },
   { id: 'gao-display', image: 'merchant-display', x: 7, y: 4 },
   { id: 'north-garden', image: 'low-planter', x: 16, y: 4 },
-  { id: 'east-market-display', image: 'merchant-display', x: 17, y: 9 },
+  { id: 'north-market-display', image: 'merchant-display', x: 13, y: 4 },
 ] as const;
 
 export const BA_DAN_COURTYARD_FOOTPRINTS: readonly Vec2[] = BA_DAN_COURTYARD_PROPS.flatMap(
