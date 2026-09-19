@@ -75,13 +75,14 @@ and must not be used to close these requirements.
 Current ownership, checked 19 September 2026. Read the linked handoff and verify
 live branches and checks before editing; older assignments are historical.
 
-| Assignment                         | Owner                | Boundary                                                                                                     |
-| ---------------------------------- | -------------------- | ------------------------------------------------------------------------------------------------------------ |
-| PR64 release v0.2.1                | Root orchestrator    | Frozen `fc37c6a`; one CI run35438371967; exact-head checks and merge-commit auto-merge                       |
-| Next quality integration           | Root orchestrator    | `codex/deserter-material-fx`; reviewed source-launch/flask/impact changes; no push into running PR64         |
-| Adult enemy proportions            | `quarry_composition` | Isolated `codex/route-enemy-scale`; five route sheets and existing presentation scale; preview4265           |
-| Quarry interior design audit       | `combat_preview`     | Read-only bounded geometry/cover/prop proposal against approved reference; map edits await root scope review |
-| Continuous gameplay and acceptance | Root orchestrator    | Production4267 at `fc37c6a`; manual route and source review; no final aesthetic signoff                      |
+| Assignment                         | Owner                 | Boundary                                                                                                      |
+| ---------------------------------- | --------------------- | ------------------------------------------------------------------------------------------------------------- |
+| PR64 release v0.2.1                | Root orchestrator     | Frozen `fc37c6a`; one CI run35438371967; exact-head checks and merge-commit auto-merge                        |
+| Next quality integration           | Root orchestrator     | `codex/deserter-material-fx`; reviewed source-launch/flask/impact changes; no push into running PR64          |
+| Adult enemy proportions            | `quarry_composition`  | Isolated `codex/route-enemy-scale`; five route sheets and existing presentation scale; preview4265            |
+| Quarry interior design audit       | `combat_preview`      | Read-only bounded geometry/cover/prop proposal against approved reference; map edits await root scope review  |
+| Quarry narration continuity        | `world_conversations` | Isolated next-quality scope review of two narrator lines before battle; retain existing illustrated interlude |
+| Continuous gameplay and acceptance | Root orchestrator     | Production4267 at `fc37c6a`; manual route and source review; no final aesthetic signoff                       |
 
 The [current playthrough handoff](handoffs/cutting-control-review.md) records
 ownership, exact release validation and preserved saves. Release verification

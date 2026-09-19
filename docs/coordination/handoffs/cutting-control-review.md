@@ -254,3 +254,13 @@ sheets, using existing presentation scaling without a schema change. Preview4265
 is reserved to that task. combat_preview is auditing a bounded quarry interior
 with navigable cover and useful props against the approved reference; it has no
 map-edit authorization until scope review. Root owns this FX integration tree.
+
+The superseded root-owned4210 preview (session19819) was stopped after save
+transfer and corrected-build review; its old browser origins and saves remain
+preserved. Current release4267 remains available. Adult-scale source review
+accepted loaded Canvas96 bruiser/Forest marker and WebGL96 quarry worker plus
+WebGL64 crossbow. Missing-image fallback remains functional but its primitive
+bruiser is taller than the loaded sheet; no visual-parity acceptance is implied.
+world_conversations now owns an isolated next-quality investigation of the two
+standalone quarry narration lines before battle, reusing existing world-backed
+conversation routing and preserving the illustrated interlude.
