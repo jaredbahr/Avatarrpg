@@ -7,10 +7,13 @@
 - Give the battlefield more room with compact initiative chips on short landscape screens at normal text size.
 - Let followers finish walking to dry, unoccupied places during village conversations instead of stopping on canal water.
 - Preserve elevated terrain and live-surface layering across scene changes and High Contrast toggles.
+- Extend the village with the remaining integrated local material regions across its approaches and courts.
+- Build modular ground for the Cutting and Driller routes, including the quarry's connected material composition.
+- Add the reviewed six-cell forest raised shelves with preserved playable exit space and procedural fallback.
 
 Combined local route and browser checks pass on the integrated checkpoint.
-Further village and forest art is in progress; this version has not been
-published and does not establish final visual, audio or device acceptance.
+The release remains in development and does not establish final visual, audio or
+device acceptance.
 
 ## 0.2.1 — release candidate
 

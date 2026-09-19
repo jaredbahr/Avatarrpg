@@ -1,25 +1,26 @@
 # Modular route follow-up
 
-Root owns `codex/modular-route-followup`; this v0.2.2 development batch is
-separate from PR64. Current built checkpoint `b247685` visibly shows v0.2.2
-after a normal reload, retaining the prior local save. Its production build
-passes; the latest full combined gameplay evidence is below. No follow-up push.
-
-PR64 remains v0.2.1 at `749fe3d`, auto-merge configured. Current-head CI
-`35454608779` failed E2E; root requested cancellation of its remaining gallery
-and is retrieving the failure evidence. The previous water-test timeout was repaired by reusing
-verified screenshot samples, retaining every visual assertion; root verification
-passed 860 tests and six focused browser cases before that one checked push.
+Root owns `codex/modular-route-followup`, the unpushed v0.2.2 development batch.
+Current source checkpoint is `2bc5ba1`. Separate v0.2.1 release PR64 is at
+`f5a4a87`; CI `35457611402` is active. The prior run
+`35454608779` was terminal-cancelled after 116 E2E passes and a readback
+failure. The screenshot readback repair `1fdae` and root follow-ups
+`1dfbbc0`/`2bc5ba1` are integrated; a minor comment conflict was resolved while
+retaining the elevation cases.
 
 ## Integrated result
 
-- Forest: local road, dry pond banks and separate north/south grass packs from
-  the reviewed material source. Independent pines/rubble and runtime water;
-  inactive complete-map ground pages removed after consumer checks.
-- Quarry gate: local earth/road/limestone regions (`9a23852`, `69424f4`), with
-  two-pixel edge bleed removing filtered gray joins. Existing walls, timber
-  cover, props, collision and saves remain unchanged. Runtime WebP tests check
-  cell centers and material boundaries. Source: `95cdb17`, `e2d2b55`.
+- Village: the remaining local material regions are integrated across the
+  approaches and courts, preserving the reviewed procedural perimeter and
+  existing route behavior.
+- Cutting and Driller: modular ground is integrated at `c676361` from five source commits
+  through `dbcf8cd`, covering the remaining earth, road and limestone regions
+  with the existing walls, cover, props, collision and saves preserved.
+- Quarry Gate retains its earlier accepted local regions (`9a23852`, `69424f4`).
+- Forest: the six raised shelf cells are integrated at `3003d8e` from source
+  `a237258`; the playable exit remains clear. Independent root captures at
+  96px on Canvas/WebGL with High Contrast are in
+  `forest-raised-shelf/.shots/forest-shelf-review/a237258`.
 - Short-landscape normal-text initiative: in-flow compact chips recover 31.70px
   of usable battlefield. See [HUD evidence](hud-compact-prototype.md).
 - Partial elevation: `ae7cd53`, `01fba97` keep raised terrain below authored art
@@ -29,27 +30,16 @@ passed 860 tests and six focused browser cases before that one checked push.
   NPC-aware dry-seat settlement under dialogue while map controls stay locked.
   Root reproduced the former water-standing bug through Visit Gao in normal UI.
   Source `8facaab`; browser regression covers the same interaction.
-- Western village approach: `96ec0be`, `4dfe9e1`, `2e41cdf` reuse accepted
-  courtyard material, with verified grass sampling and opaque road overlap.
-  Root inspected fresh source `cdf9e49` Canvas/WebGL production captures at
-  96px: the paved grass shoulders and dark diagonal join are corrected.
-  Seven focused Ba Dan tests pass in integration; map assets are 3.42 MiB / 4
-  after removing two unused complete-map ground pages. Combined rebuild and
-  visual route review remain pending the remaining art batch. Root's full
-  `npm run verify` at `2dbf064` passed 865 tests / 104 files, typecheck, lint
-  and formatting.
-- Village neighborhood coverage: `b66f639` (source `966e009`) adds northwest
-  lawn, north/south house courts and east approach. Root reviewed actual source
-  Canvas/WebGL 96px spawn, house and east-road captures, then ran all eight
-  decoded Ba Dan tests in integration. Road/grass coverage is more coherent;
-  repeated grass swatches and the deliberate procedural perimeter remain visible.
-  This is an improvement, not whole-village aesthetic acceptance.
+- Root verification, production build and asset budgets pass at `c676361`; 16
+  browser cases passed in 1.9 minutes before the forest integration.
+- The three focused forest tests pass. The current full combined verification
+  after forest integration is pending.
 
 ## Combined evidence
 
-At `b5a5435`, root `npm run verify` passed 864 tests / 104 files plus typecheck,
-lint and formatting. Production build, art validation and asset budgets pass:
-maps 3.97 MiB / 4, precache 17.61 MiB / 25; entry `index-YySPFXhi.js`.
+At `c676361`, root verification, production build and asset budgets pass; 16
+browser cases passed in 1.9 minutes before the forest integration. The current
+combined check is pending at `2bc5ba1`.
 
 Sixteen installed-Chrome checks passed on that production build at 1280x720:
 eight partial-ground/elevated-water cases across Canvas/WebGL, six shopfront
@@ -79,34 +69,13 @@ entry `index-B0DD_k-4.js`, gzip 291.72 kB, maps 3.53 MiB, precache 17.17 MiB.
 
 ## Live assignments and open gaps
 
-- Terra `partial_ground_validation`: stopped after quarry source `c5e9dc5`;
-  useful work preserved. Sources `54e2046`, `0154561`, `ffecaf1`, `c5e9dc5`
-  remain unintegrated. Decoded dry centers and
-  fractional shared boundaries now have coverage tests; dynamic cell centers
-  remain transparent. Root completed all four midpoint Canvas/WebGL scene
-  captures plus high contrast at `c5e9dc5`, with actual map/backend/96px checks,
-  using staged `newGame/enterNode` and pointer-adapter pan. The Driller node is
-  `battle_grumbler`, not nonexistent `battle_quarry_floor`. Evidence is in that
-  owner's `.shots/quarry-route-capture/c5e9dc5/`; the successful root harness is
-  `midpoint.mjs`. Preview 4298 stopped after terminal capture success. Boss,
-  props, oil and mud are visible. Mirrored chevrons are gone, but a thin gray
-  dirt-region join remains in both backends; this prevents acceptance.
-- Terra `conversation_ci_repair`: village batch integrated; new isolated task
-  from `c5e9dc5` owns the quarry dirt-region join diagnosis/correction and actual
-  midpoint comparison. Preserve dynamic surface coverage and existing scenery.
-- Art `world_conversations`: isolated forest raised-shelf material/scenery pass;
-  preserve the actual six elevated cells and keep exit (19,4) clear. The original
-  eight-cell proposal overcounted (18,2) and (18,6); authoritative map rows and
-  the focused test caught this before integration. No renderer/rules edits.
-  Root rejected an initial packed image with vertical sampling streaks and
-  flat-color patches; corrected packing and actual scene review remain open.
-- Root: integration, visual review, versioned releases, required CI and deployment.
+- There are no active art or village workers. Root owns integration, delivery,
+  the current combined verification and release coordination.
+- Source quality gaps, continuous reference and motion review, audible
+  listening, and physical Surface/iPad verification remain open.
 
-The old root preview on 4270 was positively identified and stopped. The v0.2.2
-version-check tab and owned preview 4304 were also closed after review.
-Forest raised tops now read as procedural stone slabs, still inconsistent with
-painted grass; this is functional relief, not final art acceptance. Village
-material coverage beyond the accepted local regions remains unfinished.
-Cutting and Driller modular composition,
-continuous reference/motion review, audible listening and physical Surface/iPad
-verification remain open. No wider world expansion is authorized by this slice.
+The old root preview on 4270 and the v0.2.2 version-check tab and owned preview
+4304 were stopped after review. Preserve the manual `a3c8d49` save/reload/nest
+review and its route evidence. The full goal, audio listening and physical
+device gaps remain open; no final aesthetic acceptance is claimed and no wider
+world expansion is authorized by this slice.
