@@ -540,3 +540,20 @@ Tab9 remains marked for continuation with Save open. Canal owner is fixing the
 old baked pond mask with the original atlas; renderer owner has isolated the
 blank painting to Pixi base rendering after resize, independent of VillageLayer.
 Neither unfinished change has been integrated or pushed.
+
+## Partial-ground renderer integration — 19 September
+
+Integration `dcc3922` includes renderer source `422eeac` (integrated as
+`e4369ba`) and corrected browser coverage `8279d2d`. `npm run verify`
+passed 857 tests in 103 files, typecheck, lint and formatting. The production
+build is isolated at `.shots/integration/modular-dist` with entry
+`assets/index-D_PRMGti.js`; existing review previews were not rebuilt.
+
+The focused installed-Chrome Surface-touch run passed 15 cases with one
+premise-based software-renderer skip: partial-ground water layering and missing
+art, legacy backdrop/rubble behavior, forced Canvas/WebGL rendering, viewport
+size and oblique picking. Report: `.shots/integration/modular-report`.
+The config-owned port 4266 server exited with the run. This verifies renderer
+integration, not final Ba Dan art, physical-device behavior or full-route
+acceptance. Ba Dan source/art remains in the separately owned neighborhood tree;
+no push, new GitHub run, release or merge was performed for this checkpoint.
