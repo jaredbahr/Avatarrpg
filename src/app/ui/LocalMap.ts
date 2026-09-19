@@ -50,10 +50,14 @@ export class LocalMap {
       dot.append(label);
       this.element.append(dot);
       if (showLabels) {
+        const rightEdge = grid.width + 1;
+        const x = npc.pos.x + 0.9;
         const visibleLabel = svgNode('text', {
-          x: String(npc.pos.x + 0.9),
+          x: String(x),
           y: String(npc.pos.y + 0.35),
           class: 'local-npc-label',
+          textLength: String(Math.max(0.75, Math.min(5, rightEdge - x - 0.1))),
+          lengthAdjust: 'spacingAndGlyphs',
         });
         visibleLabel.textContent = npc.name;
         this.element.append(visibleLabel);

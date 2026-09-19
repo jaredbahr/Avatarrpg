@@ -19,6 +19,23 @@ test('local map tracks a real walk and preserves the campaign when opened', asyn
   const dialog = page.getByRole('dialog', { name: 'Local map', exact: true });
   await expect(dialog.getByRole('navigation', { name: 'Routes from this area' })).toBeVisible();
   await expect(dialog.locator('.local-npc-label').filter({ hasText: 'Elder Mira' })).toBeVisible();
+  const labelBounds = await dialog.locator('.local-npc-label').evaluateAll((labels) => {
+    const svg = (labels[0] as SVGGraphicsElement | undefined)?.ownerSVGElement;
+    const viewBox = svg?.viewBox.baseVal;
+    if (!viewBox) throw new Error('Local map viewBox is missing');
+    return labels.map((label) => {
+      const bounds = (label as SVGGraphicsElement).getBBox();
+      return {
+        left: bounds.x,
+        right: bounds.x + bounds.width,
+        min: viewBox.x,
+        max: viewBox.x + viewBox.width,
+      };
+    });
+  });
+  expect(
+    labelBounds.every((bounds) => bounds.left >= bounds.min && bounds.right <= bounds.max),
+  ).toBe(true);
   await expect(
     dialog.getByRole('button', { name: 'Walk to Elder Mira', exact: true }),
   ).toBeEnabled();
@@ -85,6 +102,9 @@ test('a normal solo exploration dock has no phantom vertical scroll while large 
   }));
   expect(narrowHuge.overflowY).toBe('auto');
   expect(narrowHuge.bottom).toBeLessThanOrEqual(844);
+  const narrowActions = page.locator('.explore-hud .action-button');
+  await narrowActions.last().scrollIntoViewIfNeeded();
+  await expect(narrowActions.last()).toBeVisible();
 
   await resetStorage(page, '?renderer=canvas');
   await startGame(
