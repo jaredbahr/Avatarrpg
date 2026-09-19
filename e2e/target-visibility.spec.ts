@@ -47,6 +47,40 @@ async function tapTarget(page: Page) {
   await expect(page.getByRole('button', { name: 'Confirm', exact: true })).toBeEnabled();
 }
 
+/** Drag the canvas through the real pointer adapter without eight Playwright
+ * mouse round trips; software WebGL can spend a full frame per move. Points
+ * are page viewport coordinates, matching `boundingBox()` and painted hits. */
+async function dragCanvas(
+  page: Page,
+  from: { x: number; y: number },
+  to: { x: number; y: number },
+) {
+  await page.evaluate(
+    ({ from, to }) => {
+      const canvas = document.querySelector<HTMLCanvasElement>('.map-canvas');
+      if (!canvas) throw new Error('Missing battlefield canvas');
+      const fire = (type: string, point: { x: number; y: number }) =>
+        canvas.dispatchEvent(
+          new PointerEvent(type, {
+            pointerId: 1,
+            pointerType: 'mouse',
+            isPrimary: true,
+            clientX: point.x,
+            clientY: point.y,
+            button: 0,
+            buttons: type === 'pointerup' ? 0 : 1,
+            bubbles: true,
+            cancelable: true,
+          }),
+        );
+      fire('pointerdown', from);
+      fire('pointermove', to);
+      fire('pointerup', to);
+    },
+    { from, to },
+  );
+}
+
 for (const renderer of ['canvas', 'webgl'] as const) {
   for (const narrow of [false, true]) {
     test(`Fire Jab target stays tappable with separate decisions on ${renderer}${narrow ? ' at huge phone text' : ' at desktop lower edge'}`, async ({
@@ -122,10 +156,21 @@ for (const renderer of ['canvas', 'webgl'] as const) {
         const dx = box.x + box.width * 0.67 - point.x;
         const dy = box.y + box.height - 84 - point.y;
         const from = { x: box.x + box.width * 0.3, y: box.y + 80 };
-        await page.mouse.move(from.x, from.y);
-        await page.mouse.down();
-        await page.mouse.move(from.x + dx, from.y + dy, { steps: 8 });
-        await page.mouse.up();
+        const beforePan = await page.evaluate(() => {
+          const camera = window.fnt!.app.rendererCamera()!;
+          return { x: camera.offsetX, y: camera.offsetY };
+        });
+        await dragCanvas(page, from, { x: from.x + dx, y: from.y + dy });
+        await settleLayout(page);
+        const afterPan = await page.evaluate(() => {
+          const camera = window.fnt!.app.rendererCamera()!;
+          return { x: camera.offsetX, y: camera.offsetY };
+        });
+        expect(afterPan.x !== beforePan.x || afterPan.y !== beforePan.y).toBe(true);
+        const pannedPoint = await paintedTileCentre(page, target);
+        const pannedBox = await page.locator('.map-canvas').boundingBox();
+        if (!pannedPoint || !pannedBox) throw new Error('Missing post-pan geometry');
+        expect(pannedPoint.y).toBeGreaterThan(pannedBox.y + pannedBox.height - 140);
       }
       const before = await battleSnapshot(page);
       await tapTarget(page);
