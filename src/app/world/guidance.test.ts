@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { CONTENT } from '../../content';
 import { createGame } from '../../core/state/createGame';
 import { apply } from '../../core/state/reducer';
-import { nearbyExploreTarget } from './guidance';
+import { exitDestination, nearbyExploreTarget } from './guidance';
 
 function villageAt(pos: { x: number; y: number }) {
   const initial = createGame(CONTENT, {
@@ -12,6 +12,11 @@ function villageAt(pos: { x: number; y: number }) {
   });
   const state = apply(CONTENT, initial, { type: 'enterNode', nodeId: 'village_explore' }).state;
   return { ...state, location: { ...state.location, pos } };
+}
+
+function mapAt(mapId: string, pos: { x: number; y: number }) {
+  const state = villageAt(pos);
+  return { ...state, location: { ...state.location, mapId } };
 }
 
 describe('nearby exploration guidance', () => {
@@ -28,5 +33,34 @@ describe('nearby exploration guidance', () => {
 
     const bySign = nearbyExploreTarget(CONTENT, map, villageAt({ x: 18, y: 12 }));
     expect(bySign).toMatchObject({ kind: 'npc', npc: { id: 'riverside_sign' } });
+  });
+
+  it('keeps a real person primary at open gates and leaves locked routes inactive', () => {
+    const forest = CONTENT.maps.get('forest_road');
+    const village = CONTENT.maps.get('ba_dan_village');
+    if (!forest || !village) throw new Error('Missing connected maps');
+
+    expect(
+      nearbyExploreTarget(CONTENT, forest, mapAt('forest_road', { x: 1, y: 4 })),
+    ).toMatchObject({
+      kind: 'npc',
+      npc: { id: 'dema' },
+    });
+    expect(nearbyExploreTarget(CONTENT, village, villageAt({ x: 22, y: 7 }))).toMatchObject({
+      kind: 'npc',
+      npc: { id: 'guard_dorin' },
+    });
+    expect(nearbyExploreTarget(CONTENT, forest, mapAt('forest_road', { x: 18, y: 4 }))).toBeNull();
+  });
+
+  it('uses the destination map name when a route label has no arrow', () => {
+    expect(
+      exitDestination(CONTENT, {
+        pos: { x: 0, y: 0 },
+        toMapId: 'ba_dan_riverside',
+        toPos: { x: 10, y: 19 },
+        label: 'Back to the river',
+      }),
+    ).toBe('Ba Dan · The Riverside');
   });
 });

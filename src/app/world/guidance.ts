@@ -13,24 +13,21 @@ export type NearbyExploreTarget =
 
 /** The short destination name used by the action bar for an authored route. */
 export function exitDestination(content: ContentIndex, exit: MapExit): string {
-  const arrowDestination = exit.label.split('→').at(-1)?.trim();
-  return arrowDestination || content.maps.get(exit.toMapId)?.name || exit.toMapId;
+  const arrow = exit.label.lastIndexOf('→');
+  if (arrow >= 0) return exit.label.slice(arrow + 1).trim();
+  return content.maps.get(exit.toMapId)?.name || exit.toMapId;
 }
 
 /**
- * Resolves the one primary nearby action. An open route wins over a nearby
- * sign, while locked routes leave the real NPC interaction available.
+ * Resolves the one primary nearby action. A real person stays primary; an open
+ * route can supersede only the authored sign that marks that route. Locked
+ * routes leave the real NPC interaction available.
  */
 export function nearbyExploreTarget(
   content: ContentIndex,
   map: MapDef,
   state: GameState,
 ): NearbyExploreTarget {
-  const exit = map.exits?.find(
-    (item) => distance(state.location.pos, item.pos) <= 1 && evaluate(state, item.requires),
-  );
-  if (exit) return { kind: 'exit', exit, destination: exitDestination(content, exit) };
-
   let best: NpcDef | null = null;
   let nearest = TALK_RANGE + 1;
   let proximity = Infinity;
@@ -45,6 +42,12 @@ export function nearbyExploreTarget(
       nearest = gap;
       proximity = groundGap;
     }
+  }
+  const exit = map.exits?.find(
+    (item) => distance(state.location.pos, item.pos) <= 1 && evaluate(state, item.requires),
+  );
+  if (exit && (!best || best.interaction === 'route-sign')) {
+    return { kind: 'exit', exit, destination: exitDestination(content, exit) };
   }
   return best ? { kind: 'npc', npc: best, inspect: best.sprite.startsWith('world.') } : null;
 }

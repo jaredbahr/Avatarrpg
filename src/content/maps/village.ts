@@ -60,6 +60,7 @@ export const BA_DAN_VILLAGE: MapDef = {
       name: 'Riverside path',
       pos: { x: 18, y: 12 },
       sprite: 'npc.kid',
+      interaction: 'route-sign',
       node: 'riverside_invitation',
     },
     {

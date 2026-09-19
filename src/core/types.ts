@@ -540,6 +540,8 @@ export interface NpcDef {
   readonly name: string;
   readonly pos: Vec2;
   readonly sprite: string;
+  /** Optional map guidance semantic for a non-person route marker. */
+  readonly interaction?: 'route-sign';
   /** Optional story condition for maps that reveal a person or landmark later. */
   readonly when?: Condition;
   /** Story node entered when the NPC is tapped, if no route matches. */
