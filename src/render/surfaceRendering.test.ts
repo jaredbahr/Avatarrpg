@@ -1,7 +1,7 @@
 import { describe, expect, it, vi } from 'vitest';
 import type { Tile } from '../core/types';
 import { paintSurface } from './painters/tiles';
-import { surfaceIntensity } from './surfaceRendering';
+import { SURFACE_POOL, surfaceIntensity } from './surfaceRendering';
 
 const box = { x: 3.25, y: 7.5, size: 64 };
 const edges = { n: false, e: false, s: false, w: false };
@@ -29,6 +29,9 @@ function context() {
     lineTo: vi.fn(),
     stroke: vi.fn(),
     ellipse: vi.fn(),
+    bezierCurveTo: vi.fn(),
+    closePath: vi.fn(),
+    fill: vi.fn(),
     fillRect() {
       fills.push({ alpha: this.globalAlpha, color: this.fillStyle });
     },
@@ -61,7 +64,8 @@ describe('surface material presentation', () => {
     paint(-1);
     expect(ctx.rect).toHaveBeenCalledWith(box.x, box.y, box.size, box.size);
     expect(ctx.clip).toHaveBeenCalledOnce();
-    expect(ctx.moveTo).not.toHaveBeenCalled();
+    // Three interior material strokes, no extra boundary segments.
+    expect(ctx.moveTo).toHaveBeenCalledTimes(3);
     expect(ctx.lineTo).not.toHaveBeenCalled();
     expect(ctx.restore).toHaveBeenCalledOnce();
   });
@@ -74,5 +78,19 @@ describe('surface material presentation', () => {
     expect(expiring.fills[0]?.color).toBe(permanent.fills[0]?.color);
     expect(expiring.fills[0]?.alpha).toBeLessThan(permanent.fills[0]?.alpha ?? 0);
     expect(expiring.fills[0]?.alpha).toBeGreaterThan(0);
+  });
+  it('confines irregular pooling to a shallow strip inside the exterior bank', () => {
+    const { ctx } = context();
+    paintSurface(ctx as unknown as CanvasRenderingContext2D, box, tile(-1), { x: 2, y: 3 }, false, {
+      ...edges,
+      n: true,
+    });
+    expect(ctx.fill).toHaveBeenCalledOnce();
+    for (const [x, y] of ctx.lineTo.mock.calls as [number, number][]) {
+      expect(x).toBeGreaterThanOrEqual(box.x);
+      expect(x).toBeLessThanOrEqual(box.x + box.size);
+      expect(y).toBeGreaterThanOrEqual(box.y);
+      expect(y).toBeLessThanOrEqual(box.y + box.size * SURFACE_POOL.depth);
+    }
   });
 });

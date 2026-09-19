@@ -1,5 +1,5 @@
 import { SURFACE_STYLES } from '../palettes';
-import { SURFACE_BANK } from '../surfaceRendering';
+import { SURFACE_BANK, SURFACE_POOL } from '../surfaceRendering';
 
 const glslColor = (hex: string): string =>
   `vec3(${[1, 3, 5].map((offset) => (parseInt(hex.slice(offset, offset + 2), 16) / 255).toFixed(5)).join(', ')})`;
@@ -276,7 +276,8 @@ void main(void) {
   } else if (surface == 4) {          // mud
     float churn = fbm(w * 5.0);
     lay(acc, tint, opacity * (0.88 + 0.12 * churn) * intensity);
-    lay(acc, rim, smoothstep(0.70, 0.86, vnoise(w * vec2(9.0, 18.0))) * 0.20 * intensity);
+    float streak = smoothstep(0.70, 0.84, vnoise(w * vec2(9.0, 17.0)));
+    lay(acc, tint * 0.62, streak * 0.21 * intensity);
   } else if (surface == 5) {          // steam
     float billow = fbm(w * 2.2 + vec2(uTime * 0.16, -uTime * 0.22));
     lay(acc, vec3(0.85, 0.86, 0.87), (0.45 + 0.35 * billow) * intensity);
@@ -285,7 +286,9 @@ void main(void) {
     lay(acc, tint, opacity * intensity);
     // A restrained sage sheen, rather than moving rainbow colour over stone.
     float sheen = 1.0 - smoothstep(0.025, 0.070, abs(sheenBand - 0.55));
-    lay(acc, rim, sheen * 0.19 * intensity);
+    lay(acc, tint * 0.55, sheen * 0.14 * intensity);
+    float glint = 1.0 - smoothstep(0.008, 0.022, abs(sheenBand - 0.57));
+    lay(acc, mix(rim, vec3(0.68, 0.68, 0.56), 0.35), glint * 0.25 * intensity);
   } else if (surface == 7) {          // rubble
     float chunk = vnoise(w * 11.0);
     lay(acc, tint, opacity * intensity);
@@ -300,6 +303,11 @@ void main(void) {
     if (surfaceAt(cell + vec2(0.0, 1.0)) != surface) edgeDistance = min(edgeDistance, 1.0 - f.y);
     if (surfaceAt(cell - vec2(1.0, 0.0)) != surface) edgeDistance = min(edgeDistance, f.x);
     if (surfaceAt(cell + vec2(1.0, 0.0)) != surface) edgeDistance = min(edgeDistance, 1.0 - f.x);
+    if (surface == 4 || surface == 6) {
+      float depth = ${SURFACE_POOL.depth} * (0.2 + 0.8 * vnoise(w * 13.0));
+      float pool = 1.0 - smoothstep(depth * 0.45, depth, edgeDistance);
+      lay(acc, tint * 0.62, pool * ${SURFACE_POOL.alpha} * intensity);
+    }
     float bank = 1.0 - smoothstep(0.0, ${SURFACE_BANK.width}, edgeDistance);
     float line = 1.0 - smoothstep(${SURFACE_BANK.line * 0.5}, ${SURFACE_BANK.line}, edgeDistance);
     lay(acc, rim, max(bank * 0.12, line * ${SURFACE_BANK.alpha}) * intensity);

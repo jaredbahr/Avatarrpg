@@ -12,7 +12,7 @@
 import type { Tile, Vec2 } from '../../core/types';
 import type { Edges } from '../geometry/board';
 import { SURFACE_STYLES, TERRAIN_STYLES } from '../palettes';
-import { SURFACE_BANK, surfaceIntensity } from '../surfaceRendering';
+import { SURFACE_BANK, SURFACE_POOL, surfaceIntensity } from '../surfaceRendering';
 import type { Box, Ctx } from './shapes';
 import { circle, polygon, tileNoise } from './shapes';
 
@@ -74,6 +74,32 @@ export function paintSurface(
   const y0 = Math.round(box.y);
   ctx.fillRect(x0, y0, Math.round(box.x + s) - x0, Math.round(box.y + s) - y0);
 
+  // A little material gathers just inside the real bank. Irregular depth is
+  // decoration inside the tile, never a ragged or misleading hazard boundary.
+  const material = tile.surface.id;
+  if (material === 'mud' || material === 'oil') {
+    ctx.globalAlpha = SURFACE_POOL.alpha * intensity;
+    ctx.fillStyle = material === 'mud' ? '#453321' : '#171c1a';
+    for (const [side, on] of [edges.n, edges.e, edges.s, edges.w].entries()) {
+      if (!on) continue;
+      const point = (along: number, depth: number): [number, number] => {
+        if (side === 0) return [box.x + along * s, box.y + depth * s];
+        if (side === 1) return [box.x + (1 - depth) * s, box.y + along * s];
+        if (side === 2) return [box.x + along * s, box.y + (1 - depth) * s];
+        return [box.x + depth * s, box.y + along * s];
+      };
+      ctx.beginPath();
+      ctx.moveTo(...point(0, 0));
+      ctx.lineTo(...point(1, 0));
+      for (let i = 8; i >= 0; i--) {
+        const depth = SURFACE_POOL.depth * (0.2 + 0.8 * tileNoise(pos.x, pos.y, side * 17 + i));
+        ctx.lineTo(...point(i / 8, depth));
+      }
+      ctx.closePath();
+      ctx.fill();
+    }
+  }
+
   // The bank: a wide faint band inside the edge under a thin bright line.
   const inset = Math.max(1, s * SURFACE_BANK.line);
   const band = s * SURFACE_BANK.width;
@@ -110,7 +136,6 @@ export function paintSurface(
 
   // Sparse material marks leave the painted ground legible. Position-seeded
   // detail never swims with the camera; the wash still covers every hazard tile.
-  const material = tile.surface.id;
   if (material === 'ice' || material === 'mud' || material === 'oil' || material === 'rubble') {
     ctx.globalAlpha = (material === 'ice' ? 0.38 : 0.24) * intensity;
     ctx.lineWidth = Math.max(1, s * 0.013);
@@ -128,9 +153,28 @@ export function paintSurface(
         ctx.lineTo(x + s * 0.04, y + s * 0.01);
         ctx.closePath();
       } else {
-        ctx.ellipse(x, y, s * (material === 'oil' ? 0.12 : 0.045), s * 0.025, -0.35, 0, Math.PI);
+        ctx.strokeStyle = material === 'mud' ? '#453321' : '#171c1a';
+        ctx.lineWidth = s * (material === 'mud' ? 0.026 : 0.018);
+        if (material === 'oil') {
+          ctx.ellipse(x, y, s * 0.18, s * 0.055, -0.35, Math.PI * 0.2, Math.PI * 1.3);
+        } else {
+          ctx.moveTo(x - s * 0.09, y + s * 0.025);
+          ctx.bezierCurveTo(
+            x,
+            y - s * 0.04,
+            x + s * 0.06,
+            y + s * 0.045,
+            x + s * 0.2,
+            y - s * 0.025,
+          );
+        }
       }
       ctx.stroke();
+      if (material === 'oil') {
+        ctx.strokeStyle = style.edge;
+        ctx.lineWidth = Math.max(1, s * 0.009);
+        ctx.stroke();
+      }
     }
   }
 

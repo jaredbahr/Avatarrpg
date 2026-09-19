@@ -1,5 +1,6 @@
 /** Shared material treatment; the complete rules tile always receives a wash. */
 export const SURFACE_BANK = { width: 0.075, line: 0.018, alpha: 0.48 } as const;
+export const SURFACE_POOL = { depth: 0.085, alpha: 0.32 } as const;
 
 /** Permanent surfaces stay solid; temporary ones thin without disappearing. */
 export function surfaceIntensity(duration: number): number {
