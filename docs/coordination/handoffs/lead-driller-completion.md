@@ -20,6 +20,32 @@ No retry was dispatched. Integrate the bounded repair, verify the final head,
 then advance the same PR64 with the complete v0.2.1 batch. Full experiential
 acceptance, exact-final-head CI and deployed-version verification remain open.
 
+### Current review findings
+
+The CI repair reproduced the iPad target at screen y625.72 below the canvas's
+y617.22 edge; the action bar received the tap. Compact 64px framing placed the
+same target inside the canvas. Source `76cb60d` addresses that and Riverside
+button replacement, but remains under revision: independent review requested
+initial/changed-viewport measurement instead of resizing every reducer sync,
+bidirectional settled-layout correction and explicit tablet/manual-camera tests.
+Do not integrate the first patch as final while that revision is active.
+
+The separate visual audit identifies sparse scene composition, inconsistent
+ground detail, procedural mercenaries beside painted heroes, and sampled melee
+poses that do not convincingly meet the opponent. Evidence is bounded: village
+`b39d8de` on `baa87cb`, quarry composition `e17f137`, and verified motion
+`cda0925` / water `49478ac`. Current combined gate/return stills and continuous
+walk-stop-talk sequences were unavailable to that independent review, so they
+remain unreviewed rather than established defects. Quarantined port4225 footage
+was excluded. These findings prevent full-target signoff despite local checks.
+
+Root confirmed the current manifest still routes `unit.enemy.merc`,
+`unit.enemy.sergeant` and `unit.ally.ruon` to procedural painters. The art owner
+`quarry_composition` is assigned an isolated authored-character correction from
+combined `492da8f`, preserving existing animation, identity, fallback and budget
+contracts. No camera/UI/game-rule overlap or remote push is authorized for that
+source assignment. Root remains the only integration owner.
+
 ### Historical assignment plan (superseded by the ownership above)
 
 1. Gameplay `01a0b300-e321-7670-aab3-f0aeaf624dc0` repairs PR #64 and owns
