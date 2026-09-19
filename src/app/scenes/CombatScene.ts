@@ -663,25 +663,31 @@ export class CombatScene implements Scene {
     const bar = el('div', { class: 'hud-panel action-bar', attrs: { role: 'toolbar' } });
     bar.appendChild(this.abilityHeader(unit));
     const row = el('div', { class: 'action-row' });
+    const interactive = unit.faction === 'party' && this.isPlayerTurn();
 
     const moveActive = this.mode.kind === 'move';
     const canMoveNow = unit.move > 0;
     const moveButton = button(`Move`, () => this.selectMove(), {
       class: `action-button${moveActive ? ' selected' : ''}`,
-      disabled: !canMoveNow,
-      title: canMoveNow ? 'Walk to a highlighted tile' : 'No move points left this turn',
+      disabled: !interactive || !canMoveNow,
+      title: !interactive
+        ? 'Player controls are locked while another unit acts'
+        : canMoveNow
+          ? 'Walk to a highlighted tile'
+          : 'No move points left this turn',
     });
     moveButton.prepend(mark(UI_MARKS.move));
     moveButton.appendChild(el('span', { class: 'action-sub', text: `${unit.move} left` }));
     row.appendChild(moveButton);
 
     for (const ability of knownAbilities(this.app.content, unit)) {
-      row.appendChild(this.abilityButton(unit, ability));
+      row.appendChild(this.abilityButton(unit, ability, interactive));
     }
 
     const endButton = button('End turn', () => this.endTurn(unit), {
       class: 'action-button end-turn',
       title: 'Finish this turn. One unused AP carries over.',
+      disabled: !interactive,
     });
     endButton.prepend(mark(UI_MARKS.end));
     if (unit.ap > 0)
@@ -731,15 +737,19 @@ export class CombatScene implements Scene {
     return header;
   }
 
-  private abilityButton(unit: Unit, ability: Ability): HTMLElement {
+  private abilityButton(unit: Unit, ability: Ability, interactive = true): HTMLElement {
     const check = canUseAbility(this.app.content, unit, ability);
     const selected = this.mode.kind === 'aim' && this.mode.abilityId === ability.id;
     const cooldown = unit.cooldowns[ability.id] ?? 0;
 
     const node = button(ability.name, () => this.selectAbility(ability), {
       class: `action-button element-${ability.element}${selected ? ' selected' : ''}`,
-      disabled: !check.ok,
-      title: check.ok ? ability.description : check.reason,
+      disabled: !interactive || !check.ok,
+      title: !interactive
+        ? 'Player controls are locked while another unit acts'
+        : check.ok
+          ? ability.description
+          : check.reason,
     });
 
     // The ability's own mark above its name, in its element's colour; the

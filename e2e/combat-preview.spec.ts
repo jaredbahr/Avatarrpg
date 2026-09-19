@@ -96,3 +96,37 @@ test('movement confirmation warns about a possible direct attack without claimin
   );
   await expect(page.locator('.confirm-bar')).not.toContainText('safe');
 });
+
+test('player action controls are disabled during an enemy turn', async ({ page }) => {
+  await resetStorage(page);
+  await startGame(page, ['Reviewer'], ['kaya'], 'enemy-controls-touch');
+  await enterNode(page, 'battle_quarry_gate');
+  await takeTurn(page);
+  await waitForIdle(page);
+
+  await page.evaluate(() => {
+    const app = window.fnt?.app;
+    const state = app?.state;
+    const battle = state?.battle;
+    if (!app || !state || !battle) throw new Error('No battle for enemy-control fixture.');
+    const turnIndex = battle.order.findIndex((id) => {
+      const unit = battle.units.find((candidate) => candidate.id === id);
+      return unit?.faction === 'enemy';
+    });
+    if (turnIndex < 0) throw new Error('Enemy turn fixture missing an enemy.');
+    app.state = { ...state, battle: { ...battle, turnIndex } };
+    app.resync();
+  });
+
+  const controls = await page.evaluate(() => {
+    const buttons = [...document.querySelectorAll<HTMLButtonElement>('.action-button')];
+    return {
+      moveDisabled: buttons.find((button) => button.textContent?.includes('Move'))?.disabled,
+      endDisabled: buttons.find((button) => button.textContent?.includes('End turn'))?.disabled,
+      enemyBanner: document.querySelector('.enemy-turn-banner')?.textContent ?? '',
+    };
+  });
+  expect(controls.moveDisabled).toBe(true);
+  expect(controls.endDisabled).toBe(true);
+  expect(controls.enemyBanner).toContain('moving');
+});
