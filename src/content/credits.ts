@@ -172,6 +172,15 @@ export const CREDITS: readonly CreditEntry[] = [
     note: 'Original generated art registered to the existing terrain without collision changes. Source IDs, prompts, masking and anchors: docs/art/forest-scene-registration.md. Output terms: https://openai.com/policies/row-terms-of-use/. No exclusive copyright in generated output is claimed.',
   },
   {
+    what: 'The forest turtle-duck nest',
+    work: 'Turtle-duck and duckling nest discovery illustration',
+    authors: 'This project, generated with OpenAI image generation',
+    licence: 'own work',
+    source: '',
+    covers: ['art/world/turtle-ducks-nest.webp'],
+    note: 'Original transparent discovery illustration. Source image, exact prompt and resize provenance: assets/source/forest-nest/. Output terms: https://openai.com/policies/row-terms-of-use/. No exclusive copyright in generated output is claimed.',
+  },
+  {
     what: 'The registered quarry gate art',
     work: 'Quarry material textures, low timber cover and modular limestone walls',
     authors: 'This project, generated with OpenAI image generation',
