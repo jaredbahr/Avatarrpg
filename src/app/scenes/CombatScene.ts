@@ -96,6 +96,7 @@ export class CombatScene implements Scene {
   private aiScheduled = false;
   private resultShown = false;
   private logOpen = false;
+  private layoutMeasuredAfterSync = false;
 
   constructor(private app: App) {
     this.movementThreatQuery = createMovementThreatQuery(app.content);
@@ -107,6 +108,7 @@ export class CombatScene implements Scene {
 
   mount(host: HTMLElement): void {
     this.host = host;
+    this.layoutMeasuredAfterSync = false;
     clear(host);
 
     const scene = el('div', { class: 'scene combat-scene' });
@@ -149,6 +151,35 @@ export class CombatScene implements Scene {
   }
 
   /**
+   * The first HUD render can change the canvas before ResizeObserver delivers.
+   * Measure after that render, then leave later identical reducer syncs alone;
+   * the renderer's observer handles genuine box changes.
+   */
+  private resizeAfterHud(): void {
+    const renderer = this.renderer;
+    const canvas = this.canvas;
+    const battle = this.battle();
+    if (!renderer || !canvas || !battle) return;
+    const rect = canvas.getBoundingClientRect();
+    const width = Math.max(1, Math.round(rect.width));
+    const height = Math.max(1, Math.round(rect.height));
+    const dpr = Math.min(3, window.devicePixelRatio || 1);
+    const viewport = renderer.viewport;
+    if (
+      this.layoutMeasuredAfterSync &&
+      viewport.width === width &&
+      viewport.height === height &&
+      viewport.dpr === dpr
+    )
+      return;
+    this.layoutMeasuredAfterSync = true;
+    renderer.resizeAndRedraw(() => this.refit(), {
+      width: battle.grid.width,
+      height: battle.grid.height,
+    });
+  }
+
+  /**
    * Re-fits after the canvas box changed. The HUD changes it on most turns (a
    * confirm bar appears, the log opens) and the Renderer's observer reports
    * each change through onViewportChange. A board the player zoomed keeps its
@@ -180,18 +211,19 @@ export class CombatScene implements Scene {
       const hudAllowance = this.app.settings.largeText === 'huge' ? 220 : 200;
       const decisionHeight = camera.viewport.height - hudAllowance;
       const compact = decisionHeight < 360;
-      const firstSettledCompact =
-        this.mode.kind === 'idle' && compact && this.preferredCombatTilePx === 96;
-      if (this.preferredCombatFrameKey !== frameKey || firstSettledCompact) {
+      const preferredTilePx = compact
+        ? this.app.settings.largeText === 'huge' || window.innerWidth < 600
+          ? 40
+          : 64
+        : 96;
+      const idleFrameCorrection =
+        this.mode.kind === 'idle' && this.preferredCombatTilePx !== preferredTilePx;
+      if (this.preferredCombatFrameKey !== frameKey || idleFrameCorrection) {
         this.preferredCombatFrameKey = frameKey;
         // The action/preview panel takes a predictable slice of the first
         // settled canvas. Reserve that full dock before choosing the readable
         // 96px frame; Huge text needs the larger allowance.
-        this.preferredCombatTilePx = compact
-          ? this.app.settings.largeText === 'huge' || window.innerWidth < 600
-            ? 40
-            : 64
-          : 96;
+        this.preferredCombatTilePx = preferredTilePx;
       }
       camera.fitExplore(this.preferredCombatTilePx ?? 96);
     } else camera.fit();
@@ -440,14 +472,10 @@ export class CombatScene implements Scene {
     this.renderHud();
     this.maybeRunAi();
     // The first ResizeObserver delivery can happen before this sync fills the
-    // turn strip and decision dock. Measure once after those panels exist so a
-    // short tablet chooses its compact readable frame; otherwise the initial
-    // tall placeholder can lock in a 96px frame and leave lower targets under
-    // the dock.
-    this.renderer?.resizeAndRedraw(() => this.refit(), {
-      width: battle.grid.width,
-      height: battle.grid.height,
-    });
+    // turn strip and decision dock. Measure after those panels exist so a
+    // short tablet chooses its compact readable frame; later identical syncs
+    // leave the backend alone.
+    this.resizeAfterHud();
   }
 
   /**

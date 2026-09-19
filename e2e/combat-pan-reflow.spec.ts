@@ -123,6 +123,21 @@ for (const largeText of ['normal', 'huge'] as const) {
   });
 }
 
+test('iPad landscape normal text keeps the lower target inside the map', async ({ page }) => {
+  await page.setViewportSize({ width: 1194, height: 834 });
+  await resetStorage(page, '?renderer=canvas');
+  await startGame(page, ['Elias'], ['bo'], 'ipad-landscape-normal-frame');
+  await enterNode(page, 'battle_forest_road');
+  await takeTurn(page);
+  await waitForIdle(page);
+  await settleLayout(page);
+
+  const camera = await page.evaluate(() => window.fnt!.app.rendererCamera()!);
+  expect(camera.tilePx).toBeCloseTo(64, 5);
+  const canvas = await page.locator('.map-canvas').boundingBox();
+  expect(canvas?.height ?? 0).toBeGreaterThan(0);
+});
+
 test('real viewport resize recomputes compact oblique framing', async ({ page }) => {
   await page.setViewportSize({ width: 1600, height: 900 });
   await resetStorage(page, '?renderer=canvas');
