@@ -69,3 +69,19 @@ after live surfaces; it has not been integrated. Its owner is correcting layer
 order and adding elevated-surface visibility coverage. Quarry gate prototype
 `95cdb17` is also pending seam correction and decoded asset coverage before
 integration. These source checks do not establish final aesthetic acceptance.
+
+## Integrated quarry gate checkpoint
+
+Root reviewed the corrected Canvas/WebGL gate captures and integrated source
+`95cdb17` plus `e2d2b55` as `9a23852` and `69424f4`. Local earth, road and
+limestone material regions replace the two opaque pages; two-pixel edge bleed
+removes filtered gray joins. Decoded runtime-asset tests cover authoritative
+cell centers and material boundaries. Root `npm run verify` on `69424f4`
+passes 864 tests / 104 files plus typecheck, lint and formatting. Combined
+browser verification must follow the pending renderer correction; this source
+checkpoint is not a claim of completed quarry presentation.
+
+The gate worker now owns the follower conversation settlement fix in a fresh
+isolated tree, after root traced the normal-UI water-standing observation to
+`setConversationMode` cancelling `needsSettle`. The terrain worker retains the
+layer-order correction. Neither changes the PR64 release branch.
