@@ -15,7 +15,7 @@ The normal solo route has also been played through the Driller and homecoming.
 Current-head remote checks and deployment remain pending. Listening quality and
 physical Surface/iPad behavior remain unverified; this is not full-target signoff.
 
-## 0.2.0 — pending release
+## 0.2.0 — unshipped changes included in 0.2.1
 
 - Add registered oblique Forest Road and Quarry Gate scenes, including a connected western gatehouse with shared cutaway and missing-art fallback.
 - Keep combat targets readable through unit focus, retained manual pan and resize redraw; align health bars and elemental effects with visible actors.
@@ -24,7 +24,10 @@ physical Surface/iPad behavior remain unverified; this is not full-target signof
 - Slow ordinary combat walking and align its steps to distance traveled.
 - Preserve the title's commit build identifier alongside the version for reports.
 
-This is a progress release. Wider gate composition, remaining wall clusters, water material/source clarity, listening review and physical Surface/iPad validation remain open. It does not establish completion of the reference visual target.
+These changes are included in the combined 0.2.1 candidate above. The later
+quarry composition and water motion corrections supersede those earlier gaps;
+listening review, physical Surface/iPad validation and full reference-target
+acceptance remain open.
 
 ## 0.1.0
 
