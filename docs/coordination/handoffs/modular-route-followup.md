@@ -1,17 +1,17 @@
 # Modular route follow-up
 
-Root owns `codex/modular-route-followup`, the unpushed v0.2.2 development batch.
-Current fully verified source is `41288cf`: 872 tests / 105 files, typecheck,
-lint and formatting pass. Health timing is integrated at `61991a9` with test
-follow-up `752dd49`. Separate v0.2.1 release PR64 is at
-`41b2d9d`; CI `35460361910` is active. Run `35457611402` is terminal-cancelled:
-144 E2E passes followed by the same tea screenshot assertion failing twice.
-Clock-controlled tea sampling and serial gallery gating are integrated here too.
-The earlier run
-`35454608779` was terminal-cancelled after 116 E2E passes and a readback
-failure. The screenshot readback repair `1fdae` and root follow-ups
-`1dfbbc0`/`2bc5ba1` are integrated; a minor comment conflict was resolved while
-retaining the elevation cases.
+Root owns `codex/modular-route-followup`, the unpushed consolidated v0.2.2
+release candidate. Product build `a8d4e48` passes the unchanged 300 KiB aggregate
+JavaScript budget at 299.7 KiB, real Canvas/WebGL Pages-path rendering, asset
+loads and an offline title reload. Release history is reconciled at `689ff49`;
+`da12cb8` records the Pages review. Deliver this batch through existing PR64,
+not a second release PR. The live site still serves v0.1.0 at `44ed3f6`.
+
+Remote PR64 remains at `41b2d9d`. CI `35460361910` is terminal-failed in walking
+clock setup (74 passed, 361 unrun); the gallery correctly skipped. No further
+GitHub run has been started. Two Luna owners are repairing/validating the local
+browser checks before root's final combined verification and single push.
+Earlier checked implementation and review evidence remains scoped below.
 
 ## Integrated result
 
@@ -101,8 +101,10 @@ entry `index-B0DD_k-4.js`, gzip 291.72 kB, maps 3.53 MiB, precache 17.17 MiB.
 
 ## Live assignments and open gaps
 
-- There are no active art or village workers. Root owns integration, delivery,
-  the current combined verification and release coordination.
+- Root owns integration, delivery and final combined verification. Luna
+  `pages_release_check` owns the clock/RAF test repair in `clock-pause-race`;
+  Luna `release_local_regression` owns browser regression and the stale
+  painted-rubble test in `release-local-regression`. No active art worker.
 - Source quality gaps, continuous reference and motion review, audible
   listening, and physical Surface/iPad verification remain open.
 - The forest nest correction is integrated and visually reviewed. Luna handled
@@ -114,8 +116,7 @@ entry `index-B0DD_k-4.js`, gzip 291.72 kB, maps 3.53 MiB, precache 17.17 MiB.
   Terra's impact-timing fix is integrated and visually verified in both backends;
   all four normal/reduced legal-action captures pass. The permanent opt-in harness
   and [motion handoff](legal-air-motion-review.md) preserve commands and evidence.
-- All bounded workers are completed. Root owns final combined verification and
-  PR64 delivery. The next environment gap remains the sparse forest composition
+- Root owns PR64 delivery. The next environment gap remains the sparse forest composition
   and geometric pond bank; scenery should support the existing discovery story
   while keeping runtime water and logical terrain authoritative.
 
@@ -192,3 +193,21 @@ the diagnosis without weakening assertions. A separate Luna runs the remaining
 local browser suite from `a8d4e48`, excluding only those two assigned specs from
 that local diagnostic run. Required CI keeps the full suite. No new GitHub run
 has been dispatched or pushed during these repairs.
+
+The broader local Surface/SwiftShader run on `a8d4e48` completed 172 passes,
+one failure and one unrun out of 174 cases. It excluded gallery and the two
+clock-owned specs; WebKit was not started after the failure. Evidence and report
+are under `release-local-regression/.shots/release-regression/`; its owned 4334
+preview stopped. Failure is `painted-rubble.spec.ts`'s legacy expectation that
+removing `paintedRubble` changes a centre pixel. `surfaceIsPainted` explicitly
+returns false for partial ground, so current Forest Road correctly keeps its
+overlay active in both samples. Unit coverage already preserves the legacy
+complete-ground distinction. Luna is updating the browser test to verify the
+actual partial-ground contract, visible material changes and fallback, without
+changing terrain or weakening the old threshold blindly.
+
+Clock source `d05626d` plus `4a2f3d2` passes isolated SwiftShader and WebKit
+walking/tea cases and 873 unit tests. The source also reports failures in an
+earlier combined run; root has required a final combined run with the heavy
+browser jobs serialized. Do not represent isolated successes as a passing
+combined suite. No clock source is integrated yet.
