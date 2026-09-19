@@ -75,15 +75,17 @@ and must not be used to close these requirements.
 Current ownership, checked 19 September 2026. Read the linked handoff and verify
 live branches and checks before editing; older assignments are historical.
 
-| Assignment                         | Owner                                | Boundary                                                                                                                               |
-| ---------------------------------- | ------------------------------------ | -------------------------------------------------------------------------------------------------------------------------------------- |
-| PR64 release v0.2.1                | Root orchestrator                    | `fc37c6a`; CI35438371967 terminal E2E failure; gallery cancelled; no new push until coherent local verification                        |
-| Gesture CI repair                  | `gesture_ci_repair`                  | Isolated from `fc37c6a`; precise compact/wide framing and complete gesture contracts; Chrome and local WebKit evidence                 |
-| Next quality integration           | Root orchestrator                    | `codex/deserter-material-fx`; FX, scale, quarry narration and conversation framing integrated locally                                  |
-| Quarry loading/rail art            | Source complete; gameplay integrates | Accepted source `505941c`; actual registration and occlusion review remain part of quarry interior work                                |
-| Quarry interior cover and props    | `combat_preview`                     | Approved bounded map/scene implementation based on `c8f8b06`; existing rules, connected approaches and meaningful props                |
-| Riverside activity dock            | `world_conversations`                | New isolated compact activity dock based on `9a54d23`; retain all interactions and accessible controls; quarry narration is integrated |
-| Continuous gameplay and acceptance | Root orchestrator                    | Production4267 at `fc37c6a`; manual route and source review; no final aesthetic signoff                                                |
+| Assignment                         | Owner                                | Boundary                                                                                                                 |
+| ---------------------------------- | ------------------------------------ | ------------------------------------------------------------------------------------------------------------------------ |
+| PR64 release v0.2.1                | Root orchestrator                    | `fc37c6a`; CI35438371967 terminal E2E failure; gallery cancelled; no new push until coherent local verification          |
+| Gesture CI repair                  | Integrated by root                   | `710128d`; 27 Chrome and 18 local WebKit cases pass; no product framing change                                           |
+| Next quality integration           | Root orchestrator                    | `codex/deserter-material-fx`; FX, scale, quarry narration and conversation framing integrated locally                    |
+| Quarry loading/rail art            | Source complete; gameplay integrates | Accepted source `505941c`; actual registration and occlusion review remain part of quarry interior work                  |
+| Quarry interior cover and props    | `combat_preview`                     | Approved bounded map/scene implementation based on `c8f8b06`; existing rules, connected approaches and meaningful props  |
+| Riverside activity dock            | Integrated by root                   | `a9699a9`; combined dock/framing 20 Chrome and WebKit cases pass; manual WebGL closed/open dock reviewed                 |
+| Riverside tea motion               | `gesture_ci_repair`                  | Isolated from `cc9e5ab`; honest seated-cup art and pose lifecycle within existing atlas capacity; no collision shortcuts |
+| Ba Dan neighborhood composition    | `world_conversations`                | Read-only audit of approved target, existing art and map geometry; no edits yet                                          |
+| Continuous gameplay and acceptance | Root orchestrator                    | Production4267 at `fc37c6a`; manual route and source review; no final aesthetic signoff                                  |
 
 The [current playthrough handoff](handoffs/cutting-control-review.md) records
 ownership, exact release validation and preserved saves. Release verification

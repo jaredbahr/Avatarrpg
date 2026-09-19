@@ -376,3 +376,11 @@ Quarry interior registration and runtime review remain with combat_preview.
 The Riverside owner released editing ownership and is now performing a read-only
 Ba Dan composition audit against the approved neighborhood reference. No visual
 acceptance or deployment is claimed from the passing source checks.
+
+The combined Riverside/conversation-framing browser run completed: **20/20 pass**
+in 3.3 minutes, Chrome Surface and actual Windows WebKit iPad, both renderers and
+portrait Largest text. Root also reviewed actual WebGL preview v0.2.1/710128d at
+1280×720: the closed dock leaves approximately486px of map, Activities opens all
+visits and preview battle, and Tea break completes its discovery. The remaining
+standing-at-tea mismatch is confirmed visually; a separate tea art/pose task now
+owns its correction. No deployment or aesthetic completion is claimed.
