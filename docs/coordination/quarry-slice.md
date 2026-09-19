@@ -46,15 +46,16 @@ with real occlusion and runtime effects. Full paintings become supporting art.
 [player-view target](../player-view-target.md#official-world-construction-model)
 define this direction and the first acceptance gate.
 
-Root has integrated the bounded Ba Dan courtyard/canal proof (`74355b0`) and
-owns its release review; the former `world_conversations` assignment is stopped
-and its work preserved. Terra owns a bounded water-layer test follow-up; Luna
-handles routine release documentation in an isolated tree. The WebKit resize investigation
-is integrated as a diagnostic at `6e72cfd` (source `c4229e1`); it found a
-Windows headless presentation boundary and warranted no product workaround.
-Validate the proof without complete map paintings before extending the same
-construction across the route. The full finish line below remains unchanged,
-and no final aesthetic acceptance is implied.
+The bounded Ba Dan courtyard/canal proof (`74355b0`) has passed root review of
+actual crossings, conversation and save/reload in Canvas/WebGL. It establishes
+the construction approach, not finished village art. The western approach still
+needs matching material; forest and quarry-gate modular work is in a separate
+follow-up branch. See the [current handoff](handoffs/modular-route-followup.md)
+for precise ownership, source commits and combined evidence.
+
+The Windows headless WebKit resize investigation remains a diagnostic at
+`6e72cfd` (source `c4229e1`); it warranted no product workaround. The full
+finish line below remains unchanged, with no final aesthetic acceptance implied.
 
 ## Required finish line
 
@@ -95,30 +96,31 @@ and must not be used to close these requirements.
 Current ownership, checked 19 September 2026. Read the linked handoff and verify
 live branches and checks before editing; older assignments are historical.
 
-| Assignment                         | Owner                 | Boundary                                                                                                                         |
-| ---------------------------------- | --------------------- | -------------------------------------------------------------------------------------------------------------------------------- |
-| PR64 release v0.2.1                | Root orchestrator     | `fc37c6a` OPEN, auto-merge configured but blocked; no new push until coherent local verification                                 |
-| Gesture CI repair                  | Integrated by root    | `710128d`; 27 Chrome and 18 local WebKit cases pass; no product framing change                                                   |
-| Next quality integration           | Root orchestrator     | `codex/deserter-material-fx`; through `be4f4b4`, modular Ba Dan and quieter runtime water; latest focused validation in progress |
-| Quarry loading/rail art            | Integrated by root    | `ce175de`/`e7ac483`; closed rear rail reviewed in actual Canvas/WebGL captures                                                   |
-| Quarry interior cover and props    | Integrated by root    | `95598af` plus `b69fa4e`; preserved actual older R3 save checked on Canvas/WebGL                                                 |
-| Riverside activity dock            | Integrated by root    | `a9699a9`; combined dock/framing 20 Chrome and WebKit cases pass; manual WebGL closed/open dock reviewed                         |
-| Riverside tea motion               | Integrated by root    | `50b0ee0`; seated cup/sip poses, actual porch access and cancellation; combined 855 tests pass                                   |
-| Ba Dan neighborhood composition    | Integrated by root    | `74355b0`; Canvas/WebGL crossing, conversation and save/reload reviewed; prior owner stopped, preview 4297 stopped               |
-| WebKit Riverside painting resize   | Integrated diagnostic | `6e72cfd` / `c4229e1`; ports 4276 and 4268 confirmed stopped; no product workaround or hardware Safari claim                     |
-| Continuous gameplay and acceptance | Root orchestrator     | Production route integration; manual route and source review; no final aesthetic signoff                                         |
+| Assignment                   | Owner     | Boundary                                                                                          |
+| ---------------------------- | --------- | ------------------------------------------------------------------------------------------------- |
+| PR64 release v0.2.1          | Root      | `749fe3d`, OPEN, auto-merge configured; current-head CI `35454608779` active at this checkpoint   |
+| Modular route integration    | Root      | `codex/modular-route-followup`; tested product `b5a5435`, later release sampling repair `3ab0aca` |
+| Western village approach     | Terra     | New local ground region matching existing courtyard materials; preserve water, grid and scenery   |
+| New elevation browser test   | Terra     | Bounded software-WebGL input robustness; no product or release-branch changes                     |
+| Forest raised-bank art       | Art owner | Illustrated shelf material/scenery matching forest; no geometry or renderer changes               |
+| Combined review and delivery | Root      | Route, reference, motion and listening review; merge/deployment after required checks             |
 
-The [current playthrough handoff](handoffs/cutting-control-review.md) records
-ownership, exact release validation and preserved saves. Release verification
-passes836 tests;14 focused production browser checks include complete trade and
-escort return routes. GitHub verification passed; E2E failed after240 passes on
-the iPad pinch test's starting-scale assertion. The remaining gallery was cancelled
-and the scoped repair passed local Chrome/WebKit verification. Rooted AI and disabled movement controls have also been confirmed
-through the original manual campaign on the corrected release build. The same
-Sura/Riko campaign subsequently lost with the boss at2 HP and reached its ending.
-Earlier solo Sura victory and homecoming evidence remains preserved. None of
-these observations closes the reference, listening or physical-device gaps.
+The [modular route handoff](handoffs/modular-route-followup.md) records current
+source ownership and evidence. At `b5a5435`, verification passes 864 tests;
+16 combined browser cases cover partial/elevated surfaces, shopfront/follower
+settlement, and both complete quarry-return routes. Production build and asset
+budgets pass. This follow-up is not part of PR64 yet.
 
+PR64's separate release passes 860 verification tests and six focused water
+browser checks at `749fe3d`. Previous CI `35452987638` passed 116 browser cases
+before a software-WebGL screenshot timeout; its gallery was cancelled. The new
+revision reuses successful screenshot samples without weakening visual assertions.
+Current-head CI still determines merge eligibility; no deployment is claimed.
+
+The earlier [playthrough handoff](handoffs/cutting-control-review.md) preserves
+the legal Sura/Riko campaign, rooted controls, defeat with the boss at 2 HP,
+and solo Sura victory/homecoming evidence. Those observations remain useful
+without closing the reference, listening or physical-device gaps.
 All slice source PRs through #58 and the final combined route-test PR #52 are
 merged. Their implementation history is preserved; reuse useful work while
 correcting the experience. This source record does not close the presentation
