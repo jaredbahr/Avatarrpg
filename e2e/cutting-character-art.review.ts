@@ -171,16 +171,41 @@ for (const renderer of ['canvas', 'webgl'] as const) {
         return { timings, duration: app.animator.finishesAt - time, camera: app.rendererCamera() };
       }, staged);
       let elapsed = 0;
+      const sampledPoses = [];
       for (const time of reduced
         ? [80, 500]
-        : [50, 150, 300, 450, 650, 850, 1100, 1400, 1750, 2050, 2400]) {
+        : [50, 150, 300, 450, 650, 850, 1000, 1100, 1400, 1750, 2050, 2400]) {
         const delta = time - elapsed;
         if (delta > 17) await page.clock.fastForward(delta - 17);
         await page.clock.runFor(Math.min(delta, 17));
+        sampledPoses.push(
+          await page.evaluate(
+            (ids) =>
+              ids.map((id) => ({
+                id,
+                pose: window.fnt!.app.animator.unitPose(performance.now(), id) ?? null,
+              })),
+            staged.subjects.map((subject) => subject.id),
+          ),
+        );
         await page.screenshot({ path: `${folder}/staged-${time}ms.png` });
         elapsed = time;
       }
       await page.clock.resume();
+      if (!reduced)
+        for (const subject of staged.subjects) {
+          const poses = sampledPoses
+            .flat()
+            .filter((sample) => sample.id === subject.id)
+            .map((sample) => sample.pose);
+          expect(poses.some((pose) => pose?.clip === 'melee' && pose.frame === 1)).toBe(true);
+          const walkingFrames = new Set(
+            poses
+              .filter((pose) => pose?.clip === 'walk')
+              .map((pose) => Math.floor((pose?.clipTime ?? 0) / 250) % 2),
+          );
+          expect(walkingFrames.size).toBe(2);
+        }
       expect(errors).toEqual([]);
       writeFileSync(
         `${folder}/provenance.json`,
@@ -193,6 +218,7 @@ for (const renderer of ['canvas', 'webgl'] as const) {
             source: 'e2e/cutting-character-art.review.ts',
             actual: metadata,
             staged: motion,
+            sampledPoses,
             errors,
           },
           null,
