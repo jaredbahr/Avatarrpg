@@ -28,6 +28,7 @@ import {
   Texture,
   UniformGroup,
 } from 'pixi.js';
+import { surfaceIntensity } from '../surfaceRendering';
 
 import type { SurfaceId, TerrainId, Vec2 } from '../../core/types';
 import { resolveAsset } from '../../content/assets/manifest';
@@ -647,7 +648,7 @@ export class PixiBackend implements RenderBackend {
       // Surfaces thin out as they burn down, so a dying fire visibly fades.
       // A negative duration is map-authored and permanent: always full strength.
       const duration = tile.surface?.duration ?? 0;
-      const intensity = tile.surface ? (duration < 0 ? 1 : Math.min(1, 0.45 + duration / 6)) : 0;
+      const intensity = tile.surface ? surfaceIntensity(duration) : 0;
       intensities[i] = surface === SURFACE_INDEX.fire ? intensity : 0;
 
       const o = i * 4;

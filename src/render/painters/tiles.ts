@@ -12,6 +12,7 @@
 import type { Tile, Vec2 } from '../../core/types';
 import type { Edges } from '../geometry/board';
 import { SURFACE_STYLES, TERRAIN_STYLES } from '../palettes';
+import { SURFACE_BANK, surfaceIntensity } from '../surfaceRendering';
 import type { Box, Ctx } from './shapes';
 import { circle, polygon, tileNoise } from './shapes';
 
@@ -61,7 +62,11 @@ export function paintSurface(
   const s = box.size;
 
   ctx.save();
-  ctx.globalAlpha = style.alpha;
+  ctx.beginPath();
+  ctx.rect(box.x, box.y, s, s);
+  ctx.clip();
+  const intensity = surfaceIntensity(tile.surface.duration);
+  ctx.globalAlpha = style.alpha * intensity;
   ctx.fillStyle = style.fill;
   // Snapped to whole pixels rather than overlapped by one: a translucent
   // fill that overlaps its neighbour shows the seam as a darker line.
@@ -70,8 +75,8 @@ export function paintSurface(
   ctx.fillRect(x0, y0, Math.round(box.x + s) - x0, Math.round(box.y + s) - y0);
 
   // The bank: a wide faint band inside the edge under a thin bright line.
-  const inset = Math.max(1, s * 0.03);
-  const band = s * 0.12;
+  const inset = Math.max(1, s * SURFACE_BANK.line);
+  const band = s * SURFACE_BANK.width;
   const sides: [boolean, number, number, number, number][] = [
     [edges.n, box.x, box.y, s + 1, band],
     [edges.s, box.x, box.y + s - band, s + 1, band],
@@ -79,9 +84,9 @@ export function paintSurface(
     [edges.e, box.x + s - band, box.y, band, s + 1],
   ];
   ctx.fillStyle = style.edge;
-  ctx.globalAlpha = style.alpha * 0.22;
+  ctx.globalAlpha = 0.12 * intensity;
   for (const [on, x, y, w, h] of sides) if (on) ctx.fillRect(x, y, w, h);
-  ctx.globalAlpha = style.alpha * 0.75;
+  ctx.globalAlpha = SURFACE_BANK.alpha * intensity;
   ctx.strokeStyle = style.edge;
   ctx.lineWidth = inset;
   ctx.beginPath();
@@ -103,12 +108,30 @@ export function paintSurface(
   }
   ctx.stroke();
 
-  // A surface about to expire is drawn faintly, so "two rounds left" is
-  // visible without anyone reading a number.
-  if (tile.surface.duration >= 0 && tile.surface.duration <= 1) {
-    ctx.globalAlpha = 0.25;
-    ctx.fillStyle = '#000000';
-    ctx.fillRect(box.x, box.y, s + 1, s + 1);
+  // Sparse material marks leave the painted ground legible. Position-seeded
+  // detail never swims with the camera; the wash still covers every hazard tile.
+  const material = tile.surface.id;
+  if (material === 'ice' || material === 'mud' || material === 'oil' || material === 'rubble') {
+    ctx.globalAlpha = (material === 'ice' ? 0.38 : 0.24) * intensity;
+    ctx.lineWidth = Math.max(1, s * 0.013);
+    for (let i = 0; i < 3; i++) {
+      const x = box.x + (0.12 + tileNoise(pos.x, pos.y, i * 3 + 1) * 0.7) * s;
+      const y = box.y + (0.12 + tileNoise(pos.x, pos.y, i * 3 + 2) * 0.7) * s;
+      ctx.beginPath();
+      if (material === 'ice') {
+        ctx.moveTo(x - s * 0.08, y + s * 0.11);
+        ctx.lineTo(x, y);
+        ctx.lineTo(x + s * 0.15, y - s * 0.035);
+      } else if (material === 'rubble') {
+        ctx.moveTo(x - s * 0.025, y);
+        ctx.lineTo(x, y - s * 0.04);
+        ctx.lineTo(x + s * 0.04, y + s * 0.01);
+        ctx.closePath();
+      } else {
+        ctx.ellipse(x, y, s * (material === 'oil' ? 0.12 : 0.045), s * 0.025, -0.35, 0, Math.PI);
+      }
+      ctx.stroke();
+    }
   }
 
   if (hatch) paintHatch(ctx, box, style.hatch, style.edge, pos);

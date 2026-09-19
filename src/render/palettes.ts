@@ -96,12 +96,12 @@ export interface SurfaceStyle {
 
 export const SURFACE_STYLES: Record<SurfaceId, SurfaceStyle> = {
   water: { fill: '#3e8fb0', alpha: 0.55, edge: '#7ec8e3', hatch: 'wave', label: 'Water' },
-  ice: { fill: '#bfe8f5', alpha: 0.6, edge: '#ffffff', hatch: 'diagonal', label: 'Ice' },
+  ice: { fill: '#bfe8f5', alpha: 0.34, edge: '#e4f6fa', hatch: 'diagonal', label: 'Ice' },
   fire: { fill: '#e0521f', alpha: 0.7, edge: '#ffb648', hatch: 'vertical', label: 'Fire' },
-  mud: { fill: '#5a4326', alpha: 0.7, edge: '#7c5d33', hatch: 'dots', label: 'Mud' },
+  mud: { fill: '#5a4326', alpha: 0.34, edge: '#987647', hatch: 'dots', label: 'Mud' },
   steam: { fill: '#d9d9d9', alpha: 0.72, edge: '#ffffff', hatch: 'cross', label: 'Steam' },
-  oil: { fill: '#14120f', alpha: 0.72, edge: '#3d3a2f', hatch: 'diagonal', label: 'Oil' },
-  rubble: { fill: '#6e6a63', alpha: 0.65, edge: '#8d887f', hatch: 'dots', label: 'Rubble' },
+  oil: { fill: '#242522', alpha: 0.46, edge: '#65736b', hatch: 'diagonal', label: 'Oil' },
+  rubble: { fill: '#6e6a63', alpha: 0.3, edge: '#a09a8b', hatch: 'dots', label: 'Rubble' },
 };
 
 /* ------------------------------------------------------------------ */
