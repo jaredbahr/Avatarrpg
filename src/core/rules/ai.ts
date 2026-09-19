@@ -426,9 +426,9 @@ function scoreProps(
       }
     }
 
-    // Shoving a barrel with nobody near it is still mildly useful — it is cover
-    // on the move — but it must never beat hitting a person.
-    if (shoves && value === 0) value = 0.5;
+    // A shove with no affected unit or break consequence has no tactical value.
+    // Leave it at zero so the planner falls through to repositioning instead of
+    // spending AP nudging an empty prop back and forth.
     total += value;
   }
 
