@@ -29,6 +29,13 @@ export const BA_DAN_WESTERN_APPROACH_GROUND = {
   width: 704,
   height: 352,
 } as const;
+/** Connected local courts; outer tree rim and map perimeter remain procedural. */
+export const BA_DAN_NEIGHBORHOOD_GROUNDS = [
+  { id: 'northwest-lawn', x: 576, y: 96, width: 704, height: 352 },
+  { id: 'north-house-court', x: 960, y: 160, width: 1152, height: 576 },
+  { id: 'east-gate-approach', x: 1280, y: 640, width: 896, height: 448 },
+  { id: 'south-house-court', x: 384, y: 480, width: 1152, height: 576 },
+] as const;
 /** Outer metric radius of the transparent coping around runtime water. */
 export const BA_DAN_CANAL_BANK_RADIUS = 1.42;
 /** Transparent coping envelope around all six runtime water diamonds. */
@@ -126,6 +133,12 @@ function westernApproachGround(): SceneImage {
     ...BA_DAN_WESTERN_APPROACH_GROUND,
   };
 }
+function neighborhoodGround({
+  id,
+  ...frame
+}: (typeof BA_DAN_NEIGHBORHOOD_GROUNDS)[number]): SceneImage {
+  return { url: `${root}${id}-ground.webp`, ...frame };
+}
 
 function canalBanks(): SceneImage {
   return {
@@ -184,6 +197,7 @@ export const BA_DAN_SCENE: MapScene = {
   ground: [
     westernApproachGround(),
     courtyardGround(),
+    ...BA_DAN_NEIGHBORHOOD_GROUNDS.map(neighborhoodGround),
     {
       url: `${root}north-grass-fringe.webp`,
       x: 1024 + (BA_DAN_NORTH_FRINGE.x - BA_DAN_NORTH_FRINGE.y - BA_DAN_NORTH_FRINGE.depth) * 64,

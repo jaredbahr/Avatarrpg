@@ -34,6 +34,17 @@ sampled with the exact same logical-coordinate material function as the
 courtyard and sits below that region's existing feather, avoiding a second
 screen-space join.
 
+The remaining connected village courts are four local transparent pieces packed
+by `scripts/art/ba-dan-neighborhood-ground.ts`: northwest lawn (`x0..6,y3..6`),
+north house court (`x4..17,y1..4`), east gate approach (`x14..23,y6..9`), and
+south house court (`x5..17,y10..14`). Their half-open bounds overlap reviewed
+western/courtyard pixels but deliberately leave rows 0 and 15 and the exterior
+tree rim procedural. Water is transparent in every local piece. The packer
+uses only decoded opaque quiet-grass (`x10..11,y4`) and broad flagstone
+(`x5..9,y7..8`) source interiors from the tracked accepted courtyard asset; it
+copies exact decoded RGB through existing overlaps and gives every new piece its
+own exterior feather.
+
 The canal's water is runtime-owned. `canal-banks.webp` is a transparent
 576×288 coping piece at `(928,368)`, generated from the six exact water-cell
 centres and the shared 64/32 projected diamond. It supplies textured stone only;
@@ -57,6 +68,7 @@ The deterministic material and coping generators are:
 ```sh
 npx tsx scripts/art/ba-dan-courtyard-ground.ts art/raw/scenes/ground-materials.png
 npx tsx scripts/art/ba-dan-western-approach-ground.ts
+npx tsx scripts/art/ba-dan-neighborhood-ground.ts
 npx tsx scripts/art/ba-dan-canal-banks.ts art/raw/scenes/ground-materials.png
 python scripts/art/ba-dan-bridge-front.py
 ```

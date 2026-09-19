@@ -10,6 +10,7 @@ import {
   BA_DAN_CANAL_BANKS,
   BA_DAN_COURTYARD_GROUND,
   BA_DAN_WESTERN_APPROACH_GROUND,
+  BA_DAN_NEIGHBORHOOD_GROUNDS,
   BA_DAN_COURTYARD_FOOTPRINTS,
   BA_DAN_COURT_TREES,
   BA_DAN_SCENE,
@@ -24,7 +25,9 @@ beforeAll(async () => {
   await init(await WebAssembly.compile(wasm));
   decodedGround = new Map();
   for (const piece of BA_DAN_SCENE.ground.filter((entry) =>
-    /(?:courtyard|western-approach)-ground\.webp$/.test(entry.url),
+    /(?:courtyard|western-approach|northwest-lawn|north-house-court|east-gate-approach|south-house-court)-ground\.webp$/.test(
+      entry.url,
+    ),
   )) {
     const bytes = readFileSync(`public/${piece.url}`);
     decodedGround.set(
@@ -66,6 +69,18 @@ function rgbAt(
   if (!image) return [0, 0, 0];
   const x = Math.round(1024 + (pos.x - pos.y) * 64 - piece.x);
   const y = Math.round((pos.x + pos.y + 1) * 32 - piece.y);
+  const at = (y * image.width + x) * 4;
+  return [image.data[at] ?? 0, image.data[at + 1] ?? 0, image.data[at + 2] ?? 0];
+}
+
+function rgbAtWorld(
+  piece: (typeof BA_DAN_SCENE.ground)[number],
+  pos: { x: number; y: number },
+): readonly number[] {
+  const image = decodedGround.get(piece.url);
+  if (!image) return [0, 0, 0];
+  const x = Math.round(1024 + (pos.x - pos.y) * 64 - piece.x);
+  const y = Math.round((pos.x + pos.y) * 32 - piece.y);
   const at = (y * image.width + x) * 4;
   return [image.data[at] ?? 0, image.data[at + 1] ?? 0, image.data[at + 2] ?? 0];
 }
@@ -186,6 +201,88 @@ it('ships the western spawn approach as decoded material coverage with a courtya
       expect(alphaAtWorld(western, { x, y }), `opaque fractional join ${x},${y}`).toBeGreaterThan(
         240,
       );
+});
+
+it('covers the remaining connected village courts with opaque decoded material joins', () => {
+  const courtyard = BA_DAN_SCENE.ground.find((piece) =>
+    piece.url.endsWith('/courtyard-ground.webp'),
+  );
+  const named = (id: string) =>
+    BA_DAN_SCENE.ground.find((piece) => piece.url.endsWith(`/${id}-ground.webp`));
+  const regions = BA_DAN_NEIGHBORHOOD_GROUNDS.map((frame) => ({ frame, piece: named(frame.id) }));
+  expect(courtyard).toBeDefined();
+  for (const {
+    frame: { id: _id, ...frame },
+    piece,
+  } of regions)
+    expect(piece).toMatchObject(frame);
+  if (!courtyard || regions.some(({ piece }) => !piece))
+    throw new Error('Missing neighborhood material ground');
+  // The only repeated swatches are verified opaque source interiors, never props or water.
+  for (const pos of [
+    { x: 10, y: 4 },
+    { x: 11, y: 4 },
+  ]) {
+    expect(BA_DAN_VILLAGE.rows[pos.y]?.[pos.x]).toBe(',');
+    expect(alphaAt(courtyard, pos)).toBeGreaterThan(240);
+  }
+  for (const pos of [
+    { x: 5, y: 7 },
+    { x: 9, y: 7 },
+    { x: 5, y: 8 },
+    { x: 9, y: 8 },
+  ]) {
+    expect(BA_DAN_VILLAGE.rows[pos.y]?.[pos.x]).toBe('=');
+    expect(alphaAt(courtyard, pos)).toBeGreaterThan(240);
+  }
+  const centers: Readonly<Record<string, readonly { x: number; y: number }[]>> = {
+    'northwest-lawn': [
+      { x: 1, y: 4 },
+      { x: 3, y: 5 },
+      { x: 5, y: 6 },
+    ],
+    'north-house-court': [
+      { x: 5, y: 2 },
+      { x: 10, y: 2 },
+      { x: 16, y: 3 },
+    ],
+    'east-gate-approach': [
+      { x: 15, y: 7 },
+      { x: 20, y: 8 },
+      { x: 17, y: 9 },
+    ],
+    'south-house-court': [
+      { x: 6, y: 11 },
+      { x: 10, y: 12 },
+      { x: 17, y: 13 },
+    ],
+  };
+  for (const { frame, piece } of regions) {
+    if (!piece) continue;
+    for (const pos of centers[frame.id] ?? [])
+      expect(alphaAt(piece, pos), `${frame.id} ${pos.x},${pos.y}`).toBeGreaterThan(240);
+  }
+  const joins = [
+    ['northwest-lawn', { x: 1.25, y: 6.5 }, 'western-approach'],
+    ['northwest-lawn', { x: 5.5, y: 4.5 }, 'courtyard'],
+    ['north-house-court', { x: 10.5, y: 3.5 }, 'courtyard'],
+    ['east-gate-approach', { x: 14.5, y: 7.5 }, 'courtyard'],
+    ['south-house-court', { x: 10.5, y: 10.5 }, 'courtyard'],
+  ] as const;
+  for (const [leftId, pos, rightId] of joins) {
+    const left = named(leftId);
+    const right = rightId === 'courtyard' ? courtyard : named(rightId);
+    if (!left || !right) throw new Error(`Missing join ${leftId}/${rightId}`);
+    expect(alphaAtWorld(left, pos), `${leftId} alpha`).toBeGreaterThan(240);
+    expect(alphaAtWorld(right, pos), `${rightId} alpha`).toBeGreaterThan(240);
+    const a = rgbAtWorld(left, pos),
+      b = rgbAtWorld(right, pos);
+    for (let channel = 0; channel < 3; channel++)
+      expect(Math.abs((a[channel] ?? 0) - (b[channel] ?? 0))).toBeLessThanOrEqual(8);
+  }
+  for (const water of BA_DAN_WATER_CELLS) {
+    for (const { piece } of regions) if (piece) expect(alphaAt(piece, water)).toBeLessThan(8);
+  }
 });
 
 it('covers the projected courtyard and southeast canal bank without clipping', () => {
