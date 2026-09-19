@@ -6,6 +6,84 @@ import { BattleDraft } from '../src/core/state/battleDraft';
 import { enterNode, resetStorage, settleLayout, startGame, takeTurn, waitForIdle } from './helpers';
 import { groundPoint, paintedTileCentre } from './projection';
 
+async function targetPointAndHit(
+  page: Page,
+  target: { x: number; y: number },
+): Promise<{ point: { x: number; y: number }; hitCanvas: boolean } | null> {
+  return page.evaluate((p) => {
+    const canvas = document.querySelector<HTMLCanvasElement>('.map-canvas');
+    const camera = window.fnt?.app.rendererCamera();
+    if (!canvas || !camera) return null;
+    const m = camera.groundTransform;
+    const x = (p.x + 0.5) * 64;
+    const y = (p.y + 0.5) * 64;
+    const rect = canvas.getBoundingClientRect();
+    const dpr = window.devicePixelRatio || 1;
+    const point = {
+      x: rect.left + ((m.a * x + m.c * y + m.tx) * rect.width) / (canvas.width / dpr),
+      y: rect.top + ((m.b * x + m.d * y + m.ty) * rect.height) / (canvas.height / dpr),
+    };
+    return { point, hitCanvas: document.elementFromPoint(point.x, point.y) === canvas };
+  }, target);
+}
+
+async function stableAimSnapshot(
+  page: Page,
+  expected: { offsetX: number; offsetY: number; tilePx: number },
+) {
+  const handle = await page.waitForFunction(
+    (wanted) =>
+      new Promise<{
+        camera: { offsetX: number; offsetY: number; tilePx: number };
+        confirmEnabled: boolean;
+      } | null>((resolve) => {
+        const read = () => {
+          const camera = window.fnt?.app.rendererCamera();
+          const confirm = document.querySelector<HTMLButtonElement>(
+            '.confirm-dialog button.btn-primary',
+          );
+          if (!camera || !confirm) return null;
+          return {
+            camera: { offsetX: camera.offsetX, offsetY: camera.offsetY, tilePx: camera.tilePx },
+            confirmEnabled: !confirm.disabled,
+          };
+        };
+        const first = read();
+        if (!first) {
+          resolve(null);
+          return;
+        }
+        const frames = (n: number, then: () => void) =>
+          n === 0 ? then() : requestAnimationFrame(() => frames(n - 1, then));
+        frames(2, () => {
+          const second = read();
+          frames(2, () => {
+            const third = read();
+            if (
+              second &&
+              third &&
+              JSON.stringify(first.camera) === JSON.stringify(second.camera) &&
+              JSON.stringify(second.camera) === JSON.stringify(third.camera) &&
+              Math.abs(third.camera.offsetX - wanted.offsetX) < 0.01 &&
+              Math.abs(third.camera.offsetY - wanted.offsetY) < 0.01 &&
+              Math.abs(third.camera.tilePx - wanted.tilePx) < 0.01
+            ) {
+              resolve(third);
+            } else {
+              resolve(null);
+            }
+          });
+        });
+      }),
+    expected,
+    { timeout: 10_000 },
+  );
+  return handle.jsonValue() as Promise<{
+    camera: { offsetX: number; offsetY: number; tilePx: number };
+    confirmEnabled: boolean;
+  }>;
+}
+
 async function lowestVisibleMoveTarget(page: Page): Promise<{ x: number; y: number }> {
   const view = await page.evaluate(() => {
     const app = window.fnt?.app;
@@ -61,10 +139,9 @@ for (const renderer of ['canvas', 'webgl'] as const) {
     await enterNode(page, 'battle_forest_road');
     expect(await takeTurn(page)).toBe(true);
     await waitForIdle(page);
-    expect(await page.evaluate(() => window.fnt!.app.rendererBackend())).toBe(renderer);
     const target = { x: 13, y: 5 };
     // Stage only legal battle positions. Navigation and aiming use the actual UI.
-    await page.evaluate((spot) => {
+    const backend = await page.evaluate((spot) => {
       const app = window.fnt!.app;
       const state = app.state!;
       const battle = state.battle!;
@@ -83,7 +160,9 @@ for (const renderer of ['canvas', 'webgl'] as const) {
           ),
         },
       };
+      return app.rendererBackend();
     }, target);
+    expect(backend).toBe(renderer);
     await page.getByRole('button', { name: 'Recentre', exact: true }).click();
     await settleLayout(page);
     const initialView = await page.evaluate((p) => {
@@ -136,20 +215,25 @@ for (const renderer of ['canvas', 'webgl'] as const) {
     };
     await page.getByRole('button', { name: /Fire Jab/i }).click();
     await expectPan();
-    const aimed = await paintedTileCentre(page, target);
+    const aimed = await targetPointAndHit(page, target);
     if (!aimed) throw new Error('Missing target');
-    expect(
-      await page.evaluate(
-        ({ x, y }) => document.elementFromPoint(x, y) === document.querySelector('.map-canvas'),
-        aimed,
-      ),
-    ).toBe(true);
-    await page.touchscreen.tap(aimed.x, aimed.y);
-    await expect(page.getByRole('button', { name: 'Confirm', exact: true })).toBeEnabled();
-    await expectPan();
+    expect(aimed.hitCanvas).toBe(true);
+    await page.touchscreen.tap(aimed.point.x, aimed.point.y);
+    const postAim = await stableAimSnapshot(page, panned);
+    expect(postAim.confirmEnabled).toBe(true);
+    expect(postAim.camera.tilePx).toBe(panned.tilePx);
+    expect(postAim.camera.offsetX).toBeCloseTo(panned.offsetX, 3);
+    expect(postAim.camera.offsetY).toBeCloseTo(panned.offsetY, 3);
     await page.getByRole('button', { name: 'Cancel', exact: true }).click();
     await expectPan();
-    expect(await page.evaluate(() => JSON.stringify(window.fnt!.app.state!.battle))).toBe(state);
+    const cancelledState = await page.evaluate(() => ({
+      camera: window.fnt!.app.rendererCamera()!,
+      state: JSON.stringify(window.fnt!.app.state!.battle),
+    }));
+    expect(cancelledState.state).toBe(state);
+    expect(cancelledState.camera.tilePx).toBe(panned.tilePx);
+    expect(cancelledState.camera.offsetX).toBeCloseTo(panned.offsetX, 3);
+    expect(cancelledState.camera.offsetY).toBeCloseTo(panned.offsetY, 3);
     // Explicit window resize uses the same retained navigation policy.
     await page.setViewportSize({ width: 1672, height: 981 });
     await expectPan();
