@@ -1,6 +1,20 @@
 import { test, expect } from '@playwright/test';
 import { resetStorage, startGame, enterNode, takeTurn, waitForIdle } from './helpers';
-import { screenshotClipPixels, average } from './pixels';
+import { screenshotClipPixels, average, type Pixels } from './pixels';
+
+const ROI_CSS = 96;
+
+function changedPixels(before: Pixels, after: Pixels, cssSize: number): number {
+  let changed = 0;
+  for (let y = 0; y < cssSize; y++) {
+    for (let x = 0; x < cssSize; x++) {
+      const a = before.at(x, y);
+      const b = after.at(x, y);
+      if (a && b && Math.abs(a.r - b.r) + Math.abs(a.g - b.g) + Math.abs(a.b - b.b) > 6) changed++;
+    }
+  }
+  return changed;
+}
 
 for (const renderer of ['canvas', 'webgl'])
   test(`partial ground keeps rubble art and live overlays on ${renderer}`, async ({ page }) => {
@@ -47,8 +61,9 @@ for (const renderer of ['canvas', 'webgl'])
       return { ...average(pixels, point.x - left, point.y - top, 3), pixels };
     };
     const registered = await sample();
-    // Forest Road is a partial scene: its local rubble image remains visible
-    // even if the legacy complete-scene registration list is absent.
+    // Forest Road is a partial scene: the permanent live rubble overlay remains
+    // active regardless of the legacy complete-scene registration list, while
+    // the registered local rubble image remains visible underneath it.
     await page.evaluate(() => {
       const scene = window.fnt!.app.content.maps.get('forest_road')!.scene!;
       Object.defineProperty(scene, 'paintedRubble', { value: [], configurable: true });
@@ -63,29 +78,29 @@ for (const renderer of ['canvas', 'webgl'])
       const app = window.fnt!.app;
       const tile = app.state!.battle!.grid.tiles[3 * 20 + 7]!;
       Object.defineProperty(tile, 'surface', {
-        value: { id: 'water', duration: 3, spread: 0 },
+        value: { id: 'water', duration: -1, spread: 0 },
         configurable: true,
       });
     });
     const water = await sample();
     expect(water.b - registered.b).toBeGreaterThan(10);
     expect(water.g - registered.g).toBeGreaterThan(5);
+    const waterRegion = await sample(ROI_CSS);
 
     // Hatch mode remains visible over the authored image for a live material.
     await page.evaluate(() => {
       const app = window.fnt!.app;
       Object.defineProperty(app.state!.battle!.grid.tiles[3 * 20 + 7]!, 'surface', {
-        value: { id: 'water', duration: 3, spread: 0 },
+        value: { id: 'water', duration: -1, spread: 0 },
         configurable: true,
       });
       app.updateSettings({ hatchSurfaces: true });
     });
-    const hatchedWater = await sample();
+    const hatchedWater = await sample(ROI_CSS);
     expect(
-      Math.abs(hatchedWater.r - water.r) +
-        Math.abs(hatchedWater.g - water.g) +
-        Math.abs(hatchedWater.b - water.b),
-    ).toBeGreaterThan(1);
+      changedPixels(waterRegion.pixels, hatchedWater.pixels, ROI_CSS),
+      'hatch changed pixels',
+    ).toBeGreaterThan(10);
 
     // High contrast restores procedural markers when authored pieces are unavailable.
     await page.evaluate(() => {
@@ -96,28 +111,15 @@ for (const renderer of ['canvas', 'webgl'])
       });
       app.updateSettings({ hatchSurfaces: false, highContrast: false });
     });
-    const beforeContrast = await sample(96);
+    const beforeContrast = await sample(ROI_CSS);
     await page.evaluate(() => {
       window.fnt!.app.updateSettings({ highContrast: true });
     });
-    const accessible = await sample(96);
-    let changed = 0;
-    for (let y = 0; y < beforeContrast.pixels.height; y++) {
-      for (let x = 0; x < beforeContrast.pixels.width; x++) {
-        const before = beforeContrast.pixels.at(x, y);
-        const after = accessible.pixels.at(x, y);
-        if (
-          before &&
-          after &&
-          Math.abs(before.r - after.r) +
-            Math.abs(before.g - after.g) +
-            Math.abs(before.b - after.b) >
-            6
-        )
-          changed++;
-      }
-    }
-    expect(changed, `high-contrast changed pixels: ${changed}`).toBeGreaterThan(10);
+    const accessible = await sample(ROI_CSS);
+    expect(
+      changedPixels(beforeContrast.pixels, accessible.pixels, ROI_CSS),
+      'high-contrast changed pixels',
+    ).toBeGreaterThan(10);
     await page.evaluate(() => {
       const app = window.fnt!.app;
       const scene = app.content.maps.get('forest_road')!.scene!;
