@@ -82,6 +82,45 @@ export default defineConfig({
             map: null,
           };
         }
+        // The game renders on the main thread and has no Worker or OffscreenCanvas
+        // path. Register the browser environment only; the worker extension would
+        // otherwise retain Pixi's unused worker environment chunk (ADR 0033).
+        if (/[/\\]pixi\.js[/\\]lib[/\\]index\.mjs$/.test(id)) {
+          const registration = 'extensions.add(browserExt, webworkerExt);';
+          if (!code.includes(registration)) {
+            throw new Error(
+              'Pixi environment registration changed; review the worker-environment exclusion.',
+            );
+          }
+          return {
+            code: code.replace(registration, 'extensions.add(browserExt);'),
+            map: null,
+          };
+        }
+        // Canvas rendering is our separate Canvas2D backend. Pixi is created
+        // only as a WebGLRenderer, so its CanvasRenderer filter system cannot
+        // be selected (ADR 0033).
+        if (/[/\\]pixi\.js[/\\]lib[/\\]filters[/\\]init\.mjs$/.test(id)) {
+          const canvasFilterImport =
+            "import { CanvasFilterSystem } from './CanvasFilterSystem.mjs';";
+          if (
+            !code.includes(canvasFilterImport) ||
+            !code.includes('extensions.add(FilterSystem, CanvasFilterSystem);')
+          ) {
+            throw new Error(
+              'Pixi filter registration changed; review the CanvasFilterSystem exclusion.',
+            );
+          }
+          return {
+            code: code
+              .replace(canvasFilterImport, '')
+              .replace(
+                'extensions.add(FilterSystem, CanvasFilterSystem);',
+                'extensions.add(FilterSystem);',
+              ),
+            map: null,
+          };
+        }
         if (
           /[/\\]pixi\.js[/\\]lib[/\\](accessibility|events|dom|spritesheet)[/\\]init\.mjs$/.test(id)
         ) {
