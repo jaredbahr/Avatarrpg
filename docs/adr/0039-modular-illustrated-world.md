@@ -46,6 +46,14 @@ repository checks and exact-head CI remain unchanged.
 
 ## Consequences
 
+The first contract extension is an optional `MapScene.groundMode: 'partial'`.
+Absent means the existing complete-ground behavior. Partial mode draws the
+procedural terrain base, then authored projected ground pieces, then dynamic
+surfaces, paths and effects. It must not globally suppress permanent water
+outside an explicitly represented area. This extension is approved for the
+proof but remains unimplemented at this decision checkpoint; source and visual
+parity tests must establish the eventual implementation.
+
 The proof comes before expanding this construction across the existing bounded
 village-to-quarry route. It does not replace the full route, encounter, outcome,
 return, motion/audio, save, device, merge or deployment requirements. Existing
