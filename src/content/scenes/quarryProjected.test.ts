@@ -5,6 +5,7 @@ import {
   DRILLER_FLOOR_SCENE,
   DRILLER_FLOOR_WALL_CELLS,
   DRILLER_REAR_LOADING_CELLS,
+  DRILLER_REAR_LOADING_SCENERY,
 } from './quarryProjected';
 
 describe('projected quarry scenes', () => {
@@ -33,15 +34,15 @@ describe('projected quarry scenes', () => {
       'art/maps/driller-floor-scene/ground-west.webp',
       'art/maps/driller-floor-scene/ground-east.webp',
     ]);
-    expect(DRILLER_FLOOR_SCENE.scenery).toHaveLength(2);
-    expect(DRILLER_FLOOR_SCENE.scenery.map((piece) => piece.footprint[0])).toEqual(
+    expect(DRILLER_FLOOR_SCENE.scenery).toHaveLength(3);
+    expect(DRILLER_FLOOR_SCENE.scenery.slice(0, 2).map((piece) => piece.footprint[0])).toEqual(
       DRILLER_FLOOR_WALL_CELLS,
     );
-    expect(DRILLER_FLOOR_SCENE.scenery.map((piece) => piece.url)).toEqual([
+    expect(DRILLER_FLOOR_SCENE.scenery.slice(0, 2).map((piece) => piece.url)).toEqual([
       'art/maps/quarry-gate-scene/wall-end.webp',
       'art/maps/quarry-gate-scene/wall-end.webp',
     ]);
-    for (const [index, piece] of DRILLER_FLOOR_SCENE.scenery.entries()) {
+    for (const [index, piece] of DRILLER_FLOOR_SCENE.scenery.slice(0, 2).entries()) {
       const cell = DRILLER_FLOOR_WALL_CELLS[index];
       expect(cell).toBeDefined();
       if (!cell) continue;
@@ -62,6 +63,19 @@ describe('projected quarry scenes', () => {
       { x: 17, y: -1 },
       { x: 18, y: -1 },
       { x: 19, y: -1 },
+    ]);
+    expect(DRILLER_REAR_LOADING_SCENERY).toEqual([
+      {
+        id: 'driller-rear-loading',
+        url: 'art/maps/driller-floor-scene/rear-loading.webp',
+        x: 1652,
+        y: 382,
+        width: 370,
+        height: 249,
+        footprint: DRILLER_REAR_LOADING_CELLS,
+        depth: { x: 16.5, y: -0.5 },
+        exterior: true,
+      },
     ]);
     expect(DRILLER_FLOOR_SCENE.paintedWater).toBeUndefined();
   });

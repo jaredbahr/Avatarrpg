@@ -27,10 +27,10 @@ const quarryGateWallRoot = 'art/maps/quarry-gate-scene/';
 type QuarryWallVariant = 'interior' | 'end';
 
 /** The two permanent stone stacks added to the Driller's playable interior. */
-export const DRILLER_FLOOR_WALL_CELLS: readonly Vec2[] = [
+export const DRILLER_FLOOR_WALL_CELLS = [
   { x: 8, y: 4 },
   { x: 11, y: 7 },
-];
+] as const satisfies readonly Vec2[];
 
 /** Reserved exterior anchor row for the art-owned loading/rail strip. */
 export const DRILLER_REAR_LOADING_CELLS: readonly Vec2[] = [
@@ -55,16 +55,28 @@ const drillerWall = (cell: Vec2, variant: QuarryWallVariant): SceneScenery => ({
 });
 
 const DRILLER_FLOOR_WALLS: readonly SceneScenery[] = [
-  drillerWall(DRILLER_FLOOR_WALL_CELLS[0] ?? { x: 8, y: 4 }, 'end'),
-  drillerWall(DRILLER_FLOOR_WALL_CELLS[1] ?? { x: 11, y: 7 }, 'end'),
+  drillerWall(DRILLER_FLOOR_WALL_CELLS[0], 'end'),
+  drillerWall(DRILLER_FLOOR_WALL_CELLS[1], 'end'),
 ];
 
 /**
- * The rear strip is registered by the separate art handoff once its source is
- * available. Keeping the hook here makes the footprint and layering contract
- * explicit without shipping a missing URL.
+ * A shallow, closed loading stub sits behind the mixed-height rear rim. Its
+ * exterior footprint is decorative only: it must never make row 0 traversable
+ * or flatten the playable ledges beneath it.
  */
-export const DRILLER_REAR_LOADING_SCENERY: readonly SceneScenery[] = [];
+export const DRILLER_REAR_LOADING_SCENERY: readonly SceneScenery[] = [
+  {
+    id: 'driller-rear-loading',
+    url: 'art/maps/driller-floor-scene/rear-loading.webp',
+    x: 1652,
+    y: 382,
+    width: 370,
+    height: 249,
+    footprint: DRILLER_REAR_LOADING_CELLS,
+    depth: { x: 16.5, y: -0.5 },
+    exterior: true,
+  },
+];
 
 /**
  * The reviewed projected ground pages for The Cutting. Dynamic water, oil,
@@ -78,6 +90,7 @@ export const CUTTING_SCENE: MapScene = {
 /** The same scene contract for the Driller floor, including its intentional rear gap. */
 export const DRILLER_FLOOR_SCENE: MapScene = {
   ground: [...quarrySurround, westGround('driller-floor-scene'), eastGround('driller-floor-scene')],
-  // The surround owns the exterior mass; these walls own the new interior cover.
+  // The surround owns the exterior mass; these walls and the rear stub own the
+  // new structural context without changing the playable floor.
   scenery: [...DRILLER_FLOOR_WALLS, ...DRILLER_REAR_LOADING_SCENERY],
 };
