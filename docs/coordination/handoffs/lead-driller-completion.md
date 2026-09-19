@@ -176,6 +176,30 @@ preserves attachment, timing and backend behavior. No old footage is used to
 claim a current defect. PR64's exact-head checks must still be observed rather
 than inferred from local success or elapsed time.
 
+Water source `49478ac` is integrated as `ec6b669`; clean production build
+`903d853` passed the bundle build at 297.60 kB gzip and 16.67 MiB precache.
+Its source verification passed 804 tests, with both renderers at 64/96px and
+reduced motion reviewed. Root loaded Slot 1 normally in this combined build,
+targeted Grumbler and confirmed Water Whip: AP 5 to 4, HP 41 to 37, Wet applied.
+The log agreed. Original Slot 1 and completed-return Slot 2 remain preserved.
+
+The final role evidence is in `combat-role-combo-audit-13882b4` under the root
+visualization directory. Root found the original external `.ts` harness could
+not run as ESM and Bo's declared level-3 choice was invalid. The owner corrected
+it to executable `.mts` and valid `earth_wall`, preserved historical outputs,
+and reran with assertions against actual HEAD `903d853`. Water Pull, Wet, Riko's
+Chi Block and Wen's 12-lightning payoff passed; casualties and chance failures
+remain explicit. This is legal automated core evidence, not a manual all-party
+balance claim.
+
+PR64's `0af1530` E2E job failed after 205 passes in the iPad landscape preview
+playthrough; the gallery continued. The failure is assigned to an isolated
+repair owner, with no rerun or weakened checks. The combined branch now contains
+the existing PR head through a merge, so the final verified batch can advance
+that same PR rather than starting a duplicate integration pipeline. Job duration
+limits for the next batch use observed successful runtimes; no current run was
+cancelled merely because it was long.
+
 This checkpoint supersedes the in-progress route and source-integration statuses
 above. The normal solo route is complete through all four Ba Dan homecoming
 conversations; Slot 1 retains the Driller review and Slot 2 the completed return.
