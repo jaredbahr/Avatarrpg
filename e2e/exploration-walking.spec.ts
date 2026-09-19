@@ -33,12 +33,14 @@ async function tapPath(page: Page, x: number, y: number) {
 
 for (const renderer of ['canvas', 'webgl']) {
   test(`a second ground tap queues one visible walk on ${renderer}`, async ({ page }) => {
+    // Install before navigation so setup runs on the real clock. Pause only
+    // after the map is settled, with enough headroom for a slow CI browser.
+    await page.clock.install();
     await resetStorage(page, `?renderer=${renderer}`);
     await startGame(page, ['Explorer'], ['kaya', 'bo'], 'queued-walk', { reduceMotion: false });
     await enterNode(page, 'village_explore');
     await settleLayout(page);
-    await page.clock.install();
-    await page.clock.pauseAt(new Date(Date.now() + 1000));
+    await page.clock.pauseAt(Date.now() + 30_000);
     await tapPath(page, 9, 7);
     await expect(page.getByRole('button', { name: /^Talk/ })).toBeDisabled();
     await expect(page.locator('.map-wrap .walk-feedback')).toHaveCount(0);
@@ -58,12 +60,13 @@ for (const renderer of ['canvas', 'webgl']) {
 test('cancel and pause discard queued walking without teleporting the current walk', async ({
   page,
 }) => {
+  // Keep setup on the real clock; freeze only after the settled map is ready.
+  await page.clock.install();
   await resetStorage(page, '?renderer=canvas');
   await startGame(page, ['Explorer'], ['kaya'], 'cancel-walk', { reduceMotion: false });
   await enterNode(page, 'village_explore');
   await settleLayout(page);
-  await page.clock.install();
-  await page.clock.pauseAt(new Date(Date.now() + 1000));
+  await page.clock.pauseAt(Date.now() + 30_000);
   await tapPath(page, 9, 7);
   await tapPath(page, 7, 8);
   await page.getByRole('button', { name: 'Cancel next walk' }).dispatchEvent('click');

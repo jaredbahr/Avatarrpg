@@ -58,7 +58,8 @@ for (const backend of ['canvas', 'webgl']) {
       .info()
       .attach(`tea-${backend}-hold`, { body: await page.screenshot(), contentType: 'image/png' });
     const now = await page.evaluate(() => Date.now());
-    await page.clock.pauseAt(new Date(now + 1000));
+    // Leave room for the browser round trip before freezing the clock.
+    await page.clock.pauseAt(now + 30_000);
     const hold = await teaPortrait();
     // The authored tea clip has two cels at 0.25 fps: exactly four seconds
     // reaches the opposite cel without depending on wall-clock scheduling.
