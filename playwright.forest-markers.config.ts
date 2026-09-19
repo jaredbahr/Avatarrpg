@@ -10,7 +10,9 @@ export default defineConfig({
     baseURL: 'http://127.0.0.1:4259',
     viewport: { width: 1280, height: 720 },
     serviceWorkers: 'block',
-    launchOptions: { channel: 'msedge' },
+    launchOptions: process.env.FNT_REVIEW_BROWSER_CHANNEL
+      ? { channel: process.env.FNT_REVIEW_BROWSER_CHANNEL }
+      : {},
   },
   webServer: {
     command: 'npm run dev -- --host 127.0.0.1 --port 4259 --strictPort',

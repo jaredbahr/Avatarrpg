@@ -3,7 +3,9 @@
 - **Updated:** 2026-09-19. Art owner transfers to root integration owner.
 - **Location:** `C:/Users/Jared/Documents/ChatGPT/Avatar RPG-forest-marker-coherence`,
   branch `codex/forest-marker-coherence`, base `82bcc78`, runtime `91b7db9`.
-  The following handoff commit changes documentation only. No push, PR, CI,
+  Handoff `b0999f9` changes documentation only. A subsequent review-config
+  portability commit makes the browser channel optional; runtime is unchanged.
+  No push, PR, CI,
   release-version bump, generation or asset budget change.
 - **Outcome:** The turtle-duck discovery renders at scale 0.6 instead of the
   adult NPC multiplier 1.5. At tile zoom 96 its approximately 0.57-tile painted
@@ -59,10 +61,14 @@
   scale and the normal crossing figures use the painted human vocabulary.
   Its procedural drawing still differs from painted assets; this correction
   reduces its dominance rather than claiming complete style consistency.
-  Full forest composition, tree scale and physical-device acceptance remain
-  separate work. Root has been sent the exact review paths.
+  Root reviewed Canvas entry 64 and nest 96 and accepted the bounded correction.
+  Full forest composition, the hard-edged pond, tree scale and physical-device
+  acceptance remain separate work.
 - **Reproduce:** Set `FNT_FOREST_REVIEW_DIR` to a fresh ignored directory and run
-  `npx playwright test -c playwright.forest-markers.config.ts`. Full verification
+  `npx playwright test -c playwright.forest-markers.config.ts`. The portable
+  default uses bundled Chromium. To reproduce the local Edge captures in
+  PowerShell, first set `$env:FNT_REVIEW_BROWSER_CHANNEL='msedge'`; the strict
+  port and remaining capture settings stay the same. Full verification
   output is retained locally in `verify-forest-markers.local`.
 - **Transfer:** Clean committed source is ready for root integration. Port 4259
   stopped automatically after capture and has no listener. No further edits
