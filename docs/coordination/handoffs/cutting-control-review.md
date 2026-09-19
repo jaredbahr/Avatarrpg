@@ -327,3 +327,34 @@ combined checks await the coherent quality batch. PR64 remains frozen with its
 single required CI run. Its existing job caps are60min E2E and75min gallery;
 source comments record prior successful durations41–48 and up to62min, so the
 currently live long-running jobs are not treated as stalled without evidence.
+
+## Release CI failure and local engine coverage
+
+CI35438371967 is terminal: verification passed; E2E failed after240passes on the
+iPad-landscape pinch test's starting-scale assertion (96expected,64received),
+including its retry; root cancelled the remaining gallery. Log and playwright
+report are retained under frozen route-art-followup/.shots/integration with the
+run id. PR64 still targetsfc37c6a, remains open with merge-commit auto-merge
+enabled, and has not merged. Its body now records the actual failure.
+
+New isolated gesture_ci_repair owner is fixing the test contract fromfc37c6a,
+without touching root's ExploreScene. Local Chrome1194x834 reproduced the exact
+failure. Current compact framing intentionally chooses64, while wider/taller
+Surface uses96. Exact responsive sizes, usable canvas/actor visibility and all
+pinch/anchor/pan/Recentre/reflow assertions remain required.
+
+To reduce repeated CI-only discoveries, root installed the matching official
+Playwright WebKit2359 runtime on this Windows host (standardms-playwright cache).
+The repository's no-install instruction is for dev containers; this is Windows,
+not that environment. No package/lockfile changed. The repair owner now runs the
+actual local WebKit iPad profiles as well as27 passing Chrome gesture cases.
+This engine coverage does not replace a physical iPad or audible review.
+
+Root committed conversation-entry framing as1f82c1c after fullverify844/102,
+production build/budget and four Chrome browser cases. Four local WebKit framing
+cases also passed (27.6s); strict4266 stopped. See conversation-framing.md.
+Art source505941c supplies the accepted40,086B rail ledge. Gameplay source
+d266abb supplies the new quarry cover/props and has fullverify849/103 plus
+build/art/budget/balance passing. Gameplay is still integrating the rail asset
+and owes actual scene/route/variant evidence before root accepts the combined
+interior. Neither source alone establishes completed interior presentation.

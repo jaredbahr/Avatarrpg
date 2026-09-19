@@ -24,3 +24,8 @@ Validation on the next-quality candidate based onf656cd7:
 Reproduce with .shots/integration/framing.config.ts on strict4266. Its server
 stopped after the run. Source/test files: ExploreScene.ts and
 e2e/conversation-framing.spec.ts. No GitHub run was started for this change.
+
+All four matching local WebKit iPad-engine cases also passed in27.6s on the same
+production build, using newly installed official WebKit2359. Captures are
+.shots/conversation-framing-webkit-f656cd7-modified. Strict4266 stopped. Local
+WebKit coverage is engine evidence, not physical iPad touch/PWA acceptance.

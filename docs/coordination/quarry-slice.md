@@ -75,20 +75,22 @@ and must not be used to close these requirements.
 Current ownership, checked 19 September 2026. Read the linked handoff and verify
 live branches and checks before editing; older assignments are historical.
 
-| Assignment                         | Owner                 | Boundary                                                                                                                               |
-| ---------------------------------- | --------------------- | -------------------------------------------------------------------------------------------------------------------------------------- |
-| PR64 release v0.2.1                | Root orchestrator     | Frozen `fc37c6a`; one CI run35438371967; exact-head checks and merge-commit auto-merge                                                 |
-| Next quality integration           | Root orchestrator     | `codex/deserter-material-fx`; reviewed source-launch/flask/impact changes; no push into running PR64                                   |
-| Quarry loading/rail art            | `quarry_composition`  | New isolated art-only strip based on `c8f8b06`; coordinate asset/anchor with gameplay; scale source is integrated                      |
-| Quarry interior cover and props    | `combat_preview`      | Approved bounded map/scene implementation based on `c8f8b06`; existing rules, connected approaches and meaningful props                |
-| Riverside activity dock            | `world_conversations` | New isolated compact activity dock based on `9a54d23`; retain all interactions and accessible controls; quarry narration is integrated |
-| Continuous gameplay and acceptance | Root orchestrator     | Production4267 at `fc37c6a`; manual route and source review; no final aesthetic signoff                                                |
+| Assignment                         | Owner                                | Boundary                                                                                                                               |
+| ---------------------------------- | ------------------------------------ | -------------------------------------------------------------------------------------------------------------------------------------- |
+| PR64 release v0.2.1                | Root orchestrator                    | `fc37c6a`; CI35438371967 terminal E2E failure; gallery cancelled; no new push until coherent local verification                        |
+| Gesture CI repair                  | `gesture_ci_repair`                  | Isolated from `fc37c6a`; precise compact/wide framing and complete gesture contracts; Chrome and local WebKit evidence                 |
+| Next quality integration           | Root orchestrator                    | `codex/deserter-material-fx`; FX, scale, quarry narration and conversation framing integrated locally                                  |
+| Quarry loading/rail art            | Source complete; gameplay integrates | Accepted source `505941c`; actual registration and occlusion review remain part of quarry interior work                                |
+| Quarry interior cover and props    | `combat_preview`                     | Approved bounded map/scene implementation based on `c8f8b06`; existing rules, connected approaches and meaningful props                |
+| Riverside activity dock            | `world_conversations`                | New isolated compact activity dock based on `9a54d23`; retain all interactions and accessible controls; quarry narration is integrated |
+| Continuous gameplay and acceptance | Root orchestrator                    | Production4267 at `fc37c6a`; manual route and source review; no final aesthetic signoff                                                |
 
 The [current playthrough handoff](handoffs/cutting-control-review.md) records
 ownership, exact release validation and preserved saves. Release verification
 passes836 tests;14 focused production browser checks include complete trade and
-escort return routes. Current GitHub verification passed; E2E and gallery remain
-in progress. Rooted AI and disabled movement controls have also been confirmed
+escort return routes. GitHub verification passed; E2E failed after240 passes on
+the iPad pinch test's starting-scale assertion. The remaining gallery was cancelled
+and the scoped repair is under local verification. Rooted AI and disabled movement controls have also been confirmed
 through the original manual campaign on the corrected release build. The same
 Sura/Riko campaign subsequently lost with the boss at2 HP and reached its ending.
 Earlier solo Sura victory and homecoming evidence remains preserved. None of
