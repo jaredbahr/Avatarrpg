@@ -251,7 +251,7 @@ export interface AbilityPreview {
   readonly shoves: readonly ShoveForecast[];
   /** Status outcomes shown without rolling a chance. */
   readonly statuses: readonly StatusForecast[];
-  /** Living units already standing on a surface painted by this action. */
+  /** Unit contacts recorded by the shared surface resolver. */
   readonly surfaceContacts: readonly SurfaceContactForecast[];
 }
 
@@ -279,6 +279,7 @@ export function previewAbility(
     let damage = 0;
     let heal = 0;
     let healAtCapacity = false;
+    let remainingHealCapacity: number | null = null;
     let chance: number | null = null;
     const statuses: {
       id: StatusId;
@@ -297,10 +298,12 @@ export function previewAbility(
           break;
         case 'heal':
           if (friendly) {
+            remainingHealCapacity ??= Math.max(0, unit.base.maxHp - unit.hp);
             const requested = healAmount(content, caster, effect);
-            const capacity = Math.max(0, unit.base.maxHp - unit.hp);
-            heal += Math.min(requested, capacity);
-            healAtCapacity ||= capacity === 0;
+            const gained = Math.min(requested, remainingHealCapacity);
+            heal += gained;
+            remainingHealCapacity -= gained;
+            if (gained === 0) healAtCapacity = true;
           }
           break;
         case 'status':
@@ -389,7 +392,9 @@ export function previewAbility(
       forecast.catchesFriendly ||
       forecast.props.some((prop) => prop.affectedAllies.length > 0) ||
       forecast.shoves.some((shove) => shove.friendly) ||
-      forecast.surfaceContacts.some((contact) => contact.friendly),
+      forecast.surfaceContacts.some(
+        (contact) => contact.friendly && (contact.damage > 0 || contact.status !== null),
+      ),
   };
 }
 

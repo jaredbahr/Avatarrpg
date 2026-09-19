@@ -226,6 +226,32 @@ describe('bounded combat outcome previews', () => {
     ).toBe(false);
   });
 
+  it('caps multiple heal effects against the remaining HP capacity', () => {
+    const source = battleFor('enc_forest_road', ['nilak', 'kaya']);
+    const base = placed(source, { p0: { x: 1, y: 3 }, p1: { x: 4, y: 3 } }, ['p0', 'p1']);
+    const battle = {
+      ...base,
+      units: base.units.map((unit) =>
+        unit.id === 'p0' ? { ...unit, hp: unit.base.maxHp - 5 } : unit,
+      ),
+    };
+    const caster = battle.units.find((unit) => unit.id === 'p0');
+    if (!caster) throw new Error('multi-heal caster fixture missing');
+
+    const doubleHeal: Ability = {
+      ...ability('healing_stream'),
+      id: 'preview_double_heal',
+      effects: [
+        { kind: 'heal', base: 8, scale: 0 },
+        { kind: 'heal', base: 8, scale: 0 },
+      ],
+    };
+    const preview = previewAbility(CONTENT, battle, caster, doubleHeal, caster.pos);
+    expect(preview.targets.find((target) => target.unitId === caster.id)).toMatchObject({
+      heal: 5,
+    });
+  });
+
   it('reports cabbage-cart status collateral and both shove destinations', () => {
     const source = battleFor('enc_quarry_gate');
     const battle = placed(source, { p0: { x: 4, y: 6 }, e6: { x: 7, y: 6 } }, ['p0', 'e6']);
@@ -342,18 +368,83 @@ describe('bounded combat outcome previews', () => {
 
     const icePath = previewAbility(CONTENT, bossBattle, bossCaster, ability('ice_path'), boss.pos);
     expect(icePath.targets).toHaveLength(0);
-    expect(icePath.surfaceContacts).toEqual([
-      expect.objectContaining({
-        unitId: boss.id,
-        name: boss.name,
-        surface: 'ice',
-        status: expect.objectContaining({
-          requestedStatus: 'chilled',
-          appliedStatus: 'chilled',
-          chance: 0.4,
+    expect(icePath.surfaceContacts).toHaveLength(2);
+    for (const contact of icePath.surfaceContacts) {
+      expect(contact).toEqual(
+        expect.objectContaining({
+          unitId: boss.id,
+          name: boss.name,
+          surface: 'ice',
+          status: expect.objectContaining({
+            requestedStatus: 'chilled',
+            appliedStatus: 'chilled',
+            chance: 0.4,
+          }),
         }),
+      );
+    }
+
+    const alreadyIced = {
+      ...bossBattle,
+      grid: withSurface(bossBattle.grid, boss.pos, { id: 'ice', duration: 3, spread: 0 }),
+    };
+    const refreshIce: Ability = {
+      ...ability('ice_path'),
+      id: 'preview_refresh_ice',
+      targeting: { shape: 'tile' },
+      effects: [{ kind: 'surface', surface: 'ice', duration: 3, area: 'center' }],
+    };
+    const refreshPreview = previewAbility(CONTENT, alreadyIced, bossCaster, refreshIce, boss.pos);
+    expect(refreshPreview.surfaceContacts).toEqual([]);
+    expect(refreshPreview.targets).toEqual([]);
+  });
+
+  it('records lethal surface contact with actual HP loss and no post-death status', () => {
+    const source = battleFor('enc_forest_road');
+    const enemyId = source.units.find((unit) => unit.faction === 'enemy')?.id;
+    if (!enemyId) throw new Error('lethal contact fixture has no enemy');
+    const base = placed(source, { p0: { x: 1, y: 3 }, [enemyId]: { x: 4, y: 3 } }, ['p0', enemyId]);
+    const battle = {
+      ...base,
+      units: base.units.map((unit) => (unit.id === enemyId ? { ...unit, hp: 1 } : unit)),
+    };
+    const caster = battle.units.find((unit) => unit.id === 'p0');
+    const victim = battle.units.find((unit) => unit.id === enemyId);
+    if (!caster || !victim) throw new Error('lethal contact fixture missing a unit');
+
+    const preview = previewAbility(CONTENT, battle, caster, ability('fire_wall'), victim.pos);
+    expect(preview.surfaceContacts).toEqual([
+      expect.objectContaining({
+        unitId: victim.id,
+        surface: 'fire',
+        damage: 1,
+        status: null,
       }),
     ]);
+
+    const actual = resolve(battle, caster, 'fire_wall', victim.pos);
+    expect(actual.unit(victim.id)?.hp).toBe(0);
+    expect(actual.events).toContainEqual({ type: 'unitDied', unitId: victim.id });
+  });
+
+  it('does not mark a harmless friendly surface contact as damage warning', () => {
+    const source = battleFor('enc_forest_road', ['nilak', 'kaya']);
+    const battle = placed(source, { p0: { x: 1, y: 3 }, p1: { x: 4, y: 3 } }, ['p0', 'p1']);
+    const caster = battle.units.find((unit) => unit.id === 'p0');
+    const ally = battle.units.find((unit) => unit.id === 'p1');
+    if (!caster || !ally) throw new Error('harmless surface fixture missing a unit');
+    const oilPaint: Ability = {
+      ...ability('ice_path'),
+      id: 'preview_oil_paint',
+      targeting: { shape: 'tile' },
+      effects: [{ kind: 'surface', surface: 'oil', duration: -1, area: 'center' }],
+    };
+
+    const preview = previewAbility(CONTENT, battle, caster, oilPaint, ally.pos);
+    expect(preview.surfaceContacts).toEqual([
+      expect.objectContaining({ unitId: ally.id, surface: 'oil', damage: 0, status: null }),
+    ]);
+    expect(preview.hitsFriendly).toBe(false);
   });
 
   it('reports status upgrades, clears, and cleanse results without rolling', () => {
