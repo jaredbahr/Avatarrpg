@@ -75,3 +75,31 @@ Two matched tree canopies are being prototyped by `quarry_composition`, with
 real blocked trunks and before/after visibility checks. Riko contact work must
 bring the visible hand to the target through physical movement; a distant
 particle bridge is not an acceptable substitute for the missing contact.
+
+## Forest arrival and first combat
+
+The fresh two-person party walked through the east exit, spoke with Dema and
+triggered both road crossings normally. Dema's lines connect the displaced
+ducklings and dirty washing to quarry runoff. The first road narration displayed
+the village illustration despite already describing pines and wheel ruts;
+`4820ad6` switches that frame to the existing matching road image. All nine
+interlude checks passed.
+
+The forest entrance shows an oversized procedural turtle-duck beside illustrated
+adults, plus a procedural green guard for the first road trigger. Source audit
+identified adult NPC scaling applied to the animal; a bounded marker correction
+is assigned to the art agent. This does not resolve all forest material/art gaps.
+
+First encounter: Ambush on the Forest Road, round 1, Riko first, two Slingers
+at 19/19 HP. The handoff and unit-focus buttons work. Initial framing shows both
+heroes but neither enemy; focusing a Slinger pans to both opponents. Their
+visible bodies remain smaller than the heroes. Review the broader humanoid
+scale contract after the current bounded fixes, without changing the Driller's
+logical footprint or generalizing a hero multiplier to nonhumanoid creatures.
+
+Follow-up integration `619f493` includes reviewed tree framing, corrected route
+guidance and the road illustration. Verify passes 815 tests /91 files; production
+build totals 298.4 KiB of the unchanged 300 KiB JavaScript budget. All five
+existing connected-world browser checks passed on strict port 4251, which ended
+normally. Targeted new guidance interaction coverage is assigned separately on
+port 4253.
