@@ -1,14 +1,20 @@
 import { expect, it } from 'vitest';
 import { QUARRY_GATE } from '../maps/combat';
-import { QUARRY_GATE_SCENE, QUARRY_GATE_WALL_CELLS, quarryWallVariant } from './quarryGate';
+import {
+  QUARRY_GATE_GROUND_REGIONS,
+  QUARRY_GATE_SCENE,
+  QUARRY_GATE_WALL_CELLS,
+  quarryWallVariant,
+} from './quarryGate';
 import { QUARRY_WEST_FRAMES } from './quarryWestFrames';
 
 it('centers four low cover decals on the actual passable cover cells', () => {
   const cells = QUARRY_GATE.rows.flatMap((row, y) =>
     [...row].flatMap((key, x) => (key === 'c' ? [{ x, y }] : [])),
   );
-  expect(QUARRY_GATE_SCENE.ground).toHaveLength(6);
-  const decals = QUARRY_GATE_SCENE.ground.slice(2);
+  const decals = QUARRY_GATE_SCENE.ground.filter((piece) =>
+    piece.url.endsWith('cover-timber.webp'),
+  );
   expect(decals).toHaveLength(cells.length);
   for (const [index, cell] of cells.entries()) {
     const decal = decals[index];
@@ -18,6 +24,29 @@ it('centers four low cover decals on the actual passable cover cells', () => {
       width: 112,
       height: 48,
     });
+  }
+});
+
+it('uses bounded material regions over the procedural partial-ground base', () => {
+  expect(QUARRY_GATE_SCENE.groundMode).toBe('partial');
+  const regions = QUARRY_GATE_SCENE.ground.filter(
+    (piece) => !piece.url.endsWith('cover-timber.webp'),
+  );
+  expect(regions).toEqual(
+    QUARRY_GATE_GROUND_REGIONS.map(({ name, ...region }) => ({
+      url: `art/maps/quarry-gate-scene/${name}.webp`,
+      ...region,
+    })),
+  );
+  expect(regions.map((piece) => piece.url)).not.toContain(
+    'art/maps/quarry-gate-scene/ground-west.webp',
+  );
+  expect(regions.map((piece) => piece.url)).not.toContain(
+    'art/maps/quarry-gate-scene/ground-east.webp',
+  );
+  for (const region of regions) {
+    expect(region.width).toBeLessThan(2304);
+    expect(region.height).toBeLessThan(1280);
   }
 });
 

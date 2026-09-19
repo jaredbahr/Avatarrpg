@@ -98,6 +98,29 @@ about 0.91 MiB for the later maps and contingency. No other assets were degraded
 
 ## Review required
 
+## Modular local-ground proof
+
+The gate now uses four transparent local material regions in partial-ground
+mode instead of the two opaque projected pages: west/east earth, road, and
+limestone. Their alpha masks follow the authoritative map rows, including the
+oil-channel substrate and corner terraces. They are not partitions of a
+flattened map painting. The procedural base remains beneath them, so live oil,
+props, collision and old saves retain their rules-owned truth. Existing low
+timber cover and all wall scenery remain independent.
+
+Reproduce the shipped regions with:
+
+```powershell
+node --import tsx scripts/art/quarry-modular-ground.ts "C:/Users/Jared/.codex/generated_images/01a0b2ee-8d60-7643-be9b-340997ca4ae0/exec-8dcfcdb5-eeb3-485c-a1c7-5cfd6279580d.png"
+```
+
+That raw ImageGen source is deliberately local and ignored under `art/raw/`; it
+is not a tracked runtime asset. The packer records its local registration JSON
+under the same ignored folder and writes only the reviewed WebPs to
+`public/art/maps/quarry-gate-scene/`. Current partial-ground elevation shading
+is renderer-owned and remains a separate pending correction; this change does
+not alter it.
+
 Source/packed images have been inspected, but tests and technical registration
 do not establish visual acceptance. Inspect coherent wall runs versus repeated
 block appearance, exposed ends/corners, ground contact and occlusion while actors

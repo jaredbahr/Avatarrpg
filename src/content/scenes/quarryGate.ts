@@ -2,6 +2,12 @@ import type { MapScene, Vec2 } from '../../core/types';
 import { QUARRY_WEST_FRAMES } from './quarryWestFrames';
 
 const root = 'art/maps/quarry-gate-scene/';
+export const QUARRY_GATE_GROUND_REGIONS = [
+  { name: 'earth-west', x: 193, y: 96, width: 1214, height: 608 },
+  { name: 'earth-east', x: 641, y: 320, width: 1278, height: 640 },
+  { name: 'road', x: 321, y: 160, width: 1406, height: 704 },
+  { name: 'limestone', x: 1, y: 0, width: 2046, height: 1024 },
+] as const;
 export const QUARRY_GATE_COVER_CELLS: readonly Vec2[] = [
   { x: 13, y: 2 },
   { x: 5, y: 3 },
@@ -25,9 +31,15 @@ export function quarryWallVariant({ x, y }: Vec2): 'interior' | 'end' | 'corner'
 
 /** Registered gate art only. Gameplay owns projection opt-in and live surfaces/props. */
 export const QUARRY_GATE_SCENE: MapScene = {
+  // Each local region is sampled from reusable material panels against the
+  // authoritative rows. The partial renderer keeps the mutable oil/props and
+  // collision fallback beneath it; upright walls remain separate scenery.
+  groundMode: 'partial',
   ground: [
-    { url: `${root}ground-west.webp`, x: -128, y: -192, width: 1152, height: 1280 },
-    { url: `${root}ground-east.webp`, x: 1024, y: -192, width: 1152, height: 1280 },
+    ...QUARRY_GATE_GROUND_REGIONS.map(({ name, ...region }) => ({
+      url: `${root}${name}.webp`,
+      ...region,
+    })),
     ...QUARRY_GATE_COVER_CELLS.map(({ x, y }) => ({
       url: `${root}cover-timber.webp`,
       x: 768 + (x - y) * 64 - 56,
