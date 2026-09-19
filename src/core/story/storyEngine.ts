@@ -25,6 +25,7 @@ import { awardXp } from '../rules/leveling';
 import { createBattle } from '../state/createGame';
 import { adjustStanding, evaluate, getStanding } from './conditions';
 import { buildGrid, tileAt } from '../rules/grid';
+import { encounterText } from './encounterText';
 
 const MAX_CHAIN = 32;
 
@@ -220,7 +221,8 @@ export function enterStoryNode(
         const battle = createBattle(content, current, node.encounterId, rng);
         const encounter = content.encounters.get(node.encounterId);
         events.push({ type: 'battleStarted', encounterId: node.encounterId });
-        if (encounter) events.push({ type: 'message', text: encounter.intro });
+        if (encounter)
+          events.push({ type: 'message', text: encounterText(encounter, battle.variantId).intro });
         events.push({ type: 'screenChanged', screen: 'combat' });
         events.push({ type: 'roundStarted', round: 1 });
         return {
