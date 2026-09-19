@@ -6,6 +6,10 @@ for (const renderer of ['canvas', 'webgl'] as const) {
   test(`default-zoom manual pan survives aim and preview reflow on ${renderer}`, async ({
     page,
   }) => {
+    // CI trace: software GL spends ~2s per protocol action and ~20s on the
+    // ten-step drag alone. Layout waits resolve; the complete sequence needs
+    // the same slow-project allowance as other forced-WebGL regressions.
+    if (renderer === 'webgl') test.slow();
     await page.setViewportSize({ width: 1672, height: 941 });
     await resetStorage(page, `?renderer=${renderer}`);
     await startGame(page, ['Kaya'], ['kaya'], 'manual-pan-reflow');

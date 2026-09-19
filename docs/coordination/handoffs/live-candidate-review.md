@@ -371,3 +371,38 @@ verify before its single push. Require all three new-head CI checks; do not reus
 5d5952f checks for merging. With no outstanding regression or review, mark ready,
 merge with an expected-head merge commit and confirm Pages. Keep broader gate,
 water material, listening and physical-device quality work explicitly open.
+
+## Product mandate and v0.2.0 release repair
+
+Jared reaffirmed autonomous delivery toward the approved reference images and
+DOS2-like open-map roaming, environmental and elemental combat, coherent
+animation, and a distinctive engaging story. Village–quarry–return remains the
+proving ground before expanding the world. Acceptance requires actual movement,
+contact and audible play; readable environmental combinations; and consistent
+character identity. Passing automated tests alone cannot close that goal.
+
+Immediate milestone is a testable v0.2.0 progress release, retaining the commit
+build label. Live baseline remains v0.1.0 / 44ed3f6 until deployment is confirmed.
+Package and lock versions and CHANGELOG are updated in this necessary CI repair
+batch. No engine migration is authorized by that change. A later architecture
+recommendation must compare measured current-stack limits with a bounded Godot
+scene proof; it does not imply a rewrite or an RPG Maker migration.
+
+PR64 run35397662012 failed in two fixture families. CI traces show the pan test's
+whole60s budget expires after successful layout waits and a20s ten-step drag on
+software GL. It now uses the existing slow-WebGL test allowance with unchanged
+assertions and layout waits. Original local SwiftShader case passed in10.1s.
+All four gallery families (bandit portrait, slinger, bruiser, quarry bender)
+reproduced locally: right-click targets were outside the newly pannable board.
+They now focus the exact staged actor through its real turn-strip control,
+assert canvas hit visibility, and retain portrait waits and all gallery cases.
+The39-series filmstrips also frame their actors before playback. All14 affected
+project cases are being checked together with forced software WebGL before push.
+
+Final scope clarification: the finished product covers the opening, village,
+road and quarry through the Driller encounter inclusive, its outcome and return.
+No wider campaign is required. Every traversed scene, dialogue, control, battle,
+animation, sound and save transition must form one coherent finished run; a
+polished courtyard surrounded by placeholders does not meet acceptance. v0.2.0
+is still a progress release. After shipping it, prioritize one whole-run critical
+path against this scope rather than expanding into disconnected polish batches.

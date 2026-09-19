@@ -57,18 +57,18 @@ copy its campaign, assets or every mechanic.
 
 ## Evidence required for completion
 
-| Requirement | Evidence that can close it |
-| --- | --- |
-| Whole-route visual coherence | Build-identified gameplay from village, road, gate, cutting, floor, Driller and return, compared with the approved references; no unfinished area hidden by selective framing. |
-| Open roaming and truthful terrain | Actual input walks at apparent entrances, walls, water, cover, elevations and exits, with map-state agreement and reachable conversations. Include both renderers and portrait controls. |
-| Fun environmental tactics | Actual legal play demonstrates useful elemental/environmental interactions and their costs/consequences, including live props and the Driller fight. Record opportunities that are unclear or tactically pointless and improve them. Passing a damage calculation is insufficient. |
-| Character importance | Each playable character has a coherent story contribution and a distinct useful tactical role across this run; preserve existing branch/kit evidence and review it against the final build. |
-| Motion and contact | Walk/turn/stop and cast/travel/impact/reaction/recovery sequences, including forced movement, multi-cell boss and reduced motion; no foot sliding, unexplained snap, blank frame or misleading attachment. |
-| Sound quality | Actual listening notes tied to a build and recorded scene, plus timing/mute/lifecycle checks. No fabricated listening signoff. |
-| Story and portraits | Normal mobile/landscape dialogue, resolved speaker identity, readable choices, consequence/return scenes and consistent portraits without rewriting accepted story arbitrarily. |
-| Touch and accessibility | Real target selection, focus, pan, zoom, cancel and confirm; large-text narrow screens retain reachable controls and a usable map. Automated browser emulation and physical-device evidence are labeled separately. |
-| Save and continuity | Fresh/continued routes, quarry and home reload, both custody outcomes, no duplicate rewards/fights and coherent Driller win/loss aftermath. |
-| Release integrity | Exact-head required CI, preserved source/credits, merge commit, successful Pages deployment and observed title version; changelog distinguishes shipped features from known gaps. |
+| Requirement                       | Evidence that can close it                                                                                                                                                                                                                                                         |
+| --------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Whole-route visual coherence      | Build-identified gameplay from village, road, gate, cutting, floor, Driller and return, compared with the approved references; no unfinished area hidden by selective framing.                                                                                                     |
+| Open roaming and truthful terrain | Actual input walks at apparent entrances, walls, water, cover, elevations and exits, with map-state agreement and reachable conversations. Include both renderers and portrait controls.                                                                                           |
+| Fun environmental tactics         | Actual legal play demonstrates useful elemental/environmental interactions and their costs/consequences, including live props and the Driller fight. Record opportunities that are unclear or tactically pointless and improve them. Passing a damage calculation is insufficient. |
+| Character importance              | Each playable character has a coherent story contribution and a distinct useful tactical role across this run; preserve existing branch/kit evidence and review it against the final build.                                                                                        |
+| Motion and contact                | Walk/turn/stop and cast/travel/impact/reaction/recovery sequences, including forced movement, multi-cell boss and reduced motion; no foot sliding, unexplained snap, blank frame or misleading attachment.                                                                         |
+| Sound quality                     | Actual listening notes tied to a build and recorded scene, plus timing/mute/lifecycle checks. No fabricated listening signoff.                                                                                                                                                     |
+| Story and portraits               | Normal mobile/landscape dialogue, resolved speaker identity, readable choices, consequence/return scenes and consistent portraits without rewriting accepted story arbitrarily.                                                                                                    |
+| Touch and accessibility           | Real target selection, focus, pan, zoom, cancel and confirm; large-text narrow screens retain reachable controls and a usable map. Automated browser emulation and physical-device evidence are labeled separately.                                                                |
+| Save and continuity               | Fresh/continued routes, quarry and home reload, both custody outcomes, no duplicate rewards/fights and coherent Driller win/loss aftermath.                                                                                                                                        |
+| Release integrity                 | Exact-head required CI, preserved source/credits, merge commit, successful Pages deployment and observed title version; changelog distinguishes shipped features from known gaps.                                                                                                  |
 
 ## Ownership and usage discipline
 

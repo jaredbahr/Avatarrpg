@@ -1,5 +1,7 @@
 # Project coordination
 
+Current delivery mandate: [finish the complete run through the Driller](finish-through-driller.md), including its outcome and return. v0.2.0 is an interim playable release.
+
 This is the entry point for a new or resumed working session. Keep it small:
 link to authoritative documents rather than copying their rules into every task.
 

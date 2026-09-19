@@ -1,5 +1,7 @@
 # Current delivery: village to quarry and back
 
+Current delivery mandate: [finish the complete run through the Driller](finish-through-driller.md), including its outcome and return. v0.2.0 is an interim playable release.
+
 Scope approved by Jared on 17 September 2026: a polished, continuous playable
 trip from Ba Dan through the road and quarry, resolving its events and returning
 to the village. No new regions are needed to prove this experience.
