@@ -304,7 +304,11 @@ export const ASSETS: Readonly<Record<string, AssetEntry>> = {
   /* --------------------------------------------------------------- NPCs */
   'npc.elder': { kind: 'image', url: 'art/npcs/mira.png', palette: 'neutral' },
   'npc.shopkeeper': { kind: 'image', url: 'art/npcs/gao.png', palette: 'earth' },
-  'world.turtle_ducks': painter('discovery', 'earth', 'ducks'),
+  'world.turtle_ducks': {
+    kind: 'image',
+    url: 'art/world/turtle-ducks-nest.webp',
+    palette: 'earth',
+  },
   'world.runoff_marker': painter('discovery', 'neutral', 'marker'),
   'world.tea_station': { kind: 'image', url: 'art/props/tea-station.png', palette: 'earth' },
   'npc.kid': { kind: 'image', url: 'art/npcs/pella.png', palette: 'air' },
