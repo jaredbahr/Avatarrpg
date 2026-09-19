@@ -36,6 +36,24 @@ confirm that abilities or passives exist in content. The bounded role audit
 includes positional pull, cover, mobility, control and Wet/lightning sequences;
 its automated evidence does not establish manual all-party balance or motion.
 
+## Immediate implementation priority: modular Ba Dan proof
+
+Jared's 19 September clarification selects a composed illustrated 2.5D world
+over a complete painting with characters layered on top. Keep the gameplay grid,
+animated sheets and Pixi/Canvas; assemble ground regions and independent scenery,
+with real occlusion and runtime effects. Full paintings become supporting art.
+[ADR 0039](../adr/0039-modular-illustrated-world.md) and the
+[player-view target](../player-view-target.md#official-world-construction-model)
+define this direction and the first acceptance gate.
+
+`world_conversations` owns the bounded Ba Dan courtyard/canal proof in its
+existing isolated tree, preserving useful canal and modular scenery work.
+Root owns shared contract review and integration. `combat_preview` retains the
+bounded resize correctness investigation; it must not optimize full-map painting
+as the destination. Validate the proof without complete map paintings before
+extending the same construction across the route. The full finish line below
+remains unchanged, and no final aesthetic acceptance is implied.
+
 ## Required finish line
 
 Jared reaffirmed all three images in

@@ -80,6 +80,31 @@ learned through the world, what changed after their choices, which character
 made them curious, and which tactical combination was enjoyable to discover.
 Passing functional checks alone does not answer these questions.
 
+## Official world construction model
+
+Jared clarified the visual model on 19 September: build an illustrated, modular
+2.5D world on the real gameplay grid. The grid is the authority for collision,
+elevation, cover, paths and interactions; its square boundaries should largely
+disappear in normal presentation. Assemble playable spaces from authored ground
+regions, walls, buildings, roofs, trees, cliffs, props, foreground masks and
+lighting. Keep animated 2D character sheets and runtime elemental effects,
+water, fire, dust and ambience in the existing Pixi/Canvas architecture.
+
+Full-map paintings are no longer the destination for playable spaces. Reserve
+complete paintings for distant scenery, immutable vistas, title/interlude art
+and temporary prototypes. Painted local patches and individual scenery assets
+remain appropriate. Modular construction must still look composed: consistent
+perspective, scale, light, ground contact and occlusion, without obvious repeated
+blocks or decorative geometry contradicting the grid. See
+[ADR 0039](adr/0039-modular-illustrated-world.md).
+
+The next proof is a small, integrated Ba Dan courtyard/canal slice that does not
+depend on a complete map painting. Demonstrate coherent ground shapes, modular
+scenery, foreground occlusion, open paths, an animated character walking behind
+and in front of scenery, one interaction and a runtime effect on both backends.
+Review actual play before extending this construction across the bounded route.
+This proof changes the implementation sequence, not the full delivery finish line.
+
 ## Delivery sequence
 
 | Milestone                         | Playable result                                                                                           | Acceptance evidence                                                                                              |
