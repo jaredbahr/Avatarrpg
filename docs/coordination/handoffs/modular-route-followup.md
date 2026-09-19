@@ -28,6 +28,13 @@ passed 860 tests and six focused browser cases before that one checked push.
   NPC-aware dry-seat settlement under dialogue while map controls stay locked.
   Root reproduced the former water-standing bug through Visit Gao in normal UI.
   Source `8facaab`; browser regression covers the same interaction.
+- Western village approach: `96ec0be`, `4dfe9e1`, `2e41cdf` reuse accepted
+  courtyard material, with verified grass sampling and opaque road overlap.
+  Root inspected fresh source `cdf9e49` Canvas/WebGL production captures at
+  96px: the paved grass shoulders and dark diagonal join are corrected.
+  Seven focused Ba Dan tests pass in integration; map assets are 3.42 MiB / 4
+  after removing two unused complete-map ground pages. Combined rebuild and
+  full verification remain pending the remaining art batch.
 
 ## Combined evidence
 
@@ -53,19 +60,19 @@ Inline screenshots were reviewed but not saved as standalone artifacts.
 - Terra `partial_ground_validation`: local material regions for Cutting and
   Driller, with existing surroundings, walls, props and grid preserved. The
   earlier new-elevation input test correction is integrated as `b247685`.
-- Terra `conversation_ci_repair`: western Ba Dan approach. Draft `9a53e13` and
-  `9e8b307` remain unintegrated: root identified an incorrect historical atlas,
-  then grass sampling from stone cells and compounded feather opacity. Correct
-  material classification, fractional overlap coverage and actual capture review
-  are required before integration. Preserve the accepted courtyard asset.
+- Terra `conversation_ci_repair`: western Ba Dan approach completed and
+  integrated after source `cdf9e49` capture review. Owned preview stopped.
 - Art `world_conversations`: isolated forest raised-shelf material/scenery pass;
-  keep exact eight elevated cells and exit (19,4) clear. No renderer/rules edits.
+  preserve the actual six elevated cells and keep exit (19,4) clear. The original
+  eight-cell proposal overcounted (18,2) and (18,6); authoritative map rows and
+  the focused test caught this before integration. No renderer/rules edits.
 - Root: integration, visual review, versioned releases, required CI and deployment.
 
 The old root preview on 4270 was positively identified and stopped. The v0.2.2
 version-check tab and owned preview 4304 were also closed after review.
 Forest raised tops now read as procedural stone slabs, still inconsistent with
-painted grass; this is functional relief, not final art acceptance. Ba Dan's
-western approach is visibly unfinished. Cutting and Driller modular composition,
+painted grass; this is functional relief, not final art acceptance. Village
+material coverage beyond the accepted local regions remains unfinished.
+Cutting and Driller modular composition,
 continuous reference/motion review, audible listening and physical Surface/iPad
 verification remain open. No wider world expansion is authorized by this slice.
