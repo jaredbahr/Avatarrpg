@@ -1,6 +1,8 @@
 import type { MapScene, SceneScenery, Vec2 } from '../../core/types';
 
 const root = 'art/maps/forest-scene/';
+/** Water stays on its eight cells; padding carries only a narrow dry shoreline matte. */
+export const FOREST_POND_PATCH = { x: 560, y: 304, width: 352, height: 192 } as const;
 /** Asset footprints are checked against the authoritative map rows in forestRoad.test.ts. */
 export const FOREST_WATER_CELLS: readonly Vec2[] = [
   { x: 5, y: 5 },
@@ -57,7 +59,7 @@ export const FOREST_ROAD_SCENE: MapScene = {
   ground: [
     { url: `${root}ground-west.webp`, x: -128, y: -192, width: 1152, height: 1280 },
     { url: `${root}ground-east.webp`, x: 1024, y: -192, width: 1152, height: 1280 },
-    { url: `${root}water.webp`, x: 576, y: 320, width: 320, height: 160 },
+    { url: `${root}water.webp`, ...FOREST_POND_PATCH },
     ...FOREST_RUBBLE_CELLS.map(({ x, y }) => ({
       url: `${root}rubble.webp`,
       x: 768 + (x - y) * 64 - 64,

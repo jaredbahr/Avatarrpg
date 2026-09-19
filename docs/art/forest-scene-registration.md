@@ -1,5 +1,9 @@
 # Forest-road scene registration
 
+The pond patch was subsequently replaced by the bounded
+[shoreline correction](forest-pond-shoreline.md), which supersedes only the old
+water source, packing and rectangle below. Its provenance is durable in the repository.
+
 Status: source candidate packed; integrated visual review remains pending.
 The separate art branch `codex/forest-road-art` starts after courtyard handoff
 `0e3526d`. Gameplay owns projection opt-in and retains the legacy fallback.
