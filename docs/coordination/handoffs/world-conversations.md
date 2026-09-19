@@ -49,3 +49,9 @@
 - **Follow-up source:** `codex/world-guidance` continues from `5f22758`; the correction is local-only and has no push, PR, or CI dispatch.
 - **Correction:** Nearby guidance now resolves the nearest NPC first. Only an explicitly authored `interaction: 'route-sign'` NPC can yield to an open exit; the Riverside sign carries that metadata. Dema and Gate Guard Dorin remain the primary action at their nearby open gates, and locked exits do not become travel actions. Arrowless exit labels use the destination map name.
 - **Validation:** Added Dema, guard, locked-exit, sign-precedence, and arrowless-destination tests. Final local `npm run verify` passed typecheck, lint, format check, 91 files, and 814 tests. No changes overlap quarry composition's ExploreScene render-view scale scope.
+
+### Rescued riverside browser regression
+
+- **Source:** `codex/world-guidance` in `C:\Users\Jared\.codex\worktrees\world-guidance`; test-only follow-up on the guidance source already integrated by `/root`; no push, PR, or CI dispatch.
+- **Coverage:** Added one explicit rescued-campaign fixture to `e2e/world.spec.ts`. It uses the real Ba Dan `Walk to Riverside` action, the three shrine conversation advances, the rescued riverside return objective, `Walk to Ba Dan`, and final `act1_complete`, `riverside_shrine_found`, and party-HP assertions. The existing canvas/WebGL connected-route test also asserts Dema remains the primary `Talk` action on forest arrival.
+- **Validation:** Installed Chrome production preview on strict port `4253` passed the new route plus both connected-route renderer cases: **3 passed in 40.7s**. The temporary config and dependency junction were removed; port 4253 is stopped. No CI run.
