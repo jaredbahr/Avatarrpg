@@ -886,6 +886,7 @@ export class CombatScene implements Scene {
       if (entry.hitChance !== null) parts.push(`${entry.hitChance}%`);
       if (entry.damage > 0) parts.push(`~${entry.damage} dmg`);
       if (entry.heal > 0) parts.push(`+${entry.heal} hp`);
+      else if (entry.healAtCapacity) parts.push('at full health');
       for (const status of entry.statuses) {
         const requested = this.app.content.statuses.get(status.id)?.name ?? status.id;
         const applied = status.appliedStatus

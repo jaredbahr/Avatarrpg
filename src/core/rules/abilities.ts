@@ -210,6 +210,8 @@ export interface PreviewTarget {
   readonly hitChance: number | null;
   readonly damage: number;
   readonly heal: number;
+  /** True when a heal effect finds this friendly target already at max HP. */
+  readonly healAtCapacity: boolean;
   readonly statuses: readonly {
     /** Requested status, retained for callers that used the old shape. */
     readonly id: StatusId;
@@ -268,6 +270,7 @@ export function previewAbility(
   for (const unit of inArea) {
     let damage = 0;
     let heal = 0;
+    let healAtCapacity = false;
     let chance: number | null = null;
     const statuses: {
       id: StatusId;
@@ -285,7 +288,12 @@ export function previewAbility(
           chance = hitChance(content, battle.grid, caster, unit);
           break;
         case 'heal':
-          if (friendly) heal += healAmount(content, caster, effect);
+          if (friendly) {
+            const requested = healAmount(content, caster, effect);
+            const capacity = Math.max(0, unit.base.maxHp - unit.hp);
+            heal += Math.min(requested, capacity);
+            healAtCapacity ||= capacity === 0;
+          }
           break;
         case 'status':
           break;
@@ -306,7 +314,13 @@ export function previewAbility(
       for (const cleared of status.clearedStatuses) clearedStatuses.add(cleared);
     }
 
-    if (damage === 0 && heal === 0 && statuses.length === 0 && clearedStatuses.size === 0) {
+    if (
+      damage === 0 &&
+      heal === 0 &&
+      statuses.length === 0 &&
+      clearedStatuses.size === 0 &&
+      !healAtCapacity
+    ) {
       continue;
     }
     targets.push({
@@ -316,6 +330,7 @@ export function previewAbility(
       hitChance: chance,
       damage,
       heal,
+      healAtCapacity,
       statuses,
       clearedStatuses: [...clearedStatuses],
       lethal: damage > 0 && damage >= unit.hp,
@@ -338,9 +353,6 @@ export function previewAbility(
         break;
       case 'grantAp':
         terrain.push(`+${effect.amount} AP`);
-        break;
-      case 'cleanse':
-        terrain.push('Clears effects');
         break;
       case 'status':
         if (effect.to === 'self') {

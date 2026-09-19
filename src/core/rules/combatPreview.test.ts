@@ -172,8 +172,41 @@ describe('bounded combat outcome previews', () => {
 
     const healing = previewAbility(CONTENT, battle, caster, ability('healing_stream'), caster.pos);
     const selfHeal = healing.targets.find((target) => target.unitId === caster.id);
-    expect(selfHeal?.heal).toBeGreaterThan(0);
+    expect(selfHeal?.heal).toBe(caster.base.maxHp - caster.hp);
+    expect(selfHeal?.healAtCapacity).toBe(false);
     expect(selfHeal?.clearedStatuses).toEqual(['burning', 'blinded']);
+
+    const ally = battle.units.find((unit) => unit.id === 'p1');
+    if (!ally) throw new Error('ally healing fixture missing');
+    const allyBattle = {
+      ...battle,
+      units: battle.units.map((unit) =>
+        unit.id === ally.id ? { ...unit, hp: unit.hp - 3 } : unit,
+      ),
+    };
+    const allyPreview = previewAbility(
+      CONTENT,
+      allyBattle,
+      caster,
+      ability('healing_stream'),
+      ally.pos,
+    );
+    const allyHeal = allyPreview.targets.find((target) => target.unitId === ally.id);
+    expect(allyHeal?.heal).toBe(
+      ally.base.maxHp - allyBattle.units.find((unit) => unit.id === ally.id)!.hp,
+    );
+    expect(allyHeal?.healAtCapacity).toBe(false);
+
+    const fullPreview = previewAbility(
+      CONTENT,
+      battle,
+      caster,
+      ability('healing_stream'),
+      ally.pos,
+    );
+    const fullAlly = fullPreview.targets.find((target) => target.unitId === ally.id);
+    expect(fullAlly).toMatchObject({ heal: 0, healAtCapacity: true, clearedStatuses: [] });
+    expect(fullPreview.terrain).not.toContain('Clears effects');
     const healed = resolve(battle, caster, 'healing_stream', caster.pos);
     expect(healed.unit(caster.id)?.hp).toBeGreaterThan(caster.hp);
     expect(statusIds(healed.unit(caster.id))).not.toEqual(
