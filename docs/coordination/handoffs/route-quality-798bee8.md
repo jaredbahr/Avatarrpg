@@ -41,3 +41,31 @@ and the workers-home objective still present. Manual save slots were untouched.
 These follow-ups are isolated from the active PR64 CI run `35430915536`; do not
 restart its checks for an unverified experiment. The complete original quality
 goal, deployment verification, listening and physical-device gaps remain open.
+
+## Fresh opening review
+
+On the same production build, opened `localhost:4210` as a separate storage
+origin from the completed-route review at `127.0.0.1:4210`. Created a two-player
+Sura/Riko party through normal setup, read all three opening panels, walked into
+the market, read Gao's four lines and then used Look around to visit Mira.
+No campaign state was injected; the generated seed was not recorded here.
+
+The opening identifies the missing crew and interrupted quarry deliveries.
+Gao's water-skin story gives Dorin a personal connection and then warns about
+flooded ground. Mira's request is concise and specific. Party portraits, world
+figures and dialogue portraits agree in this view. The scene remains visible
+through dialogue. This is a visual/text review, not an audible reading review.
+
+After Mira's first four lines, the objective says “Thank Elder Mira, then take
+the east road”, while the nearest-person dock selects Gao. The nearby-person
+tie is a further guidance inconsistency to review; it does not prove a blocked
+route. Current fresh-play checkpoint is beside Mira/Gao, level 1, Sura 26/26,
+Riko 28/28. The prior manual save slots remain on the separate origin.
+
+The read-only audits confirmed the riverside objective override and identified
+the village exit's sign NPC taking priority over its travel action. Guidance
+implementation is assigned to `world_conversations` in a separate worktree.
+Two matched tree canopies are being prototyped by `quarry_composition`, with
+real blocked trunks and before/after visibility checks. Riko contact work must
+bring the visible hand to the target through physical movement; a distant
+particle bridge is not an acceptable substitute for the missing contact.
