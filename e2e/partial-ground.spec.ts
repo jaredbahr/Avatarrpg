@@ -137,34 +137,48 @@ async function reenterVillage(page: Page): Promise<void> {
   await waitForIdle(page);
 }
 
-/** Returns the verified screenshot sample so callers do not immediately recapture the same WebGL frame. */
+/** Reuse the composited frame that passed readiness; software readback is expensive. */
+async function waitForSamples<P extends Record<string, Pos>>(
+  page: Page,
+  probes: P,
+  ready: (value: { [K in keyof P]: Rgb }) => boolean,
+  timeout: number,
+): Promise<{ [K in keyof P]: Rgb }> {
+  let verified: { [K in keyof P]: Rgb } | undefined;
+  await expect
+    .poll(
+      async () => {
+        const value = await samples(page, probes);
+        if (ready(value)) verified = value;
+        return verified !== undefined;
+      },
+      { timeout },
+    )
+    .toBe(true);
+  if (!verified) throw new Error('Readiness passed without a composited screenshot sample');
+  return verified;
+}
+
 async function waitForAuthoredColours(
   page: Page,
   includePatch = true,
   timeout = 10_000,
 ): Promise<{ patch: Rgb; valid: Rgb }> {
-  let verified: { patch: Rgb; valid: Rgb } | null = null;
-  await expect
-    .poll(
-      async () => {
-        const sample = await samples(page, { patch: PATCH, valid: VALID });
-        const ready =
-          sample.valid.b > sample.valid.r + 55 &&
-          sample.valid.b > 170 &&
-          (!includePatch || (sample.patch.r > sample.patch.b + 55 && sample.patch.r > 170));
-        if (ready) verified = sample;
-        return ready;
-      },
-      { timeout },
-    )
-    .toBe(true);
-  // Screenshot readback on CI software WebGL can take several seconds per
-  // frame; this is intentionally scoped to the real pixel assertion.
-  if (!verified) throw new Error('Authored colours passed without a screenshot sample');
-  return verified;
+  return waitForSamples(
+    page,
+    { patch: PATCH, valid: VALID },
+    (sample) =>
+      sample.valid.b > sample.valid.r + 55 &&
+      sample.valid.b > 170 &&
+      (!includePatch || (sample.patch.r > sample.patch.b + 55 && sample.patch.r > 170)),
+    timeout,
+  );
 }
 
 for (const renderer of ['canvas', 'webgl'] as const) {
+  // Match the screenshot operation's budget on software WebGL; Canvas keeps
+  // its normal readiness bound. All real colour and geometry assertions remain.
+  const readbackTimeout = renderer === 'webgl' ? 60_000 : 10_000;
   test(`partial ground keeps an opaque patch under permanent water on ${renderer}`, async ({
     page,
   }) => {
@@ -174,17 +188,13 @@ for (const renderer of ['canvas', 'webgl'] as const) {
     await startGame(page, ['Kaya'], ['kaya'], 'partial-ground-water');
     await enterNode(page, 'village_explore');
     await page.locator('.explore-scene .map-canvas').waitFor();
-    const bare = await waitForAuthoredColours(page, true, renderer === 'webgl' ? 60_000 : 10_000);
+    const bare = await waitForAuthoredColours(page, true, readbackTimeout);
     expectRed(bare.patch);
     expectBlue(bare.valid);
 
     await setPermanentWater(page, PATCH, true);
     await reenterVillage(page);
-    const underwater = await waitForAuthoredColours(
-      page,
-      false,
-      renderer === 'webgl' ? 60_000 : 10_000,
-    );
+    const underwater = await waitForAuthoredColours(page, false, readbackTimeout);
     expectBlue(underwater.valid);
     // The red image is visible before the real grid's water surface is enabled;
     // water then tints that same image rather than replacing it or being hidden below it.
@@ -192,11 +202,7 @@ for (const renderer of ['canvas', 'webgl'] as const) {
 
     await setPermanentWater(page, PATCH, false);
     await reenterVillage(page);
-    const restored = await waitForAuthoredColours(
-      page,
-      true,
-      renderer === 'webgl' ? 60_000 : 10_000,
-    );
+    const restored = await waitForAuthoredColours(page, true, readbackTimeout);
     expectRed(restored.patch);
     expectBlue(restored.valid);
     expect(Math.abs(restored.patch.r - bare.patch.r)).toBeLessThan(12);
@@ -207,6 +213,7 @@ for (const renderer of ['canvas', 'webgl'] as const) {
   test(`partial ground retains valid pieces when one is missing on ${renderer}`, async ({
     page,
   }) => {
+    if (renderer === 'webgl') test.slow();
     await resetStorage(page, `?renderer=${renderer}`);
     // Establish the actual procedural base before adding any scene pieces.
     await installPartialScene(page, []);
@@ -220,13 +227,12 @@ for (const renderer of ['canvas', 'webgl'] as const) {
       patch(blue, VALID.x, VALID.y),
     ]);
     await reenterVillage(page);
-    await expect
-      .poll(async () => {
-        const { valid } = await samples(page, { fallback: FALLBACK, valid: VALID });
-        return valid.b > valid.r + 55 && valid.b > 170;
-      })
-      .toBe(true);
-    const loaded = await samples(page, { fallback: FALLBACK, valid: VALID });
+    const loaded = await waitForSamples(
+      page,
+      { fallback: FALLBACK, valid: VALID },
+      ({ valid }) => valid.b > valid.r + 55 && valid.b > 170,
+      readbackTimeout,
+    );
     expectBlue(loaded.valid);
     // A missing piece exposes its original procedural tile; it must neither turn red nor erase a sibling.
     expect(Math.abs(loaded.fallback.r - baseline.fallback.r)).toBeLessThan(12);
@@ -238,6 +244,7 @@ for (const renderer of ['canvas', 'webgl'] as const) {
   test(`partial ground restores decor for accessibility and unavailable art on ${renderer}`, async ({
     page,
   }) => {
+    if (renderer === 'webgl') test.slow();
     await resetStorage(page, `?renderer=${renderer}`);
     await installPartialScene(page, [patch(red, PATCH.x, PATCH.y)]);
     await setMapTile(page, PATCH, 'T');
@@ -245,34 +252,34 @@ for (const renderer of ['canvas', 'webgl'] as const) {
     await enterNode(page, 'village_explore');
     await page.locator('.explore-scene .map-canvas').waitFor();
     // A complete partial image normally owns this tile's relief.
-    await expect
-      .poll(async () => {
-        const { patch: tile } = await samples(page, { patch: PATCH });
-        return tile.r > tile.b + 55;
-      })
-      .toBe(true);
-    expectRed((await samples(page, { patch: PATCH })).patch);
+    const authored = await waitForSamples(
+      page,
+      { patch: PATCH },
+      ({ patch: tile }) => tile.r > tile.b + 55,
+      readbackTimeout,
+    );
+    expectRed(authored.patch);
 
     await page.evaluate(() => window.fnt?.app.updateSettings({ highContrast: true }));
-    await expect
-      .poll(async () => {
-        const { patch: tile } = await samples(page, { patch: PATCH });
-        return tile.g > tile.r + 15 && tile.g > tile.b + 15;
-      })
-      .toBe(true);
-    expectTreeDecor((await samples(page, { patch: PATCH })).patch);
+    const accessible = await waitForSamples(
+      page,
+      { patch: PATCH },
+      ({ patch: tile }) => tile.g > tile.r + 15 && tile.g > tile.b + 15,
+      readbackTimeout,
+    );
+    expectTreeDecor(accessible.patch);
 
     await page.evaluate(() => window.fnt?.app.updateSettings({ highContrast: false }));
     await installPartialScene(page, [
       patch('art/maps/missing-partial-ground.webp', PATCH.x, PATCH.y),
     ]);
     await reenterVillage(page);
-    await expect
-      .poll(async () => {
-        const { patch: tile } = await samples(page, { patch: PATCH });
-        return tile.g > tile.r + 15 && tile.g > tile.b + 15;
-      })
-      .toBe(true);
-    expectTreeDecor((await samples(page, { patch: PATCH })).patch);
+    const fallback = await waitForSamples(
+      page,
+      { patch: PATCH },
+      ({ patch: tile }) => tile.g > tile.r + 15 && tile.g > tile.b + 15,
+      readbackTimeout,
+    );
+    expectTreeDecor(fallback.patch);
   });
 }
