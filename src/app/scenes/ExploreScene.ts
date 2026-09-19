@@ -343,8 +343,13 @@ export class ExploreScene implements Scene {
 
   private setConversationMode(active: boolean): void {
     const entered = active && !this.conversationMode;
+    if (entered) {
+      this.app.animator.clear();
+      // A panned or cursor-zoomed view must not leave the party clipped while
+      // conversation locks map gestures. Keep the player's chosen tile size.
+      this.followParty();
+    }
     this.conversationMode = active;
-    if (entered) this.app.animator.clear();
     if (active) {
       this.clearWorldIntent();
       this.needsSettle = false;
