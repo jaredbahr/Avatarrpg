@@ -16,7 +16,8 @@
   `dac99826d02fb770bb53213168a9c4d9c5161854` was not edited. Local-only; no
   standalone PR or push.
 - **Worktree state:** Final implementation and focused tests are committed on
-  this branch; the checked head is recorded below after the last verification.
+  this branch at checked head `b0204e0`; the handoff documentation is the
+  follow-up commit on top of that implementation.
 - **Completed:**
   - `src/core/rules/reactions.ts` runs a bounded throwaway `BattleDraft`,
     journals shared surface reactions, prop outcomes, exact shoves, landing
@@ -40,14 +41,12 @@
 - **Verification:**
   - `npm run typecheck` — passed.
   - `npm run lint` — passed.
-  - `npm test` — passed locally: 73 files, 695 tests (before the final handoff
-    commit; focused follow-up tests are listed below).
-  - `npm test -- --run src/core/rules/combatPreview.test.ts src/core/rules/reactions.test.ts src/core/state/props.test.ts` — passed: 78 tests after the final preview refinements.
+  - `npm test` — passed locally: 73 files, 697 tests on `b0204e0`.
+  - `npm test -- --run src/core/rules/combatPreview.test.ts src/core/rules/reactions.test.ts src/core/state/props.test.ts` — passed: 79 tests across the three focused files after the cross-effect status-order fix.
   - `npx playwright test e2e/combat-preview.spec.ts --project=surface-touch` —
     not run to completion because this host has no installed Playwright Chromium
     executable; the test is committed for CI touch coverage.
-  - `npm run verify` — run against the final checked head and recorded in the
-    transfer message.
+  - `npm run verify` — passed on `b0204e0`: 73 files, 697 tests.
 - **Coordination:** Core rules, `BattleDraft`, and the lower confirmation panel
   belong to this task. Camera methods in `CombatScene` remain owned by the
   separate gameplay guidance worktree. Root should integrate this branch's
