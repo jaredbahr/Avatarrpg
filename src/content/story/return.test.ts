@@ -81,6 +81,8 @@ describe('the authored walk home', () => {
     const mira = CONTENT.story.get('mira_epilogue');
     if (mira?.kind !== 'dialogue') throw new Error('Missing Mira return');
     expect(resolveDialogue(spared, mira).lines).not.toEqual(resolveDialogue(traded, mira).lines);
+    expect(resolveDialogue(spared, mira).lines.join(' ')).toContain('maker-plate rubbing');
+    expect(resolveDialogue(traded, mira).lines.join(' ')).toContain('maker-plate rubbing');
   });
 
   it('does not assume Pella was consulted before the rescue', () => {

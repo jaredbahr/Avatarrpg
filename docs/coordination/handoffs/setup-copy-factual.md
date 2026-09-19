@@ -45,3 +45,14 @@
   changed. The final player-facing wording tells players to catch the driller in
   burning oil while keeping their party clear, and to use Ice Path for crossing
   mud rather than immobilizing the treads.
+
+## Driller continuity payoff
+
+- `quarry_assessment` now gives the trapped workers a human callback: one calls
+  for Grumbler by name before the fight. The driver remains the named enemy; no
+  new speaker or lore is introduced.
+- The existing spared/traded `mira_epilogue` variants now carry the Republic City
+  maker-plate rubbing into Mira’s province report. The traded branch keeps its
+  unresolved Jin delivery question; no machinery state is invented.
+- Focused branch/content/variant tests pass (46 tests). No new region, battle,
+  flag, reward, or route was added.

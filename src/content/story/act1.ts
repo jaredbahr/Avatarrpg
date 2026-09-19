@@ -77,7 +77,7 @@ export const ACT1_NODES: readonly StoryNode[] = [
         when: { kind: 'flag', key: 'ruon_spared', op: 'set' },
         lines: [
           'Bo-shan and all four messengers are home. I have counted everyone twice. They keep telling me to stop.',
-          'Dorin is taking Ruon’s statement. The families will hear it when they have had some rest.',
+          'Dorin is taking Ruon’s statement. Bring me the maker-plate rubbing too; I’ll attach both to the province report.',
           'You can stay too. Gao has food ready, and I will find you a bed.',
         ],
       },
@@ -86,7 +86,7 @@ export const ACT1_NODES: readonly StoryNode[] = [
         lines: [
           'Bo-shan and all four messengers are home. Thank you for bringing them out.',
           'I wish Ruon were here to answer their questions. I will write to the province and ask where Jin delivered him.',
-          'For now, go and eat. There is room for you to stay.',
+          'Bring me the maker-plate rubbing too; the province should know what the quarry was running. For now, go and eat.',
         ],
       },
     ],
@@ -522,7 +522,7 @@ export const ACT1_NODES: readonly StoryNode[] = [
     speaker: 'The Quarry',
     portrait: 'portrait.narrator',
     lines: [
-      'Workers bang on the barred gallery doors. The driver turns towards the noise, then back to you.',
+      'Workers bang on the barred gallery doors. One shouts, "Grumbler!" The driver turns towards the bars, then back to you.',
       'The ramp behind you is clear. It is the way everyone will have to come out.',
     ],
     next: 'battle_grumbler',
