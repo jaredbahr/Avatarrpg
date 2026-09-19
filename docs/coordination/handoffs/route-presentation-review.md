@@ -377,3 +377,17 @@ confirmation. Clicking the machine produces the correct four-tile footprint and
 camera improvement. The confirmation still has an oversized lower panel and
 scrollbar; its compact content correction remains in progress. Distant enemies
 in the separate forest fixture can remain offscreen with focus controls available.
+
+## Accepted combined preview milestone
+
+The clean `v0.2.1` static build at combined head `cda0925` survived two service-
+worker reloads. Slot 1 again restored round 4 with Sura at 23/34, Grumbler at
+41/54 and 5 AP. The normal 64px frame kept the target interaction usable:
+selecting the boss worked, Ice Path reported the correct four-tile footprint and
+40% Chilled forecast, and Cancel preserved AP. The compact confirmation keeps
+Confirm and Cancel fully visible; only a small HUD scrollbar remains.
+
+Manual zoom-out to 0.4 also showed the connected stone exterior, rear recess and
+raised terraces without floating-card geometry. This accepts the bounded camera,
+forecast, compact-confirmation and quarry-surround changes. Physical-device,
+subjective audio and remaining motion/role review stay separate acceptance work.
