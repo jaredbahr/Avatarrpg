@@ -14,7 +14,7 @@ import {
   shoreDistance,
 } from './forest-shoreline';
 
-it('ships a reproducible pond with opaque seam coverage and only dry paint beyond water', async () => {
+it('ships a reproducible dry pond bank with transparent water interior and a bounded margin', async () => {
   const { image } = packShoreline(readImage(SHORE_SOURCE));
   const packed = readFileSync(SHORE_OUTPUT);
   expect(Buffer.from(await encodeWebp(image, 88, true))).toEqual(packed);
@@ -27,31 +27,37 @@ it('ships a reproducible pond with opaque seam coverage and only dry paint beyon
   const decoded = await decode(
     packed.buffer.slice(packed.byteOffset, packed.byteOffset + packed.byteLength),
   );
-  let holes = 0,
+  let waterInterior = 0,
+    missingBank = 0,
     leaks = 0,
-    wetExterior = 0;
+    wetBank = 0;
   for (let py = 0; py < image.height; py++)
     for (let px = 0; px < image.width; px++) {
       const { x, y } = shorePosition(px, py);
       const distance = shoreDistance(x, y);
       const [r, g, b, alpha] = pixelAt(image, px, py);
       const decodedAlpha = decoded.data[(py * image.width + px) * 4 + 3];
-      if (distance <= 0.08 && decodedAlpha !== 255) holes++;
+      if (distance <= 0 && decodedAlpha !== 0) waterInterior++;
+      if (distance > 0 && distance <= 0.08 && decodedAlpha !== 255) missingBank++;
       if (distance >= 0.12 && decodedAlpha !== 0) leaks++;
-      if (distance > 0 && alpha > 0 && b > r + 5 && g > r + 5) wetExterior++;
+      if (alpha > 0 && b > r + 5 && g > r + 5) wetBank++;
     }
-  expect({ holes, leaks, wetExterior }).toEqual({ holes: 0, leaks: 0, wetExterior: 0 });
-  // Each logical water center must still read as water, not a dry inlay.
+  expect({ waterInterior, missingBank, leaks, wetBank }).toEqual({
+    waterInterior: 0,
+    missingBank: 0,
+    leaks: 0,
+    wetBank: 0,
+  });
+  // Every real water center remains clear for the runtime water layer.
   for (const { x, y } of FOREST_WATER_CELLS) {
     const px = Math.round((768 + (x - y) * 64 - 560) * 2);
     const py = Math.round(((x + y + 1) * 32 - 304) * 2);
-    let waterSamples = 0;
+    let opaqueSamples = 0;
     for (let oy = -12; oy <= 12; oy++)
       for (let ox = -12; ox <= 12; ox++) {
-        const [r, g, b] = pixelAt(image, px + ox, py + oy);
-        if (Math.min(g, b) > r + 5) waterSamples++;
+        if (pixelAt(image, px + ox, py + oy)[3] > 0) opaqueSamples++;
       }
-    expect(waterSamples / 625, `water at ${x},${y}`).toBeGreaterThan(0.7);
+    expect(opaqueSamples, `water at ${x},${y}`).toBe(0);
   }
 });
 

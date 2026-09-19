@@ -1,4 +1,4 @@
-/** Register authored pixels only: opaque seam cover, dry exterior, bounded alpha feather. */
+/** Register dry-bank pixels only: transparent water interior and a bounded alpha feather. */
 import { writeFileSync } from 'node:fs';
 import { FOREST_POND_PATCH, FOREST_WATER_CELLS } from '../../src/content/scenes/forestRoad';
 import { newImage, pixelAt, readImage, setPixel, writePng } from './lib/image';
@@ -9,7 +9,7 @@ import { encodeWebp } from './lib/webp';
 export const SHORE_LIMIT = 0.12;
 export const COVER_LIMIT = 0.08;
 export const SHORE_SOURCE = 'assets/reference/forest-pond-shoreline/shoreline-source.png';
-export const SHORE_OUTPUT = 'public/art/maps/forest-scene/water.webp';
+export const SHORE_OUTPUT = 'public/art/maps/forest-scene/pond-bank.webp';
 
 export function shorePosition(px: number, py: number, density = 2) {
   const worldX = FOREST_POND_PATCH.x + (px + 0.5) / density;
@@ -43,12 +43,14 @@ export function packShoreline(raw: Image) {
     for (let px = 0; px < out.width; px++) {
       const { x, y } = shorePosition(px, py);
       const distance = shoreDistance(x, y);
-      if (distance >= SHORE_LIMIT) continue;
+      // The actual water cells receive runtime water. This local layer only
+      // supplies their dry exterior, never a painted substitute beneath it.
+      if (distance <= 0 || distance >= SHORE_LIMIT) continue;
       let pixel = pixelAt(source, px, py);
       // Generated alpha drifts slightly from the exact guide. Cover those holes
       // with the nearest visible dry pixel from this same authored shoreline.
       // This is registration, not synthesized material or a widened water area.
-      if (pixel[3] < 16 || (distance > 0 && isWaterColour(pixel))) {
+      if (pixel[3] < 16 || isWaterColour(pixel)) {
         let best = Infinity;
         let replacement: typeof pixel | null = null;
         for (let oy = -40; oy <= 40; oy++)

@@ -5,25 +5,24 @@ This removes the continuous dark outline; it does not naturalize the exact eight
 
 ## Diagnosis and registration
 
-The old `water.webp` baked in the dark rim. `forest-composition.ts` also restores
-a hard water swatch beneath it, with a 0.08-cell technical guard. Permanent water
-overlays are suppressed by `surfaceIsPainted` in normal painted-scene rendering;
-the outline was neither an action contour nor the optional grid.
+The earlier `water.webp` baked in the dark rim. The current local `pond-bank.webp`
+contains only dry exterior pixels; permanent water is still drawn by the map's eight
+runtime water cells. The retained `water.webp` is historical source material, not
+the active forest-road ground layer.
 
 The unchanged water cells are (5,5), (6,5), (4,6), (5,6), (6,6), (7,6), (5,7), (6,7).
-The patch is now world (560,304), 352 × 192, packed at 704 × 384. The exterior
-contains dry ochre only, opaque through the existing 0.08-cell guard and feathered
-to zero at 0.12 cells. Water stays inside the original cells. Both backends use
-the existing scene ground-image contract. No new asset URL or cache family.
+The patch is world (560,304), 352 × 192, packed at 704 × 384. Its dry exterior is
+opaque through the existing 0.08-cell guard and feathered to zero at 0.12 cells;
+every pixel inside the original water cells is transparent. Both backends use the
+existing scene ground-image contract.
 
 Run `node --import tsx scripts/art/forest-shoreline.ts` to repack the tracked source.
-The source is scaled as a full canvas, without trim/recentering. Its original
-painted edge RGB is retained where visible; transparent registration holes borrow
+The source is scaled as a full canvas, without trim/recentering. Its original dry
+edge RGB is retained where visible; transparent or teal registration samples borrow
 the nearest visible dry pixel from the same source. Alpha is registered to the
-bounded guard. An initial opaque-only sample rule produced a striped fringe and
-was rejected before final packing. No procedural shoreline material is painted.
-Tests compare the shipped bytes with a fresh encode, decode shipped alpha to
-check guard coverage/exterior exclusion, and verify water color at every cell.
+bounded exterior only. No procedural shoreline material is painted. Tests compare
+the shipped bytes with a fresh encode, decode shipped alpha to check the transparent
+water interior and exterior exclusion, and verify every water-cell center is clear.
 
 ## Source and credit
 

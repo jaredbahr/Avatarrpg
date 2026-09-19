@@ -58,6 +58,7 @@ export const FOREST_ROAD_SCENE: MapScene = {
   paintedRubble: FOREST_RUBBLE_CELLS,
   ground: [
     { url: `${root}route-ground.webp`, x: 128, y: 32, width: 1984, height: 960 },
+    { url: `${root}pond-bank.webp`, ...FOREST_POND_PATCH },
     ...FOREST_RUBBLE_CELLS.map(({ x, y }) => ({
       url: `${root}rubble.webp`,
       x: 768 + (x - y) * 64 - 64,
