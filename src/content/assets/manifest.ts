@@ -54,6 +54,8 @@ export type AssetEntry =
       readonly atlas: string;
       /** Pixels a tile is drawn at in the atlas: 128, or 256 for a sharper sheet. */
       readonly pixelsPerTile: number;
+      /** Explicit art bounds when weapon reach exceeds the default frame (ADR 0032). */
+      readonly frameSize?: { readonly w: number; readonly h: number };
       /** Tiles the unit stands on: 1x1, or 2x1 for the boss. */
       readonly footprint: { readonly w: number; readonly h: number };
       /** The point of the frame that stands on the tile's foot line, as fractions of the frame. */
@@ -152,6 +154,12 @@ function cuttingSheet(name: string, palette: string): SheetEntry {
     Array.from({ length: count }, (_, i) => `${key}/${clip}/${i}`);
   return {
     ...base,
+    frameSize:
+      name === 'ruon'
+        ? { w: 139, h: 192 }
+        : name === 'merc'
+          ? { w: 169, h: 199 }
+          : { w: 147, h: 203 },
     clips: {
       idle: { frames: frames('idle', 2), fps: 1, loop: true },
       walk: { frames: frames('walk', 2), fps: 4, loop: true },

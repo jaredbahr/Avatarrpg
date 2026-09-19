@@ -25,7 +25,7 @@ for (const renderer of ['canvas', 'webgl'] as const) {
       const revision = execFileSync('git', ['rev-parse', '--short', 'HEAD'], {
         encoding: 'utf8',
       }).trim();
-      const folder = `.shots/cutting-characters/${renderer}-${reduced ? 'reduced' : 'normal'}`;
+      const folder = `${process.env.FNT_ART_REVIEW_DIR ?? '.shots/cutting-characters'}/${renderer}-${reduced ? 'reduced' : 'normal'}`;
       mkdirSync(folder, { recursive: true });
       const errors: string[] = [];
       page.on('pageerror', (error) => errors.push(error.message));

@@ -4,13 +4,13 @@
  */
 import { mkdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { dirname, join } from 'node:path';
+import { PNG } from 'pngjs';
 import { readPng, writePng } from './lib/image';
 import { splitGrid } from './split-sheet';
-import { main as normalise } from './normalise';
 import { main as pack } from './pack';
 import { alphaBounds, crop } from './lib/trim';
 import { scaleBy } from './lib/scale';
-import { placeOnBaseline } from './lib/align';
+import { BASELINE, MARGIN, placeOnBaseline } from './lib/align';
 
 const [name, source, walkSource, nearPassingSource] = process.argv.slice(2);
 if (!name || !source || !walkSource || !['ruon', 'merc', 'sergeant'].includes(name))
@@ -37,14 +37,18 @@ for (const [index, pose] of poses.entries()) {
   mkdirSync(dirname(path), { recursive: true });
   writePng(path, cell);
 }
-// The mercenary's full extended sabre needs 10% more horizontal room. Keep a
-// common character scale across all combat cels instead of shrinking the strike.
-if (
-  normalise(['--unit', key, '--key', 'alpha', '--height', name === 'merc' ? '0.70' : '0.78']) !== 0
-)
-  throw new Error('Normalisation failed');
-const idleHeight = alphaBounds(readPng(join('art/normalised', key, 'idle/0.png')))?.height;
-if (!idleHeight) throw new Error('Missing standing reference');
+// Heroes' 121 px cels receive a 1.25 oblique runtime scale. These nondirectional
+// actors need 151 px standing art to share their adult height, not smaller bodies
+// to accommodate weapon reach. Preserve one scale across every combat pose.
+const idleHeight = 151;
+const sourceIdle = cells[0] && alphaBounds(cells[0]);
+if (!sourceIdle || sourceIdle.height < idleHeight) throw new Error('Standing source is too small');
+const combatScale = idleHeight / sourceIdle.height;
+const scaled = cells.map((cell) => {
+  const bounds = alphaBounds(cell);
+  if (!bounds) throw new Error('Empty combat pose');
+  return scaleBy(crop(cell, bounds), combatScale);
+});
 const guided = splitGrid(readPng(walkSource), 2, 2);
 const selected = [guided[1], guided[3]];
 if (selected.some((cell) => !cell)) throw new Error('Missing walk contact');
@@ -59,11 +63,39 @@ for (let index = 0; index < 2; index++) {
   if (!cell || !bounds) throw new Error('Empty walking pose');
   const scale = separateSource ? idleHeight / bounds.height : commonScale;
   if (scale > 1) throw new Error('Walking source is too small');
-  const placed = placeOnBaseline(scaleBy(crop(cell, bounds), scale), 128, 192);
+  scaled[2 + index] = scaleBy(crop(cell, bounds), scale);
+}
+const extents = scaled.map((cell) => {
+  const bounds = alphaBounds(cell);
+  if (!bounds) throw new Error('Empty scaled pose');
+  return bounds;
+});
+const width = Math.max(128, Math.max(...extents.map((b) => b.width)) + 2 * MARGIN);
+let height = 192;
+while (Math.round(height * BASELINE) < Math.max(...extents.map((b) => b.height)) + MARGIN) height++;
+console.log(
+  `${key}: declared frame ${width}x${height}, standing height ${idleHeight}, combat scale ${combatScale}`,
+);
+for (const [index, pose] of poses.entries()) {
+  const cell = scaled[index];
+  if (!cell) throw new Error('Missing scaled pose');
+  const placed = placeOnBaseline(cell, width, height);
   if (placed.problems.length) throw new Error(placed.problems.join('; '));
-  writePng(join('art/normalised', key, `walk/${index}.png`), placed.image);
+  const path = join('art/normalised', key, `${pose}.png`);
+  mkdirSync(dirname(path), { recursive: true });
+  writePng(path, placed.image);
 }
 if (pack(['--unit', key, '--name', name]) !== 0) throw new Error('Packing failed');
+// A single measured lossless packing pass keeps the adult-scale art inside
+// ADR 0032's units budget. Default strategy 3 costs 7,379 extra bytes here.
+const pngPath = `public/art/units/${name}.png`;
+writeFileSync(
+  pngPath,
+  PNG.sync.write(PNG.sync.read(readFileSync(pngPath)), {
+    deflateLevel: 9,
+    deflateStrategy: 0,
+  }),
+);
 // Alias atlas rectangles, not frame names: content validation requires each
 // clip to retain its own key/clip/index vocabulary. No duplicate bitmap bytes.
 const atlasPath = `public/art/units/${name}.json`;

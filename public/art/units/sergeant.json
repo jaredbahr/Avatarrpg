@@ -4,220 +4,220 @@
       "frame": {
         "x": 0,
         "y": 0,
-        "w": 128,
-        "h": 192
+        "w": 147,
+        "h": 203
       },
       "rotated": false,
       "trimmed": false,
       "spriteSourceSize": {
         "x": 0,
         "y": 0,
-        "w": 128,
-        "h": 192
+        "w": 147,
+        "h": 203
       },
       "sourceSize": {
-        "w": 128,
-        "h": 192
+        "w": 147,
+        "h": 203
       }
     },
     "unit.enemy.sergeant/idle/1": {
       "frame": {
-        "x": 128,
+        "x": 147,
         "y": 0,
-        "w": 128,
-        "h": 192
+        "w": 147,
+        "h": 203
       },
       "rotated": false,
       "trimmed": false,
       "spriteSourceSize": {
         "x": 0,
         "y": 0,
-        "w": 128,
-        "h": 192
+        "w": 147,
+        "h": 203
       },
       "sourceSize": {
-        "w": 128,
-        "h": 192
+        "w": 147,
+        "h": 203
       }
     },
     "unit.enemy.sergeant/walk/0": {
       "frame": {
-        "x": 256,
+        "x": 294,
         "y": 0,
-        "w": 128,
-        "h": 192
+        "w": 147,
+        "h": 203
       },
       "rotated": false,
       "trimmed": false,
       "spriteSourceSize": {
         "x": 0,
         "y": 0,
-        "w": 128,
-        "h": 192
+        "w": 147,
+        "h": 203
       },
       "sourceSize": {
-        "w": 128,
-        "h": 192
+        "w": 147,
+        "h": 203
       }
     },
     "unit.enemy.sergeant/walk/1": {
       "frame": {
-        "x": 384,
+        "x": 441,
         "y": 0,
-        "w": 128,
-        "h": 192
+        "w": 147,
+        "h": 203
       },
       "rotated": false,
       "trimmed": false,
       "spriteSourceSize": {
         "x": 0,
         "y": 0,
-        "w": 128,
-        "h": 192
+        "w": 147,
+        "h": 203
       },
       "sourceSize": {
-        "w": 128,
-        "h": 192
+        "w": 147,
+        "h": 203
       }
     },
     "unit.enemy.sergeant/cast/0": {
       "frame": {
-        "x": 512,
+        "x": 588,
         "y": 0,
-        "w": 128,
-        "h": 192
+        "w": 147,
+        "h": 203
       },
       "rotated": false,
       "trimmed": false,
       "spriteSourceSize": {
         "x": 0,
         "y": 0,
-        "w": 128,
-        "h": 192
+        "w": 147,
+        "h": 203
       },
       "sourceSize": {
-        "w": 128,
-        "h": 192
+        "w": 147,
+        "h": 203
       }
     },
     "unit.enemy.sergeant/cast/1": {
       "frame": {
-        "x": 640,
+        "x": 735,
         "y": 0,
-        "w": 128,
-        "h": 192
+        "w": 147,
+        "h": 203
       },
       "rotated": false,
       "trimmed": false,
       "spriteSourceSize": {
         "x": 0,
         "y": 0,
-        "w": 128,
-        "h": 192
+        "w": 147,
+        "h": 203
       },
       "sourceSize": {
-        "w": 128,
-        "h": 192
+        "w": 147,
+        "h": 203
       }
     },
     "unit.enemy.sergeant/cast/2": {
       "frame": {
-        "x": 768,
+        "x": 882,
         "y": 0,
-        "w": 128,
-        "h": 192
+        "w": 147,
+        "h": 203
       },
       "rotated": false,
       "trimmed": false,
       "spriteSourceSize": {
         "x": 0,
         "y": 0,
-        "w": 128,
-        "h": 192
+        "w": 147,
+        "h": 203
       },
       "sourceSize": {
-        "w": 128,
-        "h": 192
+        "w": 147,
+        "h": 203
       }
     },
     "unit.enemy.sergeant/hit/0": {
       "frame": {
-        "x": 896,
+        "x": 1029,
         "y": 0,
-        "w": 128,
-        "h": 192
+        "w": 147,
+        "h": 203
       },
       "rotated": false,
       "trimmed": false,
       "spriteSourceSize": {
         "x": 0,
         "y": 0,
-        "w": 128,
-        "h": 192
+        "w": 147,
+        "h": 203
       },
       "sourceSize": {
-        "w": 128,
-        "h": 192
+        "w": 147,
+        "h": 203
       }
     },
     "unit.enemy.sergeant/ko/0": {
       "frame": {
-        "x": 1024,
+        "x": 1176,
         "y": 0,
-        "w": 128,
-        "h": 192
+        "w": 147,
+        "h": 203
       },
       "rotated": false,
       "trimmed": false,
       "spriteSourceSize": {
         "x": 0,
         "y": 0,
-        "w": 128,
-        "h": 192
+        "w": 147,
+        "h": 203
       },
       "sourceSize": {
-        "w": 128,
-        "h": 192
+        "w": 147,
+        "h": 203
       }
     },
     "unit.enemy.sergeant/melee/0": {
       "frame": {
-        "x": 512,
+        "x": 588,
         "y": 0,
-        "w": 128,
-        "h": 192
+        "w": 147,
+        "h": 203
       },
       "rotated": false,
       "trimmed": false,
       "spriteSourceSize": {
         "x": 0,
         "y": 0,
-        "w": 128,
-        "h": 192
+        "w": 147,
+        "h": 203
       },
       "sourceSize": {
-        "w": 128,
-        "h": 192
+        "w": 147,
+        "h": 203
       }
     },
     "unit.enemy.sergeant/melee/1": {
       "frame": {
-        "x": 640,
+        "x": 735,
         "y": 0,
-        "w": 128,
-        "h": 192
+        "w": 147,
+        "h": 203
       },
       "rotated": false,
       "trimmed": false,
       "spriteSourceSize": {
         "x": 0,
         "y": 0,
-        "w": 128,
-        "h": 192
+        "w": 147,
+        "h": 203
       },
       "sourceSize": {
-        "w": 128,
-        "h": 192
+        "w": 147,
+        "h": 203
       }
     }
   },
@@ -227,8 +227,8 @@
     "image": "sergeant.png",
     "format": "RGBA8888",
     "size": {
-      "w": 1152,
-      "h": 192
+      "w": 1323,
+      "h": 203
     },
     "scale": "1"
   }

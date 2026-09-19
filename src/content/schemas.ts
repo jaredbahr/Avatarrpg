@@ -708,6 +708,9 @@ export const assetEntrySchema = z.discriminatedUnion('kind', [
     kind: z.literal('sheet'),
     atlas: z.string().regex(/\.json$/, 'must point at the atlas JSON'),
     pixelsPerTile: z.union([z.literal(128), z.literal(256)]),
+    frameSize: z
+      .object({ w: z.number().int().min(1).max(512), h: z.number().int().min(1).max(512) })
+      .optional(),
     footprint: z.object({ w: z.union([z.literal(1), z.literal(2)]), h: z.literal(1) }),
     anchor: z.object({ x: z.number().min(0).max(1), y: z.number().min(0).max(1) }),
     facing: z.enum(['mirror', 'both']),

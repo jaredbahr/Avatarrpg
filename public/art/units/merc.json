@@ -4,220 +4,220 @@
       "frame": {
         "x": 0,
         "y": 0,
-        "w": 128,
-        "h": 192
+        "w": 169,
+        "h": 199
       },
       "rotated": false,
       "trimmed": false,
       "spriteSourceSize": {
         "x": 0,
         "y": 0,
-        "w": 128,
-        "h": 192
+        "w": 169,
+        "h": 199
       },
       "sourceSize": {
-        "w": 128,
-        "h": 192
+        "w": 169,
+        "h": 199
       }
     },
     "unit.enemy.merc/idle/1": {
       "frame": {
-        "x": 128,
+        "x": 169,
         "y": 0,
-        "w": 128,
-        "h": 192
+        "w": 169,
+        "h": 199
       },
       "rotated": false,
       "trimmed": false,
       "spriteSourceSize": {
         "x": 0,
         "y": 0,
-        "w": 128,
-        "h": 192
+        "w": 169,
+        "h": 199
       },
       "sourceSize": {
-        "w": 128,
-        "h": 192
+        "w": 169,
+        "h": 199
       }
     },
     "unit.enemy.merc/walk/0": {
       "frame": {
-        "x": 256,
+        "x": 338,
         "y": 0,
-        "w": 128,
-        "h": 192
+        "w": 169,
+        "h": 199
       },
       "rotated": false,
       "trimmed": false,
       "spriteSourceSize": {
         "x": 0,
         "y": 0,
-        "w": 128,
-        "h": 192
+        "w": 169,
+        "h": 199
       },
       "sourceSize": {
-        "w": 128,
-        "h": 192
+        "w": 169,
+        "h": 199
       }
     },
     "unit.enemy.merc/walk/1": {
       "frame": {
-        "x": 384,
+        "x": 507,
         "y": 0,
-        "w": 128,
-        "h": 192
+        "w": 169,
+        "h": 199
       },
       "rotated": false,
       "trimmed": false,
       "spriteSourceSize": {
         "x": 0,
         "y": 0,
-        "w": 128,
-        "h": 192
+        "w": 169,
+        "h": 199
       },
       "sourceSize": {
-        "w": 128,
-        "h": 192
+        "w": 169,
+        "h": 199
       }
     },
     "unit.enemy.merc/cast/0": {
       "frame": {
-        "x": 512,
+        "x": 676,
         "y": 0,
-        "w": 128,
-        "h": 192
+        "w": 169,
+        "h": 199
       },
       "rotated": false,
       "trimmed": false,
       "spriteSourceSize": {
         "x": 0,
         "y": 0,
-        "w": 128,
-        "h": 192
+        "w": 169,
+        "h": 199
       },
       "sourceSize": {
-        "w": 128,
-        "h": 192
+        "w": 169,
+        "h": 199
       }
     },
     "unit.enemy.merc/cast/1": {
       "frame": {
-        "x": 640,
+        "x": 845,
         "y": 0,
-        "w": 128,
-        "h": 192
+        "w": 169,
+        "h": 199
       },
       "rotated": false,
       "trimmed": false,
       "spriteSourceSize": {
         "x": 0,
         "y": 0,
-        "w": 128,
-        "h": 192
+        "w": 169,
+        "h": 199
       },
       "sourceSize": {
-        "w": 128,
-        "h": 192
+        "w": 169,
+        "h": 199
       }
     },
     "unit.enemy.merc/cast/2": {
       "frame": {
-        "x": 768,
+        "x": 1014,
         "y": 0,
-        "w": 128,
-        "h": 192
+        "w": 169,
+        "h": 199
       },
       "rotated": false,
       "trimmed": false,
       "spriteSourceSize": {
         "x": 0,
         "y": 0,
-        "w": 128,
-        "h": 192
+        "w": 169,
+        "h": 199
       },
       "sourceSize": {
-        "w": 128,
-        "h": 192
+        "w": 169,
+        "h": 199
       }
     },
     "unit.enemy.merc/hit/0": {
       "frame": {
-        "x": 896,
+        "x": 1183,
         "y": 0,
-        "w": 128,
-        "h": 192
+        "w": 169,
+        "h": 199
       },
       "rotated": false,
       "trimmed": false,
       "spriteSourceSize": {
         "x": 0,
         "y": 0,
-        "w": 128,
-        "h": 192
+        "w": 169,
+        "h": 199
       },
       "sourceSize": {
-        "w": 128,
-        "h": 192
+        "w": 169,
+        "h": 199
       }
     },
     "unit.enemy.merc/ko/0": {
       "frame": {
-        "x": 1024,
+        "x": 1352,
         "y": 0,
-        "w": 128,
-        "h": 192
+        "w": 169,
+        "h": 199
       },
       "rotated": false,
       "trimmed": false,
       "spriteSourceSize": {
         "x": 0,
         "y": 0,
-        "w": 128,
-        "h": 192
+        "w": 169,
+        "h": 199
       },
       "sourceSize": {
-        "w": 128,
-        "h": 192
+        "w": 169,
+        "h": 199
       }
     },
     "unit.enemy.merc/melee/0": {
       "frame": {
-        "x": 512,
+        "x": 676,
         "y": 0,
-        "w": 128,
-        "h": 192
+        "w": 169,
+        "h": 199
       },
       "rotated": false,
       "trimmed": false,
       "spriteSourceSize": {
         "x": 0,
         "y": 0,
-        "w": 128,
-        "h": 192
+        "w": 169,
+        "h": 199
       },
       "sourceSize": {
-        "w": 128,
-        "h": 192
+        "w": 169,
+        "h": 199
       }
     },
     "unit.enemy.merc/melee/1": {
       "frame": {
-        "x": 640,
+        "x": 845,
         "y": 0,
-        "w": 128,
-        "h": 192
+        "w": 169,
+        "h": 199
       },
       "rotated": false,
       "trimmed": false,
       "spriteSourceSize": {
         "x": 0,
         "y": 0,
-        "w": 128,
-        "h": 192
+        "w": 169,
+        "h": 199
       },
       "sourceSize": {
-        "w": 128,
-        "h": 192
+        "w": 169,
+        "h": 199
       }
     }
   },
@@ -227,8 +227,8 @@
     "image": "merc.png",
     "format": "RGBA8888",
     "size": {
-      "w": 1152,
-      "h": 192
+      "w": 1521,
+      "h": 199
     },
     "scale": "1"
   }

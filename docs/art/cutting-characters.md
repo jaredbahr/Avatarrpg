@@ -34,13 +34,20 @@ pose, using the top-right guide crop. Its other passing pose comes from the grid
 Only these two walking cels ship; the established 4 fps, two-frame loop remains.
 This is a compact two-pose walk, not a claim of a continuous four-pose cycle.
 
-The importer checks clear gutters, keeps source alpha, and uses the established
-128-by-192 frames, y=162 foot baseline and 0.5/0.85 anchor. One scale applies to
-all combat poses, so KO remains shorter. The ordinary mercenary uses a 0.70
-standing-height fraction instead of 0.78: its extended sabre would otherwise
-touch the required margin. His combat and walking body heights remain consistent.
-Walk inputs are scaled to the standing reference; paired grid poses share one
-scale. No artistic retouching, limb transformations or renderer changes are used.
+The importer checks clear gutters and keeps source alpha. All three standing
+bodies are 151 pixels high: Sura and Kaya have 121-pixel bodies with a 1.25 runtime
+scale in the oblique view, making their equivalent height 151.25 pixels. The first
+121/109-pixel drafts were visibly too short and are superseded. One source scale
+applies to all combat poses, so KO remains shorter. Walk inputs match the standing
+reference; paired grid poses share one scale.
+
+Frame dimensions are the smallest bounds that preserve every scaled pose with
+the existing eight-pixel clear margins and 0.5/0.85 anchor: Ruon 139 by 192,
+mercenary 169 by 199, sergeant 147 by 203. The manifest declares these bounds
+explicitly under ADR 0032. Pixels per tile remains 128 and logical footprint
+remains one tile. No artistic retouching, limb transformations or renderer changes
+are used. A single lossless PNG deflate strategy saves 7,379 bytes without changing
+any decoded pixels; no color reduction or lossy image compression is used.
 
 ```sh
 node --import tsx scripts/art/cutting-characters.ts ruon assets/reference/cutting-characters/ruon-combat.png assets/reference/cutting-characters/ruon-walk.png
@@ -52,7 +59,7 @@ npm run art:validate
 The existing `melee` contract reuses cast wind-up/contact frames. All clip rates,
 ability rules, effect timing and one-tile footprints remain unchanged. Loading
 and failed requests retain the original mercenary painters and faction palettes.
-No new portrait is introduced. Runtime sheets and atlas JSON total 356,681 bytes;
+No new portrait is introduced. Runtime sheets and atlas JSON total 540,375 bytes;
 see ADR 0032 for the narrowly increased units budget.
 
 The explicit local review is `e2e/cutting-character-art.review.ts`, run with
@@ -61,7 +68,9 @@ three-member Cutting views, the naturally available six-member sergeant
 reinforcement, and separately labelled staged walking/attack frames. Staged
 presentation events are not evidence of legal combat outcomes. Both rendering
 backends and reduced motion are covered at the real camera's player zoom.
-The server refuses port reuse and each test asserts the current Git build title.
+The server refuses port reuse and each test asserts the title screen's exact Git
+build label. Normal-motion samples assert both distinct walking frames and the
+brief melee release frame were captured for every subject.
 
 Output terms follow the existing art intake convention:
 <https://openai.com/policies/row-terms-of-use/>. No exclusive copyright in generated

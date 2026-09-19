@@ -4,7 +4,7 @@
       "frame": {
         "x": 0,
         "y": 0,
-        "w": 128,
+        "w": 139,
         "h": 192
       },
       "rotated": false,
@@ -12,19 +12,19 @@
       "spriteSourceSize": {
         "x": 0,
         "y": 0,
-        "w": 128,
+        "w": 139,
         "h": 192
       },
       "sourceSize": {
-        "w": 128,
+        "w": 139,
         "h": 192
       }
     },
     "unit.ally.ruon/idle/1": {
       "frame": {
-        "x": 128,
+        "x": 139,
         "y": 0,
-        "w": 128,
+        "w": 139,
         "h": 192
       },
       "rotated": false,
@@ -32,19 +32,19 @@
       "spriteSourceSize": {
         "x": 0,
         "y": 0,
-        "w": 128,
+        "w": 139,
         "h": 192
       },
       "sourceSize": {
-        "w": 128,
+        "w": 139,
         "h": 192
       }
     },
     "unit.ally.ruon/walk/0": {
       "frame": {
-        "x": 256,
+        "x": 278,
         "y": 0,
-        "w": 128,
+        "w": 139,
         "h": 192
       },
       "rotated": false,
@@ -52,19 +52,19 @@
       "spriteSourceSize": {
         "x": 0,
         "y": 0,
-        "w": 128,
+        "w": 139,
         "h": 192
       },
       "sourceSize": {
-        "w": 128,
+        "w": 139,
         "h": 192
       }
     },
     "unit.ally.ruon/walk/1": {
       "frame": {
-        "x": 384,
+        "x": 417,
         "y": 0,
-        "w": 128,
+        "w": 139,
         "h": 192
       },
       "rotated": false,
@@ -72,19 +72,19 @@
       "spriteSourceSize": {
         "x": 0,
         "y": 0,
-        "w": 128,
+        "w": 139,
         "h": 192
       },
       "sourceSize": {
-        "w": 128,
+        "w": 139,
         "h": 192
       }
     },
     "unit.ally.ruon/cast/0": {
       "frame": {
-        "x": 512,
+        "x": 556,
         "y": 0,
-        "w": 128,
+        "w": 139,
         "h": 192
       },
       "rotated": false,
@@ -92,19 +92,19 @@
       "spriteSourceSize": {
         "x": 0,
         "y": 0,
-        "w": 128,
+        "w": 139,
         "h": 192
       },
       "sourceSize": {
-        "w": 128,
+        "w": 139,
         "h": 192
       }
     },
     "unit.ally.ruon/cast/1": {
       "frame": {
-        "x": 640,
+        "x": 695,
         "y": 0,
-        "w": 128,
+        "w": 139,
         "h": 192
       },
       "rotated": false,
@@ -112,19 +112,19 @@
       "spriteSourceSize": {
         "x": 0,
         "y": 0,
-        "w": 128,
+        "w": 139,
         "h": 192
       },
       "sourceSize": {
-        "w": 128,
+        "w": 139,
         "h": 192
       }
     },
     "unit.ally.ruon/cast/2": {
       "frame": {
-        "x": 768,
+        "x": 834,
         "y": 0,
-        "w": 128,
+        "w": 139,
         "h": 192
       },
       "rotated": false,
@@ -132,19 +132,19 @@
       "spriteSourceSize": {
         "x": 0,
         "y": 0,
-        "w": 128,
+        "w": 139,
         "h": 192
       },
       "sourceSize": {
-        "w": 128,
+        "w": 139,
         "h": 192
       }
     },
     "unit.ally.ruon/hit/0": {
       "frame": {
-        "x": 896,
+        "x": 973,
         "y": 0,
-        "w": 128,
+        "w": 139,
         "h": 192
       },
       "rotated": false,
@@ -152,19 +152,19 @@
       "spriteSourceSize": {
         "x": 0,
         "y": 0,
-        "w": 128,
+        "w": 139,
         "h": 192
       },
       "sourceSize": {
-        "w": 128,
+        "w": 139,
         "h": 192
       }
     },
     "unit.ally.ruon/ko/0": {
       "frame": {
-        "x": 1024,
+        "x": 1112,
         "y": 0,
-        "w": 128,
+        "w": 139,
         "h": 192
       },
       "rotated": false,
@@ -172,19 +172,19 @@
       "spriteSourceSize": {
         "x": 0,
         "y": 0,
-        "w": 128,
+        "w": 139,
         "h": 192
       },
       "sourceSize": {
-        "w": 128,
+        "w": 139,
         "h": 192
       }
     },
     "unit.ally.ruon/melee/0": {
       "frame": {
-        "x": 512,
+        "x": 556,
         "y": 0,
-        "w": 128,
+        "w": 139,
         "h": 192
       },
       "rotated": false,
@@ -192,19 +192,19 @@
       "spriteSourceSize": {
         "x": 0,
         "y": 0,
-        "w": 128,
+        "w": 139,
         "h": 192
       },
       "sourceSize": {
-        "w": 128,
+        "w": 139,
         "h": 192
       }
     },
     "unit.ally.ruon/melee/1": {
       "frame": {
-        "x": 640,
+        "x": 695,
         "y": 0,
-        "w": 128,
+        "w": 139,
         "h": 192
       },
       "rotated": false,
@@ -212,11 +212,11 @@
       "spriteSourceSize": {
         "x": 0,
         "y": 0,
-        "w": 128,
+        "w": 139,
         "h": 192
       },
       "sourceSize": {
-        "w": 128,
+        "w": 139,
         "h": 192
       }
     }
@@ -227,7 +227,7 @@
     "image": "ruon.png",
     "format": "RGBA8888",
     "size": {
-      "w": 1152,
+      "w": 1251,
       "h": 192
     },
     "scale": "1"
