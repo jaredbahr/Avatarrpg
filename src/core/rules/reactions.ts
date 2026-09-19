@@ -21,7 +21,7 @@
 import type { Ability, BattleState, ContentIndex, StatusId, SurfaceId, Unit, Vec2 } from '../types';
 import { RngCursor } from '../rng';
 import { BattleDraft } from '../state/battleDraft';
-import { blastTiles, occupiedCells, posKey, tileAt } from './grid';
+import { allowsCasterTarget, blastTiles, occupiedCells, posKey, tileAt } from './grid';
 import { applyStatus, removeStatuses } from './status';
 import { contactEffects } from './surfaces';
 import type { ChainHit, StatusHit, SurfaceChange } from './surfaces';
@@ -176,11 +176,10 @@ export function forecastReactions(
   // live battle cursor or expose its seed in the preview.
   const previewRng = new RngCursor(0);
   const draft = new BattleDraft(content, battle, previewRng, { resolveChanceStatuses: false });
-  const isSelfShape = ability.targeting.shape === 'self';
   const struck = battle.units.filter(
     (unit) =>
       isAlive(unit) &&
-      (isSelfShape || unit.id !== caster.id) &&
+      (allowsCasterTarget(ability) || unit.id !== caster.id) &&
       occupiedCells(unit).some((cell) => tiles.some((tile) => posKey(tile) === posKey(cell))),
   );
   const hitIds = struck.map((unit) => unit.id);

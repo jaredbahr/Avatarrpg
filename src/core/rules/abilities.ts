@@ -32,6 +32,7 @@ import {
   hasLineOfSight,
   inBounds,
   lineTiles,
+  allowsCasterTarget,
   occupiedCells,
   posKey,
   samePos,
@@ -256,8 +257,9 @@ export function previewAbility(
   target: Vec2,
 ): AbilityPreview {
   const tiles = affectedTiles(battle.grid, caster, ability, target);
-  const isSelfShape = ability.targeting.shape === 'self';
-  const inArea = unitsOnTiles(battle.units, tiles).filter((u) => isSelfShape || u.id !== caster.id);
+  const inArea = unitsOnTiles(battle.units, tiles).filter(
+    (u) => allowsCasterTarget(ability) || u.id !== caster.id,
+  );
   const forecast = forecastReactions(content, battle, caster, ability, target, tiles);
 
   const targets: PreviewTarget[] = [];
@@ -398,13 +400,14 @@ export function resolveAbility(
   rng: RngCursor,
 ): void {
   const tiles = affectedTiles(draft.grid, caster, ability, target);
-  const isSelfShape = ability.targeting.shape === 'self';
 
   draft.emit({ type: 'abilityUsed', unitId: caster.id, abilityId: ability.id, target, tiles });
 
   // Snapshot who is standing where *before* anything moves, so a push in one
   // effect does not pull a unit out of the next effect's area.
-  const struck = unitsOnTiles(draft.units, tiles).filter((u) => isSelfShape || u.id !== caster.id);
+  const struck = unitsOnTiles(draft.units, tiles).filter(
+    (u) => allowsCasterTarget(ability) || u.id !== caster.id,
+  );
   const hitIds = struck.map((u) => u.id);
   const friendlyIds = struck.filter((u) => sameSide(caster, u)).map((u) => u.id);
 

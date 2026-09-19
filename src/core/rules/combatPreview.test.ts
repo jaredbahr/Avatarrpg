@@ -156,6 +156,43 @@ describe('bounded combat outcome previews', () => {
     });
   });
 
+  it('lets ally-target healing include the caster without widening hostile areas', () => {
+    const source = battleFor('enc_forest_road', ['nilak', 'kaya']);
+    const base = placed(source, { p0: { x: 1, y: 3 }, p1: { x: 4, y: 3 } }, ['p0', 'p1']);
+    const battle = {
+      ...base,
+      units: base.units.map((unit) =>
+        unit.id === 'p0'
+          ? { ...withStatus(withStatus(unit, 'burning'), 'blinded'), hp: unit.hp - 8 }
+          : unit,
+      ),
+    };
+    const caster = battle.units.find((unit) => unit.id === 'p0');
+    if (!caster) throw new Error('ally-target caster fixture missing');
+
+    const healing = previewAbility(CONTENT, battle, caster, ability('healing_stream'), caster.pos);
+    const selfHeal = healing.targets.find((target) => target.unitId === caster.id);
+    expect(selfHeal?.heal).toBeGreaterThan(0);
+    expect(selfHeal?.clearedStatuses).toEqual(['burning', 'blinded']);
+    const healed = resolve(battle, caster, 'healing_stream', caster.pos);
+    expect(healed.unit(caster.id)?.hp).toBeGreaterThan(caster.hp);
+    expect(statusIds(healed.unit(caster.id))).not.toEqual(
+      expect.arrayContaining(['burning', 'blinded']),
+    );
+
+    const selfPreview = previewAbility(CONTENT, battle, caster, ability('heat_shield'), caster.pos);
+    expect(selfPreview.targets.find((target) => target.unitId === caster.id)?.statuses).toEqual([
+      expect.objectContaining({ id: 'guarded', appliedStatus: 'guarded' }),
+    ]);
+
+    const hostileArea = previewAbility(CONTENT, battle, caster, ability('fire_blast'), caster.pos);
+    expect(hostileArea.targets.some((target) => target.unitId === caster.id)).toBe(false);
+    const hostileActual = resolve(battle, caster, 'fire_blast', caster.pos);
+    expect(
+      hostileActual.events.some((event) => event.type === 'damaged' && event.unitId === caster.id),
+    ).toBe(false);
+  });
+
   it('reports cabbage-cart status collateral and both shove destinations', () => {
     const source = battleFor('enc_quarry_gate');
     const battle = placed(source, { p0: { x: 4, y: 6 }, e6: { x: 7, y: 6 } }, ['p0', 'e6']);

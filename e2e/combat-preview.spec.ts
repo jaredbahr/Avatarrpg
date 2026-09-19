@@ -30,7 +30,7 @@ test('touching a prop target names its break consequence before confirmation', a
   });
   await settleLayout(page);
 
-  await page.getByRole('button', { name: 'Fire Jab', exact: true }).click();
+  await page.getByRole('button', { name: /^Fire Jab/ }).click();
   const canvas = page.locator('.map-canvas');
   const box = await canvas.boundingBox();
   if (!box) throw new Error('No combat canvas.');

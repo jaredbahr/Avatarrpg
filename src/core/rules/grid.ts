@@ -9,7 +9,7 @@
  * orthogonal neighbours it passes between are walkable.
  */
 
-import type { Grid, MapDef, SurfaceDef, SurfaceId, Tile, Unit, Vec2 } from '../types';
+import type { Ability, Grid, MapDef, SurfaceDef, SurfaceId, Tile, Unit, Vec2 } from '../types';
 
 export const DIRECTIONS: readonly Vec2[] = [
   { x: 1, y: 0 },
@@ -74,6 +74,12 @@ export function neighbors(grid: Grid, p: Vec2): Vec2[] {
 export function occupiedCells(unit: Pick<Unit, 'pos' | 'size'>): Vec2[] {
   if (unit.size === 2) return [unit.pos, { x: unit.pos.x + 1, y: unit.pos.y }];
   return [unit.pos];
+}
+
+/** Whether a unit-targeted ability may resolve against its own caster. */
+export function allowsCasterTarget(ability: Pick<Ability, 'targeting'>): boolean {
+  if (ability.targeting.shape === 'self') return true;
+  return ability.targeting.shape === 'unit' && ability.targeting.allow !== 'enemy';
 }
 
 /** Chebyshev distance from a point to the nearest cell of a possibly-large unit. */
