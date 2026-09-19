@@ -76,6 +76,12 @@ export class CombatScene implements Scene {
   /** True after a user zoom/pan; HUD reflows must preserve that manual framing. */
   private manualCamera = false;
   /**
+   * The compact oblique frame is chosen from the first settled combat canvas,
+   * before an ability or log panel changes its height. Keeping that choice for
+   * the scene prevents aim-mode reflow from zooming the board in and out.
+   */
+  private preferredCombatTilePx: number | null = null;
+  /**
    * The reachable set and the target/area tiles are rebuilt only when the
    * inputs that decide them change, not every frame: on a tablet the
    * flood-fill is the one per-frame cost that shows up.
@@ -165,10 +171,13 @@ export class CombatScene implements Scene {
     if (!camera) return;
     this.manualCamera = false;
     if (camera.projection === 'oblique') {
-      // Large text can leave a short combat canvas. Keep every target in the
-      // touch viewport there; the wide layout retains the preferred 96px tile.
-      if (camera.viewport.height < 360) camera.fit();
-      else camera.fitExplore(96);
+      if (this.preferredCombatTilePx === null) {
+        // Reserve the compact decision frame on a short initial canvas. The
+        // first settled height is available before the action bar expands, so
+        // this choice remains stable while targets and previews reflow.
+        this.preferredCombatTilePx = camera.viewport.height < 480 ? 40 : 96;
+      }
+      camera.fitExplore(this.preferredCombatTilePx);
     } else camera.fit();
     const unit = this.active();
     if (!camera.fitted && unit) camera.centreOn(unit.pos);

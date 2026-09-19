@@ -91,3 +91,45 @@ for (const renderer of ['canvas', 'webgl'] as const) {
     expect(Math.abs(recentred.offsetX - panned.offsetX)).toBeGreaterThan(20);
   });
 }
+
+for (const largeText of ['normal', 'huge'] as const) {
+  test(`compact oblique framing stays stable through ability reflow at ${largeText} text`, async ({
+    page,
+  }) => {
+    await page.setViewportSize({ width: 1280, height: 720 });
+    await resetStorage(page, '?renderer=canvas');
+    await startGame(page, ['Kaya'], ['kaya'], `compact-frame-${largeText}`);
+    if (largeText === 'huge')
+      await page.evaluate(() => window.fnt!.app.updateSettings({ largeText: 'huge' }));
+    await enterNode(page, 'battle_forest_road');
+    await takeTurn(page);
+    await waitForIdle(page);
+    await settleLayout(page);
+    const enemy = await page.evaluate(() => {
+      const battle = window.fnt!.app.state!.battle!;
+      const unit = battle.units.find(
+        (candidate) => candidate.faction === 'enemy' && candidate.hp > 0,
+      );
+      return unit ? { x: unit.pos.x, y: unit.pos.y } : null;
+    });
+    if (!enemy) throw new Error('Missing visible target');
+    const before = await page.evaluate(() => window.fnt!.app.rendererCamera()!);
+    const box = await page.locator('.map-canvas').boundingBox();
+    const point = await paintedTileCentre(page, enemy);
+    if (!box || !point) throw new Error('Missing battlefield geometry');
+    expect(before.tilePx).toBeLessThanOrEqual(40.01);
+    expect(point.x).toBeGreaterThan(box.x);
+    expect(point.x).toBeLessThan(box.x + box.width);
+    expect(point.y).toBeGreaterThan(box.y);
+    expect(point.y).toBeLessThan(box.y + box.height);
+
+    await page.getByRole('button', { name: /^Fire Jab/ }).click();
+    await settleLayout(page);
+    const aiming = await page.evaluate(() => window.fnt!.app.rendererCamera()!);
+    expect(aiming.tilePx).toBeCloseTo(before.tilePx, 5);
+    await page.getByRole('button', { name: 'Cancel', exact: true }).click();
+    await settleLayout(page);
+    const cancelled = await page.evaluate(() => window.fnt!.app.rendererCamera()!);
+    expect(cancelled.tilePx).toBeCloseTo(before.tilePx, 5);
+  });
+}

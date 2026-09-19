@@ -9,7 +9,7 @@ const MATERIAL_STYLES = (['ice', 'mud', 'oil', 'rubble'] as const)
   .map((id, i) => {
     const style = SURFACE_STYLES[id];
     const index = [2, 4, 6, 7][i];
-    return `if (surface == ${index}) { tint = ${glslColor(style.fill)}; rim = ${glslColor(style.edge)}; opacity = ${style.alpha.toFixed(3)}; }`;
+    return `if (surface == ${index}) { tint = ${glslColor(style.fill)}; rim = ${glslColor(style.edge)}; detail = ${glslColor(style.detail)}; opacity = ${style.alpha.toFixed(3)}; }`;
   })
   .join('\n');
 
@@ -229,7 +229,7 @@ void main(void) {
 
   /* ---------------- surfaces ---------------- */
 
-  vec3 tint = vec3(0.0), rim = vec3(0.0);
+  vec3 tint = vec3(0.0), rim = vec3(0.0), detail = vec3(0.0);
   float opacity = 0.0;
   ${MATERIAL_STYLES}
 
@@ -277,7 +277,7 @@ void main(void) {
     float churn = fbm(w * 5.0);
     lay(acc, tint, opacity * (0.88 + 0.12 * churn) * intensity);
     float streak = smoothstep(0.70, 0.84, vnoise(w * vec2(9.0, 17.0)));
-    lay(acc, tint * 0.62, streak * 0.21 * intensity);
+    lay(acc, detail, streak * 0.21 * intensity);
   } else if (surface == 5) {          // steam
     float billow = fbm(w * 2.2 + vec2(uTime * 0.16, -uTime * 0.22));
     lay(acc, vec3(0.85, 0.86, 0.87), (0.45 + 0.35 * billow) * intensity);
@@ -286,7 +286,7 @@ void main(void) {
     lay(acc, tint, opacity * intensity);
     // A restrained sage sheen, rather than moving rainbow colour over stone.
     float sheen = 1.0 - smoothstep(0.025, 0.070, abs(sheenBand - 0.55));
-    lay(acc, tint * 0.55, sheen * 0.14 * intensity);
+    lay(acc, detail, sheen * 0.14 * intensity);
     float glint = 1.0 - smoothstep(0.008, 0.022, abs(sheenBand - 0.57));
     lay(acc, mix(rim, vec3(0.68, 0.68, 0.56), 0.35), glint * 0.25 * intensity);
   } else if (surface == 7) {          // rubble

@@ -79,7 +79,7 @@ export function paintSurface(
   const material = tile.surface.id;
   if (material === 'mud' || material === 'oil') {
     ctx.globalAlpha = SURFACE_POOL.alpha * intensity;
-    ctx.fillStyle = material === 'mud' ? '#453321' : '#171c1a';
+    ctx.fillStyle = style.detail;
     for (const [side, on] of [edges.n, edges.e, edges.s, edges.w].entries()) {
       if (!on) continue;
       const point = (along: number, depth: number): [number, number] => {
@@ -153,7 +153,7 @@ export function paintSurface(
         ctx.lineTo(x + s * 0.04, y + s * 0.01);
         ctx.closePath();
       } else {
-        ctx.strokeStyle = material === 'mud' ? '#453321' : '#171c1a';
+        ctx.strokeStyle = style.detail;
         ctx.lineWidth = s * (material === 'mud' ? 0.026 : 0.018);
         if (material === 'oil') {
           ctx.ellipse(x, y, s * 0.18, s * 0.055, -0.35, Math.PI * 0.2, Math.PI * 1.3);
