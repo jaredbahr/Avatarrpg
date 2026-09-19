@@ -72,37 +72,26 @@ and must not be used to close these requirements.
 
 ## Merged functional baseline
 
-Current unmerged assignments are tracked by the lead in the
-[delivery handoff](handoffs/lead-driller-completion.md). Verify live status before
-taking any of these files; this table records ownership, not completion.
+Current ownership, checked 19 September 2026. Read the linked handoff and verify
+live branches and checks before editing; older assignments are historical.
 
-| Assignment                                        | Owner                                                | Boundary                                                                    |
-| ------------------------------------------------- | ---------------------------------------------------- | --------------------------------------------------------------------------- |
-| PR64 checks, guidance/camera and combined release | Gameplay task `01a0b300-e321-7670-aab3-f0aeaf624dc0` | Sole integration owner; visible release version and exact-head checks       |
-| Exterior quarry art and scale review              | Art task `01a0b2ee-8d60-7643-be9b-340997ca4ae0`      | Source assets/metadata; coordinate map opt-in with gameplay                 |
-| Prop, displacement and status previews            | `combat_preview` agent                               | Shared rules and lower CombatScene confirmation; no camera edits            |
-| Conversations retaining the explored world        | `world_conversations` agent                          | App routing, shared panel, ExploreScene lifecycle and presentation metadata |
-| Possible direct-attack reach                      | `combat_depth_audit` agent                           | New pure helper/tests on `codex/gate-threat-audit`; no UI or balance edits  |
-| Continuous playthrough and acceptance             | Lead task `01a0b79f-a1e6-7fd0-a4d5-76e7944406f6`     | Review integrated runtime against the full target                           |
+| Assignment                         | Owner                | Boundary                                                                                                     |
+| ---------------------------------- | -------------------- | ------------------------------------------------------------------------------------------------------------ |
+| PR64 release v0.2.1                | Root orchestrator    | Frozen `fc37c6a`; one CI run35438371967; exact-head checks and merge-commit auto-merge                       |
+| Next quality integration           | Root orchestrator    | `codex/deserter-material-fx`; reviewed source-launch/flask/impact changes; no push into running PR64         |
+| Adult enemy proportions            | `quarry_composition` | Isolated `codex/route-enemy-scale`; five route sheets and existing presentation scale; preview4265           |
+| Quarry interior design audit       | `combat_preview`     | Read-only bounded geometry/cover/prop proposal against approved reference; map edits await root scope review |
+| Continuous gameplay and acceptance | Root orchestrator    | Production4267 at `fc37c6a`; manual route and source review; no final aesthetic signoff                      |
 
-Latest local checkpoint: the lead completed the normal solo Sura route through
-Driller victory and all four village homecoming conversations, preserving saves
-across export/import and reload. This is a functional playthrough milestone,
-not final presentation acceptance or exact-final-head release verification.
-The [route review](handoffs/route-presentation-review.md) records its scope.
-
-Current ownership supersedes the historical table above: the lead now owns
-final integration in `Avatar RPG-combined-0.2.1` and PR64 coordination; the
-previous gameplay owner has stopped. Product build `903d853` includes the
-reviewed quarry surround, dynamic surfaces, compact forecasts, exploration
-overflow corrections and flowing water motion. Combined `50e6550` passed
-typecheck, lint, formatting and 804 tests. `quarry_composition` and
-`combat_preview` completed their bounded assignments and preserved evidence.
-`world_conversations` completed audio lifecycle evidence and now owns the
-isolated repair for PR64's failed iPad preview test and Riverside button churn.
-The next verified batch advances the same PR64; no duplicate CI is needed. Source
-worktrees and recordings remain preserved; redundant preview servers stop
-when their evidence is handed off. See the lead handoff for exact checkpoints.
+The [current playthrough handoff](handoffs/cutting-control-review.md) records
+ownership, exact release validation and preserved saves. Release verification
+passes836 tests;14 focused production browser checks include complete trade and
+escort return routes. Current GitHub verification passed; E2E and gallery remain
+in progress. Rooted AI and disabled movement controls have also been confirmed
+through the original manual campaign on the corrected release build. The same
+Sura/Riko campaign subsequently lost with the boss at2 HP and reached its ending.
+Earlier solo Sura victory and homecoming evidence remains preserved. None of
+these observations closes the reference, listening or physical-device gaps.
 
 All slice source PRs through #58 and the final combined route-test PR #52 are
 merged. Their implementation history is preserved; reuse useful work while

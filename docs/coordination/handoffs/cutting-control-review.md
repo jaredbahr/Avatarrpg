@@ -225,3 +225,32 @@ headroom. Root has verified its clean branch and now owns this next-quality
 candidate; its source owner released editing and stopped4265. Do not copy its
 changes into PR64 while CI runs. Versioning and the next landing revision follow
 the actual release state, not an unshipped checkpoint.
+
+## Corrected Driller replay on fc37c6a
+
+Manual WebGL replay used the imported normal level-3 Sura/Riko campaign and
+matched the old round-2 command sequence: Bolas, approach and five Water Whips.
+The boss reached42/64 HP. Rooted now prevents its movement: it used Churn and
+Oil Spray in place, with no Slam. Sura retained23/34 HP instead of the old9/34.
+Riko's Move button was disabled with the authored Rooted explanation. Slot3
+preserves round3 before player actions (19 September,06:14:38 local).
+
+Continuing legally, rooted Sura used four Water Whips (boss42 to28). Once Rooted
+expired, Debris Throw critically hit Sura for17 and splashed Riko for8; Slam
+then downed Sura. Riko moved4 through the mud to melee range and used six
+Strikes, one missing, leaving the boss2/64. Its reply defeated the party.
+The three retreat lines and all five ending panels continued successfully to
+The Quarry Keeps Running. This confirms the scoped AI/UI repair and defeated
+route on the release build; it is not an all-party balance or quality signoff.
+
+Tab5 remains at the terminal ending. Slots1/2 retain Cutting and Driller round1;
+slot3 retains the corrected round3 checkpoint. CI35438371967 still has passed
+verification with E2E and gallery running at this observation. No duplicate run
+or new release revision was pushed.
+
+Next-quality ownership: quarry_composition works in the isolated
+codex/route-enemy-scale tree on consistent adult proportions for five route enemy
+sheets, using existing presentation scaling without a schema change. Preview4265
+is reserved to that task. combat_preview is auditing a bounded quarry interior
+with navigable cover and useful props against the approved reference; it has no
+map-edit authorization until scope review. Root owns this FX integration tree.
