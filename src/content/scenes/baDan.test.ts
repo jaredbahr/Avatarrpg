@@ -46,6 +46,18 @@ function alphaAt(
   return image.data[(y * image.width + x) * 4 + 3] ?? 0;
 }
 
+function rgbAt(
+  piece: (typeof BA_DAN_SCENE.ground)[number],
+  pos: { x: number; y: number },
+): readonly number[] {
+  const image = decodedGround.get(piece.url);
+  if (!image) return [0, 0, 0];
+  const x = Math.round(1024 + (pos.x - pos.y) * 64 - piece.x);
+  const y = Math.round((pos.x + pos.y + 1) * 32 - piece.y);
+  const at = (y * image.width + x) * 4;
+  return [image.data[at] ?? 0, image.data[at + 1] ?? 0, image.data[at + 2] ?? 0];
+}
+
 it('keeps painted low boundaries solid while preserving every village destination', () => {
   const map = BA_DAN_VILLAGE;
   const grid = buildGrid(map);
@@ -142,6 +154,13 @@ it('ships the western spawn approach as decoded material coverage with a courtya
   ]) {
     expect(alphaAt(western, pos), `western join ${pos.x},${pos.y}`).toBeGreaterThan(240);
     expect(alphaAt(courtyard, pos), `courtyard join ${pos.x},${pos.y}`).toBeGreaterThan(240);
+    const westernRgb = rgbAt(western, pos);
+    const courtyardRgb = rgbAt(courtyard, pos);
+    for (let channel = 0; channel < 3; channel++)
+      expect(
+        Math.abs((westernRgb[channel] ?? 0) - (courtyardRgb[channel] ?? 0)),
+        `RGB join ${pos.x},${pos.y}, channel ${channel}`,
+      ).toBeLessThanOrEqual(4);
   }
 });
 

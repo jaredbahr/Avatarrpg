@@ -56,19 +56,19 @@ The deterministic material and coping generators are:
 
 ```sh
 npx tsx scripts/art/ba-dan-courtyard-ground.ts art/raw/scenes/ground-materials.png
-npx tsx scripts/art/ba-dan-western-approach-ground.ts art/raw/scenes/ground-materials.png
+npx tsx scripts/art/ba-dan-western-approach-ground.ts
 npx tsx scripts/art/ba-dan-canal-banks.ts art/raw/scenes/ground-materials.png
 python scripts/art/ba-dan-bridge-front.py
 ```
 
-The material atlas is deliberately not represented as tracked source. The
-western pack was made from the existing ignored local input at
-`C:\Users\Jared\.codex\worktrees\71bd\Avatar RPG\art\raw\scenes\ground-materials.png`
-(1254×1254 PNG, SHA-256
-`dc4a78d7a6340b545c0dea145357d3f2b116653fe80cd108a0de14bfe8018ccc`). Its
-path and hash record the actual source used; the committed generator is the
-reproducible transformation contract and must not be described as the raw
-atlas being tracked.
+The western pack derives from the tracked accepted local material source
+`public/art/maps/ba-dan-scene/courtyard-ground.webp` (1152×576 WebP,
+SHA-256 `691cadc6a8fd3a981aeafb18181eab0580ef62f89b51422c45165527367aac6a`).
+It decodes that already material-composed region, copies its actual pixels in
+the x5–6 overlap, and repeats interior quiet-grass and broad-flagstone swatches
+for the western cells. This is local material reuse, not a full-map crop or
+recolouring. The older ignored raw atlas is not the source of this pack and is
+not described as tracked.
 
 The original scenery layers continue to use `scripts/art/scene-image.ts` for
 alpha-trimmed WebP packing. The complete map encoder remains useful for old
