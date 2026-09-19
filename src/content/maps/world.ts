@@ -174,7 +174,7 @@ export function connectAct1(map: MapDef): MapDef {
             5,
             'gate_parley',
             'The quarry watch',
-            'npc.guard',
+            'unit.ally.ruon',
             unvisited('ruon_choice'),
           ),
         ],
