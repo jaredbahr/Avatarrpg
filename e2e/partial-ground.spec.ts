@@ -141,19 +141,25 @@ async function reenterVillage(page: Page): Promise<void> {
 async function waitForAuthoredColours(
   page: Page,
   includePatch = true,
+  timeout = 10_000,
 ): Promise<{ patch: Rgb; valid: Rgb }> {
   let verified: { patch: Rgb; valid: Rgb } | null = null;
   await expect
-    .poll(async () => {
-      const sample = await samples(page, { patch: PATCH, valid: VALID });
-      const ready =
-        sample.valid.b > sample.valid.r + 55 &&
-        sample.valid.b > 170 &&
-        (!includePatch || (sample.patch.r > sample.patch.b + 55 && sample.patch.r > 170));
-      if (ready) verified = sample;
-      return ready;
-    })
+    .poll(
+      async () => {
+        const sample = await samples(page, { patch: PATCH, valid: VALID });
+        const ready =
+          sample.valid.b > sample.valid.r + 55 &&
+          sample.valid.b > 170 &&
+          (!includePatch || (sample.patch.r > sample.patch.b + 55 && sample.patch.r > 170));
+        if (ready) verified = sample;
+        return ready;
+      },
+      { timeout },
+    )
     .toBe(true);
+  // Screenshot readback on CI software WebGL can take several seconds per
+  // frame; this is intentionally scoped to the real pixel assertion.
   if (!verified) throw new Error('Authored colours passed without a screenshot sample');
   return verified;
 }
@@ -168,13 +174,17 @@ for (const renderer of ['canvas', 'webgl'] as const) {
     await startGame(page, ['Kaya'], ['kaya'], 'partial-ground-water');
     await enterNode(page, 'village_explore');
     await page.locator('.explore-scene .map-canvas').waitFor();
-    const bare = await waitForAuthoredColours(page);
+    const bare = await waitForAuthoredColours(page, true, renderer === 'webgl' ? 60_000 : 10_000);
     expectRed(bare.patch);
     expectBlue(bare.valid);
 
     await setPermanentWater(page, PATCH, true);
     await reenterVillage(page);
-    const underwater = await waitForAuthoredColours(page, false);
+    const underwater = await waitForAuthoredColours(
+      page,
+      false,
+      renderer === 'webgl' ? 60_000 : 10_000,
+    );
     expectBlue(underwater.valid);
     // The red image is visible before the real grid's water surface is enabled;
     // water then tints that same image rather than replacing it or being hidden below it.
@@ -182,7 +192,11 @@ for (const renderer of ['canvas', 'webgl'] as const) {
 
     await setPermanentWater(page, PATCH, false);
     await reenterVillage(page);
-    const restored = await waitForAuthoredColours(page);
+    const restored = await waitForAuthoredColours(
+      page,
+      true,
+      renderer === 'webgl' ? 60_000 : 10_000,
+    );
     expectRed(restored.patch);
     expectBlue(restored.valid);
     expect(Math.abs(restored.patch.r - bare.patch.r)).toBeLessThan(12);
