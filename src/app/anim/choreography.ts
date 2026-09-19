@@ -433,7 +433,19 @@ export function choreograph(input: ChoreographyInput): Choreography {
         if (ability.id === 'water_whip' && casterUnit?.sprite === 'unit.water.sura' && gather) {
           const source = { ...gather, socket: 'waterskin' as const };
           emit(
-            [{ ...WATERSKIN_DRAW, duration: gatherSpan, life: [gatherSpan, gatherSpan] }],
+            [
+              { ...WATERSKIN_DRAW, duration: gatherSpan, life: [gatherSpan, gatherSpan] },
+              {
+                ...WATERSKIN_DRAW,
+                shape: 'stream',
+                count: 7,
+                duration: gatherSpan,
+                delay: [0, gatherSpan * 0.7],
+                life: [gatherSpan * 0.3, gatherSpan * 0.3],
+                size: [0.06, 0.09],
+                color: 'light',
+              },
+            ],
             cursor + windUp * 0.4,
             caster,
             caster,

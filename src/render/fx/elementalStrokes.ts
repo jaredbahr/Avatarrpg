@@ -3,6 +3,72 @@ import type { Vec2 } from '../../core/types';
 import type { StrokeEmitterDef } from '../../content/fx';
 import type { Stroke } from './simulate';
 
+/** Flow along the existing whip arc; endpoints and out/return clock stay fixed. */
+export function flowingWhip(def: StrokeEmitterDef, t: number, from: Vec2, to: Vec2): Stroke[] {
+  const reach = Math.sin(Math.PI * t);
+  const dx = to.x - from.x,
+    dy = to.y - from.y;
+  const distance = Math.hypot(dx, dy);
+  if (distance < 0.001 || reach < 0.001) return [];
+  const nx = -dy / distance,
+    ny = dx / distance;
+  const side = dx <= 0 ? 1 : -1;
+  const point = (u: number): number[] => {
+    // Two travelling ripples, tapered to zero at the hand and contact point.
+    const sway =
+      reach *
+      (1.2 * side * u * (1 - u) +
+        Math.sin(Math.PI * u) * Math.sin(u * Math.PI * 4 - t * Math.PI * 4) * 0.085);
+    return [from.x + dx * reach * u + nx * sway, from.y + dy * reach * u + ny * sway];
+  };
+  const alpha = Math.min(1, (1 - t) * 5);
+  const strokes: Stroke[] = [];
+  const strand = (start: number, end: number, width: number) => {
+    const line: number[] = [];
+    for (let i = 0; i <= 32; i++) line.push(...point(start + ((end - start) * i) / 32));
+    strokes.push({
+      points: taperedRibbon(line, width * reach),
+      width: 0.01,
+      alpha,
+      closed: true,
+      fill: true,
+    });
+  };
+  if (def.color === 'accent') {
+    // Broken highlights carry flow through the body instead of a solid blade stripe.
+    for (let i = 0; i < 3; i++) {
+      const start = (i / 3 + t * 0.35) % 1;
+      strand(start, Math.min(1, start + 0.19), def.width * 0.5);
+    }
+  } else {
+    strand(0, 1, def.width * 0.5);
+    // Three small falling beads follow the stream, never a cloud around the actors.
+    for (let i = 0; i < 3; i++) {
+      const u = 0.25 + i * 0.22;
+      const [x = 0, y = 0] = point(u);
+      const fall = 0.06 + Math.sin(Math.PI * t) * (0.07 + i * 0.02);
+      const size = 0.022 * reach;
+      strokes.push({
+        points: [
+          x,
+          y + fall - size * 2,
+          x + size,
+          y + fall,
+          x,
+          y + fall + size,
+          x - size,
+          y + fall,
+        ],
+        width: 0.01,
+        alpha: alpha * 0.75,
+        closed: true,
+        fill: true,
+      });
+    }
+  }
+  return strokes;
+}
+
 /** A ribbon with narrow ends, rather than a constant-width hose with round caps. */
 export function taperedRibbon(points: readonly number[], width: number): number[] {
   const count = points.length / 2;

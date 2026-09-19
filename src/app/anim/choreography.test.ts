@@ -223,6 +223,14 @@ describe('directed Fire Jab attachments', () => {
         expect(
           source?.def.kind === 'particles' && source.start + source.def.life[1],
         ).toBeLessThanOrEqual(release.start);
+        for (const track of tracks) {
+          if (track.kind !== 'emitter' || track.attachments?.from?.socket !== 'waterskin') continue;
+          expect(track.attachments.to?.socket).toBe('cast-gather');
+          if (track.def.kind === 'particles')
+            expect(track.start + track.def.delay[1] + track.def.life[1]).toBeLessThanOrEqual(
+              release.start,
+            );
+        }
       } else expect(source).toBeUndefined();
     }
   });

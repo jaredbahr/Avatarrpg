@@ -12,7 +12,7 @@
 import type { Vec2 } from '../../core/types';
 import type { ParticleEmitterDef, StrokeEmitterDef } from '../../content/fx';
 import { hashSeed, mulberry32 } from './rng';
-import { movingElement, taperedRibbon } from './elementalStrokes';
+import { flowingWhip, movingElement, taperedRibbon } from './elementalStrokes';
 import { celAnchorY } from '../../content/fxCels';
 import { FOOT_LINE } from '../sheets/bake';
 
@@ -278,6 +278,11 @@ export function sampleStrokes(
     }
 
     case 'whip': {
+      // Water has moving surface detail; the dark grappling cord keeps its taut arc.
+      if (def.color === 'base' || def.color === 'accent') {
+        strokes.push(...flowingWhip(def, t, from, to));
+        break;
+      }
       // Reaches the target at the midpoint and snaps back.
       const reach = Math.sin(Math.PI * t);
       // Bends up the screen whichever way it is aimed, so two strands of

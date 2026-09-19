@@ -694,7 +694,7 @@ const cel = (clip: FxCel, size: number, duration = 480, projectile = false): Par
 export const WATERSKIN_DRAW: ParticleEmitterDef = particles({
   shape: 'projectile',
   cell: 'drop',
-  count: 3,
+  count: 1,
   duration: 156,
   life: [156, 156],
   delay: [0, 0],
@@ -702,10 +702,10 @@ export const WATERSKIN_DRAW: ParticleEmitterDef = particles({
   spread: 0,
   gravity: 0,
   drag: 0,
-  size: [0.035, 0.055],
+  size: [0.12, 0.12],
   grow: 1,
   spin: 0,
-  color: 'light',
+  color: 'base',
   fade: 'none',
   blend: 'normal',
   layer: 'over',
@@ -775,8 +775,8 @@ export const FX_FAMILIES: Readonly<Record<string, FxRecipeInput>> = {
     cast: [glowBurst('accent', 0.4), droplets(6)],
     travel: {
       emitters: [
-        whip(0.22, 'base', true),
-        whip(0.09, 'accent', false),
+        whip(0.17, 'base', false),
+        whip(0.055, 'accent', false),
         trail('drop', 8, 'light', 'normal', [0.06, 0.12]),
       ],
       speed: 15,
