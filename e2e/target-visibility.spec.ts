@@ -86,6 +86,11 @@ for (const renderer of ['canvas', 'webgl'] as const) {
     test(`Fire Jab target stays tappable with separate decisions on ${renderer}${narrow ? ' at huge phone text' : ' at desktop lower edge'}`, async ({
       page,
     }) => {
+      // Forced WebGL on the CI software rasterizer can spend a full frame on
+      // each camera settle and pointer readback. The assertions remain the
+      // same; give this renderer the same measured slow-project allowance as
+      // the pan/reflow regression without relaxing the suite globally.
+      if (renderer === 'webgl') test.slow();
       await page.setViewportSize(
         narrow ? { width: 390, height: 844 } : { width: 1672, height: 941 },
       );
