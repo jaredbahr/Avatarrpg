@@ -3,6 +3,7 @@
 ## 0.2.1 — release candidate
 
 - Give the Cutting and Driller floor connected stone surroundings, grounded terraces, and quieter mud, oil and ice treatments.
+- Make water whips flow as ribbons with restrained droplets and a clearer waterskin draw, preserving attack contact and timing.
 - Keep nearby combatants readable on short screens, preserve manual camera framing, and make surface confirmations more compact without hiding costs or chances.
 - Forecast actual healing, surface contact, prop reactions and displacement. Healing Stream now works on its caster and previews only the health that can be restored.
 - Preserve support AP granted before an ally's turn, show possible enemy attack reach during movement planning, and disable player action buttons during enemy turns.
