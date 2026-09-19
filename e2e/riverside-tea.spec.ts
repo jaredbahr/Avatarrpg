@@ -3,10 +3,8 @@ import { groundPoint } from './projection';
 import { enterNode, resetStorage, settleLayout, startGame, waitForIdle } from './helpers';
 
 for (const backend of ['canvas', 'webgl']) {
-  test(`tea holds on the porch and yields to walking and forms (${backend})`, async ({
-    page,
-    browserName,
-  }) => {
+  test(`tea holds on the porch and yields to walking and forms (${backend})`, async ({ page }) => {
+    // Four seconds of stepped RAF frames are costly on software WebGL.
     if (backend === 'webgl') test.slow();
     // Install before navigation so setup runs on the real clock; pause only
     // once the normal-motion tea pose is ready for the deterministic cel check.
