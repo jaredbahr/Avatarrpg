@@ -295,14 +295,17 @@ test.describe('zoom and pan', () => {
     expect(withoutLog.tilePx).toBeCloseTo(zoomed.tilePx, 3);
   });
 
-  test('fitted zoom-out keeps legal water targeting framed through footer reflow', async ({ page }) => {
+  test('fitted zoom-out keeps legal water targeting framed through footer reflow', async ({
+    page,
+  }) => {
     const target = await openWaterFight(page);
     // PR64's oblique camera deliberately starts at the 48px preferred tile
     // size, which is larger than the whole-board fit at 1280x720. Use a wide
-    // landscape here so the regression reaches the exact fitted state on
-    // both camera policies; the normal viewport coverage remains below.
+    // landscape for that policy so the regression reaches the exact fitted
+    // state; the orthographic policy keeps the normal viewport coverage.
     const viewport = page.viewportSize();
-    if (viewport && viewport.width < 1600) {
+    const initialCamera = await camera(page);
+    if (initialCamera.projection === 'oblique' && viewport && viewport.width < 1600) {
       await page.setViewportSize({ width: 1600, height: 900 });
       await settleLayout(page);
     }
@@ -345,6 +348,11 @@ test.describe('zoom and pan', () => {
     await expect(page.locator('.confirm-bar').filter({ hasText: /Confirm/ })).toBeVisible();
     const firstFooter = await camera(page);
     expect(firstFooter.tilePx).toBeGreaterThanOrEqual(fitted.tilePx - 0.5);
+    await page.getByRole('button', { name: /^Log$/ }).click();
+    await expect(page.getByRole('button', { name: /^Hide log$/ })).toBeVisible();
+    const withLog = await camera(page);
+    expect(withLog.tilePx).toBeGreaterThanOrEqual(firstFooter.tilePx - 0.5);
+    await page.getByRole('button', { name: /^Hide log$/ }).click();
 
     await page.getByRole('button', { name: /^Cancel$/ }).click();
     // The cancel affordance backs out of the target but leaves the ability in
@@ -392,7 +400,12 @@ test.describe('zoom and pan', () => {
       if (app && unit) app.dispatch({ type: 'endTurn', unitId: unit.id });
     });
     await expect
-      .poll(async () => page.evaluate(() => window.fnt?.app.state?.battle?.order[window.fnt?.app.state?.battle?.turnIndex ?? -1]))
+      .poll(async () =>
+        page.evaluate(
+          () =>
+            window.fnt?.app.state?.battle?.order[window.fnt?.app.state?.battle?.turnIndex ?? -1],
+        ),
+      )
       .not.toBe(activeBefore);
     const afterActorChange = await camera(page);
     expect(afterActorChange.tilePx).toBeCloseTo(panned.tilePx, 3);
