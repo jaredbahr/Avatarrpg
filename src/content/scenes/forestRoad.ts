@@ -4,6 +4,17 @@ import { FOREST_GRASS_REGIONS } from './forestRoadGround';
 const root = 'art/maps/forest-scene/';
 /** Water stays on its eight cells; padding carries only a narrow dry shoreline matte. */
 export const FOREST_POND_PATCH = { x: 560, y: 304, width: 352, height: 192 } as const;
+/** The eastern shelf is two shallow elevated groups with the road exit left open. */
+export const FOREST_RAISED_SHELF_CELLS: readonly Vec2[] = [
+  { x: 19, y: 2 },
+  { x: 18, y: 3 },
+  { x: 19, y: 3 },
+  { x: 18, y: 5 },
+  { x: 19, y: 5 },
+  { x: 19, y: 6 },
+];
+/** Projected bounds include a small trim margin; the (19,4) exit stays alpha-clear. */
+export const FOREST_RAISED_SHELF = { x: 1528, y: 664, width: 400, height: 208 } as const;
 /** Asset footprints are checked against the authoritative map rows in forestRoad.test.ts. */
 export const FOREST_WATER_CELLS: readonly Vec2[] = [
   { x: 5, y: 5 },
@@ -62,6 +73,7 @@ export const FOREST_ROAD_SCENE: MapScene = {
     { url: `${root}grass-south.webp`, ...FOREST_GRASS_REGIONS.south },
     { url: `${root}route-ground.webp`, x: 128, y: 32, width: 1984, height: 960 },
     { url: `${root}pond-bank.webp`, ...FOREST_POND_PATCH },
+    { url: `${root}raised-shelf.webp`, ...FOREST_RAISED_SHELF },
     ...FOREST_RUBBLE_CELLS.map(({ x, y }) => ({
       url: `${root}rubble.webp`,
       x: 768 + (x - y) * 64 - 64,

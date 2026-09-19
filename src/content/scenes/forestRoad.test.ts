@@ -2,6 +2,8 @@ import { expect, it } from 'vitest';
 import { FOREST_ROAD } from '../maps/combat';
 import {
   FOREST_PINE_CELLS,
+  FOREST_RAISED_SHELF,
+  FOREST_RAISED_SHELF_CELLS,
   FOREST_ROAD_SCENE,
   FOREST_RUBBLE_CELLS,
   FOREST_WATER_CELLS,
@@ -28,6 +30,12 @@ it('registers forest art only to the existing water, cover and blocked tree cell
     'art/maps/forest-scene/water.webp',
   );
   expect(FOREST_WATER_CELLS).toEqual(cells('~'));
+  expect(FOREST_RAISED_SHELF_CELLS).toEqual(cells('^'));
+  expect(FOREST_RAISED_SHELF_CELLS).not.toContainEqual({ x: 19, y: 4 });
+  expect(FOREST_ROAD_SCENE.ground).toContainEqual({
+    url: 'art/maps/forest-scene/raised-shelf.webp',
+    ...FOREST_RAISED_SHELF,
+  });
   expect(FOREST_RUBBLE_CELLS).toEqual(cells('r'));
   expect(FOREST_PINE_CELLS).toEqual(cells('T'));
   expect(FOREST_ROAD.legend.r).toMatchObject({ cover: true, surface: 'rubble' });
