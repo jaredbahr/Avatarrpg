@@ -278,4 +278,28 @@ PR64, preserving every required exact-head check and merge-commit auto-merge.
 
 ## 19 September — release timeout follow-up
 
+Latest release correction supersedes the pending-push note below. PR64 revision
+`9cbb251` ran CI `35468950087`: verification passed; browser testing passed23
+cases, failed the WebGL manual-pan case and left420 unrun; gallery was skipped.
+The prior combat-focus case passed. Both failed attempts reached the visible,
+enabled Fire Jab control but timed out before dispatching its click at180s.
+One artifact download showed a47–52s ten-step drag and repeated software-GPU
+ReadPixels stalls. This is evidence of rendering pressure, not proof that the
+remaining interaction sequence passes.
+
+Source repair `e8b4bae`, integrated as `96eefa7`, uses a real two-step drag and
+batches initial geometry and post-drag state reads. All camera/state assertions,
+normal locator clicks, touch targeting and layout settles remain. No further
+timeout increase or renderer change. Root owns full verification and the next
+single PR revision; local WebKit is the available focused browser check.
+
+Fresh `npm run verify` passed873 tests in105 files, typecheck, lint and format.
+The exact `96eefa7` focused manual-pan test also passed both Canvas and WebGL
+in local WebKit (`ipad-landscape`,2/2), with real UI interactions. This validates
+the revised test locally; Linux Chromium/software-GPU timing still awaits CI.
+
+The release remains v0.2.2. PWA recovery and forest-bank/rubble prototypes stay
+in their separate worktrees and are excluded from this revision. Pages remains
+at v0.1.0 / `44ed3f6` until a checked merge and successful deployment are verified.
+
 PR64 remains undeployed at remote a3ade76. CI35466666097 failed the surface-touch WebGL combat-focus test after20passes;423cases did not run, gallery skipped. Downloaded trace inspection by Luna found the test reached screenshot after about66.9seconds, with battlefield coordinate assertions already passing, beyond the60second default. Root integrated74466f9 as a6e397e: WebGL-only test.slow() grants180seconds, preserving every assertion. This is a timing correction, not a claimed browser pass; bundled local Chromium is absent. Fresh npm run verify at a6e397e passed873tests105files,typecheck,lint,format. No new push yet; pwa-preload-recovery owner is preparing user-controlled recovery for observed missing lazy chunk after local service-worker update. Root reviews before integration and one combined CI run.
