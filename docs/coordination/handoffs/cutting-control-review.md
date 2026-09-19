@@ -264,3 +264,28 @@ bruiser is taller than the loaded sheet; no visual-parity acceptance is implied.
 world_conversations now owns an isolated next-quality investigation of the two
 standalone quarry narration lines before battle, reusing existing world-backed
 conversation routing and preserving the illustrated interlude.
+
+## Next-quality integration and quarry interior assignment
+
+Root integrated the reviewed scale source as3fe44ff and its handoff asc8f8b06,
+without modifying frozen PR64. Source verification843/102 and its visual matrix
+apply unchanged; root-only differences from that base are documentation. The
+next combined verification waits for the coherent quality batch.
+
+combat_preview completed the read-only interior audit: current Driller arena has
+no permanent interior blockers and its scene scenery list is empty. Root approved
+an isolated implementation based onc8f8b06: permanent stone stacks at(8,4) and
+(11,7) with reused masonry; live rubble at(6,7)/(13,4), water barrel(12,6), brazier
+(10,3), preserving the conditional cart. The owner must establish engine path,
+LOS, size-two footprint, save and balance behavior; its simple connected-cell
+audit alone is not acceptance. It owns maps/combat.ts and quarryProjected.ts.
+
+quarry_composition owns a separate art-only rear loading/rail strip assignment,
+also isolated fromc8f8b06, coordinating its key and anchor with gameplay. Target
+80–100KiB within remaining map budget175,940B; reuse art where suitable. No fake
+interactive props, duplicate Driller, renderer changes or budget increase.
+The current combined JavaScript has about315B headroom; measured authoring
+compression may be necessary. Root remains the sole integration owner, with
+PR64 frozen and no duplicate pushes or CI. Both assignments must provide exact
+source and runtime evidence before integration. Narration continuity remains
+with world_conversations in its separate scope review.
