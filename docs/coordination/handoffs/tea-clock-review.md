@@ -13,9 +13,16 @@
   time. CI run `35457611402` recorded 144 passing tests and the same WebGL tea
   screenshot failure on both attempts; no trace-based timing claim is made.
 - **Verification:** `npx playwright test -c .tea-focused.config.ts
-  e2e/riverside-tea.spec.ts --project=surface-touch` passed all three cases in
+e2e/riverside-tea.spec.ts --project=surface-touch` passed all three cases in
   30.8s using installed system Chrome. The temporary launcher config selected
   the installed browser because this worktree lacks the bundled browser. No
   product files, renderer state, workflow files, push, or full CI run are in
   scope.
 - **Next action:** Hand the commit to root for integration review.
+
+Root integrated the repair as `a544062`; a second explicit installed-Chrome
+SwiftShader run (`--use-angle=swiftshader --enable-unsafe-swiftshader`) passed
+all three cases in 42.0 seconds. Gallery dependency change `fc6e885` retains
+the required check but runs it only after E2E passes, avoiding wasted capture
+minutes on failed gameplay revisions. Root corrected this handoff's formatting
+before final local verification. Product code remains unchanged.
