@@ -7,7 +7,7 @@
  *
  * Design notes for tuning later:
  *  - Wet is the keystone. It clears Burning, halves fire, doubles lightning and
- *    makes freezing near-certain. Teaching a kid "get them wet first" is the
+ *    makes cold hit harder. Teaching a kid "get them wet first" is the
  *    single best combo lesson in the game.
  *  - Nothing here removes a turn for longer than one round. Losing two turns in
  *    a row is miserable at a shared table.
@@ -78,8 +78,7 @@ export const STATUSES: readonly StatusDef[] = [
   status({
     id: 'wet',
     name: 'Wet',
-    description:
-      'Fire damage halved, lightning doubled, freezing almost certain. Puts out Burning.',
+    description: 'Fire damage halved, lightning doubled, and cold hits harder. Puts out Burning.',
     kind: 'debuff',
     defaultDuration: 3,
     clears: ['burning'],

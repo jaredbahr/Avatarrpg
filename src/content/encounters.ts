@@ -82,7 +82,7 @@ export const ENCOUNTERS: readonly EncounterDef[] = [
       { enemyId: 'bandit_slinger', pos: { x: 16, y: 2 } },
     ],
     intro: 'They step out of the trees. They were waiting for somebody.',
-    tip: 'There are puddles in the road. Anything standing in water gets Wet — and Wet things freeze easily and take double lightning damage.',
+    tip: 'There are puddles in the road. Anything standing in water gets Wet — cold hits Wet targets harder, and lightning damage doubles.',
   },
   {
     id: 'enc_quarry_gate',
