@@ -344,15 +344,15 @@ export class ExploreScene implements Scene {
   private setConversationMode(active: boolean): void {
     const entered = active && !this.conversationMode;
     if (entered) {
-      this.app.animator.clear();
       // A panned or cursor-zoomed view must not leave the party clipped while
       // conversation locks map gestures. Keep the player's chosen tile size.
+      // Do not clear the party's in-flight legal route: conversation can open
+      // as soon as the leader reaches an NPC, before the followers settle.
       this.followParty();
     }
     this.conversationMode = active;
     if (active) {
       this.clearWorldIntent();
-      this.needsSettle = false;
     }
     const scene = this.host?.querySelector<HTMLElement>('.explore-scene');
     scene?.classList.toggle('is-conversation', active);
@@ -815,15 +815,17 @@ export class ExploreScene implements Scene {
     // change, or a world conversation.
     if (this.conversationMode || document.hidden || document.querySelector('[role="dialog"]'))
       this.clearNextWalk();
-    if (!this.conversationMode && !this.app.animator.busy(now)) {
-      if (this.walking) {
-        this.walking = null;
-        this.updateWalkFeedback();
-      }
-      const next = this.nextWalk.take(state);
-      if (next) {
-        this.requestWalk(next);
-        return;
+    if (!this.app.animator.busy(now)) {
+      if (!this.conversationMode) {
+        if (this.walking) {
+          this.walking = null;
+          this.updateWalkFeedback();
+        }
+        const next = this.nextWalk.take(state);
+        if (next) {
+          this.requestWalk(next);
+          return;
+        }
       }
       if (
         this.needsSettle &&
