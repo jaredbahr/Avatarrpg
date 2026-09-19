@@ -76,12 +76,22 @@ export class BattleDraft {
   readonly encounterId: string;
   readonly variantId: string | null;
   readonly mapId: string;
+  /** Preview drafts describe chance branches without choosing one. */
+  readonly resolveChanceStatuses: boolean;
   readonly events: GameEvent[] = [];
+  /**
+   * Terrain reactions produced while this draft runs.  The reducer does not
+   * need this journal, but the confirm-step forecast can consume the exact
+   * reactions (including ones released by a prop breaking) without copying
+   * the combo rules into a second simulator.
+   */
+  readonly terrainReactions: SurfaceReaction[] = [];
 
   constructor(
     readonly content: ContentIndex,
     battle: BattleState,
     readonly rng: RngCursor,
+    options: { readonly resolveChanceStatuses?: boolean } = {},
   ) {
     this.grid = battle.grid;
     this.units = [...battle.units];
@@ -95,6 +105,7 @@ export class BattleDraft {
     this.encounterId = battle.encounterId;
     this.variantId = battle.variantId;
     this.mapId = battle.mapId;
+    this.resolveChanceStatuses = options.resolveChanceStatuses ?? true;
   }
 
   toBattle(): BattleState {
@@ -289,7 +300,10 @@ export class BattleDraft {
           applyMultiplier: true,
         });
       }
-      if (contact.status && this.rng.chance(contact.statusChance)) {
+      const appliesStatus = this.resolveChanceStatuses
+        ? contact.status !== null && this.rng.chance(contact.statusChance)
+        : contact.status !== null && contact.statusChance >= 1;
+      if (appliesStatus && contact.status) {
         this.applyStatusTo(unitId, contact.status);
       }
     }
@@ -472,7 +486,10 @@ export class BattleDraft {
           for (const tile of tiles) {
             const victim = this.unitAt(tile);
             if (!victim || !isAlive(victim)) continue;
-            if (!this.rng.chance(effect.chance)) continue;
+            const appliesStatus = this.resolveChanceStatuses
+              ? this.rng.chance(effect.chance)
+              : effect.chance >= 1;
+            if (!appliesStatus) continue;
             this.applyStatusTo(victim.id, effect.status, effect.duration);
           }
           break;
@@ -601,15 +618,20 @@ export class BattleDraft {
     for (const hit of reaction.statusHits) {
       const target = this.unitAt(hit.pos);
       if (!target || !isAlive(target)) continue;
-      if (!this.rng.chance(hit.chance)) continue;
+      const appliesStatus = this.resolveChanceStatuses
+        ? this.rng.chance(hit.chance)
+        : hit.chance >= 1;
+      if (!appliesStatus) continue;
       this.applyStatusTo(target.id, hit.status);
     }
   }
 
   /** Runs the combo table for a damage type landing on a set of tiles. */
-  impact(tiles: readonly Vec2[], damageType: DamageType, sourceId: string | null): void {
+  impact(tiles: readonly Vec2[], damageType: DamageType, sourceId: string | null): SurfaceReaction {
     const reaction = applyImpact(this.content, this.grid, tiles, damageType);
+    this.terrainReactions.push(reaction);
     this.applyReaction(reaction, sourceId);
+    return reaction;
   }
 
   /** Paints a surface, giving the combo table first refusal on each tile. */
@@ -618,8 +640,9 @@ export class BattleDraft {
     surface: SurfaceId,
     duration: number,
     sourceId: string | null,
-  ): void {
+  ): SurfaceReaction {
     const reaction = paintSurface(this.content, this.grid, tiles, surface, duration);
+    this.terrainReactions.push(reaction);
     this.applyReaction(reaction, sourceId);
     // Anyone already standing where a surface just appeared feels it.
     for (const change of reaction.changes) {
@@ -627,6 +650,7 @@ export class BattleDraft {
       const occupant = this.unitAt(change.pos);
       if (occupant) this.applyContact(occupant.id);
     }
+    return reaction;
   }
 
   /** Raises temporary walls. Tiles holding a unit are skipped, not crushed. */

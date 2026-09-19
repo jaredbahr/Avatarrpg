@@ -842,7 +842,7 @@ export class CombatScene implements Scene {
     const preview = previewAbility(this.app.content, battle, unit, ability, target);
 
     const chips = el('div', { class: 'row row-wrap chips preview-chips' });
-    if (preview.targets.length === 0) {
+    if (preview.targets.length === 0 && preview.props.length === 0 && preview.shoves.length === 0) {
       chips.appendChild(el('span', { class: 'chip', text: 'Nobody in the area' }));
     }
     for (const entry of preview.targets) {
@@ -851,8 +851,20 @@ export class CombatScene implements Scene {
       if (entry.damage > 0) parts.push(`~${entry.damage} dmg`);
       if (entry.heal > 0) parts.push(`+${entry.heal} hp`);
       for (const status of entry.statuses) {
-        const name = this.app.content.statuses.get(status.id)?.name ?? status.id;
-        parts.push(status.chance >= 1 ? name : `${Math.round(status.chance * 100)}% ${name}`);
+        const requested = this.app.content.statuses.get(status.id)?.name ?? status.id;
+        const applied = status.appliedStatus
+          ? (this.app.content.statuses.get(status.appliedStatus)?.name ?? status.appliedStatus)
+          : requested;
+        const outcome = applied !== requested ? `${applied} (from ${requested})` : applied;
+        parts.push(status.chance >= 1 ? outcome : `${Math.round(status.chance * 100)}% ${outcome}`);
+        for (const cleared of status.clearedStatuses ?? []) {
+          const name = this.app.content.statuses.get(cleared)?.name ?? cleared;
+          parts.push(`clears ${name}`);
+        }
+      }
+      for (const cleared of entry.clearedStatuses) {
+        const name = this.app.content.statuses.get(cleared)?.name ?? cleared;
+        if (!parts.some((part) => part === `clears ${name}`)) parts.push(`clears ${name}`);
       }
       chips.appendChild(
         el('span', {
@@ -863,6 +875,75 @@ export class CombatScene implements Scene {
     }
     for (const note of preview.terrain) {
       chips.appendChild(el('span', { class: 'chip chip-terrain', text: note }));
+    }
+
+    for (const prop of preview.props) {
+      const from = `(${prop.from.x + 1},${prop.from.y + 1})`;
+      const destination = prop.to ? `to (${prop.to.x + 1},${prop.to.y + 1})` : 'breaks here';
+      const affected = [...prop.affectedAllies, ...prop.affectedEnemies]
+        .map((unit) => unit.name)
+        .join(', ');
+      const consequence = prop.destroyed
+        ? (prop.breakLabel ?? `${prop.name} breaks`)
+        : prop.moved
+          ? `${prop.name} ${destination}`
+          : prop.hpAfter !== null && prop.hpAfter < prop.hpBefore
+            ? `${prop.name} takes ${prop.hpBefore - prop.hpAfter} damage (${prop.hpAfter} hp left)`
+            : `${prop.name} holds here`;
+      const cover = prop.coverRemoved ? ' (cover removed)' : '';
+      const suffix = `${cover}${affected ? ` — affects ${affected}` : ''}`;
+      chips.appendChild(
+        el('span', {
+          class: 'chip chip-terrain',
+          text: `${prop.name} at ${from}: ${consequence}${suffix}`,
+        }),
+      );
+    }
+
+    for (const shove of preview.shoves) {
+      const destination = `(${shove.to.x + 1},${shove.to.y + 1})`;
+      const landingEffects = shove.landingSurfaces.map(
+        (id) => this.app.content.surfaces.get(id)?.name ?? id,
+      );
+      if (shove.landingDamage > 0) landingEffects.push(`${shove.landingDamage} damage`);
+      for (const status of shove.landingStatuses) {
+        const name = this.app.content.statuses.get(status.id)?.name ?? status.id;
+        landingEffects.push(
+          status.chance >= 1 ? name : `${Math.round(status.chance * 100)}% ${name}`,
+        );
+      }
+      const landing = landingEffects.length ? ` — lands on ${landingEffects.join(', ')}` : '';
+      chips.appendChild(
+        el('span', {
+          class: `chip ${shove.friendly ? 'chip-friendly' : 'chip-terrain'}`,
+          text: shove.blocked
+            ? `${shove.name}: stops at ${destination} (${shove.movedDistance}/${shove.distance}; blocked)${landing}`
+            : `${shove.name}: ${shove.mode}s to ${destination}${landing}`,
+        }),
+      );
+    }
+
+    for (const status of preview.statuses) {
+      if (status.kind !== 'apply' || !status.requestedStatus) continue;
+      if (preview.targets.some((entry) => entry.unitId === status.unitId)) continue;
+      const requested =
+        this.app.content.statuses.get(status.requestedStatus)?.name ?? status.requestedStatus;
+      const applied = status.appliedStatus
+        ? (this.app.content.statuses.get(status.appliedStatus)?.name ?? status.appliedStatus)
+        : requested;
+      const suffix =
+        status.clearedStatuses.length > 0
+          ? `; clears ${status.clearedStatuses
+              .map((id) => this.app.content.statuses.get(id)?.name ?? id)
+              .join(', ')}`
+          : '';
+      const chance = status.chance >= 1 ? '' : `${Math.round(status.chance * 100)}% `;
+      chips.appendChild(
+        el('span', {
+          class: `chip ${status.friendly ? 'chip-friendly' : 'chip-hostile'}`,
+          text: `${status.name}: ${chance}${applied}${applied !== requested ? ` (from ${requested})` : ''}${suffix}`,
+        }),
+      );
     }
 
     const body = el('div', { class: 'stack tight' }, chips);
