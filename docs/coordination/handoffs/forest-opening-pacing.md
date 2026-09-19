@@ -148,3 +148,19 @@ a spread-out or defensive manual approach and inspect the AI's control valuation
 Keep the fire/oil lesson, route progression and existing party-size evidence.
 Do not solve the observed loss by blindly moving spawns closer or weakening all
 opposition. No balance or AI changes are included in this checkpoint.
+
+The manual defeat branch subsequently recovered both characters to full health
+at level 3. Sura learned Water Pull and Riko learned Bolas through the normal
+level-up choices. The party chose escort, heard Riko's three-line response and
+returned to gate exploration with the cutting objective. Manual slot 2 now holds
+this checkpoint (19 September, 04:26:48 local); slot 1 still holds the pre-gate
+level-2 forest state. This preserves both the failed approach and a route onward.
+
+Combined `2f17e49` adds the reviewed Ruon watch and compact confirmation dock.
+Verify remains 822/94; production build and 298.7-KiB bundle gate pass. Twelve
+of thirteen focused production touch-Chrome UI checks passed immediately. The
+remaining Huge movement-warning test sampled the camera before Cancel's canvas
+resize had settled, tapping a different, unreachable cell. Its helper now awaits
+the existing layout-settle hook and reads fresh bounds for each tap; the same
+warning and no-immediate-threat assertions pass without changing product rules
+or expectations. Strict port 4267 stopped after both runs.

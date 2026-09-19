@@ -75,9 +75,12 @@ test('movement confirmation warns about a possible direct attack without claimin
 
   await page.getByRole('button', { name: /^Move/ }).click();
   const canvas = page.locator('.map-canvas');
-  const box = await canvas.boundingBox();
-  if (!box) throw new Error('No combat canvas.');
   const tapTile = async (pos: { x: number; y: number }) => {
+    // Cancel removes the forecast and resizes the canvas. Read both the camera
+    // and the element bounds only after that layout change has settled.
+    await settleLayout(page);
+    const box = await canvas.boundingBox();
+    if (!box) throw new Error('No combat canvas.');
     const point = await tileCentre(page, pos);
     await canvas.tap({ position: { x: point.x - box.x, y: point.y - box.y } });
   };
