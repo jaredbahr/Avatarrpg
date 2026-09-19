@@ -211,3 +211,33 @@ walking/tea cases and 873 unit tests. The source also reports failures in an
 earlier combined run; root has required a final combined run with the heavy
 browser jobs serialized. Do not represent isolated successes as a passing
 combined suite. No clock source is integrated yet.
+
+## Consolidated release validation at 65808fa
+
+Root integrated the clock fixes through `300c9a2` and the partial-ground rubble
+regression repairs as `16a5062` / `65808fa`. Full `npm run verify` passes:
+873 tests in 105 files, typecheck, lint and formatting. A fresh build with
+`GH_PAGES_BASE=/Avatarrpg/` passes, including the unchanged 300 KiB JavaScript
+budget (299.7 KiB), art validation and asset budgets (17.30 MiB precache).
+
+Clock source `7a406f4` passed all 14 combined SwiftShader/WebKit walking and tea
+cases. Rubble source `4ba0161b` passed two Chrome and four WebKit landscape /
+portrait cases, preserving material tint, hatch, contrast and missing-art checks.
+The earlier broader Surface run passed 172 cases before the obsolete rubble
+premise failed; it is not represented as a complete passing suite.
+
+Additional WebKit validation at `300c9a2` passed its first eight cases, then
+failed two partial-ground WebGL authored-colour readiness probes. The run was
+stopped, and Luna owns diagnosis in `release-webkit-check`; no additional push
+or GitHub run has been started. Persistent old-live-PWA upgrade/save preparation
+was unavailable through the configured browser surface and remains unverified.
+This does not invalidate the separately recorded rendered Pages-path and offline
+title smoke, and does not establish installed-device upgrade compatibility.
+
+The WebKit failure screenshots show a blank map while HUD/minimap remain.
+Root independently inspected that evidence. Terra now owns the isolated
+`webkit_partial_repair` investigation; the second filter/layer is a hypothesis,
+not an established cause. The renderer smoke's encoded-PNG-byte check cannot
+prove a nonblank frame; Luna owns correcting that assertion independently.
+The existing procedural-ground pixel tests remove the scene and therefore do
+not establish that the partial-scene path works on WebKit.
