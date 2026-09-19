@@ -18,6 +18,24 @@ art and animation, and meaningful narrative and tactical identities for all ten
 playable characters across suitable parties. Broader world expansion remains a
 separate decision after this slice meets the target below.
 
+## Combat-depth direction added 19 September
+
+Jared supplied the updated [combat-depth proposal](../coordinator-proposal-combat-depth.md).
+Adopt its party-puzzle target for this same bounded route: readable setup,
+payoff, repositioning and enemy response; distinct early character choices;
+and usable surfaces, props and geometry without prescribing a party composition.
+The proposal's example perks and interactions are design candidates, not claims
+about implemented rules or a requirement to copy every example literally.
+
+Prioritize meaningful non-damage decisions by level 2 and before the Driller,
+truthful previews, and encounters that reward multiple plans. Preserve the
+current checked release, save compatibility and established owner boundaries.
+Later disciplines, wider campaign encounters and new regions remain outside
+this slice. Review must demonstrate decisions through legal play, not merely
+confirm that abilities or passives exist in content. The bounded role audit
+includes positional pull, cover, mobility, control and Wet/lightning sequences;
+its automated evidence does not establish manual all-party balance or motion.
+
 ## Required finish line
 
 Jared reaffirmed all three images in
@@ -73,14 +91,17 @@ across export/import and reload. This is a functional playthrough milestone,
 not final presentation acceptance or exact-final-head release verification.
 The [route review](handoffs/route-presentation-review.md) records its scope.
 
-Current follow-ups supersede the earlier table's source assignments: gameplay
-retains release integration, camera and PR64 repair; `world_conversations`
-corrects exploration HUD overflow; `combat_preview` demonstrates practical
-early party setup/payoff; `quarry_composition` now owns the actual quarry
-terrace/rim composition after the former art task released that assignment.
-The accepted dynamic-surface material source is complete and awaiting combined
-integration. Source worktrees and commits remain preserved; redundant root
-preview servers were stopped. See the lead handoff for exact checkpoints.
+Current ownership supersedes the historical table above: the lead now owns
+final integration in `Avatar RPG-combined-0.2.1` and PR64 coordination; the
+previous gameplay owner has stopped. The clean accepted product build is
+`cda0925`, with documentation through `13882b4`. Quarry surround, dynamic
+surfaces, compact forecasts and exploration overflow corrections are integrated.
+`quarry_composition` now owns a bounded Water Whip material correction in an
+isolated motion-review worktree. `combat_preview` has completed the legal-role
+audit and is preserving its evidence. `world_conversations` completed audio
+lifecycle evidence and now provides a read-only CI duration audit. Source
+worktrees and recordings remain preserved; redundant preview servers stop
+when their evidence is handed off. See the lead handoff for exact checkpoints.
 
 All slice source PRs through #58 and the final combined route-test PR #52 are
 merged. Their implementation history is preserved; reuse useful work while

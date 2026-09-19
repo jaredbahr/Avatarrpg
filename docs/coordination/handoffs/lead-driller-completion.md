@@ -150,6 +150,32 @@ source milestone or legitimate boss victory closes the complete quality goal.
 
 ## Latest orchestration checkpoint
 
+Latest ownership, 19 September 06:35 UTC: root takes final combined integration
+and PR64 coordination directly. The former gameplay owner's last two turns
+completed without output; it has been instructed to stop editing and polling.
+Its existing heartbeat was already paused. No worktrees or useful source were
+removed. Combined was clean at `13882b4`, with accepted product build `cda0925`.
+The build passed 800 tests in 89 files and both current-source trade/escort
+return regressions. Root normal UI review verified both saved checkpoints,
+compact Ice Path controls, connected quarry surroundings, the corrected village
+dock and dialogue focus returning to Talk. These supersede pending integration
+statements below; final release and full experiential acceptance remain open.
+
+Audio lifecycle evidence uses `b1216b7`, whose audio implementation is unchanged
+in `cda0925`: actual Sound Off/Normal, title exit and re-entry produced expected
+master/layer cleanup on Canvas/WebGL without page errors. Visibility was a
+clearly labelled synthetic hook, not actual backgrounding. The local evidence
+is under the root visualization directory's `village-audio-review/lifecycle`.
+Subjective listening and physical-device checks remain unverified.
+
+Initial motion captures shared port 4225 with another preview and are not
+current-head acceptance evidence. The art owner recaptured on isolated 4237,
+asserting visible build `cda0925` before each case. Those captures confirm the
+rigid Water Whip silhouette; a bounded shared procedural material correction
+preserves attachment, timing and backend behavior. No old footage is used to
+claim a current defect. PR64's exact-head checks must still be observed rather
+than inferred from local success or elapsed time.
+
 This checkpoint supersedes the in-progress route and source-integration statuses
 above. The normal solo route is complete through all four Ba Dan homecoming
 conversations; Slot 1 retains the Driller review and Slot 2 the completed return.
