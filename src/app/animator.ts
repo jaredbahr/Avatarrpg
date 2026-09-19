@@ -26,6 +26,7 @@ import type { MoveTrack, PoseTrack } from './anim/timeline';
 import { motionReduced } from './ui/dom';
 import { directionalClip, walkDirection, verticalClip, screenDirection } from './anim/direction';
 import type { WalkDirection } from './anim/direction';
+import type { MeleeDirection } from '../content/assets/clips';
 
 /** Height of the walk bob in tiles, once per tile of travel. */
 const BOB = 0.05;
@@ -74,6 +75,7 @@ export interface UnitPose {
   /** 0..1 white flash on a hit. */
   readonly flash: number;
   readonly facing?: 1 | -1;
+  readonly meleeDirection?: MeleeDirection;
   /** The clip's frame, when the choreography named one. */
   readonly frame?: number;
 }
@@ -334,6 +336,7 @@ export class Animator {
       alpha,
       flash,
       ...(facing !== undefined ? { facing } : {}),
+      ...(pose?.meleeDirection ? { meleeDirection: pose.meleeDirection } : {}),
       ...(frame !== undefined ? { frame } : {}),
     };
   }

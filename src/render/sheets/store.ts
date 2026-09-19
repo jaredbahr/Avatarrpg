@@ -14,7 +14,7 @@
  * the iOS canvas cap; a resize clears them.
  */
 
-import type { ClipName } from '../../content/assets/clips';
+import type { ClipDef, ClipName, MeleeDirection } from '../../content/assets/clips';
 import type { SheetEntry } from '../../content/assets/manifest';
 import { resolveAsset } from '../../content/assets/manifest';
 import { resolvePainter } from '../painters/registry';
@@ -59,7 +59,10 @@ export function atlasHeadroom(
   atlas: AtlasJson,
   image: CanvasImageSource,
 ): number {
-  const names = new Set(Object.values(entry.clips).flatMap((clip) => clip?.frames ?? []));
+  const names = new Set([
+    ...Object.values(entry.clips).flatMap((clip) => clip?.frames ?? []),
+    ...Object.values(entry.meleeDirections ?? {}).flatMap((frames) => frames ?? []),
+  ]);
   const scratch = typeof document === 'undefined' ? null : document.createElement('canvas');
   const ctx = scratch?.getContext('2d');
   let envelope = 0;
@@ -114,11 +117,12 @@ export class SheetStore {
     clipFrame: number | undefined,
     pixelsPerTile: number,
     widthTiles: 1 | 2,
+    meleeDirection?: MeleeDirection,
   ): ResolvedFrame | null {
     const entry = resolveAsset(key);
     if (entry.kind === 'sheet') {
       const atlas = this.atlas(key, entry);
-      if (atlas) return this.fromAtlas(entry, atlas, clip, clipTime, clipFrame);
+      if (atlas) return this.fromAtlas(entry, atlas, clip, clipTime, clipFrame, meleeDirection);
     }
     const sheet = this.bake(key, pixelsPerTile, widthTiles);
     if (!sheet) return null;
@@ -147,7 +151,31 @@ export class SheetStore {
     clip: ClipName,
     clipTime: number,
     clipFrame: number | undefined,
+    meleeDirection?: MeleeDirection,
   ): ResolvedFrame | null {
+    const directionalFrames =
+      clip === 'melee' && meleeDirection ? entry.meleeDirections?.[meleeDirection] : undefined;
+    if (directionalFrames) {
+      const directional: { clip: ClipName; def: ClipDef; exact: boolean } = {
+        clip: 'melee',
+        def: { frames: directionalFrames, fps: 8, loop: false },
+        exact: true,
+      };
+      const index = frameIndex(directional, clipTime, clipFrame);
+      const frame = loaded.atlas.frames.get(directional.def.frames[index] ?? '');
+      if (frame)
+        return {
+          source: loaded.image,
+          frame,
+          pixelsPerTile: entry.pixelsPerTile,
+          footprint: entry.footprint,
+          anchor: entry.anchor,
+          headroom: loaded.headroom,
+          clip: directional.clip,
+          index,
+          placeholder: false,
+        };
+    }
     const resolved = resolveClip(entry.clips, clip);
     if (!resolved) return null;
     const index = frameIndex(resolved, clipTime, clipFrame);

@@ -716,6 +716,12 @@ export const assetEntrySchema = z.discriminatedUnion('kind', [
     anchor: z.object({ x: z.number().min(0).max(1), y: z.number().min(0).max(1) }),
     facing: z.enum(['mirror', 'both']),
     clips: z.object(Object.fromEntries(CLIP_NAMES.map((clip) => [clip, clipDef.optional()]))),
+    meleeDirections: z
+      .object({
+        screenUp: z.tuple([z.string().min(1), z.string().min(1)]).optional(),
+        screenDown: z.tuple([z.string().min(1), z.string().min(1)]).optional(),
+      })
+      .optional(),
     palette: z.string().min(1),
   }),
 ]);

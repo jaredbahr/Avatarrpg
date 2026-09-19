@@ -1141,6 +1141,8 @@ export class PixiBackend implements RenderBackend {
       const anchor = box(pos, unit.size);
       const x = anchor.x + (unit.offset?.x ?? 0) * TILE;
       const y = anchor.y + ((unit.offset?.y ?? 0) - lift) * TILE;
+      const markerX = unit.meleeDirection ? x : anchor.x;
+      const markerY = unit.meleeDirection ? y + lift * TILE : anchor.y - lift * TILE;
       const width = unit.size === 2 ? TILE * 2 : TILE;
       const facing = unit.facing ?? (unit.faction === 'enemy' ? -1 : 1);
 
@@ -1157,6 +1159,7 @@ export class PixiBackend implements RenderBackend {
         unit.clipFrame,
         px * scale,
         unit.size,
+        unit.meleeDirection,
       );
       let headroom = 0;
       if (frame) {
@@ -1200,19 +1203,17 @@ export class PixiBackend implements RenderBackend {
 
       if (unit.id === view.activeUnitId) {
         rings
-          .ellipse(anchor.x + width / 2, anchor.y + (0.86 - lift) * TILE, width * 0.42, TILE * 0.14)
+          .ellipse(markerX + width / 2, markerY + 0.86 * TILE, width * 0.42, TILE * 0.14)
           .stroke({
             width: Math.max(2, TILE * 0.06),
             color: OVERLAY.active,
             alpha: 0.75 + 0.25 * ((Math.sin(view.time / 300) + 1) / 2),
           });
       } else if (unit.id === view.selectedUnitId) {
-        rings
-          .ellipse(anchor.x + width / 2, anchor.y + (0.86 - lift) * TILE, width * 0.4, TILE * 0.12)
-          .stroke({
-            width: Math.max(1, TILE * 0.03),
-            color: 'rgba(255,255,255,0.6)',
-          });
+        rings.ellipse(markerX + width / 2, markerY + 0.86 * TILE, width * 0.4, TILE * 0.12).stroke({
+          width: Math.max(1, TILE * 0.03),
+          color: 'rgba(255,255,255,0.6)',
+        });
       }
 
       if (unit.fallen) {

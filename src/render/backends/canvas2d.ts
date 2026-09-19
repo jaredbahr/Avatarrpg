@@ -626,6 +626,13 @@ export class Canvas2DBackend implements RenderBackend {
     const { ctx } = this;
     for (const unit of view.units) {
       const box = camera.spriteBox(unit.renderPos ?? unit.pos, unit.size);
+      // Directional contact poses physically lunge the sprite toward the
+      // target. Keep their active marker under the moving feet; the marker
+      // remains on the logical tile for idle, walk and legacy melee poses.
+      if (unit.meleeDirection && unit.offset) {
+        box.x += unit.offset.x * box.size;
+        box.y += unit.offset.y * box.size;
+      }
       const width = box.size * unit.size;
       box.y -= elevationAt(view.grid, unit.pos) * ELEVATION_LIFT * box.size;
       // Active-unit ring, drawn under the sprite.
@@ -703,6 +710,7 @@ export class Canvas2DBackend implements RenderBackend {
         unit.clipFrame,
         box.size * dpr * scale,
         unit.size,
+        unit.meleeDirection,
       );
       let headroom = 0;
       if (frame) {

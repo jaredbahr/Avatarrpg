@@ -7,7 +7,7 @@
  */
 
 import type { Grid, MapBackdrop, MapScene, StatusId, Vec2 } from '../core/types';
-import type { ClipName } from '../content/assets/clips';
+import type { ClipName, MeleeDirection } from '../content/assets/clips';
 import type { EmitterDef } from '../content/fx';
 
 /** The pose vocabulary from ADR 0003; the sheet runtime maps these to frames. */
@@ -40,6 +40,8 @@ export interface RenderUnit {
   readonly clipTime?: number;
   /** The clip's frame, when the choreography knows it (a cast's wind-up is frame 0). */
   readonly clipFrame?: number;
+  /** Optional authored screen-facing melee contact variant. */
+  readonly meleeDirection?: MeleeDirection;
   /** Draw scale about the feet; 1 at rest. */
   readonly scale?: number;
   /** Draw alpha; the backend applies the fallen fade on top. */

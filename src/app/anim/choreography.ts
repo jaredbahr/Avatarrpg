@@ -22,7 +22,8 @@ import { easeInOutSine, easeOutQuad } from './easing';
 import { strollTiming } from './stroll';
 import type { AnyTrack, ClipName } from './timeline';
 import { attackMotion } from './attackMotion';
-import { screenDirection } from './direction';
+import { screenDirection, screenMeleeDirection } from './direction';
+import type { MeleeDirection } from '../../content/assets/clips';
 import type { Projection } from '../../render/projection';
 import type { ActorAttachment, EmitterAttachments } from '../../render/view';
 import { partyScale } from './actorScale';
@@ -195,6 +196,7 @@ export function choreograph(input: ChoreographyInput): Choreography {
       scale?: { from: number; to: number };
       alpha?: { from: number; to: number };
       frame?: number;
+      meleeDirection?: MeleeDirection;
     } = {},
   ): void => {
     tracks.push({
@@ -209,6 +211,7 @@ export function choreograph(input: ChoreographyInput): Choreography {
       ...(extra.scale ? { scale: extra.scale } : {}),
       ...(extra.alpha ? { alpha: extra.alpha } : {}),
       ...(extra.frame !== undefined ? { frame: extra.frame } : {}),
+      ...(extra.meleeDirection ? { meleeDirection: extra.meleeDirection } : {}),
     });
   };
 
@@ -308,6 +311,7 @@ export function choreograph(input: ChoreographyInput): Choreography {
           (event.target.x === casterPos.x && event.target.y === casterPos.y);
         const melee = ability.range <= 1 && ability.targeting.shape === 'unit';
         const screenDir = screenDirection(dir, input.projection ?? 'orthographic');
+        const meleeDirection = melee ? screenMeleeDirection(screenDir) : undefined;
         const attached = ['fire_jab', 'water_whip', 'air_blast'].includes(ability.id);
         const rock = ability.id === 'rock_throw';
         const strike = ability.id === 'strike';
@@ -377,12 +381,14 @@ export function choreograph(input: ChoreographyInput): Choreography {
           ...(facing !== undefined ? { facing } : {}),
           scale: { from: 1, to: motion.compression },
           frame: 0,
+          ...(meleeDirection ? { meleeDirection } : {}),
         });
         const releaseAt = cursor + windUp;
         pose(event.unitId, clip, releaseAt, release, back, forward, motion.releaseEase, {
           ...(facing !== undefined ? { facing } : {}),
           scale: { from: motion.compression, to: motion.extension },
           frame: 1,
+          ...(meleeDirection ? { meleeDirection } : {}),
         });
         // The element gathers through the wind-up and is out of the hands by the release.
         const gatherSpan = windUp * 0.6;
@@ -542,11 +548,13 @@ export function choreograph(input: ChoreographyInput): Choreography {
             ...(facing !== undefined ? { facing } : {}),
             scale: { from: motion.extension, to: motion.extension },
             frame: 1,
+            ...(meleeDirection ? { meleeDirection } : {}),
           });
         pose(event.unitId, clip, recoverAt, recover, forward, { x: 0, y: 0 }, easeInOutSine, {
           ...(facing !== undefined ? { facing } : {}),
           scale: { from: motion.extension, to: 1 },
           frame: melee ? 0 : 2,
+          ...(meleeDirection ? { meleeDirection } : {}),
         });
 
         // Contact fragments belong to the body; dust, cracks and rising earth

@@ -127,6 +127,26 @@ export function validateSheets(
         }
       }
     }
+    for (const [direction, frames] of Object.entries(entry.meleeDirections ?? {})) {
+      if (!frames) continue;
+      for (const name of frames) {
+        const frame = atlas.frames.get(name);
+        if (!frame) {
+          problems.push(`${key}: ${direction} frame "${name}" is not in ${entry.atlas}`);
+          continue;
+        }
+        if (frame.w !== wantW || frame.h !== wantH) {
+          problems.push(
+            `${key}: ${direction} frame "${name}" is ${frame.w}x${frame.h}, expected ${wantW}x${wantH}`,
+          );
+        }
+        if (borderTouched(image, frame, MARGIN)) {
+          problems.push(
+            `${key}: ${direction} frame "${name}" has art inside the ${MARGIN} px margin`,
+          );
+        }
+      }
+    }
   }
   return problems;
 }

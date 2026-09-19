@@ -22,6 +22,10 @@ export const CLIP_NAMES = [
 ] as const;
 export type ClipName = (typeof CLIP_NAMES)[number];
 
+/** Authored screen-facing melee contact variants, when a sheet carries them. */
+export const MELEE_DIRECTIONS = ['screenUp', 'screenDown'] as const;
+export type MeleeDirection = (typeof MELEE_DIRECTIONS)[number];
+
 export interface ClipDef {
   /** Frame names in the atlas, in pose order. */
   readonly frames: readonly string[];

@@ -591,6 +591,36 @@ describe('choreograph', () => {
     expect(release?.offset.to.x ?? 0).toBeGreaterThan(0.3);
   });
 
+  it.each([
+    [{ x: 0, y: -1 }, 'screenUp'],
+    [{ x: 0, y: 1 }, 'screenDown'],
+  ] as const)(
+    'carries the projected %s contact variant through every Riko melee pose',
+    (target, meleeDirection) => {
+      const tracks = choreograph({
+        content,
+        events: [{ type: 'abilityUsed', unitId: 'p0', abilityId: 'strike', target, tiles: [] }],
+        unitsBefore: [
+          { ...unit('p0', 0, 0), sprite: 'unit.non.riko', hp: 20 },
+          {
+            ...unit('e0', target.x, target.y),
+            faction: 'enemy',
+            sprite: 'unit.enemy.thug',
+            hp: 20,
+          },
+        ],
+        cursor: 1000,
+        rate: 1,
+        pushIndex: 0,
+        projection: 'orthographic',
+      }).tracks.filter(
+        (track): track is PoseTrack => track.kind === 'pose' && track.unitId === 'p0',
+      );
+      expect(tracks.length).toBeGreaterThanOrEqual(3);
+      expect(tracks.every((track) => track.meleeDirection === meleeDirection)).toBe(true);
+    },
+  );
+
   it('flashes and recoils the hit unit at the impact, then pops the number', () => {
     const { tracks } = run([
       {

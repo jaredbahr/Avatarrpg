@@ -1,0 +1,29 @@
+# Riko directional contact handoff
+
+- **Updated:** 2026-09-19 UTC; outgoing `/root/combat_preview`; incoming integration owner `/root`.
+- **Outcome:** Added optional screen-up and screen-down Riko melee contact cels, shared direction metadata through choreography and both renderers, and kept the active marker under the moving feet during those transient poses. Side and near-horizontal attacks use the existing side/cast presentation.
+- **Acceptance:** The final Canvas and WebGL captures show the authored hand aimed at the adjacent target, with the marker under the transient sprite feet in release and impact frames. Existing Riko atlas cells remain byte-identical outside slots 20 and 21. No reducer, RNG, ability, movement, camera, or balance code changed.
+- **Location:** `C:\Users\Jared\Documents\ChatGPT\Avatar RPG-riko-directional-contact`, branch `codex/riko-directional-contact`, based on `40f59ef0f20d366173401977fa76ceb49383f120`. No PR, push, or CI run was created; the outgoing commit is local for integration.
+- **Worktree state:** Local ignored capture harnesses and screenshots live under `.shots/`; generated source PNGs remain under `C:\Users\Jared\.codex\generated_images\`. Stop the owned dev server after capture; no server is required for handoff.
+- **Completed:**
+  - `src/content/assets/clips.ts`, `src/content/assets/manifest.ts`, `src/content/schemas.ts`: optional `MeleeDirection` vocabulary and Riko-only screen pair declaration.
+  - `src/app/anim/direction.ts`, `src/app/anim/choreography.ts`, `src/app/anim/timeline.ts`, `src/app/animator.ts`: projected vertical-dominant direction selection and pose propagation.
+  - `src/render/view.ts`, `src/render/sheets/store.ts`, `src/render/backends/canvas2d.ts`, `src/render/backends/pixi.ts`, `src/app/scenes/CombatScene.ts`: one shared optional rendering contract, safe atlas fallback, and contact-marker offset.
+  - `scripts/art/validate.ts`: directional frame validation.
+  - `src/app/anim/direction.test.ts`, `src/app/anim/choreography.test.ts`: direction and track propagation coverage.
+  - `public/art/units/walking-riko.png`: slot 20 `meleeNorth/0`, slot 21 `meleeSouth/0`; `public/art/units/walking-riko.json`: corresponding atlas records. Atlas dimensions remain 1024×576; directional cells are 128×192.
+  - Four lossless PNG repacks: bruiser −1,549 B, crossbow −709 B, grumbler −6,178 B, thug −623 B. Semantic JSON compaction across changed unit atlases saves 36,970 B net. Existing Riko pixels outside the two new cells changed in 0 channels.
+- **Art provenance:** The final screen-up source is `C:\Users\Jared\.codex\generated_images\01a0b7d0-678f-76e2-b02f-1cc8810e9a50\exec-c575d839-e621-4919-915f-d15f9d3befe6.png`; the final screen-down source is `C:\Users\Jared\.codex\generated_images\01a0b7d0-678f-76e2-b02f-1cc8810e9a50\exec-e101fefb-f8a0-434e-aeb6-c0780584a85e.png`. Both were normalized to transparent 128×192 cells with alpha>8 bounds of `[34,44]–[93,162]` (up) and `[32,44]–[94,162]` (down), preserving the eight-pixel clear margin.
+- **Decisions:** The contract is documented in [ADR 0034](../../adr/0034-directional-melee-contact-cels.md). It follows ADR 0003's atlas/schema/validator path and ADR 0002's two-backend correctness parity. `screenUp` means negative projected screen Y and `screenDown` means positive projected screen Y; the names are deliberately screen-relative, not world-axis labels.
+- **Verification:**
+  - `npm run typecheck` — passed.
+  - `npm exec vitest run src/app/anim/direction.test.ts src/app/anim/choreography.test.ts` — 56 tests passed.
+  - `npm run art:validate` — passed.
+  - `npx prettier --check` on all modified TypeScript files — passed.
+  - `npm run build` — passed locally.
+  - `npm run check:assets` — passed after the build: units `4,702,382 B` of `4,718,592 B` (`16,210 B` headroom); precache `18,022,423 B` of `26,214,400 B` (`8,191,977 B` headroom).
+  - Installed Chrome on owned port 4261, seed `focus-bruiser-5`, legal movement/targeting, Canvas and WebGL: final screen-down normal 96 capture `.shots/motion/directional-newdown-96/{canvas-riko,webgl-riko}/frame-03.png` (release) and `frame-04.png` (impact), 2/2; normal 64 `.shots/motion/directional-normal-64/`, 2/2; reduced 64 `.shots/motion/directional-reduced-64/`, 2/2; reduced 96 `.shots/motion/directional-reduced-96/`, 2/2. Screen-up normal 96 rerun after the marker fix is `.shots/motion/screen-up-96/{canvas-riko,webgl-riko}/frame-02.png` through `frame-05.png`, 2/2. The corresponding metadata records `meleeDirection`, target and zero page errors.
+  - The screen-up harness attempted one blocked staging path before settling on the legal adjacent target; the toast remains visible in those captures, but the final move/Strike/impact sequence was legal and the damage event resolved. The normal review harness has no such staging toast.
+- **Coordination:** Only the Riko atlas/metadata, optional animation/rendering contract, validator, focused tests, ADR and this handoff are owned here. The `CombatScene` change only carries `meleeDirection` into the existing `RenderUnit` fields; preserve any newer HUD/camera work when integrating. No deserter or other new character art is included. The side-pose fallback is intentional and should remain explicit in release review.
+- **Next actions:** Cherry-pick the outgoing commit into the integration branch, resolve only overlapping `CombatScene` context if needed, then run the integration owner's required checks. Review the referenced PNG captures rather than the earlier pre-marker screenshots.
+- **Completion/transfer:** Pending local commit and integration; ownership is relinquished after this handoff. The parent should verify the commit SHA and working-tree state before cherry-picking.

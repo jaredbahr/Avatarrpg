@@ -1491,7 +1491,15 @@ export class CombatScene implements Scene {
     directional: boolean,
   ): Pick<
     RenderUnit,
-    'offset' | 'facing' | 'clip' | 'clipTime' | 'clipFrame' | 'scale' | 'alpha' | 'flash'
+    | 'offset'
+    | 'facing'
+    | 'clip'
+    | 'clipTime'
+    | 'clipFrame'
+    | 'meleeDirection'
+    | 'scale'
+    | 'alpha'
+    | 'flash'
   > {
     const pose = this.app.animator.unitPose(now, unitId);
     const walked = this.app.animator.facing(unitId);
@@ -1506,6 +1514,7 @@ export class CombatScene implements Scene {
       clip: pose.clip,
       clipTime: pose.clipTime,
       ...(pose.frame !== undefined ? { clipFrame: pose.frame } : {}),
+      ...(pose.meleeDirection ? { meleeDirection: pose.meleeDirection } : {}),
       scale,
       alpha: pose.alpha,
       flash: pose.flash,

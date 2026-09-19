@@ -29,7 +29,7 @@
  * the clip logic run the same path whether the art is real or not.
  */
 
-import type { ClipDef, ClipName } from './clips';
+import type { ClipDef, ClipName, MeleeDirection } from './clips';
 
 export type AssetEntry =
   | {
@@ -63,6 +63,8 @@ export type AssetEntry =
       /** `mirror`: drawn facing screen-right and flipped for the other side. */
       readonly facing: 'mirror' | 'both';
       readonly clips: Partial<Record<ClipName, ClipDef>>;
+      /** Optional screen-up/down contact frames for a melee clip. */
+      readonly meleeDirections?: Partial<Record<MeleeDirection, readonly [string, string]>>;
       /** Palette key, for the HUD chrome and for the placeholder drawn while the atlas loads. */
       readonly palette: string;
     };
@@ -119,6 +121,22 @@ function villageSheet(name: string, palette: string): SheetEntry {
       ...base.clips,
       walk: { frames: frames('walk', 4), fps: 8, loop: true },
       wave: { frames: frames('wave', 2), fps: 4, loop: true },
+    },
+  };
+}
+
+function rikoSheet(): SheetEntry {
+  const key = 'unit.non.riko';
+  const base = heroSheet(key, 'nonbender');
+  return {
+    ...base,
+    clips: {
+      ...base.clips,
+      melee: { frames: [`${key}/cast/0`, `${key}/cast/1`], fps: 8, loop: false },
+    },
+    meleeDirections: {
+      screenUp: [`${key}/cast/0`, `${key}/meleeNorth/0`],
+      screenDown: [`${key}/cast/0`, `${key}/meleeSouth/0`],
     },
   };
 }
@@ -183,7 +201,7 @@ export const ASSETS: Readonly<Record<string, AssetEntry>> = {
   'unit.earth.linmei': heroSheet('unit.earth.linmei', 'earth'),
   'unit.air.nima': heroSheet('unit.air.nima', 'air'),
   'unit.air.jinu': heroSheet('unit.air.jinu', 'air'),
-  'unit.non.riko': heroSheet('unit.non.riko', 'nonbender'),
+  'unit.non.riko': rikoSheet(),
   'unit.non.wen': heroSheet('unit.non.wen', 'nonbender'),
 
   /* ----------------------------------------------------- Enemy sprites */
