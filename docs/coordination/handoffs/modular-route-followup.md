@@ -275,3 +275,7 @@ renderer edits. The local Windows capture limitation remains explicitly open.
 Final root verification including `a4e7336` and this handoff passes 873 tests /
 105 files, typecheck, lint and formatting. Publish one consolidated revision to
 PR64, preserving every required exact-head check and merge-commit auto-merge.
+
+## 19 September — release timeout follow-up
+
+PR64 remains undeployed at remote a3ade76. CI35466666097 failed the surface-touch WebGL combat-focus test after20passes;423cases did not run, gallery skipped. Downloaded trace inspection by Luna found the test reached screenshot after about66.9seconds, with battlefield coordinate assertions already passing, beyond the60second default. Root integrated74466f9 as a6e397e: WebGL-only test.slow() grants180seconds, preserving every assertion. This is a timing correction, not a claimed browser pass; bundled local Chromium is absent. Fresh npm run verify at a6e397e passed873tests105files,typecheck,lint,format. No new push yet; pwa-preload-recovery owner is preparing user-controlled recovery for observed missing lazy chunk after local service-worker update. Root reviews before integration and one combined CI run.
