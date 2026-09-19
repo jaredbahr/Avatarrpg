@@ -3,14 +3,15 @@
 ## 0.2.1 — release candidate
 
 - Match Ruon, blade mercenaries and sergeants to the party's adult scale with illustrated poses and distinct walking contacts.
-- Add market and garden details to Ba Dan's courtyard boundaries while keeping the central route clear.
+- Build Ba Dan's courtyard from local ground and scenery, with a crossable bridge, runtime canal water, and actor occlusion through the bridge; both renderers retain procedural fallback when scene art is unavailable.
 - Omit unused development validation and Pixi atlas initialization to retain the 300 KiB JavaScript budget.
-- Give the Cutting and Driller floor connected stone surroundings, grounded terraces, and quieter mud, oil and ice treatments.
+- Give the Cutting and Driller floor connected stone surroundings, grounded terraces, quarry cover and save-compatible wall art, while keeping mud, oil, ice and props live.
 - Make water whips flow as ribbons with restrained droplets and a clearer waterskin draw, preserving attack contact and timing.
 - Keep nearby combatants readable on short screens, preserve manual camera framing, and make surface confirmations more compact without hiding costs or chances.
 - Forecast actual healing, surface contact, prop reactions and displacement. Healing Stream now works on its caster and previews only the health that can be restored.
 - Preserve support AP granted before an ally's turn, show possible enemy attack reach during movement planning, and disable player action buttons during enemy turns.
 - Keep the explored world visible during conversations, return keyboard focus to local actions, and remove unnecessary exploration-dock scrollbars.
+- Add the Riverside dock and seated tea interaction, including the sip activity and return to walking.
 - Clarify route guidance, quarry discoveries and the village homecoming; show the rescue scene's matching illustration.
 
 Local verification includes both trade and escort campaign returns with save/reload.
