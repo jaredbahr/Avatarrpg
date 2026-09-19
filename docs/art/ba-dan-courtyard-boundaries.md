@@ -61,6 +61,16 @@ source aspect ratio. It adds no collision, scenery depth, obstacle or new path.
 The neighboring door approaches at (9,4) and (12,4) remain clear. The main open
 stone plaza keeps its quiet material; this is a single authored seam treatment.
 
+## Additional garden and market edges
+
+The current composition candidate reuses the calibrated low planter at
+(16,4)–(17,4) and produce display at (17,9)–(18,9). These occupy lawn shoulders
+beside the northern and southeastern houses, leaving road rows 7–8 and named
+NPC approaches unchanged. The existing shared footprint contract makes both
+solid to movement and transparent to sight. No additional images or art bytes
+are introduced. Village reachability and content validation pass; runtime scale
+and occlusion review must precede acceptance of these placements.
+
 Original OpenAI image-tool source `exec-81e160ec-6de4-4313-9268-6031490d518e.png`,
 18 September 2026. Generation requested a very thin, irregular transparent
 olive/celadon grass and warm soil fringe in a 2:1 ground plane, long axis slope
