@@ -14,7 +14,10 @@ village layout references after the courtyard prop change. All 808 tests in
 Total JavaScript is 298.1 KiB of 300; units are 4,715,934 bytes of 4.5 MiB and
 precache is 17.20 MiB of 25. ADRs 0032 and 0033 record the bounded contracts.
 The prior 305.2 KiB blocker below is superseded. Production renderer/offline
-and both return-route checks are running against this exact source build.
+and both return-route checks passed against this exact source build: seven
+passed, with the software-GPU fallback premise skipped on accelerated hardware.
+The exclusive 4271 preview ended normally. Results/config remain under
+`.shots/release-check`; physical-device and listening claims remain unverified.
 All delegated implementation and audit assignments have ended; no source
 agent pushed or started CI. The lead remains the only integration owner.
 
