@@ -1,6 +1,6 @@
 # Changelog
 
-## 0.2.2 — in development
+## 0.2.2 — release candidate
 
 - Compose Forest Road from local road, grass and dry-bank regions while preserving live water, scenery and gameplay geometry.
 - Replace Quarry Gate's complete ground pages with registered material regions and remove visible seams between them.
@@ -14,11 +14,12 @@
 - Time battlefield health bars and fallen states to hit, healing and knockout feedback rather than revealing damage while an attack is still travelling.
 - Show the abandoned nest, flattened reeds and dried silt beside the forest pond as an environmental clue.
 
-Combined local route and browser checks pass on the integrated checkpoint.
-The release remains in development and does not establish final visual, audio or
-device acceptance.
+Combined local route and browser checks pass on their recorded checkpoints.
+This consolidated candidate is prepared for PR64; exact-head checks and Pages
+deployment remain pending. This does not establish final visual, audio or device
+acceptance.
 
-## 0.2.1 — release candidate
+## 0.2.1 — unshipped changes included in 0.2.2
 
 - Match Ruon, blade mercenaries and sergeants to the party's adult scale with illustrated poses and distinct walking contacts.
 - Build Ba Dan's courtyard from local ground and scenery, with a crossable bridge, runtime canal water, and actor occlusion through the bridge; both renderers retain procedural fallback when scene art is unavailable.

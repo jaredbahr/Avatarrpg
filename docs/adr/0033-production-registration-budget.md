@@ -13,7 +13,8 @@ schemas and their error messages remain intact.
 Extend the existing optional Pixi registration exclusion to `spritesheet/init`.
 The game parses atlas JSON through `src/render/sheets/atlasJson.ts` and loads
 shared sheets for both backends. It does not use Pixi Assets or Spritesheet.
-Keep all texture-source, graphics, text, particle and filter registrations.
+Keep texture-source, graphics, text, particle and WebGL filter registrations,
+subject to the separately documented unused video-source exclusion.
 Using Pixi's atlas loader in future requires restoring its registration first.
 
 Also register only Pixi's browser environment. The application has no
@@ -32,7 +33,10 @@ renderer; Pixi is constructed only as `WebGLRenderer`. Omit Pixi's
 upstream registration shape changes. A future Pixi CanvasRenderer requires
 restoring this system and covering that path.
 
-The production build retains its original dynamic chunks and minifier settings.
-No dependency files, validation messages, budgets or CI checks change. The local
-candidate totals 297.8 KiB with PWA output present. Renderer and offline checks
-must pass on the integrated candidate before release.
+The minifier settings are unchanged. The original 0.2.1 candidate totaled
+297.8 KiB with PWA output present. For 0.2.2, the browser-environment and
+CanvasFilterSystem exclusions reduce the Pages-base build from 300.8 to
+299.7 KiB; the unused worker-environment chunk is replaced by the browser
+environment chunk. No dependency files, validation messages, budgets or CI
+checks change. Renderer and offline checks must pass on the integrated
+candidate before release.

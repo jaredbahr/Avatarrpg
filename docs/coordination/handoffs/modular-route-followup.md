@@ -135,10 +135,13 @@ into this branch and deliver the v0.2.2 batch through one checked landing PR.
 
 Built `625a491` passes a production build with `GH_PAGES_BASE=/Avatarrpg/`.
 Fresh local Chromium contexts, with service workers blocked, confirm title
-v0.2.2 and that build, forest combat on Canvas/WebGL, all observed asset
-responses 200, and no console/page errors. Evidence is under
-`.shots/pages-review/625a491/`. This establishes local Pages-path compatibility,
-not deployment. The preview on 4320 was stopped. Verify the actual served version
+v0.2.2 and that build, forest combat state, and no observed console/page errors.
+Root subsequently inspected the saved WebGL image and found a blank battlefield
+with fallback portrait glyphs; only three responses were recorded. The earlier
+claim of rendered-world/asset compatibility is withdrawn: this was an early
+DOM/state smoke, insufficient for that claim. Evidence remains under
+`.shots/pages-review/625a491/` and must not be used as rendering acceptance.
+The preview on 4320 was stopped. Verify the actual served version
 and expected build after deployment; an existing installed PWA's update behavior
 is separate from a fresh-network check.
 
@@ -155,3 +158,37 @@ with the complete checked total, which includes workers and service-worker code.
 Terra owns a bounded optimization from this head in an isolated
 `codex/pages-bundle-trim` worktree. Do not push the v0.2.2 batch until the actual
 Pages-base total passes unchanged budgets and root reviews the optimization.
+
+CI `35460361910` is now terminal-failed: 74 E2E passes, one WebGL walking-test
+clock setup failure on both attempts, 361 unrun; gallery skipped. Luna owns the
+clock-race repair in `codex/clock-pause-race`. Root reconciled release history
+at `689ff49`, preserving the elevation tests and incoming conversation-framing
+repair. This supersedes the two-release plan above: deliver the complete v0.2.2
+batch through existing PR64 with one verified push after these repairs.
+
+Terra source `2e79b49` is integrated as `a8d4e48`. The Pages-base aggregate
+JavaScript check passes at 299.7 KiB without a budget change. It excludes only
+unused Pixi worker-environment and CanvasFilterSystem registration; root reviewed
+the guarded transform and clarified ADR 0033.
+
+Actual Pages-path validation now passes on built `a8d4e48`. The first preview
+was incorrectly started without the build's `GH_PAGES_BASE`, causing asset 404s;
+root restarted it with `/Avatarrpg/`. No product change was needed. Fresh
+SW-blocked contexts then loaded 27/28 requests for Canvas/WebGL, including actual
+forest terrain, scenery, unit, portrait and FX assets. Both asserted the exact
+version/build/backend and recorded no failed responses or browser errors. Root
+independently viewed the nonblank forest captures: Sura, trees, rubble and live
+water render in both backends. WebGL requests `browserAll`; neither requests
+the excluded worker chunk. A separate SW-enabled context acquired
+`/Avatarrpg/sw.js` and reloaded the New Game UI offline. This is offline title
+availability, not a newly completed offline campaign. Evidence is in
+`.shots/pages-review/a8d4e48/`, with the initial local setup failure preserved
+as `failure-base-mismatch.json`. Owned preview 4320 is stopped.
+
+Luna's first clock candidate `d05626d` passes verification and four SwiftShader
+walking cases, but focused SwiftShader tea and WebKit runs expose additional
+visual/feedback failures. It is not integrated or ready to push; Luna continues
+the diagnosis without weakening assertions. A separate Luna runs the remaining
+local browser suite from `a8d4e48`, excluding only those two assigned specs from
+that local diagnostic run. Required CI keeps the full suite. No new GitHub run
+has been dispatched or pushed during these repairs.
