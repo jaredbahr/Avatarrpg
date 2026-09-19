@@ -1,7 +1,6 @@
 import { expect, test } from '@playwright/test';
 import type { Locator, Page } from '@playwright/test';
 import { enterNode, resetStorage, settleLayout, startGame, takeTurn, waitForIdle } from './helpers';
-import { paintedTileCentre } from './projection';
 
 const target = { x: 13, y: 5 };
 
@@ -9,39 +8,58 @@ async function battleSnapshot(page: Page) {
   return page.evaluate(() => JSON.stringify(window.fnt!.app.state!.battle));
 }
 
+/** Read one coherent painted frame without separate slow software-WebGL
+ * round trips for projection, canvas bounds, camera and center hit testing. */
+async function targetGeometry(page: Page) {
+  return page.evaluate((p) => {
+    const canvas = document.querySelector<HTMLCanvasElement>('.map-canvas');
+    const camera = window.fnt?.app.rendererCamera();
+    if (!canvas || !camera) throw new Error('Missing battlefield geometry');
+    const rect = canvas.getBoundingClientRect();
+    const m = camera.groundTransform;
+    const x = (p.x + 0.5) * 64,
+      y = (p.y + 0.5) * 64;
+    const dpr = window.devicePixelRatio || 1;
+    // Same backing-store stretch as paintedTileCentre in projection.ts.
+    const point = {
+      x: rect.left + ((m.a * x + m.c * y + m.tx) * rect.width) / (canvas.width / dpr),
+      y: rect.top + ((m.b * x + m.d * y + m.ty) * rect.height) / (canvas.height / dpr),
+    };
+    const hit = document.elementFromPoint(point.x, point.y);
+    return {
+      point,
+      box: { x: rect.x, y: rect.y, width: rect.width, height: rect.height },
+      camera: { x: camera.offsetX, y: camera.offsetY },
+      hit: { canvas: hit === canvas, html: hit?.outerHTML.slice(0, 250) },
+    };
+  }, target);
+}
+
 async function reachableButton(button: Locator) {
   await button.scrollIntoViewIfNeeded();
   await expect(button).toBeVisible();
   await expect(button).toBeEnabled();
-  const box = await button.boundingBox();
-  if (!box) throw new Error('Missing decision button');
+  const box = await button.evaluate((el) => {
+    const r = el.getBoundingClientRect();
+    return {
+      width: r.width,
+      height: r.height,
+      centerHit: el.contains(document.elementFromPoint(r.x + r.width / 2, r.y + r.height / 2)),
+    };
+  });
   expect(box.width).toBeGreaterThanOrEqual(44);
   expect(box.height).toBeGreaterThanOrEqual(44);
-  expect(
-    await button.evaluate((el) => {
-      const r = el.getBoundingClientRect();
-      return el.contains(document.elementFromPoint(r.x + r.width / 2, r.y + r.height / 2));
-    }),
-  ).toBe(true);
+  expect(box.centerHit).toBe(true);
 }
 
 async function tapTarget(page: Page) {
   await settleLayout(page);
-  const point = await paintedTileCentre(page, target);
-  const box = await page.locator('.map-canvas').boundingBox();
-  if (!point || !box) throw new Error('Missing battlefield geometry');
+  const { point, box, hit } = await targetGeometry(page);
   expect(box.height).toBeGreaterThan(0);
   expect(point.x).toBeGreaterThan(box.x);
   expect(point.x).toBeLessThan(box.x + box.width);
   expect(point.y).toBeGreaterThan(box.y);
   expect(point.y).toBeLessThan(box.y + box.height);
-  const hit = await page.evaluate(({ x, y }) => {
-    const element = document.elementFromPoint(x, y);
-    return {
-      canvas: element === document.querySelector('.map-canvas'),
-      html: element?.outerHTML.slice(0, 250),
-    };
-  }, point);
   expect(hit.canvas, `Target intercepted by ${hit.html}`).toBe(true);
   await page.touchscreen.tap(point.x, point.y);
   await expect(page.getByRole('button', { name: 'Confirm', exact: true })).toBeEnabled();
@@ -132,8 +150,10 @@ for (const renderer of ['canvas', 'webgl'] as const) {
         .getByRole('button', { name: `Focus ${staged.enemyName}`, exact: true })
         .first()
         .click();
-      const zoomBefore = await page.evaluate(() => window.fnt!.app.rendererCamera()!.tilePx);
-      await page.locator('.map-canvas').evaluate((canvas) => {
+      const { zoomBefore, selectedZoom } = await page.evaluate(() => {
+        const canvas = document.querySelector<HTMLCanvasElement>('.map-canvas');
+        if (!canvas) throw new Error('Missing battlefield canvas');
+        const zoomBefore = window.fnt!.app.rendererCamera()!.tilePx;
         const rect = canvas.getBoundingClientRect();
         canvas.dispatchEvent(
           new WheelEvent('wheel', {
@@ -145,8 +165,8 @@ for (const renderer of ['canvas', 'webgl'] as const) {
             cancelable: true,
           }),
         );
+        return { zoomBefore, selectedZoom: window.fnt!.app.rendererCamera()!.tilePx };
       });
-      const selectedZoom = await page.evaluate(() => window.fnt!.app.rendererCamera()!.tilePx);
       expect(selectedZoom).toBeGreaterThan(zoomBefore);
       await page.getByRole('button', { name: /Fire Jab/i }).click();
       await settleLayout(page);
@@ -155,26 +175,14 @@ for (const renderer of ['canvas', 'webgl'] as const) {
         // Keep the actual target near the lower map edge, where the old aim
         // guidance intercepted it. Pan through the real input adapter; do not
         // depend on fixed camera offsets or the implementation's dock classes.
-        const point = await paintedTileCentre(page, target);
-        const box = await page.locator('.map-canvas').boundingBox();
-        if (!point || !box) throw new Error('Missing pan geometry');
+        const { point, box, camera: beforePan } = await targetGeometry(page);
         const dx = box.x + box.width * 0.67 - point.x;
         const dy = box.y + box.height - 84 - point.y;
         const from = { x: box.x + box.width * 0.3, y: box.y + 80 };
-        const beforePan = await page.evaluate(() => {
-          const camera = window.fnt!.app.rendererCamera()!;
-          return { x: camera.offsetX, y: camera.offsetY };
-        });
         await dragCanvas(page, from, { x: from.x + dx, y: from.y + dy });
         await settleLayout(page);
-        const afterPan = await page.evaluate(() => {
-          const camera = window.fnt!.app.rendererCamera()!;
-          return { x: camera.offsetX, y: camera.offsetY };
-        });
+        const { point: pannedPoint, box: pannedBox, camera: afterPan } = await targetGeometry(page);
         expect(afterPan.x !== beforePan.x || afterPan.y !== beforePan.y).toBe(true);
-        const pannedPoint = await paintedTileCentre(page, target);
-        const pannedBox = await page.locator('.map-canvas').boundingBox();
-        if (!pannedPoint || !pannedBox) throw new Error('Missing post-pan geometry');
         expect(pannedPoint.y).toBeGreaterThan(pannedBox.y + pannedBox.height - 140);
       }
       const before = await battleSnapshot(page);
@@ -200,17 +208,17 @@ for (const renderer of ['canvas', 'webgl'] as const) {
       await reachableButton(confirm);
       await confirm.tap();
       await waitForIdle(page);
-      expect(
-        await page.evaluate(
-          (id) => window.fnt!.app.state!.battle!.units.find((u) => u.id === id)!.ap,
-          staged.actorId,
-        ),
-      ).toBe(staged.ap - staged.cost);
-      expect((await page.locator('.map-canvas').boundingBox())?.height).toBeGreaterThan(0);
-      if (narrow)
-        expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBeLessThanOrEqual(
-          390,
-        );
+      const result = await page.evaluate(
+        (id) => ({
+          ap: window.fnt!.app.state!.battle!.units.find((u) => u.id === id)!.ap,
+          height: document.querySelector('.map-canvas')?.getBoundingClientRect().height,
+          scrollWidth: document.documentElement.scrollWidth,
+        }),
+        staged.actorId,
+      );
+      expect(result.ap).toBe(staged.ap - staged.cost);
+      expect(result.height).toBeGreaterThan(0);
+      if (narrow) expect(result.scrollWidth).toBeLessThanOrEqual(390);
     });
   }
 }
