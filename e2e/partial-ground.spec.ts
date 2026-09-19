@@ -75,6 +75,18 @@ function expectBlue(pixel: Rgb): void {
   expect(pixel.b).toBeGreaterThan(170);
 }
 
+/**
+ * The patch begins #d94444 and WebGL's softest water tint raises blue by at
+ * least 23 channels at alpha 0.42. Requiring both colour shifts catches an
+ * absent/underlaid surface, while retained red distinguishes a tint over the
+ * loaded patch from replacing the patch with procedural water.
+ */
+function expectWaterOverPatch(bare: Rgb, underwater: Rgb): void {
+  expect(bare.r - underwater.r).toBeGreaterThan(35);
+  expect(underwater.b - bare.b).toBeGreaterThan(20);
+  expect(underwater.r).toBeGreaterThan(underwater.b + 12);
+}
+
 function expectTreeDecor(pixel: Rgb): void {
   expect(pixel.g).toBeGreaterThan(pixel.r + 15);
   expect(pixel.g).toBeGreaterThan(pixel.b + 15);
@@ -159,8 +171,7 @@ for (const renderer of ['canvas', 'webgl'] as const) {
     expectBlue(underwater.valid);
     // The red image is visible before the real grid's water surface is enabled;
     // water then tints that same image rather than replacing it or being hidden below it.
-    expect(underwater.patch.r).toBeLessThan(bare.patch.r - 35);
-    expect(underwater.patch.b).toBeGreaterThan(bare.patch.b + 35);
+    expectWaterOverPatch(bare.patch, underwater.patch);
 
     await setPermanentWater(page, PATCH, false);
     await reenterVillage(page);
@@ -168,6 +179,9 @@ for (const renderer of ['canvas', 'webgl'] as const) {
     const restored = await samples(page, { patch: PATCH, valid: VALID });
     expectRed(restored.patch);
     expectBlue(restored.valid);
+    expect(Math.abs(restored.patch.r - bare.patch.r)).toBeLessThan(12);
+    expect(Math.abs(restored.patch.g - bare.patch.g)).toBeLessThan(12);
+    expect(Math.abs(restored.patch.b - bare.patch.b)).toBeLessThan(12);
   });
 
   test(`partial ground retains valid pieces when one is missing on ${renderer}`, async ({
