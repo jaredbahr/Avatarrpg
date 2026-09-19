@@ -67,6 +67,15 @@ function alpha(scene: MapScene, world: { x: number; y: number }): number {
   return value;
 }
 
+function pieceAlpha(piece: MapScene['ground'][number], world: { x: number; y: number }): number {
+  const entry = decoded.find((candidate) => candidate.piece === piece);
+  if (!entry) return 0;
+  const x = Math.floor(world.x - piece.x),
+    y = Math.floor(world.y - piece.y);
+  if (x < 0 || y < 0 || x >= entry.image.width || y >= entry.image.height) return 0;
+  return entry.image.data[(y * entry.image.width + x) * 4 + 3] ?? 0;
+}
+
 describe('projected quarry scenes', () => {
   it('covers dry authored centers and boundaries while leaving live surface interiors transparent', () => {
     for (const { map, scene } of routeScenes)
@@ -105,6 +114,20 @@ describe('projected quarry scenes', () => {
       'art/maps/quarry-surround/west.webp',
       'art/maps/quarry-surround/east.webp',
     ]);
+  });
+  it('softens the independently compressed dirt-page handoff without exposing dry floor', () => {
+    for (const { scene } of routeScenes) {
+      const west = scene.ground.find((piece) => piece.url.endsWith('/dirt-west.webp'));
+      const east = scene.ground.find((piece) => piece.url.endsWith('/dirt-east.webp'));
+      if (!west || !east) throw new Error('Missing dirt split');
+      // x=10 is the authored split. East is translucent there over the opaque
+      // west bleed, rather than replacing it with a separately compressed edge.
+      const seam = point(10, 1);
+      expect(pieceAlpha(west, seam)).toBeGreaterThan(240);
+      expect(pieceAlpha(east, seam)).toBeGreaterThan(20);
+      expect(pieceAlpha(east, seam)).toBeLessThan(235);
+      expect(alpha(scene, seam)).toBeGreaterThan(240);
+    }
   });
   it('opts The Cutting into local material regions and its exterior rim', () => {
     expect(AMBUSH_ROAD.projection).toBe('oblique');

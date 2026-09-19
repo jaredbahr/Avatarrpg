@@ -124,6 +124,24 @@ function bleedEdges(image: ReturnType<typeof newImage>, pixels = 2): void {
       }
   }
 }
+/** The two independently compressed dirt pages meet at logical x=10. Fade the
+ * incoming east page across its existing bleed so its WebP edge cannot become
+ * a visible opaque colour handoff; west remains the fully opaque underlay. */
+function softenDirtJoin(image: ReturnType<typeof newImage>, name: (typeof names)[number]): void {
+  if (name !== 'dirt-east') return;
+  for (let py = 0; py < image.height; py++)
+    for (let px = 0; px < image.width; px++) {
+      const index = (py * image.width + px) * 4;
+      const alpha = image.data[index + 3] ?? 0;
+      if (!alpha) continue;
+      const wx = page.x + px + 0.5,
+        wy = page.y + py + 0.5;
+      const gx = ((wx - 768) / 64 + wy / 32) / 2;
+      const t = Math.max(0, Math.min(1, (gx - 9.96) / 0.08));
+      const eased = t * t * (3 - 2 * t);
+      image.data[index + 3] = Math.round(alpha * eased);
+    }
+}
 const regions = [] as {
   name: string;
   x: number;
@@ -135,6 +153,7 @@ const regions = [] as {
 let total = 0;
 for (const [name, image] of images) {
   bleedEdges(image);
+  softenDirtJoin(image, name);
   const bounds = alphaBounds(image);
   if (!bounds) continue;
   const packed = await encodeWebp(crop(image, bounds), 84, true);

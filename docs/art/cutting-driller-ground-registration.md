@@ -89,3 +89,11 @@ transparent for runtime surfaces. A two-pixel edge bleed is restricted away
 from those dynamic interiors. Cutting packs: dirt-west, dirt-east, road and
 stone. Driller packs: dirt-west, dirt-east and stone. The exterior surround,
 rims, rear loading strip, walls and props are independent registrations.
+
+The east dirt page now takes over across a narrow logical `x=10` alpha ramp
+over the west page's existing bleed. This avoids a visible diagonal caused by
+separately compressed opaque dirt-page edges while keeping the west page as the
+dry underlay. `scripts/art/quarry-route-ground.ts` applies the ramp for future
+packs; `scripts/art/soften-quarry-dirt-join.ts` reproduces it from the approved
+shipped pages when the historical raw source is unavailable. Runtime oil, mud,
+and water remain transparent because the repair only reduces nonzero dirt alpha.
