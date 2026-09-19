@@ -192,9 +192,23 @@ test.describe('zoom and pan', () => {
   });
 
   test('a drag pans only once the board no longer fits', async ({ page }) => {
-    // Preserve the fitted orthographic contract alongside readable oblique views.
+    // The Cutting now starts in readable oblique framing. Explicitly fit it
+    // through the real pinch gesture before checking the fitted-board contract.
     await openFight(page, 'battle_ambush');
+    const { point: fitPoint } = await centreTile(page);
+    await pinch(
+      page,
+      [
+        { x: fitPoint.x - 100, y: fitPoint.y },
+        { x: fitPoint.x + 100, y: fitPoint.y },
+      ],
+      [
+        { x: fitPoint.x - 10, y: fitPoint.y },
+        { x: fitPoint.x + 10, y: fitPoint.y },
+      ],
+    );
     const fitted = await camera(page);
+    expect(fitted.fitted).toBe(true);
 
     await swipe(page, { x: 200, y: 200 }, { x: 120, y: 160 });
     const still = await camera(page);
@@ -299,8 +313,8 @@ test.describe('zoom and pan', () => {
     page,
   }) => {
     const target = await openWaterFight(page);
-    // PR64's oblique camera deliberately starts at the 48px preferred tile
-    // size, which is larger than the whole-board fit at 1280x720. Use a wide
+    // The oblique camera starts with readable tiles larger than the
+    // whole-board fit at 1280x720. Use a wide
     // landscape for that policy so the regression reaches the exact fitted
     // state; the orthographic policy keeps the normal viewport coverage.
     const viewport = page.viewportSize();
