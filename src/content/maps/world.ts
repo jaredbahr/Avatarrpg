@@ -117,7 +117,7 @@ export function connectAct1(map: MapDef): MapDef {
             4,
             'road_depart',
             'The pine road',
-            'npc.guard',
+            'unit.enemy.thug',
             unvisited('road_depart'),
           ),
           crossing(

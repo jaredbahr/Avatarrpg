@@ -10,6 +10,7 @@
  */
 
 import { RIVERSIDE_ID } from '../../content/maps/riverside';
+import { npcPresentationScale, triggerPresentationScale } from './exploreMarkerScale';
 import { evaluate } from '../../core/story/conditions';
 import {
   activeTriggers,
@@ -884,11 +885,20 @@ export class ExploreScene implements Scene {
         pos: npc.pos,
         sprite: npc.sprite,
         name: npc.name,
-        scale: map.projection === 'oblique' ? 1.5 : 1,
+        scale: npcPresentationScale(npc.sprite, map.projection),
       })),
       ...activeTriggers(map, state).flatMap((trigger) => {
         const pos = trigger.area[0];
-        return pos ? [{ pos, sprite: trigger.sprite, name: trigger.label }] : [];
+        return pos
+          ? [
+              {
+                pos,
+                sprite: trigger.sprite,
+                name: trigger.label,
+                scale: triggerPresentationScale(map, trigger.sprite),
+              },
+            ]
+          : [];
       }),
     ];
 
