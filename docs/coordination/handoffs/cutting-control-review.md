@@ -289,3 +289,41 @@ compression may be necessary. Root remains the sole integration owner, with
 PR64 frozen and no duplicate pushes or CI. Both assignments must provide exact
 source and runtime evidence before integration. Narration continuity remains
 with world_conversations in its separate scope review.
+
+## Successful campaign import and optional river loop
+
+On frozen releasefc37c6a, root imported the earlier normal solo Sura victory and
+completed-homecoming export into a separate fresh origin, localhost4267, tab6.
+The title visibly identifies v0.2.1/buildfc37c6a. Export is
+four-nations-tactics-lv4-2026-09-19 (1).json in Downloads (06:29 local); original
+tab3 and its saves remain unchanged. Sura is level4,23/38HP. This is compatibility
+and post-victory review, not a replay of that whole winning fight on fc37c6a.
+
+The completed-homecoming objective now correctly says the party has caught up
+with the village. Root walked to Riverside, used Tea break and Meet Pebble,
+observed discoveries1/3 to2/3 to3/3, and walked back to Ba Dan. Pella's three-line
+post-quarry conversation retained the world and returned to exploration. Slot1
+in tab6 saves the return beside Pella at06:35:18. Full page reload and loading
+that slot restored Sura's health, Pella proximity and completed-homecoming
+objective. The journal visibly preserves all three river discoveries and prior
+village/road/quarry visits. Tab6 currently has the journal open; tab5 retains the
+separate two-character defeat and three combat checkpoints.
+
+Presentation findings remain open: Riverside's dock uses about231px of a720px
+viewport, repeats header utilities and horizontally scrolls many activities.
+world_conversations now owns a new isolated compact-dock pass based on9a54d23,
+limited to VillageLife.ts, Riverside CSS and focused interaction coverage. All
+activities, preview exit/settings, touch/Large-text access and return behavior
+must remain available. Tea text describes sitting with a cup, but visible Sura
+stands beside the porch; this is a recorded animation mismatch, not accepted
+sitting animation. Village buildings and retained conversations read coherently,
+but broad grass/paving and sparse daily-life detail still fall short of the
+approved dense neighborhood reference. Do not mark the full target accepted.
+
+The quarry assessment metadata source is integrated asf0894bc with handoff
+9a54d23. Root reviewed the exact-map registration and marker/save/reload test.
+Source verification842/101 and all9 interlude browser tests passed; current
+combined checks await the coherent quality batch. PR64 remains frozen with its
+single required CI run. Its existing job caps are60min E2E and75min gallery;
+source comments record prior successful durations41–48 and up to62min, so the
+currently live long-running jobs are not treated as stalled without evidence.

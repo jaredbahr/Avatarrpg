@@ -75,14 +75,14 @@ and must not be used to close these requirements.
 Current ownership, checked 19 September 2026. Read the linked handoff and verify
 live branches and checks before editing; older assignments are historical.
 
-| Assignment                         | Owner                 | Boundary                                                                                                                |
-| ---------------------------------- | --------------------- | ----------------------------------------------------------------------------------------------------------------------- |
-| PR64 release v0.2.1                | Root orchestrator     | Frozen `fc37c6a`; one CI run35438371967; exact-head checks and merge-commit auto-merge                                  |
-| Next quality integration           | Root orchestrator     | `codex/deserter-material-fx`; reviewed source-launch/flask/impact changes; no push into running PR64                    |
-| Quarry loading/rail art            | `quarry_composition`  | New isolated art-only strip based on `c8f8b06`; coordinate asset/anchor with gameplay; scale source is integrated       |
-| Quarry interior cover and props    | `combat_preview`      | Approved bounded map/scene implementation based on `c8f8b06`; existing rules, connected approaches and meaningful props |
-| Quarry narration continuity        | `world_conversations` | Isolated next-quality scope review of two narrator lines before battle; retain existing illustrated interlude           |
-| Continuous gameplay and acceptance | Root orchestrator     | Production4267 at `fc37c6a`; manual route and source review; no final aesthetic signoff                                 |
+| Assignment                         | Owner                 | Boundary                                                                                                                               |
+| ---------------------------------- | --------------------- | -------------------------------------------------------------------------------------------------------------------------------------- |
+| PR64 release v0.2.1                | Root orchestrator     | Frozen `fc37c6a`; one CI run35438371967; exact-head checks and merge-commit auto-merge                                                 |
+| Next quality integration           | Root orchestrator     | `codex/deserter-material-fx`; reviewed source-launch/flask/impact changes; no push into running PR64                                   |
+| Quarry loading/rail art            | `quarry_composition`  | New isolated art-only strip based on `c8f8b06`; coordinate asset/anchor with gameplay; scale source is integrated                      |
+| Quarry interior cover and props    | `combat_preview`      | Approved bounded map/scene implementation based on `c8f8b06`; existing rules, connected approaches and meaningful props                |
+| Riverside activity dock            | `world_conversations` | New isolated compact activity dock based on `9a54d23`; retain all interactions and accessible controls; quarry narration is integrated |
+| Continuous gameplay and acceptance | Root orchestrator     | Production4267 at `fc37c6a`; manual route and source review; no final aesthetic signoff                                                |
 
 The [current playthrough handoff](handoffs/cutting-control-review.md) records
 ownership, exact release validation and preserved saves. Release verification
