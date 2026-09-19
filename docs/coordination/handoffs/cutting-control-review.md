@@ -424,3 +424,20 @@ state/reload assertions remain. Evidence is preserved under
 `.shots/integration/full-e7ac483-first-failure`. A new combined run follows.
 Legacy-save wall visibility, tea motion and Ba Dan neighborhood remain active
 isolated assignments. No new GitHub push/run or deployment occurred.
+
+## Legacy campaign fixture and running combined checks
+
+Root exported the actual fc37 manual Driller round3 checkpoint through the game's
+UI without overwriting slots. File:
+`C:/Users/Jared/Downloads/four-nations-tactics-lv3-2026-09-19 (2).json`
+(65,917 bytes, 19 September 07:33 local). It contains Sura23/34, Riko18/36 with
+Rooted, and Grumbler42/64. Quarry ownership now includes a focused Canvas/WebGL
+load of this older save, preserving its baked grid, unit state and RNG while
+omitting new wall artwork absent from its terrain.
+
+Root's combined418-case run on the video-source-excluded build remains active:
+all168 Chromium cases completed, including repaired quarry assessment/save-load,
+renderer and motion checks; WebKit is in progress. Do not rebuild root dist until
+that run finishes. The running build precedes tea and legacy-wall guard integration.
+Tea's transient agent capacity failure was resumed in the same preserved worktree
+with its live probes retained; no duplicate jobs or GitHub runs were started.
