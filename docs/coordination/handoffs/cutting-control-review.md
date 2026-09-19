@@ -358,3 +358,21 @@ d266abb supplies the new quarry cover/props and has fullverify849/103 plus
 build/art/budget/balance passing. Gameplay is still integrating the rail asset
 and owes actual scene/route/variant evidence before root accepts the combined
 interior. Neither source alone establishes completed interior presentation.
+
+## Combined dock and gesture checkpoint — 19 September
+
+Root integrated the released Riverside dock commits as `a9699a9`/`702d9a6` and
+responsive gesture coverage as `710128d`. The combined candidate passes
+`npm run verify` (844 tests / 102 files), production build, and the 300 KiB
+JavaScript budget (299.8 KiB). Version remains the unshipped v0.2.1.
+The gesture owner separately passed 27 Chrome and 18 actual Windows WebKit cases.
+Root's combined 20-case Riverside/conversation-framing Chrome and WebKit run is
+active on strict port 4266; results are not yet final. Its reusable ignored config
+is `.shots/integration/full-local.config.ts`, preserving the production project's
+coverage and using installed Chrome plus opt-in WebKit. Full combined E2E awaits
+quarry integration. No push or new GitHub run occurred.
+
+Quarry interior registration and runtime review remain with combat_preview.
+The Riverside owner released editing ownership and is now performing a read-only
+Ba Dan composition audit against the approved neighborhood reference. No visual
+acceptance or deployment is claimed from the passing source checks.
