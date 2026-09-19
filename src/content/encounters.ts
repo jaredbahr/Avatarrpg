@@ -259,7 +259,7 @@ export const ENCOUNTERS: readonly EncounterDef[] = [
     ],
     intro:
       'The driller comes up out of the pit on two treads, dragging a plume of oil smoke behind it.',
-    tip: 'It leaks oil and churns the floor to mud. Firebenders: light the oil. Waterbenders: freeze the mud and the treads stop dead.',
+    tip: 'It leaks oil and churns the floor to mud. Ignite the oil when the driller is standing in it, and keep your party clear. Freezing mud makes it easier to cross; it does not stop the treads.',
   },
 ];
 

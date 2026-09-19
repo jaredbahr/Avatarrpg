@@ -79,7 +79,7 @@ export const ENEMIES: readonly EnemyDef[] = [
     xp: 200,
     sprite: 'unit.enemy.deserter',
     description:
-      'Spills oil, then lights it. Kill the oil with water or the fight gets away from you.',
+      'Spills oil, then lights it. Keep clear of the spill; water douses flames but leaves unburned oil in place.',
   },
   {
     id: 'merc_blade',
