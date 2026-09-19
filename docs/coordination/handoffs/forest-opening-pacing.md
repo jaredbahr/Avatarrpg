@@ -87,4 +87,31 @@ The local probe and full results remain in `.shots/pacing/probe.ts` and
 `.shots/pacing/paired-results.json` in the pacing-review worktree.
 
 Variant introduction helper `1561cf9` has 29 focused story/variant tests passing.
-CombatScene tip integration remains with the camera owner as a separate commit.
+CombatScene tip integration is complete in root commit `d42947c`; the selected
+variant's tip survives save/reload without rerolling the encounter.
+
+## Combined local checkpoint, 19 September
+
+Root integration `103870e` includes the selected encounter introduction/tip,
+forest aftermath retained over the explored world, movement-preview camera
+reveal, and the bounded pond shoreline correction. `npm run verify` passed
+822 tests in 94 files plus typecheck, lint and formatting. Production build,
+art validation and asset budgets passed; JavaScript is 298.7 KiB / 300 KiB.
+
+Nine focused production-browser checks passed in installed touch Chrome at
+1280 × 720: Canvas/WebGL normal/Huge legal movement confirmation, the selected
+slinger tip across reload, both backends' aftermath conversation save/reload,
+and complete new-campaign trade and escort routes through the quarry and home.
+Strict preview port 4267 stopped after the batch. Configuration and evidence
+remain under `.shots/aftermath`; this is not physical tablet or audio acceptance.
+
+The separate manual Sura/Riko campaign remains on older runtime `798bee8` at
+localhost:4210. It reached level 2 and the Quarry Gate by normal exploration,
+chose the direct approach, and is at Riko's first turn: Sura 23/30 HP, Riko
+32/32 HP, facing a 32-HP deserter and 27-HP bandit. Chi Block is available at
+2 AP. The forest save remains in slot 1. This older runtime is not evidence
+for the combined corrections above.
+
+The compact HUD correction and Riko directional contact art remain isolated
+assignments pending integration review. PR64 stays frozen at `9e005b1` while
+its existing required CI runs; no duplicate run or intermediate push was made.
