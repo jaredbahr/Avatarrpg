@@ -20,6 +20,9 @@ function sample(value: number): number {
 function material(key: string): number {
   return key === '=' ? 0 : 1;
 }
+function clamp(value: number): number {
+  return Math.max(0, Math.min(1, value));
+}
 function colour(kind: number, x: number, y: number) {
   const sx = sample(x * 192) + (kind % 2) * swatch;
   const sy = sample(y * 192) + Math.floor(kind / 2) * swatch;
@@ -49,18 +52,29 @@ for (let py = 0; py < image.height; py++) {
       [0, 1],
     ] as const) {
       const neighbour = FOREST_ROAD.rows[iy + oy]?.[ix + ox];
-      if (!neighbour || material(neighbour) === base) continue;
+      // Only mix across the walkable road/shoulder boundary. A pond, ledge or
+      // prop stays transparent, so runtime water and independent scenery retain
+      // their real footprint.
+      if ((neighbour !== '=' && neighbour !== ',') || material(neighbour) === base) continue;
       const edgeDistance = ox < 0 ? x - ix : ox > 0 ? ix + 1 - x : oy < 0 ? y - iy : iy + 1 - y;
-      mix = Math.max(mix, Math.max(0, Math.min(1, (0.2 - edgeDistance) / 0.2)));
+      const width = 0.16 + 0.03 * (0.5 + 0.5 * Math.sin(ix * 4.1 + iy * 6.7));
+      // Both materials meet at the same 50/50 midpoint. This avoids a full
+      // opposite-colour stripe on either side of the join.
+      mix = Math.max(mix, 0.5 * clamp((width - edgeDistance) / width));
     }
     const other = base === 0 ? 1 : 0;
     const a = colour(base, x, y),
       b = colour(other, x, y);
+    // The grass shoulders fade into the procedural field over a modest,
+    // deterministic width. The central road rows stay fully opaque.
+    const outerDistance = Math.min(y - 3, 10 - y);
+    const featherWidth = 0.26 + 0.06 * (0.5 + 0.5 * Math.sin(x * 5.9 + y * 3.7));
+    const alpha = key === ',' ? Math.round(255 * clamp(outerDistance / featherWidth)) : 255;
     setPixel(image, px, py, [
       Math.round(a[0] * (1 - mix) + b[0] * mix),
       Math.round(a[1] * (1 - mix) + b[1] * mix),
       Math.round(a[2] * (1 - mix) + b[2] * mix),
-      255,
+      alpha,
     ]);
   }
 }
