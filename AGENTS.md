@@ -12,7 +12,7 @@ PRs and the assigned owner's handoff before editing; recorded status is a snapsh
 Jared authorizes the main orchestrator to assign priorities, create or replace
 sessions, and direct delivery. The current finish line is a polished village to
 quarry and back run. Complete and review that slice before expanding the world.
-Prefer Astra for art and sound. Use an isolated worktree per coding session and
+Use the model routing policy below. Use an isolated worktree per coding session and
 one integration owner for overlapping changes. Preserve useful work from other
 agents; do not overwrite it merely because your branch started earlier.
 
@@ -22,6 +22,36 @@ and before transferring work. New sessions must verify the actual branch, head,
 uncommitted files and current checks before continuing. Compaction alone is not
 a reason to duplicate an active assignment. Session workflow and documentation
 ownership are detailed in the coordination entry point.
+
+## Model routing and usage
+
+Jared's standing routing policy:
+
+- Orchestrator and final visual judgment: GPT-6 Astra Low normally; Medium for
+  important planning, architecture, combat-system or visual-direction decisions.
+- Ordinary implementation: GPT-5.6 Luna High. Mechanical cleanup, documentation,
+  repetitive wiring and straightforward tests: Luna Medium.
+- Substantial but well-defined implementation: Luna Max when justified; Max is
+  not the default for every task.
+- Escalation: GPT-5.6 Terra or Sol High through Max for cross-system bugs,
+  difficult renderer/pathfinding work or a reasonable Luna attempt that failed.
+  Record the reason rather than retrying blindly.
+- Do not assign Astra workers ordinary implementation. Keep expensive reasoning
+  focused on decomposition, architecture and review against the visual target.
+
+Plan then execute without routine user approval. Delegate bounded implementation
+to the appropriate worker; inspect results and validate actual gameplay before
+acceptance. Preserve the references, story bible, ADRs and game vision instead
+of lowering the target to match current limitations.
+
+Use explicit model/effort parameters when available; never claim a model change
+without applying it. Preserve active work at a checkpoint before changing owners
+or routing. Current tool concurrency limits still apply: 6–10 workers is not a
+quota, and cheap workers do not justify duplicate work, uncontrolled parallelism
+or extra CI runs. Use the smallest effective team and batch validation.
+
+This is an operational preference, not a guarantee of API prices, plan allowance
+savings or model capability. Do not copy unverified pricing claims into budgets.
 
 ## Automatic merging
 
