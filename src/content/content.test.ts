@@ -19,6 +19,8 @@ describe('content', () => {
       scene: { ...source.scene, groundMode: 'partial' },
     });
     expect(partial.success).toBe(true);
+    if (!partial.success) throw new Error('Partial scene should parse');
+    expect(partial.data.scene?.groundMode).toBe('partial');
     const invalid = mapSchema.safeParse({
       ...source,
       scene: { ...source.scene, groundMode: 'complete' },
