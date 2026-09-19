@@ -333,6 +333,19 @@
   white-space: normal;
 }
 
+/* Authored paint has no combo sentence, so keep its footprint in one short
+   line instead of repeating "spreads across the ground" above the result. */
+.reaction-paint {
+  gap: var(--sp-2);
+  padding: var(--sp-1) var(--sp-2);
+  border-left-width: var(--hairline);
+  background: color-mix(in srgb, var(--c-parchment-bg) 35%, transparent);
+}
+
+.reaction-paint .reaction-result {
+  flex: 1 1 auto;
+}
+
 /* A rule actually fired, rather than the surface just landing as authored. */
 .reaction-fires {
   border-left-color: var(--c-gold);
