@@ -190,3 +190,38 @@ precache 17.37 MiB / 25, units 4,835,087 bytes under the documented 4.75 MiB cap
 The source owner's full verify passed 834 tests in 98 files; the root combined
 full suite will run after the pending AI and player-interface corrections.
 No GitHub run or push has occurred for this local batch yet.
+
+## Checked release and next quality ownership
+
+Root froze `codex/route-art-followup` at `fc37c6a` and pushed that exact head to
+PR64. Full verification passes 836 tests in 99 files; build, art and budgets pass
+at 299.5 KiB JavaScript and 17.37 MiB precache. Twelve focused production browser
+checks and both complete trade/escort quarry-return routes pass. CI run
+35438371967 has passed verification, including balance, and its E2E and gallery
+jobs are still running. Merge-commit auto-merge remains enabled, with no review
+threads. Do not push more commits into this running revision.
+
+The prior campaign's Cutting round-3 save was exported through the game menu
+and imported successfully into a fresh production origin on build `fc37c6a`.
+Root repeated the normal Cutting victory with the same command pattern, checked
+corrected "pushes" wording and the retained-world three-line Ruon aftermath,
+then walked through the east exit and across the quarry floor to the Driller.
+The intervening two-line quarry narration still uses a standalone screen; this
+is a presentation observation for the next pass, not accepted continuity.
+
+Current manual browser: in-app tab 5, `http://127.0.0.1:4267/?renderer=webgl`,
+1280 x 720. Party Sura34/34 and Riko18/36, level3. Slot1 is the healed Cutting
+checkpoint at05:57; slot2 is Grumbler round1 at06:03. The save menu is open over
+Pause before Riko's ready handoff. No battle action has occurred yet. Production
+preview4267 is root-owned session98332, serving frozen `fc37c6a`. Earlier tabs3/4
+and the unchanged4210 preview preserve the earlier victory and original saves.
+The old run's defeat is not a balance result for the corrected AI.
+
+The separate `codex/deserter-material-fx` candidate contains `df5432f` plus
+`b0e1d60`, based on the frozen release. Root accepted its bounded source-launch,
+small-flask and grounded-impact captures. The source owner reports841 tests in
+101 files and all build/art/budget checks passing, with389 bytes of JavaScript
+headroom. Root has verified its clean branch and now owns this next-quality
+candidate; its source owner released editing and stopped4265. Do not copy its
+changes into PR64 while CI runs. Versioning and the next landing revision follow
+the actual release state, not an unshipped checkpoint.
