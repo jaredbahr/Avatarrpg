@@ -297,6 +297,15 @@ test.describe('zoom and pan', () => {
 
   test('fitted zoom-out keeps legal water targeting framed through footer reflow', async ({ page }) => {
     const target = await openWaterFight(page);
+    // PR64's oblique camera deliberately starts at the 48px preferred tile
+    // size, which is larger than the whole-board fit at 1280x720. Use a wide
+    // landscape here so the regression reaches the exact fitted state on
+    // both camera policies; the normal viewport coverage remains below.
+    const viewport = page.viewportSize();
+    if (viewport && viewport.width < 1600) {
+      await page.setViewportSize({ width: 1600, height: 900 });
+      await settleLayout(page);
+    }
     const { point } = await centreTile(page);
 
     // First establish a manual frame, then zoom back out to the whole-board
