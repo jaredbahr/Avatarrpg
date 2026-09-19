@@ -95,7 +95,9 @@ jobs:
 
   gallery:
     name: Screenshot gallery
-    needs: verify
+    # Preserve the required gallery, but spend capture minutes only after the
+    # gameplay suite passes. Failed revisions cannot merge and need no gallery.
+    needs: [verify, e2e]
     runs-on: ubuntu-latest
     # Recent successful captures took up to 62 minutes; retain every gallery case.
     timeout-minutes: 75
