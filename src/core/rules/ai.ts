@@ -33,7 +33,7 @@ import {
 } from './abilities';
 import { averageDamage, hitChance, positionHasCover } from './damage';
 import { distance, distanceToUnit, euclidean, posKey, reachable, tileAt } from './grid';
-import { effectiveStats, isAlive } from './stats';
+import { canMove, effectiveStats, isAlive } from './stats';
 import { findCombo } from './surfaces';
 
 /** How much the AI wants to inflict each status, in "points of damage". */
@@ -614,7 +614,7 @@ export function planAiTurn(draft: BattleDraft, unitId: string, rng: RngCursor): 
         }
       : null;
 
-    if (unit.move > 0 && abilities.length > 0) {
+    if (canMove(content, unit) && unit.move > 0 && abilities.length > 0) {
       const cells = reachable(draft.moveContext(unit), unit.pos, unit.move);
       for (const cell of cells.values()) {
         if (cell.cost === 0) continue;
@@ -661,7 +661,7 @@ export function planAiTurn(draft: BattleDraft, unitId: string, rng: RngCursor): 
     }
 
     // 3. Nothing worth doing. Reposition instead, then stop.
-    if (unit.move > 0) {
+    if (canMove(content, unit) && unit.move > 0) {
       repositionToward(draft, unitId, weights, reach);
     }
     if (acted === 0) {
