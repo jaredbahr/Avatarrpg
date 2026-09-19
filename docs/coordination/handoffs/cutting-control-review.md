@@ -173,3 +173,20 @@ its trace handoff as `dfadbd2`. Fresh `npm run verify` at `dfadbd2` passes all
 The revised deserter counter-swing and matching portrait have passed root source
 and actual Canvas/WebGL capture review; final owner validation and integration
 remain pending. This accepts that bounded asset correction only.
+
+## Confirmed Rooted AI defect
+
+The independent current-source audit reproduced a Rooted Grumbler moving before
+Churn and Slam. Both AI movement branches in `src/core/rules/ai.ts` omitted the
+shared `canMove` rule. The direct-attack helper correctly reports no stationary
+threat at the reviewed distance while Debris Throw is cooling down, and correctly
+reports Slam at its actual stationary reach. The AI correction and regression
+belong to `combat_preview`; do not loosen the preview to accommodate illegal AI
+movement. The separate player movement-availability UI remains assigned above.
+
+Deserter implementation `1f6fc72` is integrated as `c66f0f9`. Combined production
+build, art validation and budgets pass at `c66f0f9`: JavaScript 299.3 KiB / 300,
+precache 17.37 MiB / 25, units 4,835,087 bytes under the documented 4.75 MiB cap.
+The source owner's full verify passed 834 tests in 98 files; the root combined
+full suite will run after the pending AI and player-interface corrections.
+No GitHub run or push has occurred for this local batch yet.
