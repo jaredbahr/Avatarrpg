@@ -1,5 +1,91 @@
 import { expect, test } from '@playwright/test';
-import { enterNode, resetStorage, startGame, waitForIdle } from './helpers';
+import type { Page } from '@playwright/test';
+import { enterNode, resetStorage, settleLayout, startGame, waitForIdle } from './helpers';
+
+async function openActivities(page: Page): Promise<void> {
+  const toggle = page.getByRole('button', { name: 'Activities', exact: true });
+  if ((await toggle.getAttribute('aria-expanded')) !== 'true') await toggle.click();
+}
+
+test('riverside dock stays compact until secondary activities are opened', async ({ page }) => {
+  await page.setViewportSize({ width: 1280, height: 720 });
+  await resetStorage(page, '?renderer=canvas');
+  await page.getByRole('button', { name: 'Explore the riverside', exact: true }).click();
+  await settleLayout(page);
+
+  const closed = await page.evaluate(() => {
+    const dock = document.querySelector('.explore-dock')?.getBoundingClientRect();
+    const canvas = document.querySelector('.map-canvas')?.getBoundingClientRect();
+    const panel = document.querySelector<HTMLElement>('.village-controls');
+    return {
+      dockHeight: dock?.height ?? 0,
+      canvasHeight: canvas?.height ?? 0,
+      horizontalOverflow: panel ? panel.scrollWidth - panel.clientWidth : 0,
+      journalInDock: [...(panel?.querySelectorAll('button') ?? [])].some(
+        (button) => button.textContent === 'Travel journal',
+      ),
+      settingsInDock: [...(panel?.querySelectorAll('button') ?? [])].some(
+        (button) => button.textContent === 'Settings',
+      ),
+      pauseInDock: [...(panel?.querySelectorAll('button') ?? [])].some(
+        (button) => button.textContent === 'Pause',
+      ),
+    };
+  });
+  expect(closed.dockHeight).toBeLessThan(180);
+  expect(closed.canvasHeight).toBeGreaterThan(480);
+  // The dock reserves a few device pixels for its vertical scrollbar; the
+  // Riverside HUD itself is visible without a horizontal scroller.
+  expect(closed.horizontalOverflow).toBeLessThanOrEqual(8);
+  expect(closed.journalInDock).toBe(false);
+  expect(closed.settingsInDock).toBe(false);
+  expect(closed.pauseInDock).toBe(false);
+
+  await expect(page.getByRole('button', { name: 'Activities', exact: true })).toHaveAttribute(
+    'aria-expanded',
+    'false',
+  );
+  await openActivities(page);
+  await expect(page.getByRole('button', { name: 'Under the banyan', exact: true })).toBeVisible();
+  await expect(page.getByRole('button', { name: 'Visit the shrine', exact: true })).toBeVisible();
+  await expect(page.getByRole('button', { name: "Dorin's drill", exact: true })).toBeVisible();
+  await expect(page.getByRole('button', { name: 'Activities', exact: true })).toHaveAttribute(
+    'aria-expanded',
+    'true',
+  );
+});
+
+test('riverside activities remain reachable at largest text in portrait', async ({ page }) => {
+  await page.setViewportSize({ width: 390, height: 844 });
+  await resetStorage(page, '?renderer=canvas');
+  await page.getByRole('button', { name: 'Explore the riverside', exact: true }).click();
+  await page.evaluate(() => window.fnt?.app.updateSettings({ largeText: 'huge' }));
+  await settleLayout(page);
+  await openActivities(page);
+
+  const geometry = await page.evaluate(() => {
+    const scene = document.querySelector('.explore-scene')?.getBoundingClientRect();
+    const canvas = document.querySelector('.map-canvas')?.getBoundingClientRect();
+    const dock = document.querySelector('.explore-dock')?.getBoundingClientRect();
+    return {
+      sceneWidth: scene?.width ?? 0,
+      canvasHeight: canvas?.height ?? 0,
+      dockHeight: dock?.height ?? 0,
+      pageWidth: document.documentElement.scrollWidth,
+    };
+  });
+  expect(geometry.sceneWidth).toBe(390);
+  expect(geometry.pageWidth).toBeLessThanOrEqual(390);
+  expect(geometry.canvasHeight).toBeGreaterThan(300);
+  expect(geometry.dockHeight).toBeLessThanOrEqual(geometry.sceneWidth * 2);
+
+  const menu = page.locator('#riverside-activities');
+  await expect(menu).toBeVisible();
+  const drill = page.getByRole('button', { name: "Dorin's drill", exact: true });
+  await drill.scrollIntoViewIfNeeded();
+  await expect(drill).toBeVisible();
+  expect((await drill.boundingBox())?.height ?? 0).toBeGreaterThanOrEqual(48);
+});
 
 test('riverside painted paths and sprite picking', async ({ page }) => {
   await resetStorage(page, '?renderer=canvas');
@@ -90,6 +176,7 @@ for (const renderer of ['canvas', 'webgl']) {
       'data-illustrated-actors',
       '2',
     );
+    await openActivities(page);
     await page.getByRole('button', { name: 'Under the banyan', exact: true }).click();
     await expect(page.locator('.village-note')).toContainText('The banyan shades the path.', {
       timeout,
@@ -101,10 +188,13 @@ for (const renderer of ['canvas', 'webgl']) {
     await expect
       .poll(() => page.evaluate(() => window.fnt!.app.state?.location.pos))
       .toEqual({ x: 13, y: 9 });
+    await openActivities(page);
     await page.getByRole('button', { name: 'Meet Pebble', exact: true }).click();
     await expect(page.locator('.village-note')).toContainText('Pebble leans', { timeout });
+    await openActivities(page);
     await page.getByRole('button', { name: 'Tea break', exact: true }).click();
     await expect(page.locator('.village-note')).toContainText('jasmine tea', { timeout });
+    await openActivities(page);
     await page.getByRole('button', { name: 'Visit the shrine', exact: true }).click();
     await expect(page.locator('.explore-conversation, .dialogue-scene').first()).toBeVisible({
       timeout,
@@ -117,6 +207,7 @@ for (const renderer of ['canvas', 'webgl']) {
         .click();
     }
     await expect(page.locator('.village-caption')).toContainText('3/3');
+    await openActivities(page);
     await page.getByRole('button', { name: "Dorin's drill", exact: true }).click();
     await expect(page.locator('.village-note')).toContainText('sets a rhythm', { timeout });
     for (const name of ['Water form', 'Fire form', 'Water form']) {
@@ -146,6 +237,7 @@ for (const renderer of ['canvas', 'webgl']) {
 test('preview can be left through Pause after returning to the main village', async ({ page }) => {
   await resetStorage(page);
   await page.getByRole('button', { name: 'Explore the riverside', exact: true }).click();
+  await openActivities(page);
   await page.getByRole('button', { name: 'Try a battle', exact: true }).click();
   await expect(page.locator('.combat-scene')).toBeVisible();
   await page.getByRole('button', { name: 'Pause', exact: true }).click();

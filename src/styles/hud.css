@@ -2062,6 +2062,18 @@ html[data-contrast='high'] .hud-panel::after {
   position: relative;
   overflow: hidden;
 }
+.riverside-scene .explore-dock {
+  max-height: 42%;
+  overflow-x: hidden;
+  overflow-y: auto;
+  overscroll-behavior-y: contain;
+}
+.riverside-scene .explore-hud {
+  overflow: visible;
+  padding: 0;
+  border-top: 0;
+  background: transparent;
+}
 .riverside-scene .roster {
   display: none;
 }
@@ -2074,47 +2086,74 @@ html[data-contrast='high'] .hud-panel::after {
 }
 .village-controls {
   width: 100%;
-  padding: 0.65rem 1rem;
+  padding: var(--sp-2) var(--sp-3) calc(var(--sp-2) + env(safe-area-inset-bottom, 0px));
+  gap: var(--sp-1);
 }
 .village-caption,
-.village-utilities {
+.village-utilities,
+.village-actions,
+.village-secondary {
   display: flex;
   align-items: center;
-  justify-content: space-between;
-  gap: 0.6rem;
+  flex-wrap: wrap;
+  gap: var(--sp-1);
 }
 .village-caption {
+  justify-content: space-between;
   font-weight: 600;
   font-size: var(--fs-sm);
+  gap: var(--sp-2);
 }
 .village-note {
-  margin: 0.3rem 0 0.5rem;
+  margin: 0;
   font-size: var(--fs-sm);
   min-height: 1.2rem;
 }
 .village-actions {
-  display: flex;
-  gap: 0.45rem;
-  overflow-x: auto;
-  padding-bottom: 0.3rem;
+  align-items: stretch;
 }
-.village-actions button {
-  flex: 0 0 auto;
+.village-actions button,
+.village-secondary button,
+.village-utilities button {
+  flex: 1 1 8rem;
   min-height: var(--tap);
 }
-.village-actions button:first-child {
-  border-color: var(--c-water);
+.village-actions .village-activities-toggle {
+  flex: 0 1 8rem;
+  border-color: var(--c-gold-deep);
+  background-color: color-mix(in srgb, var(--c-gold) 12%, var(--surface-1));
 }
 .village-actions button:nth-child(2) {
+  border-color: var(--c-water);
+}
+.village-actions button:nth-child(3) {
   border-color: var(--c-fire);
+}
+.village-secondary {
+  align-items: stretch;
+  padding-top: var(--sp-1);
+  border-top: var(--hairline) solid var(--c-line);
+}
+.village-secondary[hidden] {
+  display: none;
+}
+.village-secondary button {
+  flex-basis: 10rem;
 }
 .village-utilities {
   justify-content: flex-end;
-  margin-top: 0.25rem;
+  margin-top: var(--sp-1);
 }
 .village-utilities button {
-  min-height: var(--tap);
+  flex: 0 1 10rem;
   font-size: var(--fs-sm);
+}
+
+@media (max-width: 52rem), (orientation: portrait) {
+  .village-actions button,
+  .village-secondary button {
+    flex-basis: calc(50% - var(--sp-1));
+  }
 }
 
 /* Playable exploration: the world sits between one quiet header and one dock. */

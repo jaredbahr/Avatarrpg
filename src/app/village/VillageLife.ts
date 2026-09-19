@@ -9,8 +9,6 @@ import { FORM_DURATION, WAVE_DURATION } from '../../render/living/poses';
 import { hitsPebble, hitsVillager, riversideWalkTime } from '../../render/living/geometry';
 import { RIVERSIDE_ID, RIVERSIDE_SPOTS } from '../../content/maps/riverside';
 import { button, el, motionReduced } from '../ui/dom';
-import { SettingsPanel } from '../ui/SettingsPanel';
-import { TravelJournal } from '../ui/TravelJournal';
 import { verticalClip } from '../anim/direction';
 
 const distance = (a: Vec2, b: Vec2) => Math.hypot(a.x - b.x, a.y - b.y);
@@ -30,6 +28,7 @@ export class VillageLife {
   private lastFrame: number | null = null;
   private drill: number | null = null;
   private creature: Vec2 = { ...RIVERSIDE_SPOTS.otter };
+  private activitiesOpen = false;
   constructor(
     private app: App,
     host: HTMLElement,
@@ -67,28 +66,45 @@ export class VillageLife {
       row.appendChild(b);
     };
     const party = this.app.state?.party ?? [];
+    const activities = el('div', {
+      class: 'village-secondary',
+      id: 'riverside-activities',
+      attrs: { role: 'group', 'aria-label': 'More riverside activities' },
+    });
+    activities.hidden = !this.activitiesOpen;
+    const secondaryAction = (label: string, fn: () => void, disabled = false) => {
+      const b = button(label, fn, { class: 'village-secondary-action', disabled });
+      this.controls.push(b);
+      activities.appendChild(b);
+    };
+    const activitiesToggle = button('Activities', () => {
+      this.activitiesOpen = !this.activitiesOpen;
+      activities.hidden = !this.activitiesOpen;
+      activitiesToggle.setAttribute('aria-expanded', String(this.activitiesOpen));
+    });
+    activitiesToggle.classList.add('village-activities-toggle');
+    activitiesToggle.setAttribute('aria-controls', 'riverside-activities');
+    activitiesToggle.setAttribute('aria-expanded', String(this.activitiesOpen));
+    row.appendChild(activitiesToggle);
     action('Water form', () => this.perform('water'), !party.some((p) => p.element === 'water'));
     action('Fire form', () => this.perform('fire'), !party.some((p) => p.element === 'fire'));
     action('Wave', () => this.perform('wave'));
-    action('Travel journal', () =>
-      new TravelJournal(this.app).open(document.querySelector('.overlay-host') ?? document.body),
-    );
-    action('Walk to Ba Dan', () => {
+    secondaryAction('Walk to Ba Dan', () => {
       this.pending = null;
       this.drill = null;
       this.app.dispatch({ type: 'walkTo', pos: { x: 10, y: 20 } });
     });
-    action('Under the banyan', () => this.visit('canopy'));
-    action('Meet Pebble', () => this.visit('otter'));
-    action('Visit the shrine', () => this.visit('shrine'));
-    action('Tea break', () => this.visit('tea'));
-    action(
+    secondaryAction('Under the banyan', () => this.visit('canopy'));
+    secondaryAction('Meet Pebble', () => this.visit('otter'));
+    secondaryAction('Visit the shrine', () => this.visit('shrine'));
+    secondaryAction('Tea break', () => this.visit('tea'));
+    secondaryAction(
       "Dorin's drill",
       () => this.visit('practice'),
       !party.some((p) => p.element === 'water') || !party.some((p) => p.element === 'fire'),
     );
     if (this.app.previewActive)
-      action('Try a battle', () =>
+      secondaryAction('Try a battle', () =>
         this.app.dispatch({ type: 'enterNode', nodeId: 'battle_forest_road' }),
       );
     const utilities = el(
@@ -98,12 +114,7 @@ export class VillageLife {
         const pos = this.app.state?.location.pos;
         if (pos) camera.centreOn(pos);
       }),
-      button('Settings', () =>
-        new SettingsPanel(this.app).open(document.querySelector('.overlay-host') ?? document.body),
-      ),
-      this.app.previewActive
-        ? button('Leave preview', () => this.app.endVillagePreview())
-        : button('Pause', () => this.app.openPause()),
+      this.app.previewActive ? button('Leave preview', () => this.app.endVillagePreview()) : null,
     );
     const discoveries = [
       this.app.state?.flags.riverside_pet,
@@ -119,6 +130,7 @@ export class VillageLife {
       ),
       this.message,
       row,
+      activities,
       utilities,
     );
     host.appendChild(panel);

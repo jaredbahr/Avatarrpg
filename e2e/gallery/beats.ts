@@ -253,6 +253,7 @@ export const BEATS: readonly Beat[] = [
     async run(ctx) {
       await resetStorage(ctx.page, ctx.query());
       await ctx.page.getByRole('button', { name: 'Explore the riverside', exact: true }).click();
+      await ctx.page.getByRole('button', { name: 'Activities', exact: true }).click();
       await ctx.page.getByRole('button', { name: 'Under the banyan', exact: true }).click();
       await ctx.page.getByText('The banyan shades the path.', { exact: false }).waitFor();
       await ctx.page.locator('.village-life-canvas[data-illustrated-actors="2"]').waitFor();

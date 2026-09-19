@@ -1,5 +1,11 @@
 import { expect, test } from '@playwright/test';
-import { enterNode, resetStorage, startGame, waitForIdle } from './helpers';
+import type { Page } from '@playwright/test';
+import { enterNode, resetStorage, settleLayout, startGame, waitForIdle } from './helpers';
+
+async function openActivities(page: Page): Promise<void> {
+  const toggle = page.getByRole('button', { name: 'Activities', exact: true });
+  if ((await toggle.getAttribute('aria-expanded')) !== 'true') await toggle.click();
+}
 
 test('riverside roaming keeps the journal and campaign saves across a round trip', async ({
   page,
@@ -13,8 +19,11 @@ test('riverside roaming keeps the journal and campaign saves across a round trip
     return { state: JSON.stringify(app.state), storage: JSON.stringify(localStorage) };
   });
   await page.evaluate(() => window.fnt!.app.startVillagePreview());
+  await openActivities(page);
   await page.getByRole('button', { name: 'Meet Pebble', exact: true }).click();
   await expect(page.locator('.village-note')).toContainText('Pebble leans');
+  await settleLayout(page);
+  await openActivities(page);
   await page.getByRole('button', { name: 'Walk to Ba Dan', exact: true }).click();
   await expect(page.locator('.title-plate-name')).toHaveText('Ba Dan Village');
   await page.getByRole('button', { name: 'Travel journal', exact: true }).click();
@@ -41,6 +50,7 @@ test('Riverside preview can close while the party is walking', async ({ page }) 
   await startGame(page, ['Jared'], ['bo'], 'roaming-close-during-walk', { reduceMotion: false });
   await page.evaluate(() => window.fnt!.app.startVillagePreview());
 
+  await openActivities(page);
   await page.getByRole('button', { name: 'Meet Pebble', exact: true }).click();
   await expect
     .poll(() => page.evaluate(() => window.fnt!.app.animator.busy(performance.now())))
@@ -84,6 +94,7 @@ test('rescued riverside return keeps the shrine discovery and party health', asy
   await walkRiverside.click();
   await waitForIdle(page);
   await expect(page.locator('.title-plate-name')).toHaveText('Ba Dan · The Riverside');
+  await openActivities(page);
   await expect(page.getByRole('button', { name: 'Visit the shrine', exact: true })).toBeVisible();
 
   await page.getByRole('button', { name: 'Visit the shrine', exact: true }).click();
@@ -110,6 +121,7 @@ test('rescued riverside return keeps the shrine discovery and party health', asy
   expect(afterShrine.act1Complete).toBe(true);
   expect(afterShrine.party).toEqual(fixture);
 
+  await openActivities(page);
   await page.getByRole('button', { name: 'Walk to Ba Dan', exact: true }).click();
   await waitForIdle(page);
   await expect(page.locator('.title-plate-name')).toHaveText('Ba Dan Village');
