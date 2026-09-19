@@ -9,8 +9,10 @@ not a second release PR. The live site still serves v0.1.0 at `44ed3f6`.
 
 Remote PR64 remains at `41b2d9d`. CI `35460361910` is terminal-failed in walking
 clock setup (74 passed, 361 unrun); the gallery correctly skipped. No further
-GitHub run has been started. Two Luna owners are repairing/validating the local
-browser checks before root's final combined verification and single push.
+GitHub run has been started. The candidate passes 873 local tests and the Pages
+build. Terra owns a reproduced WebKit partial-scene blank-map investigation;
+Luna owns the independent decoded-image smoke assertion. Root integrates and
+will push once the rendering issue and final checks pass.
 Earlier checked implementation and review evidence remains scoped below.
 
 ## Integrated result
@@ -210,7 +212,8 @@ Clock source `d05626d` plus `4a2f3d2` passes isolated SwiftShader and WebKit
 walking/tea cases and 873 unit tests. The source also reports failures in an
 earlier combined run; root has required a final combined run with the heavy
 browser jobs serialized. Do not represent isolated successes as a passing
-combined suite. No clock source is integrated yet.
+combined suite. This earlier checkpoint is superseded by the integrated
+14-case passing result below.
 
 ## Consolidated release validation at 65808fa
 
