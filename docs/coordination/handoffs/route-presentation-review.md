@@ -167,3 +167,218 @@ are accepted for the next runtime integration review. Final packaging must
 remove any remaining guide-colored fringe and preserve the recorded transforms,
 playable-diamond exclusion and asset budgets. Actual actor/prop scale, both
 renderers and final scene composition remain unaccepted until tested in game.
+<<<<<<< HEAD
+=======
+
+## Solo gate loss and continuation
+
+Sura moved four points onto the rear plank and banked AP. The deserter advanced
+and cast Fire Blast twice for 10 and 12 damage; Burning dealt another 3 at
+turn start, leaving Sura at 5/30. A three-point approach and five Water Whips
+dealt 7, 6, 6, miss, and 7, leaving the deserter at 1/27. Sura then lost.
+The loss continued through retreat, the opened gate and Ruon's surrender.
+Level 3 offered Healing Stream or Water Pull; choosing Healing Stream and
+escorting Ruon returned to gate exploration at 34/34 with an east-cutting
+objective. This is normal-input evidence for one loss branch, not proof that
+the encounter is balanced across solo kits.
+
+An independent PR64 legal-command probe found the plank at (5,3) exposed to
+movement plus splash while the preceding bare tile (4,3) was safe for all 64
+sampled first turns. The next-turn Water Whip counterattack won 57/64 before
+another enemy turn; seven remained active. This justifies clearer threat
+information before considering numerical changes. A separate 16-seed all-ten
+AI screening flagged Air/non-bender solo weakness for deeper strategy review;
+AI wins alone are not player balance acceptance. The audit owner preserves
+the reproducible scope and follow-up evidence separately.
+
+The same run walked east into the Cutting, visited Sen and inspected the tea
+station through normal controls. Both three-line conversations returned to
+roaming; the east exit correctly remained locked until Jin's confrontation.
+Walking to the visible mercenary began the escort fight: Sura level 3 at 34/34,
+Ruon at 48/48 and two mercenaries at 37/37. Healing Stream is available. The
+autosave lists the Cutting checkpoint; Slots 1–3 remain the earlier village,
+forest and pre-gate-fight saves. Review continues from round 1 in browser tab 2.
+
+PR64's completed E2E job `105835253927` failed after 30.2 minutes with 112 tests
+passed and 223 not run. The reported case is forced-WebGL target visibility at
+the desktop lower edge, timing out during an eight-step mouse drag in both
+attempts. The release owner is inspecting the completed job log and trace
+artifact `10577653136` before a coherent local repair; no restart was requested.
+The gallery was still running at this checkpoint. This is a release blocker,
+not a passing route or deployment claim.
+
+## Cutting victory and Driller arrival
+
+The normal-input escort run won the Cutting in round 3. Ruon advanced, gave
+Sura Inspired and damaged the second mercenary. Sura used Water Whip, then
+Healing Stream on Ruon: the forecast showed +15 HP and the result changed
+30/48 to 45/48. Sura finished at 34/34. Inspecting and cancelling Ice Path
+showed its actual diagonal line missing the selected mercenary; no AP was
+spent. Healing targets still use the same red highlight as attacks, a visual
+clarity issue to revisit with the combined presentation.
+
+The victory dialogue returned to exploration and opened East → Quarry Floor.
+Normal walking reached the floor and then the machine. The authored quarry
+interlude played through its three beats, followed by the barred-gallery
+narration. The fight opened as Grumbler round 1: solo Sura level 3, 34/34 HP,
+Water Whip / Ice Path / Healing Stream, versus Grumbler at 54/54 HP. Browser
+tab 2 now holds this checkpoint; the build remains the old port4200 composition.
+
+Release repair review caught and corrected double-counted canvas offsets in
+the synthetic setup drag before accepting `c08ebb9`. The updated test asserts
+actual camera movement and lower-edge target placement while retaining real
+target taps and decision assertions. Exact release head `0c04719` includes its
+handoff and passed local verification. CI run `35421799207` is active; obsolete
+`35419645940` and intermediate `35421724476` are cancelled. No latest-head CI,
+merge or deployment success is claimed yet.
+
+## Driller self-heal failure
+
+The same normal-input run reached round 2 with Sura at 23/34 after one
+11-damage Debris Throw. Water Whip dealt 3 damage to the armored Grumbler
+(51/54 remaining). Ice Path painted four tiles across the mud and applied
+Chilled; it did not freeze or immobilize the boss.
+
+Healing Stream allowed Sura to select herself and confirm, spent 2 AP and
+started its cooldown, but left her at 23/34. The log reported only the cast.
+This contrasts with the earlier successful 15-HP heal on Ruon. Source review
+found the generic recipient filter excluding the caster unless the ability
+uses a self-shaped target. The combat-preview owner is correcting shared
+resolution/forecast recipient rules and adding self-heal/cleanse regressions.
+The browser remains paused at this failure; boss completion is not claimed.
+Resume from the Driller checkpoint on the combined corrected preview.
+
+## Corrected preview and normal-input retest
+
+Local branch `codex/route-review-preview` at `57187d4` combines PR64,
+guidance/camera, combat forecasts, caster healing, pending support AP, movement
+threats and the corrected Driller/return copy. It passed `npm run verify`
+(784 tests / 85 files), build, and three focused Chrome touch checks for prop
+confirmation, movement threats and fitted-camera reflow. It remains local;
+these checks do not establish required CI or deployed release acceptance.
+
+Port 4200 was deliberately transferred from the old southwest preview to this
+build. After the cached worker updated and a second reload, the title visibly
+showed `v0.2.1-preview.1 · build 57187d4`. The existing Driller autosave loaded
+normally, preserving the earlier route and slots. Sura again approached and
+took 11 damage; the movement confirmation had warned that Grumbler could hit
+there. Healing Stream on Sura now changed 23/34 to 34/34 and logged 11 healed.
+The forecast still showed +15 and generic 'Clears effects' with none present;
+the preview owner is correcting those remaining outcome-label inaccuracies.
+
+After moving into the boss's row, Water Whip dealt 3 damage. Ice Path crossed
+the mud into its front occupied cell and actually applied Chilled, reducing
+Grumbler's next movement allowance to 2. The confirmation incorrectly said
+'Nobody in the area' because surface-only effects yielded no direct target
+entry. This is now a separately reproduced preview finding. The run continues
+in round 2 with Sura at full health and Grumbler at 51/54.
+
+Gameplay's `Avatar RPG-combined-0.2.1` worktree is the sole final integration
+owner. Root's preview is frozen for this saved-run review; no duplicate PR or
+CI is authorized. World conversations and final Cutting/Driller scene opt-in
+belong in that final integration, not in another root release branch.
+
+Round 3 checkpoint: Grumbler moved around the ice and used Churn the Ground
+and Oil Spray; Sura stayed at 34/34. Slot 2 now preserves this mid-battle state
+(replacing the earlier forest test save), with Grumbler at 51/54. Slot 1 remains
+the village, Slot 3 the pre-gate fight, and autosave the Driller entry. The game
+is paused in its Save game dialog. The log floods with one line per painted
+tile during Churn; aggregation is a remaining readability improvement, not a
+new rules defect.
+
+## Integrated Driller victory and saved continuity
+
+The normal run exported its round-3 state through Save game and imported it
+into the sole combined preview on port 4210, initially `829e9f3` / v0.2.1.
+This brings the same solo Sura route into the registered oblique Cutting and
+Driller scenes and retained-world conversation implementation. No campaign
+state or battle outcome was injected. The export is the local Downloads file
+`four-nations-tactics-lv3-2026-09-19.json`.
+
+The imported state had Sura 34/34, Grumbler 41/54, 1 AP and 4 movement.
+Moving through mud spent the movement and applied Rooted. Banking the AP,
+taking the next attack, then saving produced port 4210 Slot 1: round 4,
+Sura 23/34, Grumbler 41/54, 5 AP. An unexpected development-server refresh
+returned to title; normal Load restored this checkpoint correctly.
+
+Self-healing worked repeatedly. Round 4 healed 11 and three Water Whips
+reduced Grumbler to 25/54, including a 9-damage critical. Rounds 5 and 6
+used healing plus two Whips each; the machine pushed Sura back and repainted
+the floor. Round 7 began at Sura 9/34 and Grumbler 10/54. Four Whips
+(4, miss, 4, lethal) won through normal controls. This is a legitimate solo
+victory, not proof that every party or strategy is satisfying or balanced.
+
+Actual dynamic mud/oil still forms large opaque geometric patches over the
+painted floor, with conspicuous ice tiling. That presentation is not accepted;
+the surface-rendering owner has a bounded Canvas/WebGL cohesion assignment.
+The repeated heal-and-Whip sequence also does not by itself establish the
+party-combo goal; the earlier Ice Path successfully chilled the boss and
+Water Whip deepened mud, but other party plans still need practical review.
+
+Continue reached the five-beat `A Road Home` outcome. Its illustration could
+not load while the preview server was stopped for owner checks; audio fetches
+also failed then. Treat these as interrupted local infrastructure observations,
+not a deployed-asset defect or listening review. Restore a stable preview,
+review the outcome illustration, and finish the return before claiming route
+completion. The victory screen and preceding fight are verified; return is open.
+
+The preview was restored as a static server. Restart scene then loaded the
+victory artwork, confirming the missing illustration was caused by the stopped
+server. Beat 2 incorrectly used Mira's village-table image for rescuing workers;
+writer correction `2e1bb8b` now maps it to the existing rescue illustration.
+
+Normal Continue exploring, Map route buttons, and walking traversed the cleared
+Quarry Floor → Cutting → Gate → Forest → Ba Dan without repeated fights. Sura
+reached level 4, 23/38 HP. The lead walked into the square and read all three
+lines each for Dorin, Pella, Mira and Gao. The world remained visible throughout
+these contextual conversations, and the manually chosen wide zoom persisted.
+Mira's spared-Ruon branch explicitly connects his statement and the maker-plate
+rubbing to her province report. Pella reunites with Bo-shan and Gao offers food;
+the homecoming remains immediate, without claiming the river is already repaired.
+
+Port 4210 Slot 2 now holds the completed Ba Dan return at 00:42 local time;
+Slot 1 retains round 4 for combat review. A normal Export to file also completed
+for the level-4 state. This completes this continuous normal-input route review,
+across the explicitly recorded local source updates. It is not an exact-final-head
+release check or final visual/audio approval. Desktop exploration still shows
+unnecessary footer and one-member party scrollbars; the conversation/UI owner
+is correcting the overflow with portrait, Huge text and six-party checks.
+
+A full browser reload then visibly showed `v0.2.1 · build be67cef-modified`;
+Continue restored Ba Dan, Sura level 4 at 23/38, the homecoming objective and
+Gao's location. The displayed modified suffix is retained here rather than
+claiming a clean exact-head runtime. The integration owner must produce a
+clean final snapshot. The root-only static preview processes for ports 4200
+and 4204 were retired after their useful saves were carried into 4210; their
+worktree and source commits remain preserved.
+
+## Follow-up combined preview checks
+
+After the next service-worker update, the title visibly reported
+`v0.2.1 · build d35178b-modified`. The integration owner identifies this as
+the content later committed in `c0fa812`; a clean final stamped build is still
+required. Normal Load of Slot 1 restored round 4, Sura 23/34, Grumbler 41/54,
+5 AP. Healing Stream now forecasts exactly `+11 hp`, without the false generic
+clear-effects message. Ice Path through the machine now forecasts
+`Grumbler: Ice contact — 40% Chilled`, plus four ice tiles, rather than falsely
+saying nobody is affected. Both confirmations were inspected without spending AP.
+
+The default compact frame is stable but gives roughly 45-pixel-tall Sura at
+1280×720. A modest manual zoom produces a more readable intermediate frame
+while retaining both combatants. Gameplay is reviewing a stable intermediate
+normal-text default, with smaller framing reserved for constrained layouts.
+The Ice Path confirmation also consumes too much vertical space through
+redundant contact/surface prose; the lower combat-UI owner has that review
+finding after the practical party-combo check. Do not accept a tiny full-board
+camera merely because its geometry tests pass.
+
+The next static build visibly reports clean `v0.2.1 · build 42e2856` after the
+service-worker update. Normal Load of Slot 1 again preserved round 4, Sura
+23/34, Grumbler 41/54 and 5 AP. At 1280×720, the new intermediate default keeps
+both combatants visible and more readable through ready, Ice Path aim and
+confirmation. Clicking the machine produces the correct four-tile footprint and
+40% Chilled contact forecast without spending AP. This accepts the bounded
+camera improvement. The confirmation still has an oversized lower panel and
+scrollbar; its compact content correction remains in progress. Distant enemies
+in the separate forest fixture can remain offscreen with focus controls available.
+>>>>>>> 10ad8f8 (Record clean preview camera acceptance)
