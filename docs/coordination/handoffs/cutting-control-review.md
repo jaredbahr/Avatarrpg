@@ -391,3 +391,18 @@ that experiment is not an acceptance build and must be rebuilt from source befor
 the next full run. Root stopped its temporary4268 manual preview. Frozen release
 4267 remains separate. Browser evidence for710128d was copied to the ignored
 `.shots/integration/dock-framing-710128d` directory before any later test run.
+
+## Legacy Driller save review — 19 September
+
+Root found an unresolved visual/rules compatibility risk before quarry integration:
+CombatScene supplies current `content.maps[mapId].scene`, while a loaded battle
+retains its serialized grid. The proposed new static walls can therefore be drawn
+on old saves whose8,4/11,7 cells remain walkable. The quarry owner is investigating
+a small authoritative-grid-dependent scene visibility correction; old battle
+positions, props and terrain must remain intact. New-grid save roundtrips alone
+do not establish legacy compatibility. Quarry integration awaits this correction.
+
+The Ba Dan read-only audit is complete. The owner now has a separate bounded
+neighborhood task: reuse market/planter art for the lower court and propose a
+coherent short canal/bank/bridge geometry before generating matching art. NPC,
+exit and save reachability remain mandatory; no new destination is authorized.
