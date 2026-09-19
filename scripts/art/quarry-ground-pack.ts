@@ -9,6 +9,10 @@ import { encodeWebp } from './lib/webp';
 const [materialPath, coverPath, shoulderPath] = process.argv.slice(2);
 if (!materialPath || !coverPath)
   throw new Error('Provide three-panel materials and transparent timber PNGs.');
+// A ground diamond is128x64 at the registered plate scale. Keep each field at
+// one diamond wide so the flat limestone reads as paving beneath a standing
+// unit instead of as a single oversized slab.
+const FIELD_REPEAT_PX = 128;
 const source = readImage(materialPath),
   timber = readImage(coverPath);
 const shoulderSource = shoulderPath ? readImage(shoulderPath) : null;
@@ -36,8 +40,8 @@ const fields = [0, 1, 2].map((index) =>
       width: source.height - 16,
       height: source.height - 16,
     }),
-    284,
-    284,
+    FIELD_REPEAT_PX,
+    FIELD_REPEAT_PX,
   ),
 );
 /** Reflected authored texels meet without seams; no upscaling or invented paint. */

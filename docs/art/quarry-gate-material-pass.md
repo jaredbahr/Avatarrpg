@@ -53,13 +53,17 @@ node --import tsx scripts/art/quarry-ground-pack.ts SOURCE/exec-b65fb7e8-f4b0-4f
 npm run art:prop -- cart SOURCE/exec-6b301c99-d305-49af-b6a4-1706cb832800.png
 ```
 
-Ground panels crop the same8px inset, then downsample to284x284 before reflected
-sampling through unchanged exact map masks. Ground output remains864x960 per
-chunk. Wall output remains256x352 per module; original prism clipping/fringe
-cleanup is retained (933 clipped/633 keyed pixels). New --walls-only mode avoids
-restoring the rejected wholeplate. Cover timber output is byte-identical.
+Ground panels crop the same8px inset, then downsample to128x128 before reflected
+sampling through unchanged exact map masks. One repeated field is now one ground
+diamond wide at the registered plate scale, so the flat limestone reads under an
+actor rather than as a multi-tile slab. Ground output remains864x960 per chunk;
+the registered1152x1280 page coordinates, masks, wall anchors and timber anchors
+are unchanged. Wall output remains256x352 per module; original prism
+clipping/fringe cleanup is retained (933 clipped/633 keyed pixels). New
+--walls-only mode avoids restoring the rejected wholeplate. Cover timber output
+is byte-identical.
 
-Ground+cover141,376 bytes, walls80,106 bytes. Map family3.07MiB, props0.25MiB;
+Ground+cover143,374 bytes, walls80,106 bytes. Maps family3.86MiB, props0.25MiB;
 all4MiB family budgets unchanged and passing. No other asset is degraded.
 
 ## Actual runtime review
@@ -80,3 +84,28 @@ wall-module repetition, shallow elevation, undersized cart and the legacy
 procedural guard remain gaps against the reference. No hazard-chain/destruction,
 normal-route, physical device or overall scene-quality approval is claimed.
 Gate remains the scope; cutting/floor expansion is not included.
+
+## Paving-scale follow-up
+
+The same source panels are packed at a128px repeat instead of284px. A projected
+ground diamond is128px wide, so this makes individual flat limestone pavers read
+under a standing actor rather than as a few multi-tile slabs. The exact map mask,
+864x960 source pages, registered1152x1280 destinations, wall anchors and timber
+cover anchors are unchanged. Re-running the pack from the recorded source is
+deterministic; the repaired pages are68,868 bytes west and68,436 bytes east.
+
+Ignored comparison evidence is at
+`gallery/scene-audit/quarry-gate-paving-scale/assembled-before/` and
+`gallery/scene-audit/quarry-gate-paving-scale/assembled-after/`. A disposable
+detached preview based on5d5952f overlaid the current gate scene, west and
+southwest frame registrations, and gate assets; it did not alter the gameplay
+worktree or port4200. Staged solo Kaya at `battle_quarry_gate` passed in Canvas
+and WebGL at1368x912 with normal motion and no page errors. The before/after
+frames hold the same actor, camera and map position. The repaired field keeps
+the paved-area boundary while replacing actor-sized slabs with smaller pavers;
+no obvious repeat grid was found at the review camera.
+
+The quarry watch and Workers' tea station remain procedural painter fallbacks.
+Sen intentionally shares Gao's person and portrait art in the current slice;
+dedicated watch, Sen and tea-rest assets remain a later quality gap rather than
+an identity reuse patch.
