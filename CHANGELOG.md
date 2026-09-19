@@ -10,6 +10,7 @@
 - Extend the village with the remaining integrated local material regions across its approaches and courts.
 - Build modular ground for the Cutting and Driller routes, including the quarry's connected material composition.
 - Add the reviewed six-cell forest raised shelves with preserved playable exit space and procedural fallback.
+- Replace the forest nest icon with a small illustrated family and borrowed sock, keeping the discovery and its story intact.
 
 Combined local route and browser checks pass on the integrated checkpoint.
 The release remains in development and does not establish final visual, audio or

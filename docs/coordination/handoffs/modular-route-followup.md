@@ -1,7 +1,7 @@
 # Modular route follow-up
 
 Root owns `codex/modular-route-followup`, the unpushed v0.2.2 development batch.
-Current tested checkpoint is `5f80ba5`. Separate v0.2.1 release PR64 is at
+Current tested product checkpoint is `fa9df5e`. Separate v0.2.1 release PR64 is at
 `f5a4a87`; CI `35457611402` is active. The prior run
 `35454608779` was terminal-cancelled after 116 E2E passes and a readback
 failure. The screenshot readback repair `1fdae` and root follow-ups
@@ -21,6 +21,12 @@ retaining the elevation cases.
   `a237258`; the playable exit remains clear. Independent root captures at
   96px on Canvas/WebGL with High Contrast are in
   `forest-raised-shelf/.shots/forest-shelf-review/a237258`.
+- Forest nest: source `e1a468d` is integrated at `fc1a9bd`. One transparent
+  512px WebP replaces the painter icon; discovery scale, location, story and
+  rules are unchanged. Root reviewed staged 96px Canvas/WebGL scenes at source
+  `e1a468d`, saved under `forest-nest-art/.shots/nest-review/e1a468d`.
+  The mother, three ducklings and borrowed sock fit the illustrated ground at
+  small-animal scale. These are visual fixtures, not a new route playthrough.
 - Short-landscape normal-text initiative: in-flow compact chips recover 31.70px
   of usable battlefield. See [HUD evidence](hud-compact-prototype.md).
 - Partial elevation: `ae7cd53`, `01fba97` keep raised terrain below authored art
@@ -38,6 +44,15 @@ retaining the elevation cases.
   precache 17.18 MiB / 25.
 
 ## Combined evidence
+
+At `fa9df5e`, root `npm run verify` passes 869 tests / 105 files, typecheck,
+lint and formatting after adding required nest artwork credits. Build passes:
+`index-B0vE-pqD.js`, 291.85 kB gzip. Precache remains 17.25 MiB / 25.
+Both Canvas/WebGL discovery and revisit checks passed at `fc1a9bd`; the only
+subsequent product change is the credits entry. Source alpha is predominantly
+252–253; decoded WebP max alpha 254 is expected from resizing, with preserved
+44.8% silhouette coverage. Root inspected actual game-size output on both
+backends, and stopped preview 4318 after capture.
 
 At `c676361`, root verification, production build and asset budgets pass; 16
 browser cases passed in 1.9 minutes before the forest integration. After forest
@@ -77,10 +92,14 @@ entry `index-B0DD_k-4.js`, gzip 291.72 kB, maps 3.53 MiB, precache 17.17 MiB.
   the current combined verification and release coordination.
 - Source quality gaps, continuous reference and motion review, audible
   listening, and physical Surface/iPad verification remain open.
-- Next visible art gap: the forest nest's world/dialogue cartoon icon does not
-  match the illustrated scene. Root owns the next bounded correction; attempts
-  to reactivate the completed art worker hit the agent thread limit, so that
-  task has not been dispatched. Luna handled routine review/docs/validation.
+- The forest nest correction is integrated and visually reviewed. Luna handled
+  packaging and validation; root generated and reviewed the image. The dialogue
+  uses party portraits and needed no portrait change.
+- Terra left an unexecuted draft `e2e/air-displacement.review.ts` in isolated
+  `codex/air-displacement-review` and has stopped. It does not yet verify target
+  legality or actual sample timing, so root has not accepted it as evidence.
+  The next motion task is a legal Air Blast capture through displacement and
+  recovery; existing gallery staging alone does not prove actual reducer play.
 
 The old root preview on 4270 and the v0.2.2 version-check tab and owned preview
 4304 were stopped after review. Preserve the manual `a3c8d49` save/reload/nest

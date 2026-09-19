@@ -96,25 +96,27 @@ and must not be used to close these requirements.
 Current ownership, checked 19 September 2026. Read the linked handoff and verify
 live branches and checks before editing; older assignments are historical.
 
-| Assignment                   | Owner     | Boundary                                                                                          |
-| ---------------------------- | --------- | ------------------------------------------------------------------------------------------------- |
-| PR64 release v0.2.1          | Root      | `749fe3d`, OPEN, auto-merge configured; current-head CI `35454608779` active at this checkpoint   |
-| Modular route integration    | Root      | `codex/modular-route-followup`; tested product `b5a5435`, later release sampling repair `3ab0aca` |
-| Village ground completion    | Terra     | Western approach integrated; coherent remaining lawn/house-court/east regions, preserving the map |
-| Cutting and Driller ground   | Terra     | Local material regions; decoded coverage and actual scene review before integration               |
-| Forest raised-bank art       | Art owner | Illustrated shelf material/scenery matching forest; no geometry or renderer changes               |
-| Combined review and delivery | Root      | Route, reference, motion and listening review; merge/deployment after required checks             |
+| Assignment                      | Owner             | Boundary                                                                                        |
+| ------------------------------- | ----------------- | ----------------------------------------------------------------------------------------------- |
+| PR64 release v0.2.1             | Root              | `f5a4a87`, OPEN, merge-commit auto-merge configured; CI `35457611402` active at this checkpoint |
+| Modular route integration       | Root              | `codex/modular-route-followup`; fully checked product and nest credits `fa9df5e`                |
+| Village and quarry ground       | Completed sources | Integrated and reviewed; source owners have stopped editing                                     |
+| Forest raised-bank and nest art | Root              | Integrated; source captures reviewed on Canvas/WebGL, no geometry changes                       |
+| Air displacement motion review  | Root              | Terra draft in isolated `codex/air-displacement-review`; execution and review pending           |
+| Combined review and delivery    | Root              | Route, reference, motion and listening review; merge/deployment after required checks           |
 
 The [modular route handoff](handoffs/modular-route-followup.md) records current
-source ownership and evidence. At `b5a5435`, verification passes 864 tests;
-16 combined browser cases cover partial/elevated surfaces, shopfront/follower
-settlement, and both complete quarry-return routes. Production build and asset
-budgets pass. This follow-up is not part of PR64 yet.
+source ownership and evidence. At `5f80ba5`, verification passes 869 tests;
+10 combined browser cases cover partial/elevated surfaces and both complete
+quarry-return routes. Prior `c676361` also passed six shopfront/follower cases.
+Production build and asset budgets pass. The nest addition `fc1a9bd` passes
+both Canvas/WebGL discovery/revisit checks. This follow-up is not part of PR64.
 
-PR64's separate release passes 860 verification tests and six focused water
-browser checks at `749fe3d`. Previous CI `35452987638` passed 116 browser cases
-before a software-WebGL screenshot timeout; its gallery was cancelled. The new
-revision reuses successful screenshot samples without weakening visual assertions.
+PR64's separate release passes 860 verification tests and six focused
+software-WebGL/Canvas ground checks at `f5a4a87`. Previous CI `35454608779`
+failed a 10-second predicate while its first software screenshot took 24 seconds;
+its gallery was cancelled. The current revision aligns WebGL predicate budgets
+with screenshot budgets and reuses passing samples without weakening assertions.
 Current-head CI still determines merge eligibility; no deployment is claimed.
 
 The earlier [playthrough handoff](handoffs/cutting-control-review.md) preserves
