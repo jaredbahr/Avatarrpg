@@ -54,12 +54,10 @@ function pine({ x, y }: Vec2): SceneScenery {
 
 /** Already projected ground; gameplay opts the map into the matching projection. */
 export const FOREST_ROAD_SCENE: MapScene = {
-  paintedWater: true,
+  groundMode: 'partial',
   paintedRubble: FOREST_RUBBLE_CELLS,
   ground: [
-    { url: `${root}ground-west.webp`, x: -128, y: -192, width: 1152, height: 1280 },
-    { url: `${root}ground-east.webp`, x: 1024, y: -192, width: 1152, height: 1280 },
-    { url: `${root}water.webp`, ...FOREST_POND_PATCH },
+    { url: `${root}route-ground.webp`, x: 128, y: 32, width: 1984, height: 960 },
     ...FOREST_RUBBLE_CELLS.map(({ x, y }) => ({
       url: `${root}rubble.webp`,
       x: 768 + (x - y) * 64 - 64,

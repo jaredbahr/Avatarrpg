@@ -13,6 +13,13 @@ const cells = (key: string) =>
   );
 
 it('registers forest art only to the existing water, cover and blocked tree cells', () => {
+  expect(FOREST_ROAD_SCENE.groundMode).toBe('partial');
+  expect(FOREST_ROAD_SCENE.ground.map((piece) => piece.url)).toContain(
+    'art/maps/forest-scene/route-ground.webp',
+  );
+  expect(FOREST_ROAD_SCENE.ground.map((piece) => piece.url)).not.toContain(
+    'art/maps/forest-scene/water.webp',
+  );
   expect(FOREST_WATER_CELLS).toEqual(cells('~'));
   expect(FOREST_RUBBLE_CELLS).toEqual(cells('r'));
   expect(FOREST_PINE_CELLS).toEqual(cells('T'));
