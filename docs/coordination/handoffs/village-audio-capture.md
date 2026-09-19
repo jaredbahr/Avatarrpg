@@ -53,8 +53,28 @@ The test-owned port 4224 stops with Playwright. Automatic approval review blocke
 cleanup of the temporary `.capture` folder; original local artifacts remain
 preserved as well. No capture artifacts were added to production or pushed.
 
+## Lifecycle follow-up
+
+The `lifecycle/` artifact subdirectory contains synchronized Canvas/WebGL takes,
+JSON events and analyser samples, screenshots, an executable local harness and
+its reproduction README. Source is `b1216b7`; the audio implementation is
+unchanged in accepted combined `cda0925`. Playwright started an exclusive static
+preview with `reuseExistingServer: false` and a strict port, then stopped it.
+
+Actual UI import, Sound Off/Normal, Quit to title and save re-import exercise
+retirement and recreation of the real AudioBus output. A capture-only mixer
+retains both successive masters in one recording without replacing the game
+graph. Each renderer recorded two masters, 13 cues seen, 10 scheduled and no page
+errors. JSON take durations are 18.427 and 18.536 seconds. Off becomes unready
+with zero environment layers and zero measured RMS. Exit/re-entry changes two
+layers to zero and back to two; re-entry is ready/running in Ba Dan. Root checked
+the saved event transitions and quiet intervals independently.
+
+The visibility portion uses a labelled synthetic `document.hidden` hook because
+the available Chrome automation did not produce an actual hidden page. Its
+handler reaches near-silence and resumes; this does not prove browser or OS
+backgrounding. No stale or doubled environment graph was observed in this take.
+
 Still open: subjective timbre/mix listening, actual Surface/iPad speakers and
-unlock/interruption behavior, synchronized Off/On and hide/show capture, and
-leaving/re-entering exploration in the same take. Existing lifecycle tests are
-separate evidence and do not close those listening requirements. Final release
-must reconcile this source checkpoint with the delivered audio implementation.
+unlock/interruption behavior, and real browser backgrounding. The measurements
+and synchronized recordings do not establish audible or physical-device quality.
