@@ -3,6 +3,8 @@ import type { MapScene, SceneScenery, Vec2 } from '../../core/types';
 const root = 'art/maps/forest-scene/';
 /** Water stays on its eight cells; padding carries only a narrow dry shoreline matte. */
 export const FOREST_POND_PATCH = { x: 560, y: 304, width: 352, height: 192 } as const;
+/** Both sparse grass packs use this shared projected registration canvas. */
+export const FOREST_GRASS_REGION = { x: 128, y: 32, width: 1984, height: 960 } as const;
 /** Asset footprints are checked against the authoritative map rows in forestRoad.test.ts. */
 export const FOREST_WATER_CELLS: readonly Vec2[] = [
   { x: 5, y: 5 },
@@ -57,6 +59,8 @@ export const FOREST_ROAD_SCENE: MapScene = {
   groundMode: 'partial',
   paintedRubble: FOREST_RUBBLE_CELLS,
   ground: [
+    { url: `${root}grass-north.webp`, ...FOREST_GRASS_REGION },
+    { url: `${root}grass-south.webp`, ...FOREST_GRASS_REGION },
     { url: `${root}route-ground.webp`, x: 128, y: 32, width: 1984, height: 960 },
     { url: `${root}pond-bank.webp`, ...FOREST_POND_PATCH },
     ...FOREST_RUBBLE_CELLS.map(({ x, y }) => ({

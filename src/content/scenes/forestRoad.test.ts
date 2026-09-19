@@ -2,6 +2,7 @@ import { expect, it } from 'vitest';
 import { FOREST_ROAD } from '../maps/combat';
 import {
   FOREST_PINE_CELLS,
+  FOREST_GRASS_REGION,
   FOREST_ROAD_SCENE,
   FOREST_RUBBLE_CELLS,
   FOREST_WATER_CELLS,
@@ -17,6 +18,12 @@ it('registers forest art only to the existing water, cover and blocked tree cell
   expect(FOREST_ROAD_SCENE.ground.map((piece) => piece.url)).toContain(
     'art/maps/forest-scene/route-ground.webp',
   );
+  for (const url of ['grass-north.webp', 'grass-south.webp']) {
+    expect(FOREST_ROAD_SCENE.ground).toContainEqual({
+      url: `art/maps/forest-scene/${url}`,
+      ...FOREST_GRASS_REGION,
+    });
+  }
   expect(FOREST_ROAD_SCENE.ground.map((piece) => piece.url)).not.toContain(
     'art/maps/forest-scene/water.webp',
   );
