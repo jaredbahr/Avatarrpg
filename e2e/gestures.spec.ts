@@ -161,12 +161,66 @@ async function openWaterFight(page: Page): Promise<{ id: string; pos: Point }> {
   return target;
 }
 
+async function expectActorOnScreen(page: Page): Promise<void> {
+  const cam = await camera(page);
+  const box = await page.locator('.map-canvas').boundingBox();
+  expect(box).not.toBeNull();
+  if (!box) return;
+  const pos = await page.evaluate(() => {
+    const battle = window.fnt?.app.state?.battle;
+    const unit = battle?.units.find((u) => u.id === battle.order[battle.turnIndex]);
+    return unit ? { x: unit.pos.x, y: unit.pos.y } : null;
+  });
+  expect(pos).not.toBeNull();
+  if (!pos) return;
+  const corners = [
+    { x: 0, y: 0 },
+    { x: 1, y: 0 },
+    { x: 0, y: 1 },
+    { x: 1, y: 1 },
+  ].map((p) => groundPoint(cam, { x: pos.x + p.x, y: pos.y + p.y }));
+  expect(Math.min(...corners.map((p) => p.x))).toBeGreaterThanOrEqual(-0.5);
+  expect(Math.min(...corners.map((p) => p.y))).toBeGreaterThanOrEqual(-0.5);
+  expect(Math.max(...corners.map((p) => p.x))).toBeLessThanOrEqual(box.width + 0.5);
+  expect(Math.max(...corners.map((p) => p.y))).toBeLessThanOrEqual(box.height + 0.5);
+}
+
 test.describe('zoom and pan', () => {
+  test('normal-text combat framing reserves room for the decision dock', async ({ page }) => {
+    for (const profile of [
+      { width: 1194, height: 834, tilePx: 64 },
+      { width: 1368, height: 912, tilePx: 96 },
+    ]) {
+      await page.setViewportSize({ width: profile.width, height: profile.height });
+      await openFight(page);
+      await settleLayout(page);
+      const initial = await camera(page);
+      expect(initial.projection).toBe('oblique');
+      expect(initial.tilePx).toBeCloseTo(profile.tilePx, 3);
+      expect(initial.fitted).toBe(false);
+      const canvas = await page.locator('.map-canvas').boundingBox();
+      expect(canvas).not.toBeNull();
+      if (!canvas) throw new Error('no combat canvas');
+      // These are rendered canvas measurements, not the viewport or the
+      // camera's internal dimensions. Preserve a usable tactical view.
+      await test.info().attach(`combat-frame-${profile.width}x${profile.height}`, {
+        body: JSON.stringify({ viewport: profile, canvas, camera: initial }),
+        contentType: 'application/json',
+      });
+      expect(canvas.width).toBeGreaterThan(1000);
+      expect(canvas.height).toBeGreaterThan(300);
+      await expectActorOnScreen(page);
+    }
+  });
+
   test('a pinch zooms in around the fingers and offers Recentre', async ({ page }) => {
     await openFight(page);
     const before = await camera(page);
     expect(before.fitted).toBe(false);
-    expect(before.tilePx).toBeGreaterThanOrEqual(96);
+    // Normal-text tablet framing is 64px on a short decision canvas and
+    // 96px when there is room. The fixed-profile regression above checks
+    // those exact frames; this test checks the gesture from either frame.
+    expect(before.tilePx).toBeGreaterThanOrEqual(64);
     const { point, tile } = await centreTile(page);
     const recentre = page.getByRole('button', { name: /^Recentre$/ });
     await expect(recentre).toBeVisible();
@@ -432,25 +486,6 @@ test.describe('zoom and pan', () => {
     const cam = await camera(page);
     expect(cam.tilePx).toBeGreaterThanOrEqual(40 - 0.5);
 
-    const box = await page.locator('.map-canvas').boundingBox();
-    expect(box).not.toBeNull();
-    if (!box) return;
-    const pos = await page.evaluate(() => {
-      const battle = window.fnt?.app.state?.battle;
-      const unit = battle?.units.find((u) => u.id === battle.order[battle.turnIndex]);
-      return unit ? { x: unit.pos.x, y: unit.pos.y } : null;
-    });
-    expect(pos).not.toBeNull();
-    if (!pos) return;
-    const corners = [
-      { x: 0, y: 0 },
-      { x: 1, y: 0 },
-      { x: 0, y: 1 },
-      { x: 1, y: 1 },
-    ].map((p) => groundPoint(cam, { x: pos.x + p.x, y: pos.y + p.y }));
-    expect(Math.min(...corners.map((p) => p.x))).toBeGreaterThanOrEqual(-0.5);
-    expect(Math.min(...corners.map((p) => p.y))).toBeGreaterThanOrEqual(-0.5);
-    expect(Math.max(...corners.map((p) => p.x))).toBeLessThanOrEqual(box.width + 0.5);
-    expect(Math.max(...corners.map((p) => p.y))).toBeLessThanOrEqual(box.height + 0.5);
+    await expectActorOnScreen(page);
   });
 });
