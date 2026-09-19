@@ -40,3 +40,99 @@
   Port 4265 server stops with the local review; no listener remains. Raw source art
   is committed outside public/precache. Ignored captures remain at the paths above.
   Outgoing owner relinquishes asset editing after final commit handoff.
+
+## Next-pass FX and bandit-scale audit (read-only, 2026-09-19)
+
+Root integrated the asset as `c66f0f9`. This audit does not hold the present
+coherent release. No FX implementation, generation, build or server was started.
+The clean `1f6fc72` source and actual captures remain valid for these unchanged
+contracts; `git show c66f0f9:src/app/anim/choreography.ts` confirms the same
+attachment allowlist at root's integration revision.
+
+### Observed defects and exact causes
+
+- **Fire Blast launches from ground space.** In
+  `src/app/anim/choreography.ts:315`, only `fire_jab`, `water_whip` and `air_blast`
+  opt into `attached`. Fire Blast therefore receives neither cast-gather nor
+  cast-release attachment; the travel emitter retains the logical caster centre.
+  `src/render/geometry/actorAttachments.ts:18` also lacks a measured deserter palm
+  pair in `CAST_HANDS`. Merely enabling attachment would otherwise use the generic
+  procedural rig, which does not match the new illustrated release palm.
+  Evidence: `.shots/deserter-final-1f6fc72/webgl-96-normal/motion-1898ms.png`.
+- **Oil Flask is literally the boulder effect.** `src/content/fx.ts:1195` maps
+  `fx.enemy.oil` to `stone()` plus dark droplets. `stone()` at line 715 is the
+  authored `boulder` cel at 0.85 tiles, fixed stone material, no spin. This produces
+  a pale slab almost as wide as the actor, not a thrown flask. Its launch also
+  lacks a hand attachment. Evidence:
+  `.shots/deserter-final-1f6fc72/canvas-96-normal/motion-1000ms.png`.
+- **The other gate bandit is undersized.** Decoded idle alpha (threshold 8) is
+  121px tall in both `public/art/units/thug.png` idle frames: 90.75px at 96 zoom,
+  60.5px at 64. The deserter is 151px: 113.25px / 75.5px respectively. That is
+  19.9% less height, or a 1.248 correction factor to adult scale. Bruiser idle is
+  also 121/120px, despite `src/content/enemies.ts` describing a large adult.
+  The normalizer's historic default, `scripts/art/normalise.ts:152`, computes
+  `round((163 - 8) * 0.78) = 121`. This is normalization history, not authored
+  short stature: the thug prompt calls him a rangy man and his story describes
+  quarry labour. Actual comparison:
+  `.shots/deserter-final-1f6fc72/webgl-96-normal/actual-gate.png` (or the 64px
+  view in `.shots/deserter-counter-swing-runtime/webgl-64-normal/actual-gate.png`).
+
+### Smallest coherent candidate, not yet implemented
+
+1. Add a measured gather/release palm pair for `unit.enemy.deserter` in
+   `actorAttachments.ts`, using the shipped 128 × 192 cast frames. Existing
+   sockets already account for mirroring, pose offsets/scales, elevation and
+   frozen launch snapshots on both backends. Keep its procedural fallback.
+2. In `choreography.ts`, opt Fire Blast and Oil Flask into **source attachment
+   only**, with the directed release facing. Fire Blast gather may use the
+   measured gather palm. **Do not simply add them to `attached`**: that also
+   selects a victim torso at line 366 and translates impact emitters at line 577.
+   Both abilities target `blast(1)`; Fire Blast's explosion/area and Oil Flask's
+   spill must still land on the selected ground tile. Keep their range, real
+   reducer results, flight speed/arc, sound/impact clocks, pose recovery and
+   reduced-motion suppression unchanged. Empty target tiles must still work.
+3. Reuse `public/art/props/flask.png` (15,713 B) as the original terracotta vessel.
+   Pack a small four-cell FX strip through the existing `FX_CELS` /
+   `FX_CEL_SHEETS` contract in `src/content/fxCels.ts`, using deterministic reuse
+   and downsampling only. A single rigid vessel may repeat in those four slots;
+   existing seeded projectile rotation supplies its tumble. Replace only the
+   oil recipe's boulder head with this flask, target roughly 12–18px visible body
+   at 96px zoom, and retain its dark droplets/shards and ground spill. Use a small
+   dark drop fallback if its image fails. This needs no image generation, new
+   emitter fields, backend shader or texture-size change. The shared atlas has
+   9 primitive cells + 48 authored cels = 57/64 slots; this adds four, reaching
+   61/64. Verify the source's bottom edge does not carry an airborne ground shadow.
+
+Do not fold the bandit scale correction into this FX change. A subsequent scale
+decision must account for the existing 1.25 Forest Road marker presentation and
+avoid enlarging it twice. Adult normalization or a scoped combat scale could both
+solve the mismatch, but raw-source availability, pose margins, attachment scale,
+fallback and all usages must be checked before choosing. No archetype/gameplay
+stats or logical footprint should change.
+
+### Required evidence and budget constraints
+
+- Extend `src/app/anim/choreography.test.ts`: deserter Fire Blast/Oil Flask have
+  source attachments and unchanged ground destinations/impacts, including empty
+  tiles; verify release facing, captured pose scale/offset, timing and reduced
+  motion. Extend `src/render/geometry/actorAttachments.test.ts` for measured palms,
+  both facings/projections/elevations and placeholder fallback.
+- Extend `src/content/fx.test.ts` for a single bounded flask projectile, no boulder
+  cel in oil, unchanged speed/arc, and atlas capacity. Test deterministic repack
+  plus failed FX-image fallback. Existing particle sampling/backends share the
+  same geometry, so avoid introducing a separate renderer path.
+- Reuse the legal-action fixture in `e2e/deserter.review.ts`; compare release,
+  mid-flight and impact at 64/96 in Canvas/WebGL, both facings, normal/reduced.
+  Include a bare-ground target. Show fire leaving the actual palm and a small
+  terracotta vessel landing on the selected tile; surface cells and AP must match.
+- JavaScript currently measures 299.3 KiB / 300 KiB; only about 0.7 KiB remains.
+  Data registration plus the existing source-attachment path should be much
+  smaller than a new particle primitive/loader, but no compiled byte delta is
+  claimed without a candidate build. Measure exact `check-bundle-size.mjs` output
+  before acceptance. Keep JS 300 KiB, every family limit and total precache 25 MiB
+  unchanged. FX currently uses about 1.40 MiB / 4 MiB; measure the derived strip's
+  actual bytes. No unit art regeneration or units-budget change is needed for FX.
+
+This is next-pass planning. Existing movement repair and release delivery remain
+root's priority. Source worktree stays clean after this documentation commit,
+and port 4265 remains stopped.
