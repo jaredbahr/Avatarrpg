@@ -16,6 +16,7 @@
 import { mkdirSync, writeFileSync } from 'node:fs';
 import { AMBUSH_ROAD, QUARRY_FLOOR } from '../../src/content/maps/combat';
 import type { MapDef } from '../../src/core/types';
+import { ELEVATION_LIFT } from '../../src/render/geometry/elevation';
 import { newImage, pixelAt, readImage, setPixel, type Image } from './lib/image';
 import { encodeWebp } from './lib/webp';
 
@@ -32,14 +33,19 @@ const MAPS: Record<string, { readonly map: MapDef; readonly directory: string }>
 
 type Rgba = readonly [number, number, number, number];
 
-const [mapId, sourcePath] = process.argv.slice(2);
+const [mapId, sourcePath, terracePath] = process.argv.slice(2);
 if (!mapId || !sourcePath)
   throw new Error(
-    'Usage: projected-scene-ground-pack.ts <ambush_road|quarry_floor> <reviewed-ground-source.png>',
+    'Usage: projected-scene-ground-pack.ts <ambush_road|quarry_floor> <reviewed-ground-source.png> [reviewed-terrace-source.png]',
   );
 const target = MAPS[mapId];
 if (!target) throw new Error(`Unknown map: ${mapId}`);
 const source = readImage(sourcePath);
+const terrace = terracePath ? readImage(terracePath) : undefined;
+if (terrace && (terrace.width !== source.width || terrace.height !== source.height))
+  throw new Error('Terrace source must retain the original canvas registration.');
+// Existing actor lift: 64 source pixels per tile � 0.06 per tier.
+const TERRACE_LIFT = 64 * ELEVATION_LIFT;
 if (Math.abs(source.width / source.height - GUIDE_WIDTH / GUIDE_HEIGHT) > 0.001)
   throw new Error(
     `Expected the reviewed guide aspect ${GUIDE_WIDTH}:${GUIDE_HEIGHT}; received ${source.width}:${source.height}.`,
@@ -133,19 +139,73 @@ function repairedSample(
   throw new Error(`No non-fringe painted sample near projected map pixel ${px},${py}.`);
 }
 
+function tierAt(point: { x: number; y: number }): number {
+  const key = target?.map.rows[Math.floor(point.y)]?.[Math.floor(point.x)];
+  return key === 'A' ? 2 : key === '^' ? 1 : 0;
+}
+
+/** Only the authored elevation masks consume the edited source. The centre
+ * remains the reviewed original, including every live-surface underlay. */
+function terraceSample(px: number, py: number): Rgba {
+  if (!terrace) throw new Error('Missing terrace source.');
+  const acceptable = (rgba: Rgba) =>
+    rgba[3] >= 128 && Math.max(rgba[0], rgba[1], rgba[2]) > 80 && !isFringe(rgba);
+  const direct = sourcePoint(terrace, px, py);
+  if (acceptable(direct)) return direct;
+  // Generated edge transparency/black matte never enters the exact map mask.
+  for (let radius = 1; radius <= 32; radius++)
+    for (let dy = -radius; dy <= radius; dy++)
+      for (let dx = -radius; dx <= radius; dx++) {
+        if (Math.max(Math.abs(dx), Math.abs(dy)) !== radius) continue;
+        const candidate = sourcePoint(terrace, px + dx, py + dy);
+        if (acceptable(candidate)) return candidate;
+      }
+  throw new Error(`No limestone sample near ${px},${py}.`);
+}
+
 const pages = [0, 1].map(() => newImage(PAGE_WIDTH, PAGE_HEIGHT));
 let opaquePixels = 0;
 let repairedPixels = 0;
+let terracePixels = 0;
+let facePixels = 0;
 for (let py = 0; py < GUIDE_HEIGHT; py++) {
   for (let px = 0; px < GUIDE_WIDTH; px++) {
     const point = mapPoint(px, py);
-    if (!inMap(target.map, point)) continue;
-    const { rgba, repaired } = repairedSample(target.map, source, px, py, point);
+    const inside = inMap(target.map, point);
+    let rgba: Rgba | undefined;
+    if (terrace) {
+      // Rasterize raised tops in their real world location. They are ground,
+      // not upright scenery: movement/target overlays must draw above them.
+      for (const tier of [2, 1]) {
+        const raised = mapPoint(px, py + tier * TERRACE_LIFT);
+        if (!inMap(target.map, raised) || tierAt(raised) !== tier) continue;
+        rgba = terraceSample(px, py + tier * TERRACE_LIFT);
+        terracePixels++;
+        break;
+      }
+      if (!rgba && inside && tierAt(point) > 0) {
+        // The narrow exposed front strip inherits the edge's painted stone.
+        // Its height is the actual actor lift, never an invented tall cliff.
+        const material = terraceSample(px, py);
+        rgba = [
+          Math.round(material[0] * 0.68),
+          Math.round(material[1] * 0.66),
+          Math.round(material[2] * 0.63),
+          255,
+        ];
+        facePixels++;
+      }
+    }
+    if (!rgba) {
+      if (!inside) continue;
+      const sample = repairedSample(target.map, source, px, py, point);
+      rgba = sample.rgba;
+      if (sample.repaired) repairedPixels++;
+    }
     const page = pages[Math.floor(px / PAGE_WIDTH)];
     if (!page) throw new Error(`Missing output page for ${px},${py}.`);
     setPixel(page, px % PAGE_WIDTH, py, [rgba[0], rgba[1], rgba[2], 255]);
     opaquePixels++;
-    if (repaired) repairedPixels++;
   }
 }
 
@@ -173,6 +233,10 @@ for (const output of outputs) writeFileSync(`${outDir}/${output.name}.webp`, out
 const registration = {
   map: target.map.id,
   source: sourcePath,
+  terraceSource: terracePath,
+  terraceLift: terrace ? TERRACE_LIFT : undefined,
+  terracePixels,
+  facePixels,
   sourcePixels: [source.width, source.height],
   guidePixels: [GUIDE_WIDTH, GUIDE_HEIGHT],
   guideScale: { x: GUIDE_WIDTH / source.width, y: GUIDE_HEIGHT / source.height },
@@ -188,7 +252,9 @@ const registration = {
   webpQuality: quality,
   opaquePixels,
   repairedFringePixels: repairedPixels,
-  note: 'Exact map-diamond clip. Water, oil, mud and rubble remain live rules overlays; cliffs are separate scenery.',
+  note: terrace
+    ? 'Exact elevation masks with renderer-matched shallow lift; edited centre discarded. Live surfaces stay rules-owned; tall rims remain scenery.'
+    : 'Exact map-diamond clip. Water, oil, mud and rubble remain live rules overlays; cliffs are separate scenery.',
 };
 mkdirSync(`art/raw/${mapId === 'ambush_road' ? 'cutting' : 'driller'}`, { recursive: true });
 writeFileSync(

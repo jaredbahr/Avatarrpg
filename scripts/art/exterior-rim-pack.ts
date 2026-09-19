@@ -31,6 +31,9 @@ const PAGE_SIZE: Point = [1152, 1280];
 const PREVIEW_WORLD = { x: -128, y: -320, width: 2304, height: 1408 } as const;
 const ALPHA_CUTOFF = 16;
 const GUTTER = 4;
+// Keep the measured sloped ground contact, while bringing the wall height
+// into scale with the current upright actors and shallow walkable terraces.
+const RIM_HEIGHT_SCALE = 0.55;
 
 const CUTTING: readonly Piece[] = [
   {
@@ -315,13 +318,29 @@ for (const piece of pieces) {
   const yScale = (atlasEnd[1] - atlasStart[1]) / (sourceEnd[1] - sourceStart[1]);
   const xOffset = atlasStart[0] - sourceStart[0] * xScale;
   const yOffset = atlasStart[1] - sourceStart[1] * yScale;
+  const baseline = (x: number) =>
+    atlasStart[1] +
+    ((x - atlasStart[0]) * (atlasEnd[1] - atlasStart[1])) / (atlasEnd[0] - atlasStart[0]);
+  const compressY = (x: number, y: number) => baseline(x) + (y - baseline(x)) * RIM_HEIGHT_SCALE;
   const startX = Math.floor(piece.sourceBounds.x * xScale + xOffset);
   const endX = Math.ceil((piece.sourceBounds.x + piece.sourceBounds.width) * xScale + xOffset);
-  const startY = Math.floor(piece.sourceBounds.y * yScale + yOffset);
-  const endY = Math.ceil((piece.sourceBounds.y + piece.sourceBounds.height) * yScale + yOffset);
+  const sourceTop = piece.sourceBounds.y * yScale + yOffset;
+  const sourceBottom = (piece.sourceBounds.y + piece.sourceBounds.height) * yScale + yOffset;
+  const startY = Math.floor(Math.min(compressY(startX, sourceTop), compressY(endX, sourceTop)));
+  const endY = Math.ceil(Math.max(compressY(startX, sourceBottom), compressY(endX, sourceBottom)));
   for (let y = startY; y < endY; y++) {
     for (let x = startX; x < endX; x++) {
-      const rgba = bilinear(source, (x - xOffset) / xScale, (y - yOffset) / yScale);
+      const sourceX = (x - xOffset) / xScale;
+      const originalY = baseline(x) + (y - baseline(x)) / RIM_HEIGHT_SCALE;
+      const sourceY = (originalY - yOffset) / yScale;
+      if (
+        sourceX < piece.sourceBounds.x ||
+        sourceX >= piece.sourceBounds.x + piece.sourceBounds.width ||
+        sourceY < piece.sourceBounds.y ||
+        sourceY >= piece.sourceBounds.y + piece.sourceBounds.height
+      )
+        continue;
+      const rgba = bilinear(source, sourceX, sourceY);
       if (rgba[3] < ALPHA_CUTOFF) {
         if (rgba[3] > 0) discardedLowAlpha++;
         continue;
@@ -441,6 +460,7 @@ const registration = {
     groundPages: `public/art/maps/${runtimeDirectory}/ground-{west,east}.webp`,
   },
   alphaCutoff: ALPHA_CUTOFF,
+  rimHeightScale: RIM_HEIGHT_SCALE,
   discardedLowAlpha,
   discardedGuideContact,
   discardedDiamond,
