@@ -21,3 +21,10 @@
   1. Integrate this commit with the parent’s current branch and run combined browser/gallery checks there.
   2. Preserve the ADR number `0030` when reconciling the documentation branch.
 - **Completion/transfer:** Local implementation is complete and ready for integration review; ownership transfers to `/root` after this commit. No remote merge has occurred.
+
+## Accepted exploration dock follow-up
+
+- **Source:** `b39d8def8a411a86f105217cb916c81bc823d808` on branch `codex/world-overflow`, worktree `C:\Users\Jared\.codex\worktrees\world-overflow`, based on combined source `baa87cb`.
+- **Evidence:** Installed Chrome at 1280x720 shows the exploration dock without false horizontal/vertical overflow. The six-member, portrait, Huge-text, follow-party, and resize exploration dock checks passed 6/6. Contextual Mira dialogue retained the ExploreScene/canvas, focused the conversation panel on entry, and restored focus to the first enabled HUD action on return.
+- **Verification:** `npm run verify` passed 87 test files and 793 tests. Screenshot: `C:\Users\Jared\.codex\visualizations\2026\09\19\01a0b79f-a1e6-7fd0-a4d5-76e7944406f6\explore-overflow-1280x720-after.png`.
+- **Transfer:** Source is accepted for integration by `/root`; no push, PR, or CI run was performed. The worktree is clean and the owned local capture server is stopped.
