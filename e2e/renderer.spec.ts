@@ -50,7 +50,9 @@ test.describe('renderer backends', () => {
     await page.waitForFunction(() => Boolean(window.fnt?.app));
     await startGame(page, ['Elias', 'Lorelai'], ['kaya', 'bo'], 'renderer-spec');
     await enterNode(page, 'battle_forest_road');
+    await takeTurn(page);
     await waitForIdle(page);
+    await settleLayout(page);
 
     expect(await page.evaluate(() => window.fnt?.app.rendererBackend())).toBe('webgl');
 
@@ -63,9 +65,14 @@ test.describe('renderer backends', () => {
     const box = await canvas.boundingBox();
     expect(box).not.toBeNull();
 
-    const shot = await canvas.screenshot({ timeout: 60_000 });
-    const distinctBytes = new Set(shot.slice(0, 20_000)).size;
-    expect(distinctBytes, 'the board rendered as a flat fill').toBeGreaterThan(16);
+    // Check the real authored scene, including its live water overlay. PNG
+    // compression bytes are varied even when the canvas is completely blank.
+    const water = await tileCentre(page, { x: 5, y: 6 });
+    const pixels = await screenshotPixels(canvas);
+    const wet = average(pixels, water.x, water.y, 3);
+    expect(wet.b, `authored scene water is absent: ${JSON.stringify(wet)}`).toBeGreaterThan(
+      wet.r + 20,
+    );
   });
 
   /*
