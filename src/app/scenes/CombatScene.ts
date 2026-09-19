@@ -81,6 +81,7 @@ export class CombatScene implements Scene {
    * the scene prevents aim-mode reflow from zooming the board in and out.
    */
   private preferredCombatTilePx: number | null = null;
+  private preferredCombatFrameKey: string | null = null;
   /**
    * The reachable set and the target/area tiles are rebuilt only when the
    * inputs that decide them change, not every frame: on a tablet the
@@ -171,13 +172,15 @@ export class CombatScene implements Scene {
     if (!camera) return;
     this.manualCamera = false;
     if (camera.projection === 'oblique') {
-      if (this.preferredCombatTilePx === null) {
-        // Reserve the compact decision frame on a short initial canvas. The
-        // first settled height is available before the action bar expands, so
-        // this choice remains stable while targets and previews reflow.
-        this.preferredCombatTilePx = camera.viewport.height < 480 ? 40 : 96;
+      // Key off the browser viewport and text setting, rather than the canvas
+      // height: HUD panels change the latter during aim mode, while rotation
+      // and accessibility settings are genuine framing changes.
+      const frameKey = `${window.innerWidth}x${window.innerHeight}:${this.app.settings.largeText}`;
+      if (this.preferredCombatFrameKey !== frameKey) {
+        this.preferredCombatFrameKey = frameKey;
+        this.preferredCombatTilePx = window.innerWidth < 600 || window.innerHeight < 840 ? 40 : 96;
       }
-      camera.fitExplore(this.preferredCombatTilePx);
+      camera.fitExplore(this.preferredCombatTilePx ?? 96);
     } else camera.fit();
     const unit = this.active();
     if (!camera.fitted && unit) camera.centreOn(unit.pos);

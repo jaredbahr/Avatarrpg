@@ -122,3 +122,20 @@ for (const largeText of ['normal', 'huge'] as const) {
     expect(cancelled.tilePx).toBeCloseTo(before.tilePx, 5);
   });
 }
+
+test('real viewport resize recomputes compact oblique framing', async ({ page }) => {
+  await page.setViewportSize({ width: 1600, height: 900 });
+  await resetStorage(page, '?renderer=canvas');
+  await startGame(page, ['Kaya'], ['kaya'], 'compact-frame-resize');
+  await enterNode(page, 'battle_forest_road');
+  await takeTurn(page);
+  await waitForIdle(page);
+  await settleLayout(page);
+  const tall = await page.evaluate(() => window.fnt!.app.rendererCamera()!);
+  expect(tall.tilePx).toBeGreaterThanOrEqual(96);
+
+  await page.setViewportSize({ width: 1280, height: 720 });
+  await settleLayout(page);
+  const short = await page.evaluate(() => window.fnt!.app.rendererCamera()!);
+  expect(short.tilePx).toBeLessThanOrEqual(40.01);
+});
