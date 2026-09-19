@@ -422,3 +422,25 @@ The same replacement batch carries truthful elemental-tip corrections from
 and lead-transfer handoff `434856b`. Southwest source `a39d5e4` remains held
 for a separately reviewed next scene batch. Full verify, production build and
 budgets must pass on the new head before merge.
+
+## PR64 target-visibility software-WebGL repair
+
+Run35419645940 reached 112 passing E2E cases, then stopped at the first allowed
+failure in `target-visibility.spec.ts` (`Fire Jab target stays tappable with
+separate decisions on webgl at desktop lower edge`). The failed operation was
+the eight-step Playwright `mouse.move`, which consumed the 60-second test
+budget while the page remained in the legal Fire Jab aim state; the assertion
+suite itself had not failed. The trace and error context are preserved in the
+`playwright-report` artifact (job `105835253927`, artifact `10577653136`).
+
+Commit `c08ebb9` keeps the target visibility, preview-only snapshot, cancel,
+reselect, Confirm and AP assertions intact. It routes the desktop drag through
+three direct PointerEvents on the same canvas adapter used by gesture coverage,
+avoiding eight serialized browser round trips that software WebGL could not
+finish inside the test timeout. The helper uses page viewport coordinates
+directly; the test asserts that camera offsets changed and that the staged
+target is within 140px of the lower canvas edge before the real touchscreen
+tap. Local Chrome-channel Canvas/WebGL desktop and huge-phone cases pass 4/4;
+`npm run verify` passes 81 files / 748 tests and `npm run build` passes with the
+0.2.0 bundle and 16,439.98 KiB precache. The repair is pushed as the sole new
+commit over PR64 head `dac9982`; wait for fresh exact-head CI before merge.
