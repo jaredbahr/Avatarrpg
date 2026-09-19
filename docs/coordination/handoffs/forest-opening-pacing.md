@@ -6,6 +6,15 @@ The party was created through setup and walked through the opening, village,
 Dema conversation and forest crossing. The generated seed was not recorded.
 No combat outcome or party state was injected.
 
+The normal UI fight subsequently ended in victory on Sura's round-2 turn.
+Riko remained at 24/28 HP; Sura had fallen to 11/26 before her first attack.
+Sura moved into range and used five Water Whips, defeating both 19-HP slingers.
+The first hit dealt 13 (critical), then the wounded target fell; the other
+target went 19 → 12 → 5 → defeated. Riko used no attack or utility ability
+before victory. This is a clear pacing/participation concern for this observed
+pair and sequence, even though the fight was winnable. The browser remains on
+the victory Continue screen, preserving the campaign for level-2 review.
+
 ## Observed choices
 
 Riko spent her first four movement points approaching, then ended with five
