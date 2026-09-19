@@ -67,6 +67,21 @@ export default defineConfig({
       // graphics/text/filter/particle/texture initialization intact (ADR 0001).
       name: 'omit-unused-pixi-systems',
       transform(code, id) {
+        // The game uploads still images/canvases and has no video textures.
+        // Keep the other source registrations intact (ADR 0038).
+        if (/[/\\]pixi\.js[/\\]lib[/\\]rendering[/\\]init\.mjs$/.test(id)) {
+          const videoImport =
+            "import { VideoSource } from './renderers/shared/texture/sources/VideoSource.mjs';";
+          if (!code.includes(videoImport) || !code.includes('  VideoSource,')) {
+            throw new Error(
+              'Pixi texture registration changed; review the video-source exclusion.',
+            );
+          }
+          return {
+            code: code.replace(videoImport, '').replace('  VideoSource,', ''),
+            map: null,
+          };
+        }
         if (
           /[/\\]pixi\.js[/\\]lib[/\\](accessibility|events|dom|spritesheet)[/\\]init\.mjs$/.test(id)
         ) {
