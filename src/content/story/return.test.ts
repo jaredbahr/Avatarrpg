@@ -110,6 +110,29 @@ describe('the authored walk home', () => {
     }
   });
 
+  it('gives the three roadside discoveries a changed but honest return state', () => {
+    const before = game();
+    const after = game({ act1_complete: true });
+    const markers = {
+      duck_nest: 'nest is dry',
+      runoff_marker: 'not clear yet',
+      tea_station: 'last of the tea',
+    } as const;
+
+    for (const [id, marker] of Object.entries(markers)) {
+      const first = CONTENT.story.get(`discover_${id}`);
+      const revisit = CONTENT.story.get(`revisit_${id}`);
+      if (first?.kind !== 'dialogue' || revisit?.kind !== 'dialogue') {
+        throw new Error(`Missing discovery dialogue for ${id}`);
+      }
+      expect(resolveDialogue(before, first).lines).toEqual(resolveDialogue(after, first).lines);
+      expect(resolveDialogue(before, revisit).lines).not.toEqual(
+        resolveDialogue(after, revisit).lines,
+      );
+      expect(resolveDialogue(after, revisit).lines.join(' ')).toContain(marker);
+    }
+  });
+
   it('provides a different map objective on every part of the resolved route', () => {
     for (const mapId of [
       'quarry_floor',
