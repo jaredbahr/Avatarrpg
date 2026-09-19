@@ -1,5 +1,17 @@
 # Changelog
 
+## 0.2.2 — in development
+
+- Compose Forest Road from local road, grass and dry-bank regions while preserving live water, scenery and gameplay geometry.
+- Replace Quarry Gate's complete ground pages with registered material regions and remove visible seams between them.
+- Give the battlefield more room with compact initiative chips on short landscape screens at normal text size.
+- Let followers finish walking to dry, unoccupied places during village conversations instead of stopping on canal water.
+- Preserve elevated terrain and live-surface layering across scene changes and High Contrast toggles.
+
+Combined local route and browser checks pass on the integrated checkpoint.
+Further village and forest art is in progress; this version has not been
+published and does not establish final visual, audio or device acceptance.
+
 ## 0.2.1 — release candidate
 
 - Match Ruon, blade mercenaries and sergeants to the party's adult scale with illustrated poses and distinct walking contacts.
