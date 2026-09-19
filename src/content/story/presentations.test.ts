@@ -76,6 +76,20 @@ describe('world conversation presentations', () => {
     ).toBeUndefined();
   });
 
+  it('keeps the forest aftermath in the world after battle results are absorbed', () => {
+    const aftermath = conversation('after_forest', 'forest_road');
+    expect(worldConversationFor(CONTENT, aftermath)).toEqual({
+      kind: 'world',
+      mapId: 'forest_road',
+    });
+    expect(
+      worldConversationFor(CONTENT, {
+        ...aftermath,
+        flags: { ...aftermath.flags, lost_forest_road: true },
+      }),
+    ).toEqual({ kind: 'world', mapId: 'forest_road' });
+  });
+
   it('rejects a registry entry that points at a missing node', () => {
     const problems = validateStoryPresentations(
       { ...STORY_PRESENTATIONS, missing_node: { kind: 'world', mapId: 'ba_dan_village' } },

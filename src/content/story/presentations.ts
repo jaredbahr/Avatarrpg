@@ -40,6 +40,7 @@ const NPC_PRESENTATIONS: readonly (readonly [string, string])[] = [
   ['riverside_shrine', 'ba_dan_riverside'],
 
   // Forest road.
+  ['after_forest', 'forest_road'],
   ['forest_dema', 'forest_road'],
   ['forest_dema_again', 'forest_road'],
   ['dema_home', 'forest_road'],
