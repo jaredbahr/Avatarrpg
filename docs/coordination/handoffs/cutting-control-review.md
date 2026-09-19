@@ -486,3 +486,25 @@ under the unchanged 300 KiB limit; PWA files are present. The displayed build is
 50b0ee0. Root's older dist remains unchanged for the live Windows WebKit diagnostic
 and resize reproduction on 4266/4268. Final integrated browser acceptance awaits
 the independent WebKit Activities painting fix and village canal work.
+
+## Windows diagnostic completion and canal review
+
+Windows WebKit continuation session3760 completed successfully: 178 passed,
+70 skipped in 21.3 minutes. Both full trade/escort campaigns, reload and walk-home
+checks passed. This tested the frozen pre-tea/pre-legacy-guard root dist, not the
+latest source. Audio/offline exclusions remain local; required Linux CI checks
+are unchanged. Report: `.shots/integration/windows-webkit-report`; preserved
+results: `.shots/integration/windows-webkit-473165b-results`.
+
+Root reviewed the canal owner's actual Canvas/WebGL crossing captures. The
+corrected bridge orientation is coherent, but a detached turquoise rectangle
+still overlays the dry court southeast of the bridge. The owner is correcting
+its source and checking an actual bridge approach before integration. No full
+ground replacement or visual acceptance is authorized by this partial review.
+
+Combined manual campaign resumes on production4269, build50b0ee0, using the
+exported healed Cutting checkpoint `(3).json`: Sura34/34 and Riko18/36, level3.
+The saved campaign loaded successfully and walked through the ordinary east
+route into the quarry. Further encounter play remains in progress. PR64 remains
+open/blocked on fc37c6a with merge-commit auto-merge enabled; remote main remains
+44ed3f6. No new CI run, merge or deployment occurred at this checkpoint.
