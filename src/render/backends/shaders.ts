@@ -240,7 +240,7 @@ void main(void) {
   if (surface == 1) {                 // water
     float ripple = fbm(w * 4.0 + vec2(uTime * 0.25, uTime * 0.17));
     vec3 tint = mix(vec3(0.153, 0.424, 0.482), vec3(0.243, 0.561, 0.690), ripple);
-    lay(acc, tint, 0.55 * intensity);
+    lay(acc, tint, 0.42 * intensity);
     acc.rgb += vec3(0.10, 0.16, 0.18) * smoothstep(0.62, 0.92, ripple) * intensity;
     // Foam where the pool meets ground: only the sides whose neighbour is not
     // water, so a puddle reads as one pool with a lapping bank, not a grid of
@@ -252,7 +252,7 @@ void main(void) {
     if (surfaceAt(cell + vec2(1.0, 0.0)) != 1) bank = max(bank, 1.0 - (1.0 - f.x) / 0.2);
     bank = clamp(bank, 0.0, 1.0);
     float lap = 0.55 + 0.45 * vnoise(w * 9.0 + vec2(uTime * 0.6, -uTime * 0.3));
-    lay(acc, vec3(0.80, 0.92, 0.95), bank * bank * lap * 0.6 * intensity);
+    lay(acc, vec3(0.80, 0.92, 0.95), bank * bank * lap * 0.22 * intensity);
   } else if (surface == 2) {          // ice
     // Continuous world-space frost, not quantised square facets. Fine veins
     // suggest ice without replacing the underlying painted stone texture.

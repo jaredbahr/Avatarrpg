@@ -77,6 +77,7 @@ export function paintSurface(
   // A little material gathers just inside the real bank. Irregular depth is
   // decoration inside the tile, never a ragged or misleading hazard boundary.
   const material = tile.surface.id;
+  const water = material === 'water';
   if (material === 'mud' || material === 'oil') {
     ctx.globalAlpha = SURFACE_POOL.alpha * intensity;
     ctx.fillStyle = style.detail;
@@ -110,9 +111,11 @@ export function paintSurface(
     [edges.e, box.x + s - band, box.y, band, s + 1],
   ];
   ctx.fillStyle = style.edge;
-  ctx.globalAlpha = 0.12 * intensity;
+  // Water follows a painted shore, so it needs a quiet material transition,
+  // not the universal tactical outline used for temporary pools.
+  ctx.globalAlpha = (water ? 0.055 : 0.12) * intensity;
   for (const [on, x, y, w, h] of sides) if (on) ctx.fillRect(x, y, w, h);
-  ctx.globalAlpha = SURFACE_BANK.alpha * intensity;
+  ctx.globalAlpha = (water ? 0.18 : SURFACE_BANK.alpha) * intensity;
   ctx.strokeStyle = style.edge;
   ctx.lineWidth = inset;
   ctx.beginPath();

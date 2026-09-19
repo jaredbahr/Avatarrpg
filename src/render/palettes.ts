@@ -99,7 +99,7 @@ export interface SurfaceStyle {
 export const SURFACE_STYLES: Record<SurfaceId, SurfaceStyle> = {
   water: {
     fill: '#3e8fb0',
-    alpha: 0.55,
+    alpha: 0.4,
     edge: '#7ec8e3',
     detail: '#3e8fb0',
     hatch: 'wave',
