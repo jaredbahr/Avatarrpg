@@ -31,7 +31,7 @@
 
 ## CI E2E repair audit
 
-- **Source:** `codex/ci-e2e-repair` in `C:\Users\Jared\.codex\worktrees\ci-e2e-repair`, based on combined `92b0c8a`; no push, PR, rerun, or gallery change.
+- **Source:** `76cb60d` on `codex/ci-e2e-repair` in `C:\Users\Jared\.codex\worktrees\ci-e2e-repair`, based on combined `92b0c8a`; no push, PR, rerun, or gallery change.
 - **CI evidence:** Job `105848850505` from PR64 run `35424656782` failed at `playthrough.spec.ts:275`: the `.confirm-bar` containing `Confirm` never became visible after the target click. The same log marked `world.spec.ts:30` flaky because `Leave preview` detached on 111 click retries.
 - **iPad reproduction:** Installed Chrome mobile emulation at 1194x834 CSS px, DPR 2, own preview port 4267. The target was `e1` at `(5,4)`; projection returned `(885,625.72)`, while `.map-canvas` was `y=154.11..617.22`. `elementFromPoint` was the action bar and no canvas pointer events arrived. After compact framing, tile size was 64px and the same target projected to `(789,474.18)` inside the canvas; pointer down/up/click arrived and the preview Confirm control enabled.
 - **Source fixes:** `ExploreScene` records `hudMoving` before the Riverside controls early return, preventing per-frame HUD replacement while the animator is busy. `CombatScene` performs one post-HUD measurement in `sync`, reserves the full compact decision dock, and permits the first settled short idle layout to select 64px while preserving manual zoom/pan and stable tall 96px framing.
