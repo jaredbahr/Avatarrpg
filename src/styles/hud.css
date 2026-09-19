@@ -1372,6 +1372,42 @@ html[data-contrast='high'] .hud-panel::after {
   gap: var(--sp-2);
 }
 
+/* In landscape, a normal or Large-text decision can share one row with its
+ * forecast. Huge text and portrait layouts keep the vertical reading order. */
+@media (min-width: 53rem) and (orientation: landscape) {
+  html:not([data-large-text='huge']) .combat-scene .hud {
+    align-items: flex-start;
+  }
+
+  html:not([data-large-text='huge']) .combat-scene .confirm-dialog {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) max-content;
+    align-items: center;
+    column-gap: var(--sp-2);
+    row-gap: var(--sp-1);
+    padding: var(--sp-2);
+  }
+
+  html:not([data-large-text='huge']) .combat-scene .confirm-dialog > .confirm-body {
+    grid-column: 1;
+    min-width: 0;
+    max-width: 100%;
+  }
+
+  html:not([data-large-text='huge']) .combat-scene .confirm-dialog > .row {
+    grid-column: 2;
+    grid-row: 1;
+    min-width: max-content;
+    margin: 0;
+  }
+
+  html:not([data-large-text='huge']) .combat-scene .confirm-body,
+  html:not([data-large-text='huge']) .combat-scene .confirm-body > .preview-chips {
+    min-width: 0;
+    max-width: 100%;
+  }
+}
+
 /* Aim guidance and confirmation share allocated dock space, never the map. */
 .aim-hint {
   border-color: var(--c-line);

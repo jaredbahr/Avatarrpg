@@ -1246,6 +1246,7 @@ export class CombatScene implements Scene {
   }
 
   private confirmShell(body: HTMLElement, onConfirm: (() => void) | null): HTMLElement {
+    body.classList.add('confirm-body');
     const confirm = button('Confirm', () => onConfirm?.(), {
       class: 'btn-primary btn-ok btn-large',
       disabled: onConfirm === null,
@@ -1253,7 +1254,7 @@ export class CombatScene implements Scene {
     confirm.prepend(mark(UI_MARKS.check, 'mark-inline'));
     return el(
       'div',
-      { class: 'confirm-bar' },
+      { class: 'confirm-bar confirm-dialog' },
       body,
       el(
         'div',

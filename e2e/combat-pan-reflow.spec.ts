@@ -230,7 +230,7 @@ test('Huge text on a tall viewport reserves the expanded decision panel', async 
 });
 
 for (const renderer of ['canvas', 'webgl'] as const) {
-  for (const largeText of ['normal', 'huge'] as const) {
+  for (const largeText of ['normal', 'large', 'huge'] as const) {
     test(`reveals a legal lower move through confirmation reflow on ${renderer}/${largeText}`, async ({
       page,
     }) => {
@@ -238,8 +238,11 @@ for (const renderer of ['canvas', 'webgl'] as const) {
       await page.setViewportSize({ width: 1280, height: 720 });
       await resetStorage(page, `?renderer=${renderer}`);
       await startGame(page, ['Sura'], ['sura'], `move-reveal-${renderer}-${largeText}`);
-      if (largeText === 'huge')
-        await page.evaluate(() => window.fnt!.app.updateSettings({ largeText: 'huge' }));
+      if (largeText !== 'normal')
+        await page.evaluate(
+          (text) => window.fnt!.app.updateSettings({ largeText: text === 'huge' ? 'huge' : 'on' }),
+          largeText,
+        );
       await enterNode(page, 'battle_forest_road');
       expect(await takeTurn(page)).toBe(true);
       await waitForIdle(page);
@@ -282,6 +285,30 @@ for (const renderer of ['canvas', 'webgl'] as const) {
         ),
       ).toBe(true);
       expect(after.tilePx).toBeCloseTo(before.tilePx, 5);
+
+      const compactMetrics = await page.evaluate(() => {
+        const body = document.querySelector<HTMLElement>('.confirm-dialog > .confirm-body');
+        const dialog = document.querySelector<HTMLElement>('.confirm-dialog');
+        const controls = [
+          ...document.querySelectorAll<HTMLButtonElement>('.confirm-dialog button'),
+        ];
+        return {
+          dialogClass: dialog?.className ?? '',
+          bodyOverflow: body ? body.scrollWidth > body.clientWidth : true,
+          dialogHeight: dialog?.getBoundingClientRect().height ?? 0,
+          controls: controls.map((control) => {
+            const box = control.getBoundingClientRect();
+            return { width: box.width, height: box.height };
+          }),
+        };
+      });
+      expect(compactMetrics.dialogClass).toContain('confirm-dialog');
+      expect(compactMetrics.bodyOverflow).toBe(false);
+      expect(
+        compactMetrics.controls.every(({ width, height }) => width >= 44 && height >= 44),
+      ).toBe(true);
+      if (largeText === 'normal') expect(afterBox.height).toBeGreaterThan(300);
+      if (largeText === 'large') expect(afterBox.height).toBeGreaterThan(230);
 
       if (process.env.FNT_REVIEW_DIR)
         await page.screenshot({
