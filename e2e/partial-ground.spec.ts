@@ -1,129 +1,185 @@
 import { expect, test, type Page } from '@playwright/test';
 import { enterNode, resetStorage, startGame, waitForIdle } from './helpers';
-import { average, screenshotPixels } from './pixels';
+import { average, screenshotPixels, type Rgb } from './pixels';
 
 const svg = (colour: string): string =>
   `data:image/svg+xml,${encodeURIComponent(`<svg xmlns="http://www.w3.org/2000/svg" width="64" height="64"><rect width="64" height="64" fill="${colour}"/></svg>`)}`;
 
 const red = svg('#d94444');
 const blue = svg('#4477d9');
+const radius = 3;
+const patch = (url: string, x: number, y: number) => ({
+  url,
+  x: 1024 + (x - y) * 64 - 32,
+  y: (x + y + 1) * 32 - 32,
+  width: 64,
+  height: 64,
+});
 
-async function tileCentre(page: Page, pos: { x: number; y: number }) {
-  const point = await page.evaluate((p) => {
+type Pos = { readonly x: number; readonly y: number };
+
+const PATCH = { x: 5, y: 7 } as const;
+const VALID = { x: 6, y: 7 } as const;
+const FALLBACK = { x: 5, y: 7 } as const;
+
+async function tileCentres(page: Page, probes: Record<string, Pos>): Promise<Record<string, Pos>> {
+  const points = await page.evaluate((entries) => {
     const camera = window.fnt?.app.rendererCamera?.();
     if (!camera) return null;
     const m = camera.groundTransform;
-    const x = (p.x + 0.5) * 64;
-    const y = (p.y + 0.5) * 64;
-    return { x: m.a * x + m.c * y + m.tx, y: m.b * x + m.d * y + m.ty };
-  }, pos);
-  if (!point) throw new Error('no map camera');
-  return point;
+    return Object.fromEntries(
+      entries.map(([name, p]) => {
+        const x = (p.x + 0.5) * 64;
+        const y = (p.y + 0.5) * 64;
+        return [name, { x: m.a * x + m.c * y + m.tx, y: m.b * x + m.d * y + m.ty }];
+      }),
+    );
+  }, Object.entries(probes));
+  if (!points) throw new Error('No map camera');
+  return points;
 }
 
-async function installPartialScene(page: Page, missing = false) {
+/** Every read is inside the canvas, so a black no-sample average cannot pass. */
+async function samples<P extends Record<string, Pos>>(
+  page: Page,
+  probes: P,
+): Promise<{ [K in keyof P]: Rgb }> {
+  const canvas = page.locator('.explore-scene .map-canvas');
+  const [pixels, box, points] = await Promise.all([
+    screenshotPixels(canvas),
+    canvas.boundingBox(),
+    tileCentres(page, probes),
+  ]);
+  if (!box) throw new Error('Map canvas has no bounding box');
+  for (const [name, point] of Object.entries(points)) {
+    expect(point.x, `${name} x is inside the map canvas`).toBeGreaterThan(radius);
+    expect(point.x, `${name} x is inside the map canvas`).toBeLessThan(box.width - radius);
+    expect(point.y, `${name} y is inside the map canvas`).toBeGreaterThan(radius);
+    expect(point.y, `${name} y is inside the map canvas`).toBeLessThan(box.height - radius);
+  }
+  return Object.fromEntries(
+    Object.entries(points).map(([name, point]) => [
+      name,
+      average(pixels, point.x, point.y, radius),
+    ]),
+  ) as { [K in keyof P]: Rgb };
+}
+
+function expectRed(pixel: Rgb): void {
+  expect(pixel.r).toBeGreaterThan(pixel.b + 55);
+  expect(pixel.r).toBeGreaterThan(170);
+}
+
+function expectBlue(pixel: Rgb): void {
+  expect(pixel.b).toBeGreaterThan(pixel.r + 55);
+  expect(pixel.b).toBeGreaterThan(170);
+}
+
+/** Replaces only the scene fixture. The real map rows remain the surface source. */
+async function installPartialScene(page: Page, ground: readonly ReturnType<typeof patch>[]) {
+  await page.evaluate((pieces) => {
+    const map = window.fnt?.app.content.maps.get('ba_dan_village');
+    if (!map) throw new Error('Missing Ba Dan map');
+    Object.defineProperty(map, 'scene', {
+      value: { groundMode: 'partial', paintedWater: true, ground: pieces, scenery: [] },
+      configurable: true,
+    });
+  }, ground);
+}
+
+async function setPermanentWater(page: Page, pos: Pos, present: boolean): Promise<void> {
   await page.evaluate(
-    ({ redUrl, blueUrl, missing }) => {
+    ({ pos, present }) => {
       const map = window.fnt?.app.content.maps.get('ba_dan_village');
-      if (!map?.scene) throw new Error('Missing Ba Dan scene');
-      const piece = (url: string, x: number, y: number) => ({
-        url,
-        x: 1024 + (x - y) * 64 - 32,
-        y: (x + y + 1) * 32 - 32,
-        width: 64,
-        height: 64,
-      });
-      Object.defineProperties(map.scene, {
-        groundMode: { value: 'partial', configurable: true },
-        ground: {
-          value: [
-            piece(missing ? 'art/maps/missing-partial-ground.webp' : redUrl, 3, 7),
-            piece(blueUrl, 5, 7),
-            piece(redUrl, 11, 6),
-          ],
-          configurable: true,
-        },
-        scenery: { value: [], configurable: true },
+      if (!map) throw new Error('Missing Ba Dan map');
+      const row = map.rows[pos.y];
+      if (!row) throw new Error('Missing fixture row');
+      const tile = present ? '~' : '=';
+      Object.defineProperty(map, 'rows', {
+        value: map.rows.map((candidate, y) =>
+          y === pos.y
+            ? `${candidate.slice(0, pos.x)}${tile}${candidate.slice(pos.x + 1)}`
+            : candidate,
+        ),
+        configurable: true,
       });
     },
-    { redUrl: red, blueUrl: blue, missing },
+    { pos, present },
   );
-  await expect
-    .poll(async () => {
-      const pixels = await screenshotPixels(page.locator('.explore-scene .map-canvas'));
-      const bluePoint = await tileCentre(page, { x: 5, y: 7 });
-      const redPoint = await tileCentre(page, { x: 3, y: 7 });
-      const bluePixel = average(pixels, bluePoint.x, bluePoint.y, 3);
-      const redPixel = average(pixels, redPoint.x, redPoint.y, 3);
-      return (
-        bluePixel.b > bluePixel.r + 20 &&
-        bluePixel.b > 150 &&
-        (missing || (redPixel.r > redPixel.b + 20 && redPixel.r > 150))
-      );
-    })
-    .toBe(true);
+}
+
+async function reenterVillage(page: Page): Promise<void> {
+  await enterNode(page, 'riverside_explore');
+  await page.locator('.explore-scene .map-canvas').waitFor();
+  await waitForIdle(page);
+  await enterNode(page, 'village_explore');
+  await page.locator('.explore-scene .map-canvas').waitFor();
+  await waitForIdle(page);
 }
 
 for (const renderer of ['canvas', 'webgl'] as const) {
-  test(`partial ground layers authored patches and live water on ${renderer}`, async ({
+  test(`partial ground keeps an opaque patch under permanent water on ${renderer}`, async ({
     page,
-    browserName,
   }) => {
-    if (renderer === 'webgl' && browserName === 'webkit') test.slow();
     await resetStorage(page, `?renderer=${renderer}`);
-    await startGame(page, ['Kaya'], ['kaya'], 'partial-ground');
+    await installPartialScene(page, [patch(red, PATCH.x, PATCH.y), patch(blue, VALID.x, VALID.y)]);
+    await startGame(page, ['Kaya'], ['kaya'], 'partial-ground-water');
     await enterNode(page, 'village_explore');
     await page.locator('.explore-scene .map-canvas').waitFor();
-    await installPartialScene(page);
-    const pixels = await screenshotPixels(page.locator('.explore-scene .map-canvas'));
-    const authoredPoint = await tileCentre(page, { x: 5, y: 7 });
-    const proceduralPoint = await tileCentre(page, { x: 3, y: 8 });
-    const pondPoint = await tileCentre(page, { x: 11, y: 6 });
-    const box = await page.locator('.explore-scene .map-canvas').boundingBox();
-    expect(box).not.toBeNull();
-    expect(authoredPoint.x).toBeGreaterThan(3);
-    expect(authoredPoint.x).toBeLessThan((box?.width ?? 0) - 3);
-    expect(authoredPoint.y).toBeGreaterThan(3);
-    expect(authoredPoint.y).toBeLessThan((box?.height ?? 0) - 3);
-    const authored = average(pixels, authoredPoint.x, authoredPoint.y, 3);
-    const procedural = average(pixels, proceduralPoint.x, proceduralPoint.y, 3);
-    expect(authored.b).toBeGreaterThan(authored.r + 20);
-    expect(procedural.r).toBeGreaterThan(procedural.b + 5);
-    const pond = average(pixels, pondPoint.x, pondPoint.y, 3);
-    expect(Math.abs(pond.r - 217) + Math.abs(pond.g - 68) + Math.abs(pond.b - 68)).toBeGreaterThan(
-      40,
-    );
+    await expect
+      .poll(async () => {
+        const { patch: loaded, valid } = await samples(page, { patch: PATCH, valid: VALID });
+        return loaded.r > loaded.b + 55 && valid.b > valid.r + 55;
+      })
+      .toBe(true);
+    const bare = await samples(page, { patch: PATCH, valid: VALID });
+    expectRed(bare.patch);
+    expectBlue(bare.valid);
+
+    await setPermanentWater(page, PATCH, true);
+    await reenterVillage(page);
+    const underwater = await samples(page, { patch: PATCH, valid: VALID });
+    expectBlue(underwater.valid);
+    // The red image is visible before the real grid's water surface is enabled;
+    // water then tints that same image rather than replacing it or being hidden below it.
+    expect(underwater.patch.r).toBeLessThan(bare.patch.r - 35);
+    expect(underwater.patch.b).toBeGreaterThan(bare.patch.b + 35);
+
+    await setPermanentWater(page, PATCH, false);
+    await reenterVillage(page);
+    const restored = await samples(page, { patch: PATCH, valid: VALID });
+    expectRed(restored.patch);
+    expectBlue(restored.valid);
   });
 
-  test(`partial ground falls back and survives scene re-entry on ${renderer}`, async ({
+  test(`partial ground retains valid pieces when one is missing on ${renderer}`, async ({
     page,
-    browserName,
   }) => {
-    if (renderer === 'webgl' && browserName === 'webkit') test.slow();
     await resetStorage(page, `?renderer=${renderer}`);
-    await startGame(page, ['Kaya'], ['kaya'], 'partial-ground-reentry');
+    // Establish the actual procedural base before adding any scene pieces.
+    await installPartialScene(page, []);
+    await startGame(page, ['Kaya'], ['kaya'], 'partial-ground-fallback');
     await enterNode(page, 'village_explore');
     await page.locator('.explore-scene .map-canvas').waitFor();
-    await installPartialScene(page, true);
-    const sample = async () => {
-      const pixels = await screenshotPixels(page.locator('.explore-scene .map-canvas'));
-      const validPoint = await tileCentre(page, { x: 5, y: 7 });
-      const fallbackPoint = await tileCentre(page, { x: 3, y: 7 });
-      const valid = average(pixels, validPoint.x, validPoint.y, 3);
-      const fallback = average(pixels, fallbackPoint.x, fallbackPoint.y, 3);
-      return { valid, fallback };
-    };
-    const before = await sample();
-    expect(before.valid.b).toBeGreaterThan(before.valid.r + 20);
-    expect(before.fallback.r).toBeGreaterThan(before.fallback.b + 5);
-    await enterNode(page, 'riverside_explore');
-    await page.locator('.explore-scene .map-canvas').waitFor();
-    await waitForIdle(page);
-    await enterNode(page, 'village_explore');
-    await page.locator('.explore-scene .map-canvas').waitFor();
-    await waitForIdle(page);
-    const after = await sample();
-    expect(after.valid.b).toBeGreaterThan(after.valid.r + 20);
-    expect(after.fallback.r).toBeGreaterThan(after.fallback.b + 5);
+    const baseline = await samples(page, { fallback: FALLBACK });
+
+    await installPartialScene(page, [
+      patch('art/maps/missing-partial-ground.webp', FALLBACK.x, FALLBACK.y),
+      patch(blue, VALID.x, VALID.y),
+    ]);
+    await reenterVillage(page);
+    await expect
+      .poll(async () => {
+        const { valid } = await samples(page, { fallback: FALLBACK, valid: VALID });
+        return valid.b > valid.r + 55 && valid.b > 170;
+      })
+      .toBe(true);
+    const loaded = await samples(page, { fallback: FALLBACK, valid: VALID });
+    expectBlue(loaded.valid);
+    // A missing piece exposes its original procedural tile; it must neither turn red nor erase a sibling.
+    expect(Math.abs(loaded.fallback.r - baseline.fallback.r)).toBeLessThan(12);
+    expect(Math.abs(loaded.fallback.g - baseline.fallback.g)).toBeLessThan(12);
+    expect(Math.abs(loaded.fallback.b - baseline.fallback.b)).toBeLessThan(12);
+    expect(loaded.fallback.r).not.toBeGreaterThan(loaded.fallback.b + 55);
   });
 }
