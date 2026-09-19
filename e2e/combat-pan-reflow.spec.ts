@@ -135,7 +135,19 @@ test('iPad landscape normal text keeps the lower target inside the map', async (
   const camera = await page.evaluate(() => window.fnt!.app.rendererCamera()!);
   expect(camera.tilePx).toBeCloseTo(64, 5);
   const canvas = await page.locator('.map-canvas').boundingBox();
-  expect(canvas?.height ?? 0).toBeGreaterThan(0);
+  const target = { x: 5, y: 4 };
+  const point = await paintedTileCentre(page, target);
+  if (!canvas || !point) throw new Error('Missing iPad battlefield geometry');
+  expect(point.x).toBeGreaterThan(canvas.x);
+  expect(point.x).toBeLessThan(canvas.x + canvas.width);
+  expect(point.y).toBeGreaterThan(canvas.y);
+  expect(point.y).toBeLessThan(canvas.y + canvas.height);
+  expect(
+    await page.evaluate(
+      ({ x, y }) => document.elementFromPoint(x, y) === document.querySelector('.map-canvas'),
+      point,
+    ),
+  ).toBe(true);
 });
 
 test('real viewport resize recomputes compact oblique framing', async ({ page }) => {
