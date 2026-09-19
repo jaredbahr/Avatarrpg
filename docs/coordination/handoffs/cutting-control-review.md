@@ -133,3 +133,43 @@ The old root preview listener was found stopped, though the cached game remained
 playable. Root restarted the same unchanged production dist at strict 4210
 (exec session 19819, PID35916 at this checkpoint). No rebuild or save overwrite
 was performed. Both manual campaign tabs are preserved for continuing review.
+
+## Driller control review and defeat branch
+
+The same manual WebGL runtime `798bee8` continued through a real Driller defeat.
+Round 1: Riko stayed back, Sura advanced four tiles and took 11 damage from
+Debris Throw. Round 2: Riko advanced, used Bolas (90% hit, about 1 damage,
+85% Rooted preview), and the log confirmed 1 damage and Rooted on Grumbler.
+Sura's four-tile approach then showed "No immediate direct attack found".
+Five Water Whips reduced Grumbler from 63 to 42 HP (including one miss).
+Nevertheless, the enemy used Churn the Ground and then Driller Slam, dealing
+14 damage to Sura and pushing her back. The boss also appeared to move.
+This apparent preview discrepancy is assigned to `combat_preview` for a
+current-source rules audit; the earlier no-threat forecast is not accepted.
+
+Round 3 exposed a separate reproducible interface issue: rooted Riko still
+had an enabled Move button, reachable highlights, an exposure preview and a
+Confirm button. Confirm correctly rejected the move with "Riko cannot move
+right now", retaining four move points and six AP. `world_conversations`
+owns the isolated current-source movement-availability correction.
+
+Sura then used Water Pull: preview predicted one of three tiles before an
+obstruction, landing on Mud. The actual attack dealt 2 damage and moved the
+machine one tile. Ice Path applied Chilled. The subsequent enemy turn defeated
+both characters, reaching the round-4 Driven back screen with Grumbler at 40 HP.
+The three retreat lines and all five ending panels continued normally to
+"The Quarry Keeps Running", with Save this game / Replay scene / Back to title.
+No slot was overwritten; the earlier Cutting round-3 save remains available.
+This is a defeated-route observation, not a successful two-person balance result.
+
+The scale audit found matching exploration/combat proportions: Grumbler idle
+165 x 102 pixels at a 96-pixel tile; party bodies about 113.4 pixels tall;
+Ruon about 113.25. Nominal marker scale differences compensate source dimensions.
+No exploration-only scale correction is warranted.
+
+Root integrated the scoped software-WebGL aftermath allowance as `ac8c81d` and
+its trace handoff as `dfadbd2`. Fresh `npm run verify` at `dfadbd2` passes all
+831 tests in 97 files, typecheck, lint and formatting. No new GitHub run started.
+The revised deserter counter-swing and matching portrait have passed root source
+and actual Canvas/WebGL capture review; final owner validation and integration
+remain pending. This accepts that bounded asset correction only.
