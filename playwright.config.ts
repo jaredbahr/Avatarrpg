@@ -50,7 +50,10 @@ export default defineConfig({
   reporter: process.env.CI ? [['github'], ['html', { open: 'never' }]] : [['list']],
   use: {
     baseURL: 'http://127.0.0.1:4173',
-    trace: 'retain-on-failure',
+    // Continuous trace screenshots stall software WebGL through GPU readback.
+    // Keep DOM/action traces and the separate failure screenshot; the required
+    // gallery remains the visual regression artifact.
+    trace: { mode: 'retain-on-failure', screenshots: false, snapshots: true, sources: true },
     screenshot: 'only-on-failure',
   },
   projects: [

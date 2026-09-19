@@ -85,3 +85,23 @@ were adjusted for its diagnostic directory. Port 4265 stopped after both batches
 Integration still needs the normal fresh-revision CI gates. If forced software
 WebGL remains near the deadline after this reduction, profile its rendering and
 trace costs separately; do not remove touch/assertions or keep increasing timeouts.
+
+## Root integration and trace readback follow-up
+
+Integrated source `380b3b5` passes full verify (823 tests / 94 files), production
+build and the default balance report including discipline sweep, with no reported
+anomalies. The gate pair remains a separate documented weakness; the standard
+party report does not erase it.
+
+Root also disabled only continuous screenshots in retained Playwright traces.
+DOM/action snapshots and sources remain enabled, failure screenshots remain
+`only-on-failure`, and the required screenshot gallery is unchanged. The CI
+ReadPixels warnings motivate reducing this diagnostic readback overhead; no
+assertion, touch action, timeout, retry or required job changed.
+
+Ten production touch-Chrome checks passed in 1.2 minutes with this trace setting:
+four gate-choice cases (Canvas/WebGL, landscape/portrait Huge), both complete
+trade/escort return routes, and all four target-visibility cases. Inspection of
+an emitted trace found 35 DOM snapshots and zero screencast frames. Strict port
+4267 stopped. This proves retained DOM diagnostics and local functionality, not
+that the next software-GPU CI run will necessarily pass.
