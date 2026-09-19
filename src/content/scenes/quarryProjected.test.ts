@@ -77,6 +77,26 @@ describe('projected quarry scenes', () => {
           if (key === '~' || key === 'o' || key === 'm')
             expect(value, `${map.id} live ${x},${y}`).toBeLessThan(8);
           else if (key !== '#') expect(value, `${map.id} dry ${x},${y}`).toBeGreaterThan(240);
+          if (key === '#' || key === '~' || key === 'o' || key === 'm') continue;
+          for (const [dx, dy] of [
+            [1, 0],
+            [0, 1],
+          ] as const) {
+            const neighbor = map.rows[y + dy]?.[x + dx];
+            if (
+              !neighbor ||
+              neighbor === '#' ||
+              neighbor === '~' ||
+              neighbor === 'o' ||
+              neighbor === 'm'
+            )
+              continue;
+            for (const inset of [-0.02, 0.02])
+              expect(
+                alpha(scene, point(x + 0.5 + dx * (0.5 + inset), y + 0.5 + dy * (0.5 + inset))),
+                `${map.id} boundary ${x},${y}`,
+              ).toBeGreaterThan(240);
+          }
         }
   });
   it('shares only the exterior surround underneath the two live floors', () => {
