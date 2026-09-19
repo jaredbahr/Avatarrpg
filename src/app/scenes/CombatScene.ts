@@ -71,8 +71,8 @@ export class CombatScene implements Scene {
   private lastActiveId: string | null = null;
   private recentreButton: HTMLButtonElement | null = null;
   private actorButton: HTMLButtonElement | null = null;
-  /** Retain manually chosen zoom, focus or pan when the HUD reflows. */
-  private zoomed = false;
+  /** True after a user zoom/pan; HUD reflows must preserve that manual framing. */
+  private manualCamera = false;
   /**
    * The reachable set and the target/area tiles are rebuilt only when the
    * inputs that decide them change, not every frame: on a tablet the
@@ -147,8 +147,11 @@ export class CombatScene implements Scene {
   private refit(): void {
     const camera = this.renderer?.camera;
     if (!camera) return;
-    if (!this.zoomed || camera.scale < camera.fitScale()) this.recentre();
-    else camera.clamp();
+    if (!this.manualCamera) this.recentre();
+    else {
+      camera.scale = Math.max(camera.scale, camera.fitScale());
+      camera.clamp();
+    }
     this.syncRecentre();
   }
 
@@ -156,9 +159,9 @@ export class CombatScene implements Scene {
   private recentre(): void {
     const camera = this.renderer?.camera;
     if (!camera) return;
+    this.manualCamera = false;
     if (camera.projection === 'oblique') camera.fitExplore(96);
     else camera.fit();
-    this.zoomed = false;
     const unit = this.active();
     if (!camera.fitted && unit) camera.centreOn(unit.pos);
     this.syncRecentre();
@@ -167,20 +170,18 @@ export class CombatScene implements Scene {
   private zoomBy(factor: number, at: { x: number; y: number }): void {
     const camera = this.renderer?.camera;
     if (!camera) return;
+    const before = camera.scale;
     camera.zoomAt(at, factor);
-    this.zoomed = !camera.fitted;
+    if (camera.scale !== before) this.manualCamera = true;
     this.syncRecentre();
   }
 
   private pan(dx: number, dy: number): void {
     const camera = this.renderer?.camera;
     if (!camera) return;
-    const { offsetX, offsetY } = camera;
+    const before = { x: camera.offsetX, y: camera.offsetY };
     camera.panBy(dx, dy);
-    if (camera.offsetX !== offsetX || camera.offsetY !== offsetY) {
-      this.zoomed = !camera.fitted;
-      this.syncRecentre();
-    }
+    if (camera.offsetX !== before.x || camera.offsetY !== before.y) this.manualCamera = true;
   }
 
   /** Camera navigation never selects a target or spends an action. */
@@ -191,7 +192,7 @@ export class CombatScene implements Scene {
     const camera = this.renderer?.camera;
     if (!unit || !camera) return;
     camera.centreOn({ x: unit.pos.x + (unit.size - 1) / 2, y: unit.pos.y });
-    this.zoomed = !camera.fitted;
+    this.manualCamera = true;
     this.syncRecentre();
   }
 

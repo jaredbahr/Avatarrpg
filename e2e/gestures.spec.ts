@@ -232,6 +232,30 @@ test.describe('zoom and pan', () => {
     expect(after.tilePx).toBeGreaterThan(before.tilePx * 1.2);
   });
 
+  test('manual zoom survives a combat log reflow', async ({ page }) => {
+    await openFight(page);
+    const { point } = await centreTile(page);
+    await pinch(
+      page,
+      [
+        { x: point.x - 30, y: point.y },
+        { x: point.x + 30, y: point.y },
+      ],
+      [
+        { x: point.x - 90, y: point.y },
+        { x: point.x + 90, y: point.y },
+      ],
+    );
+    const zoomed = await camera(page);
+    await page.getByRole('button', { name: /^Log$/ }).click();
+    await expect(page.getByRole('button', { name: /^Hide log$/ })).toBeVisible();
+    const withLog = await camera(page);
+    expect(withLog.tilePx).toBeCloseTo(zoomed.tilePx, 3);
+    await page.getByRole('button', { name: /^Hide log$/ }).click();
+    const withoutLog = await camera(page);
+    expect(withoutLog.tilePx).toBeCloseTo(zoomed.tilePx, 3);
+  });
+
   test('the fitted tile is never smaller than a fingertip and the acting unit is on screen', async ({
     page,
   }) => {
