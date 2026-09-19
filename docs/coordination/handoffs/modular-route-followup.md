@@ -43,3 +43,29 @@ The art material assignment is complete; no further image generation is queued.
 
 Full route composition, motion, listening and physical-device review remain
 open. Passing functional tests does not establish the approved visual target.
+
+## Opening and village UI review, 19 September
+
+Root used the actual UI on production build `054d530` at 1280x720, forced
+WebGL, with a new two-person Sura/Kaya party. Character setup, all three
+opening passages, a normal path click, Look around → Visit Gao, all four Gao
+lines, return to exploration, Slot 1 save, page reload and explicit Slot 1 load
+completed. The loaded scene retained Sura/Kaya at level 1 with full health and
+Gao available nearby. This is bounded manual browser evidence, not a complete
+manual campaign, physical touch test or listening review. The review tab and
+owned preview on port 4304 were closed afterwards; the local slot is preserved.
+
+The first playable view still exposes a sharp visual transition from the
+procedural western road/grass to the authored courtyard. Extend the composed
+material treatment along this approach before claiming Ba Dan finished. A
+follower also appeared standing on canal water during Gao's conversation;
+regrouping after load placed her on the dry bank. Check intended shallow-water
+movement and wading/ground-contact presentation before treating this as a
+collision defect. Captures were reviewed inline in the task, not saved as
+standalone evidence files.
+
+Review of proposed elevation commit `a092281` found opaque top paint occurring
+after live surfaces; it has not been integrated. Its owner is correcting layer
+order and adding elevated-surface visibility coverage. Quarry gate prototype
+`95cdb17` is also pending seam correction and decoded asset coverage before
+integration. These source checks do not establish final aesthetic acceptance.
