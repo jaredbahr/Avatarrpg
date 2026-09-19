@@ -167,6 +167,7 @@ are accepted for the next runtime integration review. Final packaging must
 remove any remaining guide-colored fringe and preserve the recorded transforms,
 playable-diamond exclusion and asset budgets. Actual actor/prop scale, both
 renderers and final scene composition remain unaccepted until tested in game.
+
 ## Solo gate loss and continuation
 
 Sura moved four points onto the rear plank and banked AP. The deserter advanced
@@ -347,6 +348,7 @@ claiming a clean exact-head runtime. The integration owner must produce a
 clean final snapshot. The root-only static preview processes for ports 4200
 and 4204 were retired after their useful saves were carried into 4210; their
 worktree and source commits remain preserved.
+
 ## Follow-up combined preview checks
 
 After the next service-worker update, the title visibly reported

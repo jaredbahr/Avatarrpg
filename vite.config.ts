@@ -33,6 +33,10 @@ const base = process.env.GH_PAGES_BASE ?? '/';
 
 export default defineConfig({
   base,
+  // Keep parallel worktree/dev-server dependency graphs isolated. Shared
+  // node_modules junctions otherwise let Vite workers overwrite each other's
+  // optimized-dependency hashes during visual capture.
+  cacheDir: '.vite',
   define: {
     __APP_VERSION__: JSON.stringify(version),
     __BUILD_REVISION__: JSON.stringify(buildRevision()),

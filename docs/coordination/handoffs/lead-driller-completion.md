@@ -60,6 +60,7 @@ device/authoring/animation limitation; no speculative engine migration.
 v0.2.0 is not yet verified deployed by this lead and is an interim release.
 Last predecessor-observed live title was v0.1.0 build `44ed3f6`.
 Audio listening, physical devices and whole-run final presentation remain open.
+
 ## Active source ownership update
 
 - Gameplay retains PR64 delivery and the separate guidance/camera source branch.

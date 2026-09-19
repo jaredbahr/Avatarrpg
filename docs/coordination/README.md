@@ -1,7 +1,5 @@
 # Project coordination
 
-Current delivery mandate: [finish the complete run through the Driller](finish-through-driller.md), including its outcome and return. v0.2.0 is an interim playable release.
-
 This is the entry point for a new or resumed working session. Keep it small:
 link to authoritative documents rather than copying their rules into every task.
 
@@ -87,6 +85,19 @@ steps in the established art documentation. Update affected docs with the change
 and explain any superseded decision instead of leaving competing instructions.
 
 ## Verification and reporting
+
+### Playable release versions
+
+Jared requires a new visible release version for each delivered playable update
+so he can identify what to test. A build hash alone does not meet this requirement.
+The integration owner increments the package version (and matching lockfile
+metadata), updates the release notes, and verifies the version shown by the
+deployed game. Use patch increments for iterative playable improvements and
+minor increments for larger feature milestones. Include this change before
+final verification and exact-head CI, not after checks pass. Report the release
+version, play link and meaningful testable changes; keep the build hash as
+secondary diagnostic information. Do not bump versions for unshipped source
+checkpoints or handoff-only commits.
 
 ### Keep CI work proportional
 
