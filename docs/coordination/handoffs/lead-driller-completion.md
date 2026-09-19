@@ -22,6 +22,28 @@ acceptance, exact-final-head CI and deployed-version verification remain open.
 
 ### Current review findings
 
+Combined source `f9caa7a` now includes the final reviewed camera/Riverside
+repair through `ef5f1ad`. It passes `npm run verify` (804 tests / 89 files),
+production build and 12 focused installed-Chrome checks at tablet defaults:
+actual target hitability/preview, compact/Huge framing, manual pan through
+reflow, bidirectional resize, Riverside close-during-walk and round trip,
+connected exploration, and both complete trade/escort return-save routes.
+The exclusive test preview on 4271 ended normally. Local configuration/results
+are retained under `.shots/release-check`; this is browser emulation, not
+physical iPad or WebKit evidence.
+
+Art validation and the 25 MiB precache/family asset checks pass. The complete
+JavaScript budget does **not** pass: 305.2 KiB versus 300 KiB. The Vite entry
+figure (297.83 decimal kB) excludes other shipped scripts and is not evidence
+of passing that gate. `world_conversations` now owns an isolated reduction
+from `f9caa7a`, preserving features and the existing limit. Do not push this
+candidate before resolving that failure and checking the complete final build.
+
+The character-art owner has authorization for a units-only allowance up to
+4.5 MiB, documented by ADR0032 if a bounded lossless pass cannot fit the three
+required figures under 4 MiB. All other family limits, the 25 MiB total and art
+validation remain unchanged. Port4239 is reserved for its runtime review.
+
 The CI repair reproduced the iPad target at screen y625.72 below the canvas's
 y617.22 edge; the action bar received the tap. Compact 64px framing placed the
 same target inside the canvas. Source `76cb60d` addresses that and Riverside
