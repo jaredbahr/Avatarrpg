@@ -75,6 +75,11 @@ function expectBlue(pixel: Rgb): void {
   expect(pixel.b).toBeGreaterThan(170);
 }
 
+function expectTreeDecor(pixel: Rgb): void {
+  expect(pixel.g).toBeGreaterThan(pixel.r + 15);
+  expect(pixel.g).toBeGreaterThan(pixel.b + 15);
+}
+
 /** Replaces only the scene fixture. The real map rows remain the surface source. */
 async function installPartialScene(page: Page, ground: readonly ReturnType<typeof patch>[]) {
   await page.evaluate((pieces) => {
@@ -87,14 +92,13 @@ async function installPartialScene(page: Page, ground: readonly ReturnType<typeo
   }, ground);
 }
 
-async function setPermanentWater(page: Page, pos: Pos, present: boolean): Promise<void> {
+async function setMapTile(page: Page, pos: Pos, tile: string): Promise<void> {
   await page.evaluate(
-    ({ pos, present }) => {
+    ({ pos, tile }) => {
       const map = window.fnt?.app.content.maps.get('ba_dan_village');
       if (!map) throw new Error('Missing Ba Dan map');
       const row = map.rows[pos.y];
       if (!row) throw new Error('Missing fixture row');
-      const tile = present ? '~' : '=';
       Object.defineProperty(map, 'rows', {
         value: map.rows.map((candidate, y) =>
           y === pos.y
@@ -104,8 +108,12 @@ async function setPermanentWater(page: Page, pos: Pos, present: boolean): Promis
         configurable: true,
       });
     },
-    { pos, present },
+    { pos, tile },
   );
+}
+
+async function setPermanentWater(page: Page, pos: Pos, present: boolean): Promise<void> {
+  await setMapTile(page, pos, present ? '~' : '=');
 }
 
 async function reenterVillage(page: Page): Promise<void> {
@@ -181,5 +189,46 @@ for (const renderer of ['canvas', 'webgl'] as const) {
     expect(Math.abs(loaded.fallback.g - baseline.fallback.g)).toBeLessThan(12);
     expect(Math.abs(loaded.fallback.b - baseline.fallback.b)).toBeLessThan(12);
     expect(loaded.fallback.r).not.toBeGreaterThan(loaded.fallback.b + 55);
+  });
+
+  test(`partial ground restores decor for accessibility and unavailable art on ${renderer}`, async ({
+    page,
+  }) => {
+    await resetStorage(page, `?renderer=${renderer}`);
+    await installPartialScene(page, [patch(red, PATCH.x, PATCH.y)]);
+    await setMapTile(page, PATCH, 'T');
+    await startGame(page, ['Kaya'], ['kaya'], 'partial-ground-decor');
+    await enterNode(page, 'village_explore');
+    await page.locator('.explore-scene .map-canvas').waitFor();
+    // A complete partial image normally owns this tile's relief.
+    await expect
+      .poll(async () => {
+        const { patch: tile } = await samples(page, { patch: PATCH });
+        return tile.r > tile.b + 55;
+      })
+      .toBe(true);
+    expectRed((await samples(page, { patch: PATCH })).patch);
+
+    await page.evaluate(() => window.fnt?.app.updateSettings({ highContrast: true }));
+    await expect
+      .poll(async () => {
+        const { patch: tile } = await samples(page, { patch: PATCH });
+        return tile.g > tile.r + 15 && tile.g > tile.b + 15;
+      })
+      .toBe(true);
+    expectTreeDecor((await samples(page, { patch: PATCH })).patch);
+
+    await page.evaluate(() => window.fnt?.app.updateSettings({ highContrast: false }));
+    await installPartialScene(page, [
+      patch('art/maps/missing-partial-ground.webp', PATCH.x, PATCH.y),
+    ]);
+    await reenterVillage(page);
+    await expect
+      .poll(async () => {
+        const { patch: tile } = await samples(page, { patch: PATCH });
+        return tile.g > tile.r + 15 && tile.g > tile.b + 15;
+      })
+      .toBe(true);
+    expectTreeDecor((await samples(page, { patch: PATCH })).patch);
   });
 }

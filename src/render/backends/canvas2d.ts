@@ -189,6 +189,9 @@ export class Canvas2DBackend implements RenderBackend {
         ctx.save();
         ctx.transform(m.a, m.b, m.c, m.d, m.tx, m.ty);
         this.drawGround(view, ground, false, false, true);
+        // A complete partial scene owns its local relief, but accessibility
+        // and an unavailable piece still need the procedural rule markers.
+        if (!sceneGround || view.crispOverlays) this.drawDecor(view, ground);
         this.drawOverlays(view, ground);
         this.drawPath(view, ground);
         if (view.aimArc) this.drawAimArc(view.aimArc, ground);

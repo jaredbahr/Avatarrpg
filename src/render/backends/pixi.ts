@@ -494,10 +494,12 @@ export class PixiBackend implements RenderBackend {
     this.setPartialGroundOrder(partialScene);
     this.groundOverlaySprite.visible = partialScene;
     this.syncGround(view, painted, partialScene);
-    // Partial scene ground pieces own their local relief. Suppress the
-    // procedural decor layer there so its pebbles/rims cannot cross an
-    // authored edge or sit over the runtime water pass.
-    this.syncDecor(view, camera, !partialScene && (!painted || view.crispOverlays));
+    // Complete partial ground owns its local relief, but unavailable scene
+    // pieces and High contrast still require the procedural rule markers.
+    const showDecor = partialScene
+      ? !scenePainted || view.crispOverlays
+      : !painted || view.crispOverlays;
+    this.syncDecor(view, camera, showDecor);
     this.syncShade(view, camera, scenePainted);
     this.drawOverlays(view);
     this.drawPath(view);
