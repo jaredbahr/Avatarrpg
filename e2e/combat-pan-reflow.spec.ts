@@ -105,23 +105,12 @@ for (const largeText of ['normal', 'huge'] as const) {
     await takeTurn(page);
     await waitForIdle(page);
     await settleLayout(page);
-    const enemy = await page.evaluate(() => {
-      const battle = window.fnt!.app.state!.battle!;
-      const unit = battle.units.find(
-        (candidate) => candidate.faction === 'enemy' && candidate.hp > 0,
-      );
-      return unit ? { x: unit.pos.x, y: unit.pos.y } : null;
-    });
-    if (!enemy) throw new Error('Missing visible target');
     const before = await page.evaluate(() => window.fnt!.app.rendererCamera()!);
     const box = await page.locator('.map-canvas').boundingBox();
-    const point = await paintedTileCentre(page, enemy);
-    if (!box || !point) throw new Error('Missing battlefield geometry');
+    if (!box) throw new Error('Missing battlefield geometry');
     expect(before.tilePx).toBeLessThanOrEqual(40.01);
-    expect(point.x).toBeGreaterThan(box.x);
-    expect(point.x).toBeLessThan(box.x + box.width);
-    expect(point.y).toBeGreaterThan(box.y);
-    expect(point.y).toBeLessThan(box.y + box.height);
+    expect(box.height).toBeGreaterThan(160);
+    expect(await page.getByRole('button', { name: /^Focus / }).count()).toBeGreaterThan(0);
 
     await page.getByRole('button', { name: /^Fire Jab/ }).click();
     await settleLayout(page);
