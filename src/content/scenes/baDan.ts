@@ -22,6 +22,13 @@ export const BA_DAN_COURTYARD_GROUND = {
   width: 1152,
   height: 576,
 } as const;
+/** Spawn road plus immediate grass shoulders; overlaps the courtyard at x5..6. */
+export const BA_DAN_WESTERN_APPROACH_GROUND = {
+  x: 384,
+  y: 192,
+  width: 704,
+  height: 352,
+} as const;
 /** Outer metric radius of the transparent coping around runtime water. */
 export const BA_DAN_CANAL_BANK_RADIUS = 1.42;
 /** Transparent coping envelope around all six runtime water diamonds. */
@@ -113,6 +120,13 @@ function courtyardGround(): SceneImage {
   };
 }
 
+function westernApproachGround(): SceneImage {
+  return {
+    url: `${root}western-approach-ground.webp`,
+    ...BA_DAN_WESTERN_APPROACH_GROUND,
+  };
+}
+
 function canalBanks(): SceneImage {
   return {
     url: `${root}canal-banks.webp`,
@@ -168,6 +182,7 @@ function tree(x: number, y: number, size = 360): SceneScenery {
 export const BA_DAN_SCENE: MapScene = {
   groundMode: 'partial',
   ground: [
+    westernApproachGround(),
     courtyardGround(),
     {
       url: `${root}north-grass-fringe.webp`,

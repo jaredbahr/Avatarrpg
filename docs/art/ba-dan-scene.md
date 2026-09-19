@@ -10,10 +10,12 @@ existing map family budget.
 The active exploration proof is a partial authored scene. `BA_DAN_SCENE` sets
 `groundMode: 'partial'`; Canvas and WebGL paint the procedural grid terrain,
 then projected local ground pieces, then the live grid surfaces and overlays.
-The complete `ground-west.webp` and `ground-east.webp` pages remain historical
-assets and are not active Ba Dan exploration ground authority. The full-map
-backdrop is retained for presentations that still use it, while partial
-exploration suppresses it so modular scenery and the grid remain visible.
+The former complete `ground-west.webp` and `ground-east.webp` pages were
+historical assets with no active Ba Dan exploration consumer and were removed
+from the shipped map family on 19 September 2026. Their committed history and
+the deterministic packers remain available; the full-map backdrop is retained
+for presentations that still use it, while partial exploration suppresses it so
+modular scenery and the grid remain visible.
 
 The local courtyard piece is `courtyard-ground.webp`, 1152×576 projected pixels
 at `(640,256)`. It covers the logical `x5..15,y3..11` envelope with a half-cell
@@ -21,6 +23,16 @@ alpha feather and samples the reviewed four-quadrant material atlas for grass,
 stone, and road. The image is already camera-projected; the renderer does not
 skew it again. Its irregular projected boundary blends into procedural terrain
 instead of ending at a rectangular opaque seam.
+
+The western first-view approach is `western-approach-ground.webp`, 704×352
+projected pixels at `(384,192)`. It covers only logical `x0..6,y6..9`: the
+spawn road on rows 7–8 and its immediate grass shoulders. Its transparent
+irregular mask leaves the permanent canal water at `(6,6)` to the runtime
+surface. It retains grass/stone beneath blocked trees and the map edge so their
+transparent scenery cannot reveal a procedural corner. The `x5..6` overlap is
+sampled with the exact same logical-coordinate material function as the
+courtyard and sits below that region's existing feather, avoiding a second
+screen-space join.
 
 The canal's water is runtime-owned. `canal-banks.webp` is a transparent
 576×288 coping piece at `(928,368)`, generated from the six exact water-cell
@@ -44,9 +56,19 @@ The deterministic material and coping generators are:
 
 ```sh
 npx tsx scripts/art/ba-dan-courtyard-ground.ts art/raw/scenes/ground-materials.png
+npx tsx scripts/art/ba-dan-western-approach-ground.ts art/raw/scenes/ground-materials.png
 npx tsx scripts/art/ba-dan-canal-banks.ts art/raw/scenes/ground-materials.png
 python scripts/art/ba-dan-bridge-front.py
 ```
+
+The material atlas is deliberately not represented as tracked source. The
+western pack was made from the existing ignored local input at
+`C:\Users\Jared\.codex\worktrees\71bd\Avatar RPG\art\raw\scenes\ground-materials.png`
+(1254×1254 PNG, SHA-256
+`dc4a78d7a6340b545c0dea145357d3f2b116653fe80cd108a0de14bfe8018ccc`). Its
+path and hash record the actual source used; the committed generator is the
+reproducible transformation contract and must not be described as the raw
+atlas being tracked.
 
 The original scenery layers continue to use `scripts/art/scene-image.ts` for
 alpha-trimmed WebP packing. The complete map encoder remains useful for old

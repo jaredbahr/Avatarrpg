@@ -1,4 +1,7 @@
-import { expect, it } from 'vitest';
+import { createRequire } from 'node:module';
+import { readFileSync } from 'node:fs';
+import decode, { init } from '@jsquash/webp/decode.js';
+import { beforeAll, expect, it } from 'vitest';
 import { BA_DAN_VILLAGE } from '../maps/village';
 import {
   BA_DAN_CANAL,
@@ -6,11 +9,42 @@ import {
   BA_DAN_CANAL_BRIDGE,
   BA_DAN_CANAL_BANKS,
   BA_DAN_COURTYARD_GROUND,
+  BA_DAN_WESTERN_APPROACH_GROUND,
   BA_DAN_COURTYARD_FOOTPRINTS,
   BA_DAN_COURT_TREES,
   BA_DAN_SCENE,
 } from './baDan';
 import { buildGrid, reachable, posKey, tileAt } from '../../core/rules/grid';
+
+let decodedGround: Map<string, ImageData>;
+
+beforeAll(async () => {
+  const require = createRequire(import.meta.url);
+  const wasm = readFileSync(require.resolve('@jsquash/webp/codec/dec/webp_dec.wasm'));
+  await init(await WebAssembly.compile(wasm));
+  decodedGround = new Map();
+  for (const piece of BA_DAN_SCENE.ground.filter((entry) =>
+    /(?:courtyard|western-approach)-ground\.webp$/.test(entry.url),
+  )) {
+    const bytes = readFileSync(`public/${piece.url}`);
+    decodedGround.set(
+      piece.url,
+      await decode(bytes.buffer.slice(bytes.byteOffset, bytes.byteOffset + bytes.byteLength)),
+    );
+  }
+});
+
+function alphaAt(
+  piece: (typeof BA_DAN_SCENE.ground)[number],
+  pos: { x: number; y: number },
+): number {
+  const image = decodedGround.get(piece.url);
+  if (!image) return 0;
+  const x = Math.round(1024 + (pos.x - pos.y) * 64 - piece.x);
+  const y = Math.round((pos.x + pos.y + 1) * 32 - piece.y);
+  if (x < 0 || y < 0 || x >= image.width || y >= image.height) return 0;
+  return image.data[(y * image.width + x) * 4 + 3] ?? 0;
+}
 
 it('keeps painted low boundaries solid while preserving every village destination', () => {
   const map = BA_DAN_VILLAGE;
@@ -80,6 +114,35 @@ it('uses transparent localized canal banks while the grid owns permanent water',
   expect(BA_DAN_SCENE.paintedWater).toBeUndefined();
   expect(BA_DAN_SCENE.ground.some((piece) => piece.url.endsWith('/canal.webp'))).toBe(false);
   expect(BA_DAN_SCENE.ground.some((piece) => piece.url.endsWith('/pond.webp'))).toBe(false);
+});
+
+it('ships the western spawn approach as decoded material coverage with a courtyard overlap', () => {
+  const western = BA_DAN_SCENE.ground.find((piece) =>
+    piece.url.endsWith('/western-approach-ground.webp'),
+  );
+  const courtyard = BA_DAN_SCENE.ground.find((piece) =>
+    piece.url.endsWith('/courtyard-ground.webp'),
+  );
+  expect(western).toMatchObject(BA_DAN_WESTERN_APPROACH_GROUND);
+  expect(courtyard).toBeDefined();
+  if (!western || !courtyard) throw new Error('Missing registered Ba Dan material ground');
+  for (let y = 6; y <= 9; y++) {
+    for (let x = 0; x <= 6; x++) {
+      const cell = BA_DAN_VILLAGE.rows[y]?.[x];
+      const alpha = alphaAt(western, { x, y });
+      if (cell === '~') expect(alpha).toBeLessThan(8);
+      else expect(alpha, `uncovered western cell ${x},${y}`).toBeGreaterThan(240);
+    }
+  }
+  for (const pos of [
+    { x: 5, y: 7 },
+    { x: 6, y: 7 },
+    { x: 5, y: 8 },
+    { x: 6, y: 8 },
+  ]) {
+    expect(alphaAt(western, pos), `western join ${pos.x},${pos.y}`).toBeGreaterThan(240);
+    expect(alphaAt(courtyard, pos), `courtyard join ${pos.x},${pos.y}`).toBeGreaterThan(240);
+  }
 });
 
 it('covers the projected courtyard and southeast canal bank without clipping', () => {
