@@ -103,7 +103,7 @@ test('a failed canonical portrait image keeps a visible painted fallback', async
   await expect(page.locator('.line-count')).toHaveText('2 of 4');
 });
 
-test('world speaker title agrees with the portrait and staged narration keeps its label', async ({
+test('party speaker title agrees with the portrait and staged narration keeps its label', async ({
   page,
 }) => {
   await resetStorage(page, '?renderer=canvas');
@@ -113,12 +113,12 @@ test('world speaker title agrees with the portrait and staged narration keeps it
   await expect(
     page.locator('.name-plate h2, .conversation-compact-speaker strong').first(),
   ).toHaveText('Jinu');
-  await expect(page.locator('.top-bar > span')).toHaveText('Ba Dan');
+  await expect(page.locator('.top-bar > span')).toHaveText('Jinu');
   await expect(
     page.locator('.stage-portrait canvas, .conversation-compact-portrait canvas').first(),
   ).toHaveAttribute('data-asset', 'portrait.jinu');
   await page.locator('.dialogue-panel button').tap();
-  await expect(page.locator('.top-bar > span')).toHaveText('Ba Dan');
+  await expect(page.locator('.top-bar > span')).toHaveText('Jinu');
   await enterNode(page, 'ruon_choice');
   await expect(page.locator('.top-bar > span')).toHaveText('Captain Ruon');
   await enterNode(page, 'act1_open');

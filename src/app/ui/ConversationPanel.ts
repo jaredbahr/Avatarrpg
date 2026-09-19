@@ -236,6 +236,7 @@ function choicePanel(
       ]
         .filter(Boolean)
         .join(' '),
+      attrs: { role: 'group', tabindex: '0', 'aria-label': 'Choose a response' },
     },
     compactHeader(said, compact, null),
     el('p', { class: 'dialogue-line', text: said.lines[0] ?? node.prompt }),

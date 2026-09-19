@@ -1,4 +1,4 @@
-# ADR 0029: Retain the live map for bounded world conversations
+# ADR 0030: Retain the live map for bounded world conversations
 
 ## Status
 

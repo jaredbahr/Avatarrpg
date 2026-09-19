@@ -4,6 +4,7 @@ import { enterNode, resetStorage, startGame } from './helpers';
 test.beforeEach(async ({ page }) => {
   await resetStorage(page, '?renderer=canvas');
   await startGame(page, ['Elias'], ['kaya']);
+  await enterNode(page, 'village_explore');
   await enterNode(page, 'mira_intro');
   await expect(page.locator('.explore-scene')).toBeVisible();
   await expect(page.locator('.explore-conversation')).toBeVisible();
@@ -40,4 +41,14 @@ test('the panel advances once by click or keyboard and ignores held keys', async
   await expect(page.locator('.line-count')).toHaveText(/^2 of /);
   await page.keyboard.press('Enter');
   await expect(page.locator('.line-count')).toHaveText(/^3 of /);
+});
+
+test('huge text keeps keyboard focus on the compact panel', async ({ page }) => {
+  await page.evaluate(() => window.fnt?.app.updateSettings({ largeText: 'huge' }));
+  const next = page.locator('[data-conversation-control="next"]');
+  await next.focus();
+  await page.keyboard.press('Enter');
+  await expect(page.locator('.line-count')).toHaveText('2 of 4');
+  await expect(page.locator('[data-conversation-control="next"]')).toBeFocused();
+  await expect(page.locator('.explore-scene .map-canvas')).toBeVisible();
 });

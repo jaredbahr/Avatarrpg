@@ -346,8 +346,10 @@ export class ExploreScene implements Scene {
     const entered = active && !this.conversationMode;
     this.conversationMode = active;
     if (entered) this.app.animator.clear();
-    this.clearWorldIntent();
-    if (active) this.needsSettle = false;
+    if (active) {
+      this.clearWorldIntent();
+      this.needsSettle = false;
+    }
     const scene = this.host?.querySelector<HTMLElement>('.explore-scene');
     scene?.classList.toggle('is-conversation', active);
     const canvas = this.canvas;
@@ -599,7 +601,17 @@ export class ExploreScene implements Scene {
     const panel = this.conversationMode ? conversationPanel(this.app, { compact: true }) : null;
     host.hidden = panel === null;
     host.inert = panel === null;
-    if (!panel) return;
+    if (!panel) {
+      if (refocusNext || refocusPanel) {
+        const scene = this.host?.querySelector<HTMLElement>('.explore-scene');
+        scene
+          ?.querySelector<HTMLElement>(
+            '.explore-context .action-button:not([disabled]), .explore-bar button',
+          )
+          ?.focus({ preventScroll: true });
+      }
+      return;
+    }
     host.appendChild(panel);
     const target = refocusNext
       ? (host.querySelector<HTMLElement>('[data-conversation-control="next"]') ??
@@ -607,7 +619,9 @@ export class ExploreScene implements Scene {
         panel)
       : refocusPanel
         ? panel
-        : null;
+        : (host.querySelector<HTMLElement>('[data-conversation-control="next"]') ??
+          host.querySelector<HTMLElement>('.choice-option:not([disabled])') ??
+          panel);
     target?.focus({ preventScroll: true });
   }
 
