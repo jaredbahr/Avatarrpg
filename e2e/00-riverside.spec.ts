@@ -58,7 +58,7 @@ test('riverside painted paths and sprite picking', async ({ page }) => {
   }
   // The torso is visually above the NPC's navigation tile.
   await tapWorld(15.5, 8.8);
-  await expect(page.locator('.dialogue-scene')).toBeVisible();
+  await expect(page.locator('.explore-conversation, .dialogue-scene').first()).toBeVisible();
 });
 
 for (const renderer of ['canvas', 'webgl']) {
@@ -106,7 +106,9 @@ for (const renderer of ['canvas', 'webgl']) {
     await page.getByRole('button', { name: 'Tea break', exact: true }).click();
     await expect(page.locator('.village-note')).toContainText('jasmine tea', { timeout });
     await page.getByRole('button', { name: 'Visit the shrine', exact: true }).click();
-    await expect(page.locator('.dialogue-scene')).toBeVisible({ timeout });
+    await expect(page.locator('.explore-conversation, .dialogue-scene').first()).toBeVisible({
+      timeout,
+    });
     for (let i = 0; i < 3; i++) {
       await expect(page.locator('.line-count')).toHaveText(`${i + 1} of 3`);
       await page

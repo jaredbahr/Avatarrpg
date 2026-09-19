@@ -5,6 +5,10 @@ test.beforeEach(async ({ page }) => {
   await resetStorage(page, '?renderer=canvas');
   await startGame(page, ['Elias'], ['kaya']);
   await enterNode(page, 'mira_intro');
+  await expect(page.locator('.explore-scene')).toBeVisible();
+  await expect(page.locator('.explore-conversation')).toBeVisible();
+  await expect(page.locator('.explore-dock')).toBeHidden();
+  await expect(page.getByRole('button', { name: 'Pause', exact: true })).toBeVisible();
 });
 
 for (const input of ['click', 'tap', 'Enter', 'Space'] as const) {

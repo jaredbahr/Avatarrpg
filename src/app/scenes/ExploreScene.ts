@@ -41,6 +41,8 @@ import { NearbyPlaces } from '../ui/NearbyPlaces';
 import { LocalMap, LocalMapDialog } from '../ui/LocalMap';
 import { courtyardEnvironment } from '../audio/environment';
 import { partyScale } from '../anim/actorScale';
+import { worldConversationFor } from '../../content/story/presentations';
+import { conversationPanel } from '../ui/ConversationPanel';
 
 /** How far Talk reaches, in tiles: across the square, not across the village. */
 const TALK_RANGE = 3;
@@ -75,12 +77,15 @@ export class ExploreScene implements Scene {
   private cancelNext: HTMLButtonElement | null = null;
   /** The last canvas box, so a reflow keeps the same world point in view. */
   private viewSize: { width: number; height: number } | null = null;
+  /** True while a registered world conversation sits over this map. */
+  private conversationMode = false;
 
   constructor(private app: App) {}
 
   mount(host: HTMLElement): void {
     this.host = host;
     clear(host);
+    this.conversationMode = Boolean(worldConversationFor(this.app.content, this.app.state));
 
     const scene = el('div', { class: 'scene explore-scene' });
     scene.appendChild(el('div', { class: 'top-bar explore-bar' }));
@@ -97,6 +102,7 @@ export class ExploreScene implements Scene {
           canvas,
           el('div', { class: 'explore-objective' }),
           el('div', { class: 'explore-map-corner' }),
+          el('div', { class: 'explore-conversation', hidden: true }),
         ),
       ),
     );
@@ -149,6 +155,7 @@ export class ExploreScene implements Scene {
   sync(): void {
     const state = this.app.state;
     if (!state) return;
+    const conversation = Boolean(worldConversationFor(this.app.content, state));
     const map = this.app.content.maps.get(state.location.mapId);
     if (map && map.id !== this.map?.id) {
       this.nextWalk.clear();
@@ -168,6 +175,7 @@ export class ExploreScene implements Scene {
       this.renderer?.camera.centreOn(state.location.pos);
       this.rememberViewSize();
     }
+    this.setConversationMode(conversation);
     this.renderChrome();
   }
 
@@ -334,6 +342,38 @@ export class ExploreScene implements Scene {
     if (viewport) this.viewSize = { width: viewport.width, height: viewport.height };
   }
 
+  private setConversationMode(active: boolean): void {
+    const entered = active && !this.conversationMode;
+    this.conversationMode = active;
+    if (entered) this.app.animator.clear();
+    this.clearWorldIntent();
+    if (active) this.needsSettle = false;
+    const scene = this.host?.querySelector<HTMLElement>('.explore-scene');
+    scene?.classList.toggle('is-conversation', active);
+    const canvas = this.canvas;
+    if (canvas) {
+      if (active) {
+        canvas.setAttribute('aria-disabled', 'true');
+        canvas.setAttribute('aria-hidden', 'true');
+      } else {
+        canvas.removeAttribute('aria-disabled');
+        canvas.removeAttribute('aria-hidden');
+      }
+    }
+    const dock = this.host?.querySelector<HTMLElement>('.explore-dock');
+    if (dock) {
+      dock.hidden = active;
+      dock.inert = active;
+    }
+  }
+
+  private clearWorldIntent(): void {
+    this.nextWalk.clear();
+    this.walking = null;
+    this.hover = null;
+    this.updateWalkFeedback();
+  }
+
   /* ---------------------------------------------------------------- */
   /* Chrome: the banner, the roster, the hotbar                        */
   /* ---------------------------------------------------------------- */
@@ -343,6 +383,7 @@ export class ExploreScene implements Scene {
     this.renderBanner();
     this.renderRoster();
     this.renderHud();
+    this.renderConversation();
   }
 
   private renderBanner(): void {
@@ -353,26 +394,33 @@ export class ExploreScene implements Scene {
     this.canvas?.setAttribute('aria-label', `${this.map?.name ?? 'World'} map`);
     banner.append(
       el('strong', { class: 'title-plate-name', text: this.app.placeLabel() }),
-      el('span', { class: 'explore-mode hide-narrow', text: 'Exploring' }),
-      el('div', { class: 'spacer' }),
-      button(
-        'Travel journal',
-        () => {
-          if (!this.app.animator.busy(performance.now()))
-            new TravelJournal(this.app).open(this.overlayHost());
-        },
-        { class: 'explore-header-action' },
-      ),
-      button('Save', () => new SaveMenu(this.app, { mode: 'save' }).open(this.overlayHost()), {
-        class: 'explore-header-action',
-        disabled: this.app.previewActive,
+      el('span', {
+        class: 'explore-mode hide-narrow',
+        text: this.conversationMode ? 'Conversation' : 'Exploring',
       }),
-      button('Pause', () => this.app.openPause(), { class: 'explore-header-action' }),
+      el('div', { class: 'spacer' }),
     );
+    if (!this.conversationMode) {
+      banner.append(
+        button(
+          'Travel journal',
+          () => {
+            if (!this.app.animator.busy(performance.now()))
+              new TravelJournal(this.app).open(this.overlayHost());
+          },
+          { class: 'explore-header-action' },
+        ),
+        button('Save', () => new SaveMenu(this.app, { mode: 'save' }).open(this.overlayHost()), {
+          class: 'explore-header-action',
+          disabled: this.app.previewActive,
+        }),
+      );
+    }
+    banner.append(button('Pause', () => this.app.openPause(), { class: 'explore-header-action' }));
     const objectiveHost = this.host?.querySelector<HTMLElement>('.explore-objective');
     if (objectiveHost) {
       clear(objectiveHost);
-      objectiveHost.hidden = !objective;
+      objectiveHost.hidden = this.conversationMode || !objective;
       if (objective)
         objectiveHost.append(
           el('strong', { class: 'tiny', text: 'Current objective' }),
@@ -385,7 +433,7 @@ export class ExploreScene implements Scene {
     const state = this.app.state;
     if (corner && state && this.map && this.grid) {
       clear(corner);
-      corner.hidden = !!this.life;
+      corner.hidden = this.conversationMode || !!this.life;
       this.localMap = new LocalMap(this.map, this.grid, state);
       this.localMap.update(this.partyPositions() ?? [state.location.pos]);
       const follow = button('Follow party', () => this.followParty(), {
@@ -402,6 +450,7 @@ export class ExploreScene implements Scene {
   }
 
   private followParty(): void {
+    if (this.conversationMode) return;
     const state = this.departing ?? this.app.state;
     if (!state) return;
     const leader = state.party[0];
@@ -441,6 +490,7 @@ export class ExploreScene implements Scene {
     const state = this.app.state;
     if (!hud || !state) return;
     clear(hud);
+    if (this.conversationMode) return;
     if (this.life && this.renderer) {
       this.life.renderControls(hud, this.renderer.camera);
       return;
@@ -533,6 +583,34 @@ export class ExploreScene implements Scene {
     hud.appendChild(bar);
   }
 
+  private renderConversation(): void {
+    const host = this.host?.querySelector<HTMLElement>('.explore-conversation');
+    if (!host) return;
+    const focused = document.activeElement;
+    const refocusNext =
+      focused instanceof HTMLElement &&
+      host.contains(focused) &&
+      focused.dataset.conversationControl === 'next';
+    const refocusPanel =
+      focused instanceof HTMLElement &&
+      host.contains(focused) &&
+      focused.classList.contains('conversation-panel');
+    clear(host);
+    const panel = this.conversationMode ? conversationPanel(this.app, { compact: true }) : null;
+    host.hidden = panel === null;
+    host.inert = panel === null;
+    if (!panel) return;
+    host.appendChild(panel);
+    const target = refocusNext
+      ? (host.querySelector<HTMLElement>('[data-conversation-control="next"]') ??
+        host.querySelector<HTMLElement>('.choice-option:not([disabled])') ??
+        panel)
+      : refocusPanel
+        ? panel
+        : null;
+    target?.focus({ preventScroll: true });
+  }
+
   /** The villager nearest the leader within Talk's reach, if any. */
   private nearestNpc(from: Vec2): NpcDef | null {
     const state = this.app.state;
@@ -553,12 +631,14 @@ export class ExploreScene implements Scene {
   }
 
   private talkTo(npc: NpcDef | null): void {
+    if (this.conversationMode) return;
     if (!npc) return;
     // The rules walk the party up to the villager and open the conversation.
     this.requestWalk(npc.pos);
   }
 
   private inspect(unit: Unit): void {
+    if (this.conversationMode) return;
     new UnitInspector(this.app, unit, () => undefined).open(this.overlayHost());
   }
 
@@ -598,14 +678,23 @@ export class ExploreScene implements Scene {
     this.detach = attachPointer(canvas, {
       onTap: (point) => this.handleTap(point.x, point.y),
       onDrag: (delta) => {
+        if (this.conversationMode) return;
         this.renderer?.camera.panBy(delta.x, delta.y);
       },
       onPinch: (gesture) => {
+        if (this.conversationMode) return;
         this.renderer?.camera.zoomAt(gesture.centre, gesture.step);
         this.renderer?.camera.panBy(gesture.delta.x, gesture.delta.y);
       },
-      onWheel: (wheel) => this.renderer?.camera.zoomAt(wheel.point, wheelZoomFactor(wheel)),
+      onWheel: (wheel) => {
+        if (this.conversationMode) return;
+        this.renderer?.camera.zoomAt(wheel.point, wheelZoomFactor(wheel));
+      },
       onHover: (point) => {
+        if (this.conversationMode) {
+          this.hover = null;
+          return;
+        }
         this.hover = point ? (this.renderer?.camera.toTile(point.x, point.y) ?? null) : null;
       },
     });
@@ -621,6 +710,7 @@ export class ExploreScene implements Scene {
   }
 
   private handleTap(x: number, y: number): void {
+    if (this.conversationMode) return;
     const renderer = this.renderer;
     const state = this.app.state;
     if (!renderer || !state) return;
@@ -638,6 +728,7 @@ export class ExploreScene implements Scene {
 
   private requestWalk(pos: Vec2): void {
     const state = this.app.state;
+    if (this.conversationMode) return;
     if (!state || state.screen !== 'explore' || state.location.mapId !== this.map?.id) return;
     if (this.life?.busy(performance.now())) return;
     if (this.app.animator.busy(performance.now())) {
@@ -658,6 +749,7 @@ export class ExploreScene implements Scene {
   }
 
   private onKeyDown = (event: KeyboardEvent): void => {
+    if (this.conversationMode) return;
     if (event.key === 'Escape' && !document.querySelector('[role="dialog"]')) this.clearNextWalk();
   };
 
@@ -700,9 +792,11 @@ export class ExploreScene implements Scene {
     const now = performance.now();
     // Long roaming sessions must retire old walk tracks just as combat does.
     this.app.animator.prune(now);
-    // Never carry queued intent through a menu, a loaded save, or a story/map change.
-    if (document.hidden || document.querySelector('[role="dialog"]')) this.clearNextWalk();
-    if (!this.app.animator.busy(now)) {
+    // Never carry queued intent through a menu, a loaded save, a story/map
+    // change, or a world conversation.
+    if (this.conversationMode || document.hidden || document.querySelector('[role="dialog"]'))
+      this.clearNextWalk();
+    if (!this.conversationMode && !this.app.animator.busy(now)) {
       if (this.walking) {
         this.walking = null;
         this.updateWalkFeedback();
@@ -729,7 +823,7 @@ export class ExploreScene implements Scene {
         this.animatePartyBatches(batches, state, now);
       }
     }
-    if (this.life?.update(now)) return;
+    if (!this.conversationMode && this.life?.update(now)) return;
     if (this.hudMoving !== this.app.animator.busy(now)) this.renderHud();
     this.app.stats?.frame(now);
 

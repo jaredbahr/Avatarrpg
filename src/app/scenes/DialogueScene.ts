@@ -20,6 +20,7 @@ import { CONTENT } from '../../content';
 import { resolveAsset } from '../../content/assets/manifest';
 import { button, clear, el } from '../ui/dom';
 import { assetCanvas } from '../ui/assetCanvas';
+import { conversationPanel, resolveConversation } from '../ui/ConversationPanel';
 import {
   INTERLUDES,
   INTERLUDE_ART,
@@ -351,6 +352,24 @@ export class DialogueScene implements Scene {
   }
 
   private dialogueStage(node: Extract<StoryNode, { kind: 'dialogue' }>): HTMLElement {
+    const shared = conversationPanel(this.app);
+    const resolved = resolveConversation(this.app);
+    if (shared && resolved) {
+      const state = this.app.state;
+      const index = Math.min(state?.story.lineIndex ?? 0, Math.max(0, resolved.lines.length - 1));
+      return this.stage(
+        'dialogue',
+        {
+          name: resolved.speaker,
+          portrait: resolved.portrait,
+          note: el('span', {
+            class: 'muted tiny line-count',
+            text: `${index + 1} of ${resolved.lines.length}`,
+          }),
+        },
+        shared,
+      );
+    }
     const state = this.app.state;
     // Variants first: who is standing here changes what gets said.
     const said = state
@@ -411,6 +430,10 @@ export class DialogueScene implements Scene {
   }
 
   private choiceStage(node: Extract<StoryNode, { kind: 'choice' }>): HTMLElement {
+    const shared = conversationPanel(this.app);
+    const resolved = resolveConversation(this.app);
+    if (shared && resolved)
+      return this.stage('choice', { name: resolved.speaker, portrait: resolved.portrait }, shared);
     const state = this.app.state;
     const decider = state ? this.app.session.decider(state) : undefined;
     const next = state ? this.app.session.nextDecider(state) : undefined;

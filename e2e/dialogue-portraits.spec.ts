@@ -25,7 +25,9 @@ for (const layout of [
       ['ruon_choice', 'portrait.ruon'],
     ] as const) {
       await enterNode(page, node);
-      const portrait = page.locator('.stage-portrait canvas');
+      const portrait = page
+        .locator('.stage-portrait canvas, .conversation-compact-portrait canvas')
+        .first();
       await expect(portrait).toBeVisible();
       await expect(portrait).toHaveAttribute('data-asset', asset);
       const bounds = await portrait.boundingBox();
@@ -36,7 +38,10 @@ for (const layout of [
       expect(bounds.x + bounds.width).toBeLessThanOrEqual(layout.width);
       expect(bounds.y + bounds.height).toBeLessThanOrEqual(layout.height);
       expect(
-        await page.locator('.name-plate').evaluate((el) => el.scrollWidth <= el.clientWidth),
+        await page
+          .locator('.name-plate, .conversation-compact-speaker')
+          .first()
+          .evaluate((el) => el.scrollWidth <= el.clientWidth),
       ).toBe(true);
       const panel = await page.locator('.dialogue-panel').boundingBox();
       if (!panel) throw new Error('Dialogue has no bounds');
@@ -59,7 +64,9 @@ for (const layout of [
     await page.reload();
     await page.getByRole('button', { name: /^Continue$/ }).click();
     expect(await page.evaluate(() => window.fnt?.app.state)).toEqual(saved);
-    await expect(page.locator('.stage-portrait canvas')).toBeVisible();
+    await expect(
+      page.locator('.stage-portrait canvas, .conversation-compact-portrait canvas').first(),
+    ).toBeVisible();
     await expect(page.locator('.line-count')).toHaveText('2 of 3');
     await page.locator('.dialogue-panel button').tap();
     await expect(page.locator('.line-count')).toHaveText('3 of 3');
@@ -81,7 +88,9 @@ test('a failed canonical portrait image keeps a visible painted fallback', async
   await startGame(page, ['Elias'], ['kaya']);
   await enterNode(page, 'mira_intro');
   await expect.poll(() => blocked).toBe(true);
-  const portrait = page.locator('.stage-portrait canvas');
+  const portrait = page
+    .locator('.stage-portrait canvas, .conversation-compact-portrait canvas')
+    .first();
   await expect(portrait).toBeVisible();
   expect(
     await portrait.evaluate((el) => {
@@ -94,21 +103,22 @@ test('a failed canonical portrait image keeps a visible painted fallback', async
   await expect(page.locator('.line-count')).toHaveText('2 of 4');
 });
 
-test('party speaker title agrees with the portrait and narration keeps its label', async ({
+test('world speaker title agrees with the portrait and staged narration keeps its label', async ({
   page,
 }) => {
   await resetStorage(page, '?renderer=canvas');
   await startGame(page, ['Elias'], ['jinu']);
   await expect(page.locator('.top-bar > span')).toHaveText('Ba Dan');
   await enterNode(page, 'dorin_directions');
-  await expect(page.locator('.name-plate h2')).toHaveText('Jinu');
-  await expect(page.locator('.top-bar > span')).toHaveText('Jinu');
-  await expect(page.locator('.stage-portrait canvas')).toHaveAttribute(
-    'data-asset',
-    'portrait.jinu',
-  );
+  await expect(
+    page.locator('.name-plate h2, .conversation-compact-speaker strong').first(),
+  ).toHaveText('Jinu');
+  await expect(page.locator('.top-bar > span')).toHaveText('Ba Dan');
+  await expect(
+    page.locator('.stage-portrait canvas, .conversation-compact-portrait canvas').first(),
+  ).toHaveAttribute('data-asset', 'portrait.jinu');
   await page.locator('.dialogue-panel button').tap();
-  await expect(page.locator('.top-bar > span')).toHaveText('Jinu');
+  await expect(page.locator('.top-bar > span')).toHaveText('Ba Dan');
   await enterNode(page, 'ruon_choice');
   await expect(page.locator('.top-bar > span')).toHaveText('Captain Ruon');
   await enterNode(page, 'act1_open');

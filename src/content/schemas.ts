@@ -33,6 +33,7 @@ import type {
   StoryNode,
   SurfaceDef,
 } from '../core/types';
+import { STORY_PRESENTATIONS, validateStoryPresentations } from './story/presentations';
 
 /* ------------------------------------------------------------------ */
 /* Primitives                                                          */
@@ -1388,6 +1389,8 @@ export function validateContent(bundle: ContentBundle): string[] {
       problems.push(`story node "${from}" links to "${to}", which does not exist`);
     }
   }
+
+  problems.push(...validateStoryPresentations(STORY_PRESENTATIONS, bundle.story, bundle.maps));
 
   /* --- reachability: every node must be reachable from the entry ----- */
   const entry = 'act1_open';

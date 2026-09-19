@@ -54,6 +54,7 @@ import { PartySetupScene } from './scenes/PartySetupScene';
 import { DialogueScene } from './scenes/DialogueScene';
 import { ExploreScene } from './scenes/ExploreScene';
 import { CombatScene } from './scenes/CombatScene';
+import { worldConversationFor } from '../content/story/presentations';
 
 /** What `rendererCamera()` reports: tile size and offset in CSS px, and whether the whole board is on screen. */
 export interface CameraInfo {
@@ -272,7 +273,7 @@ export class App {
     const wanted =
       state.screen === 'combat'
         ? 'combat'
-        : state.screen === 'explore'
+        : state.screen === 'explore' || worldConversationFor(this.content, state)
           ? 'explore'
           : state.screen === 'dialogue' || state.screen === 'ended'
             ? 'dialogue'

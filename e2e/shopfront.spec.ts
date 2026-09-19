@@ -21,7 +21,7 @@ for (const renderer of ['canvas', 'webgl']) {
     const talk = page.getByRole('button', { name: /^Talk/ });
     await expect(talk).toContainText('Gao');
     await talk.click();
-    await expect(page.locator('.dialogue-scene')).toBeVisible();
+    await expect(page.locator('.explore-conversation, .dialogue-scene').first()).toBeVisible();
     expect(await page.evaluate(() => window.fnt!.app.state!.story.nodeId)).toBe('gao_friendly');
   });
 
