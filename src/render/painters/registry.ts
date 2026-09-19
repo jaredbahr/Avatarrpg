@@ -90,6 +90,7 @@ export function resolvePainter(key: string): ResolvedPainter {
       'unit.enemy.slinger': 'sling',
       'unit.enemy.bruiser': 'broad',
       'unit.enemy.quarrybender': 'bender',
+      'unit.enemy.deserter': 'bender',
     };
     const mercenaryVariants: Readonly<Record<string, string>> = {
       'unit.enemy.crossbow': 'crossbow',

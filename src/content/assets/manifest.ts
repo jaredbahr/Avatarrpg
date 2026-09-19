@@ -231,7 +231,7 @@ export const ASSETS: Readonly<Record<string, AssetEntry>> = {
   'unit.enemy.slinger': quarryEnemySheet('slinger', 'enemy'),
   'unit.enemy.bruiser': quarryEnemySheet('bruiser', 'enemy'),
   'unit.enemy.quarrybender': quarryEnemySheet('quarrybender', 'earth'),
-  'unit.enemy.deserter': painter('bandit', 'fire', 'bender'),
+  'unit.enemy.deserter': quarryEnemySheet('deserter', 'fire'),
   'unit.enemy.merc': cuttingSheet('merc', 'enemy'),
   'unit.enemy.crossbow': {
     kind: 'sheet',
@@ -340,6 +340,11 @@ export const ASSETS: Readonly<Record<string, AssetEntry>> = {
     palette: 'enemy',
   },
   'portrait.enemy.thug': { kind: 'image', url: 'art/portraits/enemy.thug.png', palette: 'enemy' },
+  'portrait.enemy.deserter': {
+    kind: 'image',
+    url: 'art/portraits/enemy.deserter.webp',
+    palette: 'fire',
+  },
   'portrait.enemy.grumbler': {
     kind: 'image',
     url: 'art/portraits/enemy.grumbler.png',

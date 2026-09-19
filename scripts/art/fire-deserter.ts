@@ -39,16 +39,19 @@ const scaled = cells.map((cell) => {
 const walkSourcePath = 'assets/reference/fire-deserter/walk-source.png';
 const walkSource = readPng(walkSourcePath);
 const walkCells = splitGrid(walkSource, 2, 2);
+const counterSwingSourcePath = 'assets/reference/fire-deserter/walk-counter-swing-source.png';
+const counterSwingCells = splitGrid(readPng(counterSwingSourcePath), 2, 2);
 // Only the right column has genuinely alternating planted legs. The left
 // column repeats one lead leg and is deliberately not included.
 const selectedWalkCells = [1, 3].map((index) => {
-  const cell = walkCells[index];
+  const cell = index === 3 ? counterSwingCells[index] : walkCells[index];
   if (!cell) throw new Error('Missing walking source pose');
   const bounds = alphaBounds(cell);
   if (!bounds) throw new Error('Empty walking source pose');
   return crop(cell, bounds);
 });
-const walkScale = 151 / Math.max(...selectedWalkCells.map((cell) => cell.height));
+// Lock the existing source scale so walk/0 remains byte-identical as well.
+const walkScale = 151 / Math.max(...[1, 3].map((index) => alphaBounds(walkCells[index]!)!.height));
 for (const [index, cell] of selectedWalkCells.entries())
   scaled[index + 2] = scaleBy(cell, walkScale);
 const width = Math.max(128, ...scaled.map((cell) => cell.width + 2 * MARGIN));
@@ -113,6 +116,10 @@ const measurements = {
   walkingSource: walkSourcePath,
   walkingSourceSha256: createHash('sha256').update(readFileSync(walkSourcePath)).digest('hex'),
   walkingSourceScale: walkScale,
+  counterSwingSource: counterSwingSourcePath,
+  counterSwingSourceSha256: createHash('sha256')
+    .update(readFileSync(counterSwingSourcePath))
+    .digest('hex'),
   walkingSelectedCells: [1, 3],
   poses: report,
   pngBytesBeforeLosslessPass: original.length,
@@ -122,7 +129,7 @@ const measurements = {
   atlasSize: { width: decoded.width, height: decoded.height },
   unusedFrameSlots: (decoded.width * decoded.height) / (width * height) - poses.length,
   status:
-    'Source review only. Distinct planted legs; arms remain near-static. Alpha compositing checked. Runtime gait unreviewed. No manifest or budget integration.',
+    'Runtime candidate. Distinct planted legs and opposed arm swing. Only walk/1 uses the counter-swing edit; the other eight frames retain their original sources.',
 };
 writeFileSync(join(out, 'measurements.json'), `${JSON.stringify(measurements, null, 2)}\n`);
 console.log(JSON.stringify(measurements, null, 2));

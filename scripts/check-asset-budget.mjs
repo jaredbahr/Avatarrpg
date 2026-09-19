@@ -11,8 +11,8 @@ import { join, resolve, dirname, relative, sep } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 const FAMILY_BUDGET_MB = 4;
-// ADR 0032: three illustrated live-route figures replace procedural stand-ins.
-const UNIT_BUDGET_MB = 4.5;
+// ADR 0035: add the distinct fire deserter after the ADR 0032 Cutting figures.
+const UNIT_BUDGET_MB = 4.75;
 const PRECACHE_BUDGET_MB = 25;
 
 const root = resolve(dirname(fileURLToPath(import.meta.url)), '..');

@@ -1,5 +1,9 @@
 # Fire deserter source checkpoint
 
+This historical checkpoint is preserved below. The subsequent runtime integration,
+walking counter-swing correction and matching portrait are documented in
+[fire-deserter-runtime.md](fire-deserter-runtime.md).
+
 Base `380b3b5`, isolated branch `codex/fire-deserter-art`. This is a review source,
 not an integrated runtime replacement. No manifest, shipped art, budget, renderer,
 schema, rules or abilities have changed. This work does not block the current release.
