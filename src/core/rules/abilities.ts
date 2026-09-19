@@ -40,7 +40,13 @@ import {
 } from './grid';
 import { expectedDamage, healAmount, hitChance, rollDamage, rollHit } from './damage';
 import { forecastReactions } from './reactions';
-import type { ForecastEntry, PropForecast, ShoveForecast, StatusForecast } from './reactions';
+import type {
+  ForecastEntry,
+  PropForecast,
+  ShoveForecast,
+  StatusForecast,
+  SurfaceContactForecast,
+} from './reactions';
 import { canUseAbilities, effectiveStats, isAlive } from './stats';
 
 /* ------------------------------------------------------------------ */
@@ -245,6 +251,8 @@ export interface AbilityPreview {
   readonly shoves: readonly ShoveForecast[];
   /** Status outcomes shown without rolling a chance. */
   readonly statuses: readonly StatusForecast[];
+  /** Living units already standing on a surface painted by this action. */
+  readonly surfaceContacts: readonly SurfaceContactForecast[];
 }
 
 /**
@@ -372,6 +380,7 @@ export function previewAbility(
     props: forecast.props,
     shoves: forecast.shoves,
     statuses: forecast.statuses,
+    surfaceContacts: forecast.surfaceContacts,
     // A bolt of lightning that chains back through the puddle your own
     // waterbender is standing in counts as hitting your own side, even though
     // she is nowhere near the tile you aimed at.
@@ -379,7 +388,8 @@ export function previewAbility(
       targets.some((t) => t.friendly && t.damage > 0) ||
       forecast.catchesFriendly ||
       forecast.props.some((prop) => prop.affectedAllies.length > 0) ||
-      forecast.shoves.some((shove) => shove.friendly),
+      forecast.shoves.some((shove) => shove.friendly) ||
+      forecast.surfaceContacts.some((contact) => contact.friendly),
   };
 }
 

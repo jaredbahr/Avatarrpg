@@ -339,6 +339,21 @@ describe('bounded combat outcome previews', () => {
       x: 17,
       y: 5,
     });
+
+    const icePath = previewAbility(CONTENT, bossBattle, bossCaster, ability('ice_path'), boss.pos);
+    expect(icePath.targets).toHaveLength(0);
+    expect(icePath.surfaceContacts).toEqual([
+      expect.objectContaining({
+        unitId: boss.id,
+        name: boss.name,
+        surface: 'ice',
+        status: expect.objectContaining({
+          requestedStatus: 'chilled',
+          appliedStatus: 'chilled',
+          chance: 0.4,
+        }),
+      }),
+    ]);
   });
 
   it('reports status upgrades, clears, and cleanse results without rolling', () => {

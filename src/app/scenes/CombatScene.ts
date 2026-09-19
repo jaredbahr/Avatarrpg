@@ -878,7 +878,12 @@ export class CombatScene implements Scene {
     const preview = previewAbility(this.app.content, battle, unit, ability, target);
 
     const chips = el('div', { class: 'row row-wrap chips preview-chips' });
-    if (preview.targets.length === 0 && preview.props.length === 0 && preview.shoves.length === 0) {
+    if (
+      preview.targets.length === 0 &&
+      preview.props.length === 0 &&
+      preview.shoves.length === 0 &&
+      preview.surfaceContacts.length === 0
+    ) {
       chips.appendChild(el('span', { class: 'chip', text: 'Nobody in the area' }));
     }
     for (const entry of preview.targets) {
@@ -907,6 +912,39 @@ export class CombatScene implements Scene {
         el('span', {
           class: `chip ${entry.friendly ? 'chip-friendly' : 'chip-hostile'}${entry.lethal ? ' chip-lethal' : ''}`,
           text: `${entry.name}: ${parts.join(' · ')}${entry.lethal ? ' — lethal' : ''}`,
+        }),
+      );
+    }
+    for (const contact of preview.surfaceContacts) {
+      const surface = this.app.content.surfaces.get(contact.surface)?.name ?? contact.surface;
+      const effects: string[] = [];
+      if (contact.damage > 0) effects.push(`${contact.damage} damage`);
+      if (contact.status) {
+        const requested = contact.status.requestedStatus
+          ? (this.app.content.statuses.get(contact.status.requestedStatus)?.name ??
+            contact.status.requestedStatus)
+          : null;
+        const applied = contact.status.appliedStatus
+          ? (this.app.content.statuses.get(contact.status.appliedStatus)?.name ??
+            contact.status.appliedStatus)
+          : requested;
+        if (applied) {
+          const outcome = applied !== requested ? `${applied} (from ${requested})` : applied;
+          effects.push(
+            contact.status.chance >= 1
+              ? outcome
+              : `${Math.round(contact.status.chance * 100)}% ${outcome}`,
+          );
+        }
+        for (const cleared of contact.status.clearedStatuses) {
+          const name = this.app.content.statuses.get(cleared)?.name ?? cleared;
+          effects.push(`clears ${name}`);
+        }
+      }
+      chips.appendChild(
+        el('span', {
+          class: `chip ${contact.friendly ? 'chip-friendly' : 'chip-terrain'}`,
+          text: `${contact.name}: ${surface} contact${effects.length ? ` — ${effects.join(', ')}` : ''}`,
         }),
       );
     }

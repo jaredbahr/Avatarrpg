@@ -22,6 +22,7 @@ import type { Ability, BattleState, ContentIndex, StatusId, SurfaceId, Unit, Vec
 import { RngCursor } from '../rng';
 import { BattleDraft } from '../state/battleDraft';
 import { allowsCasterTarget, blastTiles, occupiedCells, posKey, tileAt } from './grid';
+import { surfaceDamage } from './damage';
 import { applyStatus, removeStatuses } from './status';
 import { contactEffects } from './surfaces';
 import type { ChainHit, StatusHit, SurfaceChange } from './surfaces';
@@ -99,6 +100,18 @@ export interface ShoveForecast {
   readonly landingStatuses: readonly { readonly id: StatusId; readonly chance: number }[];
 }
 
+/** A living unit standing on a surface painted by this action. */
+export interface SurfaceContactForecast {
+  readonly unitId: string;
+  readonly name: string;
+  readonly friendly: boolean;
+  readonly surface: SurfaceId;
+  /** Guaranteed contact damage after the unit's current mitigation. */
+  readonly damage: number;
+  /** The contact status, if any; chance is described but never rolled. */
+  readonly status: StatusForecast | null;
+}
+
 export interface ForecastEntry {
   /**
    * 'reaction' — the combo table fired and the tile becomes something other
@@ -134,6 +147,8 @@ export interface ReactionForecast {
   readonly shoves: readonly ShoveForecast[];
   /** Ability, combo and prop status outcomes, without a random roll. */
   readonly statuses: readonly StatusForecast[];
+  /** Units already standing on a newly painted surface, kept separate from direct hits. */
+  readonly surfaceContacts: readonly SurfaceContactForecast[];
 }
 
 const EMPTY: ReactionForecast = {
@@ -142,6 +157,7 @@ const EMPTY: ReactionForecast = {
   props: [],
   shoves: [],
   statuses: [],
+  surfaceContacts: [],
 };
 
 /** The two sides the game actually cares about; allies count as party. */
@@ -186,6 +202,7 @@ export function forecastReactions(
   const friendlyIds = struck.filter((unit) => friendlyTo(caster, unit)).map((unit) => unit.id);
   const statusForecasts: StatusForecast[] = [];
   const shoves: ShoveForecast[] = [];
+  const surfaceContacts: SurfaceContactForecast[] = [];
 
   const recipientsForStatus = (to: 'hit' | 'self' | 'allies'): readonly string[] => {
     if (to === 'self') return [caster.id];
@@ -205,7 +222,11 @@ export function forecastReactions(
         break;
       case 'surface': {
         const painted = effect.area === 'area' ? tiles : [target];
-        draft.paint(painted, effect.surface, effect.duration, caster.id);
+        const beforeContact = new Map(draft.units.map((unit) => [unit.id, unit]));
+        const reaction = draft.paint(painted, effect.surface, effect.duration, caster.id);
+        surfaceContacts.push(
+          ...forecastSurfaceContacts(content, caster, draft, beforeContact, reaction.changes),
+        );
         break;
       }
       case 'push':
@@ -357,6 +378,7 @@ export function forecastReactions(
     props,
     shoves,
     statuses: statusForecasts,
+    surfaceContacts,
   };
 }
 
@@ -381,6 +403,52 @@ export function previewStatus(
     chance,
     clearedStatuses: result.cleared,
   };
+}
+
+/**
+ * Mirrors BattleDraft.paint's contact pass without choosing any chance branch.
+ * The draft has already applied guaranteed contact damage/statuses, so the
+ * before snapshot lets previewStatus report the same upgrade and clears that
+ * the live contact would see. One record per unit/surface keeps a multi-cell
+ * footprint readable while preserving the chance rather than inventing a
+ * selected result.
+ */
+function forecastSurfaceContacts(
+  content: ContentIndex,
+  caster: Unit,
+  draft: BattleDraft,
+  beforeContact: ReadonlyMap<string, Unit>,
+  changes: readonly SurfaceChange[],
+): SurfaceContactForecast[] {
+  const out: SurfaceContactForecast[] = [];
+  const seen = new Set<string>();
+
+  for (const change of changes) {
+    if (!change.to) continue;
+    const occupant = unitStandingAt(draft.units, change.pos);
+    if (!occupant) continue;
+    const before = beforeContact.get(occupant.id) ?? occupant;
+    for (const cell of occupiedCells(occupant)) {
+      const contact = contactEffects(content, draft.grid, cell);
+      if (!contact.surface || contact.surface !== change.to) continue;
+      const key = `${occupant.id}:${contact.surface}`;
+      if (seen.has(key)) continue;
+      seen.add(key);
+      const status = contact.status
+        ? previewStatus(content, before, caster, contact.status, undefined, contact.statusChance)
+        : null;
+      out.push({
+        unitId: occupant.id,
+        name: occupant.name,
+        friendly: friendlyTo(caster, occupant),
+        surface: contact.surface,
+        damage: surfaceDamage(content, before, contact.damage, contact.damageType),
+        status,
+      });
+    }
+  }
+
+  return out;
 }
 
 function landingInfo(
