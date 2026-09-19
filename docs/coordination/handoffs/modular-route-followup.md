@@ -21,6 +21,11 @@ that release branch. The visible release version remains unshipped v0.2.1.
 - Root verification on `fc3eb7d`: 862 tests / 104 files, typecheck, lint and
   formatting pass. Earlier combined gesture/viewport coverage passed 13 cases;
   that browser build predates the final grass composition.
+  Fresh production build at `054d530` (same product as `fc3eb7d`), art validation
+  and asset budgets pass. Both complete Canvas trade/escort route checks pass
+  at 1280x720, including Driller victory, quarry and village save/reload,
+  custody-specific homecoming, and revisit without repeated battle or XP.
+  These automated legal-route checks do not prove visual or audible quality.
 
 ## Ownership and remaining review
 
