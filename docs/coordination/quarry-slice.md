@@ -93,13 +93,14 @@ The [route review](handoffs/route-presentation-review.md) records its scope.
 
 Current ownership supersedes the historical table above: the lead now owns
 final integration in `Avatar RPG-combined-0.2.1` and PR64 coordination; the
-previous gameplay owner has stopped. The clean accepted product build is
-`cda0925`, with documentation through `13882b4`. Quarry surround, dynamic
-surfaces, compact forecasts and exploration overflow corrections are integrated.
-`quarry_composition` now owns a bounded Water Whip material correction in an
-isolated motion-review worktree. `combat_preview` has completed the legal-role
-audit and is preserving its evidence. `world_conversations` completed audio
-lifecycle evidence and now provides a read-only CI duration audit. Source
+previous gameplay owner has stopped. Product build `903d853` includes the
+reviewed quarry surround, dynamic surfaces, compact forecasts, exploration
+overflow corrections and flowing water motion. Combined `50e6550` passed
+typecheck, lint, formatting and 804 tests. `quarry_composition` and
+`combat_preview` completed their bounded assignments and preserved evidence.
+`world_conversations` completed audio lifecycle evidence and now owns the
+isolated repair for PR64's failed iPad preview test and Riverside button churn.
+The next verified batch advances the same PR64; no duplicate CI is needed. Source
 worktrees and recordings remain preserved; redundant preview servers stop
 when their evidence is handed off. See the lead handoff for exact checkpoints.
 

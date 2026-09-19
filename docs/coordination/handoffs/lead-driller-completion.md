@@ -7,6 +7,21 @@ outcome and return. The approved player-view references remain the quality bar.
 
 ## Current plan and owners
 
+The lead is now the sole integration owner for PR64 and the local
+`codex/route-review-preview-combined` branch. The former gameplay and art tasks
+have stopped; their source worktrees remain preserved. `world_conversations`
+owns only the isolated CI repair in `codex/ci-e2e-repair`. Water motion and the
+reproducible role audit are complete and integrated or retained as evidence.
+
+Combined `50e6550` passed `npm run verify`: typecheck, lint, formatting and
+804 tests in 89 files. PR64 run `35424656782` is terminal: verification and
+gallery passed, E2E failed on the iPad landscape combat-preview playthrough.
+No retry was dispatched. Integrate the bounded repair, verify the final head,
+then advance the same PR64 with the complete v0.2.1 batch. Full experiential
+acceptance, exact-final-head CI and deployed-version verification remain open.
+
+### Historical assignment plan (superseded by the ownership above)
+
 1. Gameplay `01a0b300-e321-7670-aab3-f0aeaf624dc0` repairs PR #64 and owns
    integration and release. At inspected head `b0fbc8b`, verification and gallery
    pass; run 35412143302 E2E fails at the forced-WebGL painted-rubble screenshot.
