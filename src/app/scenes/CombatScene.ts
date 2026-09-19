@@ -183,7 +183,12 @@ export class CombatScene implements Scene {
         // 96px frame; Huge text needs the larger allowance.
         const hudAllowance = this.app.settings.largeText === 'huge' ? 160 : 124;
         const decisionHeight = camera.viewport.height - hudAllowance;
-        this.preferredCombatTilePx = decisionHeight < 360 ? 40 : 96;
+        const compact = decisionHeight < 360;
+        this.preferredCombatTilePx = compact
+          ? this.app.settings.largeText === 'huge' || window.innerWidth < 600
+            ? 40
+            : 64
+          : 96;
       }
       camera.fitExplore(this.preferredCombatTilePx ?? 96);
     } else camera.fit();

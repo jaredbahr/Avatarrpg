@@ -108,7 +108,7 @@ for (const largeText of ['normal', 'huge'] as const) {
     const before = await page.evaluate(() => window.fnt!.app.rendererCamera()!);
     const box = await page.locator('.map-canvas').boundingBox();
     if (!box) throw new Error('Missing battlefield geometry');
-    expect(before.tilePx).toBeLessThanOrEqual(40.01);
+    expect(before.tilePx).toBeCloseTo(largeText === 'huge' ? 40 : 64, 5);
     expect(box.height).toBeGreaterThan(160);
     expect(await page.getByRole('button', { name: /^Focus / }).count()).toBeGreaterThan(0);
 
@@ -137,7 +137,7 @@ test('real viewport resize recomputes compact oblique framing', async ({ page })
   await page.setViewportSize({ width: 1280, height: 720 });
   await settleLayout(page);
   const short = await page.evaluate(() => window.fnt!.app.rendererCamera()!);
-  expect(short.tilePx).toBeLessThanOrEqual(40.01);
+  expect(short.tilePx).toBeCloseTo(64, 5);
 });
 
 test('Huge text on a tall viewport reserves the expanded decision panel', async ({ page }) => {
