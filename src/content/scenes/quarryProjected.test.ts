@@ -1,4 +1,8 @@
-import { describe, expect, it } from 'vitest';
+import { readFileSync } from 'node:fs';
+import { createRequire } from 'node:module';
+import decode, { init } from '@jsquash/webp/decode.js';
+import { beforeAll, describe, expect, it } from 'vitest';
+import type { MapScene } from '../../core/types';
 import { AMBUSH_ROAD, QUARRY_FLOOR } from '../maps/combat';
 import {
   CUTTING_SCENE,
@@ -8,7 +12,73 @@ import {
   DRILLER_REAR_LOADING_SCENERY,
 } from './quarryProjected';
 
+const routeScenes = [
+  { map: AMBUSH_ROAD, scene: CUTTING_SCENE },
+  { map: QUARRY_FLOOR, scene: DRILLER_FLOOR_SCENE },
+] as const;
+const decoded: {
+  scene: (typeof routeScenes)[number]['scene'];
+  piece: MapScene['ground'][number];
+  image: ImageData;
+}[] = [];
+
+beforeAll(async () => {
+  const require = createRequire(import.meta.url);
+  await init(
+    await WebAssembly.compile(
+      readFileSync(require.resolve('@jsquash/webp/codec/dec/webp_dec.wasm')),
+    ),
+  );
+  for (const { scene } of routeScenes)
+    for (const piece of scene.ground.slice(2)) {
+      const bytes = readFileSync(`public/${piece.url}`);
+      decoded.push({
+        scene,
+        piece,
+        image: await decode(
+          bytes.buffer.slice(bytes.byteOffset, bytes.byteOffset + bytes.byteLength),
+        ),
+      });
+    }
+});
+
+const point = (x: number, y: number) => ({ x: 768 + (x - y) * 64, y: (x + y) * 32 });
+function alpha(scene: MapScene, world: { x: number; y: number }): number {
+  let value = 0;
+  for (const entry of decoded) {
+    if (
+      entry.scene !== scene ||
+      world.x < entry.piece.x ||
+      world.y < entry.piece.y ||
+      world.x >= entry.piece.x + entry.piece.width ||
+      world.y >= entry.piece.y + entry.piece.height
+    )
+      continue;
+    const x = Math.min(
+      entry.image.width - 1,
+      Math.floor(((world.x - entry.piece.x) * entry.image.width) / entry.piece.width),
+    );
+    const y = Math.min(
+      entry.image.height - 1,
+      Math.floor(((world.y - entry.piece.y) * entry.image.height) / entry.piece.height),
+    );
+    value = Math.max(value, entry.image.data[(y * entry.image.width + x) * 4 + 3] ?? 0);
+  }
+  return value;
+}
+
 describe('projected quarry scenes', () => {
+  it('covers dry authored centers and boundaries while leaving live surface interiors transparent', () => {
+    for (const { map, scene } of routeScenes)
+      for (let y = 0; y < map.height; y++)
+        for (let x = 0; x < map.width; x++) {
+          const key = map.rows[y]?.[x];
+          const value = alpha(scene, point(x + 0.5, y + 0.5));
+          if (key === '~' || key === 'o' || key === 'm')
+            expect(value, `${map.id} live ${x},${y}`).toBeLessThan(8);
+          else if (key !== '#') expect(value, `${map.id} dry ${x},${y}`).toBeGreaterThan(240);
+        }
+  });
   it('shares only the exterior surround underneath the two live floors', () => {
     expect(CUTTING_SCENE.ground.slice(0, 2)).toEqual(DRILLER_FLOOR_SCENE.ground.slice(0, 2));
     expect(CUTTING_SCENE.ground.slice(0, 2).map((piece) => piece.url)).toEqual([

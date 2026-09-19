@@ -76,3 +76,16 @@ Gameplay may register `src/content/scenes/cutting.ts` and
 `src/content/scenes/drillerFloor.ts` only after reviewing the upright source and
 these ground pages together. Keep `paintedWater` unset so live water remains
 visible. The old backdrop continues as the missing-asset fallback until then.
+
+## Local Cutting and Driller material regions
+
+The local region packs use the reviewed six-panel quarry source
+`exec-8dcfcdb5-eeb3-485c-a1c7-5cfd6279580d.png` from the documented local
+ImageGen directory. Its verified SHA-256 is
+`d15b808ab498c4521d73892d887ce2fedc54243008e0c92f9750c976e67a64f9`.
+`scripts/art/quarry-route-ground.ts` derives transparent dirt, road and stone
+regions from authoritative rows for each map; water, oil and mud cells stay
+transparent for runtime surfaces. A two-pixel edge bleed is restricted away
+from those dynamic interiors. Cutting packs: dirt-west, dirt-east, road and
+stone. Driller packs: dirt-west, dirt-east and stone. The exterior surround,
+rims, rear loading strip, walls and props are independent registrations.

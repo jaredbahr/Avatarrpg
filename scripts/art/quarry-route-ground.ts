@@ -11,6 +11,7 @@ const [mapId, sourcePath] = process.argv.slice(2);
 const map = mapId === 'cutting' ? AMBUSH_ROAD : mapId === 'driller' ? QUARRY_FLOOR : null;
 if (!map || !sourcePath)
   throw new Error('Usage: quarry-route-ground.ts <cutting|driller> <six-panel-source.png>');
+const rows = map.rows;
 const bytes = readFileSync(sourcePath);
 const source = readImage(sourcePath);
 if (source.width !== 1536 || source.height !== 1024)
@@ -93,6 +94,38 @@ for (let py = 0; py < page.height; py++)
     setPixel(images.get(name)!, px, py, [rgba[0], rgba[1], rgba[2], 255]);
   }
 const root = mapId === 'cutting' ? 'cutting-scene' : 'driller-floor-scene';
+function bleedEdges(image: ReturnType<typeof newImage>, pixels = 2): void {
+  for (let pass = 0; pass < pixels; pass++) {
+    const previous = new Uint8Array(image.data);
+    for (let py = 0; py < image.height; py++)
+      for (let px = 0; px < image.width; px++) {
+        const index = (py * image.width + px) * 4;
+        if (previous[index + 3]) continue;
+        const wx = page.x + px + 0.5,
+          wy = page.y + py + 0.5;
+        const gx = ((wx - 768) / 64 + wy / 32) / 2,
+          gy = (wy / 32 - (wx - 768) / 64) / 2;
+        if (kind(rows[Math.floor(gy)]?.[Math.floor(gx)]) === 'dynamic') continue;
+        for (const [dx, dy] of [
+          [-1, 0],
+          [1, 0],
+          [0, -1],
+          [0, 1],
+        ] as const) {
+          const nx = px + dx,
+            ny = py + dy;
+          if (nx < 0 || ny < 0 || nx >= image.width || ny >= image.height) continue;
+          const neighbor = (ny * image.width + nx) * 4;
+          if (!previous[neighbor + 3]) continue;
+          image.data[index] = previous[neighbor] ?? 0;
+          image.data[index + 1] = previous[neighbor + 1] ?? 0;
+          image.data[index + 2] = previous[neighbor + 2] ?? 0;
+          image.data[index + 3] = previous[neighbor + 3] ?? 255;
+          break;
+        }
+      }
+  }
+}
 const regions = [] as {
   name: string;
   x: number;
@@ -103,6 +136,7 @@ const regions = [] as {
 }[];
 let total = 0;
 for (const [name, image] of images) {
+  bleedEdges(image);
   const bounds = alphaBounds(image);
   if (!bounds) continue;
   const packed = await encodeWebp(crop(image, bounds), 84, true);
