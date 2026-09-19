@@ -405,4 +405,20 @@ No wider campaign is required. Every traversed scene, dialogue, control, battle,
 animation, sound and save transition must form one coherent finished run; a
 polished courtyard surrounded by placeholders does not meet acceptance. v0.2.0
 is still a progress release. After shipping it, prioritize one whole-run critical
-path against this scope rather than expanding into disconnected polish batches.
+ path against this scope rather than expanding into disconnected polish batches.
+
+## PR64 replacement-head repair
+
+Run35412143302 passed verification and gallery but stopped E2E after 75 tests
+because `painted-rubble.spec.ts` timed out while taking full-page diagnostic
+screenshots on software WebGL. Its registered, overlay, dynamic, high-contrast
+and missing-art color probes had completed; the timeout was capture cost, not a
+failed assertion. The two diagnostics now capture `.map-canvas`, the surface
+under test, preserving all probes and thresholds while avoiding unrelated HUD
+and curtain pixels. Local Canvas and forced software-WebGL cases pass.
+
+The same replacement batch carries truthful elemental-tip corrections from
+`f5e4b67`, cost-aware routing policy `e2864f9`, engine assessment `975170b`,
+and lead-transfer handoff `434856b`. Southwest source `a39d5e4` remains held
+for a separately reviewed next scene batch. Full verify, production build and
+budgets must pass on the new head before merge.

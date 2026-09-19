@@ -30,7 +30,11 @@ for (const renderer of ['canvas', 'webgl'])
       return average(pixels, point.x, point.y, 3);
     };
     const registered = await sample();
-    await page.screenshot({ path: `.shots/forest-${renderer}-registered-rubble.png` });
+    // Capture only the rendered board: full-page screenshots are needlessly
+    // expensive on software WebGL and do not contribute to the pixel probe.
+    await page.locator('.map-canvas').screenshot({
+      path: `.shots/forest-${renderer}-registered-rubble.png`,
+    });
     await page.evaluate(() => {
       const scene = window.fnt!.app.content.maps.get('forest_road')!.scene!;
       Object.defineProperty(scene, 'paintedRubble', { value: [], configurable: true });
@@ -41,7 +45,9 @@ for (const renderer of ['canvas', 'webgl'])
         Math.abs(overlay.g - registered.g) +
         Math.abs(overlay.b - registered.b),
     ).toBeGreaterThan(10);
-    await page.screenshot({ path: `.shots/forest-${renderer}-duplicate-rubble.png` });
+    await page.locator('.map-canvas').screenshot({
+      path: `.shots/forest-${renderer}-duplicate-rubble.png`,
+    });
     await page.evaluate(() => {
       const app = window.fnt!.app;
       Object.defineProperty(app.content.maps.get('forest_road')!.scene!, 'paintedRubble', {
