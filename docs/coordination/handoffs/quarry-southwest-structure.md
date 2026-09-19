@@ -123,6 +123,19 @@ original two-map reserve for the needed transparent cliffs and packing variance.
 Keep map masks, encounter props, actors, oil/cover rules and paths unchanged.
 No scene registration or production visual acceptance has started.
 
+## Combined preview integration
+
+The local 0.2.1 preview now opts `ambush_road` and `quarry_floor` into the
+reviewed projected ground pages and exterior rim metadata through
+`src/content/scenes/quarryProjected.ts`. Logical rows, collision, props,
+spawns, surfaces and the orthographic backdrops remain unchanged as fallbacks;
+the exterior pieces are marked `exterior` so their outside-map footprints are
+validated without participating in playable-cell occlusion. A focused
+Chrome-channel smoke pass reached `battle_grumbler` on Canvas and WebGL and
+confirmed the oblique camera, both ground pages and all four Driller rim pieces.
+The full combined candidate is local only; orchestration still owns visual
+acceptance of the live actors and props on both scenes.
+
 The cliff guides are now individually extractable transparent technical PNGs:
 each has an exact source crop, ground anchor, footprint, sort depth and exposed
 face geometry in `cliff-slices.json`; the full-map image is an assembly overview

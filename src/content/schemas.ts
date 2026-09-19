@@ -78,6 +78,7 @@ const terrainId = z.enum([
 ]);
 
 const vec2 = z.object({ x: z.number().int().min(0), y: z.number().int().min(0) });
+const sceneFootprintVec2 = z.object({ x: z.number().int(), y: z.number().int() });
 const id = z.string().min(1).max(64);
 
 const unitStats = z.object({
@@ -477,13 +478,27 @@ export const mapSchema = z
         ground: z.array(sceneImageSchema).max(8),
         scenery: z
           .array(
-            sceneImageSchema.extend({
-              id,
-              footprint: z.array(vec2).min(1),
-              depth: z.object({ x: z.number().finite(), y: z.number().finite() }),
-              fadeWhenOccluding: z.boolean().optional(),
-              fadeGroup: id.optional(),
-            }),
+            sceneImageSchema
+              .extend({
+                id,
+                footprint: z.array(sceneFootprintVec2).min(1),
+                depth: z.object({ x: z.number().finite(), y: z.number().finite() }),
+                exterior: z.boolean().optional(),
+                fadeWhenOccluding: z.boolean().optional(),
+                fadeGroup: id.optional(),
+              })
+              .superRefine((piece, ctx) => {
+                if (piece.exterior) return;
+                piece.footprint.forEach((cell, index) => {
+                  if (cell.x < 0 || cell.y < 0) {
+                    ctx.addIssue({
+                      code: z.ZodIssueCode.custom,
+                      path: ['footprint', index],
+                      message: 'must be on the map unless exterior is true',
+                    });
+                  }
+                });
+              }),
           )
           .max(32),
       })

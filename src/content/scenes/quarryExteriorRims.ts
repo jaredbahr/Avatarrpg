@@ -10,8 +10,8 @@ type ExteriorRimSource = SceneScenery & {
 };
 
 /**
- * Reviewed source metadata only. Gameplay owns the later decision to add these
- * rear-only pieces to the Cutting and Driller Floor MapScene definitions.
+ * Reviewed source metadata for the rear-only pieces used by the integrated
+ * Cutting and Driller Floor MapScene definitions.
  */
 export const CUTTING_EXTERIOR_RIM = [
   {
@@ -24,6 +24,7 @@ export const CUTTING_EXTERIOR_RIM = [
     height: 930,
     footprint: [{ x: 0, y: -1 }],
     depth: { x: -1, y: -1 },
+    exterior: true,
   },
   {
     id: 'cutting-west-upper-buttress',
@@ -35,6 +36,7 @@ export const CUTTING_EXTERIOR_RIM = [
     height: 387,
     footprint: [{ x: -1, y: 0 }],
     depth: { x: -1, y: -1 },
+    exterior: true,
   },
   {
     id: 'cutting-west-lower-buttress',
@@ -46,6 +48,7 @@ export const CUTTING_EXTERIOR_RIM = [
     height: 369,
     footprint: [{ x: -1, y: 9 }],
     depth: { x: -1, y: -1 },
+    exterior: true,
   },
 ] as const satisfies readonly ExteriorRimSource[];
 
@@ -60,6 +63,7 @@ export const DRILLER_FLOOR_EXTERIOR_RIM = [
     height: 410,
     footprint: [{ x: 0, y: -1 }],
     depth: { x: -1, y: -1 },
+    exterior: true,
   },
   {
     id: 'driller-rear-east-rim',
@@ -71,6 +75,7 @@ export const DRILLER_FLOOR_EXTERIOR_RIM = [
     height: 413,
     footprint: [{ x: 15, y: -1 }],
     depth: { x: -1, y: -1 },
+    exterior: true,
   },
   {
     id: 'driller-west-upper-buttress',
@@ -82,6 +87,7 @@ export const DRILLER_FLOOR_EXTERIOR_RIM = [
     height: 344,
     footprint: [{ x: -1, y: 0 }],
     depth: { x: -1, y: -1 },
+    exterior: true,
   },
   {
     id: 'driller-west-lower-buttress',
@@ -93,5 +99,6 @@ export const DRILLER_FLOOR_EXTERIOR_RIM = [
     height: 347,
     footprint: [{ x: -1, y: 9 }],
     depth: { x: -1, y: -1 },
+    exterior: true,
   },
 ] as const satisfies readonly ExteriorRimSource[];

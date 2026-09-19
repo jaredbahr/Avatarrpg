@@ -21,6 +21,7 @@ import type { MapDef } from '../../core/types';
 import { LEGEND } from './legend';
 import { FOREST_ROAD_SCENE } from '../scenes/forestRoad';
 import { QUARRY_GATE_SCENE } from '../scenes/quarryGate';
+import { CUTTING_SCENE, DRILLER_FLOOR_SCENE } from '../scenes/quarryProjected';
 
 export const FOREST_ROAD: MapDef = {
   id: 'forest_road',
@@ -128,6 +129,8 @@ export const QUARRY_GATE: MapDef = {
 
 export const AMBUSH_ROAD: MapDef = {
   id: 'ambush_road',
+  projection: 'oblique',
+  scene: CUTTING_SCENE,
   backdrop: { url: 'art/maps/ambush_road.webp', pixelsPerTile: 80 },
   name: 'The Cutting',
   kind: 'combat',
@@ -163,6 +166,8 @@ export const AMBUSH_ROAD: MapDef = {
 
 export const QUARRY_FLOOR: MapDef = {
   id: 'quarry_floor',
+  projection: 'oblique',
+  scene: DRILLER_FLOOR_SCENE,
   backdrop: { url: 'art/maps/quarry_floor.webp', pixelsPerTile: 80 },
   name: 'The Quarry Floor',
   kind: 'combat',

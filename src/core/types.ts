@@ -644,6 +644,8 @@ export interface SceneScenery extends SceneImage {
   readonly id: string;
   readonly footprint: readonly Vec2[];
   readonly depth: Vec2;
+  /** True for decorative rim pieces whose logical footprint sits outside the map. */
+  readonly exterior?: boolean;
   readonly fadeWhenOccluding?: boolean;
   /** Connected depth slices share the lowest cutaway opacity within this scene. */
   readonly fadeGroup?: string;
