@@ -384,3 +384,10 @@ portrait Largest text. Root also reviewed actual WebGL preview v0.2.1/710128d at
 visits and preview battle, and Tea break completes its discovery. The remaining
 standing-at-tea mismatch is confirmed visually; a separate tea art/pose task now
 owns its correction. No deployment or aesthetic completion is claimed.
+
+A local three-pass Terser experiment saved only about20 compressed bytes and was
+reverted; source still uses two passes and remains clean. The transient dist from
+that experiment is not an acceptance build and must be rebuilt from source before
+the next full run. Root stopped its temporary4268 manual preview. Frozen release
+4267 remains separate. Browser evidence for710128d was copied to the ignored
+`.shots/integration/dock-framing-710128d` directory before any later test run.
