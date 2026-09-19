@@ -17,7 +17,10 @@ for (const renderer of ['canvas', 'webgl'] as const) {
       page.on('pageerror', (error) => errors.push(error.message));
       await page.clock.install();
       await resetStorage(page, `?renderer=${renderer}`);
-      await expect(page).toHaveTitle(new RegExp(revision));
+      const buildLabel = page.locator('[aria-label^="Game version"]');
+      await expect(buildLabel).toHaveText(new RegExp(`build ${revision}$`));
+      const buildStamp = await buildLabel.innerText();
+      await page.screenshot({ path: `${folder}/source-build.png` });
       await startGame(page, ['One', 'Two', 'Three'], ['sura', 'kaya', 'bo'], 'cutting-art-review', {
         reduceMotion: reduced,
       });
@@ -137,6 +140,7 @@ for (const renderer of ['canvas', 'webgl'] as const) {
         JSON.stringify(
           {
             revision,
+            buildStamp,
             reduced,
             seed: 'cutting-art-review',
             source: 'e2e/cutting-character-art.review.ts',
