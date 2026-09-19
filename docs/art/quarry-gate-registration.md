@@ -107,6 +107,9 @@ oil-channel substrate and corner terraces. They are not partitions of a
 flattened map painting. The procedural base remains beneath them, so live oil,
 props, collision and old saves retain their rules-owned truth. Existing low
 timber cover and all wall scenery remain independent.
+Each region carries a two-world-pixel sampled edge bleed, so oblique texture
+filtering overlaps neighboring ground rather than exposing the procedural base
+as a gray seam.
 
 Reproduce the shipped regions with:
 

@@ -95,11 +95,45 @@ for (let py = 0; py < page.height; py++)
     setPixel(image, px, py, [rgba[0], rgba[1], rgba[2], 255]);
   }
 
+/**
+ * A clipped alpha edge filters against the procedural base during oblique
+ * scaling. Extend the authored edge by two world pixels so adjacent regions
+ * overlap instead of exposing that gray fallback seam; it changes no map cell.
+ */
+function bleedEdges(image: ReturnType<typeof newImage>, pixels = 2): void {
+  for (let pass = 0; pass < pixels; pass++) {
+    const previous = new Uint8Array(image.data);
+    for (let y = 0; y < image.height; y++)
+      for (let x = 0; x < image.width; x++) {
+        const index = (y * image.width + x) * 4;
+        if ((previous[index + 3] ?? 0) !== 0) continue;
+        for (const [dx, dy] of [
+          [-1, 0],
+          [1, 0],
+          [0, -1],
+          [0, 1],
+        ] as const) {
+          const nx = x + dx,
+            ny = y + dy;
+          if (nx < 0 || ny < 0 || nx >= image.width || ny >= image.height) continue;
+          const neighbor = (ny * image.width + nx) * 4;
+          if ((previous[neighbor + 3] ?? 0) === 0) continue;
+          image.data[index] = previous[neighbor] ?? 0;
+          image.data[index + 1] = previous[neighbor + 1] ?? 0;
+          image.data[index + 2] = previous[neighbor + 2] ?? 0;
+          image.data[index + 3] = previous[neighbor + 3] ?? 255;
+          break;
+        }
+      }
+  }
+}
+
 const outDir = 'public/art/maps/quarry-gate-scene';
 mkdirSync(outDir, { recursive: true });
 const regions = [];
 let totalBytes = 0;
 for (const [name, image] of images) {
+  bleedEdges(image);
   const bounds = alphaBounds(image);
   if (!bounds) throw new Error(`Empty local ground region ${name}.`);
   const bytes = await encodeWebp(crop(image, bounds), 82, true);

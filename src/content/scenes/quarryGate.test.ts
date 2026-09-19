@@ -1,4 +1,8 @@
+import { readFileSync } from 'node:fs';
+import { createRequire } from 'node:module';
+import decode, { init } from '@jsquash/webp/decode.js';
 import { expect, it } from 'vitest';
+import { beforeAll } from 'vitest';
 import { QUARRY_GATE } from '../maps/combat';
 import {
   QUARRY_GATE_GROUND_REGIONS,
@@ -7,6 +11,57 @@ import {
   quarryWallVariant,
 } from './quarryGate';
 import { QUARRY_WEST_FRAMES } from './quarryWestFrames';
+
+const shippedGround: { piece: (typeof QUARRY_GATE_SCENE.ground)[number]; image: ImageData }[] = [];
+
+beforeAll(async () => {
+  const require = createRequire(import.meta.url);
+  const wasm = readFileSync(require.resolve('@jsquash/webp/codec/dec/webp_dec.wasm'));
+  await init(await WebAssembly.compile(wasm));
+  for (const piece of QUARRY_GATE_SCENE.ground.filter(
+    (entry) => !entry.url.endsWith('cover-timber.webp'),
+  )) {
+    const bytes = readFileSync(`public/${piece.url}`);
+    shippedGround.push({
+      piece,
+      image: await decode(
+        bytes.buffer.slice(bytes.byteOffset, bytes.byteOffset + bytes.byteLength),
+      ),
+    });
+  }
+});
+
+const groundClass = (x: number, y: number) => {
+  const key = QUARRY_GATE.rows[y]?.[x] ?? '.';
+  return key === '=' ? 'road' : key === '^' || key === 'o' ? 'limestone' : 'earth';
+};
+const worldPoint = (x: number, y: number) => ({
+  x: 768 + (x - y) * 64,
+  y: (x + y) * 32,
+});
+
+function groundAlphaAt(world: { x: number; y: number }): number {
+  let alpha = 0;
+  for (const { piece, image } of shippedGround) {
+    if (
+      world.x < piece.x ||
+      world.x >= piece.x + piece.width ||
+      world.y < piece.y ||
+      world.y >= piece.y + piece.height
+    )
+      continue;
+    const x = Math.min(
+      image.width - 1,
+      Math.floor(((world.x - piece.x) * image.width) / piece.width),
+    );
+    const y = Math.min(
+      image.height - 1,
+      Math.floor(((world.y - piece.y) * image.height) / piece.height),
+    );
+    alpha = Math.max(alpha, image.data[(y * image.width + x) * 4 + 3] ?? 0);
+  }
+  return alpha;
+}
 
 it('centers four low cover decals on the actual passable cover cells', () => {
   const cells = QUARRY_GATE.rows.flatMap((row, y) =>
@@ -48,6 +103,32 @@ it('uses bounded material regions over the procedural partial-ground base', () =
     expect(region.width).toBeLessThan(2304);
     expect(region.height).toBeLessThan(1280);
   }
+});
+
+it('ships opaque material coverage at every ground center and material boundary', () => {
+  for (let y = 0; y < QUARRY_GATE.height; y++)
+    for (let x = 0; x < QUARRY_GATE.width; x++)
+      expect(groundAlphaAt(worldPoint(x + 0.5, y + 0.5)), `center ${x},${y}`).toBeGreaterThan(240);
+
+  for (let y = 0; y < QUARRY_GATE.height; y++)
+    for (let x = 0; x < QUARRY_GATE.width; x++) {
+      const current = groundClass(x, y);
+      for (const [dx, dy] of [
+        [1, 0],
+        [0, 1],
+      ] as const) {
+        const neighbor = groundClass(x + dx, y + dy);
+        if (neighbor === current || x + dx >= QUARRY_GATE.width || y + dy >= QUARRY_GATE.height)
+          continue;
+        for (const fraction of [0.25, 0.5, 0.75]) {
+          const point =
+            dx === 1 ? worldPoint(x + 1, y + fraction) : worldPoint(x + fraction, y + 1);
+          expect(groundAlphaAt(point), `boundary ${x},${y} to ${x + dx},${y + dy}`).toBeGreaterThan(
+            240,
+          );
+        }
+      }
+    }
 });
 
 it('uses exactly the existing 32 blocked wall cells and keeps their projected feet/depth aligned', () => {
