@@ -1772,6 +1772,29 @@ html[data-contrast='high'] .hud-panel::after {
   }
 }
 
+/* Keep short landscape battles compact without changing portrait or large text
+ * layouts. The strip stays in flow and scrolls horizontally when the order is
+ * crowded; each chip remains a full-size touch target. */
+@media (min-width: 53rem) and (max-height: 48rem) and (orientation: landscape) {
+  html[data-large-text='off'] .combat-scene .turn-strip {
+    align-items: center;
+    gap: var(--sp-1);
+    padding-block: var(--sp-1);
+  }
+
+  html[data-large-text='off'] .combat-scene .turn-chip {
+    flex-direction: row;
+    gap: var(--sp-1);
+    min-width: 0;
+    min-height: var(--tap);
+    padding: var(--sp-1) var(--sp-2);
+  }
+
+  html[data-large-text='off'] .combat-scene .turn-chip span {
+    max-width: 6rem;
+  }
+}
+
 /* Keep the speaker visible beside their name when the full stage portrait
    would crowd out dialogue. The text panel retains its own scroll area. */
 @media (max-width: 52rem), (max-height: 34rem) {
