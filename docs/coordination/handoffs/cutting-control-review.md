@@ -508,3 +508,10 @@ The saved campaign loaded successfully and walked through the ordinary east
 route into the quarry. Further encounter play remains in progress. PR64 remains
 open/blocked on fc37c6a with merge-commit auto-merge enabled; remote main remains
 44ed3f6. No new CI run, merge or deployment occurred at this checkpoint.
+
+The manual campaign subsequently entered Grumbler round1. Riko used four legal
+movement points around the northern cover; previews reported movement cost and
+Grumbler's potential reach. Sura remains34/34, Riko18/36, boss64/64; no attack
+or outcome is claimed. Slot1 on4269 holds this state, exported through the UI as
+`C:/Users/Jared/Downloads/four-nations-tactics-lv3-2026-09-19 (4).json`
+(64,697 bytes). Active browser tab9 is marked for continuation, with Save open.
