@@ -54,6 +54,34 @@ and must not be used to close these requirements.
 
 ## Merged functional baseline
 
+Current unmerged assignments are tracked by the lead in the
+[delivery handoff](handoffs/lead-driller-completion.md). Verify live status before
+taking any of these files; this table records ownership, not completion.
+
+| Assignment                                        | Owner                                                | Boundary                                                                    |
+| ------------------------------------------------- | ---------------------------------------------------- | --------------------------------------------------------------------------- |
+| PR64 checks, guidance/camera and combined release | Gameplay task `01a0b300-e321-7670-aab3-f0aeaf624dc0` | Sole integration owner; visible release version and exact-head checks       |
+| Exterior quarry art and scale review              | Art task `01a0b2ee-8d60-7643-be9b-340997ca4ae0`      | Source assets/metadata; coordinate map opt-in with gameplay                 |
+| Prop, displacement and status previews            | `combat_preview` agent                               | Shared rules and lower CombatScene confirmation; no camera edits            |
+| Conversations retaining the explored world        | `world_conversations` agent                          | App routing, shared panel, ExploreScene lifecycle and presentation metadata |
+| Possible direct-attack reach                      | `combat_depth_audit` agent                           | New pure helper/tests on `codex/gate-threat-audit`; no UI or balance edits  |
+| Continuous playthrough and acceptance             | Lead task `01a0b79f-a1e6-7fd0-a4d5-76e7944406f6`     | Review integrated runtime against the full target                           |
+
+Latest local checkpoint: the lead completed the normal solo Sura route through
+Driller victory and all four village homecoming conversations, preserving saves
+across export/import and reload. This is a functional playthrough milestone,
+not final presentation acceptance or exact-final-head release verification.
+The [route review](handoffs/route-presentation-review.md) records its scope.
+
+Current follow-ups supersede the earlier table's source assignments: gameplay
+retains release integration, camera and PR64 repair; `world_conversations`
+corrects exploration HUD overflow; `combat_preview` demonstrates practical
+early party setup/payoff; `quarry_composition` now owns the actual quarry
+terrace/rim composition after the former art task released that assignment.
+The accepted dynamic-surface material source is complete and awaiting combined
+integration. Source worktrees and commits remain preserved; redundant root
+preview servers were stopped. See the lead handoff for exact checkpoints.
+
 All slice source PRs through #58 and the final combined route-test PR #52 are
 merged. Their implementation history is preserved; reuse useful work while
 correcting the experience. This source record does not close the presentation
