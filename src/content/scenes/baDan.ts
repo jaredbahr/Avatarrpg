@@ -5,6 +5,12 @@ export const BA_DAN_POND = { x: 10, y: 6, width: 3, height: 1 } as const;
 /** Flat grass fringe across the northern lawn bay; both door approaches stay clear. */
 export const BA_DAN_NORTH_FRINGE = { x: 10.05, y: 3.9, width: 1.9, depth: 0.2 } as const;
 
+/** Two canopy wings frame the market court; only their trunks block walking. */
+export const BA_DAN_COURT_TREES = [
+  { x: 5, y: 5 },
+  { x: 17, y: 5 },
+] as const;
+
 /** Gameplay applies these same footprints as low, solid courtyard boundaries. */
 export const BA_DAN_COURTYARD_PROPS = [
   { id: 'west-planter', image: 'low-planter', x: 6, y: 5 },
@@ -113,6 +119,7 @@ export const BA_DAN_SCENE: MapScene = {
     house('southeast-house', 13, 10, 4, 4),
     // Equal-depth frontage must paint after the building behind it.
     ...BA_DAN_COURTYARD_PROPS.map(courtyardProp),
+    ...BA_DAN_COURT_TREES.map(({ x, y }) => tree(x, y, 320)),
     tree(0, 3),
     tree(0, 6, 400),
     tree(0, 10, 420),
