@@ -23,7 +23,9 @@ cells remain byte-identical. The asset schema and art validator check every
 directional frame for presence, dimensions and the same clear margin as normal
 clip frames. The active marker follows the transient offset only while a
 directional contact pose is playing, so the marker stays under the moving feet;
-logical positions and all other marker behavior remain unchanged.
+logical positions and all other marker behavior remain unchanged. Canvas 2D and
+Pixi both derive that point through the same elevation-aware helper, so an
+elevated cell cannot cancel its lift in one backend.
 
 ## Consequences
 
@@ -36,5 +38,9 @@ compaction keep the units family below its 4.5 MiB ceiling.
 
 The current source covers vertical-dominant screen-up and screen-down attacks.
 Diagonal and side attacks intentionally retain the existing pose until authored
-directional art is available. Capture evidence and the remaining byte headroom
-are recorded in the Riko handoff.
+directional art is available. The original generated outputs, reviewed
+normalised cells, prompts, hashes and packing command are tracked under
+`docs/art/sources/riko-directional-contact/` and the existing
+`docs/art/prompts/sheets/unit.non.riko.md` sheet pack; the reproducible packer
+is `scripts/art/riko-directional-contact.ts`. Capture evidence and the
+remaining byte headroom are recorded in the Riko handoff.

@@ -50,6 +50,24 @@ export interface RenderUnit {
   readonly flash?: number;
 }
 
+/**
+ * Ground point for a unit marker. Directional contact poses move the sprite
+ * for presentation, so callers pass that transient offset; all other markers
+ * stay on the logical ground point. Elevation is applied in actor space for
+ * both rendering backends.
+ */
+export function unitMarkerGroundPoint(
+  base: Vec2,
+  tileSize: number,
+  elevationLift: number,
+  contactOffset?: Vec2,
+): Vec2 {
+  return {
+    x: base.x + (contactOffset?.x ?? 0) * tileSize,
+    y: base.y + ((contactOffset?.y ?? 0) - elevationLift) * tileSize,
+  };
+}
+
 export type OverlayKind = 'move' | 'target' | 'area' | 'hover';
 
 export interface OverlayLayer {

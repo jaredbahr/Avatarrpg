@@ -88,6 +88,30 @@ manifest names, and CI runs it.
 Run the **Sheets** section of `checklist.md` before committing. For this
 sheet in particular: The raised two-finger hand, the grey knee guards and the single thin braid. Plain, controlled, nothing decorative; she must not read as an acrobat or a performer.
 
+## Optional vertical melee contact cels
+
+The existing side-facing melee clip remains the fallback for horizontal and
+diagonal attacks. For a vertical-dominant adjacent strike, the renderer may
+select one authored contact pair from the free cells in the existing atlas.
+These prompts keep the same reference figure, palette, line treatment and
+transparent background as the sheet above. `screenUp` means toward the upper
+part of the projected screen; `screenDown` means toward the lower part.
+
+| Direction    | Contact prompt                                                                                                                                                                                                                                                                                                                                                                                                     |
+| ------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `screenUp`   | Rear three-quarter view aimed toward the upper part of the projected screen. Keep both feet planted and the torso grounded; the leading arm reaches upward toward the adjacent target's torso, with the palm and fingers visibly extended near the target line. The other hand stays in guard. This is a contact pose, not a jump, float, projectile or long-range gesture.                                        |
+| `screenDown` | Front three-quarter view aimed toward the lower part of the projected screen. Keep both feet planted and the torso grounded; the leading arm reaches down toward the adjacent target's upper torso and the palm sits close to the target line, with the other hand in guard. Do not stop the hand at the waist or make the arm short. This is a contact pose, not a jump, float, projectile or long-range gesture. |
+
+The tracked generator outputs, exact reviewed normalised cells, hashes, negative
+prompt and OpenAI output terms are in
+`docs/art/sources/riko-directional-contact/provenance.json`. The source copies
+are `riko-screen-up.png` and `riko-screen-down.png`; the accepted atlas cells
+are `riko-screen-up-cell.png` and `riko-screen-down-cell.png`. Repack the
+reviewed cells with `node --import tsx scripts/art/riko-directional-contact.ts`;
+the script validates the source levels and eight-pixel clear margin, patches
+only the two free slots, preserves all other atlas pixels and repeats the
+measured lossless PNG and JSON compaction.
+
 ## Optional north and south locomotion
 
 For these frames, override the side-facing camera instruction above: south

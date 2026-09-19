@@ -41,7 +41,14 @@ import {
   paintTerrain,
 } from '../painters/tiles';
 import { sprites } from '../spriteCache';
-import type { AimArc, MapView, OverlayKind, OverlayLayer, RenderUnit } from '../view';
+import {
+  unitMarkerGroundPoint,
+  type AimArc,
+  type MapView,
+  type OverlayKind,
+  type OverlayLayer,
+  type RenderUnit,
+} from '../view';
 import type { BackendCapabilities, RenderBackend } from './backend';
 
 /** The rounded square a hovered tile gets, in tile units from its corner. */
@@ -626,15 +633,13 @@ export class Canvas2DBackend implements RenderBackend {
     const { ctx } = this;
     for (const unit of view.units) {
       const box = camera.spriteBox(unit.renderPos ?? unit.pos, unit.size);
-      // Directional contact poses physically lunge the sprite toward the
-      // target. Keep their active marker under the moving feet; the marker
-      // remains on the logical tile for idle, walk and legacy melee poses.
-      if (unit.meleeDirection && unit.offset) {
-        box.x += unit.offset.x * box.size;
-        box.y += unit.offset.y * box.size;
-      }
+      const marker = unitMarkerGroundPoint(
+        { x: box.x, y: box.y },
+        box.size,
+        elevationAt(view.grid, unit.pos) * ELEVATION_LIFT,
+        unit.meleeDirection ? unit.offset : undefined,
+      );
       const width = box.size * unit.size;
-      box.y -= elevationAt(view.grid, unit.pos) * ELEVATION_LIFT * box.size;
       // Active-unit ring, drawn under the sprite.
       if (unit.id === view.activeUnitId) {
         ctx.save();
@@ -643,8 +648,8 @@ export class Canvas2DBackend implements RenderBackend {
         ctx.globalAlpha = 0.75 + 0.25 * ((Math.sin(view.time / 300) + 1) / 2);
         ctx.beginPath();
         ctx.ellipse(
-          box.x + width / 2,
-          box.y + box.size * 0.86,
+          marker.x + width / 2,
+          marker.y + box.size * 0.86,
           width * 0.42,
           box.size * 0.14,
           0,
@@ -659,8 +664,8 @@ export class Canvas2DBackend implements RenderBackend {
         ctx.lineWidth = Math.max(1, box.size * 0.03);
         ctx.beginPath();
         ctx.ellipse(
-          box.x + width / 2,
-          box.y + box.size * 0.86,
+          marker.x + width / 2,
+          marker.y + box.size * 0.86,
           width * 0.4,
           box.size * 0.12,
           0,

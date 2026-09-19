@@ -132,7 +132,10 @@ function rikoSheet(): SheetEntry {
     ...base,
     clips: {
       ...base.clips,
-      melee: { frames: [`${key}/cast/0`, `${key}/cast/1`], fps: 8, loop: false },
+      // The legacy side-facing melee still uses the cast pixels, but the
+      // metadata aliases keep the clip contract self-describing. Directional
+      // contact variants select their own authored cells below.
+      melee: { frames: [`${key}/melee/0`, `${key}/melee/1`], fps: 8, loop: false },
     },
     meleeDirections: {
       screenUp: [`${key}/cast/0`, `${key}/meleeNorth/0`],
