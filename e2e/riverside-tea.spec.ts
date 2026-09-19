@@ -7,7 +7,7 @@ for (const backend of ['canvas', 'webgl']) {
     page,
     browserName,
   }) => {
-    if (backend === 'webgl' && browserName === 'webkit') test.slow();
+    if (backend === 'webgl') test.slow();
     // Install before navigation so setup runs on the real clock; pause only
     // once the normal-motion tea pose is ready for the deterministic cel check.
     await page.clock.install();
