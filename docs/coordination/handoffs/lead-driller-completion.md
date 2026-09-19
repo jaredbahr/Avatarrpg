@@ -7,6 +7,33 @@ outcome and return. The approved player-view references remain the quality bar.
 
 ## Current plan and owners
 
+Latest checkpoint, 19 September after 09:27 UTC: PR64 remains open at `9e005b1`.
+Run `35432834135` passed verification but failed the Surface-touch WebGL
+lower-edge target test after 125 passes; 243 cases did not run. Root preserved
+the report and cancelled the remaining gallery job; the run is confirmed
+terminal. Trace review shows cumulative slow browser round trips exhausting the
+180-second test budget, rather than a Confirm-specific obstruction. The CI
+owner is reducing redundant reads while preserving real touch actions and all
+assertions. No second run or new push has been started.
+
+Root's next batch is `codex/route-pacing-review`, currently `4582fee`, in the
+matching isolated worktree. It integrates selected encounter text, forest
+aftermath over the world, pending-move camera reveal, pond shoreline, Ruon watch
+art reuse and compact landscape confirmations. Combined product `2f17e49`
+passed verify (822 tests / 94 files), build and the 298.7-KiB JavaScript budget.
+Focused production UI evidence and a corrected test layout race are recorded in
+[the pacing/playthrough handoff](forest-opening-pacing.md). The earlier combined
+product `103870e` passed both complete trade/escort production route checks.
+Version remains unshipped v0.2.1; no checkpoint-only version bump.
+
+Live assignments: `combat_preview` completes Riko directional contact art;
+`world_conversations` audits the gate AI's control valuation; `quarry_composition`
+repairs the bounded target-visibility CI test. Root owns integration, release
+and manual gameplay. The two-character manual route lost the gate encounter,
+then correctly recovered into the level-three escort branch; saves preserve
+both the pre-gate state and the escort checkpoint. Presentation, motion and
+audible/physical-device acceptance remain open. Older ownership below is history.
+
 Current work supersedes the historical checkpoints below: root owns integration
 in `codex/route-quality-followup`, based on PR64 head `82bcc78`. Tree framing,
 forest marker scale, opening/return guidance and the stale gesture test repair
