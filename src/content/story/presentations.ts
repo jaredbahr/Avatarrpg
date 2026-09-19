@@ -48,6 +48,10 @@ const NPC_PRESENTATIONS: readonly (readonly [string, string])[] = [
   // The watch speaks at the gate before the party chooses its approach.
   ['gate_parley', 'quarry_gate'],
 
+  // The marker's brief assessment follows the staged descent, but still
+  // belongs over the quarry floor where the party is standing.
+  ['quarry_assessment', 'quarry_floor'],
+
   // The cutting.
   ['after_ambush', 'ambush_road'],
   ['cutting_tea', 'ambush_road'],

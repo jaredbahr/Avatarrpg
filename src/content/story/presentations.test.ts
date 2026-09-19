@@ -72,7 +72,19 @@ describe('world conversation presentations', () => {
       worldConversationFor(CONTENT, conversation('act1_open', 'ba_dan_village')),
     ).toBeUndefined();
     expect(
+      worldConversationFor(CONTENT, conversation('quarry_descent', 'quarry_floor')),
+    ).toBeUndefined();
+    expect(
       worldConversationFor(CONTENT, conversation('missing_node', 'ba_dan_village')),
+    ).toBeUndefined();
+  });
+
+  it('retains the quarry floor for the marker assessment after its interlude', () => {
+    expect(
+      worldConversationFor(CONTENT, conversation('quarry_assessment', 'quarry_floor')),
+    ).toEqual({ kind: 'world', mapId: 'quarry_floor' });
+    expect(
+      worldConversationFor(CONTENT, conversation('quarry_assessment', 'ambush_road')),
     ).toBeUndefined();
   });
 
