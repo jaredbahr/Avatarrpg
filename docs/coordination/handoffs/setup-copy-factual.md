@@ -56,3 +56,10 @@
   unresolved Jin delivery question; no machinery state is invented.
 - Focused branch/content/variant tests pass (46 tests). No new region, battle,
   flag, reward, or route was added.
+
+## Interlude continuity correction
+
+- `act1_epilogue` line 2 is the workers leaving the galleries and Bo-shan asking
+  for Pella, so its still now uses the existing `rescue.webp` image like the
+  other worker-departure beats. The Mira table remains reserved for village
+  arrival text; no new art was generated.

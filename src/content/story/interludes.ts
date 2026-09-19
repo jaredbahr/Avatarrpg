@@ -42,7 +42,7 @@ export const INTERLUDES: Readonly<Record<string, InterludeDef>> = {
   act1_open: { title: 'The Empty Road', shots: ['village', 'village', 'mira'] },
   road_depart: { title: 'Into the Pines', shots: ['village', 'road'] },
   quarry_descent: { title: 'The Bottom of the Quarry', shots: ['quarry', 'quarry', 'quarry'] },
-  act1_epilogue: { title: 'A Road Home', shots: ['rescue', 'mira', 'rescue', 'rescue', 'bay'] },
+  act1_epilogue: { title: 'A Road Home', shots: ['rescue', 'rescue', 'rescue', 'rescue', 'bay'] },
   act1_epilogue_lost: {
     title: 'The Table Stays Open',
     shots: ['village', 'mira', 'gate', 'quarry', 'bay'],
