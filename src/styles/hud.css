@@ -2055,6 +2055,24 @@ html[data-contrast='high'] .hud-panel::after {
   stroke: var(--c-paper-light);
   stroke-width: 0.16;
 }
+.local-npc-label {
+  fill: var(--c-paper-light);
+  font-family: var(--font-body);
+  font-size: 0.65px;
+  paint-order: stroke;
+  stroke: var(--c-ink);
+  stroke-width: 0.12px;
+  stroke-linejoin: round;
+}
+.explore-dock.solo-party {
+  overflow-y: hidden;
+}
+@media (min-width: 53rem) and (orientation: landscape) {
+  [data-large-text='on'] .explore-dock.solo-party,
+  [data-large-text='huge'] .explore-dock.solo-party {
+    overflow-y: auto;
+  }
+}
 .explore-scene:not(.riverside-scene) .explore-dock {
   background: var(--c-panel);
   padding: var(--sp-2);

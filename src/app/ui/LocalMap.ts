@@ -1,5 +1,6 @@
-import type { Grid, MapDef, Vec2, GameState } from '../../core/types';
+import type { ContentIndex, Grid, MapDef, Vec2, GameState } from '../../core/types';
 import { evaluate } from '../../core/story/conditions';
+import { previewWalk } from '../world/walking';
 import { Dialog } from './Dialog';
 import { button, el } from './dom';
 
@@ -15,7 +16,7 @@ export class LocalMap {
   readonly element: SVGSVGElement;
   private party: SVGCircleElement[] = [];
 
-  constructor(map: MapDef, grid: Grid, state: GameState) {
+  constructor(map: MapDef, grid: Grid, state: GameState, showLabels = false) {
     this.element = svgNode('svg', {
       viewBox: `-1 -1 ${grid.width + 2} ${grid.height + 2}`,
       class: 'local-map',
@@ -47,6 +48,17 @@ export class LocalMap {
       label.textContent = npc.name;
       dot.append(label);
       this.element.append(dot);
+      if (showLabels) {
+        this.element.append(
+          svgNode('text', {
+            x: String(npc.pos.x + 0.9),
+            y: String(npc.pos.y + 0.35),
+            class: 'local-npc-label',
+          }),
+        );
+        const visibleLabel = this.element.lastElementChild;
+        if (visibleLabel) visibleLabel.textContent = npc.name;
+      }
     }
     for (const exit of map.exits ?? []) {
       const x = exit.pos.x + 0.5;
@@ -82,15 +94,17 @@ export class LocalMapDialog extends Dialog {
     private map: MapDef,
     private grid: Grid,
     private state: GameState,
+    private content: ContentIndex,
     private positions: readonly Vec2[],
     private walk: (pos: Vec2) => void,
     private recenter: () => void,
+    private objective: string | null = null,
   ) {
     super();
   }
 
   protected build(body: HTMLElement): void {
-    const map = new LocalMap(this.map, this.grid, this.state);
+    const map = new LocalMap(this.map, this.grid, this.state, true);
     map.update(this.positions);
     body.append(
       map.element,
@@ -103,6 +117,20 @@ export class LocalMapDialog extends Dialog {
       class: 'stack',
       attrs: { role: 'navigation', 'aria-label': 'Routes from this area' },
     });
+    const target = this.objective
+      ? this.map.npcs.find((npc) => this.objective?.includes(npc.name))
+      : undefined;
+    if (target) {
+      const preview = previewWalk(this.content, this.state, target.pos);
+      if (!preview.refusal) {
+        routes.append(
+          button(`Walk to ${target.name}`, () => {
+            this.close();
+            this.walk(target.pos);
+          }),
+        );
+      }
+    }
     for (const exit of this.map.exits ?? []) {
       const open = evaluate(this.state, exit.requires);
       routes.append(

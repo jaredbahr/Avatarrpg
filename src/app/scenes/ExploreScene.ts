@@ -423,6 +423,7 @@ export class ExploreScene implements Scene {
     const current = this.host?.querySelector<HTMLElement>('.roster');
     const state = this.app.state;
     if (!current || !state) return;
+    current.parentElement?.classList.toggle('solo-party', state.party.length === 1);
     const leader = state.party[0];
     current.replaceWith(
       partyRoster(this.app, state.party, leader?.id ?? null, (unit) => this.inspect(unit)),
@@ -512,9 +513,11 @@ export class ExploreScene implements Scene {
           this.map,
           this.grid,
           state,
+          this.app.content,
           this.partyPositions() ?? [state.location.pos],
           (pos) => this.requestWalk(pos),
           () => this.followParty(),
+          worldObjective(this.app.content, state),
         ).open(this.overlayHost());
       },
       { class: 'action-button', title: 'Local map and routes' },
