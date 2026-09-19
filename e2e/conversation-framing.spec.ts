@@ -1,6 +1,43 @@
 import { expect, test } from '@playwright/test';
+import type { Page } from '@playwright/test';
 import { enterNode, resetStorage, settleLayout, startGame, waitForIdle } from './helpers';
 import { paintedTileCentre } from './projection';
+
+/**
+ * Exercise the canvas's real pointer adapter without asking Playwright to wait
+ * for eight browser-composited mouse moves. Forced WebGL on CI uses software
+ * rasterization, where each of those moves can take a frame or more.
+ */
+async function dragCanvas(
+  page: Page,
+  from: { x: number; y: number },
+  to: { x: number; y: number },
+): Promise<void> {
+  await page.evaluate(
+    ({ from, to }) => {
+      const canvas = document.querySelector<HTMLCanvasElement>('.map-canvas');
+      if (!canvas) throw new Error('Missing village canvas');
+      const fire = (type: string, point: { x: number; y: number }) =>
+        canvas.dispatchEvent(
+          new PointerEvent(type, {
+            pointerId: 1,
+            pointerType: 'mouse',
+            isPrimary: true,
+            clientX: point.x,
+            clientY: point.y,
+            button: 0,
+            buttons: type === 'pointerup' ? 0 : 1,
+            bubbles: true,
+            cancelable: true,
+          }),
+        );
+      fire('pointerdown', from);
+      fire('pointermove', to);
+      fire('pointerup', to);
+    },
+    { from, to },
+  );
+}
 
 for (const renderer of ['canvas', 'webgl']) {
   for (const portrait of [false, true]) {
@@ -29,10 +66,11 @@ for (const renderer of ['canvas', 'webgl']) {
       const box = await canvas.boundingBox();
       if (!box) throw new Error('Missing village canvas');
       const tilePx = await page.evaluate(() => window.fnt!.app.rendererCamera()!.tilePx);
-      await page.mouse.move(box.x + box.width / 2, box.y + box.height - 30);
-      await page.mouse.down();
-      await page.mouse.move(box.x + box.width / 2, box.y + 30, { steps: 8 });
-      await page.mouse.up();
+      await dragCanvas(
+        page,
+        { x: box.x + box.width / 2, y: box.y + box.height - 30 },
+        { x: box.x + box.width / 2, y: box.y + 30 },
+      );
       const panned = await paintedTileCentre(page, position);
       expect(panned!.y - tilePx * 1.5).toBeLessThan(box.y);
 
