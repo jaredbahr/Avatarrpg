@@ -2,6 +2,9 @@
 
 ## 0.2.1 — release candidate
 
+- Match Ruon, blade mercenaries and sergeants to the party's adult scale with illustrated poses and distinct walking contacts.
+- Add market and garden details to Ba Dan's courtyard boundaries while keeping the central route clear.
+- Omit unused development validation and Pixi atlas initialization to retain the 300 KiB JavaScript budget.
 - Give the Cutting and Driller floor connected stone surroundings, grounded terraces, and quieter mud, oil and ice treatments.
 - Make water whips flow as ribbons with restrained droplets and a clearer waterskin draw, preserving attack contact and timing.
 - Keep nearby combatants readable on short screens, preserve manual camera framing, and make surface confirmations more compact without hiding costs or chances.
