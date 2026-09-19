@@ -604,11 +604,10 @@ export class ExploreScene implements Scene {
     if (!panel) {
       if (refocusNext || refocusPanel) {
         const scene = this.host?.querySelector<HTMLElement>('.explore-scene');
-        scene
-          ?.querySelector<HTMLElement>(
-            '.explore-context .action-button:not([disabled]), .explore-bar button',
-          )
-          ?.focus({ preventScroll: true });
+        const target =
+          scene?.querySelector<HTMLElement>('.explore-hud .action-button:not([disabled])') ??
+          scene?.querySelector<HTMLElement>('.explore-bar button');
+        target?.focus({ preventScroll: true });
       }
       return;
     }

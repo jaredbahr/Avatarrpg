@@ -2361,6 +2361,24 @@ html[data-contrast='high'] .hud-panel::after {
 .explore-scene:not(.riverside-scene) .action-button {
   min-height: 5.5rem;
 }
+
+/* Keep the corner ornaments inside scrollable dock children. Their normal
+ * negative offset is decorative, but it becomes a four-pixel scrollbar when
+ * a one-member dock is the exact height of the viewport. Six-member rosters
+ * still scroll horizontally; only the ornament stops contributing false
+ * overflow. */
+.explore-scene:not(.riverside-scene) .roster-row::before,
+.explore-scene:not(.riverside-scene) .action-bar::before {
+  top: 0;
+  left: 0;
+}
+
+.explore-scene:not(.riverside-scene) .roster-row::after,
+.explore-scene:not(.riverside-scene) .action-bar::after {
+  right: 0;
+  bottom: 0;
+}
+
 @media (max-width: 72rem) and (orientation: landscape) {
   .explore-context {
     font-size: var(--fs-md);
