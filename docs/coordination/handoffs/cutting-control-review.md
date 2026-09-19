@@ -474,3 +474,15 @@ quality. The neighborhood owner must preserve the shipped ground outside the
 new canal envelope, preferably with an appropriately registered canal/bank slice.
 The approved direction remains the seven-cell water/bridge neighborhood feature,
 not merely a bridge over the former small pond. No rejected ground is integrated.
+
+## Combined tea and legacy-save build
+
+Tea source integrated as `50b0ee0`; cleanup handoff as `a8d557d`. Its dedicated
+4275 dev server is stopped. Combined `npm run verify` passes 855 tests in 103
+files plus typecheck, lint and formatting. Separate production output
+`.shots/integration/combined-tea-dist` builds successfully and passes art validation.
+Its exact JavaScript gzip total is 305,219 bytes (298.065 KiB), leaving 1,981 bytes
+under the unchanged 300 KiB limit; PWA files are present. The displayed build is
+50b0ee0. Root's older dist remains unchanged for the live Windows WebKit diagnostic
+and resize reproduction on 4266/4268. Final integrated browser acceptance awaits
+the independent WebKit Activities painting fix and village canal work.
