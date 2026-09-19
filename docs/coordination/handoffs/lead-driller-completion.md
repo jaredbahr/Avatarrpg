@@ -152,10 +152,12 @@ source milestone or legitimate boss victory closes the complete quality goal.
 This checkpoint supersedes the in-progress route and source-integration statuses
 above. The normal solo route is complete through all four Ba Dan homecoming
 conversations; Slot 1 retains the Driller review and Slot 2 the completed return.
-Combined source reached `c0fa812`, with active intermediate-camera revisions.
-The reviewed surface forecasts, material treatments and exploration-overflow
-corrections are integrated. Writer `2e1bb8b` still needs explicit integration
-confirmation. The owner must incorporate all outstanding root documentation.
+Combined source reached `c0fa812`, then accepted the bounded camera correction
+at `42e2856`: normal compact framing uses 64px tiles while Huge/narrow layouts
+retain 40px. The reviewed surface forecasts, material treatments and
+exploration-overflow corrections are integrated. Writer `2e1bb8b` is integrated
+as `bb44974`, with its rescue-interlude regression test passing. The outstanding
+root documentation is reconciled into this combined handoff.
 
 PR64's current pushed head is `0af1530`; the owner reported required run
 `35424656782` active. The repair gives only forced-WebGL visibility tests their
