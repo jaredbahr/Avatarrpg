@@ -61,7 +61,7 @@ assignment. Confirm current ownership with the orchestrator before new edits.
 
 | Track                             | Completed sources                                                                                                                 | Delivery owner                                                        |
 | --------------------------------- | --------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------- |
-| Camera, controls and presentation | #39 camera/movement, #43 portraits, #47 title version, #53 inspector focus, #54 exploration sheet markers                         | Orchestrator `01a0b2b4-1260-7551-a818-e7a85c0645f6` and source owners |
+| Camera, controls and presentation | #39 camera/movement, #43 portraits, #47 title version, #53 inspector focus, #54 exploration sheet markers                         | Orchestrator `01a0b79f-a1e6-7fd0-a4d5-76e7944406f6` and source owners |
 | Writing and homecoming            | #40 writing consolidation, #45 continuation, #49 return narrative, #55 defeat wording                                             | Writing `01a0b2e3-170e-7bb1-b2ab-d9e45dd780a9` and gameplay           |
 | Art and audio                     | #41/#42 bandit art/audio, #46 ten-hero walks, #50 Grumbler, #51 audio scheduling/mute, #56 NPCs, #57 crossbow, #58 quarry enemies | Art/audio `01a0b2ee-8d60-7643-be9b-340997ca4ae0`                      |
 | Kits and combined route           | #48 early character kits, #52 permanent trade/escort return test                                                                  | Gameplay/integration `01a0b300-e321-7670-aab3-f0aeaf624dc0`           |
