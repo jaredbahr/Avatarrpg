@@ -5,5 +5,6 @@ playwright-report/
 test-results/
 .shots/
 node_modules/
+.vite/
 package-lock.json
 /gallery/
