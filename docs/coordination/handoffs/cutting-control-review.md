@@ -557,3 +557,26 @@ The config-owned port 4266 server exited with the run. This verifies renderer
 integration, not final Ba Dan art, physical-device behavior or full-route
 acceptance. Ba Dan source/art remains in the separately owned neighborhood tree;
 no push, new GitHub run, release or merge was performed for this checkpoint.
+
+## Integrated modular village checkpoint — 19 September
+
+Product source `74355b0` combines Ba Dan's modular art (`e83572d`) with the
+partial-ground renderer and high-contrast/missing-art fallback. `npm run verify`
+passes 860 tests/103 files, typecheck, lint and formatting; art validation and
+asset budgets pass. Production output `.shots/integration/modular-dist` serves
+`index-CPID7Nob.js`; total shipped JavaScript is 306,049 gzip bytes (298.88 KiB),
+below 307,200 bytes, with PWA output present.
+
+All 176 applicable local Chrome browser cases pass, with one software-renderer
+premise skip, in 6.9 minutes. This includes both trade and escort quarry return
+campaigns with reload, conversation, movement, animation, audio plumbing and
+partial-ground accessibility/fallback. Preserved report:
+`.shots/integration/modular-74355b0-full-report`. This is not audible listening.
+
+The separate touch-layout review on frozen preview 4270 covered 834x1194 and
+1194x834, Canvas and WebGL, with visible waypoint taps, Gao conversation and
+UI save/reload restoring `(9,7)` / `village_explore`; no runtime errors occurred.
+Evidence: `C:/Users/Jared/.codex/worktrees/partial-ground-decor/.shots/final-badan-proof/results.json`.
+Review found a conspicuous cyan water rim against the canal banks. That visual
+polish issue remains open despite functional passes. The prior art preview on
+4297 is stopped. No GitHub push, new CI run, merge or deployment is claimed.
