@@ -76,18 +76,21 @@ describe('world conversation presentations', () => {
     ).toBeUndefined();
   });
 
-  it('keeps the forest aftermath in the world after battle results are absorbed', () => {
-    const aftermath = conversation('after_forest', 'forest_road');
+  it.each([
+    ['after_forest', 'forest_road', 'lost_forest_road'],
+    ['after_ambush', 'ambush_road', 'lost_ambush'],
+  ])('keeps %s in the world after battle results are absorbed', (nodeId, mapId, lossFlag) => {
+    const aftermath = conversation(nodeId, mapId);
     expect(worldConversationFor(CONTENT, aftermath)).toEqual({
       kind: 'world',
-      mapId: 'forest_road',
+      mapId,
     });
     expect(
       worldConversationFor(CONTENT, {
         ...aftermath,
-        flags: { ...aftermath.flags, lost_forest_road: true },
+        flags: { ...aftermath.flags, [lossFlag]: true },
       }),
-    ).toEqual({ kind: 'world', mapId: 'forest_road' });
+    ).toEqual({ kind: 'world', mapId });
   });
 
   it('rejects a registry entry that points at a missing node', () => {

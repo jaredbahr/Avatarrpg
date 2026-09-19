@@ -49,6 +49,7 @@ const NPC_PRESENTATIONS: readonly (readonly [string, string])[] = [
   ['gate_parley', 'quarry_gate'],
 
   // The cutting.
+  ['after_ambush', 'ambush_road'],
   ['cutting_tea', 'ambush_road'],
   ['cutting_tea_again', 'ambush_road'],
   ['sen_home', 'ambush_road'],
