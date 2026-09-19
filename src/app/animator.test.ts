@@ -61,6 +61,15 @@ describe('Animator', () => {
     });
     const impact = choreography.health.find((change) => change.unitId === 'e0');
     if (!impact) throw new Error('expected Air Blast health impact');
+    const flash = choreography.tracks.find(
+      (track) => track.kind === 'flash' && track.unitId === 'e0',
+    );
+    const cast = choreography.tracks.find(
+      (track) => track.kind === 'pose' && track.unitId === 'p0' && track.clip === 'cast',
+    );
+    if (!flash || !cast) throw new Error('expected Air Blast impact choreography');
+    expect(impact.at).toBe(flash.start);
+    expect(impact.at).toBeGreaterThan(cast.start);
 
     const a = new Animator(CONTENT, { motionReduced: () => reduced });
     a.push(1000, events, before);
