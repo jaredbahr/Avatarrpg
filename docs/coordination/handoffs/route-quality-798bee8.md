@@ -103,3 +103,24 @@ build totals 298.4 KiB of the unchanged 300 KiB JavaScript budget. All five
 existing connected-world browser checks passed on strict port 4251, which ended
 normally. Targeted new guidance interaction coverage is assigned separately on
 port 4253.
+
+## PR64 CI repair
+
+At exact head `82bcc78`, run `35430915536` passed verification but failed the
+surface-touch gesture test after 66 passes; the gallery was still running.
+The failure repeated on retry: the test expected a fixed offset of 276 but
+dragging produced 356. It assumed `battle_ambush` was a fitted orthographic map;
+the Cutting is now oblique and correctly starts with readable, pannable tiles.
+
+`8f4f085` explicitly pinches the real map down to fit, asserts `fitted === true`,
+then preserves the original no-pan and zoomed-pan assertions. No camera behavior
+or test tolerance changes. All eight gesture tests passed locally on installed
+Chrome at 1368×912. The full 143-test local Chromium suite is running on strict
+port 4257 before any new push. Its runtime is the `619f493` production build;
+later changes so far are tests and documentation only. CI logs are retained at
+`.shots/release-check/ci-35430915536-e2e.log`. No remote retry was dispatched.
+
+The Riko contact solver was rejected after direct capture review: her body
+overlaps the victim and the original-tile marker is visibly detached. Source
+prototype was reverted by its owner. Evidence and minimum directional pose
+requirements are in source handoff `532fc15`; no runtime fix is accepted.
