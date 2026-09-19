@@ -16,23 +16,28 @@ describe('projected quarry scenes', () => {
       'art/maps/quarry-surround/east.webp',
     ]);
   });
-  it('opts The Cutting into the reviewed ground and exterior rim pages', () => {
+  it('opts The Cutting into local material regions and its exterior rim', () => {
     expect(AMBUSH_ROAD.projection).toBe('oblique');
     expect(AMBUSH_ROAD.scene).toBe(CUTTING_SCENE);
+    expect(CUTTING_SCENE.groundMode).toBe('partial');
     expect(CUTTING_SCENE.ground.slice(2).map((piece) => piece.url)).toEqual([
-      'art/maps/cutting-scene/ground-west.webp',
-      'art/maps/cutting-scene/ground-east.webp',
+      'art/maps/cutting-scene/dirt-west.webp',
+      'art/maps/cutting-scene/dirt-east.webp',
+      'art/maps/cutting-scene/road.webp',
+      'art/maps/cutting-scene/stone.webp',
     ]);
     expect(CUTTING_SCENE.scenery).toHaveLength(3);
     expect(CUTTING_SCENE.paintedWater).toBeUndefined();
   });
 
-  it('opts the Driller floor into its ground pages while preserving the rear gap', () => {
+  it('opts the Driller floor into local material regions while preserving the rear gap', () => {
     expect(QUARRY_FLOOR.projection).toBe('oblique');
     expect(QUARRY_FLOOR.scene).toBe(DRILLER_FLOOR_SCENE);
+    expect(DRILLER_FLOOR_SCENE.groundMode).toBe('partial');
     expect(DRILLER_FLOOR_SCENE.ground.slice(2).map((piece) => piece.url)).toEqual([
-      'art/maps/driller-floor-scene/ground-west.webp',
-      'art/maps/driller-floor-scene/ground-east.webp',
+      'art/maps/driller-floor-scene/dirt-west.webp',
+      'art/maps/driller-floor-scene/dirt-east.webp',
+      'art/maps/driller-floor-scene/stone.webp',
     ]);
     expect(DRILLER_FLOOR_SCENE.scenery).toHaveLength(3);
     expect(DRILLER_FLOOR_SCENE.scenery.slice(0, 2).map((piece) => piece.footprint[0])).toEqual(
