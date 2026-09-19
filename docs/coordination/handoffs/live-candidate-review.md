@@ -405,7 +405,7 @@ No wider campaign is required. Every traversed scene, dialogue, control, battle,
 animation, sound and save transition must form one coherent finished run; a
 polished courtyard surrounded by placeholders does not meet acceptance. v0.2.0
 is still a progress release. After shipping it, prioritize one whole-run critical
- path against this scope rather than expanding into disconnected polish batches.
+path against this scope rather than expanding into disconnected polish batches.
 
 ## PR64 replacement-head repair
 
