@@ -1,9 +1,18 @@
 # Changelog
 
-## 0.2.1 — local combined preview
+## 0.2.1 — release candidate
 
-- Combine the accepted quarry route guidance, truthful combat previews, return discoveries, driller copy, and quarry rim and paving source assets.
-- Preserve manual combat camera framing through HUD and log reflows while retaining the oblique exploration view.
+- Give the Cutting and Driller floor connected stone surroundings, grounded terraces, and quieter mud, oil and ice treatments.
+- Keep nearby combatants readable on short screens, preserve manual camera framing, and make surface confirmations more compact without hiding costs or chances.
+- Forecast actual healing, surface contact, prop reactions and displacement. Healing Stream now works on its caster and previews only the health that can be restored.
+- Preserve support AP granted before an ally's turn, show possible enemy attack reach during movement planning, and disable player action buttons during enemy turns.
+- Keep the explored world visible during conversations, return keyboard focus to local actions, and remove unnecessary exploration-dock scrollbars.
+- Clarify route guidance, quarry discoveries and the village homecoming; show the rescue scene's matching illustration.
+
+Local verification includes both trade and escort campaign returns with save/reload.
+The normal solo route has also been played through the Driller and homecoming.
+Current-head remote checks and deployment remain pending. Listening quality and
+physical Surface/iPad behavior remain unverified; this is not full-target signoff.
 
 ## 0.2.0 — pending release
 
