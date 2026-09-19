@@ -76,6 +76,18 @@ export class CombatScene implements Scene {
   /** True after a user zoom/pan; HUD reflows must preserve that manual framing. */
   private manualCamera = false;
   /**
+   * The last pending move target revealed for a particular viewport. A
+   * confirmation dock can shorten the canvas after the target was selected;
+   * remember the reveal so later observer deliveries do not undo a deliberate
+   * pan while the confirmation is open.
+   */
+  private lastPendingMoveReveal: {
+    target: Vec2;
+    width: number;
+    height: number;
+    dpr: number;
+  } | null = null;
+  /**
    * The compact oblique frame is chosen from the first settled combat canvas,
    * before an ability or log panel changes its height. Keeping that choice for
    * the scene prevents aim-mode reflow from zooming the board in and out.
@@ -194,7 +206,53 @@ export class CombatScene implements Scene {
       camera.scale = Math.max(camera.scale, camera.fitScale());
       camera.clamp();
     }
+    this.revealPendingMoveAfterViewportChange();
     this.syncRecentre();
+  }
+
+  /**
+   * Keep the selected move tile reachable after a real HUD/viewport reflow.
+   * This runs from refit(), which is called by ResizeObserver or an explicit
+   * resize, rather than from the render loop. The camera keeps its scale and
+   * only pans the smallest amount needed to put the tile centre inside the
+   * usable viewport. Once that viewport/target pair has been handled, a user
+   * pan during confirmation is left alone.
+   */
+  private revealPendingMoveAfterViewportChange(): void {
+    const camera = this.renderer?.camera;
+    const target = this.pending;
+    if (!camera || !target || this.mode.kind !== 'move') return;
+
+    const viewport = camera.viewport;
+    const previous = this.lastPendingMoveReveal;
+    if (
+      previous &&
+      previous.target.x === target.x &&
+      previous.target.y === target.y &&
+      previous.width === viewport.width &&
+      previous.height === viewport.height &&
+      previous.dpr === viewport.dpr
+    ) {
+      return;
+    }
+
+    const point = camera.project({ x: target.x + 0.5, y: target.y + 0.5 });
+    const padding = Math.min(16, viewport.width / 2, viewport.height / 2);
+    const desiredX = Math.min(viewport.width - padding, Math.max(padding, point.x));
+    const desiredY = Math.min(viewport.height - padding, Math.max(padding, point.y));
+    camera.panBy(desiredX - point.x, desiredY - point.y);
+
+    this.lastPendingMoveReveal = {
+      target: { ...target },
+      width: viewport.width,
+      height: viewport.height,
+      dpr: viewport.dpr,
+    };
+  }
+
+  private clearPending(): void {
+    this.pending = null;
+    this.lastPendingMoveReveal = null;
   }
 
   /** Restore readable oblique framing, or the fitted orthographic board. */
@@ -453,7 +511,7 @@ export class CombatScene implements Scene {
     if (activeId !== this.lastActiveId) {
       this.lastActiveId = activeId;
       this.mode = { kind: 'idle' };
-      this.pending = null;
+      this.clearPending();
       this.aiScheduled = false;
 
       // A new player's turn needs the hand-off card before anything is shown.
@@ -846,7 +904,7 @@ export class CombatScene implements Scene {
 
   private selectMove(): void {
     this.mode = this.mode.kind === 'move' ? { kind: 'idle' } : { kind: 'move' };
-    this.pending = null;
+    this.clearPending();
     this.renderHud();
   }
 
@@ -855,7 +913,7 @@ export class CombatScene implements Scene {
       this.mode.kind === 'aim' && this.mode.abilityId === ability.id
         ? { kind: 'idle' }
         : { kind: 'aim', abilityId: ability.id };
-    this.pending = null;
+    this.clearPending();
     this.renderHud();
   }
 
@@ -873,7 +931,7 @@ export class CombatScene implements Scene {
     }
     this.confirmedEndTurn = false;
     this.mode = { kind: 'idle' };
-    this.pending = null;
+    this.clearPending();
     this.handedOffTo = null;
     this.app.dispatch({ type: 'endTurn', unitId: unit.id });
   }
@@ -924,7 +982,7 @@ export class CombatScene implements Scene {
         ),
         () => {
           this.app.dispatch({ type: 'move', unitId: unit.id, path: cell.path });
-          this.pending = null;
+          this.clearPending();
           this.mode = { kind: 'idle' };
           this.renderHud();
         },
@@ -1108,7 +1166,7 @@ export class CombatScene implements Scene {
         abilityId: ability.id,
         target,
       });
-      this.pending = null;
+      this.clearPending();
       this.mode = { kind: 'idle' };
       this.renderHud();
     });
@@ -1199,7 +1257,7 @@ export class CombatScene implements Scene {
         'div',
         { class: 'row' },
         this.cancelButton(() => {
-          this.pending = null;
+          this.clearPending();
           this.renderHud();
         }),
         el('div', { class: 'spacer' }),
