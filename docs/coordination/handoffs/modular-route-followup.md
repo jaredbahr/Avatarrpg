@@ -5,8 +5,9 @@ separate from PR64. Current built checkpoint `b247685` visibly shows v0.2.2
 after a normal reload, retaining the prior local save. Its production build
 passes; the latest full combined gameplay evidence is below. No follow-up push.
 
-PR64 remains v0.2.1 at `749fe3d`, auto-merge configured with current-head CI
-`35454608779` active. The previous water-test timeout was repaired by reusing
+PR64 remains v0.2.1 at `749fe3d`, auto-merge configured. Current-head CI
+`35454608779` failed E2E; root requested cancellation of its remaining gallery
+and is retrieving the failure evidence. The previous water-test timeout was repaired by reusing
 verified screenshot samples, retaining every visual assertion; root verification
 passed 860 tests and six focused browser cases before that one checked push.
 
@@ -62,6 +63,19 @@ Root also used the actual UI on prior build `054d530`, forced WebGL at
 four dialogue lines, Slot 1 save, reload and explicit load. Health/party and
 nearby Gao restored. Tab and owned port 4304 stopped; the local slot remains.
 Inline screenshots were reviewed but not saved as standalone artifacts.
+
+At built `a3c8d49`, root manually continued the existing Sura/Kaya save in
+WebGL at 1280x720 on local port 4304. A normal reload showed the updated build
+within v0.2.2. Look around → Visit Mira walked from Gao through the village;
+the party settled on dry road/bridge and all four briefing lines were readable.
+The objective changed to the east road. Map → East road reached forest roaming
+normally. Visit Turtle-duck nest delivered all three environmental-story lines;
+Slot 2 save, reload and explicit load preserved party/health, forest location,
+objective and the journal's remembered nest/silt discovery. Slot 1 was preserved.
+The remaining icon-style turtle-duck differs visibly from the illustrated world.
+No combat, audible listening or physical-device acceptance is claimed by this
+manual segment. Tab 13 and preview 4304 stopped. Build and budget pass:
+entry `index-B0DD_k-4.js`, gzip 291.72 kB, maps 3.53 MiB, precache 17.17 MiB.
 
 ## Live assignments and open gaps
 
