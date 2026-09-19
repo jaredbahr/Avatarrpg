@@ -107,8 +107,10 @@ checkpoints or handoff-only commits.
 
 CI runs once per pull-request revision, on `main` pushes, and on explicit manual
 dispatch. Do not dispatch a second run while the required PR run is active. The
-browser and gallery jobs wait for verification to pass; all required check names,
-suites and latest-head merge rules still apply, including to drafts.
+browser job waits for verification to pass, and the gallery waits for both
+verification and E2E. Failed gameplay revisions therefore do not spend gallery
+capture minutes. All required check names, suites and latest-head merge rules
+still apply, including to drafts.
 
 Batch related local edits and focused checks into a coherent verified milestone
 before pushing. Preserve a handoff before a session ends, but do not push every
