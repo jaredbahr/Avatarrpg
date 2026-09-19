@@ -8,7 +8,7 @@ export const RIVERSIDE_SPOTS = {
   mira: { x: 15, y: 9 },
   canopy: { x: 13, y: 9 },
   otter: { x: 17, y: 15 },
-  tea: { x: 10, y: 18 },
+  tea: { x: 8, y: 18 },
   practice: { x: 30, y: 13 },
   shrine: { x: 31, y: 5 },
 } as const;
@@ -78,11 +78,13 @@ const spans: readonly (readonly (readonly [number, number])[])[] = [
     [17, 18],
     [30, 31],
   ],
+  // Tea porch, reached from the southeast stone steps, not through the rail.
   [
+    [8, 8],
     [10, 11],
     [30, 31],
   ],
-  [[9, 10]],
+  [[8, 10]],
   [[9, 10]],
   [[9, 10]],
   [[10, 11]],

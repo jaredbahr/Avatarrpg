@@ -18,8 +18,8 @@ The riverside neighborhood of Ba Dan, a quiet afternoon beyond the village.
 
 36 columns by 24 rows, counted from 0 at the top-left corner. The painting is the ground and what stands on it, nothing else: the game draws its own grid, movement contours, units, props and effects over it, so every edge in the painting that matters to the rules sits exactly on a tile edge.
 
-- Road (232 tiles): 231 tiles (the centre), row 4: columns 10 and 15; row 5: columns 9–10, 14–16 and 30–32; row 6: columns 8–17 and 30–32; row 7: columns 5–19 and 30–31; row 8: columns 4–20 and 30–31; row 9: columns 5–21 and 30–31; row 10: columns 5–7, 13–21 and 29–32; row 11: columns 4–7 and 13–33; row 12: columns 4–33; row 13: columns 5–20 and 29–33; row 14: columns 9–18 and 29–33; row 15: columns 10–18 and 29–32; row 16: columns 10–18 and 29–31; row 17: columns 10–12, 17–18 and 30–31; row 18: columns 10–11 and 30–31; rows 19–21: columns 9–10; rows 22–23: columns 10–11; one tile at column 20, row 6 (top centre).
-- Stone walls (632 tiles): 622 tiles (the centre), rows 0–3: columns 0–35; row 4: columns 0–9, 11–14 and 16–35; row 5: columns 0–8, 11–13, 17–29 and 33–35; row 6: columns 0–7, 18–19, 21–29 and 33–35; row 7: columns 0–4, 20–29 and 32–35; row 8: columns 0–3, 21–29 and 32–35; row 9: columns 0–4, 22–29 and 32–35; row 10: columns 0–4, 22–28 and 33–35; rows 11–12: columns 0–3 and 34–35; row 13: columns 0–4, 21–28 and 34–35; row 14: columns 0–8, 19–28 and 34–35; row 15: columns 0–9, 19–28 and 33–35; row 16: columns 0–9, 19–28 and 32–35; row 17: columns 0–9, 13–16, 19–29 and 32–35; row 18: columns 0–9, 12–29 and 32–35; rows 19–21: columns 0–8 and 11–35; rows 22–23: columns 0–9 and 12–35; a 5×2 block at columns 8–12, rows 10–11 (middle left).
+- Road (234 tiles): 233 tiles (the centre), row 4: columns 10 and 15; row 5: columns 9–10, 14–16 and 30–32; row 6: columns 8–17 and 30–32; row 7: columns 5–19 and 30–31; row 8: columns 4–20 and 30–31; row 9: columns 5–21 and 30–31; row 10: columns 5–7, 13–21 and 29–32; row 11: columns 4–7 and 13–33; row 12: columns 4–33; row 13: columns 5–20 and 29–33; row 14: columns 9–18 and 29–33; row 15: columns 10–18 and 29–32; row 16: columns 10–18 and 29–31; row 17: columns 10–12, 17–18 and 30–31; row 18: columns 8, 10–11 and 30–31; row 19: columns 8–10; rows 20–21: columns 9–10; rows 22–23: columns 10–11; one tile at column 20, row 6 (top centre).
+- Stone walls (630 tiles): 620 tiles (the centre), rows 0–3: columns 0–35; row 4: columns 0–9, 11–14 and 16–35; row 5: columns 0–8, 11–13, 17–29 and 33–35; row 6: columns 0–7, 18–19, 21–29 and 33–35; row 7: columns 0–4, 20–29 and 32–35; row 8: columns 0–3, 21–29 and 32–35; row 9: columns 0–4, 22–29 and 32–35; row 10: columns 0–4, 22–28 and 33–35; rows 11–12: columns 0–3 and 34–35; row 13: columns 0–4, 21–28 and 34–35; row 14: columns 0–8, 19–28 and 34–35; row 15: columns 0–9, 19–28 and 33–35; row 16: columns 0–9, 19–28 and 32–35; row 17: columns 0–9, 13–16, 19–29 and 32–35; row 18: columns 0–7, 9, 12–29 and 32–35; row 19: columns 0–7 and 11–35; rows 20–21: columns 0–8 and 11–35; rows 22–23: columns 0–9 and 12–35; a 5×2 block at columns 8–12, rows 10–11 (middle left).
 - No open ground: every tile is a feature.
 - The party enters from the left, standing at (16, 12), (15, 12), (14, 12), (14, 13), (15, 13), (16, 13); enemies come from the right. The exit is at (10, 20). Paint nothing there that would read as an object to walk round.
 
@@ -44,8 +44,8 @@ The rows as the rules read them:
 ##########=========##########====###
 ##########=========##########===####
 ##########===####==###########==####
-##########==##################==####
-#########==#########################
+########=#==##################==####
+########===#########################
 #########==#########################
 #########==#########################
 ##########==########################

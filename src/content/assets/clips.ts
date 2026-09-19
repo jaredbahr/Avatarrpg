@@ -19,6 +19,7 @@ export const CLIP_NAMES = [
   'rest',
   'restNorth',
   'restSouth',
+  'tea',
 ] as const;
 export type ClipName = (typeof CLIP_NAMES)[number];
 
@@ -52,6 +53,7 @@ export const CLIP_FRAME_COUNTS: Readonly<Record<ClipName, { min: number; max: nu
   rest: { min: 1, max: 1 },
   restNorth: { min: 1, max: 1 },
   restSouth: { min: 1, max: 1 },
+  tea: { min: 2, max: 2 },
 };
 
 /** Clips every sheet must have. */

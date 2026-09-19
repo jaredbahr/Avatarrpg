@@ -121,6 +121,7 @@ function villageSheet(name: string, palette: string): SheetEntry {
       ...base.clips,
       walk: { frames: frames('walk', 4), fps: 8, loop: true },
       wave: { frames: frames('wave', 2), fps: 4, loop: true },
+      tea: { frames: frames('tea', 2), fps: 0.25, loop: true },
     },
   };
 }

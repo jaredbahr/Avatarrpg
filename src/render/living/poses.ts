@@ -2,7 +2,7 @@
 import type { Pose } from '../painters/figure';
 import { poseFor } from '../painters/figure';
 
-export type VillageMotion = 'idle' | 'walk' | 'wave' | 'water' | 'fire';
+export type VillageMotion = 'idle' | 'walk' | 'wave' | 'tea' | 'water' | 'fire';
 export const FORM_DURATION = 3800;
 export const WAVE_DURATION = 2200;
 /** All parts of a held drawing share this clock, including its shadow and FX. */
@@ -66,6 +66,7 @@ export function mixPose(a: Pose, b: Pose, t: number): Pose {
 
 export function villagePose(motion: VillageMotion, elapsed: number): Pose {
   const rest = poseFor('idle', 0);
+  if (motion === 'tea') return rest;
   if (motion === 'idle')
     return {
       ...rest,

@@ -119,15 +119,17 @@ export function main(argv: readonly string[]): number {
   const clipLines = (Object.entries(layout.clips) as [ClipName, string[]][]).map(
     ([clip, names]) => {
       const timing =
-        clip === 'walkNorth' || clip === 'walkSouth'
-          ? { fps: 4, loop: true }
-          : clip === 'idleNorth' ||
-              clip === 'idleSouth' ||
-              clip === 'rest' ||
-              clip === 'restNorth' ||
-              clip === 'restSouth'
-            ? { fps: 1, loop: true }
-            : BAKED_CLIPS[clip];
+        clip === 'tea'
+          ? { fps: 0.25, loop: true }
+          : clip === 'walkNorth' || clip === 'walkSouth'
+            ? { fps: 4, loop: true }
+            : clip === 'idleNorth' ||
+                clip === 'idleSouth' ||
+                clip === 'rest' ||
+                clip === 'restNorth' ||
+                clip === 'restSouth'
+              ? { fps: 1, loop: true }
+              : BAKED_CLIPS[clip];
       return `      ${clip}: { frames: ${JSON.stringify(names)}, fps: ${timing.fps}, loop: ${timing.loop} },`;
     },
   );
