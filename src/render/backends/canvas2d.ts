@@ -127,8 +127,7 @@ export class Canvas2DBackend implements RenderBackend {
       camera.projection === 'oblique'
         ? view.backdrop?.projection === 'oblique'
         : !view.backdrop?.projection;
-    const partialScene =
-      camera.projection === 'oblique' && view.scene?.groundMode === 'partial';
+    const partialScene = camera.projection === 'oblique' && view.scene?.groundMode === 'partial';
     const painting =
       !partialScene && compatible && view.backdrop ? backdrops.get(view.backdrop.url) : null;
     if (painting) this.drawBackdrop(painting, view, camera);

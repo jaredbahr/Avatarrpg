@@ -486,8 +486,7 @@ export class PixiBackend implements RenderBackend {
     // A painting takes the terrain's place; the decor that marks footing
     // over it comes back only under High contrast, where the rules must read
     // without the picture.
-    const partialScene =
-      camera.projection === 'oblique' && view.scene?.groundMode === 'partial';
+    const partialScene = camera.projection === 'oblique' && view.scene?.groundMode === 'partial';
     const backdropPainted = this.syncBackdrop(view, camera, partialScene);
     const scenePainted = this.syncScene(view, camera);
     // An incomplete authored scene must keep its collision-marking fallback.
@@ -532,7 +531,8 @@ export class PixiBackend implements RenderBackend {
       camera.projection === 'oblique'
         ? view.backdrop?.projection === 'oblique'
         : view.backdrop?.projection !== 'oblique';
-    const image = !partialScene && view.backdrop && compatible ? backdrops.get(view.backdrop.url) : null;
+    const image =
+      !partialScene && view.backdrop && compatible ? backdrops.get(view.backdrop.url) : null;
     if (!image) {
       this.backdropSprite.visible = false;
       this.dropBackdrop();
@@ -642,7 +642,8 @@ export class PixiBackend implements RenderBackend {
     const groundIndex = app.stage.getChildIndex(this.groundSprite);
     const sceneIndex = app.stage.getChildIndex(this.sceneGround);
     if (partial && groundIndex > sceneIndex) app.stage.setChildIndex(this.groundSprite, sceneIndex);
-    if (!partial && sceneIndex > groundIndex) app.stage.setChildIndex(this.sceneGround, groundIndex);
+    if (!partial && sceneIndex > groundIndex)
+      app.stage.setChildIndex(this.sceneGround, groundIndex);
   }
 
   private syncGround(view: MapView, painted: boolean, partialScene: boolean): void {
