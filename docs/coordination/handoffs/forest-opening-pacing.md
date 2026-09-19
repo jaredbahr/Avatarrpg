@@ -115,3 +115,36 @@ for the combined corrections above.
 The compact HUD correction and Riko directional contact art remain isolated
 assignments pending integration review. PR64 stays frozen at `9e005b1` while
 its existing required CI runs; no duplicate run or intermediate push was made.
+
+## Quarry Gate follow-through: an actual failed approach
+
+On the same manual `798bee8` Sura/Riko campaign, both characters advanced four
+movement points on round 1. Both previews warned that the deserter could hit
+the destination. Riko had no adjacent target and ended with all five AP unused.
+Sura spent two AP on Ice Path (the real preview reported ice on three tiles),
+then ended without an attack. This kept both characters close enough for the
+deserter's two Fire Blasts to hit both: Sura took 11 + 11; Riko took 9 + a
+15-point critical. Ice melted, then water became steam. Both acquired Burning.
+
+Round 2 began with Riko at 5/32 and Sura at 1/30. Riko's attempted direct step
+through oil was unaffordable; a legal dry flank consumed his four movement
+points but still left Chi Block without a target. He ended without an ability.
+Sura fell to Burning before acting. The encounter ended in defeat at round 3,
+and Continue correctly opened the three-line retreat aftermath. The forest
+manual save remains available. This is a poor, exposed approach, not proof that
+the party cannot win, nor acceptance of the encounter's teaching quality.
+
+A follow-up local legal-AI probe used current `db72f0b` content with 40 paired
+seeds (`gate-pair-0` through `39`), level-2 Sura/Riko and the normal gate roster.
+Full-health starts won 7/40; starts with Sura at the observed 23 HP won 2/40.
+Riko used an ability in round 2 in every sample, but the AI never chose Chi
+Block. The only injury fixture changed initial Sura HP; every combat command
+was `runAiTurn`. No turn cap was reached. Probe and results are retained in
+`.shots/pacing/gate-pair.ts` and `gate-pair-results.json`.
+
+This sample identifies a specific party/encounter review gap; it is neither an
+all-party balance report nor a human strategy evaluation. Before tuning, compare
+a spread-out or defensive manual approach and inspect the AI's control valuation.
+Keep the fire/oil lesson, route progression and existing party-size evidence.
+Do not solve the observed loss by blindly moving spawns closer or weakening all
+opposition. No balance or AI changes are included in this checkpoint.
