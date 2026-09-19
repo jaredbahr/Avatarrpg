@@ -38,10 +38,8 @@ const kind = (key: string | undefined): Kind =>
         : key === '.' || key === ',' || key === 'c'
           ? 'dirt'
           : 'void';
-const mirror = (value: number, size: number) => {
-  const p = ((value % (size * 2)) + size * 2) % (size * 2);
-  return p < size ? p : size * 2 - p - 1;
-};
+/** Continuous source phase: reflection made visible herringbone chevrons at every repeat. */
+const repeat = (value: number, size: number) => ((value % size) + size) % size;
 const page = { x: -128, y: -192, width: 2304, height: 1280 };
 const names = ['dirt-west', 'dirt-east', 'road', 'stone'] as const;
 const images = new Map(names.map((name) => [name, newImage(page.width, page.height)]));
@@ -64,7 +62,7 @@ for (let py = 0; py < page.height; py++)
     const current = kind(key),
       field = fields[current === 'road' ? 1 : current === 'stone' ? 2 : 0];
     if (!field) throw new Error('Missing field');
-    let rgba = pixelAt(field, mirror(px, 128), mirror(py, 128));
+    let rgba = pixelAt(field, repeat(px, 128), repeat(py, 128));
     const neighbors = [
       [x - 1, y, (gx - x + 0.15) / 0.3, gy, false],
       [x + 1, y, (gx - x - 0.85) / 0.3, gy, true],
@@ -87,7 +85,7 @@ for (let py = 0; py < page.height; py++)
       rgba = pixelAt(
         transition,
         Math.min(127, Math.max(0, Math.floor((dirtForward ? t : 1 - t) * 128))),
-        mirror(Math.floor(along * 128), 128),
+        repeat(Math.floor(along * 128), 128),
       );
       break;
     }
