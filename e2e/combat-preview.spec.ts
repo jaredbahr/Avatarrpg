@@ -133,3 +133,56 @@ test('player action controls are disabled during an enemy turn', async ({ page }
   expect(controls.endDisabled).toBe(true);
   expect(controls.enemyBanner).toContain('moving');
 });
+
+test('movement prevention disables Move and explains the status', async ({ page }) => {
+  await resetStorage(page);
+  await startGame(page, ['Rooted'], ['riko'], 'movement-status-touch');
+  await enterNode(page, 'battle_quarry_gate');
+  await takeTurn(page);
+  await waitForIdle(page);
+
+  await page.evaluate(() => {
+    const app = window.fnt?.app;
+    const state = app?.state;
+    const battle = state?.battle;
+    if (!app || !state || !battle) throw new Error('No battle for movement-status fixture.');
+    const activeId = battle.order[battle.turnIndex];
+    const active = battle.units.find((unit) => unit.id === activeId);
+    if (!active || active.faction !== 'party') throw new Error('Party unit is not active.');
+    app.state = {
+      ...state,
+      battle: {
+        ...battle,
+        units: battle.units.map((unit) =>
+          unit.id === active.id
+            ? {
+                ...unit,
+                pos: { x: 1, y: 3 },
+                statuses: [{ id: 'rooted', duration: 2, stacks: 1 }],
+              }
+            : unit,
+        ),
+      },
+    };
+    app.resync();
+  });
+
+  const move = page.getByRole('button', { name: /^Move/ });
+  await expect(move).toBeDisabled();
+  await expect(move).toHaveAttribute('title', 'Rooted: Stuck in place, but can still attack.');
+  await move.click({ force: true });
+  await expect(page.locator('.confirm-bar')).toHaveCount(0);
+
+  await page.getByRole('button', { name: /^Strike/ }).click();
+  await expect(page.locator('.aim-hint')).toContainText(
+    'Nothing is within 1 tiles of Riko. Move closer first.',
+  );
+  const moveInstead = page.getByRole('button', { name: 'Move instead' });
+  await expect(moveInstead).toBeDisabled();
+  await expect(moveInstead).toHaveAttribute(
+    'title',
+    'Rooted: Stuck in place, but can still attack.',
+  );
+  await moveInstead.click({ force: true });
+  await expect(page.locator('.confirm-dialog')).toHaveCount(0);
+});

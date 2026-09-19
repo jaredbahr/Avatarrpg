@@ -24,7 +24,7 @@ import {
   affectedTiles,
 } from '../../core/rules/abilities';
 import { pathCost, posKey, reachable, samePos } from '../../core/rules/grid';
-import { effectiveStats, isAlive } from '../../core/rules/stats';
+import { canMove, effectiveStats, isAlive, statusDefs } from '../../core/rules/stats';
 import { activeUnit, upcomingOrder } from '../../core/rules/turnOrder';
 import { encounterText } from '../../core/story/encounterText';
 import { Renderer, TILE } from '../../render/renderer';
@@ -398,6 +398,16 @@ export class CombatScene implements Scene {
     return battle ? activeUnit(battle) : undefined;
   }
 
+  private movementBlockReason(unit: Unit): string | null {
+    if (canMove(this.app.content, unit)) return null;
+    const blocker = statusDefs(this.app.content, unit).find(
+      (status) => status.preventsMove || status.skipsTurn,
+    );
+    return blocker
+      ? `${blocker.name}: ${blocker.description}`
+      : `${unit.name} cannot move right now.`;
+  }
+
   private isPlayerTurn(): boolean {
     const unit = this.active();
     return !!unit && unit.faction === 'party' && isAlive(unit);
@@ -681,6 +691,11 @@ export class CombatScene implements Scene {
     const unit = this.active();
     if (!unit) return;
 
+    if (this.mode.kind === 'move' && this.movementBlockReason(unit)) {
+      this.mode = { kind: 'idle' };
+      this.clearPending();
+    }
+
     if (unit.faction !== 'party') {
       overlays.appendChild(
         el(
@@ -793,15 +808,18 @@ export class CombatScene implements Scene {
     const interactive = unit.faction === 'party' && this.isPlayerTurn();
 
     const moveActive = this.mode.kind === 'move';
-    const canMoveNow = unit.move > 0;
+    const movementReason = this.movementBlockReason(unit);
+    const canMoveNow = unit.move > 0 && !movementReason;
     const moveButton = button(`Move`, () => this.selectMove(), {
       class: `action-button${moveActive ? ' selected' : ''}`,
       disabled: !interactive || !canMoveNow,
       title: !interactive
         ? 'Player controls are locked while another unit acts'
-        : canMoveNow
-          ? 'Walk to a highlighted tile'
-          : 'No move points left this turn',
+        : movementReason
+          ? movementReason
+          : canMoveNow
+            ? 'Walk to a highlighted tile'
+            : 'No move points left this turn',
     });
     moveButton.prepend(mark(UI_MARKS.move));
     moveButton.appendChild(el('span', { class: 'action-sub', text: `${unit.move} left` }));
@@ -906,6 +924,14 @@ export class CombatScene implements Scene {
   }
 
   private selectMove(): void {
+    const unit = this.active();
+    const movementReason = unit ? this.movementBlockReason(unit) : null;
+    if (!unit || unit.move <= 0 || movementReason) {
+      this.mode = { kind: 'idle' };
+      this.clearPending();
+      this.renderHud();
+      return;
+    }
     this.mode = this.mode.kind === 'move' ? { kind: 'idle' } : { kind: 'move' };
     this.clearPending();
     this.renderHud();
@@ -951,6 +977,10 @@ export class CombatScene implements Scene {
     if (!battle || !target) return el('div');
 
     if (this.mode.kind === 'move') {
+      const movementReason = this.movementBlockReason(unit);
+      if (movementReason) {
+        return this.confirmShell(el('span', { class: 'warn-note', text: movementReason }), null);
+      }
       const cell = this.reachableCells().get(posKey(target));
       if (!cell) {
         return this.confirmShell(
@@ -1184,6 +1214,14 @@ export class CombatScene implements Scene {
     if (!battle) return null;
 
     if (this.mode.kind === 'move') {
+      const movementReason = this.movementBlockReason(unit);
+      if (movementReason) {
+        return el(
+          'div',
+          { class: 'confirm-bar aim-hint' },
+          el('span', { class: 'warn-note', text: movementReason }),
+        );
+      }
       if (unit.move > 0) return null;
       return el(
         'div',
@@ -1217,6 +1255,7 @@ export class CombatScene implements Scene {
     }
 
     const needsUnit = ability.targeting.shape === 'unit';
+    const movementReason = this.movementBlockReason(unit);
     return el(
       'div',
       { class: 'confirm-bar aim-hint' },
@@ -1230,7 +1269,10 @@ export class CombatScene implements Scene {
         'div',
         { class: 'row' },
         el('div', { class: 'spacer' }),
-        button('Move instead', () => this.selectMove(), { disabled: unit.move <= 0 }),
+        button('Move instead', () => this.selectMove(), {
+          disabled: unit.move <= 0 || Boolean(movementReason),
+          title: movementReason ?? 'Walk to a highlighted tile',
+        }),
         this.cancelButton(() => {
           this.mode = { kind: 'idle' };
           this.renderHud();
@@ -1531,6 +1573,7 @@ export class CombatScene implements Scene {
     let path: readonly Vec2[] = [];
 
     if (this.mode.kind === 'move') {
+      if (this.movementBlockReason(unit)) return { overlays, path };
       const reach = this.reachableCells();
       const cells = [...reach.values()].filter((c) => c.cost > 0);
       overlays.push({ kind: 'move', tiles: cells.map((c) => c.pos) });
