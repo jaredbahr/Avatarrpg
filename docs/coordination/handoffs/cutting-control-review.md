@@ -435,9 +435,19 @@ Rooted, and Grumbler42/64. Quarry ownership now includes a focused Canvas/WebGL
 load of this older save, preserving its baked grid, unit state and RNG while
 omitting new wall artwork absent from its terrain.
 
-Root's combined418-case run on the video-source-excluded build remains active:
-all168 Chromium cases completed, including repaired quarry assessment/save-load,
-renderer and motion checks; WebKit is in progress. Do not rebuild root dist until
-that run finishes. The running build precedes tea and legacy-wall guard integration.
+Root's combined 418-case run on the video-source-excluded build stopped after
+178 passes, one skip and 238 not run. All 168 Chromium cases completed, including
+repaired quarry assessment/save-load, renderer and motion checks. Windows WebKit
+failed audio unlock: an independent button-gesture probe confirmed that this
+engine exposes neither AudioContext nor webkitAudioContext; Chrome exposes a
+running context. Linux CI audio checks remain mandatory and unchanged. Evidence
+is retained in `.shots/integration/full-473165b-audio-failure`.
+The tested build precedes tea and legacy-wall guard integration.
 Tea's transient agent capacity failure was resumed in the same preserved worktree
 with its live probes retained; no duplicate jobs or GitHub runs were started.
+
+Tea visual review found a separate real presentation issue: opening Activities
+can blank WebKit's forced-WebGL base painting while overlay actors remain. The
+tea owner is comparing the pre-tea compact dock on root's temporary port 4268
+with the frozen release on 4267. No renderer parity or platform-wide limitation
+is claimed. Root must preserve the 4268 dist while that comparison is active.
