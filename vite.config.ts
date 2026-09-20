@@ -77,10 +77,28 @@ export default defineConfig({
               'Pixi texture registration changed; review the video-source exclusion.',
             );
           }
-          return {
-            code: code.replace(videoImport, '').replace('  VideoSource,', ''),
-            map: null,
-          };
+          const maskImports = [
+            "import { AlphaMask } from './mask/alpha/AlphaMask.mjs';",
+            "import { ColorMask } from './mask/color/ColorMask.mjs';",
+            "import { StencilMask } from './mask/stencil/StencilMask.mjs';",
+            "import './mask/MaskEffectManager.mjs';",
+          ];
+          for (const line of maskImports) {
+            if (!code.includes(line)) {
+              throw new Error('Pixi mask registration changed; review the mask exclusion.');
+            }
+          }
+          if (
+            !code.includes(
+              'extensions.add(\n  AlphaMask,\n  ColorMask,\n  StencilMask,\n  VideoSource,',
+            )
+          ) {
+            throw new Error('Pixi mask registration changed; review the mask exclusion.');
+          }
+          let next = code.replace(videoImport, '').replace('  VideoSource,', '');
+          for (const line of maskImports) next = next.replace(line, '');
+          next = next.replace('  AlphaMask,\n  ColorMask,\n  StencilMask,\n', '');
+          return { code: next, map: null };
         }
         // The game renders on the main thread and has no Worker or OffscreenCanvas
         // path. Register the browser environment only; the worker extension would
@@ -120,6 +138,32 @@ export default defineConfig({
               ),
             map: null,
           };
+        }
+        // Nothing in the game masks a Pixi display object: the board clips in
+        // Canvas 2D and in the ground shader, and every other surface is DOM.
+        // The alpha mask pipe is the only importer of Pixi's mask filter, so
+        // both leave the shared render pipes; the color and stencil pipes stay,
+        // because a build without them drew no board on the software WebGL
+        // rasteriser (ADR 0040).
+        if (
+          /[/\\]pixi\.js[/\\]lib[/\\]rendering[/\\]renderers[/\\]shared[/\\]system[/\\]SharedSystems\.mjs$/.test(
+            id,
+          )
+        ) {
+          const alphaPipe = [
+            "import { AlphaMaskPipe } from '../../../mask/alpha/AlphaMaskPipe.mjs';\n",
+            '  AlphaMaskPipe,\n',
+          ];
+          for (const line of alphaPipe) {
+            if (!code.includes(line)) {
+              throw new Error(
+                'Pixi shared-system registration changed; review the alpha-pipe exclusion.',
+              );
+            }
+          }
+          let next = code;
+          for (const line of alphaPipe) next = next.replace(line, '');
+          return { code: next, map: null };
         }
         if (
           /[/\\]pixi\.js[/\\]lib[/\\](accessibility|events|dom|spritesheet)[/\\]init\.mjs$/.test(id)
