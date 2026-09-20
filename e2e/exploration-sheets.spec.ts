@@ -14,11 +14,17 @@ for (const renderer of ['canvas', 'webgl'] as const) {
   }) => {
     test.setTimeout(120_000);
     if (renderer === 'webgl' && browserName === 'webkit') test.slow();
-    // Substitute the existing flat red probe for the bandit's idle art. Reading
-    // pixels proves the marker draws the loaded frame, not just requests it.
+    // Substitute the existing flat red probe for the bandit's idle art. Keep
+    // both idle entries on the red source rectangle: the CI trace showed slow
+    // WebGL readback phase-locking the 1 fps red/green fixture on green, even
+    // though the atlas had loaded and the marker was on-screen.
     const atlas = readFileSync('public/art/test/probe.json', 'utf8')
       .replaceAll('unit.test.probe', 'unit.enemy.thug')
-      .replace('probe.png', 'thug.png');
+      .replace('probe.png', 'thug.png')
+      .replace(
+        '"unit.enemy.thug/idle/1": {\n      "frame": {\n        "x": 128,',
+        '"unit.enemy.thug/idle/1": {\n      "frame": {\n        "x": 0,',
+      );
     await page.route('**/art/units/thug.json', (route) =>
       route.fulfill({ contentType: 'application/json', body: atlas }),
     );
