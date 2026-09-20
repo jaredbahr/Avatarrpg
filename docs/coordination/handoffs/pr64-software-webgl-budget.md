@@ -118,15 +118,27 @@ built on:
 | `renderer.spec` board through WebGL  | 107.4s              | 120s     | 106.3s | 300s    |
 | `renderer.spec` painted ground       | 59.0s               | 120s     | 62.2s  | 300s    |
 
-One failure remains, and it is a different class: `riverside-tea.spec.ts` "tea
+`WebKit iPad` ran the full 195-case set for the first time (at `b174495` it
+aborted at 131 cases and 31.5 minutes) and failed only one case: the same
+`riverside-tea.spec.ts` WebGL case. The reaction case it failed at `b174495`
+now passes, so `settleMapCanvas` is confirmed on the engine that saw the race.
+WebKit took 36.9 minutes for 143 executed cases, still inside its 60-minute job
+limit.
+
+That remaining failure is a different class from every budget failure above:
+`riverside-tea.spec.ts` "tea
 holds on the porch and yields to walking and forms (webgl)" failed
 `expect((await teaPortrait()).equals(hold)).toBe(false)` — the two portraits
 were byte-identical, so the opposite tea cel never reached the screen. It ran
-to completion twice at 309.3s.
+to completion twice on Chromium (309.3s) and twice on WebKit (120.8s).
 
 It is newly _visible_ rather than new: at `b174495` shard 3/3 aborted on the
 resize case and skipped this one, so the WebGL backend has not run it in
-Chromium CI, while its Canvas twin passes in 10.7s and WebKit passes. No
+Chromium CI, while its Canvas twin passes on both engines in about 11s. The
+Canvas path passes, both WebGL paths fail, and
+[the tea handoff](riverside-tea-rest.md) records it passing on installed Chrome
+and Windows WebKit for both backends — so this is the observation method
+meeting CI's software WebGL, not a regression this branch introduced. No
 assertion was weakened to get this far and none should be.
 
 Leads for whoever takes it:
@@ -143,6 +155,13 @@ Leads for whoever takes it:
   `VillageLife.elapsed` advanced the full 4000 ms, and whether the last frame
   was published. Reading the app's own elapsed and chosen cel around the burst
   answers that without touching the pixel assertion.
+- The blunt asymmetry — identical pixels only where the board is a WebGL
+  surface, on both engines — points at presentation rather than at the cel
+  math: a Canvas 2D backing store composites fresh at screenshot time, while a
+  WebGL surface drawn inside one mocked-clock task may not have been presented
+  since. If the probe shows elapsed advancing correctly and the cel resolving
+  to the other frame, the repair belongs in how the test makes the browser
+  present a frame, not in the assertion.
 - `docs/coordination/handoffs/riverside-tea-rest.md` and the tea clock review
   hold the earlier history; the paused-clock handling is shared with the
   activity pause path, so a fix here touches that contract.
@@ -152,9 +171,9 @@ Leads for whoever takes it:
 1. Diagnose the tea WebGL case in its own isolated branch, on top of
    `8ae6996`. Do not relax the visible-cel assertion and do not re-raise this
    branch's budget: the case has room.
-2. Merge this follow-up (the handoff text) and that repair into
-   `codex/quarry-gate-integration` and push **once**, so the required checks run
-   on a single new revision and auto-merge can land it.
-3. Re-read the WebKit job of run `35490500300` before assuming the WebKit side
-   is clean: it was still running when this was written, and the previous
-   revision failed its reaction case.
+2. Merge this follow-up (the handoff text, on top of `8ae6996`) and that repair
+   into `codex/quarry-gate-integration` and push **once**, so the required
+   checks run on a single new revision and auto-merge can land it.
+3. Watch the WebKit job's budget: it now runs its full 195 cases in 36.9 of its
+   60 minutes. If a later revision grows past that, shard WebKit the way
+   Chromium is sharded rather than raising the job limit.
