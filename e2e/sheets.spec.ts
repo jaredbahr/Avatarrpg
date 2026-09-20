@@ -1,4 +1,5 @@
 import { expect, test } from '@playwright/test';
+import { allowSoftwareWebgl } from './budget';
 import { enterNode, resetStorage, settleLayout, startGame, takeTurn, waitForIdle } from './helpers';
 import { average, screenshotPixels } from './pixels';
 
@@ -15,12 +16,9 @@ import { average, screenshotPixels } from './pixels';
  */
 test.describe('unit sheets', () => {
   for (const renderer of ['canvas', 'webgl'] as const) {
-    test(`draws a loaded atlas frame on the unit's tile on ${renderer}`, async ({
-      page,
-      browserName,
-    }) => {
+    test(`draws a loaded atlas frame on the unit's tile on ${renderer}`, async ({ page }) => {
       test.setTimeout(120_000);
-      if (renderer === 'webgl' && browserName === 'webkit') test.slow();
+      allowSoftwareWebgl(test, renderer);
 
       const errors: string[] = [];
       page.on('console', (message) => {

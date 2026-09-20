@@ -1,4 +1,5 @@
 import { expect, test } from '@playwright/test';
+import { allowSoftwareWebgl } from './budget';
 import { enterNode, resetStorage, startGame, waitForIdle } from './helpers';
 import { screenshotPixels } from './pixels';
 import type { MapView } from '../src/render/view';
@@ -7,6 +8,7 @@ for (const renderer of ['canvas', 'webgl']) {
   test(`Look around → Visit Gao settles the party during conversation on ${renderer}`, async ({
     page,
   }) => {
+    allowSoftwareWebgl(test, renderer);
     await resetStorage(page, `?renderer=${renderer}`);
     await startGame(page, ['Sura', 'Kaya'], ['sura', 'kaya'], 'gao-conversation-settle', {
       reduceMotion: false,
@@ -78,6 +80,7 @@ for (const renderer of ['canvas', 'webgl']) {
   });
 
   test(`shopfront Talk chooses Gao on ${renderer}`, async ({ page }) => {
+    allowSoftwareWebgl(test, renderer);
     await resetStorage(page, `?renderer=${renderer}`);
     await startGame(
       page,
@@ -99,6 +102,7 @@ for (const renderer of ['canvas', 'webgl']) {
   });
 
   test(`ground ring cannot cover Mira on ${renderer}`, async ({ page }) => {
+    allowSoftwareWebgl(test, renderer);
     await resetStorage(page, `?renderer=${renderer}`);
     await startGame(
       page,

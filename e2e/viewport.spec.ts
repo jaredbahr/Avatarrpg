@@ -1,6 +1,7 @@
 import { paintedTileCentre } from './projection';
 import { expect, test } from '@playwright/test';
 import type { Page } from '@playwright/test';
+import { allowSoftwareWebgl } from './budget';
 import { enterNode, resetStorage, settleLayout, startGame, takeTurn, waitForIdle } from './helpers';
 
 /**
@@ -116,12 +117,9 @@ test.describe('map viewport', () => {
  * affine back to the same wrong tile. Off-centre samples cover both diamond edges.
  */
 for (const renderer of ['canvas', 'webgl'] as const) {
-  test(`oblique village picks the expected diamond on ${renderer}`, async ({
-    page,
-    browserName,
-  }) => {
+  test(`oblique village picks the expected diamond on ${renderer}`, async ({ page }) => {
     test.setTimeout(120_000);
-    if (renderer === 'webgl' && browserName === 'webkit') test.slow();
+    allowSoftwareWebgl(test, renderer);
     await resetStorage(page, `?renderer=${renderer}`);
     await startGame(page, ['Explorer'], ['kaya'], 'oblique-picking');
     await enterNode(page, 'village_explore');

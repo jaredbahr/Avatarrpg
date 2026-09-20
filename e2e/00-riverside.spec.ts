@@ -1,5 +1,6 @@
 import { expect, test } from '@playwright/test';
 import type { Page } from '@playwright/test';
+import { allowSoftwareWebgl } from './budget';
 import { enterNode, resetStorage, settleLayout, startGame, waitForIdle } from './helpers';
 
 async function openActivities(page: Page): Promise<void> {
@@ -151,7 +152,8 @@ for (const renderer of ['canvas', 'webgl']) {
   test(`riverside discovery, forms and campaign preservation (${renderer})`, async ({ page }) => {
     // The WebGL CI runner rasterises in software; the same gallery form
     // takes two minutes there and five seconds on Canvas.
-    test.setTimeout(renderer === 'webgl' ? 180_000 : 90_000);
+    test.setTimeout(90_000);
+    allowSoftwareWebgl(test, renderer);
     // Scenic routes now take 280 ms per tile; crossing the whole area can
     // exceed the default assertion timeout even at a smooth frame rate.
     const timeout = renderer === 'webgl' ? 30_000 : 20_000;

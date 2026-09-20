@@ -3,6 +3,7 @@ import { CONTENT } from '../src/content';
 import { RngCursor } from '../src/core/rng';
 import { reachable } from '../src/core/rules/grid';
 import { BattleDraft } from '../src/core/state/battleDraft';
+import { allowSoftwareWebgl } from './budget';
 import { enterNode, resetStorage, settleLayout, startGame, takeTurn, waitForIdle } from './helpers';
 import { groundPoint, paintedTileCentre } from './projection';
 
@@ -55,10 +56,7 @@ for (const renderer of ['canvas', 'webgl'] as const) {
     // snapshot, with roughly 40-60s still needed for resize and recentre.
     // Keep this allowance local to the forced-WebGL regression; the automatic
     // software path uses Canvas and this is not a product performance budget.
-    if (renderer === 'webgl') {
-      test.slow();
-      test.setTimeout(300_000);
-    }
+    allowSoftwareWebgl(test, renderer);
     await page.setViewportSize({ width: 1672, height: 941 });
     await resetStorage(page, `?renderer=${renderer}`);
     await startGame(page, ['Kaya'], ['kaya'], 'manual-pan-reflow');
@@ -288,7 +286,7 @@ for (const renderer of ['canvas', 'webgl'] as const) {
     test(`reveals a legal lower move through confirmation reflow on ${renderer}/${largeText}`, async ({
       page,
     }) => {
-      if (renderer === 'webgl') test.slow();
+      allowSoftwareWebgl(test, renderer);
       await page.setViewportSize({ width: 1280, height: 720 });
       await resetStorage(page, `?renderer=${renderer}`);
       await startGame(page, ['Sura'], ['sura'], `move-reveal-${renderer}-${largeText}`);

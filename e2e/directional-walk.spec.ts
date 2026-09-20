@@ -1,4 +1,5 @@
 import { expect, test } from '@playwright/test';
+import { allowSoftwareWebgl } from './budget';
 import { enterNode, resetStorage, startGame, waitForIdle } from './helpers';
 import type { MapView, RenderUnit } from '../src/render/view';
 
@@ -8,6 +9,7 @@ for (const renderer of ['canvas', 'webgl'] as const) {
       page,
     }) => {
       test.setTimeout(120_000);
+      allowSoftwareWebgl(test, renderer);
       const errors: string[] = [];
       page.on('pageerror', (error) => errors.push(error.message));
       page.on('console', (message) => {

@@ -1,12 +1,14 @@
 import { expect, test } from '@playwright/test';
 import { ALL_ABILITIES } from '../src/content/abilities';
 import { FX_CELS } from '../src/content/fxCels';
+import { allowSoftwareWebgl } from './budget';
 import { enterNode, resetStorage, settleLayout, startGame, takeTurn, waitForIdle } from './helpers';
 import { stageMotionTransition } from './motion-stage';
 
 for (const renderer of ['canvas', 'webgl'] as const) {
   test(`every bending technique renders its animation cels on ${renderer}`, async ({ page }) => {
     test.setTimeout(180_000);
+    allowSoftwareWebgl(test, renderer);
     const errors: string[] = [];
     page.on('pageerror', (error) => errors.push(error.message));
     await page.clock.install();
@@ -42,6 +44,7 @@ for (const renderer of ['canvas', 'webgl'] as const) {
 
   test(`missing cel images keep bending playable on ${renderer}`, async ({ page }) => {
     test.setTimeout(120_000);
+    allowSoftwareWebgl(test, renderer);
     await page.route('**/art/fx/*-cels.png', (route) => route.abort());
     const errors: string[] = [];
     page.on('pageerror', (error) => errors.push(error.message));

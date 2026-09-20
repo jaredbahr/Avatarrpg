@@ -1,4 +1,5 @@
 import { expect, test } from '@playwright/test';
+import { allowSoftwareWebgl } from './budget';
 import { enterNode, resetStorage, startGame, takeTurn, waitForIdle } from './helpers';
 import { paintedTileCentre } from './projection';
 
@@ -6,7 +7,7 @@ for (const renderer of ['canvas', 'webgl']) {
   test(`portrait initiative locates threats without changing actions on ${renderer}`, async ({
     page,
   }) => {
-    if (renderer === 'webgl') test.slow();
+    allowSoftwareWebgl(test, renderer);
     await page.setViewportSize({ width: 820, height: 1180 });
     await resetStorage(page, `?renderer=${renderer}`);
     await startGame(page, ['Kaya'], ['kaya'], 'forest-focus');

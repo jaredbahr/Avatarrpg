@@ -1,5 +1,6 @@
 import { expect, test } from '@playwright/test';
 import type { Page } from '@playwright/test';
+import { allowSoftwareWebgl } from './budget';
 import { enterNode, resetStorage, settleLayout, startGame, waitForIdle } from './helpers';
 
 async function openActivities(page: Page): Promise<void> {
@@ -147,11 +148,9 @@ test('rescued riverside return keeps the shrine discovery and party health', asy
 });
 
 for (const renderer of ['canvas', 'webgl']) {
-  test(`connected exploration crosses maps and returns on ${renderer}`, async ({
-    page,
-    browserName,
-  }) => {
-    test.setTimeout(browserName === 'webkit' && renderer === 'webgl' ? 120_000 : 60_000);
+  test(`connected exploration crosses maps and returns on ${renderer}`, async ({ page }) => {
+    test.setTimeout(60_000);
+    allowSoftwareWebgl(test, renderer);
     const errors: string[] = [];
     page.on('pageerror', (error) => errors.push(error.message));
     await resetStorage(page, `?renderer=${renderer}`);

@@ -1,4 +1,5 @@
 import { test, expect } from '@playwright/test';
+import { allowSoftwareWebgl } from './budget';
 import { resetStorage, startGame, enterNode, takeTurn, waitForIdle } from './helpers';
 import { screenshotClipPixels, average, type Pixels } from './pixels';
 
@@ -20,7 +21,7 @@ for (const renderer of ['canvas', 'webgl'])
   test(`partial ground keeps rubble art and live overlays on ${renderer}`, async ({ page }) => {
     // On CI's software WebGL, a full-canvas readback took 15 seconds per capture
     // in run 35417898299. Keep the WebGL allowance even with the smaller probe.
-    if (renderer === 'webgl') test.slow();
+    allowSoftwareWebgl(test, renderer);
     await page.setViewportSize({ width: 1672, height: 941 });
     await resetStorage(page, `?renderer=${renderer}`);
     await startGame(page, ['Kaya'], ['kaya'], 'forest-rubble');

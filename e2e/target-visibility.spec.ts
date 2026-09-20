@@ -1,5 +1,6 @@
 import { expect, test } from '@playwright/test';
 import type { Locator, Page } from '@playwright/test';
+import { allowSoftwareWebgl } from './budget';
 import { enterNode, resetStorage, settleLayout, startGame, takeTurn, waitForIdle } from './helpers';
 
 const target = { x: 13, y: 5 };
@@ -108,7 +109,7 @@ for (const renderer of ['canvas', 'webgl'] as const) {
       // each camera settle and pointer readback. The assertions remain the
       // same; give this renderer the same measured slow-project allowance as
       // the pan/reflow regression without relaxing the suite globally.
-      if (renderer === 'webgl') test.slow();
+      allowSoftwareWebgl(test, renderer);
       await page.setViewportSize(
         narrow ? { width: 390, height: 844 } : { width: 1672, height: 941 },
       );

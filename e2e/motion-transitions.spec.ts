@@ -1,4 +1,5 @@
 import { expect, test } from '@playwright/test';
+import { allowSoftwareWebgl } from './budget';
 import { enterNode, resetStorage, settleLayout, startGame, takeTurn, waitForIdle } from './helpers';
 import { stageMotionTransition } from './motion-stage';
 import type { MapView, RenderUnit } from '../src/render/view';
@@ -6,6 +7,7 @@ import type { MapView, RenderUnit } from '../src/render/view';
 for (const renderer of ['canvas', 'webgl'] as const) {
   test(`attack recovery and backward knockback stay grounded on ${renderer}`, async ({ page }) => {
     test.setTimeout(120_000);
+    allowSoftwareWebgl(test, renderer);
     // Capture the game's first RAF in the controlled clock, including on WebKit.
     await page.clock.install();
     await resetStorage(page, `?renderer=${renderer}`);

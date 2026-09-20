@@ -1,4 +1,5 @@
 import { expect, test } from '@playwright/test';
+import { allowSoftwareWebgl } from './budget';
 import { enterNode, resetStorage, startGame } from './helpers';
 
 for (const renderer of ['canvas', 'webgl'] as const) {
@@ -6,7 +7,7 @@ for (const renderer of ['canvas', 'webgl'] as const) {
     // This retained-world aftermath follows the same software-WebGL path as
     // forest aftermath; keep its renderer-specific budget aligned before it
     // runs after the first failing test in CI.
-    if (renderer === 'webgl') test.slow();
+    allowSoftwareWebgl(test, renderer);
     await resetStorage(page, `?renderer=${renderer}`);
     await startGame(page, ['Sura', 'Riko'], ['sura', 'riko'], 'cutting-aftermath');
     // The route suite owns combat outcomes; isolate the post-result presentation.

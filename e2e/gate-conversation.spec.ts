@@ -1,4 +1,5 @@
 import { expect, test } from '@playwright/test';
+import { allowSoftwareWebgl } from './budget';
 import { enterNode, resetStorage, startGame } from './helpers';
 
 for (const renderer of ['canvas', 'webgl'] as const) {
@@ -9,7 +10,7 @@ for (const renderer of ['canvas', 'webgl'] as const) {
       // Forced WebGL on CI is a software rasteriser. The Canvas variants
       // finish inside the normal budget; the landscape WebGL tap needs the
       // same slow-test allowance as the other forced-WebGL regressions.
-      if (renderer === 'webgl') test.slow();
+      allowSoftwareWebgl(test, renderer);
       if (portrait) await page.setViewportSize({ width: 834, height: 1194 });
       await resetStorage(page, `?renderer=${renderer}`);
       await startGame(page, ['Sura', 'Riko'], ['sura', 'riko'], 'gate-world-choice');

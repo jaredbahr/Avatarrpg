@@ -1,5 +1,6 @@
 import { expect, test } from '@playwright/test';
 import type { Page } from '@playwright/test';
+import { allowSoftwareWebgl } from './budget';
 import {
   enterNode,
   resetStorage,
@@ -66,10 +67,9 @@ test.describe('map paintings', () => {
   for (const renderer of ['canvas', 'webgl'] as const) {
     test(`draws the painting under the tiles and the grid over it on ${renderer}`, async ({
       page,
-      browserName,
     }) => {
       test.setTimeout(120_000);
-      if (renderer === 'webgl' && browserName === 'webkit') test.slow();
+      allowSoftwareWebgl(test, renderer);
 
       const errors: string[] = [];
       page.on('console', (message) => {

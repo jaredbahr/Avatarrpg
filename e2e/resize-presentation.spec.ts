@@ -1,6 +1,7 @@
 import { expect, test } from '@playwright/test';
 import type { MapView } from '../src/render/view';
 import type { Camera, Viewport } from '../src/render/camera';
+import { allowSoftwareWebgl } from './budget';
 import { enterNode, resetStorage, settleLayout, startGame, takeTurn, waitForIdle } from './helpers';
 import { paintedTileCentre } from './projection';
 
@@ -19,6 +20,7 @@ for (const renderer of ['canvas', 'webgl'] as const) {
       page,
     }) => {
       test.setTimeout(120_000);
+      allowSoftwareWebgl(test, renderer);
       const errors: string[] = [];
       const missingSheets: string[] = [];
       page.on('pageerror', (error) => errors.push(error.message));

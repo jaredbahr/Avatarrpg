@@ -1,4 +1,5 @@
 import { expect, test, type Page } from '@playwright/test';
+import { allowSoftwareWebgl } from './budget';
 import { enterNode, resetStorage, startGame, takeTurn, waitForIdle } from './helpers';
 import { average, screenshotPixels, type Rgb } from './pixels';
 
@@ -247,7 +248,7 @@ for (const renderer of ['canvas', 'webgl'] as const) {
   test(`partial ground keeps an opaque patch under permanent water on ${renderer}`, async ({
     page,
   }) => {
-    if (renderer === 'webgl') test.slow();
+    allowSoftwareWebgl(test, renderer);
     await resetStorage(page, `?renderer=${renderer}`);
     await installPartialScene(page, [patch(red, PATCH.x, PATCH.y), patch(blue, VALID.x, VALID.y)]);
     await startGame(page, ['Kaya'], ['kaya'], 'partial-ground-water');
@@ -278,7 +279,7 @@ for (const renderer of ['canvas', 'webgl'] as const) {
   test(`partial ground retains valid pieces when one is missing on ${renderer}`, async ({
     page,
   }) => {
-    if (renderer === 'webgl') test.slow();
+    allowSoftwareWebgl(test, renderer);
     await resetStorage(page, `?renderer=${renderer}`);
     // Establish the actual procedural base before adding any scene pieces.
     await installPartialScene(page, []);
@@ -309,7 +310,7 @@ for (const renderer of ['canvas', 'webgl'] as const) {
   test(`partial ground restores decor for accessibility and unavailable art on ${renderer}`, async ({
     page,
   }) => {
-    if (renderer === 'webgl') test.slow();
+    allowSoftwareWebgl(test, renderer);
     await resetStorage(page, `?renderer=${renderer}`);
     await installPartialScene(page, [patch(red, PATCH.x, PATCH.y)]);
     await setMapTile(page, PATCH, 'T');
@@ -349,7 +350,7 @@ for (const renderer of ['canvas', 'webgl'] as const) {
   });
 
   test(`partial elevation keeps a live surface above its base on ${renderer}`, async ({ page }) => {
-    if (renderer === 'webgl') test.slow();
+    allowSoftwareWebgl(test, renderer);
     const raised = { x: 19, y: 2 } as const;
     await resetStorage(page, `?renderer=${renderer}`);
     await startGame(page, ['Kaya'], ['kaya'], 'partial-elevation-surface');

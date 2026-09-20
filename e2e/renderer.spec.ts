@@ -1,5 +1,6 @@
 import { expect, test } from '@playwright/test';
 import type { Page } from '@playwright/test';
+import { allowSoftwareWebgl } from './budget';
 import { enterNode, resetStorage, settleLayout, startGame, takeTurn, waitForIdle } from './helpers';
 import { average, screenshotPixels } from './pixels';
 
@@ -34,11 +35,11 @@ test.describe('renderer backends', () => {
     expect(chosen, 'software WebGL should fall back to Canvas 2D').toBe('canvas');
   });
 
-  test('renders the board through the WebGL backend when forced', async ({ page, browserName }) => {
+  test('renders the board through the WebGL backend when forced', async ({ page }) => {
     test.setTimeout(120_000);
-    // WebKit on a Linux runner drives WebGL through Mesa's software path,
-    // which is slower again than SwiftShader; the budget above is for both.
-    if (browserName === 'webkit') test.slow();
+    // This case forces the shader path on both engines, and both rasterise in
+    // software on a runner with no GPU: SwiftShader in Chromium, Mesa in WebKit.
+    allowSoftwareWebgl(test, 'webgl');
 
     const errors: string[] = [];
     page.on('console', (message) => {
@@ -86,9 +87,9 @@ test.describe('renderer backends', () => {
    * grass green where the grass is.
    */
   for (const renderer of ['canvas', 'webgl'] as const) {
-    test(`paints the ground under the tiles on ${renderer}`, async ({ page, browserName }) => {
+    test(`paints the ground under the tiles on ${renderer}`, async ({ page }) => {
       test.setTimeout(120_000);
-      if (renderer === 'webgl' && browserName === 'webkit') test.slow();
+      allowSoftwareWebgl(test, renderer);
 
       await resetStorage(page, `?renderer=${renderer}`);
       await startGame(page, ['Elias'], ['kaya'], 'ground-spec');

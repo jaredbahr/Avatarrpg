@@ -1,5 +1,6 @@
 import { readFileSync } from 'node:fs';
 import { expect, test } from '@playwright/test';
+import { allowSoftwareWebgl } from './budget';
 import { enterNode, resetStorage, settleLayout, startGame } from './helpers';
 import { average, screenshotClipPixels } from './pixels';
 
@@ -8,12 +9,9 @@ import { average, screenshotClipPixels } from './pixels';
 test.use({ serviceWorkers: 'block' });
 
 for (const renderer of ['canvas', 'webgl'] as const) {
-  test(`exploration encounter markers draw their atlas on ${renderer}`, async ({
-    page,
-    browserName,
-  }) => {
+  test(`exploration encounter markers draw their atlas on ${renderer}`, async ({ page }) => {
     test.setTimeout(120_000);
-    if (renderer === 'webgl' && browserName === 'webkit') test.slow();
+    allowSoftwareWebgl(test, renderer);
     // Substitute the existing flat red probe for the bandit's idle art. Keep
     // both idle entries on the red source rectangle to avoid timing-sensitive
     // red/green sampling while proving the loaded atlas is rendered.

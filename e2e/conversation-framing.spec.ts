@@ -1,5 +1,6 @@
 import { expect, test } from '@playwright/test';
 import type { Page } from '@playwright/test';
+import { allowSoftwareWebgl } from './budget';
 import { enterNode, resetStorage, settleLayout, startGame, waitForIdle } from './helpers';
 
 type Point = { x: number; y: number };
@@ -97,7 +98,7 @@ for (const renderer of ['canvas', 'webgl']) {
       // The CI trace spent about 55 seconds in ordinary software-WebGL
       // protocol actions before the drag began. Keep the extra budget scoped
       // to this forced renderer; Canvas retains the normal 60-second limit.
-      if (renderer === 'webgl') test.slow();
+      allowSoftwareWebgl(test, renderer);
       if (portrait) await page.setViewportSize({ width: 834, height: 1194 });
       await resetStorage(page, `?renderer=${renderer}`);
       await startGame(page, ['Framing review'], ['sura'], 'conversation-framing');

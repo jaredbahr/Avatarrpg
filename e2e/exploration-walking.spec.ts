@@ -1,5 +1,6 @@
 import { expect, test } from '@playwright/test';
 import type { Page } from '@playwright/test';
+import { allowSoftwareWebgl } from './budget';
 import { enterNode, resetStorage, settleLayout, startGame, waitForIdle } from './helpers';
 
 /** Pointer events use the painted canvas geometry, even mid-follow and at high DPR. */
@@ -33,6 +34,7 @@ async function tapPath(page: Page, x: number, y: number) {
 
 for (const renderer of ['canvas', 'webgl']) {
   test(`a second ground tap queues one visible walk on ${renderer}`, async ({ page }) => {
+    allowSoftwareWebgl(test, renderer);
     // Install before navigation so setup runs on the real clock. Pause only
     // after the map is settled, with enough headroom for a slow CI browser.
     await page.clock.install();

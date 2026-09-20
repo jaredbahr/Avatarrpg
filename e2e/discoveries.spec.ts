@@ -1,4 +1,5 @@
 import { expect, test } from '@playwright/test';
+import { allowSoftwareWebgl } from './budget';
 import { enterNode, resetStorage, startGame, waitForIdle } from './helpers';
 
 for (const renderer of ['canvas', 'webgl']) {
@@ -6,7 +7,7 @@ for (const renderer of ['canvas', 'webgl']) {
     // CI software GL spent ~22s on each discovery click and ~11s reaching the
     // first interaction, so the two-inspection route exceeds the base 60s
     // budget. Keep the allowance local to this forced-WebGL regression.
-    if (renderer === 'webgl') test.slow();
+    allowSoftwareWebgl(test, renderer);
     const errors: string[] = [];
     page.on('pageerror', (error) => errors.push(error.message));
     await resetStorage(page, `?renderer=${renderer}`);
