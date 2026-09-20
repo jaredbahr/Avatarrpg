@@ -7,14 +7,19 @@ import { FOREST_WATER_CELLS } from '../../src/content/scenes/forestRoad';
 import { readImage, pixelAt } from './lib/image';
 import { encodeWebp } from './lib/webp';
 import {
+  BITE_FEATHER,
+  SHORE_BITE,
+  SHORE_LIMIT,
+  biteDepth,
   packShoreline,
+  pondInset,
   SHORE_SOURCE,
   SHORE_OUTPUT,
   shorePosition,
   shoreDistance,
 } from './forest-shoreline';
 
-it('ships a reproducible dry pond bank with transparent water interior and a bounded margin', async () => {
+it('ships a reproducible pond bank whose dry material bites into the outer water cells', async () => {
   const { image } = packShoreline(readImage(SHORE_SOURCE));
   const packed = readFileSync(SHORE_OUTPUT);
   expect(Buffer.from(await encodeWebp(image, 88, true))).toEqual(packed);
@@ -27,27 +32,57 @@ it('ships a reproducible dry pond bank with transparent water interior and a bou
   const decoded = await decode(
     packed.buffer.slice(packed.byteOffset, packed.byteOffset + packed.byteLength),
   );
-  let waterInterior = 0,
-    missingBank = 0,
+  let missingBank = 0,
     leaks = 0,
-    wetBank = 0;
+    wetBank = 0,
+    waterPixels = 0,
+    intruding = 0,
+    deepestBite = 0,
+    deepBite = 0;
+  const inset = pondInset(image.width, image.height);
   for (let py = 0; py < image.height; py++)
     for (let px = 0; px < image.width; px++) {
       const { x, y } = shorePosition(px, py);
       const distance = shoreDistance(x, y);
       const [r, g, b, alpha] = pixelAt(image, px, py);
       const decodedAlpha = decoded.data[(py * image.width + px) * 4 + 3];
-      if (distance <= 0 && decodedAlpha !== 0) waterInterior++;
       if (distance > 0 && distance <= 0.08 && decodedAlpha !== 255) missingBank++;
-      if (distance >= 0.12 && decodedAlpha !== 0) leaks++;
+      if (distance >= SHORE_LIMIT && decodedAlpha !== 0) leaks++;
       if (alpha > 0 && b > r + 5 && g > r + 5) wetBank++;
+      const inside = inset[py * image.width + px] ?? 0;
+      if (inside > 0) {
+        waterPixels++;
+        if (alpha > 0) {
+          intruding++;
+          // The bank never reaches half a cell in: the middle of every water
+          // tile stays water, and the rules' tile is never repainted as dry.
+          deepestBite = Math.max(deepestBite, inside);
+          if (inside > SHORE_BITE * 0.6) deepBite++;
+          // The inner edge is feathered, never a second ruled line.
+          expect(alpha).toBeLessThanOrEqual(255);
+          if (inside > biteDepth(x, y) + BITE_FEATHER) {
+            throw new Error(`Dry material at ${x},${y} sits past its own bite depth`);
+          }
+        }
+      }
     }
-  expect({ waterInterior, missingBank, leaks, wetBank }).toEqual({
-    waterInterior: 0,
+  expect({ missingBank, leaks, wetBank }).toEqual({
     missingBank: 0,
     leaks: 0,
     wetBank: 0,
   });
+  expect(deepestBite).toBeLessThanOrEqual(SHORE_BITE);
+  // The shore really does come in, and wanders as it does: a uniform ring
+  // would leave the pond reading as the rules' own cross.
+  expect(intruding).toBeGreaterThan(5_000);
+  expect(deepBite).toBeGreaterThan(300);
+  /*
+   * The pond is still water. A third of the wet pixels carrying authored bank
+   * is the most a wandered shore costs on this small a pond: the runtime water
+   * layer still covers every one of them, so what the player sees there is
+   * shallow wet silt, not dry ground.
+   */
+  expect(intruding / waterPixels).toBeLessThan(0.35);
   // Every real water center remains clear for the runtime water layer.
   for (const { x, y } of FOREST_WATER_CELLS) {
     const px = Math.round((768 + (x - y) * 64 - 560) * 2);
