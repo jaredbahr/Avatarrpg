@@ -171,6 +171,36 @@ export async function settleLayout(page: Page, timeout = 30_000): Promise<void> 
 }
 
 /**
+ * Waits for the map canvas to present at its own box size.
+ *
+ * Picking an action adds the aim hint, which changes the map's height; the
+ * camera is measured from the canvas element, so it refits a frame or two later
+ * through the ResizeObserver. Projecting a tile into page pixels before that
+ * lands taps the wrong tile, and WebKit is where it bites: its frames are fast
+ * enough that the click can beat the refit, where a software-WebGL Chromium
+ * frame is slower than the refit itself. Settle the camera, then require the
+ * backing store to agree with the CSS box at the device pixel ratio, which is
+ * what `Renderer.resize` sizes it from.
+ */
+export async function settleMapCanvas(page: Page): Promise<void> {
+  await settleLayout(page);
+  await page.waitForFunction(
+    () => {
+      const canvas = document.querySelector<HTMLCanvasElement>('.map-canvas');
+      if (!canvas) return false;
+      const rect = canvas.getBoundingClientRect();
+      const dpr = Math.min(3, window.devicePixelRatio || 1);
+      return (
+        Math.abs(canvas.width / dpr - rect.width) < 1 &&
+        Math.abs(canvas.height / dpr - rect.height) < 1
+      );
+    },
+    undefined,
+    { timeout: 30_000 },
+  );
+}
+
+/**
  * Waits until event playback has finished.
  *
  * Taps on the battlefield are deliberately ignored while the animator is

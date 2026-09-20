@@ -2,7 +2,15 @@ import type { CameraInfo } from '../src/app/App';
 import { groundPoint, groundTile, paintedTileCentre } from './projection';
 import { expect, test } from '@playwright/test';
 import type { Page } from '@playwright/test';
-import { enterNode, resetStorage, settleLayout, startGame, takeTurn, waitForIdle } from './helpers';
+import {
+  enterNode,
+  resetStorage,
+  settleLayout,
+  settleMapCanvas,
+  startGame,
+  takeTurn,
+  waitForIdle,
+} from './helpers';
 
 /**
  * Pinch, pan and Recentre.
@@ -409,6 +417,9 @@ test.describe('zoom and pan', () => {
     const fitted = await camera(page);
 
     await page.getByRole('button', { name: /water whip/i }).click();
+    // Selecting the ability adds the aim hint, which reflows the map; project
+    // the tile only once the camera and the backing store have caught up.
+    await settleMapCanvas(page);
     const targetPoint = await paintedTileCentre(page, target.pos);
     expect(targetPoint).not.toBeNull();
     if (!targetPoint) return;
