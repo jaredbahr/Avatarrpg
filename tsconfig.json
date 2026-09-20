@@ -28,7 +28,8 @@
     "scripts",
     "vite.config.ts",
     "vitest.config.ts",
-    "playwright.config.ts"
+    "playwright.config.ts",
+    "playwright.gallery.config.ts"
   ],
   "exclude": ["dist", "node_modules"]
 }

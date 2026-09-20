@@ -5,4 +5,8 @@ playwright-report/
 test-results/
 .shots/
 node_modules/
+.vite/
 package-lock.json
+/gallery/
+# Atlas metadata is generated and semantically compacted for the asset budget.
+public/art/units/*.json

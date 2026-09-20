@@ -1,0 +1,87 @@
+{
+  "tool": "OpenAI built-in image generation",
+  "date": "2026-09-18",
+  "sources": [
+    {
+      "file": "exec-53455c02-3d50-4c5f-8334-93729e1d9a94.png",
+      "status": "superseded camera candidate",
+      "prompt": "Use case: stylized-concept. Production game scenery asset: ONE isolated complete roofed village merchant house, on genuinely transparent alpha background. High quality hand-painted animation background style, warm cream plaster, weathered timber posts, muted jade green curved clay tile roof, humble stone foundation, one cloth awning with hanging pots and stacked produce baskets tight against wall. Original rural East Asian fantasy architecture, no lettering, no characters, no logos. Orthographic elevated three-quarter camera, EXACT ground plane isometric 2:1: both base edges slope one vertical pixel for two horizontal pixels, vertical posts stay screen-vertical. Rectangular foundation is four units along down-right axis and three along down-left axis, so visible rightward-facing long wall is four units, other wall three. Build complete house; roof footprint proportional and not enormous. Lighting warm from upper left, shaded right walls cooler desaturated olive, thin brown ink details with painterly two-tone large shapes. Groundless cutout: no landscape, no grass platform, no surrounding pavement, no cast shadow outside foundation. Leave generous clear transparent margin all sides; centered entire intact house on 1024x1024 canvas. Roof peak approximately y150, foremost stone foundation corner approximately y850; foundation leftmost x100, rightmost x900. Human-sized doorway about one-third wall height and tiled roof clear eaves. Asset will render at ~448px wide; craft believable architectural scale and fine but readable tiled roof/wood/plaster detail matching sophisticated painted tactical RPG scenery. Avoid toy/chibi forms, exaggerated oversize pots, photorealism, glossy 3D render, thick black outlines."
+    },
+    {
+      "file": "exec-8a44c217-e2b6-46f2-ae70-7f6fb212ef8d.png",
+      "reference": "exec-53455c02-3d50-4c5f-8334-93729e1d9a94.png",
+      "output": "merchant-house.webp",
+      "prompt": "Revise this production game scenery cutout only to correct the ORTHOGRAPHIC CAMERA. Preserve exact house identity, craftsmanship, green tiled roof, timber/plaster, warm upper-left light and baskets/awning, transparent background. BOTH foundation directions MUST have exact 2:1 screen slopes, +0.5 and -0.5, not shallow perspective. Vertical walls remain vertical. Foundation corners on 1248 square canvas approximately back(545,600), left(161,792), front(673,1048), right(1057,856): footprint rectangle4units down-right,3units down-left. Reproject roof, awning, all wall horizontal beams consistently with those same two directions. Roof overhang allowed beyond foundation. No background, no people, no text, no cast ground shadow. Keep complete house entirely inside transparent margins. This should look like same painted house seen from higher camera at exact 2:1 isometric angle; do not merely stretch image."
+    },
+    {
+      "file": "exec-c8cb4741-e9ae-4e99-821f-ea2044013e31.png",
+      "references": [
+        "art/raw/scenes/ba-dan-ground-guide.png",
+        "assets/reference/player-view-2026-09-17/ba-dan-exploration.png"
+      ],
+      "outputs": ["ground-west.webp", "ground-east.webp"],
+      "prompt": "Use case: sketch-to-render. Production GROUND-ONLY painted game map texture. Image1 is EXACT geometry layout registration guide, image2 STYLE ONLY (not geometry, not characters, not architecture). Render image1 as hand-painted village ground viewed orthographically in 2:1 isometric projection, preserving exact image1 canvas aspect2816:1536, coverage and every colored region's exact location. Ground extends to all canvas edges. Gold cross-path and broad central courtyard become warm worn irregular sandstone paving with many small stones in the same 2:1 plane (stone size6–15sourcepixels), natural chips, subtle dirt in joins, warm upper-left light. Central teal parallelogram stays precisely placed shallow village water trough/pond, pale stone rim confined INSIDE its teal footprint, bluegreen clear ripples and a few lily leaves. Four taupe/brown house footprints remain flat flagstone/timber foundations in EXACT positions: NO BUILDINGS here, separate roofed buildings will be layered by game. Olive land becomes low moss, worn grass and subtle earth mixed, NOT a lawn carpet; small groundcover flowers and fallen leaves near house edges, clear walkable surface elsewhere. Darkgreen boundary regions become deeper moss/leaf litter ground ONLY, no trees/canopies (separate layers later). Preserve roads through boundary breaks exactly. Ground plane flat with subtle texture, no tall props or walls. Sophisticated animation background painting quality matching reference ground. NO figures, NO roofs, NO trees, NO benches, NO crates, NO lanterns, NO UI, NO text, NO grid lines, NO labels. Do not alter topology, frame, crop, rotate or recenter layout. This is one continuous precisely registered floor painting, not a finished concept scene. Deliver2816x1536 or exact aspect matching image1.",
+      "status": "rejected after runtime review: pond drift and insufficient detail"
+    },
+    {
+      "file": "exec-f99bc99b-b561-4831-b4b5-3c92f9cde9c8.png",
+      "output": "village-tree.webp",
+      "prompt": "Production game scenery isolated cutout on genuinely transparent background. One mature broad-canopied village tree with gnarled natural slender trunk, olive and jade foliage catching warm upper-left sunlight, a few pale yellow flowers, roots and low grasses tight to trunk. Sophisticated hand-painted animation background detail, delicate brown ink branches, painterly grouped leaves, natural adult-world scale, not icon/cartoon toy. Elevated orthographic 2:1 isometric camera: ground edges slope half as much vertically as horizontally; upright trunk. Entire tree intact with clear transparent margin, asymmetrical spreading foliage, airy gaps between lower branches. No circular grass platform, no ground shadow, no landscape, no buildings, no people, no text. Trunk foot contact around bottom90percent canvas, foliage spans most width. Output square1536x1536. Colors muted warm green #6f8150, shadow deepolive#344837, sunny foliage#9fa662, bark earthy#74634d. Detailed enough at runtime400px height yet coherent broad silhouette. This layer will occlude walking adult characters realistically."
+    },
+    {
+      "file": "exec-11e31f88-6086-4f0c-bf9d-7c9504d61bbc.png",
+      "reference": "exec-8a44c217-e2b6-46f2-ae70-7f6fb212ef8d.png",
+      "output": "dwelling.webp",
+      "prompt": "Create a sibling DWELLING version of this production game scenery cutout. Keep exact orthographic camera, same footprint, same framing/scale, same foundation foremost corner and transparent background. Change roof to muted terracotta orange clay tiles, remove merchant awning and all produce displays, replace storefront with closed timber lattice windows and a small recessed open doorway, two modest ceramic pots and trailing ivy tucked against walls. Keep warm cream plaster, weathered timber, warm upper-left lighting, fine brown linework and painterly craftsmanship. House should feel lived-in, humble and full-scale, not a toy. Do not add characters, text, groundplane or castshadow. Complete roof and foundation with clear transparent margin. This is a registered variant to place at same scale in same village."
+    },
+    {
+      "file": "exec-ffd154dd-183d-4848-82dc-63559f91090f.png",
+      "output": "ground-materials.png",
+      "prompt": "Production game texture atlas, four flat ground material swatches arranged EXACT2x2 grid filling1024x1024 canvas. Each quadrant is a continuous evenly detailed texture, straight top-down orthographic view with NO perspective, NO shadows of objects, NO raised objects. TOP LEFT warm cream/ochre irregular worn sandstone courtyard paving: human-scale small rectangular stones, each stone about40pixels by25pixels, subtle chips/dirt seams and tiny occasional moss. TOP RIGHT muted olive mossy soil and sparse short grass, tiny scattered white/yellow petals, worn earth showing through, no large foliage. BOTTOM LEFT clear bluegreen shallow water, subtle hand-painted ripples and a few small lily leaves, no border or shoreline. BOTTOM RIGHT weathered warm timber floorboards with narrow brown joints. Sophisticated painted animation-background style, delicate brown outlines only on stone seams, warm upperleft natural light, muted palette, beautiful handmadegrounddetail. EXACT square quadrants with no borders between; fill every pixel, no transparentmargin, no labels, no grid, no text, no people, no buildings, no decoration spanning quadrants. Intended as tileable material textures to be clipped to exact tactical ground geometry by engine; no pond borders or baked elevation."
+    },
+    {
+      "file": "exec-223d48f5-24ab-4807-8236-fbebfc85aa6e.png",
+      "reference": "exec-8a44c217-e2b6-46f2-ae70-7f6fb212ef8d.png",
+      "output": "merchant-house.webp",
+      "prompt": "Edit this game-house layer to believable LOW single-story courtyard shop proportions. Keep transparent canvas1254x1254, entire existing foundation outline and its exact pixelposition UNCHANGED: foremostcorner around(563,1175), leftcorner(67,925), rightcorner(1211,890). Keep width and same2:1 groundcamera. REBUILD the upright architecture much LOWER: roof highest ridge must now be near y450, not y85; overall paintedhouseheight about725px not1100px. Lower roof pitch substantially and lower walls; doorway opening only about180sourcepixels tall not300; pots/baskets correspondingly human scale. This is a low broad single-story building not a tall hall. Retain green tile roof, plaster/timber identity, same awning and market details, warmupperleft light, sophisticated handpaintedbrownlinework. Do NOT simply squash/stretch existing raster; redraw roof and walls with proper materials/proportions while preserving foundation registration. No new ground, people, text or shadowsoutsidefoundation. Leave uppercanvastransparent where taller oldroof was removed."
+    },
+    {
+      "file": "exec-de108d53-fa9e-481d-984b-99830da950aa.png",
+      "reference": "exec-223d48f5-24ab-4807-8236-fbebfc85aa6e.png",
+      "output": "dwelling.webp",
+      "prompt": "Create sibling terracotta-roof DWELLING variant of this exact LOW single-story house. Preserve exact transparentcanvas1254x1254, foundationcorners/registration, groundcamera, LOWroofheight and wall/doorheight, warmupperleftlight, entire silhouette and highestroofpoint atapproximatelyy436. Change jadegreenroof tiles to muted clayterracotta. Remove merchantawning, hangingmarketitems andproducecrates; replacefrontstorewindowwith timberlatticewindow and modestivynearwall, retain recessed opendoor and two smallpotstighttowall. Fine painted animation-backgroundcraftsmanship, brownlines, creamplaster, weathertimber. Do not increasebuildingheight ormovefoundation. Transparentbackground preserved, nopeople,text,groundshadow."
+    },
+    {
+      "file": "exec-716d16c9-3ca0-436e-94c1-35e40d9c8239.png",
+      "reference": "docs/art/ba-dan-pond-guide.svg",
+      "output": "pond.webp",
+      "status": "historical pond layer; superseded and removed when the canal layer became authoritative",
+      "prompt": "Paint this exact geometric asset without changing its silhouette or camera. Treat the input alpha mask/outer parallelogram as IMMUTABLE: preserve all four outercorners and exact1280x768canvas. Beigearea is lowweatheredcreamstone rimofashallowvillagepond; tealarea recessedbluegreenwater. Transformflatcolorsintohandpaintedstoneblocks, subtleinnerwall depth, ripplesandtwotinylilyleaves. LOW ankleheight coping, notatalltrough. Preserve outlinepixelplacement exactly and keepalloutsidepixelsfullytransparent. Do not makebasinlongerorthinner. Geometryfirst, texturesecond. Warmupperleftlight, finebrowninkseams, watercolor-animationbackgroundlook, nophotorealism. No extras, no people/text/groundshadow. This is texture/material painting INSIDE AN EXISTING EXACTSHAPE, not redrawgeometry."
+    },
+    {
+      "file": "exec-c51f5bb1-452a-4e4c-b624-026e7f350714.png",
+      "references": ["assets/reference/player-view-2026-09-17/ba-dan-exploration.png"],
+      "outputs": ["canal.webp"],
+      "status": "historical water-bearing candidate; superseded by runtime water plus transparent canal-banks.webp",
+      "prompt": "Production transparent oblique ground strip for Ba Dan: three logical water cells, one dry stone crossing, then three more water cells in a single y6 slice. Use recessed blue-green water, low irregular stone coping, a few reeds and lilies, and a clear dry centre. Keep every outer pixel transparent; no rails, people, text, buildings or extra water. Register to the approved x6–12, y6 projected envelope."
+    },
+    {
+      "file": "exec-2bddd5df-ca31-4b16-b7e4-55b3ac976235.png",
+      "references": ["public/art/maps/ba-dan-scene/canal-bridge.webp"],
+      "outputs": ["canal-bridge.webp"],
+      "prompt": "Edit the isolated bridge so its long deck runs screen down-left/up-right, perpendicular to the canal's screen down-right direction. Keep one compact low timber crossing with quiet stone end caps, clear north and south deck openings, transparent alpha, no water, long approach, characters or text."
+    },
+    {
+      "file": "exec-636b0c65-63ae-4db6-bf4e-d46d070c9ed5.png",
+      "outputs": ["courtyard-ground.webp", "canal-banks.webp"],
+      "status": "deterministic projected local proof pieces; packed from the reviewed material atlas by the Ba Dan art scripts",
+      "prompt": "Four-quadrant material atlas reused as local projected ground vocabulary: pale limestone, quiet meadow, live water excluded from the authored piece, and warm road/wood material. The courtyard and six-cell canal coping are derived from exact grid geometry with transparent feathered edges."
+    },
+    {
+      "file": "public/art/maps/ba-dan-scene/canal-bridge.webp",
+      "outputs": ["canal-bridge-front.webp"],
+      "status": "deterministic near-rail occlusion mask; generated by scripts/art/ba-dan-bridge-front.py",
+      "prompt": "Copy the near-bank half of the approved transparent bridge into a second transparent layer so actors render between the deck/back layer and the front rail. Preserve exact dimensions, camera registration, and alpha."
+    }
+  ]
+}

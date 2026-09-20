@@ -14,7 +14,29 @@ export const ENEMY_ABILITIES: readonly Ability[] = [
     id: 'club_swing',
     name: 'Club Swing',
     element: 'nonbender',
-    apCost: 1,
+    /*
+     * Two AP, like every other enemy attack in the game.
+     *
+     * At one AP this was the only uncapped attack the party ever meets, and it
+     * belonged to the first two enemies in the first fight. Movement is a
+     * separate pool, so a four-AP bandit walked its full distance *and* swung
+     * four times: 28 expected damage onto a 22 HP airbender, and 28 onto a 26
+     * HP waterbender from the bruiser. A level-1 character could go from full
+     * health to the floor between two of their own turns, in the tutorial,
+     * with nothing on the board to read as a warning.
+     *
+     * The simulator never flagged it because the win rate was 100% — the party
+     * still wins, it just wins a player short. Deaths are the signal here, not
+     * wins: the forest road averaged 0.8 of a three-player party on the floor.
+     *
+     * Two AP is not a nerf invented for this; it is the number every other
+     * enemy attack already pays (merc_blade, merc_crossbow, ruon_sabre,
+     * driller_slam). The bandits were simply never brought into line. It also
+     * makes the turn readable, which is the point of the file header: close
+     * and hit twice, or rush and hit once. Round counts are unchanged, because
+     * a fight's length is how fast the *party* kills, not how fast it dies.
+     */
+    apCost: 2,
     range: 1,
     targeting: enemyTarget,
     effects: [{ kind: 'damage', base: 5, scale: 0.6, damageType: 'physical' }],
@@ -26,7 +48,14 @@ export const ENEMY_ABILITIES: readonly Ability[] = [
     id: 'sling_stone',
     name: 'Sling Stone',
     element: 'nonbender',
-    apCost: 1,
+    /*
+     * Two AP for the same reason as the club, and it mattered most in the
+     * all-slinger variant of the tutorial: three of them at four stones each
+     * is twelve ranged attacks a round at a party that has not closed yet.
+     * That variant measured 2.5 of a six-player party dead against 1.3 for the
+     * thugs — identical XP, a very different Tuesday evening.
+     */
+    apCost: 2,
     range: 6,
     targeting: enemyTarget,
     effects: [{ kind: 'damage', base: 4, scale: 0.5, damageType: 'physical' }],
@@ -110,13 +139,28 @@ export const ENEMY_ABILITIES: readonly Ability[] = [
     element: 'earth',
     apCost: 2,
     range: 2,
+    /*
+     * Once a turn, and that cooldown is the whole reason the quarry floor is a
+     * fight rather than a wall.
+     *
+     * Grumbler has 5 AP and this costs 2, so uncapped it slammed *twice* a turn
+     * and still had AP to move. A cone that lands 14 or so at level 3 against a
+     * party with 40-odd HP means two rounds in front of the drill arm is a dead
+     * character, and the simulator agreed: 2.2 of a 3-player party died in an
+     * average run, and the wins came in at 13% health. The boss was killing the
+     * table before any of the terrain it exists to teach ever came up.
+     *
+     * With one slam a turn the remaining AP goes into oil, mud and debris —
+     * which is the fight the encounter is actually written around.
+     */
+    cooldown: 1,
     targeting: cone(2),
     effects: [
       { kind: 'damage', base: 8, scale: 0.7, damageType: 'earth' },
       { kind: 'push', distance: 1 },
     ],
     description: 'The drill arm comes down like a falling wall.',
-    flavor: 'Get out from in front of it.',
+    flavor: 'Get out from in front of it. It cannot swing twice in a turn.',
     fx: 'fx.enemy.slam',
   }),
   ability({

@@ -1,10 +1,9 @@
 /**
  * Disciplines — the paths a character commits to at level 5.
  *
- * Up to the gate, both characters of an element are the same character with
- * different stats. From the gate on they stop being: one earthbender takes the
- * quarry road and shapes the ground, the other learns to bend the metal in a
- * bandit's armour, and they never share a technique again.
+ * Each character already brings a different early tool; the gate adds a second
+ * decision about their future craft. An earthbender can take the quarry road
+ * and shape the ground, or learn to bend the metal in a bandit's armour.
  *
  * Two rules hold the whole thing together:
  *

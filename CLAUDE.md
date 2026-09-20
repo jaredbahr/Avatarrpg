@@ -2,6 +2,14 @@
 
 Four Nations Tactics — a hot-seat tactical RPG. Read this before changing code.
 
+For dialogue, character biographies, banter, and story narration, read
+`docs/writing-guide.md`. Preserve the scene's branch facts and speaker availability
+when improving a line.
+
+For camera, interface, environment and character presentation work, also read
+`docs/player-view-target.md`: it records Jared's approved long-term player views,
+their interpretation and the staged delivery plan.
+
 ## Non-negotiables
 
 1. **`src/core/` is pure.** No DOM, no `Math.random`, no `Date.now`, no imports
@@ -31,11 +39,13 @@ src/core/story/      story graph traversal, flags, nation standing, the
 src/core/save/       serialise / deserialise / migrate a save blob, and
                      reconcile a loaded one against the current kits
 src/core/sim/        headless combat runner used by tests and the balance report
-src/content/         all game data (see schemas.ts for the shapes)
+src/content/         all game data (see schemas.ts for the shapes); story
+                     splits one file per region from Phase W5
 src/render/          camera, sprite cache, painters, palettes, the Renderer
                      facade, and backends/ — WebGL (Pixi + shaders) and the
                      Canvas 2D fallback
 src/app/             scenes, HUD, input, hot-seat session, localStorage
+docs/                roadmap, ADRs, the art bible, the device matrix
 ```
 
 ## Commands
@@ -86,10 +96,17 @@ Never run `npx playwright install` in the dev container — Chromium is already 
   meaningless if the party never arrives at the level they assume. In particular
   do not reintroduce a single global "pick option N" index — with a three-option
   node it falls through to option 0 and the test passes while testing nothing.
+  ADR 0011 rewrites this test over the **region graph** when Phase W1 lands —
+  asserting the party enters each region inside its level band, rather than
+  reaching each fight at an exact level. That is a change of premise, not a
+  weakening: both warnings above survive it verbatim.
 - Encounter difficulty scales to the table in two places and only those two:
   `reinforcements` in the encounter data (more bodies above the baseline) and
   `rules/difficulty.ts` (thinner enemies and a smaller roster below it, plus
-  superlinear boss HP above it). XP deliberately does not scale.
+  superlinear boss HP above it). XP deliberately does not scale. From Phase W1,
+  `difficulty.ts` also absorbs the ±2 levels of slop a free-roam region allows
+  (ADR 0011) — that is the same file, not a third lever, and region entry stays
+  hard-gated by a `Condition` on the exit.
 - **Roster variants are not a third scaling lever.** `EncounterDef.variants`
   changes _which_ enemies turn up, never how many relative to the table: the
   under-strength trim, flag-gated additions and reinforcements all still layer on
@@ -102,8 +119,37 @@ Never run `npx playwright install` in the dev container — Chromium is already 
   can be described back to the player — which the dialogue UI needs, because it
   draws options the party _cannot_ take and has to say why.
 - UI sizes go in `rem`, never `px`, so the Large-text setting scales them.
-  Anything tappable must be at least `var(--tap)`.
+  Anything tappable must be at least `var(--tap)`. The one exception is
+  `--hairline`, the decorative outline, which is px on purpose so it does not
+  thicken with the type.
+- Every colour, type size, z-index, duration and easing is a token in the
+  `:root` block of `src/styles/base.css`; nothing outside it writes a literal.
+  A tint of a palette colour is `color-mix(in srgb, var(--c-x) N%, transparent)`,
+  never a second copy of the value. Tag a component `.element-<id>` and draw
+  with `--el` rather than adding a rule per element (ADR 0005).
+- Scene changes go through `App.showScene`, which stays synchronous: the
+  curtain reveals _after_ the swap and never takes a tap. The backdrop's tint
+  is `app.setMood()`; a scene that knows better than the map (a speaker's
+  element, the path being picked) calls it from its `render()`.
 - Commit messages: imperative mood, one concern per commit.
+- **Work auto-merges once it is ready.** Nothing waits on a human clicking the
+  button: open the PR, then turn on auto-merge so it lands the moment CI is
+  green. Ready means `npm run verify` passed locally, the PR has no conflict
+  with `main`, and any review comment on it is addressed — CI is the last gate,
+  not a second opinion. Merge with a merge commit, not a squash: the history is
+  one-concern commits and it stays that way.
+  This is Jared's standing instruction for **all agents**, also recorded in
+  `AGENTS.md`. Use the latest commit's checks, address conflicts and review
+  feedback, and never bypass a failing or missing check. A rejected auto-merge
+  request is a blocker to investigate, not a reason to ask for routine merge
+  approval again.
+- Anything that changes an engine, a rendering contract, an asset format or a
+  budget gets an ADR in `docs/adr/`. The phase plan is `docs/roadmap.md`; art
+  is generated against `docs/art-bible.md`; a new device is checked against
+  `docs/device-matrix.md`.
+- Backends: board-correctness parity is mandatory, fidelity parity is not
+  (`src/render/backends/backend.ts`). Draw anything the rules care about on
+  both backends; particles and shader effects are WebGL-only by design.
 
 ## Things that will bite you
 
@@ -115,6 +161,19 @@ Never run `npx playwright install` in the dev container — Chromium is already 
 - The renderer must never read game state directly — it draws from a view model
   built in `src/app/`. `Renderer` is a facade over two backends and picks one at
   construction; nothing outside `src/render/backends/` should care which.
+- **The camera must be measured from the canvas element, never once at mount.**
+  The map is the only thing that flexes, so its height is whatever the turn
+  strip and the HUD leave it — and both fill in _after_ the scene mounts, none of
+  it firing a window `resize`. A stale measurement is not just a stale camera:
+  `Renderer.resize` sizes the backing store from the same numbers, so the
+  browser scales the frame to the box it really has and everything drawn drifts
+  from the pointer coordinate it was computed for, by more the further down the
+  map you go. That is why the hover highlight sat two tiles above the cursor.
+  `Renderer` now keeps a `ResizeObserver` on the canvas and calls
+  `onViewportChange` so the scene can re-fit; do not replace it with an event
+  listener. `e2e/viewport.spec.ts` holds the line, and note why it has to: every
+  other spec maps tile -> pixel through the same camera the tap handler reads,
+  so both were wrong in the same direction and the taps still landed.
 - The backend choice asks whether WebGL is **accelerated**, not whether it
   exists. Measured here, a software rasteriser runs the board at 6fps where
   Canvas 2D holds 60 — and that is not the shader's fault, since removing it
@@ -156,6 +215,29 @@ Never run `npx playwright install` in the dev container — Chromium is already 
   already passed through and nothing lights.
 - `previewAbility` consumes no RNG, and the AI's `scoreAbility` must not either.
   That is why damage to props is flat, with no to-hit roll or crit.
+- **Sprite cache sizes are device pixels.** Pass CSS size × `dpr`, or the
+  sprite comes out soft on a Surface or an iPad. Both the sprite cache and the
+  Pixi texture map are bounded LRUs because iOS caps canvas memory; do not
+  hold a texture from `Texture.from` outside that map, and always pass
+  `skipCache` so a destroyed texture is never handed back for its canvas.
+- **A refit must not eat a pinch zoom.** The `Renderer`'s observer calls the
+  scene's `onViewportChange` after every canvas box change, and the HUD
+  changes that box on most turns. `CombatScene.refit()` refits only when the
+  board was fitted, or a rotation has left it smaller than it could be, and
+  otherwise clamps; never wire `onViewportChange` straight to `camera.fit()`.
+- **iPadOS ignores the manifest's `orientation`.** Portrait has to work. Where
+  the fitted tile would drop below `MIN_TILE_PX`, `Camera.fit()` fits to a
+  tappable tile and pans instead; that is the one exception to "combat never
+  scrolls", and the camera header explains it.
+- **`navigator.vibrate` does not exist on iOS.** Keep it optional-chained; never
+  make a gesture depend on the buzz.
+- **The WebKit iPad Playwright projects exist only in CI** (or with
+  `FNT_E2E_WEBKIT=1`). The dev container has Chromium alone; never run
+  `playwright install` there. Playwright's WebKit is the engine, not Safari:
+  Home Screen behaviour stays on the manual checklist.
+- **Pinch cannot be synthesised by Playwright.** `e2e/gestures.spec.ts`
+  dispatches two-pointer `PointerEvent`s at the canvas instead, which is why
+  the pointer adapter guards `setPointerCapture` in a try/catch.
 - Anything that tells the player what an action _will_ do must run the real rule
   on a throwaway copy, never describe it in parallel. `previewAbility` pairs
   `expectedDamage` with `rollDamage`, and `forecastReactions` replays

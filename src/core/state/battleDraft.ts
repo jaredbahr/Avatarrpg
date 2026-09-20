@@ -50,6 +50,7 @@ import {
   incomingMultiplier,
   isAlive,
   isSkippingTurn,
+  startingAp,
 } from '../rules/stats';
 import type { SurfaceReaction } from '../rules/surfaces';
 import { applyImpact, contactEffects, paintSurface, tickSurfaces } from '../rules/surfaces';
@@ -62,6 +63,23 @@ const WALL_TILE: Tile = {
   cover: false,
   surface: null,
 };
+
+/** A contact status described without choosing a chance branch. */
+export interface SurfaceContactStatusRecord {
+  readonly requestedStatus: StatusId;
+  readonly appliedStatus: StatusId | null;
+  readonly chance: number;
+  readonly clearedStatuses: readonly StatusId[];
+}
+
+/** One contact caused by one changed occupied cell during a preview draft. */
+export interface SurfaceContactRecord {
+  readonly unitId: string;
+  readonly surface: SurfaceId;
+  /** Actual HP lost after mitigation and the unit's HP floor. */
+  readonly damage: number;
+  readonly status: SurfaceContactStatusRecord | null;
+}
 
 export class BattleDraft {
   grid: Grid;
@@ -76,12 +94,28 @@ export class BattleDraft {
   readonly encounterId: string;
   readonly variantId: string | null;
   readonly mapId: string;
+  /** Preview drafts describe chance branches without choosing one. */
+  readonly resolveChanceStatuses: boolean;
   readonly events: GameEvent[] = [];
+  /**
+   * Terrain reactions produced while this draft runs.  The reducer does not
+   * need this journal, but the confirm-step forecast can consume the exact
+   * reactions (including ones released by a prop breaking) without copying
+   * the combo rules into a second simulator.
+   */
+  readonly terrainReactions: SurfaceReaction[] = [];
+  /**
+   * Preview-only journal of the contacts the shared paint path actually ran.
+   * Keeping this beside applyContact means a multi-cell unit and a lethal
+   * contact cannot drift from the resolver in a second forecast loop.
+   */
+  readonly surfaceContacts: SurfaceContactRecord[] = [];
 
   constructor(
     readonly content: ContentIndex,
     battle: BattleState,
     readonly rng: RngCursor,
+    options: { readonly resolveChanceStatuses?: boolean } = {},
   ) {
     this.grid = battle.grid;
     this.units = [...battle.units];
@@ -95,6 +129,7 @@ export class BattleDraft {
     this.encounterId = battle.encounterId;
     this.variantId = battle.variantId;
     this.mapId = battle.mapId;
+    this.resolveChanceStatuses = options.resolveChanceStatuses ?? true;
   }
 
   toBattle(): BattleState {
@@ -239,9 +274,12 @@ export class BattleDraft {
 
   grantAp(unitId: string, amount: number): void {
     const unit = this.unit(unitId);
-    if (!unit || !isAlive(unit) || amount <= 0) return;
-    const cap = effectiveStats(this.content, unit).maxAp + unit.bankedAp;
-    this.replace({ ...unit, ap: Math.min(cap + amount, unit.ap + amount) });
+    if (!unit || !isAlive(unit) || !Number.isFinite(amount) || amount <= 0) return;
+    if (this.order[this.turnIndex] === unitId) {
+      this.replace({ ...unit, ap: Math.min(MAX_TOTAL_AP, unit.ap + amount) });
+    } else {
+      this.replace({ ...unit, pendingAp: Math.min(MAX_TOTAL_AP, unit.pendingAp + amount) });
+    }
   }
 
   spendAp(unitId: string, amount: number): void {
@@ -274,7 +312,7 @@ export class BattleDraft {
   }
 
   /** Surface damage and status for the cells a unit stands on right now. */
-  applyContact(unitId: string): void {
+  applyContact(unitId: string, options: { readonly journal?: boolean } = {}): void {
     const unit = this.unit(unitId);
     if (!unit || !isAlive(unit)) return;
 
@@ -284,13 +322,42 @@ export class BattleDraft {
       if (!contact.surface || seen.has(contact.surface)) continue;
       seen.add(contact.surface);
 
+      const before = this.unit(unitId);
+      const beforeHp = before?.hp ?? 0;
       if (contact.damage > 0) {
         this.dealDamage(unitId, contact.damage, contact.damageType, null, {
           applyMultiplier: true,
         });
       }
-      if (contact.status && this.rng.chance(contact.statusChance)) {
+
+      const afterDamage = this.unit(unitId);
+      const damage = Math.max(0, beforeHp - (afterDamage?.hp ?? beforeHp));
+      let status: SurfaceContactStatusRecord | null = null;
+      const statusUnit = this.unit(unitId);
+      if (contact.status && statusUnit && isAlive(statusUnit)) {
+        const application = applyStatus(this.content, statusUnit, contact.status);
+        status = {
+          requestedStatus: contact.status,
+          appliedStatus: application.applied,
+          chance: contact.statusChance,
+          clearedStatuses: application.cleared,
+        };
+      }
+
+      const appliesStatus = this.resolveChanceStatuses
+        ? contact.status !== null && this.rng.chance(contact.statusChance)
+        : contact.status !== null && contact.statusChance >= 1;
+      if (appliesStatus && contact.status) {
         this.applyStatusTo(unitId, contact.status);
+      }
+
+      if (!this.resolveChanceStatuses && options.journal) {
+        this.surfaceContacts.push({
+          unitId,
+          surface: contact.surface,
+          damage,
+          status,
+        });
       }
     }
   }
@@ -472,7 +539,10 @@ export class BattleDraft {
           for (const tile of tiles) {
             const victim = this.unitAt(tile);
             if (!victim || !isAlive(victim)) continue;
-            if (!this.rng.chance(effect.chance)) continue;
+            const appliesStatus = this.resolveChanceStatuses
+              ? this.rng.chance(effect.chance)
+              : effect.chance >= 1;
+            if (!appliesStatus) continue;
             this.applyStatusTo(victim.id, effect.status, effect.duration);
           }
           break;
@@ -601,15 +671,20 @@ export class BattleDraft {
     for (const hit of reaction.statusHits) {
       const target = this.unitAt(hit.pos);
       if (!target || !isAlive(target)) continue;
-      if (!this.rng.chance(hit.chance)) continue;
+      const appliesStatus = this.resolveChanceStatuses
+        ? this.rng.chance(hit.chance)
+        : hit.chance >= 1;
+      if (!appliesStatus) continue;
       this.applyStatusTo(target.id, hit.status);
     }
   }
 
   /** Runs the combo table for a damage type landing on a set of tiles. */
-  impact(tiles: readonly Vec2[], damageType: DamageType, sourceId: string | null): void {
+  impact(tiles: readonly Vec2[], damageType: DamageType, sourceId: string | null): SurfaceReaction {
     const reaction = applyImpact(this.content, this.grid, tiles, damageType);
+    this.terrainReactions.push(reaction);
     this.applyReaction(reaction, sourceId);
+    return reaction;
   }
 
   /** Paints a surface, giving the combo table first refusal on each tile. */
@@ -618,15 +693,17 @@ export class BattleDraft {
     surface: SurfaceId,
     duration: number,
     sourceId: string | null,
-  ): void {
+  ): SurfaceReaction {
     const reaction = paintSurface(this.content, this.grid, tiles, surface, duration);
+    this.terrainReactions.push(reaction);
     this.applyReaction(reaction, sourceId);
     // Anyone already standing where a surface just appeared feels it.
     for (const change of reaction.changes) {
       if (!change.to) continue;
       const occupant = this.unitAt(change.pos);
-      if (occupant) this.applyContact(occupant.id);
+      if (occupant) this.applyContact(occupant.id, { journal: true });
     }
+    return reaction;
   }
 
   /** Raises temporary walls. Tiles holding a unit are skipped, not crushed. */
@@ -737,9 +814,10 @@ export class BattleDraft {
     const stats = effectiveStats(this.content, refreshed);
     this.replace({
       ...refreshed,
-      ap: skipping ? 0 : Math.max(0, Math.min(MAX_TOTAL_AP, stats.maxAp + refreshed.bankedAp)),
+      ap: skipping ? 0 : startingAp(this.content, refreshed),
       move: skipping ? 0 : stats.maxMove,
       bankedAp: 0,
+      pendingAp: 0,
     });
     return skipping;
   }

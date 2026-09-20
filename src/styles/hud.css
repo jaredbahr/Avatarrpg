@@ -3,7 +3,7 @@
  *
  * Landscape-first: a top bar, the initiative strip, the map taking whatever is
  * left, and a docked HUD along the bottom. The map is the only thing that
- * flexes, so the action bar never moves between turns — muscle memory matters
+ * flexes, so the action bar never moves between turns â€” muscle memory matters
  * when six people are sharing one tablet.
  */
 
@@ -15,11 +15,157 @@
 
 .overlay-host {
   pointer-events: none;
-  z-index: 50;
+  z-index: var(--z-overlay-host);
 }
 
 .overlay-host > * {
   pointer-events: auto;
+}
+
+/* ------------------------------------------------------------------ */
+/* Curtain                                                             */
+/* ------------------------------------------------------------------ */
+
+/*
+ * The reveal-from-ink on a scene change (app/ui/Curtain.ts). It is dropped
+ * with .is-down, which commits an opaque frame with no transition, and lifted
+ * with .is-lifting, which fades over --dur-slow. It never takes a tap: the
+ * rule above re-enables pointer events on every overlay-host child, so this
+ * one is spelled out.
+ */
+.overlay-host > .curtain {
+  position: absolute;
+  inset: 0;
+  background: var(--c-bg-deep);
+  opacity: 0;
+  z-index: var(--z-curtain);
+  pointer-events: none;
+}
+
+.curtain.is-down {
+  opacity: 1;
+  transition: none;
+}
+
+.curtain.is-lifting {
+  opacity: 0;
+  transition: opacity calc(var(--dur-slow) * var(--motion-scale)) var(--ease-ink);
+}
+
+/* ------------------------------------------------------------------ */
+/* Backdrop                                                            */
+/* ------------------------------------------------------------------ */
+
+/*
+ * What every scene sits on: grain over a soft radial base, two blobs of the
+ * current mood colour, and the four-nations wheel as a faint line drawing.
+ * The mood is `data-mood` on the app root (App.setMood): a nation while a
+ * character is being picked or is speaking, a map's ambience while the party
+ * is somewhere, gold otherwise. An ambience the CSS does not know falls
+ * through to gold, so content can add one freely.
+ *
+ * Cost rules, because this is under everything on an iPad: no filter, no
+ * blend mode, no per-frame JS. The blobs drift only on the title, where
+ * nothing else moves. The wheel is hidden under the map scenes; the blobs
+ * stay, because the board's canvas is transparent round the map (ADR 0008)
+ * and the wash is what frames it.
+ */
+.app-root {
+  --mood: var(--c-gold);
+  --wash-alpha: 0.16;
+}
+
+.app-root[data-mood='fire'] {
+  --mood: var(--c-fire);
+}
+.app-root[data-mood='water'] {
+  --mood: var(--c-water);
+}
+.app-root[data-mood='earth'],
+.app-root[data-mood='forest'] {
+  --mood: var(--c-earth);
+}
+.app-root[data-mood='air'] {
+  --mood: var(--c-air);
+}
+.app-root[data-mood='nonbender'] {
+  --mood: var(--c-nonbender);
+}
+.app-root[data-mood='quarry'] {
+  --mood: var(--c-ink-faint);
+}
+
+.backdrop {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  background-color: var(--c-bg-deep);
+  background-image:
+    var(--tex-grain), radial-gradient(120% 90% at 50% 30%, var(--c-bg), var(--c-bg-deep) 70%);
+  background-size: var(--tex-grain-size), auto;
+}
+
+.backdrop-wash {
+  position: absolute;
+  width: 60vmax;
+  height: 60vmax;
+  border-radius: 50%;
+  background: radial-gradient(closest-side, var(--mood), transparent);
+  opacity: var(--wash-alpha);
+}
+
+.wash-a {
+  top: -20vmax;
+  left: -15vmax;
+}
+
+.wash-b {
+  bottom: -25vmax;
+  right: -15vmax;
+  opacity: calc(var(--wash-alpha) * 0.7);
+}
+
+.backdrop-wheel {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 90vmin;
+  height: 90vmin;
+  transform: translate(-50%, -50%);
+  color: color-mix(in srgb, var(--c-ink) 5%, transparent);
+}
+
+.backdrop-wheel svg {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
+.app-root[data-scene='combat'] .backdrop-wheel,
+.app-root[data-scene='explore'] .backdrop-wheel {
+  display: none;
+}
+
+.app-root[data-scene='title'] .backdrop-wheel {
+  top: 44%;
+}
+
+.app-root[data-scene='title'] .backdrop-wash {
+  animation: wash-drift var(--dur-drift) ease-in-out infinite alternate;
+  will-change: transform;
+}
+
+.app-root[data-scene='title'] .wash-b {
+  animation-delay: calc(var(--dur-drift) * -0.5);
+}
+
+@keyframes wash-drift {
+  from {
+    transform: translate3d(0, 0, 0) scale(1);
+  }
+  to {
+    transform: translate3d(4vmax, 3vmax, 0) scale(1.08);
+  }
 }
 
 /* ------------------------------------------------------------------ */
@@ -31,8 +177,12 @@
   align-items: center;
   gap: var(--sp-3);
   padding: var(--sp-2) var(--sp-3);
-  background: linear-gradient(180deg, rgb(27 20 16 / 96%), rgb(27 20 16 / 78%));
-  border-bottom: 1px solid var(--c-line);
+  background: linear-gradient(
+    180deg,
+    color-mix(in srgb, var(--c-bg) 96%, transparent),
+    color-mix(in srgb, var(--c-bg) 78%, transparent)
+  );
+  border-bottom: var(--hairline) solid var(--c-line);
   flex: 0 0 auto;
   min-height: var(--tap);
 }
@@ -41,13 +191,68 @@
   gap: var(--sp-1);
 }
 
+.combat-bar {
+  flex-wrap: wrap;
+  gap: var(--sp-1);
+}
+
+/* The encounter's name on a plate, in the display face, the round under it. */
+.title-plate {
+  display: flex;
+  flex-direction: column;
+  gap: 0.05rem;
+  padding: var(--sp-1) var(--sp-3);
+  border: var(--hairline) solid var(--c-ink-line);
+  border-radius: var(--radius);
+  background: var(--surface-1);
+  box-shadow: var(--inset-edge);
+}
+
+.title-plate-name {
+  font-family: var(--font-display);
+  font-size: var(--fs-lg);
+  line-height: 1.1;
+  color: var(--c-ink);
+}
+
+.title-plate-round {
+  font-size: var(--fs-xs);
+  color: var(--c-ink-dim);
+}
+
+/*
+ * Marks: the inline line drawings from app/ui/marks.ts. Drawn in the
+ * current colour, so a button's element tints them and High contrast inks
+ * them; sized in rem so they scale with the type.
+ */
+.mark {
+  display: inline-flex;
+  flex: 0 0 auto;
+  width: 1.5rem;
+  height: 1.5rem;
+}
+
+.mark svg {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
+/* Beside a button's text rather than above it. */
+.mark-inline {
+  width: 1.1rem;
+  height: 1.1rem;
+  margin-right: var(--sp-1);
+  vertical-align: -0.2em;
+}
+
 .stack.tight {
   gap: 0.1rem;
 }
 
 .rule {
   border: 0;
-  border-top: 1px solid var(--c-line);
+  border-top: var(--hairline) solid var(--c-line);
   margin: var(--sp-2) 0;
   width: 100%;
 }
@@ -62,35 +267,35 @@
   gap: var(--sp-1);
   padding: 0.15rem var(--sp-2);
   border-radius: 999px;
-  border: 1px solid var(--c-line);
+  border: var(--hairline) solid var(--c-line);
   background: rgb(0 0 0 / 30%);
-  font-size: 0.8rem;
+  font-size: var(--fs-sm);
   white-space: nowrap;
 }
 
 .chip-ap {
   border-color: var(--c-gold);
-  color: var(--c-gold-soft);
+  color: var(--c-gold-deep);
 }
 .chip-hostile {
-  border-color: #7a2c24;
-  background: rgb(64 33 28 / 70%);
+  border-color: var(--c-danger-line);
+  background: color-mix(in srgb, var(--c-danger-bg) 70%, transparent);
 }
 .chip-friendly {
-  border-color: #2f5f72;
-  background: rgb(24 48 58 / 70%);
+  border-color: var(--c-friendly-line);
+  background: color-mix(in srgb, var(--c-friendly-bg) 70%, transparent);
 }
 .chip-lethal {
   border-color: var(--c-danger);
-  color: #ffd0c8;
+  color: var(--c-danger-soft);
   font-weight: 700;
 }
 .chip-terrain {
-  border-color: #6b5a3f;
-  color: var(--c-gold-soft);
+  border-color: var(--c-parchment-line);
+  color: var(--c-gold-deep);
 }
 .chip-status {
-  border-color: #6b5a3f;
+  border-color: var(--c-parchment-line);
 }
 .chip-warn {
   border-color: var(--c-warn);
@@ -98,7 +303,7 @@
 }
 
 /* ------------------------------------------------------------------ */
-/* Reaction notes — the terrain half of the confirm step.              */
+/* Reaction notes â€” the terrain half of the confirm step.              */
 /*                                                                      */
 /* A sentence, not a chip: the combo table writes plain words and this  */
 /* shows them before the shot rather than only in the log afterwards.   */
@@ -109,15 +314,15 @@
   flex-direction: column;
   gap: var(--sp-1);
   padding: var(--sp-2) var(--sp-3);
-  border: 1px solid #6b5a3f;
+  border: var(--hairline) solid var(--c-parchment-line);
   border-left-width: var(--accent-bar);
   border-radius: var(--radius);
-  background: rgb(48 38 22 / 55%);
+  background: color-mix(in srgb, var(--c-parchment-bg) 55%, transparent);
 }
 
 .reaction-label {
-  font-size: 0.95rem;
-  color: var(--c-gold-soft);
+  font-size: var(--fs-md);
+  color: var(--c-gold-deep);
   /* Sentences wrap; chips do not. That is the whole reason this is not one. */
   white-space: normal;
 }
@@ -126,6 +331,19 @@
 .reaction-reach {
   color: var(--c-ink-dim);
   white-space: normal;
+}
+
+/* Authored paint has no combo sentence, so keep its footprint in one short
+   line instead of repeating "spreads across the ground" above the result. */
+.reaction-paint {
+  gap: var(--sp-2);
+  padding: var(--sp-1) var(--sp-2);
+  border-left-width: var(--hairline);
+  background: color-mix(in srgb, var(--c-parchment-bg) 35%, transparent);
+}
+
+.reaction-paint .reaction-result {
+  flex: 1 1 auto;
 }
 
 /* A rule actually fired, rather than the surface just landing as authored. */
@@ -137,7 +355,7 @@
 .reaction-chain {
   border-color: var(--c-warn);
   border-left-color: var(--c-warn);
-  background: rgb(66 46 16 / 65%);
+  background: color-mix(in srgb, var(--c-warn-deep) 65%, transparent);
 }
 
 .reaction-chain .reaction-reach {
@@ -159,7 +377,7 @@
 
 .reaction-group-head {
   margin: 0;
-  font-size: 0.95rem;
+  font-size: var(--fs-md);
   color: var(--c-gold);
 }
 
@@ -169,7 +387,7 @@
   gap: 0.1rem;
   padding: var(--sp-2) var(--sp-3);
   border-left: var(--accent-bar) solid var(--c-line);
-  background: rgb(0 0 0 / 22%);
+  background: var(--surface-sunken);
   border-radius: 0 var(--radius) var(--radius) 0;
 }
 
@@ -183,7 +401,7 @@
 }
 
 .reaction-row-label {
-  color: var(--c-gold-soft);
+  color: var(--c-gold-deep);
 }
 
 .reaction-row-notes {
@@ -193,16 +411,16 @@
 /* Lightning through a puddle is the lesson worth finding first. */
 .reaction-row-chain {
   border-left-color: var(--c-warn);
-  background: rgb(66 46 16 / 45%);
+  background: color-mix(in srgb, var(--c-warn-deep) 45%, transparent);
 }
 
 .warn-note {
-  color: #ffc9a8;
-  background: rgb(90 45 20 / 45%);
-  border: 1px solid #7a4a24;
+  color: var(--c-warn-ink);
+  background: color-mix(in srgb, var(--c-warn-bg) 45%, transparent);
+  border: var(--hairline) solid var(--c-warn-line);
   border-radius: var(--radius);
   padding: var(--sp-2) var(--sp-3);
-  font-size: 0.85rem;
+  font-size: var(--fs-sm);
   margin: 0;
 }
 
@@ -217,6 +435,8 @@
   overflow-y: auto;
 }
 
+/* Not a panel: the title sits straight on the backdrop, on a soft plate of
+   shadow so the type holds against the wash. */
 .title-card {
   max-width: 34rem;
   text-align: center;
@@ -224,21 +444,71 @@
   flex-direction: column;
   align-items: center;
   gap: var(--sp-3);
+  padding: var(--sp-5) var(--sp-4);
+  border-radius: var(--radius-lg);
+  background: radial-gradient(
+    ellipse closest-side at 50% 42%,
+    color-mix(in srgb, var(--c-bg-deep) 75%, transparent),
+    transparent
+  );
+}
+
+.title-mark {
+  position: relative;
+  width: 11rem;
+  height: 11rem;
+  /* The glow is a pseudo-element behind the wheel; isolating keeps its
+     negative z-index inside the mark instead of under the backdrop. */
+  isolation: isolate;
+}
+
+.title-mark::before {
+  content: '';
+  position: absolute;
+  inset: -30%;
+  border-radius: 50%;
+  background: radial-gradient(
+    closest-side,
+    color-mix(in srgb, var(--c-gold) 28%, transparent),
+    transparent
+  );
+  z-index: -1;
+}
+
+.title-mark svg {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
+.title-card h1 {
+  font-size: var(--fs-3xl);
+  line-height: 1.05;
+  margin: 0;
+  text-shadow: 0 2px 0 rgb(0 0 0 / 45%);
+}
+
+.tagline {
+  max-width: 26rem;
+  margin: 0;
 }
 
 .title-actions {
   width: 100%;
-  max-width: 22rem;
+  max-width: 20rem;
+  gap: var(--sp-2);
+  margin-top: var(--sp-2);
 }
 
 .btn-large {
   min-height: 3.5rem;
-  font-size: 1.1rem;
+  font-size: var(--fs-lg);
 }
 
 .legal {
   max-width: 28rem;
   opacity: 0.7;
+  font-size: var(--fs-xs);
 }
 
 /* ------------------------------------------------------------------ */
@@ -268,7 +538,7 @@
 .setup-footer {
   margin-top: auto;
   padding-top: var(--sp-3);
-  border-top: 1px solid var(--c-line);
+  border-top: var(--hairline) solid var(--c-line);
 }
 
 .count-row {
@@ -278,7 +548,7 @@
 .btn-count {
   min-width: 3.5rem;
   min-height: 3.5rem;
-  font-size: 1.25rem;
+  font-size: var(--fs-lg);
 }
 
 .card-grid {
@@ -296,8 +566,9 @@
   padding: var(--sp-3);
   min-height: 8rem;
   border-radius: var(--radius-lg);
-  border: 2px solid var(--c-line);
-  background: var(--c-panel-raised);
+  border: 2px solid var(--c-ink-line);
+  background-color: var(--surface-1);
+  box-shadow: var(--inset-edge), var(--shadow-1);
 }
 
 .pick-card h3 {
@@ -306,8 +577,8 @@
 
 .pick-card .tagline {
   margin: 0;
-  color: var(--c-gold-soft);
-  font-size: 0.9rem;
+  color: var(--c-gold-deep);
+  font-size: var(--fs-sm);
 }
 
 .pick-card p {
@@ -316,7 +587,10 @@
 
 .pick-card.selected {
   border-color: var(--c-gold);
-  box-shadow: 0 0 0 2px rgb(217 164 65 / 45%);
+  box-shadow:
+    var(--inset-edge),
+    0 0 0 2px color-mix(in srgb, var(--c-gold) 45%, transparent),
+    var(--shadow-1);
 }
 
 .pick-card.taken {
@@ -328,20 +602,54 @@
   text-align: center;
 }
 
+/*
+ * Element identity. A component tagged .element-<id> gets --el and --el-soft
+ * to draw with, plus the accent bar every element row carries. Cards and
+ * panels add a translucent header band in that colour; it lives in
+ * background-image so a button's hover background-color leaves it alone.
+ */
 .element-fire {
-  border-left: var(--accent-bar) solid var(--c-fire);
+  --el: var(--c-fire);
+  --el-soft: var(--c-fire-soft);
 }
 .element-water {
-  border-left: var(--accent-bar) solid var(--c-water);
+  --el: var(--c-water);
+  --el-soft: var(--c-water-soft);
 }
 .element-earth {
-  border-left: var(--accent-bar) solid var(--c-earth);
+  --el: var(--c-earth);
+  --el-soft: var(--c-earth-soft);
 }
 .element-air {
-  border-left: var(--accent-bar) solid var(--c-air);
+  /* Air's parchment is the shell's own paper; its accent is inked down to read on it. */
+  --el: color-mix(in srgb, var(--c-air) 45%, var(--c-ink-line));
+  --el-soft: var(--c-air-soft);
 }
 .element-nonbender {
-  border-left: var(--accent-bar) solid var(--c-nonbender);
+  --el: var(--c-nonbender);
+  --el-soft: var(--c-nonbender-soft);
+}
+.element-neutral {
+  --el: var(--c-gold);
+  --el-soft: var(--c-gold-soft);
+}
+
+.element-fire,
+.element-water,
+.element-earth,
+.element-air,
+.element-nonbender,
+.element-neutral {
+  border-left: var(--accent-bar) solid var(--el);
+}
+
+.pick-card[class*='element-'],
+.unit-panel[class*='element-'] {
+  background-image: linear-gradient(
+    180deg,
+    color-mix(in srgb, var(--el) 22%, transparent),
+    transparent 3.25rem
+  );
 }
 
 .painter {
@@ -358,27 +666,100 @@
   flex-direction: column;
 }
 
+/*
+ * The stage. The speaker stands over the text box, which sits in the lower
+ * third of the screen the way a visual novel's does. The head overlaps the
+ * box's top edge from outside: the box scrolls, so nothing may hang out of
+ * it, and the head has to be a sibling drawn above it.
+ */
+.stage {
+  flex: 1 1 auto;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  align-items: center;
+  padding: var(--sp-4) var(--sp-4) calc(var(--sp-5) + env(safe-area-inset-bottom, 0px));
+}
+
+.stage-head {
+  flex: 0 0 auto;
+  position: relative;
+  z-index: 1;
+  width: min(56rem, 100%);
+  display: flex;
+  align-items: flex-end;
+  gap: var(--sp-3);
+  padding: 0 var(--sp-3);
+  margin-bottom: calc(-1 * var(--sp-3));
+}
+
+.stage-portrait {
+  position: relative;
+  flex: 0 0 auto;
+}
+
+/* The element class brings an accent bar; the medallion draws its own ring. */
+.stage-portrait[class*='element-'] {
+  border-left: 0;
+}
+
+/* A halo in the speaker's element behind the medallion. */
+.stage-portrait::before {
+  content: '';
+  position: absolute;
+  inset: -18%;
+  border-radius: 50%;
+  background: radial-gradient(
+    closest-side,
+    color-mix(in srgb, var(--el) 38%, transparent),
+    transparent
+  );
+}
+
+.stage-portrait .painter {
+  position: relative;
+  box-shadow:
+    0 0 0 2px var(--c-ink-line),
+    0 0 0 4px color-mix(in srgb, var(--el) 70%, transparent),
+    var(--shadow-2);
+}
+
+.name-plate {
+  display: flex;
+  flex-direction: column;
+  gap: 0.1rem;
+  padding: var(--sp-2) var(--sp-4);
+  margin-bottom: var(--sp-5);
+  background-color: var(--surface-1);
+  background-image: var(--tex-grain);
+  background-size: var(--tex-grain-size);
+  border: var(--hairline) solid var(--c-ink-line);
+  border-radius: var(--radius);
+  box-shadow: var(--inset-edge), var(--shadow-1);
+}
+
+.name-plate h2 {
+  margin: 0;
+  line-height: 1.1;
+}
+
+/* Takes whatever height the head leaves, and only then scrolls inside. */
 .dialogue-panel {
-  margin: auto;
-  width: min(52rem, 94%);
-  max-height: 84dvh;
+  width: min(56rem, 100%);
+  margin: 0;
+  flex: 0 1 auto;
+  min-height: 0;
   overflow-y: auto;
   display: flex;
   flex-direction: column;
   gap: var(--sp-3);
+  padding: var(--sp-5) var(--sp-5) var(--sp-4);
   cursor: pointer;
 }
 
-.dialogue-head {
-  align-items: flex-start;
-}
-
-.dialogue-head h2 {
-  margin: 0;
-}
-
 .dialogue-line {
-  font-size: 1.15rem;
+  font-size: var(--fs-lg);
   line-height: 1.6;
   margin: 0;
 }
@@ -394,13 +775,13 @@
   gap: var(--sp-1);
   padding: var(--sp-3);
   border-radius: var(--radius);
-  background: rgb(217 164 65 / 12%);
-  border: 1px solid var(--c-gold);
+  background: color-mix(in srgb, var(--c-gold) 12%, transparent);
+  border: var(--hairline) solid var(--c-gold);
 }
 
 .decider-banner strong {
-  font-size: 1.6rem;
-  color: var(--c-gold-soft);
+  font-size: var(--fs-xl);
+  color: var(--c-gold-deep);
 }
 
 .choice-options {
@@ -418,20 +799,20 @@
 }
 
 .choice-option strong {
-  font-size: 1.05rem;
+  font-size: var(--fs-lg);
 }
 
 /*
- * Who in the party would say this. The Speaker Choice has no separate step —
- * picking a fire-tagged line is picking the firebender — so the tag has to be
+ * Who in the party would say this. The Speaker Choice has no separate step â€”
+ * picking a fire-tagged line is picking the firebender â€” so the tag has to be
  * the first thing read, before the words themselves.
  */
 .speaker-tag {
-  font-size: 0.8rem;
+  font-size: var(--fs-sm);
   letter-spacing: 0.04em;
   text-transform: uppercase;
-  color: var(--c-gold-soft);
-  border: 1px solid currentColor;
+  color: var(--c-gold-deep);
+  border: var(--hairline) solid currentColor;
   border-radius: 999px;
   padding: 0.1rem var(--sp-2);
 }
@@ -439,7 +820,7 @@
 /*
  * A locked option stays on screen, at full size, still legible. It is dimmed
  * rather than hidden because seeing what a different party could have said is
- * the thing that earns a second playthrough — and it keeps its full tap target,
+ * the thing that earns a second playthrough â€” and it keeps its full tap target,
  * which e2e/touch.spec.ts enforces at 48px on every visible control.
  */
 .choice-option.is-locked {
@@ -452,9 +833,11 @@
   color: var(--c-ink-dim);
 }
 
+/* Declared once: the dialogue options and the discipline cards share it. */
 .locked-hint {
-  font-size: 0.85rem;
-  color: var(--c-gold-soft);
+  margin: 0;
+  font-size: var(--fs-sm);
+  color: var(--c-gold-deep);
   font-style: italic;
 }
 
@@ -465,7 +848,7 @@
 }
 
 .end-panel h1 {
-  color: var(--c-gold-soft);
+  color: var(--c-gold-deep);
 }
 
 /* ------------------------------------------------------------------ */
@@ -479,16 +862,149 @@
   height: 100%;
 }
 
+/*
+ * The board's canvas clears to transparent (ADR 0008), so what shows round
+ * the edges of the map is the backdrop: its grain, its radial base and the
+ * mood wash, which stays visible under the map scenes for that reason. High
+ * contrast keeps the frame plain and the wash off.
+ */
 .map-wrap {
   position: relative;
   flex: 1 1 auto;
   min-height: 0;
+  background: transparent;
+}
+
+html[data-contrast='high'] .map-wrap {
   background: var(--c-bg-deep);
 }
 
 .map-canvas {
   width: 100%;
   height: 100%;
+}
+
+/* A world conversation keeps the map scene alive and places a small readable
+   plate over its lower edge. The map canvas remains visible around it, while
+   its pointer adapter is guarded in ExploreScene as well as here. */
+.explore-conversation {
+  position: absolute;
+  inset: 0;
+  z-index: var(--z-overlay);
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  flex-direction: column;
+  padding: var(--sp-3) var(--sp-3) calc(var(--sp-4) + env(safe-area-inset-bottom, 0px));
+  pointer-events: none;
+}
+
+.explore-conversation[hidden] {
+  display: none;
+}
+
+.explore-dock[hidden] {
+  display: none;
+}
+
+.explore-conversation > * {
+  pointer-events: auto;
+}
+
+.explore-scene.is-conversation .map-canvas {
+  pointer-events: none;
+}
+
+.explore-scene.is-conversation .explore-objective,
+.explore-scene.is-conversation .explore-map-corner {
+  display: none;
+}
+
+.explore-conversation .conversation-panel {
+  width: min(var(--conversation-panel-max), 100%);
+  max-height: min(62%, 25rem);
+  overflow-y: auto;
+  cursor: pointer;
+  gap: var(--sp-2);
+  padding: var(--sp-3) var(--sp-4);
+  background-color: color-mix(in srgb, var(--c-panel-raised) 95%, transparent);
+  backdrop-filter: blur(0.2rem);
+}
+
+.conversation-compact-head {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-3);
+}
+
+.conversation-compact-portrait {
+  position: relative;
+  flex: 0 0 var(--conversation-portrait);
+  width: var(--conversation-portrait);
+  height: var(--conversation-portrait);
+}
+
+.conversation-compact-portrait::before {
+  content: '';
+  position: absolute;
+  inset: -10%;
+  border-radius: 50%;
+  background: radial-gradient(
+    closest-side,
+    color-mix(in srgb, var(--el) 30%, transparent),
+    transparent
+  );
+}
+
+.conversation-compact-portrait .painter {
+  position: relative;
+  width: var(--conversation-portrait);
+  height: var(--conversation-portrait);
+  border-radius: 50%;
+  box-shadow:
+    0 0 0 1px var(--c-ink-line),
+    0 0 0 2px color-mix(in srgb, var(--el) 60%, transparent);
+}
+
+.conversation-compact-speaker {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-1);
+}
+
+.conversation-compact-speaker strong {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: var(--fs-lg);
+}
+
+.explore-conversation .conversation-panel .dialogue-line {
+  font-size: var(--fs-md);
+  line-height: 1.45;
+}
+
+.explore-conversation .conversation-panel .conversation-controls {
+  margin-top: var(--sp-1);
+}
+
+.explore-conversation .choice-panel {
+  cursor: default;
+}
+
+.explore-conversation .choice-options {
+  gap: var(--sp-2);
+}
+
+@media (orientation: portrait) {
+  .explore-conversation {
+    padding-inline: var(--sp-2);
+  }
+
+  .explore-conversation .conversation-panel {
+    max-height: 58%;
+  }
 }
 
 .combat-overlays {
@@ -513,8 +1029,8 @@
   gap: var(--sp-2);
   padding: var(--sp-2) var(--sp-3);
   overflow-x: auto;
-  background: rgb(18 13 10 / 85%);
-  border-bottom: 1px solid var(--c-line);
+  background: color-mix(in srgb, var(--c-bg-deep) 85%, transparent);
+  border-bottom: var(--hairline) solid var(--c-line);
   flex: 0 0 auto;
 }
 
@@ -527,21 +1043,31 @@
   border-radius: var(--radius);
   border: 2px solid transparent;
   min-width: 3.5rem;
+  min-height: var(--tap);
+  flex-shrink: 0;
   opacity: 0.6;
 }
 
+/* Whose turn it is stands on a gold plate; the rest wait in the paper. */
 .turn-chip.active {
-  border-color: var(--c-gold);
+  border-color: var(--c-ink-line);
   opacity: 1;
-  background: rgb(217 164 65 / 12%);
+  background: linear-gradient(180deg, var(--c-gold-soft), var(--c-gold));
+  box-shadow: var(--shadow-1);
+}
+
+.turn-chip.active span {
+  color: var(--c-ink-on-gold);
+  font-weight: 700;
 }
 
 .turn-chip.faction-enemy .painter {
   box-shadow: 0 0 0 2px var(--c-danger);
 }
 
+/* A party member's ring is their element (the chip's .element-* sets --el). */
 .turn-chip.faction-party .painter {
-  box-shadow: 0 0 0 2px var(--c-water-soft);
+  box-shadow: 0 0 0 2px var(--el);
 }
 
 .turn-chip.faction-ally .painter {
@@ -559,16 +1085,22 @@
   display: flex;
   gap: var(--sp-2);
   padding: var(--sp-2) var(--sp-3) calc(var(--sp-2) + env(safe-area-inset-bottom, 0px));
-  background: linear-gradient(0deg, rgb(18 13 10 / 98%), rgb(18 13 10 / 82%));
-  border-top: 1px solid var(--c-line);
+  background: linear-gradient(
+    0deg,
+    color-mix(in srgb, var(--c-bg-deep) 98%, transparent),
+    color-mix(in srgb, var(--c-bg-deep) 82%, transparent)
+  );
+  border-top: var(--hairline) solid var(--c-line);
   align-items: stretch;
   flex: 0 0 auto;
   overflow-x: auto;
 }
 
 .hud-panel {
-  background: var(--c-panel);
-  border: 1px solid var(--c-line);
+  position: relative;
+  background-color: var(--surface-0);
+  border: var(--hairline) solid var(--c-ink-line);
+  box-shadow: var(--inset-edge);
   border-radius: var(--radius);
   padding: var(--sp-2);
   display: flex;
@@ -576,9 +1108,89 @@
   gap: var(--sp-2);
 }
 
+/* A gilt bracket on two corners of every panel, from the one mask token. */
+.hud-panel::before,
+.hud-panel::after {
+  content: '';
+  position: absolute;
+  width: 1rem;
+  height: 1rem;
+  background: var(--c-gold);
+  -webkit-mask: var(--orn-corner) center / contain no-repeat;
+  mask: var(--orn-corner) center / contain no-repeat;
+  pointer-events: none;
+}
+
+.hud-panel::before {
+  top: -0.3rem;
+  left: -0.3rem;
+}
+
+.hud-panel::after {
+  right: -0.3rem;
+  bottom: -0.3rem;
+  transform: rotate(180deg);
+}
+
+html[data-contrast='high'] .hud-panel::before,
+html[data-contrast='high'] .hud-panel::after {
+  display: none;
+}
+
 .unit-panel {
-  min-width: 13rem;
+  min-width: 16rem;
   flex: 0 0 auto;
+}
+
+.unit-panel-body {
+  align-items: center;
+}
+
+.unit-panel-body .grow {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+/* The acting unit's face, ringed in its element; the same file the turn strip draws. */
+.unit-portrait {
+  flex: 0 0 auto;
+  border-radius: 50%;
+  background: color-mix(in srgb, var(--el) 18%, transparent);
+  box-shadow: 0 0 0 2px var(--el);
+}
+
+/* Square in the unit panel, framed in ink with the element outside it. */
+.unit-portrait-frame {
+  position: relative;
+  flex: 0 0 auto;
+}
+
+.unit-portrait.square {
+  border-radius: var(--radius);
+  box-shadow:
+    0 0 0 2px var(--c-ink-line),
+    0 0 0 4px color-mix(in srgb, var(--el) 55%, transparent);
+}
+
+/* The element's glyph as a badge on the portrait's corner. */
+.portrait-badge {
+  position: absolute;
+  right: -0.45rem;
+  bottom: -0.45rem;
+  width: 1.5rem;
+  height: 1.5rem;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  background: var(--surface-1);
+  border: var(--hairline) solid var(--c-ink-line);
+  box-shadow: var(--shadow-1);
+}
+
+.unit-name {
+  font-family: var(--font-display);
+  font-size: var(--fs-lg);
+  line-height: 1.1;
 }
 
 .bar {
@@ -587,12 +1199,12 @@
   border-radius: 999px;
   background: rgb(0 0 0 / 55%);
   overflow: hidden;
-  border: 1px solid var(--c-line);
+  border: var(--hairline) solid var(--c-line);
 }
 
 .bar-fill {
   height: 100%;
-  background: linear-gradient(90deg, #6fbf73, #a8d98c);
+  background: linear-gradient(90deg, var(--c-ok), var(--c-ok-soft));
 }
 
 .bar-label {
@@ -600,7 +1212,7 @@
   inset: 0;
   display: grid;
   place-items: center;
-  font-size: 0.75rem;
+  font-size: var(--fs-xs);
   text-shadow: 0 1px 2px rgb(0 0 0 / 90%);
 }
 
@@ -614,49 +1226,93 @@
   width: 0.7rem;
   height: 0.7rem;
   border-radius: 50%;
-  border: 1px solid var(--c-gold);
+  border: var(--hairline) solid var(--c-gold);
   background: transparent;
+  box-shadow: inset 0 0 0 1px rgb(0 0 0 / 40%);
 }
 
 .pip-on {
   background: var(--c-gold);
-}
-
-.pips-small .pip {
-  width: 0.45rem;
-  height: 0.45rem;
+  box-shadow: 0 0 0.35rem color-mix(in srgb, var(--c-gold) 50%, transparent);
 }
 
 .action-bar {
   flex: 1 1 auto;
-  flex-direction: row;
+  gap: var(--sp-1);
+}
+
+.action-row {
+  display: flex;
   flex-wrap: wrap;
   align-content: flex-start;
   gap: var(--sp-2);
 }
 
+/*
+ * What the player is doing, above the buttons: one line that never wraps,
+ * so the HUD keeps its height whichever mode the turn is in.
+ */
+.ability-header {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-2);
+  min-height: 1.75rem;
+  padding: 0 var(--sp-1);
+  color: var(--c-ink-dim);
+  font-size: var(--fs-sm);
+  white-space: nowrap;
+  overflow: hidden;
+}
+
+.ability-header .mark {
+  width: 1.25rem;
+  height: 1.25rem;
+  color: var(--el, var(--c-ink-dim));
+}
+
+.ability-header strong {
+  color: var(--c-ink);
+  font-size: var(--fs-md);
+}
+
+.header-cost {
+  color: var(--c-gold-deep);
+  font-weight: 700;
+}
+
+.header-desc {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* Mark above, name, cost under: the mockup's large action buttons. */
 .action-button {
   position: relative;
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: 0.1rem;
+  gap: 0.05rem;
   min-width: 6rem;
   min-height: var(--tap);
-  padding: var(--sp-2);
-  font-size: 0.9rem;
+  padding: var(--sp-1) var(--sp-2) var(--sp-2);
+  font-size: var(--fs-md);
   line-height: 1.15;
+}
+
+.action-button .mark {
+  color: var(--el, var(--c-ink));
 }
 
 .action-button.selected {
   border-color: var(--c-gold);
-  background: rgb(217 164 65 / 20%);
-  box-shadow: 0 0 0 2px rgb(217 164 65 / 40%);
+  background-color: color-mix(in srgb, var(--c-gold) 20%, transparent);
+  box-shadow: 0 0 0 2px color-mix(in srgb, var(--c-gold) 40%, transparent);
 }
 
 .action-sub {
-  font-size: 0.72rem;
+  font-size: var(--fs-xs);
   color: var(--c-ink-dim);
 }
 
@@ -664,14 +1320,22 @@
   position: absolute;
   top: 0.15rem;
   right: 0.25rem;
-  font-size: 0.7rem;
+  font-size: var(--fs-xs);
   font-weight: 700;
   color: var(--c-warn);
 }
 
+/* End turn stands apart: inked, at the far end of the row. */
 .end-turn {
   margin-left: auto;
-  border-color: var(--c-gold);
+  border-color: var(--c-ink-line);
+  box-shadow:
+    inset 0 0 0 1px var(--c-ink-line),
+    inset 0 1px 0 var(--paper-hair);
+}
+
+.end-turn .mark {
+  color: var(--c-ink);
 }
 
 .log-panel {
@@ -700,12 +1364,54 @@
   margin: var(--sp-3);
   padding: var(--sp-3);
   border-radius: var(--radius-lg);
-  background: rgb(27 20 16 / 97%);
-  border: 1px solid var(--c-gold);
-  box-shadow: var(--shadow-panel);
+  background: color-mix(in srgb, var(--c-bg) 97%, transparent);
+  border: var(--hairline) solid var(--c-gold);
+  box-shadow: var(--inset-edge), var(--shadow-2);
   display: flex;
   flex-direction: column;
   gap: var(--sp-2);
+}
+
+/* In landscape, a normal or Large-text decision can share one row with its
+ * forecast. Huge text and portrait layouts keep the vertical reading order. */
+@media (min-width: 53rem) and (orientation: landscape) {
+  html:not([data-large-text='huge']) .combat-scene .hud {
+    align-items: flex-start;
+  }
+
+  html:not([data-large-text='huge']) .combat-scene .confirm-dialog {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) max-content;
+    align-items: center;
+    column-gap: var(--sp-2);
+    row-gap: var(--sp-1);
+    padding: var(--sp-2);
+  }
+
+  html:not([data-large-text='huge']) .combat-scene .confirm-dialog > .confirm-body {
+    grid-column: 1;
+    min-width: 0;
+    max-width: 100%;
+  }
+
+  html:not([data-large-text='huge']) .combat-scene .confirm-dialog > .row {
+    grid-column: 2;
+    grid-row: 1;
+    min-width: max-content;
+    margin: 0;
+  }
+
+  html:not([data-large-text='huge']) .combat-scene .confirm-body,
+  html:not([data-large-text='huge']) .combat-scene .confirm-body > .preview-chips {
+    min-width: 0;
+    max-width: 100%;
+  }
+}
+
+/* Aim guidance and confirmation share allocated dock space, never the map. */
+.aim-hint {
+  border-color: var(--c-line);
+  background: color-mix(in srgb, var(--c-bg) 92%, transparent);
 }
 
 .preview-chips {
@@ -718,9 +1424,14 @@
   inset: 0;
   display: grid;
   place-items: center;
-  background: rgb(9 6 4 / 90%);
-  z-index: 20;
+  background: var(--scrim-strong);
+  z-index: var(--z-banner);
   padding: var(--sp-4);
+  animation: overlay-in calc(var(--dur-base) * var(--motion-scale)) var(--ease-out) both;
+}
+
+.handoff-banner .panel {
+  animation: dialog-in calc(var(--dur-base) * var(--motion-scale)) var(--ease-out) both;
 }
 
 .handoff-banner .panel {
@@ -732,8 +1443,8 @@
 }
 
 .handoff-banner h1 {
-  font-size: 2.6rem;
-  color: var(--c-gold-soft);
+  font-size: var(--fs-3xl);
+  color: var(--c-gold-deep);
   margin: 0;
 }
 
@@ -742,22 +1453,57 @@
   margin-bottom: var(--sp-3);
   padding: var(--sp-2) var(--sp-4);
   border-radius: 999px;
-  background: rgb(27 20 16 / 92%);
-  border: 1px solid var(--c-line);
+  background: color-mix(in srgb, var(--c-bg) 92%, transparent);
+  border: var(--hairline) solid var(--c-line);
   color: var(--c-ink-dim);
 }
 
 .result-panel h1 {
-  color: var(--c-gold-soft);
+  color: var(--c-gold-deep);
 }
 
 /* ------------------------------------------------------------------ */
 /* Dialogs                                                             */
 /* ------------------------------------------------------------------ */
 
+/*
+ * Dialogs ease in: the scrim fades and the sheet settles up into place. Pure
+ * CSS, so every dialog gets it for free; there is deliberately no exit
+ * animation, because a closed dialog that lingers in the DOM is a node the
+ * e2e suite and screen readers can still find.
+ */
+.overlay {
+  animation: overlay-in calc(var(--dur-base) * var(--motion-scale)) var(--ease-out) both;
+}
+
+.overlay > .dialog {
+  animation: dialog-in calc(var(--dur-base) * var(--motion-scale)) var(--ease-out) both;
+}
+
+@keyframes overlay-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes dialog-in {
+  from {
+    opacity: 0;
+    transform: translateY(0.5rem) scale(0.98);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
 .dialog {
   max-width: min(36rem, 94vw);
   width: 100%;
+  box-shadow: var(--inset-edge), var(--shadow-3);
   display: flex;
   flex-direction: column;
   gap: var(--sp-3);
@@ -779,7 +1525,7 @@
 
 .dialog-footer {
   padding-top: var(--sp-2);
-  border-top: 1px solid var(--c-line);
+  border-top: var(--hairline) solid var(--c-line);
 }
 
 .slot {
@@ -787,9 +1533,9 @@
   align-items: center;
   gap: var(--sp-3);
   padding: var(--sp-3);
-  border: 1px solid var(--c-line);
+  border: var(--hairline) solid var(--c-line);
   border-radius: var(--radius);
-  background: rgb(0 0 0 / 22%);
+  background: var(--surface-sunken);
   flex-wrap: wrap;
 }
 
@@ -805,6 +1551,11 @@
   overflow-wrap: anywhere;
 }
 
+.slot-place {
+  color: var(--c-gold-deep);
+  font-size: var(--fs-sm);
+}
+
 .slot-actions {
   flex: 0 0 auto;
 }
@@ -814,7 +1565,7 @@
   align-items: center;
   gap: var(--sp-3);
   padding: var(--sp-2) 0;
-  border-bottom: 1px solid var(--c-line);
+  border-bottom: var(--hairline) solid var(--c-line);
   flex-wrap: wrap;
 }
 
@@ -836,9 +1587,9 @@
   flex-direction: column;
   gap: var(--sp-2);
   padding: var(--sp-3);
-  border: 1px solid var(--c-line);
+  border: var(--hairline) solid var(--c-line);
   border-radius: var(--radius);
-  background: rgb(0 0 0 / 22%);
+  background: var(--surface-sunken);
 }
 
 .ability-card h3 {
@@ -853,11 +1604,11 @@
   margin: 0;
   padding-left: 1.1rem;
   color: var(--c-ink-dim);
-  font-size: 0.85rem;
+  font-size: var(--fs-sm);
 }
 
 /* Discipline cards: the ability card, plus the ladder the path grants. A
-   locked path stays readable rather than being hidden — it is advertising. */
+   locked path stays readable rather than being hidden â€” it is advertising. */
 .discipline-card {
   border-color: var(--c-gold);
 }
@@ -875,13 +1626,7 @@
   margin: 0;
   padding-left: 1.1rem;
   color: var(--c-ink-dim);
-  font-size: 0.85rem;
-}
-
-.locked-hint {
-  margin: 0;
-  color: var(--c-gold);
-  font-size: 0.85rem;
+  font-size: var(--fs-sm);
 }
 
 .flavor {
@@ -915,10 +1660,28 @@
   border-left-color: var(--c-gold);
 }
 
-/* Read off the damage modifiers rather than the prose: "lightning ×2". */
+/* Read off the damage modifiers rather than the prose: "lightning Ã—2". */
 .status-incoming {
-  color: var(--c-gold-soft);
+  color: var(--c-gold-deep);
   font-weight: 700;
+}
+
+/* ------------------------------------------------------------------ */
+/* Frame-time readout (?stats=1)                                        */
+/* ------------------------------------------------------------------ */
+
+.stats {
+  position: absolute;
+  top: calc(var(--sp-2) + env(safe-area-inset-top, 0px));
+  left: calc(var(--sp-2) + env(safe-area-inset-left, 0px));
+  padding: 0.1rem 0.4rem;
+  border-radius: var(--radius);
+  background: rgb(0 0 0 / 65%);
+  color: var(--c-gold-deep);
+  font-family: ui-monospace, Menlo, Consolas, monospace;
+  font-size: var(--fs-sm);
+  z-index: var(--z-stats);
+  pointer-events: none;
 }
 
 /* ------------------------------------------------------------------ */
@@ -934,7 +1697,7 @@
   flex-direction: column;
   gap: var(--sp-2);
   align-items: center;
-  z-index: 60;
+  z-index: var(--z-toast);
   pointer-events: none;
   max-width: min(36rem, 92vw);
 }
@@ -942,22 +1705,22 @@
 .toast {
   padding: var(--sp-2) var(--sp-4);
   border-radius: 999px;
-  background: rgb(27 20 16 / 96%);
-  border: 1px solid var(--c-line);
-  box-shadow: var(--shadow-panel);
-  font-size: 0.9rem;
+  background: color-mix(in srgb, var(--c-bg) 96%, transparent);
+  border: var(--hairline) solid var(--c-line);
+  box-shadow: var(--inset-edge), var(--shadow-2);
+  font-size: var(--fs-sm);
   text-align: center;
-  animation: toast-in calc(180ms * var(--motion-scale)) ease-out;
+  animation: toast-in calc(var(--dur-base) * var(--motion-scale)) var(--ease-out);
 }
 
 .toast-warn {
   border-color: var(--c-warn);
-  color: #ffe4a8;
+  color: var(--c-warn-ink);
 }
 
 .toast-out {
   opacity: 0;
-  transition: opacity calc(300ms * var(--motion-scale)) ease-in;
+  transition: opacity calc(var(--dur-slow) * var(--motion-scale)) var(--ease-ink);
 }
 
 @keyframes toast-in {
@@ -995,7 +1758,7 @@
   }
 
   .handoff-banner h1 {
-    font-size: 2rem;
+    font-size: var(--fs-2xl);
   }
 }
 
@@ -1009,14 +1772,814 @@
   }
 }
 
-/* An aim hint sits where the confirm bar would, so the eye already knows to
-   look there, but reads as guidance rather than a decision. */
-.aim-hint {
-  border-color: var(--c-line);
-  background: rgb(27 20 16 / 92%);
+/* Keep short landscape battles compact without changing portrait or large text
+ * layouts. The strip stays in flow and scrolls horizontally when the order is
+ * crowded; each chip remains a full-size touch target. */
+@media (min-width: 53rem) and (max-height: 48rem) and (orientation: landscape) {
+  html[data-large-text='off'] .combat-scene .turn-strip {
+    align-items: center;
+    gap: var(--sp-1);
+    padding-block: var(--sp-1);
+  }
+
+  html[data-large-text='off'] .combat-scene .turn-chip {
+    flex-direction: row;
+    gap: var(--sp-1);
+    min-width: 0;
+    min-height: var(--tap);
+    padding: var(--sp-1) var(--sp-2);
+  }
+
+  html[data-large-text='off'] .combat-scene .turn-chip span {
+    max-width: 6rem;
+  }
 }
 
-.slot-place {
-  color: var(--c-gold-soft);
-  font-size: 0.9rem;
+/* Keep the speaker visible beside their name when the full stage portrait
+   would crowd out dialogue. The text panel retains its own scroll area. */
+@media (max-width: 52rem), (max-height: 34rem) {
+  .stage-head {
+    align-items: center;
+    padding: 0;
+    margin-bottom: var(--sp-3);
+  }
+
+  .stage-portrait .painter {
+    max-width: var(--dialogue-portrait-compact);
+    max-height: var(--dialogue-portrait-compact);
+  }
+
+  .stage-head .name-plate {
+    flex: 1 1 auto;
+    min-width: 0;
+    margin-bottom: 0;
+    padding: var(--sp-2) var(--sp-3);
+    overflow-wrap: anywhere;
+  }
+
+  .stage-head .name-plate h2 {
+    font-size: var(--fs-lg);
+  }
+}
+
+/* A tablet held upright has height to spare and width to lose: the HUD stacks
+   under the map instead of scrolling sideways, and the map keeps the width.
+   iPadOS ignores the manifest's landscape request, so this is not optional. */
+@media (orientation: portrait) {
+  .hud {
+    flex-direction: column;
+    overflow-x: hidden;
+  }
+
+  .unit-panel,
+  .log-panel {
+    min-width: 0;
+    max-width: none;
+  }
+
+  .handoff-banner h1 {
+    font-size: var(--fs-2xl);
+  }
+}
+
+/* ------------------------------------------------------------------ */
+/* Explore: the roster, the map, the party's actions                   */
+/* ------------------------------------------------------------------ */
+
+/*
+ * The approved player view keeps the world full width and puts the party
+ * beside the actions. Narrow screens stack the two strips below the map;
+ * each remains independently reachable at the largest text setting.
+ */
+.explore-body {
+  display: flex;
+  flex: 1 1 auto;
+  min-height: 0;
+  min-width: 0;
+}
+
+.explore-dock {
+  display: flex;
+  flex: 0 0 auto;
+  min-height: 0;
+  max-height: 42%;
+  overflow-y: auto;
+  border-top: var(--hairline) solid var(--c-line);
+  background: var(--c-bg-deep);
+}
+
+.roster {
+  flex: 1 1 50%;
+  min-width: 0;
+  display: flex;
+  flex-direction: row;
+  gap: var(--sp-2);
+  padding: var(--sp-3);
+  padding-bottom: calc(var(--sp-3) + env(safe-area-inset-bottom, 0px));
+  overflow-x: auto;
+  overscroll-behavior-x: contain;
+  align-items: stretch;
+  background: linear-gradient(
+    90deg,
+    color-mix(in srgb, var(--c-bg-deep) 98%, transparent),
+    color-mix(in srgb, var(--c-bg-deep) 82%, transparent)
+  );
+}
+
+/* A row is a button in all but its tag: it holds a canvas and a bar. */
+.roster-row {
+  flex: 0 0 var(--roster-card-width);
+  min-width: var(--roster-card-width);
+  min-height: var(--tap);
+  cursor: pointer;
+}
+
+.roster-row:focus-visible {
+  outline: 2px solid var(--c-gold-deep);
+  outline-offset: 2px;
+}
+
+/* The leader's row sits on the same gold plate as the acting turn chip. */
+.roster-row.active {
+  border-color: var(--c-gold-deep);
+  background: color-mix(in srgb, var(--c-gold) 16%, var(--surface-0));
+}
+
+.roster-name {
+  font-family: var(--font-display);
+  font-size: var(--fs-md);
+  line-height: 1.1;
+}
+
+.roster-row .unit-panel-body {
+  flex-direction: column;
+  align-items: stretch;
+}
+
+.roster-row .unit-portrait-frame {
+  align-self: center;
+  margin-bottom: var(--sp-2);
+}
+
+.roster-row .grow > .row {
+  min-width: 0;
+}
+
+.roster-row .grow > .row > .stack {
+  min-width: 0;
+  flex: 1;
+}
+
+.roster-name,
+.roster-player {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.roster-row .spacer {
+  display: none;
+}
+
+.roster-row .roster-level {
+  display: none;
+}
+
+.roster-level {
+  font-size: var(--fs-xs);
+  color: var(--c-ink-dim);
+  white-space: nowrap;
+}
+
+.explore-hud .action-bar {
+  flex: 1 1 auto;
+}
+
+.explore-hud {
+  flex: 1 1 var(--explore-actions-width);
+  min-width: 0;
+  flex-direction: column;
+  justify-content: center;
+  border-top: 0;
+}
+
+.explore-hud .action-row {
+  flex-wrap: nowrap;
+  overflow-x: auto;
+  padding: var(--sp-1);
+}
+
+.explore-hud .action-row > button {
+  flex-shrink: 0;
+}
+
+.explore-bar .title-plate {
+  min-width: 0;
+}
+
+.explore-bar .title-plate-objective {
+  max-width: 100%;
+}
+
+.walk-feedback {
+  position: absolute;
+  z-index: var(--z-banner);
+  bottom: var(--sp-3);
+  left: var(--sp-3);
+  right: var(--sp-3);
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--sp-2);
+  padding: var(--sp-2) var(--sp-3);
+  border-radius: var(--radius);
+  background: color-mix(in srgb, var(--c-panel) 94%, transparent);
+  color: var(--c-ink);
+  font-size: var(--fs-sm);
+  pointer-events: none;
+}
+
+.walk-feedback[hidden] {
+  display: none;
+}
+
+.walk-feedback button[hidden] {
+  display: none;
+}
+
+.walk-feedback button {
+  pointer-events: auto;
+}
+
+/* The objective line grows a hint when the party stands at the gate. */
+.title-plate-objective {
+  font-size: var(--fs-xs);
+  color: var(--c-ink-dim);
+  max-width: 28rem;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+@media (max-width: 52rem), (orientation: portrait) {
+  .explore-dock {
+    flex-direction: column;
+  }
+
+  .roster {
+    flex: 0 0 auto;
+    flex-direction: row;
+    overflow-x: auto;
+    overflow-y: hidden;
+    border-bottom: var(--hairline) solid var(--c-line);
+    padding-bottom: var(--sp-2);
+  }
+
+  .explore-hud {
+    flex: 0 0 auto;
+  }
+}
+
+/* ------------------------------------------------------------------ */
+/* Credits: who made what                                              */
+/* ------------------------------------------------------------------ */
+
+/*
+ * One block per work, the same sunken plate the save slots use. The name of
+ * the maker is the point of the screen, so it reads at body size rather than
+ * as fine print, even though it sits under the work it belongs to.
+ */
+.credit-list {
+  gap: var(--sp-2);
+}
+
+.credit {
+  display: flex;
+  flex-direction: column;
+  gap: 0.1rem;
+  padding: var(--sp-2) var(--sp-3);
+  border: var(--hairline) solid var(--c-line);
+  border-radius: var(--radius);
+  background: var(--surface-sunken);
+}
+
+.credit-what {
+  font-family: var(--font-display);
+  font-size: var(--fs-md);
+}
+
+.credit-work {
+  font-size: var(--fs-sm);
+  overflow-wrap: anywhere;
+}
+
+.credit-by {
+  font-size: var(--fs-sm);
+  color: var(--c-ink-dim);
+  overflow-wrap: anywhere;
+}
+
+/* Riverside pilot: the painting fills the available view. */
+.riverside-scene .map-wrap {
+  position: relative;
+  overflow: hidden;
+}
+.riverside-scene .explore-dock {
+  max-height: 42%;
+  overflow-x: hidden;
+  overflow-y: auto;
+  overscroll-behavior-y: contain;
+}
+.riverside-scene .explore-hud {
+  overflow: visible;
+  padding: 0;
+  border-top: 0;
+  background: transparent;
+}
+.riverside-scene .roster {
+  display: none;
+}
+.village-life-canvas {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+}
+.village-controls {
+  width: 100%;
+  padding: var(--sp-2) var(--sp-3) calc(var(--sp-2) + env(safe-area-inset-bottom, 0px));
+  gap: var(--sp-1);
+}
+.village-caption,
+.village-utilities,
+.village-actions,
+.village-secondary {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: var(--sp-1);
+}
+.village-caption {
+  justify-content: space-between;
+  font-weight: 600;
+  font-size: var(--fs-sm);
+  gap: var(--sp-2);
+}
+.village-note {
+  margin: 0;
+  font-size: var(--fs-sm);
+  min-height: 1.2rem;
+}
+.village-actions {
+  align-items: stretch;
+}
+.village-actions button,
+.village-secondary button,
+.village-utilities button {
+  flex: 1 1 8rem;
+  min-height: var(--tap);
+}
+.village-actions .village-activities-toggle {
+  flex: 0 1 8rem;
+  border-color: var(--c-gold-deep);
+  background-color: color-mix(in srgb, var(--c-gold) 12%, var(--surface-1));
+}
+.village-actions button:nth-child(2) {
+  border-color: var(--c-water);
+}
+.village-actions button:nth-child(3) {
+  border-color: var(--c-fire);
+}
+.village-secondary {
+  align-items: stretch;
+  padding-top: var(--sp-1);
+  border-top: var(--hairline) solid var(--c-line);
+}
+.village-secondary[hidden] {
+  display: none;
+}
+.village-secondary button {
+  flex-basis: 10rem;
+}
+.village-utilities {
+  justify-content: flex-end;
+  margin-top: var(--sp-1);
+}
+.village-utilities button {
+  flex: 0 1 10rem;
+  font-size: var(--fs-sm);
+}
+
+@media (max-width: 52rem), (orientation: portrait) {
+  .village-actions button,
+  .village-secondary button {
+    flex-basis: calc(50% - var(--sp-1));
+  }
+}
+
+/* Playable exploration: the world sits between one quiet header and one dock. */
+.explore-scene:not(.riverside-scene) .explore-bar {
+  gap: var(--sp-3);
+  padding: var(--sp-1) var(--sp-4);
+  min-height: var(--tap);
+  flex-wrap: nowrap;
+}
+.explore-bar .title-plate-name {
+  font-size: var(--fs-lg);
+}
+.explore-mode {
+  font-family: var(--font-display);
+  color: var(--c-ink-dim);
+}
+.explore-header-action {
+  background: transparent;
+  box-shadow: none;
+  border-color: transparent;
+  padding: var(--sp-1) var(--sp-2);
+}
+.explore-objective {
+  position: absolute;
+  left: var(--sp-4);
+  top: var(--sp-3);
+  z-index: var(--z-banner);
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-1);
+  max-width: min(27rem, 55%);
+  padding: var(--sp-2) var(--sp-3);
+  background: color-mix(in srgb, var(--c-panel-raised) 96%, transparent);
+  border: var(--hairline) solid var(--c-line);
+  border-radius: var(--radius);
+  box-shadow: var(--inset-edge);
+  pointer-events: none;
+}
+.explore-objective[hidden],
+.explore-map-corner[hidden] {
+  display: none;
+}
+.explore-objective .title-plate-objective {
+  white-space: normal;
+  font-size: var(--fs-md);
+  color: var(--c-ink);
+}
+.explore-map-corner {
+  position: absolute;
+  right: var(--sp-3);
+  top: var(--sp-3);
+  z-index: var(--z-banner);
+}
+.local-map-follow {
+  display: flex;
+  flex-direction: column;
+  position: relative;
+  width: 9rem;
+  padding: var(--sp-2);
+  gap: var(--sp-1);
+  font-size: var(--fs-xs);
+  border-radius: var(--radius);
+}
+.local-map {
+  display: block;
+  width: 100%;
+  max-height: 23rem;
+  background: var(--c-bg-deep);
+  border-radius: var(--radius);
+}
+.local-map-north {
+  position: absolute;
+  top: 0;
+  right: var(--sp-1);
+  color: var(--c-ink);
+  background: var(--c-panel);
+  padding: 0 var(--sp-1);
+  font-size: var(--fs-xs);
+}
+.local-ground {
+  fill: var(--c-bg);
+}
+.local-ground.terrain-grass {
+  fill: var(--c-earth);
+}
+.local-ground.terrain-wood,
+.local-ground.terrain-dirt {
+  fill: var(--c-line);
+}
+.local-ground.blocked {
+  fill: var(--c-ink-faint);
+}
+.local-ground.terrain-water_deep {
+  fill: var(--c-water);
+}
+.local-ground.terrain-pit {
+  fill: var(--c-ink);
+}
+.local-npc,
+.local-exit {
+  fill: var(--c-gold-hi);
+  stroke: var(--c-ink);
+  stroke-width: 0.12;
+}
+.local-exit.locked {
+  fill: var(--c-danger);
+}
+.local-party {
+  fill: var(--c-ok);
+  stroke: var(--c-paper-light);
+  stroke-width: 0.16;
+}
+.local-npc-label {
+  fill: var(--c-paper-light);
+  font-family: var(--font-body);
+  font-size: var(--local-map-label-size);
+  paint-order: stroke;
+  stroke: var(--c-ink);
+  stroke-width: var(--local-map-label-stroke);
+  stroke-linejoin: round;
+}
+@media (min-width: 53rem) and (orientation: landscape) {
+  .explore-dock.solo-party {
+    max-height: none;
+    overflow-y: visible;
+  }
+  [data-large-text='on'] .explore-dock.solo-party,
+  [data-large-text='huge'] .explore-dock.solo-party {
+    max-height: 42%;
+    overflow-y: auto;
+  }
+}
+.explore-scene:not(.riverside-scene) .explore-dock {
+  background: var(--c-panel);
+  padding: var(--sp-2);
+  gap: var(--sp-3);
+  box-shadow: var(--inset-edge);
+}
+.explore-scene:not(.riverside-scene) .roster {
+  flex: 1 1 50%;
+  background: none;
+  padding: 0;
+  gap: var(--sp-1);
+}
+.explore-scene:not(.riverside-scene) .roster-row {
+  padding: var(--sp-1);
+  flex-basis: 5.5rem;
+  min-width: 5.5rem;
+}
+.explore-scene:not(.riverside-scene) .roster-row .unit-portrait-frame {
+  margin-bottom: 0;
+}
+.explore-scene:not(.riverside-scene) .roster-player {
+  display: none;
+}
+.explore-scene:not(.riverside-scene) .roster-name {
+  font-size: var(--fs-sm);
+}
+.explore-scene:not(.riverside-scene) .explore-hud {
+  flex: 0 1 auto;
+  padding: 0;
+  background: none;
+}
+.explore-scene:not(.riverside-scene) .action-bar {
+  padding: 0;
+  border: 0;
+  background: none;
+  box-shadow: none;
+}
+.explore-scene:not(.riverside-scene) .action-row {
+  gap: var(--sp-2);
+  align-items: stretch;
+}
+.explore-scene:not(.riverside-scene) .action-button {
+  min-width: 5rem;
+  max-width: 8rem;
+  padding: var(--sp-2);
+}
+.explore-scene:not(.riverside-scene) .action-sub {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 100%;
+}
+@media (max-width: 52rem), (orientation: portrait) {
+  .explore-scene:not(.riverside-scene) .explore-bar {
+    gap: var(--sp-1);
+    padding-inline: var(--sp-2);
+    flex-wrap: wrap;
+  }
+  .explore-bar .title-plate-name {
+    flex: 1;
+  }
+  .explore-scene:not(.riverside-scene) .explore-dock {
+    gap: var(--sp-1);
+  }
+  .explore-scene:not(.riverside-scene) .roster {
+    flex: 0 0 auto;
+    border: 0;
+  }
+  .explore-scene:not(.riverside-scene) .explore-hud {
+    flex: 0 0 auto;
+  }
+  .explore-scene:not(.riverside-scene) .action-row > button {
+    flex: 1;
+    max-width: none;
+    min-width: var(--tap);
+  }
+  .explore-scene:not(.riverside-scene) .action-button .mark {
+    display: none;
+  }
+  .explore-objective {
+    left: var(--sp-2);
+    max-width: calc(100% - 8rem);
+    padding: var(--sp-2);
+  }
+  .explore-objective .title-plate-objective {
+    font-size: var(--fs-sm);
+  }
+  .local-map-follow {
+    width: 6.5rem;
+  }
+  .explore-map-corner {
+    right: var(--sp-2);
+  }
+}
+@media (max-width: 36rem) {
+  .explore-scene:not(.riverside-scene) .explore-bar {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 0;
+  }
+  .explore-bar .title-plate-name {
+    grid-column: 1 / -1;
+    padding: var(--sp-1) 0;
+  }
+  .explore-bar .spacer {
+    display: none;
+  }
+  .explore-header-action {
+    font-size: var(--fs-sm);
+    padding-inline: 0;
+  }
+  .explore-scene:not(.riverside-scene) .action-sub {
+    display: none;
+  }
+  .explore-scene:not(.riverside-scene) .roster-row .unit-portrait {
+    width: 2rem;
+    height: 2rem;
+  }
+}
+.local-ground.surface-water,
+.local-ground.surface-ice {
+  fill: var(--c-water-soft);
+}
+
+/* Portraits, contextual guidance and actions read as a single dock. */
+.explore-scene:not(.riverside-scene) .roster {
+  flex: 0 1 auto;
+  max-width: 52%;
+}
+.explore-scene:not(.riverside-scene) .roster-row {
+  flex-basis: 6.5rem;
+  min-width: 6.5rem;
+  text-align: center;
+}
+.explore-scene:not(.riverside-scene) .roster-row .unit-portrait {
+  width: 4.5rem;
+  height: 4.5rem;
+}
+.explore-scene:not(.riverside-scene) .roster-name {
+  font-size: var(--fs-md);
+}
+.explore-scene:not(.riverside-scene) .explore-hud {
+  flex: 1 1 0;
+  flex-direction: row;
+  align-items: center;
+  gap: var(--sp-4);
+}
+.explore-context {
+  display: flex;
+  flex: 1 1 10rem;
+  min-width: 0;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--sp-2);
+  text-align: center;
+  font-family: var(--font-display);
+  font-size: var(--fs-lg);
+}
+.explore-scene:not(.riverside-scene) .action-bar {
+  flex: 0 0 auto;
+}
+.explore-scene:not(.riverside-scene) .action-button {
+  min-height: 5.5rem;
+}
+
+/* Keep the corner ornaments inside scrollable dock children. Their normal
+ * negative offset is decorative, but it becomes a four-pixel scrollbar when
+ * a one-member dock is the exact height of the viewport. Six-member rosters
+ * still scroll horizontally; only the ornament stops contributing false
+ * overflow. */
+.explore-scene:not(.riverside-scene) .roster-row::before,
+.explore-scene:not(.riverside-scene) .action-bar::before {
+  top: 0;
+  left: 0;
+}
+
+.explore-scene:not(.riverside-scene) .roster-row::after,
+.explore-scene:not(.riverside-scene) .action-bar::after {
+  right: 0;
+  bottom: 0;
+}
+
+@media (max-width: 72rem) and (orientation: landscape) {
+  .explore-context {
+    font-size: var(--fs-md);
+  }
+  .explore-context > .mark,
+  .explore-context > .tiny {
+    display: none;
+  }
+  .explore-scene:not(.riverside-scene) .roster {
+    max-width: 45%;
+  }
+  .explore-scene:not(.riverside-scene) .explore-hud {
+    gap: var(--sp-2);
+  }
+}
+@media (max-width: 52rem), (orientation: portrait) {
+  .explore-scene:not(.riverside-scene) .roster {
+    flex: 0 0 auto;
+    max-width: none;
+  }
+  .explore-scene:not(.riverside-scene) .explore-hud {
+    flex: 0 0 auto;
+    flex-direction: column;
+    gap: var(--sp-1);
+  }
+  .explore-context {
+    flex: 0 0 auto;
+    font-size: var(--fs-sm);
+  }
+  .explore-context > .mark,
+  .explore-context > .tiny {
+    display: none;
+  }
+  .explore-scene:not(.riverside-scene) .action-bar {
+    width: 100%;
+  }
+  .explore-scene:not(.riverside-scene) .action-button {
+    min-height: var(--tap);
+  }
+}
+@media (max-width: 36rem) {
+  .explore-scene:not(.riverside-scene) .roster-row {
+    flex-basis: 5.5rem;
+    min-width: 5.5rem;
+  }
+  .explore-scene:not(.riverside-scene) .roster-row .unit-portrait {
+    width: 3rem;
+    height: 3rem;
+  }
+}
+
+/* Movement status belongs in the decision dock, leaving the world unobstructed. */
+.explore-context .walk-feedback {
+  position: static;
+  padding: 0;
+  background: none;
+  justify-content: center;
+  font-size: var(--fs-md);
+}
+
+/* Keep combat controls beside the actor summary whenever touch targets fit. */
+.combat-scene .hud {
+  flex-direction: row;
+  flex-wrap: wrap;
+  max-height: 40dvh;
+  overflow-y: auto;
+}
+.combat-scene .action-bar > .confirm-bar {
+  margin: 0;
+  flex-shrink: 0;
+}
+.combat-scene .unit-panel {
+  flex: 1 1 12rem;
+  min-width: 0;
+}
+.combat-scene .action-bar {
+  flex: 3 1 24rem;
+  min-width: 0;
+}
+
+@media (max-width: 36rem) {
+  .combat-scene .combat-bar {
+    flex-wrap: nowrap;
+    overflow-x: auto;
+  }
+  .combat-scene .combat-bar > * {
+    flex-shrink: 0;
+  }
+  .combat-scene .hud {
+    max-height: 40dvh;
+    overflow-y: auto;
+  }
 }

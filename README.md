@@ -1,7 +1,7 @@
 # Four Nations Tactics
 
 A hot-seat, turn-based tactical RPG for the family — grid combat, action points,
-and elemental terrain reactions, in an original era a few decades after Korra.
+and elemental terrain reactions, in an original setting after Korra.
 Up to six players share one tablet; each picks an element and a character and
 levels up across a branching story.
 
@@ -34,6 +34,14 @@ Other scripts:
 
 ## Playing on the Surface
 
+The title screen shows the package version and build commit, for example
+`v0.1.0 · build 5e9b206`. The commit changes with each deployed revision even when
+the package version stays the same. This label belongs to the code actually
+running, including an older offline-cached build; it is not a claim about the
+latest remote deployment. Compare it with the commit of a successful Pages
+deployment. Local builds with tracked edits append `-modified`; builds without
+Git metadata show `local`.
+
 The game is a PWA. After a deploy, open it in Edge, then **Settings → Apps →
 Install this site as an app** so it launches full-screen in landscape and works
 offline (the service worker caches the whole build — no network needed once it
@@ -56,6 +64,22 @@ Recommended before handing it to kids:
 Saves live in `localStorage` (3 slots + an autosave). Because that is per-browser
 and per-device, use **Pause → Export save** to get a `.json` file before
 switching devices or clearing browser data, and **Import save** on the other end.
+
+## Playing on an iPad
+
+Open the deployed URL in Safari, then **Share → Add to Home Screen**. The icon
+launches the game full-screen and it keeps working offline. On the board:
+
+- **Pinch** to zoom in on a fight, **drag** to pan while zoomed, and tap
+  **Recentre** in the top bar to see the whole board again.
+- **Long-press** a unit for the inspector; the iOS copy sheet stays out of the way.
+- **Tap** a turn-strip chip or a status chip to read what a hover would show.
+- **Portrait** works: the HUD stacks under the map, and the board fits at a
+  tappable tile size or pans if it cannot. Landscape is still the better way to
+  play with six people round a table.
+
+iPads have no vibration motor the browser can reach, so the long-press buzz is
+Surface-only. The full checklist for a new device is in `docs/device-matrix.md`.
 
 ## How a session runs
 
@@ -175,8 +199,12 @@ src/core/     Pure rules. No DOM, no Math.random, no Date.now.
               Runs in Node, which is what makes the simulator and tests possible.
 src/content/  Data only: abilities, characters, enemies, maps, story, assets.
               Validated by zod at load time *and* in a CI test.
-src/render/   Canvas 2D drawing. One Renderer interface owns the 2D context.
+src/render/   Drawing. One Renderer facade over two backends: WebGL (Pixi)
+              where it is accelerated, Canvas 2D otherwise. Draws a view
+              model built in src/app, never game state.
 src/app/      Scenes, HUD, hot-seat, storage. May import anything.
+docs/         The roadmap, the decision records, the art bible and the
+              device matrix.
 ```
 
 Data flows one way:
@@ -193,7 +221,54 @@ That is deliberate: if we ever want phones-as-controllers, the rules do not chan
 
 Every drawn thing goes through `src/content/assets/manifest.ts`. Today each entry
 points at a code-drawn painter (vector shapes on the nation palette). Pointing an
-entry at an image URL instead swaps that art in with **no code changes**.
+entry at an image URL instead swaps that art in with **no code changes**:
+
+```ts
+'portrait.kaya': { kind: 'image', url: 'art/portraits/kaya.png', palette: 'fire' },
+```
+
+Put the file under `public/` (so `public/art/portraits/kaya.png` here) and keep the
+`palette`: it is what tints the dialogue backdrop and the HUD chrome to the
+speaker's element. Portraits are 512×512 busts on parchment, composed for a
+circular crop; the spec is `docs/art-bible.md` and the prompt packs are under
+`docs/art/prompts/`. While the bitmap loads, the painter draws in its place, and if
+it fails to load the painter stays, so a missing file never shows as nothing.
+
+A unit's animated art is a **sheet** (`docs/adr/0003-asset-contract.md`): an atlas
+PNG of key poses plus its JSON, two idle poses and three cast poses at least, drawn
+facing right and mirrored for the other side. Point the unit's key at it:
+
+```ts
+'unit.fire.kaya': {
+  kind: 'sheet',
+  atlas: 'art/units/kaya.json',
+  pixelsPerTile: 128,
+  footprint: { w: 1, h: 1 },
+  anchor: { x: 0.5, y: 0.85 },
+  facing: 'mirror',
+  palette: 'fire',
+  clips: {
+    idle: { frames: ['unit.fire.kaya/idle/0', 'unit.fire.kaya/idle/1'], fps: 1, loop: true },
+    cast: { frames: ['unit.fire.kaya/cast/0', 'unit.fire.kaya/cast/1', 'unit.fire.kaya/cast/2'], fps: 8, loop: false },
+  },
+},
+```
+
+Until a key has a sheet, the game bakes one from the key's painter, so every unit
+already animates through the same runtime; `unit.test.probe` is a committed atlas of
+flat colours the e2e suite draws to prove the path.
+
+A map can carry a **painting** (`docs/adr/0009-map-paintings.md`), drawn under the
+rules grid in place of the procedural ground while the live surfaces, the grid lines,
+the units and the effects keep drawing over it:
+
+```ts
+backdrop: { url: 'art/maps/forest_road.webp', pixelsPerTile: 96 },
+```
+
+The prompt pack and the layout image for every map are under
+`docs/art/prompts/maps/`, and `npm run art:map` turns a generated painting into the
+WebP the line above points at.
 
 ## Difficulty, and how it scales to your table
 
@@ -285,6 +360,12 @@ Real tuning happens after the kids play it. These are the numbers to argue with.
 ## Contributing notes
 
 - `npm run verify` must be green before pushing.
+- CI runs for pull requests, `main` pushes and manual dispatch; feature pushes
+  do not also start a duplicate run. Required browser/gallery suites wait for
+  verification to pass, and all three required checks still gate merging.
+- Normal Pages deployments build the game only. Download the seven-day CI
+  gallery artifact for review; optional manual Pages gallery publication is
+  described in [the gallery guide](docs/gallery.md).
 - Content is validated in CI, including dangling story `next` ids and ability
   references — a typo in `src/content/**` fails the build rather than the game.
 - The simulator test asserts every encounter terminates, produces no NaN or
@@ -319,6 +400,14 @@ Real tuning happens after the kids play it. These are the numbers to argue with.
 - **Phase 2** — world map, Fire Nation outpost, Water Tribe and Air Temple arcs,
   more enemy types, equipment. Planned. (Deliberately _after_ 1.5: authoring
   three arcs against the old schemas and retrofitting branching afterwards would
-  mean authoring them twice.)
-- **Phase 3** — tweened animation, particle FX, audio, commissioned art, haptics.
-  Planned.
+  mean authoring them twice, and _after_ A2 below so new enemies are authored
+  against the asset contract.)
+- **Phase 3** — cross-device, art and animation, in stages (`docs/roadmap.md`):
+  **A1** device foundation — pinch and pan, iPad standalone, portrait,
+  device-resolution sprites, WebKit iPad tests. ✅ **P** presentation — a
+  display face, design tokens, ink-and-parchment surfaces, backdrops, dialogue
+  staged as a visual novel, scene motion (P1 ✅; P2 combat HUD and P3 board
+  atmosphere follow). **A2** asset contract and
+  placeholder pipeline. **A3** choreography, camera and particle effects.
+  **B** pilot art (portraits, one hero, one enemy, fire). **C** full art pass.
+  **D** audio and polish. The engine stays Pixi v8 (`docs/adr/0001`).

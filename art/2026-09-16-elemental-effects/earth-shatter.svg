@@ -1,0 +1,22 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="256" height="256" viewBox="0 0 256 256" role="img" aria-label="Angular green earth slabs erupting from fractured stone">
+  <g stroke="#1b1410" stroke-width="5" stroke-linecap="round" stroke-linejoin="round">
+    <path fill="#8d7d69" d="M18 175L65 160L115 171L161 157L236 177L220 209L171 223L115 212L69 228L23 211Z"/>
+    <path fill="#6f9e4c" d="M18 175L65 160L115 171L161 157L236 177L192 190L149 184L113 197L65 184Z"/>
+    <path fill="#a8c686" d="M65 160L115 171L93 182L65 184L39 175Z" stroke-width="3"/>
+    <path fill="#6f9e4c" d="M93 169L116 95L157 64L187 105L171 164L139 187Z"/>
+    <path fill="#a8c686" d="M116 95L157 64L165 101L142 153L93 169Z"/>
+    <path fill="#8d7d69" d="M142 153L165 101L187 105L171 164L139 187Z"/>
+    <path fill="#6f9e4c" d="M49 153L28 96L67 67L97 117L93 169L69 181Z"/>
+    <path fill="#a8c686" d="M28 96L67 67L78 113L49 153Z"/>
+    <path fill="#8d7d69" d="M78 113L97 117L93 169L69 181L49 153Z"/>
+    <path fill="#6f9e4c" d="M170 67L183 24L211 37L217 76L194 96Z"/>
+    <path fill="#a8c686" d="M183 24L211 37L194 64L170 67Z"/>
+    <path fill="#8d7d69" d="M194 64L211 37L217 76L194 96L170 67Z"/>
+    <path fill="#6f9e4c" d="M22 61L38 30L65 39L70 66L43 83Z"/>
+    <path fill="#a8c686" d="M38 30L65 39L43 55L22 61Z"/>
+    <path fill="#8d7d69" d="M43 55L65 39L70 66L43 83L22 61Z"/>
+    <path fill="#6f9e4c" d="M204 134L230 109L243 135L229 158Z"/>
+    <path fill="#a8c686" d="M230 109L243 135L220 141L204 134Z" stroke-width="3"/>
+    <path fill="none" d="M115 197L105 213M149 184L159 205M65 184L54 204M192 190L209 198" stroke-width="4"/>
+  </g>
+</svg>

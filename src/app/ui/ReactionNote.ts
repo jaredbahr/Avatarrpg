@@ -68,6 +68,28 @@ export function reactionNotes(
     if (entry.kind === 'reaction') classes.push('reaction-fires');
     if (chains) classes.push('reaction-chain');
 
+    /*
+     * A plain paint has no rule sentence to teach. Its generated label says
+     * "Ice spreads across the ground" and its result immediately repeats
+     * "Ice on 4 tiles". Keep the exact footprint and footing in one compact
+     * line; reaction entries still get the full combo sentence below.
+     */
+    if (entry.kind === 'paint' && !chains && entry.caught.length === 0) {
+      const result = describeResult(content, entry);
+      notes.push(
+        el(
+          'div',
+          {
+            class: `${classes.join(' ')} reaction-paint`,
+            title: entry.label,
+            attrs: { 'aria-label': `${entry.label} ${result}` },
+          },
+          el('span', { class: 'tiny reaction-result', text: result }),
+        ),
+      );
+      continue;
+    }
+
     const note = el(
       'div',
       { class: classes.join(' ') },

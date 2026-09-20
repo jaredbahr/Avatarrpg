@@ -1,8 +1,14 @@
+import { paintedTileCentre, groundPoint } from './projection';
 import { expect, test } from '@playwright/test';
+import { CONTENT } from '../src/content';
+import { RngCursor } from '../src/core/rng';
+import { reachable } from '../src/core/rules/grid';
+import { BattleDraft } from '../src/core/state/battleDraft';
 import {
   battleActive,
   enterNode,
   resetStorage,
+  settleLayout,
   snapshot,
   startGame,
   takeTurn,
@@ -90,14 +96,40 @@ test.describe('a session', () => {
     expect(before.screen).toBe('combat');
     expect(before.round).toBe(1);
 
-    // Move: pick the action, tap a tile, confirm.
+    // Move: choose a tile the real rules say is reachable, tap it, confirm.
+    // A fixed screen fraction can land behind another unit as the battle changes.
     await waitForIdle(page);
     await page.getByRole('button', { name: /^Move/ }).click();
-    const map = await page.locator('.map-canvas').boundingBox();
-    expect(map).not.toBeNull();
-    if (!map) return;
-    await page.mouse.click(map.x + map.width * 0.3, map.y + map.height * 0.5);
+    const view = await page.evaluate(() => {
+      const app = window.fnt?.app;
+      const canvas = document.querySelector<HTMLCanvasElement>('.map-canvas');
+      const camera = app?.rendererCamera();
+      const battle = app?.state?.battle;
+      if (!app || !canvas || !camera || !battle) return null;
+      const rect = canvas.getBoundingClientRect();
+      return {
+        battle,
+        rng: app.state?.rng ?? 0,
+        camera,
+        rect: { x: rect.x, y: rect.y, width: rect.width, height: rect.height },
+      };
+    });
+    expect(view).not.toBeNull();
+    if (!view) return;
+    const draft = new BattleDraft(CONTENT, view.battle, new RngCursor(view.rng));
+    const actingId = draft.order[draft.turnIndex];
+    const acting = actingId ? draft.unit(actingId) : null;
+    expect(acting).toBeTruthy();
+    if (!acting) return;
+    const target = [...reachable(draft.moveContext(acting), acting.pos, acting.move).values()].find(
+      (cell) => cell.pos.x !== acting.pos.x,
+    );
+    expect(target, 'no reachable tile changes the acting unit’s x position').toBeTruthy();
+    if (!target) return;
+    const targetPoint = groundPoint(view.camera, { x: target.pos.x + 0.5, y: target.pos.y + 0.5 });
+    await page.mouse.click(view.rect.x + targetPoint.x, view.rect.y + targetPoint.y);
     await expect(page.locator('.confirm-bar')).toBeVisible();
+    await expect(page.getByRole('button', { name: /^Confirm$/ })).toBeEnabled();
     await page.getByRole('button', { name: /^Confirm$/ }).click();
 
     await expect
@@ -215,6 +247,23 @@ test.describe('a session', () => {
     const rockThrow = page.getByRole('button', { name: /rock throw/i });
     await expect(rockThrow).toBeVisible();
     await rockThrow.click();
+    // The aim hint changes the iPad map height. Wait for ResizeObserver and
+    // backing-store presentation before projecting a tile into page pixels.
+    await settleLayout(page);
+    await expect
+      .poll(() =>
+        page.evaluate(() => {
+          const canvas = document.querySelector<HTMLCanvasElement>('.map-canvas');
+          if (!canvas) return false;
+          const rect = canvas.getBoundingClientRect();
+          const dpr = Math.min(3, window.devicePixelRatio || 1);
+          return (
+            Math.abs(canvas.width / dpr - rect.width) < 1 &&
+            Math.abs(canvas.height / dpr - rect.height) < 1
+          );
+        }),
+      )
+      .toBe(true);
 
     const target = await page.evaluate(() => {
       const battle = window.fnt?.app.state?.battle;
@@ -232,17 +281,7 @@ test.describe('a session', () => {
     if (!target) return;
 
     // Tap the enemy's tile on the canvas, exactly as a player would.
-    const screenPoint = await page.evaluate((pos) => {
-      const canvas = document.querySelector('.map-canvas');
-      const camera = window.fnt?.app.rendererCamera?.();
-      if (!canvas || !camera) return null;
-      const rect = canvas.getBoundingClientRect();
-      const size = camera.tilePx;
-      return {
-        x: rect.left + pos.x * size - camera.offsetX + size / 2,
-        y: rect.top + pos.y * size - camera.offsetY + size / 2,
-      };
-    }, target.pos);
+    const screenPoint = await paintedTileCentre(page, target.pos);
 
     expect(screenPoint, 'could not map the target tile to the screen').not.toBeNull();
     if (!screenPoint) return;

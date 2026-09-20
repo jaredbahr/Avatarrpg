@@ -24,6 +24,8 @@ import type {
 import { awardXp } from '../rules/leveling';
 import { createBattle } from '../state/createGame';
 import { adjustStanding, evaluate, getStanding } from './conditions';
+import { buildGrid, tileAt } from '../rules/grid';
+import { encounterText } from './encounterText';
 
 const MAX_CHAIN = 32;
 
@@ -134,7 +136,16 @@ export function enterStoryNode(
   nodeId: string,
 ): StepResult {
   const events: GameEvent[] = [];
-  let current = state;
+  let current =
+    state.screen === 'explore'
+      ? {
+          ...state,
+          world: {
+            ...state.world,
+            returnPos: { ...state.world.returnPos, [state.location.mapId]: state.location.pos },
+          },
+        }
+      : state;
   let target = nodeId;
 
   for (let step = 0; step < MAX_CHAIN; step++) {
@@ -185,9 +196,13 @@ export function enterStoryNode(
 
       case 'explore': {
         events.push({ type: 'screenChanged', screen: 'explore' });
+        const map = content.maps.get(node.mapId);
+        const remembered = current.world.returnPos[node.mapId];
+        const candidate =
+          remembered ?? (current.location.mapId === node.mapId ? current.location.pos : undefined);
         const pos =
-          current.location.mapId === node.mapId
-            ? current.location.pos
+          candidate && map && tileAt(buildGrid(map), candidate)?.blocked === false
+            ? candidate
             : exploreStart(content, node.mapId);
         return {
           state: {
@@ -206,7 +221,8 @@ export function enterStoryNode(
         const battle = createBattle(content, current, node.encounterId, rng);
         const encounter = content.encounters.get(node.encounterId);
         events.push({ type: 'battleStarted', encounterId: node.encounterId });
-        if (encounter) events.push({ type: 'message', text: encounter.intro });
+        if (encounter)
+          events.push({ type: 'message', text: encounterText(encounter, battle.variantId).intro });
         events.push({ type: 'screenChanged', screen: 'combat' });
         events.push({ type: 'roundStarted', round: 1 });
         return {

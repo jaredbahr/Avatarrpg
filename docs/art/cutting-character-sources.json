@@ -1,0 +1,48 @@
+{
+  "tool": "Built-in OpenAI image generation",
+  "date": "2026-09-19",
+  "sources": [
+    {
+      "path": "assets/reference/cutting-characters/merc-combat.png",
+      "generatorFilename": "exec-a59abde4-2488-40ff-9709-611a0a055057.png",
+      "sha256": "110ed7d0c507a242fb6d58bf735ecfcb67fd415fb4c090b23663b038a3c1eeb6",
+      "bytes": 1876761
+    },
+    {
+      "path": "assets/reference/cutting-characters/merc-near-passing.png",
+      "generatorFilename": "exec-f3604768-7b43-43ef-88a8-50685a319c06.png",
+      "sha256": "a4100996b605b3c7d84c3e469372e84d764f9396df378a1fda726200751f6ca3",
+      "bytes": 1299729
+    },
+    {
+      "path": "assets/reference/cutting-characters/merc-walk.png",
+      "generatorFilename": "exec-6edb6ac3-6bfd-40f3-9f03-1277e9f4d499.png",
+      "sha256": "6ebe14a71c552d63d15efd1fc1276647ec2c8f0f2b84e9e049d30b3b68cf5340",
+      "bytes": 1761074
+    },
+    {
+      "path": "assets/reference/cutting-characters/ruon-combat.png",
+      "generatorFilename": "exec-7d1f6e12-62e5-4334-be8c-5b8930e773c6.png",
+      "sha256": "1082185bc1371fb6f5acef069893215b409bb6fbbad542abd98dd9b3ced29fae",
+      "bytes": 1886054
+    },
+    {
+      "path": "assets/reference/cutting-characters/ruon-walk.png",
+      "generatorFilename": "exec-d5e3a1fe-1f46-4407-b69e-7c48ffd51464.png",
+      "sha256": "f892d077f658e32507082c5bbe2e7436027434291e875caa75d976d97dbb9dd2",
+      "bytes": 1769109
+    },
+    {
+      "path": "assets/reference/cutting-characters/sergeant-combat.png",
+      "generatorFilename": "exec-b287d8fa-23c5-455a-8ca4-9c16971e9c29.png",
+      "sha256": "856e1f96aacc985bcf3e60525d954c44377a46bfa6383265a96613cc5af9b870",
+      "bytes": 2003640
+    },
+    {
+      "path": "assets/reference/cutting-characters/sergeant-walk.png",
+      "generatorFilename": "exec-727f55c0-66db-4b0b-a7dc-1642f840c80a.png",
+      "sha256": "db95e1576dd9fadecb339cebf506d1f156885b1671292de3f33465eb149067c7",
+      "bytes": 1882683
+    }
+  ]
+}

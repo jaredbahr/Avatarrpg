@@ -211,6 +211,8 @@ export interface Unit {
   readonly move: number;
   /** Unused AP carried into the next turn: 1 per turn, capped at 6 total AP. */
   readonly bankedAp: number;
+  /** Off-turn support bonus, consumed at the next activation (including a skip). */
+  readonly pendingAp: number;
 
   readonly base: UnitStats;
   readonly abilities: readonly string[];
@@ -538,6 +540,10 @@ export interface NpcDef {
   readonly name: string;
   readonly pos: Vec2;
   readonly sprite: string;
+  /** Optional map guidance semantic for a non-person route marker. */
+  readonly interaction?: 'route-sign';
+  /** Optional story condition for maps that reveal a person or landmark later. */
+  readonly when?: Condition;
   /** Story node entered when the NPC is tapped, if no route matches. */
   readonly node: string;
   /**
@@ -551,7 +557,29 @@ export interface NpcDef {
   readonly routes?: readonly { readonly when: Condition; readonly node: string }[];
 }
 
+export interface MapExit {
+  readonly pos: Vec2;
+  readonly toMapId: string;
+  readonly toPos: Vec2;
+  readonly label: string;
+  readonly requires?: Condition;
+  readonly lockedHint?: string;
+}
+
+export interface MapTrigger {
+  readonly id: string;
+  readonly area: readonly Vec2[];
+  readonly label: string;
+  readonly sprite: string;
+  readonly node: string;
+  readonly when?: Condition;
+  readonly once: boolean;
+}
+
 export interface MapDef {
+  /** Draw-time projection; rule coordinates and saves stay on the logical grid. */
+  readonly projection?: 'oblique';
+  readonly scene?: MapScene;
   readonly id: string;
   readonly name: string;
   readonly kind: 'combat' | 'explore';
@@ -565,8 +593,80 @@ export interface MapDef {
   /** Barrels, flasks, carts. Instantiated into `BattleState.props` per battle. */
   readonly props: readonly PropPlacement[];
   readonly ambience: string;
+  /** Map-owned routes and walk-over events; independent of the story cursor. */
+  readonly exits?: readonly MapExit[];
+  readonly triggers?: readonly MapTrigger[];
+  readonly objective?: string;
+  /** First matching objective wins; the plain objective is the fallback. */
+  readonly objectiveVariants?: readonly { readonly when: Condition; readonly text: string }[];
   /** Explore maps only: stepping here advances the current story node. */
   readonly exit?: { readonly pos: Vec2; readonly label: string };
+  /**
+   * A painting drawn under the rules grid in place of the procedural ground,
+   * once one exists for the map (ADR 0009). Presentation only, like
+   * `ambience`: nothing in the rules reads it.
+   */
+  readonly backdrop?: MapBackdrop;
+}
+
+/**
+ * A map painting: a site-relative URL and how many of its pixels span one
+ * tile, so the image is `width * pixelsPerTile` by `height * pixelsPerTile`.
+ */
+export interface MapBackdrop {
+  readonly url: string;
+  readonly pixelsPerTile: number;
+  /** Tagged oblique paintings are already projected, including upright scenery. */
+  readonly projection?: 'oblique';
+  readonly padding?: {
+    readonly left: number;
+    readonly top: number;
+    readonly right: number;
+    readonly bottom: number;
+  };
+}
+
+/** Calibrated projected pixel rectangles: upright art is never ground-skewed. */
+export interface SceneImage {
+  readonly url: string;
+  /** Optional atlas crop in source-image pixels; excludes packing gutters. */
+  readonly sourceRect?: {
+    readonly x: number;
+    readonly y: number;
+    readonly width: number;
+    readonly height: number;
+  };
+  readonly x: number;
+  readonly y: number;
+  readonly width: number;
+  readonly height: number;
+}
+
+export interface SceneScenery extends SceneImage {
+  readonly id: string;
+  readonly footprint: readonly Vec2[];
+  readonly depth: Vec2;
+  /** True for decorative rim pieces whose logical footprint sits outside the map. */
+  readonly exterior?: boolean;
+  /**
+   * When set, render only while every footprint tile is an authored wall in
+   * the loaded battle grid. This keeps newer scenery out of older saves.
+   */
+  readonly wall?: boolean;
+  readonly fadeWhenOccluding?: boolean;
+  /** Connected depth slices share the lowest cutaway opacity within this scene. */
+  readonly fadeGroup?: string;
+}
+
+export interface MapScene {
+  /** Ground art includes the permanent water cells and their banks. Dynamic surfaces still draw. */
+  readonly paintedWater?: boolean;
+  /** Partial ground art does not claim coverage of any permanent surface. */
+  readonly groundMode?: 'partial';
+  /** Exact cells whose permanent rubble is already represented by registered art. */
+  readonly paintedRubble?: readonly Vec2[];
+  readonly ground: readonly SceneImage[];
+  readonly scenery: readonly SceneScenery[];
 }
 
 /* ------------------------------------------------------------------ */
@@ -727,6 +827,14 @@ export type StoryNode =
       readonly kind: 'explore';
       readonly mapId: string;
       readonly objective: string;
+      /** Optional structured target for objective-aware map guidance. */
+      readonly objectiveNpcId?: string;
+      /** First matching objective text/target wins after the node is revisited. */
+      readonly objectiveVariants?: readonly {
+        readonly when: Condition;
+        readonly text: string;
+        readonly objectiveNpcId?: string | null;
+      }[];
       /** Entered when the player reaches the map's exit marker. */
       readonly next: string;
     }
@@ -755,6 +863,8 @@ export type StoryNode =
       readonly title: string;
       readonly lines: readonly string[];
       readonly teaser: string;
+      /** Explore node offered after this chapter's summary; absent for a terminal ending. */
+      readonly next?: string;
     };
 
 export interface StoryState {
@@ -833,6 +943,11 @@ export interface GameState {
   readonly flags: Readonly<Record<string, FlagValue>>;
   readonly pendingChoices: readonly PendingChoice[];
   readonly location: { readonly mapId: string; readonly pos: Vec2 };
+  readonly world: {
+    readonly returnPos: Readonly<Record<string, Vec2>>;
+    readonly fired: readonly string[];
+    readonly cleared: readonly string[];
+  };
   /** Human-readable combat log, newest last. Capped by the reducer. */
   readonly log: readonly string[];
 }
@@ -875,6 +990,17 @@ export type GameEvent =
       readonly unitId: string;
       readonly path: readonly Vec2[];
       readonly cost: number;
+    }
+  | {
+      /**
+       * The party crossed tiles on an explore map: the leader's id, the tile
+       * it stood on and the route it walked, so the walk can be seen rather
+       * than the party appearing at the far end. Nothing in the rules reads it.
+       */
+      readonly type: 'partyWalked';
+      readonly unitId: string;
+      readonly from: Vec2;
+      readonly path: readonly Vec2[];
     }
   | {
       readonly type: 'abilityUsed';

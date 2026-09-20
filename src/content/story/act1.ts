@@ -11,7 +11,7 @@
  *   trade him   -> `ruon_traded`, no ambush, but Jin's mercenaries are waiting
  *                  at the boss and Gao the shopkeeper will not look at you
  *
- * Neither option is the "good" one. That is the point.
+ * Choice descriptions state the consequences; the players judge Ruon themselves.
  */
 
 import type { StoryNode } from '../../core/types';
@@ -24,9 +24,9 @@ export const ACT1_NODES: readonly StoryNode[] = [
     speaker: 'Ba Dan',
     portrait: 'portrait.narrator',
     lines: [
-      'Forty years after the Avatar Korra, the outer Earth Kingdom provinces run themselves — mostly well, and mostly quietly.',
-      'Ba Dan is a stone village. It has always been a stone village. The quarry above it has sent down a cart of cut blocks every week for three generations.',
-      'It has now sent nothing for a month.',
+      'Ba Dan lies below a limestone quarry, its houses built from the same pale stone as the hill.',
+      'Every week, a cart of cut stone comes down from the quarry. Gao opens his shop early for the crew; by noon, the whole square is white with dust.',
+      'The cart has not come for a month. Elder Mira has asked you to find out why her messengers have not come home.',
     ],
     next: 'village_explore',
   },
@@ -37,6 +37,14 @@ export const ACT1_NODES: readonly StoryNode[] = [
     kind: 'explore',
     mapId: 'ba_dan_village',
     objective: 'Talk to Elder Mira, then take the east road to the quarry.',
+    objectiveNpcId: 'elder_mira',
+    objectiveVariants: [
+      {
+        when: { kind: 'visited', nodeId: 'mira_intro' },
+        text: 'Take the east road to the quarry. You can speak with the neighbors before you leave.',
+        objectiveNpcId: null,
+      },
+    ],
     next: 'road_depart',
   },
 
@@ -46,10 +54,10 @@ export const ACT1_NODES: readonly StoryNode[] = [
     speaker: 'Elder Mira',
     portrait: 'portrait.mira',
     lines: [
-      'You came. Good. I will not pretend we can pay you much.',
-      'The quarry stopped a month ago. No carts, no word, and the four people I sent up to ask have not come back down.',
-      'Whatever is up there, it is not a rockfall. Rockfalls do not post guards on the gate.',
-      'Find out what it is. Bring my people home if you can.',
+      'Come in. There is rice if you have not eaten. We need to talk about the quarry.',
+      'No carts for a month. I sent four people to find out why. None came home.',
+      'Dorin went as far as the gate yesterday. They have guards now. Would not let him through.',
+      'I can offer you food and a bed here. I wish it were more. Will you look for our people?',
     ],
     next: 'village_explore',
   },
@@ -59,11 +67,29 @@ export const ACT1_NODES: readonly StoryNode[] = [
     speaker: 'Elder Mira',
     portrait: 'portrait.mira',
     lines: [
-      'The first cart came down this morning. Cut stone, stacked properly, the way it has been for sixty years.',
-      'Whatever you did up there — thank you.',
-      'Rest. There is more road after this one, and I think you already know it.',
+      'Bo-shan came through the gate ahead of you. Pella has not let go of his sleeve.',
+      'Bo-shan and all four messengers are home. I have counted everyone twice. They keep telling me to stop.',
+      'You can stay as long as you need. Leave your washing by the door.',
     ],
-    next: 'village_explore',
+    next: 'village_return_explore',
+    variants: [
+      {
+        when: { kind: 'flag', key: 'ruon_spared', op: 'set' },
+        lines: [
+          'Bo-shan and all four messengers are home. I have counted everyone twice. They keep telling me to stop.',
+          'Dorin is taking Ruon’s statement. Bring me the maker-plate rubbing too; I’ll attach both to the province report.',
+          'You can stay too. Gao has food ready, and I will find you a bed.',
+        ],
+      },
+      {
+        when: { kind: 'flag', key: 'ruon_traded', op: 'set' },
+        lines: [
+          'Bo-shan and all four messengers are home. Thank you for bringing them out.',
+          'I wish Ruon were here to answer their questions. I will write to the province and ask where Jin delivered him.',
+          'Bring me the maker-plate rubbing too; the province should know what the quarry was running. For now, go and eat.',
+        ],
+      },
+    ],
   },
   {
     id: 'gao_friendly',
@@ -71,9 +97,10 @@ export const ACT1_NODES: readonly StoryNode[] = [
     speaker: 'Gao the Shopkeeper',
     portrait: 'portrait.gao',
     lines: [
-      'Heading up the hill, are you? Take the water skins. No, take them — I would rather be out two coppers than short four neighbours.',
-      'And mind the road. There are puddles all along the cutting after the rain. Step in one and you will be soaked through.',
-      'Mind you, so will whoever you are fighting.',
+      'For the quarry? Water skins are by the door. Take one. You can pay me when everyone is home.',
+      'Check the stopper. Dorin brought one back empty and told me it leaked. I filled it, turned it upside down, and we stood there watching it.',
+      'Then he asked if I had any more water.',
+      'The cutting is flooded in places. Mind your footing, especially if there is a fight.',
     ],
     next: 'village_explore',
   },
@@ -83,9 +110,9 @@ export const ACT1_NODES: readonly StoryNode[] = [
     speaker: 'Gao the Shopkeeper',
     portrait: 'portrait.gao',
     lines: [
-      'You sold a man. To Jin.',
-      'I do not care what he did. I care that you handed a person over for a key, and then walked into my shop like it was a Tuesday.',
-      'Prices are double. Pay or get out.',
+      'Jin came through with Ruon. Rope round his wrists.',
+      'He should answer for what happened up there. Here, where the families can hear him. What is Jin going to do with him?',
+      "No. Leave the water skins on the counter. We're done.",
     ],
     next: 'village_explore',
   },
@@ -104,11 +131,11 @@ export const ACT1_NODES: readonly StoryNode[] = [
     speaker: 'Pella',
     portrait: 'portrait.pella',
     lines: [
-      'Are you the ones going up the quarry? Can I come? No? Fine.',
-      'My brother says the trick in a fight is that the ground does the work. Puddles, fire, mud — all of it counts.',
-      'He says if someone is standing in water and you hit them with lightning, the whole puddle goes. He says he saw it once. I think he is lying, but you should check.',
-      'His name is Bo-shan. He drives the produce cart up to the quarry crews on a Tuesday and he has not come back either, and Elder Mira keeps saying "the four people" like he is not one of them.',
-      'If you see a cart with too many cabbages on it, that is his. He stacks them stupidly. Tell him I said so.',
+      "You're going to the quarry? I can show you the way. I know it. Mira keeps saying I'm too little.",
+      'My brother took vegetables up before Mira sent the others. Bo-shan. That makes five missing. He was supposed to be back on Tuesday.',
+      'He says a lightning strike can go right across a puddle. He saw it happen to a whole crew. He also says he can lift an ostrich-horse, so I would ask someone else.',
+      'Mira says “the missing people” every time. She could say his name. She knows his name.',
+      "Look for the cart with cabbages piled above the seat. Tell him I'm not doing his chores again this week.",
     ],
     next: 'pella_asked',
   },
@@ -124,8 +151,8 @@ export const ACT1_NODES: readonly StoryNode[] = [
     speaker: 'Pella',
     portrait: 'portrait.pella',
     lines: [
-      'Too many cabbages. You will know it when you see it.',
-      'And do not let anyone tell you the cabbages are not important.',
+      'He puts the cabbages on top of the turnips. Every bump, one falls off.',
+      'If you find him, tell him to leave the cart. He can just come home.',
     ],
     next: 'village_explore',
   },
@@ -135,9 +162,9 @@ export const ACT1_NODES: readonly StoryNode[] = [
     speaker: 'Gate Guard Dorin',
     portrait: 'portrait.dorin',
     lines: [
-      'East road, then up the switchbacks. Two hours if you walk it properly.',
-      'I would go with you. Elder says somebody has to be standing here when the carts come back.',
-      'Go on, then. East gate is open.',
+      'East road, then the switchbacks. About two hours. Longer if the mud is bad.',
+      'I got as far as the gate yesterday. There were workers up on the wall with slings. Would not answer me.',
+      'Mira wants me here in case anyone makes it back. If you find someone who can walk, send them down. I will watch for them.',
     ],
     next: 'village_explore',
   },
@@ -149,10 +176,10 @@ export const ACT1_NODES: readonly StoryNode[] = [
     speaker: 'The East Road',
     portrait: 'portrait.narrator',
     lines: [
-      'The road climbs out of the village and into pine. The rain has left the ruts full of standing water.',
-      'Half a league up, the birds stop.',
+      'The road climbs between the pines. Rainwater fills the wheel ruts, and wet needles cling to your boots.',
+      'At the bend, a boot scrapes on stone. Someone is standing behind the trees.',
     ],
-    next: 'battle_forest_road',
+    next: 'forest_explore',
   },
   {
     id: 'battle_forest_road',
@@ -166,7 +193,7 @@ export const ACT1_NODES: readonly StoryNode[] = [
    *
    * A wipe used to point straight at the battle again, which makes defeat a
    * chore and makes a five-year-old cry. Now it costs you something in the
-   * story and the story carries on: you lose the fight, you lose the cargo, and
+   * story and the story carries on: you lose the fight, you lose your provisions, and
    * you go on up the hill anyway, carrying a flag that people will mention.
    *
    * The compensating XP is not generosity, it is arithmetic. All the XP for a
@@ -181,9 +208,9 @@ export const ACT1_NODES: readonly StoryNode[] = [
     speaker: 'Ba Dan',
     portrait: 'portrait.narrator',
     lines: [
-      'You come round on the verge with your pockets turned out and the cart wheel gone. They took the wheel. Who takes a wheel?',
-      'Nobody is dead. Everybody is furious. Pella will not stop apologising for something that was not her fault.',
-      'The road still goes up the hill, and you have nothing left worth robbing, which is its own kind of freedom.',
+      'You wake beside the road with grit in your mouth. Your food is gone. The robbers left the empty wrapping in your pocket.',
+      'Nothing seems broken. Getting upright still takes a while.',
+      'Their tracks lead uphill. You follow once you can stand.',
     ],
     next: 'lost_forest_road',
   },
@@ -197,23 +224,45 @@ export const ACT1_NODES: readonly StoryNode[] = [
   {
     id: 'after_forest',
     kind: 'dialogue',
-    speaker: 'Kaya',
+    speaker: 'The East Road',
     portrait: 'portrait.narrator',
     lines: [
-      'They are quarry workers. Look at the hands — every one of them has cut stone for a living.',
-      'Whoever is up there did not bring an army. They took one.',
+      "Stone dust coats the attackers' cuffs. Their hands are calloused around the thumb, where a quarry hammer wears the skin.",
+      'These people worked the quarry. Something has put them on the road with weapons.',
     ],
-    // Straight into the parley now, rather than straight into the fight.
-    next: 'gate_parley',
+    // Back onto the road; reaching the quarry watch starts the parley.
+    next: 'forest_after_explore',
     variants: [
+      {
+        when: {
+          kind: 'all',
+          of: [
+            { kind: 'partyHas', characterId: 'kaya' },
+            { kind: 'flag', key: 'lost_forest_road', op: 'set' },
+          ],
+        },
+        speaker: 'Kaya',
+        portrait: 'portrait.kaya',
+        lines: [
+          'They took our supplies. I saw quarry dust on their clothes.',
+          'I want to know who put them out here.',
+        ],
+      },
       {
         // Losing the road makes the same observation land very differently.
         when: { kind: 'flag', key: 'lost_forest_road', op: 'set' },
-        speaker: 'Kaya',
         lines: [
-          'They were quarry workers. Did you see the hands? Every one of them has cut stone for a living, and every one of them has just robbed us.',
-          'Whoever is up the hill did not bring an army. They took one, and they took it from people who had nothing left to say no with.',
-          'I want to be angry about the wheel. I am finding it difficult.',
+          "You remember stone dust on the attackers' clothes and the worn hands of people who cut rock for a living.",
+          'Quarry workers have robbed you. There is still no word from the people Mira sent.',
+        ],
+      },
+      {
+        when: { kind: 'partyHas', characterId: 'kaya' },
+        speaker: 'Kaya',
+        portrait: 'portrait.kaya',
+        lines: [
+          'Quarry dust in their cuffs. My mother used to make the stonecutters shake it out before they came inside.',
+          'I thought we were going up there to get these people home. Why are they guarding the road?',
         ],
       },
     ],
@@ -237,37 +286,35 @@ export const ACT1_NODES: readonly StoryNode[] = [
     speaker: 'The Quarry Gate',
     portrait: 'portrait.narrator',
     prompt:
-      'The gate is shut and there are people on it. Somebody has to go first — and who goes first is going to matter.',
+      'Quarry workers watch from the wall. A Fire Nation deserter stands beside the oil barrels. How will you approach?',
     options: [
       {
         label: 'Walk up and knock',
-        detail:
-          'No angle, no leverage. Whatever is behind that gate, you meet it on its own terms.',
+        detail: 'Approach openly. The guards are armed and will fight.',
         next: 'battle_quarry_gate',
       },
       {
         label: 'Let the firebender do the talking',
         detail:
-          'A deserter is still Fire Nation enough to flinch at the colours. He will stand down. His quarry crew will not, and they will be angrier for it.',
+          'Bluff the deserter into standing aside. You will still have to fight the quarry crew.',
         next: 'gate_bluff',
         speaker: { element: 'fire' },
         requires: { kind: 'partyHas', element: 'fire' },
-        lockedHint: 'Nobody here can sell it. You would need a firebender.',
+        lockedHint: 'You need a firebender for this bluff.',
         // Trading on Fire Nation fear works, and it is remembered on both sides.
         adjust: { fire: 1, earth: -1 },
       },
       {
         label: 'Let the earthbender speak — these are quarry workers',
         detail:
-          'They cut stone for a living and so did your grandmother. That is not nothing, and Ruon knows it is not nothing.',
+          'Ask about the unsafe galleries. An earthbender may get Ruon to open the gate without a fight.',
         next: 'gate_kinship',
         speaker: { element: 'earth' },
         requires: { kind: 'partyHas', element: 'earth' },
-        lockedHint: 'It would have to come from an earthbender to mean anything.',
+        lockedHint: 'You need an earthbender to speak about the stonework.',
         adjust: { earth: 2 },
       },
     ],
-    footer: 'Who speaks changes what happens. It is meant to.',
   },
   {
     id: 'gate_bluff',
@@ -283,10 +330,10 @@ export const ACT1_NODES: readonly StoryNode[] = [
     speaker: 'Captain Ruon',
     portrait: 'portrait.ruon',
     lines: [
-      'Stop. Stop — say that again. Say the part about the galleries.',
-      'You have cut stone. You know what it does to a back, and you know what it does to a village when the cutting stops.',
-      'Then you know exactly why my people are on this gate, and you know I cannot pay them either.',
-      'Put it down. All of you, put it down. I am not going to be the man who set quarry workers on quarry workers.',
+      'Hold on. You know the galleries? The supports under the east face?',
+      'I told him those needed replacing. He sent the crew back in anyway.',
+      'All right. Lower the slings. Open the gate.',
+      'You want someone to answer for this, you can talk to me. Leave the crew out of it.',
     ],
     next: 'gate_talked_through',
   },
@@ -317,9 +364,9 @@ export const ACT1_NODES: readonly StoryNode[] = [
     speaker: 'The Quarry Gate',
     portrait: 'portrait.narrator',
     lines: [
-      'The oil went up, and then everything went up, and then somebody dragged you back down the switchbacks with your eyebrows gone.',
-      'When you come back the gate is open and nobody is on it. Not abandoned — opened. Somebody decided you were not worth the barrels.',
-      'Captain Ruon is waiting in the yard with his sword on the ground in front of him, which is somehow more insulting than the fight was.',
+      'You retreat down the switchbacks under a hail of stones. By the time you stop, no one is following.',
+      'When you climb back, the gate stands open. The workers have left the wall.',
+      'Captain Ruon waits in the yard. He lays his sabre on the ground as you approach.',
     ],
     next: 'lost_quarry_gate',
   },
@@ -338,10 +385,10 @@ export const ACT1_NODES: readonly StoryNode[] = [
     speaker: 'Captain Ruon',
     portrait: 'portrait.ruon',
     lines: [
-      'Enough. Enough! Put it down — all of you, put it down.',
-      'My name is Ruon. I was a captain of the provincial guard for nineteen years, and I have been running this gate for one month, and I would like you to understand that those two facts are related.',
-      'The quarry stopped paying. Then the province stopped paying. Then my people started eating stone dust and pride.',
-      'I am not asking you to forgive it. I am telling you it is mine. Do what you want with me.',
+      'My sabre stays on the ground. Tell me if anyone needs a bandage.',
+      'Captain Ruon, provincial guard. Nineteen years. I still give the rank, though I doubt they would claim me now.',
+      'The crews stopped getting paid. Then our wages stopped too. My quartermaster said holding the stone would make somebody listen. I let him shut the gate.',
+      'Then he locked people in the galleries. I kept my post. Their families will want to know that.',
     ],
     next: 'ruon_choice',
   },
@@ -355,7 +402,7 @@ export const ACT1_NODES: readonly StoryNode[] = [
       {
         label: 'Escort him back to Ba Dan for trial',
         detail:
-          'The right thing, and the slow thing. Word will travel, and somebody will come out to meet you on the road.',
+          'Keep Ruon with you to face the village court. Jin’s mercenaries will try to take him on the road.',
         next: 'escort_chosen',
         setFlags: { ruon_spared: true },
         // Ba Dan is an Earth Kingdom village and Ruon was its province's guard.
@@ -365,13 +412,13 @@ export const ACT1_NODES: readonly StoryNode[] = [
       {
         label: 'Trade him to Jin for the quarry key',
         detail:
-          'The mercenary wants Ruon and will hand over the gate key. Fast, certain — and Ba Dan will hear about it.',
+          'Accept Jin’s payment and the inner gate key. Her crew will let you pass the cutting, but Gao will hear about the trade.',
         next: 'trade_payment',
         setFlags: { ruon_traded: true },
         adjust: { earth: -2 },
       },
     ],
-    footer: 'There is no right answer here. Both roads lead to the quarry.',
+    footer: 'Both routes reach the quarry floor.',
   },
 
   /* ----------------------------------------------------- Branch A: escort */
@@ -381,11 +428,11 @@ export const ACT1_NODES: readonly StoryNode[] = [
     speaker: 'Captain Ruon',
     portrait: 'portrait.ruon',
     lines: [
-      'Trial. Right. I would have picked the other one.',
-      'Understand what you have done: Jin wanted me, and now Jin does not have me. She will be along.',
-      'Give me back my sabre when she is. I am not going to stand there and be a parcel.',
+      'Ba Dan, then. I know the way.',
+      "Jin has been waiting to collect the bounty on me. She'll send people after us.",
+      "If they catch us in the cutting, I'll need my sabre. You can take it back afterwards.",
     ],
-    next: 'battle_ambush',
+    next: 'gate_escort_explore',
   },
   {
     id: 'battle_ambush',
@@ -400,9 +447,9 @@ export const ACT1_NODES: readonly StoryNode[] = [
     speaker: 'The Cutting',
     portrait: 'portrait.narrator',
     lines: [
-      "Jin's people are professionals, and the cutting is narrow enough that being surrounded is a choice you made.",
-      'Ruon gets three of you out through the scree and goes back for the rest, which is not what anybody expected of him.',
-      'Jin has what she came for. You have a captain who chose you over a clear road, and a long walk to think about it.',
+      'The mercenaries block the road. Ruon points to a gap in the rocks and pulls you towards it.',
+      'He hauls you over the loose scree, stopping to check that everyone is still with him.',
+      'You lose the pursuers below the cutting. Ruon stays beside you, bent over and struggling for breath.',
     ],
     next: 'lost_ambush',
   },
@@ -421,11 +468,11 @@ export const ACT1_NODES: readonly StoryNode[] = [
     speaker: 'Captain Ruon',
     portrait: 'portrait.ruon',
     lines: [
-      'That was three of hers. She has more.',
-      'The thing in the quarry is not Jin, though. That one is mine too, in a way — he was my quartermaster before he found the driller.',
-      'His name is Grumbler. It was a joke once.',
+      'We cannot stay on the road. There is a path through the cutting to the quarry floor.',
+      'The man down there was my quartermaster. We called him Grumbler. He could find something wrong with a day off.',
+      'He got hold of a mecha-driller last month. I signed for the delivery without asking who paid for it.',
     ],
-    next: 'quarry_descent',
+    next: 'cutting_after_explore',
   },
 
   /* ------------------------------------------------------ Branch B: trade */
@@ -448,12 +495,12 @@ export const ACT1_NODES: readonly StoryNode[] = [
     speaker: 'Jin',
     portrait: 'portrait.jin',
     lines: [
-      'Sensible. Here — gate key, and the road is yours.',
-      'Captain. Walk.',
-      'Oh — do not look at me like that. He is worth more to the province than he is to you, and I am taking him to the province. Eventually.',
-      'My people are already in the quarry, by the way. Do try not to get in their way.',
+      'The inner gate key, as agreed. Your payment is in the pouch.',
+      'Captain. Hands where I can see them.',
+      'The province wants him alive. Keep the receipt if anyone asks who took him.',
+      'My crew is in the quarry securing the equipment. The key gets you through the gate. It does not give you a claim on the machinery.',
     ],
-    next: 'quarry_descent',
+    next: 'gate_trade_explore',
   },
 
   /* ------------------------------------------------------------ The boss */
@@ -463,9 +510,20 @@ export const ACT1_NODES: readonly StoryNode[] = [
     speaker: 'The Quarry',
     portrait: 'portrait.narrator',
     lines: [
-      'The quarry floor is a bowl of cut stone four hundred paces across, ringed by ledges.',
-      'Something is idling at the bottom of it. It is the size of a barn, it stands on two treads, and one of its arms is a drill.',
-      'Oil runs out from under it in slow black fingers.',
+      'Stone ledges step down to the quarry floor. Below them, the gallery entrances have been barred with timber.',
+      'A mecha-driller idles beside the lowest ramp, its cabin shaking between two broad treads.',
+      'Oil drips from a split hose. The driver sees you and reaches for a lever.',
+    ],
+    next: 'quarry_assessment',
+  },
+  {
+    id: 'quarry_assessment',
+    kind: 'dialogue',
+    speaker: 'The Quarry',
+    portrait: 'portrait.narrator',
+    lines: [
+      'Workers bang on the barred gallery doors. One shouts, "Grumbler!" The driver turns towards the bars, then back to you.',
+      'The ramp behind you is clear. It is the way everyone will have to come out.',
     ],
     next: 'battle_grumbler',
   },
@@ -482,9 +540,9 @@ export const ACT1_NODES: readonly StoryNode[] = [
     speaker: 'The Quarry',
     portrait: 'portrait.narrator',
     lines: [
-      'The driller does not celebrate. It simply goes back to idling, which is somehow worse.',
-      'You wake up on the switchback with every bone complaining and the quarry still running behind you.',
-      'Elder Mira comes up the road herself to fetch you down. She does not say a word about the stone. She does not have to.',
+      'The driller blocks the ramp. You scramble up the loose stone beside it while the drill tears into the slope.',
+      'By the switchback, you have to stop. The engine keeps running below.',
+      'Mira finds you there with Dorin and a handcart. “Sit down,” she says. “We can talk at home.”',
     ],
     next: 'act1_lost',
   },
@@ -504,13 +562,13 @@ export const ACT1_NODES: readonly StoryNode[] = [
     kind: 'end',
     title: 'The Quarry Keeps Running',
     lines: [
-      'Ba Dan does not fall. That is the strange part. The quarry keeps cutting, the carts keep going out, and nobody in the village is asked to leave.',
-      'They are simply not asked anything at all any more. Elder Mira still sets a place at her table for whoever is hungry, and there are more of them each week.',
-      'Grumbler never comes down the hill to gloat. Somebody else is paying him, and gloating is not in it.',
-      'The obvious question is still the obvious one: a mecha-driller is Republic City engineering, and nobody in this province could have built it, bought it, or driven it here.',
+      'Stone carts leave the quarry again. At the fork, each one takes the coast road past Ba Dan.',
+      'Mira stretches the evening rice with broth. Families still come to her door asking for news from the galleries.',
+      'A worker gets a note to Dorin: Bo-shan, the four messengers and the crews are alive. Grumbler is still holding them in the quarry.',
+      'The driller is still down there. Its parts came from Republic City; someone paid to bring them all this way.',
     ],
     teaser:
-      'Across the bay, a Fire Nation outpost that was decommissioned nine years ago has its lamps lit. Whoever lit them already knows your names.',
+      'Across the bay, lamps burn in a Fire Nation outpost closed nine years ago. A supply boat ties up at its jetty.',
   },
   {
     id: 'act1_victory',
@@ -523,12 +581,13 @@ export const ACT1_NODES: readonly StoryNode[] = [
     kind: 'end',
     title: 'The Quarry of Ba Dan',
     lines: [
-      'The driller comes apart in the middle of the quarry floor and stays apart. Grumbler climbs out of the cabin with his hands up and an expression of enormous relief.',
-      'The quarry workers come out of the lower galleries one at a time, blinking. Elder Mira gets her people back. Ba Dan gets its stone.',
-      'Somebody eventually asks the obvious question: a mecha-driller is Republic City engineering, and nobody in this province could have built it, bought it, or driven it here.',
-      'So who gave it to him?',
+      'The drill jams in the quarry floor. Grumbler tries the lever twice, then climbs out with his hands raised.',
+      'You pull the bars from the gallery doors. Mira’s four messengers are there. Bo-shan follows them out and asks where Pella is.',
+      'The driller bears a Republic City maker’s plate. You take a rubbing for Mira’s report to the province.',
+      'The workers help each other up the ramp and start down the west road. It is time to take the news home to Ba Dan.',
     ],
     teaser:
-      'Across the bay, a Fire Nation outpost that was decommissioned nine years ago has its lamps lit.',
+      'Across the bay, lamps burn in a Fire Nation outpost closed nine years ago. A supply boat ties up at its jetty.',
+    next: 'quarry_after_explore',
   },
 ];

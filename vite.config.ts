@@ -1,5 +1,29 @@
 import { defineConfig } from 'vite';
 import { VitePWA } from 'vite-plugin-pwa';
+import { execFileSync } from 'node:child_process';
+import { fileURLToPath } from 'node:url';
+import { version } from './package.json';
+
+// Stamp the code being built so even an offline cached bundle identifies itself.
+function buildRevision(): string {
+  const cwd = fileURLToPath(new URL('.', import.meta.url));
+  try {
+    const options = {
+      cwd,
+      encoding: 'utf8' as const,
+      stdio: ['ignore', 'pipe', 'ignore'] as ['ignore', 'pipe', 'ignore'],
+    };
+    const revision = execFileSync('git', ['rev-parse', '--short=7', 'HEAD'], options).trim();
+    const modified = execFileSync(
+      'git',
+      ['status', '--porcelain', '--untracked-files=no'],
+      options,
+    ).trim();
+    return `${revision}${modified ? '-modified' : ''}`;
+  } catch {
+    return 'local';
+  }
+}
 
 /**
  * `GH_PAGES_BASE` is set by the deploy workflow to `/<repo>/` so that the
@@ -9,10 +33,21 @@ const base = process.env.GH_PAGES_BASE ?? '/';
 
 export default defineConfig({
   base,
+  // Keep parallel worktree/dev-server dependency graphs isolated. Shared
+  // node_modules junctions otherwise let Vite workers overwrite each other's
+  // optimized-dependency hashes during visual capture.
+  cacheDir: '.vite',
+  define: {
+    __APP_VERSION__: JSON.stringify(version),
+    __BUILD_REVISION__: JSON.stringify(buildRevision()),
+  },
   build: {
     target: 'es2022',
     outDir: 'dist',
     sourcemap: true,
+    // The larger village stays inside the existing tablet download budget.
+    minify: 'terser',
+    terserOptions: { compress: { passes: 2 } },
     // The whole game is one bundle; 300 KB gzipped is the budget we verify in CI.
     chunkSizeWarningLimit: 900,
   },
@@ -25,12 +60,87 @@ export default defineConfig({
     port: 4173,
   },
   plugins: [
+    {
+      // Input, accessibility and HTML UI belong to the app's native DOM.
+      // Atlas JSON uses our shared loader, not Pixi's Assets/Spritesheet.
+      // These optional Pixi registration entry points are never used. Keep
+      // graphics/text/filter/particle/texture initialization intact (ADR 0001).
+      name: 'omit-unused-pixi-systems',
+      transform(code, id) {
+        // The game uploads still images/canvases and has no video textures.
+        // Keep the other source registrations intact (ADR 0038).
+        if (/[/\\]pixi\.js[/\\]lib[/\\]rendering[/\\]init\.mjs$/.test(id)) {
+          const videoImport =
+            "import { VideoSource } from './renderers/shared/texture/sources/VideoSource.mjs';";
+          if (!code.includes(videoImport) || !code.includes('  VideoSource,')) {
+            throw new Error(
+              'Pixi texture registration changed; review the video-source exclusion.',
+            );
+          }
+          return {
+            code: code.replace(videoImport, '').replace('  VideoSource,', ''),
+            map: null,
+          };
+        }
+        // The game renders on the main thread and has no Worker or OffscreenCanvas
+        // path. Register the browser environment only; the worker extension would
+        // otherwise retain Pixi's unused worker environment chunk (ADR 0033).
+        if (/[/\\]pixi\.js[/\\]lib[/\\]index\.mjs$/.test(id)) {
+          const registration = 'extensions.add(browserExt, webworkerExt);';
+          if (!code.includes(registration)) {
+            throw new Error(
+              'Pixi environment registration changed; review the worker-environment exclusion.',
+            );
+          }
+          return {
+            code: code.replace(registration, 'extensions.add(browserExt);'),
+            map: null,
+          };
+        }
+        // Canvas rendering is our separate Canvas2D backend. Pixi is created
+        // only as a WebGLRenderer, so its CanvasRenderer filter system cannot
+        // be selected (ADR 0033).
+        if (/[/\\]pixi\.js[/\\]lib[/\\]filters[/\\]init\.mjs$/.test(id)) {
+          const canvasFilterImport =
+            "import { CanvasFilterSystem } from './CanvasFilterSystem.mjs';";
+          if (
+            !code.includes(canvasFilterImport) ||
+            !code.includes('extensions.add(FilterSystem, CanvasFilterSystem);')
+          ) {
+            throw new Error(
+              'Pixi filter registration changed; review the CanvasFilterSystem exclusion.',
+            );
+          }
+          return {
+            code: code
+              .replace(canvasFilterImport, '')
+              .replace(
+                'extensions.add(FilterSystem, CanvasFilterSystem);',
+                'extensions.add(FilterSystem);',
+              ),
+            map: null,
+          };
+        }
+        if (
+          /[/\\]pixi\.js[/\\]lib[/\\](accessibility|events|dom|spritesheet)[/\\]init\.mjs$/.test(id)
+        ) {
+          return { code, map: null, moduleSideEffects: false };
+        }
+      },
+    },
     VitePWA({
       registerType: 'autoUpdate',
       injectRegister: 'auto',
       includeAssets: ['icons/apple-touch-icon.png', 'icons/favicon.svg'],
       workbox: {
-        globPatterns: ['**/*.{js,css,html,svg,png,woff2}'],
+        /*
+         * Sound effects precache: the whole set is well under a tenth of a
+         * megabyte, and a footstep that arrives on the second walk is worse
+         * than one that costs nothing to have ready. Music, when there is
+         * any, must be excluded here — a first load on a tablet has to stay
+         * a breath (ADR 0012).
+         */
+        globPatterns: ['**/*.{js,css,html,svg,png,webp,json,woff2,ogg}'],
         cleanupOutdatedCaches: true,
         navigateFallback: `${base}index.html`,
       },
@@ -41,10 +151,9 @@ export default defineConfig({
       manifest: {
         name: 'Four Nations Tactics',
         short_name: 'FN Tactics',
-        description:
-          'A hot-seat turn-based tactical RPG set a few decades after Korra. Non-commercial fan work.',
-        theme_color: '#1b1410',
-        background_color: '#1b1410',
+        description: 'A hot-seat turn-based tactical RPG set after Korra. Non-commercial fan work.',
+        theme_color: '#e7d9bd',
+        background_color: '#e7d9bd',
         display: 'standalone',
         orientation: 'landscape',
         start_url: base,

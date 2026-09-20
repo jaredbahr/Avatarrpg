@@ -1,15 +1,13 @@
 /**
  * The ten playable characters — two per element.
  *
- * All original. The era is roughly forty years after Korra: Republic City has
- * airships and electrified gauntlets, the Earth Kingdom's outer provinces are
- * still putting themselves back together, and nobody in this story has ever met
- * an Avatar.
+ * All original. Set after Korra and before Seven Havens; exact dating remains
+ * open. Nobody in this story has met an Avatar. For dialogue and character
+ * humor, read docs/writing-guide.md.
  *
- * Both characters of an element share a kit (the plan calls for element kits,
- * not class kits). They differ in stats, in voice, and in how they are drawn —
- * and, from level 5, in the discipline their player commits them to, which is
- * where two earthbenders finally stop being the same earthbender.
+ * Each pair shares an elemental foundation and the same discipline choices,
+ * but their level-2 tools give them different jobs during Act 1. Level-3
+ * choices can broaden either job. Their stats, voice and art remain individual.
  * `statMods` are deltas against the element archetype in `elements.ts`.
  */
 
@@ -18,50 +16,85 @@ import type { CharacterDef, KitEntry } from '../core/types';
 /*
  * A kit runs to the discipline gate and stops.
  *
- * Levels 1-3 are the element's fundamentals, shared by both characters of that
- * element. Level 5 is the gate: the player commits to a path, and from there
- * the path's own kit supplies levels 5, 7 and 10 (see `disciplines.ts`). That
+ * Levels 1-3 establish a character's role inside the element. Level 5 is the
+ * gate: the player commits to a path, and from there the path's own kit
+ * supplies levels 5, 7 and 10 (see `disciplines.ts`). That
  * is why nothing below has an entry above level 5 any more — the abilities that
  * used to sit at 5, 7 and 10 did not go away, they moved into the path each one
  * belongs to.
  *
- * The level-3 choice is deliberately a taste of what is coming: a waterbender
- * who takes Healing Stream at 3 has already met the discipline they can commit
- * to at 5, and one who takes Water Pull has not lost the option.
+ * The level-3 choice lets a player add a complementary attack, defense or
+ * setup tool without delaying the character's defining level-2 contribution.
+ * None of these options repeats a discipline unlock.
  */
 
-const FIRE_KIT: readonly KitEntry[] = [
+const KAYA_KIT: readonly KitEntry[] = [
   { level: 1, ability: 'fire_jab' },
-  { level: 2, ability: 'fire_blast' },
-  { level: 3, choose: ['flame_arc', 'fire_step'] },
+  { level: 2, ability: 'flame_arc' },
+  { level: 3, choose: ['fire_blast', 'fire_step'] },
   { level: 5, specialize: ['flame_shaping', 'lightning_path'] },
 ];
 
-const WATER_KIT: readonly KitEntry[] = [
+const TENZO_KIT: readonly KitEntry[] = [
+  { level: 1, ability: 'fire_jab' },
+  { level: 2, ability: 'fire_blast' },
+  { level: 3, choose: ['fire_step', 'flame_arc'] },
+  { level: 5, specialize: ['flame_shaping', 'lightning_path'] },
+];
+
+const NILAK_KIT: readonly KitEntry[] = [
+  { level: 1, ability: 'water_whip' },
+  { level: 2, ability: 'healing_stream' },
+  { level: 3, choose: ['water_pull', 'ice_path'] },
+  { level: 5, specialize: ['ice_shaping', 'healing_path'] },
+];
+
+const SURA_KIT: readonly KitEntry[] = [
   { level: 1, ability: 'water_whip' },
   { level: 2, ability: 'ice_path' },
   { level: 3, choose: ['healing_stream', 'water_pull'] },
   { level: 5, specialize: ['ice_shaping', 'healing_path'] },
 ];
 
-const EARTH_KIT: readonly KitEntry[] = [
+const BO_KIT: readonly KitEntry[] = [
   { level: 1, ability: 'rock_throw' },
   { level: 2, ability: 'stone_stance' },
   { level: 3, choose: ['earth_wall', 'shockwave'] },
   { level: 5, specialize: ['earth_shaping', 'metalbending_path'] },
 ];
 
-const AIR_KIT: readonly KitEntry[] = [
+const LIN_MEI_KIT: readonly KitEntry[] = [
+  { level: 1, ability: 'rock_throw' },
+  { level: 2, ability: 'shockwave' },
+  { level: 3, choose: ['earth_wall', 'raise_rubble'] },
+  { level: 5, specialize: ['earth_shaping', 'metalbending_path'] },
+];
+
+const NIMA_KIT: readonly KitEntry[] = [
   { level: 1, ability: 'air_blast' },
-  { level: 2, ability: 'air_shield' },
-  { level: 3, choose: ['air_scooter', 'gust'] },
+  { level: 2, ability: 'air_scooter' },
+  { level: 3, choose: ['air_shield', 'gust'] },
   { level: 5, specialize: ['air_shaping', 'sound_bending'] },
 ];
 
-const NONBENDER_KIT: readonly KitEntry[] = [
+const JINU_KIT: readonly KitEntry[] = [
+  { level: 1, ability: 'air_blast' },
+  { level: 2, ability: 'gust' },
+  { level: 3, choose: ['air_shield', 'air_scooter'] },
+  { level: 5, specialize: ['air_shaping', 'sound_bending'] },
+];
+
+const RIKO_KIT: readonly KitEntry[] = [
   { level: 1, ability: 'strike' },
-  { level: 2, ability: 'take_cover' },
-  { level: 3, choose: ['chi_block', 'bolas'] },
+  { level: 2, ability: 'chi_block' },
+  { level: 3, choose: ['take_cover', 'bolas'] },
+  { level: 5, specialize: ['field_craft', 'engineering'] },
+];
+
+const WEN_KIT: readonly KitEntry[] = [
+  { level: 1, ability: 'strike' },
+  { level: 2, ability: 'gauntlet_spark' },
+  { level: 3, choose: ['take_cover', 'bolas'] },
   { level: 5, specialize: ['field_craft', 'engineering'] },
 ];
 
@@ -71,10 +104,10 @@ export const CHARACTERS: readonly CharacterDef[] = [
     id: 'kaya',
     name: 'Kaya',
     element: 'fire',
-    blurb: 'Reckless. Fast. Already moving.',
-    bio: 'Grew up in a Fire Nation colony that stopped being a colony before she was born, and has been proving she belongs somewhere ever since. Hits first and works the rest out afterwards.',
+    blurb: 'Quick to jump into a fight.',
+    bio: 'Kaya grew up in a former Fire Nation colony, answering questions about where she was really from. She left to see the places people kept naming. Usually volunteers before hearing the whole job.',
     statMods: { power: 1, speed: 1, maxHp: -2 },
-    kit: FIRE_KIT,
+    kit: KAYA_KIT,
     portrait: 'portrait.kaya',
     sprite: 'unit.fire.kaya',
   },
@@ -82,10 +115,10 @@ export const CHARACTERS: readonly CharacterDef[] = [
     id: 'tenzo',
     name: 'Tenzo',
     element: 'fire',
-    blurb: 'Patient. Precise. Waits for the opening.',
-    bio: 'A dockside cook from Republic City who learned firebending from his grandmother over a stove. Treats a fight like a kitchen: control the heat, and nothing burns that should not.',
+    blurb: 'A cook with a steady flame.',
+    bio: 'Tenzo learned firebending at his grandmother’s stove in Republic City. He still sends her money from dockside cooking jobs. Packs enough food for a second travelling party, just in case.',
     statMods: { defense: 1, focus: 3, speed: -1 },
-    kit: FIRE_KIT,
+    kit: TENZO_KIT,
     portrait: 'portrait.tenzo',
     sprite: 'unit.fire.tenzo',
   },
@@ -95,10 +128,10 @@ export const CHARACTERS: readonly CharacterDef[] = [
     id: 'nilak',
     name: 'Nilak',
     element: 'water',
-    blurb: 'Healer first. Always watching the party.',
-    bio: 'Trained at a small Northern healing house that takes anyone who asks. Left because the house would not treat the people who needed it most, and has been travelling ever since.',
+    blurb: 'Keeps watch over the wounded.',
+    bio: 'Nilak trained at a Northern healing house that promised to treat anyone. When the house turned away people without residency papers or a sponsor, he took his medicine bag to them. He has been treating people on the road ever since.',
     statMods: { maxHp: 2, focus: 3, power: -1 },
-    kit: WATER_KIT,
+    kit: NILAK_KIT,
     portrait: 'portrait.nilak',
     sprite: 'unit.water.nilak',
   },
@@ -106,10 +139,10 @@ export const CHARACTERS: readonly CharacterDef[] = [
     id: 'sura',
     name: 'Sura',
     element: 'water',
-    blurb: 'Ice first. Ask questions later.',
-    bio: 'A Southern Water Tribe ice-fisher who found out she was very good at turning a fishing hole into a wall. Cheerfully certain that most problems freeze.',
+    blurb: 'An ice-fisher with a heavy hand.',
+    bio: 'Sura takes cold-storage work beyond her Southern Water Tribe family’s usual fishing routes. Confident on uncertain ice, she is learning to ask about the local waters. Wants to see a sea that stays liquid all year.',
     statMods: { power: 2, speed: 1, defense: -1 },
-    kit: WATER_KIT,
+    kit: SURA_KIT,
     portrait: 'portrait.sura',
     sprite: 'unit.water.sura',
   },
@@ -119,10 +152,10 @@ export const CHARACTERS: readonly CharacterDef[] = [
     id: 'bo',
     name: 'Bo',
     element: 'earth',
-    blurb: 'The wall. Nothing gets past.',
-    bio: 'Quarry foreman from three towns over, built like the thing he digs out of the ground. Joined up because the quarry stopped paying and his crew still had to eat.',
+    blurb: 'The foreman who holds the line.',
+    bio: 'Bo ran a quarry crew three towns over until the wages stopped. He took road work to keep them fed and checks for their letters in every town. Counts heads whenever the party sets off and takes the heaviest load, even when someone offers.',
     statMods: { maxHp: 4, defense: 1, speed: -1 },
-    kit: EARTH_KIT,
+    kit: BO_KIT,
     portrait: 'portrait.bo',
     sprite: 'unit.earth.bo',
   },
@@ -130,10 +163,10 @@ export const CHARACTERS: readonly CharacterDef[] = [
     id: 'lin_mei',
     name: 'Lin Mei',
     element: 'earth',
-    blurb: 'Reads the ground. Rewrites it.',
-    bio: 'A surveyor who maps unstable ground for a living, which turns out to be excellent training for deciding where a fight should happen. Never raises her voice.',
+    blurb: 'A surveyor who chooses her ground.',
+    bio: 'Lin Mei surveys unstable ground for villages that cannot afford to build twice. Carries a notebook full of measurements and arguments with contractors. Gets very quiet when someone ignores a warning.',
     statMods: { power: 1, focus: 5, maxHp: -2 },
-    kit: EARTH_KIT,
+    kit: LIN_MEI_KIT,
     portrait: 'portrait.linmei',
     sprite: 'unit.earth.linmei',
   },
@@ -143,10 +176,10 @@ export const CHARACTERS: readonly CharacterDef[] = [
     id: 'nima',
     name: 'Nima',
     element: 'air',
-    blurb: 'Never where you swung.',
-    bio: 'Raised at a rebuilt Air Temple by people who were themselves only one generation into the tradition. Takes the philosophy seriously and the rules loosely.',
+    blurb: 'Hard to catch, even at rest.',
+    bio: 'Nima grew up at a rebuilt Air Temple, helping teachers who were still learning some of the ceremonies themselves. Can sit through a long meditation. Struggles with the meeting afterwards.',
     statMods: { maxMove: 1, speed: 1, maxHp: -1 },
-    kit: AIR_KIT,
+    kit: NIMA_KIT,
     portrait: 'portrait.nima',
     sprite: 'unit.air.nima',
   },
@@ -154,10 +187,10 @@ export const CHARACTERS: readonly CharacterDef[] = [
     id: 'jinu',
     name: 'Jinu',
     element: 'air',
-    blurb: 'Talks constantly. Usually right.',
-    bio: 'A courier who flies mail between the northern provinces and has opinions about every road in them. Airbends the way other people fidget — all the time, mostly unconsciously.',
+    blurb: 'A sturdy courier who keeps talking.',
+    bio: 'Jinu carries mail between the northern provinces. Knows which rooftops are safe to land on and which families are waiting for letters. Makes little air currents while talking; loose papers are a problem.',
     statMods: { maxHp: 3, power: 1, speed: -1 },
-    kit: AIR_KIT,
+    kit: JINU_KIT,
     portrait: 'portrait.jinu',
     sprite: 'unit.air.jinu',
   },
@@ -167,10 +200,10 @@ export const CHARACTERS: readonly CharacterDef[] = [
     id: 'riko',
     name: 'Riko',
     element: 'nonbender',
-    blurb: 'Chi-blocker. Turns benders off.',
-    bio: 'Learned chi-blocking from a teacher who would not say where she learned it. Has no particular grudge against benders and no particular patience for them either.',
+    blurb: 'Quick hands and chi-blocking training.',
+    bio: 'Riko works escort contracts using chi-blocking learned above a laundry. Her teacher made her practise escapes for months before teaching a strike. Values people who keep promises. Has a weakness for badly acted stage mysteries.',
     statMods: { speed: 2, focus: 5, maxHp: -2 },
-    kit: NONBENDER_KIT,
+    kit: RIKO_KIT,
     portrait: 'portrait.riko',
     sprite: 'unit.non.riko',
   },
@@ -178,10 +211,10 @@ export const CHARACTERS: readonly CharacterDef[] = [
     id: 'wen',
     name: 'Wen',
     element: 'nonbender',
-    blurb: 'Engineer. Brought a gauntlet.',
-    bio: 'Republic City machinist who builds what she needs and then improves it in the field. The electrified glove was supposed to be for repairing airship cabling.',
+    blurb: 'A machinist with a heavy gauntlet.',
+    bio: 'Wen repaired airships in Republic City until she saved enough for her own tools. Her electrified gauntlet began as a cable tester and has grown difficult to explain to inspectors. Keeps the old drawings to prove it.',
     statMods: { maxHp: 4, defense: 1, speed: -1 },
-    kit: NONBENDER_KIT,
+    kit: WEN_KIT,
     portrait: 'portrait.wen',
     sprite: 'unit.non.wen',
   },

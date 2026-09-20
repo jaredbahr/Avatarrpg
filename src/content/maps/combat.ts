@@ -17,11 +17,33 @@
  * about three of them, and they still start as a group.
  */
 
-import type { MapDef } from '../../core/types';
+import type { MapDef, PropPlacement, Vec2 } from '../../core/types';
 import { LEGEND } from './legend';
+import { FOREST_ROAD_SCENE } from '../scenes/forestRoad';
+import { QUARRY_GATE_SCENE } from '../scenes/quarryGate';
+import { CUTTING_SCENE, DRILLER_FLOOR_SCENE } from '../scenes/quarryProjected';
+
+/** Shared because every combat map uses the same staggered party entrance. */
+const COMBAT_PARTY_SPAWNS: readonly Vec2[] = [
+  { x: 1, y: 3 },
+  { x: 3, y: 4 },
+  { x: 1, y: 5 },
+  { x: 3, y: 6 },
+  { x: 1, y: 7 },
+  { x: 3, y: 8 },
+];
+
+/** Compact authored placement form for the prop-heavy quarry maps. */
+const propAt = (propId: string, x: number, y: number): PropPlacement => ({
+  propId,
+  pos: { x, y },
+});
 
 export const FOREST_ROAD: MapDef = {
   id: 'forest_road',
+  projection: 'oblique',
+  scene: FOREST_ROAD_SCENE,
+  backdrop: { url: 'art/maps/forest_road.webp', pixelsPerTile: 80 },
   name: 'The Forest Road',
   kind: 'combat',
   width: 20,
@@ -42,20 +64,16 @@ export const FOREST_ROAD: MapDef = {
     'T,,,,,,,,,,,,,T,,,,T',
     'TT,,,,,,,,,,,,,,,,TT',
   ],
-  partySpawns: [
-    { x: 1, y: 3 },
-    { x: 3, y: 4 },
-    { x: 1, y: 5 },
-    { x: 3, y: 6 },
-    { x: 1, y: 7 },
-    { x: 3, y: 8 },
-  ],
+  partySpawns: COMBAT_PARTY_SPAWNS,
   npcs: [],
   props: [],
 };
 
 export const QUARRY_GATE: MapDef = {
   id: 'quarry_gate',
+  projection: 'oblique',
+  scene: QUARRY_GATE_SCENE,
+  backdrop: { url: 'art/maps/quarry_gate.webp', pixelsPerTile: 80 },
   name: 'The Quarry Gate',
   kind: 'combat',
   width: 20,
@@ -76,14 +94,7 @@ export const QUARRY_GATE: MapDef = {
     '^^^^#....#..#....#^^',
     '^^^^######..######^^',
   ],
-  partySpawns: [
-    { x: 1, y: 3 },
-    { x: 3, y: 4 },
-    { x: 1, y: 5 },
-    { x: 3, y: 6 },
-    { x: 1, y: 7 },
-    { x: 3, y: 8 },
-  ],
+  partySpawns: COMBAT_PARTY_SPAWNS,
   npcs: [],
   /*
    * The encounter's intro has promised "barrels stacked against the gatehouse"
@@ -96,9 +107,9 @@ export const QUARRY_GATE: MapDef = {
    * seen, and genuinely dangerous to whoever is standing too close.
    */
   props: [
-    { propId: 'brazier', pos: { x: 10, y: 5 } },
-    { propId: 'water_barrel', pos: { x: 14, y: 3 } },
-    { propId: 'water_barrel', pos: { x: 14, y: 8 } },
+    propAt('brazier', 10, 5),
+    propAt('water_barrel', 14, 3),
+    propAt('water_barrel', 14, 8),
     /*
      * Which SIDE of the oil channel a hazard sits on decides whether it is a
      * tool or a trap, and the simulator was blunt about it. At (9,4), on the
@@ -107,19 +118,22 @@ export const QUARRY_GATE: MapDef = {
      * tile group east, past the channel, and the same flask reads as 95% — it
      * now extends the hazard toward the people you are fighting.
      */
-    { propId: 'oil_flask', pos: { x: 12, y: 4 } },
+    propAt('oil_flask', 12, 4),
     /*
      * Pella's cart, turned away at the gate, sitting on the road behind the
      * party. Same lesson: at (13,6) it walled off the escape lane exactly when
      * the oil caught (40%); behind the party it is cover on the approach, and
      * average deaths at a full table drop from 4.1 to 3.2.
      */
-    { propId: 'cabbage_cart', pos: { x: 6, y: 6 } },
+    propAt('cabbage_cart', 6, 6),
   ],
 };
 
 export const AMBUSH_ROAD: MapDef = {
   id: 'ambush_road',
+  projection: 'oblique',
+  scene: CUTTING_SCENE,
+  backdrop: { url: 'art/maps/ambush_road.webp', pixelsPerTile: 80 },
   name: 'The Cutting',
   kind: 'combat',
   width: 20,
@@ -140,20 +154,16 @@ export const AMBUSH_ROAD: MapDef = {
     'AA^^^,,,,,,,,,,^^^AA',
     'AAAAAAA^^^^^^^AAAAAA',
   ],
-  partySpawns: [
-    { x: 1, y: 3 },
-    { x: 3, y: 4 },
-    { x: 1, y: 5 },
-    { x: 3, y: 6 },
-    { x: 1, y: 7 },
-    { x: 3, y: 8 },
-  ],
+  partySpawns: COMBAT_PARTY_SPAWNS,
   npcs: [],
   props: [],
 };
 
 export const QUARRY_FLOOR: MapDef = {
   id: 'quarry_floor',
+  projection: 'oblique',
+  scene: DRILLER_FLOOR_SCENE,
+  backdrop: { url: 'art/maps/quarry_floor.webp', pixelsPerTile: 80 },
   name: 'The Quarry Floor',
   kind: 'combat',
   width: 20,
@@ -165,23 +175,16 @@ export const QUARRY_FLOOR: MapDef = {
     'AA^^....r..r....^^AA',
     '^^.....oo..oo.....^^',
     '.......oo..oo.......',
-    '..r.................',
+    '..r.....#...........',
     '..........mm........',
     '..........mm........',
-    '..r.................',
+    '..r........#........',
     '.......oo..oo.......',
     '^^.....oo..oo.....^^',
     'AA^^....r..r....^^AA',
     'AAA^^..........^^AAA',
   ],
-  partySpawns: [
-    { x: 1, y: 3 },
-    { x: 3, y: 4 },
-    { x: 1, y: 5 },
-    { x: 3, y: 6 },
-    { x: 1, y: 7 },
-    { x: 3, y: 8 },
-  ],
+  partySpawns: COMBAT_PARTY_SPAWNS,
   npcs: [],
   /*
    * Pella's side quest, paid out three fights later and never announced.
@@ -193,6 +196,10 @@ export const QUARRY_FLOOR: MapDef = {
    * nobody ever tells them what they missed.
    */
   props: [
+    propAt('rubble_pile', 6, 7),
+    propAt('rubble_pile', 13, 4),
+    propAt('water_barrel', 12, 6),
+    propAt('brazier', 10, 3),
     {
       propId: 'cabbage_cart',
       pos: { x: 9, y: 6 },

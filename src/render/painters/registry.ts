@@ -11,6 +11,7 @@ import type { AssetEntry } from '../../content/assets/manifest';
 import { resolveAsset } from '../../content/assets/manifest';
 import type { Palette } from '../palettes';
 import { paletteFor } from '../palettes';
+import { paintDiscovery } from './discoveries';
 import { paintImpact } from './fx';
 import { paintPortrait } from './portraits';
 import { paintProp } from './props';
@@ -22,6 +23,8 @@ export interface ResolvedPainter {
   readonly draw: (ctx: Ctx, box: Box, options?: PainterOptions) => void;
   readonly palette: Palette;
   readonly entry: AssetEntry;
+  /** Character or silhouette used when a sheet has not loaded. */
+  readonly variant?: string;
 }
 
 const FALLBACK: UnitPainter = (ctx, box, palette) => {
@@ -31,21 +34,90 @@ const FALLBACK: UnitPainter = (ctx, box, palette) => {
   ctx.restore();
 };
 
+/** The stand-in while a bitmap loads: a disc in the entry's own colours, not a grey square. */
+const LOADING: UnitPainter = (ctx, box, palette) => {
+  ctx.save();
+  ctx.beginPath();
+  ctx.arc(box.x + box.size / 2, box.y + box.size / 2, box.size * 0.46, 0, Math.PI * 2);
+  ctx.fillStyle = palette.dark;
+  ctx.fill();
+  ctx.lineWidth = Math.max(1, box.size * 0.03);
+  ctx.strokeStyle = palette.base;
+  ctx.stroke();
+  ctx.restore();
+};
+
 /**
  * Resolves an asset key to something drawable.
  *
  * Image entries are handled by the sprite cache, not here — this returns a
  * painter that draws the placeholder until the image is ready, which is also
- * what gets drawn if the image fails to load.
+ * what gets drawn if the image fails to load. The placeholder takes the
+ * entry's palette so the chrome around it is already the right colour.
  */
 export function resolvePainter(key: string): ResolvedPainter {
   const entry = resolveAsset(key);
 
   if (entry.kind === 'image') {
+    const palette = paletteFor(entry.palette ?? 'neutral');
     return {
       entry,
-      palette: paletteFor('neutral'),
-      draw: (ctx, box, options) => FALLBACK(ctx, box, paletteFor('neutral'), options ?? {}),
+      palette,
+      draw: (ctx, box, options) => {
+        if (key.startsWith('portrait.')) {
+          paintPortrait(ctx, box, palette, { variant: key.slice('portrait.'.length) });
+        } else if (key === 'world.tea_station') {
+          // Preserve the discovery's semantic kettle while its image loads or
+          // fails; SpriteCache uses this same fallback on both backends.
+          paintDiscovery(ctx, box, palette, { ...(options ?? {}), variant: 'tea' });
+        } else if (key.startsWith('prop.')) {
+          paintProp(ctx, box, palette, { ...(options ?? {}), variant: key.slice('prop.'.length) });
+        } else if (key.startsWith('npc.')) {
+          const variant = key === 'npc.dorin' ? 'guard' : key.slice('npc.'.length);
+          (UNIT_PAINTERS.villager ?? FALLBACK)(ctx, box, palette, { ...(options ?? {}), variant });
+        } else {
+          LOADING(ctx, box, palette, options ?? {});
+        }
+      },
+    };
+  }
+
+  if (entry.kind === 'sheet') {
+    // Keep the character's existing painted figure while the atlas loads or
+    // after a failed fetch. Unit keys end in the cast variant by convention.
+    const palette = paletteFor(entry.palette);
+    const banditVariants: Readonly<Record<string, string>> = {
+      'unit.enemy.slinger': 'sling',
+      'unit.enemy.bruiser': 'broad',
+      'unit.enemy.quarrybender': 'bender',
+      'unit.enemy.deserter': 'bender',
+    };
+    const mercenaryVariants: Readonly<Record<string, string>> = {
+      'unit.enemy.crossbow': 'crossbow',
+      'unit.enemy.merc': 'blade',
+      'unit.enemy.sergeant': 'sergeant',
+      'unit.ally.ruon': 'sergeant',
+    };
+    const variant =
+      banditVariants[key] ?? mercenaryVariants[key] ?? key.slice(key.lastIndexOf('.') + 1);
+    // Missing atlases retain each enemy's original silhouette and equipment.
+    const unitPainter =
+      (key === 'unit.enemy.grumbler'
+        ? UNIT_PAINTERS.driller
+        : banditVariants[key]
+          ? UNIT_PAINTERS.bandit
+          : mercenaryVariants[key]
+            ? UNIT_PAINTERS.mercenary
+            : UNIT_PAINTERS.bender) ?? FALLBACK;
+    return {
+      entry,
+      palette,
+      variant,
+      draw: (ctx, box, options) =>
+        unitPainter(ctx, box, palette, {
+          ...(options ?? {}),
+          variant: options?.variant ?? variant,
+        }),
     };
   }
 
@@ -70,6 +142,15 @@ export function resolvePainter(key: string): ResolvedPainter {
     };
   }
 
+  if (entry.painter === 'discovery') {
+    return {
+      entry,
+      palette,
+      draw: (ctx, box, options) =>
+        paintDiscovery(ctx, box, palette, { ...(options ?? {}), variant }),
+    };
+  }
+
   if (entry.painter === 'prop') {
     return {
       entry,
@@ -83,6 +164,7 @@ export function resolvePainter(key: string): ResolvedPainter {
   return {
     entry,
     palette,
+    ...(variant !== undefined ? { variant } : {}),
     draw: (ctx, box, options) =>
       painter(ctx, box, palette, { ...(options ?? {}), variant: options?.variant ?? variant }),
   };
@@ -90,6 +172,5 @@ export function resolvePainter(key: string): ResolvedPainter {
 
 /** Palette an asset key resolves to, for tinting HUD chrome to match. */
 export function paletteForAsset(key: string): Palette {
-  const entry = resolveAsset(key);
-  return entry.kind === 'painter' ? paletteFor(entry.palette) : paletteFor('neutral');
+  return paletteFor(resolveAsset(key).palette ?? 'neutral');
 }

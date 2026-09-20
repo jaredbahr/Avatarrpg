@@ -37,6 +37,7 @@ export abstract class Dialog {
     const body = el('div', { class: 'stack' });
     this.body = body;
 
+    const heading = el('h2', { text: this.options.title, attrs: { tabindex: '-1' } });
     const panel = el(
       'div',
       {
@@ -46,7 +47,7 @@ export abstract class Dialog {
       el(
         'header',
         { class: 'dialog-head' },
-        el('h2', { text: this.options.title }),
+        heading,
         this.options.subtitle ? el('p', { class: 'muted', text: this.options.subtitle }) : null,
       ),
       body,
@@ -69,12 +70,15 @@ export abstract class Dialog {
         this.close();
         return;
       }
-      if (event.key === 'Tab') this.trapFocus(event, panel);
+      if (event.key === 'Tab' && overlay.contains(document.activeElement))
+        this.trapFocus(event, panel);
     };
     document.addEventListener('keydown', this.keyHandler);
 
     announce(this.options.title);
-    this.focusFirst(panel);
+    // A dialog's first control can be below the fold (the inspector's Close
+    // button is at the end). Focus the title so the opening view stays at top.
+    heading.focus({ preventScroll: true });
   }
 
   /** Rebuilds the body in place, keeping the dialog open. */
@@ -107,17 +111,18 @@ export abstract class Dialog {
     ];
   }
 
-  private focusFirst(root: HTMLElement): void {
-    const target = this.focusables(root)[0];
-    target?.focus();
-  }
-
   private trapFocus(event: KeyboardEvent, root: HTMLElement): void {
     const items = this.focusables(root);
     if (items.length === 0) return;
     const first = items[0];
     const last = items[items.length - 1];
     if (!first || !last) return;
+
+    if (!items.includes(document.activeElement as HTMLElement)) {
+      event.preventDefault();
+      (event.shiftKey ? last : first).focus();
+      return;
+    }
 
     if (event.shiftKey && document.activeElement === first) {
       event.preventDefault();

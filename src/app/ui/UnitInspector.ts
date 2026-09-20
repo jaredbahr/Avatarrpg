@@ -11,14 +11,15 @@ import type { App } from '../App';
 import type { Unit } from '../../core/types';
 import { Dialog } from './Dialog';
 import type { DialogOptions } from './Dialog';
-import { button, el, painterCanvas } from './dom';
+import { button, el } from './dom';
+import { assetCanvas } from './assetCanvas';
+import { portraitKeyFor } from './PartyRoster';
 import { abilityCard } from './AbilityCard';
 import { effectiveStats } from '../../core/rules/stats';
 import { describeIncoming } from '../../core/rules/status';
 import { describeFooting } from '../../core/rules/reactions';
 import { occupiedCells, tileAt } from '../../core/rules/grid';
 import { levelProgress, xpToNextLevel } from '../../core/rules/leveling';
-import { resolvePainter } from '../../render/painters/registry';
 
 export class UnitInspector extends Dialog {
   protected options: DialogOptions;
@@ -75,17 +76,13 @@ export class UnitInspector extends Dialog {
   protected build(body: HTMLElement): void {
     const unit = this.unit;
     const stats = effectiveStats(this.app.content, unit);
-    const portraitKey = unit.characterId
-      ? (this.app.content.characters.get(unit.characterId)?.portrait ?? unit.sprite)
-      : unit.sprite;
+    const portraitKey = portraitKeyFor(this.app.content, unit);
 
     body.appendChild(
       el(
         'div',
         { class: 'row inspector-head' },
-        painterCanvas(portraitKey, 5, (ctx, size) => {
-          resolvePainter(portraitKey).draw(ctx, { x: 0, y: 0, size });
-        }),
+        assetCanvas(portraitKey, 5),
         el(
           'div',
           { class: 'stack tight' },

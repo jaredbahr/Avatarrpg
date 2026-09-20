@@ -3,13 +3,16 @@
  *
  * Each tile is: a terrain fill, a deterministic scatter of detail so the
  * ground is not flat colour, an optional surface wash, and an optional hatch
- * pattern when the colourblind setting is on. Elevation is shown as a lighter
- * top edge and a cast shadow, which is enough to read "high ground" without a
- * second rendering pass.
+ * pattern when the colourblind setting is on. Everything that stands on the
+ * ground (cliff faces, walls, canopies, cover stones, decals) is the board
+ * decor in `board.ts`, drawn in a second pass over the whole visible board so
+ * a canopy can overhang its neighbours.
  */
 
 import type { Tile, Vec2 } from '../../core/types';
+import type { Edges } from '../geometry/board';
 import { SURFACE_STYLES, TERRAIN_STYLES } from '../palettes';
+import { SURFACE_BANK, SURFACE_POOL, surfaceIntensity } from '../surfaceRendering';
 import type { Box, Ctx } from './shapes';
 import { circle, polygon, tileNoise } from './shapes';
 
@@ -39,57 +42,143 @@ export function paintTerrain(ctx: Ctx, box: Box, tile: Tile, pos: Vec2): void {
     }
   }
   ctx.globalAlpha = 1;
-
-  // Elevation: a lit top lip and a shadow underneath.
-  if (tile.elevation > 0) {
-    ctx.fillStyle = 'rgba(255,255,255,0.10)';
-    ctx.fillRect(box.x, box.y, s + 1, Math.max(1, s * 0.09 * tile.elevation));
-    ctx.fillStyle = 'rgba(0,0,0,0.22)';
-    ctx.fillRect(box.x, box.y + s - s * 0.1, s + 1, Math.max(1, s * 0.1));
-  }
-
-  // Walls get a heavier block so they read as impassable, not just dark.
-  if (tile.blocked) {
-    ctx.fillStyle = 'rgba(0,0,0,0.35)';
-    ctx.fillRect(box.x, box.y, s + 1, s + 1);
-    ctx.strokeStyle = style.edge;
-    ctx.lineWidth = Math.max(1, s * 0.05);
-    ctx.strokeRect(box.x + s * 0.06, box.y + s * 0.06, s * 0.88, s * 0.88);
-  }
-
-  // Cover: three little stones along the bottom edge.
-  if (tile.cover && !tile.blocked) {
-    ctx.fillStyle = 'rgba(255,255,255,0.22)';
-    for (let i = 0; i < 3; i++) {
-      circle(ctx, box.x + s * (0.28 + i * 0.22), box.y + s * 0.78, s * 0.07);
-      ctx.fill();
-    }
-  }
 }
 
-export function paintSurface(ctx: Ctx, box: Box, tile: Tile, pos: Vec2, hatch: boolean): void {
+/**
+ * The surface wash, rimmed only where it meets something else (`edges`), so
+ * a puddle four tiles wide is one pool with a bank round it and not four
+ * squares with a border each.
+ */
+export function paintSurface(
+  ctx: Ctx,
+  box: Box,
+  tile: Tile,
+  pos: Vec2,
+  hatch: boolean,
+  edges: Edges,
+): void {
   if (!tile.surface) return;
   const style = SURFACE_STYLES[tile.surface.id];
   const s = box.size;
 
   ctx.save();
-  ctx.globalAlpha = style.alpha;
+  ctx.beginPath();
+  ctx.rect(box.x, box.y, s, s);
+  ctx.clip();
+  const intensity = surfaceIntensity(tile.surface.duration);
+  ctx.globalAlpha = style.alpha * intensity;
   ctx.fillStyle = style.fill;
-  ctx.fillRect(box.x, box.y, s + 1, s + 1);
+  // Snapped to whole pixels rather than overlapped by one: a translucent
+  // fill that overlaps its neighbour shows the seam as a darker line.
+  const x0 = Math.round(box.x);
+  const y0 = Math.round(box.y);
+  ctx.fillRect(x0, y0, Math.round(box.x + s) - x0, Math.round(box.y + s) - y0);
 
-  // A brighter rim so adjacent surface tiles read as one pool rather than a
-  // flat wash over half the map.
-  ctx.globalAlpha = style.alpha * 0.6;
+  // A little material gathers just inside the real bank. Irregular depth is
+  // decoration inside the tile, never a ragged or misleading hazard boundary.
+  const material = tile.surface.id;
+  const water = material === 'water';
+  if (material === 'mud' || material === 'oil') {
+    ctx.globalAlpha = SURFACE_POOL.alpha * intensity;
+    ctx.fillStyle = style.detail;
+    for (const [side, on] of [edges.n, edges.e, edges.s, edges.w].entries()) {
+      if (!on) continue;
+      const point = (along: number, depth: number): [number, number] => {
+        if (side === 0) return [box.x + along * s, box.y + depth * s];
+        if (side === 1) return [box.x + (1 - depth) * s, box.y + along * s];
+        if (side === 2) return [box.x + along * s, box.y + (1 - depth) * s];
+        return [box.x + depth * s, box.y + along * s];
+      };
+      ctx.beginPath();
+      ctx.moveTo(...point(0, 0));
+      ctx.lineTo(...point(1, 0));
+      for (let i = 8; i >= 0; i--) {
+        const depth = SURFACE_POOL.depth * (0.2 + 0.8 * tileNoise(pos.x, pos.y, side * 17 + i));
+        ctx.lineTo(...point(i / 8, depth));
+      }
+      ctx.closePath();
+      ctx.fill();
+    }
+  }
+
+  // The bank: a wide faint band inside the edge under a thin bright line.
+  const inset = Math.max(1, s * SURFACE_BANK.line);
+  const band = s * SURFACE_BANK.width;
+  const sides: [boolean, number, number, number, number][] = [
+    [edges.n, box.x, box.y, s + 1, band],
+    [edges.s, box.x, box.y + s - band, s + 1, band],
+    [edges.w, box.x, box.y, band, s + 1],
+    [edges.e, box.x + s - band, box.y, band, s + 1],
+  ];
+  ctx.fillStyle = style.edge;
+  // Water follows a painted shore, so it needs a quiet material transition,
+  // not the universal tactical outline used for temporary pools.
+  ctx.globalAlpha = (water ? 0.055 : 0.12) * intensity;
+  for (const [on, x, y, w, h] of sides) if (on) ctx.fillRect(x, y, w, h);
+  ctx.globalAlpha = (water ? 0.18 : SURFACE_BANK.alpha) * intensity;
   ctx.strokeStyle = style.edge;
-  ctx.lineWidth = Math.max(1, s * 0.03);
-  ctx.strokeRect(box.x + 1, box.y + 1, s - 2, s - 2);
+  ctx.lineWidth = inset;
+  ctx.beginPath();
+  if (edges.n) {
+    ctx.moveTo(box.x, box.y + inset / 2);
+    ctx.lineTo(box.x + s, box.y + inset / 2);
+  }
+  if (edges.s) {
+    ctx.moveTo(box.x, box.y + s - inset / 2);
+    ctx.lineTo(box.x + s, box.y + s - inset / 2);
+  }
+  if (edges.w) {
+    ctx.moveTo(box.x + inset / 2, box.y);
+    ctx.lineTo(box.x + inset / 2, box.y + s);
+  }
+  if (edges.e) {
+    ctx.moveTo(box.x + s - inset / 2, box.y);
+    ctx.lineTo(box.x + s - inset / 2, box.y + s);
+  }
+  ctx.stroke();
 
-  // A surface about to expire is drawn faintly, so "two rounds left" is
-  // visible without anyone reading a number.
-  if (tile.surface.duration >= 0 && tile.surface.duration <= 1) {
-    ctx.globalAlpha = 0.25;
-    ctx.fillStyle = '#000000';
-    ctx.fillRect(box.x, box.y, s + 1, s + 1);
+  // Sparse material marks leave the painted ground legible. Position-seeded
+  // detail never swims with the camera; the wash still covers every hazard tile.
+  if (material === 'ice' || material === 'mud' || material === 'oil' || material === 'rubble') {
+    ctx.globalAlpha = (material === 'ice' ? 0.38 : 0.24) * intensity;
+    ctx.lineWidth = Math.max(1, s * 0.013);
+    for (let i = 0; i < 3; i++) {
+      const x = box.x + (0.12 + tileNoise(pos.x, pos.y, i * 3 + 1) * 0.7) * s;
+      const y = box.y + (0.12 + tileNoise(pos.x, pos.y, i * 3 + 2) * 0.7) * s;
+      ctx.beginPath();
+      if (material === 'ice') {
+        ctx.moveTo(x - s * 0.08, y + s * 0.11);
+        ctx.lineTo(x, y);
+        ctx.lineTo(x + s * 0.15, y - s * 0.035);
+      } else if (material === 'rubble') {
+        ctx.moveTo(x - s * 0.025, y);
+        ctx.lineTo(x, y - s * 0.04);
+        ctx.lineTo(x + s * 0.04, y + s * 0.01);
+        ctx.closePath();
+      } else {
+        ctx.strokeStyle = style.detail;
+        ctx.lineWidth = s * (material === 'mud' ? 0.026 : 0.018);
+        if (material === 'oil') {
+          ctx.ellipse(x, y, s * 0.18, s * 0.055, -0.35, Math.PI * 0.2, Math.PI * 1.3);
+        } else {
+          ctx.moveTo(x - s * 0.09, y + s * 0.025);
+          ctx.bezierCurveTo(
+            x,
+            y - s * 0.04,
+            x + s * 0.06,
+            y + s * 0.045,
+            x + s * 0.2,
+            y - s * 0.025,
+          );
+        }
+      }
+      ctx.stroke();
+      if (material === 'oil') {
+        ctx.strokeStyle = style.edge;
+        ctx.lineWidth = Math.max(1, s * 0.009);
+        ctx.stroke();
+      }
+    }
   }
 
   if (hatch) paintHatch(ctx, box, style.hatch, style.edge, pos);

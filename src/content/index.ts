@@ -8,24 +8,40 @@
 
 import type { ContentIndex, StatusId, SurfaceId } from '../core/types';
 import { ABILITY_BY_ID, ALL_ABILITIES } from './abilities';
+import { ASSETS } from './assets/manifest';
 import { CHARACTERS, CHARACTER_BY_ID } from './characters';
 import { DISCIPLINES, DISCIPLINE_BY_ID } from './disciplines';
 import { COMBOS } from './combos';
 import { ELEMENT_BY_ID } from './elements';
 import { ENCOUNTERS, ENCOUNTER_BY_ID } from './encounters';
 import { ENEMIES, ENEMY_BY_ID } from './enemies';
+import { RIVERSIDE } from './maps/riverside';
+import { RIVERSIDE_STORY } from './story/riverside';
 import { BA_DAN_VILLAGE } from './maps/village';
 import { COMBAT_MAPS } from './maps/combat';
+import { connectAct1 } from './maps/world';
+import { DISCOVERY_STORY } from './story/discoveries';
+import { WORLD_STORY } from './story/world';
 import { PROPS, PROP_BY_ID } from './props';
 import { STATUSES, STATUS_BY_ID } from './statuses';
 import { SURFACES, SURFACE_BY_ID } from './surfaces';
 import { UNIVERSAL_ABILITY_IDS } from './abilities';
 import { ACT1_NODES } from './story/act1';
+import { withPartyVoices } from './story/partyVoices';
+import { RETURN_STORY } from './story/return';
 import type { ContentBundle } from './schemas';
 import type { MapDef, StoryNode } from '../core/types';
 
-export const ALL_MAPS: readonly MapDef[] = [BA_DAN_VILLAGE, ...COMBAT_MAPS];
-export const ALL_STORY: readonly StoryNode[] = ACT1_NODES;
+export const ALL_MAPS: readonly MapDef[] = [BA_DAN_VILLAGE, RIVERSIDE, ...COMBAT_MAPS].map(
+  connectAct1,
+);
+export const ALL_STORY: readonly StoryNode[] = withPartyVoices([
+  ...ACT1_NODES,
+  ...RIVERSIDE_STORY,
+  ...WORLD_STORY,
+  ...DISCOVERY_STORY,
+  ...RETURN_STORY,
+]);
 
 /** The flat form, used by the validation test and the balance report. */
 export const CONTENT_BUNDLE: ContentBundle = {
@@ -34,6 +50,7 @@ export const CONTENT_BUNDLE: ContentBundle = {
   disciplines: DISCIPLINES,
   enemies: ENEMIES,
   maps: ALL_MAPS,
+  assets: ASSETS,
   encounters: ENCOUNTERS,
   statuses: STATUSES,
   surfaces: SURFACES,
@@ -77,4 +94,11 @@ export { ELEMENTS, ELEMENT_BY_ID, elementBase } from './elements';
 export { charactersForElement } from './characters';
 export { DISCIPLINE_BY_ID, DISCIPLINE_FLAGS, disciplinesForElement } from './disciplines';
 export { resolveAsset, ASSETS } from './assets/manifest';
+export {
+  STORY_PRESENTATIONS,
+  WORLD_PRESENTATIONS,
+  presentationFor,
+  validateStoryPresentations,
+  worldConversationFor,
+} from './story/presentations';
 export type { AssetEntry } from './assets/manifest';

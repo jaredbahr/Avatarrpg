@@ -32,6 +32,8 @@ export interface SlotSummary {
   readonly label: string;
   readonly summary: string;
   readonly savedAt: number;
+  /** Present when the slot could not be read or its save could not be loaded. */
+  readonly error?: string;
 }
 
 export interface StorageResult {
@@ -41,9 +43,8 @@ export interface StorageResult {
 
 function storage(): Storage | null {
   try {
-    const test = '__fnt_probe__';
-    window.localStorage.setItem(test, '1');
-    window.localStorage.removeItem(test);
+    // A full quota blocks writes, not reads or erases. Probing with setItem
+    // would hide recoverable saves precisely when the player needs them.
     return window.localStorage;
   } catch {
     return null;
@@ -51,7 +52,14 @@ function storage(): Storage | null {
 }
 
 export function storageAvailable(): boolean {
-  return storage() !== null;
+  try {
+    const store = storage();
+    if (!store) return false;
+    store.getItem(keyFor(AUTOSAVE_ID));
+    return true;
+  } catch {
+    return false;
+  }
 }
 
 function keyFor(slot: SlotId): string {
@@ -97,7 +105,15 @@ export function loadFromSlot(
   const store = storage();
   if (!store) return { ok: false, error: 'This browser is blocking site data.' };
 
-  const json = store.getItem(keyFor(slot));
+  let json: string | null;
+  try {
+    json = store.getItem(keyFor(slot));
+  } catch {
+    return {
+      ok: false,
+      error: 'Could not read that save. This browser may be blocking site data.',
+    };
+  }
   if (!json) return { ok: false, error: 'That slot is empty.' };
 
   const result = deserialize(json);
@@ -109,13 +125,17 @@ export function loadFromSlot(
   };
 }
 
-export function clearSlot(slot: SlotId): void {
+export function clearSlot(slot: SlotId): StorageResult {
   const store = storage();
-  if (!store) return;
+  if (!store) return { ok: false, error: 'This browser is blocking site data.' };
   try {
     store.removeItem(keyFor(slot));
+    return { ok: true };
   } catch {
-    // Nothing useful to do; the slot listing will still show it.
+    return {
+      ok: false,
+      error: 'Could not erase that slot. This browser may be blocking site data.',
+    };
   }
 }
 
@@ -130,14 +150,23 @@ export function listSlots(): SlotSummary[] {
       summary: 'Empty',
       savedAt: 0,
     };
-    if (!store) return empty;
+    if (!store) {
+      const error = 'This browser is blocking site data.';
+      return { ...empty, summary: error, error };
+    }
 
-    const json = store.getItem(keyFor(id));
+    let json: string | null;
+    try {
+      json = store.getItem(keyFor(id));
+    } catch {
+      const error = 'Could not read that save. This browser may be blocking site data.';
+      return { ...empty, summary: error, error };
+    }
     if (!json) return empty;
 
     const result = deserialize(json);
     if (!result.ok) {
-      return { ...empty, occupied: true, summary: `Damaged save — ${result.error}` };
+      return { ...empty, occupied: true, summary: result.error, error: result.error };
     }
     return {
       id,
@@ -250,6 +279,13 @@ export interface Settings {
   reduceMotion: boolean;
   hatchSurfaces: boolean;
   highContrast: boolean;
+  /** Tile lines over the ground. Off by default (ADR 0007); High contrast forces them on. */
+  showGrid: boolean;
+  /**
+   * How loud the game is, 0 to 1. Zero opens no audio context at all, so
+   * "off" costs nothing rather than running a silent graph (ADR 0012).
+   */
+  volume: number;
 }
 
 export const DEFAULT_SETTINGS: Settings = {
@@ -257,6 +293,8 @@ export const DEFAULT_SETTINGS: Settings = {
   reduceMotion: false,
   hatchSurfaces: false,
   highContrast: false,
+  showGrid: false,
+  volume: 0.7,
 };
 
 export function loadSettings(): Settings {
@@ -272,6 +310,13 @@ export function loadSettings(): Settings {
       reduceMotion: parsed.reduceMotion === true,
       hatchSurfaces: parsed.hatchSurfaces === true,
       highContrast: parsed.highContrast === true,
+      showGrid: parsed.showGrid === true,
+      // A save written before sound existed has no volume; it gets the default
+      // rather than silence, because a missing field is not a preference.
+      volume:
+        typeof parsed.volume === 'number' && parsed.volume >= 0 && parsed.volume <= 1
+          ? parsed.volume
+          : DEFAULT_SETTINGS.volume,
     };
   } catch {
     return { ...DEFAULT_SETTINGS };
@@ -295,4 +340,10 @@ export function applySettings(settings: Settings): void {
   root.dataset.reduceMotion = settings.reduceMotion ? 'on' : 'off';
   root.dataset.hatch = settings.hatchSurfaces ? 'on' : 'off';
   root.dataset.contrast = settings.highContrast ? 'high' : 'normal';
+  root.dataset.grid = showGridLines(settings) ? 'on' : 'off';
+}
+
+/** Whether the board draws its tile lines: the setting, or High contrast, which needs them. */
+export function showGridLines(settings: Settings): boolean {
+  return settings.showGrid || settings.highContrast;
 }

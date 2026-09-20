@@ -10,6 +10,8 @@
  */
 
 import { RngCursor } from '../rng';
+import { evaluate } from '../story/conditions';
+import { activeTriggers, triggerKey, visibleNpcs } from '../story/world';
 import type {
   BattleState,
   Command,
@@ -17,6 +19,7 @@ import type {
   GameEvent,
   GameState,
   Grid,
+  MapDef,
   PendingChoice,
   StepResult,
   Unit,
@@ -331,6 +334,9 @@ function handleResolveBattle(content: ContentIndex, state: GameState): StepResul
     party,
     battle: null,
     pendingChoices,
+    world: victory
+      ? { ...state.world, cleared: [...new Set([...state.world.cleared, battle.encounterId])] }
+      : state.world,
   };
 
   if (!nextNodeId) {
@@ -357,16 +363,27 @@ function handleWalkTo(content: ContentIndex, state: GameState, pos: Vec2): StepR
   const map = content.maps.get(state.location.mapId);
   if (!map) return refuse(state, 'No map loaded.');
 
-  const npc = map.npcs.find((n) => samePos(n.pos, pos));
+  const npc = visibleNpcs(map, state).find((n) => samePos(n.pos, pos));
   if (npc) {
     if (distance(state.location.pos, pos) > 1) {
       // Walk adjacent first rather than teleporting into a conversation.
       const approach = findApproach(content, state, pos);
       if (!approach) return refuse(state, 'You cannot reach them from here.');
-      const walked: GameState = { ...state, location: { ...state.location, pos: approach } };
+      const step = handleWalkTo(content, state, approach);
+      if (
+        step.state.screen !== 'explore' ||
+        step.state.location.mapId !== map.id ||
+        !samePos(step.state.location.pos, approach)
+      )
+        return step;
+      const walked = step.state;
       const target = npcNode(content, walked, map.id, npc.id);
       if (!target) return refuse(walked, 'They have nothing to say.');
-      return enterStoryNode(content, walked, target);
+      const entered = enterStoryNode(content, walked, target);
+      return {
+        state: entered.state,
+        events: [...step.events, ...entered.events],
+      };
     }
     const target = npcNode(content, state, map.id, npc.id);
     if (!target) return refuse(state, 'They have nothing to say.');
@@ -391,30 +408,93 @@ function handleWalkTo(content: ContentIndex, state: GameState, pos: Vec2): StepR
   );
   if (!route) return refuse(state, 'There is no way through from here.');
 
-  const moved: GameState = { ...state, location: { ...state.location, pos } };
-
-  if (map.exit && samePos(map.exit.pos, pos)) {
-    const node = currentNode(content, moved);
-    if (node?.kind === 'explore') return enterStoryNode(content, moved, node.next);
+  const triggers = activeTriggers(map, state);
+  for (let index = 0; index < route.path.length; index++) {
+    const point = route.path[index];
+    if (!point) continue;
+    const trigger = triggers.find((item) => item.area.some((cell) => samePos(cell, point)));
+    if (!trigger) continue;
+    const stopped: GameState = {
+      ...state,
+      location: { ...state.location, pos: point },
+      world: {
+        ...state.world,
+        fired: [...new Set([...state.world.fired, triggerKey(map, trigger)])],
+      },
+    };
+    const entered = enterStoryNode(content, stopped, trigger.node);
+    return {
+      state: entered.state,
+      events: [...partyWalked(state, route.path.slice(0, index + 1)), ...entered.events],
+    };
   }
 
-  return { state: moved, events: [] };
+  const moved: GameState = { ...state, location: { ...state.location, pos } };
+  const walk = partyWalked(state, route.path);
+  const exit = map.exits?.find((item) => samePos(item.pos, pos));
+  if (exit) {
+    if (!evaluate(moved, exit.requires))
+      return {
+        state: moved,
+        events: [
+          ...walk,
+          { type: 'message', text: exit.lockedHint ?? 'This route is not open yet.' },
+        ],
+      };
+    const destination = content.maps.get(exit.toMapId);
+    if (!destination || tileAt(buildGrid(destination), exit.toPos)?.blocked !== false)
+      return refuse(state, 'This route is unavailable.');
+    // Arrive beside the return exit, never on it. Reciprocal routes are explicit.
+    return {
+      state: {
+        ...moved,
+        location: { mapId: destination.id, pos: exit.toPos },
+        story: { ...moved.story, nodeId: null, lineIndex: 0 },
+        world: {
+          ...moved.world,
+          returnPos: { ...moved.world.returnPos, [map.id]: pos, [destination.id]: exit.toPos },
+        },
+      },
+      events: [...walk, { type: 'screenChanged', screen: 'explore' }],
+    };
+  }
+
+  if (!map.exits?.length && map.exit && samePos(map.exit.pos, pos)) {
+    const node = currentNode(content, moved);
+    if (node?.kind === 'explore') {
+      const entered = enterStoryNode(content, moved, node.next);
+      return { state: entered.state, events: [...walk, ...entered.events] };
+    }
+  }
+
+  return { state: moved, events: walk };
+}
+
+/**
+ * The walk as an event, so the party is seen crossing the tiles instead of
+ * appearing at the far end. Presentation plays it; nothing in the rules
+ * reads it. Standing still (an empty route) is no event.
+ */
+function partyWalked(state: GameState, path: readonly Vec2[]): GameEvent[] {
+  const leader = state.party[0];
+  if (!leader || path.length === 0) return [];
+  return [{ type: 'partyWalked', unitId: leader.id, from: state.location.pos, path }];
 }
 
 /**
  * Explore maps carry no battle, so their grid is derived from the map each
- * time it is needed. Memoised by map id because the tiles never change outside
+ * time it is needed. Memoised by map definition because the tiles never change outside
  * combat and a 24x16 rebuild on every tap would be pure waste.
  */
-const exploreGrids = new Map<string, Grid>();
+const exploreGrids = new WeakMap<MapDef, Grid>();
 
 function buildExploreGrid(content: ContentIndex, state: GameState): Grid {
   const map = content.maps.get(state.location.mapId);
   if (!map) throw new Error(`Unknown map "${state.location.mapId}"`);
-  const cached = exploreGrids.get(map.id);
+  const cached = exploreGrids.get(map);
   if (cached) return cached;
   const built = buildGrid(map);
-  exploreGrids.set(map.id, built);
+  exploreGrids.set(map, built);
   return built;
 }
 
@@ -432,7 +512,14 @@ function findApproach(content: ContentIndex, state: GameState, target: Vec2): Ve
       if (occupied.has(posKey(candidate))) continue;
       const tile = tileAt(grid, candidate);
       if (!tile || tile.blocked) continue;
-      const d = distance(state.location.pos, candidate);
+      const path = findPath(
+        { grid, blocked: occupied, surfaces: content.surfaces, size: 1 },
+        state.location.pos,
+        candidate,
+        grid.width * grid.height,
+      );
+      if (!path) continue;
+      const d = path.path.length;
       if (d < bestDistance) {
         bestDistance = d;
         best = candidate;

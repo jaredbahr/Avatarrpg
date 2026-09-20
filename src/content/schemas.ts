@@ -16,6 +16,8 @@
  */
 
 import { z } from 'zod';
+import { CLIP_FRAME_COUNTS, CLIP_NAMES, REQUIRED_CLIPS } from './assets/clips';
+import type { AssetEntry } from './assets/manifest';
 import { STANDING_PREFIX } from '../core/story/conditions';
 import type {
   Ability,
@@ -31,6 +33,7 @@ import type {
   StoryNode,
   SurfaceDef,
 } from '../core/types';
+import { STORY_PRESENTATIONS, validateStoryPresentations } from './story/presentations';
 
 /* ------------------------------------------------------------------ */
 /* Primitives                                                          */
@@ -75,6 +78,7 @@ const terrainId = z.enum([
 ]);
 
 const vec2 = z.object({ x: z.number().int().min(0), y: z.number().int().min(0) });
+const sceneFootprintVec2 = z.object({ x: z.number().int(), y: z.number().int() });
 const id = z.string().min(1).max(64);
 
 const unitStats = z.object({
@@ -395,6 +399,22 @@ const tileTemplate = z.object({
   surfaceDuration: z.number().int().min(-1).optional(),
 });
 
+const sceneImageSchema = z.object({
+  url: z.string().min(1),
+  sourceRect: z
+    .object({
+      x: z.number().int().nonnegative(),
+      y: z.number().int().nonnegative(),
+      width: z.number().int().positive(),
+      height: z.number().int().positive(),
+    })
+    .optional(),
+  x: z.number(),
+  y: z.number(),
+  width: z.number().positive(),
+  height: z.number().positive(),
+});
+
 export const mapSchema = z
   .object({
     id,
@@ -411,6 +431,8 @@ export const mapSchema = z
         name: z.string().min(1),
         pos: vec2,
         sprite: z.string().min(1),
+        interaction: z.literal('route-sign').optional(),
+        when: conditionSchema.optional(),
         node: id,
         routes: z.array(z.object({ when: conditionSchema, node: id })).optional(),
       }),
@@ -418,6 +440,87 @@ export const mapSchema = z
     props: z.array(propPlacement),
     ambience: z.string().min(1),
     exit: z.object({ pos: vec2, label: z.string().min(1) }).optional(),
+    objective: z.string().min(1).optional(),
+    objectiveVariants: z
+      .array(z.object({ when: conditionSchema, text: z.string().min(1) }))
+      .optional(),
+    exits: z
+      .array(
+        z.object({
+          pos: vec2,
+          toMapId: id,
+          toPos: vec2,
+          label: z.string().min(1),
+          requires: conditionSchema.optional(),
+          lockedHint: z.string().min(1).optional(),
+        }),
+      )
+      .optional(),
+    triggers: z
+      .array(
+        z.object({
+          id,
+          area: z.array(vec2).min(1),
+          label: z.string().min(1),
+          sprite: z.string().min(1),
+          node: id,
+          when: conditionSchema.optional(),
+          once: z.boolean(),
+        }),
+      )
+      .optional(),
+    // A painting under the grid (ADR 0009). Between 32 px a tile (the probe) and
+    // 256, so a 24-wide map stays inside the 2048 px texture every iPad takes.
+    projection: z.literal('oblique').optional(),
+    scene: z
+      .object({
+        paintedWater: z.boolean().optional(),
+        groundMode: z.literal('partial').optional(),
+        paintedRubble: z.array(vec2).optional(),
+        ground: z.array(sceneImageSchema).max(8),
+        scenery: z
+          .array(
+            sceneImageSchema
+              .extend({
+                id,
+                footprint: z.array(sceneFootprintVec2).min(1),
+                depth: z.object({ x: z.number().finite(), y: z.number().finite() }),
+                exterior: z.boolean().optional(),
+                wall: z.boolean().optional(),
+                fadeWhenOccluding: z.boolean().optional(),
+                fadeGroup: id.optional(),
+              })
+              .superRefine((piece, ctx) => {
+                if (piece.exterior) return;
+                piece.footprint.forEach((cell, index) => {
+                  if (cell.x < 0 || cell.y < 0) {
+                    ctx.addIssue({
+                      code: z.ZodIssueCode.custom,
+                      path: ['footprint', index],
+                      message: 'must be on the map unless exterior is true',
+                    });
+                  }
+                });
+              }),
+          )
+          .max(32),
+      })
+      .optional(),
+    backdrop: z
+      .object({
+        url: z.string().min(1),
+        pixelsPerTile: z.number().int().min(32).max(256),
+        projection: z.literal('oblique').optional(),
+        padding: z
+          .object({
+            left: z.number().nonnegative(),
+            top: z.number().nonnegative(),
+            right: z.number().nonnegative(),
+            bottom: z.number().nonnegative(),
+          })
+          .optional(),
+      })
+      .optional(),
   })
   .superRefine((map, ctx) => {
     if (map.rows.length !== map.height) {
@@ -546,6 +649,16 @@ export const storyNodeSchema = z.discriminatedUnion('kind', [
     kind: z.literal('explore'),
     mapId: id,
     objective: z.string().min(1),
+    objectiveNpcId: id.optional(),
+    objectiveVariants: z
+      .array(
+        z.object({
+          when: conditionSchema,
+          text: z.string().min(1),
+          objectiveNpcId: id.nullable().optional(),
+        }),
+      )
+      .optional(),
     next: id,
   }),
   z.object({
@@ -562,6 +675,7 @@ export const storyNodeSchema = z.discriminatedUnion('kind', [
     title: z.string().min(1),
     lines: z.array(z.string().min(1)).min(1),
     teaser: z.string().min(1),
+    next: id.optional(),
   }),
 ]);
 
@@ -569,7 +683,54 @@ export const storyNodeSchema = z.discriminatedUnion('kind', [
 /* Cross-reference validation                                          */
 /* ------------------------------------------------------------------ */
 
+/* ------------------------------------------------------------------ */
+/* Assets                                                              */
+/* ------------------------------------------------------------------ */
+
+const clipDef = z.object({
+  frames: z.array(z.string().min(1)).min(1),
+  fps: z.number().positive().max(60),
+  loop: z.boolean(),
+  events: z.object({ hit: z.number().int().min(0).optional() }).optional(),
+});
+
+/** The manifest's entries (ADR 0003): a painter, a still, or a pose sheet. */
+export const assetEntrySchema = z.discriminatedUnion('kind', [
+  z.object({
+    kind: z.literal('painter'),
+    painter: z.string().min(1),
+    palette: z.string().min(1),
+    variant: z.string().min(1).optional(),
+  }),
+  z.object({
+    kind: z.literal('image'),
+    url: z.string().min(1),
+    palette: z.string().min(1).optional(),
+  }),
+  z.object({
+    kind: z.literal('sheet'),
+    atlas: z.string().regex(/\.json$/, 'must point at the atlas JSON'),
+    pixelsPerTile: z.union([z.literal(128), z.literal(256)]),
+    frameSize: z
+      .object({ w: z.number().int().min(1).max(512), h: z.number().int().min(1).max(512) })
+      .optional(),
+    footprint: z.object({ w: z.union([z.literal(1), z.literal(2)]), h: z.literal(1) }),
+    anchor: z.object({ x: z.number().min(0).max(1), y: z.number().min(0).max(1) }),
+    facing: z.enum(['mirror', 'both']),
+    clips: z.object(Object.fromEntries(CLIP_NAMES.map((clip) => [clip, clipDef.optional()]))),
+    meleeDirections: z
+      .object({
+        screenUp: z.tuple([z.string().min(1), z.string().min(1)]).optional(),
+        screenDown: z.tuple([z.string().min(1), z.string().min(1)]).optional(),
+      })
+      .optional(),
+    palette: z.string().min(1),
+  }),
+]);
+
 export interface ContentBundle {
+  /** The art manifest, so every sprite key content names is checked against it. */
+  readonly assets?: Readonly<Record<string, AssetEntry>>;
   readonly abilities: readonly Ability[];
   readonly characters: readonly CharacterDef[];
   readonly disciplines: readonly DisciplineDef[];
@@ -591,6 +752,30 @@ export interface ContentBundle {
  * enough that no variant is secretly the easy route.
  */
 export const VARIANT_BUDGET_TOLERANCE = 0.1;
+
+/**
+ * How much threat a flag-gated `conditionalEnemies` group may *add* on top of
+ * the authored roster.
+ *
+ * Variants swap and are held to 10% either way. Conditional groups only ever
+ * add, and until this rule existed they were the one roster lever with no
+ * budget on them at all — which is how the quarry floor boss came to put two
+ * extra mercenaries on the field for anyone who traded Ruon away. That branch
+ * measured a 9% win rate against the other branch's 62%, and because the
+ * balance harness set no story flags, nothing in the repo could see it.
+ *
+ * Twenty percent is drawn from what the simulator says extra bodies actually
+ * cost, which is far more than their XP suggests: on that boss floor a *single*
+ * 150-XP body (+29%) still measured 32-46% against 82%, and the pair that
+ * shipped (+59%) was unwinnable. A cap this tight means anything substantial
+ * has to be authored as a variant — swap the roster, do not grow it — which is
+ * the lesson that fight taught.
+ *
+ * It is a guardrail, not a proof of balance. XP is a coarse proxy for threat: a
+ * quarry bender and a mercenary cost the same 150 and do not play the same. The
+ * real check is `npm run balance` with BALANCE_VARIANTS=1.
+ */
+export const CONDITIONAL_BUDGET_TOLERANCE = 0.2;
 
 function duplicates(ids: readonly string[]): string[] {
   const seen = new Set<string>();
@@ -620,6 +805,73 @@ function isWalkable(map: MapDef, x: number, y: number): boolean {
  */
 export function validateContent(bundle: ContentBundle): string[] {
   const problems: string[] = [];
+
+  /* --- assets ------------------------------------------------------- */
+  const assets = bundle.assets ?? {};
+  for (const [key, entry] of Object.entries(assets)) {
+    const parsed = assetEntrySchema.safeParse(entry);
+    if (!parsed.success) {
+      const issues = parsed.error.issues.map((i) => `${i.path.join('.')}: ${i.message}`);
+      problems.push(`asset ${key}: ${issues.join('; ')}`);
+      continue;
+    }
+    if (entry.kind !== 'sheet') continue;
+    for (const clip of REQUIRED_CLIPS) {
+      if (!entry.clips[clip]) problems.push(`asset ${key}: sheet has no ${clip} clip`);
+    }
+    for (const clip of CLIP_NAMES) {
+      const def = entry.clips[clip];
+      if (!def) continue;
+      const bounds = CLIP_FRAME_COUNTS[clip];
+      if (def.frames.length < bounds.min || def.frames.length > bounds.max) {
+        problems.push(
+          `asset ${key}: ${clip} has ${def.frames.length} frames, needs ${bounds.min}-${bounds.max}`,
+        );
+      }
+      def.frames.forEach((name, index) => {
+        const expected = `${key}/${clip}/${index}`;
+        if (name !== expected) {
+          problems.push(
+            `asset ${key}: ${clip} frame ${index} is "${name}", expected "${expected}"`,
+          );
+        }
+      });
+    }
+  }
+  if (bundle.assets) {
+    const wanted: [string, string, number | null][] = [
+      ...bundle.characters.map((c): [string, string, number | null] => [
+        `character ${c.id}`,
+        c.sprite,
+        1,
+      ]),
+      ...bundle.enemies.map((e): [string, string, number | null] => [
+        `enemy ${e.id}`,
+        e.sprite,
+        e.size,
+      ]),
+      ...bundle.props.map((p): [string, string, number | null] => [`prop ${p.id}`, p.sprite, null]),
+      ...bundle.maps.flatMap((m) =>
+        m.npcs.map((n): [string, string, number | null] => [`npc ${n.id}`, n.sprite, null]),
+      ),
+    ];
+    for (const map of bundle.maps)
+      for (const trigger of map.triggers ?? []) {
+        wanted.push([`trigger ${map.id}:${trigger.id}`, trigger.sprite, null]);
+      }
+    for (const [owner, key, size] of wanted) {
+      const entry = assets[key];
+      if (!entry) {
+        problems.push(`${owner}: sprite "${key}" has no entry in the asset manifest`);
+        continue;
+      }
+      if (entry.kind === 'sheet' && size !== null && entry.footprint.w !== size) {
+        problems.push(
+          `${owner}: sheet "${key}" is ${entry.footprint.w} tiles wide, the unit is ${size}`,
+        );
+      }
+    }
+  }
 
   /* --- shape ------------------------------------------------------- */
   const shapeChecks: [string, z.ZodTypeAny, readonly unknown[]][] = [
@@ -859,6 +1111,31 @@ export function validateContent(bundle: ContentBundle): string[] {
         );
       }
     });
+    const exitCells = new Set<string>();
+    for (const exit of m.exits ?? []) {
+      const key = `${exit.pos.x},${exit.pos.y}`;
+      if (exitCells.has(key)) problems.push(`map "${m.id}" repeats exit (${key})`);
+      exitCells.add(key);
+      const target = bundle.maps.find((map) => map.id === exit.toMapId);
+      if (!isWalkable(m, exit.pos.x, exit.pos.y))
+        problems.push(`map "${m.id}" has a blocked world exit`);
+      if (!target || !isWalkable(target, exit.toPos.x, exit.toPos.y))
+        problems.push(`map "${m.id}" has an invalid exit destination "${exit.toMapId}"`);
+      if (exit.requires && !exit.lockedHint)
+        problems.push(`map "${m.id}" gated exit needs a lockedHint`);
+    }
+    const triggerIds = new Set<string>();
+    for (const trigger of m.triggers ?? []) {
+      if (triggerIds.has(trigger.id))
+        problems.push(`map "${m.id}" repeats trigger "${trigger.id}"`);
+      triggerIds.add(trigger.id);
+      if (!storyIds.has(trigger.node))
+        problems.push(`map "${m.id}" trigger links to missing node "${trigger.node}"`);
+      for (const pos of trigger.area) {
+        if (!isWalkable(m, pos.x, pos.y))
+          problems.push(`map "${m.id}" trigger "${trigger.id}" is blocked or off-map`);
+      }
+    }
     if (m.exit && !isWalkable(m, m.exit.pos.x, m.exit.pos.y)) {
       problems.push(`map "${m.id}" exit at (${m.exit.pos.x},${m.exit.pos.y}) is blocked`);
     }
@@ -996,6 +1273,34 @@ export function validateContent(bundle: ContentBundle): string[] {
       );
 
     const baseBudget = budgetOf(e.enemies);
+
+    /*
+     * What the flags can add, worst case.
+     *
+     * Groups keyed on the same flag with opposite `whenSet` can never both
+     * fire, so the worst case is the heavier side of each flag, summed across
+     * distinct flags. Checking groups one at a time would let three 15% groups
+     * through and land a 45% roster on the table.
+     */
+    if (baseBudget > 0 && e.conditionalEnemies.length > 0) {
+      const heaviestPerFlag = new Map<string, number>();
+      for (const group of e.conditionalEnemies) {
+        const cost = budgetOf(group.placements);
+        heaviestPerFlag.set(group.flag, Math.max(heaviestPerFlag.get(group.flag) ?? 0, cost));
+      }
+      const added = [...heaviestPerFlag.values()].reduce((sum, cost) => sum + cost, 0);
+      const drift = added / baseBudget;
+      if (drift > CONDITIONAL_BUDGET_TOLERANCE) {
+        problems.push(
+          `encounter "${e.id}" can add ${added} XP of conditional enemies to a baseline of ` +
+            `${baseBudget} (${Math.round(drift * 100)}% more, limit ` +
+            `${Math.round(CONDITIONAL_BUDGET_TOLERANCE * 100)}%) — a story branch should change ` +
+            `who is on the field, not how many. Author it as a variant, which swaps the roster ` +
+            `and is reported separately by BALANCE_VARIANTS=1`,
+        );
+      }
+    }
+
     const variantIds = new Set<string>();
     for (const variant of e.variants) {
       if (variantIds.has(variant.id)) {
@@ -1072,10 +1377,37 @@ export function validateContent(bundle: ContentBundle): string[] {
         }
         break;
       case 'end':
+        if (node.next) {
+          links.push([node.id, node.next]);
+          const target = bundle.story.find((candidate) => candidate.id === node.next);
+          if (target && target.kind !== 'explore') {
+            problems.push(
+              `story node "${node.id}" continues to "${node.next}", which is not an explore node`,
+            );
+          }
+        }
         break;
     }
-    if (node.kind === 'explore' && !mapIds.has(node.mapId)) {
-      problems.push(`story node "${node.id}" uses unknown map "${node.mapId}"`);
+    if (node.kind === 'explore') {
+      const map = bundle.maps.find((candidate) => candidate.id === node.mapId);
+      if (!map) {
+        problems.push(`story node "${node.id}" uses unknown map "${node.mapId}"`);
+      } else if (node.objectiveNpcId && !map.npcs.some((npc) => npc.id === node.objectiveNpcId)) {
+        problems.push(
+          `story node "${node.id}" targets unknown npc "${node.objectiveNpcId}" on map "${node.mapId}"`,
+        );
+      } else {
+        for (const variant of node.objectiveVariants ?? []) {
+          if (
+            variant.objectiveNpcId &&
+            !map.npcs.some((npc) => npc.id === variant.objectiveNpcId)
+          ) {
+            problems.push(
+              `story node "${node.id}" objective variant targets unknown npc "${variant.objectiveNpcId}" on map "${node.mapId}"`,
+            );
+          }
+        }
+      }
     }
   }
 
@@ -1084,6 +1416,8 @@ export function validateContent(bundle: ContentBundle): string[] {
       problems.push(`story node "${from}" links to "${to}", which does not exist`);
     }
   }
+
+  problems.push(...validateStoryPresentations(STORY_PRESENTATIONS, bundle.story, bundle.maps));
 
   /* --- reachability: every node must be reachable from the entry ----- */
   const entry = 'act1_open';

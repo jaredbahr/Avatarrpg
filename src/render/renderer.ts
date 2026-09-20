@@ -15,7 +15,7 @@ import type { Viewport } from './camera';
 import { SURFACE_STYLES } from './palettes';
 import { Canvas2DBackend } from './backends/canvas2d';
 import { PixiBackend } from './backends/pixi';
-import type { RenderBackend } from './backends/backend';
+import type { BackendCapabilities, RenderBackend } from './backends/backend';
 import { sprites } from './spriteCache';
 import type { MapView } from './view';
 
@@ -24,8 +24,10 @@ import type { MapView } from './view';
  * them to `view.ts` was a file split, not an API change.
  */
 export type {
+  AimArc,
+  ClipName,
+  EmitterInstance,
   Floater,
-  FxInstance,
   MapView,
   NpcMarker,
   OverlayKind,
@@ -37,6 +39,16 @@ export type {
 export class Renderer {
   camera: Camera;
   private backend: RenderBackend;
+  private observer: ResizeObserver | null = null;
+  private lastView: MapView | null = null;
+  private destroyed = false;
+
+  /**
+   * Called after the element's box changed and the camera has been re-measured,
+   * so the owning scene can adjust the view. Combat refits an unzoomed board;
+   * exploration keeps the player's zoom and map focus.
+   */
+  onViewportChange: (() => void) | null = null;
 
   constructor(
     private canvas: HTMLCanvasElement,
@@ -44,6 +56,7 @@ export class Renderer {
   ) {
     this.camera = new Camera(this.measure(), grid);
     this.backend = Renderer.createBackend(canvas);
+    this.observe();
   }
 
   /**
@@ -80,7 +93,12 @@ export class Renderer {
 
   /** Which backend is actually running. Exposed for the e2e suite and Settings. */
   get backendName(): 'webgl' | 'canvas' {
-    return this.backend instanceof PixiBackend ? 'webgl' : 'canvas';
+    return this.backend.capabilities.name;
+  }
+
+  /** What the running backend can draw beyond the board itself. */
+  get capabilities(): BackendCapabilities {
+    return this.backend.capabilities;
   }
 
   private measure(): Viewport {
@@ -94,10 +112,60 @@ export class Renderer {
 
   /** Re-reads the element size and resizes the backing store. Call on resize. */
   resize(grid?: { width: number; height: number }): void {
+    if (this.destroyed) return;
     const viewport = this.measure();
     this.camera.viewport = viewport;
     if (grid) this.camera.grid = grid;
     this.backend.resize(viewport);
+  }
+
+  /** Resize, restore the scene's camera policy, and refill the backing store in one turn. */
+  resizeAndRedraw(refit: () => void, grid?: { width: number; height: number }): void {
+    if (this.destroyed) return;
+    this.resize(grid);
+    refit();
+    // Both observer delivery and an explicit scene resize can follow the
+    // current RAF draw. Never leave their cleared backing store until next RAF.
+    if (!this.destroyed && this.lastView) this.backend.draw(this.lastView, this.camera);
+  }
+
+  /**
+   * Re-measures whenever the canvas element's own box changes.
+   *
+   * A window `resize` event is not enough, and relying on one is what put the
+   * hover highlight a tile or two off the cursor. The canvas is `100%` of a
+   * flexed wrapper, so its height is whatever the rest of the screen leaves it:
+   * the turn strip fills with portraits and the HUD with panels *after* the
+   * scene mounts, the log panel toggles, fonts land later still, and the
+   * Large-text setting moves all of it again. None of that fires a window
+   * resize.
+   *
+   * A stale measurement is not merely a stale camera. `resize` sizes the
+   * backing store from the same numbers, so the browser then scales the frame
+   * to the box it actually has — measured here, 830 backing pixels squashed
+   * into 622 CSS ones. Every pixel the renderer computes from a pointer
+   * coordinate is then drawn somewhere else, by more the further down the map
+   * you go, which is why the highlight drifted upwards rather than by a
+   * constant amount. Keeping the two in step is the fix; nothing in `toTile`
+   * needed changing.
+   */
+  private observe(): void {
+    if (typeof ResizeObserver === 'undefined') return;
+
+    this.observer = new ResizeObserver(() => {
+      if (this.destroyed) return;
+      const next = this.measure();
+      const current = this.camera.viewport;
+      if (
+        next.width === current.width &&
+        next.height === current.height &&
+        next.dpr === current.dpr
+      ) {
+        return;
+      }
+      this.resizeAndRedraw(() => this.onViewportChange?.());
+    });
+    this.observer.observe(this.canvas);
   }
 
   get viewport(): Viewport {
@@ -105,11 +173,19 @@ export class Renderer {
   }
 
   draw(view: MapView): void {
+    if (this.destroyed) return;
+    this.lastView = view;
     this.backend.draw(view, this.camera);
   }
 
   /** Releases GPU resources. Safe to call more than once. */
   destroy(): void {
+    if (this.destroyed) return;
+    this.destroyed = true;
+    this.lastView = null;
+    this.observer?.disconnect();
+    this.observer = null;
+    this.onViewportChange = null;
     this.backend.destroy();
     sprites.clear();
   }

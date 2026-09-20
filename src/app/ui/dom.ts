@@ -7,6 +7,8 @@
  * off if building elements is terse, hence this file.
  */
 
+import { uiSound } from '../audio/ui';
+
 type Child = Node | string | null | undefined | false;
 
 export interface ElProps {
@@ -91,11 +93,24 @@ export function button(
     disabled: options.disabled,
     title: options.title,
     id: options.id,
-    onClick: () => onClick(),
+    onClick: () => {
+      // A primary button is the one that commits something, so it gets the
+      // heavier sound; everything else is a tap. The class is already the
+      // distinction the styles make, so there is no second list to keep.
+      uiSound(options.class?.includes('btn-primary') ? 'confirm' : 'tap');
+      onClick();
+    },
   });
 }
 
-/** Renders a painter into an <canvas> sized in rem, for portraits in the HUD. */
+/**
+ * Renders a painter into an <canvas> sized in rem, for portraits in the HUD.
+ *
+ * The backing store is the rem size at the root's *current* font size times
+ * the device pixel ratio, so a portrait stays crisp under the Large-text
+ * setting: sizing it from a fixed 16px drew an 11rem portrait at Largest
+ * from two thirds of the pixels it was shown at.
+ */
 export function painterCanvas(
   assetKey: string,
   remSize: number,
@@ -103,7 +118,8 @@ export function painterCanvas(
   extraClass = '',
 ): HTMLCanvasElement {
   const canvas = el('canvas', { class: `painter ${extraClass}`.trim() });
-  const px = Math.round(remSize * 16 * (window.devicePixelRatio || 1));
+  const rootPx = parseFloat(getComputedStyle(document.documentElement).fontSize) || 16;
+  const px = Math.round(remSize * rootPx * (window.devicePixelRatio || 1));
   canvas.width = px;
   canvas.height = px;
   canvas.style.width = `${remSize}rem`;
@@ -112,6 +128,17 @@ export function painterCanvas(
   const ctx = canvas.getContext('2d');
   if (ctx) draw(ctx, px);
   return canvas;
+}
+
+/**
+ * A tooltip that also works under a finger. `title` shows on hover where there
+ * is a mouse; on a tablet nothing hovers, so a tap shows the same text as a
+ * toast. Harmless with a mouse: a click just repeats what the tooltip said.
+ */
+export function tip(node: HTMLElement, text: string, show: (text: string) => void): void {
+  if (!text) return;
+  node.title = text;
+  node.addEventListener('click', () => show(text));
 }
 
 /** Screen-reader announcement without moving focus. */
@@ -132,4 +159,13 @@ export function announce(message: string): void {
 export function motionReduced(): boolean {
   if (document.documentElement.dataset.reduceMotion === 'on') return true;
   return window.matchMedia?.('(prefers-reduced-motion: reduce)').matches ?? false;
+}
+
+/** An inline mark, hidden from readers, so a button's name stays its text. */
+export function mark(svg: string, extra = ''): HTMLElement {
+  return el('span', {
+    class: extra ? `mark ${extra}` : 'mark',
+    html: svg,
+    attrs: { 'aria-hidden': 'true' },
+  });
 }

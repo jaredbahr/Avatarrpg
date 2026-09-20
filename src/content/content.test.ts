@@ -1,18 +1,55 @@
 import { describe, expect, it } from 'vitest';
 import { CONTENT, CONTENT_BUNDLE, STORY_ENTRY } from './index';
-import { validateContent } from './schemas';
+import { mapSchema, validateContent } from './schemas';
 import { ELEMENTS } from './elements';
 import { resolveAsset } from './assets/manifest';
 import { combinedKit } from '../core/rules/leveling';
+import { createGame } from '../core/state/createGame';
 
 /**
  * The guard rail for every piece of game data. A dangling story link or a
  * misspelled ability id fails here rather than stranding a family mid-session.
  */
 describe('content', () => {
+  it('accepts partial ground mode and rejects other ground modes', () => {
+    const source = CONTENT_BUNDLE.maps.find((map) => map.scene);
+    if (!source?.scene) throw new Error('Missing scene map');
+    const partial = mapSchema.safeParse({
+      ...source,
+      scene: { ...source.scene, groundMode: 'partial' },
+    });
+    expect(partial.success).toBe(true);
+    if (!partial.success) throw new Error('Partial scene should parse');
+    expect(partial.data.scene?.groundMode).toBe('partial');
+    const invalid = mapSchema.safeParse({
+      ...source,
+      scene: { ...source.scene, groundMode: 'complete' },
+    });
+    expect(invalid.success).toBe(false);
+  });
+
   it('passes shape and cross-reference validation', () => {
     const problems = validateContent(CONTENT_BUNDLE);
     expect(problems, `\n${problems.join('\n')}\n`).toEqual([]);
+  });
+
+  it('only resumes an end screen at an existing exploration node', () => {
+    const ending = CONTENT_BUNDLE.story.find((node) => node.id === 'act1_epilogue');
+    if (ending?.kind !== 'end') throw new Error('Missing Act 1 ending');
+    const withNext = (next: string) =>
+      validateContent({
+        ...CONTENT_BUNDLE,
+        story: CONTENT_BUNDLE.story.map((node) =>
+          node.id === ending.id ? { ...ending, next } : node,
+        ),
+      });
+    expect(withNext(ending.next ?? 'village_explore')).toEqual([]);
+    expect(withNext('battle_grumbler')).toContain(
+      'story node "act1_epilogue" continues to "battle_grumbler", which is not an explore node',
+    );
+    expect(withNext('missing_explore')).toContain(
+      'story node "act1_epilogue" links to "missing_explore", which does not exist',
+    );
   });
 
   /*
@@ -56,6 +93,88 @@ describe('content', () => {
     expect(problems.some((p) => p.includes('standing.earth'))).toBe(true);
   });
 
+  /*
+   * No shipping encounter uses `conditionalEnemies` any more, so without these
+   * the budget rule is unexercised and could rot into a no-op. The case it
+   * exists to catch is the one that shipped: two mercenaries added to the
+   * quarry floor boss, a 9% win rate, and nothing in the repo able to see it.
+   */
+  it('refuses a conditional group that piles bodies onto the authored roster', () => {
+    const boss = CONTENT_BUNDLE.encounters.find((e) => e.id === 'enc_grumbler');
+    if (!boss) throw new Error('the boss encounter should exist');
+    const problems = validateContent({
+      ...CONTENT_BUNDLE,
+      encounters: [
+        ...CONTENT_BUNDLE.encounters.filter((e) => e.id !== 'enc_grumbler'),
+        {
+          ...boss,
+          conditionalEnemies: [
+            {
+              flag: 'ruon_traded',
+              whenSet: true,
+              placements: [
+                { enemyId: 'merc_blade', pos: { x: 16, y: 9 } },
+                { enemyId: 'merc_crossbow', pos: { x: 17, y: 6 } },
+              ],
+            },
+          ],
+        },
+      ],
+    });
+    expect(problems.some((p) => p.includes('conditional enemies'))).toBe(true);
+  });
+
+  it('adds up conditional groups across flags rather than judging them one by one', () => {
+    const boss = CONTENT_BUNDLE.encounters.find((e) => e.id === 'enc_grumbler');
+    if (!boss) throw new Error('the boss encounter should exist');
+    // Three groups on distinct flags, each legal alone, illegal together.
+    const one = { enemyId: 'bandit_thug', pos: { x: 14, y: 3 } } as const;
+    const problems = validateContent({
+      ...CONTENT_BUNDLE,
+      encounters: [
+        ...CONTENT_BUNDLE.encounters.filter((e) => e.id !== 'enc_grumbler'),
+        {
+          ...boss,
+          conditionalEnemies: [
+            { flag: 'a', whenSet: true, placements: [one] },
+            { flag: 'b', whenSet: true, placements: [{ ...one, pos: { x: 14, y: 8 } }] },
+            { flag: 'c', whenSet: true, placements: [{ ...one, pos: { x: 13, y: 1 } }] },
+          ],
+        },
+      ],
+    });
+    expect(problems.some((p) => p.includes('conditional enemies'))).toBe(true);
+  });
+
+  it('allows a small conditional group, and ignores the branch that cannot also fire', () => {
+    const boss = CONTENT_BUNDLE.encounters.find((e) => e.id === 'enc_grumbler');
+    if (!boss) throw new Error('the boss encounter should exist');
+    const problems = validateContent({
+      ...CONTENT_BUNDLE,
+      encounters: [
+        ...CONTENT_BUNDLE.encounters.filter((e) => e.id !== 'enc_grumbler'),
+        {
+          ...boss,
+          // Same flag, opposite sides: only one of these can ever spawn, so the
+          // pair costs one thug (100 of 510, 20%), not two.
+          conditionalEnemies: [
+            {
+              flag: 'ruon_traded',
+              whenSet: true,
+              placements: [{ enemyId: 'bandit_thug', pos: { x: 14, y: 3 } }],
+            },
+            {
+              flag: 'ruon_traded',
+              whenSet: false,
+              placements: [{ enemyId: 'bandit_thug', pos: { x: 14, y: 8 } }],
+            },
+          ],
+        },
+      ],
+    });
+    expect(problems.filter((p) => p.includes('conditional enemies'))).toEqual([]);
+  });
+
   it('indexes every item exactly once', () => {
     expect(CONTENT.abilities.size).toBe(CONTENT_BUNDLE.abilities.length);
     expect(CONTENT.characters.size).toBe(CONTENT_BUNDLE.characters.length);
@@ -81,6 +200,72 @@ describe('content', () => {
       const levels = character.kit.map((k) => k.level);
       for (const required of [1, 3, 5]) {
         expect(levels, `${character.id} level ${required}`).toContain(required);
+      }
+    }
+  });
+
+  it('gives every character a distinct level-2 job within their element', () => {
+    const tools = new Map([
+      ['kaya', 'flame_arc'],
+      ['tenzo', 'fire_blast'],
+      ['nilak', 'healing_stream'],
+      ['sura', 'ice_path'],
+      ['bo', 'stone_stance'],
+      ['lin_mei', 'shockwave'],
+      ['nima', 'air_scooter'],
+      ['jinu', 'gust'],
+      ['riko', 'chi_block'],
+      ['wen', 'gauntlet_spark'],
+    ]);
+    expect(tools.size).toBe(CONTENT_BUNDLE.characters.length);
+    for (const character of CONTENT_BUNDLE.characters) {
+      const levelTwo = character.kit.find((entry) => entry.level === 2);
+      expect(levelTwo, `${character.id} level 2`).toEqual({
+        level: 2,
+        ability: tools.get(character.id),
+      });
+      expect(CONTENT.abilities.has(tools.get(character.id) ?? '')).toBe(true);
+      const party = createGame(CONTENT, {
+        seed: `early-${character.id}`,
+        party: [{ characterId: character.id, level: 2 }],
+        startNode: '',
+      }).party;
+      expect(party[0]?.abilities, `${character.id} in a level-2 game`).toContain(
+        tools.get(character.id),
+      );
+    }
+    for (const element of ELEMENTS) {
+      const pair = CONTENT_BUNDLE.characters.filter(
+        (character) => character.element === element.id,
+      );
+      const defaultKits = pair.map((character) =>
+        createGame(CONTENT, {
+          seed: `boss-${character.id}`,
+          party: [{ characterId: character.id, level: 3, autoChoose: true }],
+          startNode: '',
+        })
+          .party[0]?.abilities.slice()
+          .sort()
+          .join(','),
+      );
+      expect(new Set(defaultKits).size, `${element.id} at the Act 1 boss`).toBe(2);
+    }
+  });
+
+  it('does not repeat an early technique at the discipline gate', () => {
+    for (const character of CONTENT_BUNDLE.characters) {
+      const early = character.kit.flatMap((entry) =>
+        'ability' in entry ? [entry.ability] : 'choose' in entry ? entry.choose : [],
+      );
+      for (const discipline of CONTENT_BUNDLE.disciplines.filter(
+        (path) => path.element === character.element,
+      )) {
+        const later = discipline.kit.flatMap((entry) =>
+          'ability' in entry ? [entry.ability] : 'choose' in entry ? entry.choose : [],
+        );
+        for (const ability of early) {
+          expect(later, `${character.id} / ${discipline.id}: ${ability}`).not.toContain(ability);
+        }
       }
     }
   });
@@ -175,7 +360,7 @@ describe('content', () => {
     }
   });
 
-  it('resolves every referenced asset key to a painter or an image', () => {
+  it('resolves every referenced asset key to a painter, image or sheet', () => {
     const keys = new Set<string>();
     for (const c of CONTENT_BUNDLE.characters) {
       keys.add(c.portrait);
@@ -190,9 +375,19 @@ describe('content', () => {
       if (node.kind === 'dialogue' || node.kind === 'choice') keys.add(node.portrait);
     }
 
+    // The palette names `src/render/palettes.ts` knows. An unknown one falls
+    // through to neutral silently, which is exactly the kind of drift a real
+    // portrait dropped in with a typo would show as a grey ring in the HUD.
+    const palettes = ['fire', 'water', 'earth', 'air', 'nonbender', 'enemy', 'neutral'];
+
     for (const key of keys) {
       const entry = resolveAsset(key);
-      expect(entry.kind === 'painter' || entry.kind === 'image', key).toBe(true);
+      expect(['painter', 'image', 'sheet'], key).toContain(entry.kind);
+      if (entry.kind === 'sheet') {
+        expect(entry.clips.idle?.frames.length, `${key} idle`).toBeGreaterThanOrEqual(2);
+        expect(entry.clips.cast?.frames.length, `${key} cast`).toBe(3);
+      }
+      if (entry.palette !== undefined) expect(palettes, `${key} palette`).toContain(entry.palette);
     }
   });
 

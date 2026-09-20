@@ -17,9 +17,10 @@
 import { describe, expect, it } from 'vitest';
 import { CONTENT } from '../../content';
 import { RngCursor } from '../rng';
+import { apply } from '../state/reducer';
 import { BattleDraft } from '../state/battleDraft';
 import { createBattle, createGame } from '../state/createGame';
-import type { Unit, Vec2 } from '../types';
+import type { GameEvent, GameState, Unit, Vec2 } from '../types';
 import { previewAiPlan } from './ai';
 import { posKey, tileAt } from './grid';
 
@@ -65,6 +66,38 @@ function enemyOf(draft: BattleDraft): Unit {
   const enemy = draft.living().find((u) => u.faction === 'enemy');
   if (!enemy) throw new Error('no enemy in this encounter');
   return enemy;
+}
+
+function gatePairState(): { state: GameState; rikoId: string } {
+  const initial = createGame(CONTENT, {
+    seed: 'gate-pair-0',
+    party: [
+      { characterId: 'sura', level: 2, autoChoose: true },
+      { characterId: 'riko', level: 2, autoChoose: true },
+    ],
+    startNode: '',
+  });
+  const rng = new RngCursor(initial.rng);
+  const battle = createBattle(CONTENT, initial, 'enc_quarry_gate', rng);
+  const rikoId = initial.party.find((unit) => unit.characterId === 'riko')?.id;
+  if (!rikoId) throw new Error('missing Riko fixture');
+
+  return {
+    state: {
+      ...initial,
+      screen: 'combat',
+      rng: rng.state,
+      battle: {
+        ...battle,
+        units: battle.units.map((unit) =>
+          unit.faction === 'party'
+            ? { ...unit, ai: unit.element === 'water' ? 'support' : 'aggressive' }
+            : unit,
+        ),
+      },
+    },
+    rikoId,
+  };
 }
 
 describe('the AI and props', () => {
@@ -210,5 +243,32 @@ describe('the AI and props', () => {
     expect(planA?.ability.id).toBe(planB?.ability.id);
     expect(planA?.target).toEqual(planB?.target);
     expect(planA?.score).toBe(planB?.score);
+  });
+
+  it('repositions gate Riko instead of spending AP shoving an empty brazier', () => {
+    const fixture = gatePairState();
+    let state = fixture.state;
+    const rikoEvents: GameEvent[] = [];
+    let rikoTurns = 0;
+
+    for (let step = 0; step < 20 && rikoTurns < 2; step++) {
+      const battle = state.battle;
+      if (!battle || battle.phase !== 'active') throw new Error('gate fixture ended early');
+      const activeId = battle.order[battle.turnIndex];
+      const result = apply(CONTENT, state, { type: 'runAiTurn' });
+      if (activeId === fixture.rikoId) {
+        rikoEvents.push(...result.events);
+        rikoTurns++;
+      }
+      state = result.state;
+    }
+
+    expect(rikoTurns).toBe(2);
+    expect(
+      rikoEvents.filter((event) => event.type === 'abilityUsed' && event.unitId === fixture.rikoId),
+    ).toEqual([]);
+    expect(
+      rikoEvents.filter((event) => event.type === 'unitMoved' && event.unitId === fixture.rikoId),
+    ).toHaveLength(2);
   });
 });

@@ -56,8 +56,20 @@ function midBattleState(): GameState {
 
   // Play a few turns so surfaces, statuses, cooldowns and the turn cursor all
   // carry something worth losing.
-  let state: GameState = { ...seeded, screen: 'combat', rng: rng.state, battle };
-  for (let i = 0; i < 12 && state.battle?.phase === 'active'; i++) {
+  let state: GameState = {
+    ...seeded,
+    screen: 'combat',
+    rng: rng.state,
+    battle: {
+      ...battle,
+      // As in the headless simulator, lend the party an AI profile. Otherwise
+      // runAiTurn refuses the first human turn and the fixture never advances.
+      units: battle.units.map((unit) =>
+        unit.faction === 'party' ? { ...unit, ai: 'aggressive' } : unit,
+      ),
+    },
+  };
+  for (let i = 0; i < 3 && state.battle?.phase === 'active'; i++) {
     state = apply(CONTENT, state, { type: 'runAiTurn' }).state;
   }
   return state;
@@ -66,7 +78,7 @@ function midBattleState(): GameState {
 describe('save round trip', () => {
   it('survives a round trip unchanged', () => {
     const before = midBattleState();
-    expect(before.battle, 'the fixture should still be mid-battle').not.toBeNull();
+    expect(before.battle?.phase, 'the fixture should still be mid-battle').toBe('active');
 
     const result = deserialize(serialize(before, META));
     expect(result.ok, result.ok ? '' : result.error).toBe(true);
@@ -177,6 +189,29 @@ describe('save round trip', () => {
     if (!result.ok) throw new Error(result.error);
     expect(stateFromBlob(result.blob)).toEqual(state);
   });
+
+  it('resumes the same combat events and RNG as an uninterrupted game', () => {
+    let uninterrupted = midBattleState();
+    const result = deserialize(serialize(uninterrupted, META));
+    if (!result.ok) throw new Error(result.error);
+    let resumed = reconcileDisciplines(CONTENT, stateFromBlob(result.blob));
+    let turns = 0;
+    const initialRng = resumed.rng;
+
+    while (uninterrupted.battle?.phase === 'active' && turns < 40) {
+      const command = { type: 'runAiTurn' } as const;
+      const expected = apply(CONTENT, uninterrupted, command);
+      const actual = apply(CONTENT, resumed, command);
+      expect(actual.events, `events after resumed turn ${turns}`).toEqual(expected.events);
+      expect(actual.state, `state after resumed turn ${turns}`).toEqual(expected.state);
+      uninterrupted = expected.state;
+      resumed = actual.state;
+      turns++;
+    }
+
+    expect(turns).toBeGreaterThan(1);
+    expect(resumed.rng).not.toBe(initialRng);
+  });
 });
 
 describe('save rejection', () => {
@@ -210,6 +245,42 @@ describe('save rejection', () => {
     expect(result.ok).toBe(false);
     if (!result.ok) expect(result.error).toContain('newer version');
   });
+
+  it('never downgrades a newer save whose summary is missing', () => {
+    const blob = JSON.parse(serialize(midBattleState(), META));
+    blob.format = SAVE_FORMAT_VERSION + 1;
+    delete blob.summary;
+
+    const result = deserialize(JSON.stringify(blob));
+    expect(result.ok).toBe(false);
+    if (!result.ok) expect(result.error).toContain('newer version');
+    expect(migrate(blob)).toEqual(blob);
+  });
+
+  it('recognises a newer format before trying to parse its unfamiliar state', () => {
+    const result = deserialize(
+      JSON.stringify({ magic: SAVE_MAGIC, format: SAVE_FORMAT_VERSION + 1, state: {} }),
+    );
+    expect(result.ok).toBe(false);
+    if (!result.ok) expect(result.error).toContain('newer version');
+  });
+
+  it.each([undefined, null, -1, 0.5, '1'])('rejects an invalid format %s', (format) => {
+    const blob = JSON.parse(serialize(midBattleState(), META));
+    blob.format = format;
+    delete blob.summary;
+    const result = deserialize(JSON.stringify(blob));
+    expect(result.ok).toBe(false);
+    if (!result.ok) expect(result.error).toContain('format');
+  });
+
+  it('does not repair a missing summary by remigrating a current save', () => {
+    const blob = JSON.parse(serialize(midBattleState(), META));
+    delete blob.summary;
+    const result = deserialize(JSON.stringify(blob));
+    expect(result.ok).toBe(false);
+    if (!result.ok) expect(result.error).toContain('summary');
+  });
 });
 
 describe('migration', () => {
@@ -225,6 +296,22 @@ describe('migration', () => {
   it('leaves a current blob alone', () => {
     const blob = { magic: SAVE_MAGIC, format: SAVE_FORMAT_VERSION, summary: 'Here' };
     expect(migrate(blob)).toEqual(blob);
+  });
+
+  it.each([0, 1])('still loads a format %s save without a summary', (format) => {
+    const blob = JSON.parse(serialize(midBattleState(), META));
+    blob.format = format;
+    blob.state.version = 1;
+    delete blob.summary;
+    for (const unit of [...blob.state.party, ...blob.state.battle.units]) {
+      delete unit.disciplineId;
+    }
+    const result = deserialize(JSON.stringify(blob));
+    if (!result.ok) throw new Error(result.error);
+    expect(result.blob.format).toBe(SAVE_FORMAT_VERSION);
+    expect(result.blob.summary).toBe(META.label);
+    expect(result.blob.state.party.every((unit) => unit.disciplineId === null)).toBe(true);
+    expect(result.blob.state.battle?.units.every((unit) => unit.disciplineId === null)).toBe(true);
   });
 
   it('passes non-objects straight through', () => {

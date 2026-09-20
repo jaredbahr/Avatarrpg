@@ -35,8 +35,27 @@ export const MAX_SCALE = 3;
  * while the boss can still only answer one or two of them per turn. Measured
  * at a straight ratio the boss sat at 63% against three players and 93%
  * against six.
+ *
+ * 1.4 -> 1.3 pays back what capping the bandits' club and sling at 2 AP took
+ * off the quarry floor, which was not the direction anyone expected. Weaker
+ * trash made that fight *harder*: the party AI scores a target by what it can
+ * do to you, so a bandit that can no longer swing four times a turn drops down
+ * the list, the quarry bender behind it lives about a quarter of a round
+ * longer, and its damage onto the party went 42.5 to 54.2 a fight. Six players
+ * measured 74.3% before the cap and 66.3% after, at n=1200 either side — three
+ * standard errors apart, not sampling noise.
+ *
+ * It is an artifact of the simulator's AI rather than a fact about human play:
+ * a table clears the trash whether or not it has been graded as scary. But the
+ * band is measured with this AI, so the number has to be honest against it.
+ * Swept at n=1200: 1.4 -> 66.3%, 1.35 -> 70.9%, 1.3 -> 73.6%, 1.25 -> 76.8%.
+ * 1.3 puts the fight back where it was (73.6% against 74.3%) rather than
+ * quietly making the Act 1 boss easier than it has always been.
+ *
+ * Only tables *above* the baseline feel this: at the baseline the ratio is 1,
+ * and below it the result clamps to MIN_SCALE at either exponent.
  */
-export const BOSS_SCALE_EXPONENT = 1.4;
+export const BOSS_SCALE_EXPONENT = 1.3;
 
 export interface ScaleContext {
   readonly baselinePartySize: number;

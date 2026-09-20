@@ -1,0 +1,83 @@
+import { readFileSync } from 'node:fs';
+import { expect, test } from '@playwright/test';
+import { allowSoftwareWebgl } from './budget';
+import { enterNode, resetStorage, settleLayout, startGame } from './helpers';
+import { average, screenshotClipPixels } from './pixels';
+
+// The production service worker precaches art; this probe must intercept the
+// network response instead of receiving the already cached illustration.
+test.use({ serviceWorkers: 'block' });
+
+for (const renderer of ['canvas', 'webgl'] as const) {
+  test(`exploration encounter markers draw their atlas on ${renderer}`, async ({ page }) => {
+    test.setTimeout(120_000);
+    allowSoftwareWebgl(test, renderer);
+    // Substitute the existing flat red probe for the bandit's idle art. Keep
+    // both idle entries on the red source rectangle to avoid timing-sensitive
+    // red/green sampling while proving the loaded atlas is rendered.
+    type ProbeAtlas = {
+      frames: Record<string, { frame: { x: number; y: number; w: number; h: number } }>;
+      meta: { image: string };
+    };
+    const atlasData = JSON.parse(
+      readFileSync('public/art/test/probe.json', 'utf8').replaceAll(
+        'unit.test.probe',
+        'unit.enemy.thug',
+      ),
+    ) as ProbeAtlas;
+    const idle0 = atlasData.frames['unit.enemy.thug/idle/0'];
+    const idle1 = atlasData.frames['unit.enemy.thug/idle/1'];
+    if (!idle0 || !idle1) throw new Error('Probe atlas is missing an idle frame');
+    idle1.frame = { ...idle0.frame };
+    atlasData.meta.image = 'thug.png';
+    const atlas = JSON.stringify(atlasData);
+    await page.route('**/art/units/thug.json', (route) =>
+      route.fulfill({ contentType: 'application/json', body: atlas }),
+    );
+    await page.route('**/art/units/thug.png', (route) =>
+      route.fulfill({ contentType: 'image/png', body: readFileSync('public/art/test/probe.png') }),
+    );
+    await resetStorage(page, `?renderer=${renderer}`);
+    await startGame(page, ['Explorer'], ['kaya'], 'marker-sheet');
+    await enterNode(page, 'forest_explore');
+    await settleLayout(page);
+    const centre = await page.evaluate(() => {
+      const app = window.fnt!.app;
+      const map = app.content.maps.get('forest_road');
+      const pos = map?.triggers?.find((trigger) => trigger.sprite === 'unit.enemy.thug')?.area[0];
+      const camera = app.rendererCamera();
+      if (!pos || !camera) throw new Error('Missing encounter marker or camera');
+      const m = camera.groundTransform;
+      const x = (pos.x + 0.5) * 64,
+        y = (pos.y + 0.5) * 64;
+      // Frame sample is upright: lift vertically from the projected foot.
+      const lift = camera.projection === 'oblique' ? 0.86 - 0.325 : 0.5 - 0.325;
+      return {
+        x: m.a * x + m.c * y + m.tx,
+        y: m.b * x + m.d * y + m.ty - camera.tilePx * lift,
+      };
+    });
+    // Full-canvas element screenshots can stall software WebGL readback longer
+    // than the pixel poll itself. Capture only the marker's centre, without
+    // Playwright's element-stability wait, and keep the same red predicate.
+    const canvas = await page.locator('.map-canvas').boundingBox();
+    if (!canvas) throw new Error('Missing exploration canvas');
+    const radius = 8;
+    const clip = {
+      x: canvas.x + centre.x - radius,
+      y: canvas.y + centre.y - radius,
+      width: radius * 2,
+      height: radius * 2,
+    };
+    await expect
+      .poll(
+        async () => {
+          const pixels = await screenshotClipPixels(page, clip);
+          const c = average(pixels, radius, radius, 2);
+          return c.r > 150 && c.g < 120 && c.b < 120;
+        },
+        { timeout: 30_000, message: 'The exploration marker never drew the red idle atlas frame' },
+      )
+      .toBe(true);
+  });
+}

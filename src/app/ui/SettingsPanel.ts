@@ -1,15 +1,42 @@
 /**
  * Settings.
  *
- * Four switches, each one aimed at a specific person at the table rather than
- * at a spec: text too small on a 2736x1824 screen, too much going on, can't
- * tell the fire from the mud, or the panels washing out in daylight.
+ * Six controls, each one aimed at a specific person at the table rather than
+ * at a spec: text too small on a 2736x1824 screen, too much going on, a room
+ * where sound is not welcome, can't tell the fire from the mud, the panels
+ * washing out in daylight, or a planner who counts squares.
  */
 
 import type { App } from '../App';
 import { Dialog } from './Dialog';
 import type { DialogOptions } from './Dialog';
 import { button, el } from './dom';
+
+/**
+ * Four steps rather than a slider: `choiceRow` is already a row of real
+ * buttons, so this inherits the tap size, the Largest-text scaling and the
+ * `touch.spec` coverage instead of needing a range input with none of it.
+ */
+const VOLUME_CHOICES = [
+  { label: 'Off', value: 0 },
+  { label: 'Quiet', value: 0.35 },
+  { label: 'Normal', value: 0.7 },
+  { label: 'Loud', value: 1 },
+] as const;
+
+/** The step a stored volume sits on, so a hand-edited value still shows a selection. */
+function nearestVolume(volume: number): number {
+  let best: number = VOLUME_CHOICES[2].value;
+  let gap = Infinity;
+  for (const choice of VOLUME_CHOICES) {
+    const distance = Math.abs(choice.value - volume);
+    if (distance < gap) {
+      gap = distance;
+      best = choice.value;
+    }
+  }
+  return best;
+}
 
 export class SettingsPanel extends Dialog {
   protected options: DialogOptions = {
@@ -39,6 +66,16 @@ export class SettingsPanel extends Dialog {
     );
 
     body.appendChild(
+      this.choiceRow(
+        'Sound',
+        'Bending, footsteps and the interface. Off opens no audio at all.',
+        VOLUME_CHOICES.map(({ label, value }) => ({ label, value: String(value) })),
+        String(nearestVolume(settings.volume)),
+        (value) => this.app.updateSettings({ volume: Number(value) }),
+      ),
+    );
+
+    body.appendChild(
       this.toggleRow(
         'Reduce motion',
         'Results appear immediately instead of playing out. Nothing is hidden.',
@@ -59,9 +96,18 @@ export class SettingsPanel extends Dialog {
     body.appendChild(
       this.toggleRow(
         'Higher contrast',
-        'Brighter panel edges and text, for playing in daylight.',
+        'Brighter panel edges and text, for playing in daylight. Also draws the grid.',
         settings.highContrast,
         (value) => this.app.updateSettings({ highContrast: value }),
+      ),
+    );
+
+    body.appendChild(
+      this.toggleRow(
+        'Show grid',
+        'Draws the tile lines over the ground, for anyone who plans by counting squares.',
+        settings.showGrid,
+        (value) => this.app.updateSettings({ showGrid: value }),
       ),
     );
 

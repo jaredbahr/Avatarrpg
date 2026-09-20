@@ -32,6 +32,7 @@ import {
   hasLineOfSight,
   inBounds,
   lineTiles,
+  allowsCasterTarget,
   occupiedCells,
   posKey,
   samePos,
@@ -39,7 +40,13 @@ import {
 } from './grid';
 import { expectedDamage, healAmount, hitChance, rollDamage, rollHit } from './damage';
 import { forecastReactions } from './reactions';
-import type { ForecastEntry } from './reactions';
+import type {
+  ForecastEntry,
+  PropForecast,
+  ShoveForecast,
+  StatusForecast,
+  SurfaceContactForecast,
+} from './reactions';
 import { canUseAbilities, effectiveStats, isAlive } from './stats';
 
 /* ------------------------------------------------------------------ */
@@ -209,7 +216,18 @@ export interface PreviewTarget {
   readonly hitChance: number | null;
   readonly damage: number;
   readonly heal: number;
-  readonly statuses: readonly { readonly id: StatusId; readonly chance: number }[];
+  /** True when a heal effect finds this friendly target already at max HP. */
+  readonly healAtCapacity: boolean;
+  readonly statuses: readonly {
+    /** Requested status, retained for callers that used the old shape. */
+    readonly id: StatusId;
+    readonly chance: number;
+    /** Actual status after `applyStatus` upgrades the request, if any. */
+    readonly appliedStatus?: StatusId | null;
+    /** Effects removed by the same application. */
+    readonly clearedStatuses?: readonly StatusId[];
+  }[];
+  readonly clearedStatuses: readonly StatusId[];
   readonly lethal: boolean;
 }
 
@@ -227,6 +245,14 @@ export interface AbilityPreview {
   readonly reactions: readonly ForecastEntry[];
   /** True when at least one of the party is in the blast or in a chain. */
   readonly hitsFriendly: boolean;
+  /** Props damaged, broken or moved by this action. */
+  readonly props: readonly PropForecast[];
+  /** Actual shove destinations after walls, units and map edges. */
+  readonly shoves: readonly ShoveForecast[];
+  /** Status outcomes shown without rolling a chance. */
+  readonly statuses: readonly StatusForecast[];
+  /** Unit contacts recorded by the shared surface resolver. */
+  readonly surfaceContacts: readonly SurfaceContactForecast[];
 }
 
 /**
@@ -241,8 +267,10 @@ export function previewAbility(
   target: Vec2,
 ): AbilityPreview {
   const tiles = affectedTiles(battle.grid, caster, ability, target);
-  const isSelfShape = ability.targeting.shape === 'self';
-  const inArea = unitsOnTiles(battle.units, tiles).filter((u) => isSelfShape || u.id !== caster.id);
+  const inArea = unitsOnTiles(battle.units, tiles).filter(
+    (u) => allowsCasterTarget(ability) || u.id !== caster.id,
+  );
+  const forecast = forecastReactions(content, battle, caster, ability, target, tiles);
 
   const targets: PreviewTarget[] = [];
   const terrain: string[] = [];
@@ -250,8 +278,16 @@ export function previewAbility(
   for (const unit of inArea) {
     let damage = 0;
     let heal = 0;
+    let healAtCapacity = false;
+    let remainingHealCapacity: number | null = null;
     let chance: number | null = null;
-    const statuses: { id: StatusId; chance: number }[] = [];
+    const statuses: {
+      id: StatusId;
+      chance: number;
+      appliedStatus?: StatusId | null;
+      clearedStatuses?: readonly StatusId[];
+    }[] = [];
+    const clearedStatuses = new Set<StatusId>();
     const friendly = sameSide(caster, unit);
 
     for (const effect of ability.effects) {
@@ -261,17 +297,43 @@ export function previewAbility(
           chance = hitChance(content, battle.grid, caster, unit);
           break;
         case 'heal':
-          if (friendly) heal += healAmount(content, caster, effect);
+          if (friendly) {
+            remainingHealCapacity ??= Math.max(0, unit.base.maxHp - unit.hp);
+            const requested = healAmount(content, caster, effect);
+            const gained = Math.min(requested, remainingHealCapacity);
+            heal += gained;
+            remainingHealCapacity -= gained;
+            if (gained === 0) healAtCapacity = true;
+          }
           break;
         case 'status':
-          if (effect.to === 'hit') statuses.push({ id: effect.status, chance: effect.chance });
           break;
         default:
           break;
       }
     }
 
-    if (damage === 0 && heal === 0 && statuses.length === 0) continue;
+    for (const status of forecast.statuses.filter((entry) => entry.unitId === unit.id)) {
+      if (status.kind === 'apply' && status.requestedStatus) {
+        statuses.push({
+          id: status.requestedStatus,
+          chance: status.chance,
+          appliedStatus: status.appliedStatus,
+          clearedStatuses: status.clearedStatuses,
+        });
+      }
+      for (const cleared of status.clearedStatuses) clearedStatuses.add(cleared);
+    }
+
+    if (
+      damage === 0 &&
+      heal === 0 &&
+      statuses.length === 0 &&
+      clearedStatuses.size === 0 &&
+      !healAtCapacity
+    ) {
+      continue;
+    }
     targets.push({
       unitId: unit.id,
       name: unit.name,
@@ -279,7 +341,9 @@ export function previewAbility(
       hitChance: chance,
       damage,
       heal,
+      healAtCapacity,
       statuses,
+      clearedStatuses: [...clearedStatuses],
       lethal: damage > 0 && damage >= unit.hp,
     });
   }
@@ -301,9 +365,6 @@ export function previewAbility(
       case 'grantAp':
         terrain.push(`+${effect.amount} AP`);
         break;
-      case 'cleanse':
-        terrain.push('Clears effects');
-        break;
       case 'status':
         if (effect.to === 'self') {
           terrain.push(`You gain ${content.statuses.get(effect.status)?.name ?? effect.status}`);
@@ -314,17 +375,26 @@ export function previewAbility(
     }
   }
 
-  const forecast = forecastReactions(content, battle, caster, ability, target, tiles);
-
   return {
     tiles,
     targets,
     terrain,
     reactions: forecast.entries,
+    props: forecast.props,
+    shoves: forecast.shoves,
+    statuses: forecast.statuses,
+    surfaceContacts: forecast.surfaceContacts,
     // A bolt of lightning that chains back through the puddle your own
     // waterbender is standing in counts as hitting your own side, even though
     // she is nowhere near the tile you aimed at.
-    hitsFriendly: targets.some((t) => t.friendly && t.damage > 0) || forecast.catchesFriendly,
+    hitsFriendly:
+      targets.some((t) => t.friendly && t.damage > 0) ||
+      forecast.catchesFriendly ||
+      forecast.props.some((prop) => prop.affectedAllies.length > 0) ||
+      forecast.shoves.some((shove) => shove.friendly) ||
+      forecast.surfaceContacts.some(
+        (contact) => contact.friendly && (contact.damage > 0 || contact.status !== null),
+      ),
   };
 }
 
@@ -357,13 +427,14 @@ export function resolveAbility(
   rng: RngCursor,
 ): void {
   const tiles = affectedTiles(draft.grid, caster, ability, target);
-  const isSelfShape = ability.targeting.shape === 'self';
 
   draft.emit({ type: 'abilityUsed', unitId: caster.id, abilityId: ability.id, target, tiles });
 
   // Snapshot who is standing where *before* anything moves, so a push in one
   // effect does not pull a unit out of the next effect's area.
-  const struck = unitsOnTiles(draft.units, tiles).filter((u) => isSelfShape || u.id !== caster.id);
+  const struck = unitsOnTiles(draft.units, tiles).filter(
+    (u) => allowsCasterTarget(ability) || u.id !== caster.id,
+  );
   const hitIds = struck.map((u) => u.id);
   const friendlyIds = struck.filter((u) => sameSide(caster, u)).map((u) => u.id);
 

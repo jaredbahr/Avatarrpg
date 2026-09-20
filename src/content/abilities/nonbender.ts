@@ -22,6 +22,24 @@ export const NONBENDER_ABILITIES: readonly Ability[] = [
     fx: 'fx.non.strike',
   }),
   ability({
+    id: 'gauntlet_spark',
+    name: 'Gauntlet Spark',
+    element: 'nonbender',
+    apCost: 1,
+    range: 1,
+    targeting: enemyTarget,
+    cooldown: 1,
+    effects: [
+      { kind: 'damage', base: 4, scale: 0.5, damageType: 'lightning' },
+      { kind: 'status', status: 'shocked', duration: 1, chance: 0.35, to: 'hit' },
+    ],
+    description:
+      'A quick pulse from Wen’s gauntlet. Wet targets conduct it; a full charge comes later.',
+    flavor: 'She built a field test into the glove. Every fight is now a field test.',
+    fx: 'fx.non.glove',
+    tags: ['attack', 'control'],
+  }),
+  ability({
     id: 'chi_block',
     name: 'Chi Block',
     element: 'nonbender',
