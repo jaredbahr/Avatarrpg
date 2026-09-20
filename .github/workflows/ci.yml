@@ -70,13 +70,28 @@ jobs:
       fail-fast: false
       matrix:
         include:
-          - label: Chromium touch
+          # The Chromium project is the software-WebGL suite. It measured
+          # roughly 36 minutes for its first 86 cases and projects near 90
+          # minutes for all 181, so three shards keep every runner inside the
+          # job limit while still covering each case exactly once.
+          - label: Chromium touch 1/3
             browser: chromium
-            projects: --project=surface-touch
+            artifact: chromium-1
+            projects: --project=surface-touch --shard=1/3
+          - label: Chromium touch 2/3
+            browser: chromium
+            artifact: chromium-2
+            projects: --project=surface-touch --shard=2/3
+          - label: Chromium touch 3/3
+            browser: chromium
+            artifact: chromium-3
+            projects: --project=surface-touch --shard=3/3
           - label: WebKit iPad
             browser: webkit
+            artifact: webkit
             projects: --project=ipad-landscape --project=ipad-portrait
-    # Each runner executes its complete browser coverage independently.
+    # Each runner executes one shard, or the complete WebKit coverage, on a
+    # machine of its own.
     timeout-minutes: 60
     steps:
       - uses: actions/checkout@v4
@@ -97,7 +112,7 @@ jobs:
       - uses: actions/upload-artifact@v4
         if: ${{ !cancelled() }}
         with:
-          name: playwright-report-${{ matrix.browser }}
+          name: playwright-report-${{ matrix.artifact }}
           path: playwright-report/
           retention-days: 7
 
