@@ -18,6 +18,7 @@ const executablePath = existsSync(PREINSTALLED_CHROMIUM) ? PREINSTALLED_CHROMIUM
  * checklist in docs/device-matrix.md.
  */
 const WEBKIT = Boolean(process.env.CI) || process.env.FNT_E2E_WEBKIT === '1';
+const GALLERY_TESTS = /e2e[\\/]gallery[\\/]/;
 
 /**
  * FNT_E2E_VIEWPORT=1194x834 runs the Chromium project at another size, which
@@ -38,7 +39,7 @@ const SURFACE_VIEWPORT = viewportOverride
 export default defineConfig({
   testDir: './e2e',
   // The screenshot gallery has its own config and its own npm script.
-  testIgnore: /e2e\/gallery\//,
+  testIgnore: GALLERY_TESTS,
   timeout: 60_000,
   expect: { timeout: 10_000 },
   fullyParallel: false,
@@ -75,7 +76,9 @@ export default defineConfig({
             // the service-worker spec, which Playwright supports in Chromium only.
             name: 'ipad-landscape',
             use: { ...devices['iPad Pro 11 landscape'] },
-            testIgnore: /offline\.spec\.ts/,
+            // Project-level ignores replace the suite-level ignore.
+            // Keep gallery captures in their dedicated required job.
+            testIgnore: [GALLERY_TESTS, /offline\.spec\.ts/],
           },
           {
             // Held upright: the board no longer fits at fingertip size, so the

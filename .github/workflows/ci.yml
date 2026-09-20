@@ -62,11 +62,21 @@ jobs:
           # a measurement — keep it cheap here and raise it locally when tuning.
           BALANCE_DISCIPLINE_TRIALS: 6
 
-  e2e:
-    name: End-to-end (Chromium touch, WebKit iPad)
+  browser_e2e:
+    name: E2E ${{ matrix.label }}
     needs: verify
     runs-on: ubuntu-latest
-    # Recent successful jobs took 41-48 minutes; cap stalled runs with headroom.
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - label: Chromium touch
+            browser: chromium
+            projects: --project=surface-touch
+          - label: WebKit iPad
+            browser: webkit
+            projects: --project=ipad-landscape --project=ipad-portrait
+    # Each runner executes its complete browser coverage independently.
     timeout-minutes: 60
     steps:
       - uses: actions/checkout@v4
@@ -78,20 +88,27 @@ jobs:
 
       - run: npm ci
 
-      - name: Install Chromium and WebKit for Playwright
-        # WebKit is the iPad's engine; the iPad projects in playwright.config.ts
-        # only exist when CI is set (or FNT_E2E_WEBKIT=1 locally).
-        run: npx playwright install --with-deps chromium webkit
+      - name: Install browser for Playwright
+        run: npx playwright install --with-deps ${{ matrix.browser }}
 
       - name: Run e2e suite
-        run: npm run e2e
+        run: npm run e2e -- ${{ matrix.projects }}
 
       - uses: actions/upload-artifact@v4
         if: ${{ !cancelled() }}
         with:
-          name: playwright-report
+          name: playwright-report-${{ matrix.browser }}
           path: playwright-report/
           retention-days: 7
+
+  e2e:
+    name: End-to-end (Chromium touch, WebKit iPad)
+    needs: browser_e2e
+    if: ${{ always() }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Require both browser projects to pass
+        run: test '${{ needs.browser_e2e.result }}' = 'success'
 
   gallery:
     name: Screenshot gallery
