@@ -31,17 +31,49 @@ for (const backend of ['canvas', 'webgl']) {
     await expect(stage).toHaveAttribute('data-illustrated-actors', '2');
     await settleLayout(page);
     const cam = await page.evaluate(() => window.fnt!.app.rendererCamera()!);
-    const box = await stage.boundingBox();
-    if (!box) throw new Error('missing village canvas');
     const foot = groundPoint(cam, { x: 8.5, y: 18.85 });
-    const teaPortrait = () =>
-      page.screenshot({
-        clip: { x: box.x + foot.x - 30, y: box.y + foot.y - 55, width: 60, height: 110 },
-      });
-    const still = await teaPortrait();
+    /*
+     * The seated figure is drawn by the shared 2D life layer, above a board
+     * that differs by backend. Comparing two composited page captures instead
+     * made the cel assertion depend on how long a software rasteriser took to
+     * hand frames back: on CI the two clipped reads landed more than one
+     * authored four-second cel apart and came back byte-identical, while the
+     * app's own clock had advanced by exactly the mocked interval. Reading
+     * this layer's own pixels compares the cel the app drew, on both
+     * backends, without waiting on the compositor.
+     */
+    const teaCel = () =>
+      page.evaluate(
+        (crop) => {
+          const canvas = document.querySelector<HTMLCanvasElement>('.village-life-canvas');
+          const ctx = canvas?.getContext('2d');
+          if (!canvas || !ctx) throw new Error('missing village life layer');
+          const sx = canvas.width / canvas.clientWidth;
+          const sy = canvas.height / canvas.clientHeight;
+          const scratch = document.createElement('canvas');
+          scratch.width = Math.max(1, Math.round(crop.width * sx));
+          scratch.height = Math.max(1, Math.round(crop.height * sy));
+          const out = scratch.getContext('2d');
+          if (!out) throw new Error('missing life layer probe');
+          out.drawImage(
+            canvas,
+            Math.round(crop.x * sx),
+            Math.round(crop.y * sy),
+            scratch.width,
+            scratch.height,
+            0,
+            0,
+            scratch.width,
+            scratch.height,
+          );
+          return scratch.toDataURL('image/png');
+        },
+        { x: foot.x - 30, y: foot.y - 55, width: 60, height: 110 },
+      );
+    const still = await teaCel();
     // Reduced motion holds the seated cup pose, rather than reverting to idle.
     await page.waitForTimeout(300);
-    expect((await teaPortrait()).equals(still)).toBe(true);
+    expect(await teaCel()).toBe(still);
     await page.getByRole('button', { name: 'Water form', exact: true }).click();
     await expect(stage).toHaveAttribute('data-tea-actors', '0');
     await expect(page.getByRole('button', { name: 'Activities', exact: true })).toBeEnabled();
@@ -65,21 +97,19 @@ for (const backend of ['canvas', 'webgl']) {
     await page.clock.pauseAt(now + 30_000);
     // Publish the held frame before measuring the four-second cel interval.
     await page.clock.runFor(17);
-    const hold = await teaPortrait();
+    const hold = await teaCel();
     // The authored tea clip has two cels at 0.25 fps: exactly four seconds
     // reaches the opposite cel without depending on wall-clock scheduling.
-    // Run the full interval through RAF so WebKit publishes the opposite cel.
-    const lifeElapsed = () =>
-      page.evaluate(() => {
-        const scene = (window.fnt?.app as unknown as { scene?: { life?: { elapsed?: number } } })
-          ?.scene;
-        return scene?.life?.elapsed ?? null;
-      });
-    const before = await lifeElapsed();
-    await page.clock.runFor(4000);
-    const after = await lifeElapsed();
-    // Evidence for a failing run either way: if the clock did not advance the
-    // animation, no amount of waiting for a frame will show the other cel.
+    // Jump the frozen clock rather than stepping 240 software-WebGL frames:
+    // the clip is read from the app's own clock for this pose, so one drawn
+    // frame after the jump is the same drawing the stepped run produced.
+    const appClock = () => page.evaluate(() => performance.now());
+    const before = await appClock();
+    await page.clock.fastForward(4000);
+    await page.clock.runFor(17);
+    const after = await appClock();
+    // Evidence either way: if the app's clock did not reach the interval, no
+    // waiting for a frame would show the other cel.
     await test.info().attach(`tea-${backend}-advance`, {
       body: JSON.stringify({
         before,
@@ -88,20 +118,17 @@ for (const backend of ['canvas', 'webgl']) {
       }),
       contentType: 'application/json',
     });
-    /*
-     * The cel has changed, but a Canvas 2D layer reads fresh at screenshot
-     * time where a WebGL surface only changes once the compositor commits the
-     * frame the app drew — and the mocked clock produced every draw inside one
-     * task. Hand real frames back before comparing. That is milliseconds of
-     * animation against a four-second cel, so it cannot turn the drawing back.
-     */
-    await page.clock.resume();
-    await settleLayout(page);
-    expect((await teaPortrait()).equals(hold)).toBe(false);
+    const sip = await teaCel();
+    expect(sip).not.toBe(hold);
+    // Two cels at 0.25 fps: one more interval returns the held cup drawing.
+    await page.clock.fastForward(4000);
+    await page.clock.runFor(17);
+    expect(await teaCel()).toBe(hold);
     await expect(stage).toHaveAttribute('data-tea-actors', '2');
-    await test
-      .info()
-      .attach(`tea-${backend}-sip`, { body: await page.screenshot(), contentType: 'image/png' });
+    await test.info().attach(`tea-${backend}-sip`, {
+      body: Buffer.from(sip.slice(sip.indexOf(',') + 1), 'base64'),
+      contentType: 'image/png',
+    });
   });
 }
 
