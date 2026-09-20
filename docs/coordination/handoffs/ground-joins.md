@@ -65,6 +65,17 @@
 - **Focused browser cases (installed Chrome, production build):**
   `e2e/renderer.spec.ts`, `e2e/partial-ground.spec.ts`, `e2e/explore.spec.ts`
   on the `surface-touch` project — 15 passed in 43.6 s.
+- **First exact-head CI run (35523630036):** `Typecheck, lint, unit tests`
+  passed; `E2E Chromium touch 3/3` failed on the _WebGL_ tea case only
+  ("the tea region must contain the drawn figure", crop empty on both the
+  attempt and its retry), with 25 other cases in the shard passing. It does not
+  reproduce on this host (3/3 locally, canvas and WebGL). The tea probe read the
+  camera and the layer's pixels in two separate round trips, so a camera refit
+  landing between them points the crop at empty paving — the same class of miss
+  the probe's own comment already records. It now reads both in one evaluate and
+  re-reads up to three times, 120 ms apart, before asserting; the figure still
+  has to be in the final crop, so a genuinely missing actor still fails. This
+  head carries that fix and its CI run is the first evidence for it.
 - **Budget:** `node scripts/check-bundle-size.mjs` reports 297.8 KB gzipped of
   the unchanged 300 KB, with the PWA output present; the ground-join painter
   costs about 0.5 KB and the alpha-pipe exclusion saves about 2.5 KB. Before
