@@ -49,7 +49,8 @@ The 20 September run at `966d33a` framed the same route before and after the
 correction: the forest pond and the village canal lose their flat fill and
 outline, and the quarry oil slabs read as a film with visible sheen on both
 backends. Crops of those captures were reviewed at 96px tiles and at the 64px
-combat camera.
+combat camera. `FNT_ROUTE_REVIEW_VIEWPORT=834x1194 FNT_ROUTE_REVIEW_TEXT=huge`
+reviews the same route on a portrait tablet at the largest type size.
 
 `src/render/painters/tiles.test.ts` holds the material contract: every coat
 stays inside its own square, a water cell gets exactly two coats and no bank

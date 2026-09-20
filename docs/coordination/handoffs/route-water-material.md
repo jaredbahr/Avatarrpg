@@ -13,15 +13,17 @@
   route review harness captures village, forest, quarry, Driller and return on
   Canvas and WebGL at 64/96px for comparison with the approved references.
 - **Location:** worktree `C:/Users/Jared/.codex/worktrees/route-visual-pass`,
-  branch `codex/route-visual-pass` pushed to `origin`, based on the v0.2.2
+  branch `codex/route-visual-pass` pushed to `origin` at head `418fd3d`, based
+  on the v0.2.2
   release head `966d33a` (`codex/quarry-gate-integration`, PR #64). PR: none yet
   — opening one now would either duplicate the release diff or land work while
   #64's gallery is still running, so the branch waits for that merge.
-- **Worktree state:** clean after the commits below; no local-only assets;
-  `.shots/route-final/` is ignored capture evidence, preview servers stopped.
+- **Worktree state:** clean; no local-only assets; `.shots/route-final/`,
+  `.shots/route-v023/` and `.shots/route-v7-portrait/` are ignored capture
+  evidence, preview servers stopped.
 - **Completed:** version `0.2.3` with its changelog entry;
-  `src/render/painters/tiles.ts` (two-coat water film, shore
-  inset, drift patches, one flow line, water rim removed),
+  `src/render/painters/tiles.ts` (two-coat water film, shore inset, one wide
+  drift patch built from five steps, one flow line, water rim removed),
   `src/render/palettes.ts` (oil fill/alpha/edge/detail), new
   `src/render/painters/tiles.test.ts`, new review harness
   `e2e/route-visual.review.ts` + `playwright.route-visual.config.ts`, and
@@ -32,12 +34,14 @@
   `docs/player-view-target.md`). Oil keeps the universal surface outline
   because it marks real hazard cells; water follows the painted-shore treatment
   WebGL already used.
-- **Verification:** at the commit head, `npm run typecheck`, `npm run lint` and
-  the new painter test pass; production build passes with total JavaScript
-  299.8 KB gzipped of the unchanged 300 KB budget (this change adds ~0.2 KB) and
-  the art/asset budgets untouched. `e2e/route-visual.review.ts` passed 2/2
-  (Canvas + WebGL) on the production dev server in installed Chrome at
-  1368x912; captures and provenance are in `.shots/route-final/`. Focused
+- **Verification:** at head `418fd3d`, `npm run verify` passes typecheck, lint,
+  formatting and 876 tests in 106 files (three new painter tests); production
+  build passes with total JavaScript 299.8 KB gzipped of the unchanged 300 KB
+  budget (this change adds ~0.2 KB) and the art/asset budgets untouched.
+  `e2e/route-visual.review.ts` passed 2/2 (Canvas + WebGL) on the production dev
+  server in installed Chrome at 1368x912 and again at 834x1194 with Huge text;
+  captures and provenance are in `.shots/route-final/`, `.shots/route-v023/`
+  and `.shots/route-v7-portrait/`. Focused
   `renderer.spec.ts`, `partial-ground.spec.ts`, `painted-rubble.spec.ts`,
   `reactions.spec.ts` and `combat-preview.spec.ts` pass their water assertions;
   the same focused run fails the canvas patch-restore tolerance (13 vs 12) and
@@ -56,9 +60,10 @@
   3. Push the rebased branch and open a PR into `main` with a merge commit, then
      enable auto-merge. The visible version is already bumped to `0.2.3`, so no
      further release edit is needed before the checks run.
-  4. Re-run the review harness on the deployed build and compare it with the
-     three approved references; the shoreline _shape_, the quarry floor's pale
-     stain, audio and physical-device checks remain open.
+  4. Re-run the review harness on the deployed build (`FNT_ROUTE_REVIEW_DIR`
+     keeps captures per head) and compare it with the three approved
+     references; the shoreline _shape_, the quarry floor's pale stain, audio
+     and physical-device checks remain open.
   5. Keep the JS budget in mind: 299.8 KB of 300 means the next product change
      needs an offsetting trim.
 - **Completion/transfer:** not merged; the outgoing owner has relinquished
