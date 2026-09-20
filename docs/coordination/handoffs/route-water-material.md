@@ -74,6 +74,9 @@
      teal field. An image-generation session should re-author the pond and canal
      beds and banks; the quarry floor's pale stain needs the same pass. Audio
      and physical-device checks also remain open.
+     The [20 September route review](route-visual-review-2026-09-20.md) puts
+     that pass in a wider order: the junction edges and water outline first,
+     then the bed/bank art, then prop contact shadows.
   5. Keep the JS budget in mind: 299.8 KB of 300 means the next product change
      needs an offsetting trim.
 - **Completion/transfer:** not merged; the outgoing owner has relinquished
