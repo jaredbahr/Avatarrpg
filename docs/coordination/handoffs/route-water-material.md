@@ -13,7 +13,7 @@
   route review harness captures village, forest, quarry, Driller and return on
   Canvas and WebGL at 64/96px for comparison with the approved references.
 - **Location:** worktree `C:/Users/Jared/.codex/worktrees/route-visual-pass`,
-  branch `codex/route-visual-pass` pushed to `origin` at head `418fd3d`, based
+  branch `codex/route-visual-pass` pushed to `origin` at head `dc7896d`, based
   on the v0.2.2
   release head `966d33a` (`codex/quarry-gate-integration`, PR #64). PR: none yet
   — opening one now would either duplicate the release diff or land work while
@@ -52,6 +52,12 @@
   must not be pushed to `codex/quarry-gate-integration` and no competing PR into
   `main` may be opened while #64 is open. Files touched are otherwise upstream
   of nothing in the release batch. No other owner holds these files.
+- **Live release state at handoff:** PR #64 is still OPEN on run `35500759409`
+  at `966d33a`; verify, all three Chromium shards, WebKit and the aggregate
+  end-to-end check are green, and the Screenshot gallery job has been running
+  for about 50 minutes against a 75-minute job limit. If that job times out, the
+  failed capture is the release blocker to diagnose before this branch can
+  land; do not dispatch a duplicate run.
 - **Next actions:**
   1. Confirm PR #64 merged (`gh pr view 64 --json state,mergedAt,mergeCommit`).
   2. `git fetch origin`, then rebase `codex/route-visual-pass` onto the new
