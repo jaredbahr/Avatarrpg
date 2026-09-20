@@ -76,6 +76,35 @@ export const FOREST_BANK_NEST_REEDS: SceneScenery = {
   depth: { x: 6.1, y: 9.08 },
 };
 
+/**
+ * The pond's own bank planting: three low reed fringes cut from the same
+ * authored flood-bank reeds, standing on the cells that touch the water so the
+ * wet line carries growth instead of meeting the road as a bare edge. They are
+ * passable scenery like the nest: no wall, no collision, no ground disk.
+ */
+/** The packed fringe's own pixel size; every placement keeps this aspect. */
+export const REED_PLATE = { width: 512, height: 313 } as const;
+export const FOREST_POND_REEDS: readonly SceneScenery[] = (
+  [
+    { x: 4, y: 5, width: 96 },
+    { x: 7, y: 7, width: 104 },
+    { x: 5, y: 8, width: 120 },
+  ] as const
+).map(({ x, y, width }) => {
+  // The packed plate's own aspect, so the artist's fringe is never stretched.
+  const height = Math.round((width * REED_PLATE.height) / REED_PLATE.width);
+  return {
+    id: `forest-pond-reeds-${x}-${y}`,
+    url: `${root}pond-reeds.webp`,
+    x: 768 + (x - y) * 64 - width / 2,
+    y: (x + y + 1) * 32 - height,
+    width,
+    height,
+    footprint: [{ x, y }],
+    depth: { x: x + 0.1, y: y + 0.08 },
+  };
+});
+
 /** Already projected ground; gameplay opts the map into the matching projection. */
 export const FOREST_ROAD_SCENE: MapScene = {
   groundMode: 'partial',
@@ -94,5 +123,5 @@ export const FOREST_ROAD_SCENE: MapScene = {
       height: 128 / 3,
     })),
   ],
-  scenery: [...FOREST_PINE_CELLS.map(pine), FOREST_BANK_NEST_REEDS],
+  scenery: [...FOREST_PINE_CELLS.map(pine), FOREST_BANK_NEST_REEDS, ...FOREST_POND_REEDS],
 };
