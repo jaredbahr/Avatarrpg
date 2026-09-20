@@ -121,15 +121,13 @@ export function paintSurface(
      * above and the painted bank under them.
      */
     ctx.fillStyle = style.edge;
-    for (let i = 0; i < 2; i++) {
-      const cx = box.x + (0.2 + tileNoise(pos.x, pos.y, i * 5 + 31) * 0.6) * s;
-      const cy = box.y + (0.2 + tileNoise(pos.x, pos.y, i * 5 + 33) * 0.6) * s;
-      const rx = s * (0.2 + tileNoise(pos.x, pos.y, i * 5 + 35) * 0.16);
-      ctx.globalAlpha = 0.022 * intensity;
-      for (let ring = 0; ring < 3; ring++) {
-        ellipse(ctx, cx, cy, rx * (0.5 + ring * 0.28), rx * (0.34 + ring * 0.2));
-        ctx.fill();
-      }
+    const cx = box.x + (0.22 + tileNoise(pos.x, pos.y, 31) * 0.56) * s;
+    const cy = box.y + (0.22 + tileNoise(pos.x, pos.y, 33) * 0.56) * s;
+    const rx = s * (0.26 + tileNoise(pos.x, pos.y, 35) * 0.16);
+    ctx.globalAlpha = 0.014 * intensity;
+    for (let ring = 0; ring < 5; ring++) {
+      ellipse(ctx, cx, cy, rx * (0.42 + ring * 0.145), rx * (0.28 + ring * 0.1));
+      ctx.fill();
     }
   }
 
