@@ -88,8 +88,20 @@ for (const renderer of ['canvas', 'webgl'])
     // most expensive operation in this spec, so the wider window serves the
     // colour check and the change count together.
     const waterRegion = await sample(ROI_CSS);
-    expect(waterRegion.b - registered.b).toBeGreaterThan(10);
-    expect(waterRegion.g - registered.g).toBeGreaterThan(5);
+    /*
+     * The live water surface tints the authored rubble image: blue and green
+     * rise together while red falls. How big each shift is depends on the
+     * rasteriser's colour pipeline - run 35499544183's software WebGL
+     * compressed every channel shift to roughly two thirds of this host's and
+     * put the green shift at 4.96 where this host measures 7.2 - so the floor
+     * is anchored on the channel the material raises most, with the others
+     * required to follow it, instead of on a per-channel absolute value.
+     */
+    const blueShift = waterRegion.b - registered.b;
+    expect(blueShift).toBeGreaterThan(10);
+    expect(waterRegion.r - registered.r).toBeLessThan(-10);
+    expect(waterRegion.g - registered.g).toBeGreaterThan(2);
+    expect((waterRegion.g - registered.g) / blueShift).toBeGreaterThan(0.2);
 
     // Hatch mode remains visible over the authored image for a live material.
     await page.evaluate(() => {
