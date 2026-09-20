@@ -69,6 +69,21 @@
   filled the pools with visible triangular fans. The perimeter walk
   (`perimeterPoint`) and a `never draws outside the cell` test in
   `painters/tiles.test.ts` hold that line.
+- **First exact-head CI run (35531658127):** `Typecheck, lint, unit tests`
+  passed, and `E2E Chromium touch 3/3` failed on the riverside-tea WebGL case
+  only — "the tea region must contain the drawn figure", the same probe that
+  flaked on v0.2.4. Two follow-ups are on the head that replaced it:
+  - `perf: keep the surface edge probe on pooled pixels` puts the shader's four
+    edge texel reads back inside `opacity > 0`. They belong on ice, mud, oil and
+    rubble pixels, and a software rasteriser runs that quad over the whole
+    board, so the first version charged every ground pixel for a pooled
+    material's bank.
+  - `test: publish a frame before retrying the tea crop` steps the app clock in
+    the retry. The old retry waited on the wall clock, which draws nothing once
+    the spec has paused the page clock, so a village-life layer that had just
+    resized and cleared stayed blank for every attempt. Both backends of
+    `e2e/riverside-tea.spec.ts` pass locally on the new head; the assertion
+    still requires the drawn figure.
 - **Contracts kept:** the base coat still covers the whole hazard tile and no
   outline point leaves it (`surfaceRendering.test.ts`, `painters/tiles.test.ts`);
   the tactical bank, the colourblind hatch and the High-contrast path are
