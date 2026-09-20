@@ -84,6 +84,46 @@ already forced the browser job's three-way shard split (`0f7d6ac`).
   bundled Playwright browser and no GPU, and the CI is the first real evidence
   for the new workflow, exactly as the earlier budget repairs were.
 
+## First run of the shard map, and the two defects it exposed
+
+Run [35507476860](https://github.com/jaredbahr/Avatarrpg/actions/runs/35507476860)
+on `53cddd3` passed `Typecheck, lint, unit tests`, all three `Chromium touch`
+shards, `WebKit iPad` and the `End-to-end (Chromium touch, WebKit iPad)`
+aggregate. All seven gallery shards then ran **in parallel and inside their
+budget**: `ipad-webgl 1/3` finished in 16 minutes and `surface-webgl 1/3` in 20
+on a runner that was about twice as slow as the healthy baseline, which is the
+split doing what it was sized for. Nothing was cancelled by a job limit.
+
+Four shards failed, on two cases, and both are the same class of defect:
+
+- `38-crossbow-portrait` (slice C) on `surface-webgl` and `ipad-webgl`,
+- `36-grumbler-portrait` (slice B) on `surface-webgl` and `ipad-webgl`.
+
+Each waited out its whole 720-second budget for
+`.dialog canvas[data-asset="portrait.enemy.*"]`: the beat projected the unit's
+tile, right-clicked it, and the inspector never opened. The cause is that the
+beat never made the camera own the actor, so the click landed on the chrome.
+`34-bandit-portrait` had exactly this problem before `b0fbc8b`, which repaired
+it by calling `focusStagedUnit` before `tileCentre`; these two beats never got
+the same repair. Sharding is what surfaced it: the monolith's cancellations
+had stopped these cases reaching the WebGL projects at all.
+
+`focusStagedUnit` now runs before `tileCentre` in both beats, matching the
+bandit beat. No assertion changed, and the captures keep their intent - the
+crossbow dialog carries the mercenary's medallion and the driller dialog the
+machine's, both checked on the local capture.
+
+- Before/after on one host: at base `966d33a`, `38-crossbow-portrait` timed out
+  for its whole 240 s budget on `portrait-canvas` (recorded above); with the
+  repair it passes in 2.3 s.
+- Six combinations (`surface-webgl`, `ipad-canvas`, `ipad-webgl` x both cases)
+  pass in 28.6 s on installed Chrome, including `ipad-webgl`, the project CI
+  failed on.
+- `npm run verify` passes: 873 tests in 105 files.
+- **Gap:** the repaired head has not run on Linux CI. A shard that fails on the
+  same two beats again means the repair did not reach the failing path; a shard
+  that fails elsewhere is a new case to read in its own log.
+
 ## Coordination
 
 - Owned here: `.github/workflows/ci.yml` gallery jobs, the gallery spec layout,
