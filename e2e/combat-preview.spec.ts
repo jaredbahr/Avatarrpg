@@ -107,7 +107,15 @@ test('player action controls are disabled during an enemy turn', async ({ page }
   await takeTurn(page);
   await waitForIdle(page);
 
-  await page.evaluate(() => {
+  /*
+   * Take the enemy's turn and read the HUD in one task. `resync()` renders the
+   * action bar synchronously and no timer can run inside a single evaluate, so
+   * the read cannot race the AI turn the scene schedules for a quarter-second
+   * later. Split across two evaluates the round trip outlasted the whole enemy
+   * turn on the slower WebKit iPad project, which is why this check reported
+   * `moveDisabled: false` there while passing everywhere else.
+   */
+  const controls = await page.evaluate(() => {
     const app = window.fnt?.app;
     const state = app?.state;
     const battle = state?.battle;
@@ -119,9 +127,7 @@ test('player action controls are disabled during an enemy turn', async ({ page }
     if (turnIndex < 0) throw new Error('Enemy turn fixture missing an enemy.');
     app.state = { ...state, battle: { ...battle, turnIndex } };
     app.resync();
-  });
 
-  const controls = await page.evaluate(() => {
     const buttons = [...document.querySelectorAll<HTMLButtonElement>('.action-button')];
     return {
       moveDisabled: buttons.find((button) => button.textContent?.includes('Move'))?.disabled,
