@@ -140,12 +140,14 @@ export async function takeTurn(
  * tile to the wrong pixel. Slow frames (WebKit on software GL) open the gap
  * wide enough to matter; three reads two frames apart close it.
  *
- * `timeout` is the whole wait. The e2e suite keeps the default; the gallery
- * passes 30 s on its WebGL projects, where a 2x frame on CI's software
- * rasteriser can take over a second and three reads two frames apart have
- * outlasted 10 s on a slow runner.
+ * `timeout` is the whole wait. The default is 30 s because this helper needs
+ * four frames, and a forced-WebGL frame on CI's software rasteriser measured
+ * about 3 s in run 35488793966 — four of those outlast the 10 s the suite used
+ * to allow, which is the same reason the gallery already passes 30 s. Canvas
+ * 2D returns as soon as the camera holds still, so the bound costs nothing
+ * there, and a camera that genuinely never settles still fails.
  */
-export async function settleLayout(page: Page, timeout = 10_000): Promise<void> {
+export async function settleLayout(page: Page, timeout = 30_000): Promise<void> {
   await page.waitForFunction(
     () =>
       new Promise<boolean>((resolve) => {
