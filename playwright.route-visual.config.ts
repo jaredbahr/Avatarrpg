@@ -1,5 +1,8 @@
 import { defineConfig } from '@playwright/test';
 
+/** FNT_ROUTE_REVIEW_VIEWPORT=834x1194 reviews the same route on a portrait tablet. */
+const viewport = /^(\d+)x(\d+)$/.exec(process.env.FNT_ROUTE_REVIEW_VIEWPORT ?? '');
+
 export default defineConfig({
   testDir: './e2e',
   testMatch: 'route-visual.review.ts',
@@ -8,7 +11,9 @@ export default defineConfig({
   reporter: [['list']],
   use: {
     baseURL: 'http://127.0.0.1:4277',
-    viewport: { width: 1368, height: 912 },
+    viewport: viewport
+      ? { width: Number(viewport[1]), height: Number(viewport[2]) }
+      : { width: 1368, height: 912 },
     serviceWorkers: 'block',
     launchOptions: process.env.FNT_REVIEW_BROWSER_CHANNEL
       ? { channel: process.env.FNT_REVIEW_BROWSER_CHANNEL }

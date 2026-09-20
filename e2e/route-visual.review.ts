@@ -105,6 +105,10 @@ for (const renderer of ['canvas', 'webgl'] as const) {
     await startGame(page, ['Sura', 'Riko', 'Kaya'], ['sura', 'riko', 'kaya'], 'route-review', {
       reduceMotion: false,
     });
+    // FNT_ROUTE_REVIEW_TEXT=huge reviews the same route at the largest type size.
+    if (process.env.FNT_ROUTE_REVIEW_TEXT === 'huge') {
+      await page.evaluate(() => window.fnt!.app.updateSettings({ largeText: 'huge' }));
+    }
 
     for (const node of EXPLORATION) {
       await enterNode(page, node);
