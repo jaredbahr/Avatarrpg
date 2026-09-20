@@ -168,12 +168,22 @@ Leads for whoever takes it:
 
 ## Next action
 
-1. Diagnose the tea WebGL case in its own isolated branch, on top of
-   `8ae6996`. Do not relax the visible-cel assertion and do not re-raise this
-   branch's budget: the case has room.
-2. Merge this follow-up (the handoff text, on top of `8ae6996`) and that repair
-   into `codex/quarry-gate-integration` and push **once**, so the required
-   checks run on a single new revision and auto-merge can land it.
-3. Watch the WebKit job's budget: it now runs its full 195 cases in 36.9 of its
+1. Read the tea case's newest result before doing anything else. The revision
+   that carries this handoff also carries a first attempt at it, because the
+   asymmetry above is specific enough to test: the spec now attaches the app's
+   own `VillageLife.elapsed` either side of the mocked four seconds, then hands
+   real frames back (`clock.resume()` and `settleLayout`) before comparing the
+   pixels, so a WebGL surface can commit the frame the app drew. If the cel
+   change lands, that closes the release. If it still fails, the attachment
+   says which half is wrong: `advanced` near 4000 means the animation moved
+   and the comparison is still reading a stale surface, while anything much
+   smaller means the mocked burst never advanced the animation and the
+   presentation change is innocent.
+2. If `advanced` is short, instrument the burst rather than guessing again:
+   `VillageLife.update` advances by `Math.min(60, delta)` per frame, so the
+   question is how many frames `clock.runFor(4000)` actually ran.
+3. Do not relax the visible-cel assertion, and do not raise this branch's
+   budget: the case has room.
+4. Watch the WebKit job's budget: it now runs its full 195 cases in 36.9 of its
    60 minutes. If a later revision grows past that, shard WebKit the way
    Chromium is sharded rather than raising the job limit.
