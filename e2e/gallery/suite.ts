@@ -1,6 +1,6 @@
 import { appendFileSync, mkdirSync } from 'node:fs';
 import { join } from 'node:path';
-import type { Page } from '@playwright/test';
+import type { Page, TestInfo } from '@playwright/test';
 import { test } from './fixtures';
 import { BEATS, capturedOn } from './beats';
 import type { Beat, BeatContext } from './beats';
@@ -8,6 +8,17 @@ import { waitForIdle } from '../helpers';
 import { settleCurtain } from './stage';
 
 /**
+ * The gallery suite, shared by the slice spec files (`gallery-a.spec.ts` and
+ * its siblings).
+ *
+ * Playwright shards by *file*, so one spec file is one shard: a single
+ * `gallery.spec.ts` cannot be split, and 340 cases no longer fit one runner's
+ * job budget (see the gallery jobs in `.github/workflows/ci.yml`). The beats
+ * are therefore dealt into `GALLERY_SLICES` files round robin — a new beat
+ * lands in exactly one of them, with no list here to keep in step — and CI
+ * runs one slice per runner. Round robin rather than consecutive thirds
+ * because the expensive filmstrip beats are authored in runs.
+ *
  * The gallery: one still or filmstrip per beat, per project, written under
  * `gallery/<project>/` with a `shots.jsonl` beside them that
  * `scripts/gallery-index.mjs` turns into a page.
@@ -19,6 +30,14 @@ import { settleCurtain } from './stage';
  */
 
 export const GALLERY_DIR = 'gallery';
+
+/** How many slice spec files the beat catalogue is dealt into. */
+export const GALLERY_SLICES = 3;
+
+/** This slice of the catalogue, in catalogue order. */
+export function beatsInSlice(slice: number): readonly Beat[] {
+  return BEATS.filter((_, index) => index % GALLERY_SLICES === slice);
+}
 
 /**
  * Filmstrips are captured at 1x on both backends; the 2x projects keep one
@@ -130,17 +149,25 @@ class Stage implements BeatContext {
   }
 }
 
-for (const beat of BEATS) {
-  test(`${beat.id} ${beat.title}`, async ({ page, renderer }, testInfo) => {
-    const project = testInfo.project.name;
-    test.skip(!capturedOn(beat, project), `${beat.id} is not captured on ${project}`);
-    if (renderer === 'webgl') test.slow();
+/**
+ * Stage one beat. A slice spec file registers its own cases in a `for` loop
+ * over `beatsInSlice`, so the case belongs to that file for Playwright's
+ * reports and for `--shard`; everything only the capture needs lives here.
+ */
+export async function runGalleryBeat(
+  beat: Beat,
+  page: Page,
+  renderer: 'canvas' | 'webgl',
+  testInfo: TestInfo,
+): Promise<void> {
+  const project = testInfo.project.name;
+  test.skip(!capturedOn(beat, project), `${beat.id} is not captured on ${project}`);
+  if (renderer === 'webgl') test.slow();
 
-    const dir = join(GALLERY_DIR, project);
-    mkdirSync(dir, { recursive: true });
+  const dir = join(GALLERY_DIR, project);
+  mkdirSync(dir, { recursive: true });
 
-    // Installed before the first navigation so the page never sees a real clock.
-    await page.clock.install();
-    await beat.run(new Stage(page, renderer, project, dir, beat));
-  });
+  // Installed before the first navigation so the page never sees a real clock.
+  await page.clock.install();
+  await beat.run(new Stage(page, renderer, project, dir, beat));
 }
