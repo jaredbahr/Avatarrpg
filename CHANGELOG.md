@@ -1,5 +1,19 @@
 # Changelog
 
+## 0.2.4 — release candidate
+
+- Join ground materials where they meet instead of ending each one on a bare
+  line: the neighbouring material bleeds into the tile in a ragged wedge, so
+  the pine road runs out under the grass, paving is edged with laid chips, dirt
+  leaves a mud rim and the quarry floor keeps grit where it meets stone. The
+  join is drawn from the rules grid over the authored ground as well, so it
+  lands where the materials really meet rather than only where a picture was
+  painted.
+- Treat standing water as a material of its own. A pond now keeps a sandy bank,
+  bank stones and reeds where it meets dry ground and leaves a wet rim on the
+  bank, which breaks the tile-shaped outline the water used to have, on both
+  renderers.
+
 ## 0.2.3 — release candidate
 
 - Paint water on the Canvas 2D backend as a film with a soft shore, quiet drift
