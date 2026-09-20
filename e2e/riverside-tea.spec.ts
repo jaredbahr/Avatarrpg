@@ -30,8 +30,6 @@ for (const backend of ['canvas', 'webgl']) {
     });
     await expect(stage).toHaveAttribute('data-illustrated-actors', '2');
     await settleLayout(page);
-    const cam = await page.evaluate(() => window.fnt!.app.rendererCamera()!);
-    const foot = groundPoint(cam, { x: 8.5, y: 18.85 });
     /*
      * The seated figure is drawn by the shared 2D life layer, above a board
      * that differs by backend. Comparing two composited page captures instead
@@ -41,9 +39,16 @@ for (const backend of ['canvas', 'webgl']) {
      * app's own clock had advanced by exactly the mocked interval. Reading
      * this layer's own pixels compares the cel the app drew, on both
      * backends, without waiting on the compositor.
+     *
+     * The projection is read with each sample rather than once: opening and
+     * closing the activities panel changes the map's height, and the camera
+     * refits onto the new viewport, so a foot position measured earlier in the
+     * test can point the crop at empty paving.
      */
-    const teaCel = () =>
-      page.evaluate(
+    const teaCel = async () => {
+      const cam = await page.evaluate(() => window.fnt!.app.rendererCamera()!);
+      const foot = groundPoint(cam, { x: 8.5, y: 18.85 });
+      const sample = await page.evaluate(
         (crop) => {
           const canvas = document.querySelector<HTMLCanvasElement>('.village-life-canvas');
           const ctx = canvas?.getContext('2d');
@@ -66,10 +71,17 @@ for (const backend of ['canvas', 'webgl']) {
             scratch.width,
             scratch.height,
           );
-          return scratch.toDataURL('image/png');
+          const pixels = out.getImageData(0, 0, scratch.width, scratch.height).data;
+          let inked = 0;
+          for (let i = 3; i < pixels.length; i += 4) if ((pixels[i] ?? 0) > 0) inked += 1;
+          return { cel: scratch.toDataURL('image/png'), inked };
         },
         { x: foot.x - 30, y: foot.y - 55, width: 60, height: 110 },
       );
+      // A crop of empty canvas would compare two blanks and prove nothing.
+      expect(sample.inked, 'the tea region must contain the drawn figure').toBeGreaterThan(0);
+      return sample.cel;
+    };
     const still = await teaCel();
     // Reduced motion holds the seated cup pose, rather than reverting to idle.
     await page.waitForTimeout(300);
@@ -98,6 +110,12 @@ for (const backend of ['canvas', 'webgl']) {
     // Publish the held frame before measuring the four-second cel interval.
     await page.clock.runFor(17);
     const hold = await teaCel();
+    // Attach the held region too: a crop that missed the figure is the one
+    // failure this assertion cannot explain on its own.
+    const png = (dataUrl: string) => Buffer.from(dataUrl.slice(dataUrl.indexOf(',') + 1), 'base64');
+    await test
+      .info()
+      .attach(`tea-${backend}-cel-hold`, { body: png(hold), contentType: 'image/png' });
     // The authored tea clip has two cels at 0.25 fps: exactly four seconds
     // reaches the opposite cel without depending on wall-clock scheduling.
     // Jump the frozen clock rather than stepping 240 software-WebGL frames:
@@ -126,7 +144,7 @@ for (const backend of ['canvas', 'webgl']) {
     expect(await teaCel()).toBe(hold);
     await expect(stage).toHaveAttribute('data-tea-actors', '2');
     await test.info().attach(`tea-${backend}-sip`, {
-      body: Buffer.from(sip.slice(sip.indexOf(',') + 1), 'base64'),
+      body: png(sip),
       contentType: 'image/png',
     });
   });
