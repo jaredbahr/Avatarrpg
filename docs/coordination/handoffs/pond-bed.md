@@ -96,3 +96,6 @@ disabled during an enemy turn`: `controls.moveDisabled` was `false` on the
   purpose, because the version bump and changelog must land on top of #68. The
   outgoing owner keeps editing ownership of the packer, its plate, its test and
   the two art documents until the PR is open and reviewed.
+- **Successor work on the same branch:** the [village canal bed and
+  kerb](canal-bed-bank.md) landed next, on the same release. Read that handoff
+  for the branch's current head, the combined verification and the next action.
