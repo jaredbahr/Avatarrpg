@@ -87,9 +87,13 @@ for (const backend of ['canvas', 'webgl']) {
     const teaCel = async () => {
       let sample = await sampleTeaCel();
       for (let attempt = 0; attempt < 3 && sample.inked === 0; attempt++) {
-        // Grace for a layer still repainting at its new size, then read again
-        // against the camera that is live then.
-        await page.waitForTimeout(120);
+        // Publish a frame and read again against the camera that is live then.
+        // A wall-clock wait is not enough once the clock is paused: nothing
+        // draws, so a layer that has just resized and cleared stays blank for
+        // every retry. Seventeen milliseconds is a frame, far short of the
+        // four-second cel these checks measure.
+        await page.clock.runFor(17);
+        await page.waitForTimeout(40);
         sample = await sampleTeaCel();
       }
       // A crop of empty canvas would compare two blanks and prove nothing, so
