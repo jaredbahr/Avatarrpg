@@ -1,7 +1,7 @@
 import type { Vec2 } from '../../core/types';
 import { projectGround } from '../../render/projection';
 import type { Projection } from '../../render/projection';
-import type { ClipName } from '../../content/assets/clips';
+import type { ClipName, MeleeDirection } from '../../content/assets/clips';
 
 export type WalkDirection = 'north' | 'south' | 'east' | 'west';
 
@@ -11,6 +11,12 @@ export function screenDirection(tangent: Vec2, projection: Projection): Vec2 {
   const projected = projectGround(tangent, projection);
   const length = Math.hypot(projected.x, projected.y);
   return length === 0 ? projected : { x: projected.x / length, y: projected.y / length };
+}
+
+/** Select an authored melee contact by its projected screen direction. */
+export function screenMeleeDirection(screen: Vec2): MeleeDirection | undefined {
+  if (Math.abs(screen.y) <= Math.abs(screen.x)) return undefined;
+  return screen.y < 0 ? 'screenUp' : 'screenDown';
 }
 
 /** Keep the current axis through a narrow diagonal band to avoid corner flicker. */

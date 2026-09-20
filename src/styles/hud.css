@@ -191,6 +191,11 @@
   gap: var(--sp-1);
 }
 
+.combat-bar {
+  flex-wrap: wrap;
+  gap: var(--sp-1);
+}
+
 /* The encounter's name on a plate, in the display face, the round under it. */
 .title-plate {
   display: flex;
@@ -326,6 +331,19 @@
 .reaction-reach {
   color: var(--c-ink-dim);
   white-space: normal;
+}
+
+/* Authored paint has no combo sentence, so keep its footprint in one short
+   line instead of repeating "spreads across the ground" above the result. */
+.reaction-paint {
+  gap: var(--sp-2);
+  padding: var(--sp-1) var(--sp-2);
+  border-left-width: var(--hairline);
+  background: color-mix(in srgb, var(--c-parchment-bg) 35%, transparent);
+}
+
+.reaction-paint .reaction-result {
+  flex: 1 1 auto;
 }
 
 /* A rule actually fired, rather than the surface just landing as authored. */
@@ -866,6 +884,129 @@ html[data-contrast='high'] .map-wrap {
   height: 100%;
 }
 
+/* A world conversation keeps the map scene alive and places a small readable
+   plate over its lower edge. The map canvas remains visible around it, while
+   its pointer adapter is guarded in ExploreScene as well as here. */
+.explore-conversation {
+  position: absolute;
+  inset: 0;
+  z-index: var(--z-overlay);
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  flex-direction: column;
+  padding: var(--sp-3) var(--sp-3) calc(var(--sp-4) + env(safe-area-inset-bottom, 0px));
+  pointer-events: none;
+}
+
+.explore-conversation[hidden] {
+  display: none;
+}
+
+.explore-dock[hidden] {
+  display: none;
+}
+
+.explore-conversation > * {
+  pointer-events: auto;
+}
+
+.explore-scene.is-conversation .map-canvas {
+  pointer-events: none;
+}
+
+.explore-scene.is-conversation .explore-objective,
+.explore-scene.is-conversation .explore-map-corner {
+  display: none;
+}
+
+.explore-conversation .conversation-panel {
+  width: min(var(--conversation-panel-max), 100%);
+  max-height: min(62%, 25rem);
+  overflow-y: auto;
+  cursor: pointer;
+  gap: var(--sp-2);
+  padding: var(--sp-3) var(--sp-4);
+  background-color: color-mix(in srgb, var(--c-panel-raised) 95%, transparent);
+  backdrop-filter: blur(0.2rem);
+}
+
+.conversation-compact-head {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-3);
+}
+
+.conversation-compact-portrait {
+  position: relative;
+  flex: 0 0 var(--conversation-portrait);
+  width: var(--conversation-portrait);
+  height: var(--conversation-portrait);
+}
+
+.conversation-compact-portrait::before {
+  content: '';
+  position: absolute;
+  inset: -10%;
+  border-radius: 50%;
+  background: radial-gradient(
+    closest-side,
+    color-mix(in srgb, var(--el) 30%, transparent),
+    transparent
+  );
+}
+
+.conversation-compact-portrait .painter {
+  position: relative;
+  width: var(--conversation-portrait);
+  height: var(--conversation-portrait);
+  border-radius: 50%;
+  box-shadow:
+    0 0 0 1px var(--c-ink-line),
+    0 0 0 2px color-mix(in srgb, var(--el) 60%, transparent);
+}
+
+.conversation-compact-speaker {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-1);
+}
+
+.conversation-compact-speaker strong {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: var(--fs-lg);
+}
+
+.explore-conversation .conversation-panel .dialogue-line {
+  font-size: var(--fs-md);
+  line-height: 1.45;
+}
+
+.explore-conversation .conversation-panel .conversation-controls {
+  margin-top: var(--sp-1);
+}
+
+.explore-conversation .choice-panel {
+  cursor: default;
+}
+
+.explore-conversation .choice-options {
+  gap: var(--sp-2);
+}
+
+@media (orientation: portrait) {
+  .explore-conversation {
+    padding-inline: var(--sp-2);
+  }
+
+  .explore-conversation .conversation-panel {
+    max-height: 58%;
+  }
+}
+
 .combat-overlays {
   position: absolute;
   inset: 0;
@@ -902,6 +1043,8 @@ html[data-contrast='high'] .map-wrap {
   border-radius: var(--radius);
   border: 2px solid transparent;
   min-width: 3.5rem;
+  min-height: var(--tap);
+  flex-shrink: 0;
   opacity: 0.6;
 }
 
@@ -1229,8 +1372,43 @@ html[data-contrast='high'] .hud-panel::after {
   gap: var(--sp-2);
 }
 
-/* An aim hint sits where the confirm bar would, so the eye already knows to
-   look there, but reads as guidance rather than a decision. */
+/* In landscape, a normal or Large-text decision can share one row with its
+ * forecast. Huge text and portrait layouts keep the vertical reading order. */
+@media (min-width: 53rem) and (orientation: landscape) {
+  html:not([data-large-text='huge']) .combat-scene .hud {
+    align-items: flex-start;
+  }
+
+  html:not([data-large-text='huge']) .combat-scene .confirm-dialog {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) max-content;
+    align-items: center;
+    column-gap: var(--sp-2);
+    row-gap: var(--sp-1);
+    padding: var(--sp-2);
+  }
+
+  html:not([data-large-text='huge']) .combat-scene .confirm-dialog > .confirm-body {
+    grid-column: 1;
+    min-width: 0;
+    max-width: 100%;
+  }
+
+  html:not([data-large-text='huge']) .combat-scene .confirm-dialog > .row {
+    grid-column: 2;
+    grid-row: 1;
+    min-width: max-content;
+    margin: 0;
+  }
+
+  html:not([data-large-text='huge']) .combat-scene .confirm-body,
+  html:not([data-large-text='huge']) .combat-scene .confirm-body > .preview-chips {
+    min-width: 0;
+    max-width: 100%;
+  }
+}
+
+/* Aim guidance and confirmation share allocated dock space, never the map. */
 .aim-hint {
   border-color: var(--c-line);
   background: color-mix(in srgb, var(--c-bg) 92%, transparent);
@@ -1565,11 +1743,6 @@ html[data-contrast='high'] .hud-panel::after {
     display: none;
   }
 
-  /* A phone, or a tablet at Largest text: the name plate alone is the head. */
-  .stage-portrait {
-    display: none;
-  }
-
   .hud {
     flex-direction: column;
   }
@@ -1594,12 +1767,58 @@ html[data-contrast='high'] .hud-panel::after {
     display: none;
   }
 
-  .stage-portrait {
-    display: none;
-  }
-
   .log-panel {
     display: none;
+  }
+}
+
+/* Keep short landscape battles compact without changing portrait or large text
+ * layouts. The strip stays in flow and scrolls horizontally when the order is
+ * crowded; each chip remains a full-size touch target. */
+@media (min-width: 53rem) and (max-height: 48rem) and (orientation: landscape) {
+  html[data-large-text='off'] .combat-scene .turn-strip {
+    align-items: center;
+    gap: var(--sp-1);
+    padding-block: var(--sp-1);
+  }
+
+  html[data-large-text='off'] .combat-scene .turn-chip {
+    flex-direction: row;
+    gap: var(--sp-1);
+    min-width: 0;
+    min-height: var(--tap);
+    padding: var(--sp-1) var(--sp-2);
+  }
+
+  html[data-large-text='off'] .combat-scene .turn-chip span {
+    max-width: 6rem;
+  }
+}
+
+/* Keep the speaker visible beside their name when the full stage portrait
+   would crowd out dialogue. The text panel retains its own scroll area. */
+@media (max-width: 52rem), (max-height: 34rem) {
+  .stage-head {
+    align-items: center;
+    padding: 0;
+    margin-bottom: var(--sp-3);
+  }
+
+  .stage-portrait .painter {
+    max-width: var(--dialogue-portrait-compact);
+    max-height: var(--dialogue-portrait-compact);
+  }
+
+  .stage-head .name-plate {
+    flex: 1 1 auto;
+    min-width: 0;
+    margin-bottom: 0;
+    padding: var(--sp-2) var(--sp-3);
+    overflow-wrap: anywhere;
+  }
+
+  .stage-head .name-plate h2 {
+    font-size: var(--fs-lg);
   }
 }
 
@@ -1866,6 +2085,18 @@ html[data-contrast='high'] .hud-panel::after {
   position: relative;
   overflow: hidden;
 }
+.riverside-scene .explore-dock {
+  max-height: 42%;
+  overflow-x: hidden;
+  overflow-y: auto;
+  overscroll-behavior-y: contain;
+}
+.riverside-scene .explore-hud {
+  overflow: visible;
+  padding: 0;
+  border-top: 0;
+  background: transparent;
+}
 .riverside-scene .roster {
   display: none;
 }
@@ -1878,47 +2109,74 @@ html[data-contrast='high'] .hud-panel::after {
 }
 .village-controls {
   width: 100%;
-  padding: 0.65rem 1rem;
+  padding: var(--sp-2) var(--sp-3) calc(var(--sp-2) + env(safe-area-inset-bottom, 0px));
+  gap: var(--sp-1);
 }
 .village-caption,
-.village-utilities {
+.village-utilities,
+.village-actions,
+.village-secondary {
   display: flex;
   align-items: center;
-  justify-content: space-between;
-  gap: 0.6rem;
+  flex-wrap: wrap;
+  gap: var(--sp-1);
 }
 .village-caption {
+  justify-content: space-between;
   font-weight: 600;
   font-size: var(--fs-sm);
+  gap: var(--sp-2);
 }
 .village-note {
-  margin: 0.3rem 0 0.5rem;
+  margin: 0;
   font-size: var(--fs-sm);
   min-height: 1.2rem;
 }
 .village-actions {
-  display: flex;
-  gap: 0.45rem;
-  overflow-x: auto;
-  padding-bottom: 0.3rem;
+  align-items: stretch;
 }
-.village-actions button {
-  flex: 0 0 auto;
+.village-actions button,
+.village-secondary button,
+.village-utilities button {
+  flex: 1 1 8rem;
   min-height: var(--tap);
 }
-.village-actions button:first-child {
-  border-color: var(--c-water);
+.village-actions .village-activities-toggle {
+  flex: 0 1 8rem;
+  border-color: var(--c-gold-deep);
+  background-color: color-mix(in srgb, var(--c-gold) 12%, var(--surface-1));
 }
 .village-actions button:nth-child(2) {
+  border-color: var(--c-water);
+}
+.village-actions button:nth-child(3) {
   border-color: var(--c-fire);
+}
+.village-secondary {
+  align-items: stretch;
+  padding-top: var(--sp-1);
+  border-top: var(--hairline) solid var(--c-line);
+}
+.village-secondary[hidden] {
+  display: none;
+}
+.village-secondary button {
+  flex-basis: 10rem;
 }
 .village-utilities {
   justify-content: flex-end;
-  margin-top: 0.25rem;
+  margin-top: var(--sp-1);
 }
 .village-utilities button {
-  min-height: var(--tap);
+  flex: 0 1 10rem;
   font-size: var(--fs-sm);
+}
+
+@media (max-width: 52rem), (orientation: portrait) {
+  .village-actions button,
+  .village-secondary button {
+    flex-basis: calc(50% - var(--sp-1));
+  }
 }
 
 /* Playable exploration: the world sits between one quiet header and one dock. */
@@ -2030,6 +2288,26 @@ html[data-contrast='high'] .hud-panel::after {
   fill: var(--c-ok);
   stroke: var(--c-paper-light);
   stroke-width: 0.16;
+}
+.local-npc-label {
+  fill: var(--c-paper-light);
+  font-family: var(--font-body);
+  font-size: var(--local-map-label-size);
+  paint-order: stroke;
+  stroke: var(--c-ink);
+  stroke-width: var(--local-map-label-stroke);
+  stroke-linejoin: round;
+}
+@media (min-width: 53rem) and (orientation: landscape) {
+  .explore-dock.solo-party {
+    max-height: none;
+    overflow-y: visible;
+  }
+  [data-large-text='on'] .explore-dock.solo-party,
+  [data-large-text='huge'] .explore-dock.solo-party {
+    max-height: 42%;
+    overflow-y: auto;
+  }
 }
 .explore-scene:not(.riverside-scene) .explore-dock {
   background: var(--c-panel);
@@ -2194,6 +2472,24 @@ html[data-contrast='high'] .hud-panel::after {
 .explore-scene:not(.riverside-scene) .action-button {
   min-height: 5.5rem;
 }
+
+/* Keep the corner ornaments inside scrollable dock children. Their normal
+ * negative offset is decorative, but it becomes a four-pixel scrollbar when
+ * a one-member dock is the exact height of the viewport. Six-member rosters
+ * still scroll horizontally; only the ornament stops contributing false
+ * overflow. */
+.explore-scene:not(.riverside-scene) .roster-row::before,
+.explore-scene:not(.riverside-scene) .action-bar::before {
+  top: 0;
+  left: 0;
+}
+
+.explore-scene:not(.riverside-scene) .roster-row::after,
+.explore-scene:not(.riverside-scene) .action-bar::after {
+  right: 0;
+  bottom: 0;
+}
+
 @media (max-width: 72rem) and (orientation: landscape) {
   .explore-context {
     font-size: var(--fs-md);
@@ -2252,4 +2548,38 @@ html[data-contrast='high'] .hud-panel::after {
   background: none;
   justify-content: center;
   font-size: var(--fs-md);
+}
+
+/* Keep combat controls beside the actor summary whenever touch targets fit. */
+.combat-scene .hud {
+  flex-direction: row;
+  flex-wrap: wrap;
+  max-height: 40dvh;
+  overflow-y: auto;
+}
+.combat-scene .action-bar > .confirm-bar {
+  margin: 0;
+  flex-shrink: 0;
+}
+.combat-scene .unit-panel {
+  flex: 1 1 12rem;
+  min-width: 0;
+}
+.combat-scene .action-bar {
+  flex: 3 1 24rem;
+  min-width: 0;
+}
+
+@media (max-width: 36rem) {
+  .combat-scene .combat-bar {
+    flex-wrap: nowrap;
+    overflow-x: auto;
+  }
+  .combat-scene .combat-bar > * {
+    flex-shrink: 0;
+  }
+  .combat-scene .hud {
+    max-height: 40dvh;
+    overflow-y: auto;
+  }
 }

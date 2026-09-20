@@ -37,6 +37,98 @@ test('each click advances one still caption and skip reaches the intended destin
   expect((await snapshot(page)).node).toBe('battle_grumbler');
 });
 
+test('the quarry marker assessment keeps the floor visible across save and reload', async ({
+  page,
+}) => {
+  await page.getByRole('button', { name: 'Skip scene' }).click();
+  await enterNode(page, 'quarry_after_explore');
+  await expect(page.locator('.explore-scene')).toBeVisible();
+  await page.evaluate(() => window.fnt?.app.dispatch({ type: 'walkTo', pos: { x: 18, y: 5 } }));
+  await expect
+    .poll(() => page.evaluate(() => window.fnt?.app.state?.story.nodeId))
+    .toBe('quarry_descent');
+  await expect(page.locator('.interlude-stage')).toBeVisible();
+  // Capture the actual crossing tile: authored cover can change the legal
+  // approach. Skipping the staged descent must preserve that world position.
+  const markerLocation = await page.evaluate(() => window.fnt?.app.state?.location);
+  expect(markerLocation?.mapId).toBe('quarry_floor');
+  expect(markerLocation?.pos.x).toBe(9);
+  await page.getByRole('button', { name: 'Skip scene' }).click();
+
+  await expect(page.locator('.explore-scene')).toBeVisible();
+  await expect(page.locator('.conversation-panel-compact')).toBeVisible();
+  await expect(page.locator('.conversation-compact-speaker')).toHaveText(/^Wen/);
+  await expect(page.locator('.dialogue-line')).toContainText("I've repaired drives like that.");
+  expect(
+    await page.evaluate(() => ({
+      node: window.fnt?.app.state?.story.nodeId,
+      map: window.fnt?.app.state?.location.mapId,
+      pos: window.fnt?.app.state?.location.pos,
+      screen: window.fnt?.app.state?.screen,
+    })),
+  ).toEqual({
+    node: 'quarry_assessment',
+    map: 'quarry_floor',
+    pos: markerLocation?.pos,
+    screen: 'dialogue',
+  });
+
+  await page.getByRole('button', { name: 'Next', exact: true }).click();
+  await expect(page.locator('.dialogue-line')).toContainText('There is oil under the treads.');
+  const checkpoint = await page.evaluate(() => {
+    const state = window.fnt?.app.state;
+    if (!state) throw new Error('Missing assessment save state.');
+    return {
+      flags: state.flags,
+      fired: state.world.fired,
+      location: state.location,
+      story: state.story,
+    };
+  });
+
+  await page.getByRole('button', { name: 'Pause', exact: true }).click();
+  await page.getByRole('button', { name: 'Save game', exact: true }).click();
+  await page
+    .locator('.slot')
+    .filter({ hasText: 'Slot 1' })
+    .getByRole('button', { name: /save here/i })
+    .click();
+  await page.reload();
+  await page.waitForFunction(() => Boolean(window.fnt?.app));
+  await page.getByRole('button', { name: /load a save/i }).click();
+  await page
+    .locator('.slot')
+    .filter({ hasText: 'Slot 1' })
+    .getByRole('button', { name: /^Load$/ })
+    .click();
+
+  await expect(page.locator('.explore-scene')).toBeVisible();
+  await expect(page.locator('.conversation-panel-compact')).toBeVisible();
+  await expect(page.locator('.dialogue-line')).toContainText('There is oil under the treads.');
+  expect(
+    await page.evaluate(() => ({
+      screen: window.fnt?.app.state?.screen,
+      battle: window.fnt?.app.state?.battle,
+      flags: window.fnt?.app.state?.flags,
+      fired: window.fnt?.app.state?.world.fired,
+      location: window.fnt?.app.state?.location,
+      story: window.fnt?.app.state?.story,
+    })),
+  ).toEqual({
+    screen: 'dialogue',
+    battle: null,
+    flags: checkpoint.flags,
+    fired: checkpoint.fired,
+    location: checkpoint.location,
+    story: checkpoint.story,
+  });
+
+  await page.getByRole('button', { name: 'Continue', exact: true }).click();
+  await expect
+    .poll(() => page.evaluate(() => window.fnt?.app.state?.battle?.encounterId))
+    .toBe('enc_grumbler');
+});
+
 test('playback pauses for menus and returns to exploration before the road encounter', async ({
   page,
 }) => {

@@ -1,3 +1,6 @@
+import { expect } from '@playwright/test';
+import { upcomingOrder } from '../../src/core/rules/turnOrder';
+import { settleLayout } from '../helpers';
 import { paintedTileCentre } from '../projection';
 import type { Page } from '@playwright/test';
 import type { Settings } from '../../src/app/storage/localSaves';
@@ -364,4 +367,30 @@ export async function settleCurtain(page: Page): Promise<void> {
     undefined,
     { timeout: 30_000 },
   );
+}
+
+/** Use the real focus control before inspecting an actor on a pannable board. */
+export async function focusStagedUnit(page: Page, unitId: string, timeout: number): Promise<void> {
+  const battle = await page.evaluate(() => window.fnt?.app.state?.battle);
+  const unit = battle?.units.find((candidate) => candidate.id === unitId);
+  if (!battle || !unit) throw new Error(`Missing staged unit ${unitId}`);
+  // Names can repeat; match this actor's occurrence in the actual turn strip.
+  const peers = upcomingOrder(battle, battle.units.length).filter(
+    (candidate) => candidate.name === unit.name,
+  );
+  const index = peers.findIndex((candidate) => candidate.id === unitId);
+  if (index < 0) throw new Error(`Staged unit ${unitId} has no focus control`);
+  await page
+    .getByRole('button', { name: `Focus ${unit.name}`, exact: true })
+    .nth(index)
+    .click();
+  await settleLayout(page, timeout);
+  const point = await tileCentre(page, unit.pos);
+  expect(
+    await page.evaluate(
+      ({ x, y }) => document.elementFromPoint(x, y) === document.querySelector('.map-canvas'),
+      point,
+    ),
+    `Focused actor ${unitId} must be on the interactive canvas`,
+  ).toBe(true);
 }

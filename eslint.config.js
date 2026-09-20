@@ -52,6 +52,7 @@ export default tseslint.config(
       'dist/**',
       'dev-dist/**',
       'node_modules/**',
+      '.vite/**',
       'coverage/**',
       'playwright-report/**',
       'test-results/**',

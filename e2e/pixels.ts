@@ -1,4 +1,4 @@
-import type { Locator } from '@playwright/test';
+import type { Locator, Page } from '@playwright/test';
 import { PNG } from 'pngjs';
 
 /**
@@ -33,6 +33,27 @@ export async function screenshotPixels(locator: Locator): Promise<Pixels> {
   ]);
   const scaleX = box ? png.width / box.width : 1;
   const scaleY = box ? png.height / box.height : 1;
+  return {
+    width: png.width,
+    height: png.height,
+    at(x, y) {
+      const px = Math.round(x * scaleX);
+      const py = Math.round(y * scaleY);
+      if (px < 0 || py < 0 || px >= png.width || py >= png.height) return null;
+      const i = (py * png.width + px) * 4;
+      return { r: png.data[i] ?? 0, g: png.data[i + 1] ?? 0, b: png.data[i + 2] ?? 0 };
+    },
+  };
+}
+
+/** Capture a small screen region around a probe without Playwright's element stability wait. */
+export async function screenshotClipPixels(
+  page: Page,
+  clip: { x: number; y: number; width: number; height: number },
+): Promise<Pixels> {
+  const png = PNG.sync.read(await page.screenshot({ clip, scale: 'device' }));
+  const scaleX = png.width / clip.width;
+  const scaleY = png.height / clip.height;
   return {
     width: png.width,
     height: png.height,

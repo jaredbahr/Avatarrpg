@@ -100,6 +100,10 @@
   --fs-2xl: 2.25rem;
   --fs-3xl: 3rem;
 
+  /* SVG local-map labels use map user units, so they scale with the viewBox. */
+  --local-map-label-size: 0.65;
+  --local-map-label-stroke: 0.12;
+
   --sp-1: 0.25rem;
   --sp-2: 0.5rem;
   --sp-3: 0.75rem;
@@ -122,6 +126,9 @@
   /* Minimum touch target. The e2e suite asserts every action button meets it. */
   --tap: 3rem; /* 48px at --ui-scale: 1 */
   --roster-card-width: 6.25rem;
+  --dialogue-portrait-compact: 4rem;
+  --conversation-portrait: 4rem;
+  --conversation-panel-max: 42rem;
   --explore-actions-width: 26rem;
 
   /* Motion. Every duration in the UI is one of these times --motion-scale, so

@@ -94,4 +94,11 @@ export { ELEMENTS, ELEMENT_BY_ID, elementBase } from './elements';
 export { charactersForElement } from './characters';
 export { DISCIPLINE_BY_ID, DISCIPLINE_FLAGS, disciplinesForElement } from './disciplines';
 export { resolveAsset, ASSETS } from './assets/manifest';
+export {
+  STORY_PRESENTATIONS,
+  WORLD_PRESENTATIONS,
+  presentationFor,
+  validateStoryPresentations,
+  worldConversationFor,
+} from './story/presentations';
 export type { AssetEntry } from './assets/manifest';

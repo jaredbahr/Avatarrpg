@@ -11,7 +11,7 @@
 
 import { RngCursor } from '../rng';
 import { evaluate } from '../story/conditions';
-import { activeTriggers, triggerKey } from '../story/world';
+import { activeTriggers, triggerKey, visibleNpcs } from '../story/world';
 import type {
   BattleState,
   Command,
@@ -363,7 +363,7 @@ function handleWalkTo(content: ContentIndex, state: GameState, pos: Vec2): StepR
   const map = content.maps.get(state.location.mapId);
   if (!map) return refuse(state, 'No map loaded.');
 
-  const npc = map.npcs.find((n) => samePos(n.pos, pos));
+  const npc = visibleNpcs(map, state).find((n) => samePos(n.pos, pos));
   if (npc) {
     if (distance(state.location.pos, pos) > 1) {
       // Walk adjacent first rather than teleporting into a conversation.

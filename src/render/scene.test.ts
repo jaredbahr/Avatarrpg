@@ -1,8 +1,8 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import type { SceneScenery, Vec2 } from '../core/types';
+import type { Grid, MapScene, SceneScenery, Tile, Vec2 } from '../core/types';
 import { Camera } from './camera';
 import type { Projection } from './projection';
-import { sceneImages, sceneryOpacity } from './scene';
+import { sceneForGrid, sceneImages, sceneryOpacity, sceneryOpacities } from './scene';
 import type { MapView, RenderUnit } from './view';
 
 const SIZE = 128;
@@ -51,6 +51,44 @@ function view(extra: Partial<MapView> = {}): MapView {
   };
 }
 
+function scenePiece(id: string, extra: Partial<SceneScenery> = {}): SceneScenery {
+  return {
+    id,
+    url: `${id}.webp`,
+    x: 0,
+    y: 0,
+    width: 64,
+    height: 64,
+    footprint: [{ x: 1, y: 1 }],
+    depth: { x: 1.5, y: 1.5 },
+    ...extra,
+  };
+}
+
+function scene(pieces: readonly SceneScenery[]): MapScene {
+  return { ground: [], scenery: pieces };
+}
+
+function gridWith(overrides: Record<string, Partial<Tile>> = {}): Grid {
+  const base: Tile = {
+    terrain: 'stone',
+    elevation: 0,
+    blocked: false,
+    blocksSight: false,
+    cover: false,
+    surface: null,
+  };
+  const tiles = Array.from({ length: 16 }, () => base);
+  for (const [key, override] of Object.entries(overrides)) {
+    const coordinates = key.split(',').map(Number);
+    const x = coordinates[0];
+    const y = coordinates[1];
+    if (x === undefined || y === undefined) throw new Error(`Invalid test tile key: ${key}`);
+    tiles[y * 4 + x] = { ...base, ...override };
+  }
+  return { width: 4, height: 4, tiles };
+}
+
 function roof(camera: Camera): SceneScenery {
   const foot = camera.groundPoint({ x: 2.5, y: 2.5 });
   return {
@@ -71,7 +109,7 @@ function installImage(alpha: (x: number, y: number) => number) {
   const pixels = new Uint8ClampedArray(SIZE * SIZE * 4);
   for (let y = 0; y < SIZE; y++)
     for (let x = 0; x < SIZE; x++) pixels[(y * SIZE + x) * 4 + 3] = alpha(x, y);
-  const image = {} as HTMLImageElement;
+  const image = { naturalWidth: 256, naturalHeight: 256 } as HTMLImageElement;
   const drawImage = vi.fn();
   const getImageData = vi.fn(() => ({ data: pixels }));
   const createElement = vi.fn(() => ({
@@ -236,4 +274,122 @@ it('leaves an unloaded image opaque without rasterizing', () => {
   );
   expect(sceneryOpacity(roof(camera), view({ units: [unit(origin)] }), camera)).toBe(1);
   expect(raster.createElement).not.toHaveBeenCalled();
+});
+
+it('filters wall scenery against the loaded grid without acquiring solid props', () => {
+  const wall = scenePiece('wall', { wall: true });
+  const propBlocked = scenePiece('prop-blocked', {
+    footprint: [{ x: 2, y: 1 }],
+    wall: true,
+  });
+  const exterior = scenePiece('exterior', {
+    footprint: [{ x: 20, y: -1 }],
+    exterior: true,
+    wall: true,
+  });
+  const decorative = scenePiece('decorative');
+  const authored = scene([wall, propBlocked, exterior, decorative]);
+
+  expect(sceneForGrid(authored, gridWith()).scenery.map((piece) => piece.id)).toEqual([
+    'exterior',
+    'decorative',
+  ]);
+  expect(
+    sceneForGrid(
+      authored,
+      gridWith({
+        '1,1': { terrain: 'wall', blocked: true, blocksSight: true },
+        '2,1': { blocked: true, blocksSight: true },
+      }),
+    ).scenery.map((piece) => piece.id),
+  ).toEqual(['wall', 'exterior', 'decorative']);
+});
+
+it('requires every cell of a multi-cell wall footprint to be an authored wall', () => {
+  const wall = scenePiece('two-cell-wall', {
+    footprint: [
+      { x: 1, y: 1 },
+      { x: 1, y: 2 },
+    ],
+    wall: true,
+  });
+  const authored = scene([wall]);
+  const oneWall = gridWith({ '1,1': { terrain: 'wall', blocked: true } });
+  const twoWalls = gridWith({
+    '1,1': { terrain: 'wall', blocked: true },
+    '1,2': { terrain: 'wall', blocked: true },
+  });
+  expect(sceneForGrid(authored, oneWall).scenery).toEqual([]);
+  expect(sceneForGrid(authored, twoWalls).scenery).toEqual([wall]);
+});
+
+it('cuts away only the opaque slice on a shared page and reuses each cropped mask', () => {
+  const raster = installImage(() => 255);
+  const opaque = new Uint8ClampedArray(SIZE * SIZE * 4).fill(255);
+  const clear = new Uint8ClampedArray(SIZE * SIZE * 4);
+  raster.drawImage.mockImplementation((_image: unknown, sourceX: number) => {
+    raster.getImageData.mockReturnValue({ data: sourceX === 2 ? opaque : clear });
+  });
+  const camera = new Camera(
+    { width: 800, height: 600, dpr: 1 },
+    { width: 8, height: 8 },
+    'oblique',
+  );
+  const base = roof(camera),
+    state = view({ units: [unit(origin)] });
+  const a = { ...base, sourceRect: { x: 2, y: 2, width: 32, height: 64 } };
+  const b = { ...base, sourceRect: { x: 38, y: 2, width: 32, height: 64 } };
+  for (let i = 0; i < 3; i++) {
+    expect(sceneryOpacity(a, state, camera)).toBe(0.28);
+    expect(sceneryOpacity(b, state, camera)).toBe(1);
+  }
+  expect(raster.drawImage).toHaveBeenCalledTimes(2);
+  expect(raster.drawImage).toHaveBeenCalledWith(expect.anything(), 2, 2, 32, 64, 0, 0, SIZE, SIZE);
+  expect(raster.drawImage).toHaveBeenCalledWith(expect.anything(), 38, 2, 32, 64, 0, 0, SIZE, SIZE);
+  vi.mocked(sceneImages.get).mockReturnValue({
+    naturalWidth: 256,
+    naturalHeight: 256,
+  } as HTMLImageElement);
+  expect(sceneryOpacity(a, state, camera)).toBe(0.28);
+  expect(raster.drawImage).toHaveBeenCalledTimes(3);
+});
+
+it('bounds masks to 32 slice regions per decoded page', () => {
+  const raster = installImage(() => 255);
+  const camera = new Camera(
+    { width: 800, height: 600, dpr: 1 },
+    { width: 8, height: 8 },
+    'oblique',
+  );
+  const base = roof(camera),
+    state = view({ units: [unit(origin)] });
+  const slice = (x: number) => ({ ...base, sourceRect: { x, y: 0, width: 16, height: 64 } });
+  for (let x = 0; x < 33; x++) expect(sceneryOpacity(slice(x), state, camera)).toBe(0.28);
+  expect(raster.getImageData).toHaveBeenCalledTimes(33);
+  expect(sceneryOpacity(slice(32), state, camera)).toBe(0.28);
+  expect(raster.getImageData).toHaveBeenCalledTimes(33);
+  expect(sceneryOpacity(slice(0), state, camera)).toBe(0.28);
+  expect(raster.getImageData).toHaveBeenCalledTimes(34);
+});
+
+it('fades connected slices together only while an actual occupant occludes a member', () => {
+  installImage(() => 255);
+  const camera = new Camera(
+    { width: 800, height: 600, dpr: 1 },
+    { width: 8, height: 8 },
+    'oblique',
+  );
+  const a = { ...roof(camera), fadeGroup: 'west' };
+  const b = { ...a, id: 'distant-slice', x: a.x + 1000 };
+  const other = { ...b, id: 'other-mass', fadeGroup: 'east' };
+  const optOut = { ...b, id: 'opt-out', fadeWhenOccluding: false };
+  const pieces = [a, b, other, optOut];
+  const state = view({ units: [unit(origin)] });
+  expect(sceneryOpacity(b, state, camera)).toBe(1);
+  expect([...sceneryOpacities(pieces, state, camera).values()]).toEqual([0.28, 0.28, 1, 1]);
+  const moved = view({ units: [unit(origin, { renderPos: { x: 7, y: 7 } })], path: [origin] });
+  expect([...sceneryOpacities(pieces, moved, camera).values()]).toEqual([1, 1, 1, 1]);
+  expect(sceneryOpacities([b], state, camera).get(b)).toBe(1);
+  vi.mocked(sceneImages.get).mockReturnValue(null);
+  expect([...sceneryOpacities(pieces, state, camera).values()]).toEqual([1, 1, 1, 1]);
 });

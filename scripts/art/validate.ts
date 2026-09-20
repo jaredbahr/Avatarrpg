@@ -61,9 +61,12 @@ function borderTouched(
   return false;
 }
 
-export function validateSheets(publicDir = 'public'): string[] {
+export function validateSheets(
+  publicDir = 'public',
+  entries: Readonly<Record<string, AssetEntry>> = ASSETS,
+): string[] {
   const problems: string[] = [];
-  for (const [key, entry] of Object.entries(ASSETS)) {
+  for (const [key, entry] of Object.entries(entries)) {
     if (entry.kind !== 'sheet') continue;
     const jsonPath = resolve(publicDir, entry.atlas);
     if (!existsSync(jsonPath)) {
@@ -92,8 +95,19 @@ export function validateSheets(publicDir = 'public'): string[] {
       );
       continue;
     }
-    const wantW = entry.pixelsPerTile * entry.footprint.w;
-    const wantH = entry.pixelsPerTile * 1.5;
+    const defaultW = entry.pixelsPerTile * entry.footprint.w;
+    const defaultH = entry.pixelsPerTile * 1.5;
+    const wantW = entry.frameSize?.w ?? defaultW;
+    const wantH = entry.frameSize?.h ?? defaultH;
+    if (
+      !Number.isInteger(wantW) ||
+      !Number.isInteger(wantH) ||
+      wantW < defaultW ||
+      wantW > defaultW * 2 ||
+      wantH < defaultH ||
+      wantH > entry.pixelsPerTile * 2
+    )
+      problems.push(`${key}: declared frame exceeds the bounded art envelope`);
     for (const clip of CLIP_NAMES) {
       const def = entry.clips[clip];
       if (!def) continue;
@@ -110,6 +124,26 @@ export function validateSheets(publicDir = 'public'): string[] {
         }
         if (borderTouched(image, frame, MARGIN)) {
           problems.push(`${key}: frame "${name}" has art inside the ${MARGIN} px margin`);
+        }
+      }
+    }
+    for (const [direction, frames] of Object.entries(entry.meleeDirections ?? {})) {
+      if (!frames) continue;
+      for (const name of frames) {
+        const frame = atlas.frames.get(name);
+        if (!frame) {
+          problems.push(`${key}: ${direction} frame "${name}" is not in ${entry.atlas}`);
+          continue;
+        }
+        if (frame.w !== wantW || frame.h !== wantH) {
+          problems.push(
+            `${key}: ${direction} frame "${name}" is ${frame.w}x${frame.h}, expected ${wantW}x${wantH}`,
+          );
+        }
+        if (borderTouched(image, frame, MARGIN)) {
+          problems.push(
+            `${key}: ${direction} frame "${name}" has art inside the ${MARGIN} px margin`,
+          );
         }
       }
     }

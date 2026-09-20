@@ -1,4 +1,21 @@
-import type { StoryNode } from '../../core/types';
+import type { Condition, StoryNode } from '../../core/types';
+
+/** The four village homecomings are remembered by the existing story visit log. */
+export const VILLAGE_HOMECOMINGS_COMPLETE: Condition = {
+  kind: 'all',
+  of: [
+    { kind: 'visited', nodeId: 'mira_epilogue' },
+    { kind: 'visited', nodeId: 'pella_home' },
+    {
+      kind: 'any',
+      of: [
+        { kind: 'visited', nodeId: 'gao_home' },
+        { kind: 'visited', nodeId: 'gao_home_cold' },
+      ],
+    },
+    { kind: 'visited', nodeId: 'dorin_home' },
+  ],
+};
 
 /** Victory frees the route for a walk home; custody and optional visits still matter. */
 export const RETURN_STORY: readonly StoryNode[] = [
@@ -35,7 +52,13 @@ export const RETURN_STORY: readonly StoryNode[] = [
     id: 'village_return_explore',
     kind: 'explore',
     mapId: 'ba_dan_village',
-    objective: 'The workers are home. Talk with Mira, Pella and Gao, or visit the river.',
+    objective: 'The workers are home. Talk with Mira, Pella, Gao or Dorin, or visit the river.',
+    objectiveVariants: [
+      {
+        when: VILLAGE_HOMECOMINGS_COMPLETE,
+        text: "You've caught up with the village. Rest by the river, or explore the roads.",
+      },
+    ],
     next: 'village_return_explore',
   },
   {

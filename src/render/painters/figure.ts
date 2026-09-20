@@ -206,6 +206,7 @@ export function poseFor(clip: ClipName, index: number): Pose {
       ? 'walk'
       : clip === 'idleNorth' ||
           clip === 'idleSouth' ||
+          clip === 'tea' ||
           clip === 'rest' ||
           clip === 'restNorth' ||
           clip === 'restSouth'

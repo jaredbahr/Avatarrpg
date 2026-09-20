@@ -40,6 +40,8 @@ export class Renderer {
   camera: Camera;
   private backend: RenderBackend;
   private observer: ResizeObserver | null = null;
+  private lastView: MapView | null = null;
+  private destroyed = false;
 
   /**
    * Called after the element's box changed and the camera has been re-measured,
@@ -110,10 +112,21 @@ export class Renderer {
 
   /** Re-reads the element size and resizes the backing store. Call on resize. */
   resize(grid?: { width: number; height: number }): void {
+    if (this.destroyed) return;
     const viewport = this.measure();
     this.camera.viewport = viewport;
     if (grid) this.camera.grid = grid;
     this.backend.resize(viewport);
+  }
+
+  /** Resize, restore the scene's camera policy, and refill the backing store in one turn. */
+  resizeAndRedraw(refit: () => void, grid?: { width: number; height: number }): void {
+    if (this.destroyed) return;
+    this.resize(grid);
+    refit();
+    // Both observer delivery and an explicit scene resize can follow the
+    // current RAF draw. Never leave their cleared backing store until next RAF.
+    if (!this.destroyed && this.lastView) this.backend.draw(this.lastView, this.camera);
   }
 
   /**
@@ -140,6 +153,7 @@ export class Renderer {
     if (typeof ResizeObserver === 'undefined') return;
 
     this.observer = new ResizeObserver(() => {
+      if (this.destroyed) return;
       const next = this.measure();
       const current = this.camera.viewport;
       if (
@@ -149,8 +163,7 @@ export class Renderer {
       ) {
         return;
       }
-      this.resize();
-      this.onViewportChange?.();
+      this.resizeAndRedraw(() => this.onViewportChange?.());
     });
     this.observer.observe(this.canvas);
   }
@@ -160,11 +173,16 @@ export class Renderer {
   }
 
   draw(view: MapView): void {
+    if (this.destroyed) return;
+    this.lastView = view;
     this.backend.draw(view, this.camera);
   }
 
   /** Releases GPU resources. Safe to call more than once. */
   destroy(): void {
+    if (this.destroyed) return;
+    this.destroyed = true;
+    this.lastView = null;
     this.observer?.disconnect();
     this.observer = null;
     this.onViewportChange = null;

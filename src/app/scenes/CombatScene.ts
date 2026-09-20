@@ -24,8 +24,9 @@ import {
   affectedTiles,
 } from '../../core/rules/abilities';
 import { pathCost, posKey, reachable, samePos } from '../../core/rules/grid';
-import { effectiveStats, isAlive } from '../../core/rules/stats';
+import { canMove, effectiveStats, isAlive, statusDefs } from '../../core/rules/stats';
 import { activeUnit, upcomingOrder } from '../../core/rules/turnOrder';
+import { encounterText } from '../../core/story/encounterText';
 import { Renderer, TILE } from '../../render/renderer';
 import type { AimArc, MapView, OverlayLayer, RenderProp, RenderUnit } from '../../render/renderer';
 import { CONTENT } from '../../content';
@@ -41,7 +42,10 @@ import { paletteFor } from '../../render/palettes';
 import { paintElementGlyph } from '../../render/painters/glyphs';
 import { showGridLines } from '../storage/localSaves';
 import { reactionNotes } from '../ui/ReactionNote';
+import { formatShoveMovement } from '../ui/combatPreviewText';
 import { UnitInspector } from '../ui/UnitInspector';
+import { enemyScale, partyScale } from '../anim/actorScale';
+import { createMovementThreatQuery } from '../ui/movementThreats';
 
 type Mode =
   | { readonly kind: 'idle' }
@@ -63,14 +67,35 @@ export class CombatScene implements Scene {
   /** How high each ability's flight lobs, or null when nothing flies; read once from its recipe. */
   private lobs = new Map<string, number | null>();
   private inspector: UnitInspector | null = null;
+  private readonly movementThreatQuery: ReturnType<typeof createMovementThreatQuery>;
 
   /** Unit whose hand-off banner has been acknowledged. */
   private handedOffTo: string | null = null;
   private bannerShownFor: string | null = null;
   private lastActiveId: string | null = null;
   private recentreButton: HTMLButtonElement | null = null;
-  /** True while the player has zoomed in past the fitted board; a reflow then keeps the zoom. */
-  private zoomed = false;
+  private actorButton: HTMLButtonElement | null = null;
+  /** True after a user zoom/pan; HUD reflows must preserve that manual framing. */
+  private manualCamera = false;
+  /**
+   * The last pending move target revealed for a particular viewport. A
+   * confirmation dock can shorten the canvas after the target was selected;
+   * remember the reveal so later observer deliveries do not undo a deliberate
+   * pan while the confirmation is open.
+   */
+  private lastPendingMoveReveal: {
+    target: Vec2;
+    width: number;
+    height: number;
+    dpr: number;
+  } | null = null;
+  /**
+   * The compact oblique frame is chosen from the first settled combat canvas,
+   * before an ability or log panel changes its height. Keeping that choice for
+   * the scene prevents aim-mode reflow from zooming the board in and out.
+   */
+  private preferredCombatTilePx: number | null = null;
+  private preferredCombatFrameKey: string | null = null;
   /**
    * The reachable set and the target/area tiles are rebuilt only when the
    * inputs that decide them change, not every frame: on a tablet the
@@ -85,8 +110,11 @@ export class CombatScene implements Scene {
   private aiScheduled = false;
   private resultShown = false;
   private logOpen = false;
+  private layoutMeasuredAfterSync = false;
 
-  constructor(private app: App) {}
+  constructor(private app: App) {
+    this.movementThreatQuery = createMovementThreatQuery(app.content);
+  }
 
   /* ---------------------------------------------------------------- */
   /* Lifecycle                                                         */
@@ -94,6 +122,7 @@ export class CombatScene implements Scene {
 
   mount(host: HTMLElement): void {
     this.host = host;
+    this.layoutMeasuredAfterSync = false;
     clear(host);
 
     const scene = el('div', { class: 'scene combat-scene' });
@@ -116,6 +145,7 @@ export class CombatScene implements Scene {
     if (this.frame) cancelAnimationFrame(this.frame);
     this.frame = 0;
     this.recentreButton = null;
+    this.actorButton = null;
     this.detach?.();
     this.detach = null;
     this.inspector?.close();
@@ -128,10 +158,39 @@ export class CombatScene implements Scene {
 
   resize(): void {
     const battle = this.battle();
-    this.renderer?.resize(
+    this.renderer?.resizeAndRedraw(
+      () => this.refit(),
       battle ? { width: battle.grid.width, height: battle.grid.height } : undefined,
     );
-    this.refit();
+  }
+
+  /**
+   * The first HUD render can change the canvas before ResizeObserver delivers.
+   * Measure after that render, then leave later identical reducer syncs alone;
+   * the renderer's observer handles genuine box changes.
+   */
+  private resizeAfterHud(): void {
+    const renderer = this.renderer;
+    const canvas = this.canvas;
+    const battle = this.battle();
+    if (!renderer || !canvas || !battle) return;
+    const rect = canvas.getBoundingClientRect();
+    const width = Math.max(1, Math.round(rect.width));
+    const height = Math.max(1, Math.round(rect.height));
+    const dpr = Math.min(3, window.devicePixelRatio || 1);
+    const viewport = renderer.viewport;
+    if (
+      this.layoutMeasuredAfterSync &&
+      viewport.width === width &&
+      viewport.height === height &&
+      viewport.dpr === dpr
+    )
+      return;
+    this.layoutMeasuredAfterSync = true;
+    renderer.resizeAndRedraw(() => this.refit(), {
+      width: battle.grid.width,
+      height: battle.grid.height,
+    });
   }
 
   /**
@@ -144,17 +203,94 @@ export class CombatScene implements Scene {
   private refit(): void {
     const camera = this.renderer?.camera;
     if (!camera) return;
-    if (!this.zoomed || camera.scale < camera.fitScale()) this.recentre();
-    else camera.clamp();
+    if (!this.manualCamera) this.recentre();
+    else {
+      camera.scale = Math.max(camera.scale, camera.fitScale());
+      camera.clamp();
+    }
+    this.revealPendingMoveAfterViewportChange();
     this.syncRecentre();
   }
 
-  /** Whole board back on screen, or the acting unit centred where it cannot fit. */
+  /**
+   * Keep the selected move tile reachable after a real HUD/viewport reflow.
+   * This runs from refit(), which is called by ResizeObserver or an explicit
+   * resize, rather than from the render loop. The camera keeps its scale and
+   * only pans the smallest amount needed to put the tile centre inside the
+   * usable viewport. Once that viewport/target pair has been handled, a user
+   * pan during confirmation is left alone.
+   */
+  private revealPendingMoveAfterViewportChange(): void {
+    const camera = this.renderer?.camera;
+    const target = this.pending;
+    if (!camera || !target || this.mode.kind !== 'move') return;
+
+    const viewport = camera.viewport;
+    const previous = this.lastPendingMoveReveal;
+    if (
+      previous &&
+      previous.target.x === target.x &&
+      previous.target.y === target.y &&
+      previous.width === viewport.width &&
+      previous.height === viewport.height &&
+      previous.dpr === viewport.dpr
+    ) {
+      return;
+    }
+
+    const point = camera.project({ x: target.x + 0.5, y: target.y + 0.5 });
+    const padding = Math.min(16, viewport.width / 2, viewport.height / 2);
+    const desiredX = Math.min(viewport.width - padding, Math.max(padding, point.x));
+    const desiredY = Math.min(viewport.height - padding, Math.max(padding, point.y));
+    camera.panBy(desiredX - point.x, desiredY - point.y);
+
+    this.lastPendingMoveReveal = {
+      target: { ...target },
+      width: viewport.width,
+      height: viewport.height,
+      dpr: viewport.dpr,
+    };
+  }
+
+  private clearPending(): void {
+    this.pending = null;
+    this.lastPendingMoveReveal = null;
+  }
+
+  /** Restore readable oblique framing, or the fitted orthographic board. */
   private recentre(): void {
     const camera = this.renderer?.camera;
     if (!camera) return;
-    camera.fit();
-    this.zoomed = false;
+    this.manualCamera = false;
+    if (camera.projection === 'oblique') {
+      // Key off both the layout and visual viewports and the text setting,
+      // then use the first settled canvas height to account for the full
+      // decision dock. iOS toolbars can change the visual viewport while the
+      // layout viewport stays put; HUD panels change only the canvas during
+      // aim mode and must keep the player's framing.
+      const visualViewport = window.visualViewport;
+      const visualWidth = Math.round(visualViewport?.width ?? window.innerWidth);
+      const visualHeight = Math.round(visualViewport?.height ?? window.innerHeight);
+      const frameKey = `${window.innerWidth}x${window.innerHeight}:${visualWidth}x${visualHeight}:${this.app.settings.largeText}`;
+      const hudAllowance = this.app.settings.largeText === 'huge' ? 220 : 200;
+      const decisionHeight = camera.viewport.height - hudAllowance;
+      const compact = decisionHeight < 360;
+      const preferredTilePx = compact
+        ? this.app.settings.largeText === 'huge' || window.innerWidth < 600
+          ? 40
+          : 64
+        : 96;
+      const idleFrameCorrection =
+        this.mode.kind === 'idle' && this.preferredCombatTilePx !== preferredTilePx;
+      if (this.preferredCombatFrameKey !== frameKey || idleFrameCorrection) {
+        this.preferredCombatFrameKey = frameKey;
+        // The action/preview panel takes a predictable slice of the first
+        // settled canvas. Reserve that full dock before choosing the readable
+        // 96px frame; Huge text needs the larger allowance.
+        this.preferredCombatTilePx = preferredTilePx;
+      }
+      camera.fitExplore(this.preferredCombatTilePx ?? 96);
+    } else camera.fit();
     const unit = this.active();
     if (!camera.fitted && unit) camera.centreOn(unit.pos);
     this.syncRecentre();
@@ -163,13 +299,30 @@ export class CombatScene implements Scene {
   private zoomBy(factor: number, at: { x: number; y: number }): void {
     const camera = this.renderer?.camera;
     if (!camera) return;
+    const before = camera.scale;
     camera.zoomAt(at, factor);
-    this.zoomed = !camera.fitted;
+    if (camera.scale !== before) this.manualCamera = true;
     this.syncRecentre();
   }
 
   private pan(dx: number, dy: number): void {
-    this.renderer?.camera.panBy(dx, dy);
+    const camera = this.renderer?.camera;
+    if (!camera) return;
+    const before = { x: camera.offsetX, y: camera.offsetY };
+    camera.panBy(dx, dy);
+    if (camera.offsetX !== before.x || camera.offsetY !== before.y) this.manualCamera = true;
+  }
+
+  /** Camera navigation never selects a target or spends an action. */
+  private focusUnit(id: string): void {
+    const unit = this.battle()?.units.find(
+      (candidate) => candidate.id === id && isAlive(candidate),
+    );
+    const camera = this.renderer?.camera;
+    if (!unit || !camera) return;
+    camera.centreOn({ x: unit.pos.x + (unit.size - 1) / 2, y: unit.pos.y });
+    this.manualCamera = true;
+    this.syncRecentre();
   }
 
   /** The Recentre button only exists while there is something off screen. */
@@ -178,6 +331,7 @@ export class CombatScene implements Scene {
     if (!button) return;
     const fitted = this.renderer?.camera.fitted ?? true;
     if (button.hidden !== fitted) button.hidden = fitted;
+    if (this.actorButton) this.actorButton.hidden = fitted;
   }
 
   private setupRenderer(): void {
@@ -190,12 +344,13 @@ export class CombatScene implements Scene {
     this.renderer.camera.projection =
       this.app.content.maps.get(battle.mapId)?.projection ?? 'orthographic';
     this.app.animator.setProjection(this.renderer.camera.projection);
-    this.renderer.camera.fit();
+    if (this.renderer.camera.projection === 'oblique') this.renderer.camera.fitExplore(96);
+    else this.renderer.camera.fit();
 
     // The map is the only thing that flexes, so it is still the wrong size
     // here: the turn strip and the HUD fill in after mount, and the log panel
     // and the Large-text setting move them again later. Re-fit whenever the
-    // canvas box actually changes, or the camera drifts from what is drawn â€”
+    // canvas box actually changes, or the camera drifts from what is drawn —
     // through refit(), so a pinch zoom survives the reflow.
     this.renderer.onViewportChange = () => this.refit();
 
@@ -241,6 +396,16 @@ export class CombatScene implements Scene {
   private active(): Unit | undefined {
     const battle = this.battle();
     return battle ? activeUnit(battle) : undefined;
+  }
+
+  private movementBlockReason(unit: Unit): string | null {
+    if (canMove(this.app.content, unit)) return null;
+    const blocker = statusDefs(this.app.content, unit).find(
+      (status) => status.preventsMove || status.skipsTurn,
+    );
+    return blocker
+      ? `${blocker.name}: ${blocker.description}`
+      : `${unit.name} cannot move right now.`;
   }
 
   private isPlayerTurn(): boolean {
@@ -358,7 +523,7 @@ export class CombatScene implements Scene {
     if (activeId !== this.lastActiveId) {
       this.lastActiveId = activeId;
       this.mode = { kind: 'idle' };
-      this.pending = null;
+      this.clearPending();
       this.aiScheduled = false;
 
       // A new player's turn needs the hand-off card before anything is shown.
@@ -380,11 +545,16 @@ export class CombatScene implements Scene {
     this.renderTurnStrip();
     this.renderHud();
     this.maybeRunAi();
+    // The first ResizeObserver delivery can happen before this sync fills the
+    // turn strip and decision dock. Measure after those panels exist so a
+    // short tablet chooses its compact readable frame; later identical syncs
+    // leave the backend alone.
+    this.resizeAfterHud();
   }
 
   /**
    * Enemy and ally turns run themselves, but only once the current playback has
-   * finished â€” otherwise six bandits resolve in one frame and the table sees
+   * finished — otherwise six bandits resolve in one frame and the table sees
    * nothing but the aftermath.
    */
   private maybeRunAi(): void {
@@ -426,17 +596,29 @@ export class CombatScene implements Scene {
 
     const recentre = button('Recentre', () => this.recentre(), {
       class: 'btn-ghost',
-      title: 'Show the whole battlefield again',
+      title: 'Reset the battlefield view around the acting unit',
     });
     recentre.prepend(mark(UI_MARKS.recentre, 'mark-inline'));
     recentre.hidden = this.renderer?.camera.fitted ?? true;
     this.recentreButton = recentre;
     bar.appendChild(recentre);
+    const actor = button(
+      'Acting unit',
+      () => {
+        const unit = this.active();
+        if (unit) this.focusUnit(unit.id);
+      },
+      { class: 'btn-ghost', title: 'Return to the acting unit without changing zoom' },
+    );
+    actor.hidden = this.renderer?.camera.fitted ?? true;
+    this.actorButton = actor;
+    bar.appendChild(actor);
 
     if (encounter) {
-      const tipButton = button('Tip', () => this.app.toasts.show(encounter.tip, 'info', 6000), {
+      const advice = encounterText(encounter, battle.variantId).tip;
+      const tipButton = button('Tip', () => this.app.toasts.show(advice, 'info', 6000), {
         class: 'btn-ghost',
-        title: encounter.tip,
+        title: advice,
       });
       tipButton.prepend(mark(UI_MARKS.tip, 'mark-inline'));
       bar.appendChild(tipButton);
@@ -463,24 +645,22 @@ export class CombatScene implements Scene {
     if (!strip || !battle) return;
     clear(strip);
 
-    for (const unit of upcomingOrder(battle, 9)) {
+    for (const unit of upcomingOrder(battle, battle.units.length).filter(isAlive)) {
       const isActive = unit.id === this.active()?.id;
       const player = this.app.session.playerFor(unit.id);
 
       // The element class puts the unit's colour in --el, for the party's ring.
       const chip = el(
-        'div',
+        'button',
         {
           class: `turn-chip faction-${unit.faction} element-${unit.element}${isActive ? ' active' : ''}`,
+          attrs: { type: 'button', 'aria-label': `Focus ${unit.name}` },
+          onClick: () => this.focusUnit(unit.id),
         },
         assetCanvas(portraitKeyFor(this.app.content, unit), 2.4),
         el('span', { class: 'tiny', text: player?.name ?? unit.name }),
       );
-      tip(
-        chip,
-        `${unit.name}${player ? ` (${player.name})` : ''} â€” ${unit.hp}/${unit.base.maxHp} HP`,
-        (text) => this.app.toasts.show(text),
-      );
+      chip.title = `${unit.name}: ${unit.hp}/${unit.base.maxHp} HP. Focus on the battlefield.`;
       strip.appendChild(chip);
     }
   }
@@ -511,27 +691,33 @@ export class CombatScene implements Scene {
     const unit = this.active();
     if (!unit) return;
 
+    if (this.mode.kind === 'move' && this.movementBlockReason(unit)) {
+      this.mode = { kind: 'idle' };
+      this.clearPending();
+    }
+
     if (unit.faction !== 'party') {
       overlays.appendChild(
         el(
           'div',
           { class: 'enemy-turn-banner' },
           el('span', {
-            text: unit.faction === 'enemy' ? 'Enemies are movingâ€¦' : `${unit.name} is movingâ€¦`,
+            text: unit.faction === 'enemy' ? 'Enemies are moving…' : `${unit.name} is moving…`,
           }),
         ),
       );
     }
 
     hud.appendChild(this.unitPanel(unit));
-    hud.appendChild(this.actionBar(unit));
+    const actions = this.actionBar(unit);
+    hud.appendChild(actions);
     if (this.logOpen) hud.appendChild(this.logPanel());
 
     if (this.pending) {
-      overlays.appendChild(this.confirmBar(unit));
+      actions.appendChild(this.confirmBar(unit));
     } else {
       const hint = this.aimHint(unit);
-      if (hint) overlays.appendChild(hint);
+      if (hint) actions.appendChild(hint);
     }
   }
 
@@ -582,7 +768,9 @@ export class CombatScene implements Scene {
               'div',
               { class: 'stack tight' },
               el('strong', { class: 'unit-name', text: unit.name }),
-              player ? el('span', { class: 'tiny muted', text: player.name }) : null,
+              player && player.name !== unit.name
+                ? el('span', { class: 'tiny muted', text: player.name })
+                : null,
             ),
             el('div', { class: 'spacer' }),
             el('span', { class: 'tiny muted', text: `Level ${unit.level}` }),
@@ -617,25 +805,34 @@ export class CombatScene implements Scene {
     const bar = el('div', { class: 'hud-panel action-bar', attrs: { role: 'toolbar' } });
     bar.appendChild(this.abilityHeader(unit));
     const row = el('div', { class: 'action-row' });
+    const interactive = unit.faction === 'party' && this.isPlayerTurn();
 
     const moveActive = this.mode.kind === 'move';
-    const canMoveNow = unit.move > 0;
+    const movementReason = this.movementBlockReason(unit);
+    const canMoveNow = unit.move > 0 && !movementReason;
     const moveButton = button(`Move`, () => this.selectMove(), {
       class: `action-button${moveActive ? ' selected' : ''}`,
-      disabled: !canMoveNow,
-      title: canMoveNow ? 'Walk to a highlighted tile' : 'No move points left this turn',
+      disabled: !interactive || !canMoveNow,
+      title: !interactive
+        ? 'Player controls are locked while another unit acts'
+        : movementReason
+          ? movementReason
+          : canMoveNow
+            ? 'Walk to a highlighted tile'
+            : 'No move points left this turn',
     });
     moveButton.prepend(mark(UI_MARKS.move));
     moveButton.appendChild(el('span', { class: 'action-sub', text: `${unit.move} left` }));
     row.appendChild(moveButton);
 
     for (const ability of knownAbilities(this.app.content, unit)) {
-      row.appendChild(this.abilityButton(unit, ability));
+      row.appendChild(this.abilityButton(unit, ability, interactive));
     }
 
     const endButton = button('End turn', () => this.endTurn(unit), {
       class: 'action-button end-turn',
       title: 'Finish this turn. One unused AP carries over.',
+      disabled: !interactive,
     });
     endButton.prepend(mark(UI_MARKS.end));
     if (unit.ap > 0)
@@ -661,7 +858,7 @@ export class CombatScene implements Scene {
         header.append(
           mark(iconMarkup(markKindFor(ability))),
           el('strong', { text: ability.name }),
-          el('span', { class: 'header-cost', text: `Â· ${ability.apCost} AP` }),
+          el('span', { class: 'header-cost', text: `· ${ability.apCost} AP` }),
           el('span', { class: 'header-desc', text: ability.description }),
         );
         return header;
@@ -671,7 +868,7 @@ export class CombatScene implements Scene {
       header.append(
         mark(UI_MARKS.move),
         el('strong', { text: 'Move' }),
-        el('span', { class: 'header-cost', text: `Â· ${unit.move} left` }),
+        el('span', { class: 'header-cost', text: `· ${unit.move} left` }),
         el('span', { class: 'header-desc', text: 'Walk to a highlighted tile.' }),
       );
       return header;
@@ -685,15 +882,19 @@ export class CombatScene implements Scene {
     return header;
   }
 
-  private abilityButton(unit: Unit, ability: Ability): HTMLElement {
+  private abilityButton(unit: Unit, ability: Ability, interactive = true): HTMLElement {
     const check = canUseAbility(this.app.content, unit, ability);
     const selected = this.mode.kind === 'aim' && this.mode.abilityId === ability.id;
     const cooldown = unit.cooldowns[ability.id] ?? 0;
 
     const node = button(ability.name, () => this.selectAbility(ability), {
       class: `action-button element-${ability.element}${selected ? ' selected' : ''}`,
-      disabled: !check.ok,
-      title: check.ok ? ability.description : check.reason,
+      disabled: !interactive || !check.ok,
+      title: !interactive
+        ? 'Player controls are locked while another unit acts'
+        : check.ok
+          ? ability.description
+          : check.reason,
     });
 
     // The ability's own mark above its name, in its element's colour; the
@@ -723,8 +924,16 @@ export class CombatScene implements Scene {
   }
 
   private selectMove(): void {
+    const unit = this.active();
+    const movementReason = unit ? this.movementBlockReason(unit) : null;
+    if (!unit || unit.move <= 0 || movementReason) {
+      this.mode = { kind: 'idle' };
+      this.clearPending();
+      this.renderHud();
+      return;
+    }
     this.mode = this.mode.kind === 'move' ? { kind: 'idle' } : { kind: 'move' };
-    this.pending = null;
+    this.clearPending();
     this.renderHud();
   }
 
@@ -733,7 +942,7 @@ export class CombatScene implements Scene {
       this.mode.kind === 'aim' && this.mode.abilityId === ability.id
         ? { kind: 'idle' }
         : { kind: 'aim', abilityId: ability.id };
-    this.pending = null;
+    this.clearPending();
     this.renderHud();
   }
 
@@ -751,7 +960,7 @@ export class CombatScene implements Scene {
     }
     this.confirmedEndTurn = false;
     this.mode = { kind: 'idle' };
-    this.pending = null;
+    this.clearPending();
     this.handedOffTo = null;
     this.app.dispatch({ type: 'endTurn', unitId: unit.id });
   }
@@ -768,6 +977,10 @@ export class CombatScene implements Scene {
     if (!battle || !target) return el('div');
 
     if (this.mode.kind === 'move') {
+      const movementReason = this.movementBlockReason(unit);
+      if (movementReason) {
+        return this.confirmShell(el('span', { class: 'warn-note', text: movementReason }), null);
+      }
       const cell = this.reachableCells().get(posKey(target));
       if (!cell) {
         return this.confirmShell(
@@ -776,16 +989,33 @@ export class CombatScene implements Scene {
         );
       }
       const cost = pathCost(this.moveContext(unit), unit.pos, cell.path) ?? cell.cost;
+      const threat = this.movementThreatQuery(battle, unit.id, target);
+      const movementChips = el(
+        'div',
+        { class: 'row row-wrap chips' },
+        el('span', { class: 'chip', text: `${cost} move` }),
+        el('span', { class: 'chip', text: `${Math.max(0, unit.move - cost)} left after` }),
+      );
+      const threatNotice = threat.warning
+        ? el('span', { class: 'warn-note movement-threat-warning', text: threat.warning })
+        : el('span', {
+            class: 'tiny muted movement-threat-empty',
+            text: 'No immediate direct attack found',
+          });
       return this.confirmShell(
         el(
           'div',
-          { class: 'row row-wrap chips' },
-          el('span', { class: 'chip', text: `${cost} move` }),
-          el('span', { class: 'chip', text: `${Math.max(0, unit.move - cost)} left after` }),
+          { class: 'stack tight' },
+          movementChips,
+          threatNotice,
+          el('span', {
+            class: 'tiny muted movement-threat-qualification',
+            text: threat.qualification,
+          }),
         ),
         () => {
           this.app.dispatch({ type: 'move', unitId: unit.id, path: cell.path });
-          this.pending = null;
+          this.clearPending();
           this.mode = { kind: 'idle' };
           this.renderHud();
         },
@@ -805,7 +1035,12 @@ export class CombatScene implements Scene {
     const preview = previewAbility(this.app.content, battle, unit, ability, target);
 
     const chips = el('div', { class: 'row row-wrap chips preview-chips' });
-    if (preview.targets.length === 0) {
+    if (
+      preview.targets.length === 0 &&
+      preview.props.length === 0 &&
+      preview.shoves.length === 0 &&
+      preview.surfaceContacts.length === 0
+    ) {
       chips.appendChild(el('span', { class: 'chip', text: 'Nobody in the area' }));
     }
     for (const entry of preview.targets) {
@@ -813,19 +1048,134 @@ export class CombatScene implements Scene {
       if (entry.hitChance !== null) parts.push(`${entry.hitChance}%`);
       if (entry.damage > 0) parts.push(`~${entry.damage} dmg`);
       if (entry.heal > 0) parts.push(`+${entry.heal} hp`);
+      else if (entry.healAtCapacity) parts.push('at full health');
       for (const status of entry.statuses) {
-        const name = this.app.content.statuses.get(status.id)?.name ?? status.id;
-        parts.push(status.chance >= 1 ? name : `${Math.round(status.chance * 100)}% ${name}`);
+        const requested = this.app.content.statuses.get(status.id)?.name ?? status.id;
+        const applied = status.appliedStatus
+          ? (this.app.content.statuses.get(status.appliedStatus)?.name ?? status.appliedStatus)
+          : requested;
+        const outcome = applied !== requested ? `${applied} (from ${requested})` : applied;
+        parts.push(status.chance >= 1 ? outcome : `${Math.round(status.chance * 100)}% ${outcome}`);
+        for (const cleared of status.clearedStatuses ?? []) {
+          const name = this.app.content.statuses.get(cleared)?.name ?? cleared;
+          parts.push(`clears ${name}`);
+        }
+      }
+      for (const cleared of entry.clearedStatuses) {
+        const name = this.app.content.statuses.get(cleared)?.name ?? cleared;
+        if (!parts.some((part) => part === `clears ${name}`)) parts.push(`clears ${name}`);
       }
       chips.appendChild(
         el('span', {
           class: `chip ${entry.friendly ? 'chip-friendly' : 'chip-hostile'}${entry.lethal ? ' chip-lethal' : ''}`,
-          text: `${entry.name}: ${parts.join(' Â· ')}${entry.lethal ? ' â€” lethal' : ''}`,
+          text: `${entry.name}: ${parts.join(' · ')}${entry.lethal ? ' — lethal' : ''}`,
+        }),
+      );
+    }
+    for (const contact of preview.surfaceContacts) {
+      const surface = this.app.content.surfaces.get(contact.surface)?.name ?? contact.surface;
+      const effects: string[] = [];
+      if (contact.damage > 0) effects.push(`${contact.damage} damage`);
+      if (contact.status) {
+        const requested = contact.status.requestedStatus
+          ? (this.app.content.statuses.get(contact.status.requestedStatus)?.name ??
+            contact.status.requestedStatus)
+          : null;
+        const applied = contact.status.appliedStatus
+          ? (this.app.content.statuses.get(contact.status.appliedStatus)?.name ??
+            contact.status.appliedStatus)
+          : requested;
+        if (applied) {
+          const outcome = applied !== requested ? `${applied} (from ${requested})` : applied;
+          effects.push(
+            contact.status.chance >= 1
+              ? outcome
+              : `${Math.round(contact.status.chance * 100)}% ${outcome}`,
+          );
+        }
+        for (const cleared of contact.status.clearedStatuses) {
+          const name = this.app.content.statuses.get(cleared)?.name ?? cleared;
+          effects.push(`clears ${name}`);
+        }
+      }
+      chips.appendChild(
+        el('span', {
+          class: `chip ${contact.friendly ? 'chip-friendly' : 'chip-terrain'}`,
+          text: `${contact.name}: ${surface} contact${effects.length ? ` — ${effects.join(', ')}` : ''}`,
         }),
       );
     }
     for (const note of preview.terrain) {
       chips.appendChild(el('span', { class: 'chip chip-terrain', text: note }));
+    }
+
+    for (const prop of preview.props) {
+      const from = `(${prop.from.x + 1},${prop.from.y + 1})`;
+      const destination = prop.to ? `to (${prop.to.x + 1},${prop.to.y + 1})` : 'breaks here';
+      const affected = [...prop.affectedAllies, ...prop.affectedEnemies]
+        .map((unit) => unit.name)
+        .join(', ');
+      const consequence = prop.destroyed
+        ? (prop.breakLabel ?? `${prop.name} breaks`)
+        : prop.moved
+          ? `${prop.name} ${destination}`
+          : prop.hpAfter !== null && prop.hpAfter < prop.hpBefore
+            ? `${prop.name} takes ${prop.hpBefore - prop.hpAfter} damage (${prop.hpAfter} hp left)`
+            : `${prop.name} holds here`;
+      const cover = prop.coverRemoved ? ' (cover removed)' : '';
+      const suffix = `${cover}${affected ? ` — affects ${affected}` : ''}`;
+      chips.appendChild(
+        el('span', {
+          class: 'chip chip-terrain',
+          text: `${prop.name} at ${from}: ${consequence}${suffix}`,
+        }),
+      );
+    }
+
+    for (const shove of preview.shoves) {
+      const destination = `(${shove.to.x + 1},${shove.to.y + 1})`;
+      const landingEffects = shove.landingSurfaces.map(
+        (id) => this.app.content.surfaces.get(id)?.name ?? id,
+      );
+      if (shove.landingDamage > 0) landingEffects.push(`${shove.landingDamage} damage`);
+      for (const status of shove.landingStatuses) {
+        const name = this.app.content.statuses.get(status.id)?.name ?? status.id;
+        landingEffects.push(
+          status.chance >= 1 ? name : `${Math.round(status.chance * 100)}% ${name}`,
+        );
+      }
+      const landing = landingEffects.length ? ` — lands on ${landingEffects.join(', ')}` : '';
+      chips.appendChild(
+        el('span', {
+          class: `chip ${shove.friendly ? 'chip-friendly' : 'chip-terrain'}`,
+          text: shove.blocked
+            ? `${shove.name}: stops at ${destination} (${shove.movedDistance}/${shove.distance}; blocked)${landing}`
+            : `${formatShoveMovement(shove.name, shove.mode, destination)}${landing}`,
+        }),
+      );
+    }
+
+    for (const status of preview.statuses) {
+      if (status.kind !== 'apply' || !status.requestedStatus) continue;
+      if (preview.targets.some((entry) => entry.unitId === status.unitId)) continue;
+      const requested =
+        this.app.content.statuses.get(status.requestedStatus)?.name ?? status.requestedStatus;
+      const applied = status.appliedStatus
+        ? (this.app.content.statuses.get(status.appliedStatus)?.name ?? status.appliedStatus)
+        : requested;
+      const suffix =
+        status.clearedStatuses.length > 0
+          ? `; clears ${status.clearedStatuses
+              .map((id) => this.app.content.statuses.get(id)?.name ?? id)
+              .join(', ')}`
+          : '';
+      const chance = status.chance >= 1 ? '' : `${Math.round(status.chance * 100)}% `;
+      chips.appendChild(
+        el('span', {
+          class: `chip ${status.friendly ? 'chip-friendly' : 'chip-hostile'}`,
+          text: `${status.name}: ${chance}${applied}${applied !== requested ? ` (from ${requested})` : ''}${suffix}`,
+        }),
+      );
     }
 
     const body = el('div', { class: 'stack tight' }, chips);
@@ -849,7 +1199,7 @@ export class CombatScene implements Scene {
         abilityId: ability.id,
         target,
       });
-      this.pending = null;
+      this.clearPending();
       this.mode = { kind: 'idle' };
       this.renderHud();
     });
@@ -864,6 +1214,14 @@ export class CombatScene implements Scene {
     if (!battle) return null;
 
     if (this.mode.kind === 'move') {
+      const movementReason = this.movementBlockReason(unit);
+      if (movementReason) {
+        return el(
+          'div',
+          { class: 'confirm-bar aim-hint' },
+          el('span', { class: 'warn-note', text: movementReason }),
+        );
+      }
       if (unit.move > 0) return null;
       return el(
         'div',
@@ -897,6 +1255,7 @@ export class CombatScene implements Scene {
     }
 
     const needsUnit = ability.targeting.shape === 'unit';
+    const movementReason = this.movementBlockReason(unit);
     return el(
       'div',
       { class: 'confirm-bar aim-hint' },
@@ -910,7 +1269,10 @@ export class CombatScene implements Scene {
         'div',
         { class: 'row' },
         el('div', { class: 'spacer' }),
-        button('Move instead', () => this.selectMove(), { disabled: unit.move <= 0 }),
+        button('Move instead', () => this.selectMove(), {
+          disabled: unit.move <= 0 || Boolean(movementReason),
+          title: movementReason ?? 'Walk to a highlighted tile',
+        }),
         this.cancelButton(() => {
           this.mode = { kind: 'idle' };
           this.renderHud();
@@ -927,6 +1289,7 @@ export class CombatScene implements Scene {
   }
 
   private confirmShell(body: HTMLElement, onConfirm: (() => void) | null): HTMLElement {
+    body.classList.add('confirm-body');
     const confirm = button('Confirm', () => onConfirm?.(), {
       class: 'btn-primary btn-ok btn-large',
       disabled: onConfirm === null,
@@ -934,13 +1297,13 @@ export class CombatScene implements Scene {
     confirm.prepend(mark(UI_MARKS.check, 'mark-inline'));
     return el(
       'div',
-      { class: 'confirm-bar' },
+      { class: 'confirm-bar confirm-dialog' },
       body,
       el(
         'div',
         { class: 'row' },
         this.cancelButton(() => {
-          this.pending = null;
+          this.clearPending();
           this.renderHud();
         }),
         el('div', { class: 'spacer' }),
@@ -1081,20 +1444,29 @@ export class CombatScene implements Scene {
       }
     }
 
-    const units: RenderUnit[] = battle.units.map((u) => ({
-      id: u.id,
-      pos: u.pos,
-      size: u.size,
-      sprite: u.sprite,
-      name: u.name,
-      faction: u.faction,
-      hp: u.hp,
-      maxHp: u.base.maxHp,
-      statuses: u.statuses.map((s) => s.id),
-      fallen: !isAlive(u),
-      renderPos: this.app.animator.renderPos(now, u.id),
-      ...this.poseFields(now, u.id, u.faction === 'enemy' ? -1 : 1, u.faction === 'party'),
-    }));
+    const units: RenderUnit[] = battle.units.map((u) => {
+      const health = this.app.animator.unitHealth(now, u);
+      return {
+        id: u.id,
+        pos: u.pos,
+        size: u.size,
+        sprite: u.sprite,
+        name: u.name,
+        faction: u.faction,
+        hp: health.hp,
+        maxHp: u.base.maxHp,
+        statuses: u.statuses.map((s) => s.id),
+        fallen: health.fallen,
+        renderPos: this.app.animator.renderPos(now, u.id),
+        ...this.poseFields(
+          now,
+          u.id,
+          u.faction === 'enemy' ? -1 : 1,
+          u.faction === 'party',
+          u.sprite,
+        ),
+      };
+    });
 
     // Resolved here, not in the renderer: the renderer never reads content.
     const props: RenderProp[] = battle.props.map((p) => {
@@ -1169,21 +1541,36 @@ export class CombatScene implements Scene {
     unitId: string,
     restFacing: 1 | -1,
     directional: boolean,
+    sprite: string,
   ): Pick<
     RenderUnit,
-    'offset' | 'facing' | 'clip' | 'clipTime' | 'clipFrame' | 'scale' | 'alpha' | 'flash'
+    | 'offset'
+    | 'facing'
+    | 'clip'
+    | 'clipTime'
+    | 'clipFrame'
+    | 'meleeDirection'
+    | 'scale'
+    | 'alpha'
+    | 'flash'
   > {
     const pose = this.app.animator.unitPose(now, unitId);
     const walked = this.app.animator.facing(unitId);
     const movement = directional ? this.app.animator.locomotion(now, unitId) : undefined;
-    if (!pose) return movement ?? { facing: walked ?? restFacing };
+    const mapId = this.app.state?.battle?.mapId;
+    const projection = mapId ? this.app.content.maps.get(mapId)?.projection : undefined;
+    const scale = directional
+      ? partyScale(projection, pose?.scale)
+      : enemyScale(sprite, pose?.scale);
+    if (!pose) return { ...(movement ?? { facing: walked ?? restFacing }), scale };
     return {
       offset: pose.offset,
       facing: pose.facing ?? walked ?? restFacing,
       clip: pose.clip,
       clipTime: pose.clipTime,
       ...(pose.frame !== undefined ? { clipFrame: pose.frame } : {}),
-      scale: pose.scale,
+      ...(pose.meleeDirection ? { meleeDirection: pose.meleeDirection } : {}),
+      scale,
       alpha: pose.alpha,
       flash: pose.flash,
       ...(pose.clip === 'walk' && movement ? movement : {}),
@@ -1198,6 +1585,7 @@ export class CombatScene implements Scene {
     let path: readonly Vec2[] = [];
 
     if (this.mode.kind === 'move') {
+      if (this.movementBlockReason(unit)) return { overlays, path };
       const reach = this.reachableCells();
       const cells = [...reach.values()].filter((c) => c.cost > 0);
       overlays.push({ kind: 'move', tiles: cells.map((c) => c.pos) });

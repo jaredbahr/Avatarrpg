@@ -140,12 +140,14 @@ export async function takeTurn(
  * tile to the wrong pixel. Slow frames (WebKit on software GL) open the gap
  * wide enough to matter; three reads two frames apart close it.
  *
- * `timeout` is the whole wait. The e2e suite keeps the default; the gallery
- * passes 30 s on its WebGL projects, where a 2x frame on CI's software
- * rasteriser can take over a second and three reads two frames apart have
- * outlasted 10 s on a slow runner.
+ * `timeout` is the whole wait. The default is 30 s because this helper needs
+ * four frames, and a forced-WebGL frame on CI's software rasteriser measured
+ * about 3 s in run 35488793966 — four of those outlast the 10 s the suite used
+ * to allow, which is the same reason the gallery already passes 30 s. Canvas
+ * 2D returns as soon as the camera holds still, so the bound costs nothing
+ * there, and a camera that genuinely never settles still fails.
  */
-export async function settleLayout(page: Page, timeout = 10_000): Promise<void> {
+export async function settleLayout(page: Page, timeout = 30_000): Promise<void> {
   await page.waitForFunction(
     () =>
       new Promise<boolean>((resolve) => {
@@ -169,6 +171,36 @@ export async function settleLayout(page: Page, timeout = 10_000): Promise<void> 
 }
 
 /**
+ * Waits for the map canvas to present at its own box size.
+ *
+ * Picking an action adds the aim hint, which changes the map's height; the
+ * camera is measured from the canvas element, so it refits a frame or two later
+ * through the ResizeObserver. Projecting a tile into page pixels before that
+ * lands taps the wrong tile, and WebKit is where it bites: its frames are fast
+ * enough that the click can beat the refit, where a software-WebGL Chromium
+ * frame is slower than the refit itself. Settle the camera, then require the
+ * backing store to agree with the CSS box at the device pixel ratio, which is
+ * what `Renderer.resize` sizes it from.
+ */
+export async function settleMapCanvas(page: Page): Promise<void> {
+  await settleLayout(page);
+  await page.waitForFunction(
+    () => {
+      const canvas = document.querySelector<HTMLCanvasElement>('.map-canvas');
+      if (!canvas) return false;
+      const rect = canvas.getBoundingClientRect();
+      const dpr = Math.min(3, window.devicePixelRatio || 1);
+      return (
+        Math.abs(canvas.width / dpr - rect.width) < 1 &&
+        Math.abs(canvas.height / dpr - rect.height) < 1
+      );
+    },
+    undefined,
+    { timeout: 30_000 },
+  );
+}
+
+/**
  * Waits until event playback has finished.
  *
  * Taps on the battlefield are deliberately ignored while the animator is
@@ -186,4 +218,16 @@ export async function waitForIdle(page: Page): Promise<void> {
 /** True while the fight is still running. */
 export async function battleActive(page: Page): Promise<boolean> {
   return page.evaluate(() => window.fnt?.app.state?.battle?.phase === 'active');
+}
+
+/** Isolate the legacy painting contract before mounting a now-layered map. */
+export async function useOrthographicBackdropFixture(page: Page, mapId: string): Promise<void> {
+  await page.evaluate((id) => {
+    const map = window.fnt?.app.content.maps.get(id);
+    if (!map) throw new Error(`Missing backdrop fixture map: ${id}`);
+    Object.defineProperties(map, {
+      projection: { value: undefined, configurable: true },
+      scene: { value: undefined, configurable: true },
+    });
+  }, mapId);
 }

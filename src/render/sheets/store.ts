@@ -14,7 +14,7 @@
  * the iOS canvas cap; a resize clears them.
  */
 
-import type { ClipName } from '../../content/assets/clips';
+import type { ClipDef, ClipName, MeleeDirection } from '../../content/assets/clips';
 import type { SheetEntry } from '../../content/assets/manifest';
 import { resolveAsset } from '../../content/assets/manifest';
 import { resolvePainter } from '../painters/registry';
@@ -45,34 +45,41 @@ export interface ResolvedFrame {
 interface LoadedAtlas {
   readonly atlas: AtlasJson;
   readonly image: HTMLImageElement;
-  /** Read from the idle frame's pixels once the image is in, like a baked sheet's. */
+  /** Stable silhouette envelope measured once across the asset's authored clips. */
   readonly headroom: number;
 }
 
 /**
- * The headroom of a fetched atlas: the idle frame's pixels, measured the way
- * the baker measures a placeholder's, so the health bar clears the head by
- * the same margin whichever the art is. Without a canvas to read them
- * through (a test), or without an idle frame, the frame's own top row.
+ * A conservative silhouette envelope over all referenced frames. Measured
+ * only when the atlas loads, then cached within its existing asset lifetime.
+ * A stable envelope avoids moving the bar with each idle/walk/cast cel.
  */
 export function atlasHeadroom(
   entry: SheetEntry,
   atlas: AtlasJson,
   image: CanvasImageSource,
 ): number {
-  const name = entry.clips.idle?.frames[0];
-  const frame = name ? atlas.frames.get(name) : undefined;
-  if (!frame) return 0;
-  const fallback = frameHeadroom(frame, entry.anchor.y, entry.pixelsPerTile);
-  if (typeof document === 'undefined' || frame.w === 0 || frame.h === 0) return fallback;
-  const scratch = document.createElement('canvas');
-  scratch.width = frame.w;
-  scratch.height = frame.h;
-  const ctx = scratch.getContext('2d');
-  if (!ctx) return fallback;
-  ctx.drawImage(image, frame.x, frame.y, frame.w, frame.h, 0, 0, frame.w, frame.h);
-  const data = ctx.getImageData(0, 0, frame.w, frame.h).data;
-  return headroomFromPixels(data, frame.w, frame.h, entry.pixelsPerTile);
+  const names = new Set([
+    ...Object.values(entry.clips).flatMap((clip) => clip?.frames ?? []),
+    ...Object.values(entry.meleeDirections ?? {}).flatMap((frames) => frames ?? []),
+  ]);
+  const scratch = typeof document === 'undefined' ? null : document.createElement('canvas');
+  const ctx = scratch?.getContext('2d');
+  let envelope = 0;
+  for (const name of names) {
+    const frame = atlas.frames.get(name);
+    if (!frame || frame.w === 0 || frame.h === 0) continue;
+    let height = frameHeadroom(frame, entry.anchor.y, entry.pixelsPerTile);
+    if (scratch && ctx) {
+      scratch.width = frame.w;
+      scratch.height = frame.h;
+      ctx.drawImage(image, frame.x, frame.y, frame.w, frame.h, 0, 0, frame.w, frame.h);
+      const data = ctx.getImageData(0, 0, frame.w, frame.h).data;
+      height = headroomFromPixels(data, frame.w, frame.h, entry.pixelsPerTile, entry.anchor.y);
+    }
+    envelope = Math.max(envelope, height);
+  }
+  return envelope;
 }
 
 /** Baked pixels kept, across every sheet: 48 MB is well under the iOS cap with sprites beside it. */
@@ -110,11 +117,12 @@ export class SheetStore {
     clipFrame: number | undefined,
     pixelsPerTile: number,
     widthTiles: 1 | 2,
+    meleeDirection?: MeleeDirection,
   ): ResolvedFrame | null {
     const entry = resolveAsset(key);
     if (entry.kind === 'sheet') {
       const atlas = this.atlas(key, entry);
-      if (atlas) return this.fromAtlas(entry, atlas, clip, clipTime, clipFrame);
+      if (atlas) return this.fromAtlas(entry, atlas, clip, clipTime, clipFrame, meleeDirection);
     }
     const sheet = this.bake(key, pixelsPerTile, widthTiles);
     if (!sheet) return null;
@@ -143,7 +151,31 @@ export class SheetStore {
     clip: ClipName,
     clipTime: number,
     clipFrame: number | undefined,
+    meleeDirection?: MeleeDirection,
   ): ResolvedFrame | null {
+    const directionalFrames =
+      clip === 'melee' && meleeDirection ? entry.meleeDirections?.[meleeDirection] : undefined;
+    if (directionalFrames) {
+      const directional: { clip: ClipName; def: ClipDef; exact: boolean } = {
+        clip: 'melee',
+        def: { frames: directionalFrames, fps: 8, loop: false },
+        exact: true,
+      };
+      const index = frameIndex(directional, clipTime, clipFrame);
+      const frame = loaded.atlas.frames.get(directional.def.frames[index] ?? '');
+      if (frame)
+        return {
+          source: loaded.image,
+          frame,
+          pixelsPerTile: entry.pixelsPerTile,
+          footprint: entry.footprint,
+          anchor: entry.anchor,
+          headroom: loaded.headroom,
+          clip: directional.clip,
+          index,
+          placeholder: false,
+        };
+    }
     const resolved = resolveClip(entry.clips, clip);
     if (!resolved) return null;
     const index = frameIndex(resolved, clipTime, clipFrame);

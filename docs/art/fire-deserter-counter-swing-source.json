@@ -1,0 +1,9 @@
+{
+  "tool": "built-in image_gen",
+  "prompt": "Use case: precise-object-edit. Edit target: supplied original 2 by 2 transparent sprite sheet. Make ONE targeted correction to ONLY the BOTTOM-RIGHT walking figure's ARMS: reverse their swing. His visible near arm (currently hanging back at the left of his body) should swing FORWARD across/in front of the torso, elbow slightly bent, hand in front of waist toward screen right. His far arm (currently extended toward screen right) should swing BACK behind the torso toward screen left, mostly occluded. Natural restrained walking counter-swing, empty hands. Preserve the bottom-right figure's head, face, hair, red tunic, belt/pouch, body dimensions and EXACT existing opposite-leg planted stance: near boot planted below him and far boot lifted behind. Do not swap or change legs. Preserve all three other figures, especially top-right, unmodified in pose. Preserve 2x2 layout, cell spacing, full body scale, original adult identity, restrained dark ink and warm red/brown cel painting. Genuine transparent alpha background; no glow, halo, gradient or new scenery. No new weapons, no fire, no text, no borders.",
+  "source": "assets/reference/fire-deserter/walk-source.png",
+  "output": "assets/reference/fire-deserter/walk-counter-swing-source.png",
+  "generator": "exec-ffdd5e80-e018-47c4-a4c5-be6c4a69c197",
+  "selectedCell": 3,
+  "preserved": "All other eight runtime frames use their existing original sources."
+}

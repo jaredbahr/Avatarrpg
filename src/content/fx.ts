@@ -690,6 +690,27 @@ const cel = (clip: FxCel, size: number, duration = 480, projectile = false): Par
     layer: 'over',
   });
 
+/** A short carried-water draw; choreography opts in only where gear is visible. */
+export const WATERSKIN_DRAW: ParticleEmitterDef = particles({
+  shape: 'projectile',
+  cell: 'drop',
+  count: 1,
+  duration: 156,
+  life: [156, 156],
+  delay: [0, 0],
+  speed: [0, 0],
+  spread: 0,
+  gravity: 0,
+  drag: 0,
+  size: [0.12, 0.12],
+  grow: 1,
+  spin: 0,
+  color: 'base',
+  fade: 'none',
+  blend: 'normal',
+  layer: 'over',
+});
+
 /** Faceted, tumbling stone in the same colours as its ground eruption. */
 const stone = (): ParticleEmitterDef => cel('boulder', 0.85, 300, true);
 
@@ -754,8 +775,8 @@ export const FX_FAMILIES: Readonly<Record<string, FxRecipeInput>> = {
     cast: [glowBurst('accent', 0.4), droplets(6)],
     travel: {
       emitters: [
-        whip(0.22, 'base', true),
-        whip(0.09, 'accent', false),
+        whip(0.17, 'base', false),
+        whip(0.055, 'accent', false),
         trail('drop', 8, 'light', 'normal', [0.06, 0.12]),
       ],
       speed: 15,
@@ -1173,7 +1194,14 @@ const DRAWN_RECIPES: Readonly<Record<string, FxRecipeInput>> = {
   },
   'fx.enemy.oil': {
     palette: 'enemy',
-    travel: { emitters: [stone(), droplets(3, 'dark')], speed: 16, arc: 0.7 },
+    travel: {
+      emitters: [
+        { ...cel('flask', 0.3, 300, true), cell: 'drop', color: 'dark', spin: 3 },
+        droplets(3, 'dark'),
+      ],
+      speed: 16,
+      arc: 0.7,
+    },
     impact: [droplets(14, 'dark'), shards(6, 'dark')],
     flash: 0,
   },

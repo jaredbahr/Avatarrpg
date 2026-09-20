@@ -1,4 +1,6 @@
-import type { StoryNode } from '../../core/types';
+import type { Condition, StoryNode } from '../../core/types';
+
+const rescued: Condition = { kind: 'flag', key: 'act1_complete', op: 'set' };
 
 export const RIVERSIDE_STORY: readonly StoryNode[] = [
   {
@@ -17,6 +19,12 @@ export const RIVERSIDE_STORY: readonly StoryNode[] = [
     kind: 'explore',
     mapId: 'ba_dan_riverside',
     objective: 'Take your time. Meet the neighbors, cross the bridge, and follow the little paths.',
+    objectiveVariants: [
+      {
+        when: rescued,
+        text: 'Rest by the river, or follow the southern path back to Ba Dan.',
+      },
+    ],
     next: 'village_explore',
   },
   {

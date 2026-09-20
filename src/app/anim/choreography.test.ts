@@ -3,7 +3,9 @@ import type { Ability, ContentIndex, GameEvent, Unit } from '../../core/types';
 import { resolveFx } from '../../content/fx';
 import { TIMING, choreograph } from './choreography';
 import { attackMotion } from './attackMotion';
+import { enemyScale } from './actorScale';
 import type { AnyTrack, EmitterTrack, PoseTrack } from './timeline';
+import { PARTICLE_STRIDE, sampleParticles } from '../../render/fx/simulate';
 
 /**
  * The choreography is a pure function, so these pin the shape of a playback:
@@ -36,7 +38,10 @@ const content = {
   abilities: new Map<string, Ability>([
     ['fire_jab', fireJab],
     ['strike', strike],
+    ['rock_throw', { ...waterWhip, id: 'rock_throw', fx: 'fx.earth.rock', range: 6 }],
+    ['earth_wall', { ...waterWhip, id: 'earth_wall', fx: 'fx.earth.wall', range: 6 }],
     ['water_whip', waterWhip],
+    ['air_blast', { ...waterWhip, id: 'air_blast', fx: 'fx.air.blast', range: 6 }],
   ]),
 } as unknown as ContentIndex;
 
@@ -51,8 +56,396 @@ function run(events: GameEvent[], rate = 1) {
 
 const kinds = (tracks: readonly AnyTrack[]) => tracks.map((t) => t.kind);
 
+describe('directed Fire Jab attachments', () => {
+  const cast = (targetX = 5, abilityId = 'fire_jab'): GameEvent => ({
+    type: 'abilityUsed',
+    unitId: 'p0',
+    abilityId,
+    target: { x: targetX, y: 3 },
+    tiles: [{ x: targetX, y: 3 }],
+  });
+  const caster = { ...unit('p0', 1, 3), sprite: 'unit.fire.kaya', hp: 20 };
+  const boss = {
+    ...unit('boss', 5, 3),
+    faction: 'enemy' as const,
+    sprite: 'unit.enemy.driller',
+    size: 2 as const,
+    hp: 80,
+  };
+  const play = (events: GameEvent[], units: Unit[] = [caster, boss], rate = 1) =>
+    choreograph({
+      content,
+      events,
+      unitsBefore: units,
+      cursor: 1000,
+      rate,
+      pushIndex: 0,
+      projection: 'oblique',
+    });
+
+  it('attaches either boss footprint cell to the same torso while preserving logical trajectory', () => {
+    const first = play([cast(5)]).tracks.filter((t): t is EmitterTrack => t.kind === 'emitter');
+    const second = play([cast(6)]).tracks.filter((t): t is EmitterTrack => t.kind === 'emitter');
+    const a = first.find((t) => t.attachments?.from?.socket === 'cast-release');
+    const b = second.find((t) => t.attachments?.from?.socket === 'cast-release');
+    expect(a?.attachments?.to).toEqual(b?.attachments?.to);
+    expect(a?.attachments?.to).toMatchObject({
+      pos: { x: 5, y: 3 },
+      size: 2,
+      socket: 'torso',
+      sprite: boss.sprite,
+    });
+    expect(a?.from).toEqual({ x: 1.5, y: 3.5 });
+    expect(a?.to).toEqual({ x: 5.5, y: 3.5 });
+    expect(b?.to).toEqual({ x: 6.5, y: 3.5 });
+    expect(first.some((t) => t.attachments?.translateTogether)).toBe(true);
+  });
+
+  it('matches route enemy torso sockets to the visible adult scale at either motion rate', () => {
+    for (const name of ['thug', 'bruiser', 'slinger', 'quarrybender', 'crossbow']) {
+      const target = { ...boss, sprite: `unit.enemy.${name}`, size: 1 as const };
+      for (const rate of [1, 0.02]) {
+        const tracks = play([cast()], [caster, target], rate).tracks;
+        if (rate < 1) {
+          // Reduced motion intentionally suppresses emitters, retaining the
+          // body poses and rule-owned impact instead of launching particles.
+          expect(tracks.some((t) => t.kind === 'emitter')).toBe(false);
+          continue;
+        }
+        const travel = tracks.find(
+          (t): t is EmitterTrack => t.kind === 'emitter' && t.attachments?.to?.socket === 'torso',
+        );
+        expect(travel?.attachments?.to).toMatchObject({
+          sprite: target.sprite,
+          pos: target.pos,
+          scale: enemyScale(target.sprite),
+          size: 1,
+        });
+        expect(travel?.to).toEqual({ x: 5.5, y: 3.5 });
+      }
+    }
+  });
+
+  it.each([
+    ['water_whip', 'unit.water.nilak'],
+    ['water_whip', 'unit.water.sura'],
+    ['air_blast', 'unit.air.nima'],
+    ['air_blast', 'unit.air.jinu'],
+  ])('attaches %s for %s and expires gather before release', (abilityId, sprite) => {
+    const tracks = play([cast(5, abilityId)], [{ ...caster, sprite }, boss]).tracks;
+    const emitters = tracks.filter((t): t is EmitterTrack => t.kind === 'emitter');
+    const gather = emitters.filter((t) => t.attachments?.from?.socket === 'cast-gather');
+    const flight = emitters.find((t) => t.attachments?.from?.socket === 'cast-release');
+    const release = tracks.find(
+      (t) => t.kind === 'pose' && t.unitId === caster.id && t.frame === 1,
+    );
+    expect(gather.length).toBeGreaterThan(0);
+    expect(flight?.attachments?.from?.sprite).toBe(sprite);
+    expect(flight?.attachments?.to?.socket).toBe('torso');
+    expect(
+      gather.every(
+        (t) =>
+          t.start + (t.def.kind === 'particles' ? t.def.delay[1] + t.def.life[1] : t.duration) <=
+          release!.start + 0.001,
+      ),
+    ).toBe(true);
+    const pushed = play(
+      [cast(5, abilityId), { type: 'unitPushed', unitId: boss.id, to: { x: 7, y: 3 } }],
+      [{ ...caster, sprite }, boss],
+    );
+    const pushedFlight = pushed.tracks.find(
+      (t) => t.kind === 'emitter' && t.attachments?.from?.socket === 'cast-release',
+    );
+    expect(pushedFlight?.kind === 'emitter' && pushedFlight.attachments?.to?.pos).toEqual({
+      x: 5,
+      y: 3,
+    });
+    expect(
+      play([cast(5, abilityId)], [{ ...caster, sprite }, boss], 0.02).tracks.some(
+        (t) => t.kind === 'emitter',
+      ),
+    ).toBe(false);
+  });
+
+  it('holds Water Whip release through its returning tether without postponing contact', () => {
+    const tracks = play(
+      [cast(5, 'water_whip')],
+      [{ ...caster, sprite: 'unit.water.nilak' }, boss],
+    ).tracks;
+    const whip = tracks.find(
+      (t): t is EmitterTrack =>
+        t.kind === 'emitter' &&
+        t.def.kind === 'strokes' &&
+        t.def.shape === 'whip' &&
+        t.attachments?.from?.socket === 'cast-release',
+    );
+    const recovery = tracks.find(
+      (t) => t.kind === 'pose' && t.unitId === caster.id && t.frame === 2,
+    );
+    expect(whip).toBeDefined();
+    expect(recovery!.start).toBeGreaterThanOrEqual(whip!.start + whip!.duration);
+    const impact = tracks.find(
+      (t): t is EmitterTrack => t.kind === 'emitter' && t.attachments?.translateTogether === true,
+    );
+    expect(impact!.start).toBeLessThan(recovery!.start);
+  });
+
+  it('lifts a stone from ground to release while separating body shards from ground debris', () => {
+    const tracks = play(
+      [cast(5, 'rock_throw')],
+      [{ ...caster, sprite: 'unit.earth.bo' }, boss],
+    ).tracks;
+    const effects = tracks.filter((t): t is EmitterTrack => t.kind === 'emitter');
+    const lift = effects.find((t) => t.attachments?.from?.socket === 'ground');
+    const flight = effects.find((t) => t.attachments?.from?.socket === 'cast-release');
+    expect(lift?.attachments?.to).toEqual(flight?.attachments?.from);
+    expect(lift?.def.kind === 'particles' && lift.start + lift.def.life[1]).toBeCloseTo(
+      flight!.start,
+      8,
+    );
+    const shards = effects.filter((t) => t.attachments?.from?.socket === 'torso');
+    expect(shards.length).toBeGreaterThan(0);
+    expect(shards.every((t) => t.def.kind === 'particles' && t.def.cell === 'shard')).toBe(true);
+    expect(
+      effects.some((t) => !t.attachments && t.def.kind === 'strokes' && t.def.shape === 'crack'),
+    ).toBe(true);
+    expect(
+      effects.some(
+        (t) => !t.attachments && t.def.kind === 'particles' && t.def.cel === 'earth-rise',
+      ),
+    ).toBe(true);
+  });
+
+  it('places Strike sparks at the body while dust stays grounded', () => {
+    const effects = play(
+      [cast(5, 'strike')],
+      [{ ...caster, sprite: 'unit.non.riko' }, boss],
+    ).tracks.filter((t): t is EmitterTrack => t.kind === 'emitter');
+    expect(
+      effects.some(
+        (t) =>
+          t.attachments?.from?.socket === 'torso' &&
+          t.def.kind === 'particles' &&
+          t.def.cell === 'spark',
+      ),
+    ).toBe(true);
+    expect(
+      effects.some((t) => !t.attachments && t.def.kind === 'particles' && t.def.cell === 'puff'),
+    ).toBe(true);
+  });
+
+  it('draws from Sura gear only and ends that source before release', () => {
+    for (const sprite of ['unit.water.sura', 'unit.water.nilak']) {
+      const tracks = play([cast(5, 'water_whip')], [{ ...caster, sprite }, boss]).tracks;
+      const source = tracks.find(
+        (t): t is EmitterTrack =>
+          t.kind === 'emitter' && t.attachments?.from?.socket === 'waterskin',
+      );
+      if (sprite.endsWith('sura')) {
+        expect(source?.attachments?.to?.socket).toBe('cast-gather');
+        const release = tracks.find(
+          (t) => t.kind === 'pose' && t.unitId === caster.id && t.frame === 1,
+        )!;
+        expect(
+          source?.def.kind === 'particles' && source.start + source.def.life[1],
+        ).toBeLessThanOrEqual(release.start);
+        for (const track of tracks) {
+          if (track.kind !== 'emitter' || track.attachments?.from?.socket !== 'waterskin') continue;
+          expect(track.attachments.to?.socket).toBe('cast-gather');
+          if (track.def.kind === 'particles')
+            expect(track.start + track.def.delay[1] + track.def.life[1]).toBeLessThanOrEqual(
+              release.start,
+            );
+        }
+      } else expect(source).toBeUndefined();
+    }
+  });
+
+  it('starts an actual Air Blast shove after contact hold with no overlapping recoil', () => {
+    const damage: GameEvent = {
+      type: 'damaged',
+      unitId: boss.id,
+      amount: 4,
+      crit: false,
+      damageType: 'air',
+      sourceId: caster.id,
+    };
+    const pushed = play([
+      cast(5, 'air_blast'),
+      damage,
+      { type: 'unitPushed', unitId: boss.id, to: { x: 7, y: 3 } },
+    ]);
+    const slide = pushed.tracks.find((t) => t.kind === 'move' && t.unitId === boss.id)!;
+    expect(slide.start).toBeCloseTo(1000 + 536.8, 8);
+    expect(slide.duration).toBe(220);
+    const poses = pushed.tracks.filter(
+      (t): t is PoseTrack => t.kind === 'pose' && t.unitId === boss.id,
+    );
+    expect(poses).toHaveLength(2);
+    expect(poses.every((t) => t.offset.from.x === 0 && t.offset.to.x === 0)).toBe(true);
+    const blocked = play([cast(5, 'air_blast'), damage]);
+    expect(blocked.tracks.filter((t) => t.kind === 'pose' && t.unitId === boss.id)).toHaveLength(3);
+  });
+
+  it.each([1, 0.02])(
+    'keeps clipped Air Blast destinations and forced timing at rate %s',
+    (rate) => {
+      const events: GameEvent[] = [
+        cast(5, 'air_blast'),
+        { type: 'unitPushed', unitId: boss.id, to: { x: 6, y: 3 } },
+      ];
+      const result = play(events, [caster, boss], rate);
+      const slide = result.tracks.find((t) => t.kind === 'move');
+      expect(slide?.start).toBeCloseTo(1000 + 536.8 * rate, 8);
+      expect(slide?.duration).toBeCloseTo(220 * rate, 8);
+      expect(result.cursor).toBeGreaterThanOrEqual(slide!.start + slide!.duration);
+      const next = play(
+        [...events, cast(5, 'strike'), { type: 'unitPushed', unitId: boss.id, to: { x: 7, y: 3 } }],
+        [caster, boss],
+        rate,
+      );
+      const moves = next.tracks.filter((t) => t.kind === 'move');
+      expect(moves[1]!.start).toBeGreaterThan(moves[0]!.start + moves[0]!.duration);
+    },
+  );
+
+  it('chooses the living recipient rather than a corpse sharing its tile', () => {
+    const corpse = {
+      ...unit('corpse', 5, 3),
+      sprite: 'unit.enemy.thug',
+      hp: 0,
+      faction: 'enemy' as const,
+    };
+    const tracks = play([cast()], [caster, corpse, boss]).tracks;
+    const travel = tracks.find(
+      (t) => t.kind === 'emitter' && t.attachments?.from?.socket === 'cast-release',
+    );
+    if (travel?.kind !== 'emitter') throw new Error('Missing flight');
+    expect(travel.attachments?.to?.sprite).toBe(boss.sprite);
+    expect(travel.attachments?.to?.size).toBe(2);
+  });
+
+  it('captures launch scale and position independently of recovery and subsequent movement', () => {
+    const origin = { x: 1, y: 3 };
+    const tracks = play(
+      [cast(), { type: 'unitPushed', unitId: 'p0', to: { x: 0, y: 3 } }],
+      [{ ...caster, pos: origin }, boss],
+    ).tracks;
+    const release = tracks.find(
+      (t) => t.kind === 'emitter' && t.attachments?.from?.socket === 'cast-release',
+    );
+    const gather = tracks.find(
+      (t) => t.kind === 'emitter' && t.attachments?.from?.socket === 'cast-gather',
+    );
+    if (release?.kind !== 'emitter' || gather?.kind !== 'emitter')
+      throw new Error('Missing attached effects');
+    const snapshot = JSON.stringify(release.attachments);
+    const pose = tracks.find(
+      (t) => t.kind === 'pose' && t.start <= release.start && t.start + t.duration > release.start,
+    );
+    if (pose?.kind !== 'pose' || !pose.scale) throw new Error('Missing release pose');
+    const fraction = pose.ease((release.start - pose.start) / pose.duration);
+    expect(release.attachments?.from?.scale).toBeCloseTo(
+      1.25 * (pose.scale.from + (pose.scale.to - pose.scale.from) * fraction),
+      9,
+    );
+    expect(release.attachments?.from?.offset.x).toBeCloseTo(
+      pose.offset.from.x + (pose.offset.to.x - pose.offset.from.x) * fraction,
+      9,
+    );
+    expect(release.attachments?.from?.pos).toEqual({ x: 1, y: 3 });
+    expect(gather.attachments?.from?.socket).toBe('cast-gather');
+    expect(tracks.some((t) => t.kind === 'pose' && t.frame === 2 && t.start > release.start)).toBe(
+      true,
+    );
+    origin.x = 18;
+    expect(JSON.stringify(release.attachments)).toBe(snapshot);
+  });
+
+  it('does not attach other techniques or revive suppressed reduced-motion emitters', () => {
+    for (const ability of ['earth_wall']) {
+      const effects = play([cast(5, ability)]).tracks.filter(
+        (t): t is EmitterTrack => t.kind === 'emitter',
+      );
+      expect(effects.length).toBeGreaterThan(0);
+      expect(effects.every((t) => t.attachments === undefined)).toBe(true);
+    }
+    const normal = play([cast()]);
+    const reduced = play([cast()], [caster, boss], 0.02);
+    expect(reduced.tracks.some((t) => t.kind === 'emitter')).toBe(false);
+    expect(reduced.cursor - 1000).toBeCloseTo((normal.cursor - 1000) * 0.02, 7);
+  });
+
+  it('uses the same explicit side for the palm and cast pose at vertical screen headings', () => {
+    for (const [x, y, facing] of [
+      [3, 5, 1],
+      [3, 6, -1],
+      [1, 5, -1],
+    ] as const) {
+      const events: GameEvent[] = [
+        {
+          type: 'abilityUsed',
+          unitId: 'p0',
+          abilityId: 'fire_jab',
+          target: { x, y },
+          tiles: [{ x, y }],
+        },
+      ];
+      const tracks = play(events, [caster, { ...boss, pos: { x, y } }]).tracks;
+      const poses = tracks.filter(
+        (t): t is PoseTrack => t.kind === 'pose' && t.unitId === caster.id,
+      );
+      expect(poses.every((pose) => pose.facing === facing)).toBe(true);
+      const palms = tracks.filter(
+        (t): t is EmitterTrack => t.kind === 'emitter' && t.attachments?.from?.socket !== 'torso',
+      );
+      expect(palms.length).toBeGreaterThan(0);
+      expect(palms.every((t) => t.attachments?.from?.facing === facing)).toBe(true);
+    }
+  });
+
+  it('ends rear-palm gather particles before the extended release pose replaces that hand', () => {
+    const tracks = play([cast()]).tracks;
+    const release = tracks.find((t) => t.kind === 'pose' && t.unitId === 'p0' && t.frame === 1);
+    if (release?.kind !== 'pose') throw new Error('Missing release');
+    const gathering = tracks.filter(
+      (t): t is EmitterTrack =>
+        t.kind === 'emitter' && t.attachments?.from?.socket === 'cast-gather',
+    );
+    expect(gathering.length).toBeGreaterThan(0);
+    for (const track of gathering) {
+      if (track.def.kind === 'particles') {
+        expect(track.start + track.def.delay[1] + track.def.life[1]).toBeLessThanOrEqual(
+          release.start,
+        );
+        const scratch = new Float32Array(track.def.count * PARTICLE_STRIDE);
+        expect(
+          sampleParticles(
+            track.def,
+            release.start - track.start - 1,
+            track.seed,
+            track.from,
+            track.to,
+            scratch,
+          ),
+        ).toBeGreaterThan(0);
+        expect(
+          sampleParticles(
+            track.def,
+            release.start - track.start + 1,
+            track.seed,
+            track.from,
+            track.to,
+            scratch,
+          ),
+        ).toBe(0);
+      } else expect(track.start + track.duration).toBeLessThanOrEqual(release.start);
+    }
+  });
+});
+
 describe('choreograph', () => {
-  it('walks a move for a step per tile', () => {
+  it('walks two combat tiles at a readable pace with brief acceleration and braking', () => {
     const { tracks, cursor } = run([
       {
         type: 'unitMoved',
@@ -66,8 +459,8 @@ describe('choreograph', () => {
     ]);
     expect(kinds(tracks)).toEqual(['move']);
     expect(tracks[0]?.start).toBe(1000);
-    expect(tracks[0]?.duration).toBe(TIMING.step * 2);
-    expect(cursor).toBe(1000 + TIMING.step * 2);
+    expect(tracks[0]?.duration).toBe(680);
+    expect(cursor).toBe(1680);
   });
 
   it('walks the party leader from where it stood, without needing the roster', () => {
@@ -93,6 +486,56 @@ describe('choreograph', () => {
     expect(move.duration).toBe(TIMING.strollStep * 2 + 120);
     expect(cursor).toBe(1000 + move.duration);
     expect(move.duration).toBeGreaterThan(TIMING.step * 4);
+  });
+
+  it('keeps short, long and diagonal combat walks at the same distance pace and sounds at footfalls', () => {
+    for (const [count, diagonal] of [
+      [2, false],
+      [12, false],
+      [6, true],
+    ] as const) {
+      const path = Array.from({ length: count }, (_, i) => ({
+        x: 2 + i,
+        y: diagonal ? 4 + i : 3,
+      }));
+      for (const rate of [1, 0.02]) {
+        const { tracks, sounds } = run(
+          [{ type: 'unitMoved', unitId: 'p0', path, cost: count }],
+          rate,
+        );
+        const [move] = tracks;
+        if (move?.kind !== 'move') throw new Error('expected movement');
+        const distanceAt = (elapsed: number) =>
+          move.ease(elapsed / move.duration) * move.curve.length;
+        expect(distanceAt(0)).toBe(0);
+        expect(distanceAt(move.duration)).toBeCloseTo(move.curve.length, 9);
+        if (rate === 1) expect(distanceAt(300) - distanceAt(200)).toBeCloseTo(100 / 280, 9);
+        else expect(move.duration).toBeCloseTo(count * 110 * rate, 9);
+        expect(sounds).toHaveLength(Math.ceil(move.curve.length));
+        sounds.forEach((sound, i) => {
+          expect(sound.key).toBe('step');
+          expect(distanceAt(sound.at - move.start)).toBeCloseTo(i, 9);
+        });
+      }
+    }
+  });
+
+  it('preserves the forced slide clock, easing and struck stance without footsteps', () => {
+    for (const rate of [1, 0.02]) {
+      const { tracks, sounds, cursor } = run(
+        [{ type: 'unitPushed', unitId: 'p0', to: { x: 4, y: 3 } }],
+        rate,
+      );
+      const [move, hit] = tracks;
+      if (move?.kind !== 'move' || hit?.kind !== 'pose') throw new Error('expected slide and hit');
+      expect(move.gait).toBe('slide');
+      expect(move.duration).toBe(220 * rate);
+      expect(move.ease(0.5)).toBe(0.75);
+      expect(hit.clip).toBe('hit');
+      expect(hit.duration).toBe(move.duration);
+      expect(cursor).toBe(1000 + 220 * rate);
+      expect(sounds).toEqual([]);
+    }
   });
 
   it('winds up, releases, sends something across and recovers for a ranged cast', () => {
@@ -173,6 +616,36 @@ describe('choreograph', () => {
     expect(release?.clip).toBe('melee');
     expect(release?.offset.to.x ?? 0).toBeGreaterThan(0.3);
   });
+
+  it.each([
+    [{ x: 0, y: -1 }, 'screenUp'],
+    [{ x: 0, y: 1 }, 'screenDown'],
+  ] as const)(
+    'carries the projected %s contact variant through every Riko melee pose',
+    (target, meleeDirection) => {
+      const tracks = choreograph({
+        content,
+        events: [{ type: 'abilityUsed', unitId: 'p0', abilityId: 'strike', target, tiles: [] }],
+        unitsBefore: [
+          { ...unit('p0', 0, 0), sprite: 'unit.non.riko', hp: 20 },
+          {
+            ...unit('e0', target.x, target.y),
+            faction: 'enemy',
+            sprite: 'unit.enemy.thug',
+            hp: 20,
+          },
+        ],
+        cursor: 1000,
+        rate: 1,
+        pushIndex: 0,
+        projection: 'orthographic',
+      }).tracks.filter(
+        (track): track is PoseTrack => track.kind === 'pose' && track.unitId === 'p0',
+      );
+      expect(tracks.length).toBeGreaterThanOrEqual(3);
+      expect(tracks.every((track) => track.meleeDirection === meleeDirection)).toBe(true);
+    },
+  );
 
   it('flashes and recoils the hit unit at the impact, then pops the number', () => {
     const { tracks } = run([
@@ -287,7 +760,7 @@ describe('choreograph', () => {
       },
     ]);
     expect(sounds.map((s) => s.key)).toEqual(['step', 'step']);
-    expect(sounds.map((s) => s.at)).toEqual([1000, 1000 + TIMING.step]);
+    expect(sounds.map((s) => s.at)).toEqual([1000, 1340]);
     // Different seeds, or a walk machine-guns one sample.
     expect(sounds[0]?.seed).not.toBe(sounds[1]?.seed);
   });
@@ -393,9 +866,13 @@ it('projects attack and reaction poses without changing timing, particles or sou
   const oblique = choreograph({ ...input, projection: 'oblique' });
   expect(oblique.cursor).toBe(flat.cursor);
   expect(oblique.sounds).toEqual(flat.sounds);
-  expect(oblique.tracks.filter((t) => t.kind !== 'pose')).toEqual(
-    flat.tracks.filter((t) => t.kind !== 'pose'),
-  );
+  // Attachments are projected presentation snapshots. Logical particle paths,
+  // emitter definitions, seeds and clocks still match exactly.
+  const logicalTracks = (tracks: readonly AnyTrack[]) =>
+    tracks
+      .filter((t) => t.kind !== 'pose')
+      .map((t) => (t.kind === 'emitter' ? { ...t, attachments: undefined } : t));
+  expect(logicalTracks(oblique.tracks)).toEqual(logicalTracks(flat.tracks));
   const flatPoses = flat.tracks.filter((t) => t.kind === 'pose');
   const poses = oblique.tracks.filter((t) => t.kind === 'pose');
   expect(poses.map(({ offset: _offset, facing: _facing, ...rest }) => rest)).toEqual(

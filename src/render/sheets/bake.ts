@@ -44,7 +44,7 @@ export interface BakedSheet {
   readonly pixelsPerTile: number;
   readonly footprint: { readonly w: number; readonly h: number };
   readonly anchor: { readonly x: number; readonly y: number };
-  /** Tiles above the tile's top edge the idle pose reaches, measured from the pixels. */
+  /** Conservative envelope across every pose, cached with this bounded sheet. */
   readonly headroom: number;
   /** Bytes of canvas the sheet holds, for the store's budget. */
   readonly bytes: number;
@@ -122,14 +122,17 @@ export function bakeSheet(
     pixelsPerTile,
     footprint: { w: widthTiles, h: 1 },
     anchor: { x: 0.5, y: FOOT_LINE },
-    headroom: measureHeadroom(ctx, layout.frames.get(`${key}/idle/0`), pixelsPerTile),
+    headroom: Math.max(
+      0,
+      ...[...layout.frames.values()].map((frame) => measureHeadroom(ctx, frame, pixelsPerTile)),
+    ),
     bytes: layout.width * layout.height * 4,
   };
 }
 
 /**
  * How far above the tile's top edge the art reaches, in tiles, read from the
- * idle frame's pixels: the health bar sits above it. The tile's top edge is
+ * frame's pixels: the health bar sits above it. The tile's top edge is
  * 0.85 tile above the foot line the anchor stands on.
  */
 function measureHeadroom(
@@ -153,9 +156,10 @@ export function headroomFromPixels(
   width: number,
   height: number,
   pixelsPerTile: number,
+  anchorY = FOOT_LINE,
 ): number {
   if (width === 0 || height === 0) return 0;
-  const tileTop = FOOT_LINE * height - 0.85 * pixelsPerTile;
+  const tileTop = anchorY * height - FOOT_LINE * pixelsPerTile;
   for (let y = 0; y < height; y++) {
     for (let x = 0; x < width; x++) {
       if ((data[(y * width + x) * 4 + 3] ?? 0) > 8) {

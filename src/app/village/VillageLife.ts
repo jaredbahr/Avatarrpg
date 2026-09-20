@@ -9,8 +9,6 @@ import { FORM_DURATION, WAVE_DURATION } from '../../render/living/poses';
 import { hitsPebble, hitsVillager, riversideWalkTime } from '../../render/living/geometry';
 import { RIVERSIDE_ID, RIVERSIDE_SPOTS } from '../../content/maps/riverside';
 import { button, el, motionReduced } from '../ui/dom';
-import { SettingsPanel } from '../ui/SettingsPanel';
-import { TravelJournal } from '../ui/TravelJournal';
 import { verticalClip } from '../anim/direction';
 
 const distance = (a: Vec2, b: Vec2) => Math.hypot(a.x - b.x, a.y - b.y);
@@ -20,6 +18,7 @@ export class VillageLife {
   private stage: VillageLayer;
   private activity: Activity | null = null;
   private pending: Visit | null = null;
+  private teaStarted: number | null = null;
   private message: HTMLElement | null = null;
   private messageText = 'An afternoon by the river. Tap the ground to walk; drag to look around.';
   private controls: HTMLButtonElement[] = [];
@@ -30,6 +29,7 @@ export class VillageLife {
   private lastFrame: number | null = null;
   private drill: number | null = null;
   private creature: Vec2 = { ...RIVERSIDE_SPOTS.otter };
+  private activitiesOpen = false;
   constructor(
     private app: App,
     host: HTMLElement,
@@ -44,6 +44,11 @@ export class VillageLife {
       this.activity !== null &&
       now < this.activity.started + (this.activity.kind === 'wave' ? WAVE_DURATION : FORM_DURATION)
     );
+  }
+  private leaveTea(): void {
+    if (this.teaStarted === null) return;
+    this.teaStarted = null;
+    this.say('Tap the ground to walk, or choose another activity.');
   }
   private say(text: string): void {
     this.messageText = text;
@@ -67,28 +72,46 @@ export class VillageLife {
       row.appendChild(b);
     };
     const party = this.app.state?.party ?? [];
+    const activities = el('div', {
+      class: 'village-secondary',
+      id: 'riverside-activities',
+      attrs: { role: 'group', 'aria-label': 'More riverside activities' },
+    });
+    activities.hidden = !this.activitiesOpen;
+    const secondaryAction = (label: string, fn: () => void, disabled = false) => {
+      const b = button(label, fn, { class: 'village-secondary-action', disabled });
+      this.controls.push(b);
+      activities.appendChild(b);
+    };
+    const activitiesToggle = button('Activities', () => {
+      this.activitiesOpen = !this.activitiesOpen;
+      activities.hidden = !this.activitiesOpen;
+      activitiesToggle.setAttribute('aria-expanded', String(this.activitiesOpen));
+    });
+    activitiesToggle.classList.add('village-activities-toggle');
+    activitiesToggle.setAttribute('aria-controls', 'riverside-activities');
+    activitiesToggle.setAttribute('aria-expanded', String(this.activitiesOpen));
+    row.appendChild(activitiesToggle);
     action('Water form', () => this.perform('water'), !party.some((p) => p.element === 'water'));
     action('Fire form', () => this.perform('fire'), !party.some((p) => p.element === 'fire'));
     action('Wave', () => this.perform('wave'));
-    action('Travel journal', () =>
-      new TravelJournal(this.app).open(document.querySelector('.overlay-host') ?? document.body),
-    );
-    action('Walk to Ba Dan', () => {
+    secondaryAction('Walk to Ba Dan', () => {
+      this.leaveTea();
       this.pending = null;
       this.drill = null;
       this.app.dispatch({ type: 'walkTo', pos: { x: 10, y: 20 } });
     });
-    action('Under the banyan', () => this.visit('canopy'));
-    action('Meet Pebble', () => this.visit('otter'));
-    action('Visit the shrine', () => this.visit('shrine'));
-    action('Tea break', () => this.visit('tea'));
-    action(
+    secondaryAction('Under the banyan', () => this.visit('canopy'));
+    secondaryAction('Meet Pebble', () => this.visit('otter'));
+    secondaryAction('Visit the shrine', () => this.visit('shrine'));
+    secondaryAction('Tea break', () => this.visit('tea'));
+    secondaryAction(
       "Dorin's drill",
       () => this.visit('practice'),
       !party.some((p) => p.element === 'water') || !party.some((p) => p.element === 'fire'),
     );
     if (this.app.previewActive)
-      action('Try a battle', () =>
+      secondaryAction('Try a battle', () =>
         this.app.dispatch({ type: 'enterNode', nodeId: 'battle_forest_road' }),
       );
     const utilities = el(
@@ -98,12 +121,7 @@ export class VillageLife {
         const pos = this.app.state?.location.pos;
         if (pos) camera.centreOn(pos);
       }),
-      button('Settings', () =>
-        new SettingsPanel(this.app).open(document.querySelector('.overlay-host') ?? document.body),
-      ),
-      this.app.previewActive
-        ? button('Leave preview', () => this.app.endVillagePreview())
-        : button('Pause', () => this.app.openPause()),
+      this.app.previewActive ? button('Leave preview', () => this.app.endVillagePreview()) : null,
     );
     const discoveries = [
       this.app.state?.flags.riverside_pet,
@@ -119,12 +137,14 @@ export class VillageLife {
       ),
       this.message,
       row,
+      activities,
       utilities,
     );
     host.appendChild(panel);
   }
   handleTap(point: Vec2, now: number): boolean {
     if (this.busy(now)) return true;
+    this.leaveTea();
     if (hitsPebble(point, this.creature)) {
       this.visit('otter');
       return true;
@@ -146,6 +166,7 @@ export class VillageLife {
   }
   private visit(place: Visit): void {
     if (this.app.animator.busy(performance.now()) || this.busy(performance.now())) return;
+    this.leaveTea();
     this.drill = null;
     const pos = place === 'otter' ? RIVERSIDE_SPOTS.otter : RIVERSIDE_SPOTS[place];
     this.pending = place === 'shrine' ? null : place;
@@ -157,6 +178,7 @@ export class VillageLife {
     if (this.app.animator.busy(now) || this.busy(now)) return;
     const unit = this.app.state?.party.find((p) => kind === 'wave' || p.element === kind);
     if (!unit) return;
+    this.leaveTea();
     this.pending = null;
     this.activity = { kind, unitId: unit.id, started: now };
     this.say(
@@ -172,6 +194,7 @@ export class VillageLife {
       const delta = now - this.lastFrame;
       if (paused) {
         if (this.activity) this.activity.started += delta;
+        if (this.teaStarted !== null) this.teaStarted += delta;
         this.petUntil += delta;
         this.greeting += delta;
       } else this.elapsed += Math.min(60, delta);
@@ -192,6 +215,13 @@ export class VillageLife {
       } else this.say('Try the other form, or follow the path across the bridge.');
     }
     const walkBusy = this.app.animator.busy(now);
+    if (
+      walkBusy ||
+      (this.teaStarted !== null &&
+        this.app.state &&
+        distance(this.app.state.location.pos, RIVERSIDE_SPOTS.tea) > 0)
+    )
+      this.leaveTea();
     const locked = walkBusy || this.busy(now);
     for (const b of this.controls) {
       const element =
@@ -219,10 +249,9 @@ export class VillageLife {
         this.app.dispatch({ type: 'setFlags', flags: { riverside_pet: true } });
         this.say('Pebble leans into your hand. His shell is warm. He sniffs at your food pouch.');
       } else if (visit === 'tea') {
+        this.teaStarted = now;
         this.app.dispatch({ type: 'setFlags', flags: { riverside_tea: true } });
-        this.say(
-          'You sit on the veranda with a cup of jasmine tea. The river runs below the steps.',
-        );
+        this.say('A quiet break on the veranda with jasmine tea. The river runs below the steps.');
       } else if (visit === 'practice') {
         this.drill = 0;
         this.say('Dorin sets a rhythm: water, fire, water. Finish each form before the next.');
@@ -241,6 +270,11 @@ export class VillageLife {
     const actors: VillageActor[] = units.map((u) => {
       const member = this.app.state?.party.find((p) => p.id === u.id);
       const active = this.activity?.unitId === u.id ? this.activity : null;
+      const tea =
+        this.teaStarted !== null &&
+        u.pos.x === 8 &&
+        (u.pos.y === 18 || u.pos.y === 19) &&
+        ['sura', 'kaya'].includes(member?.characterId ?? '');
       return {
         id: u.id,
         pos: u.renderPos ?? u.pos,
@@ -250,17 +284,19 @@ export class VillageLife {
           : u.sprite,
         palette: member?.element ?? 'water',
         facing: active ? 1 : (u.facing ?? 1),
-        motion: active?.kind ?? (u.renderPos ? 'walk' : 'idle'),
-        ...(!active && u.clip ? { locomotionClip: u.clip } : {}),
-        elapsed: active
-          ? now - active.started
-          : u.renderPos
-            ? riversideWalkTime(
-                u.clipTime ?? 0,
-                ['sura', 'kaya'].includes(member?.characterId ?? ''),
-                u.clip !== undefined && verticalClip(u.clip),
-              )
-            : time,
+        motion: tea ? 'tea' : (active?.kind ?? (u.renderPos ? 'walk' : 'idle')),
+        ...(!tea && !active && u.clip ? { locomotionClip: u.clip } : {}),
+        elapsed: tea
+          ? now - (this.teaStarted ?? now)
+          : active
+            ? now - active.started
+            : u.renderPos
+              ? riversideWalkTime(
+                  u.clipTime ?? 0,
+                  ['sura', 'kaya'].includes(member?.characterId ?? ''),
+                  u.clip !== undefined && verticalClip(u.clip),
+                )
+              : time,
         label: u.name,
       };
     });

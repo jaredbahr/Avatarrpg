@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { walkDirection, directionalClip } from './direction';
+import { screenMeleeDirection, walkDirection, directionalClip } from './direction';
 import { Animator } from '../animator';
 import type { ContentIndex } from '../../core/types';
 
@@ -77,6 +77,15 @@ describe('directional walking', () => {
     );
     a.prune(100);
     expect(a.locomotion(100, 'p')).toEqual({ clip: 'idleNorth', facing: 1 });
+  });
+});
+
+describe('screen-facing melee contacts', () => {
+  it('maps projected vertical contact to screen-up or screen-down and leaves side contact unchanged', () => {
+    expect(screenMeleeDirection({ x: 0, y: -1 })).toBe('screenUp');
+    expect(screenMeleeDirection({ x: 0, y: 1 })).toBe('screenDown');
+    expect(screenMeleeDirection({ x: 1, y: 0 })).toBeUndefined();
+    expect(screenMeleeDirection({ x: -1, y: 0.9 })).toBeUndefined();
   });
 });
 

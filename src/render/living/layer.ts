@@ -91,6 +91,7 @@ export class VillageLayer {
         : []),
     ].sort((a, b) => a.y - b.y);
     for (const entity of entities) entity.draw();
+    this.canvas.dataset.teaActors = String(view.actors.filter((a) => a.motion === 'tea').length);
     this.canvas.dataset.illustratedActors = String(
       view.actors.filter((a) => a.sprite && sheets.loadedFor(a.sprite)).length,
     );
@@ -107,7 +108,12 @@ export class VillageLayer {
         painting && actor.sprite && behindScenery(actor.pos.x + 0.5, actor.pos.y + 0.3);
       // The party names live in the HUD. Floating cards made every figure
       // read as a token; show them here only during an action or when hidden.
-      if (actor.sprite && !hidden && (actor.motion === 'idle' || actor.motion === 'walk')) continue;
+      if (
+        actor.sprite &&
+        !hidden &&
+        (actor.motion === 'idle' || actor.motion === 'walk' || actor.motion === 'tea')
+      )
+        continue;
       if (hidden) {
         c.strokeStyle = '#ffe4a2';
         c.lineWidth = 1.5;
@@ -216,7 +222,7 @@ export class VillageLayer {
     const beat = formBeat(elapsed, actor.motion === 'water');
     const clip =
       actor.locomotionClip ??
-      (reduced || (casting && (beat.t < 0.1 || beat.t > 0.96))
+      ((reduced && actor.motion !== 'tea') || (casting && (beat.t < 0.1 || beat.t > 0.96))
         ? 'idle'
         : casting
           ? 'cast'

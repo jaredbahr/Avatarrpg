@@ -87,10 +87,10 @@ export function canUseAbilities(content: ContentIndex, unit: Unit): boolean {
   return !statusDefs(content, unit).some((d) => d.preventsAbilities || d.skipsTurn);
 }
 
-/** AP the unit starts its turn with: its max, plus anything banked, capped. */
+/** Next activation's AP: effective maximum, banked AP and support bonus, capped. */
 export function startingAp(content: ContentIndex, unit: Unit): number {
   const stats = effectiveStats(content, unit);
-  return Math.max(0, Math.min(MAX_BANKED_TOTAL_AP, stats.maxAp + unit.bankedAp));
+  return Math.max(0, Math.min(MAX_BANKED_TOTAL_AP, stats.maxAp + unit.bankedAp + unit.pendingAp));
 }
 
 /** How much of this turn's leftover AP carries forward. */

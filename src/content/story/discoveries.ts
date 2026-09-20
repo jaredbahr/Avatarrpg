@@ -9,6 +9,10 @@ const TEXT = {
       'Down by the stream, white silt has dried over an empty nest. The reeds around it are bent flat.',
     ],
     again: ['The ducklings are asleep in the sock. Their mother opens one eye as you pass.'],
+    afterRescue: [
+      'The nest is still tucked above the bank, untouched. A ring of fresh reeds keeps boots away.',
+      'Dema has tied a strip of cloth to the branch. The water is still cloudy, but the nest is dry.',
+    ],
   },
   runoff_marker: {
     first: [
@@ -19,6 +23,10 @@ const TEXT = {
     again: [
       'Another thin layer of silt has caught against the reed. The arrow on the stone points uphill.',
     ],
+    afterRescue: [
+      'The old silt line is still white. Fresh notches mark the water level beside it.',
+      'A row of stakes points uphill toward the settling pit. The crews have marked where they will start when they are fit to work; the stream is not clear yet.',
+    ],
   },
   tea_station: {
     first: [
@@ -28,6 +36,10 @@ const TEXT = {
     ],
     again: [
       'The mended cup is back in the washing bowl. This time, someone has left a cloth beside it.',
+    ],
+    afterRescue: [
+      'Used cups cover the bench and the flat stones beside it. The crews have filled the place and gone on.',
+      'The kettle has only hot water left. The crews drank the last of the tea before taking the west road.',
     ],
   },
 } as const;
@@ -53,6 +65,12 @@ export const DISCOVERY_STORY: readonly StoryNode[] = DISCOVERIES.flatMap((item):
     speaker: item.name,
     portrait: item.sprite,
     lines: TEXT[item.id].again,
+    variants: [
+      {
+        when: { kind: 'flag', key: 'act1_complete', op: 'set' },
+        lines: TEXT[item.id].afterRescue,
+      },
+    ],
     next: `leave_${item.id}`,
   },
   {

@@ -2,6 +2,7 @@
 import type { Condition, MapDef, MapExit, MapTrigger, Vec2 } from '../../core/types';
 
 import { discoveryMarkers } from './discoveries';
+import { VILLAGE_HOMECOMINGS_COMPLETE } from '../story/return';
 
 const visited = (nodeId: string): Condition => ({ kind: 'visited', nodeId });
 const unvisited = (nodeId: string): Condition => ({ kind: 'not', of: visited(nodeId) });
@@ -53,8 +54,12 @@ export function connectAct1(map: MapDef): MapDef {
         objective: 'Meet the villagers, visit the riverside, or follow the east road.',
         objectiveVariants: [
           {
+            when: VILLAGE_HOMECOMINGS_COMPLETE,
+            text: "You've caught up with the village. Rest by the river, or explore the roads.",
+          },
+          {
             when: rescued,
-            text: 'The workers are home. Talk with Mira, Pella and Gao, or visit the river.',
+            text: 'The workers are home. Talk with Mira, Pella, Gao or Dorin, or visit the river.',
           },
         ],
         exits: [
@@ -112,7 +117,7 @@ export function connectAct1(map: MapDef): MapDef {
             4,
             'road_depart',
             'The pine road',
-            'npc.guard',
+            'unit.enemy.thug',
             unvisited('road_depart'),
           ),
           crossing(
@@ -169,7 +174,7 @@ export function connectAct1(map: MapDef): MapDef {
             5,
             'gate_parley',
             'The quarry watch',
-            'npc.guard',
+            'unit.ally.ruon',
             unvisited('ruon_choice'),
           ),
         ],

@@ -14,6 +14,7 @@
 
 import { z } from 'zod';
 import type { GameState } from '../types';
+import { MAX_BANKED_TOTAL_AP } from '../rules/stats';
 
 export const SAVE_FORMAT_VERSION = 3;
 export const SAVE_MAGIC = 'four-nations-tactics';
@@ -56,6 +57,8 @@ const unit = z.object({
   ap: z.number(),
   move: z.number(),
   bankedAp: z.number(),
+  // Additive v3 field: saves written before support AP was deferred have none.
+  pendingAp: z.number().min(0).max(MAX_BANKED_TOTAL_AP).default(0),
   base: unitStats,
   abilities: z.array(z.string()),
   cooldowns: z.record(z.number()),

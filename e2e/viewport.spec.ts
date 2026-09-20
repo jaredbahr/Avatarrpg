@@ -1,6 +1,7 @@
 import { paintedTileCentre } from './projection';
 import { expect, test } from '@playwright/test';
 import type { Page } from '@playwright/test';
+import { allowSoftwareWebgl } from './budget';
 import { enterNode, resetStorage, settleLayout, startGame, takeTurn, waitForIdle } from './helpers';
 
 /**
@@ -42,6 +43,9 @@ test.describe('map viewport', () => {
     // Explore first: the objective banner above the map sizes itself from text.
     await enterNode(page, 'village_explore');
     await expect(page.locator('.map-canvas')).toBeVisible();
+    // Automatic WebGL selection mounts the element before its async backend.
+    await page.waitForFunction(() => Boolean(window.fnt?.app.rendererCamera()));
+    await settleLayout(page);
     const explore = await backingStoreStretch(page);
     expect(explore.x).toBeCloseTo(1, 2);
     expect(explore.y).toBeCloseTo(1, 2);
@@ -59,6 +63,7 @@ test.describe('map viewport', () => {
     // The log panel is the HUD growing again, long after mount.
     await page.getByRole('button', { name: /^Log$/ }).click();
     await expect(page.locator('.log-panel')).toBeVisible();
+    await settleLayout(page);
     const withLog = await backingStoreStretch(page);
     expect(withLog.x).toBeCloseTo(1, 2);
     expect(withLog.y).toBeCloseTo(1, 2);
@@ -85,6 +90,12 @@ test.describe('map viewport', () => {
 
     expect(target, 'no single-tile enemy to tap').not.toBeNull();
     if (!target) return;
+    // Readable oblique combat deliberately pans. Bring this enemy into view
+    // before testing the independent painted-pixel to tile conversion.
+    await page
+      .getByRole('button', { name: `Focus ${target.name}`, exact: true })
+      .first()
+      .click();
 
     // Where that tile is *painted*, which is the camera's own geometry put
     // through whatever scaling the element is applying to the backing store.
@@ -106,12 +117,9 @@ test.describe('map viewport', () => {
  * affine back to the same wrong tile. Off-centre samples cover both diamond edges.
  */
 for (const renderer of ['canvas', 'webgl'] as const) {
-  test(`oblique village picks the expected diamond on ${renderer}`, async ({
-    page,
-    browserName,
-  }) => {
+  test(`oblique village picks the expected diamond on ${renderer}`, async ({ page }) => {
     test.setTimeout(120_000);
-    if (renderer === 'webgl' && browserName === 'webkit') test.slow();
+    allowSoftwareWebgl(test, renderer);
     await resetStorage(page, `?renderer=${renderer}`);
     await startGame(page, ['Explorer'], ['kaya'], 'oblique-picking');
     await enterNode(page, 'village_explore');

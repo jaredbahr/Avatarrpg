@@ -1,6 +1,15 @@
 import { expect, test } from '@playwright/test';
 import type { Page } from '@playwright/test';
-import { enterNode, resetStorage, settleLayout, startGame, takeTurn, waitForIdle } from './helpers';
+import { allowSoftwareWebgl } from './budget';
+import {
+  enterNode,
+  resetStorage,
+  settleLayout,
+  startGame,
+  takeTurn,
+  waitForIdle,
+  useOrthographicBackdropFixture,
+} from './helpers';
 import type { Pixels } from './pixels';
 import { average, screenshotPixels } from './pixels';
 
@@ -58,10 +67,9 @@ test.describe('map paintings', () => {
   for (const renderer of ['canvas', 'webgl'] as const) {
     test(`draws the painting under the tiles and the grid over it on ${renderer}`, async ({
       page,
-      browserName,
     }) => {
       test.setTimeout(120_000);
-      if (renderer === 'webgl' && browserName === 'webkit') test.slow();
+      allowSoftwareWebgl(test, renderer);
 
       const errors: string[] = [];
       page.on('console', (message) => {
@@ -71,6 +79,7 @@ test.describe('map paintings', () => {
 
       await resetStorage(page, `?renderer=${renderer}`);
       await startGame(page, ['Elias'], ['kaya'], 'backdrop-spec');
+      await useOrthographicBackdropFixture(page, 'forest_road');
       await enterNode(page, 'battle_forest_road');
       await takeTurn(page);
       await waitForIdle(page);

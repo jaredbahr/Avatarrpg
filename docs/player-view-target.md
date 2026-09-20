@@ -52,6 +52,59 @@ under unchanged pointer picking, unit placement or collision data. A projection
 change needs its own implementation ADR, shared forward/inverse transforms and
 both-backend hit-testing coverage. This approval does not select a new engine.
 
+## Exploration, animation and story direction
+
+Jared's added direction on 19 September is to keep the game fun and make a
+beautiful world that players want to explore. Spiritfarer and Supergiant are
+references for a consistent, expressive approach to art, animation and dialogue.
+Prefer a small, coherent set of well-timed poses and transitions that belongs
+to the characters over adding animation volume without improving their presence.
+Judge walking, stopping, interacting and fighting together in actual play.
+
+Divinity: Original Sin 2 informs the desire for surprising, understandable
+combat combinations. Divinity, Baldur's Gate, Hollow Knight and Fallout inform
+the desire for an intriguing world, discoveries and characters who move the
+story forward. Dead Cells and Hyper Light Drifter inform the desire for
+environments that sustain interest with little dialogue. These are the user's
+creative references; preserve this game's original people, situations and art.
+
+Free movement and optional routes must reward curiosity. A visible landmark,
+side path, working resident or changed place should offer a reason to look
+closer. Let environment, action and consequences carry story alongside concise,
+distinctive dialogue. Story progression should give the player a reason to
+continue while leaving room to wander and revisit. Apply this first within
+the existing village–forest–quarry–return slice before expanding destinations.
+
+Review the slice by asking what drew the player off the main route, what they
+learned through the world, what changed after their choices, which character
+made them curious, and which tactical combination was enjoyable to discover.
+Passing functional checks alone does not answer these questions.
+
+## Official world construction model
+
+Jared clarified the visual model on 19 September: build an illustrated, modular
+2.5D world on the real gameplay grid. The grid is the authority for collision,
+elevation, cover, paths and interactions; its square boundaries should largely
+disappear in normal presentation. Assemble playable spaces from authored ground
+regions, walls, buildings, roofs, trees, cliffs, props, foreground masks and
+lighting. Keep animated 2D character sheets and runtime elemental effects,
+water, fire, dust and ambience in the existing Pixi/Canvas architecture.
+
+Full-map paintings are no longer the destination for playable spaces. Reserve
+complete paintings for distant scenery, immutable vistas, title/interlude art
+and temporary prototypes. Painted local patches and individual scenery assets
+remain appropriate. Modular construction must still look composed: consistent
+perspective, scale, light, ground contact and occlusion, without obvious repeated
+blocks or decorative geometry contradicting the grid. See
+[ADR 0039](adr/0039-modular-illustrated-world.md).
+
+The next proof is a small, integrated Ba Dan courtyard/canal slice that does not
+depend on a complete map painting. Demonstrate coherent ground shapes, modular
+scenery, foreground occlusion, open paths, an animated character walking behind
+and in front of scenery, one interaction and a runtime effect on both backends.
+Review actual play before extending this construction across the bounded route.
+This proof changes the implementation sequence, not the full delivery finish line.
+
 ## Delivery sequence
 
 | Milestone                         | Playable result                                                                                           | Acceptance evidence                                                                                              |

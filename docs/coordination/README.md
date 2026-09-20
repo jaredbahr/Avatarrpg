@@ -63,9 +63,13 @@ contradictory current-status documents.
   recorded branch or an explicit branch based on its head. Do not cherry-pick or
   replay the same implementation into multiple competing PRs.
 - Use agents for bounded independent implementation, audits or reviews when
-  useful. More agents are not an objective: avoid duplicate work and concurrent
-  large test/art jobs that exhaust the host. Prefer Astra for art and audio;
-  otherwise retain configured model settings unless the task justifies a change.
+  useful. More agents are not an objective: split only genuinely independent
+  work, avoid duplicate assignments and arbitrary worker counts, and avoid
+  concurrent large test/art jobs that exhaust the host. Use Luna by default for
+  routine bounded implementation, tests and documentation; use a stronger model
+  when the complexity warrants it. Preserve the handoff before replacing a
+  session, and stop superseded owners from editing. Prefer Astra for art and
+  audio; complex art work may still justify a stronger model.
 - On completion, verify the merge, capture remaining issues, and transfer the next
   assignment. Remove old worktrees only after confirming all useful work is saved
   and no session or process still uses them.
@@ -86,12 +90,28 @@ and explain any superseded decision instead of leaving competing instructions.
 
 ## Verification and reporting
 
+### Playable release versions
+
+Jared requires a new visible release version for each delivered playable update
+so he can identify what to test. A build hash alone does not meet this requirement.
+The integration owner increments the package version (and matching lockfile
+metadata), updates the release notes, and verifies the version shown by the
+deployed game. Use patch increments for iterative playable improvements and
+minor increments for larger feature milestones. Include this change before
+final verification and exact-head CI, not after checks pass. Report the release
+version, play link and meaningful testable changes; keep the build hash as
+secondary diagnostic information. Do not bump versions for unshipped source
+checkpoints or handoff-only commits.
+
 ### Keep CI work proportional
 
 CI runs once per pull-request revision, on `main` pushes, and on explicit manual
 dispatch. Do not dispatch a second run while the required PR run is active. The
-browser and gallery jobs wait for verification to pass; all required check names,
-suites and latest-head merge rules still apply, including to drafts.
+browser job waits for verification to pass, and the gallery waits for both
+verification and E2E. Both divide their cases across parallel shards and keep
+the required check name on the aggregate job that depends on them. Failed
+gameplay revisions therefore do not spend gallery capture minutes. All required
+check names, suites and latest-head merge rules still apply, including to drafts.
 
 Batch related local edits and focused checks into a coherent verified milestone
 before pushing. Preserve a handoff before a session ends, but do not push every

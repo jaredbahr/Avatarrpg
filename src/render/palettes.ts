@@ -89,19 +89,70 @@ export interface SurfaceStyle {
   /** Alpha for the wash over the terrain, 0-1. */
   readonly alpha: number;
   readonly edge: string;
+  /** Darker material detail used for pooling and interior marks. */
+  readonly detail: string;
   /** Pattern used when the colourblind "hatch" setting is on. */
   readonly hatch: 'none' | 'diagonal' | 'cross' | 'dots' | 'wave' | 'vertical';
   readonly label: string;
 }
 
 export const SURFACE_STYLES: Record<SurfaceId, SurfaceStyle> = {
-  water: { fill: '#3e8fb0', alpha: 0.55, edge: '#7ec8e3', hatch: 'wave', label: 'Water' },
-  ice: { fill: '#bfe8f5', alpha: 0.6, edge: '#ffffff', hatch: 'diagonal', label: 'Ice' },
-  fire: { fill: '#e0521f', alpha: 0.7, edge: '#ffb648', hatch: 'vertical', label: 'Fire' },
-  mud: { fill: '#5a4326', alpha: 0.7, edge: '#7c5d33', hatch: 'dots', label: 'Mud' },
-  steam: { fill: '#d9d9d9', alpha: 0.72, edge: '#ffffff', hatch: 'cross', label: 'Steam' },
-  oil: { fill: '#14120f', alpha: 0.72, edge: '#3d3a2f', hatch: 'diagonal', label: 'Oil' },
-  rubble: { fill: '#6e6a63', alpha: 0.65, edge: '#8d887f', hatch: 'dots', label: 'Rubble' },
+  water: {
+    fill: '#3e8fb0',
+    alpha: 0.4,
+    edge: '#7ec8e3',
+    detail: '#3e8fb0',
+    hatch: 'wave',
+    label: 'Water',
+  },
+  ice: {
+    fill: '#bfe8f5',
+    alpha: 0.34,
+    edge: '#e4f6fa',
+    detail: '#bfe8f5',
+    hatch: 'diagonal',
+    label: 'Ice',
+  },
+  fire: {
+    fill: '#e0521f',
+    alpha: 0.7,
+    edge: '#ffb648',
+    detail: '#e0521f',
+    hatch: 'vertical',
+    label: 'Fire',
+  },
+  mud: {
+    fill: '#5a4326',
+    alpha: 0.34,
+    edge: '#987647',
+    detail: '#453321',
+    hatch: 'dots',
+    label: 'Mud',
+  },
+  steam: {
+    fill: '#d9d9d9',
+    alpha: 0.72,
+    edge: '#ffffff',
+    detail: '#d9d9d9',
+    hatch: 'cross',
+    label: 'Steam',
+  },
+  oil: {
+    fill: '#242522',
+    alpha: 0.46,
+    edge: '#65736b',
+    detail: '#171c1a',
+    hatch: 'diagonal',
+    label: 'Oil',
+  },
+  rubble: {
+    fill: '#6e6a63',
+    alpha: 0.3,
+    edge: '#a09a8b',
+    detail: '#6e6a63',
+    hatch: 'dots',
+    label: 'Rubble',
+  },
 };
 
 /* ------------------------------------------------------------------ */

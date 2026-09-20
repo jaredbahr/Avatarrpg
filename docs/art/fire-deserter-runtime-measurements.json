@@ -1,0 +1,121 @@
+{
+  "source": "assets/reference/fire-deserter/combat-source.png",
+  "sourceSize": {
+    "width": 1024,
+    "height": 1536
+  },
+  "sourceSha256": "0895a09ec09f073333d1f33d54fe9bb1b0e23e2bd65b38e700970d69f1723a18",
+  "frameSize": {
+    "width": 128,
+    "height": 192
+  },
+  "pixelsPerTile": 128,
+  "footprint": {
+    "w": 1,
+    "h": 1
+  },
+  "anchor": {
+    "x": 0.5,
+    "y": 0.85
+  },
+  "sourceScale": 0.3416289592760181,
+  "walkingSource": "assets/reference/fire-deserter/walk-source.png",
+  "walkingSourceSha256": "f9c83abfb7a9cd26462fcd1ee452944323c2b511abe3e38062d3c731d2f7e025",
+  "walkingSourceScale": 0.22304283604135894,
+  "counterSwingSource": "assets/reference/fire-deserter/walk-counter-swing-source.png",
+  "counterSwingSourceSha256": "bbed9e1c23af54beb5d374b64351a42a9fcd6bc8418a84cc96edaea4fdce08b8",
+  "walkingSelectedCells": [1, 3],
+  "poses": [
+    {
+      "pose": "idle/0",
+      "bounds": {
+        "x": 36,
+        "y": 12,
+        "width": 56,
+        "height": 151
+      }
+    },
+    {
+      "pose": "idle/1",
+      "bounds": {
+        "x": 36,
+        "y": 12,
+        "width": 56,
+        "height": 151
+      }
+    },
+    {
+      "pose": "walk/0",
+      "bounds": {
+        "x": 27,
+        "y": 16,
+        "width": 75,
+        "height": 147
+      }
+    },
+    {
+      "pose": "walk/1",
+      "bounds": {
+        "x": 31,
+        "y": 12,
+        "width": 66,
+        "height": 151
+      }
+    },
+    {
+      "pose": "cast/0",
+      "bounds": {
+        "x": 19,
+        "y": 26,
+        "width": 91,
+        "height": 137
+      }
+    },
+    {
+      "pose": "cast/1",
+      "bounds": {
+        "x": 8,
+        "y": 34,
+        "width": 112,
+        "height": 129
+      }
+    },
+    {
+      "pose": "cast/2",
+      "bounds": {
+        "x": 25,
+        "y": 18,
+        "width": 78,
+        "height": 145
+      }
+    },
+    {
+      "pose": "hit/0",
+      "bounds": {
+        "x": 23,
+        "y": 19,
+        "width": 82,
+        "height": 144
+      }
+    },
+    {
+      "pose": "ko/0",
+      "bounds": {
+        "x": 24,
+        "y": 69,
+        "width": 80,
+        "height": 94
+      }
+    }
+  ],
+  "pngBytesBeforeLosslessPass": 128940,
+  "pngBytesStrategyZero": 129525,
+  "pngBytes": 128940,
+  "jsonBytes": 3409,
+  "atlasSize": {
+    "width": 1152,
+    "height": 192
+  },
+  "unusedFrameSlots": 0,
+  "status": "Runtime candidate. Distinct planted legs and opposed arm swing. Only walk/1 uses the counter-swing edit; the other eight frames retain their original sources."
+}

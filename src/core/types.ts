@@ -211,6 +211,8 @@ export interface Unit {
   readonly move: number;
   /** Unused AP carried into the next turn: 1 per turn, capped at 6 total AP. */
   readonly bankedAp: number;
+  /** Off-turn support bonus, consumed at the next activation (including a skip). */
+  readonly pendingAp: number;
 
   readonly base: UnitStats;
   readonly abilities: readonly string[];
@@ -538,6 +540,10 @@ export interface NpcDef {
   readonly name: string;
   readonly pos: Vec2;
   readonly sprite: string;
+  /** Optional map guidance semantic for a non-person route marker. */
+  readonly interaction?: 'route-sign';
+  /** Optional story condition for maps that reveal a person or landmark later. */
+  readonly when?: Condition;
   /** Story node entered when the NPC is tapped, if no route matches. */
   readonly node: string;
   /**
@@ -623,6 +629,13 @@ export interface MapBackdrop {
 /** Calibrated projected pixel rectangles: upright art is never ground-skewed. */
 export interface SceneImage {
   readonly url: string;
+  /** Optional atlas crop in source-image pixels; excludes packing gutters. */
+  readonly sourceRect?: {
+    readonly x: number;
+    readonly y: number;
+    readonly width: number;
+    readonly height: number;
+  };
   readonly x: number;
   readonly y: number;
   readonly width: number;
@@ -633,12 +646,25 @@ export interface SceneScenery extends SceneImage {
   readonly id: string;
   readonly footprint: readonly Vec2[];
   readonly depth: Vec2;
+  /** True for decorative rim pieces whose logical footprint sits outside the map. */
+  readonly exterior?: boolean;
+  /**
+   * When set, render only while every footprint tile is an authored wall in
+   * the loaded battle grid. This keeps newer scenery out of older saves.
+   */
+  readonly wall?: boolean;
   readonly fadeWhenOccluding?: boolean;
+  /** Connected depth slices share the lowest cutaway opacity within this scene. */
+  readonly fadeGroup?: string;
 }
 
 export interface MapScene {
   /** Ground art includes the permanent water cells and their banks. Dynamic surfaces still draw. */
   readonly paintedWater?: boolean;
+  /** Partial ground art does not claim coverage of any permanent surface. */
+  readonly groundMode?: 'partial';
+  /** Exact cells whose permanent rubble is already represented by registered art. */
+  readonly paintedRubble?: readonly Vec2[];
   readonly ground: readonly SceneImage[];
   readonly scenery: readonly SceneScenery[];
 }
@@ -801,6 +827,14 @@ export type StoryNode =
       readonly kind: 'explore';
       readonly mapId: string;
       readonly objective: string;
+      /** Optional structured target for objective-aware map guidance. */
+      readonly objectiveNpcId?: string;
+      /** First matching objective text/target wins after the node is revisited. */
+      readonly objectiveVariants?: readonly {
+        readonly when: Condition;
+        readonly text: string;
+        readonly objectiveNpcId?: string | null;
+      }[];
       /** Entered when the player reaches the map's exit marker. */
       readonly next: string;
     }

@@ -10,21 +10,26 @@
  * context, they never own one.
  */
 
-import type { Grid, Vec2 } from '../../core/types';
+import type { SceneImage, Vec2 } from '../../core/types';
 import { resolveAsset } from '../../content/assets/manifest';
 import { Camera } from '../camera';
 import type { Viewport } from '../camera';
 import type { TileRelief } from '../geometry/board';
 import { boardRelief, decorSignature, surfaceEdges } from '../geometry/board';
 import { aimArcPoints, arcHeading, arrowheadPolygon } from '../geometry/arc';
+import { actorHealthBar } from '../geometry/actorSilhouette';
+import { resolveActorEmitters } from '../geometry/actorAttachments';
+import { elevationAt, ELEVATION_LIFT } from '../geometry/elevation';
+export { elevationAt, ELEVATION_LIFT } from '../geometry/elevation';
 import { contourLoops } from '../geometry/contour';
 import type { Curve } from '../geometry/curve';
 import { sampleAt, smoothPath } from '../geometry/curve';
 import { CanvasFxLayer } from '../fx/canvasFx';
 import { backdrops } from '../backdrops';
-import { sceneImages, sceneryOpacity } from '../scene';
+import { sceneForGrid, sceneImage, drawSceneImage, sceneryOpacities } from '../scene';
+import { surfaceIsPainted } from '../sceneSurfaces';
 import { FACTION_RING, OVERLAY, STATUS_BADGE, hpColor } from '../palettes';
-import { paintTileDecor } from '../painters/board';
+import { paintElevationBase, paintTileDecor } from '../painters/board';
 import { paintFloatingNumber, paintPathArrow, paintPathDot } from '../painters/fx';
 import { FOOT_LINE } from '../sheets/bake';
 import { idlePhase, sheets } from '../sheets/store';
@@ -36,25 +41,23 @@ import {
   paintTerrain,
 } from '../painters/tiles';
 import { sprites } from '../spriteCache';
-import type { AimArc, MapView, OverlayKind, OverlayLayer, RenderUnit } from '../view';
+import {
+  unitMarkerGroundPoint,
+  type AimArc,
+  type MapView,
+  type OverlayKind,
+  type OverlayLayer,
+  type RenderUnit,
+} from '../view';
 import type { BackendCapabilities, RenderBackend } from './backend';
 
 /** The rounded square a hovered tile gets, in tile units from its corner. */
 const HOVER_LOOP = contourLoops([{ x: 0, y: 0 }])[0] ?? [];
 
-/** How far a unit is drawn up the screen per tier of ground it stands on, in tiles. */
-export const ELEVATION_LIFT = 0.06;
-
 /** How far in from the board's edge the shading reaches, in tiles. */
 export const EDGE_SHADE_TILES = 1.4;
 export const EDGE_SHADE_ALPHA = 0.42;
 export const VIGNETTE_ALPHA = 0.3;
-
-/** Elevation under a tile, 0 off the map. */
-export function elevationAt(grid: Grid, pos: Vec2): number {
-  if (pos.x < 0 || pos.y < 0 || pos.x >= grid.width || pos.y >= grid.height) return 0;
-  return grid.tiles[pos.y * grid.width + pos.x]?.elevation ?? 0;
-}
 
 export class Canvas2DBackend implements RenderBackend {
   readonly capabilities: BackendCapabilities = { name: 'canvas', shaders: false, particles: false };
@@ -96,6 +99,16 @@ export class Canvas2DBackend implements RenderBackend {
   draw(view: MapView, camera: Camera): void {
     const { ctx } = this;
     const dpr = camera.viewport.dpr;
+    view = {
+      ...view,
+      scene: view.scene ? sceneForGrid(view.scene, view.grid) : undefined,
+      emitters: resolveActorEmitters(
+        view.emitters,
+        view.grid,
+        camera.projection,
+        camera.toScreen({ x: 0, y: 0 }).size * dpr,
+      ),
+    };
 
     ctx.save();
     ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
@@ -114,23 +127,29 @@ export class Canvas2DBackend implements RenderBackend {
       camera.projection === 'oblique'
         ? view.backdrop?.projection === 'oblique'
         : !view.backdrop?.projection;
-    const painting = compatible && view.backdrop ? backdrops.get(view.backdrop.url) : null;
+    const partialScene = camera.projection === 'oblique' && view.scene?.groundMode === 'partial';
+    const painting =
+      !partialScene && compatible && view.backdrop ? backdrops.get(view.backdrop.url) : null;
     if (painting) this.drawBackdrop(painting, view, camera);
     let sceneGround = false;
+    let sceneGroundPieces: { piece: SceneImage; image: HTMLImageElement | null }[] = [];
     if (camera.projection === 'oblique' && view.scene) {
       const ground = view.scene.ground.map((piece) => ({
         piece,
-        image: sceneImages.get(piece.url),
+        image: sceneImage(piece),
       }));
+      sceneGroundPieces = ground;
       sceneGround =
         ground.length > 0 &&
         ground.every(({ image }) => image !== null) &&
-        view.scene.scenery.every((piece) => sceneImages.get(piece.url) !== null);
-      if (sceneGround)
+        view.scene.scenery.every((piece) => sceneImage(piece) !== null);
+      if (sceneGround && !partialScene)
         for (const { piece, image } of ground) {
           if (image)
-            ctx.drawImage(
+            drawSceneImage(
+              ctx,
               image,
+              piece,
               piece.x * camera.scale - camera.offsetX,
               piece.y * camera.scale - camera.offsetY,
               piece.width * camera.scale,
@@ -145,29 +164,69 @@ export class Canvas2DBackend implements RenderBackend {
         camera.grid,
       );
       const m = camera.groundMatrix();
-      ctx.save();
-      ctx.transform(m.a, m.b, m.c, m.d, m.tx, m.ty);
-      const painted = view.scene ? sceneGround : painting !== null;
-      this.drawGround(view, ground, painted);
-      if (!painted || view.crispOverlays) this.drawDecor(view, ground);
-      this.drawOverlays(view, ground);
-      this.drawPath(view, ground);
-      if (view.aimArc) this.drawAimArc(view.aimArc, ground);
-      this.drawFxLayer(view, ground, 'under');
-      this.drawExit(view, ground);
-      ctx.restore();
+      if (partialScene) {
+        // A local authored region is an overlay, so the grid's procedural
+        // terrain must be painted first and remain visible outside it.
+        ctx.save();
+        ctx.transform(m.a, m.b, m.c, m.d, m.tx, m.ty);
+        this.drawGround(view, ground, false, true, false);
+        // A complete normal partial scene keeps raised rule terrain below its
+        // authored ground and live surfaces. Full decor handles fallbacks and
+        // High contrast later in the pass.
+        if (sceneGround && !view.crispOverlays) this.drawElevationBase(view, ground);
+        ctx.restore();
+        for (const { piece, image } of sceneGroundPieces) {
+          if (!image) continue;
+          drawSceneImage(
+            ctx,
+            image,
+            piece,
+            piece.x * camera.scale - camera.offsetX,
+            piece.y * camera.scale - camera.offsetY,
+            piece.width * camera.scale,
+            piece.height * camera.scale,
+          );
+        }
+        ctx.save();
+        ctx.transform(m.a, m.b, m.c, m.d, m.tx, m.ty);
+        this.drawGround(view, ground, false, false, true);
+        // A complete partial scene owns its local ground art; accessibility
+        // and unavailable pieces still need all procedural rule markers.
+        if (!sceneGround || view.crispOverlays) this.drawDecor(view, ground);
+        this.drawOverlays(view, ground);
+        this.drawPath(view, ground);
+        if (view.aimArc) this.drawAimArc(view.aimArc, ground);
+        this.drawFxLayer(view, ground, 'under');
+        this.drawExit(view, ground);
+        ctx.restore();
+      } else {
+        ctx.save();
+        ctx.transform(m.a, m.b, m.c, m.d, m.tx, m.ty);
+        const painted = view.scene ? sceneGround : painting !== null;
+        this.drawGround(view, ground, painted);
+        if (!painted || view.crispOverlays) this.drawDecor(view, ground);
+        this.drawOverlays(view, ground);
+        this.drawPath(view, ground);
+        if (view.aimArc) this.drawAimArc(view.aimArc, ground);
+        this.drawFxLayer(view, ground, 'under');
+        this.drawExit(view, ground);
+        ctx.restore();
+      }
       this.drawUnitRings(view, camera);
       // All upright occupants share depth order, including NPCs and props.
+      const opacities = sceneryOpacities(view.scene?.scenery ?? [], view, camera);
       const occupants = [
         ...(view.scene?.scenery ?? []).map((piece) => ({
           pos: piece.depth,
           draw: () => {
-            const image = sceneImages.get(piece.url);
+            const image = sceneImage(piece);
             if (!image) return;
             ctx.save();
-            ctx.globalAlpha = sceneryOpacity(piece, view, camera);
-            ctx.drawImage(
+            ctx.globalAlpha = opacities.get(piece) ?? 1;
+            drawSceneImage(
+              ctx,
               image,
+              piece,
               piece.x * camera.scale - camera.offsetX,
               piece.y * camera.scale - camera.offsetY,
               piece.width * camera.scale,
@@ -244,7 +303,13 @@ export class Canvas2DBackend implements RenderBackend {
   }
 
   /** Terrain, surfaces and tile lines; over a painting the terrain is the painting. */
-  private drawGround(view: MapView, camera: Camera, painted: boolean): void {
+  private drawGround(
+    view: MapView,
+    camera: Camera,
+    painted: boolean,
+    drawTerrain = true,
+    drawSurfaces = true,
+  ): void {
     const { ctx } = this;
     const bounds = camera.visibleBounds(view.grid);
     for (let y = bounds.y0; y <= bounds.y1; y++) {
@@ -253,22 +318,32 @@ export class Canvas2DBackend implements RenderBackend {
         if (!tile) continue;
         const pos = { x, y };
         const box = camera.toScreen(pos);
-        if (!painted) paintTerrain(ctx, box, tile, pos);
-        if (!(
-          painted &&
-          view.scene?.paintedWater &&
-          !view.hatch &&
-          !view.crispOverlays &&
-          tile.surface?.id === 'water' &&
-          tile.surface.duration < 0
-        ))
+        if (drawTerrain && !painted) paintTerrain(ctx, box, tile, pos);
+        if (drawSurfaces && !surfaceIsPainted(view, painted, tile, pos))
           paintSurface(ctx, box, tile, pos, view.hatch, surfaceEdges(view.grid, pos));
-        if (view.gridLines) paintGridLine(ctx, box, 'rgba(0,0,0,0.18)');
+        if (drawSurfaces && view.gridLines) paintGridLine(ctx, box, 'rgba(0,0,0,0.18)');
       }
     }
   }
 
   /** Cliffs, canopies, walls, cover and decals: a second pass so overhangs land on neighbours. */
+  private drawElevationBase(view: MapView, camera: Camera): void {
+    const { ctx } = this;
+    const signature = decorSignature(view.grid);
+    if (signature !== this.reliefSignature) {
+      this.reliefSignature = signature;
+      this.relief = boardRelief(view.grid);
+    }
+    const bounds = camera.visibleBounds(view.grid);
+    for (let y = bounds.y0; y <= bounds.y1; y++)
+      for (let x = bounds.x0; x <= bounds.x1; x++) {
+        const index = y * view.grid.width + x;
+        const tile = view.grid.tiles[index];
+        if (!tile) continue;
+        paintElevationBase(ctx, camera.toScreen({ x, y }), tile, { x, y }, this.relief.get(index));
+      }
+  }
+
   private drawDecor(view: MapView, camera: Camera): void {
     const { ctx } = this;
     const signature = decorSignature(view.grid);
@@ -623,8 +698,13 @@ export class Canvas2DBackend implements RenderBackend {
     const { ctx } = this;
     for (const unit of view.units) {
       const box = camera.spriteBox(unit.renderPos ?? unit.pos, unit.size);
+      const marker = unitMarkerGroundPoint(
+        { x: box.x, y: box.y },
+        box.size,
+        elevationAt(view.grid, unit.pos) * ELEVATION_LIFT,
+        unit.meleeDirection ? unit.offset : undefined,
+      );
       const width = box.size * unit.size;
-      box.y -= elevationAt(view.grid, unit.pos) * ELEVATION_LIFT * box.size;
       // Active-unit ring, drawn under the sprite.
       if (unit.id === view.activeUnitId) {
         ctx.save();
@@ -633,8 +713,8 @@ export class Canvas2DBackend implements RenderBackend {
         ctx.globalAlpha = 0.75 + 0.25 * ((Math.sin(view.time / 300) + 1) / 2);
         ctx.beginPath();
         ctx.ellipse(
-          box.x + width / 2,
-          box.y + box.size * 0.86,
+          marker.x + width / 2,
+          marker.y + box.size * 0.86,
           width * 0.42,
           box.size * 0.14,
           0,
@@ -649,8 +729,8 @@ export class Canvas2DBackend implements RenderBackend {
         ctx.lineWidth = Math.max(1, box.size * 0.03);
         ctx.beginPath();
         ctx.ellipse(
-          box.x + width / 2,
-          box.y + box.size * 0.86,
+          marker.x + width / 2,
+          marker.y + box.size * 0.86,
           width * 0.4,
           box.size * 0.12,
           0,
@@ -700,6 +780,7 @@ export class Canvas2DBackend implements RenderBackend {
         unit.clipFrame,
         box.size * dpr * scale,
         unit.size,
+        unit.meleeDirection,
       );
       let headroom = 0;
       if (frame) {
@@ -738,7 +819,7 @@ export class Canvas2DBackend implements RenderBackend {
 
       if (!unit.fallen) {
         if (unit.showHealth !== false) {
-          this.drawHealthBar(unit, box.x, box.y - headroom * box.size, width, box.size);
+          this.drawHealthBar(unit, box.x, box.y, width, box.size, scale, headroom);
         }
         this.drawStatusBadges(unit, box.x, box.y, width, box.size);
       } else {
@@ -757,13 +838,23 @@ export class Canvas2DBackend implements RenderBackend {
     }
   }
 
-  private drawHealthBar(unit: RenderUnit, x: number, y: number, width: number, size: number): void {
+  private drawHealthBar(
+    unit: RenderUnit,
+    x: number,
+    y: number,
+    width: number,
+    size: number,
+    scale: number,
+    headroom: number,
+  ): void {
     const { ctx } = this;
     const fraction = Math.max(0, Math.min(1, unit.hp / Math.max(1, unit.maxHp)));
-    const barWidth = width * 0.72;
-    const barHeight = Math.max(3, size * 0.075);
-    const barX = x + (width - barWidth) / 2;
-    const barY = y + size * 0.06;
+    const {
+      x: barX,
+      y: barY,
+      width: barWidth,
+      height: barHeight,
+    } = actorHealthBar(x, y, width, size, scale, headroom);
 
     ctx.fillStyle = 'rgba(0,0,0,0.6)';
     ctx.fillRect(barX - 1, barY - 1, barWidth + 2, barHeight + 2);

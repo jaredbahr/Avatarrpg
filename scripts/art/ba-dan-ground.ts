@@ -4,7 +4,6 @@
  */
 import { mkdirSync, writeFileSync } from 'node:fs';
 import { BA_DAN_VILLAGE } from '../../src/content/maps/village';
-import { BA_DAN_POND } from '../../src/content/scenes/baDan';
 import { newImage, readImage } from './lib/image';
 import { encodeWebp } from './lib/webp';
 
@@ -31,23 +30,10 @@ for (let chunk = 0; chunk < 2; chunk++) {
       const y = (dy - dx) / 2;
       const cell = BA_DAN_VILLAGE.rows[Math.floor(y)]?.[Math.floor(x)] ?? ',';
       const courtyard = x >= 8 && x < 15 && y >= 4 && y < 11;
-      let material =
-        cell === '~'
-          ? 2
-          : cell === 'w' || cell === 'B'
-            ? 3
-            : cell === '=' || cell === '.' || courtyard
-              ? 0
-              : 1;
-      // A narrow coping remains inside the actual water footprint, never over a path.
-      if (
-        cell === '~' &&
-        (x < BA_DAN_POND.x + 0.08 ||
-          x > BA_DAN_POND.x + BA_DAN_POND.width - 0.08 ||
-          y < BA_DAN_POND.y + 0.08 ||
-          y > BA_DAN_POND.y + BA_DAN_POND.height - 0.08)
-      )
-        material = 0;
+      // Permanent water is an upright canal layer now. Keep the material page
+      // underneath it dry so the old pond mask cannot leak outside that art.
+      const material =
+        cell === 'w' || cell === 'B' ? 3 : cell === '=' || cell === '.' || courtyard ? 0 : 1;
       const sx = sample(x * 192) + (material % 2) * swatch;
       const sy = sample(y * 192) + Math.floor(material / 2) * swatch;
       const from = (sy * atlas.width + sx) * 4;

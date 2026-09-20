@@ -30,6 +30,28 @@ describe('the riverside paths', () => {
       ).toEqual([]);
     }
   });
+  it('reaches the tea porch by the stone steps while the house and railing stay blocked', () => {
+    const route = findPath(
+      { grid, blocked: new Set(), surfaces: CONTENT.surfaces, size: 1 },
+      start().location.pos,
+      RIVERSIDE_SPOTS.tea,
+      864,
+    );
+    expect(route?.path.slice(-3)).toEqual([
+      { x: 9, y: 19 },
+      { x: 8, y: 19 },
+      { x: 8, y: 18 },
+    ]);
+    for (const pos of [
+      { x: 9, y: 18 },
+      { x: 8, y: 17 },
+      { x: 7, y: 18 },
+    ]) {
+      expect(apply(CONTENT, start(), { type: 'walkTo', pos }).state.location).toEqual(
+        start().location,
+      );
+    }
+  });
   it('takes the bridge to the east bank instead of crossing deep water', () => {
     const route = findPath(
       { grid, blocked: new Set(), surfaces: CONTENT.surfaces, size: 1 },

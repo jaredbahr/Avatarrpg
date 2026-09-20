@@ -7,7 +7,7 @@
  */
 
 import type { Grid, MapBackdrop, MapScene, StatusId, Vec2 } from '../core/types';
-import type { ClipName } from '../content/assets/clips';
+import type { ClipName, MeleeDirection } from '../content/assets/clips';
 import type { EmitterDef } from '../content/fx';
 
 /** The pose vocabulary from ADR 0003; the sheet runtime maps these to frames. */
@@ -40,12 +40,32 @@ export interface RenderUnit {
   readonly clipTime?: number;
   /** The clip's frame, when the choreography knows it (a cast's wind-up is frame 0). */
   readonly clipFrame?: number;
+  /** Optional authored screen-facing melee contact variant. */
+  readonly meleeDirection?: MeleeDirection;
   /** Draw scale about the feet; 1 at rest. */
   readonly scale?: number;
   /** Draw alpha; the backend applies the fallen fade on top. */
   readonly alpha?: number;
   /** 0..1 white flash on a hit. */
   readonly flash?: number;
+}
+
+/**
+ * Ground point for a unit marker. Directional contact poses move the sprite
+ * for presentation, so callers pass that transient offset; all other markers
+ * stay on the logical ground point. Elevation is applied in actor space for
+ * both rendering backends.
+ */
+export function unitMarkerGroundPoint(
+  base: Vec2,
+  tileSize: number,
+  elevationLift: number,
+  contactOffset?: Vec2,
+): Vec2 {
+  return {
+    x: base.x + (contactOffset?.x ?? 0) * tileSize,
+    y: base.y + ((contactOffset?.y ?? 0) - elevationLift) * tileSize,
+  };
 }
 
 export type OverlayKind = 'move' | 'target' | 'area' | 'hover';
@@ -59,6 +79,24 @@ export interface OverlayLayer {
  * A live effect emitter: the recipe piece, where it plays, and how old it is.
  * The definition travels resolved so the renderer never reads content.
  */
+/** A presentation-only pose snapshot; later recovery/recoil cannot move its endpoint. */
+export interface ActorAttachment {
+  readonly pos: Vec2;
+  readonly sprite: string;
+  readonly size: 1 | 2;
+  readonly socket: 'cast-gather' | 'cast-release' | 'waterskin' | 'ground' | 'torso';
+  readonly facing: 1 | -1;
+  readonly scale: number;
+  readonly offset: Vec2;
+}
+
+export interface EmitterAttachments {
+  readonly from?: ActorAttachment;
+  readonly to?: ActorAttachment;
+  /** Impact direction retains its original vector while both ends move together. */
+  readonly translateTogether?: boolean;
+}
+
 export interface EmitterInstance {
   readonly def: EmitterDef;
   /** Tile centres. */
@@ -71,6 +109,7 @@ export interface EmitterInstance {
   readonly palette: string;
   /** Lob height in tiles for a projectile flight. */
   readonly arc: number;
+  readonly attachments?: EmitterAttachments;
 }
 
 export interface Floater {

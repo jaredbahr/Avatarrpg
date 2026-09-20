@@ -1,0 +1,10 @@
+Use case: stylized-concept.
+Asset type: transparent local ground and low rim art for a modular 2.5D tactical RPG.
+Primary request: one cohesive illustrated forest raised shelf material, arranged as two separated low 2-by-2 oblique diamond shelf clusters with a clear diamond-shaped opening between them for an east road exit. The clusters are a continuous natural limestone and ochre earth bank, not eight isolated square tiles. The shelf tops are shallow warm limestone and packed earth with olive grass creeping at their outer edges. Add a low irregular stone rim only along the lower-facing exposed edges, with a thin darker earthen face, so characters can stand on the top and remain visible. Keep the middle exit opening completely empty and transparent.
+Style/medium: hand-painted gouache game background, clean dark-brown ink accents, flat cel shading, broad quiet brush shapes, no photographic noise, matching a warm olive forest road and ochre path.
+Composition/framing: square transparent RGBA image with the two shelf clusters placed left-to-right in the frame and a visible empty diamond gap at center; no perspective convergence; leave generous transparent margins.
+Lighting/mood: soft warm forest daylight from upper left.
+Color palette: olive forest greens, muted ochre earth, warm pale limestone, blue-grey stone shadow, dark brown ink #1b1410.
+Materials/textures: broad painted grass and earth masses, a few large angular limestone planes, low rim stones; readable when reduced to roughly 96 screen pixels per gameplay tile.
+Constraints: genuine alpha transparency around and inside the exit gap; coherent connected cluster silhouettes; the shelf material must look integrated with forest grass and road; no gameplay grid, no people, no trees, no props, no water, no text, no labels, no UI, no cast shadows, no black background.
+Avoid: gray asphalt slabs, straight charcoal stair steps, repetitive square stamps, cliffs taller than a shallow curb, hard rectangular edges, isolated floating rocks, photorealism, 3D render, gradients, vignette, watermark.

@@ -1,0 +1,8 @@
+{
+  "tool": "built-in image_gen",
+  "prompt": "Use case: stylized-concept. Reference image: supplied original character sprite sheet defines this ONE original adult man's identity and clothing. Create one square head-and-shoulders portrait of exactly this character, intended for a tactical RPG initiative/HUD portrait. Closely cropped dark receding hair, warm medium brown skin, angular clean-shaven face, mature man late thirties, wary stern expression; worn muted brick-red standing-collar tunic and plain dark brown diagonal shoulder strap. Three-quarter head facing screen right, visible eyes, shoulders fill lower corners, full head inside frame with comfortable margin. Match the reference's restrained dark ink, warm flat cel colors, two or three broad shadow tones, grounded adult anatomy. Plain flat warm parchment background #f4e9d8. Crisp clean illustrated shapes suitable for tiny 48px icon and 512px portrait, no mottled texture or fine noise. No props, weapons, fire, hat, insignia, text, frame, extra people, facial hair, photorealism or 3D. Square composition.",
+  "reference": "assets/reference/fire-deserter/combat-source.png",
+  "output": "assets/reference/fire-deserter/portrait-source.png",
+  "generator": "exec-37c3d558-f27b-4dd8-b562-19b89846e4ef",
+  "packing": "scripts/art/fire-deserter-portrait.ts; 512px square, WebP quality 90, no upscaling."
+}

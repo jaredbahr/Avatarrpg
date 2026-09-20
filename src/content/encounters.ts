@@ -71,8 +71,8 @@ export const ENCOUNTERS: readonly EncounterDef[] = [
           { enemyId: 'bandit_bruiser', pos: { x: 17, y: 5 } },
           { enemyId: 'bandit_bruiser', pos: { x: 17, y: 7 } },
         ],
-        intro: 'Only two of them step out. They do not look worried about it.',
-        tip: 'Two big ones instead of three small ones. Everybody hit the same one — a bruiser at half health hits just as hard as a fresh one.',
+        intro: 'A bruiser steps out of the trees and plants heavy boots in the road.',
+        tip: 'Focus your attacks. A bruiser at half health hits just as hard as a fresh one.',
       },
     ],
     // Deliberately short. This is the tutorial fight: a full table should be
@@ -82,7 +82,7 @@ export const ENCOUNTERS: readonly EncounterDef[] = [
       { enemyId: 'bandit_slinger', pos: { x: 16, y: 2 } },
     ],
     intro: 'They step out of the trees. They were waiting for somebody.',
-    tip: 'There are puddles in the road. Anything standing in water gets Wet — and Wet things freeze easily and take double lightning damage.',
+    tip: 'There are puddles in the road. Anything standing in water gets Wet — cold hits Wet targets harder, and lightning damage doubles.',
   },
   {
     id: 'enc_quarry_gate',
@@ -259,7 +259,7 @@ export const ENCOUNTERS: readonly EncounterDef[] = [
     ],
     intro:
       'The driller comes up out of the pit on two treads, dragging a plume of oil smoke behind it.',
-    tip: 'It leaks oil and churns the floor to mud. Firebenders: light the oil. Waterbenders: freeze the mud and the treads stop dead.',
+    tip: 'It leaks oil and churns the floor to mud. Catch it in burning oil, but keep your party clear. Ice Path makes the mud easier to cross; it will not stop the treads.',
   },
 ];
 

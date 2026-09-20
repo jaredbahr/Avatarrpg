@@ -12,6 +12,7 @@
 import type { Tile, Vec2 } from '../../core/types';
 import type { Edges } from '../geometry/board';
 import { SURFACE_STYLES, TERRAIN_STYLES } from '../palettes';
+import { SURFACE_BANK, SURFACE_POOL, surfaceIntensity } from '../surfaceRendering';
 import type { Box, Ctx } from './shapes';
 import { circle, polygon, tileNoise } from './shapes';
 
@@ -61,7 +62,11 @@ export function paintSurface(
   const s = box.size;
 
   ctx.save();
-  ctx.globalAlpha = style.alpha;
+  ctx.beginPath();
+  ctx.rect(box.x, box.y, s, s);
+  ctx.clip();
+  const intensity = surfaceIntensity(tile.surface.duration);
+  ctx.globalAlpha = style.alpha * intensity;
   ctx.fillStyle = style.fill;
   // Snapped to whole pixels rather than overlapped by one: a translucent
   // fill that overlaps its neighbour shows the seam as a darker line.
@@ -69,9 +74,36 @@ export function paintSurface(
   const y0 = Math.round(box.y);
   ctx.fillRect(x0, y0, Math.round(box.x + s) - x0, Math.round(box.y + s) - y0);
 
+  // A little material gathers just inside the real bank. Irregular depth is
+  // decoration inside the tile, never a ragged or misleading hazard boundary.
+  const material = tile.surface.id;
+  const water = material === 'water';
+  if (material === 'mud' || material === 'oil') {
+    ctx.globalAlpha = SURFACE_POOL.alpha * intensity;
+    ctx.fillStyle = style.detail;
+    for (const [side, on] of [edges.n, edges.e, edges.s, edges.w].entries()) {
+      if (!on) continue;
+      const point = (along: number, depth: number): [number, number] => {
+        if (side === 0) return [box.x + along * s, box.y + depth * s];
+        if (side === 1) return [box.x + (1 - depth) * s, box.y + along * s];
+        if (side === 2) return [box.x + along * s, box.y + (1 - depth) * s];
+        return [box.x + depth * s, box.y + along * s];
+      };
+      ctx.beginPath();
+      ctx.moveTo(...point(0, 0));
+      ctx.lineTo(...point(1, 0));
+      for (let i = 8; i >= 0; i--) {
+        const depth = SURFACE_POOL.depth * (0.2 + 0.8 * tileNoise(pos.x, pos.y, side * 17 + i));
+        ctx.lineTo(...point(i / 8, depth));
+      }
+      ctx.closePath();
+      ctx.fill();
+    }
+  }
+
   // The bank: a wide faint band inside the edge under a thin bright line.
-  const inset = Math.max(1, s * 0.03);
-  const band = s * 0.12;
+  const inset = Math.max(1, s * SURFACE_BANK.line);
+  const band = s * SURFACE_BANK.width;
   const sides: [boolean, number, number, number, number][] = [
     [edges.n, box.x, box.y, s + 1, band],
     [edges.s, box.x, box.y + s - band, s + 1, band],
@@ -79,9 +111,11 @@ export function paintSurface(
     [edges.e, box.x + s - band, box.y, band, s + 1],
   ];
   ctx.fillStyle = style.edge;
-  ctx.globalAlpha = style.alpha * 0.22;
+  // Water follows a painted shore, so it needs a quiet material transition,
+  // not the universal tactical outline used for temporary pools.
+  ctx.globalAlpha = (water ? 0.055 : 0.12) * intensity;
   for (const [on, x, y, w, h] of sides) if (on) ctx.fillRect(x, y, w, h);
-  ctx.globalAlpha = style.alpha * 0.75;
+  ctx.globalAlpha = (water ? 0.18 : SURFACE_BANK.alpha) * intensity;
   ctx.strokeStyle = style.edge;
   ctx.lineWidth = inset;
   ctx.beginPath();
@@ -103,12 +137,48 @@ export function paintSurface(
   }
   ctx.stroke();
 
-  // A surface about to expire is drawn faintly, so "two rounds left" is
-  // visible without anyone reading a number.
-  if (tile.surface.duration >= 0 && tile.surface.duration <= 1) {
-    ctx.globalAlpha = 0.25;
-    ctx.fillStyle = '#000000';
-    ctx.fillRect(box.x, box.y, s + 1, s + 1);
+  // Sparse material marks leave the painted ground legible. Position-seeded
+  // detail never swims with the camera; the wash still covers every hazard tile.
+  if (material === 'ice' || material === 'mud' || material === 'oil' || material === 'rubble') {
+    ctx.globalAlpha = (material === 'ice' ? 0.38 : 0.24) * intensity;
+    ctx.lineWidth = Math.max(1, s * 0.013);
+    for (let i = 0; i < 3; i++) {
+      const x = box.x + (0.12 + tileNoise(pos.x, pos.y, i * 3 + 1) * 0.7) * s;
+      const y = box.y + (0.12 + tileNoise(pos.x, pos.y, i * 3 + 2) * 0.7) * s;
+      ctx.beginPath();
+      if (material === 'ice') {
+        ctx.moveTo(x - s * 0.08, y + s * 0.11);
+        ctx.lineTo(x, y);
+        ctx.lineTo(x + s * 0.15, y - s * 0.035);
+      } else if (material === 'rubble') {
+        ctx.moveTo(x - s * 0.025, y);
+        ctx.lineTo(x, y - s * 0.04);
+        ctx.lineTo(x + s * 0.04, y + s * 0.01);
+        ctx.closePath();
+      } else {
+        ctx.strokeStyle = style.detail;
+        ctx.lineWidth = s * (material === 'mud' ? 0.026 : 0.018);
+        if (material === 'oil') {
+          ctx.ellipse(x, y, s * 0.18, s * 0.055, -0.35, Math.PI * 0.2, Math.PI * 1.3);
+        } else {
+          ctx.moveTo(x - s * 0.09, y + s * 0.025);
+          ctx.bezierCurveTo(
+            x,
+            y - s * 0.04,
+            x + s * 0.06,
+            y + s * 0.045,
+            x + s * 0.2,
+            y - s * 0.025,
+          );
+        }
+      }
+      ctx.stroke();
+      if (material === 'oil') {
+        ctx.strokeStyle = style.edge;
+        ctx.lineWidth = Math.max(1, s * 0.009);
+        ctx.stroke();
+      }
+    }
   }
 
   if (hatch) paintHatch(ctx, box, style.hatch, style.edge, pos);

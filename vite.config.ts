@@ -33,6 +33,10 @@ const base = process.env.GH_PAGES_BASE ?? '/';
 
 export default defineConfig({
   base,
+  // Keep parallel worktree/dev-server dependency graphs isolated. Shared
+  // node_modules junctions otherwise let Vite workers overwrite each other's
+  // optimized-dependency hashes during visual capture.
+  cacheDir: '.vite',
   define: {
     __APP_VERSION__: JSON.stringify(version),
     __BUILD_REVISION__: JSON.stringify(buildRevision()),
@@ -58,11 +62,68 @@ export default defineConfig({
   plugins: [
     {
       // Input, accessibility and HTML UI belong to the app's native DOM.
+      // Atlas JSON uses our shared loader, not Pixi's Assets/Spritesheet.
       // These optional Pixi registration entry points are never used. Keep
       // graphics/text/filter/particle/texture initialization intact (ADR 0001).
       name: 'omit-unused-pixi-systems',
       transform(code, id) {
-        if (/[/\\]pixi\.js[/\\]lib[/\\](accessibility|events|dom)[/\\]init\.mjs$/.test(id)) {
+        // The game uploads still images/canvases and has no video textures.
+        // Keep the other source registrations intact (ADR 0038).
+        if (/[/\\]pixi\.js[/\\]lib[/\\]rendering[/\\]init\.mjs$/.test(id)) {
+          const videoImport =
+            "import { VideoSource } from './renderers/shared/texture/sources/VideoSource.mjs';";
+          if (!code.includes(videoImport) || !code.includes('  VideoSource,')) {
+            throw new Error(
+              'Pixi texture registration changed; review the video-source exclusion.',
+            );
+          }
+          return {
+            code: code.replace(videoImport, '').replace('  VideoSource,', ''),
+            map: null,
+          };
+        }
+        // The game renders on the main thread and has no Worker or OffscreenCanvas
+        // path. Register the browser environment only; the worker extension would
+        // otherwise retain Pixi's unused worker environment chunk (ADR 0033).
+        if (/[/\\]pixi\.js[/\\]lib[/\\]index\.mjs$/.test(id)) {
+          const registration = 'extensions.add(browserExt, webworkerExt);';
+          if (!code.includes(registration)) {
+            throw new Error(
+              'Pixi environment registration changed; review the worker-environment exclusion.',
+            );
+          }
+          return {
+            code: code.replace(registration, 'extensions.add(browserExt);'),
+            map: null,
+          };
+        }
+        // Canvas rendering is our separate Canvas2D backend. Pixi is created
+        // only as a WebGLRenderer, so its CanvasRenderer filter system cannot
+        // be selected (ADR 0033).
+        if (/[/\\]pixi\.js[/\\]lib[/\\]filters[/\\]init\.mjs$/.test(id)) {
+          const canvasFilterImport =
+            "import { CanvasFilterSystem } from './CanvasFilterSystem.mjs';";
+          if (
+            !code.includes(canvasFilterImport) ||
+            !code.includes('extensions.add(FilterSystem, CanvasFilterSystem);')
+          ) {
+            throw new Error(
+              'Pixi filter registration changed; review the CanvasFilterSystem exclusion.',
+            );
+          }
+          return {
+            code: code
+              .replace(canvasFilterImport, '')
+              .replace(
+                'extensions.add(FilterSystem, CanvasFilterSystem);',
+                'extensions.add(FilterSystem);',
+              ),
+            map: null,
+          };
+        }
+        if (
+          /[/\\]pixi\.js[/\\]lib[/\\](accessibility|events|dom|spritesheet)[/\\]init\.mjs$/.test(id)
+        ) {
           return { code, map: null, moduleSideEffects: false };
         }
       },

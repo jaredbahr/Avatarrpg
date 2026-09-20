@@ -10,6 +10,14 @@ permits non-commercial use before generating anything that will be committed.
 The technical shape of every asset is fixed by `docs/adr/0003-asset-contract.md`.
 This document is about how it looks.
 
+For playable environment construction, follow the
+[official world model](player-view-target.md#official-world-construction-model)
+and [ADR 0039](adr/0039-modular-illustrated-world.md). Compose illustrated ground
+regions and independent scenery on the real gameplay grid. Complete map paintings
+are supporting vistas or temporary prototypes, not the final interactive world.
+Judge assets together in actual play for perspective, scale, palette, grounding,
+occlusion and readable paths; individually attractive images are insufficient.
+
 ## The look in one paragraph
 
 Flat cel shading with clean ink lines and painterly ground. Characters read as
@@ -136,4 +144,4 @@ Cormorant reads European and Cinzel Roman, so neither fits the world.
 ## Effects and terrain (later phases)
 
 - Bending effects combine hand-drawn-style animation cels with aimed strokes and sparse debris (ADRs 0004 and 0021). Four transparent sheets supply twelve four-cel clips; every current technique has an authored assignment in `src/content/bendingCels.ts`. Fire has curling tongues, water has crests and ribbons, ice has pointed facets, earth has broad stone shapes, metal has folded bands, and air keeps open transparent space between its streamlines. Source prompts and registration notes are in `docs/art/elemental-cels.md`.
-- The ground stays the procedural shader; painted terrain decals (edges, stones, grass tufts, path wear) are sprites layered over it in Phase C, drawn in the same ink and palette.
+- Ground combines the grid-driven material base with authored local regions and painted details (edges, stones, grass tufts, path wear), in the same ink and palette. Keep dynamic surfaces and effects above decorative ground art. Square grid seams should disappear in normal presentation; tactical overlays remain available. Review the bounded Ba Dan proof before extending the modular construction across the route.

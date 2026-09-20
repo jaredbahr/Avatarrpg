@@ -11,7 +11,7 @@
 
 import type { MapDef } from '../../core/types';
 import { LEGEND } from './legend';
-import { BA_DAN_SCENE, BA_DAN_COURTYARD_FOOTPRINTS } from '../scenes/baDan';
+import { BA_DAN_SCENE, BA_DAN_COURTYARD_FOOTPRINTS, BA_DAN_COURT_TREES } from '../scenes/baDan';
 
 export const BA_DAN_VILLAGE: MapDef = {
   id: 'ba_dan_village',
@@ -31,7 +31,7 @@ export const BA_DAN_VILLAGE: MapDef = {
     'T,,,,,Bww=,,=wwB,,,,,,,T',
     'T,,,,,,,,=,,=,,,,,,,,,,T',
     'T,,,,,,,,=====,,,,,,,,,T',
-    'T,,,,,,,,=~~~=,,,,,,,,,T',
+    'T,,,,,~~~=~~~=,,,,,,,,,T',
     '======================..',
     '======================..',
     'T,,,,,,,,=====,,,,,,,,,T',
@@ -44,7 +44,11 @@ export const BA_DAN_VILLAGE: MapDef = {
   ].map((row, y) =>
     [...row]
       .map((tile, x) =>
-        BA_DAN_COURTYARD_FOOTPRINTS.some((p) => p.x === x && p.y === y) ? 'l' : tile,
+        BA_DAN_COURT_TREES.some((p) => p.x === x && p.y === y)
+          ? 'T'
+          : BA_DAN_COURTYARD_FOOTPRINTS.some((p) => p.x === x && p.y === y)
+            ? 'l'
+            : tile,
       )
       .join(''),
   ),
@@ -56,6 +60,7 @@ export const BA_DAN_VILLAGE: MapDef = {
       name: 'Riverside path',
       pos: { x: 18, y: 12 },
       sprite: 'npc.kid',
+      interaction: 'route-sign',
       node: 'riverside_invitation',
     },
     {

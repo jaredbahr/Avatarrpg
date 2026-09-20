@@ -2,7 +2,7 @@
 import type { ContentIndex, GameState, Vec2 } from '../../core/types';
 import { apply } from '../../core/state/reducer';
 import { distance, samePos } from '../../core/rules/grid';
-import { activeTriggers } from '../../core/story/world';
+import { activeTriggers, visibleNpcs } from '../../core/story/world';
 
 export interface WalkPreview {
   readonly from: Vec2;
@@ -18,7 +18,7 @@ export function previewWalk(content: ContentIndex, state: GameState, target: Vec
   const map = content.maps.get(state.location.mapId);
   const trigger =
     map && activeTriggers(map, state).find((item) => item.area.some((cell) => samePos(cell, stop)));
-  const npc = map?.npcs.find((item) => samePos(item.pos, target));
+  const npc = map ? visibleNpcs(map, state).find((item) => samePos(item.pos, target)) : undefined;
   const exit = map?.exits?.find((item) => samePos(item.pos, target));
   const message = result.events.find((event) => event.type === 'message');
   return {
@@ -60,7 +60,7 @@ export class NextWalk {
 /** Only nearby, reachable people and objects; never a checklist of unseen maps. */
 export function nearbyPlaces(content: ContentIndex, state: GameState) {
   const map = content.maps.get(state.location.mapId);
-  return (map?.npcs ?? [])
+  return (map ? visibleNpcs(map, state) : [])
     .filter((npc) => distance(state.location.pos, npc.pos) <= 6)
     .map((npc) => ({ npc, preview: previewWalk(content, state, npc.pos) }))
     .filter(({ npc, preview }) => !preview.refusal && preview.label === npc.name)

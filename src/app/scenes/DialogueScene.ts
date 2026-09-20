@@ -12,29 +12,19 @@
  */
 
 import type { App, Mood, Scene } from '../App';
-import type { ElementId, GameState, StoryNode, StoryOption } from '../../core/types';
+import type { StoryNode } from '../../core/types';
 import { ELEMENT_IDS } from '../../core/types';
-import { describe as describeCondition } from '../../core/story/conditions';
-import { optionAvailable, resolveDialogue } from '../../core/story/storyEngine';
-import { CONTENT } from '../../content';
+import { resolveDialogue } from '../../core/story/storyEngine';
 import { resolveAsset } from '../../content/assets/manifest';
 import { button, clear, el } from '../ui/dom';
 import { assetCanvas } from '../ui/assetCanvas';
+import { conversationPanel, resolveConversation } from '../ui/ConversationPanel';
 import {
   INTERLUDES,
   INTERLUDE_ART,
   interludeHoldMs,
   type InterludeDef,
 } from '../../content/story/interludes';
-
-/** What to call a bender the party does not have. */
-const BENDER_LABEL: Record<ElementId, string> = {
-  fire: 'A firebender',
-  water: 'A waterbender',
-  earth: 'An earthbender',
-  air: 'An airbender',
-  nonbender: 'Someone who does not bend',
-};
 
 /** Portraits in the HUD are 6rem; on the stage the speaker is nearly twice that. */
 const STAGE_PORTRAIT_REM = 11;
@@ -192,10 +182,20 @@ export class DialogueScene implements Scene {
   }
 
   private topBar(): HTMLElement {
+    const node = this.app.currentNode();
+    const state = this.app.state;
+    // Match the visible speaker, including party contributions. Illustrated
+    // narration and endings keep their location label rather than inventing one.
+    const label =
+      node?.kind === 'dialogue' && state && !INTERLUDES[node.id]
+        ? resolveDialogue(state, node).speaker
+        : node?.kind === 'choice'
+          ? node.speaker
+          : this.app.placeLabel();
     return el(
       'div',
       { class: 'top-bar' },
-      el('span', { class: 'muted tiny', text: this.app.placeLabel() }),
+      el('span', { class: 'muted tiny', text: label }),
       el('div', { class: 'spacer' }),
       button(
         'Pause',
@@ -341,168 +341,45 @@ export class DialogueScene implements Scene {
   }
 
   private dialogueStage(node: Extract<StoryNode, { kind: 'dialogue' }>): HTMLElement {
-    const state = this.app.state;
-    // Variants first: who is standing here changes what gets said.
-    const said = state
-      ? resolveDialogue(state, node)
-      : { speaker: node.speaker, portrait: node.portrait, lines: node.lines };
-    const index = Math.min(state?.story.lineIndex ?? 0, said.lines.length - 1);
-    const line = said.lines[index] ?? '';
-    const isLast = index >= said.lines.length - 1;
-
-    const advance = () => this.app.dispatch({ type: 'advanceDialogue' });
-
-    const panel = el(
-      'div',
-      {
-        class: 'panel dialogue-panel',
-        attrs: { role: 'button', tabindex: '0', 'aria-label': 'Continue' },
-        onClick: (event) => {
-          // The native Next/Continue button already advances. Its click still
-          // bubbles through this old panel even after dispatch replaces the DOM.
-          if (event.target instanceof Element && event.target.closest('button')) return;
-          advance();
+    const shared = conversationPanel(this.app);
+    const resolved = resolveConversation(this.app);
+    if (shared && resolved) {
+      const state = this.app.state;
+      const index = Math.min(state?.story.lineIndex ?? 0, Math.max(0, resolved.lines.length - 1));
+      return this.stage(
+        'dialogue',
+        {
+          name: resolved.speaker,
+          portrait: resolved.portrait,
+          note: el('span', {
+            class: 'muted tiny line-count',
+            text: `${index + 1} of ${resolved.lines.length}`,
+          }),
         },
-        onKeyDown: (event) => {
-          if (event.key === 'Enter' || event.key === ' ') {
-            if (event.repeat) {
-              event.preventDefault();
-              return;
-            }
-            // Let the nested native button synthesize its own click. Only the
-            // panel itself needs a keyboard equivalent for tap-anywhere.
-            if (event.target !== event.currentTarget) return;
-            event.preventDefault();
-            advance();
-          }
-        },
-      },
-      el('p', { class: 'dialogue-line', text: line }),
-      el(
-        'div',
-        { class: 'row' },
-        el('div', { class: 'spacer' }),
-        button(isLast ? 'Continue' : 'Next', advance, { class: 'btn-primary btn-large' }),
-      ),
-    );
+        shared,
+      );
+    }
 
+    // A valid render always has both values; keep a bounded fallback for a
+    // malformed state instead of reviving a second copy of the panel logic.
     return this.stage(
       'dialogue',
-      {
-        name: said.speaker,
-        portrait: said.portrait,
-        note: el('span', {
-          class: 'muted tiny line-count',
-          text: `${index + 1} of ${said.lines.length}`,
-        }),
-      },
-      panel,
+      { name: node.speaker, portrait: node.portrait },
+      el('div', { class: 'panel dialogue-panel' }, el('p', { text: 'Loading…' })),
     );
   }
 
   private choiceStage(node: Extract<StoryNode, { kind: 'choice' }>): HTMLElement {
-    const state = this.app.state;
-    const decider = state ? this.app.session.decider(state) : undefined;
-    const next = state ? this.app.session.nextDecider(state) : undefined;
-    const solo = this.app.session.solo;
+    const shared = conversationPanel(this.app);
+    const resolved = resolveConversation(this.app);
+    if (shared && resolved)
+      return this.stage('choice', { name: resolved.speaker, portrait: resolved.portrait }, shared);
 
-    /*
-     * Every option is drawn, including the ones this party cannot take.
-     *
-     * Hiding them would be tidier and much worse: seeing that a firebender could
-     * have talked their way through this gate is the thing that makes somebody
-     * want to play it again with a different party. A locked option therefore
-     * has to say *why* it is locked, or it is just a closed door.
-     */
-    const options = el('div', { class: 'stack choice-options' });
-    node.options.forEach((option, index) => {
-      const available = state ? optionAvailable(state, option) : true;
-      const tag = state ? this.speakerTag(state, option) : null;
-
-      const children: (HTMLElement | null)[] = [
-        el('strong', { text: option.label }),
-        el('span', { class: 'muted', text: option.detail }),
-      ];
-      if (tag) children.unshift(el('span', { class: 'speaker-tag', text: tag }));
-      if (!available) {
-        children.push(
-          el('span', {
-            class: 'locked-hint',
-            text: option.lockedHint ?? this.lockedReason(option),
-          }),
-        );
-      }
-
-      options.appendChild(
-        el(
-          'button',
-          {
-            class: available ? 'choice-option' : 'choice-option is-locked',
-            attrs: available ? {} : { disabled: 'true', 'aria-disabled': 'true' },
-            onClick: available
-              ? () => this.app.dispatch({ type: 'chooseOption', optionIndex: index })
-              : undefined,
-          },
-          ...children,
-        ),
-      );
-    });
-
-    const panel = el(
-      'div',
-      { class: 'panel dialogue-panel choice-panel' },
-      el('p', { class: 'dialogue-line', text: node.prompt }),
-      solo
-        ? null
-        : el(
-            'div',
-            { class: 'decider-banner' },
-            el('span', { class: 'tiny muted', text: 'This one is decided by' }),
-            el('strong', { text: decider?.name ?? 'the party' }),
-            next && next.name !== decider?.name
-              ? el('span', { class: 'tiny muted', text: `Next choice: ${next.name}` })
-              : null,
-          ),
-      options,
-      node.footer ? el('p', { class: 'tiny muted center', text: node.footer }) : null,
+    return this.stage(
+      'choice',
+      { name: node.speaker, portrait: node.portrait },
+      el('div', { class: 'panel dialogue-panel choice-panel' }, el('p', { text: 'Loading…' })),
     );
-
-    return this.stage('choice', { name: node.speaker, portrait: node.portrait }, panel);
-  }
-
-  /**
-   * Who in the party would say this — "Kaya · Fire" when you have a firebender,
-   * "A firebender" when you do not.
-   *
-   * Naming the real party member is what turns a list of lines into a decision
-   * about *who walks up*, which is the whole Speaker Choice: no extra UI step,
-   * because picking a fire-tagged option already is picking the firebender.
-   */
-  private speakerTag(state: GameState, option: StoryOption): string | null {
-    const speaker = option.speaker;
-    if (!speaker) return null;
-
-    const match = state.party.find(
-      (u) =>
-        u.hp > 0 &&
-        (speaker.characterId ? u.characterId === speaker.characterId : true) &&
-        (speaker.element ? u.element === speaker.element : true),
-    );
-    if (match) {
-      const element = CONTENT.elements.get(match.element)?.name;
-      return element ? `${match.name} · ${element}` : match.name;
-    }
-
-    if (speaker.characterId) {
-      return CONTENT.characters.get(speaker.characterId)?.name ?? null;
-    }
-    return speaker.element ? BENDER_LABEL[speaker.element] : null;
-  }
-
-  /** Fallback for an author who did not write a `lockedHint`. */
-  private lockedReason(option: StoryOption): string {
-    if (!option.requires) return 'Not available.';
-    return `Only if ${describeCondition(CONTENT, option.requires)}.`;
   }
 
   private endPanel(node: Extract<StoryNode, { kind: 'end' }>): HTMLElement {

@@ -1,3 +1,18 @@
+import { SURFACE_STYLES } from '../palettes';
+import { SURFACE_BANK, SURFACE_POOL } from '../surfaceRendering';
+
+const glslColor = (hex: string): string =>
+  `vec3(${[1, 3, 5].map((offset) => (parseInt(hex.slice(offset, offset + 2), 16) / 255).toFixed(5)).join(', ')})`;
+
+/** The static materials share their wash and rim palette with Canvas. */
+const MATERIAL_STYLES = (['ice', 'mud', 'oil', 'rubble'] as const)
+  .map((id, i) => {
+    const style = SURFACE_STYLES[id];
+    const index = [2, 4, 6, 7][i];
+    return `if (surface == ${index}) { tint = ${glslColor(style.fill)}; rim = ${glslColor(style.edge)}; detail = ${glslColor(style.detail)}; opacity = ${style.alpha.toFixed(3)}; }`;
+  })
+  .join('\n');
+
 /**
  * GLSL for the WebGL backend.
  *
@@ -91,6 +106,9 @@ uniform float uTileSize;
 uniform float uTime;
 uniform float uHatch;
 uniform float uGridLines;
+// Partial authored scenes use a terrain-only base pass, followed by a
+// surfaces-only pass over their localized ground regions.
+uniform float uSurfaces;
 // 1 while a painting sits under the pass: the terrain is left to it and only
 // the surfaces, the hatch, the firelight and the grid are drawn, over it.
 uniform float uBackdrop;
@@ -212,12 +230,17 @@ void main(void) {
     acc = vec4(col, 1.0);
   }
 
+  if (uSurfaces > 0.5) {
   /* ---------------- surfaces ---------------- */
+
+  vec3 tint = vec3(0.0), rim = vec3(0.0), detail = vec3(0.0);
+  float opacity = 0.0;
+  ${MATERIAL_STYLES}
 
   if (surface == 1) {                 // water
     float ripple = fbm(w * 4.0 + vec2(uTime * 0.25, uTime * 0.17));
     vec3 tint = mix(vec3(0.153, 0.424, 0.482), vec3(0.243, 0.561, 0.690), ripple);
-    lay(acc, tint, 0.55 * intensity);
+    lay(acc, tint, 0.42 * intensity);
     acc.rgb += vec3(0.10, 0.16, 0.18) * smoothstep(0.62, 0.92, ripple) * intensity;
     // Foam where the pool meets ground: only the sides whose neighbour is not
     // water, so a puddle reads as one pool with a lapping bank, not a grid of
@@ -229,13 +252,14 @@ void main(void) {
     if (surfaceAt(cell + vec2(1.0, 0.0)) != 1) bank = max(bank, 1.0 - (1.0 - f.x) / 0.2);
     bank = clamp(bank, 0.0, 1.0);
     float lap = 0.55 + 0.45 * vnoise(w * 9.0 + vec2(uTime * 0.6, -uTime * 0.3));
-    lay(acc, vec3(0.80, 0.92, 0.95), bank * bank * lap * 0.6 * intensity);
+    lay(acc, vec3(0.80, 0.92, 0.95), bank * bank * lap * 0.22 * intensity);
   } else if (surface == 2) {          // ice
-    float facet = vnoise(floor(w * 7.0));
-    vec3 tint = mix(vec3(0.600, 0.839, 0.898), vec3(0.878, 0.969, 1.0), facet);
-    lay(acc, tint, 0.62 * intensity);
-    float glint = smoothstep(0.90, 1.0, vnoise(w * 9.0 + facet * 5.0));
-    acc.rgb += vec3(0.30) * glint * intensity;
+    // Continuous world-space frost, not quantised square facets. Fine veins
+    // suggest ice without replacing the underlying painted stone texture.
+    float frost = vnoise(w * 3.5);
+    lay(acc, tint, opacity * (0.88 + 0.12 * frost) * intensity);
+    float vein = 1.0 - smoothstep(0.012, 0.030, abs(vnoise(w * 6.0) - 0.52));
+    lay(acc, rim, vein * 0.23 * intensity);
   } else if (surface == 3) {          // fire
     vec2 q = w * vec2(2.4, 1.7);
     q.y -= uTime * 1.15;
@@ -255,20 +279,42 @@ void main(void) {
     lay(acc, vec3(1.0, 0.80, 0.45), ember * 0.7 * intensity);
   } else if (surface == 4) {          // mud
     float churn = fbm(w * 5.0);
-    lay(acc, mix(vec3(0.247, 0.184, 0.110), vec3(0.353, 0.271, 0.161), churn), 0.7 * intensity);
-    dim(acc, 0.88 + 0.12 * vnoise(w * 16.0));
+    lay(acc, tint, opacity * (0.88 + 0.12 * churn) * intensity);
+    float streak = smoothstep(0.70, 0.84, vnoise(w * vec2(9.0, 17.0)));
+    lay(acc, detail, streak * 0.21 * intensity);
   } else if (surface == 5) {          // steam
     float billow = fbm(w * 2.2 + vec2(uTime * 0.16, -uTime * 0.22));
     lay(acc, vec3(0.85, 0.86, 0.87), (0.45 + 0.35 * billow) * intensity);
   } else if (surface == 6) {          // oil
-    float sheenBand = fbm(w * 3.0 + uTime * 0.03);
-    vec3 sheen = 0.5 + 0.5 * cos(6.2831 * (sheenBand + vec3(0.0, 0.33, 0.67)));
-    lay(acc, vec3(0.055, 0.051, 0.043), 0.78 * intensity);
-    acc.rgb += sheen * 0.14 * smoothstep(0.45, 0.85, sheenBand) * intensity;
+    float sheenBand = vnoise(w * vec2(3.0, 5.0));
+    lay(acc, tint, opacity * intensity);
+    // A restrained sage sheen, rather than moving rainbow colour over stone.
+    float sheen = 1.0 - smoothstep(0.025, 0.070, abs(sheenBand - 0.55));
+    lay(acc, detail, sheen * 0.14 * intensity);
+    float glint = 1.0 - smoothstep(0.008, 0.022, abs(sheenBand - 0.57));
+    lay(acc, mix(rim, vec3(0.68, 0.68, 0.56), 0.35), glint * 0.25 * intensity);
   } else if (surface == 7) {          // rubble
     float chunk = vnoise(w * 11.0);
-    lay(acc, vec3(0.431, 0.416, 0.388), 0.6 * intensity);
-    dim(acc, 0.85 + 0.30 * step(0.55, chunk));
+    lay(acc, tint, opacity * intensity);
+    lay(acc, rim, smoothstep(0.74, 0.87, chunk) * 0.28 * intensity);
+  }
+
+  if (opacity > 0.0) {
+    // The actual footprint stays square and complete; only its outer bank is
+    // accented. Same-material neighbours do not acquire internal tile rims.
+    float edgeDistance = 1.0;
+    if (surfaceAt(cell - vec2(0.0, 1.0)) != surface) edgeDistance = min(edgeDistance, f.y);
+    if (surfaceAt(cell + vec2(0.0, 1.0)) != surface) edgeDistance = min(edgeDistance, 1.0 - f.y);
+    if (surfaceAt(cell - vec2(1.0, 0.0)) != surface) edgeDistance = min(edgeDistance, f.x);
+    if (surfaceAt(cell + vec2(1.0, 0.0)) != surface) edgeDistance = min(edgeDistance, 1.0 - f.x);
+    if (surface == 4 || surface == 6) {
+      float depth = ${SURFACE_POOL.depth} * (0.2 + 0.8 * vnoise(w * 13.0));
+      float pool = 1.0 - smoothstep(depth * 0.45, depth, edgeDistance);
+      lay(acc, tint * 0.62, pool * ${SURFACE_POOL.alpha} * intensity);
+    }
+    float bank = 1.0 - smoothstep(0.0, ${SURFACE_BANK.width}, edgeDistance);
+    float line = 1.0 - smoothstep(${SURFACE_BANK.line * 0.5}, ${SURFACE_BANK.line}, edgeDistance);
+    lay(acc, rim, max(bank * 0.12, line * ${SURFACE_BANK.alpha}) * intensity);
   }
 
   if (uHatch > 0.5 && surface > 0) {
@@ -295,5 +341,6 @@ void main(void) {
 
   // Premultiplied, as Pixi blends: over bare ground the coverage is 1 and this
   // is the colour as ever; over a painting it is only what was laid on it.
+  }
   fragColor = acc * quad.a;
 }`;

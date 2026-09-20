@@ -1,6 +1,7 @@
 import { paintedTileCentre as tileCentre } from './projection';
 import { expect, test } from '@playwright/test';
 import type { Page } from '@playwright/test';
+import { allowSoftwareWebgl } from './budget';
 import { enterNode, resetStorage, settleLayout, startGame, waitForIdle } from './helpers';
 
 /**
@@ -28,9 +29,9 @@ async function standAt(page: Page, pos: { x: number; y: number }) {
 
 test.describe('the village', () => {
   for (const renderer of ['canvas', 'webgl'] as const) {
-    test(`the party walks together on ${renderer}`, async ({ page, browserName }) => {
+    test(`the party walks together on ${renderer}`, async ({ page }) => {
       test.setTimeout(120_000);
-      if (renderer === 'webgl' && browserName === 'webkit') test.slow();
+      allowSoftwareWebgl(test, renderer);
 
       const errors: string[] = [];
       page.on('console', (message) => {

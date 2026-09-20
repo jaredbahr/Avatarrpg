@@ -12,7 +12,6 @@ import './styles/interludes.css';
 import './styles/a11y.css';
 
 import { CONTENT, CONTENT_BUNDLE, STORY_ENTRY } from './content';
-import { validateContent } from './content/schemas';
 import { App } from './app/App';
 import { bakeReview } from './render/sheets/review';
 import { fxCelsReady, celReady } from './render/fx/atlas';
@@ -30,14 +29,16 @@ if (!root) throw new Error('Missing #app mount point in index.html');
 /*
  * Content is validated in CI, but a dev build can be run with a half-finished
  * ability. Failing loudly here beats a blank screen ten minutes later — and in
- * production this is a no-op that costs a millisecond.
+ * production the validation module is omitted entirely.
  */
 if (import.meta.env.DEV) {
-  const problems = validateContent(CONTENT_BUNDLE);
-  if (problems.length > 0) {
-    console.error(`Content validation found ${problems.length} problem(s):`);
-    for (const problem of problems) console.error(`  - ${problem}`);
-  }
+  void import('./content/schemas').then(({ validateContent }) => {
+    const problems = validateContent(CONTENT_BUNDLE);
+    if (problems.length > 0) {
+      console.error(`Content validation found ${problems.length} problem(s):`);
+      for (const problem of problems) console.error(`  - ${problem}`);
+    }
+  });
 }
 
 const app = new App(CONTENT, root, STORY_ENTRY);

@@ -181,7 +181,9 @@ export class AudioBus {
   private schedule(def: SoundDef, when: number, volume: number, seed: number): void {
     this.scheduled += 1;
     if (def.kind === 'voice') this.playVoice(def, when, volume);
-    else this.playSample(def, when, volume, seed);
+    else if (def.kind === 'layers') {
+      for (const voice of def.voices) this.playVoice(voice, when, volume);
+    } else this.playSample(def, when, volume, seed);
   }
 
   /* ---------------------------------------------------------------- */
@@ -316,6 +318,12 @@ export class AudioBus {
     const amp = ctx.createGain();
     amp.gain.setValueAtTime(0.0001, when);
     amp.gain.exponentialRampToValueAtTime(Math.max(0.0001, def.gain * volume), when + attack);
+    if (def.body > 0) {
+      amp.gain.exponentialRampToValueAtTime(
+        Math.max(0.0001, def.gain * volume * def.body),
+        when + attack + decay * 0.35,
+      );
+    }
     amp.gain.exponentialRampToValueAtTime(0.0001, end);
 
     source.connect(filter);

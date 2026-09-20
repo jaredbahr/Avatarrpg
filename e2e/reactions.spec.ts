@@ -1,6 +1,13 @@
 import { paintedTileCentre } from './projection';
 import { expect, test } from '@playwright/test';
-import { enterNode, resetStorage, startGame, takeTurn, waitForIdle } from './helpers';
+import {
+  enterNode,
+  resetStorage,
+  settleMapCanvas,
+  startGame,
+  takeTurn,
+  waitForIdle,
+} from './helpers';
 
 /**
  * The reaction system, as a player meets it.
@@ -80,6 +87,10 @@ test.describe('elemental reactions are legible', () => {
     const fireJab = page.getByRole('button', { name: /fire jab/i });
     await expect(fireJab).toBeVisible();
     await fireJab.click();
+    // Selecting the ability adds the aim hint to the toolbar, which changes the
+    // map's height and moves the camera's fit. Project the tile only once that
+    // has landed, or the tap reads "Nobody there." on the tile next door.
+    await settleMapCanvas(page);
 
     const screenPoint = await paintedTileCentre(page, placed.spot);
 

@@ -13,21 +13,25 @@
  */
 
 import type { ContentIndex, GameEvent, Unit, Vec2 } from '../../core/types';
-import { fxPalette, resolveFx } from '../../content/fx';
+import { fxPalette, resolveFx, WATERSKIN_DRAW } from '../../content/fx';
 import type { EmitterDef, FxRecipe } from '../../content/fx';
 import { hashSeed } from '../../render/fx/rng';
 import { particleSpan } from '../../render/fx/simulate';
 import { smoothPath } from '../../render/geometry/curve';
-import { easeInOutCubic, easeInOutSine, easeOutQuad } from './easing';
+import { easeInOutSine, easeOutQuad } from './easing';
 import { strollTiming } from './stroll';
 import type { AnyTrack, ClipName } from './timeline';
 import { attackMotion } from './attackMotion';
-import { screenDirection } from './direction';
+import { screenDirection, screenMeleeDirection } from './direction';
+import type { MeleeDirection } from '../../content/assets/clips';
 import type { Projection } from '../../render/projection';
+import type { ActorAttachment, EmitterAttachments } from '../../render/view';
+import { enemyScale, partyScale } from './actorScale';
 
 /** Base durations in milliseconds, before the motion setting is applied. */
 export const TIMING = {
   step: 110,
+  combatWalkStep: 280,
   strollStep: 280,
   windUp: 260,
   release: 120,
@@ -92,6 +96,16 @@ export interface Choreography {
   readonly sounds: readonly SoundCue[];
   /** Where the next push starts. */
   readonly cursor: number;
+  /** Health changes at the same clock positions as their hit and heal effects. */
+  readonly health: readonly HealthChange[];
+}
+
+/** A logical unit health state, delayed only for presentation. */
+export interface HealthChange {
+  readonly unitId: string;
+  readonly hp: number;
+  readonly fallen: boolean;
+  readonly at: number;
 }
 
 /** A hit that has been aimed but whose damage events are still to come. */
@@ -100,6 +114,7 @@ interface PendingHit {
   readonly hitStop: number;
   readonly flash: number;
   readonly casterId: string;
+  readonly pushIds?: readonly string[];
 }
 
 const centre = (p: Vec2): Vec2 => ({ x: p.x + 0.5, y: p.y + 0.5 });
@@ -125,13 +140,22 @@ export function choreograph(input: ChoreographyInput): Choreography {
   const { content, events, unitsBefore, rate, pushIndex } = input;
   const tracks: AnyTrack[] = [];
   const sounds: SoundCue[] = [];
+  const health: HealthChange[] = [];
   let cursor = input.cursor;
 
   const positions = new Map<string, Vec2>();
   const sizes = new Map<string, number>();
+  const unitHealth = new Map<string, { hp: number; maxHp: number; fallen: boolean }>();
   for (const unit of unitsBefore) {
     positions.set(unit.id, unit.pos);
     sizes.set(unit.id, unit.size);
+    // Choreography fixtures that only exercise movement use partial Units;
+    // damage/heal events always come from complete reducer units.
+    unitHealth.set(unit.id, {
+      hp: unit.hp,
+      maxHp: unit.base?.maxHp ?? Math.max(0, unit.hp),
+      fallen: unit.hp <= 0,
+    });
   }
   /** Draw centre of a unit, allowing for the two-tile boss. */
   const unitCentre = (id: string): Vec2 | undefined => {
@@ -152,6 +176,7 @@ export function choreograph(input: ChoreographyInput): Choreography {
     eventIndex: number,
     slot: number,
     arc = 0,
+    attachments?: EmitterAttachments,
   ): void => {
     // Reduce motion collapses playback to a frame; particles would be a smear.
     if (rate < 1) return;
@@ -165,6 +190,7 @@ export function choreograph(input: ChoreographyInput): Choreography {
         seed: hashSeed(pushIndex, eventIndex, slot, i),
         palette,
         arc,
+        ...(attachments ? { attachments } : {}),
         start: at,
         duration,
       });
@@ -189,6 +215,7 @@ export function choreograph(input: ChoreographyInput): Choreography {
       scale?: { from: number; to: number };
       alpha?: { from: number; to: number };
       frame?: number;
+      meleeDirection?: MeleeDirection;
     } = {},
   ): void => {
     tracks.push({
@@ -203,6 +230,7 @@ export function choreograph(input: ChoreographyInput): Choreography {
       ...(extra.scale ? { scale: extra.scale } : {}),
       ...(extra.alpha ? { alpha: extra.alpha } : {}),
       ...(extra.frame !== undefined ? { frame: extra.frame } : {}),
+      ...(extra.meleeDirection ? { meleeDirection: extra.meleeDirection } : {}),
     });
   };
 
@@ -220,17 +248,6 @@ export function choreograph(input: ChoreographyInput): Choreography {
     sounds.push({ key, at, seed: hashSeed(pushIndex, eventIndex, slot, 0) });
   };
 
-  /** One footstep a tile along a walk that starts at `at`. */
-  const footsteps = (
-    at: number,
-    tiles: number,
-    eventIndex: number,
-    step: number = TIMING.step,
-  ): void => {
-    if (input.silentSteps) return;
-    for (let i = 0; i < tiles; i++) cue('step', at + step * rate * i, 20 + i, eventIndex);
-  };
-
   /** A hit's timing: the aimed one if it is still fresh, else now. */
   const landing = (): { at: number; hitStop: number; flash: number } =>
     pending
@@ -242,18 +259,27 @@ export function choreograph(input: ChoreographyInput): Choreography {
       case 'unitMoved': {
         if (event.path.length === 0) break;
         const from = positions.get(event.unitId) ?? event.path[0];
-        const duration = TIMING.step * event.path.length * rate;
-        if (from) {
-          tracks.push({
-            kind: 'move',
-            unitId: event.unitId,
-            curve: smoothPath(from, event.path),
-            ease: easeInOutCubic,
-            start: cursor,
-            duration,
-          });
-        }
-        footsteps(cursor, event.path.length, eventIndex);
+        if (!from) break;
+        const curve = smoothPath(from, event.path);
+        const timing = strollTiming(curve.length, TIMING.combatWalkStep);
+        // Reduced motion retains its existing abbreviated action lock.
+        const duration = (rate < 1 ? TIMING.step * event.path.length : timing.duration) * rate;
+        tracks.push({
+          kind: 'move',
+          unitId: event.unitId,
+          curve,
+          ease: timing.ease,
+          start: cursor,
+          duration,
+        });
+        if (!input.silentSteps)
+          for (let d = 0; d < curve.length; d++)
+            cue(
+              'step',
+              cursor + (timing.atDistance(d) / timing.duration) * duration,
+              20 + d,
+              eventIndex,
+            );
         const last = event.path[event.path.length - 1];
         if (last) positions.set(event.unitId, last);
         cursor += duration;
@@ -304,7 +330,19 @@ export function choreograph(input: ChoreographyInput): Choreography {
           (event.target.x === casterPos.x && event.target.y === casterPos.y);
         const melee = ability.range <= 1 && ability.targeting.shape === 'unit';
         const screenDir = screenDirection(dir, input.projection ?? 'orthographic');
-        const facing = self ? undefined : facingFor(screenDir);
+        const meleeDirection = melee ? screenMeleeDirection(screenDir) : undefined;
+        const attached = ['fire_jab', 'water_whip', 'air_blast'].includes(ability.id);
+        // Lobbed oil and area fire leave a palm, but still land on the ground.
+        const castFromHand = attached || ability.id === 'fire_blast' || ability.id === 'oil_flask';
+        const rock = ability.id === 'rock_throw';
+        const strike = ability.id === 'strike';
+        const facing = self
+          ? undefined
+          : castFromHand || rock || strike
+            ? screenDir.x < 0
+              ? -1
+              : 1
+            : facingFor(screenDir);
 
         const motion = attackMotion(ability.fx, melee, self);
         const windUp = TIMING.windUp * motion.windUp * rate;
@@ -315,6 +353,50 @@ export function choreograph(input: ChoreographyInput): Choreography {
           ? { x: 0, y: 0.04 }
           : scaled(screenDir, melee ? MELEE_LUNGE : LUNGE * motion.reach);
         const clip: ClipName = melee ? 'melee' : 'cast';
+        // These directed fundamentals have calibrated cast palms. Earth,
+        // area and surface techniques retain their separate ground contract.
+        const casterUnit = unitsBefore.find((unit) => unit.id === event.unitId);
+        const victim = unitsBefore.find((unit) => {
+          if (unit.hp <= 0) return false;
+          const pos = positions.get(unit.id) ?? unit.pos;
+          return (
+            event.target.y === pos.y &&
+            event.target.x >= pos.x &&
+            event.target.x < pos.x + unit.size
+          );
+        });
+        const snapshot = (
+          unit: Unit | undefined,
+          socket: ActorAttachment['socket'],
+          offset: Vec2 = { x: 0, y: 0 },
+          poseScale = 1,
+          poseFacing?: 1 | -1,
+        ): ActorAttachment | undefined =>
+          unit
+            ? {
+                pos: { ...(positions.get(unit.id) ?? unit.pos) },
+                sprite: unit.sprite,
+                size: unit.size,
+                socket,
+                facing: poseFacing ?? (unit.faction === 'enemy' ? -1 : 1),
+                scale:
+                  unit.faction === 'party'
+                    ? partyScale(input.projection, poseScale)
+                    : enemyScale(unit.sprite, poseScale),
+                offset,
+              }
+            : undefined;
+        const torso = attached || rock || strike ? snapshot(victim, 'torso') : undefined;
+        const gatherT = motion.gatherEase(0.4);
+        const gather = castFromHand
+          ? snapshot(
+              casterUnit,
+              'cast-gather',
+              scaled(back, gatherT),
+              1 + (motion.compression - 1) * gatherT,
+              facing ?? (screenDir.x < 0 ? -1 : 1),
+            )
+          : undefined;
 
         // The sheet's poses: wind-up, release, recover for a cast; wind-up and
         // strike for a melee, which returns to its guarded wind-up stance.
@@ -322,15 +404,40 @@ export function choreograph(input: ChoreographyInput): Choreography {
           ...(facing !== undefined ? { facing } : {}),
           scale: { from: 1, to: motion.compression },
           frame: 0,
+          ...(meleeDirection ? { meleeDirection } : {}),
         });
         const releaseAt = cursor + windUp;
         pose(event.unitId, clip, releaseAt, release, back, forward, motion.releaseEase, {
           ...(facing !== undefined ? { facing } : {}),
           scale: { from: motion.compression, to: motion.extension },
           frame: 1,
+          ...(meleeDirection ? { meleeDirection } : {}),
         });
         // The element gathers through the wind-up and is out of the hands by the release.
-        emit(recipe.cast, cursor + windUp * 0.4, caster, target, palette, eventIndex, 1);
+        const gatherSpan = windUp * 0.6;
+        const castEmitters = castFromHand
+          ? recipe.cast.map((def): EmitterDef =>
+              def.kind === 'particles'
+                ? {
+                    ...def,
+                    duration: Math.min(def.duration, gatherSpan),
+                    delay: [0, 0],
+                    life: [gatherSpan, gatherSpan],
+                  }
+                : { ...def, duration: Math.min(def.duration, gatherSpan) },
+            )
+          : recipe.cast;
+        emit(
+          castEmitters,
+          cursor + windUp * 0.4,
+          caster,
+          target,
+          palette,
+          eventIndex,
+          1,
+          0,
+          gather ? { from: gather, ...(torso ? { to: torso } : {}) } : undefined,
+        );
         // The voice goes with the release, not the wind-up: it is the sound of
         // the element leaving the hands. `ability.fx` resolves through the same
         // family segment the recipe does, so an element sounds like itself
@@ -338,9 +445,73 @@ export function choreograph(input: ChoreographyInput): Choreography {
         // Let the weight transfer lead the element; the sound and projectile
         // leave together once the striking pose has begun its extension.
         const launchAt = releaseAt + release * motion.launch;
+        const launchT = motion.releaseEase(motion.launch);
+        const hand =
+          castFromHand || rock
+            ? snapshot(
+                casterUnit,
+                'cast-release',
+                {
+                  x: back.x + (forward.x - back.x) * launchT,
+                  y: back.y + (forward.y - back.y) * launchT,
+                },
+                motion.compression + (motion.extension - motion.compression) * launchT,
+                facing ?? (screenDir.x < 0 ? -1 : 1),
+              )
+            : undefined;
+        if (ability.id === 'water_whip' && casterUnit?.sprite === 'unit.water.sura' && gather) {
+          const source = { ...gather, socket: 'waterskin' as const };
+          emit(
+            [
+              { ...WATERSKIN_DRAW, duration: gatherSpan, life: [gatherSpan, gatherSpan] },
+              {
+                ...WATERSKIN_DRAW,
+                shape: 'stream',
+                count: 7,
+                duration: gatherSpan,
+                delay: [0, gatherSpan * 0.7],
+                life: [gatherSpan * 0.3, gatherSpan * 0.3],
+                size: [0.06, 0.09],
+                color: 'light',
+              },
+            ],
+            cursor + windUp * 0.4,
+            caster,
+            caster,
+            palette,
+            eventIndex,
+            11,
+            0,
+            { from: source, to: gather },
+          );
+        }
+        if (rock && hand) {
+          const liftStart = cursor + windUp * 0.4;
+          const lift = launchAt - liftStart;
+          const stones =
+            recipe.travel?.emitters.filter(
+              (def) => def.kind === 'particles' && def.cel === 'boulder',
+            ) ?? [];
+          emit(
+            stones.map((def) =>
+              def.kind === 'particles'
+                ? { ...def, duration: lift, life: [lift, lift], delay: [0, 0] }
+                : def,
+            ),
+            liftStart,
+            caster,
+            caster,
+            palette,
+            eventIndex,
+            12,
+            0,
+            { from: snapshot(casterUnit, 'ground'), to: hand },
+          );
+        }
         cue(ability.fx, launchAt, 1, eventIndex);
 
         let impactAt = releaseAt + release * 0.5;
+        let returnAt = releaseAt + release;
         if (recipe.travel && !self) {
           const distance = Math.hypot(target.x - caster.x, target.y - caster.y);
           const flight =
@@ -370,36 +541,65 @@ export function choreograph(input: ChoreographyInput): Choreography {
                 : {}),
             };
           });
-          emit(stretched, launchAt, caster, target, palette, eventIndex, 2, recipe.travel.arc);
+          emit(
+            stretched,
+            launchAt,
+            caster,
+            target,
+            palette,
+            eventIndex,
+            2,
+            recipe.travel.arc,
+            hand ? { from: hand, ...(torso ? { to: torso } : {}) } : undefined,
+          );
           impactAt = launchAt + flight;
+          // Water Whip remains tethered on its return. Keep the striking palm
+          // out until that stroke has reeled in, rather than idling underneath it.
+          if (ability.id === 'water_whip')
+            for (const def of stretched)
+              if (def.kind === 'strokes' && def.shape === 'whip')
+                returnAt = Math.max(returnAt, launchAt + def.duration * rate);
         }
 
         // Keep the extension through flight and impact. Without this track a
         // long throw snaps to idle before its recovery starts.
         const hitStop = recipe.hitStop * rate;
-        const recoverAt = Math.max(releaseAt + release, impactAt + hitStop);
+        const recoverAt = Math.max(returnAt, impactAt + hitStop);
         const holdAt = releaseAt + release;
         if (recoverAt > holdAt)
           pose(event.unitId, clip, holdAt, recoverAt - holdAt, forward, forward, easeInOutSine, {
             ...(facing !== undefined ? { facing } : {}),
             scale: { from: motion.extension, to: motion.extension },
             frame: 1,
+            ...(meleeDirection ? { meleeDirection } : {}),
           });
         pose(event.unitId, clip, recoverAt, recover, forward, { x: 0, y: 0 }, easeInOutSine, {
           ...(facing !== undefined ? { facing } : {}),
           scale: { from: motion.extension, to: 1 },
           frame: melee ? 0 : 2,
+          ...(meleeDirection ? { meleeDirection } : {}),
         });
 
-        emit(
-          recipe.impact,
-          impactAt + hitStop * 0.5,
-          target,
-          { x: target.x + dir.x, y: target.y + dir.y },
-          palette,
-          eventIndex,
-          3,
-        );
+        // Contact fragments belong to the body; dust, cracks and rising earth
+        // still mark the struck ground. Do not lift the whole material recipe.
+        const bodily = (def: EmitterDef) =>
+          (!rock && !strike) ||
+          (def.kind === 'particles' &&
+            (rock ? def.cell === 'shard' : def.cell === 'spark' || def.cell === 'ring'));
+        for (const contact of [true, false]) {
+          const defs = recipe.impact.filter((def) => bodily(def) === contact);
+          emit(
+            defs,
+            impactAt + hitStop * 0.5,
+            target,
+            { x: target.x + dir.x, y: target.y + dir.y },
+            palette,
+            eventIndex,
+            contact ? 3 : 13,
+            0,
+            contact && torso ? { from: torso, translateTogether: true } : undefined,
+          );
+        }
         if (recipe.area.length > 0) {
           event.tiles.slice(0, 24).forEach((tile, i) => {
             const at =
@@ -425,7 +625,27 @@ export function choreograph(input: ChoreographyInput): Choreography {
           });
         }
 
-        pending = { at: impactAt, hitStop, flash: recipe.flash, casterId: event.unitId };
+        const pushIds: string[] = [];
+        if (ability.id === 'air_blast') {
+          for (const next of events.slice(eventIndex + 1)) {
+            if (
+              next.type === 'unitMoved' ||
+              next.type === 'partyWalked' ||
+              next.type === 'abilityUsed' ||
+              next.type === 'turnEnded' ||
+              next.type === 'turnStarted'
+            )
+              break;
+            if (next.type === 'unitPushed') pushIds.push(next.unitId);
+          }
+        }
+        pending = {
+          at: impactAt,
+          hitStop,
+          flash: recipe.flash,
+          casterId: event.unitId,
+          ...(pushIds.length ? { pushIds } : {}),
+        };
         cursor = Math.max(recoverAt + recover, impactAt + hitStop) + TIMING.gap * rate;
         break;
       }
@@ -433,6 +653,14 @@ export function choreograph(input: ChoreographyInput): Choreography {
       case 'damaged': {
         const pos = positions.get(event.unitId);
         const hit = landing();
+        const before = unitHealth.get(event.unitId);
+        if (before) {
+          const hp = Math.max(0, before.hp - event.amount);
+          // A death event owns the fallen mark and its KO pose. Keeping it
+          // separate lets the empty bar land with the hit before the body falls.
+          unitHealth.set(event.unitId, { ...before, hp });
+          health.push({ unitId: event.unitId, hp, fallen: before.fallen, at: hit.at });
+        }
         // The blow landing, under whatever voice threw it. `landing()` is the
         // aimed moment when a projectile is in flight, so the sound arrives
         // with the projectile rather than with the command.
@@ -472,26 +700,28 @@ export function choreograph(input: ChoreographyInput): Choreography {
                 frame: 0,
               },
             );
-          pose(
-            event.unitId,
-            'hit',
-            recoilAt,
-            TIMING.recoilOut * rate,
-            { x: 0, y: 0 },
-            out,
-            easeOutQuad,
-            { frame: 0 },
-          );
-          pose(
-            event.unitId,
-            'hit',
-            recoilAt + TIMING.recoilOut * rate,
-            TIMING.recoilBack * rate,
-            out,
-            { x: 0, y: 0 },
-            easeInOutSine,
-            { frame: 0 },
-          );
+          if (!pending?.pushIds?.includes(event.unitId)) {
+            pose(
+              event.unitId,
+              'hit',
+              recoilAt,
+              TIMING.recoilOut * rate,
+              { x: 0, y: 0 },
+              out,
+              easeOutQuad,
+              { frame: 0 },
+            );
+            pose(
+              event.unitId,
+              'hit',
+              recoilAt + TIMING.recoilOut * rate,
+              TIMING.recoilBack * rate,
+              out,
+              { x: 0, y: 0 },
+              easeInOutSine,
+              { frame: 0 },
+            );
+          }
           floater(
             pos,
             event.crit ? `${event.amount}!` : String(event.amount),
@@ -506,6 +736,13 @@ export function choreograph(input: ChoreographyInput): Choreography {
       case 'healed': {
         const pos = positions.get(event.unitId);
         const at = landing().at;
+        const before = unitHealth.get(event.unitId);
+        if (before) {
+          const hp = Math.min(before.maxHp, before.hp + event.amount);
+          const fallen = hp <= 0 ? before.fallen : false;
+          unitHealth.set(event.unitId, { ...before, hp, fallen });
+          health.push({ unitId: event.unitId, hp, fallen, at });
+        }
         cue('heal', at, 6, eventIndex);
         if (pos) {
           const { recipe, palette } = effect('fx.heal.pulse');
@@ -554,20 +791,23 @@ export function choreograph(input: ChoreographyInput): Choreography {
         const from = positions.get(event.unitId);
         if (from) {
           const duration = TIMING.step * 2 * rate;
+          const start = pending?.pushIds?.includes(event.unitId)
+            ? pending.at + pending.hitStop
+            : cursor;
           tracks.push({
             kind: 'move',
             unitId: event.unitId,
             curve: smoothPath(from, [event.to], 0),
             gait: 'slide',
             ease: easeOutQuad,
-            start: cursor,
+            start,
             duration,
           });
-          pose(event.unitId, 'hit', cursor, duration, { x: 0, y: 0 }, { x: 0, y: 0 }, easeOutQuad, {
+          pose(event.unitId, 'hit', start, duration, { x: 0, y: 0 }, { x: 0, y: 0 }, easeOutQuad, {
             frame: 0,
           });
           positions.set(event.unitId, event.to);
-          cursor += duration;
+          cursor = Math.max(cursor, start + duration);
         }
         break;
       }
@@ -575,6 +815,11 @@ export function choreograph(input: ChoreographyInput): Choreography {
       case 'unitDied': {
         const pos = positions.get(event.unitId);
         const at = Math.max(cursor, landing().at + landing().hitStop);
+        const before = unitHealth.get(event.unitId);
+        if (before) {
+          unitHealth.set(event.unitId, { ...before, hp: 0, fallen: true });
+          health.push({ unitId: event.unitId, hp: 0, fallen: true, at });
+        }
         cue('ko', at, 8, eventIndex);
         if (pos) {
           const duration = TIMING.ko * rate;
@@ -675,5 +920,5 @@ export function choreograph(input: ChoreographyInput): Choreography {
   });
 
   sounds.sort((a, b) => a.at - b.at);
-  return { tracks, sounds, cursor };
+  return { tracks, sounds, cursor, health };
 }

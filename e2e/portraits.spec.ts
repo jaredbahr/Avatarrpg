@@ -9,7 +9,9 @@ for (const [nodeId, portrait] of [
     await resetStorage(page, '?renderer=canvas');
     await startGame(page, ['Elias'], ['kaya']);
     await enterNode(page, nodeId);
-    const canvas = page.locator(`.stage-portrait canvas[data-asset="portrait.${portrait}"]`);
+    const canvas = page.locator(
+      `.stage-portrait canvas[data-asset="portrait.${portrait}"], .conversation-compact-portrait canvas[data-asset="portrait.${portrait}"]`,
+    );
     await expect(canvas).toBeVisible();
     // Compare actual canvas pixels with the shipped bitmap, not just the
     // existence of a canvas that could still contain the painter fallback.

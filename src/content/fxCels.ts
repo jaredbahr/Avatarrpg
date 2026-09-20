@@ -12,6 +12,7 @@ export const FX_CELS = [
   'wind',
   'cyclone',
   'cushion',
+  'flask',
 ] as const;
 export type FxCel = (typeof FX_CELS)[number];
 
@@ -22,6 +23,7 @@ export const FX_CEL_SHEETS = [
   { url: 'art/fx/water-cels.png', clips: ['splash', 'ice', 'healing'] },
   { url: 'art/fx/earth-cels.png', clips: ['boulder', 'earth-rise', 'metal'] },
   { url: 'art/fx/air-cels.png', clips: ['wind', 'cyclone', 'cushion'] },
+  { url: 'art/fx/flask-cels.png', clips: ['flask'] },
 ] as const satisfies readonly { url: string; clips: readonly FxCel[] }[];
 
 /** Ground eruptions stand on the tile; everything else is centred on its emitter. */

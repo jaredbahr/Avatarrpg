@@ -8,6 +8,7 @@ import {
   battleActive,
   enterNode,
   resetStorage,
+  settleLayout,
   snapshot,
   startGame,
   takeTurn,
@@ -246,6 +247,23 @@ test.describe('a session', () => {
     const rockThrow = page.getByRole('button', { name: /rock throw/i });
     await expect(rockThrow).toBeVisible();
     await rockThrow.click();
+    // The aim hint changes the iPad map height. Wait for ResizeObserver and
+    // backing-store presentation before projecting a tile into page pixels.
+    await settleLayout(page);
+    await expect
+      .poll(() =>
+        page.evaluate(() => {
+          const canvas = document.querySelector<HTMLCanvasElement>('.map-canvas');
+          if (!canvas) return false;
+          const rect = canvas.getBoundingClientRect();
+          const dpr = Math.min(3, window.devicePixelRatio || 1);
+          return (
+            Math.abs(canvas.width / dpr - rect.width) < 1 &&
+            Math.abs(canvas.height / dpr - rect.height) < 1
+          );
+        }),
+      )
+      .toBe(true);
 
     const target = await page.evaluate(() => {
       const battle = window.fnt?.app.state?.battle;

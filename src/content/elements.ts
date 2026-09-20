@@ -4,10 +4,10 @@
  *
  * First-pass balance philosophy:
  *   fire       glass cannon — highest Power, thin defence
- *   water      support and setup — soaks targets, the only real healing
+ *   water      support and setup — soaks targets, the party's dedicated healing
  *   earth      the anchor — most HP and Defence, slowest
  *   air        the mover — weakest hits, best Speed, best positioning
- *   nonbender  the specialist — 5 AP, highest Focus, shuts benders off
+ *   nonbender  the specialist — 5 AP, highest Focus, shuts benders off when it lands
  */
 
 import type { ElementDef, ElementId, UnitStats } from '../core/types';
@@ -20,8 +20,8 @@ export const ELEMENTS: readonly ElementDef[] = [
     name: 'Firebending',
     tagline: 'Hit hardest. Stand somewhere safe.',
     description:
-      'Firebenders deal the most damage in the game and take the most in return. They set the ground alight, which is wonderful and occasionally a problem for their own side.',
-    playstyle: 'Stay at range, set things on fire, and never stand in your own flames.',
+      'Firebenders hit hardest but are easier to punish. They set the ground alight, which is useful until a friend has to cross it.',
+    playstyle: 'Stay at range when you can, set up fire, and leave your own flames clear.',
     base: { maxHp: 28, maxAp: 4, maxMove: 4, power: 7, defense: 2, speed: 6, focus: 10 },
     palette: 'fire',
   },
@@ -30,8 +30,9 @@ export const ELEMENTS: readonly ElementDef[] = [
     name: 'Waterbending',
     tagline: 'Heal the party. Set up everyone else.',
     description:
-      'Waterbenders are the only healers, and the only way to make a target Wet — which doubles lightning damage and makes freezing almost certain.',
-    playstyle: 'Soak the dangerous enemy first, then let the firebender finish it.',
+      "Waterbenders are the party's dedicated healers and can make targets Wet with water attacks. Wet targets take double lightning damage, and cold can freeze water.",
+    playstyle:
+      'Wet a dangerous target, then pair it with lightning or cold when the opening is there.',
     base: { maxHp: 26, maxAp: 4, maxMove: 4, power: 5, defense: 2, speed: 5, focus: 15 },
     palette: 'water',
   },
@@ -40,8 +41,8 @@ export const ELEMENTS: readonly ElementDef[] = [
     name: 'Earthbending',
     tagline: 'Stand in front. Rebuild the battlefield.',
     description:
-      'Earthbenders have the most health and armour and the slowest turn. They can raise walls, drop boulders, and turn the ground into mud nobody can cross.',
-    playstyle: 'Block the gap, then change the shape of the fight.',
+      'Earthbenders have the most health and armour and the slowest turn. They raise walls, drop boulders, and turn the ground into mud that slows and may root.',
+    playstyle: 'Block the gap, slow a route, then change the shape of the fight.',
     base: { maxHp: 34, maxAp: 4, maxMove: 4, power: 6, defense: 4, speed: 3, focus: 5 },
     palette: 'earth',
   },
@@ -50,8 +51,9 @@ export const ELEMENTS: readonly ElementDef[] = [
     name: 'Airbending',
     tagline: 'Move anywhere. Put them where you want them.',
     description:
-      'Airbenders hit the softest and move the best. Almost everything they do pushes or pulls — which means every hazard on the map is theirs to use.',
-    playstyle: 'Shove enemies into the fire. That is the whole strategy, and it is a good one.',
+      'Airbenders hit the softest and move the best. Their wind pushes and pulls, and it can scatter fire or steam when the field gets crowded.',
+    playstyle:
+      'Use your speed to put enemies where the party wants them, then push them into hazards or away from your allies.',
     base: { maxHp: 22, maxAp: 4, maxMove: 5, power: 4, defense: 1, speed: 8, focus: 15 },
     palette: 'air',
   },
@@ -60,8 +62,9 @@ export const ELEMENTS: readonly ElementDef[] = [
     name: 'Non-bender',
     tagline: 'Five AP. Turn a bender off completely.',
     description:
-      'No bending, and it does not matter. Non-benders get an extra action every turn, crit more than anyone, and can chi-block a bender so they cannot bend at all.',
-    playstyle: 'Get next to the scariest bender and switch them off.',
+      'No bending, and it does not matter. Non-benders get five AP each turn, have the highest Focus for critical hits, and can chi-block a bender so they cannot bend for two rounds.',
+    playstyle:
+      'Use your extra AP to get close, then try to stop a dangerous bender with Chi Block.',
     base: { maxHp: 30, maxAp: 5, maxMove: 4, power: 6, defense: 3, speed: 7, focus: 20 },
     palette: 'nonbender',
   },

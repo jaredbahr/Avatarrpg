@@ -29,7 +29,7 @@
  * the clip logic run the same path whether the art is real or not.
  */
 
-import type { ClipDef, ClipName } from './clips';
+import type { ClipDef, ClipName, MeleeDirection } from './clips';
 
 export type AssetEntry =
   | {
@@ -54,6 +54,8 @@ export type AssetEntry =
       readonly atlas: string;
       /** Pixels a tile is drawn at in the atlas: 128, or 256 for a sharper sheet. */
       readonly pixelsPerTile: number;
+      /** Explicit art bounds when weapon reach exceeds the default frame (ADR 0032). */
+      readonly frameSize?: { readonly w: number; readonly h: number };
       /** Tiles the unit stands on: 1x1, or 2x1 for the boss. */
       readonly footprint: { readonly w: number; readonly h: number };
       /** The point of the frame that stands on the tile's foot line, as fractions of the frame. */
@@ -61,6 +63,8 @@ export type AssetEntry =
       /** `mirror`: drawn facing screen-right and flipped for the other side. */
       readonly facing: 'mirror' | 'both';
       readonly clips: Partial<Record<ClipName, ClipDef>>;
+      /** Optional screen-up/down contact frames for a melee clip. */
+      readonly meleeDirections?: Partial<Record<MeleeDirection, readonly [string, string]>>;
       /** Palette key, for the HUD chrome and for the placeholder drawn while the atlas loads. */
       readonly palette: string;
     };
@@ -117,6 +121,26 @@ function villageSheet(name: string, palette: string): SheetEntry {
       ...base.clips,
       walk: { frames: frames('walk', 4), fps: 8, loop: true },
       wave: { frames: frames('wave', 2), fps: 4, loop: true },
+      tea: { frames: frames('tea', 2), fps: 0.25, loop: true },
+    },
+  };
+}
+
+function rikoSheet(): SheetEntry {
+  const key = 'unit.non.riko';
+  const base = heroSheet(key, 'nonbender');
+  return {
+    ...base,
+    clips: {
+      ...base.clips,
+      // The legacy side-facing melee still uses the cast pixels, but the
+      // metadata aliases keep the clip contract self-describing. Directional
+      // contact variants select their own authored cells below.
+      melee: { frames: [`${key}/melee/0`, `${key}/melee/1`], fps: 8, loop: false },
+    },
+    meleeDirections: {
+      screenUp: [`${key}/cast/0`, `${key}/meleeNorth/0`],
+      screenDown: [`${key}/cast/0`, `${key}/meleeSouth/0`],
     },
   };
 }
@@ -144,6 +168,31 @@ function quarryEnemySheet(name: string, palette: string): SheetEntry {
   };
 }
 
+/** Blade wind-up and contact reuse the authored cast cels at the existing rate. */
+function cuttingSheet(name: string, palette: string): SheetEntry {
+  const key = name === 'ruon' ? 'unit.ally.ruon' : `unit.enemy.${name}`;
+  const base = quarryEnemySheet(name, palette);
+  const frames = (clip: ClipName, count: number) =>
+    Array.from({ length: count }, (_, i) => `${key}/${clip}/${i}`);
+  return {
+    ...base,
+    frameSize:
+      name === 'ruon'
+        ? { w: 139, h: 192 }
+        : name === 'merc'
+          ? { w: 169, h: 199 }
+          : { w: 147, h: 203 },
+    clips: {
+      idle: { frames: frames('idle', 2), fps: 1, loop: true },
+      walk: { frames: frames('walk', 2), fps: 4, loop: true },
+      cast: { frames: frames('cast', 3), fps: 8, loop: false },
+      melee: { frames: frames('melee', 2), fps: 8, loop: false },
+      hit: { frames: frames('hit', 1), fps: 1, loop: false },
+      ko: { frames: frames('ko', 1), fps: 1, loop: false },
+    },
+  };
+}
+
 export const ASSETS: Readonly<Record<string, AssetEntry>> = {
   'unit.village.sura': villageSheet('sura', 'water'),
   'unit.village.kaya': villageSheet('kaya', 'fire'),
@@ -156,7 +205,7 @@ export const ASSETS: Readonly<Record<string, AssetEntry>> = {
   'unit.earth.linmei': heroSheet('unit.earth.linmei', 'earth'),
   'unit.air.nima': heroSheet('unit.air.nima', 'air'),
   'unit.air.jinu': heroSheet('unit.air.jinu', 'air'),
-  'unit.non.riko': heroSheet('unit.non.riko', 'nonbender'),
+  'unit.non.riko': rikoSheet(),
   'unit.non.wen': heroSheet('unit.non.wen', 'nonbender'),
 
   /* ----------------------------------------------------- Enemy sprites */
@@ -183,8 +232,8 @@ export const ASSETS: Readonly<Record<string, AssetEntry>> = {
   'unit.enemy.slinger': quarryEnemySheet('slinger', 'enemy'),
   'unit.enemy.bruiser': quarryEnemySheet('bruiser', 'enemy'),
   'unit.enemy.quarrybender': quarryEnemySheet('quarrybender', 'earth'),
-  'unit.enemy.deserter': painter('bandit', 'fire', 'bender'),
-  'unit.enemy.merc': painter('mercenary', 'enemy', 'blade'),
+  'unit.enemy.deserter': quarryEnemySheet('deserter', 'fire'),
+  'unit.enemy.merc': cuttingSheet('merc', 'enemy'),
   'unit.enemy.crossbow': {
     kind: 'sheet',
     atlas: 'art/units/crossbow.json',
@@ -217,7 +266,7 @@ export const ASSETS: Readonly<Record<string, AssetEntry>> = {
       ko: { frames: ['unit.enemy.crossbow/ko/0'], fps: 1, loop: false },
     },
   },
-  'unit.enemy.sergeant': painter('mercenary', 'enemy', 'sergeant'),
+  'unit.enemy.sergeant': cuttingSheet('sergeant', 'enemy'),
   'unit.enemy.grumbler': {
     kind: 'sheet',
     atlas: 'art/units/grumbler.json',
@@ -250,14 +299,18 @@ export const ASSETS: Readonly<Record<string, AssetEntry>> = {
       ko: { frames: ['unit.enemy.grumbler/ko/0'], fps: 1, loop: false },
     },
   },
-  'unit.ally.ruon': painter('mercenary', 'neutral', 'sergeant'),
+  'unit.ally.ruon': cuttingSheet('ruon', 'neutral'),
 
   /* --------------------------------------------------------------- NPCs */
   'npc.elder': { kind: 'image', url: 'art/npcs/mira.png', palette: 'neutral' },
   'npc.shopkeeper': { kind: 'image', url: 'art/npcs/gao.png', palette: 'earth' },
-  'world.turtle_ducks': painter('discovery', 'earth', 'ducks'),
+  'world.turtle_ducks': {
+    kind: 'image',
+    url: 'art/world/turtle-ducks-nest.webp',
+    palette: 'earth',
+  },
   'world.runoff_marker': painter('discovery', 'neutral', 'marker'),
-  'world.tea_station': painter('discovery', 'earth', 'tea'),
+  'world.tea_station': { kind: 'image', url: 'art/props/tea-station.png', palette: 'earth' },
   'npc.kid': { kind: 'image', url: 'art/npcs/pella.png', palette: 'air' },
   'npc.dorin': { kind: 'image', url: 'art/npcs/dorin.png', palette: 'earth' },
   'npc.guard': painter('villager', 'earth', 'guard'),
@@ -292,6 +345,11 @@ export const ASSETS: Readonly<Record<string, AssetEntry>> = {
     palette: 'enemy',
   },
   'portrait.enemy.thug': { kind: 'image', url: 'art/portraits/enemy.thug.png', palette: 'enemy' },
+  'portrait.enemy.deserter': {
+    kind: 'image',
+    url: 'art/portraits/enemy.deserter.webp',
+    palette: 'fire',
+  },
   'portrait.enemy.grumbler': {
     kind: 'image',
     url: 'art/portraits/enemy.grumbler.png',

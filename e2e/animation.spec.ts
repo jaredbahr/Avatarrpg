@@ -1,4 +1,5 @@
 import { expect, test } from '@playwright/test';
+import { allowSoftwareWebgl } from './budget';
 import { enterNode, resetStorage, settleLayout, startGame, takeTurn, waitForIdle } from './helpers';
 
 /**
@@ -11,9 +12,9 @@ import { enterNode, resetStorage, settleLayout, startGame, takeTurn, waitForIdle
  */
 test.describe('playback', () => {
   for (const renderer of ['canvas', 'webgl'] as const) {
-    test(`a cast plays out and settles on ${renderer}`, async ({ page, browserName }) => {
+    test(`a cast plays out and settles on ${renderer}`, async ({ page }) => {
       test.setTimeout(120_000);
-      if (renderer === 'webgl' && browserName === 'webkit') test.slow();
+      allowSoftwareWebgl(test, renderer);
 
       const errors: string[] = [];
       page.on('console', (message) => {

@@ -28,26 +28,37 @@ import {
   Texture,
   UniformGroup,
 } from 'pixi.js';
+import { surfaceIntensity } from '../surfaceRendering';
 
-import type { Grid, SurfaceId, TerrainId, Vec2 } from '../../core/types';
+import type { SurfaceId, TerrainId, Vec2 } from '../../core/types';
 import { resolveAsset } from '../../content/assets/manifest';
 import { backdrops } from '../backdrops';
-import { sceneImages, sceneryOpacity } from '../scene';
+import { sceneForGrid, sceneryOpacities } from '../scene';
+import { SceneTextures } from './sceneTextures';
+import { surfaceIsPainted } from '../sceneSurfaces';
 import { TILE } from '../camera';
 import type { Camera, Viewport } from '../camera';
 import { DecorSheets } from '../decorSheets';
 import { ParticleLayer } from '../fx/particleLayer';
 import { aimArcPoints, arcHeading, arrowheadPolygon } from '../geometry/arc';
+import { actorHealthBar } from '../geometry/actorSilhouette';
 import { DECOR_CHUNK, decorChunks } from '../geometry/board';
 import { contourLoops, isHole } from '../geometry/contour';
 import type { Curve } from '../geometry/curve';
 import { sampleAt, smoothPath } from '../geometry/curve';
 import { FACTION_RING, OVERLAY, STATUS_BADGE, hpColor } from '../palettes';
 import { FOOT_LINE } from '../sheets/bake';
+import { resolveActorEmitters } from '../geometry/actorAttachments';
 import type { ResolvedFrame } from '../sheets/store';
 import { idlePhase, sheets } from '../sheets/store';
 import { MAX_SPRITE_PX, sprites } from '../spriteCache';
-import type { AimArc, MapView, OverlayLayer, RenderUnit } from '../view';
+import {
+  unitMarkerGroundPoint,
+  type AimArc,
+  type MapView,
+  type OverlayLayer,
+  type RenderUnit,
+} from '../view';
 import type { BackendCapabilities, RenderBackend } from './backend';
 import {
   EDGE_SHADE_ALPHA,
@@ -177,7 +188,7 @@ export class PixiBackend implements RenderBackend {
   private groundChunks = new Map<string, Sprite>();
   private scenerySprites = new Map<string, Sprite>();
   /** Scene textures live only as long as their manifest, independently of actor LRU. */
-  private sceneTextures = new Map<string, { image: HTMLImageElement; texture: Texture }>();
+  private sceneTextures = new SceneTextures();
   /**
    * The map's painting (ADR 0009), a screen-space sprite under the ground
    * quad so the ground pass lays its surfaces over it. Its texture is made
@@ -187,6 +198,11 @@ export class PixiBackend implements RenderBackend {
   private backdropSprite = new Sprite(Texture.EMPTY);
   private backdrop: { image: HTMLImageElement; texture: Texture } | null = null;
   private groundSprite = new Sprite(Texture.WHITE);
+  /** Raised stone bases sit above procedural ground but below live surfaces. */
+  private elevationBaseLayer = new Container();
+  private elevationBaseSprites = new Map<string, Sprite>();
+  /** A second ground pass is used only for partial authored scenes. */
+  private groundOverlaySprite = new Sprite(Texture.WHITE);
   /**
    * Cliffs, canopies, walls, cover and decals, baked by the same painters the
    * Canvas 2D backend draws with, one sprite per chunk of the board.
@@ -195,6 +211,7 @@ export class PixiBackend implements RenderBackend {
   private decorSprites = new Map<string, Sprite>();
   private decor = new DecorSheets();
   private decorPx = 0;
+  private elevationBasePx = 0;
   /** Edge shading along the board's four sides and the vignette over the view. */
   private shadeLayer = new Container();
   private shadeSprites: Sprite[] = [];
@@ -217,9 +234,22 @@ export class PixiBackend implements RenderBackend {
     uTime: { value: 0, type: 'f32' },
     uHatch: { value: 0, type: 'f32' },
     uGridLines: { value: 0, type: 'f32' },
+    uSurfaces: { value: 1, type: 'f32' },
     uBackdrop: { value: 0, type: 'f32' },
   });
+  private groundOverlayUniforms = new UniformGroup({
+    uGrid: { value: new Float32Array([1, 1]), type: 'vec2<f32>' },
+    uGroundOrigin: { value: new Float32Array([0, 0]), type: 'vec2<f32>' },
+    uGroundInverse: { value: new Float32Array([1, 0, 0, 1]), type: 'vec4<f32>' },
+    uTileSize: { value: TILE, type: 'f32' },
+    uTime: { value: 0, type: 'f32' },
+    uHatch: { value: 0, type: 'f32' },
+    uGridLines: { value: 0, type: 'f32' },
+    uSurfaces: { value: 1, type: 'f32' },
+    uBackdrop: { value: 1, type: 'f32' },
+  });
   private groundFilter: Filter | null = null;
+  private groundOverlayFilter: Filter | null = null;
 
   /** Applied once init finishes, since resize can land before the app exists. */
   private viewport: Viewport = { width: 1, height: 1, dpr: 1 };
@@ -318,13 +348,30 @@ export class PixiBackend implements RenderBackend {
        */
       resolution: GROUND_RESOLUTION,
     });
+    this.groundOverlayFilter = new Filter({
+      glProgram: GlProgram.from({ vertex: FILTER_VERTEX, fragment: GROUND_FRAGMENT }),
+      resources: {
+        groundUniforms: this.groundOverlayUniforms,
+        uMap: this.mapTexture.source,
+      },
+      padding: 0,
+      resolution: GROUND_RESOLUTION,
+    });
     this.groundSprite.filters = [this.groundFilter];
+    this.groundOverlaySprite.filters = [this.groundOverlayFilter];
 
     // The ground quad is screen-sized and sits OUTSIDE the camera transform:
     // its shader derives tile coordinates from the camera uniforms instead.
     // The painting sits under it, placed from the same camera numbers.
     this.backdropSprite.visible = false;
-    app.stage.addChild(this.backdropSprite, this.sceneGround, this.groundSprite);
+    this.groundOverlaySprite.visible = false;
+    app.stage.addChild(
+      this.backdropSprite,
+      this.groundSprite,
+      this.elevationBaseLayer,
+      this.sceneGround,
+      this.groundOverlaySprite,
+    );
 
     // Any resize that arrived during init was dropped; apply the latest now.
     this.applyViewport();
@@ -364,6 +411,7 @@ export class PixiBackend implements RenderBackend {
     this.dropTextures();
     this.decor.clear();
     this.decorPx = 0;
+    this.elevationBasePx = 0;
     this.viewport = viewport;
     this.applyViewport();
   }
@@ -377,6 +425,9 @@ export class PixiBackend implements RenderBackend {
     this.groundSprite.position.set(0, 0);
     this.groundSprite.width = this.viewport.width;
     this.groundSprite.height = this.viewport.height;
+    this.groundOverlaySprite.position.set(0, 0);
+    this.groundOverlaySprite.width = this.viewport.width;
+    this.groundOverlaySprite.height = this.viewport.height;
   }
 
   destroy(): void {
@@ -386,12 +437,19 @@ export class PixiBackend implements RenderBackend {
     // Detach the painting while its sprite is alive: Pixi clears the sprite's
     // scale on destruction, and assigning a texture still updates its size.
     this.dropBackdrop();
+    this.groundSprite.filters = null;
+    this.groundOverlaySprite.filters = null;
+    // Both filters are built from the renderer's cached program source; let
+    // the renderer own the shared GPU program and release only filter state.
+    this.groundFilter?.destroy();
+    this.groundOverlayFilter?.destroy();
     this.app?.stage.destroy({ children: true });
     this.app?.renderer.destroy(false);
     this.app = null;
+    this.groundFilter = null;
+    this.groundOverlayFilter = null;
     this.dropTextures();
     this.unitSprites.clear();
-    for (const { texture } of this.sceneTextures.values()) texture.destroy(true);
     this.sceneTextures.clear();
     this.groundChunks.clear();
     this.scenerySprites.clear();
@@ -400,6 +458,10 @@ export class PixiBackend implements RenderBackend {
 
   draw(view: MapView, camera: Camera): void {
     const app = this.app;
+    view = {
+      ...view,
+      scene: view.scene ? sceneForGrid(view.scene, view.grid) : undefined,
+    };
     if (!app) {
       // Still initialising: keep only the newest frame.
       this.pending = { view, camera };
@@ -418,6 +480,7 @@ export class PixiBackend implements RenderBackend {
       m.ty + view.cameraNudge.y * nudge,
     );
     this.root.setFromMatrix(this.groundTransform);
+    this.elevationBaseLayer.setFromMatrix(this.groundTransform);
     this.fxOver.container.setFromMatrix(this.groundTransform);
     for (const layer of [this.sceneGround, this.upright, this.labels]) {
       layer.position.set(
@@ -430,19 +493,38 @@ export class PixiBackend implements RenderBackend {
     // A painting takes the terrain's place; the decor that marks footing
     // over it comes back only under High contrast, where the rules must read
     // without the picture.
-    const backdropPainted = this.syncBackdrop(view, camera);
+    const partialScene = camera.projection === 'oblique' && view.scene?.groundMode === 'partial';
+    const backdropPainted = this.syncBackdrop(view, camera, partialScene);
     const scenePainted = this.syncScene(view, camera);
     // An incomplete authored scene must keep its collision-marking fallback.
     const painted = camera.projection === 'oblique' && view.scene ? scenePainted : backdropPainted;
-    this.syncGround(view, painted);
-    this.syncDecor(view, camera, !painted || view.crispOverlays);
+    this.setPartialGroundOrder(partialScene);
+    this.groundOverlaySprite.visible = partialScene;
+    this.syncGround(view, painted, partialScene);
+    // A complete partial scene needs only raised stone underlay here. Missing
+    // art and High contrast still require every procedural rule marker.
+    this.syncElevationBase(view, camera, partialScene && scenePainted && !view.crispOverlays);
+    const decorMode = partialScene
+      ? !scenePainted || view.crispOverlays
+        ? 'full'
+        : 'none'
+      : !painted || view.crispOverlays
+        ? 'full'
+        : 'none';
+    this.syncDecor(view, camera, decorMode);
     this.syncShade(view, camera, scenePainted);
     this.drawOverlays(view);
     this.drawPath(view);
     this.drawDecor(view);
     this.drawUnits(view, camera);
-    this.fxUnder.draw(view.emitters);
-    this.fxOver.draw(view.emitters);
+    const emitters = resolveActorEmitters(
+      view.emitters,
+      view.grid,
+      camera.projection,
+      TILE * camera.scale * camera.viewport.dpr,
+    );
+    this.fxUnder.draw(emitters);
+    this.fxOver.draw(emitters);
     this.drawFloaters(view, camera);
 
     app.renderer.render(app.stage);
@@ -458,12 +540,13 @@ export class PixiBackend implements RenderBackend {
    * shader reconstructs its tiles from, so the surfaces land on the painting
    * exactly where the painting's tiles are. Returns whether one is showing.
    */
-  private syncBackdrop(view: MapView, camera: Camera): boolean {
+  private syncBackdrop(view: MapView, camera: Camera, partialScene = false): boolean {
     const compatible =
       camera.projection === 'oblique'
         ? view.backdrop?.projection === 'oblique'
         : view.backdrop?.projection !== 'oblique';
-    const image = view.backdrop && compatible ? backdrops.get(view.backdrop.url) : null;
+    const image =
+      !partialScene && view.backdrop && compatible ? backdrops.get(view.backdrop.url) : null;
     if (!image) {
       this.backdropSprite.visible = false;
       this.dropBackdrop();
@@ -494,21 +577,10 @@ export class PixiBackend implements RenderBackend {
   /** Already-projected ground chunks and upright objects use only pan/zoom. */
   private syncScene(view: MapView, camera: Camera): boolean {
     const scene = camera.projection === 'oblique' ? view.scene : undefined;
-    const urls = new Set<string>();
+    this.sceneTextures.begin();
     const groundKeys = new Set<string>();
     const sceneryKeys = new Set<string>();
     let complete = Boolean(scene?.ground.length);
-    const textureFor = (url: string): Texture | null => {
-      urls.add(url);
-      const image = sceneImages.get(url);
-      if (!image) return null;
-      const cached = this.sceneTextures.get(url);
-      if (cached && cached.image === image) return cached.texture;
-      cached?.texture.destroy(true);
-      const texture = Texture.from(image, true);
-      this.sceneTextures.set(url, { image, texture });
-      return texture;
-    };
     for (const [index, chunk] of (scene?.ground ?? []).entries()) {
       const key = String(index);
       groundKeys.add(key);
@@ -518,7 +590,7 @@ export class PixiBackend implements RenderBackend {
         this.sceneGround.addChild(sprite);
         this.groundChunks.set(key, sprite);
       }
-      const texture = textureFor(chunk.url);
+      const texture = this.sceneTextures.get(chunk);
       sprite.visible = Boolean(texture);
       if (!texture) {
         complete = false;
@@ -529,6 +601,7 @@ export class PixiBackend implements RenderBackend {
       sprite.width = chunk.width;
       sprite.height = chunk.height;
     }
+    const opacities = sceneryOpacities(scene?.scenery ?? [], view, camera);
     for (const item of scene?.scenery ?? []) {
       sceneryKeys.add(item.id);
       let sprite = this.scenerySprites.get(item.id);
@@ -537,7 +610,7 @@ export class PixiBackend implements RenderBackend {
         this.unitLayer.addChild(sprite);
         this.scenerySprites.set(item.id, sprite);
       }
-      const texture = textureFor(item.url);
+      const texture = this.sceneTextures.get(item);
       sprite.visible = Boolean(texture);
       if (!texture) {
         // Ground alone cannot explain a missing building's blocked footprint.
@@ -550,7 +623,7 @@ export class PixiBackend implements RenderBackend {
       sprite.width = item.width;
       sprite.height = item.height;
       sprite.zIndex = camera.groundPoint(item.depth).y;
-      sprite.alpha = sceneryOpacity(item, view, camera);
+      sprite.alpha = opacities.get(item) ?? 1;
     }
     for (const [key, sprite] of this.groundChunks) {
       if (!groundKeys.has(key)) {
@@ -564,12 +637,7 @@ export class PixiBackend implements RenderBackend {
         this.scenerySprites.delete(key);
       }
     }
-    for (const [url, entry] of this.sceneTextures) {
-      if (!urls.has(url)) {
-        entry.texture.destroy(true);
-        this.sceneTextures.delete(url);
-      }
-    }
+    this.sceneTextures.end();
     return complete;
   }
 
@@ -580,12 +648,36 @@ export class PixiBackend implements RenderBackend {
     this.backdrop = null;
   }
 
-  private syncGround(view: MapView, painted: boolean): void {
+  /** Keep the historical complete-scene order; partial scenes need their
+   * procedural base below localized scene ground and surfaces above it. */
+  private setPartialGroundOrder(partial: boolean): void {
+    const app = this.app;
+    if (!app) return;
+    // Put the raised base between the procedural ground and localized art in
+    // partial mode. Reorder every participant each switch: moving only two
+    // layers leaves the base above scene art after a complete-scene visit.
+    const layers = partial
+      ? [this.groundSprite, this.elevationBaseLayer, this.sceneGround, this.groundOverlaySprite]
+      : [this.sceneGround, this.groundSprite, this.elevationBaseLayer, this.groundOverlaySprite];
+    const first = app.stage.getChildIndex(this.backdropSprite) + 1;
+    for (const [offset, layer] of layers.entries()) app.stage.setChildIndex(layer, first + offset);
+  }
+
+  /** Both baked passes share a grid cache, so one grid change invalidates both sprite buckets. */
+  private syncDecorGrid(grid: MapView['grid']): boolean {
+    const changed = this.decor.sync(grid);
+    if (changed) {
+      this.decorPx = 0;
+      this.elevationBasePx = 0;
+    }
+    return changed;
+  }
+
+  private syncGround(view: MapView, painted: boolean, partialScene: boolean): void {
     const { grid } = view;
-    this.uploadMap(
-      grid,
-      painted && view.scene?.paintedWater === true && !view.hatch && !view.crispOverlays,
-    );
+    // Partial mode must keep every permanent surface in the data texture;
+    // complete scenes retain their existing painted-surface suppression.
+    this.uploadMap(view, partialScene ? false : painted);
 
     const uniforms = this.groundUniforms.uniforms as {
       uGrid: Float32Array;
@@ -595,6 +687,7 @@ export class PixiBackend implements RenderBackend {
       uTime: number;
       uHatch: number;
       uGridLines: number;
+      uSurfaces: number;
       uBackdrop: number;
     };
     uniforms.uGrid[0] = grid.width;
@@ -608,7 +701,8 @@ export class PixiBackend implements RenderBackend {
     uniforms.uTime = view.time / 1000;
     uniforms.uHatch = view.hatch ? 1 : 0;
     uniforms.uGridLines = view.gridLines ? 1 : 0;
-    uniforms.uBackdrop = painted ? 1 : 0;
+    uniforms.uSurfaces = partialScene ? 0 : 1;
+    uniforms.uBackdrop = partialScene ? 0 : painted ? 1 : 0;
 
     /*
      * UniformGroup.uniforms is a plain object, not a proxy: neither assigning a
@@ -618,6 +712,21 @@ export class PixiBackend implements RenderBackend {
      * rendered the whole board black.
      */
     this.groundUniforms.update();
+
+    if (!partialScene) return;
+    const overlay = this.groundOverlayUniforms.uniforms as typeof uniforms;
+    overlay.uGrid[0] = grid.width;
+    overlay.uGrid[1] = grid.height;
+    overlay.uGroundOrigin[0] = m.tx;
+    overlay.uGroundOrigin[1] = m.ty;
+    overlay.uGroundInverse.set([m.d / det, -m.c / det, -m.b / det, m.a / det]);
+    overlay.uTileSize = TILE;
+    overlay.uTime = view.time / 1000;
+    overlay.uHatch = view.hatch ? 1 : 0;
+    overlay.uGridLines = view.gridLines ? 1 : 0;
+    overlay.uSurfaces = 1;
+    overlay.uBackdrop = 1;
+    this.groundOverlayUniforms.update();
   }
 
   /**
@@ -625,8 +734,15 @@ export class PixiBackend implements RenderBackend {
    * changed â€” a signature comparison is far cheaper than a GPU upload every
    * frame, and most frames change nothing on the ground.
    */
-  private uploadMap(grid: Grid, paintedWater: boolean): void {
-    let signature = `${grid.width}x${grid.height}:${paintedWater}`;
+  private uploadMap(view: MapView, painted: boolean): void {
+    const grid = view.grid;
+    const baked = grid.tiles.map((tile, i) =>
+      surfaceIsPainted(view, painted, tile, {
+        x: i % grid.width,
+        y: Math.floor(i / grid.width),
+      }),
+    );
+    let signature = `${grid.width}x${grid.height}:${baked.map((value) => (value ? '1' : '0')).join('')}`;
     for (const tile of grid.tiles) {
       signature += `|${tile.terrain}:${tile.surface?.id ?? ''}:${tile.surface?.duration ?? 0}`;
     }
@@ -645,12 +761,11 @@ export class PixiBackend implements RenderBackend {
     for (let i = 0; i < grid.tiles.length; i++) {
       const tile = grid.tiles[i];
       if (!tile) continue;
-      const baked = paintedWater && tile.surface?.id === 'water' && tile.surface.duration < 0;
-      const surface = tile.surface && !baked ? (SURFACE_INDEX[tile.surface.id] ?? 0) : 0;
+      const surface = tile.surface && !baked[i] ? (SURFACE_INDEX[tile.surface.id] ?? 0) : 0;
       // Surfaces thin out as they burn down, so a dying fire visibly fades.
       // A negative duration is map-authored and permanent: always full strength.
       const duration = tile.surface?.duration ?? 0;
-      const intensity = tile.surface ? (duration < 0 ? 1 : Math.min(1, 0.45 + duration / 6)) : 0;
+      const intensity = tile.surface ? surfaceIntensity(duration) : 0;
       intensities[i] = surface === SURFACE_INDEX.fire ? intensity : 0;
 
       const o = i * 4;
@@ -693,11 +808,44 @@ export class PixiBackend implements RenderBackend {
    * zoom's sprite bucket and re-baked only when the footing or the bucket
    * changes.
    */
-  private syncDecor(view: MapView, camera: Camera, shown: boolean): void {
-    this.decorLayer.visible = shown;
+  private syncElevationBase(view: MapView, camera: Camera, shown: boolean): void {
+    this.elevationBaseLayer.visible = shown;
     if (!shown) return;
     const grid = view.grid;
-    const changed = this.decor.sync(grid);
+    const changed = this.syncDecorGrid(grid);
+    const px = this.spritePx(camera);
+    if (!changed && px === this.elevationBasePx) return;
+    this.elevationBasePx = px;
+
+    const { cols, rows } = decorChunks(grid);
+    const live = new Set<string>();
+    for (let cy = 0; cy < rows; cy++) {
+      for (let cx = 0; cx < cols; cx++) {
+        const key = `${cx},${cy}`;
+        live.add(key);
+        let sprite = this.elevationBaseSprites.get(key);
+        if (!sprite) {
+          sprite = new Sprite();
+          this.elevationBaseLayer.addChild(sprite);
+          this.elevationBaseSprites.set(key, sprite);
+        }
+        sprite.texture = this.texture(this.decor.get(grid, cx, cy, px, true));
+        sprite.position.set(cx * DECOR_CHUNK * TILE, cy * DECOR_CHUNK * TILE);
+        sprite.width = DECOR_CHUNK * TILE;
+        sprite.height = DECOR_CHUNK * TILE;
+        sprite.visible = true;
+      }
+    }
+    for (const [key, sprite] of this.elevationBaseSprites) {
+      if (!live.has(key)) sprite.visible = false;
+    }
+  }
+
+  private syncDecor(view: MapView, camera: Camera, mode: 'none' | 'full'): void {
+    this.decorLayer.visible = mode !== 'none';
+    if (mode === 'none') return;
+    const grid = view.grid;
+    const changed = this.syncDecorGrid(grid);
     const px = this.spritePx(camera);
     if (!changed && px === this.decorPx) return;
     this.decorPx = px;
@@ -1143,6 +1291,12 @@ export class PixiBackend implements RenderBackend {
       const anchor = box(pos, unit.size);
       const x = anchor.x + (unit.offset?.x ?? 0) * TILE;
       const y = anchor.y + ((unit.offset?.y ?? 0) - lift) * TILE;
+      const marker = unitMarkerGroundPoint(
+        anchor,
+        TILE,
+        lift,
+        unit.meleeDirection ? unit.offset : undefined,
+      );
       const width = unit.size === 2 ? TILE * 2 : TILE;
       const facing = unit.facing ?? (unit.faction === 'enemy' ? -1 : 1);
 
@@ -1159,6 +1313,7 @@ export class PixiBackend implements RenderBackend {
         unit.clipFrame,
         px * scale,
         unit.size,
+        unit.meleeDirection,
       );
       let headroom = 0;
       if (frame) {
@@ -1202,7 +1357,7 @@ export class PixiBackend implements RenderBackend {
 
       if (unit.id === view.activeUnitId) {
         rings
-          .ellipse(anchor.x + width / 2, anchor.y + (0.86 - lift) * TILE, width * 0.42, TILE * 0.14)
+          .ellipse(marker.x + width / 2, marker.y + 0.86 * TILE, width * 0.42, TILE * 0.14)
           .stroke({
             width: Math.max(2, TILE * 0.06),
             color: OVERLAY.active,
@@ -1210,7 +1365,7 @@ export class PixiBackend implements RenderBackend {
           });
       } else if (unit.id === view.selectedUnitId) {
         rings
-          .ellipse(anchor.x + width / 2, anchor.y + (0.86 - lift) * TILE, width * 0.4, TILE * 0.12)
+          .ellipse(marker.x + width / 2, marker.y + 0.86 * TILE, width * 0.4, TILE * 0.12)
           .stroke({
             width: Math.max(1, TILE * 0.03),
             color: 'rgba(255,255,255,0.6)',
@@ -1227,7 +1382,7 @@ export class PixiBackend implements RenderBackend {
         continue;
       }
 
-      if (unit.showHealth !== false) this.drawHealthBar(g, unit, x, y - headroom * TILE, width);
+      if (unit.showHealth !== false) this.drawHealthBar(g, unit, x, y, width, scale, headroom);
       badgeIndex = this.drawStatusBadges(g, unit, x, y, width, badgeIndex);
     }
 
@@ -1250,12 +1405,22 @@ export class PixiBackend implements RenderBackend {
     return sprite;
   }
 
-  private drawHealthBar(g: Graphics, unit: RenderUnit, x: number, y: number, width: number): void {
+  private drawHealthBar(
+    g: Graphics,
+    unit: RenderUnit,
+    x: number,
+    y: number,
+    width: number,
+    scale: number,
+    headroom: number,
+  ): void {
     const fraction = Math.max(0, Math.min(1, unit.hp / Math.max(1, unit.maxHp)));
-    const barWidth = width * 0.72;
-    const barHeight = Math.max(3, TILE * 0.075);
-    const barX = x + (width - barWidth) / 2;
-    const barY = y + TILE * 0.06;
+    const {
+      x: barX,
+      y: barY,
+      width: barWidth,
+      height: barHeight,
+    } = actorHealthBar(x, y, width, TILE, scale, headroom);
 
     g.rect(barX - 1, barY - 1, barWidth + 2, barHeight + 2).fill({ color: 'rgba(0,0,0,0.6)' });
     g.rect(barX, barY, barWidth * fraction, barHeight).fill({ color: hpColor(fraction) });

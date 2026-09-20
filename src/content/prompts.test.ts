@@ -239,7 +239,8 @@ describe('sheet prompt packs', () => {
   it('ask for exactly the frames the clip table allows', () => {
     for (const key of sheetKeys) {
       const text = readFileSync(join(SHEETS, `${key}.md`), 'utf8');
-      for (const clip of CLIP_NAMES) {
+      // The optional Riverside tea cels have their own bounded source pack below.
+      for (const clip of CLIP_NAMES.filter((clip) => clip !== 'tea')) {
         const { min, max } = CLIP_FRAME_COUNTS[clip];
         for (let index = 0; index < min; index++) {
           expect(text, `${key}: ${clip}/${index}`).toContain(`\`${clip}/${index}.png\``);
@@ -249,6 +250,19 @@ describe('sheet prompt packs', () => {
         );
       }
     }
+  });
+
+  it('keeps the optional tea source pack bound to the two illustrated Riverside actors', () => {
+    const pack = readFileSync(join(ART, 'riverside-tea.md'), 'utf8');
+    for (let i = 0; i < CLIP_FRAME_COUNTS.tea.min; i++) {
+      expect(pack).toContain(`\`tea/${i}.png\``);
+    }
+    expect(pack).not.toContain('`tea/2.png`');
+    expect(
+      Object.entries(ASSETS)
+        .filter(([, asset]) => asset.kind === 'sheet' && asset.clips.tea)
+        .map(([key]) => key),
+    ).toEqual(['unit.village.sura', 'unit.village.kaya']);
   });
 
   it('never ship a hero sheet without its portrait pack describing the same figure', () => {

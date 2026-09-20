@@ -1,5 +1,5 @@
 import type { Beat } from './beats';
-import { tileCentre } from './stage';
+import { tileCentre, focusStagedUnit } from './stage';
 import {
   enterNode,
   resetStorage,
@@ -23,14 +23,15 @@ export const ENEMY_BEATS: readonly Beat[] = [
       await takeTurn(ctx.page, { settleTimeout: ctx.settleTimeout });
       await waitForIdle(ctx.page);
       await settleLayout(ctx.page, ctx.settleTimeout);
-      const pos = await ctx.page.evaluate(() => {
+      const bandit = await ctx.page.evaluate(() => {
         const bandit = window.fnt?.app.state?.battle?.units.find(
           (u) => u.sprite === 'unit.enemy.thug',
         );
         if (!bandit) throw new Error('Expected a bandit');
-        return bandit.pos;
+        return { id: bandit.id, pos: bandit.pos };
       });
-      const point = await tileCentre(ctx.page, pos);
+      await focusStagedUnit(ctx.page, bandit.id, ctx.settleTimeout);
+      const point = await tileCentre(ctx.page, bandit.pos);
       await ctx.page.mouse.click(point.x, point.y, { button: 'right' });
       await ctx.page.locator('.dialog canvas[data-asset="portrait.enemy.thug"]').waitFor();
       await ctx.shoot(this.note);

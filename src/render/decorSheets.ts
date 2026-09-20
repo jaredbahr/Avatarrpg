@@ -16,7 +16,7 @@
 import type { Grid } from '../core/types';
 import type { TileRelief } from './geometry/board';
 import { DECOR_CHUNK, boardRelief, decorSignature } from './geometry/board';
-import { paintTileDecor } from './painters/board';
+import { paintElevationBase, paintTileDecor } from './painters/board';
 
 /** Device pixels per tile at the sharpest bake. */
 export const DECOR_PX_CAP = 128;
@@ -47,9 +47,9 @@ export class DecorSheets {
   }
 
   /** The baked chunk at (`cx`, `cy`) in chunk units, `px` device pixels a tile. */
-  get(grid: Grid, cx: number, cy: number, px: number): HTMLCanvasElement {
+  get(grid: Grid, cx: number, cy: number, px: number, elevationOnly = false): HTMLCanvasElement {
     const size = Math.max(8, Math.min(DECOR_PX_CAP, Math.round(px)));
-    const key = `${cx},${cy}|${size}`;
+    const key = `${cx},${cy}|${size}|${elevationOnly ? 'elevation' : 'full'}`;
     const existing = this.chunks.get(key);
     if (existing) {
       this.chunks.delete(key);
@@ -61,7 +61,7 @@ export class DecorSheets {
     canvas.width = size * DECOR_CHUNK;
     canvas.height = size * DECOR_CHUNK;
     const ctx = canvas.getContext('2d');
-    if (ctx) this.bake(ctx, grid, cx, cy, size);
+    if (ctx) this.bake(ctx, grid, cx, cy, size, elevationOnly);
 
     this.chunks.set(key, canvas);
     while (this.chunks.size > MAX_CHUNKS) {
@@ -83,6 +83,7 @@ export class DecorSheets {
     cx: number,
     cy: number,
     size: number,
+    elevationOnly: boolean,
   ): void {
     const x0 = cx * DECOR_CHUNK;
     const y0 = cy * DECOR_CHUNK;
@@ -93,13 +94,9 @@ export class DecorSheets {
         const index = y * grid.width + x;
         const tile = grid.tiles[index];
         if (!tile) continue;
-        paintTileDecor(
-          ctx,
-          { x: (x - x0) * size, y: (y - y0) * size, size },
-          tile,
-          { x, y },
-          this.relief.get(index),
-        );
+        const box = { x: (x - x0) * size, y: (y - y0) * size, size };
+        if (elevationOnly) paintElevationBase(ctx, box, tile, { x, y }, this.relief.get(index));
+        else paintTileDecor(ctx, box, tile, { x, y }, this.relief.get(index));
       }
     }
   }

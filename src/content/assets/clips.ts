@@ -19,8 +19,13 @@ export const CLIP_NAMES = [
   'rest',
   'restNorth',
   'restSouth',
+  'tea',
 ] as const;
 export type ClipName = (typeof CLIP_NAMES)[number];
+
+/** Authored screen-facing melee contact variants, when a sheet carries them. */
+export const MELEE_DIRECTIONS = ['screenUp', 'screenDown'] as const;
+export type MeleeDirection = (typeof MELEE_DIRECTIONS)[number];
 
 export interface ClipDef {
   /** Frame names in the atlas, in pose order. */
@@ -48,6 +53,7 @@ export const CLIP_FRAME_COUNTS: Readonly<Record<ClipName, { min: number; max: nu
   rest: { min: 1, max: 1 },
   restNorth: { min: 1, max: 1 },
   restSouth: { min: 1, max: 1 },
+  tea: { min: 2, max: 2 },
 };
 
 /** Clips every sheet must have. */

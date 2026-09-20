@@ -1,5 +1,6 @@
 import { expect, test } from '@playwright/test';
 import type { Page } from '@playwright/test';
+import { allowSoftwareWebgl } from './budget';
 import { enterNode, resetStorage, settleLayout, startGame, takeTurn, waitForIdle } from './helpers';
 import { average, screenshotPixels } from './pixels';
 
@@ -34,11 +35,11 @@ test.describe('renderer backends', () => {
     expect(chosen, 'software WebGL should fall back to Canvas 2D').toBe('canvas');
   });
 
-  test('renders the board through the WebGL backend when forced', async ({ page, browserName }) => {
+  test('renders the board through the WebGL backend when forced', async ({ page }) => {
     test.setTimeout(120_000);
-    // WebKit on a Linux runner drives WebGL through Mesa's software path,
-    // which is slower again than SwiftShader; the budget above is for both.
-    if (browserName === 'webkit') test.slow();
+    // This case forces the shader path on both engines, and both rasterise in
+    // software on a runner with no GPU: SwiftShader in Chromium, Mesa in WebKit.
+    allowSoftwareWebgl(test, 'webgl');
 
     const errors: string[] = [];
     page.on('console', (message) => {
@@ -50,7 +51,9 @@ test.describe('renderer backends', () => {
     await page.waitForFunction(() => Boolean(window.fnt?.app));
     await startGame(page, ['Elias', 'Lorelai'], ['kaya', 'bo'], 'renderer-spec');
     await enterNode(page, 'battle_forest_road');
+    await takeTurn(page);
     await waitForIdle(page);
+    await settleLayout(page);
 
     expect(await page.evaluate(() => window.fnt?.app.rendererBackend())).toBe('webgl');
 
@@ -63,9 +66,14 @@ test.describe('renderer backends', () => {
     const box = await canvas.boundingBox();
     expect(box).not.toBeNull();
 
-    const shot = await canvas.screenshot({ timeout: 60_000 });
-    const distinctBytes = new Set(shot.slice(0, 20_000)).size;
-    expect(distinctBytes, 'the board rendered as a flat fill').toBeGreaterThan(16);
+    // Check the real authored scene, including its live water overlay. PNG
+    // compression bytes are varied even when the canvas is completely blank.
+    const water = await tileCentre(page, { x: 5, y: 6 });
+    const pixels = await screenshotPixels(canvas);
+    const wet = average(pixels, water.x, water.y, 3);
+    expect(wet.b, `authored scene water is absent: ${JSON.stringify(wet)}`).toBeGreaterThan(
+      wet.r + 20,
+    );
   });
 
   /*
@@ -79,9 +87,9 @@ test.describe('renderer backends', () => {
    * grass green where the grass is.
    */
   for (const renderer of ['canvas', 'webgl'] as const) {
-    test(`paints the ground under the tiles on ${renderer}`, async ({ page, browserName }) => {
+    test(`paints the ground under the tiles on ${renderer}`, async ({ page }) => {
       test.setTimeout(120_000);
-      if (renderer === 'webgl' && browserName === 'webkit') test.slow();
+      allowSoftwareWebgl(test, renderer);
 
       await resetStorage(page, `?renderer=${renderer}`);
       await startGame(page, ['Elias'], ['kaya'], 'ground-spec');
@@ -93,7 +101,14 @@ test.describe('renderer backends', () => {
 
       // This is the procedural ground's test: every unpainted map and the
       // fallback draw it, so take any painting the forest road may carry away.
-      await page.evaluate(() => window.fnt?.app.overrideBackdrop('forest_road', null));
+      await page.evaluate(() => {
+        const app = window.fnt?.app;
+        const map = app?.content.maps.get('forest_road');
+        // Layered scenes supersede legacy backdrops. Remove both paintings to
+        // exercise procedural fallback, retaining its original color contract.
+        if (map) Object.defineProperty(map, 'scene', { value: undefined, configurable: true });
+        return app?.overrideBackdrop('forest_road', null);
+      });
       await page.evaluate(
         () => new Promise((done) => requestAnimationFrame(() => requestAnimationFrame(done))),
       );

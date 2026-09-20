@@ -3,6 +3,7 @@ import type { ContentIndex, GameEvent, Unit } from '../core/types';
 import { Animator } from './animator';
 import { CONTENT } from '../content';
 import { sampleParticles, PARTICLE_STRIDE } from '../render/fx/simulate';
+import { choreograph } from './anim/choreography';
 
 /**
  * The animator runs in Node here with the reduce-motion lookup injected, so
@@ -27,7 +28,115 @@ function animator(reduced = false): Animator {
   return new Animator(content, { motionReduced: () => reduced });
 }
 
+const combatUnit = (id: string, x: number, y: number, hp: number, maxHp = 20): Unit =>
+  ({
+    ...unit(id, x, y),
+    hp,
+    base: { maxHp },
+    sprite: id === 'e0' ? 'unit.enemy.thug' : 'unit.air.nima',
+  }) as unknown as Unit;
+
+const airBlast: GameEvent = {
+  type: 'abilityUsed',
+  unitId: 'p0',
+  abilityId: 'air_blast',
+  target: { x: 5, y: 3 },
+  tiles: [{ x: 5, y: 3 }],
+};
+
 describe('Animator', () => {
+  it.each([false, true])('holds damage feedback until Air Blast impact, reduced=%s', (reduced) => {
+    const before = [combatUnit('p0', 1, 3, 20), combatUnit('e0', 5, 3, 20)];
+    const events: GameEvent[] = [
+      airBlast,
+      { type: 'damaged', unitId: 'e0', amount: 6, crit: false, damageType: 'air', sourceId: 'p0' },
+    ];
+    const choreography = choreograph({
+      content: CONTENT,
+      events,
+      unitsBefore: before,
+      cursor: 1000,
+      rate: reduced ? 0.02 : 1,
+      pushIndex: 0,
+    });
+    const impact = choreography.health.find((change) => change.unitId === 'e0');
+    if (!impact) throw new Error('expected Air Blast health impact');
+    const flash = choreography.tracks.find(
+      (track) => track.kind === 'flash' && track.unitId === 'e0',
+    );
+    const cast = choreography.tracks.find(
+      (track) => track.kind === 'pose' && track.unitId === 'p0' && track.clip === 'cast',
+    );
+    if (!flash || !cast) throw new Error('expected Air Blast impact choreography');
+    expect(impact.at).toBe(flash.start);
+    expect(impact.at).toBeGreaterThan(cast.start);
+
+    const a = new Animator(CONTENT, { motionReduced: () => reduced });
+    a.push(1000, events, before);
+    const after = combatUnit('e0', 5, 3, 14);
+    expect(a.unitHealth(impact.at - 0.01, after)).toEqual({ hp: 20, fallen: false });
+    expect(a.unitHealth(impact.at, after)).toEqual({ hp: 14, fallen: false });
+  });
+
+  it('keeps queued damage and healing ordered, delays a KO to its fall, and clears presentation state', () => {
+    const a = new Animator(CONTENT, { motionReduced: () => false });
+    const roster = [combatUnit('p0', 1, 3, 20), combatUnit('e0', 5, 3, 20)];
+    const damage: GameEvent[] = [
+      airBlast,
+      { type: 'damaged', unitId: 'e0', amount: 6, crit: false, damageType: 'air', sourceId: 'p0' },
+    ];
+    const first = choreograph({
+      content: CONTENT,
+      events: damage,
+      unitsBefore: roster,
+      cursor: 0,
+      rate: 1,
+      pushIndex: 0,
+    }).health[0];
+    if (!first) throw new Error('expected damage health timing');
+    a.push(0, damage, roster);
+
+    const healedBefore = [combatUnit('p0', 1, 3, 20), combatUnit('e0', 5, 3, 14)];
+    a.push(1, [{ type: 'healed', unitId: 'e0', amount: 4 }], healedBefore);
+    const healed = combatUnit('e0', 5, 3, 18);
+    expect(a.unitHealth(first.at, healed)).toEqual({ hp: 14, fallen: false });
+    expect(a.unitHealth(a.finishesAt, healed)).toEqual({ hp: 18, fallen: false });
+
+    const lethalBefore = [combatUnit('p0', 1, 3, 20), combatUnit('e0', 5, 3, 18)];
+    const lethal: GameEvent[] = [
+      {
+        type: 'damaged',
+        unitId: 'e0',
+        amount: 18,
+        crit: false,
+        damageType: 'pure',
+        sourceId: 'p0',
+      },
+      { type: 'unitDied', unitId: 'e0' },
+    ];
+    const lethalTiming = choreograph({
+      content: CONTENT,
+      events: lethal,
+      unitsBefore: lethalBefore,
+      cursor: a.finishesAt,
+      rate: 1,
+      pushIndex: 2,
+    }).health;
+    const empty = lethalTiming[0],
+      fallen = lethalTiming[1];
+    if (!empty || !fallen) throw new Error('expected lethal health timing');
+    a.push(2, lethal, lethalBefore);
+    const dead = combatUnit('e0', 5, 3, 0);
+    expect(a.unitHealth(empty.at, dead)).toEqual({ hp: 0, fallen: false });
+    expect(a.unitHealth(fallen.at, dead)).toEqual({ hp: 0, fallen: true });
+    a.prune(a.finishesAt + 1);
+    expect(a.unitHealth(a.finishesAt + 1, dead)).toEqual({ hp: 0, fallen: true });
+    const refreshed = combatUnit('e0', 5, 3, 7, 30);
+    expect(a.unitHealth(a.finishesAt + 1, refreshed)).toEqual({ hp: 7, fallen: false });
+    a.clear();
+    expect(a.unitHealth(0, dead)).toEqual({ hp: 0, fallen: true });
+  });
+
   it('shows every area cel before debris spends the Canvas particle budget', () => {
     for (const abilityId of ['shockwave', 'tidal_wave', 'tornado']) {
       const a = new Animator(CONTENT, { motionReduced: () => false });
@@ -197,19 +306,20 @@ describe('Animator', () => {
     expect(a.busy(0)).toBe(false);
     a.push(1000, [moved('p0', [2, 3], [3, 3], [4, 3])], [unit('p0', 1, 3)]);
     expect(a.busy(1000)).toBe(true);
-    // Three steps at 110 ms each.
-    expect(a.finishesAt).toBe(1000 + 330);
-    expect(a.busy(1330)).toBe(false);
+    // Three tiles at cruising pace plus short acceleration and braking.
+    expect(a.finishesAt).toBe(1960);
+    expect(a.busy(1959)).toBe(true);
+    expect(a.busy(1960)).toBe(false);
   });
 
   it('draws the walker at its start and at its destination', () => {
     const a = animator();
     a.push(1000, [moved('p0', [2, 3], [3, 3], [3, 4])], [unit('p0', 1, 3)]);
     expect(a.renderPos(1000, 'p0')).toEqual({ x: 1, y: 3 });
-    const end = a.renderPos(1330, 'p0');
+    const end = a.renderPos(a.finishesAt, 'p0');
     expect(end?.x).toBeCloseTo(3, 6);
     expect(end?.y).toBeCloseTo(4, 6);
-    expect(a.renderPos(1331, 'p0')).toBeUndefined();
+    expect(a.renderPos(a.finishesAt + 1, 'p0')).toBeUndefined();
   });
 
   it('eases along the route rather than hopping tile to tile', () => {
@@ -217,10 +327,10 @@ describe('Animator', () => {
     a.push(0, [moved('p0', [1, 0], [2, 0], [3, 0], [4, 0])], [unit('p0', 0, 0)]);
     // A quarter of the way through the time, an eased walk has covered
     // less than a quarter of the distance; halfway through, exactly half.
-    const early = a.renderPos(110, 'p0');
+    const early = a.renderPos(a.finishesAt / 4, 'p0');
     expect(early?.x ?? 0).toBeLessThan(1);
     expect(early?.x ?? 0).toBeGreaterThan(0);
-    const mid = a.renderPos(220, 'p0');
+    const mid = a.renderPos(a.finishesAt / 2, 'p0');
     expect(mid?.x).toBeCloseTo(2, 6);
     expect(mid?.y).toBeCloseTo(0, 6);
   });
@@ -228,7 +338,7 @@ describe('Animator', () => {
   it('rounds the corner of a turn without leaving the tiles walked', () => {
     const a = animator();
     a.push(0, [moved('p0', [1, 0], [1, 1])], [unit('p0', 0, 0)]);
-    for (let t = 0; t <= 220; t += 10) {
+    for (let t = 0; t <= a.finishesAt; t += 10) {
       const p = a.renderPos(t, 'p0');
       if (!p) continue;
       const inside =
@@ -240,6 +350,22 @@ describe('Animator', () => {
         (p.x >= 0 && p.x <= 1 && p.y >= 0 && p.y <= p.x + 1e-9);
       expect(inside, `${p.x},${p.y} at ${t}`).toBe(true);
     }
+  });
+
+  it('carries one distance phase across tile boundaries and settles into combat ready stance', () => {
+    const a = animator();
+    a.push(0, [moved('p0', [1, 0], [2, 0], [3, 0], [4, 0])], [unit('p0', 0, 0)]);
+    let previous = -1;
+    for (const at of [200, 339, 341, 619, 621, 900, a.finishesAt]) {
+      const x = a.renderPos(at, 'p0')?.x ?? -1;
+      const phase = a.unitPose(at, 'p0')?.clipTime ?? -1;
+      expect(phase).toBeCloseTo(x * 500, 8);
+      expect(phase).toBeGreaterThan(previous);
+      previous = phase;
+    }
+    a.prune(a.finishesAt + 1);
+    expect(a.locomotion(a.finishesAt + 1, 'p0')).toEqual({ clip: 'idle', facing: 1 });
+    expect(a.unitPose(a.finishesAt + 1, 'p0')).toBeUndefined();
   });
 
   it('turns to face the way it walks and keeps facing that way', () => {
@@ -259,11 +385,12 @@ describe('Animator', () => {
     const a = animator();
     expect(a.offset(0, 'p0')).toBeUndefined();
     a.push(0, [moved('p0', [1, 0], [2, 0])], [unit('p0', 0, 0)]);
-    const mid = a.offset(110, 'p0');
+    const mid = a.offset(200, 'p0');
     expect(mid?.x).toBe(0);
     // Half a tile of travel is the top of the first bob.
     expect(mid?.y ?? 0).toBeLessThan(0);
-    expect(a.offset(221, 'p0')).toBeUndefined();
+    expect(mid?.y).toBeCloseTo(-0.05, 9);
+    expect(a.offset(a.finishesAt + 1, 'p0')).toBeUndefined();
   });
 
   it('collapses to a single frame under reduce motion', () => {

@@ -71,12 +71,18 @@ export const voiceSchema = z.object({
   attack: z.number().min(0).max(2000).default(15),
   /** Fall to silence after the attack. The whole voice is attack + decay. */
   decay: z.number().min(10).max(4000).default(260),
+  /** Optional body level at 35% of decay; zero preserves the short legacy envelope. */
+  body: z.number().min(0).max(0.8).default(0),
   gain: z.number().min(0).max(4).default(1),
   /** A short click at the head, for a crack or a strike landing. */
   crack: z.boolean().default(false),
 });
 
-export const soundSchema = z.discriminatedUnion('kind', [sampleSchema, voiceSchema]);
+export const soundSchema = z.discriminatedUnion('kind', [
+  sampleSchema,
+  voiceSchema,
+  z.object({ kind: z.literal('layers'), voices: z.array(voiceSchema).min(1).max(3) }),
+]);
 
 export type SampleDef = z.infer<typeof sampleSchema>;
 export type VoiceDef = z.infer<typeof voiceSchema>;
@@ -100,7 +106,7 @@ const voice = (
   from: number,
   to: number,
   rest: Partial<Omit<VoiceDef, 'kind' | 'from' | 'to'>> = {},
-): SoundDefInput => ({
+): z.input<typeof voiceSchema> => ({
   kind: 'voice',
   from,
   to,
@@ -171,6 +177,39 @@ export const SOUND_FAMILIES: Readonly<Record<string, SoundDefInput>> = {
  * credited in `src/content/credits.ts`; weapon voices are original recipes.
  */
 export const SOUND_CUES: Readonly<Record<string, SoundDefInput>> = {
+  /* Slice materials: release only; hit/miss remains a separate cue. -- */
+  // A compact ignition and a lower flame body, rather than a full blast hiss.
+  'fx.fire.jab': {
+    kind: 'layers',
+    voices: [
+      voice(2300, 650, { attack: 8, decay: 110, gain: 0.3, q: 0.7 }),
+      voice(700, 260, {
+        noise: 'brown',
+        filter: 'lowpass',
+        attack: 18,
+        decay: 270,
+        body: 0.45,
+        gain: 0.65,
+        q: 0.8,
+      }),
+    ],
+  },
+  // Low weight plus audible stone grit; no crack that would imply a landed hit.
+  'fx.earth.rock': {
+    kind: 'layers',
+    voices: [
+      voice(460, 130, {
+        noise: 'brown',
+        filter: 'lowpass',
+        attack: 12,
+        decay: 360,
+        body: 0.5,
+        gain: 0.7,
+        q: 0.9,
+      }),
+      voice(1900, 620, { attack: 9, decay: 210, body: 0.25, gain: 0.18, q: 0.7 }),
+    ],
+  },
   /* Weapons and machinery ------------------------------------------- */
   // These play at release. A club's swish must not claim a hit before the
   // separately scheduled hit/miss cue; only the crossbow's mechanism cracks.

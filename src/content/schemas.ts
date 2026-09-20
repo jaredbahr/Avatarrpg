@@ -33,6 +33,7 @@ import type {
   StoryNode,
   SurfaceDef,
 } from '../core/types';
+import { STORY_PRESENTATIONS, validateStoryPresentations } from './story/presentations';
 
 /* ------------------------------------------------------------------ */
 /* Primitives                                                          */
@@ -77,6 +78,7 @@ const terrainId = z.enum([
 ]);
 
 const vec2 = z.object({ x: z.number().int().min(0), y: z.number().int().min(0) });
+const sceneFootprintVec2 = z.object({ x: z.number().int(), y: z.number().int() });
 const id = z.string().min(1).max(64);
 
 const unitStats = z.object({
@@ -399,6 +401,14 @@ const tileTemplate = z.object({
 
 const sceneImageSchema = z.object({
   url: z.string().min(1),
+  sourceRect: z
+    .object({
+      x: z.number().int().nonnegative(),
+      y: z.number().int().nonnegative(),
+      width: z.number().int().positive(),
+      height: z.number().int().positive(),
+    })
+    .optional(),
   x: z.number(),
   y: z.number(),
   width: z.number().positive(),
@@ -421,6 +431,8 @@ export const mapSchema = z
         name: z.string().min(1),
         pos: vec2,
         sprite: z.string().min(1),
+        interaction: z.literal('route-sign').optional(),
+        when: conditionSchema.optional(),
         node: id,
         routes: z.array(z.object({ when: conditionSchema, node: id })).optional(),
       }),
@@ -463,15 +475,33 @@ export const mapSchema = z
     scene: z
       .object({
         paintedWater: z.boolean().optional(),
+        groundMode: z.literal('partial').optional(),
+        paintedRubble: z.array(vec2).optional(),
         ground: z.array(sceneImageSchema).max(8),
         scenery: z
           .array(
-            sceneImageSchema.extend({
-              id,
-              footprint: z.array(vec2).min(1),
-              depth: z.object({ x: z.number().finite(), y: z.number().finite() }),
-              fadeWhenOccluding: z.boolean().optional(),
-            }),
+            sceneImageSchema
+              .extend({
+                id,
+                footprint: z.array(sceneFootprintVec2).min(1),
+                depth: z.object({ x: z.number().finite(), y: z.number().finite() }),
+                exterior: z.boolean().optional(),
+                wall: z.boolean().optional(),
+                fadeWhenOccluding: z.boolean().optional(),
+                fadeGroup: id.optional(),
+              })
+              .superRefine((piece, ctx) => {
+                if (piece.exterior) return;
+                piece.footprint.forEach((cell, index) => {
+                  if (cell.x < 0 || cell.y < 0) {
+                    ctx.addIssue({
+                      code: z.ZodIssueCode.custom,
+                      path: ['footprint', index],
+                      message: 'must be on the map unless exterior is true',
+                    });
+                  }
+                });
+              }),
           )
           .max(32),
       })
@@ -619,6 +649,16 @@ export const storyNodeSchema = z.discriminatedUnion('kind', [
     kind: z.literal('explore'),
     mapId: id,
     objective: z.string().min(1),
+    objectiveNpcId: id.optional(),
+    objectiveVariants: z
+      .array(
+        z.object({
+          when: conditionSchema,
+          text: z.string().min(1),
+          objectiveNpcId: id.nullable().optional(),
+        }),
+      )
+      .optional(),
     next: id,
   }),
   z.object({
@@ -671,10 +711,19 @@ export const assetEntrySchema = z.discriminatedUnion('kind', [
     kind: z.literal('sheet'),
     atlas: z.string().regex(/\.json$/, 'must point at the atlas JSON'),
     pixelsPerTile: z.union([z.literal(128), z.literal(256)]),
+    frameSize: z
+      .object({ w: z.number().int().min(1).max(512), h: z.number().int().min(1).max(512) })
+      .optional(),
     footprint: z.object({ w: z.union([z.literal(1), z.literal(2)]), h: z.literal(1) }),
     anchor: z.object({ x: z.number().min(0).max(1), y: z.number().min(0).max(1) }),
     facing: z.enum(['mirror', 'both']),
     clips: z.object(Object.fromEntries(CLIP_NAMES.map((clip) => [clip, clipDef.optional()]))),
+    meleeDirections: z
+      .object({
+        screenUp: z.tuple([z.string().min(1), z.string().min(1)]).optional(),
+        screenDown: z.tuple([z.string().min(1), z.string().min(1)]).optional(),
+      })
+      .optional(),
     palette: z.string().min(1),
   }),
 ]);
@@ -1339,8 +1388,26 @@ export function validateContent(bundle: ContentBundle): string[] {
         }
         break;
     }
-    if (node.kind === 'explore' && !mapIds.has(node.mapId)) {
-      problems.push(`story node "${node.id}" uses unknown map "${node.mapId}"`);
+    if (node.kind === 'explore') {
+      const map = bundle.maps.find((candidate) => candidate.id === node.mapId);
+      if (!map) {
+        problems.push(`story node "${node.id}" uses unknown map "${node.mapId}"`);
+      } else if (node.objectiveNpcId && !map.npcs.some((npc) => npc.id === node.objectiveNpcId)) {
+        problems.push(
+          `story node "${node.id}" targets unknown npc "${node.objectiveNpcId}" on map "${node.mapId}"`,
+        );
+      } else {
+        for (const variant of node.objectiveVariants ?? []) {
+          if (
+            variant.objectiveNpcId &&
+            !map.npcs.some((npc) => npc.id === variant.objectiveNpcId)
+          ) {
+            problems.push(
+              `story node "${node.id}" objective variant targets unknown npc "${variant.objectiveNpcId}" on map "${node.mapId}"`,
+            );
+          }
+        }
+      }
     }
   }
 
@@ -1349,6 +1416,8 @@ export function validateContent(bundle: ContentBundle): string[] {
       problems.push(`story node "${from}" links to "${to}", which does not exist`);
     }
   }
+
+  problems.push(...validateStoryPresentations(STORY_PRESENTATIONS, bundle.story, bundle.maps));
 
   /* --- reachability: every node must be reachable from the entry ----- */
   const entry = 'act1_open';

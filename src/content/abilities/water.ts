@@ -1,7 +1,6 @@
 /**
- * Waterbending: the party's only real healing, plus the two setup tools that
- * make every other element better — soaking a target for the firebender's
- * lightning, and freezing a puddle under an advancing line.
+ * Waterbending: the party's only real healing, plus setup tools that make
+ * lightning and cold more effective — soaking targets and freezing puddles.
  */
 
 import type { Ability } from '../../core/types';
@@ -19,8 +18,8 @@ export const WATER_ABILITIES: readonly Ability[] = [
       { kind: 'damage', base: 4, scale: 0.6, damageType: 'water' },
       { kind: 'status', status: 'wet', duration: 2, chance: 0.75, to: 'hit' },
     ],
-    description: 'A lash of water that soaks what it hits. Set up the firebender.',
-    flavor: 'Wet things freeze. Wet things conduct. Remember that.',
+    description: 'A lash of water that can soak what it hits. Set up lightning or cold.',
+    flavor: 'Wet things conduct lightning. Cold can lock water solid. Remember that.',
     fx: 'fx.water.whip',
     tags: ['attack', 'control'],
   }),
@@ -92,7 +91,7 @@ export const WATER_ABILITIES: readonly Ability[] = [
       { kind: 'surface', surface: 'water', duration: 3, area: 'area' },
     ],
     description: 'A wall of water that shoves everything back and floods the ground.',
-    flavor: 'Then ask the firebender to make some lightning.',
+    flavor: 'Use lightning while the water is there.',
     fx: 'fx.water.wave',
     tags: ['attack', 'control', 'surface', 'signature'],
   }),

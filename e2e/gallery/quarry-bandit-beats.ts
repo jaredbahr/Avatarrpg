@@ -1,5 +1,5 @@
 import type { Beat } from './beats';
-import { tileCentre } from './stage';
+import { tileCentre, focusStagedUnit } from './stage';
 import {
   enterNode,
   resetStorage,
@@ -72,6 +72,7 @@ export const QUARRY_BANDIT_BEATS: readonly Beat[] = CAST.map((spec) => ({
         }),
       );
     }, spec.name);
+    await focusStagedUnit(ctx.page, unitId, ctx.settleTimeout);
     await ctx.filmstrip(this.note, [60, 140, 260, 400, 560, 850], async () => {
       await ctx.page.evaluate(
         ({ unitId, ability }) => {
@@ -104,6 +105,7 @@ export const QUARRY_BANDIT_BEATS: readonly Beat[] = CAST.map((spec) => ({
       );
     });
     await waitForIdle(ctx.page);
+    await focusStagedUnit(ctx.page, unitId, ctx.settleTimeout);
     const point = await tileCentre(ctx.page, { x: 9, y: 8 });
     await ctx.page.mouse.click(point.x, point.y, { button: 'right' });
     await ctx.page.locator(`.dialog canvas[data-asset="portrait.enemy.${spec.name}"]`).waitFor();

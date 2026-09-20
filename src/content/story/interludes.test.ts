@@ -34,6 +34,15 @@ describe('illustrated story continuity', () => {
     }
   });
 
+  it('keeps every worker departure beat on the rescue image', () => {
+    expect(INTERLUDES.act1_epilogue?.shots.slice(0, 4)).toEqual([
+      'rescue',
+      'rescue',
+      'rescue',
+      'rescue',
+    ]);
+  });
+
   it('gives long captions enough time to read', () => {
     expect(interludeHoldMs('A quiet road.')).toBeGreaterThanOrEqual(6000);
     const text = Array.from({ length: 50 }, () => 'word').join(' ');

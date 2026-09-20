@@ -1,0 +1,53 @@
+{
+  "tool": "Built-in OpenAI image generation",
+  "date": "2026-09-19",
+  "licence": "OpenAI output terms; non-commercial project use",
+  "terms": "https://openai.com/policies/row-terms-of-use/",
+  "reference": {
+    "path": "assets/reference/character-poses/riko.png",
+    "bytes": 71153,
+    "sha256": "390faa3404865c96e9188c107f0c7e9284bb8acbacdff69d366c4645b63e8f47"
+  },
+  "outputs": [
+    {
+      "direction": "screenUp",
+      "generatorFilename": "exec-c575d839-e621-4919-915f-d15f9d3befe6.png",
+      "path": "riko-screen-up.png",
+      "pixels": [1024, 1536],
+      "bytes": 1475177,
+      "sha256": "615aa2c60b24de9e5b93bc528d55d794b64e75204880887624a467112b6622ba",
+      "normalisedCell": {
+        "path": "riko-screen-up-cell.png",
+        "pixels": [128, 192],
+        "bytes": 14033,
+        "sha256": "157b9285c6ea36f644148ec868929bea1cec1ef3cb2ecad6cd353a646425f66a"
+      }
+    },
+    {
+      "direction": "screenDown",
+      "generatorFilename": "exec-e101fefb-f8a0-434e-aeb6-c0780584a85e.png",
+      "path": "riko-screen-down.png",
+      "pixels": [1024, 1536],
+      "bytes": 1456524,
+      "sha256": "b9f07d3ca6d74cfe327b379a16a8e965787f45dfa7327fcc5d755385b62e1210",
+      "normalisedCell": {
+        "path": "riko-screen-down-cell.png",
+        "pixels": [128, 192],
+        "bytes": 14468,
+        "sha256": "b763065ea7130948bd63dc2763d906cc128fab9f79979814ef08b2e019fdfbb4"
+      }
+    }
+  ],
+  "normalisation": {
+    "alphaThreshold": 8,
+    "targetCell": [128, 192],
+    "targetVisibleHeight": 119,
+    "baselineTop": 44,
+    "clearMargin": 8,
+    "slots": {
+      "screenUp": { "atlas": [512, 384, 128, 192], "frame": "unit.non.riko/meleeNorth/0" },
+      "screenDown": { "atlas": [640, 384, 128, 192], "frame": "unit.non.riko/meleeSouth/0" }
+    }
+  },
+  "note": "The original outputs and the reviewed normalised cells are retained here because generated-image storage is task-local. The tracked packer validates both inputs, copies the exact 128x192 cells into the two free atlas slots, and checks that no source pixels outside those cells change."
+}

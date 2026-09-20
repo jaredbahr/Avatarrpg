@@ -25,6 +25,16 @@ describe('resolveClip', () => {
     expect(resolveClip({ ...directional, rest: clip(1) }, 'idle')?.clip).toBe('idle');
   });
 
+  it('holds each tea cel slowly and falls back honestly when the sheet lacks it', () => {
+    const tea = resolveClip({ ...minimal, tea: clip(2, 0.25, true) }, 'tea');
+    if (!tea) throw new Error('missing tea');
+    expect(frameIndex(tea, 3999, undefined)).toBe(0);
+    expect(frameIndex(tea, 4000, undefined)).toBe(1);
+    expect(frameIndex(tea, 8000, undefined)).toBe(0);
+    expect(frameIndex(tea, 5000, 0)).toBe(0);
+    expect(resolveClip(minimal, 'tea')).toMatchObject({ clip: 'idle', exact: false });
+  });
+
   it('finds the clip itself when the sheet has it', () => {
     expect(resolveClip(full, 'melee')).toMatchObject({ clip: 'melee', exact: true });
   });

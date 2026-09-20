@@ -1,5 +1,5 @@
 import type { Beat } from './beats';
-import { tileCentre } from './stage';
+import { tileCentre, focusStagedUnit } from './stage';
 import {
   enterNode,
   resetStorage,
@@ -28,14 +28,22 @@ export const CROSSBOW_BEATS: readonly Beat[] = [
       await takeTurn(ctx.page, { settleTimeout: ctx.settleTimeout });
       await waitForIdle(ctx.page);
       await settleLayout(ctx.page, ctx.settleTimeout);
-      const pos = await ctx.page.evaluate(() => {
+      const crossbow = await ctx.page.evaluate(() => {
         const crossbow = window.fnt?.app.state?.battle?.units.find(
           (u) => u.sprite === 'unit.enemy.crossbow',
         );
         if (!crossbow) throw new Error('Expected a crossbow');
-        return crossbow.pos;
+        return { id: crossbow.id, pos: crossbow.pos };
       });
-      const point = await tileCentre(ctx.page, pos);
+      // The camera has to own this actor before its tile is projected. An
+      // unfocused enemy can sit outside the fitted board or under the
+      // initiative strip, and the right-click then lands on the chrome instead
+      // of the tile, so the inspector never opens: the same repair the bandit
+      // portrait beat needed in b0fbc8b. It also asserts the projected point
+      // really is on the interactive canvas, so a future miss fails there
+      // instead of waiting out the test timeout on a locator.
+      await focusStagedUnit(ctx.page, crossbow.id, ctx.settleTimeout);
+      const point = await tileCentre(ctx.page, crossbow.pos);
       await ctx.page.mouse.click(point.x, point.y, { button: 'right' });
       await ctx.page.locator('.dialog canvas[data-asset="portrait.enemy.crossbow"]').waitFor();
       await ctx.shoot(this.note);

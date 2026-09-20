@@ -34,6 +34,14 @@ const HOMECOMINGS = [
 ] as const;
 
 describe('the authored walk home', () => {
+  it('keeps the opening objective directional after Mira has answered', () => {
+    const state = finish(apply(CONTENT, game(), { type: 'enterNode', nodeId: 'mira_intro' }).state);
+    expect(state.story.nodeId).toBe('village_explore');
+    expect(worldObjective(CONTENT, state)).toBe(
+      'Take the east road to the quarry. You can speak with the neighbors before you leave.',
+    );
+  });
+
   it('offers the quarry exit after victory and keeps defeat terminal', () => {
     const victory = CONTENT.story.get('act1_epilogue');
     const defeat = CONTENT.story.get('act1_epilogue_lost');
@@ -81,6 +89,8 @@ describe('the authored walk home', () => {
     const mira = CONTENT.story.get('mira_epilogue');
     if (mira?.kind !== 'dialogue') throw new Error('Missing Mira return');
     expect(resolveDialogue(spared, mira).lines).not.toEqual(resolveDialogue(traded, mira).lines);
+    expect(resolveDialogue(spared, mira).lines.join(' ')).toContain('maker-plate rubbing');
+    expect(resolveDialogue(traded, mira).lines.join(' ')).toContain('maker-plate rubbing');
   });
 
   it('does not assume Pella was consulted before the rescue', () => {
@@ -107,6 +117,71 @@ describe('the authored walk home', () => {
         if (node?.kind !== 'explore') throw new Error('Missing return exploration');
         expect(worldObjective(CONTENT, state)).toBe(node.objective);
       }
+    }
+  });
+
+  it('changes the village cue after every homecoming has been visited', () => {
+    const base = game({ act1_complete: true });
+    const visited = ['mira_epilogue', 'pella_home', 'gao_home_cold', 'dorin_home'];
+    const complete = {
+      ...base,
+      location: { ...base.location, mapId: 'ba_dan_village' },
+      story: {
+        ...base.story,
+        nodeId: 'village_return_explore',
+        visited,
+      },
+    };
+    expect(worldObjective(CONTENT, complete)).toBe(
+      "You've caught up with the village. Rest by the river, or explore the roads.",
+    );
+
+    const mapArrival = {
+      ...complete,
+      story: { ...complete.story, nodeId: null },
+    };
+    expect(worldObjective(CONTENT, mapArrival)).toBe(
+      "You've caught up with the village. Rest by the river, or explore the roads.",
+    );
+
+    const pending = { ...complete, story: { ...complete.story, visited: visited.slice(0, 3) } };
+    expect(worldObjective(CONTENT, pending)).toBe(
+      'The workers are home. Talk with Mira, Pella, Gao or Dorin, or visit the river.',
+    );
+  });
+
+  it('keeps the rescued riverside objective after an optional dialogue returns', () => {
+    const state = game({ act1_complete: true });
+    const riverside = {
+      ...state,
+      location: { ...state.location, mapId: 'ba_dan_riverside' },
+      story: { ...state.story, nodeId: 'riverside_explore' },
+    };
+    expect(worldObjective(CONTENT, riverside)).toBe(
+      'Rest by the river, or follow the southern path back to Ba Dan.',
+    );
+  });
+
+  it('gives the three roadside discoveries a changed but honest return state', () => {
+    const before = game();
+    const after = game({ act1_complete: true });
+    const markers = {
+      duck_nest: 'nest is dry',
+      runoff_marker: 'not clear yet',
+      tea_station: 'last of the tea',
+    } as const;
+
+    for (const [id, marker] of Object.entries(markers)) {
+      const first = CONTENT.story.get(`discover_${id}`);
+      const revisit = CONTENT.story.get(`revisit_${id}`);
+      if (first?.kind !== 'dialogue' || revisit?.kind !== 'dialogue') {
+        throw new Error(`Missing discovery dialogue for ${id}`);
+      }
+      expect(resolveDialogue(before, first).lines).toEqual(resolveDialogue(after, first).lines);
+      expect(resolveDialogue(before, revisit).lines).not.toEqual(
+        resolveDialogue(after, revisit).lines,
+      );
+      expect(resolveDialogue(after, revisit).lines.join(' ')).toContain(marker);
     }
   });
 

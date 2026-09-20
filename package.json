@@ -1,6 +1,6 @@
 {
   "name": "four-nations-tactics",
-  "version": "0.1.0",
+  "version": "0.2.2",
   "private": true,
   "description": "Four Nations Tactics - a hot-seat turn-based tactical RPG for the family. Non-commercial fan work.",
   "type": "module",
@@ -22,7 +22,8 @@
     "balance": "node --import tsx scripts/balance.ts",
     "e2e": "playwright test",
     "verify": "npm run typecheck && npm run lint && npm run format:check && npm run test",
-    "gallery": "playwright test -c playwright.gallery.config.ts && node scripts/gallery-index.mjs",
+    "gallery": "npm run gallery:capture && node scripts/gallery-index.mjs",
+    "gallery:capture": "playwright test -c playwright.gallery.config.ts",
     "art:normalise": "node --import tsx scripts/art/normalise.ts",
     "art:pack": "node --import tsx scripts/art/pack.ts",
     "art:validate": "node --import tsx scripts/art/validate.ts",
