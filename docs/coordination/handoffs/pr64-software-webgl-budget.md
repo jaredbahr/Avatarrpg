@@ -166,24 +166,48 @@ Leads for whoever takes it:
   hold the earlier history; the paused-clock handling is shared with the
   activity pause path, so a fix here touches that contract.
 
+## Result on `690933c`, the tea attempt
+
+Run `35492405943` on `690933c`: `Chromium touch 3/3` failed the tea case again
+(329.7s over two attempts) and nothing else. The probe added in this revision
+answers the question it was added to answer, and it rules out the explanation
+the fix was built on:
+
+```
+tea-webgl-advance: {"before":5846,"after":9846,"advanced":4000}
+```
+
+The mocked four seconds did reach the animation — `VillageLife.elapsed` moved
+by exactly one two-cel period — and handing real frames back through
+`clock.resume()` and `settleLayout()` still left the two portraits
+byte-identical. So the cel is not failing to advance, and waiting for a
+committed frame is not the repair. The Canvas variant of the same case passes
+the same comparison on the same clip.
+
+That narrows it to what the _clip_ contains. The clip is a page region, so it
+carries the board canvas under the shared 2D life layer, and the two backends
+differ only in that board. Either the tea figure is not inside this region on
+the WebGL path, or what changes in the Canvas comparison is the board's own
+animation rather than the cel — in which case the Canvas pass is not evidence
+about the cel at all, and the assertion has been measuring the wrong thing on
+both backends while only failing on one.
+
 ## Next action
 
-1. Read the tea case's newest result before doing anything else. The revision
-   that carries this handoff also carries a first attempt at it, because the
-   asymmetry above is specific enough to test: the spec now attaches the app's
-   own `VillageLife.elapsed` either side of the mocked four seconds, then hands
-   real frames back (`clock.resume()` and `settleLayout`) before comparing the
-   pixels, so a WebGL surface can commit the frame the app drew. If the cel
-   change lands, that closes the release. If it still fails, the attachment
-   says which half is wrong: `advanced` near 4000 means the animation moved
-   and the comparison is still reading a stale surface, while anything much
-   smaller means the mocked burst never advanced the animation and the
-   presentation change is innocent.
-2. If `advanced` is short, instrument the burst rather than guessing again:
-   `VillageLife.update` advances by `Math.min(60, delta)` per frame, so the
-   question is how many frames `clock.runFor(4000)` actually ran.
-3. Do not relax the visible-cel assertion, and do not raise this branch's
-   budget: the case has room.
-4. Watch the WebKit job's budget: it now runs its full 195 cases in 36.9 of its
+1. Look before changing code again. Attach both portraits (`hold` and the
+   post-advance capture) rather than only `hold`, and screenshot the
+   `.village-life-canvas` element next to the page clip. Two pictures settle
+   whether the tea figure is in the region at all and whether the cel or the
+   board moved between them. One revision of evidence beats a third guess.
+2. Then make the comparison measure the life layer rather than the page: the
+   contract under test is the shared layer's cel, and the board underneath it
+   is the only thing the two backends disagree about. If the cel genuinely
+   alternates, comparing the life canvas alone should pass on both.
+3. If the cel is not actually alternating, that is a finding about the tea clip
+   rather than a test to relax — `sheets.frame(sprite, 'tea', drawingTime(elapsed))`
+   with `n: 0.25` and two cels is the thing to read.
+4. Do not relax the assertion and do not raise this branch's budget: the case
+   has room, and the two failures so far were not budget failures.
+5. Watch the WebKit job's budget: it now runs its full 195 cases in 36.9 of its
    60 minutes. If a later revision grows past that, shard WebKit the way
    Chromium is sharded rather than raising the job limit.
