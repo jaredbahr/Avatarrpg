@@ -101,13 +101,60 @@ separate job with its own measured allowances and it currently passes.
   from a passing run of the repaired suite. The next exact-head CI is the
   first real evidence.
 
+## Result on the repaired head `8ae6996`
+
+Run `35490500300`: `Typecheck, lint, unit tests` passed, `Chromium touch 1/3`
+and `2/3` passed, `3/3` failed on one case. Both shards that failed at
+`b174495` on cost now pass, including `painted-rubble.spec.ts` and
+`forest-aftermath.spec.ts` in 2/3. Every case that timed out in 3/3 now passes
+inside the new budget, and its reported cost is the measurement the repair was
+built on:
+
+| case (webgl)                         | before              | cap then | now    | cap now |
+| ------------------------------------ | ------------------- | -------- | ------ | ------- |
+| `resize-presentation` normal         | 128s, both attempts | 120s     | 156.2s | 300s    |
+| `resize-presentation` missing sheets | never reached       | 120s     | 159.4s | 300s    |
+| `resize-presentation` reduced        | never reached       | 120s     | 135.9s | 300s    |
+| `renderer.spec` board through WebGL  | 107.4s              | 120s     | 106.3s | 300s    |
+| `renderer.spec` painted ground       | 59.0s               | 120s     | 62.2s  | 300s    |
+
+One failure remains, and it is a different class: `riverside-tea.spec.ts` "tea
+holds on the porch and yields to walking and forms (webgl)" failed
+`expect((await teaPortrait()).equals(hold)).toBe(false)` — the two portraits
+were byte-identical, so the opposite tea cel never reached the screen. It ran
+to completion twice at 309.3s.
+
+It is newly _visible_ rather than new: at `b174495` shard 3/3 aborted on the
+resize case and skipped this one, so the WebGL backend has not run it in
+Chromium CI, while its Canvas twin passes in 10.7s and WebKit passes. No
+assertion was weakened to get this far and none should be.
+
+Leads for whoever takes it:
+
+- The tea clip is two cels four seconds apart, driven by
+  `VillageLayer.actorFrame` → `sheets.frame(sprite, 'tea', drawingTime(elapsed))`.
+  The spec has to drive elapsed through a mocked clock because
+  `VillageLife.update` advances its own clock by `Math.min(60, delta)` per
+  frame: at the ~0.3 fps a software-WebGL frame manages, the animation runs
+  about twenty times slower than wall clock and cannot be reached by waiting,
+  which is why `page.clock.runFor(4000)` is there.
+- So the question is what that burst actually did on this project: how many
+  `requestAnimationFrame` callbacks `runFor(4000)` fired, whether
+  `VillageLife.elapsed` advanced the full 4000 ms, and whether the last frame
+  was published. Reading the app's own elapsed and chosen cel around the burst
+  answers that without touching the pixel assertion.
+- `docs/coordination/handoffs/riverside-tea-rest.md` and the tea clock review
+  hold the earlier history; the paused-clock handling is shared with the
+  activity pause path, so a fix here touches that contract.
+
 ## Next action
 
-1. Merge this branch into `codex/quarry-gate-integration` and push **once**, so
-   the required checks run on a single new revision.
-2. If a shard now fails only because a case still needs more than 300s, raise
-   that case alone with the measured number rather than the whole suite, and
-   record why.
-3. Read whatever the new run reports rather than assuming this branch is
-   complete: every failure in `b174495` is answered above, but no repaired case
-   has been re-run, and a shard that fails on something new is a real finding.
+1. Diagnose the tea WebGL case in its own isolated branch, on top of
+   `8ae6996`. Do not relax the visible-cel assertion and do not re-raise this
+   branch's budget: the case has room.
+2. Merge this follow-up (the handoff text) and that repair into
+   `codex/quarry-gate-integration` and push **once**, so the required checks run
+   on a single new revision and auto-merge can land it.
+3. Re-read the WebKit job of run `35490500300` before assuming the WebKit side
+   is clean: it was still running when this was written, and the previous
+   revision failed its reaction case.
