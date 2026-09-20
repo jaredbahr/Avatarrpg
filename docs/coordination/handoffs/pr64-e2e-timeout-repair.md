@@ -23,3 +23,22 @@
   Chromium or 195 WebKit cases. Workflow YAML shape, `git diff --check`, and
   `npm run verify` (105 files, 873 tests) pass. No replacement CI has run yet;
   the pushed PR head and its checks must be rechecked after integration.
+
+## Follow-up from split-browser CI
+
+Run [35484667639](https://github.com/jaredbahr/Avatarrpg/actions/runs/35484667639)
+passed verification but its WebKit job failed at `e2e/playthrough.spec.ts:278`:
+the Rock Throw preview test waited for a hostile chip that never appeared. Its
+first attempt and retry both showed `Nobody there.` The failure trace recorded
+an iPad canvas CSS box of 1194×541 while its DPR-2 backing store still represented
+1194×663 logical pixels. The aim hint had reflowed the HUD before ResizeObserver
+refit the camera; the test projected and clicked a target during that mismatch.
+The WebKit job reported 122 passed, one skipped and 71 not run. The Chromium
+job was still running when this repair was prepared.
+
+After selecting Rock Throw, the test now waits for the existing camera-stability
+helper and polls until canvas CSS and backing dimensions agree before projecting
+the tap. It keeps the hostile preview and outcome assertions. Installed WebKit
+iPad landscape focused test passed 1/1, `npm run verify` passed 873 tests in
+105 files, and `git diff --check` passed. This is a test timing repair; immediate
+player taps and physical-iPad behavior have not been assessed by this change.
