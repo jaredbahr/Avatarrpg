@@ -12,9 +12,9 @@
   files, typecheck, lint and format. `npm run build` +
   `node scripts/check-bundle-size.mjs` reports 298.7 KB gzipped of the 300 KB
   budget. The route review harness passes on both backends at `1368x912` and at
-  portrait `834x1194` with Huge text (installed Chrome). All seven `Screenshot
-  gallery` shards and both end-to-end families passed for PR #67's head, so this
-  branch inherits a release whose whole check family is proven.
+  portrait `834x1194` with Huge text (installed Chrome). All seven
+  screenshot-gallery shards and both end-to-end families passed for PR #67's
+  head, so this branch inherits a release whose whole check family is proven.
 - **Location:** worktree `C:/Users/Jared/.codex/worktrees/prop-contact-shadow`,
   branch `codex/prop-contact-shadow` rebased onto `347cee0` (the v0.2.5 merge)
   with `release: v0.2.6 grounded props` on top. `.shots/prop-shadow/` holds the
