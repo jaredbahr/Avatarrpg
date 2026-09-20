@@ -100,3 +100,33 @@ origin/main origin/codex/route-visual-pass` reported no conflict, so the
   Nothing else is claiming `src/render/painters/tiles.ts`, `palettes.ts` or the
   review harness, and the JS budget has 0.2 KB of headroom, so the next product
   change needs an offsetting trim before this branch can absorb it.
+
+## WebKit iPad ring-capture repair (same PR)
+
+The first exact-head run of the landing PR,
+[35515053759](https://github.com/jaredbahr/Avatarrpg/actions/runs/35515053759),
+failed `[ipad-landscape] › e2e/shopfront.spec.ts › ground ring cannot cover Mira
+on webgl` after 155 passes, and the gallery was skipped behind it. The two
+attempts reported channel deltas of 131 then 39 against a tolerance of 3, which
+is the signature of two different frames rather than of one ring drawn over an
+actor: a compositing regression reproduces the same magnitude every time.
+
+`paintSurface` in `src/render/painters/tiles.ts` is Canvas 2D only — the WebGL
+backend paints terrain and surfaces from a data texture through its shader
+(`src/render/backends/pixi.ts`), so this branch's water and oil change cannot
+alter a WebGL frame or its cost. The run's own failure screenshot also shows the
+ring correctly occluded by the figure standing in front of it.
+
+Two premises the beat relied on were not enforced:
+
+1. The second draw rebuilt the view, so any actor whose clip time or render
+   position moved between the captures changed the pixels the probe compares.
+   The probe now freezes the first frame's view and reuses it, which is what
+   makes the two captures differ by the ring alone.
+2. The renderer draws when the ring state changes, but the compositor presents
+   on its own schedule; a capture taken in between returns the previous frame.
+   Each capture now waits two animation frames after the draw it checks.
+
+No assertion, tolerance, probe point, seed or viewport changed. The guarded
+property is untouched — the ring is still drawn in the under-actor pass on both
+backends — and the WebKit job is the first real evidence for the repair.
