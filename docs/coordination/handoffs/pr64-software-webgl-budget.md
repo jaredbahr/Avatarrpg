@@ -192,22 +192,71 @@ animation rather than the cel — in which case the Canvas pass is not evidence
 about the cel at all, and the assertion has been measuring the wrong thing on
 both backends while only failing on one.
 
+## Result on `3342cdf`, the drawn-cel repair
+
+The previous next action named the right place to look. Two facts from the
+failing report's own attachments (`playwright-report-chromium-3`, run
+`35492405943`) decide it:
+
+- The clip is the figure. At 1280x720 the case reads page region x 378-438,
+  y 248-358, and the full-page `tea-webgl-hold` attachment draws the seated
+  tea figures and their table there, over static paving rather than moving
+  water. The region was never pointing at the wrong tile or at an animated
+  board.
+- The comparison loaded the dice. On that runner one clipped Playwright
+  capture cost about 14s and one software-WebGL frame about 3s, against an
+  authored cel of 4s. The "four seconds later" read therefore happens many
+  real seconds after the frozen read, and after `clock.resume()` the app's own
+  clock runs with real time again, so the frame the compositor finally hands
+  back can be the held cel a whole number of cel periods later. The automatic
+  failure screenshots show the same lottery: attempt 1 had changed cel pixels
+  inside the clip (810 of them), attempt 2 had none.
+
+The repair stops measuring the composited page for this assertion. The seated
+figure is drawn by the shared 2D life layer, the app's loop already drives that
+layer from `performance.now()`, and the layer's own pixels are the cel the app
+drew: identical on both backends because the board underneath is not in them.
+`e2e/riverside-tea.spec.ts` now reads that layer's backing store in the same
+60x110 region and compares those images, and the two intervals jump the frozen
+clock with `fastForward(4000)` plus one drawn frame instead of stepping 240
+software-WebGL frames.
+
+Assertion strength is unchanged: reduced motion still holds the seated cup
+pose, one interval still changes the cel, one more interval still returns the
+held cup drawing, and the walk and form paths still clear the hold. The drawn
+crop is attached as `tea-<backend>-sip` so a failing run carries the cel it
+disagreed with.
+
+## Local verification of `3342cdf` + this repair
+
+- `npm run verify` passes: typecheck, lint, format and 873 unit tests.
+- The focused spec passes all three cases in 13.7s (canvas 5.9s, webgl 6.2s),
+  and again under installed Chrome with
+  `--use-angle=swiftshader --enable-unsafe-swiftshader --disable-gpu` in 15.1s
+  (webgl 8.0s).
+- Non-vacuity: with the interval shortened to 1000ms the same case fails, so
+  the comparison is still measuring the cel rather than passing on any change.
+- Robustness: with a real 8s stall inserted before the post-advance read - the
+  condition that broke this case - webgl still passes in 14.7s, because a
+  frozen mocked clock no longer lets real time reach the drawing.
+- The launcher config used for those runs pointed at installed Chrome because
+  this worktree has no bundled browser. It is not committed.
+
+Not settled here, and not claimed: which half of the CI-only read was wrong.
+Accelerated Chrome and SwiftShader both returned a fresh composited frame on
+this host, and only CPU-throttled SwiftShader returned a stale one, so the
+compositor and the resumed real clock could not be separated locally. The
+repair does not depend on the answer, because it no longer reads through the
+compositor.
+
 ## Next action
 
-1. Look before changing code again. Attach both portraits (`hold` and the
-   post-advance capture) rather than only `hold`, and screenshot the
-   `.village-life-canvas` element next to the page clip. Two pictures settle
-   whether the tea figure is in the region at all and whether the cel or the
-   board moved between them. One revision of evidence beats a third guess.
-2. Then make the comparison measure the life layer rather than the page: the
-   contract under test is the shared layer's cel, and the board underneath it
-   is the only thing the two backends disagree about. If the cel genuinely
-   alternates, comparing the life canvas alone should pass on both.
-3. If the cel is not actually alternating, that is a finding about the tea clip
-   rather than a test to relax — `sheets.frame(sprite, 'tea', drawingTime(elapsed))`
-   with `n: 0.25` and two cels is the thing to read.
-4. Do not relax the assertion and do not raise this branch's budget: the case
-   has room, and the two failures so far were not budget failures.
-5. Watch the WebKit job's budget: it now runs its full 195 cases in 36.9 of its
-   60 minutes. If a later revision grows past that, shard WebKit the way
-   Chromium is sharded rather than raising the job limit.
+1. Push this revision to `codex/quarry-gate-integration`, the PR64 head, and
+   read the run it starts. Both browser jobs failed only on this case at
+   `690933c`, so a green browser job is the release's last gate.
+2. If the browser jobs pass, the auto-merge already enabled on PR64 lands it
+   with a merge commit. Confirm the merge, the Pages deployment and the version
+   the deployed build shows before treating v0.2.2 as shipped.
+3. This case is now much cheaper (no 240-frame bursts), which buys back room in
+   the WebKit job's 60-minute budget. If a later revision grows past it, shard
+   WebKit the way Chromium is sharded rather than raising the job limit.
