@@ -1,5 +1,8 @@
 # The pond stops wearing the tile's outline
 
+- **Superseded in part:** the same branch has since added the pond's bed; see
+  [pond-bed.md](pond-bed.md) for the current head, evidence and next actions.
+
 - **Updated:** 20 September 2026, scheduled DeepSeek Flash continuation.
   Incoming owner: the next scheduled session for the same goal.
 - **Outcome:** the forest pond's bank now reaches a bounded, wandering way inside

@@ -77,3 +77,31 @@ passes 2/2 in 32 s with crops at `.shots/water/{before,after2}-pond-*.png`
 showing the hard teal/ochre line replaced by a wandering, mottled shore on both
 backends. The bed itself — submerged stones, reeds, a visible substrate — is
 still open, along with the village canal and the quarry floor's flat stain.
+
+## Bed, added 20 September 2026
+
+The plate no longer leaves its water cells clear. The 0.4-alpha water film shows
+about 64% of whatever sits under it, so the plate now carries the bed:
+
+- **Material:** the forest's own floor, out of
+  `assets/source/forest-material-v2/material-sheet.png`, sampled in world space
+  with exactly the mapping `scripts/art/forest-route-ground.ts` uses for the road
+  (`sample(x * 192)`, the 3-pixel atlas guard, the atlas's dry-earth quadrant).
+  The bed therefore continues the ground's grain across the wet line, and the
+  small pale pebbles the artist painted into that material arrive as submerged
+  stones at their authored scale.
+- **Depth:** `BED_SHELF` (0.78) at the shelf under the bank, less `BED_SHADE`
+  (0.55) by `BED_DEPTH` (1.5) cells in, with `BED_MOTTLE` (0.07) of seeded noise
+  and a `BED_COOL` shift (red ×0.94, blue ×1.06). `bedShade()` holds the numbers;
+  [ADR 0045](../adr/0045-pond-bed.md) holds the contract.
+- **Bank:** the bite composites over the bed instead of fading into clear pixels,
+  so its inner edge meets damp silt rather than bare ground.
+- Pack metrics at this revision: 704 × 384, 131 072 bed pixels (every wet pixel),
+  6 014 deeper than 0.9 cells, deepest shade 0.387.
+
+Evidence at this revision: `npm run verify` passes (889 tests in 107 files),
+`npm run build` plus `node scripts/check-bundle-size.mjs` report 298.3 KB gzipped
+of the 300 KB budget, `npm run check:assets` is OK, and the route harness passes
+2/2 in 32 s with captures under `.shots/water/bed3/`; `before-after-webgl.png`
+there stacks the shipped v0.2.5 pond against this bed. Still open: reeds and bank
+planting, the village canal's bed and bank, and the quarry floor's flat stain.
