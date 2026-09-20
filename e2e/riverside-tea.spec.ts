@@ -69,7 +69,34 @@ for (const backend of ['canvas', 'webgl']) {
     // The authored tea clip has two cels at 0.25 fps: exactly four seconds
     // reaches the opposite cel without depending on wall-clock scheduling.
     // Run the full interval through RAF so WebKit publishes the opposite cel.
+    const lifeElapsed = () =>
+      page.evaluate(() => {
+        const scene = (window.fnt?.app as unknown as { scene?: { life?: { elapsed?: number } } })
+          ?.scene;
+        return scene?.life?.elapsed ?? null;
+      });
+    const before = await lifeElapsed();
     await page.clock.runFor(4000);
+    const after = await lifeElapsed();
+    // Evidence for a failing run either way: if the clock did not advance the
+    // animation, no amount of waiting for a frame will show the other cel.
+    await test.info().attach(`tea-${backend}-advance`, {
+      body: JSON.stringify({
+        before,
+        after,
+        advanced: before !== null && after !== null ? after - before : null,
+      }),
+      contentType: 'application/json',
+    });
+    /*
+     * The cel has changed, but a Canvas 2D layer reads fresh at screenshot
+     * time where a WebGL surface only changes once the compositor commits the
+     * frame the app drew — and the mocked clock produced every draw inside one
+     * task. Hand real frames back before comparing. That is milliseconds of
+     * animation against a four-second cel, so it cannot turn the drawing back.
+     */
+    await page.clock.resume();
+    await settleLayout(page);
     expect((await teaPortrait()).equals(hold)).toBe(false);
     await expect(stage).toHaveAttribute('data-tea-actors', '2');
     await test
