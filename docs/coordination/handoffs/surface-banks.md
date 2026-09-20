@@ -1,0 +1,169 @@
+# A pool meets the ground on a ragged bank
+
+- **Updated:** 20 September 2026, scheduled DeepSeek Flash continuation run.
+  Incoming owner: the next scheduled session for the same goal; no successor
+  assigned at handoff.
+- **Outcome:** the authored **oil, mud, rubble and ice** washes no longer fill
+  the exact square the rules use. Each surface lays a thin coat over its whole
+  tile, a firmer coat inside a ragged, seeded outline, an irregular bank and a
+  wandering rim that the material gathers along — on both renderers. Ships as
+  playable version `0.2.5`.
+- **Acceptance:** `npm run verify` passes on this head (typecheck, lint,
+  formatting, 889 tests in 107 files). The route review harness passes both
+  backends at 1368x912 and at portrait 834x1194 with Huge text. The production
+  build passes with entry `index-CnqluOEF.js` at 298.2 KB gzipped of the
+  unchanged 300 KB budget. Required Linux exact-head CI has not run yet.
+- **Location:** worktree `C:/Users/Jared/.codex/worktrees/ground-contact`,
+  branch `codex/ground-contact` based on `origin/main` at `344376f` (the v0.2.4
+  merge). Clean tree; `.shots/route-v025*` and `.shots/probe/*` are ignored
+  capture evidence; the scratch probe spec and its config were deleted before
+  commit; no preview server left running.
+
+## What changed
+
+- `src/render/surfaceRendering.ts`: `surfaceOutline` walks the tile's own
+  perimeter clockwise and insets each **open** edge by a `tileNoise` depth, so
+  one pool has one ragged outline and a side shared with the same material
+  stays on the tile edge. `surfaceRim` returns the same walk per open edge for
+  the bank band, the gathered material and the rim stroke.
+  `SURFACE_RIM.wash` is how far the wash thins (6–17% of a tile) and
+  `SURFACE_RIM.coat` splits the material alpha into a base and an interior
+  coat. `SURFACE_RIM.spread` is the shader's matching wander.
+- `src/render/painters/tiles.ts`: the wash is now a base coat over the whole
+  tile plus a firmer coat inside that outline, the bank and rim follow the
+  outline instead of the tile edges, and mud, oil and rubble gather along it.
+  Ice, fire and steam keep the plain bank.
+- `src/render/backends/shaders.ts`: `edgeDistance` is perturbed by
+  `vnoise(w * 2.0)` and feeds an `interior` factor that scales the ice, mud,
+  oil and rubble washes, so WebGL fades at the bank too.
+- `docs/adr/0042-ragged-surface-banks.md`, `package.json`,
+  `package-lock.json`, `CHANGELOG.md`: the decision, version `0.2.5` and the
+  player-facing note.
+
+## Evidence
+
+- **Diagnosis (why this and not "prop shadows").** The 20 September review read
+  two stone stacks on the Driller floor as "sitting on plain dark rectangles
+  rather than a grounded shadow". A throwaway Playwright probe (`centerTile`
+  11,7 at 1:1, canvas + WebGL) sampled the pixel and mapped it back through
+  `rendererCamera().groundTransform`: the rectangle is tile **(11,5)**, whose
+  tile carries `surface: { id: 'mud', duration: -1 }`. Re-running with
+  `scene.ground = []` removed it; painting `terrain === 'wall'` magenta showed
+  the wall tile's own thin fill separately. So the "shadow" is an authored mud
+  patch drawn to the tile square — a surface-bank defect, not a prop-shadow or
+  a baked-art defect. No image generation was needed.
+- **Stills:** `.shots/route-v025/{canvas,webgl}/` (1368x912) and
+  `.shots/route-v025-portrait/{canvas,webgl}/` (834x1194, Huge text) from
+  `npx playwright test -c playwright.route-visual.config.ts` with
+  `FNT_REVIEW_BROWSER_CHANNEL=chrome`; each folder carries the harness's own
+  `provenance.json`. Before/after crops of the same camera are in
+  `.shots/probe/{before,rim,rim2,rim3,final}/` (machine-local, ignored).
+- **What the stills show:** in `battle_grumbler-fit.png` the mud patch beside
+  the lower stack and the oil patches behind both stacks now fade at their
+  boundaries and are edged with a wavy rim and uneven grit instead of a ruled
+  line; the same reads in `battle_quarry_gate-64.png` on the gate's oil
+  channel. Canvas and WebGL agree in character but not pixel for pixel, as
+  before.
+- **A caught regression:** the first implementation walked each side in its own
+  direction, which folded the closed outline over itself at every corner and
+  filled the pools with visible triangular fans. The perimeter walk
+  (`perimeterPoint`) and a `never draws outside the cell` test in
+  `painters/tiles.test.ts` hold that line.
+- **First exact-head CI run (35531658127):** `Typecheck, lint, unit tests`
+  passed, and `E2E Chromium touch 3/3` failed on the riverside-tea WebGL case
+  only — "the tea region must contain the drawn figure", the same probe that
+  flaked on v0.2.4. Two follow-ups are on the head that replaced it:
+  - `perf: keep the surface edge probe on pooled pixels` puts the shader's four
+    edge texel reads back inside `opacity > 0`. They belong on ice, mud, oil and
+    rubble pixels, and a software rasteriser runs that quad over the whole
+    board, so the first version charged every ground pixel for a pooled
+    material's bank.
+  - `test: publish a frame before retrying the tea crop` steps the app clock in
+    the retry. The old retry waited on the wall clock, which draws nothing once
+    the spec has paused the page clock, so a village-life layer that had just
+    resized and cleared stayed blank for every attempt. Both backends of
+    `e2e/riverside-tea.spec.ts` pass locally on the new head; the assertion
+    still requires the drawn figure.
+- **Second exact-head CI run (35533614858):** verification passed,
+  `E2E Chromium touch 1/3` and `2/3` passed, and `E2E Chromium touch 3/3`
+  failed twice — the same riverside-tea WebGL crop (empty on both the attempt
+  and its retry) plus `sheets.spec.ts` WebGL, whose "probe frame never appeared
+  on the unit" poll is capped at 30 s while one software-WebGL screenshot costs
+  about 14 s. The v0.2.4 head (`344376f`, without this change) passed the same
+  shard, so these probes are the thing to watch, not to assume. `97dfc01`
+  raises that poll to the case's own measured allowance; the assertions are
+  unchanged.
+- **Diagnosis to carry forward if the tea probe fails again:** its last read
+  runs after a four-second clock jump, and the two assertions are ordered
+  `teaCel()` then `data-tea-actors=2`, so an empty crop is what a tea hold that
+  ended at the jump looks like. Check the attribute at that instant before
+  blaming the pixels. Both variants pass locally on Windows Chrome, and the
+  probe already failed once on the v0.2.4 head before this branch existed
+  (run 35523630036), so a flake is the leading hypothesis; a repeated failure
+  would need the WebGL ground cost of the wash measured against v0.2.4.
+- **Third exact-head CI run (35535267454):** verification passed, Chromium 1/3
+  and 2/3 passed, and `E2E Chromium touch 3/3` failed twice on
+  `renderer.spec.ts`'s forced-WebGL water sample — `b - r` read 19.92 against
+  the 20 it asserts. Measured on this host, that difference moves with the
+  water's animated ripple: six samples on this head read 23.18, 22.00, 21.47,
+  21.16, 21.35, 21.45, and the same six on the v0.2.4 sources read 23.22,
+  22.04, 21.51, 21.18, 21.33, 21.45. So the change is not shifting the water;
+  the assertion is marginal against an animation. `ee9c994` reads up to three
+  frames and lets the best speak, with the threshold and the failure unchanged.
+- **What that adds up to:** all three failures across three runs are WebGL
+  probes on the software rasteriser — an empty tea crop, a 30-second atlas
+  poll around 14-second screenshots, and an animated water threshold. None is
+  a rule, layout or content defect, and none was reproduced locally on either
+  backend. If a fourth run fails them again, bisect instead of assuming: keep
+  the Canvas painter, revert the shader half, and compare.
+- **Contracts kept:** the base coat still covers the whole hazard tile and no
+  outline point leaves it (`surfaceRendering.test.ts`, `painters/tiles.test.ts`);
+  the tactical bank, the colourblind hatch and the High-contrast path are
+  untouched; no rule, save, preview or content change.
+- **Budget:** 298.2 KB gzipped of the unchanged 300 KB, up 0.4 KB from v0.2.4.
+
+## Findings worth keeping
+
+- The route's ground is authored art, and the generator
+  (`scripts/art/quarry-route-ground.ts`) leaves **dynamic** cells (`~`, `o`, `m`)
+  and **void** cells (`#`) transparent, so those cells show the procedural
+  terrain and the live surface. That is why a mud or oil patch is the only thing
+  drawn there, and why its outline was exactly the tile square.
+- A blocked wall tile in a partial scene still shows its own flat terrain fill
+  where the authored scenery piece does not cover the tile diamond — a thin
+  strip at a stack's base today. It reads as the stack's base contact; if a
+  later pass changes it, do it as a contact shadow rather than as more wash.
+- `surfaceRim`/`surfaceOutline` are pure and seeded, so a boundary never
+  shimmers and the WebGL decor bake stays stable.
+
+## Open gaps (not closed by this change)
+
+- **Prop contact shadows** — the flat ellipses under barrels, carts, rubble and
+  figures (`painters/shapes.ts#groundShadow`, `spriteCache.ts`) — are untouched,
+  and are the review's remaining bounding item.
+- The pond and canal bed/bank **plates** are still uniform teal fields and the
+  quarry floor's pale stain is still flat: art, not painter.
+- Water's own wash still insets itself with a rectangle on Canvas; the shader's
+  water uses a different foam bank. They were left alone to keep this change
+  bounded.
+- Audible listening, physical Surface/iPad play and a continuous manual
+  playthrough remain untested, as before.
+
+## Next actions
+
+1. Read the CI run this push starts: `Typecheck, lint, unit tests`,
+   `End-to-end (Chromium touch, WebKit iPad)` and `Screenshot gallery` on this
+   exact head; auto-merge is enabled with a merge commit. After the merge,
+   confirm the Pages deployment and that the live title shows `v0.2.5`.
+2. Soften the prop contact shadow next: one feathered, grounded shadow for
+   pillar-, crate- and rubble-class props in `painters/shapes.ts`. Check that
+   `groundShadow`'s 0.86-of-the-box baseline stays put so no sprite shifts.
+3. Then re-capture and compare against the three approved references again; the
+   remaining review items are the field dressing and the pond/canal plates.
+
+## Completion
+
+Not merged at handoff: the revision is pushed for exact-head CI. The outgoing
+owner relinquishes `src/render/surfaceRendering.ts`,
+`src/render/painters/tiles.ts`, `src/render/backends/shaders.ts`, their tests,
+ADR 0042 and this handoff.

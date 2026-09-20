@@ -68,11 +68,23 @@ test.describe('renderer backends', () => {
 
     // Check the real authored scene, including its live water overlay. PNG
     // compression bytes are varied even when the canvas is completely blank.
+    //
+    // The water's ripple is animated, so one frame is not a fixed colour: six
+    // samples on one host moved the blue-minus-red difference between 21.2 and
+    // 23.2, and a runner whose screenshot lands on another phase measured 19.9
+    // against the 20 this asserts (both heads, measured 20 September 2026).
+    // A missing overlay never clears the bar on any frame, so read a few and
+    // let the best one speak; the threshold is unchanged.
     const water = await tileCentre(page, { x: 5, y: 6 });
-    const pixels = await screenshotPixels(canvas);
-    const wet = average(pixels, water.x, water.y, 3);
-    expect(wet.b, `authored scene water is absent: ${JSON.stringify(wet)}`).toBeGreaterThan(
-      wet.r + 20,
+    let wet = { r: 0, g: 0, b: 0, bMinusR: -Infinity };
+    for (let sample = 0; sample < 3 && wet.bMinusR <= 20; sample++) {
+      if (sample) await page.waitForTimeout(400);
+      const pixels = await screenshotPixels(canvas);
+      const read = average(pixels, water.x, water.y, 3);
+      wet = { ...read, bMinusR: read.b - read.r };
+    }
+    expect(wet.bMinusR, `authored scene water is absent: ${JSON.stringify(wet)}`).toBeGreaterThan(
+      20,
     );
   });
 

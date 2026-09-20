@@ -1,5 +1,5 @@
 import { SURFACE_STYLES } from '../palettes';
-import { SURFACE_BANK, SURFACE_POOL } from '../surfaceRendering';
+import { SURFACE_BANK, SURFACE_POOL, SURFACE_RIM } from '../surfaceRendering';
 
 const glslColor = (hex: string): string =>
   `vec3(${[1, 3, 5].map((offset) => (parseInt(hex.slice(offset, offset + 2), 16) / 255).toFixed(5)).join(', ')})`;
@@ -237,6 +237,28 @@ void main(void) {
   float opacity = 0.0;
   ${MATERIAL_STYLES}
 
+  /*
+   * How far this pixel is from the material's own boundary, as Canvas measures
+   * it: the footprint stays the full square tile, but the bank wanders inside
+   * it by world noise so a pool never wears a ruled rim. Four texel reads, paid
+   * on the pixels of a pooled material and nowhere else — a software
+   * rasteriser runs this quad for the whole board.
+   */
+  float edgeDistance = 1.0;
+  float wash = 1.0;
+  if (opacity > 0.0) {
+    if (surfaceAt(cell - vec2(0.0, 1.0)) != surface) edgeDistance = min(edgeDistance, f.y);
+    if (surfaceAt(cell + vec2(0.0, 1.0)) != surface) edgeDistance = min(edgeDistance, 1.0 - f.y);
+    if (surfaceAt(cell - vec2(1.0, 0.0)) != surface) edgeDistance = min(edgeDistance, f.x);
+    if (surfaceAt(cell + vec2(1.0, 0.0)) != surface) edgeDistance = min(edgeDistance, 1.0 - f.x);
+    edgeDistance = max(0.0, edgeDistance + (vnoise(w * 2.0) - 0.5) * ${SURFACE_RIM.spread});
+    float washDepth =
+      ${SURFACE_RIM.wash.min} + ${SURFACE_RIM.wash.span} * vnoise(w * 2.0 + vec2(3.1, 7.4));
+    wash =
+      ${SURFACE_RIM.coat.base} +
+      ${SURFACE_RIM.coat.interior} * smoothstep(0.0, washDepth, edgeDistance);
+  }
+
   if (surface == 1) {                 // water
     float ripple = fbm(w * 4.0 + vec2(uTime * 0.25, uTime * 0.17));
     vec3 tint = mix(vec3(0.153, 0.424, 0.482), vec3(0.243, 0.561, 0.690), ripple);
@@ -257,7 +279,7 @@ void main(void) {
     // Continuous world-space frost, not quantised square facets. Fine veins
     // suggest ice without replacing the underlying painted stone texture.
     float frost = vnoise(w * 3.5);
-    lay(acc, tint, opacity * (0.88 + 0.12 * frost) * intensity);
+    lay(acc, tint, opacity * (0.88 + 0.12 * frost) * wash * intensity);
     float vein = 1.0 - smoothstep(0.012, 0.030, abs(vnoise(w * 6.0) - 0.52));
     lay(acc, rim, vein * 0.23 * intensity);
   } else if (surface == 3) {          // fire
@@ -279,7 +301,7 @@ void main(void) {
     lay(acc, vec3(1.0, 0.80, 0.45), ember * 0.7 * intensity);
   } else if (surface == 4) {          // mud
     float churn = fbm(w * 5.0);
-    lay(acc, tint, opacity * (0.88 + 0.12 * churn) * intensity);
+    lay(acc, tint, opacity * (0.88 + 0.12 * churn) * wash * intensity);
     float streak = smoothstep(0.70, 0.84, vnoise(w * vec2(9.0, 17.0)));
     lay(acc, detail, streak * 0.21 * intensity);
   } else if (surface == 5) {          // steam
@@ -287,7 +309,7 @@ void main(void) {
     lay(acc, vec3(0.85, 0.86, 0.87), (0.45 + 0.35 * billow) * intensity);
   } else if (surface == 6) {          // oil
     float sheenBand = vnoise(w * vec2(3.0, 5.0));
-    lay(acc, tint, opacity * intensity);
+    lay(acc, tint, opacity * wash * intensity);
     // A restrained sage sheen, rather than moving rainbow colour over stone.
     float sheen = 1.0 - smoothstep(0.025, 0.070, abs(sheenBand - 0.55));
     lay(acc, detail, sheen * 0.14 * intensity);
@@ -295,18 +317,13 @@ void main(void) {
     lay(acc, mix(rim, vec3(0.68, 0.68, 0.56), 0.35), glint * 0.25 * intensity);
   } else if (surface == 7) {          // rubble
     float chunk = vnoise(w * 11.0);
-    lay(acc, tint, opacity * intensity);
+    lay(acc, tint, opacity * wash * intensity);
     lay(acc, rim, smoothstep(0.74, 0.87, chunk) * 0.28 * intensity);
   }
 
   if (opacity > 0.0) {
     // The actual footprint stays square and complete; only its outer bank is
     // accented. Same-material neighbours do not acquire internal tile rims.
-    float edgeDistance = 1.0;
-    if (surfaceAt(cell - vec2(0.0, 1.0)) != surface) edgeDistance = min(edgeDistance, f.y);
-    if (surfaceAt(cell + vec2(0.0, 1.0)) != surface) edgeDistance = min(edgeDistance, 1.0 - f.y);
-    if (surfaceAt(cell - vec2(1.0, 0.0)) != surface) edgeDistance = min(edgeDistance, f.x);
-    if (surfaceAt(cell + vec2(1.0, 0.0)) != surface) edgeDistance = min(edgeDistance, 1.0 - f.x);
     if (surface == 4 || surface == 6) {
       float depth = ${SURFACE_POOL.depth} * (0.2 + 0.8 * vnoise(w * 13.0));
       float pool = 1.0 - smoothstep(depth * 0.45, depth, edgeDistance);

@@ -1,5 +1,5 @@
 import { expect, test } from '@playwright/test';
-import { allowSoftwareWebgl } from './budget';
+import { SOFTWARE_WEBGL_BUDGET_MS, allowSoftwareWebgl } from './budget';
 import { enterNode, resetStorage, settleLayout, startGame, takeTurn, waitForIdle } from './helpers';
 import { average, screenshotPixels } from './pixels';
 
@@ -74,13 +74,20 @@ test.describe('unit sheets', () => {
         (c.r > 150 && c.g < 120 && c.b < 120) || (c.g > 130 && c.r < 120 && c.b < 130);
 
       // The atlas loads over the network; poll until the probe colour is there.
+      // A forced-WebGL case runs on a software rasteriser whose single
+      // screenshot costs about fourteen seconds (see `e2e/budget.ts`), so the
+      // poll gets the same measured allowance as the case itself. The
+      // assertion is unchanged: the probe colour still has to appear.
       await expect
         .poll(
           async () => {
             const pixels = await screenshotPixels(page.locator('.map-canvas'));
             return isProbe(average(pixels, centre.x, centre.y, 2));
           },
-          { timeout: 30_000, message: 'the probe frame never appeared on the unit' },
+          {
+            timeout: renderer === 'webgl' ? SOFTWARE_WEBGL_BUDGET_MS : 30_000,
+            message: 'the probe frame never appeared on the unit',
+          },
         )
         .toBe(true);
 
