@@ -15,16 +15,24 @@ for (const renderer of ['canvas', 'webgl'] as const) {
     test.setTimeout(120_000);
     if (renderer === 'webgl' && browserName === 'webkit') test.slow();
     // Substitute the existing flat red probe for the bandit's idle art. Keep
-    // both idle entries on the red source rectangle: the CI trace showed slow
-    // WebGL readback phase-locking the 1 fps red/green fixture on green, even
-    // though the atlas had loaded and the marker was on-screen.
-    const atlas = readFileSync('public/art/test/probe.json', 'utf8')
-      .replaceAll('unit.test.probe', 'unit.enemy.thug')
-      .replace('probe.png', 'thug.png')
-      .replace(
-        '"unit.enemy.thug/idle/1": {\n      "frame": {\n        "x": 128,',
-        '"unit.enemy.thug/idle/1": {\n      "frame": {\n        "x": 0,',
-      );
+    // both idle entries on the red source rectangle to avoid timing-sensitive
+    // red/green sampling while proving the loaded atlas is rendered.
+    type ProbeAtlas = {
+      frames: Record<string, { frame: { x: number; y: number; w: number; h: number } }>;
+      meta: { image: string };
+    };
+    const atlasData = JSON.parse(
+      readFileSync('public/art/test/probe.json', 'utf8').replaceAll(
+        'unit.test.probe',
+        'unit.enemy.thug',
+      ),
+    ) as ProbeAtlas;
+    const idle0 = atlasData.frames['unit.enemy.thug/idle/0'];
+    const idle1 = atlasData.frames['unit.enemy.thug/idle/1'];
+    if (!idle0 || !idle1) throw new Error('Probe atlas is missing an idle frame');
+    idle1.frame = { ...idle0.frame };
+    atlasData.meta.image = 'thug.png';
+    const atlas = JSON.stringify(atlasData);
     await page.route('**/art/units/thug.json', (route) =>
       route.fulfill({ contentType: 'application/json', body: atlas }),
     );
