@@ -83,10 +83,13 @@ for (const renderer of ['canvas', 'webgl'])
         configurable: true,
       });
     });
-    const water = await sample();
-    expect(water.b - registered.b).toBeGreaterThan(10);
-    expect(water.g - registered.g).toBeGreaterThan(5);
+    // One capture answers both probes: the average reads the same 7x7 centre
+    // whichever window it is taken from, and a software-WebGL screenshot is the
+    // most expensive operation in this spec, so the wider window serves the
+    // colour check and the change count together.
     const waterRegion = await sample(ROI_CSS);
+    expect(waterRegion.b - registered.b).toBeGreaterThan(10);
+    expect(waterRegion.g - registered.g).toBeGreaterThan(5);
 
     // Hatch mode remains visible over the authored image for a live material.
     await page.evaluate(() => {
