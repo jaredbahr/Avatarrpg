@@ -77,6 +77,14 @@ playwright.route-visual.config.ts` → 2 passed (canvas, webgl), 32 s.
 
 ## Observed, not yet explained
 
+Opening PR #68 produced no `pull_request` workflow run on head `1acc2d8` (zero
+check-runs ten minutes later, while the `main` push run for `347cee0` had its
+jobs running normally), even though the head is a clean descendant of `main`
+(`git merge-base --is-ancestor origin/main HEAD` and a conflict-free
+`git merge-tree`). The required exact-head run is triggered by the follow-up
+`synchronize` push that carries this note; if a future PR opens with no checks,
+look here first before assuming the workflow changed.
+
 A soft grey ellipse with a faint amber core sits over the dirt at about tile
 (6,7) of `battle_quarry_gate` in the **portrait** fixtures on both backends
 (`.shots/prop-shadow/crops/portrait-pool.png`,
