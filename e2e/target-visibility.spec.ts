@@ -109,6 +109,13 @@ for (const renderer of ['canvas', 'webgl'] as const) {
       // each camera settle and pointer readback. The assertions remain the
       // same; give this renderer the same measured slow-project allowance as
       // the pan/reflow regression without relaxing the suite globally.
+      //
+      // On run 35497577226 the webgl variant spent 297s of that 300s on 46
+      // real input round trips (each click, tap and enabled check costs
+      // seconds of software rasterisation) and ran out before its last step;
+      // its canvas twin finished in 5s. Raise only this renderer's cap: it is
+      // a measured allowance, not a sleep, and a hung case still fails.
+      if (renderer === 'webgl') test.setTimeout(480_000);
       allowSoftwareWebgl(test, renderer);
       await page.setViewportSize(
         narrow ? { width: 390, height: 844 } : { width: 1672, height: 941 },

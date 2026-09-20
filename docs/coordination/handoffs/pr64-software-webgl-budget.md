@@ -282,18 +282,39 @@ locally. Neither repair depends on the answer: the case no longer reads through
 the compositor, and it no longer projects from a camera read taken minutes
 earlier in wall time.
 
+## Result on `71e0122`, the tea case passes
+
+Run `35497577226` cleared the case this task exists for. Both tea variants
+passed in `Chromium touch 3/3` (`tea-webgl` 48.7s, `tea-canvas` 8.9s) and
+`WebKit iPad` passed the whole job, with `Chromium touch 1/3` and `2/3` green.
+The attached crops now agree across backends: `tea-canvas-cel-hold` and
+`tea-webgl-cel-hold` are the same 60x110 image, which is what a shared life
+layer drawing the same cel should produce.
+
+That shard still failed, on a case the tea failure had been hiding:
+`target-visibility.spec.ts` "Fire Jab target stays tappable with separate
+decisions on webgl at desktop lower edge". Its trace shows no hang - 46 real
+input round trips, each click, tap and enabled check costing seconds of
+software rasterisation, consumed 296.8s of the 300s cap before the last step
+(its canvas twin finishes in 5s, and the narrow webgl variant was skipped
+behind it). The case now asks for 480s on the webgl renderer only, with the
+measurement recorded beside it. Assertions are unchanged, and a hung case
+still fails.
+
 ## Next action
 
 1. Push this revision to `codex/quarry-gate-integration`, the PR64 head, and
-   read the run it starts. The browser jobs have failed only on this case for
-   three revisions, so a green browser job is the release's last gate.
+   read the run it starts. The tea case is fixed; the remaining risk is the
+   next case in shard 3 that a 300s software-WebGL cap cannot cover.
 2. If the browser jobs pass, the auto-merge already enabled on PR64 lands it
    with a merge commit. Confirm the merge, the Pages deployment and the version
    the deployed build shows before treating v0.2.2 as shipped.
-3. This case is now much cheaper (no 240-frame bursts), which buys back room in
-   the WebKit job's 60-minute budget. If a later revision grows past it, shard
+3. The tea case is much cheaper now (no 240-frame bursts). If the WebKit job
+   grows past its 60-minute budget - it ran 36.9 of 60 before this work - shard
    WebKit the way Chromium is sharded rather than raising the job limit.
 4. The same pattern - a projection measured once, then used after the dock
    resizes the map - is worth checking in the other specs that project a tile
    before a panel change. `settleMapCanvas` in `e2e/helpers.ts` guards the
    backing store, not this staleness.
+5. If another forced-WebGL case lands within seconds of 300s, widen the shared
+   `SOFTWARE_WEBGL_BUDGET_MS` rather than adding a third per-spec exception.
