@@ -33,11 +33,12 @@
    the quarry floor are flat fills. Every surface visible in the references is
    worked: joints, rubble, tooling, scattered detail, edge shadow. This is the
    single largest "unfinished" impression in both captures.
-4. **Prop contact is unsoftened.** The two stone pillars in
+4. **Prop and wall contact is unsoftened.** The two stone pillars in
    `battle_grumbler-fit.png` sit on plain dark rectangles rather than a
-   grounded shadow, and the rubble patch in `forest_explore-96.png` keeps a
-   hard diamond border. The references never show an object whose contact with
-   the ground is a bare rectangle.
+   grounded shadow; the rubble patch in `forest_explore-96.png` keeps a hard
+   diamond border; and in `battle_quarry_gate-fit.png` the long wall casts a
+   hard-edged grey slab with no rubble or grass at its footing. The references
+   never show an object whose contact with the ground is a bare rectangle.
 5. **Density and framing.** The references pack structures, props and NPCs
    along the walkable path and fill the frame edge to edge. Our captures leave
    a large empty middle ground and let the board's polygon edge show against
