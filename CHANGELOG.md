@@ -24,9 +24,10 @@
 - Time battlefield health bars and fallen states to hit, healing and knockout feedback rather than revealing damage while an attack is still travelling.
 - Show the abandoned nest, flattened reeds and dried silt beside the forest pond as an environmental clue.
 
-Combined local route and browser checks pass on their recorded checkpoints.
-This consolidated candidate is prepared for PR64; exact-head checks and Pages
-deployment remain pending. This does not establish final visual, audio or device
+Shipped as v0.2.2: PR64 merged as `5403473`, its required checks passed on the
+exact head and the Pages deployment published a build that shows
+`v0.2.2 · build 5403473`. Combined local route and browser checks pass on their
+recorded checkpoints. This does not establish final visual, audio or device
 acceptance.
 
 ## 0.2.1 — unshipped changes included in 0.2.2

@@ -69,8 +69,10 @@ read as hazards.
 
 ## Coordination
 
-- Nothing here changes the v0.2.2 release: PR #64's head is `53cddd3`, a
-  test/CI-only gallery shard repair, and this branch still waits for that merge.
+- This does not change the v0.2.2 release: PR #64 merged as `5403473` and its
+  deployed build shows `v0.2.2 · build 5403473`. This branch is rebased onto
+  that merge, so the comparison above is against the shipped product code plus
+  the branch's own water/oil painter change.
 - This note is a stills review. It does not close any row of the
   [finish-through-driller](../finish-through-driller.md) acceptance table -
   audible listening, physical Surface/iPad play and continuous-play evidence

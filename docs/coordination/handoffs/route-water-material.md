@@ -13,11 +13,12 @@
   route review harness captures village, forest, quarry, Driller and return on
   Canvas and WebGL at 64/96px for comparison with the approved references.
 - **Location:** worktree `C:/Users/Jared/.codex/worktrees/route-visual-pass`,
-  branch `codex/route-visual-pass` pushed to `origin` at head `dc7896d`, based
-  on the v0.2.2
-  release head `966d33a` (`codex/quarry-gate-integration`, PR #64). PR: none yet
-  — opening one now would either duplicate the release diff or land work while
-  #64's gallery is still running, so the branch waits for that merge.
+  branch `codex/route-visual-pass`, rebased onto `origin/main` at the v0.2.2
+  merge `5403473` (PR #64). The rebase was clean: `git merge-tree --write-tree
+origin/main origin/codex/route-visual-pass` reported no conflict, so the
+  gallery spec layout that changed under this branch (`gallery.spec.ts` into
+  `suite.ts` plus three slice files) needs no manual resolution. PR: none yet —
+  the next session pushes this head and opens one.
 - **Worktree state:** clean; no local-only assets; `.shots/route-final/`,
   `.shots/route-v023/` and `.shots/route-v7-portrait/` are ignored capture
   evidence, preview servers stopped.
@@ -52,20 +53,26 @@
   must not be pushed to `codex/quarry-gate-integration` and no competing PR into
   `main` may be opened while #64 is open. Files touched are otherwise upstream
   of nothing in the release batch. No other owner holds these files.
-- **Live release state at handoff:** PR #64 is still OPEN on run `35500759409`
-  at `966d33a`; verify, all three Chromium shards, WebKit and the aggregate
-  end-to-end check are green, and the Screenshot gallery job has been running
-  for about 50 minutes against a 75-minute job limit. If that job times out, the
-  failed capture is the release blocker to diagnose before this branch can
-  land; do not dispatch a duplicate run.
+- **Live release state:** v0.2.2 shipped. PR #64 merged as `5403473` on 20
+  September 2026, its Pages deployment succeeded and the live game shows
+  `v0.2.2 · build 5403473`. The gallery blocker recorded at the last handoff
+  was real and is repaired: the capture is now seven parallel shards behind the
+  same required `Screenshot gallery` aggregate, which assembled 395 pictures
+  across five projects, and that first sharded run exposed two inspector beats
+  (`38-crossbow-portrait`, `36-grumbler-portrait`) that projected a tile
+  without the camera owning the actor, so the right-click missed and the case
+  burned its whole 720-second budget. Both now focus the unit first, as the
+  bandit portrait beat has since `b0fbc8b`. The detail is in
+  `pr64-gallery-budget.md` in `main`'s history.
 - **Next actions:**
-  1. Confirm PR #64 merged (`gh pr view 64 --json state,mergedAt,mergeCommit`).
-  2. `git fetch origin`, then rebase `codex/route-visual-pass` onto the new
-     `origin/main` and re-run `npm run verify` plus
-     `node scripts/check-bundle-size.mjs`.
-  3. Push the rebased branch and open a PR into `main` with a merge commit, then
-     enable auto-merge. The visible version is already bumped to `0.2.3`, so no
-     further release edit is needed before the checks run.
+  1. Done: PR #64 merged as `5403473`, deployed, live version confirmed, and
+     this branch rebased onto it.
+  2. Done on the rebased head: `npm run verify` passes typecheck, lint,
+     formatting and 876 tests in 106 files; `node scripts/check-bundle-size.mjs`
+     reports 299.8 KB gzipped of the 300 KB budget.
+  3. Push this head and open a PR into `main` with a merge commit, then enable
+     auto-merge. The visible version is already bumped to `0.2.3` and the
+     changelog records it, so no further release edit is needed before checks.
   4. Re-run the review harness on the deployed build (`FNT_ROUTE_REVIEW_DIR`
      keeps captures per head) and compare it with the three approved
      references. The comparison made here says the remaining water gap is art,
