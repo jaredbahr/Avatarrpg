@@ -62,8 +62,12 @@
      further release edit is needed before the checks run.
   4. Re-run the review harness on the deployed build (`FNT_ROUTE_REVIEW_DIR`
      keeps captures per head) and compare it with the three approved
-     references; the shoreline _shape_, the quarry floor's pale stain, audio
-     and physical-device checks remain open.
+     references. The comparison made here says the remaining water gap is art,
+     not painter code: the references show a shallow bed with submerged stones
+     and plants under an irregular bank, and our pond bed plate is a uniform
+     teal field. An image-generation session should re-author the pond and canal
+     beds and banks; the quarry floor's pale stain needs the same pass. Audio
+     and physical-device checks also remain open.
   5. Keep the JS budget in mind: 299.8 KB of 300 means the next product change
      needs an offsetting trim.
 - **Completion/transfer:** not merged; the outgoing owner has relinquished

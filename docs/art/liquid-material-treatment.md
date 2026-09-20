@@ -71,6 +71,14 @@ local result is not treated as a gate; required Linux CI is.
   honest eight-cell footprint, not an organic outline. Making the _edge_ itself
   irregular is an art job on the bank plates, not a painter job, and the
   approved references want an authored bank there.
+- Compared with [Ba Dan exploration](../../assets/reference/player-view-2026-09-17/ba-dan-exploration.png)
+  and [Causeway](../../assets/reference/player-view-2026-09-17/causeway-exploration.png),
+  the approved water is a shallow, translucent body: submerged stones, plants
+  and animals read through it, and its edge is an authored irregular basin. Our
+  runtime water now has the soft shore, mottling and flow line, but the plate
+  under it is a uniform teal field, so the bed shows nothing worth seeing. The
+  next water improvement is authored bed and bank material on the pond and canal
+  plates, not another painter pass; that work needs image generation.
 - The quarry floor's pale elliptical stain near the mud sits in the authored
   ground plate and reads as an unexplained patch; it needs an art pass.
 - No audible review was performed here, and no physical device was tested.
