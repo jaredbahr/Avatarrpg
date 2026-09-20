@@ -1,7 +1,7 @@
 import { readFileSync } from 'node:fs';
 import { expect, test } from '@playwright/test';
 import { enterNode, resetStorage, settleLayout, startGame } from './helpers';
-import { average, screenshotPixels } from './pixels';
+import { average, screenshotClipPixels } from './pixels';
 
 // The production service worker precaches art; this probe must intercept the
 // network response instead of receiving the already cached illustration.
@@ -59,11 +59,23 @@ for (const renderer of ['canvas', 'webgl'] as const) {
         y: m.b * x + m.d * y + m.ty - camera.tilePx * lift,
       };
     });
+    // Full-canvas element screenshots can stall software WebGL readback longer
+    // than the pixel poll itself. Capture only the marker's centre, without
+    // Playwright's element-stability wait, and keep the same red predicate.
+    const canvas = await page.locator('.map-canvas').boundingBox();
+    if (!canvas) throw new Error('Missing exploration canvas');
+    const radius = 8;
+    const clip = {
+      x: canvas.x + centre.x - radius,
+      y: canvas.y + centre.y - radius,
+      width: radius * 2,
+      height: radius * 2,
+    };
     await expect
       .poll(
         async () => {
-          const pixels = await screenshotPixels(page.locator('.map-canvas'));
-          const c = average(pixels, centre.x, centre.y, 2);
+          const pixels = await screenshotClipPixels(page, clip);
+          const c = average(pixels, radius, radius, 2);
           return c.r > 150 && c.g < 120 && c.b < 120;
         },
         { timeout: 30_000, message: 'The exploration marker never drew the red idle atlas frame' },

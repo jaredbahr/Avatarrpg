@@ -33,8 +33,7 @@ first attempt and retry both showed `Nobody there.` The failure trace recorded
 an iPad canvas CSS box of 1194×541 while its DPR-2 backing store still represented
 1194×663 logical pixels. The aim hint had reflowed the HUD before ResizeObserver
 refit the camera; the test projected and clicked a target during that mismatch.
-The WebKit job reported 122 passed, one skipped and 71 not run. The Chromium
-job was still running when this repair was prepared.
+The WebKit job reported 122 passed, one skipped and 71 not run.
 
 After selecting Rock Throw, the test now waits for the existing camera-stability
 helper and polls until canvas CSS and backing dimensions agree before projecting
@@ -42,3 +41,21 @@ the tap. It keeps the hostile preview and outcome assertions. Installed WebKit
 iPad landscape focused test passed 1/1, `npm run verify` passed 873 tests in
 105 files, and `git diff --check` passed. This is a test timing repair; immediate
 player taps and physical-iPad behavior have not been assessed by this change.
+
+The same run's Chromium job failed its forced-WebGL exploration marker case
+after 72 passes, leaving 108 not run. Both attempts fetched the intercepted
+`thug.json` and `thug.png` successfully. Trace timing showed one full-canvas
+element screenshot per attempt taking 34.9 seconds, longer than the 30-second
+pixel poll; the red predicate had no chance to finish. The software WebGL log
+also reported a `ReadPixels` GPU stall. Local Chrome with forced SwiftShader
+rendered the expected red RGB (214, 58, 52) at the projected point.
+
+The marker test now captures a 16×16 CSS-pixel clip around that same point with
+the existing page-level clip helper. Its strict red predicate and timeout stay
+unchanged. The focused Canvas test passed locally in 1.2 seconds, and forced
+SwiftShader WebGL passed in 5.8 seconds. A temporary green-only atlas negative
+control failed the red predicate, then was removed. `npm run verify` passed
+873 tests in 105 files.
+This removes the full-canvas readback bottleneck while retaining a pixel check
+of the actual marker. The next pushed head still needs the required exact-head
+CI and gallery; local results do not establish Linux software-WebGL success.
