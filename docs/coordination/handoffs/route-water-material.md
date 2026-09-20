@@ -13,11 +13,14 @@
   route review harness captures village, forest, quarry, Driller and return on
   Canvas and WebGL at 64/96px for comparison with the approved references.
 - **Location:** worktree `C:/Users/Jared/.codex/worktrees/route-visual-pass`,
-  branch `codex/route-visual-pass`, based on the v0.2.2 release head `966d33a`
-  (`codex/quarry-gate-integration`, PR #64). PR: none yet — see Next actions.
+  branch `codex/route-visual-pass` pushed to `origin`, based on the v0.2.2
+  release head `966d33a` (`codex/quarry-gate-integration`, PR #64). PR: none yet
+  — opening one now would either duplicate the release diff or land work while
+  #64's gallery is still running, so the branch waits for that merge.
 - **Worktree state:** clean after the commits below; no local-only assets;
   `.shots/route-final/` is ignored capture evidence, preview servers stopped.
-- **Completed:** `src/render/painters/tiles.ts` (two-coat water film, shore
+- **Completed:** version `0.2.3` with its changelog entry;
+  `src/render/painters/tiles.ts` (two-coat water film, shore
   inset, drift patches, one flow line, water rim removed),
   `src/render/palettes.ts` (oil fill/alpha/edge/detail), new
   `src/render/painters/tiles.test.ts`, new review harness
@@ -50,9 +53,9 @@
   2. `git fetch origin`, then rebase `codex/route-visual-pass` onto the new
      `origin/main` and re-run `npm run verify` plus
      `node scripts/check-bundle-size.mjs`.
-  3. Push the branch and open a PR into `main` with a merge commit, patch-bump
-     `package.json`/lockfile version and the changelog, and enable auto-merge —
-     the release policy requires a new visible version for a playable update.
+  3. Push the rebased branch and open a PR into `main` with a merge commit, then
+     enable auto-merge. The visible version is already bumped to `0.2.3`, so no
+     further release edit is needed before the checks run.
   4. Re-run the review harness on the deployed build and compare it with the
      three approved references; the shoreline _shape_, the quarry floor's pale
      stain, audio and physical-device checks remain open.
