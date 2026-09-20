@@ -73,11 +73,33 @@ describe('surface material painting', () => {
     for (const id of ['oil', 'mud', 'ice', 'rubble'] as const) {
       const pool = record();
       paintSurface(pool.ctx, BOX, surface(id, -1), { x: 5, y: 6 }, false, SHORE);
-      expect(fills(pool.calls).length, `${id} keeps its bank band`).toBeGreaterThan(2);
+      // One thin coat over the whole cell, then a firmer interior inside the
+      // ragged outline, so the material fades at its bank instead of stopping
+      // on the rule's own edge.
+      expect(fills(pool.calls), `${id} keeps its base coat`).toEqual([[40, 24, 64, 64]]);
+      expect(
+        pool.calls.filter((call) => call.op === 'fill').length,
+        `${id} keeps its firmer interior`,
+      ).toBeGreaterThan(0);
       expect(
         pool.calls.filter((call) => call.op === 'stroke').length,
         `${id} keeps its outline`,
       ).toBeGreaterThan(0);
+    }
+  });
+
+  it('never draws a bank, a wash outline or a gather outside the cell', () => {
+    for (const id of ['oil', 'mud', 'ice', 'rubble', 'water'] as const) {
+      const { ctx, calls } = record();
+      paintSurface(ctx, BOX, surface(id, -1), { x: 5, y: 6 }, false, SHORE);
+      for (const call of calls) {
+        if (call.op !== 'moveTo' && call.op !== 'lineTo') continue;
+        const [x, y] = call.args;
+        expect(x, `${id} ${call.op} x`).toBeGreaterThanOrEqual(BOX.x);
+        expect(y, `${id} ${call.op} y`).toBeGreaterThanOrEqual(BOX.y);
+        expect(x, `${id} ${call.op} x`).toBeLessThanOrEqual(BOX.x + BOX.size);
+        expect(y, `${id} ${call.op} y`).toBeLessThanOrEqual(BOX.y + BOX.size);
+      }
     }
   });
 

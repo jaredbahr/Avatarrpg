@@ -1,7 +1,13 @@
 import { describe, expect, it, vi } from 'vitest';
 import type { Tile } from '../core/types';
 import { paintSurface } from './painters/tiles';
-import { SURFACE_POOL, surfaceIntensity } from './surfaceRendering';
+import {
+  SURFACE_BANK,
+  SURFACE_RIM,
+  surfaceIntensity,
+  surfaceOutline,
+  surfaceRim,
+} from './surfaceRendering';
 
 const box = { x: 3.25, y: 7.5, size: 64 };
 const edges = { n: false, e: false, s: false, w: false };
@@ -14,7 +20,7 @@ const tile = (duration: number): Tile => ({
   surface: { id: 'mud', duration, spread: 0 },
 });
 function context() {
-  const fills: { alpha: number; color: string }[] = [];
+  const fills: { alpha: number; color: string; box: number[] }[] = [];
   const ctx = {
     globalAlpha: 1,
     fillStyle: '',
@@ -32,8 +38,8 @@ function context() {
     bezierCurveTo: vi.fn(),
     closePath: vi.fn(),
     fill: vi.fn(),
-    fillRect() {
-      fills.push({ alpha: this.globalAlpha, color: this.fillStyle });
+    fillRect(x: number, y: number, w: number, h: number) {
+      fills.push({ alpha: this.globalAlpha, color: this.fillStyle, box: [x, y, w, h] });
     },
   };
   return {
@@ -64,9 +70,9 @@ describe('surface material presentation', () => {
     paint(-1);
     expect(ctx.rect).toHaveBeenCalledWith(box.x, box.y, box.size, box.size);
     expect(ctx.clip).toHaveBeenCalledOnce();
-    // Three interior material strokes, no extra boundary segments.
-    expect(ctx.moveTo).toHaveBeenCalledTimes(3);
-    expect(ctx.lineTo).not.toHaveBeenCalled();
+    // Three interior material strokes and no boundary segment: a tile
+    // surrounded by the same material has no bank to draw.
+    expect(ctx.stroke).toHaveBeenCalledTimes(3);
     expect(ctx.restore).toHaveBeenCalledOnce();
   });
   it('fades the original wash instead of painting black over an expiring tile', () => {
@@ -79,18 +85,70 @@ describe('surface material presentation', () => {
     expect(expiring.fills[0]?.alpha).toBeLessThan(permanent.fills[0]?.alpha ?? 0);
     expect(expiring.fills[0]?.alpha).toBeGreaterThan(0);
   });
-  it('confines irregular pooling to a shallow strip inside the exterior bank', () => {
-    const { ctx } = context();
+  it('keeps a thin coat over the whole tile and draws every outline inside it', () => {
+    const { ctx, fills } = context();
     paintSurface(ctx as unknown as CanvasRenderingContext2D, box, tile(-1), { x: 2, y: 3 }, false, {
       ...edges,
       n: true,
     });
-    expect(ctx.fill).toHaveBeenCalledOnce();
+    // The base coat still covers the hazard tile: a thinned edge is shading,
+    // never a tile that has stopped reading as material.
+    expect(fills[0]?.box).toEqual([Math.round(box.x), Math.round(box.y), box.size, box.size]);
+    // The firmer interior, the ragged bank and the material gathering along it.
+    expect(ctx.fill).toHaveBeenCalledTimes(3);
     for (const [x, y] of ctx.lineTo.mock.calls as [number, number][]) {
       expect(x).toBeGreaterThanOrEqual(box.x);
       expect(x).toBeLessThanOrEqual(box.x + box.size);
       expect(y).toBeGreaterThanOrEqual(box.y);
-      expect(y).toBeLessThanOrEqual(box.y + box.size * SURFACE_POOL.depth);
+      expect(y).toBeLessThanOrEqual(box.y + box.size);
     }
+  });
+});
+
+describe('surface rim', () => {
+  const pos = { x: 4, y: 9 };
+  const edges = { n: true, e: true, s: false, w: true };
+
+  it('runs one ragged bank per open edge, in n, e, s, w order', () => {
+    expect(surfaceRim(pos, edges)).toHaveLength(3);
+    expect(surfaceRim(pos, { n: false, e: false, s: false, w: false })).toHaveLength(0);
+  });
+
+  it('draws the wash outline on the open edges and on nothing else', () => {
+    const outline = surfaceOutline(pos, edges);
+    expect(outline).toHaveLength((SURFACE_RIM.steps + 1) * 4);
+    // A side that meets the same material stays on the tile's own edge, so a
+    // puddle four tiles wide has no interior rim.
+    const flat = surfaceOutline(pos, { n: false, e: false, s: false, w: false });
+    expect(flat.every(([x, y]) => x === 0 || x === 1 || y === 0 || y === 1)).toBe(true);
+  });
+
+  it('never leaves the tile, and always keeps the tie to its own edge', () => {
+    for (const rim of surfaceRim(pos, edges)) {
+      expect(rim.outer).toHaveLength(rim.bank.length);
+      for (const points of [rim.outer, rim.bank, rim.pool]) {
+        for (const [x, y] of points) {
+          expect(x).toBeGreaterThanOrEqual(0);
+          expect(x).toBeLessThanOrEqual(1);
+          expect(y).toBeGreaterThanOrEqual(0);
+          expect(y).toBeLessThanOrEqual(1);
+        }
+      }
+      // A bank that sits on the tile boundary is the ruled edge again.
+      const depths = rim.bank.map(([x, y], index) => {
+        const [ox, oy] = rim.outer[index] ?? [0, 0];
+        return Math.abs(x - ox) + Math.abs(y - oy);
+      });
+      expect(Math.min(...depths)).toBeGreaterThan(0);
+      expect(Math.max(...depths)).toBeLessThanOrEqual(SURFACE_BANK.width * 0.9 + 1e-9);
+    }
+  });
+
+  it('wanders along its length, is stable per tile, and differs between tiles', () => {
+    const [first] = surfaceRim(pos, edges);
+    const depths = first?.bank.map(([, y]) => y) ?? [];
+    expect(new Set(depths).size).toBeGreaterThan(1);
+    expect(surfaceRim(pos, edges)).toEqual(surfaceRim(pos, edges));
+    expect(surfaceRim({ x: pos.x, y: pos.y + 1 }, edges)).not.toEqual(surfaceRim(pos, edges));
   });
 });

@@ -12,9 +12,33 @@
 import type { Tile, Vec2 } from '../../core/types';
 import type { Edges } from '../geometry/board';
 import { SURFACE_STYLES, TERRAIN_STYLES } from '../palettes';
-import { SURFACE_BANK, SURFACE_POOL, surfaceIntensity } from '../surfaceRendering';
+import {
+  SURFACE_BANK,
+  SURFACE_POOL,
+  SURFACE_RIM,
+  surfaceIntensity,
+  surfaceOutline,
+  surfaceRim,
+  type RimPoints,
+} from '../surfaceRendering';
 import type { Box, Ctx } from './shapes';
 import { circle, ellipse, polygon, tileNoise } from './shapes';
+
+const at = (points: RimPoints, box: Box): [number, number][] =>
+  points.map(([x, y]) => [box.x + x * box.size, box.y + y * box.size]);
+
+/** The band between the tile's edge and its ragged inner boundary. */
+function strip(ctx: Ctx, outer: RimPoints, inner: RimPoints, box: Box): void {
+  const edge = at(outer, box);
+  const ragged = at(inner, box);
+  ragged.reverse();
+  polygon(ctx, [...edge, ...ragged]);
+}
+
+/** The ragged boundary on its own, for a rim stroke. */
+function path(ctx: Ctx, inner: RimPoints, box: Box): void {
+  polygon(ctx, at(inner, box));
+}
 
 export function paintTerrain(ctx: Ctx, box: Box, tile: Tile, pos: Vec2): void {
   const style = TERRAIN_STYLES[tile.terrain];
@@ -68,18 +92,30 @@ export function paintSurface(
   const intensity = surfaceIntensity(tile.surface.duration);
   const material = tile.surface.id;
   const water = material === 'water';
+  const rims = surfaceRim(pos, edges);
   /*
    * Water lies on the ground as a film, so it lays a lighter first coat with a
    * firmer interior over it rather than one flat fill: the wash still covers
    * every water cell, but the pool stops ending on a clipped straight edge.
    */
-  ctx.globalAlpha = style.alpha * intensity * (water ? 0.6 : 1);
+  ctx.globalAlpha = style.alpha * intensity * (water ? 0.6 : SURFACE_RIM.coat.base);
   ctx.fillStyle = style.fill;
   // Snapped to whole pixels rather than overlapped by one: a translucent
   // fill that overlaps its neighbour shows the seam as a darker line.
   const x0 = Math.round(box.x);
   const y0 = Math.round(box.y);
   ctx.fillRect(x0, y0, Math.round(box.x + s) - x0, Math.round(box.y + s) - y0);
+  /*
+   * A material that ends on dry ground carries its full strength inside a
+   * ragged outline and thins over the last few percent of the tile, so the
+   * boundary is a fade rather than the square the rules happen to use. The
+   * thin coat underneath still covers every hazard tile.
+   */
+  if (!water) {
+    ctx.globalAlpha = style.alpha * intensity * SURFACE_RIM.coat.interior;
+    path(ctx, surfaceOutline(pos, edges), box);
+    ctx.fill();
+  }
   if (water) {
     const feather = s * 0.1;
     const left = box.x + (edges.w ? feather : 0);
@@ -90,30 +126,7 @@ export function paintSurface(
     ctx.fillRect(left, top, right - left, bottom - top);
   }
 
-  // A little material gathers just inside the real bank. Irregular depth is
-  // decoration inside the tile, never a ragged or misleading hazard boundary.
-  if (material === 'mud' || material === 'oil') {
-    ctx.globalAlpha = SURFACE_POOL.alpha * intensity;
-    ctx.fillStyle = style.detail;
-    for (const [side, on] of [edges.n, edges.e, edges.s, edges.w].entries()) {
-      if (!on) continue;
-      const point = (along: number, depth: number): [number, number] => {
-        if (side === 0) return [box.x + along * s, box.y + depth * s];
-        if (side === 1) return [box.x + (1 - depth) * s, box.y + along * s];
-        if (side === 2) return [box.x + along * s, box.y + (1 - depth) * s];
-        return [box.x + depth * s, box.y + along * s];
-      };
-      ctx.beginPath();
-      ctx.moveTo(...point(0, 0));
-      ctx.lineTo(...point(1, 0));
-      for (let i = 8; i >= 0; i--) {
-        const depth = SURFACE_POOL.depth * (0.2 + 0.8 * tileNoise(pos.x, pos.y, side * 17 + i));
-        ctx.lineTo(...point(i / 8, depth));
-      }
-      ctx.closePath();
-      ctx.fill();
-    }
-  } else if (water) {
+  if (water) {
     /*
      * Stacked soft patches give the interior the quiet tonal drift a still
      * pool has rather than one dead flat colour. A rim highlight would just
@@ -131,46 +144,42 @@ export function paintSurface(
     }
   }
 
-  // The bank: a wide faint band inside the edge under a thin bright line.
-  const inset = Math.max(1, s * SURFACE_BANK.line);
-  const band = s * SURFACE_BANK.width;
-  const sides: [boolean, number, number, number, number][] = [
-    [edges.n, box.x, box.y, s + 1, band],
-    [edges.s, box.x, box.y + s - band, s + 1, band],
-    [edges.w, box.x, box.y, band, s + 1],
-    [edges.e, box.x + s - band, box.y, band, s + 1],
-  ];
-  ctx.fillStyle = style.edge;
   /*
-   * The wide faint band under a thin bright line is the universal tactical
-   * outline a temporary pool needs. Water already follows a painted shore —
-   * and WebGL has never drawn that line for it — so the rim is what made a
-   * pond read as a filled polygon rather than a body of water.
+   * The bank: a wide faint band inside the edge under a thin bright line. It
+   * follows a ragged outline instead of the tile's own edges, because a rim
+   * ruled along the squared boundary is what makes a mud patch or an oil
+   * slick read as a filled rectangle rather than something spilled on the
+   * ground. Water already follows a painted shore — and WebGL has never drawn
+   * that line for it — so the rim is what made a pond read as a filled
+   * polygon rather than a body of water.
    */
   if (!water) {
+    ctx.fillStyle = style.edge;
     ctx.globalAlpha = 0.12 * intensity;
-    for (const [on, x, y, w, h] of sides) if (on) ctx.fillRect(x, y, w, h);
+    for (const rim of rims) {
+      strip(ctx, rim.outer, rim.bank, box);
+      ctx.fill();
+    }
     ctx.globalAlpha = SURFACE_BANK.alpha * intensity;
     ctx.strokeStyle = style.edge;
-    ctx.lineWidth = inset;
-    ctx.beginPath();
-    if (edges.n) {
-      ctx.moveTo(box.x, box.y + inset / 2);
-      ctx.lineTo(box.x + s, box.y + inset / 2);
+    ctx.lineWidth = Math.max(1, s * SURFACE_BANK.line);
+    for (const rim of rims) {
+      path(ctx, rim.bank, box);
+      ctx.stroke();
     }
-    if (edges.s) {
-      ctx.moveTo(box.x, box.y + s - inset / 2);
-      ctx.lineTo(box.x + s, box.y + s - inset / 2);
+    /*
+     * A heavy material gathers a little deeper along that ragged outline.
+     * Irregular depth is decoration inside the tile, never a ragged or
+     * misleading hazard boundary: the wash still covers every hazard tile.
+     */
+    if (material !== 'ice' && material !== 'fire' && material !== 'steam') {
+      ctx.globalAlpha = SURFACE_POOL.alpha * intensity;
+      ctx.fillStyle = style.detail;
+      for (const rim of rims) {
+        strip(ctx, rim.outer, rim.pool, box);
+        ctx.fill();
+      }
     }
-    if (edges.w) {
-      ctx.moveTo(box.x + inset / 2, box.y);
-      ctx.lineTo(box.x + inset / 2, box.y + s);
-    }
-    if (edges.e) {
-      ctx.moveTo(box.x + s - inset / 2, box.y);
-      ctx.lineTo(box.x + s - inset / 2, box.y + s);
-    }
-    ctx.stroke();
   }
 
   // Sparse material marks leave the painted ground legible. Position-seeded
