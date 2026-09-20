@@ -227,13 +227,45 @@ held cup drawing, and the walk and form paths still clear the hold. The drawn
 crop is attached as `tea-<backend>-sip` so a failing run carries the cel it
 disagreed with.
 
+## Result on `b73a225`, the cel read alone was not enough
+
+Run `35495049916` judged the drawn-cel revision: `Typecheck, lint, unit tests`
+passed, `Chromium touch 1/3` and `2/3` passed, `WebKit iPad` passed, and
+`Chromium touch 3/3` failed the same webgl tea case. So the compositor read was
+one half of the fault, not all of it. The attached evidence named the other
+half: the expected crop in the failure message decodes to a 60x110 image with
+every channel zero - the region held nothing at all - while the `sip` crop the
+canvas case attached in the same run shows both seated figures.
+
+The trace from that run holds the reason. Playwright records each element's
+bounding rect per snapshot, and the map wrapper's bottom edge moves during the
+case (`476.2` at one snapshot, `549.6` at the next), because the dock the
+activities panel lives in resizes the map. `ExploreScene.refit()` answers a
+viewport change by refitting the camera, so the projection of tile (8.5, 18.85)
+measured once, right after the early `settleLayout`, no longer points at the
+seated figure by the time the case samples. On the runner the crop landed on
+empty paving and two blanks compared equal; on WebKit and on this host the same
+stale point still overlapped the figures, which is why the case has been
+intermittent rather than plainly broken, and why the old page-clip comparison
+also failed and passed on different runs.
+
+The spec now reads `rendererCamera()` with every sample instead of once, and
+each sample is preceded by a drawn frame, so the crop is projected from the
+camera that drew it. A sample whose region holds no drawn pixel now fails with
+`the tea region must contain the drawn figure` instead of reporting two equal
+blanks, and the held crop is attached as `tea-<backend>-cel-hold` so a failure
+carries the region it compared.
+
 ## Local verification of `3342cdf` + this repair
 
 - `npm run verify` passes: typecheck, lint, format and 873 unit tests.
-- The focused spec passes all three cases in 13.7s (canvas 5.9s, webgl 6.2s),
+- The focused spec passes all three cases in 13.7s (canvas 6.0s, webgl 6.2s),
   and again under installed Chrome with
-  `--use-angle=swiftshader --enable-unsafe-swiftshader --disable-gpu` in 15.1s
-  (webgl 8.0s).
+  `--use-angle=swiftshader --enable-unsafe-swiftshader --disable-gpu` in 15.2s
+  (webgl 8.3s).
+- Layout flux: with the activities panel opened and closed between the two
+  samples, the webgl case still passes (6.7s), because each sample re-reads the
+  camera the last drawn frame used.
 - Non-vacuity: with the interval shortened to 1000ms the same case fails, so
   the comparison is still measuring the cel rather than passing on any change.
 - Robustness: with a real 8s stall inserted before the post-advance read - the
@@ -242,21 +274,26 @@ disagreed with.
 - The launcher config used for those runs pointed at installed Chrome because
   this worktree has no bundled browser. It is not committed.
 
-Not settled here, and not claimed: which half of the CI-only read was wrong.
-Accelerated Chrome and SwiftShader both returned a fresh composited frame on
-this host, and only CPU-throttled SwiftShader returned a stale one, so the
-compositor and the resumed real clock could not be separated locally. The
-repair does not depend on the answer, because it no longer reads through the
-compositor.
+Not settled here, and not claimed: whether the composited read was also stale
+in the runs before this one. Accelerated Chrome and SwiftShader both returned a
+fresh composited frame on this host, and only CPU-throttled SwiftShader returned
+a stale one, so the compositor and the resumed real clock could not be separated
+locally. Neither repair depends on the answer: the case no longer reads through
+the compositor, and it no longer projects from a camera read taken minutes
+earlier in wall time.
 
 ## Next action
 
 1. Push this revision to `codex/quarry-gate-integration`, the PR64 head, and
-   read the run it starts. Both browser jobs failed only on this case at
-   `690933c`, so a green browser job is the release's last gate.
+   read the run it starts. The browser jobs have failed only on this case for
+   three revisions, so a green browser job is the release's last gate.
 2. If the browser jobs pass, the auto-merge already enabled on PR64 lands it
    with a merge commit. Confirm the merge, the Pages deployment and the version
    the deployed build shows before treating v0.2.2 as shipped.
 3. This case is now much cheaper (no 240-frame bursts), which buys back room in
    the WebKit job's 60-minute budget. If a later revision grows past it, shard
    WebKit the way Chromium is sharded rather than raising the job limit.
+4. The same pattern - a projection measured once, then used after the dock
+   resizes the map - is worth checking in the other specs that project a tile
+   before a panel change. `settleMapCanvas` in `e2e/helpers.ts` guards the
+   backing store, not this staleness.
