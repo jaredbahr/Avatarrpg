@@ -240,18 +240,24 @@ void main(void) {
   /*
    * How far this pixel is from the material's own boundary, as Canvas measures
    * it: the footprint stays the full square tile, but the bank wanders inside
-   * it by world noise so a pool never wears a ruled rim.
+   * it by world noise so a pool never wears a ruled rim. Four texel reads, paid
+   * on the pixels of a pooled material and nowhere else — a software
+   * rasteriser runs this quad for the whole board.
    */
   float edgeDistance = 1.0;
-  if (surfaceAt(cell - vec2(0.0, 1.0)) != surface) edgeDistance = min(edgeDistance, f.y);
-  if (surfaceAt(cell + vec2(0.0, 1.0)) != surface) edgeDistance = min(edgeDistance, 1.0 - f.y);
-  if (surfaceAt(cell - vec2(1.0, 0.0)) != surface) edgeDistance = min(edgeDistance, f.x);
-  if (surfaceAt(cell + vec2(1.0, 0.0)) != surface) edgeDistance = min(edgeDistance, 1.0 - f.x);
-  edgeDistance = max(0.0, edgeDistance + (vnoise(w * 2.0) - 0.5) * ${SURFACE_RIM.spread});
-  float washDepth =
-    ${SURFACE_RIM.wash.min} + ${SURFACE_RIM.wash.span} * vnoise(w * 2.0 + vec2(3.1, 7.4));
-  float interior = smoothstep(0.0, washDepth, edgeDistance);
-  float wash = ${SURFACE_RIM.coat.base} + ${SURFACE_RIM.coat.interior} * interior;
+  float wash = 1.0;
+  if (opacity > 0.0) {
+    if (surfaceAt(cell - vec2(0.0, 1.0)) != surface) edgeDistance = min(edgeDistance, f.y);
+    if (surfaceAt(cell + vec2(0.0, 1.0)) != surface) edgeDistance = min(edgeDistance, 1.0 - f.y);
+    if (surfaceAt(cell - vec2(1.0, 0.0)) != surface) edgeDistance = min(edgeDistance, f.x);
+    if (surfaceAt(cell + vec2(1.0, 0.0)) != surface) edgeDistance = min(edgeDistance, 1.0 - f.x);
+    edgeDistance = max(0.0, edgeDistance + (vnoise(w * 2.0) - 0.5) * ${SURFACE_RIM.spread});
+    float washDepth =
+      ${SURFACE_RIM.wash.min} + ${SURFACE_RIM.wash.span} * vnoise(w * 2.0 + vec2(3.1, 7.4));
+    wash =
+      ${SURFACE_RIM.coat.base} +
+      ${SURFACE_RIM.coat.interior} * smoothstep(0.0, washDepth, edgeDistance);
+  }
 
   if (surface == 1) {                 // water
     float ripple = fbm(w * 4.0 + vec2(uTime * 0.25, uTime * 0.17));
