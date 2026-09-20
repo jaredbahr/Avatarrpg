@@ -84,6 +84,23 @@
     resized and cleared stayed blank for every attempt. Both backends of
     `e2e/riverside-tea.spec.ts` pass locally on the new head; the assertion
     still requires the drawn figure.
+- **Second exact-head CI run (35533614858):** verification passed,
+  `E2E Chromium touch 1/3` and `2/3` passed, and `E2E Chromium touch 3/3`
+  failed twice — the same riverside-tea WebGL crop (empty on both the attempt
+  and its retry) plus `sheets.spec.ts` WebGL, whose "probe frame never appeared
+  on the unit" poll is capped at 30 s while one software-WebGL screenshot costs
+  about 14 s. The v0.2.4 head (`344376f`, without this change) passed the same
+  shard, so these probes are the thing to watch, not to assume. `97dfc01`
+  raises that poll to the case's own measured allowance; the assertions are
+  unchanged.
+- **Diagnosis to carry forward if the tea probe fails again:** its last read
+  runs after a four-second clock jump, and the two assertions are ordered
+  `teaCel()` then `data-tea-actors=2`, so an empty crop is what a tea hold that
+  ended at the jump looks like. Check the attribute at that instant before
+  blaming the pixels. Both variants pass locally on Windows Chrome, and the
+  probe already failed once on the v0.2.4 head before this branch existed
+  (run 35523630036), so a flake is the leading hypothesis; a repeated failure
+  would need the WebGL ground cost of the wash measured against v0.2.4.
 - **Contracts kept:** the base coat still covers the whole hazard tile and no
   outline point leaves it (`surfaceRendering.test.ts`, `painters/tiles.test.ts`);
   the tactical bank, the colourblind hatch and the High-contrast path are
