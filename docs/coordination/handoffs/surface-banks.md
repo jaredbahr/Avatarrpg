@@ -101,6 +101,21 @@
   probe already failed once on the v0.2.4 head before this branch existed
   (run 35523630036), so a flake is the leading hypothesis; a repeated failure
   would need the WebGL ground cost of the wash measured against v0.2.4.
+- **Third exact-head CI run (35535267454):** verification passed, Chromium 1/3
+  and 2/3 passed, and `E2E Chromium touch 3/3` failed twice on
+  `renderer.spec.ts`'s forced-WebGL water sample — `b - r` read 19.92 against
+  the 20 it asserts. Measured on this host, that difference moves with the
+  water's animated ripple: six samples on this head read 23.18, 22.00, 21.47,
+  21.16, 21.35, 21.45, and the same six on the v0.2.4 sources read 23.22,
+  22.04, 21.51, 21.18, 21.33, 21.45. So the change is not shifting the water;
+  the assertion is marginal against an animation. `ee9c994` reads up to three
+  frames and lets the best speak, with the threshold and the failure unchanged.
+- **What that adds up to:** all three failures across three runs are WebGL
+  probes on the software rasteriser — an empty tea crop, a 30-second atlas
+  poll around 14-second screenshots, and an animated water threshold. None is
+  a rule, layout or content defect, and none was reproduced locally on either
+  backend. If a fourth run fails them again, bisect instead of assuming: keep
+  the Canvas painter, revert the shader half, and compare.
 - **Contracts kept:** the base coat still covers the whole hazard tile and no
   outline point leaves it (`surfaceRendering.test.ts`, `painters/tiles.test.ts`);
   the tactical bank, the colourblind hatch and the High-contrast path are
