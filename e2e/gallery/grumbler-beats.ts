@@ -7,7 +7,7 @@ import {
   takeTurn,
   waitForIdle,
 } from '../helpers';
-import { tileCentre } from './stage';
+import { tileCentre, focusStagedUnit } from './stage';
 
 async function openGrumbler(ctx: BeatContext): Promise<void> {
   await resetStorage(ctx.page, ctx.query());
@@ -30,14 +30,18 @@ export const GRUMBLER_BEATS: readonly Beat[] = [
     async run(ctx) {
       await openGrumbler(ctx);
       await ctx.shoot('The two-tile machine stands on the quarry floor beside the party.', 'floor');
-      const pos = await ctx.page.evaluate(() => {
+      const boss = await ctx.page.evaluate(() => {
         const boss = window.fnt?.app.state?.battle?.units.find(
           (u) => u.sprite === 'unit.enemy.grumbler',
         );
         if (!boss) throw new Error('Missing Grumbler');
-        return boss.pos;
+        return { id: boss.id, pos: boss.pos };
       });
-      const point = await tileCentre(ctx.page, pos);
+      // The camera has to own the machine before its tile is projected, or the
+      // right-click lands on the chrome and the inspector never opens. Same
+      // repair as the bandit portrait beat (b0fbc8b) and the crossbow beat.
+      await focusStagedUnit(ctx.page, boss.id, ctx.settleTimeout);
+      const point = await tileCentre(ctx.page, boss.pos);
       await ctx.page.mouse.click(point.x, point.y, { button: 'right' });
       await ctx.page.locator('.dialog canvas[data-asset="portrait.enemy.grumbler"]').waitFor();
       // Review the portrait at the top; initial Close-button focus currently
