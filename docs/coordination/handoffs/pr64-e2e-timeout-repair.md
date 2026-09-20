@@ -59,3 +59,38 @@ control failed the red predicate, then was removed. `npm run verify` passed
 This removes the full-canvas readback bottleneck while retaining a pixel check
 of the actual marker. The next pushed head still needs the required exact-head
 CI and gallery; local results do not establish Linux software-WebGL success.
+
+## Gate-conversation budget and Chromium sharding
+
+Run [35486721503](https://github.com/jaredbahr/Avatarrpg/actions/runs/35486721503)
+on head `2bb72c9` passed verification and the WebKit iPad job. The Chromium
+surface-touch job failed at `e2e/gate-conversation.spec.ts:25`: both attempts
+exhausted the ordinary 60-second test budget while tapping "Walk up and knock"
+under forced software WebGL. The failure snapshot still showed the enabled
+button in the live choice panel, so this was render cost, not a missing or
+disabled control. The matching WebKit case finishes in 8.9 seconds; Chromium
+recorded 135.9 seconds across the two attempts, about 68 seconds for one pass.
+The new test now carries the same `test.slow()` allowance as the other
+forced-WebGL regressions.
+
+The same report also showed the suite cannot finish on one Chromium runner.
+It completed 86 of 181 cases in 35.9 minutes. Matching those 86 cases against
+the successful WebKit report gives a median Chromium/WebKit ratio of 7.88 for
+the 21 forced-WebGL pairs and 0.62 for the other 65. Applying those ratios to
+the unrun cases projects about 54.5 more minutes, or roughly 90 minutes for the
+whole Chromium suite. The pre-split run [35481410752](https://github.com/jaredbahr/Avatarrpg/actions/runs/35481410752)
+was cancelled at the existing 60-minute job limit. `surface-touch` is therefore
+split into three Playwright shards (62/59/60 cases, 181 total) on separate
+runners. WebKit remains one 195-case job, the required aggregator check name
+`End-to-end (Chromium touch, WebKit iPad)` is unchanged, and the gallery still
+waits for that check. Each shard uploads `playwright-report-chromium-N`; WebKit
+keeps `playwright-report-webkit`.
+
+Local evidence: `npm run verify` passed typecheck, lint, formatting and 873
+tests in 105 files. `git diff --check` passed. The workflow parses as YAML, and
+`npm run e2e -- --list --project=surface-touch --shard=N/3` resolves to 62, 59
+and 60 cases with no overlap or omission. The local Windows dev container has
+no Playwright Chromium build, so the repaired browser cases could not be rerun
+locally; the exact-head Linux CI must demonstrate them. This is a test and CI
+budget repair for the already-versioned v0.2.2 release, not a product change or
+a version bump.
