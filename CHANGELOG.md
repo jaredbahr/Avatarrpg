@@ -1,5 +1,15 @@
 # Changelog
 
+## 0.2.3 — unshipped
+
+- Paint water on the Canvas 2D backend as a film with a soft shore, quiet drift
+  and a flow line instead of one flat opaque fill, and drop the bright rim that
+  made a pond, canal or puddle read as a filled polygon. WebGL already looked
+  like this; the two backends now agree about the same water.
+- Read quarry oil as a slate-green film rather than a hole: a lighter body and a
+  stronger sage sheen on both backends, with the surface outline that marks the
+  hazard cells unchanged.
+
 ## 0.2.2 — release candidate
 
 - Compose Forest Road from local road, grass and dry-bank regions while preserving live water, scenery and gameplay geometry.
