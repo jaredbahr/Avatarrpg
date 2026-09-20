@@ -14,9 +14,9 @@
  */
 
 import type { Tile, Vec2 } from '../../core/types';
-import type { Edges, TileRelief } from '../geometry/board';
-import { isCanopy } from '../geometry/board';
-import { TERRAIN_STYLES } from '../palettes';
+import type { Edges, SeamMaterial, TileRelief } from '../geometry/board';
+import { isCanopy, seamMaterial } from '../geometry/board';
+import { SURFACE_STYLES, TERRAIN_STYLES } from '../palettes';
 import { paintTerrain } from './tiles';
 import type { Box, Ctx } from './shapes';
 import { circle, ellipse, tileNoise } from './shapes';
@@ -45,6 +45,7 @@ export function paintTileDecor(
   if (tile.terrain === 'pit') paintPit(ctx, box, relief?.solid ?? null);
   else if (!tile.blocked) paintDecals(ctx, box, tile, pos);
 
+  paintTileSeams(ctx, box, pos, seamMaterial(tile), relief?.seams ?? null);
   paintTileRelief(ctx, box, pos, relief);
 
   if (tile.cover && !tile.blocked) paintCoverStones(ctx, box, pos);
@@ -53,6 +54,110 @@ export function paintTileDecor(
     if (isCanopy(tile)) paintCanopy(ctx, box, pos);
     else if (tile.terrain !== 'pit') paintSolidMass(ctx, box, tile, pos, relief?.solid ?? null);
   }
+}
+
+/**
+ * Where two ground materials meet, the softer neighbour bleeds into the
+ * harder one in a ragged wedge, with a contact shade under it and its own
+ * litter: grass tufts, stone chips, sand grit, or the stones and reeds of a
+ * bank. That is what keeps a road, a paving edge or a pond from ending on a
+ * bare polygon line.
+ *
+ * Everything stays inside the tile's own box, because the WebGL decor bake
+ * draws one chunk at a time and a spill over a chunk edge would only appear
+ * on one side of it.
+ */
+export function paintTileSeams(
+  ctx: Ctx,
+  box: Box,
+  pos: Vec2,
+  host: SeamMaterial,
+  seams: readonly (SeamMaterial | null)[] | null,
+  quiet = false,
+): void {
+  if (!seams) return;
+  const s = box.size;
+
+  ctx.save();
+  for (let side = 0; side < 4; side++) {
+    const material = seams[side];
+    if (!material) continue;
+    // A bank stands in the water it edges, so it goes down firmly and deep
+    // enough to break the tile's outline; the water's own rim on dry ground
+    // and every dry join stay a tint that keeps the hazard cells readable.
+    const bank = host === 'water';
+    const wet = bank || material === 'water';
+    const depth = s * (bank ? 0.2 : 0.13) * (quiet ? 0.7 : 1);
+    const style = material === 'water' ? SURFACE_STYLES.water : TERRAIN_STYLES[material];
+    const at = (salt: number, spread: number): number => tileNoise(pos.x, pos.y, salt) * spread;
+
+    ctx.save();
+    // Work in a local box whose top edge is this side of the tile, so one
+    // layout serves all four joins.
+    ctx.translate(box.x + s / 2, box.y + s / 2);
+    ctx.rotate((side * Math.PI) / 2);
+    ctx.translate(-s / 2, -s / 2);
+
+    ctx.beginPath();
+    ctx.moveTo(0, 0);
+    ctx.lineTo(s, 0);
+    for (let i = 6; i >= 0; i--) {
+      ctx.lineTo(s * (i / 6), depth * (0.3 + 0.7 * tileNoise(pos.x, pos.y, 120 + side * 8 + i)));
+    }
+    ctx.closePath();
+    ctx.globalAlpha = (bank ? 0.5 : wet ? 0.3 : 0.42) * (quiet ? 0.55 : 1);
+    ctx.fillStyle = style.fill;
+    ctx.fill();
+
+    // The contact shade is what grounds a join, but a gradient per edge is the
+    // most expensive thing here; over a scene only the bank pays for one.
+    if (!quiet || bank) {
+      const contact = ctx.createLinearGradient(0, 0, 0, depth * 1.7);
+      contact.addColorStop(0, `rgba(0,0,0,${bank ? 0.14 : 0.2})`);
+      contact.addColorStop(1, 'rgba(0,0,0,0)');
+      ctx.fillStyle = contact;
+      ctx.fillRect(0, 0, s, depth * 1.7);
+    }
+
+    const stone = TERRAIN_STYLES.stone.fill;
+    const base = shade(wet ? stone : style.fill, -0.08);
+    const lit = shade(wet ? stone : style.fill, 0.3);
+    const litter = (salt: number, reach: number): void =>
+      pebble(
+        ctx,
+        { x: at(salt, s), y: at(salt + 1, depth * reach) + depth * 0.45 },
+        s * 0.045,
+        base,
+        lit,
+      );
+
+    // Litter is a garnish, not a rule: only some edges carry any, so a long
+    // material boundary does not read as a row of evenly spaced stones.
+    if (!quiet && tileNoise(pos.x, pos.y, 300 + side) > 0.45) {
+      if (wet || material === 'stone' || material === 'sand') litter(170 + side, 1.1);
+      else if (material === 'grass') {
+        tuft(
+          ctx,
+          { x: at(140 + side * 3, s), y: at(141 + side * 3, depth * 0.9) + depth * 0.3 },
+          s,
+          pos,
+          150 + side,
+        );
+        litter(160 + side, 1.1);
+      } else litter(200 + side, 1);
+      // A bank keeps reeds as well as stones, where the water meets dry ground.
+      if (wet && tileNoise(pos.x, pos.y, 310 + side) > 0.55)
+        tuft(
+          ctx,
+          { x: at(184 + side, s), y: at(185 + side, depth * 1.1) + depth * 0.4 },
+          s,
+          pos,
+          190 + side,
+        );
+    }
+    ctx.restore();
+  }
+  ctx.restore();
 }
 
 /** Raised terrain remains rule-owned in a partial scene, including its rocky top and step faces. */

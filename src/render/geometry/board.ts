@@ -9,7 +9,7 @@
  * grid and rebuild only when a tile's footing changes.
  */
 
-import type { Grid, Tile, Vec2 } from '../../core/types';
+import type { Grid, TerrainId, Tile, Vec2 } from '../../core/types';
 
 export interface Edges {
   readonly n: boolean;
@@ -37,7 +37,21 @@ export interface TileRelief {
   readonly rim: Edges | null;
   /** For a blocked tile that is not a tree (a wall, a hut, a pit): which of its edges face open ground. */
   readonly solid: Edges | null;
+  /**
+   * What each edge looks out on, in n/e/s/w order: the neighbour's ground
+   * material, or null where the join needs no dressing. The neighbour's
+   * material is what the painter bleeds into this tile, so a road ends under
+   * grass rather than on a bare line.
+   */
+  readonly seams: readonly (SeamMaterial | null)[] | null;
 }
+
+/**
+ * A ground material as a join sees it. Standing water is its own material, so
+ * the pond joins a dry bank the same way the road joins grass — the rules care
+ * about the tile's surface, and the picture cares about what the edge meets.
+ */
+export type SeamMaterial = TerrainId | 'water';
 
 const NONE: Edges = { n: false, e: false, s: false, w: false };
 
@@ -87,11 +101,34 @@ export function boardRelief(grid: Grid): ReadonlyMap<number, TileRelief> {
           : NONE;
       const solid = any(solidEdges) ? solidEdges : null;
 
-      if (faceDrop === 0 && westDrop === 0 && eastDrop === 0 && !rim && !solid) continue;
-      out.set(y * grid.width + x, { faceDrop, westDrop, eastDrop, rim, solid });
+      // A blocked tile is a mass standing on the ground, so it has no join of
+      // its own; the ground around it is dressed by the open tiles themselves.
+      const mine = material(tile);
+      // A join is ground meeting ground: a ledge keeps its cliff face, and two
+      // tiles of one material need nothing between them.
+      const join = (other: Tile | undefined): SeamMaterial | null =>
+        other && other.elevation === tile.elevation && material(other) !== mine
+          ? material(other)
+          : null;
+      const sides = [join(north), join(east), join(south), join(west)];
+      const seams = !tile.blocked && sides.some((other) => other !== null) ? sides : null;
+
+      if (faceDrop === 0 && westDrop === 0 && eastDrop === 0 && !rim && !solid && !seams) continue;
+      out.set(y * grid.width + x, { faceDrop, westDrop, eastDrop, rim, solid, seams });
     }
   }
   return out;
+}
+
+/** The material a tile's ground presents to the edges around it. */
+export function seamMaterial(tile: Tile): SeamMaterial {
+  if (tile.surface?.id === 'water' || tile.terrain === 'water_deep') return 'water';
+  return tile.terrain;
+}
+
+/** The material an edge of a tile meets, or null off the map. */
+function material(tile: Tile | undefined): SeamMaterial | null {
+  return tile ? seamMaterial(tile) : null;
 }
 
 /**
@@ -126,11 +163,17 @@ export function decorChunks(grid: Grid): { cols: number; rows: number } {
   };
 }
 
-/** Everything the decor depends on, so a backend knows when to rebuild it. */
+/**
+ * Everything the decor depends on, so a backend knows when to rebuild it.
+ * Standing water is in here because it is a join material: a puddle that
+ * appears or dries changes the shore the ground around it is dressed with.
+ */
 export function decorSignature(grid: Grid): string {
   let signature = `${grid.width}x${grid.height}`;
   for (const tile of grid.tiles) {
-    signature += `|${tile.terrain}${tile.elevation}${tile.blocked ? 'b' : ''}${tile.cover ? 'c' : ''}`;
+    signature += `|${tile.terrain}${tile.elevation}${tile.blocked ? 'b' : ''}${tile.cover ? 'c' : ''}${
+      tile.surface?.id === 'water' ? 'w' : ''
+    }`;
   }
   return signature;
 }
