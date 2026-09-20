@@ -97,11 +97,14 @@ Surface-only. The full checklist for a new device is in `docs/device-matrix.md`.
 
 ## Committing to a path
 
-Up to level 5, the two characters of an element are the same character with
-different stats. At 5 they stop being: one earthbender takes the quarry road and
-shapes the ground, the other learns to bend the metal in a bandit's armour, and
-they never share a technique again. The commitment is permanent, and the path
-supplies levels 5, 7 and 10 — the back half of the character's kit.
+The two characters of an element are not the same character with different
+stats. Each pair shares an elemental foundation and the same two paths, but
+their level-2 tools give them different jobs, and their stats, voice and art are
+their own. The gate is a second decision about their craft: one earthbender can
+take the quarry road and shape the ground while the other learns to bend the
+metal in a bandit's armour — or both can walk the same road. The commitment is
+permanent, and the chosen path supplies levels 5, 7 and 10, the back half of the
+character's kit.
 
 Each element offers two paths, and two rules keep the choice honest:
 
@@ -114,11 +117,14 @@ Each element offers two paths, and two rules keep the choice honest:
   teacher; a kid who rolls badly can do nothing at all — which is why we do not
   roll.
 
-**Not reachable yet.** Act 1's four fights are tuned for levels 1, 2, 3 and 3, so
-a party finishes it around level 4 and the gate sits just past the end of the
-shipped story. The teacher scenes that set the rare flags are Act 2 beats. Until
-then the paths are reachable only through a save flag, a test fixture, or the
-balance simulator — the data and the dialog are written and waiting.
+**Not reachable yet.** The shipped route runs from Ba Dan up the east road,
+through the quarry gate and the cutting, to the Driller on the quarry floor, and
+then home. Its four fights are tuned for levels 1, 2, 3 and 3, so a party
+finishes the run around level 4 — one level short of the gate. Nothing in the
+shipped story sets the rare flags, and the teacher scenes that would are not
+written yet, so the paths are reachable only through a save flag, a test fixture
+or the balance simulator. The path data and the gate's pick dialog exist: a
+locked path still shows, dimmed, with the hint of who to go and find.
 
 ## Elemental reactions
 
