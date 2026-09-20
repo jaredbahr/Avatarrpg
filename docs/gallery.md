@@ -8,6 +8,16 @@ Download the `gallery` artifact from the revision's CI run and open its
 `index.html`. Artifacts are retained for seven days. Scroll a strip sideways to
 step through a playback.
 
+The capture itself runs as parallel shards, because one runner no longer fits
+all 340 cases inside a job budget. Playwright shards by file, so the catalogue
+is dealt into three slice spec files (`e2e/gallery/gallery-{a,b,c}.spec.ts`)
+round robin; a runner captures one Canvas project group or one slice of a WebGL
+project. The required `Screenshot gallery` check waits for every shard and
+merges them into that one artefact and one index, so what you download has not
+changed. A whole capture locally is still `npm run gallery`; to recapture one
+shard, run `npm run gallery:capture -- --project=surface-webgl --shard=1/3`
+and then `node scripts/gallery-index.mjs`.
+
 Normal Pages deployments publish the game without recapturing the gallery.
 For a public review URL, manually run **Deploy to GitHub Pages** on `main` with
 `publish_gallery` enabled. A successful capture is then available at `/gallery/`
