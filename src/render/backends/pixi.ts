@@ -211,6 +211,7 @@ export class PixiBackend implements RenderBackend {
   private decorSprites = new Map<string, Sprite>();
   private decor = new DecorSheets();
   private decorPx = 0;
+  private decorMode: 'full' | 'seams' = 'full';
   private elevationBasePx = 0;
   /** Edge shading along the board's four sides and the vignette over the view. */
   private shadeLayer = new Container();
@@ -504,10 +505,12 @@ export class PixiBackend implements RenderBackend {
     // A complete partial scene needs only raised stone underlay here. Missing
     // art and High contrast still require every procedural rule marker.
     this.syncElevationBase(view, camera, partialScene && scenePainted && !view.crispOverlays);
+    // A complete authored scene keeps its picture and gets the ground joins
+    // drawn over it, because the rules grid owns where the materials meet.
     const decorMode = partialScene
       ? !scenePainted || view.crispOverlays
         ? 'full'
-        : 'none'
+        : 'seams'
       : !painted || view.crispOverlays
         ? 'full'
         : 'none';
@@ -829,7 +832,7 @@ export class PixiBackend implements RenderBackend {
           this.elevationBaseLayer.addChild(sprite);
           this.elevationBaseSprites.set(key, sprite);
         }
-        sprite.texture = this.texture(this.decor.get(grid, cx, cy, px, true));
+        sprite.texture = this.texture(this.decor.get(grid, cx, cy, px, 'elevation'));
         sprite.position.set(cx * DECOR_CHUNK * TILE, cy * DECOR_CHUNK * TILE);
         sprite.width = DECOR_CHUNK * TILE;
         sprite.height = DECOR_CHUNK * TILE;
@@ -841,11 +844,12 @@ export class PixiBackend implements RenderBackend {
     }
   }
 
-  private syncDecor(view: MapView, camera: Camera, mode: 'none' | 'full'): void {
+  private syncDecor(view: MapView, camera: Camera, mode: 'none' | 'full' | 'seams'): void {
     this.decorLayer.visible = mode !== 'none';
     if (mode === 'none') return;
     const grid = view.grid;
-    const changed = this.syncDecorGrid(grid);
+    const changed = this.syncDecorGrid(grid) || this.decorMode !== mode;
+    this.decorMode = mode;
     const px = this.spritePx(camera);
     if (!changed && px === this.decorPx) return;
     this.decorPx = px;
@@ -862,7 +866,7 @@ export class PixiBackend implements RenderBackend {
           this.decorLayer.addChild(sprite);
           this.decorSprites.set(key, sprite);
         }
-        sprite.texture = this.texture(this.decor.get(grid, cx, cy, px));
+        sprite.texture = this.texture(this.decor.get(grid, cx, cy, px, mode));
         sprite.position.set(cx * DECOR_CHUNK * TILE, cy * DECOR_CHUNK * TILE);
         sprite.width = DECOR_CHUNK * TILE;
         sprite.height = DECOR_CHUNK * TILE;

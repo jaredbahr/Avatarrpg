@@ -15,8 +15,14 @@
 
 import type { Grid } from '../core/types';
 import type { TileRelief } from './geometry/board';
-import { DECOR_CHUNK, boardRelief, decorSignature } from './geometry/board';
-import { paintElevationBase, paintTileDecor } from './painters/board';
+import { DECOR_CHUNK, boardRelief, decorSignature, seamMaterial } from './geometry/board';
+import { paintElevationBase, paintTileDecor, paintTileSeams } from './painters/board';
+
+/**
+ * What a chunk carries: every rule marker and decal, the raised terrain alone
+ * under a complete scene, or only the ground joins over one.
+ */
+export type DecorMode = 'full' | 'elevation' | 'seams';
 
 /** Device pixels per tile at the sharpest bake. */
 export const DECOR_PX_CAP = 128;
@@ -47,9 +53,9 @@ export class DecorSheets {
   }
 
   /** The baked chunk at (`cx`, `cy`) in chunk units, `px` device pixels a tile. */
-  get(grid: Grid, cx: number, cy: number, px: number, elevationOnly = false): HTMLCanvasElement {
+  get(grid: Grid, cx: number, cy: number, px: number, mode: DecorMode = 'full'): HTMLCanvasElement {
     const size = Math.max(8, Math.min(DECOR_PX_CAP, Math.round(px)));
-    const key = `${cx},${cy}|${size}|${elevationOnly ? 'elevation' : 'full'}`;
+    const key = `${cx},${cy}|${size}|${mode}`;
     const existing = this.chunks.get(key);
     if (existing) {
       this.chunks.delete(key);
@@ -61,7 +67,7 @@ export class DecorSheets {
     canvas.width = size * DECOR_CHUNK;
     canvas.height = size * DECOR_CHUNK;
     const ctx = canvas.getContext('2d');
-    if (ctx) this.bake(ctx, grid, cx, cy, size, elevationOnly);
+    if (ctx) this.bake(ctx, grid, cx, cy, size, mode);
 
     this.chunks.set(key, canvas);
     while (this.chunks.size > MAX_CHUNKS) {
@@ -83,10 +89,11 @@ export class DecorSheets {
     cx: number,
     cy: number,
     size: number,
-    elevationOnly: boolean,
+    mode: DecorMode,
   ): void {
     const x0 = cx * DECOR_CHUNK;
     const y0 = cy * DECOR_CHUNK;
+    const seamsOnly = mode === 'seams';
     for (let y = y0 - 1; y <= y0 + DECOR_CHUNK; y++) {
       if (y < 0 || y >= grid.height) continue;
       for (let x = x0 - 1; x <= x0 + DECOR_CHUNK; x++) {
@@ -95,8 +102,11 @@ export class DecorSheets {
         const tile = grid.tiles[index];
         if (!tile) continue;
         const box = { x: (x - x0) * size, y: (y - y0) * size, size };
-        if (elevationOnly) paintElevationBase(ctx, box, tile, { x, y }, this.relief.get(index));
-        else paintTileDecor(ctx, box, tile, { x, y }, this.relief.get(index));
+        const relief = this.relief.get(index);
+        if (mode === 'elevation') paintElevationBase(ctx, box, tile, { x, y }, relief);
+        else if (seamsOnly)
+          paintTileSeams(ctx, box, { x, y }, seamMaterial(tile), relief?.seams ?? null, true);
+        else paintTileDecor(ctx, box, tile, { x, y }, relief);
       }
     }
   }

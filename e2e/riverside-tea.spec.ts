@@ -1,6 +1,5 @@
 import { expect, test } from '@playwright/test';
 import { allowSoftwareWebgl } from './budget';
-import { groundPoint } from './projection';
 import { enterNode, resetStorage, settleLayout, startGame, waitForIdle } from './helpers';
 
 for (const backend of ['canvas', 'webgl']) {
@@ -40,45 +39,61 @@ for (const backend of ['canvas', 'webgl']) {
      * this layer's own pixels compares the cel the app drew, on both
      * backends, without waiting on the compositor.
      *
-     * The projection is read with each sample rather than once: opening and
-     * closing the activities panel changes the map's height, and the camera
-     * refits onto the new viewport, so a foot position measured earlier in the
-     * test can point the crop at empty paving.
+     * The projection is read with each sample rather than once, and in the same
+     * evaluate as the pixels: opening and closing the activities panel changes
+     * the map's height and the camera refits onto the new viewport, so a foot
+     * position read a tick before the canvas it is used on points the crop at
+     * empty paving. A frame or two of grace after that covers a layer that has
+     * not repainted at the new size yet on a slow rasteriser; the figure still
+     * has to be in the crop, so a genuinely missing actor fails.
      */
+    const sampleTeaCel = () =>
+      page.evaluate(() => {
+        const canvas = document.querySelector<HTMLCanvasElement>('.village-life-canvas');
+        const ctx = canvas?.getContext('2d');
+        const camera = window.fnt?.app.rendererCamera();
+        if (!canvas || !ctx || !camera) throw new Error('missing village life layer');
+        // The seated figure's foot through the same logical-pixel affine the
+        // `groundPoint` helper uses, now read with the canvas it crops.
+        const m = camera.groundTransform;
+        const foot = {
+          x: (m.a * 8.5 + m.c * 18.85) * 64 + m.tx,
+          y: (m.b * 8.5 + m.d * 18.85) * 64 + m.ty,
+        };
+        const sx = canvas.width / canvas.clientWidth;
+        const sy = canvas.height / canvas.clientHeight;
+        const scratch = document.createElement('canvas');
+        scratch.width = Math.max(1, Math.round(60 * sx));
+        scratch.height = Math.max(1, Math.round(110 * sy));
+        const out = scratch.getContext('2d');
+        if (!out) throw new Error('missing life layer probe');
+        out.drawImage(
+          canvas,
+          Math.round((foot.x - 30) * sx),
+          Math.round((foot.y - 55) * sy),
+          scratch.width,
+          scratch.height,
+          0,
+          0,
+          scratch.width,
+          scratch.height,
+        );
+        const pixels = out.getImageData(0, 0, scratch.width, scratch.height).data;
+        let inked = 0;
+        for (let i = 3; i < pixels.length; i += 4) if ((pixels[i] ?? 0) > 0) inked += 1;
+        return { cel: scratch.toDataURL('image/png'), inked };
+      });
+
     const teaCel = async () => {
-      const cam = await page.evaluate(() => window.fnt!.app.rendererCamera()!);
-      const foot = groundPoint(cam, { x: 8.5, y: 18.85 });
-      const sample = await page.evaluate(
-        (crop) => {
-          const canvas = document.querySelector<HTMLCanvasElement>('.village-life-canvas');
-          const ctx = canvas?.getContext('2d');
-          if (!canvas || !ctx) throw new Error('missing village life layer');
-          const sx = canvas.width / canvas.clientWidth;
-          const sy = canvas.height / canvas.clientHeight;
-          const scratch = document.createElement('canvas');
-          scratch.width = Math.max(1, Math.round(crop.width * sx));
-          scratch.height = Math.max(1, Math.round(crop.height * sy));
-          const out = scratch.getContext('2d');
-          if (!out) throw new Error('missing life layer probe');
-          out.drawImage(
-            canvas,
-            Math.round(crop.x * sx),
-            Math.round(crop.y * sy),
-            scratch.width,
-            scratch.height,
-            0,
-            0,
-            scratch.width,
-            scratch.height,
-          );
-          const pixels = out.getImageData(0, 0, scratch.width, scratch.height).data;
-          let inked = 0;
-          for (let i = 3; i < pixels.length; i += 4) if ((pixels[i] ?? 0) > 0) inked += 1;
-          return { cel: scratch.toDataURL('image/png'), inked };
-        },
-        { x: foot.x - 30, y: foot.y - 55, width: 60, height: 110 },
-      );
-      // A crop of empty canvas would compare two blanks and prove nothing.
+      let sample = await sampleTeaCel();
+      for (let attempt = 0; attempt < 3 && sample.inked === 0; attempt++) {
+        // Grace for a layer still repainting at its new size, then read again
+        // against the camera that is live then.
+        await page.waitForTimeout(120);
+        sample = await sampleTeaCel();
+      }
+      // A crop of empty canvas would compare two blanks and prove nothing, so
+      // a missing figure is a failure however long it takes to appear.
       expect(sample.inked, 'the tea region must contain the drawn figure').toBeGreaterThan(0);
       return sample.cel;
     };

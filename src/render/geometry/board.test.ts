@@ -25,6 +25,11 @@ function grid(rows: string[]): Grid {
       else if (ch === 'P') tiles.push(tile({ terrain: 'pit', blocked: true }));
       else if (ch === '~') {
         tiles.push(tile({ surface: { id: 'water', duration: -1, spread: 0 } }));
+      } else if (ch === ',') tiles.push(tile({ terrain: 'grass' }));
+      else if (ch === '=') tiles.push(tile({ terrain: 'road' }));
+      else if (ch === 's') tiles.push(tile({ terrain: 'stone' }));
+      else if (ch === 'm') {
+        tiles.push(tile({ surface: { id: 'mud', duration: -1, spread: 0 } }));
       } else tiles.push(tile());
     }
   }
@@ -74,6 +79,28 @@ describe('boardRelief', () => {
   it('is empty for a flat open board', () => {
     expect(boardRelief(grid(['...', '...'])).size).toBe(0);
   });
+
+  it('names the material each open edge meets, and nothing off the map', () => {
+    const g = grid([',,', '=.', '..']);
+    const roads = boardRelief(g).get(index(g, 0, 1));
+    // Grass north, dirt east and south, and the map edge to the west.
+    expect(roads?.seams).toEqual(['grass', 'dirt', 'dirt', null]);
+    const grass = boardRelief(g).get(index(g, 1, 0));
+    expect(grass?.seams).toEqual([null, null, 'dirt', null]);
+    // The interior stays bare: two tiles of the same material need no join.
+    expect(boardRelief(g).get(index(g, 1, 2))).toBeUndefined();
+  });
+
+  it('treats standing water as a material, so a pond gets a bank and the bank a wet rim', () => {
+    const g = grid(['.~', '..']);
+    expect(boardRelief(g).get(index(g, 1, 0))?.seams).toEqual([null, null, 'dirt', 'dirt']);
+    expect(boardRelief(g).get(index(g, 0, 0))?.seams).toEqual([null, 'water', null, null]);
+  });
+
+  it('gives a blocked tile no join of its own, including a tree', () => {
+    const g = grid([',T', '=,']);
+    expect(boardRelief(g).get(index(g, 1, 0))).toBeUndefined();
+  });
 });
 
 describe('surfaceEdges', () => {
@@ -93,11 +120,13 @@ describe('decor chunks', () => {
     expect(decorChunks({ width: 24, height: 16, tiles: [] })).toEqual({ cols: 3, rows: 2 });
   });
 
-  it('change their signature with footing, not with surfaces', () => {
+  it('change their signature with footing and with standing water, not with other surfaces', () => {
     const flat = grid(['..']);
     const wet = grid(['.~']);
+    const muddy = grid(['.m']);
     const raised = grid(['.^']);
-    expect(decorSignature(flat)).toBe(decorSignature(wet));
+    expect(decorSignature(flat)).not.toBe(decorSignature(wet));
+    expect(decorSignature(flat)).toBe(decorSignature(muddy));
     expect(decorSignature(flat)).not.toBe(decorSignature(raised));
   });
 });

@@ -15,7 +15,7 @@ import { resolveAsset } from '../../content/assets/manifest';
 import { Camera } from '../camera';
 import type { Viewport } from '../camera';
 import type { TileRelief } from '../geometry/board';
-import { boardRelief, decorSignature, surfaceEdges } from '../geometry/board';
+import { boardRelief, decorSignature, seamMaterial, surfaceEdges } from '../geometry/board';
 import { aimArcPoints, arcHeading, arrowheadPolygon } from '../geometry/arc';
 import { actorHealthBar } from '../geometry/actorSilhouette';
 import { resolveActorEmitters } from '../geometry/actorAttachments';
@@ -29,7 +29,7 @@ import { backdrops } from '../backdrops';
 import { sceneForGrid, sceneImage, drawSceneImage, sceneryOpacities } from '../scene';
 import { surfaceIsPainted } from '../sceneSurfaces';
 import { FACTION_RING, OVERLAY, STATUS_BADGE, hpColor } from '../palettes';
-import { paintElevationBase, paintTileDecor } from '../painters/board';
+import { paintElevationBase, paintTileDecor, paintTileSeams } from '../painters/board';
 import { paintFloatingNumber, paintPathArrow, paintPathDot } from '../painters/fx';
 import { FOOT_LINE } from '../sheets/bake';
 import { idlePhase, sheets } from '../sheets/store';
@@ -193,6 +193,7 @@ export class Canvas2DBackend implements RenderBackend {
         // A complete partial scene owns its local ground art; accessibility
         // and unavailable pieces still need all procedural rule markers.
         if (!sceneGround || view.crispOverlays) this.drawDecor(view, ground);
+        else this.drawSeams(view, ground);
         this.drawOverlays(view, ground);
         this.drawPath(view, ground);
         if (view.aimArc) this.drawAimArc(view.aimArc, ground);
@@ -359,6 +360,40 @@ export class Canvas2DBackend implements RenderBackend {
         if (!tile) continue;
         const pos = { x, y };
         paintTileDecor(ctx, camera.toScreen(pos), tile, pos, this.relief.get(index));
+      }
+    }
+  }
+
+  /**
+   * Ground joins over a complete authored scene.
+   *
+   * An authored ground region is painted art, so it has no procedural decor to
+   * carry the join; its material edges are as straight as the tiles under it.
+   * This pass draws only the joins, from the rules grid, so the road still
+   * ends under grass and the pond keeps its bank over the picture.
+   */
+  private drawSeams(view: MapView, camera: Camera): void {
+    const { ctx } = this;
+    const signature = decorSignature(view.grid);
+    if (signature !== this.reliefSignature) {
+      this.reliefSignature = signature;
+      this.relief = boardRelief(view.grid);
+    }
+    const bounds = camera.visibleBounds(view.grid);
+    for (let y = bounds.y0; y <= bounds.y1; y++) {
+      for (let x = bounds.x0; x <= bounds.x1; x++) {
+        const index = y * view.grid.width + x;
+        const tile = view.grid.tiles[index];
+        if (!tile) continue;
+        const pos = { x, y };
+        paintTileSeams(
+          ctx,
+          camera.toScreen(pos),
+          pos,
+          seamMaterial(tile),
+          this.relief.get(index)?.seams ?? null,
+          true,
+        );
       }
     }
   }
