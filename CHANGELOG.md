@@ -1,5 +1,14 @@
 # Changelog
 
+## 0.2.5 — release candidate
+
+- Let a pool of oil, mud or rubble fade at its bank instead of stopping on the
+  tiles that hold it. The wash now thins over a ragged outline, the bank and
+  the rim wander with it and the material gathers unevenly along the edge, on
+  both renderers, so a spill reads as something poured on the quarry floor
+  rather than a filled rectangle. The hazard still covers every tile it really
+  covers; only the painted outline is softened.
+
 ## 0.2.4 — release candidate
 
 - Join ground materials where they meet instead of ending each one on a bare
