@@ -1,7 +1,8 @@
 # Liquid ground material correction
 
-- **Updated:** 20 September 2026, root (scheduled DeepSeek Flash continuation).
-  Incoming owner: next scheduled session for the same goal.
+- **Updated:** 20 September 2026, later scheduled DeepSeek Flash continuation run.
+  This session verified the rebased head, opened the landing PR and handed the
+  branch to the next scheduled session for the same goal.
 - **Outcome:** water and oil now read as painted ground materials instead of
   flat clipped tiles. Canvas 2D water gains the ripple/mottle/soft-shore
   treatment WebGL already had and loses the bright rim that made a pond look
@@ -17,8 +18,9 @@
   merge `5403473` (PR #64). The rebase was clean: `git merge-tree --write-tree
 origin/main origin/codex/route-visual-pass` reported no conflict, so the
   gallery spec layout that changed under this branch (`gallery.spec.ts` into
-  `suite.ts` plus three slice files) needs no manual resolution. PR: none yet —
-  the next session pushes this head and opens one.
+  `suite.ts` plus three slice files) needs no manual resolution. The landing PR
+  into `main` was opened from this head by the run above; nothing here is pushed
+  to `codex/quarry-gate-integration`.
 - **Worktree state:** clean; no local-only assets; `.shots/route-final/`,
   `.shots/route-v023/` and `.shots/route-v7-portrait/` are ignored capture
   evidence, preview servers stopped.
@@ -35,10 +37,15 @@ origin/main origin/codex/route-visual-pass` reported no conflict, so the
   `docs/player-view-target.md`). Oil keeps the universal surface outline
   because it marks real hazard cells; water follows the painted-shore treatment
   WebGL already used.
-- **Verification:** at head `418fd3d`, `npm run verify` passes typecheck, lint,
-  formatting and 876 tests in 106 files (three new painter tests); production
-  build passes with total JavaScript 299.8 KB gzipped of the unchanged 300 KB
-  budget (this change adds ~0.2 KB) and the art/asset budgets untouched.
+- **Verification:** re-confirmed on the rebased product head `bcf3fc1`; the
+  commit that carries this handoff changes only this file and the changelog
+  heading. `npm run verify` passes typecheck, lint,
+  formatting and 876 tests in 106 files (873 from merged `main` plus three new
+  painter tests); `node scripts/check-bundle-size.mjs` reports total JavaScript
+  299.8 KB gzipped of the unchanged 300 KB budget (this change adds ~0.2 KB),
+  with the PWA output present and the art/asset budgets untouched. The
+  pre-rebase head `418fd3d` reported the same figures, and the rebase changed
+  only this branch's base, not its product diffs.
   `e2e/route-visual.review.ts` passed 2/2 (Canvas + WebGL) on the production dev
   server in installed Chrome at 1368x912 and again at 834x1194 with Huge text;
   captures and provenance are in `.shots/route-final/`, `.shots/route-v023/`
@@ -70,9 +77,10 @@ origin/main origin/codex/route-visual-pass` reported no conflict, so the
   2. Done on the rebased head: `npm run verify` passes typecheck, lint,
      formatting and 876 tests in 106 files; `node scripts/check-bundle-size.mjs`
      reports 299.8 KB gzipped of the 300 KB budget.
-  3. Push this head and open a PR into `main` with a merge commit, then enable
-     auto-merge. The visible version is already bumped to `0.2.3` and the
-     changelog records it, so no further release edit is needed before checks.
+  3. Done by this run: local verification on `bcf3fc1`, then a PR into `main`
+     with a merge commit and auto-merge enabled. The visible version is already
+     bumped to `0.2.3` and the changelog records it, so no further release edit
+     is needed before checks.
   4. Re-run the review harness on the deployed build (`FNT_ROUTE_REVIEW_DIR`
      keeps captures per head) and compare it with the three approved
      references. The comparison made here says the remaining water gap is art,
@@ -86,5 +94,9 @@ origin/main origin/codex/route-visual-pass` reported no conflict, so the
      then the bed/bank art, then prop contact shadows.
   5. Keep the JS budget in mind: 299.8 KB of 300 means the next product change
      needs an offsetting trim.
-- **Completion/transfer:** not merged; the outgoing owner has relinquished
-  editing ownership of the files above beyond this commit.
+- **Completion/transfer:** not merged at handoff; exact-head CI and the Pages
+  deployment for `0.2.3` are the next session's first check. The outgoing owner
+  has relinquished editing ownership of the files above beyond this commit.
+  Nothing else is claiming `src/render/painters/tiles.ts`, `palettes.ts` or the
+  review harness, and the JS budget has 0.2 KB of headroom, so the next product
+  change needs an offsetting trim before this branch can absorb it.

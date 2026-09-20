@@ -1,6 +1,6 @@
 # Changelog
 
-## 0.2.3 — unshipped
+## 0.2.3 — release candidate
 
 - Paint water on the Canvas 2D backend as a film with a soft shore, quiet drift
   and a flow line instead of one flat opaque fill, and drop the bright rim that
