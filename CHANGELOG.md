@@ -1,5 +1,15 @@
 # Changelog
 
+## 0.2.3 — release candidate
+
+- Paint water on the Canvas 2D backend as a film with a soft shore, quiet drift
+  and a flow line instead of one flat opaque fill, and drop the bright rim that
+  made a pond, canal or puddle read as a filled polygon. WebGL already looked
+  like this; the two backends now agree about the same water.
+- Read quarry oil as a slate-green film rather than a hole: a lighter body and a
+  stronger sage sheen on both backends, with the surface outline that marks the
+  hazard cells unchanged.
+
 ## 0.2.2 — release candidate
 
 - Compose Forest Road from local road, grass and dry-bank regions while preserving live water, scenery and gameplay geometry.
@@ -14,9 +24,10 @@
 - Time battlefield health bars and fallen states to hit, healing and knockout feedback rather than revealing damage while an attack is still travelling.
 - Show the abandoned nest, flattened reeds and dried silt beside the forest pond as an environmental clue.
 
-Combined local route and browser checks pass on their recorded checkpoints.
-This consolidated candidate is prepared for PR64; exact-head checks and Pages
-deployment remain pending. This does not establish final visual, audio or device
+Shipped as v0.2.2: PR64 merged as `5403473`, its required checks passed on the
+exact head and the Pages deployment published a build that shows
+`v0.2.2 · build 5403473`. Combined local route and browser checks pass on their
+recorded checkpoints. This does not establish final visual, audio or device
 acceptance.
 
 ## 0.2.1 — unshipped changes included in 0.2.2

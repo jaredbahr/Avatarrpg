@@ -127,16 +127,17 @@ for (const renderer of ['canvas', 'webgl']) {
       // The probe freezes time already. Present each ring state once so software
       // WebGL does not redraw an identical scene throughout screenshot capture.
       let lastHidden: boolean | undefined;
+      // The two captures must differ only by the ring, so the second draw reuses
+      // the first frame's view verbatim. Rebuilding it lets an idle clip or a
+      // settling follower move actor pixels between the captures, and the probe
+      // then compares two different frames rather than two ring states.
+      let frozen: MapView | null = null;
       scene.renderer.draw = (view) => {
         const hidden = Boolean(win.hideGroundRing);
         if (hidden === lastHidden) return;
         lastHidden = hidden;
-        draw({
-          ...view,
-          time: 1000,
-          activeUnitId: hidden ? null : view.activeUnitId,
-          selectedUnitId: null,
-        });
+        frozen ??= { ...view, time: 1000, selectedUnitId: null };
+        draw({ ...frozen, activeUnitId: hidden ? null : frozen.activeUnitId });
         win.ringProbePresented = hidden;
       };
       const camera = app.rendererCamera()!;
@@ -152,9 +153,24 @@ for (const renderer of ['canvas', 'webgl']) {
     });
     const canvas = page.locator('.map-canvas');
     expect(Number.isFinite(probe.x) && Number.isFinite(probe.y)).toBe(true);
+    /*
+     * The renderer draws when the ring state changes, but the compositor
+     * presents on its own schedule, and a screenshot taken in between returns
+     * the frame before the draw. On a software rasteriser that window is wide
+     * enough to capture the previous ring state, which reads as the ring
+     * covering Mira. Two animation frames put the capture after the present.
+     */
+    const presented = () =>
+      page.evaluate(
+        () =>
+          new Promise<void>((resolve) => {
+            requestAnimationFrame(() => requestAnimationFrame(() => resolve()));
+          }),
+      );
     await page.waitForFunction(
       () => (window as Window & { ringProbePresented?: boolean }).ringProbePresented === false,
     );
+    await presented();
     const withRing = await screenshotPixels(canvas);
     await page.evaluate(() => {
       (window as Window & { hideGroundRing?: boolean }).hideGroundRing = true;
@@ -162,6 +178,7 @@ for (const renderer of ['canvas', 'webgl']) {
     await page.waitForFunction(
       () => (window as Window & { ringProbePresented?: boolean }).ringProbePresented === true,
     );
+    await presented();
     const withoutRing = await screenshotPixels(canvas);
     for (let dy = -1; dy <= 1; dy++)
       for (let dx = -2; dx <= 2; dx++) {
