@@ -477,7 +477,11 @@ export const mapSchema = z
         paintedWater: z.boolean().optional(),
         groundMode: z.literal('partial').optional(),
         paintedRubble: z.array(vec2).optional(),
-        ground: z.array(sceneImageSchema).max(8),
+        // Twelve covers the widest shipped scene: the gate's two shared
+        // exterior surround plates, four local material regions and four cover
+        // decals. The bound still exists so a scene cannot quietly grow into an
+        // unbounded pile of ground draws.
+        ground: z.array(sceneImageSchema).max(12),
         scenery: z
           .array(
             sceneImageSchema
