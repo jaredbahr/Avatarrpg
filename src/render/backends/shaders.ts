@@ -84,8 +84,8 @@ const TERRAIN_COLORS = `
 vec3 terrainBase(int t) {
   if (t == 0) return vec3(0.490, 0.533, 0.314); // grass
   if (t == 1) return vec3(0.302, 0.247, 0.184); // dirt
-  if (t == 2) return vec3(0.357, 0.314, 0.267); // road
-  if (t == 3) return vec3(0.337, 0.329, 0.322); // stone
+  if (t == 2) return vec3(0.467, 0.435, 0.365); // road
+  if (t == 3) return vec3(0.541, 0.533, 0.502); // stone
   if (t == 4) return vec3(0.541, 0.459, 0.282); // sand
   if (t == 5) return vec3(0.420, 0.310, 0.200); // wood
   if (t == 6) return vec3(0.122, 0.290, 0.369); // water_deep

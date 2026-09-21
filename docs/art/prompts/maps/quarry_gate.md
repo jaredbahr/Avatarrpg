@@ -8,7 +8,7 @@
 
 **Layout** `quarry_gate-layout.png` beside this file: the tile grid as flat colour blocks at 32 px a tile, with the grid drawn. Hand it to the generator as the composition reference (image-to-image or a structure control) at a strength that keeps every edge where it is; upscale it to the delivery size first so the generator does not invent a border.
 
-**Palette** hue anchors from the game's own ground (`src/render/palettes.ts`): stone `#565452`, wall `#3a352f`, dirt `#4d3f2f`, wood `#6b4f33`, road `#5b5044`. The painting replaces those tones outright, so lighter and more saturated is fine; stay in the same families so the effects and the parchment HUD still read over it.
+**Palette** hue anchors from the game's own ground (`src/render/palettes.ts`): stone `#8a8880`, wall `#3a352f`, dirt `#4d3f2f`, wood `#6b4f33`, road `#776f5d`. The painting replaces those tones outright, so lighter and more saturated is fine; stay in the same families so the effects and the parchment HUD still read over it.
 
 ## Where
 
