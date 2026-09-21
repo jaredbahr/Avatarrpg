@@ -1,5 +1,19 @@
 # Changelog
 
+## 0.2.7 — release candidate
+
+- Let standing water show what it sits on. The forest pond's bank now wanders
+  inside its own water cells instead of tracing the rules' eight-cell cross, and
+  the water carries the forest floor beneath it, darkened and cooled with depth,
+  so the pond reads as shallow silt at the edge and deeper water in the middle
+  rather than a flat teal field. The village canal gets the same treatment from
+  the village's own paving, under a kerb dressed toward grey with a wet band at
+  the waterline.
+- Plant the pond's bank. Three low reed fringes, cut and feathered from the
+  flood-bank reeds the road already uses, stand on the cells that touch the
+  water, so the waterline carries growth instead of meeting the road as a bare
+  edge. They are passable scenery: no wall, no collision and no ground disk.
+
 ## 0.2.6 — release candidate
 
 - Ground props and figures instead of leaving them on a hard dark rim. The
