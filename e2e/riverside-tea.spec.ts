@@ -30,6 +30,76 @@ for (const backend of ['canvas', 'webgl']) {
     await expect(stage).toHaveAttribute('data-illustrated-actors', '2');
     await settleLayout(page);
     /*
+     * Closing the activities panel reflows the HUD, which resizes the map a
+     * frame later through the ResizeObserver, and the camera refits a frame
+     * after that. `settleLayout` reads the camera three times two frames
+     * apart, so three identical reads inside that gap can hand back a fit that
+     * is one layout behind. That fit is not wrong, but the seated party stands
+     * below the bottom edge of the stage in it — run 35547980370 measured the
+     * projected foot at y 518 on a 485 px stage on CI's software rasteriser,
+     * where a frame takes long enough that every retry below stayed inside the
+     * same lag — and the sample it fed was an empty crop.
+     *
+     * Do not ask for the foot itself to be inside the stage. Measured on a
+     * settled camera at this viewport the foot sits at y 475 in one run and
+     * y 524 on the same 1280x485 stage in another, with a stable camera and a
+     * sample that still contains the figure in both: the crop reaches 55 px
+     * above the foot, so it reads the seated figure's head and shoulders and
+     * the fixture asserts on ink, not framing. A predicate that demands the
+     * whole crop land inside the stage would never be true and would only time
+     * out. What the crop actually needs is the state the drawing was made in.
+     *
+     * The clock is faked from here on, so a frame is published when the test
+     * asks for one and not before: a `waitForFunction` parked on
+     * `requestAnimationFrame` never gets a frame to wake on and can only time
+     * out (the first attempt at this repair did exactly that). Step whole
+     * frames from this side instead, and stop when the life layer has drawn at
+     * the box it is showing — its backing store is sized from the camera's
+     * viewport, so a store that disagrees with the CSS box is a layer that has
+     * been resized and not repainted, which is the crop that reads blank — and
+     * the camera has held still across two published frames. Exhausting the
+     * rail is not a failure: the inked assertion further down owns the real
+     * claim, and a figure that was never drawn fails it however long the wait.
+     */
+    const teaFoot = () =>
+      page.evaluate(() => {
+        const canvas = document.querySelector<HTMLCanvasElement>('.village-life-canvas');
+        const camera = window.fnt?.app.rendererCamera();
+        if (!canvas || !camera) return null;
+        const m = camera.groundTransform;
+        const dpr = Math.min(window.devicePixelRatio || 1, 2);
+        const x = (m.a * 8.5 + m.c * 18.85) * 64 + m.tx;
+        const y = (m.b * 8.5 + m.d * 18.85) * 64 + m.ty;
+        return {
+          store: `${canvas.width}x${canvas.height}@${dpr}`,
+          box: `${canvas.clientWidth}x${canvas.clientHeight}`,
+          key: `${x.toFixed(2)}:${y.toFixed(2)}:${canvas.clientWidth}x${canvas.clientHeight}`,
+          painted:
+            Math.abs(canvas.width / dpr - canvas.clientWidth) < 1 &&
+            Math.abs(canvas.height / dpr - canvas.clientHeight) < 1,
+        };
+      });
+    /** Frames the settle may use; 30 is seconds on a software rasteriser. */
+    const FOOT_RAIL = 30;
+    let settled = false;
+    let previous: string | null = null;
+    let last: Awaited<ReturnType<typeof teaFoot>> = null;
+    for (let attempt = 0; attempt < FOOT_RAIL; attempt++) {
+      last = await teaFoot();
+      settled = Boolean(last?.painted) && last?.key === previous;
+      previous = last?.key ?? null;
+      if (settled) break;
+      await page.clock.runFor(17);
+      await page.waitForTimeout(40);
+    }
+    // Evidence when the rail gave up: the state the crop would have used.
+    if (!settled) {
+      await test.info().attach(`tea-${backend}-foot-settle`, {
+        body: JSON.stringify({ last, attempts: FOOT_RAIL }),
+        contentType: 'application/json',
+      });
+    }
+    /*
      * The seated figure is drawn by the shared 2D life layer, above a board
      * that differs by backend. Comparing two composited page captures instead
      * made the cel assertion depend on how long a software rasteriser took to
@@ -86,12 +156,16 @@ for (const backend of ['canvas', 'webgl']) {
 
     const teaCel = async () => {
       let sample = await sampleTeaCel();
-      for (let attempt = 0; attempt < 3 && sample.inked === 0; attempt++) {
+      for (let attempt = 0; attempt < 24 && sample.inked === 0; attempt++) {
         // Publish a frame and read again against the camera that is live then.
         // A wall-clock wait is not enough once the clock is paused: nothing
         // draws, so a layer that has just resized and cleared stays blank for
         // every retry. Seventeen milliseconds is a frame, far short of the
-        // four-second cel these checks measure.
+        // four-second cel these checks measure. The count is bounded by the
+        // settle it may have to outlast rather than by a hope: a rail of 24
+        // frames is seconds on a software rasteriser and a few hundred
+        // milliseconds on a GPU, and the assertion below still fails outright
+        // when the figure never arrives.
         await page.clock.runFor(17);
         await page.waitForTimeout(40);
         sample = await sampleTeaCel();
