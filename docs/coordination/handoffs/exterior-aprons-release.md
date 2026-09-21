@@ -49,16 +49,30 @@ pointer here.
 
 ## Evidence
 
-- `npm run verify` on the release head (typecheck, lint, format, full vitest).
+- `npm run verify` on the batch head `935a119`: typecheck, lint, format and the
+  full vitest run, **903 tests in 111 files** (899 before this batch).
 - Per-scene art tests, unchanged by the batch: byte-identical repack, no alpha
   inside the board or past the fade, closed rim seam, material continuation.
-- Review frames per scene, both backends (see each source handoff for its views
-  and the `.shots/` paths it re-captures into).
+- Frames on this head, installed Chrome at 1368x912, Canvas and WebGL:
+  - `.shots/forest-apron/{canvas,webgl}` — `fit.png`, six rim/exit views, plus
+    the new `combat-fit.png` and `combat-rim-{0-4,9-0}.png` from
+    `FNT_REVIEW_BROWSER_CHANNEL=chrome npx playwright test -c
+playwright.forest-apron.config.ts` (4 passed).
+  - `.shots/rim-probe/{canvas,webgl}` — the village rim probe, now actually
+    running: `npx playwright test -c playwright.ba-dan-apron.config.ts`
+    (2 passed) after the `testMatch` repair.
+  - `.shots/route-review/{canvas,webgl}` — the whole-route framing,
+    `battle_quarry_gate-fit.png` shows the gatehouse terrace continuing on both
+    backends (2 passed).
+  - Read against the references, the three hard diagonals are gone; the ground
+    leaves each board as its own material and dissolves.
 
 ## Open gaps (not closed by this release)
 
 - Frames are review fixtures at one viewport, not a playthrough; the forest
-  road's combat framing with the apron in place still needs its own walk.
+  road's combat framing is now captured but not walked with real input, and the
+  quarry-side transition and the return still need reviewing in the deployed
+  build.
 - Nothing here was checked on a physical device, at Large text, or by listening.
 
 ## Next action

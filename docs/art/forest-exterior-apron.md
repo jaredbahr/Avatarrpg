@@ -60,3 +60,13 @@ The fill's inner edge follows the guard's own alpha contour, which is
 cell-quantised. In the Canvas and WebGL frames that reads as faint texture noise
 rather than a line, so nothing further is queued for it; feathering the fill's
 alpha into the guard's ramp is the refinement if a later frame shows it.
+
+## The encounter camera
+
+The apron was first reviewed under the exploration follow camera only. The
+batched v0.2.8 branch adds the fight's own framing to
+`e2e/forest-apron.review.ts`: `battle_forest_road` on both backends, captured at
+the encounter camera and again at zoom 40 centred on the west exit and the north
+rim. In those frames the road and its grass run out of the board under the
+combat HUD exactly as they do in exploration, and the two renders agree — the
+board edge the fight sits against is not a bare page.
