@@ -13,6 +13,30 @@ long, straight seams inside the village board.
 
 ## What moved
 
+## Also in this release: 0.2.9 hid the illustrated village
+
+Reviewing the tone change on the merged 0.2.9 base showed the village drawing
+its **procedural fallback** — grid cells, decor canopies, dark road band — where
+the illustrated ground used to be. Cause, confirmed by A/B: `sceneImages` is a
+`BackdropStore(16)`, an LRU, and a partial scene paints its authored ground only
+when _every_ ground and scenery piece is resident at once. 0.2.9's twelve apron
+bands per scene took Ba Dan from 16 distinct scene images to 27 and the forest
+road from 10 to 21, so both can never complete: permanent fallback, plus a
+re-decode of every evicted piece each frame. Nothing in 0.2.9's checks could see
+it — the gallery is an artifact rather than a comparison, and the band proofs
+test geometry.
+
+Fix in this branch: `SCENE_IMAGE_CAP = 32` in `src/render/scene.ts`, plus a
+content contract in `src/render/scene.test.ts` that fails on exactly those two
+scenes (27 and 21) under the old cap. Evidence: `.shots/village-fallback-cap16.png`
+against `.shots/village-resident-fixed.png`, and the re-captured
+`.shots/rim-probe/{canvas,webgl}/` frames (village and forest, both backends,
+both authored again). Measured residency: village 27 pieces / 22.9 MB decoded,
+forest 21 / 23.4 MB, against the ~35 MB a quarry scene already keeps resident
+under the old cap.
+
+## The tone change
+
 1. `src/render/palettes.ts` — `TERRAIN_STYLES.grass` `#41552f` / `#35471f` /
    `#55693c` → **`#7d8850` / `#717a40` / `#95a060`** (fill / edge / detail, same
    relative offsets, lifted into the illustrated family).
@@ -67,25 +91,34 @@ playwright.ba-dan-apron.config.ts`); `.shots/rim-probe-before/` holds the same
 Not claimed: no playthrough, no listening, no physical device, no Large-text
 check, and no WebKit run.
 
-## Do not open a PR from this head
+## Rebased onto the shipped v0.2.9 (done in this run)
 
-PR #73 (v0.2.9, apron bands) is in flight on `codex/apron-release` and rewrites
-this same seam: it deletes the single-plate `exterior-apron.webp`, ships twelve
-band plates per scene, raises the scene's ground bound 12 → 32, and adds
-`scripts/art/lib/apron-{bands,plates}.ts`. It was still mid-CI at 16:37 CDT with
-its gallery shards running, so nothing here touched it.
+PR #73 (v0.2.9, apron bands) merged at 21:43Z as merge commit `92a30e5`, exactly
+on its checked head `cae38c5`. It rewrites this same seam: it deletes the
+single-plate `exterior-apron.webp`, ships twelve band plates per scene, raises
+the scene's ground bound 12 → 32, and adds
+`scripts/art/lib/apron-{bands,plates}.ts`. Nothing in this run touched that
+branch or its run until the merge was confirmed on the live API.
 
-Next run, after #73 merges with a merge commit:
+This branch was then rebased onto `92a30e5` with one conflict — the regenerated
+single-plate `exterior-apron.webp`, which #73 deletes — resolved by taking the
+deletion, and `npx tsx scripts/art/ba-dan-exterior-apron.ts` was re-run on that
+base so the twelve village bands are cut from the new tone (the `verify` suite
+re-cuts them byte-for-byte). The forest apron mirrors the forest's own authored
+pixels and needed nothing. On the rebased head: `npm run verify` green (922
+tests / 114 files, including the five new residency cases), `npm run build` +
+`scripts/check-bundle-size.mjs` 299.8 KB of 300 KB gzipped, `art:validate` and
+`check:assets` green (precache 17.62 MB of 25 MB), and the village and forest
+re-captured on both backends.
 
-1. Rebase this branch onto the merge commit. The one expected conflict is the
-   regenerated `exterior-apron.webp` (they delete it): take the deletion.
-2. Re-run `npx tsx scripts/art/ba-dan-exterior-apron.ts` on that base so the
-   twelve village bands are cut from the new tone (`npm run verify` re-cuts them
-   byte-for-byte and would otherwise fail). The forest apron mirrors the
-   forest's own authored pixels and needs no regeneration.
-3. Re-run verify, `art:validate`, `check:assets`, the bundle gate, and one
-   village re-capture on both backends. Take the next free patch version
-   (0.2.10 at this checkpoint), open the PR and arm merge-commit auto-merge.
+## This branch is the v0.2.10 release
+
+Because 0.2.9 is already serving the fallback village, the residency fix ships
+in this same pull request rather than waiting for its own release train: two
+content commits under one release commit, one CI run, one merge. The tone change
+and the residency fix are independent (the tone is visible in both the authored
+ground and the fallback cells), so if the tone change needs to come out, revert
+`918506d` alone and keep `4a17f5b`.
 
 ## Open, recorded honestly
 

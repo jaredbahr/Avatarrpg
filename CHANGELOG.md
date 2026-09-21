@@ -1,5 +1,38 @@
 # Changelog
 
+## 0.2.10 — release candidate
+
+- Keep a partial scene's ground on screen. 0.2.9 shipped each apron as twelve
+  band plates, which took Ba Dan from 16 distinct scene images to 27 and the
+  forest road from 10 to 21 — over the sixteen-entry LRU that caches them. A
+  partial scene paints its authored ground only when every ground and scenery
+  piece is resident at once, so both scenes fell back to the procedural board
+  permanently, and re-decoded their evicted pieces every frame while they did.
+  The cap is now 32 and named `SCENE_IMAGE_CAP`, and `scene.test.ts` holds every
+  partial scene under it, so content that splits another piece fails the suite
+  instead of silently deleting the village. Decoded cost stays modest: the
+  village's 27 pieces are 22.9 MB against the ~35 MB a quarry scene already
+  keeps resident. No rendering path changed.
+- Lift the procedural grass the illustrated ground is drawn over into the
+  family the art is painted in. The cells still carried the legacy board tone
+  `#41552f` (`#425730` once shaded) against an authored lawn measured at
+  `#8d9557`: a 1.79x luminance step along long, straight seams inside the Ba Dan
+  board, where the south-west and north-east fields met the plaza. Every
+  authored source in the game — the legacy complete paintings, the ground
+  plates, the approved player-view reference — already uses a light grass, so
+  the cell tone was the outlier and the cell tone moved: `#7d8850` fill,
+  `#717a40` edge, `#95a060` detail, mirrored into the WebGL terrain shader at
+  the same value so the two backends still agree. The same fixture re-measured
+  on this build puts the step at 1.19x on Canvas and 1.24x on WebGL.
+- The village's exterior apron is cut again from the new tone, because it
+  paints the procedural grass outward past the rim; the forest apron mirrors
+  the forest's own authored pixels and is untouched. Nothing else inside a
+  board moved: no rule, collision, save, camera or content change.
+- Still open and deliberately not claimed: the road and paving side of the same
+  step (`TERRAIN_STYLES.road`/`stone` are still the legacy tones, so the apron's
+  road band at the east exit remains a dark band), and the two bare fields are
+  still flatter than the plates — the tone matches, the texture does not.
+
 ## 0.2.9 — release candidate
 
 - Ship each scene's outer apron as twelve bands instead of one plate. The plate
