@@ -57,3 +57,37 @@ the required checks judge the new head. If `painted-rubble` still exceeds its
 budget there, the plate size was not the cause: the time is spent in
 `page.screenshot`, so measure that spec's probe count next rather than changing
 art again.
+
+## Release: v0.2.9 (2026-09-21, after PR #71 merged)
+
+PR #71 merged as `8345e1d` before the bands could be landed on its head, so the
+fix ships as its own interim version from fresh `main`. Branch
+`codex/apron-release` (worktree `C:/Users/Jared/.codex/worktrees/apron-release`)
+is `8345e1d` + the merge of `1e26044`, then one `release: v0.2.9` commit:
+`package.json` / `package-lock.json` 0.2.8 -> 0.2.9, the `CHANGELOG.md` entry,
+and this section. Source commits are preserved unmodified beneath it. The merge
+is clean, and the only content it adds is the one this handoff already
+describes; nothing in `main` outside the apron files is touched.
+
+Evidence on the release commit, all local (no runner and no device):
+
+- `npm run verify` green: 917 tests in 114 files, typecheck/lint/format
+  included.
+- `npm run build` + `node scripts/check-bundle-size.mjs`: **299.8 KB of the
+  300 KB gzipped budget** (was 299.7 KB on `b71e0b5`). Only 0.2 KB of headroom
+  remains, so the next runtime addition must pay for itself or trim something.
+- `npm run art:validate` and `npm run check:assets` green; precache 17.59 MB of
+  25 MB.
+- The apron-band proofs inside `verify` re-cut both shipped rings from the
+  packed WebPs and assert coverage, the 2048 ceiling, the byte-for-byte
+  re-encode and the half-plate area bound.
+
+Open, unchanged: no physical-device check, no listening check, and the
+software-WebGL timeout that motivated this work can only be judged on the
+runner. Watch `e2e/painted-rubble.spec.ts` (shard 3/3, `surface-touch`) and the
+gallery shards on this head's first CI run.
+
+Next action: confirm the required checks on this head and let the armed
+merge-commit auto-merge land it, then re-check Pages serves 0.2.9. If
+`painted-rubble` still times out, plate size was not the cause — measure that
+spec's probe count before changing art again.
