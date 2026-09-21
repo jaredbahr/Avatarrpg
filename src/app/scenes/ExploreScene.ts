@@ -56,6 +56,12 @@ export class ExploreScene implements Scene {
   private renderer: Renderer | null = null;
   private detach: (() => void) | null = null;
   private frame = 0;
+
+  /**
+   * The units of the last published frame, so a resize can repaint the life
+   * layer without waiting for the render loop to come round again.
+   */
+  private lastLife: { units: readonly RenderUnit[]; now: number } | null = null;
   private hover: Vec2 | null = null;
   private map: MapDef | null = null;
   /** Built once per map, not once per frame: the village never changes shape. */
@@ -141,6 +147,7 @@ export class ExploreScene implements Scene {
     this.localMap = null;
     this.life?.destroy();
     this.life = null;
+    this.lastLife = null;
     if (this.frame) cancelAnimationFrame(this.frame);
     this.frame = 0;
     this.detach?.();
@@ -334,6 +341,28 @@ export class ExploreScene implements Scene {
     }
     camera.clamp();
     this.rememberViewSize();
+    this.redrawLife();
+  }
+
+  /**
+   * Repaint the life layer in the same turn as the resize that moved its box.
+   *
+   * The layer sizes its backing store from the camera's viewport, so a resize
+   * that repaints the board but leaves this layer until the next animation
+   * frame leaves a store that disagrees with the box it is shown in: the
+   * browser stretches the old frame, and every measurement taken in backing
+   * pixels — a tap, or the suite's crop of the seated party — lands outside
+   * the bitmap and reads as empty canvas. `Renderer.resizeAndRedraw` already
+   * redraws the board in this turn for exactly that reason; give the layer the
+   * units of the last published frame and the camera that was just refitted,
+   * so the two never come apart however slowly the runner hands back frames.
+   */
+  private redrawLife(): void {
+    const last = this.lastLife;
+    const camera = this.renderer?.camera;
+    // The frame's own timestamp, not a fresh read: this is a repaint of the
+    // frame the renderer was last handed, at the camera that just refitted.
+    if (this.life && last && camera) this.life.draw(last.units, camera, last.now);
   }
 
   private rememberViewSize(): void {
@@ -945,6 +974,7 @@ export class ExploreScene implements Scene {
     };
 
     renderer.draw(view);
+    this.lastLife = { units, now };
     this.life?.draw(units, renderer.camera, now);
   };
 }
