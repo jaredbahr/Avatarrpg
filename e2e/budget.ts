@@ -19,11 +19,21 @@ import type { TestInfo } from '@playwright/test';
  * forced board render 107s of 120, the painted ground 59s of 120, and the gate
  * approach 115s and 98s of 180.
  *
+ * Run 35555673408, a green pass on 8de10f0e, measured painted rubble at 297.2s
+ * of this cap and the painted elevation at 260.0s: the two heaviest cases were
+ * already spending 99% and 87% of what they were allowed, so art that costs a
+ * few seconds - run 35560977952 added 13 by carrying each exterior apron over
+ * the board's rim - turned a required gate red without any behaviour changing.
+ * A cap that a normal art delta can exhaust is not measuring a hang, so the
+ * cap carries a margin over those measurements instead. The cases themselves
+ * keep every assertion; the probe round trips that made them expensive are
+ * being paid down separately.
+ *
  * This is a cap, not a sleep. Canvas 2D cases keep the suite default, a case
  * that finishes early still finishes early, and a genuinely hung case still
  * fails its shard after its retry.
  */
-export const SOFTWARE_WEBGL_BUDGET_MS = 300_000;
+export const SOFTWARE_WEBGL_BUDGET_MS = 360_000;
 
 interface BudgetedTest {
   setTimeout(timeout: number): void;

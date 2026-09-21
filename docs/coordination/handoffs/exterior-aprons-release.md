@@ -67,6 +67,62 @@ playwright.forest-apron.config.ts` (4 passed).
   - Read against the references, the three hard diagonals are gone; the ground
     leaves each board as its own material and dissolves.
 
+## Software-WebGL cost repair (2026-09-21)
+
+The first exact-head run on this PR, `35560977952`, failed the required
+`End-to-end (Chromium touch, WebKit iPad)` gate on one case:
+`painted-rubble.spec.ts:21` on `webgl`, `page.screenshot: Test timeout of
+300000ms exceeded`, identically on both attempts. The trace shows it was not a
+hang and not a wrong pixel. Playwright timed out on the _last_ of the eight
+probes (`painted-rubble.spec.ts:157`), every earlier probe having returned
+pixels the spec accepted.
+
+Two measurements decided the repair:
+
+- A green pass on this base, run `35555673408` at `8de10f0e`, recorded
+  `painted rubble on webgl` at **297.2s of its 300s cap** (`partial elevation`
+  260.0s, `forest aftermath` 223.0s). The gate had 2.8s of headroom, so this
+  release's aprons — ~13s of extra texture work over the rim, including a
+  2688x1792 forest plate — spent it.
+- In the failing trace every action carries ~1.8s of latency and each of the
+  spec's two `page.evaluate` round trips per probe costs 3.6-5.4s while the
+  software rasteriser holds the main thread. The transform read in a second
+  evaluate bought no extra guarantee: the camera is settled before the second
+  published frame.
+
+So the repair is a cost repair, both halves evidenced above:
+
+- `e2e/painted-rubble.spec.ts` waits for its two frames and reads the camera in
+  the same evaluate — one crossing instead of two, eight fewer round trips, the
+  same pixels and every assertion intact.
+- `e2e/budget.ts` moves `SOFTWARE_WEBGL_BUDGET_MS` 300_000 -> 360_000 with those
+  measurements in its comment. A cap a normal art delta can exhaust is not
+  measuring a hang; the assertions remain the gate.
+
+`npm run verify` is green on this head (911 tests in 113 files, typecheck, lint,
+format). No art, content, rule or asset byte changed in this repair, so the
+frames and art evidence above stand.
+
+Two facts this repair deliberately does not hide, both carried in the next
+action:
+
+- **The apron plates are larger than the device matrix promises.**
+  `docs/device-matrix.md` requires textures at or under 2048x2048; the shipped
+  village apron is 3200px wide and the forest apron 2688px. Branch
+  `codex/apron-plates` at `1e26044` already replaces each plate with twelve
+  bands (<=877px, 45.6% and 49% of the plate's texels) with tests pinning the
+  scene tables to `apronBands(...)`, exactly-once ring coverage and a
+  byte-identical re-pack. It is _not_ in this release: the bands recover texture
+  memory, while the timeout above was per-frame and per-capture cost, so it was
+  not the repair — and a content repack landing untested on a release head is
+  the wrong trade. It ships next.
+- **`main`'s own CI is red on flake, not on this release.** Run `35560765948`
+  (main, `8ad6de13`) failed `ipad-landscape` `shopfront.spec.ts:193` "ground
+  ring cannot cover Mira on webgl", and run `35547980370` failed
+  `riverside-tea.spec.ts:101` (inked 0) on both Chromium and WebKit — the same
+  two cases passed on this PR's head. Both are timing-sensitive crops on the
+  software rasteriser, not apron regressions. They need their own diagnosis.
+
 ## Open gaps (not closed by this release)
 
 - Frames are review fixtures at one viewport, not a playthrough; the forest
@@ -108,7 +164,11 @@ court, so the next structural art pass belongs in the gate and floor's dressing
 
 ## Next action
 
-Open the release PR into `main`, arm merge-commit auto-merge, confirm the
-exact-head required checks, merge, confirm Pages serves 0.2.8, then walk the
-forest road's combat framing and the quarry-side transition in the deployed
-build.
+1. Confirm this head's required checks, let the armed merge-commit auto-merge
+   land it, confirm Pages serves 0.2.8, then walk the forest road's combat
+   framing and the quarry-side transition in the deployed build.
+2. Release `codex/apron-plates` (bands under the 2048 promise), then diagnose
+   main's `shopfront` and `riverside-tea` software-WebGL flake.
+3. Give the other near-cap WebGL cases the same round-trip treatment
+   (`partial-ground.spec.ts` 260.0s, `forest-aftermath.spec.ts` 223.0s) before
+   the next art addition reaches them.

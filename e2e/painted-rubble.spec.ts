@@ -29,23 +29,46 @@ for (const renderer of ['canvas', 'webgl'])
     await takeTurn(page);
     await waitForIdle(page);
     await page.waitForTimeout(1000);
+    /*
+     * One round trip per probe: wait for two published frames and read the
+     * camera in the same evaluate. While the software rasteriser is busy, a
+     * call across the protocol costs seconds — run 35555673408 measured the
+     * two frames alone at about five, and this spec's webgl half passed at
+     * 297.2s of a 300s cap — so a second `page.evaluate` for the transform
+     * charged eight more of those. The camera is settled before the second
+     * frame is published, and the screenshot below still follows the wait, so
+     * the probe reads the same pixels with one fewer crossing.
+     */
     const sample = async (regionSize = 7) => {
-      await page.evaluate(
-        () => new Promise((resolve) => requestAnimationFrame(() => requestAnimationFrame(resolve))),
+      const probe = await page.evaluate(
+        () =>
+          new Promise<{
+            point: { x: number; y: number };
+            rect: { x: number; y: number; width: number; height: number };
+          } | null>((resolve) => {
+            requestAnimationFrame(() =>
+              requestAnimationFrame(() => {
+                const m = window.fnt?.app.rendererCamera()?.groundTransform;
+                const canvas = document.querySelector('.map-canvas');
+                if (!m || !canvas) {
+                  resolve(null);
+                  return;
+                }
+                const bounds = canvas.getBoundingClientRect();
+                resolve({
+                  point: {
+                    x: m.a * 7.5 * 64 + m.c * 3.5 * 64 + m.tx,
+                    y: m.b * 7.5 * 64 + m.d * 3.5 * 64 + m.ty,
+                  },
+                  rect: { x: bounds.x, y: bounds.y, width: bounds.width, height: bounds.height },
+                });
+              }),
+            );
+          }),
       );
-      const { point, rect } = await page.evaluate(() => {
-        const m = window.fnt!.app.rendererCamera()!.groundTransform;
-        const canvas = document.querySelector('.map-canvas');
-        if (!canvas) throw new Error('Missing map canvas');
-        const bounds = canvas.getBoundingClientRect();
-        return {
-          point: {
-            x: m.a * 7.5 * 64 + m.c * 3.5 * 64 + m.tx,
-            y: m.b * 7.5 * 64 + m.d * 3.5 * 64 + m.ty,
-          },
-          rect: { x: bounds.x, y: bounds.y, width: bounds.width, height: bounds.height },
-        };
-      });
+      expect(probe, 'the map canvas is mounted with a settled camera').not.toBeNull();
+      if (!probe) throw new Error('Missing map canvas');
+      const { point, rect } = probe;
       expect(point.x).toBeGreaterThan(3);
       expect(point.x).toBeLessThan(rect.width - 3);
       expect(point.y).toBeGreaterThan(3);
