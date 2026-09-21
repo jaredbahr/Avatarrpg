@@ -163,10 +163,15 @@ function groundAt(field: Image, x: number, y: number): [number, number, number, 
 }
 
 /**
- * The colour the apron continues for an exterior point: the authored ground a
- * little way in along the normal. Where that is blocked by a pond, a ledge or a
- * cover cell — which are objects on the ground, not ground — the walk keeps
- * going until it finds the terrain those objects stand on.
+ * The colour the apron continues for a point, taken from the authored ground at
+ * the point's own reflection across the rim — `2 * depth` in, which is a rigid
+ * mirror and therefore carries the texture in two dimensions instead of smearing
+ * the rim line outward as a translation of the depth would. Inside the seam band
+ * the offset is the band's own width, so that band is a plain shift.
+ *
+ * Where the mirror point is blocked by a pond, a ledge or a cover cell — objects
+ * standing on the ground, not ground — the walk keeps going until it finds the
+ * terrain those objects stand on.
  */
 export function apronTerrain(
   field: Image,
@@ -175,7 +180,8 @@ export function apronTerrain(
 ): { r: number; g: number; b: number } | null {
   const depth = apronDepth(x, y);
   const inward = apronInward(x, y);
-  for (let t = Math.max(depth, 0.08); t <= depth + SAMPLE_REACH; t += 0.08) {
+  const mirror = depth > 0 ? 2 * depth : APRON_SEAM + 0.08;
+  for (let t = mirror; t <= mirror + SAMPLE_REACH; t += 0.08) {
     const point = scenePixel(x + inward.x * t, y + inward.y * t);
     const found = groundAt(field, point.x, point.y);
     if (found) return { r: found[0], g: found[1], b: found[2] };
