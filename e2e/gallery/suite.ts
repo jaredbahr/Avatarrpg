@@ -55,6 +55,15 @@ class Stage implements BeatContext {
    * `settleLayout` reads the camera three times two frames apart; on a slow
    * runner that outlasted its 10 s on eight beats while the parallel runner
    * passed. The same allowance `settleCurtain` has, for the same reason.
+   *
+   * 60 s, not 30: `09-rock-throw` spent the whole 30 s of run 35590666334 on
+   * the first iPad-WebGL shard and never got four frames that agreed, while the
+   * same beat passed on the pull-request run minutes earlier. This project
+   * paints 2388x1668 pixels through a software rasteriser, so a contended
+   * runner can plausibly stretch one frame past the 7.5 s that a four-frame
+   * 30 s budget allows. `settleLayout` now reports the frame timings it saw, so
+   * the next failure says whether this bound was still too tight or the camera
+   * truly never settled.
    */
   readonly settleTimeout: number;
 
@@ -65,7 +74,7 @@ class Stage implements BeatContext {
     private readonly dir: string,
     private readonly beat: Beat,
   ) {
-    this.settleTimeout = renderer === 'webgl' ? 30_000 : 10_000;
+    this.settleTimeout = renderer === 'webgl' ? 60_000 : 10_000;
   }
 
   query(extra: Record<string, string> = {}): string {

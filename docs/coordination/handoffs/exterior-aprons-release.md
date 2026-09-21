@@ -181,3 +181,12 @@ veranda it seats the party on), a `pauseAt` race in `directional-walk`, and the
 gallery shards that are gated behind them. Diagnosis, measurements and the
 repairs now on this head: `release-head-e2e-repair.md`. The three items above
 stand, with the head re-checked first.
+
+## After the v0.2.8 merge (2026-09-21, thirteenth run)
+
+`8345e1d` deployed to Pages, but main's own `CI` run `35590666334` went red on
+`Gallery iPad WebGL 3/3`: `09-rock-throw` spent its whole 30 s `settleLayout`
+budget without seeing four frames that agreed, on a project that paints
+2388x1668 pixels through a software rasteriser. The helper now reports the
+frames it saw and the gallery's WebGL allowance is 60 s:
+`settle-budget-repair.md`. Item 2 above is unaffected and stays next.
