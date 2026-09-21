@@ -1,5 +1,15 @@
 # Changelog
 
+## 0.2.8 — release candidate
+
+- Let Ba Dan end in landscape instead of on the page. The villages's authored
+  ground stopped on the board's diamond, so the outermost grass, the eastern
+  plaza and the western road all met the bare backdrop along a hard diagonal.
+  A painted apron now carries the terrain that borders the rim back out: the
+  same grass the outer cells paint, continued for about a tile where the
+  village's own outer cell is road or paving, then faded into the page wash
+  before the camera can follow it further. Every playable cell is untouched.
+
 ## 0.2.6 — release candidate
 
 - Ground props and figures instead of leaving them on a hard dark rim. The
