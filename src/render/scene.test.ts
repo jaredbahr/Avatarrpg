@@ -2,7 +2,14 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import type { Grid, MapScene, SceneScenery, Tile, Vec2 } from '../core/types';
 import { Camera } from './camera';
 import type { Projection } from './projection';
-import { sceneForGrid, sceneImages, sceneryOpacity, sceneryOpacities } from './scene';
+import { ALL_MAPS } from '../content';
+import {
+  SCENE_IMAGE_CAP,
+  sceneForGrid,
+  sceneImages,
+  sceneryOpacity,
+  sceneryOpacities,
+} from './scene';
 import type { MapView, RenderUnit } from './view';
 
 const SIZE = 128;
@@ -392,4 +399,27 @@ it('fades connected slices together only while an actual occupant occludes a mem
   expect(sceneryOpacities([b], state, camera).get(b)).toBe(1);
   vi.mocked(sceneImages.get).mockReturnValue(null);
   expect([...sceneryOpacities(pieces, state, camera).values()]).toEqual([1, 1, 1, 1]);
+});
+
+/*
+ * The store is an LRU and `sceneGround` needs every piece resident at once, so
+ * a scene whose distinct images exceed the cap never draws its painted ground,
+ * never stops re-decoding the evicted pieces, and shows the procedural board
+ * forever. That is what the twelve apron bands did to Ba Dan the moment the
+ * scene's count passed the old sixteen: the piece count is content, and this
+ * is where content has to notice.
+ */
+describe('scene image residency', () => {
+  for (const map of ALL_MAPS) {
+    const scene = map.scene;
+    if (!scene || scene.groundMode !== 'partial') continue;
+    it(`${map.id} holds every ground and scenery image under the cap`, () => {
+      const distinct = new Set([...scene.ground, ...scene.scenery].map((piece) => piece.url));
+      expect(scene.ground.length).toBeGreaterThan(0);
+      expect(
+        distinct.size,
+        `${map.id} asks for ${distinct.size} distinct scene images; SCENE_IMAGE_CAP is ${SCENE_IMAGE_CAP}`,
+      ).toBeLessThanOrEqual(SCENE_IMAGE_CAP);
+    });
+  }
 });
