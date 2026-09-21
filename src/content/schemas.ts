@@ -477,7 +477,7 @@ export const mapSchema = z
         paintedWater: z.boolean().optional(),
         groundMode: z.literal('partial').optional(),
         paintedRubble: z.array(vec2).optional(),
-        ground: z.array(sceneImageSchema).max(8),
+        ground: z.array(sceneImageSchema).max(12),
         scenery: z
           .array(
             sceneImageSchema

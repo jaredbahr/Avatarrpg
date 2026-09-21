@@ -41,6 +41,23 @@ export const BA_DAN_CANAL_BANK_RADIUS = 1.42;
 /** Transparent coping envelope around all six runtime water diamonds. */
 export const BA_DAN_CANAL_BANKS = { x: 928, y: 368, width: 576, height: 288 } as const;
 
+/**
+ * The village does not end where the rules stop. This apron carries the ground
+ * that borders the rim back out into the page — the same grass the procedural
+ * cells paint, continued a little way where the map's outer cell is road or
+ * paving — and fades to nothing before the camera can follow it further.
+ * `village.ts` owns the authoritative size; `baDan.test.ts` pins them together.
+ */
+export const BA_DAN_APRON_MAP = { width: 24, height: 16 } as const;
+/** Logical tiles of authored terrain outside the rim, on all four sides. */
+export const BA_DAN_APRON_DEPTH = 2.5;
+export const BA_DAN_EXTERIOR_APRON = {
+  x: 1024 - (BA_DAN_APRON_MAP.height + 2 * BA_DAN_APRON_DEPTH) * 64,
+  y: -2 * BA_DAN_APRON_DEPTH * 32,
+  width: (BA_DAN_APRON_MAP.width + BA_DAN_APRON_MAP.height + 4 * BA_DAN_APRON_DEPTH) * 64,
+  height: (BA_DAN_APRON_MAP.width + BA_DAN_APRON_MAP.height + 4 * BA_DAN_APRON_DEPTH) * 32,
+} as const;
+
 /** Two canopy wings frame the market court; only their trunks block walking. */
 export const BA_DAN_COURT_TREES = [
   { x: 5, y: 5 },
@@ -147,6 +164,14 @@ function canalBanks(): SceneImage {
   };
 }
 
+/** Painted last: it is transparent everywhere the board can be walked. */
+function exteriorApron(): SceneImage {
+  return {
+    url: `${root}exterior-apron.webp`,
+    ...BA_DAN_EXTERIOR_APRON,
+  };
+}
+
 /** Complete upright house: source foundation's foremost corner is at 43.2%, 99.5%. */
 function house(
   id: string,
@@ -206,6 +231,7 @@ export const BA_DAN_SCENE: MapScene = {
       height: ((BA_DAN_NORTH_FRINGE.width + BA_DAN_NORTH_FRINGE.depth) * 64 * 267) / 512,
     },
     canalBanks(),
+    exteriorApron(),
   ],
   scenery: [
     house('gao-house', 6, 1, 4, 3),
