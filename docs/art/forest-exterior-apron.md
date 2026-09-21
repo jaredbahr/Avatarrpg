@@ -40,7 +40,7 @@ not redrawn as a line.
 
 The first in-engine frame showed the band combed into long diagonal streaks.
 The cause was geometry, not texture: continuing a point by its own `depth` in
-along the normal lands every point of a band on the *same* rim line, so the band
+along the normal lands every point of a band on the _same_ rim line, so the band
 was one row of pixels stretched outward. Sampling the point's reflection instead
 — `2 * depth` in — is a rigid mirror: it varies in two dimensions, joins
 continuously at the rim and carries the authored texture. Inside the seam band
@@ -50,7 +50,7 @@ the offset is that band's width, which is a plain shift.
 
 The grass packs feather to alpha 0 across their outermost ~0.2 tiles. Against
 the page that was invisible; beside textured ground it read as a pale hem, so
-the plate reaches 0.35 tiles *inside* the rim and fills that band — but only
+the plate reaches 0.35 tiles _inside_ the rim and fills that band — but only
 where the whole ground composite is thinner than `GUARD_ALPHA` (250). The
 invariant is therefore "never overpaint authored ground" rather than "never
 paint a playable pixel", and `forest-exterior-apron.test.ts` counts both: zero
