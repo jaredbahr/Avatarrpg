@@ -1,5 +1,9 @@
 # The gatehouse wears the quarry's exterior mass
 
+> Shipped inside **v0.2.8**, batched with the Ba Dan and forest-road aprons;
+> see [the release handoff](exterior-aprons-release.md) for why and what
+> changed.
+
 - **Updated:** 20 September 2026, seventh scheduled DeepSeek Flash continuation
   run. Incoming owner: the next scheduled session for the same goal.
 - **Outcome:** the quarry gate battle and gate return no longer end at a bare

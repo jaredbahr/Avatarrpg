@@ -1,5 +1,8 @@
 # Handoff — forest road exterior apron (v0.2.x candidate, unmerged)
 
+> Shipped inside **v0.2.8**, batched with the quarry-gate surround and the
+> Ba Dan apron; see [the release handoff](exterior-aprons-release.md).
+
 Owner: DeepSeek Flash scheduled continuation, 20 September 2026 (session
 worktree `C:/Users/Jared/.codex/worktrees/forest-road-apron`, branch
 `codex/forest-road-apron`, based on `89a65df`, the v0.2.6 + tea-settle merge).

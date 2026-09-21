@@ -1,5 +1,10 @@
 # Handoff — Ba Dan exterior apron (v0.2.8 candidate)
 
+> Shipped inside **v0.2.8**, batched with the quarry-gate surround and the
+> forest-road apron; see
+> [the release handoff](exterior-aprons-release.md). The renumbering below no
+> longer applies.
+
 Owner: DeepSeek Flash scheduled continuation, 20 September 2026 (session
 worktree `C:/Users/Jared/.codex/worktrees/village-outer-apron`, branch
 `codex/village-outer-apron`, based on `87c97b3`, the v0.2.6 merge).
