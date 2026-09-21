@@ -33,8 +33,9 @@ deepens away from the shore, and small submerged stones.
 - The bed is **shaded by how far it sits inside the water**: `BED_SHELF` (0.78 of
   the floor's brightness at the shelf under the bank) falling by `BED_SHADE`
   (0.55) to its deepest point `BED_DEPTH` (1.5 cells) in, with a seeded
-  `BED_MOTTLE` (0.07) and a small `BED_COOL` shift (red ×0.94, blue ×1.06),
-  because standing water absorbs red first. The shading is smooth in cell space,
+  `BED_MOTTLE` (0.07) and a `BED_COOL` shift (red ×0.80, blue ×1.26, widened
+  from a first pass at 0.94/1.06 — see Consequences), because standing water
+  absorbs red first. The shading is smooth in cell space,
   so neighbouring pixels agree and the bed never speckles.
 - The bank's bite (ADR 0044) now composites **over** the bed rather than fading
   into transparency, so its feathered inner edge meets silt instead of bare
@@ -53,6 +54,14 @@ keeps 0.387 of the floor's brightness, so the bottom stays legible under the
 film. In the running game the pond's middle measures 87.8/107.0/96.0 against
 70.3/92.3/91.1 before — about 17% lighter, still green-teal, and now carrying
 visible substrate and depth instead of one flat fill.
+
+Those two measurements are the accelerated-GPU path. On a software rasteriser
+the same plate lost the film's blue over the lighter bed: the authored-water
+gate in `e2e/renderer.spec.ts` sampled the pond's middle at `b-r` 3.8 on CI
+against 23.1 on hardware, and passed again once the plate was swapped back to
+its pre-bed version. `BED_COOL` was therefore widened to red ×0.80 / blue
+×1.26 — brightness, depth, mottle and the bite are unchanged — and the plate
+repacked. Evidence: `docs/coordination/handoffs/pond-bed-blue-gate.md`.
 
 Costs and limits: `public/art/maps/forest-scene/pond-bank.webp` grows from
 34,822 to 36,562 bytes (precache 17.32 MB of 25 MB). The bed has no reeds or

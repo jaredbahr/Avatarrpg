@@ -35,8 +35,19 @@ export const BED_SHELF = 0.78;
 export const BED_SHADE = 0.55;
 /** The deepest the seeded mottle may darken or lighten the bed, at full depth. */
 export const BED_MOTTLE = 0.07;
-/** Standing water absorbs red first, so the bed cools as it goes under. */
-export const BED_COOL = { red: 0.94, blue: 1.06 } as const;
+/**
+ * Standing water absorbs red first, so the bed cools as it goes under.
+ *
+ * The first pass used a small shift (0.94/1.06) and the pond's middle read
+ * green-teal through the 0.4-alpha film: `e2e/renderer.spec.ts`'s authored-water
+ * gate, which wants blue-minus-red above 20 where the rules say water, measured
+ * 3.8 on a CI runner and 4.0 under SwiftShader locally, against 23 on an
+ * accelerated GPU, where the same head clears it. The gate passed on the plate
+ * before the bed existed, so the shift has to carry the water's own colour over
+ * an opaque floor: 0.80/1.26 restores it on both rasterisers without touching
+ * the brightness the bed's depth gradient is tuned for.
+ */
+export const BED_COOL = { red: 0.8, blue: 1.26 } as const;
 /** World pixels per cell, and packed pixels per cell at this density. */
 const CELL = 64;
 const DENSITY = 2;
