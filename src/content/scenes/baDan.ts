@@ -35,6 +35,8 @@ export const BA_DAN_NEIGHBORHOOD_GROUNDS = [
   { id: 'north-house-court', x: 960, y: 160, width: 1152, height: 576 },
   { id: 'east-gate-approach', x: 1280, y: 640, width: 896, height: 448 },
   { id: 'south-house-court', x: 384, y: 480, width: 1152, height: 576 },
+  { id: 'northeast-lawn', x: 1472, y: 512, width: 1024, height: 512 },
+  { id: 'southwest-lawn', x: 64, y: 288, width: 832, height: 416 },
 ] as const;
 /** Outer metric radius of the transparent coping around runtime water. */
 export const BA_DAN_CANAL_BANK_RADIUS = 1.42;

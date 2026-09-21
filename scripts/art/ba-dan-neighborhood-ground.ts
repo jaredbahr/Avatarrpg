@@ -13,12 +13,16 @@ type Region = {
   readonly y0: number;
   readonly y1: number;
 };
-// Half-open logical bounds: row 0/15 and the outer tree rim deliberately remain procedural.
+// Half-open logical bounds: row 0/15 and the outer tree rim deliberately remain
+// procedural. Each plate overlaps its neighbour by two or more cells so the two
+// exterior feathers never leave an uncovered band between them.
 const regions: readonly Region[] = [
   { name: 'northwest-lawn', x0: 0, x1: 7, y0: 3, y1: 7 },
   { name: 'north-house-court', x0: 4, x1: 18, y0: 1, y1: 5 },
   { name: 'east-gate-approach', x0: 14, x1: 24, y0: 6, y1: 10 },
   { name: 'south-house-court', x0: 5, x1: 18, y0: 10, y1: 15 },
+  { name: 'northeast-lawn', x0: 15, x1: 24, y0: 1, y1: 8 },
+  { name: 'southwest-lawn', x0: 0, x1: 7, y0: 9, y1: 15 },
 ];
 
 const require = createRequire(import.meta.url);
