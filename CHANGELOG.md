@@ -1,5 +1,14 @@
 # Changelog
 
+## 0.2.6 — release candidate
+
+- Ground props and figures instead of leaving them on a hard dark rim. The
+  shared contact shadow is now a feathered pool that fades to nothing at its
+  edge and dips a hair down-screen the way the board's ledge shadows fall, and
+  a prop drawn from art measures its own base so the shadow's soft edge shows
+  past the art that stands on it. Barn crates, stone piles, the quarry cart and
+  the road rubble all sit in the ground rather than on a stamped ellipse.
+
 ## 0.2.5 — release candidate
 
 - Let a pool of oil, mud or rubble fade at its bank instead of stopping on the

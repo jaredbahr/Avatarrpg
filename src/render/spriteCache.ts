@@ -18,6 +18,7 @@
  */
 
 import { resolveAsset } from '../content/assets/manifest';
+import { FALLBACK_SHADOW_WIDTH, measureArtWidth } from './propFootprint';
 import { resolvePainter } from './painters/registry';
 import { groundShadow } from './painters/shapes';
 import type { PainterOptions } from './painters/units';
@@ -53,6 +54,8 @@ export class SpriteCache {
   private images = new Map<string, HTMLImageElement | null>();
   private loading = new Map<string, Promise<boolean>>();
   private failed = new Set<string>();
+  /** Measured contact-shadow width per prop key; art does not change at runtime. */
+  private propWidths = new Map<string, number>();
 
   /** Painted sprites are cheap to rebuild; drop them all on a big resize. */
   clear(): void {
@@ -90,8 +93,11 @@ export class SpriteCache {
       if (image) {
         // Prop PNGs contain no painted floor or shadow: retain ground contact
         // on both backends, at the same baseline as their procedural fallback.
+        // The footprint is measured from the art so the feathered rim shows
+        // around the base, which is what stops a crate or a stone pile from
+        // meeting the ground on a bare line.
         if (key.startsWith('prop.'))
-          groundShadow(ctx, { x: 0, y: 0, size: bucketed }, key === 'prop.flask' ? 0.34 : 0.5);
+          groundShadow(ctx, { x: 0, y: 0, size: bucketed }, this.propWidth(key, image));
         ctx.drawImage(image, 0, 0, canvas.width, canvas.height);
       } else {
         const painter = resolvePainter(key);
@@ -106,6 +112,17 @@ export class SpriteCache {
       this.entries.delete(oldest);
     }
     return canvas;
+  }
+
+  /** Cached contact-shadow width for a prop's art, measured once per page. */
+  private propWidth(key: string, image: HTMLImageElement): number {
+    const known = this.propWidths.get(key);
+    if (known !== undefined) return known;
+    const measured = measureArtWidth(image);
+    // An image that is still decoding is not cached: the next frame measures it.
+    if (measured === null) return FALLBACK_SHADOW_WIDTH;
+    this.propWidths.set(key, measured);
+    return measured;
   }
 
   /**

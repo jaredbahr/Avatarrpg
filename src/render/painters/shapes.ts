@@ -52,18 +52,38 @@ export function polygon(ctx: Ctx, points: readonly (readonly [number, number])[]
   ctx.closePath();
 }
 
-/** Soft contact shadow so a figure sits on the tile rather than floating. */
+/** How far down-screen the contact shadow falls, as a fraction of the box. */
+const SHADOW_FALL = 0.025;
+
+/**
+ * Soft contact shadow so a figure sits on the tile rather than floating.
+ *
+ * The anchor is the one every painter, the sprite cache and the baked sheets
+ * already share — the object's foot at `0.86` of its box — so a baked frame
+ * and a live sprite still stand on the same line. Two things changed. The old
+ * flat black ellipse ended on a hard rim that read as a dark sticker, and it
+ * was narrow enough that the rim sat under the object, where a shadow can
+ * ground nothing. Now a radial gradient holds its density at the contact and
+ * feathers across the outer half of the radius, the ellipse falls a hair
+ * down-screen the way the board's ledge and cliff shadows do, and callers size
+ * `width` to their art so the feathered rim shows around the base. The fade
+ * still finishes inside the footprint, so a sprite never paints outside the
+ * box it was given.
+ */
 export function groundShadow(ctx: Ctx, box: Box, width = 0.46): void {
+  const rx = (box.size * width) / 2;
+  const ry = box.size * 0.09;
+  if (!(rx > 0) || !(ry > 0)) return;
+
   ctx.save();
-  ctx.globalAlpha = 0.32;
-  ctx.fillStyle = '#000000';
-  ellipse(
-    ctx,
-    box.x + box.size / 2,
-    box.y + box.size * 0.86,
-    box.size * width * 0.5,
-    box.size * 0.09,
-  );
+  ctx.translate(box.x + box.size / 2, box.y + box.size * (0.86 + SHADOW_FALL));
+  ctx.scale(1, ry / rx);
+  const shade = ctx.createRadialGradient(0, 0, 0, 0, 0, rx);
+  shade.addColorStop(0, 'rgba(0,0,0,0.34)');
+  shade.addColorStop(0.5, 'rgba(0,0,0,0.26)');
+  shade.addColorStop(1, 'rgba(0,0,0,0)');
+  ctx.fillStyle = shade;
+  circle(ctx, 0, 0, rx);
   ctx.fill();
   ctx.restore();
 }
