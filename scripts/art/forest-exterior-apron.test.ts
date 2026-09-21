@@ -8,11 +8,14 @@ import {
 } from '../../src/content/scenes/forestRoad';
 import {
   APRON_FADE,
+  APRON_SEAM,
+  GUARD_ALPHA,
   OUTPUT,
   apronDepth,
   apronLogical,
   baseField,
   loadBasePlates,
+  loadGuardField,
   packApron,
 } from './forest-exterior-apron';
 import { pixelAt, type Image } from './lib/image';
@@ -20,7 +23,8 @@ import { encodeWebp } from './lib/webp';
 
 const plates = await loadBasePlates();
 const field = baseField(plates);
-const apron = packApron(plates);
+const guard = await loadGuardField();
+const apron = packApron(plates, guard);
 
 /** The apron pixel for a logical point; the forward projection. */
 function apronPixel(x: number, y: number): { x: number; y: number } {
@@ -38,25 +42,31 @@ function apronAt(image: Image, x: number, y: number): readonly number[] {
 const distance = (a: readonly number[], b: readonly number[]): number =>
   Math.hypot((a[0] ?? 0) - (b[0] ?? 0), (a[1] ?? 0) - (b[1] ?? 0), (a[2] ?? 0) - (b[2] ?? 0));
 
-it('ships a reproducible apron that never paints a playable pixel', async () => {
+it('ships a reproducible apron that never overpaints authored ground', async () => {
   expect(Buffer.from(await encodeWebp(apron, 86, true))).toEqual(readFileSync(OUTPUT));
 
   let inside = 0,
     beyond = 0,
     opaque = 0,
-    feather = 0;
+    feather = 0,
+    overpainted = 0;
   for (let py = 0; py < apron.height; py++)
     for (let px = 0; px < apron.width; px++) {
       const alpha = pixelAt(apron, px, py)[3];
       if (alpha === 0) continue;
       const { x, y } = apronLogical(px, py);
       const depth = apronDepth(x, y);
-      if (depth <= 0) inside++;
+      if (depth <= 0) {
+        inside++;
+        // Inside the board the plate may only close what the scene left open.
+        if ((pixelAt(guard, px, py)[3] ?? 0) >= GUARD_ALPHA) overpainted++;
+      }
       if (depth >= APRON_FADE) beyond++;
       if (alpha === 255) opaque++;
       else feather++;
     }
-  expect({ inside, beyond }).toEqual({ inside: 0, beyond: 0 });
+  expect({ overpainted, beyond }).toEqual({ overpainted: 0, beyond: 0 });
+  expect(inside, 'the plate closes the seam the authored ground leaves').toBeGreaterThan(1_000);
   expect(opaque, 'the plate has an opaque band').toBeGreaterThan(1_000);
   expect(feather, 'the plate fades out rather than stopping').toBeGreaterThan(1_000);
 });
@@ -128,6 +138,21 @@ it('carries the material of the cell it leaves, and fades with the page', () => 
   }
   const grass = leaves(-1.5, 1.5);
   expect(distance(grass, meadow), 'the meadow is carried out').toBeLessThan(distance(grass, road));
+
+  // The authored packs feather to 0 across the rim, so the plate fills that
+  // band; with it, nothing along the rim reads as page showing through.
+  for (const point of [
+    { x: 10.5, y: -0.12 },
+    { x: -0.12, y: 1.5 },
+    { x: 10.5, y: FOREST_APRON_MAP.height + 0.12 },
+    { x: FOREST_APRON_MAP.width + 0.12, y: 4.5 },
+  ] as const) {
+    const seam = apronAt(apron, point.x, point.y)[3] ?? 0;
+    const open = apronAt(guard, point.x, point.y)[3] ?? 0;
+    const covered = seam + (open * (255 - seam)) / 255;
+    expect(covered, `${point.x},${point.y} is closed`).toBeGreaterThan(245);
+  }
+  expect(APRON_SEAM).toBeGreaterThan(0.2);
 
   for (const point of [
     { x: -2.35, y: 6 },

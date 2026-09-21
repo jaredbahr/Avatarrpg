@@ -28,11 +28,13 @@ and `codex/village-outer-apron` already carry, so the three merge cleanly.
 ## Evidence on `HEAD`
 
 - `npx vitest run scripts/art/forest-exterior-apron.test.ts` — three tests: the
-  packed plate is byte-identical to the shipped file; no apron pixel lands on
-  the board or past the 2.2-tile fade; the plate is pinned to `FOREST_ROAD`'s
-  own 20x12 size and its scene entry; the band is painted at six rim points; and
-  the road leaves as road while the meadow leaves as meadow, measured against
-  the mean authored colour of each material.
+  packed plate is byte-identical to the shipped file; no apron pixel past the
+  2.2-tile fade, and none inside the board that overpaints authored ground
+  (`GUARD_ALPHA`); the plate is pinned to `FOREST_ROAD`'s own 20x12 size and its
+  scene entry; the band is painted at six rim points; the rim seam is closed
+  (ground plus apron cover more than 245/255 at four faces); and the road leaves
+  as road while the meadow leaves as meadow, measured against the mean authored
+  colour of each material.
 - `npm run verify` on this head — recorded in the PR-less branch push summary
   below (see the commit message for the pass line).
 - Local composites, both with and without the apron:
@@ -42,14 +44,17 @@ and `codex/village-outer-apron` already carry, so the three merge cleanly.
 
 ## Open gaps (not closed by this change)
 
-- **The pale hem is the blocker for review.** The grass packs feather to alpha 0
-  across their outer ~0.2 tiles. That was invisible against the page and now
-  reads as a light hem just inside the rim on the grass faces. Two repairs:
-  (a) extend the band a short way inside and fill only pixels where no ground
-  plate paints, guarding the invariant as "never overpaint authored ground"
-  rather than "never paint a playable pixel"; or (b) rebuild `grass-north`/
-  `grass-south` with an opaque outer row, which touches shipped art and needs the
-  material sheet. (a) is the smaller, self-contained change.
+- **The pale hem is closed but its contour is not yet judged in engine.** The
+  grass packs feather to alpha 0 across their outer ~0.2 tiles, which read as a
+  light hem beside textured ground. The plate now reaches 0.35 tiles inside the
+  rim and fills only where the whole ground composite is thinner than
+  `GUARD_ALPHA`, so the invariant is "never overpaint authored ground" rather
+  than "never paint a playable pixel" (`village-outer-apron` kept the stricter
+  one because its own cells are procedural and its rim did not feather). That
+  fill contour is cell-quantised, so the static composite shows a faint
+  tile-scale notch pattern where it meets the feathered edge. Same material
+  throughout, so it should read as texture noise — but no real frame has been
+  looked at. If it shows, feather the fill's alpha into the guard's own ramp.
 - **No in-engine capture yet.** The composites are static, built from the same
   plates the renderer uses; they are not a Canvas/WebGL frame, not a playthrough
   and not a device check. The obvious next evidence is the rim probe used for the
@@ -61,8 +66,9 @@ and `codex/village-outer-apron` already carry, so the three merge cleanly.
 1. Once v0.2.7 has merged, rebase this branch onto `main`; keep the 0.2.x number
    that is still free after `codex/frame-surround-coverage` and
    `codex/village-outer-apron` land, and add the changelog entry.
-2. Repair the hem as (a) above, re-run `npm run verify`, and capture one
-   Canvas/WebGL rim frame for the branch handoff.
+2. Look at one Canvas/WebGL rim frame (the village apron's probe, pointed at
+   `forest_road`) and decide whether the fill's notch contour needs the alpha
+   feather described above; then set the changelog entry.
 3. Then open the release PR with merge-commit auto-merge under Jared's standing
    policy, and confirm Pages serves the new version.
 
