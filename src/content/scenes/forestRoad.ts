@@ -1,4 +1,4 @@
-import type { MapScene, SceneScenery, Vec2 } from '../../core/types';
+import type { MapScene, SceneImage, SceneScenery, Vec2 } from '../../core/types';
 import { FOREST_GRASS_REGIONS } from './forestRoadGround';
 
 const root = 'art/maps/forest-scene/';
@@ -115,12 +115,47 @@ export const FOREST_POND_REEDS: readonly SceneScenery[] = (
 export const FOREST_APRON_MAP = { width: 20, height: 12 } as const;
 /** Logical tiles of authored terrain outside the rim, on all four sides. */
 export const FOREST_APRON_DEPTH = 2.5;
+/**
+ * How far inside the rim the apron reaches to close the feather the grass packs
+ * leave: they fade to alpha 0 across their outermost ~0.2 tiles, which the page
+ * showed through beside the authored ground.
+ */
+export const FOREST_APRON_SEAM = 0.35;
 export const FOREST_EXTERIOR_APRON = {
   x: 768 - (FOREST_APRON_MAP.height + 2 * FOREST_APRON_DEPTH) * 64,
   y: -2 * FOREST_APRON_DEPTH * 32,
   width: (FOREST_APRON_MAP.width + FOREST_APRON_MAP.height + 4 * FOREST_APRON_DEPTH) * 64,
   height: (FOREST_APRON_MAP.width + FOREST_APRON_MAP.height + 4 * FOREST_APRON_DEPTH) * 32,
 } as const;
+/**
+ * The ring ships as bands, not as one plate: its bounding box is 2688 pixels
+ * wide against the 2048-pixel texture the device matrix promises, and 83.3% of
+ * it is clear. These are the ring's pixels, in plate coordinates, from
+ * `scripts/art/lib/apron-bands.ts`; the packer cuts the same rectangles, and
+ * `scripts/art/apron-plates.test.ts` pins the table, the cut and the shipped
+ * files together.
+ */
+export const FOREST_APRON_BANDS = [
+  { x: 723, y: 0, width: 730, height: 182 },
+  { x: 362, y: 182, width: 726, height: 181 },
+  { x: 1088, y: 182, width: 726, height: 181 },
+  { x: 0, y: 363, width: 726, height: 181 },
+  { x: 1450, y: 363, width: 726, height: 181 },
+  { x: 0, y: 544, width: 877, height: 256 },
+  { x: 1811, y: 544, width: 877, height: 256 },
+  { x: 512, y: 800, width: 726, height: 181 },
+  { x: 1962, y: 800, width: 726, height: 181 },
+  { x: 874, y: 981, width: 726, height: 181 },
+  { x: 1600, y: 981, width: 726, height: 181 },
+  { x: 1235, y: 1162, width: 730, height: 182 },
+] as const;
+export const FOREST_APRON_PIECES: readonly SceneImage[] = FOREST_APRON_BANDS.map((band, index) => ({
+  url: `${root}exterior-apron-${index}.webp`,
+  x: FOREST_EXTERIOR_APRON.x + band.x,
+  y: FOREST_EXTERIOR_APRON.y + band.y,
+  width: band.width,
+  height: band.height,
+}));
 
 /** Already projected ground; gameplay opts the map into the matching projection. */
 export const FOREST_ROAD_SCENE: MapScene = {
@@ -140,7 +175,7 @@ export const FOREST_ROAD_SCENE: MapScene = {
       height: 128 / 3,
     })),
     // Painted last: transparent everywhere the board can be walked.
-    { url: `${root}exterior-apron.webp`, ...FOREST_EXTERIOR_APRON },
+    ...FOREST_APRON_PIECES,
   ],
   scenery: [...FOREST_PINE_CELLS.map(pine), FOREST_BANK_NEST_REEDS, ...FOREST_POND_REEDS],
 };

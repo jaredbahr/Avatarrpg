@@ -17,20 +17,25 @@
  *
  * npx tsx scripts/art/forest-exterior-apron.ts
  */
-import { mkdirSync, readFileSync, writeFileSync } from 'node:fs';
+import { readFileSync } from 'node:fs';
 import { createRequire } from 'node:module';
 import decode, { init as initWebpDecode } from '@jsquash/webp/decode.js';
 import {
+  FOREST_APRON_BANDS,
   FOREST_APRON_MAP,
+  FOREST_APRON_SEAM,
   FOREST_EXTERIOR_APRON,
   FOREST_ROAD_SCENE,
 } from '../../src/content/scenes/forestRoad';
 import { tileNoise } from '../../src/render/painters/shapes';
+import { writeApronPlates } from './lib/apron-plates';
 import { newImage, pixelAt, setPixel } from './lib/image';
 import type { Image } from './lib/image';
-import { encodeWebp } from './lib/webp';
 
-export const OUTPUT = 'public/art/maps/forest-scene/exterior-apron.webp';
+/** The bands are written here, one file per entry in `FOREST_APRON_BANDS`. */
+export const DIRECTORY = 'public/art/maps/forest-scene';
+export const STEM = 'exterior-apron';
+export const QUALITY = 86;
 /** Authored terrain is fully faded out by this far outside the rim, in tiles. */
 export const APRON_FADE = 2.2;
 /**
@@ -39,8 +44,11 @@ export const APRON_FADE = 2.2;
  * the page that was invisible, and beside textured ground it reads as a pale
  * hem. The plate fills that band, but only where the scene's own ground leaves
  * the page showing (`GUARD_ALPHA`), so it never overpaints authored ground.
+ *
+ * The value itself lives on the scene, because which pixels are the apron's is
+ * geometry the scene registers, not a brush choice here.
  */
-export const APRON_SEAM = 0.35;
+export const APRON_SEAM = FOREST_APRON_SEAM;
 /** Ground this opaque is the scene's own painting and is left alone. */
 export const GUARD_ALPHA = 250;
 /**
@@ -249,8 +257,13 @@ export async function packSceneApron(): Promise<Image> {
 }
 
 async function main(): Promise<void> {
-  mkdirSync('public/art/maps/forest-scene', { recursive: true });
-  writeFileSync(OUTPUT, await encodeWebp(await packSceneApron(), 86, true));
+  await writeApronPlates({
+    ring: await packSceneApron(),
+    bands: FOREST_APRON_BANDS,
+    directory: DIRECTORY,
+    stem: STEM,
+    quality: QUALITY,
+  });
 }
 
 if (process.argv[1]?.endsWith('forest-exterior-apron.ts')) {
