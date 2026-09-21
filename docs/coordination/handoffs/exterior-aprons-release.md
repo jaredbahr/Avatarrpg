@@ -75,6 +75,27 @@ playwright.forest-apron.config.ts` (4 passed).
   build.
 - Nothing here was checked on a physical device, at Large text, or by listening.
 
+## Reference comparison taken from this head's frames
+
+The rim work is the change under review, but the same frames make one
+independent gap concrete. `assets/reference/player-view-2026-09-17/ba-dan-exploration.png`
+is a village that is almost entirely built surface: paving, low stone walls with
+planting behind them, market tables under fabric awnings, hanging banners and
+lanterns, a pond with ducks and lily pads, a stone bridge, and figures filling
+every court. This build's `village_explore-fit.png` at the player's own camera
+shows the same court as a plaza path across a large flat green field with one
+market table. Two causes, both real:
+
+- the default follow camera shows roughly a quarter of the reference's field of
+  view, so the reference's density comes partly from showing most of the village
+  at once; and
+- the western half of Ba Dan genuinely has few props and no water, where the
+  reference has its pond, bridge and garden walls.
+
+Density and framing are listed as open acceptance gaps; this narrows them to the
+village's western field and the market court. That is a separate change from the
+aprons and is not attempted here.
+
 ## Next action
 
 Open the release PR into `main`, arm merge-commit auto-merge, confirm the
