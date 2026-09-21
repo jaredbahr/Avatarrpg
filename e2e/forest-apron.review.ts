@@ -12,14 +12,7 @@
 import { mkdirSync, writeFileSync } from 'node:fs';
 import { expect, test } from '@playwright/test';
 import type { Page } from '@playwright/test';
-import {
-  enterNode,
-  resetStorage,
-  settleLayout,
-  startGame,
-  takeTurn,
-  waitForIdle,
-} from './helpers';
+import { enterNode, resetStorage, settleLayout, startGame, takeTurn, waitForIdle } from './helpers';
 
 async function zoom(page: Page, target: number): Promise<void> {
   const current = await page.evaluate(() => window.fnt?.app.rendererCamera()?.tilePx);
@@ -106,9 +99,15 @@ for (const renderer of ['canvas', 'webgl'] as const) {
     const errors: string[] = [];
     page.on('pageerror', (e) => errors.push(e.message));
     await resetStorage(page, `?renderer=${renderer}`);
-    await startGame(page, ['Sura', 'Riko', 'Kaya'], ['sura', 'riko', 'kaya'], 'forest-apron-fight', {
-      reduceMotion: false,
-    });
+    await startGame(
+      page,
+      ['Sura', 'Riko', 'Kaya'],
+      ['sura', 'riko', 'kaya'],
+      'forest-apron-fight',
+      {
+        reduceMotion: false,
+      },
+    );
     await enterNode(page, 'battle_forest_road');
     await takeTurn(page);
     await waitForIdle(page);
