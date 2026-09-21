@@ -38,6 +38,11 @@ already reaches the rim. The piece adds no scenery, no footprint, no collision
 and no path — `src/content/scenes/baDan.test.ts` pins the registration and the
 world size, and the art test pins the alpha behaviour.
 
+The plate is one 3200×1600 texture, inside the 4096 limit both backends' GPU
+path assumes, and it is a single extra decode at 30 KB. Both backends treat every
+registered ground piece as part of the scene's readiness gate, so a missing apron
+degrades to the procedural board rather than to a broken frame.
+
 ## Provenance
 
 Original procedural art, generated in-repo on 20 September 2026 from the

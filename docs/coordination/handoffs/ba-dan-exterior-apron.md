@@ -35,10 +35,12 @@ identical hunk instead of a conflict).
   road-to-meadow continuation.
 - Frames, both backends: `.shots/rim-probe/{canvas,webgl}/` captured with
   `FNT_REVIEW_BROWSER_CHANNEL=chrome npx playwright test -c
-playwright.apron-probe.config.ts` (a temporary, untracked review probe; the
-  committed route-visual harness is unchanged). Views: `village_explore` at the
-  default follow camera plus zoom 64 centred on the north, west, east and south
-  rim and both road exits (`0,7` and `23,7`), Canvas and WebGL side by side.
+  playwright.ba-dan-apron.config.ts`, which runs the committed review fixture
+  `e2e/ba-dan-apron.review.ts` (it is not in the default Playwright projects, so
+  it never runs in CI). Views: `village_explore` at the default follow camera
+  plus zoom 64 centred on the north, west, east and south rim and both road exits
+  (`0,7` and `23,7`), Canvas and WebGL side by side.
+  `.shots/` is git-ignored; re-capture rather than looking for the frames.
   Read them against `assets/reference/player-view-2026-09-17/ba-dan-exploration.png`:
   the hard diagonal is gone; the plaza's east exit and the western road now walk
   out of frame and dissolve.
