@@ -146,27 +146,102 @@ export async function takeTurn(
  * to allow, which is the same reason the gallery already passes 30 s. Canvas
  * 2D returns as soon as the camera holds still, so the bound costs nothing
  * there, and a camera that genuinely never settles still fails.
+ *
+ * The loop retries until the deadline rather than taking one sample, and it
+ * reports the frames it saw on the way out: a slow frame is the usual reason
+ * this fails on the 2x software-WebGL project, and "four frames took 40 s" is
+ * a different fault from "the camera drifted for 30 s". The Node-side backstop
+ * covers the third case, a page whose animation frames have stopped.
  */
-export async function settleLayout(page: Page, timeout = 30_000): Promise<void> {
-  await page.waitForFunction(
-    () =>
-      new Promise<boolean>((resolve) => {
-        const read = () => JSON.stringify(window.fnt?.app.rendererCamera() ?? null);
-        const frames = (n: number, then: () => void) => {
-          if (n === 0) then();
-          else requestAnimationFrame(() => frames(n - 1, then));
-        };
-        const reads: string[] = [read()];
-        frames(2, () => {
-          reads.push(read());
-          frames(2, () => {
-            reads.push(read());
-            resolve(reads.every((r) => r === reads[0]));
-          });
+interface SettleReport {
+  settled: boolean;
+  frames: number;
+  elapsedMs: number;
+  longestFrameMs: number;
+  reads: readonly string[];
+}
+
+/** Runs in the page: samples the camera until it holds still or the budget runs out. */
+async function settleProbe(budgetMs: number): Promise<SettleReport> {
+  const read = () => JSON.stringify(window.fnt?.app.rendererCamera() ?? null);
+  const startedAt = performance.now();
+  const reads: string[] = [];
+  let frames = 0;
+  let longestFrameMs = 0;
+  let previous = startedAt;
+
+  const step = (n: number, after: () => void): void => {
+    if (n === 0) {
+      after();
+      return;
+    }
+    requestAnimationFrame((stamp) => {
+      const now = typeof stamp === 'number' ? stamp : performance.now();
+      frames += 1;
+      longestFrameMs = Math.max(longestFrameMs, now - previous);
+      previous = now;
+      step(n - 1, after);
+    });
+  };
+
+  const report = (settled: boolean): SettleReport => ({
+    settled,
+    frames,
+    elapsedMs: performance.now() - startedAt,
+    longestFrameMs,
+    reads: [...reads],
+  });
+
+  return new Promise<SettleReport>((resolve) => {
+    const round = (): void => {
+      const local: string[] = [read()];
+      step(2, () => {
+        local.push(read());
+        step(2, () => {
+          local.push(read());
+          reads.length = 0;
+          reads.push(...local);
+          if (local.every((r) => r === local[0])) {
+            resolve(report(true));
+            return;
+          }
+          if (performance.now() - startedAt >= budgetMs) {
+            resolve(report(false));
+            return;
+          }
+          round();
         });
-      }),
-    undefined,
-    { timeout },
+      });
+    };
+    round();
+  });
+}
+
+export async function settleLayout(page: Page, timeout = 30_000): Promise<void> {
+  const probe = page.evaluate(settleProbe, timeout);
+  probe.catch(() => undefined);
+
+  let backstop: ReturnType<typeof setTimeout> | undefined;
+  const stalled = new Promise<null>((resolve) => {
+    backstop = setTimeout(() => resolve(null), timeout + 5_000);
+  });
+  const report = await Promise.race([probe, stalled]);
+  if (backstop !== undefined) clearTimeout(backstop);
+
+  if (report === null) {
+    throw new Error(
+      `settleLayout: no animation frame arrived in ${timeout + 5_000} ms, ` +
+        'so the camera could not be sampled at all — is the page clock paused?',
+    );
+  }
+  if (report.settled) return;
+
+  const longest = Math.round(report.longestFrameMs);
+  const elapsed = Math.round(report.elapsedMs);
+  throw new Error(
+    `settleLayout: the camera did not hold still within ${timeout} ms ` +
+      `(${report.frames} frames in ${elapsed} ms, longest ${longest} ms); ` +
+      `reads: ${report.reads.join(' -> ')}`,
   );
 }
 
