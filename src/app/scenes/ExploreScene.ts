@@ -873,7 +873,7 @@ export class ExploreScene implements Scene {
         this.animatePartyBatches(batches, state, now);
       }
     }
-    if (!this.conversationMode && this.life?.update(now)) return;
+    if (!this.conversationMode && this.life?.update(now, renderer.camera)) return;
     if (this.hudMoving !== this.app.animator.busy(now)) this.renderHud();
     this.app.stats?.frame(now);
 

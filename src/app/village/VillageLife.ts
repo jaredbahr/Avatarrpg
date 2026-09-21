@@ -188,7 +188,7 @@ export class VillageLife {
     );
   }
   /** Returns true if the update changed scenes, so the old scene stops drawing. */
-  update(now: number): boolean {
+  update(now: number, camera: Camera): boolean {
     const paused = document.hidden || Boolean(document.querySelector('[role="dialog"]'));
     if (this.lastFrame !== null) {
       const delta = now - this.lastFrame;
@@ -251,6 +251,13 @@ export class VillageLife {
       } else if (visit === 'tea') {
         this.teaStarted = now;
         this.app.dispatch({ type: 'setFlags', flags: { riverside_tea: true } });
+        /*
+         * The break seats the party on the veranda three tiles below where it
+         * stands, and nothing walks them there, so the camera has to come along
+         * or the player never sees the pair they just sat down. The tea spot is
+         * the seat the leader takes; centring on it frames both figures.
+         */
+        camera.centreOn(RIVERSIDE_SPOTS.tea);
         this.say('A quiet break on the veranda with jasmine tea. The river runs below the steps.');
       } else if (visit === 'practice') {
         this.drill = 0;
