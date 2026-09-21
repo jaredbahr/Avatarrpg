@@ -1,5 +1,21 @@
 # Changelog
 
+## 0.2.9 — release candidate
+
+- Ship each scene's outer apron as twelve bands instead of one plate. The plate
+  was the ring's axis-aligned bounding box — 3200 px for the village and 2688 px
+  for the forest road, over the 2048×2048 ceiling `docs/device-matrix.md`
+  promises every iPad in the family takes. 84.8% of the village plate's texels
+  and 83.3% of the forest plate's were fully clear, and a software-WebGL
+  screenshot pays to read back the whole plate. The bands are cut from the same
+  pixels the plate held, so the ground past every rim looks unchanged.
+- The bands are ordinary ground pieces in each scene's table, taken from the
+  board's own oblique lattice, so no rendering path is special-cased and a band
+  can never exceed the texture ceiling. The scene's ground bound rises 12 -> 32
+  to make room for a ring that cannot be one piece under the cap.
+- Bytes fall slightly with the overdraw: the village apron 30.3 KB -> 27.8 KB
+  and the forest road 166 KB -> 162 KB. Nothing inside a board changed.
+
 ## 0.2.7 — release candidate
 
 - Let standing water show what it sits on. The forest pond's bank now wanders
