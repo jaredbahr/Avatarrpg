@@ -35,7 +35,7 @@ identical hunk instead of a conflict).
   road-to-meadow continuation.
 - Frames, both backends: `.shots/rim-probe/{canvas,webgl}/` captured with
   `FNT_REVIEW_BROWSER_CHANNEL=chrome npx playwright test -c
-  playwright.ba-dan-apron.config.ts`, which runs the committed review fixture
+playwright.ba-dan-apron.config.ts`, which runs the committed review fixture
   `e2e/ba-dan-apron.review.ts` (it is not in the default Playwright projects, so
   it never runs in CI). Views: `village_explore` at the default follow camera
   plus zoom 64 centred on the north, west, east and south rim and both road exits
