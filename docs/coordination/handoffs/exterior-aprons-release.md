@@ -96,6 +96,16 @@ Density and framing are listed as open acceptance gaps; this narrows them to the
 village's western field and the market court. That is a separate change from the
 aprons and is not attempted here.
 
+`assets/reference/player-view-2026-09-17/quarry-battle.png` makes the same
+comparison for the gate: the reference fight is surrounded by working quarry
+structure — a winch and crane ropes, rail with a loaded mine cart, the boring
+machine's own bulk, stacked crates, a canvas tent, scaffolding and standing
+workers. This build's `battle_quarry_gate-fit.png` has the walls, the timber, one
+cart and one brazier on paving, and the terraced rock the surround now
+continues. The reference's reading is an operating site rather than a walled
+court, so the next structural art pass belongs in the gate and floor's dressing
+(rails, carts, winch, crates), not in more rim treatment.
+
 ## Next action
 
 Open the release PR into `main`, arm merge-commit auto-merge, confirm the
