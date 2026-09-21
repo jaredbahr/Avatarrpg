@@ -172,3 +172,12 @@ court, so the next structural art pass belongs in the gate and floor's dressing
 3. Give the other near-cap WebGL cases the same round-trip treatment
    (`partial-ground.spec.ts` 260.0s, `forest-aftermath.spec.ts` 223.0s) before
    the next art addition reaches them.
+
+## Release-head repairs (2026-09-21, after two more red heads)
+
+Runs `35568889528` and `35578795966` failed on a real camera defect behind
+`riverside-tea`'s blank crop (the tea break never brought the camera to the
+veranda it seats the party on), a `pauseAt` race in `directional-walk`, and the
+gallery shards that are gated behind them. Diagnosis, measurements and the
+repairs now on this head: `release-head-e2e-repair.md`. The three items above
+stand, with the head re-checked first.
