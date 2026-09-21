@@ -34,6 +34,16 @@ export const OUTPUT = 'public/art/maps/forest-scene/exterior-apron.webp';
 /** Authored terrain is fully faded out by this far outside the rim, in tiles. */
 export const APRON_FADE = 2.2;
 /**
+ * How far inside the rim the plate may reach to close the authored ground's own
+ * feather. The grass packs fade to alpha 0 across their outermost ~0.2 tiles; on
+ * the page that was invisible, and beside textured ground it reads as a pale
+ * hem. The plate fills that band, but only where the scene's own ground leaves
+ * the page showing (`GUARD_ALPHA`), so it never overpaints authored ground.
+ */
+export const APRON_SEAM = 0.35;
+/** Ground this opaque is the scene's own painting and is left alone. */
+export const GUARD_ALPHA = 250;
+/**
  * How far inside the board the continuation may reach to find real ground. Two
  * tiles of ledge stand on the eastern rim's cells, so the walk has to be able
  * to cross them to the grass bank they are cut into.
@@ -48,6 +58,15 @@ const TILE = { width: 64, height: 32 } as const;
  * objects standing on the ground, not ground to be smeared outward.
  */
 const BASE_PLATES = ['grass-north.webp', 'grass-south.webp', 'route-ground.webp'] as const;
+/** Every ground plate, in draw order, for the overpaint guard. */
+const GUARD_PLATES = [
+  'grass-north.webp',
+  'grass-south.webp',
+  'route-ground.webp',
+  'pond-bank.webp',
+  'raised-shelf.webp',
+  'rubble.webp',
+] as const;
 
 let decoderReady: Promise<void> | null = null;
 
@@ -164,25 +183,28 @@ export function apronTerrain(
   return null;
 }
 
-export function packApron(plates: readonly ApronPlate[]): Image {
+export function packApron(plates: readonly ApronPlate[], guard: Image): Image {
   const field = baseField(plates);
   const image = newImage(FOREST_EXTERIOR_APRON.width, FOREST_EXTERIOR_APRON.height);
   for (let py = 0; py < image.height; py++) {
     for (let px = 0; px < image.width; px++) {
       const { x, y } = apronLogical(px, py);
       const depth = apronDepth(x, y);
-      if (depth <= 0 || depth >= APRON_FADE) continue;
+      const inside = depth <= 0;
+      if (inside ? depth <= -APRON_SEAM : depth >= APRON_FADE) continue;
+      // Inside the board this plate only closes what the scene left open.
+      if (inside && (pixelAt(guard, px, py)[3] ?? 0) >= GUARD_ALPHA) continue;
       const terrain = apronTerrain(field, x, y);
       if (!terrain) continue;
       // Grain and recession ramp in from the rim, so the board's own edge is
       // not redrawn as a line between the authored ground and its continuation.
-      const settle = smoothstep(0, 0.35, depth);
+      const settle = smoothstep(0, 0.35, Math.max(depth, 0));
       const grain =
         1 + settle * ((tileNoise(px, py, 7) - 0.5) * 0.09 + (tileNoise(px, py, 11) - 0.5) * 0.05);
-      const recession = 1 - 0.1 * smoothstep(0.1, APRON_FADE, depth);
+      const recession = 1 - 0.1 * smoothstep(0.1, APRON_FADE, Math.max(depth, 0));
       const shade = (channel: number): number =>
         clamp(Math.round(channel * grain * recession), 0, 255);
-      const alpha = Math.round(255 * (1 - smoothstep(0.05, APRON_FADE, depth)));
+      const alpha = inside ? 255 : Math.round(255 * (1 - smoothstep(0.05, APRON_FADE, depth)));
       setPixel(image, px, py, [shade(terrain.r), shade(terrain.g), shade(terrain.b), alpha]);
     }
   }
@@ -191,19 +213,33 @@ export function packApron(plates: readonly ApronPlate[]): Image {
 
 /** The scene's own base ground, decoded from the shipped art it registers. */
 export async function loadBasePlates(): Promise<ApronPlate[]> {
-  const scene = FOREST_ROAD_SCENE.ground;
+  return loadPlates(BASE_PLATES);
+}
+
+/** Every ground plate the scene draws, decoded, for the overpaint guard. */
+export async function loadGuardField(): Promise<Image> {
+  return baseField(await loadPlates(GUARD_PLATES));
+}
+
+async function loadPlates(names: readonly string[]): Promise<ApronPlate[]> {
   const plates: ApronPlate[] = [];
-  for (const name of BASE_PLATES) {
-    const piece = scene.find((candidate) => candidate.url.endsWith(name));
-    if (!piece) throw new Error(`${name} is not registered in the forest scene`);
+  const found = new Set<string>();
+  // Scene order is draw order, and a repeated plate (the rubble cells) is drawn
+  // once per cell, so every matching piece belongs in the field.
+  for (const piece of FOREST_ROAD_SCENE.ground) {
+    const name = names.find((candidate) => piece.url.endsWith(candidate));
+    if (!name) continue;
+    found.add(name);
     plates.push({ image: await readWebp(`public/${piece.url}`), x: piece.x, y: piece.y });
   }
+  for (const name of names)
+    if (!found.has(name)) throw new Error(`${name} is not registered in the forest scene`);
   return plates;
 }
 
 /** The apron plate for the scene as registered, decoded from the shipped art. */
 export async function packSceneApron(): Promise<Image> {
-  return packApron(await loadBasePlates());
+  return packApron(await loadBasePlates(), await loadGuardField());
 }
 
 async function main(): Promise<void> {
