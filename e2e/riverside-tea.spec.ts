@@ -172,6 +172,64 @@ for (const backend of ['canvas', 'webgl']) {
       }
       // A crop of empty canvas would compare two blanks and prove nothing, so
       // a missing figure is a failure however long it takes to appear.
+      if (sample.inked === 0) {
+        /*
+         * Two attempts of run 35568889528 (Chromium touch and WebKit) ended
+         * here against the same page — board painted, nothing on the veranda
+         * (attachment `tea-webgl-reduced`, file 12936d91) — and nothing in that
+         * report said whether the layer drew the pair off the stage, drew it
+         * somewhere else, or stopped drawing at all. Carry the layer and the
+         * geometry that placed the crop, so the next failure is a diagnosis
+         * rather than another reproduction. This costs one readback and two
+         * attachments on the failing path only.
+         */
+        const geometry = await page.evaluate(() => {
+          const canvas = document.querySelector<HTMLCanvasElement>('.village-life-canvas');
+          const camera = window.fnt?.app.rendererCamera() ?? null;
+          if (!canvas || !camera) return { camera, error: 'missing life layer' };
+          const m = camera.groundTransform;
+          const foot = {
+            x: (m.a * 8.5 + m.c * 18.85) * 64 + m.tx,
+            y: (m.b * 8.5 + m.d * 18.85) * 64 + m.ty,
+          };
+          const pixels = canvas
+            .getContext('2d')
+            ?.getImageData(0, 0, canvas.width, canvas.height).data;
+          let inked = 0;
+          let top = Infinity;
+          let bottom = -Infinity;
+          if (pixels) {
+            for (let i = 3, p = 0; i < pixels.length; i += 4, p++) {
+              if ((pixels[i] ?? 0) === 0) continue;
+              inked += 1;
+              const y = Math.floor(p / canvas.width);
+              if (y < top) top = y;
+              if (y > bottom) bottom = y;
+            }
+          }
+          return {
+            camera,
+            store: `${canvas.width}x${canvas.height}`,
+            box: `${canvas.clientWidth}x${canvas.clientHeight}`,
+            dataset: { ...canvas.dataset },
+            partyPositions: window.fnt?.app.partyPositions() ?? null,
+            foot,
+            ink: { inked, top, bottom },
+          };
+        });
+        await test.info().attach(`tea-${backend}-blank-geometry`, {
+          body: JSON.stringify(geometry, null, 2),
+          contentType: 'application/json',
+        });
+        const layer = await page.evaluate(
+          () =>
+            document.querySelector<HTMLCanvasElement>('.village-life-canvas')?.toDataURL() ?? '',
+        );
+        await test.info().attach(`tea-${backend}-blank-layer`, {
+          body: Buffer.from(layer.slice(layer.indexOf(',') + 1), 'base64'),
+          contentType: 'image/png',
+        });
+      }
       expect(sample.inked, 'the tea region must contain the drawn figure').toBeGreaterThan(0);
       return sample.cel;
     };
