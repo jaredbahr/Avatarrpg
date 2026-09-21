@@ -1,7 +1,8 @@
 import { expect, test, type Page } from '@playwright/test';
 import { allowSoftwareWebgl } from './budget';
 import { enterNode, resetStorage, startGame, takeTurn, waitForIdle } from './helpers';
-import { average, screenshotPixels, type Rgb } from './pixels';
+import { average, pixelsFromDataUrl, type Rgb } from './pixels';
+import type { MapView } from '../src/render/view';
 
 const svg = (colour: string): string =>
   `data:image/svg+xml,${encodeURIComponent(`<svg xmlns="http://www.w3.org/2000/svg" width="64" height="64"><rect width="64" height="64" fill="${colour}"/></svg>`)}`;
@@ -23,45 +24,70 @@ const PATCH = { x: 5, y: 7 } as const;
 const VALID = { x: 6, y: 7 } as const;
 const FALLBACK = { x: 5, y: 7 } as const;
 
-async function tileCentres(page: Page, probes: Record<string, Pos>): Promise<Record<string, Pos>> {
-  const points = await page.evaluate((entries) => {
-    const camera = window.fnt?.app.rendererCamera?.();
-    if (!camera) return null;
+/**
+ * Every read is inside the canvas, so a black no-sample average cannot pass.
+ *
+ * The board is drawn and read back inside one turn: a screenshot of a
+ * software-WebGL canvas costs about 14 s on the runners, this spec polls up to
+ * a dozen times on its way through, and the picture a screenshot returns is
+ * whatever the compositor happened to have - not necessarily the frame the app
+ * last drew. Drawing the board's own last view and decoding the canvas in the
+ * same turn reads the drawing buffer that draw just wrote, which is the frame
+ * the readiness polls below are asking about.
+ */
+async function samples<P extends Record<string, Pos>>(
+  page: Page,
+  probes: P,
+): Promise<{ [K in keyof P]: Rgb }> {
+  const shot = await page.evaluate((entries) => {
+    const app = window.fnt?.app;
+    const camera = app?.rendererCamera?.();
+    if (!app || !camera) return null;
+    const renderer = (
+      app as unknown as {
+        scene: {
+          renderer: {
+            camera: unknown;
+            lastView: MapView | null;
+            backend: { draw(view: MapView, camera: unknown): void };
+          };
+        };
+      }
+    ).scene.renderer;
+    const view = renderer.lastView;
+    const canvas = document.querySelector<HTMLCanvasElement>('.map-canvas');
+    if (!view || !canvas) throw new Error('the board has not been drawn yet');
+    renderer.backend.draw(view, renderer.camera);
     const m = camera.groundTransform;
-    return Object.fromEntries(
+    const points = Object.fromEntries(
       entries.map(([name, p]) => {
         const x = (p.x + 0.5) * 64;
         const y = (p.y + 0.5) * 64;
         return [name, { x: m.a * x + m.c * y + m.tx, y: m.b * x + m.d * y + m.ty }];
       }),
     );
+    const box = canvas.getBoundingClientRect();
+    return {
+      url: canvas.toDataURL('image/png'),
+      points,
+      // The crop is read in the canvas' own device pixels.
+      scale: canvas.width / box.width,
+      width: box.width,
+      height: box.height,
+    };
   }, Object.entries(probes));
-  if (!points) throw new Error('No map camera');
-  return points;
-}
-
-/** Every read is inside the canvas, so a black no-sample average cannot pass. */
-async function samples<P extends Record<string, Pos>>(
-  page: Page,
-  probes: P,
-): Promise<{ [K in keyof P]: Rgb }> {
-  const canvas = page.locator('.map-canvas');
-  const [pixels, box, points] = await Promise.all([
-    screenshotPixels(canvas),
-    canvas.boundingBox(),
-    tileCentres(page, probes),
-  ]);
-  if (!box) throw new Error('Map canvas has no bounding box');
-  for (const [name, point] of Object.entries(points)) {
+  if (!shot) throw new Error('No map camera');
+  for (const [name, point] of Object.entries(shot.points)) {
     expect(point.x, `${name} x is inside the map canvas`).toBeGreaterThan(radius);
-    expect(point.x, `${name} x is inside the map canvas`).toBeLessThan(box.width - radius);
+    expect(point.x, `${name} x is inside the map canvas`).toBeLessThan(shot.width - radius);
     expect(point.y, `${name} y is inside the map canvas`).toBeGreaterThan(radius);
-    expect(point.y, `${name} y is inside the map canvas`).toBeLessThan(box.height - radius);
+    expect(point.y, `${name} y is inside the map canvas`).toBeLessThan(shot.height - radius);
   }
+  const pixels = pixelsFromDataUrl(shot.url);
   return Object.fromEntries(
-    Object.entries(points).map(([name, point]) => [
+    Object.entries(shot.points).map(([name, point]) => [
       name,
-      average(pixels, point.x, point.y, radius),
+      average(pixels, point.x * shot.scale, point.y * shot.scale, radius * shot.scale),
     ]),
   ) as { [K in keyof P]: Rgb };
 }
