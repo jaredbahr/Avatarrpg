@@ -36,12 +36,27 @@ The band is 2.5 logical tiles wide, opaque at the rim, faded out by 2.2 tiles,
 with grain and recession ramping in from 0.35 tiles so the board's own edge is
 not redrawn as a line.
 
-## Known defect in this candidate
+## The continuation is a mirror, not a translation
 
-The grass packs feather to alpha 0 across their outermost ~0.2 tiles, which was
-invisible while the page was behind them. With textured ground now outside the
-rim, that feather reads as a pale hem just inside the rim on the grass faces.
-The apron deliberately paints no playable pixel, so it cannot cover the hem as
-written. `docs/coordination/handoffs/forest-road-apron.md` records the two
-repairs considered; the band has to extend a short way inside and fill only
-pixels that no ground plate already paints.
+The first in-engine frame showed the band combed into long diagonal streaks.
+The cause was geometry, not texture: continuing a point by its own `depth` in
+along the normal lands every point of a band on the *same* rim line, so the band
+was one row of pixels stretched outward. Sampling the point's reflection instead
+— `2 * depth` in — is a rigid mirror: it varies in two dimensions, joins
+continuously at the rim and carries the authored texture. Inside the seam band
+the offset is that band's width, which is a plain shift.
+
+## The seam band
+
+The grass packs feather to alpha 0 across their outermost ~0.2 tiles. Against
+the page that was invisible; beside textured ground it read as a pale hem, so
+the plate reaches 0.35 tiles *inside* the rim and fills that band — but only
+where the whole ground composite is thinner than `GUARD_ALPHA` (250). The
+invariant is therefore "never overpaint authored ground" rather than "never
+paint a playable pixel", and `forest-exterior-apron.test.ts` counts both: zero
+overpainted pixels, and more than a thousand fill pixels closing the hem.
+
+The fill's inner edge follows the guard's own alpha contour, which is
+cell-quantised. In the Canvas and WebGL frames that reads as faint texture noise
+rather than a line, so nothing further is queued for it; feathering the fill's
+alpha into the guard's ramp is the refinement if a later frame shows it.

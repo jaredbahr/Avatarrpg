@@ -41,24 +41,32 @@ and `codex/village-outer-apron` already carry, so the three merge cleanly.
   `npx tsx scripts/art/forest-apron-preview.ts [--no-apron]` writes
   `.shots/forest-apron/preview{,-no-apron}.png` (`.shots/` is git-ignored). They
   show the hard diamond replaced by ground that continues and dissolves.
+- **In-engine frames, both backends:**
+  `FNT_REVIEW_BROWSER_CHANNEL=chrome npx playwright test -c
+playwright.forest-apron.config.ts` runs the committed review fixture
+  `e2e/forest-apron.review.ts` (not in the default projects, so it never runs in
+  CI) and writes `.shots/forest-apron/{canvas,webgl}/{fit,rim-*}.png` from the
+  `forest_explore` node: the default follow camera, then zoom 64 on the north,
+  west, east and south rim and both road exits (`0,4` and `19,4`). Those frames
+  found the combed-band defect below and then confirmed its repair: the road
+  continues out of frame on both flanks, the grass keeps its texture, and the
+  ground dissolves into the page.
 
 ## Open gaps (not closed by this change)
 
-- **The pale hem is closed but its contour is not yet judged in engine.** The
-  grass packs feather to alpha 0 across their outer ~0.2 tiles, which read as a
-  light hem beside textured ground. The plate now reaches 0.35 tiles inside the
-  rim and fills only where the whole ground composite is thinner than
+- **The seam is closed and the combed band is fixed** (both recorded in
+  `docs/art/forest-exterior-apron.md`). The seam band reaches 0.35 tiles inside
+  the rim and fills only where the whole ground composite is thinner than
   `GUARD_ALPHA`, so the invariant is "never overpaint authored ground" rather
   than "never paint a playable pixel" (`village-outer-apron` kept the stricter
-  one because its own cells are procedural and its rim did not feather). That
-  fill contour is cell-quantised, so the static composite shows a faint
-  tile-scale notch pattern where it meets the feathered edge. Same material
-  throughout, so it should read as texture noise — but no real frame has been
-  looked at. If it shows, feather the fill's alpha into the guard's own ramp.
-- **No in-engine capture yet.** The composites are static, built from the same
-  plates the renderer uses; they are not a Canvas/WebGL frame, not a playthrough
-  and not a device check. The obvious next evidence is the rim probe used for the
-  village apron, run against `forest_road` on both backends.
+  one because its own cells are procedural and its rim did not feather). Its
+  cell-quantised contour reads as texture noise in both backends' frames, not as
+  a line.
+- **The frames are not a playthrough.** They are the exploration follow camera on
+  both backends at one viewport; the forest road's combat framing, the quarry
+  side of the transition and the return have not been re-walked with the apron in
+  place, and nothing was checked on a physical device, at Large text, or by
+  listening.
 - Nothing here was checked on a physical device, at Large text, or by listening.
 
 ## Next action
@@ -66,12 +74,11 @@ and `codex/village-outer-apron` already carry, so the three merge cleanly.
 1. Once v0.2.7 has merged, rebase this branch onto `main`; keep the 0.2.x number
    that is still free after `codex/frame-surround-coverage` and
    `codex/village-outer-apron` land, and add the changelog entry.
-2. Look at one Canvas/WebGL rim frame (the village apron's probe, pointed at
-   `forest_road`) and decide whether the fill's notch contour needs the alpha
-   feather described above; then set the changelog entry.
+2. Re-capture the frames after the rebase, walk the forest road's combat framing
+   with the apron in place, and set the changelog entry.
 3. Then open the release PR with merge-commit auto-merge under Jared's standing
    policy, and confirm Pages serves the new version.
 
-If a later session decides the hem is worse than the hard rim it replaces, the
-reviewable alternative is to drop this plate and rebuild the two grass packs
+If a later session decides the seam fill is worse than the hard rim it replaces,
+the reviewable alternative is to drop the fill and rebuild the two grass packs
 with an opaque rim row instead.
