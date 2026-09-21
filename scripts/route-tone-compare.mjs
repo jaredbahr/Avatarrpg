@@ -4,8 +4,13 @@
  * The blast radius of a palette lift is the set of pixels that move between the
  * heads on an identical fixture. This reads that set per board and per layer
  * (authored board, procedural only, bare cells), says how far it moved and
- * which way, and draws where it is on a 48 px grid. Capture the frames with
- * `playwright.route-tone.config.ts` first: see `e2e/route-tone.review.ts`.
+ * which way, and draws where it is on a 48 px grid. Then it reads the probe's
+ * per-tile table from both heads and prints the tone of each terrain under the
+ * board, which is how a key the pixel diff cannot split -- `dirt`, `sand` --
+ * gets its own before/after.
+ *
+ * Capture the frames with `playwright.route-tone.config.ts` first: see
+ * `e2e/route-tone.review.ts`.
  *
  *   node scripts/route-tone-compare.mjs .shots/route-tone/before \
  *     .shots/route-tone/after
@@ -77,6 +82,29 @@ for (const renderer of RENDERERS) {
           `${changed ? (afterLum / changed).toFixed(1) : '-'}`,
       );
       if (changed > 0 && lines.length > 0) console.log(lines.join('\n'));
+    }
+
+    /* The probe's per-tile table: the tone of each terrain on the board, which
+     * is the only split that reaches a key the hue mask cannot see. */
+    const tiles = `${node}-${renderer}-tiles.json`;
+    let before;
+    let after;
+    try {
+      before = JSON.parse(readFileSync(`${beforeDir}/${tiles}`, 'utf8'));
+      after = JSON.parse(readFileSync(`${afterDir}/${tiles}`, 'utf8'));
+    } catch {
+      continue;
+    }
+    const byTerrain = new Map(after.table.map((row) => [row.terrain, row]));
+    for (const row of before.table) {
+      const next = byTerrain.get(row.terrain);
+      if (!next) continue;
+      const delta = next.lum - row.lum;
+      console.log(
+        `  ${renderer} ${node} tile ${row.terrain.padEnd(7)} n=${String(row.n).padStart(3)} ` +
+          `${row.hex} lum ${row.lum.toFixed(1)} -> ${next.hex} lum ${next.lum.toFixed(1)} ` +
+          `(${delta >= 0 ? '+' : ''}${delta.toFixed(1)})`,
+      );
     }
   }
 }

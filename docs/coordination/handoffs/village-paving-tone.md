@@ -103,11 +103,36 @@ legacy tone was doing much work; the two boards the route plays most are within
 0.7%, and a village-only rim tone would need a second palette key and a second
 shader colour to reach the 0.03-0.7% the global key now improves elsewhere.
 
+### The same measurement at tile scale
+
+The probe samples the rendered frame at every non-blocked tile centre through
+the same camera the taps use, and `scripts/route-tone-compare.mjs` prints both
+heads' table. On the authored board, every terrain's _centre_ is unmoved except
+one cell:
+
+| board (canvas)       | terrain | n   | before              | after               |
+| -------------------- | ------- | --- | ------------------- | ------------------- |
+| `battle_forest_road` | grass   | 36  | `#7f7134` lum 111.5 | `#7f7134` lum 111.5 |
+| `battle_forest_road` | road    | 32  | `#cd9d5b` lum 162.3 | `#cd9d5b` lum 162.3 |
+| `battle_forest_road` | dirt    | 8   | `#55726e` lum 107.4 | `#55726e` lum 107.4 |
+| `battle_forest_road` | stone   | 1   | `#786249` lum 100.9 | `#79634a` lum 101.9 |
+| `battle_ambush`      | road    | 27  | `#d9b991` lum 188.5 | `#d9b991` lum 188.5 |
+| `village_explore`    | road    | 22  | `#d0b38c` lum 182.4 | `#d0b38c` lum 182.4 |
+
+That is the whole change at tile scale: the plates own every road centre on the
+route, so the raised key shows only in the fallback between and outside them.
+It also puts the earlier village window measurement in its place — the 2.06x ->
+1.65x step the paving handoff recorded is a _rim and apron_ step, not a
+tile-centre one.
+
 ## Still not measured
 
-- `dirt`, `sand` and `wall` remain at their legacy tones; the probe classifies
-  by hue, not by tile, so their own reach is not split out — the board numbers
-  above include every pixel they paint on these seven boards.
+- `dirt`, `sand` and `wall` remain at their legacy tones and this change does
+  not touch them: their tile centres read identical on both heads (`dirt` on
+  forest road, the cutting and the village; no `sand` tile on these boards to
+  read, and `wall` tiles are blocked so the probe skips them). Whether those
+  three keys want lifting in their own right is a separate question with its
+  own measurement.
 - The `stone` tone is also the ink for pebbles and the wet-edge sheen in
   `src/render/painters/board.ts`. Pebbles are ~3 px and keep their dark
   outline, and the pond-corner crops look unchanged, but the bank edges have
