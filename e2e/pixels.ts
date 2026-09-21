@@ -9,6 +9,12 @@ import { PNG } from 'pngjs';
  * to check what either backend actually put on screen is Playwright's own
  * screenshot, decoded here with pngjs. Positions are CSS pixels inside the
  * element; the device pixel ratio is handled from the PNG's size.
+ *
+ * A probe that draws the frame itself can do better: reading the canvas back
+ * inside the same turn reads the drawing buffer that draw just wrote, before
+ * the compositor has had a chance to present (or drop) it. That is what
+ * `pixelsFromDataUrl` is for, and it is how a probe compares two states of a
+ * board that the page may repaint while the capture is on its way.
  */
 
 export interface Rgb {
@@ -22,6 +28,28 @@ export interface Pixels {
   at(x: number, y: number): Rgb | null;
   readonly width: number;
   readonly height: number;
+}
+
+/**
+ * Pixels out of a PNG the page encoded itself, `canvas.toDataURL` most often.
+ *
+ * Coordinates are the canvas' own device pixels, which is what a drawing
+ * buffer is measured in once the device pixel ratio is in play.
+ */
+export function pixelsFromDataUrl(dataUrl: string): Pixels {
+  const comma = dataUrl.indexOf(',');
+  const png = PNG.sync.read(Buffer.from(dataUrl.slice(comma + 1), 'base64'));
+  return {
+    width: png.width,
+    height: png.height,
+    at(x, y) {
+      const px = Math.round(x);
+      const py = Math.round(y);
+      if (px < 0 || py < 0 || px >= png.width || py >= png.height) return null;
+      const i = (py * png.width + px) * 4;
+      return { r: png.data[i] ?? 0, g: png.data[i + 1] ?? 0, b: png.data[i + 2] ?? 0 };
+    },
+  };
 }
 
 export async function screenshotPixels(locator: Locator): Promise<Pixels> {
