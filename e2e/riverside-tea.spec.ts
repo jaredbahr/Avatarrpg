@@ -1,6 +1,13 @@
 import { expect, test } from '@playwright/test';
 import { allowSoftwareWebgl } from './budget';
-import { enterNode, resetStorage, settleLayout, startGame, waitForIdle } from './helpers';
+import {
+  enterNode,
+  pauseClock,
+  resetStorage,
+  settleLayout,
+  startGame,
+  waitForIdle,
+} from './helpers';
 
 for (const backend of ['canvas', 'webgl']) {
   test(`tea holds on the porch and yields to walking and forms (${backend})`, async ({ page }) => {
@@ -22,7 +29,40 @@ for (const backend of ['canvas', 'webgl']) {
       { x: 8, y: 18 },
       { x: 8, y: 19 },
     ]);
-    await page.getByRole('button', { name: 'Activities', exact: true }).click();
+    /*
+     * Everything below reads this layer's own backing store, so that store has
+     * to be the size of the box it is shown in. Closing the panel reflows the
+     * HUD and the map resizes; the layer's repaint used to belong to the render
+     * loop, so on a runner that hands back a frame every few seconds the store
+     * could still be at the old size when the crop was taken -- and a crop
+     * measured in backing pixels then samples past the end of the bitmap and
+     * reads blank. Freeze the clock, close the panel from inside the page, and
+     * require the store to have followed the camera in the same turn the resize
+     * did; the render loop cannot be the thing that makes it true.
+     */
+    await pauseClock(page);
+    const followed = await page.evaluate(() => {
+      const life = document.querySelector<HTMLCanvasElement>('.village-life-canvas');
+      const scene = (
+        window.fnt!.app as unknown as {
+          scene: {
+            resize(): void;
+            renderer: { camera: { viewport: { width: number; height: number; dpr: number } } };
+          };
+        }
+      ).scene;
+      if (!life) throw new Error('missing village life layer');
+      document.querySelector<HTMLButtonElement>('.village-activities-toggle')?.click();
+      scene.resize();
+      const { viewport } = scene.renderer.camera;
+      const dpr = Math.min(viewport.dpr, 2);
+      return {
+        store: `${life.width}x${life.height}`,
+        camera: `${Math.round(viewport.width * dpr)}x${Math.round(viewport.height * dpr)}`,
+      };
+    });
+    expect(followed.store).toBe(followed.camera);
+    await page.clock.resume();
     await test.info().attach(`tea-${backend}-reduced`, {
       body: await page.screenshot(),
       contentType: 'image/png',
@@ -40,14 +80,17 @@ for (const backend of ['canvas', 'webgl']) {
      * where a frame takes long enough that every retry below stayed inside the
      * same lag — and the sample it fed was an empty crop.
      *
-     * Do not ask for the foot itself to be inside the stage. Measured on a
-     * settled camera at this viewport the foot sits at y 475 in one run and
-     * y 524 on the same 1280x485 stage in another, with a stable camera and a
-     * sample that still contains the figure in both: the crop reaches 55 px
-     * above the foot, so it reads the seated figure's head and shoulders and
-     * the fixture asserts on ink, not framing. A predicate that demands the
-     * whole crop land inside the stage would never be true and would only time
-     * out. What the crop actually needs is the state the drawing was made in.
+     * The break itself centres the camera on the seat it fills — that is what
+     * `VillageLife.update` takes the camera for — so the pair sits inside the
+     * stage instead of below its bottom edge: measured at this viewport the
+     * foot sits at y 259 on a 485 px stage, where run 35578795966 drew the same
+     * pair at y 547.3 and fed the crop a blank. A viewport resize afterwards
+     * leaves the camera at the map's own lower limit rather than on the seat,
+     * which is 135 px below the middle of the stage instead of a fixed offset
+     * from its bottom: the foot measured y 338, 435 and 518 on 405, 599 and
+     * 765 px stages, and the 110 px crop stayed inside the stage in all four,
+     * with the figure inked in each. The assertion below owns that claim,
+     * because a crop that leaves the stage reads as a missing figure.
      *
      * The clock is faked from here on, so a frame is published when the test
      * asks for one and not before: a `waitForFunction` parked on
@@ -74,6 +117,10 @@ for (const backend of ['canvas', 'webgl']) {
           store: `${canvas.width}x${canvas.height}@${dpr}`,
           box: `${canvas.clientWidth}x${canvas.clientHeight}`,
           key: `${x.toFixed(2)}:${y.toFixed(2)}:${canvas.clientWidth}x${canvas.clientHeight}`,
+          footY: y,
+          stage: canvas.clientHeight,
+          // `sampleTeaCel` crops 110 px tall, centred on the same foot.
+          cropOnStage: y - 55 >= 0 && y + 55 <= canvas.clientHeight,
           painted:
             Math.abs(canvas.width / dpr - canvas.clientWidth) < 1 &&
             Math.abs(canvas.height / dpr - canvas.clientHeight) < 1,
@@ -99,6 +146,10 @@ for (const backend of ['canvas', 'webgl']) {
         contentType: 'application/json',
       });
     }
+    expect(
+      last?.cropOnStage,
+      `the veranda keeps the seated pair on stage: foot y ${last?.footY} of ${last?.stage}`,
+    ).toBe(true);
     /*
      * The seated figure is drawn by the shared 2D life layer, above a board
      * that differs by backend. Comparing two composited page captures instead
@@ -172,6 +223,64 @@ for (const backend of ['canvas', 'webgl']) {
       }
       // A crop of empty canvas would compare two blanks and prove nothing, so
       // a missing figure is a failure however long it takes to appear.
+      if (sample.inked === 0) {
+        /*
+         * Two attempts of run 35568889528 (Chromium touch and WebKit) ended
+         * here against the same page — board painted, nothing on the veranda
+         * (attachment `tea-webgl-reduced`, file 12936d91) — and nothing in that
+         * report said whether the layer drew the pair off the stage, drew it
+         * somewhere else, or stopped drawing at all. Carry the layer and the
+         * geometry that placed the crop, so the next failure is a diagnosis
+         * rather than another reproduction. This costs one readback and two
+         * attachments on the failing path only.
+         */
+        const geometry = await page.evaluate(() => {
+          const canvas = document.querySelector<HTMLCanvasElement>('.village-life-canvas');
+          const camera = window.fnt?.app.rendererCamera() ?? null;
+          if (!canvas || !camera) return { camera, error: 'missing life layer' };
+          const m = camera.groundTransform;
+          const foot = {
+            x: (m.a * 8.5 + m.c * 18.85) * 64 + m.tx,
+            y: (m.b * 8.5 + m.d * 18.85) * 64 + m.ty,
+          };
+          const pixels = canvas
+            .getContext('2d')
+            ?.getImageData(0, 0, canvas.width, canvas.height).data;
+          let inked = 0;
+          let top = Infinity;
+          let bottom = -Infinity;
+          if (pixels) {
+            for (let i = 3, p = 0; i < pixels.length; i += 4, p++) {
+              if ((pixels[i] ?? 0) === 0) continue;
+              inked += 1;
+              const y = Math.floor(p / canvas.width);
+              if (y < top) top = y;
+              if (y > bottom) bottom = y;
+            }
+          }
+          return {
+            camera,
+            store: `${canvas.width}x${canvas.height}`,
+            box: `${canvas.clientWidth}x${canvas.clientHeight}`,
+            dataset: { ...canvas.dataset },
+            partyPositions: window.fnt?.app.partyPositions() ?? null,
+            foot,
+            ink: { inked, top, bottom },
+          };
+        });
+        await test.info().attach(`tea-${backend}-blank-geometry`, {
+          body: JSON.stringify(geometry, null, 2),
+          contentType: 'application/json',
+        });
+        const layer = await page.evaluate(
+          () =>
+            document.querySelector<HTMLCanvasElement>('.village-life-canvas')?.toDataURL() ?? '',
+        );
+        await test.info().attach(`tea-${backend}-blank-layer`, {
+          body: Buffer.from(layer.slice(layer.indexOf(',') + 1), 'base64'),
+          contentType: 'image/png',
+        });
+      }
       expect(sample.inked, 'the tea region must contain the drawn figure').toBeGreaterThan(0);
       return sample.cel;
     };

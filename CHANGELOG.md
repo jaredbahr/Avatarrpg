@@ -14,6 +14,23 @@
   water, so the waterline carries growth instead of meeting the road as a bare
   edge. They are passable scenery: no wall, no collision and no ground disk.
 
+## 0.2.8 — release candidate
+
+- Carry every scene's own ground past its edge instead of letting the board meet
+  the bare page along one diagonal. Ba Dan, the forest road and the quarry gate
+  all had ground that stopped at the rim they were painted to cover: the village
+  grass, plaza paving and western road, the pine road's banks and both of its
+  ends, and the gatehouse terrace now continue outward and dissolve before the
+  camera can follow them.
+- Each apron is made from its own scene's material rather than a generic fill.
+  The forest road and the quarry gate continue the exact authored pixels they
+  were already drawn with, so the road leaves the board as road and the terrace
+  as terrace; the village apron is painted in the colours its procedural cells
+  use, then ramps into grain and recession.
+- Nothing inside a board changed. Every apron plate is transparent wherever the
+  board can be walked, so paths, cover, water, elevation and collision play
+  exactly as before, and both renderers agree about it.
+
 ## 0.2.6 — release candidate
 
 - Ground props and figures instead of leaving them on a hard dark rim. The

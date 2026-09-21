@@ -215,6 +215,31 @@ export async function waitForIdle(page: Page): Promise<void> {
   );
 }
 
+/**
+ * Freezes the page clock at a moment still ahead of it.
+ *
+ * `clock.pauseAt` refuses a target that is not ahead of the fake clock, and
+ * until it is paused that clock keeps pace with real time: on a software-WebGL
+ * runner one frame can outlast the whole gap between reading the clock and
+ * asking it to pause, which reddened `directional-walk` with "Cannot
+ * fast-forward to the past" in run 35578795966. A failed attempt still leaves
+ * the clock frozen, so reading it again with a wider margin converges instead
+ * of racing the renderer. Callers resume once they are done stepping frames.
+ */
+export async function pauseClock(page: Page): Promise<void> {
+  let margin = 1000;
+  for (let attempt = 0; ; attempt++) {
+    const now = await page.evaluate(() => Date.now());
+    try {
+      await page.clock.pauseAt(now + margin);
+      return;
+    } catch (error) {
+      if (attempt >= 4) throw error;
+      margin *= 2;
+    }
+  }
+}
+
 /** True while the fight is still running. */
 export async function battleActive(page: Page): Promise<boolean> {
   return page.evaluate(() => window.fnt?.app.state?.battle?.phase === 'active');

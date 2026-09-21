@@ -1,6 +1,6 @@
 {
   "name": "four-nations-tactics",
-  "version": "0.2.7",
+  "version": "0.2.8",
   "private": true,
   "description": "Four Nations Tactics - a hot-seat turn-based tactical RPG for the family. Non-commercial fan work.",
   "type": "module",

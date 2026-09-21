@@ -1,4 +1,5 @@
 import type { MapScene, Vec2 } from '../../core/types';
+import { QUARRY_SURROUND } from './quarryProjected';
 import { QUARRY_WEST_FRAMES } from './quarryWestFrames';
 
 const root = 'art/maps/quarry-gate-scene/';
@@ -36,6 +37,10 @@ export const QUARRY_GATE_SCENE: MapScene = {
   // collision fallback beneath it; upright walls remain separate scenery.
   groundMode: 'partial',
   ground: [
+    // The gatehouse stands on the quarry's own terrace, so it wears the same
+    // exterior mass as The Cutting. Without it the projected diamond's edge
+    // floats on bare backdrop along the left and bottom of the frame.
+    ...QUARRY_SURROUND,
     ...QUARRY_GATE_GROUND_REGIONS.map(({ name, ...region }) => ({
       url: `${root}${name}.webp`,
       ...region,

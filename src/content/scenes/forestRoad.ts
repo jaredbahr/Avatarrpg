@@ -105,6 +105,23 @@ export const FOREST_POND_REEDS: readonly SceneScenery[] = (
   };
 });
 
+/**
+ * The forest road does not end where the rules stop. This apron carries the
+ * route's own authored ground — the pixels `grass-north`, `grass-south` and
+ * `route-ground` paint along the rim — back out into the page, then fades to
+ * nothing before the camera can follow it. `combat.ts` owns the authoritative
+ * map size, and `forestRoad.test.ts` pins the two together.
+ */
+export const FOREST_APRON_MAP = { width: 20, height: 12 } as const;
+/** Logical tiles of authored terrain outside the rim, on all four sides. */
+export const FOREST_APRON_DEPTH = 2.5;
+export const FOREST_EXTERIOR_APRON = {
+  x: 768 - (FOREST_APRON_MAP.height + 2 * FOREST_APRON_DEPTH) * 64,
+  y: -2 * FOREST_APRON_DEPTH * 32,
+  width: (FOREST_APRON_MAP.width + FOREST_APRON_MAP.height + 4 * FOREST_APRON_DEPTH) * 64,
+  height: (FOREST_APRON_MAP.width + FOREST_APRON_MAP.height + 4 * FOREST_APRON_DEPTH) * 32,
+} as const;
+
 /** Already projected ground; gameplay opts the map into the matching projection. */
 export const FOREST_ROAD_SCENE: MapScene = {
   groundMode: 'partial',
@@ -122,6 +139,8 @@ export const FOREST_ROAD_SCENE: MapScene = {
       width: 128,
       height: 128 / 3,
     })),
+    // Painted last: transparent everywhere the board can be walked.
+    { url: `${root}exterior-apron.webp`, ...FOREST_EXTERIOR_APRON },
   ],
   scenery: [...FOREST_PINE_CELLS.map(pine), FOREST_BANK_NEST_REEDS, ...FOREST_POND_REEDS],
 };

@@ -13,9 +13,19 @@ import {
   BA_DAN_NEIGHBORHOOD_GROUNDS,
   BA_DAN_COURTYARD_FOOTPRINTS,
   BA_DAN_COURT_TREES,
+  BA_DAN_APRON_MAP,
+  BA_DAN_EXTERIOR_APRON,
   BA_DAN_SCENE,
 } from './baDan';
 import { buildGrid, reachable, posKey, tileAt } from '../../core/rules/grid';
+
+it('carries the village ground outside the rim, painted after every local piece', () => {
+  expect(BA_DAN_APRON_MAP).toEqual({ width: BA_DAN_VILLAGE.width, height: BA_DAN_VILLAGE.height });
+  expect(BA_DAN_SCENE.ground.at(-1)).toEqual({
+    url: 'art/maps/ba-dan-scene/exterior-apron.webp',
+    ...BA_DAN_EXTERIOR_APRON,
+  });
+});
 
 let decodedGround: Map<string, ImageData>;
 
