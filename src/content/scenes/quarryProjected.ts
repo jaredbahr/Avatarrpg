@@ -3,7 +3,10 @@ import { CUTTING_EXTERIOR_RIM } from './quarryExteriorRims';
 import { CUTTING_GROUND_REGIONS, DRILLER_GROUND_REGIONS } from './quarryRouteGround';
 
 // Shared exterior painting, clipped clear of the authoritative 20 x 12 floor.
-const quarrySurround = [
+// The Cutting, the Driller floor and the gatehouse all sit on the same
+// projected terrace, so one reviewed surround serves all three; a scene that
+// omits it shows the board's diamond edge against bare backdrop.
+export const QUARRY_SURROUND = [
   { url: 'art/maps/quarry-surround/west.webp', x: -320, y: -560, width: 1344, height: 1664 },
   { url: 'art/maps/quarry-surround/east.webp', x: 1024, y: -560, width: 1344, height: 1664 },
 ];
@@ -86,14 +89,14 @@ export const DRILLER_REAR_LOADING_SCENERY: readonly SceneScenery[] = [
  */
 export const CUTTING_SCENE: MapScene = {
   groundMode: 'partial',
-  ground: [...quarrySurround, ...routeGround('cutting-scene', CUTTING_GROUND_REGIONS)],
+  ground: [...QUARRY_SURROUND, ...routeGround('cutting-scene', CUTTING_GROUND_REGIONS)],
   scenery: CUTTING_EXTERIOR_RIM,
 };
 
 /** The same scene contract for the Driller floor, including its intentional rear gap. */
 export const DRILLER_FLOOR_SCENE: MapScene = {
   groundMode: 'partial',
-  ground: [...quarrySurround, ...routeGround('driller-floor-scene', DRILLER_GROUND_REGIONS)],
+  ground: [...QUARRY_SURROUND, ...routeGround('driller-floor-scene', DRILLER_GROUND_REGIONS)],
   // The surround owns the exterior mass; these walls and the rear stub own the
   // new structural context without changing the playable floor.
   scenery: [...DRILLER_FLOOR_WALLS, ...DRILLER_REAR_LOADING_SCENERY],

@@ -10,6 +10,7 @@ import {
   QUARRY_GATE_WALL_CELLS,
   quarryWallVariant,
 } from './quarryGate';
+import { QUARRY_SURROUND } from './quarryProjected';
 import { QUARRY_WEST_FRAMES } from './quarryWestFrames';
 
 const shippedGround: { piece: (typeof QUARRY_GATE_SCENE.ground)[number]; image: ImageData }[] = [];
@@ -85,7 +86,9 @@ it('centers four low cover decals on the actual passable cover cells', () => {
 it('uses bounded material regions over the procedural partial-ground base', () => {
   expect(QUARRY_GATE_SCENE.groundMode).toBe('partial');
   const regions = QUARRY_GATE_SCENE.ground.filter(
-    (piece) => !piece.url.endsWith('cover-timber.webp'),
+    (piece) =>
+      !piece.url.endsWith('cover-timber.webp') &&
+      !QUARRY_SURROUND.some((surround) => surround.url === piece.url),
   );
   expect(regions).toEqual(
     QUARRY_GATE_GROUND_REGIONS.map(({ name, ...region }) => ({
@@ -103,6 +106,17 @@ it('uses bounded material regions over the procedural partial-ground base', () =
     expect(region.width).toBeLessThan(2304);
     expect(region.height).toBeLessThan(1280);
   }
+});
+
+it('carries the quarry surround beneath the local gatehouse materials', () => {
+  // The gate is the quarry's own entrance: without the exterior mass the
+  // board's diamond edge floats on bare backdrop. It must paint first so the
+  // local earth, road and limestone still own every playable cell.
+  const urls = QUARRY_GATE_SCENE.ground.map((piece) => piece.url);
+  expect(QUARRY_GATE_SCENE.ground.slice(0, QUARRY_SURROUND.length)).toEqual([...QUARRY_SURROUND]);
+  expect(urls.indexOf('art/maps/quarry-surround/west.webp')).toBeLessThan(
+    urls.indexOf('art/maps/quarry-gate-scene/limestone.webp'),
+  );
 });
 
 it('ships opaque material coverage at every ground center and material boundary', () => {
