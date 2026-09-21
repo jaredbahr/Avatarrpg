@@ -45,14 +45,20 @@ uses only decoded opaque quiet-grass (`x10..11,y4`) and broad flagstone
 copies exact decoded RGB through existing overlaps and gives every new piece its
 own exterior feather.
 
-The canal's water is runtime-owned. `canal-banks.webp` is a transparent
-576×288 coping piece at `(928,368)`, generated from the six exact water-cell
-centres and the shared 64/32 projected diamond. It supplies textured stone only;
-its interior is transparent. Permanent water remains the walkable `~` surface
-at `(6..8,6)` and `(10..12,6)`, and the dry road crossing is `(9,6)`. The
-coping is intentionally shallow and does not add a collision wall. The old
-water-bearing `canal.webp` candidate is superseded and is kept only in ignored
-local evidence; it is not referenced or shipped.
+The canal's water is runtime-owned, but its ground layer is authored.
+`canal-banks.webp` is a 576×288 piece at `(928,368)`, generated from the six
+exact water-cell centres and the shared 64/32 projected diamond. It carries the
+**bed** the water sits on — the tracked courtyard painting's own flagstone,
+sampled one and a half cells nearer the viewer with that plate's world mapping,
+shaded darker and cooler with distance inside the water so the middle of the
+channel is its deepest point — and the **kerb** around it: the same paving moved
+24% toward its own grey, shaded from wet stone at the waterline to the paving's
+own brightness at the outer edge. Both are opaque; only the ground beyond the
+coping radius is left clear. Permanent water remains the walkable `~` surface at
+`(6..8,6)` and `(10..12,6)`, the dry road crossing is `(9,6)`, and the coping adds
+no collision wall. The old water-bearing `canal.webp` candidate is superseded and
+is kept only in ignored local evidence; it is not referenced or shipped. The
+reasoning is [ADR 0046](../adr/0046-canal-bed.md).
 
 The bridge is a transparent scenery layer registered to `(9,6)` with a single
 logical footprint. `canal-bridge.webp` is the deck/back layer and
@@ -69,9 +75,16 @@ The deterministic material and coping generators are:
 npx tsx scripts/art/ba-dan-courtyard-ground.ts art/raw/scenes/ground-materials.png
 npx tsx scripts/art/ba-dan-western-approach-ground.ts
 npx tsx scripts/art/ba-dan-neighborhood-ground.ts
-npx tsx scripts/art/ba-dan-canal-banks.ts art/raw/scenes/ground-materials.png
+npx tsx scripts/art/ba-dan-canal-banks.ts
 python scripts/art/ba-dan-bridge-front.py
 ```
+
+The canal packer takes no arguments: unlike the courtyard and the historical
+ground page, its material source is the tracked
+`public/art/maps/ba-dan-scene/courtyard-ground.webp`, so the shipped
+`canal-banks.webp` can be re-packed and byte-compared from a clean checkout.
+`scripts/art/ba-dan-canal-banks.test.ts` holds that contract, the diamond metric
+the bed is cut to, the depth gradient, and the kerb's dress and wet band.
 
 The western pack derives from the tracked accepted local material source
 `public/art/maps/ba-dan-scene/courtyard-ground.webp` (1152×576 WebP,
