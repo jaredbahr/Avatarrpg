@@ -72,27 +72,41 @@ for (const renderer of ['canvas', 'webgl'] as const) {
         const walkClip = riverside ? `walk${direction}` : 'walk';
         const restClip = riverside ? `rest${direction}` : 'rest';
         const facing = riverside || dy < 0 ? 1 : -1;
+        /*
+         * The leader holds the walk pose for about 1.2 s of app time, and a
+         * software-WebGL runner hands back a frame every few seconds: on a
+         * real-time cadence the renderer can be handed only the rest pose on
+         * either side of the walk, which is a coin flip rather than a claim
+         * about the wiring. Pause the clock at the dispatch and publish the
+         * frames from this side, so the poses the renderer sees are the app's
+         * own state and not the runner's frame rate.
+         */
+        await page.clock.pauseAt(await page.evaluate(() => Date.now() + 1000));
         await page.evaluate((delta) => {
           const app = window.fnt!.app;
           const pos = app.state!.location.pos;
           (window as Window & { directionFrames?: unknown[] }).directionFrames = [];
           app.dispatch({ type: 'walkTo', pos: { x: pos.x, y: pos.y + delta } });
         }, dy);
-        await expect
-          .poll(() =>
-            page.evaluate(
-              ({ clip, facing }) => {
-                const frames =
-                  (window as Window & { directionFrames?: { clip: string; facing: number }[][] })
-                    .directionFrames ?? [];
-                return frames.some(
-                  (units) => units[0]?.clip === clip && units[0]?.facing === facing,
-                );
-              },
-              { clip: walkClip, facing },
-            ),
-          )
-          .toBe(true);
+        // Twenty steps of 60 ms cover the walk, and each step publishes the
+        // frames the app would have drawn in it.
+        let sawWalk = false;
+        for (let step = 0; step < 20 && !sawWalk; step++) {
+          await page.clock.runFor(60);
+          sawWalk = await page.evaluate(
+            ({ clip, facing }) => {
+              const frames =
+                (window as Window & { directionFrames?: { clip: string; facing: number }[][] })
+                  .directionFrames ?? [];
+              return frames.some((units) => units[0]?.clip === clip && units[0]?.facing === facing);
+            },
+            { clip: walkClip, facing },
+          );
+        }
+        expect(sawWalk, `the ${direction} walk pose reached the renderer`).toBe(true);
+        // One frame finishes the walk rather than a second's worth of them.
+        await page.clock.fastForward(2000);
+        await page.clock.resume();
         await waitForIdle(page);
         await expect
           .poll(() =>

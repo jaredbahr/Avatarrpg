@@ -1,7 +1,7 @@
 import { expect, test } from '@playwright/test';
 import { allowSoftwareWebgl } from './budget';
 import { enterNode, resetStorage, startGame, waitForIdle } from './helpers';
-import { screenshotPixels } from './pixels';
+import { pixelsFromDataUrl } from './pixels';
 import type { MapView } from '../src/render/view';
 
 for (const renderer of ['canvas', 'webgl']) {
@@ -118,28 +118,40 @@ for (const renderer of ['canvas', 'webgl']) {
     await page.getByRole('button', { name: 'Follow party', exact: true }).click();
     const talk = page.getByRole('button', { name: /^Talk/ });
     await expect(talk).toContainText('Gao');
+    /*
+     * Both captures are drawn and read back inside one turn, so no compositor
+     * step and no other frame can land between them. A screenshot cannot make
+     * that promise: the page may present another frame, or resize the board,
+     * while the capture is on its way, and on a software rasteriser that window
+     * is seconds wide. Run 35568889528 measured this probe at 15 and then 146
+     * levels of difference on WebKit, where 3 are allowed, because the two ring
+     * states were read off two different frames.
+     */
     const probe = await page.evaluate(() => {
       const app = window.fnt!.app;
-      const scene = (app as unknown as { scene: { renderer: { draw(view: MapView): void } } })
-        .scene;
-      const draw = scene.renderer.draw.bind(scene.renderer);
-      const win = window as Window & { hideGroundRing?: boolean; ringProbePresented?: boolean };
-      // The probe freezes time already. Present each ring state once so software
-      // WebGL does not redraw an identical scene throughout screenshot capture.
-      let lastHidden: boolean | undefined;
-      // The two captures must differ only by the ring, so the second draw reuses
-      // the first frame's view verbatim. Rebuilding it lets an idle clip or a
-      // settling follower move actor pixels between the captures, and the probe
-      // then compares two different frames rather than two ring states.
-      let frozen: MapView | null = null;
-      scene.renderer.draw = (view) => {
-        const hidden = Boolean(win.hideGroundRing);
-        if (hidden === lastHidden) return;
-        lastHidden = hidden;
-        frozen ??= { ...view, time: 1000, selectedUnitId: null };
-        draw({ ...frozen, activeUnitId: hidden ? null : frozen.activeUnitId });
-        win.ringProbePresented = hidden;
+      const renderer = (
+        app as unknown as {
+          scene: {
+            renderer: {
+              camera: unknown;
+              lastView: MapView | null;
+              backend: { draw(view: MapView, camera: unknown): void };
+            };
+          };
+        }
+      ).scene.renderer;
+      const view = renderer.lastView;
+      const canvas = document.querySelector<HTMLCanvasElement>('.map-canvas');
+      if (!view || !canvas) throw new Error('the board has not been drawn yet');
+      // One draw per ring state, read back before the turn ends: the drawing
+      // buffer still holds what that draw wrote. Both draws share one view, so
+      // the ring is the only thing that can differ between the two.
+      const capture = (activeUnitId: string | null) => {
+        renderer.backend.draw({ ...view, activeUnitId }, renderer.camera);
+        return canvas.toDataURL('image/png');
       };
+      const withRing = capture(view.activeUnitId);
+      const withoutRing = capture(null);
       const camera = app.rendererCamera()!;
       const m = camera.groundTransform;
       // Mira stands one diagonal step in front of the leader. Her upper torso
@@ -147,43 +159,24 @@ for (const renderer of ['canvas', 'webgl']) {
       const x = 11.5 * 64,
         y = 5.5 * 64;
       return {
+        withRing,
+        withoutRing,
+        // The crop is read in the canvas' own device pixels.
+        scale: canvas.width / canvas.getBoundingClientRect().width,
         x: m.a * x + m.c * y + m.tx,
         y: m.b * x + m.d * y + m.ty - (54 * camera.tilePx) / 64,
       };
     });
-    const canvas = page.locator('.map-canvas');
     expect(Number.isFinite(probe.x) && Number.isFinite(probe.y)).toBe(true);
-    /*
-     * The renderer draws when the ring state changes, but the compositor
-     * presents on its own schedule, and a screenshot taken in between returns
-     * the frame before the draw. On a software rasteriser that window is wide
-     * enough to capture the previous ring state, which reads as the ring
-     * covering Mira. Two animation frames put the capture after the present.
-     */
-    const presented = () =>
-      page.evaluate(
-        () =>
-          new Promise<void>((resolve) => {
-            requestAnimationFrame(() => requestAnimationFrame(() => resolve()));
-          }),
-      );
-    await page.waitForFunction(
-      () => (window as Window & { ringProbePresented?: boolean }).ringProbePresented === false,
-    );
-    await presented();
-    const withRing = await screenshotPixels(canvas);
-    await page.evaluate(() => {
-      (window as Window & { hideGroundRing?: boolean }).hideGroundRing = true;
-    });
-    await page.waitForFunction(
-      () => (window as Window & { ringProbePresented?: boolean }).ringProbePresented === true,
-    );
-    await presented();
-    const withoutRing = await screenshotPixels(canvas);
+    // Hiding the ring has to change the board, or the crop below would pass
+    // without measuring anything.
+    expect(probe.withRing, 'hiding the ring must change the board').not.toBe(probe.withoutRing);
+    const withRing = pixelsFromDataUrl(probe.withRing);
+    const withoutRing = pixelsFromDataUrl(probe.withoutRing);
     for (let dy = -1; dy <= 1; dy++)
       for (let dx = -2; dx <= 2; dx++) {
-        const a = withRing.at(probe.x + dx, probe.y + dy);
-        const b = withoutRing.at(probe.x + dx, probe.y + dy);
+        const a = withRing.at((probe.x + dx) * probe.scale, (probe.y + dy) * probe.scale);
+        const b = withoutRing.at((probe.x + dx) * probe.scale, (probe.y + dy) * probe.scale);
         expect(a).not.toBeNull();
         expect(b).not.toBeNull();
         if (!a || !b) throw new Error('Occlusion probe is outside the canvas');
