@@ -57,6 +57,35 @@ export const BA_DAN_EXTERIOR_APRON = {
   width: (BA_DAN_APRON_MAP.width + BA_DAN_APRON_MAP.height + 4 * BA_DAN_APRON_DEPTH) * 64,
   height: (BA_DAN_APRON_MAP.width + BA_DAN_APRON_MAP.height + 4 * BA_DAN_APRON_DEPTH) * 32,
 } as const;
+/**
+ * The ring ships as bands, not as one plate: its bounding box is 3200 pixels
+ * wide against the 2048-pixel texture the device matrix promises, and 84.8% of
+ * it is clear. These are the ring's pixels, in plate coordinates, from
+ * `scripts/art/lib/apron-bands.ts`; the packer cuts the same rectangles, and
+ * `scripts/art/apron-plates.test.ts` pins the table, the cut and the shipped
+ * files together.
+ */
+export const BA_DAN_APRON_BANDS = [
+  { x: 1024, y: 0, width: 640, height: 160 },
+  { x: 512, y: 160, width: 832, height: 256 },
+  { x: 1344, y: 160, width: 832, height: 256 },
+  { x: 0, y: 416, width: 832, height: 256 },
+  { x: 1856, y: 416, width: 832, height: 256 },
+  { x: 0, y: 672, width: 832, height: 256 },
+  { x: 2368, y: 672, width: 832, height: 256 },
+  { x: 512, y: 928, width: 832, height: 256 },
+  { x: 2368, y: 928, width: 832, height: 256 },
+  { x: 1024, y: 1184, width: 832, height: 256 },
+  { x: 1856, y: 1184, width: 832, height: 256 },
+  { x: 1536, y: 1440, width: 640, height: 160 },
+] as const;
+export const BA_DAN_APRON_PIECES: readonly SceneImage[] = BA_DAN_APRON_BANDS.map((band, index) => ({
+  url: `${root}exterior-apron-${index}.webp`,
+  x: BA_DAN_EXTERIOR_APRON.x + band.x,
+  y: BA_DAN_EXTERIOR_APRON.y + band.y,
+  width: band.width,
+  height: band.height,
+}));
 
 /** Two canopy wings frame the market court; only their trunks block walking. */
 export const BA_DAN_COURT_TREES = [
@@ -164,14 +193,6 @@ function canalBanks(): SceneImage {
   };
 }
 
-/** Painted last: it is transparent everywhere the board can be walked. */
-function exteriorApron(): SceneImage {
-  return {
-    url: `${root}exterior-apron.webp`,
-    ...BA_DAN_EXTERIOR_APRON,
-  };
-}
-
 /** Complete upright house: source foundation's foremost corner is at 43.2%, 99.5%. */
 function house(
   id: string,
@@ -231,7 +252,8 @@ export const BA_DAN_SCENE: MapScene = {
       height: ((BA_DAN_NORTH_FRINGE.width + BA_DAN_NORTH_FRINGE.depth) * 64 * 267) / 512,
     },
     canalBanks(),
-    exteriorApron(),
+    // Painted last: transparent everywhere the board can be walked.
+    ...BA_DAN_APRON_PIECES,
   ],
   scenery: [
     house('gao-house', 6, 1, 4, 3),

@@ -14,6 +14,7 @@ import {
   BA_DAN_COURTYARD_FOOTPRINTS,
   BA_DAN_COURT_TREES,
   BA_DAN_APRON_MAP,
+  BA_DAN_APRON_PIECES,
   BA_DAN_EXTERIOR_APRON,
   BA_DAN_SCENE,
 } from './baDan';
@@ -21,10 +22,25 @@ import { buildGrid, reachable, posKey, tileAt } from '../../core/rules/grid';
 
 it('carries the village ground outside the rim, painted after every local piece', () => {
   expect(BA_DAN_APRON_MAP).toEqual({ width: BA_DAN_VILLAGE.width, height: BA_DAN_VILLAGE.height });
-  expect(BA_DAN_SCENE.ground.at(-1)).toEqual({
-    url: 'art/maps/ba-dan-scene/exterior-apron.webp',
-    ...BA_DAN_EXTERIOR_APRON,
-  });
+  // The apron is the ring cut into bands, each one a piece of its own; the ring
+  // itself is still the single box `BA_DAN_EXTERIOR_APRON` describes.
+  expect(BA_DAN_EXTERIOR_APRON.width, 'one plate cannot hold the ring').toBeGreaterThan(2048);
+  expect(BA_DAN_APRON_PIECES.length).toBeGreaterThan(1);
+  for (const piece of BA_DAN_APRON_PIECES) {
+    expect(piece.width, `${piece.url} fits an iPad texture`).toBeLessThanOrEqual(2048);
+    expect(piece.height).toBeLessThanOrEqual(2048);
+    expect(piece.x, `${piece.url} stays on the ring`).toBeGreaterThanOrEqual(
+      BA_DAN_EXTERIOR_APRON.x,
+    );
+    expect(piece.y).toBeGreaterThanOrEqual(BA_DAN_EXTERIOR_APRON.y);
+    expect(piece.x + piece.width).toBeLessThanOrEqual(
+      BA_DAN_EXTERIOR_APRON.x + BA_DAN_EXTERIOR_APRON.width,
+    );
+    expect(piece.y + piece.height).toBeLessThanOrEqual(
+      BA_DAN_EXTERIOR_APRON.y + BA_DAN_EXTERIOR_APRON.height,
+    );
+  }
+  expect(BA_DAN_SCENE.ground.slice(-BA_DAN_APRON_PIECES.length)).toEqual([...BA_DAN_APRON_PIECES]);
 });
 
 let decodedGround: Map<string, ImageData>;

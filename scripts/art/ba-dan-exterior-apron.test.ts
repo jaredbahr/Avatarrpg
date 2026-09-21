@@ -1,12 +1,9 @@
-import { readFileSync } from 'node:fs';
 import { expect, it } from 'vitest';
 import { TERRAIN_STYLES } from '../../src/render/palettes';
 import { pixelAt, parseHex } from './lib/image';
-import { encodeWebp } from './lib/webp';
 import {
   APRON_FADE,
   MATERIAL_REACH,
-  OUTPUT,
   apronDepth,
   apronLogical,
   apronPixel,
@@ -16,9 +13,10 @@ import {
 const distance = (a: readonly number[], b: readonly number[]): number =>
   Math.hypot((a[0] ?? 0) - (b[0] ?? 0), (a[1] ?? 0) - (b[1] ?? 0), (a[2] ?? 0) - (b[2] ?? 0));
 
-it('ships a reproducible apron that never paints a playable pixel', async () => {
+// The shipped files are the ring cut into bands; `apron-plates.test.ts` proves
+// that cut byte-for-byte. These are the ring's own promises.
+it('packs an apron that never paints a playable pixel', () => {
   const image = packApron();
-  expect(Buffer.from(await encodeWebp(image, 82, true))).toEqual(readFileSync(OUTPUT));
 
   let inside = 0,
     beyond = 0,

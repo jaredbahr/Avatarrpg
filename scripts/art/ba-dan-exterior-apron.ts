@@ -13,16 +13,22 @@
  *
  * npx tsx scripts/art/ba-dan-exterior-apron.ts
  */
-import { mkdirSync, writeFileSync } from 'node:fs';
 import { BA_DAN_VILLAGE } from '../../src/content/maps/village';
-import { BA_DAN_APRON_MAP, BA_DAN_EXTERIOR_APRON } from '../../src/content/scenes/baDan';
+import {
+  BA_DAN_APRON_BANDS,
+  BA_DAN_APRON_MAP,
+  BA_DAN_EXTERIOR_APRON,
+} from '../../src/content/scenes/baDan';
 import { TERRAIN_STYLES } from '../../src/render/palettes';
 import { tileNoise } from '../../src/render/painters/shapes';
+import { writeApronPlates } from './lib/apron-plates';
 import { newImage, parseHex, pixelAt, setPixel } from './lib/image';
 import type { Image } from './lib/image';
-import { encodeWebp } from './lib/webp';
 
-export const OUTPUT = 'public/art/maps/ba-dan-scene/exterior-apron.webp';
+/** The bands are written here, one file per entry in `BA_DAN_APRON_BANDS`. */
+export const DIRECTORY = 'public/art/maps/ba-dan-scene';
+export const STEM = 'exterior-apron';
+export const QUALITY = 82;
 /** Terrain is fully faded out by this far outside the rim, in logical tiles. */
 export const APRON_FADE = 2.2;
 /** The outer cell's road or paving is carried this far before meadow takes over. */
@@ -191,6 +197,11 @@ export function packApron(): Image {
 }
 
 if (process.argv[1]?.endsWith('ba-dan-exterior-apron.ts')) {
-  mkdirSync('public/art/maps/ba-dan-scene', { recursive: true });
-  writeFileSync(OUTPUT, await encodeWebp(packApron(), 82, true));
+  await writeApronPlates({
+    ring: packApron(),
+    bands: BA_DAN_APRON_BANDS,
+    directory: DIRECTORY,
+    stem: STEM,
+    quality: QUALITY,
+  });
 }

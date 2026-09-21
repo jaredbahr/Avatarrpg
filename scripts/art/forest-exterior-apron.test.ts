@@ -1,8 +1,8 @@
-import { readFileSync } from 'node:fs';
 import { expect, it } from 'vitest';
 import { FOREST_ROAD } from '../../src/content/maps/combat';
 import {
   FOREST_APRON_MAP,
+  FOREST_APRON_PIECES,
   FOREST_EXTERIOR_APRON,
   FOREST_ROAD_SCENE,
 } from '../../src/content/scenes/forestRoad';
@@ -10,7 +10,6 @@ import {
   APRON_FADE,
   APRON_SEAM,
   GUARD_ALPHA,
-  OUTPUT,
   apronDepth,
   apronLogical,
   baseField,
@@ -19,7 +18,6 @@ import {
   packApron,
 } from './forest-exterior-apron';
 import { pixelAt, type Image } from './lib/image';
-import { encodeWebp } from './lib/webp';
 
 const plates = await loadBasePlates();
 const field = baseField(plates);
@@ -42,9 +40,9 @@ function apronAt(image: Image, x: number, y: number): readonly number[] {
 const distance = (a: readonly number[], b: readonly number[]): number =>
   Math.hypot((a[0] ?? 0) - (b[0] ?? 0), (a[1] ?? 0) - (b[1] ?? 0), (a[2] ?? 0) - (b[2] ?? 0));
 
-it('ships a reproducible apron that never overpaints authored ground', async () => {
-  expect(Buffer.from(await encodeWebp(apron, 86, true))).toEqual(readFileSync(OUTPUT));
-
+// The shipped files are the ring cut into bands; `apron-plates.test.ts` proves
+// that cut byte-for-byte. These are the ring's own promises.
+it('packs an apron that never overpaints authored ground', () => {
   let inside = 0,
     beyond = 0,
     opaque = 0,
@@ -73,10 +71,9 @@ it('ships a reproducible apron that never overpaints authored ground', async () 
 
 it('is pinned to the map it surrounds and to the scene that paints it', () => {
   expect(FOREST_APRON_MAP).toEqual({ width: FOREST_ROAD.width, height: FOREST_ROAD.height });
-  expect(FOREST_ROAD_SCENE.ground.at(-1)).toEqual({
-    url: 'art/maps/forest-scene/exterior-apron.webp',
-    ...FOREST_EXTERIOR_APRON,
-  });
+  expect(FOREST_ROAD_SCENE.ground.slice(-FOREST_APRON_PIECES.length)).toEqual([
+    ...FOREST_APRON_PIECES,
+  ]);
   // The plate is the rotated bounding box of the band, so its own corners sit
   // outside it; what has to hold is that the whole band has somewhere to land.
   for (const point of [
