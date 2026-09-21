@@ -4,7 +4,7 @@ import type { Page, TestInfo } from '@playwright/test';
 import { test } from './fixtures';
 import { BEATS, capturedOn } from './beats';
 import type { Beat, BeatContext } from './beats';
-import { waitForIdle } from '../helpers';
+import { pauseClock, waitForIdle } from '../helpers';
 import { settleCurtain } from './stage';
 
 /**
@@ -127,25 +127,10 @@ class Stage implements BeatContext {
     await waitForIdle(this.page);
   }
 
-  /**
-   * `pauseAt` needs a moment that is still ahead of the fake clock, and the
-   * clock keeps pace with real time until it is paused. On software GL a
-   * frame takes a sixth of a second, so the gap between reading the clock
-   * and pausing it can be wider than any fixed margin; read, try, widen.
-   */
+  /** `pauseClock` reads, tries and widens: see its note on slow frames. */
   private async pause(): Promise<void> {
-    let margin = 500;
-    for (let attempt = 0; ; attempt++) {
-      const now = await this.page.evaluate(() => Date.now());
-      try {
-        await this.page.clock.pauseAt(now + margin);
-        this.paused = true;
-        return;
-      } catch (error) {
-        if (attempt >= 4) throw error;
-        margin *= 2;
-      }
-    }
+    await pauseClock(this.page);
+    this.paused = true;
   }
 }
 

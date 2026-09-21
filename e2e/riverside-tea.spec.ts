@@ -1,6 +1,13 @@
 import { expect, test } from '@playwright/test';
 import { allowSoftwareWebgl } from './budget';
-import { enterNode, resetStorage, settleLayout, startGame, waitForIdle } from './helpers';
+import {
+  enterNode,
+  pauseClock,
+  resetStorage,
+  settleLayout,
+  startGame,
+  waitForIdle,
+} from './helpers';
 
 for (const backend of ['canvas', 'webgl']) {
   test(`tea holds on the porch and yields to walking and forms (${backend})`, async ({ page }) => {
@@ -33,7 +40,7 @@ for (const backend of ['canvas', 'webgl']) {
      * require the store to have followed the camera in the same turn the resize
      * did; the render loop cannot be the thing that makes it true.
      */
-    await page.clock.pauseAt(await page.evaluate(() => Date.now() + 1000));
+    await pauseClock(page);
     const followed = await page.evaluate(() => {
       const life = document.querySelector<HTMLCanvasElement>('.village-life-canvas');
       const scene = (
@@ -73,14 +80,17 @@ for (const backend of ['canvas', 'webgl']) {
      * where a frame takes long enough that every retry below stayed inside the
      * same lag — and the sample it fed was an empty crop.
      *
-     * Do not ask for the foot itself to be inside the stage. Measured on a
-     * settled camera at this viewport the foot sits at y 475 in one run and
-     * y 524 on the same 1280x485 stage in another, with a stable camera and a
-     * sample that still contains the figure in both: the crop reaches 55 px
-     * above the foot, so it reads the seated figure's head and shoulders and
-     * the fixture asserts on ink, not framing. A predicate that demands the
-     * whole crop land inside the stage would never be true and would only time
-     * out. What the crop actually needs is the state the drawing was made in.
+     * The break itself centres the camera on the seat it fills — that is what
+     * `VillageLife.update` takes the camera for — so the pair sits inside the
+     * stage instead of below its bottom edge: measured at this viewport the
+     * foot sits at y 259 on a 485 px stage, where run 35578795966 drew the same
+     * pair at y 547.3 and fed the crop a blank. A viewport resize afterwards
+     * leaves the camera at the map's own lower limit rather than on the seat,
+     * which is 135 px below the middle of the stage instead of a fixed offset
+     * from its bottom: the foot measured y 338, 435 and 518 on 405, 599 and
+     * 765 px stages, and the 110 px crop stayed inside the stage in all four,
+     * with the figure inked in each. The assertion below owns that claim,
+     * because a crop that leaves the stage reads as a missing figure.
      *
      * The clock is faked from here on, so a frame is published when the test
      * asks for one and not before: a `waitForFunction` parked on
@@ -107,6 +117,10 @@ for (const backend of ['canvas', 'webgl']) {
           store: `${canvas.width}x${canvas.height}@${dpr}`,
           box: `${canvas.clientWidth}x${canvas.clientHeight}`,
           key: `${x.toFixed(2)}:${y.toFixed(2)}:${canvas.clientWidth}x${canvas.clientHeight}`,
+          footY: y,
+          stage: canvas.clientHeight,
+          // `sampleTeaCel` crops 110 px tall, centred on the same foot.
+          cropOnStage: y - 55 >= 0 && y + 55 <= canvas.clientHeight,
           painted:
             Math.abs(canvas.width / dpr - canvas.clientWidth) < 1 &&
             Math.abs(canvas.height / dpr - canvas.clientHeight) < 1,
@@ -132,6 +146,10 @@ for (const backend of ['canvas', 'webgl']) {
         contentType: 'application/json',
       });
     }
+    expect(
+      last?.cropOnStage,
+      `the veranda keeps the seated pair on stage: foot y ${last?.footY} of ${last?.stage}`,
+    ).toBe(true);
     /*
      * The seated figure is drawn by the shared 2D life layer, above a board
      * that differs by backend. Comparing two composited page captures instead

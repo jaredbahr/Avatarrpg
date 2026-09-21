@@ -1,6 +1,6 @@
 import { expect, test } from '@playwright/test';
 import { allowSoftwareWebgl } from './budget';
-import { enterNode, resetStorage, startGame, waitForIdle } from './helpers';
+import { enterNode, pauseClock, resetStorage, startGame, waitForIdle } from './helpers';
 import type { MapView, RenderUnit } from '../src/render/view';
 
 for (const renderer of ['canvas', 'webgl'] as const) {
@@ -80,8 +80,12 @@ for (const renderer of ['canvas', 'webgl'] as const) {
          * about the wiring. Pause the clock at the dispatch and publish the
          * frames from this side, so the poses the renderer sees are the app's
          * own state and not the runner's frame rate.
+         *
+         * `pauseClock` re-reads and widens rather than trusting one margin:
+         * the frame the runner is painting when this asks for the pause can
+         * outlast the gap between the read and the request.
          */
-        await page.clock.pauseAt(await page.evaluate(() => Date.now() + 1000));
+        await pauseClock(page);
         await page.evaluate((delta) => {
           const app = window.fnt!.app;
           const pos = app.state!.location.pos;
