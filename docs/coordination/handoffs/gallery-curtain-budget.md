@@ -50,9 +50,14 @@ Two things about that wait, no assertion:
   114 files**.
 - The beat itself, staged locally on the patched head:
   `npx playwright test -c playwright.gallery.config.ts --project=ipad-webgl
-  -g 34-bandit-portrait` → passed in 14.2 s. This host is GPU-backed, so it
+-g 34-bandit-portrait` → passed in 14.2 s. This host is GPU-backed, so it
   cannot reproduce the runner's starvation; CI is the arbiter, exactly as
   `release-head-e2e-repair.md` records for the `pauseAt` race.
+- **The first push of this repair failed its own `format:check`**: this file was
+  written after the local `npm run verify` and prettier re-wraps these tables.
+  Run 35666027570 died in 62 s in `Typecheck, lint, unit tests`, and both
+  aggregate jobs reported `skipped`, so no e2e or gallery shard ran. The follow-up
+  push is the formatted file only. Write the handoff, then verify, then push.
 
 ## Next action
 
