@@ -12,7 +12,14 @@
 import { mkdirSync, writeFileSync } from 'node:fs';
 import { expect, test } from '@playwright/test';
 import type { Page } from '@playwright/test';
-import { enterNode, resetStorage, settleLayout, startGame, waitForIdle } from './helpers';
+import {
+  enterNode,
+  resetStorage,
+  settleLayout,
+  startGame,
+  takeTurn,
+  waitForIdle,
+} from './helpers';
 
 async function zoom(page: Page, target: number): Promise<void> {
   const current = await page.evaluate(() => window.fnt?.app.rendererCamera()?.tilePx);
@@ -80,6 +87,42 @@ for (const renderer of ['canvas', 'webgl'] as const) {
       await page.screenshot({ path: `${folder}/rim-${tx}-${ty}.png` });
     }
     writeFileSync(`${folder}/errors.json`, JSON.stringify(errors, null, 2));
+    expect(errors).toEqual([]);
+  });
+}
+
+/*
+ * The rim probe above is exploration. This one answers the sibling question the
+ * forest apron handoff left open: does the apron hold while the road is being
+ * fought over, where the encounter camera, not the follow camera, owns the
+ * frame? It captures the fight's own framing, then pulls out and centres on the
+ * two board edges the fight sits nearest — the west exit and the north rim.
+ */
+for (const renderer of ['canvas', 'webgl'] as const) {
+  test(`${renderer} forest combat framing`, async ({ page }) => {
+    test.setTimeout(240_000);
+    const folder = `.shots/forest-apron/${renderer}`;
+    mkdirSync(folder, { recursive: true });
+    const errors: string[] = [];
+    page.on('pageerror', (e) => errors.push(e.message));
+    await resetStorage(page, `?renderer=${renderer}`);
+    await startGame(page, ['Sura', 'Riko', 'Kaya'], ['sura', 'riko', 'kaya'], 'forest-apron-fight', {
+      reduceMotion: false,
+    });
+    await enterNode(page, 'battle_forest_road');
+    await takeTurn(page);
+    await waitForIdle(page);
+    await settleLayout(page);
+    await page.screenshot({ path: `${folder}/combat-fit.png` });
+    await zoom(page, 40);
+    for (const [tx, ty] of [
+      [0, 4],
+      [9, 0],
+    ] as const) {
+      await centerTile(page, tx, ty);
+      await page.screenshot({ path: `${folder}/combat-rim-${tx}-${ty}.png` });
+    }
+    writeFileSync(`${folder}/combat-errors.json`, JSON.stringify(errors, null, 2));
     expect(errors).toEqual([]);
   });
 }
