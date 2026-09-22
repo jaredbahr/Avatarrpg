@@ -76,10 +76,10 @@ red against green.
 The puddle at `(5,6)` on the procedural fallback, 3px average at the tile centre
 through the camera, both paintings removed:
 
-| backend | before | after | blue − red |
-| --- | --- | --- | --- |
-| canvas | `134/142/128` | `92/127/133` | −6 → **+41** |
-| webgl | `128/139/122` | `84/122/128` | −6 → **+44** |
+| backend | before        | after        | blue − red   |
+| ------- | ------------- | ------------ | ------------ |
+| canvas  | `134/142/128` | `92/127/133` | −6 → **+41** |
+| webgl   | `128/139/122` | `84/122/128` | −6 → **+44** |
 
 The two backends agree within 8 channels on every channel. Grass at `(3,1)` is
 unchanged in character: canvas `107/152/74`, webgl `105/149/72`.
@@ -93,7 +93,7 @@ unchanged in character: canvas `107/152/74`, webgl `105/149/72`.
   a live water tint over an authored rubble image, the nearest neighbour to this
   change.
 - `npx playwright test -c playwright.gallery.config.ts --project=ipad-webgl -g
-  "04-board-idle|08-water-whip|16-grid-on"` — 3 passed.
+"04-board-idle|08-water-whip|16-grid-on"` — 3 passed.
 
 ### Captures
 
