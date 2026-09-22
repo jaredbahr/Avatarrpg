@@ -58,7 +58,8 @@ savings or model capability. Do not copy unverified pricing claims into budgets.
 Jared's standing instruction: all completed work on this project merges
 automatically after its checks pass. Do not ask him to approve each merge.
 
-- Work on a branch, run `npm run verify`, and open a pull request into `main`.
+- Work on a branch, run `npm run ci:local` and get green before any push, then
+  open a pull request into `main`.
 - Keep unfinished work in a draft. Mark completed work ready for review and
   enable auto-merge using a **merge commit**, preserving individual commits.
 - Required CI checks are `Typecheck, lint, unit tests`,

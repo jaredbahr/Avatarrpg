@@ -25,6 +25,7 @@ Other scripts:
 | Command            | What it does                                                       |
 | ------------------ | ------------------------------------------------------------------ |
 | `npm run verify`   | typecheck + lint + format + unit/content/sim tests (before a PR)   |
+| `npm run ci:local` | full CI verify job: typecheck, lint, format, tests, build, budgets |
 | `npm test`         | vitest: rules, content validation, deterministic combat sim        |
 | `npm run balance`  | headless AI-vs-AI win-rate report per encounter                    |
 | `npm run build`    | production build into `dist/` (includes service worker + manifest) |
@@ -365,13 +366,16 @@ Real tuning happens after the kids play it. These are the numbers to argue with.
 
 ## Contributing notes
 
-- `npm run verify` must be green before pushing.
+- Run `npm run ci:local` and get green before any push. It mirrors the CI verify
+  job (typecheck, lint, format, tests, build, budgets, art validation, balance).
+  `npm run verify` is the faster subset (no build, budgets or art validation).
 - CI runs for pull requests, `main` pushes and manual dispatch; feature pushes
   do not also start a duplicate run. Required browser/gallery suites wait for
   verification to pass, and all three required checks still gate merging.
-- Normal Pages deployments build the game only. Download the seven-day CI
-  gallery artifact for review; optional manual Pages gallery publication is
-  described in [the gallery guide](docs/gallery.md).
+- The screenshot gallery is captured only on the nightly CI run (when main moved
+  that day) or on a manual `workflow_dispatch` with `run_gallery`, and the
+  artifact is retained for one day. The details, including manual publication,
+  are in [the gallery guide](docs/gallery.md).
 - Content is validated in CI, including dangling story `next` ids and ability
   references — a typo in `src/content/**` fails the build rather than the game.
 - The simulator test asserts every encounter terminates, produces no NaN or
