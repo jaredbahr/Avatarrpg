@@ -18,6 +18,38 @@ are supporting vistas or temporary prototypes, not the final interactive world.
 Judge assets together in actual play for perspective, scale, palette, grounding,
 occlusion and readable paths; individually attractive images are insufficient.
 
+## Visual contract (read first)
+
+A generator or reviewer that only reads this file must still land on the
+approved look. Checkable rules, cross-referenced to where each is decided:
+
+- **World model.** Playable spaces are a modular illustrated 2.5D world built
+  from authored ground regions and independent scenery on the real gameplay
+  grid, not complete map paintings — [ADR 0039](adr/0039-modular-illustrated-world.md),
+  [official world model](player-view-target.md#official-world-construction-model).
+- **Projection.** The shipped renderer draws an axis-aligned logical grid with
+  calibrated, oblique-view painted ground and scenery references. Never
+  rotate or skew finished art to reconcile it with another projection; a
+  projection change needs its own implementation ADR, shared forward/inverse
+  transforms and both-backend hit-testing coverage — see
+  [player-view-target.md](player-view-target.md#what-the-pictures-do-not-decide).
+  This is separate from the character camera in the table below (see the note
+  there).
+- **Outline.** Uniform dark brown ink, `#1b1410`, on every asset. Never black,
+  never tapered.
+- **Shading.** Exactly two flat tones per material (base and shadow) plus one
+  thin pale rim light on the lit edge. No gradients, no photographic texture,
+  no lens effects.
+- **Palette.** Every colour traces to `src/render/palettes.ts` and
+  `src/styles/base.css`. A colour not in those files is drift, not a variant.
+- **Baseline and scale.** Feet sit on the 85% baseline within 2 px. Every
+  asset must stay readable at 40 px tall.
+- **Grid seams.** Square construction seams should disappear in normal
+  presentation; the tactical overlay is the exception, not the default view.
+- **HUD.** The world occupies most of the screen; a compact dock holds
+  portraits, health and touch actions, per
+  [player-view-target.md](player-view-target.md#what-the-approval-means).
+
 ## The look in one paragraph
 
 Flat cel shading with clean ink lines and painterly ground. Characters read as
@@ -38,6 +70,14 @@ survive being 40 pixels tall.
 | Background | Flat `#00ff00`, no ground shadow, no cast shadow. The game draws its own ground shadow under every unit                               |
 | Facing     | One facing only. Enemies are mirrored, so no lettering or asymmetric emblems that would read wrong flipped                            |
 | Margins    | At least 8 px of empty frame on every side after trim; effects that extend past the frame belong to the FX layer                      |
+
+This View row is the generation camera for character sprites only — how a unit
+is posed and lit in its own frame. It does not describe the world projection.
+Ground, scenery and level art follow the axis-aligned grid and oblique painted
+references from [ADR 0039](adr/0039-modular-illustrated-world.md) and
+[player-view-target.md](player-view-target.md#what-the-pictures-do-not-decide);
+never rotate or skew a finished sprite to match that projection, and never use
+this row to justify rotating or skewing world art instead.
 
 ## Palette
 
