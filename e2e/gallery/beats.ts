@@ -24,6 +24,7 @@ import {
   endTurn,
   enemies,
   fellEnemies,
+  focusStagedBlast,
   giveTurn,
   grantAbility,
   loadDice,
@@ -57,6 +58,23 @@ export const PARTY = ['kaya', 'bo', 'nilak', 'nima'];
 
 /** Where a filmstrip samples the playback, in animator milliseconds after the act. */
 export const CAST_TIMES = [80, 200, 320, 560, 900];
+
+/**
+ * The storm's own filmstrip schedule: every `CAST_TIMES` sample, plus one
+ * inside the cels this ability actually shows.
+ *
+ * `lightning_storm` winds up for `TIMING.windUp` (260 ms) and its impact is
+ * emitted at `releaseAt + release * 0.5 + hitStop * 0.5` — 375 ms — with the
+ * bolt strokes running 240 ms from there and the staggered area rings a little
+ * past that. The shared schedule's 320 ms sample therefore lands in the
+ * gather, and the 2x projects keep only the *middle* sample of the schedule
+ * they are given: the beat that promises the biggest effect in the game had a
+ * still of bare floor. A sixth sample also moves that middle one to `times[3]`
+ * (560 ms), inside the same window. Beat-local rather than a change to
+ * `CAST_TIMES`, so no other beat's capture moves.
+ */
+export const STORM_TIMES = [80, 200, 320, 560, 620, 900];
+
 /** A six-tile village walk lasts 660 ms: mid-stride twice, arriving, settled. */
 export const WALK_TIMES = [120, 330, 540, 700, 1000];
 
@@ -592,7 +610,15 @@ export const BEATS: readonly Beat[] = [
       await loadDice(ctx.page);
       await settleLayout(ctx.page, ctx.settleTimeout);
       await ctx.shoot('The quarry floor at rest, with the frame-time readout.', 'floor');
-      await ctx.filmstrip(this.note, CAST_TIMES, async () => {
+      // The floor still is a party shot on purpose. The filmstrip is about the
+      // storm, and the camera has to own the impact area first: the default
+      // framing sits on the party five tiles west of the driller, and a 5x5
+      // blast that is half off the canvas is not "the biggest effect in the
+      // game". Same repair as the grumbler portrait beat. Kaya is a witness,
+      // so a framing that drops the caster fails the canary, not the picture.
+      await focusStagedBlast(ctx.page, boss.id, 2, ctx.settleTimeout, [kaya.id]);
+      await settleLayout(ctx.page, ctx.settleTimeout);
+      await ctx.filmstrip(this.note, STORM_TIMES, async () => {
         await cast(ctx.page, kaya.id, 'lightning_storm', boss.pos);
       });
     },

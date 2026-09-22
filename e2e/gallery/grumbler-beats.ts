@@ -56,6 +56,9 @@ export const GRUMBLER_BEATS: readonly Beat[] = [
           panel.getAnimations({ subtree: true }).map((animation) => animation.finished),
         );
         panel.scrollTop = 0;
+        // The body is the dialog's scroll region now; reset it as well.
+        const body = panel.querySelector<HTMLElement>(':scope > .stack');
+        if (body) body.scrollTop = 0;
       });
       await ctx.shoot(this.note, 'inspector');
     },
