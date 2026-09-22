@@ -1,13 +1,49 @@
+# CI cost rule (Jared, 2026-09-21) — read before editing the triggers below.
+#
+# One full run of this workflow fans out to about 13 ubuntu jobs (verify, four
+# Playwright e2e shards, seven gallery shards), bills roughly 250 runner-minutes
+# (about $2), and it ran 172 times on 2026-09-18. Billed Actions went from $0 a
+# day to $67 a day. That cannot be sustained, so:
+#
+#   - `pull_request` runs ONLY the `verify` job (typecheck, lint, format, unit
+#     tests, build, budgets, balance): a few minutes on one runner.
+#   - The browser e2e shards run only on push to `main`, on the nightly
+#     schedule, and on `workflow_dispatch`.
+#   - The gallery shards run only on `workflow_dispatch` (with `run_gallery`)
+#     and on the nightly schedule. Never on `pull_request`, never on a push.
+#   - The nightly run does nothing beyond `verify` unless `main` moved in the
+#     last 24 hours.
+#   - Artifacts keep for one day; Playwright reports upload only on failure.
+#
+# The `e2e` and `gallery` gate jobs keep the names the "Branch check" ruleset
+# requires on `main`. On a pull request they pass on the strength of `verify`
+# alone (their suites are skipped); on every other event they require the
+# suites they gate. A supervisor who wants the full suite on a branch before
+# merging dispatches this workflow once against that branch. Do not re-add the
+# fan-out to `pull_request` or `push`; do not raise retention; budget is under
+# $1 a day of billed Actions for this repository.
+
 name: CI
 
 on:
   push:
     branches: [main]
   pull_request:
+  schedule:
+    # Nightly, 09:00 UTC (04:00 America/Chicago). Skips the suites when `main`
+    # has not moved since the previous night.
+    - cron: '0 9 * * *'
   workflow_dispatch:
+    inputs:
+      run_gallery:
+        description: Also capture the screenshot gallery (seven shards, slow)
+        type: boolean
+        default: false
 
+# A newer run of the same event on the same ref supersedes an older one. The
+# event name is part of the key so a nightly cannot cancel a push run.
 concurrency:
-  group: ci-${{ github.ref }}
+  group: ci-${{ github.event_name }}-${{ github.ref }}
   cancel-in-progress: true
 
 jobs:
@@ -15,8 +51,20 @@ jobs:
     name: Typecheck, lint, unit tests
     runs-on: ubuntu-latest
     timeout-minutes: 10
+    outputs:
+      # `true` when HEAD is younger than 24 hours; the nightly suites key on it.
+      fresh: ${{ steps.fresh.outputs.fresh }}
     steps:
       - uses: actions/checkout@v4
+
+      - name: Has main moved in the last 24 hours?
+        id: fresh
+        run: |
+          if [ -n "$(git log -1 --since='24 hours ago' --format=%H)" ]; then
+            echo "fresh=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "fresh=false" >> "$GITHUB_OUTPUT"
+          fi
 
       - uses: actions/setup-node@v4
         with:
@@ -65,6 +113,9 @@ jobs:
   browser_e2e:
     name: E2E ${{ matrix.label }}
     needs: verify
+    # Never on a pull request (see the cost rule at the top). On the nightly
+    # schedule only when `main` moved since the previous night.
+    if: ${{ github.event_name == 'push' || github.event_name == 'workflow_dispatch' || (github.event_name == 'schedule' && needs.verify.outputs.fresh == 'true') }}
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
@@ -110,26 +161,43 @@ jobs:
         run: npm run e2e -- ${{ matrix.projects }}
 
       - uses: actions/upload-artifact@v4
-        if: ${{ !cancelled() }}
+        # The report is for diagnosing a failure; a green shard needs none.
+        if: ${{ failure() }}
         with:
           name: playwright-report-${{ matrix.artifact }}
           path: playwright-report/
-          retention-days: 7
+          retention-days: 1
 
   e2e:
     name: End-to-end (Chromium touch, WebKit iPad)
-    needs: browser_e2e
+    # Required check on `main`. On a pull request the browser shards are
+    # skipped by design, so this passes when `verify` passed. On every other
+    # event it passes only when every browser shard passed.
+    needs: [verify, browser_e2e]
     if: ${{ always() }}
     runs-on: ubuntu-latest
     steps:
-      - name: Require both browser projects to pass
-        run: test '${{ needs.browser_e2e.result }}' = 'success'
+      - name: Require the browser suites (or, on a pull request, verify alone)
+        run: |
+          echo "event=${{ github.event_name }} verify=${{ needs.verify.result }} browser_e2e=${{ needs.browser_e2e.result }}"
+          if [ '${{ needs.browser_e2e.result }}' = 'success' ]; then
+            exit 0
+          fi
+          if [ '${{ needs.browser_e2e.result }}' = 'skipped' ] && [ '${{ needs.verify.result }}' = 'success' ]; then
+            case '${{ github.event_name }}' in
+              pull_request|schedule) exit 0 ;;
+            esac
+          fi
+          echo "::error::Browser e2e suites did not pass on this event."
+          exit 1
 
   gallery_shards:
     name: Gallery ${{ matrix.label }}
-    # Preserve the required gallery, but spend capture minutes only after the
-    # gameplay suite passes. Failed revisions cannot merge and need no gallery.
+    # Only on an explicit dispatch that asks for it, or on the nightly run when
+    # `main` moved. Never on a pull request or a push (see the cost rule).
+    # Spend capture minutes only after the gameplay suite passes.
     needs: [verify, e2e]
+    if: ${{ needs.e2e.result == 'success' && ((github.event_name == 'workflow_dispatch' && inputs.run_gallery) || (github.event_name == 'schedule' && needs.verify.outputs.fresh == 'true')) }}
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
@@ -193,24 +261,40 @@ jobs:
         run: npm run gallery:capture -- ${{ matrix.projects }}
 
       - uses: actions/upload-artifact@v4
+        # The stills are the deliverable, so a green shard uploads them too;
+        # the aggregate job below merges them and they expire the next day.
         if: ${{ !cancelled() }}
         with:
           name: gallery-shard-${{ matrix.artifact }}
           path: gallery/
-          retention-days: 7
+          retention-days: 1
 
   gallery:
     name: Screenshot gallery
-    needs: gallery_shards
+    # Required check on `main`. The shards are skipped on a pull request and
+    # on a push by design, so this passes when `verify` passed. When the
+    # shards did run, every one of them must have passed.
+    needs: [verify, e2e, gallery_shards]
     if: ${{ always() }}
     runs-on: ubuntu-latest
     steps:
-      - name: Require every gallery shard to pass
-        run: test '${{ needs.gallery_shards.result }}' = 'success'
+      - name: Require every gallery shard (or, when they were skipped, verify)
+        run: |
+          echo "event=${{ github.event_name }} verify=${{ needs.verify.result }} e2e=${{ needs.e2e.result }} gallery_shards=${{ needs.gallery_shards.result }}"
+          if [ '${{ needs.gallery_shards.result }}' = 'success' ]; then
+            exit 0
+          fi
+          if [ '${{ needs.gallery_shards.result }}' = 'skipped' ] && [ '${{ needs.verify.result }}' = 'success' ] && [ '${{ needs.e2e.result }}' = 'success' ]; then
+            exit 0
+          fi
+          echo "::error::Gallery shards did not pass."
+          exit 1
 
       - uses: actions/checkout@v4
+        if: ${{ needs.gallery_shards.result == 'success' }}
 
       - name: Collect the shards
+        if: ${{ needs.gallery_shards.result == 'success' }}
         uses: actions/download-artifact@v4
         with:
           pattern: gallery-shard-*
@@ -218,12 +302,14 @@ jobs:
           merge-multiple: true
 
       - name: Assemble the gallery page
+        if: ${{ needs.gallery_shards.result == 'success' }}
         # One index over every shard, so the reviewer still downloads a single
         # artefact and opens its index.html.
         run: node scripts/gallery-index.mjs
 
       - uses: actions/upload-artifact@v4
+        if: ${{ needs.gallery_shards.result == 'success' }}
         with:
           name: gallery
           path: gallery/
-          retention-days: 7
+          retention-days: 1
