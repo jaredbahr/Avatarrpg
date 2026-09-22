@@ -179,7 +179,11 @@ describe('Animator', () => {
       const a = new Animator(CONTENT, { motionReduced: () => reduced });
       a.push(0, [moved('p0', [4, 3])], [unit('p0', 4, 4)]);
       a.prune(500);
-      expect(a.locomotion(500, 'p0').clip).toBe('idleNorth');
+      // The walk's stop holds the settled pose its facing implies for a beat
+      // before the ready stance is selected; reduce motion collapses the beat.
+      expect(a.locomotion(500, 'p0').clip).toBe(reduced ? 'idleNorth' : 'restNorth');
+      a.prune(600);
+      expect(a.locomotion(600, 'p0').clip).toBe('idleNorth');
       a.push(
         1000,
         [
@@ -223,7 +227,9 @@ describe('Animator', () => {
       expect(a.locomotion(a.finishesAt + 1, 'p0')).toEqual({ clip: 'idle', facing: -1 });
       a.push(a.finishesAt + 10, [moved('p0', [4, 4])], [unit('p0', 4, 3)]);
       a.prune(a.finishesAt + 1);
-      expect(a.locomotion(a.finishesAt + 1, 'p0')).toEqual({ clip: 'idleSouth', facing: 1 });
+      // The southward stop settles facing south, then keeps that facing at rest.
+      expect(a.locomotion(a.finishesAt + 1, 'p0')).toEqual({ clip: 'restSouth', facing: 1 });
+      expect(a.locomotion(a.finishesAt + 300, 'p0')).toEqual({ clip: 'idleSouth', facing: 1 });
     });
   }
 
@@ -352,7 +358,7 @@ describe('Animator', () => {
     }
   });
 
-  it('carries one distance phase across tile boundaries and settles into combat ready stance', () => {
+  it('carries one distance phase across tile boundaries, then settles into combat ready stance', () => {
     const a = animator();
     a.push(0, [moved('p0', [1, 0], [2, 0], [3, 0], [4, 0])], [unit('p0', 0, 0)]);
     let previous = -1;
@@ -364,8 +370,10 @@ describe('Animator', () => {
       previous = phase;
     }
     a.prune(a.finishesAt + 1);
-    expect(a.locomotion(a.finishesAt + 1, 'p0')).toEqual({ clip: 'idle', facing: 1 });
+    // The route's end holds the settled stop pose; the ready stance follows it.
+    expect(a.locomotion(a.finishesAt + 1, 'p0')).toEqual({ clip: 'rest', facing: 1 });
     expect(a.unitPose(a.finishesAt + 1, 'p0')).toBeUndefined();
+    expect(a.locomotion(a.finishesAt + 300, 'p0')).toEqual({ clip: 'idle', facing: 1 });
   });
 
   it('turns to face the way it walks and keeps facing that way', () => {
