@@ -102,3 +102,35 @@ dry underlay. `scripts/art/quarry-route-ground.ts` applies the ramp for future
 packs; `scripts/art/soften-quarry-dirt-join.ts` reproduces it from the approved
 shipped pages when the historical raw source is unavailable. Runtime oil, mud,
 and water remain transparent because the repair only reduces nonzero dirt alpha.
+
+## DL-2 W3 re-key of the Driller floor (2026-09-22)
+
+The Driller floor's three regions no longer come from that six-panel sheet.
+`scripts/art/quarry-route-ground.ts` takes no source argument; it re-derives
+its pixels from the **approved village plates**
+`public/art/maps/ba-dan-scene/western-approach-ground.webp` and
+`courtyard-ground.webp`, read-only, through
+`scripts/art/quarry-village-material.ts`, and applies the ground table in
+`SUBSYSTEMS/dl2-ground-language-plan.md` §3. Reproduce with:
+
+```powershell
+node --import tsx scripts/art/quarry-route-ground.ts driller
+```
+
+Cell-to-page routing, the page origin and the cell keys are unchanged, so all
+three registered rectangles are identical and only bytes moved. What changed is
+that a cell's **material** is now read more finely than its page: `^`/`A` are
+cut-stone block face, `r` is spoil, `o` is limestone cut floor, `m` is path
+wear, and the plain floor is packed earth. Every boundary between two materials
+carries the bible's uniform `#1b1410` ink with a thin pale rim on its up-screen
+side, which is what gives each ledge and hazard diamond an edge for the first
+time. The packed-earth plane carries painted incident — inked spoil heaps and a
+pair of wandering haul ruts in §3's cart-rut tone — so no quarter of the frame
+is bare material.
+
+**The Cutting was not repacked.** Its four regions and `CUTTING_GROUND_REGIONS`
+keep their approved bytes; folding it in is DL-2 W4.
+
+WebP quality for the re-keyed plates is 34 (`QUARRY_GROUND_QUALITY`), shared
+with the gate. `scripts/art/quarry-route-ground.test.ts` pins the shipped bytes
+against the packer, the tone table, the window span and the ink.

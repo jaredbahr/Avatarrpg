@@ -114,12 +114,29 @@ as a gray seam.
 Reproduce the shipped regions with:
 
 ```powershell
-node --import tsx scripts/art/quarry-modular-ground.ts "C:/Users/Jared/.codex/generated_images/01a0b2ee-8d60-7643-be9b-340997ca4ae0/exec-8dcfcdb5-eeb3-485c-a1c7-5cfd6279580d.png"
+node --import tsx scripts/art/quarry-modular-ground.ts
 ```
 
-That raw ImageGen source is deliberately local and ignored under `art/raw/`; it
-is not a tracked runtime asset. The packer records its local registration JSON
-under the same ignored folder and writes only the reviewed WebPs to
+**DL-2 W3 re-key (2026-09-22).** The packer takes no source argument any more.
+It used to tile the reviewed six-panel ImageGen sheet
+`exec-8dcfcdb5-…-5fd6279580d.png`, whose neutral cracked grey is the "fourth
+ground family" of `SUBSYSTEMS/dl2-ground-language-plan.md` §1. The four ground
+regions are now re-derived from the **approved village plates**
+`public/art/maps/ba-dan-scene/western-approach-ground.webp` and
+`courtyard-ground.webp`, read-only, through
+`scripts/art/quarry-village-material.ts` — the same mechanism W2 gave the
+forest. Three materials across the four regions: `limestone` is §3 limestone
+paving, `road` is §3 packed earth with the haul tracks running down its two
+rows, and `earth-west`/`earth-east` are §3 quarry spoil carrying scattered
+inked heaps of cut stone. Every boundary between two materials carries the
+bible's uniform `#1b1410` ink with a thin pale rim on its up-screen side. The
+four registered rectangles are unchanged; only bytes moved, and WebP quality
+for these plates is 34 (`QUARRY_GROUND_QUALITY`), which holds the map family
+inside its 4 MiB budget. `scripts/art/quarry-route-ground.test.ts` pins the
+shipped bytes against the packer.
+
+The packer records its local registration JSON
+under an ignored folder and writes only the reviewed WebPs to
 `public/art/maps/quarry-gate-scene/`. Current partial-ground elevation shading
 is renderer-owned and remains a separate pending correction; this change does
 not alter it.
