@@ -3,6 +3,9 @@
  * steps, in the same order, and stops at the first failure, so a green run here
  * is the evidence a green `verify` job needs. Keep STEPS in sync with that
  * workflow by hand — ci.yml stays the source of truth.
+ *
+ * It assumes Node 22 (what the workflow pins) and a node_modules installed from
+ * the lockfile with `npm ci`; it does not check either.
  */
 import { spawnSync } from 'node:child_process';
 
@@ -25,9 +28,11 @@ const STEPS = [
   },
 ];
 
+let failed = false;
+
 for (const [index, step] of STEPS.entries()) {
   console.log(`\n=== ci:local ${index + 1}/${STEPS.length}: ${step.name} ===`);
-  const { status, error } = spawnSync(step.run, {
+  const { status, signal, error } = spawnSync(step.run, {
     stdio: 'inherit',
     // shell: true resolves npm.cmd on Windows and npm on Linux, so the command
     // strings stay identical to the workflow on both platforms.
@@ -36,14 +41,22 @@ for (const [index, step] of STEPS.entries()) {
   });
   if (error) {
     console.error(`\nci:local could not start "${step.name}": ${error.message}`);
-    process.exit(1);
+    process.exitCode = 1;
+    failed = true;
+    break;
   }
   if (status !== 0) {
     console.error(
-      `\nci:local failed at step ${index + 1}/${STEPS.length} "${step.name}" (exit ${status}).`,
+      `\nci:local failed at step ${index + 1}/${STEPS.length} "${step.name}" (${
+        status === null ? `signal ${signal}` : `exit ${status}`
+      }).`,
     );
-    process.exit(status ?? 1);
+    process.exitCode = status ?? 1;
+    failed = true;
+    break;
   }
 }
 
-console.log(`\nci:local: all ${STEPS.length} steps passed.`);
+if (!failed) {
+  console.log(`\nci:local: all ${STEPS.length} steps passed.`);
+}
