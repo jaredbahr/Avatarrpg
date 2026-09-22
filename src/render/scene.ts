@@ -5,8 +5,26 @@ import type { Camera } from './camera';
 import type { MapView } from './view';
 import { BackdropStore } from './backdrops';
 
+/**
+ * How many distinct scene images stay decoded at once.
+ *
+ * A partial scene paints its authored ground only when *every* ground piece —
+ * and every scenery piece — is resident, because a board that shows part of a
+ * painting and the procedural fallback under the rest is neither. So this cap
+ * is a content contract, not just a memory knob: a scene with more distinct
+ * images than this can never satisfy `sceneGround`, falls back to the grid
+ * forever, and re-decodes its evicted pieces every frame while it does.
+ * `scene.test.ts` holds every partial scene under it, so a split piece fails
+ * the suite instead of silently deleting the village.
+ *
+ * The decoded cost is small next to the paintings' (a plate is 300-900 px
+ * wide): the widest scene here holds 27 distinct images, about 23 MB, against
+ * the ~35 MB a quarry scene already keeps resident under the old cap.
+ */
+export const SCENE_IMAGE_CAP = 32;
+
 /** Separate bounded cache: multi-piece scenes must not evict their own ground each frame. */
-export const sceneImages = new BackdropStore(16);
+export const sceneImages = new BackdropStore(SCENE_IMAGE_CAP);
 
 /**
  * Keep stateful structure art aligned with the grid loaded from a save.

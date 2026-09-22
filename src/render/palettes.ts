@@ -69,7 +69,7 @@ export interface TerrainStyle {
 }
 
 export const TERRAIN_STYLES: Record<TerrainId, TerrainStyle> = {
-  grass: { fill: '#41552f', edge: '#35471f', detail: '#55693c' },
+  grass: { fill: '#7d8850', edge: '#717a40', detail: '#95a060' },
   dirt: { fill: '#4d3f2f', edge: '#3d3124', detail: '#5d4d3a' },
   road: { fill: '#5b5044', edge: '#4a4036', detail: '#6b6053' },
   stone: { fill: '#565452', edge: '#434140', detail: '#666461' },

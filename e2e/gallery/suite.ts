@@ -85,9 +85,19 @@ class Stage implements BeatContext {
     return text ? `?${text}` : '';
   }
 
+  /**
+   * The curtain's budget, the same allowance as the camera's and never below
+   * the 30 s this wait has always had. See `settleCurtain` for why it is not a
+   * constant: a starved iPad-WebGL runner outlasts a fixed 30 s on a beat its
+   * sibling shard paints in three minutes.
+   */
+  private get curtainTimeout(): number {
+    return Math.max(30_000, this.settleTimeout);
+  }
+
   async shoot(note: string, suffix?: string): Promise<void> {
     const file = suffix ? `${this.beat.id}-${suffix}.png` : `${this.beat.id}.png`;
-    if (!this.paused) await settleCurtain(this.page);
+    if (!this.paused) await settleCurtain(this.page, this.curtainTimeout);
     await this.page.screenshot({
       path: join(this.dir, file),
       scale: 'css',
@@ -111,7 +121,7 @@ class Stage implements BeatContext {
      * playback by exactly that much and fires the render loop's animation
      * frames on the way.
      */
-    await settleCurtain(this.page);
+    await settleCurtain(this.page, this.curtainTimeout);
     await this.pause();
     await act();
 

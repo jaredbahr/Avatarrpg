@@ -82,7 +82,7 @@ float fbm(vec2 p) {
 /** Base colour per terrain, mirroring TERRAIN_STYLES in palettes.ts. */
 const TERRAIN_COLORS = `
 vec3 terrainBase(int t) {
-  if (t == 0) return vec3(0.255, 0.333, 0.184); // grass
+  if (t == 0) return vec3(0.490, 0.533, 0.314); // grass
   if (t == 1) return vec3(0.302, 0.247, 0.184); // dirt
   if (t == 2) return vec3(0.357, 0.314, 0.267); // road
   if (t == 3) return vec3(0.337, 0.329, 0.322); // stone

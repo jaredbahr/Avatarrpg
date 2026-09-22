@@ -360,12 +360,25 @@ export async function tileCentre(page: Page, pos: Vec2): Promise<{ x: number; y:
  *
  * The budget is generous because software WebGL at 2x renders the village in
  * more than a second a frame, and the transition end queues behind it.
+ *
+ * `timeout` is the caller's allowance rather than a constant here. Run
+ * 35659737521 spent the whole 30 s this wait used to have on
+ * `34-bandit-portrait` alone, on the first iPad-WebGL shard of a run whose
+ * sibling shards passed, while the same beat took 3.2 minutes on the
+ * neighbouring head's shard — the same starvation that made `09-rock-throw`
+ * spend 30 s on four frames and get the camera budget raised. `Stage` passes
+ * `settleTimeout`, so WebGL gets 60 s and Canvas keeps the 30 s.
+ *
+ * Polled on an interval rather than on animation frames. The starved frame
+ * loop that stretches this wait is exactly what the default `raf` polling
+ * waits on, so a starved page could miss a curtain that had already lifted;
+ * an interval is driven from the driver and re-reads the DOM regardless.
  */
-export async function settleCurtain(page: Page): Promise<void> {
+export async function settleCurtain(page: Page, timeout = 30_000): Promise<void> {
   await page.waitForFunction(
     () => document.querySelector('.curtain.is-down, .curtain.is-lifting') === null,
     undefined,
-    { timeout: 30_000 },
+    { timeout, polling: 250 },
   );
 }
 
