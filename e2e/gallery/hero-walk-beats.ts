@@ -107,7 +107,7 @@ export const HERO_WALK_BEATS: readonly Beat[] = [
         });
         await enterNode(ctx.page, 'battle_forest_road');
         await takeTurn(ctx.page);
-        await waitForIdle(ctx.page);
+        await waitForIdle(ctx.page, ctx.idleTimeout);
         await settleLayout(ctx.page, ctx.settleTimeout);
         await ctx.page.evaluate(
           async (names) => {

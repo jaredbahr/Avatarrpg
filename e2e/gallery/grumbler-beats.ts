@@ -17,7 +17,7 @@ async function openGrumbler(ctx: BeatContext): Promise<void> {
   await ctx.page.evaluate(() => window.fnt!.app.updateSettings({ showGrid: true }));
   await enterNode(ctx.page, 'battle_grumbler');
   await takeTurn(ctx.page, { settleTimeout: ctx.settleTimeout });
-  await waitForIdle(ctx.page);
+  await waitForIdle(ctx.page, ctx.idleTimeout);
   await settleLayout(ctx.page, ctx.settleTimeout);
 }
 

@@ -41,7 +41,7 @@ export const BENDING_BEATS: readonly Beat[] = [
     });
     await enterNode(ctx.page, 'battle_forest_road');
     await takeTurn(ctx.page);
-    await waitForIdle(ctx.page);
+    await waitForIdle(ctx.page, ctx.idleTimeout);
     await settleLayout(ctx.page, ctx.settleTimeout);
     await ctx.page.evaluate(() => window.fnt!.loadedFxCels());
     await ctx.filmstrip(note ?? '', [240, 450, 570, 720, 940], async () => {

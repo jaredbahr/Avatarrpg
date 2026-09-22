@@ -26,7 +26,7 @@ export const QUARRY_BANDIT_BEATS: readonly Beat[] = CAST.map((spec) => ({
     await startGame(ctx.page, ['Reviewer'], ['kaya'], 'quarry-art', { reduceMotion: false });
     await enterNode(ctx.page, 'battle_forest_road');
     await takeTurn(ctx.page, { settleTimeout: ctx.settleTimeout });
-    await waitForIdle(ctx.page);
+    await waitForIdle(ctx.page, ctx.idleTimeout);
     const unitId = await ctx.page.evaluate(({ enemy }) => {
       const app = window.fnt!.app;
       const state = app.state;
@@ -104,7 +104,7 @@ export const QUARRY_BANDIT_BEATS: readonly Beat[] = CAST.map((spec) => ({
         { unitId, ability: spec.ability },
       );
     });
-    await waitForIdle(ctx.page);
+    await waitForIdle(ctx.page, ctx.idleTimeout);
     await focusStagedUnit(ctx.page, unitId, ctx.settleTimeout);
     const point = await tileCentre(ctx.page, { x: 9, y: 8 });
     await ctx.page.mouse.click(point.x, point.y, { button: 'right' });
