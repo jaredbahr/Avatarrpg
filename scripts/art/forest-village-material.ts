@@ -43,7 +43,36 @@ export const FOREST_GROUND_TONES = {
   wear: { base: '#a6845a', shadow: '#7a5f3e', rim: '#c7a87d' },
   verge: { base: '#6f9e4c', shadow: '#4f7538', rim: '#a8c686' },
 } as const;
-export type ToneName = keyof typeof FOREST_GROUND_TONES;
+
+/**
+ * The rest of the DL-2 §3 table, for the forest pieces W2 left on the old
+ * atlas: the pond's bank and bed, the eastern shelf, and the two rubble
+ * diamonds. Held apart from `FOREST_GROUND_TONES` so the route plate's
+ * "nothing outside the table is painted" test keeps testing three materials
+ * rather than seven.
+ *
+ * - `margin` is the §3 water margin's **damp margin** `#8e7049` over the
+ *   packed-earth shadow the road already uses, so the pond's dry ring is the
+ *   road's own family gone damp rather than a fourth earth.
+ * - `bed` is the §3 **bed** `#2a5e77` with a deeper second flat tone; its pale
+ *   entry is the §3 waterline **edge** `#7ec8e3`, which is painted only as the
+ *   thin wet line against the bank, never as field incident (see `flat`).
+ * - `spoil` is §3 quarry spoil / rubble with its chip highlight.
+ * - `stone` is the §3 cut stone block face. Its pale rim is the limestone row's
+ *   `#efe6d2` rather than the cut-stone row's `#8a7d66` tool-mark, because the
+ *   bible's third entry is a *thin pale rim* and both rows are one family; the
+ *   dark tool-mark would be a third field tone, which the no-gradient rule
+ *   forbids.
+ */
+export const FOREST_PIECE_TONES = {
+  margin: { base: '#8e7049', shadow: '#7a5f3e', rim: '#b39064' },
+  bed: { base: '#2a5e77', shadow: '#1a3a4c', rim: '#7ec8e3' },
+  spoil: { base: '#a89880', shadow: '#857762', rim: '#c2b49c' },
+  stone: { base: '#cfc2a6', shadow: '#a2957c', rim: '#efe6d2' },
+} as const;
+
+export const FOREST_ALL_TONES = { ...FOREST_GROUND_TONES, ...FOREST_PIECE_TONES } as const;
+export type ToneName = keyof typeof FOREST_ALL_TONES;
 /** Every outline in this game, never black, never tapered (`docs/art-bible.md`). */
 export const FOREST_INK = '#1b1410';
 
@@ -238,6 +267,14 @@ export async function loadVillageCrops(): Promise<Record<CropName, Crop>> {
  */
 export interface VillagePalette<N extends string> {
   readonly colour: (tone: N, x: number, y: number) => Rgb;
+  /**
+   * Which of the three classes the village's own painted incident puts at a
+   * logical point, without choosing a colour for it. The pond's bed needs this:
+   * its pale entry is the §3 waterline edge, which belongs on the wet line
+   * against the bank and nowhere else, so the bed picks its two flat tones by
+   * depth and uses the class only to flip them.
+   */
+  readonly classOf: (tone: N, x: number, y: number) => 'base' | 'shadow' | 'rim';
   readonly rimOf: (tone: N) => Rgb;
   readonly ink: Rgb;
   readonly cuts: Readonly<Record<CropName, { shadow: number; rim: number; joint: number }>>;
@@ -271,19 +308,19 @@ export function bindPalette<N extends string>(
     },
     rimOf: (tone) => parsed[tone].rim,
     colour: (tone, x, y) => parsed[tone][structure(crops[cropOf[tone]], x, y, saltOf[tone])],
+    // No forest material names a joint tone, so its darkest slice — a subset
+    // of the shadow share — reads as shadow here, exactly as it did before
+    // `structure` grew a fourth, joint-only class for the quarry's tool-mark.
+    classOf: (tone, x, y) => {
+      const cls = structure(crops[cropOf[tone]], x, y, saltOf[tone]);
+      return cls === 'joint' ? 'shadow' : cls;
+    },
   };
 }
 
-export interface ForestMaterial {
-  /** The flat tone for a logical point of the named material. */
-  readonly colour: (tone: ToneName, x: number, y: number) => Rgb;
-  /** A material's pale rim tone, for the thin lit edge beside a region's ink. */
-  readonly rimOf: (tone: ToneName) => Rgb;
+export interface ForestMaterial extends VillagePalette<ToneName> {
   /** True where the road has been worn to its ruts; drives the third material. */
   readonly worn: (x: number, y: number) => boolean;
-  readonly ink: Rgb;
-  /** Reported by the packers so the handoff can show what the re-key keyed to. */
-  readonly cuts: VillagePalette<ToneName>['cuts'];
 }
 
 /**
@@ -295,18 +332,37 @@ const ROAD_CENTRE = 6.5;
 const RUT_OFFSET = 1.05;
 const RUT_HALF = 0.3;
 
+/**
+ * Which village crop lends each material its structure, and the salt that
+ * keeps two materials drawing the same crop from landing on the same tiles.
+ * The paving's flagstone joints carry the made materials — road, wear, the
+ * shelf's cut stone, the quarry spoil's chipped slabs; the courtyard lawn's
+ * organic rhythm carries the grown and the settled ones — the verge, the
+ * pond's damp ring, and the silt on its bed.
+ */
+const CROP_OF: Record<ToneName, CropName> = {
+  road: 'paving',
+  wear: 'paving',
+  verge: 'lawn',
+  margin: 'lawn',
+  bed: 'lawn',
+  spoil: 'paving',
+  stone: 'paving',
+};
+const SALT_OF: Record<ToneName, number> = {
+  road: 17,
+  wear: 17,
+  verge: 31,
+  margin: 47,
+  bed: 59,
+  spoil: 71,
+  stone: 83,
+};
+
 export async function loadForestMaterial(): Promise<ForestMaterial> {
-  const palette = bindPalette(
-    await loadVillageCrops(),
-    FOREST_GROUND_TONES,
-    { road: 'paving', wear: 'paving', verge: 'lawn' },
-    { road: 17, wear: 17, verge: 31 },
-  );
+  const palette = bindPalette(await loadVillageCrops(), FOREST_ALL_TONES, CROP_OF, SALT_OF);
   return {
-    ink: palette.ink,
-    cuts: palette.cuts,
-    rimOf: palette.rimOf,
-    colour: palette.colour,
+    ...palette,
     worn(x: number, y: number): boolean {
       // Two ruts either side of the centre line, wandering by about a tenth of
       // a tile so the pair never reads as a ruled stripe, plus the occasional
