@@ -317,9 +317,32 @@ export const BEATS: readonly Beat[] = [
     async run(ctx) {
       await resetStorage(ctx.page, ctx.query());
       await startGame(ctx.page, PLAYERS, PARTY, SEED);
-      await ctx.page
-        .locator('.interlude-art')
-        .evaluate((image) => (image as HTMLImageElement).decode());
+      // Decoding the image is not the same as painting it: on WebGL the
+      // painting and its caption land a frame or more after the decode
+      // resolves (and the interlude may not be mounted at all yet), so a
+      // bare `decode()` captured a blank curtain. Wait for the mounted
+      // element to hold a decoded bitmap at a real CSS size with the
+      // caption resolved, then let the layout settle before the still.
+      const art = ctx.page.locator('.interlude-art');
+      await art.waitFor();
+      await ctx.page.waitForFunction(
+        () => {
+          const image = document.querySelector<HTMLImageElement>('.interlude-art');
+          const caption = document.querySelector('.interlude-caption .dialogue-line');
+          if (!image || !caption) return false;
+          const box = image.getBoundingClientRect();
+          return (
+            image.complete &&
+            image.naturalWidth > 0 &&
+            box.width > 0 &&
+            box.height > 0 &&
+            (caption.textContent ?? '').trim().length > 0
+          );
+        },
+        undefined,
+        { timeout: ctx.settleTimeout },
+      );
+      await settleLayout(ctx.page, ctx.settleTimeout);
       await ctx.shoot(this.note);
     },
   },
