@@ -196,11 +196,15 @@
   gap: var(--sp-1);
 }
 
-/* The encounter's name on a plate, in the display face, the round under it. */
+/* The encounter's name on a plate, in the display face, the round under it.
+ * The plate gives way before the header does: `min-width: 0` lets it shrink
+ * past its text, so a long encounter name ellipses instead of pushing Pause
+ * onto a second row at Large text. Nothing moves while the name fits. */
 .title-plate {
   display: flex;
   flex-direction: column;
   gap: 0.05rem;
+  min-width: 0;
   padding: var(--sp-1) var(--sp-3);
   border: var(--hairline) solid var(--c-ink-line);
   border-radius: var(--radius);
@@ -213,6 +217,14 @@
   font-size: var(--fs-lg);
   line-height: 1.1;
   color: var(--c-ink);
+}
+
+/* Only the plated name ellipses; the exploration header's bare name still
+ * wraps on a narrow screen, where it owns its own row. */
+.title-plate > .title-plate-name {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .title-plate-round {
@@ -1670,10 +1682,22 @@ html[data-contrast='high'] .hud-panel::after {
 /* Frame-time readout (?stats=1)                                        */
 /* ------------------------------------------------------------------ */
 
+/*
+ * Pinned to the left edge at mid height, not to the top-left corner. The
+ * corner is where every scene puts its title: on the quarry floor beat the
+ * readout sat over the encounter plate and read as a dark blob behind
+ * `Grumbler`, which cost a gallery shot its header. Both scenes keep a chrome
+ * bar along the top and a dock along the bottom, and this milestone is the
+ * promise that the board holds the band between them — so the middle of the
+ * left edge is the one place the readout covers the board and nothing else,
+ * at any text size and in either orientation. It stays visible, which is what
+ * the beat that turns it on is for.
+ */
 .stats {
   position: absolute;
-  top: calc(var(--sp-2) + env(safe-area-inset-top, 0px));
+  top: 50%;
   left: calc(var(--sp-2) + env(safe-area-inset-left, 0px));
+  transform: translateY(-50%);
   padding: 0.1rem 0.4rem;
   border-radius: var(--radius);
   background: rgb(0 0 0 / 65%);
@@ -1795,6 +1819,48 @@ html[data-contrast='high'] .hud-panel::after {
   }
 }
 
+/* Large text asks for the same compact chip, and asks for it on every landscape
+ * battle rather than only a short one: at 1.25x and 1.5x the stacked portrait
+ * and name cost two rows of the strip, and the board is what pays. A row chip
+ * is still a full `--tap` target, and the strip still scrolls sideways when the
+ * order is crowded. Portrait keeps the stacked chip, where height is cheap. */
+@media (min-width: 53rem) and (orientation: landscape) {
+  /* Wrapping is resolved before shrinking, so a long encounter name pushed
+     Pause onto a second header row however far the plate was allowed to give.
+     One landscape line, and the plate is the item that yields: its name
+     ellipses (see `.title-plate`) while every button keeps its full size. */
+  html[data-large-text='on'] .combat-scene .combat-bar,
+  html[data-large-text='huge'] .combat-scene .combat-bar {
+    flex-wrap: nowrap;
+  }
+
+  html[data-large-text='on'] .combat-scene .combat-bar > button,
+  html[data-large-text='huge'] .combat-scene .combat-bar > button {
+    flex-shrink: 0;
+  }
+
+  html[data-large-text='on'] .combat-scene .turn-strip,
+  html[data-large-text='huge'] .combat-scene .turn-strip {
+    align-items: center;
+    gap: var(--sp-1);
+    padding-block: var(--sp-1);
+  }
+
+  html[data-large-text='on'] .combat-scene .turn-chip,
+  html[data-large-text='huge'] .combat-scene .turn-chip {
+    flex-direction: row;
+    gap: var(--sp-1);
+    min-width: 0;
+    min-height: var(--tap);
+    padding: var(--sp-1) var(--sp-2);
+  }
+
+  html[data-large-text='on'] .combat-scene .turn-chip span,
+  html[data-large-text='huge'] .combat-scene .turn-chip span {
+    max-width: 6rem;
+  }
+}
+
 /* Keep the speaker visible beside their name when the full stage portrait
    would crowd out dialogue. The text panel retains its own scroll area. */
 @media (max-width: 52rem), (max-height: 34rem) {
@@ -1862,7 +1928,7 @@ html[data-contrast='high'] .hud-panel::after {
   display: flex;
   flex: 0 0 auto;
   min-height: 0;
-  max-height: 42%;
+  max-height: 40%;
   overflow-y: auto;
   border-top: var(--hairline) solid var(--c-line);
   background: var(--c-bg-deep);
@@ -2305,7 +2371,7 @@ html[data-contrast='high'] .hud-panel::after {
   }
   [data-large-text='on'] .explore-dock.solo-party,
   [data-large-text='huge'] .explore-dock.solo-party {
-    max-height: 42%;
+    max-height: 40%;
     overflow-y: auto;
   }
 }
@@ -2538,6 +2604,95 @@ html[data-contrast='high'] .hud-panel::after {
   .explore-scene:not(.riverside-scene) .roster-row .unit-portrait {
     width: 3rem;
     height: 3rem;
+  }
+}
+
+/*
+ * Large text, landscape: the world stays the majority of the screen.
+ *
+ * Three things went wrong at 1.25x and 1.5x, and each has its own line below.
+ * The roster stretched every card to the height of the taller action column,
+ * so a card was a portrait, a name, a health bar and then a hand's width of
+ * empty parchment — `align-items: flex-start` sizes a card to what is in it.
+ * The action bar refused to shrink (`flex: 0 0 auto`) while the roster held
+ * half the dock, so the last action hung off the right edge of the screen:
+ * the bar may now shrink and the row may wrap, which costs a second row of
+ * buttons rather than an unreachable one. And the buttons themselves were
+ * 5.5rem tall for a two-line label; at this type size one `--tap` is already
+ * a generous target, and the saved height goes back to the map.
+ *
+ * Nothing here applies at normal text, where the dock already sits near a
+ * fifth of the screen, or in portrait, where the dock stacks and scrolls.
+ */
+@media (min-width: 53rem) and (orientation: landscape) {
+  html[data-large-text='on'] .explore-scene:not(.riverside-scene) .roster,
+  html[data-large-text='huge'] .explore-scene:not(.riverside-scene) .roster {
+    align-items: flex-start;
+    max-width: 45%;
+  }
+
+  html[data-large-text='on'] .explore-scene:not(.riverside-scene) .action-bar,
+  html[data-large-text='huge'] .explore-scene:not(.riverside-scene) .action-bar {
+    flex: 0 1 auto;
+    min-width: 0;
+  }
+
+  html[data-large-text='on'] .explore-scene:not(.riverside-scene) .action-row,
+  html[data-large-text='huge'] .explore-scene:not(.riverside-scene) .action-row {
+    flex-wrap: wrap;
+    justify-content: center;
+    overflow-x: visible;
+  }
+
+  html[data-large-text='on'] .explore-scene:not(.riverside-scene) .action-button,
+  html[data-large-text='huge'] .explore-scene:not(.riverside-scene) .action-button {
+    min-height: var(--tap);
+    min-width: var(--tap);
+    max-width: none;
+  }
+
+  /* Beside the actions there is no width left for the hint at this type size —
+     it ellipsed down to a word and a half. It stands over them instead, on its
+     own line, where it reads; the actions still lay out at their own size, so
+     the dock is no taller than the roster cards beside it. The drawn mark and
+     the second line stand down. */
+  html[data-large-text='on'] .explore-scene:not(.riverside-scene) .explore-hud,
+  html[data-large-text='huge'] .explore-scene:not(.riverside-scene) .explore-hud {
+    flex-direction: column;
+    justify-content: center;
+    gap: var(--sp-2);
+  }
+
+  html[data-large-text='on'] .explore-context,
+  html[data-large-text='huge'] .explore-context {
+    flex: 0 0 auto;
+    width: 100%;
+    font-size: var(--fs-md);
+  }
+
+  html[data-large-text='on'] .explore-context > strong,
+  html[data-large-text='huge'] .explore-context > strong {
+    max-width: 100%;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  /* The bar hugs its buttons and centres under the hint. Stretched the full
+     width of the column instead, it kept its gilt corner bracket out in the
+     empty parchment to the left of the actions, where the ornament reads as a
+     stray mark rather than as the edge of anything. */
+  html[data-large-text='on'] .explore-scene:not(.riverside-scene) .action-bar,
+  html[data-large-text='huge'] .explore-scene:not(.riverside-scene) .action-bar {
+    align-self: center;
+    max-width: 100%;
+  }
+
+  html[data-large-text='on'] .explore-context > .mark,
+  html[data-large-text='huge'] .explore-context > .mark,
+  html[data-large-text='on'] .explore-context > .tiny,
+  html[data-large-text='huge'] .explore-context > .tiny {
+    display: none;
   }
 }
 
