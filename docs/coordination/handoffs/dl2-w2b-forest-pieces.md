@@ -1,0 +1,216 @@
+# Handoff — the forest's remaining pieces, re-keyed to the same hand
+
+Owner: Opus subagent run, 2026-09-22. Branch `claude/dl2-w2b-forest-pieces`,
+clone `D:/AvatarRPG-work/dl2-w2b-forest`, based on `03faeef` (origin/main, the
+PR #88 merge that landed W2). This is **DL-2 work item W2b**, the small pass
+W2's own "not done" list asked for
+(`dl2-w2-forest-road.md:179-185`): `pond-bank.webp`, `raised-shelf.webp` and
+`rubble.webp` still carried the four-quadrant forest atlas's ochre and cold
+grey, so on a board whose road and verges had moved to the village's hand they
+were the odd material. **No art was generated in this run**; every pixel below
+comes from `forest-village-material.ts`, which re-derives the forest's ground
+from the two approved Ba Dan plates.
+
+## What changed
+
+1. **`scripts/art/forest-village-material.ts`** gains the rest of the DL-2 §3
+   table as `FOREST_PIECE_TONES`, held apart from `FOREST_GROUND_TONES` so the
+   route plate's "no colour outside the table is painted" test keeps testing
+   three materials rather than seven.
+   - `margin` `#8e7049`/`#7a5f3e` rim `#b39064` — the §3 water margin's **damp
+     margin** over the road's own packed-earth shadow, so the pond's dry ring is
+     the road's family gone damp rather than a fourth earth.
+   - `bed` `#2a5e77`/`#1a3a4c` rim `#7ec8e3` — the §3 **bed** with a deeper
+     second flat tone; the pale entry is the §3 waterline **edge**.
+   - `spoil` `#a89880`/`#857762` rim `#c2b49c` — §3 quarry spoil / rubble.
+   - `stone` `#cfc2a6`/`#a2957c` rim `#efe6d2` — §3 cut stone block face. Its
+     pale entry is the limestone row's `#efe6d2`, **not** the cut-stone row's
+     `#8a7d66` tool-mark: the bible's third entry is a _thin pale rim_, both rows
+     are one family, and a dark tool-mark would be a third field tone, which the
+     no-gradient rule forbids. Flagged for the reviewer.
+   - Each material now names which village crop lends it structure — paving's
+     flagstone joints for the made materials (road, wear, stone, spoil), the
+     courtyard lawn's rhythm for the grown and settled ones (verge, margin, bed)
+     — and `classOf()` exposes the crop's class without choosing a colour, which
+     is what lets the bed pick its two tones by depth.
+2. **`scripts/art/forest-shoreline.ts`.** Every piece of geometry is unchanged:
+   the bounded exterior feather (`SHORE_LIMIT`/`COVER_LIMIT`), the seeded bite
+   into the outer water cells (ADR 0044), the inset field, and ADR 0045's
+   **opaque bed across every wet pixel**. What changed is what the geometry is
+   painted with. The packer no longer opens `shoreline-source.png` or the
+   material sheet — those images only ever supplied colour; the shapes were
+   always the packer's own.
+   - The wet line now carries the bible's `#1b1410` ink, with `#7ec8e3` on its
+     wet side and the margin's pale rim on its dry one. **The ink sits at the
+     bite boundary, not at the tile edge**: the tile polygon is not a material
+     edge and never was.
+   - ADR 0045's "deepens away from the shore" survives as a choice of _which_
+     of two flat tones a pixel takes — the deep tone's share rises across
+     `BED_DEEP_BAND` — resolved over four-pixel clumps rather than per pixel,
+     because a per-pixel draw is a dither and a dither is a gradient with extra
+     steps. No intermediate key is ever written.
+   - Both bed tones clear the `e2e/renderer.spec.ts` authored-water gate's
+     blue-minus-red > 20 bar on their own (77 and 50), which the test now pins,
+     so no rasteriser has to make up the difference. `BED_COOL` is gone with the
+     sampled silt it corrected.
+3. **`scripts/art/forest-raised-shelf.ts`** is now `packRaisedShelf(material)`
+   with a `main()` guard and no argument. The ledge is **packed earth** standing
+   on a **cut stone block face**, the face showing only where the ledge's
+   down-screen (+x/+y) side is exposed, ink around the silhouette, thin pale rim
+   inside the lit (up-screen) edge. The cell envelope, the (19,4) road exit and
+   the projected bounds do not move.
+4. **`scripts/art/forest-rubble.ts` (new).** `rubble.webp` had no packer at all
+   — it was committed straight out of `bd70d2d`. The plate is now painted in the
+   §3 spoil key on a ragged diamond, with the chip highlight as the rim on the
+   diamond's lit slopes. The village paving lends the structure at **three times**
+   the road's logical frequency, so its flagstones arrive as chips rather than
+   whole slabs: the difference between a heap and a floor. The plate keeps its
+   shipped 384×128 size, so both `FOREST_RUBBLE_CELLS` placements are untouched.
+5. **Tests.** `forest-shoreline.test.ts` rewritten against the new packer: it
+   pins the plate byte-for-byte, asserts no colour outside the two water-margin
+   rows is painted, keeps every ADR 0044/0045 assertion (bank coverage, no leak
+   past `SHORE_LIMIT`, opaque bed, bounded wandering bite, shelf darker than
+   bank, deep darker than shelf, feather running pale to dark outward), and adds
+   the blue-gate check. `forest-rubble.test.ts` (new) pins the plate, the table,
+   the ragged silhouette and the window span. `forest-raised-shelf.test.ts`
+   keeps its coverage/exit test and gains a byte-pin and a table check.
+
+Nothing touches map rows, cell keys, scene ids, collision or saves; no product
+code changed. **No new region file** — all three are re-keyed in place, so the
+forest's resolved-URL count is unchanged against `SCENE_IMAGE_CAP = 32`. Ba Dan,
+the quarry and the Cutting are untouched.
+
+**Map family 3.98 → 3.95 MiB of 4 MiB.** `pond-bank` 33,744 → 24,600 B,
+`raised-shelf` 9,870 → 7,344 B, `rubble` 21,456 → 5,114 B. All three moved to
+`FOREST_GROUND_QUALITY = 74`, the setting W2 already shares across the ground
+plates; no budget was touched.
+
+## Measurements
+
+`npx tsx scripts/art/forest-ground-measure.ts <plate>`; "span" is the ratio of
+the brightest 128 px window mean to the darkest, stepped 32 px, windows at least
+half opaque. The W2 route plate's mean is **142.5**; the DL-2 §3 bars are span
+**≤ 1.25×** and plate mean within **1.3×** of the route's.
+
+| Plate                 | Window span | Mean luma | Mean colour | vs route mean |
+| --------------------- | ----------- | --------- | ----------- | ------------- |
+| `pond-bank` before    | 1.744×      | 115.1     | `#7c7453`   | 1.238×        |
+| `pond-bank` after     | **1.687×**  | 97.8      | `#566563`   | **1.457×**    |
+| `raised-shelf` before | 1.076×      | 148.9     | `#af9452`   | 1.045×        |
+| `raised-shelf` after  | **1.029×**  | 157.4     | `#b49b76`   | **1.105×** ✓  |
+| `rubble` before       | 1.057×      | 116.5     | `#8f714a`   | 1.223×        |
+| `rubble` after        | **1.087×**  | 135.7     | `#948671`   | **1.050×** ✓  |
+
+The shelf and the rubble pass both bars. **The pond plate passes neither on the
+whole-plate figures, and cannot**, because it is the one plate that holds two
+materials which are _supposed_ to differ: damp earth and a bed seen through
+water. The packer therefore reports each material's own mean, in the same
+Rec. 709 luma, and those are the numbers that say whether either has drifted:
+
+```
+node --import tsx scripts/art/forest-shoreline.ts
+  -> { dryMean: 116.9, bedMean: 83.8, bitePixels: 41653, bedPixels: 89419,
+       deepBedPixels: 6014, inkPixels: 5526, bytes: 24600 }
+```
+
+- **Dry margin 116.9 against the route's 142.5 = 1.219×** — inside the 1.3×
+  band. The bank is in the same tone band as the road it runs beside, which is
+  the acceptance this work item is really about.
+- **Bed 83.8 = 1.70× of the route.** It is under water. The §3 table specifies
+  `#2a5e77` for it, and nothing in the same family is brighter; the only way to
+  reach 1.3× would be to drift the §3 bed hex, which the bible calls a QA
+  failure.
+- Plate span 1.687× is therefore a **wet-against-dry material step**, not a
+  baked ramp. It is nonetheless _worse_ than a plate with no bed would measure,
+  and I did not attempt a third arrangement: the darker second bed tone was
+  chosen to keep ADR 0045's depth reading, and softening it would trade the
+  depth for a number. **Recorded rather than closed** — see "Open".
+
+Before/after screen evidence is the captures below, not a tone probe: no
+route-tone comparison was run this pass (see "Not claimed").
+
+## Commands, exactly as run
+
+```
+node --import tsx scripts/art/forest-shoreline.ts
+node --import tsx scripts/art/forest-raised-shelf.ts
+node --import tsx scripts/art/forest-rubble.ts
+npx prettier --write "scripts/art/forest-*.ts"
+npm run art:validate                 # green
+npm run check:assets                 # green, maps 3.95 MiB of 4 MiB
+npm run verify                       # green, 945 tests / 118 files
+npx vitest run src/render/scene.test.ts src/content/scenes          # 53 tests
+npx vitest run scripts/art/forest-shoreline.test.ts \
+  scripts/art/forest-rubble.test.ts scripts/art/forest-raised-shelf.test.ts
+npx tsx scripts/art/forest-ground-measure.ts \
+  public/art/maps/forest-scene/pond-bank.webp \
+  public/art/maps/forest-scene/raised-shelf.webp \
+  public/art/maps/forest-scene/rubble.webp
+npx playwright test -c playwright.gallery.config.ts --project=ipad-webgl \
+  -g "04-board-idle|09-rock-throw|16-grid-on"                        # 3 passed
+```
+
+## Capture paths
+
+- `gallery/ipad-webgl/04-board-idle.png`, `09-rock-throw.png`, `16-grid-on.png`
+  in this clone (the gallery folder is git-ignored).
+- Compared against `evidence/refs/ba-dan-exploration.png` and the W2 frame
+  `D:/AvatarRPG-work/dl2-w2-forest/gallery/ipad-webgl/04-board-idle.png`.
+- Plate decodes composited over magenta for silhouette review:
+  `.shots/peek/{pond-bank,raised-shelf,rubble}.png` (also git-ignored; the
+  helper that wrote them was a scratch script and is not kept).
+
+On screen, against the W2 frame: the pond's dark ochre ring is gone and the
+bank now continues the road's material into the waterline, which carries the
+ink and the pale edge; the bed reads as silt deepening toward the middle rather
+than as one flat teal fill; both rubble diamonds have moved from cold grey to
+warm spoil and sit in the road's tone band instead of punching out of it.
+
+## Open, recorded honestly
+
+- **The pond plate's whole-plate span and mean do not meet the §3 bars, and
+  this run did not try twice to close them.** The per-material figures above are
+  offered instead. A reviewer who reads §3's span bar as "per plate, whatever is
+  on it" should reject this; a reviewer who reads it as "no material carries a
+  baked ramp" should accept it. That is a call about the contract's wording, not
+  about the packer, and it is the same class of question W2 left open about the
+  village paving mean.
+- **The `#7ec8e3` waterline reads brightly** at board zoom — a pale halo around
+  the pond rather than a glint. It is the §3 edge hex at the bible's 3 px rim
+  width, so both numbers are per contract, but a reviewer may want it thinner or
+  dropped to the bank's side only.
+- **`pond-reeds.webp` and `old-nest-reeds.webp` were not re-keyed.** They
+  measure `#766238` / `#7b6642`, which is ochre against the route's 142.5
+  (1.44× / 1.37×), but that ochre is the artist's own flood-bank reed material
+  out of `assets/source/forest-bank/old-nest-reeds.png` — it is not the forest
+  atlas's. They are also standing scenery, not ground, and the §3 table has no
+  row for vegetation. Re-keying them would be a visual-direction change (dry
+  straw → green reeds, as in the Ba Dan reference), which is Jared's call, not
+  this work item's. Left as it is, with the measurement recorded.
+- **The shelf is not visible in any of the three captures**: it sits on the
+  board's eastern edge, outside the framing of all three gallery shots. Its
+  evidence is the plate decode, the coverage test and the measurement only.
+- **The cut-stone rim uses `#efe6d2`, not the §3 cut-stone row's `#8a7d66`.**
+  Reasoned above; a reviewer wanting the tool-mark instead should say so, and it
+  would need a decision about whether a _dark_ third tone is allowed on a face.
+- **No route-tone before/after probe.** W2 ran `playwright.route-tone.config.ts`
+  to show what moved on screen; this pass did not, so the "what moved" claim
+  above is read off the captures by eye rather than counted.
+- Not claimed: no playthrough, no listening, no physical device, no Large-text
+  check, no WebKit run, no canvas-backend capture, no other scene's capture, and
+  no reviewer judgement. W5 remains the gate that decides whether the four
+  scenes read as one game.
+
+## Next action
+
+Review the draft PR against `ba-dan-exploration.png` and the W2 frame, and rule
+on the two contract questions above (the pond's plate-wide span, and the
+cut-stone rim hex). With W2 and W2b together the forest's ground is entirely off
+the old atlas, so W3 — the quarry, which inherits the same table and the same
+arithmetic — can start as soon as those rulings exist.
+
+## CI cost
+
+No push to `main`, no workflow dispatch, no re-run, no auto-merge. One branch
+push and one **draft** PR. Local only: one `npm run verify` and one 3-frame
+gallery capture.
