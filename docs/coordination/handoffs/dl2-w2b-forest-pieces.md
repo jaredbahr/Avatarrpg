@@ -209,8 +209,72 @@ cut-stone rim hex). With W2 and W2b together the forest's ground is entirely off
 the old atlas, so W3 — the quarry, which inherits the same table and the same
 arithmetic — can start as soon as those rulings exist.
 
+## Rebase and water-tint tests
+
+Owner: Sonnet subagent run, 2026-09-22. Rebased this branch onto
+`origin/main` (`49dcb77`), which had landed both PR #87 (fallback palette
+re-key) and PR #90 (the quarry re-key, which generalised
+`forest-village-material.ts`'s per-material `parseHex`/`structure` calls into
+shared `loadVillageCrops()` + `bindPalette()` and added
+`scripts/art/quarry-village-material.ts`).
+
+- **The conflict** was in `forest-village-material.ts` alone. Kept main's
+  generalised `loadVillageCrops`/`bindPalette`/`VillagePalette<N>` machinery
+  rather than this branch's per-material `parseHex` block, and folded this
+  branch's `FOREST_PIECE_TONES`, `FOREST_ALL_TONES` and `classOf()` into it:
+  `VillagePalette<N>` now declares `classOf`, `bindPalette()` implements it,
+  and `ForestMaterial` is `extends VillagePalette<ToneName>` plus `worn`
+  instead of redeclaring `colour`/`rimOf`/`ink`/`cuts`/`classOf` by hand.
+  `loadForestMaterial()` binds all seven tones (`road`, `wear`, `verge`,
+  `margin`, `bed`, `spoil`, `stone`) through the shared `CROP_OF`/`SALT_OF`
+  tables instead of the three-tone table it bound before. One adaptation
+  `structure()` now returns a fourth class, `'joint'`, for the quarry's
+  tool-mark; no forest tone names a joint colour, so `classOf()` folds
+  `'joint'` back into `'shadow'`, which is exactly the three-way split this
+  branch's `classOf` had before the quarry work existed.
+- **Byte-identity.** Re-ran every forest packer (`forest-route-ground.ts`,
+  `forest-grass-regions.ts`, `forest-exterior-apron.ts`, `forest-shoreline.ts`,
+  `forest-raised-shelf.ts`, `forest-rubble.ts`) and both quarry packers
+  (`quarry-route-ground.ts driller`, `quarry-modular-ground.ts`), then
+  `npx prettier --write` per the quarry handoff's own command list. `git
+status` came back clean: every regenerated plate and registration file
+  matched what was already committed.
+
+Separately, the two forest raised-shelf/rubble water-tint e2e checks failed
+on this branch against current `main`'s ground contract: the shelf's bare
+tone is now the warm packed earth `FOREST_PIECE_TONES.stone` samples to
+(~178, 147, 101 at the probed cell), which is already greener (`g=147`) than
+the `#3e8fb0` water fill (`g=143`), so no water film can raise green over it.
+The green-rise assertions were calibrated on the old, darker legacy dirt and
+are unsatisfiable by construction against the new contract, not a real
+regression.
+
+- **`e2e/partial-ground.spec.ts`** ("partial elevation keeps a live surface
+  above its base"): kept `wet.b - bare.b > 12`, added `wet.r < bare.r - 12`,
+  and replaced `wet.g - bare.g > 10` with
+  `(wet.b - wet.r) - (bare.b - bare.r) > 25`. Measured: canvas
+  `bare {r:177.9, g:146.6, b:100.5}` → `wet {r:133.6, g:144.3, b:130.3}`, gap
+  `74.2`; webgl `bare {r:178.2, g:147.0, b:100.8}` → `wet {r:125.0, g:138.3,
+b:121.9}`, gap `74.4`.
+- **`e2e/painted-rubble.spec.ts`** (water tint over the registered rubble
+  image): kept `blueShift > 10` and `waterRegion.r - registered.r < -10`,
+  and replaced the absolute green shift (`> 2`) and the green/blue ratio
+  (`> 0.2`) with the same gap criterion,
+  `(waterRegion.b - waterRegion.r) - (registered.b - registered.r) > 25`.
+  Measured: canvas gap `47.3`; webgl gap `48.5`.
+
+`npx playwright test e2e/partial-ground.spec.ts e2e/painted-rubble.spec.ts
+e2e/renderer.spec.ts` (all local projects): **14 passed**, canvas and webgl
+both. `npm run verify` (typecheck, lint, format:check, vitest): green, 951
+tests / 119 files. `npm run art:validate` and `npm run check:assets`: green,
+maps 3.94 MiB of 4 MiB.
+
 ## CI cost
 
 No push to `main`, no workflow dispatch, no re-run, no auto-merge. One branch
 push and one **draft** PR. Local only: one `npm run verify` and one 3-frame
 gallery capture.
+
+The rebase pass added one further force-push to this same draft PR's branch
+(`--force-with-lease`, no merge, no CI re-run triggered from this side) and
+one local `npm run verify` plus the three e2e specs above.
