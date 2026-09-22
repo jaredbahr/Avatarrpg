@@ -14,7 +14,7 @@ Every uncovered map cell falls back to `TERRAIN_STYLES`, which was a fourth colo
 
 ## Verification
 
-`npm run verify` 116 files / 933 tests green; `npm run art:validate` and `npm run check:assets` green on this head; supervisor captured `02-village`, `04-board-idle`, `14-boss-blast-floor`, `38-crossbow-portrait` on ipad-webgl and inspected them: village unchanged, quarry ledges read as pale limestone rather than neutral grey, no regression.
+`npm run verify` 116 files / 933 tests green; `npm run art:validate` green; `npm run check:assets` **failed** on the first head (maps family 4.01 MiB against 4 MiB: the twelve regenerated apron bands grew ~18 KB). Repair: `QUALITY` in `scripts/art/ba-dan-exterior-apron.ts` 82 → 74 and the bands regenerated; maps family 3.97 MiB, `check:assets` green; supervisor captured `02-village`, `04-board-idle`, `14-boss-blast-floor`, `38-crossbow-portrait` on ipad-webgl and inspected them: village unchanged, quarry ledges read as pale limestone rather than neutral grey, no regression.
 
 ## Not claimed
 

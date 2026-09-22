@@ -28,7 +28,7 @@ import type { Image } from './lib/image';
 /** The bands are written here, one file per entry in `BA_DAN_APRON_BANDS`. */
 export const DIRECTORY = 'public/art/maps/ba-dan-scene';
 export const STEM = 'exterior-apron';
-export const QUALITY = 82;
+export const QUALITY = 74;
 /** Terrain is fully faded out by this far outside the rim, in logical tiles. */
 export const APRON_FADE = 2.2;
 /** The outer cell's road or paving is carried this far before meadow takes over. */
