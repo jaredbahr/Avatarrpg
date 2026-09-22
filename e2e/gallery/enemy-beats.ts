@@ -21,7 +21,7 @@ export const ENEMY_BEATS: readonly Beat[] = [
       await startGame(ctx.page, ['Explorer'], ['kaya'], 'bandit-review');
       await enterNode(ctx.page, 'battle_forest_road');
       await takeTurn(ctx.page, { settleTimeout: ctx.settleTimeout });
-      await waitForIdle(ctx.page);
+      await waitForIdle(ctx.page, ctx.idleTimeout);
       await settleLayout(ctx.page, ctx.settleTimeout);
       const bandit = await ctx.page.evaluate(() => {
         const bandit = window.fnt?.app.state?.battle?.units.find(
@@ -47,7 +47,7 @@ export const ENEMY_BEATS: readonly Beat[] = [
       await startGame(ctx.page, ['Explorer'], ['kaya'], 'bandit-review', { reduceMotion: false });
       await enterNode(ctx.page, 'battle_forest_road');
       await takeTurn(ctx.page, { settleTimeout: ctx.settleTimeout });
-      await waitForIdle(ctx.page);
+      await waitForIdle(ctx.page, ctx.idleTimeout);
       await settleLayout(ctx.page, ctx.settleTimeout);
       // Decode the real asset before freezing the clock for the filmstrip.
       await ctx.page.evaluate(async () => {

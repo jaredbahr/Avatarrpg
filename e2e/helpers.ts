@@ -281,13 +281,38 @@ export async function settleMapCanvas(page: Page): Promise<void> {
  * Taps on the battlefield are deliberately ignored while the animator is
  * running — you should not be able to act in the middle of somebody else's
  * turn playing out — so a spec that taps the canvas has to wait for it.
+ *
+ * `timeout` is the whole wait, and the default is what a fast machine clears
+ * in a frame or two. It is a parameter for the same reason `settleLayout`'s is:
+ * this waits on the page clock, so on CI's software rasteriser a single frame
+ * of a 2x WebGL beat can take seconds, and run 35672596001 (`13-victory` on
+ * the iPad-WebGL shard) spent the whole 20 s here while the same beat passed on
+ * a sibling shard minutes earlier. The gallery passes its own per-project
+ * budget; see `Stage.idleTimeout`.
+ *
+ * A timeout still fails, and now reports what the animator was waiting on, so
+ * the next one separates "the playback is longer than the budget" from "the
+ * clock stopped and no frame will arrive".
  */
-export async function waitForIdle(page: Page): Promise<void> {
-  await page.waitForFunction(
-    () => window.fnt?.app.animator.busy(performance.now()) === false,
-    undefined,
-    { timeout: 20_000 },
-  );
+export async function waitForIdle(page: Page, timeout = 20_000): Promise<void> {
+  try {
+    await page.waitForFunction(
+      () => window.fnt?.app.animator.busy(performance.now()) === false,
+      undefined,
+      { timeout },
+    );
+  } catch (error) {
+    const pending = await page
+      .evaluate(() => {
+        const animator = window.fnt?.app.animator;
+        if (!animator) return 'the game is not on the page';
+        const left = Math.round(animator.finishesAt - performance.now());
+        return left > 0 ? `${left} ms of playback left` : 'no frame reached the end of playback';
+      })
+      .catch(() => 'the page could not be read back');
+    const detail = error instanceof Error ? error.message : String(error);
+    throw new Error(`waitForIdle: still busy after ${timeout} ms (${pending}) — ${detail}`);
+  }
 }
 
 /**

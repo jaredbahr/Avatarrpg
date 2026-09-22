@@ -66,6 +66,8 @@ export interface BeatContext {
   readonly project: string;
   /** How long a layout settle may take here: longer on WebGL under software GL. */
   readonly settleTimeout: number;
+  /** How long playback may take to settle here: the same budget, same reason. */
+  readonly idleTimeout: number;
   /** Builds the query string for a fresh page: the project's renderer plus anything extra. */
   query(extra?: Record<string, string>): string;
   /** One still. `suffix` distinguishes several stills in one beat. */
@@ -158,7 +160,7 @@ async function openBattle(
   if (options.legacyBackdrop) await useOrthographicBackdropFixture(ctx.page, 'forest_road');
   await enterNode(ctx.page, options.node ?? 'battle_forest_road');
   await takeTurn(ctx.page, { settleTimeout: ctx.settleTimeout });
-  await waitForIdle(ctx.page);
+  await waitForIdle(ctx.page, ctx.idleTimeout);
   await settleLayout(ctx.page, ctx.settleTimeout);
 }
 
@@ -528,7 +530,7 @@ export const BEATS: readonly Beat[] = [
           died = events.includes('unitDied');
         });
         if (died) return;
-        await waitForIdle(ctx.page);
+        await waitForIdle(ctx.page, ctx.idleTimeout);
       }
       throw new Error('Rock Throw missed eight times in a row.');
     },
@@ -544,7 +546,7 @@ export const BEATS: readonly Beat[] = [
       await fellEnemies(ctx.page);
       await endTurn(ctx.page, active.id);
       await ctx.page.locator('.result-panel').waitFor();
-      await waitForIdle(ctx.page);
+      await waitForIdle(ctx.page, ctx.idleTimeout);
       await ctx.shoot(this.note);
     },
   },
@@ -619,7 +621,7 @@ export const BEATS: readonly Beat[] = [
       await openBattle(ctx);
       await updateSettings(ctx.page, { largeText: 'huge', highContrast: true });
       await settleLayout(ctx.page, ctx.settleTimeout);
-      await waitForIdle(ctx.page);
+      await waitForIdle(ctx.page, ctx.idleTimeout);
       await ctx.shoot(this.note);
     },
   },

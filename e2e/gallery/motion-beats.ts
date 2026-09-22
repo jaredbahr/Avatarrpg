@@ -24,7 +24,7 @@ export const MOTION_BEATS: readonly Beat[] = (['cast', 'push'] as const).map((ki
     });
     await enterNode(ctx.page, 'battle_forest_road');
     await takeTurn(ctx.page);
-    await waitForIdle(ctx.page);
+    await waitForIdle(ctx.page, ctx.idleTimeout);
     await settleLayout(ctx.page);
     await ctx.filmstrip(
       kind === 'cast'
@@ -55,7 +55,7 @@ export const ELEMENT_BEATS: readonly Beat[] = (
     await startGame(ctx.page, ['Explorer'], [character], 'element-review', { reduceMotion: false });
     await enterNode(ctx.page, 'battle_forest_road');
     await takeTurn(ctx.page);
-    await waitForIdle(ctx.page);
+    await waitForIdle(ctx.page, ctx.idleTimeout);
     await settleLayout(ctx.page);
     await ctx.page.evaluate(() => window.fnt!.loadedFxCels());
     await ctx.filmstrip(`${element} release follows the body's extension.`, times, async () => {

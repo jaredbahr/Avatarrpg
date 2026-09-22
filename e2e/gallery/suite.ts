@@ -67,6 +67,13 @@ class Stage implements BeatContext {
    */
   readonly settleTimeout: number;
 
+  /**
+   * How long playback may take to settle: see `waitForIdle`. The same
+   * reasoning as the camera settle, since it waits on the same slow frames,
+   * and never below the 20 s the helper has always allowed.
+   */
+  readonly idleTimeout: number;
+
   constructor(
     readonly page: Page,
     readonly renderer: 'canvas' | 'webgl',
@@ -75,6 +82,7 @@ class Stage implements BeatContext {
     private readonly beat: Beat,
   ) {
     this.settleTimeout = renderer === 'webgl' ? 60_000 : 10_000;
+    this.idleTimeout = Math.max(20_000, this.settleTimeout);
   }
 
   query(extra: Record<string, string> = {}): string {
@@ -143,7 +151,7 @@ class Stage implements BeatContext {
     // sixteen milliseconds of it, which on software GL is minutes.
     await this.page.clock.resume();
     this.paused = false;
-    await waitForIdle(this.page);
+    await waitForIdle(this.page, this.idleTimeout);
   }
 
   /** `pauseClock` reads, tries and widens: see its note on slow frames. */

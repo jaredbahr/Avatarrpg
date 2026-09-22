@@ -26,7 +26,7 @@ export const CROSSBOW_BEATS: readonly Beat[] = [
       );
       await enterNode(ctx.page, 'battle_ambush');
       await takeTurn(ctx.page, { settleTimeout: ctx.settleTimeout });
-      await waitForIdle(ctx.page);
+      await waitForIdle(ctx.page, ctx.idleTimeout);
       await settleLayout(ctx.page, ctx.settleTimeout);
       const crossbow = await ctx.page.evaluate(() => {
         const crossbow = window.fnt?.app.state?.battle?.units.find(
@@ -65,7 +65,7 @@ export const CROSSBOW_BEATS: readonly Beat[] = [
       );
       await enterNode(ctx.page, 'battle_ambush');
       await takeTurn(ctx.page, { settleTimeout: ctx.settleTimeout });
-      await waitForIdle(ctx.page);
+      await waitForIdle(ctx.page, ctx.idleTimeout);
       await settleLayout(ctx.page, ctx.settleTimeout);
       // Decode the real asset before freezing the clock for the filmstrip.
       await ctx.page.evaluate(async () => {

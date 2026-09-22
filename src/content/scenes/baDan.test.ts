@@ -51,7 +51,7 @@ beforeAll(async () => {
   await init(await WebAssembly.compile(wasm));
   decodedGround = new Map();
   for (const piece of BA_DAN_SCENE.ground.filter((entry) =>
-    /(?:courtyard|western-approach|northwest-lawn|north-house-court|east-gate-approach|south-house-court)-ground\.webp$/.test(
+    /(?:courtyard|western-approach|northwest-lawn|north-house-court|east-gate-approach|south-house-court|northeast-lawn|southwest-lawn)-ground\.webp$/.test(
       entry.url,
     ),
   )) {
@@ -282,6 +282,18 @@ it('covers the remaining connected village courts with opaque decoded material j
       { x: 10, y: 12 },
       { x: 17, y: 13 },
     ],
+    'northeast-lawn': [
+      { x: 19, y: 2 },
+      { x: 21, y: 3 },
+      { x: 22, y: 4 },
+      { x: 18, y: 5 },
+    ],
+    'southwest-lawn': [
+      { x: 1, y: 11 },
+      { x: 3, y: 12 },
+      { x: 4, y: 14 },
+      { x: 1, y: 14 },
+    ],
   };
   for (const { frame, piece } of regions) {
     if (!piece) continue;
@@ -294,6 +306,9 @@ it('covers the remaining connected village courts with opaque decoded material j
     ['north-house-court', { x: 10.5, y: 3.5 }, 'courtyard'],
     ['east-gate-approach', { x: 14.5, y: 7.5 }, 'courtyard'],
     ['south-house-court', { x: 10.5, y: 10.5 }, 'courtyard'],
+    ['southwest-lawn', { x: 1.25, y: 9.5 }, 'western-approach'],
+    ['southwest-lawn', { x: 5.5, y: 11.5 }, 'south-house-court'],
+    ['northeast-lawn', { x: 17.5, y: 2.5 }, 'north-house-court'],
   ] as const;
   for (const [leftId, pos, rightId] of joins) {
     const left = named(leftId);

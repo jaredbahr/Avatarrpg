@@ -34,16 +34,21 @@ sampled with the exact same logical-coordinate material function as the
 courtyard and sits below that region's existing feather, avoiding a second
 screen-space join.
 
-The remaining connected village courts are four local transparent pieces packed
+The remaining connected village courts are six local transparent pieces packed
 by `scripts/art/ba-dan-neighborhood-ground.ts`: northwest lawn (`x0..6,y3..6`),
-north house court (`x4..17,y1..4`), east gate approach (`x14..23,y6..9`), and
-south house court (`x5..17,y10..14`). Their half-open bounds overlap reviewed
-western/courtyard pixels but deliberately leave rows 0 and 15 and the exterior
-tree rim procedural. Water is transparent in every local piece. The packer
-uses only decoded opaque quiet-grass (`x10..11,y4`) and broad flagstone
-(`x5..9,y7..8`) source interiors from the tracked accepted courtyard asset; it
-copies exact decoded RGB through existing overlaps and gives every new piece its
-own exterior feather.
+north house court (`x4..17,y1..4`), east gate approach (`x14..23,y6..9`),
+south house court (`x5..17,y10..14`), and the two outer lawns that closed the
+last flat fields — northeast (`x15..23,y1..7`) and southwest
+(`x0..6,y9..14`). Their half-open bounds overlap reviewed western/courtyard
+pixels but deliberately leave rows 0 and 15 and the exterior tree rim
+procedural. Every piece overlaps at least one neighbour by two or more cells, so
+two exterior feathers never leave an uncovered band between them: the outer
+lawns overlap the house courts west and north of them and the east gate approach
+south of them. Water is transparent in every local piece. The packer uses only
+decoded opaque quiet-grass (`x10..11,y4`) and broad flagstone (`x5..9,y7..8`)
+source interiors from the tracked accepted courtyard asset; it copies exact
+decoded RGB through existing overlaps and gives every new piece its own exterior
+feather.
 
 The canal's water is runtime-owned, but its ground layer is authored.
 `canal-banks.webp` is a 576×288 piece at `(928,368)`, generated from the six
