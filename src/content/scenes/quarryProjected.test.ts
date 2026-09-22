@@ -77,29 +77,24 @@ function pieceAlpha(piece: MapScene['ground'][number], world: { x: number; y: nu
 }
 
 describe('projected quarry scenes', () => {
-  it('covers dry authored centers and boundaries while leaving live surface interiors transparent', () => {
+  it('covers authored centers and boundaries, including the ground under a spill, leaving only water transparent', () => {
     for (const { map, scene } of routeScenes)
       for (let y = 0; y < map.height; y++)
         for (let x = 0; x < map.width; x++) {
           const key = map.rows[y]?.[x];
           const value = alpha(scene, point(x + 0.5, y + 0.5));
-          if (key === '~' || key === 'o' || key === 'm')
-            expect(value, `${map.id} live ${x},${y}`).toBeLessThan(8);
+          // Water keeps a transparent hole because its bed is authored with the
+          // liquid; oil and mud are opaque, so their own ground is painted and
+          // the live surface is drawn over it.
+          if (key === '~') expect(value, `${map.id} live water ${x},${y}`).toBeLessThan(8);
           else if (key !== '#') expect(value, `${map.id} dry ${x},${y}`).toBeGreaterThan(240);
-          if (key === '#' || key === '~' || key === 'o' || key === 'm') continue;
+          if (key === '#' || key === '~') continue;
           for (const [dx, dy] of [
             [1, 0],
             [0, 1],
           ] as const) {
             const neighbor = map.rows[y + dy]?.[x + dx];
-            if (
-              !neighbor ||
-              neighbor === '#' ||
-              neighbor === '~' ||
-              neighbor === 'o' ||
-              neighbor === 'm'
-            )
-              continue;
+            if (!neighbor || neighbor === '#' || neighbor === '~') continue;
             for (const inset of [-0.02, 0.02])
               expect(
                 alpha(scene, point(x + 0.5 + dx * (0.5 + inset), y + 0.5 + dy * (0.5 + inset))),
@@ -107,6 +102,29 @@ describe('projected quarry scenes', () => {
               ).toBeGreaterThan(240);
           }
         }
+  });
+
+  it('paints the quarry floor stone under every oil slick and the dirt under every mud patch', () => {
+    for (const [key, terrain] of [
+      ['o', 'stone'],
+      ['m', 'dirt'],
+    ] as const) {
+      const pieces = DRILLER_FLOOR_SCENE.ground.filter((piece) =>
+        piece.url.includes(terrain === 'stone' ? '/stone.webp' : '/dirt-'),
+      );
+      expect(pieces.length, `${key} pieces`).toBeGreaterThan(0);
+      let cells = 0;
+      for (let y = 0; y < QUARRY_FLOOR.height; y++)
+        for (let x = 0; x < QUARRY_FLOOR.width; x++) {
+          if (QUARRY_FLOOR.rows[y]?.[x] !== key) continue;
+          cells++;
+          expect(
+            pieces.some((piece) => pieceAlpha(piece, point(x + 0.5, y + 0.5)) > 240),
+            `${key} ${x},${y}`,
+          ).toBe(true);
+        }
+      expect(cells, `${key} cells`).toBeGreaterThan(0);
+    }
   });
   it('shares only the exterior surround underneath the two live floors', () => {
     expect(CUTTING_SCENE.ground.slice(0, 2)).toEqual(DRILLER_FLOOR_SCENE.ground.slice(0, 2));

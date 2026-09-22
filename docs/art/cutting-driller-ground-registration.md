@@ -84,11 +84,16 @@ The local region packs use the reviewed six-panel quarry source
 ImageGen directory. Its verified SHA-256 is
 `d15b808ab498c4521d73892d887ce2fedc54243008e0c92f9750c976e67a64f9`.
 `scripts/art/quarry-route-ground.ts` derives transparent dirt, road and stone
-regions from authoritative rows for each map; water, oil and mud cells stay
-transparent for runtime surfaces. A two-pixel edge bleed is restricted away
-from those dynamic interiors. Cutting packs: dirt-west, dirt-east, road and
-stone. Driller packs: dirt-west, dirt-east and stone. The exterior surround,
-rims, rear loading strip, walls and props are independent registrations.
+regions from authoritative rows for each map. A cell is painted with the ground
+its material stands on: an oil slick takes the stone page and a mud patch the
+dirt page, and the live surface is still drawn over it at runtime, so no opaque
+spill leaves the only unpainted hole in the floor beside illustrated ground.
+Water alone stays transparent, because its bed is authored with the liquid and
+a painted page under a translucent film would compete with it. A two-pixel edge
+bleed is restricted away from those water interiors. Cutting packs: dirt-west,
+dirt-east, road and stone. Driller packs: dirt-west, dirt-east and stone. The
+exterior surround, rims, rear loading strip, walls and props are independent
+registrations.
 
 The east dirt page now takes over across a narrow logical `x=10` alpha ramp
 over the west page's existing bleed. This avoids a visible diagonal caused by

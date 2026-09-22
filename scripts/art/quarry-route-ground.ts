@@ -28,14 +28,23 @@ const panel = (index: number) =>
 const fields = [0, 1, 2].map((index) => scaleTo(panel(index), 128, 128));
 const transitions = [3, 4, 5].map((index) => scaleTo(panel(index), 128, 128));
 type Kind = 'dirt' | 'road' | 'stone' | 'dynamic' | 'void';
+/**
+ * The ground a cell stands on, which is the material its authored page carries.
+ *
+ * A spill lies *on* the ground, so an oil slick reads as stone and a mud patch
+ * as dirt: the live surface is still drawn over the page at runtime, but an
+ * opaque material no longer leaves the only unpainted hole in the floor beside
+ * illustrated ground. Water alone stays transparent — its bed is authored with
+ * the liquid and a painted page under a translucent film would compete with it.
+ */
 const kind = (key: string | undefined): Kind =>
   key === '='
     ? 'road'
-    : key === '^' || key === 'A' || key === 'r'
+    : key === '^' || key === 'A' || key === 'r' || key === 'o'
       ? 'stone'
-      : key === '~' || key === 'o' || key === 'm'
+      : key === '~'
         ? 'dynamic'
-        : key === '.' || key === ',' || key === 'c'
+        : key === '.' || key === ',' || key === 'c' || key === 'm'
           ? 'dirt'
           : 'void';
 /** Continuous source phase: reflection made visible herringbone chevrons at every repeat. */
