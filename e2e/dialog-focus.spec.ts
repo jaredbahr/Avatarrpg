@@ -16,11 +16,13 @@ test('a long inspector opens at its title and keeps keyboard focus inside', asyn
   const title = dialog.getByRole('heading', { level: 2 });
   const close = dialog.getByRole('button', { name: 'Close' });
   await expect(title).toBeFocused();
-  const scroll = await dialog.evaluate((panel) => ({
-    top: panel.scrollTop,
-    height: panel.clientHeight,
-    content: panel.scrollHeight,
-  }));
+  // The dialog body is the scroll region (the header stays pinned above it),
+  // so a long inspector overflows its body and opens with that body at the top.
+  const scroll = await dialog.evaluate((panel) => {
+    const body = panel.querySelector<HTMLElement>(':scope > .stack');
+    if (!body) throw new Error('Missing dialog body');
+    return { top: body.scrollTop, height: body.clientHeight, content: body.scrollHeight };
+  });
   expect(scroll.content).toBeGreaterThan(scroll.height);
   expect(scroll.top).toBe(0);
 
