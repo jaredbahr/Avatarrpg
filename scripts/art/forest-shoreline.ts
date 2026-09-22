@@ -1,23 +1,43 @@
 /**
- * Pack the pond: its dry bank, a bounded exterior feather, a ragged bite into
+ * Pack the pond: its damp bank, a bounded exterior feather, a ragged bite into
  * the outer water cells so the pond does not read as the rules' eight-cell
  * cross, and the bed the water sits on.
+ *
+ *   node --import tsx scripts/art/forest-shoreline.ts [--audit]
  *
  * The runtime water layer still covers every water cell, exactly as the rules
  * do — it lays a 0.4-alpha film over the tile. What this layer adds is what the
  * camera sees through that film: the authored dry material reaches a little way
  * inside the outermost cells by a seeded, smoothly varying amount, so the
  * boundary between wet and dry wanders the way a real bank does instead of
- * tracing the tile polygon; and the rest of the water carries the forest's own
- * floor material, darkened with distance from the shore, so the middle of the
- * pond reads as deeper water over a visible bed rather than as a flat teal field.
+ * tracing the tile polygon; and the rest of the water carries a painted bed
+ * that deepens away from the shore, so the middle of the pond reads as deeper
+ * water over a visible bottom rather than as a flat teal field (ADR 0045).
+ *
+ * **What DL-2 W2b changed.** The geometry above is untouched. What the geometry
+ * is painted *with* is no longer the four-quadrant forest atlas — the bank was
+ * that atlas's ochre and the bed was the same ochre darkened, which is why the
+ * pond's margin was the odd material on a board whose road and verges had
+ * already been re-keyed to the village's hand. Both now come from
+ * `forest-village-material.ts`, in the DL-2 §3 water-margin key: the bank is
+ * the **damp margin** `#8e7049` over the road's own packed-earth shadow, the
+ * bed is `#2a5e77` falling to a deeper second flat tone, the wet line carries
+ * the bible's `#1b1410` ink with the §3 `#7ec8e3` edge on its wet side and the
+ * bank's pale rim on its dry one. Two flat tones per material, no gradient; the
+ * bed's depth is spent on *which* of its two tones a pixel takes, never on
+ * blending them, exactly as the route plate spends its feather.
  */
-import { writeFileSync } from 'node:fs';
+import { mkdirSync, writeFileSync } from 'node:fs';
 import { FOREST_POND_PATCH, FOREST_WATER_CELLS } from '../../src/content/scenes/forestRoad';
-import { newImage, pixelAt, readImage, setPixel, writePng } from './lib/image';
-import type { Image } from './lib/image';
-import { scaleTo } from './lib/scale';
+import { tileNoise } from '../../src/render/painters/shapes';
+import { newImage, parseHex, setPixel, writePng } from './lib/image';
 import { encodeWebp } from './lib/webp';
+import {
+  FOREST_GROUND_QUALITY,
+  FOREST_PIECE_TONES,
+  loadForestMaterial,
+} from './forest-village-material';
+import type { ForestMaterial } from './forest-village-material';
 
 export const SHORE_LIMIT = 0.12;
 export const COVER_LIMIT = 0.08;
@@ -27,58 +47,22 @@ export const SHORE_BITE = 0.3;
 export const BITE_FEATHER = 0.05;
 /** The narrowest a bite gets, as a fraction of `SHORE_BITE`. */
 export const BITE_FLOOR = 0.3;
-/** How far in the bed reaches its full depth, in cells. */
-export const BED_DEPTH = 1.5;
-/** What the shelf just under the bank keeps of the floor's brightness. */
-export const BED_SHELF = 0.78;
-/** How much of the authored silt's brightness the deepest water takes away. */
-export const BED_SHADE = 0.55;
-/** The deepest the seeded mottle may darken or lighten the bed, at full depth. */
-export const BED_MOTTLE = 0.07;
+/** How far in the bed reaches its deep tone, in cells, and over what band. */
+export const BED_DEEP_AT = 0.75;
+export const BED_DEEP_BAND = 0.3;
 /**
- * Standing water absorbs red first, so the bed cools as it goes under.
- *
- * The first pass used a small shift (0.94/1.06) and the pond's middle read
- * green-teal through the 0.4-alpha film: `e2e/renderer.spec.ts`'s authored-water
- * gate, which wants blue-minus-red above 20 where the rules say water, measured
- * 3.8 on a CI runner and 4.0 under SwiftShader locally, against 23 on an
- * accelerated GPU, where the same head clears it. The gate passed on the plate
- * before the bed existed, so the shift has to carry the water's own colour over
- * an opaque floor: 0.80/1.26 restores it on both rasterisers without touching
- * the brightness the bed's depth gradient is tuned for.
+ * The bible's uniform ink and the thin rim beside it, in logical cells. One
+ * step of a tile across either kind of cell edge is `hypot(64, 32)` screen
+ * pixels, so 2 px of ink is this much of a tile — the same arithmetic
+ * `forest-route-ground.ts` uses, so the pond's line matches the road's.
  */
-export const BED_COOL = { red: 0.8, blue: 1.26 } as const;
+const TILE_DIAGONAL = Math.hypot(64, 32);
+export const INK_HALF = 1 / TILE_DIAGONAL;
+export const RIM_WIDTH = 3 / TILE_DIAGONAL;
 /** World pixels per cell, and packed pixels per cell at this density. */
 const CELL = 64;
 const DENSITY = 2;
-export const SHORE_SOURCE = 'assets/reference/forest-pond-shoreline/shoreline-source.png';
 export const SHORE_OUTPUT = 'public/art/maps/forest-scene/pond-bank.webp';
-/** The atlas the route ground itself is packed from, and its own 3px guard. */
-export const BED_SOURCE = 'assets/source/forest-material-v2/material-sheet.png';
-const ATLAS_GUARD = 3;
-const ATLAS_PERIODS = 192;
-
-/**
- * The forest floor under the pond, sampled in world space exactly as
- * `forest-route-ground.ts` samples it for the road, out of the atlas's own
- * dry-earth quadrant. The pond therefore holds the material the ground around
- * it is made of — a unit of road, one unit of water below — and the bed's grain
- * continues across the shoreline instead of changing material at the wet line.
- */
-export function bedSampler(
-  atlas: Image,
-): (x: number, y: number) => [number, number, number, number] {
-  const swatch = Math.floor(Math.min(atlas.width, atlas.height) / 2);
-  const period = swatch - ATLAS_GUARD * 2;
-  const wrap = (value: number): number => {
-    const wrapped = ((value % (period * 2)) + period * 2) % (period * 2);
-    return (
-      ATLAS_GUARD +
-      Math.min(period - 1, Math.floor(wrapped < period ? wrapped : period * 2 - wrapped))
-    );
-  };
-  return (x, y) => pixelAt(atlas, wrap(x * ATLAS_PERIODS), wrap(y * ATLAS_PERIODS));
-}
 
 export function shorePosition(px: number, py: number, density = 2) {
   const worldX = FOREST_POND_PATCH.x + (px + 0.5) / density;
@@ -101,20 +85,6 @@ export function shoreDistance(x: number, y: number): number {
  */
 export function biteDepth(x: number, y: number): number {
   return SHORE_BITE * (BITE_FLOOR + (1 - BITE_FLOOR) * shoreNoise(x * 2.6, y * 2.6));
-}
-
-/**
- * How much of the bed's borrowed silt colour survives at a point, by how far
- * the point sits inside the water. The shelf under the bank keeps the artist's
- * own tone, so the bite's feather meets it without a seam; the middle of the
- * pond loses `BED_SHADE` of its brightness and gains a slow mottle, which is
- * what makes the water read as deeper there. Position-seeded and smooth, so
- * neighbouring pixels agree and the bed never speckles.
- */
-export function bedShade(x: number, y: number, inset: number): number {
-  const depth = Math.min(1, Math.max(0, inset) / BED_DEPTH);
-  const mottle = (shoreNoise(x * 1.7 + 31.7, y * 1.7 + 17.3) - 0.5) * 2 * BED_MOTTLE * depth;
-  return Math.max(0.3, BED_SHELF - BED_SHADE * depth + mottle);
 }
 
 /** Two octaves of value noise over a seeded integer lattice. */
@@ -142,54 +112,36 @@ function hash01(ix: number, iy: number): number {
   return ((h ^ (h >>> 16)) >>> 0) / 4294967296;
 }
 
+const clamp = (value: number): number => Math.max(0, Math.min(1, value));
+const smooth = (t: number): number => {
+  const c = clamp(t);
+  return c * c * (3 - 2 * c);
+};
+
 /**
- * The nearest authored dry pixel's colour and 4-connected distance at every
- * packed pixel, by one multi-source breadth-first walk out of the dry material.
- * Registration and the bite both use it, so neither synthesises a colour the
- * artist did not draw.
+ * Whether a wet point takes the bed's deep tone rather than its shelf tone.
+ *
+ * The decision is the smoothstep of how far the point sits inside the water,
+ * resolved per pixel against a hash: the *share* of deep pixels rises across
+ * `BED_DEEP_BAND`, so the pond visibly deepens, but every pixel is still one of
+ * exactly two flat tones and no intermediate key is ever written. The village
+ * lawn's own incident then flips the class in its minority share, which leaves
+ * silt flecks on the shelf and pale submerged stones in the deep.
  */
-function nearestDry(source: Image): { colour: Image; distance: Float64Array } {
-  const { width, height } = source;
-  const colour = newImage(width, height);
-  const distance = new Float64Array(width * height).fill(-1);
-  const queue = new Int32Array(width * height);
-  let head = 0;
-  let tail = 0;
-  for (let py = 0; py < height; py++)
-    for (let px = 0; px < width; px++) {
-      const pixel = pixelAt(source, px, py);
-      if (pixel[3] < 16 || isWaterColour(pixel)) continue;
-      // Only the authored bank outside the water cells seeds the fill: the
-      // shallow-water mottling the artist drew at the rim reads as scattered
-      // green noise once it is carried inward pixel by pixel.
-      const { x, y } = shorePosition(px, py);
-      if (shoreDistance(x, y) <= 0) continue;
-      const index = py * width + px;
-      distance[index] = 0;
-      setPixel(colour, px, py, pixel);
-      queue[tail++] = index;
-    }
-  while (head < tail) {
-    const index = queue[head++] ?? 0;
-    const px = index % width;
-    const py = (index - px) / width;
-    const step = (distance[index] ?? 0) + 1;
-    const spread = (next: number): void => {
-      if (next < 0 || next >= width * height) return;
-      if ((distance[next] ?? -1) >= 0) return;
-      const nx = next % width;
-      const ny = (next - nx) / width;
-      if (Math.abs(nx - px) + Math.abs(ny - py) !== 1) return;
-      distance[next] = step;
-      setPixel(colour, nx, ny, pixelAt(colour, px, py));
-      queue[tail++] = next;
-    };
-    spread(index - 1);
-    spread(index + 1);
-    spread(index - width);
-    spread(index + width);
-  }
-  return { colour, distance };
+export function bedIsDeep(
+  material: ForestMaterial,
+  x: number,
+  y: number,
+  px: number,
+  py: number,
+  inside: number,
+): boolean {
+  const band = smooth((inside - BED_DEEP_AT) / BED_DEEP_BAND + 0.5);
+  // Resolved over four-pixel clumps rather than per pixel: a per-pixel draw is
+  // a dither, and a dither is a gradient with extra steps. At this density a
+  // clump is two world pixels, so the shelf breaks into silt rather than noise.
+  const deep = tileNoise(px >> 2, py >> 2, 11) < band;
+  return deep !== (material.classOf('bed', x, y) === 'shadow');
 }
 
 /** How far inside the water a packed pixel sits, in cells; zero outside it. */
@@ -229,28 +181,32 @@ export function pondInset(width: number, height: number): Float64Array {
   return inset;
 }
 
-/** Teal is absent from the authored ochre dry-margin material. */
-export function isWaterColour(pixel: readonly number[]): boolean {
-  const [r = 0, g = 0, b = 0] = pixel;
-  return b > r + 5 && g > r + 5;
-}
-
-export function packShoreline(raw: Image, atlas: Image) {
+export function packShoreline(material: ForestMaterial) {
   const { width, height } = FOREST_POND_PATCH;
-  if (Math.abs(raw.width / raw.height - width / height) > 0.005)
-    throw new Error('Shoreline source changed the full-canvas registration aspect.');
-  const source = scaleTo(raw, width * 2, height * 2);
-  const out = newImage(source.width, source.height);
-  const { colour: dry, distance: dryDistancePx } = nearestDry(source);
+  const out = newImage(width * DENSITY, height * DENSITY);
   const inset = pondInset(out.width, out.height);
-  const bedSample = bedSampler(atlas);
-  let mattePixels = 0,
-    farthestSampleCells = 0,
-    bitePixels = 0,
+  const bed = {
+    shelf: parseHex(FOREST_PIECE_TONES.bed.base),
+    deep: parseHex(FOREST_PIECE_TONES.bed.shadow),
+    edge: parseHex(FOREST_PIECE_TONES.bed.rim),
+  };
+  let bitePixels = 0,
     deepestBitePixels = 0,
     bedPixels = 0,
     deepBedPixels = 0,
-    deepestShade = 1;
+    inkPixels = 0;
+  /*
+   * Per-material means, in the same Rec. 709 luma `forest-ground-measure.ts`
+   * reads. The plate holds two materials that are supposed to differ — damp
+   * earth and water-covered bed — so its whole-plate window span is a
+   * wet-against-dry step, not the baked ramp the DL-2 §3 bar is aimed at.
+   * These are the numbers that say whether either material itself has drifted.
+   */
+  const bands = { dry: { n: 0, sum: 0 }, bed: { n: 0, sum: 0 } };
+  const record = (band: { n: number; sum: number }, rgb: readonly number[]): void => {
+    band.n++;
+    band.sum += 0.2126 * (rgb[0] ?? 0) + 0.7152 * (rgb[1] ?? 0) + 0.0722 * (rgb[2] ?? 0);
+  };
   for (let py = 0; py < out.height; py++)
     for (let px = 0; px < out.width; px++) {
       const { x, y } = shorePosition(px, py);
@@ -261,116 +217,86 @@ export function packShoreline(raw: Image, atlas: Image) {
       /*
        * Inside a water cell the bank reaches in by `depth`, so the wet outline
        * wanders instead of running along the tile's own edge. The bite is
-       * bounded well below half a cell, so the middle of every water cell -
-       * where a unit stands and where the runtime water reads as water - is
+       * bounded well below half a cell, so the middle of every water cell —
+       * where a unit stands and where the runtime water reads as water — is
        * never covered.
        */
       const dryInside = inside > 0 && inside < depth;
       const wet = inside > 0;
       if (!dryOutside && !wet) continue;
-      /*
-       * The bed is painted first, because both the bank and its bite sit on it:
-       * the forest floor, darkened with distance from the shore. It is opaque
-       * across every water pixel, so the 0.4-alpha water film tints authored
-       * sediment the same way the road beside it is made, instead of showing
-       * whichever ground the pond happens to sit on.
-       */
-      let pixel: readonly number[] = [0, 0, 0, 0];
+
+      let rgb: readonly number[];
+      let alpha = 255;
       if (wet) {
-        const silt = bedSample(x, y);
-        const shade = bedShade(x, y, inside);
-        pixel = [
-          Math.round(silt[0] * shade * BED_COOL.red),
-          Math.round(silt[1] * shade),
-          Math.min(255, Math.round(silt[2] * shade * BED_COOL.blue)),
-          255,
-        ];
-        bedPixels++;
-        deepestShade = Math.min(deepestShade, shade);
-        if (inside > BED_DEPTH * 0.6) deepBedPixels++;
-      }
-      if (dryOutside || dryInside) {
-        let bank = pixelAt(source, px, py);
-        // Generated alpha drifts slightly from the exact guide, and a bite sits
-        // where the source painted water. Both borrow the nearest authored dry
-        // pixel: this is registration and shore, never synthesized material.
-        if (bank[3] < 16 || isWaterColour(bank)) {
-          /*
-           * The nearest bank pixel is reached by a straight 4-connected walk, so
-           * copying it verbatim lays the bank into the water as parallel streaks.
-           * A small seeded offset along the shore turns those into mottle, and
-           * falls back to the exact pixel when the offset lands off the bank.
-           */
-          const jitterX = Math.round((hash01(px >> 2, py >> 2) - 0.5) * 7);
-          const jitterY = Math.round((hash01(py >> 2, px >> 2) - 0.5) * 7);
-          let replacement = pixelAt(
-            dry,
-            Math.min(dry.width - 1, Math.max(0, px + jitterX)),
-            Math.min(dry.height - 1, Math.max(0, py + jitterY)),
-          );
-          if (replacement[3] < 16) replacement = pixelAt(dry, px, py);
-          if (replacement[3] < 16)
-            throw new Error(`No nearby authored dry shore pixel at ${px},${py}`);
-          bank = replacement;
-          mattePixels++;
-          farthestSampleCells = Math.max(
-            farthestSampleCells,
-            (dryDistancePx[py * out.width + px] ?? 0) / (CELL * DENSITY),
-          );
-        }
-        if (dryOutside) {
-          // Nothing lies under this band, outside the water: it keeps its own
-          // alpha, opaque against the bank and feathered out to the dry ground.
-          const alpha =
-            distance <= COVER_LIMIT
-              ? 255
-              : Math.round((255 * (SHORE_LIMIT - distance)) / (SHORE_LIMIT - COVER_LIMIT));
-          pixel = [bank[0], bank[1], bank[2], alpha];
+        // The bed is opaque across every wet pixel, so the 0.4-alpha water film
+        // always tints authored bottom rather than whatever ground the pond
+        // happens to sit on (ADR 0045). The wet line itself is the boundary
+        // between the bite and the bed, which is where the ink belongs: the
+        // tile edge is not a material edge, and never was.
+        const fromLine = inside - depth;
+        if (Math.abs(fromLine) < INK_HALF) {
+          rgb = material.ink;
+          inkPixels++;
+        } else if (fromLine > 0 && fromLine < INK_HALF + RIM_WIDTH) {
+          rgb = bed.edge;
+        } else if (fromLine < 0 && -fromLine < INK_HALF + RIM_WIDTH) {
+          rgb = material.rimOf('margin');
+        } else if (dryInside) {
+          rgb = material.colour('margin', x, y);
         } else {
-          /*
-           * The bite is the damp edge of the bank. It fades into the bed that is
-           * already painted underneath, rather than into bare ground: wet and
-           * dry meet in silt, and the pond has no translucent hole in it.
-           */
-          const weight = Math.min(1, (depth - inside) / BITE_FEATHER);
-          pixel = [
-            Math.round(bank[0] * weight + (pixel[0] ?? 0) * (1 - weight)),
-            Math.round(bank[1] * weight + (pixel[1] ?? 0) * (1 - weight)),
-            Math.round(bank[2] * weight + (pixel[2] ?? 0) * (1 - weight)),
-            255,
-          ];
-          bitePixels++;
-          if (inside > SHORE_BITE * 0.75) deepestBitePixels++;
+          rgb = bedIsDeep(material, x, y, px, py, inside) ? bed.deep : bed.shelf;
         }
+        if (dryInside) {
+          bitePixels++;
+          record(bands.dry, rgb);
+          if (inside > SHORE_BITE * 0.75) deepestBitePixels++;
+        } else {
+          bedPixels++;
+          record(bands.bed, rgb);
+          if (inside > BED_DEEP_AT + BED_DEEP_BAND / 2) deepBedPixels++;
+        }
+      } else {
+        // Nothing lies under this band, outside the water: it keeps the damp
+        // margin, opaque against the bank and feathered out to the dry ground
+        // so the plate's own rim never ends on a ruled line.
+        rgb = material.colour('margin', x, y);
+        record(bands.dry, rgb);
+        alpha =
+          distance <= COVER_LIMIT
+            ? 255
+            : Math.round((255 * (SHORE_LIMIT - distance)) / (SHORE_LIMIT - COVER_LIMIT));
       }
-      setPixel(out, px, py, pixel);
+      setPixel(out, px, py, [rgb[0] ?? 0, rgb[1] ?? 0, rgb[2] ?? 0, alpha]);
     }
   return {
     image: out,
-    mattePixels,
-    farthestSampleCells,
     bitePixels,
     deepestBitePixels,
     bedPixels,
     deepBedPixels,
-    deepestShade,
+    inkPixels,
+    dryMean: bands.dry.n ? bands.dry.sum / bands.dry.n : 0,
+    bedMean: bands.bed.n ? bands.bed.sum / bands.bed.n : 0,
   };
 }
 
 export async function main() {
-  const result = packShoreline(readImage(SHORE_SOURCE), readImage(BED_SOURCE));
-  writeFileSync(SHORE_OUTPUT, await encodeWebp(result.image, 88, true));
+  const result = packShoreline(await loadForestMaterial());
+  mkdirSync('public/art/maps/forest-scene', { recursive: true });
+  const bytes = await encodeWebp(result.image, FOREST_GROUND_QUALITY, true);
+  writeFileSync(SHORE_OUTPUT, bytes);
   if (process.argv.includes('--audit')) writePng('.shots/pond/packed.png', result.image);
   console.log({
     width: result.image.width,
     height: result.image.height,
-    mattePixels: result.mattePixels,
-    farthestSampleCells: Number(result.farthestSampleCells.toFixed(3)),
+    bytes: bytes.length,
     bitePixels: result.bitePixels,
     deepestBitePixels: result.deepestBitePixels,
     bedPixels: result.bedPixels,
     deepBedPixels: result.deepBedPixels,
-    deepestShade: Number(result.deepestShade.toFixed(3)),
+    inkPixels: result.inkPixels,
+    dryMean: Number(result.dryMean.toFixed(1)),
+    bedMean: Number(result.bedMean.toFixed(1)),
   });
 }
 if (process.argv[1]?.endsWith('forest-shoreline.ts')) await main();
