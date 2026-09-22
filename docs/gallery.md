@@ -27,7 +27,9 @@ whole capture locally is still `npm run gallery`; to recapture one
 shard, run `npm run gallery:capture -- --project=surface-webgl --shard=1/3`
 and then `node scripts/gallery-index.mjs`.
 
-Normal Pages deployments publish the game without recapturing the gallery.
+Pages deploys once a day at 10:00 UTC (skipped when `main` has not moved) or on
+a manual dispatch, not on every merge. Normal deployments publish the game
+without recapturing the gallery.
 For a public review URL, manually run **Deploy to GitHub Pages** on `main` with
 `publish_gallery` enabled. A successful capture is then available at `/gallery/`
 beside the game until the next normal deployment replaces it. A failed optional

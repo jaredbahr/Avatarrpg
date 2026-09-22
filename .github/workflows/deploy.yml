@@ -1,8 +1,14 @@
+# Deploys once a day, not on every merge (Jared, 2026-09-21). The daily run
+# skips the build when `main` has not moved since the previous day, so an idle
+# repo costs one short runner. A supervisor who needs the site current sooner
+# dispatches this workflow by hand. Do not re-add the `push` trigger.
+
 name: Deploy to GitHub Pages
 
 on:
-  push:
-    branches: [main]
+  schedule:
+    # Daily, 10:00 UTC (05:00 America/Chicago), one hour after the nightly CI.
+    - cron: '0 10 * * *'
   workflow_dispatch:
     inputs:
       publish_gallery:
@@ -22,8 +28,32 @@ concurrency:
   cancel-in-progress: false
 
 jobs:
+  freshness:
+    name: Has main moved since yesterday?
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    outputs:
+      # `true` when HEAD is younger than the daily window; the build keys on it.
+      fresh: ${{ steps.fresh.outputs.fresh }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - id: fresh
+        # 25 hours, not 24: cron start times jitter by minutes, and a commit
+        # that lands in the gap would otherwise never deploy. A repeated
+        # deploy of the same revision is harmless.
+        run: |
+          if [ -n "$(git log -1 --since='25 hours ago' --format=%H)" ]; then
+            echo "fresh=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "fresh=false" >> "$GITHUB_OUTPUT"
+          fi
+
   build:
     name: Build site
+    needs: freshness
+    # A manual dispatch always builds; the daily run only when `main` moved.
+    if: ${{ github.event_name == 'workflow_dispatch' || needs.freshness.outputs.fresh == 'true' }}
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
