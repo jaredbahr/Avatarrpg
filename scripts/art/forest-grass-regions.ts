@@ -1,9 +1,24 @@
-/** Pack sparse reusable grass regions around the forest road from the material sheet. */
+/**
+ * Pack the sparse reusable grass regions around the forest road.
+ *
+ *   node --import tsx scripts/art/forest-grass-regions.ts
+ *
+ * These two packs and `route-ground.webp` share rows 3 and 9, so they have to
+ * be the same verge or the overlap shows as a seam. They therefore take their
+ * pixels from the same place the route plate does — `forest-village-material.ts`,
+ * re-derived from the village's accepted lawn — and not from the forest atlas,
+ * whose olive-ochre swatch had no Earth-family green in it at all.
+ *
+ * The material is a pure function of the logical point, so the two packers
+ * cannot drift across the overlap even when they are run separately.
+ */
 import { mkdirSync, writeFileSync } from 'node:fs';
 import { FOREST_ROAD } from '../../src/content/maps/combat';
 import { FOREST_GRASS_REGIONS } from '../../src/content/scenes/forestRoadGround';
-import { newImage, pixelAt, readImage, setPixel } from './lib/image';
+import { newImage, setPixel } from './lib/image';
 import type { Image } from './lib/image';
+import { FOREST_GROUND_QUALITY, loadForestMaterial } from './forest-village-material';
+import type { ForestMaterial } from './forest-village-material';
 import { encodeWebp } from './lib/webp';
 
 export const FOREST_GRASS_PACKS = [
@@ -37,11 +52,6 @@ export function grassPosition(
   return { x: (dx + dy) / 2, y: (dy - dx) / 2 };
 }
 
-function sample(value: number, period: number, edge: number): number {
-  const wrapped = ((value % (period * 2)) + period * 2) % (period * 2);
-  return edge + Math.min(period - 1, Math.floor(wrapped < period ? wrapped : period * 2 - wrapped));
-}
-
 export function withinGrassRegion(x: number, y: number, rows: readonly number[]): boolean {
   const key = FOREST_ROAD.rows[y]?.[x];
   // Grass continues beneath a pine without changing its footprint, but never
@@ -50,13 +60,10 @@ export function withinGrassRegion(x: number, y: number, rows: readonly number[])
 }
 
 export function packGrassRegion(
-  atlas: Image,
+  material: ForestMaterial,
   rows: readonly number[],
   region: (typeof FOREST_GRASS_PACKS)[number]['region'],
 ): Image {
-  const swatch = Math.floor(Math.min(atlas.width, atlas.height) / 2);
-  const edge = 3;
-  const period = swatch - edge * 2;
   const image = newImage(region.width, region.height);
   for (let py = 0; py < image.height; py++)
     for (let px = 0; px < image.width; px++) {
@@ -78,25 +85,21 @@ export function packGrassRegion(
         alpha = Math.min(alpha, clamp(distance / width));
       }
 
-      const sx = sample(x * 192, period, edge) + swatch;
-      const sy = sample(y * 192, period, edge);
-      const colour = pixelAt(atlas, sx, sy);
+      const colour = material.colour('verge', x, y);
       setPixel(image, px, py, [colour[0], colour[1], colour[2], Math.round(alpha * 255)]);
     }
   return image;
 }
 
-export async function main(source: string) {
-  const atlas = readImage(source);
+export async function main() {
+  const material = await loadForestMaterial();
   mkdirSync('public/art/maps/forest-scene', { recursive: true });
   for (const pack of FOREST_GRASS_PACKS) {
-    const image = packGrassRegion(atlas, pack.rows, pack.region);
-    writeFileSync(pack.output, await encodeWebp(image, 86, true));
+    const image = packGrassRegion(material, pack.rows, pack.region);
+    writeFileSync(pack.output, await encodeWebp(image, FOREST_GROUND_QUALITY, true));
   }
 }
 
 if (process.argv[1]?.endsWith('forest-grass-regions.ts')) {
-  const source = process.argv[2];
-  if (!source) throw new Error('Provide the reviewed four-quadrant forest material sheet.');
-  await main(source);
+  await main();
 }
