@@ -1,4 +1,4 @@
-import { SURFACE_STYLES } from '../palettes';
+import { SURFACE_STYLES, WATER_BED } from '../palettes';
 import { SURFACE_BANK, SURFACE_POOL, SURFACE_RIM } from '../surfaceRendering';
 
 const glslColor = (hex: string): string =>
@@ -226,6 +226,20 @@ void main(void) {
       // deep water: slow swell
       float swell = fbm(w * 2.0 + vec2(uTime * 0.06, uTime * 0.04));
       col += vec3(0.02, 0.05, 0.07) * (swell - 0.4);
+    }
+    /*
+     * The bed under standing water, mirroring paintWaterBed in
+     * painters/tiles.ts: the terrain keeps its grain and is carried toward the
+     * contract's bed tone before the film above it, because a 0.4 wash over
+     * light packed earth reads grey. Deep water, wall and pit are already dark
+     * and are left alone; the painting's own bed is left alone too, because
+     * this branch does not run under one.
+     */
+    if (surface == 1 && terrain != 6 && terrain != 7 && terrain != 8) {
+      float bedMottle =
+        ${(1 - WATER_BED.mottle).toFixed(3)} +
+        ${(2 * WATER_BED.mottle).toFixed(3)} * vnoise(w * 5.0);
+      col = mix(col, ${glslColor(WATER_BED.fill)}, ${WATER_BED.weight.toFixed(3)} * bedMottle * intensity);
     }
     acc = vec4(col, 1.0);
   }

@@ -80,6 +80,30 @@ export const TERRAIN_STYLES: Record<TerrainId, TerrainStyle> = {
   pit: { fill: '#14100c', edge: '#0b0906', detail: '#1d1813' },
 };
 
+/**
+ * What lies under standing water on procedural ground.
+ *
+ * ADR 0045 packs a bed into the forest pond's own plate, because a 0.4-alpha
+ * film leaves most of what the camera sees to the ground below: over the old
+ * dark dirt the film still read as water, but the ground contract's packed
+ * earth (`#b39064`, red 79 above blue) is warm and light, and the film over it
+ * desaturated to grey. Procedural ground therefore grows the same bed the
+ * authored plate carries — the contract's bed tone, mixed into the terrain
+ * *before* the film, so the ground's own grain stays visible through it.
+ *
+ * It belongs to the terrain pass, not the surface pass: an authored plate
+ * brings its own bed and must not be tinted twice, and neither backend draws
+ * terrain where a painting owns the ground.
+ */
+export const WATER_BED = {
+  /** The ground contract's bed tone, shared with `water_deep`'s detail. */
+  fill: '#2a5e77',
+  /** How far the terrain is carried toward it under a permanent surface. */
+  weight: 0.55,
+  /** Seeded variation either side of that weight, so a bed is not a slab. */
+  mottle: 0.08,
+} as const;
+
 /* ------------------------------------------------------------------ */
 /* Surfaces                                                            */
 /* ------------------------------------------------------------------ */
