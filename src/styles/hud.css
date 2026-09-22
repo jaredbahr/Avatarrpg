@@ -1520,7 +1520,43 @@ html[data-contrast='high'] .hud-panel::after {
   flex-direction: column;
   gap: var(--sp-3);
   max-height: 88dvh;
+}
+
+/*
+ * base.css lets every overlay panel scroll. A dialog must not: the sheet's only
+ * scroll belongs to the body region below, so the footer holding Import and
+ * Close stays pinned inside the sheet at Largest text instead of scrolling
+ * below the bottom edge with nothing to say the sheet goes on. Higher
+ * specificity than `.overlay > .panel` on purpose.
+ */
+.overlay > .panel.dialog {
+  overflow: hidden;
+}
+
+/*
+ * The dialog body is the sheet's flexible region. It scrolls itself when a
+ * dialog has no inner scroll region (the unit inspector, settings), so the
+ * header stays pinned and nothing is clipped; the save sheet's slot list below
+ * scrolls first, so that sheet's footer never leaves the box.
+ */
+.dialog > .stack {
+  min-height: 0;
+  flex: 1 1 auto;
   overflow-y: auto;
+}
+
+/*
+ * The slot list is the scroll region. `overscroll-behavior` keeps a flick at
+ * the end of the list from scrolling the page behind the sheet, and the
+ * hairline of padding leaves room for a row's outline at the scroll edges.
+ */
+.dialog > .stack > .slot-list {
+  min-height: 0;
+  flex: 1 1 auto;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  overscroll-behavior: contain;
+  padding: var(--hairline);
 }
 
 .dialog-wide {
@@ -1538,6 +1574,8 @@ html[data-contrast='high'] .hud-panel::after {
 .dialog-footer {
   padding-top: var(--sp-2);
   border-top: var(--hairline) solid var(--c-line);
+  /* Pinned below the scrolling list, whatever the text size. */
+  flex: 0 0 auto;
 }
 
 .slot {

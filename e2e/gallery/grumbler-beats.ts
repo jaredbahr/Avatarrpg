@@ -29,7 +29,6 @@ export const GRUMBLER_BEATS: readonly Beat[] = [
     projects: ['surface-canvas', 'surface-webgl', 'ipad-canvas', 'ipad-webgl', 'portrait-canvas'],
     async run(ctx) {
       await openGrumbler(ctx);
-      await ctx.shoot('The two-tile machine stands on the quarry floor beside the party.', 'floor');
       const boss = await ctx.page.evaluate(() => {
         const boss = window.fnt?.app.state?.battle?.units.find(
           (u) => u.sprite === 'unit.enemy.grumbler',
@@ -37,10 +36,14 @@ export const GRUMBLER_BEATS: readonly Beat[] = [
         if (!boss) throw new Error('Missing Grumbler');
         return { id: boss.id, pos: boss.pos };
       });
-      // The camera has to own the machine before its tile is projected, or the
-      // right-click lands on the chrome and the inspector never opens. Same
-      // repair as the bandit portrait beat (b0fbc8b) and the crossbow beat.
+      // The camera has to own the machine before the floor still, or the frame
+      // shows the party alone: the driller sits outside the default focus, so
+      // its two-tile footprint never enters the picture. The same focus also
+      // puts its tile where the right-click below can reach it, or the click
+      // lands on the chrome and the inspector never opens. Same repair as the
+      // bandit portrait beat (b0fbc8b) and the crossbow beat.
       await focusStagedUnit(ctx.page, boss.id, ctx.settleTimeout);
+      await ctx.shoot('The two-tile machine stands on the quarry floor beside the party.', 'floor');
       const point = await tileCentre(ctx.page, boss.pos);
       await ctx.page.mouse.click(point.x, point.y, { button: 'right' });
       await ctx.page.locator('.dialog canvas[data-asset="portrait.enemy.grumbler"]').waitFor();
@@ -53,6 +56,9 @@ export const GRUMBLER_BEATS: readonly Beat[] = [
           panel.getAnimations({ subtree: true }).map((animation) => animation.finished),
         );
         panel.scrollTop = 0;
+        // The body is the dialog's scroll region now; reset it as well.
+        const body = panel.querySelector<HTMLElement>(':scope > .stack');
+        if (body) body.scrollTop = 0;
       });
       await ctx.shoot(this.note, 'inspector');
     },

@@ -407,3 +407,67 @@ export async function focusStagedUnit(page: Page, unitId: string, timeout: numbe
     `Focused actor ${unitId} must be on the interactive canvas`,
   ).toBe(true);
 }
+
+/** True while a tile's centre lands on the painted map canvas, on this screen. */
+export async function tileInFrame(page: Page, pos: Vec2): Promise<boolean> {
+  const point = await paintedTileCentre(page, pos);
+  if (!point) return false;
+  return page.evaluate(({ x, y }) => {
+    const canvas = document.querySelector<HTMLElement>('.map-canvas');
+    if (!canvas) return false;
+    const rect = canvas.getBoundingClientRect();
+    return (
+      x >= rect.left &&
+      x <= rect.right &&
+      y >= rect.top &&
+      y <= rect.bottom &&
+      x >= 0 &&
+      y >= 0 &&
+      x <= window.innerWidth &&
+      y <= window.innerHeight
+    );
+  }, point);
+}
+
+/**
+ * Focuses the camera so the area a unit's blast covers is in frame.
+ *
+ * `focusStagedUnit` centres the camera on the actor, which is right for a
+ * portrait. A beat whose subject is an area effect needs the *ground* in
+ * frame: the quarry storm covers five tiles around the driller, and framing
+ * the caster five tiles west leaves half of that off the canvas — the frame
+ * that promises "the biggest effect in the game" shows floor and no machine.
+ * The turn chips are the only camera control the UI exposes and each centres
+ * on one unit, so this prefers the impact (the unit the area is centred on),
+ * then checks the box the blast covers rather than only the target's tile.
+ * `witnessIds` are the casters the picture is supposed to include: they are
+ * checked too, so a framing that loses one is reported instead of assumed.
+ */
+export async function focusStagedBlast(
+  page: Page,
+  unitId: string,
+  radius: number,
+  timeout: number,
+  witnessIds: readonly string[] = [],
+): Promise<void> {
+  await focusStagedUnit(page, unitId, timeout);
+  const battle = await page.evaluate(() => window.fnt?.app.state?.battle);
+  const unit = battle?.units.find((candidate) => candidate.id === unitId);
+  if (!unit) throw new Error(`Missing staged unit ${unitId}`);
+  const watched: readonly { readonly id: string; readonly pos: Vec2 }[] = [
+    ...witnessIds.flatMap((id) => {
+      const witness = battle?.units.find((candidate) => candidate.id === id);
+      return witness ? [{ id, pos: witness.pos }] : [];
+    }),
+    // The corners of the blast box, so the whole area is in the picture.
+    { id: 'blast NW', pos: { x: unit.pos.x - radius, y: unit.pos.y - radius } },
+    { id: 'blast SE', pos: { x: unit.pos.x + radius, y: unit.pos.y + radius } },
+  ];
+  for (const { id, pos } of watched) {
+    expect(
+      await tileInFrame(page, pos),
+      `${id} at ${pos.x},${pos.y} must be in frame after focusing ${unitId}`,
+    ).toBe(true);
+  }
+  await settleLayout(page, timeout);
+}
