@@ -330,7 +330,10 @@ for (const renderer of ['canvas', 'webgl'] as const) {
     expect(Math.abs(loaded.fallback.r - baseline.fallback.r)).toBeLessThan(12);
     expect(Math.abs(loaded.fallback.g - baseline.fallback.g)).toBeLessThan(12);
     expect(Math.abs(loaded.fallback.b - baseline.fallback.b)).toBeLessThan(12);
-    expect(loaded.fallback.r).not.toBeGreaterThan(loaded.fallback.b + 55);
+    // "Red" here is the missing-piece error tint, not the warm packed-earth
+    // fallback (`#b39064`, r - b = 79 by contract): an error tile is red against
+    // green, so that is the axis to guard.
+    expect(loaded.fallback.r).not.toBeGreaterThan(loaded.fallback.g + 60);
   });
 
   test(`partial ground restores decor for accessibility and unavailable art on ${renderer}`, async ({

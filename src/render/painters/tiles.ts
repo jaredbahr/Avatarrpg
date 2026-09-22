@@ -11,7 +11,7 @@
 
 import type { Tile, Vec2 } from '../../core/types';
 import type { Edges } from '../geometry/board';
-import { SURFACE_STYLES, TERRAIN_STYLES } from '../palettes';
+import { SURFACE_STYLES, TERRAIN_STYLES, WATER_BED } from '../palettes';
 import {
   SURFACE_BANK,
   SURFACE_POOL,
@@ -65,6 +65,24 @@ export function paintTerrain(ctx: Ctx, box: Box, tile: Tile, pos: Vec2): void {
       ctx.fill();
     }
   }
+  ctx.globalAlpha = 1;
+  paintWaterBed(ctx, box, tile, pos);
+}
+
+/**
+ * Standing water sinks the ground it stands on toward the contract's bed tone,
+ * over the terrain's own grain rather than instead of it, so the film above
+ * has something water-coloured to work with on light packed earth. Deep water,
+ * a wall and a pit are already their own dark material and are left alone; a
+ * temporary splash fades with its own intensity and leaves no stain behind.
+ */
+function paintWaterBed(ctx: Ctx, box: Box, tile: Tile, pos: Vec2): void {
+  if (tile.surface?.id !== 'water') return;
+  if (tile.terrain === 'water_deep' || tile.terrain === 'wall' || tile.terrain === 'pit') return;
+  const mottle = 1 - WATER_BED.mottle + 2 * WATER_BED.mottle * tileNoise(pos.x, pos.y, 41);
+  ctx.globalAlpha = WATER_BED.weight * mottle * surfaceIntensity(tile.surface.duration);
+  ctx.fillStyle = WATER_BED.fill;
+  ctx.fillRect(box.x, box.y, box.size + 1, box.size + 1);
   ctx.globalAlpha = 1;
 }
 

@@ -69,16 +69,40 @@ export interface TerrainStyle {
 }
 
 export const TERRAIN_STYLES: Record<TerrainId, TerrainStyle> = {
-  grass: { fill: '#7d8850', edge: '#717a40', detail: '#95a060' },
-  dirt: { fill: '#4d3f2f', edge: '#3d3124', detail: '#5d4d3a' },
-  road: { fill: '#776f5d', edge: '#665f4f', detail: '#877f6c' },
-  stone: { fill: '#8a8880', edge: '#77756e', detail: '#9a988f' },
-  sand: { fill: '#8a7548', edge: '#75623c', detail: '#9c8657' },
+  grass: { fill: '#6f9e4c', edge: '#4f7538', detail: '#a8c686' },
+  dirt: { fill: '#b39064', edge: '#8e7049', detail: '#c7a87d' },
+  road: { fill: '#b39064', edge: '#7a5f3e', detail: '#c7a87d' },
+  stone: { fill: '#d8cbb0', edge: '#b3a488', detail: '#9a8c72' },
+  sand: { fill: '#a89880', edge: '#857762', detail: '#c2b49c' },
   wood: { fill: '#6b4f33', edge: '#573f28', detail: '#7d5e3d' },
   water_deep: { fill: '#1f4a5e', edge: '#173b4c', detail: '#2a5e77' },
   wall: { fill: '#3a352f', edge: '#26221e', detail: '#4a443c' },
   pit: { fill: '#14100c', edge: '#0b0906', detail: '#1d1813' },
 };
+
+/**
+ * What lies under standing water on procedural ground.
+ *
+ * ADR 0045 packs a bed into the forest pond's own plate, because a 0.4-alpha
+ * film leaves most of what the camera sees to the ground below: over the old
+ * dark dirt the film still read as water, but the ground contract's packed
+ * earth (`#b39064`, red 79 above blue) is warm and light, and the film over it
+ * desaturated to grey. Procedural ground therefore grows the same bed the
+ * authored plate carries — the contract's bed tone, mixed into the terrain
+ * *before* the film, so the ground's own grain stays visible through it.
+ *
+ * It belongs to the terrain pass, not the surface pass: an authored plate
+ * brings its own bed and must not be tinted twice, and neither backend draws
+ * terrain where a painting owns the ground.
+ */
+export const WATER_BED = {
+  /** The ground contract's bed tone, shared with `water_deep`'s detail. */
+  fill: '#2a5e77',
+  /** How far the terrain is carried toward it under a permanent surface. */
+  weight: 0.55,
+  /** Seeded variation either side of that weight, so a bed is not a slab. */
+  mottle: 0.08,
+} as const;
 
 /* ------------------------------------------------------------------ */
 /* Surfaces                                                            */
