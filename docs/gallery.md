@@ -4,17 +4,26 @@
 to reading them: what each beat is for, which ones carry the verdict on the
 look, and the questions to answer before more story gets written.
 
-Download the `gallery` artifact from the revision's CI run and open its
-`index.html`. Artifacts are retained for seven days. Scroll a strip sideways to
+Download the `gallery` artifact from a CI run that captured it and open its
+`index.html`. Artifacts are retained for one day. Scroll a strip sideways to
 step through a playback.
+
+CI captures the gallery only on the nightly run (when `main` moved that day)
+and when a supervisor runs the **CI** workflow manually with `run_gallery`
+enabled against the branch under review. Pull requests and pushes never
+capture it: the seven capture shards cost more runner time than every other
+job together, and the Actions bill has to stay under about a dollar a day (see
+the cost rule at the top of `.github/workflows/ci.yml`). The required
+`Screenshot gallery` check therefore passes on a pull request on the strength
+of the fast `verify` job; it demands every shard only in a run that captured.
 
 The capture itself runs as parallel shards, because one runner no longer fits
 all 340 cases inside a job budget. Playwright shards by file, so the catalogue
 is dealt into three slice spec files (`e2e/gallery/gallery-{a,b,c}.spec.ts`)
 round robin; a runner captures one Canvas project group or one slice of a WebGL
-project. The required `Screenshot gallery` check waits for every shard and
-merges them into that one artefact and one index, so what you download has not
-changed. A whole capture locally is still `npm run gallery`; to recapture one
+project. The `Screenshot gallery` job waits for every shard and merges them
+into that one artefact and one index, so what you download has not changed. A
+whole capture locally is still `npm run gallery`; to recapture one
 shard, run `npm run gallery:capture -- --project=surface-webgl --shard=1/3`
 and then `node scripts/gallery-index.mjs`.
 
