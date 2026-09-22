@@ -6,8 +6,19 @@ import {
   FOREST_RAISED_SHELF,
   FOREST_RAISED_SHELF_CELLS,
 } from '../../src/content/scenes/forestRoad';
+import { toHex } from './lib/image';
+import { encodeWebp } from './lib/webp';
+import {
+  FOREST_ALL_TONES,
+  FOREST_GROUND_QUALITY,
+  FOREST_INK,
+  FOREST_PIECE_TONES,
+  FOREST_GROUND_TONES,
+  loadForestMaterial,
+} from './forest-village-material';
+import { FOREST_RAISED_SHELF_OUTPUT, packRaisedShelf } from './forest-raised-shelf';
 
-const OUTPUT = 'public/art/maps/forest-scene/raised-shelf.webp';
+const OUTPUT = FOREST_RAISED_SHELF_OUTPUT;
 const EXIT = { x: 19, y: 4 };
 const raised = new Set(FOREST_RAISED_SHELF_CELLS.map(({ x, y }) => `${x},${y}`));
 
@@ -48,4 +59,30 @@ it('decodes complete six-cell shelf coverage while leaving the road exit clear',
 
   expect(transparentExit).toBe(0);
   expect([...missingRaised.entries()]).toEqual([]);
+});
+
+it('ships the shelf the packer builds, in the packed-earth and cut-stone keys', async () => {
+  const image = packRaisedShelf(await loadForestMaterial());
+  expect(Buffer.from(await encodeWebp(image, FOREST_GROUND_QUALITY, true))).toEqual(
+    readFileSync(OUTPUT),
+  );
+  const allowed = new Set<string>([
+    FOREST_INK,
+    ...Object.values(FOREST_GROUND_TONES.road),
+    ...Object.values(FOREST_PIECE_TONES.stone),
+  ]);
+  const seen = new Set<string>();
+  for (let i = 0; i < image.data.length; i += 4) {
+    if ((image.data[i + 3] ?? 0) === 0) continue;
+    seen.add(toHex([image.data[i] ?? 0, image.data[i + 1] ?? 0, image.data[i + 2] ?? 0]));
+  }
+  // Two materials, two flat tones each plus a thin pale rim, and the ink: no
+  // continuous tone is left for a gradient or a distance haze to live in.
+  expect([...seen].filter((hex) => !allowed.has(hex))).toEqual([]);
+  // The ledge is packed earth standing on a cut stone face; both show.
+  expect(seen).toContain(FOREST_GROUND_TONES.road.base);
+  expect(seen).toContain(FOREST_PIECE_TONES.stone.base);
+  expect(seen).toContain(FOREST_INK);
+  // Nothing from the forest's other materials reaches this plate.
+  for (const hex of Object.values(FOREST_ALL_TONES.verge)) expect(seen).not.toContain(hex);
 });
