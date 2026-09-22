@@ -51,8 +51,11 @@ docs/                roadmap, ADRs, the art bible, the device matrix
 ## Commands
 
 ```bash
-npm run verify   # typecheck + lint + format:check + tests. Must pass before
-                 # any push — it is the same gate CI runs, minus the build.
+npm run ci:local # the full CI verify job mirror (typecheck, lint, format,
+                 # tests, build, budgets, art validation, balance). Run it and
+                 # get green before any push.
+npm run verify   # the faster subset: typecheck + lint + format:check + tests.
+                 # It is not the whole CI gate — use ci:local before a push.
 npm test         # vitest
 npm run balance  # simulator win-rate report
 npm run e2e      # Playwright (builds first; uses the preinstalled Chromium)
@@ -134,7 +137,7 @@ Never run `npx playwright install` in the dev container — Chromium is already 
 - Commit messages: imperative mood, one concern per commit.
 - **Work auto-merges once it is ready.** Nothing waits on a human clicking the
   button: open the PR, then turn on auto-merge so it lands the moment CI is
-  green. Ready means `npm run verify` passed locally, the PR has no conflict
+  green. Ready means `npm run ci:local` passed locally, the PR has no conflict
   with `main`, and any review comment on it is addressed — CI is the last gate,
   not a second opinion. Merge with a merge commit, not a squash: the history is
   one-concern commits and it stays that way.
