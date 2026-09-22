@@ -1,5 +1,76 @@
 # Changelog
 
+## 0.2.11 — release candidate
+
+- Paint the quarry floor's oil pools and mud patch on their own ground. The
+  ground generator left every **dynamic** cell transparent, so the Driller
+  floor's four spills and one mud patch were procedural slate standing beside
+  illustrated stone, tile square and all. Oil (`o`) now packs into the **stone**
+  page and mud (`m`) into **dirt**, exactly as rubble (`r`) already did, and only
+  water (`~`) keeps its transparent hole because its bed is authored with the
+  liquid. Repacking moved `stone.webp` 39,100 → 50,252 B and
+  `dirt-{east,west}.webp` 28,026 → 33,068 B and 31,990 → 33,922 B; the Cutting
+  has no spill cell and keeps its bytes. Against a frame captured from 0.2.10,
+  the quarry floor moves 4.572% of pixels on Canvas `-fit` (52,916 up / 4,119
+  down) and 4.912% on WebGL `-fit`, overwhelmingly lighter, while the village,
+  road, gate and cutting frames stay inside animation-timing noise.
+- Paint the two bare village lawns from accepted material. The 0.2.10 palette
+  step matched the fields' tone but carried no texture, and two fields had no
+  plate over them at all — south-west `x1..4,y10..14` and north-east
+  `x18..22,y1..5`. They are now two regions beside the four existing courts in
+  `scripts/art/ba-dan-neighborhood-ground.ts`, assembled by the same packer from
+  the same verified opaque source interiors with the same 0.4-cell exterior
+  feather, each overlapping its neighbours by two or more cells so two feathers
+  cannot leave a band between pieces. Two plates ship,
+  `northeast-lawn-ground.webp` (1024×512, 36.5 KB) and
+  `southwest-lawn-ground.webp` (832×416, 24.4 KB); the map family goes
+  820 KB → 881 KB and precache 17.62 → 17.67 MB of 25 MB, and re-running the
+  packer leaves the four existing plates byte-identical. Village cells with no
+  opaque plate fall 144 → 86, the south-west field 20/20 bare → 0/20 and the
+  north-east 25/25 → 0/25; the remaining 86 are the deliberate rim rows and tree
+  columns. On the review fixture the default village view moves 9.753% of pixels
+  on Canvas and 10.558% on WebGL, all of them up in luminance and onto green.
+- Lift the procedural road and paving tones into the illustrated family. Push
+  the exposed rim and apron bands against light illustrated paving and the
+  mismatch was 1.95x on stone and 2.06x in the east road-band window. `road`
+  `#5b5044/#4a4036/#6b6053` → `#776f5d/#665f4f/#877f6c` and `stone`
+  `#565452/#434140/#666461` → `#8a8880/#77756e/#9a988f`, mirrored into the WebGL
+  terrain colours at the Canvas values, plus the four apron bands that carry the
+  road or paving reach. Re-measured, the window step is 1.65x and stone 1.61x.
+  The blast radius is the fallback the plates do not own, and every moved pixel
+  moves toward its board: at tile scale every terrain centre on the authored
+  board is unchanged except one stone cell that moves 100.9 → 101.9. The
+  decision to keep the change global rather than add a village-only key is
+  recorded with the per-board table in
+  `docs/coordination/handoffs/village-paving-tone.md`.
+- Give the gallery's playback settle a per-project budget. The iPad-WebGL
+  software rasteriser can spend seconds on a single 2x frame, and `waitForIdle`
+  was the last wait in that path still on a fixed 20 s while `settleTimeout`
+  already carried 60 s and the curtain 30 s. `waitForIdle` now takes a timeout,
+  `Stage.idleTimeout` is `max(20_000, settleTimeout)` — 60 s on WebGL, 20 s on
+  Canvas — and the gallery beats pass it; specs outside the gallery keep the
+  20 s default. A timeout still fails and now names which way the budget was
+  wrong: `N ms of playback left`, or `no frame reached the end of playback`.
+- Pin that a load settles and the route survives it. The schema tests hold what
+  a blob contains, but nothing held what a **load** does to a run, and every
+  load runs the load-time discipline repair — so a repair that granted or
+  recomputed something on every read would have let a reloading player watch
+  their numbers drift. `src/core/save/continuity.test.ts` now loads the save of
+  a loaded save across a mid-battle state, the walk home at both custody
+  outcomes and a party at the discipline gate with no pick taken — the one
+  fixture the repair actually rewrites — and asserts it is the run that was
+  saved. The same file then asks the route question rather than the field
+  question: the same objective, Gao offering the same scene for the outcome that
+  was saved, and Mira remembering the same decisions. Verified by making
+  `reconcileDisciplines` ignore its `alreadyOffered` guard, which fails the
+  gated fixture with a second pending pick and passes once the guard is back.
+- Still open and deliberately not claimed: no played browser save route, so the
+  continuity test is a unit-level property and not a session saved, reloaded and
+  walked through by hand; no visual acceptance against the approved references,
+  only the fixture frames and the per-board tables above; and no device or
+  listening evidence — physical iPad and Surface touch, pinch, rotation and PWA
+  behaviour are untested, and the audio has not been listened to on hardware.
+
 ## 0.2.10 — release candidate
 
 - Keep a partial scene's ground on screen. 0.2.9 shipped each apron as twelve
