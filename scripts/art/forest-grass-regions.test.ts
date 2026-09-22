@@ -3,8 +3,10 @@ import { expect, it } from 'vitest';
 import { FOREST_ROAD } from '../../src/content/maps/combat';
 import { FOREST_WATER_CELLS } from '../../src/content/scenes/forestRoad';
 import { FOREST_GRASS_REGIONS } from '../../src/content/scenes/forestRoadGround';
-import { pixelAt, readImage } from './lib/image';
+import { pixelAt } from './lib/image';
 import { encodeWebp } from './lib/webp';
+import { FOREST_GROUND_QUALITY, loadForestMaterial } from './forest-village-material';
+import { measure } from './forest-ground-measure';
 import {
   FOREST_GRASS_PACKS,
   grassPosition,
@@ -12,13 +14,13 @@ import {
   withinGrassRegion,
 } from './forest-grass-regions';
 
-const source = 'assets/source/forest-material-v2/material-sheet.png';
-
 it('ships reproducible sparse grass packs with fully covered eligible centers', async () => {
-  const atlas = readImage(source);
+  const material = await loadForestMaterial();
   for (const pack of FOREST_GRASS_PACKS) {
-    const image = packGrassRegion(atlas, pack.rows, pack.region);
-    expect(Buffer.from(await encodeWebp(image, 86, true))).toEqual(readFileSync(pack.output));
+    const image = packGrassRegion(material, pack.rows, pack.region);
+    expect(Buffer.from(await encodeWebp(image, FOREST_GROUND_QUALITY, true))).toEqual(
+      readFileSync(pack.output),
+    );
     let opaque = 0,
       feather = 0,
       waterLeaks = 0,
@@ -38,6 +40,9 @@ it('ships reproducible sparse grass packs with fully covered eligible centers', 
         if (alpha > 0 && alpha < 255) feather++;
       }
     expect({ waterLeaks, nonGrassLeaks }).toEqual({ waterLeaks: 0, nonGrassLeaks: 0 });
+    // DL-2 §3: the verge is the Earth family. The forest atlas these packs used
+    // to tile had no green in it at all, which is defect 9's other half.
+    expect(measure(image).greenShare, `${pack.name} pack is Earth green`).toBeGreaterThan(0.9);
     expect(opaque, `${pack.name} pack has content`).toBeGreaterThan(1_000);
     expect(feather, `${pack.name} pack has a soft edge`).toBeGreaterThan(1_000);
 
