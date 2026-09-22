@@ -123,8 +123,10 @@ for (const renderer of ['canvas', 'webgl'])
     const blueShift = waterRegion.b - registered.b;
     expect(blueShift).toBeGreaterThan(10);
     expect(waterRegion.r - registered.r).toBeLessThan(-10);
-    expect(waterRegion.g - registered.g).toBeGreaterThan(2);
-    expect((waterRegion.g - registered.g) / blueShift).toBeGreaterThan(0.2);
+    // Measured as a cool shift rather than an absolute green rise: the ground
+    // contract's warm packed earth is already greener than the water fill, so
+    // no film can raise green over light warm ground (see partial-ground.spec.ts).
+    expect(waterRegion.b - waterRegion.r - (registered.b - registered.r)).toBeGreaterThan(25);
 
     // Hatch mode remains visible over the authored image for a live material.
     await page.evaluate(() => {
