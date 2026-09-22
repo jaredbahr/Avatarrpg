@@ -38,6 +38,14 @@ const BOB = 0.05;
  */
 const WALK_MS_PER_TILE = 500;
 
+/**
+ * How long a finished walk holds its settled pose before the ready stance is
+ * selected. The travel already brakes to a stop (see `anim/stroll.ts`), but the
+ * last stride's pose is not a stance: without this dwell the sprite cuts
+ * straight from mid-stride to idle on the frame the route ends.
+ */
+const STOP_SETTLE_MS = 140;
+
 /** How far off dead vertical the travel has to lean before the sprite turns. */
 const TURN_THRESHOLD = 0.2;
 
@@ -110,6 +118,8 @@ export class Animator {
   /** Which way each unit last walked; a unit keeps facing that way when it stops. */
   private facings = new Map<string, 1 | -1>();
   private directions = new Map<string, WalkDirection>();
+  /** When each unit's last voluntary walk ended, and when its stop settles. */
+  private stops = new Map<string, { readonly from: number; readonly to: number }>();
   private pendingHeadings: HeadingCue[] = [];
   /** Health events wait beside the tracks which make their impact visible. */
   private healthCues: HealthCue[] = [];
@@ -128,6 +138,7 @@ export class Animator {
     this.timeline.clear();
     this.facings.clear();
     this.directions.clear();
+    this.stops.clear();
     this.pendingHeadings = [];
     this.healthCues = [];
     this.settledHealth.clear();
@@ -201,12 +212,21 @@ export class Animator {
     this.healthCues.sort((a, b) => a.at - b.at || a.order - b.order);
     for (const track of result.tracks) {
       this.timeline.add(track);
-      if (track.kind === 'move' && track.gait !== 'slide')
-        this.pendingHeadings.push({
-          unitId: track.unitId,
-          at: track.start + track.duration,
-          tangent: sampleAt(track.curve, track.curve.length).tangent,
-        });
+      if (track.kind === 'move') {
+        if (track.gait === 'slide') {
+          // A push takes the stance over: the struck figure does not settle
+          // out of a walk it was knocked out of.
+          this.stops.delete(track.unitId);
+        } else {
+          const ended = track.start + track.duration;
+          this.stops.set(track.unitId, { from: ended, to: ended + STOP_SETTLE_MS * rate });
+          this.pendingHeadings.push({
+            unitId: track.unitId,
+            at: ended,
+            tangent: sampleAt(track.curve, track.curve.length).tangent,
+          });
+        }
+      }
       if (track.kind === 'pose' && track.facing !== undefined)
         this.pendingHeadings.push({
           unitId: track.unitId,
@@ -226,6 +246,9 @@ export class Animator {
   prune(now: number): void {
     this.settleHeadings(now);
     this.settleHealth(now);
+    for (const [unitId, stop] of this.stops) {
+      if (now >= stop.to) this.stops.delete(unitId);
+    }
     this.timeline.prune(now);
   }
 
@@ -283,7 +306,14 @@ export class Animator {
     if (Math.abs(screen.x) > TURN_THRESHOLD) this.facings.set(unitId, screen.x > 0 ? 1 : -1);
   }
 
-  /** Locomotion fields shared by the world, riverside and combat views. */
+  /**
+   * Locomotion fields shared by the world, riverside and combat views.
+   *
+   * A walk that has just ended holds its settled pose for a moment before
+   * `resting` (combat's ready stance) is selected, so the sprite does not cut
+   * from mid-stride to guard on the frame the route ends. The dwell is
+   * presentation only: `busy()` and `finishesAt` still end with the travel.
+   */
   locomotion(
     now: number,
     unitId: string,
@@ -293,8 +323,18 @@ export class Animator {
     const travel = this.walkTravel(now, unitId);
     if (travel)
       this.rememberDirection(unitId, sampleAt(travel.track.curve, travel.distance).tangent);
-    const clip = directionalClip(travel ? 'walk' : resting, this.directions.get(unitId));
+    const stop = !travel && this.settling(now, unitId);
+    const clip = directionalClip(
+      travel ? 'walk' : stop ? 'rest' : resting,
+      this.directions.get(unitId),
+    );
     return { clip, facing: verticalClip(clip) ? 1 : (this.facings.get(unitId) ?? 1) };
+  }
+
+  /** True while a finished walk is still holding the settled stop pose. */
+  private settling(now: number, unitId: string): boolean {
+    const stop = this.stops.get(unitId);
+    return stop !== undefined && now >= stop.from && now < stop.to;
   }
 
   /** The move track a unit is on at `now`, if any, with how far along it is in tiles. */

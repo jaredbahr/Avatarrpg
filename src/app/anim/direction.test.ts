@@ -44,7 +44,13 @@ describe('directional walking', () => {
         a.unitPose(400, 'follower')?.clipTime ?? -1,
       );
       a.prune(a.finishesAt + 1);
+      // The stop holds the settled pose its facing implies, then the ready
+      // stance, and neither loses the walked way.
       expect(a.locomotion(a.finishesAt + 1, 'leader')).toEqual({
+        clip: `rest${direction}`,
+        facing: 1,
+      });
+      expect(a.locomotion(a.finishesAt + 300, 'leader')).toEqual({
         clip: `idle${direction}`,
         facing: 1,
       });
@@ -123,7 +129,12 @@ describe('oblique screen headings', () => {
         if (dy === 0) expect(pos?.y).toBe(4);
         const done = a.finishesAt + 1;
         a.prune(done);
-        expect(a.locomotion(done, 'p')).toEqual({ clip: clip.replace('walk', 'idle'), facing });
+        // The stop settles on the walked heading before the ready stance.
+        expect(a.locomotion(done, 'p')).toEqual({ clip: clip.replace('walk', 'rest'), facing });
+        expect(a.locomotion(done + 300, 'p')).toEqual({
+          clip: clip.replace('walk', 'idle'),
+          facing,
+        });
       });
     }
   }
