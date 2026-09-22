@@ -1,106 +1,146 @@
-/** Assemble local quarry-ground regions from reusable authored material panels. */
+/**
+ * Build the quarry gate's local ground from the village's accepted plates.
+ *
+ *   node --import tsx scripts/art/quarry-modular-ground.ts
+ *
+ * This used to tile the same generated six-panel quarry sheet the Driller floor
+ * did, with three fields and three painted transitions and no ink anywhere, and
+ * it is the reason the gate reads as a fourth ground family beside Ba Dan
+ * (design-audit defect 32). DL-2 W3 re-keys it from
+ * `quarry-village-material.ts`, exactly as the Driller floor is re-keyed, so
+ * the two quarry scenes cannot drift from each other or from the village.
+ *
+ * Three materials across the four registered regions, which is what the gate's
+ * geometry is actually describing:
+ *
+ * - `limestone` region → the §3 limestone paving of the gatehouse terrace.
+ * - `road` region → §3 packed earth, with the haul tracks running down its two
+ *   rows in the cart-rut tone.
+ * - `earth-west` / `earth-east` → §3 quarry spoil, the loose ground either side
+ *   of the road, carrying scattered inked heaps of freshly cut stone.
+ *
+ * Region routing, page origin and cell keys are untouched, so the registered
+ * geometry is unchanged and only the bytes move.
+ */
 import { mkdirSync, writeFileSync } from 'node:fs';
 import { QUARRY_GATE } from '../../src/content/maps/combat';
-import { newImage, pixelAt, readImage, setPixel } from './lib/image';
+import { newImage, setPixel } from './lib/image';
+import type { Image } from './lib/image';
+import { tileNoise } from '../../src/render/painters/shapes';
 import { alphaBounds, crop } from './lib/trim';
-import { scaleTo } from './lib/scale';
 import { encodeWebp } from './lib/webp';
+import { loadQuarryMaterial, QUARRY_GROUND_QUALITY } from './quarry-village-material';
+import type { QuarryMaterial, QuarryTone } from './quarry-village-material';
 
-const sourcePath = process.argv[2];
-if (!sourcePath) throw new Error('Provide the authored six-panel quarry material source.');
+const TILE_DIAGONAL = Math.hypot(64, 32);
+const INK_HALF = 1 / TILE_DIAGONAL;
+const RIM_WIDTH = 3 / TILE_DIAGONAL;
 
-const source = readImage(sourcePath);
-const panelSize = source.width / 3;
-if (!Number.isInteger(panelSize) || source.height !== panelSize * 2)
-  throw new Error('Expected a 3 by 2 sheet of equal square material panels.');
+export const QUARRY_GATE_PAGE = { x: -128, y: -192, width: 2304, height: 1280 } as const;
+export const QUARRY_GATE_REGION_NAMES = ['earth-west', 'earth-east', 'road', 'limestone'] as const;
+export type GateRegionName = (typeof QUARRY_GATE_REGION_NAMES)[number];
 
-const inset = 24;
-const panel = (index: number) =>
-  crop(source, {
-    x: (index % 3) * panelSize + inset,
-    y: Math.floor(index / 3) * panelSize + inset,
-    width: panelSize - inset * 2,
-    height: panelSize - inset * 2,
-  });
-const materials = [0, 1, 2].map((index) => scaleTo(panel(index), 128, 128));
-const transitions = [3, 4, 5].map((index) => scaleTo(panel(index), 128, 128));
-
-type GroundClass = 'earth' | 'road' | 'limestone';
-type RegionName = 'earth-west' | 'earth-east' | 'road' | 'limestone';
-const groundClass = (x: number, y: number): GroundClass => {
-  const key = QUARRY_GATE.rows[y]?.[x] ?? '.';
-  return key === '=' ? 'road' : key === '^' || key === 'o' ? 'limestone' : 'earth';
-};
-const regionAt = (x: number, y: number): RegionName | null => {
+const regionAt = (x: number, y: number): GateRegionName | null => {
   const key = QUARRY_GATE.rows[y]?.[x];
   if (!key) return null;
   if (key === '=') return 'road';
   if (key === 'o' || key === '^') return 'limestone';
   return x < 10 ? 'earth-west' : 'earth-east';
 };
-const regionNames = ['earth-west', 'earth-east', 'road', 'limestone'] as const;
-const materialIndex: Record<GroundClass, number> = { earth: 0, road: 1, limestone: 2 };
-const transitionIndex = (a: GroundClass, b: GroundClass) =>
-  (a === 'earth' && b === 'road') || (a === 'road' && b === 'earth')
-    ? 0
-    : (a === 'earth' && b === 'limestone') || (a === 'limestone' && b === 'earth')
-      ? 1
-      : null;
-const mirror = (value: number, size: number) => {
-  const period = ((value % (size * 2)) + size * 2) % (size * 2);
-  return period < size ? period : size * 2 - period - 1;
+
+/** Which of the §3 materials a cell is painted in. */
+const materialOf = (key: string | undefined): QuarryTone | null => {
+  if (!key) return null;
+  if (key === '=') return 'earth';
+  if (key === 'o' || key === '^') return 'limestone';
+  // Walls and cover stand on the terrace; their footprint is still ground, and
+  // leaving it unpainted would change the registered page bounds.
+  return 'spoil';
 };
 
-const page = { x: -128, y: -192, width: 2304, height: 1280 };
-const images = new Map(regionNames.map((name) => [name, newImage(page.width, page.height)]));
-for (let py = 0; py < page.height; py++)
-  for (let px = 0; px < page.width; px++) {
-    const wx = px + 0.5 + page.x,
-      wy = py + 0.5 + page.y;
-    const gx = ((wx - 768) / 64 + wy / 32) / 2;
-    const gy = (wy / 32 - (wx - 768) / 64) / 2;
-    const x = Math.floor(gx),
-      y = Math.floor(gy);
-    const name = regionAt(x, y);
-    if (!name) continue;
-    const image = images.get(name);
-    if (!image) throw new Error(`Unknown local ground region ${name}.`);
-    const current = groundClass(x, y);
-    const material = materials[materialIndex[current]];
-    if (!material) throw new Error('Missing authored material panel.');
-    let rgba = pixelAt(material, mirror(px, material.width), mirror(py, material.height));
-    const lx = gx - x,
-      ly = gy - y;
-    const edges = [
-      { x: x - 1, y, t: (lx + 0.15) / 0.3, along: gy, forward: false },
-      { x: x + 1, y, t: (lx - 0.85) / 0.3, along: gy, forward: true },
-      { x, y: y - 1, t: (ly + 0.15) / 0.3, along: gx, forward: false },
-      { x, y: y + 1, t: (ly - 0.85) / 0.3, along: gx, forward: true },
-    ];
-    for (const edge of edges) {
-      if (edge.t < 0 || edge.t > 1) continue;
-      const transition = transitionIndex(current, groundClass(edge.x, edge.y));
-      if (transition === null) continue;
-      const field = transitions[transition];
-      if (!field) throw new Error('Missing authored transition panel.');
-      const dirtToOther = current === 'earth' ? edge.forward : !edge.forward;
-      const t = dirtToOther ? edge.t : 1 - edge.t;
-      rgba = pixelAt(
-        field,
-        Math.min(127, Math.max(0, Math.floor(t * 128))),
-        mirror(Math.floor(edge.along * 128), 128),
-      );
-      break;
+/** A soft join belongs between the road and the terrace it runs across; a wall base does not. */
+const plain = (key: string | undefined): boolean => key === '.' || key === ',' || key === '=';
+
+const clamp = (value: number): number => Math.max(0, Math.min(1, value));
+
+export function packGateGround(material: QuarryMaterial): Map<GateRegionName, Image> {
+  const images = new Map(
+    QUARRY_GATE_REGION_NAMES.map((name) => [
+      name,
+      newImage(QUARRY_GATE_PAGE.width, QUARRY_GATE_PAGE.height),
+    ]),
+  );
+  for (let py = 0; py < QUARRY_GATE_PAGE.height; py++)
+    for (let px = 0; px < QUARRY_GATE_PAGE.width; px++) {
+      const wx = QUARRY_GATE_PAGE.x + px + 0.5,
+        wy = QUARRY_GATE_PAGE.y + py + 0.5;
+      const gx = ((wx - 768) / 64 + wy / 32) / 2,
+        gy = (wy / 32 - (wx - 768) / 64) / 2;
+      const x = Math.floor(gx),
+        y = Math.floor(gy);
+      const name = regionAt(x, y);
+      if (!name) continue;
+      const key = QUARRY_GATE.rows[y]?.[x];
+      const own = materialOf(key);
+      if (!own) continue;
+
+      let mix = 0;
+      let swapTone: QuarryTone | null = null;
+      let edge = Infinity;
+      let lit = false;
+      for (const [ox, oy] of [
+        [-1, 0],
+        [1, 0],
+        [0, -1],
+        [0, 1],
+      ] as const) {
+        const neighbourKey = QUARRY_GATE.rows[y + oy]?.[x + ox];
+        const other = materialOf(neighbourKey);
+        if (!other || other === own) continue;
+        const edgeDistance = ox < 0 ? gx - x : ox > 0 ? x + 1 - gx : oy < 0 ? gy - y : y + 1 - gy;
+        if (edgeDistance < edge) {
+          edge = edgeDistance;
+          lit = ox < 0 || oy < 0;
+        }
+        if (!plain(key) || !plain(neighbourKey)) continue;
+        const width = 0.16 + 0.03 * (0.5 + 0.5 * Math.sin(x * 4.1 + y * 6.7));
+        const share = 0.5 * clamp((width - edgeDistance) / width);
+        if (share > mix) {
+          mix = share;
+          swapTone = other;
+        }
+      }
+      let tone: QuarryTone = swapTone && tileNoise(px, py, 5) < mix ? swapTone : own;
+
+      let inked = edge < INK_HALF;
+      if (tone === 'earth') {
+        // The road: haul tracks only. Spoil heaps do not sit in a cart lane.
+        tone = material.trackMark(gx, gy) ?? tone;
+      } else if (tone === 'spoil') {
+        // The terrace either side: inked heaps of freshly cut stone, so neither
+        // earth page is a quarter-frame of bare material.
+        const heap = material.heapMark(gx, gy);
+        if (heap === 'ink') inked = true;
+        else if (heap === 'inside') tone = 'limestone';
+        else if (heap === 'rim') tone = 'block';
+      }
+
+      const rgb = inked
+        ? material.ink
+        : lit && edge < INK_HALF + RIM_WIDTH
+          ? material.rimOf(tone)
+          : material.colour(tone, gx, gy);
+      setPixel(images.get(name)!, px, py, [rgb[0], rgb[1], rgb[2], 255]);
     }
-    setPixel(image, px, py, [rgba[0], rgba[1], rgba[2], 255]);
-  }
+  return images;
+}
 
 /**
  * A clipped alpha edge filters against the procedural base during oblique
  * scaling. Extend the authored edge by two world pixels so adjacent regions
  * overlap instead of exposing that gray fallback seam; it changes no map cell.
  */
-function bleedEdges(image: ReturnType<typeof newImage>, pixels = 2): void {
+function bleedEdges(image: Image, pixels = 2): void {
   for (let pass = 0; pass < pixels; pass++) {
     const previous = new Uint8Array(image.data);
     for (let y = 0; y < image.height; y++)
@@ -128,32 +168,79 @@ function bleedEdges(image: ReturnType<typeof newImage>, pixels = 2): void {
   }
 }
 
-const outDir = 'public/art/maps/quarry-gate-scene';
-mkdirSync(outDir, { recursive: true });
-const regions = [];
-let totalBytes = 0;
-for (const [name, image] of images) {
-  bleedEdges(image);
-  const bounds = alphaBounds(image);
-  if (!bounds) throw new Error(`Empty local ground region ${name}.`);
-  const bytes = await encodeWebp(crop(image, bounds), 82, true);
-  writeFileSync(`${outDir}/${name}.webp`, bytes);
-  totalBytes += bytes.length;
-  regions.push({
-    name,
-    url: `art/maps/quarry-gate-scene/${name}.webp`,
-    x: page.x + bounds.x,
-    y: page.y + bounds.y,
-    width: bounds.width,
-    height: bounds.height,
-    bytes: bytes.length,
-  });
+/** The finished gate plates, exactly as they are encoded; see `buildQuarryGround`. */
+export async function buildGateGround(): Promise<
+  Map<GateRegionName, { image: Image; x: number; y: number }>
+> {
+  // The gate's road is two rows wide, so its pair of ruts runs inside them.
+  const images = packGateGround(await loadQuarryMaterial({ centre: 5.5, offset: 0.5 }));
+  const built = new Map<GateRegionName, { image: Image; x: number; y: number }>();
+  for (const [name, image] of images) {
+    bleedEdges(image);
+    const bounds = alphaBounds(image);
+    if (!bounds) throw new Error(`Empty local ground region ${name}.`);
+    built.set(name, {
+      image: crop(image, bounds),
+      x: QUARRY_GATE_PAGE.x + bounds.x,
+      y: QUARRY_GATE_PAGE.y + bounds.y,
+    });
+  }
+  return built;
 }
-if (totalBytes > 240 * 1024)
-  throw new Error(`Modular quarry ground exceeds 240KiB: ${totalBytes}.`);
-mkdirSync('art/raw/quarry-gate', { recursive: true });
-writeFileSync(
-  'art/raw/quarry-gate/modular-ground-registration.json',
-  JSON.stringify({ source: sourcePath, page, regions, totalBytes }, null, 2),
-);
-console.log({ source: sourcePath, regions, totalBytes });
+
+export async function writeGateGround(): Promise<{
+  regions: {
+    name: string;
+    url: string;
+    x: number;
+    y: number;
+    width: number;
+    height: number;
+    bytes: number;
+  }[];
+  totalBytes: number;
+}> {
+  const built = await buildGateGround();
+  const outDir = 'public/art/maps/quarry-gate-scene';
+  mkdirSync(outDir, { recursive: true });
+  const regions = [];
+  let totalBytes = 0;
+  for (const [name, { image, x, y }] of built) {
+    const bytes = await encodeWebp(image, QUARRY_GROUND_QUALITY, true);
+    writeFileSync(`${outDir}/${name}.webp`, bytes);
+    totalBytes += bytes.length;
+    regions.push({
+      name,
+      url: `art/maps/quarry-gate-scene/${name}.webp`,
+      x,
+      y,
+      width: image.width,
+      height: image.height,
+      bytes: bytes.length,
+    });
+  }
+  if (totalBytes > 240 * 1024)
+    throw new Error(`Modular quarry ground exceeds 240KiB: ${totalBytes}.`);
+  mkdirSync('art/raw/quarry-gate', { recursive: true });
+  writeFileSync(
+    'art/raw/quarry-gate/modular-ground-registration.json',
+    JSON.stringify(
+      {
+        source: [
+          'public/art/maps/ba-dan-scene/western-approach-ground.webp',
+          'public/art/maps/ba-dan-scene/courtyard-ground.webp',
+        ],
+        page: QUARRY_GATE_PAGE,
+        regions,
+        totalBytes,
+      },
+      null,
+      2,
+    ),
+  );
+  return { regions, totalBytes };
+}
+
+if (process.argv[1]?.endsWith('quarry-modular-ground.ts')) {
+  console.log(await writeGateGround());
+}

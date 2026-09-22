@@ -6,7 +6,7 @@ export const DRILLER_GROUND_REGIONS = [
     y: 94,
     width: 1218,
     height: 612,
-    bytes: 33922,
+    bytes: 39424,
   },
   {
     name: 'dirt-east',
@@ -14,7 +14,7 @@ export const DRILLER_GROUND_REGIONS = [
     y: 318,
     width: 1218,
     height: 612,
-    bytes: 33068,
+    bytes: 39836,
   },
   {
     name: 'stone',
@@ -22,7 +22,7 @@ export const DRILLER_GROUND_REGIONS = [
     y: -2,
     width: 2050,
     height: 1028,
-    bytes: 50252,
+    bytes: 43512,
   },
 ] as const;
 

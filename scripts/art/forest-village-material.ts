@@ -56,6 +56,16 @@ export const FOREST_INK = '#1b1410';
  */
 export const SHADOW_SHARE = 0.14;
 export const RIM_SHARE = 0.14;
+/**
+ * The darkest slice of a crop, which in the village's paving is the flagstone
+ * joint itself rather than the general shade beside it. A material that names a
+ * `joint` tone paints this slice with it — that is how DL-2 §3's "joint lines
+ * `#9a8c72`" and "tool-mark `#8a7d66`" reach the plate without inventing a
+ * second sampling pass. A material that does not name one (every forest tone)
+ * falls back to its shadow, which is exactly what the two-cut version did, so
+ * the forest plates are unaffected.
+ */
+export const JOINT_SHARE = 0.05;
 
 /**
  * WebP quality for the three re-keyed ground plates, shared so they cannot
@@ -67,9 +77,24 @@ export const RIM_SHARE = 0.14;
  */
 export const FOREST_GROUND_QUALITY = 74;
 
-type Rgb = readonly [number, number, number];
+export type Rgb = readonly [number, number, number];
 
-interface Crop {
+/**
+ * One material's flat tones. Two per material plus a thin pale rim is the
+ * bible's shading rule; `joint` is the optional darkest slice described at
+ * `JOINT_SHARE`, used by the cut-stone families.
+ */
+export interface ToneSpec {
+  readonly base: string;
+  readonly shadow: string;
+  readonly rim: string;
+  readonly joint?: string;
+}
+
+/** Which village crop a material reads its structure from. */
+export type CropName = 'paving' | 'lawn';
+
+export interface Crop {
   /** Village plate this crop lives on, and where that plate sits in the scene. */
   readonly image: ImageData;
   readonly origin: { readonly x: number; readonly y: number };
@@ -81,6 +106,8 @@ interface Crop {
   /** Luminance below this is the shadow tone; above `rim`, the rim tone. */
   shadow: number;
   rim: number;
+  /** Below this is the joint tone, for materials that name one. */
+  joint: number;
 }
 
 /** Rec. 709 luma on the stored sRGB bytes; the same weighting the measure uses. */
@@ -119,7 +146,7 @@ function villagePixel(crop: Crop, x: number, y: number): readonly number[] {
  * inside it must be fully opaque village interior, never a prop, never water,
  * never one of the plate's own feathers.
  */
-function calibrate(crop: Crop, label: string): void {
+export function calibrate(crop: Crop, label: string): void {
   const values: number[] = [];
   for (let y = crop.y0; y < crop.y1; y += 0.01)
     for (let x = crop.x0; x < crop.x1; x += 0.01) {
@@ -133,6 +160,7 @@ function calibrate(crop: Crop, label: string): void {
   values.sort((a, b) => a - b);
   crop.shadow = values[Math.floor(values.length * SHADOW_SHARE)] ?? 0;
   crop.rim = values[Math.floor(values.length * (1 - RIM_SHARE))] ?? 255;
+  crop.joint = values[Math.floor(values.length * JOINT_SHARE)] ?? 0;
 }
 
 /**
@@ -145,7 +173,8 @@ function calibrate(crop: Crop, label: string): void {
  * single repeated tile; this cannot, because neighbouring cells draw unrelated
  * tiles of the source in unrelated orientations.
  */
-function structure(crop: Crop, x: number, y: number, salt: number): 'base' | 'shadow' | 'rim' {
+export type StructureClass = 'joint' | 'shadow' | 'base' | 'rim';
+export function structure(crop: Crop, x: number, y: number, salt: number): StructureClass {
   const ix = Math.floor(x),
     iy = Math.floor(y);
   const width = crop.x1 - crop.x0,
@@ -159,31 +188,16 @@ function structure(crop: Crop, x: number, y: number, salt: number): 'base' | 'sh
   const sy = crop.y0 + (Math.floor(pick / width) % height) + Math.min(0.999, fy);
   const [r, g, b] = villagePixel(crop, sx, sy);
   const value = luma(r ?? 0, g ?? 0, b ?? 0);
+  if (value < crop.joint) return 'joint';
   return value < crop.shadow ? 'shadow' : value > crop.rim ? 'rim' : 'base';
 }
 
-export interface ForestMaterial {
-  /** The flat tone for a logical point of the named material. */
-  readonly colour: (tone: ToneName, x: number, y: number) => Rgb;
-  /** A material's pale rim tone, for the thin lit edge beside a region's ink. */
-  readonly rimOf: (tone: ToneName) => Rgb;
-  /** True where the road has been worn to its ruts; drives the third material. */
-  readonly worn: (x: number, y: number) => boolean;
-  readonly ink: Rgb;
-  /** Reported by the packers so the handoff can show what the re-key keyed to. */
-  readonly cuts: Readonly<Record<'paving' | 'lawn', { shadow: number; rim: number }>>;
-}
-
 /**
- * The centre of the five road rows (y 4..8). The ruts run with the road, along
- * x, which is why the wear is a function of y and a slow wander in x rather
- * than a radius: a cart leaves two lines, not a stain.
+ * The two village crops, calibrated. Shared by the forest and the quarry so
+ * every re-keyed plate in DL-2 reads its structure from the same two accepted
+ * paintings; only the tone table differs between scenes.
  */
-const ROAD_CENTRE = 6.5;
-const RUT_OFFSET = 1.05;
-const RUT_HALF = 0.3;
-
-export async function loadForestMaterial(): Promise<ForestMaterial> {
+export async function loadVillageCrops(): Promise<Record<CropName, Crop>> {
   const courtyard = await readWebp('public/art/maps/ba-dan-scene/courtyard-ground.webp');
   const western = await readWebp('public/art/maps/ba-dan-scene/western-approach-ground.webp');
   // Both interiors are the ones the village's own packer certifies: broad
@@ -198,6 +212,7 @@ export async function loadForestMaterial(): Promise<ForestMaterial> {
     y1: 9,
     shadow: 0,
     rim: 255,
+    joint: 0,
   };
   const lawn: Crop = {
     image: courtyard,
@@ -208,34 +223,90 @@ export async function loadForestMaterial(): Promise<ForestMaterial> {
     y1: 5,
     shadow: 0,
     rim: 255,
+    joint: 0,
   };
   calibrate(paving, 'western-approach paving x1..5,y7..8');
   calibrate(lawn, 'courtyard lawn x10..11,y4');
+  return { paving, lawn };
+}
 
-  const tones = {
-    road: {
-      base: parseHex(FOREST_GROUND_TONES.road.base),
-      shadow: parseHex(FOREST_GROUND_TONES.road.shadow),
-      rim: parseHex(FOREST_GROUND_TONES.road.rim),
-    },
-    wear: {
-      base: parseHex(FOREST_GROUND_TONES.wear.base),
-      shadow: parseHex(FOREST_GROUND_TONES.wear.shadow),
-      rim: parseHex(FOREST_GROUND_TONES.wear.rim),
-    },
-    verge: {
-      base: parseHex(FOREST_GROUND_TONES.verge.base),
-      shadow: parseHex(FOREST_GROUND_TONES.verge.shadow),
-      rim: parseHex(FOREST_GROUND_TONES.verge.rim),
-    },
-  } as const;
+/**
+ * A scene's tone table bound to the village crops: given a material name and a
+ * logical point, the flat tone that point takes. `crops` and `salts` say which
+ * accepted crop supplies each material's structure and with which tiling hash,
+ * so two materials sharing a crop still draw unrelated incident.
+ */
+export interface VillagePalette<N extends string> {
+  readonly colour: (tone: N, x: number, y: number) => Rgb;
+  readonly rimOf: (tone: N) => Rgb;
+  readonly ink: Rgb;
+  readonly cuts: Readonly<Record<CropName, { shadow: number; rim: number; joint: number }>>;
+}
 
+export function bindPalette<N extends string>(
+  crops: Record<CropName, Crop>,
+  table: Readonly<Record<N, ToneSpec>>,
+  cropOf: Readonly<Record<N, CropName>>,
+  saltOf: Readonly<Record<N, number>>,
+): VillagePalette<N> {
+  const parsed = {} as Record<N, Record<StructureClass, Rgb>>;
+  for (const name of Object.keys(table) as N[]) {
+    const spec = table[name];
+    parsed[name] = {
+      base: parseHex(spec.base),
+      shadow: parseHex(spec.shadow),
+      rim: parseHex(spec.rim),
+      joint: spec.joint ? parseHex(spec.joint) : parseHex(spec.shadow),
+    };
+  }
   return {
     ink: parseHex(FOREST_INK),
     cuts: {
-      paving: { shadow: paving.shadow, rim: paving.rim },
-      lawn: { shadow: lawn.shadow, rim: lawn.rim },
+      paving: {
+        shadow: crops.paving.shadow,
+        rim: crops.paving.rim,
+        joint: crops.paving.joint,
+      },
+      lawn: { shadow: crops.lawn.shadow, rim: crops.lawn.rim, joint: crops.lawn.joint },
     },
+    rimOf: (tone) => parsed[tone].rim,
+    colour: (tone, x, y) => parsed[tone][structure(crops[cropOf[tone]], x, y, saltOf[tone])],
+  };
+}
+
+export interface ForestMaterial {
+  /** The flat tone for a logical point of the named material. */
+  readonly colour: (tone: ToneName, x: number, y: number) => Rgb;
+  /** A material's pale rim tone, for the thin lit edge beside a region's ink. */
+  readonly rimOf: (tone: ToneName) => Rgb;
+  /** True where the road has been worn to its ruts; drives the third material. */
+  readonly worn: (x: number, y: number) => boolean;
+  readonly ink: Rgb;
+  /** Reported by the packers so the handoff can show what the re-key keyed to. */
+  readonly cuts: VillagePalette<ToneName>['cuts'];
+}
+
+/**
+ * The centre of the five road rows (y 4..8). The ruts run with the road, along
+ * x, which is why the wear is a function of y and a slow wander in x rather
+ * than a radius: a cart leaves two lines, not a stain.
+ */
+const ROAD_CENTRE = 6.5;
+const RUT_OFFSET = 1.05;
+const RUT_HALF = 0.3;
+
+export async function loadForestMaterial(): Promise<ForestMaterial> {
+  const palette = bindPalette(
+    await loadVillageCrops(),
+    FOREST_GROUND_TONES,
+    { road: 'paving', wear: 'paving', verge: 'lawn' },
+    { road: 17, wear: 17, verge: 31 },
+  );
+  return {
+    ink: palette.ink,
+    cuts: palette.cuts,
+    rimOf: palette.rimOf,
+    colour: palette.colour,
     worn(x: number, y: number): boolean {
       // Two ruts either side of the centre line, wandering by about a tenth of
       // a tile so the pair never reads as a ruled stripe, plus the occasional
@@ -247,14 +318,6 @@ export async function loadForestMaterial(): Promise<ForestMaterial> {
       );
       if (rut < RUT_HALF) return true;
       return tileNoise(Math.floor(x), Math.floor(y), 23) > 0.86;
-    },
-    rimOf(tone: ToneName): Rgb {
-      return tones[tone].rim;
-    },
-    colour(tone: ToneName, x: number, y: number): Rgb {
-      const crop = tone === 'verge' ? lawn : paving;
-      const salt = tone === 'verge' ? 31 : 17;
-      return tones[tone][structure(crop, x, y, salt)];
     },
   };
 }
