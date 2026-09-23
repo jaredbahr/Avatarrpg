@@ -935,7 +935,14 @@ export interface PendingChoice {
 
 export type Screen = 'title' | 'setup' | 'explore' | 'dialogue' | 'combat' | 'ended';
 
-export type DayPhase = 'dawn' | 'morning' | 'midday' | 'afternoon' | 'evening' | 'night';
+/**
+ * The one list of phases, in clock order. `clock.ts`'s `PHASE_ORDER`, the
+ * `serialize.ts`/`schemas.ts` zod enums, and the `DayPhase` type itself all
+ * derive from this rather than repeating the six names.
+ */
+export const DAY_PHASES = ['dawn', 'morning', 'midday', 'afternoon', 'evening', 'night'] as const;
+
+export type DayPhase = (typeof DAY_PHASES)[number];
 
 export interface GameState {
   /** Bumped when the save shape changes; `core/save` migrates on load. */

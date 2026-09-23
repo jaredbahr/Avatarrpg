@@ -13,6 +13,7 @@
  */
 
 import { z } from 'zod';
+import { DAY_PHASES } from '../types';
 import type { GameState } from '../types';
 import { MAX_BANKED_TOTAL_AP } from '../rules/stats';
 
@@ -25,7 +26,7 @@ export const SAVE_MAGIC = 'four-nations-tactics';
 
 const vec2 = z.object({ x: z.number().int(), y: z.number().int() });
 
-const dayPhase = z.enum(['dawn', 'morning', 'midday', 'afternoon', 'evening', 'night']);
+const dayPhase = z.enum(DAY_PHASES);
 
 const statusInstance = z.object({
   id: z.string(),

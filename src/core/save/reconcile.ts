@@ -17,9 +17,7 @@
 
 import type { ContentIndex, GameState, PendingChoice } from '../types';
 import { specializationsUpTo } from '../rules/leveling';
-import { buildGrid, samePos } from '../rules/grid';
-import { findSettleTile } from '../story/settle';
-import { visibleNpcs } from '../story/world';
+import { settle } from '../story/settle';
 
 export function reconcileDisciplines(content: ContentIndex, state: GameState): GameState {
   const owed: PendingChoice[] = [];
@@ -53,33 +51,18 @@ export function reconcileDisciplines(content: ContentIndex, state: GameState): G
  * same leader-resettle search `settle` runs after every command, silently
  * (no events: there is nothing to animate on a load). Idempotent:
  * reconciling an already-reconciled state changes nothing.
+ *
+ * `settle` already clears a pin whose screen or map no longer holds it, and
+ * already runs the leader-resettle search — this only adds the one check
+ * `settle` cannot make: whether content itself has drifted since the save
+ * was written, so the pinned NpcDef no longer exists at all.
  */
 export function reconcileWorld(content: ContentIndex, state: GameState): GameState {
-  let next = state;
-  const talk = next.world.talk;
+  const settled = settle(content, state, state).state;
+  const talk = settled.world.talk;
+  if (!talk) return settled;
 
-  if (talk) {
-    const holds = next.screen === 'dialogue' && next.location.mapId === talk.mapId;
-    const map = content.maps.get(talk.mapId);
-    const npcExists = map?.npcs.some((npc) => npc.id === talk.npcId) ?? false;
-    if (!holds || !npcExists) {
-      next = { ...next, world: { ...next.world, talk: null } };
-    }
-  }
-
-  if (next.screen === 'explore') {
-    const map = content.maps.get(next.location.mapId);
-    if (map) {
-      const onNpc = visibleNpcs(map, next).some((npc) => samePos(npc.pos, next.location.pos));
-      if (onNpc) {
-        const grid = buildGrid(map);
-        const found = findSettleTile(content, map, grid, next, next.location.pos);
-        if (found) {
-          next = { ...next, location: { ...next.location, pos: found.pos } };
-        }
-      }
-    }
-  }
-
-  return next;
+  const map = content.maps.get(talk.mapId);
+  const npcExists = map?.npcs.some((npc) => npc.id === talk.npcId) ?? false;
+  return npcExists ? settled : { ...settled, world: { ...settled.world, talk: null } };
 }

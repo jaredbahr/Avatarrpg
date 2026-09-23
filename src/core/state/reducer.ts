@@ -33,7 +33,16 @@ import { BattleDraft } from './battleDraft';
 import { appendLog } from './log';
 import { absorbBattleResults, restAfterVictory, reviveParty, xpRoster } from './createGame';
 import { canUseAbility, isValidTarget, resolveAbility } from '../rules/abilities';
-import { buildGrid, distance, findPath, pathCost, posKey, samePos, tileAt } from '../rules/grid';
+import {
+  buildGrid,
+  cachedGrid,
+  distance,
+  findPath,
+  pathCost,
+  posKey,
+  samePos,
+  tileAt,
+} from '../rules/grid';
 import { adoptDiscipline, awardXp, disciplineUnlocked } from '../rules/leveling';
 import { advanceTurn, battleOutcome, endedOnTimeLimit } from '../rules/turnOrder';
 import { canMove, isAlive } from '../rules/stats';
@@ -585,19 +594,15 @@ function partyWalked(state: GameState, path: readonly Vec2[]): GameEvent[] {
 
 /**
  * Explore maps carry no battle, so their grid is derived from the map each
- * time it is needed. Memoised by map definition because the tiles never change outside
- * combat and a 24x16 rebuild on every tap would be pure waste.
+ * time it is needed. `cachedGrid` (rules/grid.ts) memoises the build by
+ * `MapDef` object — the same cache `settle()` reuses — because the tiles
+ * never change outside combat and a 24x16 rebuild on every tap would be
+ * pure waste.
  */
-const exploreGrids = new WeakMap<MapDef, Grid>();
-
 function buildExploreGrid(content: ContentIndex, state: GameState): Grid {
   const map = content.maps.get(state.location.mapId);
   if (!map) throw new Error(`Unknown map "${state.location.mapId}"`);
-  const cached = exploreGrids.get(map);
-  if (cached) return cached;
-  const built = buildGrid(map);
-  exploreGrids.set(map, built);
-  return built;
+  return cachedGrid(map);
 }
 
 /** Nearest walkable tile adjacent to `target`, for approaching an NPC. */

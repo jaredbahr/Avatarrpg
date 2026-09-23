@@ -9,16 +9,10 @@
  * pause, menus or saving.
  */
 
+import { DAY_PHASES } from '../types';
 import type { DayPhase, GameState } from '../types';
 
-const PHASE_ORDER: readonly DayPhase[] = [
-  'dawn',
-  'morning',
-  'midday',
-  'afternoon',
-  'evening',
-  'night',
-];
+const PHASE_ORDER = DAY_PHASES;
 
 /**
  * Moves the clock forward to the next occurrence of `to`. If the clock is

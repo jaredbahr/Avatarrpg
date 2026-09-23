@@ -138,6 +138,23 @@ export function buildGrid(map: MapDef): Grid {
   return { width: map.width, height: map.height, tiles };
 }
 
+/**
+ * `buildGrid`, memoised by `MapDef` object. An explore map's tiles never
+ * change outside combat, so re-deriving a grid on every settle, reconcile or
+ * tap is pure waste. Battle grids are built fresh (`BattleDraft` mutates its
+ * own copy for walls, fire spread, etc.) — only callers of a static explore
+ * grid should use this.
+ */
+const exploreGridCache = new WeakMap<MapDef, Grid>();
+
+export function cachedGrid(map: MapDef): Grid {
+  const cached = exploreGridCache.get(map);
+  if (cached) return cached;
+  const built = buildGrid(map);
+  exploreGridCache.set(map, built);
+  return built;
+}
+
 /** Replaces one tile, returning a new grid. Out-of-bounds writes are ignored. */
 export function withTile(grid: Grid, p: Vec2, next: Tile): Grid {
   if (!inBounds(grid, p)) return grid;

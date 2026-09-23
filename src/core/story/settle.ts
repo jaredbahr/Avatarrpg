@@ -7,7 +7,7 @@
  */
 
 import type { ContentIndex, GameEvent, GameState, Grid, MapDef, StepResult, Vec2 } from '../types';
-import { DIRECTIONS, buildGrid, inBounds, posKey, samePos, tileAt } from '../rules/grid';
+import { DIRECTIONS, cachedGrid, inBounds, posKey, samePos, tileAt } from '../rules/grid';
 import { activeTriggers, visibleNpcs } from './world';
 
 export interface SettleTile {
@@ -143,7 +143,7 @@ export function settle(content: ContentIndex, _before: GameState, after: GameSta
     if (map) {
       const onNpc = visibleNpcs(map, state).some((npc) => samePos(npc.pos, state.location.pos));
       if (onNpc) {
-        const grid = buildGrid(map);
+        const grid = cachedGrid(map);
         const found = findSettleTile(content, map, grid, state, state.location.pos);
         const leader = state.party[0];
         if (found && leader) {

@@ -19,6 +19,7 @@ import { z } from 'zod';
 import { CLIP_FRAME_COUNTS, CLIP_NAMES, REQUIRED_CLIPS } from './assets/clips';
 import type { AssetEntry } from './assets/manifest';
 import { STANDING_PREFIX } from '../core/story/conditions';
+import { DAY_PHASES } from '../core/types';
 import type {
   Ability,
   CharacterDef,
@@ -42,14 +43,7 @@ import { IDENTITY_REGISTER, excludedResidentFor } from './identity';
 /* ------------------------------------------------------------------ */
 
 const elementId = z.enum(['fire', 'water', 'earth', 'air', 'nonbender']);
-const dayPhaseId: z.ZodType<DayPhase> = z.enum([
-  'dawn',
-  'morning',
-  'midday',
-  'afternoon',
-  'evening',
-  'night',
-]);
+const dayPhaseId: z.ZodType<DayPhase> = z.enum(DAY_PHASES);
 const damageType = z.enum([
   'fire',
   'water',
