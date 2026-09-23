@@ -6,8 +6,8 @@
  * file holds only the search for now; `settle()` is added here later.
  */
 
-import type { ContentIndex, GameState, Grid, MapDef, Vec2 } from '../types';
-import { DIRECTIONS, inBounds, posKey, tileAt } from '../rules/grid';
+import type { ContentIndex, GameEvent, GameState, Grid, MapDef, StepResult, Vec2 } from '../types';
+import { DIRECTIONS, buildGrid, inBounds, posKey, samePos, tileAt } from '../rules/grid';
 import { activeTriggers, visibleNpcs } from './world';
 
 export interface SettleTile {
@@ -110,4 +110,44 @@ export function findSettleTile(
   }
 
   return null;
+}
+
+/**
+ * Wraps every command (ADR 0047 §5, B2). `_before` is unused today —
+ * kept because the ADR specifies `settle(content, before, after)`, and a
+ * later work item's placement diffing may need it.
+ */
+export function settle(content: ContentIndex, _before: GameState, after: GameState): StepResult {
+  let state = after;
+  const events: GameEvent[] = [];
+
+  if (state.world.talk) {
+    const stillHolds =
+      state.screen === 'dialogue' && state.location.mapId === state.world.talk.mapId;
+    if (!stillHolds) {
+      state = { ...state, world: { ...state.world, talk: null } };
+    }
+  }
+
+  if (state.screen === 'explore') {
+    const map = content.maps.get(state.location.mapId);
+    if (map) {
+      const onNpc = visibleNpcs(map, state).some((npc) => samePos(npc.pos, state.location.pos));
+      if (onNpc) {
+        const grid = buildGrid(map);
+        const found = findSettleTile(content, map, grid, state, state.location.pos);
+        const leader = state.party[0];
+        if (found && leader) {
+          const from = state.location.pos;
+          state = { ...state, location: { ...state.location, pos: found.pos } };
+          events.push({ type: 'partyWalked', unitId: leader.id, from, path: found.path });
+        }
+        // No free tile: broken content per the ADR's §4 neighbour rule.
+        // Leave the leader in place rather than crash; structured
+        // diagnostics land with the resolver (W4a).
+      }
+    }
+  }
+
+  return { state, events };
 }

@@ -12,7 +12,7 @@
 import { RngCursor } from '../rng';
 import { evaluate } from '../story/conditions';
 import { advancePhase } from '../story/clock';
-import { findSettleTile } from '../story/settle';
+import { findSettleTile, settle } from '../story/settle';
 import { activeTriggers, triggerKey, visibleNpcs } from '../story/world';
 import type {
   BattleState,
@@ -23,6 +23,7 @@ import type {
   GameState,
   Grid,
   MapDef,
+  NpcDef,
   PendingChoice,
   StepResult,
   Unit,
@@ -382,7 +383,7 @@ function handleWalkTo(content: ContentIndex, state: GameState, pos: Vec2): StepR
       const walked = step.state;
       const target = npcNode(content, walked, map.id, npc.id);
       if (!target) return refuse(walked, 'They have nothing to say.');
-      const entered = enterStoryNode(content, walked, target);
+      const entered = pinIfDialogue(map, npc, enterStoryNode(content, walked, target));
       return {
         state: entered.state,
         events: [...step.events, ...entered.events],
@@ -390,7 +391,7 @@ function handleWalkTo(content: ContentIndex, state: GameState, pos: Vec2): StepR
     }
     const target = npcNode(content, state, map.id, npc.id);
     if (!target) return refuse(state, 'They have nothing to say.');
-    return enterStoryNode(content, state, target);
+    return pinIfDialogue(map, npc, enterStoryNode(content, state, target));
   }
 
   const grid = buildExploreGrid(content, state);
@@ -471,6 +472,26 @@ function handleWalkTo(content: ContentIndex, state: GameState, pos: Vec2): StepR
   }
 
   return { state: moved, events: walk };
+}
+
+/**
+ * Sets the conversation pin (ADR 0047 §4, B1) when an NpcDef-opened node
+ * lands in dialogue. `anchor` is the NPC's own tile, formatted like
+ * `posKey` elsewhere in this file — a placeholder for "where this
+ * conversation opened" until the real anchor system (W4a) exists.
+ */
+function pinIfDialogue(map: MapDef, npc: NpcDef, entered: StepResult): StepResult {
+  if (entered.state.screen !== 'dialogue') return entered;
+  return {
+    state: {
+      ...entered.state,
+      world: {
+        ...entered.state.world,
+        talk: { npcId: npc.id, mapId: map.id, anchor: posKey(npc.pos) },
+      },
+    },
+    events: entered.events,
+  };
 }
 
 /**
@@ -675,7 +696,7 @@ function handleChooseDiscipline(
 /* Entry point                                                         */
 /* ------------------------------------------------------------------ */
 
-export function apply(content: ContentIndex, state: GameState, command: Command): StepResult {
+function applyCommand(content: ContentIndex, state: GameState, command: Command): StepResult {
   switch (command.type) {
     case 'enterNode':
       return enterStoryNode(content, state, command.nodeId);
@@ -736,6 +757,19 @@ export function apply(content: ContentIndex, state: GameState, command: Command)
     case 'wait':
       return handleWait(content, state, command.until);
   }
+}
+
+/**
+ * The one door into the rules. Every command runs through `settle`
+ * afterward (ADR 0047 §5, B2): it clears a conversation pin the result no
+ * longer supports, and — in explore only — steps the leader off a
+ * visible NPC tile. `settle`'s events are appended after the command's
+ * own.
+ */
+export function apply(content: ContentIndex, state: GameState, command: Command): StepResult {
+  const result = applyCommand(content, state, command);
+  const settled = settle(content, state, result.state);
+  return { state: settled.state, events: [...result.events, ...settled.events] };
 }
 
 /** Applies a list of commands in order. Used by the simulator and by tests. */
