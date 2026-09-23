@@ -41,6 +41,7 @@ import { showGridLines } from '../storage/localSaves';
 import { NextWalk, previewWalk } from '../world/walking';
 import type { WalkPreview } from '../world/walking';
 import { nearbyExploreTarget } from '../world/guidance';
+import { handoverBark } from '../world/barks';
 import { phaseLabel } from '../world/journal';
 import { NearbyPlaces } from '../ui/NearbyPlaces';
 import { LocalMap, LocalMapDialog } from '../ui/LocalMap';
@@ -87,6 +88,8 @@ export class ExploreScene implements Scene {
   private viewSize: { width: number; height: number } | null = null;
   /** True while a registered world conversation sits over this map. */
   private conversationMode = false;
+  /** The watch (day and phase) whose handover bark has been shown. */
+  private barked = '';
 
   constructor(private app: App) {}
 
@@ -560,6 +563,13 @@ export class ExploreScene implements Scene {
     const row = el('div', { class: 'action-row' });
 
     const moving = this.hudMoving;
+    // The handover's bark (ADR 0047 §8) as a subtitle, once per watch, on arrival.
+    const bark = moving || !this.map ? null : handoverBark(this.app.content, this.map, state);
+    const watch = `${state.world.clock.day}:${state.world.clock.phase}`;
+    if (bark && this.barked !== watch) {
+      this.barked = watch;
+      this.app.toasts.show(bark, 'info', 5000);
+    }
     const target =
       moving || !this.map ? null : nearbyExploreTarget(this.app.content, this.map, state);
     const exit = target?.kind === 'exit' ? target : null;
