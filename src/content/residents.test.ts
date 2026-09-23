@@ -11,6 +11,7 @@ import { CONTENT_BUNDLE } from './index';
 import { validateContent } from './schemas';
 import type { ContentBundle } from './schemas';
 import { EXCLUDED_RESIDENTS } from './identity';
+import { ASSETS } from './assets/manifest';
 import type {
   BackgroundRole,
   MapDef,
@@ -329,6 +330,17 @@ describe('validateContent: resident records (ADR 0047 W4a)', () => {
     );
     expect(problemsOf(bundle({ anchors: walled }))).toContain(
       'anchor "test.yard" stands on a blocked tile',
+    );
+  });
+
+  it("checks a background role's sprite against the asset manifest", () => {
+    const withAssets = (roles: readonly BackgroundRole[]): ContentBundle => ({
+      ...bundle({ roles }),
+      assets: ASSETS,
+    });
+    expect(problemsOf(withAssets([HELPER]))).toEqual([]);
+    expect(problemsOf(withAssets([{ ...HELPER, sprite: 'npc.nobody' }]))).toContain(
+      'background role bg.test_helper: sprite "npc.nobody" has no entry in the asset manifest',
     );
   });
 

@@ -995,6 +995,8 @@ export function validateContent(bundle: ContentBundle): string[] {
       for (const trigger of map.triggers ?? []) {
         wanted.push([`trigger ${map.id}:${trigger.id}`, trigger.sprite, null]);
       }
+    for (const role of bundle.backgroundRoles)
+      wanted.push([`background role ${role.id}`, role.sprite, null]);
     for (const [owner, key, size] of wanted) {
       const entry = assets[key];
       if (!entry) {
