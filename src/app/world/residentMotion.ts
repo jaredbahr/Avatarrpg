@@ -280,16 +280,22 @@ export class ResidentWalks {
       return false;
     }
     if (state === this.seen || !live) return false;
-    // Anyone caught mid-walk sets off again from the tile they are drawn on.
+    // Someone caught mid-walk sets off again from the tile they are drawn on,
+    // but only when their own tile changed: anyone else keeps the walk they are on.
+    const was = new Map(this.people.map((s) => [s.id, s.pos]));
+    const is = new Map(standingOn(this.content, map, state).map((s) => [s.id, s.pos]));
     const drawn = new Map<string, Vec2 | null>();
-    for (const figure of this.figures())
-      if (this.tracks.has(figure.id))
-        drawn.set(
-          figure.id,
-          !figure.pos && figure.alpha < 1
-            ? null
-            : { x: Math.round(figure.drawPos.x), y: Math.round(figure.drawPos.y) },
-        );
+    for (const figure of this.figures()) {
+      const a = was.get(figure.id);
+      const b = is.get(figure.id);
+      if (!this.tracks.has(figure.id) || (a && b ? samePos(a, b) : a === b)) continue;
+      drawn.set(
+        figure.id,
+        !figure.pos && figure.alpha < 1
+          ? null
+          : { x: Math.round(figure.drawPos.x), y: Math.round(figure.drawPos.y) },
+      );
+    }
     const motions = planResidentMotion({
       content: this.content,
       map,

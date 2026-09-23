@@ -247,6 +247,42 @@ describe('ResidentWalks', () => {
     expect(w.walkingTo({ x: 20, y: 9 })).toBe(false);
   });
 
+  it('keeps a walk running when a command mid-walk leaves the walker’s tile alone', () => {
+    const run = (interrupt: boolean) => {
+      const w = walks();
+      const before = at('midday');
+      w.tick(0, false);
+      w.update(VILLAGE, before, party, true);
+      const after = waited(before, 'afternoon');
+      w.update(VILLAGE, after, party, true);
+      const trace: Vec2[] = [];
+      let ended = -1;
+      for (let t = 50; t <= 6000; t += 50) {
+        if (interrupt && t === 1000) {
+          // The party walks off; nobody's place changes.
+          const walked = apply(CONTENT, after, { type: 'walkTo', pos: { x: 12, y: 7 } }).state;
+          expect(walked.location.pos).toEqual({ x: 12, y: 7 });
+          expect(w.update(VILLAGE, walked, [{ x: 12, y: 7 }], true)).toBe(false);
+        }
+        w.tick(t, false);
+        const mira = figure(w, 'lw.npc.mira');
+        if (mira) trace.push(mira.drawPos);
+        if (ended < 0 && !w.moving()) ended = t;
+      }
+      return { trace, ended };
+    };
+    const calm = run(false);
+    const busy = run(true);
+    for (let i = 1; i < busy.trace.length; i++) {
+      const a = busy.trace[i - 1] as Vec2;
+      const b = busy.trace[i] as Vec2;
+      expect(Math.hypot(b.x - a.x, b.y - a.y)).toBeLessThan(0.2);
+    }
+    expect(busy.trace).toEqual(calm.trace);
+    expect(busy.ended).toBe(calm.ended);
+    expect(busy.ended).toBeGreaterThan(0);
+  });
+
   it('freezes through a conversation: nothing planned, nothing moves, the speaker stays', () => {
     const w = walks();
     const before = at('midday');

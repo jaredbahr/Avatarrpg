@@ -68,8 +68,9 @@ for (const renderer of ['canvas', 'webgl'] as const) {
     await page.evaluate(() => window.fnt!.app.dispatch({ type: 'wait', until: 'afternoon' }));
     const trail: { x: number; y: number }[] = [];
     let dorinSprites = new Set<number>();
-    for (let step = 0; step < 24; step++) {
-      await page.clock.runFor(200);
+    // Sixty ms steps: at 280 ms a tile an even walk moves about 0.21 tile a step.
+    for (let step = 0; step < 80; step++) {
+      await page.clock.runFor(60);
       const now = await markers(page);
       const mira = now.find((m) => m.id === 'lw.npc.mira');
       if (mira && mira.alpha === 1) trail.push(mira.at);
@@ -94,7 +95,7 @@ for (const renderer of ['canvas', 'webgl'] as const) {
     for (let i = 1; i < trail.length; i++) {
       const a = trail[i - 1]!;
       const b = trail[i]!;
-      expect(Math.hypot(b.x - a.x, b.y - a.y)).toBeLessThan(1);
+      expect(Math.hypot(b.x - a.x, b.y - a.y)).toBeLessThan(0.25);
     }
     const end = await markers(page);
     expect(end.find((m) => m.id === 'lw.npc.mira')).toBeUndefined();
