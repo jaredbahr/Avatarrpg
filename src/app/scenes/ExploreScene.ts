@@ -40,6 +40,7 @@ import { showGridLines } from '../storage/localSaves';
 import { NextWalk, previewWalk } from '../world/walking';
 import type { WalkPreview } from '../world/walking';
 import { nearbyExploreTarget } from '../world/guidance';
+import { phaseLabel } from '../world/journal';
 import { NearbyPlaces } from '../ui/NearbyPlaces';
 import { LocalMap, LocalMapDialog } from '../ui/LocalMap';
 import { courtyardEnvironment } from '../audio/environment';
@@ -428,8 +429,14 @@ export class ExploreScene implements Scene {
     clear(banner);
     const objective = this.app.state ? worldObjective(this.app.content, this.app.state) : null;
     this.canvas?.setAttribute('aria-label', `${this.map?.name ?? 'World'} map`);
+    const clock = this.app.state?.world.clock;
     banner.append(
-      el('strong', { class: 'title-plate-name', text: this.app.placeLabel() }),
+      el(
+        'div',
+        { class: 'explore-title' },
+        el('strong', { class: 'title-plate-name', text: this.app.placeLabel() }),
+        clock ? el('span', { class: 'explore-phase', text: phaseLabel(clock.phase) }) : null,
+      ),
       el('span', {
         class: 'explore-mode hide-narrow',
         text: this.conversationMode ? 'Conversation' : 'Exploring',

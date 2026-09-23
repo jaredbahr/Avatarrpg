@@ -14,7 +14,12 @@ export class TravelJournal extends Dialog {
     if (!state) return;
     const journal = travelJournal(this.app.content, state);
     body.append(
-      el('strong', { text: journal.location }),
+      el(
+        'p',
+        { class: 'explore-title' },
+        el('strong', { text: journal.location }),
+        el('span', { class: 'explore-phase', text: journal.time }),
+      ),
       el('p', { text: journal.objective }),
       button('Return to the path', () => this.close(), { class: 'btn-primary' }),
     );

@@ -2293,9 +2293,21 @@ html[data-contrast='high'] .hud-panel::after {
 .explore-bar .title-plate-name {
   font-size: var(--fs-lg);
 }
-.explore-mode {
+/* The place and, beside it, the time of day (ADR 0047 D1: a label, no tint).
+ * Inline rather than under the name, so the header keeps its height. */
+.explore-title {
+  display: flex;
+  align-items: baseline;
+  gap: var(--sp-2);
+  min-width: 0;
+}
+.explore-mode,
+.explore-phase {
   font-family: var(--font-display);
   color: var(--c-ink-dim);
+}
+.explore-phase {
+  white-space: nowrap;
 }
 .explore-header-action {
   background: transparent;
@@ -2470,7 +2482,7 @@ html[data-contrast='high'] .hud-panel::after {
     padding-inline: var(--sp-2);
     flex-wrap: wrap;
   }
-  .explore-bar .title-plate-name {
+  .explore-title {
     flex: 1;
   }
   .explore-scene:not(.riverside-scene) .explore-dock {
@@ -2512,7 +2524,7 @@ html[data-contrast='high'] .hud-panel::after {
     grid-template-columns: repeat(3, minmax(0, 1fr));
     gap: 0;
   }
-  .explore-bar .title-plate-name {
+  .explore-title {
     grid-column: 1 / -1;
     padding: var(--sp-1) 0;
   }

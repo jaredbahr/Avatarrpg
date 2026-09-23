@@ -1,7 +1,11 @@
-import type { ContentIndex, GameState } from '../../core/types';
+import type { ContentIndex, DayPhase, GameState } from '../../core/types';
 import { evaluate } from '../../core/story/conditions';
 import { worldObjective } from '../../core/story/world';
 import { JOURNAL_NOTES } from '../../content/journal';
+
+/** The time of day as the title plate and journal show it (ADR 0047 D1): "Midday". */
+export const phaseLabel = (phase: DayPhase): string =>
+  phase.charAt(0).toUpperCase() + phase.slice(1);
 
 export function travelJournal(content: ContentIndex, state: GameState) {
   const visited = new Set([state.location.mapId, ...Object.keys(state.world.returnPos)]);
@@ -16,6 +20,7 @@ export function travelJournal(content: ContentIndex, state: GameState) {
   const map = content.maps.get(state.location.mapId);
   return {
     location: map?.name ?? 'On the road',
+    time: phaseLabel(state.world.clock.phase),
     objective: worldObjective(content, state) ?? 'Take your time and follow the paths.',
     places: [...content.maps.values()]
       .filter((place) => known.has(place.id))

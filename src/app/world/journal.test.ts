@@ -5,8 +5,9 @@ import { conditionSchema } from '../../content/schemas';
 import { createGame } from '../../core/state/createGame';
 import { apply } from '../../core/state/reducer';
 import { deserialize, serialize, stateFromBlob } from '../../core/save/serialize';
-import { travelJournal } from './journal';
+import { phaseLabel, travelJournal } from './journal';
 import { DISCOVERIES } from '../../content/maps/discoveries';
+import { DAY_PHASES } from '../../core/types';
 
 const start = () => {
   const state = createGame(CONTENT, {
@@ -24,6 +25,22 @@ describe('travel journal and riverside routes', () => {
       expect(CONTENT.maps.has(note.mapId)).toBe(true);
       expect(conditionSchema.safeParse(note.when).success).toBe(true);
     }
+  });
+  it('names the time of day as a label (ADR 0047 D1)', () => {
+    const state = start();
+    expect(travelJournal(CONTENT, state).time).toBe('Midday');
+    const clock = { day: 2, phase: 'evening' } as const;
+    expect(travelJournal(CONTENT, { ...state, world: { ...state.world, clock } }).time).toBe(
+      'Evening',
+    );
+    expect(DAY_PHASES.map(phaseLabel)).toEqual([
+      'Dawn',
+      'Morning',
+      'Midday',
+      'Afternoon',
+      'Evening',
+      'Night',
+    ]);
   });
   it('shows nearby places and leads without spoiling unseen areas', () => {
     const state = start();
