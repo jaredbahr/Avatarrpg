@@ -14,7 +14,7 @@ import { evaluate } from '../story/conditions';
 import { advancePhase } from '../story/clock';
 import { findSettleTile, settle } from '../story/settle';
 import { resolveResidents } from '../story/residents';
-import { activeTriggers, triggerKey, visibleNpcs } from '../story/world';
+import { activeTriggers, backgroundFigures, triggerKey, visibleNpcs } from '../story/world';
 import type {
   BattleState,
   Command,
@@ -433,6 +433,14 @@ function handleWalkTo(content: ContentIndex, state: GameState, pos: Vec2): StepR
     );
   }
 
+  // A background role says nothing (ADR 0047, W8): walk up to them, never onto them.
+  if (backgroundFigures(content, map, state).some((role) => samePos(role.pos, pos))) {
+    if (distance(state.location.pos, pos) <= 1) return { state, events: [] };
+    const approach = findApproach(content, state, pos);
+    if (!approach) return refuse(state, 'You cannot reach them from here.');
+    return handleWalkTo(content, state, approach);
+  }
+
   const grid = buildExploreGrid(content, state);
   const tile = tileAt(grid, pos);
   if (!tile || tile.blocked) return refuse(state, 'You cannot walk there.');
@@ -630,6 +638,11 @@ function buildExploreGrid(content: ContentIndex, state: GameState): Grid {
 function findApproach(content: ContentIndex, state: GameState, target: Vec2): Vec2 | null {
   const grid = buildExploreGrid(content, state);
   const occupied = new Set<string>([posKey(target)]);
+  const map = content.maps.get(state.location.mapId);
+  // Nobody ends a walk on a background role's tile.
+  const roles = new Set(
+    map ? backgroundFigures(content, map, state).map((role) => posKey(role.pos)) : [],
+  );
   let best: Vec2 | null = null;
   let bestDistance = Infinity;
 
@@ -637,7 +650,7 @@ function findApproach(content: ContentIndex, state: GameState, target: Vec2): Ve
     for (let dx = -1; dx <= 1; dx++) {
       if (dx === 0 && dy === 0) continue;
       const candidate = { x: target.x + dx, y: target.y + dy };
-      if (occupied.has(posKey(candidate))) continue;
+      if (occupied.has(posKey(candidate)) || roles.has(posKey(candidate))) continue;
       const tile = tileAt(grid, candidate);
       if (!tile || tile.blocked) continue;
       const path = findPath(

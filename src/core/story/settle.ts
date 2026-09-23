@@ -7,8 +7,8 @@
  */
 
 import type { ContentIndex, GameEvent, GameState, Grid, MapDef, StepResult, Vec2 } from '../types';
-import { DIRECTIONS, cachedGrid, inBounds, posKey, samePos, tileAt } from '../rules/grid';
-import { activeTriggers, visibleNpcs } from './world';
+import { DIRECTIONS, cachedGrid, inBounds, posKey, tileAt } from '../rules/grid';
+import { activeTriggers, backgroundFigures, visibleNpcs } from './world';
 
 export interface SettleTile {
   readonly pos: Vec2;
@@ -42,9 +42,18 @@ function restSpotTiles(map: MapDef): ReadonlySet<string> {
   return tileSet(map.restSpots ? map.restSpots.map((spot) => spot.pos) : []);
 }
 
+/** Where someone stands: every visible NPC and every background role (ADR 0047, W8). */
+function standingTiles(content: ContentIndex, map: MapDef, state: GameState): Set<string> {
+  return new Set(
+    [...visibleNpcs(content, map, state), ...backgroundFigures(content, map, state)].map((who) =>
+      posKey(who.pos),
+    ),
+  );
+}
+
 /**
- * Nearest walkable tile, other than `from`, that is not a visible NPC tile,
- * an exit tile, an arrival tile, an active trigger cell or a rest spot (ADR
+ * Nearest walkable tile, other than `from`, that is not a visible NPC tile
+ * or background role's tile (W8 amendment), an exit tile, an arrival tile, an active trigger cell or a rest spot (ADR
  * 0047 §5). Breadth-first; a step never crosses an exit or an active
  * trigger cell, so it can never fire one; a diagonal step may not squeeze
  * between two blocked orthogonal neighbours, matching `findPath`'s rule.
@@ -61,7 +70,7 @@ export function findSettleTile(
     ...exitTiles(map),
     ...activeTriggers(map, state).flatMap((trigger) => trigger.area.map(posKey)),
   ]);
-  const npcTiles = new Set(visibleNpcs(content, map, state).map((npc) => posKey(npc.pos)));
+  const npcTiles = standingTiles(content, map, state);
   const arrivals = arrivalTiles(content, map);
   const restSpots = restSpotTiles(map);
 
@@ -141,9 +150,7 @@ export function settle(content: ContentIndex, _before: GameState, after: GameSta
   if (state.screen === 'explore') {
     const map = content.maps.get(state.location.mapId);
     if (map) {
-      const onNpc = visibleNpcs(content, map, state).some((npc) =>
-        samePos(npc.pos, state.location.pos),
-      );
+      const onNpc = standingTiles(content, map, state).has(posKey(state.location.pos));
       if (onNpc) {
         const grid = cachedGrid(map);
         const found = findSettleTile(content, map, grid, state, state.location.pos);
