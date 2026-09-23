@@ -7,8 +7,9 @@ import { RIVERSIDE_ENTRY } from '../../content/maps/riverside';
  * §1). It is set after Mira's briefing (`riverside_mira` greets the party as
  * people she knows), so its start state records `mira_intro` as visited;
  * otherwise her pre-intro hold would keep her at her table in the village
- * and, through the supervision rule, Pella with her. The preview's clock is
- * W7's.
+ * and, through the supervision rule, Pella with her. It enters in the
+ * afternoon, the riverside's written time of day, when Mira walks the bank
+ * and Pella watches the otter.
  */
 export function villagePreviewState(content: ContentIndex): GameState {
   const fresh = createGame(content, {
@@ -16,5 +17,9 @@ export function villagePreviewState(content: ContentIndex): GameState {
     party: [{ characterId: 'sura' }, { characterId: 'kaya' }],
     startNode: RIVERSIDE_ENTRY,
   });
-  return { ...fresh, story: { ...fresh.story, visited: ['mira_intro'] } };
+  return {
+    ...fresh,
+    story: { ...fresh.story, visited: ['mira_intro'] },
+    world: { ...fresh.world, clock: { day: 1, phase: 'afternoon' } },
+  };
 }

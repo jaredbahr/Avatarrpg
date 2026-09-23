@@ -343,15 +343,14 @@ suite('Ba Dan residents: anchor tiles (W5c)', () => {
 });
 
 suite('the title preview (ADR 0047 §1)', () => {
-  it('starts after Mira’s briefing, so she and Pella are at the river in the afternoon', () => {
+  it('starts in the afternoon after Mira’s briefing, with Mira and Pella at the river', () => {
     const preview = villagePreviewState(CONTENT);
     expect(preview.story.visited).toContain('mira_intro');
-    // The preview's clock is W7's; this is where the afternoon puts them.
-    const afternoon = {
-      ...preview,
-      world: { ...preview.world, clock: { day: 1, phase: 'afternoon' as const } },
-    };
-    expect(where(afternoon, 'lw.npc.mira')).toBe('bd06.bank');
-    expect(where(afternoon, 'lw.npc.pella')).toBe('bd06.watch');
+    expect(preview.world.clock).toEqual({ day: 1, phase: 'afternoon' });
+    expect(where(preview, 'lw.npc.mira')).toBe('bd06.bank');
+    expect(where(preview, 'lw.npc.pella')).toBe('bd06.watch');
+    const river = visibleNpcs(CONTENT, map(RIVERSIDE), preview).map((n) => n.id);
+    expect(river).toEqual(expect.arrayContaining(['riverside_mira', 'riverside_pella']));
+    expect(river).not.toContain('riverside_dorin');
   });
 });
