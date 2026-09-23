@@ -172,7 +172,7 @@ export function decorSignature(grid: Grid): string {
   let signature = `${grid.width}x${grid.height}`;
   for (const tile of grid.tiles) {
     signature += `|${tile.terrain}${tile.elevation}${tile.blocked ? 'b' : ''}${tile.cover ? 'c' : ''}${
-      tile.surface?.id === 'water' ? 'w' : ''
+      tile.surface?.id === 'water' ? 'w' : tile.surface?.id === 'rubble' ? 'r' : ''
     }`;
   }
   return signature;

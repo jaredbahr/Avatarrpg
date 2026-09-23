@@ -17,6 +17,8 @@ import type { Grid } from '../core/types';
 import type { TileRelief } from './geometry/board';
 import { DECOR_CHUNK, boardRelief, decorSignature, seamMaterial } from './geometry/board';
 import { paintElevationBase, paintTileDecor, paintTileSeams } from './painters/board';
+import { surfaceIsPainted } from './sceneSurfaces';
+import type { MapView } from './view';
 
 /**
  * What a chunk carries: every rule marker and decal, the raised terrain alone
@@ -52,10 +54,22 @@ export class DecorSheets {
     this.chunks.clear();
   }
 
-  /** The baked chunk at (`cx`, `cy`) in chunk units, `px` device pixels a tile. */
-  get(grid: Grid, cx: number, cy: number, px: number, mode: DecorMode = 'full'): HTMLCanvasElement {
+  /**
+   * The baked chunk at (`cx`, `cy`) in chunk units, `px` device pixels a tile.
+   * `view` and `ready` let a seams bake drop the cells whose art is painted;
+   * the accessibility overlays restore them, so they key the chunk too.
+   */
+  get(
+    grid: Grid,
+    cx: number,
+    cy: number,
+    px: number,
+    mode: DecorMode = 'full',
+    view?: MapView,
+    ready = false,
+  ): HTMLCanvasElement {
     const size = Math.max(8, Math.min(DECOR_PX_CAP, Math.round(px)));
-    const key = `${cx},${cy}|${size}|${mode}`;
+    const key = `${cx},${cy}|${size}|${mode}|${ready && !view?.hatch ? 1 : 0}`;
     const existing = this.chunks.get(key);
     if (existing) {
       this.chunks.delete(key);
@@ -67,7 +81,7 @@ export class DecorSheets {
     canvas.width = size * DECOR_CHUNK;
     canvas.height = size * DECOR_CHUNK;
     const ctx = canvas.getContext('2d');
-    if (ctx) this.bake(ctx, grid, cx, cy, size, mode);
+    if (ctx) this.bake(ctx, grid, cx, cy, size, mode, view, ready);
 
     this.chunks.set(key, canvas);
     while (this.chunks.size > MAX_CHUNKS) {
@@ -90,6 +104,8 @@ export class DecorSheets {
     cy: number,
     size: number,
     mode: DecorMode,
+    view: MapView | undefined,
+    ready: boolean,
   ): void {
     const x0 = cx * DECOR_CHUNK;
     const y0 = cy * DECOR_CHUNK;
@@ -104,9 +120,11 @@ export class DecorSheets {
         const box = { x: (x - x0) * size, y: (y - y0) * size, size };
         const relief = this.relief.get(index);
         if (mode === 'elevation') paintElevationBase(ctx, box, tile, { x, y }, relief);
-        else if (seamsOnly)
+        else if (seamsOnly) {
+          // Painted art carries its own join: a seam over it would tint the cell.
+          if (view && surfaceIsPainted(view, ready, tile, { x, y })) continue;
           paintTileSeams(ctx, box, { x, y }, seamMaterial(tile), relief?.seams ?? null, true);
-        else paintTileDecor(ctx, box, tile, { x, y }, relief);
+        } else paintTileDecor(ctx, box, tile, { x, y }, relief);
       }
     }
   }
