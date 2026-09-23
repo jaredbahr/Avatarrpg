@@ -24,6 +24,7 @@ import type {
   CharacterDef,
   ComboRule,
   Condition,
+  DayPhase,
   DisciplineDef,
   EncounterDef,
   EnemyDef,
@@ -41,6 +42,14 @@ import { EXCLUDED_RESIDENTS, IDENTITY_REGISTER } from './identity';
 /* ------------------------------------------------------------------ */
 
 const elementId = z.enum(['fire', 'water', 'earth', 'air', 'nonbender']);
+const dayPhaseId: z.ZodType<DayPhase> = z.enum([
+  'dawn',
+  'morning',
+  'midday',
+  'afternoon',
+  'evening',
+  'night',
+]);
 const damageType = z.enum([
   'fire',
   'water',
@@ -152,6 +161,7 @@ export const conditionSchema: z.ZodType<Condition> = z.lazy(() =>
     z.object({ kind: z.literal('all'), of: z.array(conditionSchema).min(1) }),
     z.object({ kind: z.literal('any'), of: z.array(conditionSchema).min(1) }),
     z.object({ kind: z.literal('not'), of: conditionSchema }),
+    z.object({ kind: z.literal('phase'), in: z.array(dayPhaseId).min(1) }),
   ]),
 );
 

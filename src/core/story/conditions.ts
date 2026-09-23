@@ -27,7 +27,7 @@
  * truth.
  */
 
-import type { Condition, ContentIndex, ElementId, FlagValue, GameState } from '../types';
+import type { Condition, ContentIndex, DayPhase, ElementId, FlagValue, GameState } from '../types';
 
 /** Reserved flag prefix. `validateContent` stops content from reaching past it. */
 export const STANDING_PREFIX = 'standing.';
@@ -147,6 +147,9 @@ function evaluateAt(state: GameState, condition: Condition, depth: number): bool
 
     case 'not':
       return !evaluateAt(state, condition.of, depth + 1);
+
+    case 'phase':
+      return condition.in.includes(state.world.clock.phase);
   }
 }
 
@@ -159,6 +162,16 @@ export function evaluate(state: GameState, condition: Condition | undefined): bo
 /* ------------------------------------------------------------------ */
 /* Description                                                         */
 /* ------------------------------------------------------------------ */
+
+/** English phrasing for each phase, for `describe()`. "at dawn", "in the evening", etc. */
+const PHASE_PHRASE: Record<DayPhase, string> = {
+  dawn: 'at dawn',
+  morning: 'in the morning',
+  midday: 'at midday',
+  afternoon: 'in the afternoon',
+  evening: 'in the evening',
+  night: 'at night',
+};
 
 /**
  * Bender words, for the common case. `describe` needs these before it has any
@@ -243,6 +256,9 @@ function describeAt(content: ContentIndex, condition: Condition, depth: number):
 
     case 'not':
       return `not (${describeAt(content, condition.of, depth + 1)})`;
+
+    case 'phase':
+      return condition.in.map((phase) => PHASE_PHRASE[phase]).join(' or ');
   }
 }
 

@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { CONTENT, CONTENT_BUNDLE, STORY_ENTRY } from './index';
-import { mapSchema, validateContent } from './schemas';
+import { conditionSchema, mapSchema, validateContent } from './schemas';
 import { ELEMENTS } from './elements';
 import { resolveAsset } from './assets/manifest';
 import { combinedKit } from '../core/rules/leveling';
@@ -31,6 +31,12 @@ describe('content', () => {
   it('passes shape and cross-reference validation', () => {
     const problems = validateContent(CONTENT_BUNDLE);
     expect(problems, `\n${problems.join('\n')}\n`).toEqual([]);
+  });
+
+  it('accepts a phase condition for a real phase and rejects the rest', () => {
+    expect(conditionSchema.safeParse({ kind: 'phase', in: ['dawn'] }).success).toBe(true);
+    expect(conditionSchema.safeParse({ kind: 'phase', in: ['tuesday'] }).success).toBe(false);
+    expect(conditionSchema.safeParse({ kind: 'phase', in: [] }).success).toBe(false);
   });
 
   it('only resumes an end screen at an existing exploration node', () => {

@@ -745,7 +745,8 @@ export type Condition =
   | { readonly kind: 'partySize'; readonly op: 'gte' | 'lte'; readonly value: number }
   | { readonly kind: 'all'; readonly of: readonly Condition[] }
   | { readonly kind: 'any'; readonly of: readonly Condition[] }
-  | { readonly kind: 'not'; readonly of: Condition };
+  | { readonly kind: 'not'; readonly of: Condition }
+  | { readonly kind: 'phase'; readonly in: readonly DayPhase[] };
 
 export interface StoryOption {
   readonly label: string;
