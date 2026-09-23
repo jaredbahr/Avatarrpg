@@ -463,6 +463,19 @@ subtitles. The barks are presentation work and are assigned to W7, not W6 (W6 re
 Dorin actor are shown only while Dorin resolves to `rv.practice`. The preview enters in the
 afternoon, so its drill appears after "Wait until midday" at the porch (D3, D8).
 
+**Amendment (W7, 2026-09-23): where the UI puts the wait, and what it leaves to W8.** The village
+hotbar offers "Wait until…" only while the leader is within one tile of a rest spot, in Look
+around's slot: the dock is laid out for four actions, and a fifth wrapped the iPad dock to twice
+its height and pushed a button off a phone at Largest text. On the riverside it is always in the
+Activities group. Away from a seat the travel journal says where the map lets you wait, and the
+dialog shows the rule's refusal once over its locked options. The refusals name their reason: a
+fight, a conversation, no seat (naming the map's rest spots), or nowhere for the party to stand.
+The handover barks are three items rotated by `(day, watch)` and shown once per watch as a toast.
+Background roles are not drawn yet: on the village they are `NpcMarker`s, which are W8's, and
+drawing them needs W8 to decide how the party treats an observe-only figure's tile (rules paths
+and settle ignore it today). The riverside, the only stage VillageLife draws, has no role
+placements in Slice A.
+
 ### 9. Consistency with Jared's later decisions
 
 - **One streamed world:** placements derived, anchors are stable ids with a `mapId`, the clock is
