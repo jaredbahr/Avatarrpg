@@ -98,10 +98,12 @@ registrations.
 The east dirt page now takes over across a narrow logical `x=10` alpha ramp
 over the west page's existing bleed. This avoids a visible diagonal caused by
 separately compressed opaque dirt-page edges while keeping the west page as the
-dry underlay. `scripts/art/quarry-route-ground.ts` applies the ramp for future
-packs; `scripts/art/soften-quarry-dirt-join.ts` reproduces it from the approved
-shipped pages when the historical raw source is unavailable. Runtime oil, mud,
-and water remain transparent because the repair only reduces nonzero dirt alpha.
+dry underlay. `scripts/art/quarry-route-ground.ts` applies the ramp itself
+(`softenDirtJoin`) when it packs either map. Runtime oil, mud, and water remain
+transparent because the ramp only reduces nonzero dirt alpha. (A one-off script,
+`soften-quarry-dirt-join.ts`, once re-applied the ramp to the shipped pages; it
+re-encoded them at quality 84, broke the byte pins, and was deleted in the DL-2
+cleanup.)
 
 ## DL-2 W3 re-key of the Driller floor (2026-09-22)
 
@@ -164,8 +166,8 @@ gate's plates are byte-identical to W3.
 | Total       |    167,520 |   125,588 |   −41,932 |
 
 Every registered rectangle is unchanged. The east dirt page keeps its soft
-`x=10` takeover over the west page's bleed; it is now produced by the packer's
-`softenDirtJoin` rather than `scripts/art/soften-quarry-dirt-join.ts`, which
-re-encodes the shipped pages at quality 84 and must no longer be run over
-either map. `scripts/art/quarry-route-ground.test.ts` pins the Cutting's bytes,
-its ink and the lane/shoulder split.
+`x=10` takeover over the west page's bleed; it is produced by the packer's
+`softenDirtJoin`. `scripts/art/quarry-route-ground.test.ts` pins the Cutting's
+bytes, its ink and the lane/shoulder split, and checks that every page's size
+on disk equals the `bytes` recorded for it in `CUTTING_GROUND_REGIONS` and
+`DRILLER_GROUND_REGIONS`.
