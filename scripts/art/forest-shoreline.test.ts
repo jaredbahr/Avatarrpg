@@ -150,10 +150,20 @@ it('keeps the bank, its wandering bite and the opaque bed of ADR 0045', () => {
   const mean = (b: { n: number; sum: number }): number => b.sum / b.n;
   expect(mean(band.shelf)).toBeLessThan(mean(band.bank) * 0.85);
   expect(mean(band.deep)).toBeLessThan(mean(band.shelf) * 0.8);
-  // The wet line: ink, with the §3 edge on its wet side and the margin's pale
-  // rim on its dry one, so the bite's inner sliver runs pale to dark outward.
+  // The wet line: ink, with the §3 edge on its wet side and the wet bank on
+  // its dry one, so the bite's inner sliver darkens into the line.
   expect(mean(band.featherOuter)).toBeGreaterThan(mean(band.featherInner));
   expect(BED_DEEP_AT).toBeGreaterThan(BED_DEEP_BAND / 2);
+  // Under the water film the bank is the damp margin gone a step darker: its
+  // pale rim, which read as the lit top of a curb there, is never painted.
+  let paleUnderFilm = 0;
+  for (let py = 0; py < image.height; py++)
+    for (let px = 0; px < image.width; px++) {
+      if ((inset[py * image.width + px] ?? 0) <= 0) continue;
+      const hex = toHex(pixelAt(image, px, py).slice(0, 3));
+      if (hex === FOREST_PIECE_TONES.margin.rim) paleUnderFilm++;
+    }
+  expect(paleUnderFilm).toBe(0);
   // Every real water centre carries bed, and muted bed at that: the middle of
   // a tile is never dry bank, and never the brightest thing in the pond.
   for (const { x, y } of FOREST_WATER_CELLS) {

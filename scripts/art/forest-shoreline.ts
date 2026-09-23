@@ -20,16 +20,15 @@
  * pond's margin was the odd material on a board whose road and verges had
  * already been re-keyed to the village's hand. Both now come from
  * `forest-village-material.ts`, in the DL-2 §3 water-margin key: the bank is
- * the **damp margin** `#8e7049` over the road's own packed-earth shadow, the
- * bed is `#2a5e77` falling to a deeper second flat tone, the wet line carries
- * the bible's `#1b1410` ink with the §3 `#7ec8e3` edge on its wet side and the
- * bank's pale rim on its dry one. Two flat tones per material, no gradient; the
- * bed's depth is spent on *which* of its two tones a pixel takes, never on
- * blending them, exactly as the route plate spends its feather.
+ * the **damp margin** `#8e7049` over the road's own packed-earth shadow, gone
+ * a step darker where the water film covers it; the bed is `#2a5e77` falling
+ * to a deeper second flat tone; and the wet line carries the bible's `#1b1410`
+ * ink with the §3 `#7ec8e3` edge on its wet side. Two flat tones per material,
+ * no gradient; the bed's depth is spent on *which* of its two tones a pixel
+ * takes, never on blending them, exactly as the route plate spends its feather.
  */
 import { mkdirSync, writeFileSync } from 'node:fs';
 import { FOREST_POND_PATCH, FOREST_WATER_CELLS } from '../../src/content/scenes/forestRoad';
-import { tileNoise } from '../../src/render/painters/shapes';
 import { newImage, parseHex, setPixel, writePng } from './lib/image';
 import { encodeWebp } from './lib/webp';
 import {
@@ -49,7 +48,7 @@ export const BITE_FEATHER = 0.05;
 export const BITE_FLOOR = 0.3;
 /** How far in the bed reaches its deep tone, in cells, and over what band. */
 export const BED_DEEP_AT = 0.75;
-export const BED_DEEP_BAND = 0.3;
+export const BED_DEEP_BAND = 0.6;
 /**
  * The bible's uniform ink and the thin rim beside it, in logical cells. One
  * step of a tile across either kind of cell edge is `hypot(64, 32)` screen
@@ -121,26 +120,18 @@ const smooth = (t: number): number => {
 /**
  * Whether a wet point takes the bed's deep tone rather than its shelf tone.
  *
- * The decision is the smoothstep of how far the point sits inside the water,
- * resolved per pixel against a hash: the *share* of deep pixels rises across
- * `BED_DEEP_BAND`, so the pond visibly deepens, but every pixel is still one of
- * exactly two flat tones and no intermediate key is ever written. The village
- * lawn's own incident then flips the class in its minority share, which leaves
- * silt flecks on the shelf and pale submerged stones in the deep.
+ * The deep tone's territory is a pool whose edge wanders across
+ * `BED_DEEP_BAND`: a point is deep where its depth, as a smoothstep across the
+ * band, clears a smooth value-noise field. The field is continuous and sampled
+ * in cell space on whole-number frequencies, so the boundary is one wandering
+ * line rather than a dither — no pixel, clump or hash decides it on its own —
+ * and every pixel is still one of exactly two flat tones. The village lawn's
+ * own incident then flips the class in its minority share, which leaves silt
+ * flecks on the shelf and pale submerged stones in the deep.
  */
-export function bedIsDeep(
-  material: ForestMaterial,
-  x: number,
-  y: number,
-  px: number,
-  py: number,
-  inside: number,
-): boolean {
+export function bedIsDeep(material: ForestMaterial, x: number, y: number, inside: number): boolean {
   const band = smooth((inside - BED_DEEP_AT) / BED_DEEP_BAND + 0.5);
-  // Resolved over four-pixel clumps rather than per pixel: a per-pixel draw is
-  // a dither, and a dither is a gradient with extra steps. At this density a
-  // clump is two world pixels, so the shelf breaks into silt rather than noise.
-  const deep = tileNoise(px >> 2, py >> 2, 11) < band;
+  const deep = band > shoreNoise(x * 3 + 7, y * 3 + 5);
   return deep !== (material.classOf('bed', x, y) === 'shadow');
 }
 
@@ -190,6 +181,10 @@ export function packShoreline(material: ForestMaterial) {
     deep: parseHex(FOREST_PIECE_TONES.bed.shadow),
     edge: parseHex(FOREST_PIECE_TONES.bed.rim),
   };
+  const wetBank = {
+    field: parseHex(FOREST_PIECE_TONES.margin.shadow),
+    lifted: parseHex(FOREST_PIECE_TONES.margin.base),
+  };
   let bitePixels = 0,
     deepestBitePixels = 0,
     bedPixels = 0,
@@ -197,12 +192,14 @@ export function packShoreline(material: ForestMaterial) {
     inkPixels = 0;
   /*
    * Per-material means, in the same Rec. 709 luma `forest-ground-measure.ts`
-   * reads. The plate holds two materials that are supposed to differ — damp
-   * earth and water-covered bed — so its whole-plate window span is a
-   * wet-against-dry step, not the baked ramp the DL-2 §3 bar is aimed at.
-   * These are the numbers that say whether either material itself has drifted.
+   * reads. The plate holds materials that are supposed to differ — the damp
+   * margin on dry ground, the same margin gone wet under the film, and the
+   * bed — so its whole-plate window span is a wet-against-dry step, not the
+   * baked ramp the DL-2 §3 bar is aimed at. These are the numbers that say
+   * whether any one of them has drifted; `dry` is the one the route's tone
+   * band applies to.
    */
-  const bands = { dry: { n: 0, sum: 0 }, bed: { n: 0, sum: 0 } };
+  const bands = { dry: { n: 0, sum: 0 }, bank: { n: 0, sum: 0 }, bed: { n: 0, sum: 0 } };
   const record = (band: { n: number; sum: number }, rgb: readonly number[]): void => {
     band.n++;
     band.sum += 0.2126 * (rgb[0] ?? 0) + 0.7152 * (rgb[1] ?? 0) + 0.0722 * (rgb[2] ?? 0);
@@ -239,21 +236,23 @@ export function packShoreline(material: ForestMaterial) {
           inkPixels++;
         } else if (fromLine > 0 && fromLine < INK_HALF + RIM_WIDTH) {
           rgb = bed.edge;
-        } else if (fromLine < 0 && -fromLine < INK_HALF + RIM_WIDTH) {
-          rgb = material.rimOf('margin');
         } else if (dryInside) {
-          rgb = material.colour('margin', x, y);
+          // The bank under the film is wet, so it is the damp margin a step
+          // darker: its shadow as the field, its base where the lawn's rhythm
+          // lifts a patch. The pale rim stays on dry ground; under the film it
+          // read as the lit top of a curb rather than as a bank going under.
+          rgb = material.classOf('margin', x, y) === 'rim' ? wetBank.lifted : wetBank.field;
         } else {
-          rgb = bedIsDeep(material, x, y, px, py, inside) ? bed.deep : bed.shelf;
+          rgb = bedIsDeep(material, x, y, inside) ? bed.deep : bed.shelf;
         }
         if (dryInside) {
           bitePixels++;
-          record(bands.dry, rgb);
+          record(bands.bank, rgb);
           if (inside > SHORE_BITE * 0.75) deepestBitePixels++;
         } else {
           bedPixels++;
           record(bands.bed, rgb);
-          if (inside > BED_DEEP_AT + BED_DEEP_BAND / 2) deepBedPixels++;
+          if (rgb === bed.deep) deepBedPixels++;
         }
       } else {
         // Nothing lies under this band, outside the water: it keeps the damp
@@ -276,6 +275,7 @@ export function packShoreline(material: ForestMaterial) {
     deepBedPixels,
     inkPixels,
     dryMean: bands.dry.n ? bands.dry.sum / bands.dry.n : 0,
+    bankMean: bands.bank.n ? bands.bank.sum / bands.bank.n : 0,
     bedMean: bands.bed.n ? bands.bed.sum / bands.bed.n : 0,
   };
 }
@@ -296,6 +296,7 @@ export async function main() {
     deepBedPixels: result.deepBedPixels,
     inkPixels: result.inkPixels,
     dryMean: Number(result.dryMean.toFixed(1)),
+    bankMean: Number(result.bankMean.toFixed(1)),
     bedMean: Number(result.bedMean.toFixed(1)),
   });
 }
