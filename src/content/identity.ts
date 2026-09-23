@@ -40,9 +40,10 @@ export interface IdentityEntry {
 }
 
 /**
- * The seven missing (ADR 0047 §8, and Hesh/Miri added under the W0-W3
- * review): no record, NpcDef or placement exists for them in Slice A, and
- * their keys are reserved so nothing can claim them by accident.
+ * The five missing (ADR 0047 §8) plus two reserved names (Hesh, Miri), added
+ * under the W0-W3 review: no record, NpcDef or placement exists for any of
+ * them in Slice A, and their keys are reserved so nothing can claim them by
+ * accident.
  */
 export const EXCLUDED_RESIDENTS: readonly IdentityEntry[] = [
   { id: 'lw.npc.bo_shan', name: 'Bo-shan', names: ['Bo-shan'], runtimeSlugs: ['bo_shan'] },
@@ -58,9 +59,9 @@ export const EXCLUDED_RESIDENTS: readonly IdentityEntry[] = [
 ];
 
 /**
- * The full register: the seven missing, plus every other identity that must
- * stay distinct from a name or sprite already in use elsewhere (guide
- * §00.5). `lw.npc.bo` is not `lw.npc.bo_shan`; the road's "Dema, road
+ * The full register: the five missing plus two reserved names (Hesh, Miri),
+ * then every other identity that must stay distinct from a name or sprite
+ * already in use elsewhere (guide §00.5). `lw.npc.bo` is not `lw.npc.bo_shan`; the road's "Dema, road
  * keeper" placeholder (`runtimeSlugs: ['dema']`) is not `lw.npc.dema_cook`;
  * the rest stop's "Sen" placeholder is not `lw.npc.sen_tea`,
  * `lw.npc.senn_messenger` or `lw.npc.sena` — those three are three
@@ -119,7 +120,7 @@ export const FORBIDDEN_BINDINGS: Readonly<Record<string, readonly string[]>> = {
 const REGISTER_IDS: ReadonlySet<string> = new Set(IDENTITY_REGISTER.map((entry) => entry.id));
 const EXCLUDED_IDS: ReadonlySet<string> = new Set(EXCLUDED_RESIDENTS.map((entry) => entry.id));
 
-/** True for any of the seven missing (ADR 0047 §8). */
+/** True for any of the five missing plus two reserved names (Hesh, Miri) (ADR 0047 §8). */
 export function isExcludedResident(id: string): boolean {
   return EXCLUDED_IDS.has(id);
 }
