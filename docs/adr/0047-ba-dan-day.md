@@ -504,21 +504,35 @@ these decisions and departures.
   it ends.
 - **Taps.** A tap hit-tests the drawn figures (upright bounds over the drawn feet, front-most
   first) and walks to that person's rules tile. A tap on someone still walking targets where they
-  are going, and the party's walk is held as the next walk ("Next: …") until they arrive; every
-  other route to them (a ground tap on their tile, Talk, Look around, the map) goes through the
-  same hold, so no conversation opens with the speaker mid-stride. Someone walking off the map
+  are going: the party sets off at once for the tile beside it, and the conversation is held as
+  the next walk ("Next: …") until they arrive. Every other route to them (a ground tap on their
+  tile, Talk, Look around, the map) goes through the same hold, so no conversation opens with the
+  speaker mid-stride. Someone walking off the map
   has no tile; a tap on them is a ground tap.
 - **Background roles.** Both roles are drawn from placements as markers with no talk pip. The
   party treats a role's tile as a person's: a walk to it stops beside it and opens nothing, an
   approach to someone else never ends on it, settle never leaves the leader on it, and the
   followers are never seated there. The midday relief watch therefore stands at the gate before
-  victory. Like Dorin on the same post, the watch is under the verge tree's canopy, which fades
-  only when the party is within three tiles.
+  victory.
+- **D6 adjusted: the post moves to (17,6), the handover to (16,6).** The east road from x=17 to
+  the exit runs under the verge trees' canopies, which fade only with the party within three tiles,
+  so a guard at (20,9) could not be seen from the square and the first gate a new player saw read
+  as unguarded (W7 and W8 reviews). (17,6) is the nearest verge tile to the old post that the
+  square's camera shows clear of canopy (checked from Mira's seat and from the square's east edge
+  at the opening zoom): the north verge where the road leaves the square, off the cart lanes of
+  rows 7-8, looking east down the road toward the exit. The handover is the verge beside it, on
+  the village side. The anchors' validators pass unchanged. One consequence: at the exit tile
+  itself the route, not Dorin, is now the nearby action; the guard is met where the road leaves
+  the square. No gate tile near the exit is visible from the square at the opening zoom.
 - **Art.** Until P2/P3, a resident's PNG slides at the party's pace with its bob, a contact shadow
-  that stays on the ground under the bob, a facing that follows the walk, and a small rock onto
-  each foot (as big as the bob, a step a tile). A painted placeholder (the relief watch, the
-  household adult, Hanru) strides with the rig's two walk drawings instead; the riverside's
-  villagers stride with their procedural walk. `via` is honoured; ambient `loop`s are not played,
+  that stays on the ground under the bob, a facing that follows the walk, a steady 0.06 rad lean
+  into the walk eased over the stroll's ramps, and a slight settle (1.02 wide, 0.97 tall) at each
+  footfall. A painted placeholder (the relief watch, the household adult, Hanru) strides with the
+  rig's two walk drawings instead, drawn at 1.4 rather than 1.5 so it stands at the residents'
+  height; the riverside's villagers stride with their procedural walk. The party gets the same
+  contact shadow on explore maps (ADR 0015).
+- **Re-planning.** A command that lands mid-walk re-plans only someone whose rules tile changed;
+  everyone else keeps the walk they are on. `via` is honoured; ambient `loop`s are not played,
   since no content declares one.
 
 ### 9. Consistency with Jared's later decisions
@@ -548,6 +562,8 @@ all eight defaults accepted.** Text that depends on one cites it as (Dn).
 - **D5. House ownership.** Gao north-west, Mira north, Pella's household south-west; south-east
   unassigned.
 - **D6. Gate post.** The verge (20,9), out of cart traffic, rather than the road tile (20,8).
+  Adjusted in W8 to the north verge at (17,6), with the handover at (16,6); see the W8
+  amendment.
 - **D7. Hanru's appearance.** A placeholder sprite distinct from both Dorin sprites. Hanru uses
   they/them (§04.14).
 - **D8. Where waiting is allowed.** Only at designated spots: Mira's table bench and the riverside
