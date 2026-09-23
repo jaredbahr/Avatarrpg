@@ -688,7 +688,11 @@ export interface MapDef {
   /** Map-owned routes and walk-over events; independent of the story cursor. */
   readonly exits?: readonly MapExit[];
   readonly triggers?: readonly MapTrigger[];
-  /** Where `wait` is allowed (ADR 0047 §1, D8): the leader must be within one tile of one of these. */
+  /**
+   * Where `wait` is allowed (ADR 0047 §1, D8): the leader must be within one
+   * tile of one of these. `label` finishes "You can wait only at …", so it is
+   * lower case unless it starts with a name.
+   */
   readonly restSpots?: readonly { readonly pos: Vec2; readonly label: string }[];
   readonly objective?: string;
   /** First matching objective wins; the plain objective is the fallback. */

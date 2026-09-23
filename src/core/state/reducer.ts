@@ -543,15 +543,14 @@ function pinIfDialogue(
  * ADR lists; changes only the clock, and only via `advancePhase`.
  */
 function handleWait(content: ContentIndex, state: GameState, until: DayPhase): StepResult {
-  if (state.screen !== 'explore' || state.battle !== null) {
-    return refuse(state, 'Not exploring right now.');
+  if (state.battle !== null || state.screen === 'combat') {
+    return refuse(state, 'Not in the middle of a fight.');
   }
-  if (state.story.nodeId) {
-    const node = content.story.get(state.story.nodeId);
-    if (node && node.kind !== 'explore') {
-      return refuse(state, 'You are in the middle of something.');
-    }
+  const node = state.story.nodeId ? content.story.get(state.story.nodeId) : undefined;
+  if (state.screen === 'dialogue' || (node && node.kind !== 'explore')) {
+    return refuse(state, 'Not in the middle of a conversation.');
   }
+  if (state.screen !== 'explore') return refuse(state, 'Not exploring right now.');
   if (until === state.world.clock.phase) {
     return refuse(state, 'It is already that time.');
   }
@@ -564,9 +563,15 @@ function handleWait(content: ContentIndex, state: GameState, until: DayPhase): S
   // In explore the leader's tile is `location.pos`; `party[0].pos` is only set
   // in battle (see `partyWalked` and `app/world/guidance`).
   const leaderPos = state.location.pos;
-  const nearRestSpot = (map.restSpots ?? []).some((spot) => distance(leaderPos, spot.pos) <= 1);
-  if (!nearRestSpot) {
-    return refuse(state, 'You need to be somewhere you can wait — like a bench or a porch.');
+  const spots = map.restSpots ?? [];
+  if (!spots.some((spot) => distance(leaderPos, spot.pos) <= 1)) {
+    // Name the places, so the refusal says where waiting is possible (D8).
+    return refuse(
+      state,
+      spots.length
+        ? `You can wait only at ${spots.map((spot) => spot.label).join(' or ')}.`
+        : 'There is nowhere to sit and wait here.',
+    );
   }
 
   // Checked against the *post-wait* state: a phase change can change which

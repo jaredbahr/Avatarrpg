@@ -70,13 +70,16 @@ function exploring(): GameState {
 
 const wait = (state: GameState, until: DayPhase) => apply(CONTENT, state, { type: 'wait', until });
 
-/** A wait that must be refused: same state, a message, no clock change. */
-function expectRefused(state: GameState, until: DayPhase = 'evening'): void {
+/**
+ * A wait that must be refused: same state, no clock change, and the reason the
+ * player reads (W7 shows it on the locked option, as dialogue does).
+ */
+function expectRefused(state: GameState, text: string, until: DayPhase = 'evening'): void {
   const result = wait(state, until);
   expect(result.state).toEqual(state);
   expect(result.state.world.clock).toEqual(state.world.clock);
   expect(result.events.some((event) => event.type === 'phaseChanged')).toBe(false);
-  expect(result.events).toContainEqual({ type: 'message', text: expect.any(String) });
+  expect(result.events).toContainEqual({ type: 'message', text });
 }
 
 suite('wait', () => {
@@ -99,26 +102,48 @@ suite('wait', () => {
   });
 
   it('is refused when the screen is not explore', () => {
-    expectRefused({ ...exploring(), screen: 'dialogue' });
+    expectRefused({ ...exploring(), screen: 'dialogue' }, 'Not in the middle of a conversation.');
   });
 
   it('is refused during a battle', () => {
     const battle = { encounterId: 'test', units: [], order: [] } as unknown as BattleState;
-    expectRefused({ ...exploring(), battle });
+    expectRefused({ ...exploring(), battle }, 'Not in the middle of a fight.');
   });
 
   it('is refused when the story cursor is on a conversation', () => {
     const state = exploring();
-    expectRefused({ ...state, story: { ...state.story, nodeId: 'mira_intro' } });
+    expectRefused(
+      { ...state, story: { ...state.story, nodeId: 'mira_intro' } },
+      'Not in the middle of a conversation.',
+    );
   });
 
   it('is refused when the target is already the current phase', () => {
-    expectRefused(exploring(), 'midday');
+    expectRefused(exploring(), 'It is already that time.', 'midday');
   });
 
   it('is refused when the leader is not near a rest spot', () => {
     const state = exploring();
-    expectRefused({ ...state, location: { ...state.location, pos: { x: 3, y: 7 } } });
+    expectRefused(
+      { ...state, location: { ...state.location, pos: { x: 3, y: 7 } } },
+      "You can wait only at Mira's table.",
+    );
+  });
+
+  it('names the riverside porch, and says so when a map has nowhere to wait', () => {
+    const state = exploring();
+    expectRefused(
+      { ...state, location: { mapId: 'ba_dan_riverside', pos: { x: 16, y: 12 } } },
+      'You can wait only at the tea porch.',
+    );
+    expectRefused(
+      { ...state, location: { mapId: 'forest_road', pos: { x: 1, y: 1 } } },
+      'There is nowhere to sit and wait here.',
+    );
+  });
+
+  it('is refused outside explore and dialogue with the plain reason', () => {
+    expectRefused({ ...exploring(), screen: 'ended' }, 'Not exploring right now.');
   });
 
   it('is refused when the leader would be stuck on an NPC tile with nowhere to settle', () => {

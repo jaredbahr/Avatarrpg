@@ -148,5 +148,5 @@ export const RIVERSIDE: MapDef = {
     },
   ],
   props: [],
-  restSpots: [{ pos: RIVERSIDE_SPOTS.tea, label: 'The tea porch' }],
+  restSpots: [{ pos: RIVERSIDE_SPOTS.tea, label: 'the tea porch' }],
 };
