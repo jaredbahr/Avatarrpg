@@ -27,7 +27,10 @@ export const LEGEND: Readonly<Record<string, TileTemplate>> = {
 
   /* Cover without blocking ----------------------------------------- */
   c: { terrain: 'wood', cover: true },
-  r: { terrain: 'stone', cover: true, surface: 'rubble', surfaceDuration: -1 },
+  // Rubble lies on spoil, not paving: `sand` is the ground contract's quarry
+  // spoil. Terrain carries no rule, so this only sets the ground a partial
+  // scene shows round a painted heap, which pale limestone left reading as a slab.
+  r: { terrain: 'sand', cover: true, surface: 'rubble', surfaceDuration: -1 },
 
   /* Elevation ------------------------------------------------------ */
   '^': { terrain: 'stone', elevation: 1 },

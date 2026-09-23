@@ -1,5 +1,5 @@
 import { expect, it } from 'vitest';
-import { RUBBLE_CHIP } from '../palettes';
+import { RUBBLE_CHIP, TERRAIN_STYLES } from '../palettes';
 import { GROUND_FRAGMENT } from './shaders';
 
 const glsl = (hex: string): string =>
@@ -15,4 +15,30 @@ it('speckles WebGL rubble in the spoil chip tone, never the ink bank', () => {
   expect(branch).not.toMatch(/lay\(acc,\s*rim\b/);
   // The bank line after the material branches still lays the rim (the ink).
   expect(GROUND_FRAGMENT).toMatch(/lay\(acc, rim, max\(bank \* 0\.12, line \*/);
+});
+
+it('gives WebGL stone and wall no shader cracks, so they match Canvas', () => {
+  // A crack keyed to a contour of the macro noise widens wherever the field is
+  // flat and drew tapered grey worms across stone and oil pools. The house
+  // crack is the shared decal pass, which runs on both backends.
+  expect(GROUND_FRAGMENT).not.toMatch(/float crack/);
+  expect(GROUND_FRAGMENT).not.toMatch(/terrain == 3/);
+  expect(GROUND_FRAGMENT).not.toMatch(/terrain == 7/);
+
+  // Parity: every procedural base the shader starts from is the Canvas fill.
+  const indices = ['grass', 'dirt', 'road', 'stone', 'sand', 'wood', 'water_deep', 'wall'] as const;
+  for (const [index, terrain] of indices.entries()) {
+    const line = GROUND_FRAGMENT.match(
+      new RegExp(String.raw`if \(t == ${index}\) return vec3\(([\d.]+), ([\d.]+), ([\d.]+)\);`),
+    );
+    expect(line, terrain).not.toBeNull();
+    const fill = TERRAIN_STYLES[terrain].fill;
+    [1, 3, 5].forEach((offset, channel) =>
+      expect(Number(line?.[channel + 1]), `${terrain} channel ${channel}`).toBeCloseTo(
+        parseInt(fill.slice(offset, offset + 2), 16) / 255,
+        2,
+      ),
+    );
+  }
+  expect(TERRAIN_STYLES.wall.fill).toBe('#3a352f');
 });

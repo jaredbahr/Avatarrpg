@@ -210,6 +210,7 @@ void main(void) {
     float detail = vnoise(w * 3.1);
     col *= 0.82 + 0.36 * (macro * 0.6 + detail * 0.4);
 
+    ${/* Stone and wall take no shader cracks: a noise contour widens wherever the field is flat and drew tapered worms. The house crack is the shared decal pass (paintDecals), the same on both backends. */ ''}
     if (terrain == 0) {
       ${/* grass: blades run vertically, so stretch the noise */ ''}
       col += vec3(0.05, 0.08, 0.03) * (vnoise(w * vec2(3.0, 11.0)) - 0.5);
@@ -218,10 +219,6 @@ void main(void) {
       float grit = vnoise(w * 20.0);
       col *= 0.92 + 0.16 * grit;
       col += vec3(0.05) * smoothstep(0.86, 1.0, grit);
-    } else if (terrain == 3 || terrain == 7) {
-      ${/* stone and wall: cracks */ ''}
-      float crack = smoothstep(0.42, 0.40, abs(macro - 0.5));
-      col *= 1.0 - 0.30 * crack;
     } else if (terrain == 6) {
       ${/* deep water: slow swell */ ''}
       float swell = fbm(w * 2.0 + vec2(uTime * 0.06, uTime * 0.04));

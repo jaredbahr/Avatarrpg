@@ -530,7 +530,8 @@ export function paintDecals(ctx: Ctx, box: Box, tile: Tile, pos: Vec2): void {
       break;
     }
     case 'sand': {
-      if (roll > 0.55) break;
+      // Map rubble lies on spoil (`sand`); wind ripples under a heap read as dunes.
+      if (roll > 0.55 || tile.surface?.id === 'rubble') break;
       ctx.strokeStyle = 'rgba(0,0,0,0.14)';
       ctx.lineWidth = Math.max(1, s * 0.025);
       for (let i = 0; i < 2; i++) {
