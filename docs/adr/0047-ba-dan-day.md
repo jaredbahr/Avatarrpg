@@ -221,7 +221,7 @@ tiles need a visual check (W5c).
 | `bd04.court`               | BD04 family court    | village, the lane at the SW dwelling, x=9 rows 10–11 (`village.ts:38-39`, `baDan.ts:263`) (D5)                                        | **Approximate.** No oven yard                          |
 | `bd04.yard`                | BD04 household adult | village, a free tile beside `bd04.court` (candidate (10,11))                                                                          | **Approximate**                                        |
 | `home.pella`               | BD04 sleeping rooms  | private; door on the SW dwelling (D5)                                                                                                 | **Doorway**                                            |
-| `bd05.school`              | BD05 school          | private; represented by a new notice NpcDef, `school_notice` (a `route-sign`, `types.ts:544`), planned for the free tile (11,12) (§8) | **Does not fit.** No school or play court on any map   |
+| `bd05.school`              | BD05 school          | private; represented by a new notice NpcDef, `school_notice` (a `route-sign`, `types.ts:544`), at the free lawn tile (12,11) (§8, W6) | **Does not fit.** No school or play court on any map   |
 | `bd06.bank`                | BD06 riverside       | riverside (15,9) (`riverside.ts:8`)                                                                                                   | **Fits**                                               |
 | `bd06.watch`               | BD06 safe bank       | riverside (16,14), near `otter` (17,15) (`riverside.ts:10`; row-14 span 9–18, `riverside.ts:64-67`)                                   | **Fits** as a tile; the safe edge needs a visual check |
 | `rv.practice`              | Dorin's drill        | riverside (32,12), Dorin's current NpcDef tile (`riverside.ts:129`) (D3)                                                              | Existing spot, not in the guide's table                |
@@ -429,7 +429,7 @@ Dorin's drill moves to his midday relief (D3).
 | ----------------- | ------------------------------------------- | ------------------------------------------------------------------- | -------------------------------------------------- |
 | `guard_hanru`     | `ba_dan_village`, resident `lw.npc.hanru`   | placeholder from A1, distinct from `npc.dorin` and `npc.guard` (D7) | `hanru_watch`, `handover_scene`                    |
 | `riverside_pella` | `ba_dan_riverside`, resident `lw.npc.pella` | `npc.kid`                                                           | `riverside_pella`, with an `act1_complete` variant |
-| `school_notice`   | `ba_dan_village`, unbound, at (11,12)       | notice art from A1                                                  | `school_notice`                                    |
+| `school_notice`   | `ba_dan_village`, unbound, at (12,11)       | notice art from A1                                                  | `school_notice`                                    |
 
 The existing `pella_*` nodes return to `village_explore` (`act1.ts:140-157`), so they can't be
 reused on the riverside.
@@ -457,7 +457,7 @@ plant art yet; the scene ships as text plus a changed pose and is reported that 
 **LW-S-BD-03, the handover.** The first route on `guard_hanru` is `handover_scene`, gated on
 `phase in [dawn, evening]` and `scene.bd03_handover` unset. It carries the guide's lines and sets
 the flag at the end. After that, `hanru_watch` plays. Ambient barks, rotated by `day`, are shown as
-subtitles.
+subtitles. The barks are presentation work and are assigned to W7, not W6 (W6 review).
 
 **Dorin's drill (M7).** The "Dorin's drill" control (`VillageLife.ts:108-112, 262-264`) and the
 Dorin actor are shown only while Dorin resolves to `rv.practice`. The preview enters in the
