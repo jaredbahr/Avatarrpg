@@ -28,14 +28,13 @@ import {
   Texture,
   UniformGroup,
 } from 'pixi.js';
-import { surfaceIntensity } from '../surfaceRendering';
 
-import type { SurfaceId, TerrainId, Vec2 } from '../../core/types';
+import type { TerrainId, Vec2 } from '../../core/types';
 import { resolveAsset } from '../../content/assets/manifest';
 import { backdrops } from '../backdrops';
 import { sceneForGrid, sceneryOpacities } from '../scene';
 import { SceneTextures } from './sceneTextures';
-import { surfaceIsPainted } from '../sceneSurfaces';
+import { SURFACE_INDEX, surfaceIsPainted, surfaceTexel } from '../sceneSurfaces';
 import { TILE } from '../camera';
 import type { Camera, Viewport } from '../camera';
 import { DecorSheets } from '../decorSheets';
@@ -158,16 +157,6 @@ function insideLoop(point: Vec2, loop: readonly Vec2[]): boolean {
   }
   return inside;
 }
-
-const SURFACE_INDEX: Record<SurfaceId, number> = {
-  water: 1,
-  ice: 2,
-  fire: 3,
-  mud: 4,
-  steam: 5,
-  oil: 6,
-  rubble: 7,
-};
 
 export class PixiBackend implements RenderBackend {
   readonly capabilities: BackendCapabilities = { name: 'webgl', shaders: true, particles: false };
@@ -763,11 +752,7 @@ export class PixiBackend implements RenderBackend {
     for (let i = 0; i < grid.tiles.length; i++) {
       const tile = grid.tiles[i];
       if (!tile) continue;
-      const surface = tile.surface && !baked[i] ? (SURFACE_INDEX[tile.surface.id] ?? 0) : 0;
-      // Surfaces thin out as they burn down, so a dying fire visibly fades.
-      // A negative duration is map-authored and permanent: always full strength.
-      const duration = tile.surface?.duration ?? 0;
-      const intensity = tile.surface ? surfaceIntensity(duration) : 0;
+      const [surface, intensity] = surfaceTexel(tile, baked[i] === true);
       intensities[i] = surface === SURFACE_INDEX.fire ? intensity : 0;
 
       const o = i * 4;

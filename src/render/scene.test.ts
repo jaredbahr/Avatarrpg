@@ -2,7 +2,10 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import type { Grid, MapScene, SceneScenery, Tile, Vec2 } from '../core/types';
 import { Camera } from './camera';
 import type { Projection } from './projection';
-import { ALL_MAPS } from '../content';
+import { ALL_MAPS, CONTENT } from '../content';
+import { FOREST_ROAD } from '../content/maps/combat';
+import { buildGrid, withSurface } from '../core/rules/grid';
+import { applyImpact, paintSurface } from '../core/rules/surfaces';
 import {
   SCENE_IMAGE_CAP,
   sceneForGrid,
@@ -422,4 +425,53 @@ describe('scene image residency', () => {
       ).toBeLessThanOrEqual(SCENE_IMAGE_CAP);
     });
   }
+});
+
+describe('a registered heap follows its cell', () => {
+  const authored = FOREST_ROAD.scene!;
+  const heaps = authored.ground.filter((piece) => piece.url.endsWith('/rubble.webp'));
+  const HEAP = { x: 7, y: 3 };
+  const OTHER = { x: 8, y: 9 };
+  const shown = (scene: MapScene) => heaps.filter((heap) => scene.ground.includes(heap));
+
+  it('finds one heap piece per registered cell and nothing else in those tiles', () => {
+    expect(heaps).toHaveLength(authored.paintedRubble!.length);
+    const bare = [HEAP, OTHER].reduce(
+      (grid, cell) => withSurface(grid, cell, null),
+      buildGrid(FOREST_ROAD),
+    );
+    expect(sceneForGrid(authored, bare).ground).toEqual(
+      authored.ground.filter((piece) => !heaps.includes(piece)),
+    );
+  });
+
+  it('keeps the authored scene while both heaps are rubble', () => {
+    expect(sceneForGrid(authored, buildGrid(FOREST_ROAD))).toBe(authored);
+  });
+
+  it('stands a heap down through water, mud and expiry, and back up when re-rubbled', () => {
+    let grid = buildGrid(FOREST_ROAD);
+    const other = heaps[1];
+    // Water turns the heap's rubble to mud: the cell no longer gives cover.
+    grid = applyImpact(CONTENT, grid, [HEAP], 'water').grid;
+    let scene = sceneForGrid(authored, grid);
+    expect(shown(scene)).toEqual([other]);
+    // Ground order is kept, so the apron still paints last.
+    expect(scene.ground).toEqual(authored.ground.filter((piece) => piece !== heaps[0]));
+    // The mud expires: the spill stays painted in the route plate, the heap does not.
+    grid = withSurface(grid, HEAP, null);
+    scene = sceneForGrid(authored, grid);
+    expect(shown(scene)).toEqual([other]);
+    // The other heap still needs its image, so a failed load of it still
+    // keeps the procedural wash on that cell.
+    expect(scene.ground.some((piece) => piece.url.endsWith('/rubble.webp'))).toBe(true);
+    // Ability rubble puts the cover back, and the heap with it.
+    grid = paintSurface(CONTENT, grid, [HEAP], 'rubble', -1).grid;
+    expect(sceneForGrid(authored, grid)).toBe(authored);
+  });
+
+  it('leaves no heap standing when both cells are cleared', () => {
+    const grid = applyImpact(CONTENT, buildGrid(FOREST_ROAD), [HEAP, OTHER], 'water').grid;
+    expect(shown(sceneForGrid(authored, grid))).toEqual([]);
+  });
 });

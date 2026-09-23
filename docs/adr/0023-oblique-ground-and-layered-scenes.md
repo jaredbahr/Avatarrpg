@@ -104,3 +104,18 @@ texture invalidation signature. Forest opts in only(7,3)/(8,9). This changes no
 surface state, movement, cover or save data. A permanent rubble effect at an
 already registered permanent-rubble cell has the same representation; effects
 elsewhere and different/temporary surfaces still draw normally.
+
+The heap is state, not decoration: rubble grants cover. While a registered
+cell holds anything but rubble (water turned it to mud, the mud expired), the
+ground piece that fits inside that cell's tile is left out of the scene the
+backends draw (`sceneForGrid`), so a cleared cell shows only its painted spill
+and no longer promises cover. Rubble put back by an ability restores the heap
+and its suppressed wash. Hiding costs no art and reads the same on both
+backends; a "cleared" overlay would have to fight the heap's own ink.
+
+Ability rubble beside a live heap meets it without a bank on both backends, as
+it would meet more ability rubble: the heap's ink outline is the edge there, and
+a bank along the shared tile side put back a straight fragment of the diamond
+beside it. Canvas already read the grid this way; WebGL now keeps a painted
+cell's surface slot in its map texel at zero strength rather than clearing it,
+so its bank test agrees while nothing is drawn on the heap.
