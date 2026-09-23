@@ -34,8 +34,8 @@ export const RIVERSIDE_STORY: readonly StoryNode[] = [
     portrait: 'portrait.mira',
     lines: [
       'You found me. Sit down. That end of the bench is dry.',
-      'Dorin has been practising across the river. He asked me to watch, but every time I look up he stops.',
-      'There is a shrine past the practice ground. I took flowers this morning. Mind the roots on the path.',
+      'Dorin practises across the river at midday. He asks me to watch, but every time I look up he stops.',
+      'There is a shrine past the practice ground. I took flowers on my way down. Mind the roots on the path.',
     ],
     next: 'riverside_explore',
   },
