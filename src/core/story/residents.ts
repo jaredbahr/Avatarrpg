@@ -182,24 +182,29 @@ function firstCandidate(
   talk: GameState['world']['talk'],
 ): Candidate {
   const phase = state.world.clock.phase;
+  const overrides = resident.overrides ?? [];
   let best: Candidate = { resident, rank: RANK_SCHEDULE, value: resident.schedule[phase] };
-  const values: ResidentSlotValue[] = [best.value, resident.fallback];
-  for (const override of resident.overrides ?? []) {
+  for (const override of overrides) {
     const value = override.slots[phase] ?? override.all;
-    if (!value) continue;
-    values.push(value);
     const rank = RESIDENT_TIERS.indexOf(override.tier) + 1;
-    if (rank < best.rank && evaluate(state, override.when)) best = { resident, rank, value };
+    if (value && rank < best.rank && evaluate(state, override.when))
+      best = { resident, rank, value };
   }
   if (!talk || pinned !== resident.id) return best;
-  // The pin holds the speaker where the conversation opened. The phase can't
-  // change mid-conversation (§4), so the slot that stood there is one of this
-  // phase's: keep it, and any service it carries, even if the hold that
-  // placed it has since lifted. Build a bare one if content has none.
-  const own = values.find(
-    (v): v is ResidentSlot =>
-      typeof v === 'object' && v.anchor === talk.anchor && v.npc === talk.npcId,
-  );
+  // The pin holds the speaker where the conversation opened. Prefer the slot
+  // that wins now; if the hold that placed the speaker has since lifted, the
+  // slot that stood there is still one of this phase's (the phase can't
+  // change mid-conversation, §4): keep it, and any service it carries. Build
+  // a bare one if content has none.
+  const at = (v: ResidentSlotValue | undefined): v is ResidentSlot =>
+    typeof v === 'object' && v.anchor === talk.anchor && v.npc === talk.npcId;
+  const own = at(best.value)
+    ? best.value
+    : [
+        resident.schedule[phase],
+        resident.fallback,
+        ...overrides.map((o) => o.slots[phase] ?? o.all),
+      ].find(at);
   const slot: ResidentSlot = own
     ? { ...own, interrupt: 'talk' }
     : { anchor: talk.anchor, activity: 'talk', npc: talk.npcId, interrupt: 'talk' };

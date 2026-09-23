@@ -672,6 +672,35 @@ suite('resolveResidents: guard relief', () => {
     });
     expect(resolution.placements.filter((p) => p.slot?.service === 'gate_watch')).toHaveLength(1);
   });
+
+  it('pins the slot that wins now when two slots share the pinned anchor and npc', () => {
+    // The schedule also puts the guard at the post, off duty; the winning
+    // hold slot there carries the watch. The pin must keep the hold's slot,
+    // not the first look-alike it finds.
+    const offDuty = slot('post', { npc: dayNpc, activity: 'off_duty' });
+    const doubled = world(
+      [...c.anchors.values()],
+      [{ ...day, schedule: { ...day.schedule, midday: offDuty } }, night],
+      [relief],
+      [...c.maps.values()],
+    );
+    const talk = { npcId: dayNpc, mapId: 'town', anchor: 'post' };
+    const held = at('midday', { flags: { victory: true }, screen: 'dialogue', talk });
+    expect(placementOf(resolveResidents(doubled, held), 'day_guard').slot).toMatchObject({
+      service: 'gate_watch',
+      activity: 'idle',
+    });
+    // Once the hold lifts, the schedule's off-duty slot is the winner, and it is kept.
+    const lifted = at('midday', {
+      flags: { victory: true },
+      visited: ['day_home'],
+      screen: 'dialogue',
+      talk,
+    });
+    expect(placementOf(resolveResidents(doubled, lifted), 'day_guard').slot).toMatchObject({
+      activity: 'off_duty',
+    });
+  });
 });
 
 /* --- required conversations and the pin (tests 7 and 8) --------------- */
