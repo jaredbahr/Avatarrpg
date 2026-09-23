@@ -105,3 +105,25 @@ of the 300 KB budget, `npm run check:assets` is OK, and the route harness passes
 2/2 in 32 s with captures under `.shots/water/bed3/`; `before-after-webgl.png`
 there stacks the shipped v0.2.5 pond against this bed. Still open: reeds and bank
 planting, the village canal's bed and bank, and the quarry floor's flat stain.
+
+## Waterline and wet bank, after the DL-2 W5 gate (23 September 2026)
+
+The W5 reviewer ranked two pond nits "later", and both are fixed in the packer
+(`scripts/art/forest-shoreline.ts`), so they reach the forest pond and the
+Cutting's pool (`cutting-scene/pool-bank.webp`), which the same packer builds:
+
+- **Waterline halo.** The wet line carried a 3 px band of the §3 edge
+  `#7ec8e3` on its water side. Under the film it read as a UI selection ring
+  traced round the pond. The band is gone: the `#1b1410` ink meets the bed
+  directly, and the test holds that no pixel of the plate is `#7ec8e3`.
+- **Wet bank.** Under the film the bank was the damp margin's shadow `#7a5f3e`
+  with base `#8e7049` lifts, which the film turned into a grey-olive band like
+  a strip of mud. It now takes the margin's base `#8e7049` with rim `#b39064`
+  lifts (`WET_BANK`), so it reads as the same earth seen through shallow water.
+  The test holds that no wet pixel is the margin's shadow.
+
+Geometry, the bed, the dry margin and every alpha value are unchanged, so the
+water cells and their bed still read as water under the film, and the forest
+apron (which reads this plate only as an overpaint guard) is byte-identical.
+`pond-bank.webp` went from 21,434 to 18,050 B and `pool-bank.webp` from 13,184
+to 10,490 B. Both packers were run twice and produced byte-identical files.

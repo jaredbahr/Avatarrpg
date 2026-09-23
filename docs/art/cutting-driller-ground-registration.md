@@ -218,8 +218,8 @@ it as a flat teal rectangle — a third water style on the route. It now has its
 own plate, `cutting-scene/pool-bank.webp`, packed by the forest pond's own
 packer (`packShoreline`, now parametrised by the pond it banks) in the same §3
 keys: bed `#2a5e77` pooling to `#173b4c`, the damp margin `#8e7049` round it
-and gone wet where the bank bites into the water, the inked wet line and its
-`#7ec8e3` edge. The quarry reads those tones from the forest's table rather
+and gone wet where the bank bites into the water, and the inked wet line. The
+quarry reads those tones from the forest's table rather
 than restating them (`QUARRY_GROUND_TONES.margin`/`.bed`). The live water film
 and its runtime bank band are unchanged.
 
@@ -250,6 +250,13 @@ one distinct image to each scene. Both packers were run twice and produced
 byte-identical files. `scripts/art/quarry-route-ground.test.ts` pins every
 page and the pool plate to the packer and to its recorded size on disk
 (`CUTTING_GROUND_REGIONS`, `DRILLER_GROUND_REGIONS`, `CUTTING_POOL_BYTES`).
+
+**Pond edge, after the W5 gate.** The shared packer's waterline lost its
+`#7ec8e3` band (it read as a UI selection ring) and its wet bank moved from
+the damp margin's shadow/base to its base/rim (the shadow under the film read
+as a grey-olive band of mud); see `docs/art/forest-pond-shoreline.md`. The
+pool plate went from 13,184 to 10,490 B (`CUTTING_POOL_BYTES`); every page
+above is byte-identical.
 
 **Not fixed here.** A faint band of the neighbouring terrain's colour still
 runs just inside each cover cell's diamond. It is not a gap in the art: the

@@ -20,12 +20,21 @@
  * pond's margin was the odd material on a board whose road and verges had
  * already been re-keyed to the village's hand. Both now come from
  * `forest-village-material.ts`, in the DL-2 §3 water-margin key: the bank is
- * the **damp margin** `#8e7049` over the road's own packed-earth shadow, gone
- * a step darker where the water film covers it; the bed is `#2a5e77` falling
- * to a deeper second flat tone; and the wet line carries the bible's `#1b1410`
- * ink with the §3 `#7ec8e3` edge on its wet side. Two flat tones per material,
- * no gradient; the bed's depth is spent on *which* of its two tones a pixel
- * takes, never on blending them, exactly as the route plate spends its feather.
+ * the **damp margin** `#8e7049` over the road's own packed-earth shadow, and
+ * under the water film it keeps the margin's base and rim (`WET_BANK`); the
+ * bed is `#2a5e77` falling to a deeper second flat tone; and the wet line is
+ * the bible's `#1b1410` ink alone. Two flat tones per material, no gradient;
+ * the bed's depth is spent on *which* of its two tones a pixel takes, never on
+ * blending them, exactly as the route plate spends its feather.
+ *
+ * **What the DL-2 W5 gate changed.** The wet line used to carry a band of the
+ * §3 `#7ec8e3` edge on its water side. Under the film it read as a UI
+ * selection ring traced round the pond, so the ink now meets the bed
+ * directly. And the bank under the film was the margin's shadow, which the
+ * film turned into a grey-olive band like a strip of mud round the water; it
+ * now takes the margin's base and rim, so the bank reads as the same earth
+ * seen through shallow water. Both changes reach the Cutting's pool too,
+ * since it is packed here.
  */
 import { mkdirSync, writeFileSync } from 'node:fs';
 import { FOREST_POND_PATCH, FOREST_WATER_CELLS } from '../../src/content/scenes/forestRoad';
@@ -51,14 +60,13 @@ export const BITE_FLOOR = 0.3;
 export const BED_DEEP_AT = 0.75;
 export const BED_DEEP_BAND = 0.6;
 /**
- * The bible's uniform ink and the thin rim beside it, in logical cells. One
- * step of a tile across either kind of cell edge is `hypot(64, 32)` screen
- * pixels, so 2 px of ink is this much of a tile — the same arithmetic
- * `forest-route-ground.ts` uses, so the pond's line matches the road's.
+ * The bible's uniform ink, in logical cells. One step of a tile across either
+ * kind of cell edge is `hypot(64, 32)` screen pixels, so 2 px of ink is this
+ * much of a tile — the same arithmetic `forest-route-ground.ts` uses, so the
+ * pond's line matches the road's.
  */
 const TILE_DIAGONAL = Math.hypot(64, 32);
 export const INK_HALF = 1 / TILE_DIAGONAL;
-export const RIM_WIDTH = 3 / TILE_DIAGONAL;
 /** World pixels per cell, and packed pixels per cell at this density. */
 const CELL = 64;
 const DENSITY = 2;
@@ -204,16 +212,22 @@ export function pondInset(width: number, height: number, pond: Pond = FOREST_PON
 const BED = {
   shelf: parseHex(FOREST_PIECE_TONES.bed.base),
   deep: parseHex(FOREST_PIECE_TONES.bed.shadow),
-  edge: parseHex(FOREST_PIECE_TONES.bed.rim),
 };
-const WET_BANK = {
-  field: parseHex(FOREST_PIECE_TONES.margin.shadow),
-  lifted: parseHex(FOREST_PIECE_TONES.margin.base),
-};
+/**
+ * The bank under the water film: the damp margin's base as the field and its
+ * rim where the lawn's rhythm lifts a patch. The film already cools and darkens
+ * whatever it covers, so the bank needs no darker tone of its own to read as
+ * wet; the margin's shadow under it read as a grey-olive band of mud.
+ */
+export const WET_BANK = {
+  field: FOREST_PIECE_TONES.margin.base,
+  lifted: FOREST_PIECE_TONES.margin.rim,
+} as const;
+const WET_BANK_RGB = { field: parseHex(WET_BANK.field), lifted: parseHex(WET_BANK.lifted) };
 
-/** What a wet pixel shows through the film: the ink, the waterline, the bank or the bed. */
+/** What a wet pixel shows through the film: the ink, the bank or the bed. */
 interface WetPaint {
-  readonly part: 'ink' | 'edge' | 'bank' | 'bed';
+  readonly part: 'ink' | 'bank' | 'bed';
   readonly rgb: Rgb;
   /** The bed's deep tone rather than its shelf tone. */
   readonly deep: boolean;
@@ -236,26 +250,15 @@ function wetPixel(
   // always tints authored bottom rather than whatever ground the pond
   // happens to sit on (ADR 0045). The wet line itself is the boundary
   // between the bite and the bed, which is where the ink belongs: the
-  // tile edge is not a material edge, and never was.
+  // tile edge is not a material edge, and never was. The ink meets the bed
+  // directly: a pale band on its water side read as a selection ring.
   const fromLine = inside - depth;
-  const part =
-    Math.abs(fromLine) < INK_HALF
-      ? 'ink'
-      : fromLine > 0 && fromLine < INK_HALF + RIM_WIDTH
-        ? 'edge'
-        : inside < depth
-          ? 'bank'
-          : 'bed';
+  const part = Math.abs(fromLine) < INK_HALF ? 'ink' : inside < depth ? 'bank' : 'bed';
   if (part === 'ink') return { part, rgb: material.ink, deep: false };
-  if (part === 'edge') return { part, rgb: BED.edge, deep: false };
   if (part === 'bank')
-    // The bank under the film is wet, so it is the damp margin a step
-    // darker: its shadow as the field, its base where the lawn's rhythm
-    // lifts a patch. The pale rim stays on dry ground; under the film it
-    // read as the lit top of a curb rather than as a bank going under.
     return {
       part,
-      rgb: material.classOf('margin', x, y) === 'rim' ? WET_BANK.lifted : WET_BANK.field,
+      rgb: material.classOf('margin', x, y) === 'rim' ? WET_BANK_RGB.lifted : WET_BANK_RGB.field,
       deep: false,
     };
   const deep = bedIsDeep(material, x, y, inside);
