@@ -61,3 +61,41 @@ pine occlusion and traversable ledge clarity still need the integrated review.
 Validation: local npm run verify passed (624 tests), along with art:validate
 and check:assets. Precache totals 13.98 MiB of 25 MiB. The forest scene is not
 yet opted into the map, so integrated rendering and tactical checks are pending.
+
+## DL-2 cleanup: the rubble heaps stand on their spill (2026-09-23)
+
+The two rubble cells, (7,3) and (8,9), used to be holes in the ground plates:
+`grass-north`, `grass-south` and `route-ground` left every `r` cell clear, so
+the bare terrain (legend `r`, sand `#a89880`) showed round the heap as a flat
+tan diamond with ruled edges, on both backends. Now the ground plates paint
+those cells like the verge round them, including the road's ink line and
+feathered join, and ask `spillAt` in `scripts/art/forest-rubble.ts` wherever
+they would paint verge. Round each heap the verge gives way to the heap's
+**spill**: the DL-2 §3 spoil key (`#a89880` / `#857762`, rim `#c2b49c`) read
+through the courtyard lawn's structure. That is the `spill` tone in
+`forest-village-material.ts`, the same material as the quarry's spoil terrace.
+The spill covers the cell the live rubble wash lies on and carries on past its
+edges. Over a band about a quarter of a cell wide it breaks up into the grass,
+in clumps and round the lawn's own painted tufts, so its edge never runs along
+the cell's diamond. It ends on the road's ink line.
+
+`rubble.webp` now carries only what stands on that ground: the pile, its
+contact shadow and two loose stones that have rolled clear. The pile's courses
+are pulled in from the cell's side corners, because courses that ran out to
+the cell's edges gave the pile the cell's diamond for a silhouette. Placement,
+plate size and the scene's image count are unchanged.
+
+| File                        | Before (B) | After (B) | Delta (B) |
+| --------------------------- | ---------: | --------: | --------: |
+| `rubble.webp`               |      3,942 |     3,998 |       +56 |
+| `grass-north.webp`          |     60,934 |    61,236 |      +302 |
+| `grass-south.webp`          |     48,022 |    49,176 |    +1,154 |
+| `route-ground.webp`         |    112,886 |   113,520 |      +634 |
+| `exterior-apron-0..11.webp` |    203,290 |   203,700 |      +410 |
+
+The apron bands move only because they continue the re-encoded grass and route
+pixels outward (`apron-plates.test.ts` pins them to those plates). The change is
+WebP re-encode drift in the continued lawn, at most about 33 levels
+premultiplied, with no spill carried outside the board. The live rubble wash is
+unchanged and still marks the hazard cell. It is drawn over the spill, and its
+inked bank is the one diamond cue left.

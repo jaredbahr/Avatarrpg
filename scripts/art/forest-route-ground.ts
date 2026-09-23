@@ -25,6 +25,7 @@ import { FOREST_GROUND_QUALITY, loadForestMaterial } from './forest-village-mate
 import type { ForestMaterial, ToneName } from './forest-village-material';
 import { tileNoise } from '../../src/render/painters/shapes';
 import { encodeWebp } from './lib/webp';
+import { spillAt } from './forest-rubble';
 
 export const FOREST_ROUTE_GROUND = { x: 128, y: 32, width: 1984, height: 960 } as const;
 /**
@@ -39,6 +40,16 @@ const RIM_WIDTH = 3 / TILE_DIAGONAL;
 
 function clamp(value: number): number {
   return Math.max(0, Math.min(1, value));
+}
+/**
+ * The ground a cell's key stands on. A rubble heap (`r`) lies on the verge, as
+ * a pine does, so the cell is painted, inked and feathered exactly like the
+ * shoulder round it instead of leaving the bare terrain to show through as a
+ * diamond; the verge there gives way to the heap's spill (`spillAt`), and the
+ * heap's own plate (`forest-rubble.ts`) is laid over that.
+ */
+function ground(key: string | undefined): string | undefined {
+  return key === 'r' ? ',' : key;
 }
 function painted(key: string | undefined): key is '=' | ',' {
   return key === '=' || key === ',';
@@ -56,7 +67,7 @@ export function packRouteGround(material: ForestMaterial): Image {
       const y = (dy - dx) / 2;
       const ix = Math.floor(x),
         iy = Math.floor(y);
-      const key = FOREST_ROAD.rows[iy]?.[ix];
+      const key = ground(FOREST_ROAD.rows[iy]?.[ix]);
       // The local route has only road and its grass shoulders. Water, ledges and
       // cover remain transparent so the real grid and runtime materials show.
       if (!painted(key) || ix < 0 || ix >= 20 || iy < 3 || iy > 9) continue;
@@ -74,7 +85,7 @@ export function packRouteGround(material: ForestMaterial): Image {
         [0, -1],
         [0, 1],
       ] as const) {
-        const neighbour = FOREST_ROAD.rows[iy + oy]?.[ix + ox];
+        const neighbour = ground(FOREST_ROAD.rows[iy + oy]?.[ix + ox]);
         // Only mix across the walkable road/shoulder boundary. A pond, ledge or
         // prop stays transparent, so runtime water and independent scenery retain
         // their real footprint, and their own authored art keeps its own edge.
@@ -93,7 +104,15 @@ export function packRouteGround(material: ForestMaterial): Image {
 
       const swapped = tileNoise(px, py, 5) < mix;
       const onRoad = swapped ? !road : road;
-      const tone: ToneName = onRoad ? (material.worn(x, y) ? 'wear' : 'road') : 'verge';
+      // Round a rubble heap the verge gives way to the spill it has shed; the
+      // road keeps its own edge and ink, so the spill ends on the road's line.
+      const tone: ToneName = onRoad
+        ? material.worn(x, y)
+          ? 'wear'
+          : 'road'
+        : spillAt(material, x, y)
+          ? 'spill'
+          : 'verge';
 
       // The grass shoulders fade into the procedural field over a modest,
       // deterministic width. The central road rows stay fully opaque.
