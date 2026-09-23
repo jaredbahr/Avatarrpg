@@ -49,6 +49,7 @@ import { PauseMenu } from './ui/PauseMenu';
 import { LevelUpDialog } from './ui/LevelUpDialog';
 import { DisciplineDialog } from './ui/DisciplineDialog';
 import { RIVERSIDE_ENTRY } from '../content/maps/riverside';
+import { villagePreviewState } from './village/previewState';
 import { TitleScene } from './scenes/TitleScene';
 import { PartySetupScene } from './scenes/PartySetupScene';
 import { DialogueScene } from './scenes/DialogueScene';
@@ -305,11 +306,7 @@ export class App {
     if (this.previewActive) return;
     this.cancelRoute();
     this.previewSnapshot = { state: this.state, session: this.session.toMeta() };
-    this.state = createGame(this.content, {
-      seed: 'riverside-first-afternoon',
-      party: [{ characterId: 'sura' }, { characterId: 'kaya' }],
-      startNode: RIVERSIDE_ENTRY,
-    });
+    this.state = villagePreviewState(this.content);
     this.session.setPlayers([]);
     this.animator.clear();
     this.dispatch({ type: 'enterNode', nodeId: RIVERSIDE_ENTRY });
