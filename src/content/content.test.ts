@@ -94,6 +94,17 @@ describe('content', () => {
     expect(problems.some((p) => p.includes('standing_trap') && p.includes('0 is'))).toBe(true);
   });
 
+  it('refuses scene memory other than completed or declined (ADR 0047 §6)', () => {
+    const problems = validateContent({
+      ...CONTENT_BUNDLE,
+      story: [
+        ...CONTENT_BUNDLE.story,
+        { id: 'scene_trap', kind: 'flags', set: { 'scene.trap': true }, next: STORY_ENTRY },
+      ],
+    });
+    expect(problems.some((p) => p.includes('scene_trap') && p.includes('scene memory'))).toBe(true);
+  });
+
   /*
    * An authored `flags` node may advance the clock (ADR 0047 §1), but the
    * validator only allows it where a replay cannot reach it: a phase change

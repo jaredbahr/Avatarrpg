@@ -18,7 +18,7 @@
 import { z } from 'zod';
 import { CLIP_FRAME_COUNTS, CLIP_NAMES, REQUIRED_CLIPS } from './assets/clips';
 import type { AssetEntry } from './assets/manifest';
-import { STANDING_PREFIX } from '../core/story/conditions';
+import { SCENE_PREFIX, SCENE_VALUES, STANDING_PREFIX } from '../core/story/conditions';
 import { DAY_PHASES, RESIDENT_TIERS } from '../core/types';
 import type {
   Ability,
@@ -1572,6 +1572,24 @@ export function validateContent(bundle: ContentBundle): string[] {
             );
           }
         }
+      }
+    }
+  }
+
+  /* --- scene memory (ADR 0047 §6): only 'completed' or 'declined' ---- */
+  for (const node of bundle.story) {
+    const writes =
+      node.kind === 'flags'
+        ? [node.set]
+        : node.kind === 'choice'
+          ? node.options.map((option) => option.setFlags ?? {})
+          : [];
+    for (const [key, value] of writes.flatMap((set) => Object.entries(set))) {
+      if (key.startsWith(SCENE_PREFIX) && !SCENE_VALUES.includes(value)) {
+        problems.push(
+          `story node "${node.id}" sets "${key}" to ${JSON.stringify(value)}: scene memory ` +
+            `holds only ${SCENE_VALUES.map((v) => `"${String(v)}"`).join(' or ')}`,
+        );
       }
     }
   }

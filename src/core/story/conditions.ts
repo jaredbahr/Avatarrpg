@@ -32,6 +32,13 @@ import type { Condition, ContentIndex, DayPhase, ElementId, FlagValue, GameState
 /** Reserved flag prefix. `validateContent` stops content from reaching past it. */
 export const STANDING_PREFIX = 'standing.';
 
+/**
+ * Reserved flag prefix for scene memory (ADR 0047 §6): set once, by a scene's
+ * authored end, to one of `SCENE_VALUES`. Being seen is `visited`, not a flag.
+ */
+export const SCENE_PREFIX = 'scene.';
+export const SCENE_VALUES: readonly FlagValue[] = ['completed', 'declined'];
+
 /** Bounded so a run of generous choices cannot make a nation permanently adoring. */
 export const MIN_STANDING = -5;
 export const MAX_STANDING = 5;
