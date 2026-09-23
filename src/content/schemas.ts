@@ -35,7 +35,7 @@ import type {
   SurfaceDef,
 } from '../core/types';
 import { STORY_PRESENTATIONS, validateStoryPresentations } from './story/presentations';
-import { EXCLUDED_RESIDENTS, IDENTITY_REGISTER } from './identity';
+import { IDENTITY_REGISTER, excludedResidentFor } from './identity';
 
 /* ------------------------------------------------------------------ */
 /* Primitives                                                          */
@@ -942,10 +942,10 @@ export function validateContent(bundle: ContentBundle): string[] {
   }
   for (const map of bundle.maps) {
     for (const npc of map.npcs) {
-      const excluded = EXCLUDED_RESIDENTS.find((entry) => entry.id === npc.id);
+      const excluded = excludedResidentFor(npc.id, npc.name);
       if (excluded) {
         problems.push(
-          `map "${map.id}" npc "${npc.id}" claims the reserved identity "${excluded.id}" (${excluded.name}), which is excluded until released`,
+          `map "${map.id}" npc "${npc.id}" ("${npc.name}") claims the reserved identity "${excluded.id}" (${excluded.name}), which is excluded until released`,
         );
       }
     }
