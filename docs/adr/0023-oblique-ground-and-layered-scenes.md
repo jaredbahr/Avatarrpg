@@ -100,7 +100,9 @@ carries the ink outline that marks the hazard; the wash and bank over it drew
 the tile diamond its painted spill hides (PR 95). High contrast, crisp overlays, unavailable art, other cells,
 and changed surface types/durations retain the procedural treatment. Both
 backends use the same predicate and WebGL includes per-cell suppression in its
-texture invalidation signature. Forest opts in only(7,3)/(8,9). This changes no
+texture invalidation signature. Forest opts in (7,3)/(8,9); since the DL-2 W5
+gate fixes The Cutting and the Driller floor opt in every `r` cell with the
+same heap plate on its own spill, so real cover reads alike on the route. This changes no
 surface state, movement, cover or save data. A permanent rubble effect at an
 already registered permanent-rubble cell has the same representation; effects
 elsewhere and different/temporary surfaces still draw normally.

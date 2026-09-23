@@ -171,3 +171,90 @@ Every registered rectangle is unchanged. The east dirt page keeps its soft
 bytes, its ink and the lane/shoulder split, and checks that every page's size
 on disk equals the `bytes` recorded for it in `CUTTING_GROUND_REGIONS` and
 `DRILLER_GROUND_REGIONS`.
+
+## DL-2 W5 gate fixes (2026-09-23)
+
+The W5 route-wide gate ranked three items before release. All three are fixed
+in the packers; reproduce with:
+
+```powershell
+node --import tsx scripts/art/quarry-route-ground.ts cutting
+node --import tsx scripts/art/quarry-route-ground.ts driller
+node --import tsx scripts/art/quarry-modular-ground.ts
+```
+
+**Cover read backwards.** Real cover (legend `r`: `cover: true` and the rubble
+surface) showed only as a faint inked spoil diamond, while the decorative heaps
+beside it were whole inked limestone heaps, the loudest thing on the board.
+Now:
+
+- The decorative heaps are ground texture: about half their old size
+  (`HEAP_SCALE`), no ink, and painted in the §3 spoil row alone — a flat body,
+  the chip highlight along the lit upper edge and the spoil shadow along the
+  front (`heapClass` in `quarry-village-material.ts`). They keep a clear margin
+  from every other material (`HEAP_CLEARANCE`) and from every cover cell, and
+  are drawn whole or not at all. The same change applies to the gate's terrace
+  (`quarry-gate-registration.md`).
+- Every `r` cell carries the route's one painted heap, the forest's
+  `forest-scene/rubble.webp`, registered per cell in `quarryProjected.ts`
+  (`CUTTING_RUBBLE_CELLS`, `DRILLER_RUBBLE_CELLS`, both listed in
+  `paintedRubble` so the live wash stands down under the heap, as in the forest
+  since PR 95). The pages no longer paint the cell as a diamond: they paint the
+  floor the heap stands on and the heap's spill across it — spoil breaking up
+  into the Driller's packed earth through `spillWins`, exactly as the forest's
+  spill breaks up into the verge, and on the Cutting's spoil shoulders the spoil
+  row the other way up (`spillMark`), so the fresh grit round the heap's foot
+  still shows as a darker footprint on ground of its own material.
+
+**The `x = 10` seam.** The two dirt pages met on the line and the east page
+faded in over 0.08 of a tile, so wherever their compressed edges disagreed the
+Cutting's procedural grass showed through. Both pages now paint the two
+columns either side of the line (`DIRT_OVERLAP`); the west page is opaque
+across both and the east page fades in across the middle of them
+(`DIRT_FADE`), over identical painting.
+
+**The Cutting's water.** The pool was a hole in every page, so the runtime drew
+it as a flat teal rectangle — a third water style on the route. It now has its
+own plate, `cutting-scene/pool-bank.webp`, packed by the forest pond's own
+packer (`packShoreline`, now parametrised by the pond it banks) in the same §3
+keys: bed `#2a5e77` pooling to `#173b4c`, the damp margin `#8e7049` round it
+and gone wet where the bank bites into the water, the inked wet line and its
+`#7ec8e3` edge. The quarry reads those tones from the forest's table rather
+than restating them (`QUARRY_GROUND_TONES.margin`/`.bed`). The live water film
+and its runtime bank band are unchanged.
+
+The spoil row lives once, as `SPOIL_TONES` in `forest-village-material.ts`;
+the forest's heap and spill and every quarry use of spoil read it from there.
+If §3's spoil row is amended, that is one edit and a repack of the plates that
+paint it (plus `TERRAIN_STYLES.sand` and `SURFACE_STYLES.rubble` in
+`src/render/palettes.ts`, which the runtime holds separately).
+
+| Page                      | Before (B) | After (B) | Delta (B) |
+| ------------------------- | ---------: | --------: | --------: |
+| Cutting `dirt-west`       |     24,578 |    26,388 |    +1,810 |
+| Cutting `dirt-east`       |     25,408 |    26,300 |      +892 |
+| Cutting `road`            |     28,396 |    28,402 |        +6 |
+| Cutting `stone`           |     47,206 |    43,804 |    −3,402 |
+| Cutting `pool-bank` (new) |          — |    13,184 |   +13,184 |
+| Cutting total             |    125,588 |   138,078 |   +12,490 |
+| Driller `dirt-west`       |     39,424 |    42,066 |    +2,642 |
+| Driller `dirt-east`       |     39,836 |    42,132 |    +2,296 |
+| Driller `stone`           |     43,512 |    39,282 |    −4,230 |
+| Driller total             |    122,772 |   123,480 |      +708 |
+
+The dirt pages' registered rectangles grow by the overlap: the Cutting's
+`dirt-west` to 1218×612 and `dirt-east` to 1064×534 at (665, 332); the
+Driller's `dirt-west` to 1282×644 and `dirt-east` to 1256×630 at (601, 300).
+The pool plate is 832×448, drawn into (752, 368, 416×224). The heap plate adds
+one distinct image to each scene. Both packers were run twice and produced
+byte-identical files. `scripts/art/quarry-route-ground.test.ts` pins every
+page and the pool plate to the packer and to its recorded size on disk
+(`CUTTING_GROUND_REGIONS`, `DRILLER_GROUND_REGIONS`, `CUTTING_POOL_BYTES`).
+
+**Not fixed here.** A faint band of the neighbouring terrain's colour still
+runs just inside each cover cell's diamond. It is not a gap in the art: the
+runtime's `drawSeams` paints the neighbour's `TERRAIN_STYLES` fill inside any
+cell whose terrain differs from its neighbour's, and legend `r` is `sand` next
+to the Cutting's `,` grass (and the Driller's `.` dirt). Setting the cell's
+terrain to its neighbours' removes the band in a live probe. The fix belongs in
+the renderer or the legend, outside this art change.

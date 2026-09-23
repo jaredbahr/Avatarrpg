@@ -174,3 +174,22 @@ readability on both backends at the actual 96px camera before extending maps.
 Minor authored wall silhouette insets
 must not create distracting seams between adjacent cells. The quarry reference
 is a composition/material target, not authorization to invent new obstacles.
+
+**DL-2 W5 gate fixes: the terrace's heaps are texture (2026-09-23).** The gate
+has no cover cell (its cover is the timber on the four `c` cells), yet its
+terrace carried eight whole inked limestone heaps, which read as cover that is
+not there. They are now the small uninked spoil mounds The Cutting and the
+Driller share (`heapClass`, `HEAP_SCALE`, `HEAP_CLEARANCE` in
+`quarry-village-material.ts`); see `cutting-driller-ground-registration.md`.
+The registered rectangles are unchanged. Each page's size on disk is now pinned
+in `scripts/art/quarry-route-ground.test.ts` (`QUARRY_GATE_GROUND_BYTES`), as
+the Cutting's and the Driller's are; the pins live in the test rather than on
+`QUARRY_GATE_GROUND_REGIONS` because that table ships in the runtime bundle.
+
+| Page         | Before (B) | After (B) | Delta (B) |
+| ------------ | ---------: | --------: | --------: |
+| `earth-west` |     33,486 |    31,664 |    −1,822 |
+| `earth-east` |     32,368 |    31,136 |    −1,232 |
+| `road`       |     18,376 |    18,376 |         0 |
+| `limestone`  |     29,930 |    29,930 |         0 |
+| Total        |    114,160 |   111,106 |    −3,054 |
