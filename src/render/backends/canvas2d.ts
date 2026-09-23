@@ -40,7 +40,7 @@ import {
   paintSurface,
   paintTerrain,
 } from '../painters/tiles';
-import { npcPose, npcRock, sprites } from '../spriteCache';
+import { npcPose, sprites } from '../spriteCache';
 import {
   unitMarkerGroundPoint,
   type AimArc,
@@ -670,9 +670,10 @@ export class Canvas2DBackend implements RenderBackend {
         const s = box.size * scale;
         ctx.drawImage(sprites.shadow(s * dpr), footX - s / 2, footY - 0.86 * s, s, s);
       }
+      const squash = npc.squash ?? 0;
       ctx.translate(footX, footY + lift);
-      if (entry.kind === 'image') ctx.rotate(npcRock(npc));
-      ctx.scale(scale * (npc.facing ?? 1), scale);
+      ctx.rotate(npc.lean ?? 0);
+      ctx.scale(scale * (npc.facing ?? 1) * (1 + 0.02 * squash), scale * (1 - 0.03 * squash));
       ctx.translate(-footX, -footY);
       const frame =
         entry.kind === 'sheet'

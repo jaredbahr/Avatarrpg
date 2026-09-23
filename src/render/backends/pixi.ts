@@ -50,7 +50,7 @@ import { FOOT_LINE } from '../sheets/bake';
 import { resolveActorEmitters } from '../geometry/actorAttachments';
 import type { ResolvedFrame } from '../sheets/store';
 import { idlePhase, sheets } from '../sheets/store';
-import { MAX_SPRITE_PX, npcPose, npcRock, sprites } from '../spriteCache';
+import { MAX_SPRITE_PX, npcPose, sprites } from '../spriteCache';
 import {
   unitMarkerGroundPoint,
   type AimArc,
@@ -1252,8 +1252,11 @@ export class PixiBackend implements RenderBackend {
         sprite.width = width * TILE * scale;
         sprite.height = TILE * scale;
       }
+      const squash = npc.squash ?? 0;
+      sprite.width *= 1 + 0.02 * squash;
+      sprite.height *= 1 - 0.03 * squash;
       sprite.scale.x = Math.abs(sprite.scale.x) * facing;
-      sprite.rotation = entry.kind === 'image' ? npcRock(npc) : 0;
+      sprite.rotation = npc.lean ?? 0;
       sprite.alpha = alpha;
       sprite.visible = true;
       if (entry.kind === 'image') {

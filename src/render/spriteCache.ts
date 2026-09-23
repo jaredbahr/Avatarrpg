@@ -201,18 +201,6 @@ export class SpriteCache {
 export const sprites = new SpriteCache();
 
 /**
- * A walking resident drawn from one still picture rocks onto each foot as it
- * lifts, the weight shifting a step a tile, so the bob reads as footfalls
- * rather than hops. Radians about the feet, as big as the bob and faded with it.
- */
-export function npcRock(npc: {
-  readonly offset?: { readonly y: number };
-  readonly clipTime?: number;
-}): number {
-  return (npc.offset?.y ?? 0) * (Math.floor((npc.clipTime ?? 0) / 500) % 2 ? 1 : -1);
-}
-
-/**
  * How a walking resident's painted figure is drawn: striding, two drawings a
  * tile as the walk clip is, on the distance clock. Art that cannot stride
  * (a PNG) stays one drawing and rides the bob alone.

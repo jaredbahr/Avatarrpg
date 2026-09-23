@@ -208,6 +208,10 @@ export interface ResidentFigure {
   /** Ms into the walk clip, by distance, as the party's is. */
   readonly clipTime: number;
   readonly alpha: number;
+  /** Radians about the feet: a lean into the walk, eased in and out with it. */
+  readonly lean?: number;
+  /** 0..1: how far the figure settles onto a foot, strongest at each footfall. */
+  readonly squash?: number;
 }
 
 const clamp01 = (n: number) => Math.max(0, Math.min(1, n));
@@ -386,13 +390,24 @@ export class ResidentWalks {
     const drawPos = animator?.renderPos(c, who.id) ?? (c < walkEnd ? motion.from : end);
     const clip = animator?.locomotion(c, who.id, 'rest').clip ?? 'rest';
     const offset = animator?.offset(c, who.id);
+    const facing = animator?.facing(who.id) ?? this.facings.get(who.id) ?? 1;
+    const clipTime = animator?.unitPose(c, who.id)?.clipTime ?? 0;
+    const walking = clip.startsWith('walk');
+    // The lean and the footfalls ease in and out over the stroll's 120 ms ramps.
+    const from = start + (motion.enter ? fade : 0);
+    const into = walking
+      ? clamp01(Math.min(c - from, walkEnd - c) / ((120 * fade) / FADE_MS))
+      : 0;
     return {
       ...base,
       drawPos,
       ...(offset ? { offset } : {}),
-      facing: animator?.facing(who.id) ?? this.facings.get(who.id) ?? 1,
-      walking: clip.startsWith('walk'),
-      clipTime: animator?.unitPose(c, who.id)?.clipTime ?? 0,
+      facing,
+      walking,
+      clipTime,
+      lean: 0.06 * facing * into,
+      // A tile of travel is 500 ms of clip, one stride: a footfall where the bob touches down.
+      squash: (1 - Math.abs(Math.sin((Math.PI * clipTime) / 500))) * into,
       alpha:
         motion.enter && c < start + fade
           ? clamp01((c - start) / fade)
