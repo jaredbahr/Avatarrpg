@@ -132,7 +132,7 @@ export const RIVERSIDE: MapDef = {
       node: 'riverside_dorin',
     },
     {
-      // Pella's supervised afternoon at the safe bank (ADR 0047 §8); W6 writes her lines.
+      // Pella's supervised afternoon at the safe bank (ADR 0047 §8).
       id: 'riverside_pella',
       name: 'Pella',
       resident: 'lw.npc.pella',

@@ -40,6 +40,30 @@ export const RIVERSIDE_STORY: readonly StoryNode[] = [
     next: 'riverside_explore',
   },
   {
+    // Afternoons at the safe bank, only with Mira on the bank (ADR 0047 §4). After
+    // victory she is here only once she has told the party at home (`pella_home`).
+    id: 'riverside_pella',
+    kind: 'dialogue',
+    speaker: 'Pella',
+    portrait: 'portrait.pella',
+    lines: [
+      'I have to stay where Mira can see me. That is why I am standing here and not there.',
+      'I am selling stones. The smooth one is two coins. The sparkly one is three, or two if you are nice about it.',
+      'The flat one is not for sale. My brother Bo-shan and I are halfway through a skipping game. It is his turn. He is late.',
+    ],
+    variants: [
+      {
+        when: rescued,
+        lines: [
+          'I have to stay where Mira can see me. Bo-shan says that is a good rule. He never followed it.',
+          'He is resting. Mira says to let him, so I am letting him.',
+          'I gave him the flat stone so we could finish our game. He only got four skips. He says his arm is out of practice.',
+        ],
+      },
+    ],
+    next: 'riverside_explore',
+  },
+  {
     id: 'riverside_dorin',
     kind: 'dialogue',
     speaker: 'Dorin',
