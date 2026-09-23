@@ -16,26 +16,33 @@
  * correct structure for a quarry's cut floor rather than an approximation of
  * one — the provenance is exact, not merely convenient.
  *
- * Five materials, so no region of the floor can be a single swatch:
+ * Five ground materials, so no region of the floor can be a single swatch,
+ * and the forest pond's two water keys for the Cutting's pool:
  *
- * | material    | where it lands                                  |
- * | ----------- | ----------------------------------------------- |
- * | `limestone` | the cut floor under the oil pools, the gate terrace |
- * | `block`     | the `^`/`A` ledge diamonds — cut stone block face   |
- * | `earth`     | the packed-earth floor and the gate road            |
- * | `wear`      | haul ruts and the mud patch                         |
- * | `spoil`     | rubble, the gate's off-road ground, floor spoil heaps |
+ * | material    | where it lands                                             |
+ * | ----------- | ---------------------------------------------------------- |
+ * | `limestone` | the cut floor under the oil pools, the gate's paving       |
+ * | `block`     | the `^`/`A` ledge diamonds — cut stone block face          |
+ * | `earth`     | the packed-earth floor and the lanes                       |
+ * | `wear`      | haul ruts and the mud patch                                |
+ * | `spoil`     | the gate terrace, the Cutting's shoulders, cover spill and |
+ * |             | the small decorative mounds                                |
+ * | `margin`    | the Cutting pool's damp margin and wet bank                |
+ * | `bed`       | the Cutting pool's bed and waterline                       |
  *
  * Nothing here writes to the village. The two plates are opened read-only.
  */
 import {
   bindPalette,
+  FOREST_PIECE_TONES,
   loadVillageCrops,
+  SPOIL_TONES,
   type CropName,
   type Rgb,
   type ToneSpec,
   type VillagePalette,
 } from './forest-village-material';
+import { parseHex } from './lib/image';
 import { tileNoise } from '../../src/render/painters/shapes';
 
 /**
@@ -50,7 +57,15 @@ export const QUARRY_GROUND_TONES = {
   wear: { base: '#a6845a', shadow: '#7a5f3e', rim: '#c7a87d' },
   /** §3's cart-rut `#7a5f3e`, as the thin trodden core of a haul track. */
   rut: { base: '#8e7049', shadow: '#7a5f3e', rim: '#c7a87d' },
-  spoil: { base: '#a89880', shadow: '#857762', rim: '#c2b49c' },
+  /** The route's one spoil row (`SPOIL_TONES`), shared with the forest's heaps. */
+  spoil: SPOIL_TONES,
+  /**
+   * The Cutting's pool, in the forest pond's own keys so the route has one
+   * water language: §3's damp margin and bed, read from the table the forest
+   * shoreline paints with rather than restated here.
+   */
+  margin: FOREST_PIECE_TONES.margin,
+  bed: FOREST_PIECE_TONES.bed,
 } as const satisfies Record<string, ToneSpec>;
 export type QuarryTone = keyof typeof QUARRY_GROUND_TONES;
 
@@ -68,6 +83,8 @@ const CROP_OF: Record<QuarryTone, CropName> = {
   wear: 'paving',
   rut: 'paving',
   spoil: 'lawn',
+  margin: 'lawn',
+  bed: 'lawn',
 };
 /** Distinct tiling hashes, so two materials sharing a crop still draw unlike incident. */
 const SALT_OF: Record<QuarryTone, number> = {
@@ -77,6 +94,10 @@ const SALT_OF: Record<QuarryTone, number> = {
   wear: 59,
   rut: 83,
   spoil: 71,
+  // The forest pond's own salts, so the Cutting's bank and bed draw the same
+  // incident the forest's do (`forest-village-material.ts`).
+  margin: 47,
+  bed: 59,
 };
 
 /**
@@ -110,23 +131,48 @@ export function fieldNoise(x: number, y: number, salt: number): number {
  * Signed distance, in tiles, from the nearest spoil heap: negative inside.
  *
  * Thresholding a smooth field made long snaking blobs, because near its level a
- * smooth field's contour wanders. A quarry's spoil is *piles* — discrete, about
- * a tile across, scattered where carts turned. So a heap is anchored to a cell
- * chosen by `tileNoise`, offset and sized from the same hash, and its rim is
- * wobbled by angle so no two read as the same drawn oval. Because the anchor is
- * a cell, the distance only has to be searched over the 3x3 neighbourhood.
+ * smooth field's contour wanders. A quarry's spoil is *piles* — discrete,
+ * scattered where carts turned. So a heap is anchored to a cell chosen by
+ * `tileNoise`, offset and sized from the same hash, and its rim is wobbled by
+ * angle so no two read as the same drawn oval. Because the anchor is a cell,
+ * the distance only has to be searched over the 3x3 neighbourhood.
  */
 export const HEAP_SHARE = 0.9;
 
 /**
- * The heap nearest a point: its signed distance, its centre, and how far from
- * that centre any of its paint — body, ink and chip rim — can reach. A packer
- * uses the reach to keep a heap off a boundary it would otherwise be cut by.
+ * These heaps are decoration: ground texture, not objects. The DL-2 W5 gate
+ * found the board reading backwards — whole inked limestone heaps, bigger and
+ * brighter than anything else, on ground where the real cover (legend `r`, which
+ * grants cover and costs movement) showed only as a faint diamond. So a
+ * decorative heap is now about half its W3/W4 size, carries no ink, and is
+ * painted in the spoil row alone: a flat body with the chip highlight along its
+ * lit upper edge and the spoil shadow along its front. It reads as a low mound
+ * of grit in the ground; the inked heap standing on every `r` cell
+ * (`forest-rubble.ts`'s plate) is what reads as a pile.
+ */
+export const HEAP_SCALE = 0.55;
+/** Chip-highlight rim along a heap's lit upper edge, in tiles. */
+export const HEAP_RIM = 0.035;
+/** Shaded front of a heap: how far in from its edge the spoil shadow reaches, in tiles. */
+export const HEAP_SHADE = 0.06;
+/**
+ * Clear ground a heap keeps from any cell it does not fit on, in tiles: the
+ * packers' soft join between two floor materials feathers up to 0.19 of a tile
+ * into each, and the ink and pale rim at a hard edge are about 0.06, so a mound
+ * nearer than this would be speckled or cut by that edge.
+ */
+export const HEAP_CLEARANCE = 0.2;
+
+/**
+ * The heap nearest a point: its signed distance, its centre, its base radius
+ * and how far from that centre any of its paint can reach. A packer uses the
+ * reach to keep a heap off a boundary it would otherwise be cut by.
  */
 export interface NearestHeap {
   readonly distance: number;
   readonly hx: number;
   readonly hy: number;
+  readonly radius: number;
   readonly reach: number;
 }
 
@@ -141,12 +187,12 @@ export function nearestHeap(x: number, y: number): NearestHeap | null {
       const hy = cy + 0.2 + 0.6 * tileNoise(cx, cy, 43);
       const dx = x - hx,
         dy = y - hy;
-      const base = 0.22 + 0.2 * tileNoise(cx, cy, 44);
+      const base = HEAP_SCALE * (0.22 + 0.2 * tileNoise(cx, cy, 44));
       const radius =
         base * (1 + 0.22 * Math.sin(Math.atan2(dy, dx) * 3 + 9 * tileNoise(cx, cy, 45)));
       const distance = Math.hypot(dx, dy) - radius;
       if (!found || distance < found.distance)
-        found = { distance, hx, hy, reach: base * 1.22 + HEAP_INK + HEAP_RIM };
+        found = { distance, hx, hy, radius: base, reach: base * 1.22 + HEAP_CLEARANCE };
     }
   return found;
 }
@@ -154,11 +200,11 @@ export function nearestHeap(x: number, y: number): NearestHeap | null {
 /**
  * Whether the heap nearest a point lies wholly on ground that can carry it:
  * every cell its paint can reach must pass `carries`. A packer passes "plain
- * spoil" in its own reading of the map. A heap near a lane edge, a ledge, a
- * wall base or a cover cell would otherwise be cut by that boundary into a
- * sliver, or into ink specks through a feathered join; one that does not fit
- * is left out whole rather than clipped. The Cutting and the gate share this
- * rule so the two cannot drift.
+ * spoil" or "plain floor" in its own reading of the map. A heap near a lane
+ * edge, a ledge, a wall base or a cover cell would otherwise be cut by that
+ * boundary into a sliver; one that does not fit is left out whole rather than
+ * clipped. The Cutting, the Driller floor and the gate share this rule so they
+ * cannot drift.
  */
 export function heapFits(
   x: number,
@@ -173,13 +219,20 @@ export function heapFits(
   return true;
 }
 
-function heapDistance(x: number, y: number): number {
-  return nearestHeap(x, y)?.distance ?? Infinity;
+/**
+ * Which of the spoil row's three flat tones a point of a decorative heap takes,
+ * or null off every heap. Up-screen is decreasing `x + y`, so the lit edge is
+ * the half of the outline with `x + y` below the heap's centre.
+ */
+export function heapClass(x: number, y: number): 'base' | 'shadow' | 'rim' | null {
+  const heap = nearestHeap(x, y);
+  if (!heap || heap.distance >= 0) return null;
+  const front = x - heap.hx + (y - heap.hy);
+  if (front < 0 && heap.distance > -HEAP_RIM) return 'rim';
+  if (front > 0 && heap.distance > -HEAP_SHADE * Math.min(1, front / heap.radius + 0.3))
+    return 'shadow';
+  return 'base';
 }
-
-/** Ink half-width and chip-rim width around a heap, in tiles. */
-export const HEAP_INK = 0.022;
-export const HEAP_RIM = 0.05;
 
 /**
  * The haul tracks: a thin trodden core in §3's cart-rut tone with a wider
@@ -196,8 +249,13 @@ export const RUT_HALF = 0.28;
  * collision moves.
  */
 export interface QuarryMaterial extends VillagePalette<QuarryTone> {
-  /** Where a spoil heap lies: its interior, its ink edge, its chip rim. */
-  readonly heapMark: (x: number, y: number) => 'inside' | 'ink' | 'rim' | null;
+  /** A decorative spoil heap's flat tone at a point, or null off every heap. */
+  readonly heapMark: (x: number, y: number) => Rgb | null;
+  /**
+   * A cover heap's spill where it lies on spoil: the spoil row the other way
+   * up, so the fresh grit round the heap's foot shows on a spoil shoulder.
+   */
+  readonly spillMark: (x: number, y: number) => Rgb;
   /** Where a haul track runs: its trodden core and its scuffed shoulder. */
   readonly trackMark: (x: number, y: number) => 'rut' | 'wear' | null;
 }
@@ -227,16 +285,22 @@ export interface Track {
 
 export async function loadQuarryMaterial(track: Track): Promise<QuarryMaterial> {
   const palette = bindPalette(await loadVillageCrops(), QUARRY_GROUND_TONES, CROP_OF, SALT_OF);
+  // Read from the table, never restated: a change to §3's spoil row is one edit.
+  const spoil = QUARRY_GROUND_TONES.spoil;
+  const heapTones = {
+    base: parseHex(spoil.base),
+    shadow: parseHex(spoil.shadow),
+    rim: parseHex(spoil.rim),
+  } as const;
   return {
     ...palette,
-    heapMark(x: number, y: number): 'inside' | 'ink' | 'rim' | null {
-      const heap = heapDistance(x, y);
-      if (heap < -HEAP_INK) return 'inside';
-      // The heap carries the bible's edge in its own right: the acceptance asks
-      // for no region wider than a quarter of the frame without painted
-      // incident, and an unoutlined patch of near-tone would not be incident.
-      if (heap < HEAP_INK) return 'ink';
-      return heap < HEAP_INK + HEAP_RIM ? 'rim' : null;
+    heapMark(x: number, y: number): Rgb | null {
+      const cls = heapClass(x, y);
+      return cls ? heapTones[cls] : null;
+    },
+    spillMark(x: number, y: number): Rgb {
+      const cls = palette.classOf('spoil', x, y);
+      return cls === 'rim' ? heapTones.rim : cls === 'shadow' ? heapTones.base : heapTones.shadow;
     },
     trackMark(x: number, y: number): 'rut' | 'wear' | null {
       const rut = rutDistance(x, y, track);
