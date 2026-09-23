@@ -27,8 +27,9 @@
  * breaks up into the verge in clumps and round the lawn's own painted tufts,
  * the way the pond's dry margin feathers out rather than stopping on a line —
  * never along the cell's diamond. The plate keeps only what stands on that
- * ground: the pile, its contact shadow, and a few loose stones that have rolled
- * clear. Only those objects carry the bible's ink; the ground does not.
+ * ground: the pile and its contact shadow (`looseStones` may add a stone or two
+ * at its front, but none has room there today). Only those objects carry the
+ * bible's ink; the ground does not.
  *
  * The plate keeps its shipped 384x128 size and everything on it stays inside
  * the cell's diamond, so the two `FOREST_RUBBLE_CELLS` placements in
@@ -162,10 +163,12 @@ export function rubbleChunks(): Chunk[] {
 
 /**
  * Loose stones that have rolled off the pile: small chunks of the same two
- * kinds on the bare earth round its foot and, now and then, out in the grass.
- * Candidate spots are drawn across the plate by a seeded hash, and a stone is
- * kept only where it lies clear of the pile and of the stones already kept, and
- * wholly inside the cell's diamond, so they land wherever there is ground.
+ * kinds on the ground at the front of its foot. Candidate spots are drawn by a
+ * seeded hash across the band in front of the pile, and a stone is kept only
+ * where it lies clear of the pile and of the stones already kept, wholly inside
+ * the cell's diamond, and well away from the diamond's side corners — a stone
+ * in a corner reads as a rivet marking the cell's outline, which is exactly the
+ * diamond the spill is there to hide. If none fits, there are none.
  */
 export const LOOSE_STONES = { candidates: 400, keep: 6 } as const;
 export function looseStones(): Chunk[] {
@@ -176,7 +179,7 @@ export function looseStones(): Chunk[] {
     const size = 1 + 0.45 * n(3);
     const stone: Chunk = {
       x: DIAMOND.x + (n(1) - 0.5) * DIAMOND.rx * 2,
-      y: n(2) * FOREST_RUBBLE_PLATE.height,
+      y: RUBBLE_MOUND.y + n(2) * (FOREST_RUBBLE_PLATE.height - RUBBLE_MOUND.y),
       rx: 9 * size,
       ry: 5 * size,
       corners: chunkCorners(100 + i),
@@ -188,7 +191,11 @@ export function looseStones(): Chunk[] {
   return stones;
 }
 
+/** How far out from the cell's centre a loose stone may reach, as a share of the half-width. */
+export const STONE_REACH = 0.55;
+
 function stoneFits(stone: Chunk, pile: readonly Chunk[], kept: readonly Chunk[]): boolean {
+  if (Math.abs(stone.x - DIAMOND.x) + stone.rx > DIAMOND.rx * STONE_REACH) return false;
   const pad = INK_PX + 2;
   // Room for the stone's ink and contact shadow, and a stone's width from any
   // other, so two never read as one blot.

@@ -79,15 +79,17 @@ edges. Over a band about a quarter of a cell wide it breaks up into the grass,
 in clumps and round the lawn's own painted tufts, so its edge never runs along
 the cell's diamond. It ends on the road's ink line.
 
-`rubble.webp` now carries only what stands on that ground: the pile, its
-contact shadow and two loose stones that have rolled clear. The pile's courses
+`rubble.webp` now carries only what stands on that ground: the pile and its
+contact shadow. Loose stones may only sit at the front of the pile, well away
+from the cell's side corners, because a stone in a corner reads as a rivet
+marking the cell's outline. None has room there today, so none is drawn. The pile's courses
 are pulled in from the cell's side corners, because courses that ran out to
 the cell's edges gave the pile the cell's diamond for a silhouette. Placement,
 plate size and the scene's image count are unchanged.
 
 | File                        | Before (B) | After (B) | Delta (B) |
 | --------------------------- | ---------: | --------: | --------: |
-| `rubble.webp`               |      3,942 |     3,998 |       +56 |
+| `rubble.webp`               |      3,942 |     3,636 |      −306 |
 | `grass-north.webp`          |     60,934 |    61,236 |      +302 |
 | `grass-south.webp`          |     48,022 |    49,176 |    +1,154 |
 | `route-ground.webp`         |    112,886 |   113,520 |      +634 |

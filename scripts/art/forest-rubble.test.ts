@@ -13,6 +13,7 @@ import {
 import {
   FOREST_RUBBLE_OUTPUT,
   FOREST_RUBBLE_PLATE,
+  STONE_REACH,
   looseStones,
   packRubble,
   rubbleChunks,
@@ -95,8 +96,6 @@ it('piles a crowned heap inside its own cell with no baked gradient', () => {
   // A heap, not a floor: separate chunks, stacked so the crown rises well
   // above the foot of the pile.
   expect(rubbleChunks().length).toBeGreaterThanOrEqual(12);
-  // A few loose stones have rolled clear of it.
-  expect(looseStones().length).toBeGreaterThanOrEqual(2);
   let crown = image.height;
   for (let py = 0; py < image.height && crown === image.height; py++)
     for (let px = 0; px < image.width; px++)
@@ -107,12 +106,26 @@ it('piles a crowned heap inside its own cell with no baked gradient', () => {
   const foot = Math.max(...rubbleChunks().map((chunk) => chunk.y + chunk.ry));
   expect(foot - crown).toBeGreaterThan(80);
   // The pile's foot is a mound well inside the cell, not the cell's own
-  // diamond: its widest course stays clear of the diamond's side corners.
+  // diamond: its widest course stays clear of the diamond's side corners, and
+  // so does every loose stone, which in a corner reads as a rivet marking the
+  // cell's outline.
   for (const chunk of rubbleChunks())
     expect(
       Math.abs(chunk.x - image.width / 2) + chunk.rx,
       'chunk clear of the corners',
     ).toBeLessThan(image.width / 2 - 36);
+  for (const stone of looseStones())
+    expect(
+      Math.abs(stone.x - image.width / 2) + stone.rx,
+      'stone clear of the corners',
+    ).toBeLessThanOrEqual((image.width / 2) * STONE_REACH);
+  // Nothing at all is painted in the corner wedges.
+  let cornered = 0;
+  for (let py = 0; py < image.height; py++)
+    for (let px = 0; px < image.width; px++)
+      if (opaqueAt(px, py) && Math.abs(px + 0.5 - image.width / 2) > image.width / 2 - 24)
+        cornered++;
+  expect(cornered, 'paint in the diamond corners').toBe(0);
   const m = measure(image);
   // The plate is smaller than one 128 px measuring window in height, so the
   // span is read across the widest row of windows it can hold.
