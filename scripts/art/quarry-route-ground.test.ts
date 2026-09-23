@@ -1,4 +1,4 @@
-import { readFileSync } from 'node:fs';
+import { readFileSync, statSync } from 'node:fs';
 import { expect, it } from 'vitest';
 import { AMBUSH_ROAD, QUARRY_FLOOR } from '../../src/content/maps/combat';
 import {
@@ -260,4 +260,22 @@ it('ships the plates the packers build, inside the registered page', async () =>
         `${root}/${region.name}.webp`,
       ).toEqual(readFileSync(`public/art/maps/${root}/${region.name}.webp`));
     }
+});
+
+/**
+ * The `bytes` field of each generated region table is a pin, not a comment:
+ * `quarryProjected.ts` drops it before the scene sees it, so nothing at runtime
+ * would notice a page re-encoded behind the table's back. The pages are
+ * approved art (The Cutting's especially), so a repack has to show up here.
+ */
+it.each([
+  ['driller-floor-scene', DRILLER_GROUND_REGIONS],
+  ['cutting-scene', CUTTING_GROUND_REGIONS],
+] as const)('pins every %s page to its recorded size on disk', (root, regions) => {
+  expect(regions.length).toBeGreaterThan(0);
+  for (const region of regions)
+    expect(
+      statSync(`public/art/maps/${root}/${region.name}.webp`).size,
+      `${root}/${region.name}.webp`,
+    ).toBe(region.bytes);
 });
