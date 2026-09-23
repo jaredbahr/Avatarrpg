@@ -32,12 +32,15 @@ const NPC_PRESENTATIONS: readonly (readonly [string, string])[] = [
   ['pella_home', 'ba_dan_village'],
   ['dorin_directions', 'ba_dan_village'],
   ['dorin_home', 'ba_dan_village'],
+  // W5a placeholders; W6 writes them.
+  ['hanru_watch', 'ba_dan_village'],
 
   // Riverside.
   ['riverside_mira', 'ba_dan_riverside'],
   ['riverside_mira_home', 'ba_dan_riverside'],
   ['riverside_dorin', 'ba_dan_riverside'],
   ['riverside_shrine', 'ba_dan_riverside'],
+  ['riverside_pella', 'ba_dan_riverside'],
 
   // Forest road.
   ['after_forest', 'forest_road'],

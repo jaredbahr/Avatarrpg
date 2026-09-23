@@ -2,7 +2,8 @@
  * `validateContent`'s resident rules (ADR 0047 §2, W4a): the zod shapes, the
  * structural rules, and the W0 identity register applied to resident records
  * (the five missing, `FORBIDDEN_BINDINGS`). Every fixture is synthetic: one
- * resident bound to Elder Mira's NpcDef, since Ba Dan's records are W5a.
+ * resident bound to Elder Mira's NpcDef in place of the real Mira; Ba Dan's
+ * other records (W5a) stay as they are.
  */
 
 import { describe, expect, it } from 'vitest';
@@ -86,7 +87,14 @@ function bundle(
   } = {},
 ): ContentBundle {
   const mapId = change.map ?? VILLAGE;
-  const maps: readonly MapDef[] = CONTENT_BUNDLE.maps.map((map) => {
+  const maps: readonly MapDef[] = CONTENT_BUNDLE.maps.map((raw) => {
+    // The synthetic elder replaces the real Mira: her riverside NpcDef stands unbound.
+    const map = {
+      ...raw,
+      npcs: raw.npcs.map((n) =>
+        n.id === 'riverside_mira' ? { ...n, resident: undefined, pos: { x: 15, y: 9 } } : n,
+      ),
+    };
     if (map.id !== mapId) return map;
     const mira = map.npcs.find((n) => n.id === 'elder_mira');
     let npcs =
@@ -101,9 +109,13 @@ function bundle(
   return {
     ...CONTENT_BUNDLE,
     maps,
-    anchors: change.anchors ?? ANCHORS,
-    residents: change.residents ?? [ELDER],
-    backgroundRoles: change.roles ?? [HELPER],
+    // Ba Dan's real records stay (W5a), all but Mira's, which the synthetic elder replaces.
+    anchors: [...CONTENT_BUNDLE.anchors, ...(change.anchors ?? ANCHORS)],
+    residents: [
+      ...CONTENT_BUNDLE.residents.filter((r) => r.id !== 'lw.npc.mira'),
+      ...(change.residents ?? [ELDER]),
+    ],
+    backgroundRoles: [...CONTENT_BUNDLE.backgroundRoles, ...(change.roles ?? [HELPER])],
   };
 }
 

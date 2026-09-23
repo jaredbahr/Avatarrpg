@@ -3,8 +3,9 @@
  * NPC-tap path and by nothing else, and only for a resident-bound NpcDef.
  * The pin stores the resident's anchor id, not a tile.
  *
- * No real NpcDef is bound until W5a, so `BOUND` binds Elder Mira to a
- * synthetic resident standing on her tile (`residents.fixture.ts`).
+ * `BOUND` binds Elder Mira to a synthetic resident standing on her tile in
+ * every phase (`residents.fixture.ts`), so the pin is tested apart from her
+ * real schedule.
  *
  * These tests drive the pin through the real `apply` entry point so they
  * also exercise `settle` (ADR 0047 §5, B2), which clears a pin the result no
@@ -62,10 +63,12 @@ suite('the conversation pin', () => {
   });
 
   it('pins nobody when an unbound NpcDef opens a conversation', () => {
-    // Real content binds no NpcDef yet: the same tap opens the same
-    // conversation, but there is no resident to hold in place.
-    const result = apply(CONTENT, besideMira(), { type: 'walkTo', pos: { x: 11, y: 5 } });
+    // The riverside path sign is a plain NpcDef: its tap opens a dialogue,
+    // but there is no resident to hold in place.
+    const state = { ...besideMira(), location: { mapId: 'ba_dan_village', pos: { x: 17, y: 12 } } };
+    const result = apply(CONTENT, state, { type: 'walkTo', pos: { x: 18, y: 12 } });
     expect(result.state.screen).toBe('dialogue');
+    expect(result.state.story.nodeId).toBe('riverside_invitation');
     expect(result.state.world.talk).toBeNull();
   });
 

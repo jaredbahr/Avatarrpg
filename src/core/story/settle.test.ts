@@ -10,7 +10,7 @@ import { describe as suite, expect, it } from 'vitest';
 import { CONTENT } from '../../content';
 import { DEFAULT_TILE, buildGrid, posKey } from '../rules/grid';
 import { createGame } from '../state/createGame';
-import { activeTriggers } from './world';
+import { activeTriggers, visibleNpcs } from './world';
 import type { Grid, GameState, MapDef, Tile, Vec2 } from '../types';
 import { findSettleTile } from './settle';
 
@@ -65,8 +65,11 @@ function steppingForbidden(map: MapDef, state: GameState): readonly Vec2[] {
  * to somewhere else — only `steppingForbidden` may never be crossed either.
  */
 function forbidden(map: MapDef, state: GameState): readonly Vec2[] {
-  // Authored NpcDefs, not resident-bound: pos is always set.
-  const out: Vec2[] = [...map.npcs.map((npc) => npc.pos!), ...steppingForbidden(map, state)];
+  // Visible NPCs where they stand now (a bound NpcDef at its resident's anchor).
+  const out: Vec2[] = [
+    ...visibleNpcs(CONTENT, map, state).map((npc) => npc.pos),
+    ...steppingForbidden(map, state),
+  ];
   for (const spot of map.restSpots ?? []) out.push(spot.pos);
   out.push(...arrivals(map));
   return out;

@@ -15,8 +15,24 @@ import { reconcileWorld } from './reconcile';
 import { deserialize, serialize, stateFromBlob } from './serialize';
 import { TEST_ANCHOR, TEST_RESIDENT, withBoundNpc } from '../story/residents.fixture';
 
-/** Elder Mira bound to a synthetic resident on her tile; no real NpcDef is bound until W5a. */
+/** Elder Mira bound to a synthetic resident on her tile, apart from her real schedule. */
 const BOUND = withBoundNpc(CONTENT, 'ba_dan_village', 'elder_mira');
+
+/** `BOUND` with Elder Mira's NpcDef unbound again. */
+const UNBOUND = {
+  ...BOUND,
+  maps: new Map(
+    [...BOUND.maps].map(([id, map]) => [
+      id,
+      {
+        ...map,
+        npcs: map.npcs.map((n) =>
+          n.id === 'elder_mira' ? { ...n, resident: undefined, pos: { x: 11, y: 5 } } : n,
+        ),
+      },
+    ]),
+  ),
+};
 
 const META = {
   label: 'Slot 1',
@@ -109,11 +125,12 @@ suite('reconcileWorld: the conversation pin (clear half)', () => {
   });
 
   it('clears a pin whose NpcDef is no longer bound to a resident', () => {
-    // The same live pin, loaded against content where Elder Mira is unbound
-    // (today's real content): the binding is gone, so nobody is held.
+    // The same live pin, loaded against content where Elder Mira is
+    // unbound: the binding is gone, so nobody is held.
     const state = withTalk(exploring({ screen: 'dialogue' }), MIRA);
+    expect(reconcileWorld(BOUND, state).world.talk).toEqual(MIRA);
 
-    expect(reconcileWorld(CONTENT, state).world.talk).toBeNull();
+    expect(reconcileWorld(UNBOUND, state).world.talk).toBeNull();
   });
 
   it('clears a pin whose resident record no longer exists', () => {
@@ -133,7 +150,7 @@ suite('reconcileWorld: the conversation pin (clear half)', () => {
 
 suite('reconcileWorld: the leader step (move half)', () => {
   it('moves the leader off a visible NPC tile in explore, without events', () => {
-    // Elder Mira's real NpcDef tile on `ba_dan_village`.
+    // Elder Mira's real anchor, `bd01.table`: held there before `mira_intro`.
     const state = exploring({ location: { mapId: 'ba_dan_village', pos: { x: 11, y: 5 } } });
 
     // `reconcileWorld` returns a `GameState`, not a `StepResult`: there is

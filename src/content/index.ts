@@ -29,8 +29,10 @@ import { UNIVERSAL_ABILITY_IDS } from './abilities';
 import { ACT1_NODES } from './story/act1';
 import { withPartyVoices } from './story/partyVoices';
 import { RETURN_STORY } from './story/return';
+import { RESIDENT_PLACEHOLDER_STORY } from './story/residentPlaceholders';
 import type { ContentBundle } from './schemas';
 import type { BackgroundRole, MapDef, ResidentDef, StoryNode, WorldAnchor } from '../core/types';
+import { BA_DAN_ANCHORS, BA_DAN_BACKGROUND_ROLES, BA_DAN_RESIDENTS } from './residents/baDan';
 
 export const ALL_MAPS: readonly MapDef[] = [BA_DAN_VILLAGE, RIVERSIDE, ...COMBAT_MAPS].map(
   connectAct1,
@@ -41,12 +43,13 @@ export const ALL_STORY: readonly StoryNode[] = withPartyVoices([
   ...WORLD_STORY,
   ...DISCOVERY_STORY,
   ...RETURN_STORY,
+  ...RESIDENT_PLACEHOLDER_STORY,
 ]);
 
-/** Living-world records (ADR 0047 §2). Ba Dan's anchors, residents and roles land in W5a. */
-const ANCHORS: readonly WorldAnchor[] = [];
-const RESIDENTS: readonly ResidentDef[] = [];
-const BACKGROUND_ROLES: readonly BackgroundRole[] = [];
+/** Living-world records (ADR 0047 §2): Ba Dan's anchors, residents and background roles. */
+const ANCHORS: readonly WorldAnchor[] = BA_DAN_ANCHORS;
+const RESIDENTS: readonly ResidentDef[] = BA_DAN_RESIDENTS;
+const BACKGROUND_ROLES: readonly BackgroundRole[] = BA_DAN_BACKGROUND_ROLES;
 
 /** The flat form, used by the validation test and the balance report. */
 export const CONTENT_BUNDLE: ContentBundle = {

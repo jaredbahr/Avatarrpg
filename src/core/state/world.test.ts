@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
-import { CONTENT } from '../../content';
+import { CONTENT, CONTENT_BUNDLE } from '../../content';
+import { npcStandTiles } from '../../content/schemas';
 import { buildGrid, findPath } from '../rules/grid';
 import { activeTriggers } from '../story/world';
 import { SAVE_VERSION, createGame } from './createGame';
@@ -143,8 +144,8 @@ describe('connected world traversal', () => {
       const grid = buildGrid(map);
       const destinations: Vec2[] = [
         ...(map.exits ?? []).map((exit) => exit.pos),
-        // Authored NpcDefs, not resident-bound: pos is always set.
-        ...map.npcs.map((npc) => npc.pos!),
+        // A resident-bound NpcDef has no `pos`: its tiles are its resident's anchors.
+        ...map.npcs.flatMap((npc) => npcStandTiles(CONTENT_BUNDLE, map.id, npc)),
       ];
       const arrivals = [...CONTENT.maps.values()].flatMap((other) =>
         (other.exits ?? []).filter((exit) => exit.toMapId === map.id).map((exit) => exit.toPos),

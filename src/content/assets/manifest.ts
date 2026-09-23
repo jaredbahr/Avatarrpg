@@ -314,6 +314,10 @@ export const ASSETS: Readonly<Record<string, AssetEntry>> = {
   'npc.kid': { kind: 'image', url: 'art/npcs/pella.png', palette: 'air' },
   'npc.dorin': { kind: 'image', url: 'art/npcs/dorin.png', palette: 'earth' },
   'npc.guard': painter('villager', 'earth', 'guard'),
+  // ADR 0047 placeholders until A1's art: Hanru, distinct from both of
+  // Dorin's sprites (D7), and an adult of Pella's household who is no named person.
+  'npc.hanru': painter('villager', 'nonbender', 'guard'),
+  'npc.household': painter('villager', 'earth'),
 
   /* --------------------------------------------------------------- Props */
   'prop.barrel': { kind: 'image', url: 'art/props/barrel.png', palette: 'water' },

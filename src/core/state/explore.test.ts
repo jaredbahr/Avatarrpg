@@ -5,6 +5,7 @@ import { createGame } from './createGame';
 import { apply } from './reducer';
 import { serialize, deserialize, stateFromBlob } from '../save/serialize';
 import { buildGrid, tileAt } from '../rules/grid';
+import { visibleNpcs } from '../story/world';
 
 /**
  * Walking the village. The rules of a walk have not changed: the reducer
@@ -32,7 +33,9 @@ const walks = (events: readonly GameEvent[]) =>
 describe('walking the village', () => {
   it('uses Gao’s shopfront after loading older village positions, including a new boundary cell', () => {
     const map = CONTENT.maps.get('ba_dan_village');
-    const gao = map?.npcs.find((npc) => npc.id === 'shopkeeper_gao');
+    // Resident-bound (ADR 0047): Gao stands at his anchor, `bd02.shopfront`.
+    const gao =
+      map && visibleNpcs(CONTENT, map, inVillage()).find((n) => n.id === 'shopkeeper_gao');
     if (!map || !gao) throw new Error('Missing village merchant');
     expect(gao.pos).toEqual({ x: 9, y: 4 });
     for (const pos of [
@@ -52,8 +55,7 @@ describe('walking the village', () => {
       if (!loaded.ok) throw new Error('Could not reload village save');
       const restored = stateFromBlob(loaded.blob);
       expect(restored.location).toEqual(before.location);
-      // Authored NpcDef, not resident-bound: pos is always set.
-      const result = apply(CONTENT, restored, { type: 'walkTo', pos: gao.pos! });
+      const result = apply(CONTENT, restored, { type: 'walkTo', pos: gao.pos });
       expect(result.state.screen).toBe('dialogue');
       expect(result.state.story.nodeId).toBe('gao_friendly');
       expect(result.state.location.pos).not.toEqual(gao.pos);
@@ -97,16 +99,18 @@ describe('walking the village', () => {
 
   it('walks up to an NPC before the conversation opens', () => {
     const state = inVillage();
-    const elder = CONTENT.maps.get('ba_dan_village')?.npcs.find((n) => n.id === 'elder_mira');
+    const village = CONTENT.maps.get('ba_dan_village');
+    // Resident-bound (ADR 0047): Mira is held at `bd01.table` until `mira_intro`.
+    const elder =
+      village && visibleNpcs(CONTENT, village, state).find((n) => n.id === 'elder_mira');
     expect(elder).toBeDefined();
     if (!elder) return;
-    // Authored NpcDef, not resident-bound: pos is always set.
-    const { state: after, events } = apply(CONTENT, state, { type: 'walkTo', pos: elder.pos! });
+    const { state: after, events } = apply(CONTENT, state, { type: 'walkTo', pos: elder.pos });
 
     expect(
       Math.max(
-        Math.abs(after.location.pos.x - elder.pos!.x),
-        Math.abs(after.location.pos.y - elder.pos!.y),
+        Math.abs(after.location.pos.x - elder.pos.x),
+        Math.abs(after.location.pos.y - elder.pos.y),
       ),
     ).toBe(1);
     expect(after.screen).toBe('dialogue');

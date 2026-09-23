@@ -119,16 +119,24 @@ export const RIVERSIDE: MapDef = {
     {
       id: 'riverside_mira',
       name: 'Elder Mira',
-      pos: RIVERSIDE_SPOTS.mira,
+      resident: 'lw.npc.mira',
       sprite: 'npc.elder',
       node: 'riverside_mira',
     },
     {
       id: 'riverside_dorin',
       name: 'Dorin',
-      pos: { x: 32, y: 12 },
+      resident: 'lw.npc.dorin',
       sprite: 'npc.guard',
       node: 'riverside_dorin',
+    },
+    {
+      // Pella's supervised afternoon at the safe bank (ADR 0047 §8); W6 writes her lines.
+      id: 'riverside_pella',
+      name: 'Pella',
+      resident: 'lw.npc.pella',
+      sprite: 'npc.kid',
+      node: 'riverside_pella',
     },
     {
       id: 'riverside_shrine',

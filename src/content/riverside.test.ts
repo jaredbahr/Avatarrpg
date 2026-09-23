@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
-import { CONTENT } from './index';
+import { CONTENT, CONTENT_BUNDLE } from './index';
+import { npcStandTiles } from './schemas';
 import { RIVERSIDE, RIVERSIDE_ENTRY, RIVERSIDE_SPOTS } from './maps/riverside';
 import { buildGrid, findPath } from '../core/rules/grid';
 import { createGame } from '../core/state/createGame';
@@ -20,8 +21,8 @@ describe('the riverside paths', () => {
     const state = start();
     for (const pos of [
       ...Object.values(RIVERSIDE_SPOTS),
-      // Authored NpcDefs, not resident-bound: pos is always set.
-      ...RIVERSIDE.npcs.map((n) => n.pos!),
+      // A resident-bound NpcDef has no `pos`: its tiles are its resident's anchors.
+      ...RIVERSIDE.npcs.flatMap((n) => npcStandTiles(CONTENT_BUNDLE, RIVERSIDE.id, n)),
       RIVERSIDE.exit!.pos,
     ]) {
       const result = apply(CONTENT, state, { type: 'walkTo', pos });

@@ -67,7 +67,7 @@ export const BA_DAN_VILLAGE: MapDef = {
     {
       id: 'elder_mira',
       name: 'Elder Mira',
-      pos: { x: 11, y: 5 },
+      resident: 'lw.npc.mira',
       sprite: 'npc.elder',
       node: 'mira_intro',
       routes: [{ when: { kind: 'flag', key: 'act1_complete', op: 'set' }, node: 'mira_epilogue' }],
@@ -75,7 +75,7 @@ export const BA_DAN_VILLAGE: MapDef = {
     {
       id: 'shopkeeper_gao',
       name: 'Gao the Shopkeeper',
-      pos: { x: 9, y: 4 },
+      resident: 'lw.npc.gao',
       sprite: 'npc.shopkeeper',
       node: 'gao_friendly',
       routes: [
@@ -96,7 +96,7 @@ export const BA_DAN_VILLAGE: MapDef = {
     {
       id: 'kid_pella',
       name: 'Pella',
-      pos: { x: 12, y: 10 },
+      resident: 'lw.npc.pella',
       sprite: 'npc.kid',
       node: 'pella_tips',
       routes: [
@@ -107,10 +107,19 @@ export const BA_DAN_VILLAGE: MapDef = {
     {
       id: 'guard_dorin',
       name: 'Gate Guard Dorin',
-      pos: { x: 20, y: 8 },
+      resident: 'lw.npc.dorin',
       sprite: 'npc.dorin',
       node: 'dorin_directions',
       routes: [{ when: { kind: 'flag', key: 'act1_complete', op: 'set' }, node: 'dorin_home' }],
+    },
+    {
+      // D7: a placeholder sprite, distinct from both of Dorin's. Hanru's
+      // conversations (`hanru_watch`, the handover scene) are W6's.
+      id: 'guard_hanru',
+      name: 'Hanru',
+      resident: 'lw.npc.hanru',
+      sprite: 'npc.hanru',
+      node: 'hanru_watch',
     },
   ],
   props: [],
