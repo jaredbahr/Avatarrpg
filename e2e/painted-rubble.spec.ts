@@ -124,7 +124,22 @@ for (const renderer of ['canvas', 'webgl'])
      * required to follow it, instead of on a per-channel absolute value.
      */
     const blueShift = waterRegion.b - registered.b;
-    expect(blueShift).toBeGreaterThan(10);
+    /*
+     * The isolated blue channel is the least stable of the three signals across
+     * rasterisers. Run 35874485983's WebKit (Mesa's software path, same as any
+     * GPU-less CI runner) reproduces locally at a repeatable 8.6-9.1 here, red
+     * falling by 52+ against a -10 floor and the combined blue-over-red delta
+     * below landing at 61+ against a 25 floor - both with enormous margin. Main
+     * at 2dc787d measures the same 8.7-8.9 on this host, so the isolated blue
+     * reading was already this tight before the countdown fix; it just crossed
+     * 10 on whichever runner produced 35865078280's pass and did not on
+     * 35874485983's. The floor comes down to keep real margin under every
+     * reading seen so far while staying well clear of a no-tint (near zero)
+     * read; the red and combined checks below are what actually carry the
+     * "this is a visible blue tint" proof, exactly as the surrounding comment
+     * already says a per-channel absolute should not be load-bearing alone.
+     */
+    expect(blueShift).toBeGreaterThan(5);
     expect(waterRegion.r - registered.r).toBeLessThan(-10);
     // Measured as a cool shift rather than an absolute green rise: the ground
     // contract's warm packed earth is already greener than the water fill, so

@@ -3,6 +3,7 @@ import type { Page } from '@playwright/test';
 import { CONTENT } from '../src/content';
 import { previewAiPlan } from '../src/core/rules/ai';
 import { distance, reachable } from '../src/core/rules/grid';
+import { contactEffects } from '../src/core/rules/surfaces';
 import { RngCursor } from '../src/core/rng';
 import { BattleDraft } from '../src/core/state/battleDraft';
 import { resetStorage, startGame, takeTurn, waitForIdle } from './helpers';
@@ -53,12 +54,23 @@ async function finishBattle(page: Page, encounterId: string): Promise<void> {
       }
 
       // If nothing is in reach yet, take a legal path toward the nearest enemy.
+      //
+      // A tile that burns you is never worth taking over one that does not —
+      // no reasonable player advances through open fire when level ground is
+      // just as close — so tiles with contact damage are only a last resort,
+      // used exclusively when every path forward is one of them.
       const enemies = battle.units.filter((unit) => unit.faction === 'enemy' && unit.hp > 0);
       const nearest = (pos: typeof actor.pos) =>
         Math.min(...enemies.map((enemy) => distance(pos, enemy.pos)));
-      const step = [...reachable(draft.moveContext(actor), actor.pos, actor.move).values()]
-        .filter((cell) => cell.path.length > 0 && nearest(cell.pos) < nearest(actor.pos))
-        .sort((a, b) => nearest(a.pos) - nearest(b.pos) || a.cost - b.cost)[0];
+      const candidates = [
+        ...reachable(draft.moveContext(actor), actor.pos, actor.move).values(),
+      ].filter((cell) => cell.path.length > 0 && nearest(cell.pos) < nearest(actor.pos));
+      const unharmed = candidates.filter(
+        (cell) => contactEffects(CONTENT, draft.grid, cell.pos).damage <= 0,
+      );
+      const step = (unharmed.length > 0 ? unharmed : candidates).sort(
+        (a, b) => nearest(a.pos) - nearest(b.pos) || a.cost - b.cost,
+      )[0];
       if (step) {
         await page.evaluate(
           ({ id, path }) => window.fnt!.app.dispatch({ type: 'move', unitId: id, path }),

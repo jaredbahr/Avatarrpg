@@ -249,6 +249,7 @@ export function paintSurface(
 export function tickSurfaces(content: ContentIndex, grid: Grid): SurfaceReaction {
   let next = grid;
   const changes: SurfaceChange[] = [];
+  let ticked = false;
 
   const spreadFrom: { pos: Vec2; duration: number; spread: number }[] = [];
 
@@ -278,6 +279,7 @@ export function tickSurfaces(content: ContentIndex, grid: Grid): SurfaceReaction
         continue;
       }
       next = withSurface(next, pos, { ...surface, duration });
+      ticked = true;
     }
   }
 
@@ -313,7 +315,7 @@ export function tickSurfaces(content: ContentIndex, grid: Grid): SurfaceReaction
     }
   }
 
-  if (changes.length === 0) return NO_REACTION(grid);
+  if (changes.length === 0 && !ticked) return NO_REACTION(grid);
   return { grid: next, changes, statusHits: [], chainHits: [] };
 }
 
