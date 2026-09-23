@@ -1781,6 +1781,7 @@ function validateResidents(bundle: ContentBundle, problems: string[]): void {
     for (const npc of map.npcs) {
       if (!npc.resident) continue;
       const label = `map "${map.id}" npc "${npc.id}"`;
+      if (npc.when) problems.push(`${label} is bound, so its conditions belong in overrides`);
       const resident = byId.get(npc.resident);
       if (!resident) problems.push(`${label} is bound to unknown resident "${npc.resident}"`);
       else if (!resident.source.runtimeNpcIds.includes(npc.id)) {

@@ -334,6 +334,15 @@ describe('validateContent: resident records (ADR 0047 W4a)', () => {
     );
   });
 
+  it('rejects `when` on a bound NpcDef: its conditions belong in overrides', () => {
+    const gated = bundle({
+      npc: { id: 'elder_mira', resident: 'test.elder', when: { kind: 'phase', in: ['dawn'] } },
+    });
+    expect(problemsOf(gated)).toContain(
+      'map "ba_dan_village" npc "elder_mira" is bound, so its conditions belong in overrides',
+    );
+  });
+
   it('checks the NpcDef side of a binding', () => {
     const unlisted: ResidentDef = { ...ELDER, source: { runtimeNpcIds: [] } };
     expect(problemsOf(bundle({ residents: [unlisted] }))).toContain(
