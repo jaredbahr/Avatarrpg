@@ -8,8 +8,6 @@ import type { VillageActor } from '../../render/living/layer';
 import { FORM_DURATION, WAVE_DURATION } from '../../render/living/poses';
 import { hitsPebble, hitsVillager, riversideWalkTime } from '../../render/living/geometry';
 import { RIVERSIDE_ID, RIVERSIDE_SPOTS } from '../../content/maps/riverside';
-import { visibleNpcs } from '../../core/story/world';
-import type { PlacedNpc } from '../../core/story/world';
 import type { ResidentFigure } from '../world/residentMotion';
 import { resolveResidents } from '../../core/story/residents';
 import { phaseLabel } from '../world/journal';
@@ -205,32 +203,11 @@ export class VillageLife {
     return false;
   }
   /**
-   * The people on the riverside now, as the walks draw them, and anyone
-   * unbound but the shrine, which is painted.
+   * The people on the riverside now, as the walks draw them. The riverside's
+   * only unbound NpcDef is the shrine, which is painted, so nobody else is drawn.
    */
   private residents(): ResidentFigure[] {
-    const map = this.app.content.maps.get(RIVERSIDE_ID);
-    const state = this.app.state;
-    const still = (npc: PlacedNpc): ResidentFigure => ({
-      id: npc.id,
-      npcId: npc.id,
-      sprite: npc.sprite,
-      name: npc.name,
-      pos: npc.pos,
-      drawPos: npc.pos,
-      facing: 1,
-      walking: false,
-      clipTime: 0,
-      alpha: 1,
-    });
-    return map && state
-      ? [
-          ...visibleNpcs(this.app.content, map, state)
-            .filter((npc) => !npc.resident && npc.id !== 'riverside_shrine')
-            .map(still),
-          ...this.app.residents.figures(),
-        ]
-      : [];
+    return this.app.residents.figures();
   }
   private visit(place: Visit): void {
     if (this.app.animator.busy(performance.now()) || this.busy(performance.now())) return;
