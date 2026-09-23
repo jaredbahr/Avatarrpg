@@ -8,6 +8,7 @@ import type { VillageActor } from '../../render/living/layer';
 import { FORM_DURATION, WAVE_DURATION } from '../../render/living/poses';
 import { hitsPebble, hitsVillager, riversideWalkTime } from '../../render/living/geometry';
 import { RIVERSIDE_ID, RIVERSIDE_SPOTS } from '../../content/maps/riverside';
+import { visibleNpcs } from '../../core/story/world';
 import { button, el, motionReduced } from '../ui/dom';
 import { verticalClip } from '../anim/direction';
 
@@ -149,11 +150,12 @@ export class VillageLife {
       this.visit('otter');
       return true;
     }
-    for (const npc of this.app.content.maps.get(RIVERSIDE_ID)?.npcs ?? []) {
+    // Only the people placed here now, at their resolved tiles (ADR 0047 §2).
+    // The drawn actors still come from the stage until W7 moves them.
+    const map = this.app.content.maps.get(RIVERSIDE_ID);
+    const state = this.app.state;
+    for (const npc of map && state ? visibleNpcs(this.app.content, map, state) : []) {
       if (npc.id === 'riverside_shrine') continue;
-      // W7: VillageLife moves to reading placements; until then a resident-bound
-      // NpcDef (no authored pos) is simply not hit-testable here.
-      if (!npc.pos) continue;
       if (hitsVillager(point, npc.pos)) {
         this.app.dispatch({ type: 'walkTo', pos: npc.pos });
         return true;
