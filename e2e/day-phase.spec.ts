@@ -87,3 +87,22 @@ test('a refused wait shows why and changes nothing', async ({ page }) => {
   expect(await clock(page)).toEqual({ day: 1, phase: 'afternoon' });
   await expect(page.locator('.explore-phase')).toHaveText('Afternoon');
 });
+
+test('waiting at the porch until midday brings Dorin and his drill to the riverside', async ({
+  page,
+}) => {
+  await resetStorage(page, '?renderer=canvas');
+  await page.getByRole('button', { name: 'Explore the riverside', exact: true }).click();
+  await openActivities(page);
+  await expect(page.getByRole('button', { name: "Dorin's drill", exact: true })).toHaveCount(0);
+  await page.evaluate(() => window.fnt!.app.dispatch({ type: 'walkTo', pos: { x: 8, y: 18 } }));
+  await waitForIdle(page);
+  await openActivities(page);
+  await page.getByRole('button', { name: 'Wait until…', exact: true }).click();
+  await page.getByRole('dialog').locator('.choice-option').filter({ hasText: 'Midday' }).click();
+  expect(await clock(page)).toEqual({ day: 2, phase: 'midday' });
+  // The opening line follows the phase.
+  await expect(page.locator('.village-note')).toContainText('Midday by the river.');
+  await openActivities(page);
+  await expect(page.getByRole('button', { name: "Dorin's drill", exact: true })).toBeVisible();
+});

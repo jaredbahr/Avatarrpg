@@ -34,7 +34,9 @@ export class VillageLife {
   private pending: Visit | null = null;
   private teaStarted: number | null = null;
   private message: HTMLElement | null = null;
-  private messageText: string;
+  private messageText = '';
+  /** Until something else is said, the note is the opening line for the phase. */
+  private opening = true;
   private controls: HTMLButtonElement[] = [];
   private petUntil = 0;
   /** When each resident last greeted the party, and who is near it now. */
@@ -52,8 +54,6 @@ export class VillageLife {
     host: HTMLElement,
   ) {
     this.stage = new VillageLayer(host);
-    const phase = app.state?.world.clock.phase ?? 'afternoon';
-    this.messageText = `${phaseLabel(phase)} by the river. Tap the ground to walk; drag to look around.`;
   }
   destroy(): void {
     this.stage.destroy();
@@ -70,12 +70,15 @@ export class VillageLife {
     this.say('Tap the ground to walk, or choose another activity.');
   }
   private say(text: string): void {
+    this.opening = false;
     this.messageText = text;
     if (this.message) this.message.textContent = text;
   }
   renderControls(host: HTMLElement, camera: Camera): void {
     this.controls = [];
     const state = this.app.state;
+    if (this.opening && state)
+      this.messageText = `${phaseLabel(state.world.clock.phase)} by the river. Tap the ground to walk; drag to look around.`;
     this.dorinAtDrill = Boolean(
       state &&
       resolveResidents(this.app.content, state).placements.some(
