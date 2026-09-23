@@ -200,7 +200,8 @@ export class PixiBackend implements RenderBackend {
   private decorSprites = new Map<string, Sprite>();
   private decor = new DecorSheets();
   private decorPx = 0;
-  private decorMode: 'full' | 'seams' = 'full';
+  /** The mode and seam readiness the decor chunks were baked for. */
+  private decorMode = '';
   private elevationBasePx = 0;
   /** Edge shading along the board's four sides and the vignette over the view. */
   private shadeLayer = new Container();
@@ -503,7 +504,7 @@ export class PixiBackend implements RenderBackend {
       : !painted || view.crispOverlays
         ? 'full'
         : 'none';
-    this.syncDecor(view, camera, decorMode);
+    this.syncDecor(view, camera, decorMode, painted);
     this.syncShade(view, camera, scenePainted);
     this.drawOverlays(view);
     this.drawPath(view);
@@ -828,12 +829,20 @@ export class PixiBackend implements RenderBackend {
     }
   }
 
-  private syncDecor(view: MapView, camera: Camera, mode: 'none' | 'full' | 'seams'): void {
+  private syncDecor(
+    view: MapView,
+    camera: Camera,
+    mode: 'none' | 'full' | 'seams',
+    ready: boolean,
+  ): void {
     this.decorLayer.visible = mode !== 'none';
     if (mode === 'none') return;
     const grid = view.grid;
-    const changed = this.syncDecorGrid(grid) || this.decorMode !== mode;
-    this.decorMode = mode;
+    // A seams bake drops the cells whose art is painted, and the accessibility
+    // overlays bring their joins back, so both key the chunks as the mode does.
+    const bake = `${mode}|${ready && !view.hatch ? 1 : 0}`;
+    const changed = this.syncDecorGrid(grid) || this.decorMode !== bake;
+    this.decorMode = bake;
     const px = this.spritePx(camera);
     if (!changed && px === this.decorPx) return;
     this.decorPx = px;
@@ -850,7 +859,7 @@ export class PixiBackend implements RenderBackend {
           this.decorLayer.addChild(sprite);
           this.decorSprites.set(key, sprite);
         }
-        sprite.texture = this.texture(this.decor.get(grid, cx, cy, px, mode));
+        sprite.texture = this.texture(this.decor.get(grid, cx, cy, px, mode, view, ready));
         sprite.position.set(cx * DECOR_CHUNK * TILE, cy * DECOR_CHUNK * TILE);
         sprite.width = DECOR_CHUNK * TILE;
         sprite.height = DECOR_CHUNK * TILE;

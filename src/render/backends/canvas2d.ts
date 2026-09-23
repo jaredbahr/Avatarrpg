@@ -193,7 +193,7 @@ export class Canvas2DBackend implements RenderBackend {
         // A complete partial scene owns its local ground art; accessibility
         // and unavailable pieces still need all procedural rule markers.
         if (!sceneGround || view.crispOverlays) this.drawDecor(view, ground);
-        else this.drawSeams(view, ground);
+        else this.drawSeams(view, ground, sceneGround);
         this.drawOverlays(view, ground);
         this.drawPath(view, ground);
         if (view.aimArc) this.drawAimArc(view.aimArc, ground);
@@ -372,7 +372,7 @@ export class Canvas2DBackend implements RenderBackend {
    * This pass draws only the joins, from the rules grid, so the road still
    * ends under grass and the pond keeps its bank over the picture.
    */
-  private drawSeams(view: MapView, camera: Camera): void {
+  private drawSeams(view: MapView, camera: Camera, ready: boolean): void {
     const { ctx } = this;
     const signature = decorSignature(view.grid);
     if (signature !== this.reliefSignature) {
@@ -386,6 +386,7 @@ export class Canvas2DBackend implements RenderBackend {
         const tile = view.grid.tiles[index];
         if (!tile) continue;
         const pos = { x, y };
+        if (surfaceIsPainted(view, ready, tile, pos)) continue;
         paintTileSeams(
           ctx,
           camera.toScreen(pos),
