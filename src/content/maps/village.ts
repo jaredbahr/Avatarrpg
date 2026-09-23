@@ -60,7 +60,8 @@ export const BA_DAN_VILLAGE: MapDef = {
       id: 'riverside_sign',
       name: 'Riverside path',
       pos: { x: 18, y: 12 },
-      sprite: 'npc.kid',
+      // A marker post, not Pella's figure: she is a resident placed elsewhere.
+      sprite: 'world.route_sign',
       interaction: 'route-sign',
       node: 'riverside_invitation',
     },

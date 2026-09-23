@@ -301,6 +301,25 @@ suite('Ba Dan residents: guards, supervision and the five missing', () => {
         expect(excluded.has(p.id), `${name}, ${phase}`).toBe(false);
     });
   });
+
+  it('lets no plain village NPC wear a resident’s figure or speak in a resident’s name (W7)', () => {
+    // The riverside sign drew Pella's figure and spoke as her, so a second
+    // Pella stood at the lane while she was at the court.
+    const village = CONTENT.maps.get(VILLAGE);
+    const bound = village?.npcs.filter((npc) => npc.resident) ?? [];
+    const figures = new Set(bound.map((npc) => npc.sprite));
+    const names = [...CONTENT.residents.values()].map((resident) => resident.name);
+    const plain = village?.npcs.filter((npc) => !npc.resident) ?? [];
+    expect(plain.map((npc) => npc.id)).toContain('riverside_sign');
+    for (const npc of plain) {
+      expect(figures.has(npc.sprite), npc.id).toBe(false);
+      for (const id of [npc.node, ...(npc.routes ?? []).map((route) => route.node)]) {
+        const node = CONTENT.story.get(id);
+        const speaker = node && 'speaker' in node ? node.speaker : '';
+        for (const name of names) expect(speaker, `${npc.id} → ${id}`).not.toContain(name);
+      }
+    }
+  });
 });
 
 suite('Ba Dan residents: anchor tiles (W5c)', () => {

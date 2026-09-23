@@ -4,13 +4,15 @@ const rescued: Condition = { kind: 'flag', key: 'act1_complete', op: 'set' };
 
 export const RIVERSIDE_STORY: readonly StoryNode[] = [
   {
+    // A sign, not Pella (ADR 0047 W7): she is placed elsewhere, often at the
+    // court beside it. Her chalk keeps her contest and her invitation.
     id: 'riverside_invitation',
     kind: 'dialogue',
-    speaker: 'Pella',
-    portrait: 'portrait.pella',
+    speaker: 'Riverside path',
+    portrait: 'portrait.narrator',
     lines: [
-      'I got six skips from one stone. Dorin only got three, but his went further.',
-      'We are still arguing about who won. Come down to the river and look.',
+      '“To the river.” An arrow points down the path.',
+      'Underneath, in careful chalk: “SIX SKIPS FROM ONE STONE. DORIN GOT THREE BUT HIS WENT FURTHER. STILL ARGUING WHO WON. COME AND LOOK. — PELLA”',
     ],
     next: 'riverside_explore',
   },

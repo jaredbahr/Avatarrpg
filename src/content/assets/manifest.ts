@@ -320,6 +320,8 @@ export const ASSETS: Readonly<Record<string, AssetEntry>> = {
   'npc.household': painter('villager', 'earth'),
   // Until A1's notice art: a marker stone.
   'world.school_notice': painter('discovery', 'neutral', 'marker'),
+  // The village's riverside path sign, until it has sign art of its own.
+  'world.route_sign': painter('discovery', 'neutral', 'marker'),
 
   /* --------------------------------------------------------------- Props */
   'prop.barrel': { kind: 'image', url: 'art/props/barrel.png', palette: 'water' },
