@@ -480,6 +480,47 @@ yet: on the village they are `NpcMarker`s, which are W8's, and drawing them need
 the party treats an observe-only figure's tile (rules paths and settle ignore it today). The
 riverside, the only stage VillageLife draws, has no role placements in Slice A.
 
+**Amendment (W8, 2026-09-23): how residents walk, and what a role's tile is.** §7 stands, with
+these decisions and departures.
+
+- **Its own clock.** The planner (`src/app/world/residentMotion.ts`) is played by
+  `ResidentWalks`, held on the App so a conversation in its own scene does not forget where
+  people were drawn. Each walk is a `partyWalked` on a private `Animator`, so it has the party's
+  280 ms a tile, ramps, bob and facing and no footsteps, but it is not an `alongside` track on
+  the app's animator: a resident walking never makes the party wait, never blocks a tap and never
+  holds `waitForIdle`. A load, a new game and the preview place everyone directly; a new map
+  does too.
+- **Blocked routes.** A route round the party and the other people is tried, then one through the
+  party. If both fail the resident fades out where they stand and fades in on their tile (320 ms
+  each). This replaces "wait on the nearest reachable tile and re-plan": a figure drawn off its
+  rules tile would need its own tap target. It is the only fade away from a door or an exit, and
+  shipped content has no such route; a walled-verge fixture proves it.
+- **Where people come from.** A private anchor's door on this map, else the exit toward the map
+  they are on. A role with `accompanies` uses its resident's home door; anyone else placed nowhere
+  uses the nearest exit (the relief watch comes and goes by the east road).
+- **The freeze.** The clock stands still while a conversation, a menu or a hidden tab is up, and
+  no plan is made until the conversation ends, so a pinned speaker never moves. Anyone mid-walk
+  when a conversation opens (possible only through a trigger or a flag) holds mid-stride until
+  it ends.
+- **Taps.** A tap hit-tests the drawn figures (upright bounds over the drawn feet, front-most
+  first) and walks to that person's rules tile. A tap on someone still walking targets where they
+  are going, and the party's walk is held as the next walk ("Next: …") until they arrive; every
+  other route to them (a ground tap on their tile, Talk, Look around, the map) goes through the
+  same hold, so no conversation opens with the speaker mid-stride. Someone walking off the map
+  has no tile; a tap on them is a ground tap.
+- **Background roles.** Both roles are drawn from placements as markers with no talk pip. The
+  party treats a role's tile as a person's: a walk to it stops beside it and opens nothing, an
+  approach to someone else never ends on it, settle never leaves the leader on it, and the
+  followers are never seated there. The midday relief watch therefore stands at the gate before
+  victory. Like Dorin on the same post, the watch is under the verge tree's canopy, which fades
+  only when the party is within three tiles.
+- **Art.** Until P2/P3, a resident's PNG slides at the party's pace with its bob, a contact shadow
+  that stays on the ground under the bob, a facing that follows the walk, and a small rock onto
+  each foot (as big as the bob, a step a tile). A painted placeholder (the relief watch, the
+  household adult, Hanru) strides with the rig's two walk drawings instead; the riverside's
+  villagers stride with their procedural walk. `via` is honoured; ambient `loop`s are not played,
+  since no content declares one.
+
 ### 9. Consistency with Jared's later decisions
 
 - **One streamed world:** placements derived, anchors are stable ids with a `mapId`, the clock is
