@@ -52,6 +52,21 @@ function refuse(state: GameState, text: string): StepResult {
   return { state, events: [{ type: 'message', text }] };
 }
 
+/**
+ * Formats `result`'s events into the log the same way `handleWait` does,
+ * appending onto `base.log`. For explore/dialogue commands only — a
+ * battle-turn command's events log through `finish` or
+ * `handleResolveBattle` instead, which pass the mid-battle (or
+ * just-concluded) roster `describeEvent` needs to resolve unit names; battle
+ * is always null on every path that calls this.
+ */
+function withLog(content: ContentIndex, base: GameState, result: StepResult): StepResult {
+  return {
+    state: { ...result.state, log: appendLog(content, null, base.log, result.events) },
+    events: result.events,
+  };
+}
+
 function finish(
   content: ContentIndex,
   state: GameState,
@@ -383,7 +398,11 @@ function handleWalkTo(content: ContentIndex, state: GameState, pos: Vec2): StepR
       const walked = step.state;
       const target = npcNode(content, walked, map.id, npc.id);
       if (!target) return refuse(walked, 'They have nothing to say.');
-      const entered = pinIfDialogue(map, npc, enterStoryNode(content, walked, target));
+      const entered = withLog(
+        content,
+        walked,
+        pinIfDialogue(map, npc, enterStoryNode(content, walked, target)),
+      );
       return {
         state: entered.state,
         events: [...step.events, ...entered.events],
@@ -391,7 +410,7 @@ function handleWalkTo(content: ContentIndex, state: GameState, pos: Vec2): StepR
     }
     const target = npcNode(content, state, map.id, npc.id);
     if (!target) return refuse(state, 'They have nothing to say.');
-    return pinIfDialogue(map, npc, enterStoryNode(content, state, target));
+    return withLog(content, state, pinIfDialogue(map, npc, enterStoryNode(content, state, target)));
   }
 
   const grid = buildExploreGrid(content, state);
@@ -426,7 +445,7 @@ function handleWalkTo(content: ContentIndex, state: GameState, pos: Vec2): StepR
         fired: [...new Set([...state.world.fired, triggerKey(map, trigger)])],
       },
     };
-    const entered = enterStoryNode(content, stopped, trigger.node);
+    const entered = withLog(content, stopped, enterStoryNode(content, stopped, trigger.node));
     return {
       state: entered.state,
       events: [...partyWalked(state, route.path.slice(0, index + 1)), ...entered.events],
@@ -466,7 +485,7 @@ function handleWalkTo(content: ContentIndex, state: GameState, pos: Vec2): StepR
   if (!map.exits?.length && map.exit && samePos(map.exit.pos, pos)) {
     const node = currentNode(content, moved);
     if (node?.kind === 'explore') {
-      const entered = enterStoryNode(content, moved, node.next);
+      const entered = withLog(content, moved, enterStoryNode(content, moved, node.next));
       return { state: entered.state, events: [...walk, ...entered.events] };
     }
   }
@@ -707,19 +726,20 @@ function handleChooseDiscipline(
 function applyCommand(content: ContentIndex, state: GameState, command: Command): StepResult {
   switch (command.type) {
     case 'enterNode':
-      return enterStoryNode(content, state, command.nodeId);
+      return withLog(content, state, enterStoryNode(content, state, command.nodeId));
 
     case 'advanceDialogue': {
       const node = currentNode(content, state);
-      if (node?.kind === 'dialogue') return advanceDialogue(content, state);
+      if (node?.kind === 'dialogue')
+        return withLog(content, state, advanceDialogue(content, state));
       // Leaving a conversation that ends nowhere returns to the explore map.
       const fallback = exploreNodeFor(content, state.location.mapId);
-      if (fallback) return enterStoryNode(content, state, fallback);
+      if (fallback) return withLog(content, state, enterStoryNode(content, state, fallback));
       return { state, events: [] };
     }
 
     case 'chooseOption':
-      return chooseOption(content, state, command.optionIndex);
+      return withLog(content, state, chooseOption(content, state, command.optionIndex));
 
     case 'walkTo':
       return handleWalkTo(content, state, command.pos);
@@ -729,7 +749,7 @@ function applyCommand(content: ContentIndex, state: GameState, command: Command)
         (n) => n.kind === 'battle' && n.encounterId === command.encounterId,
       );
       if (!node) return refuse(state, `No story node runs encounter "${command.encounterId}".`);
-      return enterStoryNode(content, state, node.id);
+      return withLog(content, state, enterStoryNode(content, state, node.id));
     }
 
     case 'move':

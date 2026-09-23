@@ -9,6 +9,7 @@
 
 import { describe as suite, expect, it } from 'vitest';
 import { CONTENT } from '../../content';
+import { apply } from '../state/reducer';
 import { createGame } from '../state/createGame';
 import type { DayPhase, GameState } from '../types';
 import { enterStoryNode } from './storyEngine';
@@ -50,5 +51,14 @@ suite('an authored phase node', () => {
     const second = enterStoryNode(CONTENT, first.state, 'act1_victory');
     expect(second.state.world.clock).toEqual({ day: 1, phase: 'evening' });
     expect(second.events.filter((event) => event.type === 'phaseChanged')).toEqual([]);
+  });
+
+  it('logs "Evening falls." through the enterNode command, the same as wait does', () => {
+    // enterStoryNode() alone (above) never touches state.log - only the
+    // reducer's `apply()` formats events into it. Every path that can reach
+    // an authored phase node (a direct enterNode, a dialogue choice, a
+    // walked trigger or exit, or a battle's story chain) must log it.
+    const result = apply(CONTENT, game('midday'), { type: 'enterNode', nodeId: 'act1_victory' });
+    expect(result.state.log).toContain('Evening falls.');
   });
 });
