@@ -401,13 +401,19 @@ for (const renderer of ['canvas', 'webgl'] as const) {
     await page.waitForTimeout(250);
     const wet = (await samples(page, { raised })).raised;
     // Real water's cool tint must be visible over the existing raised-base
-    // sample; a hidden surface leaves this identical to `bare`.
+    // sample; a hidden surface leaves this identical to `bare`. Measured as a
+    // cool shift rather than an absolute green rise: the shelf top is the
+    // ground contract's warm packed earth (`FOREST_PIECE_TONES.trodden`, base
+    // `#b39064`, ~179,148,101 on screen), already greener than the water
+    // fill's g=143, so no film can raise green over it.
     expect(wet.b - bare.b, `water blue shift: ${JSON.stringify({ bare, wet })}`).toBeGreaterThan(
       12,
     );
-    expect(wet.g - bare.g, `water green shift: ${JSON.stringify({ bare, wet })}`).toBeGreaterThan(
-      10,
-    );
+    expect(wet.r, `water red drop: ${JSON.stringify({ bare, wet })}`).toBeLessThan(bare.r - 12);
+    expect(
+      wet.b - wet.r - (bare.b - bare.r),
+      `water cool-shift gap: ${JSON.stringify({ bare, wet })}`,
+    ).toBeGreaterThan(25);
 
     await setBattleWater(page, raised, false);
     await expect
