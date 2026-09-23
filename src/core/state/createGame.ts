@@ -38,8 +38,8 @@ import {
 } from '../rules/leveling';
 import { rollInitiative } from '../rules/turnOrder';
 
-/** 2 added `Unit.disciplineId` and widened `PendingChoice`. */
-export const SAVE_VERSION = 3;
+/** 2 added `Unit.disciplineId` and widened `PendingChoice`. 4 added `world.clock` and `world.talk` (ADR 0047). */
+export const SAVE_VERSION = 4;
 
 export interface PartySlot {
   readonly characterId: string;
@@ -170,7 +170,13 @@ export function createGame(content: ContentIndex, options: NewGameOptions): Game
     flags: { ...(options.flags ?? {}) },
     pendingChoices: [],
     location: { mapId: '', pos: { x: 0, y: 0 } },
-    world: { returnPos: {}, fired: [], cleared: [] },
+    world: {
+      returnPos: {},
+      fired: [],
+      cleared: [],
+      clock: { day: 1, phase: 'midday' },
+      talk: null,
+    },
     log: [],
   };
 }

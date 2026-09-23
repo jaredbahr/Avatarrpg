@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { CONTENT } from '../../content';
 import { buildGrid, findPath } from '../rules/grid';
 import { activeTriggers } from '../story/world';
-import { createGame } from './createGame';
+import { SAVE_VERSION, createGame } from './createGame';
 import { apply } from './reducer';
 import { deserialize, serialize, stateFromBlob } from '../save/serialize';
 import type { GameState, Vec2 } from '../types';
@@ -110,7 +110,7 @@ describe('connected world traversal', () => {
     const result = deserialize(JSON.stringify(old));
     if (!result.ok) throw new Error(result.error);
     const restored = stateFromBlob(result.blob);
-    expect(restored.version).toBe(3);
+    expect(restored.version).toBe(SAVE_VERSION);
     const map = CONTENT.maps.get('forest_road');
     if (!map) throw new Error('Missing forest');
     expect(activeTriggers(map, restored)).toEqual([]);

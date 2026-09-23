@@ -930,6 +930,8 @@ export interface PendingChoice {
 
 export type Screen = 'title' | 'setup' | 'explore' | 'dialogue' | 'combat' | 'ended';
 
+export type DayPhase = 'dawn' | 'morning' | 'midday' | 'afternoon' | 'evening' | 'night';
+
 export interface GameState {
   /** Bumped when the save shape changes; `core/save` migrates on load. */
   readonly version: number;
@@ -947,6 +949,14 @@ export interface GameState {
     readonly returnPos: Readonly<Record<string, Vec2>>;
     readonly fired: readonly string[];
     readonly cleared: readonly string[];
+    /** One clock for the whole world (ADR 0047 §1). */
+    readonly clock: { readonly day: number; readonly phase: DayPhase };
+    /** The conversation pin (ADR 0047 §4); null when nobody is pinned. */
+    readonly talk: {
+      readonly npcId: string;
+      readonly mapId: string;
+      readonly anchor: string;
+    } | null;
   };
   /** Human-readable combat log, newest last. Capped by the reducer. */
   readonly log: readonly string[];
