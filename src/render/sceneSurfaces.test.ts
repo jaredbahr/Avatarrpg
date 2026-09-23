@@ -2,7 +2,7 @@ import { expect, it } from 'vitest';
 import { FOREST_ROAD } from '../content/maps/combat';
 import { BA_DAN_VILLAGE } from '../content/maps/village';
 import { buildGrid, tileAt } from '../core/rules/grid';
-import { surfaceIsPainted } from './sceneSurfaces';
+import { surfaceIsPainted, surfaceIsSeated } from './sceneSurfaces';
 
 it('replaces only registered permanent rubble and restores all dynamic/accessibility/fallback overlays', () => {
   const pos = { x: 7, y: 3 };
@@ -44,6 +44,50 @@ it('keeps Ba Dan permanent water painted only in legacy complete mode', () => {
       view,
       true,
       { ...tile, surface: { id: 'water', duration: 3, spread: 0 } },
+      pos,
+    ),
+  ).toBe(false);
+});
+
+it('seats only registered permanent rubble in a partial scene, never a plain overlay', () => {
+  const pos = { x: 7, y: 3 };
+  const tile = tileAt(buildGrid(FOREST_ROAD), pos);
+  const scene = FOREST_ROAD.scene;
+  if (!tile || !scene) throw new Error('Missing authored cover');
+  const view = { scene, hatch: false, crispOverlays: false };
+  // Forest Road's heaps keep a live wash (not painted over) but a seated one.
+  expect(surfaceIsSeated(view, true, tile, pos)).toBe(true);
+  expect(surfaceIsPainted(view, true, tile, pos)).toBe(false);
+  // Missing art, hatch and high contrast get the full wash and its bank back.
+  expect(surfaceIsSeated(view, false, tile, pos)).toBe(false);
+  expect(surfaceIsSeated({ ...view, hatch: true }, true, tile, pos)).toBe(false);
+  expect(surfaceIsSeated({ ...view, crispOverlays: true }, true, tile, pos)).toBe(false);
+  // A complete scene paints the heap instead; an unregistered cell has no heap.
+  const complete = { ...view, scene: { ...scene, groundMode: undefined } };
+  expect(surfaceIsSeated(complete, true, tile, pos)).toBe(false);
+  expect(surfaceIsSeated(view, true, tile, { x: 6, y: 3 })).toBe(false);
+  // Ability rubble, spreading rubble and any other material keep their bank.
+  expect(
+    surfaceIsSeated(
+      view,
+      true,
+      { ...tile, surface: { id: 'rubble', duration: 3, spread: 0 } },
+      pos,
+    ),
+  ).toBe(false);
+  expect(
+    surfaceIsSeated(
+      view,
+      true,
+      { ...tile, surface: { id: 'rubble', duration: -1, spread: 1 } },
+      pos,
+    ),
+  ).toBe(false);
+  expect(
+    surfaceIsSeated(
+      view,
+      true,
+      { ...tile, surface: { id: 'water', duration: -1, spread: 0 } },
       pos,
     ),
   ).toBe(false);

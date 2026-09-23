@@ -156,4 +156,63 @@ describe('surface material painting', () => {
     expect(banked.filter((tone) => tone === SURFACE_STYLES.rubble.edge)).toHaveLength(4);
     expect(banked.filter((tone) => tone === RUBBLE_CHIP)).toHaveLength(chips.length);
   });
+
+  it('seats rubble on its heap art: no bank, no ruled fill, chips under the pile', () => {
+    const ops: { op: string; args: readonly unknown[]; stroke: string }[] = [];
+    const stops: unknown[][] = [];
+    let strokeStyle = '';
+    const ctx = new Proxy(
+      {},
+      {
+        get: (_target, op: string) =>
+          op === 'strokeStyle'
+            ? strokeStyle
+            : op === 'createRadialGradient'
+              ? (...args: unknown[]) => {
+                  ops.push({ op, args, stroke: strokeStyle });
+                  return { addColorStop: (...stop: unknown[]) => void stops.push(stop) };
+                }
+              : (...args: unknown[]) => void ops.push({ op, args, stroke: strokeStyle }),
+        set: (_target, op: string, value: unknown) => {
+          if (op === 'strokeStyle') strokeStyle = String(value);
+          return true;
+        },
+      },
+    );
+    paintSurface(
+      ctx as unknown as Ctx,
+      BOX,
+      surface('rubble', -1),
+      { x: 7, y: 3 },
+      false,
+      SHORE,
+      true,
+    );
+
+    // Nothing is stroked in the ink: the bank is what drew the cell's diamond.
+    const strokes = ops.filter((call) => call.op === 'stroke');
+    expect(strokes.length).toBeGreaterThan(0);
+    for (const call of strokes) expect(call.stroke).toBe(RUBBLE_CHIP);
+    // The wash is a centred falloff that has gone before the middle of any edge.
+    const [gradient] = ops.filter((call) => call.op === 'createRadialGradient');
+    const [cx, cy, inner, , , outer] = (gradient?.args ?? []) as number[];
+    expect([cx, cy]).toEqual([BOX.x + BOX.size / 2, BOX.y + BOX.size / 2]);
+    expect(inner!).toBeGreaterThan(0);
+    expect(outer!).toBeLessThan(BOX.size / 2);
+    expect(stops).toEqual([
+      [0, SURFACE_STYLES.rubble.fill],
+      [1, `${SURFACE_STYLES.rubble.fill}00`],
+    ]);
+    // Two coats, as the plain wash lays, so the pile's centre is unchanged.
+    expect(ops.filter((call) => call.op === 'fillRect')).toHaveLength(2);
+    expect(ops.some((call) => call.op === 'fill')).toBe(false);
+    // Chips stay in the middle of the cell; near its edge they read as rivets.
+    for (const call of ops.filter((c) => c.op === 'moveTo' || c.op === 'lineTo')) {
+      const [x, y] = call.args as number[];
+      expect(x!).toBeGreaterThan(BOX.x + BOX.size * 0.25);
+      expect(x!).toBeLessThan(BOX.x + BOX.size * 0.75);
+      expect(y!).toBeGreaterThan(BOX.y + BOX.size * 0.25);
+      expect(y!).toBeLessThan(BOX.y + BOX.size * 0.75);
+    }
+  });
 });

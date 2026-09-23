@@ -1,5 +1,5 @@
 import { RUBBLE_CHIP, SURFACE_STYLES, WATER_BED } from '../palettes';
-import { SURFACE_BANK, SURFACE_POOL, SURFACE_RIM } from '../surfaceRendering';
+import { SURFACE_BANK, SURFACE_POOL, SURFACE_RIM, SURFACE_SEAT } from '../surfaceRendering';
 
 const glslColor = (hex: string): string =>
   `vec3(${[1, 3, 5].map((offset) => (parseInt(hex.slice(offset, offset + 2), 16) / 255).toFixed(5)).join(', ')})`;
@@ -22,7 +22,7 @@ const MATERIAL_STYLES = (['ice', 'mud', 'oil', 'rubble'] as const)
  * blue the surface intensity. The shader does the rest, which is why fire
  * animates and water ripples without the CPU touching a tile.
  *
- * Indices here must match TERRAIN_INDEX and SURFACE_INDEX in `pixi.ts`.
+ * Indices here must match TERRAIN_INDEX, SURFACE_INDEX and SEATED_RUBBLE in `pixi.ts`.
  */
 
 /**
@@ -124,7 +124,7 @@ ${TERRAIN_COLORS}
 int surfaceAt(vec2 cell) {
   if (cell.x < 0.0 || cell.y < 0.0 || cell.x >= uGrid.x || cell.y >= uGrid.y) return -1;
   int packed = int(texture(uMap, (cell + 0.5) / uGrid).r * 255.0 + 0.5);
-  return packed - (packed / 8) * 8;
+  return packed - (packed / 16) * 16;
 }
 
 /*
@@ -185,16 +185,13 @@ void main(void) {
     return;
   }
 
-  /*
-   * Terrain and surface share the red channel (terrain * 8 + surface) so that
-   * blue can carry precomputed firelight and alpha can stay at 255 — a canvas
-   * with partial alpha is premultiplied on upload, which would corrupt the
-   * other channels.
-   */
+  ${/* Terrain and surface share the red channel (terrain * 16 + surface) so that blue can carry precomputed firelight and alpha can stay at 255: a canvas with partial alpha is premultiplied on upload, which would corrupt the other channels. Surface 8 is rubble seated on its heap art, drawn as rubble without a bank. */ ''}
   vec4 data = texture(uMap, (cell + 0.5) / uGrid);
   int packed = int(data.r * 255.0 + 0.5);
-  int terrain = packed / 8;
-  int surface = packed - terrain * 8;
+  int terrain = packed / 16;
+  int surface = packed - terrain * 16;
+  bool seated = surface == 8;
+  if (seated) surface = 7;
   float intensity = data.g;
   float firelight = data.b;
 
@@ -250,7 +247,7 @@ void main(void) {
    */
   float edgeDistance = 1.0;
   float wash = 1.0;
-  if (opacity > 0.0) {
+  if (opacity > 0.0 && !seated) {
     if (surfaceAt(cell - vec2(0.0, 1.0)) != surface) edgeDistance = min(edgeDistance, f.y);
     if (surfaceAt(cell + vec2(0.0, 1.0)) != surface) edgeDistance = min(edgeDistance, 1.0 - f.y);
     if (surfaceAt(cell - vec2(1.0, 0.0)) != surface) edgeDistance = min(edgeDistance, f.x);
@@ -321,8 +318,14 @@ void main(void) {
     lay(acc, mix(rim, vec3(0.68, 0.68, 0.56), 0.35), glint * 0.25 * intensity);
   } else if (surface == 7) {          // rubble
     float chunk = vnoise(w * 11.0);
+    ${/* Seated (surfaceIsSeated): the interior's strength under the pile, gone inside the cell. edgeDistance stays 1.0, so no bank. */ ''}
+    float seat = 1.0;
+    if (seated) {
+      seat = clamp((${SURFACE_SEAT.outer} - length(f - 0.5) * 2.0) / ${(SURFACE_SEAT.outer - SURFACE_SEAT.inner).toFixed(2)}, 0.0, 1.0);
+      wash = ${(SURFACE_RIM.coat.base + SURFACE_RIM.coat.interior).toFixed(2)} * seat;
+    }
     lay(acc, tint, opacity * wash * intensity);
-    lay(acc, ${glslColor(RUBBLE_CHIP)}, smoothstep(0.74, 0.87, chunk) * 0.28 * intensity);
+    lay(acc, ${glslColor(RUBBLE_CHIP)}, smoothstep(0.74, 0.87, chunk) * 0.28 * seat * intensity);
   }
 
   if (opacity > 0.0) {

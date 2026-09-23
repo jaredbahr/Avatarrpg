@@ -16,6 +16,7 @@ import {
   SURFACE_BANK,
   SURFACE_POOL,
   SURFACE_RIM,
+  SURFACE_SEAT,
   surfaceIntensity,
   surfaceOutline,
   surfaceRim,
@@ -98,6 +99,7 @@ export function paintSurface(
   pos: Vec2,
   hatch: boolean,
   edges: Edges,
+  seated = false,
 ): void {
   if (!tile.surface) return;
   const style = SURFACE_STYLES[tile.surface.id];
@@ -110,26 +112,50 @@ export function paintSurface(
   const intensity = surfaceIntensity(tile.surface.duration);
   const material = tile.surface.id;
   const water = material === 'water';
-  const rims = surfaceRim(pos, edges);
-  /*
-   * Water lies on the ground as a film, so it lays a lighter first coat with a
-   * firmer interior over it rather than one flat fill: the wash still covers
-   * every water cell, but the pool stops ending on a clipped straight edge.
-   */
-  ctx.globalAlpha = style.alpha * intensity * (water ? 0.6 : SURFACE_RIM.coat.base);
-  ctx.fillStyle = style.fill;
-  // Snapped to whole pixels rather than overlapped by one: a translucent
-  // fill that overlaps its neighbour shows the seam as a darker line.
-  const x0 = Math.round(box.x);
-  const y0 = Math.round(box.y);
-  ctx.fillRect(x0, y0, Math.round(box.x + s) - x0, Math.round(box.y + s) - y0);
+  const rims = seated ? [] : surfaceRim(pos, edges);
+  if (seated) {
+    /*
+     * Rubble seated on its own heap art (`surfaceIsSeated`): the same two coats
+     * at full strength under the pile, fading to nothing inside the cell, and
+     * no bank. The heap marks the cell; a wash to its edges drew the diamond.
+     */
+    const c = s / 2;
+    const seat = ctx.createRadialGradient(
+      box.x + c,
+      box.y + c,
+      c * SURFACE_SEAT.inner,
+      box.x + c,
+      box.y + c,
+      c * SURFACE_SEAT.outer,
+    );
+    seat.addColorStop(0, style.fill);
+    seat.addColorStop(1, `${style.fill}00`);
+    ctx.fillStyle = seat;
+    for (const coat of [SURFACE_RIM.coat.base, SURFACE_RIM.coat.interior]) {
+      ctx.globalAlpha = style.alpha * intensity * coat;
+      ctx.fillRect(box.x, box.y, s, s);
+    }
+  } else {
+    /*
+     * Water lies on the ground as a film, so it lays a lighter first coat with
+     * a firmer interior over it rather than one flat fill: the wash still
+     * covers every water cell, but the pool stops ending on a clipped edge.
+     */
+    ctx.globalAlpha = style.alpha * intensity * (water ? 0.6 : SURFACE_RIM.coat.base);
+    ctx.fillStyle = style.fill;
+    // Snapped to whole pixels rather than overlapped by one: a translucent
+    // fill that overlaps its neighbour shows the seam as a darker line.
+    const x0 = Math.round(box.x);
+    const y0 = Math.round(box.y);
+    ctx.fillRect(x0, y0, Math.round(box.x + s) - x0, Math.round(box.y + s) - y0);
+  }
   /*
    * A material that ends on dry ground carries its full strength inside a
    * ragged outline and thins over the last few percent of the tile, so the
    * boundary is a fade rather than the square the rules happen to use. The
    * thin coat underneath still covers every hazard tile.
    */
-  if (!water) {
+  if (!water && !seated) {
     ctx.globalAlpha = style.alpha * intensity * SURFACE_RIM.coat.interior;
     path(ctx, surfaceOutline(pos, edges), box);
     ctx.fill();
@@ -211,9 +237,11 @@ export function paintSurface(
   ) {
     ctx.globalAlpha = (material === 'ice' ? 0.38 : water ? 0.12 : 0.24) * intensity;
     ctx.lineWidth = Math.max(1, s * (water ? 0.012 : 0.013));
+    // Seated chips stay under the pile: near the cell's edge they read as rivets.
+    const [from, span] = seated ? [0.3, 0.4] : [0.12, 0.7];
     for (let i = 0; i < (water ? 1 : 3); i++) {
-      const x = box.x + (0.12 + tileNoise(pos.x, pos.y, i * 3 + 1) * 0.7) * s;
-      const y = box.y + (0.12 + tileNoise(pos.x, pos.y, i * 3 + 2) * 0.7) * s;
+      const x = box.x + (from + tileNoise(pos.x, pos.y, i * 3 + 1) * span) * s;
+      const y = box.y + (from + tileNoise(pos.x, pos.y, i * 3 + 2) * span) * s;
       ctx.beginPath();
       if (material === 'ice') {
         ctx.moveTo(x - s * 0.08, y + s * 0.11);

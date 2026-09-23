@@ -27,7 +27,7 @@ import { sampleAt, smoothPath } from '../geometry/curve';
 import { CanvasFxLayer } from '../fx/canvasFx';
 import { backdrops } from '../backdrops';
 import { sceneForGrid, sceneImage, drawSceneImage, sceneryOpacities } from '../scene';
-import { surfaceIsPainted } from '../sceneSurfaces';
+import { surfaceIsPainted, surfaceIsSeated } from '../sceneSurfaces';
 import { FACTION_RING, OVERLAY, STATUS_BADGE, hpColor } from '../palettes';
 import { paintElevationBase, paintTileDecor, paintTileSeams } from '../painters/board';
 import { paintFloatingNumber, paintPathArrow, paintPathDot } from '../painters/fx';
@@ -189,7 +189,8 @@ export class Canvas2DBackend implements RenderBackend {
         }
         ctx.save();
         ctx.transform(m.a, m.b, m.c, m.d, m.tx, m.ty);
-        this.drawGround(view, ground, false, false, true);
+        // Terrain is already down, so readiness here only seats rubble on its heap art.
+        this.drawGround(view, ground, sceneGround, false, true);
         // A complete partial scene owns its local ground art; accessibility
         // and unavailable pieces still need all procedural rule markers.
         if (!sceneGround || view.crispOverlays) this.drawDecor(view, ground);
@@ -321,7 +322,15 @@ export class Canvas2DBackend implements RenderBackend {
         const box = camera.toScreen(pos);
         if (drawTerrain && !painted) paintTerrain(ctx, box, tile, pos);
         if (drawSurfaces && !surfaceIsPainted(view, painted, tile, pos))
-          paintSurface(ctx, box, tile, pos, view.hatch, surfaceEdges(view.grid, pos));
+          paintSurface(
+            ctx,
+            box,
+            tile,
+            pos,
+            view.hatch,
+            surfaceEdges(view.grid, pos),
+            surfaceIsSeated(view, painted, tile, pos),
+          );
         if (drawSurfaces && view.gridLines) paintGridLine(ctx, box, 'rgba(0,0,0,0.18)');
       }
     }

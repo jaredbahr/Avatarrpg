@@ -35,7 +35,7 @@ import { resolveAsset } from '../../content/assets/manifest';
 import { backdrops } from '../backdrops';
 import { sceneForGrid, sceneryOpacities } from '../scene';
 import { SceneTextures } from './sceneTextures';
-import { surfaceIsPainted } from '../sceneSurfaces';
+import { surfaceIsPainted, surfaceIsSeated } from '../sceneSurfaces';
 import { TILE } from '../camera';
 import type { Camera, Viewport } from '../camera';
 import { DecorSheets } from '../decorSheets';
@@ -168,6 +168,9 @@ const SURFACE_INDEX: Record<SurfaceId, number> = {
   oil: 6,
   rubble: 7,
 };
+
+/** Rubble seated on its heap art in a partial scene (`surfaceIsSeated`). */
+const SEATED_RUBBLE = 8;
 
 export class PixiBackend implements RenderBackend {
   readonly capabilities: BackendCapabilities = { name: 'webgl', shaders: true, particles: false };
@@ -678,9 +681,9 @@ export class PixiBackend implements RenderBackend {
 
   private syncGround(view: MapView, painted: boolean, partialScene: boolean): void {
     const { grid } = view;
-    // Partial mode must keep every permanent surface in the data texture;
-    // complete scenes retain their existing painted-surface suppression.
-    this.uploadMap(view, partialScene ? false : painted);
+    // Partial mode keeps every permanent surface in the data texture (seating
+    // rubble on its heap art); complete scenes keep their painted suppression.
+    this.uploadMap(view, painted);
 
     const uniforms = this.groundUniforms.uniforms as {
       uGrid: Float32Array;
@@ -745,7 +748,10 @@ export class PixiBackend implements RenderBackend {
         y: Math.floor(i / grid.width),
       }),
     );
-    let signature = `${grid.width}x${grid.height}:${baked.map((value) => (value ? '1' : '0')).join('')}`;
+    const seated = grid.tiles.map((tile, i) =>
+      surfaceIsSeated(view, painted, tile, { x: i % grid.width, y: Math.floor(i / grid.width) }),
+    );
+    let signature = `${grid.width}x${grid.height}:${baked.map((value, i) => (value ? '1' : seated[i] ? '2' : '0')).join('')}`;
     for (const tile of grid.tiles) {
       signature += `|${tile.terrain}:${tile.surface?.id ?? ''}:${tile.surface?.duration ?? 0}`;
     }
@@ -764,7 +770,12 @@ export class PixiBackend implements RenderBackend {
     for (let i = 0; i < grid.tiles.length; i++) {
       const tile = grid.tiles[i];
       if (!tile) continue;
-      const surface = tile.surface && !baked[i] ? (SURFACE_INDEX[tile.surface.id] ?? 0) : 0;
+      const surface =
+        !tile.surface || baked[i]
+          ? 0
+          : seated[i]
+            ? SEATED_RUBBLE
+            : (SURFACE_INDEX[tile.surface.id] ?? 0);
       // Surfaces thin out as they burn down, so a dying fire visibly fades.
       // A negative duration is map-authored and permanent: always full strength.
       const duration = tile.surface?.duration ?? 0;
@@ -772,7 +783,7 @@ export class PixiBackend implements RenderBackend {
       intensities[i] = surface === SURFACE_INDEX.fire ? intensity : 0;
 
       const o = i * 4;
-      image.data[o] = (TERRAIN_INDEX[tile.terrain] ?? 0) * 8 + surface;
+      image.data[o] = (TERRAIN_INDEX[tile.terrain] ?? 0) * 16 + surface;
       image.data[o + 1] = Math.round(255 * intensity);
       image.data[o + 3] = 255;
     }

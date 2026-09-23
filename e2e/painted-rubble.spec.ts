@@ -87,7 +87,9 @@ for (const renderer of ['canvas', 'webgl'])
     const registered = await sample();
     // Forest Road is a partial scene: the permanent live rubble overlay remains
     // active regardless of the legacy complete-scene registration list, while
-    // the registered local rubble image remains visible underneath it.
+    // the registered local rubble image remains visible underneath it. A
+    // registered heap only seats the wash (no bank, fading inside the cell),
+    // so under the pile it lays the same strength as the unregistered wash.
     await page.evaluate(() => {
       const scene = window.fnt!.app.content.maps.get('forest_road')!.scene!;
       Object.defineProperty(scene, 'paintedRubble', { value: [], configurable: true });

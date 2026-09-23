@@ -27,6 +27,13 @@ export const SURFACE_RIM = {
   coat: { base: 0.42, interior: 0.78 },
 } as const;
 
+/**
+ * A rubble wash seated on its heap art: full strength out to `inner` and gone
+ * by `outer`, as distances from the cell's centre where 1 is the middle of an
+ * edge. It ends inside the cell on every side, so it never draws the diamond.
+ */
+export const SURFACE_SEAT = { inner: 0.35, outer: 0.85 } as const;
+
 /** Tile-local points, `0..1` on each axis. */
 export type RimPoints = readonly (readonly [number, number])[];
 
