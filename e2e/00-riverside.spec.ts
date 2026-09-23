@@ -49,7 +49,9 @@ test('riverside dock stays compact until secondary activities are opened', async
   await openActivities(page);
   await expect(page.getByRole('button', { name: 'Under the banyan', exact: true })).toBeVisible();
   await expect(page.getByRole('button', { name: 'Visit the shrine', exact: true })).toBeVisible();
-  await expect(page.getByRole('button', { name: "Dorin's drill", exact: true })).toBeVisible();
+  await expect(page.getByRole('button', { name: 'Wait until…', exact: true })).toBeVisible();
+  // The preview enters in the afternoon, when Dorin is on the gate post (M7).
+  await expect(page.getByRole('button', { name: "Dorin's drill", exact: true })).toHaveCount(0);
   await expect(page.getByRole('button', { name: 'Activities', exact: true })).toHaveAttribute(
     'aria-expanded',
     'true',
@@ -82,10 +84,11 @@ test('riverside activities remain reachable at largest text in portrait', async 
 
   const menu = page.locator('#riverside-activities');
   await expect(menu).toBeVisible();
-  const drill = page.getByRole('button', { name: "Dorin's drill", exact: true });
-  await drill.scrollIntoViewIfNeeded();
-  await expect(drill).toBeVisible();
-  expect((await drill.boundingBox())?.height ?? 0).toBeGreaterThanOrEqual(48);
+  // The last activity in the afternoon, when the drill is not on offer.
+  const wait = page.getByRole('button', { name: 'Wait until…', exact: true });
+  await wait.scrollIntoViewIfNeeded();
+  await expect(wait).toBeVisible();
+  expect((await wait.boundingBox())?.height ?? 0).toBeGreaterThanOrEqual(48);
 });
 
 test('riverside painted paths and sprite picking', async ({ page }) => {
@@ -196,6 +199,16 @@ for (const renderer of ['canvas', 'webgl']) {
     await openActivities(page);
     await page.getByRole('button', { name: 'Tea break', exact: true }).click();
     await expect(page.locator('.village-note')).toContainText('jasmine tea', { timeout });
+    // Dorin's drill is his midday relief (D3); the preview's afternoon has
+    // him on the gate post, so wait for it here at the porch (D8).
+    await expect(page.getByRole('button', { name: "Dorin's drill", exact: true })).toHaveCount(0);
+    await openActivities(page);
+    await page.getByRole('button', { name: 'Wait until…', exact: true }).click();
+    await page
+      .getByRole('dialog')
+      .getByRole('button', { name: /^Midday/ })
+      .click();
+    await expect(page.locator('.explore-phase')).toHaveText('Midday');
     await openActivities(page);
     await page.getByRole('button', { name: 'Visit the shrine', exact: true }).click();
     await expect(page.locator('.explore-conversation, .dialogue-scene').first()).toBeVisible({
