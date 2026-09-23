@@ -846,7 +846,8 @@
 }
 
 /* The wait options are a phase and a word each, so they sit in a grid of
- * tap targets: one row on a tablet, and still short on a phone. */
+ * tap targets: one row on a tablet, and on a phone one line each, which
+ * keeps all five and the way back on screen at Largest text. */
 .wait-options {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(7rem, 1fr));
@@ -859,6 +860,14 @@
 
 .wait-options .choice-option strong {
   font-size: var(--fs-md);
+}
+
+@media (max-width: 36rem) {
+  .wait-options .choice-option {
+    flex-flow: row wrap;
+    align-items: baseline;
+    column-gap: var(--sp-2);
+  }
 }
 
 /* Declared once: the dialogue options and the discipline cards share it. */
@@ -2313,8 +2322,9 @@ html[data-contrast='high'] .hud-panel::after {
  * Inline rather than under the name, so the header keeps its height. */
 .explore-title {
   display: flex;
+  flex-wrap: wrap;
   align-items: baseline;
-  gap: var(--sp-2);
+  column-gap: var(--sp-2);
   min-width: 0;
 }
 .explore-mode,
@@ -2534,8 +2544,10 @@ html[data-contrast='high'] .hud-panel::after {
     right: var(--sp-2);
   }
 }
+/* The riverside's header takes the same two rows, so its longer name and the
+ * time of day never run under the header actions. */
 @media (max-width: 36rem) {
-  .explore-scene:not(.riverside-scene) .explore-bar {
+  .explore-bar {
     display: grid;
     grid-template-columns: repeat(3, minmax(0, 1fr));
     gap: 0;
