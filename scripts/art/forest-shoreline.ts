@@ -29,6 +29,7 @@
  */
 import { mkdirSync, writeFileSync } from 'node:fs';
 import { FOREST_POND_PATCH, FOREST_WATER_CELLS } from '../../src/content/scenes/forestRoad';
+import type { Vec2 } from '../../src/core/types';
 import { newImage, parseHex, setPixel, writePng } from './lib/image';
 import { encodeWebp } from './lib/webp';
 import {
@@ -36,7 +37,7 @@ import {
   FOREST_PIECE_TONES,
   loadForestMaterial,
 } from './forest-village-material';
-import type { ForestMaterial } from './forest-village-material';
+import type { Rgb, VillagePalette } from './forest-village-material';
 
 export const SHORE_LIMIT = 0.12;
 export const COVER_LIMIT = 0.08;
@@ -63,18 +64,41 @@ const CELL = 64;
 const DENSITY = 2;
 export const SHORE_OUTPUT = 'public/art/maps/forest-scene/pond-bank.webp';
 
-export function shorePosition(px: number, py: number, density = 2) {
-  const worldX = FOREST_POND_PATCH.x + (px + 0.5) / density;
-  const worldY = FOREST_POND_PATCH.y + (py + 0.5) / density;
+/**
+ * A pond to pack: the scene box its plate is drawn into and the water cells it
+ * banks. The forest's pond by default; the Cutting's pool passes its own
+ * (`quarry-route-ground.ts`), so both are painted by this one packer.
+ */
+export interface Pond {
+  readonly patch: {
+    readonly x: number;
+    readonly y: number;
+    readonly width: number;
+    readonly height: number;
+  };
+  readonly cells: readonly Vec2[];
+}
+export const FOREST_POND: Pond = { patch: FOREST_POND_PATCH, cells: FOREST_WATER_CELLS };
+
+export function shorePosition(px: number, py: number, density = 2, pond: Pond = FOREST_POND) {
+  const worldX = pond.patch.x + (px + 0.5) / density;
+  const worldY = pond.patch.y + (py + 0.5) / density;
   const dx = (worldX - 768) / 64,
     dy = worldY / 32;
   return { x: (dx + dy) / 2, y: (dy - dx) / 2 };
 }
 
-export function shoreDistance(x: number, y: number): number {
-  return Math.min(
-    ...FOREST_WATER_CELLS.map((c) => Math.max(c.x - x, x - c.x - 1, c.y - y, y - c.y - 1, 0)),
-  );
+/**
+ * How far outside the water a logical point lies, in cells; zero on water. The
+ * forest's pond by default; the Cutting's pool passes its own cells
+ * (`quarry-route-ground.ts`), so both banks are measured the same way.
+ */
+export function shoreDistance(
+  x: number,
+  y: number,
+  cells: readonly Vec2[] = FOREST_WATER_CELLS,
+): number {
+  return Math.min(...cells.map((c) => Math.max(c.x - x, x - c.x - 1, c.y - y, y - c.y - 1, 0)));
 }
 
 /**
@@ -129,20 +153,25 @@ const smooth = (t: number): number => {
  * own incident then flips the class in its minority share, which leaves silt
  * flecks on the shelf and pale submerged stones in the deep.
  */
-export function bedIsDeep(material: ForestMaterial, x: number, y: number, inside: number): boolean {
+export function bedIsDeep(
+  material: Pick<VillagePalette<'bed'>, 'classOf'>,
+  x: number,
+  y: number,
+  inside: number,
+): boolean {
   const band = smooth((inside - BED_DEEP_AT) / BED_DEEP_BAND + 0.5);
   const deep = band > shoreNoise(x * 3 + 7, y * 3 + 5);
   return deep !== (material.classOf('bed', x, y) === 'shadow');
 }
 
 /** How far inside the water a packed pixel sits, in cells; zero outside it. */
-export function pondInset(width: number, height: number): Float64Array {
+export function pondInset(width: number, height: number, pond: Pond = FOREST_POND): Float64Array {
   const far = 1e9;
   const inset = new Float64Array(width * height);
   for (let py = 0; py < height; py++)
     for (let px = 0; px < width; px++) {
-      const { x, y } = shorePosition(px, py);
-      inset[py * width + px] = shoreDistance(x, y) <= 0 ? far : 0;
+      const { x, y } = shorePosition(px, py, DENSITY, pond);
+      inset[py * width + px] = shoreDistance(x, y, pond.cells) <= 0 ? far : 0;
     }
   const pixelsPerCell = CELL * DENSITY;
   const step = (index: number, previous: number, cost: number): void => {
@@ -172,19 +201,79 @@ export function pondInset(width: number, height: number): Float64Array {
   return inset;
 }
 
-export function packShoreline(material: ForestMaterial) {
-  const { width, height } = FOREST_POND_PATCH;
+const BED = {
+  shelf: parseHex(FOREST_PIECE_TONES.bed.base),
+  deep: parseHex(FOREST_PIECE_TONES.bed.shadow),
+  edge: parseHex(FOREST_PIECE_TONES.bed.rim),
+};
+const WET_BANK = {
+  field: parseHex(FOREST_PIECE_TONES.margin.shadow),
+  lifted: parseHex(FOREST_PIECE_TONES.margin.base),
+};
+
+/** What a wet pixel shows through the film: the ink, the waterline, the bank or the bed. */
+interface WetPaint {
+  readonly part: 'ink' | 'edge' | 'bank' | 'bed';
+  readonly rgb: Rgb;
+  /** The bed's deep tone rather than its shelf tone. */
+  readonly deep: boolean;
+}
+
+/**
+ * One wet pixel of a pond, `inside` cells in from the water's edge with the
+ * bank biting `depth` cells in at that point (`biteDepth`). The forest pond and
+ * the Cutting's pool both paint every wet pixel here, which is what makes them
+ * one water language rather than two that happen to share tones.
+ */
+function wetPixel(
+  material: Pick<VillagePalette<'margin' | 'bed'>, 'classOf' | 'ink'>,
+  x: number,
+  y: number,
+  inside: number,
+  depth: number,
+): WetPaint {
+  // The bed is opaque across every wet pixel, so the 0.4-alpha water film
+  // always tints authored bottom rather than whatever ground the pond
+  // happens to sit on (ADR 0045). The wet line itself is the boundary
+  // between the bite and the bed, which is where the ink belongs: the
+  // tile edge is not a material edge, and never was.
+  const fromLine = inside - depth;
+  const part =
+    Math.abs(fromLine) < INK_HALF
+      ? 'ink'
+      : fromLine > 0 && fromLine < INK_HALF + RIM_WIDTH
+        ? 'edge'
+        : inside < depth
+          ? 'bank'
+          : 'bed';
+  if (part === 'ink') return { part, rgb: material.ink, deep: false };
+  if (part === 'edge') return { part, rgb: BED.edge, deep: false };
+  if (part === 'bank')
+    // The bank under the film is wet, so it is the damp margin a step
+    // darker: its shadow as the field, its base where the lawn's rhythm
+    // lifts a patch. The pale rim stays on dry ground; under the film it
+    // read as the lit top of a curb rather than as a bank going under.
+    return {
+      part,
+      rgb: material.classOf('margin', x, y) === 'rim' ? WET_BANK.lifted : WET_BANK.field,
+      deep: false,
+    };
+  const deep = bedIsDeep(material, x, y, inside);
+  return { part, rgb: deep ? BED.deep : BED.shelf, deep };
+}
+
+/**
+ * The pond's bank and bed. `material` is any palette that binds §3's damp
+ * margin and bed: the forest's, or the quarry's, which reads them from the
+ * same table (`quarry-village-material.ts`).
+ */
+export function packShoreline(
+  material: Pick<VillagePalette<'margin' | 'bed'>, 'colour' | 'classOf' | 'ink'>,
+  pond: Pond = FOREST_POND,
+) {
+  const { width, height } = pond.patch;
   const out = newImage(width * DENSITY, height * DENSITY);
-  const inset = pondInset(out.width, out.height);
-  const bed = {
-    shelf: parseHex(FOREST_PIECE_TONES.bed.base),
-    deep: parseHex(FOREST_PIECE_TONES.bed.shadow),
-    edge: parseHex(FOREST_PIECE_TONES.bed.rim),
-  };
-  const wetBank = {
-    field: parseHex(FOREST_PIECE_TONES.margin.shadow),
-    lifted: parseHex(FOREST_PIECE_TONES.margin.base),
-  };
+  const inset = pondInset(out.width, out.height, pond);
   let bitePixels = 0,
     deepestBitePixels = 0,
     bedPixels = 0,
@@ -206,8 +295,8 @@ export function packShoreline(material: ForestMaterial) {
   };
   for (let py = 0; py < out.height; py++)
     for (let px = 0; px < out.width; px++) {
-      const { x, y } = shorePosition(px, py);
-      const distance = shoreDistance(x, y);
+      const { x, y } = shorePosition(px, py, DENSITY, pond);
+      const distance = shoreDistance(x, y, pond.cells);
       const depth = biteDepth(x, y);
       const inside = inset[py * out.width + px] ?? 0;
       const dryOutside = distance > 0 && distance < SHORE_LIMIT;
@@ -225,26 +314,9 @@ export function packShoreline(material: ForestMaterial) {
       let rgb: readonly number[];
       let alpha = 255;
       if (wet) {
-        // The bed is opaque across every wet pixel, so the 0.4-alpha water film
-        // always tints authored bottom rather than whatever ground the pond
-        // happens to sit on (ADR 0045). The wet line itself is the boundary
-        // between the bite and the bed, which is where the ink belongs: the
-        // tile edge is not a material edge, and never was.
-        const fromLine = inside - depth;
-        if (Math.abs(fromLine) < INK_HALF) {
-          rgb = material.ink;
-          inkPixels++;
-        } else if (fromLine > 0 && fromLine < INK_HALF + RIM_WIDTH) {
-          rgb = bed.edge;
-        } else if (dryInside) {
-          // The bank under the film is wet, so it is the damp margin a step
-          // darker: its shadow as the field, its base where the lawn's rhythm
-          // lifts a patch. The pale rim stays on dry ground; under the film it
-          // read as the lit top of a curb rather than as a bank going under.
-          rgb = material.classOf('margin', x, y) === 'rim' ? wetBank.lifted : wetBank.field;
-        } else {
-          rgb = bedIsDeep(material, x, y, inside) ? bed.deep : bed.shelf;
-        }
+        const paint = wetPixel(material, x, y, inside, depth);
+        rgb = paint.rgb;
+        if (paint.part === 'ink') inkPixels++;
         if (dryInside) {
           bitePixels++;
           record(bands.bank, rgb);
@@ -252,7 +324,7 @@ export function packShoreline(material: ForestMaterial) {
         } else {
           bedPixels++;
           record(bands.bed, rgb);
-          if (rgb === bed.deep) deepBedPixels++;
+          if (paint.deep) deepBedPixels++;
         }
       } else {
         // Nothing lies under this band, outside the water: it keeps the damp

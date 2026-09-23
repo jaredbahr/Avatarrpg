@@ -23,23 +23,34 @@
  * gate's road layout cut between ledges, so it takes the gate's reading of that
  * layout (`quarry-modular-ground.ts`): a packed-earth cart lane with one haul
  * track per lane, spoil shoulders carrying whole inked heaps of cut stone, and
- * cut-stone ledges. Rubble diamonds are inked even on spoil of their own
- * material, because a pile is an object on the floor.
+ * cut-stone ledges.
  *
- * Region routing, page origin and cell keys are untouched, so the registered
- * geometry is bit-for-bit the same and only the bytes move. Saves, collision
- * and the runtime surfaces above the page are unaffected.
+ * DL-2 W5 gate fixes. The gate found the Cutting and the floor reading
+ * backwards: the decorative heaps, inked and in limestone, were the loudest
+ * thing on the board while real cover (legend `r`) was a faint inked diamond.
+ * Now the decorative heaps are small uninked mounds in the spoil row
+ * (`heapClass`), every `r` cell carries the route's painted heap
+ * (`forest-rubble.ts`'s plate, registered in `quarryProjected.ts`) standing on
+ * its spill, and the pages paint the ground under it rather than a diamond. The
+ * two dirt pages overlap by two cells across `x = 10` (`DIRT_OVERLAP`), and the
+ * Cutting's pool gets the forest pond's bed and bank (`buildCuttingPool`).
+ *
+ * Page origin and cell keys are untouched. Saves, collision and the runtime
+ * surfaces above the page are unaffected.
  */
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { AMBUSH_ROAD, QUARRY_FLOOR } from '../../src/content/maps/combat';
-import type { MapDef } from '../../src/core/types';
+import { CUTTING_POOL_PATCH, CUTTING_WATER_CELLS } from '../../src/content/scenes/quarryProjected';
+import type { MapDef, Vec2 } from '../../src/core/types';
 import { newImage, setPixel } from './lib/image';
 import type { Image } from './lib/image';
 import { tileNoise } from '../../src/render/painters/shapes';
 import { alphaBounds, crop } from './lib/trim';
 import { encodeWebp } from './lib/webp';
+import { spillDepth, spillWins } from './forest-rubble';
+import { packShoreline } from './forest-shoreline';
 import { heapFits, loadQuarryMaterial, QUARRY_GROUND_QUALITY } from './quarry-village-material';
-import type { QuarryMaterial, QuarryTone } from './quarry-village-material';
+import type { QuarryMaterial, QuarryTone, Rgb } from './quarry-village-material';
 
 /** One logical tile is 64x32 scene pixels; see `forest-route-ground.ts`. */
 const TILE_DIAGONAL = Math.hypot(64, 32);
@@ -50,37 +61,50 @@ export const QUARRY_PAGE = { x: -128, y: -192, width: 2304, height: 1280 } as co
 export const QUARRY_REGION_NAMES = ['dirt-west', 'dirt-east', 'road', 'stone'] as const;
 export type QuarryRegionName = (typeof QUARRY_REGION_NAMES)[number];
 
-type Kind = 'dirt' | 'road' | 'stone' | 'dynamic' | 'void';
+/**
+ * The two dirt pages are compressed independently and used to meet on the line
+ * `x = 10`, where the east page faded in over 0.08 of a tile. Anywhere their
+ * two edges did not agree to the pixel the procedural terrain showed through —
+ * and in the Cutting that terrain is grass, so the join read as a green seam
+ * (DL-2 W5 gate). Now both pages paint the columns either side of the line, so
+ * they overlap by `DIRT_OVERLAP` whole cells of identical painting, and the
+ * east page fades in across the middle of that overlap (`DIRT_FADE`), over
+ * ground the west page already covers opaquely.
+ */
+export const DIRT_SPLIT = 10;
+export const DIRT_OVERLAP = 2;
+export const DIRT_FADE = { from: DIRT_SPLIT - 0.75, to: DIRT_SPLIT + 0.75 } as const;
+
+type Kind = 'dirt' | 'road' | 'stone' | 'water' | 'void';
 /**
  * The ground a cell stands on, which is the material its authored page carries,
- * and therefore which page it belongs to. Unchanged from the spill pass: an oil
- * slick reads as stone and a mud patch as dirt, and water alone stays
- * transparent because its bed is authored with the liquid.
+ * and therefore which page it belongs to. An oil slick reads as stone and a
+ * mud patch as dirt. A rubble cell reads as the floor its heap stands on
+ * (`groundKey`). Water alone stays a hole in every page: its bed and bank are
+ * the pool's own plate (`buildCuttingPool`), as the forest pond's are.
  */
 const kind = (key: string | undefined): Kind =>
   key === '='
     ? 'road'
-    : key === '^' || key === 'A' || key === 'r' || key === 'o'
+    : key === '^' || key === 'A' || key === 'o'
       ? 'stone'
       : key === '~'
-        ? 'dynamic'
+        ? 'water'
         : key === '.' || key === ',' || key === 'c' || key === 'm'
           ? 'dirt'
           : 'void';
 
 /**
- * Which of the five §3 materials a cell is painted in. This is a finer reading
- * than `kind`, and it is the whole point of the re-key: the ledges, the rubble
- * and the mud each become their own material instead of sharing a field with
- * the floor, which is what gives every hazard and ledge diamond an ink edge.
+ * Which of the §3 materials a cell is painted in. This is a finer reading than
+ * `kind`: the ledges and the hazards each become their own material instead of
+ * sharing a field with the floor, which is what gives every ledge and oil
+ * diamond an ink edge.
  */
 const materialOf = (key: string | undefined): QuarryTone | null => {
   switch (key) {
     case '^':
     case 'A':
       return 'block';
-    case 'r':
-      return 'spoil';
     case 'o':
       return 'limestone';
     case 'm':
@@ -104,32 +128,82 @@ const materialOf = (key: string | undefined): QuarryTone | null => {
 
 /**
  * Where a soft join is right. §3 keeps the packer's smoothstep idiom across a
- * boundary between two walkable floor materials; a ledge face, a rubble pile
- * and a hazard pool are objects on the floor and take a crisp inked edge
- * instead, which is how the reference reads them.
+ * boundary between two walkable floor materials; a ledge face and a hazard
+ * pool are objects on the floor and take a crisp inked edge instead, which is
+ * how the reference reads them.
  */
 const plain = (key: string | undefined): boolean =>
   key === '.' || key === ',' || key === 'c' || key === '=';
 
+/**
+ * The ground under a cell, as the pages paint it. A rubble cell (legend `r`) is
+ * no longer painted as a diamond of its own: its heap is the route's painted
+ * heap plate, drawn over the page (`quarryProjected.ts`), and the page lays the
+ * floor it stands on — the Cutting's spoil shoulder, or the Driller's packed
+ * earth with the heap's spill shed across it. An inked spoil diamond was all
+ * that marked cover before, and it read as a faint tile beside the decorative
+ * heaps (DL-2 W5 gate).
+ */
+function groundKey(map: MapDef, x: number, y: number): string | undefined {
+  const key = map.rows[y]?.[x];
+  if (key !== 'r') return key;
+  const around = [
+    map.rows[y]?.[x - 1],
+    map.rows[y]?.[x + 1],
+    map.rows[y - 1]?.[x],
+    map.rows[y + 1]?.[x],
+  ];
+  return around.includes(',') ? ',' : '.';
+}
+
+/** Every cell of a map carrying one legend key. */
+export function cellsOf(map: MapDef, key: string): Vec2[] {
+  return map.rows.flatMap((row, y) =>
+    [...row].flatMap((value, x) => (value === key ? [{ x, y }] : [])),
+  );
+}
+
 const clamp = (value: number): number => Math.max(0, Math.min(1, value));
 
 /**
- * Plain spoil, the only ground a heap may lie on. The Cutting's shoulders are
- * narrow strips between the lane and the ledges, so a heap anchored near either
- * edge is dropped whole by `heapFits` rather than cut into a sliver.
+ * Open floor a decorative heap may lie on: plain ground of one material, a
+ * whole cell clear of every cover cell and its spill, so no decorative mound
+ * sits beside a real heap to be read as part of it. A heap reaching a lane
+ * edge, a ledge or a hazard is dropped whole by `heapFits`.
  */
-const plainSpoil =
-  (map: MapDef) =>
+export const openFloor =
+  (map: MapDef, material: QuarryTone) =>
   (x: number, y: number): boolean => {
     const key = map.rows[y]?.[x];
-    return materialOf(key) === 'spoil' && plain(key);
+    if (materialOf(key) !== material || !plain(key)) return false;
+    for (let oy = -1; oy <= 1; oy++)
+      for (let ox = -1; ox <= 1; ox++) if (map.rows[y + oy]?.[x + ox] === 'r') return false;
+    return true;
   };
 
-const regionOf = (x: number, key: string | undefined): QuarryRegionName | null => {
-  const terrain = kind(key);
-  if (terrain === 'dirt') return x < 10 ? 'dirt-west' : 'dirt-east';
-  return terrain === 'road' ? 'road' : terrain === 'stone' ? 'stone' : null;
-};
+/**
+ * The pages a cell is painted on. The two dirt pages overlap by
+ * `DIRT_OVERLAP` columns across `DIRT_SPLIT`.
+ */
+function pagesOf(x: number, terrain: Kind): QuarryRegionName[] {
+  if (terrain === 'dirt') {
+    const pages: QuarryRegionName[] = [];
+    if (x < DIRT_SPLIT + DIRT_OVERLAP / 2) pages.push('dirt-west');
+    if (x >= DIRT_SPLIT - DIRT_OVERLAP / 2) pages.push('dirt-east');
+    return pages;
+  }
+  if (terrain === 'road') return ['road'];
+  return terrain === 'stone' ? ['stone'] : [];
+}
+
+/** Logical point of a page pixel's centre. */
+function cellAt(px: number, py: number): { gx: number; gy: number; x: number; y: number } {
+  const wx = QUARRY_PAGE.x + px + 0.5,
+    wy = QUARRY_PAGE.y + py + 0.5;
+  const gx = ((wx - 768) / 64 + wy / 32) / 2,
+    gy = (wy / 32 - (wx - 768) / 64) / 2;
+  return { gx, gy, x: Math.floor(gx), y: Math.floor(gy) };
+}
 
 export function packQuarryGround(
   map: MapDef,
@@ -138,18 +212,22 @@ export function packQuarryGround(
   const images = new Map(
     QUARRY_REGION_NAMES.map((name) => [name, newImage(QUARRY_PAGE.width, QUARRY_PAGE.height)]),
   );
-  const carries = plainSpoil(map);
+  const rubble = cellsOf(map, 'r');
+  const spoilFloor = openFloor(map, 'spoil');
+  const earthFloor = openFloor(map, 'earth');
+
   for (let py = 0; py < QUARRY_PAGE.height; py++)
     for (let px = 0; px < QUARRY_PAGE.width; px++) {
-      const wx = QUARRY_PAGE.x + px + 0.5,
-        wy = QUARRY_PAGE.y + py + 0.5;
-      const gx = ((wx - 768) / 64 + wy / 32) / 2,
-        gy = (wy / 32 - (wx - 768) / 64) / 2;
-      const x = Math.floor(gx),
-        y = Math.floor(gy),
-        key = map.rows[y]?.[x],
-        name = regionOf(x, key);
-      if (!name) continue;
+      const { gx, gy, x, y } = cellAt(px, py);
+      const key = groundKey(map, x, y);
+      const terrain = kind(key);
+      const pages = pagesOf(x, terrain);
+      if (!pages.length) continue;
+      const paint = (rgb: Rgb): void => {
+        for (const name of pages)
+          setPixel(images.get(name)!, px, py, [rgb[0], rgb[1], rgb[2], 255]);
+      };
+
       const own = materialOf(key);
       if (!own) continue;
 
@@ -166,13 +244,9 @@ export function packQuarryGround(
         [0, -1],
         [0, 1],
       ] as const) {
-        const neighbourKey = map.rows[y + oy]?.[x + ox];
+        const neighbourKey = groundKey(map, x + ox, y + oy);
         const other = materialOf(neighbourKey);
-        // A rubble pile is an object on the floor, so its diamond is inked
-        // even where it lies on spoil of its own material (the Cutting's
-        // shoulders); otherwise the live wash is the only thing that shows it.
-        const pile = (key === 'r') !== (neighbourKey === 'r');
-        if (!other || (other === own && !pile)) continue;
+        if (!other || other === own) continue;
         const edgeDistance = ox < 0 ? gx - x : ox > 0 ? x + 1 - gx : oy < 0 ? gy - y : y + 1 - gy;
         if (edgeDistance < edge) {
           edge = edgeDistance;
@@ -191,43 +265,66 @@ export function packQuarryGround(
       }
       let tone: QuarryTone = swapTone && tileNoise(px, py, 5) < mix ? swapTone : own;
 
-      // Painted incident, only on the plain earth plane: spoil heaps with their
-      // own ink edge and chip rim, plus the haul ruts. A hazard, a ledge or a
-      // dressed floor already carries its own painting.
-      let inked = edge < INK_HALF;
+      // Painted incident, only on plain floor. A ledge or a hazard already
+      // carries its own painting.
+      let heap: Rgb | null = null;
       if (tone === 'earth' && plain(key) && (key === '=' || own !== 'earth')) {
         // A cart lane, or its feathered fringe: haul tracks only, as at the
         // gate. Spoil heaps do not sit in a cart lane.
         tone = material.trackMark(gx, gy) ?? tone;
       } else if (tone === 'earth' && plain(key)) {
-        const heap = material.heapMark(gx, gy);
-        if (heap === 'ink') inked = true;
-        else if (heap === 'inside') tone = 'spoil';
-        else if (heap === 'rim') tone = 'wear';
-        else tone = material.trackMark(gx, gy) ?? tone;
-      } else if (tone === 'spoil' && own === 'spoil' && plain(key) && heapFits(gx, gy, carries)) {
-        // Spoil shoulders: inked heaps of freshly cut stone, exactly as the
-        // gate paints its terrace, so neither dirt page is a bare swatch.
-        const heap = material.heapMark(gx, gy);
-        if (heap === 'ink') inked = true;
-        else if (heap === 'inside') tone = 'limestone';
-        else if (heap === 'rim') tone = 'block';
+        // The Driller's packed-earth floor. Round each cover cell its heap's
+        // spill of spoil breaks up into the floor the way the forest's breaks
+        // into the verge (`spillWins`); elsewhere, low uninked spoil mounds
+        // and the haul ruts.
+        const spilt =
+          rubble.length > 0 &&
+          spillWins(
+            spillDepth(gx, gy, rubble),
+            gx,
+            gy,
+            () => material.classOf('earth', gx, gy) !== 'base',
+          );
+        if (spilt) tone = 'spoil';
+        else {
+          heap = heapFits(gx, gy, earthFloor) ? material.heapMark(gx, gy) : null;
+          if (!heap) tone = material.trackMark(gx, gy) ?? tone;
+        }
+      } else if (tone === 'spoil' && own === 'spoil' && plain(key)) {
+        const spilt =
+          rubble.length > 0 &&
+          spillWins(
+            spillDepth(gx, gy, rubble),
+            gx,
+            gy,
+            () => material.classOf('spoil', gx, gy) === 'rim',
+          );
+        // The Cutting's shoulders are spoil already, so a heap's spill laid in
+        // the shoulder's own key would not show. It is the fresh grit round
+        // the heap's foot, so it takes the spoil row the other way up
+        // (`spillMark`): a darker footprint about the cell's size, broken up
+        // at its edge, that grounds the heap on the shoulder. Elsewhere on the
+        // shoulders, the same low mounds as the floor, in the spoil row alone,
+        // so they read as the shoulder's texture and not as cover.
+        if (spilt) heap = material.spillMark(gx, gy);
+        else if (heapFits(gx, gy, spoilFloor)) heap = material.heapMark(gx, gy);
       }
 
-      const rgb = inked
-        ? material.ink
-        : lit && edge < INK_HALF + RIM_WIDTH
-          ? material.rimOf(tone)
-          : material.colour(tone, gx, gy);
-      setPixel(images.get(name)!, px, py, [rgb[0], rgb[1], rgb[2], 255]);
+      paint(
+        edge < INK_HALF
+          ? material.ink
+          : lit && edge < INK_HALF + RIM_WIDTH
+            ? material.rimOf(tone)
+            : (heap ?? material.colour(tone, gx, gy)),
+      );
     }
   return images;
 }
 
 /**
  * A clipped alpha edge filters against the procedural base during oblique
- * scaling, so extend the authored edge outward by two world pixels. Dynamic
- * (water) cells keep their hole.
+ * scaling, so extend the authored edge outward by two world pixels. Water
+ * cells keep their hole; the pool's own plate covers them.
  */
 function bleedEdges(image: Image, map: MapDef, pixels = 2): void {
   for (let pass = 0; pass < pixels; pass++) {
@@ -236,11 +333,8 @@ function bleedEdges(image: Image, map: MapDef, pixels = 2): void {
       for (let px = 0; px < image.width; px++) {
         const index = (py * image.width + px) * 4;
         if (previous[index + 3]) continue;
-        const wx = QUARRY_PAGE.x + px + 0.5,
-          wy = QUARRY_PAGE.y + py + 0.5;
-        const gx = ((wx - 768) / 64 + wy / 32) / 2,
-          gy = (wy / 32 - (wx - 768) / 64) / 2;
-        if (kind(map.rows[Math.floor(gy)]?.[Math.floor(gx)]) === 'dynamic') continue;
+        const { x, y } = cellAt(px, py);
+        if (kind(map.rows[y]?.[x]) === 'water') continue;
         for (const [dx, dy] of [
           [-1, 0],
           [1, 0],
@@ -263,9 +357,10 @@ function bleedEdges(image: Image, map: MapDef, pixels = 2): void {
 }
 
 /**
- * The two independently compressed dirt pages meet at logical x=10. Fade the
- * incoming east page across its existing bleed so its WebP edge cannot become
- * a visible opaque colour handoff; west remains the fully opaque underlay.
+ * The east dirt page fades in across the middle of the two pages' overlap
+ * (`DIRT_FADE`). Both pages carry the same painting there and the west page is
+ * opaque under all of it, so the fade hides only the two encoders'
+ * disagreement, never the ground.
  */
 function softenDirtJoin(image: Image, name: QuarryRegionName): void {
   if (name !== 'dirt-east') return;
@@ -274,10 +369,7 @@ function softenDirtJoin(image: Image, name: QuarryRegionName): void {
       const index = (py * image.width + px) * 4;
       const alpha = image.data[index + 3] ?? 0;
       if (!alpha) continue;
-      const wx = QUARRY_PAGE.x + px + 0.5,
-        wy = QUARRY_PAGE.y + py + 0.5;
-      const gx = ((wx - 768) / 64 + wy / 32) / 2;
-      const t = Math.max(0, Math.min(1, (gx - 9.96) / 0.08));
+      const t = clamp((cellAt(px, py).gx - DIRT_FADE.from) / (DIRT_FADE.to - DIRT_FADE.from));
       const eased = t * t * (3 - 2 * t);
       image.data[index + 3] = Math.round(alpha * eased);
     }
@@ -290,6 +382,36 @@ export interface PackedRegion {
   readonly width: number;
   readonly height: number;
   readonly bytes: number;
+}
+
+const CUTTING_TRACK = { centre: 6, offset: 1.5 } as const;
+
+/**
+ * The Cutting's pool: its bed, the bank biting into it, the inked wet line and
+ * the damp margin round it, packed by the forest pond's own packer
+ * (`packShoreline`) in the same §3 keys, so the route has one water language
+ * instead of a flat teal rectangle beside the forest's banked pond. It is its
+ * own plate drawn over the pages, exactly as the forest's `pond-bank.webp` is,
+ * and the live 0.4-alpha film still covers every water cell and tints its bed.
+ */
+export const CUTTING_POOL_OUTPUT = 'public/art/maps/cutting-scene/pool-bank.webp';
+export async function buildCuttingPool(): Promise<Image> {
+  const material = await loadQuarryMaterial(CUTTING_TRACK);
+  return packShoreline(material, { patch: CUTTING_POOL_PATCH, cells: CUTTING_WATER_CELLS }).image;
+}
+
+/** Rewrite one generated declaration in the registration file, or append it. */
+function register(declaration: string, pattern: RegExp): void {
+  const registrationPath = 'src/content/scenes/quarryRouteGround.ts';
+  const existing = existsSync(registrationPath)
+    ? readFileSync(registrationPath, 'utf8')
+    : '/** Generated from authoritative map rows by quarry-route-ground.ts. */\n';
+  writeFileSync(
+    registrationPath,
+    pattern.test(existing)
+      ? existing.replace(pattern, declaration)
+      : `${existing}\n${declaration}\n`,
+  );
 }
 
 /**
@@ -305,7 +427,7 @@ export async function buildQuarryGround(
   // On the Driller the carts cross the open floor, so the pair straddles the
   // board's centre. The Cutting's road splits round the pool into two one-row
   // lanes, rows 4 and 7, so it runs one track down the middle of each.
-  const track = mapId === 'cutting' ? { centre: 6, offset: 1.5 } : { centre: 5.5, offset: 1.15 };
+  const track = mapId === 'cutting' ? CUTTING_TRACK : { centre: 5.5, offset: 1.15 };
   const images = packQuarryGround(map, await loadQuarryMaterial(track));
   const built = new Map<QuarryRegionName, { image: Image; x: number; y: number }>();
   for (const [name, image] of images) {
@@ -363,18 +485,20 @@ export async function writeQuarryGround(
     ),
   );
   const exportName = mapId === 'cutting' ? 'CUTTING_GROUND_REGIONS' : 'DRILLER_GROUND_REGIONS';
-  const registrationPath = 'src/content/scenes/quarryRouteGround.ts';
-  const existing = existsSync(registrationPath)
-    ? readFileSync(registrationPath, 'utf8')
-    : '/** Generated from authoritative map rows by quarry-route-ground.ts. */\n';
-  const declaration = `export const ${exportName} = ${JSON.stringify(regions, null, 2)} as const;`;
-  const pattern = new RegExp(`export const ${exportName} = [\\s\\S]*? as const;`);
-  writeFileSync(
-    registrationPath,
-    pattern.test(existing)
-      ? existing.replace(pattern, declaration)
-      : `${existing}\n${declaration}\n`,
+  register(
+    `export const ${exportName} = ${JSON.stringify(regions, null, 2)} as const;`,
+    new RegExp(`export const ${exportName} = [\\s\\S]*? as const;`),
   );
+  if (mapId === 'cutting') {
+    const pool = await encodeWebp(await buildCuttingPool(), QUARRY_GROUND_QUALITY, true);
+    writeFileSync(CUTTING_POOL_OUTPUT, pool);
+    total += pool.length;
+    // A pin, like each page's `bytes`: the test holds the file on disk to it.
+    register(
+      `export const CUTTING_POOL_BYTES = ${pool.length};`,
+      /export const CUTTING_POOL_BYTES = \d+;/,
+    );
+  }
   return { regions, total };
 }
 

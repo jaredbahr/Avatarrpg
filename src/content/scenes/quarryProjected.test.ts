@@ -4,9 +4,14 @@ import decode, { init } from '@jsquash/webp/decode.js';
 import { beforeAll, describe, expect, it } from 'vitest';
 import type { MapScene } from '../../core/types';
 import { AMBUSH_ROAD, QUARRY_FLOOR } from '../maps/combat';
+import { rubbleHeap } from './forestRoad';
 import {
+  CUTTING_POOL_PATCH,
+  CUTTING_RUBBLE_CELLS,
   CUTTING_SCENE,
+  CUTTING_WATER_CELLS,
   DRILLER_FLOOR_SCENE,
+  DRILLER_RUBBLE_CELLS,
   DRILLER_FLOOR_WALL_CELLS,
   DRILLER_REAR_LOADING_CELLS,
   DRILLER_REAR_LOADING_SCENERY,
@@ -77,17 +82,17 @@ function pieceAlpha(piece: MapScene['ground'][number], world: { x: number; y: nu
 }
 
 describe('projected quarry scenes', () => {
-  it('covers authored centers and boundaries, including the ground under a spill, leaving only water transparent', () => {
+  it('covers authored centers and boundaries, including the ground under a spill and the pool', () => {
     for (const { map, scene } of routeScenes)
       for (let y = 0; y < map.height; y++)
         for (let x = 0; x < map.width; x++) {
           const key = map.rows[y]?.[x];
           const value = alpha(scene, point(x + 0.5, y + 0.5));
-          // Water keeps a transparent hole because its bed is authored with the
-          // liquid; oil and mud are opaque, so their own ground is painted and
-          // the live surface is drawn over it.
-          if (key === '~') expect(value, `${map.id} live water ${x},${y}`).toBeLessThan(8);
-          else if (key !== '#') expect(value, `${map.id} dry ${x},${y}`).toBeGreaterThan(240);
+          // Every walkable cell is painted. Oil and mud are opaque ground with
+          // the live surface drawn over it; the Cutting's pool is its own bed
+          // and bank plate, which the live water film tints, as the forest
+          // pond's is.
+          if (key !== '#') expect(value, `${map.id} ground ${x},${y}`).toBeGreaterThan(240);
           if (key === '#' || key === '~') continue;
           for (const [dx, dy] of [
             [1, 0],
@@ -133,19 +138,77 @@ describe('projected quarry scenes', () => {
       'art/maps/quarry-surround/east.webp',
     ]);
   });
-  it('softens the independently compressed dirt-page handoff without exposing dry floor', () => {
-    for (const { scene } of routeScenes) {
+  it('overlaps the two dirt pages by two whole cells across the x=10 split', () => {
+    for (const { map, scene } of routeScenes) {
       const west = scene.ground.find((piece) => piece.url.endsWith('/dirt-west.webp'));
       const east = scene.ground.find((piece) => piece.url.endsWith('/dirt-east.webp'));
       if (!west || !east) throw new Error('Missing dirt split');
-      // x=10 is the authored split. East is translucent there over the opaque
-      // west bleed, rather than replacing it with a separately compressed edge.
-      const seam = point(10, 1);
-      expect(pieceAlpha(west, seam)).toBeGreaterThan(240);
-      expect(pieceAlpha(east, seam)).toBeGreaterThan(20);
-      expect(pieceAlpha(east, seam)).toBeLessThan(235);
-      expect(alpha(scene, seam)).toBeGreaterThan(240);
+      // The pages are compressed independently, so where only their edges met
+      // the procedural grass showed through as a seam (DL-2 W5 gate). Now the
+      // west page is opaque across both columns either side of the line and
+      // the east page fades in over the middle of them, so nowhere between
+      // x=9 and x=11 does the board depend on two edges agreeing.
+      let checked = 0;
+      for (let y = 0; y < map.height; y++) {
+        if (![9, 10].every((x) => ['.', ','].includes(map.rows[y]?.[x] ?? ''))) continue;
+        for (let gx = 9.02; gx < 11; gx += 0.08) {
+          const at = point(gx, y + 0.5);
+          expect(pieceAlpha(west, at), `${map.id} west ${gx.toFixed(2)},${y}`).toBeGreaterThan(240);
+          expect(alpha(scene, at)).toBeGreaterThan(240);
+        }
+        // East takes over across the middle of the overlap and owns x=11 on.
+        expect(pieceAlpha(east, point(9.1, y + 0.5))).toBeLessThan(20);
+        expect(pieceAlpha(east, point(10, y + 0.5))).toBeGreaterThan(20);
+        expect(pieceAlpha(east, point(10, y + 0.5))).toBeLessThan(235);
+        expect(pieceAlpha(east, point(10.9, y + 0.5))).toBeGreaterThan(240);
+        checked++;
+      }
+      expect(checked, `${map.id} rows crossing the split`).toBeGreaterThan(3);
     }
+  });
+
+  it('stands the route heap on every cover cell and lays the pool over every water cell', () => {
+    const cells = (map: typeof AMBUSH_ROAD, key: string) =>
+      map.rows.flatMap((row, y) => [...row].flatMap((v, x) => (v === key ? [{ x, y }] : [])));
+    expect(CUTTING_RUBBLE_CELLS).toEqual(cells(AMBUSH_ROAD, 'r'));
+    expect(DRILLER_RUBBLE_CELLS).toEqual(cells(QUARRY_FLOOR, 'r'));
+    expect(CUTTING_WATER_CELLS).toEqual(cells(AMBUSH_ROAD, '~'));
+    for (const [scene, heaps] of [
+      [CUTTING_SCENE, CUTTING_RUBBLE_CELLS],
+      [DRILLER_FLOOR_SCENE, DRILLER_RUBBLE_CELLS],
+    ] as const) {
+      // The heap's own ink marks the hazard, so the live wash stands down under
+      // it, exactly as on the forest road.
+      expect(scene.paintedRubble).toEqual(heaps);
+      const pages = scene.ground.filter((piece) => /\/(dirt-|road|stone|pool)/.test(piece.url));
+      const lastPage = Math.max(...pages.map((page) => scene.ground.indexOf(page)));
+      for (const cell of heaps) {
+        const heap = rubbleHeap(cell);
+        const index = scene.ground.findIndex(
+          (piece) => JSON.stringify(piece) === JSON.stringify(heap),
+        );
+        // Drawn after every page, so no page covers the heap.
+        expect(index, `heap on ${cell.x},${cell.y}`).toBeGreaterThan(lastPage);
+        // Centred in its cell's diamond.
+        const centre = point(cell.x + 0.5, cell.y + 0.5);
+        expect(heap.x + heap.width / 2).toBeCloseTo(centre.x);
+        expect(heap.y + heap.height / 2).toBeCloseTo(centre.y);
+      }
+    }
+    for (const { x, y } of CUTTING_WATER_CELLS)
+      for (const [u, v] of [
+        [0.5, 0.5],
+        [0.02, 0.5],
+        [0.98, 0.5],
+        [0.5, 0.02],
+        [0.5, 0.98],
+      ] as const) {
+        const at = point(x + u, y + v);
+        expect(at.x).toBeGreaterThan(CUTTING_POOL_PATCH.x);
+        expect(at.x).toBeLessThan(CUTTING_POOL_PATCH.x + CUTTING_POOL_PATCH.width);
+        expect(at.y).toBeGreaterThan(CUTTING_POOL_PATCH.y);
+        expect(at.y).toBeLessThan(CUTTING_POOL_PATCH.y + CUTTING_POOL_PATCH.height);
+      }
   });
   it('opts The Cutting into local material regions and its exterior rim', () => {
     expect(AMBUSH_ROAD.projection).toBe('oblique');
@@ -156,6 +219,8 @@ describe('projected quarry scenes', () => {
       'art/maps/cutting-scene/dirt-east.webp',
       'art/maps/cutting-scene/road.webp',
       'art/maps/cutting-scene/stone.webp',
+      'art/maps/cutting-scene/pool-bank.webp',
+      ...CUTTING_RUBBLE_CELLS.map(() => 'art/maps/forest-scene/rubble.webp'),
     ]);
     expect(CUTTING_SCENE.scenery).toHaveLength(3);
     expect(CUTTING_SCENE.paintedWater).toBeUndefined();
@@ -169,6 +234,7 @@ describe('projected quarry scenes', () => {
       'art/maps/driller-floor-scene/dirt-west.webp',
       'art/maps/driller-floor-scene/dirt-east.webp',
       'art/maps/driller-floor-scene/stone.webp',
+      ...DRILLER_RUBBLE_CELLS.map(() => 'art/maps/forest-scene/rubble.webp'),
     ]);
     expect(DRILLER_FLOOR_SCENE.scenery).toHaveLength(3);
     expect(DRILLER_FLOOR_SCENE.scenery.slice(0, 2).map((piece) => piece.footprint[0])).toEqual(

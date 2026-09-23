@@ -17,9 +17,11 @@
  * - `road` region → §3 packed earth, with the haul tracks running down its two
  *   rows in the cart-rut tone.
  * - `earth-west` / `earth-east` → §3 quarry spoil, the loose ground either side
- *   of the road, carrying scattered inked heaps of freshly cut stone. A heap is
- *   painted only if it fits wholly on open terrace, the rule The Cutting uses
- *   (`heapFits`), so none is cut by the road's edge or a ledge into a sliver.
+ *   of the road, carrying small low mounds of spoil as texture. Since the DL-2
+ *   W5 gate they carry no ink and no limestone: the gate has no cover cell (its
+ *   cover is Pella's timber), and inked heaps read as cover that was not there.
+ *   A mound is painted only if it fits wholly on open terrace, the rule The
+ *   Cutting uses (`heapFits`), so none is cut by the road's edge or a ledge.
  *
  * Region routing, page origin and cell keys are untouched, so the registered
  * geometry is unchanged and only the bytes move.
@@ -32,7 +34,7 @@ import { tileNoise } from '../../src/render/painters/shapes';
 import { alphaBounds, crop } from './lib/trim';
 import { encodeWebp } from './lib/webp';
 import { heapFits, loadQuarryMaterial, QUARRY_GROUND_QUALITY } from './quarry-village-material';
-import type { QuarryMaterial, QuarryTone } from './quarry-village-material';
+import type { QuarryMaterial, QuarryTone, Rgb } from './quarry-village-material';
 
 const TILE_DIAGONAL = Math.hypot(64, 32);
 const INK_HALF = 1 / TILE_DIAGONAL;
@@ -71,7 +73,7 @@ const clamp = (value: number): number => Math.max(0, Math.min(1, value));
  * wall base or a cover cell is dropped whole by `heapFits`, never cut by that
  * boundary into a sliver.
  */
-const plainSpoil = (x: number, y: number): boolean => {
+export const plainSpoil = (x: number, y: number): boolean => {
   const key = QUARRY_GATE.rows[y]?.[x];
   return materialOf(key) === 'spoil' && plain(key);
 };
@@ -125,24 +127,24 @@ export function packGateGround(material: QuarryMaterial): Map<GateRegionName, Im
       }
       let tone: QuarryTone = swapTone && tileNoise(px, py, 5) < mix ? swapTone : own;
 
-      let inked = edge < INK_HALF;
+      let heap: Rgb | null = null;
       if (tone === 'earth') {
         // The road: haul tracks only. Spoil heaps do not sit in a cart lane.
         tone = material.trackMark(gx, gy) ?? tone;
       } else if (tone === 'spoil' && heapFits(gx, gy, plainSpoil)) {
-        // The terrace either side: inked heaps of freshly cut stone, so neither
-        // earth page is a quarter-frame of bare material. Only whole heaps.
-        const heap = material.heapMark(gx, gy);
-        if (heap === 'ink') inked = true;
-        else if (heap === 'inside') tone = 'limestone';
-        else if (heap === 'rim') tone = 'block';
+        // The terrace either side: low uninked mounds of spoil, so neither
+        // earth page is a quarter-frame of bare material, painted as the
+        // terrace's own texture. The gate has no cover cell (its cover is
+        // Pella's timber), so no heap here may read as one. Only whole heaps.
+        heap = material.heapMark(gx, gy);
       }
 
-      const rgb = inked
-        ? material.ink
-        : lit && edge < INK_HALF + RIM_WIDTH
-          ? material.rimOf(tone)
-          : material.colour(tone, gx, gy);
+      const rgb =
+        edge < INK_HALF
+          ? material.ink
+          : lit && edge < INK_HALF + RIM_WIDTH
+            ? material.rimOf(tone)
+            : (heap ?? material.colour(tone, gx, gy));
       setPixel(images.get(name)!, px, py, [rgb[0], rgb[1], rgb[2], 255]);
     }
   return images;

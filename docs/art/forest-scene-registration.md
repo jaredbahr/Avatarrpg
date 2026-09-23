@@ -101,3 +101,9 @@ WebP re-encode drift in the continued lawn, at most about 33 levels
 premultiplied, with no spill carried outside the board. The live rubble wash is
 unchanged and still marks the hazard cell. It is drawn over the spill, and its
 inked bank is the one diamond cue left.
+
+**The heap is the route's (2026-09-23).** Since the DL-2 W5 gate fixes,
+`rubble.webp` also stands on every cover cell of The Cutting and the Driller
+floor, registered through `rubbleHeap` in `src/content/scenes/forestRoad.ts`
+so all three scenes place it the same way, and `spillDepth`/`spillWins` take
+the quarry scenes' own cells. No forest plate changed.
