@@ -54,21 +54,26 @@ export const FOREST_GROUND_TONES = {
  * - `margin` is the §3 water margin's **damp margin** `#8e7049` over the
  *   packed-earth shadow the road already uses, so the pond's dry ring is the
  *   road's own family gone damp rather than a fourth earth.
- * - `bed` is the §3 **bed** `#2a5e77` with a deeper second flat tone; its pale
- *   entry is the §3 waterline **edge** `#7ec8e3`, which is painted only as the
- *   thin wet line against the bank, never as field incident (see `flat`).
+ * - `bed` is the §3 **bed** `#2a5e77` with a deeper second flat tone, the
+ *   palette's own deep-water edge `#173b4c` (`TERRAIN_STYLES.water_deep` in
+ *   `src/render/palettes.ts`); its pale entry is the §3 waterline **edge**
+ *   `#7ec8e3`, which is painted only as the thin wet line against the bank,
+ *   never as field incident.
  * - `spoil` is §3 quarry spoil / rubble with its chip highlight.
  * - `stone` is the §3 cut stone block face. Its pale rim is the limestone row's
- *   `#efe6d2` rather than the cut-stone row's `#8a7d66` tool-mark, because the
- *   bible's third entry is a *thin pale rim* and both rows are one family; the
- *   dark tool-mark would be a third field tone, which the no-gradient rule
- *   forbids.
+ *   `#efe6d2`; its joint is the cut-stone row's `#8a7d66` tool-mark, which the
+ *   shelf spends only on the block joints of a face turned away from the light.
+ * - `trodden` is packed earth that was never paved: the shelf's walkable top
+ *   and the bare ground the rubble lies on. It is the road's packed-earth key,
+ *   read through the courtyard lawn's rhythm and its own salt rather than the
+ *   paving's flagstones, so neither reads as the road carried on.
  */
 export const FOREST_PIECE_TONES = {
   margin: { base: '#8e7049', shadow: '#7a5f3e', rim: '#b39064' },
-  bed: { base: '#2a5e77', shadow: '#1a3a4c', rim: '#7ec8e3' },
+  bed: { base: '#2a5e77', shadow: '#173b4c', rim: '#7ec8e3' },
   spoil: { base: '#a89880', shadow: '#857762', rim: '#c2b49c' },
-  stone: { base: '#cfc2a6', shadow: '#a2957c', rim: '#efe6d2' },
+  stone: { base: '#cfc2a6', shadow: '#a2957c', rim: '#efe6d2', joint: '#8a7d66' },
+  trodden: { base: '#b39064', shadow: '#8e7049', rim: '#c7a87d' },
 } as const;
 
 export const FOREST_ALL_TONES = { ...FOREST_GROUND_TONES, ...FOREST_PIECE_TONES } as const;
@@ -308,9 +313,9 @@ export function bindPalette<N extends string>(
     },
     rimOf: (tone) => parsed[tone].rim,
     colour: (tone, x, y) => parsed[tone][structure(crops[cropOf[tone]], x, y, saltOf[tone])],
-    // No forest material names a joint tone, so its darkest slice — a subset
-    // of the shadow share — reads as shadow here, exactly as it did before
-    // `structure` grew a fourth, joint-only class for the quarry's tool-mark.
+    // The class is structure, not colour: a crop's darkest slice is a subset
+    // of its shadow share, so it reads as shadow here whether or not the
+    // material names a joint tone for `colour` to paint it with.
     classOf: (tone, x, y) => {
       const cls = structure(crops[cropOf[tone]], x, y, saltOf[tone]);
       return cls === 'joint' ? 'shadow' : cls;
@@ -338,7 +343,7 @@ const RUT_HALF = 0.3;
  * The paving's flagstone joints carry the made materials — road, wear, the
  * shelf's cut stone, the quarry spoil's chipped slabs; the courtyard lawn's
  * organic rhythm carries the grown and the settled ones — the verge, the
- * pond's damp ring, and the silt on its bed.
+ * pond's damp ring, the silt on its bed, and trodden earth.
  */
 const CROP_OF: Record<ToneName, CropName> = {
   road: 'paving',
@@ -348,6 +353,7 @@ const CROP_OF: Record<ToneName, CropName> = {
   bed: 'lawn',
   spoil: 'paving',
   stone: 'paving',
+  trodden: 'lawn',
 };
 const SALT_OF: Record<ToneName, number> = {
   road: 17,
@@ -357,6 +363,7 @@ const SALT_OF: Record<ToneName, number> = {
   bed: 59,
   spoil: 71,
   stone: 83,
+  trodden: 97,
 };
 
 export async function loadForestMaterial(): Promise<ForestMaterial> {
