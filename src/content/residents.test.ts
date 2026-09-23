@@ -208,8 +208,75 @@ describe('validateContent: resident records (ADR 0047 W4a)', () => {
       ],
     };
     expect(problemsOf(bundle({ residents: [lax] }))).toContain(
-      'resident "test.elder" override "intro" all: a mission slot must take \'talk\'',
+      'resident "test.elder" override "intro" all: a mission slot must name an npc and take \'talk\'',
     );
+  });
+
+  describe('a mission hold can never lose its required conversation', () => {
+    const hold = (
+      override: Partial<NonNullable<ResidentDef['overrides']>[number]>,
+    ): ResidentDef => ({
+      ...ELDER,
+      overrides: [
+        {
+          id: 'intro',
+          tier: 'mission',
+          when: { kind: 'visited', nodeId: 'mira_intro' },
+          slots: {},
+          ...override,
+        },
+      ],
+    });
+    const intro = 'resident "test.elder" override "intro"';
+
+    it('accepts all six phases in `slots` without `all`', () => {
+      const six = hold({
+        slots: {
+          dawn: TABLE,
+          morning: TABLE,
+          midday: TABLE,
+          afternoon: TABLE,
+          evening: TABLE,
+          night: TABLE,
+        },
+      });
+      expect(problemsOf(bundle({ residents: [six] }))).toEqual([]);
+    });
+
+    it('rejects a hold with neither `all` nor every phase', () => {
+      const partial = hold({ slots: { dawn: TABLE, morning: TABLE } });
+      expect(problemsOf(bundle({ residents: [partial] }))).toContain(
+        `${intro}: a mission hold must cover every phase`,
+      );
+    });
+
+    it("rejects 'home' in a hold", () => {
+      const home = hold({ slots: { night: 'home' }, all: TABLE });
+      expect(problemsOf(bundle({ residents: [home] }))).toContain(
+        `${intro} night: a mission hold can't be "home"`,
+      );
+    });
+
+    it("rejects 'absent' in a hold", () => {
+      const absent = hold({ all: 'absent' });
+      expect(problemsOf(bundle({ residents: [absent] }))).toContain(
+        `${intro} all: a mission hold can't be "absent"`,
+      );
+    });
+
+    it('rejects a hold slot that names no npc', () => {
+      const mute = hold({ all: { anchor: 'test.table', activity: 'idle', interrupt: 'talk' } });
+      expect(problemsOf(bundle({ residents: [mute] }))).toContain(
+        `${intro} all: a mission slot must name an npc and take 'talk'`,
+      );
+    });
+
+    it('rejects a hold slot on a private anchor', () => {
+      const hidden = hold({ all: { ...TABLE, anchor: 'test.home' } });
+      expect(problemsOf(bundle({ residents: [hidden] }))).toContain(
+        `${intro} all: a mission slot must be public`,
+      );
+    });
   });
 
   it('enforces the fallback and home rules', () => {

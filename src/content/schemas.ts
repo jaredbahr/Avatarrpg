@@ -1734,11 +1734,25 @@ function validateResidents(bundle: ContentBundle, problems: string[]): void {
       const where = `${label} override "${override.id}"`;
       const values = [...Object.entries(override.slots), ['all', override.all] as const];
       if (values.length === 1 && !override.all) problems.push(`${where} has no slots`);
+      const mission = override.tier === 'mission';
+      // A mission holds a required conversation (§4): it must cover every
+      // phase with a public, talkable slot, or the conversation can be lost.
+      if (mission && !override.all && DAY_PHASES.some((phase) => !override.slots[phase])) {
+        problems.push(`${where}: a mission hold must cover every phase`);
+      }
       for (const [phase, slot] of values) {
-        if (typeof slot !== 'object') continue;
+        if (typeof slot !== 'object') {
+          if (mission && slot)
+            problems.push(`${where} ${phase}: a mission hold can't be "${slot}"`);
+          continue;
+        }
         checkSlot(`${where} ${phase}`, slot, resident.id);
-        if (override.tier === 'mission' && slot.interrupt !== 'talk') {
-          problems.push(`${where} ${phase}: a mission slot must take 'talk'`);
+        if (!mission) continue;
+        if (!slot.npc || slot.interrupt !== 'talk') {
+          problems.push(`${where} ${phase}: a mission slot must name an npc and take 'talk'`);
+        }
+        if (anchors.get(slot.anchor)?.site.kind === 'private') {
+          problems.push(`${where} ${phase}: a mission slot must be public`);
         }
       }
     }
