@@ -1814,9 +1814,23 @@ function validateResidents(bundle: ContentBundle, problems: string[]): void {
     }
   }
 
+  // An unnamed role must never look like a named person (§8): no role may
+  // wear the sprite of any resident-bound NpcDef.
+  const residentSprites = new Map<string, string>();
+  for (const map of bundle.maps)
+    for (const npc of map.npcs)
+      if (npc.resident && !residentSprites.has(npc.sprite))
+        residentSprites.set(npc.sprite, `${map.id}:${npc.id}`);
+
   for (const role of bundle.backgroundRoles) {
     const label = `background role "${role.id}"`;
     if (isReservedIdentity(role.id)) problems.push(`${label} uses a registered identity`);
+    const lookalike = residentSprites.get(role.sprite);
+    if (lookalike) {
+      problems.push(
+        `${label} wears "${role.sprite}", the sprite of resident-bound npc ${lookalike}`,
+      );
+    }
     for (const [phase, slot] of Object.entries(role.slots)) {
       checkSlot(`${label} ${phase}`, slot, null);
     }

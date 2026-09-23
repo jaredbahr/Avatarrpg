@@ -344,6 +344,25 @@ describe('validateContent: resident records (ADR 0047 W4a)', () => {
     );
   });
 
+  it('never lets a background role wear a resident-bound NpcDef’s sprite', () => {
+    // The W5 data before the review: riverside Dorin in `npc.guard`, the
+    // sprite the unnamed relief watch also wears.
+    const before: ContentBundle = {
+      ...CONTENT_BUNDLE,
+      maps: CONTENT_BUNDLE.maps.map((map) => ({
+        ...map,
+        npcs: map.npcs.map((n) => (n.id === 'riverside_dorin' ? { ...n, sprite: 'npc.guard' } : n)),
+      })),
+    };
+    const clash =
+      'background role "bg.relief_watch" wears "npc.guard", the sprite of resident-bound npc ba_dan_riverside:riverside_dorin';
+    expect(problemsOf(before)).toContain(clash);
+    expect(problemsOf(CONTENT_BUNDLE)).not.toContain(clash);
+    expect(problemsOf(bundle({ roles: [{ ...HELPER, sprite: 'npc.elder' }] }))).toContain(
+      'background role "bg.test_helper" wears "npc.elder", the sprite of resident-bound npc ba_dan_village:elder_mira',
+    );
+  });
+
   it('keeps background roles unnamed and non-interactive', () => {
     const named: BackgroundRole = { ...HELPER, id: 'lw.npc.bo' };
     expect(problemsOf(bundle({ roles: [named] }))).toContain(

@@ -127,11 +127,12 @@ export const RIVERSIDE: MapDef = {
       id: 'riverside_dorin',
       name: 'Dorin',
       resident: 'lw.npc.dorin',
-      sprite: 'npc.guard',
+      // One person, one look: the same sprite as village Dorin.
+      sprite: 'npc.dorin',
       node: 'riverside_dorin',
     },
     {
-      // Pella's supervised afternoon at the safe bank (ADR 0047 ง8); W6 writes her lines.
+      // Pella's supervised afternoon at the safe bank (ADR 0047 ยง8); W6 writes her lines.
       id: 'riverside_pella',
       name: 'Pella',
       resident: 'lw.npc.pella',
