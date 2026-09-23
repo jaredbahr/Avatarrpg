@@ -1,4 +1,6 @@
 import { expect, it } from 'vitest';
+import { CONTENT } from '../content';
+import { LEGEND } from '../content/maps/legend';
 import { NEUTRAL_PALETTE, SURFACE_STYLES, TERRAIN_STYLES } from './palettes';
 import { SURFACE_BANK, SURFACE_RIM } from './surfaceRendering';
 
@@ -66,4 +68,31 @@ it('rings live rubble with a bank every ground shows at default settings', () =>
     const line = over(ground, edge, SURFACE_BANK.alpha);
     expect(Math.abs(luma(line) - luma(ground)), `bank over ${name}`).toBeGreaterThanOrEqual(30);
   }
+});
+
+it('lays every rubble cell on the ground contract spoil, not limestone paving', () => {
+  /*
+   * A partial scene draws the grid's terrain first and the painted heap over
+   * it, and the heap's earth bed does not fill the cell's diamond. Under `stone`
+   * that margin read as a pale limestone slab (`#d8cbb0`) round every forest
+   * heap on Canvas; rubble lies on spoil, which W1 keyed `sand` to.
+   */
+  const rubble = LEGEND.r;
+  expect(rubble?.surface).toBe('rubble');
+  expect(rubble?.terrain).toBe('sand');
+  expect(TERRAIN_STYLES.sand.fill).toBe(GROUNDS.spoil);
+  // Terrain carries no rule: what makes rubble rubble stays on the template.
+  expect(rubble).toMatchObject({ cover: true, surfaceDuration: -1 });
+  expect(rubble?.blocked ?? false).toBe(false);
+  expect(rubble?.elevation ?? 0).toBe(0);
+
+  let cells = 0;
+  for (const map of CONTENT.maps.values())
+    for (const row of map.rows)
+      for (const key of row) {
+        if (map.legend[key]?.surface !== 'rubble') continue;
+        cells++;
+        expect(map.legend[key]?.terrain, `${map.id} rubble '${key}'`).toBe('sand');
+      }
+  expect(cells).toBeGreaterThan(0);
 });
