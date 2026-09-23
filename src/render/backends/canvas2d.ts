@@ -189,7 +189,7 @@ export class Canvas2DBackend implements RenderBackend {
         }
         ctx.save();
         ctx.transform(m.a, m.b, m.c, m.d, m.tx, m.ty);
-        this.drawGround(view, ground, false, false, true);
+        this.drawGround(view, ground, sceneGround, false, true);
         // A complete partial scene owns its local ground art; accessibility
         // and unavailable pieces still need all procedural rule markers.
         if (!sceneGround || view.crispOverlays) this.drawDecor(view, ground);

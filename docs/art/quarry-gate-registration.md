@@ -141,6 +141,31 @@ under an ignored folder and writes only the reviewed WebPs to
 is renderer-owned and remains a separate pending correction; this change does
 not alter it.
 
+**DL-2 cleanup: whole heaps only (2026-09-23).** The spoil heaps on the terrace
+now obey the fit rule The Cutting has used since W4: a heap is painted only if
+every cell its paint can reach is open terrace (`.`/`,`). The rule lives in
+`scripts/art/quarry-village-material.ts` as `heapFits`, shared by both
+packers. Before, a heap anchored near the road cut across the lane's edge, so
+the road's ink line sliced it into a sliver (the heap at about (2.7, 6.8), left
+of the road in the authored frame), and others were clipped by a ledge or ran
+under a wall base or a cover cell. Those heaps are now left out whole; the
+heaps that fit are unchanged. `quarry-route-ground.test.ts` samples every heap
+on the board and fails if any shows only part of its body. The four registered
+rectangles are unchanged. The Cutting's and the Driller's plates are
+byte-identical.
+
+| Page         | Before (B) | After (B) | Delta (B) |
+| ------------ | ---------: | --------: | --------: |
+| `earth-west` |     35,840 |    33,486 |    −2,354 |
+| `earth-east` |     34,708 |    32,368 |    −2,340 |
+| `road`       |     18,460 |    18,376 |       −84 |
+| `limestone`  |     29,930 |    29,930 |         0 |
+| Total        |    118,938 |   114,160 |    −4,778 |
+
+The road page moves because the old packer also drew heap pixels onto road
+cells where the lane's feathered join swapped a pixel to spoil. Those were ink
+specks in the road, and they are gone too.
+
 Source/packed images have been inspected, but tests and technical registration
 do not establish visual acceptance. Inspect coherent wall runs versus repeated
 block appearance, exposed ends/corners, ground contact and occlusion while actors

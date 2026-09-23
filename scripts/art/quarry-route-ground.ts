@@ -38,7 +38,7 @@ import type { Image } from './lib/image';
 import { tileNoise } from '../../src/render/painters/shapes';
 import { alphaBounds, crop } from './lib/trim';
 import { encodeWebp } from './lib/webp';
-import { loadQuarryMaterial, nearestHeap, QUARRY_GROUND_QUALITY } from './quarry-village-material';
+import { heapFits, loadQuarryMaterial, QUARRY_GROUND_QUALITY } from './quarry-village-material';
 import type { QuarryMaterial, QuarryTone } from './quarry-village-material';
 
 /** One logical tile is 64x32 scene pixels; see `forest-route-ground.ts`. */
@@ -114,22 +114,16 @@ const plain = (key: string | undefined): boolean =>
 const clamp = (value: number): number => Math.max(0, Math.min(1, value));
 
 /**
- * Whether the heap nearest a point lies wholly on plain spoil. The Cutting's
- * shoulders are narrow strips between the lane and the ledges, and a heap
- * anchored near either edge would be cut by it: into a sliver hugging a ledge
- * line, or into ink specks scattered through the lane's feathered fringe. A
- * heap that does not fit is left out whole rather than clipped.
+ * Plain spoil, the only ground a heap may lie on. The Cutting's shoulders are
+ * narrow strips between the lane and the ledges, so a heap anchored near either
+ * edge is dropped whole by `heapFits` rather than cut into a sliver.
  */
-function heapFits(map: MapDef, x: number, y: number): boolean {
-  const heap = nearestHeap(x, y);
-  if (!heap) return false;
-  for (let cy = Math.floor(heap.hy - heap.reach); cy <= Math.floor(heap.hy + heap.reach); cy++)
-    for (let cx = Math.floor(heap.hx - heap.reach); cx <= Math.floor(heap.hx + heap.reach); cx++) {
-      const key = map.rows[cy]?.[cx];
-      if (materialOf(key) !== 'spoil' || !plain(key)) return false;
-    }
-  return true;
-}
+const plainSpoil =
+  (map: MapDef) =>
+  (x: number, y: number): boolean => {
+    const key = map.rows[y]?.[x];
+    return materialOf(key) === 'spoil' && plain(key);
+  };
 
 const regionOf = (x: number, key: string | undefined): QuarryRegionName | null => {
   const terrain = kind(key);
@@ -144,6 +138,7 @@ export function packQuarryGround(
   const images = new Map(
     QUARRY_REGION_NAMES.map((name) => [name, newImage(QUARRY_PAGE.width, QUARRY_PAGE.height)]),
   );
+  const carries = plainSpoil(map);
   for (let py = 0; py < QUARRY_PAGE.height; py++)
     for (let px = 0; px < QUARRY_PAGE.width; px++) {
       const wx = QUARRY_PAGE.x + px + 0.5,
@@ -210,7 +205,7 @@ export function packQuarryGround(
         else if (heap === 'inside') tone = 'spoil';
         else if (heap === 'rim') tone = 'wear';
         else tone = material.trackMark(gx, gy) ?? tone;
-      } else if (tone === 'spoil' && own === 'spoil' && plain(key) && heapFits(map, gx, gy)) {
+      } else if (tone === 'spoil' && own === 'spoil' && plain(key) && heapFits(gx, gy, carries)) {
         // Spoil shoulders: inked heaps of freshly cut stone, exactly as the
         // gate paints its terrace, so neither dirt page is a bare swatch.
         const heap = material.heapMark(gx, gy);

@@ -67,6 +67,10 @@ export const FOREST_GROUND_TONES = {
  *   and the bare ground the rubble lies on. It is the road's packed-earth key,
  *   read through the courtyard lawn's rhythm and its own salt rather than the
  *   paving's flagstones, so neither reads as the road carried on.
+ * - `spill` is the same §3 spoil key laid as ground: the grit and chips a
+ *   rubble heap sheds round its foot. It reads its structure from the lawn, as
+ *   the quarry's own spoil ground does (`quarry-village-material.ts`), so the
+ *   forest's roadside spill and the quarry's terrace are one material.
  */
 export const FOREST_PIECE_TONES = {
   margin: { base: '#8e7049', shadow: '#7a5f3e', rim: '#b39064' },
@@ -74,6 +78,7 @@ export const FOREST_PIECE_TONES = {
   spoil: { base: '#a89880', shadow: '#857762', rim: '#c2b49c' },
   stone: { base: '#cfc2a6', shadow: '#a2957c', rim: '#efe6d2', joint: '#8a7d66' },
   trodden: { base: '#b39064', shadow: '#8e7049', rim: '#c7a87d' },
+  spill: { base: '#a89880', shadow: '#857762', rim: '#c2b49c' },
 } as const;
 
 export const FOREST_ALL_TONES = { ...FOREST_GROUND_TONES, ...FOREST_PIECE_TONES } as const;
@@ -354,6 +359,7 @@ const CROP_OF: Record<ToneName, CropName> = {
   spoil: 'paving',
   stone: 'paving',
   trodden: 'lawn',
+  spill: 'lawn',
 };
 const SALT_OF: Record<ToneName, number> = {
   road: 17,
@@ -364,6 +370,7 @@ const SALT_OF: Record<ToneName, number> = {
   spoil: 71,
   stone: 83,
   trodden: 97,
+  spill: 109,
 };
 
 export async function loadForestMaterial(): Promise<ForestMaterial> {

@@ -84,18 +84,21 @@ for (const renderer of ['canvas', 'webgl'])
       });
       return { ...average(pixels, point.x - left, point.y - top, 3), pixels };
     };
-    const registered = await sample();
-    // Forest Road is a partial scene: the permanent live rubble overlay remains
-    // active regardless of the legacy complete-scene registration list, while
-    // the registered local rubble image remains visible underneath it.
+    const registered = await sample(ROI_CSS);
+    // Forest Road is a partial scene. Its registered heap cells carry authored
+    // art whose own ink outline marks the hazard, so the permanent rubble wash
+    // and its bank stand down there; unregistered rubble draws them again. The
+    // difference sits mostly on the bank round the tile edge, so it is counted
+    // across the window rather than read from the centre average.
     await page.evaluate(() => {
       const scene = window.fnt!.app.content.maps.get('forest_road')!.scene!;
       Object.defineProperty(scene, 'paintedRubble', { value: [], configurable: true });
     });
-    const unregistered = await sample();
-    expect(Math.abs(unregistered.r - registered.r)).toBeLessThan(3);
-    expect(Math.abs(unregistered.g - registered.g)).toBeLessThan(3);
-    expect(Math.abs(unregistered.b - registered.b)).toBeLessThan(3);
+    const unregistered = await sample(ROI_CSS);
+    expect(
+      changedPixels(registered.pixels, unregistered.pixels, ROI_CSS),
+      'unregistered rubble wash changed pixels',
+    ).toBeGreaterThan(200);
 
     // A live material must still tint the authored rubble image.
     await page.evaluate(() => {

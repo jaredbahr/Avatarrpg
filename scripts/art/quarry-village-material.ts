@@ -151,6 +151,28 @@ export function nearestHeap(x: number, y: number): NearestHeap | null {
   return found;
 }
 
+/**
+ * Whether the heap nearest a point lies wholly on ground that can carry it:
+ * every cell its paint can reach must pass `carries`. A packer passes "plain
+ * spoil" in its own reading of the map. A heap near a lane edge, a ledge, a
+ * wall base or a cover cell would otherwise be cut by that boundary into a
+ * sliver, or into ink specks through a feathered join; one that does not fit
+ * is left out whole rather than clipped. The Cutting and the gate share this
+ * rule so the two cannot drift.
+ */
+export function heapFits(
+  x: number,
+  y: number,
+  carries: (cellX: number, cellY: number) => boolean,
+): boolean {
+  const heap = nearestHeap(x, y);
+  if (!heap) return false;
+  for (let cy = Math.floor(heap.hy - heap.reach); cy <= Math.floor(heap.hy + heap.reach); cy++)
+    for (let cx = Math.floor(heap.hx - heap.reach); cx <= Math.floor(heap.hx + heap.reach); cx++)
+      if (!carries(cx, cy)) return false;
+  return true;
+}
+
 function heapDistance(x: number, y: number): number {
   return nearestHeap(x, y)?.distance ?? Infinity;
 }

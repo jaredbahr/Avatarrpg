@@ -1,6 +1,6 @@
-import { readFileSync } from 'node:fs';
+import { readFileSync, statSync } from 'node:fs';
 import { expect, it } from 'vitest';
-import { AMBUSH_ROAD, QUARRY_FLOOR } from '../../src/content/maps/combat';
+import { AMBUSH_ROAD, QUARRY_FLOOR, QUARRY_GATE } from '../../src/content/maps/combat';
 import {
   CUTTING_GROUND_REGIONS,
   DRILLER_GROUND_REGIONS,
@@ -10,7 +10,12 @@ import type { Image } from './lib/image';
 import { pixelAt, toHex } from './lib/image';
 import { encodeWebp } from './lib/webp';
 import { FOREST_INK } from './forest-village-material';
-import { QUARRY_GROUND_QUALITY, QUARRY_GROUND_TONES } from './quarry-village-material';
+import {
+  HEAP_INK,
+  QUARRY_GROUND_QUALITY,
+  QUARRY_GROUND_TONES,
+  nearestHeap,
+} from './quarry-village-material';
 import { QUARRY_PAGE, buildQuarryGround } from './quarry-route-ground';
 import { buildGateGround } from './quarry-modular-ground';
 import { luma, measure, readPlate } from './forest-ground-measure';
@@ -260,4 +265,60 @@ it('ships the plates the packers build, inside the registered page', async () =>
         `${root}/${region.name}.webp`,
       ).toEqual(readFileSync(`public/art/maps/${root}/${region.name}.webp`));
     }
+});
+
+/**
+ * The `bytes` field of each generated region table is a pin, not a comment:
+ * `quarryProjected.ts` drops it before the scene sees it, so nothing at runtime
+ * would notice a page re-encoded behind the table's back. The pages are
+ * approved art (The Cutting's especially), so a repack has to show up here.
+ */
+it.each([
+  ['driller-floor-scene', DRILLER_GROUND_REGIONS],
+  ['cutting-scene', CUTTING_GROUND_REGIONS],
+] as const)('pins every %s page to its recorded size on disk', (root, regions) => {
+  expect(regions.length).toBeGreaterThan(0);
+  for (const region of regions)
+    expect(
+      statSync(`public/art/maps/${root}/${region.name}.webp`).size,
+      `${root}/${region.name}.webp`,
+    ).toBe(region.bytes);
+});
+
+/**
+ * A spoil heap is drawn whole or not at all. Sampled over the whole board: every
+ * heap whose body shows anywhere must show its body everywhere, so none is cut
+ * by a lane edge, a ledge, a wall base or a cover cell into a sliver (the fit
+ * rule both packers share, `heapFits`).
+ */
+it.each([
+  ['cutting', () => cutting, AMBUSH_ROAD, ['dirt-west', 'dirt-east'], 3],
+  ['gate', () => gate, QUARRY_GATE, ['earth-west', 'earth-east'], 5],
+] as const)('draws every %s spoil heap whole', (_scene, built, map, pages, atLeast) => {
+  const body = new Set<string>(Object.values(QUARRY_GROUND_TONES.limestone));
+  const heaps = new Map<string, { hits: number; all: number }>();
+  const step = 0.02;
+  for (let gy = step / 2; gy < map.height; gy += step)
+    for (let gx = step / 2; gx < map.width; gx += step) {
+      const heap = nearestHeap(gx, gy);
+      // Well inside the body, clear of the ink line and of pixel rounding.
+      if (!heap || heap.distance > -HEAP_INK - 0.02) continue;
+      const key = `${heap.hx.toFixed(4)},${heap.hy.toFixed(4)}`;
+      const tally = heaps.get(key) ?? { hits: 0, all: 0 };
+      tally.all++;
+      const { image, x: originX, y: originY } = plate(built(), pages[gx < 10 ? 0 : 1]);
+      const rgba = pixelAt(
+        image,
+        Math.floor(768 + (gx - gy) * 64 - originX),
+        Math.floor((gx + gy) * 32 - originY),
+      );
+      if ((rgba[3] ?? 0) === 255 && body.has(toHex([rgba[0], rgba[1], rgba[2]]))) tally.hits++;
+      heaps.set(key, tally);
+    }
+  let whole = 0;
+  for (const [key, { hits, all }] of heaps) {
+    expect(hits === 0 || hits === all, `heap at ${key}: ${hits} of ${all} body samples`).toBe(true);
+    if (hits === all) whole++;
+  }
+  expect(whole).toBeGreaterThanOrEqual(atLeast);
 });

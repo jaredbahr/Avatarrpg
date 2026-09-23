@@ -20,6 +20,7 @@ import type { Image } from './lib/image';
 import { FOREST_GROUND_QUALITY, loadForestMaterial } from './forest-village-material';
 import type { ForestMaterial } from './forest-village-material';
 import { encodeWebp } from './lib/webp';
+import { spillAt } from './forest-rubble';
 
 export const FOREST_GRASS_PACKS = [
   {
@@ -54,9 +55,11 @@ export function grassPosition(
 
 export function withinGrassRegion(x: number, y: number, rows: readonly number[]): boolean {
   const key = FOREST_ROAD.rows[y]?.[x];
-  // Grass continues beneath a pine without changing its footprint, but never
-  // replaces water, ledges, rubble or the road's gameplay material.
-  return rows.includes(y) && (key === ',' || key === 'T');
+  // Grass continues beneath a pine without changing its footprint, and the
+  // verge runs on under a rubble heap, where it gives way to the heap's spill
+  // (`forest-rubble.ts`), so no bare terrain diamond shows round it. It never
+  // replaces water, ledges or the road's gameplay material.
+  return rows.includes(y) && (key === ',' || key === 'T' || key === 'r');
 }
 
 export function packGrassRegion(
@@ -85,7 +88,8 @@ export function packGrassRegion(
         alpha = Math.min(alpha, clamp(distance / width));
       }
 
-      const colour = material.colour('verge', x, y);
+      // Round a rubble heap the verge gives way to the spill it has shed.
+      const colour = material.colour(spillAt(material, x, y) ? 'spill' : 'verge', x, y);
       setPixel(image, px, py, [colour[0], colour[1], colour[2], Math.round(alpha * 255)]);
     }
   return image;

@@ -8,8 +8,10 @@ import {
   FOREST_GROUND_QUALITY,
   FOREST_GROUND_TONES,
   FOREST_INK,
+  FOREST_PIECE_TONES,
   loadForestMaterial,
 } from './forest-village-material';
+import { SPILL, spillDepth } from './forest-rubble';
 import {
   FOREST_ROUTE_GROUND,
   FOREST_ROUTE_GROUND_OUTPUT,
@@ -34,23 +36,37 @@ it('ships the route plate the packer builds, inside the texture cap', async () =
   );
 });
 
-it('paints only the three named materials, their rims and the ink', () => {
+it('paints only the three named materials, the heap spill, their rims and the ink', () => {
   const allowed = new Set<string>([FOREST_INK]);
   for (const tone of Object.values(FOREST_GROUND_TONES))
     for (const hex of Object.values(tone)) allowed.add(hex);
+  const spill = new Set<string>(Object.values(FOREST_PIECE_TONES.spill));
   const seen = new Set<string>();
-  for (let i = 0; i < image.data.length; i += 4) {
-    if ((image.data[i + 3] ?? 0) === 0) continue;
-    seen.add(toHex([image.data[i] ?? 0, image.data[i + 1] ?? 0, image.data[i + 2] ?? 0]));
-  }
+  let strayed = 0;
+  for (let py = 0; py < image.height; py++)
+    for (let px = 0; px < image.width; px++) {
+      const i = (py * image.width + px) * 4;
+      if ((image.data[i + 3] ?? 0) === 0) continue;
+      const hex = toHex([image.data[i] ?? 0, image.data[i + 1] ?? 0, image.data[i + 2] ?? 0]);
+      seen.add(hex);
+      if (!spill.has(hex) || allowed.has(hex)) continue;
+      // The spill is the rubble heaps' own ground and lies only round them.
+      const wx = FOREST_ROUTE_GROUND.x + px + 0.5,
+        wy = FOREST_ROUTE_GROUND.y + py + 0.5;
+      const dx = (wx - 768) / 64,
+        dy = wy / 32;
+      if (spillDepth((dx + dy) / 2, (dy - dx) / 2) <= -SPILL.feather) strayed++;
+    }
   // Flat tones only: a colour outside the table would be the continuous tone a
   // gradient or a distance haze needs in order to exist.
-  expect([...seen].filter((hex) => !allowed.has(hex))).toEqual([]);
+  expect([...seen].filter((hex) => !allowed.has(hex) && !spill.has(hex))).toEqual([]);
+  expect(strayed, 'spill painted away from a heap').toBe(0);
   // All three materials are actually used, so the plane is not one swatch.
   for (const hex of [
     FOREST_GROUND_TONES.road.base,
     FOREST_GROUND_TONES.wear.base,
     FOREST_GROUND_TONES.verge.base,
+    FOREST_PIECE_TONES.spill.base,
   ])
     expect(seen, `${hex} is painted`).toContain(hex);
 });

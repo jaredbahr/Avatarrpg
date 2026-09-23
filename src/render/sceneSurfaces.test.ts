@@ -13,7 +13,10 @@ it('replaces only registered permanent rubble and restores all dynamic/accessibi
   const view = { scene, hatch: false, crispOverlays: false };
   expect(tile.surface?.id).toBe('rubble');
   expect(scene.groundMode).toBe('partial');
-  expect(surfaceIsPainted(view, true, tile, pos)).toBe(false);
+  expect(surfaceIsPainted(view, true, tile, pos)).toBe(true);
+  expect(
+    surfaceIsPainted({ ...view, scene: { ...view.scene, paintedRubble: [] } }, true, tile, pos),
+  ).toBe(false);
   expect(
     surfaceIsPainted({ ...view, scene: { ...view.scene, groundMode: undefined } }, true, tile, pos),
   ).toBe(true);

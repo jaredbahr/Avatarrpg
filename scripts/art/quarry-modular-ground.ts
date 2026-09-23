@@ -17,7 +17,9 @@
  * - `road` region → §3 packed earth, with the haul tracks running down its two
  *   rows in the cart-rut tone.
  * - `earth-west` / `earth-east` → §3 quarry spoil, the loose ground either side
- *   of the road, carrying scattered inked heaps of freshly cut stone.
+ *   of the road, carrying scattered inked heaps of freshly cut stone. A heap is
+ *   painted only if it fits wholly on open terrace, the rule The Cutting uses
+ *   (`heapFits`), so none is cut by the road's edge or a ledge into a sliver.
  *
  * Region routing, page origin and cell keys are untouched, so the registered
  * geometry is unchanged and only the bytes move.
@@ -29,7 +31,7 @@ import type { Image } from './lib/image';
 import { tileNoise } from '../../src/render/painters/shapes';
 import { alphaBounds, crop } from './lib/trim';
 import { encodeWebp } from './lib/webp';
-import { loadQuarryMaterial, QUARRY_GROUND_QUALITY } from './quarry-village-material';
+import { heapFits, loadQuarryMaterial, QUARRY_GROUND_QUALITY } from './quarry-village-material';
 import type { QuarryMaterial, QuarryTone } from './quarry-village-material';
 
 const TILE_DIAGONAL = Math.hypot(64, 32);
@@ -62,6 +64,17 @@ const materialOf = (key: string | undefined): QuarryTone | null => {
 const plain = (key: string | undefined): boolean => key === '.' || key === ',' || key === '=';
 
 const clamp = (value: number): number => Math.max(0, Math.min(1, value));
+
+/**
+ * Open terrace, the only ground a heap may lie on: the Cutting's fit rule in
+ * the gate's reading of its rows. A heap reaching the road, the limestone, a
+ * wall base or a cover cell is dropped whole by `heapFits`, never cut by that
+ * boundary into a sliver.
+ */
+const plainSpoil = (x: number, y: number): boolean => {
+  const key = QUARRY_GATE.rows[y]?.[x];
+  return materialOf(key) === 'spoil' && plain(key);
+};
 
 export function packGateGround(material: QuarryMaterial): Map<GateRegionName, Image> {
   const images = new Map(
@@ -116,9 +129,9 @@ export function packGateGround(material: QuarryMaterial): Map<GateRegionName, Im
       if (tone === 'earth') {
         // The road: haul tracks only. Spoil heaps do not sit in a cart lane.
         tone = material.trackMark(gx, gy) ?? tone;
-      } else if (tone === 'spoil') {
+      } else if (tone === 'spoil' && heapFits(gx, gy, plainSpoil)) {
         // The terrace either side: inked heaps of freshly cut stone, so neither
-        // earth page is a quarter-frame of bare material.
+        // earth page is a quarter-frame of bare material. Only whole heaps.
         const heap = material.heapMark(gx, gy);
         if (heap === 'ink') inked = true;
         else if (heap === 'inside') tone = 'limestone';
