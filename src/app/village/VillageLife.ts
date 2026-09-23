@@ -13,11 +13,12 @@ import { resolveResidents } from '../../core/story/residents';
 import { phaseLabel } from '../world/journal';
 import { button, el, motionReduced } from '../ui/dom';
 import { WaitDialog } from '../ui/WaitDialog';
+import { seatHere } from '../world/waiting';
 import { verticalClip } from '../anim/direction';
 
 const distance = (a: Vec2, b: Vec2) => Math.hypot(a.x - b.x, a.y - b.y);
 type Activity = { kind: 'water' | 'fire' | 'wave'; unitId: string; started: number };
-type Visit = 'otter' | 'tea' | 'shrine' | 'practice' | 'canopy';
+type Visit = 'otter' | 'tea' | 'shrine' | 'practice' | 'canopy' | 'wait';
 /**
  * How the stage draws each resident's NpcDef sprite: the painted villager
  * figure and palette it has always used here. Placeholder art until the
@@ -135,12 +136,9 @@ export class VillageLife {
     secondaryAction('Meet Pebble', () => this.visit('otter'));
     secondaryAction('Visit the shrine', () => this.visit('shrine'));
     secondaryAction('Tea break', () => this.visit('tea'));
-    // The porch is the riverside's seat for waiting (ADR 0047 D8).
-    secondaryAction('Wait until…', () =>
-      new WaitDialog(this.app).open(
-        document.querySelector<HTMLElement>('.overlay-host') ?? document.body,
-      ),
-    );
+    // The porch is the riverside's seat for waiting (ADR 0047 D8): walk
+    // there first, as Tea break does, then choose when to stop.
+    secondaryAction('Wait until…', () => this.visit('wait'));
     if (this.dorinAtDrill)
       secondaryAction(
         "Dorin's drill",
@@ -212,12 +210,20 @@ export class VillageLife {
   private visit(place: Visit): void {
     if (this.app.animator.busy(performance.now()) || this.busy(performance.now())) return;
     if (place === 'practice' && !this.dorinAtDrill) return;
+    // Already at the porch (tea included): no walk, just the choice.
+    if (place === 'wait' && this.app.state && seatHere(this.app.content, this.app.state))
+      return this.openWait();
     this.leaveTea();
     this.drill = null;
-    const pos = place === 'otter' ? RIVERSIDE_SPOTS.otter : RIVERSIDE_SPOTS[place];
+    const pos = RIVERSIDE_SPOTS[place === 'wait' ? 'tea' : place];
     this.pending = place === 'shrine' ? null : place;
     const events = this.app.dispatch({ type: 'walkTo', pos });
     if (events.some((e) => e.type === 'message')) this.pending = null;
+  }
+  private openWait(): void {
+    new WaitDialog(this.app, () => this.visit('wait')).open(
+      document.querySelector<HTMLElement>('.overlay-host') ?? document.body,
+    );
   }
   private perform(kind: Activity['kind']): void {
     const now = performance.now();
@@ -305,6 +311,8 @@ export class VillageLife {
          */
         camera.centreOn(RIVERSIDE_SPOTS.tea);
         this.say('A quiet break on the veranda with jasmine tea. The river runs below the steps.');
+      } else if (visit === 'wait') {
+        this.openWait();
       } else if (visit === 'practice') {
         this.drill = 0;
         this.say('Dorin sets a rhythm: water, fire, water. Finish each form before the next.');

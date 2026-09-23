@@ -845,15 +845,16 @@
   color: var(--c-ink-dim);
 }
 
-/* The wait options are a phase and a word each, so they sit in a grid of
- * tap targets: one row on a tablet, and on a phone one line each, which
- * keeps all five and the way back on screen at Largest text. */
+/* The wait options are a phase and a word each, so they wrap as a row of
+ * tap targets, the last row stretching to fill; on a phone each is one line,
+ * which keeps all five on screen at Largest text. */
 .wait-options {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(7rem, 1fr));
+  display: flex;
+  flex-wrap: wrap;
 }
 
 .wait-options .choice-option {
+  flex: 1 1 7rem;
   min-height: var(--tap);
   padding: var(--sp-2);
 }
@@ -868,6 +869,12 @@
     align-items: baseline;
     column-gap: var(--sp-2);
   }
+}
+
+/* The way back stays in view while the options scroll under it. */
+.wait-return {
+  position: sticky;
+  bottom: 0;
 }
 
 /* Declared once: the dialogue options and the discipline cards share it. */

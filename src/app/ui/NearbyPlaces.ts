@@ -31,6 +31,14 @@ export class NearbyPlaces extends Dialog {
         }),
       );
     }
+    // A seat is a place too: sitting there is how the day moves on (ADR 0047 D8).
+    for (const seat of this.app.content.maps.get(state.location.mapId)?.restSpots ?? [])
+      body.append(
+        button(`${seat.label[0]?.toUpperCase()}${seat.label.slice(1)} · Sit and wait`, () => {
+          this.close();
+          this.walk(seat.pos);
+        }),
+      );
     if (!places.length)
       body.append(
         el('p', {

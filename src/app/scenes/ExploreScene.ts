@@ -42,6 +42,7 @@ import { NextWalk, previewWalk } from '../world/walking';
 import type { WalkPreview } from '../world/walking';
 import { nearbyExploreTarget } from '../world/guidance';
 import { handoverBark } from '../world/barks';
+import { seatHere } from '../world/waiting';
 import { phaseLabel } from '../world/journal';
 import { NearbyPlaces } from '../ui/NearbyPlaces';
 import { LocalMap, LocalMapDialog } from '../ui/LocalMap';
@@ -619,12 +620,13 @@ export class ExploreScene implements Scene {
     // laid out for four actions: a fifth wraps the iPad dock to twice its
     // height and pushes one off a phone at Largest text. Look around is one
     // step away; away from a seat the journal says where waiting is possible.
-    const seat = this.map?.restSpots?.find((spot) => distance(state.location.pos, spot.pos) <= 1);
+    const seat = !moving && seatHere(this.app.content, state);
     const look = seat
-      ? button('Wait until…', () => new WaitDialog(this.app).open(this.overlayHost()), {
-          class: 'action-button',
-          title: `Let the day move on at ${seat.label}`,
-        })
+      ? button(
+          'Wait',
+          () => new WaitDialog(this.app, (pos) => this.requestWalk(pos)).open(this.overlayHost()),
+          { class: 'action-button', title: `Wait until later at ${seat.label}` },
+        )
       : button(
           'Look around',
           () => {
