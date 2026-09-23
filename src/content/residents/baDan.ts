@@ -110,8 +110,9 @@ export const BA_DAN_ANCHORS: readonly WorldAnchor[] = [
   // No school on any map (§3): Pella goes to class down the south lane.
   door('bd05.school', 'BD05', 11, 15),
   // Dorin's home is "off the gate lane" (guide NPC-04) and Hanru's is BD16:
-  // interim doors in the tree line just south of the gate, never an exit.
-  door('home.dorin', 'DORIN-HOME', 22, 11),
+  // interim doors on open grass at the tree line just south of the gate,
+  // clear of the rim tree's painted trunk at (22,11), never an exit.
+  door('home.dorin', 'DORIN-HOME', 21, 12),
   door('home.hanru', 'BD16', 22, 10),
   // The riverside: Mira's walk on the open bank east of the banyan, and the
   // safe place to watch the otter, dry ground two tiles back from the reeds,
