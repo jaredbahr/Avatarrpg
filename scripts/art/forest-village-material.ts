@@ -45,6 +45,16 @@ export const FOREST_GROUND_TONES = {
 } as const;
 
 /**
+ * DL-2 §3 quarry spoil / rubble: base, shadow and chip highlight. Held once for
+ * the whole route: the forest's heap spill and heap chunks, the quarry's spoil
+ * terrace and shoulders, and the quarry's decorative spoil heaps all read it
+ * from here (`FOREST_PIECE_TONES`, `QUARRY_GROUND_TONES`). §3's spoil row may
+ * be amended on Jared's call; that is this one edit and a repack of the plates
+ * that paint it.
+ */
+export const SPOIL_TONES = { base: '#a89880', shadow: '#857762', rim: '#c2b49c' } as const;
+
+/**
  * The rest of the DL-2 §3 table, for the forest pieces W2 left on the old
  * atlas: the pond's bank and bed, the eastern shelf, and the two rubble
  * diamonds. Held apart from `FOREST_GROUND_TONES` so the route plate's
@@ -75,10 +85,10 @@ export const FOREST_GROUND_TONES = {
 export const FOREST_PIECE_TONES = {
   margin: { base: '#8e7049', shadow: '#7a5f3e', rim: '#b39064' },
   bed: { base: '#2a5e77', shadow: '#173b4c', rim: '#7ec8e3' },
-  spoil: { base: '#a89880', shadow: '#857762', rim: '#c2b49c' },
+  spoil: SPOIL_TONES,
   stone: { base: '#cfc2a6', shadow: '#a2957c', rim: '#efe6d2', joint: '#8a7d66' },
   trodden: { base: '#b39064', shadow: '#8e7049', rim: '#c7a87d' },
-  spill: { base: '#a89880', shadow: '#857762', rim: '#c2b49c' },
+  spill: SPOIL_TONES,
 } as const;
 
 export const FOREST_ALL_TONES = { ...FOREST_GROUND_TONES, ...FOREST_PIECE_TONES } as const;

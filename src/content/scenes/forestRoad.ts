@@ -157,6 +157,22 @@ export const FOREST_APRON_PIECES: readonly SceneImage[] = FOREST_APRON_BANDS.map
   height: band.height,
 }));
 
+/**
+ * The route's one painted rubble heap (`scripts/art/forest-rubble.ts`), drawn
+ * into the middle of a cover cell's diamond. Every `r` cell on the route stands
+ * this heap on its own spill, so real cover reads the same in the forest, the
+ * Cutting and on the quarry floor; the scene lists the cell in `paintedRubble`
+ * so the live wash stands down under it.
+ */
+export const RUBBLE_HEAP_URL = `${root}rubble.webp`;
+export const rubbleHeap = ({ x, y }: Vec2): SceneImage => ({
+  url: RUBBLE_HEAP_URL,
+  x: 768 + (x - y) * 64 - 64,
+  y: (x + y + 1) * 32 - 64 / 3,
+  width: 128,
+  height: 128 / 3,
+});
+
 /** Already projected ground; gameplay opts the map into the matching projection. */
 export const FOREST_ROAD_SCENE: MapScene = {
   groundMode: 'partial',
@@ -167,13 +183,7 @@ export const FOREST_ROAD_SCENE: MapScene = {
     { url: `${root}route-ground.webp`, x: 128, y: 32, width: 1984, height: 960 },
     { url: `${root}pond-bank.webp`, ...FOREST_POND_PATCH },
     { url: `${root}raised-shelf.webp`, ...FOREST_RAISED_SHELF },
-    ...FOREST_RUBBLE_CELLS.map(({ x, y }) => ({
-      url: `${root}rubble.webp`,
-      x: 768 + (x - y) * 64 - 64,
-      y: (x + y + 1) * 32 - 64 / 3,
-      width: 128,
-      height: 128 / 3,
-    })),
+    ...FOREST_RUBBLE_CELLS.map(rubbleHeap),
     // Painted last: transparent everywhere the board can be walked.
     ...FOREST_APRON_PIECES,
   ],

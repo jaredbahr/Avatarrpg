@@ -38,6 +38,7 @@
  */
 import { mkdirSync, writeFileSync } from 'node:fs';
 import { FOREST_RUBBLE_CELLS } from '../../src/content/scenes/forestRoad';
+import type { Vec2 } from '../../src/core/types';
 import { tileNoise } from '../../src/render/painters/shapes';
 import { newImage, parseHex, setPixel } from './lib/image';
 import type { Image } from './lib/image';
@@ -302,11 +303,17 @@ function clumpNoise(x: number, y: number): number {
 
 /**
  * How far inside the nearest heap's spill a logical point lies, in cells:
- * positive inside its outline.
+ * positive inside its outline. The forest's two heaps by default; the quarry
+ * scenes pass their own `r` cells (`quarry-route-ground.ts`), so every heap on
+ * the route stands on the same spill.
  */
-export function spillDepth(x: number, y: number): number {
+export function spillDepth(
+  x: number,
+  y: number,
+  cells: readonly Vec2[] = FOREST_RUBBLE_CELLS,
+): number {
   let best = -Infinity;
-  for (const cell of FOREST_RUBBLE_CELLS) {
+  for (const cell of cells) {
     const dx = x - (cell.x + 0.5),
       dy = y - (cell.y + 0.5);
     const angle = Math.atan2(dy, dx);
@@ -330,14 +337,23 @@ export function spillDepth(x: number, y: number): number {
  */
 export function spillAt(material: ForestMaterial, x: number, y: number): boolean {
   const depth = spillDepth(x, y);
+  return spillWins(depth, x, y, () => material.classOf('verge', x, y) !== 'base');
+}
+
+/**
+ * The spill's own edge, for any ground: `depth` from `spillDepth`, and `tuft`
+ * saying whether the ground being given way has painted incident at the point
+ * (the verge's tufts in the forest, the earth floor's flagstone marks in the
+ * quarry), which holds out longest.
+ */
+export function spillWins(depth: number, x: number, y: number, tuft: () => boolean): boolean {
   if (depth >= SPILL.feather) return true;
   if (depth <= -SPILL.feather) return false;
   const across = (depth + SPILL.feather) / (2 * SPILL.feather);
-  const tuft = material.classOf('verge', x, y) !== 'base';
   const hold =
     SPILL_FROM +
     SPILL_CLUMP * clumpNoise(x * CLUMPS_PER_CELL, y * CLUMPS_PER_CELL) +
-    (tuft ? TUFT_HOLD : 0);
+    (tuft() ? TUFT_HOLD : 0);
   return across > hold;
 }
 
