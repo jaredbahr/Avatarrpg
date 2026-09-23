@@ -26,6 +26,7 @@ import type {
   CharacterDef,
   ComboRule,
   Condition,
+  FlagValue,
   DayPhase,
   DisciplineDef,
   EncounterDef,
@@ -1593,6 +1594,43 @@ export function validateContent(bundle: ContentBundle): string[] {
       }
     }
   }
+
+  // `branch` tests truthiness, and 'declined' is truthy: read scene memory
+  // through a Condition that names the value.
+  for (const node of bundle.story) {
+    if (node.kind === 'branch' && node.flag.startsWith(SCENE_PREFIX)) {
+      problems.push(
+        `story node "${node.id}" branches on "${node.flag}": 'declined' is truthy, so ` +
+          `compare scene memory with an "eq" flag condition instead of a branch node`,
+      );
+    }
+  }
+  // Every flag condition in content, wherever it sits, that compares scene
+  // memory with a value it can never hold.
+  const seen = new WeakSet<object>();
+  const scanConditions = (value: unknown, where: string): void => {
+    if (typeof value !== 'object' || value === null || seen.has(value)) return;
+    seen.add(value);
+    const record = value as Record<string, unknown>;
+    if (
+      record.kind === 'flag' &&
+      typeof record.key === 'string' &&
+      record.key.startsWith(SCENE_PREFIX) &&
+      record.op === 'eq' &&
+      !SCENE_VALUES.includes(record.value as FlagValue)
+    ) {
+      problems.push(
+        `${where} compares "${record.key}" with ${JSON.stringify(record.value)}: scene memory ` +
+          `holds only ${SCENE_VALUES.map((v) => `"${String(v)}"`).join(' or ')}`,
+      );
+    }
+    for (const child of Object.values(record)) scanConditions(child, where);
+  };
+  for (const node of bundle.story) scanConditions(node, `story node "${node.id}"`);
+  for (const m of bundle.maps) scanConditions(m, `map "${m.id}"`);
+  for (const e of bundle.encounters) scanConditions(e, `encounter "${e.id}"`);
+  for (const r of bundle.residents) scanConditions(r, `resident "${r.id}"`);
+  for (const r of bundle.backgroundRoles) scanConditions(r, `background role "${r.id}"`);
 
   for (const [from, to] of links) {
     if (!storyIds.has(to)) {

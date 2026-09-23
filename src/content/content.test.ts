@@ -105,6 +105,45 @@ describe('content', () => {
     expect(problems.some((p) => p.includes('scene_trap') && p.includes('scene memory'))).toBe(true);
   });
 
+  it('refuses a branch on scene memory, which would read declined as set', () => {
+    const problems = validateContent({
+      ...CONTENT_BUNDLE,
+      story: [
+        ...CONTENT_BUNDLE.story,
+        {
+          id: 'scene_branch_trap',
+          kind: 'branch',
+          flag: 'scene.bd01_plant_chair',
+          ifSet: STORY_ENTRY,
+          ifUnset: STORY_ENTRY,
+        },
+      ],
+    });
+    expect(problems.some((p) => p.includes('scene_branch_trap') && p.includes('truthy'))).toBe(
+      true,
+    );
+  });
+
+  it('refuses a condition comparing scene memory with a value it never holds', () => {
+    const [map, ...restMaps] = CONTENT_BUNDLE.maps;
+    const npc = map?.npcs[0];
+    if (!map || !npc) throw new Error('Missing an NPC to probe');
+    const trap = { kind: 'flag', key: 'scene.bd01_plant_chair', op: 'eq', value: 'done' } as const;
+    const problems = validateContent({
+      ...CONTENT_BUNDLE,
+      maps: [
+        {
+          ...map,
+          npcs: [{ ...npc, routes: [{ when: trap, node: npc.node }] }, ...map.npcs.slice(1)],
+        },
+        ...restMaps,
+      ],
+    });
+    expect(problems.some((p) => p.includes(`map "${map.id}"`) && p.includes('"done"'))).toBe(true);
+    // The shipped comparisons (Gao's afternoon pose) use real values.
+    expect(problems.filter((p) => p.includes('scene memory') && !p.includes('"done"'))).toEqual([]);
+  });
+
   /*
    * An authored `flags` node may advance the clock (ADR 0047 §1), but the
    * validator only allows it where a replay cannot reach it: a phase change
