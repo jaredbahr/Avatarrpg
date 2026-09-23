@@ -278,3 +278,69 @@ gallery capture.
 The rebase pass added one further force-push to this same draft PR's branch
 (`--force-with-lease`, no merge, no CI re-run triggered from this side) and
 one local `npm run verify` plus the three e2e specs above.
+
+## Repair after the independent review
+
+Owner: Opus subagent run, 2026-09-23, on `3e1db6c` (main had not moved from
+`49dcb77`, so no rebase). The independent visual review returned
+CHANGES-NEEDED and withdrew the earlier acceptance, because the shelf was
+outside every gallery frame. This pass answers its five findings. No art was
+generated; every pixel still comes from `forest-village-material.ts`, and
+only DL-2 §3 and `palettes.ts` hexes are painted.
+
+1. **Raised shelf.** `forest-raised-shelf.ts` now draws the step the way this
+   camera sees a raised block: the top is the footprint lifted by
+   `SHELF_RISE = 16` world pixels (the height the old 0.26-cell band gave), and
+   any pixel whose ground would already be off the shelf is the face, so the
+   face stands straight up from the +x/+y edges. The top is a new `trodden`
+   tone (the road's packed-earth hexes, read through the courtyard lawn with
+   its own salt 97, not the paving's flagstones). Ink runs along the lip as
+   well as the silhouette and the foot. The face uses only the cut-stone row's
+   shadow tones: the left-facing wall `#a2957c` with `#8a7d66` tool-mark
+   joints, the right-facing wall `#8a7d66` with ink joints, in two coursed
+   rows of staggered blocks. `stone.base` and `stone.rim` are no longer painted
+   and the test forbids them. Plate mean luma 157.4 → 130.4 (1.093× the route).
+2. **Rubble.** `forest-rubble.ts` now paints a heap, not a floor: 18 broken
+   chunks (irregular 5–7-sided polygons) in five courses stacked back to
+   front, rising to a crown about 40 plate px above the ground they spread
+   over. Each chunk has a lit top facet with the chip highlight on its upper
+   edge and a shadowed front facet. Half of them are §3 spoil and half are the
+   road's own slabs, broken. The gaps and the contact shadow under each chunk
+   are the packed-earth shades (`#8e7049`, `#7a5f3e`), with 2 px ink round the
+   pile and 1 px between the chunks. Every outline is built from straight
+   sides or whole-number harmonics, so there is no seam step. The heap stays
+   inside its cell's diamond; the plate size and both placements are
+   unchanged. The plate goes from `#948671` to `#826d51` (red minus blue 35 → 49),
+   mean luma 111.6 (1.28× the route).
+3. **Pond.** Under the water film the bank is now the damp margin one step
+   darker (`#7a5f3e` field, `#8e7049` where the lawn lifts), and its pale rim
+   is no longer painted there. That rim was what read as a curb top. The deep
+   bed is no longer dithered in 4 px clumps: it is one pool whose edge is
+   where the depth's smoothstep across `BED_DEEP_BAND` (now 0.6) clears a
+   smooth value-noise field. The two comments that disagreed are replaced by
+   one. The packer now reports the dry margin (116.3, 1.225× the route), the
+   wet bank (95.2) and the bed (82.8) separately.
+4. **Invented tone.** `bed.shadow` is `#173b4c`, the palette's
+   `water_deep.edge`. `#1f4a5e` was the alternative, but it failed the ADR
+   0045 deepening check (deep band mean < 0.8 × shelf band) once the silt flips
+   are counted.
+5. **Test comment.** `e2e/partial-ground.spec.ts` now names the shelf top's
+   `trodden` packed earth `#b39064`, measured at ~179,148,101 on both
+   backends.
+
+**On screen** (canvas / webgl, 128 px tiles, mean over the rubble diamond):
+PR head `#a79d8d` / `#a69c8e` (red minus blue 25.7 / 24.0) → `#9b8d7a` /
+`#998c79` (33.4 / 31.1). It is warmer and darker, but the runtime rubble wash
+(`SURFACE_STYLES.rubble`, `#6e6a63` at 0.3 over the whole tile, drawn above the
+plate in partial scenes) still cools whatever the plate paints. That wash is
+render code and out of scope here.
+
+**Determinism.** All eight forest and quarry packers were run twice. All 43
+output hashes matched between the runs, and every plate other than these three
+matched what is committed.
+
+**Evidence**: `C:/Users/Jared/OpenClawControl/avatar-supervisor/evidence/pr89-repair/`.
+It holds `before/` and `after/` full frames (canvas and webgl; board, shelf,
+both rubble cells and pond at 64 and 128 px tiles, with camera probes) and
+`compare-*.png` before/after crops. The capture spec is a scratch file and is
+not committed.
