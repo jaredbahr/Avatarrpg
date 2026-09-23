@@ -57,7 +57,7 @@ export const RIVERSIDE_STORY: readonly StoryNode[] = [
         lines: [
           'I have to stay where Mira can see me. Bo-shan says that is a good rule. He never followed it.',
           'He is resting. Mira says to let him, so I am letting him.',
-          'I gave him the flat stone so we could finish our game. He only got four skips. He says his arm is out of practice.',
+          'The flat stone is still his turn. I am keeping it until he is rested.',
         ],
       },
     ],

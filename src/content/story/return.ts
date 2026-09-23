@@ -84,7 +84,7 @@ export const RETURN_STORY: readonly StoryNode[] = [
         lines: [
           'You found him. He came through the gate and I ran so fast I lost a shoe.',
           'I told him about the chores. He said he would do them. All of them.',
-          'He said he would start today. He is still asleep.',
+          'He said he would start straight away. He is still asleep.',
         ],
       },
       {

@@ -90,7 +90,7 @@ export const BA_DAN_DAY_STORY: readonly StoryNode[] = [
     speaker: GAO,
     portrait: 'portrait.gao',
     lines: [
-      'There is a drawer in it somewhere. I have found two.',
+      'There are three drawers in it. I have found two.',
       'Something rattles in the third. Don’t shake it. I’ve tried that.',
     ],
     next: 'plant_chair_done',
@@ -210,7 +210,7 @@ export const BA_DAN_DAY_STORY: readonly StoryNode[] = [
     lines: [
       'I have the watch until dawn. Walk where you like. I only ask where people are going when they look lost.',
       'That lamp by the east road stays lit. If anyone comes down from the quarry in the dark, they will see it.',
-      'Dorin wants my fish prints for the notice board. They stay in the cupboard.',
+      'Dorin once wanted my fish prints on the notice board. They stay inside the hut.',
     ],
     variants: [
       {
@@ -253,9 +253,12 @@ export const BA_DAN_DAY_STORY: readonly StoryNode[] = [
     ],
     variants: [
       {
-        // Held at home until she has told the party (§4): no class for her today.
+        // Held at home until she has told the party (§4), so she is not in class.
         when: both(victory, { kind: 'not', of: { kind: 'visited', nodeId: 'pella_home' } }),
-        lines: ['“No school today. Welcome home.”'],
+        lines: [
+          '“School this morning. Pupils home at midday.”',
+          'The chalk line underneath has been rubbed out.',
+        ],
       },
       {
         when: victory,

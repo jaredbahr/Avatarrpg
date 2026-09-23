@@ -447,7 +447,7 @@ describe('Hanru’s watch, the school notice and Pella at the river', () => {
     }
   });
 
-  it('says no school while Pella is held at home, and she is there to see', () => {
+  it('rubs out Pella’s chalk line while she is held at home, and she is there to see', () => {
     const held = at('morning', CLASSES['victory, no homecoming heard']);
     expect(npcAt(held, VILLAGE, 'kid_pella')).toBeDefined();
     const inClass = at('morning', CLASSES['homecomings complete']);
