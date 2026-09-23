@@ -1,9 +1,15 @@
 /**
  * Ba Dan's residents (ADR 0047 §3, §4, §8; W5a, tiles W5c).
  *
- * Anchors are narrative codes bound to tiles on today's two Ba Dan maps, at
- * the ADR's §3 candidates. Their tiles still need checking against the
- * painted scene (W5c).
+ * Anchors are narrative codes bound to tiles on today's two Ba Dan maps. Each
+ * tile was chosen against the painted scene, not the ASCII rows alone: the
+ * `w` cells and the `=` notches inside the house footprints (the ADR's
+ * `bd04.court` candidate at x=9, rows 10-11, and the north dwelling's (12,3))
+ * are drawn inside a wall, so nobody stands there. Every house's door is on
+ * its east face, and its steps come down at the tile diagonally in front of
+ * the step (Gao (10,3), Mira (16,3), Pella's household (10,13)); the private
+ * anchors use those tiles as their doors. See the W5c anchor table in the
+ * slice report for the tile-by-tile reasoning.
  *
  * The schedule is the ADR's §8 table, itself the guide's §05.1 workday with
  * the recorded adaptations. The guide's §05.2 states are applied first, as it
@@ -81,26 +87,38 @@ const door = (id: string, place: string, x: number, y: number): WorldAnchor => (
 });
 
 export const BA_DAN_ANCHORS: readonly WorldAnchor[] = [
+  // Mira's Table: the square's paving beside the canal, next to the bench
+  // rest spot (10,5). No table or awning art yet.
   tile('bd01.table', 'BD01', VILLAGE, 11, 5),
+  // Gao's shopfront: the lane in front of his display, below the shop steps.
   tile('bd02.shopfront', 'BD02', VILLAGE, 9, 4),
-  door('home.gao', 'BD02', 9, 3),
-  // D5: Mira lives in the north dwelling.
-  door('home.mira', 'BD01-HOME', 12, 3),
-  // D6: the gate post on the verge, off the road.
+  // The rear room: the merchant house's steps come down at (10,3).
+  door('home.gao', 'BD02', 10, 3),
+  // D5: Mira lives in the north dwelling; its door steps come down at (16,3).
+  door('home.mira', 'BD01-HOME', 16, 3),
+  // D6: the gate post on the south verge of the east road, off the cart
+  // track, with the road and the east exit in view; the handover tile is the
+  // verge beside it, on the village side.
   tile('bd03.post', 'BD03', VILLAGE, 20, 9),
-  tile('bd03.handover', 'BD03', VILLAGE, 21, 9),
-  // D5: Pella's household is the south-west dwelling.
-  tile('bd04.court', 'BD04', VILLAGE, 9, 10),
-  tile('bd04.yard', 'BD04', VILLAGE, 10, 11),
-  door('home.pella', 'BD04', 9, 11),
+  tile('bd03.handover', 'BD03', VILLAGE, 19, 9),
+  // D5: Pella's household is the south-west dwelling. The court is the lawn
+  // in front of its door, clear of both houses' walls; the household adult
+  // stands beside it, nearer the door. The door tile (10,13) stays free.
+  tile('bd04.court', 'BD04', VILLAGE, 11, 12),
+  tile('bd04.yard', 'BD04', VILLAGE, 11, 13),
+  door('home.pella', 'BD04', 10, 13),
   // No school on any map (§3): Pella goes to class down the south lane.
   door('bd05.school', 'BD05', 11, 15),
-  // Interim doors near the north-east tree line, never an exit.
-  door('home.dorin', 'DORIN-HOME', 21, 2),
-  door('home.hanru', 'BD16', 21, 2),
+  // Dorin's home is "off the gate lane" (guide NPC-04) and Hanru's is BD16:
+  // interim doors in the tree line just south of the gate, never an exit.
+  door('home.dorin', 'DORIN-HOME', 22, 11),
+  door('home.hanru', 'BD16', 22, 10),
+  // The riverside: Mira's walk on the open bank east of the banyan, and the
+  // safe place to watch the otter, dry ground two tiles back from the reeds,
+  // in Mira's line of sight.
   tile('bd06.bank', 'BD06', RIVERSIDE_ID, 15, 9),
   tile('bd06.watch', 'BD06', RIVERSIDE_ID, 16, 14),
-  // D3: Dorin's drill, his riverside NpcDef's tile.
+  // D3: Dorin's drill on the east-bank practice ground, between the posts.
   tile('rv.practice', 'RV-PRACTICE', RIVERSIDE_ID, 32, 12),
 ];
 
