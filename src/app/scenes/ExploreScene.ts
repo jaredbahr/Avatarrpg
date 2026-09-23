@@ -990,6 +990,7 @@ export class ExploreScene implements Scene {
       fallen: false,
       // A health bar over someone strolling round a village is noise.
       showHealth: false,
+      shadow: true,
       scale: partyScale(map.projection),
       renderPos: index === 0 ? walking : this.app.animator.renderPos(now, member.id),
       offset: this.app.animator.offset(now, member.id),

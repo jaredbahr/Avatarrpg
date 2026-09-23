@@ -829,6 +829,14 @@ export class Canvas2DBackend implements RenderBackend {
       if (!uprightSpriteVisible(box, camera.viewport, unit.size, scale)) continue;
 
       ctx.save();
+      if (unit.shadow) {
+        // On the ground, not on the bob: the tile's foot line, less the ledge.
+        const s = box.size * scale;
+        const footX = box.x - (unit.offset?.x ?? 0) * box.size + width / 2;
+        const footY = box.y - (unit.offset?.y ?? 0) * box.size + 0.86 * box.size;
+        ctx.globalAlpha = unit.alpha ?? 1;
+        ctx.drawImage(sprites.shadow(s * dpr), footX - s / 2, footY - 0.86 * s, s, s);
+      }
       // A pose scales about the feet; the fallen fade sits on top of any alpha.
       ctx.globalAlpha = (unit.alpha ?? 1) * (unit.fallen ? 0.35 : 1);
       // The frame comes from the unit's sheet, real or baked from its painter

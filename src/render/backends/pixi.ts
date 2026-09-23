@@ -1334,6 +1334,19 @@ export class PixiBackend implements RenderBackend {
 
       live.add(unit.id);
       const sprite = this.unitSprite(unit.id);
+      if (unit.shadow) {
+        // On the ground, not on the bob (explore maps, ADR 0015).
+        const key = `shadow:${unit.id}`;
+        live.add(key);
+        const shadow = this.unitSprite(key);
+        shadow.texture = this.texture(sprites.shadow(px * (unit.scale ?? 1)));
+        shadow.anchor.set(0.5, 0.86);
+        shadow.position.set(anchor.x + width / 2, anchor.y + (0.86 - lift) * TILE);
+        shadow.width = shadow.height = TILE * (unit.scale ?? 1);
+        shadow.alpha = unit.alpha ?? 1;
+        shadow.zIndex = depth(pos, unit.size) - 0.001;
+        shadow.visible = true;
+      }
       // A pose scales about the feet; the fallen fade sits on top of any alpha.
       const scale = unit.scale ?? 1;
       // The frame comes from the unit's sheet, real or baked from its painter

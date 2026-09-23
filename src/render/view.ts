@@ -28,6 +28,8 @@ export interface RenderUnit {
   readonly renderPos?: Vec2;
   /** Off for the party strolling round a village. Defaults to on. */
   readonly showHealth?: boolean;
+  /** A contact shadow on the ground under the figure and its bob (explore maps, ADR 0015). */
+  readonly shadow?: boolean;
   /** Which way the sprite faces: 1 is screen-right. Defaults to the faction's side. */
   readonly facing?: 1 | -1;
   /**
