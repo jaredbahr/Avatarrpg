@@ -127,7 +127,7 @@ describe('ability rubble beside a registered heap', () => {
     expectParity(grid, false);
   });
 
-  it('banks the shared edge once the heap is cleared, and not after it is re-rubbled', () => {
+  it('banks the shared edge once the heap cell loses its rubble surface, and not after it is re-rubbled', () => {
     let grid = rubble(buildGrid(FOREST_ROAD), [WEST]);
     grid = applyImpact(CONTENT, grid, [HEAP], 'water').grid;
     expect(tileAt(grid, HEAP)?.surface?.id).toBe('mud');

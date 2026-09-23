@@ -36,12 +36,6 @@ export const sceneImages = new BackdropStore(SCENE_IMAGE_CAP);
  * save may contain a later solid prop on that coordinate without having the
  * authored masonry that the scene describes. Exterior scenery has no tile to
  * validate and remains visible.
- *
- * A registered heap is stateful art too: rubble grants cover, so once its cell
- * holds anything else (mud, water, nothing) the heap would still promise cover
- * that is gone. The ground piece that fits inside that cell's tile is its heap;
- * it stands down until rubble returns. The spill under it is painted into the
- * route plates and stays.
  */
 export function sceneForGrid(scene: MapScene, grid: Grid): MapScene {
   const scenery = scene.scenery.filter(
@@ -53,28 +47,7 @@ export function sceneForGrid(scene: MapScene, grid: Grid): MapScene {
         return tile?.terrain === 'wall' && tile.blocked;
       }),
   );
-  const cleared = scene.paintedRubble?.filter(
-    (cell) => tileAt(grid, cell)?.surface?.id !== 'rubble',
-  );
-  const ground = cleared?.length
-    ? scene.ground.filter(
-        (piece) =>
-          !cleared.some(({ x, y }) => {
-            // The cell's projected tile box, in the scene's world pixels.
-            const left = (x - y + grid.height - 1) * 64;
-            const top = (x + y) * 32;
-            return (
-              piece.x >= left &&
-              piece.y >= top &&
-              piece.x + piece.width <= left + 128 &&
-              piece.y + piece.height <= top + 64
-            );
-          }),
-      )
-    : scene.ground;
-  return scenery.length < scene.scenery.length || ground !== scene.ground
-    ? { ...scene, scenery, ground }
-    : scene;
+  return scenery.length < scene.scenery.length ? { ...scene, scenery } : scene;
 }
 
 // A small alpha mask avoids fading roofs when a figure is only inside the

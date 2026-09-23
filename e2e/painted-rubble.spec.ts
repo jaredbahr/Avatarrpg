@@ -191,7 +191,7 @@ for (const renderer of ['canvas', 'webgl'])
   });
 
 for (const renderer of ['canvas', 'webgl'])
-  test(`a forest heap follows its cell's rubble on ${renderer}`, async ({ page }) => {
+  test(`ability rubble meets a forest heap alike on ${renderer}`, async ({ page }) => {
     allowSoftwareWebgl(test, renderer);
     await page.setViewportSize({ width: 1672, height: 941 });
     await resetStorage(page, `?renderer=${renderer}`);
@@ -300,27 +300,28 @@ for (const renderer of ['canvas', 'webgl'])
     expect(changed(beside, besideWash, heap), 'heap wash once loaded').toBeGreaterThan(40);
     await register([HEAP, { x: 8, y: 9 }]);
 
-    // Water turns the heap to mud: no cover, so no heap, and the neighbour
-    // banks against the mud. WebGL's bank is the fainter of the two (this host
-    // counted 44 changed pixels to Canvas's 314), so the floor sits well under
-    // it and well over the zero the unbanked comparison above reads.
+    // Water turns the heap to mud. The neighbour banks against the mud. WebGL's
+    // bank is the fainter of the two (this host counted 44 changed pixels to
+    // Canvas's 314), so the floor sits well under it and well over the zero the
+    // unbanked comparison above reads. The heap itself stays drawn under the
+    // mud's wash: the authored cell keeps `cover`, whatever its surface.
     await set([[HEAP, { id: 'mud', duration: 3, spread: 0 }]]);
     const mud = await probe();
     expect(changed(beside, mud, edge), 'bank against the mud').toBeGreaterThan(15);
-    expect(changed(beside, mud, heap), 'heap gone under the mud').toBeGreaterThan(100);
-    // The mud expires: bare spill, still no heap.
+    expect(changed(beside, mud, heap), 'mud wash over the heap').toBeGreaterThan(40);
+    // The mud expires. The cell is still cover, so the heap stands exactly as
+    // the live heap does, wash and all stood down.
     await set([
       [HEAP, null],
       [WEST, null],
     ]);
     const bare = await probe();
-    expect(changed(beside, bare, heap), 'heap gone after the mud').toBeGreaterThan(100);
-    // Rubble again: the heap and its suppressed wash come back as authored.
     await set([[HEAP, RUBBLE]]);
     const live = await probe();
+    expect(changed(live, bare, heap), 'heap still drawn after the mud').toBeLessThan(5);
+    // Rubble again beside it: back to the first frame.
     await set([[WEST, RUBBLE]]);
     expect(changed(beside, await probe(), everywhere), 're-rubbled heap').toBeLessThan(5);
-    expect(changed(bare, live, heap), 'heap back').toBeGreaterThan(100);
 
     // A scene piece that fails to load keeps every procedural wash: the heap's
     // registration then changes nothing.
