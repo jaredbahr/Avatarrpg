@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import type { SurfaceId, Tile } from '../../core/types';
 import type { Edges } from '../geometry/board';
+import { RUBBLE_CHIP, SURFACE_STYLES } from '../palettes';
 import type { Box, Ctx } from './shapes';
 import { paintSurface } from './tiles';
 
@@ -122,5 +123,37 @@ describe('surface material painting', () => {
     expect(flush[1]).toBeGreaterThan(BOX.y);
     expect(flush[0]! + flush[2]!).toBe(BOX.x + BOX.size);
     expect(flush[1]! + flush[3]!).toBe(BOX.y + BOX.size);
+  });
+
+  it('scatters rubble chips in the spoil chip tone, never the ink bank', () => {
+    // The bank is an outline; ink chips inside the patch read as oil or scorch.
+    const strokes = (edges: Edges): string[] => {
+      const seen: string[] = [];
+      let strokeStyle = '';
+      const ctx = new Proxy(
+        {},
+        {
+          get: (_target, op: string) =>
+            op === 'strokeStyle'
+              ? strokeStyle
+              : () => void (op === 'stroke' && seen.push(strokeStyle)),
+          set: (_target, op: string, value: unknown) => {
+            if (op === 'strokeStyle') strokeStyle = String(value);
+            return true;
+          },
+        },
+      );
+      paintSurface(ctx as unknown as Ctx, BOX, surface('rubble', 3), { x: 5, y: 6 }, false, edges);
+      return seen;
+    };
+    const open: Edges = { n: false, e: false, s: false, w: false };
+    const chips = strokes(open);
+    expect(chips.length).toBeGreaterThan(0);
+    for (const tone of chips) expect(tone).toBe(RUBBLE_CHIP);
+    expect(RUBBLE_CHIP).not.toBe(SURFACE_STYLES.rubble.edge);
+    // The ragged bank round the patch keeps the ink.
+    const banked = strokes(SHORE);
+    expect(banked.filter((tone) => tone === SURFACE_STYLES.rubble.edge)).toHaveLength(4);
+    expect(banked.filter((tone) => tone === RUBBLE_CHIP)).toHaveLength(chips.length);
   });
 });

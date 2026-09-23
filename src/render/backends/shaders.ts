@@ -1,4 +1,4 @@
-import { SURFACE_STYLES, WATER_BED } from '../palettes';
+import { RUBBLE_CHIP, SURFACE_STYLES, WATER_BED } from '../palettes';
 import { SURFACE_BANK, SURFACE_POOL, SURFACE_RIM } from '../surfaceRendering';
 
 const glslColor = (hex: string): string =>
@@ -325,7 +325,7 @@ void main(void) {
   } else if (surface == 7) {          // rubble
     float chunk = vnoise(w * 11.0);
     lay(acc, tint, opacity * wash * intensity);
-    lay(acc, rim, smoothstep(0.74, 0.87, chunk) * 0.28 * intensity);
+    lay(acc, ${glslColor(RUBBLE_CHIP)}, smoothstep(0.74, 0.87, chunk) * 0.28 * intensity);
   }
 
   if (opacity > 0.0) {

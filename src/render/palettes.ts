@@ -187,6 +187,13 @@ export const SURFACE_STYLES: Record<SurfaceId, SurfaceStyle> = {
   },
 };
 
+/**
+ * The chips scattered inside a live rubble patch: the spoil chip highlight
+ * (DL-2 §3), on both backends. They are never the ink bank, which is an
+ * outline; ink chips read as soft oil or scorch blotches inside the patch.
+ */
+export const RUBBLE_CHIP = TERRAIN_STYLES.sand.detail;
+
 /* ------------------------------------------------------------------ */
 /* Overlays                                                            */
 /* ------------------------------------------------------------------ */
