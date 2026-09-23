@@ -62,16 +62,22 @@ function refuse(state: GameState, text: string): StepResult {
 }
 
 /**
- * Formats `result`'s events into the log the same way `handleWait` does,
- * appending onto `base.log`. For explore/dialogue commands only — a
- * battle-turn command's events log through `finish` or
- * `handleResolveBattle` instead, which pass the mid-battle (or
- * just-concluded) roster `describeEvent` needs to resolve unit names; battle
- * is always null on every path that calls this.
+ * Formats a phase change out of `result`'s events into the log, the same
+ * way `handleWait` does, appending onto `base.log`. Only `phaseChanged` -
+ * not every event. `enterStoryNode`'s 'flags' node kind can also grant XP
+ * or start a battle on the same node that changes the phase (e.g. an
+ * authored node chaining into a `grantXp` node or straight into a
+ * `battle` node), and those events need the mid-battle/post-battle unit
+ * roster `describeEvent` resolves names from - which `finish` and
+ * `handleResolveBattle` already log correctly, with that roster in hand.
+ * Logging them again here, with no roster, is how a bare unit id like
+ * "p0" or a battle's round banner ended up in the log; every path that
+ * calls this is explore/dialogue only, so battle is always null.
  */
 function withLog(content: ContentIndex, base: GameState, result: StepResult): StepResult {
+  const phaseChanges = result.events.filter((event) => event.type === 'phaseChanged');
   return {
-    state: { ...result.state, log: appendLog(content, null, base.log, result.events) },
+    state: { ...result.state, log: appendLog(content, null, base.log, phaseChanges) },
     events: result.events,
   };
 }
