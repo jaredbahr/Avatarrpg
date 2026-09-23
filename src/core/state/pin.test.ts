@@ -20,7 +20,7 @@ import { reconcileDisciplines, reconcileWorld } from '../save/reconcile';
 import { deserialize, serialize, stateFromBlob } from '../save/serialize';
 import { TEST_ANCHOR, TEST_RESIDENT, withBoundNpc } from '../story/residents.fixture';
 import { RANK_CONVERSATION, resolveResidents } from '../story/residents';
-import { placedNpcs } from '../story/world';
+import { visibleNpcs } from '../story/world';
 
 const BOUND = withBoundNpc(CONTENT, 'ba_dan_village', 'elder_mira');
 const PIN = { npcId: 'elder_mira', mapId: 'ba_dan_village', anchor: TEST_ANCHOR };
@@ -94,7 +94,7 @@ suite('the conversation pin', () => {
       );
       expect(placement?.rank).toBe(RANK_CONVERSATION);
       expect(placement?.anchor).toBe(TEST_ANCHOR);
-      const speaker = placedNpcs(BOUND, village, state).find((npc) => npc.id === 'elder_mira');
+      const speaker = visibleNpcs(BOUND, village, state).find((npc) => npc.id === 'elder_mira');
       expect(speaker?.pos).toEqual({ x: 11, y: 5 });
       state = apply(BOUND, state, { type: 'advanceDialogue' }).state;
     }

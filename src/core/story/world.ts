@@ -14,29 +14,26 @@ export function activeTriggers(map: MapDef, state: GameState): readonly MapTrigg
   );
 }
 
-/** NPCs currently present on the map; every UI and reducer lookup shares this predicate. */
-export function visibleNpcs(map: MapDef, state: GameState): readonly NpcDef[] {
-  return map.npcs.filter((npc) => !npc.when || evaluate(state, npc.when));
-}
-
-let placedMemo: readonly [ContentIndex, MapDef, GameState, readonly NpcDef[]] | undefined;
+let visibleMemo: readonly [ContentIndex, MapDef, GameState, readonly NpcDef[]] | undefined;
 
 /**
- * `visibleNpcs` with residents (ADR 0047 §2): a bound NpcDef is present only
- * where its resident's placement puts it on this map, with `npc` naming it,
- * and comes back at that anchor's tile. W4b renames this to `visibleNpcs`
- * and moves every caller over. One-entry memo: the renderer asks each frame.
+ * NPCs currently present on the map; every UI and reducer lookup shares this
+ * predicate. An `NpcDef.when` must hold, and a resident-bound NpcDef (ADR 0047
+ * §2) is present only where its resident's placement puts it on this map, with
+ * `npc` naming it, coming back at that anchor's tile. One-entry memo: the
+ * renderer asks each frame.
  */
-export function placedNpcs(
+export function visibleNpcs(
   content: ContentIndex,
   map: MapDef,
   state: GameState,
 ): readonly NpcDef[] {
-  const m = placedMemo;
+  const m = visibleMemo;
   if (m && m[0] === content && m[1] === map && m[2] === state) return m[3];
   const { placements } = resolveResidents(content, state);
   const npcs: NpcDef[] = [];
-  for (const npc of visibleNpcs(map, state)) {
+  for (const npc of map.npcs) {
+    if (npc.when && !evaluate(state, npc.when)) continue;
     if (!npc.resident) {
       npcs.push(npc);
       continue;
@@ -46,7 +43,7 @@ export function placedNpcs(
     );
     if (at?.pos) npcs.push({ ...npc, pos: at.pos });
   }
-  placedMemo = [content, map, state, npcs];
+  visibleMemo = [content, map, state, npcs];
   return npcs;
 }
 

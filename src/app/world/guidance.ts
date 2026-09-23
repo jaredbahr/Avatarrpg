@@ -31,7 +31,7 @@ export function nearbyExploreTarget(
   let best: NpcDef | null = null;
   let nearest = TALK_RANGE + 1;
   let proximity = Infinity;
-  for (const npc of visibleNpcs(map, state)) {
+  for (const npc of visibleNpcs(content, map, state)) {
     const gap = distance(state.location.pos, npc.pos);
     const groundGap = Math.hypot(
       state.location.pos.x - npc.pos.x,

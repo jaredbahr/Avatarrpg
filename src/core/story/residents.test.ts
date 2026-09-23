@@ -34,7 +34,7 @@ import {
   resolveResidents,
 } from './residents';
 import type { Placement, Resolution } from './residents';
-import { placedNpcs } from './world';
+import { visibleNpcs } from './world';
 
 /* --- fixture builders ----------------------------------------------- */
 
@@ -760,7 +760,7 @@ suite('resolveResidents: required conversations', () => {
         anchor: 'table',
         rank: RANK_CONVERSATION,
       });
-      expect(placedNpcs(c, town, state).find((n) => n.id === elderNpc)?.pos, phase).toEqual({
+      expect(visibleNpcs(c, town, state).find((n) => n.id === elderNpc)?.pos, phase).toEqual({
         x: 11,
         y: 5,
       });
@@ -770,7 +770,7 @@ suite('resolveResidents: required conversations', () => {
 
 /* --- one place, never two maps (test 4) ------------------------------ */
 
-suite('placedNpcs: bound NpcDefs follow their resident', () => {
+suite('visibleNpcs: bound NpcDefs follow their resident', () => {
   const walker = resident('walker', {
     ...every(slot('town.spot', { npc: 'town_walker' })),
     afternoon: slot('bank.spot', { npc: 'bank_walker' }),
@@ -791,7 +791,7 @@ suite('placedNpcs: bound NpcDefs follow their resident', () => {
       const state = at(phase);
       const placement = placementOf(resolveResidents(c, state), 'walker');
       const seen = [...c.maps.values()].flatMap((m) =>
-        placedNpcs(c, m, state)
+        visibleNpcs(c, m, state)
           .filter((n) => n.resident === 'walker')
           .map((n) => ({ map: m.id, pos: n.pos })),
       );
@@ -807,9 +807,9 @@ suite('placedNpcs: bound NpcDefs follow their resident', () => {
     const town = c.maps.get('town');
     if (!town) throw new Error('Missing town');
     const state = at('night');
-    const npcs = placedNpcs(c, town, state);
+    const npcs = visibleNpcs(c, town, state);
     expect(npcs.map((n) => n.id)).toEqual(['sign']);
-    expect(placedNpcs(c, town, state)).toBe(npcs);
+    expect(visibleNpcs(c, town, state)).toBe(npcs);
   });
 });
 
@@ -847,7 +847,7 @@ suite('resolveResidents: a captive before release', () => {
         anchor: null,
         slot: null,
       });
-      expect(placedNpcs(c, town, state), phase).toEqual([]);
+      expect(visibleNpcs(c, town, state), phase).toEqual([]);
     }
     const released = at('morning', { flags: { captive_released: true } });
     expect(placementOf(resolveResidents(c, released), 'test.captive').anchor).toBe('workshop');

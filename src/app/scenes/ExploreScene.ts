@@ -215,7 +215,7 @@ export class ExploreScene implements Scene {
               event.path,
               state.party.length,
               grid,
-              visibleNpcs(this.map, state).map((npc) => npc.pos),
+              visibleNpcs(this.app.content, this.map, state).map((npc) => npc.pos),
             )
           : null;
       if (plan) {
@@ -292,7 +292,7 @@ export class ExploreScene implements Scene {
     const seated = new PartyTrail(
       placeParty(grid, head, count, {
         awayFrom: this.map?.exit?.pos,
-        avoid: this.map ? visibleNpcs(this.map, state).map((npc) => npc.pos) : [],
+        avoid: this.map ? visibleNpcs(this.app.content, this.map, state).map((npc) => npc.pos) : [],
       }),
     );
     this.trail = seated;
@@ -469,7 +469,7 @@ export class ExploreScene implements Scene {
     if (corner && state && this.map && this.grid) {
       clear(corner);
       corner.hidden = this.conversationMode || !!this.life;
-      this.localMap = new LocalMap(this.map, this.grid, state);
+      this.localMap = new LocalMap(this.app.content, this.map, this.grid, state);
       this.localMap.update(this.partyPositions() ?? [state.location.pos]);
       const follow = button('Follow party', () => this.followParty(), {
         class: 'local-map-follow',
@@ -866,7 +866,7 @@ export class ExploreScene implements Scene {
         const trail = this.ensureTrail(state, grid);
         const routes = trail.settle(
           grid,
-          visibleNpcs(map, state).map((npc) => npc.pos),
+          visibleNpcs(this.app.content, map, state).map((npc) => npc.pos),
         );
         const batches: FollowerRoute[][] = [];
         for (const route of routes) (batches[route.batch ?? 0] ??= []).push(route);
@@ -917,7 +917,7 @@ export class ExploreScene implements Scene {
     }));
 
     const npcs: NpcMarker[] = [
-      ...visibleNpcs(map, state).map((npc) => ({
+      ...visibleNpcs(this.app.content, map, state).map((npc) => ({
         pos: npc.pos,
         sprite: npc.sprite,
         name: npc.name,

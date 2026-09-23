@@ -119,7 +119,7 @@ describe('the identity register (ADR 0047 W0)', () => {
     });
     for (const excluded of EXCLUDED_RESIDENTS) {
       for (const map of CONTENT.maps.values()) {
-        const visible = visibleNpcs(map, state);
+        const visible = visibleNpcs(CONTENT, map, state);
         expect(
           visible.some((npc) => npc.id === excluded.id || excluded.names.includes(npc.name)),
           `${excluded.id} should never be visible on "${map.id}"`,

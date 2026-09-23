@@ -398,7 +398,7 @@ function handleWalkTo(content: ContentIndex, state: GameState, pos: Vec2): StepR
   const map = content.maps.get(state.location.mapId);
   if (!map) return refuse(state, 'No map loaded.');
 
-  const npc = visibleNpcs(map, state).find((n) => samePos(n.pos, pos));
+  const npc = visibleNpcs(content, map, state).find((n) => samePos(n.pos, pos));
   if (npc) {
     if (distance(state.location.pos, pos) > 1) {
       // Walk adjacent first rather than teleporting into a conversation.
@@ -575,7 +575,7 @@ function handleWait(content: ContentIndex, state: GameState, until: DayPhase): S
   // `settle()` to put them (it runs after every command, including this
   // one) — is only knowable after `advancePhase`, not before it.
   const advanced = advancePhase(state, until);
-  const onNpc = visibleNpcs(map, advanced).some((npc) => samePos(npc.pos, leaderPos));
+  const onNpc = visibleNpcs(content, map, advanced).some((npc) => samePos(npc.pos, leaderPos));
   if (onNpc) {
     const grid = buildExploreGrid(content, advanced);
     if (!findSettleTile(content, map, grid, advanced, leaderPos)) {

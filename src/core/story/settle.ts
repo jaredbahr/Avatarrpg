@@ -61,7 +61,7 @@ export function findSettleTile(
     ...exitTiles(map),
     ...activeTriggers(map, state).flatMap((trigger) => trigger.area.map(posKey)),
   ]);
-  const npcTiles = new Set(visibleNpcs(map, state).map((npc) => posKey(npc.pos)));
+  const npcTiles = new Set(visibleNpcs(content, map, state).map((npc) => posKey(npc.pos)));
   const arrivals = arrivalTiles(content, map);
   const restSpots = restSpotTiles(map);
 
@@ -141,7 +141,9 @@ export function settle(content: ContentIndex, _before: GameState, after: GameSta
   if (state.screen === 'explore') {
     const map = content.maps.get(state.location.mapId);
     if (map) {
-      const onNpc = visibleNpcs(map, state).some((npc) => samePos(npc.pos, state.location.pos));
+      const onNpc = visibleNpcs(content, map, state).some((npc) =>
+        samePos(npc.pos, state.location.pos),
+      );
       if (onNpc) {
         const grid = cachedGrid(map);
         const found = findSettleTile(content, map, grid, state, state.location.pos);
