@@ -219,8 +219,8 @@ void main(void) {
       col *= 0.92 + 0.16 * grit;
       col += vec3(0.05) * smoothstep(0.86, 1.0, grit);
     } else if (terrain == 3 || terrain == 7) {
-      ${/* stone and wall: cracks */ ''}
-      float crack = smoothstep(0.42, 0.40, abs(macro - 0.5));
+      ${/* stone and wall: sparse cracks along one contour of the macro field, about 5% of the stone, with a short hard edge so a crack reads as a line rather than a soft smudge. The old reversed smoothstep(0.42, 0.40) was on nearly everywhere and held WebGL stone at 0.7x the Canvas limestone. */ ''}
+      float crack = 1.0 - smoothstep(0.006, 0.012, abs(macro - 0.5));
       col *= 1.0 - 0.30 * crack;
     } else if (terrain == 6) {
       ${/* deep water: slow swell */ ''}
