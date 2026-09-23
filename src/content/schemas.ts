@@ -19,9 +19,10 @@ import { z } from 'zod';
 import { CLIP_FRAME_COUNTS, CLIP_NAMES, REQUIRED_CLIPS } from './assets/clips';
 import type { AssetEntry } from './assets/manifest';
 import { STANDING_PREFIX } from '../core/story/conditions';
-import { DAY_PHASES } from '../core/types';
+import { DAY_PHASES, RESIDENT_TIERS } from '../core/types';
 import type {
   Ability,
+  BackgroundRole,
   CharacterDef,
   ComboRule,
   Condition,
@@ -31,12 +32,20 @@ import type {
   EnemyDef,
   MapDef,
   PropDef,
+  ResidentDef,
+  ResidentSlot,
   StatusDef,
   StoryNode,
   SurfaceDef,
+  WorldAnchor,
 } from '../core/types';
 import { STORY_PRESENTATIONS, validateStoryPresentations } from './story/presentations';
-import { IDENTITY_REGISTER, excludedResidentFor } from './identity';
+import {
+  FORBIDDEN_BINDINGS,
+  IDENTITY_REGISTER,
+  excludedResidentFor,
+  isReservedIdentity,
+} from './identity';
 
 /* ------------------------------------------------------------------ */
 /* Primitives                                                          */
@@ -440,6 +449,7 @@ export const mapSchema = z
         when: conditionSchema.optional(),
         node: id,
         routes: z.array(z.object({ when: conditionSchema, node: id })).optional(),
+        resident: id.optional(),
       }),
     ),
     props: z.array(propPlacement),
@@ -740,6 +750,67 @@ export const assetEntrySchema = z.discriminatedUnion('kind', [
   }),
 ]);
 
+/* ------------------------------------------------------------------ */
+/* Residents (ADR 0047 §2)                                             */
+/* ------------------------------------------------------------------ */
+
+export const anchorSchema = z.object({
+  id,
+  place: z.string().min(1),
+  site: z.discriminatedUnion('kind', [
+    z.object({ kind: z.literal('map'), mapId: id, pos: vec2, reserve: id.optional() }),
+    z.object({ kind: z.literal('private'), door: z.object({ mapId: id, pos: vec2 }) }),
+  ]),
+});
+
+const residentSlotSchema = z.object({
+  anchor: id,
+  activity: z.string().min(1),
+  variants: z.array(z.object({ when: conditionSchema, activity: z.string().min(1) })).optional(),
+  npc: id.optional(),
+  interrupt: z.enum(['talk', 'finish-then-talk', 'observe']),
+  service: z.literal('gate_watch').optional(),
+  via: z.array(vec2).optional(),
+  loop: z.array(vec2).optional(),
+});
+
+const slotValue = z.union([residentSlotSchema, z.literal('home'), z.literal('absent')]);
+const byPhase = <T extends z.ZodTypeAny>(value: T) =>
+  z.object(Object.fromEntries(DAY_PHASES.map((phase) => [phase, value])) as Record<DayPhase, T>);
+
+export const residentSchema = z.object({
+  id,
+  name: z.string().min(1),
+  source: z.object({
+    established: z.string().min(1).optional(),
+    runtimeNpcIds: z.array(id),
+  }),
+  home: id,
+  fallback: residentSlotSchema,
+  schedule: byPhase(z.union([residentSlotSchema, z.literal('home')])),
+  overrides: z
+    .array(
+      z.object({
+        id,
+        tier: z.enum(RESIDENT_TIERS),
+        when: conditionSchema,
+        slots: byPhase(slotValue).partial(),
+        all: slotValue.optional(),
+      }),
+    )
+    .optional(),
+});
+
+export const backgroundRoleSchema = z.object({
+  id,
+  label: z.string().min(1),
+  sprite: z.string().min(1),
+  slots: byPhase(residentSlotSchema).partial(),
+  accompanies: z
+    .object({ resident: id, anchors: z.array(id).min(1), slot: residentSlotSchema })
+    .optional(),
+});
+
 export interface ContentBundle {
   /** The art manifest, so every sprite key content names is checked against it. */
   readonly assets?: Readonly<Record<string, AssetEntry>>;
@@ -754,6 +825,9 @@ export interface ContentBundle {
   readonly props: readonly PropDef[];
   readonly combos: readonly ComboRule[];
   readonly story: readonly StoryNode[];
+  readonly anchors: readonly WorldAnchor[];
+  readonly residents: readonly ResidentDef[];
+  readonly backgroundRoles: readonly BackgroundRole[];
 }
 
 /**
@@ -898,6 +972,9 @@ export function validateContent(bundle: ContentBundle): string[] {
     ['prop', propSchema, bundle.props],
     ['combo', comboSchema, bundle.combos],
     ['story node', storyNodeSchema, bundle.story],
+    ['anchor', anchorSchema, bundle.anchors],
+    ['resident', residentSchema, bundle.residents],
+    ['background role', backgroundRoleSchema, bundle.backgroundRoles],
   ];
 
   for (const [label, schema, items] of shapeChecks) {
@@ -925,6 +1002,11 @@ export function validateContent(bundle: ContentBundle): string[] {
     ['prop', bundle.props.map((p) => p.id)],
     ['combo', bundle.combos.map((c) => c.id)],
     ['story node', bundle.story.map((n) => n.id)],
+    ['anchor', bundle.anchors.map((a) => a.id)],
+    [
+      'resident or background role',
+      [...bundle.residents, ...bundle.backgroundRoles].map((r) => r.id),
+    ],
   ];
   for (const [label, ids] of idGroups) {
     for (const dupe of duplicates(ids)) problems.push(`duplicate ${label} id: "${dupe}"`);
@@ -1562,5 +1644,137 @@ export function validateContent(bundle: ContentBundle): string[] {
     }
   }
 
+  validateResidents(bundle, problems);
+
   return problems;
+}
+
+/**
+ * Structural rules for living-world records (ADR 0047 §2, §4, §8): every
+ * reference resolves, slots agree with the NpcDefs they name, and nothing
+ * claims an excluded or forbidden identity (the W0 register). Tile rules that
+ * need the resolver over the state classes (forbidden tiles, reachability,
+ * the neighbour rule, guard coverage, pairing) are W5b's.
+ */
+function validateResidents(bundle: ContentBundle, problems: string[]): void {
+  const anchors = new Map(bundle.anchors.map((a) => [a.id, a]));
+  const residentIds = new Set(bundle.residents.map((r) => r.id));
+  const maps = new Map(bundle.maps.map((m) => [m.id, m]));
+
+  for (const anchor of bundle.anchors) {
+    const where = anchor.site.kind === 'map' ? anchor.site : anchor.site.door;
+    const map = maps.get(where.mapId);
+    if (!map) problems.push(`anchor "${anchor.id}" is on unknown map "${where.mapId}"`);
+    else if (anchor.site.kind === 'map' && !isWalkable(map, where.pos.x, where.pos.y)) {
+      problems.push(`anchor "${anchor.id}" stands on a blocked tile`);
+    }
+  }
+
+  /** Checks one slot; `owner` is the resident it belongs to, or null for a background role. */
+  const checkSlot = (label: string, slot: ResidentSlot, owner: string | null): void => {
+    const anchor = anchors.get(slot.anchor);
+    if (!anchor) {
+      problems.push(`${label}: unknown anchor "${slot.anchor}"`);
+      return;
+    }
+    if (slot.npc) {
+      if (slot.interrupt === 'observe') problems.push(`${label}: names an npc but only observes`);
+      const npc =
+        anchor.site.kind === 'map'
+          ? maps.get(anchor.site.mapId)?.npcs.find((n) => n.id === slot.npc)
+          : undefined;
+      if (!npc || npc.resident !== owner) {
+        problems.push(
+          `${label}: npc "${slot.npc}" is not an NpcDef bound to "${owner}" on the anchor's map`,
+        );
+      }
+    }
+    if (owner === null && (slot.interrupt !== 'observe' || slot.npc)) {
+      problems.push(`${label}: a background role only observes`);
+    }
+    if (anchor.site.kind === 'map') {
+      const { pos } = anchor.site;
+      for (const point of slot.loop ?? []) {
+        if (Math.max(Math.abs(point.x - pos.x), Math.abs(point.y - pos.y)) > 2) {
+          problems.push(
+            `${label}: loop point ${point.x},${point.y} is over 2 tiles from its anchor`,
+          );
+        }
+      }
+    }
+  };
+
+  for (const resident of bundle.residents) {
+    const label = `resident "${resident.id}"`;
+    const claims = [resident.id, ...resident.source.runtimeNpcIds].map((key) =>
+      excludedResidentFor(key, resident.name),
+    );
+    const excluded = claims.find(Boolean);
+    if (excluded) problems.push(`${label} claims "${excluded.id}", excluded until released`);
+    for (const npcId of resident.source.runtimeNpcIds) {
+      if (FORBIDDEN_BINDINGS[npcId]?.includes(resident.id)) {
+        problems.push(`${label} must never bind runtime npc "${npcId}"`);
+      }
+    }
+    if (anchors.get(resident.home)?.site.kind !== 'private') {
+      problems.push(`${label}: home "${resident.home}" is not a private anchor`);
+    }
+    const { fallback } = resident;
+    checkSlot(`${label} fallback`, fallback, resident.id);
+    if (!fallback.npc || fallback.interrupt !== 'talk') {
+      problems.push(`${label}: the fallback slot must name an npc and take 'talk'`);
+    }
+    if (anchors.get(fallback.anchor)?.site.kind === 'private') {
+      problems.push(`${label}: the fallback slot must be public`);
+    }
+    for (const [phase, slot] of Object.entries(resident.schedule)) {
+      if (slot !== 'home') checkSlot(`${label} ${phase}`, slot, resident.id);
+    }
+    for (const override of resident.overrides ?? []) {
+      const where = `${label} override "${override.id}"`;
+      const values = [...Object.entries(override.slots), ['all', override.all] as const];
+      if (values.length === 1 && !override.all) problems.push(`${where} has no slots`);
+      for (const [phase, slot] of values) {
+        if (typeof slot !== 'object') continue;
+        checkSlot(`${where} ${phase}`, slot, resident.id);
+        if (override.tier === 'mission' && slot.interrupt !== 'talk') {
+          problems.push(`${where} ${phase}: a mission slot must take 'talk'`);
+        }
+      }
+    }
+  }
+
+  for (const role of bundle.backgroundRoles) {
+    const label = `background role "${role.id}"`;
+    if (isReservedIdentity(role.id)) problems.push(`${label} uses a registered identity`);
+    for (const [phase, slot] of Object.entries(role.slots)) {
+      checkSlot(`${label} ${phase}`, slot, null);
+    }
+    const company = role.accompanies;
+    if (company) {
+      if (!residentIds.has(company.resident)) {
+        problems.push(`${label} accompanies unknown resident "${company.resident}"`);
+      }
+      for (const anchor of company.anchors) {
+        if (!anchors.has(anchor)) problems.push(`${label}: unknown anchor "${anchor}"`);
+      }
+      checkSlot(`${label} accompanying`, company.slot, null);
+    }
+  }
+
+  const byId = new Map(bundle.residents.map((r) => [r.id, r]));
+  for (const map of bundle.maps) {
+    for (const npc of map.npcs) {
+      if (!npc.resident) continue;
+      const label = `map "${map.id}" npc "${npc.id}"`;
+      const resident = byId.get(npc.resident);
+      if (!resident) problems.push(`${label} is bound to unknown resident "${npc.resident}"`);
+      else if (!resident.source.runtimeNpcIds.includes(npc.id)) {
+        problems.push(`${label} is not listed in "${npc.resident}"'s runtimeNpcIds`);
+      }
+      if (FORBIDDEN_BINDINGS[npc.id]?.includes(npc.resident)) {
+        problems.push(`${label} must never bind "${npc.resident}"`);
+      }
+    }
+  }
 }

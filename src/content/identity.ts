@@ -108,8 +108,8 @@ export const IDENTITY_REGISTER: readonly IdentityEntry[] = [
 /**
  * Runtime NpcDef ids that must never be bound to the listed design
  * identities, because today's placeholder name is a coincidence, not a
- * claim (see the module doc). Not enforced by `validateContent` — W4a, the
- * work item that does the real resident binding, is what must check this.
+ * claim (see the module doc). `validateContent` rejects the binding from
+ * either side: a resident listing the runtime id, or the NpcDef's `resident`.
  */
 export const FORBIDDEN_BINDINGS: Readonly<Record<string, readonly string[]>> = {
   dema: ['lw.npc.dema_cook'],

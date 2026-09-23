@@ -555,6 +555,94 @@ export interface NpcDef {
    * than one alternative.
    */
   readonly routes?: readonly { readonly when: Condition; readonly node: string }[];
+  /**
+   * The resident (ADR 0047 §2) this NpcDef speaks for. A bound NpcDef is
+   * present only where its resident's placement puts it; `pos` becomes
+   * optional for bound NpcDefs in W4b, when every reader switches to the
+   * resolved anchor tile.
+   */
+  readonly resident?: string;
+}
+
+/* ------------------------------------------------------------------ */
+/* Residents (ADR 0047 §2)                                             */
+/* ------------------------------------------------------------------ */
+
+/** A place a resident can be. Codes are narrative ('bd02.shopfront'), never tiles. */
+export interface WorldAnchor {
+  readonly id: string;
+  /** Narrative place code, 'BD02'. */
+  readonly place: string;
+  readonly site:
+    | {
+        readonly kind: 'map';
+        readonly mapId: string;
+        readonly pos: Vec2;
+        /** A claim shared by several anchors: only one placement may hold it. */
+        readonly reserve?: string;
+      }
+    | { readonly kind: 'private'; readonly door: { readonly mapId: string; readonly pos: Vec2 } };
+}
+
+export interface ResidentSlot {
+  readonly anchor: string;
+  /** Pose/prop/bark key for presentation; never evaluated. */
+  readonly activity: string;
+  /** First match replaces `activity`. */
+  readonly variants?: readonly { readonly when: Condition; readonly activity: string }[];
+  /** NpcDef on the anchor's map that owns conversation here. */
+  readonly npc?: string;
+  /** `npc` set means not 'observe'. */
+  readonly interrupt: 'talk' | 'finish-then-talk' | 'observe';
+  readonly service?: 'gate_watch';
+  /** Waypoints for the walk into this slot. */
+  readonly via?: readonly Vec2[];
+  /** Presentation-only wander points, at most 2 tiles from the anchor. */
+  readonly loop?: readonly Vec2[];
+}
+
+/** Override tiers in precedence order; the resolver ranks them 1-5 (§2). */
+export const RESIDENT_TIERS = ['mission', 'hazard', 'presence', 'care', 'appointment'] as const;
+
+export type ResidentTier = (typeof RESIDENT_TIERS)[number];
+
+export type ResidentSlotValue = ResidentSlot | 'home' | 'absent';
+
+export interface ResidentOverride {
+  readonly id: string;
+  readonly tier: ResidentTier;
+  readonly when: Condition;
+  /** Per-phase slots; a missing phase uses `all`, and with no `all` the override skips it. */
+  readonly slots: Partial<Readonly<Record<DayPhase, ResidentSlotValue>>>;
+  readonly all?: ResidentSlotValue;
+}
+
+export interface ResidentDef {
+  /** Design key, 'lw.npc.gao'. */
+  readonly id: string;
+  readonly name: string;
+  readonly source: { readonly established?: string; readonly runtimeNpcIds: readonly string[] };
+  /** A private anchor. */
+  readonly home: string;
+  /** Public; must have `npc` and interrupt 'talk'. */
+  readonly fallback: ResidentSlot;
+  readonly schedule: Readonly<Record<DayPhase, ResidentSlot | 'home'>>;
+  readonly overrides?: readonly ResidentOverride[];
+}
+
+/** Unnamed background people: never in the identity register, never interactive. */
+export interface BackgroundRole {
+  readonly id: string;
+  readonly label: string;
+  readonly sprite: string;
+  /** Interrupt 'observe'. */
+  readonly slots: Partial<Readonly<Record<DayPhase, ResidentSlot>>>;
+  /** Present when `resident` resolved to one of `anchors`. */
+  readonly accompanies?: {
+    readonly resident: string;
+    readonly anchors: readonly string[];
+    readonly slot: ResidentSlot;
+  };
 }
 
 export interface MapExit {
@@ -1139,6 +1227,10 @@ export interface ContentIndex {
   readonly props: ReadonlyMap<string, PropDef>;
   readonly combos: readonly ComboRule[];
   readonly story: ReadonlyMap<string, StoryNode>;
+  /** Living-world records (ADR 0047 §2). Map order is declaration order, which ranks ties. */
+  readonly anchors: ReadonlyMap<string, WorldAnchor>;
+  readonly residents: ReadonlyMap<string, ResidentDef>;
+  readonly backgroundRoles: ReadonlyMap<string, BackgroundRole>;
   /**
    * Abilities every party member has without spending a kit slot on them — the
    * Shove that lets anybody push a barrel. Reached through the index because

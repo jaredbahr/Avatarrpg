@@ -30,7 +30,7 @@ import { ACT1_NODES } from './story/act1';
 import { withPartyVoices } from './story/partyVoices';
 import { RETURN_STORY } from './story/return';
 import type { ContentBundle } from './schemas';
-import type { MapDef, StoryNode } from '../core/types';
+import type { BackgroundRole, MapDef, ResidentDef, StoryNode, WorldAnchor } from '../core/types';
 
 export const ALL_MAPS: readonly MapDef[] = [BA_DAN_VILLAGE, RIVERSIDE, ...COMBAT_MAPS].map(
   connectAct1,
@@ -42,6 +42,11 @@ export const ALL_STORY: readonly StoryNode[] = withPartyVoices([
   ...DISCOVERY_STORY,
   ...RETURN_STORY,
 ]);
+
+/** Living-world records (ADR 0047 §2). Ba Dan's anchors, residents and roles land in W5a. */
+const ANCHORS: readonly WorldAnchor[] = [];
+const RESIDENTS: readonly ResidentDef[] = [];
+const BACKGROUND_ROLES: readonly BackgroundRole[] = [];
 
 /** The flat form, used by the validation test and the balance report. */
 export const CONTENT_BUNDLE: ContentBundle = {
@@ -57,6 +62,9 @@ export const CONTENT_BUNDLE: ContentBundle = {
   props: PROPS,
   combos: COMBOS,
   story: ALL_STORY,
+  anchors: ANCHORS,
+  residents: RESIDENTS,
+  backgroundRoles: BACKGROUND_ROLES,
 };
 
 /** The indexed form, used by the rules. */
@@ -73,6 +81,9 @@ export const CONTENT: ContentIndex = {
   props: PROP_BY_ID,
   combos: COMBOS,
   story: new Map(ALL_STORY.map((n) => [n.id, n])),
+  anchors: new Map(ANCHORS.map((a) => [a.id, a])),
+  residents: new Map(RESIDENTS.map((r) => [r.id, r])),
+  backgroundRoles: new Map(BACKGROUND_ROLES.map((r) => [r.id, r])),
   universalAbilities: UNIVERSAL_ABILITY_IDS,
 };
 
