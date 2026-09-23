@@ -4,7 +4,7 @@
  * The pin stores the resident's anchor id, not a tile.
  *
  * No real NpcDef is bound until W5a, so `BOUND` binds Elder Mira to a
- * synthetic resident standing on her tile (`testResidents.ts`).
+ * synthetic resident standing on her tile (`residents.fixture.ts`).
  *
  * These tests drive the pin through the real `apply` entry point so they
  * also exercise `settle` (ADR 0047 §5, B2), which clears a pin the result no
@@ -18,7 +18,7 @@ import { createGame } from './createGame';
 import { apply } from './reducer';
 import { reconcileDisciplines, reconcileWorld } from '../save/reconcile';
 import { deserialize, serialize, stateFromBlob } from '../save/serialize';
-import { TEST_ANCHOR, TEST_RESIDENT, withBoundNpc } from '../story/testResidents';
+import { TEST_ANCHOR, TEST_RESIDENT, withBoundNpc } from '../story/residents.fixture';
 import { RANK_CONVERSATION, resolveResidents } from '../story/residents';
 import { placedNpcs } from '../story/world';
 

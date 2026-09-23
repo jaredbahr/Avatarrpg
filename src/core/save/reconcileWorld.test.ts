@@ -13,7 +13,7 @@ import { createGame } from '../state/createGame';
 import type { GameState } from '../types';
 import { reconcileWorld } from './reconcile';
 import { deserialize, serialize, stateFromBlob } from './serialize';
-import { TEST_ANCHOR, TEST_RESIDENT, withBoundNpc } from '../story/testResidents';
+import { TEST_ANCHOR, TEST_RESIDENT, withBoundNpc } from '../story/residents.fixture';
 
 /** Elder Mira bound to a synthetic resident on her tile; no real NpcDef is bound until W5a. */
 const BOUND = withBoundNpc(CONTENT, 'ba_dan_village', 'elder_mira');

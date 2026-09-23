@@ -1,8 +1,8 @@
 /**
- * Test support only (nothing in the game imports it): binds one existing
- * NpcDef to a synthetic resident who stands on that NpcDef's tile in every
- * phase, so reducer-level tests can exercise the conversation pin (ADR 0047
- * §4) before any real resident records exist (W5a).
+ * Test fixture only: no game code imports it, so it is never bundled. Binds
+ * one existing NpcDef to a synthetic resident who stands on that NpcDef's
+ * tile in every phase, so reducer-level tests can exercise the conversation
+ * pin (ADR 0047 §4) before any real resident records exist (W5a).
  */
 
 import type { ContentIndex, ResidentDef, ResidentSlot, WorldAnchor } from '../types';
