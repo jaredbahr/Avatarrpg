@@ -54,6 +54,7 @@ import { TitleScene } from './scenes/TitleScene';
 import { PartySetupScene } from './scenes/PartySetupScene';
 import { DialogueScene } from './scenes/DialogueScene';
 import { ExploreScene } from './scenes/ExploreScene';
+import { ResidentWalks } from './world/residentMotion';
 import { CombatScene } from './scenes/CombatScene';
 import { worldConversationFor } from '../content/story/presentations';
 
@@ -107,6 +108,12 @@ export class App {
    * back in the same watch does not say it again.
    */
   barkedWatch = '';
+  /**
+   * Residents walking between their places (ADR 0047 §7, W8). Held here so a
+   * conversation in its own scene does not forget where people were drawn;
+   * reset wherever the playback is, so a load places everyone directly.
+   */
+  readonly residents: ResidentWalks;
   /** Frame-time readout, present only with `?stats=1`. */
   readonly stats: Stats | null;
   /** The reveal-from-ink on every scene change. */
@@ -161,6 +168,7 @@ export class App {
     this.animator = new Animator(content, {
       onSounds: (cues, now) => this.audio.play(cues, now),
     });
+    this.residents = new ResidentWalks(content);
     applySettings(this.settings);
 
     clear(root);
@@ -315,6 +323,7 @@ export class App {
     this.state = villagePreviewState(this.content);
     this.session.setPlayers([]);
     this.animator.clear();
+    this.residents.reset();
     this.dispatch({ type: 'enterNode', nodeId: RIVERSIDE_ENTRY });
   }
 
@@ -326,6 +335,7 @@ export class App {
     this.state = previous.state;
     this.session.setPlayers(Session.fromMeta(previous.session).players);
     this.animator.clear();
+    this.residents.reset();
     this.closePause();
     this.levelUp?.close();
     this.levelUp = null;
@@ -358,6 +368,7 @@ export class App {
 
     this.state = state;
     this.animator.clear();
+    this.residents.reset();
     this.dispatch({ type: 'enterNode', nodeId: this.storyEntry });
   }
 
@@ -372,6 +383,7 @@ export class App {
     this.state = reconcileWorld(this.content, reconcileDisciplines(this.content, state));
     this.session.setPlayers(Session.fromMeta(session).players);
     this.animator.clear();
+    this.residents.reset();
     this.closePause();
     this.routeToState();
     this.toasts.show('Game loaded.');
