@@ -34,6 +34,14 @@ describe('handover barks (ADR 0047 §8)', () => {
       /^Dorin: “.+” Hanru: “.+”$/,
     );
     expect(handoverBark(CONTENT, village, at('dawn', 1, GATE, false))).toBeNull();
+    // Only a completed handover, read through a Condition (ADR 0047 §6).
+    const declined = at('dawn', 1, GATE);
+    expect(
+      handoverBark(CONTENT, village, {
+        ...declined,
+        flags: { ...declined.flags, 'scene.bd03_handover': 'declined' },
+      }),
+    ).toBeNull();
     for (const phase of ['morning', 'midday', 'afternoon', 'night'] as const)
       expect(handoverBark(CONTENT, village, at(phase, 1, GATE)), phase).toBeNull();
     expect(handoverBark(CONTENT, village, at('dawn', 1, { x: 3, y: 7 }))).toBeNull();

@@ -101,6 +101,12 @@ export class App {
   readonly animator: Animator;
   readonly session = new Session();
   readonly toasts: Toasts;
+  /**
+   * The watch (day and phase) whose handover bark has been shown (ADR 0047
+   * §8). Held here rather than on the scene, so leaving the map and coming
+   * back in the same watch does not say it again.
+   */
+  barkedWatch = '';
   /** Frame-time readout, present only with `?stats=1`. */
   readonly stats: Stats | null;
   /** The reveal-from-ink on every scene change. */

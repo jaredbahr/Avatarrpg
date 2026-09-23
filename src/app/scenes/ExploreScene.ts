@@ -88,8 +88,6 @@ export class ExploreScene implements Scene {
   private viewSize: { width: number; height: number } | null = null;
   /** True while a registered world conversation sits over this map. */
   private conversationMode = false;
-  /** The watch (day and phase) whose handover bark has been shown. */
-  private barked = '';
 
   constructor(private app: App) {}
 
@@ -562,8 +560,8 @@ export class ExploreScene implements Scene {
     // The handover's bark (ADR 0047 §8) as a subtitle, once per watch, on arrival.
     const bark = moving || !this.map ? null : handoverBark(this.app.content, this.map, state);
     const watch = `${state.world.clock.day}:${state.world.clock.phase}`;
-    if (bark && this.barked !== watch) {
-      this.barked = watch;
+    if (bark && this.app.barkedWatch !== watch) {
+      this.app.barkedWatch = watch;
       this.app.toasts.show(bark, 'info', 5000);
     }
     const target =
