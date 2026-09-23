@@ -189,3 +189,157 @@ for (const renderer of ['canvas', 'webgl'])
         Math.abs(fallback.b - registered.b),
     ).toBeGreaterThan(10);
   });
+
+for (const renderer of ['canvas', 'webgl'])
+  test(`ability rubble meets a forest heap alike on ${renderer}`, async ({ page }) => {
+    allowSoftwareWebgl(test, renderer);
+    await page.setViewportSize({ width: 1672, height: 941 });
+    await resetStorage(page, `?renderer=${renderer}`);
+    await startGame(page, ['Kaya'], ['kaya'], 'forest-rubble');
+    await enterNode(page, 'battle_forest_road');
+    await takeTurn(page);
+    await waitForIdle(page);
+    await page.waitForTimeout(1000);
+
+    type Cell = { x: number; y: number };
+    type Surface = { id: string; duration: number; spread: number } | null;
+    const HEAP = { x: 7, y: 3 };
+    const WEST = { x: 6, y: 3 };
+    const RUBBLE = { id: 'rubble', duration: -1, spread: 0 };
+    const set = (cells: [Cell, Surface][]) =>
+      page.evaluate((cells) => {
+        const grid = window.fnt!.app.state!.battle!.grid;
+        for (const [{ x, y }, surface] of cells)
+          Object.defineProperty(grid.tiles[y * grid.width + x]!, 'surface', {
+            value: surface,
+            configurable: true,
+          });
+      }, cells);
+    const register = (cells: Cell[]) =>
+      page.evaluate((cells) => {
+        const scene = window.fnt!.app.content.maps.get('forest_road')!.scene!;
+        Object.defineProperty(scene, 'paintedRubble', { value: cells, configurable: true });
+      }, cells);
+
+    /*
+     * One window round the heap tile, with each pixel mapped back to the
+     * logical ground it shows: `edge` is the west neighbour's side of the
+     * shared edge, above the heap image, and `heap` is the heap image itself.
+     */
+    const probe = async () => {
+      const found = await page.evaluate(
+        () =>
+          new Promise<{
+            m: { a: number; b: number; c: number; d: number; tx: number; ty: number };
+            rect: { x: number; y: number };
+          } | null>((resolve) =>
+            requestAnimationFrame(() =>
+              requestAnimationFrame(() => {
+                const m = window.fnt?.app.rendererCamera()?.groundTransform;
+                const canvas = document.querySelector('.map-canvas');
+                if (!m || !canvas) return resolve(null);
+                const { a, b, c, d, tx, ty } = m;
+                const bounds = canvas.getBoundingClientRect();
+                resolve({ m: { a, b, c, d, tx, ty }, rect: { x: bounds.x, y: bounds.y } });
+              }),
+            ),
+          ),
+      );
+      if (!found) throw new Error('Missing map canvas');
+      const { m, rect } = found;
+      const centre = {
+        x: m.a * 7.5 * 64 + m.c * 3.5 * 64 + m.tx,
+        y: m.b * 7.5 * 64 + m.d * 3.5 * 64 + m.ty,
+      };
+      const left = Math.round(centre.x) - ROI_CSS / 2;
+      const top = Math.round(centre.y) - ROI_CSS / 2;
+      const pixels = await screenshotClipPixels(page, {
+        x: rect.x + left,
+        y: rect.y + top,
+        width: ROI_CSS,
+        height: ROI_CSS,
+      });
+      const det = m.a * m.d - m.b * m.c;
+      const ground = (x: number, y: number) => {
+        const sx = left + x + 0.5 - m.tx;
+        const sy = top + y + 0.5 - m.ty;
+        return { x: (m.d * sx - m.c * sy) / det / 64, y: (m.a * sy - m.b * sx) / det / 64 };
+      };
+      return { pixels, ground };
+    };
+    type Probe = Awaited<ReturnType<typeof probe>>;
+    const inside = (lo: Cell, hi: Cell) => (p: Cell) =>
+      p.x > lo.x && p.x < hi.x && p.y > lo.y && p.y < hi.y;
+    const edge = inside({ x: 6.85, y: 3.05 }, { x: 6.985, y: 3.45 });
+    const heap = inside({ x: 7.25, y: 3.25 }, { x: 7.75, y: 3.75 });
+    const everywhere = () => true;
+    const changed = (before: Probe, after: Probe, region: (p: Cell) => boolean) => {
+      let count = 0;
+      let total = 0;
+      for (let y = 0; y < ROI_CSS; y++)
+        for (let x = 0; x < ROI_CSS; x++) {
+          if (!region(before.ground(x, y))) continue;
+          total++;
+          const a = before.pixels.at(x, y);
+          const b = after.pixels.at(x, y);
+          if (a && b && Math.abs(a.r - b.r) + Math.abs(a.g - b.g) + Math.abs(a.b - b.b) > 6)
+            count++;
+        }
+      expect(total, 'probe region lies inside the window').toBeGreaterThan(40);
+      return count;
+    };
+
+    // Ability rubble beside a live heap: its bank stops at the heap, whose own
+    // ink outline is the edge there, exactly as against more ability rubble.
+    await set([[WEST, RUBBLE]]);
+    const beside = await probe();
+    await register([]);
+    const besideWash = await probe();
+    expect(changed(beside, besideWash, edge), 'bank beside the heap').toBeLessThan(5);
+    // Loaded art is what stands the heap's wash down.
+    expect(changed(beside, besideWash, heap), 'heap wash once loaded').toBeGreaterThan(40);
+    await register([HEAP, { x: 8, y: 9 }]);
+
+    // Water turns the heap to mud. The neighbour banks against the mud. WebGL's
+    // bank is the fainter of the two (this host counted 44 changed pixels to
+    // Canvas's 314), so the floor sits well under it and well over the zero the
+    // unbanked comparison above reads. The heap itself stays drawn under the
+    // mud's wash: the authored cell keeps `cover`, whatever its surface.
+    await set([[HEAP, { id: 'mud', duration: 3, spread: 0 }]]);
+    const mud = await probe();
+    expect(changed(beside, mud, edge), 'bank against the mud').toBeGreaterThan(15);
+    expect(changed(beside, mud, heap), 'mud wash over the heap').toBeGreaterThan(40);
+    // The mud expires. The cell is still cover, so the heap stands exactly as
+    // the live heap does, wash and all stood down.
+    await set([
+      [HEAP, null],
+      [WEST, null],
+    ]);
+    const bare = await probe();
+    await set([[HEAP, RUBBLE]]);
+    const live = await probe();
+    expect(changed(live, bare, heap), 'heap still drawn after the mud').toBeLessThan(5);
+    // Rubble again beside it: back to the first frame.
+    await set([[WEST, RUBBLE]]);
+    expect(changed(beside, await probe(), everywhere), 're-rubbled heap').toBeLessThan(5);
+
+    // A scene piece that fails to load keeps every procedural wash: the heap's
+    // registration then changes nothing.
+    await page.evaluate(() => {
+      const scene = window.fnt!.app.content.maps.get('forest_road')!.scene!;
+      Object.defineProperty(scene, 'ground', {
+        value: scene.ground.map((piece) =>
+          piece.url.endsWith('/pond-bank.webp')
+            ? { ...piece, url: 'art/maps/missing-pond-bank-test.webp' }
+            : piece,
+        ),
+        configurable: true,
+      });
+    });
+    const failed = await probe();
+    await register([]);
+    expect(changed(failed, await probe(), heap), 'registration after a failed load').toBeLessThan(
+      5,
+    );
+    expect(changed(beside, failed, heap), 'fallback after a failed load').toBeGreaterThan(40);
+  });

@@ -2,7 +2,11 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import type { Grid, MapScene, SceneScenery, Tile, Vec2 } from '../core/types';
 import { Camera } from './camera';
 import type { Projection } from './projection';
-import { ALL_MAPS } from '../content';
+import { ALL_MAPS, CONTENT } from '../content';
+import { FOREST_ROAD } from '../content/maps/combat';
+import { positionHasCover } from '../core/rules/damage';
+import { buildGrid, tileAt, withSurface } from '../core/rules/grid';
+import { applyImpact } from '../core/rules/surfaces';
 import {
   SCENE_IMAGE_CAP,
   sceneForGrid,
@@ -421,5 +425,28 @@ describe('scene image residency', () => {
         `${map.id} asks for ${distinct.size} distinct scene images; SCENE_IMAGE_CAP is ${SCENE_IMAGE_CAP}`,
       ).toBeLessThanOrEqual(SCENE_IMAGE_CAP);
     });
+  }
+});
+
+it('keeps a registered heap drawn while its cell still gives cover', () => {
+  // The forest heap cell is authored `r`: `cover: true` as well as rubble, and
+  // the rules read `tile.cover` before the surface. Water and the mud's expiry
+  // change the surface only, so the cell stays cover and its heap must stay
+  // drawn. Whether cover should follow the surface is an open gameplay
+  // question; until the rules change, no render change may hide this heap.
+  const authored = FOREST_ROAD.scene!;
+  const HEAP = { x: 7, y: 3 };
+  const heap = authored.ground.find(
+    (piece) => piece.url.endsWith('/rubble.webp') && piece.x === 768 + (HEAP.x - HEAP.y - 1) * 64,
+  );
+  expect(heap).toBeDefined();
+  let grid = applyImpact(CONTENT, buildGrid(FOREST_ROAD), [HEAP], 'water').grid;
+  expect(tileAt(grid, HEAP)?.surface?.id).toBe('mud');
+  const muddy = grid;
+  // The mud's expiry: its duration runs out and the cell is bare.
+  grid = withSurface(grid, HEAP, null);
+  for (const state of [muddy, grid]) {
+    expect(positionHasCover(CONTENT, state, HEAP)).toBe(true);
+    expect(sceneForGrid(authored, state).ground).toContain(heap);
   }
 });
