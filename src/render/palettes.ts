@@ -169,11 +169,16 @@ export const SURFACE_STYLES: Record<SurfaceId, SurfaceStyle> = {
     hatch: 'diagonal',
     label: 'Oil',
   },
+  /*
+   * The ground contract's quarry spoil (DL-2 §3): the spoil shadow as the wash
+   * and its chip highlight as the bank, so a painted heap under the live
+   * overlay stays in its own family rather than being pulled toward grey.
+   */
   rubble: {
-    fill: '#6e6a63',
+    fill: '#857762',
     alpha: 0.3,
-    edge: '#a09a8b',
-    detail: '#6e6a63',
+    edge: '#c2b49c',
+    detail: '#857762',
     hatch: 'dots',
     label: 'Rubble',
   },
