@@ -330,12 +330,26 @@ describe('LW-S-BD-01: the plant’s chair (test 12)', () => {
         expect(npcNode(CONTENT, done, VILLAGE, 'shopkeeper_gao')).toBe(after);
       });
 
-  it('grants nothing and asks again when the party says another time', () => {
-    const before = at('afternoon', CLASSES['mira_intro visited']);
-    const left = play(tap(before, 'shopkeeper_gao'), [1]);
-    expect(left.story.nodeId).toBe('village_explore');
-    expect(left.flags).toEqual(before.flags);
-    expect(npcNode(CONTENT, left, VILLAGE, 'shopkeeper_gao')).toBe('plant_chair');
+  it('drops into Gao’s ordinary lines on another time, sets nothing, and asks again', () => {
+    for (const cls of [
+      CLASSES['mira_intro visited'],
+      CLASSES['traded, gao_cold heard'],
+      CLASSES['homecomings complete'],
+      CLASSES['victory, traded, gao_home_cold heard'],
+    ]) {
+      const before = at('afternoon', cls);
+      const declined = apply(CONTENT, tap(before, 'shopkeeper_gao'), {
+        type: 'chooseOption',
+        optionIndex: 1,
+      }).state;
+      // The node he would open if the scene were already done.
+      const done = { ...before, flags: { ...before.flags, [PLANT]: 'completed' } };
+      expect(declined.story.nodeId).toBe(npcNode(CONTENT, done, VILLAGE, 'shopkeeper_gao'));
+      expect(declined.story.nodeId).not.toBe('plant_chair');
+      const left = play(declined);
+      expect(left.flags).toEqual(before.flags);
+      expect(npcNode(CONTENT, left, VILLAGE, 'shopkeeper_gao')).toBe('plant_chair');
+    }
   });
 
   it('waits for the objection to the trade before victory, then offers the chair', () => {

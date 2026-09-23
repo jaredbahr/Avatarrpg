@@ -41,8 +41,31 @@ export const BA_DAN_DAY_STORY: readonly StoryNode[] = [
     ],
     options: [
       { label: 'Sit down', detail: 'Take a break at the shop.', next: 'plant_chair_seat' },
-      { label: 'Another time', detail: 'Leave Gao to his stock.', next: 'village_leave' },
+      { label: 'Another time', detail: 'Talk with Gao instead.', next: 'plant_chair_decline' },
     ],
+  },
+  // Declining sets nothing: Gao says what he would have said without the
+  // invitation (his NpcDef's later routes), and asks again next time.
+  {
+    id: 'plant_chair_decline',
+    kind: 'branch',
+    flag: 'act1_complete',
+    ifSet: 'plant_chair_decline_home',
+    ifUnset: 'plant_chair_decline_road',
+  },
+  {
+    id: 'plant_chair_decline_home',
+    kind: 'branch',
+    flag: 'ruon_traded',
+    ifSet: 'gao_home_cold',
+    ifUnset: 'gao_home',
+  },
+  {
+    id: 'plant_chair_decline_road',
+    kind: 'branch',
+    flag: 'ruon_traded',
+    ifSet: 'gao_cold',
+    ifUnset: 'gao_friendly',
   },
   {
     id: 'plant_chair_seat',
