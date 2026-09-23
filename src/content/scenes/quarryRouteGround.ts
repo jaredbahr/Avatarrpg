@@ -33,7 +33,7 @@ export const CUTTING_GROUND_REGIONS = [
     y: 94,
     width: 1154,
     height: 580,
-    bytes: 24988,
+    bytes: 24578,
   },
   {
     name: 'dirt-east',
@@ -41,7 +41,7 @@ export const CUTTING_GROUND_REGIONS = [
     y: 350,
     width: 1026,
     height: 516,
-    bytes: 22760,
+    bytes: 25408,
   },
   {
     name: 'road',
@@ -49,7 +49,7 @@ export const CUTTING_GROUND_REGIONS = [
     y: 126,
     width: 1538,
     height: 772,
-    bytes: 64366,
+    bytes: 28396,
   },
   {
     name: 'stone',
@@ -57,6 +57,6 @@ export const CUTTING_GROUND_REGIONS = [
     y: -2,
     width: 2050,
     height: 1028,
-    bytes: 55406,
+    bytes: 47206,
   },
 ] as const;

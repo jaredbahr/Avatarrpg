@@ -134,3 +134,38 @@ keep their approved bytes; folding it in is DL-2 W4.
 WebP quality for the re-keyed plates is 34 (`QUARRY_GROUND_QUALITY`), shared
 with the gate. `scripts/art/quarry-route-ground.test.ts` pins the shipped bytes
 against the packer, the tone table, the window span and the ink.
+
+## DL-2 W4: The Cutting folded in (2026-09-23)
+
+The Cutting's four regions now come from the same packer and the same §3 table
+as the Driller floor and the gate. Reproduce with:
+
+```powershell
+node --import tsx scripts/art/quarry-route-ground.ts cutting
+```
+
+The Cutting is the gate's road layout cut between ledges, so it takes the
+gate's reading of that layout rather than the Driller's. If `,` were painted as
+earth like the Driller's `.`, the lane and its shoulders would merge into one
+plane and the approved road would vanish. So `=` is packed earth with one haul
+track down each of the two one-row lanes (rows 4 and 7), `,` is spoil carrying
+inked heaps of cut stone (limestone body, block rim), and `^`/`A` are cut-stone
+block face. A heap is painted only if it fits wholly on plain spoil, so none is
+clipped by the lane or a ledge. Rubble diamonds are inked even on spoil of their
+own material, because a pile is an object on the floor. The Driller's and the
+gate's plates are byte-identical to W3.
+
+| Page        | Before (B) | After (B) | Delta (B) |
+| ----------- | ---------: | --------: | --------: |
+| `dirt-west` |     24,988 |    24,578 |      −410 |
+| `dirt-east` |     22,760 |    25,408 |    +2,648 |
+| `road`      |     64,366 |    28,396 |   −35,970 |
+| `stone`     |     55,406 |    47,206 |    −8,200 |
+| Total       |    167,520 |   125,588 |   −41,932 |
+
+Every registered rectangle is unchanged. The east dirt page keeps its soft
+`x=10` takeover over the west page's bleed; it is now produced by the packer's
+`softenDirtJoin` rather than `scripts/art/soften-quarry-dirt-join.ts`, which
+re-encodes the shipped pages at quality 84 and must no longer be run over
+either map. `scripts/art/quarry-route-ground.test.ts` pins the Cutting's bytes,
+its ink and the lane/shoulder split.

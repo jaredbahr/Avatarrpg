@@ -117,8 +117,21 @@ export function fieldNoise(x: number, y: number, salt: number): number {
  * a cell, the distance only has to be searched over the 3x3 neighbourhood.
  */
 export const HEAP_SHARE = 0.9;
-function heapDistance(x: number, y: number): number {
-  let best = Infinity;
+
+/**
+ * The heap nearest a point: its signed distance, its centre, and how far from
+ * that centre any of its paint — body, ink and chip rim — can reach. A packer
+ * uses the reach to keep a heap off a boundary it would otherwise be cut by.
+ */
+export interface NearestHeap {
+  readonly distance: number;
+  readonly hx: number;
+  readonly hy: number;
+  readonly reach: number;
+}
+
+export function nearestHeap(x: number, y: number): NearestHeap | null {
+  let found: NearestHeap | null = null;
   const ix = Math.floor(x),
     iy = Math.floor(y);
   for (let cy = iy - 1; cy <= iy + 1; cy++)
@@ -128,12 +141,18 @@ function heapDistance(x: number, y: number): number {
       const hy = cy + 0.2 + 0.6 * tileNoise(cx, cy, 43);
       const dx = x - hx,
         dy = y - hy;
+      const base = 0.22 + 0.2 * tileNoise(cx, cy, 44);
       const radius =
-        (0.22 + 0.2 * tileNoise(cx, cy, 44)) *
-        (1 + 0.22 * Math.sin(Math.atan2(dy, dx) * 3 + 9 * tileNoise(cx, cy, 45)));
-      best = Math.min(best, Math.hypot(dx, dy) - radius);
+        base * (1 + 0.22 * Math.sin(Math.atan2(dy, dx) * 3 + 9 * tileNoise(cx, cy, 45)));
+      const distance = Math.hypot(dx, dy) - radius;
+      if (!found || distance < found.distance)
+        found = { distance, hx, hy, reach: base * 1.22 + HEAP_INK + HEAP_RIM };
     }
-  return best;
+  return found;
+}
+
+function heapDistance(x: number, y: number): number {
+  return nearestHeap(x, y)?.distance ?? Infinity;
 }
 
 /** Ink half-width and chip-rim width around a heap, in tiles. */
