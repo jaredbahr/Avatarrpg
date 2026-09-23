@@ -34,6 +34,7 @@ import type {
   SurfaceDef,
 } from '../core/types';
 import { STORY_PRESENTATIONS, validateStoryPresentations } from './story/presentations';
+import { EXCLUDED_RESIDENTS, IDENTITY_REGISTER } from './identity';
 
 /* ------------------------------------------------------------------ */
 /* Primitives                                                          */
@@ -922,6 +923,21 @@ export function validateContent(bundle: ContentBundle): string[] {
   ];
   for (const [label, ids] of idGroups) {
     for (const dupe of duplicates(ids)) problems.push(`duplicate ${label} id: "${dupe}"`);
+  }
+
+  /* --- identity register (ADR 0047 W0) ------------------------------ */
+  for (const dupe of duplicates(IDENTITY_REGISTER.map((entry) => entry.id))) {
+    problems.push(`identity register has two entries for "${dupe}"`);
+  }
+  for (const map of bundle.maps) {
+    for (const npc of map.npcs) {
+      const excluded = EXCLUDED_RESIDENTS.find((entry) => entry.id === npc.id);
+      if (excluded) {
+        problems.push(
+          `map "${map.id}" npc "${npc.id}" claims the reserved identity "${excluded.id}" (${excluded.name}), which is excluded until released`,
+        );
+      }
+    }
   }
 
   const abilityIds = new Set(bundle.abilities.map((a) => a.id));
