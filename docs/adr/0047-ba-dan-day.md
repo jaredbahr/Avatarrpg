@@ -290,6 +290,15 @@ hide an actor there.
 - **The school notice.** In the morning, `school_notice` (visible only with `phase: ['morning']`)
   reads "Pella is in class until midday". "Wait until midday" is the §18.9 next-period alternative.
 
+**Amendment (W5, 2026-09-23): the supervision pairing inside Mira's conversation.** `story.visited`
+is written when a node is entered (Context), so opening `mira_intro`, or `mira_epilogue` once
+`pella_home` has been heard, lifts Mira's hold at once. For that one conversation Mira stays at
+`bd01.table` only through the pin (tier 0), while Pella's supervision fallback has also lifted, so
+in the afternoon Pella resolves to `bd06.watch` without Mira at BD06. This is accepted: Pella is on
+the riverside, off the player's map, and it lasts only until the conversation ends, when Mira walks
+to `bd06.bank`. The pairing rule and test 11 therefore allow exactly this case: Mira pinned at
+`bd01.table` with Pella not on the village map. Every other state, pinned or not, keeps the pairing.
+
 ### 5. After every command: settle (B2)
 
 `apply` wraps every command with a pure `settle(content, before, after)` in

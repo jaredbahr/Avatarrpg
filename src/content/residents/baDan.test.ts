@@ -13,7 +13,8 @@ import { EXCLUDED_RESIDENTS } from '../identity';
 import { villagePreviewState } from '../../app/village/previewState';
 import { createGame } from '../../core/state/createGame';
 import { buildGrid, findPath, posKey, tileAt } from '../../core/rules/grid';
-import { resolveResidents } from '../../core/story/residents';
+import { RANK_CONVERSATION, resolveResidents } from '../../core/story/residents';
+import { npcNode } from '../../core/story/storyEngine';
 import type { Placement } from '../../core/story/residents';
 import { activeTriggers, visibleNpcs } from '../../core/story/world';
 import { DAY_PHASES } from '../../core/types';
@@ -28,7 +29,7 @@ interface StateClass {
   readonly visited?: readonly string[];
 }
 
-/** The ADR's state classes (Tests section), plus two partial return states. */
+/** The ADR's state classes (Tests section), plus three partial return states. */
 const CLASSES: Readonly<Record<string, StateClass>> = {
   'new game': {},
   'mira_intro visited': { visited: ['mira_intro'] },
@@ -40,6 +41,10 @@ const CLASSES: Readonly<Record<string, StateClass>> = {
   'act1_complete, some homecomings heard': {
     flags: { act1_complete: true, ruon_traded: true },
     visited: ['mira_intro', 'mira_epilogue', 'gao_home_cold'],
+  },
+  'act1_complete, pella_home heard before mira_epilogue': {
+    flags: { act1_complete: true },
+    visited: ['mira_intro', 'pella_home'],
   },
   'homecomings complete': {
     flags: { act1_complete: true },
@@ -90,6 +95,31 @@ const placementOf = (state: GameState, id: string): Placement => {
 const where = (state: GameState, id: string): string | null =>
   resolveResidents(CONTENT, state).placements.find((p) => p.id === id)?.anchor ?? null;
 
+/**
+ * `state` with each visible resident in turn pinned mid-conversation, as
+ * `handleWalkTo` leaves it: the entered node is already in `visited`, since
+ * the log is written on entry (ADR 0047 §4 amendment, W5).
+ */
+const pinnedStates = (state: GameState) =>
+  everyVisible(state).flatMap((npc) => {
+    if (!npc.resident) return [];
+    const anchor = placementOf(state, npc.resident).anchor;
+    if (!anchor) throw new Error(`${npc.id} is visible without an anchor`);
+    const node = npcNode(CONTENT, state, npc.mapId, npc.id);
+    if (!node) throw new Error(`${npc.id} opens no conversation`);
+    const pinned: GameState = {
+      ...state,
+      screen: 'dialogue',
+      location: { ...state.location, mapId: npc.mapId },
+      story: {
+        ...state.story,
+        visited: [...state.story.visited, node],
+      },
+      world: { ...state.world, talk: { npcId: npc.id, mapId: npc.mapId, anchor } },
+    };
+    return [{ npc, anchor, resident: npc.resident, pinned }];
+  });
+
 const each = (fn: (name: string, cls: StateClass, phase: DayPhase) => void): void => {
   for (const [name, cls] of Object.entries(CLASSES))
     for (const phase of DAY_PHASES) fn(name, cls, phase);
@@ -106,20 +136,10 @@ suite('Ba Dan residents: no diagnostics in any state class or phase (CI gate)', 
 
   it('resolves with no diagnostic while any visible resident is pinned in conversation', () => {
     each((name, cls, phase) => {
-      const state = at(phase, cls);
-      for (const npc of everyVisible(state)) {
-        if (!npc.resident) continue;
-        const anchor = placementOf(state, npc.resident).anchor;
-        if (!anchor) throw new Error(`${npc.id} is visible without an anchor`);
-        const pinned: GameState = {
-          ...state,
-          screen: 'dialogue',
-          location: { ...state.location, mapId: npc.mapId },
-          world: { ...state.world, talk: { npcId: npc.id, mapId: npc.mapId, anchor } },
-        };
+      for (const { npc, anchor, resident, pinned } of pinnedStates(at(phase, cls))) {
         const resolution = resolveResidents(CONTENT, pinned);
         expect(resolution.diagnostics, `${name}, ${phase}, ${npc.id}`).toEqual([]);
-        expect(placementOf(pinned, npc.resident).anchor).toBe(anchor);
+        expect(placementOf(pinned, resident).anchor).toBe(anchor);
       }
     });
   });
@@ -230,18 +250,41 @@ suite('Ba Dan residents: guards, supervision and the five missing', () => {
   });
 
   it('puts Pella at the river only with Mira there, and never alone at the court', () => {
+    // The one exception (ADR 0047 §4 amendment, W5): opening `mira_intro`,
+    // or `mira_epilogue` once `pella_home` is heard, visits it at once and
+    // lifts Mira's hold, so Pella resolves to the river while Mira is pinned
+    // at her table. Pella is off the player's map, and only for that talk.
+    let exceptions = 0;
     each((name, cls, phase) => {
       const state = at(phase, cls);
-      const pella = where(state, 'lw.npc.pella');
-      if (pella?.startsWith('bd06.'))
-        expect(where(state, 'lw.npc.mira'), `${name}, ${phase}`).toMatch(/^bd06\./);
-      if (pella === 'bd04.court')
-        expect(where(state, 'bg.pella_household'), `${name}, ${phase}`).toBe('bd04.yard');
-      expect(
-        [null, 'home.pella', 'bd05.school', 'bd04.court', 'bd06.watch'],
-        `${name}, ${phase}`,
-      ).toContain(pella);
+      const cases = [
+        { label: `${name}, ${phase}`, s: state },
+        ...pinnedStates(state).map(({ npc, pinned }) => ({
+          label: `${name}, ${phase}, ${npc.id} pinned`,
+          s: pinned,
+        })),
+      ];
+      for (const { label, s } of cases) {
+        const pella = placementOf(s, 'lw.npc.pella');
+        const mira = placementOf(s, 'lw.npc.mira');
+        if (pella.anchor?.startsWith('bd06.') && !mira.anchor?.startsWith('bd06.')) {
+          expect(
+            mira.rank === RANK_CONVERSATION &&
+              mira.anchor === 'bd01.table' &&
+              pella.mapId !== VILLAGE,
+            label,
+          ).toBe(true);
+          exceptions++;
+        }
+        if (pella.anchor === 'bd04.court')
+          expect(where(s, 'bg.pella_household'), label).toBe('bd04.yard');
+        expect([null, 'home.pella', 'bd05.school', 'bd04.court', 'bd06.watch'], label).toContain(
+          pella.anchor,
+        );
+      }
     });
+    // The exception is real, and the test sees it.
+    expect(exceptions).toBeGreaterThan(0);
   });
 
   it('shows each person on at most one map, and never one of the five missing', () => {
