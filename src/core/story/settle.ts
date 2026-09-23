@@ -68,6 +68,15 @@ export function findSettleTile(
   const isBlockedForStepping = (p: Vec2): boolean => blockedForStepping.has(posKey(p));
   const isForbiddenLanding = (p: Vec2): boolean =>
     npcTiles.has(posKey(p)) || arrivals.has(posKey(p)) || restSpots.has(posKey(p));
+  /**
+   * A diagonal's corner is off-limits if it is an exit/trigger cell (as
+   * before) or, matching `findPath`'s `diagonalAllowed` (`grid.ts`), if it
+   * is blocked terrain or off the map.
+   */
+  const blockedCorner = (p: Vec2): boolean => {
+    const t = tileAt(grid, p);
+    return !t || t.blocked || isBlockedForStepping(p);
+  };
 
   const visited = new Set<string>([posKey(from)]);
   let frontier: SettleTile[] = [{ pos: from, path: [] }];
@@ -87,7 +96,7 @@ export function findSettleTile(
         if (next.x !== node.pos.x && next.y !== node.pos.y) {
           const a = { x: next.x, y: node.pos.y };
           const b = { x: node.pos.x, y: next.y };
-          if (isBlockedForStepping(a) || isBlockedForStepping(b)) continue;
+          if (blockedCorner(a) || blockedCorner(b)) continue;
         }
 
         const tile = tileAt(grid, next);

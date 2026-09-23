@@ -8,9 +8,9 @@
 
 import { describe as suite, expect, it } from 'vitest';
 import { CONTENT } from '../../content';
-import { buildGrid, posKey } from '../rules/grid';
+import { DEFAULT_TILE, buildGrid, posKey } from '../rules/grid';
 import { createGame } from '../state/createGame';
-import type { GameState, MapDef, Vec2 } from '../types';
+import type { Grid, GameState, MapDef, Tile, Vec2 } from '../types';
 import { findSettleTile } from './settle';
 
 const VILLAGE = (() => {
@@ -70,5 +70,38 @@ suite('findSettleTile', () => {
     const first = findSettleTile(CONTENT, VILLAGE, GRID, village(), from);
     const second = findSettleTile(CONTENT, VILLAGE, GRID, village(), from);
     expect(first).toEqual(second);
+  });
+
+  it('never cuts a corner between two blocked tiles, matching findPath', () => {
+    // # S #
+    // . # .
+    // . . .
+    //
+    // From S, every orthogonal neighbour is blocked (left, right, down),
+    // and both diagonal neighbours — (0,1) and (2,1) — are open tiles
+    // squeezed between two blocked corners. `findPath`'s `diagonalAllowed`
+    // (grid.ts) refuses that squeeze; `findSettleTile` must too, so
+    // nothing here is reachable at all.
+    const layout = ['#S#', '.#.', '...'];
+    const tiles: Tile[] = layout
+      .join('')
+      .split('')
+      .map((ch) => ({ ...DEFAULT_TILE, blocked: ch === '#' }));
+    const grid: Grid = { width: 3, height: 3, tiles };
+    const map: MapDef = {
+      id: 'settle_corner_test',
+      name: 'Settle corner test',
+      kind: 'explore',
+      width: 3,
+      height: 3,
+      rows: layout,
+      legend: {},
+      partySpawns: [],
+      npcs: [],
+      props: [],
+      ambience: '',
+    };
+    const result = findSettleTile(CONTENT, map, grid, village(), { x: 1, y: 0 });
+    expect(result).toBeNull();
   });
 });
