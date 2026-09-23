@@ -849,9 +849,14 @@ export class ExploreScene implements Scene {
     if (this.conversationMode) return;
     if (!state || state.screen !== 'explore' || state.location.mapId !== this.map?.id) return;
     if (this.life?.busy(performance.now())) return;
-    // Someone still walking to their place is met there once they arrive, so
-    // no conversation opens with the speaker mid-stride (ADR 0047 §7, W8).
-    if (this.app.animator.busy(performance.now()) || this.app.residents.walkingTo(pos)) {
+    // Someone still walking to their place: set off now for the tile beside
+    // where they are going, and talk once they are there, so no conversation
+    // opens with the speaker mid-stride (ADR 0047 §7, W8).
+    if (!this.app.animator.busy(performance.now()) && this.app.residents.walkingTo(pos)) {
+      const beside = previewWalk(this.app.content, state, pos).path.at(-1);
+      if (beside) this.app.dispatch({ type: 'walkTo', pos: beside });
+      if (this.app.state) this.nextWalk.set(this.app.content, this.app.state, pos);
+    } else if (this.app.animator.busy(performance.now())) {
       const preview = this.nextWalk.set(this.app.content, state, pos);
       if (preview.refusal) this.app.toasts.show(preview.refusal);
     } else {
