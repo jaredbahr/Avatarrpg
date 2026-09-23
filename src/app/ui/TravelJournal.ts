@@ -1,7 +1,8 @@
 import type { App } from '../App';
 import { travelJournal } from '../world/journal';
 import { Dialog } from './Dialog';
-import { button, el } from './dom';
+import { append, button, el, mark } from './dom';
+import { UI_MARKS } from './marks';
 
 export class TravelJournal extends Dialog {
   protected options = { title: 'Travel journal', wide: true };
@@ -13,16 +14,17 @@ export class TravelJournal extends Dialog {
     const state = this.app.state;
     if (!state) return;
     const journal = travelJournal(this.app.content, state);
-    body.append(
+    append(body, [
       el(
         'p',
         { class: 'explore-title' },
         el('strong', { text: journal.location }),
-        el('span', { class: 'explore-phase', text: journal.time }),
+        el('span', { class: 'explore-phase' }, mark(UI_MARKS.wait, 'mark-inline'), journal.time),
       ),
+      journal.wait && el('p', { class: 'muted', text: journal.wait }),
       el('p', { text: journal.objective }),
       button('Return to the path', () => this.close(), { class: 'btn-primary' }),
-    );
+    ]);
     const section = (title: string) => {
       const part = el(
         'section',

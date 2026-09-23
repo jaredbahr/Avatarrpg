@@ -10,6 +10,7 @@ import { hitsPebble, hitsVillager, riversideWalkTime } from '../../render/living
 import { RIVERSIDE_ID, RIVERSIDE_SPOTS } from '../../content/maps/riverside';
 import { visibleNpcs } from '../../core/story/world';
 import { button, el, motionReduced } from '../ui/dom';
+import { WaitDialog } from '../ui/WaitDialog';
 import { verticalClip } from '../anim/direction';
 
 const distance = (a: Vec2, b: Vec2) => Math.hypot(a.x - b.x, a.y - b.y);
@@ -106,6 +107,12 @@ export class VillageLife {
     secondaryAction('Meet Pebble', () => this.visit('otter'));
     secondaryAction('Visit the shrine', () => this.visit('shrine'));
     secondaryAction('Tea break', () => this.visit('tea'));
+    // The porch is the riverside's seat for waiting (ADR 0047 D8).
+    secondaryAction('Wait until…', () =>
+      new WaitDialog(this.app).open(
+        document.querySelector<HTMLElement>('.overlay-host') ?? document.body,
+      ),
+    );
     secondaryAction(
       "Dorin's drill",
       () => this.visit('practice'),

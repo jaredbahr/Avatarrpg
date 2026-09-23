@@ -29,6 +29,7 @@ describe('travel journal and riverside routes', () => {
   it('names the time of day as a label (ADR 0047 D1)', () => {
     const state = start();
     expect(travelJournal(CONTENT, state).time).toBe('Midday');
+    expect(travelJournal(CONTENT, state).wait).toBe('Wait at the tea porch to pass the time.');
     const clock = { day: 2, phase: 'evening' } as const;
     expect(travelJournal(CONTENT, { ...state, world: { ...state.world, clock } }).time).toBe(
       'Evening',

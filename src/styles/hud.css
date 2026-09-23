@@ -845,6 +845,22 @@
   color: var(--c-ink-dim);
 }
 
+/* The wait options are a phase and a word each, so they sit in a grid of
+ * tap targets: one row on a tablet, and still short on a phone. */
+.wait-options {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(7rem, 1fr));
+}
+
+.wait-options .choice-option {
+  min-height: var(--tap);
+  padding: var(--sp-2);
+}
+
+.wait-options .choice-option strong {
+  font-size: var(--fs-md);
+}
+
 /* Declared once: the dialogue options and the discipline cards share it. */
 .locked-hint {
   margin: 0;

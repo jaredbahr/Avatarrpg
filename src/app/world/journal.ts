@@ -21,6 +21,10 @@ export function travelJournal(content: ContentIndex, state: GameState) {
   return {
     location: map?.name ?? 'On the road',
     time: phaseLabel(state.world.clock.phase),
+    /** Where the hotbar offers "Wait until…" on this map (ADR 0047 D8), if anywhere. */
+    wait: map?.restSpots?.length
+      ? `Wait at ${map.restSpots.map((spot) => spot.label).join(' or ')} to pass the time.`
+      : null,
     objective: worldObjective(content, state) ?? 'Take your time and follow the paths.',
     places: [...content.maps.values()]
       .filter((place) => known.has(place.id))

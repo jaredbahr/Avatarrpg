@@ -36,6 +36,7 @@ import { partyRoster } from '../ui/PartyRoster';
 import { SaveMenu } from '../ui/SaveMenu';
 import { UnitInspector } from '../ui/UnitInspector';
 import { TravelJournal } from '../ui/TravelJournal';
+import { WaitDialog } from '../ui/WaitDialog';
 import { showGridLines } from '../storage/localSaves';
 import { NextWalk, previewWalk } from '../world/walking';
 import type { WalkPreview } from '../world/walking';
@@ -435,7 +436,14 @@ export class ExploreScene implements Scene {
         'div',
         { class: 'explore-title' },
         el('strong', { class: 'title-plate-name', text: this.app.placeLabel() }),
-        clock ? el('span', { class: 'explore-phase', text: phaseLabel(clock.phase) }) : null,
+        clock
+          ? el(
+              'span',
+              { class: 'explore-phase' },
+              mark(UI_MARKS.wait, 'mark-inline'),
+              phaseLabel(clock.phase),
+            )
+          : null,
       ),
       el('span', {
         class: 'explore-mode hide-narrow',
@@ -603,14 +611,25 @@ export class ExploreScene implements Scene {
     );
     row.appendChild(primary);
 
-    const look = button(
-      'Look around',
-      () => {
-        new NearbyPlaces(this.app, (pos) => this.requestWalk(pos)).open(this.overlayHost());
-      },
-      { class: 'action-button', title: 'Find nearby people and places along this path' },
-    );
-    look.prepend(mark(UI_MARKS.talk));
+    // At a seat (ADR 0047 D8), waiting takes Look around's place. The dock is
+    // laid out for four actions: a fifth wraps the iPad dock to twice its
+    // height and pushes one off a phone at Largest text. Look around is one
+    // step away; away from a seat the journal says where waiting is possible.
+    const seat = this.map?.restSpots?.find((spot) => distance(state.location.pos, spot.pos) <= 1);
+    const look = seat
+      ? button('Wait until…', () => new WaitDialog(this.app).open(this.overlayHost()), {
+          class: 'action-button',
+          title: `Let the day move on at ${seat.label}`,
+        })
+      : button(
+          'Look around',
+          () => {
+            new NearbyPlaces(this.app, (pos) => this.requestWalk(pos)).open(this.overlayHost());
+          },
+          { class: 'action-button', title: 'Find nearby people and places along this path' },
+        );
+    look.prepend(mark(seat ? UI_MARKS.wait : UI_MARKS.talk));
+    if (seat) look.appendChild(el('span', { class: 'action-sub', text: seat.label }));
     row.appendChild(look);
 
     const leader = state.party[0];
