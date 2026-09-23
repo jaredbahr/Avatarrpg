@@ -91,7 +91,7 @@ describe('planResidentMotion', () => {
       // The relief watch goes back down the east road; nobody placed it anywhere.
       {
         id: 'bg.relief_watch',
-        from: { x: 20, y: 9 },
+        from: { x: 17, y: 6 },
         to: { x: 23, y: 7 },
         enter: false,
         leave: true,
@@ -100,7 +100,7 @@ describe('planResidentMotion', () => {
       {
         id: 'lw.npc.dorin',
         from: { x: 19, y: 14 },
-        to: { x: 20, y: 9 },
+        to: { x: 17, y: 6 },
         enter: true,
         leave: false,
       },
@@ -123,7 +123,7 @@ describe('planResidentMotion', () => {
   });
 
   it('walks round the people standing still', () => {
-    const standing = new Set(['9,4', '20,9']); // Gao, and Dorin's post
+    const standing = new Set(['9,4', '17,6']); // Gao, and Dorin's post
     for (const motion of plan)
       if (motion.kind === 'walk' && motion.who.id !== 'lw.npc.dorin')
         for (const step of motion.path) expect(standing.has(posKey(step))).toBe(false);
@@ -218,11 +218,11 @@ describe('ResidentWalks', () => {
     expect(w.moving()).toBe(true);
     // Dorin's rules tile is the post at once; the drawing starts at the river path.
     expect(figure(w, 'lw.npc.dorin')).toMatchObject({
-      pos: { x: 20, y: 9 },
+      pos: { x: 17, y: 6 },
       drawPos: { x: 19, y: 14 },
       alpha: 0,
     });
-    expect(w.walkingTo({ x: 20, y: 9 })).toBe(true);
+    expect(w.walkingTo({ x: 17, y: 6 })).toBe(true);
     const trace: Vec2[] = [];
     for (let t = 50; t <= 4000; t += 50) {
       w.tick(t, false);
@@ -239,12 +239,12 @@ describe('ResidentWalks', () => {
     for (let t = 4050; t <= 6000; t += 50) w.tick(t, false);
     expect(figure(w, 'lw.npc.mira')).toBeUndefined();
     expect(figure(w, 'lw.npc.dorin')).toMatchObject({
-      drawPos: { x: 20, y: 9 },
+      drawPos: { x: 17, y: 6 },
       alpha: 1,
       walking: false,
     });
     expect(w.moving()).toBe(false);
-    expect(w.walkingTo({ x: 20, y: 9 })).toBe(false);
+    expect(w.walkingTo({ x: 17, y: 6 })).toBe(false);
   });
 
   it('keeps a walk running when a command mid-walk leaves the walker’s tile alone', () => {
@@ -328,7 +328,7 @@ describe('ResidentWalks', () => {
     const walled: MapDef = {
       ...VILLAGE,
       legend: { ...VILLAGE.legend, X: { terrain: 'wall', blocked: true } },
-      rows: VILLAGE.rows.map((row, y) => (y === 9 ? `${row.slice(0, 19)}X${row.slice(20)}` : row)),
+      rows: VILLAGE.rows.map((row, y) => (y === 6 ? `${row.slice(0, 16)}X${row.slice(17)}` : row)),
     };
     const w = walks();
     const before = at('afternoon', SEAT, ['mira_intro', 'mira_epilogue']);
@@ -342,9 +342,9 @@ describe('ResidentWalks', () => {
       if (dorin) seen.push({ ...dorin.drawPos, alpha: dorin.alpha });
     }
     // Only ever drawn on one of the two tiles: out at the post, then in at the verge.
-    expect(seen.every((f) => (f.x === 20 || f.x === 19) && f.y === 9)).toBe(true);
-    const out = seen.filter((f) => f.x === 20).map((f) => f.alpha);
-    const back = seen.filter((f) => f.x === 19).map((f) => f.alpha);
+    expect(seen.every((f) => (f.x === 17 || f.x === 16) && f.y === 6)).toBe(true);
+    const out = seen.filter((f) => f.x === 17).map((f) => f.alpha);
+    const back = seen.filter((f) => f.x === 16).map((f) => f.alpha);
     expect(out.length).toBeGreaterThan(3);
     expect(out).toEqual([...out].sort((a, b) => b - a));
     expect(back).toEqual([...back].sort((a, b) => a - b));
@@ -360,7 +360,7 @@ describe('ResidentWalks', () => {
     w.tick(100, false);
     w.tick(200, false);
     expect(w.moving()).toBe(false);
-    expect(figure(w, 'lw.npc.dorin')?.drawPos).toEqual({ x: 20, y: 9 });
+    expect(figure(w, 'lw.npc.dorin')?.drawPos).toEqual({ x: 17, y: 6 });
   });
 
   it('forgets everything on reset: the next state is placed, not walked', () => {
@@ -371,6 +371,6 @@ describe('ResidentWalks', () => {
     w.reset();
     expect(w.update(VILLAGE, waited(before, 'afternoon'), party, true)).toBe(false);
     expect(w.moving()).toBe(false);
-    expect(figure(w, 'lw.npc.dorin')?.drawPos).toEqual({ x: 20, y: 9 });
+    expect(figure(w, 'lw.npc.dorin')?.drawPos).toEqual({ x: 17, y: 6 });
   });
 });

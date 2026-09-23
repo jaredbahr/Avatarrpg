@@ -17,7 +17,7 @@ import { settle } from './settle';
 import { backgroundFigures, visibleNpcs } from './world';
 
 const VILLAGE = CONTENT.maps.get('ba_dan_village') as MapDef;
-const POST: Vec2 = { x: 20, y: 9 };
+const POST: Vec2 = { x: 17, y: 6 };
 const YARD: Vec2 = { x: 11, y: 13 };
 
 /** A new game (midday, D4) exploring the village with the leader at `pos`. */
@@ -47,9 +47,9 @@ describe('background roles on the village (W8)', () => {
       { id: 'bg.pella_household', label: "Pella's household", sprite: 'npc.household', pos: YARD },
     ]);
     // Nobody else is on the post: Dorin is at his drill on the riverside (D3).
-    expect(visibleNpcs(CONTENT, VILLAGE, state).some((npc) => posKey(npc.pos) === '20,9')).toBe(
-      false,
-    );
+    expect(
+      visibleNpcs(CONTENT, VILLAGE, state).some((npc) => posKey(npc.pos) === posKey(POST)),
+    ).toBe(false);
   });
 
   it('walk the party up to a role, never onto its tile, and open nothing', () => {

@@ -47,8 +47,10 @@ describe('nearby exploration guidance', () => {
       npc: { id: 'dema' },
     });
     // Dorin keeps the gate post in the morning (ADR 0047 §8); at midday he
-    // is at his drill and the unnamed relief watch, no NpcDef, holds it.
-    const atGate = villageAt({ x: 22, y: 7 });
+    // is at his drill and the unnamed relief watch, no NpcDef, holds it. The
+    // post is where the east road leaves the square (W8), so it is met on the
+    // road there rather than at the exit tile.
+    const atGate = villageAt({ x: 19, y: 7 });
     const morning = {
       ...atGate,
       world: { ...atGate.world, clock: { day: 1, phase: 'morning' as const } },

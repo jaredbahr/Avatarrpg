@@ -96,11 +96,13 @@ export const BA_DAN_ANCHORS: readonly WorldAnchor[] = [
   door('home.gao', 'BD02', 10, 3),
   // D5: Mira lives in the north dwelling; its door steps come down at (16,3).
   door('home.mira', 'BD01-HOME', 16, 3),
-  // D6: the gate post on the south verge of the east road, off the cart
-  // track, with the road and the east exit in view; the handover tile is the
-  // verge beside it, on the village side.
-  tile('bd03.post', 'BD03', VILLAGE, 20, 9),
-  tile('bd03.handover', 'BD03', VILLAGE, 19, 9),
+  // D6, adjusted in W8: the gate post on the north verge where the east road
+  // leaves the square, off the cart track, looking down the road to the east
+  // exit. The verge tree's canopy covers the road from here east, and (20,9)
+  // under it read as an unguarded gate from the square. The handover tile is
+  // the verge beside it, on the village side.
+  tile('bd03.post', 'BD03', VILLAGE, 17, 6),
+  tile('bd03.handover', 'BD03', VILLAGE, 16, 6),
   // D5: Pella's household is the south-west dwelling. The court is the lawn
   // in front of its door, clear of both houses' walls; the household adult
   // stands beside it, nearer the door. The door tile (10,13) stays free.

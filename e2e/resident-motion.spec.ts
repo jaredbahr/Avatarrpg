@@ -100,8 +100,8 @@ for (const renderer of ['canvas', 'webgl'] as const) {
     const end = await markers(page);
     expect(end.find((m) => m.id === 'lw.npc.mira')).toBeUndefined();
     expect(end.find((m) => m.id === 'lw.npc.dorin')).toMatchObject({
-      pos: { x: 20, y: 9 },
-      at: { x: 20, y: 9 },
+      pos: { x: 17, y: 6 },
+      at: { x: 17, y: 6 },
       alpha: 1,
     });
     if (renderer === 'webgl') expect([...dorinSprites]).toEqual([1]);
@@ -111,17 +111,17 @@ for (const renderer of ['canvas', 'webgl'] as const) {
 test('the relief watch holds the gate at midday, and the party stops beside them', async ({
   page,
 }) => {
-  await village(page, 'canvas', 'midday', { x: 16, y: 7 });
+  await village(page, 'canvas', 'midday', { x: 13, y: 7 });
   const watch = (await markers(page)).find((m) => m.id === 'bg.relief_watch');
-  expect(watch).toMatchObject({ pos: { x: 20, y: 9 }, alpha: 1, quiet: true });
-  await page.evaluate(() => window.fnt!.app.dispatch({ type: 'walkTo', pos: { x: 20, y: 9 } }));
+  expect(watch).toMatchObject({ pos: { x: 17, y: 6 }, alpha: 1, quiet: true });
+  await page.evaluate(() => window.fnt!.app.dispatch({ type: 'walkTo', pos: { x: 17, y: 6 } }));
   await waitForIdle(page);
   const after = await page.evaluate(() => {
     const state = window.fnt!.app.state!;
     return { screen: state.screen, pos: state.location.pos };
   });
   expect(after.screen).toBe('explore');
-  expect(Math.max(Math.abs(after.pos.x - 20), Math.abs(after.pos.y - 9))).toBe(1);
+  expect(Math.max(Math.abs(after.pos.x - 17), Math.abs(after.pos.y - 6))).toBe(1);
 });
 
 test('a tap on someone walking takes the party to them once they arrive', async ({ page }) => {
@@ -137,7 +137,7 @@ test('a tap on someone walking takes the party to them once they arrive', async 
   });
   await page.clock.runFor(900);
   const dorin = (await markers(page)).find((m) => m.id === 'lw.npc.dorin');
-  expect(dorin?.pos).toEqual({ x: 20, y: 9 });
+  expect(dorin?.pos).toEqual({ x: 17, y: 6 });
   expect(dorin?.at).not.toEqual(dorin?.pos);
   // Tap his body where it is drawn, not the tile he is heading for.
   const point = await page.evaluate((at) => {
@@ -152,22 +152,38 @@ test('a tap on someone walking takes the party to them once they arrive', async 
       y: rect.top + m.b * x + m.d * y + m.ty - camera.tilePx * 0.5,
     };
   }, dorin!.at);
+  const start = await page.evaluate(() => window.fnt!.app.state!.location.pos);
   await page.mouse.click(point.x, point.y);
   await page.clock.runFor(50);
-  // Queued, not dispatched: nobody talks to a man mid-stride.
-  expect(await page.evaluate(() => window.fnt!.app.state!.screen)).toBe('explore');
+  // The party sets off at once for the tile beside his post; the talk waits for him.
+  const set = await page.evaluate(() => {
+    const state = window.fnt!.app.state!;
+    return { screen: state.screen, pos: state.location.pos };
+  });
+  expect(set.screen).toBe('explore');
+  expect(set.pos).not.toEqual(start);
+  expect(Math.max(Math.abs(set.pos.x - 17), Math.abs(set.pos.y - 6))).toBe(1);
   await expect(page.locator('.walk-feedback')).toContainText(/Next: .*Dorin/);
-  await page.clock.runFor(6000);
+  // No conversation opens while he is still walking.
+  let opened = false;
+  for (let step = 0; step < 80 && !opened; step++) {
+    await page.clock.runFor(100);
+    const now = await page.evaluate(() => ({
+      screen: window.fnt!.app.state!.screen,
+      dorin: window.fnt!.app.residents.figures().find((f) => f.id === 'lw.npc.dorin')?.drawPos,
+    }));
+    opened = now.screen === 'dialogue';
+    if (opened) expect(now.dorin).toEqual({ x: 17, y: 6 });
+  }
   await page.clock.resume();
-  await expect
-    .poll(() => page.evaluate(() => window.fnt!.app.state!.world.talk?.npcId))
-    .toBe('guard_dorin');
+  expect(opened).toBe(true);
+  expect(await page.evaluate(() => window.fnt!.app.state!.world.talk?.npcId)).toBe('guard_dorin');
   // The speaker is on his tile, and stays there while they talk.
   const drawn = () =>
     page.evaluate(
       () => window.fnt!.app.residents.figures().find((f) => f.id === 'lw.npc.dorin')?.drawPos,
     );
-  expect(await drawn()).toEqual({ x: 20, y: 9 });
+  expect(await drawn()).toEqual({ x: 17, y: 6 });
   await page.waitForTimeout(500);
-  expect(await drawn()).toEqual({ x: 20, y: 9 });
+  expect(await drawn()).toEqual({ x: 17, y: 6 });
 });
