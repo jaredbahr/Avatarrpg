@@ -525,12 +525,20 @@ function handleWait(content: ContentIndex, state: GameState, until: DayPhase): S
     return refuse(state, 'You need to be somewhere you can wait — like a bench or a porch.');
   }
 
-  const grid = buildExploreGrid(content, state);
-  if (!findSettleTile(content, map, grid, state, leaderPos)) {
-    return refuse(state, 'There is nowhere for the party to stand.');
+  // Checked against the *post-wait* state: a phase change can change which
+  // NPCs are visible (`NpcDef.when` may key off the clock), so whether the
+  // leader will need resettling — and whether anywhere free exists for
+  // `settle()` to put them (it runs after every command, including this
+  // one) — is only knowable after `advancePhase`, not before it.
+  const advanced = advancePhase(state, until);
+  const onNpc = visibleNpcs(map, advanced).some((npc) => samePos(npc.pos, leaderPos));
+  if (onNpc) {
+    const grid = buildExploreGrid(content, advanced);
+    if (!findSettleTile(content, map, grid, advanced, leaderPos)) {
+      return refuse(state, 'There is nowhere for the party to stand.');
+    }
   }
 
-  const advanced = advancePhase(state, until);
   const events: GameEvent[] = [
     {
       type: 'phaseChanged',
