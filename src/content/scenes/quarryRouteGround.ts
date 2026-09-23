@@ -61,4 +61,4 @@ export const CUTTING_GROUND_REGIONS = [
   },
 ] as const;
 
-export const CUTTING_POOL_BYTES = 13184;
+export const CUTTING_POOL_BYTES = 10490;

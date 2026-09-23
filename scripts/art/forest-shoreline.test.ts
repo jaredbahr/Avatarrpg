@@ -14,12 +14,14 @@ import {
   BED_DEEP_AT,
   BED_DEEP_BAND,
   BITE_FEATHER,
+  INK_HALF,
   SHORE_BITE,
   SHORE_LIMIT,
   biteDepth,
   packShoreline,
   pondInset,
   SHORE_OUTPUT,
+  WET_BANK,
   shorePosition,
   shoreDistance,
 } from './forest-shoreline';
@@ -37,7 +39,7 @@ it('ships the pond plate the packer builds', async () => {
   );
 });
 
-it('paints only the damp margin, the bed, their rims and the ink', () => {
+it('paints only the damp margin, the bed and the ink', () => {
   const allowed = new Set<string>([FOREST_INK]);
   for (const key of ['margin', 'bed'] as const)
     for (const hex of Object.values(FOREST_PIECE_TONES[key])) allowed.add(hex);
@@ -53,9 +55,11 @@ it('paints only the damp margin, the bed, their rims and the ink', () => {
     FOREST_PIECE_TONES.margin.base,
     FOREST_PIECE_TONES.bed.base,
     FOREST_PIECE_TONES.bed.shadow,
-    FOREST_PIECE_TONES.bed.rim,
   ])
     expect(seen, `${hex} is painted`).toContain(hex);
+  // The DL-2 W5 gate: a `#7ec8e3` band on the wet line's water side read as a
+  // UI selection ring round the pond, so the ink meets the bed directly.
+  expect(seen, 'no waterline halo').not.toContain(FOREST_PIECE_TONES.bed.rim);
 });
 
 it('keeps the bank, its wandering bite and the opaque bed of ADR 0045', () => {
@@ -150,20 +154,29 @@ it('keeps the bank, its wandering bite and the opaque bed of ADR 0045', () => {
   const mean = (b: { n: number; sum: number }): number => b.sum / b.n;
   expect(mean(band.shelf)).toBeLessThan(mean(band.bank) * 0.85);
   expect(mean(band.deep)).toBeLessThan(mean(band.shelf) * 0.8);
-  // The wet line: ink, with the §3 edge on its wet side and the wet bank on
-  // its dry one, so the bite's inner sliver darkens into the line.
+  // The wet line: ink, with the bed on its wet side and the wet bank on its
+  // dry one, so the bite's inner sliver darkens into the line.
   expect(mean(band.featherOuter)).toBeGreaterThan(mean(band.featherInner));
   expect(BED_DEEP_AT).toBeGreaterThan(BED_DEEP_BAND / 2);
-  // Under the water film the bank is the damp margin gone a step darker: its
-  // pale rim, which read as the lit top of a curb there, is never painted.
-  let paleUnderFilm = 0;
+  // Under the water film the bank keeps the damp margin's base and rim. Its
+  // shadow there, darkened again by the film, read as a grey-olive band of mud
+  // round the water (the DL-2 W5 gate), so no wet pixel takes it; and the
+  // bank's lifted rim patches really are painted, so the choice is exercised.
+  const wetBank = new Map<string, number>();
+  let shadowUnderFilm = 0;
   for (let py = 0; py < image.height; py++)
     for (let px = 0; px < image.width; px++) {
-      if ((inset[py * image.width + px] ?? 0) <= 0) continue;
+      const inside = inset[py * image.width + px] ?? 0;
+      if (inside <= 0) continue;
       const hex = toHex(pixelAt(image, px, py).slice(0, 3));
-      if (hex === FOREST_PIECE_TONES.margin.rim) paleUnderFilm++;
+      if (hex === FOREST_PIECE_TONES.margin.shadow) shadowUnderFilm++;
+      const { x, y } = shorePosition(px, py);
+      // Clear of the ink on both sides, so only the bank's own paint counts.
+      if (inside < biteDepth(x, y) - 2 * INK_HALF) wetBank.set(hex, (wetBank.get(hex) ?? 0) + 1);
     }
-  expect(paleUnderFilm).toBe(0);
+  expect(shadowUnderFilm).toBe(0);
+  expect([...wetBank.keys()].sort()).toEqual([WET_BANK.field, WET_BANK.lifted].sort());
+  expect(wetBank.get(WET_BANK.field) ?? 0).toBeGreaterThan(wetBank.get(WET_BANK.lifted) ?? 0);
   // Every real water centre carries bed, and muted bed at that: the middle of
   // a tile is never dry bank, and never the brightest thing in the pond.
   for (const { x, y } of FOREST_WATER_CELLS) {
