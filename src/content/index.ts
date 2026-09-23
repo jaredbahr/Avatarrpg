@@ -29,7 +29,7 @@ import { UNIVERSAL_ABILITY_IDS } from './abilities';
 import { ACT1_NODES } from './story/act1';
 import { withPartyVoices } from './story/partyVoices';
 import { RETURN_STORY } from './story/return';
-import { RESIDENT_PLACEHOLDER_STORY } from './story/residentPlaceholders';
+import { BA_DAN_DAY_STORY } from './story/baDanDay';
 import type { ContentBundle } from './schemas';
 import type { BackgroundRole, MapDef, ResidentDef, StoryNode, WorldAnchor } from '../core/types';
 import { BA_DAN_ANCHORS, BA_DAN_BACKGROUND_ROLES, BA_DAN_RESIDENTS } from './residents/baDan';
@@ -43,7 +43,7 @@ export const ALL_STORY: readonly StoryNode[] = withPartyVoices([
   ...WORLD_STORY,
   ...DISCOVERY_STORY,
   ...RETURN_STORY,
-  ...RESIDENT_PLACEHOLDER_STORY,
+  ...BA_DAN_DAY_STORY,
 ]);
 
 /** Living-world records (ADR 0047 §2): Ba Dan's anchors, residents and background roles. */

@@ -32,7 +32,10 @@ const NPC_PRESENTATIONS: readonly (readonly [string, string])[] = [
   ['pella_home', 'ba_dan_village'],
   ['dorin_directions', 'ba_dan_village'],
   ['dorin_home', 'ba_dan_village'],
-  // W5a placeholders; W6 writes them.
+  // A Ba Dan day (ADR 0047 W6): every conversation node, so a scene keeps its map.
+  ['handover_scene', 'ba_dan_village'],
+  ['handover_repeat', 'ba_dan_village'],
+  ['handover_float', 'ba_dan_village'],
   ['hanru_watch', 'ba_dan_village'],
 
   // Riverside.

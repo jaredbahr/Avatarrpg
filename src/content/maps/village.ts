@@ -113,13 +113,25 @@ export const BA_DAN_VILLAGE: MapDef = {
       routes: [{ when: { kind: 'flag', key: 'act1_complete', op: 'set' }, node: 'dorin_home' }],
     },
     {
-      // D7: a placeholder sprite, distinct from both of Dorin's. Hanru's
-      // conversations (`hanru_watch`, the handover scene) are W6's.
+      // D7: a placeholder sprite, distinct from both of Dorin's.
       id: 'guard_hanru',
       name: 'Hanru',
       resident: 'lw.npc.hanru',
       sprite: 'npc.hanru',
       node: 'hanru_watch',
+      routes: [
+        {
+          // LW-S-BD-03: the handover, once, at either change of watch.
+          when: {
+            kind: 'all',
+            of: [
+              { kind: 'phase', in: ['dawn', 'evening'] },
+              { kind: 'flag', key: 'scene.bd03_handover', op: 'unset' },
+            ],
+          },
+          node: 'handover_scene',
+        },
+      ],
     },
   ],
   props: [],
