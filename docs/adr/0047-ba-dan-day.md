@@ -464,17 +464,21 @@ Dorin actor are shown only while Dorin resolves to `rv.practice`. The preview en
 afternoon, so its drill appears after "Wait until midday" at the porch (D3, D8).
 
 **Amendment (W7, 2026-09-23): where the UI puts the wait, and what it leaves to W8.** The village
-hotbar offers "Wait until…" only while the leader is within one tile of a rest spot, in Look
-around's slot: the dock is laid out for four actions, and a fifth wrapped the iPad dock to twice
-its height and pushed a button off a phone at Largest text. On the riverside it is always in the
-Activities group. Away from a seat the travel journal says where the map lets you wait, and the
-dialog shows the rule's refusal once over its locked options. The refusals name their reason: a
-fight, a conversation, no seat (naming the map's rest spots), or nowhere for the party to stand.
-The handover barks are three items rotated by `(day, watch)` and shown once per watch as a toast.
-Background roles are not drawn yet: on the village they are `NpcMarker`s, which are W8's, and
-drawing them needs W8 to decide how the party treats an observe-only figure's tile (rules paths
-and settle ignore it today). The riverside, the only stage VillageLife draws, has no role
-placements in Slice A.
+hotbar offers "Wait" (the seat's name under it) only while the leader stands within one tile of a
+rest spot and is not walking, in Look around's slot: the dock is laid out for four actions, and a
+fifth wrapped the iPad dock to twice its height and pushed a button off a phone at Largest text.
+No player meets a dead end: Look around lists "Mira's table · Sit and wait", which walks to the
+seat; the riverside's "Wait until…" (in Activities) walks to the tea porch first, as Tea break
+does; and a dialog whose every option is refused shows the reason and a walk to the map's seat in
+place of the locked tiles. A partly refused dialog keeps each locked option with its own reason.
+The refusals name a fight, a conversation, no seat (naming the map's rest spots), or nowhere for
+the party to stand. The phase replaces the header's "Exploring" and carries no mark. The handover
+barks are three items rotated by `(day, watch)`, gated by the Condition
+`scene.bd03_handover eq completed` (§6), and shown once per watch as a toast; the watch is held on
+the app, so leaving the map and coming back does not repeat it. Background roles are not drawn
+yet: on the village they are `NpcMarker`s, which are W8's, and drawing them needs W8 to decide how
+the party treats an observe-only figure's tile (rules paths and settle ignore it today). The
+riverside, the only stage VillageLife draws, has no role placements in Slice A.
 
 ### 9. Consistency with Jared's later decisions
 
