@@ -251,6 +251,9 @@ const PELLA: ResidentDef = {
   ],
 };
 
+/** The post Dorin is held at in every daylight phase (`dorin_homecoming`). */
+const DORIN_POST = talk('bd03.post', 'guard_dorin', 'waiting_to_talk', WATCH);
+
 const DORIN: ResidentDef = {
   id: 'lw.npc.dorin',
   name: 'Dorin',
@@ -277,10 +280,10 @@ const DORIN: ResidentDef = {
       tier: 'mission',
       when: DORIN_HELD,
       slots: {
-        dawn: talk('bd03.post', 'guard_dorin', 'waiting_to_talk', WATCH),
-        morning: talk('bd03.post', 'guard_dorin', 'waiting_to_talk', WATCH),
-        midday: talk('bd03.post', 'guard_dorin', 'waiting_to_talk', WATCH),
-        afternoon: talk('bd03.post', 'guard_dorin', 'waiting_to_talk', WATCH),
+        dawn: DORIN_POST,
+        morning: DORIN_POST,
+        midday: DORIN_POST,
+        afternoon: DORIN_POST,
       },
       all: talk('bd03.handover', 'guard_dorin', 'waiting_to_talk'),
     },
