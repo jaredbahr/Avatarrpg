@@ -402,9 +402,10 @@ for (const renderer of ['canvas', 'webgl'] as const) {
     const wet = (await samples(page, { raised })).raised;
     // Real water's cool tint must be visible over the existing raised-base
     // sample; a hidden surface leaves this identical to `bare`. Measured as a
-    // cool shift rather than an absolute green rise: the ground contract's
-    // warm packed earth (`FOREST_PIECE_TONES.stone`, ~178,147,101) is already
-    // greener than the water fill's g=143, so no film can raise green over it.
+    // cool shift rather than an absolute green rise: the shelf top is the
+    // ground contract's warm packed earth (`FOREST_PIECE_TONES.trodden`, base
+    // `#b39064`, ~179,148,101 on screen), already greener than the water
+    // fill's g=143, so no film can raise green over it.
     expect(wet.b - bare.b, `water blue shift: ${JSON.stringify({ bare, wet })}`).toBeGreaterThan(
       12,
     );
