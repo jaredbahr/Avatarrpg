@@ -1,6 +1,8 @@
 import { describe, expect, it, vi } from 'vitest';
+import { LEGEND } from '../../content/maps/legend';
+import type { Tile } from '../../core/types';
 import { TERRAIN_STYLES } from '../palettes';
-import { paintTileSeams } from './board';
+import { paintDecals, paintTileSeams } from './board';
 
 const box = { x: 10, y: 20, size: 64 };
 
@@ -154,5 +156,51 @@ describe('ground joins', () => {
       seams,
     );
     expect(second.points).toEqual(first.points);
+  });
+});
+
+describe('ground decals', () => {
+  /** Every stroke's colour, recorded at the moment it is laid. */
+  function strokes(tile: Tile, pos: { x: number; y: number }): string[] {
+    const laid: string[] = [];
+    const ctx = {
+      globalAlpha: 1,
+      fillStyle: '',
+      strokeStyle: '',
+      lineWidth: 1,
+      lineCap: 'butt',
+      save: vi.fn(),
+      restore: vi.fn(),
+      beginPath: vi.fn(),
+      moveTo: vi.fn(),
+      lineTo: vi.fn(),
+      quadraticCurveTo: vi.fn(),
+      ellipse: vi.fn(),
+      arc: vi.fn(),
+      fill: vi.fn(),
+      stroke() {
+        laid.push(this.strokeStyle);
+      },
+    };
+    paintDecals(ctx as unknown as CanvasRenderingContext2D, box, tile, pos);
+    return laid;
+  }
+  const ground = (terrain: Tile['terrain'], surface: Tile['surface'] = null): Tile => ({
+    terrain,
+    elevation: 0,
+    blocked: false,
+    blocksSight: false,
+    cover: false,
+    surface,
+  });
+
+  it('leaves wind ripples off the spoil under map rubble', () => {
+    // The forest heap at 7,3 rolls ripples on bare sand; under a heap they read
+    // as dunes, and the ripple stroke is not the bible ink.
+    const pos = { x: 7, y: 3 };
+    expect(strokes(ground('sand'), pos).length).toBeGreaterThan(0);
+    const rubble = ground('sand', { id: 'rubble', duration: -1, spread: 0 });
+    expect(LEGEND.r?.terrain).toBe(rubble.terrain);
+    expect(strokes(rubble, pos)).toEqual([]);
   });
 });
