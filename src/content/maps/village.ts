@@ -54,6 +54,7 @@ export const BA_DAN_VILLAGE: MapDef = {
   ),
   partySpawns: [{ x: 3, y: 7 }],
   exit: { pos: { x: 23, y: 7 }, label: 'The east road, toward the quarry' },
+  restSpots: [{ pos: { x: 10, y: 5 }, label: "Mira's table" }],
   npcs: [
     {
       id: 'riverside_sign',

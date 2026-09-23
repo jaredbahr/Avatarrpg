@@ -6,7 +6,7 @@
  * happened — "Kaya is Wet, so the lightning hits double" rather than "24 dmg".
  */
 
-import type { BattleState, ContentIndex, GameEvent, Unit } from '../types';
+import type { BattleState, ContentIndex, DayPhase, GameEvent, Unit } from '../types';
 
 export const MAX_LOG_LINES = 120;
 
@@ -125,6 +125,18 @@ export function describeEvent(
 
     case 'battleEnded':
       return event.outcome === 'victory' ? 'The fight is won.' : 'The party is overwhelmed.';
+
+    case 'phaseChanged': {
+      const label: Record<DayPhase, string> = {
+        dawn: 'Dawn breaks.',
+        morning: 'Morning arrives.',
+        midday: 'Midday arrives.',
+        afternoon: 'Afternoon settles in.',
+        evening: 'Evening falls.',
+        night: 'Night falls.',
+      };
+      return label[event.to];
+    }
 
     case 'flagSet':
     case 'storyNodeEntered':

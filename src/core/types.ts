@@ -596,6 +596,8 @@ export interface MapDef {
   /** Map-owned routes and walk-over events; independent of the story cursor. */
   readonly exits?: readonly MapExit[];
   readonly triggers?: readonly MapTrigger[];
+  /** Where `wait` is allowed (ADR 0047 §1, D8): the leader must be within one tile of one of these. */
+  readonly restSpots?: readonly { readonly pos: Vec2; readonly label: string }[];
   readonly objective?: string;
   /** First matching objective wins; the plain objective is the fallback. */
   readonly objectiveVariants?: readonly { readonly when: Condition; readonly text: string }[];
@@ -985,7 +987,8 @@ export type Command =
   | { readonly type: 'resolveBattle' }
   | { readonly type: 'chooseLevelUp'; readonly unitId: string; readonly abilityId: string }
   | { readonly type: 'chooseDiscipline'; readonly unitId: string; readonly disciplineId: string }
-  | { readonly type: 'setFlags'; readonly flags: Readonly<Record<string, FlagValue>> };
+  | { readonly type: 'setFlags'; readonly flags: Readonly<Record<string, FlagValue>> }
+  | { readonly type: 'wait'; readonly until: DayPhase };
 
 export type GameEvent =
   | { readonly type: 'message'; readonly text: string }
@@ -1091,7 +1094,13 @@ export type GameEvent =
       readonly unlocked: readonly string[];
     }
   | { readonly type: 'battleEnded'; readonly outcome: 'victory' | 'defeat' }
-  | { readonly type: 'screenChanged'; readonly screen: Screen };
+  | { readonly type: 'screenChanged'; readonly screen: Screen }
+  | {
+      readonly type: 'phaseChanged';
+      readonly from: DayPhase;
+      readonly to: DayPhase;
+      readonly day: number;
+    };
 
 /** Every reducer step returns the next state plus what the UI should play. */
 export interface StepResult {

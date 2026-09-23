@@ -11,11 +11,14 @@
 
 import { RngCursor } from '../rng';
 import { evaluate } from '../story/conditions';
+import { advancePhase } from '../story/clock';
+import { findSettleTile } from '../story/settle';
 import { activeTriggers, triggerKey, visibleNpcs } from '../story/world';
 import type {
   BattleState,
   Command,
   ContentIndex,
+  DayPhase,
   GameEvent,
   GameState,
   Grid,
@@ -471,6 +474,57 @@ function handleWalkTo(content: ContentIndex, state: GameState, pos: Vec2): StepR
 }
 
 /**
+ * `{ type: 'wait'; until }` (ADR 0047 §1). Refused for every reason the
+ * ADR lists; changes only the clock, and only via `advancePhase`.
+ */
+function handleWait(content: ContentIndex, state: GameState, until: DayPhase): StepResult {
+  if (state.screen !== 'explore' || state.battle !== null) {
+    return refuse(state, 'Not exploring right now.');
+  }
+  if (state.story.nodeId) {
+    const node = content.story.get(state.story.nodeId);
+    if (node && node.kind !== 'explore') {
+      return refuse(state, 'You are in the middle of something.');
+    }
+  }
+  if (until === state.world.clock.phase) {
+    return refuse(state, 'It is already that time.');
+  }
+
+  const map = content.maps.get(state.location.mapId);
+  if (!map) return refuse(state, 'No map loaded.');
+  const leader = state.party[0];
+  if (!leader) return refuse(state, 'There is no one to wait.');
+
+  // In explore the leader's tile is `location.pos`; `party[0].pos` is only set
+  // in battle (see `partyWalked` and `app/world/guidance`).
+  const leaderPos = state.location.pos;
+  const nearRestSpot = (map.restSpots ?? []).some((spot) => distance(leaderPos, spot.pos) <= 1);
+  if (!nearRestSpot) {
+    return refuse(state, 'You need to be somewhere you can wait — like a bench or a porch.');
+  }
+
+  const grid = buildExploreGrid(content, state);
+  if (!findSettleTile(content, map, grid, state, leaderPos)) {
+    return refuse(state, 'There is nowhere for the party to stand.');
+  }
+
+  const advanced = advancePhase(state, until);
+  const events: GameEvent[] = [
+    {
+      type: 'phaseChanged',
+      from: state.world.clock.phase,
+      to: until,
+      day: advanced.world.clock.day,
+    },
+  ];
+  return {
+    state: { ...advanced, log: appendLog(content, null, state.log, events) },
+    events,
+  };
+}
+
+/**
  * The walk as an event, so the party is seen crossing the tiles instead of
  * appearing at the far end. Presentation plays it; nothing in the rules
  * reads it. Standing still (an empty route) is no event.
@@ -678,6 +732,9 @@ export function apply(content: ContentIndex, state: GameState, command: Command)
       }));
       return { state: { ...state, flags: { ...state.flags, ...command.flags } }, events };
     }
+
+    case 'wait':
+      return handleWait(content, state, command.until);
   }
 }
 
