@@ -120,11 +120,26 @@ export interface Floater {
 }
 
 export interface NpcMarker {
+  /** Stable per person (resident, role, NpcDef or trigger), so a walk keeps one sprite. */
+  readonly id: string;
   readonly pos: Vec2;
   readonly sprite: string;
   readonly name: string;
   /** Presentation size about the ground-contact point; never changes the footprint. */
   readonly scale?: number;
+  /** Drawn here instead of `pos` while walking (ADR 0047 §7); the contact shadow follows. */
+  readonly renderPos?: Vec2;
+  /** The walk bob in tile units; lifts the figure, never its shadow or its sort. */
+  readonly offset?: Vec2;
+  /** 1 is screen-right, the way the art is drawn. */
+  readonly facing?: 1 | -1;
+  /** Fades at a door, an exit or a blocked route. */
+  readonly alpha?: number;
+  /** Ms into the walk clip while walking; a painted figure strides with it. */
+  readonly clipTime?: number;
+  readonly walking?: boolean;
+  /** No talk pip: a background role, or someone walking off the map. */
+  readonly quiet?: boolean;
 }
 
 /**

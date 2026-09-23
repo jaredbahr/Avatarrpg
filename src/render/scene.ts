@@ -145,13 +145,14 @@ export function sceneryOpacity(scenery: SceneScenery, view: MapView, camera: Cam
       .filter((npc) =>
         party.some((unit) => {
           const pos = unit.renderPos ?? unit.pos;
-          return Math.hypot(pos.x - npc.pos.x, pos.y - npc.pos.y) <= 3;
+          const at = npc.renderPos ?? npc.pos;
+          return Math.hypot(pos.x - at.x, pos.y - at.y) <= 3;
         }),
       )
       .map((npc) => {
         const entry = resolveAsset(npc.sprite);
         return {
-          pos: npc.pos,
+          pos: npc.renderPos ?? npc.pos,
           size: entry.kind === 'sheet' ? entry.footprint.w : 1,
           scale: npc.scale ?? 1,
         };

@@ -9,6 +9,8 @@ import { FORM_DURATION, WAVE_DURATION } from '../../render/living/poses';
 import { hitsPebble, hitsVillager, riversideWalkTime } from '../../render/living/geometry';
 import { RIVERSIDE_ID, RIVERSIDE_SPOTS } from '../../content/maps/riverside';
 import { visibleNpcs } from '../../core/story/world';
+import type { PlacedNpc } from '../../core/story/world';
+import type { ResidentFigure } from '../world/residentMotion';
 import { resolveResidents } from '../../core/story/residents';
 import { phaseLabel } from '../world/journal';
 import { button, el, motionReduced } from '../ui/dom';
@@ -53,6 +55,8 @@ export class VillageLife {
   constructor(
     private app: App,
     host: HTMLElement,
+    /** The scene's walk, which waits for a resident still on their way. */
+    private walkTo: (pos: Vec2) => void,
   ) {
     this.stage = new VillageLayer(host);
   }
@@ -184,10 +188,11 @@ export class VillageLife {
       this.visit('otter');
       return true;
     }
-    // Only the people placed here now, at the tiles the stage draws them on.
-    for (const npc of this.residents()) {
-      if (hitsVillager(point, npc.pos)) {
-        this.app.dispatch({ type: 'walkTo', pos: npc.pos });
+    // The people placed here now, where the stage draws them (ADR 0047 §7):
+    // a tap on someone walking goes to where they are going.
+    for (const who of this.residents()) {
+      if (who.pos && hitsVillager(point, who.drawPos)) {
+        this.walkTo(who.pos);
         return true;
       }
     }
@@ -199,12 +204,32 @@ export class VillageLife {
     this.drill = null;
     return false;
   }
-  /** The people standing on the riverside now: not the shrine, which is painted. */
-  private residents() {
+  /**
+   * The people on the riverside now, as the walks draw them, and anyone
+   * unbound but the shrine, which is painted.
+   */
+  private residents(): ResidentFigure[] {
     const map = this.app.content.maps.get(RIVERSIDE_ID);
     const state = this.app.state;
+    const still = (npc: PlacedNpc): ResidentFigure => ({
+      id: npc.id,
+      npcId: npc.id,
+      sprite: npc.sprite,
+      name: npc.name,
+      pos: npc.pos,
+      drawPos: npc.pos,
+      facing: 1,
+      walking: false,
+      clipTime: 0,
+      alpha: 1,
+    });
     return map && state
-      ? visibleNpcs(this.app.content, map, state).filter((npc) => npc.id !== 'riverside_shrine')
+      ? [
+          ...visibleNpcs(this.app.content, map, state)
+            .filter((npc) => !npc.resident && npc.id !== 'riverside_shrine')
+            .map(still),
+          ...this.app.residents.figures(),
+        ]
       : [];
   }
   private visit(place: Visit): void {
@@ -360,23 +385,30 @@ export class VillageLife {
     });
     // The residents placed on the riverside in this phase (ADR 0047 §2, §7),
     // each greeting the party once as it comes near.
-    this.residents().forEach((npc, index) => {
-      const near = Boolean(head && distance(head, npc.pos) < 5);
-      if (near && !this.near.has(npc.id)) this.greetings.set(npc.id, now);
-      if (near) this.near.add(npc.id);
-      else this.near.delete(npc.id);
-      const since = now - (this.greetings.get(npc.id) ?? -Infinity);
-      const [variant, palette] = LOOKS[npc.sprite] ?? [npc.sprite, 'neutral'];
+    // A resident walking in or out strides on the party's distance clock.
+    this.residents().forEach((who, index) => {
+      const at = who.drawPos;
+      const near = Boolean(head && who.pos && !who.walking && distance(head, at) < 5);
+      if (near && !this.near.has(who.id)) this.greetings.set(who.id, now);
+      if (near) this.near.add(who.id);
+      else this.near.delete(who.id);
+      const since = now - (this.greetings.get(who.id) ?? -Infinity);
+      const [variant, palette] = LOOKS[who.sprite] ?? [who.sprite, 'neutral'];
       actors.push({
-        id: npc.id,
-        pos: npc.pos,
+        id: who.id,
+        pos: at,
         variant,
         palette,
         villager: true,
-        facing: head && head.x < npc.pos.x ? -1 : 1,
-        motion: since < WAVE_DURATION ? 'wave' : 'idle',
-        elapsed: since < WAVE_DURATION ? since : time + 600 + index * 200,
-        label: near ? npc.name : '',
+        facing: who.walking ? who.facing : head && head.x < at.x ? -1 : 1,
+        motion: who.walking ? 'walk' : since < WAVE_DURATION ? 'wave' : 'idle',
+        elapsed: who.walking
+          ? who.clipTime
+          : since < WAVE_DURATION
+            ? since
+            : time + 600 + index * 200,
+        label: near ? who.name : '',
+        alpha: who.alpha,
       });
     });
     // A small loop on open bank tiles. Once befriended, Pebble notices the

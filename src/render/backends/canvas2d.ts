@@ -40,7 +40,7 @@ import {
   paintSurface,
   paintTerrain,
 } from '../painters/tiles';
-import { sprites } from '../spriteCache';
+import { npcPose, npcRock, sprites } from '../spriteCache';
 import {
   unitMarkerGroundPoint,
   type AimArc,
@@ -237,7 +237,10 @@ export class Canvas2DBackend implements RenderBackend {
           },
         })),
         ...view.npcs.map((npc) => ({
-          pos: { x: npc.pos.x + this.npcWidth(npc.sprite) / 2, y: npc.pos.y + 0.5 },
+          pos: {
+            x: (npc.renderPos ?? npc.pos).x + this.npcWidth(npc.sprite) / 2,
+            y: (npc.renderPos ?? npc.pos).y + 0.5,
+          },
           draw: () => this.drawNpcs({ ...view, npcs: [npc] }, camera),
         })),
         ...view.props.map((prop) => ({
@@ -647,20 +650,40 @@ export class Canvas2DBackend implements RenderBackend {
     const { dpr } = camera.viewport;
     for (const npc of view.npcs) {
       const width = this.npcWidth(npc.sprite);
-      const box = camera.spriteBox(npc.pos, width);
-      box.y -= elevationAt(view.grid, npc.pos) * ELEVATION_LIFT * box.size;
+      const at = npc.renderPos ?? npc.pos;
+      const box = camera.spriteBox(at, width);
+      box.y -=
+        elevationAt(view.grid, { x: Math.round(at.x), y: Math.round(at.y) }) *
+        ELEVATION_LIFT *
+        box.size;
       const entry = resolveAsset(npc.sprite);
       const scale = npc.scale ?? 1;
-      if (!uprightSpriteVisible(box, camera.viewport, width, scale)) continue;
+      const alpha = npc.alpha ?? 1;
+      if (alpha <= 0 || !uprightSpriteVisible(box, camera.viewport, width, scale)) continue;
       const footX = box.x + (width * box.size) / 2;
       const footY = box.y + FOOT_LINE * box.size;
+      // The walk bob lifts the figure; its contact shadow stays on the ground.
+      const lift = (npc.offset?.y ?? 0) * box.size;
       ctx.save();
-      ctx.translate(footX, footY);
-      ctx.scale(scale, scale);
+      ctx.globalAlpha = alpha;
+      if (entry.kind === 'image') {
+        const s = box.size * scale;
+        ctx.drawImage(sprites.shadow(s * dpr), footX - s / 2, footY - 0.86 * s, s, s);
+      }
+      ctx.translate(footX, footY + lift);
+      if (entry.kind === 'image') ctx.rotate(npcRock(npc));
+      ctx.scale(scale * (npc.facing ?? 1), scale);
       ctx.translate(-footX, -footY);
       const frame =
         entry.kind === 'sheet'
-          ? sheets.frame(npc.sprite, 'idle', 0, 0, box.size * dpr * scale, width)
+          ? sheets.frame(
+              npc.sprite,
+              npc.walking ? 'walk' : 'idle',
+              npc.clipTime ?? 0,
+              undefined,
+              box.size * dpr * scale,
+              width,
+            )
           : null;
       if (frame) {
         const fw = (frame.frame.w / frame.pixelsPerTile) * box.size;
@@ -672,25 +695,26 @@ export class Canvas2DBackend implements RenderBackend {
           f.y,
           f.w,
           f.h,
-          box.x + (width * box.size) / 2 - frame.anchor.x * fw,
-          box.y + FOOT_LINE * box.size - frame.anchor.y * fh,
+          footX - frame.anchor.x * fw,
+          footY - frame.anchor.y * fh,
           fw,
           fh,
         );
       } else {
-        const sprite = sprites.get(npc.sprite, box.size * dpr * scale, { facing: 1 }, width);
+        const sprite = sprites.get(npc.sprite, box.size * dpr * scale, npcPose(npc), width);
         ctx.drawImage(sprite, box.x, box.y, box.size * width, box.size);
       }
 
       ctx.restore();
+      if (npc.quiet) continue;
       // A small "talk" pip so a child can tell an NPC from scenery.
       ctx.save();
-      ctx.globalAlpha = 0.55 + 0.35 * ((Math.sin(view.time / 500) + 1) / 2);
+      ctx.globalAlpha = alpha * (0.55 + 0.35 * ((Math.sin(view.time / 500) + 1) / 2));
       ctx.fillStyle = '#f0c674';
       ctx.beginPath();
       ctx.arc(
         box.x + box.size * width * 0.5,
-        footY - box.size * (FOOT_LINE - 0.08) * scale,
+        footY + lift - box.size * (FOOT_LINE - 0.08) * scale,
         box.size * 0.07,
         0,
         Math.PI * 2,
@@ -699,7 +723,6 @@ export class Canvas2DBackend implements RenderBackend {
       ctx.restore();
     }
   }
-
   private drawProps(view: MapView, camera: Camera): void {
     const { ctx } = this;
     const { dpr } = camera.viewport;

@@ -27,6 +27,8 @@ export interface VillageActor {
   readonly locomotionClip?: ClipName;
   readonly elapsed: number;
   readonly label: string;
+  /** Fades at a door, an exit or a blocked route (ADR 0047 §7). */
+  readonly alpha?: number;
 }
 export interface VillageView {
   readonly time: number;
@@ -76,11 +78,18 @@ export class VillageLayer {
     const t = view.reduced ? 0 : view.time / 1000;
     this.river(camera, t);
     const painting = view.backdrop ? backdrops.get(view.backdrop.url) : null;
-    for (const actor of view.actors) this.groundContact(actor, camera, view.reduced);
+    const faded = (actor: VillageActor, draw: () => void) => {
+      c.save();
+      c.globalAlpha = actor.alpha ?? 1;
+      draw();
+      c.restore();
+    };
+    for (const actor of view.actors)
+      faded(actor, () => this.groundContact(actor, camera, view.reduced));
     const entities = [
       ...view.actors.map((actor) => ({
         y: actor.pos.y + FOOT_Y,
-        draw: () => this.actor(actor, camera, view.reduced),
+        draw: () => faded(actor, () => this.actor(actor, camera, view.reduced)),
       })),
       { y: view.creature.y + 0.86, draw: () => this.otter(view, camera, t) },
       ...(painting
@@ -172,7 +181,7 @@ export class VillageLayer {
       ink.globalCompositeOperation = 'source-over';
       const factor = (s * 1.45) / frame.pixelsPerTile;
       c.save();
-      c.globalAlpha = 0.19 * (1 - shade * 0.65);
+      c.globalAlpha *= 0.19 * (1 - shade * 0.65);
       c.translate(x + weight * s * actor.facing, y);
       // Project the actual silhouette, keeping both boot contacts attached.
       c.transform(actor.facing, 0, 0.52, -0.19, 0, 0);

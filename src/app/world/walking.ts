@@ -48,6 +48,11 @@ export class NextWalk {
     return this.pending?.preview ?? null;
   }
 
+  /** Where the next walk goes, without taking it. */
+  target(state: GameState): Vec2 | null {
+    return this.pending?.state === state ? this.pending.target : null;
+  }
+
   take(state: GameState): Vec2 | null {
     const target = this.pending?.state === state ? this.pending.target : null;
     this.clear();
