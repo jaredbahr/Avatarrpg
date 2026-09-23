@@ -19,6 +19,8 @@ import {
   BA_DAN_SCENE,
 } from './baDan';
 import { buildGrid, reachable, posKey, tileAt } from '../../core/rules/grid';
+import { CONTENT_BUNDLE } from '../index';
+import { npcStandTiles } from '../schemas';
 
 it('carries the village ground outside the rim, painted after every local piece', () => {
   expect(BA_DAN_APRON_MAP).toEqual({ width: BA_DAN_VILLAGE.width, height: BA_DAN_VILLAGE.height });
@@ -123,7 +125,12 @@ it('keeps painted low boundaries solid while preserving every village destinatio
   const start = map.partySpawns[0];
   if (!start) throw new Error('Village has no spawn');
   const paths = reachable({ grid, blocked: new Set(), surfaces: new Map(), size: 1 }, start, 1000);
-  for (const p of [...map.npcs.map((npc) => npc.pos), { x: 9, y: 4 }, { x: 23, y: 7 }])
+  // A resident-bound NpcDef has no `pos`: its tiles are its resident's anchors.
+  for (const p of [
+    ...map.npcs.flatMap((npc) => npcStandTiles(CONTENT_BUNDLE, map.id, npc)),
+    { x: 9, y: 4 },
+    { x: 23, y: 7 },
+  ])
     expect(paths.has(posKey(p)), `Unreachable village destination ${posKey(p)}`).toBe(true);
 });
 
@@ -367,7 +374,8 @@ it('keeps court trunks solid and both shop doors and village routes reachable', 
     });
   }
   for (const pos of [
-    ...map.npcs.map((npc) => npc.pos),
+    // A resident-bound NpcDef has no `pos`: its tiles are its resident's anchors.
+    ...map.npcs.flatMap((npc) => npcStandTiles(CONTENT_BUNDLE, map.id, npc)),
     { x: 9, y: 3 },
     { x: 11, y: 3 },
     { x: 23, y: 7 },

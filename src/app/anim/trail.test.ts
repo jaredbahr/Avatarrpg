@@ -453,7 +453,8 @@ describe('temporal movement reservations', () => {
 });
 
 it('keeps the five-leg courtyard audit separated without the serial cadence regression', () => {
-  const avoid = BA_DAN_VILLAGE.npcs.map((npc) => npc.pos);
+  // Authored NpcDefs, not resident-bound: pos is always set.
+  const avoid = BA_DAN_VILLAGE.npcs.map((npc) => npc.pos!);
   const trail = new PartyTrail(
     placeParty(grid, spawn, 5, { awayFrom: BA_DAN_VILLAGE.exit?.pos, avoid }),
   );

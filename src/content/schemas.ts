@@ -31,12 +31,15 @@ import type {
   EncounterDef,
   EnemyDef,
   MapDef,
+  NpcDef,
   PropDef,
   ResidentDef,
   ResidentSlot,
+  ResidentSlotValue,
   StatusDef,
   StoryNode,
   SurfaceDef,
+  Vec2,
   WorldAnchor,
 } from '../core/types';
 import { STORY_PRESENTATIONS, validateStoryPresentations } from './story/presentations';
@@ -440,17 +443,22 @@ export const mapSchema = z
     legend: z.record(tileTemplate),
     partySpawns: z.array(vec2).min(1),
     npcs: z.array(
-      z.object({
-        id,
-        name: z.string().min(1),
-        pos: vec2,
-        sprite: z.string().min(1),
-        interaction: z.literal('route-sign').optional(),
-        when: conditionSchema.optional(),
-        node: id,
-        routes: z.array(z.object({ when: conditionSchema, node: id })).optional(),
-        resident: id.optional(),
-      }),
+      z
+        .object({
+          id,
+          name: z.string().min(1),
+          pos: vec2.optional(),
+          sprite: z.string().min(1),
+          interaction: z.literal('route-sign').optional(),
+          when: conditionSchema.optional(),
+          node: id,
+          routes: z.array(z.object({ when: conditionSchema, node: id })).optional(),
+          resident: id.optional(),
+        })
+        .refine((npc) => npc.resident !== undefined || npc.pos !== undefined, {
+          path: ['pos'],
+          message: 'pos is required unless the NpcDef is bound to a resident',
+        }),
     ),
     props: z.array(propPlacement),
     ambience: z.string().min(1),
@@ -885,6 +893,48 @@ function isWalkable(map: MapDef, x: number, y: number): boolean {
 }
 
 /**
+ * Every anchor tile on `mapId` a resident can stand at: the anchors named by
+ * its slots, fallback and overrides (ADR 0047 §2). 'home' and 'absent' never
+ * put an NPC on a map tile, so they contribute nothing. A resident-bound
+ * NpcDef has no authored `pos`; these tiles are where it can appear.
+ */
+function residentAnchorTiles(
+  bundle: ContentBundle,
+  residentId: string,
+  mapId: string,
+): readonly Vec2[] {
+  const resident = bundle.residents.find((r) => r.id === residentId);
+  if (!resident) return [];
+  const anchors = new Map(bundle.anchors.map((anchor) => [anchor.id, anchor]));
+  const values: (ResidentSlotValue | undefined)[] = [
+    ...Object.values(resident.schedule),
+    resident.fallback,
+    ...(resident.overrides ?? []).flatMap((override) => [
+      ...Object.values(override.slots),
+      override.all,
+    ]),
+  ];
+  const tiles = new Map<string, Vec2>();
+  for (const value of values) {
+    if (typeof value !== 'object') continue;
+    const site = anchors.get(value.anchor)?.site;
+    if (site?.kind === 'map' && site.mapId === mapId)
+      tiles.set(`${site.pos.x},${site.pos.y}`, site.pos);
+  }
+  return [...tiles.values()];
+}
+
+/**
+ * The tiles an NpcDef can stand on: a resident-bound one has no authored
+ * `pos`, so it uses every anchor its resident can be placed at on the map
+ * (ADR 0047 §2). A plain NpcDef keeps its authored tile.
+ */
+export function npcStandTiles(bundle: ContentBundle, mapId: string, npc: NpcDef): readonly Vec2[] {
+  if (!npc.resident) return npc.pos ? [npc.pos] : [];
+  return residentAnchorTiles(bundle, npc.resident, mapId);
+}
+
+/**
  * Returns a list of human-readable problems. Empty means the content is sound.
  * Deliberately collects everything rather than throwing on the first fault, so
  * one CI run reports every broken link at once.
@@ -1257,6 +1307,8 @@ export function validateContent(bundle: ContentBundle): string[] {
      */
     const propCells = new Set<string>();
     const spawnCells = new Set(m.partySpawns.map((s) => `${s.x},${s.y}`));
+    // A bound NpcDef stands on its resident's anchors, a plain one on `pos`.
+    const npcTiles = (npc: NpcDef): readonly Vec2[] => npcStandTiles(bundle, m.id, npc);
     for (const placement of m.props) {
       if (!propIds.has(placement.propId)) {
         problems.push(`map "${m.id}" places unknown prop "${placement.propId}"`);
@@ -1274,7 +1326,7 @@ export function validateContent(bundle: ContentBundle): string[] {
       if (m.exit && key === `${m.exit.pos.x},${m.exit.pos.y}`) {
         problems.push(`map "${m.id}" places "${placement.propId}" on the exit (${key})`);
       }
-      if (m.npcs.some((n) => `${n.pos.x},${n.pos.y}` === key)) {
+      if (m.npcs.some((n) => npcTiles(n).some((tile) => `${tile.x},${tile.y}` === key))) {
         problems.push(`map "${m.id}" places "${placement.propId}" on an npc (${key})`);
       }
       if (propCells.has(key)) {
@@ -1283,8 +1335,10 @@ export function validateContent(bundle: ContentBundle): string[] {
       propCells.add(key);
     }
     for (const npc of m.npcs) {
-      if (!isWalkable(m, npc.pos.x, npc.pos.y)) {
-        problems.push(`map "${m.id}" npc "${npc.id}" stands on a blocked tile`);
+      for (const tile of npcTiles(npc)) {
+        if (!isWalkable(m, tile.x, tile.y)) {
+          problems.push(`map "${m.id}" npc "${npc.id}" stands on a blocked tile`);
+        }
       }
       if (!storyIds.has(npc.node)) {
         problems.push(`map "${m.id}" npc "${npc.id}" points at unknown story node "${npc.node}"`);

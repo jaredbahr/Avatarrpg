@@ -143,7 +143,8 @@ describe('connected world traversal', () => {
       const grid = buildGrid(map);
       const destinations: Vec2[] = [
         ...(map.exits ?? []).map((exit) => exit.pos),
-        ...map.npcs.map((npc) => npc.pos),
+        // Authored NpcDefs, not resident-bound: pos is always set.
+        ...map.npcs.map((npc) => npc.pos!),
       ];
       const arrivals = [...CONTENT.maps.values()].flatMap((other) =>
         (other.exits ?? []).filter((exit) => exit.toMapId === map.id).map((exit) => exit.toPos),

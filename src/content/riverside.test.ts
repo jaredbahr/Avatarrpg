@@ -20,7 +20,8 @@ describe('the riverside paths', () => {
     const state = start();
     for (const pos of [
       ...Object.values(RIVERSIDE_SPOTS),
-      ...RIVERSIDE.npcs.map((n) => n.pos),
+      // Authored NpcDefs, not resident-bound: pos is always set.
+      ...RIVERSIDE.npcs.map((n) => n.pos!),
       RIVERSIDE.exit!.pos,
     ]) {
       const result = apply(CONTENT, state, { type: 'walkTo', pos });

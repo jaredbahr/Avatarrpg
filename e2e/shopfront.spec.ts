@@ -57,7 +57,8 @@ for (const renderer of ['canvas', 'webgl']) {
       const npcCells = new Set(
         app.content.maps
           .get(app.state!.location.mapId)
-          ?.npcs.map((npc) => `${npc.pos.x},${npc.pos.y}`),
+          // Authored NpcDefs, not resident-bound: pos is always set.
+          ?.npcs.map((npc) => `${npc.pos!.x},${npc.pos!.y}`),
       );
       return seats.map((seat) => ({
         ...seat,

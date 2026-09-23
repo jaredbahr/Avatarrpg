@@ -52,7 +52,8 @@ describe('walking the village', () => {
       if (!loaded.ok) throw new Error('Could not reload village save');
       const restored = stateFromBlob(loaded.blob);
       expect(restored.location).toEqual(before.location);
-      const result = apply(CONTENT, restored, { type: 'walkTo', pos: gao.pos });
+      // Authored NpcDef, not resident-bound: pos is always set.
+      const result = apply(CONTENT, restored, { type: 'walkTo', pos: gao.pos! });
       expect(result.state.screen).toBe('dialogue');
       expect(result.state.story.nodeId).toBe('gao_friendly');
       expect(result.state.location.pos).not.toEqual(gao.pos);
@@ -99,12 +100,13 @@ describe('walking the village', () => {
     const elder = CONTENT.maps.get('ba_dan_village')?.npcs.find((n) => n.id === 'elder_mira');
     expect(elder).toBeDefined();
     if (!elder) return;
-    const { state: after, events } = apply(CONTENT, state, { type: 'walkTo', pos: elder.pos });
+    // Authored NpcDef, not resident-bound: pos is always set.
+    const { state: after, events } = apply(CONTENT, state, { type: 'walkTo', pos: elder.pos! });
 
     expect(
       Math.max(
-        Math.abs(after.location.pos.x - elder.pos.x),
-        Math.abs(after.location.pos.y - elder.pos.y),
+        Math.abs(after.location.pos.x - elder.pos!.x),
+        Math.abs(after.location.pos.y - elder.pos!.y),
       ),
     ).toBe(1);
     expect(after.screen).toBe('dialogue');

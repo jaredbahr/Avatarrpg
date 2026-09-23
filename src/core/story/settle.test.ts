@@ -65,7 +65,8 @@ function steppingForbidden(map: MapDef, state: GameState): readonly Vec2[] {
  * to somewhere else — only `steppingForbidden` may never be crossed either.
  */
 function forbidden(map: MapDef, state: GameState): readonly Vec2[] {
-  const out: Vec2[] = [...map.npcs.map((npc) => npc.pos), ...steppingForbidden(map, state)];
+  // Authored NpcDefs, not resident-bound: pos is always set.
+  const out: Vec2[] = [...map.npcs.map((npc) => npc.pos!), ...steppingForbidden(map, state)];
   for (const spot of map.restSpots ?? []) out.push(spot.pos);
   out.push(...arrivals(map));
   return out;

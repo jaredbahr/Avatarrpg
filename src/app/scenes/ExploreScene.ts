@@ -18,9 +18,10 @@ import {
   worldObjective,
   worldObjectiveNpcId,
 } from '../../core/story/world';
+import type { PlacedNpc } from '../../core/story/world';
 import { VillageLife } from '../village/VillageLife';
 import type { App, CameraInfo, Scene } from '../App';
-import type { GameEvent, GameState, Grid, MapDef, NpcDef, Unit, Vec2 } from '../../core/types';
+import type { GameEvent, GameState, Grid, MapDef, Unit, Vec2 } from '../../core/types';
 import { buildGrid, distance, samePos } from '../../core/rules/grid';
 import { Renderer, TILE } from '../../render/renderer';
 import type { MapView, NpcMarker, RenderUnit } from '../../render/renderer';
@@ -678,7 +679,7 @@ export class ExploreScene implements Scene {
     target?.focus({ preventScroll: true });
   }
 
-  private talkTo(npc: NpcDef | null): void {
+  private talkTo(npc: PlacedNpc | null): void {
     if (this.conversationMode) return;
     if (!npc) return;
     // The rules walk the party up to the villager and open the conversation.

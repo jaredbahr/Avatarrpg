@@ -1,4 +1,4 @@
-import type { ContentIndex, GameState, MapDef, MapTrigger, NpcDef } from '../types';
+import type { ContentIndex, GameState, MapDef, MapTrigger, NpcDef, Vec2 } from '../types';
 import { evaluate } from './conditions';
 import { resolveResidents } from './residents';
 
@@ -14,7 +14,10 @@ export function activeTriggers(map: MapDef, state: GameState): readonly MapTrigg
   );
 }
 
-let visibleMemo: readonly [ContentIndex, MapDef, GameState, readonly NpcDef[]] | undefined;
+/** An NpcDef as placed on the map: plain ones keep `pos`, bound ones take their anchor's tile. */
+export type PlacedNpc = NpcDef & { readonly pos: Vec2 };
+
+let visibleMemo: readonly [ContentIndex, MapDef, GameState, readonly PlacedNpc[]] | undefined;
 
 /**
  * NPCs currently present on the map; every UI and reducer lookup shares this
@@ -27,15 +30,15 @@ export function visibleNpcs(
   content: ContentIndex,
   map: MapDef,
   state: GameState,
-): readonly NpcDef[] {
+): readonly PlacedNpc[] {
   const m = visibleMemo;
   if (m && m[0] === content && m[1] === map && m[2] === state) return m[3];
   const { placements } = resolveResidents(content, state);
-  const npcs: NpcDef[] = [];
+  const npcs: PlacedNpc[] = [];
   for (const npc of map.npcs) {
     if (npc.when && !evaluate(state, npc.when)) continue;
     if (!npc.resident) {
-      npcs.push(npc);
+      if (npc.pos) npcs.push(npc as PlacedNpc);
       continue;
     }
     const at = placements.find(

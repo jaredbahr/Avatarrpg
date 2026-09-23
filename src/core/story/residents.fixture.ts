@@ -14,9 +14,11 @@ export function withBoundNpc(content: ContentIndex, mapId: string, npcId: string
   const map = content.maps.get(mapId);
   const npc = map?.npcs.find((n) => n.id === npcId);
   if (!map || !npc) throw new Error(`No npc "${npcId}" on "${mapId}"`);
+  // The npc being bound here is still a plain authored NpcDef at this point, so pos is set.
+  const pos = npc.pos!;
   const anchors: WorldAnchor[] = [
-    { id: TEST_ANCHOR, place: 'TEST', site: { kind: 'map', mapId, pos: npc.pos } },
-    { id: 'test.home', place: 'TEST', site: { kind: 'private', door: { mapId, pos: npc.pos } } },
+    { id: TEST_ANCHOR, place: 'TEST', site: { kind: 'map', mapId, pos } },
+    { id: 'test.home', place: 'TEST', site: { kind: 'private', door: { mapId, pos } } },
   ];
   const slot: ResidentSlot = {
     anchor: TEST_ANCHOR,

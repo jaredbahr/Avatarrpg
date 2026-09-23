@@ -538,7 +538,11 @@ export interface PropInstance {
 export interface NpcDef {
   readonly id: string;
   readonly name: string;
-  readonly pos: Vec2;
+  /**
+   * The tile this NPC stands on. Required unless `resident` is set, in which
+   * case the tile comes from the resident's resolved anchor (ADR 0047 §2).
+   */
+  readonly pos?: Vec2;
   readonly sprite: string;
   /** Optional map guidance semantic for a non-person route marker. */
   readonly interaction?: 'route-sign';

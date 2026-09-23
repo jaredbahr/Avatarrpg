@@ -33,6 +33,19 @@ describe('content', () => {
     expect(problems, `\n${problems.join('\n')}\n`).toEqual([]);
   });
 
+  it('requires pos only on an NpcDef that binds no resident', () => {
+    const map = CONTENT_BUNDLE.maps.find((candidate) => candidate.npcs.length > 0);
+    const npc = map?.npcs[0];
+    if (!map || !npc) throw new Error('Missing map with an npc');
+    const plain = { ...npc };
+    delete plain.pos;
+    const bound = (candidate: unknown) =>
+      mapSchema.safeParse({ ...map, npcs: [candidate] }).success;
+    // A resident-bound NpcDef takes its tile from the resident's anchor (ADR 0047 §2).
+    expect(bound({ ...plain, resident: 'lw.npc.gao' })).toBe(true);
+    expect(bound(plain)).toBe(false);
+  });
+
   it('accepts a phase condition for a real phase and rejects the rest', () => {
     expect(conditionSchema.safeParse({ kind: 'phase', in: ['dawn'] }).success).toBe(true);
     expect(conditionSchema.safeParse({ kind: 'phase', in: ['tuesday'] }).success).toBe(false);

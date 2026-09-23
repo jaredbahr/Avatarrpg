@@ -151,6 +151,9 @@ export class VillageLife {
     }
     for (const npc of this.app.content.maps.get(RIVERSIDE_ID)?.npcs ?? []) {
       if (npc.id === 'riverside_shrine') continue;
+      // W7: VillageLife moves to reading placements; until then a resident-bound
+      // NpcDef (no authored pos) is simply not hit-testable here.
+      if (!npc.pos) continue;
       if (hitsVillager(point, npc.pos)) {
         this.app.dispatch({ type: 'walkTo', pos: npc.pos });
         return true;
