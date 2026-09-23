@@ -8,14 +8,30 @@
  * atlas gave the road: once W2 re-keyed the route and its verges to the
  * village's hand, the shelf was one of three pieces left speaking the old
  * language. It is now painted from `forest-village-material.ts` like the rest
- * of the board, in the two keys the DL-2 §3 table gives what this piece
- * actually depicts — a low ledge of **packed earth** standing on a **cut stone
- * block face**, the face showing only where the ledge's down-screen side is
- * exposed, with the bible's `#1b1410` ink around the silhouette and a thin pale
- * rim inside its lit edge.
+ * of the board.
  *
- * The cell envelope, the (19,4) road exit and the projected bounds are
- * unchanged, and no map row, key or scene id moves with this.
+ * What it depicts is a low shelf standing a step above the road: a trodden
+ * **packed-earth** top on a **cut stone block face**. The plate is clipped to
+ * the rules' own cells, so the step is drawn inside them the way this camera
+ * sees a raised block: the top is the footprint lifted by `SHELF_RISE` world
+ * pixels, and wherever the ground under a pixel's top would already be off the
+ * shelf, that pixel is the face instead. The face therefore stands straight up
+ * from the shelf's down-screen (+x/+y) edges.
+ *
+ * Three things make it read raised rather than as the road widening:
+ *
+ * - the top reads the courtyard lawn's rhythm through its own salt (`trodden`),
+ *   not the paving's flagstones the road beside it carries;
+ * - ink runs along the lip, where the top breaks over the face, as well as
+ *   round the silhouette and along the face's foot;
+ * - the face is in the cut-stone row's shadow tones, never its pale ones: the
+ *   left-facing wall in `#a2957c` with `#8a7d66` tool-marked joints, the
+ *   right-facing wall, turned further from the light, in `#8a7d66` with ink
+ *   joints.
+ *
+ * The lit (up-screen) edges of the top carry the thin pale rim. The cell
+ * envelope, the (19,4) road exit and the projected bounds are unchanged, and
+ * no map row, key or scene id moves with this.
  */
 import { mkdirSync, writeFileSync } from 'node:fs';
 import { FOREST_ROAD } from '../../src/content/maps/combat';
@@ -23,36 +39,62 @@ import {
   FOREST_RAISED_SHELF,
   FOREST_RAISED_SHELF_CELLS,
 } from '../../src/content/scenes/forestRoad';
-import { newImage, setPixel } from './lib/image';
+import { tileNoise } from '../../src/render/painters/shapes';
+import { newImage, parseHex, setPixel } from './lib/image';
 import type { Image } from './lib/image';
 import { encodeWebp } from './lib/webp';
-import { FOREST_GROUND_QUALITY, loadForestMaterial } from './forest-village-material';
-import type { ForestMaterial, ToneName } from './forest-village-material';
+import {
+  FOREST_GROUND_QUALITY,
+  FOREST_PIECE_TONES,
+  loadForestMaterial,
+} from './forest-village-material';
+import type { ForestMaterial, Rgb } from './forest-village-material';
 
 const TILE_DIAGONAL = Math.hypot(64, 32);
-const INK_HALF = 1 / TILE_DIAGONAL;
+/** The bible's 2 px ink, drawn wholly inside: nothing else draws its other half. */
+const INK = 2 / TILE_DIAGONAL;
 const RIM_WIDTH = 3 / TILE_DIAGONAL;
 /**
- * How much of a cell's down-screen corner shows the block face. This is the
- * figure the generated shelf was registered at, kept so the ledge's apparent
- * height does not change with the re-key.
+ * How far the top stands above the ground, in world pixels: the vertical
+ * height the old 0.26-cell face band gave the ledge, kept so the shelf's
+ * apparent height does not change with the re-key.
  */
-export const SHELF_FACE = 0.26;
+export const SHELF_RISE = 16;
+/** Ink across the lip and along the foot, in world pixels. */
+const LIP_INK = 2;
+/** One course of blocks is half the face; a block runs about half a cell along it. */
+const COURSE = SHELF_RISE / 2;
+const BLOCK = 32;
 
 export const FOREST_RAISED_SHELF_OUTPUT = 'public/art/maps/forest-scene/raised-shelf.webp';
+
+/** Logical cell coordinates of a world pixel. */
+function logical(worldX: number, worldY: number): { x: number; y: number } {
+  const diagonal = (worldX - 768) / 64;
+  const sum = worldY / 32;
+  return { x: (diagonal + sum) / 2, y: (sum - diagonal) / 2 };
+}
 
 export function packRaisedShelf(material: ForestMaterial): Image {
   const raised = new Set(FOREST_RAISED_SHELF_CELLS.map(({ x, y }) => `${x},${y}`));
   const cellAt = (x: number, y: number): boolean => raised.has(`${x},${y}`);
+  const onShelf = (worldX: number, worldY: number): boolean => {
+    const { x, y } = logical(worldX, worldY);
+    return cellAt(Math.floor(x), Math.floor(y));
+  };
+  const stone = FOREST_PIECE_TONES.stone;
+  const walls = {
+    /** The wall facing down-screen left, nearer the light. */
+    left: { field: parseHex(stone.shadow), joint: parseHex(stone.joint) },
+    /** The wall facing down-screen right, turned away from it. */
+    right: { field: parseHex(stone.joint), joint: material.ink },
+  };
   const image = newImage(FOREST_RAISED_SHELF.width, FOREST_RAISED_SHELF.height);
   for (let py = 0; py < image.height; py++)
     for (let px = 0; px < image.width; px++) {
       const worldX = FOREST_RAISED_SHELF.x + px + 0.5;
       const worldY = FOREST_RAISED_SHELF.y + py + 0.5;
-      const diagonal = (worldX - 768) / 64;
-      const sum = worldY / 32;
-      const x = (diagonal + sum) / 2;
-      const y = (sum - diagonal) / 2;
+      const { x, y } = logical(worldX, worldY);
       const ix = Math.floor(x),
         iy = Math.floor(y);
       if (!cellAt(ix, iy)) continue;
@@ -77,19 +119,41 @@ export function packRaisedShelf(material: ForestMaterial): Image {
           lit = ox < 0 || oy < 0;
         }
       }
-      // The block face is the down-screen exposure: where the ledge ends on its
-      // +x or +y side there is a cut wall under the walkable top, and that wall
-      // is the only place cut stone shows.
-      const face =
-        (!cellAt(ix + 1, iy) && fx > 1 - SHELF_FACE) ||
-        (!cellAt(ix, iy + 1) && fy > 1 - SHELF_FACE);
-      const tone: ToneName = face ? 'stone' : 'road';
-      const rgb =
-        edge < INK_HALF
-          ? material.ink
-          : lit && edge < INK_HALF + RIM_WIDTH
-            ? material.rimOf(tone)
-            : material.colour(tone, x, y);
+
+      // How far straight down the footprint runs from here. Within the rise,
+      // the ground under this pixel's top is already off the shelf, so what
+      // the camera sees is the face; beyond it, the lifted top.
+      let drop = 1;
+      while (drop <= SHELF_RISE && onShelf(worldX, worldY + drop)) drop++;
+      let rgb: Rgb;
+      if (edge < INK) {
+        rgb = material.ink;
+      } else if (drop <= SHELF_RISE) {
+        // Which wall this is: the one whose edge the drop leaves the shelf by.
+        const foot = logical(worldX, worldY + drop - 1);
+        const exit = logical(worldX, worldY + drop);
+        const wall =
+          Math.floor(exit.x) > Math.floor(foot.x) && Math.floor(exit.y) === Math.floor(foot.y)
+            ? walls.right
+            : walls.left;
+        const height = drop - 1;
+        const course = Math.floor(height / COURSE);
+        // Blocks break joint course to course, and each runs its own length.
+        const run = Math.floor(worldX) + course * (BLOCK / 2);
+        const block = Math.floor(run / BLOCK);
+        const jointAt = block * BLOCK + 4 + Math.floor(tileNoise(block, course, 5) * (BLOCK - 8));
+        if (drop > SHELF_RISE - LIP_INK || height < LIP_INK) rgb = material.ink;
+        else if (height % COURSE === 0 || run === jointAt) rgb = wall.joint;
+        else rgb = wall.field;
+      } else {
+        // The top, sampled where it stands rather than where its pixel lands,
+        // so the lawn's rhythm rides up with the lift instead of sliding.
+        const top = logical(worldX, worldY + SHELF_RISE);
+        rgb =
+          lit && edge < INK + RIM_WIDTH
+            ? material.rimOf('trodden')
+            : material.colour('trodden', top.x, top.y);
+      }
       setPixel(image, px, py, [rgb[0], rgb[1], rgb[2], 255]);
     }
   return image;
@@ -113,7 +177,7 @@ export async function main(): Promise<void> {
       bytes: bytes.length,
       quality: FOREST_GROUND_QUALITY,
     },
-    note: 'Painted from the village material in the DL-2 §3 packed-earth and cut-stone keys, clipped to the authored elevation mask. Collision, elevation and the road exit remain map-owned; no water or grid is painted.',
+    note: 'Painted from the village material in the DL-2 §3 packed-earth and cut-stone keys: a lifted top over a vertical block face, clipped to the authored elevation mask. Collision, elevation and the road exit remain map-owned; no water or grid is painted.',
   };
   mkdirSync('art/raw/forest', { recursive: true });
   writeFileSync(
