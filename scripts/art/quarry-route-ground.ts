@@ -2,6 +2,7 @@
  * Build the Cutting / Driller floor's ground from the village's accepted plates.
  *
  *   node --import tsx scripts/art/quarry-route-ground.ts driller
+ *   node --import tsx scripts/art/quarry-route-ground.ts cutting
  *
  * This used to tile a generated six-panel quarry material sheet by continuous
  * repeat, with three fields and three painted transitions. Three things came
@@ -18,6 +19,13 @@
  * every boundary between two of them, and painted incident — spoil heaps and
  * haul ruts — inside the earth plane so no quarter-frame of it is bare.
  *
+ * DL-2 W4 folds The Cutting in through the same table. The Cutting is the
+ * gate's road layout cut between ledges, so it takes the gate's reading of that
+ * layout (`quarry-modular-ground.ts`): a packed-earth cart lane with one haul
+ * track per lane, spoil shoulders carrying whole inked heaps of cut stone, and
+ * cut-stone ledges. Rubble diamonds are inked even on spoil of their own
+ * material, because a pile is an object on the floor.
+ *
  * Region routing, page origin and cell keys are untouched, so the registered
  * geometry is bit-for-bit the same and only the bytes move. Saves, collision
  * and the runtime surfaces above the page are unaffected.
@@ -30,7 +38,7 @@ import type { Image } from './lib/image';
 import { tileNoise } from '../../src/render/painters/shapes';
 import { alphaBounds, crop } from './lib/trim';
 import { encodeWebp } from './lib/webp';
-import { loadQuarryMaterial, QUARRY_GROUND_QUALITY } from './quarry-village-material';
+import { loadQuarryMaterial, nearestHeap, QUARRY_GROUND_QUALITY } from './quarry-village-material';
 import type { QuarryMaterial, QuarryTone } from './quarry-village-material';
 
 /** One logical tile is 64x32 scene pixels; see `forest-route-ground.ts`. */
@@ -79,8 +87,14 @@ const materialOf = (key: string | undefined): QuarryTone | null => {
       return 'wear';
     case '=':
       return 'earth';
-    case '.':
+    // The Cutting's shoulders. The Cutting is the gate's road layout — a
+    // cart lane with loose ground either side — cut between ledges, so it
+    // takes the gate's reading of that layout: packed-earth lane, spoil
+    // shoulders. As earth they would merge with the lane into one plane and
+    // the approved road would vanish. The Driller floor has no `,` cell.
     case ',':
+      return 'spoil';
+    case '.':
     case 'c':
       return 'earth';
     default:
@@ -98,6 +112,24 @@ const plain = (key: string | undefined): boolean =>
   key === '.' || key === ',' || key === 'c' || key === '=';
 
 const clamp = (value: number): number => Math.max(0, Math.min(1, value));
+
+/**
+ * Whether the heap nearest a point lies wholly on plain spoil. The Cutting's
+ * shoulders are narrow strips between the lane and the ledges, and a heap
+ * anchored near either edge would be cut by it: into a sliver hugging a ledge
+ * line, or into ink specks scattered through the lane's feathered fringe. A
+ * heap that does not fit is left out whole rather than clipped.
+ */
+function heapFits(map: MapDef, x: number, y: number): boolean {
+  const heap = nearestHeap(x, y);
+  if (!heap) return false;
+  for (let cy = Math.floor(heap.hy - heap.reach); cy <= Math.floor(heap.hy + heap.reach); cy++)
+    for (let cx = Math.floor(heap.hx - heap.reach); cx <= Math.floor(heap.hx + heap.reach); cx++) {
+      const key = map.rows[cy]?.[cx];
+      if (materialOf(key) !== 'spoil' || !plain(key)) return false;
+    }
+  return true;
+}
 
 const regionOf = (x: number, key: string | undefined): QuarryRegionName | null => {
   const terrain = kind(key);
@@ -141,7 +173,11 @@ export function packQuarryGround(
       ] as const) {
         const neighbourKey = map.rows[y + oy]?.[x + ox];
         const other = materialOf(neighbourKey);
-        if (!other || other === own) continue;
+        // A rubble pile is an object on the floor, so its diamond is inked
+        // even where it lies on spoil of its own material (the Cutting's
+        // shoulders); otherwise the live wash is the only thing that shows it.
+        const pile = (key === 'r') !== (neighbourKey === 'r');
+        if (!other || (other === own && !pile)) continue;
         const edgeDistance = ox < 0 ? gx - x : ox > 0 ? x + 1 - gx : oy < 0 ? gy - y : y + 1 - gy;
         if (edgeDistance < edge) {
           edge = edgeDistance;
@@ -164,12 +200,23 @@ export function packQuarryGround(
       // own ink edge and chip rim, plus the haul ruts. A hazard, a ledge or a
       // dressed floor already carries its own painting.
       let inked = edge < INK_HALF;
-      if (tone === 'earth' && plain(key)) {
+      if (tone === 'earth' && plain(key) && (key === '=' || own !== 'earth')) {
+        // A cart lane, or its feathered fringe: haul tracks only, as at the
+        // gate. Spoil heaps do not sit in a cart lane.
+        tone = material.trackMark(gx, gy) ?? tone;
+      } else if (tone === 'earth' && plain(key)) {
         const heap = material.heapMark(gx, gy);
         if (heap === 'ink') inked = true;
         else if (heap === 'inside') tone = 'spoil';
         else if (heap === 'rim') tone = 'wear';
         else tone = material.trackMark(gx, gy) ?? tone;
+      } else if (tone === 'spoil' && own === 'spoil' && plain(key) && heapFits(map, gx, gy)) {
+        // Spoil shoulders: inked heaps of freshly cut stone, exactly as the
+        // gate paints its terrace, so neither dirt page is a bare swatch.
+        const heap = material.heapMark(gx, gy);
+        if (heap === 'ink') inked = true;
+        else if (heap === 'inside') tone = 'limestone';
+        else if (heap === 'rim') tone = 'block';
       }
 
       const rgb = inked
@@ -260,11 +307,11 @@ export async function buildQuarryGround(
   mapId: 'cutting' | 'driller',
 ): Promise<Map<QuarryRegionName, { image: Image; x: number; y: number }>> {
   const map = mapId === 'cutting' ? AMBUSH_ROAD : QUARRY_FLOOR;
-  // The carts cross the open floor, so the pair straddles the board's centre.
-  const images = packQuarryGround(
-    map,
-    await loadQuarryMaterial({ centre: map.height / 2 - 0.5, offset: 1.15 }),
-  );
+  // On the Driller the carts cross the open floor, so the pair straddles the
+  // board's centre. The Cutting's road splits round the pool into two one-row
+  // lanes, rows 4 and 7, so it runs one track down the middle of each.
+  const track = mapId === 'cutting' ? { centre: 6, offset: 1.5 } : { centre: 5.5, offset: 1.15 };
+  const images = packQuarryGround(map, await loadQuarryMaterial(track));
   const built = new Map<QuarryRegionName, { image: Image; x: number; y: number }>();
   for (const [name, image] of images) {
     bleedEdges(image, map);

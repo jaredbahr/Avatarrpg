@@ -1,7 +1,10 @@
 import { readFileSync } from 'node:fs';
 import { expect, it } from 'vitest';
-import { QUARRY_FLOOR } from '../../src/content/maps/combat';
-import { DRILLER_GROUND_REGIONS } from '../../src/content/scenes/quarryRouteGround';
+import { AMBUSH_ROAD, QUARRY_FLOOR } from '../../src/content/maps/combat';
+import {
+  CUTTING_GROUND_REGIONS,
+  DRILLER_GROUND_REGIONS,
+} from '../../src/content/scenes/quarryRouteGround';
 import { QUARRY_GATE_GROUND_REGIONS } from '../../src/content/scenes/quarryGate';
 import type { Image } from './lib/image';
 import { pixelAt, toHex } from './lib/image';
@@ -24,6 +27,7 @@ const INK = toHex([0x1b, 0x14, 0x10]);
 
 type Built = Map<string, { image: Image; x: number; y: number }>;
 const driller: Built = await buildQuarryGround('driller');
+const cutting: Built = await buildQuarryGround('cutting');
 const gate: Built = await buildGateGround();
 
 const plate = (built: Built, name: string) => {
@@ -34,6 +38,7 @@ const plate = (built: Built, name: string) => {
 
 it.each([
   ['driller-floor-scene', () => driller, DRILLER_GROUND_REGIONS],
+  ['cutting-scene', () => cutting, CUTTING_GROUND_REGIONS],
   ['quarry-gate-scene', () => gate, QUARRY_GATE_GROUND_REGIONS],
 ] as const)('registers %s exactly where the packer puts it', (_root, built, regions) => {
   for (const region of regions) {
@@ -52,7 +57,7 @@ it('paints only the named materials, their rims and the ink', () => {
   for (const tone of Object.values(QUARRY_GROUND_TONES))
     for (const hex of Object.values(tone)) allowed.add(hex);
   const seen = new Set<string>();
-  for (const built of [driller, gate])
+  for (const built of [driller, cutting, gate])
     for (const [, { image }] of built)
       for (let i = 0; i < image.data.length; i += 4) {
         if ((image.data[i + 3] ?? 0) === 0) continue;
@@ -77,6 +82,7 @@ it('carries no baked gradient and stays in the village tone band', async () => {
   ).mean;
   for (const [scene, built] of [
     ['driller', driller],
+    ['cutting', cutting],
     ['gate', gate],
   ] as const)
     for (const [name, { image }] of built) {
@@ -100,63 +106,147 @@ it('carries no baked gradient and stays in the village tone band', async () => {
   // ground. A limestone terrace cannot also sit inside 1.3x of that figure
   // without drifting a §3 hex, which the bible calls a QA failure; see the
   // handoff's "Open" section.
-  for (const name of ['dirt-west', 'dirt-east']) {
-    const m = measure(plate(driller, name).image);
+  for (const [scene, name] of [
+    [driller, 'dirt-west'],
+    [driller, 'dirt-east'],
+    // The Cutting's cart lane is the same packed earth as the Driller's floor.
+    [cutting, 'road'],
+  ] as const) {
+    const m = measure(plate(scene, name).image);
     expect(Math.max(VILLAGE / m.mean, m.mean / VILLAGE), `floor ${name}`).toBeLessThan(1.3);
   }
 });
 
-it('gives every ledge and hazard diamond an ink edge', () => {
-  const { image, x: originX, y: originY } = plate(driller, 'stone');
-  const isInk = (gx: number, gy: number): boolean => {
-    const rgba = pixelAt(
-      image,
-      Math.round(768 + (gx - gy) * 64 - originX - 0.5),
-      Math.round((gx + gy) * 32 - originY - 0.5),
-    );
-    return toHex([rgba[0], rgba[1], rgba[2]]) === INK;
-  };
-  /**
-   * Walk inward from the midpoint of each of the diamond's four cell edges.
-   * The ink is a 2 px line, which is 0.014 of a tile either side of the edge,
-   * so a single sample at a fixed inset would be a coin toss against rounding.
-   */
-  const inkOnRim = (cx: number, cy: number): boolean => {
-    for (let t = 0.002; t < 0.04; t += 0.002)
-      if (
-        isInk(cx + t, cy + 0.5) ||
-        isInk(cx + 1 - t, cy + 0.5) ||
-        isInk(cx + 0.5, cy + t) ||
-        isInk(cx + 0.5, cy + 1 - t)
-      )
-        return true;
-    return false;
-  };
-
-  let checked = 0;
-  for (let y = 0; y < QUARRY_FLOOR.height; y++)
-    for (let x = 0; x < QUARRY_FLOOR.width; x++) {
-      const key = QUARRY_FLOOR.rows[y]?.[x];
-      if (key !== 'r' && key !== 'o') continue;
-      checked++;
-      expect(inkOnRim(x, y), `hazard '${key}' at ${x},${y} carries ink`).toBe(true);
-    }
+it.each([
   // The floor has four oil pairs and four rubble cells; the old pass painted
   // every one of them with the same field as the floor and no edge at all.
-  expect(checked).toBeGreaterThan(8);
+  ['driller', () => driller, QUARRY_FLOOR, 8],
+  // The Cutting's four rubble cells lie on its spoil shoulders, the same
+  // material as the ground round them, so their ink is the whole of their edge.
+  ['cutting', () => cutting, AMBUSH_ROAD, 4],
+] as const)(
+  'gives every %s ledge and hazard diamond an ink edge',
+  (_scene, built, map, hazards) => {
+    const { image, x: originX, y: originY } = plate(built(), 'stone');
+    const isInk = (gx: number, gy: number): boolean => {
+      const rgba = pixelAt(
+        image,
+        Math.round(768 + (gx - gy) * 64 - originX - 0.5),
+        Math.round((gx + gy) * 32 - originY - 0.5),
+      );
+      return toHex([rgba[0], rgba[1], rgba[2]]) === INK;
+    };
+    /**
+     * Walk inward from the midpoint of each of the diamond's four cell edges.
+     * The ink is a 2 px line, which is 0.014 of a tile either side of the edge,
+     * so a single sample at a fixed inset would be a coin toss against rounding.
+     */
+    const inkOnRim = (cx: number, cy: number): boolean => {
+      for (let t = 0.002; t < 0.04; t += 0.002)
+        if (
+          isInk(cx + t, cy + 0.5) ||
+          isInk(cx + 1 - t, cy + 0.5) ||
+          isInk(cx + 0.5, cy + t) ||
+          isInk(cx + 0.5, cy + 1 - t)
+        )
+          return true;
+      return false;
+    };
 
-  // The ledge mass is a long boundary with the floor, so its ink is thousands
-  // of pixels of 2 px line rather than a stray fleck.
-  let inked = 0;
-  for (let i = 0; i < image.data.length; i += 4)
-    if (toHex([image.data[i] ?? 0, image.data[i + 1] ?? 0, image.data[i + 2] ?? 0]) === INK)
-      inked++;
-  expect(inked).toBeGreaterThan(5_000);
+    let checked = 0;
+    for (let y = 0; y < map.height; y++)
+      for (let x = 0; x < map.width; x++) {
+        const key = map.rows[y]?.[x];
+        if (key !== 'r' && key !== 'o') continue;
+        checked++;
+        expect(inkOnRim(x, y), `hazard '${key}' at ${x},${y} carries ink`).toBe(true);
+      }
+    expect(checked).toBeGreaterThanOrEqual(hazards);
+
+    // The ledge mass is a long boundary with the floor, so its ink is thousands
+    // of pixels of 2 px line rather than a stray fleck.
+    let inked = 0;
+    for (let i = 0; i < image.data.length; i += 4)
+      if (toHex([image.data[i] ?? 0, image.data[i + 1] ?? 0, image.data[i + 2] ?? 0]) === INK)
+        inked++;
+    expect(inked).toBeGreaterThan(5_000);
+  },
+);
+
+/**
+ * DL-2 W4. The Cutting is the gate's road layout cut between ledges, and it
+ * takes the gate's reading of it: a packed-earth cart lane with its haul
+ * tracks, and spoil shoulders carrying inked heaps of cut stone. Read cell by
+ * cell off the built plates, so neither the lane nor a clipped heap can drift.
+ */
+it("keeps the Cutting's lane apart from its spoil shoulders", () => {
+  const lane = new Set<string>(
+    [QUARRY_GROUND_TONES.earth, QUARRY_GROUND_TONES.rut, QUARRY_GROUND_TONES.wear].flatMap((t) =>
+      Object.values(t),
+    ),
+  );
+  // Spoil, and the whole heaps of cut stone on it: limestone body, block rim.
+  const shoulder = new Set<string>(
+    [QUARRY_GROUND_TONES.spoil, QUARRY_GROUND_TONES.limestone, QUARRY_GROUND_TONES.block].flatMap(
+      (t) => Object.values(t),
+    ),
+  );
+  // Per cell: how many interior pixels are lane tones, shoulder tones and ink.
+  const cells = new Map<string, { lane: number; shoulder: number; ink: number; all: number }>();
+  for (const [, { image, x: originX, y: originY }] of cutting)
+    for (let py = 0; py < image.height; py++)
+      for (let px = 0; px < image.width; px++) {
+        const i = (py * image.width + px) * 4;
+        if ((image.data[i + 3] ?? 0) < 255) continue;
+        const wx = originX + px + 0.5,
+          wy = originY + py + 0.5;
+        const gx = ((wx - 768) / 64 + wy / 32) / 2,
+          gy = (wy / 32 - (wx - 768) / 64) / 2;
+        const x = Math.floor(gx),
+          y = Math.floor(gy);
+        // The interior only: ink, rims and the feathered join live at the edge.
+        if (Math.min(gx - x, x + 1 - gx, gy - y, y + 1 - gy) < 0.2) continue;
+        const hex = toHex([image.data[i] ?? 0, image.data[i + 1] ?? 0, image.data[i + 2] ?? 0]);
+        const tally = cells.get(`${x},${y}`) ?? { lane: 0, shoulder: 0, ink: 0, all: 0 };
+        tally.all++;
+        if (lane.has(hex)) tally.lane++;
+        if (shoulder.has(hex)) tally.shoulder++;
+        if (hex === INK) tally.ink++;
+        cells.set(`${x},${y}`, tally);
+      }
+
+  let lanes = 0,
+    shoulders = 0;
+  for (let y = 0; y < AMBUSH_ROAD.height; y++)
+    for (let x = 0; x < AMBUSH_ROAD.width; x++) {
+      const key = AMBUSH_ROAD.rows[y]?.[x];
+      const tally = cells.get(`${x},${y}`);
+      if (key === '=') {
+        lanes++;
+        expect(tally?.all, `lane ${x},${y} is painted`).toBeGreaterThan(0);
+        if (!tally) continue;
+        // Packed earth throughout, and no heap ink speckled across the lane.
+        expect(tally.lane / tally.all, `lane ${x},${y} is packed earth`).toBeGreaterThan(0.95);
+        expect(tally.ink, `lane ${x},${y} carries no stray ink`).toBe(0);
+      } else if (key === ',') {
+        shoulders++;
+        if (!tally) continue;
+        expect(tally.lane, `shoulder ${x},${y} has no earth`).toBe(0);
+        // A heap's own ink outline is part of the shoulder's painting.
+        expect(
+          (tally.shoulder + tally.ink) / tally.all,
+          `shoulder ${x},${y} is spoil`,
+        ).toBeGreaterThan(0.95);
+      }
+    }
+  expect(lanes).toBeGreaterThan(50);
+  expect(shoulders).toBeGreaterThan(70);
 });
 
 it('ships the plates the packers build, inside the registered page', async () => {
   for (const [root, built, regions] of [
     ['driller-floor-scene', driller, DRILLER_GROUND_REGIONS],
+    ['cutting-scene', cutting, CUTTING_GROUND_REGIONS],
     ['quarry-gate-scene', gate, QUARRY_GATE_GROUND_REGIONS],
   ] as const)
     for (const region of regions) {
