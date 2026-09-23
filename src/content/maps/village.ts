@@ -79,6 +79,34 @@ export const BA_DAN_VILLAGE: MapDef = {
       sprite: 'npc.shopkeeper',
       node: 'gao_friendly',
       routes: [
+        // LW-S-BD-01 (ADR 0047 §8): an afternoon break, once. The homecoming
+        // comes first, and before victory so does his objection to the trade.
+        {
+          when: {
+            kind: 'all',
+            of: [
+              { kind: 'phase', in: ['afternoon'] },
+              { kind: 'flag', key: 'scene.bd01_plant_chair', op: 'unset' },
+              {
+                kind: 'any',
+                of: [
+                  { kind: 'flag', key: 'act1_complete', op: 'unset' },
+                  { kind: 'visited', nodeId: 'gao_home' },
+                  { kind: 'visited', nodeId: 'gao_home_cold' },
+                ],
+              },
+              {
+                kind: 'any',
+                of: [
+                  { kind: 'flag', key: 'ruon_traded', op: 'unset' },
+                  { kind: 'flag', key: 'act1_complete', op: 'set' },
+                  { kind: 'visited', nodeId: 'gao_cold' },
+                ],
+              },
+            ],
+          },
+          node: 'plant_chair',
+        },
         {
           when: {
             kind: 'all',

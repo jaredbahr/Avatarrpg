@@ -33,6 +33,12 @@ const NPC_PRESENTATIONS: readonly (readonly [string, string])[] = [
   ['dorin_directions', 'ba_dan_village'],
   ['dorin_home', 'ba_dan_village'],
   // A Ba Dan day (ADR 0047 W6): every conversation node, so a scene keeps its map.
+  ['plant_chair', 'ba_dan_village'],
+  ['plant_chair_seat', 'ba_dan_village'],
+  ['plant_chair_talk', 'ba_dan_village'],
+  ['plant_chair_leaf', 'ba_dan_village'],
+  ['plant_chair_box', 'ba_dan_village'],
+  ['plant_chair_quiet', 'ba_dan_village'],
   ['handover_scene', 'ba_dan_village'],
   ['handover_repeat', 'ba_dan_village'],
   ['handover_float', 'ba_dan_village'],

@@ -1,6 +1,6 @@
 /**
- * A Ba Dan day (ADR 0047 §8, W6): the gate handover (LW-S-BD-03) and
- * Hanru's watch.
+ * A Ba Dan day (ADR 0047 §8, W6): Gao's plant scene (LW-S-BD-01), the gate
+ * handover (LW-S-BD-03) and Hanru's watch.
  *
  * Voice for Hanru is set here, since the story bible is not available: few
  * words, practical, kind without saying so. Hanru uses they/them (D7).
@@ -16,6 +16,7 @@ const victory: Condition = { kind: 'flag', key: 'act1_complete', op: 'set' };
 const atDawn: Condition = { kind: 'phase', in: ['dawn'] };
 const both = (...of: Condition[]): Condition => ({ kind: 'all', of });
 
+const GAO = 'Gao the Shopkeeper';
 const DORIN = 'Gate Guard Dorin';
 const HANRU = 'Hanru';
 /** No Hanru portrait until A1 (it needs a prompt pack); the narrator's stands in. */
@@ -24,6 +25,94 @@ const FLOAT =
   'A model parade float sits in the cupboard behind the post. Its little roof sticks out past the door.';
 
 export const BA_DAN_DAY_STORY: readonly StoryNode[] = [
+  /* ------------------------------------------- LW-S-BD-01: the plant's chair */
+  {
+    id: 'plant_chair',
+    kind: 'choice',
+    speaker: GAO,
+    portrait: 'portrait.gao',
+    prompt: 'Come in out of the sun. Sit down a minute.',
+    // A visit does not reset the custody disagreement (guide §04.2).
+    variants: [
+      {
+        when: { kind: 'flag', key: 'ruon_traded', op: 'set' },
+        lines: ['You can sit, if you like. It does not change what I think about Ruon.'],
+      },
+    ],
+    options: [
+      { label: 'Sit down', detail: 'Take a break at the shop.', next: 'plant_chair_seat' },
+      { label: 'Another time', detail: 'Leave Gao to his stock.', next: 'village_leave' },
+    ],
+  },
+  {
+    id: 'plant_chair_seat',
+    kind: 'dialogue',
+    speaker: 'Gao’s shop',
+    portrait: 'portrait.narrator',
+    lines: [
+      'The only spare chair holds a potted plant. Gao moves it to the counter.',
+      'A leaf touches the hanging scale. He turns the pot. Now a leaf rests on the wrapping paper.',
+      'He looks back at the empty chair. “You sit,” he says. “I’ll find it somewhere.”',
+      'He brings stools out from beside the storeroom, sits on one, and puts the plant back on its chair.',
+    ],
+    next: 'plant_chair_talk',
+  },
+  {
+    id: 'plant_chair_talk',
+    kind: 'choice',
+    speaker: GAO,
+    portrait: 'portrait.gao',
+    prompt: 'There.',
+    options: [
+      { label: 'Admire the plant', detail: 'It has a new leaf.', next: 'plant_chair_leaf' },
+      {
+        label: 'Ask about the puzzle box',
+        detail: 'It is on the counter.',
+        next: 'plant_chair_box',
+      },
+      { label: 'Just sit', detail: 'Nobody needs anything.', next: 'plant_chair_quiet' },
+    ],
+  },
+  {
+    id: 'plant_chair_leaf',
+    kind: 'dialogue',
+    speaker: GAO,
+    portrait: 'portrait.gao',
+    lines: [
+      'Third one this year. It only grows toward the door, so every morning I turn it round.',
+      'Look. It is facing the door again.',
+    ],
+    next: 'plant_chair_done',
+  },
+  {
+    id: 'plant_chair_box',
+    kind: 'dialogue',
+    speaker: GAO,
+    portrait: 'portrait.gao',
+    lines: [
+      'There is a drawer in it somewhere. I have found two.',
+      'Something rattles in the third. Don’t shake it. I’ve tried that.',
+    ],
+    next: 'plant_chair_done',
+  },
+  {
+    id: 'plant_chair_quiet',
+    kind: 'dialogue',
+    speaker: 'Gao’s shop',
+    portrait: 'portrait.narrator',
+    lines: [
+      'You sit. Gao sits. Somewhere across the square, a broom scrapes.',
+      'Gao leans over and turns the pot a little toward the light.',
+    ],
+    next: 'plant_chair_done',
+  },
+  {
+    id: 'plant_chair_done',
+    kind: 'flags',
+    set: { 'scene.bd01_plant_chair': 'completed' },
+    next: 'village_leave',
+  },
+
   /* ------------------------------------------------ LW-S-BD-03: the handover */
   // The outgoing guard reports: Dorin in the evening, Hanru at dawn.
   {
@@ -145,6 +234,14 @@ export const BA_DAN_DAY_STORY: readonly StoryNode[] = [
   {
     // Back to whichever village hub is current, as the discoveries do.
     id: 'hanru_watch_leave',
+    kind: 'branch',
+    flag: 'act1_complete',
+    ifSet: 'village_return_explore',
+    ifUnset: 'village_explore',
+  },
+
+  {
+    id: 'village_leave',
     kind: 'branch',
     flag: 'act1_complete',
     ifSet: 'village_return_explore',
