@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { CONTENT } from '../../content';
 import { apply } from '../state/reducer';
 import { createGame } from '../state/createGame';
-import { reconcileDisciplines } from './reconcile';
+import { reconcileDisciplines, reconcileWorld } from './reconcile';
 import type { GameState } from '../types';
 import { SAVE_MAGIC, deserialize, migrate, serialize, stateFromBlob } from './serialize';
 
@@ -127,7 +127,11 @@ describe('save format 4: world.clock and world.talk (ADR 0047 W1)', () => {
     };
     const result = deserialize(JSON.stringify(blob));
     if (!result.ok) throw new Error(result.error);
-    let loaded = reconcileDisciplines(CONTENT, stateFromBlob(result.blob));
+    // The full load path (App.ts): reconcileDisciplines, then reconcileWorld.
+    // Mid-dialogue with no pin, reconcileWorld is a no-op here - the point is
+    // that the real load path runs clean on a migrated save, not just the
+    // narrower reconcileDisciplines-only path this test used to take.
+    let loaded = reconcileWorld(CONTENT, reconcileDisciplines(CONTENT, stateFromBlob(result.blob)));
     expect(loaded.screen).toBe('dialogue');
     expect(loaded.story.nodeId).toBe('riverside_dorin');
 
@@ -137,6 +141,48 @@ describe('save format 4: world.clock and world.talk (ADR 0047 W1)', () => {
       loaded = apply(CONTENT, loaded, { type: 'advanceDialogue' }).state;
     }
     expect(loaded.screen).not.toBe('dialogue');
+  });
+
+  it('migrates a format-1 save all the way to format 4, with the phase taken from mapId', () => {
+    // format 1 -> 2 (disciplines) -> 3 (world.returnPos/fired/cleared) -> 4
+    // (world.clock/talk), all inside one migrate() call - the same
+    // mapId-keyed phase the format-3 tests above exercise directly.
+    const state = createGame(CONTENT, {
+      seed: 7,
+      party: [{ characterId: 'kaya' }],
+      startNode: 'act1_open',
+    });
+    const blob = {
+      magic: SAVE_MAGIC,
+      format: 1,
+      savedAt: META.savedAt,
+      label: META.label,
+      summary: META.summary,
+      state: {
+        ...state,
+        version: 1,
+        location: { mapId: 'ba_dan_riverside', pos: { x: 1, y: 1 } },
+      },
+      session: META.session,
+    };
+
+    const migrated = migrate(blob) as {
+      format: number;
+      state: { version: number; world: unknown };
+    };
+    expect(migrated.format).toBe(4);
+    expect(migrated.state.version).toBe(4);
+    expect(migrated.state.world).toEqual({
+      returnPos: {},
+      fired: [],
+      cleared: [],
+      clock: { day: 1, phase: 'afternoon' },
+      talk: null,
+    });
+
+    const result = deserialize(JSON.stringify(blob));
+    if (!result.ok) throw new Error(result.error);
+    expect(result.blob.format).toBe(4);
   });
 
   it('rejects a save with a bad phase or day < 1', () => {
