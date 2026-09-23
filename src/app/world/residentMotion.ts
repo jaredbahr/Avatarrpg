@@ -395,9 +395,7 @@ export class ResidentWalks {
     const walking = clip.startsWith('walk');
     // The lean and the footfalls ease in and out over the stroll's 120 ms ramps.
     const from = start + (motion.enter ? fade : 0);
-    const into = walking
-      ? clamp01(Math.min(c - from, walkEnd - c) / ((120 * fade) / FADE_MS))
-      : 0;
+    const into = walking ? clamp01(Math.min(c - from, walkEnd - c) / ((120 * fade) / FADE_MS)) : 0;
     return {
       ...base,
       drawPos,
