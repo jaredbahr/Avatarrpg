@@ -318,6 +318,8 @@ export const ASSETS: Readonly<Record<string, AssetEntry>> = {
   // Dorin's sprites (D7), and an adult of Pella's household who is no named person.
   'npc.hanru': painter('villager', 'nonbender', 'guard'),
   'npc.household': painter('villager', 'earth'),
+  // Until A1's notice art: a marker stone.
+  'world.school_notice': painter('discovery', 'neutral', 'marker'),
 
   /* --------------------------------------------------------------- Props */
   'prop.barrel': { kind: 'image', url: 'art/props/barrel.png', palette: 'water' },

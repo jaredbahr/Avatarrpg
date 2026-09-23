@@ -161,6 +161,17 @@ export const BA_DAN_VILLAGE: MapDef = {
         },
       ],
     },
+    {
+      // BD05 has no building (ADR 0047 §3): in the morning this notice stands
+      // in for Pella, who is in class. Placeholder art until A1.
+      id: 'school_notice',
+      name: 'School notice',
+      pos: { x: 12, y: 11 },
+      sprite: 'world.school_notice',
+      interaction: 'route-sign',
+      when: { kind: 'phase', in: ['morning'] },
+      node: 'school_notice',
+    },
   ],
   props: [],
 };

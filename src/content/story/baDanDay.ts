@@ -1,6 +1,6 @@
 /**
  * A Ba Dan day (ADR 0047 §8, W6): Gao's plant scene (LW-S-BD-01), the gate
- * handover (LW-S-BD-03) and Hanru's watch.
+ * handover (LW-S-BD-03), Hanru's watch and the school notice.
  *
  * Voice for Hanru is set here, since the story bible is not available: few
  * words, practical, kind without saying so. Hanru uses they/them (D7).
@@ -240,6 +240,33 @@ export const BA_DAN_DAY_STORY: readonly StoryNode[] = [
     ifUnset: 'village_explore',
   },
 
+  /* -------------------------------------------------------- The school notice */
+  // Morning only: it stands in for Pella while she is in class (§4).
+  {
+    id: 'school_notice',
+    kind: 'dialogue',
+    speaker: 'School notice',
+    portrait: 'portrait.narrator',
+    lines: [
+      '“School this morning. Pupils home at midday.”',
+      'Underneath, in careful chalk: “PELLA IS AT SCHOOL. IF BO-SHAN COMES HOME, FETCH ME.”',
+    ],
+    variants: [
+      {
+        // Held at home until she has told the party (§4): no class for her today.
+        when: both(victory, { kind: 'not', of: { kind: 'visited', nodeId: 'pella_home' } }),
+        lines: ['“No school today. Welcome home.”'],
+      },
+      {
+        when: victory,
+        lines: [
+          '“School this morning. Pupils home at midday.”',
+          'Underneath, in careful chalk: “PELLA IS AT SCHOOL. BO-SHAN, DO NOT MOVE MY STONES.”',
+        ],
+      },
+    ],
+    next: 'village_leave',
+  },
   {
     id: 'village_leave',
     kind: 'branch',
