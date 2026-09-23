@@ -93,8 +93,11 @@ No rule-grid, save, hit-test or enemy footprint changes accompany this framing.
 ## Explicit painted rubble registration
 
 `MapScene.paintedRubble` lists exact cells already represented by ground art.
-Only matching permanent rubble in a complete scene suppresses the duplicate
-normal overlay; high contrast, crisp overlays, unavailable art, other cells,
+Only matching permanent rubble whose scene art is fully loaded suppresses the
+duplicate normal overlay, in complete and partial scenes alike (partial scenes
+keep every other permanent surface live, including water). The authored heap
+carries the ink outline that marks the hazard; the wash and bank over it drew
+the tile diamond its painted spill hides (PR 95). High contrast, crisp overlays, unavailable art, other cells,
 and changed surface types/durations retain the procedural treatment. Both
 backends use the same predicate and WebGL includes per-cell suppression in its
 texture invalidation signature. Forest opts in only(7,3)/(8,9). This changes no

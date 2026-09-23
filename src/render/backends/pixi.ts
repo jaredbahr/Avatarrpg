@@ -678,9 +678,8 @@ export class PixiBackend implements RenderBackend {
 
   private syncGround(view: MapView, painted: boolean, partialScene: boolean): void {
     const { grid } = view;
-    // Partial mode must keep every permanent surface in the data texture;
-    // complete scenes retain their existing painted-surface suppression.
-    this.uploadMap(view, partialScene ? false : painted);
+    // `surfaceIsPainted` decides per cell which permanent surfaces the art replaces.
+    this.uploadMap(view, painted);
 
     const uniforms = this.groundUniforms.uniforms as {
       uGrid: Float32Array;
