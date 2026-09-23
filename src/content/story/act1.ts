@@ -574,6 +574,7 @@ export const ACT1_NODES: readonly StoryNode[] = [
     id: 'act1_victory',
     kind: 'flags',
     set: { act1_complete: true },
+    phase: 'evening',
     next: 'act1_epilogue',
   },
   {

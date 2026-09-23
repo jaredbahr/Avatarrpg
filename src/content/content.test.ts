@@ -81,6 +81,54 @@ describe('content', () => {
     expect(problems.some((p) => p.includes('standing_trap') && p.includes('0 is'))).toBe(true);
   });
 
+  /*
+   * An authored `flags` node may advance the clock (ADR 0047 §1), but the
+   * validator only allows it where a replay cannot reach it: a phase change
+   * that opens straight into a conversation, or that a repeatable NPC
+   * conversation can enter again, would churn time every time somebody said
+   * hello. Both halves of that rule deserve a test.
+   */
+  it('refuses a phase node that reaches a conversation before a resting point', () => {
+    const victory = CONTENT_BUNDLE.story.find((node) => node.id === 'act1_victory');
+    if (victory?.kind !== 'flags') throw new Error('Missing the Act 1 victory beat');
+    const problems = validateContent({
+      ...CONTENT_BUNDLE,
+      story: [
+        ...CONTENT_BUNDLE.story.map((node) =>
+          node.id === victory.id ? { ...victory, next: 'phase_trap' } : node,
+        ),
+        {
+          id: 'phase_trap',
+          kind: 'branch',
+          flag: 'act1_complete',
+          ifSet: 'quarry_assessment',
+          ifUnset: 'quarry_assessment',
+        },
+      ],
+    });
+    expect(
+      problems.some((p) => p.includes('act1_victory') && p.includes('dialogue or choice')),
+    ).toBe(true);
+  });
+
+  it('refuses a phase node that an NPC conversation could replay', () => {
+    const [map, ...restMaps] = CONTENT_BUNDLE.maps;
+    if (!map) throw new Error('Missing maps to probe');
+    const npc = map.npcs[0];
+    if (!npc) throw new Error('Missing an NPC to probe');
+    const victory = CONTENT_BUNDLE.story.find((node) => node.id === 'act1_victory');
+    if (victory?.kind !== 'flags') throw new Error('Missing the Act 1 victory beat');
+    const problems = validateContent({
+      ...CONTENT_BUNDLE,
+      maps: [{ ...map, npcs: [{ ...npc, node: victory.id }, ...map.npcs.slice(1)] }, ...restMaps],
+    });
+    expect(problems.some((p) => p.includes('act1_victory') && p.includes('churn'))).toBe(true);
+  });
+
+  it('accepts the Act 1 victory beat, which rests at an ending nobody replays', () => {
+    expect(validateContent(CONTENT_BUNDLE).filter((p) => p.includes('act1_victory'))).toEqual([]);
+  });
+
   it('refuses conditional enemies gated on standing', () => {
     const [first, ...rest] = CONTENT_BUNDLE.encounters;
     if (!first) throw new Error('no encounters to test against');

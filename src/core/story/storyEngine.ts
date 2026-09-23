@@ -26,6 +26,7 @@ import { createBattle } from '../state/createGame';
 import { adjustStanding, evaluate, getStanding } from './conditions';
 import { buildGrid, tileAt } from '../rules/grid';
 import { encounterText } from './encounterText';
+import { advancePhase } from './clock';
 
 const MAX_CHAIN = 32;
 
@@ -170,6 +171,11 @@ export function enterStoryNode(
         current = { ...current, flags, story: { ...current.story, visited } };
         if (node.grantXp && node.grantXp > 0) {
           current = grantPartyXp(content, current, node.grantXp, events);
+        }
+        if (node.phase && current.world.clock.phase !== node.phase) {
+          const from = current.world.clock.phase;
+          current = advancePhase(current, node.phase);
+          events.push({ type: 'phaseChanged', from, to: node.phase, day: current.world.clock.day });
         }
         target = node.next;
         continue;

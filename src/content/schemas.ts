@@ -683,6 +683,7 @@ export const storyNodeSchema = z.discriminatedUnion('kind', [
     kind: z.literal('flags'),
     set: z.record(flagValue),
     grantXp: z.number().int().min(0).max(2000).optional(),
+    phase: dayPhaseId.optional(),
     next: id,
   }),
   z.object({ id, kind: z.literal('branch'), flag: z.string().min(1), ifSet: id, ifUnset: id }),
@@ -1490,6 +1491,80 @@ export function validateContent(bundle: ContentBundle): string[] {
       if (!reachable.has(nodeId)) {
         problems.push(`story node "${nodeId}" is unreachable from "${entry}" or any NPC`);
       }
+    }
+  }
+
+  /* --- phase nodes: no clock churn behind a conversation (ADR 0047 §1) --- */
+  const nodeById = new Map(bundle.story.map((n) => [n.id, n]));
+  const phaseNodes = bundle.story.filter(
+    (n): n is Extract<StoryNode, { kind: 'flags' }> => n.kind === 'flags' && n.phase !== undefined,
+  );
+
+  for (const phaseNode of phaseNodes) {
+    // Walking only flags/branch successors (the pass-through node kinds),
+    // this must reach an explore, battle or end node before a dialogue or
+    // choice — a phase change can never open directly into a conversation.
+    const seen = new Set<string>([phaseNode.id]);
+    const queue = [phaseNode.next];
+    let reachesDialogueOrChoice = false;
+    while (queue.length > 0) {
+      const currentId = queue.shift();
+      if (!currentId || seen.has(currentId)) continue;
+      seen.add(currentId);
+      const current = nodeById.get(currentId);
+      if (!current) continue;
+      if (current.kind === 'dialogue' || current.kind === 'choice') {
+        reachesDialogueOrChoice = true;
+        break;
+      }
+      if (current.kind === 'flags') {
+        queue.push(current.next);
+      } else if (current.kind === 'branch') {
+        queue.push(current.ifSet, current.ifUnset);
+      }
+      // explore/battle/end: a resting point, do not walk past it.
+    }
+    if (reachesDialogueOrChoice) {
+      problems.push(
+        `story node "${phaseNode.id}" sets a phase but reaches a dialogue or choice node before an explore, battle or end node`,
+      );
+    }
+  }
+
+  // A phase node must never be reachable from an NpcDef's own node/routes,
+  // or from a repeatable (once: false) trigger: either could be replayed
+  // and would churn the clock every time. Walk the conversation subgraph
+  // from every such root, stopping at explore/end nodes rather than
+  // walking past them.
+  const conversationRoots: string[] = [];
+  for (const m of bundle.maps) {
+    for (const npc of m.npcs) {
+      conversationRoots.push(npc.node, ...(npc.routes ?? []).map((r) => r.node));
+    }
+    for (const trigger of m.triggers ?? []) {
+      if (!trigger.once) conversationRoots.push(trigger.node);
+    }
+  }
+
+  const conversationReachable = new Set<string>();
+  const conversationQueue = [...conversationRoots];
+  while (conversationQueue.length > 0) {
+    const currentId = conversationQueue.shift();
+    if (!currentId || conversationReachable.has(currentId)) continue;
+    conversationReachable.add(currentId);
+    const current = nodeById.get(currentId);
+    if (!current) continue;
+    if (current.kind === 'explore' || current.kind === 'end') continue;
+    for (const [from, to] of links) {
+      if (from === currentId) conversationQueue.push(to);
+    }
+  }
+
+  for (const phaseNode of phaseNodes) {
+    if (conversationReachable.has(phaseNode.id)) {
+      problems.push(
+        `story node "${phaseNode.id}" sets a phase but is reachable from an NPC or a repeatable trigger, which could churn the clock`,
+      );
     }
   }
 

@@ -851,6 +851,8 @@ export type StoryNode =
        * that skip an encounter from arriving a level behind.
        */
       readonly grantXp?: number;
+      /** Advance to the next occurrence of this phase; a no-op if already there (ADR 0047 §1). */
+      readonly phase?: DayPhase;
       readonly next: string;
     }
   | {
