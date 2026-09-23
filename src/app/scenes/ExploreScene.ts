@@ -30,7 +30,7 @@ import { ambienceFx } from '../../content/fx';
 import { ambientEmitters } from '../anim/ambience';
 import { PartyTrail, placeParty } from '../anim/trail';
 import type { FollowerRoute } from '../anim/trail';
-import { button, clear, el, mark, motionReduced } from '../ui/dom';
+import { append, button, clear, el, mark, motionReduced } from '../ui/dom';
 import { UI_MARKS } from '../ui/marks';
 import { partyRoster } from '../ui/PartyRoster';
 import { SaveMenu } from '../ui/SaveMenu';
@@ -434,26 +434,22 @@ export class ExploreScene implements Scene {
     const objective = this.app.state ? worldObjective(this.app.content, this.app.state) : null;
     this.canvas?.setAttribute('aria-label', `${this.map?.name ?? 'World'} map`);
     const clock = this.app.state?.world.clock;
-    banner.append(
+    append(banner, [
       el(
         'div',
         { class: 'explore-title' },
         el('strong', { class: 'title-plate-name', text: this.app.placeLabel() }),
-        clock
-          ? el(
-              'span',
-              { class: 'explore-phase' },
-              mark(UI_MARKS.wait, 'mark-inline'),
-              phaseLabel(clock.phase),
-            )
-          : null,
+        clock ? el('span', { class: 'explore-phase', text: phaseLabel(clock.phase) }) : null,
       ),
-      el('span', {
-        class: 'explore-mode hide-narrow',
-        text: this.conversationMode ? 'Conversation' : 'Exploring',
-      }),
+      // The time of day stands where 'Exploring' did; a conversation still says so.
+      this.conversationMode || !clock
+        ? el('span', {
+            class: 'explore-mode hide-narrow',
+            text: this.conversationMode ? 'Conversation' : 'Exploring',
+          })
+        : null,
       el('div', { class: 'spacer' }),
-    );
+    ]);
     if (!this.conversationMode) {
       banner.append(
         button(

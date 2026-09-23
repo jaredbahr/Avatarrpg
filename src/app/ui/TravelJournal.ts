@@ -1,8 +1,7 @@
 import type { App } from '../App';
 import { travelJournal } from '../world/journal';
 import { Dialog } from './Dialog';
-import { append, button, el, mark } from './dom';
-import { UI_MARKS } from './marks';
+import { append, button, el } from './dom';
 
 export class TravelJournal extends Dialog {
   protected options = { title: 'Travel journal', wide: true };
@@ -19,7 +18,7 @@ export class TravelJournal extends Dialog {
         'p',
         { class: 'explore-title' },
         el('strong', { text: journal.location }),
-        el('span', { class: 'explore-phase' }, mark(UI_MARKS.wait, 'mark-inline'), journal.time),
+        el('span', { class: 'explore-phase', text: journal.time }),
       ),
       journal.wait && el('p', { class: 'muted', text: journal.wait }),
       el('p', { text: journal.objective }),
