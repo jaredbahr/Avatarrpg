@@ -9,9 +9,25 @@
 
 import { describe as suite, expect, it } from 'vitest';
 import { CONTENT } from '../../content';
-import type { GameState } from '../types';
+import type { ContentIndex, GameState } from '../types';
 import { createGame } from './createGame';
 import { apply } from './reducer';
+import { reconcileDisciplines, reconcileWorld } from '../save/reconcile';
+import { deserialize, serialize, stateFromBlob } from '../save/serialize';
+
+const META = {
+  label: 'Slot 1',
+  summary: 'Pin round trip',
+  savedAt: 1_700_000_000_000,
+  session: { players: [{ name: 'Lorelai', unitId: 'p0' }], soloPlay: false },
+};
+
+/** deserialize -> stateFromBlob -> reconcileDisciplines -> reconcileWorld, the same order App.ts loads a save in. */
+function reload(content: ContentIndex, state: GameState): GameState {
+  const result = deserialize(serialize(state, META));
+  if (!result.ok) throw new Error(result.error);
+  return reconcileWorld(content, reconcileDisciplines(content, stateFromBlob(result.blob)));
+}
 
 /** Explore, one tile west of Elder Mira (11,5) on the village map. */
 function besideMira(): GameState {
@@ -59,5 +75,33 @@ suite('the conversation pin', () => {
     const result = apply(CONTENT, besideMira(), { type: 'enterNode', nodeId: 'mira_intro' });
     expect(result.state.screen).toBe('dialogue');
     expect(result.state.world.talk).toBeNull();
+  });
+
+  it('survives a save/reload mid-conversation, and clears once reloaded and played to the end', () => {
+    // walkTo opens the conversation and sets the pin; advance one line short
+    // of the end, then round-trip through the full load path (serialize ->
+    // deserialize -> reconcileDisciplines -> reconcileWorld, matching
+    // App.ts) before checking the pin is still there.
+    const opened = apply(CONTENT, besideMira(), { type: 'walkTo', pos: { x: 11, y: 5 } }).state;
+    expect(opened.screen).toBe('dialogue');
+    const advanced = apply(CONTENT, opened, { type: 'advanceDialogue' }).state;
+    expect(advanced.screen).toBe('dialogue');
+
+    const reloaded = reload(CONTENT, advanced);
+    expect(reloaded.screen).toBe('dialogue');
+    expect(reloaded.world.talk).toEqual({
+      npcId: 'elder_mira',
+      mapId: 'ba_dan_village',
+      anchor: '11,5',
+    });
+
+    // Now play the reloaded conversation to the end; settle() clears the
+    // pin on the command that leaves it, the same as the in-memory case.
+    let played = reloaded;
+    for (let i = 0; i < 50 && played.screen === 'dialogue'; i++) {
+      played = apply(CONTENT, played, { type: 'advanceDialogue' }).state;
+    }
+    expect(played.screen).toBe('explore');
+    expect(played.world.talk).toBeNull();
   });
 });
