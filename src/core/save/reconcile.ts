@@ -17,6 +17,9 @@
 
 import type { ContentIndex, GameState, PendingChoice } from '../types';
 import { specializationsUpTo } from '../rules/leveling';
+import { buildGrid, samePos } from '../rules/grid';
+import { findSettleTile } from '../story/settle';
+import { visibleNpcs } from '../story/world';
 
 export function reconcileDisciplines(content: ContentIndex, state: GameState): GameState {
   const owed: PendingChoice[] = [];
@@ -41,4 +44,42 @@ export function reconcileDisciplines(content: ContentIndex, state: GameState): G
 
   if (owed.length === 0) return state;
   return { ...state, pendingChoices: [...state.pendingChoices, ...owed] };
+}
+
+/**
+ * Repairs a loaded game's world state (ADR 0047 §5). Clears a stale
+ * conversation pin — one whose screen or map no longer holds it, or
+ * whose NpcDef no longer exists in content — and, in explore, runs the
+ * same leader-resettle search `settle` runs after every command, silently
+ * (no events: there is nothing to animate on a load). Idempotent:
+ * reconciling an already-reconciled state changes nothing.
+ */
+export function reconcileWorld(content: ContentIndex, state: GameState): GameState {
+  let next = state;
+  const talk = next.world.talk;
+
+  if (talk) {
+    const holds = next.screen === 'dialogue' && next.location.mapId === talk.mapId;
+    const map = content.maps.get(talk.mapId);
+    const npcExists = map?.npcs.some((npc) => npc.id === talk.npcId) ?? false;
+    if (!holds || !npcExists) {
+      next = { ...next, world: { ...next.world, talk: null } };
+    }
+  }
+
+  if (next.screen === 'explore') {
+    const map = content.maps.get(next.location.mapId);
+    if (map) {
+      const onNpc = visibleNpcs(map, next).some((npc) => samePos(npc.pos, next.location.pos));
+      if (onNpc) {
+        const grid = buildGrid(map);
+        const found = findSettleTile(content, map, grid, next, next.location.pos);
+        if (found) {
+          next = { ...next, location: { ...next.location, pos: found.pos } };
+        }
+      }
+    }
+  }
+
+  return next;
 }

@@ -35,7 +35,7 @@ import {
   saveToSlot,
 } from './storage/localSaves';
 import { describeProgress } from '../core/save/serialize';
-import { reconcileDisciplines } from '../core/save/reconcile';
+import { reconcileDisciplines, reconcileWorld } from '../core/save/reconcile';
 import type { SessionMeta } from '../core/save/serialize';
 import { announce, clear, el } from './ui/dom';
 import { loadIcons } from './ui/icons';
@@ -364,7 +364,9 @@ export class App {
     this.cancelRoute();
     // A save can predate a discipline gate the kits have since gained; this
     // hands back any pick the party is owed rather than swallowing it.
-    this.state = reconcileDisciplines(this.content, state);
+    // ADR 0047 §5: also clears a stale conversation pin and steps the
+    // leader off a visible NPC tile if content moved under the save.
+    this.state = reconcileWorld(this.content, reconcileDisciplines(this.content, state));
     this.session.setPlayers(Session.fromMeta(session).players);
     this.animator.clear();
     this.closePause();
