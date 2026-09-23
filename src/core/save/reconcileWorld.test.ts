@@ -13,6 +13,10 @@ import { createGame } from '../state/createGame';
 import type { GameState } from '../types';
 import { reconcileWorld } from './reconcile';
 import { deserialize, serialize, stateFromBlob } from './serialize';
+import { TEST_ANCHOR, TEST_RESIDENT, withBoundNpc } from '../story/testResidents';
+
+/** Elder Mira bound to a synthetic resident on her tile; no real NpcDef is bound until W5a. */
+const BOUND = withBoundNpc(CONTENT, 'ba_dan_village', 'elder_mira');
 
 const META = {
   label: 'Slot 1',
@@ -41,8 +45,8 @@ function exploring(overrides: Partial<GameState> = {}): GameState {
   };
 }
 
-/** Elder Mira's real NpcDef id and tile on `ba_dan_village`. */
-const MIRA = { npcId: 'elder_mira', mapId: 'ba_dan_village', anchor: '11,5' };
+/** A live pin on the bound Elder Mira: her NpcDef id and her resident's anchor id. */
+const MIRA = { npcId: 'elder_mira', mapId: 'ba_dan_village', anchor: TEST_ANCHOR };
 
 const withTalk = (state: GameState, talk: GameState['world']['talk']): GameState => ({
   ...state,
@@ -54,7 +58,7 @@ suite('reconcileWorld: the conversation pin (clear half)', () => {
     const state = withTalk(exploring(), MIRA);
     expect(state.screen).toBe('explore');
 
-    expect(reconcileWorld(CONTENT, state).world.talk).toBeNull();
+    expect(reconcileWorld(BOUND, state).world.talk).toBeNull();
   });
 
   it('clears a stale pin when the map no longer matches talk.mapId', () => {
@@ -66,7 +70,7 @@ suite('reconcileWorld: the conversation pin (clear half)', () => {
       MIRA,
     );
 
-    expect(reconcileWorld(CONTENT, state).world.talk).toBeNull();
+    expect(reconcileWorld(BOUND, state).world.talk).toBeNull();
   });
 
   it('clears a pin whose NpcDef no longer exists on talk.mapId', () => {
@@ -75,13 +79,55 @@ suite('reconcileWorld: the conversation pin (clear half)', () => {
       npcId: 'nobody',
     });
 
+    expect(reconcileWorld(BOUND, state).world.talk).toBeNull();
+  });
+
+  it('clears a pin whose anchor no longer exists in content', () => {
+    const state = withTalk(exploring({ screen: 'dialogue' }), { ...MIRA, anchor: 'gone.anchor' });
+
+    expect(reconcileWorld(BOUND, state).world.talk).toBeNull();
+  });
+
+  it('clears a pin whose anchor is on another map', () => {
+    const elsewhere = {
+      ...BOUND,
+      anchors: new Map([
+        ...BOUND.anchors,
+        [
+          TEST_ANCHOR,
+          {
+            id: TEST_ANCHOR,
+            place: 'TEST',
+            site: { kind: 'map' as const, mapId: 'ba_dan_riverside', pos: { x: 15, y: 9 } },
+          },
+        ],
+      ]),
+    };
+    const state = withTalk(exploring({ screen: 'dialogue' }), MIRA);
+
+    expect(reconcileWorld(elsewhere, state).world.talk).toBeNull();
+  });
+
+  it('clears a pin whose NpcDef is no longer bound to a resident', () => {
+    // The same live pin, loaded against content where Elder Mira is unbound
+    // (today's real content): the binding is gone, so nobody is held.
+    const state = withTalk(exploring({ screen: 'dialogue' }), MIRA);
+
     expect(reconcileWorld(CONTENT, state).world.talk).toBeNull();
   });
 
-  it('keeps a valid, live pin unchanged: dialogue on the pinned map', () => {
+  it('clears a pin whose resident record no longer exists', () => {
+    const orphaned = { ...BOUND, residents: new Map() };
+    const state = withTalk(exploring({ screen: 'dialogue' }), MIRA);
+    expect(BOUND.residents.has(TEST_RESIDENT)).toBe(true);
+
+    expect(reconcileWorld(orphaned, state).world.talk).toBeNull();
+  });
+
+  it('keeps a valid, live pin unchanged: dialogue on the pinned map, bound, anchor known', () => {
     const state = withTalk(exploring({ screen: 'dialogue' }), MIRA);
 
-    expect(reconcileWorld(CONTENT, state).world.talk).toEqual(MIRA);
+    expect(reconcileWorld(BOUND, state).world.talk).toEqual(MIRA);
   });
 });
 
@@ -102,8 +148,8 @@ suite('reconcileWorld: idempotence and the round trip', () => {
     const onNpc = exploring({ location: { mapId: 'ba_dan_village', pos: { x: 11, y: 5 } } });
 
     for (const state of [pinned, onNpc]) {
-      const once = reconcileWorld(CONTENT, state);
-      expect(reconcileWorld(CONTENT, once)).toEqual(once);
+      const once = reconcileWorld(BOUND, state);
+      expect(reconcileWorld(BOUND, once)).toEqual(once);
     }
   });
 
@@ -112,7 +158,7 @@ suite('reconcileWorld: idempotence and the round trip', () => {
 
     const result = deserialize(serialize(state, META));
     if (!result.ok) throw new Error(result.error);
-    const reloaded = reconcileWorld(CONTENT, stateFromBlob(result.blob));
+    const reloaded = reconcileWorld(BOUND, stateFromBlob(result.blob));
 
     expect(reloaded.world.talk).toEqual(MIRA);
   });

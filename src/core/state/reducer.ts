@@ -13,6 +13,7 @@ import { RngCursor } from '../rng';
 import { evaluate } from '../story/conditions';
 import { advancePhase } from '../story/clock';
 import { findSettleTile, settle } from '../story/settle';
+import { resolveResidents } from '../story/residents';
 import { activeTriggers, triggerKey, visibleNpcs } from '../story/world';
 import type {
   BattleState,
@@ -416,7 +417,7 @@ function handleWalkTo(content: ContentIndex, state: GameState, pos: Vec2): StepR
       const entered = withLog(
         content,
         walked,
-        pinIfDialogue(map, npc, enterStoryNode(content, walked, target)),
+        pinIfDialogue(content, walked, map, npc, enterStoryNode(content, walked, target)),
       );
       return {
         state: entered.state,
@@ -425,7 +426,11 @@ function handleWalkTo(content: ContentIndex, state: GameState, pos: Vec2): StepR
     }
     const target = npcNode(content, state, map.id, npc.id);
     if (!target) return refuse(state, 'They have nothing to say.');
-    return withLog(content, state, pinIfDialogue(map, npc, enterStoryNode(content, state, target)));
+    return withLog(
+      content,
+      state,
+      pinIfDialogue(content, state, map, npc, enterStoryNode(content, state, target)),
+    );
   }
 
   const grid = buildExploreGrid(content, state);
@@ -509,21 +514,26 @@ function handleWalkTo(content: ContentIndex, state: GameState, pos: Vec2): StepR
 }
 
 /**
- * Sets the conversation pin (ADR 0047 §4, B1) when an NpcDef-opened node
- * lands in dialogue. `anchor` is the NPC's own tile, formatted like
- * `posKey` elsewhere in this file — a placeholder for "where this
- * conversation opened" until the real anchor system (W4a) exists.
+ * Sets the conversation pin (ADR 0047 §4, B1) when a resident-bound NpcDef
+ * opens a node that lands in dialogue. The pin records the anchor the
+ * resident stood on at the tap (`at`, before the conversation), which is the
+ * placement that made this NpcDef visible; unbound NpcDefs pin nobody.
  */
-function pinIfDialogue(map: MapDef, npc: NpcDef, entered: StepResult): StepResult {
-  if (entered.state.screen !== 'dialogue') return entered;
+function pinIfDialogue(
+  content: ContentIndex,
+  at: GameState,
+  map: MapDef,
+  npc: NpcDef,
+  entered: StepResult,
+): StepResult {
+  if (entered.state.screen !== 'dialogue' || !npc.resident) return entered;
+  const anchor = resolveResidents(content, at).placements.find(
+    (p) => p.id === npc.resident && p.mapId === map.id && p.slot?.npc === npc.id,
+  )?.anchor;
+  if (!anchor) return entered;
+  const talk = { npcId: npc.id, mapId: map.id, anchor };
   return {
-    state: {
-      ...entered.state,
-      world: {
-        ...entered.state.world,
-        talk: { npcId: npc.id, mapId: map.id, anchor: posKey(npc.pos) },
-      },
-    },
+    state: { ...entered.state, world: { ...entered.state.world, talk } },
     events: entered.events,
   };
 }

@@ -18,6 +18,7 @@
 import type { ContentIndex, GameState, PendingChoice } from '../types';
 import { specializationsUpTo } from '../rules/leveling';
 import { settle } from '../story/settle';
+import { npcResident } from '../story/residents';
 
 export function reconcileDisciplines(content: ContentIndex, state: GameState): GameState {
   const owed: PendingChoice[] = [];
@@ -45,24 +46,23 @@ export function reconcileDisciplines(content: ContentIndex, state: GameState): G
 }
 
 /**
- * Repairs a loaded game's world state (ADR 0047 §5). Clears a stale
- * conversation pin — one whose screen or map no longer holds it, or
- * whose NpcDef no longer exists in content — and, in explore, runs the
- * same leader-resettle search `settle` runs after every command, silently
- * (no events: there is nothing to animate on a load). Idempotent:
- * reconciling an already-reconciled state changes nothing.
- *
- * `settle` already clears a pin whose screen or map no longer holds it, and
- * already runs the leader-resettle search — this only adds the one check
- * `settle` cannot make: whether content itself has drifted since the save
- * was written, so the pinned NpcDef no longer exists at all.
+ * Repairs a loaded game's world state (ADR 0047 §5). Runs `settle` silently
+ * (no events: there is nothing to animate on a load), which clears a pin
+ * whose screen or map no longer holds it and steps the leader off an NPC
+ * tile, then clears the one kind of stale pin `settle` cannot see: content
+ * that has drifted since the save, so the pinned NpcDef, its resident
+ * binding or the pinned map anchor no longer exists. Idempotent.
  */
 export function reconcileWorld(content: ContentIndex, state: GameState): GameState {
   const settled = settle(content, state, state).state;
   const talk = settled.world.talk;
   if (!talk) return settled;
-
-  const map = content.maps.get(talk.mapId);
-  const npcExists = map?.npcs.some((npc) => npc.id === talk.npcId) ?? false;
-  return npcExists ? settled : { ...settled, world: { ...settled.world, talk: null } };
+  const resident = npcResident(content, talk.mapId, talk.npcId);
+  const site = content.anchors.get(talk.anchor)?.site;
+  const holds =
+    resident !== null &&
+    content.residents.has(resident) &&
+    site?.kind === 'map' &&
+    site.mapId === talk.mapId;
+  return holds ? settled : { ...settled, world: { ...settled.world, talk: null } };
 }
