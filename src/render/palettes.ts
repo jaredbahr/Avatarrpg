@@ -170,14 +170,17 @@ export const SURFACE_STYLES: Record<SurfaceId, SurfaceStyle> = {
     label: 'Oil',
   },
   /*
-   * The ground contract's quarry spoil (DL-2 §3): the spoil shadow as the wash
-   * and its chip highlight as the bank, so a painted heap under the live
-   * overlay stays in its own family rather than being pulled toward grey.
+   * The ground contract's quarry spoil (DL-2 §3): the spoil shadow as the wash,
+   * so a painted heap under the live overlay stays in its own family rather
+   * than being pulled toward grey. The bank is the bible's ink: rubble an
+   * ability leaves has no heap art and costs movement, and with hatch and high
+   * contrast off by default its ragged inked bank is what shows it on every
+   * ground. The spoil chip highlight all but vanished over spoil.
    */
   rubble: {
     fill: '#857762',
     alpha: 0.3,
-    edge: '#c2b49c',
+    edge: '#1b1410',
     detail: '#857762',
     hatch: 'dots',
     label: 'Rubble',
