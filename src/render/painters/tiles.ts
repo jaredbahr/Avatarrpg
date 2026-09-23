@@ -11,7 +11,7 @@
 
 import type { Tile, Vec2 } from '../../core/types';
 import type { Edges } from '../geometry/board';
-import { SURFACE_STYLES, TERRAIN_STYLES, WATER_BED } from '../palettes';
+import { RUBBLE_CHIP, SURFACE_STYLES, TERRAIN_STYLES, WATER_BED } from '../palettes';
 import {
   SURFACE_BANK,
   SURFACE_POOL,
@@ -220,6 +220,7 @@ export function paintSurface(
         ctx.lineTo(x, y);
         ctx.lineTo(x + s * 0.15, y - s * 0.035);
       } else if (material === 'rubble') {
+        ctx.strokeStyle = RUBBLE_CHIP;
         ctx.moveTo(x - s * 0.025, y);
         ctx.lineTo(x, y - s * 0.04);
         ctx.lineTo(x + s * 0.04, y + s * 0.01);
