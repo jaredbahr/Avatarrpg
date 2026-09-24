@@ -42,6 +42,11 @@ are app-layer work that fits the existing architecture.
 - Wanting a 3D or 2.5D presentation like the live-action series: Three.js, and a new ADR.
 - Wanting App Store distribution: wrap the same web build with Capacitor. Still not an engine change.
 
+## Budget amendment, 2026-09-24
+
+ADR 0048 supersedes this ADR's 300 KB JavaScript ceiling with a 320 KB gzipped
+gate. The engine and optional-registration decisions above are unchanged.
+
 ## Optional registrations, 2026-09-18
 
 The production build omits Pixi's optional accessibility-overlay, federated-event

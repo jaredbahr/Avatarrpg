@@ -84,7 +84,9 @@ sheets replace baked ones key by key.
 
 ### Budgets
 
-- JavaScript stays at 300 KB gzipped (`scripts/check-bundle-size.mjs`).
+- JavaScript is governed by the current bundle-budget ADR. ADR 0048 supersedes
+  this decision's original 300 KB ceiling with 320 KB gzipped
+  (`scripts/check-bundle-size.mjs`).
 - Assets get their own gate in A2: 4 MB per scene bundle, 25 MB total precache. `workbox.globPatterns` gains `webp,json`.
 
 ## Consequences

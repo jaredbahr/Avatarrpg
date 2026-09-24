@@ -48,7 +48,7 @@ export default defineConfig({
     // The larger village stays inside the existing tablet download budget.
     minify: 'terser',
     terserOptions: { compress: { passes: 2 } },
-    // The whole game is one bundle; 300 KB gzipped is the budget we verify in CI.
+    // The whole game is one bundle; 320 KB gzipped is the budget we verify in CI.
     chunkSizeWarningLimit: 900,
   },
   server: {

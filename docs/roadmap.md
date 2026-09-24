@@ -314,7 +314,7 @@ below remains open.
 ## Governance
 
 - **ADRs** in `docs/adr/` for any decision that changes an engine, a contract or a budget.
-- **Budgets checked in CI:** 300 KB gzipped JavaScript (`scripts/check-bundle-size.mjs`); 4 MB per art family and 25 MB precached (`scripts/check-asset-budget.mjs`); every sheet the manifest names validated against its files (`npm run art:validate`).
+- **Budgets checked in CI:** 320 KB gzipped JavaScript (`scripts/check-bundle-size.mjs`); 4 MB per art family and 25 MB precached (`scripts/check-asset-budget.mjs`); every sheet the manifest names validated against its files (`npm run art:validate`).
 - **Prompt hygiene:** nothing under `docs/art` names the franchise, a character or a faction, and every hex a pack quotes is a palette value (`src/content/prompts.test.ts`).
 - **Parity:** anything the rules care about is drawn on both backends (ADR 0002).
 - **Determinism:** presentation randomness (particles) is seeded per instance and never touches the game RNG.
