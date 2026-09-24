@@ -107,14 +107,14 @@ surface state, movement, cover or save data. A permanent rubble effect at an
 already registered permanent-rubble cell has the same representation; effects
 elsewhere and different/temporary surfaces still draw normally.
 
-The heap stays drawn in every surface state. A registered cell is authored
-`r`, which sets `cover: true` as well as the rubble surface, and the rules read
-`tile.cover` before the surface; water turning the rubble to mud, or the mud
-expiring, changes the surface only, so the cell is still cover and the heap
-still says so. A render test pins this against `positionHasCover`. Whether
-cover should instead follow the rubble surface is an open gameplay question for
-the owner; if the rules change, the heap's visibility should follow them, not
-lead them.
+The heap stays drawn in every surface state. A registered cell is authored `r`:
+rubble on spoil, with no permanent `tile.cover` — cover comes from the live
+surface's `grantsCover`, so water turning the rubble to mud, or the mud
+expiring, takes the cover with it. The painted heap is ground art registered to
+the cell rather than a cover marker, so it stays drawn there whatever surface
+lands on it (water paints the mud wash over it). The render test that once
+pinned the old reading now pins this one: the heap is still in the scene while
+`positionHasCover` has gone false.
 
 Ability rubble beside a live heap meets it without a bank on both backends, as
 it would meet more ability rubble: the heap's ink outline is the edge there, and

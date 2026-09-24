@@ -1,6 +1,7 @@
 import { expect, it } from 'vitest';
 import { CONTENT } from '../content';
 import { LEGEND } from '../content/maps/legend';
+import { SURFACE_BY_ID } from '../content/surfaces';
 import { NEUTRAL_PALETTE, SURFACE_STYLES, TERRAIN_STYLES } from './palettes';
 import { SURFACE_BANK, SURFACE_RIM } from './surfaceRendering';
 
@@ -81,8 +82,11 @@ it('lays every rubble cell on the ground contract spoil, not limestone paving', 
   expect(rubble?.surface).toBe('rubble');
   expect(rubble?.terrain).toBe('sand');
   expect(TERRAIN_STYLES.sand.fill).toBe(GROUNDS.spoil);
-  // Terrain carries no rule: what makes rubble rubble stays on the template.
-  expect(rubble).toMatchObject({ cover: true, surfaceDuration: -1 });
+  // Terrain carries no rule, and neither does the tile: cover comes from the
+  // live rubble surface, so water that turns the heap to mud takes it away.
+  expect(rubble).toMatchObject({ surfaceDuration: -1 });
+  expect(rubble?.cover ?? false).toBe(false);
+  expect(SURFACE_BY_ID.get('rubble')?.grantsCover).toBe(true);
   expect(rubble?.blocked ?? false).toBe(false);
   expect(rubble?.elevation ?? 0).toBe(0);
 

@@ -428,12 +428,12 @@ describe('scene image residency', () => {
   }
 });
 
-it('keeps a registered heap drawn while its cell still gives cover', () => {
-  // The forest heap cell is authored `r`: `cover: true` as well as rubble, and
-  // the rules read `tile.cover` before the surface. Water and the mud's expiry
-  // change the surface only, so the cell stays cover and its heap must stay
-  // drawn. Whether cover should follow the surface is an open gameplay
-  // question; until the rules change, no render change may hide this heap.
+it('keeps a registered heap drawn on its own cell while the surface changes under it', () => {
+  // The forest heap cell is authored `r`: rubble on spoil, whose cover is
+  // granted by the live surface rather than a permanent tile flag. The painted
+  // heap is registered ground art for that cell, so it stays drawn whatever
+  // surface lands on it (water paints the mud wash over it); what the rules
+  // stop doing is giving the cell cover once the rubble is gone.
   const authored = FOREST_ROAD.scene!;
   const HEAP = { x: 7, y: 3 };
   const heap = authored.ground.find(
@@ -446,7 +446,7 @@ it('keeps a registered heap drawn while its cell still gives cover', () => {
   // The mud's expiry: its duration runs out and the cell is bare.
   grid = withSurface(grid, HEAP, null);
   for (const state of [muddy, grid]) {
-    expect(positionHasCover(CONTENT, state, HEAP)).toBe(true);
+    expect(positionHasCover(CONTENT, state, HEAP)).toBe(false);
     expect(sceneForGrid(authored, state).ground).toContain(heap);
   }
 });

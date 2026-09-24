@@ -1,8 +1,10 @@
 import { describe, expect, it } from 'vitest';
 import { CONTENT } from '../../content';
+import { FOREST_ROAD } from '../../content/maps/combat';
 import type { Grid, SurfaceId } from '../types';
-import { DEFAULT_TILE, tileAt, withSurface } from './grid';
-import { tickSurfaces } from './surfaces';
+import { positionHasCover } from './damage';
+import { DEFAULT_TILE, buildGrid, tileAt, withSurface } from './grid';
+import { applyImpact, tickSurfaces } from './surfaces';
 
 function openGrid(width: number, height: number): Grid {
   return { width, height, tiles: Array.from({ length: width * height }, () => DEFAULT_TILE) };
@@ -57,5 +59,33 @@ describe('tickSurfaces', () => {
     const reaction = tickSurfaces(CONTENT, start);
     expect(reaction.grid).toBe(start);
     expect(reaction.changes).toEqual([]);
+  });
+});
+
+describe('rubble cover', () => {
+  /*
+   * The forest heap cell is authored `r`: rubble on spoil. Cover is not a
+   * permanent property of that tile — it comes from the live surface's
+   * `grantsCover` — so a cell water turns to mud, or one whose rubble has
+   * cleared, must stop giving cover.
+   */
+  const HEAP = { x: 7, y: 3 };
+
+  it('grants cover from the live rubble surface', () => {
+    const grid = buildGrid(FOREST_ROAD);
+    expect(tileAt(grid, HEAP)?.cover ?? false).toBe(false);
+    expect(tileAt(grid, HEAP)?.surface?.id).toBe('rubble');
+    expect(positionHasCover(CONTENT, grid, HEAP)).toBe(true);
+  });
+
+  it('stops granting cover once water turns the rubble to mud', () => {
+    const muddy = applyImpact(CONTENT, buildGrid(FOREST_ROAD), [HEAP], 'water').grid;
+    expect(tileAt(muddy, HEAP)?.surface?.id).toBe('mud');
+    expect(positionHasCover(CONTENT, muddy, HEAP)).toBe(false);
+  });
+
+  it('stops granting cover once the rubble clears', () => {
+    const cleared = withSurface(buildGrid(FOREST_ROAD), HEAP, null);
+    expect(positionHasCover(CONTENT, cleared, HEAP)).toBe(false);
   });
 });

@@ -319,13 +319,13 @@ for (const renderer of ['canvas', 'webgl'])
     // bank is the fainter of the two (this host counted 44 changed pixels to
     // Canvas's 314), so the floor sits well under it and well over the zero the
     // unbanked comparison above reads. The heap itself stays drawn under the
-    // mud's wash: the authored cell keeps `cover`, whatever its surface.
+    // mud's wash: the heap art is registered to the cell, not to its cover.
     await set([[HEAP, { id: 'mud', duration: 3, spread: 0 }]]);
     const mud = await probe();
     expect(changed(beside, mud, edge), 'bank against the mud').toBeGreaterThan(15);
     expect(changed(beside, mud, heap), 'mud wash over the heap').toBeGreaterThan(40);
-    // The mud expires. The cell is still cover, so the heap stands exactly as
-    // the live heap does, wash and all stood down.
+    // The mud expires. The heap stands exactly as the live heap does, wash and
+    // all stood down.
     await set([
       [HEAP, null],
       [WEST, null],
