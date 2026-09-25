@@ -238,6 +238,9 @@ Never run `npx playwright install` in the dev container — Chromium is already 
   `FNT_E2E_WEBKIT=1`). The dev container has Chromium alone; never run
   `playwright install` there. Playwright's WebKit is the engine, not Safari:
   Home Screen behaviour stays on the manual checklist.
+- **Two local clones must not share one preview server.** Outside CI Playwright
+  reuses whatever already listens on the port, so the second clone needs
+  `FNT_E2E_PORT=4191 npm run e2e`; the default stays 4173.
 - **Pinch cannot be synthesised by Playwright.** `e2e/gestures.spec.ts`
   dispatches two-pointer `PointerEvent`s at the canvas instead, which is why
   the pointer adapter guards `setPointerCapture` in a try/catch.

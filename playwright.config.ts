@@ -31,6 +31,23 @@ const SURFACE_VIEWPORT = viewportOverride
   : { width: 1368, height: 912 };
 
 /**
+ * Two clones (or a clone and a review worktree) must not share one preview
+ * server: outside CI Playwright reuses a server already listening on the port,
+ * so a second clone would silently test the first clone's build. FNT_E2E_PORT
+ * moves it; a malformed value throws instead of falling back to 4173.
+ */
+const configuredPort = process.env.FNT_E2E_PORT ?? '4173';
+if (!/^\d+$/.test(configuredPort) || Number(configuredPort) < 1 || Number(configuredPort) > 65535) {
+  throw new Error(
+    `FNT_E2E_PORT must be an integer port between 1 and 65535, got ${JSON.stringify(
+      process.env.FNT_E2E_PORT,
+    )}.`,
+  );
+}
+const PORT = Number(configuredPort);
+const ORIGIN = `http://127.0.0.1:${PORT}`;
+
+/**
  * The container ships Chromium at PLAYWRIGHT_BROWSERS_PATH; never run
  * `playwright install` here. Tests run against the *production* build so the
  * service worker and the PWA manifest are exercised the same way the Surface
@@ -50,7 +67,7 @@ export default defineConfig({
   maxFailures: process.env.CI ? 1 : 0,
   reporter: process.env.CI ? [['github'], ['html', { open: 'never' }]] : [['list']],
   use: {
-    baseURL: 'http://127.0.0.1:4173',
+    baseURL: ORIGIN,
     // Continuous trace screenshots stall software WebGL through GPU readback.
     // Keep DOM/action traces and the separate failure screenshot; the required
     // gallery remains the visual regression artifact.
@@ -91,8 +108,8 @@ export default defineConfig({
       : []),
   ],
   webServer: {
-    command: 'npm run build && npm run preview -- --port 4173 --host 127.0.0.1',
-    url: 'http://127.0.0.1:4173',
+    command: `npm run build && npm run preview -- --port ${PORT} --host 127.0.0.1`,
+    url: ORIGIN,
     reuseExistingServer: !process.env.CI,
     timeout: 180_000,
   },

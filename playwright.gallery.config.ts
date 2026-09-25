@@ -17,6 +17,22 @@ const PREINSTALLED_CHROMIUM = '/opt/pw-browsers/chromium';
 const executablePath = existsSync(PREINSTALLED_CHROMIUM) ? PREINSTALLED_CHROMIUM : undefined;
 const launchOptions = executablePath ? { executablePath } : {};
 
+/**
+ * The same preview server and the same trap as the e2e suite: outside CI this
+ * config reuses a server already listening on the port, so the gallery moves
+ * with FNT_E2E_PORT too (see playwright.config.ts).
+ */
+const configuredPort = process.env.FNT_E2E_PORT ?? '4173';
+if (!/^\d+$/.test(configuredPort) || Number(configuredPort) < 1 || Number(configuredPort) > 65535) {
+  throw new Error(
+    `FNT_E2E_PORT must be an integer port between 1 and 65535, got ${JSON.stringify(
+      process.env.FNT_E2E_PORT,
+    )}.`,
+  );
+}
+const PORT = Number(configuredPort);
+const ORIGIN = `http://127.0.0.1:${PORT}`;
+
 const chromium = {
   ...devices['Desktop Chrome'],
   hasTouch: true,
@@ -34,7 +50,7 @@ export default defineConfig<GalleryOptions>({
   retries: 0,
   reporter: [['list']],
   use: {
-    baseURL: 'http://127.0.0.1:4173',
+    baseURL: ORIGIN,
     trace: 'retain-on-failure',
     renderer: 'canvas',
   },
@@ -66,8 +82,8 @@ export default defineConfig<GalleryOptions>({
     },
   ],
   webServer: {
-    command: 'npm run build && npm run preview -- --port 4173 --host 127.0.0.1',
-    url: 'http://127.0.0.1:4173',
+    command: `npm run build && npm run preview -- --port ${PORT} --host 127.0.0.1`,
+    url: ORIGIN,
     reuseExistingServer: !process.env.CI,
     timeout: 180_000,
   },
