@@ -42,6 +42,10 @@ Never run `playwright install` in the dev container: Chromium is preinstalled at
 `PLAYWRIGHT_BROWSERS_PATH`. On a machine of your own, `npx playwright install
 webkit` once, then `FNT_E2E_WEBKIT=1 npm run e2e`.
 
+Two local clones must not share one preview server: outside CI Playwright
+reuses a server already on the port, so run the second one with
+`FNT_E2E_PORT=4191 npm run e2e` (default 4173, as in CI).
+
 ## Manual iPad checklist
 
 Run against the deployed Pages URL before a release tag. Record the iPad
