@@ -37,6 +37,8 @@ describe('save format 4: world.clock and world.talk (ADR 0047 W1)', () => {
         cleared: [],
         clock: { day: 3, phase: 'evening' },
         talk: { npcId: 'shopkeeper_gao', mapId: 'ba_dan_village', anchor: 'bd02.shopfront' },
+        residentProfiles: {},
+        runoff: 'unresolved',
       },
     };
     const result = deserialize(serialize(state, META));
@@ -65,18 +67,20 @@ describe('save format 4: world.clock and world.talk (ADR 0047 W1)', () => {
       session: META.session,
     };
     const migrated = migrate(blob) as { format: number; state: { world: unknown } };
-    expect(migrated.format).toBe(4);
+    expect(migrated.format).toBe(5);
     expect(migrated.state.world).toEqual({
       returnPos: {},
       fired: [],
       cleared: [],
       clock: { day: 1, phase: 'afternoon' },
       talk: null,
+      residentProfiles: {},
+      runoff: 'unresolved',
     });
 
     const result = deserialize(JSON.stringify(blob));
     if (!result.ok) throw new Error(result.error);
-    expect(result.blob.format).toBe(4);
+    expect(result.blob.format).toBe(5);
   });
 
   it('migrates a format-3 village save to evening', () => {
@@ -143,10 +147,11 @@ describe('save format 4: world.clock and world.talk (ADR 0047 W1)', () => {
     expect(loaded.screen).not.toBe('dialogue');
   });
 
-  it('migrates a format-1 save all the way to format 4, with the phase taken from mapId', () => {
+  it('migrates a format-1 save all the way to format 5, with the phase taken from mapId', () => {
     // format 1 -> 2 (disciplines) -> 3 (world.returnPos/fired/cleared) -> 4
-    // (world.clock/talk), all inside one migrate() call - the same
-    // mapId-keyed phase the format-3 tests above exercise directly.
+    // (world.clock/talk) -> 5 (world.residentProfiles/runoff), all inside one
+    // migrate() call - the same mapId-keyed phase the format-3 tests above
+    // exercise directly.
     const state = createGame(CONTENT, {
       seed: 7,
       party: [{ characterId: 'kaya' }],
@@ -170,19 +175,21 @@ describe('save format 4: world.clock and world.talk (ADR 0047 W1)', () => {
       format: number;
       state: { version: number; world: unknown };
     };
-    expect(migrated.format).toBe(4);
-    expect(migrated.state.version).toBe(4);
+    expect(migrated.format).toBe(5);
+    expect(migrated.state.version).toBe(5);
     expect(migrated.state.world).toEqual({
       returnPos: {},
       fired: [],
       cleared: [],
       clock: { day: 1, phase: 'afternoon' },
       talk: null,
+      residentProfiles: {},
+      runoff: 'unresolved',
     });
 
     const result = deserialize(JSON.stringify(blob));
     if (!result.ok) throw new Error(result.error);
-    expect(result.blob.format).toBe(4);
+    expect(result.blob.format).toBe(5);
   });
 
   it('rejects a save with a bad phase or day < 1', () => {

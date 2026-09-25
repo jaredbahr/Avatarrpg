@@ -1,5 +1,5 @@
 /**
- * Format-3 saves, loaded into format 4 with the new Ba Dan residents
+ * Format-3 saves, loaded into format 5 with the new Ba Dan residents
  * (ADR 0047 §2/§4, W5a/W5c).
  *
  * Ba Dan's residents arrived after save format 4: a format-3 blob has no
@@ -197,7 +197,7 @@ function load(json: string): GameState {
   return reconcileWorld(CONTENT, reconcileDisciplines(CONTENT, stateFromBlob(result.blob)));
 }
 
-describe('a format-3 save loads into format 4 with Ba Dan’s residents', () => {
+describe('a format-3 save loads into format 5 with Ba Dan’s residents', () => {
   for (const cls of CLASSES) {
     it(cls.name, () => {
       for (const scenario of SCENARIOS) {
@@ -205,7 +205,7 @@ describe('a format-3 save loads into format 4 with Ba Dan’s residents', () => 
         const fixture = format3(cls, scenario);
         const loaded = load(fixture.json);
 
-        expect(loaded.version, label).toBe(4);
+        expect(loaded.version, label).toBe(5);
         expect(loaded.world.clock.phase, label).toBe(scenario.phase);
         expect(loaded.world.talk, label).toBeNull();
         expect(resolveResidents(CONTENT, loaded).diagnostics, label).toEqual([]);

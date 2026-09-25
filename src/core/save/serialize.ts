@@ -13,11 +13,11 @@
  */
 
 import { z } from 'zod';
-import { DAY_PHASES } from '../types';
+import { DAY_PHASES, RESIDENT_PROFILES, RUNOFF_STATES } from '../types';
 import type { GameState } from '../types';
 import { MAX_BANKED_TOTAL_AP } from '../rules/stats';
 
-export const SAVE_FORMAT_VERSION = 4;
+export const SAVE_FORMAT_VERSION = 5;
 export const SAVE_MAGIC = 'four-nations-tactics';
 
 /* ------------------------------------------------------------------ */
@@ -27,6 +27,10 @@ export const SAVE_MAGIC = 'four-nations-tactics';
 const vec2 = z.object({ x: z.number().int(), y: z.number().int() });
 
 const dayPhase = z.enum(DAY_PHASES);
+
+const residentProfile = z.enum(RESIDENT_PROFILES);
+
+const runoffState = z.enum(RUNOFF_STATES);
 
 const statusInstance = z.object({
   id: z.string(),
@@ -151,6 +155,13 @@ const gameState = z.object({
     cleared: z.array(z.string()),
     clock: z.object({ day: z.number().int().min(1), phase: dayPhase }),
     talk: z.object({ npcId: z.string(), mapId: z.string(), anchor: z.string() }).nullable(),
+    /*
+     * Deliberately no `.default()`. A format-5 blob that is missing either of
+     * these is damaged — the migration below is the only thing that may add
+     * them, and it adds them to a format-4 blob, which never had them.
+     */
+    residentProfiles: z.record(residentProfile),
+    runoff: runoffState,
   }),
   log: z.array(z.string()),
 });
@@ -276,7 +287,41 @@ export function migrate(raw: unknown): unknown {
     }
   }
 
+  if (blob.format === 4) blob = migrateToFormat5(blob);
+
   return blob;
+}
+
+/**
+ * Format 4 -> 5: the living-world profile map and the quarry runoff state.
+ *
+ * Both are additive and neither has a value a format-4 save could have implied,
+ * so this is the whole migration: every resident starts unrecorded and the runoff
+ * starts unresolved, exactly as a new game does. It reads nothing else — not the
+ * location, the flags, `story.visited`, the clock, portraits, sprites or
+ * `world.ducks_seen` — because nothing in a format-4 blob is evidence about
+ * either field. Anything that *did* read them would be inventing play the player
+ * never did, and would have to be undone the first time a real rule disagreed.
+ */
+function migrateToFormat5(blob: Record<string, unknown>): Record<string, unknown> {
+  const state = blob.state;
+  if (typeof state !== 'object' || state === null) return { ...blob, format: 5 };
+  const s = state as Record<string, unknown>;
+  const world = s.world;
+
+  return {
+    ...blob,
+    format: 5,
+    state: {
+      ...s,
+      version: 5,
+      world: {
+        ...(typeof world === 'object' && world !== null ? world : {}),
+        residentProfiles: {},
+        runoff: 'unresolved',
+      },
+    },
+  };
 }
 
 /**
