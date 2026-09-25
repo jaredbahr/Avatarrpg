@@ -6,7 +6,7 @@ export const DRILLER_GROUND_REGIONS = [
     y: 94,
     width: 1282,
     height: 644,
-    bytes: 42066,
+    bytes: 43254,
   },
   {
     name: 'dirt-east',
@@ -14,7 +14,7 @@ export const DRILLER_GROUND_REGIONS = [
     y: 300,
     width: 1256,
     height: 630,
-    bytes: 42132,
+    bytes: 43322,
   },
   {
     name: 'stone',
@@ -33,7 +33,7 @@ export const CUTTING_GROUND_REGIONS = [
     y: 94,
     width: 1218,
     height: 612,
-    bytes: 26388,
+    bytes: 35572,
   },
   {
     name: 'dirt-east',
@@ -41,7 +41,7 @@ export const CUTTING_GROUND_REGIONS = [
     y: 332,
     width: 1064,
     height: 534,
-    bytes: 26300,
+    bytes: 36586,
   },
   {
     name: 'road',
@@ -49,7 +49,7 @@ export const CUTTING_GROUND_REGIONS = [
     y: 126,
     width: 1538,
     height: 772,
-    bytes: 28402,
+    bytes: 27448,
   },
   {
     name: 'stone',

@@ -66,18 +66,18 @@ yet opted into the map, so integrated rendering and tactical checks are pending.
 
 The two rubble cells, (7,3) and (8,9), used to be holes in the ground plates:
 `grass-north`, `grass-south` and `route-ground` left every `r` cell clear, so
-the bare terrain (legend `r`, sand `#a89880`) showed round the heap as a flat
+the bare terrain (legend `r`, sand `#c7a87d`) showed round the heap as a flat
 tan diamond with ruled edges, on both backends. Now the ground plates paint
-those cells like the verge round them, including the road's ink line and
-feathered join, and ask `spillAt` in `scripts/art/forest-rubble.ts` wherever
+those cells like the verge round them, with an uninked feathered join to the
+road, and ask `spillAt` in `scripts/art/forest-rubble.ts` wherever
 they would paint verge. Round each heap the verge gives way to the heap's
-**spill**: the DL-2 §3 spoil key (`#a89880` / `#857762`, rim `#c2b49c`) read
+**spill**: the amended DL-2 §3 spoil key (`#c7a87d` / `#8e7049`, rim `#d8cbb0`) read
 through the courtyard lawn's structure. That is the `spill` tone in
 `forest-village-material.ts`, the same material as the quarry's spoil terrace.
 The spill covers the cell the live rubble wash lies on and carries on past its
 edges. Over a band about a quarter of a cell wide it breaks up into the grass,
 in clumps and round the lawn's own painted tufts, so its edge never runs along
-the cell's diamond. It ends on the road's ink line.
+the cell's diamond. It feathers into the road without an ink line.
 
 `rubble.webp` now carries only what stands on that ground: the pile and its
 contact shadow. Loose stones may only sit at the front of the pile, well away

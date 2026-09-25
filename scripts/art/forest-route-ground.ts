@@ -15,7 +15,7 @@
  * Three materials, not two: the packed-earth road, the Earth-family verge, and
  * path wear along the cart ruts. Each is exactly two flat tones plus a thin
  * pale rim, so there is no continuous tone left for a gradient to hide in, and
- * every road/verge boundary carries the bible's uniform `#1b1410` ink.
+ * road and verge feather together without ink; gameplay objects own their edges.
  */
 import { mkdirSync, writeFileSync } from 'node:fs';
 import { FOREST_ROAD } from '../../src/content/maps/combat';
@@ -28,16 +28,6 @@ import { encodeWebp } from './lib/webp';
 import { spillAt } from './forest-rubble';
 
 export const FOREST_ROUTE_GROUND = { x: 128, y: 32, width: 1984, height: 960 } as const;
-/**
- * One logical tile is 64x32 scene pixels, so a step of one tile across either
- * kind of cell edge is sqrt(64^2 + 32^2) ~= 71.6 screen pixels. The bible's
- * 2 px ink at a 64 px tile is therefore 0.014 of a tile either side, and the
- * pale rim beside it is three more pixels.
- */
-const TILE_DIAGONAL = Math.hypot(64, 32);
-const INK_HALF = 1 / TILE_DIAGONAL;
-const RIM_WIDTH = 3 / TILE_DIAGONAL;
-
 function clamp(value: number): number {
   return Math.max(0, Math.min(1, value));
 }
@@ -73,12 +63,9 @@ export function packRouteGround(material: ForestMaterial): Image {
       if (!painted(key) || ix < 0 || ix >= 20 || iy < 3 || iy > 9) continue;
       const road = key === '=';
 
-      // Distance to the nearest boundary with the *other* walkable material, and
-      // whether that boundary is the region's up-screen edge, which is the lit
-      // one in this projection and therefore the one that carries the rim.
+      // Plain road and verge materials feather into one another without ink.
+      // Gameplay boundaries are carried by their own pond, shelf and heap art.
       let mix = 0;
-      let edge = Infinity;
-      let lit = false;
       for (const [ox, oy] of [
         [-1, 0],
         [1, 0],
@@ -96,16 +83,12 @@ export function packRouteGround(material: ForestMaterial): Image {
         // on *which* of the two flat tones a pixel takes rather than on blending
         // them, so the join is soft without inventing a third, intermediate key.
         mix = Math.max(mix, 0.5 * clamp((width - edgeDistance) / width));
-        if (edgeDistance < edge) {
-          edge = edgeDistance;
-          lit = ox < 0 || oy < 0;
-        }
       }
 
       const swapped = tileNoise(px, py, 5) < mix;
       const onRoad = swapped ? !road : road;
       // Round a rubble heap the verge gives way to the spill it has shed; the
-      // road keeps its own edge and ink, so the spill ends on the road's line.
+      // road remains a plain-material join while the heap itself carries cover ink.
       const tone: ToneName = onRoad
         ? material.worn(x, y)
           ? 'wear'
@@ -120,12 +103,7 @@ export function packRouteGround(material: ForestMaterial): Image {
       const featherWidth = 0.26 + 0.06 * (0.5 + 0.5 * Math.sin(x * 5.9 + y * 3.7));
       const alpha = key === ',' ? Math.round(255 * clamp(outerDistance / featherWidth)) : 255;
 
-      const rgb =
-        edge < INK_HALF
-          ? material.ink
-          : lit && edge < INK_HALF + RIM_WIDTH
-            ? material.rimOf(tone)
-            : material.colour(tone, x, y);
+      const rgb = material.colour(tone, x, y);
       setPixel(image, px, py, [rgb[0], rgb[1], rgb[2], alpha]);
     }
   return image;

@@ -52,7 +52,7 @@ export const FOREST_GROUND_TONES = {
  * be amended on Jared's call; that is this one edit and a repack of the plates
  * that paint it.
  */
-export const SPOIL_TONES = { base: '#a89880', shadow: '#857762', rim: '#c2b49c' } as const;
+export const SPOIL_TONES = { base: '#c7a87d', shadow: '#8e7049', rim: '#d8cbb0' } as const;
 
 /**
  * The rest of the DL-2 §3 table, for the forest pieces W2 left on the old
@@ -66,9 +66,9 @@ export const SPOIL_TONES = { base: '#a89880', shadow: '#857762', rim: '#c2b49c' 
  *   road's own family gone damp rather than a fourth earth.
  * - `bed` is the §3 **bed** `#2a5e77` with a deeper second flat tone, the
  *   palette's own deep-water edge `#173b4c` (`TERRAIN_STYLES.water_deep` in
- *   `src/render/palettes.ts`); its pale entry is the §3 waterline **edge**
- *   `#7ec8e3`, which is painted only as the thin wet line against the bank,
- *   never as field incident.
+ *   `src/render/palettes.ts`). The pale `#7ec8e3` entry remains only as a legacy
+ *   palette light: W5 removed it from the plate, and the gameplay hazard shore
+ *   carries bible ink directly against the bed.
  * - `spoil` is §3 quarry spoil / rubble with its chip highlight.
  * - `stone` is the §3 cut stone block face. Its pale rim is the limestone row's
  *   `#efe6d2`; its joint is the cut-stone row's `#8a7d66` tool-mark, which the

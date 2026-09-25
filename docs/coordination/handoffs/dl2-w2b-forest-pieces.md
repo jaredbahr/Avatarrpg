@@ -11,6 +11,13 @@ were the odd material. **No art was generated in this run**; every pixel below
 comes from `forest-village-material.ts`, which re-derives the forest's ground
 from the two approved Ba Dan plates.
 
+> **Current contract (2026-09-25).** This delivery record preserves the tones it
+> originally shipped, but its palette notes are superseded. PR 101 removed the
+> pale `#7ec8e3` waterline band; the hazard shore now carries only the bible ink
+> and the wet bank meets the two-tone bed directly. The spoil row is now
+> `#c7a87d` / `#8e7049` with chip `#d8cbb0`, and plain-material joins carry no
+> ink. See the art bible's DL-2 section 3 table.
+
 ## What changed
 
 1. **`scripts/art/forest-village-material.ts`** gains the rest of the DL-2 §3

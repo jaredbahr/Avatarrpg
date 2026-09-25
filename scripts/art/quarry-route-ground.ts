@@ -15,9 +15,9 @@
  * DL-2 W3 re-keys it the way W2 re-keyed the forest: the pixels come from
  * `quarry-village-material.ts`, which reads its structure from the two approved
  * Ba Dan plates and applies the §3 ground table. Five materials, each exactly
- * two flat tones plus a thin pale rim, the bible's uniform `#1b1410` ink on
- * every boundary between two of them, and painted incident — spoil heaps and
- * haul ruts — inside the earth plane so no quarter-frame of it is bare.
+ * two flat tones plus a thin pale rim, the bible's uniform `#1b1410` ink only
+ * on hazard, cover and elevation boundaries, and painted incident — spoil heaps
+ * and haul ruts — inside the earth plane so no quarter-frame of it is bare.
  *
  * DL-2 W4 folds The Cutting in through the same table. The Cutting is the
  * gate's road layout cut between ledges, so it takes the gate's reading of that
@@ -248,11 +248,13 @@ export function packQuarryGround(
         const other = materialOf(neighbourKey);
         if (!other || other === own) continue;
         const edgeDistance = ox < 0 ? gx - x : ox > 0 ? x + 1 - gx : oy < 0 ? gy - y : y + 1 - gy;
-        if (edgeDistance < edge) {
-          edge = edgeDistance;
-          lit = ox < 0 || oy < 0;
+        if (!plain(key) || !plain(neighbourKey)) {
+          if (edgeDistance < edge) {
+            edge = edgeDistance;
+            lit = ox < 0 || oy < 0;
+          }
+          continue;
         }
-        if (!plain(key) || !plain(neighbourKey)) continue;
         const width = 0.16 + 0.03 * (0.5 + 0.5 * Math.sin(x * 4.1 + y * 6.7));
         // Both materials meet at the same 50/50 midpoint. The smoothstep is
         // spent on *which* of the two flat tones a pixel takes rather than on

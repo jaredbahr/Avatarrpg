@@ -25,13 +25,15 @@ const SPOIL = [TERRAIN_STYLES.sand.fill, TERRAIN_STYLES.sand.edge, TERRAIN_STYLE
 const INK = NEUTRAL_PALETTE.ink;
 /** The §3 grounds a live rubble patch can land on. */
 const GROUNDS = {
-  spoil: '#a89880',
+  spoil: '#c7a87d',
   'packed earth': '#b39064',
   limestone: '#d8cbb0',
   grass: '#6f9e4c',
 } as const;
 
 it('keys the live rubble wash to the ground contract quarry spoil and the ink', () => {
+  expect(SPOIL).toEqual(['#c7a87d', '#8e7049', '#d8cbb0']);
+
   const rubble = SURFACE_STYLES.rubble;
   expect(SPOIL).toContain(rubble.fill);
   expect(SPOIL).toContain(rubble.detail);

@@ -96,6 +96,28 @@ colour-checked against these values; drift is a QA failure.
 | Ink           | `#1b1410` | —         | Every outline                              |
 | Gold          | `#d9a441` | `#f0c674` | UI accent; on a character only as a detail |
 
+### Ground language (DL-2 section 3)
+
+Ground uses the same flat-material discipline as figures. These are the route's
+authoritative material triples; generated plates, procedural fallbacks and both
+render backends must use the same values.
+
+| Ground material       | Base           | Shadow                    | Rim / detail                           |
+| --------------------- | -------------- | ------------------------- | -------------------------------------- |
+| Limestone paving      | `#d8cbb0`      | `#b3a488`                 | joints `#9a8c72`, pale rim `#efe6d2`   |
+| Packed earth road     | `#b39064`      | `#8e7049`                 | rut `#7a5f3e`, dust `#c7a87d`          |
+| Quarry spoil / rubble | `#c7a87d`      | `#8e7049`                 | chip `#d8cbb0`                         |
+| Cut stone block face  | `#cfc2a6`      | `#a2957c`                 | tool mark `#8a7d66`                    |
+| Grass verge           | `#6f9e4c`      | `#4f7538`                 | tuft `#a8c686`, wear `#b39064`         |
+| Water margin          | film `#3e8fb0` | bed `#2a5e77` / `#173b4c` | damp bank `#8e7049`; no pale waterline |
+
+**Ground ink rule.** Use `#1b1410` only where a visible ground edge communicates
+gameplay: a hazard shore, cover silhouette or elevation break. Plain materials
+feather into one another without ink. In particular, road-to-verge,
+road-to-spoil and spoil-to-earth joins are not object outlines. The water hazard
+shore may carry the ink edge, but the former `#7ec8e3` waterline band is not a
+ground-material edge and must not return.
+
 ## Silhouette rules
 
 - Each character owns one signature shape readable at 40 px: a hair silhouette, a hat, a sleeve, a weapon. Two characters of the same element must differ in silhouette, not only in colour (the kits already distinguish `lean`, `broad` and `robed` builds; the art keeps that).

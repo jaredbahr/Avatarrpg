@@ -7,7 +7,6 @@ import { encodeWebp } from './lib/webp';
 import {
   FOREST_GROUND_QUALITY,
   FOREST_GROUND_TONES,
-  FOREST_INK,
   FOREST_PIECE_TONES,
   loadForestMaterial,
 } from './forest-village-material';
@@ -36,8 +35,8 @@ it('ships the route plate the packer builds, inside the texture cap', async () =
   );
 });
 
-it('paints only the three named materials, the heap spill, their rims and the ink', () => {
-  const allowed = new Set<string>([FOREST_INK]);
+it('paints only the three named materials, the heap spill and their rims', () => {
+  const allowed = new Set<string>();
   for (const tone of Object.values(FOREST_GROUND_TONES))
     for (const hex of Object.values(tone)) allowed.add(hex);
   const spill = new Set<string>(Object.values(FOREST_PIECE_TONES.spill));
@@ -83,7 +82,7 @@ it('carries no baked gradient and stays in the village tone band', () => {
   expect(Math.max(village / m.mean, m.mean / village)).toBeLessThan(1.3);
 });
 
-it('inks every road/verge boundary and leaves the holes alone', () => {
+it('leaves plain road/verge boundaries uninked and the holes clear', () => {
   const ink = toHex([0x1b, 0x14, 0x10]);
   let inked = 0;
   const centre = (x: number, y: number) => ({
@@ -93,9 +92,8 @@ it('inks every road/verge boundary and leaves the holes alone', () => {
   for (let i = 0; i < image.data.length; i += 4)
     if (toHex([image.data[i] ?? 0, image.data[i + 1] ?? 0, image.data[i + 2] ?? 0]) === ink)
       inked++;
-  // Rows 3|4 and 8|9 run the length of the board, plus the x11|12 joins in the
-  // pond rows: a few thousand pixels of 2 px line, not a stray fleck.
-  expect(inked).toBeGreaterThan(2_000);
+  // The pond, shelf and rubble carry their own gameplay-boundary art.
+  expect(inked).toBe(0);
 
   for (const cell of FOREST_WATER_CELLS) {
     const { px, py } = centre(cell.x, cell.y);
