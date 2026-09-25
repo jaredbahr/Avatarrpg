@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { CONTENT, CONTENT_BUNDLE, STORY_ENTRY } from './index';
 import { conditionSchema, mapSchema, storyNodeSchema, validateContent } from './schemas';
+import type { ContentBundle } from './schemas';
 import { ELEMENTS } from './elements';
 import { resolveAsset } from './assets/manifest';
 import { combinedKit } from '../core/rules/leveling';
@@ -86,6 +87,45 @@ describe('content', () => {
     expect(problems).toContain(
       'story node "unknown_profile_completion" writes unknown resident profile "lw.npc.unknown"',
     );
+  });
+
+  /*
+   * The Slice B returnees are placeholder actors: their NPC binding points at
+   * their map's explore hub on purpose, and `validateContent` defers exactly
+   * those by name. That deferral used to be pre-empted by a generic exemption in
+   * the presentation validator, so any resident could be pointed at the hub and
+   * still pass — Dorin tapped without a conversation, silently bounced into
+   * exploration. The exemption is gone; only the profile-backed case is allowed.
+   */
+  it('rejects an ordinary resident pointed at the explore hub, but defers the returnees', () => {
+    const missingPresentation = (bundle: ContentBundle) =>
+      validateContent(bundle).filter((problem) => problem.includes('has no story presentation'));
+    const village = CONTENT_BUNDLE.maps.find((map) => map.id === 'ba_dan_village');
+    const dorin = village?.npcs.find((npc) => npc.id === 'guard_dorin');
+    if (!village || !dorin) throw new Error('Missing village Dorin');
+    expect(dorin.resident).toBe('lw.npc.dorin');
+    expect(dorin.node).toBe('dorin_directions');
+
+    // The five returnees are profile-backed and keep their exemption.
+    expect(missingPresentation(CONTENT_BUNDLE)).toEqual([]);
+
+    expect(
+      missingPresentation({
+        ...CONTENT_BUNDLE,
+        maps: CONTENT_BUNDLE.maps.map((map) =>
+          map.id === village.id
+            ? {
+                ...map,
+                npcs: map.npcs.map((npc) =>
+                  npc === dorin ? { ...npc, node: 'village_explore' } : npc,
+                ),
+              }
+            : map,
+        ),
+      }),
+    ).toEqual([
+      'map "ba_dan_village" npc "guard_dorin" conversation "village_explore" has no story presentation',
+    ]);
   });
 
   it('only resumes an end screen at an existing exploration node', () => {

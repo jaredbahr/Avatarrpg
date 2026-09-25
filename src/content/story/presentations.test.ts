@@ -1,13 +1,45 @@
 import { describe, expect, it } from 'vitest';
 import { DISCOVERIES } from '../maps/discoveries';
-import { CONTENT, CONTENT_BUNDLE } from '../index';
+import { CONTENT, CONTENT_BUNDLE, RETURNEE_IDS } from '../index';
 import { createGame } from '../../core/state/createGame';
-import type { GameState } from '../../core/types';
+import type { GameState, StoryNode } from '../../core/types';
 import {
   STORY_PRESENTATIONS,
   validateStoryPresentations,
   worldConversationFor,
 } from './presentations';
+
+/**
+ * The profile-backed Slice B placeholders, named the way the validator names
+ * them: an NPC bound to a returnee resident whose conversation is its map's
+ * explore hub. `validateContent` defers exactly these by name.
+ */
+function placeholderProblems(): string[] {
+  const exploreMap = new Map(
+    CONTENT_BUNDLE.story
+      .filter((node): node is Extract<StoryNode, { kind: 'explore' }> => node.kind === 'explore')
+      .map((node) => [node.id, node.mapId] as const),
+  );
+  return CONTENT_BUNDLE.maps.flatMap((map) =>
+    map.npcs
+      .filter(
+        (npc) =>
+          npc.resident !== undefined &&
+          (RETURNEE_IDS as readonly string[]).includes(npc.resident) &&
+          exploreMap.get(npc.node) === map.id,
+      )
+      .map(
+        (npc) =>
+          'map "' +
+          map.id +
+          '" npc "' +
+          npc.id +
+          '" conversation "' +
+          npc.node +
+          '" has no story presentation',
+      ),
+  );
+}
 
 function conversation(
   nodeId: string,
@@ -29,9 +61,11 @@ function conversation(
 
 describe('world conversation presentations', () => {
   it('validates every explicit and generated presentation against content', () => {
+    // The returnee placeholders are the only NPC conversations that go without
+    // one, and `validateContent` defers precisely those.
     expect(
       validateStoryPresentations(STORY_PRESENTATIONS, CONTENT_BUNDLE.story, CONTENT_BUNDLE.maps),
-    ).toEqual([]);
+    ).toEqual(placeholderProblems());
 
     for (const discovery of DISCOVERIES) {
       expect(STORY_PRESENTATIONS['discover_' + discovery.id]).toEqual({
@@ -43,6 +77,31 @@ describe('world conversation presentations', () => {
         mapId: discovery.map,
       });
     }
+  });
+
+  /*
+   * A resident NPC standing on its own map's explore hub is a silent bounce to
+   * exploration, not a conversation: tapping them does nothing. Only the
+   * profile-backed returnees are meant to sit like that, and that exception is
+   * `validateContent`'s to make, so an ordinary resident must be rejected here.
+   */
+  it('rejects an ordinary resident bound to its map explore node', () => {
+    const village = CONTENT_BUNDLE.maps.find((map) => map.id === 'ba_dan_village');
+    const dorin = village?.npcs.find((npc) => npc.id === 'guard_dorin');
+    if (!village || !dorin) throw new Error('Missing village Dorin');
+    const maps = CONTENT_BUNDLE.maps.map((map) =>
+      map === village
+        ? {
+            ...map,
+            npcs: map.npcs.map((npc) =>
+              npc === dorin ? { ...npc, node: 'village_explore' } : npc,
+            ),
+          }
+        : map,
+    );
+    expect(validateStoryPresentations(STORY_PRESENTATIONS, CONTENT_BUNDLE.story, maps)).toContain(
+      'map "ba_dan_village" npc "guard_dorin" conversation "village_explore" has no story presentation',
+    );
   });
 
   it('retains the map only for an exact eligible location and screen', () => {

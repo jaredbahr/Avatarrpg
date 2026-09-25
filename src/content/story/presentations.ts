@@ -184,10 +184,11 @@ export function validateStoryPresentations(
       for (const nodeId of [npc.node, ...(npc.routes ?? []).map((route) => route.node)]) {
         const presentation = registry[nodeId];
         if (!presentation) {
-          const node = storyById.get(nodeId);
-          // Profile-owned placeholder actors may deliberately bounce to the
-          // current exploration hub until their dialogue ships in a later wave.
-          if (npc.resident && node?.kind === 'explore' && node.mapId === map.id) continue;
+          // Every NPC conversation needs a presentation. The profile-backed
+          // Slice B placeholders are the one intended exception, and
+          // `validateContent` defers those by name; exempting resident NPCs
+          // here instead would be wider than the returnee case and would hide
+          // a resident silently bouncing to exploration when tapped.
           problems.push(
             'map "' +
               map.id +
