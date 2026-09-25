@@ -1331,6 +1331,12 @@ export class PixiBackend implements RenderBackend {
       );
       const width = unit.size === 2 ? TILE * 2 : TILE;
       const facing = unit.facing ?? (unit.faction === 'enemy' ? -1 : 1);
+      const asset = resolveAsset(unit.sprite);
+      const locomotion = unit.clip ?? 'idle';
+      const drawFacing =
+        asset.kind === 'sheet' && asset.facing === 'both' && /^(idle|walk|rest)/.test(locomotion)
+          ? 1
+          : facing;
 
       live.add(unit.id);
       const sprite = this.unitSprite(unit.id);
@@ -1368,7 +1374,7 @@ export class PixiBackend implements RenderBackend {
         sprite.position.set(x + width / 2, y + FOOT_LINE * TILE);
         sprite.width = (frame.frame.w / frame.pixelsPerTile) * TILE * scale;
         sprite.height = (frame.frame.h / frame.pixelsPerTile) * TILE * scale;
-        sprite.scale.x = Math.abs(sprite.scale.x) * facing;
+        sprite.scale.x = Math.abs(sprite.scale.x) * drawFacing;
       } else {
         sprite.texture = this.texture(sprites.get(unit.sprite, px * scale, { facing }, unit.size));
         sprite.anchor.set(0, 0);

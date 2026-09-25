@@ -39,6 +39,22 @@ const BOB = 0.05;
 const WALK_MS_PER_TILE = 500;
 
 /**
+ * PixelLab Kaya's measured root travel, converted to authored clip time per
+ * 128 px tile at the in-game 0.75 scale. Movement duration stays gameplay-
+ * driven; only distance-phased cel selection changes, preventing foot skating.
+ */
+const KAYA_WALK_MS_PER_TILE: Readonly<Record<WalkDirection, number>> = {
+  north: (128 / (6.38 * 0.75)) * 114,
+  northEast: (128 / (8.52 * 0.75)) * 114,
+  east: (128 / (9.66 * 0.75)) * 114,
+  southEast: (128 / (9.92 * 0.75)) * 114,
+  south: (128 / (6 * 0.75)) * 114,
+  southWest: (128 / (9.47 * 0.75)) * 114,
+  west: (128 / (9.74 * 0.75)) * 114,
+  northWest: (128 / (9.11 * 0.75)) * 114,
+};
+
+/**
  * How long a finished walk holds its settled pose before the ready stance is
  * selected. The travel already brakes to a stop (see `anim/stroll.ts`), but the
  * last stride's pose is not a stance: without this dwell the sprite cuts
@@ -118,6 +134,8 @@ export class Animator {
   /** Which way each unit last walked; a unit keeps facing that way when it stops. */
   private facings = new Map<string, 1 | -1>();
   private directions = new Map<string, WalkDirection>();
+  /** Character identity retained from scheduling for sprite-specific gait. */
+  private characters = new Map<string, string>();
   /** When each unit's last voluntary walk ended, and when its stop settles. */
   private stops = new Map<string, { readonly from: number; readonly to: number }>();
   private pendingHeadings: HeadingCue[] = [];
@@ -138,6 +156,7 @@ export class Animator {
     this.timeline.clear();
     this.facings.clear();
     this.directions.clear();
+    this.characters.clear();
     this.stops.clear();
     this.pendingHeadings = [];
     this.healthCues = [];
@@ -176,6 +195,9 @@ export class Animator {
       delayMs?: number;
     } = {},
   ): void {
+    for (const unit of unitsBefore) {
+      if (unit.characterId) this.characters.set(unit.id, unit.characterId);
+    }
     const base = options.alongside
       ? Math.max(now, this.lastCursor)
       : Math.max(now, this.timeline.finishesAt);
@@ -439,9 +461,15 @@ export class Animator {
     const alpha = pose?.alpha ? pose.alpha.from + (pose.alpha.to - pose.alpha.from) * t : 1;
     const facing = pose?.facing;
     const frame = pose?.frame;
+    let walkMsPerTile = WALK_MS_PER_TILE;
+    if (travel && this.characters.get(unitId) === 'kaya') {
+      const tangent = sampleAt(travel.track.curve, travel.distance).tangent;
+      const direction = walkDirection(screenDirection(tangent, this.projection));
+      walkMsPerTile = KAYA_WALK_MS_PER_TILE[direction];
+    }
     return {
       clip: pose ? pose.clip : bob ? 'walk' : 'idle',
-      clipTime: pose ? now - pose.start : travel ? travel.distance * WALK_MS_PER_TILE : 0,
+      clipTime: pose ? now - pose.start : travel ? travel.distance * walkMsPerTile : 0,
       offset,
       scale,
       alpha,

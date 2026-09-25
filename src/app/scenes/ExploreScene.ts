@@ -231,14 +231,14 @@ export class ExploreScene implements Scene {
         this.animatePartyBatches(plan.batches, state, now);
         continue;
       }
-      this.app.animator.push(now, [event], []);
-      const routes = trail.walk(event.path, state.party.length);
-      if (routes.length === 0) continue;
       const unitsBefore: Unit[] = state.party.map((member, index) => ({
         ...member,
         pos: before[index] ?? event.from,
         size: 1,
       }));
+      this.app.animator.push(now, [event], unitsBefore);
+      const routes = trail.walk(event.path, state.party.length);
+      if (routes.length === 0) continue;
       // One push per follower: moves in a single push play one after another,
       // and these all start where the leader's did.
       for (const route of routes) {
@@ -280,7 +280,13 @@ export class ExploreScene implements Scene {
               path: route.path,
             },
           ],
-          [],
+          [
+            {
+              ...member,
+              pos: route.from,
+              size: 1,
+            },
+          ],
           { alongside: index > 0, silentSteps: route.index !== 0, delayMs: route.delayMs },
         );
       }

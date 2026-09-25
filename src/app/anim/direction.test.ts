@@ -6,11 +6,12 @@ import type { ContentIndex } from '../../core/types';
 const content = { abilities: new Map() } as unknown as ContentIndex;
 
 describe('directional walking', () => {
-  it('keeps a diagonal corner stable, then turns when the route changes axis', () => {
-    expect(walkDirection({ x: 0.68, y: -0.72 }, 'east')).toBe('east');
-    expect(walkDirection({ x: 0.72, y: -0.68 }, 'north')).toBe('north');
+  it('selects each authored octant and retains a heading at rest', () => {
+    expect(walkDirection({ x: 0.68, y: -0.72 }, 'east')).toBe('northEast');
+    expect(walkDirection({ x: 0.72, y: 0.68 }, 'north')).toBe('southEast');
     expect(walkDirection({ x: 0.2, y: -0.98 }, 'east')).toBe('north');
     expect(walkDirection({ x: -1, y: 0 }, 'north')).toBe('west');
+    expect(walkDirection({ x: 0, y: 0 }, 'southWest')).toBe('southWest');
     expect(directionalClip('cast', 'north')).toBe('cast');
     expect(directionalClip('ko', 'south')).toBe('ko');
   });
@@ -98,10 +99,10 @@ describe('screen-facing melee contacts', () => {
 describe('oblique screen headings', () => {
   for (const reduced of [false, true]) {
     for (const [dx, dy, clip, facing] of [
-      [1, 0, 'walk', 1],
-      [0, 1, 'walk', -1],
-      [-1, 0, 'walk', -1],
-      [0, -1, 'walk', 1],
+      [1, 0, 'walkSouthEast', 1],
+      [0, 1, 'walkSouthWest', -1],
+      [-1, 0, 'walkNorthWest', -1],
+      [0, -1, 'walkNorthEast', 1],
       [1, 1, 'walkSouth', 1],
       [-1, -1, 'walkNorth', 1],
     ] as const) {
@@ -162,7 +163,7 @@ describe('oblique screen headings', () => {
     a.setProjection('oblique');
     expect(a.finishesAt).toBe(finish);
     expect(a.renderPos(200, 'p')).toEqual(pos);
-    expect(a.locomotion(200, 'p')).toEqual({ clip: 'walk', facing: -1 });
+    expect(a.locomotion(200, 'p')).toEqual({ clip: 'walkSouthWest', facing: -1 });
     a.setProjection('orthographic');
     expect(a.locomotion(200, 'p')).toEqual({ clip: 'walkSouth', facing: 1 });
   });

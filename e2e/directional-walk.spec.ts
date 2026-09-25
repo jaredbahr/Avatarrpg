@@ -67,10 +67,11 @@ for (const renderer of ['canvas', 'webgl'] as const) {
         ['North', -4],
         ['South', 4],
       ] as const) {
-        // Logical north/south projects sideways on Ba Dan's oblique basis;
+        // Logical north/south projects diagonally on Ba Dan's oblique basis;
         // riverside retains its orthographic front/back poses.
-        const walkClip = riverside ? `walk${direction}` : 'walk';
-        const restClip = riverside ? `rest${direction}` : 'rest';
+        const projectedDirection = riverside ? direction : dy < 0 ? 'NorthEast' : 'SouthWest';
+        const walkClip = `walk${projectedDirection}`;
+        const restClip = `rest${projectedDirection}`;
         const facing = riverside || dy < 0 ? 1 : -1;
         /*
          * The leader holds the walk pose for about 1.2 s of app time, and a
