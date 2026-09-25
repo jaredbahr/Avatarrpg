@@ -142,6 +142,11 @@ interface Look {
   readonly figures: readonly string[];
 }
 
+interface ResidentTap {
+  readonly npcId: string;
+  readonly pos: { readonly x: number; readonly y: number };
+}
+
 const look = (page: Page): Promise<Look> =>
   page.evaluate(() => {
     const app = window.fnt!.app;
@@ -263,6 +268,40 @@ function check(entry: Case, seen: Look): void {
   ).toEqual([]);
 }
 
+/** Tap every named resident from the same arrived state; each must open and pin itself. */
+async function checkResidentTaps(page: Page): Promise<void> {
+  const base = await page.evaluate(() => window.fnt!.app.state!);
+  const residents = await page.evaluate(() =>
+    window
+      .fnt!.app.residents.figures()
+      .filter(
+        (figure): figure is typeof figure & ResidentTap =>
+          figure.npcId !== null && figure.pos !== null,
+      )
+      .map((figure) => ({ npcId: figure.npcId, pos: figure.pos })),
+  );
+
+  for (const resident of residents) {
+    const opened = await page.evaluate(
+      ({ saved, target }) => {
+        const app = window.fnt!.app;
+        app.adoptSave(saved, undefined);
+        app.dispatch({ type: 'walkTo', pos: target.pos });
+        return {
+          screen: app.state!.screen,
+          npcId: app.state!.world.talk?.npcId ?? null,
+        };
+      },
+      { saved: base, target: resident },
+    );
+    expect(opened.screen, resident.npcId).toBe('dialogue');
+    expect(opened.npcId, resident.npcId).toBe(resident.npcId);
+  }
+
+  await page.evaluate((saved) => window.fnt!.app.adoptSave(saved, undefined), base);
+  await settled(page);
+}
+
 for (const entry of CASES) {
   for (const party of entry.parties) {
     test(`the ${entry.spot.name} at ${entry.phase} draws its roster once, with a party of ${party.length}`, async ({
@@ -271,6 +310,7 @@ for (const entry of CASES) {
       await arrive(page, entry, party);
       await advance(page, entry);
       check(entry, await look(page));
+      await checkResidentTaps(page);
     });
   }
 }

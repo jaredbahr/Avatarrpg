@@ -284,6 +284,14 @@ for (const custody of ['trade', 'escort'] as const) {
     await expect(page.locator('.dialogue-line')).toContainText('crews came past');
     await continueStory(page);
     await takeRoute(page, 'West → Ba Dan Village', 'ba_dan_village');
+    // Dorin and Hanru occupy adjacent handover tiles. From the east-road
+    // return position, tapping Dorin must open and pin Dorin, not Hanru.
+    const dorin = CONTENT.anchors.get('bd03.handover')?.site;
+    if (dorin?.kind !== 'map') throw new Error('Missing canonical Dorin handover');
+    await walkTo(page, dorin.pos.x, dorin.pos.y);
+    expect(await page.evaluate(() => window.fnt?.app.state?.story.nodeId)).toBe('dorin_home');
+    expect(await page.evaluate(() => window.fnt?.app.state?.world.talk?.npcId)).toBe('guard_dorin');
+    await continueStory(page);
     await walkTo(page, 11, 5);
     expect(await page.evaluate(() => window.fnt?.app.state?.story.nodeId)).toBe('mira_epilogue');
     await expect(page.locator('.dialogue-line')).toContainText('Bo-shan');
