@@ -187,6 +187,11 @@ const FLAG_SETS = [
   { name: 'act1_lost', flags: { act1_lost: true } },
   { name: 'the spared custody', flags: { act1_complete: true, ruon_spared: true } },
   { name: 'the traded custody', flags: { act1_lost: true, ruon_traded: true } },
+  // `world.ducks_seen` is a story *flag key*, not a world field, and a
+  // format-4 blob that set it is still no evidence about the runoff: both the
+  // seen and the explicitly-not-seen version have to land on the same defaults.
+  { name: 'the ducks already seen', flags: { 'world.ducks_seen': true } },
+  { name: 'the ducks not yet seen', flags: { 'world.ducks_seen': false } },
 ] as const;
 
 describe('a new game is format 5', () => {
@@ -221,6 +226,35 @@ describe('a new game is format 5', () => {
       cleared: [],
       clock: { day: 1, phase: 'midday' },
       talk: null,
+    });
+
+    // The rest of the version-4 new-game state, pinned to literals from the
+    // 6800b98 code shape rather than read back off `createGame`. Without this
+    // the round trip below is circular: an initial field that regressed would
+    // be on both sides of the compare and pass.
+    expect(fresh.screen).toBe('dialogue');
+    expect(fresh.story).toEqual({
+      nodeId: 'act1_open',
+      deciderIndex: 0,
+      visited: [],
+      lineIndex: 0,
+    });
+    expect(fresh.flags).toEqual({});
+    expect(fresh.location).toEqual({ mapId: '', pos: { x: 0, y: 0 } });
+    expect(fresh.battle).toBeNull();
+    expect(fresh.pendingChoices).toEqual([]);
+    expect(fresh.log).toEqual([]);
+    expect(fresh.party).toHaveLength(1);
+    expect(fresh.party[0]).toMatchObject({
+      id: 'p0',
+      characterId: 'kaya',
+      faction: 'party',
+      enemyId: null,
+      disciplineId: null,
+      level: 1,
+      xp: 0,
+      pos: { x: 0, y: 0 },
+      temporary: false,
     });
 
     // And the version-4 baseline for that same game migrates into it field for
