@@ -183,8 +183,8 @@ node --import tsx scripts/art/quarry-route-ground.ts driller
 node --import tsx scripts/art/quarry-modular-ground.ts
 ```
 
-**Cover read backwards.** Real cover (legend `r`: `cover: true` and the rubble
-surface) showed only as a faint inked spoil diamond, while the decorative heaps
+**Cover read backwards.** Real cover (legend `r`: the rubble surface, which
+grants it) showed only as a faint inked spoil diamond, while the decorative heaps
 beside it were whole inked limestone heaps, the loudest thing on the board.
 Now:
 

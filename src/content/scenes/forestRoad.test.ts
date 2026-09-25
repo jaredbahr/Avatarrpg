@@ -39,7 +39,10 @@ it('registers forest art only to the existing water, cover and blocked tree cell
   });
   expect(FOREST_RUBBLE_CELLS).toEqual(cells('r'));
   expect(FOREST_PINE_CELLS).toEqual(cells('T'));
-  expect(FOREST_ROAD.legend.r).toMatchObject({ cover: true, surface: 'rubble' });
+  // Cover rides on the live rubble surface, never a permanent tile flag: a
+  // converted or cleared cell must stop giving cover.
+  expect(FOREST_ROAD.legend.r).toMatchObject({ surface: 'rubble', surfaceDuration: -1 });
+  expect(FOREST_ROAD.legend.r?.cover ?? false).toBe(false);
   expect(FOREST_ROAD.legend.r?.blocked).not.toBe(true);
   expect(FOREST_ROAD.legend['^']).toMatchObject({ elevation: 1 });
   expect(FOREST_ROAD.legend['^']?.blocked).not.toBe(true);
