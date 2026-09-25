@@ -157,6 +157,9 @@ function evaluateAt(state: GameState, condition: Condition, depth: number): bool
 
     case 'phase':
       return condition.in.includes(state.world.clock.phase);
+
+    case 'residentProfile':
+      return condition.in.includes(state.world.residentProfiles[condition.residentId] ?? 'missing');
   }
 }
 
@@ -266,6 +269,9 @@ function describeAt(content: ContentIndex, condition: Condition, depth: number):
 
     case 'phase':
       return condition.in.map((phase) => PHASE_PHRASE[phase]).join(' or ');
+
+    case 'residentProfile':
+      return `${humanise(condition.residentId)} is ${condition.in.join(' or ')}`;
   }
 }
 

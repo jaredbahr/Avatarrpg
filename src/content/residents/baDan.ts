@@ -15,10 +15,10 @@
  * the recorded adaptations. The guide's §05.2 states are applied first, as it
  * asks, and in Slice A they reduce to four things:
  *
- * - **The five missing** (Bo-shan, Leto, Amri, Hesra, Senn) are held until
- *   their per-person release by having no record at all: no resident, no
- *   NpcDef, no placement, and the identity register rejects their keys (W0).
- *   Their release is Slice B's per-person state, not a global flag here.
+ * - **The five returnees** (Bo-shan, Leto, Amri, Hesra, Senn) are composed
+ *   below from Slice B's profile-backed records. An absent key reads as
+ *   `missing`, so their NpcDefs remain invisible until an authored transition
+ *   releases each person.
  * - **Occupation** (before `act1_complete`, including an Act I defeat, which is
  *   a resolver-only state today) changes nobody's place, only the visible
  *   evidence: `variants` on the slots (short stock, a road watched for
@@ -43,6 +43,7 @@ import type {
 } from '../../core/types';
 import { RIVERSIDE_ID } from '../maps/riverside';
 import { VILLAGE_HOMECOMINGS_COMPLETE } from '../story/return';
+import { RETURNEE_ANCHORS, RETURNEE_RESIDENTS } from './returnees';
 
 const VILLAGE = 'ba_dan_village';
 
@@ -123,6 +124,7 @@ export const BA_DAN_ANCHORS: readonly WorldAnchor[] = [
   tile('bd06.watch', 'BD06', RIVERSIDE_ID, 16, 14),
   // D3: Dorin's drill on the east-bank practice ground, between the posts.
   tile('rv.practice', 'RV-PRACTICE', RIVERSIDE_ID, 32, 12),
+  ...RETURNEE_ANCHORS,
 ];
 
 /* ------------------------------------------------------------------ */
@@ -310,7 +312,14 @@ const HANRU: ResidentDef = {
 };
 
 /** Declaration order breaks ties within a tier (§2). */
-export const BA_DAN_RESIDENTS: readonly ResidentDef[] = [MIRA, GAO, PELLA, DORIN, HANRU];
+export const BA_DAN_RESIDENTS: readonly ResidentDef[] = [
+  MIRA,
+  GAO,
+  PELLA,
+  DORIN,
+  HANRU,
+  ...RETURNEE_RESIDENTS,
+];
 
 /* ------------------------------------------------------------------ */
 /* Background roles                                                    */

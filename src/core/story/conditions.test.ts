@@ -107,6 +107,32 @@ suite('party conditions', () => {
   });
 });
 
+suite('resident profile conditions', () => {
+  const condition = (profiles: readonly ('missing' | 'returning')[]): Condition => ({
+    kind: 'residentProfile',
+    residentId: 'lw.npc.bo_shan',
+    in: profiles,
+  });
+
+  it('reads an absent key as missing', () => {
+    expect(evaluate(game(), condition(['missing']))).toBe(true);
+    expect(evaluate(game(), condition(['returning']))).toBe(false);
+  });
+
+  it('matches the explicitly saved profile', () => {
+    const base = game();
+    const state: GameState = {
+      ...base,
+      world: {
+        ...base.world,
+        residentProfiles: { 'lw.npc.bo_shan': 'returning' },
+      },
+    };
+    expect(evaluate(state, condition(['returning']))).toBe(true);
+    expect(evaluate(state, condition(['missing']))).toBe(false);
+  });
+});
+
 suite('nation standing', () => {
   it('defaults every nation to neutral', () => {
     const state = game();

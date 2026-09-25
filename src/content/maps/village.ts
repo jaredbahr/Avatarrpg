@@ -12,6 +12,7 @@
 import type { MapDef } from '../../core/types';
 import { LEGEND } from './legend';
 import { BA_DAN_SCENE, BA_DAN_COURTYARD_FOOTPRINTS, BA_DAN_COURT_TREES } from '../scenes/baDan';
+import { RETURNEE_PRESENTATIONS } from '../residents/returnees';
 
 export const BA_DAN_VILLAGE: MapDef = {
   id: 'ba_dan_village',
@@ -172,6 +173,34 @@ export const BA_DAN_VILLAGE: MapDef = {
       interaction: 'route-sign',
       when: { kind: 'phase', in: ['morning'] },
       node: 'school_notice',
+    },
+    {
+      id: 'bo_shan',
+      name: 'Bo-shan',
+      resident: 'lw.npc.bo_shan',
+      sprite: RETURNEE_PRESENTATIONS['lw.npc.bo_shan'].npcSprite,
+      node: 'village_explore',
+    },
+    {
+      id: 'leto',
+      name: 'Leto',
+      resident: 'lw.npc.leto',
+      sprite: RETURNEE_PRESENTATIONS['lw.npc.leto'].npcSprite,
+      node: 'village_explore',
+    },
+    {
+      id: 'amri',
+      name: 'Amri',
+      resident: 'lw.npc.amri',
+      sprite: RETURNEE_PRESENTATIONS['lw.npc.amri'].npcSprite,
+      node: 'village_explore',
+    },
+    {
+      id: 'hesra',
+      name: 'Hesra',
+      resident: 'lw.npc.hesra',
+      sprite: RETURNEE_PRESENTATIONS['lw.npc.hesra'].npcSprite,
+      node: 'village_explore',
     },
   ],
   props: [],

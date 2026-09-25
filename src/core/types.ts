@@ -844,7 +844,13 @@ export type Condition =
   | { readonly kind: 'all'; readonly of: readonly Condition[] }
   | { readonly kind: 'any'; readonly of: readonly Condition[] }
   | { readonly kind: 'not'; readonly of: Condition }
-  | { readonly kind: 'phase'; readonly in: readonly DayPhase[] };
+  | { readonly kind: 'phase'; readonly in: readonly DayPhase[] }
+  /** An absent profile key is the authored `missing` state (ADR 0049). */
+  | {
+      readonly kind: 'residentProfile';
+      readonly residentId: string;
+      readonly in: readonly ResidentProfile[];
+    };
 
 export interface StoryOption {
   readonly label: string;

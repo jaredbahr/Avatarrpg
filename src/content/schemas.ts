@@ -19,7 +19,7 @@ import { z } from 'zod';
 import { CLIP_FRAME_COUNTS, CLIP_NAMES, REQUIRED_CLIPS } from './assets/clips';
 import type { AssetEntry } from './assets/manifest';
 import { SCENE_PREFIX, SCENE_VALUES, STANDING_PREFIX } from '../core/story/conditions';
-import { DAY_PHASES, RESIDENT_TIERS } from '../core/types';
+import { DAY_PHASES, RESIDENT_PROFILES, RESIDENT_TIERS } from '../core/types';
 import type {
   Ability,
   BackgroundRole,
@@ -169,6 +169,11 @@ export const conditionSchema: z.ZodType<Condition> = z.lazy(() =>
     z.object({ kind: z.literal('any'), of: z.array(conditionSchema).min(1) }),
     z.object({ kind: z.literal('not'), of: conditionSchema }),
     z.object({ kind: z.literal('phase'), in: z.array(dayPhaseId).min(1) }),
+    z.object({
+      kind: z.literal('residentProfile'),
+      residentId: id,
+      in: z.array(z.enum(RESIDENT_PROFILES)).min(1),
+    }),
   ]),
 );
 
@@ -1638,7 +1643,35 @@ export function validateContent(bundle: ContentBundle): string[] {
     }
   }
 
-  problems.push(...validateStoryPresentations(STORY_PRESENTATIONS, bundle.story, bundle.maps));
+  // Profile-backed placeholders have no authored conversation until W5. Their
+  // map explore node is an intentional no-op, not missing dialogue metadata.
+  const profileBacked = new Set(
+    bundle.residents
+      .filter((resident) =>
+        (resident.overrides ?? []).some(
+          (override) =>
+            override.when.kind === 'residentProfile' && override.when.residentId === resident.id,
+        ),
+      )
+      .map((resident) => resident.id),
+  );
+  const deferred = new Set(
+    bundle.maps.flatMap((map) =>
+      map.npcs
+        .filter(
+          (npc) => npc.resident && profileBacked.has(npc.resident) && npc.node.endsWith('_explore'),
+        )
+        .map(
+          (npc) =>
+            `map "${map.id}" npc "${npc.id}" conversation "${npc.node}" has no story presentation`,
+        ),
+    ),
+  );
+  problems.push(
+    ...validateStoryPresentations(STORY_PRESENTATIONS, bundle.story, bundle.maps).filter(
+      (problem) => !deferred.has(problem),
+    ),
+  );
 
   /* --- reachability: every node must be reachable from the entry ----- */
   const entry = 'act1_open';
@@ -1771,6 +1804,39 @@ export function validateContent(bundle: ContentBundle): string[] {
 function validateResidents(bundle: ContentBundle, problems: string[]): void {
   const anchors = new Map(bundle.anchors.map((a) => [a.id, a]));
   const residentIds = new Set(bundle.residents.map((r) => r.id));
+  const profileBacked = new Set<string>();
+  const scanProfileConditions = (value: unknown, where: string, owner?: string): void => {
+    const seen = new WeakSet<object>();
+    const visit = (current: unknown): void => {
+      if (typeof current !== 'object' || current === null || seen.has(current)) return;
+      seen.add(current);
+      const record = current as Record<string, unknown>;
+      if (record.kind === 'residentProfile' && typeof record.residentId === 'string') {
+        const referenced = record.residentId;
+        if (!residentIds.has(referenced)) {
+          problems.push(`${where} reads unknown resident profile "${referenced}"`);
+        }
+        if (owner && referenced !== owner) {
+          problems.push(`${where} reads "${referenced}" instead of its own profile "${owner}"`);
+        }
+        if (owner === referenced) profileBacked.add(owner);
+      }
+      for (const child of Object.values(record)) visit(child);
+    };
+    visit(value);
+  };
+
+  for (const resident of bundle.residents) {
+    scanProfileConditions(resident, `resident "${resident.id}"`, resident.id);
+  }
+  for (const node of bundle.story) scanProfileConditions(node, `story node "${node.id}"`);
+  for (const map of bundle.maps) scanProfileConditions(map, `map "${map.id}"`);
+  for (const encounter of bundle.encounters) {
+    scanProfileConditions(encounter, `encounter "${encounter.id}"`);
+  }
+  for (const role of bundle.backgroundRoles) {
+    scanProfileConditions(role, `background role "${role.id}"`);
+  }
   const maps = new Map(bundle.maps.map((m) => [m.id, m]));
 
   for (const anchor of bundle.anchors) {
@@ -1875,7 +1941,7 @@ function validateResidents(bundle: ContentBundle, problems: string[]): void {
   const residentSprites = new Map<string, string>();
   for (const map of bundle.maps)
     for (const npc of map.npcs)
-      if (npc.resident && !residentSprites.has(npc.sprite))
+      if (npc.resident && !profileBacked.has(npc.resident) && !residentSprites.has(npc.sprite))
         residentSprites.set(npc.sprite, `${map.id}:${npc.id}`);
 
   for (const role of bundle.backgroundRoles) {

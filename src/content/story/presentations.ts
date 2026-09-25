@@ -183,6 +183,10 @@ export function validateStoryPresentations(
       for (const nodeId of [npc.node, ...(npc.routes ?? []).map((route) => route.node)]) {
         const presentation = registry[nodeId];
         if (!presentation) {
+          const node = storyById.get(nodeId);
+          // Profile-owned placeholder actors may deliberately bounce to the
+          // current exploration hub until their dialogue ships in a later wave.
+          if (npc.resident && node?.kind === 'explore' && node.mapId === map.id) continue;
           problems.push(
             'map "' +
               map.id +

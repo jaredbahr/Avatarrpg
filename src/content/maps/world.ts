@@ -3,6 +3,7 @@ import type { Condition, MapDef, MapExit, MapTrigger, Vec2 } from '../../core/ty
 
 import { discoveryMarkers } from './discoveries';
 import { VILLAGE_HOMECOMINGS_COMPLETE } from '../story/return';
+import { RETURNEE_PRESENTATIONS } from '../residents/returnees';
 
 const visited = (nodeId: string): Condition => ({ kind: 'visited', nodeId });
 const unvisited = (nodeId: string): Condition => ({ kind: 'not', of: visited(nodeId) });
@@ -146,6 +147,41 @@ export function connectAct1(map: MapDef): MapDef {
                 node: 'forest_dema_again',
               },
             ],
+          },
+          {
+            id: 'bo_shan',
+            name: 'Bo-shan',
+            resident: 'lw.npc.bo_shan',
+            sprite: RETURNEE_PRESENTATIONS['lw.npc.bo_shan'].npcSprite,
+            node: 'forest_explore',
+          },
+          {
+            id: 'leto',
+            name: 'Leto',
+            resident: 'lw.npc.leto',
+            sprite: RETURNEE_PRESENTATIONS['lw.npc.leto'].npcSprite,
+            node: 'forest_explore',
+          },
+          {
+            id: 'amri',
+            name: 'Amri',
+            resident: 'lw.npc.amri',
+            sprite: RETURNEE_PRESENTATIONS['lw.npc.amri'].npcSprite,
+            node: 'forest_explore',
+          },
+          {
+            id: 'hesra',
+            name: 'Hesra',
+            resident: 'lw.npc.hesra',
+            sprite: RETURNEE_PRESENTATIONS['lw.npc.hesra'].npcSprite,
+            node: 'forest_explore',
+          },
+          {
+            id: 'senn',
+            name: 'Senn',
+            resident: 'lw.npc.senn_messenger',
+            sprite: RETURNEE_PRESENTATIONS['lw.npc.senn_messenger'].npcSprite,
+            node: 'forest_explore',
           },
         ],
       };

@@ -371,9 +371,15 @@ suite('Ba Dan residents: anchor tiles (W5c)', () => {
       expect(forbidden(map(site.mapId)).has(posKey(site.pos)), site.id).toBe(false);
   });
 
-  it('never shares a tile between two anchors or between an anchor and a door', () => {
-    const keys = sites.map((s) => `${s.mapId}:${posKey(s.pos)}`);
-    expect(new Set(keys).size).toBe(keys.length);
+  it('shares only the declared BD04 household door', () => {
+    const byTile = new Map<string, string[]>();
+    for (const site of sites) {
+      const key = `${site.mapId}:${posKey(site.pos)}`;
+      byTile.set(key, [...(byTile.get(key) ?? []), site.id]);
+    }
+    expect(
+      [...byTile.values()].filter((ids) => ids.length > 1).map((ids) => [...ids].sort()),
+    ).toEqual([['home.bo_shan', 'home.pella']]);
   });
 
   it('leaves every visible NPC a free neighbour to be approached from', () => {
