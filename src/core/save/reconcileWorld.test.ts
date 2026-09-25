@@ -11,6 +11,7 @@ import { describe as suite, expect, it } from 'vitest';
 import { CONTENT } from '../../content';
 import { createGame } from '../state/createGame';
 import type { GameState } from '../types';
+import { resolveResidents } from '../story/residents';
 import { reconcileWorld } from './reconcile';
 import { deserialize, serialize, stateFromBlob } from './serialize';
 import { TEST_ANCHOR, TEST_RESIDENT, withBoundNpc } from '../story/residents.fixture';
@@ -139,6 +140,42 @@ suite('reconcileWorld: the conversation pin (clear half)', () => {
     expect(BOUND.residents.has(TEST_RESIDENT)).toBe(true);
 
     expect(reconcileWorld(orphaned, state).world.talk).toBeNull();
+  });
+
+  it("clears a same-map anchor owned by another resident and resumes the speaker's schedule", () => {
+    const ordinary = exploring();
+    const base = exploring({
+      screen: 'dialogue',
+      story: { ...ordinary.story, visited: ['mira_intro', 'dorin_home'] },
+      world: { ...ordinary.world, clock: { day: 1, phase: 'morning' }, talk: null },
+    });
+    const state = withTalk(base, {
+      npcId: 'guard_dorin',
+      mapId: 'ba_dan_village',
+      // Mira owns this valid village anchor; it has never been one of Dorin's slots.
+      anchor: 'bd01.table',
+    });
+
+    const reconciled = reconcileWorld(CONTENT, state);
+    expect(reconciled.world.talk).toBeNull();
+    expect(
+      resolveResidents(CONTENT, reconciled).placements.find((p) => p.id === 'lw.npc.dorin')?.anchor,
+    ).toBe('bd03.post');
+  });
+
+  it('keeps an old pinless save on the ordinary resident schedule', () => {
+    const ordinary = exploring();
+    const old = exploring({
+      screen: 'dialogue',
+      story: { ...ordinary.story, visited: ['mira_intro', 'dorin_home'] },
+      world: { ...ordinary.world, clock: { day: 1, phase: 'morning' }, talk: null },
+    });
+
+    const reconciled = reconcileWorld(CONTENT, old);
+    expect(reconciled.world.talk).toBeNull();
+    expect(
+      resolveResidents(CONTENT, reconciled).placements.find((p) => p.id === 'lw.npc.dorin')?.anchor,
+    ).toBe('bd03.post');
   });
 
   it('keeps a valid, live pin unchanged: dialogue on the pinned map, bound, anchor known', () => {

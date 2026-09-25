@@ -15,7 +15,14 @@
  * quietly never receives the reward for the level they earned.
  */
 
-import type { ContentIndex, GameState, PendingChoice } from '../types';
+import type {
+  ContentIndex,
+  GameState,
+  PendingChoice,
+  ResidentDef,
+  ResidentSlot,
+  ResidentSlotValue,
+} from '../types';
 import { specializationsUpTo } from '../rules/leveling';
 import { settle } from '../story/settle';
 import { npcResident } from '../story/residents';
@@ -58,11 +65,25 @@ export function reconcileWorld(content: ContentIndex, state: GameState): GameSta
   const talk = settled.world.talk;
   if (!talk) return settled;
   const resident = npcResident(content, talk.mapId, talk.npcId);
+  const record = resident ? content.residents.get(resident) : undefined;
   const site = content.anchors.get(talk.anchor)?.site;
   const holds =
-    resident !== null &&
-    content.residents.has(resident) &&
+    record !== undefined &&
+    residentSlots(record).some((slot) => slot.anchor === talk.anchor && slot.npc === talk.npcId) &&
     site?.kind === 'map' &&
     site.mapId === talk.mapId;
   return holds ? settled : { ...settled, world: { ...settled.world, talk: null } };
+}
+
+/** Every authored public slot a resident may occupy, independent of the loaded state's phase. */
+function residentSlots(resident: ResidentDef): readonly ResidentSlot[] {
+  const values: (ResidentSlotValue | undefined)[] = [
+    resident.fallback,
+    ...Object.values(resident.schedule),
+    ...(resident.overrides ?? []).flatMap((override) => [
+      override.all,
+      ...Object.values(override.slots),
+    ]),
+  ];
+  return values.filter((value): value is ResidentSlot => typeof value === 'object');
 }
