@@ -62,6 +62,41 @@ suite('the conversation pin', () => {
     expect(result.state.world.talk).toEqual(PIN);
   });
 
+  it('opens each adjacent guard from the east-road return tile', () => {
+    const base = besideMira();
+    const state: GameState = {
+      ...base,
+      flags: {
+        ...base.flags,
+        act1_complete: true,
+        'scene.bd03_handover': 'completed',
+      },
+      screen: 'explore',
+      location: { mapId: 'ba_dan_village', pos: { x: 22, y: 7 } },
+      story: {
+        ...base.story,
+        nodeId: 'village_return_explore',
+        visited: [...base.story.visited, 'mira_intro', 'dorin_home'],
+      },
+      world: { ...base.world, clock: { day: 1, phase: 'evening' } },
+    };
+    const village = CONTENT.maps.get('ba_dan_village');
+    if (!village) throw new Error('Missing village map');
+
+    for (const [npcId, nodeId] of [
+      ['guard_dorin', 'dorin_home'],
+      ['guard_hanru', 'hanru_watch'],
+    ] as const) {
+      const npc = visibleNpcs(CONTENT, village, state).find((candidate) => candidate.id === npcId);
+      if (!npc) throw new Error(`Missing ${npcId} at the evening handover`);
+      const opened = apply(CONTENT, state, { type: 'walkTo', pos: npc.pos }).state;
+
+      expect(opened.screen, npcId).toBe('dialogue');
+      expect(opened.story.nodeId, npcId).toBe(nodeId);
+      expect(opened.world.talk?.npcId, npcId).toBe(npcId);
+    }
+  });
+
   it('pins nobody when an unbound NpcDef opens a conversation', () => {
     // The riverside path sign is a plain NpcDef: its tap opens a dialogue,
     // but there is no resident to hold in place.

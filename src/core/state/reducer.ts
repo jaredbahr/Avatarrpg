@@ -637,11 +637,16 @@ function buildExploreGrid(content: ContentIndex, state: GameState): Grid {
 /** Nearest walkable tile adjacent to `target`, for approaching an NPC. */
 function findApproach(content: ContentIndex, state: GameState, target: Vec2): Vec2 | null {
   const grid = buildExploreGrid(content, state);
-  const occupied = new Set<string>([posKey(target)]);
   const map = content.maps.get(state.location.mapId);
-  // Nobody ends a walk on a background role's tile.
-  const roles = new Set(
-    map ? backgroundFigures(content, map, state).map((role) => posKey(role.pos)) : [],
+  // Nobody ends a walk on, or paths through, another person. In particular,
+  // the two guards share adjacent handover tiles: approaching one must not
+  // recursively tap the other when their tile happens to be the nearest.
+  const occupied = new Set(
+    map
+      ? [...visibleNpcs(content, map, state), ...backgroundFigures(content, map, state)].map(
+          (who) => posKey(who.pos),
+        )
+      : [posKey(target)],
   );
   let best: Vec2 | null = null;
   let bestDistance = Infinity;
@@ -650,7 +655,7 @@ function findApproach(content: ContentIndex, state: GameState, target: Vec2): Ve
     for (let dx = -1; dx <= 1; dx++) {
       if (dx === 0 && dy === 0) continue;
       const candidate = { x: target.x + dx, y: target.y + dy };
-      if (occupied.has(posKey(candidate)) || roles.has(posKey(candidate))) continue;
+      if (occupied.has(posKey(candidate))) continue;
       const tile = tileAt(grid, candidate);
       if (!tile || tile.blocked) continue;
       const path = findPath(
