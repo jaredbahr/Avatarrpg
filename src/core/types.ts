@@ -1040,6 +1040,28 @@ export const DAY_PHASES = ['dawn', 'morning', 'midday', 'afternoon', 'evening', 
 
 export type DayPhase = (typeof DAY_PHASES)[number];
 
+/**
+ * What a living-world resident is doing, in the one place a save records it.
+ *
+ * `missing` is the absence of a record rather than a condition: a resident with
+ * no entry is `missing`, which is why the world's default map is empty. These
+ * are persisted and deliberately inert — nothing reads them yet.
+ */
+export const RESIDENT_PROFILES = [
+  'missing',
+  'returning',
+  'resting',
+  'recovering',
+  'ready',
+] as const;
+
+export type ResidentProfile = (typeof RESIDENT_PROFILES)[number];
+
+/** How far the quarry runoff has been dealt with. Persisted, not yet acted on. */
+export const RUNOFF_STATES = ['unresolved', 'inspected', 'repaired'] as const;
+
+export type RunoffState = (typeof RUNOFF_STATES)[number];
+
 export interface GameState {
   /** Bumped when the save shape changes; `core/save` migrates on load. */
   readonly version: number;
@@ -1065,6 +1087,10 @@ export interface GameState {
       readonly mapId: string;
       readonly anchor: string;
     } | null;
+    /** Per-resident living-world state, keyed by resident id. */
+    readonly residentProfiles: Readonly<Record<string, ResidentProfile>>;
+    /** Where the quarry runoff stands. */
+    readonly runoff: RunoffState;
   };
   /** Human-readable combat log, newest last. Capped by the reducer. */
   readonly log: readonly string[];

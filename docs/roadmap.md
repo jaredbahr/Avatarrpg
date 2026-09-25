@@ -299,6 +299,8 @@ trips through the five Act 1 locations. This keeps ordered encounter levels and
 the exact progression audit; the broader region-band and direct-encounter work
 below remains open.
 
+- **Living-world Slice B:** W0 engineering contract recorded in ADR 0049; gameplay not activated; target <=318.5 KB aggregate JavaScript under the unchanged 320 KB gate.
+
 - [ ] W1: `MapDef.exits` with `toMapId`, `toPos`, `requires`, `lockedHint`; `MapDef.exit` removed
 - [ ] W1: regions with `minLevel` / `maxLevel`; region membership on every map
 - [ ] W1: `GameState.location.world` (`returnPos`, `fired`, `cleared`) **and its zod schema in `serialize.ts`, same commit**

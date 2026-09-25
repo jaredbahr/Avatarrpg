@@ -1,16 +1,17 @@
 /**
  * `validateContent`'s resident rules (ADR 0047 §2, W4a): the zod shapes, the
  * structural rules, and the W0 identity register applied to resident records
- * (the five missing, `FORBIDDEN_BINDINGS`). Every fixture is synthetic: one
- * resident bound to Elder Mira's NpcDef in place of the real Mira; Ba Dan's
- * other records (W5a) stay as they are.
+ * (the five returnees W2 released, Hesh and Miri, `FORBIDDEN_BINDINGS`). Every
+ * fixture is synthetic: one resident bound to Elder Mira's NpcDef in place of
+ * the real Mira; Ba Dan's other records (W5a) stay as they are.
  */
 
 import { describe, expect, it } from 'vitest';
 import { CONTENT_BUNDLE } from './index';
 import { validateContent } from './schemas';
 import type { ContentBundle } from './schemas';
-import { EXCLUDED_RESIDENTS } from './identity';
+import { EXCLUDED_RESIDENTS, RELEASED_RESIDENTS } from './identity';
+import type { IdentityEntry } from './identity';
 import { ASSETS } from './assets/manifest';
 import type {
   BackgroundRole,
@@ -84,6 +85,7 @@ function bundle(
     roles?: readonly BackgroundRole[];
     anchors?: readonly WorldAnchor[];
     npc?: Partial<NpcDef> & { id: string };
+    npcs?: readonly NpcDef[];
     map?: string;
   } = {},
 ): ContentBundle {
@@ -105,6 +107,7 @@ function bundle(
       if (!base) throw new Error(`No npc to base "${change.npc.id}" on`);
       npcs = withNpc(npcs, { ...base, ...change.npc });
     }
+    for (const extra of change.npcs ?? []) npcs = withNpc(npcs, extra);
     return { ...map, npcs };
   });
   return {
@@ -122,18 +125,63 @@ function bundle(
 
 const problemsOf = (b: ContentBundle): string[] => validateContent(b);
 
+/**
+ * A synthetic record and bound NpcDef for a released identity, written the way
+ * the per-person work will write it: the design key is the record, the runtime
+ * slug is the NpcDef, and the two name the same person through `resident`.
+ */
+function released(entry: IdentityEntry): { resident: ResidentDef; npc: NpcDef } {
+  const slug = entry.runtimeSlugs[0];
+  if (!slug) throw new Error(`${entry.id} has no runtime slug`);
+  const slot: ResidentSlot = {
+    anchor: 'test.table',
+    activity: 'idle',
+    npc: slug,
+    interrupt: 'talk',
+  };
+  return {
+    resident: {
+      id: entry.id,
+      name: entry.name,
+      source: { runtimeNpcIds: [slug] },
+      home: 'test.home',
+      fallback: slot,
+      schedule: {
+        dawn: slot,
+        morning: slot,
+        midday: slot,
+        afternoon: slot,
+        evening: slot,
+        night: 'home',
+      },
+    },
+    npc: {
+      id: slug,
+      name: entry.name,
+      sprite: 'npc.elder',
+      node: 'mira_intro',
+      resident: entry.id,
+    },
+  };
+}
+
 describe('validateContent: resident records (ADR 0047 W4a)', () => {
   it('accepts a well-formed synthetic resident, anchor set and background role', () => {
     expect(problemsOf(bundle())).toEqual([]);
   });
 
-  it('rejects a record for each of the five missing, by key, by runtime id and by name', () => {
-    const five = ['lw.npc.bo_shan', 'lw.npc.leto', 'lw.npc.amri', 'lw.npc.hesra', 'lw.npc.senn'];
-    for (const key of five) {
-      const entry = EXCLUDED_RESIDENTS.find((e) => e.id === key);
-      if (!entry) throw new Error(`${key} is not in the register`);
+  it('accepts a record for each of the five released returnees (W2)', () => {
+    for (const entry of RELEASED_RESIDENTS) {
+      const { resident, npc } = released(entry);
+      const problems = problemsOf(bundle({ residents: [ELDER, resident], npcs: [npc] }));
+      expect(problems, `${entry.id} should be claimable`).toEqual([]);
+    }
+  });
+
+  it('still rejects a record for Hesh or Miri, by key, by runtime id and by name', () => {
+    for (const entry of EXCLUDED_RESIDENTS) {
       const claims: ResidentDef[] = [
-        { ...ELDER, id: key },
+        { ...ELDER, id: entry.id },
         { ...ELDER, id: 'test.other', source: { runtimeNpcIds: [...entry.runtimeSlugs] } },
         { ...ELDER, id: 'test.other', name: entry.name },
       ];
@@ -142,11 +190,25 @@ describe('validateContent: resident records (ADR 0047 W4a)', () => {
           bundle({ residents: [ELDER, { ...claim, source: { ...claim.source } }] }),
         );
         expect(
-          problems.some((p) => p.includes(`claims "${key}"`)),
-          `${key} via ${claim.id}/${claim.name}`,
+          problems.some((p) => p.includes(`claims "${entry.id}"`)),
+          `${entry.id} via ${claim.id}/${claim.name}`,
         ).toBe(true);
       }
     }
+  });
+
+  it('keeps lw.npc.senn_messenger the one canonical messenger record and blocks the legacy key', () => {
+    const messenger = RELEASED_RESIDENTS.find((entry) => entry.id === 'lw.npc.senn_messenger');
+    if (!messenger) throw new Error('The messenger is not in the release list');
+    const { resident, npc } = released(messenger);
+    expect(problemsOf(bundle({ residents: [ELDER, resident], npcs: [npc] }))).toEqual([]);
+
+    // The superseded W0 key can never sit beside the canonical record as a
+    // second Senn (ADR 0047 §8): it is a key, not a person.
+    const legacy: ResidentDef = { ...ELDER, id: 'lw.npc.senn', source: { runtimeNpcIds: [] } };
+    expect(problemsOf(bundle({ residents: [ELDER, resident, legacy], npcs: [npc] }))).toContain(
+      'resident "lw.npc.senn" claims "lw.npc.senn", excluded until released',
+    );
   });
 
   it('never binds `dema` to lw.npc.dema_cook or `rest_keeper` to lw.npc.sen_tea (FORBIDDEN_BINDINGS)', () => {

@@ -38,8 +38,12 @@ import {
 } from '../rules/leveling';
 import { rollInitiative } from '../rules/turnOrder';
 
-/** 2 added `Unit.disciplineId` and widened `PendingChoice`. 4 added `world.clock` and `world.talk` (ADR 0047). */
-export const SAVE_VERSION = 4;
+/**
+ * 2 added `Unit.disciplineId` and widened `PendingChoice`. 4 added `world.clock`
+ * and `world.talk` (ADR 0047). 5 added `world.residentProfiles` and
+ * `world.runoff`, both persisted and not yet read by anything.
+ */
+export const SAVE_VERSION = 5;
 
 export interface PartySlot {
   readonly characterId: string;
@@ -176,6 +180,8 @@ export function createGame(content: ContentIndex, options: NewGameOptions): Game
       cleared: [],
       clock: { day: 1, phase: 'midday' },
       talk: null,
+      residentProfiles: {},
+      runoff: 'unresolved',
     },
     log: [],
   };
