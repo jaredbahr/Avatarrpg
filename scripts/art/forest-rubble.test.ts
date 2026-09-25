@@ -71,11 +71,9 @@ it('paints broken stone in the spoil and road keys over shaded earth, and the in
     FOREST_INK,
   ])
     expect(seen.get(hex) ?? 0, `${hex} is painted`).toBeGreaterThan(200);
-  // Warmer than spoil on its own: the heap must not read as the cold grey it
-  // replaced once the runtime rubble wash is laid over it.
-  const spoilRed = Number.parseInt(FOREST_PIECE_TONES.spoil.base.slice(1, 3), 16);
-  const spoilBlue = Number.parseInt(FOREST_PIECE_TONES.spoil.base.slice(5, 7), 16);
-  expect((red - blue) / opaque).toBeGreaterThan(spoilRed - spoilBlue);
+  // The amended heap stays warmer than the former cold-grey spoil base
+  // (`#a89880`, R-B 40) even after its ink and contact shadow are included.
+  expect((red - blue) / opaque).toBeGreaterThan(0xa8 - 0x80);
 });
 
 it('piles a crowned heap inside its own cell with no baked gradient', () => {

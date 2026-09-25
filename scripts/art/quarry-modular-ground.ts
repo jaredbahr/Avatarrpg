@@ -113,11 +113,13 @@ export function packGateGround(material: QuarryMaterial): Map<GateRegionName, Im
         const other = materialOf(neighbourKey);
         if (!other || other === own) continue;
         const edgeDistance = ox < 0 ? gx - x : ox > 0 ? x + 1 - gx : oy < 0 ? gy - y : y + 1 - gy;
-        if (edgeDistance < edge) {
-          edge = edgeDistance;
-          lit = ox < 0 || oy < 0;
+        if (!plain(key) || !plain(neighbourKey)) {
+          if (edgeDistance < edge) {
+            edge = edgeDistance;
+            lit = ox < 0 || oy < 0;
+          }
+          continue;
         }
-        if (!plain(key) || !plain(neighbourKey)) continue;
         const width = 0.16 + 0.03 * (0.5 + 0.5 * Math.sin(x * 4.1 + y * 6.7));
         const share = 0.5 * clamp((width - edgeDistance) / width);
         if (share > mix) {

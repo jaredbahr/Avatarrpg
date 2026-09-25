@@ -86,7 +86,7 @@ vec3 terrainBase(int t) {
   if (t == 1) return vec3(0.702, 0.565, 0.392); // dirt
   if (t == 2) return vec3(0.702, 0.565, 0.392); // road
   if (t == 3) return vec3(0.847, 0.796, 0.690); // stone
-  if (t == 4) return vec3(0.659, 0.596, 0.502); // sand
+  if (t == 4) return vec3(0.780, 0.659, 0.490); // sand
   if (t == 5) return vec3(0.420, 0.310, 0.200); // wood
   if (t == 6) return vec3(0.122, 0.290, 0.369); // water_deep
   if (t == 7) return vec3(0.227, 0.208, 0.184); // wall

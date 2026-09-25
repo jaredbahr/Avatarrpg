@@ -169,6 +169,46 @@ function inkedEdges(built: Built, cx: number, cy: number): { dx: number; dy: num
     .map(({ dx, dy }) => ({ dx, dy }));
 }
 
+it('leaves ink off every plain-material join at the gate and Cutting', () => {
+  const scenes = [
+    {
+      name: 'gate',
+      built: gate,
+      map: QUARRY_GATE,
+      material: (key: string | undefined) =>
+        key === '=' ? 'earth' : key === '.' || key === ',' ? 'spoil' : null,
+    },
+    {
+      name: 'cutting',
+      built: cutting,
+      map: AMBUSH_ROAD,
+      material: (key: string | undefined) =>
+        key === '=' ? 'earth' : key === ',' ? 'spoil' : key === '.' ? 'earth' : null,
+    },
+  ] as const;
+  for (const scene of scenes) {
+    let checked = 0;
+    for (let y = 0; y < scene.map.height; y++)
+      for (let x = 0; x < scene.map.width; x++) {
+        const own = scene.material(scene.map.rows[y]?.[x]);
+        if (!own) continue;
+        for (const { dx, dy } of [
+          { dx: 1, dy: 0 },
+          { dx: 0, dy: 1 },
+        ]) {
+          const other = scene.material(scene.map.rows[y + dy]?.[x + dx]);
+          if (!other || other === own) continue;
+          checked++;
+          expect(
+            inkedEdges(scene.built, x, y),
+            `${scene.name} plain join at ${x},${y} toward ${dx},${dy}`,
+          ).not.toContainEqual({ dx, dy });
+        }
+      }
+    expect(checked, `${scene.name} exercises plain-material joins`).toBeGreaterThan(0);
+  }
+});
+
 it.each([
   // The floor has four oil blocks; the old pass painted every one of them with
   // the same field as the floor and no edge at all. The Cutting has no oil.
@@ -296,7 +336,8 @@ it("keeps the Cutting's lane apart from its spoil shoulders", () => {
       } else if (key === ',') {
         shoulders++;
         if (!tally) continue;
-        expect(tally.lane, `shoulder ${x},${y} has no earth`).toBe(0);
+        // The amended spoil row intentionally shares packed-earth dust and
+        // shadow tones, so membership in the spoil triple is the useful pin.
         // No decorative heap carries ink: ink on the board marks objects.
         expect(tally.ink, `shoulder ${x},${y} carries no ink`).toBe(0);
         expect(tally.shoulder / tally.all, `shoulder ${x},${y} is spoil`).toBeGreaterThan(0.95);
@@ -341,9 +382,9 @@ it('ships the plates the packers build, inside the registered page', async () =>
  * budget, so its pins live here rather than as a `bytes` field on each region.
  */
 const QUARRY_GATE_GROUND_BYTES = [
-  { name: 'earth-west', bytes: 31_664 },
-  { name: 'earth-east', bytes: 31_136 },
-  { name: 'road', bytes: 18_376 },
+  { name: 'earth-west', bytes: 46_294 },
+  { name: 'earth-east', bytes: 46_054 },
+  { name: 'road', bytes: 18_076 },
   { name: 'limestone', bytes: 29_930 },
 ] as const;
 

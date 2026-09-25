@@ -73,7 +73,7 @@ export const TERRAIN_STYLES: Record<TerrainId, TerrainStyle> = {
   dirt: { fill: '#b39064', edge: '#8e7049', detail: '#c7a87d' },
   road: { fill: '#b39064', edge: '#7a5f3e', detail: '#c7a87d' },
   stone: { fill: '#d8cbb0', edge: '#b3a488', detail: '#9a8c72' },
-  sand: { fill: '#a89880', edge: '#857762', detail: '#c2b49c' },
+  sand: { fill: '#c7a87d', edge: '#8e7049', detail: '#d8cbb0' },
   wood: { fill: '#6b4f33', edge: '#573f28', detail: '#7d5e3d' },
   water_deep: { fill: '#1f4a5e', edge: '#173b4c', detail: '#2a5e77' },
   wall: { fill: '#3a352f', edge: '#26221e', detail: '#4a443c' },
@@ -178,10 +178,10 @@ export const SURFACE_STYLES: Record<SurfaceId, SurfaceStyle> = {
    * ground. The spoil chip highlight all but vanished over spoil.
    */
   rubble: {
-    fill: '#857762',
+    fill: '#8e7049',
     alpha: 0.3,
     edge: '#1b1410',
-    detail: '#857762',
+    detail: '#8e7049',
     hatch: 'dots',
     label: 'Rubble',
   },

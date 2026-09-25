@@ -11,8 +11,8 @@
  *
  * The plate is a heap of broken stone, not a floor: a pile of separate chunks,
  * the higher ones further back, each in the DL-2 §3 **quarry spoil / rubble**
- * key — a lit top facet in `#a89880` with the `#c2b49c` chip highlight along
- * its upper edge, a front facet in the `#857762` shadow — and each outlined in
+ * key — a lit top facet in `#c7a87d` with the `#d8cbb0` chip highlight along
+ * its upper edge, a front facet in the `#8e7049` shadow — and each outlined in
  * the bible's `#1b1410` ink. Between the chunks lies packed earth in shade,
  * and under the heap's foot its contact shadow in §3's cart-rut `#7a5f3e`.
  *
