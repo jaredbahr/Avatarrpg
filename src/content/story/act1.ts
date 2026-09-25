@@ -14,7 +14,13 @@
  * Choice descriptions state the consequences; the players judge Ruon themselves.
  */
 
-import type { StoryNode } from '../../core/types';
+import type { ResidentProfile, StoryNode } from '../../core/types';
+import { RETURNEE_IDS } from '../residents/returnees';
+import { RETURNEES_HOME } from './return';
+
+const RETURNING_PROFILES = Object.fromEntries(
+  RETURNEE_IDS.map((id) => [id, 'returning']),
+) as Readonly<Record<(typeof RETURNEE_IDS)[number], ResidentProfile>>;
 
 export const ACT1_NODES: readonly StoryNode[] = [
   /* ---------------------------------------------------------------- Opening */
@@ -39,6 +45,11 @@ export const ACT1_NODES: readonly StoryNode[] = [
     objective: 'Talk to Elder Mira, then take the east road to the quarry.',
     objectiveNpcId: 'elder_mira',
     objectiveVariants: [
+      {
+        when: RETURNEES_HOME,
+        text: 'The workers are home. Talk with Mira, Pella, Gao or Dorin, or visit the river.',
+        objectiveNpcId: null,
+      },
       {
         when: { kind: 'visited', nodeId: 'mira_intro' },
         text: 'Take the east road to the quarry. You can speak with the neighbors before you leave.',
@@ -574,6 +585,7 @@ export const ACT1_NODES: readonly StoryNode[] = [
     id: 'act1_victory',
     kind: 'flags',
     set: { act1_complete: true },
+    residentProfiles: RETURNING_PROFILES,
     phase: 'evening',
     next: 'act1_epilogue',
   },

@@ -10,7 +10,7 @@
 import { describe as suite, expect, it } from 'vitest';
 import { CONTENT } from '../../content';
 import { createGame } from '../state/createGame';
-import type { Condition, DayPhase, FlagValue, GameState } from '../types';
+import type { Condition, DayPhase, FlagValue, GameState, ResidentProfile } from '../types';
 import {
   MAX_STANDING,
   MIN_STANDING,
@@ -105,6 +105,45 @@ suite('party conditions', () => {
     expect(evaluate(state, { kind: 'partySize', op: 'gte', value: 3 })).toBe(false);
     expect(evaluate(state, { kind: 'partySize', op: 'lte', value: 2 })).toBe(true);
   });
+});
+
+suite('resident profile conditions', () => {
+  const condition = (profiles: readonly ResidentProfile[]): Condition => ({
+    kind: 'residentProfile',
+    residentId: 'lw.npc.bo_shan',
+    in: profiles,
+  });
+
+  it('reads an absent key as missing', () => {
+    expect(evaluate(game(), condition(['missing']))).toBe(true);
+    expect(evaluate(game(), condition(['returning']))).toBe(false);
+  });
+
+  it('matches the explicitly saved profile', () => {
+    const base = game();
+    const state: GameState = {
+      ...base,
+      world: {
+        ...base.world,
+        residentProfiles: { 'lw.npc.bo_shan': 'returning' },
+      },
+    };
+    expect(evaluate(state, condition(['returning']))).toBe(true);
+    expect(evaluate(state, condition(['missing']))).toBe(false);
+  });
+
+  it.each(['resting', 'recovering', 'ready'] as const)(
+    'matches the valid %s profile without broadening to another state',
+    (profile) => {
+      const base = game();
+      const state: GameState = {
+        ...base,
+        world: { ...base.world, residentProfiles: { 'lw.npc.bo_shan': profile } },
+      };
+      expect(evaluate(state, condition([profile]))).toBe(true);
+      expect(evaluate(state, condition(['missing', 'returning']))).toBe(false);
+    },
+  );
 });
 
 suite('nation standing', () => {

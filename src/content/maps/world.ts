@@ -2,7 +2,8 @@
 import type { Condition, MapDef, MapExit, MapTrigger, Vec2 } from '../../core/types';
 
 import { discoveryMarkers } from './discoveries';
-import { VILLAGE_HOMECOMINGS_COMPLETE } from '../story/return';
+import { RETURNEES_HOME, RETURNEES_RETURNING, VILLAGE_HOMECOMINGS_COMPLETE } from '../story/return';
+import { RETURNEE_PRESENTATIONS } from '../residents/returnees';
 
 const visited = (nodeId: string): Condition => ({ kind: 'visited', nodeId });
 const unvisited = (nodeId: string): Condition => ({ kind: 'not', of: visited(nodeId) });
@@ -58,7 +59,7 @@ export function connectAct1(map: MapDef): MapDef {
             text: "You've caught up with the village. Rest by the river, or explore the roads.",
           },
           {
-            when: rescued,
+            when: RETURNEES_HOME,
             text: 'The workers are home. Talk with Mira, Pella, Gao or Dorin, or visit the river.',
           },
         ],
@@ -97,6 +98,10 @@ export function connectAct1(map: MapDef): MapDef {
         ...map,
         objective: 'Explore the woodland paths. The quarry lies east; Ba Dan lies west.',
         objectiveVariants: [
+          {
+            when: RETURNEES_RETURNING,
+            text: 'The five workers are returning. The roadblock is gone. Follow the road west to Ba Dan.',
+          },
           { when: rescued, text: 'The roadblock is gone. Follow the road west to Ba Dan.' },
         ],
         exits: [
@@ -129,6 +134,15 @@ export function connectAct1(map: MapDef): MapDef {
             'unit.enemy.thug',
             unvisited('after_forest'),
           ),
+          crossing(
+            map,
+            1,
+            4,
+            'forest_return_arrival',
+            'Ba Dan is ahead',
+            'npc.household',
+            RETURNEES_RETURNING,
+          ),
         ],
         npcs: [
           ...map.npcs,
@@ -146,6 +160,41 @@ export function connectAct1(map: MapDef): MapDef {
                 node: 'forest_dema_again',
               },
             ],
+          },
+          {
+            id: 'bo_shan',
+            name: 'Bo-shan',
+            resident: 'lw.npc.bo_shan',
+            sprite: RETURNEE_PRESENTATIONS['lw.npc.bo_shan'].npcSprite,
+            node: 'forest_explore',
+          },
+          {
+            id: 'leto',
+            name: 'Leto',
+            resident: 'lw.npc.leto',
+            sprite: RETURNEE_PRESENTATIONS['lw.npc.leto'].npcSprite,
+            node: 'forest_explore',
+          },
+          {
+            id: 'amri',
+            name: 'Amri',
+            resident: 'lw.npc.amri',
+            sprite: RETURNEE_PRESENTATIONS['lw.npc.amri'].npcSprite,
+            node: 'forest_explore',
+          },
+          {
+            id: 'hesra',
+            name: 'Hesra',
+            resident: 'lw.npc.hesra',
+            sprite: RETURNEE_PRESENTATIONS['lw.npc.hesra'].npcSprite,
+            node: 'forest_explore',
+          },
+          {
+            id: 'senn',
+            name: 'Senn',
+            resident: 'lw.npc.senn_messenger',
+            sprite: RETURNEE_PRESENTATIONS['lw.npc.senn_messenger'].npcSprite,
+            node: 'forest_explore',
           },
         ],
       };

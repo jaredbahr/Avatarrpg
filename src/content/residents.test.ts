@@ -11,7 +11,6 @@ import { CONTENT_BUNDLE } from './index';
 import { validateContent } from './schemas';
 import type { ContentBundle } from './schemas';
 import { EXCLUDED_RESIDENTS, RELEASED_RESIDENTS } from './identity';
-import type { IdentityEntry } from './identity';
 import { ASSETS } from './assets/manifest';
 import type {
   BackgroundRole,
@@ -89,6 +88,7 @@ function bundle(
     map?: string;
   } = {},
 ): ContentBundle {
+  const residents = change.residents ?? [ELDER];
   const mapId = change.map ?? VILLAGE;
   const maps: readonly MapDef[] = CONTENT_BUNDLE.maps.map((raw) => {
     // The synthetic elder replaces the real Mira: her riverside NpcDef stands unbound.
@@ -116,8 +116,10 @@ function bundle(
     // Ba Dan's real records stay (W5a), all but Mira's, which the synthetic elder replaces.
     anchors: [...CONTENT_BUNDLE.anchors, ...(change.anchors ?? ANCHORS)],
     residents: [
-      ...CONTENT_BUNDLE.residents.filter((r) => r.id !== 'lw.npc.mira'),
-      ...(change.residents ?? [ELDER]),
+      ...CONTENT_BUNDLE.residents.filter(
+        (r) => r.id !== 'lw.npc.mira' && !residents.some((replacement) => replacement.id === r.id),
+      ),
+      ...residents,
     ],
     backgroundRoles: [...CONTENT_BUNDLE.backgroundRoles, ...(change.roles ?? [HELPER])],
   };
@@ -125,56 +127,24 @@ function bundle(
 
 const problemsOf = (b: ContentBundle): string[] => validateContent(b);
 
-/**
- * A synthetic record and bound NpcDef for a released identity, written the way
- * the per-person work will write it: the design key is the record, the runtime
- * slug is the NpcDef, and the two name the same person through `resident`.
- */
-function released(entry: IdentityEntry): { resident: ResidentDef; npc: NpcDef } {
-  const slug = entry.runtimeSlugs[0];
-  if (!slug) throw new Error(`${entry.id} has no runtime slug`);
-  const slot: ResidentSlot = {
-    anchor: 'test.table',
-    activity: 'idle',
-    npc: slug,
-    interrupt: 'talk',
-  };
-  return {
-    resident: {
-      id: entry.id,
-      name: entry.name,
-      source: { runtimeNpcIds: [slug] },
-      home: 'test.home',
-      fallback: slot,
-      schedule: {
-        dawn: slot,
-        morning: slot,
-        midday: slot,
-        afternoon: slot,
-        evening: slot,
-        night: 'home',
-      },
-    },
-    npc: {
-      id: slug,
-      name: entry.name,
-      sprite: 'npc.elder',
-      node: 'mira_intro',
-      resident: entry.id,
-    },
-  };
-}
-
 describe('validateContent: resident records (ADR 0047 W4a)', () => {
   it('accepts a well-formed synthetic resident, anchor set and background role', () => {
     expect(problemsOf(bundle())).toEqual([]);
   });
 
-  it('accepts a record for each of the five released returnees (W2)', () => {
+  it('accepts one canonical record and resident-bound NpcDef for each released returnee', () => {
+    expect(problemsOf(CONTENT_BUNDLE)).toEqual([]);
     for (const entry of RELEASED_RESIDENTS) {
-      const { resident, npc } = released(entry);
-      const problems = problemsOf(bundle({ residents: [ELDER, resident], npcs: [npc] }));
-      expect(problems, `${entry.id} should be claimable`).toEqual([]);
+      expect(
+        CONTENT_BUNDLE.residents.filter((resident) => resident.id === entry.id),
+        entry.id,
+      ).toHaveLength(1);
+      expect(
+        CONTENT_BUNDLE.maps.some((map) =>
+          map.npcs.some((npc) => npc.resident === entry.id && entry.runtimeSlugs.includes(npc.id)),
+        ),
+        entry.id,
+      ).toBe(true);
     }
   });
 
@@ -200,13 +170,14 @@ describe('validateContent: resident records (ADR 0047 W4a)', () => {
   it('keeps lw.npc.senn_messenger the one canonical messenger record and blocks the legacy key', () => {
     const messenger = RELEASED_RESIDENTS.find((entry) => entry.id === 'lw.npc.senn_messenger');
     if (!messenger) throw new Error('The messenger is not in the release list');
-    const { resident, npc } = released(messenger);
-    expect(problemsOf(bundle({ residents: [ELDER, resident], npcs: [npc] }))).toEqual([]);
+    expect(
+      CONTENT_BUNDLE.residents.filter((resident) => resident.id === messenger.id),
+    ).toHaveLength(1);
 
     // The superseded W0 key can never sit beside the canonical record as a
     // second Senn (ADR 0047 §8): it is a key, not a person.
     const legacy: ResidentDef = { ...ELDER, id: 'lw.npc.senn', source: { runtimeNpcIds: [] } };
-    expect(problemsOf(bundle({ residents: [ELDER, resident, legacy], npcs: [npc] }))).toContain(
+    expect(problemsOf(bundle({ residents: [ELDER, legacy] }))).toContain(
       'resident "lw.npc.senn" claims "lw.npc.senn", excluded until released',
     );
   });

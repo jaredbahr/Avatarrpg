@@ -116,3 +116,4 @@ export {
   worldConversationFor,
 } from './story/presentations';
 export type { AssetEntry } from './assets/manifest';
+export { RETURNEE_IDS, RETURNEE_PRESENTATIONS, RETURNEE_RECORDS } from './residents/returnees';

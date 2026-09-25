@@ -1,10 +1,15 @@
 import { describe, expect, it } from 'vitest';
-import { CONTENT } from '../index';
+import { CONTENT, RETURNEE_IDS } from '../index';
 import { createGame } from '../../core/state/createGame';
 import { apply } from '../../core/state/reducer';
-import { npcNode, resolveDialogue } from '../../core/story/storyEngine';
+import {
+  advanceDialogue,
+  enterStoryNode,
+  npcNode,
+  resolveDialogue,
+} from '../../core/story/storyEngine';
 import { worldObjective } from '../../core/story/world';
-import type { GameState } from '../../core/types';
+import type { ContentIndex, GameState, ResidentProfile, StoryNode } from '../../core/types';
 
 function game(flags: GameState['flags'] = {}): GameState {
   const initial = createGame(CONTENT, {
@@ -13,6 +18,16 @@ function game(flags: GameState['flags'] = {}): GameState {
     startNode: 'village_explore',
   });
   return { ...initial, flags };
+}
+
+const profiles = (profile: ResidentProfile) =>
+  Object.fromEntries(RETURNEE_IDS.map((id) => [id, profile]));
+
+function withProfiles(state: GameState, profile: ResidentProfile): GameState {
+  return {
+    ...state,
+    world: { ...state.world, residentProfiles: profiles(profile) },
+  };
 }
 
 function finish(state: GameState): GameState {
@@ -48,8 +63,11 @@ describe('the authored walk home', () => {
     if (victory?.kind !== 'end' || defeat?.kind !== 'end') throw new Error('Missing endings');
     expect(victory.next).toBe('quarry_after_explore');
     expect(defeat.next).toBeUndefined();
+    const lost = enterStoryNode(CONTENT, game(), 'act1_lost').state;
+    expect(lost.world.residentProfiles).toEqual({});
     if (!victory.next) throw new Error('Missing victory continuation');
     const ended = apply(CONTENT, game(), { type: 'enterNode', nodeId: 'act1_victory' }).state;
+    expect(ended.world.residentProfiles).toEqual(profiles('returning'));
     const returned = apply(CONTENT, ended, { type: 'enterNode', nodeId: victory.next }).state;
     expect(returned.screen).toBe('explore');
     expect(returned.location.mapId).toBe('quarry_floor');
@@ -58,6 +76,67 @@ describe('the authored walk home', () => {
     expect(returned.battle).toBeNull();
   });
 
+  it('changes returning profiles only when the neutral arrival completes', () => {
+    const victory = enterStoryNode(CONTENT, game(), 'act1_victory').state;
+    const onRoad: GameState = {
+      ...victory,
+      screen: 'explore',
+      location: { mapId: 'forest_road', pos: { x: 1, y: 4 } },
+      story: { ...victory.story, nodeId: 'forest_return_explore' },
+    };
+    const entered = enterStoryNode(CONTENT, onRoad, 'forest_return_arrival').state;
+    expect(entered.screen).toBe('dialogue');
+    expect(entered.location.mapId).toBe('forest_road');
+    expect(entered.world.residentProfiles).toEqual(profiles('returning'));
+
+    const savedMidArrival = structuredClone(entered);
+    const afterFirstLine = advanceDialogue(CONTENT, savedMidArrival).state;
+    expect(afterFirstLine.world.residentProfiles).toEqual(profiles('returning'));
+    expect(afterFirstLine.location.mapId).toBe('forest_road');
+
+    const arrived = advanceDialogue(CONTENT, afterFirstLine).state;
+    expect(arrived.world.residentProfiles).toEqual(profiles('resting'));
+    expect(arrived.location.mapId).toBe('ba_dan_village');
+    expect(arrived.story.nodeId).toBe('village_return_explore');
+  });
+
+  it('allows an explicit later liberation without clearing the loss history', () => {
+    const liberation: StoryNode = {
+      id: 'test_later_liberation',
+      kind: 'flags',
+      set: { liberation_complete: true },
+      residentProfiles: profiles('returning'),
+      next: 'forest_return_explore',
+    };
+    const content: ContentIndex = {
+      ...CONTENT,
+      story: new Map([...CONTENT.story, [liberation.id, liberation]]),
+    };
+    const lost = enterStoryNode(CONTENT, game(), 'act1_lost').state;
+    const liberated = enterStoryNode(content, lost, liberation.id).state;
+    expect(liberated.flags.act1_lost).toBe(true);
+    expect(liberated.flags.liberation_complete).toBe(true);
+    expect(liberated.world.residentProfiles).toEqual(profiles('returning'));
+  });
+
+  it('uses profile ownership for returning and home objectives', () => {
+    const road = withProfiles(
+      {
+        ...game({ act1_complete: true }),
+        location: { mapId: 'forest_road', pos: { x: 2, y: 4 } },
+        story: { ...game().story, nodeId: null },
+      },
+      'returning',
+    );
+    expect(worldObjective(CONTENT, road)).toContain('returning');
+    expect(worldObjective(CONTENT, road)).not.toContain('home');
+
+    const village = withProfiles(
+      { ...road, location: { mapId: 'ba_dan_village', pos: { x: 22, y: 7 } } },
+      'resting',
+    );
+    expect(worldObjective(CONTENT, village)).toContain('home');
+  });
   it.each(HOMECOMINGS)(
     '%s/%s responds to rescue without replaying the request',
     (map, npc, node) => {
@@ -121,7 +200,7 @@ describe('the authored walk home', () => {
   });
 
   it('changes the village cue after every homecoming has been visited', () => {
-    const base = game({ act1_complete: true });
+    const base = withProfiles(game({ act1_complete: true }), 'resting');
     const visited = ['mira_epilogue', 'pella_home', 'gao_home_cold', 'dorin_home'];
     const complete = {
       ...base,
@@ -148,6 +227,25 @@ describe('the authored walk home', () => {
     expect(worldObjective(CONTENT, pending)).toBe(
       'The workers are home. Talk with Mira, Pella, Gao or Dorin, or visit the river.',
     );
+  });
+
+  it('reads legacy Act I completion as home without assigning resident profiles', () => {
+    const base = game({ act1_complete: true });
+    const legacy = {
+      ...base,
+      location: { ...base.location, mapId: 'ba_dan_village' },
+    };
+    const expected =
+      'The workers are home. Talk with Mira, Pella, Gao or Dorin, or visit the river.';
+
+    expect(worldObjective(CONTENT, legacy)).toBe(expected);
+    expect(
+      worldObjective(CONTENT, {
+        ...legacy,
+        story: { ...legacy.story, nodeId: null },
+      }),
+    ).toBe(expected);
+    expect(legacy.world.residentProfiles).toEqual({});
   });
 
   it('keeps the rescued riverside objective after an optional dialogue returns', () => {
@@ -199,7 +297,10 @@ describe('the authored walk home', () => {
         location: { mapId, pos: { x: 1, y: 1 } },
         story: { ...game().story, nodeId: 'act1_epilogue' },
       };
-      const after = { ...before, flags: { act1_complete: true } };
+      const after = withProfiles(
+        { ...before, flags: { act1_complete: true } },
+        mapId === 'ba_dan_village' ? 'resting' : 'returning',
+      );
       expect(worldObjective(CONTENT, after)).not.toBe(worldObjective(CONTENT, before));
       expect(worldObjective(CONTENT, after)).toBeTruthy();
     }

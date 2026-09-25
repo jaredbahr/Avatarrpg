@@ -844,7 +844,13 @@ export type Condition =
   | { readonly kind: 'all'; readonly of: readonly Condition[] }
   | { readonly kind: 'any'; readonly of: readonly Condition[] }
   | { readonly kind: 'not'; readonly of: Condition }
-  | { readonly kind: 'phase'; readonly in: readonly DayPhase[] };
+  | { readonly kind: 'phase'; readonly in: readonly DayPhase[] }
+  /** An absent profile key is the authored `missing` state (ADR 0049). */
+  | {
+      readonly kind: 'residentProfile';
+      readonly residentId: string;
+      readonly in: readonly ResidentProfile[];
+    };
 
 export interface StoryOption {
   readonly label: string;
@@ -941,6 +947,8 @@ export type StoryNode =
       readonly id: string;
       readonly kind: 'flags';
       readonly set: Readonly<Record<string, FlagValue>>;
+      /** Authored resident-state changes applied with this completion beat. */
+      readonly residentProfiles?: Readonly<Record<string, ResidentProfile>>;
       /**
        * XP granted to every party member, for story beats that are worth
        * something without a fight — Jin paying for Ruon, say. Keeps branches

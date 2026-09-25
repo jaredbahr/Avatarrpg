@@ -86,7 +86,7 @@ describe('the identity register (ADR 0047 W0, released W2)', () => {
     expect(excludedResidentFor('senn', 'Senn')).toBeUndefined();
   });
 
-  it('has no NpcDef or visible placement for the five while their profiles are missing', () => {
+  it('owns an NpcDef for each returnee but keeps all five invisible while profiles are missing', () => {
     for (const entry of RELEASED_RESIDENTS) {
       const claimedByNpc = CONTENT_BUNDLE.maps.some((map) =>
         map.npcs.some(
@@ -96,7 +96,7 @@ describe('the identity register (ADR 0047 W0, released W2)', () => {
             entry.names.includes(npc.name),
         ),
       );
-      expect(claimedByNpc, `${entry.id} should have no NpcDef`).toBe(false);
+      expect(claimedByNpc, `${entry.id} should have a resident-bound NpcDef`).toBe(true);
     }
     const state = createGame(CONTENT, {
       seed: 'identity',

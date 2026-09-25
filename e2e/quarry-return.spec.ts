@@ -1,6 +1,6 @@
 import { expect, test } from '@playwright/test';
 import type { Page } from '@playwright/test';
-import { CONTENT } from '../src/content';
+import { CONTENT, RETURNEE_IDS } from '../src/content';
 import { previewAiPlan } from '../src/core/rules/ai';
 import { distance, reachable } from '../src/core/rules/grid';
 import { contactEffects } from '../src/core/rules/surfaces';
@@ -283,7 +283,22 @@ for (const custody of ['trade', 'escort'] as const) {
     expect(await page.evaluate(() => window.fnt?.app.state?.story.nodeId)).toBe('dema_home');
     await expect(page.locator('.dialogue-line')).toContainText('crews came past');
     await continueStory(page);
-    await takeRoute(page, 'West → Ba Dan Village', 'ba_dan_village');
+    await page.getByRole('button', { name: 'Map', exact: true }).click();
+    await page.getByRole('button', { name: 'West → Ba Dan Village', exact: true }).click();
+    await expect
+      .poll(() => page.evaluate(() => window.fnt?.app.state?.story.nodeId))
+      .toBe('forest_return_arrival');
+    expect(await page.evaluate(() => window.fnt!.app.state?.location.mapId)).toBe('forest_road');
+    expect(await page.evaluate(() => window.fnt!.app.state?.world.residentProfiles)).toEqual(
+      Object.fromEntries(RETURNEE_IDS.map((id) => [id, 'returning'])),
+    );
+    await continueStory(page);
+    await expect
+      .poll(() => page.evaluate(() => window.fnt?.app.state?.location.mapId))
+      .toBe('ba_dan_village');
+    expect(await page.evaluate(() => window.fnt!.app.state?.world.residentProfiles)).toEqual(
+      Object.fromEntries(RETURNEE_IDS.map((id) => [id, 'resting'])),
+    );
     // Dorin and Hanru occupy adjacent handover tiles. From the east-road
     // return position, tapping Dorin must open and pin Dorin, not Hanru.
     const dorin = CONTENT.anchors.get('bd03.handover')?.site;

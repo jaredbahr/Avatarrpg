@@ -57,6 +57,7 @@ const NPC_PRESENTATIONS: readonly (readonly [string, string])[] = [
   ['forest_dema', 'forest_road'],
   ['forest_dema_again', 'forest_road'],
   ['dema_home', 'forest_road'],
+  ['forest_return_arrival', 'forest_road'],
 
   // The watch speaks at the gate before the party chooses its approach.
   ['gate_parley', 'quarry_gate'],
@@ -183,6 +184,11 @@ export function validateStoryPresentations(
       for (const nodeId of [npc.node, ...(npc.routes ?? []).map((route) => route.node)]) {
         const presentation = registry[nodeId];
         if (!presentation) {
+          // Every NPC conversation needs a presentation. The profile-backed
+          // Slice B placeholders are the one intended exception, and
+          // `validateContent` defers those by name; exempting resident NPCs
+          // here instead would be wider than the returnee case and would hide
+          // a resident silently bouncing to exploration when tapped.
           problems.push(
             'map "' +
               map.id +

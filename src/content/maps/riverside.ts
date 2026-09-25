@@ -1,6 +1,7 @@
 /** Walkable paths traced against the riverside painting. One cell is 1/36 of its width. */
 import type { MapDef } from '../../core/types';
 import { LEGEND } from './legend';
+import { RETURNEE_PRESENTATIONS } from '../residents/returnees';
 
 export const RIVERSIDE_ID = 'ba_dan_riverside';
 export const RIVERSIDE_ENTRY = 'riverside_explore';
@@ -145,6 +146,13 @@ export const RIVERSIDE: MapDef = {
       pos: RIVERSIDE_SPOTS.shrine,
       sprite: 'npc.elder',
       node: 'riverside_shrine',
+    },
+    {
+      id: 'senn',
+      name: 'Senn',
+      resident: 'lw.npc.senn_messenger',
+      sprite: RETURNEE_PRESENTATIONS['lw.npc.senn_messenger'].npcSprite,
+      node: 'riverside_explore',
     },
   ],
   props: [],
