@@ -11,15 +11,20 @@
 
 import { RngCursor } from '../rng';
 import { evaluate } from '../story/conditions';
-import { activeTriggers, triggerKey, visibleNpcs } from '../story/world';
+import { advancePhase } from '../story/clock';
+import { findSettleTile, settle } from '../story/settle';
+import { resolveResidents } from '../story/residents';
+import { activeTriggers, backgroundFigures, triggerKey, visibleNpcs } from '../story/world';
 import type {
   BattleState,
   Command,
   ContentIndex,
+  DayPhase,
   GameEvent,
   GameState,
   Grid,
   MapDef,
+  NpcDef,
   PendingChoice,
   StepResult,
   Unit,
@@ -29,7 +34,16 @@ import { BattleDraft } from './battleDraft';
 import { appendLog } from './log';
 import { absorbBattleResults, restAfterVictory, reviveParty, xpRoster } from './createGame';
 import { canUseAbility, isValidTarget, resolveAbility } from '../rules/abilities';
-import { buildGrid, distance, findPath, pathCost, posKey, samePos, tileAt } from '../rules/grid';
+import {
+  buildGrid,
+  cachedGrid,
+  distance,
+  findPath,
+  pathCost,
+  posKey,
+  samePos,
+  tileAt,
+} from '../rules/grid';
 import { adoptDiscipline, awardXp, disciplineUnlocked } from '../rules/leveling';
 import { advanceTurn, battleOutcome, endedOnTimeLimit } from '../rules/turnOrder';
 import { canMove, isAlive } from '../rules/stats';
@@ -46,6 +60,27 @@ import {
 /** Convenience: state unchanged, one explanatory message. */
 function refuse(state: GameState, text: string): StepResult {
   return { state, events: [{ type: 'message', text }] };
+}
+
+/**
+ * Formats a phase change out of `result`'s events into the log, the same
+ * way `handleWait` does, appending onto `base.log`. Only `phaseChanged` -
+ * not every event. `enterStoryNode`'s 'flags' node kind can also grant XP
+ * or start a battle on the same node that changes the phase (e.g. an
+ * authored node chaining into a `grantXp` node or straight into a
+ * `battle` node), and those events need the mid-battle/post-battle unit
+ * roster `describeEvent` resolves names from - which `finish` and
+ * `handleResolveBattle` already log correctly, with that roster in hand.
+ * Logging them again here, with no roster, is how a bare unit id like
+ * "p0" or a battle's round banner ended up in the log; every path that
+ * calls this is explore/dialogue only, so battle is always null.
+ */
+function withLog(content: ContentIndex, base: GameState, result: StepResult): StepResult {
+  const phaseChanges = result.events.filter((event) => event.type === 'phaseChanged');
+  return {
+    state: { ...result.state, log: appendLog(content, null, base.log, phaseChanges) },
+    events: result.events,
+  };
 }
 
 function finish(
@@ -363,7 +398,7 @@ function handleWalkTo(content: ContentIndex, state: GameState, pos: Vec2): StepR
   const map = content.maps.get(state.location.mapId);
   if (!map) return refuse(state, 'No map loaded.');
 
-  const npc = visibleNpcs(map, state).find((n) => samePos(n.pos, pos));
+  const npc = visibleNpcs(content, map, state).find((n) => samePos(n.pos, pos));
   if (npc) {
     if (distance(state.location.pos, pos) > 1) {
       // Walk adjacent first rather than teleporting into a conversation.
@@ -379,7 +414,11 @@ function handleWalkTo(content: ContentIndex, state: GameState, pos: Vec2): StepR
       const walked = step.state;
       const target = npcNode(content, walked, map.id, npc.id);
       if (!target) return refuse(walked, 'They have nothing to say.');
-      const entered = enterStoryNode(content, walked, target);
+      const entered = withLog(
+        content,
+        walked,
+        pinIfDialogue(content, walked, map, npc, enterStoryNode(content, walked, target)),
+      );
       return {
         state: entered.state,
         events: [...step.events, ...entered.events],
@@ -387,7 +426,19 @@ function handleWalkTo(content: ContentIndex, state: GameState, pos: Vec2): StepR
     }
     const target = npcNode(content, state, map.id, npc.id);
     if (!target) return refuse(state, 'They have nothing to say.');
-    return enterStoryNode(content, state, target);
+    return withLog(
+      content,
+      state,
+      pinIfDialogue(content, state, map, npc, enterStoryNode(content, state, target)),
+    );
+  }
+
+  // A background role says nothing (ADR 0047, W8): walk up to them, never onto them.
+  if (backgroundFigures(content, map, state).some((role) => samePos(role.pos, pos))) {
+    if (distance(state.location.pos, pos) <= 1) return { state, events: [] };
+    const approach = findApproach(content, state, pos);
+    if (!approach) return refuse(state, 'You cannot reach them from here.');
+    return handleWalkTo(content, state, approach);
   }
 
   const grid = buildExploreGrid(content, state);
@@ -422,7 +473,7 @@ function handleWalkTo(content: ContentIndex, state: GameState, pos: Vec2): StepR
         fired: [...new Set([...state.world.fired, triggerKey(map, trigger)])],
       },
     };
-    const entered = enterStoryNode(content, stopped, trigger.node);
+    const entered = withLog(content, stopped, enterStoryNode(content, stopped, trigger.node));
     return {
       state: entered.state,
       events: [...partyWalked(state, route.path.slice(0, index + 1)), ...entered.events],
@@ -462,12 +513,101 @@ function handleWalkTo(content: ContentIndex, state: GameState, pos: Vec2): StepR
   if (!map.exits?.length && map.exit && samePos(map.exit.pos, pos)) {
     const node = currentNode(content, moved);
     if (node?.kind === 'explore') {
-      const entered = enterStoryNode(content, moved, node.next);
+      const entered = withLog(content, moved, enterStoryNode(content, moved, node.next));
       return { state: entered.state, events: [...walk, ...entered.events] };
     }
   }
 
   return { state: moved, events: walk };
+}
+
+/**
+ * Sets the conversation pin (ADR 0047 §4, B1) when a resident-bound NpcDef
+ * opens a node that lands in dialogue. The pin records the anchor the
+ * resident stood on at the tap (`at`, before the conversation), which is the
+ * placement that made this NpcDef visible; unbound NpcDefs pin nobody.
+ */
+function pinIfDialogue(
+  content: ContentIndex,
+  at: GameState,
+  map: MapDef,
+  npc: NpcDef,
+  entered: StepResult,
+): StepResult {
+  if (entered.state.screen !== 'dialogue' || !npc.resident) return entered;
+  const anchor = resolveResidents(content, at).placements.find(
+    (p) => p.id === npc.resident && p.mapId === map.id && p.slot?.npc === npc.id,
+  )?.anchor;
+  if (!anchor) return entered;
+  const talk = { npcId: npc.id, mapId: map.id, anchor };
+  return {
+    state: { ...entered.state, world: { ...entered.state.world, talk } },
+    events: entered.events,
+  };
+}
+
+/**
+ * `{ type: 'wait'; until }` (ADR 0047 §1). Refused for every reason the
+ * ADR lists; changes only the clock, and only via `advancePhase`.
+ */
+function handleWait(content: ContentIndex, state: GameState, until: DayPhase): StepResult {
+  if (state.battle !== null || state.screen === 'combat') {
+    return refuse(state, 'Not in the middle of a fight.');
+  }
+  const node = state.story.nodeId ? content.story.get(state.story.nodeId) : undefined;
+  if (state.screen === 'dialogue' || (node && node.kind !== 'explore')) {
+    return refuse(state, 'Not in the middle of a conversation.');
+  }
+  if (state.screen !== 'explore') return refuse(state, 'Not exploring right now.');
+  if (until === state.world.clock.phase) {
+    return refuse(state, 'It is already that time.');
+  }
+
+  const map = content.maps.get(state.location.mapId);
+  if (!map) return refuse(state, 'No map loaded.');
+  const leader = state.party[0];
+  if (!leader) return refuse(state, 'There is no one to wait.');
+
+  // In explore the leader's tile is `location.pos`; `party[0].pos` is only set
+  // in battle (see `partyWalked` and `app/world/guidance`).
+  const leaderPos = state.location.pos;
+  const spots = map.restSpots ?? [];
+  if (!spots.some((spot) => distance(leaderPos, spot.pos) <= 1)) {
+    // Name the places, so the refusal says where waiting is possible (D8).
+    return refuse(
+      state,
+      spots.length
+        ? `You can wait only at ${spots.map((spot) => spot.label).join(' or ')}.`
+        : 'There is nowhere to sit and wait here.',
+    );
+  }
+
+  // Checked against the *post-wait* state: a phase change can change which
+  // NPCs are visible (`NpcDef.when` may key off the clock), so whether the
+  // leader will need resettling — and whether anywhere free exists for
+  // `settle()` to put them (it runs after every command, including this
+  // one) — is only knowable after `advancePhase`, not before it.
+  const advanced = advancePhase(state, until);
+  const onNpc = visibleNpcs(content, map, advanced).some((npc) => samePos(npc.pos, leaderPos));
+  if (onNpc) {
+    const grid = buildExploreGrid(content, advanced);
+    if (!findSettleTile(content, map, grid, advanced, leaderPos)) {
+      return refuse(state, 'There is nowhere for the party to stand.');
+    }
+  }
+
+  const events: GameEvent[] = [
+    {
+      type: 'phaseChanged',
+      from: state.world.clock.phase,
+      to: until,
+      day: advanced.world.clock.day,
+    },
+  ];
+  return {
+    state: { ...advanced, log: appendLog(content, null, state.log, events) },
+    events,
+  };
 }
 
 /**
@@ -483,25 +623,31 @@ function partyWalked(state: GameState, path: readonly Vec2[]): GameEvent[] {
 
 /**
  * Explore maps carry no battle, so their grid is derived from the map each
- * time it is needed. Memoised by map definition because the tiles never change outside
- * combat and a 24x16 rebuild on every tap would be pure waste.
+ * time it is needed. `cachedGrid` (rules/grid.ts) memoises the build by
+ * `MapDef` object — the same cache `settle()` reuses — because the tiles
+ * never change outside combat and a 24x16 rebuild on every tap would be
+ * pure waste.
  */
-const exploreGrids = new WeakMap<MapDef, Grid>();
-
 function buildExploreGrid(content: ContentIndex, state: GameState): Grid {
   const map = content.maps.get(state.location.mapId);
   if (!map) throw new Error(`Unknown map "${state.location.mapId}"`);
-  const cached = exploreGrids.get(map);
-  if (cached) return cached;
-  const built = buildGrid(map);
-  exploreGrids.set(map, built);
-  return built;
+  return cachedGrid(map);
 }
 
 /** Nearest walkable tile adjacent to `target`, for approaching an NPC. */
 function findApproach(content: ContentIndex, state: GameState, target: Vec2): Vec2 | null {
   const grid = buildExploreGrid(content, state);
-  const occupied = new Set<string>([posKey(target)]);
+  const map = content.maps.get(state.location.mapId);
+  // Nobody ends a walk on, or paths through, another person. In particular,
+  // the two guards share adjacent handover tiles: approaching one must not
+  // recursively tap the other when their tile happens to be the nearest.
+  const occupied = new Set(
+    map
+      ? [...visibleNpcs(content, map, state), ...backgroundFigures(content, map, state)].map(
+          (who) => posKey(who.pos),
+        )
+      : [posKey(target)],
+  );
   let best: Vec2 | null = null;
   let bestDistance = Infinity;
 
@@ -621,22 +767,23 @@ function handleChooseDiscipline(
 /* Entry point                                                         */
 /* ------------------------------------------------------------------ */
 
-export function apply(content: ContentIndex, state: GameState, command: Command): StepResult {
+function applyCommand(content: ContentIndex, state: GameState, command: Command): StepResult {
   switch (command.type) {
     case 'enterNode':
-      return enterStoryNode(content, state, command.nodeId);
+      return withLog(content, state, enterStoryNode(content, state, command.nodeId));
 
     case 'advanceDialogue': {
       const node = currentNode(content, state);
-      if (node?.kind === 'dialogue') return advanceDialogue(content, state);
+      if (node?.kind === 'dialogue')
+        return withLog(content, state, advanceDialogue(content, state));
       // Leaving a conversation that ends nowhere returns to the explore map.
       const fallback = exploreNodeFor(content, state.location.mapId);
-      if (fallback) return enterStoryNode(content, state, fallback);
+      if (fallback) return withLog(content, state, enterStoryNode(content, state, fallback));
       return { state, events: [] };
     }
 
     case 'chooseOption':
-      return chooseOption(content, state, command.optionIndex);
+      return withLog(content, state, chooseOption(content, state, command.optionIndex));
 
     case 'walkTo':
       return handleWalkTo(content, state, command.pos);
@@ -646,7 +793,7 @@ export function apply(content: ContentIndex, state: GameState, command: Command)
         (n) => n.kind === 'battle' && n.encounterId === command.encounterId,
       );
       if (!node) return refuse(state, `No story node runs encounter "${command.encounterId}".`);
-      return enterStoryNode(content, state, node.id);
+      return withLog(content, state, enterStoryNode(content, state, node.id));
     }
 
     case 'move':
@@ -678,7 +825,23 @@ export function apply(content: ContentIndex, state: GameState, command: Command)
       }));
       return { state: { ...state, flags: { ...state.flags, ...command.flags } }, events };
     }
+
+    case 'wait':
+      return handleWait(content, state, command.until);
   }
+}
+
+/**
+ * The one door into the rules. Every command runs through `settle`
+ * afterward (ADR 0047 §5, B2): it clears a conversation pin the result no
+ * longer supports, and — in explore only — steps the leader off a
+ * visible NPC tile. `settle`'s events are appended after the command's
+ * own.
+ */
+export function apply(content: ContentIndex, state: GameState, command: Command): StepResult {
+  const result = applyCommand(content, state, command);
+  const settled = settle(content, state, result.state);
+  return { state: settled.state, events: [...result.events, ...settled.events] };
 }
 
 /** Applies a list of commands in order. Used by the simulator and by tests. */

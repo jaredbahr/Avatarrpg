@@ -13,10 +13,11 @@
  */
 
 import { z } from 'zod';
+import { DAY_PHASES } from '../types';
 import type { GameState } from '../types';
 import { MAX_BANKED_TOTAL_AP } from '../rules/stats';
 
-export const SAVE_FORMAT_VERSION = 3;
+export const SAVE_FORMAT_VERSION = 4;
 export const SAVE_MAGIC = 'four-nations-tactics';
 
 /* ------------------------------------------------------------------ */
@@ -24,6 +25,8 @@ export const SAVE_MAGIC = 'four-nations-tactics';
 /* ------------------------------------------------------------------ */
 
 const vec2 = z.object({ x: z.number().int(), y: z.number().int() });
+
+const dayPhase = z.enum(DAY_PHASES);
 
 const statusInstance = z.object({
   id: z.string(),
@@ -146,6 +149,8 @@ const gameState = z.object({
     returnPos: z.record(vec2),
     fired: z.array(z.string()),
     cleared: z.array(z.string()),
+    clock: z.object({ day: z.number().int().min(1), phase: dayPhase }),
+    talk: z.object({ npcId: z.string(), mapId: z.string(), anchor: z.string() }).nullable(),
   }),
   log: z.array(z.string()),
 });
@@ -237,6 +242,38 @@ export function migrate(raw: unknown): unknown {
           ? { ...state, version: 3, world: { returnPos: {}, fired: [], cleared: [] } }
           : state,
     };
+  }
+
+  if (blob.format === 3) {
+    const state = blob.state;
+    if (typeof state === 'object' && state !== null) {
+      const s = state as Record<string, unknown>;
+      const location = s.location;
+      const mapId =
+        typeof location === 'object' && location !== null
+          ? (location as Record<string, unknown>).mapId
+          : undefined;
+      // Mira and Pella are at the riverside once mira_intro is visited (afternoon);
+      // every other map matches D2's homecoming evening (Mira, Gao, Pella and both
+      // guards in the village).
+      const phase = mapId === 'ba_dan_riverside' ? 'afternoon' : 'evening';
+      const world = s.world;
+      blob = {
+        ...blob,
+        format: 4,
+        state: {
+          ...s,
+          version: 4,
+          world: {
+            ...(typeof world === 'object' && world !== null ? world : {}),
+            clock: { day: 1, phase },
+            talk: null,
+          },
+        },
+      };
+    } else {
+      blob = { ...blob, format: 4 };
+    }
   }
 
   return blob;

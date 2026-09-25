@@ -538,7 +538,11 @@ export interface PropInstance {
 export interface NpcDef {
   readonly id: string;
   readonly name: string;
-  readonly pos: Vec2;
+  /**
+   * The tile this NPC stands on. Required unless `resident` is set, in which
+   * case the tile comes from the resident's resolved anchor (ADR 0047 §2).
+   */
+  readonly pos?: Vec2;
   readonly sprite: string;
   /** Optional map guidance semantic for a non-person route marker. */
   readonly interaction?: 'route-sign';
@@ -555,6 +559,94 @@ export interface NpcDef {
    * than one alternative.
    */
   readonly routes?: readonly { readonly when: Condition; readonly node: string }[];
+  /**
+   * The resident (ADR 0047 §2) this NpcDef speaks for. A bound NpcDef is
+   * present only where its resident's placement puts it; `pos` becomes
+   * optional for bound NpcDefs in W4b, when every reader switches to the
+   * resolved anchor tile.
+   */
+  readonly resident?: string;
+}
+
+/* ------------------------------------------------------------------ */
+/* Residents (ADR 0047 §2)                                             */
+/* ------------------------------------------------------------------ */
+
+/** A place a resident can be. Codes are narrative ('bd02.shopfront'), never tiles. */
+export interface WorldAnchor {
+  readonly id: string;
+  /** Narrative place code, 'BD02'. */
+  readonly place: string;
+  readonly site:
+    | {
+        readonly kind: 'map';
+        readonly mapId: string;
+        readonly pos: Vec2;
+        /** A claim shared by several anchors: only one placement may hold it. */
+        readonly reserve?: string;
+      }
+    | { readonly kind: 'private'; readonly door: { readonly mapId: string; readonly pos: Vec2 } };
+}
+
+export interface ResidentSlot {
+  readonly anchor: string;
+  /** Pose/prop/bark key for presentation; never evaluated. */
+  readonly activity: string;
+  /** First match replaces `activity`. */
+  readonly variants?: readonly { readonly when: Condition; readonly activity: string }[];
+  /** NpcDef on the anchor's map that owns conversation here. */
+  readonly npc?: string;
+  /** `npc` set means not 'observe'. */
+  readonly interrupt: 'talk' | 'finish-then-talk' | 'observe';
+  readonly service?: 'gate_watch';
+  /** Waypoints for the walk into this slot. */
+  readonly via?: readonly Vec2[];
+  /** Presentation-only wander points, at most 2 tiles from the anchor. */
+  readonly loop?: readonly Vec2[];
+}
+
+/** Override tiers in precedence order; the resolver ranks them 1-5 (§2). */
+export const RESIDENT_TIERS = ['mission', 'hazard', 'presence', 'care', 'appointment'] as const;
+
+export type ResidentTier = (typeof RESIDENT_TIERS)[number];
+
+export type ResidentSlotValue = ResidentSlot | 'home' | 'absent';
+
+export interface ResidentOverride {
+  readonly id: string;
+  readonly tier: ResidentTier;
+  readonly when: Condition;
+  /** Per-phase slots; a missing phase uses `all`, and with no `all` the override skips it. */
+  readonly slots: Partial<Readonly<Record<DayPhase, ResidentSlotValue>>>;
+  readonly all?: ResidentSlotValue;
+}
+
+export interface ResidentDef {
+  /** Design key, 'lw.npc.gao'. */
+  readonly id: string;
+  readonly name: string;
+  readonly source: { readonly established?: string; readonly runtimeNpcIds: readonly string[] };
+  /** A private anchor. */
+  readonly home: string;
+  /** Public; must have `npc` and interrupt 'talk'. */
+  readonly fallback: ResidentSlot;
+  readonly schedule: Readonly<Record<DayPhase, ResidentSlot | 'home'>>;
+  readonly overrides?: readonly ResidentOverride[];
+}
+
+/** Unnamed background people: never in the identity register, never interactive. */
+export interface BackgroundRole {
+  readonly id: string;
+  readonly label: string;
+  readonly sprite: string;
+  /** Interrupt 'observe'. */
+  readonly slots: Partial<Readonly<Record<DayPhase, ResidentSlot>>>;
+  /** Present when `resident` resolved to one of `anchors`. */
+  readonly accompanies?: {
+    readonly resident: string;
+    readonly anchors: readonly string[];
+    readonly slot: ResidentSlot;
+  };
 }
 
 export interface MapExit {
@@ -596,6 +688,12 @@ export interface MapDef {
   /** Map-owned routes and walk-over events; independent of the story cursor. */
   readonly exits?: readonly MapExit[];
   readonly triggers?: readonly MapTrigger[];
+  /**
+   * Where `wait` is allowed (ADR 0047 §1, D8): the leader must be within one
+   * tile of one of these. `label` finishes "You can wait only at …", so it is
+   * lower case unless it starts with a name.
+   */
+  readonly restSpots?: readonly { readonly pos: Vec2; readonly label: string }[];
   readonly objective?: string;
   /** First matching objective wins; the plain objective is the fallback. */
   readonly objectiveVariants?: readonly { readonly when: Condition; readonly text: string }[];
@@ -745,7 +843,8 @@ export type Condition =
   | { readonly kind: 'partySize'; readonly op: 'gte' | 'lte'; readonly value: number }
   | { readonly kind: 'all'; readonly of: readonly Condition[] }
   | { readonly kind: 'any'; readonly of: readonly Condition[] }
-  | { readonly kind: 'not'; readonly of: Condition };
+  | { readonly kind: 'not'; readonly of: Condition }
+  | { readonly kind: 'phase'; readonly in: readonly DayPhase[] };
 
 export interface StoryOption {
   readonly label: string;
@@ -848,6 +947,8 @@ export type StoryNode =
        * that skip an encounter from arriving a level behind.
        */
       readonly grantXp?: number;
+      /** Advance to the next occurrence of this phase; a no-op if already there (ADR 0047 §1). */
+      readonly phase?: DayPhase;
       readonly next: string;
     }
   | {
@@ -930,6 +1031,15 @@ export interface PendingChoice {
 
 export type Screen = 'title' | 'setup' | 'explore' | 'dialogue' | 'combat' | 'ended';
 
+/**
+ * The one list of phases, in clock order. `clock.ts`'s `PHASE_ORDER`, the
+ * `serialize.ts`/`schemas.ts` zod enums, and the `DayPhase` type itself all
+ * derive from this rather than repeating the six names.
+ */
+export const DAY_PHASES = ['dawn', 'morning', 'midday', 'afternoon', 'evening', 'night'] as const;
+
+export type DayPhase = (typeof DAY_PHASES)[number];
+
 export interface GameState {
   /** Bumped when the save shape changes; `core/save` migrates on load. */
   readonly version: number;
@@ -947,6 +1057,14 @@ export interface GameState {
     readonly returnPos: Readonly<Record<string, Vec2>>;
     readonly fired: readonly string[];
     readonly cleared: readonly string[];
+    /** One clock for the whole world (ADR 0047 §1). */
+    readonly clock: { readonly day: number; readonly phase: DayPhase };
+    /** The conversation pin (ADR 0047 §4); null when nobody is pinned. */
+    readonly talk: {
+      readonly npcId: string;
+      readonly mapId: string;
+      readonly anchor: string;
+    } | null;
   };
   /** Human-readable combat log, newest last. Capped by the reducer. */
   readonly log: readonly string[];
@@ -974,7 +1092,8 @@ export type Command =
   | { readonly type: 'resolveBattle' }
   | { readonly type: 'chooseLevelUp'; readonly unitId: string; readonly abilityId: string }
   | { readonly type: 'chooseDiscipline'; readonly unitId: string; readonly disciplineId: string }
-  | { readonly type: 'setFlags'; readonly flags: Readonly<Record<string, FlagValue>> };
+  | { readonly type: 'setFlags'; readonly flags: Readonly<Record<string, FlagValue>> }
+  | { readonly type: 'wait'; readonly until: DayPhase };
 
 export type GameEvent =
   | { readonly type: 'message'; readonly text: string }
@@ -1080,7 +1199,13 @@ export type GameEvent =
       readonly unlocked: readonly string[];
     }
   | { readonly type: 'battleEnded'; readonly outcome: 'victory' | 'defeat' }
-  | { readonly type: 'screenChanged'; readonly screen: Screen };
+  | { readonly type: 'screenChanged'; readonly screen: Screen }
+  | {
+      readonly type: 'phaseChanged';
+      readonly from: DayPhase;
+      readonly to: DayPhase;
+      readonly day: number;
+    };
 
 /** Every reducer step returns the next state plus what the UI should play. */
 export interface StepResult {
@@ -1110,6 +1235,10 @@ export interface ContentIndex {
   readonly props: ReadonlyMap<string, PropDef>;
   readonly combos: readonly ComboRule[];
   readonly story: ReadonlyMap<string, StoryNode>;
+  /** Living-world records (ADR 0047 §2). Map order is declaration order, which ranks ties. */
+  readonly anchors: ReadonlyMap<string, WorldAnchor>;
+  readonly residents: ReadonlyMap<string, ResidentDef>;
+  readonly backgroundRoles: ReadonlyMap<string, BackgroundRole>;
   /**
    * Abilities every party member has without spending a kit slot on them — the
    * Shove that lets anybody push a barrel. Reached through the index because

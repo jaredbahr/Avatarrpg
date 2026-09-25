@@ -26,7 +26,7 @@ import { createBattle, createGame } from '../state/createGame';
 import { npcNode, resolveDialogue } from '../story/storyEngine';
 import { worldObjective } from '../story/world';
 import type { GameState } from '../types';
-import { reconcileDisciplines } from './reconcile';
+import { reconcileDisciplines, reconcileWorld } from './reconcile';
 import { deserialize, serialize, stateFromBlob } from './serialize';
 
 const META = {
@@ -40,7 +40,7 @@ const META = {
 function load(state: GameState): GameState {
   const result = deserialize(serialize(state, META));
   if (!result.ok) throw new Error(result.error);
-  return reconcileDisciplines(CONTENT, stateFromBlob(result.blob));
+  return reconcileWorld(CONTENT, reconcileDisciplines(CONTENT, stateFromBlob(result.blob)));
 }
 
 /** A party that has finished the quarry, standing somewhere on the way home. */
@@ -169,5 +169,13 @@ describe('a continued run is the same run', () => {
     const mira = CONTENT.story.get('mira_epilogue');
     if (mira?.kind !== 'dialogue') throw new Error('Missing Mira return');
     expect(resolveDialogue(spared, mira).lines).not.toEqual(resolveDialogue(traded, mira).lines);
+  });
+
+  it('still settles now that reconcileWorld runs in the load path (ADR 0047 §5)', () => {
+    // `load` now runs `reconcileWorld` after `reconcileDisciplines`, so this is
+    // the whole load path the app uses. A second load of an already-loaded save
+    // must still be that same run: `reconcileWorld` is idempotent.
+    const saved = homeward({ ruon_spared: true }, 'ba_dan_village', 'village_return_explore');
+    expect(load(load(saved))).toEqual(load(saved));
   });
 });

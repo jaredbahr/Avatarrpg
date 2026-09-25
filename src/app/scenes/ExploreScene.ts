@@ -14,13 +14,15 @@ import { npcPresentationScale, triggerPresentationScale } from './exploreMarkerS
 import { evaluate } from '../../core/story/conditions';
 import {
   activeTriggers,
+  backgroundFigures,
   visibleNpcs,
   worldObjective,
   worldObjectiveNpcId,
 } from '../../core/story/world';
+import type { PlacedNpc } from '../../core/story/world';
 import { VillageLife } from '../village/VillageLife';
 import type { App, CameraInfo, Scene } from '../App';
-import type { GameEvent, GameState, Grid, MapDef, NpcDef, Unit, Vec2 } from '../../core/types';
+import type { GameEvent, GameState, Grid, MapDef, Unit, Vec2 } from '../../core/types';
 import { buildGrid, distance, samePos } from '../../core/rules/grid';
 import { Renderer, TILE } from '../../render/renderer';
 import type { MapView, NpcMarker, RenderUnit } from '../../render/renderer';
@@ -29,16 +31,20 @@ import { ambienceFx } from '../../content/fx';
 import { ambientEmitters } from '../anim/ambience';
 import { PartyTrail, placeParty } from '../anim/trail';
 import type { FollowerRoute } from '../anim/trail';
-import { button, clear, el, mark, motionReduced } from '../ui/dom';
+import { append, button, clear, el, mark, motionReduced } from '../ui/dom';
 import { UI_MARKS } from '../ui/marks';
 import { partyRoster } from '../ui/PartyRoster';
 import { SaveMenu } from '../ui/SaveMenu';
 import { UnitInspector } from '../ui/UnitInspector';
 import { TravelJournal } from '../ui/TravelJournal';
+import { WaitDialog } from '../ui/WaitDialog';
 import { showGridLines } from '../storage/localSaves';
 import { NextWalk, previewWalk } from '../world/walking';
 import type { WalkPreview } from '../world/walking';
 import { nearbyExploreTarget } from '../world/guidance';
+import { handoverBark } from '../world/barks';
+import { seatHere } from '../world/waiting';
+import { phaseLabel } from '../world/journal';
 import { NearbyPlaces } from '../ui/NearbyPlaces';
 import { LocalMap, LocalMapDialog } from '../ui/LocalMap';
 import { courtyardEnvironment } from '../audio/environment';
@@ -84,6 +90,14 @@ export class ExploreScene implements Scene {
   private viewSize: { width: number; height: number } | null = null;
   /** True while a registered world conversation sits over this map. */
   private conversationMode = false;
+  /**
+   * The people drawn last frame, each with the tile a tap on them walks to
+   * (ADR 0047 §7): a walking resident's rules tile, so a tap targets where
+   * they are going. Someone walking off the map has none and is not listed.
+   */
+  private targets: { readonly at: Vec2; readonly scale: number; readonly to: Vec2 }[] = [];
+  /** The markers drawn last frame; the e2e suite reads them. */
+  lastNpcs: readonly NpcMarker[] = [];
 
   constructor(private app: App) {}
 
@@ -211,12 +225,7 @@ export class ExploreScene implements Scene {
       const before = trail.positions(state.party.length);
       const plan =
         this.map?.projection === 'oblique'
-          ? trail.planWalk(
-              event.path,
-              state.party.length,
-              grid,
-              visibleNpcs(this.map, state).map((npc) => npc.pos),
-            )
+          ? trail.planWalk(event.path, state.party.length, grid, this.standing(state))
           : null;
       if (plan) {
         this.animatePartyBatches(plan.batches, state, now);
@@ -292,11 +301,21 @@ export class ExploreScene implements Scene {
     const seated = new PartyTrail(
       placeParty(grid, head, count, {
         awayFrom: this.map?.exit?.pos,
-        avoid: this.map ? visibleNpcs(this.map, state).map((npc) => npc.pos) : [],
+        avoid: this.standing(state),
       }),
     );
     this.trail = seated;
     return seated;
+  }
+
+  /** Where people stand, residents and background roles alike: nobody is seated there. */
+  private standing(state: GameState): Vec2[] {
+    const map = this.map;
+    if (!map) return [];
+    const { content } = this.app;
+    return [...visibleNpcs(content, map, state), ...backgroundFigures(content, map, state)].map(
+      (who) => who.pos,
+    );
   }
 
   /** The camera as plain numbers, for the e2e suite to map a tile to a pixel. */
@@ -427,14 +446,23 @@ export class ExploreScene implements Scene {
     clear(banner);
     const objective = this.app.state ? worldObjective(this.app.content, this.app.state) : null;
     this.canvas?.setAttribute('aria-label', `${this.map?.name ?? 'World'} map`);
-    banner.append(
-      el('strong', { class: 'title-plate-name', text: this.app.placeLabel() }),
-      el('span', {
-        class: 'explore-mode hide-narrow',
-        text: this.conversationMode ? 'Conversation' : 'Exploring',
-      }),
+    const clock = this.app.state?.world.clock;
+    append(banner, [
+      el(
+        'div',
+        { class: 'explore-title' },
+        el('strong', { class: 'title-plate-name', text: this.app.placeLabel() }),
+        clock ? el('span', { class: 'explore-phase', text: phaseLabel(clock.phase) }) : null,
+      ),
+      // The time of day stands where 'Exploring' did; a conversation still says so.
+      this.conversationMode || !clock
+        ? el('span', {
+            class: 'explore-mode hide-narrow',
+            text: this.conversationMode ? 'Conversation' : 'Exploring',
+          })
+        : null,
       el('div', { class: 'spacer' }),
-    );
+    ]);
     if (!this.conversationMode) {
       banner.append(
         button(
@@ -469,7 +497,7 @@ export class ExploreScene implements Scene {
     if (corner && state && this.map && this.grid) {
       clear(corner);
       corner.hidden = this.conversationMode || !!this.life;
-      this.localMap = new LocalMap(this.map, this.grid, state);
+      this.localMap = new LocalMap(this.app.content, this.map, this.grid, state);
       this.localMap.update(this.partyPositions() ?? [state.location.pos]);
       const follow = button('Follow party', () => this.followParty(), {
         class: 'local-map-follow',
@@ -544,6 +572,13 @@ export class ExploreScene implements Scene {
     const row = el('div', { class: 'action-row' });
 
     const moving = this.hudMoving;
+    // The handover's bark (ADR 0047 §8) as a subtitle, once per watch, on arrival.
+    const bark = moving || !this.map ? null : handoverBark(this.app.content, this.map, state);
+    const watch = `${state.world.clock.day}:${state.world.clock.phase}`;
+    if (bark && this.app.barkedWatch !== watch) {
+      this.app.barkedWatch = watch;
+      this.app.toasts.show(bark, 'info', 5000);
+    }
     const target =
       moving || !this.map ? null : nearbyExploreTarget(this.app.content, this.map, state);
     const exit = target?.kind === 'exit' ? target : null;
@@ -595,14 +630,26 @@ export class ExploreScene implements Scene {
     );
     row.appendChild(primary);
 
-    const look = button(
-      'Look around',
-      () => {
-        new NearbyPlaces(this.app, (pos) => this.requestWalk(pos)).open(this.overlayHost());
-      },
-      { class: 'action-button', title: 'Find nearby people and places along this path' },
-    );
-    look.prepend(mark(UI_MARKS.talk));
+    // At a seat (ADR 0047 D8), waiting takes Look around's place. The dock is
+    // laid out for four actions: a fifth wraps the iPad dock to twice its
+    // height and pushes one off a phone at Largest text. Look around is one
+    // step away; away from a seat the journal says where waiting is possible.
+    const seat = !moving && seatHere(this.app.content, state);
+    const look = seat
+      ? button(
+          'Wait',
+          () => new WaitDialog(this.app, (pos) => this.requestWalk(pos)).open(this.overlayHost()),
+          { class: 'action-button', title: `Wait until later at ${seat.label}` },
+        )
+      : button(
+          'Look around',
+          () => {
+            new NearbyPlaces(this.app, (pos) => this.requestWalk(pos)).open(this.overlayHost());
+          },
+          { class: 'action-button', title: 'Find nearby people and places along this path' },
+        );
+    look.prepend(mark(seat ? UI_MARKS.wait : UI_MARKS.talk));
+    if (seat) look.appendChild(el('span', { class: 'action-sub', text: seat.label }));
     row.appendChild(look);
 
     const leader = state.party[0];
@@ -678,7 +725,7 @@ export class ExploreScene implements Scene {
     target?.focus({ preventScroll: true });
   }
 
-  private talkTo(npc: NpcDef | null): void {
+  private talkTo(npc: PlacedNpc | null): void {
     if (this.conversationMode) return;
     if (!npc) return;
     // The rules walk the party up to the villager and open the conversation.
@@ -754,7 +801,7 @@ export class ExploreScene implements Scene {
     const wrap = this.canvas?.parentElement;
     const active = this.map?.id === RIVERSIDE_ID;
     this.host?.querySelector('.explore-scene')?.classList.toggle('riverside-scene', active);
-    if (active && wrap) this.life = new VillageLife(this.app, wrap);
+    if (active && wrap) this.life = new VillageLife(this.app, wrap, (pos) => this.requestWalk(pos));
   }
 
   private handleTap(x: number, y: number): void {
@@ -762,7 +809,8 @@ export class ExploreScene implements Scene {
     const renderer = this.renderer;
     const state = this.app.state;
     if (!renderer || !state) return;
-    const tile = renderer.camera.toTile(x, y);
+    // A tap on someone walks to them, wherever their figure is drawn.
+    const tile = this.figureAt(x, y) ?? renderer.camera.toTile(x, y);
     // Ground taps can plan the next stroll without interrupting the current animation.
     if (this.app.animator.busy(performance.now())) {
       this.requestWalk(tile);
@@ -774,12 +822,41 @@ export class ExploreScene implements Scene {
     this.requestWalk(tile);
   }
 
+  /**
+   * The tile of the person whose drawn figure is under the point, front-most
+   * first, or null: upright bounds over the drawn feet, as the riverside's
+   * `hitsVillager` has them.
+   */
+  private figureAt(x: number, y: number): Vec2 | null {
+    const camera = this.renderer?.camera;
+    if (!camera) return null;
+    let best: { to: Vec2; foot: number } | null = null;
+    for (const who of this.targets) {
+      const box = camera.spriteBox(who.at);
+      const size = box.size * who.scale;
+      const foot = box.y + box.size * 0.86;
+      const hit =
+        Math.abs(x - box.x - box.size / 2) <= size * 0.28 &&
+        y <= foot + box.size * 0.12 &&
+        y >= foot - size * 0.9;
+      if (hit && (!best || foot > best.foot)) best = { to: who.to, foot };
+    }
+    return best?.to ?? null;
+  }
+
   private requestWalk(pos: Vec2): void {
     const state = this.app.state;
     if (this.conversationMode) return;
     if (!state || state.screen !== 'explore' || state.location.mapId !== this.map?.id) return;
     if (this.life?.busy(performance.now())) return;
-    if (this.app.animator.busy(performance.now())) {
+    // Someone still walking to their place: set off now for the tile beside
+    // where they are going, and talk once they are there, so no conversation
+    // opens with the speaker mid-stride (ADR 0047 §7, W8).
+    if (!this.app.animator.busy(performance.now()) && this.app.residents.walkingTo(pos)) {
+      const beside = previewWalk(this.app.content, state, pos).path.at(-1);
+      if (beside) this.app.dispatch({ type: 'walkTo', pos: beside });
+      if (this.app.state) this.nextWalk.set(this.app.content, this.app.state, pos);
+    } else if (this.app.animator.busy(performance.now())) {
       const preview = this.nextWalk.set(this.app.content, state, pos);
       if (preview.refusal) this.app.toasts.show(preview.refusal);
     } else {
@@ -840,17 +917,29 @@ export class ExploreScene implements Scene {
     const now = performance.now();
     // Long roaming sessions must retire old walk tracks just as combat does.
     this.app.animator.prune(now);
+    const held = Boolean(
+      this.conversationMode || document.hidden || document.querySelector('[role="dialog"]'),
+    );
     // Never carry queued intent through a menu, a loaded save, a story/map
     // change, or a world conversation.
-    if (this.conversationMode || document.hidden || document.querySelector('[role="dialog"]'))
-      this.clearNextWalk();
+    if (held) this.clearNextWalk();
+    // Residents walk to their new places after any command (ADR 0047 §7).
+    // Nothing moves, and nothing is planned, while a conversation is open.
+    const residents = this.app.residents;
+    residents.tick(now, held);
+    const live = !this.departing && !this.conversationMode && state.screen === 'explore';
+    const party = this.ensureTrail(state, grid).positions(state.party.length);
+    // A follower on a tile someone is walking to steps aside.
+    if (residents.update(map, state, party, live)) this.needsSettle = true;
     if (!this.app.animator.busy(now)) {
       if (!this.conversationMode) {
         if (this.walking) {
           this.walking = null;
           this.updateWalkFeedback();
         }
-        const next = this.nextWalk.take(state);
+        const queued = this.nextWalk.target(state);
+        const next =
+          queued && this.app.residents.walkingTo(queued) ? null : this.nextWalk.take(state);
         if (next) {
           this.requestWalk(next);
           return;
@@ -864,10 +953,7 @@ export class ExploreScene implements Scene {
       ) {
         this.needsSettle = false;
         const trail = this.ensureTrail(state, grid);
-        const routes = trail.settle(
-          grid,
-          visibleNpcs(map, state).map((npc) => npc.pos),
-        );
+        const routes = trail.settle(grid, this.standing(state));
         const batches: FollowerRoute[][] = [];
         for (const route of routes) (batches[route.batch ?? 0] ??= []).push(route);
         this.animatePartyBatches(batches, state, now);
@@ -909,6 +995,7 @@ export class ExploreScene implements Scene {
       fallen: false,
       // A health bar over someone strolling round a village is noise.
       showHealth: false,
+      shadow: true,
       scale: partyScale(map.projection),
       renderPos: index === 0 ? walking : this.app.animator.renderPos(now, member.id),
       offset: this.app.animator.offset(now, member.id),
@@ -916,18 +1003,41 @@ export class ExploreScene implements Scene {
       ...this.app.animator.locomotion(now, member.id, 'rest'),
     }));
 
+    // Residents and background roles come from the walks, in their drawn
+    // places; signs and other unbound NpcDefs stand where they are defined.
+    const people = residents.figures();
     const npcs: NpcMarker[] = [
-      ...visibleNpcs(map, state).map((npc) => ({
-        pos: npc.pos,
-        sprite: npc.sprite,
-        name: npc.name,
-        scale: npcPresentationScale(npc.sprite, map.projection),
+      ...visibleNpcs(this.app.content, map, state)
+        .filter((npc) => !npc.resident)
+        .map((npc) => ({
+          id: npc.id,
+          pos: npc.pos,
+          sprite: npc.sprite,
+          name: npc.name,
+          scale: npcPresentationScale(npc.sprite, map.projection),
+        })),
+      ...people.map((who) => ({
+        id: who.id,
+        pos: who.pos ?? who.drawPos,
+        sprite: who.sprite,
+        name: who.name,
+        scale: npcPresentationScale(who.sprite, map.projection),
+        renderPos: who.drawPos,
+        ...(who.offset ? { offset: who.offset } : {}),
+        facing: who.facing,
+        alpha: who.alpha,
+        clipTime: who.clipTime,
+        walking: who.walking,
+        lean: who.lean,
+        squash: who.squash,
+        quiet: !who.npcId || !who.pos,
       })),
       ...activeTriggers(map, state).flatMap((trigger) => {
         const pos = trigger.area[0];
         return pos
           ? [
               {
+                id: `trigger:${trigger.id}`,
                 pos,
                 sprite: trigger.sprite,
                 name: trigger.label,
@@ -937,6 +1047,11 @@ export class ExploreScene implements Scene {
           : [];
       }),
     ];
+    const gone = new Set(people.filter((who) => !who.pos).map((who) => who.id));
+    this.targets = npcs
+      .filter((npc) => !gone.has(npc.id))
+      .map((npc) => ({ at: npc.renderPos ?? npc.pos, scale: npc.scale ?? 1, to: npc.pos }));
+    this.lastNpcs = npcs;
 
     // The air over the village is fidelity: WebGL only, and still under reduce motion.
     const ambient =

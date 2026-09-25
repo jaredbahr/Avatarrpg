@@ -73,6 +73,21 @@ export const RETURN_STORY: readonly StoryNode[] = [
     ],
     variants: [
       {
+        // The return lands in the evening (D2); this hold lasts until she is heard.
+        when: {
+          kind: 'all',
+          of: [
+            { kind: 'flag', key: 'pella_asked', op: 'set' },
+            { kind: 'phase', in: ['dawn', 'morning', 'midday', 'afternoon'] },
+          ],
+        },
+        lines: [
+          'You found him. He came through the gate and I ran so fast I lost a shoe.',
+          'I told him about the chores. He said he would do them. All of them.',
+          'He said he would start straight away. He is still asleep.',
+        ],
+      },
+      {
         when: { kind: 'flag', key: 'pella_asked', op: 'set' },
         lines: [
           'You found him. He came through the gate and I ran so fast I lost a shoe.',
@@ -115,7 +130,18 @@ export const RETURN_STORY: readonly StoryNode[] = [
     lines: [
       'I saw them coming round the bend. Pella was through the gate before I could call her.',
       'Everyone who could walk is back. We took the handcart for the others.',
-      'Mira is in the square. Go on. I will keep watch here.',
+      'Go and see Mira. I will keep watch here.',
+    ],
+    variants: [
+      {
+        // Off the post in the evening and at night: Hanru has the watch (§4).
+        when: { kind: 'phase', in: ['evening', 'night'] },
+        lines: [
+          'I saw them coming round the bend. Pella was through the gate before I could call her.',
+          'Everyone who could walk is back. We took the handcart for the others.',
+          'Hanru has the watch tonight. I stayed to see them in.',
+        ],
+      },
     ],
     next: 'village_return_explore',
   },
@@ -149,7 +175,7 @@ export const RETURN_STORY: readonly StoryNode[] = [
     speaker: 'Elder Mira',
     portrait: 'portrait.mira',
     lines: [
-      'I have spent the afternoon finding beds. Everyone wants their relatives to stay in the same room.',
+      'I spent the morning moving beds. Everyone wants their relatives to stay in the same room.',
       'They are all home. I keep going back to check.',
       'Sit with me a while. The washing can wait.',
     ],

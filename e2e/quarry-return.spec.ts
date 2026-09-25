@@ -284,6 +284,14 @@ for (const custody of ['trade', 'escort'] as const) {
     await expect(page.locator('.dialogue-line')).toContainText('crews came past');
     await continueStory(page);
     await takeRoute(page, 'West → Ba Dan Village', 'ba_dan_village');
+    // Dorin and Hanru occupy adjacent handover tiles. From the east-road
+    // return position, tapping Dorin must open and pin Dorin, not Hanru.
+    const dorin = CONTENT.anchors.get('bd03.handover')?.site;
+    if (dorin?.kind !== 'map') throw new Error('Missing canonical Dorin handover');
+    await walkTo(page, dorin.pos.x, dorin.pos.y);
+    expect(await page.evaluate(() => window.fnt?.app.state?.story.nodeId)).toBe('dorin_home');
+    expect(await page.evaluate(() => window.fnt?.app.state?.world.talk?.npcId)).toBe('guard_dorin');
+    await continueStory(page);
     await walkTo(page, 11, 5);
     expect(await page.evaluate(() => window.fnt?.app.state?.story.nodeId)).toBe('mira_epilogue');
     await expect(page.locator('.dialogue-line')).toContainText('Bo-shan');
@@ -292,8 +300,9 @@ for (const custody of ['trade', 'escort'] as const) {
       custody === 'trade' ? 'where Jin delivered him' : 'taking Ruon’s statement';
     await expect(page.locator('.dialogue-line')).toContainText(custodyResponse);
     await continueStory(page);
-    const gao = CONTENT.maps.get('ba_dan_village')?.npcs.find((npc) => npc.id === 'shopkeeper_gao');
-    if (!gao) throw new Error('Missing canonical village merchant');
+    // Gao is resident-bound (ADR 0047): his homecoming hold keeps him at his shopfront.
+    const gao = CONTENT.anchors.get('bd02.shopfront')?.site;
+    if (gao?.kind !== 'map') throw new Error('Missing canonical village merchant');
     await walkTo(page, gao.pos.x, gao.pos.y);
     expect(await page.evaluate(() => window.fnt?.app.state?.story.nodeId)).toBe(
       custody === 'trade' ? 'gao_home_cold' : 'gao_home',

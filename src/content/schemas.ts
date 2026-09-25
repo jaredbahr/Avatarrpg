@@ -18,28 +18,45 @@
 import { z } from 'zod';
 import { CLIP_FRAME_COUNTS, CLIP_NAMES, REQUIRED_CLIPS } from './assets/clips';
 import type { AssetEntry } from './assets/manifest';
-import { STANDING_PREFIX } from '../core/story/conditions';
+import { SCENE_PREFIX, SCENE_VALUES, STANDING_PREFIX } from '../core/story/conditions';
+import { DAY_PHASES, RESIDENT_TIERS } from '../core/types';
 import type {
   Ability,
+  BackgroundRole,
   CharacterDef,
   ComboRule,
   Condition,
+  FlagValue,
+  DayPhase,
   DisciplineDef,
   EncounterDef,
   EnemyDef,
   MapDef,
+  NpcDef,
   PropDef,
+  ResidentDef,
+  ResidentSlot,
+  ResidentSlotValue,
   StatusDef,
   StoryNode,
   SurfaceDef,
+  Vec2,
+  WorldAnchor,
 } from '../core/types';
 import { STORY_PRESENTATIONS, validateStoryPresentations } from './story/presentations';
+import {
+  FORBIDDEN_BINDINGS,
+  IDENTITY_REGISTER,
+  excludedResidentFor,
+  isReservedIdentity,
+} from './identity';
 
 /* ------------------------------------------------------------------ */
 /* Primitives                                                          */
 /* ------------------------------------------------------------------ */
 
 const elementId = z.enum(['fire', 'water', 'earth', 'air', 'nonbender']);
+const dayPhaseId: z.ZodType<DayPhase> = z.enum(DAY_PHASES);
 const damageType = z.enum([
   'fire',
   'water',
@@ -151,6 +168,7 @@ export const conditionSchema: z.ZodType<Condition> = z.lazy(() =>
     z.object({ kind: z.literal('all'), of: z.array(conditionSchema).min(1) }),
     z.object({ kind: z.literal('any'), of: z.array(conditionSchema).min(1) }),
     z.object({ kind: z.literal('not'), of: conditionSchema }),
+    z.object({ kind: z.literal('phase'), in: z.array(dayPhaseId).min(1) }),
   ]),
 );
 
@@ -426,16 +444,22 @@ export const mapSchema = z
     legend: z.record(tileTemplate),
     partySpawns: z.array(vec2).min(1),
     npcs: z.array(
-      z.object({
-        id,
-        name: z.string().min(1),
-        pos: vec2,
-        sprite: z.string().min(1),
-        interaction: z.literal('route-sign').optional(),
-        when: conditionSchema.optional(),
-        node: id,
-        routes: z.array(z.object({ when: conditionSchema, node: id })).optional(),
-      }),
+      z
+        .object({
+          id,
+          name: z.string().min(1),
+          pos: vec2.optional(),
+          sprite: z.string().min(1),
+          interaction: z.literal('route-sign').optional(),
+          when: conditionSchema.optional(),
+          node: id,
+          routes: z.array(z.object({ when: conditionSchema, node: id })).optional(),
+          resident: id.optional(),
+        })
+        .refine((npc) => npc.resident !== undefined || npc.pos !== undefined, {
+          path: ['pos'],
+          message: 'pos is required unless the NpcDef is bound to a resident',
+        }),
     ),
     props: z.array(propPlacement),
     ambience: z.string().min(1),
@@ -672,6 +696,7 @@ export const storyNodeSchema = z.discriminatedUnion('kind', [
     kind: z.literal('flags'),
     set: z.record(flagValue),
     grantXp: z.number().int().min(0).max(2000).optional(),
+    phase: dayPhaseId.optional(),
     next: id,
   }),
   z.object({ id, kind: z.literal('branch'), flag: z.string().min(1), ifSet: id, ifUnset: id }),
@@ -734,6 +759,67 @@ export const assetEntrySchema = z.discriminatedUnion('kind', [
   }),
 ]);
 
+/* ------------------------------------------------------------------ */
+/* Residents (ADR 0047 §2)                                             */
+/* ------------------------------------------------------------------ */
+
+export const anchorSchema = z.object({
+  id,
+  place: z.string().min(1),
+  site: z.discriminatedUnion('kind', [
+    z.object({ kind: z.literal('map'), mapId: id, pos: vec2, reserve: id.optional() }),
+    z.object({ kind: z.literal('private'), door: z.object({ mapId: id, pos: vec2 }) }),
+  ]),
+});
+
+const residentSlotSchema = z.object({
+  anchor: id,
+  activity: z.string().min(1),
+  variants: z.array(z.object({ when: conditionSchema, activity: z.string().min(1) })).optional(),
+  npc: id.optional(),
+  interrupt: z.enum(['talk', 'finish-then-talk', 'observe']),
+  service: z.literal('gate_watch').optional(),
+  via: z.array(vec2).optional(),
+  loop: z.array(vec2).optional(),
+});
+
+const slotValue = z.union([residentSlotSchema, z.literal('home'), z.literal('absent')]);
+const byPhase = <T extends z.ZodTypeAny>(value: T) =>
+  z.object(Object.fromEntries(DAY_PHASES.map((phase) => [phase, value])) as Record<DayPhase, T>);
+
+export const residentSchema = z.object({
+  id,
+  name: z.string().min(1),
+  source: z.object({
+    established: z.string().min(1).optional(),
+    runtimeNpcIds: z.array(id),
+  }),
+  home: id,
+  fallback: residentSlotSchema,
+  schedule: byPhase(z.union([residentSlotSchema, z.literal('home')])),
+  overrides: z
+    .array(
+      z.object({
+        id,
+        tier: z.enum(RESIDENT_TIERS),
+        when: conditionSchema,
+        slots: byPhase(slotValue).partial(),
+        all: slotValue.optional(),
+      }),
+    )
+    .optional(),
+});
+
+export const backgroundRoleSchema = z.object({
+  id,
+  label: z.string().min(1),
+  sprite: z.string().min(1),
+  slots: byPhase(residentSlotSchema).partial(),
+  accompanies: z
+    .object({ resident: id, anchors: z.array(id).min(1), slot: residentSlotSchema })
+    .optional(),
+});
+
 export interface ContentBundle {
   /** The art manifest, so every sprite key content names is checked against it. */
   readonly assets?: Readonly<Record<string, AssetEntry>>;
@@ -748,6 +834,9 @@ export interface ContentBundle {
   readonly props: readonly PropDef[];
   readonly combos: readonly ComboRule[];
   readonly story: readonly StoryNode[];
+  readonly anchors: readonly WorldAnchor[];
+  readonly residents: readonly ResidentDef[];
+  readonly backgroundRoles: readonly BackgroundRole[];
 }
 
 /**
@@ -802,6 +891,48 @@ function isWalkable(map: MapDef, x: number, y: number): boolean {
   const template = map.legend[ch];
   if (!template) return false;
   return !(template.blocked ?? template.terrain === 'wall');
+}
+
+/**
+ * Every anchor tile on `mapId` a resident can stand at: the anchors named by
+ * its slots, fallback and overrides (ADR 0047 §2). 'home' and 'absent' never
+ * put an NPC on a map tile, so they contribute nothing. A resident-bound
+ * NpcDef has no authored `pos`; these tiles are where it can appear.
+ */
+function residentAnchorTiles(
+  bundle: ContentBundle,
+  residentId: string,
+  mapId: string,
+): readonly Vec2[] {
+  const resident = bundle.residents.find((r) => r.id === residentId);
+  if (!resident) return [];
+  const anchors = new Map(bundle.anchors.map((anchor) => [anchor.id, anchor]));
+  const values: (ResidentSlotValue | undefined)[] = [
+    ...Object.values(resident.schedule),
+    resident.fallback,
+    ...(resident.overrides ?? []).flatMap((override) => [
+      ...Object.values(override.slots),
+      override.all,
+    ]),
+  ];
+  const tiles = new Map<string, Vec2>();
+  for (const value of values) {
+    if (typeof value !== 'object') continue;
+    const site = anchors.get(value.anchor)?.site;
+    if (site?.kind === 'map' && site.mapId === mapId)
+      tiles.set(`${site.pos.x},${site.pos.y}`, site.pos);
+  }
+  return [...tiles.values()];
+}
+
+/**
+ * The tiles an NpcDef can stand on: a resident-bound one has no authored
+ * `pos`, so it uses every anchor its resident can be placed at on the map
+ * (ADR 0047 §2). A plain NpcDef keeps its authored tile.
+ */
+export function npcStandTiles(bundle: ContentBundle, mapId: string, npc: NpcDef): readonly Vec2[] {
+  if (!npc.resident) return npc.pos ? [npc.pos] : [];
+  return residentAnchorTiles(bundle, npc.resident, mapId);
 }
 
 /**
@@ -865,6 +996,8 @@ export function validateContent(bundle: ContentBundle): string[] {
       for (const trigger of map.triggers ?? []) {
         wanted.push([`trigger ${map.id}:${trigger.id}`, trigger.sprite, null]);
       }
+    for (const role of bundle.backgroundRoles)
+      wanted.push([`background role ${role.id}`, role.sprite, null]);
     for (const [owner, key, size] of wanted) {
       const entry = assets[key];
       if (!entry) {
@@ -892,6 +1025,9 @@ export function validateContent(bundle: ContentBundle): string[] {
     ['prop', propSchema, bundle.props],
     ['combo', comboSchema, bundle.combos],
     ['story node', storyNodeSchema, bundle.story],
+    ['anchor', anchorSchema, bundle.anchors],
+    ['resident', residentSchema, bundle.residents],
+    ['background role', backgroundRoleSchema, bundle.backgroundRoles],
   ];
 
   for (const [label, schema, items] of shapeChecks) {
@@ -919,9 +1055,29 @@ export function validateContent(bundle: ContentBundle): string[] {
     ['prop', bundle.props.map((p) => p.id)],
     ['combo', bundle.combos.map((c) => c.id)],
     ['story node', bundle.story.map((n) => n.id)],
+    ['anchor', bundle.anchors.map((a) => a.id)],
+    [
+      'resident or background role',
+      [...bundle.residents, ...bundle.backgroundRoles].map((r) => r.id),
+    ],
   ];
   for (const [label, ids] of idGroups) {
     for (const dupe of duplicates(ids)) problems.push(`duplicate ${label} id: "${dupe}"`);
+  }
+
+  /* --- identity register (ADR 0047 W0) ------------------------------ */
+  for (const dupe of duplicates(IDENTITY_REGISTER.map((entry) => entry.id))) {
+    problems.push(`identity register has two entries for "${dupe}"`);
+  }
+  for (const map of bundle.maps) {
+    for (const npc of map.npcs) {
+      const excluded = excludedResidentFor(npc.id, npc.name);
+      if (excluded) {
+        problems.push(
+          `map "${map.id}" npc "${npc.id}" ("${npc.name}") claims the reserved identity "${excluded.id}" (${excluded.name}), which is excluded until released`,
+        );
+      }
+    }
   }
 
   const abilityIds = new Set(bundle.abilities.map((a) => a.id));
@@ -1154,6 +1310,8 @@ export function validateContent(bundle: ContentBundle): string[] {
      */
     const propCells = new Set<string>();
     const spawnCells = new Set(m.partySpawns.map((s) => `${s.x},${s.y}`));
+    // A bound NpcDef stands on its resident's anchors, a plain one on `pos`.
+    const npcTiles = (npc: NpcDef): readonly Vec2[] => npcStandTiles(bundle, m.id, npc);
     for (const placement of m.props) {
       if (!propIds.has(placement.propId)) {
         problems.push(`map "${m.id}" places unknown prop "${placement.propId}"`);
@@ -1171,7 +1329,7 @@ export function validateContent(bundle: ContentBundle): string[] {
       if (m.exit && key === `${m.exit.pos.x},${m.exit.pos.y}`) {
         problems.push(`map "${m.id}" places "${placement.propId}" on the exit (${key})`);
       }
-      if (m.npcs.some((n) => `${n.pos.x},${n.pos.y}` === key)) {
+      if (m.npcs.some((n) => npcTiles(n).some((tile) => `${tile.x},${tile.y}` === key))) {
         problems.push(`map "${m.id}" places "${placement.propId}" on an npc (${key})`);
       }
       if (propCells.has(key)) {
@@ -1180,8 +1338,10 @@ export function validateContent(bundle: ContentBundle): string[] {
       propCells.add(key);
     }
     for (const npc of m.npcs) {
-      if (!isWalkable(m, npc.pos.x, npc.pos.y)) {
-        problems.push(`map "${m.id}" npc "${npc.id}" stands on a blocked tile`);
+      for (const tile of npcTiles(npc)) {
+        if (!isWalkable(m, tile.x, tile.y)) {
+          problems.push(`map "${m.id}" npc "${npc.id}" stands on a blocked tile`);
+        }
       }
       if (!storyIds.has(npc.node)) {
         problems.push(`map "${m.id}" npc "${npc.id}" points at unknown story node "${npc.node}"`);
@@ -1417,6 +1577,61 @@ export function validateContent(bundle: ContentBundle): string[] {
     }
   }
 
+  /* --- scene memory (ADR 0047 §6): only 'completed' or 'declined' ---- */
+  for (const node of bundle.story) {
+    const writes =
+      node.kind === 'flags'
+        ? [node.set]
+        : node.kind === 'choice'
+          ? node.options.map((option) => option.setFlags ?? {})
+          : [];
+    for (const [key, value] of writes.flatMap((set) => Object.entries(set))) {
+      if (key.startsWith(SCENE_PREFIX) && !SCENE_VALUES.includes(value)) {
+        problems.push(
+          `story node "${node.id}" sets "${key}" to ${JSON.stringify(value)}: scene memory ` +
+            `holds only ${SCENE_VALUES.map((v) => `"${String(v)}"`).join(' or ')}`,
+        );
+      }
+    }
+  }
+
+  // `branch` tests truthiness, and 'declined' is truthy: read scene memory
+  // through a Condition that names the value.
+  for (const node of bundle.story) {
+    if (node.kind === 'branch' && node.flag.startsWith(SCENE_PREFIX)) {
+      problems.push(
+        `story node "${node.id}" branches on "${node.flag}": 'declined' is truthy, so ` +
+          `compare scene memory with an "eq" flag condition instead of a branch node`,
+      );
+    }
+  }
+  // Every flag condition in content, wherever it sits, that compares scene
+  // memory with a value it can never hold.
+  const seen = new WeakSet<object>();
+  const scanConditions = (value: unknown, where: string): void => {
+    if (typeof value !== 'object' || value === null || seen.has(value)) return;
+    seen.add(value);
+    const record = value as Record<string, unknown>;
+    if (
+      record.kind === 'flag' &&
+      typeof record.key === 'string' &&
+      record.key.startsWith(SCENE_PREFIX) &&
+      record.op === 'eq' &&
+      !SCENE_VALUES.includes(record.value as FlagValue)
+    ) {
+      problems.push(
+        `${where} compares "${record.key}" with ${JSON.stringify(record.value)}: scene memory ` +
+          `holds only ${SCENE_VALUES.map((v) => `"${String(v)}"`).join(' or ')}`,
+      );
+    }
+    for (const child of Object.values(record)) scanConditions(child, where);
+  };
+  for (const node of bundle.story) scanConditions(node, `story node "${node.id}"`);
+  for (const m of bundle.maps) scanConditions(m, `map "${m.id}"`);
+  for (const e of bundle.encounters) scanConditions(e, `encounter "${e.id}"`);
+  for (const r of bundle.residents) scanConditions(r, `resident "${r.id}"`);
+  for (const r of bundle.backgroundRoles) scanConditions(r, `background role "${r.id}"`);
+
   for (const [from, to] of links) {
     if (!storyIds.has(to)) {
       problems.push(`story node "${from}" links to "${to}", which does not exist`);
@@ -1467,5 +1682,240 @@ export function validateContent(bundle: ContentBundle): string[] {
     }
   }
 
+  /* --- phase nodes: no clock churn behind a conversation (ADR 0047 §1) --- */
+  const nodeById = new Map(bundle.story.map((n) => [n.id, n]));
+  const phaseNodes = bundle.story.filter(
+    (n): n is Extract<StoryNode, { kind: 'flags' }> => n.kind === 'flags' && n.phase !== undefined,
+  );
+
+  for (const phaseNode of phaseNodes) {
+    // Walking only flags/branch successors (the pass-through node kinds),
+    // this must reach an explore, battle or end node before a dialogue or
+    // choice — a phase change can never open directly into a conversation.
+    const seen = new Set<string>([phaseNode.id]);
+    const queue = [phaseNode.next];
+    let reachesDialogueOrChoice = false;
+    while (queue.length > 0) {
+      const currentId = queue.shift();
+      if (!currentId || seen.has(currentId)) continue;
+      seen.add(currentId);
+      const current = nodeById.get(currentId);
+      if (!current) continue;
+      if (current.kind === 'dialogue' || current.kind === 'choice') {
+        reachesDialogueOrChoice = true;
+        break;
+      }
+      if (current.kind === 'flags') {
+        queue.push(current.next);
+      } else if (current.kind === 'branch') {
+        queue.push(current.ifSet, current.ifUnset);
+      }
+      // explore/battle/end: a resting point, do not walk past it.
+    }
+    if (reachesDialogueOrChoice) {
+      problems.push(
+        `story node "${phaseNode.id}" sets a phase but reaches a dialogue or choice node before an explore, battle or end node`,
+      );
+    }
+  }
+
+  // A phase node must never be reachable from an NpcDef's own node/routes,
+  // or from a repeatable (once: false) trigger: either could be replayed
+  // and would churn the clock every time. Walk the conversation subgraph
+  // from every such root, stopping at explore/end nodes rather than
+  // walking past them.
+  const conversationRoots: string[] = [];
+  for (const m of bundle.maps) {
+    for (const npc of m.npcs) {
+      conversationRoots.push(npc.node, ...(npc.routes ?? []).map((r) => r.node));
+    }
+    for (const trigger of m.triggers ?? []) {
+      if (!trigger.once) conversationRoots.push(trigger.node);
+    }
+  }
+
+  const conversationReachable = new Set<string>();
+  const conversationQueue = [...conversationRoots];
+  while (conversationQueue.length > 0) {
+    const currentId = conversationQueue.shift();
+    if (!currentId || conversationReachable.has(currentId)) continue;
+    conversationReachable.add(currentId);
+    const current = nodeById.get(currentId);
+    if (!current) continue;
+    if (current.kind === 'explore' || current.kind === 'end') continue;
+    for (const [from, to] of links) {
+      if (from === currentId) conversationQueue.push(to);
+    }
+  }
+
+  for (const phaseNode of phaseNodes) {
+    if (conversationReachable.has(phaseNode.id)) {
+      problems.push(
+        `story node "${phaseNode.id}" sets a phase but is reachable from an NPC or a repeatable trigger, which could churn the clock`,
+      );
+    }
+  }
+
+  validateResidents(bundle, problems);
+
   return problems;
+}
+
+/**
+ * Structural rules for living-world records (ADR 0047 §2, §4, §8): every
+ * reference resolves, slots agree with the NpcDefs they name, and nothing
+ * claims an excluded or forbidden identity (the W0 register). Tile rules that
+ * need the resolver over the state classes (forbidden tiles, reachability,
+ * the neighbour rule, guard coverage, pairing) are W5b's.
+ */
+function validateResidents(bundle: ContentBundle, problems: string[]): void {
+  const anchors = new Map(bundle.anchors.map((a) => [a.id, a]));
+  const residentIds = new Set(bundle.residents.map((r) => r.id));
+  const maps = new Map(bundle.maps.map((m) => [m.id, m]));
+
+  for (const anchor of bundle.anchors) {
+    const where = anchor.site.kind === 'map' ? anchor.site : anchor.site.door;
+    const map = maps.get(where.mapId);
+    if (!map) problems.push(`anchor "${anchor.id}" is on unknown map "${where.mapId}"`);
+    else if (anchor.site.kind === 'map' && !isWalkable(map, where.pos.x, where.pos.y)) {
+      problems.push(`anchor "${anchor.id}" stands on a blocked tile`);
+    }
+  }
+
+  /** Checks one slot; `owner` is the resident it belongs to, or null for a background role. */
+  const checkSlot = (label: string, slot: ResidentSlot, owner: string | null): void => {
+    const anchor = anchors.get(slot.anchor);
+    if (!anchor) {
+      problems.push(`${label}: unknown anchor "${slot.anchor}"`);
+      return;
+    }
+    if (slot.npc) {
+      if (slot.interrupt === 'observe') problems.push(`${label}: names an npc but only observes`);
+      const npc =
+        anchor.site.kind === 'map'
+          ? maps.get(anchor.site.mapId)?.npcs.find((n) => n.id === slot.npc)
+          : undefined;
+      if (!npc || npc.resident !== owner) {
+        problems.push(
+          `${label}: npc "${slot.npc}" is not an NpcDef bound to "${owner}" on the anchor's map`,
+        );
+      }
+    }
+    if (owner === null && (slot.interrupt !== 'observe' || slot.npc)) {
+      problems.push(`${label}: a background role only observes`);
+    }
+    if (anchor.site.kind === 'map') {
+      const { pos } = anchor.site;
+      for (const point of slot.loop ?? []) {
+        if (Math.max(Math.abs(point.x - pos.x), Math.abs(point.y - pos.y)) > 2) {
+          problems.push(
+            `${label}: loop point ${point.x},${point.y} is over 2 tiles from its anchor`,
+          );
+        }
+      }
+    }
+  };
+
+  for (const resident of bundle.residents) {
+    const label = `resident "${resident.id}"`;
+    const claims = [resident.id, ...resident.source.runtimeNpcIds].map((key) =>
+      excludedResidentFor(key, resident.name),
+    );
+    const excluded = claims.find(Boolean);
+    if (excluded) problems.push(`${label} claims "${excluded.id}", excluded until released`);
+    for (const npcId of resident.source.runtimeNpcIds) {
+      if (FORBIDDEN_BINDINGS[npcId]?.includes(resident.id)) {
+        problems.push(`${label} must never bind runtime npc "${npcId}"`);
+      }
+    }
+    if (anchors.get(resident.home)?.site.kind !== 'private') {
+      problems.push(`${label}: home "${resident.home}" is not a private anchor`);
+    }
+    const { fallback } = resident;
+    checkSlot(`${label} fallback`, fallback, resident.id);
+    if (!fallback.npc || fallback.interrupt !== 'talk') {
+      problems.push(`${label}: the fallback slot must name an npc and take 'talk'`);
+    }
+    if (anchors.get(fallback.anchor)?.site.kind === 'private') {
+      problems.push(`${label}: the fallback slot must be public`);
+    }
+    for (const [phase, slot] of Object.entries(resident.schedule)) {
+      if (slot !== 'home') checkSlot(`${label} ${phase}`, slot, resident.id);
+    }
+    for (const override of resident.overrides ?? []) {
+      const where = `${label} override "${override.id}"`;
+      const values = [...Object.entries(override.slots), ['all', override.all] as const];
+      if (values.length === 1 && !override.all) problems.push(`${where} has no slots`);
+      const mission = override.tier === 'mission';
+      // A mission holds a required conversation (§4): it must cover every
+      // phase with a public, talkable slot, or the conversation can be lost.
+      if (mission && !override.all && DAY_PHASES.some((phase) => !override.slots[phase])) {
+        problems.push(`${where}: a mission hold must cover every phase`);
+      }
+      for (const [phase, slot] of values) {
+        if (typeof slot !== 'object') {
+          if (mission && slot)
+            problems.push(`${where} ${phase}: a mission hold can't be "${slot}"`);
+          continue;
+        }
+        checkSlot(`${where} ${phase}`, slot, resident.id);
+        if (!mission) continue;
+        if (!slot.npc || slot.interrupt !== 'talk') {
+          problems.push(`${where} ${phase}: a mission slot must name an npc and take 'talk'`);
+        }
+        if (anchors.get(slot.anchor)?.site.kind === 'private') {
+          problems.push(`${where} ${phase}: a mission slot must be public`);
+        }
+      }
+    }
+  }
+
+  // An unnamed role must never look like a named person (§8): no role may
+  // wear the sprite of any resident-bound NpcDef.
+  const residentSprites = new Map<string, string>();
+  for (const map of bundle.maps)
+    for (const npc of map.npcs)
+      if (npc.resident && !residentSprites.has(npc.sprite))
+        residentSprites.set(npc.sprite, `${map.id}:${npc.id}`);
+
+  for (const role of bundle.backgroundRoles) {
+    const label = `background role "${role.id}"`;
+    if (isReservedIdentity(role.id)) problems.push(`${label} uses a registered identity`);
+    const lookalike = residentSprites.get(role.sprite);
+    if (lookalike) {
+      problems.push(
+        `${label} wears "${role.sprite}", the sprite of resident-bound npc ${lookalike}`,
+      );
+    }
+    for (const [phase, slot] of Object.entries(role.slots)) {
+      checkSlot(`${label} ${phase}`, slot, null);
+    }
+    const company = role.accompanies;
+    if (company) {
+      if (!residentIds.has(company.resident)) {
+        problems.push(`${label} accompanies unknown resident "${company.resident}"`);
+      }
+      for (const anchor of company.anchors) {
+        if (!anchors.has(anchor)) problems.push(`${label}: unknown anchor "${anchor}"`);
+      }
+      checkSlot(`${label} accompanying`, company.slot, null);
+    }
+  }
+
+  const byId = new Map(bundle.residents.map((r) => [r.id, r]));
+  for (const map of bundle.maps) {
+    for (const npc of map.npcs) {
+      if (!npc.resident) continue;
+      const label = `map "${map.id}" npc "${npc.id}"`;
+      if (npc.when) problems.push(`${label} is bound, so its conditions belong in overrides`);
+      const resident = byId.get(npc.resident);
+      if (!resident) problems.push(`${label} is bound to unknown resident "${npc.resident}"`);
+      else if (!resident.source.runtimeNpcIds.includes(npc.id)) {
+        problems.push(`${label} is not listed in "${npc.resident}"'s runtimeNpcIds`);
+      }
+      if (FORBIDDEN_BINDINGS[npc.id]?.includes(npc.resident)) {
+        problems.push(`${label} must never bind "${npc.resident}"`);
+      }
+    }
+  }
 }

@@ -189,7 +189,7 @@ for (const projection of ['orthographic', 'oblique'] as const satisfies readonly
     it('ignores distant NPCs but reveals a nearby conversation partner', () => {
       installImage(() => 255);
       const scene = roof(camera);
-      const npc = { pos: origin, name: 'Villager', sprite: 'npc.elder' };
+      const npc = { id: 'villager', pos: origin, name: 'Villager', sprite: 'npc.elder' };
       expect(sceneryOpacity(scene, view({ npcs: [npc] }), camera)).toBe(1);
       expect(
         sceneryOpacity(scene, view({ npcs: [npc], units: [unit({ x: 7, y: 7 })] }), camera),
@@ -220,7 +220,7 @@ for (const projection of ['orthographic', 'oblique'] as const satisfies readonly
       );
       const state = view({
         units: [unit({ x: 5, y: 2 })],
-        npcs: [{ pos: origin, sprite: 'npc.elder', name: 'Villager', scale: 1.5 }],
+        npcs: [{ id: 'villager', pos: origin, sprite: 'npc.elder', name: 'Villager', scale: 1.5 }],
       });
       expect(sceneryOpacity(scene, state, camera)).toBe(0.28);
     });
@@ -233,7 +233,9 @@ for (const projection of ['orthographic', 'oblique'] as const satisfies readonly
           scene,
           view({
             units: [unit({ x: 5, y: 2 })],
-            npcs: [{ pos: origin, sprite: 'unit.enemy.grumbler', name: 'Grumbler' }],
+            npcs: [
+              { id: 'grumbler', pos: origin, sprite: 'unit.enemy.grumbler', name: 'Grumbler' },
+            ],
           }),
           camera,
         ),

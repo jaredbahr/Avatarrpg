@@ -4,13 +4,15 @@ const rescued: Condition = { kind: 'flag', key: 'act1_complete', op: 'set' };
 
 export const RIVERSIDE_STORY: readonly StoryNode[] = [
   {
+    // A sign, not Pella (ADR 0047 W7): she is placed elsewhere, often at the
+    // court beside it. Her chalk keeps her contest and her invitation.
     id: 'riverside_invitation',
     kind: 'dialogue',
-    speaker: 'Pella',
-    portrait: 'portrait.pella',
+    speaker: 'Riverside path',
+    portrait: 'portrait.narrator',
     lines: [
-      'I got six skips from one stone. Dorin only got three, but his went further.',
-      'We are still arguing about who won. Come down to the river and look.',
+      '“To the river.” An arrow points down the path.',
+      'Underneath, in careful chalk: “SIX SKIPS FROM ONE STONE. DORIN GOT THREE BUT HIS WENT FURTHER. STILL ARGUING WHO WON. COME AND LOOK. — PELLA”',
     ],
     next: 'riverside_explore',
   },
@@ -34,8 +36,32 @@ export const RIVERSIDE_STORY: readonly StoryNode[] = [
     portrait: 'portrait.mira',
     lines: [
       'You found me. Sit down. That end of the bench is dry.',
-      'Dorin has been practising across the river. He asked me to watch, but every time I look up he stops.',
-      'There is a shrine past the practice ground. I took flowers this morning. Mind the roots on the path.',
+      'Dorin practises across the river at midday. He asks me to watch, but every time I look up he stops.',
+      'There is a shrine past the practice ground. I took flowers on my way down. Mind the roots on the path.',
+    ],
+    next: 'riverside_explore',
+  },
+  {
+    // Afternoons at the safe bank, only with Mira on the bank (ADR 0047 §4). After
+    // victory she is here only once she has told the party at home (`pella_home`).
+    id: 'riverside_pella',
+    kind: 'dialogue',
+    speaker: 'Pella',
+    portrait: 'portrait.pella',
+    lines: [
+      'I have to stay where Mira can see me. That is why I am standing here and not there.',
+      'I am selling stones. The smooth one is two coins. The sparkly one is three, or two if you are nice about it.',
+      'The flat one is not for sale. My brother Bo-shan and I are halfway through a skipping game. It is his turn. He is late.',
+    ],
+    variants: [
+      {
+        when: rescued,
+        lines: [
+          'I have to stay where Mira can see me. Bo-shan says that is a good rule. He never followed it.',
+          'He is resting. Mira says to let him, so I am letting him.',
+          'The flat stone is still his turn. I am keeping it until he is rested.',
+        ],
+      },
     ],
     next: 'riverside_explore',
   },

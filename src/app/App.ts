@@ -35,7 +35,7 @@ import {
   saveToSlot,
 } from './storage/localSaves';
 import { describeProgress } from '../core/save/serialize';
-import { reconcileDisciplines } from '../core/save/reconcile';
+import { reconcileDisciplines, reconcileWorld } from '../core/save/reconcile';
 import type { SessionMeta } from '../core/save/serialize';
 import { announce, clear, el } from './ui/dom';
 import { loadIcons } from './ui/icons';
@@ -49,10 +49,12 @@ import { PauseMenu } from './ui/PauseMenu';
 import { LevelUpDialog } from './ui/LevelUpDialog';
 import { DisciplineDialog } from './ui/DisciplineDialog';
 import { RIVERSIDE_ENTRY } from '../content/maps/riverside';
+import { villagePreviewState } from './village/previewState';
 import { TitleScene } from './scenes/TitleScene';
 import { PartySetupScene } from './scenes/PartySetupScene';
 import { DialogueScene } from './scenes/DialogueScene';
 import { ExploreScene } from './scenes/ExploreScene';
+import { ResidentWalks } from './world/residentMotion';
 import { CombatScene } from './scenes/CombatScene';
 import { worldConversationFor } from '../content/story/presentations';
 
@@ -100,6 +102,18 @@ export class App {
   readonly animator: Animator;
   readonly session = new Session();
   readonly toasts: Toasts;
+  /**
+   * The watch (day and phase) whose handover bark has been shown (ADR 0047
+   * §8). Held here rather than on the scene, so leaving the map and coming
+   * back in the same watch does not say it again.
+   */
+  barkedWatch = '';
+  /**
+   * Residents walking between their places (ADR 0047 §7, W8). Held here so a
+   * conversation in its own scene does not forget where people were drawn;
+   * reset wherever the playback is, so a load places everyone directly.
+   */
+  readonly residents: ResidentWalks;
   /** Frame-time readout, present only with `?stats=1`. */
   readonly stats: Stats | null;
   /** The reveal-from-ink on every scene change. */
@@ -154,6 +168,7 @@ export class App {
     this.animator = new Animator(content, {
       onSounds: (cues, now) => this.audio.play(cues, now),
     });
+    this.residents = new ResidentWalks(content);
     applySettings(this.settings);
 
     clear(root);
@@ -305,13 +320,10 @@ export class App {
     if (this.previewActive) return;
     this.cancelRoute();
     this.previewSnapshot = { state: this.state, session: this.session.toMeta() };
-    this.state = createGame(this.content, {
-      seed: 'riverside-first-afternoon',
-      party: [{ characterId: 'sura' }, { characterId: 'kaya' }],
-      startNode: RIVERSIDE_ENTRY,
-    });
+    this.state = villagePreviewState(this.content);
     this.session.setPlayers([]);
     this.animator.clear();
+    this.residents.reset();
     this.dispatch({ type: 'enterNode', nodeId: RIVERSIDE_ENTRY });
   }
 
@@ -323,6 +335,7 @@ export class App {
     this.state = previous.state;
     this.session.setPlayers(Session.fromMeta(previous.session).players);
     this.animator.clear();
+    this.residents.reset();
     this.closePause();
     this.levelUp?.close();
     this.levelUp = null;
@@ -355,6 +368,7 @@ export class App {
 
     this.state = state;
     this.animator.clear();
+    this.residents.reset();
     this.dispatch({ type: 'enterNode', nodeId: this.storyEntry });
   }
 
@@ -364,9 +378,12 @@ export class App {
     this.cancelRoute();
     // A save can predate a discipline gate the kits have since gained; this
     // hands back any pick the party is owed rather than swallowing it.
-    this.state = reconcileDisciplines(this.content, state);
+    // ADR 0047 §5: also clears a stale conversation pin and steps the
+    // leader off a visible NPC tile if content moved under the save.
+    this.state = reconcileWorld(this.content, reconcileDisciplines(this.content, state));
     this.session.setPlayers(Session.fromMeta(session).players);
     this.animator.clear();
+    this.residents.reset();
     this.closePause();
     this.routeToState();
     this.toasts.show('Game loaded.');

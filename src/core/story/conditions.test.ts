@@ -10,7 +10,7 @@
 import { describe as suite, expect, it } from 'vitest';
 import { CONTENT } from '../../content';
 import { createGame } from '../state/createGame';
-import type { Condition, FlagValue, GameState } from '../types';
+import type { Condition, DayPhase, FlagValue, GameState } from '../types';
 import {
   MAX_STANDING,
   MIN_STANDING,
@@ -286,5 +286,46 @@ suite('describe', () => {
         ],
       }),
     ).toBe('you have a firebender and there are at least 3 of you');
+  });
+});
+
+suite('phase condition', () => {
+  /** A new game starts at midday (ADR 0047, D4); move the clock for each case. */
+  const at = (phase: DayPhase): GameState => {
+    const state = game();
+    return { ...state, world: { ...state.world, clock: { ...state.world.clock, phase } } };
+  };
+
+  it('matches a single phase against the world clock', () => {
+    expect(evaluate(at('evening'), { kind: 'phase', in: ['evening'] })).toBe(true);
+    expect(evaluate(at('dawn'), { kind: 'phase', in: ['evening'] })).toBe(false);
+  });
+
+  it('matches any phase in a multi-phase list', () => {
+    const inList: Condition = { kind: 'phase', in: ['dawn', 'evening'] };
+    expect(evaluate(at('dawn'), inList)).toBe(true);
+    expect(evaluate(at('evening'), inList)).toBe(true);
+    expect(evaluate(at('midday'), inList)).toBe(false);
+  });
+
+  it('describes a single phase as a time of day', () => {
+    expect(describe(CONTENT, { kind: 'phase', in: ['evening'] })).toBe('in the evening');
+  });
+
+  it('joins several phases with "or", as the ADR writes them', () => {
+    expect(describe(CONTENT, { kind: 'phase', in: ['dawn', 'evening'] })).toBe(
+      'at dawn or in the evening',
+    );
+  });
+
+  it.each([
+    ['dawn', 'at dawn'],
+    ['morning', 'in the morning'],
+    ['midday', 'at midday'],
+    ['afternoon', 'in the afternoon'],
+    ['evening', 'in the evening'],
+    ['night', 'at night'],
+  ] as const)('describes %s as "%s"', (phase, phrase) => {
+    expect(describe(CONTENT, { kind: 'phase', in: [phase] })).toBe(phrase);
   });
 });

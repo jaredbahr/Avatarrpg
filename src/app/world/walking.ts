@@ -18,7 +18,9 @@ export function previewWalk(content: ContentIndex, state: GameState, target: Vec
   const map = content.maps.get(state.location.mapId);
   const trigger =
     map && activeTriggers(map, state).find((item) => item.area.some((cell) => samePos(cell, stop)));
-  const npc = map ? visibleNpcs(map, state).find((item) => samePos(item.pos, target)) : undefined;
+  const npc = map
+    ? visibleNpcs(content, map, state).find((item) => samePos(item.pos, target))
+    : undefined;
   const exit = map?.exits?.find((item) => samePos(item.pos, target));
   const message = result.events.find((event) => event.type === 'message');
   return {
@@ -46,6 +48,11 @@ export class NextWalk {
     return this.pending?.preview ?? null;
   }
 
+  /** Where the next walk goes, without taking it. */
+  target(state: GameState): Vec2 | null {
+    return this.pending?.state === state ? this.pending.target : null;
+  }
+
   take(state: GameState): Vec2 | null {
     const target = this.pending?.state === state ? this.pending.target : null;
     this.clear();
@@ -60,7 +67,7 @@ export class NextWalk {
 /** Only nearby, reachable people and objects; never a checklist of unseen maps. */
 export function nearbyPlaces(content: ContentIndex, state: GameState) {
   const map = content.maps.get(state.location.mapId);
-  return (map ? visibleNpcs(map, state) : [])
+  return (map ? visibleNpcs(content, map, state) : [])
     .filter((npc) => distance(state.location.pos, npc.pos) <= 6)
     .map((npc) => ({ npc, preview: previewWalk(content, state, npc.pos) }))
     .filter(({ npc, preview }) => !preview.refusal && preview.label === npc.name)

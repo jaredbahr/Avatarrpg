@@ -1,5 +1,8 @@
 import { describe, expect, it } from 'vitest';
 import { BA_DAN_VILLAGE } from '../../content/maps/village';
+import { CONTENT } from '../../content';
+import { createGame } from '../../core/state/createGame';
+import { visibleNpcs } from '../../core/story/world';
 import {
   buildGrid,
   distance,
@@ -453,7 +456,13 @@ describe('temporal movement reservations', () => {
 });
 
 it('keeps the five-leg courtyard audit separated without the serial cadence regression', () => {
-  const avoid = BA_DAN_VILLAGE.npcs.map((npc) => npc.pos);
+  // Where the village's NPCs stand on a new game's first midday (ADR 0047 §8).
+  const fresh = createGame(CONTENT, {
+    seed: 'courtyard-audit',
+    party: [{ characterId: 'kaya' }],
+    startNode: 'village_explore',
+  });
+  const avoid = visibleNpcs(CONTENT, BA_DAN_VILLAGE, fresh).map((npc) => npc.pos);
   const trail = new PartyTrail(
     placeParty(grid, spawn, 5, { awayFrom: BA_DAN_VILLAGE.exit?.pos, avoid }),
   );

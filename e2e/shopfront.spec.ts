@@ -54,11 +54,16 @@ for (const renderer of ['canvas', 'webgl']) {
         }
       ).scene;
       const seats = app.partyPositions() ?? [];
-      const npcCells = new Set(
-        app.content.maps
-          .get(app.state!.location.mapId)
-          ?.npcs.map((npc) => `${npc.pos.x},${npc.pos.y}`),
-      );
+      const mapId = app.state!.location.mapId;
+      const npcCells = new Set([
+        ...(app.content.maps.get(mapId)?.npcs ?? []).flatMap((npc) =>
+          npc.pos ? [`${npc.pos.x},${npc.pos.y}`] : [],
+        ),
+        // Resident-bound NpcDefs stand on anchors (ADR 0047): count every anchor tile here.
+        ...[...app.content.anchors.values()].flatMap(({ site }) =>
+          site.kind === 'map' && site.mapId === mapId ? [`${site.pos.x},${site.pos.y}`] : [],
+        ),
+      ]);
       return seats.map((seat) => ({
         ...seat,
         dry: (() => {

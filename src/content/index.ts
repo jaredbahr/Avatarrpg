@@ -29,8 +29,10 @@ import { UNIVERSAL_ABILITY_IDS } from './abilities';
 import { ACT1_NODES } from './story/act1';
 import { withPartyVoices } from './story/partyVoices';
 import { RETURN_STORY } from './story/return';
+import { BA_DAN_DAY_STORY } from './story/baDanDay';
 import type { ContentBundle } from './schemas';
-import type { MapDef, StoryNode } from '../core/types';
+import type { BackgroundRole, MapDef, ResidentDef, StoryNode, WorldAnchor } from '../core/types';
+import { BA_DAN_ANCHORS, BA_DAN_BACKGROUND_ROLES, BA_DAN_RESIDENTS } from './residents/baDan';
 
 export const ALL_MAPS: readonly MapDef[] = [BA_DAN_VILLAGE, RIVERSIDE, ...COMBAT_MAPS].map(
   connectAct1,
@@ -41,7 +43,13 @@ export const ALL_STORY: readonly StoryNode[] = withPartyVoices([
   ...WORLD_STORY,
   ...DISCOVERY_STORY,
   ...RETURN_STORY,
+  ...BA_DAN_DAY_STORY,
 ]);
+
+/** Living-world records (ADR 0047 §2): Ba Dan's anchors, residents and background roles. */
+const ANCHORS: readonly WorldAnchor[] = BA_DAN_ANCHORS;
+const RESIDENTS: readonly ResidentDef[] = BA_DAN_RESIDENTS;
+const BACKGROUND_ROLES: readonly BackgroundRole[] = BA_DAN_BACKGROUND_ROLES;
 
 /** The flat form, used by the validation test and the balance report. */
 export const CONTENT_BUNDLE: ContentBundle = {
@@ -57,6 +65,9 @@ export const CONTENT_BUNDLE: ContentBundle = {
   props: PROPS,
   combos: COMBOS,
   story: ALL_STORY,
+  anchors: ANCHORS,
+  residents: RESIDENTS,
+  backgroundRoles: BACKGROUND_ROLES,
 };
 
 /** The indexed form, used by the rules. */
@@ -73,6 +84,9 @@ export const CONTENT: ContentIndex = {
   props: PROP_BY_ID,
   combos: COMBOS,
   story: new Map(ALL_STORY.map((n) => [n.id, n])),
+  anchors: new Map(ANCHORS.map((a) => [a.id, a])),
+  residents: new Map(RESIDENTS.map((r) => [r.id, r])),
+  backgroundRoles: new Map(BACKGROUND_ROLES.map((r) => [r.id, r])),
   universalAbilities: UNIVERSAL_ABILITY_IDS,
 };
 

@@ -74,7 +74,8 @@ export class SpriteCache {
    */
   get(key: string, size: number, options: PainterOptions = {}, widthTiles = 1): HTMLCanvasElement {
     const bucketed = this.bucket(size);
-    const cacheKey = `${key}|${options.variant ?? ''}|${options.facing ?? 1}|${bucketed}|${widthTiles}`;
+    const pose = options.pose ? `${options.pose.clip}${options.pose.index}` : '';
+    const cacheKey = `${key}|${options.variant ?? ''}|${options.facing ?? 1}|${bucketed}|${widthTiles}|${pose}`;
     const existing = this.entries.get(cacheKey);
     if (existing) {
       // Re-insert so Map order doubles as recency.
@@ -111,6 +112,25 @@ export class SpriteCache {
       if (oldest === undefined) break;
       this.entries.delete(oldest);
     }
+    return canvas;
+  }
+
+  /**
+   * A contact shadow on its own, in a tile-sized box with the painters' foot
+   * line, for figure art that carries none: a resident's portrait-style PNG.
+   * Drawn on the ground under the walk bob, so it stays put as the figure
+   * lifts (ADR 0047 §7, W8).
+   */
+  shadow(size: number): HTMLCanvasElement {
+    const bucketed = this.bucket(size);
+    const cacheKey = `shadow|${bucketed}`;
+    const existing = this.entries.get(cacheKey);
+    if (existing) return existing.canvas;
+    const canvas = document.createElement('canvas');
+    canvas.width = canvas.height = bucketed;
+    const ctx = canvas.getContext('2d');
+    if (ctx) groundShadow(ctx, { x: 0, y: 0, size: bucketed }, 0.36);
+    this.entries.set(cacheKey, { canvas });
     return canvas;
   }
 
@@ -179,3 +199,18 @@ export class SpriteCache {
 }
 
 export const sprites = new SpriteCache();
+
+/**
+ * How a walking resident's painted figure is drawn: striding, two drawings a
+ * tile as the walk clip is, on the distance clock. Art that cannot stride
+ * (a PNG) stays one drawing and rides the bob alone.
+ */
+export function npcPose(npc: {
+  readonly sprite: string;
+  readonly walking?: boolean;
+  readonly clipTime?: number;
+}): PainterOptions {
+  return npc.walking && resolveAsset(npc.sprite).kind === 'painter'
+    ? { facing: 1, pose: { clip: 'walk', index: Math.floor((npc.clipTime ?? 0) / 250) % 2 } }
+    : { facing: 1 };
+}

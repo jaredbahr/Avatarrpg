@@ -50,7 +50,7 @@ import { FOOT_LINE } from '../sheets/bake';
 import { resolveActorEmitters } from '../geometry/actorAttachments';
 import type { ResolvedFrame } from '../sheets/store';
 import { idlePhase, sheets } from '../sheets/store';
-import { MAX_SPRITE_PX, sprites } from '../spriteCache';
+import { MAX_SPRITE_PX, npcPose, sprites } from '../spriteCache';
 import {
   unitMarkerGroundPoint,
   type AimArc,
@@ -1206,47 +1206,82 @@ export class PixiBackend implements RenderBackend {
     let badgeIndex = 0;
 
     for (const npc of view.npcs) {
-      const key = `npc:${npc.pos.x},${npc.pos.y}`;
+      // Keyed by who, not where: a walking resident keeps one sprite (ADR 0047 §7).
+      const key = `npc:${npc.id}`;
+      const alpha = npc.alpha ?? 1;
+      if (alpha <= 0) continue;
       live.add(key);
       const sprite = this.unitSprite(key);
       const entry = resolveAsset(npc.sprite);
       const width = entry.kind === 'sheet' && entry.footprint.w === 2 ? 2 : 1;
       const scale = npc.scale ?? 1;
+      const facing = npc.facing ?? 1;
+      const at = npc.renderPos ?? npc.pos;
       const frame =
-        entry.kind === 'sheet' ? sheets.frame(npc.sprite, 'idle', 0, 0, px * scale, width) : null;
-      const anchor = box(npc.pos, width);
+        entry.kind === 'sheet'
+          ? sheets.frame(
+              npc.sprite,
+              npc.walking ? 'walk' : 'idle',
+              npc.clipTime ?? 0,
+              undefined,
+              px * scale,
+              width,
+            )
+          : null;
+      const anchor = box(at, width);
       const x = anchor.x;
-      const y = anchor.y - elevationAt(view.grid, npc.pos) * ELEVATION_LIFT * TILE;
-      sprite.zIndex = depth(npc.pos, width);
+      const ground =
+        anchor.y -
+        elevationAt(view.grid, { x: Math.round(at.x), y: Math.round(at.y) }) *
+          ELEVATION_LIFT *
+          TILE;
+      // The walk bob lifts the figure; its contact shadow stays on the ground.
+      const y = ground + (npc.offset?.y ?? 0) * TILE;
+      const footX = x + (width * TILE) / 2;
+      sprite.zIndex = depth(at, width);
       if (frame) {
         sprite.texture = this.frameTexture(frame);
         sprite.anchor.set(frame.anchor.x, frame.anchor.y);
-        sprite.position.set(x + (width * TILE) / 2, y + FOOT_LINE * TILE);
+        sprite.position.set(footX, y + FOOT_LINE * TILE);
         sprite.width = (frame.frame.w / frame.pixelsPerTile) * TILE * scale;
         sprite.height = (frame.frame.h / frame.pixelsPerTile) * TILE * scale;
       } else {
-        sprite.texture = this.texture(sprites.get(npc.sprite, px * scale, { facing: 1 }, width));
-        sprite.anchor.set(0, 0);
-        sprite.position.set(
-          x + (width * TILE * (1 - scale)) / 2,
-          y + FOOT_LINE * TILE * (1 - scale),
-        );
+        sprite.texture = this.texture(sprites.get(npc.sprite, px * scale, npcPose(npc), width));
+        sprite.anchor.set(0.5, FOOT_LINE);
+        sprite.position.set(footX, y + FOOT_LINE * TILE);
         sprite.width = width * TILE * scale;
         sprite.height = TILE * scale;
       }
-      sprite.scale.x = Math.abs(sprite.scale.x);
-      sprite.alpha = 1;
+      const squash = npc.squash ?? 0;
+      sprite.width *= 1 + 0.02 * squash;
+      sprite.height *= 1 - 0.03 * squash;
+      sprite.scale.x = Math.abs(sprite.scale.x) * facing;
+      sprite.rotation = npc.lean ?? 0;
+      sprite.alpha = alpha;
       sprite.visible = true;
+      if (entry.kind === 'image') {
+        const shadowKey = `shadow:${npc.id}`;
+        live.add(shadowKey);
+        const shadow = this.unitSprite(shadowKey);
+        shadow.texture = this.texture(sprites.shadow(px * scale));
+        shadow.anchor.set(0.5, 0.86);
+        shadow.position.set(footX, ground + FOOT_LINE * TILE);
+        shadow.width = shadow.height = TILE * scale;
+        shadow.alpha = alpha;
+        shadow.zIndex = sprite.zIndex - 0.001;
+        shadow.visible = true;
+      }
 
       // A small "talk" pip so a child can tell an NPC from scenery.
-      g.circle(
-        x + TILE * width * 0.5,
-        y + TILE * (FOOT_LINE - (FOOT_LINE - 0.08) * scale),
-        TILE * 0.07,
-      ).fill({
-        color: '#f0c674',
-        alpha: 0.55 + 0.35 * ((Math.sin(view.time / 500) + 1) / 2),
-      });
+      if (!npc.quiet)
+        g.circle(
+          x + TILE * width * 0.5,
+          y + TILE * (FOOT_LINE - (FOOT_LINE - 0.08) * scale),
+          TILE * 0.07,
+        ).fill({
+          color: '#f0c674',
+          alpha: alpha * (0.55 + 0.35 * ((Math.sin(view.time / 500) + 1) / 2)),
+        });
     }
 
     for (const prop of view.props) {
@@ -1299,6 +1334,19 @@ export class PixiBackend implements RenderBackend {
 
       live.add(unit.id);
       const sprite = this.unitSprite(unit.id);
+      if (unit.shadow) {
+        // On the ground, not on the bob (explore maps, ADR 0015).
+        const key = `shadow:${unit.id}`;
+        live.add(key);
+        const shadow = this.unitSprite(key);
+        shadow.texture = this.texture(sprites.shadow(px * (unit.scale ?? 1)));
+        shadow.anchor.set(0.5, 0.86);
+        shadow.position.set(anchor.x + width / 2, anchor.y + (0.86 - lift) * TILE);
+        shadow.width = shadow.height = TILE * (unit.scale ?? 1);
+        shadow.alpha = unit.alpha ?? 1;
+        shadow.zIndex = depth(pos, unit.size) - 0.001;
+        shadow.visible = true;
+      }
       // A pose scales about the feet; the fallen fade sits on top of any alpha.
       const scale = unit.scale ?? 1;
       // The frame comes from the unit's sheet, real or baked from its painter

@@ -17,7 +17,13 @@ export class LocalMap {
   readonly element: SVGSVGElement;
   private party: SVGCircleElement[] = [];
 
-  constructor(map: MapDef, grid: Grid, state: GameState, showLabels = false) {
+  constructor(
+    content: ContentIndex,
+    map: MapDef,
+    grid: Grid,
+    state: GameState,
+    showLabels = false,
+  ) {
     this.element = svgNode('svg', {
       viewBox: `-1 -1 ${grid.width + 2} ${grid.height + 2}`,
       class: 'local-map',
@@ -38,7 +44,7 @@ export class LocalMap {
         }),
       );
     });
-    for (const npc of visibleNpcs(map, state)) {
+    for (const npc of visibleNpcs(content, map, state)) {
       const dot = svgNode('circle', {
         cx: String(npc.pos.x + 0.5),
         cy: String(npc.pos.y + 0.5),
@@ -107,7 +113,7 @@ export class LocalMapDialog extends Dialog {
   }
 
   protected build(body: HTMLElement): void {
-    const map = new LocalMap(this.map, this.grid, this.state, true);
+    const map = new LocalMap(this.content, this.map, this.grid, this.state, true);
     map.update(this.positions);
     body.append(
       map.element,
@@ -121,7 +127,9 @@ export class LocalMapDialog extends Dialog {
       attrs: { role: 'navigation', 'aria-label': 'Routes from this area' },
     });
     const target = this.objectiveNpcId
-      ? visibleNpcs(this.map, this.state).find((npc) => npc.id === this.objectiveNpcId)
+      ? visibleNpcs(this.content, this.map, this.state).find(
+          (npc) => npc.id === this.objectiveNpcId,
+        )
       : undefined;
     if (target) {
       const preview = previewWalk(this.content, this.state, target.pos);

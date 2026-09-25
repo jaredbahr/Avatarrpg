@@ -147,7 +147,7 @@ export const ABILITY_MARKS: Readonly<Record<MarkKind, string>> = {
   ),
 };
 
-/** The controls round the board: move, end turn, confirm, cancel, log, pause, tip, recentre. */
+/** The controls round the board: move, end turn, confirm, cancel, log, pause, tip, recentre, wait. */
 export const UI_MARKS = {
   move: svg(
     '<circle cx="15" cy="4" r="2"/><path d="M13 7l-3 1-2 4M13 7l-1 6-4 6M12 13l4 2 1 5M11 9l6 2"/>',
@@ -166,6 +166,8 @@ export const UI_MARKS = {
   recentre: svg(
     '<path d="M4 9V4h5M15 4h5v5M20 15v5h-5M9 20H4v-5"/><circle cx="12" cy="12" r="2"/>',
   ),
+  // A sun on the horizon: letting the day move on (ADR 0047 §1).
+  wait: svg('<path d="M3 18h18M6 18a6 6 0 0 1 12 0M12 5v3M5 9l2 2M19 9l-2 2"/>'),
 } as const;
 
 /**

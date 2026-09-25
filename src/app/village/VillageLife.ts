@@ -8,23 +8,43 @@ import type { VillageActor } from '../../render/living/layer';
 import { FORM_DURATION, WAVE_DURATION } from '../../render/living/poses';
 import { hitsPebble, hitsVillager, riversideWalkTime } from '../../render/living/geometry';
 import { RIVERSIDE_ID, RIVERSIDE_SPOTS } from '../../content/maps/riverside';
+import type { ResidentFigure } from '../world/residentMotion';
+import { resolveResidents } from '../../core/story/residents';
+import { phaseLabel } from '../world/journal';
 import { button, el, motionReduced } from '../ui/dom';
+import { WaitDialog } from '../ui/WaitDialog';
+import { seatHere } from '../world/waiting';
 import { verticalClip } from '../anim/direction';
 
 const distance = (a: Vec2, b: Vec2) => Math.hypot(a.x - b.x, a.y - b.y);
 type Activity = { kind: 'water' | 'fire' | 'wave'; unitId: string; started: number };
-type Visit = 'otter' | 'tea' | 'shrine' | 'practice' | 'canopy';
+type Visit = 'otter' | 'tea' | 'shrine' | 'practice' | 'canopy' | 'wait';
+/**
+ * How the stage draws each resident's NpcDef sprite: the painted villager
+ * figure and palette it has always used here. Placeholder art until the
+ * character pipeline (ADR 0047 §7); an unknown sprite gets the generic figure.
+ */
+const LOOKS: Readonly<Record<string, readonly [string, string]>> = {
+  'npc.elder': ['elder', 'neutral'],
+  'npc.dorin': ['guard', 'earth'],
+  'npc.kid': ['kid', 'air'],
+};
 export class VillageLife {
   private stage: VillageLayer;
   private activity: Activity | null = null;
   private pending: Visit | null = null;
   private teaStarted: number | null = null;
   private message: HTMLElement | null = null;
-  private messageText = 'An afternoon by the river. Tap the ground to walk; drag to look around.';
+  private messageText = '';
+  /** Until something else is said, the note is the opening line for the phase. */
+  private opening = true;
   private controls: HTMLButtonElement[] = [];
   private petUntil = 0;
-  private greeting = -10000;
-  private wasNearMira = false;
+  /** When each resident last greeted the party, and who is near it now. */
+  private greetings = new Map<string, number>();
+  private near = new Set<string>();
+  /** Dorin's drill is his midday relief at `rv.practice` (ADR 0047 D3, M7). */
+  private dorinAtDrill = false;
   private elapsed = 0;
   private lastFrame: number | null = null;
   private drill: number | null = null;
@@ -33,6 +53,8 @@ export class VillageLife {
   constructor(
     private app: App,
     host: HTMLElement,
+    /** The scene's walk, which waits for a resident still on their way. */
+    private walkTo: (pos: Vec2) => void,
   ) {
     this.stage = new VillageLayer(host);
   }
@@ -51,11 +73,22 @@ export class VillageLife {
     this.say('Tap the ground to walk, or choose another activity.');
   }
   private say(text: string): void {
+    this.opening = false;
     this.messageText = text;
     if (this.message) this.message.textContent = text;
   }
   renderControls(host: HTMLElement, camera: Camera): void {
     this.controls = [];
+    const state = this.app.state;
+    if (this.opening && state)
+      this.messageText = `${phaseLabel(state.world.clock.phase)} by the river. Tap the ground to walk; drag to look around.`;
+    this.dorinAtDrill = Boolean(
+      state &&
+      resolveResidents(this.app.content, state).placements.some(
+        (p) => p.id === 'lw.npc.dorin' && p.anchor === 'rv.practice',
+      ),
+    );
+    if (!this.dorinAtDrill) this.drill = null;
     const panel = el('div', { class: 'hud-panel village-controls' });
     this.message = el('p', {
       class: 'village-note',
@@ -105,11 +138,15 @@ export class VillageLife {
     secondaryAction('Meet Pebble', () => this.visit('otter'));
     secondaryAction('Visit the shrine', () => this.visit('shrine'));
     secondaryAction('Tea break', () => this.visit('tea'));
-    secondaryAction(
-      "Dorin's drill",
-      () => this.visit('practice'),
-      !party.some((p) => p.element === 'water') || !party.some((p) => p.element === 'fire'),
-    );
+    // The porch is the riverside's seat for waiting (ADR 0047 D8): walk
+    // there first, as Tea break does, then choose when to stop.
+    secondaryAction('Wait until…', () => this.visit('wait'));
+    if (this.dorinAtDrill)
+      secondaryAction(
+        "Dorin's drill",
+        () => this.visit('practice'),
+        !party.some((p) => p.element === 'water') || !party.some((p) => p.element === 'fire'),
+      );
     if (this.app.previewActive)
       secondaryAction('Try a battle', () =>
         this.app.dispatch({ type: 'enterNode', nodeId: 'battle_forest_road' }),
@@ -149,10 +186,11 @@ export class VillageLife {
       this.visit('otter');
       return true;
     }
-    for (const npc of this.app.content.maps.get(RIVERSIDE_ID)?.npcs ?? []) {
-      if (npc.id === 'riverside_shrine') continue;
-      if (hitsVillager(point, npc.pos)) {
-        this.app.dispatch({ type: 'walkTo', pos: npc.pos });
+    // The people placed here now, where the stage draws them (ADR 0047 §7):
+    // a tap on someone walking goes to where they are going.
+    for (const who of this.residents()) {
+      if (who.pos && hitsVillager(point, who.drawPos)) {
+        this.walkTo(who.pos);
         return true;
       }
     }
@@ -164,14 +202,30 @@ export class VillageLife {
     this.drill = null;
     return false;
   }
+  /**
+   * The people on the riverside now, as the walks draw them. The riverside's
+   * only unbound NpcDef is the shrine, which is painted, so nobody else is drawn.
+   */
+  private residents(): ResidentFigure[] {
+    return this.app.residents.figures();
+  }
   private visit(place: Visit): void {
     if (this.app.animator.busy(performance.now()) || this.busy(performance.now())) return;
+    if (place === 'practice' && !this.dorinAtDrill) return;
+    // Already at the porch (tea included): no walk, just the choice.
+    if (place === 'wait' && this.app.state && seatHere(this.app.content, this.app.state))
+      return this.openWait();
     this.leaveTea();
     this.drill = null;
-    const pos = place === 'otter' ? RIVERSIDE_SPOTS.otter : RIVERSIDE_SPOTS[place];
+    const pos = RIVERSIDE_SPOTS[place === 'wait' ? 'tea' : place];
     this.pending = place === 'shrine' ? null : place;
     const events = this.app.dispatch({ type: 'walkTo', pos });
     if (events.some((e) => e.type === 'message')) this.pending = null;
+  }
+  private openWait(): void {
+    new WaitDialog(this.app, () => this.visit('wait')).open(
+      document.querySelector<HTMLElement>('.overlay-host') ?? document.body,
+    );
   }
   private perform(kind: Activity['kind']): void {
     const now = performance.now();
@@ -196,7 +250,7 @@ export class VillageLife {
         if (this.activity) this.activity.started += delta;
         if (this.teaStarted !== null) this.teaStarted += delta;
         this.petUntil += delta;
-        this.greeting += delta;
+        for (const [id, at] of this.greetings) this.greetings.set(id, at + delta);
       } else this.elapsed += Math.min(60, delta);
     }
     this.lastFrame = now;
@@ -259,6 +313,8 @@ export class VillageLife {
          */
         camera.centreOn(RIVERSIDE_SPOTS.tea);
         this.say('A quiet break on the veranda with jasmine tea. The river runs below the steps.');
+      } else if (visit === 'wait') {
+        this.openWait();
       } else if (visit === 'practice') {
         this.drill = 0;
         this.say('Dorin sets a rhythm: water, fire, water. Finish each form before the next.');
@@ -271,9 +327,6 @@ export class VillageLife {
     const time = reduced ? 0 : this.elapsed;
     const leader = units[0];
     const head = leader?.renderPos ?? leader?.pos;
-    const near = Boolean(head && distance(head, RIVERSIDE_SPOTS.mira) < 5);
-    if (near && !this.wasNearMira) this.greeting = now;
-    this.wasNearMira = near;
     const actors: VillageActor[] = units.map((u) => {
       const member = this.app.state?.party.find((p) => p.id === u.id);
       const active = this.activity?.unitId === u.id ? this.activity : null;
@@ -307,27 +360,33 @@ export class VillageLife {
         label: u.name,
       };
     });
-    actors.push({
-      id: 'mira',
-      pos: RIVERSIDE_SPOTS.mira,
-      variant: 'elder',
-      palette: 'neutral',
-      villager: true,
-      facing: 1,
-      motion: now - this.greeting < WAVE_DURATION ? 'wave' : 'idle',
-      elapsed: now - this.greeting < WAVE_DURATION ? now - this.greeting : time + 800,
-      label: near ? 'Elder Mira' : '',
-    });
-    actors.push({
-      id: 'dorin',
-      pos: { x: 32, y: 12 },
-      variant: 'guard',
-      palette: 'earth',
-      villager: true,
-      facing: -1,
-      motion: 'idle',
-      elapsed: time + 600,
-      label: head && distance(head, { x: 32, y: 12 }) < 5 ? 'Dorin' : '',
+    // The residents placed on the riverside in this phase (ADR 0047 §2, §7),
+    // each greeting the party once as it comes near.
+    // A resident walking in or out strides on the party's distance clock.
+    this.residents().forEach((who, index) => {
+      const at = who.drawPos;
+      const near = Boolean(head && who.pos && !who.walking && distance(head, at) < 5);
+      if (near && !this.near.has(who.id)) this.greetings.set(who.id, now);
+      if (near) this.near.add(who.id);
+      else this.near.delete(who.id);
+      const since = now - (this.greetings.get(who.id) ?? -Infinity);
+      const [variant, palette] = LOOKS[who.sprite] ?? [who.sprite, 'neutral'];
+      actors.push({
+        id: who.id,
+        pos: at,
+        variant,
+        palette,
+        villager: true,
+        facing: who.walking ? who.facing : head && head.x < at.x ? -1 : 1,
+        motion: who.walking ? 'walk' : since < WAVE_DURATION ? 'wave' : 'idle',
+        elapsed: who.walking
+          ? who.clipTime
+          : since < WAVE_DURATION
+            ? since
+            : time + 600 + index * 200,
+        label: near ? who.name : '',
+        alpha: who.alpha,
+      });
     });
     // A small loop on open bank tiles. Once befriended, Pebble notices the
     // party but stays on his bank instead of crossing cliffs or deep water.

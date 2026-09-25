@@ -1,14 +1,15 @@
 import { distance } from '../../core/rules/grid';
 import { evaluate } from '../../core/story/conditions';
 import { visibleNpcs } from '../../core/story/world';
-import type { ContentIndex, GameState, MapDef, MapExit, NpcDef } from '../../core/types';
+import type { PlacedNpc } from '../../core/story/world';
+import type { ContentIndex, GameState, MapDef, MapExit } from '../../core/types';
 
 /** How far the action bar reaches for a person or nearby world object. */
 const TALK_RANGE = 3;
 
 export type NearbyExploreTarget =
   | { readonly kind: 'exit'; readonly exit: MapExit; readonly destination: string }
-  | { readonly kind: 'npc'; readonly npc: NpcDef; readonly inspect: boolean }
+  | { readonly kind: 'npc'; readonly npc: PlacedNpc; readonly inspect: boolean }
   | null;
 
 /** The short destination name used by the action bar for an authored route. */
@@ -28,10 +29,10 @@ export function nearbyExploreTarget(
   map: MapDef,
   state: GameState,
 ): NearbyExploreTarget {
-  let best: NpcDef | null = null;
+  let best: PlacedNpc | null = null;
   let nearest = TALK_RANGE + 1;
   let proximity = Infinity;
-  for (const npc of visibleNpcs(map, state)) {
+  for (const npc of visibleNpcs(content, map, state)) {
     const gap = distance(state.location.pos, npc.pos);
     const groundGap = Math.hypot(
       state.location.pos.x - npc.pos.x,

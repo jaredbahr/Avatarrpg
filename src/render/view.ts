@@ -28,6 +28,8 @@ export interface RenderUnit {
   readonly renderPos?: Vec2;
   /** Off for the party strolling round a village. Defaults to on. */
   readonly showHealth?: boolean;
+  /** A contact shadow on the ground under the figure and its bob (explore maps, ADR 0015). */
+  readonly shadow?: boolean;
   /** Which way the sprite faces: 1 is screen-right. Defaults to the faction's side. */
   readonly facing?: 1 | -1;
   /**
@@ -120,11 +122,30 @@ export interface Floater {
 }
 
 export interface NpcMarker {
+  /** Stable per person (resident, role, NpcDef or trigger), so a walk keeps one sprite. */
+  readonly id: string;
   readonly pos: Vec2;
   readonly sprite: string;
   readonly name: string;
   /** Presentation size about the ground-contact point; never changes the footprint. */
   readonly scale?: number;
+  /** Drawn here instead of `pos` while walking (ADR 0047 §7); the contact shadow follows. */
+  readonly renderPos?: Vec2;
+  /** The walk bob in tile units; lifts the figure, never its shadow or its sort. */
+  readonly offset?: Vec2;
+  /** 1 is screen-right, the way the art is drawn. */
+  readonly facing?: 1 | -1;
+  /** Fades at a door, an exit or a blocked route. */
+  readonly alpha?: number;
+  /** Ms into the walk clip while walking; a painted figure strides with it. */
+  readonly clipTime?: number;
+  readonly walking?: boolean;
+  /** Radians about the feet, into the walk. */
+  readonly lean?: number;
+  /** 0..1 settle onto a foot at each footfall: a touch wider and shorter. */
+  readonly squash?: number;
+  /** No talk pip: a background role, or someone walking off the map. */
+  readonly quiet?: boolean;
 }
 
 /**

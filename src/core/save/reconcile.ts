@@ -15,8 +15,17 @@
  * quietly never receives the reward for the level they earned.
  */
 
-import type { ContentIndex, GameState, PendingChoice } from '../types';
+import type {
+  ContentIndex,
+  GameState,
+  PendingChoice,
+  ResidentDef,
+  ResidentSlot,
+  ResidentSlotValue,
+} from '../types';
 import { specializationsUpTo } from '../rules/leveling';
+import { settle } from '../story/settle';
+import { npcResident } from '../story/residents';
 
 export function reconcileDisciplines(content: ContentIndex, state: GameState): GameState {
   const owed: PendingChoice[] = [];
@@ -41,4 +50,40 @@ export function reconcileDisciplines(content: ContentIndex, state: GameState): G
 
   if (owed.length === 0) return state;
   return { ...state, pendingChoices: [...state.pendingChoices, ...owed] };
+}
+
+/**
+ * Repairs a loaded game's world state (ADR 0047 §5). Runs `settle` silently
+ * (no events: there is nothing to animate on a load), which clears a pin
+ * whose screen or map no longer holds it and steps the leader off an NPC
+ * tile, then clears the one kind of stale pin `settle` cannot see: content
+ * that has drifted since the save, so the pinned NpcDef, its resident
+ * binding or the pinned map anchor no longer exists. Idempotent.
+ */
+export function reconcileWorld(content: ContentIndex, state: GameState): GameState {
+  const settled = settle(content, state, state).state;
+  const talk = settled.world.talk;
+  if (!talk) return settled;
+  const resident = npcResident(content, talk.mapId, talk.npcId);
+  const record = resident ? content.residents.get(resident) : undefined;
+  const site = content.anchors.get(talk.anchor)?.site;
+  const holds =
+    record !== undefined &&
+    residentSlots(record).some((slot) => slot.anchor === talk.anchor && slot.npc === talk.npcId) &&
+    site?.kind === 'map' &&
+    site.mapId === talk.mapId;
+  return holds ? settled : { ...settled, world: { ...settled.world, talk: null } };
+}
+
+/** Every authored public slot a resident may occupy, independent of the loaded state's phase. */
+function residentSlots(resident: ResidentDef): readonly ResidentSlot[] {
+  const values: (ResidentSlotValue | undefined)[] = [
+    resident.fallback,
+    ...Object.values(resident.schedule),
+    ...(resident.overrides ?? []).flatMap((override) => [
+      override.all,
+      ...Object.values(override.slots),
+    ]),
+  ];
+  return values.filter((value): value is ResidentSlot => typeof value === 'object');
 }

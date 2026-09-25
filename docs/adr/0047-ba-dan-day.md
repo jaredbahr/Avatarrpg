@@ -221,7 +221,7 @@ tiles need a visual check (W5c).
 | `bd04.court`               | BD04 family court    | village, the lane at the SW dwelling, x=9 rows 10–11 (`village.ts:38-39`, `baDan.ts:263`) (D5)                                        | **Approximate.** No oven yard                          |
 | `bd04.yard`                | BD04 household adult | village, a free tile beside `bd04.court` (candidate (10,11))                                                                          | **Approximate**                                        |
 | `home.pella`               | BD04 sleeping rooms  | private; door on the SW dwelling (D5)                                                                                                 | **Doorway**                                            |
-| `bd05.school`              | BD05 school          | private; represented by a new notice NpcDef, `school_notice` (a `route-sign`, `types.ts:544`), planned for the free tile (11,12) (§8) | **Does not fit.** No school or play court on any map   |
+| `bd05.school`              | BD05 school          | private; represented by a new notice NpcDef, `school_notice` (a `route-sign`, `types.ts:544`), at the free lawn tile (12,11) (§8, W6) | **Does not fit.** No school or play court on any map   |
 | `bd06.bank`                | BD06 riverside       | riverside (15,9) (`riverside.ts:8`)                                                                                                   | **Fits**                                               |
 | `bd06.watch`               | BD06 safe bank       | riverside (16,14), near `otter` (17,15) (`riverside.ts:10`; row-14 span 9–18, `riverside.ts:64-67`)                                   | **Fits** as a tile; the safe edge needs a visual check |
 | `rv.practice`              | Dorin's drill        | riverside (32,12), Dorin's current NpcDef tile (`riverside.ts:129`) (D3)                                                              | Existing spot, not in the guide's table                |
@@ -289,6 +289,15 @@ hide an actor there.
   Pella's parents (handoff, "What is new").
 - **The school notice.** In the morning, `school_notice` (visible only with `phase: ['morning']`)
   reads "Pella is in class until midday". "Wait until midday" is the §18.9 next-period alternative.
+
+**Amendment (W5, 2026-09-23): the supervision pairing inside Mira's conversation.** `story.visited`
+is written when a node is entered (Context), so opening `mira_intro`, or `mira_epilogue` once
+`pella_home` has been heard, lifts Mira's hold at once. For that one conversation Mira stays at
+`bd01.table` only through the pin (tier 0), while Pella's supervision fallback has also lifted, so
+in the afternoon Pella resolves to `bd06.watch` without Mira at BD06. This is accepted: Pella is on
+the riverside, off the player's map, and it lasts only until the conversation ends, when Mira walks
+to `bd06.bank`. The pairing rule and test 11 therefore allow exactly this case: Mira pinned at
+`bd01.table` with Pella not on the village map. Every other state, pinned or not, keeps the pairing.
 
 ### 5. After every command: settle (B2)
 
@@ -420,7 +429,7 @@ Dorin's drill moves to his midday relief (D3).
 | ----------------- | ------------------------------------------- | ------------------------------------------------------------------- | -------------------------------------------------- |
 | `guard_hanru`     | `ba_dan_village`, resident `lw.npc.hanru`   | placeholder from A1, distinct from `npc.dorin` and `npc.guard` (D7) | `hanru_watch`, `handover_scene`                    |
 | `riverside_pella` | `ba_dan_riverside`, resident `lw.npc.pella` | `npc.kid`                                                           | `riverside_pella`, with an `act1_complete` variant |
-| `school_notice`   | `ba_dan_village`, unbound, at (11,12)       | notice art from A1                                                  | `school_notice`                                    |
+| `school_notice`   | `ba_dan_village`, unbound, at (12,11)       | notice art from A1                                                  | `school_notice`                                    |
 
 The existing `pella_*` nodes return to `village_explore` (`act1.ts:140-157`), so they can't be
 reused on the riverside.
@@ -448,11 +457,83 @@ plant art yet; the scene ships as text plus a changed pose and is reported that 
 **LW-S-BD-03, the handover.** The first route on `guard_hanru` is `handover_scene`, gated on
 `phase in [dawn, evening]` and `scene.bd03_handover` unset. It carries the guide's lines and sets
 the flag at the end. After that, `hanru_watch` plays. Ambient barks, rotated by `day`, are shown as
-subtitles.
+subtitles. The barks are presentation work and are assigned to W7, not W6 (W6 review).
 
 **Dorin's drill (M7).** The "Dorin's drill" control (`VillageLife.ts:108-112, 262-264`) and the
 Dorin actor are shown only while Dorin resolves to `rv.practice`. The preview enters in the
 afternoon, so its drill appears after "Wait until midday" at the porch (D3, D8).
+
+**Amendment (W7, 2026-09-23): where the UI puts the wait, and what it leaves to W8.** The village
+hotbar offers "Wait" (the seat's name under it) only while the leader stands within one tile of a
+rest spot and is not walking, in Look around's slot: the dock is laid out for four actions, and a
+fifth wrapped the iPad dock to twice its height and pushed a button off a phone at Largest text.
+No player meets a dead end: Look around lists "Mira's table · Sit and wait", which walks to the
+seat; the riverside's "Wait until…" (in Activities) walks to the tea porch first, as Tea break
+does; and a dialog whose every option is refused shows the reason and a walk to the map's seat in
+place of the locked tiles. A partly refused dialog keeps each locked option with its own reason.
+The refusals name a fight, a conversation, no seat (naming the map's rest spots), or nowhere for
+the party to stand. The phase replaces the header's "Exploring" and carries no mark. The handover
+barks are three items rotated by `(day, watch)`, gated by the Condition
+`scene.bd03_handover eq completed` (§6), and shown once per watch as a toast; the watch is held on
+the app, so leaving the map and coming back does not repeat it. Background roles are not drawn
+yet: on the village they are `NpcMarker`s, which are W8's, and drawing them needs W8 to decide how
+the party treats an observe-only figure's tile (rules paths and settle ignore it today). The
+riverside, the only stage VillageLife draws, has no role placements in Slice A.
+
+**Amendment (W8, 2026-09-23): how residents walk, and what a role's tile is.** §7 stands, with
+these decisions and departures.
+
+- **Its own clock.** The planner (`src/app/world/residentMotion.ts`) is played by
+  `ResidentWalks`, held on the App so a conversation in its own scene does not forget where
+  people were drawn. Each walk is a `partyWalked` on a private `Animator`, so it has the party's
+  280 ms a tile, ramps, bob and facing and no footsteps, but it is not an `alongside` track on
+  the app's animator: a resident walking never makes the party wait, never blocks a tap and never
+  holds `waitForIdle`. A load, a new game and the preview place everyone directly; a new map
+  does too.
+- **Blocked routes.** A route round the party and the other people is tried, then one through the
+  party. If both fail the resident fades out where they stand and fades in on their tile (320 ms
+  each). This replaces "wait on the nearest reachable tile and re-plan": a figure drawn off its
+  rules tile would need its own tap target. It is the only fade away from a door or an exit, and
+  shipped content has no such route; a walled-verge fixture proves it.
+- **Where people come from.** A private anchor's door on this map, else the exit toward the map
+  they are on. A role with `accompanies` uses its resident's home door; anyone else placed nowhere
+  uses the nearest exit (the relief watch comes and goes by the east road).
+- **The freeze.** The clock stands still while a conversation, a menu or a hidden tab is up, and
+  no plan is made until the conversation ends, so a pinned speaker never moves. Anyone mid-walk
+  when a conversation opens (possible only through a trigger or a flag) holds mid-stride until
+  it ends.
+- **Taps.** A tap hit-tests the drawn figures (upright bounds over the drawn feet, front-most
+  first) and walks to that person's rules tile. A tap on someone still walking targets where they
+  are going: the party sets off at once for the tile beside it, and the conversation is held as
+  the next walk ("Next: …") until they arrive. Every other route to them (a ground tap on their
+  tile, Talk, Look around, the map) goes through the same hold, so no conversation opens with the
+  speaker mid-stride. Someone walking off the map
+  has no tile; a tap on them is a ground tap.
+- **Background roles.** Both roles are drawn from placements as markers with no talk pip. The
+  party treats a role's tile as a person's: a walk to it stops beside it and opens nothing, an
+  approach to someone else never ends on it, settle never leaves the leader on it, and the
+  followers are never seated there. The midday relief watch therefore stands at the gate before
+  victory.
+- **D6 adjusted: the post moves to (17,6), the handover to (16,6).** The east road from x=17 to
+  the exit runs under the verge trees' canopies, which fade only with the party within three tiles,
+  so a guard at (20,9) could not be seen from the square and the first gate a new player saw read
+  as unguarded (W7 and W8 reviews). (17,6) is the nearest verge tile to the old post that the
+  square's camera shows clear of canopy (checked from Mira's seat and from the square's east edge
+  at the opening zoom): the north verge where the road leaves the square, off the cart lanes of
+  rows 7-8, looking east down the road toward the exit. The handover is the verge beside it, on
+  the village side. The anchors' validators pass unchanged. One consequence: at the exit tile
+  itself the route, not Dorin, is now the nearby action; the guard is met where the road leaves
+  the square. No gate tile near the exit is visible from the square at the opening zoom.
+- **Art.** Until P2/P3, a resident's PNG slides at the party's pace with its bob, a contact shadow
+  that stays on the ground under the bob, a facing that follows the walk, a steady 0.06 rad lean
+  into the walk eased over the stroll's ramps, and a slight settle (1.02 wide, 0.97 tall) at each
+  footfall. A painted placeholder (the relief watch, the household adult, Hanru) strides with the
+  rig's two walk drawings instead, drawn at 1.4 rather than 1.5 so it stands at the residents'
+  height; the riverside's villagers stride with their procedural walk. The party gets the same
+  contact shadow on explore maps (ADR 0015).
+- **Re-planning.** A command that lands mid-walk re-plans only someone whose rules tile changed;
+  everyone else keeps the walk they are on. `via` is honoured; ambient `loop`s are not played,
+  since no content declares one.
 
 ### 9. Consistency with Jared's later decisions
 
@@ -481,6 +562,8 @@ all eight defaults accepted.** Text that depends on one cites it as (Dn).
 - **D5. House ownership.** Gao north-west, Mira north, Pella's household south-west; south-east
   unassigned.
 - **D6. Gate post.** The verge (20,9), out of cart traffic, rather than the road tile (20,8).
+  Adjusted in W8 to the north verge at (17,6), with the handover at (16,6); see the W8
+  amendment.
 - **D7. Hanru's appearance.** A placeholder sprite distinct from both Dorin sprites. Hanru uses
   they/them (§04.14).
 - **D8. Where waiting is allowed.** Only at designated spots: Mira's table bench and the riverside

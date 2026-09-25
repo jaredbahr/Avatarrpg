@@ -16,6 +16,14 @@ it('sizes only the small animal discovery below adult NPCs', () => {
   expect(animal).toBeLessThan(35);
 });
 
+it('brings the painted placeholder people down to the illustrated residents’ height', () => {
+  for (const sprite of ['npc.guard', 'npc.household', 'npc.hanru']) {
+    expect(npcPresentationScale(sprite, 'oblique')).toBe(1.4);
+    expect(npcPresentationScale(sprite, undefined)).toBe(1);
+  }
+  expect(npcPresentationScale('npc.dorin', 'oblique')).toBe(1.5);
+});
+
 it('uses the existing forest attacker at both crossings without changing their areas', () => {
   const map = CONTENT.maps.get('forest_road');
   if (!map) throw new Error('Missing forest');

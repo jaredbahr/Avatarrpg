@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { CONTENT, CONTENT_BUNDLE, STORY_ENTRY } from './index';
-import { mapSchema, validateContent } from './schemas';
+import { conditionSchema, mapSchema, validateContent } from './schemas';
 import { ELEMENTS } from './elements';
 import { resolveAsset } from './assets/manifest';
 import { combinedKit } from '../core/rules/leveling';
@@ -31,6 +31,25 @@ describe('content', () => {
   it('passes shape and cross-reference validation', () => {
     const problems = validateContent(CONTENT_BUNDLE);
     expect(problems, `\n${problems.join('\n')}\n`).toEqual([]);
+  });
+
+  it('requires pos only on an NpcDef that binds no resident', () => {
+    const map = CONTENT_BUNDLE.maps.find((candidate) => candidate.npcs.length > 0);
+    const npc = map?.npcs[0];
+    if (!map || !npc) throw new Error('Missing map with an npc');
+    const plain = { ...npc };
+    delete plain.pos;
+    const bound = (candidate: unknown) =>
+      mapSchema.safeParse({ ...map, npcs: [candidate] }).success;
+    // A resident-bound NpcDef takes its tile from the resident's anchor (ADR 0047 §2).
+    expect(bound({ ...plain, resident: 'lw.npc.gao' })).toBe(true);
+    expect(bound(plain)).toBe(false);
+  });
+
+  it('accepts a phase condition for a real phase and rejects the rest', () => {
+    expect(conditionSchema.safeParse({ kind: 'phase', in: ['dawn'] }).success).toBe(true);
+    expect(conditionSchema.safeParse({ kind: 'phase', in: ['tuesday'] }).success).toBe(false);
+    expect(conditionSchema.safeParse({ kind: 'phase', in: [] }).success).toBe(false);
   });
 
   it('only resumes an end screen at an existing exploration node', () => {
@@ -73,6 +92,104 @@ describe('content', () => {
       ],
     });
     expect(problems.some((p) => p.includes('standing_trap') && p.includes('0 is'))).toBe(true);
+  });
+
+  it('refuses scene memory other than completed or declined (ADR 0047 §6)', () => {
+    const problems = validateContent({
+      ...CONTENT_BUNDLE,
+      story: [
+        ...CONTENT_BUNDLE.story,
+        { id: 'scene_trap', kind: 'flags', set: { 'scene.trap': true }, next: STORY_ENTRY },
+      ],
+    });
+    expect(problems.some((p) => p.includes('scene_trap') && p.includes('scene memory'))).toBe(true);
+  });
+
+  it('refuses a branch on scene memory, which would read declined as set', () => {
+    const problems = validateContent({
+      ...CONTENT_BUNDLE,
+      story: [
+        ...CONTENT_BUNDLE.story,
+        {
+          id: 'scene_branch_trap',
+          kind: 'branch',
+          flag: 'scene.bd01_plant_chair',
+          ifSet: STORY_ENTRY,
+          ifUnset: STORY_ENTRY,
+        },
+      ],
+    });
+    expect(problems.some((p) => p.includes('scene_branch_trap') && p.includes('truthy'))).toBe(
+      true,
+    );
+  });
+
+  it('refuses a condition comparing scene memory with a value it never holds', () => {
+    const [map, ...restMaps] = CONTENT_BUNDLE.maps;
+    const npc = map?.npcs[0];
+    if (!map || !npc) throw new Error('Missing an NPC to probe');
+    const trap = { kind: 'flag', key: 'scene.bd01_plant_chair', op: 'eq', value: 'done' } as const;
+    const problems = validateContent({
+      ...CONTENT_BUNDLE,
+      maps: [
+        {
+          ...map,
+          npcs: [{ ...npc, routes: [{ when: trap, node: npc.node }] }, ...map.npcs.slice(1)],
+        },
+        ...restMaps,
+      ],
+    });
+    expect(problems.some((p) => p.includes(`map "${map.id}"`) && p.includes('"done"'))).toBe(true);
+    // The shipped comparisons (Gao's afternoon pose) use real values.
+    expect(problems.filter((p) => p.includes('scene memory') && !p.includes('"done"'))).toEqual([]);
+  });
+
+  /*
+   * An authored `flags` node may advance the clock (ADR 0047 §1), but the
+   * validator only allows it where a replay cannot reach it: a phase change
+   * that opens straight into a conversation, or that a repeatable NPC
+   * conversation can enter again, would churn time every time somebody said
+   * hello. Both halves of that rule deserve a test.
+   */
+  it('refuses a phase node that reaches a conversation before a resting point', () => {
+    const victory = CONTENT_BUNDLE.story.find((node) => node.id === 'act1_victory');
+    if (victory?.kind !== 'flags') throw new Error('Missing the Act 1 victory beat');
+    const problems = validateContent({
+      ...CONTENT_BUNDLE,
+      story: [
+        ...CONTENT_BUNDLE.story.map((node) =>
+          node.id === victory.id ? { ...victory, next: 'phase_trap' } : node,
+        ),
+        {
+          id: 'phase_trap',
+          kind: 'branch',
+          flag: 'act1_complete',
+          ifSet: 'quarry_assessment',
+          ifUnset: 'quarry_assessment',
+        },
+      ],
+    });
+    expect(
+      problems.some((p) => p.includes('act1_victory') && p.includes('dialogue or choice')),
+    ).toBe(true);
+  });
+
+  it('refuses a phase node that an NPC conversation could replay', () => {
+    const [map, ...restMaps] = CONTENT_BUNDLE.maps;
+    if (!map) throw new Error('Missing maps to probe');
+    const npc = map.npcs[0];
+    if (!npc) throw new Error('Missing an NPC to probe');
+    const victory = CONTENT_BUNDLE.story.find((node) => node.id === 'act1_victory');
+    if (victory?.kind !== 'flags') throw new Error('Missing the Act 1 victory beat');
+    const problems = validateContent({
+      ...CONTENT_BUNDLE,
+      maps: [{ ...map, npcs: [{ ...npc, node: victory.id }, ...map.npcs.slice(1)] }, ...restMaps],
+    });
+    expect(problems.some((p) => p.includes('act1_victory') && p.includes('churn'))).toBe(true);
+  });
+
+  it('accepts the Act 1 victory beat, which rests at an ending nobody replays', () => {
+    expect(validateContent(CONTENT_BUNDLE).filter((p) => p.includes('act1_victory'))).toEqual([]);
   });
 
   it('refuses conditional enemies gated on standing', () => {
