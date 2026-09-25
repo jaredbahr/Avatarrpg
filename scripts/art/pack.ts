@@ -121,15 +121,11 @@ export function main(argv: readonly string[]): number {
       const timing =
         clip === 'tea'
           ? { fps: 0.25, loop: true }
-          : clip === 'walkNorth' || clip === 'walkSouth'
+          : clip.startsWith('walk')
             ? { fps: 4, loop: true }
-            : clip === 'idleNorth' ||
-                clip === 'idleSouth' ||
-                clip === 'rest' ||
-                clip === 'restNorth' ||
-                clip === 'restSouth'
+            : clip.startsWith('idle') || clip.startsWith('rest')
               ? { fps: 1, loop: true }
-              : BAKED_CLIPS[clip];
+              : BAKED_CLIPS[clip as keyof typeof BAKED_CLIPS];
       return `      ${clip}: { frames: ${JSON.stringify(names)}, fps: ${timing.fps}, loop: ${timing.loop} },`;
     },
   );

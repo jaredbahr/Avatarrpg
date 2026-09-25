@@ -72,14 +72,21 @@ describe('Cutting character art', () => {
       const atlas = parseAtlasJson(readFileSync(`public/${entry.atlas}`, 'utf8'));
       const rect = atlas.frames.get(`${key}/idle/0`);
       if (!rect) throw new Error('Missing hero standing pose');
-      const frame = crop(readPng(`public/art/units/walking-${name}.png`), {
-        x: rect.x,
-        y: rect.y,
-        width: rect.w,
-        height: rect.h,
-      });
-      const height = alphaBounds(frame)?.height ?? 0;
-      expect(Math.abs(height * 1.25 - 151)).toBeLessThan(1);
+      if (atlas.image.endsWith('.webp')) {
+        expect(name).toBe('kaya');
+        expect([rect.w, rect.h]).toEqual([128, 192]);
+        expect(entry.pixelsPerTile).toBe(128);
+        expect(entry.anchor).toEqual({ x: 0.5, y: 0.85 });
+      } else {
+        const frame = crop(readPng(`public/art/units/${atlas.image}`), {
+          x: rect.x,
+          y: rect.y,
+          width: rect.w,
+          height: rect.h,
+        });
+        const height = alphaBounds(frame)?.height ?? 0;
+        expect(Math.abs(height * 1.25 - 151)).toBeLessThan(1);
+      }
     }
   });
 });

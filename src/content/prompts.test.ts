@@ -239,8 +239,11 @@ describe('sheet prompt packs', () => {
   it('ask for exactly the frames the clip table allows', () => {
     for (const key of sheetKeys) {
       const text = readFileSync(join(SHEETS, `${key}.md`), 'utf8');
-      // The optional Riverside tea cels have their own bounded source pack below.
-      for (const clip of CLIP_NAMES.filter((clip) => clip !== 'tea')) {
+      // Riverside tea and PixelLab's eight-way runtime locomotion have their
+      // own bounded source packs rather than the legacy hero prompt table.
+      for (const clip of CLIP_NAMES.filter(
+        (clip) => clip !== 'tea' && !/(NorthEast|SouthEast|SouthWest|NorthWest|West)$/.test(clip),
+      )) {
         const { min, max } = CLIP_FRAME_COUNTS[clip];
         for (let index = 0; index < min; index++) {
           expect(text, `${key}: ${clip}/${index}`).toContain(`\`${clip}/${index}.png\``);

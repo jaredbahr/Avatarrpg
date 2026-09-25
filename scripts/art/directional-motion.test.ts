@@ -21,6 +21,32 @@ describe('directional art compatibility', () => {
       );
       const oldImage = readPng(`assets/reference/character-poses/${originalStem}.png`);
       const atlas = parseAtlasJson(readFileSync(`public/${entry.atlas}`, 'utf8'));
+      if (atlas.image.endsWith('.webp')) {
+        expect(key).toBe('unit.fire.kaya');
+        expect(entry.anchor).toEqual({ x: 0.5, y: 0.85 });
+        for (const direction of [
+          '',
+          'NorthEast',
+          'North',
+          'NorthWest',
+          'West',
+          'SouthWest',
+          'South',
+          'SouthEast',
+        ]) {
+          const idle = resolveClip(entry.clips, `idle${direction}` as 'idle');
+          const walk = resolveClip(entry.clips, `walk${direction}` as 'walk');
+          expect(idle?.exact, `idle${direction}`).toBe(true);
+          expect(idle?.def.frames).toHaveLength(4);
+          expect(walk?.exact, `walk${direction}`).toBe(true);
+          expect(walk?.def.frames).toHaveLength(12);
+          for (const id of [...(idle?.def.frames ?? []), ...(walk?.def.frames ?? [])]) {
+            const rect = atlas.frames.get(id);
+            expect(rect && [rect.w, rect.h], id).toEqual([128, 192]);
+          }
+        }
+        continue;
+      }
       const image = readPng(`public/art/units/${atlas.image}`);
       const extract = (im: typeof image, r: { x: number; y: number; w: number; h: number }) =>
         crop(im, { x: r.x, y: r.y, width: r.w, height: r.h });

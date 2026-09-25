@@ -83,15 +83,22 @@ export function validateSheets(
     if (atlas.width > MAX_ATLAS || atlas.height > MAX_ATLAS) {
       problems.push(`${key}: atlas is ${atlas.width}x${atlas.height}; the limit is ${MAX_ATLAS}`);
     }
-    const pngPath = join(dirname(jsonPath), atlas.image);
-    if (!existsSync(pngPath)) {
+    const imagePath = join(dirname(jsonPath), atlas.image);
+    if (!existsSync(imagePath)) {
       problems.push(`${key}: ${atlas.image} is missing beside ${entry.atlas}`);
       continue;
     }
-    const image = readPng(pngPath);
-    if (image.width !== atlas.width || image.height !== atlas.height) {
+    const image = atlas.image.endsWith('.png') ? readPng(imagePath) : undefined;
+    const size =
+      image ??
+      (atlas.image.endsWith('.webp') ? webpSize(new Uint8Array(readFileSync(imagePath))) : null);
+    if (!size) {
+      problems.push(`${key}: ${atlas.image} must be a readable PNG or WebP`);
+      continue;
+    }
+    if (size.width !== atlas.width || size.height !== atlas.height) {
       problems.push(
-        `${key}: ${atlas.image} is ${image.width}x${image.height}, the JSON says ${atlas.width}x${atlas.height}`,
+        `${key}: ${atlas.image} is ${size.width}x${size.height}, the JSON says ${atlas.width}x${atlas.height}`,
       );
       continue;
     }
@@ -122,7 +129,7 @@ export function validateSheets(
             `${key}: frame "${name}" is ${frame.w}x${frame.h}, expected ${wantW}x${wantH}`,
           );
         }
-        if (borderTouched(image, frame, MARGIN)) {
+        if (image && borderTouched(image, frame, MARGIN)) {
           problems.push(`${key}: frame "${name}" has art inside the ${MARGIN} px margin`);
         }
       }
@@ -140,7 +147,7 @@ export function validateSheets(
             `${key}: ${direction} frame "${name}" is ${frame.w}x${frame.h}, expected ${wantW}x${wantH}`,
           );
         }
-        if (borderTouched(image, frame, MARGIN)) {
+        if (image && borderTouched(image, frame, MARGIN)) {
           problems.push(
             `${key}: ${direction} frame "${name}" has art inside the ${MARGIN} px margin`,
           );

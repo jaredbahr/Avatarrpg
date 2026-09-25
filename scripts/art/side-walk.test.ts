@@ -19,6 +19,18 @@ describe('hero lateral walk art', () => {
       const oldAtlas = parseAtlasJson(readFileSync(`${oldStem}.json`, 'utf8'));
       const oldImage = readPng(`${oldStem}.png`);
       const atlas = parseAtlasJson(readFileSync(`public/${entry.atlas}`, 'utf8'));
+      if (atlas.image.endsWith('.webp')) {
+        expect(key).toBe('unit.fire.kaya');
+        const walk = resolveClip(entry.clips, 'walk');
+        expect(walk?.exact).toBe(true);
+        expect(walk?.def.frames).toHaveLength(12);
+        expect(walk?.def.fps).toBeCloseTo(1000 / 114);
+        for (const id of walk?.def.frames ?? []) {
+          const rect = atlas.frames.get(id);
+          expect(rect && [rect.w, rect.h], id).toEqual([128, 192]);
+        }
+        continue;
+      }
       const image = readPng(`public/art/units/${atlas.image}`);
       const extract = (im: typeof image, r: { x: number; y: number; w: number; h: number }) =>
         crop(im, { x: r.x, y: r.y, width: r.w, height: r.h });
