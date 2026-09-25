@@ -700,6 +700,7 @@ export const storyNodeSchema = z.discriminatedUnion('kind', [
     id,
     kind: z.literal('flags'),
     set: z.record(flagValue),
+    residentProfiles: z.record(z.enum(RESIDENT_PROFILES)).optional(),
     grantXp: z.number().int().min(0).max(2000).optional(),
     phase: dayPhaseId.optional(),
     next: id,
@@ -1830,6 +1831,14 @@ function validateResidents(bundle: ContentBundle, problems: string[]): void {
     scanProfileConditions(resident, `resident "${resident.id}"`, resident.id);
   }
   for (const node of bundle.story) scanProfileConditions(node, `story node "${node.id}"`);
+  for (const node of bundle.story) {
+    if (node.kind !== 'flags' || !node.residentProfiles) continue;
+    for (const residentId of Object.keys(node.residentProfiles)) {
+      if (!residentIds.has(residentId)) {
+        problems.push(`story node "${node.id}" writes unknown resident profile "${residentId}"`);
+      }
+    }
+  }
   for (const map of bundle.maps) scanProfileConditions(map, `map "${map.id}"`);
   for (const encounter of bundle.encounters) {
     scanProfileConditions(encounter, `encounter "${encounter.id}"`);

@@ -8,10 +8,10 @@
  */
 
 import { describe as suite, expect, it } from 'vitest';
-import { CONTENT } from '../../content';
+import { CONTENT, RETURNEE_IDS } from '../../content';
 import { apply } from '../state/reducer';
 import { createGame } from '../state/createGame';
-import type { DayPhase, GameState } from '../types';
+import type { ContentIndex, DayPhase, GameState, StoryNode } from '../types';
 import { enterStoryNode } from './storyEngine';
 
 function game(phase: DayPhase = 'midday'): GameState {
@@ -80,5 +80,32 @@ suite('an authored phase node', () => {
     });
     expect(battle.state.log).toEqual([]);
     expect(battle.events.some((event) => event.type === 'roundStarted')).toBe(true);
+  });
+
+  it('applies flags, resident profiles, XP and phase at one authored node', () => {
+    const completion: StoryNode = {
+      id: 'test_atomic_completion',
+      kind: 'flags',
+      set: { completed: true },
+      residentProfiles: Object.fromEntries(RETURNEE_IDS.map((id) => [id, 'returning'])),
+      grantXp: 5,
+      phase: 'evening',
+      next: 'village_explore',
+    };
+    const content: ContentIndex = {
+      ...CONTENT,
+      story: new Map([...CONTENT.story, [completion.id, completion]]),
+    };
+    const before = game('midday');
+    const result = enterStoryNode(content, before, completion.id);
+
+    expect(result.state.flags.completed).toBe(true);
+    expect(result.state.world.clock.phase).toBe('evening');
+    expect(result.state.world.residentProfiles).toMatchObject(
+      Object.fromEntries(RETURNEE_IDS.map((id) => [id, 'returning'])),
+    );
+    expect(result.state.party[0]?.xp).toBe((before.party[0]?.xp ?? 0) + 5);
+    expect(before.flags.completed).toBeUndefined();
+    expect(before.world.residentProfiles).toEqual({});
   });
 });

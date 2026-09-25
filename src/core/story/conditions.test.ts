@@ -10,7 +10,7 @@
 import { describe as suite, expect, it } from 'vitest';
 import { CONTENT } from '../../content';
 import { createGame } from '../state/createGame';
-import type { Condition, DayPhase, FlagValue, GameState } from '../types';
+import type { Condition, DayPhase, FlagValue, GameState, ResidentProfile } from '../types';
 import {
   MAX_STANDING,
   MIN_STANDING,
@@ -108,7 +108,7 @@ suite('party conditions', () => {
 });
 
 suite('resident profile conditions', () => {
-  const condition = (profiles: readonly ('missing' | 'returning')[]): Condition => ({
+  const condition = (profiles: readonly ResidentProfile[]): Condition => ({
     kind: 'residentProfile',
     residentId: 'lw.npc.bo_shan',
     in: profiles,
@@ -131,6 +131,19 @@ suite('resident profile conditions', () => {
     expect(evaluate(state, condition(['returning']))).toBe(true);
     expect(evaluate(state, condition(['missing']))).toBe(false);
   });
+
+  it.each(['resting', 'recovering', 'ready'] as const)(
+    'matches the valid %s profile without broadening to another state',
+    (profile) => {
+      const base = game();
+      const state: GameState = {
+        ...base,
+        world: { ...base.world, residentProfiles: { 'lw.npc.bo_shan': profile } },
+      };
+      expect(evaluate(state, condition([profile]))).toBe(true);
+      expect(evaluate(state, condition(['missing', 'returning']))).toBe(false);
+    },
+  );
 });
 
 suite('nation standing', () => {

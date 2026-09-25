@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { CONTENT, CONTENT_BUNDLE, STORY_ENTRY } from './index';
-import { conditionSchema, mapSchema, validateContent } from './schemas';
+import { conditionSchema, mapSchema, storyNodeSchema, validateContent } from './schemas';
 import { ELEMENTS } from './elements';
 import { resolveAsset } from './assets/manifest';
 import { combinedKit } from '../core/rules/leveling';
@@ -50,6 +50,42 @@ describe('content', () => {
     expect(conditionSchema.safeParse({ kind: 'phase', in: ['dawn'] }).success).toBe(true);
     expect(conditionSchema.safeParse({ kind: 'phase', in: ['tuesday'] }).success).toBe(false);
     expect(conditionSchema.safeParse({ kind: 'phase', in: [] }).success).toBe(false);
+  });
+
+  it('accepts typed resident assignments only on authored flags nodes', () => {
+    const node = {
+      id: 'profile_completion',
+      kind: 'flags',
+      set: { complete: true },
+      residentProfiles: { 'lw.npc.bo_shan': 'returning' },
+      next: STORY_ENTRY,
+    };
+    expect(storyNodeSchema.safeParse(node).success).toBe(true);
+    expect(
+      storyNodeSchema.safeParse({
+        ...node,
+        residentProfiles: { 'lw.npc.bo_shan': 'arrived' },
+      }).success,
+    ).toBe(false);
+  });
+
+  it('rejects a profile assignment to an unknown resident', () => {
+    const problems = validateContent({
+      ...CONTENT_BUNDLE,
+      story: [
+        ...CONTENT_BUNDLE.story,
+        {
+          id: 'unknown_profile_completion',
+          kind: 'flags',
+          set: {},
+          residentProfiles: { 'lw.npc.unknown': 'returning' },
+          next: STORY_ENTRY,
+        },
+      ],
+    });
+    expect(problems).toContain(
+      'story node "unknown_profile_completion" writes unknown resident profile "lw.npc.unknown"',
+    );
   });
 
   it('only resumes an end screen at an existing exploration node', () => {

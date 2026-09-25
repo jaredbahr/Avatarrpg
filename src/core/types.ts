@@ -947,6 +947,8 @@ export type StoryNode =
       readonly id: string;
       readonly kind: 'flags';
       readonly set: Readonly<Record<string, FlagValue>>;
+      /** Authored resident-state changes applied with this completion beat. */
+      readonly residentProfiles?: Readonly<Record<string, ResidentProfile>>;
       /**
        * XP granted to every party member, for story beats that are worth
        * something without a fight — Jin paying for Ruon, say. Keeps branches

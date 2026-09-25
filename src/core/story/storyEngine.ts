@@ -168,7 +168,16 @@ export function enterStoryNode(
         for (const [key, value] of Object.entries(node.set)) {
           events.push({ type: 'flagSet', key, value });
         }
-        current = { ...current, flags, story: { ...current.story, visited } };
+        const world = node.residentProfiles
+          ? {
+              ...current.world,
+              residentProfiles: {
+                ...current.world.residentProfiles,
+                ...node.residentProfiles,
+              },
+            }
+          : current.world;
+        current = { ...current, flags, world, story: { ...current.story, visited } };
         if (node.grantXp && node.grantXp > 0) {
           current = grantPartyXp(content, current, node.grantXp, events);
         }
