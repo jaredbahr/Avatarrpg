@@ -18,6 +18,14 @@ type Scene = {
   renderer: { backend: { unitSprites?: Map<string, { visible: boolean }> } };
 };
 
+type Marker = {
+  id: string;
+  pos: { x: number; y: number };
+  at: { x: number; y: number };
+  alpha: number;
+  quiet: boolean;
+};
+
 const markers = (page: Page) =>
   page.evaluate(() =>
     (window.fnt!.app as unknown as { scene: Scene }).scene.lastNpcs.map((npc) => ({
@@ -28,6 +36,33 @@ const markers = (page: Page) =>
       quiet: Boolean(npc.quiet),
     })),
   );
+
+/** Sample after a fake-clock frame, including the WebGL sprite cache's visible entries. */
+const residentFrame = (page: Page) =>
+  page.evaluate(() => {
+    const app = window.fnt!.app as unknown as {
+      scene: Scene;
+      residents: { moving(): boolean };
+    };
+    const sprites = app.scene.renderer.backend.unitSprites;
+    const visible = [...(sprites?.entries() ?? [])].filter(([, sprite]) => sprite.visible);
+    return {
+      moving: app.residents.moving(),
+      markers: app.scene.lastNpcs.map((npc) => ({
+        id: npc.id,
+        pos: npc.pos,
+        at: npc.renderPos ?? npc.pos,
+        alpha: npc.alpha ?? 1,
+        quiet: Boolean(npc.quiet),
+      })),
+      // The coordinate key is the old contract this regression guards against.
+      dorinSprites: visible.filter(([key]) => key === 'npc:lw.npc.dorin' || key === 'npc:17,6')
+        .length,
+      // Any tile-keyed entry, hidden or not, means the old contract is back.
+      coordinateSprites: [...(sprites?.keys() ?? [])].filter((key) => /^npc:\d+,\d+$/.test(key))
+        .length,
+    };
+  });
 
 /** A new game's village at `phase`, the leader at `pos`, after Mira's briefing. */
 async function village(page: Page, renderer: string, phase: string, pos: { x: number; y: number }) {
@@ -67,26 +102,25 @@ for (const renderer of ['canvas', 'webgl'] as const) {
     await pauseClock(page);
     await page.evaluate(() => window.fnt!.app.dispatch({ type: 'wait', until: 'afternoon' }));
     const trail: { x: number; y: number }[] = [];
-    let dorinSprites = new Set<number>();
+    const dorinSprites: number[] = [];
+    let end: Marker[] = [];
+    let coordinateSprites = 0;
     // Sixty ms steps: at 280 ms a tile an even walk moves about 0.21 tile a step.
-    for (let step = 0; step < 80; step++) {
+    // Stop on the rendered settled state, rather than assuming 80 fake-clock
+    // advances produced 80 animation frames in every browser.
+    for (let step = 0; step < 120; step++) {
       await page.clock.runFor(60);
-      const now = await markers(page);
-      const mira = now.find((m) => m.id === 'lw.npc.mira');
+      const frame = await residentFrame(page);
+      end = frame.markers;
+      const mira = end.find((m) => m.id === 'lw.npc.mira');
       if (mira && mira.alpha === 1) trail.push(mira.at);
-      if (renderer === 'webgl')
-        dorinSprites = new Set([
-          ...dorinSprites,
-          await page.evaluate(() => {
-            const sprites = (window.fnt!.app as unknown as { scene: Scene }).scene.renderer.backend
-              .unitSprites;
-            // One sprite for Dorin, keyed by who he is; none keyed by a tile.
-            if ([...(sprites?.keys() ?? [])].some((key) => /^npc:\d+,\d+$/.test(key))) return -1;
-            return [...(sprites?.entries() ?? [])].filter(
-              ([key, sprite]) => key === 'npc:lw.npc.dorin' && sprite.visible,
-            ).length;
-          }),
-        ]);
+      if (renderer === 'webgl') {
+        dorinSprites.push(frame.dorinSprites);
+        coordinateSprites = Math.max(coordinateSprites, frame.coordinateSprites);
+      }
+      const dorin = end.find((m) => m.id === 'lw.npc.dorin');
+      if (!frame.moving && !mira && dorin?.at.x === 17 && dorin.at.y === 6 && dorin.alpha === 1)
+        break;
     }
     await page.clock.resume();
     // Mira was seen part-way along her walk to the river path, never jumping a tile.
@@ -97,14 +131,20 @@ for (const renderer of ['canvas', 'webgl'] as const) {
       const b = trail[i]!;
       expect(Math.hypot(b.x - a.x, b.y - a.y)).toBeLessThan(0.25);
     }
-    const end = await markers(page);
     expect(end.find((m) => m.id === 'lw.npc.mira')).toBeUndefined();
     expect(end.find((m) => m.id === 'lw.npc.dorin')).toMatchObject({
       pos: { x: 17, y: 6 },
       at: { x: 17, y: 6 },
       alpha: 1,
     });
-    if (renderer === 'webgl') expect([...dorinSprites]).toEqual([1]);
+    if (renderer === 'webgl') {
+      // A resident may be absent before their entering frame, and Pixi retains
+      // hidden cache entries. The invariant is one visible sprite at most while
+      // moving, and exactly one identity-keyed sprite once the frame settles.
+      expect(Math.max(...dorinSprites)).toBeLessThanOrEqual(1);
+      expect(dorinSprites.at(-1)).toBe(1);
+      expect(coordinateSprites).toBe(0);
+    }
   });
 }
 
@@ -135,8 +175,19 @@ test('a tap on someone walking takes the party to them once they arrive', async 
       world: { ...app.state.world, clock: { day: 1, phase: 'afternoon' } },
     };
   });
-  await page.clock.runFor(900);
-  const dorin = (await markers(page)).find((m) => m.id === 'lw.npc.dorin');
+  let dorin: Marker | undefined;
+  for (let step = 0; step < 40; step++) {
+    await page.clock.runFor(60);
+    const candidate = (await markers(page)).find((m) => m.id === 'lw.npc.dorin');
+    if (
+      candidate?.pos.x === 17 &&
+      candidate.pos.y === 6 &&
+      (candidate.at.x !== candidate.pos.x || candidate.at.y !== candidate.pos.y)
+    ) {
+      dorin = candidate;
+      break;
+    }
+  }
   expect(dorin?.pos).toEqual({ x: 17, y: 6 });
   expect(dorin?.at).not.toEqual(dorin?.pos);
   // Tap his body where it is drawn, not the tile he is heading for.
