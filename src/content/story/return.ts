@@ -15,7 +15,16 @@ const RESTING_PROFILES = Object.fromEntries(RETURNEE_IDS.map((id) => [id, 'resti
 >;
 
 export const RETURNEES_RETURNING: Condition = profilesAre('returning');
-export const RETURNEES_HOME: Condition = profilesAre('resting', 'recovering', 'ready');
+export const RETURNEES_HOME: Condition = {
+  kind: 'any',
+  of: [
+    profilesAre('resting', 'recovering', 'ready'),
+    {
+      kind: 'all',
+      of: [{ kind: 'flag', key: 'act1_complete', op: 'set' }, profilesAre('missing')],
+    },
+  ],
+};
 
 /** The four village homecomings are remembered by the existing story visit log. */
 export const VILLAGE_HOMECOMINGS_COMPLETE: Condition = {

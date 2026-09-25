@@ -229,6 +229,25 @@ describe('the authored walk home', () => {
     );
   });
 
+  it('reads legacy Act I completion as home without assigning resident profiles', () => {
+    const base = game({ act1_complete: true });
+    const legacy = {
+      ...base,
+      location: { ...base.location, mapId: 'ba_dan_village' },
+    };
+    const expected =
+      'The workers are home. Talk with Mira, Pella, Gao or Dorin, or visit the river.';
+
+    expect(worldObjective(CONTENT, legacy)).toBe(expected);
+    expect(
+      worldObjective(CONTENT, {
+        ...legacy,
+        story: { ...legacy.story, nodeId: null },
+      }),
+    ).toBe(expected);
+    expect(legacy.world.residentProfiles).toEqual({});
+  });
+
   it('keeps the rescued riverside objective after an optional dialogue returns', () => {
     const state = game({ act1_complete: true });
     const riverside = {
