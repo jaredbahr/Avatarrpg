@@ -2,7 +2,7 @@
 import type { Condition, MapDef, MapExit, MapTrigger, Vec2 } from '../../core/types';
 
 import { discoveryMarkers } from './discoveries';
-import { VILLAGE_HOMECOMINGS_COMPLETE } from '../story/return';
+import { RETURNEES_HOME, RETURNEES_RETURNING, VILLAGE_HOMECOMINGS_COMPLETE } from '../story/return';
 import { RETURNEE_PRESENTATIONS } from '../residents/returnees';
 
 const visited = (nodeId: string): Condition => ({ kind: 'visited', nodeId });
@@ -59,7 +59,7 @@ export function connectAct1(map: MapDef): MapDef {
             text: "You've caught up with the village. Rest by the river, or explore the roads.",
           },
           {
-            when: rescued,
+            when: RETURNEES_HOME,
             text: 'The workers are home. Talk with Mira, Pella, Gao or Dorin, or visit the river.',
           },
         ],
@@ -98,6 +98,10 @@ export function connectAct1(map: MapDef): MapDef {
         ...map,
         objective: 'Explore the woodland paths. The quarry lies east; Ba Dan lies west.',
         objectiveVariants: [
+          {
+            when: RETURNEES_RETURNING,
+            text: 'The five workers are returning. The roadblock is gone. Follow the road west to Ba Dan.',
+          },
           { when: rescued, text: 'The roadblock is gone. Follow the road west to Ba Dan.' },
         ],
         exits: [
@@ -129,6 +133,15 @@ export function connectAct1(map: MapDef): MapDef {
             'Quarry workers blocking the road',
             'unit.enemy.thug',
             unvisited('after_forest'),
+          ),
+          crossing(
+            map,
+            1,
+            4,
+            'forest_return_arrival',
+            'Ba Dan is ahead',
+            'npc.household',
+            RETURNEES_RETURNING,
           ),
         ],
         npcs: [

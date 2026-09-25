@@ -1,4 +1,21 @@
-import type { Condition, StoryNode } from '../../core/types';
+import type { Condition, ResidentProfile, StoryNode } from '../../core/types';
+import { RETURNEE_IDS } from '../residents/returnees';
+
+const profilesAre = (...profiles: ResidentProfile[]): Condition => ({
+  kind: 'all',
+  of: RETURNEE_IDS.map((residentId) => ({
+    kind: 'residentProfile',
+    residentId,
+    in: profiles,
+  })),
+});
+
+const RESTING_PROFILES = Object.fromEntries(RETURNEE_IDS.map((id) => [id, 'resting'])) as Readonly<
+  Record<(typeof RETURNEE_IDS)[number], ResidentProfile>
+>;
+
+export const RETURNEES_RETURNING: Condition = profilesAre('returning');
+export const RETURNEES_HOME: Condition = profilesAre('resting', 'recovering', 'ready');
 
 /** The four village homecomings are remembered by the existing story visit log. */
 export const VILLAGE_HOMECOMINGS_COMPLETE: Condition = {
@@ -23,7 +40,7 @@ export const RETURN_STORY: readonly StoryNode[] = [
     id: 'quarry_after_explore',
     kind: 'explore',
     mapId: 'quarry_floor',
-    objective: 'The workers are out. Take the west path through the cutting towards Ba Dan.',
+    objective: 'The five workers are returning with you. Take the west path towards Ba Dan.',
     next: 'cutting_return_explore',
   },
   {
@@ -31,21 +48,40 @@ export const RETURN_STORY: readonly StoryNode[] = [
     kind: 'explore',
     mapId: 'ambush_road',
     objective:
-      'Ba Dan lies west, past the quarry gate. Sen is at the rest stop if you need a pause.',
+      'The workers are returning to Ba Dan. Ba Dan lies west; Sen is at the rest stop if you need a pause.',
     next: 'gate_return_explore',
   },
   {
     id: 'gate_return_explore',
     kind: 'explore',
     mapId: 'quarry_gate',
-    objective: 'The gate is open. Follow the forest road west to Ba Dan.',
+    objective:
+      'The workers are returning. The gate is open; follow the forest road west to Ba Dan.',
     next: 'forest_return_explore',
   },
   {
     id: 'forest_return_explore',
     kind: 'explore',
     mapId: 'forest_road',
-    objective: 'The roadblock is gone. Continue west to Ba Dan.',
+    objective: 'The five workers are returning. Continue west to Ba Dan.',
+    next: 'forest_return_arrival',
+  },
+  {
+    id: 'forest_return_arrival',
+    kind: 'dialogue',
+    speaker: 'The West Road',
+    portrait: 'portrait.narrator',
+    lines: [
+      'The west road reaches the edge of Ba Dan.',
+      'The returning group crosses into the village together.',
+    ],
+    next: 'forest_return_arrived',
+  },
+  {
+    id: 'forest_return_arrived',
+    kind: 'flags',
+    set: {},
+    residentProfiles: RESTING_PROFILES,
     next: 'village_return_explore',
   },
   {

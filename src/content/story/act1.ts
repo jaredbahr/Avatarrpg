@@ -14,7 +14,12 @@
  * Choice descriptions state the consequences; the players judge Ruon themselves.
  */
 
-import type { StoryNode } from '../../core/types';
+import type { ResidentProfile, StoryNode } from '../../core/types';
+import { RETURNEE_IDS } from '../residents/returnees';
+
+const RETURNING_PROFILES = Object.fromEntries(
+  RETURNEE_IDS.map((id) => [id, 'returning']),
+) as Readonly<Record<(typeof RETURNEE_IDS)[number], ResidentProfile>>;
 
 export const ACT1_NODES: readonly StoryNode[] = [
   /* ---------------------------------------------------------------- Opening */
@@ -574,6 +579,7 @@ export const ACT1_NODES: readonly StoryNode[] = [
     id: 'act1_victory',
     kind: 'flags',
     set: { act1_complete: true },
+    residentProfiles: RETURNING_PROFILES,
     phase: 'evening',
     next: 'act1_epilogue',
   },

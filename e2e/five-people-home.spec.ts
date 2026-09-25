@@ -36,6 +36,55 @@ const drawnReturnees = (page: Page) =>
       .map((marker) => marker.id);
   }, RETURNEES);
 
+async function walkTo(page: Page, x: number, y: number): Promise<void> {
+  await page.evaluate((pos) => window.fnt!.app.dispatch({ type: 'walkTo', pos }), { x, y });
+  await waitForIdle(page);
+}
+
+async function takeRoute(page: Page, label: string, mapId: string): Promise<void> {
+  await page.getByRole('button', { name: 'Map', exact: true }).click();
+  await page.getByRole('button', { name: label, exact: true }).click();
+  await expect.poll(() => page.evaluate(() => window.fnt?.app.state?.location.mapId)).toBe(mapId);
+  await waitForIdle(page);
+}
+
+async function saveAndReload(page: Page): Promise<void> {
+  await page.getByRole('button', { name: 'Pause', exact: true }).click();
+  await page.getByRole('button', { name: 'Save game', exact: true }).click();
+  await page
+    .locator('.slot')
+    .filter({ hasText: 'Slot 1' })
+    .getByRole('button', { name: /save here/i })
+    .click();
+  const saved = await page.evaluate(() => {
+    const state = window.fnt!.app.state!;
+    return {
+      flags: state.flags,
+      world: state.world,
+      story: state.story,
+      location: state.location,
+    };
+  });
+  await page.reload();
+  await page.getByRole('button', { name: /load a save/i }).click();
+  await page
+    .locator('.slot')
+    .filter({ hasText: 'Slot 1' })
+    .getByRole('button', { name: /^Load$/ })
+    .click();
+  expect(
+    await page.evaluate(() => {
+      const state = window.fnt!.app.state!;
+      return {
+        flags: state.flags,
+        world: state.world,
+        story: state.story,
+        location: state.location,
+      };
+    }),
+  ).toEqual(saved);
+}
+
 test('seeded return profiles own five forest markers and missing owns none under Canvas', async ({
   page,
 }) => {
@@ -89,3 +138,87 @@ test('seeded return profiles own five forest markers and missing owns none under
 
   expect(await drawnReturnees(page)).toEqual([]);
 });
+
+for (const custody of ['escort', 'trade'] as const) {
+  test(`${custody} victory keeps five returning until the real west-exit arrival completes`, async ({
+    page,
+  }) => {
+    test.setTimeout(180_000);
+    await resetStorage(page, '?renderer=canvas');
+    await startGame(page, ['Jared'], ['kaya'], `five-home-${custody}`);
+    await page.evaluate((route) => {
+      const app = window.fnt!.app;
+      const current = app.state!;
+      const flag = route === 'escort' ? 'ruon_spared' : 'ruon_traded';
+      app.adoptSave(
+        {
+          ...current,
+          flags: { ...current.flags, [flag]: true },
+          story: {
+            ...current.story,
+            visited: [
+              ...current.story.visited,
+              'road_depart',
+              'after_forest',
+              'gate_parley',
+              'ruon_choice',
+              ...(route === 'escort' ? ['escort_chosen', 'after_ambush'] : ['trade_chosen']),
+            ],
+          },
+        },
+        undefined,
+      );
+    }, custody);
+    await enterNode(page, 'act1_victory');
+
+    expect(await page.evaluate(() => window.fnt!.app.state?.world.residentProfiles)).toEqual(
+      Object.fromEntries(RETURNEES.map((id) => [id, 'returning'])),
+    );
+    await page.getByRole('button', { name: 'Read summary' }).click();
+    await page.getByRole('button', { name: 'Continue exploring' }).click();
+
+    await takeRoute(page, 'West → The Cutting', 'ambush_road');
+    await takeRoute(page, 'West → Quarry Gate', 'quarry_gate');
+    await takeRoute(page, 'West → Forest Road', 'forest_road');
+    await settleResidents(page);
+    expect(await drawnReturnees(page)).toHaveLength(5);
+    await expect(page.locator('.title-plate-objective')).toContainText('returning');
+
+    await saveAndReload(page);
+    await settleResidents(page);
+    expect(await drawnReturnees(page)).toHaveLength(5);
+    expect(await page.evaluate(() => window.fnt!.app.state?.world.residentProfiles)).toEqual(
+      Object.fromEntries(RETURNEES.map((id) => [id, 'returning'])),
+    );
+
+    await walkTo(page, 0, 4);
+    expect(await page.evaluate(() => window.fnt!.app.state?.story.nodeId)).toBe(
+      'forest_return_arrival',
+    );
+    expect(await page.evaluate(() => window.fnt!.app.state?.location.mapId)).toBe('forest_road');
+    expect(await page.evaluate(() => window.fnt!.app.state?.world.residentProfiles)).toEqual(
+      Object.fromEntries(RETURNEES.map((id) => [id, 'returning'])),
+    );
+
+    await page.locator('.dialogue-panel button.btn-primary').click();
+    expect(await page.evaluate(() => window.fnt!.app.state?.world.residentProfiles)).toEqual(
+      Object.fromEntries(RETURNEES.map((id) => [id, 'returning'])),
+    );
+    await page.locator('.dialogue-panel button.btn-primary').click();
+    await expect
+      .poll(() => page.evaluate(() => window.fnt!.app.state?.location.mapId))
+      .toBe('ba_dan_village');
+    expect(await page.evaluate(() => window.fnt!.app.state?.world.residentProfiles)).toEqual(
+      Object.fromEntries(RETURNEES.map((id) => [id, 'resting'])),
+    );
+    await settleResidents(page);
+    expect(await drawnReturnees(page)).toEqual([]);
+    await expect(page.locator('.title-plate-objective')).toContainText('home');
+    expect(
+      await page.evaluate(
+        (flag) => window.fnt!.app.state?.flags[flag],
+        custody === 'escort' ? 'ruon_spared' : 'ruon_traded',
+      ),
+    ).toBe(true);
+  });
+}
