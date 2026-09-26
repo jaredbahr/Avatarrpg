@@ -46,27 +46,52 @@ export interface KayaGPins {
 
 /**
  * Per direction: the source folder, its idle, walk and rest clips, the walk
- * cel reused as the walk-to-idle rest transition, and the walk's vertical
- * correction in packed pixels.
+ * cel reused as the walk-to-idle rest transition, and the walk's horizontal
+ * and vertical placement in packed pixels.
  *
  * The transition is the walk cel whose silhouette, as placed, best overlaps
- * idle cel 0 (max IoU). The correction puts the walk's planted sole on the
- * idle's baseline: it is `-round(planted_sole_minus_baseline x 0.75)` from the
- * scripted gates on the delivered set (party-consistency `checks.json`), so a
- * walk that measured 6.1 source px above the idle baseline (north) is lowered
- * 5 px and one that measured 5 px below it (south) is raised 4 px. It moves
- * the walk and rest cels only; idle is the reference and never moves.
+ * idle cel 0 (max IoU), except north-east: there the best overlap is cel 1, a
+ * contact pose with the trailing foot 24 px off the anchor column, so the stop
+ * uses cel 9, the passing pose whose torso and head sit on idle's and whose
+ * feet are together under the column.
+ *
+ * The vertical correction puts the walk's planted sole on the idle's baseline:
+ * it is `-round(planted_sole_minus_baseline x 0.75)` from the scripted gates on
+ * the delivered set (party-consistency `checks.json`), so a walk that measured
+ * 5 source px below the idle baseline (south) is raised 4 px. North is the
+ * exception. Seen from behind, the planted sole is the leading foot, a stride
+ * up-screen of where she stands, so lowering the walk to it (the gates' 5 px)
+ * dropped her head and body 6 px on the first cel. The north walk is the same
+ * height as its idle (113 against 114 px), and unmoved both its mean head row
+ * (1 px lower: the walk's bent knees) and its mean lowest row (1 px lower)
+ * meet idle's, so it is left where it was drawn.
+ *
+ * The horizontal correction aligns the walk's torso with idle's: west's walk
+ * torso and head sit 6 px left of its idle's (east's are within 3), so west is
+ * moved 6 px right. A constant shift moves no foot relative to another, so
+ * the distance phasing and the measured root travel are unchanged.
+ *
+ * Both move the walk and rest cels only; idle is the reference and never
+ * moves.
  */
 const DIRECTIONS = [
-  ['east', 'idle', 'walk', 'rest', 9, 0],
-  ['north-east', 'idleNorthEast', 'walkNorthEast', 'restNorthEast', 1, -1],
-  ['north', 'idleNorth', 'walkNorth', 'restNorth', 10, 5],
-  ['north-west', 'idleNorthWest', 'walkNorthWest', 'restNorthWest', 8, 1],
-  ['west', 'idleWest', 'walkWest', 'restWest', 4, 0],
-  ['south-west', 'idleSouthWest', 'walkSouthWest', 'restSouthWest', 4, -1],
-  ['south', 'idleSouth', 'walkSouth', 'restSouth', 6, -4],
-  ['south-east', 'idleSouthEast', 'walkSouthEast', 'restSouthEast', 9, -1],
-] as const satisfies readonly (readonly [string, ClipName, ClipName, ClipName, number, number])[];
+  ['east', 'idle', 'walk', 'rest', 9, 0, 0],
+  ['north-east', 'idleNorthEast', 'walkNorthEast', 'restNorthEast', 9, 0, -1],
+  ['north', 'idleNorth', 'walkNorth', 'restNorth', 10, 0, 0],
+  ['north-west', 'idleNorthWest', 'walkNorthWest', 'restNorthWest', 8, 0, 1],
+  ['west', 'idleWest', 'walkWest', 'restWest', 3, 6, 0],
+  ['south-west', 'idleSouthWest', 'walkSouthWest', 'restSouthWest', 4, 0, -1],
+  ['south', 'idleSouth', 'walkSouth', 'restSouth', 6, 0, -4],
+  ['south-east', 'idleSouthEast', 'walkSouthEast', 'restSouthEast', 9, 0, -1],
+] as const satisfies readonly (readonly [
+  string,
+  ClipName,
+  ClipName,
+  ClipName,
+  number,
+  number,
+  number,
+])[];
 
 /** Every source file the build reads, relative to its set. */
 export function sourceFiles(): { pixellab: string[]; actions: string[] } {
@@ -142,7 +167,7 @@ function crop(source: Image, x0: number, y0: number, width: number, height: numb
   return out;
 }
 
-function normalise(source: Image, dy = 0): Image {
+function normalise(source: Image, dx = 0, dy = 0): Image {
   if (source.width !== 192 || source.height !== 192)
     throw new Error(`Expected a 192x192 PixelLab cel; got ${source.width}x${source.height}.`);
   const out = newImage(FRAME_W, FRAME_H);
@@ -150,7 +175,7 @@ function normalise(source: Image, dy = 0): Image {
   for (let y = 0; y < scaled; y++) {
     for (let x = 0; x < scaled; x++) {
       const rgba = pixelAt(source, Math.floor(x / SCALE), Math.floor(y / SCALE));
-      setPixel(out, OFFSET_X + x, OFFSET_Y + dy + y, rgba[3] === 0 ? [0, 0, 0, 0] : rgba);
+      setPixel(out, OFFSET_X + dx + x, OFFSET_Y + dy + y, rgba[3] === 0 ? [0, 0, 0, 0] : rgba);
     }
   }
   return out;
@@ -172,7 +197,7 @@ async function main(): Promise<void> {
   const frames = new Map<string, Image>();
   const counts: Partial<Record<ClipName, number>> = { cast: 3, ko: 1 };
 
-  for (const [direction, idleClip, walkClip, restClip, transition, dy] of DIRECTIONS) {
+  for (const [direction, idleClip, walkClip, restClip, transition, dx, dy] of DIRECTIONS) {
     counts[idleClip] = 4;
     counts[walkClip] = 12;
     counts[restClip] = 1;
@@ -186,6 +211,7 @@ async function main(): Promise<void> {
         `${KEY}/${walkClip}/${i}`,
         normalise(
           readPng(join(source, 'walk', direction, `${String(i).padStart(2, '0')}.png`)),
+          dx,
           dy,
         ),
       );
@@ -193,6 +219,7 @@ async function main(): Promise<void> {
       `${KEY}/${restClip}/0`,
       normalise(
         readPng(join(source, 'walk', direction, `${String(transition).padStart(2, '0')}.png`)),
+        dx,
         dy,
       ),
     );
