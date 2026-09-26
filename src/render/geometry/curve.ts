@@ -84,6 +84,31 @@ export function sampleAt(curve: Curve, s: number): CurveSample {
   };
 }
 
+/**
+ * The integral of `rate(tangent)` over the first `s` of the curve's arc
+ * length, clamped to its ends: each straight segment contributes its length,
+ * or the walked part of it, times the rate for its own direction. A rate that
+ * depends on direction therefore accumulates continuously through a turn,
+ * where rate-at-the-current-point times distance would jump. A degenerate
+ * curve integrates to 0.
+ */
+export function integrateAlong(curve: Curve, s: number, rate: (tangent: Vec2) => number): number {
+  const { points, cumulative } = curve;
+  const target = Math.max(0, Math.min(curve.length, s));
+  let total = 0;
+  for (let i = 1; i < points.length; i++) {
+    const a = points[i - 1];
+    const b = points[i];
+    const start = cumulative[i - 1] ?? 0;
+    if (!a || !b || start >= target) break;
+    const span = (cumulative[i] ?? start) - start;
+    if (span <= 0) continue;
+    const walked = Math.min(span, target - start);
+    total += walked * rate({ x: (b.x - a.x) / span, y: (b.y - a.y) / span });
+  }
+  return total;
+}
+
 /** Same as `sampleAt`, by fraction of the whole length. */
 export function sampleFraction(curve: Curve, fraction: number): CurveSample {
   return sampleAt(curve, fraction * curve.length);

@@ -19,7 +19,7 @@ import type { ClipName } from '../render/view';
 import { hashSeed, mulberry32 } from '../render/fx/rng';
 import { projectGround } from '../render/projection';
 import type { Projection } from '../render/projection';
-import { sampleAt } from '../render/geometry/curve';
+import { integrateAlong, sampleAt } from '../render/geometry/curve';
 import { choreograph } from './anim/choreography';
 import type { HealthChange, SoundCue } from './anim/choreography';
 import { Timeline } from './anim/timeline';
@@ -377,22 +377,30 @@ export class Animator {
   }
 
   /**
-   * Clip time per tile of travel. An eight-way sheet declares its own per
-   * heading, matched to its authored stride so the feet do not skate. That
-   * stride is measured on screen, so it is scaled by how far one logical tile
-   * of the route carries the figure on screen: 1 on orthographic ground, and
-   * on oblique ground about 1.12 along a grid axis, 1.41 screen-across and
-   * 0.71 screen-down.
+   * Ms into the walk clip, `distance` along the route. Four-way art advances
+   * a fixed `WALK_MS_PER_TILE`. An eight-way sheet declares its own clip time
+   * per tile for each heading, matched to its authored stride so the feet do
+   * not skate. That stride is measured on screen, so it is scaled by how far
+   * one logical tile of the route carries the figure on screen: 1 on
+   * orthographic ground, and on oblique ground about 1.12 along a grid axis,
+   * 1.41 screen-across and 0.71 screen-down.
+   *
+   * Because that rate changes with the heading, the phase is accumulated
+   * along the route, each stretch at its own rate, rather than the current
+   * rate times the whole distance: the latter jumps by whole cels at a turn
+   * (three tiles east then north on flat ground went from 4.5 s to 9.1 s of
+   * clip in a frame) and runs backwards through the opposite turn.
    */
-  private walkMsPerTile(travel: { track: MoveTrack; distance: number }, sprite?: string): number {
+  private walkClipTime(travel: { track: MoveTrack; distance: number }, sprite?: string): number {
     const gait = sheetLocomotion(sprite);
-    if (!gait) return WALK_MS_PER_TILE;
-    const tangent = sampleAt(travel.track.curve, travel.distance).tangent;
-    const screen = projectGround(tangent, this.projection);
-    return (
-      gait.walkMsPerTile[walkHeading(screenDirection(tangent, this.projection))] *
-      Math.hypot(screen.x, screen.y)
-    );
+    if (!gait) return travel.distance * WALK_MS_PER_TILE;
+    return integrateAlong(travel.track.curve, travel.distance, (tangent) => {
+      const screen = projectGround(tangent, this.projection);
+      return (
+        gait.walkMsPerTile[walkHeading(screenDirection(tangent, this.projection))] *
+        Math.hypot(screen.x, screen.y)
+      );
+    });
   }
 
   /** Fade the lift at each end so a fractional final stride settles onto the path. */
@@ -484,11 +492,7 @@ export class Animator {
     const frame = pose?.frame;
     return {
       clip: pose ? pose.clip : bob ? 'walk' : 'idle',
-      clipTime: pose
-        ? now - pose.start
-        : travel
-          ? travel.distance * this.walkMsPerTile(travel, sprite)
-          : 0,
+      clipTime: pose ? now - pose.start : travel ? this.walkClipTime(travel, sprite) : 0,
       offset,
       scale,
       alpha,
