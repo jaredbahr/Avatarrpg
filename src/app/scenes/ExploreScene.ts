@@ -21,6 +21,7 @@ import {
 } from '../../core/story/world';
 import type { PlacedNpc } from '../../core/story/world';
 import { VillageLife } from '../village/VillageLife';
+import { drawnPose } from '../village/riversidePose';
 import type { App, CameraInfo, Scene } from '../App';
 import type { GameEvent, GameState, Grid, MapDef, Unit, Vec2 } from '../../core/types';
 import { buildGrid, distance, samePos } from '../../core/rules/grid';
@@ -999,8 +1000,8 @@ export class ExploreScene implements Scene {
       scale: partyScale(map.projection),
       renderPos: index === 0 ? walking : this.app.animator.renderPos(now, member.id),
       offset: this.app.animator.offset(now, member.id),
-      clipTime: this.app.animator.unitPose(now, member.id, member.sprite)?.clipTime,
-      ...this.app.animator.locomotion(now, member.id, 'rest', member.sprite),
+      // Timed and posed from the sheet the riverside actually draws.
+      ...drawnPose(this.app.animator, now, member, Boolean(this.life)),
     }));
 
     // Residents and background roles come from the walks, in their drawn

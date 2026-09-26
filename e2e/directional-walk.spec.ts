@@ -32,12 +32,24 @@ for (const renderer of ['canvas', 'webgl'] as const) {
       // Observe the view handed to the real renderer, including the riverside
       // adapter, rather than calling the direction helper in isolation.
       await page.evaluate(() => {
-        type Recorded = { clip: string | undefined; facing: number | undefined; moving: boolean };
+        type Recorded = {
+          clip: string | undefined;
+          facing: number | undefined;
+          moving: boolean;
+          clipTime: number | undefined;
+          y: number | undefined;
+        };
         const win = window as Window & { directionFrames?: Recorded[][] };
         win.directionFrames = [];
         const capture = (units: readonly RenderUnit[]) => {
           win.directionFrames?.push(
-            units.map((u) => ({ clip: u.clip, facing: u.facing, moving: Boolean(u.renderPos) })),
+            units.map((u) => ({
+              clip: u.clip,
+              facing: u.facing,
+              moving: Boolean(u.renderPos),
+              clipTime: u.clipTime,
+              y: u.renderPos?.y,
+            })),
           );
           if ((win.directionFrames?.length ?? 0) > 240) win.directionFrames?.shift();
         };
@@ -87,11 +99,12 @@ for (const renderer of ['canvas', 'webgl'] as const) {
          * outlast the gap between the read and the request.
          */
         await pauseClock(page);
-        await page.evaluate((delta) => {
+        const startY = await page.evaluate((delta) => {
           const app = window.fnt!.app;
           const pos = app.state!.location.pos;
           (window as Window & { directionFrames?: unknown[] }).directionFrames = [];
           app.dispatch({ type: 'walkTo', pos: { x: pos.x, y: pos.y + delta } });
+          return pos.y;
         }, dy);
         // Twenty steps of 60 ms cover the walk, and each step publishes the
         // frames the app would have drawn in it.
@@ -109,6 +122,31 @@ for (const renderer of ['canvas', 'webgl'] as const) {
           );
         }
         expect(sawWalk, `the ${direction} walk pose reached the renderer`).toBe(true);
+        if (riverside) {
+          // The riverside draws its leader from a four-way village sheet, so
+          // the walk is timed from that sheet: 500 ms of clip a tile, not the
+          // eight-way gait of the unit art it replaces (ADR 0051).
+          const paces = await page.evaluate(
+            ({ clip, startY }) =>
+              (
+                (
+                  window as Window & {
+                    directionFrames?: { clip: string; clipTime?: number; y?: number }[][];
+                  }
+                ).directionFrames ?? []
+              )
+                .map((units) => units[0])
+                .filter((u) => u?.clip === clip && u.y !== undefined && u.clipTime !== undefined)
+                .map((u) => ({
+                  travelled: Math.abs((u!.y ?? 0) - startY),
+                  clipTime: u!.clipTime!,
+                })),
+            { clip: walkClip, startY },
+          );
+          expect(paces.length).toBeGreaterThan(0);
+          for (const { travelled, clipTime } of paces)
+            expect(Math.abs(clipTime - 500 * travelled), `${travelled} tiles`).toBeLessThan(40);
+        }
         // One frame finishes the walk rather than a second's worth of them.
         await page.clock.fastForward(2000);
         await page.clock.resume();
