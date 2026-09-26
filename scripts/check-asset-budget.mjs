@@ -11,8 +11,9 @@ import { join, resolve, dirname, relative, sep } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 const FAMILY_BUDGET_MB = 4;
-// ADR 0035: add the distinct fire deserter after the ADR 0032 Cutting figures.
-const UNIT_BUDGET_MB = 4.75;
+// ADR 0051: the PixelLab G party's locomotion now, and its stance and bend
+// sets to come (ADR 0035 had added the fire deserter at 4.75).
+const UNIT_BUDGET_MB = 6.75;
 const PRECACHE_BUDGET_MB = 25;
 
 const root = resolve(dirname(fileURLToPath(import.meta.url)), '..');
