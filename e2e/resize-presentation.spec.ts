@@ -29,7 +29,10 @@ for (const renderer of ['canvas', 'webgl'] as const) {
           missingSheets.push(route.request().url());
           return route.abort();
         });
+        // Kaya's G atlas is a WebP; block both image formats so no sheet
+        // can decode behind an aborted atlas JSON.
         await page.route('**/art/units/*.png', (route) => route.abort());
+        await page.route('**/art/units/*.webp', (route) => route.abort());
       }
       await resetStorage(page, `?renderer=${renderer}`);
       await startGame(page, ['Kaya'], ['kaya'], 'resize-presentation', {
@@ -143,7 +146,8 @@ for (const renderer of ['canvas', 'webgl'] as const) {
       ).toBe(staged.ap - 1);
       expect(errors).toEqual([]);
       if (mode === 'missing sheets') {
-        expect(missingSheets.some((url) => url.endsWith('/walking-kaya.json'))).toBe(true);
+        // The acting hero is Kaya, whose sheet is the eight-way G atlas.
+        expect(missingSheets.some((url) => url.endsWith('/kaya-g.json'))).toBe(true);
         await test.info().attach('painter-fallback-after-cast', {
           body: await page.locator('.map-canvas').screenshot(),
           contentType: 'image/png',

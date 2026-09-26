@@ -7,9 +7,12 @@ import { parseAtlasJson } from '../../src/render/sheets/atlasJson';
 import { frameIndex, resolveClip } from '../../src/render/sheets/resolveClip';
 import { readPng } from './lib/image';
 import { alphaBounds, crop, lowestOpaqueRow } from './lib/trim';
+import { decodeWebp } from './lib/webp';
+import { MARGIN } from './lib/align';
+import { STRIDE_ABOVE, STRIDE_BELOW, validateSheets } from './validate';
 
 describe('hero lateral walk art', () => {
-  it('preserves all prior action and directional pixels while supplying a complete walk loop', () => {
+  it('preserves all prior action and directional pixels while supplying a complete walk loop', async () => {
     for (const character of CHARACTERS) {
       const key = character.sprite;
       const name = key.split('.').at(-1);
@@ -19,6 +22,35 @@ describe('hero lateral walk art', () => {
       const oldAtlas = parseAtlasJson(readFileSync(`${oldStem}.json`, 'utf8'));
       const oldImage = readPng(`${oldStem}.png`);
       const atlas = parseAtlasJson(readFileSync(`public/${entry.atlas}`, 'utf8'));
+      if (atlas.image.endsWith('.webp')) {
+        expect(key).toBe('unit.fire.kaya');
+        const walk = resolveClip(entry.clips, 'walk');
+        expect(walk?.exact).toBe(true);
+        expect(walk?.def.frames).toHaveLength(12);
+        expect(walk?.def.fps).toBeCloseTo(1000 / 114);
+        expect(await validateSheets('public', { [key]: entry })).toEqual([]);
+        const decoded = await decodeWebp(
+          new Uint8Array(readFileSync(`public/art/units/${atlas.image}`)),
+        );
+        const hashes = new Set<string>();
+        for (const id of walk?.def.frames ?? []) {
+          const rect = atlas.frames.get(id);
+          if (!rect) throw new Error(`Missing cel ${id}`);
+          expect([rect.w, rect.h], id).toEqual([128, 192]);
+          const frame = crop(decoded, { x: rect.x, y: rect.y, width: rect.w, height: rect.h });
+          const bounds = alphaBounds(frame);
+          if (!bounds) throw new Error(`Empty cel ${id}`);
+          const foot = lowestOpaqueRow(frame);
+          expect(foot, id).toBeGreaterThanOrEqual(163 - STRIDE_ABOVE);
+          expect(foot, id).toBeLessThanOrEqual(163 + STRIDE_BELOW);
+          expect(bounds.x).toBeGreaterThanOrEqual(MARGIN);
+          expect(bounds.x + bounds.width).toBeLessThanOrEqual(128 - MARGIN);
+          expect(bounds.y).toBeGreaterThanOrEqual(MARGIN);
+          hashes.add(createHash('sha256').update(frame.data).digest('hex'));
+        }
+        expect(hashes.size, `${key} needs twelve distinct cels`).toBe(12);
+        continue;
+      }
       const image = readPng(`public/art/units/${atlas.image}`);
       const extract = (im: typeof image, r: { x: number; y: number; w: number; h: number }) =>
         crop(im, { x: r.x, y: r.y, width: r.w, height: r.h });

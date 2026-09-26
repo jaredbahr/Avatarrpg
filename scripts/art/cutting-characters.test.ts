@@ -13,7 +13,7 @@ describe('Cutting character art', () => {
     ['merc', 'unit.enemy.merc', 'blade'],
     ['sergeant', 'unit.enemy.sergeant', 'sergeant'],
   ]) {
-    it(`${name} preserves ground contact, equipment fallback and authored clip coverage`, () => {
+    it(`${name} preserves ground contact, equipment fallback and authored clip coverage`, async () => {
       if (!name || !key || !variant) throw new Error('Invalid case');
       const entry = ASSETS[key];
       if (entry?.kind !== 'sheet') throw new Error('Expected authored sheet');
@@ -46,20 +46,20 @@ describe('Cutting character art', () => {
       expect(entry.footprint).toEqual({ w: 1, h: 1 });
       expect(entry.anchor).toEqual({ x: 0.5, y: 0.85 });
       expect(resolvePainter(key).variant).toBe(variant);
-      expect(validateSheets('public', { [key]: entry })).toEqual([]);
+      expect(await validateSheets('public', { [key]: entry })).toEqual([]);
       expect(
-        validateSheets('public', { [key]: { ...entry, frameSize: undefined } }).some((problem) =>
-          problem.includes('expected 128x192'),
+        (await validateSheets('public', { [key]: { ...entry, frameSize: undefined } })).some(
+          (problem) => problem.includes('expected 128x192'),
         ),
       ).toBe(true);
       expect(
-        validateSheets('public', { [key]: { ...entry, frameSize: { w: 600, h: 600 } } }).some(
-          (problem) => problem.includes('bounded art envelope'),
-        ),
+        (
+          await validateSheets('public', { [key]: { ...entry, frameSize: { w: 600, h: 600 } } })
+        ).some((problem) => problem.includes('bounded art envelope')),
       ).toBe(true);
     });
   }
-  it('keeps undeclared hero frames exact and matches their oblique adult height', () => {
+  it('keeps undeclared hero frames exact and matches their oblique adult height', async () => {
     for (const [name, key] of [
       ['sura', 'unit.water.sura'],
       ['kaya', 'unit.fire.kaya'],
@@ -68,18 +68,25 @@ describe('Cutting character art', () => {
       const entry = ASSETS[key];
       if (entry?.kind !== 'sheet') throw new Error('Missing hero sheet');
       expect(entry.frameSize).toBeUndefined();
-      expect(validateSheets('public', { [key]: entry })).toEqual([]);
+      expect(await validateSheets('public', { [key]: entry })).toEqual([]);
       const atlas = parseAtlasJson(readFileSync(`public/${entry.atlas}`, 'utf8'));
       const rect = atlas.frames.get(`${key}/idle/0`);
       if (!rect) throw new Error('Missing hero standing pose');
-      const frame = crop(readPng(`public/art/units/walking-${name}.png`), {
-        x: rect.x,
-        y: rect.y,
-        width: rect.w,
-        height: rect.h,
-      });
-      const height = alphaBounds(frame)?.height ?? 0;
-      expect(Math.abs(height * 1.25 - 151)).toBeLessThan(1);
+      if (atlas.image.endsWith('.webp')) {
+        expect(name).toBe('kaya');
+        expect([rect.w, rect.h]).toEqual([128, 192]);
+        expect(entry.pixelsPerTile).toBe(128);
+        expect(entry.anchor).toEqual({ x: 0.5, y: 0.85 });
+      } else {
+        const frame = crop(readPng(`public/art/units/${atlas.image}`), {
+          x: rect.x,
+          y: rect.y,
+          width: rect.w,
+          height: rect.h,
+        });
+        const height = alphaBounds(frame)?.height ?? 0;
+        expect(Math.abs(height * 1.25 - 151)).toBeLessThan(1);
+      }
     }
   });
 });

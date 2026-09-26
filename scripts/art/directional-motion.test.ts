@@ -6,9 +6,11 @@ import { parseAtlasJson } from '../../src/render/sheets/atlasJson';
 import { frameIndex, resolveClip } from '../../src/render/sheets/resolveClip';
 import { readPng } from './lib/image';
 import { alphaBounds, crop, lowestOpaqueRow } from './lib/trim';
+import { decodeWebp } from './lib/webp';
+import { STAND_TOLERANCE, validateSheets } from './validate';
 
 describe('directional art compatibility', () => {
-  it('preserves every original pose and the foot anchor for all heroes and both riverside sheets', () => {
+  it('preserves every original pose and the foot anchor for all heroes and both riverside sheets', async () => {
     const keys = [...CHARACTERS.map((c) => c.sprite), 'unit.village.kaya', 'unit.village.sura'];
     for (const key of keys) {
       const entry = ASSETS[key];
@@ -21,6 +23,69 @@ describe('directional art compatibility', () => {
       );
       const oldImage = readPng(`assets/reference/character-poses/${originalStem}.png`);
       const atlas = parseAtlasJson(readFileSync(`public/${entry.atlas}`, 'utf8'));
+      if (atlas.image.endsWith('.webp')) {
+        expect(key).toBe('unit.fire.kaya');
+        expect(entry.anchor).toEqual({ x: 0.5, y: 0.85 });
+        // Decoded margin, per-cel pins and the eight-way foot line.
+        expect(await validateSheets('public', { [key]: entry })).toEqual([]);
+        const decoded = await decodeWebp(
+          new Uint8Array(readFileSync(`public/art/units/${atlas.image}`)),
+        );
+        const cut = (im: typeof oldImage, r: { x: number; y: number; w: number; h: number }) =>
+          crop(im, { x: r.x, y: r.y, width: r.w, height: r.h });
+        const cel = (id: string) => {
+          const r = atlas.frames.get(id);
+          if (!r) throw new Error(`Missing ${id}`);
+          return crop(decoded, { x: r.x, y: r.y, width: r.w, height: r.h });
+        };
+        // The retained action cels: the checked-in sources are the original
+        // poses to the pixel, and the lossy atlas keeps their silhouette and feet.
+        for (const [id, r] of oldAtlas.frames) {
+          const [, clip, index] = id.slice(key.length + 1).match(/^(\w+)\/(\d+)$/) ?? [];
+          if (clip !== 'cast' && clip !== 'ko') continue;
+          const original = cut(oldImage, r);
+          const source = readPng(`art/source/kaya-actions/${clip}/${index}.png`);
+          expect(Buffer.from(source.data).equals(Buffer.from(original.data)), id).toBe(true);
+          const shipped = cel(id);
+          expect(lowestOpaqueRow(shipped), id).toBe(lowestOpaqueRow(original));
+          const want = alphaBounds(original);
+          const got = alphaBounds(shipped);
+          if (!want || !got) throw new Error(`Empty ${id}`);
+          for (const side of ['x', 'y', 'width', 'height'] as const)
+            expect(Math.abs(got[side] - want[side]), `${id} ${side}`).toBeLessThanOrEqual(1);
+        }
+        for (const direction of [
+          '',
+          'NorthEast',
+          'North',
+          'NorthWest',
+          'West',
+          'SouthWest',
+          'South',
+          'SouthEast',
+        ]) {
+          const idle = resolveClip(entry.clips, `idle${direction}` as 'idle');
+          const walk = resolveClip(entry.clips, `walk${direction}` as 'walk');
+          expect(idle?.exact, `idle${direction}`).toBe(true);
+          expect(idle?.def.frames).toHaveLength(4);
+          expect(walk?.exact, `walk${direction}`).toBe(true);
+          expect(walk?.def.frames).toHaveLength(12);
+          for (const id of [...(idle?.def.frames ?? []), ...(walk?.def.frames ?? [])]) {
+            const rect = atlas.frames.get(id);
+            expect(rect && [rect.w, rect.h], id).toEqual([128, 192]);
+          }
+          for (const id of idle?.def.frames ?? []) {
+            expect(Math.abs(lowestOpaqueRow(cel(id)) - 163), id).toBeLessThanOrEqual(
+              STAND_TOLERANCE,
+            );
+          }
+          const strides = new Set(
+            (walk?.def.frames ?? []).map((id) => Buffer.from(cel(id).data).toString('base64')),
+          );
+          expect(strides.size, `walk${direction} needs twelve distinct cels`).toBe(12);
+        }
+        continue;
+      }
       const image = readPng(`public/art/units/${atlas.image}`);
       const extract = (im: typeof image, r: { x: number; y: number; w: number; h: number }) =>
         crop(im, { x: r.x, y: r.y, width: r.w, height: r.h });

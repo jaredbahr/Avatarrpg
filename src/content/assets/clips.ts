@@ -13,15 +13,61 @@ export type BaseClipName = (typeof BASE_CLIP_NAMES)[number];
 export const CLIP_NAMES = [
   ...BASE_CLIP_NAMES,
   'idleNorth',
+  'idleNorthEast',
+  'idleSouthEast',
   'idleSouth',
+  'idleSouthWest',
+  'idleWest',
+  'idleNorthWest',
   'walkNorth',
+  'walkNorthEast',
+  'walkSouthEast',
   'walkSouth',
+  'walkSouthWest',
+  'walkWest',
+  'walkNorthWest',
   'rest',
   'restNorth',
+  'restNorthEast',
+  'restSouthEast',
   'restSouth',
+  'restSouthWest',
+  'restWest',
+  'restNorthWest',
   'tea',
 ] as const;
 export type ClipName = (typeof CLIP_NAMES)[number];
+
+/** The eight screen headings an eight-way locomotion sheet authors, clockwise from east. */
+export const HEADINGS = [
+  'east',
+  'southEast',
+  'south',
+  'southWest',
+  'west',
+  'northWest',
+  'north',
+  'northEast',
+] as const;
+export type Heading = (typeof HEADINGS)[number];
+
+/**
+ * A sheet's declared locomotion capability (ADR 0050). Absent means the legacy
+ * four-way contract: a mirrored side walk plus front and back poses. An
+ * eight-way sheet carries an idle, walk and rest clip for every heading and
+ * the clip time its walk plays per tile of travel in each, so the feet stay
+ * planted whatever the authored stride.
+ */
+export interface LocomotionDef {
+  readonly headings: 8;
+  readonly walkMsPerTile: Readonly<Record<Heading, number>>;
+}
+
+/** The idle, walk or rest clip for a heading; east is the unsuffixed clip. */
+export function headingClip(base: 'idle' | 'walk' | 'rest', heading: Heading): ClipName {
+  if (heading === 'east') return base;
+  return `${base}${heading[0]?.toUpperCase() ?? ''}${heading.slice(1)}` as ClipName;
+}
 
 /** Authored screen-facing melee contact variants, when a sheet carries them. */
 export const MELEE_DIRECTIONS = ['screenUp', 'screenDown'] as const;
@@ -39,20 +85,35 @@ export interface ClipDef {
 
 /** Poses a clip must carry to be valid, and how many it may carry. */
 export const CLIP_FRAME_COUNTS: Readonly<Record<ClipName, { min: number; max: number }>> = {
-  idle: { min: 2, max: 2 },
-  walk: { min: 2, max: 4 },
+  idle: { min: 2, max: 4 },
+  walk: { min: 2, max: 12 },
   cast: { min: 3, max: 3 },
   melee: { min: 2, max: 2 },
   hit: { min: 1, max: 1 },
   ko: { min: 1, max: 1 },
   wave: { min: 2, max: 2 },
-  idleNorth: { min: 1, max: 1 },
-  idleSouth: { min: 1, max: 1 },
-  walkNorth: { min: 4, max: 4 },
-  walkSouth: { min: 4, max: 4 },
+  idleNorth: { min: 1, max: 4 },
+  idleNorthEast: { min: 1, max: 4 },
+  idleSouthEast: { min: 1, max: 4 },
+  idleSouth: { min: 1, max: 4 },
+  idleSouthWest: { min: 1, max: 4 },
+  idleWest: { min: 1, max: 4 },
+  idleNorthWest: { min: 1, max: 4 },
+  walkNorth: { min: 4, max: 12 },
+  walkNorthEast: { min: 4, max: 12 },
+  walkSouthEast: { min: 4, max: 12 },
+  walkSouth: { min: 4, max: 12 },
+  walkSouthWest: { min: 4, max: 12 },
+  walkWest: { min: 4, max: 12 },
+  walkNorthWest: { min: 4, max: 12 },
   rest: { min: 1, max: 1 },
   restNorth: { min: 1, max: 1 },
+  restNorthEast: { min: 1, max: 1 },
+  restSouthEast: { min: 1, max: 1 },
   restSouth: { min: 1, max: 1 },
+  restSouthWest: { min: 1, max: 1 },
+  restWest: { min: 1, max: 1 },
+  restNorthWest: { min: 1, max: 1 },
   tea: { min: 2, max: 2 },
 };
 

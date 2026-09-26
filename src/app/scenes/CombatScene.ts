@@ -1554,9 +1554,11 @@ export class CombatScene implements Scene {
     | 'alpha'
     | 'flash'
   > {
-    const pose = this.app.animator.unitPose(now, unitId);
+    const pose = this.app.animator.unitPose(now, unitId, sprite);
     const walked = this.app.animator.facing(unitId);
-    const movement = directional ? this.app.animator.locomotion(now, unitId) : undefined;
+    const movement = directional
+      ? this.app.animator.locomotion(now, unitId, 'idle', sprite)
+      : undefined;
     const mapId = this.app.state?.battle?.mapId;
     const projection = mapId ? this.app.content.maps.get(mapId)?.projection : undefined;
     const scale = directional

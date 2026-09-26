@@ -8,7 +8,7 @@ import { readPng } from './lib/image';
 import { alphaBounds, crop } from './lib/trim';
 import { validateSheets } from './validate';
 
-it('keeps five legacy route adults near party height without changing their pixels or feet', () => {
+it('keeps five legacy route adults near party height without changing their pixels or feet', async () => {
   const heights: Record<string, number> = {};
   for (const name of ['thug', 'bruiser', 'slinger', 'quarrybender', 'crossbow']) {
     const key = `unit.enemy.${name}`;
@@ -40,7 +40,7 @@ it('keeps five legacy route adults near party height without changing their pixe
       expect(rect.w).toBe(128);
       expect(rect.h).toBe(192);
     }
-    expect(validateSheets('public', { [key]: entry })).toEqual([]);
+    expect(await validateSheets('public', { [key]: entry })).toEqual([]);
     expect(resolvePainter(key).variant).toBeTruthy();
     expect(enemyScale(key, 0.96)).toBeCloseTo(enemyScale(key) * 0.96);
   }

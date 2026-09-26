@@ -999,8 +999,8 @@ export class ExploreScene implements Scene {
       scale: partyScale(map.projection),
       renderPos: index === 0 ? walking : this.app.animator.renderPos(now, member.id),
       offset: this.app.animator.offset(now, member.id),
-      clipTime: this.app.animator.unitPose(now, member.id)?.clipTime,
-      ...this.app.animator.locomotion(now, member.id, 'rest'),
+      clipTime: this.app.animator.unitPose(now, member.id, member.sprite)?.clipTime,
+      ...this.app.animator.locomotion(now, member.id, 'rest', member.sprite),
     }));
 
     // Residents and background roles come from the walks, in their drawn

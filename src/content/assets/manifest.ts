@@ -29,7 +29,7 @@
  * the clip logic run the same path whether the art is real or not.
  */
 
-import type { ClipDef, ClipName, MeleeDirection } from './clips';
+import type { ClipDef, ClipName, LocomotionDef, MeleeDirection } from './clips';
 
 export type AssetEntry =
   | {
@@ -62,6 +62,8 @@ export type AssetEntry =
       readonly anchor: { readonly x: number; readonly y: number };
       /** `mirror`: drawn facing screen-right and flipped for the other side. */
       readonly facing: 'mirror' | 'both';
+      /** Eight-way locomotion, when the sheet authors it; absent is the four-way contract. */
+      readonly locomotion?: LocomotionDef;
       readonly clips: Partial<Record<ClipName, ClipDef>>;
       /** Optional screen-up/down contact frames for a melee clip. */
       readonly meleeDirections?: Partial<Record<MeleeDirection, readonly [string, string]>>;
@@ -145,6 +147,75 @@ function rikoSheet(): SheetEntry {
   };
 }
 
+/** PixelLab G locomotion plus the existing authored action poses. */
+function kayaGSheet(): SheetEntry {
+  const key = 'unit.fire.kaya';
+  const frames = (clip: ClipName, count: number) =>
+    Array.from({ length: count }, (_, i) => `${key}/${clip}/${i}`);
+  const walk = (clip: ClipName): ClipDef => ({
+    frames: frames(clip, 12),
+    fps: 1000 / 114,
+    loop: true,
+  });
+  const idle = (clip: ClipName): ClipDef => ({ frames: frames(clip, 4), fps: 4, loop: true });
+  const rest = (clip: ClipName): ClipDef => ({ frames: frames(clip, 1), fps: 1, loop: true });
+  return {
+    kind: 'sheet',
+    atlas: 'art/units/kaya-g.json',
+    pixelsPerTile: 128,
+    footprint: { w: 1, h: 1 },
+    anchor: { x: 0.5, y: 0.85 },
+    facing: 'both',
+    locomotion: {
+      headings: 8,
+      // PixelLab Kaya's measured root travel per 114 ms cel (planted-sole
+      // speed_px_per_frame in each walk's gates.json, party-consistency set),
+      // converted to clip time per 128 px tile at the in-game 0.75 scale.
+      // Movement duration stays gameplay-driven; only distance-phased cel
+      // selection changes.
+      walkMsPerTile: {
+        north: (128 / (6.38 * 0.75)) * 114,
+        northEast: (128 / (11.74 * 0.75)) * 114,
+        east: (128 / (12.88 * 0.75)) * 114,
+        southEast: (128 / (10.74 * 0.75)) * 114,
+        south: (128 / (6.71 * 0.75)) * 114,
+        southWest: (128 / (10.99 * 0.75)) * 114,
+        west: (128 / (12.97 * 0.75)) * 114,
+        northWest: (128 / (11.17 * 0.75)) * 114,
+      },
+    },
+    palette: 'fire',
+    clips: {
+      idle: idle('idle'),
+      walk: walk('walk'),
+      rest: rest('rest'),
+      idleNorth: idle('idleNorth'),
+      walkNorth: walk('walkNorth'),
+      restNorth: rest('restNorth'),
+      idleNorthEast: idle('idleNorthEast'),
+      walkNorthEast: walk('walkNorthEast'),
+      restNorthEast: rest('restNorthEast'),
+      idleSouthEast: idle('idleSouthEast'),
+      walkSouthEast: walk('walkSouthEast'),
+      restSouthEast: rest('restSouthEast'),
+      idleSouth: idle('idleSouth'),
+      walkSouth: walk('walkSouth'),
+      restSouth: rest('restSouth'),
+      idleSouthWest: idle('idleSouthWest'),
+      walkSouthWest: walk('walkSouthWest'),
+      restSouthWest: rest('restSouthWest'),
+      idleWest: idle('idleWest'),
+      walkWest: walk('walkWest'),
+      restWest: rest('restWest'),
+      idleNorthWest: idle('idleNorthWest'),
+      walkNorthWest: walk('walkNorthWest'),
+      restNorthWest: rest('restNorthWest'),
+      cast: { frames: frames('cast', 3), fps: 8, loop: false },
+      ko: { frames: frames('ko', 1), fps: 1, loop: false },
+    },
+  };
+}
+
 /** Compact illustrated enemy clips preserve the procedural clip rates. */
 function quarryEnemySheet(name: string, palette: string): SheetEntry {
   const key = `unit.enemy.${name}`;
@@ -197,7 +268,7 @@ export const ASSETS: Readonly<Record<string, AssetEntry>> = {
   'unit.village.sura': villageSheet('sura', 'water'),
   'unit.village.kaya': villageSheet('kaya', 'fire'),
   /* ------------------------------------------------------ Party sprites */
-  'unit.fire.kaya': heroSheet('unit.fire.kaya', 'fire'),
+  'unit.fire.kaya': kayaGSheet(),
   'unit.fire.tenzo': heroSheet('unit.fire.tenzo', 'fire'),
   'unit.water.nilak': heroSheet('unit.water.nilak', 'water'),
   'unit.water.sura': heroSheet('unit.water.sura', 'water'),
@@ -406,6 +477,13 @@ export const ASSETS: Readonly<Record<string, AssetEntry>> = {
     },
   },
 };
+
+/** The eight-way locomotion a key's sheet declares, or undefined for four-way art. */
+export function sheetLocomotion(key: string | undefined): LocomotionDef | undefined {
+  if (!key) return undefined;
+  const asset = resolveAsset(key);
+  return asset.kind === 'sheet' ? asset.locomotion : undefined;
+}
 
 /**
  * Ability effects are keyed `fx.<element>.<name>`. Rather than list forty

@@ -46,7 +46,9 @@ for (const renderer of ['canvas', 'webgl'] as const) {
     expect(await rendered(cast.id)).toMatchObject({ clip: 'cast', facing: -1 });
     await page.clock.fastForward(cast.duration);
     await page.clock.runFor(32);
-    expect(await rendered(cast.id)).toMatchObject({ clip: 'idle', facing: -1 });
+    // Kaya's sheet declares eight-way locomotion: she settles on her authored
+    // west idle rather than the mirrored side idle four-way sheets use.
+    expect(await rendered(cast.id)).toMatchObject({ clip: 'idleWest', facing: -1 });
 
     const push = await stageMotionTransition(page, 'push');
     await page.clock.runFor(64);
@@ -57,6 +59,8 @@ for (const renderer of ['canvas', 'webgl'] as const) {
     });
     await page.clock.fastForward(push.duration);
     await page.clock.runFor(32);
-    expect(await rendered(push.id)).toMatchObject({ clip: 'idle', facing: -1 });
+    // The logical westward walk projects to screen north-west on this
+    // oblique map, and the push does not turn her: she keeps that idle.
+    expect(await rendered(push.id)).toMatchObject({ clip: 'idleNorthWest', facing: -1 });
   });
 }

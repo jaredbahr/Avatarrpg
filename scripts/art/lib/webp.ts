@@ -1,15 +1,18 @@
 /**
- * WebP for the map paintings: encoding through libwebp compiled to wasm
- * (`@jsquash/webp`, dev-only, nothing native to build), and reading a file's
- * size back from its header without decoding it, for the validator.
+ * WebP for the map paintings and lossy sheets: encoding and decoding through
+ * libwebp compiled to wasm (`@jsquash/webp`, dev-only, nothing native to
+ * build), and reading a file's size back from its header without decoding it.
+ * A lossy sheet is validated on its decoded pixels, since that is what ships.
  */
 
 import { readFileSync } from 'node:fs';
 import { createRequire } from 'node:module';
+import decode, { init as initDecoder } from '@jsquash/webp/decode.js';
 import encode, { init } from '@jsquash/webp/encode.js';
 import type { Image } from './image';
 
 let ready: Promise<unknown> | null = null;
+let decoderReady: Promise<unknown> | null = null;
 
 /**
  * The package's glue fetches its wasm over HTTP, which a script has no server
@@ -23,6 +26,41 @@ function encoder(): Promise<unknown> {
     ready = WebAssembly.compile(wasm).then((module) => init(module));
   }
   return ready;
+}
+
+function decoder(): Promise<unknown> {
+  if (!decoderReady) {
+    const require = createRequire(import.meta.url);
+    const wasm = readFileSync(require.resolve('@jsquash/webp/codec/dec/webp_dec.wasm'));
+    decoderReady = WebAssembly.compile(wasm).then((module) => initDecoder(module));
+  }
+  return decoderReady;
+}
+
+/** The RGBA pixels a browser draws for a WebP file. */
+export async function decodeWebp(bytes: Uint8Array): Promise<Image> {
+  await decoder();
+  const decoded = await decode(bytes as unknown as ArrayBuffer);
+  return {
+    width: decoded.width,
+    height: decoded.height,
+    data: new Uint8Array(decoded.data.buffer, decoded.data.byteOffset, decoded.data.byteLength),
+  };
+}
+
+/** Lossless WebP, exact to the pixel; test fixtures derive from decoded atlases with it. */
+export async function encodeWebpLossless(image: Image): Promise<Uint8Array> {
+  await encoder();
+  const data = new Uint8ClampedArray(image.data.length);
+  data.set(image.data);
+  const pixels = { data, width: image.width, height: image.height, colorSpace: 'srgb' };
+  const buffer = await encode(pixels as ImageData, {
+    lossless: 1,
+    quality: 0,
+    method: 0,
+    exact: 1,
+  });
+  return new Uint8Array(buffer);
 }
 
 /** Lossy WebP; ordinary paintings are opaque, upright scene layers retain alpha. */

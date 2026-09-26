@@ -201,18 +201,12 @@ export const POSES: Readonly<Record<BaseClipName, readonly Pose[]>> = {
 
 /** The pose for a frame; a clip's last pose for an index past its end. */
 export function poseFor(clip: ClipName, index: number): Pose {
-  const base =
-    clip === 'walkNorth' || clip === 'walkSouth'
-      ? 'walk'
-      : clip === 'idleNorth' ||
-          clip === 'idleSouth' ||
-          clip === 'tea' ||
-          clip === 'rest' ||
-          clip === 'restNorth' ||
-          clip === 'restSouth'
-        ? 'idle'
-        : clip;
-  const poses = POSES[base];
+  const base = clip.startsWith('walk')
+    ? 'walk'
+    : clip.startsWith('idle') || clip.startsWith('rest') || clip === 'tea'
+      ? 'idle'
+      : clip;
+  const poses = POSES[base as keyof typeof POSES];
   return poses[Math.max(0, Math.min(index, poses.length - 1))] ?? rest();
 }
 

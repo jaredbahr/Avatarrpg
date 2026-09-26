@@ -825,6 +825,12 @@ export class Canvas2DBackend implements RenderBackend {
       }
       box.y -= elevationAt(view.grid, unit.pos) * ELEVATION_LIFT * box.size;
       const facing = unit.facing ?? (unit.faction === 'enemy' ? -1 : 1);
+      const asset = resolveAsset(unit.sprite);
+      const locomotion = unit.clip ?? 'idle';
+      const drawFacing =
+        asset.kind === 'sheet' && asset.facing === 'both' && /^(idle|walk|rest)/.test(locomotion)
+          ? 1
+          : facing;
       const scale = unit.scale ?? 1;
       if (!uprightSpriteVisible(box, camera.viewport, unit.size, scale)) continue;
 
@@ -859,7 +865,7 @@ export class Canvas2DBackend implements RenderBackend {
         const ay = box.y + FOOT_LINE * box.size;
         const drawX = ax - frame.anchor.x * fw;
         const drawY = ay - frame.anchor.y * fh;
-        if (facing === -1) {
+        if (drawFacing === -1) {
           ctx.translate(ax, 0);
           ctx.scale(-1, 1);
           ctx.translate(-ax, 0);

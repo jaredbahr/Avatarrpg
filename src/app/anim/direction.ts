@@ -1,7 +1,8 @@
 import type { Vec2 } from '../../core/types';
 import { projectGround } from '../../render/projection';
 import type { Projection } from '../../render/projection';
-import type { ClipName, MeleeDirection } from '../../content/assets/clips';
+import { HEADINGS } from '../../content/assets/clips';
+import type { ClipName, Heading, MeleeDirection } from '../../content/assets/clips';
 
 export type WalkDirection = 'north' | 'south' | 'east' | 'west';
 
@@ -27,6 +28,17 @@ export function walkDirection(tangent: Vec2, previous?: WalkDirection): WalkDire
   const vertical =
     y > x * 1.15 || (x <= y * 1.15 && (previous === 'north' || previous === 'south'));
   return vertical ? (tangent.y < 0 ? 'north' : 'south') : tangent.x < 0 ? 'west' : 'east';
+}
+
+/**
+ * Quantise a screen-space tangent to one of the eight authored headings. Only
+ * sheets that declare eight-way locomotion read this; four-way art keeps
+ * `walkDirection`, whose corner hysteresis its side walk depends on.
+ */
+export function walkHeading(tangent: Vec2, previous?: Heading): Heading {
+  if (Math.abs(tangent.x) + Math.abs(tangent.y) < 0.001) return previous ?? 'east';
+  const octant = Math.round(Math.atan2(tangent.y, tangent.x) / (Math.PI / 4));
+  return HEADINGS[(octant + 8) % 8] ?? 'east';
 }
 
 /** Actions retain their authored side poses; only locomotion has front/back art. */
