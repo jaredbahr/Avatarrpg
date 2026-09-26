@@ -320,6 +320,26 @@ describe('heading vocabulary is a declared sheet capability', () => {
       ((legacy?.clipTime ?? 0) / 500) * sheet.locomotion.walkMsPerTile.south,
     );
   });
+
+  it('phases an oblique eight-way walk by the screen distance a tile covers', () => {
+    const sheet = ASSETS['unit.fire.kaya'];
+    if (sheet?.kind !== 'sheet' || !sheet.locomotion) throw new Error('Kaya G is eight-way');
+    const { walkMsPerTile } = sheet.locomotion;
+    // Logical +x is screen south-east (1, 0.5); logical (1, 1) is screen south
+    // (0, 1) over a route of length sqrt(2); logical (1, -1) is screen east (2, 0).
+    for (const [to, expected] of [
+      [{ x: 8, y: 4 }, walkMsPerTile.southEast * Math.hypot(1, 0.5)],
+      [{ x: 8, y: 8 }, walkMsPerTile.south * Math.SQRT1_2],
+      [{ x: 8, y: 0 }, walkMsPerTile.east * Math.SQRT2],
+    ] as const) {
+      const a = new Animator(content, { motionReduced: () => false });
+      a.setProjection('oblique');
+      a.push(0, [{ type: 'partyWalked', unitId: 'u', from: { x: 4, y: 4 }, path: [to] }], []);
+      const pose = a.unitPose(300, 'u', 'unit.fire.kaya');
+      const legacy = a.unitPose(300, 'u', 'unit.earth.bo');
+      expect(pose?.clipTime).toBeCloseTo(((legacy?.clipTime ?? 0) / 500) * expected);
+    }
+  });
 });
 
 describe('eight-way oblique headings for a declaring sheet', () => {

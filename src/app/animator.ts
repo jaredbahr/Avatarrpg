@@ -17,6 +17,7 @@ import type { ContentIndex, GameEvent, Unit, Vec2 } from '../core/types';
 import type { EmitterInstance, Floater } from '../render/view';
 import type { ClipName } from '../render/view';
 import { hashSeed, mulberry32 } from '../render/fx/rng';
+import { projectGround } from '../render/projection';
 import type { Projection } from '../render/projection';
 import { sampleAt } from '../render/geometry/curve';
 import { choreograph } from './anim/choreography';
@@ -377,13 +378,21 @@ export class Animator {
 
   /**
    * Clip time per tile of travel. An eight-way sheet declares its own per
-   * heading, matched to its authored stride so the feet do not skate.
+   * heading, matched to its authored stride so the feet do not skate. That
+   * stride is measured on screen, so it is scaled by how far one logical tile
+   * of the route carries the figure on screen: 1 on orthographic ground, and
+   * on oblique ground about 1.12 along a grid axis, 1.41 screen-across and
+   * 0.71 screen-down.
    */
   private walkMsPerTile(travel: { track: MoveTrack; distance: number }, sprite?: string): number {
     const gait = sheetLocomotion(sprite);
     if (!gait) return WALK_MS_PER_TILE;
     const tangent = sampleAt(travel.track.curve, travel.distance).tangent;
-    return gait.walkMsPerTile[walkHeading(screenDirection(tangent, this.projection))];
+    const screen = projectGround(tangent, this.projection);
+    return (
+      gait.walkMsPerTile[walkHeading(screenDirection(tangent, this.projection))] *
+      Math.hypot(screen.x, screen.y)
+    );
   }
 
   /** Fade the lift at each end so a fractional final stride settles onto the path. */
