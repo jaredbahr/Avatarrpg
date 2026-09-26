@@ -118,6 +118,29 @@ describe('decoded Kaya G atlas validation', () => {
     expect(problems.every((p) => p.includes(`${KEY}/idle/0`))).toBe(true);
   }, 60_000);
 
+  it("measures a stride's lift from the heading's standing feet, not past them", async () => {
+    // North's idle stands at row 157, 6 px above the anchor line; its walk is
+    // level with it, and cel 8's lowest foot sits 9 px above those feet. Four
+    // more is 13 above where she stands, and that is a floating stride.
+    const cel = atlas.frames.get(`${KEY}/walkNorth/8`);
+    if (!cel) throw new Error('Missing Kaya north walk');
+    const dir = await fixture((image) => {
+      const lift = 4;
+      for (let y = 0; y < cel.h; y++) {
+        for (let x = 0; x < cel.w; x++) {
+          const from =
+            y + lift < cel.h ? pixelAt(image, cel.x + x, cel.y + y + lift) : [0, 0, 0, 0];
+          setPixel(image, cel.x + x, cel.y + y, from);
+        }
+      }
+    });
+    const problems = await validateSheets(dir, { [KEY]: entry });
+    expect(problems).toEqual([
+      `${KEY}: decoded cel "${KEY}/walkNorth/8" does not match its pin`,
+      `${KEY}: cel "${KEY}/walkNorth/8" puts its feet at row 144, off the foot line 163`,
+    ]);
+  }, 60_000);
+
   it('fails a subtly recoloured cel through its pin alone', async () => {
     const dir = await fixture((image) => {
       const [r, g, b, a] = pixelAt(image, rect.x + 64, rect.y + 100);

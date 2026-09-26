@@ -58,6 +58,12 @@ export const STAND_TOLERANCE = 6;
  * sunk figure. The grounded walks measure 10 px above to 10 px below the line
  * (a screen-vertical stride lifts the trailing foot), so 12 above now catches
  * the earlier floating east and west walks, whose feet sat 12-16 px above it.
+ *
+ * The lift is measured from where she stands in that heading: the anchor's
+ * foot line, or her idle cel 0's feet when those stand higher (north's idle
+ * stands 6 px above the line, inside `STAND_TOLERANCE`). A walk placed level
+ * with that idle lifts its feet relative to that idle, not to the line; the
+ * sunk bound stays on the line.
  */
 export const STRIDE_ABOVE = 12;
 export const STRIDE_BELOW = 10;
@@ -217,6 +223,17 @@ export async function validateSheets(
       const line = Math.round(entry.anchor.y * wantH);
       const column = entry.anchor.x * wantW;
       for (const heading of HEADINGS) {
+        const idleName = entry.clips[headingClip('idle', heading)]?.frames[0];
+        const idleFrame = idleName ? atlas.frames.get(idleName) : undefined;
+        const idleCel = idleFrame
+          ? crop(image, { x: idleFrame.x, y: idleFrame.y, width: idleFrame.w, height: idleFrame.h })
+          : undefined;
+        // Never more than the standing tolerance above the line, so an idle
+        // that itself floats cannot lift its walk's envelope with it.
+        const stands = Math.max(
+          line - STAND_TOLERANCE,
+          Math.min(line, idleCel && alphaBounds(idleCel) ? lowestOpaqueRow(idleCel) : line),
+        );
         for (const base of ['idle', 'walk', 'rest'] as const) {
           const clip = headingClip(base, heading);
           for (const name of entry.clips[clip]?.frames ?? []) {
@@ -232,7 +249,7 @@ export async function validateSheets(
             const standing = base === 'idle';
             const grounded = standing
               ? Math.abs(foot - line) <= STAND_TOLERANCE
-              : foot >= line - STRIDE_ABOVE && foot <= line + STRIDE_BELOW;
+              : foot >= stands - STRIDE_ABOVE && foot <= line + STRIDE_BELOW;
             if (!grounded) {
               problems.push(
                 `${key}: cel "${name}" puts its feet at row ${foot}, off the foot line ${line}`,
