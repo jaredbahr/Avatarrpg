@@ -1,6 +1,6 @@
 # ADR 0050: Kaya uses authored eight-way PixelLab locomotion
 
-**Status:** Accepted  
+**Status:** Accepted, amended by ADR 0051  
 **Date:** 2026-09-25
 
 ## Context
@@ -42,16 +42,20 @@ hold the uncompressed 128-cel locomotion atlas.
   east and west unmoved). North is the exception: seen from behind, the
   planted sole is the leading foot, a stride up-screen of where she stands,
   and lowering the walk 5 px to it dropped her head and body 6 px at the
-  switch. The north walk is its idle's height, and drawn unmoved both its
-  mean head row and its mean lowest row sit within 1.5 px of idle's, so it
-  stays where it was drawn. The west walk and rest are moved 6 px right,
+  switch. The north walk is its idle's height, and drawn unmoved its mean
+  lowest row sits 0.6 px below idle's and its mean head row 0.4 px below,
+  so it stays where it was drawn. The west walk and rest are moved 6 px right,
   which puts their torso and head on idle's (east's already sit within 3 px).
-  Idle never moves.
+  Idle never moves. (ADR 0051 raises the north-east and north-west walks 1
+  and 2 px more, to hold every walk's mean lowest row within 4 px of idle's.)
 - The walk-to-idle transition is a one-cel `rest*` clip per direction: the
   walk cel whose placed silhouette best overlaps idle cel 0, except
   north-east, whose best overlap is a contact pose with the trailing foot
   24 px off the anchor column; it stops on its passing pose (cel 9) instead,
-  torso and head on idle's and the feet together under the column.
+  torso and head on idle's and the feet together under the column. (ADR 0051
+  replaces the best-overlap rule with one that first requires the cel to
+  stand like idle, which moves the south and south-west stops off a lone
+  foot 15-16 px from the column, and re-picks north-west for its raised walk.)
 - The south walk art stands 9 px taller than its idle (127 against 118 px).
   That is the art, not placement, and it is not rescaled: she reads a little
   larger while walking toward the camera.
@@ -62,7 +66,8 @@ hold the uncompressed 128-cel locomotion atlas.
   12 px above where she stands in that heading, which is the line or, when
   higher, idle cel 0's feet, and no more than 10 px below the line; the
   feet's centre within 32 px of the anchor column mid-stride). A WebP sheet without a pin file fails.
-- `scripts/art/kaya-g.ts` builds only from the pinned sources:
+- `scripts/art/kaya-g.ts` (now `scripts/art/g-sprites.ts --character kaya`,
+  ADR 0051) builds only from the pinned sources:
   `art/source/kaya-g/pins.json` records the SHA-256 of all 128 PixelLab cels
   and the four preserved action cels, and a missing, changed or unpinned source
   stops the build before anything is written. The build writes the decoded

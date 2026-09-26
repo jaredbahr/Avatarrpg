@@ -23,7 +23,8 @@ describe('hero lateral walk art', () => {
       const oldImage = readPng(`${oldStem}.png`);
       const atlas = parseAtlasJson(readFileSync(`public/${entry.atlas}`, 'utf8'));
       if (atlas.image.endsWith('.webp')) {
-        expect(key).toBe('unit.fire.kaya');
+        // The PixelLab G party (ADR 0050, ADR 0051).
+        expect(['unit.fire.kaya', 'unit.water.sura', 'unit.earth.bo']).toContain(key);
         const walk = resolveClip(entry.clips, 'walk');
         expect(walk?.exact).toBe(true);
         expect(walk?.def.frames).toHaveLength(12);

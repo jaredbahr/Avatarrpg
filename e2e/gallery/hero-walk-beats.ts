@@ -109,18 +109,26 @@ export const HERO_WALK_BEATS: readonly Beat[] = [
         await takeTurn(ctx.page);
         await waitForIdle(ctx.page, ctx.idleTimeout);
         await settleLayout(ctx.page, ctx.settleTimeout);
-        await ctx.page.evaluate(
-          async (names) => {
-            await Promise.all(
-              names.map(async (name) => {
-                const image = new Image();
-                image.src = new URL(`art/units/walking-${name}.png`, document.baseURI).href;
-                await image.decode();
-              }),
-            );
-          },
-          [...party],
-        );
+        // Preload whatever atlas the manifest resolves each hero to (the G
+        // party ships WebP atlases, ADR 0050 and 0051), not a guessed file name.
+        const atlases = party.map((name) => {
+          const entry = ASSETS[CHARACTERS.find((c) => c.sprite.endsWith(`.${name}`))?.sprite ?? ''];
+          if (entry?.kind !== 'sheet') throw new Error(`Missing sheet for ${name}`);
+          return entry.atlas;
+        });
+        await ctx.page.evaluate(async (paths) => {
+          await Promise.all(
+            paths.map(async (path) => {
+              const atlasUrl = new URL(path, document.baseURI);
+              const atlas = (await fetch(atlasUrl).then((r) => r.json())) as {
+                meta: { image: string };
+              };
+              const image = new Image();
+              image.src = new URL(atlas.meta.image, atlasUrl).href;
+              await image.decode();
+            }),
+          );
+        }, atlases);
         // Combat walks ease in/out: sample more tightly around mid-travel
         // so the distance-based clock visits each cel rather than both contacts twice.
         await ctx.filmstrip(this.note, [70, 100, 125, 165, 360], async () => {

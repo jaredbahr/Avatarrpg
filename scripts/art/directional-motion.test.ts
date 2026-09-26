@@ -24,7 +24,8 @@ describe('directional art compatibility', () => {
       const oldImage = readPng(`assets/reference/character-poses/${originalStem}.png`);
       const atlas = parseAtlasJson(readFileSync(`public/${entry.atlas}`, 'utf8'));
       if (atlas.image.endsWith('.webp')) {
-        expect(key).toBe('unit.fire.kaya');
+        // The PixelLab G party (ADR 0050, ADR 0051).
+        expect(['unit.fire.kaya', 'unit.water.sura', 'unit.earth.bo']).toContain(key);
         expect(entry.anchor).toEqual({ x: 0.5, y: 0.85 });
         // Decoded margin, per-cel pins and the eight-way foot line.
         expect(await validateSheets('public', { [key]: entry })).toEqual([]);
@@ -44,7 +45,7 @@ describe('directional art compatibility', () => {
           const [, clip, index] = id.slice(key.length + 1).match(/^(\w+)\/(\d+)$/) ?? [];
           if (clip !== 'cast' && clip !== 'ko') continue;
           const original = cut(oldImage, r);
-          const source = readPng(`art/source/kaya-actions/${clip}/${index}.png`);
+          const source = readPng(`art/source/${originalStem}-actions/${clip}/${index}.png`);
           expect(Buffer.from(source.data).equals(Buffer.from(original.data)), id).toBe(true);
           const shipped = cel(id);
           expect(lowestOpaqueRow(shipped), id).toBe(lowestOpaqueRow(original));

@@ -32,33 +32,27 @@ export function packSideWalk(name: string, input?: string): void {
   const height = idle && alphaBounds(idle)?.height;
   if (!height) throw new Error('Missing standing reference');
 
-  if (!input) {
-    if (name !== 'kaya' && name !== 'sura') throw new Error('Supply a transparent 2x2 walk sheet');
-    const village = readFrames(`public/art/units/riverside-locomotion-${name}`);
-    for (let i = 0; i < 4; i++) {
-      const frame = village.get(`unit.village.${name}/walk/${i}`);
-      if (!frame) throw new Error(`Missing village walk ${i}`);
-      frames.set(`${key}/walk/${i}`, frame);
-    }
-  } else {
-    const cells = splitGrid(readPng(input), 2, 2);
-    const bounds = cells.map((cell) => alphaBounds(cell));
-    if (bounds.some((b) => !b)) throw new Error('Empty walk cel');
-    const heights = bounds.map((b) => b?.height ?? 0);
-    if (Math.max(...heights) / Math.min(...heights) > 1.15)
-      throw new Error('Walk changes height by over 15 percent; regenerate the sheet');
-    // Common scale: the passing pose is allowed to shorten, never inflated.
-    const scale = Math.min(1, height / Math.max(...heights));
-    if (Math.max(...heights) < height)
-      throw new Error('Source is too small; regenerate at higher resolution');
-    cells.forEach((cell, i) => {
-      const b = bounds[i];
-      if (!b) throw new Error('Empty walk cel');
-      const placed = placeOnBaseline(scaleBy(crop(cell, b), scale), 128, 192);
-      if (placed.problems.length) throw new Error(placed.problems.join('; '));
-      frames.set(`${key}/walk/${i}`, placed.image);
-    });
-  }
+  // Kaya, Sura and Bo walk from their PixelLab G sets (scripts/art/g-sprites.ts,
+  // ADR 0050 and ADR 0051); their walking-<name> sheets are retired.
+  if (['kaya', 'sura', 'bo'].includes(name)) throw new Error(`${name} walks from the G set`);
+  if (!input) throw new Error('Supply a transparent 2x2 walk sheet');
+  const cells = splitGrid(readPng(input), 2, 2);
+  const bounds = cells.map((cell) => alphaBounds(cell));
+  if (bounds.some((b) => !b)) throw new Error('Empty walk cel');
+  const heights = bounds.map((b) => b?.height ?? 0);
+  if (Math.max(...heights) / Math.min(...heights) > 1.15)
+    throw new Error('Walk changes height by over 15 percent; regenerate the sheet');
+  // Common scale: the passing pose is allowed to shorten, never inflated.
+  const scale = Math.min(1, height / Math.max(...heights));
+  if (Math.max(...heights) < height)
+    throw new Error('Source is too small; regenerate at higher resolution');
+  cells.forEach((cell, i) => {
+    const b = bounds[i];
+    if (!b) throw new Error('Empty walk cel');
+    const placed = placeOnBaseline(scaleBy(crop(cell, b), scale), 128, 192);
+    if (placed.problems.length) throw new Error(placed.problems.join('; '));
+    frames.set(`${key}/walk/${i}`, placed.image);
+  });
 
   const columns = 8;
   const output = newImage(columns * 128, Math.ceil(frames.size / columns) * 192);

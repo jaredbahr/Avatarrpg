@@ -15,6 +15,7 @@ import { button, el, motionReduced } from '../ui/dom';
 import { WaitDialog } from '../ui/WaitDialog';
 import { seatHere } from '../world/waiting';
 import { verticalClip } from '../anim/direction';
+import { drawnSprite } from './riversidePose';
 
 const distance = (a: Vec2, b: Vec2) => Math.hypot(a.x - b.x, a.y - b.y);
 type Activity = { kind: 'water' | 'fire' | 'wave'; unitId: string; started: number };
@@ -339,9 +340,7 @@ export class VillageLife {
         id: u.id,
         pos: u.renderPos ?? u.pos,
         variant: member?.characterId ?? 'sura',
-        sprite: ['sura', 'kaya'].includes(member?.characterId ?? '')
-          ? `unit.village.${member?.characterId}`
-          : u.sprite,
+        sprite: member ? drawnSprite(member, true) : u.sprite,
         palette: member?.element ?? 'water',
         facing: active ? 1 : (u.facing ?? 1),
         motion: tea ? 'tea' : (active?.kind ?? (u.renderPos ? 'walk' : 'idle')),

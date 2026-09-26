@@ -29,7 +29,8 @@
  * the clip logic run the same path whether the art is real or not.
  */
 
-import type { ClipDef, ClipName, LocomotionDef, MeleeDirection } from './clips';
+import type { ClipDef, ClipName, Heading, LocomotionDef, MeleeDirection } from './clips';
+import { HEADINGS, headingClip } from './clips';
 
 export type AssetEntry =
   | {
@@ -100,7 +101,7 @@ const heroSheet = (key: string, palette: string): SheetEntry => {
       idleSouth: { frames: frames('idleSouth', 1), fps: 1, loop: true },
       walkNorth: { frames: frames('walkNorth', 4), fps: 4, loop: true },
       walkSouth: { frames: frames('walkSouth', 4), fps: 4, loop: true },
-      ...(!key.startsWith('unit.village.') && ['nima', 'kaya', 'sura', 'bo', 'wen'].includes(name)
+      ...(!key.startsWith('unit.village.') && ['nima', 'wen'].includes(name)
         ? {
             rest: { frames: frames('rest', 1), fps: 1, loop: true },
             restNorth: { frames: frames('restNorth', 1), fps: 1, loop: true },
@@ -147,9 +148,48 @@ function rikoSheet(): SheetEntry {
   };
 }
 
+/**
+ * Measured root travel per 114 ms walk cel, in source px, per heading: the
+ * planted-sole `speed_px_per_frame` in each walk's gates.json (party-consistency
+ * set) for the PixelLab G party (ADR 0050, ADR 0051).
+ */
+type GTravel = Readonly<Record<Heading, number>>;
+
+const G_TRAVEL: Readonly<Record<'kaya' | 'sura' | 'bo', GTravel>> = {
+  kaya: {
+    north: 6.38,
+    northEast: 11.74,
+    east: 12.88,
+    southEast: 10.74,
+    south: 6.71,
+    southWest: 10.99,
+    west: 12.97,
+    northWest: 11.17,
+  },
+  sura: {
+    north: 7.0,
+    northEast: 10.97,
+    east: 13.62,
+    southEast: 11.23,
+    south: 7.0,
+    southWest: 12.23,
+    west: 13.37,
+    northWest: 9.94,
+  },
+  bo: {
+    north: 6.13,
+    northEast: 11.02,
+    east: 12.92,
+    southEast: 11.35,
+    south: 6.3,
+    southWest: 11.13,
+    west: 12.7,
+    northWest: 9.97,
+  },
+};
+
 /** PixelLab G locomotion plus the existing authored action poses. */
-function kayaGSheet(): SheetEntry {
-  const key = 'unit.fire.kaya';
+function gSheet(key: string, name: keyof typeof G_TRAVEL, palette: string): SheetEntry {
   const frames = (clip: ClipName, count: number) =>
     Array.from({ length: count }, (_, i) => `${key}/${clip}/${i}`);
   const walk = (clip: ClipName): ClipDef => ({
@@ -159,60 +199,32 @@ function kayaGSheet(): SheetEntry {
   });
   const idle = (clip: ClipName): ClipDef => ({ frames: frames(clip, 4), fps: 4, loop: true });
   const rest = (clip: ClipName): ClipDef => ({ frames: frames(clip, 1), fps: 1, loop: true });
+  const travel = G_TRAVEL[name];
+  // The measured travel per cel, converted to clip time per 128 px tile at the
+  // in-game 0.75 scale. Movement duration stays gameplay-driven; only
+  // distance-phased cel selection changes.
+  const walkMsPerTile = Object.fromEntries(
+    HEADINGS.map((heading) => [heading, (128 / (travel[heading] * 0.75)) * 114]),
+  ) as Record<Heading, number>;
+  const clips: Partial<Record<ClipName, ClipDef>> = {
+    cast: { frames: frames('cast', 3), fps: 8, loop: false },
+    ko: { frames: frames('ko', 1), fps: 1, loop: false },
+  };
+  for (const heading of HEADINGS) {
+    clips[headingClip('idle', heading)] = idle(headingClip('idle', heading));
+    clips[headingClip('walk', heading)] = walk(headingClip('walk', heading));
+    clips[headingClip('rest', heading)] = rest(headingClip('rest', heading));
+  }
   return {
     kind: 'sheet',
-    atlas: 'art/units/kaya-g.json',
+    atlas: `art/units/${name}-g.json`,
     pixelsPerTile: 128,
     footprint: { w: 1, h: 1 },
     anchor: { x: 0.5, y: 0.85 },
     facing: 'both',
-    locomotion: {
-      headings: 8,
-      // PixelLab Kaya's measured root travel per 114 ms cel (planted-sole
-      // speed_px_per_frame in each walk's gates.json, party-consistency set),
-      // converted to clip time per 128 px tile at the in-game 0.75 scale.
-      // Movement duration stays gameplay-driven; only distance-phased cel
-      // selection changes.
-      walkMsPerTile: {
-        north: (128 / (6.38 * 0.75)) * 114,
-        northEast: (128 / (11.74 * 0.75)) * 114,
-        east: (128 / (12.88 * 0.75)) * 114,
-        southEast: (128 / (10.74 * 0.75)) * 114,
-        south: (128 / (6.71 * 0.75)) * 114,
-        southWest: (128 / (10.99 * 0.75)) * 114,
-        west: (128 / (12.97 * 0.75)) * 114,
-        northWest: (128 / (11.17 * 0.75)) * 114,
-      },
-    },
-    palette: 'fire',
-    clips: {
-      idle: idle('idle'),
-      walk: walk('walk'),
-      rest: rest('rest'),
-      idleNorth: idle('idleNorth'),
-      walkNorth: walk('walkNorth'),
-      restNorth: rest('restNorth'),
-      idleNorthEast: idle('idleNorthEast'),
-      walkNorthEast: walk('walkNorthEast'),
-      restNorthEast: rest('restNorthEast'),
-      idleSouthEast: idle('idleSouthEast'),
-      walkSouthEast: walk('walkSouthEast'),
-      restSouthEast: rest('restSouthEast'),
-      idleSouth: idle('idleSouth'),
-      walkSouth: walk('walkSouth'),
-      restSouth: rest('restSouth'),
-      idleSouthWest: idle('idleSouthWest'),
-      walkSouthWest: walk('walkSouthWest'),
-      restSouthWest: rest('restSouthWest'),
-      idleWest: idle('idleWest'),
-      walkWest: walk('walkWest'),
-      restWest: rest('restWest'),
-      idleNorthWest: idle('idleNorthWest'),
-      walkNorthWest: walk('walkNorthWest'),
-      restNorthWest: rest('restNorthWest'),
-      cast: { frames: frames('cast', 3), fps: 8, loop: false },
-      ko: { frames: frames('ko', 1), fps: 1, loop: false },
-    },
+    locomotion: { headings: 8, walkMsPerTile },
+    palette,
+    clips,
   };
 }
 
@@ -268,11 +280,11 @@ export const ASSETS: Readonly<Record<string, AssetEntry>> = {
   'unit.village.sura': villageSheet('sura', 'water'),
   'unit.village.kaya': villageSheet('kaya', 'fire'),
   /* ------------------------------------------------------ Party sprites */
-  'unit.fire.kaya': kayaGSheet(),
+  'unit.fire.kaya': gSheet('unit.fire.kaya', 'kaya', 'fire'),
   'unit.fire.tenzo': heroSheet('unit.fire.tenzo', 'fire'),
   'unit.water.nilak': heroSheet('unit.water.nilak', 'water'),
-  'unit.water.sura': heroSheet('unit.water.sura', 'water'),
-  'unit.earth.bo': heroSheet('unit.earth.bo', 'earth'),
+  'unit.water.sura': gSheet('unit.water.sura', 'sura', 'water'),
+  'unit.earth.bo': gSheet('unit.earth.bo', 'bo', 'earth'),
   'unit.earth.linmei': heroSheet('unit.earth.linmei', 'earth'),
   'unit.air.nima': heroSheet('unit.air.nima', 'air'),
   'unit.air.jinu': heroSheet('unit.air.jinu', 'air'),

@@ -9,6 +9,11 @@ import type { ContentIndex } from '../../core/types';
 
 const content = { abilities: new Map() } as unknown as ContentIndex;
 
+/** The eight-way PixelLab G party (ADR 0050, ADR 0051). */
+const G_PARTY = ['unit.fire.kaya', 'unit.water.sura', 'unit.earth.bo'] as const;
+/** A sheet on the legacy four-way contract, fixed 500 ms a tile. */
+const FOUR_WAY = 'unit.earth.linmei';
+
 describe('directional walking', () => {
   it('keeps a diagonal corner stable, then turns when the route changes axis', () => {
     expect(walkDirection({ x: 0.68, y: -0.72 }, 'east')).toBe('east');
@@ -202,16 +207,17 @@ describe('heading vocabulary is a declared sheet capability', () => {
     expect(walkHeading({ x: 0, y: 0 }, 'southWest')).toBe('southWest');
   });
 
-  it('only Kaya G declares eight-way locomotion today', () => {
+  it('only the G party (Kaya, Sura, Bo) declares eight-way locomotion today', () => {
     const eightWay = Object.entries(ASSETS)
       .filter(([, entry]) => entry.kind === 'sheet' && entry.locomotion?.headings === 8)
       .map(([key]) => key);
-    expect(eightWay).toEqual(['unit.fire.kaya']);
+    expect(eightWay).toEqual(['unit.fire.kaya', 'unit.water.sura', 'unit.earth.bo']);
   });
 
   // A continuous route of straight legs, each starting where the last ended,
   // so the four-way corner hysteresis sees every previous heading it would in
-  // play. Bo's reported tangent (0.8, -0.6) is the first leg.
+  // play. Bo's reported tangent (0.8, -0.6), from when his sheet was
+  // four-way, is the first leg.
   const legs: readonly Vec2[] = [
     { x: 4, y: -3 },
     { x: 3, y: -4 },
@@ -252,7 +258,7 @@ describe('heading vocabulary is a declared sheet capability', () => {
     }
   }
 
-  for (const sprite of ['unit.earth.bo', 'unit.water.sura', 'unit.fire.tenzo', undefined]) {
+  for (const sprite of ['unit.earth.linmei', 'unit.water.nilak', 'unit.fire.tenzo', undefined]) {
     it(`keeps the legacy four-way choices exactly for ${sprite ?? 'an unknown sprite'}`, () => {
       let previous: WalkDirection | undefined;
       let facing: 1 | -1 = 1;
@@ -283,63 +289,68 @@ describe('heading vocabulary is a declared sheet capability', () => {
     });
   }
 
-  it("gives Bo's (0.8, -0.6) tangent the side walk, and Kaya G its diagonal", () => {
-    const bo = new Animator(content, { motionReduced: () => false });
-    const kaya = new Animator(content, { motionReduced: () => false });
-    for (const a of [bo, kaya])
-      a.push(
+  it("gives a four-way sheet the side walk for Bo's (0.8, -0.6) tangent, and the G party its diagonal", () => {
+    const legacy = new Animator(content, { motionReduced: () => false });
+    legacy.push(
+      0,
+      [{ type: 'partyWalked', unitId: 'u', from: { x: 4, y: 4 }, path: [{ x: 8, y: 1 }] }],
+      [],
+    );
+    expect(legacy.locomotion(200, 'u', 'idle', 'unit.earth.linmei')).toEqual({
+      clip: 'walk',
+      facing: 1,
+    });
+    for (const sprite of G_PARTY) {
+      const g = new Animator(content, { motionReduced: () => false });
+      g.push(
         0,
         [{ type: 'partyWalked', unitId: 'u', from: { x: 4, y: 4 }, path: [{ x: 8, y: 1 }] }],
         [],
       );
-    expect(bo.locomotion(200, 'u', 'idle', 'unit.earth.bo')).toEqual({ clip: 'walk', facing: 1 });
-    expect(kaya.locomotion(200, 'u', 'idle', 'unit.fire.kaya')).toEqual({
-      clip: 'walkNorthEast',
-      facing: 1,
-    });
-    kaya.clear();
-    // A cleared animator forgets the eight-way heading with everything else.
-    expect(kaya.locomotion(9999, 'u', 'idle', 'unit.fire.kaya')).toEqual({
-      clip: 'idle',
-      facing: 1,
-    });
-  });
-
-  it('plays an eight-way walk at its sheet-declared gait per heading', () => {
-    const sheet = ASSETS['unit.fire.kaya'];
-    if (sheet?.kind !== 'sheet' || !sheet.locomotion) throw new Error('Kaya G is eight-way');
-    const a = new Animator(content, { motionReduced: () => false });
-    a.push(
-      0,
-      [{ type: 'partyWalked', unitId: 'u', from: { x: 4, y: 4 }, path: [{ x: 4, y: 8 }] }],
-      [],
-    );
-    const pose = a.unitPose(300, 'u', 'unit.fire.kaya');
-    const legacy = a.unitPose(300, 'u', 'unit.earth.bo');
-    expect(pose?.clipTime).toBeCloseTo(
-      ((legacy?.clipTime ?? 0) / 500) * sheet.locomotion.walkMsPerTile.south,
-    );
-  });
-
-  it('phases an oblique eight-way walk by the screen distance a tile covers', () => {
-    const sheet = ASSETS['unit.fire.kaya'];
-    if (sheet?.kind !== 'sheet' || !sheet.locomotion) throw new Error('Kaya G is eight-way');
-    const { walkMsPerTile } = sheet.locomotion;
-    // Logical +x is screen south-east (1, 0.5); logical (1, 1) is screen south
-    // (0, 1) over a route of length sqrt(2); logical (1, -1) is screen east (2, 0).
-    for (const [to, expected] of [
-      [{ x: 8, y: 4 }, walkMsPerTile.southEast * Math.hypot(1, 0.5)],
-      [{ x: 8, y: 8 }, walkMsPerTile.south * Math.SQRT1_2],
-      [{ x: 8, y: 0 }, walkMsPerTile.east * Math.SQRT2],
-    ] as const) {
-      const a = new Animator(content, { motionReduced: () => false });
-      a.setProjection('oblique');
-      a.push(0, [{ type: 'partyWalked', unitId: 'u', from: { x: 4, y: 4 }, path: [to] }], []);
-      const pose = a.unitPose(300, 'u', 'unit.fire.kaya');
-      const legacy = a.unitPose(300, 'u', 'unit.earth.bo');
-      expect(pose?.clipTime).toBeCloseTo(((legacy?.clipTime ?? 0) / 500) * expected);
+      expect(g.locomotion(200, 'u', 'idle', sprite)).toEqual({ clip: 'walkNorthEast', facing: 1 });
+      g.clear();
+      // A cleared animator forgets the eight-way heading with everything else.
+      expect(g.locomotion(9999, 'u', 'idle', sprite)).toEqual({ clip: 'idle', facing: 1 });
     }
   });
+
+  for (const sprite of G_PARTY) {
+    it(`plays ${sprite}'s eight-way walk at its sheet-declared gait per heading`, () => {
+      const sheet = ASSETS[sprite];
+      if (sheet?.kind !== 'sheet' || !sheet.locomotion) throw new Error(`${sprite} is eight-way`);
+      const a = new Animator(content, { motionReduced: () => false });
+      a.push(
+        0,
+        [{ type: 'partyWalked', unitId: 'u', from: { x: 4, y: 4 }, path: [{ x: 4, y: 8 }] }],
+        [],
+      );
+      const pose = a.unitPose(300, 'u', sprite);
+      const legacy = a.unitPose(300, 'u', FOUR_WAY);
+      expect(pose?.clipTime).toBeCloseTo(
+        ((legacy?.clipTime ?? 0) / 500) * sheet.locomotion.walkMsPerTile.south,
+      );
+    });
+
+    it(`phases ${sprite}'s oblique eight-way walk by the screen distance a tile covers`, () => {
+      const sheet = ASSETS[sprite];
+      if (sheet?.kind !== 'sheet' || !sheet.locomotion) throw new Error(`${sprite} is eight-way`);
+      const { walkMsPerTile } = sheet.locomotion;
+      // Logical +x is screen south-east (1, 0.5); logical (1, 1) is screen south
+      // (0, 1) over a route of length sqrt(2); logical (1, -1) is screen east (2, 0).
+      for (const [to, expected] of [
+        [{ x: 8, y: 4 }, walkMsPerTile.southEast * Math.hypot(1, 0.5)],
+        [{ x: 8, y: 8 }, walkMsPerTile.south * Math.SQRT1_2],
+        [{ x: 8, y: 0 }, walkMsPerTile.east * Math.SQRT2],
+      ] as const) {
+        const a = new Animator(content, { motionReduced: () => false });
+        a.setProjection('oblique');
+        a.push(0, [{ type: 'partyWalked', unitId: 'u', from: { x: 4, y: 4 }, path: [to] }], []);
+        const pose = a.unitPose(300, 'u', sprite);
+        const legacy = a.unitPose(300, 'u', FOUR_WAY);
+        expect(pose?.clipTime).toBeCloseTo(((legacy?.clipTime ?? 0) / 500) * expected);
+      }
+    });
+  }
 });
 
 describe('eight-way oblique headings for a declaring sheet', () => {
