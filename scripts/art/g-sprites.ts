@@ -74,7 +74,12 @@ export interface GPins {
  *   idle's, lowest foot centred within 10 px of the anchor column, and head
  *   and torso within 4 px of idle's. Without the filter the best overlap can
  *   be a contact pose with the trailing foot 24 px off the column, or a lone
- *   leading foot 16 px off it, which stops the figure beside its feet.
+ *   leading foot 16 px off it, which stops the figure beside its feet. Where
+ *   that pick is still mid-stride and a feet-together cel in the same walk
+ *   meets the same limits, the stop takes that cel instead (Kaya north-west,
+ *   Sura east, Bo north-east, each commented below). No width measure tells
+ *   a stride from feet together across side, front and diagonal views, so
+ *   this last step is judged by eye, not scored.
  * - `idleDy` moves a whole heading, idle included, only where its idle
  *   stands outside art:validate's 6 px standing tolerance, by the least that
  *   brings it inside. Otherwise idle is the reference and never moves.
@@ -139,7 +144,8 @@ export const CHARACTERS: Readonly<Record<'kaya' | 'sura' | 'bo', GCharacter>> = 
       [9, 0, 0],
       [9, 0, -2],
       [10, 0, 0],
-      [2, 0, -1],
+      // Stops feet-together on cel 9; the overlap pick, cel 2, is mid-stride.
+      [9, 0, -1],
       [3, 6, 0],
       [3, 0, -1],
       [10, 0, -4],
@@ -153,7 +159,8 @@ export const CHARACTERS: Readonly<Record<'kaya' | 'sura' | 'bo', GCharacter>> = 
     actions: 'art/source/sura-actions',
     // Sura's north idle stands 7 px above the anchor line; the heading moves 1 px down.
     headings: headings([
-      [3, 0, 1],
+      // Stops feet-together on cel 9; the overlap pick, cel 3, is mid-stride.
+      [9, 0, 1],
       [3, 0, -2],
       [10, 2, 0, 1],
       [9, 2, 0],
@@ -170,7 +177,8 @@ export const CHARACTERS: Readonly<Record<'kaya' | 'sura' | 'bo', GCharacter>> = 
     actions: 'art/source/bo-actions',
     headings: headings([
       [3, 0, 1],
-      [8, 0, -1],
+      // Stops feet-together on cel 9; the overlap pick, cel 8, is mid-stride.
+      [9, 0, -1],
       [10, 3, 0],
       [9, 0, 0],
       [3, 6, 1],
