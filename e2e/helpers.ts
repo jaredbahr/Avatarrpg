@@ -21,10 +21,15 @@ export async function setLargeText(page: Page, size: LargeText): Promise<void> {
   );
 }
 
-/** Wait for entrance/exit animations belonging to one dialog subtree only. */
+/**
+ * Wait for entrance/exit animations belonging to one dialog subtree only.
+ * Infinite animations (spinners, pulses) never finish, so they are skipped.
+ */
 export async function settleDialog(dialog: Locator): Promise<void> {
   await dialog.evaluate(async (element) => {
-    const animations = element.getAnimations({ subtree: true });
+    const animations = element
+      .getAnimations({ subtree: true })
+      .filter((animation) => animation.effect?.getComputedTiming().iterations !== Infinity);
     await Promise.all(animations.map((animation) => animation.finished.catch(() => undefined)));
   });
 }
