@@ -110,6 +110,13 @@ test('six-person combat keeps initiative navigation usable on a narrow screen wi
         ],
       });
     }
+    // Hold still before lifting, as a person does after a drag. Six instant
+    // moves otherwise lift at speed and start a fling, and the browser spends
+    // the next tap stopping that fling without sending a click.
+    for (let hold = 0; hold < 4; hold++) {
+      await page.waitForTimeout(50);
+      await cdp.send('Input.dispatchTouchEvent', { type: 'touchMove', touchPoints: [to] });
+    }
     await cdp.send('Input.dispatchTouchEvent', { type: 'touchEnd', touchPoints: [] });
   };
   await swipe({ x: 200, y: 780 }, { x: 200, y: 590 });
