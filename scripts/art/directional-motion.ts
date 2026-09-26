@@ -83,11 +83,11 @@ if (process.argv[1]?.endsWith('directional-motion.ts')) {
   if (
     !name ||
     !input ||
-    !['kaya', 'tenzo', 'nilak', 'sura', 'bo', 'linmei', 'nima', 'jinu', 'riko', 'wen'].includes(
-      name,
-    )
+    !['kaya', 'tenzo', 'nilak', 'sura', 'linmei', 'nima', 'jinu', 'riko', 'wen'].includes(name)
   )
     throw new Error('Supply a playable hero name and transparent 5x2 PNG.');
-  packDirectional(name, input);
+  // Kaya, Sura and Bo's unit art is their PixelLab G set (scripts/art/g-sprites.ts,
+  // ADR 0050 and ADR 0051); only Kaya's and Sura's riverside sheets pack here.
   if (name === 'kaya' || name === 'sura') packDirectional(name, input, true);
+  else packDirectional(name, input);
 }

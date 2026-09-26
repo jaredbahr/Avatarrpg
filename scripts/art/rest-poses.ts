@@ -10,7 +10,10 @@ import { splitGrid } from './split-sheet';
 import { parseAtlasJson } from '../../src/render/sheets/atlasJson';
 
 const [name, input] = process.argv.slice(2);
-if (!name || !['nima', 'kaya', 'sura', 'bo', 'wen'].includes(name) || !input)
+// Kaya, Sura and Bo rest on cels of their PixelLab G walks instead
+// (scripts/art/g-sprites.ts, ADR 0050 and ADR 0051); their four-way
+// walking-<name> sheets are retired.
+if (!name || !['nima', 'wen'].includes(name) || !input)
   throw new Error('Provide an approved courtyard hero and a transparent three-column PNG.');
 const stem = `public/art/units/walking-${name}`;
 const original = readPng(`${stem}.png`);
