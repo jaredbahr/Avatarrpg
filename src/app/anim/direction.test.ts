@@ -353,6 +353,67 @@ describe('heading vocabulary is a declared sheet capability', () => {
   }
 });
 
+describe('the fighting stance (ADR 0052)', () => {
+  it('turns the stance like idle for four-way art, which falls back to its idle', () => {
+    expect(directionalClip('stance', 'north')).toBe('stanceNorth');
+    expect(directionalClip('stance', 'south')).toBe('stanceSouth');
+    expect(directionalClip('stance', 'east')).toBe('stance');
+    expect(directionalClip('stance', undefined)).toBe('stance');
+  });
+
+  for (const [dx, dy, heading] of [
+    [1, 0, ''],
+    [1, 1, 'SouthEast'],
+    [0, 1, 'South'],
+    [-1, 1, 'SouthWest'],
+    [-1, 0, 'West'],
+    [-1, -1, 'NorthWest'],
+    [0, -1, 'North'],
+    [1, -1, 'NorthEast'],
+  ] as const) {
+    it(`walks, settles, then stands guard ${heading || 'East'} for (${dx},${dy})`, () => {
+      for (const sprite of G_PARTY) {
+        const a = new Animator(content, { motionReduced: () => false });
+        a.push(
+          0,
+          [
+            {
+              type: 'partyWalked',
+              unitId: 'p',
+              from: { x: 4, y: 4 },
+              path: [1, 2, 3].map((step) => ({ x: 4 + dx * step, y: 4 + dy * step })),
+            },
+          ],
+          [],
+        );
+        expect(a.locomotion(a.finishesAt / 2, 'p', 'stance', sprite).clip).toBe(`walk${heading}`);
+        const done = a.finishesAt + 1;
+        a.prune(done);
+        expect(a.locomotion(done, 'p', 'stance', sprite).clip).toBe(`rest${heading}`);
+        const guard = a.locomotion(done + 300, 'p', 'stance', sprite);
+        // Authored for each side, so drawn unflipped whichever way she faces.
+        expect(guard.clip).toBe(`stance${heading}`);
+        const entry = ASSETS[sprite];
+        expect(entry?.kind === 'sheet' && entry.clips[guard.clip]?.frames).toHaveLength(8);
+      }
+    });
+  }
+
+  it('stands a four-way party sheet in its front, back or side idle', () => {
+    const a = new Animator(content, { motionReduced: () => false });
+    a.push(
+      0,
+      [{ type: 'partyWalked', unitId: 'p', from: { x: 4, y: 4 }, path: [{ x: 4, y: 3 }] }],
+      [],
+    );
+    const done = a.finishesAt + 400;
+    a.prune(done);
+    expect(a.locomotion(done, 'p', 'stance', FOUR_WAY).clip).toBe('stanceNorth');
+    const entry = ASSETS[FOUR_WAY];
+    expect(entry?.kind === 'sheet' && entry.clips.stanceNorth).toBeFalsy();
+  });
+});
+
 describe('eight-way oblique headings for a declaring sheet', () => {
   for (const [dx, dy, clip] of [
     [1, 0, 'SouthEast'],
