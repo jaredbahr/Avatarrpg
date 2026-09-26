@@ -405,6 +405,9 @@ export class ResidentWalks {
       clipTime,
       lean: 0.06 * facing * into,
       // A tile of travel is 500 ms of clip, one stride: a footfall where the bob touches down.
+      // That is the four-way gait. An eight-way sheet (ADR 0050, ADR 0051) plays
+      // its declared `walkMsPerTile` instead, so this bob would drift from its
+      // feet; no resident uses one today. Read the sheet's rate before one does.
       squash: (1 - Math.abs(Math.sin((Math.PI * clipTime) / 500))) * into,
       alpha:
         motion.enter && c < start + fade
