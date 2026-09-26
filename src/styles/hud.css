@@ -1575,6 +1575,8 @@ html[data-contrast='high'] .hud-panel::after {
   min-height: 0;
   flex: 1 1 auto;
   overflow-y: auto;
+  /* The focus outline plus its offset reaches five hairlines past a control. */
+  padding: calc(var(--hairline) * 5);
 }
 
 /*
