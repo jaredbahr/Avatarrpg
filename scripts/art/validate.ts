@@ -12,7 +12,8 @@
  * every frame's border. A WebP sheet is lossy, so it is checked on its
  * decoded pixels: the margin, a pin per cel written by the sheet's build
  * script (a hand-edited or re-encoded cel fails), and, for a sheet declaring
- * eight-way locomotion, feet on the anchor's foot line; every `image` entry's file exists, is the PNG or WebP its
+ * eight-way locomotion, feet on the anchor's foot line, a rest cel's feet under
+ * the column and each walk's mean foot row level with its idle's; every `image` entry's file exists, is the PNG or WebP its
  * name says, and measures what its kind of key promises (a portrait is
  * 512x512), because the loader falls back to the drawn placeholder on a
  * missing file and a typo would otherwise ship green; and every map's
@@ -74,6 +75,19 @@ export const STRIDE_BELOW = 10;
  */
 export const STAND_CENTRE = 16;
 export const STRIDE_CENTRE = 32;
+/**
+ * A rest cel is the one pose between the last stride and idle, so its feet
+ * stand under the figure: a stop on a lone leading foot 16 px off the column
+ * reads as a slide.
+ */
+export const REST_CENTRE = 12;
+/**
+ * How far a walk or rest clip's mean lowest opaque row may sit from idle
+ * cel 0's in the same heading. Per cel the lowest row swings with the stride;
+ * over the cycle it stays where she stands, or the figure bobs up or down at
+ * every start and stop.
+ */
+export const FOOT_ROW_TOLERANCE = 4;
 
 /** SHA-256 of a decoded cel's RGBA, as the pin files record it. */
 export function celHash(
@@ -236,6 +250,7 @@ export async function validateSheets(
         );
         for (const base of ['idle', 'walk', 'rest'] as const) {
           const clip = headingClip(base, heading);
+          const rows: number[] = [];
           for (const name of entry.clips[clip]?.frames ?? []) {
             const frame = atlas.frames.get(name);
             if (!frame) continue;
@@ -245,6 +260,7 @@ export async function validateSheets(
               continue;
             }
             const foot = lowestOpaqueRow(cel);
+            rows.push(foot);
             const centre = footCentre(cel) ?? -1;
             const standing = base === 'idle';
             const grounded = standing
@@ -255,9 +271,20 @@ export async function validateSheets(
                 `${key}: cel "${name}" puts its feet at row ${foot}, off the foot line ${line}`,
               );
             }
-            if (Math.abs(centre - column) > (standing ? STAND_CENTRE : STRIDE_CENTRE)) {
+            const centred = standing ? STAND_CENTRE : base === 'rest' ? REST_CENTRE : STRIDE_CENTRE;
+            if (Math.abs(centre - column) > centred) {
               problems.push(
                 `${key}: cel "${name}" centres its feet at x ${centre.toFixed(1)}, off the anchor ${column}`,
+              );
+            }
+          }
+          const idleRow = idleCel && alphaBounds(idleCel) ? lowestOpaqueRow(idleCel) : undefined;
+          if (base !== 'idle' && idleRow !== undefined && rows.length > 0) {
+            const mean = rows.reduce((sum, row) => sum + row, 0) / rows.length;
+            if (Math.abs(mean - idleRow) > FOOT_ROW_TOLERANCE) {
+              problems.push(
+                `${key}: clip "${clip}" has its mean foot row at ${mean.toFixed(2)}, ` +
+                  `${(mean - idleRow).toFixed(2)} px from idle's ${idleRow}`,
               );
             }
           }
