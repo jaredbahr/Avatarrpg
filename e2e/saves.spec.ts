@@ -1,5 +1,5 @@
 import { expect, test } from '@playwright/test';
-import { resetStorage, startGame } from './helpers';
+import { resetStorage, setLargeText, settleDialog, startGame } from './helpers';
 
 /**
  * Largest text on a short landscape viewport is where the sheet used to lose
@@ -25,23 +25,11 @@ test.describe('the save sheet at Largest text', () => {
     });
     await page.reload();
     await page.getByRole('button', { name: 'Load a save' }).click();
-    await page.evaluate(() => window.fnt?.app.updateSettings({ largeText: 'huge' }));
-    // WebKit re-resolves rem lengths a rendering update after the root font
-    // size changes: in the same task the text has grown but the sheet still has
-    // its Normal-text `max-width`, and it only widens on the next frame. Measure
-    // the settled sheet, never that intermediate one, or the frame is the old
-    // narrow box while the buttons are read from the wide one.
-    await page.evaluate(
-      () =>
-        new Promise<void>((resolve) => {
-          requestAnimationFrame(() => requestAnimationFrame(() => resolve()));
-        }),
-    );
+    await setLargeText(page, 'huge');
 
     const sheet = page.locator('.dialog');
     await expect(sheet).toBeVisible();
-    // Measure the sheet at rest, not mid-way through its entrance animation.
-    await page.evaluate(() => Promise.all(document.getAnimations().map((a) => a.finished)));
+    await settleDialog(sheet);
 
     // The list is the sheet's only scroll region: a footer cannot be pushed out.
     await expect

@@ -1,5 +1,13 @@
 import { expect, test } from '@playwright/test';
-import { enterNode, resetStorage, settleLayout, startGame, takeTurn, waitForIdle } from './helpers';
+import {
+  enterNode,
+  resetStorage,
+  setLargeText,
+  settleLayout,
+  startGame,
+  takeTurn,
+  waitForIdle,
+} from './helpers';
 
 /**
  * The battle HUD at Largest text on an iPad in landscape.
@@ -25,7 +33,7 @@ test('the battle header and initiative strip leave the board its screen at Large
   await enterNode(page, 'battle_forest_road');
   await takeTurn(page);
   await waitForIdle(page);
-  await page.evaluate(() => window.fnt?.app.updateSettings({ largeText: 'huge' }));
+  await setLargeText(page, 'huge');
   await settleLayout(page);
 
   const hud = await page.evaluate(() => {

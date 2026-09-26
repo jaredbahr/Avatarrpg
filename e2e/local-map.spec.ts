@@ -1,5 +1,12 @@
 import { expect, test } from '@playwright/test';
-import { enterNode, resetStorage, settleLayout, startGame, waitForIdle } from './helpers';
+import {
+  enterNode,
+  resetStorage,
+  setLargeText,
+  settleLayout,
+  startGame,
+  waitForIdle,
+} from './helpers';
 
 test('local map tracks a real walk and preserves the campaign when opened', async ({ page }) => {
   await resetStorage(page, '?renderer=canvas');
@@ -90,7 +97,7 @@ test('a normal solo exploration dock has no phantom vertical scroll while large 
   expect(normal.childrenFit).toBe(true);
   expect(normal.bottom).toBeLessThanOrEqual(720);
 
-  await page.evaluate(() => window.fnt?.app.updateSettings({ largeText: 'huge' }));
+  await setLargeText(page, 'huge');
   const large = await page.locator('.explore-dock').evaluate((dock) => ({
     overflowY: getComputedStyle(dock).overflowY,
   }));

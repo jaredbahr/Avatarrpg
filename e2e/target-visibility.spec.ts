@@ -1,7 +1,15 @@
 import { expect, test } from '@playwright/test';
 import type { Locator, Page } from '@playwright/test';
 import { allowSoftwareWebgl } from './budget';
-import { enterNode, resetStorage, settleLayout, startGame, takeTurn, waitForIdle } from './helpers';
+import {
+  enterNode,
+  resetStorage,
+  setLargeText,
+  settleLayout,
+  startGame,
+  takeTurn,
+  waitForIdle,
+} from './helpers';
 
 const target = { x: 13, y: 5 };
 
@@ -122,7 +130,7 @@ for (const renderer of ['canvas', 'webgl'] as const) {
       );
       await resetStorage(page, `?renderer=${renderer}`);
       await startGame(page, ['Kaya'], ['kaya'], 'target-visibility');
-      if (narrow) await page.evaluate(() => window.fnt!.app.updateSettings({ largeText: 'huge' }));
+      if (narrow) await setLargeText(page, 'huge');
       await enterNode(page, 'battle_forest_road');
       expect(await takeTurn(page)).toBe(true);
       await waitForIdle(page);

@@ -1,7 +1,14 @@
 import { expect, test } from '@playwright/test';
 import type { Page } from '@playwright/test';
 import { allowSoftwareWebgl } from './budget';
-import { enterNode, resetStorage, settleLayout, startGame, waitForIdle } from './helpers';
+import {
+  enterNode,
+  resetStorage,
+  setLargeText,
+  settleLayout,
+  startGame,
+  waitForIdle,
+} from './helpers';
 
 async function openActivities(page: Page): Promise<void> {
   const toggle = page.getByRole('button', { name: 'Activities', exact: true });
@@ -62,7 +69,7 @@ test('riverside activities remain reachable at largest text in portrait', async 
   await page.setViewportSize({ width: 390, height: 844 });
   await resetStorage(page, '?renderer=canvas');
   await page.getByRole('button', { name: 'Explore the riverside', exact: true }).click();
-  await page.evaluate(() => window.fnt?.app.updateSettings({ largeText: 'huge' }));
+  await setLargeText(page, 'huge');
   await settleLayout(page);
   await openActivities(page);
 

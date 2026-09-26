@@ -1,5 +1,5 @@
 import { expect, test } from '@playwright/test';
-import { enterNode, resetStorage, startGame } from './helpers';
+import { enterNode, resetStorage, setLargeText, startGame } from './helpers';
 
 test.use({ serviceWorkers: 'block' });
 
@@ -15,8 +15,7 @@ for (const layout of [
     await page.setViewportSize(layout);
     await resetStorage(page, '?renderer=canvas');
     await startGame(page, ['Elias'], ['jinu']);
-    if (layout.huge)
-      await page.evaluate(() => window.fnt?.app.updateSettings({ largeText: 'huge' }));
+    if (layout.huge) await setLargeText(page, 'huge');
     for (const [node, asset] of [
       ['mira_intro', 'portrait.mira'],
       ['gao_home', 'portrait.gao'],

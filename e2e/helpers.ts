@@ -1,4 +1,4 @@
-import type { Page } from '@playwright/test';
+import type { Locator, Page } from '@playwright/test';
 
 /**
  * Shared driving helpers.
@@ -7,6 +7,32 @@ import type { Page } from '@playwright/test';
  * and drop to `window.fnt.app` only to skip *past* parts a given spec is not
  * about — otherwise every test would spend thirty taps getting to a fight.
  */
+
+export type LargeText = 'off' | 'on' | 'huge';
+
+/** Apply a text-size setting and wait for the root rem size and layout to settle. */
+export async function setLargeText(page: Page, size: LargeText): Promise<void> {
+  await page.evaluate((largeText) => window.fnt?.app.updateSettings({ largeText }), size);
+  await page.evaluate(
+    () =>
+      new Promise<void>((resolve) => {
+        requestAnimationFrame(() => requestAnimationFrame(() => resolve()));
+      }),
+  );
+}
+
+/**
+ * Wait for entrance/exit animations belonging to one dialog subtree only.
+ * Infinite animations (spinners, pulses) never finish, so they are skipped.
+ */
+export async function settleDialog(dialog: Locator): Promise<void> {
+  await dialog.evaluate(async (element) => {
+    const animations = element
+      .getAnimations({ subtree: true })
+      .filter((animation) => animation.effect?.getComputedTiming().iterations !== Infinity);
+    await Promise.all(animations.map((animation) => animation.finished.catch(() => undefined)));
+  });
+}
 
 export interface AppSnapshot {
   screen: string;

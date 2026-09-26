@@ -1,5 +1,13 @@
 import { expect, test } from '@playwright/test';
-import { enterNode, resetStorage, settleLayout, startGame, takeTurn, waitForIdle } from './helpers';
+import {
+  enterNode,
+  resetStorage,
+  setLargeText,
+  settleLayout,
+  startGame,
+  takeTurn,
+  waitForIdle,
+} from './helpers';
 import { tileCentre } from './gallery/stage';
 
 test('touching a prop target names its break consequence before confirmation', async ({ page }) => {
@@ -50,7 +58,7 @@ test('movement confirmation warns about a possible direct attack without claimin
   await enterNode(page, 'battle_quarry_gate');
   await takeTurn(page);
   await waitForIdle(page);
-  await page.evaluate(() => window.fnt?.app.updateSettings({ largeText: 'huge' }));
+  await setLargeText(page, 'huge');
 
   await page.evaluate(() => {
     const app = window.fnt?.app;

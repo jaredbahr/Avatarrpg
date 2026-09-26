@@ -1,6 +1,6 @@
 import { expect, test } from '@playwright/test';
 import { allowSoftwareWebgl } from './budget';
-import { enterNode, resetStorage, startGame, takeTurn, waitForIdle } from './helpers';
+import { enterNode, resetStorage, setLargeText, startGame, takeTurn, waitForIdle } from './helpers';
 import { paintedTileCentre } from './projection';
 
 for (const renderer of ['canvas', 'webgl']) {
@@ -76,7 +76,7 @@ test('six-person combat keeps initiative navigation usable on a narrow screen wi
     ['nima', 'kaya', 'sura', 'bo', 'wen', 'tenzo'],
     'forest-six',
   );
-  await page.evaluate(() => window.fnt!.app.updateSettings({ largeText: 'huge' }));
+  await setLargeText(page, 'huge');
   await enterNode(page, 'battle_forest_road');
   await takeTurn(page);
   await waitForIdle(page);
