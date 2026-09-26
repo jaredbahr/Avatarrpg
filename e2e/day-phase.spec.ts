@@ -115,7 +115,59 @@ test('a refused wait keeps its way back on a phone at Largest text', async ({ pa
     'Not in the middle of a conversation.',
   );
   const back = dialog.getByRole('button', { name: /^(Return|Back) to the path$/ });
-  await expect(back).toBeInViewport({ ratio: 1 });
+  // Wholly on screen and unclipped by the sheet. Not `toBeInViewport({ ratio: 1 })`:
+  // the button's bottom edge sits exactly on the bottom of the dialog's scroll
+  // region at a fractional y, and WebKit's IntersectionObserver snaps that clip
+  // rect, reporting a ratio of 0.998 for a button whose box is fully inside it.
+  // The settled sheet reads 0.998 every time; the old check passed only when a
+  // poll happened to land on an earlier layout. Measure the box against the
+  // viewport and the padding box of every clipping ancestor instead, with the
+  // half-pixel allowance the save sheet's check uses. Let the entrance
+  // animation finish first: mid-animation boxes are shifted and shrunk, which
+  // hid a 1-3 px clip at the bottom.
+  await page.evaluate(() => Promise.all(document.getAnimations().map((a) => a.finished)));
+  await expect
+    .poll(
+      () =>
+        back.evaluate((button) => {
+          const box = button.getBoundingClientRect();
+          const outside = (
+            name: string,
+            r: { left: number; top: number; right: number; bottom: number },
+          ) =>
+            box.left < r.left - 0.5 ||
+            box.top < r.top - 0.5 ||
+            box.right > r.right + 0.5 ||
+            box.bottom > r.bottom + 0.5
+              ? [name]
+              : [];
+          const clipped = outside('viewport', {
+            left: 0,
+            top: 0,
+            right: window.innerWidth,
+            bottom: window.innerHeight,
+          });
+          for (let node = button.parentElement; node; node = node.parentElement) {
+            const style = getComputedStyle(node);
+            if (style.overflowX === 'visible' && style.overflowY === 'visible') continue;
+            const edge = node.getBoundingClientRect();
+            const left = edge.left + node.clientLeft;
+            const top = edge.top + node.clientTop;
+            const name = `${node.tagName.toLowerCase()}.${node.className.replace(/ /g, '.')}`;
+            clipped.push(
+              ...outside(name, {
+                left,
+                top,
+                right: left + node.clientWidth,
+                bottom: top + node.clientHeight,
+              }),
+            );
+          }
+          return clipped;
+        }),
+      { message: 'The way back must sit wholly on screen and inside the sheet' },
+    )
+    .toEqual([]);
   await back.click();
   await expect(dialog).toHaveCount(0);
 });
