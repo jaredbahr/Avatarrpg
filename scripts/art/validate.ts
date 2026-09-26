@@ -13,7 +13,9 @@
  * decoded pixels: the margin, a pin per cel written by the sheet's build
  * script (a hand-edited or re-encoded cel fails), and, for a sheet declaring
  * eight-way locomotion, feet on the anchor's foot line, a rest cel's feet under
- * the column and each walk's mean foot row level with its idle's; every `image` entry's file exists, is the PNG or WebP its
+ * the column and each walk's and stance's mean foot row level with its idle's.
+ * A sheet's further atlas pages (ADR 0052) are held to all of it, page by
+ * page, and a frame may live on only one of them. Every `image` entry's file exists, is the PNG or WebP its
  * name says, and measures what its kind of key promises (a portrait is
  * 512x512), because the loader falls back to the drawn placeholder on a
  * missing file and a typo would otherwise ship green; and every map's
@@ -63,8 +65,8 @@ export const STAND_TOLERANCE = 6;
  * the earlier floating east and west walks, whose feet sat 12-16 px above it.
  *
  * The lift is measured from where she stands in that heading: the anchor's
- * foot line, or her idle cel 0's feet when those stand higher (north's idle
- * stands 6 px above the line, inside `STAND_TOLERANCE`). A walk placed level
+ * foot line, or her idle cel 0's feet when those stand higher (Kaya's south
+ * idle stands 4 px above the line, inside `STAND_TOLERANCE`). A walk placed level
  * with that idle lifts its feet relative to that idle, not to the line; the
  * sunk bound stays on the line.
  */
@@ -84,10 +86,11 @@ export const STRIDE_CENTRE = 32;
  */
 export const REST_CENTRE = 12;
 /**
- * How far a walk or rest clip's mean lowest opaque row may sit from idle
- * cel 0's in the same heading. Per cel the lowest row swings with the stride;
- * over the cycle it stays where she stands, or the figure bobs up or down at
- * every start and stop.
+ * How far a walk, rest or stance clip's mean lowest opaque row may sit from
+ * idle cel 0's in the same heading. Per cel the lowest row swings with the
+ * stride; over the cycle it stays where she stands, or the figure bobs up or
+ * down at every start and stop. A fighting stance stands feet apart, so it is
+ * held to the stride's envelope per cel and to this per clip (ADR 0052).
  */
 export const FOOT_ROW_TOLERANCE = 4;
 
@@ -138,6 +141,44 @@ function borderTouched(
   return false;
 }
 
+interface Page {
+  readonly path: string;
+  /** The image file the page's JSON names. */
+  readonly file: string;
+  readonly image: Image;
+  readonly frames: ReadonlyMap<string, { x: number; y: number; w: number; h: number }>;
+  readonly lossy: boolean;
+}
+
+/** One atlas page from disk, or the problem that stopped it loading. */
+async function readPage(publicDir: string, key: string, path: string): Promise<Page | string> {
+  const jsonPath = resolve(publicDir, path);
+  if (!existsSync(jsonPath)) return `${key}: ${path} is missing under ${publicDir}/`;
+  let atlas;
+  try {
+    atlas = parseAtlasJson(readFileSync(jsonPath, 'utf8'));
+  } catch (error) {
+    return `${key}: ${error instanceof Error ? error.message : String(error)}`;
+  }
+  if (atlas.width > MAX_ATLAS || atlas.height > MAX_ATLAS) {
+    return `${key}: atlas is ${atlas.width}x${atlas.height}; the limit is ${MAX_ATLAS}`;
+  }
+  const imagePath = join(dirname(jsonPath), atlas.image);
+  if (!existsSync(imagePath)) return `${key}: ${atlas.image} is missing beside ${path}`;
+  const lossy = atlas.image.endsWith('.webp');
+  let image: Image | undefined;
+  if (atlas.image.endsWith('.png')) image = readPng(imagePath);
+  else if (lossy) {
+    const bytes = new Uint8Array(readFileSync(imagePath));
+    if (webpSize(bytes)) image = await decodeWebp(bytes).catch(() => undefined);
+  }
+  if (!image) return `${key}: ${atlas.image} must be a readable PNG or WebP`;
+  if (image.width !== atlas.width || image.height !== atlas.height) {
+    return `${key}: ${atlas.image} is ${image.width}x${image.height}, the JSON says ${atlas.width}x${atlas.height}`;
+  }
+  return { path, file: atlas.image, image, frames: atlas.frames, lossy };
+}
+
 export async function validateSheets(
   publicDir = 'public',
   entries: Readonly<Record<string, AssetEntry>> = ASSETS,
@@ -146,48 +187,37 @@ export async function validateSheets(
   const problems: string[] = [];
   for (const [key, entry] of Object.entries(entries)) {
     if (entry.kind !== 'sheet') continue;
-    const jsonPath = resolve(publicDir, entry.atlas);
-    if (!existsSync(jsonPath)) {
-      problems.push(`${key}: ${entry.atlas} is missing under ${publicDir}/`);
-      continue;
+    const pages: Page[] = [];
+    for (const path of [entry.atlas, ...(entry.atlasPages ?? [])]) {
+      const page = await readPage(publicDir, key, path);
+      if (typeof page === 'string') problems.push(page);
+      else pages.push(page);
     }
-    let atlas;
-    try {
-      atlas = parseAtlasJson(readFileSync(jsonPath, 'utf8'));
-    } catch (error) {
-      problems.push(`${key}: ${error instanceof Error ? error.message : String(error)}`);
-      continue;
+    if (pages.length !== 1 + (entry.atlasPages?.length ?? 0)) continue;
+    const seen = new Map<string, string>();
+    for (const page of pages) {
+      for (const name of page.frames.keys()) {
+        const other = seen.get(name);
+        if (other) problems.push(`${key}: frame "${name}" is on both ${other} and ${page.path}`);
+        seen.set(name, page.path);
+      }
     }
-    if (atlas.width > MAX_ATLAS || atlas.height > MAX_ATLAS) {
-      problems.push(`${key}: atlas is ${atlas.width}x${atlas.height}; the limit is ${MAX_ATLAS}`);
-    }
-    const imagePath = join(dirname(jsonPath), atlas.image);
-    if (!existsSync(imagePath)) {
-      problems.push(`${key}: ${atlas.image} is missing beside ${entry.atlas}`);
-      continue;
-    }
-    const lossy = atlas.image.endsWith('.webp');
-    let image: Image | undefined;
-    if (atlas.image.endsWith('.png')) image = readPng(imagePath);
-    else if (lossy) {
-      const bytes = new Uint8Array(readFileSync(imagePath));
-      if (webpSize(bytes)) image = await decodeWebp(bytes).catch(() => undefined);
-    }
-    if (!image) {
-      problems.push(`${key}: ${atlas.image} must be a readable PNG or WebP`);
-      continue;
-    }
-    if (image.width !== atlas.width || image.height !== atlas.height) {
-      problems.push(
-        `${key}: ${atlas.image} is ${image.width}x${image.height}, the JSON says ${atlas.width}x${atlas.height}`,
-      );
-      continue;
-    }
+    /** The page a frame lives on, its image and its rectangle there. */
+    const find = (name: string) => {
+      for (const page of pages) {
+        const frame = page.frames.get(name);
+        if (frame) return { image: page.image, frame };
+      }
+      return undefined;
+    };
+    const atlasNames = pages.map((page) => page.path).join(' + ');
+    const lossy = pages.some((page) => page.lossy);
     let pinned: Readonly<Record<string, string>> | undefined;
     if (lossy) {
       const pinPath = pins[key];
       if (!pinPath || !existsSync(pinPath)) {
-        problems.push(`${key}: lossy ${atlas.image} has no cel pin file`);
+        const files = pages.map((page) => page.file).join(' + ');
+        problems.push(`${key}: lossy ${files} has no cel pin file`);
       } else {
         pinned = (JSON.parse(readFileSync(pinPath, 'utf8')) as { frames?: Record<string, string> })
           .frames;
@@ -211,11 +241,12 @@ export async function validateSheets(
       const def = entry.clips[clip];
       if (!def) continue;
       for (const name of def.frames) {
-        const frame = atlas.frames.get(name);
-        if (!frame) {
-          problems.push(`${key}: frame "${name}" is not in ${entry.atlas}`);
+        const found = find(name);
+        if (!found) {
+          problems.push(`${key}: frame "${name}" is not in ${atlasNames}`);
           continue;
         }
+        const { image, frame } = found;
         if (frame.w !== wantW || frame.h !== wantH) {
           problems.push(
             `${key}: frame "${name}" is ${frame.w}x${frame.h}, expected ${wantW}x${wantH}`,
@@ -240,9 +271,14 @@ export async function validateSheets(
       const column = entry.anchor.x * wantW;
       for (const heading of HEADINGS) {
         const idleName = entry.clips[headingClip('idle', heading)]?.frames[0];
-        const idleFrame = idleName ? atlas.frames.get(idleName) : undefined;
-        const idleCel = idleFrame
-          ? crop(image, { x: idleFrame.x, y: idleFrame.y, width: idleFrame.w, height: idleFrame.h })
+        const idleFound = idleName ? find(idleName) : undefined;
+        const idleCel = idleFound
+          ? crop(idleFound.image, {
+              x: idleFound.frame.x,
+              y: idleFound.frame.y,
+              width: idleFound.frame.w,
+              height: idleFound.frame.h,
+            })
           : undefined;
         // Never more than the standing tolerance above the line, so an idle
         // that itself floats cannot lift its walk's envelope with it.
@@ -250,12 +286,13 @@ export async function validateSheets(
           line - STAND_TOLERANCE,
           Math.min(line, idleCel && alphaBounds(idleCel) ? lowestOpaqueRow(idleCel) : line),
         );
-        for (const base of ['idle', 'walk', 'rest'] as const) {
+        for (const base of ['idle', 'walk', 'rest', 'stance'] as const) {
           const clip = headingClip(base, heading);
           const rows: number[] = [];
           for (const name of entry.clips[clip]?.frames ?? []) {
-            const frame = atlas.frames.get(name);
-            if (!frame) continue;
+            const found = find(name);
+            if (!found) continue;
+            const { image, frame } = found;
             const cel = crop(image, { x: frame.x, y: frame.y, width: frame.w, height: frame.h });
             if (!alphaBounds(cel)) {
               problems.push(`${key}: cel "${name}" is empty`);
@@ -273,6 +310,7 @@ export async function validateSheets(
                 `${key}: cel "${name}" puts its feet at row ${foot}, off the foot line ${line}`,
               );
             }
+            // A guard stance stands feet apart, a stride's width (ADR 0052).
             const centred = standing ? STAND_CENTRE : base === 'rest' ? REST_CENTRE : STRIDE_CENTRE;
             if (Math.abs(centre - column) > centred) {
               problems.push(
@@ -296,11 +334,12 @@ export async function validateSheets(
     for (const [direction, frames] of Object.entries(entry.meleeDirections ?? {})) {
       if (!frames) continue;
       for (const name of frames) {
-        const frame = atlas.frames.get(name);
-        if (!frame) {
-          problems.push(`${key}: ${direction} frame "${name}" is not in ${entry.atlas}`);
+        const found = find(name);
+        if (!found) {
+          problems.push(`${key}: ${direction} frame "${name}" is not in ${atlasNames}`);
           continue;
         }
+        const { image, frame } = found;
         if (frame.w !== wantW || frame.h !== wantH) {
           problems.push(
             `${key}: ${direction} frame "${name}" is ${frame.w}x${frame.h}, expected ${wantW}x${wantH}`,

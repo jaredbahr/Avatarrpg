@@ -109,12 +109,13 @@ export const HERO_WALK_BEATS: readonly Beat[] = [
         await takeTurn(ctx.page);
         await waitForIdle(ctx.page, ctx.idleTimeout);
         await settleLayout(ctx.page, ctx.settleTimeout);
-        // Preload whatever atlas the manifest resolves each hero to (the G
-        // party ships WebP atlases, ADR 0050 and 0051), not a guessed file name.
-        const atlases = party.map((name) => {
+        // Preload whatever atlas pages the manifest resolves each hero to (the
+        // G party ships WebP atlases, ADR 0050 and 0051, its stance on a second
+        // page, ADR 0052), not a guessed file name.
+        const atlases = party.flatMap((name) => {
           const entry = ASSETS[CHARACTERS.find((c) => c.sprite.endsWith(`.${name}`))?.sprite ?? ''];
           if (entry?.kind !== 'sheet') throw new Error(`Missing sheet for ${name}`);
-          return entry.atlas;
+          return [entry.atlas, ...(entry.atlasPages ?? [])];
         });
         await ctx.page.evaluate(async (paths) => {
           await Promise.all(

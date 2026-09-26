@@ -1,6 +1,6 @@
 # ADR 0050: Kaya uses authored eight-way PixelLab locomotion
 
-**Status:** Accepted, amended by ADR 0051  
+**Status:** Accepted, amended by ADR 0051 and ADR 0052  
 **Date:** 2026-09-25
 
 ## Context

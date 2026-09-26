@@ -42,11 +42,29 @@ export interface ResolvedFrame {
   readonly placeholder: boolean;
 }
 
-interface LoadedAtlas {
+interface AtlasPage {
   readonly atlas: AtlasJson;
   readonly image: HTMLImageElement;
+}
+
+interface LoadedAtlas {
+  /** `atlas` first, then each of `atlasPages` (ADR 0052). */
+  readonly pages: readonly AtlasPage[];
   /** Stable silhouette envelope measured once across the asset's authored clips. */
   readonly headroom: number;
+}
+
+/** The page a frame lives on, and its rectangle there. */
+function findFrame(
+  loaded: LoadedAtlas,
+  name: string | undefined,
+): { readonly image: HTMLImageElement; readonly frame: AtlasFrame } | undefined {
+  if (name === undefined) return undefined;
+  for (const page of loaded.pages) {
+    const frame = page.atlas.frames.get(name);
+    if (frame) return { image: page.image, frame };
+  }
+  return undefined;
 }
 
 /**
@@ -162,11 +180,11 @@ export class SheetStore {
         exact: true,
       };
       const index = frameIndex(directional, clipTime, clipFrame);
-      const frame = loaded.atlas.frames.get(directional.def.frames[index] ?? '');
-      if (frame)
+      const found = findFrame(loaded, directional.def.frames[index]);
+      if (found)
         return {
-          source: loaded.image,
-          frame,
+          source: found.image,
+          frame: found.frame,
           pixelsPerTile: entry.pixelsPerTile,
           footprint: entry.footprint,
           anchor: entry.anchor,
@@ -179,12 +197,11 @@ export class SheetStore {
     const resolved = resolveClip(entry.clips, clip);
     if (!resolved) return null;
     const index = frameIndex(resolved, clipTime, clipFrame);
-    const name = resolved.def.frames[index];
-    const frame = name ? loaded.atlas.frames.get(name) : undefined;
-    if (!frame) return null;
+    const found = findFrame(loaded, resolved.def.frames[index]);
+    if (!found) return null;
     return {
-      source: loaded.image,
-      frame,
+      source: found.image,
+      frame: found.frame,
       pixelsPerTile: entry.pixelsPerTile,
       footprint: entry.footprint,
       anchor: entry.anchor,
@@ -221,37 +238,46 @@ export class SheetStore {
     return sheet;
   }
 
-  /** The loaded atlas for a sheet key, kicking off the load on first ask. */
+  /**
+   * The loaded atlas for a sheet key, kicking off the load on first ask. A
+   * sheet with further pages (ADR 0052) is loaded only once every page is, so
+   * a clip never draws from half a sheet.
+   */
   private atlas(key: string, entry: SheetEntry): LoadedAtlas | null {
     const state = this.loaded.get(key);
     if (state && state !== 'loading' && state !== 'failed') return state;
     if (state !== undefined) return null;
 
     this.loaded.set(key, 'loading');
-    const jsonUrl = assetUrl(entry.atlas);
-    const fail = (reason: unknown): void => {
-      this.loaded.set(key, 'failed');
-      console.warn(`Sheet "${key}" failed to load; using the drawn placeholder.`, reason);
-    };
-    fetch(jsonUrl)
-      .then((response) => {
-        if (!response.ok) throw new Error(`${response.status} for ${jsonUrl}`);
-        return response.text();
-      })
-      .then((text) => {
-        const atlas = parseAtlasJson(text);
-        const image = new Image();
-        image.decoding = 'async';
-        image.onload = () =>
-          this.loaded.set(key, { atlas, image, headroom: atlasHeadroom(entry, atlas, image) });
-        image.onerror = () => fail(`image ${atlas.image}`);
-        image.src = assetUrl(
-          `${entry.atlas.slice(0, entry.atlas.lastIndexOf('/') + 1)}${atlas.image}`,
-        );
-      })
-      .catch(fail);
+    Promise.all([entry.atlas, ...(entry.atlasPages ?? [])].map(loadPage))
+      .then((pages) =>
+        this.loaded.set(key, {
+          pages,
+          headroom: Math.max(...pages.map((page) => atlasHeadroom(entry, page.atlas, page.image))),
+        }),
+      )
+      .catch((reason: unknown) => {
+        this.loaded.set(key, 'failed');
+        console.warn(`Sheet "${key}" failed to load; using the drawn placeholder.`, reason);
+      });
     return null;
   }
+}
+
+/** One atlas page: its JSON, then the image its `meta.image` names beside it. */
+async function loadPage(path: string): Promise<AtlasPage> {
+  const jsonUrl = assetUrl(path);
+  const response = await fetch(jsonUrl);
+  if (!response.ok) throw new Error(`${response.status} for ${jsonUrl}`);
+  const atlas = parseAtlasJson(await response.text());
+  const image = new Image();
+  image.decoding = 'async';
+  await new Promise<void>((resolve, reject) => {
+    image.onload = () => resolve();
+    image.onerror = () => reject(new Error(`image ${atlas.image}`));
+    image.src = assetUrl(`${path.slice(0, path.lastIndexOf('/') + 1)}${atlas.image}`);
+  });
+  return { atlas, image };
 }
 
 export const sheets = new SheetStore();

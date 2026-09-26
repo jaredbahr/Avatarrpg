@@ -753,6 +753,10 @@ export const assetEntrySchema = z.discriminatedUnion('kind', [
   z.object({
     kind: z.literal('sheet'),
     atlas: z.string().regex(/\.json$/, 'must point at the atlas JSON'),
+    atlasPages: z
+      .array(z.string().regex(/\.json$/, 'must point at the atlas JSON'))
+      .min(1)
+      .optional(),
     pixelsPerTile: z.union([z.literal(128), z.literal(256)]),
     frameSize: z
       .object({ w: z.number().int().min(1).max(512), h: z.number().int().min(1).max(512) })
@@ -982,6 +986,17 @@ export function validateContent(bundle: ContentBundle): string[] {
     const eightWayClips = HEADINGS.flatMap((heading) =>
       (['idle', 'walk', 'rest'] as const).map((base) => headingClip(base, heading)),
     );
+    // A fighting stance is optional, but a sheet that authors one authors it
+    // for every heading of its eight-way locomotion (ADR 0052).
+    const stanceClips = HEADINGS.map((heading) => headingClip('stance', heading));
+    const stances = stanceClips.filter((clip) => entry.clips[clip]);
+    if (stances.length > 0 && !entry.locomotion) {
+      problems.push(`asset ${key}: a stance needs declared eight-way locomotion`);
+    } else if (stances.length > 0 && stances.length < stanceClips.length) {
+      for (const clip of stanceClips) {
+        if (!entry.clips[clip]) problems.push(`asset ${key}: has a stance but no ${clip} clip`);
+      }
+    }
     if (entry.locomotion) {
       for (const clip of eightWayClips) {
         if (!entry.clips[clip]) {

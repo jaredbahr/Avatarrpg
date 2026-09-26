@@ -56,6 +56,26 @@ describe('content', () => {
     expect(check({ 'unit.earth.bo': bo })).toEqual([]);
   });
 
+  it('holds a fighting stance to every heading of declared eight-way locomotion', () => {
+    const sura = CONTENT_BUNDLE.assets?.['unit.water.sura'];
+    const linmei = CONTENT_BUNDLE.assets?.['unit.earth.linmei'];
+    if (sura?.kind !== 'sheet' || linmei?.kind !== 'sheet') throw new Error('Expected sheets');
+    const check = (assets: Record<string, unknown>) =>
+      validateContent({ ...CONTENT_BUNDLE, assets } as ContentBundle).filter((p) =>
+        p.startsWith('asset '),
+      );
+    const { stanceNorthWest: _dropped, ...partial } = sura.clips;
+    expect(check({ 'unit.water.sura': { ...sura, clips: partial } })).toEqual([
+      'asset unit.water.sura: has a stance but no stanceNorthWest clip',
+    ]);
+    expect(
+      check({
+        'unit.earth.linmei': { ...linmei, clips: { ...linmei.clips, stance: sura.clips.stance } },
+      }),
+    ).toContain('asset unit.earth.linmei: a stance needs declared eight-way locomotion');
+    expect(check({ 'unit.water.sura': sura })).toEqual([]);
+  });
+
   it('requires pos only on an NpcDef that binds no resident', () => {
     const map = CONTENT_BUNDLE.maps.find((candidate) => candidate.npcs.length > 0);
     const npc = map?.npcs[0];

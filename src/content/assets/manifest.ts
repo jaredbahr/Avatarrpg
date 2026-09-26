@@ -53,6 +53,12 @@ export type AssetEntry =
       readonly kind: 'sheet';
       /** The atlas JSON, relative to the site root; its `meta.image` names the PNG beside it. */
       readonly atlas: string;
+      /**
+       * Further atlas pages, each a JSON and image like `atlas`, for a sheet
+       * whose cels do not fit one 2048 px texture (ADR 0052). A frame name
+       * lives on exactly one page; the sheet draws once every page is in.
+       */
+      readonly atlasPages?: readonly string[];
       /** Pixels a tile is drawn at in the atlas: 128, or 256 for a sharper sheet. */
       readonly pixelsPerTile: number;
       /** Explicit art bounds when weapon reach exceeds the default frame (ADR 0032). */
@@ -188,7 +194,7 @@ const G_TRAVEL: Readonly<Record<'kaya' | 'sura' | 'bo', GTravel>> = {
   },
 };
 
-/** PixelLab G locomotion plus the existing authored action poses. */
+/** PixelLab G locomotion and fighting stance plus the existing authored action poses. */
 function gSheet(key: string, name: keyof typeof G_TRAVEL, palette: string): SheetEntry {
   const frames = (clip: ClipName, count: number) =>
     Array.from({ length: count }, (_, i) => `${key}/${clip}/${i}`);
@@ -199,6 +205,12 @@ function gSheet(key: string, name: keyof typeof G_TRAVEL, palette: string): Shee
   });
   const idle = (clip: ClipName): ClipDef => ({ frames: frames(clip, 4), fps: 4, loop: true });
   const rest = (clip: ClipName): ClipDef => ({ frames: frames(clip, 1), fps: 1, loop: true });
+  // The approved guard loop plays eight cels at 150 ms each (ADR 0052).
+  const stance = (clip: ClipName): ClipDef => ({
+    frames: frames(clip, 8),
+    fps: 1000 / 150,
+    loop: true,
+  });
   const travel = G_TRAVEL[name];
   // The measured travel per cel, converted to clip time per 128 px tile at the
   // in-game 0.75 scale. Movement duration stays gameplay-driven; only
@@ -214,10 +226,13 @@ function gSheet(key: string, name: keyof typeof G_TRAVEL, palette: string): Shee
     clips[headingClip('idle', heading)] = idle(headingClip('idle', heading));
     clips[headingClip('walk', heading)] = walk(headingClip('walk', heading));
     clips[headingClip('rest', heading)] = rest(headingClip('rest', heading));
+    clips[headingClip('stance', heading)] = stance(headingClip('stance', heading));
   }
   return {
     kind: 'sheet',
     atlas: `art/units/${name}-g.json`,
+    // Page 2 holds the fighting stance; locomotion and actions fill page 1.
+    atlasPages: [`art/units/${name}-g-2.json`],
     pixelsPerTile: 128,
     footprint: { w: 1, h: 1 },
     anchor: { x: 0.5, y: 0.85 },

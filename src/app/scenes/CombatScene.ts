@@ -1556,8 +1556,9 @@ export class CombatScene implements Scene {
   > {
     const pose = this.app.animator.unitPose(now, unitId, sprite);
     const walked = this.app.animator.facing(unitId);
+    // The party stands in its fighting stance between moves (ADR 0052).
     const movement = directional
-      ? this.app.animator.locomotion(now, unitId, 'idle', sprite)
+      ? this.app.animator.locomotion(now, unitId, 'stance', sprite)
       : undefined;
     const mapId = this.app.state?.battle?.mapId;
     const projection = mapId ? this.app.content.maps.get(mapId)?.projection : undefined;

@@ -1,13 +1,20 @@
 /**
  * Reproducibly integrates a party member's PixelLab G locomotion set
- * (ADR 0050; Sura and Bo, ADR 0051).
+ * (ADR 0050; Sura and Bo, ADR 0051) and fighting stance (ADR 0052).
  *
  * Usage:
- *   node --import tsx scripts/art/g-sprites.ts --character <kaya|sura|bo> --source <party-consistency/<name>>
+ *   node --import tsx scripts/art/g-sprites.ts --character <kaya|sura|bo> \
+ *     --source <party-consistency/<name>> --combat <party-combat-se/<name>>
+ *
+ * Sura's and Bo's sources are the toned sets (ADR 0052): party-consistency
+ * `tone/tone.py apply` with the frozen `tone/params.json` their pin files
+ * record, run on idle, walk and stance alike. Kaya is never toned.
  *
  * The source cels remain read-only. They are nearest-neighbour scaled to 75%,
  * kept in their root-locked 192 px coordinate system, and packed beside the
- * character's existing cast/KO action cels.
+ * character's existing cast/KO action cels. Locomotion and actions fill page
+ * 1 (`<name>-g.webp`); the stance fills page 2 (`<name>-g-2.webp`), because a
+ * 2048 px atlas holds 160 of these frames and locomotion takes 132.
  *
  * Any directory is not accepted: every PixelLab cel and every preserved
  * action cel must match its SHA-256 in the character's checked-in pin file,
@@ -40,6 +47,10 @@ export interface GPins {
   readonly pixellab: Readonly<Record<string, string>>;
   /** SHA-256 of each preserved action cel, relative to the character's `actions` folder. */
   readonly actions: Readonly<Record<string, string>>;
+  /** SHA-256 of each PixelLab stance cel, relative to the `--combat` set. */
+  readonly combat: Readonly<Record<string, string>>;
+  /** A toned character's tone tool and the SHA-256 of its frozen parameters (ADR 0052). */
+  readonly tone?: { readonly tool: string; readonly params: string };
   /** SHA-256 of each decoded atlas cel's RGBA, written by this script. */
   readonly frames: Readonly<Record<string, string>>;
 }
@@ -80,9 +91,17 @@ export interface GPins {
  *   Sura east, Bo north-east, each commented below). No width measure tells
  *   a stride from feet together across side, front and diagonal views, so
  *   this last step is judged by eye, not scored.
- * - `idleDy` moves a whole heading, idle included, only where its idle
- *   stands outside art:validate's 6 px standing tolerance, by the least that
- *   brings it inside. Otherwise idle is the reference and never moves.
+ * - `idleDy` moves a whole heading: idle, walk, rest and stance together.
+ *   Every north idle is levelled onto the anchor's foot line (ADR 0052):
+ *   seen from behind, the three stood 5-7 px above it, so a turn in place to
+ *   north lifted the feet. Otherwise idle is the reference and never moves.
+ * - The stance is drawn on the idle still's root, so it takes idle's place
+ *   in its heading, never moved sideways, feet planted. `stanceDy` then
+ *   applies the walks' rule: where its mean lowest row sits more than 3.5 px
+ *   from idle cel 0's, it moves the fewest pixels that bring it inside. A
+ *   guard stands feet apart, so facing the camera the forward foot reaches
+ *   5-6 px below idle's feet (every south stance), and facing north-west the
+ *   feet stand up to 5 px above them.
  *
  * A constant shift moves no foot relative to another, so the distance
  * phasing and the measured root travel are unchanged.
@@ -92,10 +111,12 @@ export interface GHeading {
   readonly idle: ClipName;
   readonly walk: ClipName;
   readonly rest: ClipName;
+  readonly stance: ClipName;
   readonly restCel: number;
   readonly walkDx: number;
   readonly walkDy: number;
   readonly idleDy: number;
+  readonly stanceDy: number;
 }
 
 export interface GCharacter {
@@ -107,31 +128,39 @@ export interface GCharacter {
   readonly pins: string;
   /** The preserved legacy cast/KO cels, relative to the repo root. */
   readonly actions: string;
+  /** True for Sura and Bo, whose sources are the toned sets (ADR 0052). */
+  readonly toned: boolean;
   readonly headings: readonly GHeading[];
 }
 
-/** Rest cel, walk dx, walk dy and idle dy for each heading, in `HEADING_ROWS` order. */
-type Placement = readonly [number, number, number, number?];
+/**
+ * Rest cel, walk dx, walk dy, idle dy and stance dy for each heading, in
+ * `HEADING_ROWS` order.
+ */
+type Placement = readonly [number, number, number, number, number];
 
 const HEADING_ROWS = [
-  ['east', 'idle', 'walk', 'rest'],
-  ['north-east', 'idleNorthEast', 'walkNorthEast', 'restNorthEast'],
-  ['north', 'idleNorth', 'walkNorth', 'restNorth'],
-  ['north-west', 'idleNorthWest', 'walkNorthWest', 'restNorthWest'],
-  ['west', 'idleWest', 'walkWest', 'restWest'],
-  ['south-west', 'idleSouthWest', 'walkSouthWest', 'restSouthWest'],
-  ['south', 'idleSouth', 'walkSouth', 'restSouth'],
-  ['south-east', 'idleSouthEast', 'walkSouthEast', 'restSouthEast'],
-] as const satisfies readonly (readonly [string, ClipName, ClipName, ClipName])[];
+  ['east', 'idle', 'walk', 'rest', 'stance'],
+  ['north-east', 'idleNorthEast', 'walkNorthEast', 'restNorthEast', 'stanceNorthEast'],
+  ['north', 'idleNorth', 'walkNorth', 'restNorth', 'stanceNorth'],
+  ['north-west', 'idleNorthWest', 'walkNorthWest', 'restNorthWest', 'stanceNorthWest'],
+  ['west', 'idleWest', 'walkWest', 'restWest', 'stanceWest'],
+  ['south-west', 'idleSouthWest', 'walkSouthWest', 'restSouthWest', 'stanceSouthWest'],
+  ['south', 'idleSouth', 'walkSouth', 'restSouth', 'stanceSouth'],
+  ['south-east', 'idleSouthEast', 'walkSouthEast', 'restSouthEast', 'stanceSouthEast'],
+] as const satisfies readonly (readonly [string, ClipName, ClipName, ClipName, ClipName])[];
 
 function headings(placements: readonly Placement[]): GHeading[] {
   if (placements.length !== HEADING_ROWS.length)
     throw new Error('A G set places all eight headings.');
-  return HEADING_ROWS.map(([direction, idle, walk, rest], i) => {
-    const [restCel, walkDx, walkDy, idleDy = 0] = placements[i] ?? [0, 0, 0];
-    return { direction, idle, walk, rest, restCel, walkDx, walkDy, idleDy };
+  return HEADING_ROWS.map(([direction, idle, walk, rest, stance], i) => {
+    const [restCel, walkDx, walkDy, idleDy, stanceDy] = placements[i] ?? [0, 0, 0, 0, 0];
+    return { direction, idle, walk, rest, stance, restCel, walkDx, walkDy, idleDy, stanceDy };
   });
 }
+
+/** Cels in each heading's approved guard loop. */
+export const STANCE_CELS = 8;
 
 export const CHARACTERS: Readonly<Record<'kaya' | 'sura' | 'bo', GCharacter>> = {
   kaya: {
@@ -139,17 +168,18 @@ export const CHARACTERS: Readonly<Record<'kaya' | 'sura' | 'bo', GCharacter>> = 
     name: 'kaya',
     pins: 'art/source/kaya-g/pins.json',
     actions: 'art/source/kaya-actions',
-    // E, NE, N, NW, W, SW, S, SE: [rest cel, walk dx, walk dy, idle dy]
+    toned: false,
+    // E, NE, N, NW, W, SW, S, SE: [rest cel, walk dx, walk dy, idle dy, stance dy]
     headings: headings([
-      [9, 0, 0],
-      [9, 0, -2],
-      [10, 0, 0],
+      [9, 0, 0, 0, 0],
+      [9, 0, -2, 0, 0],
+      [10, 0, 0, 6, 0],
       // Stops feet-together on cel 9; the overlap pick, cel 2, is mid-stride.
-      [9, 0, -1],
-      [3, 6, 0],
-      [3, 0, -1],
-      [10, 0, -4],
-      [9, 0, -1],
+      [9, 0, -1, 0, 1],
+      [3, 6, 0, 0, 0],
+      [3, 0, -1, 0, 0],
+      [10, 0, -4, 0, -2],
+      [9, 0, -1, 0, 0],
     ]),
   },
   sura: {
@@ -157,17 +187,17 @@ export const CHARACTERS: Readonly<Record<'kaya' | 'sura' | 'bo', GCharacter>> = 
     name: 'sura',
     pins: 'art/source/sura-g/pins.json',
     actions: 'art/source/sura-actions',
-    // Sura's north idle stands 7 px above the anchor line; the heading moves 1 px down.
+    toned: true,
     headings: headings([
       // Stops feet-together on cel 9; the overlap pick, cel 3, is mid-stride.
-      [9, 0, 1],
-      [3, 0, -2],
-      [10, 2, 0, 1],
-      [9, 2, 0],
-      [9, 8, 0],
-      [4, 3, 0],
-      [10, 0, -3],
-      [9, 0, -1],
+      [9, 0, 1, 0, 0],
+      [3, 0, -2, 0, 0],
+      [10, 2, 0, 7, 0],
+      [9, 2, 0, 0, 1],
+      [9, 8, 0, 0, 0],
+      [4, 3, 0, 0, 0],
+      [10, 0, -3, 0, -2],
+      [9, 0, -1, 0, 0],
     ]),
   },
   bo: {
@@ -175,31 +205,47 @@ export const CHARACTERS: Readonly<Record<'kaya' | 'sura' | 'bo', GCharacter>> = 
     name: 'bo',
     pins: 'art/source/bo-g/pins.json',
     actions: 'art/source/bo-actions',
+    toned: true,
     headings: headings([
-      [3, 0, 1],
+      [3, 0, 1, 0, 0],
       // Stops feet-together on cel 9; the overlap pick, cel 8, is mid-stride.
-      [9, 0, -1],
-      [10, 3, 0],
-      [9, 0, 0],
-      [3, 6, 1],
-      [4, 3, 0],
-      [2, 0, -4],
+      [9, 0, -1, 0, 0],
+      [10, 3, 0, 5, -1],
+      [9, 0, 0, 0, 2],
+      [3, 6, 1, 0, 0],
+      [4, 3, 0, 0, -1],
+      [2, 0, -4, 0, -3],
       // The rules give 1 px down, which puts cel 6's leading foot 11 px below
       // the line, past art:validate's 10 px sunk-stride bound; it stays at 0.
-      [9, 0, 0],
+      [9, 0, 0, 0, 0],
     ]),
   },
 };
 
+/**
+ * A stance cel in the combat set. South-east was the proof heading and sits
+ * at the set's root; the other seven extended it into their own folders.
+ */
+export function stanceFile(direction: string, index: number): string {
+  const cel = `stance/${String(index).padStart(2, '0')}.png`;
+  return direction === 'south-east' ? cel : `${direction}/${cel}`;
+}
+
 /** Every source file a character's build reads, relative to its set. */
-export function sourceFiles(character: GCharacter): { pixellab: string[]; actions: string[] } {
+export function sourceFiles(character: GCharacter): {
+  pixellab: string[];
+  combat: string[];
+  actions: string[];
+} {
   const pixellab: string[] = [];
+  const combat: string[] = [];
   for (const { direction } of character.headings) {
     for (let i = 0; i < 4; i++) pixellab.push(`idle/${direction}/${i}.png`);
     for (let i = 0; i < 12; i++)
       pixellab.push(`walk/${direction}/${String(i).padStart(2, '0')}.png`);
+    for (let i = 0; i < STANCE_CELS; i++) combat.push(stanceFile(direction, i));
   }
-  return { pixellab, actions: ['cast/0.png', 'cast/1.png', 'cast/2.png', 'ko/0.png'] };
+  return { pixellab, combat, actions: ['cast/0.png', 'cast/1.png', 'cast/2.png', 'ko/0.png'] };
 }
 
 export const sha256 = (bytes: Uint8Array): string =>
@@ -244,9 +290,9 @@ function characterArg(argv: readonly string[]): GCharacter {
   return character;
 }
 
-function sourceArg(argv: readonly string[]): string {
-  const value = argValue(argv, '--source');
-  if (!value) throw new Error('Pass --source <party-consistency/<name>>.');
+function dirArg(argv: readonly string[], flag: string, hint: string): string {
+  const value = argValue(argv, flag);
+  if (!value) throw new Error(`Pass ${flag} <${hint}>.`);
   return resolve(value);
 }
 
@@ -292,21 +338,25 @@ function normalise(source: Image, dx = 0, dy = 0): Image {
   return out;
 }
 
-export async function buildG(character: GCharacter, source: string): Promise<void> {
+export async function buildG(character: GCharacter, source: string, combat: string): Promise<void> {
   const { key, name } = character;
   const legacyActions = resolve(character.actions);
   const pins = JSON.parse(readFileSync(character.pins, 'utf8')) as GPins;
   const files = sourceFiles(character);
   const problems = [
     ...checkSources(source, files.pixellab, pins.pixellab, 'PixelLab'),
+    ...checkSources(combat, files.combat, pins.combat, 'stance'),
     ...checkSources(legacyActions, files.actions, pins.actions, 'action'),
   ];
+  if (character.toned !== (pins.tone !== undefined))
+    problems.push(`${character.pins} records tone parameters only for a toned character`);
   if (problems.length > 0) {
     throw new Error(`${name} G sources do not match ${character.pins}:\n${problems.join('\n')}`);
   }
 
   const frames = new Map<string, Image>();
   const counts: Partial<Record<ClipName, number>> = { cast: 3, ko: 1 };
+  const stanceCounts: Partial<Record<ClipName, number>> = {};
 
   for (const h of character.headings) {
     counts[h.idle] = 4;
@@ -325,6 +375,12 @@ export async function buildG(character: GCharacter, source: string): Promise<voi
       );
     for (let i = 0; i < 12; i++) frames.set(`${key}/${h.walk}/${i}`, walkCel(i));
     frames.set(`${key}/${h.rest}/0`, walkCel(h.restCel));
+    stanceCounts[h.stance] = STANCE_CELS;
+    for (let i = 0; i < STANCE_CELS; i++)
+      frames.set(
+        `${key}/${h.stance}/${i}`,
+        normalise(readPng(join(combat, stanceFile(h.direction, i))), 0, h.idleDy + h.stanceDy),
+      );
   }
 
   for (const [clip, count] of [
@@ -337,32 +393,42 @@ export async function buildG(character: GCharacter, source: string): Promise<voi
     }
   }
 
-  const layout = layoutSheet(key, counts, FRAME_W, FRAME_H);
-  const atlas = newImage(layout.width, layout.height);
-  for (const [frame, rect] of layout.frames) {
-    const pixels = frames.get(frame);
-    if (!pixels) throw new Error(`No pixels prepared for ${frame}.`);
-    blit(atlas, pixels, rect.x, rect.y);
-  }
-
   const outDir = resolve('public/art/units');
   mkdirSync(outDir, { recursive: true });
-  const webp = await encodeWebp(atlas, WEBP_QUALITY, true);
-  writeFileSync(join(outDir, `${name}-g.webp`), webp);
-  writeFileSync(
-    join(outDir, `${name}-g.json`),
-    `${JSON.stringify(JSON.parse(atlasJsonText(layout.frames, `${name}-g.webp`, layout.width, layout.height)))}\n`,
-  );
-  const decoded = await decodeWebp(webp);
   const frameHashes: Record<string, string> = {};
-  for (const [frame, rect] of layout.frames) frameHashes[frame] = celHash(decoded, rect);
+  const pages = [
+    { stem: `${name}-g`, counts },
+    { stem: `${name}-g-2`, counts: stanceCounts },
+  ];
+  for (const page of pages) {
+    const layout = layoutSheet(key, page.counts, FRAME_W, FRAME_H);
+    const atlas = newImage(layout.width, layout.height);
+    for (const [frame, rect] of layout.frames) {
+      const pixels = frames.get(frame);
+      if (!pixels) throw new Error(`No pixels prepared for ${frame}.`);
+      blit(atlas, pixels, rect.x, rect.y);
+    }
+    const webp = await encodeWebp(atlas, WEBP_QUALITY, true);
+    writeFileSync(join(outDir, `${page.stem}.webp`), webp);
+    writeFileSync(
+      join(outDir, `${page.stem}.json`),
+      `${JSON.stringify(JSON.parse(atlasJsonText(layout.frames, `${page.stem}.webp`, layout.width, layout.height)))}\n`,
+    );
+    const decoded = await decodeWebp(webp);
+    for (const [frame, rect] of layout.frames) frameHashes[frame] = celHash(decoded, rect);
+    console.log(
+      `wrote ${page.stem}.webp (${layout.width}x${layout.height}, ${Math.round(webp.length / 1024)} KiB) and ${page.stem}.json`,
+    );
+  }
   writeFileSync(character.pins, `${JSON.stringify({ ...pins, frames: frameHashes }, null, 2)}\n`);
-  console.log(
-    `wrote ${name}-g.webp (${layout.width}x${layout.height}, ${Math.round(webp.length / 1024)} KiB), ${name}-g.json and ${character.pins} cel pins`,
-  );
+  console.log(`wrote ${character.pins} cel pins`);
 }
 
 if (process.argv[1]?.endsWith('g-sprites.ts')) {
   const argv = process.argv.slice(2);
-  await buildG(characterArg(argv), sourceArg(argv));
+  await buildG(
+    characterArg(argv),
+    dirArg(argv, '--source', 'party-consistency/<name>'),
+    dirArg(argv, '--combat', 'party-combat-se/<name>'),
+  );
 }

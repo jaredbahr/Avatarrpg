@@ -25,6 +25,21 @@ describe('resolveClip', () => {
     expect(resolveClip({ ...directional, rest: clip(1) }, 'idle')?.clip).toBe('idle');
   });
 
+  it('draws a missing fighting stance as the idle of the same heading (ADR 0052)', () => {
+    const directional = { ...minimal, idleNorth: clip(1), idleSouth: clip(1) };
+    expect(resolveClip(minimal, 'stance')?.clip).toBe('idle');
+    expect(resolveClip(directional, 'stanceNorth')?.clip).toBe('idleNorth');
+    expect(resolveClip(directional, 'stanceSouthWest')?.clip).toBe('idleSouth');
+    expect(resolveClip(directional, 'stanceWest')?.clip).toBe('idle');
+    expect(resolveClip({ ...directional, idleNorthEast: clip(4) }, 'stanceNorthEast')?.clip).toBe(
+      'idleNorthEast',
+    );
+    expect(resolveClip({ ...minimal, stance: clip(8, 6, true) }, 'stance')).toMatchObject({
+      clip: 'stance',
+      exact: true,
+    });
+  });
+
   it('holds each tea cel slowly and falls back honestly when the sheet lacks it', () => {
     const tea = resolveClip({ ...minimal, tea: clip(2, 0.25, true) }, 'tea');
     if (!tea) throw new Error('missing tea');

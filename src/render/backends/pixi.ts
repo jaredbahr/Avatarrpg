@@ -30,6 +30,7 @@ import {
 } from 'pixi.js';
 
 import type { TerrainId, Vec2 } from '../../core/types';
+import { authoredForBothSides } from '../../content/assets/clips';
 import { resolveAsset } from '../../content/assets/manifest';
 import { backdrops } from '../backdrops';
 import { sceneForGrid, sceneryOpacities } from '../scene';
@@ -1334,7 +1335,7 @@ export class PixiBackend implements RenderBackend {
       const asset = resolveAsset(unit.sprite);
       const locomotion = unit.clip ?? 'idle';
       const drawFacing =
-        asset.kind === 'sheet' && asset.facing === 'both' && /^(idle|walk|rest)/.test(locomotion)
+        asset.kind === 'sheet' && asset.facing === 'both' && authoredForBothSides(locomotion)
           ? 1
           : facing;
 
