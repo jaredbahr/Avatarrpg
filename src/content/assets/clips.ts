@@ -38,6 +38,37 @@ export const CLIP_NAMES = [
 ] as const;
 export type ClipName = (typeof CLIP_NAMES)[number];
 
+/** The eight screen headings an eight-way locomotion sheet authors, clockwise from east. */
+export const HEADINGS = [
+  'east',
+  'southEast',
+  'south',
+  'southWest',
+  'west',
+  'northWest',
+  'north',
+  'northEast',
+] as const;
+export type Heading = (typeof HEADINGS)[number];
+
+/**
+ * A sheet's declared locomotion capability (ADR 0050). Absent means the legacy
+ * four-way contract: a mirrored side walk plus front and back poses. An
+ * eight-way sheet carries an idle, walk and rest clip for every heading and
+ * the clip time its walk plays per tile of travel in each, so the feet stay
+ * planted whatever the authored stride.
+ */
+export interface LocomotionDef {
+  readonly headings: 8;
+  readonly walkMsPerTile: Readonly<Record<Heading, number>>;
+}
+
+/** The idle, walk or rest clip for a heading; east is the unsuffixed clip. */
+export function headingClip(base: 'idle' | 'walk' | 'rest', heading: Heading): ClipName {
+  if (heading === 'east') return base;
+  return `${base}${heading[0]?.toUpperCase() ?? ''}${heading.slice(1)}` as ClipName;
+}
+
 /** Authored screen-facing melee contact variants, when a sheet carries them. */
 export const MELEE_DIRECTIONS = ['screenUp', 'screenDown'] as const;
 export type MeleeDirection = (typeof MELEE_DIRECTIONS)[number];

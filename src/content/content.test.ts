@@ -34,6 +34,28 @@ describe('content', () => {
     expect(problems, `\n${problems.join('\n')}\n`).toEqual([]);
   });
 
+  it('holds eight-way locomotion to a declared, complete heading set', () => {
+    const kaya = CONTENT_BUNDLE.assets?.['unit.fire.kaya'];
+    const bo = CONTENT_BUNDLE.assets?.['unit.earth.bo'];
+    if (kaya?.kind !== 'sheet' || bo?.kind !== 'sheet') throw new Error('Expected sheets');
+    const { walkNorthEast: _dropped, ...partial } = kaya.clips;
+    const { locomotion: _undeclared, ...undeclared } = kaya;
+    const check = (assets: Record<string, unknown>) =>
+      validateContent({ ...CONTENT_BUNDLE, assets } as ContentBundle).filter((p) =>
+        p.startsWith('asset '),
+      );
+    expect(check({ 'unit.fire.kaya': { ...kaya, clips: partial } })).toEqual([
+      'asset unit.fire.kaya: declares eight-way locomotion but has no walkNorthEast clip',
+    ]);
+    expect(check({ 'unit.fire.kaya': undeclared })).toContain(
+      'asset unit.fire.kaya: facing both needs declared eight-way locomotion',
+    );
+    expect(check({ 'unit.fire.kaya': undeclared })).toContain(
+      'asset unit.fire.kaya: walkNorthEast is unused without eight-way locomotion',
+    );
+    expect(check({ 'unit.earth.bo': bo })).toEqual([]);
+  });
+
   it('requires pos only on an NpcDef that binds no resident', () => {
     const map = CONTENT_BUNDLE.maps.find((candidate) => candidate.npcs.length > 0);
     const npc = map?.npcs[0];

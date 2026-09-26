@@ -29,7 +29,7 @@
  * the clip logic run the same path whether the art is real or not.
  */
 
-import type { ClipDef, ClipName, MeleeDirection } from './clips';
+import type { ClipDef, ClipName, LocomotionDef, MeleeDirection } from './clips';
 
 export type AssetEntry =
   | {
@@ -62,6 +62,8 @@ export type AssetEntry =
       readonly anchor: { readonly x: number; readonly y: number };
       /** `mirror`: drawn facing screen-right and flipped for the other side. */
       readonly facing: 'mirror' | 'both';
+      /** Eight-way locomotion, when the sheet authors it; absent is the four-way contract. */
+      readonly locomotion?: LocomotionDef;
       readonly clips: Partial<Record<ClipName, ClipDef>>;
       /** Optional screen-up/down contact frames for a melee clip. */
       readonly meleeDirections?: Partial<Record<MeleeDirection, readonly [string, string]>>;
@@ -164,6 +166,22 @@ function kayaGSheet(): SheetEntry {
     footprint: { w: 1, h: 1 },
     anchor: { x: 0.5, y: 0.85 },
     facing: 'both',
+    locomotion: {
+      headings: 8,
+      // PixelLab Kaya's measured root travel per 114 ms cel, converted to clip
+      // time per 128 px tile at the in-game 0.75 scale. Movement duration
+      // stays gameplay-driven; only distance-phased cel selection changes.
+      walkMsPerTile: {
+        north: (128 / (6.38 * 0.75)) * 114,
+        northEast: (128 / (8.52 * 0.75)) * 114,
+        east: (128 / (9.66 * 0.75)) * 114,
+        southEast: (128 / (9.92 * 0.75)) * 114,
+        south: (128 / (6 * 0.75)) * 114,
+        southWest: (128 / (9.47 * 0.75)) * 114,
+        west: (128 / (9.74 * 0.75)) * 114,
+        northWest: (128 / (9.11 * 0.75)) * 114,
+      },
+    },
     palette: 'fire',
     clips: {
       idle: idle('idle'),
@@ -457,6 +475,13 @@ export const ASSETS: Readonly<Record<string, AssetEntry>> = {
     },
   },
 };
+
+/** The eight-way locomotion a key's sheet declares, or undefined for four-way art. */
+export function sheetLocomotion(key: string | undefined): LocomotionDef | undefined {
+  if (!key) return undefined;
+  const asset = resolveAsset(key);
+  return asset.kind === 'sheet' ? asset.locomotion : undefined;
+}
 
 /**
  * Ability effects are keyed `fx.<element>.<name>`. Rather than list forty

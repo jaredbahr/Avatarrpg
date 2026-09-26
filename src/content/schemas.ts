@@ -16,7 +16,13 @@
  */
 
 import { z } from 'zod';
-import { CLIP_FRAME_COUNTS, CLIP_NAMES, REQUIRED_CLIPS } from './assets/clips';
+import {
+  CLIP_FRAME_COUNTS,
+  CLIP_NAMES,
+  HEADINGS,
+  REQUIRED_CLIPS,
+  headingClip,
+} from './assets/clips';
 import type { AssetEntry } from './assets/manifest';
 import { SCENE_PREFIX, SCENE_VALUES, STANDING_PREFIX } from '../core/story/conditions';
 import { DAY_PHASES, RESIDENT_PROFILES, RESIDENT_TIERS } from '../core/types';
@@ -754,6 +760,14 @@ export const assetEntrySchema = z.discriminatedUnion('kind', [
     footprint: z.object({ w: z.union([z.literal(1), z.literal(2)]), h: z.literal(1) }),
     anchor: z.object({ x: z.number().min(0).max(1), y: z.number().min(0).max(1) }),
     facing: z.enum(['mirror', 'both']),
+    locomotion: z
+      .object({
+        headings: z.literal(8),
+        walkMsPerTile: z.object(
+          Object.fromEntries(HEADINGS.map((heading) => [heading, z.number().positive()])),
+        ),
+      })
+      .optional(),
     clips: z.object(Object.fromEntries(CLIP_NAMES.map((clip) => [clip, clipDef.optional()]))),
     meleeDirections: z
       .object({
@@ -961,6 +975,28 @@ export function validateContent(bundle: ContentBundle): string[] {
     if (entry.kind !== 'sheet') continue;
     for (const clip of REQUIRED_CLIPS) {
       if (!entry.clips[clip]) problems.push(`asset ${key}: sheet has no ${clip} clip`);
+    }
+    // Eight-way locomotion is a declared capability, never inferred: the
+    // renderer draws a `both` sheet's locomotion unflipped, and the animator
+    // only asks a declaring sheet for diagonal and west clips.
+    const eightWayClips = HEADINGS.flatMap((heading) =>
+      (['idle', 'walk', 'rest'] as const).map((base) => headingClip(base, heading)),
+    );
+    if (entry.locomotion) {
+      for (const clip of eightWayClips) {
+        if (!entry.clips[clip]) {
+          problems.push(`asset ${key}: declares eight-way locomotion but has no ${clip} clip`);
+        }
+      }
+    } else {
+      if (entry.facing === 'both') {
+        problems.push(`asset ${key}: facing both needs declared eight-way locomotion`);
+      }
+      for (const clip of eightWayClips) {
+        if (/(East|West)$/.test(clip) && entry.clips[clip]) {
+          problems.push(`asset ${key}: ${clip} is unused without eight-way locomotion`);
+        }
+      }
     }
     for (const clip of CLIP_NAMES) {
       const def = entry.clips[clip];

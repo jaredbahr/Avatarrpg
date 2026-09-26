@@ -1,17 +1,20 @@
 import { describe, expect, it } from 'vitest';
-import { screenMeleeDirection, walkDirection, directionalClip } from './direction';
+import { screenMeleeDirection, walkDirection, walkHeading, directionalClip } from './direction';
+import type { WalkDirection } from './direction';
+import { ASSETS } from '../../content/assets/manifest';
+import type { ClipName } from '../../content/assets/clips';
+import type { Vec2 } from '../../core/types';
 import { Animator } from '../animator';
 import type { ContentIndex } from '../../core/types';
 
 const content = { abilities: new Map() } as unknown as ContentIndex;
 
 describe('directional walking', () => {
-  it('selects each authored octant and retains a heading at rest', () => {
-    expect(walkDirection({ x: 0.68, y: -0.72 }, 'east')).toBe('northEast');
-    expect(walkDirection({ x: 0.72, y: 0.68 }, 'north')).toBe('southEast');
+  it('keeps a diagonal corner stable, then turns when the route changes axis', () => {
+    expect(walkDirection({ x: 0.68, y: -0.72 }, 'east')).toBe('east');
+    expect(walkDirection({ x: 0.72, y: -0.68 }, 'north')).toBe('north');
     expect(walkDirection({ x: 0.2, y: -0.98 }, 'east')).toBe('north');
     expect(walkDirection({ x: -1, y: 0 }, 'north')).toBe('west');
-    expect(walkDirection({ x: 0, y: 0 }, 'southWest')).toBe('southWest');
     expect(directionalClip('cast', 'north')).toBe('cast');
     expect(directionalClip('ko', 'south')).toBe('ko');
   });
@@ -99,10 +102,10 @@ describe('screen-facing melee contacts', () => {
 describe('oblique screen headings', () => {
   for (const reduced of [false, true]) {
     for (const [dx, dy, clip, facing] of [
-      [1, 0, 'walkSouthEast', 1],
-      [0, 1, 'walkSouthWest', -1],
-      [-1, 0, 'walkNorthWest', -1],
-      [0, -1, 'walkNorthEast', 1],
+      [1, 0, 'walk', 1],
+      [0, 1, 'walk', -1],
+      [-1, 0, 'walk', -1],
+      [0, -1, 'walk', 1],
       [1, 1, 'walkSouth', 1],
       [-1, -1, 'walkNorth', 1],
     ] as const) {
@@ -163,8 +166,192 @@ describe('oblique screen headings', () => {
     a.setProjection('oblique');
     expect(a.finishesAt).toBe(finish);
     expect(a.renderPos(200, 'p')).toEqual(pos);
-    expect(a.locomotion(200, 'p')).toEqual({ clip: 'walkSouthWest', facing: -1 });
+    expect(a.locomotion(200, 'p')).toEqual({ clip: 'walk', facing: -1 });
     a.setProjection('orthographic');
     expect(a.locomotion(200, 'p')).toEqual({ clip: 'walkSouth', facing: 1 });
   });
+});
+
+/*
+ * The four-way choice exactly as it shipped before eight-way sheets existed,
+ * kept verbatim as the oracle: a sheet that does not declare eight-way
+ * locomotion must keep choosing precisely these clips.
+ */
+function legacyWalkDirection(tangent: Vec2, previous?: WalkDirection): WalkDirection {
+  const x = Math.abs(tangent.x),
+    y = Math.abs(tangent.y);
+  if (x + y < 0.001) return previous ?? 'east';
+  const vertical =
+    y > x * 1.15 || (x <= y * 1.15 && (previous === 'north' || previous === 'south'));
+  return vertical ? (tangent.y < 0 ? 'north' : 'south') : tangent.x < 0 ? 'west' : 'east';
+}
+function legacyClip(clip: 'walk' | 'idle' | 'rest', direction?: WalkDirection): ClipName {
+  if (direction === 'north')
+    return clip === 'walk' ? 'walkNorth' : clip === 'rest' ? 'restNorth' : 'idleNorth';
+  if (direction === 'south')
+    return clip === 'walk' ? 'walkSouth' : clip === 'rest' ? 'restSouth' : 'idleSouth';
+  return clip;
+}
+
+describe('heading vocabulary is a declared sheet capability', () => {
+  it('quantises eight-way headings and keeps the last one at rest', () => {
+    expect(walkHeading({ x: 0.68, y: -0.72 }, 'east')).toBe('northEast');
+    expect(walkHeading({ x: 0.72, y: 0.68 }, 'north')).toBe('southEast');
+    expect(walkHeading({ x: 0.2, y: -0.98 }, 'east')).toBe('north');
+    expect(walkHeading({ x: -1, y: 0 }, 'north')).toBe('west');
+    expect(walkHeading({ x: 0, y: 0 }, 'southWest')).toBe('southWest');
+  });
+
+  it('only Kaya G declares eight-way locomotion today', () => {
+    const eightWay = Object.entries(ASSETS)
+      .filter(([, entry]) => entry.kind === 'sheet' && entry.locomotion?.headings === 8)
+      .map(([key]) => key);
+    expect(eightWay).toEqual(['unit.fire.kaya']);
+  });
+
+  // A continuous route of straight legs, each starting where the last ended,
+  // so the four-way corner hysteresis sees every previous heading it would in
+  // play. Bo's reported tangent (0.8, -0.6) is the first leg.
+  const legs: readonly Vec2[] = [
+    { x: 4, y: -3 },
+    { x: 3, y: -4 },
+    { x: 0, y: -4 },
+    { x: 4, y: -4 },
+    { x: 5, y: -4 },
+    { x: 4, y: 5 },
+    { x: 0, y: 3 },
+    { x: -4, y: 3 },
+    { x: -5, y: 5 },
+    { x: -4, y: 0 },
+    { x: -3, y: -4 },
+    { x: -4, y: -3 },
+    { x: 6, y: 1 },
+  ];
+
+  function walkLegs(sprite: string | undefined, check: (leg: Vec2, got: unknown) => void) {
+    const a = new Animator(content, { motionReduced: () => false });
+    let at = { x: 20, y: 20 };
+    let t = 0;
+    for (const leg of legs) {
+      const to = { x: at.x + leg.x, y: at.y + leg.y };
+      a.push(t, [{ type: 'partyWalked', unitId: 'u', from: at, path: [to] }], []);
+      const start = t;
+      const end = a.finishesAt;
+      const mid = (start + end) / 2;
+      check(leg, {
+        walk: a.locomotion(mid, 'u', 'idle', sprite),
+        clipTime: a.unitPose(mid, 'u', sprite)?.clipTime,
+      });
+      a.prune(end + 1);
+      check(leg, {
+        rest: a.locomotion(end + 1, 'u', 'idle', sprite),
+        idle: a.locomotion(end + 400, 'u', 'idle', sprite),
+      });
+      t = end + 500;
+      at = to;
+    }
+  }
+
+  for (const sprite of ['unit.earth.bo', 'unit.water.sura', 'unit.fire.tenzo', undefined]) {
+    it(`keeps the legacy four-way choices exactly for ${sprite ?? 'an unknown sprite'}`, () => {
+      let previous: WalkDirection | undefined;
+      let facing: 1 | -1 = 1;
+      let walking = true;
+      walkLegs(sprite, (leg, got) => {
+        if (walking) {
+          const length = Math.hypot(leg.x, leg.y);
+          const tangent = { x: leg.x / length, y: leg.y / length };
+          previous = legacyWalkDirection(tangent, previous);
+          if (Math.abs(tangent.x) > 0.2) facing = tangent.x > 0 ? 1 : -1;
+          const clip = legacyClip('walk', previous);
+          const vertical = clip !== 'walk';
+          expect(got, `leg ${leg.x},${leg.y}`).toEqual({
+            walk: { clip, facing: vertical ? 1 : facing },
+            // Legacy gait: 500 ms of clip time per tile.
+            clipTime: expect.closeTo(250 * length, 0) as unknown as number,
+          });
+        } else {
+          const rest = legacyClip('rest', previous);
+          const idle = legacyClip('idle', previous);
+          expect(got, `leg ${leg.x},${leg.y} at rest`).toEqual({
+            rest: { clip: rest, facing: rest !== 'rest' ? 1 : facing },
+            idle: { clip: idle, facing: idle !== 'idle' ? 1 : facing },
+          });
+        }
+        walking = !walking;
+      });
+    });
+  }
+
+  it("gives Bo's (0.8, -0.6) tangent the side walk, and Kaya G its diagonal", () => {
+    const bo = new Animator(content, { motionReduced: () => false });
+    const kaya = new Animator(content, { motionReduced: () => false });
+    for (const a of [bo, kaya])
+      a.push(
+        0,
+        [{ type: 'partyWalked', unitId: 'u', from: { x: 4, y: 4 }, path: [{ x: 8, y: 1 }] }],
+        [],
+      );
+    expect(bo.locomotion(200, 'u', 'idle', 'unit.earth.bo')).toEqual({ clip: 'walk', facing: 1 });
+    expect(kaya.locomotion(200, 'u', 'idle', 'unit.fire.kaya')).toEqual({
+      clip: 'walkNorthEast',
+      facing: 1,
+    });
+    kaya.clear();
+    // A cleared animator forgets the eight-way heading with everything else.
+    expect(kaya.locomotion(9999, 'u', 'idle', 'unit.fire.kaya')).toEqual({
+      clip: 'idle',
+      facing: 1,
+    });
+  });
+
+  it('plays an eight-way walk at its sheet-declared gait per heading', () => {
+    const sheet = ASSETS['unit.fire.kaya'];
+    if (sheet?.kind !== 'sheet' || !sheet.locomotion) throw new Error('Kaya G is eight-way');
+    const a = new Animator(content, { motionReduced: () => false });
+    a.push(
+      0,
+      [{ type: 'partyWalked', unitId: 'u', from: { x: 4, y: 4 }, path: [{ x: 4, y: 8 }] }],
+      [],
+    );
+    const pose = a.unitPose(300, 'u', 'unit.fire.kaya');
+    const legacy = a.unitPose(300, 'u', 'unit.earth.bo');
+    expect(pose?.clipTime).toBeCloseTo(
+      ((legacy?.clipTime ?? 0) / 500) * sheet.locomotion.walkMsPerTile.south,
+    );
+  });
+});
+
+describe('eight-way oblique headings for a declaring sheet', () => {
+  for (const [dx, dy, clip] of [
+    [1, 0, 'SouthEast'],
+    [0, 1, 'SouthWest'],
+    [-1, 0, 'NorthWest'],
+    [0, -1, 'NorthEast'],
+    [1, 1, 'South'],
+    [-1, -1, 'North'],
+  ] as const) {
+    it(`walks, settles and idles ${clip} for (${dx},${dy})`, () => {
+      const a = new Animator(content, { motionReduced: () => false });
+      a.setProjection('oblique');
+      a.push(
+        0,
+        [
+          {
+            type: 'partyWalked',
+            unitId: 'p',
+            from: { x: 4, y: 4 },
+            path: [1, 2, 3, 4].map((step) => ({ x: 4 + dx * step, y: 4 + dy * step })),
+          },
+        ],
+        [],
+      );
+      const kaya = 'unit.fire.kaya';
+      expect(a.locomotion(a.finishesAt / 2, 'p', 'idle', kaya).clip).toBe(`walk${clip}`);
+      const done = a.finishesAt + 1;
+      a.prune(done);
+      expect(a.locomotion(done, 'p', 'idle', kaya).clip).toBe(`rest${clip}`);
+      expect(a.locomotion(done + 300, 'p', 'idle', kaya).clip).toBe(`idle${clip}`);
+    });
+  }
 });

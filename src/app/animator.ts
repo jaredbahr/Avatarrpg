@@ -24,9 +24,17 @@ import type { HealthChange, SoundCue } from './anim/choreography';
 import { Timeline } from './anim/timeline';
 import type { MoveTrack, PoseTrack } from './anim/timeline';
 import { motionReduced } from './ui/dom';
-import { directionalClip, walkDirection, verticalClip, screenDirection } from './anim/direction';
+import {
+  directionalClip,
+  walkDirection,
+  walkHeading,
+  verticalClip,
+  screenDirection,
+} from './anim/direction';
 import type { WalkDirection } from './anim/direction';
-import type { MeleeDirection } from '../content/assets/clips';
+import { headingClip } from '../content/assets/clips';
+import type { Heading, MeleeDirection } from '../content/assets/clips';
+import { sheetLocomotion } from '../content/assets/manifest';
 
 /** Height of the walk bob in tiles, once per tile of travel. */
 const BOB = 0.05;
@@ -37,22 +45,6 @@ const BOB = 0.05;
  * the unit's speed.
  */
 const WALK_MS_PER_TILE = 500;
-
-/**
- * PixelLab Kaya's measured root travel, converted to authored clip time per
- * 128 px tile at the in-game 0.75 scale. Movement duration stays gameplay-
- * driven; only distance-phased cel selection changes, preventing foot skating.
- */
-const KAYA_WALK_MS_PER_TILE: Readonly<Record<WalkDirection, number>> = {
-  north: (128 / (6.38 * 0.75)) * 114,
-  northEast: (128 / (8.52 * 0.75)) * 114,
-  east: (128 / (9.66 * 0.75)) * 114,
-  southEast: (128 / (9.92 * 0.75)) * 114,
-  south: (128 / (6 * 0.75)) * 114,
-  southWest: (128 / (9.47 * 0.75)) * 114,
-  west: (128 / (9.74 * 0.75)) * 114,
-  northWest: (128 / (9.11 * 0.75)) * 114,
-};
 
 /**
  * How long a finished walk holds its settled pose before the ready stance is
@@ -129,13 +121,17 @@ export class Animator {
     this.projection = projection;
     this.facings.clear();
     this.directions.clear();
+    this.headings.clear();
   }
 
   /** Which way each unit last walked; a unit keeps facing that way when it stops. */
   private facings = new Map<string, 1 | -1>();
   private directions = new Map<string, WalkDirection>();
-  /** Character identity retained from scheduling for sprite-specific gait. */
-  private characters = new Map<string, string>();
+  /**
+   * The same headings quantised to eight ways. Read only for a sprite whose
+   * sheet declares eight-way locomotion; four-way art never sees them.
+   */
+  private headings = new Map<string, Heading>();
   /** When each unit's last voluntary walk ended, and when its stop settles. */
   private stops = new Map<string, { readonly from: number; readonly to: number }>();
   private pendingHeadings: HeadingCue[] = [];
@@ -156,7 +152,7 @@ export class Animator {
     this.timeline.clear();
     this.facings.clear();
     this.directions.clear();
-    this.characters.clear();
+    this.headings.clear();
     this.stops.clear();
     this.pendingHeadings = [];
     this.healthCues = [];
@@ -195,9 +191,6 @@ export class Animator {
       delayMs?: number;
     } = {},
   ): void {
-    for (const unit of unitsBefore) {
-      if (unit.characterId) this.characters.set(unit.id, unit.characterId);
-    }
     const base = options.alongside
       ? Math.max(now, this.lastCursor)
       : Math.max(now, this.timeline.finishesAt);
@@ -325,6 +318,7 @@ export class Animator {
   private rememberDirection(unitId: string, tangent: Vec2, screenSpace = false): void {
     const screen = screenSpace ? tangent : screenDirection(tangent, this.projection);
     this.directions.set(unitId, walkDirection(screen, this.directions.get(unitId)));
+    this.headings.set(unitId, walkHeading(screen, this.headings.get(unitId)));
     if (Math.abs(screen.x) > TURN_THRESHOLD) this.facings.set(unitId, screen.x > 0 ? 1 : -1);
   }
 
@@ -335,21 +329,28 @@ export class Animator {
    * `resting` (combat's ready stance) is selected, so the sprite does not cut
    * from mid-stride to guard on the frame the route ends. The dwell is
    * presentation only: `busy()` and `finishesAt` still end with the travel.
+   *
+   * `sprite` selects the heading vocabulary: only a sheet that declares
+   * eight-way locomotion is given diagonal and west clips. Everything else,
+   * including an unknown sprite, keeps the four-way side/front/back choice.
    */
   locomotion(
     now: number,
     unitId: string,
     resting: 'idle' | 'rest' = 'idle',
+    sprite?: string,
   ): { clip: ClipName; facing: 1 | -1 } {
     this.settleHeadings(now);
     const travel = this.walkTravel(now, unitId);
     if (travel)
       this.rememberDirection(unitId, sampleAt(travel.track.curve, travel.distance).tangent);
     const stop = !travel && this.settling(now, unitId);
-    const clip = directionalClip(
-      travel ? 'walk' : stop ? 'rest' : resting,
-      this.directions.get(unitId),
-    );
+    const base = travel ? 'walk' : stop ? 'rest' : resting;
+    const heading = this.headings.get(unitId);
+    const clip =
+      sheetLocomotion(sprite)?.headings === 8 && heading
+        ? headingClip(base, heading)
+        : directionalClip(base, this.directions.get(unitId));
     return { clip, facing: verticalClip(clip) ? 1 : (this.facings.get(unitId) ?? 1) };
   }
 
@@ -372,6 +373,17 @@ export class Animator {
   private walkTravel(now: number, unitId: string) {
     const travel = this.travel(now, unitId);
     return travel?.track.gait === 'slide' ? null : travel;
+  }
+
+  /**
+   * Clip time per tile of travel. An eight-way sheet declares its own per
+   * heading, matched to its authored stride so the feet do not skate.
+   */
+  private walkMsPerTile(travel: { track: MoveTrack; distance: number }, sprite?: string): number {
+    const gait = sheetLocomotion(sprite);
+    if (!gait) return WALK_MS_PER_TILE;
+    const tangent = sampleAt(travel.track.curve, travel.distance).tangent;
+    return gait.walkMsPerTile[walkHeading(screenDirection(tangent, this.projection))];
   }
 
   /** Fade the lift at each end so a fractional final stride settles onto the path. */
@@ -435,7 +447,7 @@ export class Animator {
    * latest-started pose track wins, the walk bob adds to it, and a hit's
    * flash decays over its own track.
    */
-  unitPose(now: number, unitId: string): UnitPose | undefined {
+  unitPose(now: number, unitId: string, sprite?: string): UnitPose | undefined {
     this.settleHeadings(now);
     let pose: PoseTrack | undefined;
     for (const track of this.timeline.active(now, 'pose')) {
@@ -461,15 +473,13 @@ export class Animator {
     const alpha = pose?.alpha ? pose.alpha.from + (pose.alpha.to - pose.alpha.from) * t : 1;
     const facing = pose?.facing;
     const frame = pose?.frame;
-    let walkMsPerTile = WALK_MS_PER_TILE;
-    if (travel && this.characters.get(unitId) === 'kaya') {
-      const tangent = sampleAt(travel.track.curve, travel.distance).tangent;
-      const direction = walkDirection(screenDirection(tangent, this.projection));
-      walkMsPerTile = KAYA_WALK_MS_PER_TILE[direction];
-    }
     return {
       clip: pose ? pose.clip : bob ? 'walk' : 'idle',
-      clipTime: pose ? now - pose.start : travel ? travel.distance * walkMsPerTile : 0,
+      clipTime: pose
+        ? now - pose.start
+        : travel
+          ? travel.distance * this.walkMsPerTile(travel, sprite)
+          : 0,
       offset,
       scale,
       alpha,

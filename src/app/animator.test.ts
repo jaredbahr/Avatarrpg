@@ -201,7 +201,7 @@ describe('Animator', () => {
       expect(a.locomotion(999, 'p0').clip).toBe('idleNorth');
       expect(a.unitPose(1000, 'p0')?.facing).toBe(-1);
       a.prune(a.finishesAt + 1);
-      expect(a.locomotion(a.finishesAt + 1, 'p0')).toEqual({ clip: 'idleWest', facing: -1 });
+      expect(a.locomotion(a.finishesAt + 1, 'p0')).toEqual({ clip: 'idle', facing: -1 });
       a.clear();
       expect(a.locomotion(9999, 'p0')).toEqual({ clip: 'idle', facing: 1 });
     });
@@ -224,7 +224,7 @@ describe('Animator', () => {
       );
       // No intermediate rendered frame, as when returning from a hidden tab.
       a.prune(a.finishesAt + 1);
-      expect(a.locomotion(a.finishesAt + 1, 'p0')).toEqual({ clip: 'idleWest', facing: -1 });
+      expect(a.locomotion(a.finishesAt + 1, 'p0')).toEqual({ clip: 'idle', facing: -1 });
       a.push(a.finishesAt + 10, [moved('p0', [4, 4])], [unit('p0', 4, 3)]);
       a.prune(a.finishesAt + 1);
       // The southward stop settles facing south, then keeps that facing at rest.
@@ -243,10 +243,10 @@ describe('Animator', () => {
       expect(a.unitPose(at, 'p0')?.clip).toBe('hit');
       expect(a.unitPose(at, 'p0')?.offset).toEqual({ x: 0, y: 0 });
       expect(a.offset(at, 'p0')).toBeUndefined();
-      expect(a.locomotion(at, 'p0')).toEqual({ clip: 'idleWest', facing: -1 });
+      expect(a.locomotion(at, 'p0')).toEqual({ clip: 'idle', facing: -1 });
     }
     a.prune(a.finishesAt + 1);
-    expect(a.locomotion(a.finishesAt + 1, 'p0')).toEqual({ clip: 'idleWest', facing: -1 });
+    expect(a.locomotion(a.finishesAt + 1, 'p0')).toEqual({ clip: 'idle', facing: -1 });
     expect(a.renderPos(a.finishesAt + 1, 'p0')).toBeUndefined();
   });
 

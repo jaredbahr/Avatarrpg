@@ -388,10 +388,10 @@ export class ResidentWalks {
     const animator = track.animator;
     const end = motion.path.at(-1) ?? motion.from;
     const drawPos = animator?.renderPos(c, who.id) ?? (c < walkEnd ? motion.from : end);
-    const clip = animator?.locomotion(c, who.id, 'rest').clip ?? 'rest';
+    const clip = animator?.locomotion(c, who.id, 'rest', who.sprite).clip ?? 'rest';
     const offset = animator?.offset(c, who.id);
     const facing = animator?.facing(who.id) ?? this.facings.get(who.id) ?? 1;
-    const clipTime = animator?.unitPose(c, who.id)?.clipTime ?? 0;
+    const clipTime = animator?.unitPose(c, who.id, who.sprite)?.clipTime ?? 0;
     const walking = clip.startsWith('walk');
     // The lean and the footfalls ease in and out over the stroll's 120 ms ramps.
     const from = start + (motion.enter ? fade : 0);
