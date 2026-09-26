@@ -1,6 +1,6 @@
 # ADR 0052: The G party fights from its stance, on a second atlas page
 
-**Status:** Accepted  
+**Status:** Accepted, amended by ADR 0053  
 **Date:** 2026-09-26
 
 Amends ADR 0050 and ADR 0051. Jared approved raising the unit-art budget

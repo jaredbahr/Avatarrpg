@@ -280,15 +280,15 @@ describe('decoded Kaya G foot line', () => {
 
   it("measures a stride's lift from the heading's standing feet, not past them", async () => {
     // South's idle stands at row 159, 4 px above the anchor line; its walk is
-    // placed on it, and cel 9's lowest foot sits 6 px above those feet. Five
-    // more is 11 above where she stands (15 above the line) and passes; seven
+    // placed on it, and cel 9's lowest foot sits 5 px above those feet. Six
+    // more is 11 above where she stands (15 above the line) and passes; eight
     // more is 13 above where she stands, and that is a floating stride.
     const lifted = (dy: number) =>
       g.fixture((pages) => g.shift(pages, g.rect('walkSouth/9'), 0, dy));
-    expect(await validateSheets(await lifted(-5), { [KEY]: g.entry })).toEqual([
+    expect(await validateSheets(await lifted(-6), { [KEY]: g.entry })).toEqual([
       `${KEY}: decoded cel "${KEY}/walkSouth/9" does not match its pin`,
     ]);
-    expect(await validateSheets(await lifted(-7), { [KEY]: g.entry })).toEqual([
+    expect(await validateSheets(await lifted(-8), { [KEY]: g.entry })).toEqual([
       `${KEY}: decoded cel "${KEY}/walkSouth/9" does not match its pin`,
       `${KEY}: cel "${KEY}/walkSouth/9" puts its feet at row 146, off the foot line 163`,
     ]);

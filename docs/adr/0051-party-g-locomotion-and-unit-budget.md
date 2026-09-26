@@ -1,6 +1,6 @@
 # ADR 0051: Sura and Bo take G locomotion, and the units budget grows for the party set
 
-**Status:** Accepted, amended by ADR 0052  
+**Status:** Accepted, amended by ADR 0052 and ADR 0053  
 **Date:** 2026-09-26
 
 Extends ADR 0050 to Sura and Bo, amends its placement rules, and supersedes the
