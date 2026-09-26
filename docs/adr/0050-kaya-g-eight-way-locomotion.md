@@ -27,14 +27,24 @@ hold the uncompressed 128-cel locomotion atlas.
 - Idle uses four cels at 4 fps. Walk uses twelve cels with a nominal 114 ms
   cadence. Route playback remains gameplay-timed; cel phase is distance-based
   from the measured per-direction root travel, declared on the sheet as
-  `locomotion.walkMsPerTile`, so Kaya's feet do not skate.
-- The supplied nearest walk-to-idle frame is a one-cel `rest*` transition for
-  each direction.
+  `locomotion.walkMsPerTile`, so Kaya's feet do not skate. That travel is a
+  screen measurement, so the animator scales it by the screen length of one
+  logical tile of the route: 1 on orthographic ground, and on oblique ground
+  about 1.12 along a grid axis, 1.41 screen-across and 0.71 screen-down.
+- The walks are the corrected set (party-consistency, 2026-09-25): the first
+  walks' leg projection left strides short and the feet 12-16 px above the
+  line. Each direction's walk and rest cels are moved vertically so the
+  planted sole meets the idle baseline, by the gate-measured
+  `planted_sole_minus_baseline` at 0.75 (north down 5 px, south up 4 px,
+  the diagonals 1 px, east and west unmoved). Idle never moves.
+- The walk-to-idle transition is a one-cel `rest*` clip per direction: the
+  walk cel whose placed silhouette best overlaps idle cel 0.
 - The atlas is lossily encoded as alpha WebP at quality 90, and validated on
   its decoded pixels, as shipped: the transparent margin on every cel, a
   SHA-256 pin per decoded cel, and for eight-way locomotion the feet on the
   anchor's foot line (standing cels within 6 px; stride cels no more than
-  18 px above or 10 px below). A WebP sheet without a pin file fails.
+  12 px above or 10 px below, the feet's centre within 32 px of the anchor
+  column mid-stride). A WebP sheet without a pin file fails.
 - `scripts/art/kaya-g.ts` builds only from the pinned sources:
   `art/source/kaya-g/pins.json` records the SHA-256 of all 128 PixelLab cels
   and the four preserved action cels, and a missing, changed or unpinned source

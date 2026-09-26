@@ -168,18 +168,20 @@ function kayaGSheet(): SheetEntry {
     facing: 'both',
     locomotion: {
       headings: 8,
-      // PixelLab Kaya's measured root travel per 114 ms cel, converted to clip
-      // time per 128 px tile at the in-game 0.75 scale. Movement duration
-      // stays gameplay-driven; only distance-phased cel selection changes.
+      // PixelLab Kaya's measured root travel per 114 ms cel (planted-sole
+      // speed_px_per_frame in each walk's gates.json, party-consistency set),
+      // converted to clip time per 128 px tile at the in-game 0.75 scale.
+      // Movement duration stays gameplay-driven; only distance-phased cel
+      // selection changes.
       walkMsPerTile: {
         north: (128 / (6.38 * 0.75)) * 114,
-        northEast: (128 / (8.52 * 0.75)) * 114,
-        east: (128 / (9.66 * 0.75)) * 114,
-        southEast: (128 / (9.92 * 0.75)) * 114,
-        south: (128 / (6 * 0.75)) * 114,
-        southWest: (128 / (9.47 * 0.75)) * 114,
-        west: (128 / (9.74 * 0.75)) * 114,
-        northWest: (128 / (9.11 * 0.75)) * 114,
+        northEast: (128 / (11.74 * 0.75)) * 114,
+        east: (128 / (12.88 * 0.75)) * 114,
+        southEast: (128 / (10.74 * 0.75)) * 114,
+        south: (128 / (6.71 * 0.75)) * 114,
+        southWest: (128 / (10.99 * 0.75)) * 114,
+        west: (128 / (12.97 * 0.75)) * 114,
+        northWest: (128 / (11.17 * 0.75)) * 114,
       },
     },
     palette: 'fire',

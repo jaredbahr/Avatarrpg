@@ -2,7 +2,7 @@
  * Reproducibly integrates the PixelLab Kaya G locomotion set.
  *
  * Usage:
- *   node --import tsx scripts/art/kaya-g.ts --source <kaya-g-set>
+ *   node --import tsx scripts/art/kaya-g.ts --source <party-consistency/kaya>
  *
  * The source cels remain read-only. They are nearest-neighbour scaled to 75%,
  * kept in their root-locked 192 px coordinate system, and packed beside Kaya's
@@ -44,16 +44,29 @@ export interface KayaGPins {
   readonly frames: Readonly<Record<string, string>>;
 }
 
+/**
+ * Per direction: the source folder, its idle, walk and rest clips, the walk
+ * cel reused as the walk-to-idle rest transition, and the walk's vertical
+ * correction in packed pixels.
+ *
+ * The transition is the walk cel whose silhouette, as placed, best overlaps
+ * idle cel 0 (max IoU). The correction puts the walk's planted sole on the
+ * idle's baseline: it is `-round(planted_sole_minus_baseline x 0.75)` from the
+ * scripted gates on the delivered set (party-consistency `checks.json`), so a
+ * walk that measured 6.1 source px above the idle baseline (north) is lowered
+ * 5 px and one that measured 5 px below it (south) is raised 4 px. It moves
+ * the walk and rest cels only; idle is the reference and never moves.
+ */
 const DIRECTIONS = [
-  ['east', 'idle', 'walk', 'rest', 4],
-  ['north-east', 'idleNorthEast', 'walkNorthEast', 'restNorthEast', 7],
-  ['north', 'idleNorth', 'walkNorth', 'restNorth', 7],
-  ['north-west', 'idleNorthWest', 'walkNorthWest', 'restNorthWest', 10],
-  ['west', 'idleWest', 'walkWest', 'restWest', 3],
-  ['south-west', 'idleSouthWest', 'walkSouthWest', 'restSouthWest', 4],
-  ['south', 'idleSouth', 'walkSouth', 'restSouth', 11],
-  ['south-east', 'idleSouthEast', 'walkSouthEast', 'restSouthEast', 9],
-] as const satisfies readonly (readonly [string, ClipName, ClipName, ClipName, number])[];
+  ['east', 'idle', 'walk', 'rest', 9, 0],
+  ['north-east', 'idleNorthEast', 'walkNorthEast', 'restNorthEast', 1, -1],
+  ['north', 'idleNorth', 'walkNorth', 'restNorth', 10, 5],
+  ['north-west', 'idleNorthWest', 'walkNorthWest', 'restNorthWest', 8, 1],
+  ['west', 'idleWest', 'walkWest', 'restWest', 4, 0],
+  ['south-west', 'idleSouthWest', 'walkSouthWest', 'restSouthWest', 4, -1],
+  ['south', 'idleSouth', 'walkSouth', 'restSouth', 6, -4],
+  ['south-east', 'idleSouthEast', 'walkSouthEast', 'restSouthEast', 9, -1],
+] as const satisfies readonly (readonly [string, ClipName, ClipName, ClipName, number, number])[];
 
 /** Every source file the build reads, relative to its set. */
 export function sourceFiles(): { pixellab: string[]; actions: string[] } {
@@ -97,7 +110,7 @@ export function checkSources(
 function sourceArg(argv: readonly string[]): string {
   const at = argv.indexOf('--source');
   const value = at < 0 ? undefined : argv[at + 1];
-  if (!value) throw new Error('Pass --source <kaya-g-set>.');
+  if (!value) throw new Error('Pass --source <party-consistency/kaya>.');
   return resolve(value);
 }
 
@@ -129,7 +142,7 @@ function crop(source: Image, x0: number, y0: number, width: number, height: numb
   return out;
 }
 
-function normalise(source: Image): Image {
+function normalise(source: Image, dy = 0): Image {
   if (source.width !== 192 || source.height !== 192)
     throw new Error(`Expected a 192x192 PixelLab cel; got ${source.width}x${source.height}.`);
   const out = newImage(FRAME_W, FRAME_H);
@@ -137,7 +150,7 @@ function normalise(source: Image): Image {
   for (let y = 0; y < scaled; y++) {
     for (let x = 0; x < scaled; x++) {
       const rgba = pixelAt(source, Math.floor(x / SCALE), Math.floor(y / SCALE));
-      setPixel(out, OFFSET_X + x, OFFSET_Y + y, rgba[3] === 0 ? [0, 0, 0, 0] : rgba);
+      setPixel(out, OFFSET_X + x, OFFSET_Y + dy + y, rgba[3] === 0 ? [0, 0, 0, 0] : rgba);
     }
   }
   return out;
@@ -159,7 +172,7 @@ async function main(): Promise<void> {
   const frames = new Map<string, Image>();
   const counts: Partial<Record<ClipName, number>> = { cast: 3, ko: 1 };
 
-  for (const [direction, idleClip, walkClip, restClip, transition] of DIRECTIONS) {
+  for (const [direction, idleClip, walkClip, restClip, transition, dy] of DIRECTIONS) {
     counts[idleClip] = 4;
     counts[walkClip] = 12;
     counts[restClip] = 1;
@@ -171,12 +184,16 @@ async function main(): Promise<void> {
     for (let i = 0; i < 12; i++)
       frames.set(
         `${KEY}/${walkClip}/${i}`,
-        normalise(readPng(join(source, 'walk', direction, `${String(i).padStart(2, '0')}.png`))),
+        normalise(
+          readPng(join(source, 'walk', direction, `${String(i).padStart(2, '0')}.png`)),
+          dy,
+        ),
       );
     frames.set(
       `${KEY}/${restClip}/0`,
       normalise(
         readPng(join(source, 'walk', direction, `${String(transition).padStart(2, '0')}.png`)),
+        dy,
       ),
     );
   }

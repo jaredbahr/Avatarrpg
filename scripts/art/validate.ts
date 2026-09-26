@@ -53,12 +53,21 @@ export const WEBP_SHEET_PINS: Readonly<Record<string, string>> = {
 
 /** How far a standing cel's lowest opaque row may sit from the anchor's foot line. */
 export const STAND_TOLERANCE = 6;
-/** The envelope for walk and settle cels: a lifted stride, never a floating or sunk figure. */
-export const STRIDE_ABOVE = 18;
+/**
+ * The envelope for walk and settle cels: a lifted stride, never a floating or
+ * sunk figure. The grounded walks measure 10 px above to 10 px below the line
+ * (a screen-vertical stride lifts the trailing foot), so 12 above now catches
+ * the earlier floating east and west walks, whose feet sat 12-16 px above it.
+ */
+export const STRIDE_ABOVE = 12;
 export const STRIDE_BELOW = 10;
-/** How far the feet's centre may sit from the anchor column, standing and mid-stride. */
+/**
+ * How far the feet's centre may sit from the anchor column, standing and
+ * mid-stride. A full 13 px/cel stride on a down-screen diagonal carries the
+ * lowest (leading) foot up to 29 px from the column while the body stays on it.
+ */
 export const STAND_CENTRE = 16;
-export const STRIDE_CENTRE = 28;
+export const STRIDE_CENTRE = 32;
 
 /** SHA-256 of a decoded cel's RGBA, as the pin files record it. */
 export function celHash(
