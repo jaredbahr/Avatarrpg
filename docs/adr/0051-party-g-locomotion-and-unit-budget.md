@@ -57,7 +57,14 @@ in every one of the eight headings.
     south-west (2-3 px);
   - the rest cel is the walk cel that best overlaps idle cel 0 among those
     that stand like idle: lowest row within 3 px of idle's, feet within
-    10 px of the anchor column, head and torso within 4 px of idle's;
+    10 px of the anchor column, head and torso within 4 px of idle's; where
+    that pick is still mid-stride and a feet-together cel of the same walk
+    meets the same limits, the stop takes it (Kaya north-west, Sura east, Bo
+    north-east). That last step is judged by eye: leg-band and ground-contact
+    widths were measured and neither separates a stride from feet together
+    across side, front and diagonal views (side idles stand 17-19 px wide,
+    and Bo's north-east stride is within 3 px of his idle's width), so no
+    stance-width limit is added;
   - idle never moves, unless it stands outside the 6 px standing tolerance:
     Sura's north idle stood 7 px above the line and her whole north heading
     moves 1 px down.
@@ -65,7 +72,10 @@ in every one of the eight headings.
   north-east and north-west walks rise 1 and 2 px (their mean lowest rows
   sat 4.4 and 5.5 px below idle's), and her south, south-west and
   north-west stops take the cels that stand like idle (the south and
-  south-west stops had stood on a lone foot 15-16 px off the column).
+  south-west stops had stood on a lone foot 15-16 px off the column; the
+  north-west stop is her feet-together cel 9). Her south stop, cel 10, is
+  still a short stride: the one feet-together south cel (4) stands 12.7 px
+  left of the column with her torso 4 px off, outside the stop limits.
   Her east walk measures within 1 px of idle by head, chest and upper-body
   registration, so it is not moved.
 - `art:validate` holds the rule's results: each walk and rest clip's mean
@@ -86,19 +96,19 @@ in every one of the eight headings.
 | `main` before this change          |     4,950,063 |     4.72 |
 | retire `walking-sura` (PNG + JSON) |      -288,351 |          |
 | retire `walking-bo` (PNG + JSON)   |      -264,500 |          |
-| add `sura-g` (WebP 300,784 + JSON) |      +327,196 |          |
-| add `bo-g` (WebP 303,436 + JSON)   |      +329,566 |          |
-| Kaya's re-placed cels, re-encoded  |          +524 |          |
-| **After**                          | **5,054,498** | **4.82** |
+| add `sura-g` (WebP 300,684 + JSON) |      +327,096 |          |
+| add `bo-g` (WebP 303,506 + JSON)   |      +329,636 |          |
+| Kaya's re-placed cels, re-encoded  |          +412 |          |
+| **After**                          | **5,054,356** | **4.82** |
 
 Each G atlas is 2048 x 1728, 132 cels (128 locomotion, 4 action). At
-quality 90 the three average 2,270 bytes a cel in WebP and 199 bytes a frame
+quality 90 the three average 2,269 bytes a cel in WebP and 199 bytes a frame
 in the atlas JSON.
 
 The planned set adds 8 x (8 + 16) = 192 cels per character at the upper
-bend length, 576 in all: 576 x (2,270 + 199) = 1,422,144 bytes, for a
-planned units total of 6,476,642 bytes (6.18 MiB). The 6.75 MiB ceiling
-leaves 601,246 bytes (about 9%) of headroom over that plan: a stance or bend
+bend length, 576 in all: 576 x (2,269 + 199) = 1,421,568 bytes, for a
+planned units total of 6,475,924 bytes (6.18 MiB). The 6.75 MiB ceiling
+leaves 601,964 bytes (about 9%) of headroom over that plan: a stance or bend
 that encodes a quarter heavier than walk cels still fits, a fourth G
 character does not.
 
@@ -117,6 +127,13 @@ The planned set brings the precache to about 20,139,000 bytes (19.2 MiB), inside
   and battle on both backends, with no code change beyond the manifest: the
   animator, renderers and validation already key off the declared
   capability (ADR 0050).
+- The riverside still draws Sura and Kaya from their four-way village sheets
+  (ADR 0047), so their walk clip and clip time are read from the sheet
+  drawn there, not from the unit art (`src/app/village/riversidePose.ts`).
+  Timed from the G gait instead, the four-cel village walk played 2.9-5.6
+  times too fast (1,428 ms a tile east and 2,779 ms north against 500) and
+  diagonals fell back to front and back cels; Kaya's riverside walk had done
+  so since ADR 0050.
 - Like Kaya's, their G walks are sharper and more pixel-art-forward than the
   painted maps and the rest of the cast. Their side walks are drawn with
   bent knees, so the head sits 3-6 px lower mid-stride than standing (Bo's
