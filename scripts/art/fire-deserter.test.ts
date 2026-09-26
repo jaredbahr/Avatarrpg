@@ -9,7 +9,7 @@ import { readPng } from './lib/image';
 import { alphaBounds, crop } from './lib/trim';
 import { validateImages, validateSheets } from './validate';
 
-it('ships nine compact grounded deserter poses at the established adult scale', () => {
+it('ships nine compact grounded deserter poses at the established adult scale', async () => {
   const key = 'unit.enemy.deserter';
   const entry = ASSETS[key];
   if (entry?.kind !== 'sheet') throw new Error('Missing deserter sheet');
@@ -21,7 +21,7 @@ it('ships nine compact grounded deserter poses at the established adult scale', 
   expect(entry.footprint).toEqual({ w: 1, h: 1 });
   expect(entry.anchor).toEqual({ x: 0.5, y: 0.85 });
   expect(entry.clips.melee).toBeUndefined();
-  expect(validateSheets('public', { [key]: entry })).toEqual([]);
+  expect(await validateSheets('public', { [key]: entry })).toEqual([]);
   for (const [name, r] of atlas.frames) {
     const bounds = alphaBounds(crop(image, { x: r.x, y: r.y, width: r.w, height: r.h }));
     expect(bounds, name).not.toBeNull();

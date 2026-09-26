@@ -7,9 +7,12 @@
  * `validateContent` already checks the manifest's shape and clip table in the
  * unit tests; this is the half that needs the files: the atlas JSON exists
  * under `public/`, parses, names every frame the clips use at the size the
- * entry promises, points at a PNG that exists at the size the JSON claims,
- * stays inside 2048 px, and keeps the art bible's clear margin on every
- * frame's border; every `image` entry's file exists, is the PNG or WebP its
+ * entry promises, points at a PNG or WebP that exists at the size the JSON
+ * claims, stays inside 2048 px, and keeps the art bible's clear margin on
+ * every frame's border. A WebP sheet is lossy, so it is checked on its
+ * decoded pixels: the margin, a pin per cel written by the sheet's build
+ * script (a hand-edited or re-encoded cel fails), and, for a sheet declaring
+ * eight-way locomotion, feet on the anchor's foot line; every `image` entry's file exists, is the PNG or WebP its
  * name says, and measures what its kind of key promises (a portrait is
  * 512x512), because the loader falls back to the drawn placeholder on a
  * missing file and a typo would otherwise ship green; and every map's
@@ -17,17 +20,19 @@
  * (ADR 0009). Exit 1 on any problem, so CI can run it.
  */
 
+import { createHash } from 'node:crypto';
 import { existsSync, readFileSync } from 'node:fs';
 import { dirname, join, resolve } from 'node:path';
 import { ALL_MAPS } from '../../src/content';
-import { CLIP_NAMES } from '../../src/content/assets/clips';
+import { CLIP_NAMES, HEADINGS, headingClip } from '../../src/content/assets/clips';
 import type { AssetEntry } from '../../src/content/assets/manifest';
 import { ASSETS } from '../../src/content/assets/manifest';
 import { parseAtlasJson } from '../../src/render/sheets/atlasJson';
 import { MARGIN } from './lib/align';
 import type { Image } from './lib/image';
 import { imageSize, readPng } from './lib/image';
-import { webpSize } from './lib/webp';
+import { alphaBounds, crop, lowestOpaqueRow } from './lib/trim';
+import { decodeWebp, webpSize } from './lib/webp';
 import { CEL_FRAMES, CEL_SIZE, FX_CEL_SHEETS } from '../../src/content/fxCels';
 
 /** The largest texture every device in the matrix takes. */
@@ -37,6 +42,47 @@ const MAX_ATLAS = 2048;
 export const IMAGE_SIZES: Readonly<Record<string, { width: number; height: number }>> = {
   'portrait.': { width: 512, height: 512 },
 };
+
+/**
+ * Lossy sheets and the pin file their build script writes. A WebP sheet
+ * without one fails: its cels cannot be compared with a lossless reference.
+ */
+export const WEBP_SHEET_PINS: Readonly<Record<string, string>> = {
+  'unit.fire.kaya': 'art/source/kaya-g/pins.json',
+};
+
+/** How far a standing cel's lowest opaque row may sit from the anchor's foot line. */
+export const STAND_TOLERANCE = 6;
+/** The envelope for walk and settle cels: a lifted stride, never a floating or sunk figure. */
+export const STRIDE_ABOVE = 18;
+export const STRIDE_BELOW = 10;
+/** How far the feet's centre may sit from the anchor column, standing and mid-stride. */
+export const STAND_CENTRE = 16;
+export const STRIDE_CENTRE = 28;
+
+/** SHA-256 of a decoded cel's RGBA, as the pin files record it. */
+export function celHash(
+  image: Image,
+  frame: { x: number; y: number; w: number; h: number },
+): string {
+  const cel = crop(image, { x: frame.x, y: frame.y, width: frame.w, height: frame.h });
+  return createHash('sha256').update(cel.data).digest('hex');
+}
+
+/** The x centre of the opaque pixels in the lowest `rows` rows of a cel. */
+function footCentre(cel: Image, rows = 6): number | null {
+  const bottom = lowestOpaqueRow(cel);
+  let sum = 0;
+  let count = 0;
+  for (let y = Math.max(0, bottom - rows + 1); y <= bottom; y++) {
+    for (let x = 0; x < cel.width; x++) {
+      if ((cel.data[(y * cel.width + x) * 4 + 3] ?? 0) < 8) continue;
+      sum += x;
+      count++;
+    }
+  }
+  return count === 0 ? null : sum / count;
+}
 
 /** Larger than this and it is not the flat-shaded 512 px picture the packs ask for. */
 export const MAX_IMAGE_BYTES = 512 * 1024;
@@ -61,10 +107,11 @@ function borderTouched(
   return false;
 }
 
-export function validateSheets(
+export async function validateSheets(
   publicDir = 'public',
   entries: Readonly<Record<string, AssetEntry>> = ASSETS,
-): string[] {
+  pins: Readonly<Record<string, string>> = WEBP_SHEET_PINS,
+): Promise<string[]> {
   const problems: string[] = [];
   for (const [key, entry] of Object.entries(entries)) {
     if (entry.kind !== 'sheet') continue;
@@ -88,19 +135,33 @@ export function validateSheets(
       problems.push(`${key}: ${atlas.image} is missing beside ${entry.atlas}`);
       continue;
     }
-    const image = atlas.image.endsWith('.png') ? readPng(imagePath) : undefined;
-    const size =
-      image ??
-      (atlas.image.endsWith('.webp') ? webpSize(new Uint8Array(readFileSync(imagePath))) : null);
-    if (!size) {
+    const lossy = atlas.image.endsWith('.webp');
+    let image: Image | undefined;
+    if (atlas.image.endsWith('.png')) image = readPng(imagePath);
+    else if (lossy) {
+      const bytes = new Uint8Array(readFileSync(imagePath));
+      if (webpSize(bytes)) image = await decodeWebp(bytes).catch(() => undefined);
+    }
+    if (!image) {
       problems.push(`${key}: ${atlas.image} must be a readable PNG or WebP`);
       continue;
     }
-    if (size.width !== atlas.width || size.height !== atlas.height) {
+    if (image.width !== atlas.width || image.height !== atlas.height) {
       problems.push(
-        `${key}: ${atlas.image} is ${size.width}x${size.height}, the JSON says ${atlas.width}x${atlas.height}`,
+        `${key}: ${atlas.image} is ${image.width}x${image.height}, the JSON says ${atlas.width}x${atlas.height}`,
       );
       continue;
+    }
+    let pinned: Readonly<Record<string, string>> | undefined;
+    if (lossy) {
+      const pinPath = pins[key];
+      if (!pinPath || !existsSync(pinPath)) {
+        problems.push(`${key}: lossy ${atlas.image} has no cel pin file`);
+      } else {
+        pinned = (JSON.parse(readFileSync(pinPath, 'utf8')) as { frames?: Record<string, string> })
+          .frames;
+        if (!pinned) problems.push(`${key}: ${pinPath} pins no cels`);
+      }
     }
     const defaultW = entry.pixelsPerTile * entry.footprint.w;
     const defaultH = entry.pixelsPerTile * 1.5;
@@ -129,8 +190,51 @@ export function validateSheets(
             `${key}: frame "${name}" is ${frame.w}x${frame.h}, expected ${wantW}x${wantH}`,
           );
         }
-        if (image && borderTouched(image, frame, MARGIN)) {
+        if (borderTouched(image, frame, MARGIN)) {
           problems.push(`${key}: frame "${name}" has art inside the ${MARGIN} px margin`);
+        }
+        if (pinned && pinned[name] !== celHash(image, frame)) {
+          problems.push(`${key}: decoded cel "${name}" does not match its pin`);
+        }
+      }
+    }
+    if (pinned) {
+      const used = new Set(CLIP_NAMES.flatMap((clip) => entry.clips[clip]?.frames ?? []));
+      for (const name of Object.keys(pinned)) {
+        if (!used.has(name)) problems.push(`${key}: pinned cel "${name}" is not in a clip`);
+      }
+    }
+    if (entry.locomotion) {
+      const line = Math.round(entry.anchor.y * wantH);
+      const column = entry.anchor.x * wantW;
+      for (const heading of HEADINGS) {
+        for (const base of ['idle', 'walk', 'rest'] as const) {
+          const clip = headingClip(base, heading);
+          for (const name of entry.clips[clip]?.frames ?? []) {
+            const frame = atlas.frames.get(name);
+            if (!frame) continue;
+            const cel = crop(image, { x: frame.x, y: frame.y, width: frame.w, height: frame.h });
+            if (!alphaBounds(cel)) {
+              problems.push(`${key}: cel "${name}" is empty`);
+              continue;
+            }
+            const foot = lowestOpaqueRow(cel);
+            const centre = footCentre(cel) ?? -1;
+            const standing = base === 'idle';
+            const grounded = standing
+              ? Math.abs(foot - line) <= STAND_TOLERANCE
+              : foot >= line - STRIDE_ABOVE && foot <= line + STRIDE_BELOW;
+            if (!grounded) {
+              problems.push(
+                `${key}: cel "${name}" puts its feet at row ${foot}, off the foot line ${line}`,
+              );
+            }
+            if (Math.abs(centre - column) > (standing ? STAND_CENTRE : STRIDE_CENTRE)) {
+              problems.push(
+                `${key}: cel "${name}" centres its feet at x ${centre.toFixed(1)}, off the anchor ${column}`,
+              );
+            }
+          }
         }
       }
     }
@@ -147,7 +251,7 @@ export function validateSheets(
             `${key}: ${direction} frame "${name}" is ${frame.w}x${frame.h}, expected ${wantW}x${wantH}`,
           );
         }
-        if (image && borderTouched(image, frame, MARGIN)) {
+        if (borderTouched(image, frame, MARGIN)) {
           problems.push(
             `${key}: ${direction} frame "${name}" has art inside the ${MARGIN} px margin`,
           );
@@ -277,7 +381,7 @@ export function validateFxCels(publicDir = 'public'): string[] {
 
 if (process.argv[1]?.endsWith('validate.ts')) {
   const problems = [
-    ...validateSheets(),
+    ...(await validateSheets()),
     ...validateImages(),
     ...validateBackdrops(),
     ...validateFxCels(),

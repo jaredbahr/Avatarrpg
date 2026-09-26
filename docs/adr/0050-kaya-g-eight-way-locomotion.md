@@ -30,9 +30,16 @@ hold the uncompressed 128-cel locomotion atlas.
   `locomotion.walkMsPerTile`, so Kaya's feet do not skate.
 - The supplied nearest walk-to-idle frame is a one-cel `rest*` transition for
   each direction.
-- The atlas is lossily encoded as alpha WebP at quality 90. Atlas validation
-  verifies the WebP header and dimensions; transparent-margin pixel checks
-  remain available only for PNG sheets.
+- The atlas is lossily encoded as alpha WebP at quality 90, and validated on
+  its decoded pixels, as shipped: the transparent margin on every cel, a
+  SHA-256 pin per decoded cel, and for eight-way locomotion the feet on the
+  anchor's foot line (standing cels within 6 px; stride cels no more than
+  18 px above or 10 px below). A WebP sheet without a pin file fails.
+- `scripts/art/kaya-g.ts` builds only from the pinned sources:
+  `art/source/kaya-g/pins.json` records the SHA-256 of all 128 PixelLab cels
+  and the four preserved action cels, and a missing, changed or unpinned source
+  stops the build before anything is written. The build writes the decoded
+  cel pins into the same file, so an intended rebuild is one reviewable diff.
 - Kaya's existing east/west cast and KO cels are preserved as source cels and
   packed into the new atlas. Existing horizontal mirroring remains active for
   those legacy actions. No unprovided animation is fabricated.
