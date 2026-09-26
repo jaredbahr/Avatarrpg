@@ -11,6 +11,7 @@
  */
 
 import type { SceneImage, Vec2 } from '../../core/types';
+import { authoredForBothSides } from '../../content/assets/clips';
 import { resolveAsset } from '../../content/assets/manifest';
 import { Camera } from '../camera';
 import type { Viewport } from '../camera';
@@ -828,7 +829,7 @@ export class Canvas2DBackend implements RenderBackend {
       const asset = resolveAsset(unit.sprite);
       const locomotion = unit.clip ?? 'idle';
       const drawFacing =
-        asset.kind === 'sheet' && asset.facing === 'both' && /^(idle|walk|rest)/.test(locomotion)
+        asset.kind === 'sheet' && asset.facing === 'both' && authoredForBothSides(locomotion)
           ? 1
           : facing;
       const scale = unit.scale ?? 1;

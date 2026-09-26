@@ -35,6 +35,14 @@ export const CLIP_NAMES = [
   'restWest',
   'restNorthWest',
   'tea',
+  'stance',
+  'stanceNorth',
+  'stanceNorthEast',
+  'stanceSouthEast',
+  'stanceSouth',
+  'stanceSouthWest',
+  'stanceWest',
+  'stanceNorthWest',
 ] as const;
 export type ClipName = (typeof CLIP_NAMES)[number];
 
@@ -63,8 +71,11 @@ export interface LocomotionDef {
   readonly walkMsPerTile: Readonly<Record<Heading, number>>;
 }
 
-/** The idle, walk or rest clip for a heading; east is the unsuffixed clip. */
-export function headingClip(base: 'idle' | 'walk' | 'rest', heading: Heading): ClipName {
+/** The clip families an eight-way sheet authors per heading. */
+export type HeadingClipBase = 'idle' | 'walk' | 'rest' | 'stance';
+
+/** The idle, walk, rest or stance clip for a heading; east is the unsuffixed clip. */
+export function headingClip(base: HeadingClipBase, heading: Heading): ClipName {
   if (heading === 'east') return base;
   return `${base}${heading[0]?.toUpperCase() ?? ''}${heading.slice(1)}` as ClipName;
 }
@@ -115,7 +126,24 @@ export const CLIP_FRAME_COUNTS: Readonly<Record<ClipName, { min: number; max: nu
   restWest: { min: 1, max: 1 },
   restNorthWest: { min: 1, max: 1 },
   tea: { min: 2, max: 2 },
+  stance: { min: 1, max: 8 },
+  stanceNorth: { min: 1, max: 8 },
+  stanceNorthEast: { min: 1, max: 8 },
+  stanceSouthEast: { min: 1, max: 8 },
+  stanceSouth: { min: 1, max: 8 },
+  stanceSouthWest: { min: 1, max: 8 },
+  stanceWest: { min: 1, max: 8 },
+  stanceNorthWest: { min: 1, max: 8 },
 };
+
+/**
+ * Clips a `facing: 'both'` sheet authors for each side, so the renderer draws
+ * them unflipped; its legacy actions (cast, KO) are still mirrored. One test
+ * for both backends (ADR 0002).
+ */
+export function authoredForBothSides(clip: ClipName): boolean {
+  return /^(idle|walk|rest|stance)/.test(clip);
+}
 
 /** Clips every sheet must have. */
 export const REQUIRED_CLIPS: readonly ClipName[] = ['idle', 'cast'];

@@ -327,9 +327,11 @@ export class Animator {
    * Locomotion fields shared by the world, riverside and combat views.
    *
    * A walk that has just ended holds its settled pose for a moment before
-   * `resting` (combat's ready stance) is selected, so the sprite does not cut
-   * from mid-stride to guard on the frame the route ends. The dwell is
-   * presentation only: `busy()` and `finishesAt` still end with the travel.
+   * `resting` is selected, so the sprite does not cut from mid-stride to guard
+   * on the frame the route ends. Combat rests its party in `stance`, the
+   * fighting stance, which a sheet without one draws as its idle (ADR 0052).
+   * The dwell is presentation only: `busy()` and `finishesAt` still end with
+   * the travel.
    *
    * `sprite` selects the heading vocabulary: only a sheet that declares
    * eight-way locomotion is given diagonal and west clips. Everything else,
@@ -338,7 +340,7 @@ export class Animator {
   locomotion(
     now: number,
     unitId: string,
-    resting: 'idle' | 'rest' = 'idle',
+    resting: 'idle' | 'rest' | 'stance' = 'idle',
     sprite?: string,
   ): { clip: ClipName; facing: 1 | -1 } {
     this.settleHeadings(now);

@@ -41,6 +41,15 @@ const FALLBACK: Readonly<Record<ClipName, readonly ClipName[]>> = {
   restSouthWest: ['idleSouthWest', 'idleSouth', 'rest', 'idle'],
   restWest: ['idleWest', 'rest', 'idle'],
   restNorthWest: ['idleNorthWest', 'idleNorth', 'rest', 'idle'],
+  // A fighting stance is the idle of a sheet that authors none (ADR 0052).
+  stance: ['idle'],
+  stanceNorth: ['idleNorth', 'idle'],
+  stanceNorthEast: ['idleNorthEast', 'idleNorth', 'idle'],
+  stanceSouthEast: ['idleSouthEast', 'idleSouth', 'idle'],
+  stanceSouth: ['idleSouth', 'idle'],
+  stanceSouthWest: ['idleSouthWest', 'idleSouth', 'idle'],
+  stanceWest: ['idleWest', 'idle'],
+  stanceNorthWest: ['idleNorthWest', 'idleNorth', 'idle'],
 };
 
 export interface ResolvedClip {
