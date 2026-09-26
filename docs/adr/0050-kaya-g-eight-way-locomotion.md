@@ -31,20 +31,37 @@ hold the uncompressed 128-cel locomotion atlas.
   screen measurement, so the animator scales it by the screen length of one
   logical tile of the route: 1 on orthographic ground, and on oblique ground
   about 1.12 along a grid axis, 1.41 screen-across and 0.71 screen-down.
+  Because the rate depends on the heading, the phase is accumulated along the
+  route, each segment of the smoothed curve at its own rate, so it runs on
+  continuously through a turn. Four-way sheets keep a fixed 500 ms a tile.
 - The walks are the corrected set (party-consistency, 2026-09-25): the first
   walks' leg projection left strides short and the feet 12-16 px above the
   line. Each direction's walk and rest cels are moved vertically so the
   planted sole meets the idle baseline, by the gate-measured
-  `planted_sole_minus_baseline` at 0.75 (north down 5 px, south up 4 px,
-  the diagonals 1 px, east and west unmoved). Idle never moves.
+  `planted_sole_minus_baseline` at 0.75 (south up 4 px, the diagonals 1 px,
+  east and west unmoved). North is the exception: seen from behind, the
+  planted sole is the leading foot, a stride up-screen of where she stands,
+  and lowering the walk 5 px to it dropped her head and body 6 px at the
+  switch. The north walk is its idle's height, and drawn unmoved both its
+  mean head row and its mean lowest row sit within 1.5 px of idle's, so it
+  stays where it was drawn. The west walk and rest are moved 6 px right,
+  which puts their torso and head on idle's (east's already sit within 3 px).
+  Idle never moves.
 - The walk-to-idle transition is a one-cel `rest*` clip per direction: the
-  walk cel whose placed silhouette best overlaps idle cel 0.
+  walk cel whose placed silhouette best overlaps idle cel 0, except
+  north-east, whose best overlap is a contact pose with the trailing foot
+  24 px off the anchor column; it stops on its passing pose (cel 9) instead,
+  torso and head on idle's and the feet together under the column.
+- The south walk art stands 9 px taller than its idle (127 against 118 px).
+  That is the art, not placement, and it is not rescaled: she reads a little
+  larger while walking toward the camera.
 - The atlas is lossily encoded as alpha WebP at quality 90, and validated on
   its decoded pixels, as shipped: the transparent margin on every cel, a
   SHA-256 pin per decoded cel, and for eight-way locomotion the feet on the
   anchor's foot line (standing cels within 6 px; stride cels no more than
-  12 px above or 10 px below, the feet's centre within 32 px of the anchor
-  column mid-stride). A WebP sheet without a pin file fails.
+  12 px above where she stands in that heading, which is the line or, when
+  higher, idle cel 0's feet, and no more than 10 px below the line; the
+  feet's centre within 32 px of the anchor column mid-stride). A WebP sheet without a pin file fails.
 - `scripts/art/kaya-g.ts` builds only from the pinned sources:
   `art/source/kaya-g/pins.json` records the SHA-256 of all 128 PixelLab cels
   and the four preserved action cels, and a missing, changed or unpinned source
