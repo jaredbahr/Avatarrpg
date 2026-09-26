@@ -1,5 +1,5 @@
 import { expect, test } from '@playwright/test';
-import { enterNode, resetStorage, startGame } from './helpers';
+import { enterNode, resetStorage, setLargeText, startGame } from './helpers';
 
 test.beforeEach(async ({ page }) => {
   await resetStorage(page, '?renderer=canvas');
@@ -44,7 +44,7 @@ test('the panel advances once by click or keyboard and ignores held keys', async
 });
 
 test('huge text keeps keyboard focus on the compact panel', async ({ page }) => {
-  await page.evaluate(() => window.fnt?.app.updateSettings({ largeText: 'huge' }));
+  await setLargeText(page, 'huge');
   const next = page.locator('[data-conversation-control="next"]');
   await next.focus();
   await page.keyboard.press('Enter');

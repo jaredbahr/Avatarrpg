@@ -1,6 +1,6 @@
 import { paintedTileCentre } from './projection';
 import { expect, test } from '@playwright/test';
-import { enterNode, resetStorage, settleLayout, startGame } from './helpers';
+import { enterNode, resetStorage, setLargeText, settleLayout, startGame } from './helpers';
 
 const PARTY = ['nima', 'kaya', 'sura', 'bo', 'wen', 'jinu'];
 
@@ -38,12 +38,7 @@ for (const layout of [
     await resetStorage(page, '?renderer=canvas');
     await startGame(page, ['Jared'], PARTY, 'player-view-dock');
     await enterNode(page, 'village_explore');
-    if (layout.largeText !== 'off') {
-      await page.evaluate(
-        (largeText) => window.fnt?.app.updateSettings({ largeText }),
-        layout.largeText,
-      );
-    }
+    await setLargeText(page, layout.largeText);
     await settleLayout(page);
 
     const geometry = await page.evaluate(() => {

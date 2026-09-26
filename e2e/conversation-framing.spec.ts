@@ -1,7 +1,14 @@
 import { expect, test } from '@playwright/test';
 import type { Page } from '@playwright/test';
 import { allowSoftwareWebgl } from './budget';
-import { enterNode, resetStorage, settleLayout, startGame, waitForIdle } from './helpers';
+import {
+  enterNode,
+  resetStorage,
+  setLargeText,
+  settleLayout,
+  startGame,
+  waitForIdle,
+} from './helpers';
 
 type Point = { x: number; y: number };
 
@@ -102,8 +109,7 @@ for (const renderer of ['canvas', 'webgl']) {
       if (portrait) await page.setViewportSize({ width: 834, height: 1194 });
       await resetStorage(page, `?renderer=${renderer}`);
       await startGame(page, ['Framing review'], ['sura'], 'conversation-framing');
-      if (portrait)
-        await page.evaluate(() => window.fnt!.app.updateSettings({ largeText: 'huge' }));
+      if (portrait) await setLargeText(page, 'huge');
       await enterNode(page, 'village_explore');
       // A loaded checkpoint already beside Mira: opening Talk must not rely on
       // a walk animation to repair a manually panned camera.

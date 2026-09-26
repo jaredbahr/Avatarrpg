@@ -1,6 +1,6 @@
 import { expect, test } from '@playwright/test';
 import { allowSoftwareWebgl } from './budget';
-import { enterNode, resetStorage, startGame } from './helpers';
+import { enterNode, resetStorage, setLargeText, startGame } from './helpers';
 
 for (const renderer of ['canvas', 'webgl'] as const) {
   for (const portrait of [false, true]) {
@@ -14,8 +14,7 @@ for (const renderer of ['canvas', 'webgl'] as const) {
       if (portrait) await page.setViewportSize({ width: 834, height: 1194 });
       await resetStorage(page, `?renderer=${renderer}`);
       await startGame(page, ['Sura', 'Riko'], ['sura', 'riko'], 'gate-world-choice');
-      if (portrait)
-        await page.evaluate(() => window.fnt!.app.updateSettings({ largeText: 'huge' }));
+      if (portrait) await setLargeText(page, 'huge');
       // Isolate the choice presentation; the route suite owns arrival on foot.
       await enterNode(page, 'gate_escort_explore');
       await enterNode(page, 'gate_parley');

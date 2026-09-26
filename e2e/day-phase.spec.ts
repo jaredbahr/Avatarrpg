@@ -1,6 +1,13 @@
 import { expect, test } from '@playwright/test';
 import type { Page } from '@playwright/test';
-import { enterNode, resetStorage, startGame, waitForIdle } from './helpers';
+import {
+  enterNode,
+  resetStorage,
+  setLargeText,
+  settleDialog,
+  startGame,
+  waitForIdle,
+} from './helpers';
 
 /**
  * The time of day in the interface (ADR 0047 W7): the phase label in the
@@ -92,9 +99,9 @@ test('a refused wait keeps its way back on a phone at Largest text', async ({ pa
   await page.setViewportSize({ width: 390, height: 844 });
   await resetStorage(page, '?renderer=canvas');
   await startGame(page, ['Jared'], ['kaya', 'sura'], 'refused-on-a-phone');
+  await setLargeText(page, 'huge');
   await page.evaluate(() => {
     const app = window.fnt!.app;
-    app.updateSettings({ largeText: 'huge' });
     app.dispatch({ type: 'enterNode', nodeId: 'riverside_explore' });
     const state = app.state!;
     // At the porch, with the story cursor off an explore node, so the rule
@@ -125,7 +132,7 @@ test('a refused wait keeps its way back on a phone at Largest text', async ({ pa
   // half-pixel allowance the save sheet's check uses. Let the entrance
   // animation finish first: mid-animation boxes are shifted and shrunk, which
   // hid a 1-3 px clip at the bottom.
-  await page.evaluate(() => Promise.all(document.getAnimations().map((a) => a.finished)));
+  await settleDialog(dialog);
   await expect
     .poll(
       () =>

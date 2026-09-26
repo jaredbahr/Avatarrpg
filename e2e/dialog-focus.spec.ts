@@ -1,12 +1,12 @@
 import { expect, test } from '@playwright/test';
-import { enterNode, resetStorage, startGame } from './helpers';
+import { enterNode, resetStorage, setLargeText, settleDialog, startGame } from './helpers';
 
 test('a long inspector opens at its title and keeps keyboard focus inside', async ({ page }) => {
   await page.setViewportSize({ width: 390, height: 844 });
   await resetStorage(page, '?renderer=canvas');
   await startGame(page, ['Jared'], ['nima', 'kaya', 'sura', 'bo', 'wen', 'jinu']);
   await enterNode(page, 'village_explore');
-  await page.evaluate(() => window.fnt?.app.updateSettings({ largeText: 'huge' }));
+  await setLargeText(page, 'huge');
 
   const lastHero = page.locator('.roster-row').last();
   await lastHero.scrollIntoViewIfNeeded();
@@ -15,6 +15,7 @@ test('a long inspector opens at its title and keeps keyboard focus inside', asyn
   const dialog = page.getByRole('dialog');
   const title = dialog.getByRole('heading', { level: 2 });
   const close = dialog.getByRole('button', { name: 'Close' });
+  await settleDialog(dialog);
   await expect(title).toBeFocused();
   // The dialog body is the scroll region (the header stays pinned above it),
   // so a long inspector overflows its body and opens with that body at the top.

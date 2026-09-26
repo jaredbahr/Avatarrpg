@@ -4,7 +4,15 @@ import { RngCursor } from '../src/core/rng';
 import { reachable } from '../src/core/rules/grid';
 import { BattleDraft } from '../src/core/state/battleDraft';
 import { allowSoftwareWebgl } from './budget';
-import { enterNode, resetStorage, settleLayout, startGame, takeTurn, waitForIdle } from './helpers';
+import {
+  enterNode,
+  resetStorage,
+  setLargeText,
+  settleLayout,
+  startGame,
+  takeTurn,
+  waitForIdle,
+} from './helpers';
 import { groundPoint, paintedTileCentre } from './projection';
 
 async function lowestVisibleMoveTarget(page: Page): Promise<{ x: number; y: number }> {
@@ -196,8 +204,7 @@ for (const largeText of ['normal', 'huge'] as const) {
     await page.setViewportSize({ width: 1280, height: 720 });
     await resetStorage(page, '?renderer=canvas');
     await startGame(page, ['Kaya'], ['kaya'], `compact-frame-${largeText}`);
-    if (largeText === 'huge')
-      await page.evaluate(() => window.fnt!.app.updateSettings({ largeText: 'huge' }));
+    if (largeText === 'huge') await setLargeText(page, 'huge');
     await enterNode(page, 'battle_forest_road');
     await takeTurn(page);
     await waitForIdle(page);
@@ -268,7 +275,7 @@ test('Huge text on a tall viewport reserves the expanded decision panel', async 
   await page.setViewportSize({ width: 1368, height: 912 });
   await resetStorage(page, '?renderer=canvas');
   await startGame(page, ['Kaya'], ['kaya'], 'compact-frame-tall-huge');
-  await page.evaluate(() => window.fnt!.app.updateSettings({ largeText: 'huge' }));
+  await setLargeText(page, 'huge');
   await enterNode(page, 'battle_forest_road');
   await takeTurn(page);
   await waitForIdle(page);
@@ -290,11 +297,7 @@ for (const renderer of ['canvas', 'webgl'] as const) {
       await page.setViewportSize({ width: 1280, height: 720 });
       await resetStorage(page, `?renderer=${renderer}`);
       await startGame(page, ['Sura'], ['sura'], `move-reveal-${renderer}-${largeText}`);
-      if (largeText !== 'normal')
-        await page.evaluate(
-          (text) => window.fnt!.app.updateSettings({ largeText: text === 'huge' ? 'huge' : 'on' }),
-          largeText,
-        );
+      if (largeText !== 'normal') await setLargeText(page, largeText === 'huge' ? 'huge' : 'on');
       await enterNode(page, 'battle_forest_road');
       expect(await takeTurn(page)).toBe(true);
       await waitForIdle(page);
