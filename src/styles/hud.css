@@ -1575,6 +1575,10 @@ html[data-contrast='high'] .hud-panel::after {
   min-height: 0;
   flex: 1 1 auto;
   overflow-y: auto;
+  /* Room for a flush control's focus ring (3px outline + 2px offset, base.css),
+     cancelled by the margin so the body keeps its Normal-text layout. */
+  padding: 5px;
+  margin: -5px;
 }
 
 /*
