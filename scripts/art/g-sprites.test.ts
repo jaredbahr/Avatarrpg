@@ -7,17 +7,19 @@ import { parseAtlasJson } from '../../src/render/sheets/atlasJson';
 import type { Image } from './lib/image';
 import { newImage, pixelAt, setPixel } from './lib/image';
 import { decodeWebp, encodeWebpLossless } from './lib/webp';
-import { PINS, checkSources, sha256, sourceFiles } from './kaya-g';
-import type { KayaGPins } from './kaya-g';
+import { CHARACTERS, checkSources, sha256, sourceFiles } from './g-sprites';
+import type { GPins } from './g-sprites';
 import { MARGIN } from './lib/align';
 import { validateSheets, WEBP_SHEET_PINS } from './validate';
 
-const KEY = 'unit.fire.kaya';
-const pins = JSON.parse(readFileSync(PINS, 'utf8')) as KayaGPins;
+const KAYA = CHARACTERS.kaya;
+const KEY = KAYA.key;
+const PINS = KAYA.pins;
+const pins = JSON.parse(readFileSync(PINS, 'utf8')) as GPins;
 
 describe('Kaya G source pins', () => {
   it('pins exactly the files the build reads, and the preserved action cels in the repo', () => {
-    const files = sourceFiles();
+    const files = sourceFiles(KAYA);
     expect(files.pixellab).toHaveLength(8 * (4 + 12));
     expect(Object.keys(pins.pixellab).sort()).toEqual([...files.pixellab].sort());
     for (const hash of Object.values(pins.pixellab)) expect(hash).toMatch(/^[0-9a-f]{64}$/);
