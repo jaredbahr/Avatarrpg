@@ -122,7 +122,10 @@ test('a refused wait keeps its way back on a phone at Largest text', async ({ pa
   // The settled sheet reads 0.998 every time; the old check passed only when a
   // poll happened to land on an earlier layout. Measure the box against the
   // viewport and the padding box of every clipping ancestor instead, with the
-  // half-pixel allowance the save sheet's check uses.
+  // half-pixel allowance the save sheet's check uses. Let the entrance
+  // animation finish first: mid-animation boxes are shifted and shrunk, which
+  // hid a 1-3 px clip at the bottom.
+  await page.evaluate(() => Promise.all(document.getAnimations().map((a) => a.finished)));
   await expect
     .poll(
       () =>

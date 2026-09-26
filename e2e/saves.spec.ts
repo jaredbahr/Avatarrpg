@@ -40,6 +40,8 @@ test.describe('the save sheet at Largest text', () => {
 
     const sheet = page.locator('.dialog');
     await expect(sheet).toBeVisible();
+    // Measure the sheet at rest, not mid-way through its entrance animation.
+    await page.evaluate(() => Promise.all(document.getAnimations().map((a) => a.finished)));
 
     // The list is the sheet's only scroll region: a footer cannot be pushed out.
     await expect
@@ -47,7 +49,11 @@ test.describe('the save sheet at Largest text', () => {
         () =>
           page
             .locator('.dialog .slot-list')
-            .evaluate((list) => list.scrollHeight > list.clientHeight),
+            .evaluate(
+              (list) =>
+                list.scrollHeight > list.clientHeight &&
+                ['auto', 'scroll'].includes(getComputedStyle(list).overflowY),
+            ),
         { message: 'The slot list must be the scrolling region at Largest text' },
       )
       .toBe(true);
@@ -55,7 +61,8 @@ test.describe('the save sheet at Largest text', () => {
     for (const name of ['Import from file', 'Close']) {
       const control = sheet.getByRole('button', { name, exact: true });
       await expect(control).toBeVisible();
-      // The frame and the button are read together, so both come from one layout.
+      // The frame and the button are read separately; the poll retries until
+      // both come from the settled layout.
       await expect
         .poll(
           async () => {
