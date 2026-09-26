@@ -156,31 +156,34 @@ function rikoSheet(): SheetEntry {
 
 /**
  * Measured root travel per 114 ms walk cel, in source px, per heading: the
- * planted-sole `speed_px_per_frame` in each walk's gates.json (party-consistency
- * set) for the PixelLab G party (ADR 0050, ADR 0051).
+ * planted-sole `speed_px_per_frame` in each walk's gates.json for the
+ * PixelLab G party (ADR 0050, ADR 0051). Kaya's and Sura's are their narrower
+ * girls-walk-v2 "A" walks (ADR 0053), whose shorter strides cover 3.4-3.8 px
+ * a cel walking north against 4.75-5.8 south; Bo's are the party-consistency
+ * set.
  */
 type GTravel = Readonly<Record<Heading, number>>;
 
 const G_TRAVEL: Readonly<Record<'kaya' | 'sura' | 'bo', GTravel>> = {
   kaya: {
-    north: 6.38,
-    northEast: 11.74,
-    east: 12.88,
-    southEast: 10.74,
-    south: 6.71,
-    southWest: 10.99,
-    west: 12.97,
-    northWest: 11.17,
+    north: 3.81,
+    northEast: 9.11,
+    east: 12.48,
+    southEast: 9.36,
+    south: 5.8,
+    southWest: 9.49,
+    west: 11.75,
+    northWest: 9.14,
   },
   sura: {
-    north: 7.0,
-    northEast: 10.97,
-    east: 13.62,
-    southEast: 11.23,
-    south: 7.0,
-    southWest: 12.23,
-    west: 13.37,
-    northWest: 9.94,
+    north: 3.36,
+    northEast: 8.54,
+    east: 11.52,
+    southEast: 7.8,
+    south: 4.75,
+    southWest: 9.63,
+    west: 14.0,
+    northWest: 8.97,
   },
   bo: {
     north: 6.13,

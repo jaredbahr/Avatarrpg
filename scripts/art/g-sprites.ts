@@ -65,21 +65,23 @@ export interface GPins {
  *
  * - `walkDy` puts the walk's planted sole on the idle's baseline:
  *   `-round(planted_sole_minus_baseline x 0.75)` from the scripted gates on
- *   the delivered set (party-consistency `checks.json`), so a walk that
- *   measured 5 source px below the idle baseline (Kaya south) is raised 4 px.
+ *   the delivered set (party-consistency `checks.json`; for Kaya's and Sura's
+ *   narrower girls-walk-v2 "A" walks, the planted soles in each walk's
+ *   `gates.json` minus the idle's mean lowest row), so a walk that measured
+ *   4 source px below the idle baseline would be raised 3 px.
  *   North is the exception: seen from behind, the planted sole is the leading
- *   foot, a stride up-screen of where the figure stands, and lowering Kaya's
- *   walk to it (the gates' 5 px) dropped her head and body 6 px on the first
- *   cel. Every north walk is drawn level with its idle and stays where it was
- *   drawn: Kaya's mean lowest row sits 0.6 px below her idle's, her mean head
- *   row 0.4 px below. Where the sole rule leaves a walk's mean lowest row
+ *   foot, a stride up-screen of where the figure stands (7 px on the A
+ *   walks), and lowering Kaya's first walk to it (5 px) dropped her head and
+ *   body 6 px on the first cel. Every north walk is drawn level with its idle
+ *   and stays where it was drawn: Kaya's A walk's mean lowest row sits 1.3 px
+ *   below her idle's, Sura's 1.1 px. Where the sole rule leaves a walk's mean lowest row
  *   more than 3.5 px below idle cel 0's (art:validate allows 4), the walk is
  *   raised the fewest pixels that bring it inside: the up-screen diagonals,
  *   whose trailing foot hangs below the stance.
  * - `walkDx` aligns the walk's head and torso with idle's: where the mean
  *   upper-body offset (the best-overlap registration of each cel's top 45%
  *   against idle cel 0's) exceeds 2 px, the walk moves by its rounding. The
- *   west walks are drawn 6-8 px left of their idles.
+ *   west walks are drawn 6-7 px left of their idles.
  * - `restCel` is the walk cel whose placed silhouette best overlaps idle
  *   cel 0 among the cels that stand like idle: lowest row within 3 px of
  *   idle's, lowest foot centred within 10 px of the anchor column, and head
@@ -87,8 +89,8 @@ export interface GPins {
  *   be a contact pose with the trailing foot 24 px off the column, or a lone
  *   leading foot 16 px off it, which stops the figure beside its feet. Where
  *   that pick is still mid-stride and a feet-together cel in the same walk
- *   meets the same limits, the stop takes that cel instead (Kaya north-west,
- *   Sura east, Bo north-east, each commented below). No width measure tells
+ *   meets the same limits, the stop takes that cel instead (commented
+ *   below). No width measure tells
  *   a stride from feet together across side, front and diagonal views, so
  *   this last step is judged by eye, not scored.
  * - `idleDy` moves a whole heading: idle, walk, rest and stance together.
@@ -171,15 +173,19 @@ export const CHARACTERS: Readonly<Record<'kaya' | 'sura' | 'bo', GCharacter>> = 
     toned: false,
     // E, NE, N, NW, W, SW, S, SE: [rest cel, walk dx, walk dy, idle dy, stance dy]
     headings: headings([
-      [9, 0, 0, 0, 0],
+      [3, 0, 0, 0, 0],
+      // Stops feet-together on cel 9; the overlap pick, cel 8, is mid-stride.
       [9, 0, -2, 0, 0],
-      [10, 0, 0, 6, 0],
-      // Stops feet-together on cel 9; the overlap pick, cel 2, is mid-stride.
-      [9, 0, -1, 0, 1],
+      [9, 0, 0, 6, 0],
+      // Stops feet-together on cel 3; the overlap pick, cel 2, is mid-stride.
+      [3, 0, -1, 0, 1],
       [3, 6, 0, 0, 0],
+      // The rules give 0, which puts cel 0's leading foot 11 px below the
+      // line, past art:validate's 10 px sunk-stride bound; it rises 1 px.
       [3, 0, -1, 0, 0],
-      [10, 0, -4, 0, -2],
-      [9, 0, -1, 0, 0],
+      [2, 0, -4, 0, -2],
+      // Stops feet-together on cel 9; the overlap pick, cel 10, is mid-stride.
+      [9, 0, 0, 0, 0],
     ]),
   },
   sura: {
@@ -189,14 +195,15 @@ export const CHARACTERS: Readonly<Record<'kaya' | 'sura' | 'bo', GCharacter>> = 
     actions: 'art/source/sura-actions',
     toned: true,
     headings: headings([
-      // Stops feet-together on cel 9; the overlap pick, cel 3, is mid-stride.
-      [9, 0, 1, 0, 0],
-      [3, 0, -2, 0, 0],
-      [10, 2, 0, 7, 0],
-      [9, 2, 0, 0, 1],
-      [9, 8, 0, 0, 0],
-      [4, 3, 0, 0, 0],
-      [10, 0, -3, 0, -2],
+      [3, 0, 1, 0, 0],
+      // Stops feet-together on cel 9; the overlap pick, cel 8, is mid-stride.
+      [9, 0, -2, 0, 0],
+      [2, 0, 0, 7, 0],
+      // Stops feet-together on cel 9; the overlap pick, cel 10, is mid-stride.
+      [9, 0, 1, 0, 1],
+      [3, 7, 0, 0, 0],
+      [3, 3, 1, 0, 0],
+      [2, 0, -4, 0, -2],
       [9, 0, -1, 0, 0],
     ]),
   },
