@@ -151,14 +151,35 @@ export const CHARACTERS: Readonly<Record<'kaya' | 'sura' | 'bo', GCharacter>> = 
     name: 'sura',
     pins: 'art/source/sura-g/pins.json',
     actions: 'art/source/sura-actions',
-    headings: [],
+    // Sura's north idle stands 7 px above the anchor line; the heading moves 1 px down.
+    headings: headings([
+      [3, 0, 1],
+      [3, 0, -2],
+      [10, 2, 0, 1],
+      [9, 2, 0],
+      [9, 8, 0],
+      [4, 3, 0],
+      [10, 0, -3],
+      [9, 0, -1],
+    ]),
   },
   bo: {
     key: 'unit.earth.bo',
     name: 'bo',
     pins: 'art/source/bo-g/pins.json',
     actions: 'art/source/bo-actions',
-    headings: [],
+    headings: headings([
+      [3, 0, 1],
+      [8, 0, -1],
+      [10, 3, 0],
+      [9, 0, 0],
+      [3, 6, 1],
+      [4, 3, 0],
+      [2, 0, -4],
+      // The rules give 1 px down, which puts cel 6's leading foot 11 px below
+      // the line, past art:validate's 10 px sunk-stride bound; it stays at 0.
+      [9, 0, 0],
+    ]),
   },
 };
 

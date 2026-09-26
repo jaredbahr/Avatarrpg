@@ -9,7 +9,8 @@ import { screenDirection, walkHeading } from './direction';
 
 const content = { abilities: new Map() } as unknown as ContentIndex;
 const KAYA = 'unit.fire.kaya';
-const BO = 'unit.earth.bo';
+/** A four-way sheet: a fixed 500 ms of clip a tile. */
+const FOUR_WAY = 'unit.earth.linmei';
 /** Kaya's walk cel: the clip's nominal 114 ms cadence. */
 const CEL_MS = 114;
 
@@ -116,7 +117,7 @@ describe('eight-way walk phase across a turn', () => {
       const length = Math.hypot(tangent.x, tangent.y);
       const rate = kayaRate({ x: tangent.x / length, y: tangent.y / length }, projection);
       for (const t of [50, 150, 300, a.finishesAt - 1]) {
-        const legacy = a.unitPose(t, 'p', BO)?.clipTime ?? -1;
+        const legacy = a.unitPose(t, 'p', FOUR_WAY)?.clipTime ?? -1;
         expect(a.unitPose(t, 'p', KAYA)?.clipTime, `${projection} ${t}`).toBeCloseTo(
           (legacy / 500) * rate,
           6,
@@ -142,7 +143,7 @@ describe('eight-way walk phase across a turn', () => {
     for (const projection of ['orthographic', 'oblique'] as const) {
       const path = tiles(FROM, E, E, E, N, N, N);
       const a = walker(projection, FROM, path);
-      for (const sprite of [BO, 'unit.water.sura', undefined]) {
+      for (const sprite of [FOUR_WAY, 'unit.water.nilak', undefined]) {
         let travelled = 0;
         let previous: Vec2 | undefined;
         for (let t = 1; t < a.finishesAt; t++) {

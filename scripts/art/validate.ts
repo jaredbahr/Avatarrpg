@@ -50,6 +50,8 @@ export const IMAGE_SIZES: Readonly<Record<string, { width: number; height: numbe
  */
 export const WEBP_SHEET_PINS: Readonly<Record<string, string>> = {
   'unit.fire.kaya': 'art/source/kaya-g/pins.json',
+  'unit.water.sura': 'art/source/sura-g/pins.json',
+  'unit.earth.bo': 'art/source/bo-g/pins.json',
 };
 
 /** How far a standing cel's lowest opaque row may sit from the anchor's foot line. */
