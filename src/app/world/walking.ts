@@ -2,7 +2,7 @@
 import type { ContentIndex, GameState, Vec2 } from '../../core/types';
 import { apply } from '../../core/state/reducer';
 import { distance, samePos } from '../../core/rules/grid';
-import { activeTriggers, visibleNpcs } from '../../core/story/world';
+import { activeTriggers, exitAt, visibleNpcs } from '../../core/story/world';
 
 export interface WalkPreview {
   readonly from: Vec2;
@@ -21,7 +21,7 @@ export function previewWalk(content: ContentIndex, state: GameState, target: Vec
   const npc = map
     ? visibleNpcs(content, map, state).find((item) => samePos(item.pos, target))
     : undefined;
-  const exit = map?.exits?.find((item) => samePos(item.pos, target));
+  const exit = map ? exitAt(map, target) : undefined;
   const message = result.events.find((event) => event.type === 'message');
   return {
     from: state.location.pos,

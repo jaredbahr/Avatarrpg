@@ -29,11 +29,19 @@ import {
   UniformGroup,
 } from 'pixi.js';
 
-import type { TerrainId, Vec2 } from '../../core/types';
+import type { MapScene, SceneFlock, SceneImage, TerrainId, Vec2 } from '../../core/types';
 import { authoredForBothSides } from '../../content/assets/clips';
 import { resolveAsset } from '../../content/assets/manifest';
 import { backdrops } from '../backdrops';
-import { sceneForGrid, sceneryOpacities } from '../scene';
+import { sceneForGrid, sceneImage, sceneryOpacities } from '../scene';
+import {
+  firstGustCrest,
+  flockAt,
+  flockFrame,
+  flushElapsed,
+  GUST_LENGTH,
+  sway,
+} from '../living/wind';
 import { SceneTextures } from './sceneTextures';
 import { SURFACE_INDEX, surfaceIsPainted, surfaceTexel } from '../sceneSurfaces';
 import { TILE } from '../camera';
@@ -89,6 +97,15 @@ const GROUND_RESOLUTION = 0.5;
 
 /** How far firelight reaches, in tiles. */
 const GLOW_RADIUS = 2;
+
+/** Half-widths of the grass band's three nested stripes, widest first, in scene pixels. */
+const BREEZE_HALVES = [260, 175, 90] as const;
+
+/** A wind plate's add-blended stripes; `used` counts those drawn this frame. */
+interface BreezePool {
+  stripes: Sprite[];
+  used: number;
+}
 
 /**
  * Sprite textures are rasterised for the zoom actually on screen, in steps this
@@ -178,6 +195,14 @@ export class PixiBackend implements RenderBackend {
   private sceneGround = new Container();
   private groundChunks = new Map<string, Sprite>();
   private scenerySprites = new Map<string, Sprite>();
+  /** A gust's light on the grass: slices of the wind ground added back onto it. */
+  private breeze = new Container();
+  /** Each wind plate's breeze stripes, kept from frame to frame. */
+  private breezePools = new Map<string, BreezePool>();
+  /** The flock whose page was last asked for, so a scene change asks once. */
+  private flock: SceneFlock | undefined;
+  /** The birds a fight flushes out of the trees, over every upright. */
+  private flockLayer = new Container();
   /** Scene textures live only as long as their manifest, independently of actor LRU. */
   private sceneTextures = new SceneTextures();
   /**
@@ -350,6 +375,7 @@ export class PixiBackend implements RenderBackend {
       padding: 0,
       resolution: GROUND_RESOLUTION,
     });
+    this.sceneGround.addChild(this.breeze);
     this.groundSprite.filters = [this.groundFilter];
     this.groundOverlaySprite.filters = [this.groundOverlayFilter];
 
@@ -387,7 +413,7 @@ export class PixiBackend implements RenderBackend {
       this.decorGfx,
     );
     this.unitLayer.sortableChildren = true;
-    this.upright.addChild(this.groundRings, this.unitLayer);
+    this.upright.addChild(this.groundRings, this.unitLayer, this.flockLayer);
     this.labels.addChild(this.fxGfx, this.floaterLayer);
     app.stage.addChild(this.root, this.upright, this.fxOver.container, this.labels);
 
@@ -443,6 +469,7 @@ export class PixiBackend implements RenderBackend {
     this.groundOverlayFilter = null;
     this.dropTextures();
     this.unitSprites.clear();
+    this.breezePools.clear();
     this.sceneTextures.clear();
     this.groundChunks.clear();
     this.scenerySprites.clear();
@@ -582,7 +609,8 @@ export class PixiBackend implements RenderBackend {
       let sprite = this.groundChunks.get(key);
       if (!sprite) {
         sprite = new Sprite();
-        this.sceneGround.addChild(sprite);
+        // Chunks stay under the breeze, whenever they first load.
+        this.sceneGround.addChildAt(sprite, this.sceneGround.getChildIndex(this.breeze));
         this.groundChunks.set(key, sprite);
       }
       const texture = this.sceneTextures.get(chunk);
@@ -614,9 +642,12 @@ export class PixiBackend implements RenderBackend {
         continue;
       }
       sprite.texture = texture;
-      sprite.position.set(item.x, item.y);
+      // Wind leans the crown about the foot; the trunk's base never moves.
+      sprite.anchor.set(0, 1);
+      sprite.position.set(item.x, item.y + item.height);
       sprite.width = item.width;
       sprite.height = item.height;
+      sprite.skew.x = item.wind && !view.reducedMotion ? -sway(view.time, item) : 0;
       sprite.zIndex = camera.groundPoint(item.depth).y;
       sprite.alpha = opacities.get(item) ?? 1;
     }
@@ -632,8 +663,115 @@ export class PixiBackend implements RenderBackend {
         this.scenerySprites.delete(key);
       }
     }
+    this.syncBreeze(scene?.ground ?? [], view);
+    this.syncFlock(scene, view);
     this.sceneTextures.end();
     return complete;
+  }
+
+  /**
+   * WebGL only: the grass brightens under each gust crest as it crosses the
+   * board. Three nested stripes each add a little of the grass back onto
+   * itself, so the band's edge steps down softly. A stripe is a slice of the
+   * plate, never a masked copy: a sprite mask composites offscreen and drops
+   * the add, and a stencil mask broke the particle layers' batches.
+   */
+  private syncBreeze(ground: readonly SceneImage[], view: MapView): void {
+    for (const pool of this.breezePools.values()) pool.used = 0;
+    for (const piece of view.reducedMotion ? [] : ground) {
+      const image = piece.wind && !piece.sourceRect ? sceneImage(piece) : null;
+      const plate = image && this.sceneTextures.get(piece);
+      // The same page limit a sourceRect crop has (sceneSourceRect).
+      if (!image || !plate || Math.max(image.naturalWidth, image.naturalHeight) > 2048) continue;
+      let pool = this.breezePools.get(piece.url);
+      if (!pool) this.breezePools.set(piece.url, (pool = { stripes: [], used: 0 }));
+      const scale = image.naturalWidth / piece.width;
+      const end = piece.x + piece.width + BREEZE_HALVES[0];
+      for (
+        let crest = firstGustCrest(view.time, piece.x - BREEZE_HALVES[0]);
+        crest <= end;
+        crest += GUST_LENGTH
+      )
+        for (const half of BREEZE_HALVES) {
+          const from = Math.round(Math.max(0, crest - half - piece.x) * scale);
+          const to = Math.round(Math.min(piece.width, crest + half - piece.x) * scale);
+          if (to <= from) continue;
+          const stripe = this.breezeStripe(pool, plate);
+          const { texture } = stripe;
+          texture.frame.x = from;
+          texture.frame.width = to - from;
+          texture.update();
+          stripe.visible = true;
+          stripe.position.set(piece.x + from / scale, piece.y);
+          stripe.width = (to - from) / scale;
+          stripe.height = piece.height;
+        }
+    }
+    for (const pool of this.breezePools.values())
+      for (let i = pool.used; i < pool.stripes.length; i++) {
+        const stripe = pool.stripes[i];
+        if (stripe) stripe.visible = false;
+      }
+  }
+
+  /**
+   * The next stripe of a plate's pool. Each owns a full-height crop Texture on
+   * the plate's source and moves its frame in place, so a frame builds no GPU
+   * texture: one is made only when the pool first grows or the plate's page
+   * reloads. The crop is a plain view, so the one it replaces goes with the
+   * page's destroyed source and needs no destroy of its own.
+   */
+  private breezeStripe(pool: BreezePool, plate: Texture): Sprite {
+    let stripe = pool.stripes[pool.used++];
+    if (!stripe) {
+      stripe = new Sprite();
+      stripe.blendMode = 'add';
+      stripe.alpha = 0.05;
+      this.breeze.addChild(stripe);
+      pool.stripes.push(stripe);
+    }
+    if (stripe.texture.source !== plate.source)
+      stripe.texture = new Texture({
+        source: plate.source,
+        frame: new Rectangle(0, 0, 1, plate.height),
+        dynamic: true,
+      });
+    return stripe;
+  }
+
+  /** The flush over every upright, only while a bird is still in the air. */
+  private syncFlock(scene: MapScene | undefined, view: MapView): void {
+    const flock = scene?.flock;
+    // The page is asked for once per scene, so it is in by the time a fight opens.
+    if (flock !== this.flock) {
+      this.flock = flock;
+      if (flock) sceneImage(flockFrame(flock, 0));
+    }
+    const elapsed = flushElapsed(view);
+    const birds =
+      flock && elapsed >= 0
+        ? flockAt(
+            flock,
+            scene.scenery.filter((piece) => piece.wind),
+            elapsed,
+          )
+        : [];
+    while (this.flockLayer.children.length < birds.length) {
+      const sprite = new Sprite();
+      sprite.anchor.set(0.5);
+      this.flockLayer.addChild(sprite);
+    }
+    this.flockLayer.children.forEach((child, index) => {
+      const bird = birds[index];
+      const texture = bird && flock ? this.sceneTextures.get(flockFrame(flock, bird.frame)) : null;
+      child.visible = Boolean(texture);
+      if (!bird || !flock || !texture || !(child instanceof Sprite)) return;
+      child.texture = texture;
+      child.position.set(bird.x, bird.y);
+      child.width = child.height = flock.size;
+      child.rotation = bird.angle;
+      child.alpha = bird.alpha;
+    });
   }
 
   private dropBackdrop(): void {

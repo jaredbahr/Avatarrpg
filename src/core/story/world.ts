@@ -1,4 +1,5 @@
-import type { ContentIndex, GameState, MapDef, MapTrigger, NpcDef, Vec2 } from '../types';
+import type { ContentIndex, GameState, MapDef, MapExit, MapTrigger, NpcDef, Vec2 } from '../types';
+import { samePos } from '../rules/grid';
 import { evaluate } from './conditions';
 import { resolveResidents } from './residents';
 
@@ -12,6 +13,20 @@ export function activeTriggers(map: MapDef, state: GameState): readonly MapTrigg
       (!trigger.once || !state.world.fired.includes(triggerKey(map, trigger))) &&
       evaluate(state, trigger.when),
   );
+}
+
+/**
+ * Every tile the leader can walk into to take an exit (M2): the authored
+ * `area` when present, otherwise the single `pos` tile. Validation keeps
+ * `pos` inside a given area and keeps areas from overlapping.
+ */
+export function exitCells(exit: MapExit): readonly Vec2[] {
+  return exit.area ?? [exit.pos];
+}
+
+/** The exit covering a tile, if any. Identical to the `pos` match when `area` is absent. */
+export function exitAt(map: MapDef, pos: Vec2): MapExit | undefined {
+  return (map.exits ?? []).find((exit) => exitCells(exit).some((cell) => samePos(cell, pos)));
 }
 
 /** An NpcDef as placed on the map: plain ones keep `pos`, bound ones take their anchor's tile. */

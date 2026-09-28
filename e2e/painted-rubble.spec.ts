@@ -190,19 +190,21 @@ for (const renderer of ['canvas', 'webgl'])
         configurable: true,
       });
     });
-    const fallbackAccessible = await sample();
+    // Counted across the window, like the wash above, not read from the centre
+    // average: at figure-weight ink the heap's middle is spoil-toned stone, the
+    // same key as the procedural rubble, so a 7 px average no longer separates
+    // the art from its fallback even though the whole heap has gone.
+    const fallbackAccessible = await sample(ROI_CSS);
     expect(
-      Math.abs(fallbackAccessible.r - registered.r) +
-        Math.abs(fallbackAccessible.g - registered.g) +
-        Math.abs(fallbackAccessible.b - registered.b),
-    ).toBeGreaterThan(10);
+      changedPixels(registered.pixels, fallbackAccessible.pixels, ROI_CSS),
+      'high-contrast fallback changed pixels',
+    ).toBeGreaterThan(200);
     await page.evaluate(() => window.fnt!.app.updateSettings({ highContrast: false }));
-    const fallback = await sample();
+    const fallback = await sample(ROI_CSS);
     expect(
-      Math.abs(fallback.r - registered.r) +
-        Math.abs(fallback.g - registered.g) +
-        Math.abs(fallback.b - registered.b),
-    ).toBeGreaterThan(10);
+      changedPixels(registered.pixels, fallback.pixels, ROI_CSS),
+      'fallback changed pixels',
+    ).toBeGreaterThan(200);
   });
 
 for (const renderer of ['canvas', 'webgl'])

@@ -9,8 +9,10 @@
 
 import { describe as suite, expect, it } from 'vitest';
 import { CONTENT } from '../../content';
-import { createGame } from '../state/createGame';
-import type { GameState } from '../types';
+import { RngCursor } from '../rng';
+import { buildGrid, tileAt } from '../rules/grid';
+import { createBattle, createGame } from '../state/createGame';
+import type { ContentIndex, GameState, MapDef, Vec2 } from '../types';
 import { resolveResidents } from '../story/residents';
 import { reconcileWorld } from './reconcile';
 import { deserialize, serialize, stateFromBlob } from './serialize';
@@ -215,5 +217,186 @@ suite('reconcileWorld: idempotence and the round trip', () => {
     const reloaded = reconcileWorld(BOUND, stateFromBlob(result.blob));
 
     expect(reloaded.world.talk).toEqual(MIRA);
+  });
+});
+
+/**
+ * The M9 explore snap: a map edit can leave a saved position off the grid or
+ * inside new terrain, so the load repairs it. The fixture is one fabricated
+ * explore map, `m9_snap`, with a dead-end pocket, a solid 3x3 wall block and a
+ * two-way tie:
+ *
+ *   y2 '...###....'   the block: (4,3) is wall inside a wall ring
+ *   y3 '...###....'
+ *   y4 '...###....'
+ *   y5 '......###.'   the tie: (7,6) is wall
+ *   y6 '.......#..'     (6,6) and (8,6) are one walkable step away
+ *   y7 '###...###.'
+ *   y8 '##........'   the pocket: (1,8) is wall; (2,8) alone is walkable beside it
+ *   y9 '###.......'
+ */
+const SNAP_ROWS = [
+  '..........',
+  '..........',
+  '...###....',
+  '...###....',
+  '...###....',
+  '......###.',
+  '.......#..',
+  '###...###.',
+  '##........',
+  '###.......',
+];
+
+/**
+ * A 15x15 chamber: a walkable rim around a blocked core, so the rim is seven
+ * Chebyshev steps from the centre — one past the snap radius. The enclosed
+ * case needs a pocket this deep: a merely one-step ring no longer defeats a
+ * geometric search.
+ */
+const POCKET_ROWS = [
+  '...............',
+  '.#############.',
+  '.#############.',
+  '.#############.',
+  '.#############.',
+  '.#############.',
+  '.#############.',
+  '.#############.',
+  '.#############.',
+  '.#############.',
+  '.#############.',
+  '.#############.',
+  '.#############.',
+  '.#############.',
+  '...............',
+];
+
+/** A fabricated explore map added to the real content, keyed by its own id. */
+function snapFixture(
+  id: string,
+  rows: readonly string[],
+  spawn: Vec2,
+): { content: ContentIndex; map: MapDef; mapId: string } {
+  const map: MapDef = {
+    id,
+    name: id,
+    kind: 'explore',
+    width: rows[0]?.length ?? 0,
+    height: rows.length,
+    rows,
+    legend: { '.': { terrain: 'dirt' }, '#': { terrain: 'wall' } },
+    partySpawns: [spawn],
+    npcs: [],
+    props: [],
+    ambience: '',
+  };
+  const content: ContentIndex = { ...CONTENT, maps: new Map([...CONTENT.maps, [id, map]]) };
+  return { content, map, mapId: id };
+}
+
+/** A game paused mid-fight, with a real battle so its own grid is carried. */
+function midBattle(overrides: Partial<GameState> = {}): GameState {
+  const seeded = createGame(CONTENT, {
+    seed: 'reconcile-battle',
+    party: [{ characterId: 'kaya' }, { characterId: 'bo' }],
+    startNode: 'battle_quarry_gate',
+  });
+  const rng = new RngCursor(seeded.rng);
+  const battle = createBattle(CONTENT, seeded, 'enc_quarry_gate', rng);
+  return { ...seeded, screen: 'combat', rng: rng.state, battle, ...overrides };
+}
+
+suite('reconcileWorld: the explore snap (M9)', () => {
+  const { content, map, mapId } = snapFixture('m9_snap', SNAP_ROWS, { x: 8, y: 8 });
+
+  /** The app's real load path over a fabricated old save: write, read, reconcile. */
+  function loadOldSave(state: GameState): GameState {
+    const result = deserialize(serialize(state, META));
+    if (!result.ok) throw new Error(result.error);
+    return reconcileWorld(content, stateFromBlob(result.blob));
+  }
+
+  it('snaps a saved position on a cell the map edit blocked to the nearest walkable cell', () => {
+    const reconciled = loadOldSave(exploring({ location: { mapId, pos: { x: 1, y: 8 } } }));
+
+    expect(reconciled.location.pos).toEqual({ x: 2, y: 8 });
+    expect(tileAt(buildGrid(map), reconciled.location.pos)?.blocked).toBe(false);
+  });
+
+  it('snaps a position three cells off the map edge onto the map', () => {
+    // (12,5) is three cells past the right edge (width 10). Off-grid cells are
+    // not candidates, so the third ring is the first with any, and row-major
+    // picks the topmost of the equidistant cells in column x=9.
+    const reconciled = loadOldSave(exploring({ location: { mapId, pos: { x: 12, y: 5 } } }));
+
+    expect(reconciled.location.pos).toEqual({ x: 9, y: 2 });
+    expect(tileAt(buildGrid(map), reconciled.location.pos)?.blocked).toBe(false);
+  });
+
+  it('leaves an already-walkable position byte-identical', () => {
+    const state = exploring({ location: { mapId, pos: { x: 5, y: 6 } } });
+
+    expect(reconcileWorld(content, state).location.pos).toEqual({ x: 5, y: 6 });
+    expect(serialize(reconcileWorld(content, state), META)).toBe(serialize(state, META));
+  });
+
+  it('snaps the centre of a 3x3 wall block to the nearest walkable cell outside it', () => {
+    // (4,3) is the centre of the block at x 3..5, y 2..4: the whole first ring
+    // is wall, so the search reaches the second ring and takes its (2,1) corner.
+    const reconciled = loadOldSave(exploring({ location: { mapId, pos: { x: 4, y: 3 } } }));
+
+    expect(reconciled.location.pos).toEqual({ x: 2, y: 1 });
+    expect(tileAt(buildGrid(map), reconciled.location.pos)?.blocked).toBe(false);
+  });
+
+  it('falls back to the map entry when no walkable cell is within the snap radius', () => {
+    // The chamber's centre is seven steps from the walkable rim, one past the
+    // radius, so the search finds nothing and the entry wins.
+    const pocket = snapFixture('m9_pocket', POCKET_ROWS, { x: 0, y: 0 });
+    const reconciled = reconcileWorld(
+      pocket.content,
+      exploring({ location: { mapId: pocket.mapId, pos: { x: 7, y: 7 } } }),
+    );
+
+    // The entry is `partySpawns[0]`, the same cell `enterStoryNode` starts the party on.
+    expect(reconciled.location.pos).toEqual(pocket.map.partySpawns[0]);
+    expect(reconciled.location.pos).toEqual({ x: 0, y: 0 });
+  });
+
+  it('falls back to the entry when the map has no walkable cells at all', () => {
+    const bare = snapFixture('m9_bare', ['####', '####', '####'], { x: 2, y: 2 });
+    const reconciled = reconcileWorld(
+      bare.content,
+      exploring({ location: { mapId: bare.mapId, pos: { x: 0, y: 0 } } }),
+    );
+
+    expect(reconciled.location.pos).toEqual({ x: 2, y: 2 });
+  });
+
+  it('breaks ties row-major — smallest y, then smallest x — and repeats exactly', () => {
+    // (7,6) is wall with (6,6) and (8,6) one step away; y matches, so x decides.
+    const state = exploring({ location: { mapId, pos: { x: 7, y: 6 } } });
+    const first = reconcileWorld(content, state).location.pos;
+    expect(first).toEqual({ x: 6, y: 6 });
+
+    for (let attempt = 0; attempt < 3; attempt++) {
+      expect(reconcileWorld(content, state).location.pos).toEqual(first);
+    }
+  });
+
+  it('reconciles to a fixed point: a second pass leaves the snapped position alone', () => {
+    const once = reconcileWorld(content, exploring({ location: { mapId, pos: { x: 1, y: 8 } } }));
+
+    expect(reconcileWorld(content, once).location.pos).toEqual(once.location.pos);
+  });
+
+  it('leaves a mid-battle save untouched, even sitting on a cell the map edit blocked', () => {
+    const state = midBattle({ location: { mapId, pos: { x: 1, y: 8 } } });
+    const reconciled = reconcileWorld(content, state);
+
+    expect(reconciled).toEqual(state);
+    expect(reconciled.location).toEqual(state.location);
+    expect(reconciled.battle).toEqual(state.battle);
   });
 });
