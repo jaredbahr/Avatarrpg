@@ -7,7 +7,10 @@
  *
  * The stack hangs from the top of the map viewport, not the page: over the
  * page top it covered the place name and the header's buttons at the moment a
- * fight opened. It sits under an open sheet for the same reason.
+ * fight opened. It sits under the dialog overlay for the same reason, except
+ * while a sheet is open: then the toast is usually the sheet's own answer
+ * ("Saved.", "Could not erase"), so it rises above the overlay at the bottom of
+ * the screen, clear of the sheet's title.
  */
 
 import { el } from './dom';
@@ -18,6 +21,11 @@ export class Toasts {
   private host: HTMLElement;
   private recent = new Map<string, number>();
   private frame = 0;
+  /** What `place` last wrote, so a frame that changes nothing writes nothing. */
+  private placed: { where: 'sheet' | 'map' | 'top'; anchor: string } = {
+    where: 'top',
+    anchor: '',
+  };
 
   constructor(parent: HTMLElement) {
     this.host = el('div', { class: 'toasts', attrs: { 'aria-live': 'polite' } });
@@ -53,24 +61,37 @@ export class Toasts {
   }
 
   /**
-   * Re-measures the map's top edge every frame while a toast is up. It moves
-   * after the toast is raised: a story beat's line arrives just before the
-   * scene swaps to the fight, and the turn strip and text size change the
-   * header's height without a resize. A scene with no map keeps the CSS
-   * fallback, the top of the screen.
+   * Re-measures every frame while a toast is up, because what it hangs from
+   * moves after the toast is raised: a story beat's line arrives just before
+   * the scene swaps to the fight, the turn strip and text size change the
+   * header's height without a resize, and a sheet can open or close under it.
+   * A scene with no map keeps the CSS fallback, the top of the screen. The DOM
+   * is written only when the answer changes.
    */
   private place = (): void => {
     if (this.frame) cancelAnimationFrame(this.frame);
     this.frame = 0;
     if (this.host.childElementCount === 0) return;
-    const map = document.querySelector('.scene-host .map-wrap')?.getBoundingClientRect();
-    const origin = this.host.parentElement?.getBoundingClientRect();
-    if (map && origin && map.height > 0) {
-      this.host.style.setProperty('--toast-anchor', `${Math.round(map.top - origin.top)}px`);
-      this.host.dataset.anchored = '';
+    const origin = this.host.parentElement;
+    let where: 'sheet' | 'map' | 'top' = 'top';
+    let anchor = '';
+    if (origin?.querySelector(':scope > .overlay')) {
+      where = 'sheet';
     } else {
-      delete this.host.dataset.anchored;
+      const map = document.querySelector('.scene-host .map-wrap')?.getBoundingClientRect();
+      if (map && origin && map.height > 0) {
+        where = 'map';
+        anchor = `${Math.round(map.top - origin.getBoundingClientRect().top)}px`;
+      }
     }
+    if (where !== this.placed.where) {
+      if (where === 'top') delete this.host.dataset.place;
+      else this.host.dataset.place = where;
+    }
+    if (anchor && anchor !== this.placed.anchor) {
+      this.host.style.setProperty('--toast-anchor', anchor);
+    }
+    this.placed = { where, anchor: anchor || this.placed.anchor };
     this.frame = requestAnimationFrame(this.place);
   };
 }

@@ -148,6 +148,8 @@
   /* Under the dialog overlay: a toast never covers an open sheet. */
   --z-toast: 30;
   --z-overlay: 40;
+  /* A toast raised while a sheet is open: over the sheet, under the curtain. */
+  --z-toast-sheet: 45;
   --z-overlay-host: 50;
   --z-curtain: 55;
   --z-stats: 70;

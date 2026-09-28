@@ -1579,6 +1579,8 @@ html[data-contrast='high'] .hud-panel::after {
      cancelled by the margin so the body keeps its Normal-text layout. */
   padding: 5px;
   margin: -5px;
+  /* A control focused from the keyboard scrolls clear of the faded band. */
+  scroll-padding-block: var(--sheet-fade);
 }
 
 /*
@@ -1593,6 +1595,7 @@ html[data-contrast='high'] .hud-panel::after {
   -webkit-overflow-scrolling: touch;
   overscroll-behavior: contain;
   padding: var(--hairline);
+  scroll-padding-block: var(--sheet-fade);
 }
 
 /*
@@ -1861,8 +1864,9 @@ html[data-contrast='high'] .hud-panel::after {
 /*
  * Below the map's top edge, which Toasts.ts measures (under the header and, in
  * combat, the initiative strip); the top of the screen only where there is no
- * map. --z-toast sits under the dialog overlay, so an open sheet's title and
- * buttons are never covered either.
+ * map. --z-toast sits under the dialog overlay, so a sheet is never covered
+ * by a stray beat; a toast raised while one is open comes up over it instead,
+ * at the bottom (Toasts.ts).
  */
 .toasts {
   position: absolute;
@@ -1880,8 +1884,15 @@ html[data-contrast='high'] .hud-panel::after {
   max-width: min(36rem, 92vw);
 }
 
-.toasts[data-anchored] {
+.toasts[data-place='map'] {
   top: calc(var(--toast-anchor) + var(--sp-2));
+}
+
+/* Over an open sheet, at the foot of the screen: the header stays clear. */
+.toasts[data-place='sheet'] {
+  top: auto;
+  bottom: calc(var(--sp-4) + env(safe-area-inset-bottom, 0px));
+  z-index: var(--z-toast-sheet);
 }
 
 .toast {
