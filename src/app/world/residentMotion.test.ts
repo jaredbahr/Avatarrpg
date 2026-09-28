@@ -7,6 +7,7 @@ import { buildGrid, posKey, samePos, tileAt } from '../../core/rules/grid';
 import type { DayPhase, GameState, MapDef, Vec2 } from '../../core/types';
 import { ResidentWalks, planResidentMotion, standingOn } from './residentMotion';
 import type { ResidentMotion } from './residentMotion';
+import { previewWalk } from './walking';
 
 /**
  * The resident walk planner (ADR 0047 §7, W8): who walks where when the
@@ -394,7 +395,6 @@ describe('routines (Working Ba Dan)', () => {
   /** Out on the east lawn, well clear of the square, the bridge and the lanes. */
   const AWAY: Vec2[] = [{ x: 20, y: 11 }];
   const key = (p: Vec2) => posKey({ x: Math.round(p.x), y: Math.round(p.y) });
-  const within2 = (a: Vec2, b: Vec2) => Math.max(Math.abs(a.x - b.x), Math.abs(a.y - b.y)) <= 2;
   /** The parked basket runs here as it will once the household adult has art. */
   const walks = (reduced = false) =>
     new ResidentWalks(CONTENT, () => reduced, [...BA_DAN_ROUTINES, ...PARKED_ROUTINES]);
@@ -548,28 +548,96 @@ describe('routines (Working Ba Dan)', () => {
     expect(stay.every((f) => samePos(f.drawPos, SHOP))).toBe(true);
   });
 
-  it('goes back to the shop while the party walks up to talk, and nowhere else', () => {
+  it('calls him home from the crates when tapped, so the talk opens with him on his tile', () => {
     const w = walks();
     const state = at('morning', AWAY[0]);
     const reached = of(play(w, state, 0, 30_000), GAO).find(
       (f) => !f.walking && key(f.drawPos) === '8,5',
     );
     if (!reached) throw new Error('Gao reached the display');
+    const gao = (v: ResidentWalks) => v.figures().find((f) => f.id === GAO);
+
+    // Without the call home, a talk opened at once freezes him at the crates:
+    // the scene holds the resident clock for as long as the conversation lasts.
+    const naive = walks();
+    play(naive, state, 0, reached.t);
+    const opened = apply(CONTENT, state, { type: 'walkTo', pos: SHOP }).state;
+    expect(opened.world.talk?.npcId).toBe('shopkeeper_gao');
+    for (let t = reached.t + 50; t <= reached.t + 5_000; t += 50) {
+      naive.tick(t, true);
+      naive.update(VILLAGE, opened, [opened.location.pos], false);
+    }
+    expect(gao(naive)?.drawPos).toEqual({ x: 8, y: 5 });
+
+    // The scene's way (ExploreScene.requestWalk): he is away, so the tap walks
+    // the party beside his shop and the talk waits until he is home.
     const v = walks();
     play(v, state, 0, reached.t);
-    // A tap on him: the talk opens on his shop tile as the party sets off.
-    const talk = apply(CONTENT, state, { type: 'walkTo', pos: SHOP }).state;
-    expect(talk.world.talk?.npcId).toBe('shopkeeper_gao');
-    // The party arriving beside the shop is within reach of the display.
-    const arrived = [talk.location.pos];
-    expect(within2(arrived[0]!, { x: 8, y: 5 })).toBe(true);
-    const frames: Vec2[] = [];
-    for (let t = reached.t + 50; t <= reached.t + 20_000; t += 50) {
+    expect(v.walkingTo(SHOP)).toBe(true);
+    const beside = previewWalk(CONTENT, state, SHOP).path.at(-1);
+    if (!beside) throw new Error('a tile beside the shop');
+    const walking = apply(CONTENT, state, { type: 'walkTo', pos: beside }).state;
+    expect(walking.screen).toBe('explore');
+    let t = reached.t + 50;
+    for (; t <= reached.t + 10_000 && v.walkingTo(SHOP); t += 50) {
       v.tick(t, false);
-      v.update(VILLAGE, talk, arrived, false, arrived);
-      frames.push(v.figures().find((f) => f.id === GAO)?.drawPos ?? { x: -1, y: -1 });
+      v.update(VILLAGE, walking, [beside], true);
     }
-    expect(frames.slice(40).every((p) => samePos(p, SHOP))).toBe(true);
+    // Home on the next leg, not after the four-second hold at the crates.
+    expect(t - reached.t).toBeLessThan(2_500);
+    expect(gao(v)).toMatchObject({ drawPos: SHOP, walking: false });
+    const talk = apply(CONTENT, walking, { type: 'walkTo', pos: SHOP }).state;
+    expect(talk.world.talk?.npcId).toBe('shopkeeper_gao');
+    // The conversation holds the clock, exactly as the scene does: he stays home.
+    for (const end = t + 20_000; t <= end; t += 50) {
+      v.tick(t, true);
+      v.update(VILLAGE, talk, [talk.location.pos], false);
+      expect(gao(v)).toMatchObject({ drawPos: SHOP, walking: false, alpha: 1 });
+    }
+  });
+
+  /** Gao at the crates, then `ms` more of the loop with the party on `party`. */
+  function homeFromCrates(party: readonly Vec2[], ms: number) {
+    const state = at('morning', AWAY[0]);
+    const reached = of(play(walks(), state, 0, 30_000), GAO).find(
+      (f) => !f.walking && key(f.drawPos) === '8,5',
+    );
+    if (!reached) throw new Error('Gao reached the display');
+    const v = walks();
+    play(v, state, 0, reached.t);
+    return of(
+      play(v, state, reached.t + 50, ms, () => party),
+      GAO,
+    );
+  }
+
+  it('goes home round the party, never through it', () => {
+    // The party on the lane tile his home leg crosses.
+    const home = homeFromCrates([{ x: 9, y: 5 }], 3_000);
+    expect(home.at(-1)?.drawPos).toEqual(SHOP);
+    expect(home.every((f) => f.alpha === 1)).toBe(true);
+    expect(home.some((f) => f.walking)).toBe(true);
+    for (const f of home)
+      expect(Math.hypot(f.drawPos.x - 9, f.drawPos.y - 5)).toBeGreaterThanOrEqual(0.7);
+  });
+
+  it('fades home when the party leaves no way round', () => {
+    // Every open neighbour of his shop tile but the crates he stands at.
+    const ring: Vec2[] = [
+      { x: 8, y: 3 },
+      { x: 9, y: 3 },
+      { x: 10, y: 3 },
+      { x: 8, y: 4 },
+      { x: 10, y: 4 },
+      { x: 9, y: 5 },
+      { x: 10, y: 5 },
+    ];
+    const home = homeFromCrates(ring, 1_000);
+    expect(home.at(-1)).toMatchObject({ drawPos: SHOP, alpha: 1 });
+    expect(home.some((f) => f.alpha < 1)).toBe(true);
+    // Out at the crates, in at home: never drawn on a tile between.
+    for (const f of home) expect(['8,5', '9,4']).toContain(key(f.drawPos));
+    expect(home.some((f) => f.walking)).toBe(false);
   });
 
   it('holds the anchor under reduce motion', () => {
