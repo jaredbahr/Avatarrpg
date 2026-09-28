@@ -239,8 +239,30 @@ function tree(x: number, y: number, size = 360): SceneScenery {
   };
 }
 
+const NORTH_HOUSE = house('north-house', 12, 1, 4, 3, 'dwelling');
+const SOUTHWEST_HOUSE = house('southwest-house', 6, 10, 4, 4, 'dwelling');
+
+/** The ground point the oblique camera draws under (u, v) of a house image. */
+function roofPoint(piece: SceneScenery, u: number, v: number): Vec2 {
+  const across = (piece.x + u * piece.width - 1024) / 64;
+  const down = (piece.y + v * piece.height) / 64;
+  return { x: down + across / 2, y: down - across / 2 };
+}
+
+/**
+ * The dwellings have no painted chimney: a cooking fire's smoke leaves by a
+ * vent in the ridge tiles, halfway along the main ridge, so the wisp starts
+ * on the roof and not at the ridge end over the paving behind. Mira's house
+ * and Pella's household's.
+ */
+export const BA_DAN_CHIMNEYS: readonly Vec2[] = [
+  roofPoint(NORTH_HOUSE, 0.55, 0.19),
+  roofPoint(SOUTHWEST_HOUSE, 0.55, 0.19),
+];
+
 /** Calibrated projected pixels; textures are already painted in the target camera. */
 export const BA_DAN_SCENE: MapScene = {
+  chimneys: BA_DAN_CHIMNEYS,
   groundMode: 'partial',
   ground: [
     westernApproachGround(),
@@ -259,8 +281,8 @@ export const BA_DAN_SCENE: MapScene = {
   ],
   scenery: [
     house('gao-house', 6, 1, 4, 3),
-    house('north-house', 12, 1, 4, 3, 'dwelling'),
-    house('southwest-house', 6, 10, 4, 4, 'dwelling'),
+    NORTH_HOUSE,
+    SOUTHWEST_HOUSE,
     house('southeast-house', 13, 10, 4, 4),
     ...canalBridge(),
     // Equal-depth frontage must paint after the building behind it.

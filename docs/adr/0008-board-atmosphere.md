@@ -60,6 +60,7 @@ e2e spec depends on.
   reseeded every cycle (`src/app/anim/ambience.ts`), so nothing is stored
   between frames. WebGL only and off under reduce motion: it is fidelity,
   not information. A map whose ambience has no recipe gets still air.
+  Chimney smoke is the exception; see the amendment below.
 
 ## Consequences
 
@@ -77,3 +78,23 @@ e2e spec depends on.
   cleared with the sprites on a resize, for the iOS canvas cap.
 - A new ambience needs a recipe and nothing else; a new terrain needs a decal
   case, or none.
+
+## Amendment, 2026-09-28: chimney smoke
+
+A painted roof can smoke. `MapScene.chimneys` lists where smoke leaves a
+roof, in ground tiles; a roof stands above the grid, so a point may be
+fractional or lie off it, and a scene lists four at most. An ambience recipe
+may carry a `chimney` emitter, which `ambientEmitters` runs at each point on
+the same two-loop clock as the motes.
+
+Two optional particle fields came with it. `opacity` caps a particle's peak
+alpha (default 1), so smoke stays a haze. `upright` draws each particle round
+on the screen under the oblique camera instead of flat on the ground,
+stretched along the diagonal the camera halves, on both backends.
+
+Unlike the motes, the smoke is drawn on Canvas 2D and under Reduce motion,
+as a **still wisp**: one frame frozen at the column's fullest, marked
+`still` on the emitter instance. A roof that smokes on one device and not on
+another reads as a different village; a still wisp moves nothing, so it
+costs Reduce motion nothing. The Canvas backend samples a still emitter once
+and keeps it, so the wisp is not resampled every frame.

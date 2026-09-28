@@ -815,6 +815,8 @@ export interface MapScene {
   readonly groundMode?: 'partial';
   /** Exact cells whose permanent rubble is already represented by registered art. */
   readonly paintedRubble?: readonly Vec2[];
+  /** Where smoke leaves a painted roof, in ground tiles (fractional, may lie off the grid). */
+  readonly chimneys?: readonly Vec2[];
   readonly ground: readonly SceneImage[];
   readonly scenery: readonly SceneScenery[];
   readonly flock?: SceneFlock;

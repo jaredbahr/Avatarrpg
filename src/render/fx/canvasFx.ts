@@ -22,6 +22,8 @@ const MAX_PARTICLES = 96;
 const MAX_STROKES = 60;
 /** Tinted cells kept; a cell per (shape, colour) so the map stays small. */
 const MAX_TINTED = 96;
+/** Still samples kept: a loop per chimney is a handful. */
+const MAX_STILL = 16;
 
 export class CanvasFxLayer {
   constructor() {
@@ -29,10 +31,13 @@ export class CanvasFxLayer {
   }
   private tinted = new Map<string, HTMLCanvasElement>();
   private scratch = new Float32Array(MAX_PARTICLES * PARTICLE_STRIDE);
+  /** A still emitter's particles, sampled once rather than every frame, by instance key. */
+  private stills = new Map<string, { readonly def: EmitterInstance['def']; data: Float32Array }>();
 
   /**
    * Draws one layer's worth of live emitters. `origin` is the screen position
-   * of tile (0, 0) and `size` the tile size in CSS pixels.
+   * of tile (0, 0) and `size` the tile size in CSS pixels. `oblique` says
+   * the context carries the oblique ground transform.
    */
   draw(
     ctx: CanvasRenderingContext2D,
@@ -40,6 +45,7 @@ export class CanvasFxLayer {
     layer: 'under' | 'over',
     origin: Vec2,
     size: number,
+    oblique = false,
   ): void {
     let particles = 0;
     let strokes = 0;
@@ -51,16 +57,20 @@ export class CanvasFxLayer {
       if (def.kind === 'particles') {
         if (particles >= MAX_PARTICLES) continue;
         const room = MAX_PARTICLES - particles;
-        const n = sampleParticles(
-          def,
-          instance.elapsed,
-          instance.seed,
-          instance.from,
-          instance.to,
-          this.scratch,
-          0,
-          instance.arc,
-        );
+        const sampled = instance.still ? this.still(instance) : null;
+        const data = sampled ?? this.scratch;
+        const n = sampled
+          ? sampled.length / PARTICLE_STRIDE
+          : sampleParticles(
+              def,
+              instance.elapsed,
+              instance.seed,
+              instance.from,
+              instance.to,
+              this.scratch,
+              0,
+              instance.arc,
+            );
         const frame =
           def.cel && celReady(def.cel)
             ? celAtlasFrame(def.cel, celFrameIndex(def.cel, instance.elapsed, def.duration))
@@ -72,16 +82,24 @@ export class CanvasFxLayer {
         ctx.globalCompositeOperation = def.blend === 'add' ? 'lighter' : 'source-over';
         for (let i = 0; i < Math.min(n, room); i++) {
           const at = i * PARTICLE_STRIDE;
-          const px = origin.x + (this.scratch[at] ?? 0) * size;
-          const py = origin.y + (this.scratch[at + 1] ?? 0) * size;
-          const s = (this.scratch[at + 2] ?? 0) * size;
-          const rotation = this.scratch[at + 3] ?? 0;
-          ctx.globalAlpha = Math.max(0, Math.min(1, this.scratch[at + 4] ?? 0));
-          ctx.setTransform(ctx.getTransform().translate(px, py).rotate(rotation));
+          const px = origin.x + (data[at] ?? 0) * size;
+          const py = origin.y + (data[at + 1] ?? 0) * size;
+          const s = (data[at + 2] ?? 0) * size;
+          const rotation = data[at + 3] ?? 0;
+          ctx.globalAlpha = Math.max(0, Math.min(1, data[at + 4] ?? 0));
+          const base = ctx.getTransform();
+          // Stretched along the ground diagonal the oblique camera halves, so it lands round.
+          const up = oblique && def.upright;
+          ctx.setTransform(
+            base
+              .translate(px, py)
+              .rotate(up ? Math.PI / 4 : rotation)
+              .scale(up ? Math.SQRT2 : 1, up ? Math.SQRT1_2 : 1),
+          );
           if (frame)
             ctx.drawImage(cell, frame.x, frame.y, frame.size, frame.size, -s / 2, -s / 2, s, s);
           else ctx.drawImage(cell, -s / 2, -s / 2, s, s);
-          ctx.setTransform(ctx.getTransform().rotate(-rotation).translate(-px, -py));
+          ctx.setTransform(base);
         }
         ctx.restore();
         particles += Math.min(n, room);
@@ -130,6 +148,23 @@ export class CanvasFxLayer {
         ctx.restore();
       }
     }
+  }
+
+  /** A still emitter's particles, sampled the first time it is drawn and kept. */
+  private still(instance: EmitterInstance): Float32Array {
+    const { def, seed, elapsed, from, to, arc } = instance;
+    const key = `${seed}|${elapsed}|${from.x},${from.y}|${to.x},${to.y}|${arc}`;
+    const kept = this.stills.get(key);
+    if (kept?.def === def) return kept.data;
+    if (def.kind !== 'particles') return this.scratch.subarray(0, 0);
+    const n = sampleParticles(def, elapsed, seed, from, to, this.scratch, 0, arc);
+    const data = this.scratch.slice(0, n * PARTICLE_STRIDE);
+    this.stills.set(key, { def, data });
+    if (this.stills.size > MAX_STILL) {
+      const oldest = this.stills.keys().next().value;
+      if (oldest !== undefined) this.stills.delete(oldest);
+    }
+    return data;
   }
 
   /** A cell of the atlas with its white fill turned `hex`, ink edge kept. */

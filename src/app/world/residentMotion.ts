@@ -18,9 +18,18 @@
  *   the same 280 ms a tile, ramps, bob and facing, with no footsteps.
  * - A conversation freezes everything: the clock stops, and no plan is made
  *   until the conversation ends, so a pinned speaker never moves.
+ * - Between placements, someone with a routine (`BA_DAN_ROUTINES`) walks its
+ *   legs on the same clock: an errand. It never touches the rules tile, so
+ *   it is not `moving()`. It holds rather than step near the party or onto
+ *   anyone's tile, heads home early when the party comes close, and under
+ *   reduce motion stays on the anchor. Its way home goes round the party,
+ *   or fades when it cannot. A tap on someone away on an errand calls them
+ *   home (`walkingTo`), so their talk opens with them on their tile.
  */
 
 import type { ContentIndex, GameState, Grid, MapDef, Vec2 } from '../../core/types';
+import type { ResidentRoutine } from '../../content/schemas';
+import { BA_DAN_ROUTINES } from '../../content/residents/routines';
 import { cachedGrid, euclidean, findPath, posKey, samePos } from '../../core/rules/grid';
 import { resolveResidents } from '../../core/story/residents';
 import { backgroundFigures, visibleNpcs } from '../../core/story/world';
@@ -179,6 +188,16 @@ function portal(
   return ways[0] ?? near;
 }
 
+/** The first leg after `leg` that ends at `home`; the next leg when none does. */
+function homeLeg(legs: ResidentRoutine['legs'], leg: number, home: Vec2): number {
+  for (let k = 1; k <= legs.length; k++) {
+    const index = (leg + k) % legs.length;
+    const end = legs[index]?.path.at(-1);
+    if (end && samePos(end, home)) return index;
+  }
+  return (leg + 1) % legs.length;
+}
+
 /** How long a fade at a door, an exit or a blocked route takes, at full motion. */
 export const FADE_MS = 320;
 
@@ -216,6 +235,28 @@ export interface ResidentFigure {
 
 const clamp01 = (n: number) => Math.max(0, Math.min(1, n));
 
+/** Tiles either way the party keeps an errand from setting off. */
+const YIELD = 2;
+/** One reach into the work while an errand holds, in ms. */
+const WORK_MS = 1600;
+
+const within = (a: Vec2, b: Vec2, tiles: number) =>
+  Math.max(Math.abs(a.x - b.x), Math.abs(a.y - b.y)) <= tiles;
+
+/** A routine under way: the leg whose stop the figure is at or walking to. */
+interface Errand {
+  readonly routine: ResidentRoutine;
+  leg: number;
+  at: Vec2;
+  walk: Track | null;
+  /** When the hold at `at` began, and when it ends. */
+  since: number;
+  until: number;
+  facing: 1 | -1;
+  /** Called home for a talk: the next leg home, now, without the hold. */
+  recalled: boolean;
+}
+
 /**
  * The walks in progress on the loaded map, on a clock of their own that
  * stands still through a conversation, a menu or a hidden tab. Owned by the
@@ -229,10 +270,14 @@ export class ResidentWalks {
   private people: readonly Standing[] = [];
   private tracks = new Map<string, Track>();
   private facings = new Map<string, 1 | -1>();
+  private errands = new Map<string, Errand>();
+  /** What each placed person is doing, by id: `anchor/activity`. */
+  private doing = new Map<string, string>();
 
   constructor(
     private content: ContentIndex,
     private reduced: () => boolean = motionReduced,
+    private routines: readonly ResidentRoutine[] = BA_DAN_ROUTINES,
   ) {}
 
   /** Forget everything: a load, a new game or the preview puts people straight on their tiles. */
@@ -241,6 +286,7 @@ export class ResidentWalks {
     this.seen = null;
     this.tracks.clear();
     this.facings.clear();
+    this.errands.clear();
   }
 
   /** Moves the clock on, unless `frozen`. */
@@ -253,6 +299,18 @@ export class ResidentWalks {
       if (facing) this.facings.set(id, facing);
       this.tracks.delete(id);
     }
+    // An errand's walk (or its fade, once faded in) that has ended becomes the hold at its stop.
+    for (const [id, errand] of this.errands) {
+      const walk = errand.walk;
+      if (!walk) continue;
+      const ends = walk.motion.kind === 'fade' ? walk.end : walk.walkEnd;
+      if (this.clock < ends) continue;
+      const leg = errand.routine.legs[errand.leg];
+      errand.walk = null;
+      errand.facing = leg?.face ?? walk.animator?.facing(id) ?? errand.facing;
+      errand.since = ends;
+      errand.until = ends + (leg?.hold ?? 0);
+    }
   }
 
   /** True while anyone is still walking or fading. */
@@ -260,11 +318,27 @@ export class ResidentWalks {
     return this.tracks.size > 0;
   }
 
-  /** True while someone is still on their way to their rules tile `pos`. */
+  /** Where errands hold someone off their rules tile, or are taking them. */
+  errandTiles(): Vec2[] {
+    return [...this.errands.values()].map((errand) => errand.at);
+  }
+
+  /**
+   * True while someone is still on their way to their rules tile `pos`, or an
+   * errand has them off it. That errand is called home, so the party waits
+   * beside the tile and talks once they are back on it (ADR 0047 §7, W8).
+   */
   walkingTo(pos: Vec2): boolean {
     for (const [id, track] of this.tracks) {
       const to = this.people.find((s) => s.id === id)?.pos;
       if (to && samePos(to, pos) && this.clock < track.walkEnd) return true;
+    }
+    for (const who of this.people) {
+      const errand = this.errands.get(who.id);
+      if (!errand || !samePos(who.pos, pos)) continue;
+      if (!errand.walk && samePos(errand.at, pos)) continue;
+      errand.recalled = true;
+      return true;
     }
     return false;
   }
@@ -275,23 +349,51 @@ export class ResidentWalks {
    * walk): the plan waits for the state that follows it. A new map, or the
    * first state after a reset, places everyone where they stand.
    * Returns true when anyone started to move.
+   *
+   * Every call also paces the errands. `clear` is where the party is and is
+   * going (its tiles, drawn positions and the path it walks); it defaults to
+   * `party`.
    */
-  update(map: MapDef, state: GameState, party: readonly Vec2[], live: boolean): boolean {
+  update(
+    map: MapDef,
+    state: GameState,
+    party: readonly Vec2[],
+    live: boolean,
+    clear: readonly Vec2[] = party,
+  ): boolean {
     if (map !== this.map || !this.seen) {
       this.map = map;
       this.accept(state);
       this.tracks.clear();
+      this.errands.clear();
+      this.pace(clear, live);
       return false;
     }
-    if (state === this.seen || !live) return false;
+    if (state === this.seen || !live) {
+      this.pace(clear, live);
+      return false;
+    }
     // Someone caught mid-walk sets off again from the tile they are drawn on,
     // but only when their own tile changed: anyone else keeps the walk they are on.
     const was = new Map(this.people.map((s) => [s.id, s.pos]));
     const is = new Map(standingOn(this.content, map, state).map((s) => [s.id, s.pos]));
+    const doing = this.doings(state);
     const drawn = new Map<string, Vec2 | null>();
     for (const figure of this.figures()) {
       const a = was.get(figure.id);
       const b = is.get(figure.id);
+      const errand = this.errands.get(figure.id);
+      // An errand ends when its placement does; they set off from where they are drawn.
+      if (errand && doing.get(figure.id) !== this.doing.get(figure.id)) {
+        this.errands.delete(figure.id);
+        this.facings.set(figure.id, figure.facing);
+        if (errand.walk || !a || !samePos(errand.at, a))
+          drawn.set(figure.id, {
+            x: Math.round(figure.drawPos.x),
+            y: Math.round(figure.drawPos.y),
+          });
+        continue;
+      }
       if (!this.tracks.has(figure.id) || (a && b ? samePos(a, b) : a === b)) continue;
       drawn.set(
         figure.id,
@@ -310,24 +412,137 @@ export class ResidentWalks {
     });
     this.accept(state);
     for (const motion of motions) this.start(motion, map);
+    this.pace(clear, live);
     return motions.length > 0;
+  }
+
+  private doings(state: GameState): Map<string, string> {
+    return new Map(
+      resolveResidents(this.content, state).placements.map((p) => [
+        p.id,
+        `${p.anchor}/${p.activity}`,
+      ]),
+    );
   }
 
   private accept(state: GameState): void {
     this.seen = state;
     this.people = this.map ? standingOn(this.content, this.map, state) : [];
+    this.doing = this.doings(state);
+  }
+
+  /**
+   * Sets each errand off on its next leg when its hold is over and the way is
+   * clear, and starts one for anyone standing at a routine's anchor. While
+   * not `live` only the way home is taken: someone the party is walking up to
+   * talk to goes back to the tile the talk is on.
+   */
+  private pace(clear: readonly Vec2[], live: boolean): void {
+    const map = this.map;
+    if (this.reduced()) this.errands.clear();
+    if (!map || this.reduced()) return;
+    for (const who of this.people) {
+      let errand = this.errands.get(who.id);
+      if (!errand) {
+        if (!live) continue;
+        const doing = this.doing.get(who.id);
+        const routine = this.routines.find(
+          (r) =>
+            r.id === who.id &&
+            r.mapId === map.id &&
+            r.activities.some((activity) => doing === `${r.anchor}/${activity}`),
+        );
+        const last = routine?.legs.length ?? 0;
+        if (!routine || this.tracks.has(who.id)) continue;
+        errand = {
+          routine,
+          leg: last - 1,
+          at: who.pos,
+          walk: null,
+          since: this.clock,
+          until: this.clock + (routine.legs[last - 1]?.hold ?? 0),
+          facing: this.facings.get(who.id) ?? 1,
+          recalled: false,
+        };
+        this.errands.set(who.id, errand);
+      }
+      if (errand.walk) continue;
+      const at = errand.at;
+      if (samePos(at, who.pos)) errand.recalled = false;
+      const recalled = errand.recalled;
+      const legs = errand.routine.legs;
+      const natural = (errand.leg + 1) % legs.length;
+      // Called home: the next leg that ends there, at once.
+      const index = recalled ? homeLeg(legs, errand.leg, who.pos) : natural;
+      const next = legs[index];
+      if (!next) continue;
+      // A leg back to the anchor goes home: the party coming close cuts the hold short.
+      const home = samePos(next.path.at(-1) ?? at, who.pos);
+      if (!home && !live) continue;
+      const near = clear.some((p) => within(p, at, YIELD));
+      if (!recalled && this.clock < errand.until && !(home && near)) continue;
+      // Never onto anyone's tile; away from home, never near the party either.
+      const taken = [
+        ...this.people.filter((s) => s.id !== who.id).map((s) => s.pos),
+        ...[...this.errands]
+          .filter(([id]) => id !== who.id)
+          .flatMap(([, e]) => [
+            e.at,
+            ...(e.walk?.motion.kind === 'walk' ? e.walk.motion.path : []),
+          ]),
+      ];
+      const onTaken = (tile: Vec2) => taken.some((p) => samePos(p, tile));
+      if (!home) {
+        const blocked = (tile: Vec2) => onTaken(tile) || clear.some((p) => within(p, tile, YIELD));
+        if (next.path.some(blocked) || blocked(at)) continue;
+        errand.walk = this.walk(
+          { kind: 'walk', who, from: at, path: next.path, enter: false, leave: false },
+          map,
+        );
+      } else {
+        // Home waits for nobody's tile to clear unless called, and goes round
+        // the party rather than through it; with no way round, a short fade.
+        if (!recalled && next.path.some(onTaken)) continue;
+        const onParty = (tile: Vec2) => clear.some((p) => samePos(p, tile));
+        const path =
+          index === natural && !next.path.some((tile) => onTaken(tile) || onParty(tile))
+            ? next.path
+            : route(
+                this.content,
+                cachedGrid(map),
+                at,
+                [who.pos],
+                [[...taken, ...clear].map(posKey)],
+              );
+        errand.walk = path
+          ? this.walk({ kind: 'walk', who, from: at, path, enter: false, leave: false }, map)
+          : this.fade({ kind: 'fade', who, from: at, to: who.pos });
+      }
+      errand.leg = index;
+      errand.at = next.path.at(-1) ?? at;
+      errand.recalled = false;
+    }
   }
 
   private start(motion: ResidentMotion, map: MapDef): void {
+    this.tracks.set(
+      motion.who.id,
+      motion.kind === 'fade' ? this.fade(motion) : this.walk(motion, map),
+    );
+  }
+
+  private fade(motion: Extract<ResidentMotion, { kind: 'fade' }>): Track {
+    const fade = FADE_MS * (this.reduced() ? 0.02 : 1);
+    const at = this.clock;
+    const out = motion.from ? fade : 0;
+    const end = at + out + (motion.to ? fade : 0);
+    return { motion, animator: null, start: at, walkEnd: at + out, end, fade };
+  }
+
+  private walk(motion: Extract<ResidentMotion, { kind: 'walk' }>, map: MapDef): Track {
     const id = motion.who.id;
     const fade = FADE_MS * (this.reduced() ? 0.02 : 1);
     const at = this.clock;
-    if (motion.kind === 'fade') {
-      const out = motion.from ? fade : 0;
-      const end = at + out + (motion.to ? fade : 0);
-      this.tracks.set(id, { motion, animator: null, start: at, walkEnd: at + out, end, fade });
-      return;
-    }
     const animator = new Animator(this.content, { motionReduced: this.reduced });
     animator.setProjection(map.projection ?? 'orthographic');
     animator.push(
@@ -338,7 +553,7 @@ export class ResidentWalks {
     );
     const walkEnd = Math.max(at + (motion.enter ? fade : 0), animator.finishesAt);
     const end = walkEnd + (motion.leave ? fade : 0);
-    this.tracks.set(id, { motion, animator, start: at, walkEnd, end, fade });
+    return { motion, animator, start: at, walkEnd, end, fade };
   }
 
   /** Everyone the map draws now: the people last planned for, and anyone still walking off. */
@@ -348,22 +563,45 @@ export class ResidentWalks {
     for (const who of this.people) {
       placed.add(who.id);
       const track = this.tracks.get(who.id);
+      const errand = this.errands.get(who.id);
       out.push(
         track
           ? this.sample(who, track, who.pos)
-          : {
-              ...who,
-              drawPos: who.pos,
-              facing: this.facings.get(who.id) ?? 1,
-              walking: false,
-              clipTime: 0,
-              alpha: 1,
-            },
+          : errand?.walk
+            ? this.sample(who, errand.walk, who.pos)
+            : errand
+              ? this.holding(who, errand)
+              : {
+                  ...who,
+                  drawPos: who.pos,
+                  facing: this.facings.get(who.id) ?? 1,
+                  walking: false,
+                  clipTime: 0,
+                  alpha: 1,
+                },
       );
     }
     for (const [id, track] of this.tracks)
       if (!placed.has(id)) out.push(this.sample(track.motion.who, track, null));
     return out;
+  }
+
+  /** Someone holding at an errand's stop; at a work stop, reaching into the work and back. */
+  private holding(who: Standing, errand: Errand): ResidentFigure {
+    const work = errand.routine.legs[errand.leg]?.work;
+    const reach = work
+      ? 0.5 - 0.5 * Math.cos((2 * Math.PI * (this.clock - errand.since)) / WORK_MS)
+      : 0;
+    return {
+      ...who,
+      drawPos: errand.at,
+      facing: errand.facing,
+      walking: false,
+      clipTime: 0,
+      alpha: 1,
+      lean: 0.05 * errand.facing * reach,
+      squash: 0.4 * reach,
+    };
   }
 
   private sample(who: Standing, track: Track, pos: Vec2 | null): ResidentFigure {

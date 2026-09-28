@@ -64,6 +64,21 @@ const residentFrame = (page: Page) =>
     };
   });
 
+/** The page point on the body of someone drawn at tile `at`. */
+const bodyPoint = (page: Page, at: { x: number; y: number }) =>
+  page.evaluate((at) => {
+    const canvas = document.querySelector<HTMLCanvasElement>('.map-canvas')!;
+    const camera = window.fnt!.app.rendererCamera()!;
+    const m = camera.groundTransform;
+    const x = (at.x + 0.5) * 64;
+    const y = (at.y + 0.5) * 64;
+    const rect = canvas.getBoundingClientRect();
+    return {
+      x: rect.left + m.a * x + m.c * y + m.tx,
+      y: rect.top + m.b * x + m.d * y + m.ty - camera.tilePx * 0.5,
+    };
+  }, at);
+
 /** A new game's village at `phase`, the leader at `pos`, after Mira's briefing. */
 async function village(page: Page, renderer: string, phase: string, pos: { x: number; y: number }) {
   await resetStorage(page, `?renderer=${renderer}`);
@@ -148,6 +163,29 @@ for (const renderer of ['canvas', 'webgl'] as const) {
   });
 }
 
+test('Gao restocks his display in trading hours, his tap tile never leaving the shop', async ({
+  page,
+}) => {
+  // The party out on the east lawn, clear of the square.
+  await village(page, 'canvas', 'morning', { x: 20, y: 11 });
+  await pauseClock(page);
+  const seen = new Set<string>();
+  let moving = false;
+  // A tenth of a second a sample: a tile of walk is 280 ms.
+  for (let step = 0; step < 200 && !seen.has('8,5'); step++) {
+    await page.clock.runFor(100);
+    const frame = await residentFrame(page);
+    const gao = frame.markers.find((m) => m.id === 'lw.npc.gao');
+    expect(gao?.pos).toEqual({ x: 9, y: 4 });
+    if (gao) seen.add(`${Math.round(gao.at.x)},${Math.round(gao.at.y)}`);
+    moving ||= frame.moving;
+  }
+  await page.clock.resume();
+  // Round by the lane to the display's crates; an errand is not a walk anyone waits on.
+  expect([...seen]).toEqual(expect.arrayContaining(['9,4', '9,5', '8,5']));
+  expect(moving).toBe(false);
+});
+
 test('the relief watch holds the gate at midday, and the party stops beside them', async ({
   page,
 }) => {
@@ -191,18 +229,7 @@ test('a tap on someone walking takes the party to them once they arrive', async 
   expect(dorin?.pos).toEqual({ x: 17, y: 6 });
   expect(dorin?.at).not.toEqual(dorin?.pos);
   // Tap his body where it is drawn, not the tile he is heading for.
-  const point = await page.evaluate((at) => {
-    const canvas = document.querySelector<HTMLCanvasElement>('.map-canvas')!;
-    const camera = window.fnt!.app.rendererCamera()!;
-    const m = camera.groundTransform;
-    const x = (at.x + 0.5) * 64;
-    const y = (at.y + 0.5) * 64;
-    const rect = canvas.getBoundingClientRect();
-    return {
-      x: rect.left + m.a * x + m.c * y + m.tx,
-      y: rect.top + m.b * x + m.d * y + m.ty - camera.tilePx * 0.5,
-    };
-  }, dorin!.at);
+  const point = await bodyPoint(page, dorin!.at);
   const start = await page.evaluate(() => window.fnt!.app.state!.location.pos);
   await page.mouse.click(point.x, point.y);
   await page.clock.runFor(50);
@@ -237,4 +264,53 @@ test('a tap on someone walking takes the party to them once they arrive', async 
   expect(await drawn()).toEqual({ x: 17, y: 6 });
   await page.waitForTimeout(500);
   expect(await drawn()).toEqual({ x: 17, y: 6 });
+});
+
+test('a tap on Gao at his crates brings him home before the talk opens', async ({ page }) => {
+  await village(page, 'canvas', 'morning', { x: 20, y: 11 });
+  await pauseClock(page);
+  const gao = () =>
+    page.evaluate(() => {
+      const figure = window.fnt!.app.residents.figures().find((f) => f.id === 'lw.npc.gao');
+      return figure && { pos: figure.pos, at: figure.drawPos, walking: figure.walking };
+    });
+  const home = { pos: { x: 9, y: 4 }, at: { x: 9, y: 4 }, walking: false };
+  // Wait for him to stop at the display's crates, off his rules tile.
+  let crates = false;
+  for (let step = 0; step < 200 && !crates; step++) {
+    await page.clock.runFor(100);
+    const now = await gao();
+    crates = now?.at.x === 8 && now.at.y === 5 && !now.walking;
+  }
+  expect(crates).toBe(true);
+  // The party is out on the lawn: bring the square into view, as a drag would.
+  await page.evaluate(() =>
+    (
+      window.fnt!.app as unknown as {
+        scene: { renderer: { camera: { centreOn(at: { x: number; y: number }): void } } };
+      }
+    ).scene.renderer.camera.centreOn({ x: 8, y: 5 }),
+  );
+  await page.clock.runFor(50);
+  const point = await bodyPoint(page, { x: 8, y: 5 });
+  await page.mouse.click(point.x, point.y);
+  await page.clock.runFor(50);
+  // The talk waits for him: the party sets off, and nothing opens yet.
+  expect(await page.evaluate(() => window.fnt!.app.state!.screen)).toBe('explore');
+  await expect(page.locator('.walk-feedback')).toContainText(/Next: .*Gao/);
+  let opened = false;
+  for (let step = 0; step < 80 && !opened; step++) {
+    await page.clock.runFor(100);
+    opened = (await page.evaluate(() => window.fnt!.app.state!.screen)) === 'dialogue';
+    // The conversation opens with him standing on his rules tile.
+    if (opened) expect(await gao()).toEqual(home);
+  }
+  expect(opened).toBe(true);
+  expect(await page.evaluate(() => window.fnt!.app.state!.world.talk?.npcId)).toBe(
+    'shopkeeper_gao',
+  );
+  // And he stays there while they talk.
+  await page.clock.runFor(3000);
+  await page.clock.resume();
+  expect(await gao()).toEqual(home);
 });
