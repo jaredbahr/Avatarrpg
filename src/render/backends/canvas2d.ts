@@ -203,7 +203,7 @@ export class Canvas2DBackend implements RenderBackend {
         this.drawOverlays(view, ground);
         this.drawPath(view, ground);
         if (view.aimArc) this.drawAimArc(view.aimArc, ground);
-        this.drawFxLayer(view, ground, 'under');
+        this.drawFxLayer(view, ground, 'under', true);
         this.drawExit(view, ground);
         ctx.restore();
       } else {
@@ -215,7 +215,7 @@ export class Canvas2DBackend implements RenderBackend {
         this.drawOverlays(view, ground);
         this.drawPath(view, ground);
         if (view.aimArc) this.drawAimArc(view.aimArc, ground);
-        this.drawFxLayer(view, ground, 'under');
+        this.drawFxLayer(view, ground, 'under', true);
         this.drawExit(view, ground);
         ctx.restore();
       }
@@ -241,6 +241,11 @@ export class Canvas2DBackend implements RenderBackend {
               piece.x * camera.scale - camera.offsetX,
               (piece.y + piece.height) * camera.scale - camera.offsetY,
             );
+            if (piece.flip) {
+              // Mirrored inside its own box: the right edge becomes the left.
+              ctx.translate(piece.width * camera.scale, 0);
+              ctx.scale(-1, 1);
+            }
             drawSceneImage(
               ctx,
               image,
@@ -277,7 +282,7 @@ export class Canvas2DBackend implements RenderBackend {
       drawBendFx(ctx, view.bendFx ?? [], camera, true);
       ctx.save();
       ctx.transform(m.a, m.b, m.c, m.d, m.tx, m.ty);
-      this.drawFxLayer(view, ground, 'over');
+      this.drawFxLayer(view, ground, 'over', true);
       ctx.restore();
     } else {
       this.drawGround(view, camera, painting !== null);
@@ -1037,10 +1042,15 @@ export class Canvas2DBackend implements RenderBackend {
     ctx.restore();
   }
 
-  private drawFxLayer(view: MapView, camera: Camera, layer: 'under' | 'over'): void {
+  private drawFxLayer(
+    view: MapView,
+    camera: Camera,
+    layer: 'under' | 'over',
+    oblique = false,
+  ): void {
     if (view.emitters.length === 0) return;
     const origin = camera.toScreen({ x: 0, y: 0 });
-    this.fx.draw(this.ctx, view.emitters, layer, { x: origin.x, y: origin.y }, origin.size);
+    this.fx.draw(this.ctx, view.emitters, layer, origin, origin.size, oblique);
   }
 
   /** The art as a white silhouette, for the hit flash. */

@@ -140,6 +140,10 @@ export const particleEmitterSchema = z.object({
   spin: z.number().min(0),
   color: z.enum(FX_COLORS),
   fade: z.enum(['out', 'in-out', 'none']),
+  /** Peak alpha, for something that should only ever be a haze. Default 1. */
+  opacity: z.number().min(0).max(1).optional(),
+  /** Under the oblique camera, round on the screen rather than flat on the ground: smoke stands up. */
+  upright: z.boolean().optional(),
   blend: z.enum(['normal', 'add']),
   layer: z.enum(['under', 'over']),
 });
@@ -1416,13 +1420,46 @@ export interface AmbienceRecipe {
   /** Which palette colours the roles. */
   readonly palette: string;
   readonly emitters: readonly ParticleEmitterDef[];
+  /** What rises from each of the scene's `chimneys`, if it has any. */
+  readonly chimney?: ParticleEmitterDef;
 }
+
+/**
+ * A cooking fire under a painted roof: soft pale puffs, never more than
+ * a haze, rising up the screen (on the oblique ground, heading 4.08 rad is
+ * straight up leaning a little with the leaves' wind) and spreading as they go.
+ */
+const chimneySmoke = particles({
+  shape: 'drift',
+  cell: 'glow',
+  count: 14,
+  duration: 6000,
+  life: [5000, 7000],
+  delay: [0, 6000],
+  speed: [0.2, 0.3],
+  spread: 4.08,
+  gravity: 0,
+  drag: 0,
+  size: [0.4, 0.55],
+  grow: 2.4,
+  spin: 0,
+  // Pale, not the smoke grey: a dark haze over light paving reads as a shadow.
+  color: 'white',
+  // Thickest at the vent and thinning as it rises, so the wisp sits on the roof.
+  fade: 'out',
+  opacity: 0.6,
+  upright: true,
+  blend: 'normal',
+  layer: 'over',
+});
 
 /**
  * What a map's `ambience` puts in the air, keyed by the ambience string. A
  * map whose ambience is not here gets nothing, which is a valid answer for
- * a cellar. WebGL-only and off under reduce motion: it is fidelity, not
- * information (ADR 0002).
+ * a cellar. The motes are WebGL-only and off under reduce motion: they are
+ * fidelity, not information (ADR 0002). A `chimney` rises from each of the
+ * scene's `MapScene.chimneys` and is drawn everywhere: animated on WebGL, a
+ * still wisp on Canvas 2D and under reduce motion (ADR 0008 amendment).
  */
 export const FX_AMBIENCE: Readonly<Record<string, AmbienceRecipe>> = {
   forest: {
@@ -1440,6 +1477,7 @@ export const FX_AMBIENCE: Readonly<Record<string, AmbienceRecipe>> = {
       drifting('leaf', 8, 'base', 0.7, [0.2, 0.4], [0.07, 0.11]),
       drifting('glow', 8, 'white', 4.88, [0.05, 0.1], [0.03, 0.05], 'add', 0),
     ],
+    chimney: chimneySmoke,
   },
   quarry: {
     palette: 'neutral',

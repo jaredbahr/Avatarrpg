@@ -112,10 +112,9 @@ describe('the riverside paths', () => {
     ] as const) {
       expect(walkable(x, y), `(${x},${y})`).toBe(true);
     }
-    // The flowerbed island, garden fences, the rocky bank, the practice posts,
-    // and the lantern, rock and trunk on the lower east-bank lane.
+    // The garden fences, the rocky bank, the practice posts, and the lantern,
+    // rock and trunk on the lower east-bank lane.
     for (const [x, y] of [
-      [20, 6],
       [16, 5],
       [10, 16],
       [20, 13],
@@ -129,6 +128,71 @@ describe('the riverside paths', () => {
     ] as const) {
       expect(walkable(x, y), `(${x},${y})`).toBe(false);
     }
+  });
+  it('lets flowers never block on their own: only a solid in the bed does', () => {
+    const walkable = (x: number, y: number) => tileAt(grid, { x, y })?.blocked === false;
+    // Beds in the square, before the middle house, inside the north-east
+    // fence, at the lantern's foot and at the sand pocket's edge.
+    for (const [x, y] of [
+      [9, 5],
+      [10, 5],
+      [12, 5],
+      [13, 5],
+      [5, 7],
+      [6, 7],
+      [19, 6],
+      [20, 5],
+      [20, 6],
+      [20, 7],
+      [4, 10],
+      [18, 21],
+      [19, 21],
+    ] as const) {
+      expect(walkable(x, y), `(${x},${y})`).toBe(true);
+    }
+    // The fence and the flower pot the beds grow against, and the shrine
+    // terrace's rocky ledge.
+    for (const [x, y] of [
+      [16, 5],
+      [19, 5],
+      [21, 6],
+      [12, 4],
+      [29, 4],
+      [33, 4],
+    ] as const) {
+      expect(walkable(x, y), `(${x},${y})`).toBe(false);
+    }
+  });
+  it('opens the garden walkway to its painted boundary', () => {
+    const walkable = (x: number, y: number) => tileAt(grid, { x, y })?.blocked === false;
+    // The slabs west of the porch steps and the lawn they cross.
+    for (const [x, y] of [
+      [8, 20],
+      [5, 21],
+      [6, 21],
+      [7, 21],
+      [8, 21],
+      [4, 20],
+      [5, 20],
+      [6, 20],
+    ] as const) {
+      expect(walkable(x, y), `(${x},${y})`).toBe(true);
+    }
+    // Boulders, the fence and its corner post, and the trees to the south.
+    for (const [x, y] of [
+      [4, 21],
+      [7, 20],
+      [5, 19],
+      [3, 20],
+      [5, 22],
+      [6, 22],
+    ] as const) {
+      expect(walkable(x, y), `(${x},${y})`).toBe(false);
+    }
+    const state = start();
+    const result = apply(CONTENT, state, { type: 'walkTo', pos: { x: 5, y: 21 } });
+    expect(result.events.filter((e) => e.type === 'message')).toEqual([]);
+    expect(result.state.location.pos).toEqual({ x: 5, y: 21 });
   });
   it('leaves by any cell of the south path, never by an invisible edge', () => {
     const exit = CONTENT.maps.get(RIVERSIDE.id)?.exits?.[0];

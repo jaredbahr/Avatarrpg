@@ -530,6 +530,12 @@ export const mapSchema = z
         paintedWater: z.boolean().optional(),
         groundMode: z.literal('partial').optional(),
         paintedRubble: z.array(vec2).optional(),
+        // Where smoke leaves a painted roof, in ground tiles; a roof stands
+        // above the grid, so these may lie off it. A handful at most.
+        chimneys: z
+          .array(z.object({ x: z.number(), y: z.number() }))
+          .max(4)
+          .optional(),
         // A ground draw is cheap and the apron forces several of them: a ring of
         // exterior ground is wider than the 2048-pixel texture every iPad takes,
         // so each scene ships it as a dozen registered bands, and the village
@@ -548,6 +554,7 @@ export const mapSchema = z
                 wall: z.boolean().optional(),
                 fadeWhenOccluding: z.boolean().optional(),
                 fadeGroup: id.optional(),
+                flip: z.boolean().optional(),
               })
               .superRefine((piece, ctx) => {
                 if (piece.exterior) return;
@@ -879,6 +886,36 @@ export const backgroundRoleSchema = z.object({
     .optional(),
 });
 
+/**
+ * A resident's working routine (presentation only): while they are placed at
+ * `anchor` doing one of `activities`, they walk its legs in a loop, holding
+ * at the end of each. The last leg comes home to the anchor. The rules never
+ * see it: their tile stays the anchor, and nothing of it is saved.
+ */
+export const residentRoutineSchema = z.object({
+  /** Resident or background-role id. */
+  id,
+  mapId: id,
+  anchor: id,
+  activities: z.array(z.string().min(1)).min(1),
+  legs: z
+    .array(
+      z.object({
+        /** Tiles walked from the last stop, each a step from the one before. */
+        path: z.array(vec2).min(1).max(8),
+        /** Ms held at the end of the path. */
+        hold: z.number().int().min(0).max(20_000),
+        /** A work beat while held: reaching into the stall, the basket. */
+        work: z.boolean().optional(),
+        /** Which way to face while held; the walk's own facing otherwise. */
+        face: z.union([z.literal(1), z.literal(-1)]).optional(),
+      }),
+    )
+    .min(2)
+    .max(8),
+});
+export type ResidentRoutine = z.infer<typeof residentRoutineSchema>;
+
 export interface ContentBundle {
   /** The art manifest, so every sprite key content names is checked against it. */
   readonly assets?: Readonly<Record<string, AssetEntry>>;
@@ -953,14 +990,14 @@ function isWalkable(map: MapDef, x: number, y: number): boolean {
 }
 
 /* ------------------------------------------------------------------ */
-/* Map contract (M1, report-only)                                      */
+/* Map contract (M1; enforced per map by `edgeContract`)               */
 /* ------------------------------------------------------------------ */
 
 export type MapContractSeverity = 'warning' | 'error';
 
 /**
- * One finding from `validateMapContracts`. Report-only for now: an unconverted
- * map's findings are `warning`s, and `validateContent` folds only the errors
+ * One finding from `validateMapContracts`. An enforced map's findings are
+ * `error`s; an unconverted map's are `warning`s, and `validateContent` folds only the errors
  * into its problems, so a map that has not opted into `edgeContract: 'enforce'`
  * can never fail CI on a boundary or step it has not declared yet. The one
  * exception is malformed edge data: an inverted, fractional or off-the-side
@@ -1681,9 +1718,10 @@ export function validateContent(bundle: ContentBundle): string[] {
     }
   }
 
-  /* --- map edge / step / footprint contract (M1, report-only) -------- */
-  // Warnings never fail content, and no map sets `edgeContract: 'enforce'`
-  // yet; only a malformed edge span is an error on every map.
+  /* --- map edge / step / footprint contract (M1) ---------------------- */
+  // Warnings never fail content. A map that sets `edgeContract: 'enforce'`
+  // (the riverside does) fails on every finding; on the others only a
+  // malformed edge span is an error.
   for (const issue of validateMapContracts(bundle.maps)) {
     if (issue.severity === 'error') problems.push(issue.message);
   }

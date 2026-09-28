@@ -89,8 +89,11 @@ export class ParticleLayer {
     this.source.destroy();
   }
 
-  /** Rebuilds the layer from the live emitters, in world pixels (tile * TILE). */
-  draw(emitters: readonly EmitterInstance[]): void {
+  /**
+   * Rebuilds the layer from the live emitters, in world pixels (tile * TILE).
+   * `oblique` says the container carries the oblique ground transform.
+   */
+  draw(emitters: readonly EmitterInstance[], oblique = false): void {
     this.strokes.clear();
     this.strokesAdd.clear();
     const normal: Particle[] = [];
@@ -120,6 +123,8 @@ export class ParticleLayer {
         if (!texture) continue;
         const tint = cel ? 0xffffff : hexToNumber(roleColor(def.color, instance.palette));
         const list = def.blend === 'add' ? additive : normal;
+        // Stretched along the ground diagonal the oblique camera halves, so it lands round.
+        const up = oblique && def.upright;
         for (let i = 0; i < n && used < MAX_PARTICLES; i++) {
           const at = i * PARTICLE_STRIDE;
           const particle = this.particle(used++);
@@ -127,9 +132,9 @@ export class ParticleLayer {
           particle.x = (this.scratch[at] ?? 0) * TILE;
           particle.y = (this.scratch[at + 1] ?? 0) * TILE;
           const scale = ((this.scratch[at + 2] ?? 0) * TILE) / ATLAS_CELL;
-          particle.scaleX = scale;
-          particle.scaleY = scale;
-          particle.rotation = this.scratch[at + 3] ?? 0;
+          particle.scaleX = up ? scale * Math.SQRT2 : scale;
+          particle.scaleY = up ? scale * Math.SQRT1_2 : scale;
+          particle.rotation = up ? Math.PI / 4 : (this.scratch[at + 3] ?? 0);
           particle.tint = tint;
           particle.alpha = Math.max(0, Math.min(1, this.scratch[at + 4] ?? 0));
           list.push(particle);
