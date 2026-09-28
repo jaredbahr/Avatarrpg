@@ -1438,7 +1438,7 @@ export class PixiBackend implements RenderBackend {
       }
 
       if (unit.showHealth !== false)
-        this.drawHealthBar(g, unit, x, y, width, scale, headroom, view.hatch);
+        this.drawHealthBar(g, unit, x, y, width, scale, headroom, view.hatch, camera.scale);
       badgeIndex = this.drawStatusBadges(g, unit, x, y, width, badgeIndex);
     }
 
@@ -1470,6 +1470,8 @@ export class PixiBackend implements RenderBackend {
     scale: number,
     headroom: number,
     hatch: boolean,
+    /** CSS px per world unit (the camera scale), so the cap keeps its minimum. */
+    cssScale: number,
   ): void {
     const fraction = Math.max(0, Math.min(1, unit.hp / Math.max(1, unit.maxHp)));
     const bar = actorHealthBar(x, y, width, TILE, scale, headroom);
@@ -1486,7 +1488,7 @@ export class PixiBackend implements RenderBackend {
     });
 
     // The side's cap, so the bar reads by shape as well as colour.
-    const cap = healthBarCap(bar, HP_CAP[unit.faction]);
+    const cap = healthBarCap(bar, HP_CAP[unit.faction], x, 1 / cssScale);
     if (cap.length === 0) return;
     g.poly(cap)
       .fill({ color: hpFill(unit.faction, 1, hatch) })

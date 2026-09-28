@@ -27,25 +27,43 @@ export function actorHealthBar(
 }
 
 /**
+ * The shortest a side cap is drawn, in CSS px: 20 device px on a DPR 2 tablet.
+ * The bar itself is only 4-7 px tall, and in the default colours the cap is
+ * what tells an ally from the party, so it may not shrink with the bar.
+ */
+export const HP_CAP_MIN_PX = 10;
+
+/** A cap's width over its height; a small board narrows it further (below). */
+const CAP_ASPECT = 0.7;
+
+/**
  * The polygon for a bar's side cap (`HP_CAP` in palettes.ts), flat x,y pairs,
- * butted against the left of the bar's 1px frame; empty for none. It is as
- * tall as the framed bar, so it grows with the bar and never with the type.
+ * butted against the left of the bar's 1px frame; empty for none. It is at
+ * least as tall as the framed bar and at least `HP_CAP_MIN_PX`, centred on the
+ * bar, and it never reaches past `column`, the left edge of the actor the bar
+ * sits over: on a small board it gets narrower, not wider than its figure.
+ *
+ * `px` is one CSS pixel in the caller's units (1 on Canvas 2D, 1 / camera
+ * scale in Pixi's world space), so both backends draw the same cap.
  */
 export function healthBarCap(
   bar: { x: number; y: number; height: number },
   cap: 'none' | 'diamond' | 'spike',
+  column: number,
+  px = 1,
 ): number[] {
-  const top = bar.y - 1;
-  const bottom = bar.y + bar.height + 1;
-  const mid = (top + bottom) / 2;
-  const half = (bottom - top) / 2;
-  const left = bar.x - 1;
-  if (cap === 'spike') return [left, top, left, bottom, left - half * 1.6, mid];
-  if (cap === 'diamond') {
-    const cx = left - half - 1;
-    return [cx, top, cx + half, mid, cx, bottom, cx - half, mid];
-  }
-  return [];
+  if (cap === 'none') return [];
+  const mid = bar.y + bar.height / 2;
+  const half = Math.max(bar.height / 2 + 1, (HP_CAP_MIN_PX * px) / 2);
+  const top = mid - half;
+  const bottom = mid + half;
+  const right = bar.x - 1;
+  // A 1px ink gap before a diamond, so it reads as a mark and not a bar end.
+  const gap = cap === 'diamond' ? px : 0;
+  const width = Math.max(0, Math.min(2 * half * CAP_ASPECT, right - gap - column));
+  if (cap === 'spike') return [right, top, right, bottom, right - width, mid];
+  const cx = right - gap - width / 2;
+  return [cx, top, cx + width / 2, mid, cx, bottom, cx - width / 2, mid];
 }
 
 /** Ground whose busy texture swallows the standard contact pool. */

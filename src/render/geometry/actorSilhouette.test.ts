@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest';
 import type { Grid, TerrainId, Tile } from '../../core/types';
 import {
   GRASS_SHADOW_DENSITY,
+  HP_CAP_MIN_PX,
   actorHealthBar,
   actorShadowDensity,
   healthBarCap,
@@ -98,22 +99,58 @@ describe('contact shadow sampling', () => {
 });
 
 describe('health bar cap', () => {
-  const bar = { x: 10, y: 20, height: 4 };
+  const extent = (points: number[]) => {
+    const xs = points.filter((_, i) => i % 2 === 0);
+    const ys = points.filter((_, i) => i % 2 === 1);
+    return {
+      left: Math.min(...xs),
+      right: Math.max(...xs),
+      top: Math.min(...ys),
+      bottom: Math.max(...ys),
+    };
+  };
 
   it('draws nothing for the party', () => {
-    expect(healthBarCap(bar, 'none')).toEqual([]);
+    expect(healthBarCap({ x: 10, y: 20, height: 4 }, 'none', 0)).toEqual([]);
   });
 
-  it('butts a cap against the frame, as tall as the framed bar', () => {
+  it('keeps its minimum height however thin the bar, centred on it', () => {
+    const bar = { x: 20, y: 20, height: 4 };
     for (const cap of ['diamond', 'spike'] as const) {
-      const points = healthBarCap(bar, cap);
-      const xs = points.filter((_, i) => i % 2 === 0);
-      const ys = points.filter((_, i) => i % 2 === 1);
-      expect(Math.max(...xs)).toBeLessThanOrEqual(bar.x - 1);
-      expect(Math.min(...ys)).toBe(bar.y - 1);
-      expect(Math.max(...ys)).toBe(bar.y + bar.height + 1);
+      const box = extent(healthBarCap(bar, cap, 0));
+      expect(box.right).toBeLessThanOrEqual(bar.x - 1);
+      expect(box.bottom - box.top).toBe(HP_CAP_MIN_PX);
+      expect((box.top + box.bottom) / 2).toBe(bar.y + bar.height / 2);
     }
-    expect(healthBarCap(bar, 'spike')).toHaveLength(6);
-    expect(healthBarCap(bar, 'diamond')).toHaveLength(8);
+    expect(healthBarCap(bar, 'spike', 0)).toHaveLength(6);
+    expect(healthBarCap(bar, 'diamond', 0)).toHaveLength(8);
+  });
+
+  it('grows past the minimum with a thick bar, to the framed height', () => {
+    const bar = { x: 40, y: 20, height: 12 };
+    const box = extent(healthBarCap(bar, 'spike', 0));
+    expect(box.top).toBe(bar.y - 1);
+    expect(box.bottom).toBe(bar.y + bar.height + 1);
+  });
+
+  it('measures the minimum in CSS px, whatever the world scale', () => {
+    // Pixi draws in world units: at camera scale 1.5, one CSS px is 2/3 of one.
+    const scale = 1.5;
+    const bar = { x: 20, y: 20, height: 3 };
+    const box = extent(healthBarCap(bar, 'diamond', 0, 1 / scale));
+    expect((box.bottom - box.top) * scale).toBeCloseTo(HP_CAP_MIN_PX);
+  });
+
+  it('stays over its own figure, narrowing on the smallest board', () => {
+    // The fitted board's floor: a 40px tile, whose bar leaves ~5.6px either side.
+    for (const tile of [40, 64, 96]) {
+      const bar = actorHealthBar(0, 100, tile, tile, 1);
+      for (const cap of ['diamond', 'spike'] as const) {
+        const box = extent(healthBarCap(bar, cap, 0));
+        expect(box.left).toBeGreaterThanOrEqual(0);
+        expect(box.right).toBeLessThanOrEqual(bar.x - 1);
+        expect(box.right - box.left).toBeGreaterThan(3);
+      }
+    }
   });
 });

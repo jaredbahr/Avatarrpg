@@ -948,7 +948,7 @@ export class Canvas2DBackend implements RenderBackend {
     ctx.strokeRect(barX - 0.5, barY - 0.5, barWidth + 1, barHeight + 1);
 
     // The side's cap, so the bar reads by shape as well as colour.
-    const cap = healthBarCap(bar, HP_CAP[unit.faction]);
+    const cap = healthBarCap(bar, HP_CAP[unit.faction], x);
     if (cap.length === 0) return;
     ctx.beginPath();
     for (let i = 0; i < cap.length; i += 2) ctx.lineTo(cap[i] ?? 0, cap[i + 1] ?? 0);
