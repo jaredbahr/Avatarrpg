@@ -20,6 +20,9 @@
 import { z } from 'zod';
 import { HEADINGS } from './assets/clips';
 import type { Heading } from './assets/clips';
+import { effectCelName } from './fxCels';
+
+export { effectCelName };
 
 /* ------------------------------------------------------------------ */
 /* Vocabulary                                                          */
@@ -77,8 +80,15 @@ export const BEND_FRAME_MS_MIN = 16;
 export const BEND_FRAME_MS_MAX = 1000;
 /** Hit-stop is 0-300 ms, at launch/contact and again at impact. */
 export const BEND_HOLD_MS_MAX = 300;
-/** Flash is the peak opacity of the additive white flash frame, 0-1. */
+/**
+ * Flash is how much of the flashed cel is added onto itself, 0-1: at `f` its
+ * colour is multiplied by `1 + f` (the approved prototype's `Brightness(1.75)`
+ * is 0.75). It brightens the painted cel in its own colours; it is not a white
+ * overlay.
+ */
 export const BEND_FLASH_MAX = 1;
+/** The impact point sits at most 256 unit-cel pixels from the target's feet, each way. */
+export const BEND_IMPACT_OFFSET_MAX = 256;
 /** Screen shake is at most half a tile of amplitude. */
 export const BEND_SHAKE_TILES_MAX = 0.5;
 /** Residue lingers at most 3 s after impact. */
@@ -113,7 +123,10 @@ export interface BendRelease {
   readonly launchHoldMs: number;
   /** Hit-stop when the effect lands on the target, 0-300 ms. */
   readonly impactHoldMs: number;
-  /** Peak opacity of the contact flash frame, 0-1; absent means no flash. */
+  /**
+   * The contact flash: the launch cels added onto themselves at this weight,
+   * 0-1 (`BEND_FLASH_MAX`); absent means no flash.
+   */
   readonly flash?: number;
   /** Contact shake amplitude in tiles, 0-0.5; absent means no shake. */
   readonly shakeTiles?: number;
@@ -200,16 +213,24 @@ export interface BendSetDef {
   readonly facings: Record<Heading, HeadingBendDef>;
 }
 
-/** One painted layer of an effect. */
+/**
+ * One painted layer of an effect. An attack's releases need not draw the same
+ * thing: Kaya's jab and cross throw differently painted fireballs, and Bo's
+ * stomp opens the crack his drive then throws the rock out of. So a layer may
+ * name the one `release` it plays for, by index into the attack's releases;
+ * a layer without one plays for every release.
+ */
 export interface BendEffectLayer {
   readonly phase: BendPhase;
   readonly z: BendLayerZ;
-  /** The painted sequence this layer draws. */
+  /** The painted sequence this layer draws: its cels are `<sequence>/<index>`. */
   readonly sequence: string;
-  /** How long each cel of the sequence holds, in ms (16-1000). */
+  /** How long each cel of the sequence holds, in ms (16-1000); one entry a cel. */
   readonly frameMs: readonly number[];
   readonly origin: BendLayerOrigin;
   readonly blend: BendBlend;
+  /** The release this layer plays for; absent means every release. */
+  readonly release?: number;
 }
 
 /** What travels from the caster to the target. */
@@ -230,11 +251,22 @@ export type BendTrajectory =
       readonly boltSpeedTilesPerSecond: number;
     };
 
-/** What the effect draws when it lands on the target. */
+/** What the effect draws when it lands on the target, and where. */
 export interface BendImpact {
   readonly sequence: string;
-  /** Peak opacity of the impact flash frame, 0-1. */
+  /**
+   * The impact flash: the impact's first cel added onto itself at this
+   * weight, 0-1 (`BEND_FLASH_MAX`), never a white overlay.
+   */
   readonly flash: number;
+  /**
+   * Where on the target the effect lands, in unit-cel pixels (the scale the
+   * character cels are packed at, so it zooms with them) from the target's
+   * foot anchor; -y is up. The trajectory ends here, and every `targetTile`
+   * layer is placed by its pivot here, so bursts hit the body rather than the
+   * feet. Each axis is within +-`BEND_IMPACT_OFFSET_MAX`.
+   */
+  readonly offsetPx: { readonly x: number; readonly y: number };
   /** Impact shake amplitude in tiles, 0-0.5. */
   readonly shakeTiles: number;
 }
@@ -285,6 +317,12 @@ const impactSchema: z.ZodType<BendImpact> = z
     sequence: z.string().min(1),
     flash: flashValue,
     shakeTiles: shakeValue,
+    offsetPx: z
+      .object({
+        x: z.number().min(-BEND_IMPACT_OFFSET_MAX).max(BEND_IMPACT_OFFSET_MAX),
+        y: z.number().min(-BEND_IMPACT_OFFSET_MAX).max(BEND_IMPACT_OFFSET_MAX),
+      })
+      .strict(),
   })
   .strict();
 
@@ -373,6 +411,7 @@ export const bendEffectLayerSchema: z.ZodType<BendEffectLayer> = z
     frameMs: z.array(frameMsValue).min(1),
     origin: z.enum(BEND_LAYER_ORIGINS),
     blend: z.enum(BEND_BLENDS),
+    release: celIndex.optional(),
   })
   .strict();
 
@@ -580,6 +619,14 @@ function validateFacing(
     if (effect && effect.element !== element) {
       note(`attack "${id}" uses ${effect.element} effect "${attack.effectId}"`);
     }
+    effect?.layers.forEach((layer, index) => {
+      if (layer.release !== undefined && layer.release >= attack.releases.length) {
+        note(
+          `attack "${id}" has ${attack.releases.length} releases, but effect ` +
+            `"${attack.effectId}" layer ${index} plays for release ${layer.release}`,
+        );
+      }
+    });
   }
 }
 
@@ -653,8 +700,19 @@ function validateEffect(effect: BendEffectDef, problems: string[]): void {
   if (!within(effect.impact.shakeTiles, 0, BEND_SHAKE_TILES_MAX)) {
     note(`impact shakeTiles ${effect.impact.shakeTiles} is outside 0..${BEND_SHAKE_TILES_MAX}`);
   }
+  for (const axis of ['x', 'y'] as const) {
+    const value = effect.impact.offsetPx[axis];
+    if (!within(value, -BEND_IMPACT_OFFSET_MAX, BEND_IMPACT_OFFSET_MAX)) {
+      note(
+        `impact offsetPx.${axis} ${value} is outside -${BEND_IMPACT_OFFSET_MAX}..${BEND_IMPACT_OFFSET_MAX}`,
+      );
+    }
+  }
   effect.layers.forEach((layer, index) => {
     if (layer.frameMs.length === 0) note(`layer ${index} (${layer.phase}) has no frameMs`);
+    if (layer.release !== undefined && !(Number.isInteger(layer.release) && layer.release >= 0)) {
+      note(`layer ${index} release ${layer.release} is not a release index`);
+    }
     layer.frameMs.forEach((held, cel) => {
       if (!within(held, BEND_FRAME_MS_MIN, BEND_FRAME_MS_MAX)) {
         note(
@@ -663,6 +721,10 @@ function validateEffect(effect: BendEffectDef, problems: string[]): void {
       }
     });
   });
+  const impactLayers = effect.layers.filter((layer) => layer.phase === 'impact');
+  if (!impactLayers.some((layer) => layer.sequence === effect.impact.sequence)) {
+    note(`impact "${effect.impact.sequence}" has no impact layer drawing it`);
+  }
   const residueLayers = effect.layers.filter((layer) => layer.phase === 'residue');
   const residue = effect.residue;
   if (residue) {
@@ -679,10 +741,11 @@ function validateEffect(effect: BendEffectDef, problems: string[]): void {
 }
 
 /**
- * Passed as `effects` while the painted effects are not authored yet (ADR
- * 0055, step 5): the packed sets are checked in full except for the effect
- * each attack names. A test fails as soon as an effect is defined anywhere
- * while a caller still passes this, so the skip cannot outlive its reason.
+ * Was passed as `effects` until the painted effects were authored (ADR 0055,
+ * step 5); no caller passes it now. The packed sets are checked in full
+ * except for the effect each attack names. A test fails as soon as an effect
+ * is defined anywhere while a caller still passes this, so the skip cannot
+ * outlive its reason.
  * It is a `unique symbol`, not a string, so the skip can only be asked for by
  * this name, which is what the test looks for: no literal can stand in for it.
  */
@@ -693,7 +756,7 @@ export const EFFECTS_NOT_YET_AUTHORED: unique symbol = Symbol('effects not yet a
  * the contract is sound. `knownUnitAssets` is the manifest's unit keys, and
  * `knownFrames`, when given, is every frame name the unit atlases carry, so a
  * bend cannot name a cel the packer never wrote. `effects` is the painted
- * effects, or `EFFECTS_NOT_YET_AUTHORED` until step 5 authors them.
+ * effects; `EFFECTS_NOT_YET_AUTHORED` skips them, and no caller does now.
  * Deliberately collects everything rather than throwing on the first fault,
  * so one CI run reports every broken link at once.
  */
@@ -739,6 +802,48 @@ export function validateBendSets(
       validateFacing(set.id, set.element, heading, facing, effectById, frames, problems);
     }
     validateAttacksAgree(set, problems);
+  }
+  return problems;
+}
+
+/**
+ * Returns the problems between the effects and the painted cels the effect
+ * atlas carries (`cels`, every frame name on its pages). A layer's sequence
+ * has exactly one cel for each entry of its `frameMs`, `<sequence>/0` onward;
+ * two layers that share a sequence agree on its length; and every cel on the
+ * pages belongs to a sequence some layer draws, so nothing ships unused.
+ */
+export function validateEffectCels(
+  effects: readonly BendEffectDef[],
+  cels: readonly string[],
+): string[] {
+  const problems: string[] = [];
+  const known = new Set(cels);
+  const lengths = new Map<string, number>();
+  for (const effect of effects) {
+    effect.layers.forEach((layer, index) => {
+      const where = `effect "${effect.id}" layer ${index} (${layer.sequence})`;
+      const count = layer.frameMs.length;
+      const before = lengths.get(layer.sequence);
+      if (before !== undefined && before !== count) {
+        problems.push(`${where} times ${count} cels; another layer times ${before}`);
+      }
+      lengths.set(layer.sequence, Math.max(before ?? 0, count));
+      for (let cel = 0; cel < count; cel++) {
+        const name = effectCelName(layer.sequence, cel);
+        if (!known.has(name)) problems.push(`${where} needs cel "${name}"`);
+      }
+      if (known.has(effectCelName(layer.sequence, count))) {
+        problems.push(`${where} times ${count} cels but the atlas has more`);
+      }
+    });
+  }
+  const drawn = new Set<string>();
+  for (const [sequence, count] of lengths) {
+    for (let cel = 0; cel < count; cel++) drawn.add(effectCelName(sequence, cel));
+  }
+  for (const name of cels) {
+    if (!drawn.has(name)) problems.push(`effect cel "${name}" is in no layer`);
   }
   return problems;
 }

@@ -49,7 +49,7 @@ export const R9_FIRE: R9Take = {
   smearFrame: 5,
   attack: {
     id: 'fire-strike',
-    effectId: 'fx.fire.jet',
+    effectId: 'fx.fire.fireball',
     releases: [
       { frame: 2, launchFrame: 2, socket: 'LW', launchHoldMs: 60, impactHoldMs: 0 },
       { frame: 6, launchFrame: 6, socket: 'RW', launchHoldMs: 100, impactHoldMs: 0 },
@@ -88,7 +88,7 @@ export const R9_EARTH: R9Take = {
   smearFrame: 3,
   attack: {
     id: 'earth-strike',
-    effectId: 'fx.earth.slab',
+    effectId: 'fx.earth.rock',
     releases: [
       { frame: 4, launchFrame: 4, socket: 'LA', launchHoldMs: 50, impactHoldMs: 0 },
       { frame: 6, launchFrame: 6, socket: 'LW', launchHoldMs: 110, impactHoldMs: 0 },
@@ -126,7 +126,7 @@ export const R9_WATER: R9Take = {
   smearFrame: 4,
   attack: {
     id: 'water-strike',
-    effectId: 'fx.water.whip',
+    effectId: 'fx.water.bolt',
     releases: [{ frame: 5, launchFrame: 5, socket: 'LW', launchHoldMs: 80, impactHoldMs: 0 }],
     damageRelease: 0,
   },

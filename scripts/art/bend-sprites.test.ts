@@ -13,12 +13,8 @@ import { afterEach, describe, expect, it } from 'vitest';
 import { HEADINGS, headingClip } from '../../src/content/assets/clips';
 import type { Heading } from '../../src/content/assets/clips';
 import { ASSETS } from '../../src/content/assets/manifest';
-import {
-  EFFECTS_NOT_YET_AUTHORED,
-  bendSetDefSchema,
-  validateBendSets,
-} from '../../src/content/bends';
-import type { BendSetDef } from '../../src/content/bends';
+import { bendSetDefSchema, validateBendSets } from '../../src/content/bends';
+import type { BendEffectDef, BendSetDef } from '../../src/content/bends';
 import {
   BEND_CHARACTERS,
   STANCE_TOLERANCE,
@@ -41,7 +37,7 @@ import type { BendCharacter, BendPins, Registration } from './bend-sprites';
 import { FRAME_H, FRAME_W } from './g-sprites';
 import type { Image } from './lib/image';
 import { newImage, pixelAt, setPixel, writePng } from './lib/image';
-import { BEND_SHEETS, validateBends } from './validate';
+import { BEND_SHEETS, readBendEffects, validateBends } from './validate';
 
 /* ------------------------------------------------------------------ */
 /* A synthetic three-cel bend in eight headings                         */
@@ -97,6 +93,31 @@ function strikeCel(): Image {
   return image;
 }
 
+/** The one painted effect the synthetic bend's attack names. */
+const TEST_EFFECTS: readonly BendEffectDef[] = [
+  {
+    id: 'fx.test.hit',
+    element: 'fire',
+    layers: [
+      {
+        phase: 'impact',
+        z: 'overActor',
+        sequence: 'fx.test.hit/burst',
+        frameMs: [60],
+        origin: 'targetTile',
+        blend: 'normal',
+      },
+    ],
+    trajectory: { kind: 'straight', speedTilesPerSecond: 8 },
+    impact: {
+      sequence: 'fx.test.hit/burst',
+      flash: 0.5,
+      shakeTiles: 0.02,
+      offsetPx: { x: 0, y: -66.667 },
+    },
+  },
+];
+
 const TEMP: string[] = [];
 function temp(prefix: string): string {
   const dir = mkdtempSync(join(tmpdir(), prefix));
@@ -116,7 +137,8 @@ function character(overrides: Partial<BendCharacter> = {}): BendCharacter {
     gPins: 'unused',
     stancePage: 'unused',
     attackId: 'fire-strike',
-    effectId: 'fx.fire.jet',
+    effectId: 'fx.test.hit',
+    releaseCues: [{ impactHoldMs: 40, flash: 0.5, shakeTiles: 0.02 }],
     roles: { K1: 'contact' },
     holds: {},
     headings: HEADINGS.map((heading) => ({
@@ -170,6 +192,7 @@ async function build(source: string, pinsPath: string, who = character()) {
     pinsPath,
     stance: () => STANCE,
     knownUnitAssets: ['unit.fire.kaya'],
+    effects: TEST_EFFECTS,
     log: () => undefined,
   });
   return { outDir, ...result };
@@ -214,13 +237,19 @@ describe('bend packer', () => {
     expect(data).toEqual(set);
     expect(bendSetDefSchema.safeParse(data).success).toBe(true);
     const names = HEADINGS.flatMap((heading) => data.facings[heading].frames);
-    expect(validateBendSets([data], EFFECTS_NOT_YET_AUTHORED, ['unit.fire.kaya'], names)).toEqual(
-      [],
-    );
+    expect(validateBendSets([data], TEST_EFFECTS, ['unit.fire.kaya'], names)).toEqual([]);
     const east = data.facings.east;
     expect(east.frames).toEqual([0, 1, 0].map((i) => bendFrameName('unit.fire.kaya', 'east', i)));
     expect(east.attacks[0]?.releases).toEqual([
-      { frame: 1, launchFrame: 1, socket: 'LW', launchHoldMs: 50, impactHoldMs: 0 },
+      {
+        frame: 1,
+        launchFrame: 1,
+        socket: 'LW',
+        launchHoldMs: 50,
+        impactHoldMs: 40,
+        flash: 0.5,
+        shakeTiles: 0.02,
+      },
     ]);
     expect(east.keyFrames).toEqual({ K1: { frame: 1, role: 'contact' } });
   });
@@ -283,6 +312,7 @@ describe('bend packer', () => {
         pinsPath,
         stance: () => toned,
         knownUnitAssets: ['unit.fire.kaya'],
+        effects: TEST_EFFECTS,
         log: () => undefined,
       }),
     ).rejects.toThrow('does not match the packed stance');
@@ -309,6 +339,7 @@ describe('bend packer', () => {
           return STANCE;
         },
         knownUnitAssets: ['unit.fire.kaya'],
+        effects: TEST_EFFECTS,
         log: () => undefined,
       }),
     ).rejects.toThrow('decoded frame 0 does not match the packed stance');
@@ -324,6 +355,7 @@ describe('bend packer', () => {
       pinsPath: pinned(source),
       stance: () => STANCE,
       knownUnitAssets: ['unit.fire.kaya'],
+      effects: TEST_EFFECTS,
       log: (line) => lines.push(line),
     });
     const headings = lines.filter((line) => line.includes(' decoded frame 0: alpha exact, mean '));
@@ -550,9 +582,7 @@ describe('the packed r10 bends', () => {
       ) as BendSetDef;
       expect(bendSetDefSchema.safeParse(set).success).toBe(true);
       const frames = HEADINGS.flatMap((heading) => set.facings[heading].frames);
-      expect(
-        validateBendSets([set], EFFECTS_NOT_YET_AUTHORED, Object.keys(ASSETS), frames),
-      ).toEqual([]);
+      expect(validateBendSets([set], readBendEffects(), Object.keys(ASSETS), frames)).toEqual([]);
       const celCount = HEADINGS.reduce(
         (sum, heading) => sum + set.facings[heading].frames.length,
         0,
