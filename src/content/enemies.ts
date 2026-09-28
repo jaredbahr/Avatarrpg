@@ -30,7 +30,8 @@ export const ENEMIES: readonly EnemyDef[] = [
     ai: 'aggressive',
     xp: 100,
     sprite: 'unit.enemy.thug',
-    description: 'Quarry labour that stopped getting paid and started taking instead.',
+    description:
+      'Quarry labour that stopped getting paid and started taking. Walks straight in with a club; Rush closes four tiles, though not every turn.',
   },
   {
     id: 'bandit_slinger',
@@ -42,7 +43,8 @@ export const ENEMIES: readonly EnemyDef[] = [
     ai: 'cautious',
     xp: 100,
     sprite: 'unit.enemy.slinger',
-    description: 'Hangs back on the high ground and never comes down willingly.',
+    description:
+      'Throws stones from up to six tiles and backs away from a fight. Frail once caught, and cover makes its stones miss more often.',
   },
   {
     id: 'bandit_bruiser',
@@ -54,7 +56,7 @@ export const ENEMIES: readonly EnemyDef[] = [
     ai: 'aggressive',
     xp: 150,
     sprite: 'unit.enemy.bruiser',
-    description: 'Twice the size of the others and half as fast.',
+    description: 'Big, slow and hard to put down. Rush still lets it lunge four tiles at you.',
   },
   {
     id: 'bandit_earthbender',
@@ -66,7 +68,8 @@ export const ENEMIES: readonly EnemyDef[] = [
     ai: 'cautious',
     xp: 150,
     sprite: 'unit.enemy.quarrybender',
-    description: 'Knows this quarry better than anyone, and keeps raising cover to prove it.',
+    description:
+      'Knows this quarry better than anyone. Throws rock and raises rubble for cover, but melee attacks ignore that cover.',
   },
   {
     id: 'fire_deserter',
@@ -79,7 +82,7 @@ export const ENEMIES: readonly EnemyDef[] = [
     xp: 200,
     sprite: 'unit.enemy.deserter',
     description:
-      'Spills oil, then lights it. Keep clear of the spill; water douses flames but leaves unburned oil in place.',
+      'Spills oil, then lights it with a thrown torch. Keep clear of the spill; water douses flames but leaves unburned oil in place.',
   },
   {
     id: 'merc_blade',
@@ -91,7 +94,7 @@ export const ENEMIES: readonly EnemyDef[] = [
     ai: 'aggressive',
     xp: 150,
     sprite: 'unit.enemy.merc',
-    description: "One of Jin's. Professional, unbothered, and in the way.",
+    description: "One of Jin's crew. A low, fast blade that can leave you Slowed for a turn.",
   },
   {
     id: 'merc_crossbow',
@@ -103,7 +106,8 @@ export const ENEMIES: readonly EnemyDef[] = [
     ai: 'cautious',
     xp: 150,
     sprite: 'unit.enemy.crossbow',
-    description: 'Outranges everyone in the party except the airbender.',
+    description:
+      "One of Jin's crew. Shoots up to eight tiles, farther than almost any attack you have. Cover makes it miss more often.",
   },
   {
     id: 'merc_sergeant',
@@ -115,7 +119,8 @@ export const ENEMIES: readonly EnemyDef[] = [
     ai: 'support',
     xp: 210,
     sprite: 'unit.enemy.sergeant',
-    description: 'Makes the others hit harder. Deal with the sergeant first.',
+    description:
+      'Rally gives another mercenary an extra AP and makes them hit harder. Deal with the sergeant first.',
   },
   {
     id: 'grumbler',
@@ -137,7 +142,7 @@ export const ENEMIES: readonly EnemyDef[] = [
     xp: 360,
     sprite: 'unit.enemy.grumbler',
     description:
-      'A former quartermaster in a mecha-driller. Two tiles wide, leaks oil, and churns the floor into mud.',
+      'A quartermaster at the controls of a two-tile mecha-driller. Slams a cone once a turn, sprays oil, hurls debris and churns the floor to mud.',
   },
 
   /* --------------------------------------------------------------------- */
@@ -154,7 +159,8 @@ export const ENEMIES: readonly EnemyDef[] = [
     ai: 'aggressive',
     xp: 0,
     sprite: 'unit.ally.ruon',
-    description: 'Fights beside you if you spared him. Not happy about it.',
+    description:
+      'Fights beside you on the road to his trial. His sabre hits hard, and his barked orders make a hero hit harder and truer.',
   },
 ];
 
