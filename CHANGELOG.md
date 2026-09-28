@@ -16,10 +16,6 @@
   the scene art fails to load, as its wash check already did: at the lighter ink
   the heap's 7 px centre is spoil stone in the procedural rubble's own key, so
   the centre average stopped telling the art from the fallback.
-- Close the water barrel. Its open top was a disc of bright cyan that read as a
-  water hazard on the quarry's pale ground; `scripts/art/barrel-lid.ts` lids it
-  in the barrel's own stave tones with plank seams. `barrel.png`
-  46,384 → 42,187 B.
 - Paint the quarry floor's oil pools and mud patch on their own ground. The
   ground generator left every **dynamic** cell transparent, so the Driller
   floor's four spills and one mud patch were procedural slate standing beside
