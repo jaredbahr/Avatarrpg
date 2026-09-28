@@ -51,7 +51,8 @@ export const ENCOUNTERS: readonly EncounterDef[] = [
       {
         id: 'thugs',
         weight: 2,
-        intro: 'They step out of the trees. They were waiting for somebody.',
+        intro:
+          'Figures step out from the pines at the bend, clubs in hand. They have been waiting here for somebody.',
       },
       {
         id: 'slingers',
@@ -61,8 +62,9 @@ export const ENCOUNTERS: readonly EncounterDef[] = [
           { enemyId: 'bandit_slinger', pos: { x: 18, y: 3 } },
           { enemyId: 'bandit_slinger', pos: { x: 18, y: 7 } },
         ],
-        intro: 'Stones come out of the trees before anybody does.',
-        tip: 'Nobody up there wants to come close. Get among them — a slinger with somebody in its face is not much use.',
+        intro:
+          'Stones whip out of the pines before anyone shows a face. Whoever is throwing them means to stay out of reach.',
+        tip: 'Slingers throw from up to six tiles and back away. Stand on the rubble heaps for cover while you close in; a slinger is the frailest body on this road.',
       },
       {
         id: 'bruisers',
@@ -71,8 +73,9 @@ export const ENCOUNTERS: readonly EncounterDef[] = [
           { enemyId: 'bandit_bruiser', pos: { x: 17, y: 5 } },
           { enemyId: 'bandit_bruiser', pos: { x: 17, y: 7 } },
         ],
-        intro: 'A bruiser steps out of the trees and plants heavy boots in the road.',
-        tip: 'Focus your attacks. A bruiser at half health hits just as hard as a fresh one.',
+        intro:
+          'Heavy boots thud onto the road at the bend. Whoever wears them is big, slow, and in no hurry to step aside.',
+        tip: 'Bruisers are heavy and slow, but Rush lets one lunge four tiles now and then. Focus one at a time: a bruiser at half health swings as hard as a fresh one.',
       },
     ],
     // Deliberately short. This is the tutorial fight: a full table should be
@@ -81,8 +84,9 @@ export const ENCOUNTERS: readonly EncounterDef[] = [
       { enemyId: 'bandit_thug', pos: { x: 18, y: 6 } },
       { enemyId: 'bandit_slinger', pos: { x: 16, y: 2 } },
     ],
-    intro: 'They step out of the trees. They were waiting for somebody.',
-    tip: 'There are puddles in the road. Anything standing in water gets Wet — cold hits Wet targets harder, and lightning damage doubles.',
+    intro:
+      'Figures step out from the pines at the bend, clubs in hand. They have been waiting here for somebody.',
+    tip: 'Anyone standing in the puddle gets Wet: lightning does double damage and cold hits harder. Cold on the water can freeze whoever is in it. Shove a bandit in first.',
   },
   {
     id: 'enc_quarry_gate',
@@ -118,8 +122,8 @@ export const ENCOUNTERS: readonly EncounterDef[] = [
           { enemyId: 'bandit_bruiser', pos: { x: 16, y: 8 } },
         ],
         intro:
-          'The deserter looks at your colours, looks at the ground, and steps back off the gate. The quarry crew does not.',
-        tip: 'Nobody up there bends fire any more — so the oil only goes up if you light it. That makes the brazier yours to spend.',
+          'The deserter looks at your firebender, then at the ground, and steps back from the gate. The quarry crew comes forward anyway.',
+        tip: 'Nobody left at the gate bends fire, so the oil burns only if you light it. The quarry bender raises rubble for cover; close in, because melee attacks ignore cover.',
       },
     ],
     /*
@@ -149,7 +153,8 @@ export const ENCOUNTERS: readonly EncounterDef[] = [
       { enemyId: 'bandit_thug', pos: { x: 17, y: 4 } },
       { enemyId: 'bandit_slinger', pos: { x: 17, y: 9 } },
     ],
-    intro: 'Barrels are stacked against the gatehouse, and the ground around them is slick.',
+    intro:
+      'Barrels stand against the gatehouse, and a dark stripe of spilled oil runs through the gate. Someone on the far side has a lit torch.',
     /*
      * This used to say "or wash it away with water first". It does not work:
      * `water-into-oil` in combos.ts keeps the oil and prints "The oil floats on
@@ -159,7 +164,7 @@ export const ENCOUNTERS: readonly EncounterDef[] = [
      * Burning it off early *is* a real counter — fire on oil expires after a few
      * rounds and leaves bare ground — so the tip now points at that.
      */
-    tip: 'That dark stripe down the middle is spilled oil. Fire turns it into a spreading blaze that chases people — so either stay off it, or light it early, while nobody is standing in it.',
+    tip: 'That stripe is oil, and the deserter can light it. Light it first yourself: shove the brazier onto the oil, then smash it, with your party clear. Burst a water barrel to douse flames.',
   },
   {
     id: 'enc_ambush',
@@ -181,8 +186,9 @@ export const ENCOUNTERS: readonly EncounterDef[] = [
       { enemyId: 'merc_blade', pos: { x: 15, y: 8 } },
       { enemyId: 'merc_sergeant', pos: { x: 17, y: 9 } },
     ],
-    intro: "Jin's people are already in the cutting. They knew which road you would take.",
-    tip: 'The walls are high here, so there is only one way through. Push someone back into the gap and nobody gets past them.',
+    intro:
+      "Jin's people are already in the cutting. They knew which road you would take, and they have come for Ruon.",
+    tip: 'Ruon fights with you, and his orders make a hero hit harder. Take the raised ground at the edges for better aim, and catch mercenaries in the central pool with lightning or cold.',
   },
   {
     id: 'enc_grumbler',
@@ -247,8 +253,8 @@ export const ENCOUNTERS: readonly EncounterDef[] = [
           { enemyId: 'merc_crossbow', pos: { x: 16, y: 2 } },
         ],
         intro:
-          'The driller comes up out of the pit on two treads. One of Jin’s people is already on the rim above it, crossbow braced, and does not look surprised to see you.',
-        tip: 'No quarry bender up there raising cover this time — just a crossbow that outranges most of you. Close the distance or break line of sight, and the driller is still the driller.',
+          'The driller grinds forward on its treads, oil dripping from a split hose. On the rim above, one of Jin’s crossbows is already braced.',
+        tip: 'No quarry bender raising cover this time, but the crossbow reaches eight tiles. Close on it or break its line of sight, and stay out of the drill’s two-tile slam.',
       },
     ],
     reinforcements: [
@@ -258,8 +264,8 @@ export const ENCOUNTERS: readonly EncounterDef[] = [
       { enemyId: 'bandit_earthbender', pos: { x: 13, y: 10 } },
     ],
     intro:
-      'The driller comes up out of the pit on two treads, dragging a plume of oil smoke behind it.',
-    tip: 'It leaks oil and churns the floor to mud. Catch it in burning oil, but keep your party clear. Ice Path makes the mud easier to cross; it will not stop the treads.',
+      'The driller grinds forward on its treads, oil dripping from a split hose. Grumbler hauls on a lever, and the drill arm swings towards you.',
+    tip: 'Keep more than two tiles from the driller: its slam hits a cone and knocks people back, once a turn. It sprays oil and churns mud. Light its oil when your party is clear.',
   },
 ];
 
