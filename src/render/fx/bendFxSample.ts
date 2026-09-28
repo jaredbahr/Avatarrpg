@@ -15,7 +15,9 @@
  *   first cel by the release's `flash`; a launch segment is the whip, from the
  *   socket to its head;
  * - the travel clock starts at the launch, or once the whip is out for a
- *   whip-bolt, and the travel cel draws once the launch cels are done;
+ *   whip-bolt, and the travel cel draws once the launch cels are done; the
+ *   flight lasts the layer's prototype `flightMs` stretched by the range, at
+ *   whatever speed covers the distance on screen in that;
  * - impact starts on arrival and flashes its first cel by `impact.flash`;
  * - residue starts after the impact;
  * - `previousPhaseEnd` is where the layer before this one left off for the
@@ -40,7 +42,7 @@ import {
   aimDeg,
   bendStep,
   celTurnDeg,
-  flightMs,
+  flightDurationMs,
   flightPoint,
   flipsFor,
   segmentBetween,
@@ -76,6 +78,12 @@ export interface BendFxShot {
    * (`bendStep`), against the character as it is drawn.
    */
   readonly scale: number;
+  /**
+   * The range, caster to target, in grid tiles by the rules' Chebyshev
+   * `distance`: what stretches each flight's prototype time
+   * (`flightDurationMs`).
+   */
+  readonly tiles: number;
   /**
    * The caster's heading on screen, degrees clockwise of +x: the aim of a
    * release thrown at the point it leaves from, which has no direction.
@@ -166,7 +174,7 @@ export function planBendFx(fx: BendFxIndex, shot: BendFxShot): BendFxPlan {
           break;
         case 'travel':
           clock = cue.launchAt + (trajectory.kind === 'whipBolt' ? (launchMs[release] ?? 0) : 0);
-          lands = clock + flightMs(trajectory, from, to, step);
+          lands = clock + flightDurationMs(layer.flightMs ?? 0, shot.tiles);
           arrivals[release] = lands;
           start = cue.launchAt + (launchMs[release] ?? 0);
           end = to;
@@ -227,7 +235,14 @@ export function sampleBendFx(fx: BendFxIndex, shot: BendFxShot, now: number): Be
       if (now < run.start || now >= run.lands) continue;
       const cel = fx.layerCel(layer, now - run.start);
       if (!cel) continue;
-      const at = flightPoint(effect.trajectory, run.from, to, step, now - run.clock);
+      const at = flightPoint(
+        effect.trajectory,
+        run.from,
+        to,
+        step,
+        now - run.clock,
+        run.lands - run.clock,
+      );
       const turn = celTurnDeg(cel.meta, aim, flip) + at.spin;
       sprites.push(sprite(layer, cel, at, turn, 0, scale, flip));
       continue;

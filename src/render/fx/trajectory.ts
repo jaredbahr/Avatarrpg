@@ -7,12 +7,10 @@
  * is placed in the same units, so every point here is a screen point divided
  * by the tile's width, whatever the zoom.
  *
- * Distances are measured in tiles of one board step: the screen length of a
- * move of one tile along a grid axis. That is the prototype's `STEP = (96,
- * 48)` on the oblique board (its speeds, arc heights and whip cap were all
- * measured in `hypot(96, 48)` px) and a plain tile width on a square one. So
- * a flight lasts its real on-screen length over its speed: a diagonal throw,
- * or one to a raised hand, takes as long as it looks.
+ * Shapes are measured against the character (`bendStep`): arc height and
+ * whip reach. Time is not. A flight lasts its travel layer's prototype flight
+ * stretched by the range (`flightDurationMs`), and its speed is whatever
+ * covers the real on-screen distance in that time (ADR 0055, step 6).
  *
  * Angles are degrees clockwise of +x, the way `atan2(dy, dx)` measures with y
  * down, which is how the effect atlas records `facing` and `angle`.
@@ -37,11 +35,10 @@ export const boardStep = (projection: Projection): number =>
  * cels at 1.35x on a `hypot(96, 48)` px step; the game draws them at 0.75x on
  * a 128 px tile, times the actor's own scale. So one data tile is
  * `hypot(96, 48) * 0.75 / 1.35` packed px, about 0.466 tiles at scale 1 and
- * 2.4 times shorter than an oblique board step. A throw, an arc and a whip
- * then move against the character exactly as the approved prototype's did,
- * and a flight lasts what the prototype's lasted over the same distance
- * measured in character heights. The projection plays no part: the character
- * is the ruler.
+ * 2.4 times shorter than an oblique board step. An arc and a whip then rise
+ * and reach against the character exactly as the approved prototype's did.
+ * The projection plays no part: the character is the ruler. How long a flight
+ * takes is not measured with it (`flightDurationMs`).
  */
 export const bendStep = (scale = 1): number => ((Math.hypot(96, 48) * 0.75) / 1.35 / 128) * scale;
 
@@ -70,23 +67,44 @@ export function whipHead(trajectory: BendTrajectory, from: Point, to: Point, ste
 }
 
 /**
- * How long the flight from `from` to `to` takes, in ms: its length in tiles
- * over the speed. For a whip-bolt, `from` is the whip's head and this is the
- * bolt; the whip itself is its launch cels.
+ * The range the prototype's flights were timed over (its `3se` throw), a
+ * tenth of the flight more or less for each tile past or short of it, and the
+ * least and most of it a flight lasts.
  */
-export function flightMs(trajectory: BendTrajectory, from: Point, to: Point, step: number): number {
-  const speed =
-    trajectory.kind === 'whipBolt'
-      ? trajectory.boltSpeedTilesPerSecond
-      : trajectory.speedTilesPerSecond;
-  return (length(from, to) / step / speed) * 1000;
-}
+export const FLIGHT_BASE_TILES = 3;
+export const FLIGHT_STRETCH_PER_TILE = 0.1;
+export const FLIGHT_STRETCH_MIN = 0.8;
+export const FLIGHT_STRETCH_MAX = 1.3;
 
 /**
- * The flight `ms` after it began: the point, and the spin in degrees an arc
- * adds to the cel's turn. An arc lifts by `heightTiles` at its middle, as the
- * prototype's `arc()` did (`4 h t (1 - t)`); a straight path and a bolt do
- * not. Clamped to the ends, so a late sample sits on the target.
+ * How much longer than the prototype's a flight over `tiles` of range lasts:
+ * `clamp(1 + 0.1 (tiles - 3), 0.8, 1.3)`. The approved prototype flew a fixed
+ * number of cels whatever the range, and that snap is what was approved; the
+ * stretch lets a long throw read as longer without going sluggish.
+ */
+export const flightStretch = (tiles: number): number =>
+  Math.min(
+    FLIGHT_STRETCH_MAX,
+    Math.max(FLIGHT_STRETCH_MIN, 1 + FLIGHT_STRETCH_PER_TILE * (tiles - FLIGHT_BASE_TILES)),
+  );
+
+/**
+ * How long a flight takes, in ms: the travel layer's prototype `flightMs`
+ * stretched by the range. `tiles` is the rules' range from caster to target,
+ * the grid's Chebyshev distance (`distance` in `src/core/rules/grid.ts`, the
+ * game's one metric), not a screen length: a grid diagonal is as many tiles as
+ * the prototype's `5e` was steps. The distance on screen only sets the speed.
+ * For a whip-bolt this is the bolt; the whip itself is its launch cels.
+ */
+export const flightDurationMs = (prototypeMs: number, tiles: number): number =>
+  prototypeMs * flightStretch(tiles);
+
+/**
+ * The flight `ms` after it began, of one lasting `total` ms: the point, and
+ * the spin in degrees an arc adds to the cel's turn. It covers the chord at an
+ * even speed, whatever that length is. An arc lifts by `heightTiles` at its
+ * middle, as the prototype's `arc()` did (`4 h t (1 - t)`); a straight path
+ * and a bolt do not. Clamped to the ends, so a late sample sits on the target.
  */
 export function flightPoint(
   trajectory: BendTrajectory,
@@ -94,8 +112,8 @@ export function flightPoint(
   to: Point,
   step: number,
   ms: number,
+  total: number,
 ): Point & { readonly spin: number } {
-  const total = flightMs(trajectory, from, to, step);
   const t = total > 0 ? Math.min(1, Math.max(0, ms / total)) : 1;
   const point = lerp(from, to, t);
   if (trajectory.kind !== 'arc') return { ...point, spin: 0 };

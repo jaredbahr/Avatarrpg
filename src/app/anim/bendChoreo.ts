@@ -70,6 +70,8 @@ export interface BendSpec {
   readonly to: Point;
   /** The caster's draw scale: cels, sockets and the data's tiles scale with it. */
   readonly scale: number;
+  /** The range in grid tiles (Chebyshev), which stretches each flight (`BendFxShot.tiles`). */
+  readonly tiles: number;
   /** No kick under reduced motion. */
   readonly still?: boolean;
 }
@@ -158,6 +160,7 @@ export function planBend(fx: BendFxIndex, spec: BendSpec): BendPlan {
     from: spec.foot,
     to: spec.to,
     scale: spec.scale,
+    tiles: spec.tiles,
     heading: headingDeg(spec.heading),
   };
   const fxPlan = planBendFx(fx, shot);

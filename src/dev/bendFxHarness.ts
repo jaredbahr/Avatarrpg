@@ -24,6 +24,7 @@ import { Animator } from '../app/animator';
 import type { Heading } from '../content/assets/clips';
 import { HEADINGS } from '../content/assets/clips';
 import { BEND_FX } from '../content/fxCels';
+import { distance } from '../core/rules/grid';
 import type { ContentIndex, Grid, Tile, Vec2 } from '../core/types';
 import { loadBendFx } from '../render/fx/bendFx';
 import { bendFxPages } from '../render/fx/bendFxDraw';
@@ -130,6 +131,7 @@ async function setup() {
       y: landing.y + (effect.impact.offsetPx.y / BEND_FX_PX_PER_TILE) * SCALE,
     },
     scale: SCALE,
+    tiles: distance(caster, target),
   });
   // The game's animator plays it, from scene time 0.
   const animator = new Animator({} as ContentIndex, { motionReduced: () => false });
