@@ -2,7 +2,8 @@
 
 **Status:** accepted, 2026-09-27 (contract); amended 2026-09-28 (packer and
 packed data), again 2026-09-28 (manifest plumbing, lazy bend loading and the
-socket convention), and again 2026-09-28 (the painted effects; playback
+socket convention), again 2026-09-28 (the painted effects), and again
+2026-09-28 (drawing them: trajectories, sprites and the flash; playback
 follows)
 
 ## Context
@@ -281,7 +282,8 @@ source: its painted layer sprites and the renderer that composited them,
   there is no air effect. The effects are JSON the packer writes,
   `public/art/fx/bend-effects.json`, beside one atlas page,
   `public/art/fx/bend-fx.webp` and `.json`. `BEND_FX` in `fxCels.ts` registers
-  them beside the other effect atlases. Nothing draws them yet.
+  them beside the other effect atlases. Both backends draw them (below);
+  nothing plays them in combat yet.
 - **A layer may play for one release.** An attack's releases need not draw the
   same thing: the jab throws a comet-tailed fireball and the cross a round one,
   and Bo's stomp opens the crack that his drive throws the rock out of. So
@@ -396,6 +398,97 @@ source: its painted layer sprites and the renderer that composited them,
   (312.2 KB) gzip, which leaves a headroom of 8,002 B (7.8 KB) under the
   320 KB gate.
 
+## Drawing the effects (amended 2026-09-28)
+
+The integration plan's step 5 (generic trajectories and layers) draws the
+painted effects on both backends from a time the caller gives. It wires
+neither combat nor the choreography clock: holds, freezes, shake timing and
+the combat handoff stay with steps 6 and 7.
+
+- **Board units, and a tile is one board step.** Every position is in the
+  space `projectGround` returns, one unit a tile's width on screen, y down: a
+  socket (`celOffset` from the foot), the landing point (the target's foot
+  plus `impact.offsetPx / 128`) and every point of a flight. Distances are in
+  tiles of one board step, the screen length of one grid step
+  (`boardStep`: `hypot(1, 0.5)` oblique, 1 square). That is the prototype's
+  `hypot(96, 48)` px, the unit its speeds, arc heights and whip cap were
+  measured in, and its whip cap is `math.dist((0, 0), STEP) * 1.5` in the
+  renderer itself. So a flight lasts its real on-screen length over its
+  speed: a diagonal or a throw to a raised hand takes as long as it looks.
+- **Trajectories are pure** (`src/render/fx/trajectory.ts`). An arc lifts by
+  `heightTiles` board steps at its middle (`4 h t (1 - t)`, the prototype's
+  `arc()`) and adds `spin` whole turns over the flight; a straight path and a
+  bolt stay on the chord. A whip-bolt's whip reaches `whipFraction` of the
+  way, capped at `whipMaxTiles`; the bolt leaves from the whip's head.
+  Cels with a `facing` turn by the chord's direction minus it (the chord from
+  launch to target, as the prototype aimed, not the arc's tangent); an
+  `angle` is fixed; a `segment` cel is centred between two points, turned
+  along them and stretched to `segment` times their distance.
+- **Clocks.** The travel clock starts at the launch for a straight path or an
+  arc (the approved speeds are the 3-tile throw over the launch and flight
+  cels) and when the launch cels end for a whip-bolt (its speed is the bolt's
+  two tiles over the cels after the whip). The rest are the conventions
+  above. A gather's cel `k` of `n` is drawn on the bend cel `n - k` before the
+  launch; a socket gather follows the socket there, and its `r`th segment
+  layer spans the socket's step `r` cels back (water's lead, then trail).
+  Flashes land on a launch layer's first cel (the release's `flash`) and an
+  impact layer's first cel (`impact.flash`). A long throw lands after the
+  bend's last cel; nothing clips it to the bend.
+- **The view carries resolved sprites.** `MapView.bendFx` is a list of
+  `BendFxSprite`s: page and rectangle, the pivot and the board point it lands
+  on, size in tiles, turn, alpha, blend, flash and depth. `sampleBendFx`
+  (`bendFxSample.ts`) builds it from the effect, the release cues (launch
+  time, the socket's path to it, the flash), the caster's and landing points
+  and the time. The backends draw it as it comes: `ground` and `underActor`
+  after the unit rings and before the depth-sorted actors, `overActor` after
+  them, and never time, turn, mirror or shake anything. Both place a sprite
+  by one rule, `bendFxPlacement`, in the unscaled world pixels `groundPoint`
+  returns. Pixi keeps two pooled sprite layers in the camera-scaled upright
+  layer; Canvas 2D draws with `drawImage` under the camera's transform.
+- **Never mirrored.** Nothing on this path reads a facing. A cel's turn comes
+  from the board.
+- **Shake is the view's `cameraNudge`.** The caller applies it; the effect
+  sprites carry none.
+- **The flash is a brightened copy of the one cel.** `flashedCel` draws the
+  cel into a canvas its own size, applies Pillow's `Brightness` to the pixels
+  (`floor(c * (1 + flash))` a channel, alpha kept) and keeps it in a 16-entry
+  LRU; both backends draw that copy in the cel's place. It reproduces Pillow's
+  output on the shipped fire launch and water splash exactly, every channel of
+  every pixel (`bendFlash.test.ts`, against fixtures Pillow 12.3.0 wrote from
+  the same page). The `lighter` second draw this ADR first proposed matches on
+  opaque pixels but adds before it clamps, so on the splash, painted at 224
+  and saturated, it came out a mean 3.8 channel levels off Pillow over the
+  board. The copy is one cel, never the page, so the canvas
+  cap is not at risk.
+- **Parity.** `bendFxParity.test.ts` runs Canvas 2D's real draw against a
+  recording context and the Pixi sync into real sprites, over three cameras
+  (fitted oblique, zoomed and panned oblique at dpr 2, square) and five
+  sprites (ground, flashed, turned, stretched, added), and holds their screen
+  quads to 1e-6 px, and their source rectangles, alpha and blend to equal.
+- **A dev harness, never built.** `dev/bend-fx.html` (served by `vite` only;
+  the build's one entry stays `index.html`) plays one character's bend and
+  effect at a given time on either backend, with a stand-in clock (the bend
+  cels on their `frameMs`, no holds). `scripts/bend-fx-capture.ts` starts
+  Vite in-process, captures range 3 and 5, cardinal and diagonal, on both
+  backends, each bend cel and then every 80 ms until the effect is done, with
+  and without the effects, and closes the server and browser whatever
+  happens.
+- **Found in review: the prototype's board is smaller than the game's.** The
+  prototype drew the 320 px character cels at 1.35x on a 96 x 48 px step; the
+  game draws them at 0.75x on a 128 px tile. Against the character, a game
+  tile is 2.4 times the prototype's step, so the approved "3-tile" throw is
+  about 1.25 game tiles on screen, and an effect thrown 3 real tiles flies
+  2.4 times as far against the character, the whip reaches 2.4 times as far
+  and the arcs lift 2.4 times as high, while the effect cels stay the size
+  they were against the character. The speeds in tiles a second hold the
+  flight times, not the look. Whether to keep board-scaled motion or rescale
+  `heightTiles`, `whipMaxTiles` and the speeds to the character is a visual
+  decision for review before step 7; it is data, and nothing here changes it.
+- **Budget.** JavaScript is 321,922 B gzip, 745 B more than the same build
+  of the base (321,177 B), 5,758 B under the 327,680 B gate. Only the draw
+  path is in the bundle; the sampler and the trajectories tree-shake until
+  step 6 calls them. No asset changes.
+
 ## Planned PR sequence
 
 1. **The contract.** `src/content/bends.ts`, its tests, the r9 fixture and
@@ -449,9 +542,10 @@ source: its painted layer sprites and the renderer that composited them,
      bend flashes on Canvas 2D; not fixed in step 4. Step 5 makes this live:
      the shipped releases and impacts now carry `flash` 0.75. That flash is
      the effect cel added onto itself (above), not the unit's white mask, so
-     step 7 draws it on the effect cel (on Canvas 2D, a `lighter` second draw
-     of the cel at 0.75) and must not route it through `mask` on the bend or
-     effect page.
+     step 7 draws it on the effect cel and must not route it through `mask`
+     on the bend or effect page. Settled by the drawing step (below): a
+     brightened copy of the one cel, on both backends, not a `lighter`
+     second draw.
    - **Effect ids share a namespace with the ability FX keys.**
      The bend effect `fx.earth.rock` is also the earth ability's `fx` key
      (`src/content/fx.ts`, `sounds.ts`, `bendingCels.ts`, `marks.ts`), where

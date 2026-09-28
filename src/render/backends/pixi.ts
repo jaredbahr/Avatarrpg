@@ -49,6 +49,8 @@ import { TILE } from '../camera';
 import type { Camera, Viewport } from '../camera';
 import { DecorSheets } from '../decorSheets';
 import { ParticleLayer } from '../fx/particleLayer';
+import { bendFxSource } from '../fx/bendFxDraw';
+import { syncBendFx } from '../fx/bendFxPixi';
 import { aimArcPoints, arcHeading, arrowheadPolygon } from '../geometry/arc';
 import { actorHealthBar, actorShadowDensity, healthBarCap } from '../geometry/actorSilhouette';
 import { DECOR_CHUNK, decorChunks } from '../geometry/board';
@@ -65,6 +67,7 @@ import { MAX_SPRITE_PX, npcPose, sprites } from '../spriteCache';
 import {
   unitMarkerGroundPoint,
   type AimArc,
+  type BendFxSprite,
   type MapView,
   type OverlayLayer,
   type RenderUnit,
@@ -239,6 +242,9 @@ export class PixiBackend implements RenderBackend {
   private decorGfx = new Graphics();
   private groundRings = new Graphics();
   private unitLayer = new Container();
+  /** Painted bend effects under and over the actors (ADR 0055). */
+  private bendUnder = new Container();
+  private bendOver = new Container();
   private fxGfx = new Graphics();
   private floaterLayer = new Container();
   /** Particles and strokes: ground-level ones under the units, the rest over them. */
@@ -414,7 +420,13 @@ export class PixiBackend implements RenderBackend {
       this.decorGfx,
     );
     this.unitLayer.sortableChildren = true;
-    this.upright.addChild(this.groundRings, this.unitLayer, this.flockLayer);
+    this.upright.addChild(
+      this.groundRings,
+      this.bendUnder,
+      this.unitLayer,
+      this.flockLayer,
+      this.bendOver,
+    );
     this.labels.addChild(this.fxGfx, this.floaterLayer);
     app.stage.addChild(this.root, this.upright, this.fxOver.container, this.labels);
 
@@ -540,6 +552,23 @@ export class PixiBackend implements RenderBackend {
     this.drawPath(view);
     this.drawDecor(view);
     this.drawUnits(view, camera);
+    const bendFx = view.bendFx ?? [];
+    const bendTexture = (sprite: BendFxSprite) => {
+      const source = bendFxSource(sprite);
+      return source ? this.frameTexture({ source: source.image, frame: source.frame }) : null;
+    };
+    syncBendFx(
+      this.bendUnder,
+      bendFx.filter((s) => s.z !== 'overActor'),
+      camera,
+      bendTexture,
+    );
+    syncBendFx(
+      this.bendOver,
+      bendFx.filter((s) => s.z === 'overActor'),
+      camera,
+      bendTexture,
+    );
     const emitters = resolveActorEmitters(
       view.emitters,
       view.grid,
@@ -1292,7 +1321,7 @@ export class PixiBackend implements RenderBackend {
    * the frame rectangle, never a copy of the pixels. Keyed by the source
    * texture's id so a re-uploaded sheet gets fresh views.
    */
-  private frameTexture(frame: ResolvedFrame): Texture {
+  private frameTexture(frame: Pick<ResolvedFrame, 'source' | 'frame'>): Texture {
     const base = this.texture(frame.source);
     const f = frame.frame;
     const key = `${base.uid}|${f.x},${f.y},${f.w},${f.h}`;
