@@ -63,6 +63,7 @@ import { placeFrame } from '../sheets/placement';
 import { idlePhase, sheets } from '../sheets/store';
 import { MAX_SPRITE_PX, npcPose, sprites } from '../spriteCache';
 import {
+  fallenAlpha,
   unitMarkerGroundPoint,
   type AimArc,
   type MapView,
@@ -1489,7 +1490,7 @@ export class PixiBackend implements RenderBackend {
       live.add(unit.id);
       const sprite = this.unitSprite(unit.id);
       // A pose scales about the feet; the fallen fade sits on top of any alpha.
-      const alpha = (unit.alpha ?? 1) * (unit.fallen ? 0.35 : 1);
+      const alpha = (unit.alpha ?? 1) * fallenAlpha(unit);
       const shadowDensity = actorShadowDensity(view.grid, pos, unit.shadow === true, unit.size);
       if (shadowDensity > 0) {
         // On the ground, not on the bob (explore maps, ADR 0015; grass, canvas2d.ts).

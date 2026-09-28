@@ -52,6 +52,21 @@ export interface RenderUnit {
   readonly flash?: number;
 }
 
+/** How far the fallen fade takes a standing pose: nearly a ghost, under its cross. */
+export const FALLEN_ALPHA = 0.35;
+/**
+ * How far it takes a body lying in its G knockout (ADR 0059). The drawing
+ * already says down, and lying flat it is most of the way into the ground's
+ * colours, so the standing fade left Kaya a smudge on grass; it only dims.
+ */
+export const FALLEN_KNOCKOUT_ALPHA = 0.8;
+
+/** The fallen fade both backends lay over a unit's own alpha. */
+export function fallenAlpha(unit: Pick<RenderUnit, 'fallen' | 'clip'>): number {
+  if (!unit.fallen) return 1;
+  return unit.clip && /^ko[A-Z]/.test(unit.clip) ? FALLEN_KNOCKOUT_ALPHA : FALLEN_ALPHA;
+}
+
 /**
  * Ground point for a unit marker. Directional contact poses move the sprite
  * for presentation, so callers pass that transient offset; all other markers
