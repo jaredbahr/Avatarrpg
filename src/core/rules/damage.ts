@@ -9,6 +9,10 @@
  *
  *   damage = round((base + scale x Power) x variance) x incoming multipliers
  *            - Defense, minimum 1
+ *
+ * The hit-chance numbers themselves are data: `ContentIndex.tuning` carries
+ * them in from `src/content/tuning.ts`, so a balance variant can move them
+ * without touching core.
  */
 
 import type { RngCursor } from '../rng';
@@ -16,9 +20,6 @@ import type { AbilityEffect, ContentIndex, Grid, Unit, Vec2 } from '../types';
 import { distanceToUnit, occupiedCells, tileAt } from './grid';
 import { accuracyModifier, effectiveStats, incomingMultiplier } from './stats';
 
-export const BASE_HIT_CHANCE = 90;
-export const ELEVATION_STEP = 10;
-export const COVER_PENALTY = 20;
 export const CRIT_MULTIPLIER = 1.5;
 export const VARIANCE_MIN = 0.9;
 export const VARIANCE_MAX = 1.1;
@@ -48,7 +49,7 @@ export function hasCover(content: ContentIndex, grid: Grid, unit: Unit): boolean
 }
 
 export interface HitBreakdown {
-  /** Final chance as a percentage, 5-99. */
+  /** Final chance as a percentage, clamped to the tuning band (5-99 today). */
   readonly chance: number;
   readonly base: number;
   readonly elevation: number;
@@ -66,18 +67,19 @@ export function hitBreakdown(
   attacker: Unit,
   defender: Unit,
 ): HitBreakdown {
+  const tuning = content.tuning;
   const elevationDelta = elevationOf(grid, attacker) - elevationOf(grid, defender);
-  const elevation = elevationDelta * ELEVATION_STEP;
+  const elevation = elevationDelta * tuning.elevationStep;
 
   const adjacent = distanceToUnit(attacker.pos, defender) <= 1;
-  const cover = !adjacent && hasCover(content, grid, defender) ? -COVER_PENALTY : 0;
+  const cover = !adjacent && hasCover(content, grid, defender) ? -tuning.coverPenalty : 0;
 
   const statuses = accuracyModifier(content, attacker);
 
-  const raw = BASE_HIT_CHANCE + elevation + cover + statuses;
+  const raw = tuning.baseHitChance + elevation + cover + statuses;
   return {
-    chance: Math.max(5, Math.min(99, raw)),
-    base: BASE_HIT_CHANCE,
+    chance: Math.max(tuning.hitChanceMin, Math.min(tuning.hitChanceMax, raw)),
+    base: tuning.baseHitChance,
     elevation,
     cover,
     statuses,

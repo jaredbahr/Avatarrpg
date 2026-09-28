@@ -41,5 +41,10 @@ node --import tsx scripts/art/map.ts --map ba_dan_riverside --in <environment.pn
 The motion packer preserves alpha, crops the grid cells, uses the existing idle
 height as the common scale reference, aligns feet and combines the new poses
 with existing idle/cast/KO frames. Each finished atlas has twelve 128×192 frames.
-Runtime enlargement is anchored at the feet. Foreground silhouettes live in
+Runtime enlargement is anchored at the feet.
+
+Those motion atlases are retired (ADR 0054): the riverside now draws Kaya and
+Sura from their G sheets, `riverside-motion.ts` is gone, and only the two wave
+cels survive, as byte-exact sources in `art/source/<name>-riverside/wave/`
+packed by `scripts/art/riverside-page.ts`. Foreground silhouettes live in
 `src/render/living/scenery.ts`; review them against this exact environment.

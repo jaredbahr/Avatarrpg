@@ -3,16 +3,19 @@ import type { Vec2 } from '../../core/types';
 
 export const FOOT_Y = 0.5;
 
-/** The river sheets carry four poses at 8 fps; a two-tile stride is 500 clip ms.
- * Animator time is 500 ms per tile for the ordinary two-pose, 4 fps sheets.
+/** The life layer draws a figure this many tiles to 128 atlas pixels. */
+export const FIGURE_SCALE = 1.45;
+
+/**
+ * Walk clip time on the riverside, from the animator's. A four-way sheet
+ * plays a fixed 500 ms a tile, a cadence rather than a stride, and keeps it.
+ * An eight-way sheet's `walkMsPerTile` is its measured stride at one tile to
+ * 128 atlas px (ADR 0050); drawn here at `FIGURE_SCALE`, the same stride
+ * covers that much more ground, so the clip runs that much less a tile or
+ * the feet slide backwards (ADR 0054).
  */
-export function riversideWalkTime(
-  clipTime: number,
-  illustrated: boolean,
-  vertical = false,
-): number {
-  // Front/back atlases use 4 fps; the retained riverside side walks use 8 fps.
-  return illustrated && !vertical ? clipTime / 2 : clipTime;
+export function riversideWalkTime(clipTime: number, eightWay: boolean): number {
+  return eightWay ? clipTime / FIGURE_SCALE : clipTime;
 }
 
 /** Tight world-space bounds around a standing villager, above its feet. */

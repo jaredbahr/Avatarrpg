@@ -17,65 +17,77 @@ export const RIVERSIDE_SPOTS = {
 // Ground footprints, not canopy silhouettes: the shaded lane west of the
 // banyan is open. Only its trunk/stone planter blocks passage. Coordinates
 // refer to tile centres, the same points used by feet and pointer targeting.
+// A painted solid stands on its base cell, so the practice posts, the lantern,
+// the rock and the trunk on the east bank each block one tile (R1 audit).
 const spans: readonly (readonly (readonly [number, number])[])[] = [
   [],
   [],
   [],
-  [],
+  [[10, 10]],
   [
     [10, 10],
     [15, 15],
   ],
+  // (16,5) is the garden fence in front of the north-east house.
   [
-    [9, 10],
-    [14, 16],
+    [9, 11],
+    [14, 15],
     [30, 32],
   ],
+  // The sand lane west of the square runs up to the trees at (0,6).
   [
+    [1, 2],
     [8, 17],
-    [20, 20],
     [30, 32],
   ],
   [
-    [5, 19],
+    [2, 19],
     [30, 31],
   ],
   [
-    [4, 20],
+    [3, 20],
     [30, 31],
   ],
   [
-    [5, 21],
+    [4, 21],
     [30, 31],
   ],
   [
     [5, 7],
     [13, 21],
-    [29, 32],
+    [29, 30],
+    [32, 32],
   ],
   [
     [4, 7],
-    [13, 33],
-  ],
-  [[4, 33]],
-  [
-    [5, 20],
-    [29, 33],
+    [13, 29],
+    [31, 33],
   ],
   [
-    [9, 18],
-    [29, 33],
+    [4, 29],
+    [31, 33],
   ],
   [
-    [10, 18],
+    [5, 19],
     [29, 32],
   ],
   [
-    [10, 18],
-    [29, 31],
+    [9, 18],
+    [29, 29],
+    [32, 33],
+  ],
+  // (10,15..17) is the tea garden's hedge and fence.
+  [
+    [11, 18],
+    [29, 32],
   ],
   [
-    [10, 12],
+    [11, 18],
+    [29, 29],
+    [31, 32],
+  ],
+  [
+    [11, 12],
     [17, 18],
     [30, 31],
   ],
@@ -83,11 +95,23 @@ const spans: readonly (readonly (readonly [number, number])[])[] = [
   [
     [8, 8],
     [10, 11],
-    [30, 31],
+    [17, 18],
+    [30, 32],
   ],
-  [[8, 10]],
-  [[9, 10]],
-  [[9, 10]],
+  [
+    [7, 11],
+    [18, 19],
+    [32, 33],
+  ],
+  [
+    [9, 11],
+    [19, 20],
+    [33, 34],
+  ],
+  [
+    [9, 11],
+    [20, 20],
+  ],
   [[10, 11]],
   [[10, 11]],
 ];
@@ -157,4 +181,8 @@ export const RIVERSIDE: MapDef = {
   ],
   props: [],
   restSpots: [{ pos: RIVERSIDE_SPOTS.tea, label: 'the tea porch' }],
+  // The south path is the only walkable ground on the rim; every cell of it
+  // belongs to the exit mouth in `connectAct1`.
+  edges: [{ side: 'south', span: [10, 11], treatment: 'exit' }],
+  edgeContract: 'enforce',
 };

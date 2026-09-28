@@ -10,7 +10,7 @@
  * context, they never own one.
  */
 
-import type { SceneImage, Vec2 } from '../../core/types';
+import type { SceneFlock, SceneImage, Vec2 } from '../../core/types';
 import { authoredForBothSides } from '../../content/assets/clips';
 import { resolveAsset } from '../../content/assets/manifest';
 import { Camera } from '../camera';
@@ -28,6 +28,7 @@ import { sampleAt, smoothPath } from '../geometry/curve';
 import { CanvasFxLayer } from '../fx/canvasFx';
 import { backdrops } from '../backdrops';
 import { sceneForGrid, sceneImage, drawSceneImage, sceneryOpacities } from '../scene';
+import { flockAt, flockFrame, flushElapsed, sway } from '../living/wind';
 import { surfaceIsPainted } from '../sceneSurfaces';
 import { HP_CAP, HP_COLORS, OVERLAY, STATUS_BADGE, hpFill } from '../palettes';
 import { paintElevationBase, paintTileDecor, paintTileSeams } from '../painters/board';
@@ -77,6 +78,8 @@ export class Canvas2DBackend implements RenderBackend {
   /** Cliffs, rims and wall outlines, rebuilt only when a tile's footing changes. */
   private relief: ReadonlyMap<number, TileRelief> = new Map();
   private reliefSignature = '';
+  /** The flock whose page was last asked for, so a scene change asks once. */
+  private flock: SceneFlock | undefined;
 
   constructor(private canvas: HTMLCanvasElement) {
     // Transparent, so the page's mood wash shows round the board (ADR 0008).
@@ -225,12 +228,22 @@ export class Canvas2DBackend implements RenderBackend {
             if (!image) return;
             ctx.save();
             ctx.globalAlpha = opacities.get(piece) ?? 1;
+            // Three held drawings of the lean, sheared about the foot.
+            const lean = piece.wind && !view.reducedMotion ? sway(view.time, piece, true) : 0;
+            ctx.transform(
+              1,
+              0,
+              -lean,
+              1,
+              piece.x * camera.scale - camera.offsetX,
+              (piece.y + piece.height) * camera.scale - camera.offsetY,
+            );
             drawSceneImage(
               ctx,
               image,
               piece,
-              piece.x * camera.scale - camera.offsetX,
-              piece.y * camera.scale - camera.offsetY,
+              0,
+              -piece.height * camera.scale,
               piece.width * camera.scale,
               piece.height * camera.scale,
             );
@@ -257,6 +270,7 @@ export class Canvas2DBackend implements RenderBackend {
         })),
       ].sort((a, b) => camera.groundPoint(a.pos).y - camera.groundPoint(b.pos).y);
       for (const occupant of occupants) occupant.draw();
+      this.drawFlock(view, camera);
       ctx.save();
       ctx.transform(m.a, m.b, m.c, m.d, m.tx, m.ty);
       this.drawFxLayer(view, ground, 'over');
@@ -752,6 +766,33 @@ export class Canvas2DBackend implements RenderBackend {
       ctx.fillStyle = '#d9a441';
       ctx.fillRect(x, y, (w * prop.hp) / prop.maxHp, Math.max(2, box.size * 0.05));
       ctx.restore();
+    }
+  }
+
+  /** The birds a fight flushes out of the trees; the page is asked for once per scene so it is in. */
+  private drawFlock(view: MapView, camera: Camera): void {
+    const flock = view.scene?.flock;
+    if (flock !== this.flock) {
+      this.flock = flock;
+      if (flock) sceneImage(flockFrame(flock, 0));
+    }
+    const elapsed = flushElapsed(view);
+    if (!flock || !(elapsed >= 0)) return;
+    const perches = view.scene?.scenery.filter((piece) => piece.wind) ?? [];
+    const size = flock.size * camera.scale;
+    for (const bird of flockAt(flock, perches, elapsed)) {
+      const frame = flockFrame(flock, bird.frame);
+      const image = sceneImage(frame);
+      if (!image) continue;
+      this.ctx.save();
+      this.ctx.globalAlpha = bird.alpha;
+      this.ctx.translate(
+        bird.x * camera.scale - camera.offsetX,
+        bird.y * camera.scale - camera.offsetY,
+      );
+      this.ctx.rotate(bird.angle);
+      drawSceneImage(this.ctx, image, frame, -size / 2, -size / 2, size, size);
+      this.ctx.restore();
     }
   }
 

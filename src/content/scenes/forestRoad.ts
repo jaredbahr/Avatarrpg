@@ -61,8 +61,18 @@ function pine({ x, y }: Vec2): SceneScenery {
     footprint: [{ x, y }],
     depth: { x: x + 0.5, y: y + 0.5 },
     fadeWhenOccluding: true,
+    wind: true,
   };
 }
+
+/** Songbirds that burst out of the pines as the ambush opens (docs/art/forest-birds.md). */
+export const FOREST_FLOCK = {
+  url: `${root}bird-flap.webp`,
+  frames: 6,
+  frameSize: 32,
+  size: 20,
+  count: 6,
+} as const;
 
 /** A low, passable flood-bank remnant beside the southern woodland path. */
 export const FOREST_BANK_NEST_REEDS: SceneScenery = {
@@ -158,15 +168,27 @@ export const FOREST_APRON_PIECES: readonly SceneImage[] = FOREST_APRON_BANDS.map
 }));
 
 /**
- * The route's one painted rubble heap (`scripts/art/forest-rubble.ts`), drawn
+ * The route's painted rubble heaps (`scripts/art/forest-rubble.ts`), drawn
  * into the middle of a cover cell's diamond. Every `r` cell on the route stands
- * this heap on its own spill, so real cover reads the same in the forest, the
+ * one of them on its own spill, so real cover reads the same in the forest, the
  * Cutting and on the quarry floor; the scene lists the cell in `paintedRubble`
  * so the live wash stands down under it.
+ *
+ * There are three piles, and a hash of the cell picks one — never the RNG, so
+ * a board draws the same heaps every time — so a floor of six heaps is not six
+ * copies of one stamp.
  */
-export const RUBBLE_HEAP_URL = `${root}rubble.webp`;
+export const RUBBLE_HEAP_URLS = [
+  `${root}rubble.webp`,
+  `${root}rubble-1.webp`,
+  `${root}rubble-2.webp`,
+] as const;
+export const rubbleHeapUrl = ({ x, y }: Vec2): string =>
+  RUBBLE_HEAP_URLS[
+    ((Math.imul(x, 73856093) ^ Math.imul(y, 19349663)) >>> 0) % RUBBLE_HEAP_URLS.length
+  ] ?? RUBBLE_HEAP_URLS[0];
 export const rubbleHeap = ({ x, y }: Vec2): SceneImage => ({
-  url: RUBBLE_HEAP_URL,
+  url: rubbleHeapUrl({ x, y }),
   x: 768 + (x - y) * 64 - 64,
   y: (x + y + 1) * 32 - 64 / 3,
   width: 128,
@@ -178,8 +200,8 @@ export const FOREST_ROAD_SCENE: MapScene = {
   groundMode: 'partial',
   paintedRubble: FOREST_RUBBLE_CELLS,
   ground: [
-    { url: `${root}grass-north.webp`, ...FOREST_GRASS_REGIONS.north },
-    { url: `${root}grass-south.webp`, ...FOREST_GRASS_REGIONS.south },
+    { url: `${root}grass-north.webp`, ...FOREST_GRASS_REGIONS.north, wind: true },
+    { url: `${root}grass-south.webp`, ...FOREST_GRASS_REGIONS.south, wind: true },
     { url: `${root}route-ground.webp`, x: 128, y: 32, width: 1984, height: 960 },
     { url: `${root}pond-bank.webp`, ...FOREST_POND_PATCH },
     { url: `${root}raised-shelf.webp`, ...FOREST_RAISED_SHELF },
@@ -188,4 +210,5 @@ export const FOREST_ROAD_SCENE: MapScene = {
     ...FOREST_APRON_PIECES,
   ],
   scenery: [...FOREST_PINE_CELLS.map(pine), FOREST_BANK_NEST_REEDS, ...FOREST_POND_REEDS],
+  flock: FOREST_FLOCK,
 };

@@ -68,7 +68,8 @@ export const STATUSES: readonly StatusDef[] = [
   status({
     id: 'burning',
     name: 'Burning',
-    description: '3 fire damage at the start of your turn. Water or standing in water puts it out.',
+    description:
+      'Takes 3 fire damage at the start of each turn and has 1 less Defence. Becoming Wet puts it out, so step into water.',
     kind: 'debuff',
     defaultDuration: 3,
     tickDamage: 3,
@@ -78,7 +79,8 @@ export const STATUSES: readonly StatusDef[] = [
   status({
     id: 'wet',
     name: 'Wet',
-    description: 'Fire damage halved, lightning doubled, and cold hits harder. Puts out Burning.',
+    description:
+      'Soaked through. Takes half damage from fire, double from lightning and half as much again from cold. Becoming Wet puts out Burning.',
     kind: 'debuff',
     defaultDuration: 3,
     clears: ['burning'],
@@ -89,7 +91,8 @@ export const STATUSES: readonly StatusDef[] = [
   status({
     id: 'chilled',
     name: 'Chilled',
-    description: 'Slow and clumsy. Chill something that is already Chilled and it Freezes.',
+    description:
+      '1 less Move, 2 less Speed and 5% lower hit chance. If a Chilled unit is Chilled again, it becomes Frozen.',
     kind: 'debuff',
     defaultDuration: 2,
     modifiers: { move: -1, speed: -2, accuracy: -5 },
@@ -97,7 +100,8 @@ export const STATUSES: readonly StatusDef[] = [
   status({
     id: 'frozen',
     name: 'Frozen',
-    description: 'Cannot act for a turn. Takes extra damage from earth and physical hits.',
+    description:
+      'Locked in ice and loses the next turn. Has 2 less Defence, takes half as much again from earth and physical hits, and a quarter more from fire.',
     kind: 'debuff',
     defaultDuration: 1,
     skipsTurn: true,
@@ -110,7 +114,7 @@ export const STATUSES: readonly StatusDef[] = [
   status({
     id: 'shocked',
     name: 'Shocked',
-    description: 'Jittery: slower, less accurate, and one less AP next turn.',
+    description: '1 less AP, 3 less Speed and 10% lower hit chance while it lasts.',
     kind: 'debuff',
     defaultDuration: 2,
     modifiers: { speed: -3, accuracy: -10, ap: -1 },
@@ -118,7 +122,7 @@ export const STATUSES: readonly StatusDef[] = [
   status({
     id: 'stunned',
     name: 'Stunned',
-    description: 'Loses the next turn entirely.',
+    description: 'Dazed and loses the next turn.',
     kind: 'debuff',
     defaultDuration: 1,
     skipsTurn: true,
@@ -126,7 +130,7 @@ export const STATUSES: readonly StatusDef[] = [
   status({
     id: 'slowed',
     name: 'Slowed',
-    description: 'Two fewer move points.',
+    description: '2 less Move while it lasts.',
     kind: 'debuff',
     defaultDuration: 2,
     modifiers: { move: -2 },
@@ -134,7 +138,7 @@ export const STATUSES: readonly StatusDef[] = [
   status({
     id: 'blinded',
     name: 'Blinded',
-    description: 'Much harder to hit anything. Smoke and dust do this.',
+    description: '30% lower hit chance on every attack.',
     kind: 'debuff',
     defaultDuration: 2,
     modifiers: { accuracy: -30 },
@@ -142,7 +146,7 @@ export const STATUSES: readonly StatusDef[] = [
   status({
     id: 'rooted',
     name: 'Rooted',
-    description: 'Stuck in place, but can still attack.',
+    description: 'Cannot walk, but can still use abilities.',
     kind: 'debuff',
     defaultDuration: 2,
     preventsMove: true,
@@ -150,7 +154,7 @@ export const STATUSES: readonly StatusDef[] = [
   status({
     id: 'chiBlocked',
     name: 'Chi-Blocked',
-    description: 'Cannot bend or use abilities. Can still move. The chi-blocker signature.',
+    description: 'Cannot use any ability, bending or otherwise, but can still walk.',
     kind: 'debuff',
     defaultDuration: 2,
     preventsAbilities: true,
@@ -158,7 +162,7 @@ export const STATUSES: readonly StatusDef[] = [
   status({
     id: 'guarded',
     name: 'Guarded',
-    description: 'Braced behind a shield: much harder to hurt.',
+    description: '3 more Defence, and fire and physical hits deal a quarter less.',
     kind: 'buff',
     defaultDuration: 2,
     modifiers: { defense: 3, incomingMultiplier: { fire: 0.75, physical: 0.75 } },
@@ -166,7 +170,8 @@ export const STATUSES: readonly StatusDef[] = [
   status({
     id: 'inspired',
     name: 'Inspired',
-    description: 'Hits harder and truer.',
+    description:
+      '2 more Power, 10% higher hit chance and 5% more Focus (Focus is critical-hit chance).',
     kind: 'buff',
     defaultDuration: 2,
     modifiers: { power: 2, accuracy: 10, focus: 5 },

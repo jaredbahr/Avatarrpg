@@ -10,4 +10,6 @@ Tap the visible object, or approach and use **Inspect**. Each place remembers it
 
 The shell-and-bill turtle-duck, notched measuring stone, and kettle-and-cup assets use the existing painter contract and sprite cache on both renderers. They are original code-drawn assets with transparent surroundings and palette-based ink outlines; no new bitmap download or asset format is required.
 
+The text lives in the `TEXT` table in `src/content/story/discoveries.ts`. Narration names no one the party may not have met: the cloth over the nest is tied by "someone", not Dema, because the nest can be found before her conversation. First-visit text must agree with the journal entry in `src/content/journal.ts` and with the Nima and Sura lines in `partyVoices.ts`, which replace it when they are present. A new spot also needs a journal entry; without one the journal test fails.
+
 Manual playtest: start a new game, leave Ba Dan east, explore the southwest verge, inspect the nest twice, save and reload, then inspect again. After resolving the road encounter, find the measuring stone. Continue into the Cutting and inspect the tea station near Sen. Confirm that inspection leaves the party at the same place and that return routes and visible encounters still work.

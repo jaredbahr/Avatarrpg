@@ -21,7 +21,6 @@ import {
 } from '../../core/story/world';
 import type { PlacedNpc } from '../../core/story/world';
 import { VillageLife } from '../village/VillageLife';
-import { drawnPose } from '../village/riversidePose';
 import type { App, CameraInfo, Scene } from '../App';
 import type { GameEvent, GameState, Grid, MapDef, Unit, Vec2 } from '../../core/types';
 import { buildGrid, distance, samePos } from '../../core/rules/grid';
@@ -42,7 +41,7 @@ import { WaitDialog } from '../ui/WaitDialog';
 import { showGridLines } from '../storage/localSaves';
 import { NextWalk, previewWalk } from '../world/walking';
 import type { WalkPreview } from '../world/walking';
-import { nearbyExploreTarget } from '../world/guidance';
+import { nearbyExits, nearbyExploreTarget } from '../world/guidance';
 import { handoverBark } from '../world/barks';
 import { seatHere } from '../world/waiting';
 import { phaseLabel } from '../world/journal';
@@ -528,7 +527,7 @@ export class ExploreScene implements Scene {
   private atGate(): string | null {
     const state = this.app.state;
     if (!state) return null;
-    const exit = this.map?.exits?.find((item) => distance(state.location.pos, item.pos) <= 1);
+    const exit = this.map ? nearbyExits(this.map, state.location.pos)[0] : undefined;
     if (exit)
       return evaluate(state, exit.requires)
         ? exit.label
@@ -1000,8 +999,8 @@ export class ExploreScene implements Scene {
       scale: partyScale(map.projection),
       renderPos: index === 0 ? walking : this.app.animator.renderPos(now, member.id),
       offset: this.app.animator.offset(now, member.id),
-      // Timed and posed from the sheet the riverside actually draws.
-      ...drawnPose(this.app.animator, now, member, Boolean(this.life)),
+      clipTime: this.app.animator.unitPose(now, member.id, member.sprite)?.clipTime,
+      ...this.app.animator.locomotion(now, member.id, 'rest', member.sprite),
     }));
 
     // Residents and background roles come from the walks, in their drawn
@@ -1087,6 +1086,7 @@ export class ExploreScene implements Scene {
       backdrop: this.app.backdropFor(map.id),
       scene: map.scene,
       time: now,
+      reducedMotion: motionReduced(),
     };
 
     renderer.draw(view);

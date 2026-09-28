@@ -651,6 +651,12 @@ export interface BackgroundRole {
 
 export interface MapExit {
   readonly pos: Vec2;
+  /**
+   * Multi-tile entrance (M2): the leader triggers the exit from any of these
+   * cells. Absent means the single `pos` tile. When present it must contain
+   * `pos`, and no cell may belong to two exits on the same map.
+   */
+  readonly area?: readonly Vec2[];
   readonly toMapId: string;
   readonly toPos: Vec2;
   readonly label: string;
@@ -666,6 +672,26 @@ export interface MapTrigger {
   readonly node: string;
   readonly when?: Condition;
   readonly once: boolean;
+}
+
+/** Which border of the grid an authored edge declaration covers. */
+export type MapEdgeSide = 'north' | 'south' | 'east' | 'west';
+
+/**
+ * What a declared edge is for. Nothing in the rules reads this yet (M1); it
+ * records what the map author intends so the report-only edge-contract
+ * validator can tell an intended boundary from an accidentally open one.
+ */
+export type MapEdgeTreatment = 'barrier' | 'band' | 'exit';
+
+/**
+ * An authored claim about one run of a map border. `span` is an inclusive
+ * `[from, to]` measured in x for north/south edges and in y for east/west.
+ */
+export interface MapEdge {
+  readonly side: MapEdgeSide;
+  readonly span: readonly [number, number];
+  readonly treatment: MapEdgeTreatment;
 }
 
 export interface MapDef {
@@ -699,6 +725,15 @@ export interface MapDef {
   readonly objectiveVariants?: readonly { readonly when: Condition; readonly text: string }[];
   /** Explore maps only: stepping here advances the current story node. */
   readonly exit?: { readonly pos: Vec2; readonly label: string };
+  /**
+   * Authored claims about this map's walkable border (M1). Report-only: the
+   * edge-contract validator warns on a walkable border cell that no exit or
+   * declared edge covers, and only errors when the map sets
+   * `edgeContract: 'enforce'`.
+   */
+  readonly edges?: readonly MapEdge[];
+  /** Opt this map into edge-contract errors. No map sets it yet (M1). */
+  readonly edgeContract?: 'enforce';
   /**
    * A painting drawn under the rules grid in place of the procedural ground,
    * once one exists for the map (ADR 0009). Presentation only, like
@@ -738,6 +773,23 @@ export interface SceneImage {
   readonly y: number;
   readonly width: number;
   readonly height: number;
+  /**
+   * Moves in the wind, on the render clock only: ground brightens as a gust
+   * crosses it, upright scenery leans. Presentation; the rules never read it.
+   */
+  readonly wind?: boolean;
+}
+
+/** Small birds that lift out of the wind-moved scenery when a fight opens. */
+export interface SceneFlock {
+  /** One row of square flap frames. */
+  readonly url: string;
+  readonly frames: number;
+  /** Source pixels per frame. */
+  readonly frameSize: number;
+  /** Drawn size in scene pixels. */
+  readonly size: number;
+  readonly count: number;
 }
 
 export interface SceneScenery extends SceneImage {
@@ -765,6 +817,7 @@ export interface MapScene {
   readonly paintedRubble?: readonly Vec2[];
   readonly ground: readonly SceneImage[];
   readonly scenery: readonly SceneScenery[];
+  readonly flock?: SceneFlock;
 }
 
 /* ------------------------------------------------------------------ */
@@ -1252,6 +1305,25 @@ export interface StepResult {
 /* ------------------------------------------------------------------ */
 
 /**
+ * Combat tuning numbers that used to be literals in `core/rules/damage.ts`.
+ *
+ * Content owns the values (`src/content/tuning.ts` checks them with zod); core
+ * only ever reads them off the index it was handed. Keeping them in one data
+ * file is what lets `scripts/balance.ts` A/B a variant without a code edit.
+ */
+export interface CombatTuning {
+  /** Accuracy before elevation, cover and statuses. */
+  readonly baseHitChance: number;
+  /** Accuracy gained per elevation tier of advantage; a tier down loses it. */
+  readonly elevationStep: number;
+  /** Accuracy removed when the defender has cover and is not adjacent. */
+  readonly coverPenalty: number;
+  /** Hit chance is clamped into this band, lowest bound first. */
+  readonly hitChanceMin: number;
+  readonly hitChanceMax: number;
+}
+
+/**
  * The only way core code reaches content. Built once in `src/content/index.ts`
  * and threaded through every rules call, which keeps `src/core` importable
  * from a test that supplies its own tiny fixture content instead.
@@ -1268,6 +1340,11 @@ export interface ContentIndex {
   readonly surfaces: ReadonlyMap<SurfaceId, SurfaceDef>;
   readonly props: ReadonlyMap<string, PropDef>;
   readonly combos: readonly ComboRule[];
+  /**
+   * The hit-chance numbers. Reached through the index for the same reason as
+   * everything else here — core may not import content values.
+   */
+  readonly tuning: CombatTuning;
   readonly story: ReadonlyMap<string, StoryNode>;
   /** Living-world records (ADR 0047 §2). Map order is declaration order, which ranks ties. */
   readonly anchors: ReadonlyMap<string, WorldAnchor>;

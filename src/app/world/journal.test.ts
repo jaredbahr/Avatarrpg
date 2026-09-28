@@ -7,7 +7,59 @@ import { apply } from '../../core/state/reducer';
 import { deserialize, serialize, stateFromBlob } from '../../core/save/serialize';
 import { phaseLabel, travelJournal } from './journal';
 import { DISCOVERIES } from '../../content/maps/discoveries';
-import { DAY_PHASES } from '../../core/types';
+import { DAY_PHASES, type Condition, type GameState } from '../../core/types';
+
+/** Set from the riverside scene (VillageLife), not by a story node. */
+const APP_FLAGS = new Set(['riverside_pet', 'riverside_tea']);
+
+const flagKeys = (condition: Condition): string[] => {
+  switch (condition.kind) {
+    case 'flag':
+      return [condition.key];
+    case 'all':
+    case 'any':
+      return condition.of.flatMap(flagKeys);
+    case 'not':
+      return flagKeys(condition.of);
+    default:
+      return [];
+  }
+};
+
+const visitedNodes = (condition: Condition): string[] => {
+  switch (condition.kind) {
+    case 'visited':
+      return [condition.nodeId];
+    case 'all':
+    case 'any':
+      return condition.of.flatMap(visitedNodes);
+    case 'not':
+      return visitedNodes(condition.of);
+    default:
+      return [];
+  }
+};
+
+const storyFlags = () => {
+  const keys = new Set<string>();
+  for (const node of CONTENT.story.values()) {
+    if (node.kind === 'flags') for (const key of Object.keys(node.set)) keys.add(key);
+    if (node.kind === 'choice')
+      for (const option of node.options)
+        for (const key of Object.keys(option.setFlags ?? {})) keys.add(key);
+  }
+  return keys;
+};
+
+const play = (state: GameState, nodeId: string) => {
+  let next = apply(CONTENT, state, { type: 'enterNode', nodeId }).state;
+  for (let i = 0; i < 8 && next.screen === 'dialogue'; i++)
+    next = apply(CONTENT, next, { type: 'advanceDialogue' }).state;
+  return next;
+};
+
+const found = (state: GameState, id: string) =>
+  travelJournal(CONTENT, state).discoveries.find((note) => note.id === id)?.found ?? false;
 
 const start = () => {
   const state = createGame(CONTENT, {
@@ -24,7 +76,44 @@ describe('travel journal and riverside routes', () => {
     for (const note of JOURNAL_NOTES) {
       expect(CONTENT.maps.has(note.mapId)).toBe(true);
       expect(conditionSchema.safeParse(note.when).success).toBe(true);
+      if (note.hintWhile) expect(conditionSchema.safeParse(note.hintWhile).success).toBe(true);
     }
+  });
+  it('gates every note on a flag some story node actually sets', () => {
+    const set = storyFlags();
+    for (const note of JOURNAL_NOTES)
+      for (const key of [
+        ...flagKeys(note.when),
+        ...(note.hintWhile ? flagKeys(note.hintWhile) : []),
+      ])
+        expect(set.has(key) || APP_FLAGS.has(key), `${note.id}: ${key}`).toBe(true);
+  });
+  it('gates every visited note on a story node that exists', () => {
+    for (const note of JOURNAL_NOTES)
+      for (const nodeId of visitedNodes(note.when))
+        expect(CONTENT.story.has(nodeId), `${note.id}: ${nodeId}`).toBe(true);
+  });
+  it('finds the story notes on the routes that earn them', () => {
+    expect(found(start(), 'bo_shan_cart')).toBe(false);
+    expect(found(play(start(), 'pella_tips'), 'bo_shan_cart')).toBe(true);
+    const victory = play(start(), 'act1_victory');
+    expect(found(start(), 'galleries')).toBe(false);
+    expect(found(victory, 'galleries')).toBe(true);
+    expect(found(victory, 'maker_plate')).toBe(true);
+    expect(found(start(), 'roadblock_workers')).toBe(false);
+    expect(found(play(start(), 'after_forest'), 'roadblock_workers')).toBe(true);
+  });
+  it('drops the Bo-shan lead once act 1 is over unless Pella was asked', () => {
+    const shown = (state: GameState) =>
+      travelJournal(CONTENT, state).discoveries.some((note) => note.id === 'bo_shan_cart');
+    const village = { ...start(), location: { mapId: 'ba_dan_village', pos: { x: 18, y: 14 } } };
+    expect(shown(village)).toBe(true);
+    const done: GameState = { ...village, flags: { ...village.flags, act1_complete: true } };
+    expect(done.flags.pella_asked).toBeUndefined();
+    expect(shown(done)).toBe(false);
+    const asked = { ...done, flags: { ...done.flags, pella_asked: true } };
+    expect(shown(asked)).toBe(true);
+    expect(found(asked, 'bo_shan_cart')).toBe(true);
   });
   it('names the time of day as a label (ADR 0047 D1)', () => {
     const state = start();

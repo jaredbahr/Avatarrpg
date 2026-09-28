@@ -1430,6 +1430,8 @@ export const FX_AMBIENCE: Readonly<Record<string, AmbienceRecipe>> = {
     emitters: [
       drifting('leaf', 14, 'light', 0.9, [0.25, 0.5], [0.08, 0.13]),
       drifting('glow', 10, 'white', 4.98, [0.05, 0.12], [0.03, 0.05], 'add', 0),
+      // Pine needles, thin and quick, riding the same wind the canopy leans in.
+      drifting('shard', 8, 'dark', 0.45, [0.4, 0.65], [0.035, 0.05], 'normal', 5),
     ],
   },
   village: {

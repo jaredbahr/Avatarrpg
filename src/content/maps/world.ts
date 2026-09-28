@@ -13,9 +13,13 @@ const route = (
   toMapId: string,
   toPos: Vec2,
   label: string,
+  area?: readonly Vec2[],
   requires?: Condition,
   lockedHint?: string,
-): MapExit => ({ pos, toMapId, toPos, label, requires, lockedHint });
+): MapExit => ({ pos, toMapId, toPos, label, area, requires, lockedHint });
+
+/** A road mouth (M2): the walkable cells of the exit's cross-section at the map edge. */
+const mouth = (x: number, ys: readonly number[]): readonly Vec2[] => ys.map((y) => ({ x, y }));
 
 /** A visible group watches the whole crossing, so a long tap cannot skip it. */
 function crossing(
@@ -64,7 +68,13 @@ export function connectAct1(map: MapDef): MapDef {
           },
         ],
         exits: [
-          route({ x: 23, y: 7 }, 'forest_road', { x: 1, y: 4 }, 'East road → Forest Road'),
+          route(
+            { x: 23, y: 7 },
+            'forest_road',
+            { x: 1, y: 4 },
+            'East road → Forest Road',
+            mouth(23, [7, 8]),
+          ),
           route({ x: 19, y: 14 }, 'ba_dan_riverside', { x: 10, y: 19 }, 'River path → Riverside'),
         ],
       };
@@ -90,6 +100,13 @@ export function connectAct1(map: MapDef): MapDef {
             'ba_dan_village',
             { x: 18, y: 14 },
             'South path → Ba Dan Village',
+            // The south path from row 20 to the rim: it leaves with no tile to miss.
+            [
+              { x: 10, y: 20 },
+              ...mouth(9, [20, 21]),
+              ...mouth(10, [21, 22, 23]),
+              ...mouth(11, [20, 21, 22, 23]),
+            ],
           ),
         ],
       };
@@ -105,12 +122,19 @@ export function connectAct1(map: MapDef): MapDef {
           { when: rescued, text: 'The roadblock is gone. Follow the road west to Ba Dan.' },
         ],
         exits: [
-          route({ x: 0, y: 4 }, 'ba_dan_village', { x: 22, y: 7 }, 'West → Ba Dan Village'),
+          route(
+            { x: 0, y: 4 },
+            'ba_dan_village',
+            { x: 22, y: 7 },
+            'West → Ba Dan Village',
+            mouth(0, [4, 5, 6, 7, 8]),
+          ),
           route(
             { x: 19, y: 4 },
             'quarry_gate',
             { x: 1, y: 5 },
             'East → Quarry Gate',
+            mouth(19, [4, 5, 6, 7, 8]),
             visited('after_forest'),
             'Deal with the roadblock before heading to the quarry.',
           ),
@@ -206,12 +230,19 @@ export function connectAct1(map: MapDef): MapDef {
           { when: rescued, text: 'The gate is open. Follow the forest road west to Ba Dan.' },
         ],
         exits: [
-          route({ x: 0, y: 5 }, 'forest_road', { x: 18, y: 4 }, 'West → Forest Road'),
+          route(
+            { x: 0, y: 5 },
+            'forest_road',
+            { x: 18, y: 4 },
+            'West → Forest Road',
+            mouth(0, [5, 6]),
+          ),
           route(
             { x: 19, y: 5 },
             'ambush_road',
             { x: 1, y: 4 },
             'East → The Cutting',
+            mouth(19, [5, 6]),
             { kind: 'any', of: [visited('escort_chosen'), visited('trade_chosen')] },
             'Speak with Ruon and decide how to proceed first.',
           ),
@@ -240,12 +271,19 @@ export function connectAct1(map: MapDef): MapDef {
           },
         ],
         exits: [
-          route({ x: 0, y: 4 }, 'quarry_gate', { x: 18, y: 5 }, 'West → Quarry Gate'),
+          route(
+            { x: 0, y: 4 },
+            'quarry_gate',
+            { x: 18, y: 5 },
+            'West → Quarry Gate',
+            mouth(0, [4, 5, 6, 7]),
+          ),
           route(
             { x: 19, y: 4 },
             'quarry_floor',
             { x: 1, y: 5 },
             'East → Quarry Floor',
+            mouth(19, [4, 5, 6, 7]),
             { kind: 'any', of: [visited('after_ambush'), visited('trade_chosen')] },
             'Jin’s people are waiting further along the cutting.',
           ),

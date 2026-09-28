@@ -11,9 +11,10 @@
  * for about two tiles, fading the page back in before the camera can follow.
  *
  * The road therefore leaves the board instead of ending on it: the route is a
- * stretch of a longer road, and the reference reads that way. Nothing here
- * touches a playable pixel; every sample inside the board stays transparent,
- * which `forest-exterior-apron.test.ts` asserts.
+ * stretch of a longer road, and the reference reads that way. Inside the board
+ * the plate paints only the seam band the grass packs leave open, and never over
+ * ground the scene already paints opaque, which `forest-exterior-apron.test.ts`
+ * asserts.
  *
  * npx tsx scripts/art/forest-exterior-apron.ts
  */
@@ -57,6 +58,8 @@ export const GUARD_ALPHA = 250;
  * to cross them to the grass bank they are cut into.
  */
 const SAMPLE_REACH = 3.4;
+/** The walk's stride along the normal, in tiles. */
+const SAMPLE_STEP = 0.08;
 /** Tile centre of logical (0,0) in scene-local pixels, as every piece uses it. */
 const ORIGIN = { x: 768, y: 0 } as const;
 const TILE = { width: 64, height: 32 } as const;
@@ -178,8 +181,11 @@ function groundAt(field: Image, x: number, y: number): [number, number, number, 
  * the offset is the band's own width, so that band is a plain shift.
  *
  * Where the mirror point is blocked by a pond, a ledge or a cover cell — objects
- * standing on the ground, not ground — the walk keeps going until it finds the
- * terrain those objects stand on.
+ * standing on the ground, not ground — the walk keeps going to the terrain those
+ * objects stand on, and mirrors again across the hole's far edge. Taking the
+ * first ground past the hole instead hands every depth whose mirror falls in it
+ * the same far-edge pixel: the one-row comb the raised shelf left on the east
+ * rim.
  */
 export function apronTerrain(
   field: Image,
@@ -189,10 +195,69 @@ export function apronTerrain(
   const depth = apronDepth(x, y);
   const inward = apronInward(x, y);
   const mirror = depth > 0 ? 2 * depth : APRON_SEAM + 0.08;
-  for (let t = mirror; t <= mirror + SAMPLE_REACH; t += 0.08) {
+  const sample = (t: number): [number, number, number, number] | null => {
     const point = scenePixel(x + inward.x * t, y + inward.y * t);
-    const found = groundAt(field, point.x, point.y);
+    return groundAt(field, point.x, point.y);
+  };
+  const direct = sample(mirror);
+  if (direct) return { r: direct[0], g: direct[1], b: direct[2] };
+  const resumed = groundEdge(sample, mirror);
+  if (!resumed) return null;
+  const { t: far, ground: edge } = resumed;
+  const colour = { r: edge[0], g: edge[1], b: edge[2] };
+  // Near a corner the mirror falls off the board or into another rim's own
+  // feather, not into an object's hole; there the first ground is the nearest
+  // continuation. Only the other sides decide that: along the way back in, every
+  // shallow mirror sits in this rim's own feather, which is exactly where the
+  // shelf's hole begins.
+  if (sideDepth(x + inward.x * mirror, y + inward.y * mirror, inward) > -APRON_SEAM) return colour;
+  // Reflect across the far edge, so the depths that fall in the hole read
+  // ground that moves with them instead of one line of it.
+  const steps = Math.floor(SAMPLE_REACH / SAMPLE_STEP);
+  for (let back = 0; back <= steps; back++) {
+    const found = sample(2 * far - mirror + back * SAMPLE_STEP);
     if (found) return { r: found[0], g: found[1], b: found[2] };
+  }
+  return colour;
+}
+
+/** How far outside the board a point is, ignoring the rim `inward` leads back through. */
+function sideDepth(x: number, y: number, inward: { x: number; y: number }): number {
+  const { width, height } = FOREST_APRON_MAP;
+  const sides = [
+    { x: 1, y: 0, depth: -x },
+    { x: -1, y: 0, depth: x - width },
+    { x: 0, y: 1, depth: -y },
+    { x: 0, y: -1, depth: y - height },
+  ];
+  return Math.max(
+    ...sides.filter((side) => side.x !== inward.x || side.y !== inward.y).map((s) => s.depth),
+  );
+}
+
+/**
+ * Where the ground resumes past a blocked sample, found once to a fraction of a
+ * pixel: a coarse walk for the first ground, then bisection back to its edge.
+ * Stepping from each point's own mirror instead lands every point on its own
+ * multiple of the stride, and the far edge wobbles into micro-bands.
+ */
+function groundEdge(
+  sample: (t: number) => [number, number, number, number] | null,
+  from: number,
+): { t: number; ground: [number, number, number, number] } | null {
+  const steps = Math.floor(SAMPLE_REACH / SAMPLE_STEP);
+  for (let step = 1; step <= steps; step++) {
+    let t = from + step * SAMPLE_STEP;
+    let ground = sample(t);
+    if (!ground) continue;
+    let miss = t - SAMPLE_STEP;
+    for (let i = 0; i < 10; i++) {
+      const mid = (miss + t) / 2;
+      const found = sample(mid);
+      if (found) [t, ground] = [mid, found];
+      else miss = mid;
+    }
+    return { t, ground };
   }
   return null;
 }
@@ -239,9 +304,11 @@ async function loadPlates(names: readonly string[]): Promise<ApronPlate[]> {
   const plates: ApronPlate[] = [];
   const found = new Set<string>();
   // Scene order is draw order, and a repeated plate (the rubble cells) is drawn
-  // once per cell, so every matching piece belongs in the field.
+  // once per cell, so every matching piece belongs in the field. The heap's
+  // variants (`rubble-1.webp`, ...) all answer to `rubble.webp`.
   for (const piece of FOREST_ROAD_SCENE.ground) {
-    const name = names.find((candidate) => piece.url.endsWith(candidate));
+    const url = piece.url.replace(/rubble-\d\.webp$/, 'rubble.webp');
+    const name = names.find((candidate) => url.endsWith(candidate));
     if (!name) continue;
     found.add(name);
     plates.push({ image: await readWebp(`public/${piece.url}`), x: piece.x, y: piece.y });

@@ -1,6 +1,6 @@
 # ADR 0053: Kaya and Sura walk the narrower "A" gait
 
-**Status:** Accepted  
+**Status:** Accepted, amended by ADR 0054  
 **Date:** 2026-09-26
 
 Amends ADR 0050, ADR 0051 and ADR 0052 for Kaya's and Sura's walks only.
