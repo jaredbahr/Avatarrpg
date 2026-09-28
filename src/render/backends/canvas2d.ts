@@ -26,6 +26,7 @@ import { contourLoops } from '../geometry/contour';
 import type { Curve } from '../geometry/curve';
 import { sampleAt, smoothPath } from '../geometry/curve';
 import { CanvasFxLayer } from '../fx/canvasFx';
+import { drawBendFx } from '../fx/bendFxDraw';
 import { backdrops } from '../backdrops';
 import { sceneForGrid, sceneImage, drawSceneImage, sceneryOpacities } from '../scene';
 import { flockAt, flockFrame, flushElapsed, sway } from '../living/wind';
@@ -220,6 +221,7 @@ export class Canvas2DBackend implements RenderBackend {
         ctx.restore();
       }
       this.drawUnitRings(view, camera);
+      drawBendFx(ctx, view.bendFx ?? [], camera, false);
       // All upright occupants share depth order, including NPCs and props.
       const opacities = sceneryOpacities(view.scene?.scenery ?? [], view, camera);
       const occupants = [
@@ -278,6 +280,7 @@ export class Canvas2DBackend implements RenderBackend {
       ].sort((a, b) => camera.groundPoint(a.pos).y - camera.groundPoint(b.pos).y);
       for (const occupant of occupants) occupant.draw();
       this.drawFlock(view, camera);
+      drawBendFx(ctx, view.bendFx ?? [], camera, true);
       ctx.save();
       ctx.transform(m.a, m.b, m.c, m.d, m.tx, m.ty);
       this.drawFxLayer(view, ground, 'over', true);
@@ -292,9 +295,11 @@ export class Canvas2DBackend implements RenderBackend {
       this.drawFxLayer(view, camera, 'under');
       this.drawExit(view, camera);
       this.drawUnitRings(view, camera);
+      drawBendFx(ctx, view.bendFx ?? [], camera, false);
       this.drawNpcs(view, camera);
       this.drawProps(view, camera);
       this.drawUnits(view, camera);
+      drawBendFx(ctx, view.bendFx ?? [], camera, true);
       this.drawFxLayer(view, camera, 'over');
     }
     this.drawFloaters(view, camera);

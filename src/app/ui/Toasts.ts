@@ -24,9 +24,10 @@ export class Toasts {
   private recent = new Map<string, number>();
   private frame = 0;
   /** What `place` last wrote, so a frame that changes nothing writes nothing. */
-  private placed: { where: Placement; anchor: string; panel: Element | null } = {
+  private placed: { where: Placement; anchor: string; aside: string; panel: Element | null } = {
     where: 'top',
     anchor: '',
+    aside: '',
     panel: null,
   };
 
@@ -78,12 +79,13 @@ export class Toasts {
       // The last toast has gone: forget the lift, so the next one measures
       // whatever sheet is open then rather than inheriting this answer.
       delete this.host.dataset.place;
-      this.placed = { where: 'top', anchor: '', panel: null };
+      this.placed = { where: 'top', anchor: '', aside: '', panel: null };
       return;
     }
     const origin = this.host.parentElement;
     let where: Placement = 'top';
     let anchor = '';
+    let aside = '';
     const panels = origin?.querySelectorAll(':scope > .overlay > .panel');
     const panel = panels?.[panels.length - 1];
     if (origin && panel) {
@@ -109,7 +111,24 @@ export class Toasts {
       const map = document.querySelector('.scene-host .map-wrap')?.getBoundingClientRect();
       if (map && origin && map.height > 0) {
         where = 'map';
-        anchor = `${Math.round(map.top - origin.getBoundingClientRect().top)}px`;
+        const box = origin.getBoundingClientRect();
+        let top = map.top;
+        // A list that drops over the map (the phone battle header's More)
+        // keeps the band clear of it, without hiding the live region: beside
+        // the list where the screen has the width, under it where it does not.
+        const menu = document
+          .querySelector('.scene-host [data-toast-clear]')
+          ?.getBoundingClientRect();
+        if (menu && menu.height > 0) {
+          const rem = parseFloat(getComputedStyle(document.documentElement).fontSize);
+          if (menu.left - box.left >= BESIDE_REM * rem) {
+            where = 'map-beside';
+            aside = `${Math.round(box.right - menu.left)}px`;
+          } else {
+            top = Math.max(top, menu.bottom);
+          }
+        }
+        anchor = `${Math.round(top - box.top)}px`;
       }
     }
     if (where === 'top') delete this.host.dataset.place;
@@ -117,12 +136,23 @@ export class Toasts {
     if (anchor && anchor !== this.placed.anchor) {
       this.host.style.setProperty('--toast-anchor', anchor);
     }
-    this.placed = { where, anchor: anchor || this.placed.anchor, panel: panel ?? null };
+    if (aside && aside !== this.placed.aside) {
+      this.host.style.setProperty('--toast-aside', aside);
+    }
+    this.placed = {
+      where,
+      anchor: anchor || this.placed.anchor,
+      aside: aside || this.placed.aside,
+      panel: panel ?? null,
+    };
     this.frame = requestAnimationFrame(this.place);
   };
 }
 
-type Placement = 'sheet' | 'sheet-lifted' | 'map' | 'top';
+type Placement = 'sheet' | 'sheet-lifted' | 'map' | 'map-beside' | 'top';
+
+/** The width, in rem, left of an open list that still holds a toast beside it. */
+const BESIDE_REM = 16;
 
 /** Whether two elements' boxes intersect: here, a toast and a sheet. */
 function overlaps(a: Element, b: Element): boolean {
