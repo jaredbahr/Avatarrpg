@@ -111,6 +111,9 @@ export class CombatScene implements Scene {
   private aiScheduled = false;
   private resultShown = false;
   private logOpen = false;
+  /** The phone header's More list, and the listeners that close it. */
+  private moreOpen = false;
+  private moreDismiss: (() => void) | null = null;
   private layoutMeasuredAfterSync = false;
   /** When the scene's birds burst out of the trees: once, as a fresh fight is first seen. */
   private flushedAt: number | null = null;
@@ -150,6 +153,9 @@ export class CombatScene implements Scene {
     this.frame = 0;
     this.recentreButton = null;
     this.actorButton = null;
+    this.moreDismiss?.();
+    this.moreDismiss = null;
+    this.moreOpen = false;
     this.detach?.();
     this.detach = null;
     this.inspector?.close();
@@ -214,6 +220,7 @@ export class CombatScene implements Scene {
     }
     this.revealPendingMoveAfterViewportChange();
     this.syncRecentre();
+    if (this.moreOpen) this.measureMoreRoom();
   }
 
   /**
@@ -535,6 +542,9 @@ export class CombatScene implements Scene {
         this.handedOffTo = null;
       }
       if (unit) announce(`${this.app.session.labelFor(unit)}'s turn.`);
+      // The More list was opened for the last turn; the next player at the
+      // table finds it closed. The rebuild below hands focus to the toggle.
+      this.setMoreOpen(false, false);
 
       // Where the board cannot fit, whoever is acting is what to look at.
       const camera = this.renderer?.camera;
@@ -584,6 +594,12 @@ export class CombatScene implements Scene {
     const bar = this.host?.querySelector<HTMLElement>('.combat-bar');
     const battle = this.battle();
     if (!bar || !battle) return;
+    // Every sync rebuilds the header, an AI turn several times a second. The
+    // button that had focus is found again by its key, so a keyboard or
+    // switch user reading the More list is not dropped to the page.
+    const active = document.activeElement;
+    const focusedKey =
+      active instanceof HTMLElement && bar.contains(active) ? active.dataset.key : undefined;
     clear(bar);
 
     const encounter = this.app.content.encounters.get(battle.encounterId);
@@ -592,44 +608,82 @@ export class CombatScene implements Scene {
       el(
         'div',
         { class: 'title-plate' },
-        el('strong', { class: 'title-plate-name', text: encounter?.name ?? 'Battle' }),
+        el('strong', {
+          class: 'title-plate-name',
+          text: encounter?.name ?? 'Battle',
+          title: encounter?.name ?? 'Battle',
+        }),
         el('span', { class: 'title-plate-round', text: `Round ${battle.round}` }),
       ),
     );
     bar.appendChild(el('div', { class: 'spacer' }));
 
-    const recentre = button('Recentre', () => this.recentre(), {
-      class: 'btn-ghost',
-      title: 'Reset the battlefield view around the acting unit',
+    // On a phone the header keeps only its title and Pause; the view and help
+    // buttons fold behind More, so the title never scrolls off. Wider screens
+    // lay the same buttons inline and never show the toggle (`.combat-more`).
+    // The toggle is its mark alone, named for a screen reader: the plate
+    // needs the width.
+    const toggle = button('', () => this.setMoreOpen(!this.moreOpen, true), {
+      class: 'btn-ghost combat-more-toggle',
+      title: 'View and help',
     });
+    toggle.append(mark(UI_MARKS.more), el('span', { class: 'visually-hidden', text: 'More' }));
+    toggle.setAttribute('aria-controls', 'combat-more');
+    toggle.setAttribute('aria-expanded', String(this.moreOpen));
+    toggle.dataset.key = 'more';
+    bar.appendChild(toggle);
+    // `data-toast-clear`: toasts move their band clear of the list while it is open.
+    const more = el('div', {
+      class: `combat-more${this.moreOpen ? ' open' : ''}`,
+      id: 'combat-more',
+      attrs: { role: 'group', 'aria-label': 'View and help', 'data-toast-clear': '' },
+    });
+    bar.appendChild(more);
+    // A folded button closes the list and hands focus back to More.
+    const folded = (action: () => void) => () => {
+      this.setMoreOpen(false, true);
+      action();
+    };
+
+    const recentre = button(
+      'Recentre',
+      folded(() => this.recentre()),
+      { class: 'btn-ghost', title: 'Reset the battlefield view around the acting unit' },
+    );
     recentre.prepend(mark(UI_MARKS.recentre, 'mark-inline'));
     recentre.hidden = this.renderer?.camera.fitted ?? true;
+    recentre.dataset.key = 'recentre';
     this.recentreButton = recentre;
-    bar.appendChild(recentre);
+    more.appendChild(recentre);
     const actor = button(
       'Acting unit',
-      () => {
+      folded(() => {
         const unit = this.active();
         if (unit) this.focusUnit(unit.id);
-      },
+      }),
       { class: 'btn-ghost', title: 'Return to the acting unit without changing zoom' },
     );
     actor.hidden = this.renderer?.camera.fitted ?? true;
+    actor.dataset.key = 'actor';
     this.actorButton = actor;
-    bar.appendChild(actor);
+    more.appendChild(actor);
 
     if (encounter) {
       const advice = encounterText(encounter, battle.variantId).tip;
-      const tipButton = button('Tip', () => this.app.toasts.show(advice, 'info', 6000), {
-        class: 'btn-ghost',
-        title: advice,
-      });
+      const tipButton = button(
+        'Tip',
+        folded(() => this.app.toasts.show(advice, 'info', 6000)),
+        { class: 'btn-ghost', title: advice },
+      );
       tipButton.prepend(mark(UI_MARKS.tip, 'mark-inline'));
-      bar.appendChild(tipButton);
+      tipButton.dataset.key = 'tip';
+      more.appendChild(tipButton);
     }
     const logButton = button(
       this.logOpen ? 'Hide log' : 'Log',
       () => {
+        // Focus stays on Log through the rebuild, or on More where the list folded it.
+        this.setMoreOpen(false, false);
         this.logOpen = !this.logOpen;
         this.renderTopBar();
         this.renderHud();
@@ -637,10 +691,84 @@ export class CombatScene implements Scene {
       { class: 'btn-ghost' },
     );
     logButton.prepend(mark(UI_MARKS.log, 'mark-inline'));
-    bar.appendChild(logButton);
-    const pauseButton = button('Pause', () => this.app.openPause(), { class: 'btn-ghost' });
-    pauseButton.prepend(mark(UI_MARKS.pause, 'mark-inline'));
+    logButton.dataset.key = 'log';
+    more.appendChild(logButton);
+    // The label is its own span so a phone at Large text can show the mark alone.
+    const pauseButton = button(
+      '',
+      () => {
+        this.setMoreOpen(false, false);
+        this.app.openPause();
+      },
+      { class: 'btn-ghost combat-pause' },
+    );
+    pauseButton.append(
+      mark(UI_MARKS.pause, 'mark-inline'),
+      el('span', { class: 'combat-pause-label', text: 'Pause' }),
+    );
+    pauseButton.dataset.key = 'pause';
     bar.appendChild(pauseButton);
+
+    if (focusedKey) {
+      // Back to the same button if it is still on screen; if the list it sat
+      // in has closed, to the toggle that reopens it.
+      const shown = (key: string) => {
+        const found = bar.querySelector<HTMLElement>(`[data-key="${key}"]`);
+        return found && found.getClientRects().length > 0 ? found : null;
+      };
+      (shown(focusedKey) ?? shown('more'))?.focus();
+    }
+  }
+
+  /**
+   * How far the More list may drop before it meets the foot of the scene.
+   * Written on the bar, which outlives every rebuild of the list inside it.
+   */
+  private measureMoreRoom(): void {
+    const bar = this.host?.querySelector<HTMLElement>('.combat-bar');
+    if (!bar || !this.host) return;
+    const room = this.host.getBoundingClientRect().bottom - bar.getBoundingClientRect().bottom;
+    bar.style.setProperty('--more-room', `${Math.max(0, Math.round(room))}px`);
+  }
+
+  /**
+   * Opens or closes the header's More list. Open, a tap outside or Escape
+   * closes it; with `focus`, focus moves to the first button on the way in
+   * and back to the toggle on the way out, as a dialog's does.
+   */
+  private setMoreOpen(open: boolean, focus: boolean): void {
+    if (this.moreOpen === open) return;
+    this.moreOpen = open;
+    this.moreDismiss?.();
+    this.moreDismiss = null;
+    const bar = this.host?.querySelector<HTMLElement>('.combat-bar');
+    if (!bar) return;
+    const list = bar.querySelector<HTMLElement>('.combat-more');
+    const toggle = bar.querySelector<HTMLElement>('.combat-more-toggle');
+    list?.classList.toggle('open', open);
+    toggle?.setAttribute('aria-expanded', String(open));
+    if (!open) {
+      // Focus never stays behind in a list that has just been hidden.
+      if (focus || list?.contains(document.activeElement)) toggle?.focus();
+      return;
+    }
+    this.measureMoreRoom();
+    const onPointer = (event: PointerEvent) => {
+      if (!(event.target instanceof Node) || !bar.contains(event.target))
+        this.setMoreOpen(false, false);
+    };
+    const onKey = (event: KeyboardEvent) => {
+      if (event.key !== 'Escape') return;
+      event.preventDefault();
+      this.setMoreOpen(false, true);
+    };
+    document.addEventListener('pointerdown', onPointer, true);
+    document.addEventListener('keydown', onKey);
+    this.moreDismiss = () => {
+      document.removeEventListener('pointerdown', onPointer, true);
+      document.removeEventListener('keydown', onKey);
+    };
+    if (focus) list?.querySelector<HTMLElement>('button:not([hidden])')?.focus();
   }
 
   private renderTurnStrip(): void {
@@ -664,7 +792,10 @@ export class CombatScene implements Scene {
         assetCanvas(portraitKeyFor(this.app.content, unit), 2.4),
         el('span', { class: 'tiny', text: player?.name ?? unit.name }),
       );
-      chip.title = `${unit.name}: ${unit.hp}/${unit.base.maxHp} HP. Focus on the battlefield.`;
+      // A phone shows the waiting chips as faces alone and a long name
+      // ellipses anywhere, so the full name always rides on the chip itself.
+      const who = player && player.name !== unit.name ? `${unit.name} (${player.name})` : unit.name;
+      chip.title = `${who}: ${unit.hp}/${unit.base.maxHp} HP. Focus on the battlefield.`;
       strip.appendChild(chip);
     }
   }

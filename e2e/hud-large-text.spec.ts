@@ -81,6 +81,241 @@ test('the battle header and initiative strip leave the board its screen at Large
 });
 
 /**
+ * A phone held upright. The board used to get about a third of the screen:
+ * the header scrolled its own title off at Largest text, every initiative
+ * chip stacked a face over a truncated name, and the acting card and actions
+ * took the bottom half. Now the header folds its view buttons behind More,
+ * the waiting chips are faces with their full names on the chip, and the
+ * dock is compact — so the world gets at least half the screen at default.
+ */
+test('a phone battle gives the board half the screen and keeps its header on one row', async ({
+  page,
+}) => {
+  await page.setViewportSize({ width: 390, height: 844 });
+  await resetStorage(page, '?renderer=canvas');
+  await startGame(page, ['Riko', 'Tal'], ['nima', 'kaya', 'sura', 'bo'], 'hud-phone');
+  await enterNode(page, 'battle_quarry_gate');
+  await takeTurn(page);
+  await waitForIdle(page);
+  await settleLayout(page);
+
+  // More than half: the old layout already scraped 0.52 here at default text,
+  // with the title scrolled off and the chips truncated. This one gives 0.58.
+  const canvas = await page.locator('.map-canvas').boundingBox();
+  expect(canvas?.height ?? 0).toBeGreaterThanOrEqual(844 * 0.55);
+
+  // Every chip names its unit in full, whatever it shows; only the acting
+  // chip still shows a label.
+  const { names, chips } = await page.evaluate(() => ({
+    names: window.fnt!.app.state!.battle!.units.map((unit) => unit.name),
+    chips: [...document.querySelectorAll<HTMLElement>('.turn-chip')].map((chip) => ({
+      label: chip.getAttribute('aria-label') ?? '',
+      title: chip.title,
+      active: chip.classList.contains('active'),
+      labelShown: (chip.querySelector('span')?.getBoundingClientRect().width ?? 0) > 0,
+    })),
+  }));
+  expect(chips.length).toBeGreaterThan(4);
+  expect(chips.some((chip) => chip.label === 'Focus Fire Nation Deserter')).toBe(true);
+  for (const chip of chips) {
+    const name = chip.label.replace(/^Focus /, '');
+    expect(names).toContain(name);
+    expect(chip.title.startsWith(name)).toBe(true);
+    expect(chip.labelShown).toBe(chip.active);
+  }
+
+  for (const size of ['off', 'huge'] as const) {
+    await setLargeText(page, size);
+    await settleLayout(page);
+    const header = await page.evaluate(() => {
+      const bar = document.querySelector<HTMLElement>('.combat-bar');
+      const plate = document.querySelector('.combat-bar .title-plate')?.getBoundingClientRect();
+      const pause = document.querySelector('.combat-bar .combat-pause')?.getBoundingClientRect();
+      const rem = parseFloat(getComputedStyle(document.documentElement).fontSize);
+      const tap =
+        parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--tap')) * rem;
+      return {
+        scroll: bar ? bar.scrollWidth - bar.clientWidth : -1,
+        page: document.documentElement.scrollWidth,
+        plateLeft: plate?.left ?? -1,
+        pauseRight: pause?.right ?? Infinity,
+        pauseSize: Math.min(pause?.width ?? 0, pause?.height ?? 0),
+        tap,
+      };
+    });
+    // No sideways scroll in the header: the title stays where it starts.
+    expect(header.scroll).toBe(0);
+    expect(header.page).toBeLessThanOrEqual(390);
+    expect(header.plateLeft).toBeGreaterThanOrEqual(0);
+    expect(header.pauseRight).toBeLessThanOrEqual(390);
+    expect(header.pauseSize).toBeGreaterThanOrEqual(header.tap - 0.5);
+    await expect(page.getByRole('button', { name: 'Pause', exact: true })).toBeVisible();
+  }
+
+  // More is a disclosure: it names itself, opens with focus on its first
+  // button, and Escape closes it and hands focus back.
+  const more = page.getByRole('button', { name: 'More', exact: true });
+  await expect(more).toHaveAttribute('aria-expanded', 'false');
+  await expect(page.getByRole('button', { name: 'Log', exact: true })).toBeHidden();
+  await more.focus();
+  await page.keyboard.press('Enter');
+  await expect(more).toHaveAttribute('aria-expanded', 'true');
+  const log = page.getByRole('button', { name: 'Log', exact: true });
+  await expect(log).toBeVisible();
+  expect(await page.evaluate(() => document.activeElement?.closest('#combat-more') !== null)).toBe(
+    true,
+  );
+  await page.keyboard.press('Escape');
+  await expect(more).toHaveAttribute('aria-expanded', 'false');
+  await expect(more).toBeFocused();
+  await expect(log).toBeHidden();
+
+  // A folded button still does its job, and closes the list behind it.
+  await more.tap();
+  await log.tap();
+  await expect(page.getByRole('button', { name: 'Hide log', exact: true })).toBeHidden();
+  await expect(more).toHaveAttribute('aria-expanded', 'false');
+  await expect(page.locator('.log-panel')).toBeVisible();
+});
+
+/**
+ * The phone's More list drops over the map, where toasts hang. A toast raised
+ * while it is open moves its band clear of the list — under it upright,
+ * beside it on its side — and the live region stays on screen, so a screen
+ * reader still hears it. On its side at Largest text the list is taller than
+ * the room under the header, so it scrolls and every button stays a full tap.
+ * An AI turn rebuilds the header on every sync; focus in the list survives
+ * that, and the list closes, focus on More, when the acting unit changes.
+ */
+test('the phone More list keeps clear of toasts, fits the screen and keeps focus', async ({
+  page,
+}) => {
+  await page.setViewportSize({ width: 390, height: 844 });
+  await resetStorage(page, '?renderer=canvas');
+  await startGame(page, ['Riko', 'Tal'], ['nima', 'kaya', 'sura', 'bo'], 'hud-phone-more');
+  await enterNode(page, 'battle_quarry_gate');
+  await takeTurn(page);
+  await waitForIdle(page);
+  await settleLayout(page);
+
+  const more = page.getByRole('button', { name: 'More', exact: true });
+  const list = page.locator('#combat-more');
+  const live = page.locator('.toasts[aria-live="polite"]');
+
+  /** Raises a toast and reports the boxes once its band has settled. */
+  const raise = async (text: string) => {
+    await page.evaluate((line) => window.fnt!.app.toasts.show(line, 'info', 20_000), text);
+    await expect(live).toBeVisible();
+    await expect(live).toContainText(text);
+    await expect
+      .poll(() =>
+        page.evaluate(() => {
+          const menu = document.querySelector('#combat-more')?.getBoundingClientRect();
+          const toast = document
+            .querySelector('.toasts .toast:last-child')
+            ?.getBoundingClientRect();
+          if (!menu || !toast || menu.height === 0 || toast.height === 0) return 'missing';
+          const hits =
+            menu.left < toast.right &&
+            toast.left < menu.right &&
+            menu.top < toast.bottom &&
+            toast.top < menu.bottom;
+          const onScreen =
+            toast.left >= 0 &&
+            toast.top >= 0 &&
+            toast.right <= innerWidth &&
+            toast.bottom <= innerHeight;
+          return hits ? 'overlap' : onScreen ? 'clear' : 'off-screen';
+        }),
+      )
+      .toBe('clear');
+    await page.evaluate(() => window.fnt!.app.toasts.clear());
+  };
+
+  // Upright: the band drops under the open list.
+  await more.tap();
+  await expect(list).toBeVisible();
+  await raise('Upright, under the list.');
+
+  // Focus inside the list survives a rebuild of the header by a sync.
+  await page.keyboard.press('Escape');
+  await expect(more).toBeFocused();
+  await page.keyboard.press('Enter');
+  await expect(more).toHaveAttribute('aria-expanded', 'true');
+  const tip = page.getByRole('button', { name: 'Tip', exact: true });
+  await tip.focus();
+  await page.evaluate(() => window.fnt!.app.updateSettings({}));
+  await expect(more).toHaveAttribute('aria-expanded', 'true');
+  await expect(tip).toBeFocused();
+
+  // The next unit's turn finds the list closed, with focus on More, not the page.
+  const handedOver = await page.evaluate(() => {
+    const app = window.fnt!.app;
+    const battle = app.state!.battle!;
+    const unitId = battle.order[battle.turnIndex]!;
+    app.dispatch({ type: 'endTurn', unitId });
+    const active = document.activeElement;
+    return {
+      changed: app.state?.battle?.order[app.state.battle.turnIndex] !== unitId,
+      expanded: document.querySelector('.combat-more-toggle')?.getAttribute('aria-expanded'),
+      open: document.querySelector('#combat-more')?.classList.contains('open'),
+      onToggle: active?.classList.contains('combat-more-toggle') ?? false,
+    };
+  });
+  expect(handedOver).toEqual({ changed: true, expanded: 'false', open: false, onToggle: true });
+
+  // On its side at Largest text: the list scrolls inside the room it has,
+  // every button a full tap and the last one reachable, and a toast sits
+  // beside it.
+  await takeTurn(page);
+  await waitForIdle(page);
+  await page.setViewportSize({ width: 844, height: 390 });
+  await setLargeText(page, 'huge');
+  await settleLayout(page);
+  await more.tap();
+  await expect(list).toBeVisible();
+  // Chromium here can report the list's box from before the room was written
+  // until the next frame; what is painted is already capped, so read it then.
+  await expect
+    .poll(() =>
+      page.evaluate(() => document.querySelector('#combat-more')?.getBoundingClientRect().bottom),
+    )
+    .toBeLessThanOrEqual(390);
+  const fit = await page.evaluate(() => {
+    const menu = document.querySelector<HTMLElement>('#combat-more')!;
+    const rem = parseFloat(getComputedStyle(document.documentElement).fontSize);
+    const tap =
+      parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--tap')) * rem;
+    const buttons = [...menu.querySelectorAll<HTMLElement>('button')].filter(
+      (button) => button.getClientRects().length > 0,
+    );
+    return {
+      overflowY: getComputedStyle(menu).overflowY,
+      scrolls: menu.scrollHeight > menu.clientHeight,
+      tap,
+      sizes: buttons.map((button) => {
+        const box = button.getBoundingClientRect();
+        return Math.min(box.width, box.height);
+      }),
+    };
+  });
+  // The list is taller than the room here: that is the case being held.
+  expect(fit.scrolls).toBe(true);
+  expect(fit.overflowY).toBe('auto');
+  expect(fit.sizes.length).toBeGreaterThanOrEqual(2);
+  for (const size of fit.sizes) expect(size).toBeGreaterThanOrEqual(fit.tap - 0.5);
+  const last = list.locator('button:visible').last();
+  await last.scrollIntoViewIfNeeded();
+  const lastBox = await last.boundingBox();
+  const listBox = await list.boundingBox();
+  expect(lastBox && listBox).toBeTruthy();
+  expect((lastBox?.y ?? 0) + (lastBox?.height ?? 0)).toBeLessThanOrEqual(
+    (listBox?.y ?? 0) + (listBox?.height ?? 0) + 0.5,
+  );
+  await raise('On its side, beside the list.');
+});
+
+/**
  * The frame-time readout is debug chrome and sits over the board, not over
  * the header. Pinned to the top-left corner it covered the encounter plate on
  * the quarry floor gallery beat — a dark rounded blob behind `Grumbler` — and

@@ -196,6 +196,17 @@
   gap: var(--sp-1);
 }
 
+/* The view and help buttons. Inline wherever the header has room: the group
+ * draws no box of its own and More is not shown. A phone folds them into a
+ * list under More (see "Phone battle" at the end of this file). */
+.combat-more {
+  display: contents;
+}
+
+.combat-bar .combat-more-toggle {
+  display: none;
+}
+
 /* The encounter's name on a plate, in the display face, the round under it.
  * The plate gives way before the header does: `min-width: 0` lets it shrink
  * past its text, so a long encounter name ellipses instead of pushing Pause
@@ -1884,8 +1895,21 @@ html[data-contrast='high'] .hud-panel::after {
   max-width: min(36rem, 92vw);
 }
 
-.toasts[data-place='map'] {
+.toasts[data-place='map'],
+.toasts[data-place='map-beside'] {
   top: calc(var(--toast-anchor) + var(--sp-2));
+}
+
+/*
+ * Beside a list open over the map (the phone battle header's More), centred in
+ * the width left of it, which Toasts.ts measures as --toast-aside.
+ */
+.toasts[data-place='map-beside'] {
+  left: var(--sp-2);
+  right: calc(var(--toast-aside) + var(--sp-2));
+  margin-inline: auto;
+  transform: none;
+  max-width: calc(100% - var(--toast-aside) - var(--sp-4));
 }
 
 /*
@@ -2023,8 +2047,8 @@ html[data-contrast='high'] .hud-panel::after {
     flex-wrap: nowrap;
   }
 
-  html[data-large-text='on'] .combat-scene .combat-bar > button,
-  html[data-large-text='huge'] .combat-scene .combat-bar > button {
+  html[data-large-text='on'] .combat-scene .combat-bar button,
+  html[data-large-text='huge'] .combat-scene .combat-bar button {
     flex-shrink: 0;
   }
 
@@ -2929,16 +2953,192 @@ html[data-contrast='high'] .hud-panel::after {
   min-width: 0;
 }
 
-@media (max-width: 36rem) {
+/* ------------------------------------------------------------------ */
+/* Phone battle                                                        */
+/* ------------------------------------------------------------------ */
+
+/* A phone, either way up: the header is one row that never scrolls. The plate
+ * yields, Pause keeps its place, and the view and help buttons fold into a
+ * list under More, which drops over the board. */
+@media (max-width: 36rem), (max-height: 34rem) {
   .combat-scene .combat-bar {
+    position: relative;
+    z-index: var(--z-menu);
     flex-wrap: nowrap;
-    overflow-x: auto;
   }
-  .combat-scene .combat-bar > * {
+
+  .combat-scene .combat-bar > button {
     flex-shrink: 0;
+    padding-inline: var(--sp-2);
   }
-  .combat-scene .hud {
-    max-height: 40dvh;
+
+  .combat-scene .combat-bar .combat-more-toggle {
+    display: grid;
+    place-items: center;
+  }
+
+  /* A few letters and an ellipsis is not a title: on a phone the name takes a
+     second line before it gives up any of itself. */
+  .combat-scene .title-plate > .title-plate-name {
+    display: -webkit-box;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 2;
+    line-clamp: 2;
+    white-space: normal;
+  }
+
+  .combat-scene .title-plate-round {
+    white-space: nowrap;
+  }
+
+  .combat-scene .combat-more {
+    position: absolute;
+    top: 100%;
+    right: var(--sp-3);
+    display: none;
+    flex-direction: column;
+    gap: var(--sp-1);
+    min-width: 12rem;
+    padding: var(--sp-2);
+    border: var(--hairline) solid var(--c-ink-line);
+    border-radius: var(--radius);
+    background: var(--surface-1);
+    box-shadow: var(--shadow-2);
+    /* A phone on its side at Largest text has less room under the header than
+       the list is tall, so it scrolls within what is left (CombatScene
+       measures --more-room) rather than running off the foot of the screen. */
+    max-height: calc(var(--more-room, 100dvh) - var(--sp-2));
     overflow-y: auto;
+    overscroll-behavior: contain;
+  }
+
+  .combat-scene .combat-more.open {
+    display: flex;
+  }
+
+  /* Each a full `--tap`, however short the list: it scrolls, they never squash. */
+  .combat-scene .combat-more > button {
+    flex-shrink: 0;
+    text-align: start;
+  }
+
+  /* Toasts hang in the overlay host, above the whole scene, and the map's
+     place for them is right where the list drops. The list carries
+     `data-toast-clear`, so Toasts.ts moves their band beside or under it while
+     it is open, and the live region keeps announcing. */
+}
+
+/* Upright at Large text, Pause is its mark alone too; its label stays in the
+ * accessible name, hidden the way `.visually-hidden` hides one. The plate
+ * steps its name down one size, which at Largest is still bigger than the
+ * default's, so "Ambush on the Forest Road" reads whole on two lines. */
+@media (max-width: 36rem) {
+  html:not([data-large-text='off']) .combat-scene .title-plate {
+    padding-inline: var(--sp-2);
+  }
+
+  html:not([data-large-text='off']) .combat-scene .title-plate-name {
+    font-size: var(--fs-md);
+  }
+
+  html:not([data-large-text='off']) .combat-scene .combat-pause {
+    display: grid;
+    place-items: center;
+  }
+
+  html:not([data-large-text='off']) .combat-scene .combat-pause .mark-inline {
+    margin-right: 0;
+  }
+
+  html:not([data-large-text='off']) .combat-scene .combat-pause-label {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0 0 0 0);
+    white-space: nowrap;
+  }
+}
+
+/* The acting card and the actions give the board its rows back: a smaller
+ * face, the player's name beside the unit's, and each action's mark beside
+ * its name rather than above it. Every button is still a full `--tap`. */
+@media (max-width: 36rem), (max-height: 34rem) {
+  .combat-scene .hud {
+    gap: var(--sp-1);
+    padding-block: var(--sp-1) calc(var(--sp-1) + env(safe-area-inset-bottom, 0px));
+  }
+
+  .combat-scene .hud-panel {
+    gap: var(--sp-1);
+    padding: var(--sp-1) var(--sp-2);
+  }
+
+  .combat-scene .unit-portrait.square {
+    max-width: 2.75rem;
+    max-height: 2.75rem;
+  }
+
+  .combat-scene .unit-panel-body .grow > .row > .stack {
+    flex-direction: row;
+    align-items: baseline;
+    gap: var(--sp-2);
+    min-width: 0;
+  }
+
+  .combat-scene .action-row {
+    gap: var(--sp-1);
+  }
+
+  .combat-scene .action-button {
+    display: grid;
+    grid-template-columns: auto auto;
+    align-content: center;
+    justify-content: center;
+    column-gap: var(--sp-1);
+    min-width: 0;
+    padding: var(--sp-1) var(--sp-2);
+  }
+
+  .combat-scene .action-button .mark {
+    grid-column: 1;
+    grid-row: 1 / span 2;
+    align-self: center;
+  }
+}
+
+/* A phone held upright: the initiative strip is faces, and only the acting
+ * chip keeps its name. Each chip's aria-label and title carry the full name. */
+@media (max-width: 36rem) {
+  .combat-scene .turn-strip {
+    align-items: center;
+    gap: var(--sp-1);
+    padding-block: var(--sp-1);
+  }
+
+  .combat-scene .turn-chip {
+    flex-direction: row;
+    justify-content: center;
+    gap: var(--sp-1);
+    min-width: var(--tap);
+    padding: var(--sp-1);
+  }
+
+  .combat-scene .turn-chip .painter {
+    max-width: 2rem;
+    max-height: 2rem;
+  }
+
+  .combat-scene .turn-chip:not(.active) span {
+    display: none;
+  }
+
+  .combat-scene .turn-chip.active {
+    padding-inline: var(--sp-2);
+  }
+
+  .combat-scene .turn-chip.active span {
+    max-width: 7rem;
   }
 }
