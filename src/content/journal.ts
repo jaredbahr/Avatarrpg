@@ -7,6 +7,8 @@ export interface JournalNote {
   readonly hint: string;
   readonly found: string;
   readonly when: Condition;
+  /** While unfound, the hint shows only while this holds; a lead the story has moved past drops out. */
+  readonly hintWhile?: Condition;
 }
 
 /** Discoveries are derived from story flags. The journal never owns a second copy. */
@@ -93,10 +95,11 @@ export const JOURNAL_NOTES: readonly JournalNote[] = [
     id: 'bo_shan_cart',
     mapId: 'ba_dan_village',
     title: 'Five missing, not four',
-    hint: 'Someone in Ba Dan knows who else went up this road.',
+    hint: 'Someone in Ba Dan knows who else went up to the quarry.',
     found:
-      'Pella’s brother, Bo-shan, took vegetables up before Mira’s messengers went. Look for a cart of cabbages on the quarry floor.',
+      'Pella’s brother, Bo-shan, took vegetables up before Mira’s messengers went. Look for a cart with cabbages piled above the seat.',
     when: { kind: 'flag', key: 'pella_asked', op: 'set' },
+    hintWhile: { kind: 'not', of: { kind: 'flag', key: 'act1_complete', op: 'set' } },
   },
   {
     id: 'gate_wages',

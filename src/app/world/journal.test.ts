@@ -76,12 +76,16 @@ describe('travel journal and riverside routes', () => {
     for (const note of JOURNAL_NOTES) {
       expect(CONTENT.maps.has(note.mapId)).toBe(true);
       expect(conditionSchema.safeParse(note.when).success).toBe(true);
+      if (note.hintWhile) expect(conditionSchema.safeParse(note.hintWhile).success).toBe(true);
     }
   });
   it('gates every note on a flag some story node actually sets', () => {
     const set = storyFlags();
     for (const note of JOURNAL_NOTES)
-      for (const key of flagKeys(note.when))
+      for (const key of [
+        ...flagKeys(note.when),
+        ...(note.hintWhile ? flagKeys(note.hintWhile) : []),
+      ])
         expect(set.has(key) || APP_FLAGS.has(key), `${note.id}: ${key}`).toBe(true);
   });
   it('gates every visited note on a story node that exists', () => {
@@ -98,6 +102,18 @@ describe('travel journal and riverside routes', () => {
     expect(found(victory, 'maker_plate')).toBe(true);
     expect(found(start(), 'roadblock_workers')).toBe(false);
     expect(found(play(start(), 'after_forest'), 'roadblock_workers')).toBe(true);
+  });
+  it('drops the Bo-shan lead once act 1 is over unless Pella was asked', () => {
+    const shown = (state: GameState) =>
+      travelJournal(CONTENT, state).discoveries.some((note) => note.id === 'bo_shan_cart');
+    const village = { ...start(), location: { mapId: 'ba_dan_village', pos: { x: 18, y: 14 } } };
+    expect(shown(village)).toBe(true);
+    const done: GameState = { ...village, flags: { ...village.flags, act1_complete: true } };
+    expect(done.flags.pella_asked).toBeUndefined();
+    expect(shown(done)).toBe(false);
+    const asked = { ...done, flags: { ...done.flags, pella_asked: true } };
+    expect(shown(asked)).toBe(true);
+    expect(found(asked, 'bo_shan_cart')).toBe(true);
   });
   it('names the time of day as a label (ADR 0047 D1)', () => {
     const state = start();
