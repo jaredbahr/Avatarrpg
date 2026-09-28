@@ -517,8 +517,9 @@ export class PixiBackend implements RenderBackend {
       camera.projection,
       TILE * camera.scale * camera.viewport.dpr,
     );
-    this.fxUnder.draw(emitters);
-    this.fxOver.draw(emitters);
+    const oblique = camera.projection === 'oblique';
+    this.fxUnder.draw(emitters, oblique);
+    this.fxOver.draw(emitters, oblique);
     this.drawFloaters(view, camera);
 
     app.renderer.render(app.stage);

@@ -388,3 +388,32 @@ it('keeps court trunks solid and both shop doors and village routes reachable', 
     for (let x = 0; x < map.width; x++) expect(tileAt(grid, { x, y })?.blocked).not.toBe(true);
   }
 });
+
+it('raises chimney smoke from the painted roof of a dwelling', async () => {
+  const chimneys = BA_DAN_SCENE.chimneys ?? [];
+  expect(chimneys).toHaveLength(2);
+  const bytes = readFileSync('public/art/maps/ba-dan-scene/dwelling.webp');
+  const roof = await decode(
+    bytes.buffer.slice(bytes.byteOffset, bytes.byteOffset + bytes.byteLength),
+  );
+  for (const at of chimneys) {
+    // The oblique camera's scene pixel for the ground point.
+    const px = 1024 + (at.x - at.y) * 64;
+    const py = (at.x + at.y) * 32;
+    const house = BA_DAN_SCENE.scenery.find(
+      (piece) =>
+        piece.url.endsWith('dwelling.webp') &&
+        px >= piece.x &&
+        px < piece.x + piece.width &&
+        py >= piece.y &&
+        py < piece.y + piece.height,
+    );
+    expect(house, `chimney at ${px},${py} is on a dwelling`).toBeDefined();
+    if (!house) continue;
+    const u = Math.floor(((px - house.x) / house.width) * roof.width);
+    const v = Math.floor(((py - house.y) / house.height) * roof.height);
+    // On the roof itself, in its upper band, not in the clear air round it.
+    expect(roof.data[(v * roof.width + u) * 4 + 3], `${house.id} roof pixel`).toBeGreaterThan(200);
+    expect(v / roof.height).toBeLessThan(0.2);
+  }
+});

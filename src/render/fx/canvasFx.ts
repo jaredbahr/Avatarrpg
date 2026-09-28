@@ -32,7 +32,8 @@ export class CanvasFxLayer {
 
   /**
    * Draws one layer's worth of live emitters. `origin` is the screen position
-   * of tile (0, 0) and `size` the tile size in CSS pixels.
+   * of tile (0, 0) and `size` the tile size in CSS pixels. `oblique` says
+   * the context carries the oblique ground transform.
    */
   draw(
     ctx: CanvasRenderingContext2D,
@@ -40,6 +41,7 @@ export class CanvasFxLayer {
     layer: 'under' | 'over',
     origin: Vec2,
     size: number,
+    oblique = false,
   ): void {
     let particles = 0;
     let strokes = 0;
@@ -77,11 +79,19 @@ export class CanvasFxLayer {
           const s = (this.scratch[at + 2] ?? 0) * size;
           const rotation = this.scratch[at + 3] ?? 0;
           ctx.globalAlpha = Math.max(0, Math.min(1, this.scratch[at + 4] ?? 0));
-          ctx.setTransform(ctx.getTransform().translate(px, py).rotate(rotation));
+          const base = ctx.getTransform();
+          // Stretched along the ground diagonal the oblique camera halves, so it lands round.
+          const up = oblique && def.upright;
+          ctx.setTransform(
+            base
+              .translate(px, py)
+              .rotate(up ? Math.PI / 4 : rotation)
+              .scale(up ? Math.SQRT2 : 1, up ? Math.SQRT1_2 : 1),
+          );
           if (frame)
             ctx.drawImage(cell, frame.x, frame.y, frame.size, frame.size, -s / 2, -s / 2, s, s);
           else ctx.drawImage(cell, -s / 2, -s / 2, s, s);
-          ctx.setTransform(ctx.getTransform().rotate(-rotation).translate(-px, -py));
+          ctx.setTransform(base);
         }
         ctx.restore();
         particles += Math.min(n, room);

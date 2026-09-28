@@ -529,6 +529,12 @@ export const mapSchema = z
         paintedWater: z.boolean().optional(),
         groundMode: z.literal('partial').optional(),
         paintedRubble: z.array(vec2).optional(),
+        // Where smoke leaves a painted roof, in ground tiles; a roof stands
+        // above the grid, so these may lie off it. A handful at most.
+        chimneys: z
+          .array(z.object({ x: z.number(), y: z.number() }))
+          .max(4)
+          .optional(),
         // A ground draw is cheap and the apron forces several of them: a ring of
         // exterior ground is wider than the 2048-pixel texture every iPad takes,
         // so each scene ships it as a dozen registered bands, and the village

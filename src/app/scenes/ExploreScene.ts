@@ -1053,11 +1053,15 @@ export class ExploreScene implements Scene {
       .map((npc) => ({ at: npc.renderPos ?? npc.pos, scale: npc.scale ?? 1, to: npc.pos }));
     this.lastNpcs = npcs;
 
-    // The air over the village is fidelity: WebGL only, and still under reduce motion.
-    const ambient =
-      renderer.capabilities.shaders && !motionReduced()
-        ? ambientEmitters(ambienceFx(map.ambience), grid, now)
-        : [];
+    // The air over the village is fidelity: WebGL only, and still under reduce
+    // motion. Chimney smoke stays on both as one still wisp.
+    const ambient = ambientEmitters(
+      ambienceFx(map.ambience),
+      grid,
+      now,
+      map.scene?.chimneys,
+      !renderer.capabilities.shaders || motionReduced(),
+    );
 
     const cue = this.nextWalk.preview(state) ?? this.walking;
     const view: MapView = {
