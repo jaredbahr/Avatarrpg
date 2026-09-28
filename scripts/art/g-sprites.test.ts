@@ -31,7 +31,7 @@ describe('G source pins', () => {
       expect(pins.tone !== undefined, character.name).toBe(character.toned);
       if (pins.tone) expect(pins.tone.params).toMatch(/^[0-9a-f]{64}$/);
       expect(checkSources(character.actions, files.actions, pins.actions, 'action')).toEqual([]);
-      expect(WEBP_SHEET_PINS[character.key]).toBe(character.pins);
+      expect(WEBP_SHEET_PINS[character.key]?.[0]).toBe(character.pins);
     });
   }
 
@@ -112,7 +112,9 @@ function decodedAtlas(character: GCharacter) {
     if (decoded.length !== atlases.length) throw new Error('Load the atlas first');
     const dir = mkdtempSync(join(tmpdir(), `${character.name}-g-atlas-`));
     mkdirSync(join(dir, 'art', 'units'), { recursive: true });
-    for (const path of paths) copyFileSync(`public/${path}`, join(dir, path));
+    // The knockouts' clip data (ADR 0059) travels with the pages.
+    for (const path of [...paths, ...(entry.clipData ? [entry.clipData] : [])])
+      copyFileSync(`public/${path}`, join(dir, path));
     const pages = decoded.map((page) => {
       const copy = newImage(page.width, page.height);
       copy.data.set(page.data);
@@ -187,6 +189,42 @@ for (const character of PARTY) {
       ]);
     }, 60_000);
 
+    it('fails a knockout that starts off the stance, and a recoloured knockout cel (ADR 0059)', async () => {
+      const start = g.rect('koSouthWest/0');
+      const ko = g.rect('koNorthEast/6');
+      const dir = await g.fixture((pages) => {
+        // A hole in the body: frame 0 no longer has the stance's alpha.
+        g.paint(pages, start, Math.floor(start.w / 2), Math.floor(start.h / 2), () => [0, 0, 0, 0]);
+        g.paint(pages, ko, Math.floor(ko.w / 2), Math.floor(ko.h / 2), ([r = 0, gr = 0, b = 0]) => [
+          r ^ 1,
+          gr,
+          b,
+          255,
+        ]);
+      });
+      const problems = await validateSheets(dir, { [KEY]: g.entry });
+      expect(problems).toContain(
+        `${KEY}: decoded cel "${KEY}/koSouthWest/0" does not match its pin`,
+      );
+      expect(problems).toContain(
+        `${KEY}: decoded cel "${KEY}/koNorthEast/6" does not match its pin`,
+      );
+      const off = problems.filter((p) => p.includes('alpha px off the stance cel'));
+      expect(off).toHaveLength(1);
+      expect(off[0]).toMatch(new RegExp(`^${KEY}: koSouthWest frame "${KEY}/koSouthWest/0"`));
+      expect(problems).toHaveLength(3);
+    }, 60_000);
+
+    it('fails a sheet whose knockout clip data is missing (ADR 0059)', async () => {
+      const dir = await g.fixture(() => {});
+      const path = g.entry.clipData;
+      if (!path) throw new Error('Expected clip data');
+      rmSync(join(dir, path));
+      expect(await validateSheets(dir, { [KEY]: g.entry })).toEqual([
+        `${KEY}: ${path} is not a readable set of clips`,
+      ]);
+    }, 60_000);
+
     it('fails a subtly recoloured cel through its pin alone', async () => {
       const rect = g.rect('idle/0');
       const dir = await g.fixture((pages) =>
@@ -245,7 +283,8 @@ for (const character of PARTY) {
 
     it('fails a lossy sheet with no pin file', async () => {
       expect(await validateSheets('public', { [KEY]: g.entry }, {})).toEqual([
-        `${KEY}: lossy ${character.name}-g.webp + ${character.name}-g-2.webp has no cel pin file`,
+        `${KEY}: lossy ${character.name}-g.webp + ${character.name}-g-2.webp + ` +
+          `${character.name}-g-3.webp has no cel pin file`,
       ]);
     }, 60_000);
 

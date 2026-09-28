@@ -241,11 +241,14 @@ function gSheet(key: string, name: keyof typeof G_TRAVEL, palette: string): Shee
   return {
     kind: 'sheet',
     atlas: `art/units/${name}-g.json`,
-    // Page 2 holds the fighting stance; locomotion and actions fill page 1.
+    // Page 2 holds the fighting stance; locomotion and actions fill page 1;
+    // page 3 the knockouts, whose clips arrive with it (ADR 0059).
     atlasPages: [
       `art/units/${name}-g-2.json`,
+      `art/units/${name}-g-3.json`,
       ...(riverside ? [`art/units/riverside-${name}.json`] : []),
     ],
+    clipData: `art/units/${name}-g-clips.json`,
     // The bend loads on its own, only when something asks for it (ADR 0055).
     bend: `art/units/${name}-bend.json`,
     bendPages: [`art/units/${name}-g-bend.json`],
