@@ -38,6 +38,15 @@ export const BA_DAN_NEIGHBORHOOD_GROUNDS = [
   { id: 'northeast-lawn', x: 1472, y: 512, width: 1024, height: 512 },
   { id: 'southwest-lawn', x: 64, y: 288, width: 832, height: 416 },
 ] as const;
+/**
+ * The outer garden's base: two opaque halves of one pixel-grain meadow under
+ * the whole board, listed first so every painted court feathers into it
+ * rather than into the procedural grass (`scripts/art/ba-dan-garden.ts`).
+ */
+export const BA_DAN_GARDEN_PLATES = [
+  { x: 0, y: 0, width: 1280, height: 1280 },
+  { x: 1280, y: 0, width: 1280, height: 1280 },
+] as const;
 /** Outer metric radius of the transparent coping around runtime water. */
 export const BA_DAN_CANAL_BANK_RADIUS = 1.42;
 /** Transparent coping envelope around all six runtime water diamonds. */
@@ -357,6 +366,10 @@ export const BA_DAN_SCENE: MapScene = {
   chimneys: BA_DAN_CHIMNEYS,
   groundMode: 'partial',
   ground: [
+    ...BA_DAN_GARDEN_PLATES.map((plate, index) => ({
+      url: `${root}garden-${index}.webp`,
+      ...plate,
+    })),
     westernApproachGround(),
     courtyardGround(),
     ...BA_DAN_NEIGHBORHOOD_GROUNDS.map(neighborhoodGround),

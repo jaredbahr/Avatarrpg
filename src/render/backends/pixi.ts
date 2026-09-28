@@ -29,7 +29,14 @@ import {
   UniformGroup,
 } from 'pixi.js';
 
-import type { MapScene, SceneFlock, SceneImage, TerrainId, Vec2 } from '../../core/types';
+import type {
+  MapScene,
+  SceneFlock,
+  SceneImage,
+  SceneScenery,
+  TerrainId,
+  Vec2,
+} from '../../core/types';
 import { authoredForBothSides } from '../../content/assets/clips';
 import { resolveAsset } from '../../content/assets/manifest';
 import { backdrops } from '../backdrops';
@@ -43,7 +50,9 @@ import {
   sway,
 } from '../living/wind';
 import { SceneTextures } from './sceneTextures';
-import { sceneryZ, shadowZ } from './depthOrder';
+import { sceneryZ, shadowZ, tuftZ } from './depthOrder';
+import type { GroundingCanvas } from '../groundingLayer';
+import { sceneGrounding } from '../groundingLayer';
 import { SURFACE_INDEX, surfaceIsPainted, surfaceTexel } from '../sceneSurfaces';
 import { TILE } from '../camera';
 import type { Camera, Viewport } from '../camera';
@@ -200,6 +209,12 @@ export class PixiBackend implements RenderBackend {
   private sceneGround = new Container();
   private groundChunks = new Map<string, Sprite>();
   private scenerySprites = new Map<string, Sprite>();
+  /** Contact shadow and wear under the scenery (grounding.ts), above the ground chunks. */
+  private groundingSprite: Sprite | null = null;
+  /** Grass tufts over each piece's foot, keyed by scenery id. */
+  private tuftSprites = new Map<string, Sprite>();
+  /** One texture per grounding canvas, released when its scene is gone. */
+  private groundingTextures = new Map<HTMLCanvasElement, Texture>();
   /** A gust's light on the grass: slices of the wind ground added back onto it. */
   private breeze = new Container();
   /** Each wind plate's breeze stripes, kept from frame to frame. */
@@ -487,6 +502,10 @@ export class PixiBackend implements RenderBackend {
     this.sceneTextures.clear();
     this.groundChunks.clear();
     this.scenerySprites.clear();
+    this.tuftSprites.clear();
+    this.groundingSprite = null;
+    for (const texture of this.groundingTextures.values()) texture.destroy(true);
+    this.groundingTextures.clear();
     this.mapTexture.destroy(true);
   }
 
@@ -700,10 +719,83 @@ export class PixiBackend implements RenderBackend {
         this.scenerySprites.delete(key);
       }
     }
+    this.syncGrounding(complete ? scene : undefined, view, camera, opacities);
     this.syncBreeze(scene?.ground ?? [], view);
     this.syncFlock(scene, view);
     this.sceneTextures.end();
     return complete;
+  }
+
+  private groundingTexture(layer: GroundingCanvas, used: Set<HTMLCanvasElement>): Texture {
+    used.add(layer.canvas);
+    let texture = this.groundingTextures.get(layer.canvas);
+    if (!texture) {
+      // Never Pixi's global cache: the canvas belongs to groundingLayer's.
+      texture = Texture.from(layer.canvas, true);
+      texture.source.scaleMode = 'nearest';
+      this.groundingTextures.set(layer.canvas, texture);
+    }
+    return texture;
+  }
+
+  /** Contact layer with the ground; tufts sorted with their piece (grounding.ts). */
+  private syncGrounding(
+    scene: MapScene | undefined,
+    view: MapView,
+    camera: Camera,
+    opacities: ReadonlyMap<SceneScenery, number>,
+  ): void {
+    const grounding = scene
+      ? sceneGrounding(scene, view.grid, { toWorld: (pos) => camera.groundPoint(pos) })
+      : null;
+    const used = new Set<HTMLCanvasElement>();
+    const contact = grounding?.contact;
+    if (contact) {
+      let sprite = this.groundingSprite;
+      if (!sprite) {
+        sprite = new Sprite();
+        this.groundingSprite = sprite;
+      }
+      // Over every chunk, under the breeze, whenever a chunk arrived.
+      if (sprite.parent !== this.sceneGround || this.sceneGround.getChildIndex(sprite) !== this.sceneGround.getChildIndex(this.breeze) - 1) {
+        sprite.removeFromParent();
+        this.sceneGround.addChildAt(sprite, this.sceneGround.getChildIndex(this.breeze));
+      }
+      sprite.texture = this.groundingTexture(contact, used);
+      sprite.position.set(contact.x, contact.y);
+      sprite.width = contact.width;
+      sprite.height = contact.height;
+      sprite.visible = true;
+    } else if (this.groundingSprite) this.groundingSprite.visible = false;
+    const seen = new Set<string>();
+    for (const piece of scene?.scenery ?? []) {
+      const layer = grounding?.tufts.get(piece.id);
+      if (!layer) continue;
+      seen.add(piece.id);
+      let sprite = this.tuftSprites.get(piece.id);
+      if (!sprite) {
+        sprite = new Sprite();
+        this.unitLayer.addChild(sprite);
+        this.tuftSprites.set(piece.id, sprite);
+      }
+      sprite.texture = this.groundingTexture(layer, used);
+      sprite.position.set(layer.x, layer.y);
+      sprite.width = layer.width;
+      sprite.height = layer.height;
+      sprite.zIndex = tuftZ(camera.groundPoint(piece.depth).y);
+      sprite.alpha = opacities.get(piece) ?? 1;
+      sprite.visible = true;
+    }
+    for (const [id, sprite] of this.tuftSprites) {
+      if (seen.has(id)) continue;
+      sprite.destroy();
+      this.tuftSprites.delete(id);
+    }
+    for (const [canvas, texture] of this.groundingTextures) {
+      if (used.has(canvas)) continue;
+      texture.destroy(true);
+      this.groundingTextures.delete(canvas);
+    }
   }
 
   /**
