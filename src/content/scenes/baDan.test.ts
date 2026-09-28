@@ -17,6 +17,7 @@ import {
   BA_DAN_APRON_PIECES,
   BA_DAN_EXTERIOR_APRON,
   BA_DAN_SCENE,
+  BA_DAN_SOUTHEAST_PLANTER,
 } from './baDan';
 import { buildGrid, reachable, posKey, tileAt } from '../../core/rules/grid';
 import { CONTENT_BUNDLE } from '../index';
@@ -132,6 +133,34 @@ it('keeps painted low boundaries solid while preserving every village destinatio
     { x: 23, y: 7 },
   ])
     expect(paths.has(posKey(p)), `Unreachable village destination ${posKey(p)}`).toBe(true);
+});
+
+it("stands the courtyard planter, turned, on the south-east house's blocked strip", () => {
+  const grid = buildGrid(BA_DAN_VILLAGE);
+  const scenery = BA_DAN_SCENE.scenery;
+  const house = scenery.findIndex((piece) => piece.id === 'southeast-house');
+  const planter = scenery.findIndex((piece) => piece.id === 'southeast-planter');
+  const houseDepth = scenery[house]?.depth;
+  const piece = scenery[planter];
+  if (!houseDepth || !piece) throw new Error('Missing south-east house or planter');
+  for (const cell of BA_DAN_SOUTHEAST_PLANTER) {
+    // `rows` already blocks the strip; the house art stops at x 16.
+    expect(tileAt(grid, cell)?.blocked).toBe(true);
+    expect(scenery[house]?.footprint).not.toContainEqual(cell);
+  }
+  expect(piece).toMatchObject({
+    url: 'art/maps/ba-dan-scene/low-planter.webp',
+    footprint: [...BA_DAN_SOUTHEAST_PLANTER],
+    flip: true,
+    width: 192,
+    height: 110.625,
+  });
+  // Ties the house's depth and paints after it, like the other frontage.
+  expect(piece.depth.x + piece.depth.y).toBe(houseDepth.x + houseDepth.y);
+  expect(planter).toBeGreaterThan(house);
+  // Mirrored, its front corner is (18,12): 0.325 of the width from its left.
+  expect(piece.x + piece.width * 0.325).toBeCloseTo(1024 + (18 - 12) * 64);
+  expect(piece.y + piece.height).toBe((18 + 12) * 32);
 });
 
 it('registers the painted canal to every actual permanent-water cell', () => {
