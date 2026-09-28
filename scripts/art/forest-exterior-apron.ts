@@ -11,9 +11,10 @@
  * for about two tiles, fading the page back in before the camera can follow.
  *
  * The road therefore leaves the board instead of ending on it: the route is a
- * stretch of a longer road, and the reference reads that way. Nothing here
- * touches a playable pixel; every sample inside the board stays transparent,
- * which `forest-exterior-apron.test.ts` asserts.
+ * stretch of a longer road, and the reference reads that way. Inside the board
+ * the plate paints only the seam band the grass packs leave open, and never over
+ * ground the scene already paints opaque, which `forest-exterior-apron.test.ts`
+ * asserts.
  *
  * npx tsx scripts/art/forest-exterior-apron.ts
  */
@@ -200,23 +201,63 @@ export function apronTerrain(
   };
   const direct = sample(mirror);
   if (direct) return { r: direct[0], g: direct[1], b: direct[2] };
-  // Near a corner the mirror falls off the board or into the other rim's own
+  const resumed = groundEdge(sample, mirror);
+  if (!resumed) return null;
+  const { t: far, ground: edge } = resumed;
+  const colour = { r: edge[0], g: edge[1], b: edge[2] };
+  // Near a corner the mirror falls off the board or into another rim's own
   // feather, not into an object's hole; there the first ground is the nearest
-  // continuation and stays as it was.
-  const onBoard = apronDepth(x + inward.x * mirror, y + inward.y * mirror) <= -APRON_SEAM;
+  // continuation. Only the other sides decide that: along the way back in, every
+  // shallow mirror sits in this rim's own feather, which is exactly where the
+  // shelf's hole begins.
+  if (sideDepth(x + inward.x * mirror, y + inward.y * mirror, inward) > -APRON_SEAM) return colour;
+  // Reflect across the far edge, so the depths that fall in the hole read
+  // ground that moves with them instead of one line of it.
+  const steps = Math.floor(SAMPLE_REACH / SAMPLE_STEP);
+  for (let back = 0; back <= steps; back++) {
+    const found = sample(2 * far - mirror + back * SAMPLE_STEP);
+    if (found) return { r: found[0], g: found[1], b: found[2] };
+  }
+  return colour;
+}
+
+/** How far outside the board a point is, ignoring the rim `inward` leads back through. */
+function sideDepth(x: number, y: number, inward: { x: number; y: number }): number {
+  const { width, height } = FOREST_APRON_MAP;
+  const sides = [
+    { x: 1, y: 0, depth: -x },
+    { x: -1, y: 0, depth: x - width },
+    { x: 0, y: 1, depth: -y },
+    { x: 0, y: -1, depth: y - height },
+  ];
+  return Math.max(
+    ...sides.filter((side) => side.x !== inward.x || side.y !== inward.y).map((s) => s.depth),
+  );
+}
+
+/**
+ * Where the ground resumes past a blocked sample, found once to a fraction of a
+ * pixel: a coarse walk for the first ground, then bisection back to its edge.
+ * Stepping from each point's own mirror instead lands every point on its own
+ * multiple of the stride, and the far edge wobbles into micro-bands.
+ */
+function groundEdge(
+  sample: (t: number) => [number, number, number, number] | null,
+  from: number,
+): { t: number; ground: [number, number, number, number] } | null {
   const steps = Math.floor(SAMPLE_REACH / SAMPLE_STEP);
   for (let step = 1; step <= steps; step++) {
-    const far = mirror + step * SAMPLE_STEP;
-    const edge = sample(far);
-    if (!edge) continue;
-    if (!onBoard) return { r: edge[0], g: edge[1], b: edge[2] };
-    // Reflect across the far edge, so the depths that fall in the hole read
-    // ground that moves with them instead of one line of it.
-    for (let back = 0; back <= steps; back++) {
-      const found = sample(2 * far - mirror + back * SAMPLE_STEP);
-      if (found) return { r: found[0], g: found[1], b: found[2] };
+    let t = from + step * SAMPLE_STEP;
+    let ground = sample(t);
+    if (!ground) continue;
+    let miss = t - SAMPLE_STEP;
+    for (let i = 0; i < 10; i++) {
+      const mid = (miss + t) / 2;
+      const found = sample(mid);
+      if (found) [t, ground] = [mid, found];
+      else miss = mid;
     }
-    return null;
+    return { t, ground };
   }
   return null;
 }

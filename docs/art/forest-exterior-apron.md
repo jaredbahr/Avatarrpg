@@ -54,8 +54,14 @@ The visual audit caught it on the iPad frame of the fight. A blocked mirror now
 reflects a second time across the hole's far edge, so the sample keeps moving
 with depth. A corner is the exception: there the mirror falls off the board or
 into the neighbouring rim's feather, not into an object, and the first ground is
-still the nearest continuation. `forest-exterior-apron.test.ts` counts distinct
-colours along the rows beside the shelf.
+still the nearest continuation. Only the other three sides decide that — every
+shallow depth mirrors into its own rim's feather, which is where the shelf's hole
+begins, so judging by that rim too left a comb a third of a tile wide right at
+the rim. The hole's far edge is found once per point by bisection, not by
+striding from each mirror, which would put every point on its own multiple of
+the stride; and if the second reflection finds no ground, the edge colour stands
+in rather than a gap. `forest-exterior-apron.test.ts` counts distinct colours
+along the rows beside the shelf, including the band closest to the rim.
 
 ## The seam band
 

@@ -164,6 +164,16 @@ it('carries the material of the cell it leaves, and fades with the page', () => 
       if (terrain) colours.add(`${terrain.r},${terrain.g},${terrain.b}`);
     }
     expect(colours.size, `row ${y} beside the shelf is not combed`).toBeGreaterThan(12);
+    // The shallowest depths mirror into the rim's own feather, where the plate
+    // is nearly opaque, so they must move with depth too. Treated as a corner,
+    // they sawtooth through the few pixels just past the hole — seven colours
+    // across the band — where a reflection walks half a tile of ground.
+    const shallow = new Set<string>();
+    for (let depth = 0.05; depth <= 0.3; depth += 0.01) {
+      const terrain = apronTerrain(field, FOREST_APRON_MAP.width + depth, y);
+      if (terrain) shallow.add(`${terrain.r},${terrain.g},${terrain.b}`);
+    }
+    expect(shallow.size, `row ${y} at the rim is not one colour`).toBeGreaterThan(9);
   }
 
   for (const point of [
