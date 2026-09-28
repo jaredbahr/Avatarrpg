@@ -4,7 +4,7 @@ import decode, { init } from '@jsquash/webp/decode.js';
 import { beforeAll, describe, expect, it } from 'vitest';
 import type { MapScene } from '../../core/types';
 import { AMBUSH_ROAD, QUARRY_FLOOR } from '../maps/combat';
-import { rubbleHeap } from './forestRoad';
+import { rubbleHeap, rubbleHeapUrl } from './forestRoad';
 import {
   CUTTING_POOL_PATCH,
   CUTTING_RUBBLE_CELLS,
@@ -220,7 +220,7 @@ describe('projected quarry scenes', () => {
       'art/maps/cutting-scene/road.webp',
       'art/maps/cutting-scene/stone.webp',
       'art/maps/cutting-scene/pool-bank.webp',
-      ...CUTTING_RUBBLE_CELLS.map(() => 'art/maps/forest-scene/rubble.webp'),
+      ...CUTTING_RUBBLE_CELLS.map(rubbleHeapUrl),
     ]);
     expect(CUTTING_SCENE.scenery).toHaveLength(3);
     expect(CUTTING_SCENE.paintedWater).toBeUndefined();
@@ -234,7 +234,7 @@ describe('projected quarry scenes', () => {
       'art/maps/driller-floor-scene/dirt-west.webp',
       'art/maps/driller-floor-scene/dirt-east.webp',
       'art/maps/driller-floor-scene/stone.webp',
-      ...DRILLER_RUBBLE_CELLS.map(() => 'art/maps/forest-scene/rubble.webp'),
+      ...DRILLER_RUBBLE_CELLS.map(rubbleHeapUrl),
     ]);
     expect(DRILLER_FLOOR_SCENE.scenery).toHaveLength(3);
     expect(DRILLER_FLOOR_SCENE.scenery.slice(0, 2).map((piece) => piece.footprint[0])).toEqual(

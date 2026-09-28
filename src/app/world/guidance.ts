@@ -1,8 +1,8 @@
 import { distance } from '../../core/rules/grid';
 import { evaluate } from '../../core/story/conditions';
-import { visibleNpcs } from '../../core/story/world';
+import { exitCells, visibleNpcs } from '../../core/story/world';
 import type { PlacedNpc } from '../../core/story/world';
-import type { ContentIndex, GameState, MapDef, MapExit } from '../../core/types';
+import type { ContentIndex, GameState, MapDef, MapExit, Vec2 } from '../../core/types';
 
 /** How far the action bar reaches for a person or nearby world object. */
 const TALK_RANGE = 3;
@@ -17,6 +17,13 @@ export function exitDestination(content: ContentIndex, exit: MapExit): string {
   const arrow = exit.label.lastIndexOf('→');
   if (arrow >= 0) return exit.label.slice(arrow + 1).trim();
   return content.maps.get(exit.toMapId)?.name || exit.toMapId;
+}
+
+/** Exits whose mouth, `pos` or any `area` cell, reaches within a tile of `pos`. */
+export function nearbyExits(map: MapDef, pos: Vec2): readonly MapExit[] {
+  return (map.exits ?? []).filter((exit) =>
+    exitCells(exit).some((cell) => distance(pos, cell) <= 1),
+  );
 }
 
 /**
@@ -44,9 +51,7 @@ export function nearbyExploreTarget(
       proximity = groundGap;
     }
   }
-  const exit = map.exits?.find(
-    (item) => distance(state.location.pos, item.pos) <= 1 && evaluate(state, item.requires),
-  );
+  const exit = nearbyExits(map, state.location.pos).find((item) => evaluate(state, item.requires));
   if (exit && (!best || best.interaction === 'route-sign')) {
     return { kind: 'exit', exit, destination: exitDestination(content, exit) };
   }

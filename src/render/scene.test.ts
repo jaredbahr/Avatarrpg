@@ -444,7 +444,8 @@ it('keeps a registered heap drawn on its own cell while the surface changes unde
   const authored = FOREST_ROAD.scene!;
   const HEAP = { x: 7, y: 3 };
   const heap = authored.ground.find(
-    (piece) => piece.url.endsWith('/rubble.webp') && piece.x === 768 + (HEAP.x - HEAP.y - 1) * 64,
+    (piece) =>
+      /\/rubble(-\d)?\.webp$/.test(piece.url) && piece.x === 768 + (HEAP.x - HEAP.y - 1) * 64,
   );
   expect(heap).toBeDefined();
   let grid = applyImpact(CONTENT, buildGrid(FOREST_ROAD), [HEAP], 'water').grid;

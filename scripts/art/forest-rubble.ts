@@ -56,13 +56,27 @@ export const FOREST_RUBBLE_PLATE = { width: 384, height: 128 } as const;
 export const FOREST_RUBBLE_BOX = { width: 128, height: 128 / 3 } as const;
 /** Plate pixels per world pixel. */
 const SCALE = FOREST_RUBBLE_PLATE.width / FOREST_RUBBLE_BOX.width;
-/** The heap's outline is the bible's 2 px; a chunk's own outline is a little finer. */
-const INK_PX = 2 * SCALE;
-const CHUNK_INK_PX = SCALE;
+/**
+ * The heap's outline is the figures' line weight: a unit sprite's ink is about
+ * two frame pixels in a 128 px frame drawn one 64 px tile wide, so one world
+ * pixel. At two it read as a cookie-cutter stamp, heavier than anyone standing
+ * beside it. A chunk's own outline, inside the pile, is a little finer again.
+ */
+export const INK_PX = SCALE;
+export const CHUNK_INK_PX = (2 / 3) * SCALE;
 /** The chip highlight, inside a chunk's lit upper edge. */
 const CHIP_PX = SCALE;
 
-export const FOREST_RUBBLE_OUTPUT = 'public/art/maps/forest-scene/rubble.webp';
+/**
+ * Three heaps, not one stamp: each variant piles its own chunks from its own
+ * seed, and the third is also mirrored. `rubbleHeap` in `forestRoad.ts` picks
+ * one per cell by a hash of the cell, never by the RNG, so a board draws the
+ * same heaps every time it is shown.
+ */
+export const RUBBLE_VARIANTS = 3;
+export const rubbleOutput = (variant: number): string =>
+  `public/art/maps/forest-scene/rubble${variant === 0 ? '' : `-${variant}`}.webp`;
+export const FOREST_RUBBLE_OUTPUT = rubbleOutput(0);
 
 /**
  * The cell's own diamond in plate pixels: the box is the diamond's full width
@@ -135,7 +149,7 @@ export interface Chunk {
  * to the cell's own edges gave the pile the cell's diamond for a silhouette,
  * which is what made it read as a tile pasted on the grass.
  */
-export function rubbleChunks(): Chunk[] {
+export function rubbleChunks(variant = 0): Chunk[] {
   const courses = [
     { y: 26, half: 14, count: 2, size: 0.8 },
     { y: 42, half: 50, count: 3, size: 0.85 },
@@ -143,17 +157,25 @@ export function rubbleChunks(): Chunk[] {
     { y: 74, half: 92, count: 5, size: 0.95 },
     { y: 90, half: 58, count: 4, size: 0.85 },
   ];
+  // Variant 0 keeps the shipped heap's seeds; the others move them clear of it.
+  const seed = variant * 16;
+  const mirror = variant === 2 ? -1 : 1;
   const chunks: Chunk[] = [];
   courses.forEach((course, row) => {
     for (let i = 0; i < course.count; i++) {
-      const n = (salt: number): number => tileNoise(row, i, salt);
+      const n = (salt: number): number => tileNoise(row + seed, i, salt);
       const across = course.count === 1 ? 0 : (i / (course.count - 1)) * 2 - 1;
+      const corners = chunkCorners((row + seed) * 8 + i);
       chunks.push({
-        x: RUBBLE_MOUND.x + across * course.half + (n(1) - 0.5) * 18,
+        x: RUBBLE_MOUND.x + mirror * (across * course.half + (n(1) - 0.5) * 18),
         y: course.y + (n(2) - 0.5) * 8,
         rx: (30 + 12 * n(3)) * course.size,
         ry: (15 + 5 * n(4)) * course.size,
-        corners: chunkCorners(row * 8 + i),
+        corners:
+          mirror === 1
+            ? corners
+            : // Reflected across the vertical, so the angles run the other way round.
+              corners.map(({ angle, reach }) => ({ angle: Math.PI - angle, reach })).reverse(),
         split: 0.05 + 0.3 * n(7),
         slab: n(8) < SLAB_SHARE,
       });
@@ -172,11 +194,11 @@ export function rubbleChunks(): Chunk[] {
  * diamond the spill is there to hide. If none fits, there are none.
  */
 export const LOOSE_STONES = { candidates: 400, keep: 6 } as const;
-export function looseStones(): Chunk[] {
-  const pile = rubbleChunks();
+export function looseStones(variant = 0): Chunk[] {
+  const pile = rubbleChunks(variant);
   const stones: Chunk[] = [];
   for (let i = 0; i < LOOSE_STONES.candidates && stones.length < LOOSE_STONES.keep; i++) {
-    const n = (salt: number): number => tileNoise(i, 7, salt);
+    const n = (salt: number): number => tileNoise(i, 7 + variant * 16, salt);
     const size = 1 + 0.45 * n(3);
     const stone: Chunk = {
       x: DIAMOND.x + (n(1) - 0.5) * DIAMOND.rx * 2,
@@ -357,15 +379,17 @@ export function spillWins(depth: number, x: number, y: number, tuft: () => boole
   return across > hold;
 }
 
-export function packRubble(material: ForestMaterial): Image {
+export function packRubble(material: ForestMaterial, variant = 0): Image {
   const { width, height } = FOREST_RUBBLE_PLATE;
   const image = newImage(width, height);
-  const chunks = rubbleChunks();
-  const stones = looseStones();
+  const chunks = rubbleChunks(variant);
+  const stones = looseStones(variant);
+  // Every chunk is chipped in the spoil triple's highlight, the road's broken
+  // slabs too: theirs was the spoil base, too close to their top to read.
   const keys = [FOREST_PIECE_TONES.spoil, FOREST_GROUND_TONES.road].map((tone) => ({
     top: parseHex(tone.base),
     front: parseHex(tone.shadow),
-    chip: parseHex(tone.rim),
+    chip: parseHex(FOREST_PIECE_TONES.spoil.rim),
   }));
   const shade = parseHex(FOREST_PIECE_TONES.margin.shadow);
   const gap = parseHex(FOREST_PIECE_TONES.trodden.shadow);
@@ -459,11 +483,14 @@ export function packRubble(material: ForestMaterial): Image {
 }
 
 export async function main(): Promise<void> {
-  const image = packRubble(await loadForestMaterial());
+  const material = await loadForestMaterial();
   mkdirSync('public/art/maps/forest-scene', { recursive: true });
-  const bytes = await encodeWebp(image, FOREST_GROUND_QUALITY, true);
-  writeFileSync(FOREST_RUBBLE_OUTPUT, bytes);
-  console.log({ width: image.width, height: image.height, bytes: bytes.length });
+  for (let variant = 0; variant < RUBBLE_VARIANTS; variant++) {
+    const image = packRubble(material, variant);
+    const bytes = await encodeWebp(image, FOREST_GROUND_QUALITY, true);
+    writeFileSync(rubbleOutput(variant), bytes);
+    console.log({ variant, width: image.width, height: image.height, bytes: bytes.length });
+  }
 }
 
 if (process.argv[1]?.endsWith('forest-rubble.ts')) await main();

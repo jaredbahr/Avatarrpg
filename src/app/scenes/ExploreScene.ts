@@ -41,7 +41,7 @@ import { WaitDialog } from '../ui/WaitDialog';
 import { showGridLines } from '../storage/localSaves';
 import { NextWalk, previewWalk } from '../world/walking';
 import type { WalkPreview } from '../world/walking';
-import { nearbyExploreTarget } from '../world/guidance';
+import { nearbyExits, nearbyExploreTarget } from '../world/guidance';
 import { handoverBark } from '../world/barks';
 import { seatHere } from '../world/waiting';
 import { phaseLabel } from '../world/journal';
@@ -527,7 +527,7 @@ export class ExploreScene implements Scene {
   private atGate(): string | null {
     const state = this.app.state;
     if (!state) return null;
-    const exit = this.map?.exits?.find((item) => distance(state.location.pos, item.pos) <= 1);
+    const exit = this.map ? nearbyExits(this.map, state.location.pos)[0] : undefined;
     if (exit)
       return evaluate(state, exit.requires)
         ? exit.label

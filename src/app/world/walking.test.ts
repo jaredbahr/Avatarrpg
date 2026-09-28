@@ -35,6 +35,15 @@ describe('walking feedback', () => {
     expect(preview.refusal).toBeNull();
   });
 
+  it('labels a walk onto any cell of a widened road mouth as that route (M2)', () => {
+    const base = village();
+    const state = { ...base, location: { ...base.location, pos: { x: 22, y: 8 } } };
+    const preview = previewWalk(CONTENT, state, { x: 23, y: 8 });
+    expect(preview.path.at(-1)).toEqual({ x: 23, y: 8 });
+    expect(preview.label).toBe('East road → Forest Road');
+    expect(preview.refusal).toBeNull();
+  });
+
   it('approaches a person instead of promising a walk onto their tile', () => {
     const state = village();
     const preview = previewWalk(CONTENT, state, { x: 11, y: 5 });

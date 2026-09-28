@@ -168,15 +168,27 @@ export const FOREST_APRON_PIECES: readonly SceneImage[] = FOREST_APRON_BANDS.map
 }));
 
 /**
- * The route's one painted rubble heap (`scripts/art/forest-rubble.ts`), drawn
+ * The route's painted rubble heaps (`scripts/art/forest-rubble.ts`), drawn
  * into the middle of a cover cell's diamond. Every `r` cell on the route stands
- * this heap on its own spill, so real cover reads the same in the forest, the
+ * one of them on its own spill, so real cover reads the same in the forest, the
  * Cutting and on the quarry floor; the scene lists the cell in `paintedRubble`
  * so the live wash stands down under it.
+ *
+ * There are three piles, and a hash of the cell picks one — never the RNG, so
+ * a board draws the same heaps every time — so a floor of six heaps is not six
+ * copies of one stamp.
  */
-export const RUBBLE_HEAP_URL = `${root}rubble.webp`;
+export const RUBBLE_HEAP_URLS = [
+  `${root}rubble.webp`,
+  `${root}rubble-1.webp`,
+  `${root}rubble-2.webp`,
+] as const;
+export const rubbleHeapUrl = ({ x, y }: Vec2): string =>
+  RUBBLE_HEAP_URLS[
+    ((Math.imul(x, 73856093) ^ Math.imul(y, 19349663)) >>> 0) % RUBBLE_HEAP_URLS.length
+  ] ?? RUBBLE_HEAP_URLS[0];
 export const rubbleHeap = ({ x, y }: Vec2): SceneImage => ({
-  url: RUBBLE_HEAP_URL,
+  url: rubbleHeapUrl({ x, y }),
   x: 768 + (x - y) * 64 - 64,
   y: (x + y + 1) * 32 - 64 / 3,
   width: 128,

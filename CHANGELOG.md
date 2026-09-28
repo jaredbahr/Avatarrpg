@@ -12,6 +12,20 @@
   under Reduce motion. Canvas 2D draws the lean in three held steps, and it
   draws the birds too. The strip adds 1.5 KB of art, and the JS bundle
   measures 318.7 KB gzipped of 320 with it.
+- Ink the rubble heaps at the figures' weight, and stop stamping one heap on
+  every cover cell. The heap's silhouette was two world pixels of `#1b1410`,
+  double a sprite's line, so each read as a cookie-cutter stamp; it is now one,
+  with the chunks' inner lines finer again. `scripts/art/forest-rubble.ts`
+  piles three heaps from their own seeds (the third mirrored), every chunk
+  chipped in the spoil triple's `#d8cbb0`, and `rubbleHeap` picks one per cell
+  by a hash of the cell, never the RNG — the Cutting and the Driller floor now
+  show all three. `rubble.webp` 3,734 → 4,322 B, plus `rubble-1.webp` 4,470 B
+  and `rubble-2.webp` 4,356 B. The grey square the audit saw under heaps was
+  already gone in current frames: every heap stands on its feathered spill.
+  `painted-rubble.spec.ts` now counts changed pixels across its window when
+  the scene art fails to load, as its wash check already did: at the lighter ink
+  the heap's 7 px centre is spoil stone in the procedural rubble's own key, so
+  the centre average stopped telling the art from the fallback.
 - Paint the quarry floor's oil pools and mud patch on their own ground. The
   ground generator left every **dynamic** cell transparent, so the Driller
   floor's four spills and one mud patch were procedural slate standing beside
