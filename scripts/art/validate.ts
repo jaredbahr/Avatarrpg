@@ -17,7 +17,9 @@
  * A sheet's further atlas pages (ADR 0052) are held to all of it, page by
  * page, and a frame may live on only one of them; the pins cover the cels on
  * a sheet's lossy pages, and a lossless PNG page beside them (ADR 0054) is
- * checked as any PNG sheet is. Every `image` entry's file exists, is the PNG or WebP its
+ * checked as any PNG sheet is. The bend pages beside the G sheets (ADR 0055)
+ * are held to the same page rules and pins, and their bend sets to the bend
+ * contract (`validateBends`). Every `image` entry's file exists, is the PNG or WebP its
  * name says, and measures what its kind of key promises (a portrait is
  * 512x512), because the loader falls back to the drawn placeholder on a
  * missing file and a typo would otherwise ship green; and every map's
@@ -39,6 +41,11 @@ import { imageSize, readPng } from './lib/image';
 import { alphaBounds, crop, lowestOpaqueRow } from './lib/trim';
 import { decodeWebp, webpSize } from './lib/webp';
 import { CEL_FRAMES, CEL_SIZE, FX_CEL_SHEETS } from '../../src/content/fxCels';
+import {
+  EFFECTS_NOT_YET_AUTHORED,
+  bendSetDefSchema,
+  validateBendSets,
+} from '../../src/content/bends';
 
 /** The largest texture every device in the matrix takes. */
 const MAX_ATLAS = 2048;
@@ -363,6 +370,183 @@ export async function validateSheets(
 }
 
 /**
+ * The bend pages beside each G sheet and the bend set they draw (ADR 0055).
+ * They are not in the manifest until its plumbing lands, so they are checked
+ * here on their own: the same page rules and decoded-cel pins as a sheet's
+ * pages, the set against its schema and `validateBendSets` (with
+ * `EFFECTS_NOT_YET_AUTHORED` until step 5), and every heading's first and last frame on
+ * the stance cel's exact alpha, so the bend starts and ends on its feet.
+ */
+export const BEND_SHEETS: Readonly<
+  Record<
+    string,
+    { readonly pins: string; readonly data: string; readonly pages: readonly string[] }
+  >
+> = {
+  'unit.fire.kaya': {
+    pins: 'art/source/kaya-bend/pins.json',
+    data: 'art/units/kaya-bend.json',
+    pages: ['art/units/kaya-g-bend.json'],
+  },
+  'unit.water.sura': {
+    pins: 'art/source/sura-bend/pins.json',
+    data: 'art/units/sura-bend.json',
+    pages: ['art/units/sura-g-bend.json'],
+  },
+  'unit.earth.bo': {
+    pins: 'art/source/bo-bend/pins.json',
+    data: 'art/units/bo-bend.json',
+    pages: ['art/units/bo-g-bend.json'],
+  },
+};
+
+/** Alpha pixels that differ between a bend cel placed by its anchor and the stance cel. */
+function stanceAlphaMismatch(
+  bend: Image,
+  foot: { x: number; y: number },
+  anchor: { x: number; y: number },
+  stance: Image,
+): number {
+  const ox = Math.round(foot.x - anchor.x * bend.width);
+  const oy = Math.round(foot.y - anchor.y * bend.height);
+  let differ = 0;
+  const alpha = (image: Image, x: number, y: number) =>
+    x < 0 || y < 0 || x >= image.width || y >= image.height
+      ? 0
+      : (image.data[(y * image.width + x) * 4 + 3] ?? 0);
+  const x0 = Math.min(0, ox);
+  const y0 = Math.min(0, oy);
+  const x1 = Math.max(stance.width, ox + bend.width);
+  const y1 = Math.max(stance.height, oy + bend.height);
+  for (let y = y0; y < y1; y++)
+    for (let x = x0; x < x1; x++) if (alpha(bend, x - ox, y - oy) !== alpha(stance, x, y)) differ++;
+  return differ;
+}
+
+export async function validateBends(
+  publicDir = 'public',
+  sheets: typeof BEND_SHEETS = BEND_SHEETS,
+  entries: Readonly<Record<string, AssetEntry>> = ASSETS,
+): Promise<string[]> {
+  const problems: string[] = [];
+  for (const [key, bend] of Object.entries(sheets)) {
+    const pages: Page[] = [];
+    for (const path of bend.pages) {
+      const page = await readPage(publicDir, key, path);
+      if (typeof page === 'string') problems.push(page);
+      else pages.push(page);
+    }
+    if (pages.length !== bend.pages.length) continue;
+    const where = new Map<string, Page>();
+    for (const page of pages) {
+      for (const name of page.frames.keys()) {
+        const other = where.get(name);
+        if (other)
+          problems.push(`${key}: bend frame "${name}" is on both ${other.path} and ${page.path}`);
+        where.set(name, page);
+      }
+    }
+    const cel = (name: string): Image | undefined => {
+      const page = where.get(name);
+      const frame = page?.frames.get(name);
+      return page && frame
+        ? crop(page.image, { x: frame.x, y: frame.y, width: frame.w, height: frame.h })
+        : undefined;
+    };
+
+    const dataPath = resolve(publicDir, bend.data);
+    if (!existsSync(dataPath)) {
+      problems.push(`${key}: ${bend.data} is missing under ${publicDir}/`);
+      continue;
+    }
+    const parsed = bendSetDefSchema.safeParse(JSON.parse(readFileSync(dataPath, 'utf8')));
+    if (!parsed.success) {
+      problems.push(`${key}: ${bend.data} fails the bend schema: ${parsed.error.message}`);
+      continue;
+    }
+    const set = parsed.data;
+    if (set.unitAsset !== key) problems.push(`${key}: ${bend.data} draws ${set.unitAsset}`);
+    const known = Object.keys(entries);
+    const names = [...where.keys()];
+    for (const problem of validateBendSets([set], EFFECTS_NOT_YET_AUTHORED, known, names))
+      problems.push(`${key}: ${problem}`);
+
+    const pinned = existsSync(bend.pins)
+      ? (JSON.parse(readFileSync(bend.pins, 'utf8')) as { frames?: Record<string, string> }).frames
+      : undefined;
+    if (!pinned) problems.push(`${key}: ${bend.pins} pins no bend cels`);
+    const used = new Set<string>();
+    for (const heading of HEADINGS) {
+      const facing = set.facings[heading];
+      for (const name of facing.frames) {
+        used.add(name);
+        const page = where.get(name);
+        const frame = page?.frames.get(name);
+        if (!page || !frame) continue;
+        const { width, height } = facing.frameSize;
+        if (frame.w !== width || frame.h !== height)
+          problems.push(
+            `${key}: bend frame "${name}" is ${frame.w}x${frame.h}, expected ${width}x${height}`,
+          );
+        if (borderTouched(page.image, frame, MARGIN))
+          problems.push(`${key}: bend frame "${name}" has art inside the ${MARGIN} px margin`);
+      }
+    }
+    for (const name of where.keys()) {
+      const page = where.get(name);
+      const frame = page?.frames.get(name);
+      if (!used.has(name)) problems.push(`${key}: bend frame "${name}" is in no heading`);
+      if (pinned && page && frame && pinned[name] !== celHash(page.image, frame))
+        problems.push(`${key}: decoded bend cel "${name}" does not match its pin`);
+    }
+    for (const name of Object.keys(pinned ?? {}))
+      if (!where.has(name)) problems.push(`${key}: pinned bend cel "${name}" is on no page`);
+
+    // Registration: the first and last frames stand exactly on the stance cel.
+    const entry = entries[key];
+    if (entry?.kind !== 'sheet') {
+      problems.push(`${key}: the bend's unit is not a sheet`);
+      continue;
+    }
+    const sheetPages: Page[] = [];
+    for (const path of [entry.atlas, ...(entry.atlasPages ?? [])]) {
+      const page = await readPage(publicDir, key, path);
+      if (typeof page !== 'string') sheetPages.push(page);
+    }
+    const w = entry.frameSize?.w ?? entry.pixelsPerTile * entry.footprint.w;
+    const h = entry.frameSize?.h ?? entry.pixelsPerTile * 1.5;
+    const foot = { x: entry.anchor.x * w, y: entry.anchor.y * h };
+    for (const heading of HEADINGS) {
+      const facing = set.facings[heading];
+      const stanceName = `${key}/${headingClip('stance', heading)}/0`;
+      const stancePage = sheetPages.find((page) => page.frames.has(stanceName));
+      const stanceFrame = stancePage?.frames.get(stanceName);
+      if (!stancePage || !stanceFrame) {
+        problems.push(`${key}: no stance cel "${stanceName}" to register the ${heading} bend on`);
+        continue;
+      }
+      const stance = crop(stancePage.image, {
+        x: stanceFrame.x,
+        y: stanceFrame.y,
+        width: stanceFrame.w,
+        height: stanceFrame.h,
+      });
+      const ends = [facing.frames[0], facing.frames[facing.frames.length - 1]];
+      for (const [end, name] of ends.entries()) {
+        const image = name ? cel(name) : undefined;
+        if (!image) continue;
+        const differ = stanceAlphaMismatch(image, foot, facing.anchor, stance);
+        if (differ > 0)
+          problems.push(
+            `${key}: ${heading} bend ${end === 0 ? 'first' : 'last'} frame "${name}" is ${differ} alpha px off the stance cel`,
+          );
+      }
+    }
+  }
+  return problems;
+}
+
+/**
  * Every `image` entry: a site-relative url, a file under `public/` that is
  * the PNG or WebP its name says, at the size its kind of key promises.
  */
@@ -482,6 +666,7 @@ export function validateFxCels(publicDir = 'public'): string[] {
 if (process.argv[1]?.endsWith('validate.ts')) {
   const problems = [
     ...(await validateSheets()),
+    ...(await validateBends()),
     ...validateImages(),
     ...validateBackdrops(),
     ...validateFxCels(),

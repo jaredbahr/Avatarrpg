@@ -5,9 +5,17 @@
  * tools checkout: cel count and timing, key frames (named as r9 names them,
  * with the shared role each plays), the smear cel, the attacks' frames, sockets
  * and hit-stop, and the measured wrist and ankle sockets per cel, in 320 px
- * cel coordinates. r9 records no foot anchor and no impact hold, so those are
- * placeholders; everything else is the take as approved. Test data only:
- * nothing at runtime imports this file.
+ * cel coordinates. r9 records no impact hold, so that is a placeholder (0).
+ *
+ * The r9 `stance_base_offset_in_cel` is not a root-lock point and is not used.
+ * The mapping is the one the packer measures (`scripts/art/bend-sprites.ts`):
+ * each south-east take's frame 0 is the 192 px stance cel placed at (64, 64)
+ * of the 320 px cel, and the G party packs that stance at 75% with its foot
+ * anchor at (64, 163.2) of a 128x192 cel, with the scaled cel's corner 8 px
+ * left of and 31 px below that cel's. So the source point (160, 240.27) stands on the foot
+ * anchor. The fixture packs the whole 320 px cel untrimmed, 240 px square,
+ * where that point lands at (120, 180.2). Test data only: nothing at runtime
+ * imports this file.
  */
 
 import type { BendAttackCue, BendElement, BendFrameSockets, HeadingBendDef } from './bends';
@@ -20,7 +28,6 @@ interface R9Take {
   readonly unitAsset: string;
   readonly element: BendElement;
   readonly frameMs: readonly number[];
-  readonly root: { readonly x: number; readonly y: number };
   readonly keyFrames: HeadingBendDef['keyFrames'];
   readonly smearFrame: number;
   readonly attack: BendAttackCue;
@@ -33,7 +40,6 @@ export const R9_FIRE: R9Take = {
   unitAsset: 'unit.fire.kaya',
   element: 'fire',
   frameMs: [60, 60, 110, 50, 120, 40, 150, 110, 70, 110, 70, 70, 120],
-  root: { x: 65, y: 61 },
   keyFrames: {
     F1: { frame: 2, role: 'contact' },
     F2: { frame: 4, role: 'anticipation' },
@@ -73,7 +79,6 @@ export const R9_EARTH: R9Take = {
   unitAsset: 'unit.earth.bo',
   element: 'earth',
   frameMs: [60, 80, 150, 40, 130, 50, 170, 120, 80, 130, 90, 120],
-  root: { x: 68, y: 61 },
   keyFrames: {
     E2: { frame: 2, role: 'anticipation' },
     E3: { frame: 4, role: 'contact' },
@@ -112,11 +117,10 @@ export const R9_WATER: R9Take = {
   unitAsset: 'unit.water.sura',
   element: 'water',
   frameMs: [60, 70, 110, 150, 40, 140, 110, 70, 130, 80, 120],
-  root: { x: 64, y: 62 },
   keyFrames: {
     W2: { frame: 2, role: 'anticipation' },
     W3: { frame: 3, role: 'anticipation' },
-    W4: { frame: 5, role: 'release' },
+    W4: { frame: 5, role: 'contact' },
     W5: { frame: 8, role: 'recovery' },
   },
   smearFrame: 4,
@@ -148,25 +152,29 @@ export function r9FrameNames(take: R9Take): string[] {
   return take.frameMs.map((_, index) => `${take.take}/${index}`);
 }
 
-/** A take as one heading's bend. */
+/** The G party's scale: packed pixels per source pixel. */
+export const R9_SCALE = 0.75;
+/** Where the fixture's untrimmed packed cel puts the foot anchor. */
+const R9_FOOT = { x: 120, y: 180.2 };
+const R9_PACKED = 320 * R9_SCALE;
+
+/** A take as one heading's bend, packed untrimmed at the G scale. */
 export function r9Heading(take: R9Take): HeadingBendDef {
+  const at = (x: number, y: number) => ({ x: x * R9_SCALE, y: y * R9_SCALE });
   const socketsPerFrame = take.sockets.map(
     ([lwX, lwY, rwX, rwY, laX, laY, raX, raY], frame): BendFrameSockets => ({
       frame,
-      sockets: {
-        LW: { x: lwX, y: lwY },
-        RW: { x: rwX, y: rwY },
-        LA: { x: laX, y: laY },
-        RA: { x: raX, y: raY },
-      },
+      sockets: { LW: at(lwX, lwY), RW: at(rwX, rwY), LA: at(laX, laY), RA: at(raX, raY) },
     }),
   );
   return {
     frames: r9FrameNames(take),
     frameMs: [...take.frameMs],
     sourceSize: { width: 320, height: 320 },
-    root: take.root,
-    anchor: { x: 0.5, y: 0.9 },
+    root: { x: R9_FOOT.x / R9_SCALE, y: R9_FOOT.y / R9_SCALE },
+    scale: R9_SCALE,
+    frameSize: { width: R9_PACKED, height: R9_PACKED },
+    anchor: { x: R9_FOOT.x / R9_PACKED, y: R9_FOOT.y / R9_PACKED },
     keyFrames: take.keyFrames,
     smearFrame: take.smearFrame,
     attacks: [take.attack],
