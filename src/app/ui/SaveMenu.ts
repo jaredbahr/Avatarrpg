@@ -11,6 +11,7 @@ import type { App } from '../App';
 import { Dialog } from './Dialog';
 import type { DialogOptions } from './Dialog';
 import { button, el } from './dom';
+import { savedWhen, slotLines } from './slotText';
 import type { SlotId } from '../storage/localSaves';
 import {
   AUTOSAVE_ID,
@@ -68,6 +69,10 @@ export class SaveMenu extends Dialog {
        * menu should raise.
        */
       const slotName = isAuto ? 'Autosave' : `Slot ${slot.id.slice(-1)}`;
+      // The place once, then the level and party size: the summary repeats the place.
+      const lines = slot.error ? null : slotLines(slot.summary);
+      const place =
+        lines?.place ?? (slot.occupied && !isAuto && slot.label !== slotName ? slot.label : null);
 
       const row = el(
         'div',
@@ -76,15 +81,10 @@ export class SaveMenu extends Dialog {
           'div',
           { class: 'slot-text' },
           el('strong', { text: slotName }),
-          slot.occupied && !isAuto && slot.label !== slotName
-            ? el('span', { class: 'slot-place', text: slot.label })
-            : null,
-          el('span', { class: 'muted tiny', text: slot.summary }),
+          place ? el('span', { class: 'slot-place', text: place }) : null,
+          el('span', { class: 'muted tiny', text: lines?.detail ?? slot.summary }),
           slot.savedAt > 0
-            ? el('span', {
-                class: 'muted tiny',
-                text: new Date(slot.savedAt).toLocaleString(),
-              })
+            ? el('span', { class: 'muted tiny', text: savedWhen(slot.savedAt) })
             : null,
         ),
         el(

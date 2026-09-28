@@ -18,7 +18,7 @@ import type { Viewport } from '../camera';
 import type { TileRelief } from '../geometry/board';
 import { boardRelief, decorSignature, seamMaterial, surfaceEdges } from '../geometry/board';
 import { aimArcPoints, arcHeading, arrowheadPolygon } from '../geometry/arc';
-import { actorHealthBar } from '../geometry/actorSilhouette';
+import { actorHealthBar, actorShadowDensity } from '../geometry/actorSilhouette';
 import { resolveActorEmitters } from '../geometry/actorAttachments';
 import { elevationAt, ELEVATION_LIFT } from '../geometry/elevation';
 export { elevationAt, ELEVATION_LIFT } from '../geometry/elevation';
@@ -29,7 +29,7 @@ import { CanvasFxLayer } from '../fx/canvasFx';
 import { backdrops } from '../backdrops';
 import { sceneForGrid, sceneImage, drawSceneImage, sceneryOpacities } from '../scene';
 import { surfaceIsPainted } from '../sceneSurfaces';
-import { FACTION_RING, OVERLAY, STATUS_BADGE, hpColor } from '../palettes';
+import { HP_COLORS, OVERLAY, STATUS_BADGE, hpFill } from '../palettes';
 import { paintElevationBase, paintTileDecor, paintTileSeams } from '../painters/board';
 import { paintFloatingNumber, paintPathArrow, paintPathDot } from '../painters/fx';
 import { FOOT_LINE } from '../sheets/bake';
@@ -669,7 +669,9 @@ export class Canvas2DBackend implements RenderBackend {
       ctx.globalAlpha = alpha;
       if (entry.kind === 'image') {
         const s = box.size * scale;
-        ctx.drawImage(sprites.shadow(s * dpr), footX - s / 2, footY - 0.86 * s, s, s);
+        const tile = { x: Math.round(at.x), y: Math.round(at.y) };
+        const density = actorShadowDensity(view.grid, tile, true);
+        ctx.drawImage(sprites.shadow(s * dpr, density), footX - s / 2, footY - 0.86 * s, s, s);
       }
       const squash = npc.squash ?? 0;
       ctx.translate(footX, footY + lift);
@@ -836,13 +838,20 @@ export class Canvas2DBackend implements RenderBackend {
       if (!uprightSpriteVisible(box, camera.viewport, unit.size, scale)) continue;
 
       ctx.save();
-      if (unit.shadow) {
+      const shadowDensity = actorShadowDensity(view.grid, unit.pos, unit.shadow === true);
+      if (shadowDensity > 0) {
         // On the ground, not on the bob: the tile's foot line, less the ledge.
         const s = box.size * scale;
         const footX = box.x - (unit.offset?.x ?? 0) * box.size + width / 2;
         const footY = box.y - (unit.offset?.y ?? 0) * box.size + 0.86 * box.size;
         ctx.globalAlpha = unit.alpha ?? 1;
-        ctx.drawImage(sprites.shadow(s * dpr), footX - s / 2, footY - 0.86 * s, s, s);
+        ctx.drawImage(
+          sprites.shadow(s * dpr, shadowDensity),
+          footX - s / 2,
+          footY - 0.86 * s,
+          s,
+          s,
+        );
       }
       // A pose scales about the feet; the fallen fade sits on top of any alpha.
       ctx.globalAlpha = (unit.alpha ?? 1) * (unit.fallen ? 0.35 : 1);
@@ -931,11 +940,12 @@ export class Canvas2DBackend implements RenderBackend {
       height: barHeight,
     } = actorHealthBar(x, y, width, size, scale, headroom);
 
-    ctx.fillStyle = 'rgba(0,0,0,0.6)';
-    ctx.fillRect(barX - 1, barY - 1, barWidth + 2, barHeight + 2);
-    ctx.fillStyle = hpColor(fraction);
+    // An ink-framed track, filled in the unit's side colour (pixi.ts matches).
+    ctx.fillStyle = HP_COLORS.back;
+    ctx.fillRect(barX, barY, barWidth, barHeight);
+    ctx.fillStyle = hpFill(unit.faction, fraction);
     ctx.fillRect(barX, barY, barWidth * fraction, barHeight);
-    ctx.strokeStyle = FACTION_RING[unit.faction];
+    ctx.strokeStyle = HP_COLORS.frame;
     ctx.lineWidth = 1;
     ctx.strokeRect(barX - 0.5, barY - 0.5, barWidth + 1, barHeight + 1);
   }

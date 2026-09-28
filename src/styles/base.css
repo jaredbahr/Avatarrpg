@@ -119,6 +119,9 @@
      hairline beside 1.4x type. Was a scatter of 3px and 4px literals. */
   --accent-bar: 0.25rem;
 
+  /* How far a sheet's scroll region fades out at an edge with more behind it. */
+  --sheet-fade: 1.5rem;
+
   /* Decorative edges are the one thing that must *not* scale with Large text:
      a 1.5px outline beside 24px type is a smudge. px on purpose. */
   --hairline: 1px;
@@ -142,10 +145,11 @@
 
   /* Stacking, bottom to top. */
   --z-banner: 20;
+  /* Under the dialog overlay: a toast never covers an open sheet. */
+  --z-toast: 30;
   --z-overlay: 40;
   --z-overlay-host: 50;
   --z-curtain: 55;
-  --z-toast: 60;
   --z-stats: 70;
 
   --font-ui: 'Segoe UI', system-ui, -apple-system, 'Helvetica Neue', Arial, sans-serif;

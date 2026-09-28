@@ -68,7 +68,9 @@ art, and it is where every later asset lands.
   the midpoint of a fade would break all three. A curtain in the overlay host
   drops opaque _after_ the swap and lifts over `--dur-slow`. It takes no
   pointer events, sits above dialogs and below toasts, and a timer lifts it if
-  `transitionend` never comes.
+  `transitionend` never comes. _Amended:_ toasts have since moved under dialogs
+  and the curtain, hanging from the top of the map rather than the page, so a
+  story beat never covers the header or an open sheet.
 - Dialogs ease in through CSS only. There is deliberately no exit animation: a
   closed dialog that lingers in the DOM is a node the e2e suite and assistive
   technology can still find.

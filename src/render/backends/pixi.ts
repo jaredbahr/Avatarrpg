@@ -41,12 +41,12 @@ import type { Camera, Viewport } from '../camera';
 import { DecorSheets } from '../decorSheets';
 import { ParticleLayer } from '../fx/particleLayer';
 import { aimArcPoints, arcHeading, arrowheadPolygon } from '../geometry/arc';
-import { actorHealthBar } from '../geometry/actorSilhouette';
+import { actorHealthBar, actorShadowDensity } from '../geometry/actorSilhouette';
 import { DECOR_CHUNK, decorChunks } from '../geometry/board';
 import { contourLoops, isHole } from '../geometry/contour';
 import type { Curve } from '../geometry/curve';
 import { sampleAt, smoothPath } from '../geometry/curve';
-import { FACTION_RING, OVERLAY, STATUS_BADGE, hpColor } from '../palettes';
+import { HP_COLORS, OVERLAY, STATUS_BADGE, hpFill } from '../palettes';
 import { FOOT_LINE } from '../sheets/bake';
 import { resolveActorEmitters } from '../geometry/actorAttachments';
 import type { ResolvedFrame } from '../sheets/store';
@@ -1264,7 +1264,9 @@ export class PixiBackend implements RenderBackend {
         const shadowKey = `shadow:${npc.id}`;
         live.add(shadowKey);
         const shadow = this.unitSprite(shadowKey);
-        shadow.texture = this.texture(sprites.shadow(px * scale));
+        const tile = { x: Math.round(at.x), y: Math.round(at.y) };
+        const density = actorShadowDensity(view.grid, tile, true);
+        shadow.texture = this.texture(sprites.shadow(px * scale, density));
         shadow.anchor.set(0.5, 0.86);
         shadow.position.set(footX, ground + FOOT_LINE * TILE);
         shadow.width = shadow.height = TILE * scale;
@@ -1341,12 +1343,13 @@ export class PixiBackend implements RenderBackend {
 
       live.add(unit.id);
       const sprite = this.unitSprite(unit.id);
-      if (unit.shadow) {
-        // On the ground, not on the bob (explore maps, ADR 0015).
+      const shadowDensity = actorShadowDensity(view.grid, unit.pos, unit.shadow === true);
+      if (shadowDensity > 0) {
+        // On the ground, not on the bob (explore maps, ADR 0015; grass, canvas2d.ts).
         const key = `shadow:${unit.id}`;
         live.add(key);
         const shadow = this.unitSprite(key);
-        shadow.texture = this.texture(sprites.shadow(px * (unit.scale ?? 1)));
+        shadow.texture = this.texture(sprites.shadow(px * (unit.scale ?? 1), shadowDensity));
         shadow.anchor.set(0.5, 0.86);
         shadow.position.set(anchor.x + width / 2, anchor.y + (0.86 - lift) * TILE);
         shadow.width = shadow.height = TILE * (unit.scale ?? 1);
@@ -1474,11 +1477,14 @@ export class PixiBackend implements RenderBackend {
       height: barHeight,
     } = actorHealthBar(x, y, width, TILE, scale, headroom);
 
-    g.rect(barX - 1, barY - 1, barWidth + 2, barHeight + 2).fill({ color: 'rgba(0,0,0,0.6)' });
-    g.rect(barX, barY, barWidth * fraction, barHeight).fill({ color: hpColor(fraction) });
+    // An ink-framed track, filled in the unit's side colour (canvas2d.ts matches).
+    g.rect(barX, barY, barWidth, barHeight).fill({ color: HP_COLORS.back });
+    g.rect(barX, barY, barWidth * fraction, barHeight).fill({
+      color: hpFill(unit.faction, fraction),
+    });
     g.rect(barX - 0.5, barY - 0.5, barWidth + 1, barHeight + 1).stroke({
       width: 1,
-      color: FACTION_RING[unit.faction],
+      color: HP_COLORS.frame,
     });
   }
 

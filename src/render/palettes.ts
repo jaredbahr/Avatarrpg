@@ -220,13 +220,6 @@ export const OVERLAY = {
   edgeWidth: 0.05,
 } as const;
 
-/** Ring drawn under a unit, so faction is readable without reading names. */
-export const FACTION_RING: Record<'party' | 'enemy' | 'ally', string> = {
-  party: OVERLAY.friendly,
-  ally: 'rgba(160, 220, 170, 0.9)',
-  enemy: OVERLAY.hostile,
-};
-
 /** Short badges drawn under a unit so statuses are visible without a tooltip. */
 export const STATUS_BADGE: Record<StatusId, { letter: string; color: string }> = {
   burning: { letter: 'B', color: '#e0521f' },
@@ -246,12 +239,19 @@ export const STATUS_BADGE: Record<StatusId, { letter: string; color: string }> =
 export const HP_COLORS = {
   high: '#6fbf73',
   mid: '#e0b23c',
-  low: '#e2584a',
-  back: 'rgba(0,0,0,0.55)',
+  /** Every enemy bar, full or not: --c-danger-soft. */
+  hostile: '#d94a3a',
+  /** The empty part of the bar, and the 1px frame round it: the art bible's ink. */
+  back: 'rgba(27,20,16,0.55)',
+  frame: '#1b1410',
 } as const;
 
-export function hpColor(fraction: number): string {
-  if (fraction > 0.6) return HP_COLORS.high;
-  if (fraction > 0.3) return HP_COLORS.mid;
-  return HP_COLORS.low;
+/**
+ * A unit's bar fill. The side reads before the number does: an enemy's bar is
+ * red however full it is, and a friendly bar is green, turning amber when hurt
+ * but never the hostile red.
+ */
+export function hpFill(faction: 'party' | 'enemy' | 'ally', fraction: number): string {
+  if (faction === 'enemy') return HP_COLORS.hostile;
+  return fraction > 0.6 ? HP_COLORS.high : HP_COLORS.mid;
 }

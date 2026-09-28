@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
-import { actorHealthBar } from './actorSilhouette';
+import type { Grid, TerrainId, Tile } from '../../core/types';
+import { GRASS_SHADOW_DENSITY, actorHealthBar, actorShadowDensity } from './actorSilhouette';
 import { FOOT_LINE, headroomFromPixels } from '../sheets/bake';
 
 describe('upright actor health bar', () => {
@@ -22,7 +23,7 @@ describe('upright actor health bar', () => {
           const bar = actorHealthBar(100, y, tile, tile, scale, headroom);
           expect(bar.silhouetteTop).toBeCloseTo(top, 8);
           expect(bar.y + bar.height + 1).toBeLessThan(top);
-          expect(top - (bar.y + bar.height + 1)).toBeCloseTo(Math.max(2, tile * 0.04), 8);
+          expect(top - (bar.y + bar.height + 1)).toBeCloseTo(Math.max(1.4, tile * 0.028), 8);
         }
       }
     }
@@ -43,5 +44,27 @@ describe('upright actor health bar', () => {
     expect(base.y + base.height + 1).toBeLessThan(fallbackTop);
     expect(shifted.y - base.y).toBe(-17);
     expect(shifted.x - base.x).toBe(12);
+  });
+});
+
+describe('upright actor contact shadow', () => {
+  const tile = (terrain: TerrainId): Tile => ({
+    terrain,
+    elevation: 0,
+    blocked: false,
+    blocksSight: false,
+    cover: false,
+    surface: null,
+  });
+  const grid: Grid = { width: 2, height: 1, tiles: [tile('grass'), tile('road')] };
+
+  it('is denser on grass, for every figure, and unchanged elsewhere', () => {
+    expect(actorShadowDensity(grid, { x: 0, y: 0 }, false)).toBe(GRASS_SHADOW_DENSITY);
+    expect(actorShadowDensity(grid, { x: 0, y: 0 }, true)).toBe(GRASS_SHADOW_DENSITY);
+    expect(GRASS_SHADOW_DENSITY).toBeGreaterThan(1);
+    // Off grass a combat figure keeps no pool and an explore figure the standard one.
+    expect(actorShadowDensity(grid, { x: 1, y: 0 }, false)).toBe(0);
+    expect(actorShadowDensity(grid, { x: 1, y: 0 }, true)).toBe(1);
+    expect(actorShadowDensity(grid, { x: 5, y: 0 }, true)).toBe(1);
   });
 });
