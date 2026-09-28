@@ -22,6 +22,13 @@ from these files into `public/art/maps/ba_dan_riverside.webp`.
 | `logs.png`       | 44 x 65 | (1377, 474)              | The log rounds against the east clearing's banner fence  |
 | `rock-small.png` | 32 x 30 | (326, 840)               | The small mossy rock beside the garden walkway at (8,21) |
 
+`rock-small.png` stands once in the bake, on the south-east bank at (34,21).
+Its original at (8,21) is painted out: that cell is walkable now, so a rock on
+it read as a stop that was not there. The bake clones a patch of the
+painting's own sunlit verge over it, offset (63,-77), scaled per channel to
+the light of the ground round the rock (`GROUND_PATCHES` in the script). The
+source painting keeps the rock, so the cutout still checks against it.
+
 The prototype's `cutouts.py` cut the first three. Their masks are rectangles and
 polygons measured at 10x, with no colour key, then blurred 0.5 px (the fence)
 or 0.8 px (the rocks and logs). `rock-small.png` was cut the same way for
