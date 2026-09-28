@@ -651,6 +651,12 @@ export interface BackgroundRole {
 
 export interface MapExit {
   readonly pos: Vec2;
+  /**
+   * Multi-tile entrance (M2): the leader triggers the exit from any of these
+   * cells. Absent means the single `pos` tile. When present it must contain
+   * `pos`, and no cell may belong to two exits on the same map.
+   */
+  readonly area?: readonly Vec2[];
   readonly toMapId: string;
   readonly toPos: Vec2;
   readonly label: string;
@@ -666,6 +672,26 @@ export interface MapTrigger {
   readonly node: string;
   readonly when?: Condition;
   readonly once: boolean;
+}
+
+/** Which border of the grid an authored edge declaration covers. */
+export type MapEdgeSide = 'north' | 'south' | 'east' | 'west';
+
+/**
+ * What a declared edge is for. Nothing in the rules reads this yet (M1); it
+ * records what the map author intends so the report-only edge-contract
+ * validator can tell an intended boundary from an accidentally open one.
+ */
+export type MapEdgeTreatment = 'barrier' | 'band' | 'exit';
+
+/**
+ * An authored claim about one run of a map border. `span` is an inclusive
+ * `[from, to]` measured in x for north/south edges and in y for east/west.
+ */
+export interface MapEdge {
+  readonly side: MapEdgeSide;
+  readonly span: readonly [number, number];
+  readonly treatment: MapEdgeTreatment;
 }
 
 export interface MapDef {
@@ -699,6 +725,15 @@ export interface MapDef {
   readonly objectiveVariants?: readonly { readonly when: Condition; readonly text: string }[];
   /** Explore maps only: stepping here advances the current story node. */
   readonly exit?: { readonly pos: Vec2; readonly label: string };
+  /**
+   * Authored claims about this map's walkable border (M1). Report-only: the
+   * edge-contract validator warns on a walkable border cell that no exit or
+   * declared edge covers, and only errors when the map sets
+   * `edgeContract: 'enforce'`.
+   */
+  readonly edges?: readonly MapEdge[];
+  /** Opt this map into edge-contract errors. No map sets it yet (M1). */
+  readonly edgeContract?: 'enforce';
   /**
    * A painting drawn under the rules grid in place of the procedural ground,
    * once one exists for the map (ADR 0009). Presentation only, like
