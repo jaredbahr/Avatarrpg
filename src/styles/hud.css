@@ -3041,3 +3041,38 @@ html[data-contrast='high'] .hud-panel::after {
     white-space: nowrap;
   }
 }
+
+/* A phone held upright: the initiative strip is faces, and only the acting
+ * chip keeps its name. Each chip's aria-label and title carry the full name. */
+@media (max-width: 36rem) {
+  .combat-scene .turn-strip {
+    align-items: center;
+    gap: var(--sp-1);
+    padding-block: var(--sp-1);
+  }
+
+  .combat-scene .turn-chip {
+    flex-direction: row;
+    justify-content: center;
+    gap: var(--sp-1);
+    min-width: var(--tap);
+    padding: var(--sp-1);
+  }
+
+  .combat-scene .turn-chip .painter {
+    max-width: 2rem;
+    max-height: 2rem;
+  }
+
+  .combat-scene .turn-chip:not(.active) span {
+    display: none;
+  }
+
+  .combat-scene .turn-chip.active {
+    padding-inline: var(--sp-2);
+  }
+
+  .combat-scene .turn-chip.active span {
+    max-width: 7rem;
+  }
+}

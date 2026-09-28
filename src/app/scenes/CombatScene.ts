@@ -754,7 +754,10 @@ export class CombatScene implements Scene {
         assetCanvas(portraitKeyFor(this.app.content, unit), 2.4),
         el('span', { class: 'tiny', text: player?.name ?? unit.name }),
       );
-      chip.title = `${unit.name}: ${unit.hp}/${unit.base.maxHp} HP. Focus on the battlefield.`;
+      // A phone shows the waiting chips as faces alone and a long name
+      // ellipses anywhere, so the full name always rides on the chip itself.
+      const who = player && player.name !== unit.name ? `${unit.name} (${player.name})` : unit.name;
+      chip.title = `${who}: ${unit.hp}/${unit.base.maxHp} HP. Focus on the battlefield.`;
       strip.appendChild(chip);
     }
   }
