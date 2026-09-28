@@ -133,6 +133,36 @@ function courtyardProp({ id, image, x, y }: (typeof BA_DAN_COURTYARD_PROPS)[numb
   };
 }
 
+/**
+ * The south-east house is drawn over x 13..16, but `rows` blocks its footprint
+ * out to (17,10) and (17,11), a paved strip that read as open ground. The
+ * courtyard's own low planter stands on it, mirrored so its long side runs
+ * along y. Its depth ties the house (x + y = 30) and it is listed after it, so
+ * it paints in front of the plinth like the rest of the frontage.
+ */
+export const BA_DAN_SOUTHEAST_PLANTER = [
+  { x: 17, y: 10 },
+  { x: 17, y: 11 },
+] as const;
+
+function turnedPlanter(): SceneScenery {
+  const width = 192;
+  const height = (width * 295) / 512;
+  const front = { x: 18, y: 12 };
+  return {
+    id: 'southeast-planter',
+    url: `${root}low-planter.webp`,
+    // Mirrored, the front corner sits the other side of centre.
+    x: 1024 + (front.x - front.y) * 64 - width * (1 - 0.675),
+    y: (front.x + front.y) * 32 - height,
+    width,
+    height,
+    footprint: [...BA_DAN_SOUTHEAST_PLANTER],
+    depth: { x: 17.5, y: 12.5 },
+    flip: true,
+  };
+}
+
 /** Low crossing over the canal's dry centre, split at the near rail so actors
  * can stand on the deck instead of disappearing behind one opaque sprite. */
 function canalBridge(): SceneScenery[] {
@@ -287,6 +317,7 @@ export const BA_DAN_SCENE: MapScene = {
     ...canalBridge(),
     // Equal-depth frontage must paint after the building behind it.
     ...BA_DAN_COURTYARD_PROPS.map(courtyardProp),
+    turnedPlanter(),
     ...BA_DAN_COURT_TREES.map(({ x, y }) => tree(x, y, 320)),
     tree(0, 3),
     tree(0, 6, 400),

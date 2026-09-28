@@ -554,6 +554,7 @@ export const mapSchema = z
                 wall: z.boolean().optional(),
                 fadeWhenOccluding: z.boolean().optional(),
                 fadeGroup: id.optional(),
+                flip: z.boolean().optional(),
               })
               .superRefine((piece, ctx) => {
                 if (piece.exterior) return;
@@ -989,14 +990,14 @@ function isWalkable(map: MapDef, x: number, y: number): boolean {
 }
 
 /* ------------------------------------------------------------------ */
-/* Map contract (M1, report-only)                                      */
+/* Map contract (M1; enforced per map by `edgeContract`)               */
 /* ------------------------------------------------------------------ */
 
 export type MapContractSeverity = 'warning' | 'error';
 
 /**
- * One finding from `validateMapContracts`. Report-only for now: an unconverted
- * map's findings are `warning`s, and `validateContent` folds only the errors
+ * One finding from `validateMapContracts`. An enforced map's findings are
+ * `error`s; an unconverted map's are `warning`s, and `validateContent` folds only the errors
  * into its problems, so a map that has not opted into `edgeContract: 'enforce'`
  * can never fail CI on a boundary or step it has not declared yet. The one
  * exception is malformed edge data: an inverted, fractional or off-the-side
@@ -1717,9 +1718,10 @@ export function validateContent(bundle: ContentBundle): string[] {
     }
   }
 
-  /* --- map edge / step / footprint contract (M1, report-only) -------- */
-  // Warnings never fail content, and no map sets `edgeContract: 'enforce'`
-  // yet; only a malformed edge span is an error on every map.
+  /* --- map edge / step / footprint contract (M1) ---------------------- */
+  // Warnings never fail content. A map that sets `edgeContract: 'enforce'`
+  // (the riverside does) fails on every finding; on the others only a
+  // malformed edge span is an error.
   for (const issue of validateMapContracts(bundle.maps)) {
     if (issue.severity === 'error') problems.push(issue.message);
   }

@@ -644,12 +644,19 @@ export class PixiBackend implements RenderBackend {
       }
       sprite.texture = texture;
       // Wind leans the crown about the foot; the trunk's base never moves.
-      sprite.anchor.set(0, 1);
+      // A mirrored piece anchors on its texture's right edge, which the
+      // negative scale lays on the box's left.
+      sprite.anchor.set(item.flip ? 1 : 0, 1);
       sprite.position.set(item.x, item.y + item.height);
       sprite.width = item.width;
       sprite.height = item.height;
+      sprite.scale.x = Math.abs(sprite.scale.x) * (item.flip ? -1 : 1);
       sprite.skew.x = item.wind && !view.reducedMotion ? -sway(view.time, item) : 0;
-      sprite.zIndex = camera.groundPoint(item.depth).y;
+      // Canvas 2D draws scenery before any figure at the same depth, so a
+      // figure level with a piece of frontage stands in front of it. Pixi
+      // breaks a zIndex tie by child order instead; sit scenery just under
+      // the tie, below a figure's shadow (-0.001) as well.
+      sprite.zIndex = camera.groundPoint(item.depth).y - 0.002;
       sprite.alpha = opacities.get(item) ?? 1;
     }
     for (const [key, sprite] of this.groundChunks) {
