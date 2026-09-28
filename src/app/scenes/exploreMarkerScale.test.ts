@@ -36,7 +36,7 @@ it('uses the existing forest attacker at both crossings without changing their a
     expect(trigger?.area[0]).toEqual({ x, y: 4 });
     expect(trigger?.area.every((pos) => pos.x === x)).toBe(true);
     expect(triggerPresentationScale(map, trigger?.sprite ?? '')).toBe(
-      enemyScale('unit.enemy.thug'),
+      enemyScale('unit.enemy.thug', 1, map.projection),
     );
   }
   expect(map.npcs.find((npc) => npc.id === 'duck_nest')?.pos).toEqual({ x: 2, y: 9 });
@@ -45,5 +45,7 @@ it('uses the existing forest attacker at both crossings without changing their a
   );
   expect(
     triggerPresentationScale({ id: 'ambush_road', projection: 'oblique' }, 'unit.enemy.thug'),
-  ).toBe(enemyScale('unit.enemy.thug'));
+  ).toBe(enemyScale('unit.enemy.thug', 1, 'oblique'));
+  // The G thug (ADR 0059) stands at the party's scale on the map's projection.
+  expect(enemyScale('unit.enemy.thug', 1, 'oblique')).toBe(1.25);
 });

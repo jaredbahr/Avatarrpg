@@ -52,7 +52,7 @@ export const ENEMY_BEATS: readonly Beat[] = [
       // Decode the real asset before freezing the clock for the filmstrip.
       await ctx.page.evaluate(async () => {
         const img = new Image();
-        img.src = new URL('art/units/thug.png', document.baseURI).href;
+        img.src = new URL('art/units/thug-g.webp', document.baseURI).href;
         await img.decode();
       });
       await ctx.filmstrip(

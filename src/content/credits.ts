@@ -106,7 +106,7 @@ export const THIRD_PARTY_CREDITS: readonly CreditEntry[] = [
       'art/units/bo-g-3.json',
       'art/units/bo-g-clips.json',
     ],
-    note: 'The data used in this project was obtained from mocap.cs.cmu.edu. The database was created with funding from NSF EIA-0196217. Kaya falls to 90_18 (RugPullFall), Sura to 77_18 and Bo to 77_16, each played in reverse and retargeted onto the character’s own stance; the cels are drawn for this project with PixelLab. See docs/adr/0059-g-hit-knockout-and-thug.md.',
+    note: 'The data used in this project was obtained from mocap.cs.cmu.edu. The database was created with funding from NSF EIA-0196217. Kaya falls to 90_18 (RugPullFall), frames 64 to 170; Sura to 77_18 and Bo to 77_16, each lying down played in reverse; every take is retargeted onto the character’s own stance; the cels are drawn for this project with PixelLab. See docs/adr/0059-g-hit-knockout-and-thug.md.',
   },
 ];
 
