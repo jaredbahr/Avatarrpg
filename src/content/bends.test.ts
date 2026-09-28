@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { HEADINGS } from './assets/clips';
 import type { Heading } from './assets/clips';
 import {
+  EFFECTS_NOT_YET_AUTHORED,
   bendAttackCueSchema,
   bendEffectDefSchema,
   bendEffectLayerSchema,
@@ -267,10 +268,32 @@ describe('bend data contract', () => {
 
   it('accepts a release that launches before its contact frame', () => {
     const attack = attackOf({ releases: [releaseOf({ frame: 2, launchFrame: 1 })] });
+    const keyFrames = {
+      launch: { frame: 1, role: 'release' },
+      hit: { frame: 2, role: 'contact' },
+    } as const;
     const set = setOf({
-      headings: Object.fromEntries(HEADINGS.map((h) => [h, { attacks: [attack] }])),
+      headings: Object.fromEntries(HEADINGS.map((h) => [h, { attacks: [attack], keyFrames }])),
     });
     expect(problemsFor([set])).toBe('');
+  });
+
+  it('rejects a release whose contact frame is not keyed as a contact', () => {
+    const keyFrames = { hit: { frame: 1, role: 'anticipation' } } as const;
+    const set = setOf({ headings: { east: { keyFrames } } });
+    expect(problemsFor([set])).toContain('attack "jab" release 0 frame 1 has no contact key frame');
+  });
+
+  it('rejects an early launch that is not keyed as a release', () => {
+    const attack = attackOf({ releases: [releaseOf({ frame: 2, launchFrame: 1 })] });
+    const keyFrames = {
+      launch: { frame: 1, role: 'anticipation' },
+      hit: { frame: 2, role: 'contact' },
+    } as const;
+    const set = setOf({ headings: { east: { attacks: [attack], keyFrames } } });
+    const problems = problemsFor([set]);
+    expect(problems).toContain('release 0 launchFrame 1 has no release key frame');
+    expect(problems).not.toContain('has no contact key frame');
   });
 
   it('checks every release socket against its own frames, not only the first', () => {
@@ -330,6 +353,17 @@ describe('bend data contract', () => {
     expect(problemsFor([set])).toContain('release 1 repeats socket LW on frame 1');
   });
 
+  it('rejects a socket repeated on one frame with another release between', () => {
+    const attack = attackOf({
+      releases: [releaseOf(), releaseOf({ socket: 'RW' }), releaseOf()],
+      damageRelease: 2,
+    });
+    const set = setOf({ headings: { east: { attacks: [attack] } } });
+    const problems = problemsFor([set]);
+    expect(problems).toContain('release 2 repeats socket LW on frame 1');
+    expect(problems).not.toContain('release 1 repeats');
+  });
+
   it('rejects two attacks with one id in a heading', () => {
     const set = setOf({ headings: { east: { attacks: [attackOf(), attackOf()] } } });
     expect(problemsFor([set])).toContain('attack id "jab" repeats');
@@ -372,12 +406,13 @@ describe('bend data contract', () => {
   it('skips only the effect check while the effects are not authored', () => {
     const attack = attackOf({ effectId: 'fx.none.thing' });
     const everywhere = Object.fromEntries(HEADINGS.map((h) => [h, { attacks: [attack] }]));
-    expect(validateBendSets([setOf({ headings: everywhere })], null, KNOWN_UNIT_ASSETS)).toEqual(
+    const skip = EFFECTS_NOT_YET_AUTHORED;
+    expect(validateBendSets([setOf({ headings: everywhere })], skip, KNOWN_UNIT_ASSETS)).toEqual(
       [],
     );
     const late = attackOf({ effectId: 'fx.none.thing', releases: [releaseOf({ frame: 3 })] });
     const bad = setOf({ headings: { east: { attacks: [late] } } });
-    const problems = validateBendSets([bad], null, KNOWN_UNIT_ASSETS).join('\n');
+    const problems = validateBendSets([bad], skip, KNOWN_UNIT_ASSETS).join('\n');
     expect(problems).toContain('release 0 frame 3 is outside 0..2');
     expect(problems).toContain('differ from east [jab/fx.none.thing/1/0]');
     expect(problems).not.toContain('unknown effect');

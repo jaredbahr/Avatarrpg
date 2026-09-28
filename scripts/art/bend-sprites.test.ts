@@ -13,7 +13,11 @@ import { afterEach, describe, expect, it } from 'vitest';
 import { HEADINGS, headingClip } from '../../src/content/assets/clips';
 import type { Heading } from '../../src/content/assets/clips';
 import { ASSETS } from '../../src/content/assets/manifest';
-import { bendSetDefSchema, validateBendSets } from '../../src/content/bends';
+import {
+  EFFECTS_NOT_YET_AUTHORED,
+  bendSetDefSchema,
+  validateBendSets,
+} from '../../src/content/bends';
 import type { BendSetDef } from '../../src/content/bends';
 import {
   BEND_CHARACTERS,
@@ -210,7 +214,9 @@ describe('bend packer', () => {
     expect(data).toEqual(set);
     expect(bendSetDefSchema.safeParse(data).success).toBe(true);
     const names = HEADINGS.flatMap((heading) => data.facings[heading].frames);
-    expect(validateBendSets([data], null, ['unit.fire.kaya'], names)).toEqual([]);
+    expect(validateBendSets([data], EFFECTS_NOT_YET_AUTHORED, ['unit.fire.kaya'], names)).toEqual(
+      [],
+    );
     const east = data.facings.east;
     expect(east.frames).toEqual([0, 1, 0].map((i) => bendFrameName('unit.fire.kaya', 'east', i)));
     expect(east.attacks[0]?.releases).toEqual([
@@ -280,6 +286,51 @@ describe('bend packer', () => {
         log: () => undefined,
       }),
     ).rejects.toThrow('does not match the packed stance');
+  });
+
+  it('writes nothing when a page fails its check as it decodes', async () => {
+    const source = sourceSet();
+    const pinsPath = pinned(source);
+    const before = readFileSync(pinsPath);
+    const outDir = temp('bend-out-');
+    // The source cels match the stance; only the decoded page is held to a
+    // re-toned one, so the build fails after every page is encoded.
+    const toned = packCel(stanceCel(), REG, { x: 0, y: 0, w: FRAME_W, h: FRAME_H });
+    for (let i = 0; i < toned.data.length; i += 4)
+      if (toned.data[i + 3]) toned.data[i] = Math.min(255, (toned.data[i] ?? 0) + 20);
+    const asked = new Set<Heading>();
+    await expect(
+      buildBend(character(), source, {
+        outDir,
+        pinsPath,
+        stance: (h) => {
+          if (asked.has(h.heading)) return toned;
+          asked.add(h.heading);
+          return STANCE;
+        },
+        knownUnitAssets: ['unit.fire.kaya'],
+        log: () => undefined,
+      }),
+    ).rejects.toThrow('decoded frame 0 does not match the packed stance');
+    expect(readdirSync(outDir)).toEqual([]);
+    expect(readFileSync(pinsPath).equals(before)).toBe(true);
+  });
+
+  it('reports every heading’s decoded frame 0 and the worst of them', async () => {
+    const source = sourceSet();
+    const lines: string[] = [];
+    await buildBend(character(), source, {
+      outDir: temp('bend-out-'),
+      pinsPath: pinned(source),
+      stance: () => STANCE,
+      knownUnitAssets: ['unit.fire.kaya'],
+      log: (line) => lines.push(line),
+    });
+    const headings = lines.filter((line) => line.includes(' decoded frame 0: alpha exact, mean '));
+    expect(headings).toHaveLength(8);
+    expect(lines).toContainEqual(
+      expect.stringMatching(/^test decoded frame 0, worst heading: mean \d+\.\d\d of 6, bias /),
+    );
   });
 
   it('holds the last frame to the stance too', async () => {
@@ -381,6 +432,64 @@ describe('bend packer', () => {
   });
 });
 
+/**
+ * The effect-check skip and what would end it, under `root`: every non-test
+ * source that still passes `EFFECTS_NOT_YET_AUTHORED`, and every source or
+ * data file that defines a painted effect or a registry of them (anything
+ * typed `BendEffectDef`, parsed by `bendEffectDefSchema`, or carrying a
+ * trajectory). `src/content/bends.ts` declares all three and is neither.
+ */
+function effectSkip(root: string): { skipUsers: string[]; definers: string[] } {
+  const skipUsers: string[] = [];
+  const definers: string[] = [];
+  const walk = (dir: string): void => {
+    for (const entry of readdirSync(join(root, dir), { withFileTypes: true })) {
+      const path = `${dir}/${entry.name}`;
+      if (entry.isDirectory()) {
+        if (entry.name !== 'node_modules') walk(path);
+        continue;
+      }
+      if (path === 'src/content/bends.ts' || /\.test\.ts$/.test(path)) continue;
+      const code = path.endsWith('.ts');
+      if (!code && !path.endsWith('.json')) continue;
+      const text = readFileSync(join(root, path), 'utf8');
+      if (code && text.includes('EFFECTS_NOT_YET_AUTHORED')) skipUsers.push(path);
+      if (/\bBendEffectDef\b|\bbendEffectDefSchema\b|["']?\btrajectory["']?\s*:/.test(text))
+        definers.push(path);
+    }
+  };
+  for (const dir of ['src', 'scripts', 'public']) walk(dir);
+  return { skipUsers: skipUsers.sort(), definers: definers.sort() };
+}
+
+describe('the effect-check skip', () => {
+  it('ends the moment a painted effect is authored (ADR 0055, step 5)', () => {
+    const { skipUsers, definers } = effectSkip('.');
+    // Before step 5 the scan finds the callers, after it the effects: never
+    // neither, or it is not looking where the code is.
+    expect(skipUsers.length + definers.length).toBeGreaterThan(0);
+    // Once an effect exists, every caller must pass the effects instead.
+    if (definers.length > 0) {
+      expect(skipUsers, `effects exist in ${definers.join(', ')}; stop skipping them`).toEqual([]);
+    }
+  });
+
+  it('fires on an effect registry in code or data', () => {
+    const root = temp('bend-skip-');
+    for (const dir of ['src/content', 'scripts', 'public/art']) {
+      mkdirSync(join(root, dir), { recursive: true });
+    }
+    writeFileSync(join(root, 'scripts/pack.ts'), 'validateBendSets(s, EFFECTS_NOT_YET_AUTHORED);');
+    expect(effectSkip(root)).toEqual({ skipUsers: ['scripts/pack.ts'], definers: [] });
+    writeFileSync(
+      join(root, 'src/content/bendEffects.ts'),
+      'export const EFFECTS: BendEffectDef[] = [];',
+    );
+    writeFileSync(join(root, 'public/art/fx.json'), '{"trajectory":{"kind":"straight"}}');
+    expect(effectSkip(root).definers).toEqual(['public/art/fx.json', 'src/content/bendEffects.ts']);
+  });
+});
+
 describe('the packed r10 bends', () => {
   const PARTY = Object.values(BEND_CHARACTERS);
 
@@ -395,7 +504,9 @@ describe('the packed r10 bends', () => {
       ) as BendSetDef;
       expect(bendSetDefSchema.safeParse(set).success).toBe(true);
       const frames = HEADINGS.flatMap((heading) => set.facings[heading].frames);
-      expect(validateBendSets([set], null, Object.keys(ASSETS), frames)).toEqual([]);
+      expect(
+        validateBendSets([set], EFFECTS_NOT_YET_AUTHORED, Object.keys(ASSETS), frames),
+      ).toEqual([]);
       const celCount = HEADINGS.reduce(
         (sum, heading) => sum + set.facings[heading].frames.length,
         0,
@@ -409,6 +520,14 @@ describe('the packed r10 bends', () => {
         expect(facing.frames[facing.frames.length - 1]).toBe(facing.frames[0]);
         expect(facing.scale).toBe(0.75);
         expect(facing.sourceSize).toEqual({ width: 320, height: 320 });
+        // The roles and the releases agree: each strike is a contact, and
+        // every r10 release launches on its contact frame.
+        const contacts = Object.values(facing.keyFrames)
+          .filter((key) => key.role === 'contact')
+          .map((key) => key.frame);
+        const releases = facing.attacks.flatMap((attack) => attack.releases);
+        expect(releases.map((release) => release.frame)).toEqual(contacts);
+        for (const release of releases) expect(release.launchFrame).toBe(release.frame);
       }
     });
   }

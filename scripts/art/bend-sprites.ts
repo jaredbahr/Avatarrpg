@@ -50,7 +50,12 @@ import type {
   BendSocket,
   HeadingBendDef,
 } from '../../src/content/bends';
-import { BEND_SOCKETS, bendSetDefSchema, validateBendSets } from '../../src/content/bends';
+import {
+  BEND_SOCKETS,
+  EFFECTS_NOT_YET_AUTHORED,
+  bendSetDefSchema,
+  validateBendSets,
+} from '../../src/content/bends';
 import { atlasJsonText, parseAtlasJson } from '../../src/render/sheets/atlasJson';
 import type { AtlasFrame } from '../../src/render/sheets/atlasJson';
 import {
@@ -837,15 +842,19 @@ export async function buildBend(
   if (!parsed.success)
     throw new Error(`${name} bend set fails its schema: ${parsed.error.message}`);
   const known = options.knownUnitAssets ?? Object.keys(ASSETS);
-  const setProblems = validateBendSets([set], null, known, [...cels.keys()]);
+  const setProblems = validateBendSets([set], EFFECTS_NOT_YET_AUTHORED, known, [...cels.keys()]);
   if (setProblems.length > 0) throw new Error(`${name} bend set:\n${setProblems.join('\n')}`);
 
-  mkdirSync(options.outDir, { recursive: true });
+  // Every page is encoded and checked as it decodes before anything is
+  // written, so a failed check leaves the shipped files as they were.
   const layouts = layoutBendPages(cels);
   const files = bendOutputs(name, layouts.length);
   const frameHashes: Record<string, string> = {};
   const bytes: Record<string, number> = {};
   const pageFiles: string[] = [];
+  const writes: { file: string; content: Uint8Array | string; line: string }[] = [];
+  let worstMean = 0;
+  let worstBias = 0;
   for (const [index, layout] of layouts.entries()) {
     const imageFile = files[index * 2] ?? '';
     const jsonFile = files[index * 2 + 1] ?? '';
@@ -859,8 +868,6 @@ export async function buildBend(
     }
     const webp = await encodeWebp(atlas, WEBP_QUALITY, true);
     const json = `${JSON.stringify(JSON.parse(atlasJsonText(layout.frames, imageFile, layout.width, layout.height)))}\n`;
-    writeFileSync(join(options.outDir, imageFile), webp);
-    writeFileSync(join(options.outDir, jsonFile), json);
     bytes[imageFile] = webp.length;
     bytes[jsonFile] = Buffer.byteLength(json);
     pageFiles.push(jsonFile);
@@ -881,23 +888,50 @@ export async function buildBend(
             options.stance(h),
             `${name} ${h.direction} decoded frame 0`,
           );
+          worstMean = Math.max(worstMean, d.meanRgb);
+          worstBias = Math.max(worstBias, d.bias);
           log(
-            `  ${h.direction} frame 0 as shipped: alpha exact, mean ${d.meanRgb.toFixed(2)}, bias ${d.bias.toFixed(2)}`,
+            `  ${h.direction} decoded frame 0: alpha exact, mean ${d.meanRgb.toFixed(2)} ` +
+              `(at most ${STANCE_TOLERANCE.meanRgb}), bias ${d.bias.toFixed(2)} ` +
+              `(at most ${STANCE_TOLERANCE.bias}), outliers ${(d.outliers * 100).toFixed(2)}%`,
           );
         }
       }
     }
-    log(
-      `wrote ${imageFile} (${layout.width}x${layout.height}, ${layout.frames.size} cels, ${webp.length} B) and ${jsonFile}`,
+    writes.push(
+      {
+        file: join(options.outDir, imageFile),
+        content: webp,
+        line: `wrote ${imageFile} (${layout.width}x${layout.height}, ${layout.frames.size} cels, ${webp.length} B)`,
+      },
+      { file: join(options.outDir, jsonFile), content: json, line: `wrote ${jsonFile}` },
     );
   }
+  log(
+    `${name} decoded frame 0, worst heading: mean ${worstMean.toFixed(2)} of ` +
+      `${STANCE_TOLERANCE.meanRgb}, bias ${worstBias.toFixed(2)} of ${STANCE_TOLERANCE.bias}`,
+  );
   const dataFile = files[files.length - 1] ?? `${name}-bend.json`;
   const data = `${JSON.stringify(set)}\n`;
-  writeFileSync(join(options.outDir, dataFile), data);
   bytes[dataFile] = Buffer.byteLength(data);
-  log(`wrote ${dataFile} (${bytes[dataFile]} B)`);
-  writeFileSync(pinsPath, `${JSON.stringify({ ...pins, frames: frameHashes }, null, 2)}\n`);
-  log(`wrote ${pinsPath} cel pins`);
+  writes.push(
+    {
+      file: join(options.outDir, dataFile),
+      content: data,
+      line: `wrote ${dataFile} (${bytes[dataFile]} B)`,
+    },
+    {
+      file: pinsPath,
+      content: `${JSON.stringify({ ...pins, frames: frameHashes }, null, 2)}\n`,
+      line: `wrote ${pinsPath} cel pins`,
+    },
+  );
+
+  mkdirSync(options.outDir, { recursive: true });
+  for (const { file, content, line } of writes) {
+    writeFileSync(file, content);
+    log(line);
+  }
   return { set, pages: pageFiles, bytes };
 }
 

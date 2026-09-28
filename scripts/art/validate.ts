@@ -41,7 +41,11 @@ import { imageSize, readPng } from './lib/image';
 import { alphaBounds, crop, lowestOpaqueRow } from './lib/trim';
 import { decodeWebp, webpSize } from './lib/webp';
 import { CEL_FRAMES, CEL_SIZE, FX_CEL_SHEETS } from '../../src/content/fxCels';
-import { bendSetDefSchema, validateBendSets } from '../../src/content/bends';
+import {
+  EFFECTS_NOT_YET_AUTHORED,
+  bendSetDefSchema,
+  validateBendSets,
+} from '../../src/content/bends';
 
 /** The largest texture every device in the matrix takes. */
 const MAX_ATLAS = 2048;
@@ -369,8 +373,8 @@ export async function validateSheets(
  * The bend pages beside each G sheet and the bend set they draw (ADR 0055).
  * They are not in the manifest until its plumbing lands, so they are checked
  * here on their own: the same page rules and decoded-cel pins as a sheet's
- * pages, the set against its schema and `validateBendSets` (the painted
- * effects are not authored yet), and every heading's first and last frame on
+ * pages, the set against its schema and `validateBendSets` (with
+ * `EFFECTS_NOT_YET_AUTHORED` until step 5), and every heading's first and last frame on
  * the stance cel's exact alpha, so the bend starts and ends on its feet.
  */
 export const BEND_SHEETS: Readonly<
@@ -462,7 +466,9 @@ export async function validateBends(
     }
     const set = parsed.data;
     if (set.unitAsset !== key) problems.push(`${key}: ${bend.data} draws ${set.unitAsset}`);
-    for (const problem of validateBendSets([set], null, Object.keys(entries), [...where.keys()]))
+    const known = Object.keys(entries);
+    const names = [...where.keys()];
+    for (const problem of validateBendSets([set], EFFECTS_NOT_YET_AUTHORED, known, names))
       problems.push(`${key}: ${problem}`);
 
     const pinned = existsSync(bend.pins)

@@ -472,6 +472,17 @@ function validateRelease(
       note(`${label} needs socket ${release.socket} on frame ${frame}`);
     }
   }
+  // The key frames and the releases describe one strike, so they must agree:
+  // every strike's peak is keyed `contact`, and a launch before the peak is
+  // keyed `release`.
+  const keyed = (frame: number, role: BendKeyRole): boolean =>
+    Object.values(facing.keyFrames).some((key) => key.frame === frame && key.role === role);
+  if (!keyed(release.frame, 'contact')) {
+    note(`${label} frame ${release.frame} has no contact key frame`);
+  }
+  if (release.launchFrame !== release.frame && !keyed(release.launchFrame, 'release')) {
+    note(`${label} launchFrame ${release.launchFrame} has no release key frame`);
+  }
 }
 
 /** One heading of one set, checked field by field. */
@@ -547,11 +558,16 @@ function validateFacing(
     }
     attack.releases.forEach((release, index) => {
       validateRelease(`attack "${id}" release ${index}`, release, facing, note);
-      // Two hands may release together, never one hand twice on one frame.
       const before = attack.releases[index - 1];
       if (before && release.frame < before.frame) {
         note(`attack "${id}" release ${index} frame ${release.frame} is before ${before.frame}`);
-      } else if (before && release.frame === before.frame && release.socket === before.socket) {
+      }
+      // Two hands may release together, never one hand twice on one frame,
+      // however many releases lie between the two.
+      const repeated = attack.releases
+        .slice(0, index)
+        .some((earlier) => earlier.frame === release.frame && earlier.socket === release.socket);
+      if (repeated) {
         note(
           `attack "${id}" release ${index} repeats socket ${release.socket} on frame ${release.frame}`,
         );
@@ -662,32 +678,43 @@ function validateEffect(effect: BendEffectDef, problems: string[]): void {
 }
 
 /**
+ * Passed as `effects` while the painted effects are not authored yet (ADR
+ * 0055, step 5): the packed sets are checked in full except for the effect
+ * each attack names. A test fails as soon as an effect is defined anywhere
+ * while a caller still passes this, so the skip cannot outlive its reason.
+ */
+export const EFFECTS_NOT_YET_AUTHORED = 'not-yet-authored';
+
+/**
  * Returns a list of human-readable problems with the bend data. Empty means
  * the contract is sound. `knownUnitAssets` is the manifest's unit keys, and
  * `knownFrames`, when given, is every frame name the unit atlases carry, so a
- * bend cannot name a cel the packer never wrote. `effects` is `null` only
- * while the painted effects are not authored yet (ADR 0055, step 5): the
- * packed sets are checked in full except for the effect each attack names.
+ * bend cannot name a cel the packer never wrote. `effects` is the painted
+ * effects, or `EFFECTS_NOT_YET_AUTHORED` until step 5 authors them.
  * Deliberately collects everything rather than throwing on the first fault,
  * so one CI run reports every broken link at once.
  */
 export function validateBendSets(
   sets: readonly BendSetDef[],
-  effects: readonly BendEffectDef[] | null,
+  effects: readonly BendEffectDef[] | typeof EFFECTS_NOT_YET_AUTHORED,
   knownUnitAssets: readonly string[],
   knownFrames?: readonly string[],
 ): string[] {
   const problems: string[] = [];
   const assets = new Set(knownUnitAssets);
   const frames = knownFrames ? new Set(knownFrames) : undefined;
-  const effectById = effects ? new Map(effects.map((effect) => [effect.id, effect])) : null;
-  for (const id of repeats((effects ?? []).map((effect) => effect.id))) {
+  const authored = effects === EFFECTS_NOT_YET_AUTHORED ? [] : effects;
+  const effectById =
+    effects === EFFECTS_NOT_YET_AUTHORED
+      ? null
+      : new Map(authored.map((effect) => [effect.id, effect]));
+  for (const id of repeats(authored.map((effect) => effect.id))) {
     problems.push(`effect id "${id}" repeats`);
   }
   for (const id of repeats(sets.map((set) => set.id))) {
     problems.push(`bend id "${id}" repeats`);
   }
-  for (const effect of effects ?? []) validateEffect(effect, problems);
+  for (const effect of authored) validateEffect(effect, problems);
 
   const claimed = new Map<string, string>();
   for (const set of sets) {
