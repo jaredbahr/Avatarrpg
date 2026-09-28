@@ -19,6 +19,7 @@ import { existsSync, mkdirSync, writeFileSync } from 'node:fs';
 import { dirname, resolve } from 'node:path';
 import { ALL_MAPS } from '../../src/content';
 import type { MapDef } from '../../src/core/types';
+import type { Image } from './lib/image';
 import { readImage } from './lib/image';
 import { scaleTo } from './lib/scale';
 import type { Bounds } from './lib/trim';
@@ -94,6 +95,27 @@ export function fitPainting(
     };
   }
   return { crop: off > 0.01 ? box : null, note, problem: null };
+}
+
+/**
+ * A painting framed to the map, box-filtered down to `px` a tile and encoded
+ * as the WebP the game loads: the one encode path every map painting takes,
+ * whether it comes from a generator or from a bake like the riverside's.
+ */
+export async function paintingWebp(
+  raw: Image,
+  map: { id: string; width: number; height: number },
+  px: number,
+  quality: number,
+): Promise<Uint8Array> {
+  const fit = fitPainting(raw, map, px);
+  if (fit.problem) throw new Error(fit.problem);
+  const framed = fit.crop ? crop(raw, fit.crop) : raw;
+  const wantW = map.width * px;
+  const wantH = map.height * px;
+  const scaled =
+    framed.width === wantW && framed.height === wantH ? framed : scaleTo(framed, wantW, wantH);
+  return encodeWebp(scaled, quality);
 }
 
 /** The `backdrop` line for a map, as the content wants it. */
@@ -173,11 +195,7 @@ export async function main(argv: readonly string[]): Promise<number> {
     console.error(fit.problem);
     return 1;
   }
-  const framed = fit.crop ? crop(raw, fit.crop) : raw;
-
-  const scaled =
-    framed.width === wantW && framed.height === wantH ? framed : scaleTo(framed, wantW, wantH);
-  const bytes = await encodeWebp(scaled, quality);
+  const bytes = await paintingWebp(raw, map, px, quality);
   const target = resolve(args.out, `${map.id}.webp`);
   mkdirSync(dirname(target), { recursive: true });
   writeFileSync(target, bytes);
