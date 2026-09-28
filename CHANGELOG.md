@@ -2,6 +2,16 @@
 
 ## 0.2.11 — release candidate
 
+- Make the forest road feel alive (ADR 0056). Its pines lean in a wind that
+  travels across the board, and on WebGL a faint band of light crosses the
+  grass under each gust while pine needles drift in the air. When the ambush
+  opens, six small PixelLab songbirds burst out of the trees and fly off over
+  the board. The birds passed the lineup gate beside the G party
+  (`docs/art/forest-birds.md`). All of it runs on the render clock only, so
+  it never touches the RNG, the saves or the event log, and it stays still
+  under Reduce motion. Canvas 2D draws the lean in three held steps, and it
+  draws the birds too. The strip adds 1.5 KB of art, and the JS bundle
+  measures 318.7 KB gzipped of 320 with it.
 - Ink the rubble heaps at the figures' weight, and stop stamping one heap on
   every cover cell. The heap's silhouette was two world pixels of `#1b1410`,
   double a sprite's line, so each read as a cookie-cutter stamp; it is now one,

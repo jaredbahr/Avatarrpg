@@ -25,6 +25,7 @@ it('registers forest art only to the existing water, cover and blocked tree cell
     expect(FOREST_ROAD_SCENE.ground).toContainEqual({
       url: `art/maps/forest-scene/grass-${name}.webp`,
       ...region,
+      wind: true,
     });
   }
   expect(FOREST_ROAD_SCENE.ground.map((piece) => piece.url)).not.toContain(

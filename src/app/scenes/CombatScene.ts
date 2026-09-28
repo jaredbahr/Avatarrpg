@@ -46,6 +46,7 @@ import { formatShoveMovement } from '../ui/combatPreviewText';
 import { UnitInspector } from '../ui/UnitInspector';
 import { enemyScale, partyScale } from '../anim/actorScale';
 import { createMovementThreatQuery } from '../ui/movementThreats';
+import { flushTime } from './flockFlush';
 
 type Mode =
   | { readonly kind: 'idle' }
@@ -111,6 +112,8 @@ export class CombatScene implements Scene {
   private resultShown = false;
   private logOpen = false;
   private layoutMeasuredAfterSync = false;
+  /** When the scene's birds burst out of the trees: once, as a fresh fight is first seen. */
+  private flushedAt: number | null = null;
 
   constructor(private app: App) {
     this.movementThreatQuery = createMovementThreatQuery(app.content);
@@ -123,6 +126,7 @@ export class CombatScene implements Scene {
   mount(host: HTMLElement): void {
     this.host = host;
     this.layoutMeasuredAfterSync = false;
+    this.flushedAt = null;
     clear(host);
 
     const scene = el('div', { class: 'scene combat-scene' });
@@ -1481,6 +1485,9 @@ export class CombatScene implements Scene {
       };
     });
 
+    // "They step out of the trees": the birds go first.
+    this.flushedAt = flushTime(this.flushedAt, battle, this.needsHandoff(), now);
+
     // The air over the board is fidelity: WebGL only, and still under reduce motion.
     const ambient =
       renderer.capabilities.shaders && !motionReduced()
@@ -1514,6 +1521,8 @@ export class CombatScene implements Scene {
       backdrop: this.app.backdropFor(battle.mapId),
       scene: this.app.content.maps.get(battle.mapId)?.scene,
       time: now,
+      reducedMotion: motionReduced(),
+      flushedAt: this.flushedAt,
     };
 
     renderer.draw(view);

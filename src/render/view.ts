@@ -211,4 +211,8 @@ export interface MapView {
   readonly backdrop: MapBackdrop | null;
   /** Milliseconds since start, for idle animation. */
   readonly time: number;
+  /** Reduce motion: the wind drops and nothing takes flight. */
+  readonly reducedMotion?: boolean;
+  /** On `time`'s clock, when the scene's flock burst out of the trees; null keeps it hidden. */
+  readonly flushedAt?: number | null;
 }
