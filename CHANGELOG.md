@@ -2,6 +2,16 @@
 
 ## 0.2.11 — release candidate
 
+- Make the forest road feel alive (ADR 0054). Its pines lean in a wind that
+  travels across the board, and on WebGL a faint band of light crosses the
+  grass under each gust while pine needles drift in the air. When the ambush
+  opens, six small PixelLab songbirds burst out of the trees and fly off over
+  the board. The birds passed the lineup gate beside the G party
+  (`docs/art/forest-birds.md`). All of it runs on the render clock only, so
+  it never touches the RNG, the saves or the event log, and it stays still
+  under Reduce motion. Canvas 2D draws the lean in three held steps, and it
+  draws the birds too. The strip adds 1.5 KB of art; the JS bundle goes 315.5
+  → 316.8 KB gzipped of 320.
 - Paint the quarry floor's oil pools and mud patch on their own ground. The
   ground generator left every **dynamic** cell transparent, so the Driller
   floor's four spills and one mud patch were procedural slate standing beside

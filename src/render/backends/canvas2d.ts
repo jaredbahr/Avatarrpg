@@ -28,6 +28,7 @@ import { sampleAt, smoothPath } from '../geometry/curve';
 import { CanvasFxLayer } from '../fx/canvasFx';
 import { backdrops } from '../backdrops';
 import { sceneForGrid, sceneImage, drawSceneImage, sceneryOpacities } from '../scene';
+import { flockAt, flockFrame, heldSway } from '../living/wind';
 import { surfaceIsPainted } from '../sceneSurfaces';
 import { FACTION_RING, OVERLAY, STATUS_BADGE, hpColor } from '../palettes';
 import { paintElevationBase, paintTileDecor, paintTileSeams } from '../painters/board';
@@ -225,12 +226,22 @@ export class Canvas2DBackend implements RenderBackend {
             if (!image) return;
             ctx.save();
             ctx.globalAlpha = opacities.get(piece) ?? 1;
+            // Three held drawings of the lean, sheared about the foot.
+            const lean = piece.wind && !view.reducedMotion ? heldSway(view.time, piece) : 0;
+            ctx.transform(
+              1,
+              0,
+              -lean,
+              1,
+              piece.x * camera.scale - camera.offsetX,
+              (piece.y + piece.height) * camera.scale - camera.offsetY,
+            );
             drawSceneImage(
               ctx,
               image,
               piece,
-              piece.x * camera.scale - camera.offsetX,
-              piece.y * camera.scale - camera.offsetY,
+              0,
+              -piece.height * camera.scale,
               piece.width * camera.scale,
               piece.height * camera.scale,
             );
@@ -257,6 +268,7 @@ export class Canvas2DBackend implements RenderBackend {
         })),
       ].sort((a, b) => camera.groundPoint(a.pos).y - camera.groundPoint(b.pos).y);
       for (const occupant of occupants) occupant.draw();
+      this.drawFlock(view, camera);
       ctx.save();
       ctx.transform(m.a, m.b, m.c, m.d, m.tx, m.ty);
       this.drawFxLayer(view, ground, 'over');
@@ -751,6 +763,30 @@ export class Canvas2DBackend implements RenderBackend {
       ctx.fillStyle = '#d9a441';
       ctx.fillRect(x, y, (w * prop.hp) / prop.maxHp, Math.max(2, box.size * 0.05));
       ctx.restore();
+    }
+  }
+
+  /** The birds a fight flushes out of the trees; the page is asked for early so it is in. */
+  private drawFlock(view: MapView, camera: Camera): void {
+    const flock = view.scene?.flock;
+    if (!flock) return;
+    sceneImage(flockFrame(flock, 0));
+    if (view.flushedAt == null || view.reducedMotion) return;
+    const perches = view.scene?.scenery.filter((piece) => piece.wind) ?? [];
+    const size = flock.size * camera.scale;
+    for (const bird of flockAt(flock, perches, view.time - view.flushedAt)) {
+      const frame = flockFrame(flock, bird.frame);
+      const image = sceneImage(frame);
+      if (!image) continue;
+      this.ctx.save();
+      this.ctx.globalAlpha = bird.alpha;
+      this.ctx.translate(
+        bird.x * camera.scale - camera.offsetX,
+        bird.y * camera.scale - camera.offsetY,
+      );
+      this.ctx.rotate(bird.angle);
+      drawSceneImage(this.ctx, image, frame, -size / 2, -size / 2, size, size);
+      this.ctx.restore();
     }
   }
 

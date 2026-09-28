@@ -442,6 +442,7 @@ const sceneImageSchema = z.object({
   y: z.number(),
   width: z.number().positive(),
   height: z.number().positive(),
+  wind: z.boolean().optional(),
 });
 
 export const mapSchema = z
@@ -545,6 +546,15 @@ export const mapSchema = z
               }),
           )
           .max(32),
+        flock: z
+          .object({
+            url: z.string().min(1),
+            frames: z.number().int().min(1).max(16),
+            frameSize: z.number().int().positive(),
+            size: z.number().positive(),
+            count: z.number().int().min(1).max(8),
+          })
+          .optional(),
       })
       .optional(),
     backdrop: z

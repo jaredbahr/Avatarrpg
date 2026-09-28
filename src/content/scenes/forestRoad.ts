@@ -61,8 +61,18 @@ function pine({ x, y }: Vec2): SceneScenery {
     footprint: [{ x, y }],
     depth: { x: x + 0.5, y: y + 0.5 },
     fadeWhenOccluding: true,
+    wind: true,
   };
 }
+
+/** Songbirds that burst out of the pines as the ambush opens (docs/art/forest-birds.md). */
+export const FOREST_FLOCK = {
+  url: `${root}bird-flap.webp`,
+  frames: 6,
+  frameSize: 32,
+  size: 20,
+  count: 6,
+} as const;
 
 /** A low, passable flood-bank remnant beside the southern woodland path. */
 export const FOREST_BANK_NEST_REEDS: SceneScenery = {
@@ -178,8 +188,8 @@ export const FOREST_ROAD_SCENE: MapScene = {
   groundMode: 'partial',
   paintedRubble: FOREST_RUBBLE_CELLS,
   ground: [
-    { url: `${root}grass-north.webp`, ...FOREST_GRASS_REGIONS.north },
-    { url: `${root}grass-south.webp`, ...FOREST_GRASS_REGIONS.south },
+    { url: `${root}grass-north.webp`, ...FOREST_GRASS_REGIONS.north, wind: true },
+    { url: `${root}grass-south.webp`, ...FOREST_GRASS_REGIONS.south, wind: true },
     { url: `${root}route-ground.webp`, x: 128, y: 32, width: 1984, height: 960 },
     { url: `${root}pond-bank.webp`, ...FOREST_POND_PATCH },
     { url: `${root}raised-shelf.webp`, ...FOREST_RAISED_SHELF },
@@ -188,4 +198,5 @@ export const FOREST_ROAD_SCENE: MapScene = {
     ...FOREST_APRON_PIECES,
   ],
   scenery: [...FOREST_PINE_CELLS.map(pine), FOREST_BANK_NEST_REEDS, ...FOREST_POND_REEDS],
+  flock: FOREST_FLOCK,
 };
