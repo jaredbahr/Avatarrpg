@@ -1,6 +1,11 @@
 import { describe, expect, it } from 'vitest';
 import type { Grid, TerrainId, Tile } from '../../core/types';
-import { GRASS_SHADOW_DENSITY, actorHealthBar, actorShadowDensity } from './actorSilhouette';
+import {
+  GRASS_SHADOW_DENSITY,
+  actorHealthBar,
+  actorShadowDensity,
+  healthBarCap,
+} from './actorSilhouette';
 import { FOOT_LINE, headroomFromPixels } from '../sheets/bake';
 
 describe('upright actor health bar', () => {
@@ -66,5 +71,49 @@ describe('upright actor contact shadow', () => {
     expect(actorShadowDensity(grid, { x: 1, y: 0 }, false)).toBe(0);
     expect(actorShadowDensity(grid, { x: 1, y: 0 }, true)).toBe(1);
     expect(actorShadowDensity(grid, { x: 5, y: 0 }, true)).toBe(1);
+  });
+});
+
+describe('contact shadow sampling', () => {
+  const tile = (terrain: TerrainId): Tile => ({
+    terrain,
+    elevation: 0,
+    blocked: false,
+    blocksSight: false,
+    cover: false,
+    surface: null,
+  });
+  const grid: Grid = { width: 3, height: 1, tiles: [tile('road'), tile('road'), tile('grass')] };
+
+  it('reads the tile under a walking figure, not the one it set out from', () => {
+    expect(actorShadowDensity(grid, { x: 1.4, y: 0 }, false)).toBe(0);
+    expect(actorShadowDensity(grid, { x: 1.6, y: 0 }, false)).toBe(GRASS_SHADOW_DENSITY);
+  });
+
+  it('seats a two-wide figure on grass under either half', () => {
+    expect(actorShadowDensity(grid, { x: 0, y: 0 }, false, 2)).toBe(0);
+    expect(actorShadowDensity(grid, { x: 1, y: 0 }, false, 2)).toBe(GRASS_SHADOW_DENSITY);
+    expect(actorShadowDensity(grid, { x: 2, y: 0 }, true, 2)).toBe(GRASS_SHADOW_DENSITY);
+  });
+});
+
+describe('health bar cap', () => {
+  const bar = { x: 10, y: 20, height: 4 };
+
+  it('draws nothing for the party', () => {
+    expect(healthBarCap(bar, 'none')).toEqual([]);
+  });
+
+  it('butts a cap against the frame, as tall as the framed bar', () => {
+    for (const cap of ['diamond', 'spike'] as const) {
+      const points = healthBarCap(bar, cap);
+      const xs = points.filter((_, i) => i % 2 === 0);
+      const ys = points.filter((_, i) => i % 2 === 1);
+      expect(Math.max(...xs)).toBeLessThanOrEqual(bar.x - 1);
+      expect(Math.min(...ys)).toBe(bar.y - 1);
+      expect(Math.max(...ys)).toBe(bar.y + bar.height + 1);
+    }
+    expect(healthBarCap(bar, 'spike')).toHaveLength(6);
+    expect(healthBarCap(bar, 'diamond')).toHaveLength(8);
   });
 });

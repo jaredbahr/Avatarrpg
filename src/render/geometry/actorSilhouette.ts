@@ -26,6 +26,28 @@ export function actorHealthBar(
   };
 }
 
+/**
+ * The polygon for a bar's side cap (`HP_CAP` in palettes.ts), flat x,y pairs,
+ * butted against the left of the bar's 1px frame; empty for none. It is as
+ * tall as the framed bar, so it grows with the bar and never with the type.
+ */
+export function healthBarCap(
+  bar: { x: number; y: number; height: number },
+  cap: 'none' | 'diamond' | 'spike',
+): number[] {
+  const top = bar.y - 1;
+  const bottom = bar.y + bar.height + 1;
+  const mid = (top + bottom) / 2;
+  const half = (bottom - top) / 2;
+  const left = bar.x - 1;
+  if (cap === 'spike') return [left, top, left, bottom, left - half * 1.6, mid];
+  if (cap === 'diamond') {
+    const cx = left - half - 1;
+    return [cx, top, cx + half, mid, cx, bottom, cx - half, mid];
+  }
+  return [];
+}
+
 /** Ground whose busy texture swallows the standard contact pool. */
 const GRASS_FAMILY: ReadonlySet<TerrainId> = new Set<TerrainId>(['grass']);
 
@@ -38,10 +60,23 @@ export const GRASS_SHADOW_DENSITY = 1.4;
  * figure gets a denser one, combat included, because there the standard pool
  * vanishes into the tufts and the figure floats; on paving and rock it does
  * not, so nothing changes there.
+ *
+ * `pos` is the drawn position, so a walk reads the tile under the feet as it
+ * crosses from road to grass; it is rounded to a tile here. A two-wide figure
+ * stands on grass if any cell of its footprint is grass.
  */
-export function actorShadowDensity(grid: Grid, pos: Vec2, always: boolean): number {
-  const inside = pos.x >= 0 && pos.y >= 0 && pos.x < grid.width && pos.y < grid.height;
-  const terrain = inside ? grid.tiles[pos.y * grid.width + pos.x]?.terrain : undefined;
-  if (terrain && GRASS_FAMILY.has(terrain)) return GRASS_SHADOW_DENSITY;
+export function actorShadowDensity(
+  grid: Grid,
+  pos: Vec2,
+  always: boolean,
+  width: 1 | 2 = 1,
+): number {
+  const x0 = Math.round(pos.x);
+  const y = Math.round(pos.y);
+  for (let x = x0; x < x0 + width; x++) {
+    const inside = x >= 0 && y >= 0 && x < grid.width && y < grid.height;
+    const terrain = inside ? grid.tiles[y * grid.width + x]?.terrain : undefined;
+    if (terrain && GRASS_FAMILY.has(terrain)) return GRASS_SHADOW_DENSITY;
+  }
   return always ? 1 : 0;
 }

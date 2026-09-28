@@ -7,7 +7,7 @@
  * the duplication — if you change one, change both.
  */
 
-import type { ElementId, StatusId, SurfaceId, TerrainId } from '../core/types';
+import type { ElementId, Faction, StatusId, SurfaceId, TerrainId } from '../core/types';
 
 export interface Palette {
   readonly base: string;
@@ -236,22 +236,67 @@ export const STATUS_BADGE: Record<StatusId, { letter: string; color: string }> =
   inspired: { letter: '★', color: '#f0c674' },
 };
 
+/** A friendly bar turns `mid` at or below the first, `low` at or below the second. */
+export const HP_THRESHOLDS = { mid: 0.6, low: 0.3 } as const;
+
+interface HpTints {
+  readonly party: string;
+  readonly ally: string;
+  readonly mid: string;
+  /** A friend in trouble: warm and loud, but never the hostile red. */
+  readonly low: string;
+  /** Every enemy bar, full or not. */
+  readonly hostile: string;
+}
+
 export const HP_COLORS = {
-  high: '#6fbf73',
-  mid: '#e0b23c',
-  /** Every enemy bar, full or not: --c-danger-soft. */
-  hostile: '#d94a3a',
+  /** hostile is --c-danger-soft. */
+  tints: {
+    party: '#6fbf73',
+    ally: '#5fc4b8',
+    mid: '#e0b23c',
+    low: '#f5913e',
+    hostile: '#d94a3a',
+  } satisfies HpTints,
+  /*
+   * The colourblind (hatch) setting swaps in the Okabe-Ito set, which keeps the
+   * five apart under protan, deutan and tritan vision; the caps below carry the
+   * side either way.
+   */
+  hatchTints: {
+    party: '#56b4e9',
+    ally: '#009e73',
+    mid: '#f0e442',
+    low: '#cc79a7',
+    hostile: '#d55e00',
+  } satisfies HpTints,
   /** The empty part of the bar, and the 1px frame round it: the art bible's ink. */
   back: 'rgba(27,20,16,0.55)',
   frame: '#1b1410',
 } as const;
 
 /**
- * A unit's bar fill. The side reads before the number does: an enemy's bar is
- * red however full it is, and a friendly bar is green, turning amber when hurt
- * but never the hostile red.
+ * The mark at a bar's left end, so the side reads by shape as well as colour:
+ * the party's bar is plain, an ally's carries a diamond and an enemy's a spike.
+ * It is what the faction-coloured ring round the bar used to say.
  */
-export function hpFill(faction: 'party' | 'enemy' | 'ally', fraction: number): string {
-  if (faction === 'enemy') return HP_COLORS.hostile;
-  return fraction > 0.6 ? HP_COLORS.high : HP_COLORS.mid;
+export type HpCap = 'none' | 'diamond' | 'spike';
+
+export const HP_CAP: Record<Faction, HpCap> = {
+  party: 'none',
+  ally: 'diamond',
+  enemy: 'spike',
+};
+
+/**
+ * A unit's bar fill. The side reads before the number does: an enemy's bar is
+ * hostile red however full it is; a friendly bar keeps its side's colour when
+ * healthy, turns amber when hurt, and a warm orange when low, never the red.
+ */
+export function hpFill(faction: Faction, fraction: number, hatch = false): string {
+  const tints = hatch ? HP_COLORS.hatchTints : HP_COLORS.tints;
+  if (faction === 'enemy') return tints.hostile;
+  if (fraction <= HP_THRESHOLDS.low) return tints.low;
+  if (fraction <= HP_THRESHOLDS.mid) return tints.mid;
+  return tints[faction];
 }

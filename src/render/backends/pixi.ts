@@ -41,12 +41,12 @@ import type { Camera, Viewport } from '../camera';
 import { DecorSheets } from '../decorSheets';
 import { ParticleLayer } from '../fx/particleLayer';
 import { aimArcPoints, arcHeading, arrowheadPolygon } from '../geometry/arc';
-import { actorHealthBar, actorShadowDensity } from '../geometry/actorSilhouette';
+import { actorHealthBar, actorShadowDensity, healthBarCap } from '../geometry/actorSilhouette';
 import { DECOR_CHUNK, decorChunks } from '../geometry/board';
 import { contourLoops, isHole } from '../geometry/contour';
 import type { Curve } from '../geometry/curve';
 import { sampleAt, smoothPath } from '../geometry/curve';
-import { HP_COLORS, OVERLAY, STATUS_BADGE, hpFill } from '../palettes';
+import { HP_CAP, HP_COLORS, OVERLAY, STATUS_BADGE, hpFill } from '../palettes';
 import { FOOT_LINE } from '../sheets/bake';
 import { resolveActorEmitters } from '../geometry/actorAttachments';
 import type { ResolvedFrame } from '../sheets/store';
@@ -1264,8 +1264,7 @@ export class PixiBackend implements RenderBackend {
         const shadowKey = `shadow:${npc.id}`;
         live.add(shadowKey);
         const shadow = this.unitSprite(shadowKey);
-        const tile = { x: Math.round(at.x), y: Math.round(at.y) };
-        const density = actorShadowDensity(view.grid, tile, true);
+        const density = actorShadowDensity(view.grid, at, true, width);
         shadow.texture = this.texture(sprites.shadow(px * scale, density));
         shadow.anchor.set(0.5, 0.86);
         shadow.position.set(footX, ground + FOOT_LINE * TILE);
@@ -1343,7 +1342,9 @@ export class PixiBackend implements RenderBackend {
 
       live.add(unit.id);
       const sprite = this.unitSprite(unit.id);
-      const shadowDensity = actorShadowDensity(view.grid, unit.pos, unit.shadow === true);
+      // A pose scales about the feet; the fallen fade sits on top of any alpha.
+      const alpha = (unit.alpha ?? 1) * (unit.fallen ? 0.35 : 1);
+      const shadowDensity = actorShadowDensity(view.grid, pos, unit.shadow === true, unit.size);
       if (shadowDensity > 0) {
         // On the ground, not on the bob (explore maps, ADR 0015; grass, canvas2d.ts).
         const key = `shadow:${unit.id}`;
@@ -1353,11 +1354,10 @@ export class PixiBackend implements RenderBackend {
         shadow.anchor.set(0.5, 0.86);
         shadow.position.set(anchor.x + width / 2, anchor.y + (0.86 - lift) * TILE);
         shadow.width = shadow.height = TILE * (unit.scale ?? 1);
-        shadow.alpha = unit.alpha ?? 1;
+        shadow.alpha = alpha;
         shadow.zIndex = depth(pos, unit.size) - 0.001;
         shadow.visible = true;
       }
-      // A pose scales about the feet; the fallen fade sits on top of any alpha.
       const scale = unit.scale ?? 1;
       // The frame comes from the unit's sheet, real or baked from its painter
       // at the zoom's bucket (ADR 0003); the anchor stands on the foot line.
@@ -1389,7 +1389,7 @@ export class PixiBackend implements RenderBackend {
         sprite.height = drawHeight;
         sprite.scale.x = Math.abs(sprite.scale.x);
       }
-      sprite.alpha = (unit.alpha ?? 1) * (unit.fallen ? 0.35 : 1);
+      sprite.alpha = alpha;
       sprite.visible = true;
       sprite.zIndex = depth(pos, unit.size);
 
@@ -1437,7 +1437,8 @@ export class PixiBackend implements RenderBackend {
         continue;
       }
 
-      if (unit.showHealth !== false) this.drawHealthBar(g, unit, x, y, width, scale, headroom);
+      if (unit.showHealth !== false)
+        this.drawHealthBar(g, unit, x, y, width, scale, headroom, view.hatch);
       badgeIndex = this.drawStatusBadges(g, unit, x, y, width, badgeIndex);
     }
 
@@ -1468,24 +1469,28 @@ export class PixiBackend implements RenderBackend {
     width: number,
     scale: number,
     headroom: number,
+    hatch: boolean,
   ): void {
     const fraction = Math.max(0, Math.min(1, unit.hp / Math.max(1, unit.maxHp)));
-    const {
-      x: barX,
-      y: barY,
-      width: barWidth,
-      height: barHeight,
-    } = actorHealthBar(x, y, width, TILE, scale, headroom);
+    const bar = actorHealthBar(x, y, width, TILE, scale, headroom);
+    const { x: barX, y: barY, width: barWidth, height: barHeight } = bar;
 
     // An ink-framed track, filled in the unit's side colour (canvas2d.ts matches).
     g.rect(barX, barY, barWidth, barHeight).fill({ color: HP_COLORS.back });
     g.rect(barX, barY, barWidth * fraction, barHeight).fill({
-      color: hpFill(unit.faction, fraction),
+      color: hpFill(unit.faction, fraction, hatch),
     });
     g.rect(barX - 0.5, barY - 0.5, barWidth + 1, barHeight + 1).stroke({
       width: 1,
       color: HP_COLORS.frame,
     });
+
+    // The side's cap, so the bar reads by shape as well as colour.
+    const cap = healthBarCap(bar, HP_CAP[unit.faction]);
+    if (cap.length === 0) return;
+    g.poly(cap)
+      .fill({ color: hpFill(unit.faction, 1, hatch) })
+      .stroke({ width: 1, color: HP_COLORS.frame });
   }
 
   private drawStatusBadges(

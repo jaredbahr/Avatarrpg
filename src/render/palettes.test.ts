@@ -2,7 +2,15 @@ import { expect, it } from 'vitest';
 import { CONTENT } from '../content';
 import { LEGEND } from '../content/maps/legend';
 import { SURFACE_BY_ID } from '../content/surfaces';
-import { NEUTRAL_PALETTE, SURFACE_STYLES, TERRAIN_STYLES } from './palettes';
+import {
+  HP_CAP,
+  HP_COLORS,
+  HP_THRESHOLDS,
+  NEUTRAL_PALETTE,
+  SURFACE_STYLES,
+  TERRAIN_STYLES,
+  hpFill,
+} from './palettes';
 import { SURFACE_BANK, SURFACE_RIM } from './surfaceRendering';
 
 type Rgb = readonly [number, number, number];
@@ -101,4 +109,46 @@ it('lays every rubble cell on the ground contract spoil, not limestone paving', 
         expect(map.legend[key]?.terrain, `${map.id} rubble '${key}'`).toBe('sand');
       }
   expect(cells).toBeGreaterThan(0);
+});
+
+it('fills an enemy bar hostile red at any health, and never a friendly one', () => {
+  for (const hatch of [false, true]) {
+    const tints = hatch ? HP_COLORS.hatchTints : HP_COLORS.tints;
+    for (const fraction of [1, 0.61, 0.6, 0.31, 0.3, 0.01, 0]) {
+      expect(hpFill('enemy', fraction, hatch)).toBe(tints.hostile);
+      expect(hpFill('party', fraction, hatch)).not.toBe(tints.hostile);
+      expect(hpFill('ally', fraction, hatch)).not.toBe(tints.hostile);
+    }
+  }
+});
+
+it('turns a friendly bar mid, then low, at the thresholds', () => {
+  for (const hatch of [false, true]) {
+    const tints = hatch ? HP_COLORS.hatchTints : HP_COLORS.tints;
+    for (const faction of ['party', 'ally'] as const) {
+      expect(hpFill(faction, 1, hatch)).toBe(tints[faction]);
+      expect(hpFill(faction, HP_THRESHOLDS.mid + 0.01, hatch)).toBe(tints[faction]);
+      expect(hpFill(faction, HP_THRESHOLDS.mid, hatch)).toBe(tints.mid);
+      expect(hpFill(faction, HP_THRESHOLDS.low + 0.01, hatch)).toBe(tints.mid);
+      expect(hpFill(faction, HP_THRESHOLDS.low, hatch)).toBe(tints.low);
+      expect(hpFill(faction, 0, hatch)).toBe(tints.low);
+    }
+  }
+});
+
+it('keeps every bar tint distinct, in both palettes', () => {
+  for (const tints of [HP_COLORS.tints, HP_COLORS.hatchTints]) {
+    const values = Object.values(tints);
+    expect(new Set(values).size).toBe(values.length);
+  }
+  // The party's low bar is warm, but nowhere near the hostile red.
+  const [lr, lg] = rgb(HP_COLORS.tints.low);
+  const [, hg] = rgb(HP_COLORS.tints.hostile);
+  expect(lr).toBeGreaterThan(lg);
+  expect(lg - hg).toBeGreaterThan(40);
+});
+
+it('marks each side with its own cap shape, not colour alone', () => {
+  expect(HP_CAP.party).toBe('none');
+  expect(new Set(Object.values(HP_CAP)).size).toBe(3);
 });
