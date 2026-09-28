@@ -250,13 +250,14 @@ function roofPoint(piece: SceneScenery, u: number, v: number): Vec2 {
 }
 
 /**
- * The dwellings have no painted chimney: a cooking fire's smoke leaves under
- * the far end of the ridge, beside the ridge-end block, as it does from a
- * gable vent. Mira's house and Pella's household's.
+ * The dwellings have no painted chimney: a cooking fire's smoke leaves by a
+ * vent in the ridge tiles, halfway along the main ridge, so the wisp starts
+ * on the roof and not at the ridge end over the paving behind. Mira's house
+ * and Pella's household's.
  */
 export const BA_DAN_CHIMNEYS: readonly Vec2[] = [
-  roofPoint(NORTH_HOUSE, 0.7, 0.07),
-  roofPoint(SOUTHWEST_HOUSE, 0.7, 0.07),
+  roofPoint(NORTH_HOUSE, 0.55, 0.19),
+  roofPoint(SOUTHWEST_HOUSE, 0.55, 0.19),
 ];
 
 /** Calibrated projected pixels; textures are already painted in the target camera. */

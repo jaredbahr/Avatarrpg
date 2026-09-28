@@ -1425,7 +1425,7 @@ export interface AmbienceRecipe {
 }
 
 /**
- * A cooking fire under a painted roof: soft warm-grey puffs, never more than
+ * A cooking fire under a painted roof: soft pale puffs, never more than
  * a haze, rising up the screen (on the oblique ground, heading 4.08 rad is
  * straight up leaning a little with the leaves' wind) and spreading as they go.
  */
@@ -1436,15 +1436,17 @@ const chimneySmoke = particles({
   duration: 6000,
   life: [5000, 7000],
   delay: [0, 6000],
-  speed: [0.45, 0.6],
+  speed: [0.2, 0.3],
   spread: 4.08,
   gravity: 0,
   drag: 0,
   size: [0.4, 0.55],
   grow: 2.4,
   spin: 0,
-  color: 'smoke',
-  fade: 'in-out',
+  // Pale, not the smoke grey: a dark haze over light paving reads as a shadow.
+  color: 'white',
+  // Thickest at the vent and thinning as it rises, so the wisp sits on the roof.
+  fade: 'out',
   opacity: 0.6,
   upright: true,
   blend: 'normal',

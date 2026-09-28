@@ -413,7 +413,11 @@ it('raises chimney smoke from the painted roof of a dwelling', async () => {
     const u = Math.floor(((px - house.x) / house.width) * roof.width);
     const v = Math.floor(((py - house.y) / house.height) * roof.height);
     // On the roof itself, in its upper band, not in the clear air round it.
-    expect(roof.data[(v * roof.width + u) * 4 + 3], `${house.id} roof pixel`).toBeGreaterThan(200);
+    const at4 = (v * roof.width + u) * 4;
+    expect(roof.data[at4 + 3], `${house.id} roof pixel`).toBeGreaterThan(200);
     expect(v / roof.height).toBeLessThan(0.2);
+    // Red roof tile, not a ridge-end block or the wall: the wisp starts on the tiles.
+    const [r = 0, g = 0] = [roof.data[at4], roof.data[at4 + 1]];
+    expect(r - g, `${house.id} roof tile`).toBeGreaterThan(40);
   }
 });
