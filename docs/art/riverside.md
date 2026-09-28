@@ -13,11 +13,19 @@ a practice clearing across it, a north-east shrine and a south-west tea veranda.
 Warm afternoon light, sage foliage, cream paths, mossy stone, gentle painted
 texture and brown ink accents; no characters, animals, lettering, UI or grid.
 
-The delivered WebP is 1440 by 960, 40 pixels per tile, encoded at quality 88:
+The delivered WebP is 1440 by 960, 40 pixels per tile, encoded at quality 88.
+It is baked from the unmodified painting in `art/source/ba-dan-riverside/`,
+with the painted edge stops below laid on it:
 
 ```
-node --import tsx scripts/art/map.ts --map ba_dan_riverside --in <source.png> --px 40 --quality 88
+node --import tsx scripts/art/riverside-edge-props.ts
 ```
+
+The bake encodes through the same `paintingWebp` step as
+`scripts/art/map.ts --map ba_dan_riverside --px 40 --quality 88`.
+`scripts/art/riverside-edge-props.test.ts` rebuilds it and compares the bytes.
+Change the painting or a stop there and rerun the bake. Do not re-encode the
+shipped WebP, which already carries the props.
 
 The generated prompt pack describes future regeneration at the standard larger
 size. The current painting uses the explicit 40-pixel setting above and the map's
@@ -64,18 +72,41 @@ square (9..10,5) and west lane (4..7,7) stay open, and so are:
 Canopy is still not a footprint. Every walkable cell of the south path belongs
 to the exit mouth, so the map sets `edgeContract: 'enforce'`.
 
-These blocked cells still read as open ground and need a painted stop. Paint an
-object; do not reopen the cell:
+## Painted edge stops
 
-- the lane north between the middle and north-east houses, (15..17, 0..3), runs
-  to the rim;
-- the lane west past (10,3) continues at (9,2) behind the north-west house
-  fence;
-- the west lane reaches the rim at (0,6);
-- the south-east bank path runs on under the canopy from (34,21);
-- the east clearing reaches the rim past the banner fence at (34..35, 12);
+A blocked cell that reads as open ground needs something painted on it.
+Paint an object; do not reopen the cell. The stops are the painting's own
+elements, cut out, laid on the blocked cell with a shadow falling left and a
+little down as the painting's shadows do, and relit where they move into shade
+(method (b) of the edge-prop prototype). The cells behind them cannot be
+reached, so the props live in the painting rather than as runtime scenery:
+
+- the lane north between the middle and north-east houses, (15..17, 0..3): two
+  bays of the tea garden's front-facing rail span the gap at (15..16,3), and
+  the north-east house's eave and wall are laid back over the right-hand post;
+- the lane west past (10,3), at (9,2): one more bay of the north-west garden
+  fence runs from its end post to the tree;
+- the west lane's end at the rim, (0,6): a mossy boulder, relit to the canopy
+  shade;
+- the east clearing's rim past the banner fence, (34..35,12): a second rank of
+  log rounds behind the painted ones makes a woodpile against the fence;
+- the south-east bank path, (34,21): a small mossy rock where the sand narrows
+  between two trees. The prototype's boulder there drew over the canopy. Of the
+  two fixes, the canopy mask is the cleaner: the rock stands on the top of
+  (34,21)'s visible sand, and the leaves of the right-hand tree are laid back
+  over its corner. The alternative moved the stop north onto (34,20). That
+  would have closed a sand cell R1 opened, left the sand beyond the rock
+  looking open, and put the rock level with the feet of anyone on (33,20).
+
+Two stretches still read as open and have no stop:
+
 - the back lane behind the north-west house, (4..5, 0..1), is unreachable, so it
-  is low priority.
+  is low priority;
+- the sand pocket's southern dead end: the sand and grass of (19..20,21) trail on
+  under the trees at (19..20,22). A prop there would stand on the walkable cell
+  or in the canopy, so the painted canopy is the stop for now.
+
+## The tea garden walkway
 
 The garden slabs west of the porch steps are a clear stone walkway, so (8,20)
 and (5..8,21) are open, with no prop on them. By the flower rule the lawn they
