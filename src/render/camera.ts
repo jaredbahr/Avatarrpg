@@ -162,7 +162,11 @@ export class Camera {
 
   /** Continuous logical ground coordinate -> unscaled projected world pixels. */
   groundPoint(pos: Vec2): ScreenPoint {
-    const point = projectGround(pos, this.projection);
+    return this.boardPoint(projectGround(pos, this.projection));
+  }
+
+  /** A point already in board units (projected tiles) -> unscaled world pixels. */
+  boardPoint(point: Vec2): ScreenPoint {
     return { x: (point.x - this.bounds.minX) * TILE, y: (point.y - this.bounds.minY) * TILE };
   }
 

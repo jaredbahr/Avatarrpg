@@ -20,7 +20,11 @@ type Entry = 'loading' | 'failed' | HTMLImageElement;
 const MAX_RESIDENT = 3;
 
 export class BackdropStore {
-  constructor(private readonly maxResident = MAX_RESIDENT) {}
+  constructor(
+    private readonly maxResident = MAX_RESIDENT,
+    private readonly label = 'Map painting',
+    private readonly fallback = 'drawing the procedural ground',
+  ) {}
   private entries = new Map<string, Entry>();
   private pending = new Map<string, Promise<boolean>>();
 
@@ -66,7 +70,7 @@ export class BackdropStore {
       image.onerror = () => {
         this.entries.set(url, 'failed');
         this.pending.delete(url);
-        console.warn(`Map painting "${url}" failed to load; drawing the procedural ground.`);
+        console.warn(`${this.label} "${url}" failed to load; ${this.fallback}.`);
         resolve(false);
       };
       image.src = assetUrl(url);
