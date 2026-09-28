@@ -336,12 +336,16 @@ export class Animator {
    * `sprite` selects the heading vocabulary: only a sheet that declares
    * eight-way locomotion is given diagonal and west clips. Everything else,
    * including an unknown sprite, keeps the four-way side/front/back choice.
+   * `restFacing` is the side a unit faces before it has turned: an enemy on
+   * an eight-way sheet (the thug, ADR 0059) stands facing west, as its
+   * mirrored sheet did.
    */
   locomotion(
     now: number,
     unitId: string,
     resting: 'idle' | 'rest' | 'stance' = 'idle',
     sprite?: string,
+    restFacing: 1 | -1 = 1,
   ): { clip: ClipName; facing: 1 | -1 } {
     this.settleHeadings(now);
     const travel = this.walkTravel(now, unitId);
@@ -349,12 +353,17 @@ export class Animator {
       this.rememberDirection(unitId, sampleAt(travel.track.curve, travel.distance).tangent);
     const stop = !travel && this.settling(now, unitId);
     const base = travel ? 'walk' : stop ? 'rest' : resting;
-    const heading = this.headings.get(unitId);
+    const heading = this.heading(unitId, restFacing);
     const clip =
       sheetLocomotion(sprite)?.headings === 8 && heading
         ? headingClip(base, heading)
         : directionalClip(base, this.directions.get(unitId));
-    return { clip, facing: verticalClip(clip) ? 1 : (this.facings.get(unitId) ?? 1) };
+    return { clip, facing: verticalClip(clip) ? 1 : (this.facings.get(unitId) ?? restFacing) };
+  }
+
+  /** The eight-way heading a unit last turned to, or west for one that has not and faces left. */
+  private heading(unitId: string, restFacing: 1 | -1): Heading | undefined {
+    return this.headings.get(unitId) ?? (restFacing === -1 ? 'west' : undefined);
   }
 
   /** True while a finished walk is still holding the settled stop pose. */

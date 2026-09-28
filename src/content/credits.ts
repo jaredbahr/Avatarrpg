@@ -108,6 +108,15 @@ export const THIRD_PARTY_CREDITS: readonly CreditEntry[] = [
     ],
     note: 'The data used in this project was obtained from mocap.cs.cmu.edu. The database was created with funding from NSF EIA-0196217. Kaya falls to 90_18 (RugPullFall), frames 64 to 170; Sura to 77_18 and Bo to 77_16, each lying down played in reverse; every take is retargeted onto the character’s own stance; the cels are drawn for this project with PixelLab. See docs/adr/0059-g-hit-knockout-and-thug.md.',
   },
+  {
+    what: 'The motion of the thug’s walk',
+    work: 'Mixamo “Unarmed Walk Forward”',
+    authors: 'Adobe Mixamo',
+    licence: 'Adobe Mixamo terms',
+    source: 'https://www.mixamo.com',
+    covers: ['art/units/thug-g.webp', 'art/units/thug-g.json'],
+    note: 'Projected onto each of the thug’s eight headings and root-locked; the cels are drawn for this project with PixelLab, and the idle and the cast, hit and defeat poses are this project’s own. The animation file itself is not redistributed. See docs/adr/0059-g-hit-knockout-and-thug.md.',
+  },
 ];
 
 export const CREDITS: readonly CreditEntry[] = [

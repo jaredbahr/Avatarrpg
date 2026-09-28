@@ -174,6 +174,22 @@ describe('Animator', () => {
     }
   });
 
+  it('stands an eight-way enemy facing west until it turns, then by its heading (ADR 0059)', () => {
+    const a = new Animator(CONTENT, { motionReduced: () => false });
+    const thug = 'unit.enemy.thug';
+    expect(a.locomotion(0, 'e0', 'idle', thug, -1)).toEqual({ clip: 'idleWest', facing: -1 });
+    // The party's default is unchanged: east, unsuffixed.
+    expect(a.locomotion(0, 'p0', 'stance', 'unit.fire.kaya')).toEqual({
+      clip: 'stance',
+      facing: 1,
+    });
+    a.push(0, [moved('e0', [4, 5])], [unit('e0', 4, 4)]);
+    a.prune(10);
+    expect(a.locomotion(10, 'e0', 'idle', thug, -1).clip).toBe('walkSouth');
+    a.prune(5000);
+    expect(a.locomotion(5000, 'e0', 'idle', thug, -1).clip).toBe('idleSouth');
+  });
+
   for (const reduced of [false, true]) {
     it(`keeps the attack facing after recovery (reduced motion: ${reduced})`, () => {
       const a = new Animator(CONTENT, { motionReduced: () => reduced });

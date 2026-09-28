@@ -382,7 +382,7 @@ export function choreograph(input: ChoreographyInput): Choreography {
                 scale:
                   unit.faction === 'party'
                     ? partyScale(input.projection, poseScale)
-                    : enemyScale(unit.sprite, poseScale),
+                    : enemyScale(unit.sprite, poseScale, input.projection),
                 offset,
               }
             : undefined;

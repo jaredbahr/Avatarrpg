@@ -118,7 +118,8 @@ describe('directed Fire Jab attachments', () => {
         expect(travel?.attachments?.to).toMatchObject({
           sprite: target.sprite,
           pos: target.pos,
-          scale: enemyScale(target.sprite),
+          // The G thug (ADR 0059) stands at the party's scale on `play`'s oblique map.
+          scale: enemyScale(target.sprite, 1, 'oblique'),
           size: 1,
         });
         expect(travel?.to).toEqual({ x: 5.5, y: 3.5 });
