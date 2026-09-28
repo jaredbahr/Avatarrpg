@@ -369,8 +369,10 @@ export class SheetStore {
   /**
    * The loaded atlas for a sheet key, kicking off the load on first ask. A
    * sheet with further pages (ADR 0052) is loaded only once every page is, so
-   * a clip never draws from half a sheet, and so is its clip data (ADR 0059).
-   * Its bend is not one of them.
+   * a clip never draws from half a sheet; a page that fails fails the sheet.
+   * Its clip data (ADR 0059) rides along but is best-effort: if it is missing
+   * or malformed, only the extra clips it carries are dropped, and a `koX`
+   * falls back to the sheet's legacy `ko` pose. Its bend is not one of them.
    */
   private atlas(key: string, entry: SheetEntry): LoadedAtlas | null {
     const state = this.loaded.get(key);
@@ -378,13 +380,21 @@ export class SheetStore {
     if (state !== undefined) return null;
 
     this.loaded.set(key, 'loading');
-    Promise.all([
-      Promise.all([entry.atlas, ...(entry.atlasPages ?? [])].map(loadPage)),
-      // Checked by its schema in CI (`art:validate`), so only typed here.
-      entry.clipData
-        ? fetchText(entry.clipData).then((text) => JSON.parse(text) as SheetClips)
-        : undefined,
-    ])
+    const pages = Promise.all([entry.atlas, ...(entry.atlasPages ?? [])].map(loadPage));
+    // A sheet's extra clips (ADR 0059) are optional to the sheet: losing the
+    // file costs the clips it carries, not the art, so a `koX` resolves back
+    // to the legacy `ko` pose (`resolveClip`). The schema is checked in CI
+    // (`art:validate`), so this only types the parse.
+    const clipsPromise = entry.clipData
+      ? fetchText(entry.clipData)
+          .then((text) => JSON.parse(text) as SheetClips)
+          .catch((reason: unknown) => {
+            console.warn(`Sheet "${key}" clip data failed; drawing its own clips.`, reason);
+            return undefined;
+          })
+      : Promise.resolve(undefined);
+    // Only a page failure rejects here; the clip data already caught its own.
+    Promise.all([pages, clipsPromise])
       .then(([pages, fetched]) => {
         const clips: SheetClips = fetched ? { ...entry.clips, ...fetched } : entry.clips;
         this.loaded.set(key, {
