@@ -26,7 +26,7 @@ export interface Point {
   readonly y: number;
 }
 
-/** One board step's screen length in board units: the tile distances are measured in. */
+/** One board step's screen length in board units: the length of one grid move on screen. */
 export const boardStep = (projection: Projection): number =>
   projection === 'oblique' ? Math.hypot(1, 0.5) : 1;
 
@@ -98,13 +98,24 @@ export interface CelTurn {
 }
 
 /**
+ * Whether a throw aimed at `aim` draws its turned cels flipped (ADR 0055,
+ * step 6): past straight up or down, toward the screen's left, a cel turned
+ * to it would stand on its head and its painted light would come from below.
+ * Flipped top to bottom first, the same turn keeps the light on top. Exactly
+ * up or down is not flipped.
+ */
+export const flipsFor = (aim: number): boolean => Math.abs(aim) > 90;
+
+/**
  * The turn a cel is drawn at, in degrees clockwise: art that points somewhere
  * (`facing`) turns by the aim minus that; a fixed `angle` ignores the aim;
  * anything else is drawn as packed. The aim is the chord from launch to
- * target, as the prototype aimed, not the arc's tangent.
+ * target, as the prototype aimed, not the arc's tangent. A `flip`ped cel is
+ * mirrored top to bottom before it turns, so its art points at `-facing` and
+ * it turns by the aim plus that.
  */
-export function celTurnDeg(meta: CelTurn, aim: number): number {
-  if (meta.facing !== undefined) return aim - meta.facing;
+export function celTurnDeg(meta: CelTurn, aim: number, flip = false): number {
+  if (meta.facing !== undefined) return flip ? aim + meta.facing : aim - meta.facing;
   return meta.angle ?? 0;
 }
 
@@ -118,10 +129,11 @@ export function segmentBetween(
   b: Point,
   meta: CelTurn,
   stretch: number,
+  flip = false,
 ): { readonly at: Point; readonly turn: number; readonly width: number } {
   return {
     at: lerp(a, b, 0.5),
-    turn: celTurnDeg({ facing: meta.facing ?? 0 }, aimDeg(a, b)),
+    turn: celTurnDeg({ facing: meta.facing ?? 0 }, aimDeg(a, b), flip),
     width: stretch * length(a, b),
   };
 }

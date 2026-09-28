@@ -32,6 +32,8 @@ export function bendFxPlacement(sprite: BendFxSprite, camera: Camera) {
     ax: sprite.pivot.x / sprite.frame.w,
     ay: sprite.pivot.y / sprite.frame.h,
     rotation: (sprite.turn * Math.PI) / 180,
+    /** -1 mirrors the cel top to bottom about its pivot, before the turn. */
+    sy: sprite.flipY ? -1 : 1,
   };
 }
 
@@ -68,6 +70,7 @@ export function drawBendFx(
     ctx.save();
     ctx.translate(p.x * s - camera.offsetX, p.y * s - camera.offsetY);
     ctx.rotate(p.rotation);
+    if (p.sy < 0) ctx.scale(1, -1);
     ctx.globalAlpha = sprite.alpha;
     if (sprite.blend === 'add') ctx.globalCompositeOperation = 'lighter';
     ctx.drawImage(
