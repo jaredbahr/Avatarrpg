@@ -26,6 +26,24 @@ function buildRevision(): string {
 }
 
 /**
+ * Applies exact text replacements to one Pixi module, throwing if any `from`
+ * text is missing so a Pixi upgrade fails the build instead of silently
+ * shipping the omitted code again.
+ */
+function replaceExactly(
+  code: string,
+  replacements: readonly (readonly [from: string, to: string])[],
+  review: string,
+): { code: string; map: null } {
+  let next = code;
+  for (const [from, to] of replacements) {
+    if (!next.includes(from)) throw new Error(`Pixi changed; review ${review}.`);
+    next = next.replace(from, to);
+  }
+  return { code: next, map: null };
+}
+
+/**
  * `GH_PAGES_BASE` is set by the deploy workflow to `/<repo>/` so that the
  * built asset URLs resolve on GitHub Pages. Locally it stays `/`.
  */
@@ -166,6 +184,75 @@ export default defineConfig({
           let next = code;
           for (const line of alphaPipe) next = next.replace(line, '');
           return { code: next, map: null };
+        }
+        // Graphics and particle containers register a pipe per renderer. Only
+        // the WebGL ones can run, for the reason above (ADR 0056).
+        if (/[/\\]pixi\.js[/\\]lib[/\\]scene[/\\]graphics[/\\]init\.mjs$/.test(id)) {
+          return replaceExactly(
+            code,
+            [
+              [
+                "import { CanvasGraphicsContextSystem } from './canvas/CanvasGraphicsContextSystem.mjs';\n",
+                '',
+              ],
+              ["import { CanvasGraphicsPipe } from './canvas/CanvasGraphicsPipe.mjs';\n", ''],
+              ['extensions.add(CanvasGraphicsPipe);\n', ''],
+              ['extensions.add(CanvasGraphicsContextSystem);\n', ''],
+            ],
+            'the canvas graphics exclusion',
+          );
+        }
+        if (/[/\\]pixi\.js[/\\]lib[/\\]scene[/\\]particle-container[/\\]init\.mjs$/.test(id)) {
+          return replaceExactly(
+            code,
+            [
+              [
+                "import { CanvasParticleContainerPipe } from './canvas/CanvasParticleContainerPipe.mjs';\n",
+                '',
+              ],
+              [
+                "import { GpuParticleContainerPipe } from './gpu/GpuParticleContainerPipe.mjs';\n",
+                '',
+              ],
+              ['extensions.add(GpuParticleContainerPipe);\n', ''],
+              ['extensions.add(CanvasParticleContainerPipe);\n', ''],
+            ],
+            'the particle pipe exclusion',
+          );
+        }
+        // Its WGSL twin is only compiled by the WebGPU renderer; Shader binds a
+        // GL-only program's resources by name, as it does for our own filters.
+        if (
+          /[/\\]pixi\.js[/\\]lib[/\\]scene[/\\]particle-container[/\\]shared[/\\]shader[/\\]ParticleShader\.mjs$/.test(
+            id,
+          )
+        ) {
+          return replaceExactly(
+            code,
+            [
+              [
+                "import { GpuProgram } from '../../../../rendering/renderers/gpu/shader/GpuProgram.mjs';\n",
+                '',
+              ],
+              ["import wgsl from './particles.wgsl.mjs';\n", ''],
+              [
+                `    const gpuProgram = GpuProgram.from({
+      fragment: {
+        source: wgsl,
+        entryPoint: "mainFragment"
+      },
+      vertex: {
+        source: wgsl,
+        entryPoint: "mainVertex"
+      }
+    });
+`,
+                '',
+              ],
+              ['      gpuProgram,\n', ''],
+            ],
+            'the particle WGSL exclusion',
+          );
         }
         if (
           /[/\\]pixi\.js[/\\]lib[/\\](accessibility|events|dom|spritesheet)[/\\]init\.mjs$/.test(id)
