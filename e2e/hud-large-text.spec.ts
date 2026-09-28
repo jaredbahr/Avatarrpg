@@ -237,14 +237,28 @@ test('the phone More list keeps clear of toasts, fits the screen and keeps focus
   await expect(list).toBeVisible();
   await raise('Upright, under the list.');
 
-  // Focus inside the list survives a rebuild of the header by a sync.
+  // Focus inside the list survives a sync. A sync that changes nothing the
+  // header draws leaves it alone: the focused button is the same node and
+  // focus is never set again, so a screen reader does not re-announce it
+  // several times a second through an AI turn.
   await page.keyboard.press('Escape');
   await expect(more).toBeFocused();
   await page.keyboard.press('Enter');
   await expect(more).toHaveAttribute('aria-expanded', 'true');
   const tip = page.getByRole('button', { name: 'Tip', exact: true });
   await tip.focus();
-  await page.evaluate(() => window.fnt!.app.updateSettings({}));
+  const synced = await page.evaluate(() => {
+    const before = document.activeElement;
+    let moves = 0;
+    const count = () => moves++;
+    document.addEventListener('focusin', count, true);
+    document.addEventListener('focusout', count, true);
+    for (let i = 0; i < 5; i++) window.fnt!.app.updateSettings({});
+    document.removeEventListener('focusin', count, true);
+    document.removeEventListener('focusout', count, true);
+    return { moves, same: document.activeElement === before };
+  });
+  expect(synced).toEqual({ moves: 0, same: true });
   await expect(more).toHaveAttribute('aria-expanded', 'true');
   await expect(tip).toBeFocused();
 
@@ -272,15 +286,13 @@ test('the phone More list keeps clear of toasts, fits the screen and keeps focus
   await page.setViewportSize({ width: 844, height: 390 });
   await setLargeText(page, 'huge');
   await settleLayout(page);
-  await more.tap();
+  // The list is capped the moment it opens, not a frame or a restyle later.
+  const opened = await page.evaluate(() => {
+    document.querySelector<HTMLElement>('.combat-more-toggle')?.click();
+    return document.querySelector('#combat-more')?.getBoundingClientRect().bottom ?? Infinity;
+  });
+  expect(opened).toBeLessThanOrEqual(390);
   await expect(list).toBeVisible();
-  // Chromium here can report the list's box from before the room was written
-  // until the next frame; what is painted is already capped, so read it then.
-  await expect
-    .poll(() =>
-      page.evaluate(() => document.querySelector('#combat-more')?.getBoundingClientRect().bottom),
-    )
-    .toBeLessThanOrEqual(390);
   const fit = await page.evaluate(() => {
     const menu = document.querySelector<HTMLElement>('#combat-more')!;
     const rem = parseFloat(getComputedStyle(document.documentElement).fontSize);
@@ -314,6 +326,99 @@ test('the phone More list keeps clear of toasts, fits the screen and keeps focus
   );
   await raise('On its side, beside the list.');
 });
+
+/**
+ * Where the band fits neither 16rem beside the open list nor under it, it
+ * still stays on screen and off the list. A 667×375 phone on its side at
+ * Largest text has 15rem left of the list and no room under it, so a long
+ * line goes beside in the narrower width; a 360×640 phone upright has no
+ * width beside and too little under, so the line takes the foot and the list
+ * gives it the room. Either way every button left in the list is a full tap.
+ */
+const LONG_TOAST =
+  'Hold the gate together: the deserters rush whoever stands alone, so keep everyone within a step of a friend and let the first charge break on the rocks.';
+
+for (const [width, height, where] of [
+  [667, 375, 'map-beside'],
+  [360, 640, 'map-foot'],
+] as const) {
+  test(`a long toast stays on screen and clear of the More list at ${width}x${height}, Largest text`, async ({
+    page,
+  }) => {
+    await page.setViewportSize({ width: 390, height: 844 });
+    await resetStorage(page, '?renderer=canvas');
+    await startGame(page, ['Riko', 'Tal'], ['nima', 'kaya', 'sura', 'bo'], 'hud-phone-crowded');
+    await enterNode(page, 'battle_quarry_gate');
+    await takeTurn(page);
+    await waitForIdle(page);
+    await page.setViewportSize({ width, height });
+    await setLargeText(page, 'huge');
+    await settleLayout(page);
+
+    const more = page.getByRole('button', { name: 'More', exact: true });
+    await more.tap();
+    await expect(page.locator('#combat-more')).toBeVisible();
+    await page.evaluate((line) => window.fnt!.app.toasts.show(line, 'info', 20_000), LONG_TOAST);
+    await expect(page.locator('.toasts[aria-live="polite"]')).toContainText(LONG_TOAST);
+
+    await expect
+      .poll(() =>
+        page.evaluate(() => {
+          const menu = document.querySelector('#combat-more')?.getBoundingClientRect();
+          const toasts = [...document.querySelectorAll('.toasts .toast')]
+            .map((toast) => toast.getBoundingClientRect())
+            .filter((box) => box.height > 0);
+          if (!menu || menu.height === 0 || toasts.length === 0) return 'missing';
+          if (menu.bottom > innerHeight) return 'list off screen';
+          for (const toast of toasts) {
+            if (
+              menu.left < toast.right &&
+              toast.left < menu.right &&
+              menu.top < toast.bottom &&
+              toast.top < menu.bottom
+            )
+              return 'overlap';
+            if (
+              toast.left < 0 ||
+              toast.top < 0 ||
+              toast.right > innerWidth ||
+              toast.bottom > innerHeight
+            )
+              return 'off screen';
+          }
+          return document.querySelector<HTMLElement>('.toasts')?.dataset.place;
+        }),
+      )
+      .toBe(where);
+
+    // The list still offers full-size buttons in whatever room it kept.
+    const sizes = await page.evaluate(() => {
+      const rem = parseFloat(getComputedStyle(document.documentElement).fontSize);
+      const tap =
+        parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--tap')) * rem;
+      const menu = document.querySelector('#combat-more')!;
+      return {
+        tap,
+        clientHeight: menu.clientHeight,
+        sizes: [...menu.querySelectorAll('button')]
+          .filter((button) => button.getClientRects().length > 0)
+          .map((button) => {
+            const box = button.getBoundingClientRect();
+            return Math.min(box.width, box.height);
+          }),
+      };
+    });
+    expect(sizes.clientHeight).toBeGreaterThanOrEqual(sizes.tap);
+    for (const size of sizes.sizes) expect(size).toBeGreaterThanOrEqual(sizes.tap - 0.5);
+
+    // Closing the list gives the band back to the map and the list its room.
+    await page.keyboard.press('Escape');
+    await expect(page.locator('.toasts')).toHaveAttribute('data-place', 'map');
+    expect(
+      await page.evaluate(() => document.documentElement.style.getPropertyValue('--toast-reserve')),
+    ).toBe('');
+  });
+}
 
 /**
  * The frame-time readout is debug chrome and sits over the board, not over
