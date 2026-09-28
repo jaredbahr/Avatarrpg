@@ -23,16 +23,55 @@ async function expectToastOverSheet(page: Page, text: string | RegExp): Promise<
           stack?.style.setProperty('pointer-events', 'auto');
           const top = document.elementFromPoint(box.left + box.width / 2, box.top + box.height / 2);
           stack?.style.removeProperty('pointer-events');
-          const head = document.querySelector('.dialog .dialog-head')?.getBoundingClientRect();
+          const clear = (selector: string) => {
+            const edge = document.querySelector(selector)?.getBoundingClientRect();
+            return !edge || box.top >= edge.bottom || box.bottom <= edge.top;
+          };
           return {
             onTop: top !== null && node.contains(top),
-            clearOfHead: !head || box.top >= head.bottom || box.bottom <= head.top,
+            clearOfHead: clear('.dialog .dialog-head'),
+            clearOfFooter: clear('.dialog .dialog-footer'),
             onScreen: box.top >= 0 && box.bottom <= window.innerHeight,
           };
         }),
       { message: `The toast "${text}" must show over the open sheet` },
     )
-    .toEqual({ onTop: true, clearOfHead: true, onScreen: true });
+    .toEqual({ onTop: true, clearOfHead: true, clearOfFooter: true, onScreen: true });
+}
+
+/** Saves twice from the pause sheet at Largest text, the second write refused. */
+async function toastsFromTheSaveSheet(page: Page, seed: string): Promise<void> {
+  await resetStorage(page);
+  await startGame(page, ['Elias'], ['kaya'], seed);
+  await enterNode(page, 'village_explore');
+  await setLargeText(page, 'huge');
+
+  // Save from the sheet: "Game saved." is raised while the sheet stays open.
+  await page.evaluate(() => window.fnt?.app.openPause());
+  await page.getByRole('button', { name: 'Save game', exact: true }).click();
+  const sheet = page.locator('.dialog').last();
+  await settleDialog(sheet);
+  await sheet
+    .locator('.slot')
+    .filter({ hasText: 'Slot 1' })
+    .getByRole('button', { name: 'Save here', exact: true })
+    .click();
+  await expectToastOverSheet(page, 'Game saved.');
+
+  // Storage refuses the write: the App's own failure toast, same sheet.
+  await page.evaluate(() => {
+    Storage.prototype.setItem = () => {
+      throw new DOMException('Storage is full', 'QuotaExceededError');
+    };
+  });
+  await sheet
+    .locator('.slot')
+    .filter({ hasText: 'Slot 2' })
+    .getByRole('button', { name: 'Save here', exact: true })
+    .click();
+  await expect(page.locator('.toast.toast-warn')).toBeVisible();
+  const warning = (await page.locator('.toast.toast-warn').last().textContent()) ?? '';
+  await expectToastOverSheet(page, warning);
 }
 
 /**
@@ -212,37 +251,20 @@ test('loadability comes from validation, not the words in the save summary', asy
 test.describe('toasts raised inside the save sheet', () => {
   test.use({ viewport: { width: 390, height: 844 } });
 
-  test('show over the sheet at Largest text, clear of its title', async ({ page }) => {
-    await resetStorage(page);
-    await startGame(page, ['Elias'], ['kaya'], 'toast-over-sheet');
-    await enterNode(page, 'village_explore');
-    await setLargeText(page, 'huge');
+  test('show over the sheet at Largest text, clear of its title and footer', async ({ page }) => {
+    await toastsFromTheSaveSheet(page, 'toast-over-sheet');
+  });
+});
 
-    // Save from the sheet: "Game saved." is raised while the sheet stays open.
-    await page.evaluate(() => window.fnt?.app.openPause());
-    await page.getByRole('button', { name: 'Save game', exact: true }).click();
-    const sheet = page.locator('.dialog').last();
-    await settleDialog(sheet);
-    await sheet
-      .locator('.slot')
-      .filter({ hasText: 'Slot 1' })
-      .getByRole('button', { name: 'Save here', exact: true })
-      .click();
-    await expectToastOverSheet(page, 'Game saved.');
+/*
+ * A phone on its side at Largest text: the sheet runs to its 88dvh cap, so the
+ * foot of the screen is the sheet's own footer, Import and Close. The toast
+ * has to rise above that footer rather than sit on it.
+ */
+test.describe('toasts raised inside the save sheet, phone landscape', () => {
+  test.use({ viewport: { width: 844, height: 390 } });
 
-    // Storage refuses the write: the App's own failure toast, same sheet.
-    await page.evaluate(() => {
-      Storage.prototype.setItem = () => {
-        throw new DOMException('Storage is full', 'QuotaExceededError');
-      };
-    });
-    await sheet
-      .locator('.slot')
-      .filter({ hasText: 'Slot 2' })
-      .getByRole('button', { name: 'Save here', exact: true })
-      .click();
-    await expect(page.locator('.toast.toast-warn')).toBeVisible();
-    const warning = (await page.locator('.toast.toast-warn').last().textContent()) ?? '';
-    await expectToastOverSheet(page, warning);
+  test('stay clear of Import and Close at Largest text', async ({ page }) => {
+    await toastsFromTheSaveSheet(page, 'toast-over-sheet-landscape');
   });
 });

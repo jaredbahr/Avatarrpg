@@ -10,7 +10,8 @@
  * fight opened. It sits under the dialog overlay for the same reason, except
  * while a sheet is open: then the toast is usually the sheet's own answer
  * ("Saved.", "Could not erase"), so it rises above the overlay at the bottom of
- * the screen, clear of the sheet's title.
+ * the screen, clear of the sheet's title; or, where the sheet itself reaches
+ * the bottom, inside it just above its footer, clear of its buttons too.
  */
 
 import { el } from './dom';
@@ -22,9 +23,10 @@ export class Toasts {
   private recent = new Map<string, number>();
   private frame = 0;
   /** What `place` last wrote, so a frame that changes nothing writes nothing. */
-  private placed: { where: 'sheet' | 'map' | 'top'; anchor: string } = {
+  private placed: { where: Placement; anchor: string; panel: Element | null } = {
     where: 'top',
     anchor: '',
+    panel: null,
   };
 
   constructor(parent: HTMLElement) {
@@ -73,10 +75,26 @@ export class Toasts {
     this.frame = 0;
     if (this.host.childElementCount === 0) return;
     const origin = this.host.parentElement;
-    let where: 'sheet' | 'map' | 'top' = 'top';
+    let where: Placement = 'top';
     let anchor = '';
-    if (origin?.querySelector(':scope > .overlay')) {
-      where = 'sheet';
+    const panels = origin?.querySelectorAll(':scope > .overlay > .panel');
+    const panel = panels?.[panels.length - 1];
+    if (origin && panel) {
+      // A tall sheet reaches the foot of the screen (Largest text, a phone on
+      // its side), and there the toast would sit on its Import and Close.
+      // Then it rises into the sheet, just above the footer, and stays there
+      // while that sheet is open, so it never hops between the two.
+      let lifted = this.placed.where === 'sheet-lifted' && this.placed.panel === panel;
+      if (!lifted) {
+        if (this.host.dataset.place !== 'sheet') this.host.dataset.place = 'sheet';
+        lifted = overlaps(this.host, panel);
+      }
+      where = lifted ? 'sheet-lifted' : 'sheet';
+      if (lifted) {
+        const footer = panel.querySelector('.dialog-footer') ?? panel;
+        const bottom = origin.getBoundingClientRect().bottom;
+        anchor = `${Math.round(bottom - footer.getBoundingClientRect().top)}px`;
+      }
     } else {
       const map = document.querySelector('.scene-host .map-wrap')?.getBoundingClientRect();
       if (map && origin && map.height > 0) {
@@ -84,14 +102,21 @@ export class Toasts {
         anchor = `${Math.round(map.top - origin.getBoundingClientRect().top)}px`;
       }
     }
-    if (where !== this.placed.where) {
-      if (where === 'top') delete this.host.dataset.place;
-      else this.host.dataset.place = where;
-    }
+    if (where === 'top') delete this.host.dataset.place;
+    else if (this.host.dataset.place !== where) this.host.dataset.place = where;
     if (anchor && anchor !== this.placed.anchor) {
       this.host.style.setProperty('--toast-anchor', anchor);
     }
-    this.placed = { where, anchor: anchor || this.placed.anchor };
+    this.placed = { where, anchor: anchor || this.placed.anchor, panel: panel ?? null };
     this.frame = requestAnimationFrame(this.place);
   };
+}
+
+type Placement = 'sheet' | 'sheet-lifted' | 'map' | 'top';
+
+/** Whether two elements' boxes intersect: here, a toast and a sheet. */
+function overlaps(a: Element, b: Element): boolean {
+  const p = a.getBoundingClientRect();
+  const q = b.getBoundingClientRect();
+  return p.left < q.right && q.left < p.right && p.top < q.bottom && q.top < p.bottom;
 }

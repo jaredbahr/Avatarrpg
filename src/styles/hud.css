@@ -1888,11 +1888,20 @@ html[data-contrast='high'] .hud-panel::after {
   top: calc(var(--toast-anchor) + var(--sp-2));
 }
 
-/* Over an open sheet, at the foot of the screen: the header stays clear. */
-.toasts[data-place='sheet'] {
+/*
+ * Over an open sheet, at the foot of the screen: the header stays clear. A
+ * sheet tall enough to reach there lifts it to just above its footer instead,
+ * which Toasts.ts measures, so Import and Close stay clear too.
+ */
+.toasts[data-place='sheet'],
+.toasts[data-place='sheet-lifted'] {
   top: auto;
   bottom: calc(var(--sp-4) + env(safe-area-inset-bottom, 0px));
   z-index: var(--z-toast-sheet);
+}
+
+.toasts[data-place='sheet-lifted'] {
+  bottom: calc(var(--toast-anchor) + var(--sp-2));
 }
 
 .toast {

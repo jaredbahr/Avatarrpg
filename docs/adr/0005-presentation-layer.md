@@ -73,7 +73,8 @@ art, and it is where every later asset lands.
   story beat never covers the header or an open sheet. A toast raised while a
   sheet is open is that sheet's answer ("Saved.", "Could not erase"), so it
   alone rises over the overlay, at the bottom of the screen and still under the
-  curtain.
+  curtain. Where the sheet itself reaches the bottom (Largest text on a phone
+  held sideways), the toast sits inside it, just above its footer.
 - Dialogs ease in through CSS only. There is deliberately no exit animation: a
   closed dialog that lingers in the DOM is a node the e2e suite and assistive
   technology can still find.
