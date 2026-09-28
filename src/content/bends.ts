@@ -200,16 +200,24 @@ export interface BendSetDef {
   readonly facings: Record<Heading, HeadingBendDef>;
 }
 
-/** One painted layer of an effect. */
+/**
+ * One painted layer of an effect. An attack's releases need not draw the same
+ * thing: Kaya's jab and cross throw differently painted fireballs, and Bo's
+ * stomp opens the crack his drive then throws the rock out of. So a layer may
+ * name the one `release` it plays for, by index into the attack's releases;
+ * a layer without one plays for every release.
+ */
 export interface BendEffectLayer {
   readonly phase: BendPhase;
   readonly z: BendLayerZ;
-  /** The painted sequence this layer draws. */
+  /** The painted sequence this layer draws: its cels are `<sequence>/<index>`. */
   readonly sequence: string;
-  /** How long each cel of the sequence holds, in ms (16-1000). */
+  /** How long each cel of the sequence holds, in ms (16-1000); one entry a cel. */
   readonly frameMs: readonly number[];
   readonly origin: BendLayerOrigin;
   readonly blend: BendBlend;
+  /** The release this layer plays for; absent means every release. */
+  readonly release?: number;
 }
 
 /** What travels from the caster to the target. */
@@ -373,6 +381,7 @@ export const bendEffectLayerSchema: z.ZodType<BendEffectLayer> = z
     frameMs: z.array(frameMsValue).min(1),
     origin: z.enum(BEND_LAYER_ORIGINS),
     blend: z.enum(BEND_BLENDS),
+    release: celIndex.optional(),
   })
   .strict();
 
@@ -580,6 +589,14 @@ function validateFacing(
     if (effect && effect.element !== element) {
       note(`attack "${id}" uses ${effect.element} effect "${attack.effectId}"`);
     }
+    effect?.layers.forEach((layer, index) => {
+      if (layer.release !== undefined && layer.release >= attack.releases.length) {
+        note(
+          `attack "${id}" has ${attack.releases.length} releases, but effect ` +
+            `"${attack.effectId}" layer ${index} plays for release ${layer.release}`,
+        );
+      }
+    });
   }
 }
 
@@ -655,6 +672,9 @@ function validateEffect(effect: BendEffectDef, problems: string[]): void {
   }
   effect.layers.forEach((layer, index) => {
     if (layer.frameMs.length === 0) note(`layer ${index} (${layer.phase}) has no frameMs`);
+    if (layer.release !== undefined && !(Number.isInteger(layer.release) && layer.release >= 0)) {
+      note(`layer ${index} release ${layer.release} is not a release index`);
+    }
     layer.frameMs.forEach((held, cel) => {
       if (!within(held, BEND_FRAME_MS_MIN, BEND_FRAME_MS_MAX)) {
         note(
@@ -663,6 +683,10 @@ function validateEffect(effect: BendEffectDef, problems: string[]): void {
       }
     });
   });
+  const impactLayers = effect.layers.filter((layer) => layer.phase === 'impact');
+  if (!impactLayers.some((layer) => layer.sequence === effect.impact.sequence)) {
+    note(`impact "${effect.impact.sequence}" has no impact layer drawing it`);
+  }
   const residueLayers = effect.layers.filter((layer) => layer.phase === 'residue');
   const residue = effect.residue;
   if (residue) {
@@ -739,6 +763,53 @@ export function validateBendSets(
       validateFacing(set.id, set.element, heading, facing, effectById, frames, problems);
     }
     validateAttacksAgree(set, problems);
+  }
+  return problems;
+}
+
+/** The atlas cel name of a sequence's `index`th cel. */
+export function effectCelName(sequence: string, index: number): string {
+  return `${sequence}/${index}`;
+}
+
+/**
+ * Returns the problems between the effects and the painted cels the effect
+ * atlas carries (`cels`, every frame name on its pages). A layer's sequence
+ * has exactly one cel for each entry of its `frameMs`, `<sequence>/0` onward;
+ * two layers that share a sequence agree on its length; and every cel on the
+ * pages belongs to a sequence some layer draws, so nothing ships unused.
+ */
+export function validateEffectCels(
+  effects: readonly BendEffectDef[],
+  cels: readonly string[],
+): string[] {
+  const problems: string[] = [];
+  const known = new Set(cels);
+  const lengths = new Map<string, number>();
+  for (const effect of effects) {
+    effect.layers.forEach((layer, index) => {
+      const where = `effect "${effect.id}" layer ${index} (${layer.sequence})`;
+      const count = layer.frameMs.length;
+      const before = lengths.get(layer.sequence);
+      if (before !== undefined && before !== count) {
+        problems.push(`${where} times ${count} cels; another layer times ${before}`);
+      }
+      lengths.set(layer.sequence, Math.max(before ?? 0, count));
+      for (let cel = 0; cel < count; cel++) {
+        const name = effectCelName(layer.sequence, cel);
+        if (!known.has(name)) problems.push(`${where} needs cel "${name}"`);
+      }
+      if (known.has(effectCelName(layer.sequence, count))) {
+        problems.push(`${where} times ${count} cels but the atlas has more`);
+      }
+    });
+  }
+  const drawn = new Set<string>();
+  for (const [sequence, count] of lengths) {
+    for (let cel = 0; cel < count; cel++) drawn.add(effectCelName(sequence, cel));
+  }
+  for (const name of cels) {
+    if (!drawn.has(name)) problems.push(`effect cel "${name}" is in no layer`);
   }
   return problems;
 }

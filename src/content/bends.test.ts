@@ -14,6 +14,7 @@ import {
   bendTrajectorySchema,
   headingBendDefSchema,
   validateBendSets,
+  validateEffectCels,
 } from './bends';
 import type {
   BendAttackCue,
@@ -565,6 +566,71 @@ describe('bend data contract', () => {
     expect(problemsFor([setOf()], EFFECTS, KNOWN_FRAMES)).toBe('');
     const problems = problemsFor([setOf()], EFFECTS, ['bend/0', 'bend/1']);
     expect(problems).toContain('"bend/2" is unknown');
+  });
+
+  it('keys a layer to one release of every attack that draws the effect', () => {
+    const keyed = effectOf({
+      layers: [
+        { ...layerOf('gather', 'bend-gather'), release: 0 },
+        layerOf('impact', 'bend-burst'),
+        layerOf('residue', 'bend-scorch'),
+      ],
+    });
+    expect(bendEffectLayerSchema.safeParse(keyed.layers[0]).success).toBe(true);
+    expect(problemsFor([setOf()], [keyed])).toBe('');
+    const late = effectOf({
+      layers: [
+        { ...layerOf('gather', 'bend-gather'), release: 1 },
+        layerOf('impact', 'bend-burst'),
+        layerOf('residue', 'bend-scorch'),
+      ],
+    });
+    expect(problemsFor([setOf()], [late])).toContain(
+      'attack "jab" has 1 releases, but effect "fx.fire.jab" layer 0 plays for release 1',
+    );
+    expectSchemaFailure(bendEffectLayerSchema, { ...layerOf('gather', 'g'), release: -1 });
+    expectSchemaFailure(bendEffectLayerSchema, { ...layerOf('gather', 'g'), release: 0.5 });
+  });
+
+  it('rejects an impact no impact layer draws', () => {
+    const effect = effectOf({ impact: { sequence: 'bend-gather', flash: 0.4, shakeTiles: 0.1 } });
+    expect(problemsFor([], [effect])).toContain('impact "bend-gather" has no impact layer');
+  });
+});
+
+describe('effect cels', () => {
+  const cels = ['bend-gather/0', 'bend-burst/0', 'bend-scorch/0'];
+
+  it('accepts an atlas with one cel for every timed cel of every layer', () => {
+    expect(validateEffectCels(EFFECTS, cels)).toEqual([]);
+  });
+
+  it('rejects a layer that times a cel the atlas lacks, or fewer than it has', () => {
+    const effect = effectOf({
+      layers: [
+        { ...layerOf('gather', 'bend-gather'), frameMs: [50, 50] },
+        layerOf('impact', 'bend-burst'),
+        layerOf('residue', 'bend-scorch'),
+      ],
+    });
+    expect(validateEffectCels([effect], cels)).toEqual([
+      'effect "fx.fire.jab" layer 0 (bend-gather) needs cel "bend-gather/1"',
+    ]);
+    expect(validateEffectCels(EFFECTS, [...cels, 'bend-burst/1'])).toEqual([
+      'effect "fx.fire.jab" layer 1 (bend-burst) times 1 cels but the atlas has more',
+      'effect cel "bend-burst/1" is in no layer',
+    ]);
+  });
+
+  it('rejects two layers that time one sequence differently, and an unused cel', () => {
+    const effect = effectOf({
+      layers: [...effectOf().layers, { ...layerOf('impact', 'bend-burst'), frameMs: [40, 40] }],
+    });
+    expect(validateEffectCels([effect], [...cels, 'bend-burst/1', 'stray/0'])).toEqual([
+      'effect "fx.fire.jab" layer 1 (bend-burst) times 1 cels but the atlas has more',
+      'effect "fx.fire.jab" layer 3 (bend-burst) times 2 cels; another layer times 1',
+      'effect cel "stray/0" is in no layer',
+    ]);
   });
 });
 
