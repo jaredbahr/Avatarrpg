@@ -18,7 +18,8 @@ export const WATER_ABILITIES: readonly Ability[] = [
       { kind: 'damage', base: 4, scale: 0.6, damageType: 'water' },
       { kind: 'status', status: 'wet', duration: 2, chance: 0.75, to: 'hit' },
     ],
-    description: 'A lash of water that can soak what it hits. Set up lightning or cold.',
+    description:
+      'A lash of water at one enemy, with a 75% chance to leave them Wet for 2 rounds, ready for lightning or cold.',
     flavor: 'Wet things conduct lightning. Cold can lock water solid. Remember that.',
     fx: 'fx.water.whip',
     tags: ['attack', 'control'],
@@ -36,7 +37,8 @@ export const WATER_ABILITIES: readonly Ability[] = [
       { kind: 'heal', base: 8, scale: 0.8 },
       { kind: 'cleanse', statuses: ['burning', 'blinded'] },
     ],
-    description: 'Glowing water knits a friend back together and puts out fires.',
+    description:
+      'Glowing water heals one ally within 4 tiles, or yourself, and washes away Burning and Blinded.',
     flavor: 'The rarest gift in the North, and it is not a weapon.',
     fx: 'fx.water.heal',
     tags: ['heal'],
@@ -53,7 +55,8 @@ export const WATER_ABILITIES: readonly Ability[] = [
       { kind: 'pull', distance: 3 },
       { kind: 'status', status: 'wet', duration: 2, chance: 1, to: 'hit' },
     ],
-    description: 'Hooks an enemy and drags them three tiles toward you. Soaks them too.',
+    description:
+      'A rope of water hooks one enemy, drags them up to 3 tiles towards you and leaves them Wet for 2 rounds.',
     flavor: 'Come here.',
     fx: 'fx.water.pull',
     tags: ['control'],
@@ -71,7 +74,8 @@ export const WATER_ABILITIES: readonly Ability[] = [
       { kind: 'status', status: 'chilled', duration: 2, chance: 0.7, to: 'hit' },
       { kind: 'surface', surface: 'ice', duration: 2, area: 'area' },
     ],
-    description: 'Spears of ice erupt in a small area and leave the ground slick.',
+    description:
+      'Spears of ice burst from a 3×3 area, hitting everyone there, friend or foe. Each has a 70% chance to be Chilled, and the ground turns to ice for 2 rounds.',
     flavor: 'Chill something twice and it stops moving altogether.',
     fx: 'fx.water.spikes',
     tags: ['attack', 'control', 'surface'],
@@ -90,7 +94,8 @@ export const WATER_ABILITIES: readonly Ability[] = [
       { kind: 'status', status: 'wet', duration: 3, chance: 1, to: 'hit' },
       { kind: 'surface', surface: 'water', duration: 3, area: 'area' },
     ],
-    description: 'A wall of water that shoves everything back and floods the ground.',
+    description:
+      'A wave four tiles deep. Everyone in it, friend or foe, is pushed 2 tiles away from you and left Wet for 3 rounds, and the ground floods for 3.',
     flavor: 'Use lightning while the water is there.',
     fx: 'fx.water.wave',
     tags: ['attack', 'control', 'surface', 'signature'],
@@ -107,7 +112,8 @@ export const WATER_ABILITIES: readonly Ability[] = [
       { kind: 'status', status: 'guarded', duration: 2, chance: 1, to: 'hit' },
       { kind: 'heal', base: 3, scale: 0.2 },
     ],
-    description: 'A curved plate of ice in front of a friend. Absorbs a lot.',
+    description:
+      'A curved plate of ice guards one ally within 4 tiles, or yourself: Guarded for 2 rounds and a small heal.',
     flavor: 'Thicker than it looks.',
     fx: 'fx.water.shield',
     tags: ['buff', 'heal'],
@@ -126,7 +132,8 @@ export const WATER_ABILITIES: readonly Ability[] = [
       { kind: 'status', status: 'guarded', duration: 2, chance: 1, to: 'self' },
       { kind: 'push', distance: 1 },
     ],
-    description: 'Six arms of water lash out in every direction while you stay covered.',
+    description:
+      'Arms of water lash a 5×5 area centred within 2 tiles of you, friend or foe. Everyone struck is Wet for 3 rounds and pushed a tile outward; you are Guarded for 2.',
     flavor: 'Attack and defence are the same motion.',
     fx: 'fx.water.octopus',
     tags: ['attack', 'buff', 'signature'],
@@ -141,7 +148,8 @@ export const WATER_ABILITIES: readonly Ability[] = [
     targeting: line(4),
     cooldown: 2,
     effects: [{ kind: 'surface', surface: 'ice', duration: 3, area: 'area' }],
-    description: 'Freezes a line of ground solid. Water under it locks up.',
+    description:
+      'Freezes a line of four tiles out from you for 3 rounds. The ice costs no extra Move but may Chill whoever steps on it; anyone standing in water there may be Frozen.',
     flavor: 'A road, or a trap, depending who walks it.',
     fx: 'fx.water.path',
     tags: ['surface', 'control'],
@@ -164,7 +172,7 @@ export const WATER_ABILITIES: readonly Ability[] = [
       { kind: 'cleanse', statuses: ['burning', 'chilled', 'blinded'] },
     ],
     description:
-      'Hands on, water glowing. Nearly twice what Healing Stream gives, but you have to be standing next to them.',
+      'Hands-on healing for an adjacent ally, or yourself. A much larger heal than Healing Stream, and it clears Burning, Chilled and Blinded.',
     flavor: 'Close enough to hear them breathing. That is the point.',
     fx: 'fx.water.hands',
     tags: ['heal'],
@@ -183,7 +191,7 @@ export const WATER_ABILITIES: readonly Ability[] = [
       { kind: 'surface', surface: 'steam', duration: 2, area: 'area' },
     ],
     description:
-      'A cloud of warm mist over the whole group: heals everyone friendly inside it, and clears a chi block.',
+      'Warm mist fills a 3×3 area, healing every ally inside except you and clearing Burning, Blinded, Shocked and Chi-Blocked. The steam blocks sight for 2 rounds.',
     flavor: 'Breathe in. You are all right.',
     fx: 'fx.water.mist',
     tags: ['heal', 'surface'],
@@ -216,7 +224,7 @@ export const WATER_ABILITIES: readonly Ability[] = [
       { kind: 'status', status: 'inspired', duration: 2, chance: 1, to: 'allies' },
     ],
     description:
-      'Everything the healer has, poured out at once: a large heal across the whole party, every debuff gone, and everyone hits harder for two rounds.',
+      'Every ally in a 5×5 area except you gets a large heal, loses every harmful status and is Inspired for 2 rounds.',
     flavor: 'Not a technique. A decision.',
     fx: 'fx.water.tide',
     tags: ['heal', 'buff', 'signature'],
