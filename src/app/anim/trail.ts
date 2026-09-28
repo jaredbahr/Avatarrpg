@@ -118,10 +118,18 @@ export class PartyTrail {
   private line: Vec2[];
   /** Once clustered, seats are no longer an adjacent breadcrumb path. */
   private formation: { grid: Grid; avoid: readonly Vec2[] } | null = null;
+  /** The climb surcharge the rules charge, so a seat search agrees with them. */
+  private readonly climbCost: number | undefined;
 
-  /** `members` are the party's tiles, leader first, as `placeParty` seats them. */
-  constructor(members: readonly Vec2[]) {
+  /**
+   * `members` are the party's tiles, leader first, as `placeParty` seats them.
+   * `climbCost` is `content.tuning.climbCost`: without it a context has no
+   * climb rule, so a one-tier step is refused and the line cannot follow the
+   * leader up a bench (`E4`). Cliffs are refused either way.
+   */
+  constructor(members: readonly Vec2[], options: { readonly climbCost?: number } = {}) {
     this.line = [...members];
+    this.climbCost = options.climbCost;
   }
 
   /** The leader's tile. */
@@ -156,7 +164,7 @@ export class PartyTrail {
       const blocked = new Set([...avoid, ...seats.filter((_, i) => i !== index)].map(posKey));
       const choices = [
         ...reachable(
-          { grid, blocked, surfaces: new Map(), size: 1 },
+          { grid, blocked, surfaces: new Map(), size: 1, climbCost: this.climbCost },
           from,
           grid.width * grid.height,
         ).values(),
@@ -203,7 +211,11 @@ export class PartyTrail {
       if (!from || !routeNearPoint(leader, from)) continue;
       const blocked = new Set([...avoid, ...positions.filter((_, i) => i !== index)].map(posKey));
       const candidates = [
-        ...reachable({ grid, blocked, surfaces: new Map(), size: 1 }, from, budget).values(),
+        ...reachable(
+          { grid, blocked, surfaces: new Map(), size: 1, climbCost: this.climbCost },
+          from,
+          budget,
+        ).values(),
       ]
         .filter(
           (cell) =>
@@ -227,7 +239,11 @@ export class PartyTrail {
       if (!from || !target) continue;
       const blocked = new Set([...avoid, ...positions.filter((_, i) => i !== index)].map(posKey));
       const candidates = [
-        ...reachable({ grid, blocked, surfaces: new Map(), size: 1 }, from, budget).values(),
+        ...reachable(
+          { grid, blocked, surfaces: new Map(), size: 1, climbCost: this.climbCost },
+          from,
+          budget,
+        ).values(),
       ]
         .filter((cell) => !blocked.has(posKey(cell.pos)))
         .sort((a, b) => {
@@ -276,7 +292,7 @@ export class PartyTrail {
         if (!from || !to) continue;
         const blocked = new Set([...avoid, ...next.filter((_, index) => index !== i)].map(posKey));
         const reachableSeats = reachable(
-          { grid, blocked, surfaces: new Map(), size: 1 },
+          { grid, blocked, surfaces: new Map(), size: 1, climbCost: this.climbCost },
           from,
           grid.width * grid.height,
         );

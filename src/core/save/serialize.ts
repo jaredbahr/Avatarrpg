@@ -81,6 +81,9 @@ const tile = z.object({
   blocked: z.boolean(),
   blocksSight: z.boolean(),
   cover: z.boolean(),
+  // Additive: a mid-battle save written before climbing shipped has none, and
+  // dropping it here would silently delete a ramp and change movement on load.
+  ramp: z.boolean().optional(),
   surface: z.object({ id: z.string(), duration: z.number(), spread: z.number() }).nullable(),
 });
 

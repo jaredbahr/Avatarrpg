@@ -20,11 +20,12 @@ describe('combat tuning', () => {
       accepts({ ...COMBAT_TUNING, baseHitChance: 'high' }),
       accepts({ ...COMBAT_TUNING, elevationStep: -1 }),
       accepts({ ...COMBAT_TUNING, coverPenalty: 7.5 }),
+      accepts({ ...COMBAT_TUNING, climbCost: -1 }),
       accepts({ ...COMBAT_TUNING, hitChanceMax: 200 }),
       accepts({ ...COMBAT_TUNING, hitChanceMin: 99, hitChanceMax: 5 }),
       accepts({ ...COMBAT_TUNING, baseHit: 80 }),
       accepts(undefined),
-    ]).toEqual([false, false, false, false, false, false, false]);
+    ]).toEqual([false, false, false, false, false, false, false, false]);
   });
 
   it('accepts a partial overlay and still rejects an unknown key', () => {

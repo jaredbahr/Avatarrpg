@@ -447,6 +447,7 @@ export class CombatScene implements Scene {
         blocked,
         surfaces: this.app.content.surfaces,
         size: unit.size,
+        climbCost: this.app.content.tuning.climbCost,
       },
       unit.pos,
       unit.move,
@@ -468,6 +469,7 @@ export class CombatScene implements Scene {
       blocked,
       surfaces: this.app.content.surfaces,
       size: unit.size,
+      climbCost: this.app.content.tuning.climbCost,
     };
   }
 

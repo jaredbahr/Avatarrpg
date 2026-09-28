@@ -16,7 +16,7 @@ import { beforeEach, describe, expect, it } from 'vitest';
 import { CONTENT } from '../../content';
 import { RngCursor } from '../rng';
 import { unitAbilities } from '../rules/abilities';
-import { enterCost, posKey, tileAt } from '../rules/grid';
+import { posKey, standCost, tileAt } from '../rules/grid';
 import type { GameState, Vec2 } from '../types';
 import { BattleDraft } from './battleDraft';
 import { createBattle, createGame } from './createGame';
@@ -72,7 +72,7 @@ describe('props on the battlefield', () => {
     expect(tile?.blocked).toBe(true);
     expect(tile?.cover).toBe(true);
     expect(
-      enterCost({ grid: draft.grid, blocked: new Set(), surfaces: CONTENT.surfaces, size: 1 }, pos),
+      standCost({ grid: draft.grid, blocked: new Set(), surfaces: CONTENT.surfaces, size: 1 }, pos),
     ).toBeNull();
   });
 
