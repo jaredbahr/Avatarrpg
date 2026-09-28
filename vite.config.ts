@@ -45,7 +45,7 @@ function replaceExactly(
 
 /** A stand-in for an omitted Pixi function that fails loudly if it is ever reached. */
 function omittedPixi(name: string): string {
-  return `const ${name} = () => { throw new Error('Pixi ${name} is omitted from this build (ADR 0056).'); };`;
+  return `const ${name} = () => { throw new Error('Pixi ${name} is omitted from this build (ADR 0057).'); };`;
 }
 
 /**
@@ -88,8 +88,9 @@ export default defineConfig({
     {
       // Input, accessibility and HTML UI belong to the app's native DOM.
       // Atlas JSON uses our shared loader, not Pixi's Assets/Spritesheet.
-      // These optional Pixi registration entry points are never used. Keep
-      // graphics/text/filter/particle/texture initialization intact (ADR 0001).
+      // These optional Pixi registration entry points are never used. Keep the
+      // WebGL graphics/text/filter/particle/texture initialization intact
+      // (ADR 0001); only their Canvas and WebGPU twins are dropped (ADR 0057).
       name: 'omit-unused-pixi-systems',
       transform(code, id) {
         // The game uploads still images/canvases and has no video textures.
@@ -191,7 +192,7 @@ export default defineConfig({
           return { code: next, map: null };
         }
         // Graphics and particle containers register a pipe per renderer. Only
-        // the WebGL ones can run, for the reason above (ADR 0056).
+        // the WebGL ones can run, for the reason above (ADR 0057).
         if (/[/\\]pixi\.js[/\\]lib[/\\]scene[/\\]graphics[/\\]init\.mjs$/.test(id)) {
           return replaceExactly(
             code,
