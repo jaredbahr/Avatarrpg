@@ -808,7 +808,7 @@ export interface SceneScenery extends SceneImage {
   readonly fadeGroup?: string;
   /**
    * Mirror the drawing left to right inside its own box, so one piece of art
-   * can turn its long side from x to y (ADR 0057). The box, footprint and
+   * can turn its long side from x to y (ADR 0058). The box, footprint and
    * depth are authored for the mirrored drawing.
    */
   readonly flip?: boolean;

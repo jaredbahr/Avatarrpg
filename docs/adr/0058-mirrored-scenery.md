@@ -1,4 +1,4 @@
-# ADR 0057: Mirrored scenery
+# ADR 0058: Mirrored scenery
 
 **Status:** Accepted  
 **Date:** 2026-09-28
