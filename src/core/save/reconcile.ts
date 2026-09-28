@@ -18,11 +18,15 @@
 import type {
   ContentIndex,
   GameState,
+  Grid,
+  MapDef,
   PendingChoice,
   ResidentDef,
   ResidentSlot,
   ResidentSlotValue,
+  Vec2,
 } from '../types';
+import { DIRECTIONS, cachedGrid, inBounds, posKey, tileAt } from '../rules/grid';
 import { specializationsUpTo } from '../rules/leveling';
 import { settle } from '../story/settle';
 import { npcResident } from '../story/residents';
@@ -58,10 +62,16 @@ export function reconcileDisciplines(content: ContentIndex, state: GameState): G
  * whose screen or map no longer holds it and steps the leader off an NPC
  * tile, then clears the one kind of stale pin `settle` cannot see: content
  * that has drifted since the save, so the pinned NpcDef, its resident
- * binding or the pinned map anchor no longer exists. Idempotent.
+ * binding or the pinned map anchor no longer exists. Before `settle`, it
+ * snaps a saved explore position back onto walkable ground when a map edit
+ * has buried it (M9). Idempotent.
  */
 export function reconcileWorld(content: ContentIndex, state: GameState): GameState {
-  const settled = settle(content, state, state).state;
+  // Snap first, so `settle` then sees the repaired tile: if the nearest
+  // walkable cell happens to be one somebody else is standing on, the
+  // leader step moves the party off it in the same pass.
+  const snapped = snapExplore(content, state);
+  const settled = settle(content, snapped, snapped).state;
   const talk = settled.world.talk;
   if (!talk) return settled;
   const resident = npcResident(content, talk.mapId, talk.npcId);
@@ -73,6 +83,86 @@ export function reconcileWorld(content: ContentIndex, state: GameState): GameSta
     site?.kind === 'map' &&
     site.mapId === talk.mapId;
   return holds ? settled : { ...settled, world: { ...settled.world, talk: null } };
+}
+
+/**
+ * How far a saved explore position may move to find walkable ground before
+ * the map's own entry is used instead. Chebyshev steps, like `distance`.
+ */
+const EXPLORE_SNAP_RADIUS = 6;
+
+/**
+ * A saved explore position a map edit has buried (M9).
+ *
+ * Explore keeps exactly one position for the whole party — `location.pos`;
+ * the followers are a presentation line the scene re-seats at load, never
+ * saved, so there is nothing per-member to repair. That one cell can be
+ * off-grid or inside new terrain once the map changes, so the party is moved
+ * to the nearest cell explore movement would accept, or to the map's entry
+ * spawn (the same one `enterStoryNode` uses) when nothing is reachable close
+ * by. Mid-battle saves are left alone: a battle carries its own grid.
+ */
+function snapExplore(content: ContentIndex, state: GameState): GameState {
+  if (state.screen !== 'explore' || state.battle) return state;
+  const map = content.maps.get(state.location.mapId);
+  if (!map) return state;
+  const grid = cachedGrid(map);
+  if (walkable(grid, state.location.pos)) return state;
+  const pos = nearestWalkable(grid, state.location.pos, EXPLORE_SNAP_RADIUS) ?? entrySpawn(map);
+  return { ...state, location: { ...state.location, pos } };
+}
+
+/** Explore movement's walkability: an in-bounds tile that is not blocked. */
+function walkable(grid: Grid, p: Vec2): boolean {
+  const tile = tileAt(grid, p);
+  return tile !== undefined && !tile.blocked;
+}
+
+/** The party's entry cell on an explore map, matching `enterStoryNode`'s `exploreStart`. */
+function entrySpawn(map: MapDef): Vec2 {
+  return map.partySpawns[0] ?? { x: 1, y: 1 };
+}
+
+/**
+ * The nearest walkable cell to `from`, breadth-first, at most `radius` steps
+ * away. Ties break row-major — smallest y, then smallest x — and neighbours
+ * are tried in `DIRECTIONS` order (orthogonals, then diagonals), so the same
+ * map and cell always snap to the same tile. A diagonal may not squeeze
+ * between two blocked or off-grid corners, matching `findPath` and
+ * `findSettleTile`. Returns null when nothing walkable is that close.
+ */
+function nearestWalkable(grid: Grid, from: Vec2, radius: number): Vec2 | null {
+  const visited = new Set<string>([posKey(from)]);
+  let frontier: readonly Vec2[] = [from];
+
+  for (let depth = 1; depth <= radius && frontier.length > 0; depth++) {
+    const reached: Vec2[] = [];
+    const next: Vec2[] = [];
+    for (const node of frontier) {
+      for (const d of DIRECTIONS) {
+        const cell = { x: node.x + d.x, y: node.y + d.y };
+        if (!inBounds(grid, cell) || !walkable(grid, cell)) continue;
+        const key = posKey(cell);
+        if (visited.has(key)) continue;
+        if (cell.x !== node.x && cell.y !== node.y && cornerBlocked(grid, node, cell)) continue;
+        visited.add(key);
+        next.push(cell);
+        reached.push(cell);
+      }
+    }
+    if (reached.length > 0) {
+      reached.sort((a, b) => a.y - b.y || a.x - b.x);
+      return reached[0] ?? null;
+    }
+    frontier = next;
+  }
+
+  return null;
+}
+
+/** A diagonal's two orthogonal corners must both be walkable, as in `findPath`. */
+function cornerBlocked(grid: Grid, from: Vec2, to: Vec2): boolean {
+  return !walkable(grid, { x: to.x, y: from.y }) || !walkable(grid, { x: from.x, y: to.y });
 }
 
 /** Every authored public slot a resident may occupy, independent of the loaded state's phase. */
