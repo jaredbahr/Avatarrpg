@@ -19,7 +19,8 @@ export const AIR_ABILITIES: readonly Ability[] = [
       { kind: 'damage', base: 3, scale: 0.5, damageType: 'air' },
       { kind: 'push', distance: 2 },
     ],
-    description: 'A hard shove of wind. Pushes two tiles — pick where they land.',
+    description:
+      'A hard shove of wind at one enemy, pushing them 2 tiles straight away from you. Aim it so they land in fire, water or oil.',
     flavor: 'Into the fire is a legitimate answer.',
     fx: 'fx.air.blast',
     tags: ['attack', 'control'],
@@ -34,8 +35,9 @@ export const AIR_ABILITIES: readonly Ability[] = [
     cooldown: 2,
     requiresLineOfSight: false,
     effects: [{ kind: 'dash' }],
-    description: 'A ball of spinning air. Move anywhere in range, ignoring what is in the way.',
-    flavor: 'Invented by a twelve-year-old. Still unbeaten.',
+    description:
+      'Ride a ball of spinning air to any open tile within 6. You do not need a clear view of it, and nothing in between stops you.',
+    flavor: 'Every novice tries it first. Most fall off.',
     fx: 'fx.air.scooter',
     tags: ['mobility'],
   }),
@@ -51,7 +53,8 @@ export const AIR_ABILITIES: readonly Ability[] = [
       { kind: 'push', distance: 1 },
       { kind: 'status', status: 'blinded', duration: 2, chance: 0.4, to: 'hit' },
     ],
-    description: 'A fan of dust and wind. Blinds, and scatters steam and fire.',
+    description:
+      'A fan of wind and dust three tiles deep. Everyone in it, friend or foe, is pushed back a tile with a 40% chance of Blinded. It clears steam but spreads fire.',
     flavor: 'Wind also feeds a fire. Watch what you fan.',
     fx: 'fx.air.gust',
     tags: ['attack', 'control'],
@@ -69,7 +72,8 @@ export const AIR_ABILITIES: readonly Ability[] = [
       { kind: 'pull', distance: 2 },
       { kind: 'status', status: 'slowed', duration: 2, chance: 0.6, to: 'hit' },
     ],
-    description: 'A spinning column that drags everything nearby into the middle.',
+    description:
+      'A spinning column over a 3×3 area. Everyone caught, friend or foe, is hit and pulled towards the centre, with a 60% chance of being Slowed.',
     flavor: 'Gather them up, then let the earthbender drop a rock on the pile.',
     fx: 'fx.air.cyclone',
     tags: ['attack', 'control'],
@@ -87,7 +91,8 @@ export const AIR_ABILITIES: readonly Ability[] = [
       { kind: 'status', status: 'guarded', duration: 1, chance: 1, to: 'hit' },
       { kind: 'grantAp', amount: 1, to: 'hit' },
     ],
-    description: 'Catch a friend on a cushion of air: soften the blow and give them an AP.',
+    description:
+      'Catch an ally within 5 tiles, or yourself, on a cushion of air: a small heal, Guarded for 1 round, and 1 extra AP.',
     flavor: 'Helping is a technique too.',
     fx: 'fx.air.cushion',
     tags: ['heal', 'buff'],
@@ -104,7 +109,8 @@ export const AIR_ABILITIES: readonly Ability[] = [
       { kind: 'damage', base: 7, scale: 0.7, damageType: 'air' },
       { kind: 'status', status: 'stunned', duration: 1, chance: 0.3, to: 'hit' },
     ],
-    description: 'A clap of compressed air. Sometimes it just switches someone off.',
+    description:
+      'A clap of compressed air at one enemy up to 7 tiles away, with a 30% chance to Stun them.',
     flavor: 'Loud, in every sense.',
     fx: 'fx.air.boom',
   }),
@@ -122,7 +128,8 @@ export const AIR_ABILITIES: readonly Ability[] = [
       { kind: 'status', status: 'blinded', duration: 2, chance: 0.75, to: 'hit' },
       { kind: 'status', status: 'slowed', duration: 2, chance: 0.5, to: 'hit' },
     ],
-    description: 'A full funnel. Throws everything in a wide area three tiles outward.',
+    description:
+      'A full funnel over a 5×5 area. Everyone caught, friend or foe, is thrown 3 tiles outward, with a 75% chance of Blinded and an even chance of Slowed.',
     flavor: 'The air is never still. It only waits.',
     fx: 'fx.air.tornado',
     tags: ['attack', 'control', 'signature'],
@@ -139,7 +146,7 @@ export const AIR_ABILITIES: readonly Ability[] = [
       { kind: 'status', status: 'guarded', duration: 1, chance: 1, to: 'self' },
       { kind: 'cleanse', statuses: ['burning'] },
     ],
-    description: 'A sphere of moving air. Cheap, brief, and puts out flames.',
+    description: 'Wrap yourself in moving air: Guarded for 1 round, and it snuffs out Burning.',
     flavor: 'Evade first. Always.',
     fx: 'fx.air.shield',
     tags: ['buff'],
@@ -163,7 +170,7 @@ export const AIR_ABILITIES: readonly Ability[] = [
       { kind: 'status', status: 'stunned', duration: 1, chance: 0.35, to: 'hit' },
     ],
     description:
-      'Compress the air in your chest and let it out as noise. Everything in the cone loses its footing and some of it loses its turn.',
+      'A shout of compressed air through a cone three tiles deep. Everyone in it, friend or foe, has an 80% chance to be Slowed and a 35% chance to be Stunned.',
     flavor: 'Airbending is not always quiet.',
     fx: 'fx.air.shout',
     tags: ['attack', 'control'],
@@ -182,7 +189,7 @@ export const AIR_ABILITIES: readonly Ability[] = [
       { kind: 'push', distance: 2 },
     ],
     description:
-      'Two shockfronts, aimed to meet inside the target. Goes straight through armour, because armour is not what it is hitting.',
+      'Two shockfronts meet over a 3×3 area, friend or foe. Ignores Defence, pushes everyone 2 tiles outward and has a 60% chance to Stun each.',
     flavor: 'Find the note the thing is already singing. Then sing it louder.',
     fx: 'fx.air.shatter',
     tags: ['attack', 'control', 'signature'],

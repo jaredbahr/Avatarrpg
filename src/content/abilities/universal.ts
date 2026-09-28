@@ -33,7 +33,7 @@ export const UNIVERSAL_ABILITIES: readonly Ability[] = [
     effects: [{ kind: 'push', distance: 1 }],
     tags: ['control', 'mobility'],
     description:
-      'Shove whatever is next to you one tile away. Works on people, and works on barrels, carts and braziers — which is usually the better idea.',
+      'Push an adjacent person or object one tile away from you. Barrels, carts and braziers can be shoved into position, or into trouble.',
     flavor: 'No bending required. Just lean.',
     fx: 'fx.non.shove',
   }),
