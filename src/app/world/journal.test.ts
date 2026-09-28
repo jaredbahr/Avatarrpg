@@ -26,6 +26,20 @@ const flagKeys = (condition: Condition): string[] => {
   }
 };
 
+const visitedNodes = (condition: Condition): string[] => {
+  switch (condition.kind) {
+    case 'visited':
+      return [condition.nodeId];
+    case 'all':
+    case 'any':
+      return condition.of.flatMap(visitedNodes);
+    case 'not':
+      return visitedNodes(condition.of);
+    default:
+      return [];
+  }
+};
+
 const storyFlags = () => {
   const keys = new Set<string>();
   for (const node of CONTENT.story.values()) {
@@ -69,6 +83,11 @@ describe('travel journal and riverside routes', () => {
     for (const note of JOURNAL_NOTES)
       for (const key of flagKeys(note.when))
         expect(set.has(key) || APP_FLAGS.has(key), `${note.id}: ${key}`).toBe(true);
+  });
+  it('gates every visited note on a story node that exists', () => {
+    for (const note of JOURNAL_NOTES)
+      for (const nodeId of visitedNodes(note.when))
+        expect(CONTENT.story.has(nodeId), `${note.id}: ${nodeId}`).toBe(true);
   });
   it('finds the story notes on the routes that earn them', () => {
     expect(found(start(), 'bo_shan_cart')).toBe(false);

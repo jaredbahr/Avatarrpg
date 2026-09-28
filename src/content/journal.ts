@@ -91,11 +91,11 @@ export const JOURNAL_NOTES: readonly JournalNote[] = [
   },
   {
     id: 'bo_shan_cart',
-    mapId: 'quarry_floor',
+    mapId: 'ba_dan_village',
     title: 'Five missing, not four',
     hint: 'Someone in Ba Dan knows who else went up this road.',
     found:
-      'Pella’s brother, Bo-shan, took vegetables up before Mira’s messengers went. Look for a cart with cabbages piled above the seat.',
+      'Pella’s brother, Bo-shan, took vegetables up before Mira’s messengers went. Look for a cart of cabbages on the quarry floor.',
     when: { kind: 'flag', key: 'pella_asked', op: 'set' },
   },
   {
