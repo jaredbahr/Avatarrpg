@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { CONTENT } from '../../content';
 import { createGame } from '../../core/state/createGame';
 import { apply } from '../../core/state/reducer';
-import { exitDestination, nearbyExploreTarget } from './guidance';
+import { exitDestination, nearbyExits, nearbyExploreTarget } from './guidance';
 
 function villageAt(pos: { x: number; y: number }) {
   const initial = createGame(CONTENT, {
@@ -71,5 +71,35 @@ describe('nearby exploration guidance', () => {
         label: 'Back to the river',
       }),
     ).toBe('Ba Dan · The Riverside');
+  });
+
+  it('reaches a route from every cell of a widened road mouth (M2)', () => {
+    const village = CONTENT.maps.get('ba_dan_village');
+    const forest = CONTENT.maps.get('forest_road');
+    if (!village || !forest) throw new Error('Missing connected maps');
+
+    // The east gate's mouth is the two cells of the road at the border, so a
+    // leader one tile south of `pos` still gets the route.
+    const east = nearbyExits(village, { x: 22, y: 9 });
+    expect(east.map((exit) => exit.toMapId)).toEqual(['forest_road']);
+    expect(nearbyExploreTarget(CONTENT, village, villageAt({ x: 22, y: 9 }))).toMatchObject({
+      kind: 'exit',
+      destination: 'Forest Road',
+    });
+
+    // The forest's west mouth runs the whole road cross-section.
+    const west = nearbyExits(forest, { x: 1, y: 7 });
+    expect(west.map((exit) => exit.toMapId)).toEqual(['ba_dan_village']);
+    // One tile further inland is outside the mouth.
+    expect(nearbyExits(forest, { x: 2, y: 7 })).toEqual([]);
+  });
+
+  it('keeps a single-tile exit matching only its own tile (M2)', () => {
+    const village = CONTENT.maps.get('ba_dan_village');
+    if (!village) throw new Error('Missing Ba Dan village');
+    const single = village.exits?.find((exit) => exit.toMapId === 'ba_dan_riverside');
+    if (!single) throw new Error('Missing the river path');
+    expect(nearbyExits(village, single.pos)).toContain(single);
+    expect(nearbyExits(village, { x: single.pos.x - 2, y: single.pos.y })).toEqual([]);
   });
 });

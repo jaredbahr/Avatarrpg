@@ -1,9 +1,17 @@
-import type { ContentIndex, Grid, MapDef, Vec2, GameState } from '../../core/types';
+import type { ContentIndex, Grid, MapDef, MapExit, Vec2, GameState } from '../../core/types';
+import { distance } from '../../core/rules/grid';
 import { evaluate } from '../../core/story/conditions';
-import { visibleNpcs } from '../../core/story/world';
+import { exitCells, visibleNpcs } from '../../core/story/world';
 import { previewWalk } from '../world/walking';
 import { Dialog } from './Dialog';
 import { button, el } from './dom';
+
+/** The mouth cell nearest the party, so a widened exit is entered from the near side. */
+export function nearestExitCell(exit: MapExit, from: Vec2): Vec2 {
+  let best = exit.pos;
+  for (const cell of exitCells(exit)) if (distance(from, cell) < distance(from, best)) best = cell;
+  return best;
+}
 
 const NS = 'http://www.w3.org/2000/svg';
 function svgNode<K extends keyof SVGElementTagNameMap>(tag: K, attributes: Record<string, string>) {
@@ -149,7 +157,7 @@ export class LocalMapDialog extends Dialog {
           exit.label,
           () => {
             this.close();
-            this.walk(exit.pos);
+            this.walk(nearestExitCell(exit, this.positions[0] ?? this.state.location.pos));
           },
           {
             disabled: !open,
