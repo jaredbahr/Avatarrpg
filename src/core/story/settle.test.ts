@@ -10,8 +10,8 @@ import { describe as suite, expect, it } from 'vitest';
 import { CONTENT } from '../../content';
 import { DEFAULT_TILE, buildGrid, posKey } from '../rules/grid';
 import { createGame } from '../state/createGame';
-import { activeTriggers, visibleNpcs } from './world';
-import type { Grid, GameState, MapDef, Tile, Vec2 } from '../types';
+import { activeTriggers, exitCells, visibleNpcs } from './world';
+import type { Grid, GameState, MapDef, MapExit, Tile, Vec2 } from '../types';
 import { findSettleTile } from './settle';
 
 const VILLAGE = (() => {
@@ -50,10 +50,13 @@ function arrivals(map: MapDef): readonly Vec2[] {
   return out;
 }
 
-/** Exit (single or array form) and active-trigger cells: never crossed, matching `blockedForStepping`. */
+/**
+ * Exit cells (the legacy `exit`, and every cell of an `exits` area) and
+ * active-trigger cells: never crossed, matching `blockedForStepping`.
+ */
 function steppingForbidden(map: MapDef, state: GameState): readonly Vec2[] {
   const out: Vec2[] = map.exit ? [map.exit.pos] : [];
-  for (const exit of map.exits ?? []) out.push(exit.pos);
+  for (const exit of map.exits ?? []) out.push(...exitCells(exit));
   for (const trigger of activeTriggers(map, state)) out.push(...trigger.area);
   return out;
 }
@@ -162,6 +165,52 @@ suite('findSettleTile', () => {
     expect(has(landingForbidden, result?.pos)).toBe(false);
     for (const step of result!.path) {
       expect(has(crossingForbidden, step), `path crosses ${posKey(step)}`).toBe(false);
+    }
+  });
+
+  it('never settles onto or across a non-`pos` cell of a widened exit mouth', () => {
+    //   . . .
+    //   . # .
+    //   . . .
+    //
+    // The exit's `pos` is (1,0); its `area` also widens east to (2,0). The
+    // leader starts at (2,1), beside that extra mouth cell. The only other
+    // free neighbour is (2,2), so if the area is not blocked for stepping the
+    // nearest tile — (2,0), sorted first by y — is the mouth, not a safe spot.
+    const layout = ['...', '.#.', '...'];
+    const tiles: Tile[] = layout
+      .join('')
+      .split('')
+      .map((ch) => ({ ...DEFAULT_TILE, blocked: ch === '#' }));
+    const grid: Grid = { width: 3, height: 3, tiles };
+    const mouth: MapExit = {
+      pos: { x: 1, y: 0 },
+      area: [{ x: 1, y: 0 }, { x: 2, y: 0 }],
+      toMapId: 'settle_elsewhere',
+      toPos: { x: 1, y: 1 },
+      label: 'Widened mouth',
+    };
+    const map: MapDef = {
+      id: 'settle_mouth_test',
+      name: 'Settle mouth test',
+      kind: 'explore',
+      width: 3,
+      height: 3,
+      rows: layout,
+      legend: {},
+      partySpawns: [{ x: 2, y: 1 }],
+      npcs: [],
+      props: [],
+      ambience: '',
+      exits: [mouth],
+    };
+    const area = exitCells(mouth);
+    const result = findSettleTile(CONTENT, map, grid, village(), { x: 2, y: 1 });
+    expect(result).not.toBeNull();
+    expect(result?.pos).toEqual({ x: 2, y: 2 });
+    expect(has(area, result?.pos)).toBe(false);
+    for (const step of result!.path) {
+      expect(has(area, step), `path crosses ${posKey(step)}`).toBe(false);
     }
   });
 });

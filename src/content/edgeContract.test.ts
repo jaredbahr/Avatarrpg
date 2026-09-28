@@ -69,6 +69,31 @@ describe('map edge contract', () => {
     expect(issues.some((issue) => issue.message.includes('(0,0)'))).toBe(false);
   });
 
+  it('exempts every cell of a multi-tile exit area from the edge contract', () => {
+    // A widened west gate (M2): `pos` at (0,0) plus (0,1). Both border cells
+    // are covered by the one exit, so neither may warn.
+    const withMouth = fixture(openRows, {
+      exits: [
+        {
+          pos: { x: 0, y: 0 },
+          area: [{ x: 0, y: 0 }, { x: 0, y: 1 }],
+          toMapId: 'fixture_elsewhere',
+          toPos: { x: 1, y: 1 },
+          label: 'Widened west gate',
+        },
+      ],
+    });
+    const issues = validateMapContracts([withMouth]);
+    // 14 border cells, two covered by the exit area: the other 12 warn.
+    expect(issues).toHaveLength(12);
+    for (const cell of [{ x: 0, y: 0 }, { x: 0, y: 1 }]) {
+      expect(
+        issues.some((issue) => issue.message.includes(`walkable border (${cell.x},${cell.y}) `)),
+        `area cell ${cell.x},${cell.y} warned`,
+      ).toBe(false);
+    }
+  });
+
   it('errors on a span that starts before its side, enforced or not', () => {
     const negative = fixture(openRows, {
       id: 'fixture_edge_negative',

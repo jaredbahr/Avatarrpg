@@ -8,7 +8,7 @@
 
 import type { ContentIndex, GameEvent, GameState, Grid, MapDef, StepResult, Vec2 } from '../types';
 import { DIRECTIONS, cachedGrid, inBounds, posKey, tileAt } from '../rules/grid';
-import { activeTriggers, backgroundFigures, visibleNpcs } from './world';
+import { activeTriggers, backgroundFigures, exitCells, visibleNpcs } from './world';
 
 export interface SettleTile {
   readonly pos: Vec2;
@@ -21,10 +21,14 @@ function tileSet(positions: readonly Vec2[]): ReadonlySet<string> {
   return set;
 }
 
+/** Every cell of every exit — a widened `area` mouth, or the lone `pos` (M2). */
 function exitTiles(map: MapDef): ReadonlySet<string> {
-  const positions: Vec2[] = map.exits ? map.exits.map((exit) => exit.pos) : [];
-  if (map.exit) positions.push(map.exit.pos);
-  return tileSet(positions);
+  const cells = new Set<string>();
+  for (const exit of map.exits ?? []) {
+    for (const cell of exitCells(exit)) cells.add(posKey(cell));
+  }
+  if (map.exit) cells.add(posKey(map.exit.pos));
+  return cells;
 }
 
 /** Every tile another map's exit arrives at on this one (ADR 0047 §3). */
