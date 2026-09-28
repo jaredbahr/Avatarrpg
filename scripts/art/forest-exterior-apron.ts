@@ -57,6 +57,8 @@ export const GUARD_ALPHA = 250;
  * to cross them to the grass bank they are cut into.
  */
 const SAMPLE_REACH = 3.4;
+/** The walk's stride along the normal, in tiles. */
+const SAMPLE_STEP = 0.08;
 /** Tile centre of logical (0,0) in scene-local pixels, as every piece uses it. */
 const ORIGIN = { x: 768, y: 0 } as const;
 const TILE = { width: 64, height: 32 } as const;
@@ -178,8 +180,11 @@ function groundAt(field: Image, x: number, y: number): [number, number, number, 
  * the offset is the band's own width, so that band is a plain shift.
  *
  * Where the mirror point is blocked by a pond, a ledge or a cover cell — objects
- * standing on the ground, not ground — the walk keeps going until it finds the
- * terrain those objects stand on.
+ * standing on the ground, not ground — the walk keeps going to the terrain those
+ * objects stand on, and mirrors again across the hole's far edge. Taking the
+ * first ground past the hole instead hands every depth whose mirror falls in it
+ * the same far-edge pixel: the one-row comb the raised shelf left on the east
+ * rim.
  */
 export function apronTerrain(
   field: Image,
@@ -189,10 +194,29 @@ export function apronTerrain(
   const depth = apronDepth(x, y);
   const inward = apronInward(x, y);
   const mirror = depth > 0 ? 2 * depth : APRON_SEAM + 0.08;
-  for (let t = mirror; t <= mirror + SAMPLE_REACH; t += 0.08) {
+  const sample = (t: number): [number, number, number, number] | null => {
     const point = scenePixel(x + inward.x * t, y + inward.y * t);
-    const found = groundAt(field, point.x, point.y);
-    if (found) return { r: found[0], g: found[1], b: found[2] };
+    return groundAt(field, point.x, point.y);
+  };
+  const direct = sample(mirror);
+  if (direct) return { r: direct[0], g: direct[1], b: direct[2] };
+  // Near a corner the mirror falls off the board or into the other rim's own
+  // feather, not into an object's hole; there the first ground is the nearest
+  // continuation and stays as it was.
+  const onBoard = apronDepth(x + inward.x * mirror, y + inward.y * mirror) <= -APRON_SEAM;
+  const steps = Math.floor(SAMPLE_REACH / SAMPLE_STEP);
+  for (let step = 1; step <= steps; step++) {
+    const far = mirror + step * SAMPLE_STEP;
+    const edge = sample(far);
+    if (!edge) continue;
+    if (!onBoard) return { r: edge[0], g: edge[1], b: edge[2] };
+    // Reflect across the far edge, so the depths that fall in the hole read
+    // ground that moves with them instead of one line of it.
+    for (let back = 0; back <= steps; back++) {
+      const found = sample(2 * far - mirror + back * SAMPLE_STEP);
+      if (found) return { r: found[0], g: found[1], b: found[2] };
+    }
+    return null;
   }
   return null;
 }

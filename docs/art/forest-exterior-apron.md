@@ -46,6 +46,17 @@ was one row of pixels stretched outward. Sampling the point's reflection instead
 continuously at the rim and carries the authored texture. Inside the seam band
 the offset is that band's width, which is a plain shift.
 
+The same comb came back where an object blocks the mirror. The raised shelf
+stands on the east rim's cells, so for every shallow depth there the mirror
+point lands in the shelf's hole in the grass, and the walk took the first ground
+past it — one far-edge line for all those depths, which is a translation again.
+The visual audit caught it on the iPad frame of the fight. A blocked mirror now
+reflects a second time across the hole's far edge, so the sample keeps moving
+with depth. A corner is the exception: there the mirror falls off the board or
+into the neighbouring rim's feather, not into an object, and the first ground is
+still the nearest continuation. `forest-exterior-apron.test.ts` counts distinct
+colours along the rows beside the shelf.
+
 ## The seam band
 
 The grass packs feather to alpha 0 across their outermost ~0.2 tiles. Against
