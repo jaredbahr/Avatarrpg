@@ -238,6 +238,11 @@ export class Canvas2DBackend implements RenderBackend {
               piece.x * camera.scale - camera.offsetX,
               (piece.y + piece.height) * camera.scale - camera.offsetY,
             );
+            if (piece.flip) {
+              // Mirrored inside its own box: the right edge becomes the left.
+              ctx.translate(piece.width * camera.scale, 0);
+              ctx.scale(-1, 1);
+            }
             drawSceneImage(
               ctx,
               image,

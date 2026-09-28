@@ -170,6 +170,15 @@ for (const projection of ['orthographic', 'oblique'] as const satisfies readonly
       ).toBe(1);
     });
 
+    it('probes a mirrored drawing where it is drawn, not where its texture is', () => {
+      // Opaque only in the texture's right half; the actor stands a quarter in.
+      installImage((x) => (x >= 64 ? 255 : 0));
+      const scene = { ...roof(camera), x: roof(camera).x + 32 },
+        state = view({ units: [unit(origin)] });
+      expect(sceneryOpacity(scene, state, camera)).toBe(1);
+      expect(sceneryOpacity({ ...scene, flip: true }, state, camera)).toBe(0.28);
+    });
+
     it('does not fade for an actor in front of the roof or outside its rectangle', () => {
       installImage(() => 255);
       const scene = roof(camera);

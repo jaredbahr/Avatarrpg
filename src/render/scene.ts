@@ -163,12 +163,13 @@ export function sceneryOpacity(scenery: SceneScenery, view: MapView, camera: Cam
     if (foot.y > depth) continue;
     // Head, torso and feet probes follow upright figures, not the ground's
     // affine transform. Future route points cannot fade an unoccupied building.
+    const across = (foot.x - scenery.x) / scenery.width;
     for (const lift of [8, 32, 56]) {
       if (
         covers(
           image,
           scenery,
-          (foot.x - scenery.x) / scenery.width,
+          scenery.flip ? 1 - across : across,
           (foot.y - lift * scale - scenery.y) / scenery.height,
         )
       )

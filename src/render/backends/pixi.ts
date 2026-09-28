@@ -642,10 +642,13 @@ export class PixiBackend implements RenderBackend {
       }
       sprite.texture = texture;
       // Wind leans the crown about the foot; the trunk's base never moves.
-      sprite.anchor.set(0, 1);
+      // A mirrored piece anchors on its texture's right edge, which the
+      // negative scale lays on the box's left.
+      sprite.anchor.set(item.flip ? 1 : 0, 1);
       sprite.position.set(item.x, item.y + item.height);
       sprite.width = item.width;
       sprite.height = item.height;
+      sprite.scale.x = Math.abs(sprite.scale.x) * (item.flip ? -1 : 1);
       sprite.skew.x = item.wind && !view.reducedMotion ? -sway(view.time, item) : 0;
       sprite.zIndex = camera.groundPoint(item.depth).y;
       sprite.alpha = opacities.get(item) ?? 1;

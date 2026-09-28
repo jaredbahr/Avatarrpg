@@ -548,6 +548,7 @@ export const mapSchema = z
                 wall: z.boolean().optional(),
                 fadeWhenOccluding: z.boolean().optional(),
                 fadeGroup: id.optional(),
+                flip: z.boolean().optional(),
               })
               .superRefine((piece, ctx) => {
                 if (piece.exterior) return;
