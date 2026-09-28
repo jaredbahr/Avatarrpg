@@ -2,7 +2,7 @@
 
 ## 0.2.11 — release candidate
 
-- Make the forest road feel alive (ADR 0054). Its pines lean in a wind that
+- Make the forest road feel alive (ADR 0056). Its pines lean in a wind that
   travels across the board, and on WebGL a faint band of light crosses the
   grass under each gust while pine needles drift in the air. When the ambush
   opens, six small PixelLab songbirds burst out of the trees and fly off over
