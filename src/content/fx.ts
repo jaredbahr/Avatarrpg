@@ -1456,8 +1456,10 @@ const chimneySmoke = particles({
 /**
  * What a map's `ambience` puts in the air, keyed by the ambience string. A
  * map whose ambience is not here gets nothing, which is a valid answer for
- * a cellar. WebGL-only and off under reduce motion: it is fidelity, not
- * information (ADR 0002).
+ * a cellar. The motes are WebGL-only and off under reduce motion: they are
+ * fidelity, not information (ADR 0002). A `chimney` rises from each of the
+ * scene's `MapScene.chimneys` and is drawn everywhere: animated on WebGL, a
+ * still wisp on Canvas 2D and under reduce motion (ADR 0008 amendment).
  */
 export const FX_AMBIENCE: Readonly<Record<string, AmbienceRecipe>> = {
   forest: {
