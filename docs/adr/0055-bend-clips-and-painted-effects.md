@@ -1,4 +1,4 @@
-# ADR 0054: One bend a character, painted effects a layer set
+# ADR 0055: One bend a character, painted effects a layer set
 
 **Status:** accepted, 2026-09-27 (contract only; packer, data and wiring follow)
 

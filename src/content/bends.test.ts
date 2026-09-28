@@ -30,7 +30,7 @@ import type {
 import { R9_EARTH, R9_FIRE, R9_TAKES, R9_WATER, r9FrameNames, r9Heading } from './bends.fixture';
 
 /**
- * The bend contract is data, so it is validated like content (ADR 0054): every
+ * The bend contract is data, so it is validated like content (ADR 0055): every
  * rule gets its own failing case, and the approved r9 takes must pass untouched.
  */
 

@@ -1,5 +1,5 @@
 /**
- * Bend clips and their painted effects, as data (ADR 0054).
+ * Bend clips and their painted effects, as data (ADR 0055).
  *
  * A bend _set_ is the one whole-body bending animation a character owns.
  * Every bending ability that character has plays that clip, and no clip is
