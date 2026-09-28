@@ -147,15 +147,26 @@ export function bendFxIndex(
   };
 }
 
+/** `fetch` as JSON, rejecting a response that is not ok. */
+export async function fetchJson(
+  url: string,
+  get: (url: string) => Promise<Pick<Response, 'ok' | 'status' | 'json'>> = fetch,
+): Promise<unknown> {
+  const response = await get(url);
+  if (!response.ok) throw new Error(`${response.status} for ${url}`);
+  return response.json();
+}
+
 /**
  * Fetches the registered effects and pages (`BEND_FX`, relative to `base`)
  * and indexes them. The page images are not fetched: that is the drawing's
- * business, through the cel's `image`.
+ * business, through the cel's `image`. A response that is not ok rejects,
+ * rather than parsing an error page as data.
  */
 export async function loadBendFx(
   registration: { readonly data: string; readonly pages: readonly string[] },
   base: string,
-  get: (url: string) => Promise<unknown> = async (url) => (await fetch(url)).json(),
+  get: (url: string) => Promise<unknown> = fetchJson,
 ): Promise<BendFxIndex> {
   const [effects, ...pages] = await Promise.all([
     get(`${base}${registration.data}`),

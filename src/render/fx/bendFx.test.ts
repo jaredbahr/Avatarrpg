@@ -3,7 +3,14 @@ import { join } from 'node:path';
 import { describe, expect, it } from 'vitest';
 import type { BendEffectDef, BendSetDef } from '../../content/bends';
 import { BEND_FX, effectCelName } from '../../content/fxCels';
-import { bendFxIndex, celIndexAt, layerLoops, loadBendFx, parseBendFxPage } from './bendFx';
+import {
+  bendFxIndex,
+  celIndexAt,
+  fetchJson,
+  layerLoops,
+  loadBendFx,
+  parseBendFxPage,
+} from './bendFx';
 
 const read = (path: string): unknown => JSON.parse(readFileSync(join('public', path), 'utf8'));
 const effects = read(BEND_FX.data) as BendEffectDef[];
@@ -123,6 +130,16 @@ describe('the shipped bend effects', () => {
     });
     expect(urls).toEqual(['/base/art/fx/bend-effects.json', '/base/art/fx/bend-fx.json']);
     expect(loaded.effect('fx.earth.rock')?.trajectory.kind).toBe('arc');
+  });
+
+  it('rejects a response that is not ok instead of parsing it', async () => {
+    const reply = (ok: boolean) => async () => ({
+      ok,
+      status: ok ? 200 : 404,
+      json: () => Promise.resolve({ served: ok }),
+    });
+    await expect(fetchJson('/base/x.json', reply(true))).resolves.toEqual({ served: true });
+    await expect(fetchJson('/base/x.json', reply(false))).rejects.toThrow('404 for /base/x.json');
   });
 });
 
