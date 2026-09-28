@@ -20,6 +20,9 @@
 import { z } from 'zod';
 import { HEADINGS } from './assets/clips';
 import type { Heading } from './assets/clips';
+import { effectCelName } from './fxCels';
+
+export { effectCelName };
 
 /* ------------------------------------------------------------------ */
 /* Vocabulary                                                          */
@@ -765,11 +768,6 @@ export function validateBendSets(
     validateAttacksAgree(set, problems);
   }
   return problems;
-}
-
-/** The atlas cel name of a sequence's `index`th cel. */
-export function effectCelName(sequence: string, index: number): string {
-  return `${sequence}/${index}`;
 }
 
 /**
