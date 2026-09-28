@@ -14,8 +14,7 @@ import { phaseLabel } from '../world/journal';
 import { button, el, motionReduced } from '../ui/dom';
 import { WaitDialog } from '../ui/WaitDialog';
 import { seatHere } from '../world/waiting';
-import { verticalClip } from '../anim/direction';
-import { drawnSprite } from './riversidePose';
+import { sheetLocomotion } from '../../content/assets/manifest';
 
 const distance = (a: Vec2, b: Vec2) => Math.hypot(a.x - b.x, a.y - b.y);
 type Activity = { kind: 'water' | 'fire' | 'wave'; unitId: string; started: number };
@@ -340,7 +339,7 @@ export class VillageLife {
         id: u.id,
         pos: u.renderPos ?? u.pos,
         variant: member?.characterId ?? 'sura',
-        sprite: member ? drawnSprite(member, true) : u.sprite,
+        sprite: u.sprite,
         palette: member?.element ?? 'water',
         facing: active ? 1 : (u.facing ?? 1),
         motion: tea ? 'tea' : (active?.kind ?? (u.renderPos ? 'walk' : 'idle')),
@@ -350,11 +349,7 @@ export class VillageLife {
           : active
             ? now - active.started
             : u.renderPos
-              ? riversideWalkTime(
-                  u.clipTime ?? 0,
-                  ['sura', 'kaya'].includes(member?.characterId ?? ''),
-                  u.clip !== undefined && verticalClip(u.clip),
-                )
+              ? riversideWalkTime(u.clipTime ?? 0, sheetLocomotion(u.sprite) !== undefined)
               : time,
         label: u.name,
       };

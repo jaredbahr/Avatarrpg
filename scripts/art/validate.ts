@@ -15,7 +15,9 @@
  * eight-way locomotion, feet on the anchor's foot line, a rest cel's feet under
  * the column and each walk's and stance's mean foot row level with its idle's.
  * A sheet's further atlas pages (ADR 0052) are held to all of it, page by
- * page, and a frame may live on only one of them. Every `image` entry's file exists, is the PNG or WebP its
+ * page, and a frame may live on only one of them; the pins cover the cels on
+ * a sheet's lossy pages, and a lossless PNG page beside them (ADR 0054) is
+ * checked as any PNG sheet is. Every `image` entry's file exists, is the PNG or WebP its
  * name says, and measures what its kind of key promises (a portrait is
  * 512x512), because the loader falls back to the drawn placeholder on a
  * missing file and a typo would otherwise ship green; and every map's
@@ -206,7 +208,7 @@ export async function validateSheets(
     const find = (name: string) => {
       for (const page of pages) {
         const frame = page.frames.get(name);
-        if (frame) return { image: page.image, frame };
+        if (frame) return { image: page.image, frame, lossy: page.lossy };
       }
       return undefined;
     };
@@ -216,7 +218,10 @@ export async function validateSheets(
     if (lossy) {
       const pinPath = pins[key];
       if (!pinPath || !existsSync(pinPath)) {
-        const files = pages.map((page) => page.file).join(' + ');
+        const files = pages
+          .filter((page) => page.lossy)
+          .map((page) => page.file)
+          .join(' + ');
         problems.push(`${key}: lossy ${files} has no cel pin file`);
       } else {
         pinned = (JSON.parse(readFileSync(pinPath, 'utf8')) as { frames?: Record<string, string> })
@@ -246,7 +251,7 @@ export async function validateSheets(
           problems.push(`${key}: frame "${name}" is not in ${atlasNames}`);
           continue;
         }
-        const { image, frame } = found;
+        const { image, frame, lossy: lossyCel } = found;
         if (frame.w !== wantW || frame.h !== wantH) {
           problems.push(
             `${key}: frame "${name}" is ${frame.w}x${frame.h}, expected ${wantW}x${wantH}`,
@@ -255,7 +260,8 @@ export async function validateSheets(
         if (borderTouched(image, frame, MARGIN)) {
           problems.push(`${key}: frame "${name}" has art inside the ${MARGIN} px margin`);
         }
-        if (pinned && pinned[name] !== celHash(image, frame)) {
+        // A lossless page (the riverside's, ADR 0054) is its own record.
+        if (pinned && lossyCel && pinned[name] !== celHash(image, frame)) {
           problems.push(`${key}: decoded cel "${name}" does not match its pin`);
         }
       }
