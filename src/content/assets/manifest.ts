@@ -68,6 +68,13 @@ export type AssetEntry =
       readonly bend?: string;
       /** The atlas pages `bend` draws from, each a JSON and image like `atlas`. */
       readonly bendPages?: readonly string[];
+      /**
+       * Further clips, as a JSON of `ClipDef`s by clip name relative to the
+       * site root, whose cels live on the pages above (the G knockouts, ADR
+       * 0059). Fetched with the pages, so it costs the bundle nothing: the
+       * sheet draws once it is in, and those clips are asked of the store.
+       */
+      readonly clipData?: string;
       /** Pixels a tile is drawn at in the atlas: 128, or 256 for a sharper sheet. */
       readonly pixelsPerTile: number;
       /** Explicit art bounds when weapon reach exceeds the default frame (ADR 0032). */
