@@ -156,8 +156,9 @@ test('Gao restocks his display in trading hours, his tap tile never leaving the 
   await pauseClock(page);
   const seen = new Set<string>();
   let moving = false;
-  for (let step = 0; step < 40 && !seen.has('8,5'); step++) {
-    await page.clock.runFor(500);
+  // A tenth of a second a sample: a tile of walk is 280 ms.
+  for (let step = 0; step < 200 && !seen.has('8,5'); step++) {
+    await page.clock.runFor(100);
     const frame = await residentFrame(page);
     const gao = frame.markers.find((m) => m.id === 'lw.npc.gao');
     expect(gao?.pos).toEqual({ x: 9, y: 4 });
