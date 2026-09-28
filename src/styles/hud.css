@@ -1913,6 +1913,20 @@ html[data-contrast='high'] .hud-panel::after {
 }
 
 /*
+ * Neither beside the list nor under it: at the foot of the screen, and the
+ * list stops short of it by --toast-reserve (Toasts.ts). The room holds one
+ * toast, so only the newest shows, as over a tall sheet.
+ */
+.toasts[data-place='map-foot'] {
+  top: auto;
+  bottom: calc(var(--sp-2) + env(safe-area-inset-bottom, 0px));
+}
+
+.toasts[data-place='map-foot'] > .toast:not(:last-child) {
+  display: none;
+}
+
+/*
  * Over an open sheet, at the foot of the screen: the header stays clear. A
  * sheet tall enough to reach there lifts it to just above its footer instead,
  * which Toasts.ts measures, so Import and Close stay clear too.
@@ -3006,8 +3020,9 @@ html[data-contrast='high'] .hud-panel::after {
     box-shadow: var(--shadow-2);
     /* A phone on its side at Largest text has less room under the header than
        the list is tall, so it scrolls within what is left (CombatScene
-       measures --more-room) rather than running off the foot of the screen. */
-    max-height: calc(var(--more-room, 100dvh) - var(--sp-2));
+       measures --more-room) rather than running off the foot of the screen.
+       A toast with nowhere else to go takes the foot, and --toast-reserve. */
+    max-height: calc(var(--more-room, 100dvh) - var(--toast-reserve, 0px) - var(--sp-2));
     overflow-y: auto;
     overscroll-behavior: contain;
   }
@@ -3024,8 +3039,9 @@ html[data-contrast='high'] .hud-panel::after {
 
   /* Toasts hang in the overlay host, above the whole scene, and the map's
      place for them is right where the list drops. The list carries
-     `data-toast-clear`, so Toasts.ts moves their band beside or under it while
-     it is open, and the live region keeps announcing. */
+     `data-toast-clear`, so Toasts.ts moves their band beside or under it, or
+     to the foot of the screen, while it is open, and the live region keeps
+     announcing. */
 }
 
 /* Upright at Large text, Pause is its mark alone too; its label stays in the
