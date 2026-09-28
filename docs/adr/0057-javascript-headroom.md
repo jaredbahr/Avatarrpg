@@ -23,12 +23,13 @@ for renderers the game never creates.
 ## Decision
 
 1. **Terser without `safari10`.** Vite passes `safari10: true` to terser by
-   default. The build targets es2022, which needs Safari 15, so the workaround
-   only costs bytes. Saves 0.67 KB.
+   default. The supported floor is iPadOS 16.2 (ADR 0005), far past the
+   Safari 10 bugs the workaround exists for, so it only costs bytes. Saves 0.67 KB.
 2. **A compact precache manifest.** The manifest is inlined in `sw.js`, and 200
    md5 revisions of 32 hex digits do not compress. A `manifestTransforms` step
    keeps 12 digits, which leaves a 1 in 2^48 chance that an edited file keeps its
-   revision. `includeAssets` and `includeManifestIcons` are dropped because
+   revision. `manifest.webmanifest` keeps its full 32 digits, because the PWA
+   plugin adds its entry after `manifestTransforms` has run. `includeAssets` and `includeManifestIcons` are dropped because
    `globPatterns` already precaches every icon, and each icon had been listed
    twice. Saves 2.32 KB.
 3. **No Canvas or WebGPU graphics and particle pipes.** Pixi is only created as
@@ -82,5 +83,10 @@ Measured on the local production build:
 The gate stays at 320 KB, with about 10 KB of headroom again. A future feature
 that draws SVG, uses tagged text, or creates a Canvas or WebGPU Pixi renderer
 must first restore the matching registration; the stub's error names this ADR.
-Precache revisions are 12 hex digits; the offline behaviour and the precached
-set are otherwise unchanged.
+Precache revisions are 12 hex digits, except `manifest.webmanifest`, which keeps
+32; the offline behaviour and the precached set are otherwise unchanged.
+
+The shortening has a one-time cost. Every revisioned precache key changes, so on
+the first update after this lands each installed tablet re-downloads the
+non-hashed precached files once. Files with a content hash in their name carry
+no revision and are not fetched again.
