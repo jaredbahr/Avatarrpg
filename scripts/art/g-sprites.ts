@@ -34,11 +34,11 @@ import { newImage, pixelAt, readPng, setPixel } from './lib/image';
 import { decodeWebp, encodeWebp } from './lib/webp';
 import { celHash } from './validate';
 
-const FRAME_W = 128;
-const FRAME_H = 192;
-const SCALE = 0.75;
-const OFFSET_X = -8;
-const OFFSET_Y = 31;
+export const FRAME_W = 128;
+export const FRAME_H = 192;
+export const SCALE = 0.75;
+export const OFFSET_X = -8;
+export const OFFSET_Y = 31;
 /** The lossy encoding every G atlas ships at (ADR 0050, ADR 0051). */
 export const WEBP_QUALITY = 90;
 
