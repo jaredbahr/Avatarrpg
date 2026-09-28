@@ -17,6 +17,18 @@ const MOMENTS = [
   ['wen', 'quarry_assessment'],
 ] as const;
 
+/** Nodes with more than one voice list them in priority order; single-voice nodes list one. */
+const ROAD_VOICES = [
+  ['defeat_forest', ['tenzo']],
+  ['forest_dema_again', ['sura']],
+  ['defeat_gate', ['riko', 'kaya']],
+  ['gate_kinship', ['bo', 'lin_mei']],
+  ['defeat_ambush', ['nilak', 'jinu']],
+  ['cutting_tea_again', ['nima']],
+  ['quarry_assessment', ['wen', 'bo']],
+  ['defeat_boss', ['wen']],
+] as const;
+
 function game(ids: readonly string[]): GameState {
   return createGame(CONTENT, {
     seed: 'party-contributions',
@@ -78,5 +90,36 @@ describe('party contributions in the quarry run', () => {
       const complete = { ...state, flags: { ...state.flags, act1_complete: true } };
       expect(said(complete, node).speaker).not.toBe(CONTENT.characters.get(id)?.name);
     }
+  });
+});
+
+describe('party voices along the road and the quarry floor', () => {
+  const name = (id: string) => CONTENT.characters.get(id)?.name;
+
+  it.each(ROAD_VOICES)('%s speaks for each listed hero on their own', (node, ids) => {
+    for (const id of ids) {
+      expect(said(game([id]), node).speaker).toBe(name(id));
+      const present = game([id]);
+      const unconscious = {
+        ...present,
+        party: present.party.map((unit) => ({ ...unit, hp: 0 })),
+      };
+      expect(said(unconscious, node).speaker).not.toBe(name(id));
+      const complete = { ...present, flags: { ...present.flags, act1_complete: true } };
+      expect(said(complete, node).speaker).not.toBe(name(id));
+    }
+  });
+
+  it.each(ROAD_VOICES)('%s gives the first listed hero priority', (node, ids) => {
+    const [first, ...rest] = ids;
+    expect(said(game([...rest, first]), node).speaker).toBe(name(first));
+  });
+
+  it.each(ROAD_VOICES)('%s falls back when no listed hero is present', (node, ids) => {
+    const outsider = CHARACTERS.find((character) => !ids.some((id) => id === character.id));
+    if (!outsider) throw new Error(node);
+    const fallback = said(game([outsider.id]), node);
+    for (const id of ids) expect(fallback.speaker).not.toBe(name(id));
+    expect(fallback.lines.length).toBeGreaterThan(0);
   });
 });
