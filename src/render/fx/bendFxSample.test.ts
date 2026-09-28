@@ -4,9 +4,9 @@ import { describe, expect, it } from 'vitest';
 import type { BendEffectDef } from '../../content/bends';
 import { BEND_FX } from '../../content/fxCels';
 import { bendFxIndex, parseBendFxPage } from './bendFx';
-import { BEND_FX_PX_PER_TILE, sampleBendFx } from './bendFxSample';
+import { BEND_FX_PX_PER_TILE, planBendFx, sampleBendFx } from './bendFxSample';
 import type { BendFxShot } from './bendFxSample';
-import { aimDeg, boardStep, flightMs, flightPoint, whipHead } from './trajectory';
+import { aimDeg, bendStep, flightMs, flightPoint, whipHead } from './trajectory';
 import type { Point } from './trajectory';
 
 const read = (path: string): unknown => JSON.parse(readFileSync(join('public', path), 'utf8'));
@@ -20,7 +20,7 @@ const effect = (id: string): BendEffectDef => {
   if (!found) throw new Error(id);
   return found;
 };
-const STEP = boardStep('oblique');
+const STEP = bendStep(1);
 const TO: Point = { x: 3, y: 0.9 };
 
 function names(shot: BendFxShot, now: number): string[] {
@@ -42,11 +42,11 @@ describe('sampleBendFx: fire, a jab and a cross', () => {
     effect: effect('fx.fire.fireball'),
     releases: [
       { launchAt: 1000, socket: [jab], flash: 0.75 },
-      { launchAt: 2000, socket: [cross], flash: 0.75 },
+      { launchAt: 2500, socket: [cross], flash: 0.75 },
     ],
     from: { x: 0, y: 0 },
     to: TO,
-    step: STEP,
+    scale: 1,
   };
   const lands = 1000 + flightMs(shot.effect.trajectory, jab, TO, STEP);
 
@@ -79,8 +79,8 @@ describe('sampleBendFx: fire, a jab and a cross', () => {
   });
 
   it('plays the cross from its own hand, with its own cels', () => {
-    expect(names(shot, 2000)).toEqual(['cross-launch/0']);
-    expect(sampleBendFx(fx, shot, 2000)[0]?.at).toEqual(cross);
+    expect(names(shot, 2500)).toEqual(['cross-launch/0']);
+    expect(sampleBendFx(fx, shot, 2500)[0]?.at).toEqual(cross);
   });
 });
 
@@ -95,7 +95,7 @@ describe('sampleBendFx: earth, a stomp and a drive', () => {
     ],
     from: { x: 0, y: 0 },
     to: TO,
-    step: STEP,
+    scale: 1,
   };
 
   it('opens the crack on the ground at the stomp and raises the rock in it', () => {
@@ -124,7 +124,7 @@ describe('sampleBendFx: water, a gather, a whip and a bolt', () => {
     releases: [{ launchAt: 1000, socket }],
     from: { x: 0, y: 0 },
     to: TO,
-    step: STEP,
+    scale: 1,
   };
   const trajectory = shot.effect.trajectory;
   const head = whipHead(trajectory, launch, TO, STEP);
@@ -164,12 +164,110 @@ describe('sampleBendFx: water, a gather, a whip and a bolt', () => {
     expect(names(shot, lands + 330)).toEqual([]);
   });
 
-  it('never mirrors a cel', () => {
+  it('never mirrors a cel on a throw to the right', () => {
     for (let t = 600; t < lands + 400; t += 7) {
       for (const s of sampleBendFx(fx, shot, t)) {
         expect(s.width).toBeGreaterThan(0);
         expect(s.height).toBeGreaterThan(0);
+        expect(s.flipY).toBeUndefined();
       }
     }
+  });
+});
+
+describe('sampleBendFx: step 6 follow-ups', () => {
+  const fire = effect('fx.fire.fireball');
+  const jab = { x: 0.2, y: -1 };
+
+  it('measures the data in character-relative steps, sized with the caster', () => {
+    // The prototype's step against the character: 2.4 times shorter than an oblique board step.
+    expect(Math.hypot(1, 0.5) / bendStep(1)).toBeCloseTo(2.4, 12);
+    expect(bendStep(1.25)).toBeCloseTo(bendStep(1) * 1.25, 12);
+    const big: BendFxShot = {
+      effect: fire,
+      releases: [{ launchAt: 0, socket: [jab] }],
+      from: { x: 0, y: 0 },
+      to: TO,
+      scale: 1.25,
+    };
+    const [launch] = sampleBendFx(fx, big, 0);
+    expect(launch?.width).toBeCloseTo(((launch?.frame.w ?? 0) / BEND_FX_PX_PER_TILE) * 1.25, 12);
+    expect(planBendFx(fx, big).arrivals[0]).toBeCloseTo(
+      flightMs(fire.trajectory, jab, TO, bendStep(1.25)),
+      9,
+    );
+  });
+
+  it('flips turned cels top to bottom on a throw to the left, never a fixed one', () => {
+    const west = { x: -3, y: 0.2 };
+    const shot: BendFxShot = {
+      effect: fire,
+      releases: [{ launchAt: 0, socket: [jab] }],
+      from: { x: 0, y: 0 },
+      to: west,
+      scale: 1,
+    };
+    const aim = aimDeg(jab, west);
+    expect(Math.abs(aim)).toBeGreaterThan(90);
+    const [launch] = sampleBendFx(fx, shot, 0);
+    expect(launch?.flipY).toBe(true);
+    // Mirrored first, the art points at -32 degrees, so it turns by the aim plus 32.
+    expect(launch?.turn).toBeCloseTo(aim + 32, 12);
+    const [ball] = sampleBendFx(fx, shot, 200);
+    expect(ball?.flipY).toBe(true);
+    const lands = planBendFx(fx, shot).arrivals[0] ?? 0;
+    // The burst has no facing: it is drawn as painted whatever the throw.
+    expect(sampleBendFx(fx, shot, lands)[0]?.flipY).toBeUndefined();
+    // Straight up is not past it, and neither is a throw to the right.
+    expect(sampleBendFx(fx, { ...shot, to: { x: jab.x, y: -4 } }, 0)[0]?.flipY).toBeUndefined();
+    expect(sampleBendFx(fx, { ...shot, to: TO }, 0)[0]?.flipY).toBeUndefined();
+  });
+
+  it('aims a release thrown at its own launch point along the heading', () => {
+    const shot: BendFxShot = {
+      effect: fire,
+      releases: [{ launchAt: 0, socket: [jab] }],
+      from: { x: 0, y: 0 },
+      to: jab,
+      scale: 1,
+      heading: 135,
+    };
+    const [launch] = sampleBendFx(fx, shot, 0);
+    expect(launch?.turn).toBeCloseTo(135 + 32, 12);
+    expect(launch?.flipY).toBe(true);
+  });
+
+  it('lays a gather with no recorded socket on the launch point, not the board origin', () => {
+    const shot: BendFxShot = {
+      effect: effect('fx.water.bolt'),
+      releases: [{ launchAt: 1000, socket: [] }],
+      from: { x: 2, y: 1 },
+      to: TO,
+      scale: 1,
+    };
+    // With no socket at all, the launch point is the caster's ground point.
+    const coil = sampleBendFx(fx, shot, 980).find((s) => s.turn === -8);
+    expect(coil?.at).toEqual({ x: 2, y: 1 });
+  });
+
+  it('flies each release from its own previous phase, and plans once a shot', () => {
+    const cross = { x: 0.3, y: -0.9 };
+    const shot: BendFxShot = {
+      effect: fire,
+      releases: [
+        { launchAt: 0, socket: [jab] },
+        { launchAt: 100, socket: [cross] },
+      ],
+      from: { x: 0, y: 0 },
+      to: TO,
+      scale: 1,
+    };
+    const plan = planBendFx(fx, shot);
+    expect(planBendFx(fx, shot)).toBe(plan);
+    const step = bendStep(1);
+    expect(plan.arrivals[0]).toBeCloseTo(flightMs(fire.trajectory, jab, TO, step), 9);
+    expect(plan.arrivals[1]).toBeCloseTo(100 + flightMs(fire.trajectory, cross, TO, step), 9);
+    // The cross's burst is 250 ms of cels after it lands.
+    expect(plan.endsAt).toBeCloseTo((plan.arrivals[1] ?? 0) + 250, 9);
   });
 });

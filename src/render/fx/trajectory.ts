@@ -30,6 +30,21 @@ export interface Point {
 export const boardStep = (projection: Projection): number =>
   projection === 'oblique' ? Math.hypot(1, 0.5) : 1;
 
+/**
+ * The unit the effect data's "tiles" are in, as board units, for a character
+ * drawn at `scale` (ADR 0055, step 6): the prototype's board step measured
+ * against the character, not the game's. The prototype drew the character
+ * cels at 1.35x on a `hypot(96, 48)` px step; the game draws them at 0.75x on
+ * a 128 px tile, times the actor's own scale. So one data tile is
+ * `hypot(96, 48) * 0.75 / 1.35` packed px, about 0.466 tiles at scale 1 and
+ * 2.4 times shorter than an oblique board step. A throw, an arc and a whip
+ * then move against the character exactly as the approved prototype's did,
+ * and a flight lasts what the prototype's lasted over the same distance
+ * measured in character heights. The projection plays no part: the character
+ * is the ruler.
+ */
+export const bendStep = (scale = 1): number => ((Math.hypot(96, 48) * 0.75) / 1.35 / 128) * scale;
+
 export const lerp = (a: Point, b: Point, t: number): Point => ({
   x: a.x + (b.x - a.x) * t,
   y: a.y + (b.y - a.y) * t,

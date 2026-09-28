@@ -26,7 +26,6 @@ import { loadBendFx } from '../render/fx/bendFx';
 import { bendFxPages } from '../render/fx/bendFxDraw';
 import { BEND_FX_PX_PER_TILE, sampleBendFx } from '../render/fx/bendFxSample';
 import type { BendFxShot } from '../render/fx/bendFxSample';
-import { boardStep } from '../render/fx/trajectory';
 import { projectGround } from '../render/projection';
 import { Renderer } from '../render/renderer';
 import { FOOT_LINE } from '../render/sheets/bake';
@@ -119,7 +118,7 @@ async function setup() {
       x: landing.x + effect.impact.offsetPx.x / BEND_FX_PX_PER_TILE,
       y: landing.y + effect.impact.offsetPx.y / BEND_FX_PX_PER_TILE,
     },
-    step: boardStep('oblique'),
+    scale: 1,
   };
   const pages = new Set(effect.layers.map((l) => fx.layerCel(l, 0)?.image ?? ''));
   const bendPage = (cel(0).source as HTMLImageElement).src;
