@@ -208,7 +208,7 @@ Never run `npx playwright install` in the dev container — Chromium is already 
   `toBlob` writes through an unchecked cast, so a forgotten field serialises fine,
   parses back as `undefined`, and crashes only on a loaded mid-battle save.
   `serialize.test.ts` deep-compares a real mid-battle round trip to catch it.
-- **Shipped code validates with `src/core/schema.ts`, not zod** (ADR 0059). It
+- **Shipped code validates with `src/core/schema.ts`, not zod** (ADR 0060). It
   is zod's v3 API for the combinators the save, fx, sound and tuning schemas use,
   and `schema.test.ts` holds it to zod's verdicts, data and issue paths. A shipped
   module that needs a combinator it lacks adds it there, with a case in that test;

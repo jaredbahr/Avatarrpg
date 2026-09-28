@@ -67,11 +67,11 @@ if (stubs.length > 0) {
   process.exit(1);
 }
 
-// Runtime validation goes through src/core/schema.ts (ADR 0059). zod is for CI
+// Runtime validation goes through src/core/schema.ts (ADR 0060). zod is for CI
 // and dev only; a value import of it from a shipped module brings ~10 KB back.
 if (shipped.includes('ZodError')) {
   console.error(
-    '\nzod is in the shipped JavaScript; import src/core/schema.ts instead (ADR 0059).',
+    '\nzod is in the shipped JavaScript; import src/core/schema.ts instead (ADR 0060).',
   );
   process.exit(1);
 }
