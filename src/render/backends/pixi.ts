@@ -50,6 +50,7 @@ import { FACTION_RING, OVERLAY, STATUS_BADGE, hpColor } from '../palettes';
 import { FOOT_LINE } from '../sheets/bake';
 import { resolveActorEmitters } from '../geometry/actorAttachments';
 import type { ResolvedFrame } from '../sheets/store';
+import { placeFrame } from '../sheets/placement';
 import { idlePhase, sheets } from '../sheets/store';
 import { MAX_SPRITE_PX, npcPose, sprites } from '../spriteCache';
 import {
@@ -1373,8 +1374,9 @@ export class PixiBackend implements RenderBackend {
         sprite.texture = this.frameTexture(frame);
         sprite.anchor.set(frame.anchor.x, frame.anchor.y);
         sprite.position.set(x + width / 2, y + FOOT_LINE * TILE);
-        sprite.width = (frame.frame.w / frame.pixelsPerTile) * TILE * scale;
-        sprite.height = (frame.frame.h / frame.pixelsPerTile) * TILE * scale;
+        const placed = placeFrame(frame, 0, 0, TILE * scale);
+        sprite.width = placed.w;
+        sprite.height = placed.h;
         sprite.scale.x = Math.abs(sprite.scale.x) * drawFacing;
       } else {
         sprite.texture = this.texture(sprites.get(unit.sprite, px * scale, { facing }, unit.size));
