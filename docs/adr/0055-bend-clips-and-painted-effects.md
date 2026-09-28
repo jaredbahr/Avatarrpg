@@ -489,6 +489,96 @@ the combat handoff stay with steps 6 and 7.
   path is in the bundle; the sampler and the trajectories tree-shake until
   step 6 calls them. No asset changes.
 
+## The choreography and the freeze clock (amended 2026-09-28)
+
+The integration plan's step 6 plays one attack of a bend on the presentation
+clock: the character's cels, its painted effect, the hit-stops and the board
+kick (`src/app/anim/bendChoreo.ts`, queued by `Animator.pushBend` as a `bend`
+track). Nothing maps an ability to it yet; that is step 7.
+
+- **One plan, pure samplers.** `planBend` lays the attack out once: cel
+  starts from the heading's `frameMs` (cumulative, exact), each release's
+  launch time and socket path, the effect's runs and arrivals
+  (`planBendFx`), the holds, the follow-through wait and the kicks.
+  `bendPoseAt`, `bendFxAt` and `bendNudge` sample it at a scene time, so a
+  skipped frame or a replay sees the same thing.
+- **The character.** It plays its heading's cels through `bendFrame`, never
+  mirrored, and each release reads its socket by play index, so a held cel
+  keeps its own sockets. A cel that records no socket borrows the nearest
+  earlier one that does, so the water gather follows the hand across every
+  pre-launch cel.
+- **The freeze clock.** Scene time runs on; the bend's presentation time
+  stops for every hold, and a hold freezes the character and every effect of
+  the bend together, in flight or not: a hit-stop, as the prototype froze the
+  whole frame. A launch hold (`launchHoldMs`) starts with the release's
+  contact cel; an impact hold (`impactHoldMs`) the moment its effect lands.
+- **Overlapping holds are serial, and simultaneous ones merge.** Because
+  presentation time does not move inside a hold, no second moment can come
+  due during one: a later hold starts when presentation time reaches its own
+  moment. So at 5 tiles the jab's impact hold freezes the cross in the air,
+  and the cross still takes its own hold when it lands. Holds whose moments
+  fall within `HOLD_MERGE_MS` (17 ms, one 60 Hz frame) of the first of them
+  are one hold, as long as the longest: two contacts at once cost one
+  hit-stop, never their sum and never a one-frame twitch between two. A
+  track's duration is its presentation length plus every hold, so `busy()`
+  and the queue wait them out, and `bendSceneAt` gives the scene time of any
+  presentation moment for step 7 to lay the struck unit and the damage on.
+- **The kick is the view's `cameraNudge`.** Each release with `shakeTiles`
+  kicks the board when its contact cel lands, and each impact by
+  `impact.shakeTiles`, both in the data's tiles (below). A launch kick points
+  toward the throw's side of the screen and up, the prototype's `(3, -2)`,
+  mirrored in x for a throw to the left; an impact kick points the opposite
+  way. It holds still through its hold, then eases linearly to nothing over
+  the cel it landed on (the release's cel, or the impact layer's first cel),
+  on the presentation clock, so a later hold freezes it too. It adds to the
+  animator's other shake. Reduced motion has no kick.
+- **A throw that lands after the bend.** When the last effect lands after
+  the character reaches its `recovery` key frame, the character holds the
+  cel before that key, the follow-through, until the landing, then plays the
+  recovery back to the stance. The pose that threw stays out while the throw
+  is in the air, and the recovery never plays while the effect still flies.
+  Effects never wait for the character.
+- **Scale: the character is the ruler.** Supervisor decision. The effect cels
+  already keep their size against the character (packed at the unit cels'
+  128 px a tile, and scaled with the actor's own draw scale). The motion now
+  does too: the data's "tiles" (speeds, `heightTiles`, `whipMaxTiles`,
+  `shakeTiles`) are converted, not re-authored, through `bendStep(scale)`,
+  the prototype's `hypot(96, 48)` px step measured against the character:
+  `hypot(96, 48) * 0.75 / 1.35 / 128`, about 0.466 of a game tile at scale 1
+  and 2.4 times shorter than an oblique board step. A throw's speed, its
+  arc's lift and the whip's reach against the character are the approved
+  prototype's, whatever the projection, so the arc is as high against the
+  character as it was, not 2.4 times higher. A game tile is a longer throw
+  than the prototype's 3-step one, so it flies for longer, at the approved
+  speed: the rhythm for the same visual distance is the prototype's, and a
+  far target reads as far. No data value changed, and the schema bounds are
+  untouched.
+- **Leftward throws flip, the character never does.** Supervisor decision.
+  A cel turned to an aim with `|aim| > 90°` (toward the screen's left) is
+  mirrored top to bottom about its pivot before it turns (`flipsFor`,
+  `BendFxSprite.flipY`, drawn by both backends and held by the parity test),
+  so the painted light stays on top on a west or north-west throw. Only cels
+  that turn with the throw (`facing` or `segment`) flip; a fixed cel keeps
+  its drawing; exactly up or down does not flip. Character cels are never
+  mirrored.
+- **Step 5's review, settled.** `previousPhaseEnd` is kept per release (a
+  release that has played nothing yet picks up where the layer before left
+  off, so the rock rises in the stomp's crack); a socket path with no socket
+  falls back to the launch point, not the origin; a release thrown at its own
+  launch point aims along the actor's heading; and the per-effect segment
+  rank and launch length are planned once a shot, so a frame only picks
+  cels.
+- **Headroom.** `bendHeadroom.test.ts` decodes the shipped pages and holds
+  every cel of every heading of the three G bends under the sheet's headroom
+  envelope, so the health bar needs no move while a bend plays.
+- **The harness plays the choreography.** `dev/bend-fx.html` now plays the
+  plan itself (character, effect, holds and kick), and
+  `scripts/bend-fx-capture.ts` captures range 3 and 5 in east, south-east,
+  west and north-west on both backends.
+- **Budget.** JavaScript is 325,844 B gzip, 1,897 B more than the same
+  build with step 6's runtime files at the base's contents (323,947 B), and
+  1,836 B under the 327,680 B gate. No asset changes.
+
 ## Planned PR sequence
 
 1. **The contract.** `src/content/bends.ts`, its tests, the r9 fixture and
@@ -510,7 +600,9 @@ the combat handoff stay with steps 6 and 7.
    test passes with no non-test caller left. Done for fire, earth and water:
    see above. Air follows its bend.
 6. **Trajectories.** Straight, arc and whipBolt travel on the presentation
-   clock, aimed at the resolved target.
+   clock, aimed at the resolved target. Done, with the choreography and the
+   freeze clock: see above. Mirroring, sockets by play index and headroom
+   below are settled there; combat wiring stays with step 7.
 7. **Choreography and combat handoff.** Attach to sockets; flash, hold and
    shake at each contact and impact; follow the real target; map abilities to
    attacks; apply the one damage on the damage release. No rules, AP, damage or
