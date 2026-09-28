@@ -45,6 +45,7 @@ export function ambientEmitters(
         seed: hashSeed(index, n, cycle),
         palette: recipe.palette,
         arc: 0,
+        ...(still ? { still: true } : {}),
       });
     }
   };
