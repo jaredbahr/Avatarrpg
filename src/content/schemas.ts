@@ -952,10 +952,18 @@ export interface MapContractIssue {
   readonly message: string;
 }
 
-const NEIGHBOURS = [[1, 0], [-1, 0], [0, 1], [0, -1]] as const;
+const NEIGHBOURS = [
+  [1, 0],
+  [-1, 0],
+  [0, 1],
+  [0, -1],
+] as const;
 
 /** East and south only: this checks every orthogonal pair exactly once. */
-const STEP_DIRECTIONS = [[1, 0], [0, 1]] as const;
+const STEP_DIRECTIONS = [
+  [1, 0],
+  [0, 1],
+] as const;
 
 const cellKey = (x: number, y: number): string => `${x},${y}`;
 
