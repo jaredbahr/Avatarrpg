@@ -1,35 +1,36 @@
 /**
- * Dev-only bend effect harness (ADR 0055, step 5).
+ * Dev-only bend harness (ADR 0055, steps 5 and 6).
  *
  * Served by `vite` at `/dev/bend-fx.html` and never built: the production
  * build's only entry is `index.html`, and nothing in the game imports this.
- * It plays one character's bend with its painted effect on either backend,
- * frozen at a time the caller gives, so `scripts/bend-fx-capture.ts` can
- * capture frames for review:
+ * It plays one character's whole bend choreography on either backend (the
+ * cels on the freeze clock, the painted effect, every hold and the board
+ * kick) through the game's animator, frozen at a scene time the caller
+ * gives, so `scripts/bend-fx-capture.ts` can capture it for review:
  *
- *   /dev/bend-fx.html?element=fire&range=3&dir=cardinal&renderer=canvas
+ *   /dev/bend-fx.html?element=fire&range=3&dir=southEast&renderer=canvas
  *
- * `dir=cardinal` throws along a grid axis (south-east on screen, the
- * prototype's `3se`/`5se`), `dir=diagonal` along a grid diagonal (east on
- * screen, the prototype's `5e` direction). `range` is the rules' range.
- *
- * The timing is a stand-in for the choreography (step 6): the bend's cels on
- * their authored `frameMs` from 0, with no holds and no shake, each release
- * leaving on its `launchFrame`. The caster is drawn as a sprite in the effect
- * list, between the under- and over-actor layers, facing as authored.
+ * `dir` is the screen heading the character throws toward; `cardinal` is
+ * `southEast` (a grid axis, the prototype's `3se`/`5se`) and `diagonal` is
+ * `east` (a grid diagonal, the prototype's `5e`). `range` is the rules' range
+ * in grid steps. The caster draws at the party's oblique combat scale, as a
+ * sprite in the effect list between the under- and over-actor layers, facing
+ * as authored and never mirrored.
  */
 
+import { partyScale } from '../app/anim/actorScale';
+import { bendSceneAt, planBend } from '../app/anim/bendChoreo';
+import { Animator } from '../app/animator';
 import type { Heading } from '../content/assets/clips';
+import { HEADINGS } from '../content/assets/clips';
 import { BEND_FX } from '../content/fxCels';
-import type { Grid, Tile, Vec2 } from '../core/types';
+import type { ContentIndex, Grid, Tile, Vec2 } from '../core/types';
 import { loadBendFx } from '../render/fx/bendFx';
 import { bendFxPages } from '../render/fx/bendFxDraw';
-import { BEND_FX_PX_PER_TILE, sampleBendFx } from '../render/fx/bendFxSample';
-import type { BendFxShot } from '../render/fx/bendFxSample';
+import { BEND_FX_PX_PER_TILE } from '../render/fx/bendFxSample';
 import { projectGround } from '../render/projection';
 import { Renderer } from '../render/renderer';
 import { FOOT_LINE } from '../render/sheets/bake';
-import { celOffset } from '../render/sheets/placement';
 import { sheets } from '../render/sheets/store';
 import type { BendFxSprite, MapView } from '../render/view';
 
@@ -39,15 +40,36 @@ const CASTERS: Readonly<Record<string, string>> = {
   earth: 'unit.earth.bo',
 };
 
+/** One grid step toward each screen heading on the oblique board. */
+const GRID_STEP: Readonly<Record<Heading, Vec2>> = {
+  east: { x: 1, y: -1 },
+  southEast: { x: 1, y: 0 },
+  south: { x: 1, y: 1 },
+  southWest: { x: 0, y: 1 },
+  west: { x: -1, y: 1 },
+  northWest: { x: -1, y: 0 },
+  north: { x: -1, y: -1 },
+  northEast: { x: 0, y: -1 },
+};
+
 const params = new URLSearchParams(window.location.search);
 const element = params.get('element') ?? 'fire';
 const key = CASTERS[element] ?? 'unit.fire.kaya';
 const range = Number(params.get('range') ?? 3);
-const diagonal = params.get('dir') === 'diagonal';
-const heading: Heading = diagonal ? 'east' : 'southEast';
+const dir = params.get('dir') ?? 'cardinal';
+const heading: Heading =
+  dir === 'diagonal'
+    ? 'east'
+    : (HEADINGS as readonly string[]).includes(dir)
+      ? (dir as Heading)
+      : 'southEast';
 const SIZE = 8;
-const caster: Vec2 = { x: 1, y: 6 };
-const target: Vec2 = diagonal ? { x: 1 + range, y: 6 - range } : { x: 1 + range, y: 6 };
+const step = GRID_STEP[heading];
+// Stood back from the edge the throw goes toward, so a range-5 throw fits the board.
+const along = (d: number) => (d > 0 ? 1 : d < 0 ? SIZE - 2 : 4);
+const caster: Vec2 = { x: along(step.x), y: along(step.y) };
+const target: Vec2 = { x: caster.x + step.x * range, y: caster.y + step.y * range };
+const SCALE = partyScale('oblique');
 
 const tile: Tile = {
   terrain: 'grass',
@@ -94,55 +116,46 @@ async function setup() {
     if (!found) throw new Error(`No cel ${i}.`);
     return found;
   };
-  const starts = facing.frameMs.map((_, i) =>
-    facing.frameMs.slice(0, i).reduce((a, b) => a + b, 0),
-  );
   const from = foot(caster);
-  const socket = (i: number, name: keyof ReturnType<typeof cel>['sockets']): Vec2 => {
-    const c = cel(i);
-    const point = c.sockets[name];
-    if (!point) throw new Error(`No ${name} on cel ${i}.`);
-    const o = celOffset(c, point);
-    return { x: from.x + o.x, y: from.y + o.y };
-  };
   const landing = foot(target);
-  const shot: BendFxShot = {
+  const plan = planBend(fx, {
+    heading,
+    facing,
+    attack,
     effect,
-    releases: attack.releases.map((release) => ({
-      launchAt: starts[release.launchFrame] ?? 0,
-      socket: Array.from({ length: release.launchFrame + 1 }, (_, i) => socket(i, release.socket)),
-      ...(release.flash === undefined ? {} : { flash: release.flash }),
-    })),
-    from,
+    cel: (i) => sheets.bendFrame(key, heading, i),
+    foot: from,
     to: {
-      x: landing.x + effect.impact.offsetPx.x / BEND_FX_PX_PER_TILE,
-      y: landing.y + effect.impact.offsetPx.y / BEND_FX_PX_PER_TILE,
+      x: landing.x + (effect.impact.offsetPx.x / BEND_FX_PX_PER_TILE) * SCALE,
+      y: landing.y + (effect.impact.offsetPx.y / BEND_FX_PX_PER_TILE) * SCALE,
     },
-    scale: 1,
-  };
+    scale: SCALE,
+  });
+  // The game's animator plays it, from scene time 0.
+  const animator = new Animator({} as ContentIndex, { motionReduced: () => false });
+  animator.pushBend(0, 'caster', plan, fx);
   const pages = new Set(effect.layers.map((l) => fx.layerCel(l, 0)?.image ?? ''));
   const bendPage = (cel(0).source as HTMLImageElement).src;
   await Promise.all([...pages, bendPage].map((url) => bendFxPages.whenLoaded(url)));
 
-  /** Draws the bend at `t`; without `effects`, the caster alone, for a difference. */
-  const draw = (t: number, effects = true): BendFxSprite[] => {
-    let index = starts.findIndex((start, i) => t >= start && t < start + (facing.frameMs[i] ?? 0));
-    if (index < 0) index = t < 0 ? 0 : starts.length - 1;
-    const c = cel(index);
+  /** Draws the choreography `t` scene ms in; without `effects`, the caster alone, unkicked. */
+  const draw = (t: number, effects = true) => {
+    const pose = animator.bendPose(t, 'caster');
+    const c = cel(pose?.index ?? 0);
     const body: BendFxSprite = {
       image: bendPage,
       frame: c.frame,
       pivot: { x: c.anchor.x * c.frame.w, y: c.anchor.y * c.frame.h },
       at: from,
-      width: c.frame.w / c.pixelsPerTile,
-      height: c.frame.h / c.pixelsPerTile,
+      width: (c.frame.w / c.pixelsPerTile) * SCALE,
+      height: (c.frame.h / c.pixelsPerTile) * SCALE,
       turn: 0,
       alpha: 1,
       blend: 'normal',
       flash: 0,
       z: 'underActor',
     };
-    const drawn = effects ? sampleBendFx(fx, shot, t) : [];
+    const drawn = effects ? animator.bendFx(t) : [];
     const bendFx = [
       ...drawn.filter((s) => s.z !== 'overActor'),
       body,
@@ -160,7 +173,7 @@ async function setup() {
       emitters: [],
       bendFx,
       floaters: [],
-      cameraNudge: { x: 0, y: 0 },
+      cameraNudge: effects ? animator.cameraNudge(t) : { x: 0, y: 0 },
       activeUnitId: null,
       selectedUnitId: null,
       hoverTile: { ...target },
@@ -174,7 +187,12 @@ async function setup() {
       reducedMotion: true,
     };
     renderer.draw(view);
-    return drawn;
+    return {
+      sprites: drawn.length,
+      flipped: drawn.filter((s) => s.flipY).length,
+      index: pose?.index ?? -1,
+      held: pose?.held ?? false,
+    };
   };
 
   /** The screen box round the caster and the landing point, in CSS px. */
@@ -187,21 +205,29 @@ async function setup() {
     const a = screen(from);
     const b = screen(landing);
     const t = 64 * camera.scale;
-    const x = Math.floor(Math.min(a.x, b.x) - 1.1 * t);
-    const y = Math.floor(Math.min(a.y, b.y) - 2 * t);
+    const x = Math.floor(Math.min(a.x, b.x) - 1.2 * t);
+    const y = Math.floor(Math.min(a.y, b.y) - 2.2 * t);
     return {
       x,
       y,
-      width: Math.ceil(Math.max(a.x, b.x) + 1.1 * t) - x,
-      height: Math.ceil(Math.max(a.y, b.y) + 0.6 * t) - y,
+      width: Math.ceil(Math.max(a.x, b.x) + 1.2 * t) - x,
+      height: Math.ceil(Math.max(a.y, b.y) + 0.7 * t) - y,
     };
   };
 
   return {
     backend: renderer.backendName,
-    frames: starts,
-    frameMs: facing.frameMs,
-    draw: (t: number, effects = true) => draw(t, effects).length,
+    heading,
+    duration: plan.duration,
+    /** Every hold, in scene ms from the start, with what called it. */
+    holds: plan.holds.map((hold) => ({
+      at: bendSceneAt(plan, hold.at),
+      ms: hold.ms,
+      causes: hold.causes,
+    })),
+    /** When each release lands, in scene ms; null for one that does not travel. */
+    arrivals: plan.arrivals.map((p) => (p === undefined ? null : bendSceneAt(plan, p))),
+    draw,
     crop,
   };
 }
