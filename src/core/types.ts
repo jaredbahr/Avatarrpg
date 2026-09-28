@@ -732,7 +732,7 @@ export interface MapDef {
    * `edgeContract: 'enforce'`.
    */
   readonly edges?: readonly MapEdge[];
-  /** Opt this map into edge-contract errors. No map sets it yet (M1). */
+  /** Opt this map into edge-contract errors (M1); the riverside is the first. */
   readonly edgeContract?: 'enforce';
   /**
    * A painting drawn under the rules grid in place of the procedural ground,
