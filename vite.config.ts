@@ -177,7 +177,9 @@ export default defineConfig({
     VitePWA({
       registerType: 'autoUpdate',
       injectRegister: 'auto',
-      includeAssets: ['icons/apple-touch-icon.png', 'icons/favicon.svg'],
+      // No includeAssets or manifest icons: globPatterns already precaches every
+      // icon, and listing them again put each one in the manifest twice.
+      includeManifestIcons: false,
       workbox: {
         /*
          * Sound effects precache: the whole set is well under a tenth of a
@@ -187,6 +189,22 @@ export default defineConfig({
          * a breath (ADR 0012).
          */
         globPatterns: ['**/*.{js,css,html,svg,png,webp,json,woff2,ogg}'],
+        /*
+         * The precache manifest is inlined in sw.js, which the JavaScript gate
+         * counts (ADR 0048), and two hundred 32-digit md5 revisions do not
+         * compress. A revision only has to change when its file does, so twelve
+         * hex digits keep a 1 in 2^48 chance of an edit going unnoticed and
+         * save 2.3 KB gzipped. Hashed build assets carry no revision at all.
+         */
+        manifestTransforms: [
+          (entries) => ({
+            manifest: entries.map((entry) => ({
+              ...entry,
+              revision: entry.revision ? entry.revision.slice(0, 12) : entry.revision,
+            })),
+            warnings: [],
+          }),
+        ],
         cleanupOutdatedCaches: true,
         navigateFallback: `${base}index.html`,
       },
