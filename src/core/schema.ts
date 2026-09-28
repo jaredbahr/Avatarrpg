@@ -3,7 +3,7 @@
  *
  * Save files, fx recipes, sounds and the combat tuning parse at runtime, and
  * zod cost about 10 KB gzipped of a 320 KB JavaScript gate for the dozen
- * combinators they need (ADR 0059). Everything validated only in CI and dev —
+ * combinators they need (ADR 0060). Everything validated only in CI and dev —
  * `content/schemas.ts`, the bend packer's schemas — stays on real zod.
  *
  * The contract is zod's own, for every combinator here: what passes, the data

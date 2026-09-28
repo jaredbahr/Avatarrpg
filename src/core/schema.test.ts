@@ -192,6 +192,61 @@ const META = {
   session: { players: [{ name: 'Lorelai', unitId: 'p0' }], soloPlay: false },
 };
 
+interface MutableLegacySave {
+  format: number;
+  summary?: unknown;
+  state: {
+    version: number;
+    party: Record<string, unknown>[];
+    battle: { units: Record<string, unknown>[] } | null;
+    pendingChoices: Record<string, unknown>[];
+    world?: Record<string, unknown>;
+  };
+}
+
+function legacySaveFixtures(current: ReturnType<typeof saveShipped.toBlob>): unknown[] {
+  const v4 = structuredClone(current) as unknown as MutableLegacySave;
+  v4.format = 4;
+  v4.state.version = 4;
+  delete v4.state.world?.residentProfiles;
+  delete v4.state.world?.runoff;
+
+  const v3 = structuredClone(v4);
+  v3.format = 3;
+  v3.state.version = 3;
+  delete v3.state.world?.clock;
+  delete v3.state.world?.talk;
+
+  const v2 = structuredClone(v3);
+  v2.format = 2;
+  v2.state.version = 2;
+  delete v2.state.world;
+
+  const v1 = structuredClone(v2);
+  v1.format = 1;
+  v1.state.version = 1;
+  for (const unit of v1.state.party) delete unit.disciplineId;
+  for (const unit of v1.state.battle?.units ?? []) delete unit.disciplineId;
+  for (const choice of v1.state.pendingChoices) delete choice.kind;
+
+  const v0 = structuredClone(v1);
+  v0.format = 0;
+  delete v0.summary;
+  return [v0, v1, v2, v3, v4];
+}
+
+const MALFORMED_SAVE_CORPUS: readonly unknown[] = [
+  null,
+  [],
+  {},
+  { magic: 'some-other-game', format: 1 },
+  { magic: 'four-nations-tactics', format: 99 },
+  { magic: 'four-nations-tactics', format: Number.NaN },
+  { magic: 'four-nations-tactics', format: 5, state: null },
+  { magic: 'four-nations-tactics', format: 5, state: {} },
+  { magic: 'four-nations-tactics', format: 5, summary: null },
+];
+
 describe('the runtime validator matches zod', () => {
   it('on saves, as parsed and as the player is told', () => {
     const state = midBattleState();
@@ -209,8 +264,15 @@ describe('the runtime validator matches zod', () => {
       },
       { ...META, session: { players: [] } },
     );
+    const legacy = legacySaveFixtures(explore);
     const seeds = [battle, explore];
     fuzz(saveShipped.saveBlobSchema, zodBuilt.save.saveBlobSchema, seeds, 3000, 1);
+
+    for (const value of [...legacy, ...MALFORMED_SAVE_CORPUS]) {
+      expectSameVerdict(saveShipped.saveBlobSchema, zodBuilt.save.saveBlobSchema, value, 'corpus');
+      const json = JSON.stringify(value);
+      expect(saveShipped.deserialize(json), json).toEqual(zodBuilt.save.deserialize(json));
+    }
 
     const random = lcg(2);
     for (let n = 0; n < 500; n++) {
