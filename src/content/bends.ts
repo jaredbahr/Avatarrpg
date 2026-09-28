@@ -706,10 +706,11 @@ function validateEffect(effect: BendEffectDef, problems: string[]): void {
 }
 
 /**
- * Passed as `effects` while the painted effects are not authored yet (ADR
- * 0055, step 5): the packed sets are checked in full except for the effect
- * each attack names. A test fails as soon as an effect is defined anywhere
- * while a caller still passes this, so the skip cannot outlive its reason.
+ * Was passed as `effects` until the painted effects were authored (ADR 0055,
+ * step 5); no caller passes it now. The packed sets are checked in full
+ * except for the effect each attack names. A test fails as soon as an effect
+ * is defined anywhere while a caller still passes this, so the skip cannot
+ * outlive its reason.
  * It is a `unique symbol`, not a string, so the skip can only be asked for by
  * this name, which is what the test looks for: no literal can stand in for it.
  */
@@ -720,7 +721,7 @@ export const EFFECTS_NOT_YET_AUTHORED: unique symbol = Symbol('effects not yet a
  * the contract is sound. `knownUnitAssets` is the manifest's unit keys, and
  * `knownFrames`, when given, is every frame name the unit atlases carry, so a
  * bend cannot name a cel the packer never wrote. `effects` is the painted
- * effects, or `EFFECTS_NOT_YET_AUTHORED` until step 5 authors them.
+ * effects; `EFFECTS_NOT_YET_AUTHORED` skips them, and no caller does now.
  * Deliberately collects everything rather than throwing on the first fault,
  * so one CI run reports every broken link at once.
  */
