@@ -100,10 +100,12 @@ export function connectAct1(map: MapDef): MapDef {
             'ba_dan_village',
             { x: 18, y: 14 },
             'South path → Ba Dan Village',
+            // The south path from row 20 to the rim: it leaves with no tile to miss.
             [
               { x: 10, y: 20 },
-              { x: 9, y: 20 },
-              { x: 9, y: 21 },
+              ...mouth(9, [20, 21]),
+              ...mouth(10, [21, 22, 23]),
+              ...mouth(11, [20, 21, 22, 23]),
             ],
           ),
         ],

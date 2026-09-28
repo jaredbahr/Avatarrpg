@@ -644,12 +644,21 @@ describe('the packed r10 bends', () => {
       [key]: {
         ...kaya,
         bend: 'art/units/sura-bend.json',
-        atlasPages: kaya.atlasPages?.filter((path) => !path.endsWith('-g-bend.json')),
+        bendPages: undefined,
       },
     };
     expect(await validateBends('public', BEND_SHEETS, unregistered)).toEqual([
       `${key}: the manifest's bend is art/units/sura-bend.json, not art/units/kaya-bend.json`,
-      `${key}: the manifest's sheet does not load the bend page art/units/kaya-g-bend.json`,
+      `${key}: the manifest does not load the bend page art/units/kaya-g-bend.json as a bend page`,
+    ]);
+    // A bend page folded back into the sheet's own load is a problem too: a
+    // failed bend would blank the sheet, and every scene would decode it.
+    const eager = {
+      ...ASSETS,
+      [key]: { ...kaya, atlasPages: [...(kaya.atlasPages ?? []), ...(kaya.bendPages ?? [])] },
+    };
+    expect(await validateBends('public', BEND_SHEETS, eager)).toEqual([
+      `${key}: the manifest does not load the bend page art/units/kaya-g-bend.json as a bend page`,
     ]);
     // A bend the manifest names that this table does not check is a problem too.
     const rest = Object.fromEntries(

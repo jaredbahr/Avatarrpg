@@ -2,8 +2,14 @@ import { test, expect } from '@playwright/test';
 import { allowSoftwareWebgl } from './budget';
 import { resetStorage, startGame, enterNode, takeTurn, waitForIdle } from './helpers';
 import { screenshotClipPixels, average, type Pixels } from './pixels';
+import type { MapView } from '../src/render/view';
 
 const ROI_CSS = 96;
+
+/** The slice of the mounted scene this probe reaches for: the renderer it draws through. */
+type PinnedScene = {
+  renderer: { draw: (view: MapView) => void; lastView: { time: number } | null };
+};
 
 function changedPixels(before: Pixels, after: Pixels, cssSize: number): number {
   let changed = 0;
@@ -29,6 +35,33 @@ for (const renderer of ['canvas', 'webgl'])
     await takeTurn(page);
     await waitForIdle(page);
     await page.waitForTimeout(1000);
+    /*
+     * Every capture below runs on one fixed frame time.
+     *
+     * `view.time` is the scene loop's `performance.now()` stamp and the WebGL
+     * water film animates on it - `ripple = fbm(w * 4.0 + vec2(uTime * 0.25,
+     * uTime * 0.17))` with `uTime = view.time / 1000` - so a capture taken
+     * whenever the runner reaches it reads the ripple at an arbitrary phase.
+     * That is what made this probe load-dependent: the same board read 8.8 on
+     * a quiet host and 4.41, 3.82 and 4.63 on a busy WebKit runner.
+     *
+     * The phase is derived from the shader, not tuned to a host. The sample
+     * sits at the centre of cell (7,3), world `w = (3.75, 1.75)`, where `fbm`
+     * averages about 0.75 across the 7x7 patch at 640 s with every pixel in it
+     * above 0.6 - inside the 0.62-0.92 band the film's own `smoothstep` gloss
+     * adds to, so the water lays down the strongest blue the field reaches at
+     * that tile. A pinned phase reads the same on every runner, every frame.
+     *
+     * This wraps the renderer rather than changing the game: the real `draw`
+     * still runs on every frame with the view the scene built, only its `time`
+     * is replaced, so nothing ships for it and no behaviour moves.
+     */
+    const PINNED_FRAME_TIME_MS = 640_000;
+    await page.evaluate((time) => {
+      const scene = (window.fnt!.app as unknown as { scene: PinnedScene }).scene;
+      const draw = scene.renderer.draw.bind(scene.renderer);
+      scene.renderer.draw = (view) => draw({ ...view, time });
+    }, PINNED_FRAME_TIME_MS);
     /*
      * One round trip per probe: wait for two published frames and read the
      * camera in the same evaluate. While the software rasteriser is busy, a
@@ -100,15 +133,25 @@ for (const renderer of ['canvas', 'webgl'])
       'unregistered rubble wash changed pixels',
     ).toBeGreaterThan(200);
 
-    // A live material must still tint the authored rubble image.
-    await page.evaluate(() => {
+    /*
+     * A live material must still tint the authored rubble image. The same
+     * crossing also proves the pin above reached the renderer: the pin is a
+     * wrapper, so a silent miss would leave this probe reading whatever phase
+     * the runner reached, which is the flake being fixed here.
+     */
+    const frameTime = await page.evaluate(() => {
       const app = window.fnt!.app;
       const tile = app.state!.battle!.grid.tiles[3 * 20 + 7]!;
       Object.defineProperty(tile, 'surface', {
         value: { id: 'water', duration: -1, spread: 0 },
         configurable: true,
       });
+      const scene = (app as unknown as { scene: PinnedScene }).scene;
+      return scene.renderer.lastView?.time ?? null;
     });
+    expect(frameTime, 'the water shader was handed the pinned frame time').toBe(
+      PINNED_FRAME_TIME_MS,
+    );
     // One capture answers both probes: the average reads the same 7x7 centre
     // whichever window it is taken from, and a software-WebGL screenshot is the
     // most expensive operation in this spec, so the wider window serves the
@@ -125,19 +168,18 @@ for (const renderer of ['canvas', 'webgl'])
      */
     const blueShift = waterRegion.b - registered.b;
     /*
-     * The isolated blue channel is the least stable of the three signals across
-     * rasterisers. Run 35874485983's WebKit (Mesa's software path, same as any
-     * GPU-less CI runner) reproduces locally at a repeatable 8.6-9.1 here, red
-     * falling by 52+ against a -10 floor and the combined blue-over-red delta
-     * below landing at 61+ against a 25 floor - both with enormous margin. Main
-     * at 2dc787d measures the same 8.7-8.9 on this host, so the isolated blue
-     * reading was already this tight before the countdown fix; it just crossed
-     * 10 on whichever runner produced 35865078280's pass and did not on
-     * 35874485983's. The floor comes down to keep real margin under every
-     * reading seen so far while staying well clear of a no-tint (near zero)
-     * read; the red and combined checks below are what actually carry the
-     * "this is a visible blue tint" proof, exactly as the surrounding comment
-     * already says a per-channel absolute should not be load-bearing alone.
+     * The isolated blue channel is the least stable of the three signals, and
+     * it is the one the ripple moves: before the frame time above was pinned,
+     * run 35874485983's WebKit (Mesa's software path, same as any GPU-less CI
+     * runner) read 4.41, 3.82 and 4.63 where a quiet host reads about 8.8. The
+     * pin holds the phase at the top of the ripple's range, so this reading no
+     * longer swings with machine load, and the floor stays the 5 it already was
+     * rather than coming down to meet the readings that failed. The red and
+     * combined checks below are what actually carry the "this is a visible blue
+     * tint" proof, exactly as the surrounding comment already says a
+     * per-channel absolute should not be load-bearing alone: red falls by 52+
+     * against its -10 floor and the combined blue-over-red delta lands at 61+
+     * against its 25 floor, both with enormous margin.
      */
     expect(blueShift).toBeGreaterThan(5);
     expect(waterRegion.r - registered.r).toBeLessThan(-10);
