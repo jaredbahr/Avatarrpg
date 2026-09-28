@@ -23,7 +23,8 @@
  *
  * The timing is the prototype's too: each layer's `frameMs` are the bend cels
  * the prototype drew it on, read from the pinned r9 timing, which every
- * shipped heading must still carry. Speeds and heights are the prototype's
+ * shipped heading must still carry, except the earth tumble's travel loop,
+ * which is hard-coded at 100 ms a cel. Speeds and heights are the prototype's
  * 3-tile south-east throw in tiles (one tile is one board step, 96 x 48 px),
  * and every effect lands 120 prototype px above the target's feet, where the
  * renderer's `destination` put it.
@@ -339,8 +340,10 @@ export const SEQUENCES: readonly SequenceRecipe[] = [
   { name: seq('fire', 'burst'), cels: [burst(0), burst(1), burst(2)] },
   // Earth: `earth_fx`. The stomp opens the crack (crack 5, then 8 held and
   // faded); the rock rises in it (emerge 5), hangs at the drive hand (emerge
-  // 6), tumbles (every third tumble cel, the stride the approved GIF sampled)
-  // and shatters (2, 4, 6).
+  // 6), tumbles and shatters (2, 4, 6). The approved GIF shows tumble cels 9
+  // and 0 (`(frame * 3) % 12` on bend cels 7 and 8); 3 and 6, on the same
+  // stride, close them into a loop for longer flights. Packing those two is a
+  // supervisor-accepted exception to "only the approved frames" (ADR 0055).
   {
     name: seq('earth', 'crack'),
     cels: [
@@ -603,7 +606,9 @@ export function effectDefs(timing: Readonly<Record<Element, R9Timing>>): BendEff
   };
   // The stomp (release 0) opens the crack on bend cel 4 and it fades out by
   // cel 10; the rock rises in it on cel 5, hangs at the drive (release 1) on
-  // cel 6, flies 6-8 and shatters on 9-11. The painted tumble is the spin.
+  // cel 6, flies 6-8 and shatters on 9-11. The painted tumble is the spin. Its
+  // loop's 100 ms a cel is hard-coded here, not read from the r9 timing: the
+  // prototype drew one tumble cel per bend cel, and the loop has no bend cels.
   const earth: BendEffectDef = {
     id: EFFECT_IDS.earth,
     element: 'earth',
