@@ -64,7 +64,7 @@ export const ENCOUNTERS: readonly EncounterDef[] = [
         ],
         intro:
           'Stones whip out of the pines before anyone shows a face. Whoever is throwing them means to stay out of reach.',
-        tip: 'Slingers throw from up to six tiles and back away. Stand on the rubble heaps for cover while you close in; a slinger is the frailest body on this road.',
+        tip: 'Nobody up there wants to come close. Get among them — a slinger with somebody in its face is not much use.',
       },
       {
         id: 'bruisers',
@@ -123,7 +123,7 @@ export const ENCOUNTERS: readonly EncounterDef[] = [
         ],
         intro:
           'The deserter looks at your firebender, then at the ground, and steps back from the gate. The quarry crew comes forward anyway.',
-        tip: 'Nobody left at the gate bends fire, so the oil burns only if you light it. The quarry bender raises rubble for cover; close in, because melee attacks ignore cover.',
+        tip: 'Nobody left at the gate bends fire, so the oil burns only if you light it. If a quarry bender is with them, it raises rubble for cover; close in, because melee attacks ignore cover.',
       },
     ],
     /*
@@ -164,7 +164,7 @@ export const ENCOUNTERS: readonly EncounterDef[] = [
      * Burning it off early *is* a real counter — fire on oil expires after a few
      * rounds and leaves bare ground — so the tip now points at that.
      */
-    tip: 'That stripe is oil, and the deserter can light it. Light it first yourself: shove the brazier onto the oil, then smash it, with your party clear. Burst a water barrel to douse flames.',
+    tip: 'That stripe is oil, and the deserter can light it. Light it first yourself: shove the brazier onto the oil, then smash it from range. A water barrel near the flames can douse them.',
   },
   {
     id: 'enc_ambush',
@@ -253,8 +253,8 @@ export const ENCOUNTERS: readonly EncounterDef[] = [
           { enemyId: 'merc_crossbow', pos: { x: 16, y: 2 } },
         ],
         intro:
-          'The driller grinds forward on its treads, oil dripping from a split hose. On the rim above, one of Jin’s crossbows is already braced.',
-        tip: 'No quarry bender raising cover this time, but the crossbow reaches eight tiles. Close on it or break its line of sight, and stay out of the drill’s two-tile slam.',
+          'The driller grinds forward on its treads, oil dripping from a split hose. Somewhere on the rim above, Jin’s people may already be waiting.',
+        tip: 'No quarry bender raising cover this time. If a crossbow is braced on the rim, it reaches eight tiles: close on it or break its line of sight. Avoid the drill’s two-tile slam.',
       },
     ],
     reinforcements: [
