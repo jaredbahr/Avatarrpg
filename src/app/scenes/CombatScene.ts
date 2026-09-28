@@ -1469,6 +1469,7 @@ export class CombatScene implements Scene {
           u.faction === 'enemy' ? -1 : 1,
           u.faction === 'party',
           u.sprite,
+          health.fallen,
         ),
       };
     });
@@ -1552,6 +1553,7 @@ export class CombatScene implements Scene {
     restFacing: 1 | -1,
     directional: boolean,
     sprite: string,
+    fallen = false,
   ): Pick<
     RenderUnit,
     | 'offset'
@@ -1584,6 +1586,9 @@ export class CombatScene implements Scene {
     const scale = directional
       ? partyScale(projection, pose?.scale)
       : enemyScale(sprite, pose?.scale, projection);
+    // Once a G knockout has played, the body stays where it fell (ADR 0059).
+    const down = !pose && fallen ? this.app.animator.fallenPose(unitId, sprite) : undefined;
+    if (down) return { ...down, facing: 1, scale };
     if (!pose) return { ...(movement ?? { facing: walked ?? restFacing }), scale };
     return {
       offset: pose.offset,

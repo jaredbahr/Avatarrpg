@@ -1,7 +1,9 @@
+import { readFileSync } from 'node:fs';
 import { describe, expect, it } from 'vitest';
 import type { Ability, ContentIndex, GameEvent, Unit } from '../../core/types';
 import { resolveFx } from '../../content/fx';
-import { TIMING, choreograph } from './choreography';
+import type { SheetClips } from '../../render/sheets/store';
+import { TIMING, choreograph, knockoutSpan } from './choreography';
 import { attackMotion } from './attackMotion';
 import { enemyScale } from './actorScale';
 import type { AnyTrack, EmitterTrack, PoseTrack } from './timeline';
@@ -742,6 +744,74 @@ describe('choreograph', () => {
     expect(ko?.alpha?.to).toBe(0.35);
     expect(tracks.some((t) => t.kind === 'emitter')).toBe(true);
     expect(tracks.find((t) => t.kind === 'floater')?.text).toBe('down');
+  });
+
+  it('plays a G knockout out in full once its sheet is in, and the legacy one as before (ADR 0059)', () => {
+    const kaya = { ...unit('p0', 1, 3), sprite: 'unit.fire.kaya', hp: 20 } as Unit;
+    const thug = {
+      ...unit('e0', 5, 3),
+      faction: 'enemy',
+      sprite: 'unit.enemy.thug',
+      hp: 20,
+    } as Unit;
+    // Kaya's knockouts arrive with her sheet, as the store fetches them.
+    const kayaClips = JSON.parse(
+      readFileSync('public/art/units/kaya-g-clips.json', 'utf8'),
+    ) as SheetClips;
+    const loaded = (sprite: string) => (sprite === kaya.sprite ? kayaClips : undefined);
+    const at = (events: GameEvent[], rate = 1, clipsOf: typeof loaded | null = loaded) =>
+      choreograph({
+        content,
+        events,
+        unitsBefore: [kaya, thug],
+        cursor: 1000,
+        rate,
+        pushIndex: 0,
+        ...(clipsOf ? { clipsOf } : {}),
+      });
+    const poses = (events: GameEvent[], rate = 1, clipsOf: typeof loaded | null = loaded) =>
+      at(events, rate, clipsOf).tracks.filter((t): t is PoseTrack => t.kind === 'pose');
+    const end = (tracks: readonly PoseTrack[]) =>
+      Math.max(...tracks.map((t) => t.start + t.duration));
+
+    // A blow is the legacy hit for everyone: the party has no G hit.
+    const blow: GameEvent = {
+      type: 'damaged',
+      unitId: 'p0',
+      amount: 4,
+      crit: false,
+      damageType: 'fire',
+      sourceId: 'e0',
+    };
+    const hit = poses([blow], 1, loaded);
+    expect(hit.every((t) => t.clip === 'hit')).toBe(true);
+    expect(end(hit)).toBeCloseTo(1000 + (TIMING.recoilOut + TIMING.recoilBack));
+
+    const span = knockoutSpan(kayaClips);
+    expect(knockoutSpan(undefined)).toBe(0);
+    const died: GameEvent = { type: 'unitDied', unitId: 'p0' };
+    const ko = poses([died], 1, loaded).find((t) => t.clip === 'ko');
+    expect(ko?.duration).toBe(span);
+    expect(ko?.duration).toBeGreaterThan(TIMING.ko);
+    // It falls in its own drawing: no sink that would jump back when it ends,
+    // at full strength, and is marked fallen, which fades it, once it lies still.
+    expect(ko?.offset.to).toEqual({ x: 0, y: 0 });
+    expect(ko?.alpha).toBeUndefined();
+    const down = at([died]).health.find((h) => h.fallen);
+    expect(down?.at).toBe((ko?.start ?? 0) + (ko?.duration ?? 0));
+    // The thug, and Kaya before her sheet is in, keep the legacy knockout.
+    for (const [event, clipsOf] of [
+      [{ type: 'unitDied', unitId: 'e0' }, loaded],
+      [died, null],
+    ] as const) {
+      const legacy = poses([event], 1, clipsOf).find((t) => t.clip === 'ko');
+      expect(legacy?.duration).toBe(TIMING.ko);
+      expect(legacy?.alpha).toEqual({ from: 1, to: 0.35 });
+      expect(at([event], 1, clipsOf).health.find((h) => h.fallen)?.at).toBe(1000);
+    }
+    // Reduce motion collapses the clip with everything else.
+    const reduced = poses([died], 0.02, loaded).find((t) => t.clip === 'ko');
+    expect(reduced?.duration).toBeCloseTo(span * 0.02);
   });
 
   /* ---------------------------------------------------------------- */
