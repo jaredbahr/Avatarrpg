@@ -682,8 +682,10 @@ function validateEffect(effect: BendEffectDef, problems: string[]): void {
  * 0055, step 5): the packed sets are checked in full except for the effect
  * each attack names. A test fails as soon as an effect is defined anywhere
  * while a caller still passes this, so the skip cannot outlive its reason.
+ * It is a `unique symbol`, not a string, so the skip can only be asked for by
+ * this name, which is what the test looks for: no literal can stand in for it.
  */
-export const EFFECTS_NOT_YET_AUTHORED = 'not-yet-authored';
+export const EFFECTS_NOT_YET_AUTHORED: unique symbol = Symbol('effects not yet authored');
 
 /**
  * Returns a list of human-readable problems with the bend data. Empty means

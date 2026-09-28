@@ -437,8 +437,23 @@ describe('bend packer', () => {
  * source that still passes `EFFECTS_NOT_YET_AUTHORED`, and every source or
  * data file that defines a painted effect or a registry of them (anything
  * typed `BendEffectDef`, parsed by `bendEffectDefSchema`, or carrying a
- * trajectory). `src/content/bends.ts` declares all three and is neither.
+ * trajectory). `src/content/bends.ts` declares all three, so it is held to a
+ * narrower test: a value initialised as an effect or a collection of them, a
+ * trajectory written as an object, or a parse through the schema.
  */
+const CONTRACT = 'src/content/bends.ts';
+const CONTRACT_DEFINES = new RegExp(
+  [
+    // `const X: BendEffectDef = `, `: readonly BendEffectDef[] = `,
+    // `: Record<string, BendEffectDef> = `, `: ReadonlyMap<..., BendEffectDef> = `
+    // (the schema's own `z.ZodType<BendEffectDef>` is not a collection).
+    String.raw`:\s*(?:readonly\s+)?(?:BendEffectDef\b[\s[\]]*|(?:Readonly|ReadonlyArray|Array|Record|ReadonlyMap|Map|ReadonlySet|Set)<[^=;{}()]*\bBendEffectDef\b[^=;{}()]*>[\s[\]]*)=(?![=>])`,
+    String.raw`\bsatisfies\s+(?:readonly\s+)?[^;]*\bBendEffectDef\b`,
+    String.raw`["']?\btrajectory["']?\s*:\s*\{`,
+    String.raw`\bbendEffectDefSchema\s*\.\s*(?:safe)?[pP]arse\b`,
+  ].join('|'),
+);
+
 function effectSkip(root: string): { skipUsers: string[]; definers: string[] } {
   const skipUsers: string[] = [];
   const definers: string[] = [];
@@ -449,10 +464,14 @@ function effectSkip(root: string): { skipUsers: string[]; definers: string[] } {
         if (entry.name !== 'node_modules') walk(path);
         continue;
       }
-      if (path === 'src/content/bends.ts' || /\.test\.ts$/.test(path)) continue;
+      if (/\.test\.ts$/.test(path)) continue;
       const code = path.endsWith('.ts');
       if (!code && !path.endsWith('.json')) continue;
       const text = readFileSync(join(root, path), 'utf8');
+      if (path === CONTRACT) {
+        if (CONTRACT_DEFINES.test(text)) definers.push(path);
+        continue;
+      }
       if (code && text.includes('EFFECTS_NOT_YET_AUTHORED')) skipUsers.push(path);
       if (/\bBendEffectDef\b|\bbendEffectDefSchema\b|["']?\btrajectory["']?\s*:/.test(text))
         definers.push(path);
@@ -487,6 +506,33 @@ describe('the effect-check skip', () => {
     );
     writeFileSync(join(root, 'public/art/fx.json'), '{"trajectory":{"kind":"straight"}}');
     expect(effectSkip(root).definers).toEqual(['public/art/fx.json', 'src/content/bendEffects.ts']);
+  });
+
+  it('holds the contract file itself to its declarations only', () => {
+    const contract = readFileSync(CONTRACT, 'utf8');
+    const root = temp('bend-contract-');
+    for (const dir of ['src/content', 'scripts', 'public']) {
+      mkdirSync(join(root, dir), { recursive: true });
+    }
+    const scan = (extra: string): string[] => {
+      writeFileSync(join(root, CONTRACT), `${contract}\n${extra}\n`);
+      return effectSkip(root).definers;
+    };
+    // The shipped contract declares the shapes, the schema and the validator
+    // that takes `readonly BendEffectDef[]`, and defines no effect.
+    expect(scan('')).toEqual([]);
+    for (const registry of [
+      'export const BEND_EFFECTS: BendEffectDef[] = [];',
+      'export const BEND_EFFECTS: readonly BendEffectDef[] = [];',
+      'const EFFECTS: ReadonlyArray<BendEffectDef> = [];',
+      'const BY_ID: Readonly<Record<string, BendEffectDef>> = {};',
+      'const FIRE: BendEffectDef = { id: "fx.fire.jet" } as never;',
+      'const WATER = { id: "fx.water.whip" } satisfies Partial<BendEffectDef>;',
+      'const EARTH = { trajectory: { kind: "arc" } };',
+      'const PARSED = bendEffectDefSchema.parse({});',
+    ]) {
+      expect(scan(registry), registry).toEqual([CONTRACT]);
+    }
   });
 });
 
