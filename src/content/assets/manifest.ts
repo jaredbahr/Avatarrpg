@@ -59,6 +59,15 @@ export type AssetEntry =
        * lives on exactly one page; the sheet draws once every page is in.
        */
       readonly atlasPages?: readonly string[];
+      /**
+       * The character's bend set (ADR 0055): a `BendSetDef` JSON, relative to
+       * the site root, whose frames live on `bendPages`. Loaded lazily, after
+       * the pages above and apart from them: a bend that fails never blanks
+       * the sheet.
+       */
+      readonly bend?: string;
+      /** The atlas pages `bend` draws from, each a JSON and image like `atlas`. */
+      readonly bendPages?: readonly string[];
       /** Pixels a tile is drawn at in the atlas: 128, or 256 for a sharper sheet. */
       readonly pixelsPerTile: number;
       /** Explicit art bounds when weapon reach exceeds the default frame (ADR 0032). */
@@ -230,6 +239,9 @@ function gSheet(key: string, name: keyof typeof G_TRAVEL, palette: string): Shee
       `art/units/${name}-g-2.json`,
       ...(riverside ? [`art/units/riverside-${name}.json`] : []),
     ],
+    // The bend loads on its own, only when something asks for it (ADR 0055).
+    bend: `art/units/${name}-bend.json`,
+    bendPages: [`art/units/${name}-g-bend.json`],
     pixelsPerTile: 128,
     footprint: { w: 1, h: 1 },
     anchor: { x: 0.5, y: 0.85 },

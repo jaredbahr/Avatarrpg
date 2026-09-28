@@ -1579,6 +1579,8 @@ html[data-contrast='high'] .hud-panel::after {
      cancelled by the margin so the body keeps its Normal-text layout. */
   padding: 5px;
   margin: -5px;
+  /* A control focused from the keyboard scrolls clear of the faded band. */
+  scroll-padding-block: var(--sheet-fade);
 }
 
 /*
@@ -1593,6 +1595,46 @@ html[data-contrast='high'] .hud-panel::after {
   -webkit-overflow-scrolling: touch;
   overscroll-behavior: contain;
   padding: var(--hairline);
+  scroll-padding-block: var(--sheet-fade);
+}
+
+/*
+ * The scroll cue. Dialog.ts marks the edges of a scroll region that have more
+ * behind them, and only those fade, so a sheet at rest keeps its first row
+ * crisp and a row cut by the edge reads as "there is more" instead of as a
+ * broken sheet. A mask's colour is irrelevant; only its alpha is used.
+ */
+.dialog .has-more-above,
+.dialog .has-more-below {
+  --fade-above: 0rem;
+  --fade-below: 0rem;
+  -webkit-mask-image: linear-gradient(
+    to bottom,
+    transparent,
+    black var(--fade-above),
+    black calc(100% - var(--fade-below)),
+    transparent
+  );
+  mask-image: linear-gradient(
+    to bottom,
+    transparent,
+    black var(--fade-above),
+    black calc(100% - var(--fade-below)),
+    transparent
+  );
+}
+
+.dialog .has-more-above {
+  --fade-above: var(--sheet-fade);
+}
+
+.dialog .has-more-below {
+  --fade-below: var(--sheet-fade);
+}
+
+/* The Wait sheet's way back is pinned to the bottom edge: it is the cue. */
+.dialog .has-more-below:has(> .wait-return) {
+  --fade-below: 0rem;
 }
 
 .dialog-wide {
@@ -1725,6 +1767,39 @@ html[data-contrast='high'] .hud-panel::after {
   gap: var(--sp-3);
 }
 
+.stack.inspector-stats {
+  gap: var(--sp-2);
+}
+
+/*
+ * On a phone the seven chips wrapped into four ragged rows with the portrait
+ * floating beside them. There the stats go under the portrait as a two-column
+ * table, one stat per cell, both chip groups flowing into the one grid.
+ */
+@media (max-width: 36rem) {
+  .inspector-head {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .inspector-head > canvas {
+    align-self: center;
+  }
+
+  .stack.inspector-stats {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .inspector-stats > .chips {
+    display: contents;
+  }
+
+  .inspector-stats .chip {
+    justify-content: center;
+  }
+}
+
 .status-row {
   display: flex;
   flex-direction: column;
@@ -1786,6 +1861,13 @@ html[data-contrast='high'] .hud-panel::after {
 /* Toasts                                                              */
 /* ------------------------------------------------------------------ */
 
+/*
+ * Below the map's top edge, which Toasts.ts measures (under the header and, in
+ * combat, the initiative strip); the top of the screen only where there is no
+ * map. --z-toast sits under the dialog overlay, so a sheet is never covered
+ * by a stray beat; a toast raised while one is open comes up over it instead,
+ * at the bottom (Toasts.ts).
+ */
 .toasts {
   position: absolute;
   top: calc(var(--sp-4) + env(safe-area-inset-top, 0px));
@@ -1797,7 +1879,40 @@ html[data-contrast='high'] .hud-panel::after {
   align-items: center;
   z-index: var(--z-toast);
   pointer-events: none;
+  /* Sized to the text: shrink-to-fit past `left: 50%` halved it on a phone. */
+  width: max-content;
   max-width: min(36rem, 92vw);
+}
+
+.toasts[data-place='map'] {
+  top: calc(var(--toast-anchor) + var(--sp-2));
+}
+
+/*
+ * Over an open sheet, at the foot of the screen: the header stays clear. A
+ * sheet tall enough to reach there lifts it to just above its footer instead,
+ * which Toasts.ts measures, so Import and Close stay clear too.
+ */
+.toasts[data-place='sheet'],
+.toasts[data-place='sheet-lifted'] {
+  top: auto;
+  bottom: calc(var(--sp-4) + env(safe-area-inset-bottom, 0px));
+  z-index: var(--z-toast-sheet);
+}
+
+.toasts[data-place='sheet-lifted'] {
+  bottom: calc(var(--toast-anchor) + var(--sp-2));
+}
+
+/*
+ * Lifted, the stack grows up from the footer into the room under the sheet's
+ * title, which on a phone on its side at Largest text holds one toast and no
+ * more: two answers in a row put the older one over the title. So only the
+ * newest shows there. It is the sheet's latest answer, and the older ones were
+ * announced when they arrived.
+ */
+.toasts[data-place='sheet-lifted'] > .toast:not(:last-child) {
+  display: none;
 }
 
 .toast {

@@ -88,18 +88,22 @@ export class UnitInspector extends Dialog {
           { class: 'stack tight' },
           el(
             'div',
-            { class: 'row row-wrap chips' },
-            el('span', { class: 'chip', text: `${unit.hp} / ${unit.base.maxHp} HP` }),
-            el('span', { class: 'chip', text: `${unit.ap} / ${stats.maxAp} AP` }),
-            el('span', { class: 'chip', text: `Move ${unit.move} / ${stats.maxMove}` }),
-          ),
-          el(
-            'div',
-            { class: 'row row-wrap chips' },
-            el('span', { class: 'chip', text: `Power ${stats.power}` }),
-            el('span', { class: 'chip', text: `Defence ${stats.defense}` }),
-            el('span', { class: 'chip', text: `Speed ${stats.speed}` }),
-            el('span', { class: 'chip', text: `Focus ${stats.focus}%` }),
+            { class: 'stack inspector-stats' },
+            el(
+              'div',
+              { class: 'row row-wrap chips' },
+              el('span', { class: 'chip', text: `${unit.hp} / ${unit.base.maxHp} HP` }),
+              el('span', { class: 'chip', text: `${unit.ap} / ${stats.maxAp} AP` }),
+              el('span', { class: 'chip', text: `Move ${unit.move} / ${stats.maxMove}` }),
+            ),
+            el(
+              'div',
+              { class: 'row row-wrap chips' },
+              el('span', { class: 'chip', text: `Power ${stats.power}` }),
+              el('span', { class: 'chip', text: `Defence ${stats.defense}` }),
+              el('span', { class: 'chip', text: `Speed ${stats.speed}` }),
+              el('span', { class: 'chip', text: `Focus ${stats.focus}%` }),
+            ),
           ),
           unit.faction === 'party'
             ? el('span', {
