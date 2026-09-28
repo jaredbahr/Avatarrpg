@@ -23,6 +23,7 @@ import { apply } from '../core/state/reducer';
 import { createGame } from '../core/state/createGame';
 import type { PartySlot } from '../core/state/createGame';
 import { backdrops } from '../render/backdrops';
+import { sheets } from '../render/sheets/store';
 import { Animator } from './animator';
 import { Session } from './session';
 import type { Player } from './session';
@@ -167,6 +168,8 @@ export class App {
     setUiSink((key) => this.audio.play([{ key, at: 0, seed: 0 }], 0));
     this.animator = new Animator(content, {
       onSounds: (cues, now) => this.audio.play(cues, now),
+      // The G knockouts arrive with the sheet, not the bundle (ADR 0059).
+      sheetClips: (sprite) => sheets.clips(sprite),
     });
     this.residents = new ResidentWalks(content);
     applySettings(this.settings);

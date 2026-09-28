@@ -1,5 +1,8 @@
+import { readFileSync } from 'node:fs';
 import { describe, expect, it } from 'vitest';
 import type { ContentIndex, GameEvent, Unit } from '../core/types';
+import { clipDurationMs } from '../content/assets/clips';
+import type { SheetClips } from '../render/sheets/store';
 import { Animator } from './animator';
 import { CONTENT } from '../content';
 import { sampleParticles, PARTICLE_STRIDE } from '../render/fx/simulate';
@@ -172,6 +175,75 @@ describe('Animator', () => {
       expect(cels, abilityId).toBeGreaterThanOrEqual(24);
       expect(drawn, abilityId).toBe(cels);
     }
+  });
+
+  it('stands an eight-way enemy facing west until it turns, then by its heading (ADR 0059)', () => {
+    const a = new Animator(CONTENT, { motionReduced: () => false });
+    const thug = 'unit.enemy.thug';
+    expect(a.locomotion(0, 'e0', 'idle', thug, -1)).toEqual({ clip: 'idleWest', facing: -1 });
+    // The party's default is unchanged: east, unsuffixed.
+    expect(a.locomotion(0, 'p0', 'stance', 'unit.fire.kaya')).toEqual({
+      clip: 'stance',
+      facing: 1,
+    });
+    a.push(0, [moved('e0', [4, 5])], [unit('e0', 4, 4)]);
+    a.prune(10);
+    expect(a.locomotion(10, 'e0', 'idle', thug, -1).clip).toBe('walkSouth');
+    a.prune(5000);
+    expect(a.locomotion(5000, 'e0', 'idle', thug, -1).clip).toBe('idleSouth');
+  });
+
+  it('holds the G knockout a heading falls on once the sheet is in (ADR 0059)', () => {
+    const kaya = 'unit.fire.kaya';
+    const kayaClips = JSON.parse(
+      readFileSync('public/art/units/kaya-g-clips.json', 'utf8'),
+    ) as SheetClips;
+    const a = new Animator(CONTENT, {
+      motionReduced: () => false,
+      sheetClips: (sprite) => (sprite === kaya ? kayaClips : undefined),
+    });
+    const roster = [
+      { ...combatUnit('p0', 4, 4, 20), sprite: kaya },
+      { ...combatUnit('e0', 7, 4, 20), faction: 'enemy' as const, sprite: 'unit.enemy.thug' },
+    ];
+    // A blow is the legacy hit: the party has no G hit.
+    a.push(
+      0,
+      [
+        {
+          type: 'damaged',
+          unitId: 'p0',
+          amount: 3,
+          crit: false,
+          damageType: 'fire',
+          sourceId: 'e0',
+        },
+      ],
+      roster,
+    );
+    expect(a.unitPose(0, 'p0', kaya)?.clip).toBe('hit');
+    // The thug's sheet has no G knockout: the legacy pose, and nothing held.
+    expect(a.fallenPose('e0', 'unit.enemy.thug')).toBeUndefined();
+
+    // Walked north, she falls on the diagonal clockwise of it and stays there.
+    a.clear();
+    a.push(0, [moved('p0', [4, 3])], roster);
+    a.prune(2000);
+    a.push(2000, [{ type: 'unitDied', unitId: 'p0' }], roster);
+    expect(a.unitPose(2001, 'p0', kaya)?.clip).toBe('koNorthEast');
+    a.prune(5000);
+    expect(a.unitPose(5000, 'p0', kaya)).toBeUndefined();
+    const held = a.fallenPose('p0', kaya);
+    expect(held?.clip).toBe('koNorthEast');
+    const ko = kayaClips.koNorthEast;
+    if (!ko) throw new Error('Expected a knockout');
+    expect(held?.clipTime).toBeGreaterThan(clipDurationMs(ko));
+
+    // Before the sheet is in, the knockout is the legacy one.
+    const cold = new Animator(CONTENT, { motionReduced: () => false });
+    cold.push(0, [{ type: 'unitDied', unitId: 'p0' }], roster);
+    expect(cold.unitPose(1, 'p0', kaya)?.clip).toBe('ko');
+    expect(cold.fallenPose('p0', kaya)).toBeUndefined();
   });
 
   for (const reduced of [false, true]) {

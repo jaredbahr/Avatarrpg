@@ -43,6 +43,10 @@ export const CLIP_NAMES = [
   'stanceSouthWest',
   'stanceWest',
   'stanceNorthWest',
+  'koNorthEast',
+  'koSouthEast',
+  'koSouthWest',
+  'koNorthWest',
 ] as const;
 export type ClipName = (typeof CLIP_NAMES)[number];
 
@@ -80,6 +84,41 @@ export function headingClip(base: HeadingClipBase, heading: Heading): ClipName {
   return `${base}${heading[0]?.toUpperCase() ?? ''}${heading.slice(1)}` as ClipName;
 }
 
+/**
+ * The screen diagonals a G knockout is authored in (ADR 0059). On the oblique
+ * combat grid every orthogonal step, so every melee adjacency, is a screen
+ * diagonal; north, south, east and west only turn up on a grid-diagonal move.
+ */
+export const KO_HEADINGS = ['southEast', 'southWest', 'northEast', 'northWest'] as const;
+export type KoHeading = (typeof KO_HEADINGS)[number];
+
+/**
+ * The diagonal a heading falls on: a diagonal is its own, and an orthogonal
+ * heading takes the diagonal 45 degrees clockwise of it on screen (east to
+ * south-east, south to south-west, west to north-west, north to north-east).
+ * One fixed turn, so the same heading always falls the same way.
+ */
+export const KO_HEADING: Readonly<Record<Heading, KoHeading>> = {
+  east: 'southEast',
+  southEast: 'southEast',
+  south: 'southWest',
+  southWest: 'southWest',
+  west: 'northWest',
+  northWest: 'northWest',
+  north: 'northEast',
+  northEast: 'northEast',
+};
+
+/**
+ * A G sheet's knockout for a heading: the diagonal `KO_HEADING` falls it on.
+ * Always suffixed: the bare `ko` is the legacy one-cel pose, drawn facing
+ * right and mirrored, which a G knockout never is (ADR 0059).
+ */
+export function koClip(heading: Heading): ClipName {
+  const diagonal = KO_HEADING[heading];
+  return `ko${diagonal[0]?.toUpperCase() ?? ''}${diagonal.slice(1)}` as ClipName;
+}
+
 /** Authored screen-facing melee contact variants, when a sheet carries them. */
 export const MELEE_DIRECTIONS = ['screenUp', 'screenDown'] as const;
 export type MeleeDirection = (typeof MELEE_DIRECTIONS)[number];
@@ -92,6 +131,21 @@ export interface ClipDef {
   readonly loop: boolean;
   /** Optional cue frames, e.g. which frame of a melee clip lands the hit. */
   readonly events?: { readonly hit?: number };
+  /**
+   * How long each frame holds, in ms, for a clip timed cel by cel (a G
+   * knockout, ADR 0059). It replaces `fps`, plays by time whatever frame the
+   * choreography names, and a clip that does not loop holds its last frame.
+   * A frame may name an earlier frame's cel of the same clip: a hold is
+   * timing, never a second cel.
+   */
+  readonly frameMs?: readonly number[];
+  /**
+   * A trimmed clip's own cel size and foot anchor (a fraction of that size),
+   * when its cels are not the sheet's frame: one rectangle per clip, like a
+   * bend heading's, so a body lying flat is not clipped to a standing cel.
+   */
+  readonly frameSize?: { readonly w: number; readonly h: number };
+  readonly anchor?: { readonly x: number; readonly y: number };
 }
 
 /** Poses a clip must carry to be valid, and how many it may carry. */
@@ -134,15 +188,25 @@ export const CLIP_FRAME_COUNTS: Readonly<Record<ClipName, { min: number; max: nu
   stanceSouthWest: { min: 1, max: 8 },
   stanceWest: { min: 1, max: 8 },
   stanceNorthWest: { min: 1, max: 8 },
+  koNorthEast: { min: 2, max: 8 },
+  koSouthEast: { min: 2, max: 8 },
+  koSouthWest: { min: 2, max: 8 },
+  koNorthWest: { min: 2, max: 8 },
 };
 
 /**
  * Clips a `facing: 'both'` sheet authors for each side, so the renderer draws
- * them unflipped; its legacy actions (cast, KO) are still mirrored. One test
- * for both backends (ADR 0002).
+ * them unflipped; its legacy actions (cast, hit and the bare KO) are
+ * still mirrored. One test for both backends (ADR 0002).
  */
 export function authoredForBothSides(clip: ClipName): boolean {
-  return /^(idle|walk|rest|stance)/.test(clip);
+  return /^(idle|walk|rest|stance)|^ko[A-Z]/.test(clip);
+}
+
+/** The clip's length in ms when it plays once through: its frame holds, or its frames at `fps`. */
+export function clipDurationMs(def: ClipDef): number {
+  if (def.frameMs) return def.frameMs.reduce((sum, ms) => sum + ms, 0);
+  return def.fps > 0 ? (def.frames.length / def.fps) * 1000 : 0;
 }
 
 /** Clips every sheet must have. */

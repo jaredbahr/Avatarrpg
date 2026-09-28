@@ -20,9 +20,12 @@ import {
   CLIP_FRAME_COUNTS,
   CLIP_NAMES,
   HEADINGS,
+  KO_HEADINGS,
   REQUIRED_CLIPS,
   headingClip,
+  koClip,
 } from './assets/clips';
+import type { ClipDef, ClipName } from './assets/clips';
 import type { AssetEntry } from './assets/manifest';
 import { SCENE_PREFIX, SCENE_VALUES, STANDING_PREFIX } from '../core/story/conditions';
 import { exitCells } from '../core/story/world';
@@ -764,12 +767,81 @@ export const storyNodeSchema = z.discriminatedUnion('kind', [
 /* Assets                                                              */
 /* ------------------------------------------------------------------ */
 
-const clipDef = z.object({
-  frames: z.array(z.string().min(1)).min(1),
-  fps: z.number().positive().max(60),
-  loop: z.boolean(),
-  events: z.object({ hit: z.number().int().min(0).optional() }).optional(),
-});
+const clipDef = z
+  .object({
+    frames: z.array(z.string().min(1)).min(1),
+    fps: z.number().positive().max(60),
+    loop: z.boolean(),
+    events: z.object({ hit: z.number().int().min(0).optional() }).optional(),
+    // A G knockout (ADR 0059): timed cel by cel, trimmed to its own cel.
+    frameMs: z.array(z.number().positive().max(5000)).optional(),
+    frameSize: z
+      .object({ w: z.number().int().positive(), h: z.number().int().positive() })
+      .optional(),
+    anchor: z.object({ x: z.number().finite(), y: z.number().finite() }).optional(),
+  })
+  .refine((clip) => !clip.frameMs || clip.frameMs.length === clip.frames.length, {
+    message: 'frameMs times every frame',
+  })
+  .refine((clip) => (clip.frameSize === undefined) === (clip.anchor === undefined), {
+    message: 'a trimmed clip declares its frameSize and its anchor together',
+  });
+
+/**
+ * A sheet's clips, as the manifest lists them or as a sheet's `clipData`
+ * file carries them (ADR 0059). The runtime only types that file, so the
+ * schema stays out of the bundle; `art:validate` parses it with this.
+ */
+export const clipSetSchema = z.object(
+  Object.fromEntries(CLIP_NAMES.map((clip) => [clip, clipDef.optional()])),
+);
+
+/**
+ * What is wrong with a sheet's clips: their frame counts and names, and a G
+ * knockout family (ADR 0059) that is not whole, timed cel by cel, and on a
+ * sheet declaring the headings it is asked for by. `validateContent` runs it
+ * on the manifest's clips, `art:validate` on those with the fetched ones.
+ */
+export function sheetClipProblems(
+  key: string,
+  clips: Readonly<Partial<Record<ClipName, ClipDef>>>,
+  eightWay: boolean,
+): string[] {
+  const problems: string[] = [];
+  const family = KO_HEADINGS.map(koClip);
+  const authored = family.filter((clip) => clips[clip]);
+  if (authored.length > 0) {
+    if (!eightWay)
+      problems.push(`asset ${key}: ${authored[0]} needs declared eight-way locomotion`);
+    for (const clip of family) {
+      const def = clips[clip];
+      if (!def) problems.push(`asset ${key}: has ${authored[0]} but no ${clip} clip`);
+      else if (!def.frameMs) problems.push(`asset ${key}: ${clip} is not timed cel by cel`);
+    }
+  }
+  for (const clip of CLIP_NAMES) {
+    const def = clips[clip];
+    if (!def) continue;
+    const bounds = CLIP_FRAME_COUNTS[clip];
+    if (def.frames.length < bounds.min || def.frames.length > bounds.max) {
+      problems.push(
+        `asset ${key}: ${clip} has ${def.frames.length} frames, needs ${bounds.min}-${bounds.max}`,
+      );
+    }
+    def.frames.forEach((name, index) => {
+      const expected = `${key}/${clip}/${index}`;
+      // A timed clip holds an earlier cel of its own by naming it again.
+      const held =
+        def.frameMs !== undefined &&
+        def.frames.slice(0, index).includes(name) &&
+        name.startsWith(`${key}/${clip}/`);
+      if (name !== expected && !held) {
+        problems.push(`asset ${key}: ${clip} frame ${index} is "${name}", expected "${expected}"`);
+      }
+    });
+  }
+  return problems;
+}
 
 /** The manifest's entries (ADR 0003): a painter, a still, or a pose sheet. */
 export const assetEntrySchema = z.discriminatedUnion('kind', [
@@ -799,6 +871,10 @@ export const assetEntrySchema = z.discriminatedUnion('kind', [
       .array(z.string().regex(/\.json$/, 'must point at the atlas JSON'))
       .min(1)
       .optional(),
+    clipData: z
+      .string()
+      .regex(/\.json$/, 'must point at the clip JSON')
+      .optional(),
     pixelsPerTile: z.union([z.literal(128), z.literal(256)]),
     frameSize: z
       .object({ w: z.number().int().min(1).max(512), h: z.number().int().min(1).max(512) })
@@ -814,7 +890,7 @@ export const assetEntrySchema = z.discriminatedUnion('kind', [
         ),
       })
       .optional(),
-    clips: z.object(Object.fromEntries(CLIP_NAMES.map((clip) => [clip, clipDef.optional()]))),
+    clips: clipSetSchema,
     meleeDirections: z
       .object({
         screenUp: z.tuple([z.string().min(1), z.string().min(1)]).optional(),
@@ -1297,24 +1373,11 @@ export function validateContent(bundle: ContentBundle): string[] {
         }
       }
     }
-    for (const clip of CLIP_NAMES) {
-      const def = entry.clips[clip];
-      if (!def) continue;
-      const bounds = CLIP_FRAME_COUNTS[clip];
-      if (def.frames.length < bounds.min || def.frames.length > bounds.max) {
-        problems.push(
-          `asset ${key}: ${clip} has ${def.frames.length} frames, needs ${bounds.min}-${bounds.max}`,
-        );
-      }
-      def.frames.forEach((name, index) => {
-        const expected = `${key}/${clip}/${index}`;
-        if (name !== expected) {
-          problems.push(
-            `asset ${key}: ${clip} frame ${index} is "${name}", expected "${expected}"`,
-          );
-        }
-      });
-    }
+    // A G knockout (ADR 0059) is asked for by heading, so its clip data is
+    // only read for a sheet that declares the headings it is asked for by.
+    if (entry.clipData && !entry.locomotion)
+      problems.push(`asset ${key}: clip data needs declared eight-way locomotion`);
+    problems.push(...sheetClipProblems(key, entry.clips, entry.locomotion !== undefined));
   }
   if (bundle.assets) {
     const wanted: [string, string, number | null][] = [

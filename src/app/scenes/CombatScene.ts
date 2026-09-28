@@ -45,6 +45,7 @@ import { reactionNotes } from '../ui/ReactionNote';
 import { formatShoveMovement } from '../ui/combatPreviewText';
 import { UnitInspector } from '../ui/UnitInspector';
 import { enemyScale, partyScale } from '../anim/actorScale';
+import { sheetLocomotion } from '../../content/assets/manifest';
 import { createMovementThreatQuery } from '../ui/movementThreats';
 import { flushTime } from './flockFlush';
 
@@ -1612,6 +1613,7 @@ export class CombatScene implements Scene {
           u.faction === 'enemy' ? -1 : 1,
           u.faction === 'party',
           u.sprite,
+          health.fallen,
         ),
       };
     });
@@ -1695,6 +1697,7 @@ export class CombatScene implements Scene {
     restFacing: 1 | -1,
     directional: boolean,
     sprite: string,
+    fallen = false,
   ): Pick<
     RenderUnit,
     | 'offset'
@@ -1709,15 +1712,27 @@ export class CombatScene implements Scene {
   > {
     const pose = this.app.animator.unitPose(now, unitId, sprite);
     const walked = this.app.animator.facing(unitId);
-    // The party stands in its fighting stance between moves (ADR 0052).
-    const movement = directional
-      ? this.app.animator.locomotion(now, unitId, 'stance', sprite)
-      : undefined;
+    // The party stands in its fighting stance between moves (ADR 0052); an
+    // enemy on an eight-way sheet (the thug, ADR 0059) idles and walks by
+    // heading the same way.
+    const movement =
+      directional || sheetLocomotion(sprite)?.headings === 8
+        ? this.app.animator.locomotion(
+            now,
+            unitId,
+            directional ? 'stance' : 'idle',
+            sprite,
+            restFacing,
+          )
+        : undefined;
     const mapId = this.app.state?.battle?.mapId;
     const projection = mapId ? this.app.content.maps.get(mapId)?.projection : undefined;
     const scale = directional
       ? partyScale(projection, pose?.scale)
-      : enemyScale(sprite, pose?.scale);
+      : enemyScale(sprite, pose?.scale, projection);
+    // Once a G knockout has played, the body stays where it fell (ADR 0059).
+    const down = !pose && fallen ? this.app.animator.fallenPose(unitId, sprite) : undefined;
+    if (down) return { ...down, facing: 1, scale };
     if (!pose) return { ...(movement ?? { facing: walked ?? restFacing }), scale };
     return {
       offset: pose.offset,

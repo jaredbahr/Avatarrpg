@@ -31,8 +31,16 @@ import { createHash } from 'node:crypto';
 import { existsSync, readFileSync } from 'node:fs';
 import { dirname, join, resolve } from 'node:path';
 import { ALL_MAPS } from '../../src/content';
-import { CLIP_NAMES, HEADINGS, headingClip } from '../../src/content/assets/clips';
+import {
+  CLIP_NAMES,
+  HEADINGS,
+  KO_HEADINGS,
+  headingClip,
+  koClip,
+} from '../../src/content/assets/clips';
+import type { ClipDef, ClipName } from '../../src/content/assets/clips';
 import type { AssetEntry } from '../../src/content/assets/manifest';
+import { clipSetSchema, sheetClipProblems } from '../../src/content/schemas';
 import { ASSETS } from '../../src/content/assets/manifest';
 import { parseAtlasJson } from '../../src/render/sheets/atlasJson';
 import { MARGIN } from './lib/align';
@@ -59,13 +67,16 @@ export const IMAGE_SIZES: Readonly<Record<string, { width: number; height: numbe
 };
 
 /**
- * Lossy sheets and the pin file their build script writes. A WebP sheet
- * without one fails: its cels cannot be compared with a lossless reference.
+ * Lossy sheets and the pin files their build scripts write: the G build's,
+ * and the knockout build's for the page it adds (ADR 0059). A WebP
+ * sheet without one fails: its cels cannot be compared with a lossless
+ * reference.
  */
-export const WEBP_SHEET_PINS: Readonly<Record<string, string>> = {
-  'unit.fire.kaya': 'art/source/kaya-g/pins.json',
-  'unit.water.sura': 'art/source/sura-g/pins.json',
-  'unit.earth.bo': 'art/source/bo-g/pins.json',
+export const WEBP_SHEET_PINS: Readonly<Record<string, readonly string[]>> = {
+  'unit.fire.kaya': ['art/source/kaya-g/pins.json', 'art/source/kaya-clips/pins.json'],
+  'unit.water.sura': ['art/source/sura-g/pins.json', 'art/source/sura-clips/pins.json'],
+  'unit.earth.bo': ['art/source/bo-g/pins.json', 'art/source/bo-clips/pins.json'],
+  'unit.enemy.thug': ['art/source/thug-g/pins.json'],
 };
 
 /** How far a standing cel's lowest opaque row may sit from the anchor's foot line. */
@@ -194,7 +205,7 @@ async function readPage(publicDir: string, key: string, path: string): Promise<P
 export async function validateSheets(
   publicDir = 'public',
   entries: Readonly<Record<string, AssetEntry>> = ASSETS,
-  pins: Readonly<Record<string, string>> = WEBP_SHEET_PINS,
+  pins: Readonly<Record<string, readonly string[]>> = WEBP_SHEET_PINS,
 ): Promise<string[]> {
   const problems: string[] = [];
   for (const [key, entry] of Object.entries(entries)) {
@@ -206,6 +217,24 @@ export async function validateSheets(
       else pages.push(page);
     }
     if (pages.length !== 1 + (entry.atlasPages?.length ?? 0)) continue;
+    // The sheet's fetched clips (ADR 0059) are held to everything its own are.
+    let clips: Partial<Record<ClipName, ClipDef>> = entry.clips;
+    if (entry.clipData) {
+      const path = join(publicDir, entry.clipData);
+      const parsed = existsSync(path)
+        ? clipSetSchema.safeParse(JSON.parse(readFileSync(path, 'utf8')))
+        : undefined;
+      if (!parsed?.success) {
+        problems.push(`${key}: ${entry.clipData} is not a readable set of clips`);
+        continue;
+      }
+      const fetched = parsed.data as Partial<Record<ClipName, ClipDef>>;
+      for (const clip of Object.keys(fetched) as ClipName[])
+        if (entry.clips[clip])
+          problems.push(`${key}: ${clip} is in both the manifest and ${entry.clipData}`);
+      clips = { ...entry.clips, ...fetched };
+      problems.push(...sheetClipProblems(key, clips, entry.locomotion !== undefined));
+    }
     const seen = new Map<string, string>();
     for (const page of pages) {
       for (const name of page.frames.keys()) {
@@ -226,17 +255,26 @@ export async function validateSheets(
     const lossy = pages.some((page) => page.lossy);
     let pinned: Readonly<Record<string, string>> | undefined;
     if (lossy) {
-      const pinPath = pins[key];
-      if (!pinPath || !existsSync(pinPath)) {
+      const pinPaths = pins[key] ?? [];
+      if (pinPaths.length === 0 || !pinPaths.every((path) => existsSync(path))) {
         const files = pages
           .filter((page) => page.lossy)
           .map((page) => page.file)
           .join(' + ');
         problems.push(`${key}: lossy ${files} has no cel pin file`);
       } else {
-        pinned = (JSON.parse(readFileSync(pinPath, 'utf8')) as { frames?: Record<string, string> })
-          .frames;
-        if (!pinned) problems.push(`${key}: ${pinPath} pins no cels`);
+        const merged: Record<string, string> = {};
+        for (const pinPath of pinPaths) {
+          const frames = (
+            JSON.parse(readFileSync(pinPath, 'utf8')) as { frames?: Record<string, string> }
+          ).frames;
+          if (!frames) problems.push(`${key}: ${pinPath} pins no cels`);
+          for (const [name, hash] of Object.entries(frames ?? {})) {
+            if (merged[name] !== undefined) problems.push(`${key}: "${name}" is pinned twice`);
+            merged[name] = hash;
+          }
+        }
+        pinned = merged;
       }
     }
     const defaultW = entry.pixelsPerTile * entry.footprint.w;
@@ -253,18 +291,24 @@ export async function validateSheets(
     )
       problems.push(`${key}: declared frame exceeds the bounded art envelope`);
     for (const clip of CLIP_NAMES) {
-      const def = entry.clips[clip];
+      const def = clips[clip];
       if (!def) continue;
-      for (const name of def.frames) {
+      // A trimmed clip (a G knockout, ADR 0059) is its own size.
+      const clipW = def.frameSize?.w ?? wantW;
+      const clipH = def.frameSize?.h ?? wantH;
+      if (def.frameSize && (clipW > MAX_ATLAS || clipH > MAX_ATLAS))
+        problems.push(`${key}: ${clip} declares a ${clipW}x${clipH} cel`);
+      // A held cel (ADR 0059) is one cel, checked once.
+      for (const name of new Set(def.frames)) {
         const found = find(name);
         if (!found) {
           problems.push(`${key}: frame "${name}" is not in ${atlasNames}`);
           continue;
         }
         const { image, frame, lossy: lossyCel } = found;
-        if (frame.w !== wantW || frame.h !== wantH) {
+        if (frame.w !== clipW || frame.h !== clipH) {
           problems.push(
-            `${key}: frame "${name}" is ${frame.w}x${frame.h}, expected ${wantW}x${wantH}`,
+            `${key}: frame "${name}" is ${frame.w}x${frame.h}, expected ${clipW}x${clipH}`,
           );
         }
         if (borderTouched(image, frame, MARGIN)) {
@@ -277,7 +321,7 @@ export async function validateSheets(
       }
     }
     if (pinned) {
-      const used = new Set(CLIP_NAMES.flatMap((clip) => entry.clips[clip]?.frames ?? []));
+      const used = new Set(CLIP_NAMES.flatMap((clip) => clips[clip]?.frames ?? []));
       for (const name of Object.keys(pinned)) {
         if (!used.has(name)) problems.push(`${key}: pinned cel "${name}" is not in a clip`);
       }
@@ -286,7 +330,7 @@ export async function validateSheets(
       const line = Math.round(entry.anchor.y * wantH);
       const column = entry.anchor.x * wantW;
       for (const heading of HEADINGS) {
-        const idleName = entry.clips[headingClip('idle', heading)]?.frames[0];
+        const idleName = clips[headingClip('idle', heading)]?.frames[0];
         const idleFound = idleName ? find(idleName) : undefined;
         const idleCel = idleFound
           ? crop(idleFound.image, {
@@ -305,7 +349,7 @@ export async function validateSheets(
         for (const base of ['idle', 'walk', 'rest', 'stance'] as const) {
           const clip = headingClip(base, heading);
           const rows: number[] = [];
-          for (const name of entry.clips[clip]?.frames ?? []) {
+          for (const name of clips[clip]?.frames ?? []) {
             const found = find(name);
             if (!found) continue;
             const { image, frame } = found;
@@ -345,6 +389,37 @@ export async function validateSheets(
             }
           }
         }
+      }
+      // A G knockout starts on the stance's feet at its size: placed by its
+      // own anchor, frame 0 has the stance cel's exact alpha (ADR 0059).
+      const foot = { x: column, y: entry.anchor.y * wantH };
+      for (const heading of KO_HEADINGS) {
+        const clip = koClip(heading);
+        const def = clips[clip];
+        if (!def?.anchor) continue;
+        const stanceFound = find(`${key}/${headingClip('stance', heading)}/0`);
+        if (!stanceFound) {
+          problems.push(`${key}: no ${heading} stance cel to register ${clip} on`);
+          continue;
+        }
+        const stance = crop(stanceFound.image, {
+          x: stanceFound.frame.x,
+          y: stanceFound.frame.y,
+          width: stanceFound.frame.w,
+          height: stanceFound.frame.h,
+        });
+        const name = def.frames[0];
+        const found = name ? find(name) : undefined;
+        if (!found) continue;
+        const cel = crop(found.image, {
+          x: found.frame.x,
+          y: found.frame.y,
+          width: found.frame.w,
+          height: found.frame.h,
+        });
+        const differ = stanceAlphaMismatch(cel, foot, def.anchor, stance);
+        if (differ > 0)
+          problems.push(`${key}: ${clip} frame "${name}" is ${differ} alpha px off the stance cel`);
       }
     }
     for (const [direction, frames] of Object.entries(entry.meleeDirections ?? {})) {
