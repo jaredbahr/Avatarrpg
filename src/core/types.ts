@@ -651,6 +651,12 @@ export interface BackgroundRole {
 
 export interface MapExit {
   readonly pos: Vec2;
+  /**
+   * Multi-tile entrance (M2): the leader triggers the exit from any of these
+   * cells. Absent means the single `pos` tile. When present it must contain
+   * `pos`, and no cell may belong to two exits on the same map.
+   */
+  readonly area?: readonly Vec2[];
   readonly toMapId: string;
   readonly toPos: Vec2;
   readonly label: string;
