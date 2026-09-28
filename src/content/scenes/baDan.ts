@@ -89,6 +89,29 @@ export const BA_DAN_APRON_PIECES: readonly SceneImage[] = BA_DAN_APRON_BANDS.map
   height: band.height,
 }));
 
+/**
+ * Pixel size of each upright texture. They are pixel-art redraws at two
+ * screen pixels a texel, shipped nearest-upscaled by a whole number
+ * (`scripts/art/ba-dan-restyle.ts`), so the pieces keep their world widths
+ * and take their heights from these aspects. `ba-dan-restyle.test.ts` pins
+ * the table to the shipped files.
+ */
+export const BA_DAN_TEXTURES = {
+  'merchant-house': { width: 610, height: 390 },
+  dwelling: { width: 602, height: 388 },
+  'merchant-display': { width: 452, height: 284 },
+  'low-planter': { width: 448, height: 248 },
+  'village-tree': { width: 750, height: 732 },
+  'canal-bridge': { width: 436, height: 272 },
+} as const;
+type BaDanTexture = keyof typeof BA_DAN_TEXTURES;
+
+/** World height of a texture drawn `width` wide. */
+function aspectHeight(image: BaDanTexture, width: number): number {
+  const natural = BA_DAN_TEXTURES[image];
+  return (width * natural.height) / natural.width;
+}
+
 /** Two canopy wings frame the market court; only their trunks block walking. */
 export const BA_DAN_COURT_TREES = [
   { x: 5, y: 5 },
@@ -115,7 +138,7 @@ export const BA_DAN_COURTYARD_FOOTPRINTS: readonly Vec2[] = BA_DAN_COURTYARD_PRO
 
 function courtyardProp({ id, image, x, y }: (typeof BA_DAN_COURTYARD_PROPS)[number]): SceneScenery {
   const width = 192;
-  const height = (width * (image === 'low-planter' ? 295 : 329)) / 512;
+  const height = aspectHeight(image, width);
   const frontAnchor = image === 'low-planter' ? 0.675 : 0.695;
   const front = { x: x + 2, y: y + 1 };
   return {
@@ -152,11 +175,14 @@ export const BA_DAN_SOUTHEAST_PLANTER = [
   { x: 17, y: 11 },
 ] as const;
 
-/** The far slice's width in texture columns of the unmirrored planter. */
-export const BA_DAN_PLANTER_CUT = 82;
+/**
+ * The far slice's width in texture columns of the unmirrored planter: the
+ * widest cut whose slice still starts at or past the house image's east edge.
+ */
+export const BA_DAN_PLANTER_CUT = 71;
 
 function turnedPlanter(): SceneScenery[] {
-  const natural = { width: 512, height: 295 };
+  const natural = BA_DAN_TEXTURES['low-planter'];
   const width = 192;
   const height = (width * natural.height) / natural.width;
   const front = { x: 18, y: 12 };
@@ -203,7 +229,7 @@ function turnedPlanter(): SceneScenery[] {
  * can stand on the deck instead of disappearing behind one opaque sprite. */
 function canalBridge(): SceneScenery[] {
   const width = 192;
-  const height = (width * 323) / 512;
+  const height = aspectHeight('canal-bridge', width);
   const { x, y } = BA_DAN_CANAL_BRIDGE;
   const image = {
     // The isolated bridge art is a crossing centred on its logical road
@@ -268,10 +294,10 @@ function house(
   y: number,
   w: number,
   h: number,
-  image = 'merchant-house',
+  image: 'merchant-house' | 'dwelling' = 'merchant-house',
 ): SceneScenery {
   const width = (w + h) * 64;
-  const height = (width * (image === 'dwelling' ? 495 : 494)) / 768;
+  const height = aspectHeight(image, width);
   const front = { x: x + w, y: y + h };
   const footprint: Vec2[] = [];
   for (let row = y; row < y + h; row++) {
@@ -291,7 +317,7 @@ function house(
 }
 
 function tree(x: number, y: number, size = 360): SceneScenery {
-  const height = (size * 765) / 768;
+  const height = aspectHeight('village-tree', size);
   return {
     id: `tree-${x}-${y}`,
     url: `${root}village-tree.webp`,

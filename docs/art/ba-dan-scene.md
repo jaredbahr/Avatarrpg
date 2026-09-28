@@ -81,8 +81,56 @@ npx tsx scripts/art/ba-dan-courtyard-ground.ts art/raw/scenes/ground-materials.p
 npx tsx scripts/art/ba-dan-western-approach-ground.ts
 npx tsx scripts/art/ba-dan-neighborhood-ground.ts
 npx tsx scripts/art/ba-dan-canal-banks.ts
+npx tsx scripts/art/ba-dan-restyle.ts
 python scripts/art/ba-dan-bridge-front.py
 ```
+
+## Restyle (direction B, 28 September 2026)
+
+The upright scenery — `merchant-house`, `dwelling`, `merchant-display` (the
+fruit stall), `low-planter`, `village-tree` and `canal-bridge` — was restyled
+by direction B of the Ba Dan style study, which Jared approved on 28 September 2026. The OpenAI originals read as rendered rather than drawn: soft ramps on
+every tile and fruit, no ink, more detail than a 40–90 px piece can hold, and
+perfectly repeated tiles and baskets. The G party and the riverside painting
+are flat clusters with hard steps and a dark contour.
+
+Each piece is a PixelLab `image_to_pixelart` redraw (`faithful=false`,
+`init_image_strength=0`, default guidance) at two screen pixels a texel, the
+grain of the party and the riverside painting: the largest instance's world
+width × zoom 1.2, halved. Its input was the shipped WebP as already published
+on `main`. Three seeds were generated for each asset and the one closest to the
+shipped silhouette was kept. The jobs, seeds and hashes are in
+`art/source/ba-dan-restyle/pins.json`: 18 generations in all.
+
+`scripts/art/ba-dan-restyle.ts` then does the rest deterministically, from the
+tracked redraw and the tracked lossless decode of the texture it replaces:
+
+- It keys the redraw's flat background. For the tree, this includes the
+  pockets inside the canopy.
+- It locks the palette: the redraw keeps its own stepped luminance but takes
+  its YCbCr chroma from the shipped piece at the same place. PixelLab alone
+  pushes the jade roof teal and the timber orange.
+- It quantises to 32 colours with no dither.
+- The redraw's darkest line work and the whole silhouette become `#1b1410`.
+- Isolated specks take their neighbours' colour.
+- A few repeated roof tiles, the second orange and pear baskets, and one
+  planter kerb block are stepped a shade (`VARIATIONS`).
+- It ships lossless, nearest-upscaled by a whole number (houses ×2, tree ×3,
+  stall, planter and bridge ×4). Scenery is linearly filtered in both
+  backends, so this keeps the grain crisp.
+
+Nothing is drawn by hand. `ba-dan-restyle.test.ts` re-packs every asset and
+compares each pixel with the shipped file.
+
+The redraws register to the old footprints within about 1% of their width: the
+front corners and the ends of the footprint land where they did. So every
+anchor in `baDan.ts` still holds, and only the aspects changed.
+`BA_DAN_TEXTURES` records the new pixel sizes. `BA_DAN_PLANTER_CUT` became 71
+columns, the widest cut that still starts at the south-east house image's east
+edge. The dwelling's smoke vent at (0.55, 0.19) still lands on the tiles just
+under the main ridge, halfway along it. The bridge's front mask is re-derived by
+`ba-dan-bridge-front.py`, which now states its cut in the texture's own
+proportions.
 
 The canal packer takes no arguments: unlike the courtyard and the historical
 ground page, its material source is the tracked
