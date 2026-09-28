@@ -11,6 +11,14 @@ for (const renderer of ['canvas', 'webgl'] as const) {
     allowSoftwareWebgl(test, renderer);
     const errors: string[] = [];
     page.on('pageerror', (error) => errors.push(error.message));
+    // A particle shader that fails to link or bind throws nothing in Pixi; it
+    // logs and draws nothing (ADR 0057 took the WGSL program off it).
+    const glErrors: string[] = [];
+    page.on('console', (message) => {
+      if (message.type() === 'error' && /shader|webgl|glsl/i.test(message.text())) {
+        glErrors.push(message.text());
+      }
+    });
     await page.clock.install();
     await resetStorage(page, `?renderer=${renderer}`);
     await startGame(page, ['Explorer'], ['kaya'], 'bending-cels', { reduceMotion: false });
@@ -40,6 +48,7 @@ for (const renderer of ['canvas', 'webgl'] as const) {
       [],
     );
     expect(errors).toEqual([]);
+    expect(glErrors).toEqual([]);
   });
 
   test(`missing cel images keep bending playable on ${renderer}`, async ({ page }) => {

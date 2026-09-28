@@ -26,6 +26,29 @@ function buildRevision(): string {
 }
 
 /**
+ * Applies exact text replacements to one Pixi module, throwing if any `from`
+ * text is missing so a Pixi upgrade fails the build instead of silently
+ * shipping the omitted code again.
+ */
+function replaceExactly(
+  code: string,
+  replacements: readonly (readonly [from: string, to: string])[],
+  review: string,
+): { code: string; map: null } {
+  let next = code;
+  for (const [from, to] of replacements) {
+    if (!next.includes(from)) throw new Error(`Pixi changed; review ${review}.`);
+    next = next.replace(from, to);
+  }
+  return { code: next, map: null };
+}
+
+/** A stand-in for an omitted Pixi function that fails loudly if it is ever reached. */
+function omittedPixi(name: string): string {
+  return `const ${name} = () => { throw new Error('Pixi ${name} is omitted from this build (ADR 0057).'); };`;
+}
+
+/**
  * `GH_PAGES_BASE` is set by the deploy workflow to `/<repo>/` so that the
  * built asset URLs resolve on GitHub Pages. Locally it stays `/`.
  */
@@ -47,7 +70,9 @@ export default defineConfig({
     sourcemap: true,
     // The larger village stays inside the existing tablet download budget.
     minify: 'terser',
-    terserOptions: { compress: { passes: 2 } },
+    // Vite passes terser `safari10: true` by default. That Safari 10/11 workaround
+    // costs 0.7 KB gzipped and cannot matter: an es2022 target needs Safari 15.
+    terserOptions: { compress: { passes: 2 }, safari10: false },
     // The whole game is one bundle; 320 KB gzipped is the budget we verify in CI.
     chunkSizeWarningLimit: 900,
   },
@@ -63,8 +88,9 @@ export default defineConfig({
     {
       // Input, accessibility and HTML UI belong to the app's native DOM.
       // Atlas JSON uses our shared loader, not Pixi's Assets/Spritesheet.
-      // These optional Pixi registration entry points are never used. Keep
-      // graphics/text/filter/particle/texture initialization intact (ADR 0001).
+      // These optional Pixi registration entry points are never used. Keep the
+      // WebGL graphics/text/filter/particle/texture initialization intact
+      // (ADR 0001); only their Canvas and WebGPU twins are dropped (ADR 0057).
       name: 'omit-unused-pixi-systems',
       transform(code, id) {
         // The game uploads still images/canvases and has no video textures.
@@ -165,6 +191,120 @@ export default defineConfig({
           for (const line of alphaPipe) next = next.replace(line, '');
           return { code: next, map: null };
         }
+        // Graphics and particle containers register a pipe per renderer. Only
+        // the WebGL ones can run, for the reason above (ADR 0057).
+        if (/[/\\]pixi\.js[/\\]lib[/\\]scene[/\\]graphics[/\\]init\.mjs$/.test(id)) {
+          return replaceExactly(
+            code,
+            [
+              [
+                "import { CanvasGraphicsContextSystem } from './canvas/CanvasGraphicsContextSystem.mjs';\n",
+                '',
+              ],
+              ["import { CanvasGraphicsPipe } from './canvas/CanvasGraphicsPipe.mjs';\n", ''],
+              ['extensions.add(CanvasGraphicsPipe);\n', ''],
+              ['extensions.add(CanvasGraphicsContextSystem);\n', ''],
+            ],
+            'the canvas graphics exclusion',
+          );
+        }
+        if (/[/\\]pixi\.js[/\\]lib[/\\]scene[/\\]particle-container[/\\]init\.mjs$/.test(id)) {
+          return replaceExactly(
+            code,
+            [
+              [
+                "import { CanvasParticleContainerPipe } from './canvas/CanvasParticleContainerPipe.mjs';\n",
+                '',
+              ],
+              [
+                "import { GpuParticleContainerPipe } from './gpu/GpuParticleContainerPipe.mjs';\n",
+                '',
+              ],
+              ['extensions.add(GpuParticleContainerPipe);\n', ''],
+              ['extensions.add(CanvasParticleContainerPipe);\n', ''],
+            ],
+            'the particle pipe exclusion',
+          );
+        }
+        // Its WGSL twin is only compiled by the WebGPU renderer; Shader binds a
+        // GL-only program's resources by name, as it does for our own filters.
+        if (
+          /[/\\]pixi\.js[/\\]lib[/\\]scene[/\\]particle-container[/\\]shared[/\\]shader[/\\]ParticleShader\.mjs$/.test(
+            id,
+          )
+        ) {
+          return replaceExactly(
+            code,
+            [
+              [
+                "import { GpuProgram } from '../../../../rendering/renderers/gpu/shader/GpuProgram.mjs';\n",
+                '',
+              ],
+              ["import wgsl from './particles.wgsl.mjs';\n", ''],
+              [
+                `    const gpuProgram = GpuProgram.from({
+      fragment: {
+        source: wgsl,
+        entryPoint: "mainFragment"
+      },
+      vertex: {
+        source: wgsl,
+        entryPoint: "mainVertex"
+      }
+    });
+`,
+                '',
+              ],
+              ['      gpuProgram,\n', ''],
+            ],
+            'the particle WGSL exclusion',
+          );
+        }
+        // Every path the game draws is built from points; nothing hands Pixi
+        // SVG markup or an SVG path string, so the parser becomes a loud stub.
+        if (
+          /[/\\]pixi\.js[/\\]lib[/\\]scene[/\\]graphics[/\\]shared[/\\]GraphicsContext\.mjs$/.test(
+            id,
+          )
+        ) {
+          return replaceExactly(
+            code,
+            [["import { SVGParser } from './svg/SVGParser.mjs';", omittedPixi('SVGParser')]],
+            'the SVG parser exclusion',
+          );
+        }
+        if (
+          /[/\\]pixi\.js[/\\]lib[/\\]scene[/\\]graphics[/\\]shared[/\\]path[/\\]GraphicsPath\.mjs$/.test(
+            id,
+          )
+        ) {
+          return replaceExactly(
+            code,
+            [
+              [
+                "import { parseSVGPath } from '../svg/parseSVGPath.mjs';",
+                omittedPixi('parseSVGPath'),
+              ],
+            ],
+            'the SVG path exclusion',
+          );
+        }
+        // Tagged text only runs for a style with `tagStyles`, and no label the
+        // game draws has one; `hasTagStyles` stays, so the stub is never reached.
+        if (
+          /[/\\]pixi\.js[/\\]lib[/\\]scene[/\\]text[/\\]canvas[/\\]CanvasTextMetrics\.mjs$/.test(id)
+        ) {
+          return replaceExactly(
+            code,
+            [
+              [
+                "import { measureTaggedText } from './utils/measureTaggedText.mjs';",
+                omittedPixi('measureTaggedText'),
+              ],
+            ],
+            'the tagged-text exclusion',
+          );
+        }
         if (
           /[/\\]pixi\.js[/\\]lib[/\\](accessibility|events|dom|spritesheet)[/\\]init\.mjs$/.test(id)
         ) {
@@ -175,7 +315,9 @@ export default defineConfig({
     VitePWA({
       registerType: 'autoUpdate',
       injectRegister: 'auto',
-      includeAssets: ['icons/apple-touch-icon.png', 'icons/favicon.svg'],
+      // No includeAssets or manifest icons: globPatterns already precaches every
+      // icon, and listing them again put each one in the manifest twice.
+      includeManifestIcons: false,
       workbox: {
         /*
          * Sound effects precache: the whole set is well under a tenth of a
@@ -185,6 +327,22 @@ export default defineConfig({
          * a breath (ADR 0012).
          */
         globPatterns: ['**/*.{js,css,html,svg,png,webp,json,woff2,ogg}'],
+        /*
+         * The precache manifest is inlined in sw.js, which the JavaScript gate
+         * counts (ADR 0048), and two hundred 32-digit md5 revisions do not
+         * compress. A revision only has to change when its file does, so twelve
+         * hex digits keep a 1 in 2^48 chance of an edit going unnoticed and
+         * save 2.3 KB gzipped. Hashed build assets carry no revision at all.
+         */
+        manifestTransforms: [
+          (entries) => ({
+            manifest: entries.map((entry) => ({
+              ...entry,
+              revision: entry.revision ? entry.revision.slice(0, 12) : entry.revision,
+            })),
+            warnings: [],
+          }),
+        ],
         cleanupOutdatedCaches: true,
         navigateFallback: `${base}index.html`,
       },
