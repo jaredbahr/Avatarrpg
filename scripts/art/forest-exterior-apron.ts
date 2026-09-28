@@ -239,9 +239,11 @@ async function loadPlates(names: readonly string[]): Promise<ApronPlate[]> {
   const plates: ApronPlate[] = [];
   const found = new Set<string>();
   // Scene order is draw order, and a repeated plate (the rubble cells) is drawn
-  // once per cell, so every matching piece belongs in the field.
+  // once per cell, so every matching piece belongs in the field. The heap's
+  // variants (`rubble-1.webp`, ...) all answer to `rubble.webp`.
   for (const piece of FOREST_ROAD_SCENE.ground) {
-    const name = names.find((candidate) => piece.url.endsWith(candidate));
+    const url = piece.url.replace(/rubble-\d\.webp$/, 'rubble.webp');
+    const name = names.find((candidate) => url.endsWith(candidate));
     if (!name) continue;
     found.add(name);
     plates.push({ image: await readWebp(`public/${piece.url}`), x: piece.x, y: piece.y });
