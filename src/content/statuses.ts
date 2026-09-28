@@ -171,7 +171,7 @@ export const STATUSES: readonly StatusDef[] = [
     id: 'inspired',
     name: 'Inspired',
     description:
-      '2 more Power, 10% higher hit chance and 5% more Focus, their chance of a critical hit.',
+      '2 more Power, 10% higher hit chance and 5% more Focus (Focus is critical-hit chance).',
     kind: 'buff',
     defaultDuration: 2,
     modifiers: { power: 2, accuracy: 10, focus: 5 },

@@ -108,7 +108,7 @@ export const NONBENDER_ABILITIES: readonly Ability[] = [
     ],
     description:
       'A charged glove driven into an adjacent enemy: lightning damage, doubled if they are Wet, with a 70% chance to Shock them for 2 rounds.',
-    flavor: 'Charge, contact, done.',
+    flavor: 'Republic City engineering. Charge, contact, done.',
     fx: 'fx.non.glove',
   }),
   ability({
