@@ -2,6 +2,10 @@
 
 ## 0.2.11 — release candidate
 
+- Close the water barrel. Its open top was a disc of bright cyan that read as a
+  water hazard on the quarry's pale ground; `scripts/art/barrel-lid.ts` lids it
+  in the barrel's own stave tones with plank seams. `barrel.png`
+  46,384 → 42,187 B.
 - Paint the quarry floor's oil pools and mud patch on their own ground. The
   ground generator left every **dynamic** cell transparent, so the Driller
   floor's four spills and one mud patch were procedural slate standing beside
