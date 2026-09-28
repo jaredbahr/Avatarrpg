@@ -87,11 +87,14 @@ describe('nearby exploration guidance', () => {
       destination: 'Forest Road',
     });
 
-    // The forest's west mouth runs the whole road cross-section.
-    const west = nearbyExits(forest, { x: 1, y: 7 });
+    // The forest's west mouth is the road tile at the rim (M3 narrowed it from
+    // the old five-row cross-section; rows 3 and 5-9 are a declared tree line).
+    const west = nearbyExits(forest, { x: 1, y: 4 });
     expect(west.map((exit) => exit.toMapId)).toEqual(['ba_dan_village']);
-    // One tile further inland is outside the mouth.
-    expect(nearbyExits(forest, { x: 2, y: 7 })).toEqual([]);
+    // One tile further inland is outside the mouth, and the tree line beside it
+    // is not a way out at all.
+    expect(nearbyExits(forest, { x: 2, y: 4 })).toEqual([]);
+    expect(nearbyExits(forest, { x: 1, y: 7 })).toEqual([]);
   });
 
   it('keeps a single-tile exit matching only its own tile (M2)', () => {
