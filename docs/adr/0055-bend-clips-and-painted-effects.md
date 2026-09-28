@@ -1,8 +1,8 @@
 # ADR 0055: One bend a character, painted effects a layer set
 
 **Status:** accepted, 2026-09-27 (contract); amended 2026-09-28 (packer and
-packed data), and again 2026-09-28 (manifest plumbing and the socket
-convention; playback follows)
+packed data), and again 2026-09-28 (manifest plumbing, lazy bend loading and
+the socket convention; playback follows)
 
 ## Context
 
@@ -60,12 +60,15 @@ The budgets are measured on the packed r10 pages (one page a character):
   ADR either raises the ceiling or cuts the art. This ADR does not raise it.
 - **Effects:** the `fx` family is 1,527,899 B (1.46 MiB) of its 4 MiB ceiling,
   so painted bend sequences for four elements fit inside the remaining 2.5 MiB.
-- **Precache:** 19,244,262 B (18.35 MiB) of the 25 MiB ceiling with the three
-  bends' pages and data in the service worker's precache; 19,249,513 B
-  (18.36 MiB) after the manifest plumbing, of which the bends are the same
-  615,071 B. They stay in it: combat needs them offline.
-- **JavaScript, gzip:** 317.4 KB of the 320 KB gate (ADR 0048); the manifest
-  plumbing adds 256 B (324,948 B to 325,204 B, 317.6 KB). The bend data
+- **Precache:** 19,262,721 B (18.37 MiB) of the 25 MiB ceiling, measured on
+  the plumbing's head after lazy bend loading, with `main` merged in; the
+  bends are the same 615,071 B of it. They stay in the precache although they
+  load lazily: combat needs them offline.
+- **JavaScript, gzip:** 327,675 B (320.0 KB) on the same head, 5 B under the
+  327,680 B (320 KB) gate (ADR 0048), where `main` stands at about 319.2 KB.
+  The plumbing and its lazy loading cost about 0.8 KB between them, so the
+  gate has no room left: step 5 onward has to find its own bytes, and the
+  budget ADR in step 3 should look at the JavaScript gate too. The bend data
   is JSON the packer writes, not a TypeScript table, so it does not enter the
   bundle. The zod schemas in `bends.ts` are for the packer's output and CI and
   must stay out of the runtime bundle too: runtime code imports the types with
@@ -196,8 +199,8 @@ The budgets are measured on the packed r10 pages (one page a character):
 - **Trimmed pages with a foot anchor.** Every cel of a heading shares one
   rectangle, the heading's ink over all its cels plus the art bible's 8 px
   margin, with its foot anchor recorded per heading (ADR 0003). A bend page is
-  an extra sheet page beside locomotion and stance (ADR 0052),
-  `<name>-g-bend.webp`, shelf-packed in heading order without rotation. A cel
+  an atlas page in the sheet-page format (ADR 0052), loaded apart from the
+  locomotion and stance pages (below), `<name>-g-bend.webp`, shelf-packed in heading order without rotation. A cel
   whose pixels repeat an earlier cel's is packed once, as a hold the character
   declares; an undeclared repeat, or a declared hold that is not a repeat,
   stops the build.
@@ -214,26 +217,35 @@ The budgets are measured on the packed r10 pages (one page a character):
   at load; `bends.ts` holds the shapes and the rules, not a second copy of the
   data. The impact holds are 0 until the effects set them: r10 times one hold
   per release, at launch.
-- **An extra page of the character's own sheet.** The manifest registers the
-  bend page as one more of the G sheet's `atlasPages` and the bend data as
-  the sheet's `bend`, rather than as a sibling sheet. The sheet store already
-  loads a sheet's pages together and draws nothing until every one is in
-  (ADR 0052); the bend data joins that same load, so the pages and the data
-  arrive, or fail, as one, and a bend can never draw from a load that its
-  stance, the first and last cel, is not part of. Canvas 2D and Pixi both ask
-  the one store, so they resolve the same page and rectangle. The price is
-  that a scene which never bends (the riverside) fetches the page too, about
-  0.2 MB from the precache per character, and holds the page's image, though
-  Pixi uploads it as a texture only when a bend cel is first drawn.
+- **On the character's own sheet, loaded lazily and apart from it.** The
+  manifest registers the bend page as the G sheet's `bendPages` and the bend
+  data as its `bend`, rather than as a sibling sheet, and never among its
+  `atlasPages`. The sheet store loads a bend's pages and data together, so
+  they arrive, or fail, as one, but only after the sheet itself is in and
+  only when something asks: the first `bendSet` or `bendFrame`, or
+  `preloadBend(key)`, which combat is to call at its start (step 7) so the
+  cels are in by the first cast. A scene that never bends - the riverside,
+  Ba Dan, forest exploration, anything outside combat - never fetches or
+  decodes a bend page, where loading them with the sheet decoded about
+  17.7 MB of RGBA (the three 2000-2048 px pages) in every scene that drew a
+  G character. A bend that fails sets only the bend's own state to failed:
+  the sheet, its locomotion and its stance keep drawing from the atlas.
+  Failed is for the session, as a failed sheet is; nothing retries, and
+  `bendState(key)` reports it. A bend can still never draw from a load its
+  stance is not part of: `bendFrame` needs both loads, and the bend's starts
+  only once the sheet's has finished. Canvas 2D and Pixi both ask the one
+  store, so they resolve the same page and rectangle.
 - **Drawn by the heading's anchor.** `SheetStore.bendFrame` takes a unit
   key, a heading and a cel index and returns the cel's page and rectangle
   with its heading's own foot anchor, never the sheet's, plus its hold and
-  its sockets; `bendSet(key)` returns the data. Placed by that anchor on the unit's foot through the one
-  rule both backends share (`placeFrame`), the first and last cels cover the
-  stance cel's alpha exactly, pixel for pixel, for every heading of every
-  bend. The runtime reads the data as typed JSON, with no schema, and refuses
-  only a cel whose rectangle is not its heading's `frameSize`, since the anchor
-  is a fraction of it.
+  its sockets; `bendSet(key)` returns the data. Placed by that anchor on the
+  unit's foot through the one rule both backends share (`placeFrame`), the
+  first and last cels cover the stance cel's alpha exactly, pixel for pixel,
+  for every heading of every bend. The runtime reads the data as typed JSON,
+  with no schema. `bendFrame` is null until both loads are in, after either
+  failed, for a sheet with no bend, for an index the heading has no cel or no
+  `frameMs` hold for, and for a cel whose rectangle is not its heading's
+  `frameSize`, since the anchor is a fraction of it.
 - **Validated in CI, not at runtime.** `art:validate` holds the manifest's
   registration to `BEND_SHEETS` (the pins and pages it checks), and the data to
   its schema and `validateBendSets`, which skips only the effect
@@ -258,9 +270,9 @@ The budgets are measured on the packed r10 pages (one page a character):
    settle the units and precache ceilings for about ten characters in their
    own ADR.
 4. **Manifest plumbing.** Register the bend pages and data on the character
-   sheets, resolve a cel by its heading's anchor on both backends, settle the
-   socket convention, and hold the registration to the pins in CI. Done: see
-   the decisions above.
+   sheets, load them lazily and apart from the sheet, resolve a cel by its
+   heading's anchor on both backends, settle the socket convention, and hold
+   the registration to the pins in CI. Done: see the decisions above.
 5. **Effect data.** The painted `BendEffectDef`s and sequences for the four
    elements. Precondition: the packer, `art:validate` and the shipped-data
    test stop passing `EFFECTS_NOT_YET_AUTHORED` and pass the effects, so every
@@ -272,6 +284,32 @@ The budgets are measured on the packed r10 pages (one page a character):
    shake at each contact and impact; follow the real target; map abilities to
    attacks; apply the one damage on the damage release. No rules, AP, damage or
    save change.
+
+   Found while plumbing, for steps 6 and 7 to settle before a bend first
+   draws:
+   - **Never mirror a bend cel.** Both backends mirror a sheet frame when
+     `drawFacing === -1` (Canvas 2D flips the context, Pixi negates the
+     sprite's `scale.x`). Every heading of a bend is its own drawing with its
+     own anchor and sockets, so a bend cel must draw as authored whatever the
+     unit's facing; mirrored, it stands off the feet and every socket lands on
+     the wrong side.
+   - **Read sockets by play index, not by cel.** A held cel is one packed
+     rectangle named more than once in `frames`, and each play index keeps its
+     own entry in `socketsPerFrame`. Looking sockets up by the cel's name or
+     rectangle gives a hold the sockets of its first appearance; `bendFrame`
+     already returns them by index.
+   - **Headroom excludes bend cels.** A frame's `headroom`, which places the
+     health bar, is the sheet's envelope over its clips' cels; `bendFrame`
+     carries that same value, and no bend cel is in it. Check the bar against
+     the raised arms of every heading, and either widen the envelope or hold
+     the bar where it was for the length of the bend.
+   - **Canvas 2D's flash mask is a whole page.** `Canvas2DBackend.mask`
+     (the `unit.flash` draw) builds, once per source image, a white copy of
+     the entire page it is given. A contact flash on a bend cel would make a
+     second 2048 px canvas for the bend page, about 7 MB for Kaya's, on the
+     device class the canvas cap bites. Mask the cel, not the page, before a
+     bend flashes on Canvas 2D; not fixed in step 4.
+
 8. **Gallery.** Capture the four elements for review against the visual target.
 
 ## Consequences
@@ -296,6 +334,8 @@ The budgets are measured on the packed r10 pages (one page a character):
 - Each heading has its own frame size and anchor, where every other clip of a
   sheet shares one, so a bend cel is resolved through `bendFrame`, which
   carries its heading's anchor, never through a sheet clip.
-- Every scene that draws a G character loads its bend page and data, bending
-  or not; a missing bend file fails that sheet to its drawn placeholder, as a
-  missing page always has.
+- Only a scene that asks for a bend loads it, and a missing or broken bend
+  file costs only the bend: the character still draws from its sheet, and the
+  bend stays unavailable for the rest of the session. The price of the lazy
+  load is that a bend asked for mid-scene without a preload arrives a few
+  frames late, so step 7 preloads at combat's start.
