@@ -43,6 +43,7 @@ import {
   sway,
 } from '../living/wind';
 import { SceneTextures } from './sceneTextures';
+import { sceneryZ, shadowZ } from './depthOrder';
 import { SURFACE_INDEX, surfaceIsPainted, surfaceTexel } from '../sceneSurfaces';
 import { TILE } from '../camera';
 import type { Camera, Viewport } from '../camera';
@@ -652,11 +653,9 @@ export class PixiBackend implements RenderBackend {
       sprite.height = item.height;
       sprite.scale.x = Math.abs(sprite.scale.x) * (item.flip ? -1 : 1);
       sprite.skew.x = item.wind && !view.reducedMotion ? -sway(view.time, item) : 0;
-      // Canvas 2D draws scenery before any figure at the same depth, so a
-      // figure level with a piece of frontage stands in front of it. Pixi
-      // breaks a zIndex tie by child order instead; sit scenery just under
-      // the tie, below a figure's shadow (-0.001) as well.
-      sprite.zIndex = camera.groundPoint(item.depth).y - 0.002;
+      // A figure level with a piece of frontage stands in front of it, as on
+      // Canvas 2D (depthOrder.ts).
+      sprite.zIndex = sceneryZ(camera.groundPoint(item.depth).y);
       sprite.alpha = opacities.get(item) ?? 1;
     }
     for (const [key, sprite] of this.groundChunks) {
@@ -1417,7 +1416,7 @@ export class PixiBackend implements RenderBackend {
         shadow.position.set(footX, ground + FOOT_LINE * TILE);
         shadow.width = shadow.height = TILE * scale;
         shadow.alpha = alpha;
-        shadow.zIndex = sprite.zIndex - 0.001;
+        shadow.zIndex = shadowZ(sprite.zIndex);
         shadow.visible = true;
       }
 
@@ -1502,7 +1501,7 @@ export class PixiBackend implements RenderBackend {
         shadow.position.set(anchor.x + width / 2, anchor.y + (0.86 - lift) * TILE);
         shadow.width = shadow.height = TILE * (unit.scale ?? 1);
         shadow.alpha = alpha;
-        shadow.zIndex = depth(pos, unit.size) - 0.001;
+        shadow.zIndex = shadowZ(depth(pos, unit.size));
         shadow.visible = true;
       }
       const scale = unit.scale ?? 1;
