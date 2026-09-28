@@ -19,6 +19,9 @@ export const RIVERSIDE_SPOTS = {
 // refer to tile centres, the same points used by feet and pointer targeting.
 // A painted solid stands on its base cell, so the practice posts, the lantern,
 // the rock and the trunk on the east bank each block one tile (R1 audit).
+// Flowers never block on their own: a flowerbed is as walkable as the ground
+// it grows in, and blocks only where a fence, post, pot, rock or wall stands
+// on the cell or the ground itself is a rocky ledge (the shrine terrace).
 const spans: readonly (readonly (readonly [number, number])[])[] = [
   [],
   [],
@@ -28,20 +31,22 @@ const spans: readonly (readonly (readonly [number, number])[])[] = [
     [10, 10],
     [15, 15],
   ],
-  // (16,5) is the garden fence in front of the north-east house.
+  // (16,5) is the garden fence in front of the north-east house; the beds in
+  // front of the middle house (12..13,5) and inside the fence at (20,5) are ground.
   [
-    [9, 11],
-    [14, 15],
+    [9, 15],
+    [20, 20],
     [30, 32],
   ],
-  // The sand lane west of the square runs up to the trees at (0,6).
+  // The sand lane west of the square runs up to the rock at (0,6).
   [
     [1, 2],
     [8, 17],
+    [19, 20],
     [30, 32],
   ],
   [
-    [2, 19],
+    [2, 20],
     [30, 31],
   ],
   [
@@ -52,8 +57,9 @@ const spans: readonly (readonly (readonly [number, number])[])[] = [
     [4, 21],
     [30, 31],
   ],
+  // (4,10) is the flower clump at the lantern's foot.
   [
-    [5, 7],
+    [4, 7],
     [13, 21],
     [29, 30],
     [32, 32],
@@ -108,9 +114,10 @@ const spans: readonly (readonly (readonly [number, number])[])[] = [
     [19, 20],
     [33, 34],
   ],
+  // The daisies at the sand pocket's west side (18..19,21) are ground.
   [
     [9, 11],
-    [20, 20],
+    [18, 20],
   ],
   [[10, 11]],
   [[10, 11]],

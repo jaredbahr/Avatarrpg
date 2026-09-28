@@ -47,8 +47,19 @@ A painted solid now blocks the one cell its base stands on:
 - the lantern (30,14), the rock (31,14) and the trunk (30,16) on the lower
   east-bank lane;
 - the rocky bank (20,13);
-- the garden fences (16,5) and (10,15..17);
-- the unreachable flowerbed (20,6).
+- the garden fences (16,5) and (10,15..17).
+
+**Flowers never block on their own.** A flowerbed is as walkable as the
+ground it grows in. It blocks only where a fence, post, pot, rock or wall
+stands on the cell, or where the ground itself is not walkable, as on the
+shrine terrace's rocky ledge at (29,4) and (33,4). By this rule the beds in the
+square (9..10,5) and west lane (4..7,7) stay open, and so are:
+
+- the bed in front of the middle house (12..13,5), whose pot at (12,4) blocks;
+- the bed inside the north-east fence (19,6), (20,5..7), which R1 had closed as
+  an island; the fence (19,5) and (21,6) and the barrel (18,6) still block;
+- the clump at the lantern's foot (4,10);
+- the daisies at the sand pocket's west side (18..19,21).
 
 Canopy is still not a footprint. Every walkable cell of the south path belongs
 to the exit mouth, so the map sets `edgeContract: 'enforce'`.
