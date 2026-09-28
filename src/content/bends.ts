@@ -12,8 +12,9 @@
  * way `validateContent` holds the rest of the content to its.
  *
  * The schemas are for the packer's output and CI. The runtime imports types
- * from here, never values, so zod stays out of the bundle (ADR 0048).
- * Nothing here is wired into `src/content/index.ts` or the manifest yet.
+ * from here, never values, so zod stays out of the bundle (ADR 0048): the
+ * manifest names each character's bend data beside its sheet, the sheet store
+ * reads it as typed JSON, and `art:validate` holds it to these schemas.
  */
 
 import { z } from 'zod';
@@ -682,8 +683,10 @@ function validateEffect(effect: BendEffectDef, problems: string[]): void {
  * 0055, step 5): the packed sets are checked in full except for the effect
  * each attack names. A test fails as soon as an effect is defined anywhere
  * while a caller still passes this, so the skip cannot outlive its reason.
+ * It is a `unique symbol`, not a string, so the skip can only be asked for by
+ * this name, which is what the test looks for: no literal can stand in for it.
  */
-export const EFFECTS_NOT_YET_AUTHORED = 'not-yet-authored';
+export const EFFECTS_NOT_YET_AUTHORED: unique symbol = Symbol('effects not yet authored');
 
 /**
  * Returns a list of human-readable problems with the bend data. Empty means

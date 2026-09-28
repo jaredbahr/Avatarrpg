@@ -1,7 +1,8 @@
 # ADR 0055: One bend a character, painted effects a layer set
 
 **Status:** accepted, 2026-09-27 (contract); amended 2026-09-28 (packer and
-packed data; wiring follows)
+packed data), and again 2026-09-28 (manifest plumbing, lazy bend loading and
+the socket convention; playback follows)
 
 ## Context
 
@@ -59,9 +60,15 @@ The budgets are measured on the packed r10 pages (one page a character):
   ADR either raises the ceiling or cuts the art. This ADR does not raise it.
 - **Effects:** the `fx` family is 1,527,899 B (1.46 MiB) of its 4 MiB ceiling,
   so painted bend sequences for four elements fit inside the remaining 2.5 MiB.
-- **Precache:** 19,244,262 B (18.35 MiB) of the 25 MiB ceiling with the three
-  bends' pages and data in the service worker's precache.
-- **JavaScript, gzip:** 317.4 KB of the 320 KB gate (ADR 0048). The bend data
+- **Precache:** 19,262,721 B (18.37 MiB) of the 25 MiB ceiling, measured on
+  the plumbing's head after lazy bend loading, with `main` merged in; the
+  bends are the same 615,071 B of it. They stay in the precache although they
+  load lazily: combat needs them offline.
+- **JavaScript, gzip:** 327,675 B (320.0 KB) on the same head, 5 B under the
+  327,680 B (320 KB) gate (ADR 0048), where `main` stands at about 319.2 KB.
+  The plumbing and its lazy loading cost about 0.8 KB between them, so the
+  gate has no room left: step 5 onward has to find its own bytes, and the
+  budget ADR in step 3 should look at the JavaScript gate too. The bend data
   is JSON the packer writes, not a TypeScript table, so it does not enter the
   bundle. The zod schemas in `bends.ts` are for the packer's output and CI and
   must stay out of the runtime bundle too: runtime code imports the types with
@@ -110,14 +117,24 @@ The budgets are measured on the packed r10 pages (one page a character):
   must be recorded on both its launch frame and its contact frame. Sockets are
   in packed-cel pixels, and every socket lies inside the heading's
   `frameSize`.
-- **Sub-pixel sockets (open, step 3).** The packer treats an r10 socket's
-  integer coordinates as a point on the source grid, the corner of the source
-  pixel it names, and moves it through the continuous map below, while the
-  packed pixels sample their source nearest-neighbour from their own corner.
-  So a stored socket can sit up to 0.75 packed px (one source pixel at 75%)
-  from the drawn pixel it names, and if r10 meant pixel centres every socket
-  is 0.375 px up and left of where it should be. Step 3 settles which
-  convention the hand-off uses and whether the packer adds the half pixel.
+- **Sub-pixel sockets: corners (settled by step 4, manifest plumbing, before
+  step 7 attaches effects).** A socket is a continuous point in cel pixels
+  measured from the top-left _corner_ of the cel, where a pixel (u, v) covers
+  [u, u+1) x [v, v+1) and its centre is (u + 0.5, v + 0.5). That is the space
+  a cel draws in on both backends, so a socket moves with the cel exactly as
+  its anchor does, at any zoom. The packer already reads an r10 socket this
+  way, as a point on the source grid moved through the continuous map below,
+  so the shipped data and pins stand and nothing adds a half pixel: not the
+  packer, not `SheetStore.bendFrame`, which returns the sockets as stored, and
+  not step 7. The r10 hand-off gives its sockets to a tenth of a source pixel
+  (hands snapped to the drawn skin, ankles from the skeleton) without naming
+  a convention, and its snapping routine is not in the hand-off; if it meant
+  pixel centres, every socket is 0.375 packed px (half a source pixel at 75%)
+  up and left of the point it named, and a stored socket is always within
+  0.75 packed px of the drawn pixel it names. Both are under one drawn pixel
+  and far under the painted effects that attach there, so they are not
+  corrected. A future hand-off that states pixel centres is moved by half a
+  source pixel in the packer, once, never at runtime.
 - **Key frames have free names and shared roles.** A key frame is
   `{ frame, role }` under whatever name the take uses (`F1`, `E3`), so the
   choreography can find "the contact" without knowing each clip's names. The
@@ -182,8 +199,8 @@ The budgets are measured on the packed r10 pages (one page a character):
 - **Trimmed pages with a foot anchor.** Every cel of a heading shares one
   rectangle, the heading's ink over all its cels plus the art bible's 8 px
   margin, with its foot anchor recorded per heading (ADR 0003). A bend page is
-  an extra sheet page beside locomotion and stance (ADR 0052),
-  `<name>-g-bend.webp`, shelf-packed in heading order without rotation. A cel
+  an atlas page in the sheet-page format (ADR 0052), loaded apart from the
+  locomotion and stance pages (below), `<name>-g-bend.webp`, shelf-packed in heading order without rotation. A cel
   whose pixels repeat an earlier cel's is packed once, as a hold the character
   declares; an undeclared repeat, or a declared hold that is not a repeat,
   stops the build.
@@ -192,7 +209,7 @@ The budgets are measured on the packed r10 pages (one page a character):
   stray or changed one stops the build before anything is written; the build
   then records every decoded atlas cel's hash for `art:validate`. Every check,
   the decoded pages' included, runs before the first file is written, so a
-  failed build leaves the shipped files as they were. Two builds write
+  failed check leaves the shipped files unchanged. Two builds write
   byte-identical pages, data and pins.
 - **JSON timing and sockets, not TypeScript tables.** Frame names, per-cel
   timing, key frames, sockets and attack cues are written by the packer into
@@ -200,13 +217,44 @@ The budgets are measured on the packed r10 pages (one page a character):
   at load; `bends.ts` holds the shapes and the rules, not a second copy of the
   data. The impact holds are 0 until the effects set them: r10 times one hold
   per release, at launch.
-- **Unwired until the plumbing.** `src/content/index.ts`, the manifest and the
-  runtime do not read the bend pages or data yet. `art:validate` checks them
-  on their own (`BEND_SHEETS`), with `validateBendSets` skipping only the
-  effect cross-reference until the effects are authored. The skip is explicit:
-  the packer and `art:validate` pass `EFFECTS_NOT_YET_AUTHORED`, and a test
-  fails once any `BendEffectDef` or effect registry exists while either still
-  does. The asset budget counts the pages because it walks the folder.
+- **On the character's own sheet, loaded lazily and apart from it.** The
+  manifest registers the bend page as the G sheet's `bendPages` and the bend
+  data as its `bend`, rather than as a sibling sheet, and never among its
+  `atlasPages`. The sheet store loads a bend's pages and data together, so
+  they arrive, or fail, as one, but only after the sheet itself is in and
+  only when something asks: the first `bendSet` or `bendFrame`, or
+  `preloadBend(key)`, which combat is to call at its start (step 7) so the
+  cels are in by the first cast. A scene that never bends - the riverside,
+  Ba Dan, forest exploration, anything outside combat - never fetches or
+  decodes a bend page, where loading them with the sheet decoded about
+  17.7 MB of RGBA (the three 2000-2048 px pages) in every scene that drew a
+  G character. A bend that fails sets only the bend's own state to failed:
+  the sheet, its locomotion and its stance keep drawing from the atlas.
+  Failed is for the session, as a failed sheet is; nothing retries, and
+  `bendState(key)` reports it. A bend can still never draw from a load its
+  stance is not part of: `bendFrame` needs both loads, and the bend's starts
+  only once the sheet's has finished. Canvas 2D and Pixi both ask the one
+  store, so they resolve the same page and rectangle.
+- **Drawn by the heading's anchor.** `SheetStore.bendFrame` takes a unit
+  key, a heading and a cel index and returns the cel's page and rectangle
+  with its heading's own foot anchor, never the sheet's, plus its hold and
+  its sockets; `bendSet(key)` returns the data. Placed by that anchor on the
+  unit's foot through the one rule both backends share (`placeFrame`), the
+  first and last cels cover the stance cel's alpha exactly, pixel for pixel,
+  for every heading of every bend. The runtime reads the data as typed JSON,
+  with no schema. `bendFrame` is null until both loads are in, after either
+  failed, for a sheet with no bend, for an index the heading has no cel or no
+  `frameMs` hold for, and for a cel whose rectangle is not its heading's
+  `frameSize`, since the anchor is a fraction of it.
+- **Validated in CI, not at runtime.** `art:validate` holds the manifest's
+  registration to `BEND_SHEETS` (the pins and pages it checks), and the data to
+  its schema and `validateBendSets`, which skips only the effect
+  cross-reference until the effects are authored. The skip is explicit: the
+  packer, `art:validate` and the shipped-data test pass
+  `EFFECTS_NOT_YET_AUTHORED`, a `unique symbol` so no literal can stand in for
+  it, and a test fails once any `BendEffectDef` or effect registry exists
+  while a non-test caller still passes it, including a registry initialised
+  in `bends.ts` itself. Nothing plays a bend yet.
 - **Which ability plays which attack is not decided here.** The contract names
   a set's attacks and their effects; mapping abilities onto them is the combat
   handoff's job (step 7 below) and gets its field then.
@@ -221,18 +269,47 @@ The budgets are measured on the packed r10 pages (one page a character):
 3. **Units budget.** Before the roster's bends outgrow the measured headroom,
    settle the units and precache ceilings for about ten characters in their
    own ADR.
-4. **Manifest plumbing.** Register the bend pages on the character sheets and
-   surface the bend sets through content so CI validates them.
+4. **Manifest plumbing.** Register the bend pages and data on the character
+   sheets, load them lazily and apart from the sheet, resolve a cel by its
+   heading's anchor on both backends, settle the socket convention, and hold
+   the registration to the pins in CI. Done: see the decisions above.
 5. **Effect data.** The painted `BendEffectDef`s and sequences for the four
-   elements. Precondition: the packer and `art:validate` stop passing
-   `EFFECTS_NOT_YET_AUTHORED` and pass the effects, so every attack's
-   `effectId` is checked; the skip's tripwire test fails until they do.
+   elements. Precondition: the packer, `art:validate` and the shipped-data
+   test stop passing `EFFECTS_NOT_YET_AUTHORED` and pass the effects, so every
+   attack's `effectId` is checked; the skip's tripwire test fails until the
+   packer and `art:validate` do.
 6. **Trajectories.** Straight, arc and whipBolt travel on the presentation
    clock, aimed at the resolved target.
 7. **Choreography and combat handoff.** Attach to sockets; flash, hold and
    shake at each contact and impact; follow the real target; map abilities to
    attacks; apply the one damage on the damage release. No rules, AP, damage or
    save change.
+
+   Found while plumbing, for steps 6 and 7 to settle before a bend first
+   draws:
+   - **Never mirror a bend cel.** Both backends mirror a sheet frame when
+     `drawFacing === -1` (Canvas 2D flips the context, Pixi negates the
+     sprite's `scale.x`). Every heading of a bend is its own drawing with its
+     own anchor and sockets, so a bend cel must draw as authored whatever the
+     unit's facing; mirrored, it stands off the feet and every socket lands on
+     the wrong side.
+   - **Read sockets by play index, not by cel.** A held cel is one packed
+     rectangle named more than once in `frames`, and each play index keeps its
+     own entry in `socketsPerFrame`. Looking sockets up by the cel's name or
+     rectangle gives a hold the sockets of its first appearance; `bendFrame`
+     already returns them by index.
+   - **Headroom excludes bend cels.** A frame's `headroom`, which places the
+     health bar, is the sheet's envelope over its clips' cels; `bendFrame`
+     carries that same value, and no bend cel is in it. Check the bar against
+     the raised arms of every heading, and either widen the envelope or hold
+     the bar where it was for the length of the bend.
+   - **Canvas 2D's flash mask is a whole page.** `Canvas2DBackend.mask`
+     (the `unit.flash` draw) builds, once per source image, a white copy of
+     the entire page it is given. A contact flash on a bend cel would make a
+     second 2048 px canvas for the bend page, about 7 MB for Kaya's, on the
+     device class the canvas cap bites. Mask the cel, not the page, before a
+     bend flashes on Canvas 2D; not fixed in step 4.
+
 8. **Gallery.** Capture the four elements for review against the visual target.
 
 ## Consequences
@@ -255,5 +332,10 @@ The budgets are measured on the packed r10 pages (one page a character):
 - Nothing here changes gameplay. The contract and the packed assets ship
   ahead of their plumbing, and every later step is spelled out above.
 - Each heading has its own frame size and anchor, where every other clip of a
-  sheet shares one; the manifest plumbing has to draw a bend cel by its
-  heading's anchor, not the sheet's.
+  sheet shares one, so a bend cel is resolved through `bendFrame`, which
+  carries its heading's anchor, never through a sheet clip.
+- Only a scene that asks for a bend loads it, and a missing or broken bend
+  file costs only the bend: the character still draws from its sheet, and the
+  bend stays unavailable for the rest of the session. The price of the lazy
+  load is that a bend asked for mid-scene without a preload arrives a few
+  frames late, so step 7 preloads at combat's start.

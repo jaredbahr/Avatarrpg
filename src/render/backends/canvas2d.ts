@@ -34,6 +34,7 @@ import { HP_CAP, HP_COLORS, OVERLAY, STATUS_BADGE, hpFill } from '../palettes';
 import { paintElevationBase, paintTileDecor, paintTileSeams } from '../painters/board';
 import { paintFloatingNumber, paintPathArrow, paintPathDot } from '../painters/fx';
 import { FOOT_LINE } from '../sheets/bake';
+import { placeFrame } from '../sheets/placement';
 import { idlePhase, sheets } from '../sheets/store';
 import {
   paintExitMarker,
@@ -910,12 +911,9 @@ export class Canvas2DBackend implements RenderBackend {
       let headroom = 0;
       if (frame) {
         headroom = frame.headroom;
-        const fw = (frame.frame.w / frame.pixelsPerTile) * box.size * scale;
-        const fh = (frame.frame.h / frame.pixelsPerTile) * box.size * scale;
         const ax = box.x + width / 2;
         const ay = box.y + FOOT_LINE * box.size;
-        const drawX = ax - frame.anchor.x * fw;
-        const drawY = ay - frame.anchor.y * fh;
+        const { x: drawX, y: drawY, w: fw, h: fh } = placeFrame(frame, ax, ay, box.size * scale);
         if (drawFacing === -1) {
           ctx.translate(ax, 0);
           ctx.scale(-1, 1);

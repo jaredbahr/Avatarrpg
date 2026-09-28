@@ -406,7 +406,7 @@ describe('bend data contract', () => {
   it('skips only the effect check while the effects are not authored', () => {
     const attack = attackOf({ effectId: 'fx.none.thing' });
     const everywhere = Object.fromEntries(HEADINGS.map((h) => [h, { attacks: [attack] }]));
-    const skip = EFFECTS_NOT_YET_AUTHORED;
+    const skip: typeof EFFECTS_NOT_YET_AUTHORED = EFFECTS_NOT_YET_AUTHORED;
     expect(validateBendSets([setOf({ headings: everywhere })], skip, KNOWN_UNIT_ASSETS)).toEqual(
       [],
     );
@@ -416,6 +416,13 @@ describe('bend data contract', () => {
     expect(problems).toContain('release 0 frame 3 is outside 0..2');
     expect(problems).toContain('differ from east [jab/fx.none.thing/1/0]');
     expect(problems).not.toContain('unknown effect');
+  });
+
+  it('is asked for by its name only, never by a literal', () => {
+    expect(typeof EFFECTS_NOT_YET_AUTHORED).toBe('symbol');
+    // @ts-expect-error: the skip is a unique symbol; no string stands in for it.
+    const literal: typeof EFFECTS_NOT_YET_AUTHORED = 'not-yet-authored';
+    expect(literal).not.toBe(EFFECTS_NOT_YET_AUTHORED);
   });
 
   it('rejects an attack pointing at an unknown effect', () => {
