@@ -163,6 +163,37 @@ describe('the riverside paths', () => {
       expect(walkable(x, y), `(${x},${y})`).toBe(false);
     }
   });
+  it('opens the garden walkway to its painted boundary', () => {
+    const walkable = (x: number, y: number) => tileAt(grid, { x, y })?.blocked === false;
+    // The slabs west of the porch steps and the lawn they cross.
+    for (const [x, y] of [
+      [8, 20],
+      [5, 21],
+      [6, 21],
+      [7, 21],
+      [8, 21],
+      [4, 20],
+      [5, 20],
+      [6, 20],
+    ] as const) {
+      expect(walkable(x, y), `(${x},${y})`).toBe(true);
+    }
+    // Boulders, the fence and its corner post, and the trees to the south.
+    for (const [x, y] of [
+      [4, 21],
+      [7, 20],
+      [5, 19],
+      [3, 20],
+      [5, 22],
+      [6, 22],
+    ] as const) {
+      expect(walkable(x, y), `(${x},${y})`).toBe(false);
+    }
+    const state = start();
+    const result = apply(CONTENT, state, { type: 'walkTo', pos: { x: 5, y: 21 } });
+    expect(result.events.filter((e) => e.type === 'message')).toEqual([]);
+    expect(result.state.location.pos).toEqual({ x: 5, y: 21 });
+  });
   it('leaves by any cell of the south path, never by an invisible edge', () => {
     const exit = CONTENT.maps.get(RIVERSIDE.id)?.exits?.[0];
     const area = new Set((exit?.area ?? []).map((cell) => `${cell.x},${cell.y}`));

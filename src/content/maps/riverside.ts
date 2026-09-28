@@ -109,14 +109,18 @@ const spans: readonly (readonly (readonly [number, number])[])[] = [
     [18, 19],
     [32, 33],
   ],
+  // The garden walkway's slabs (8,20) and (5..8,21) are open, and so is the
+  // flowered lawn south of the tea-house fence (4..6,20). The walkway stops at
+  // the boulders (4,21), the fence and its post (7,20) and the trees south of it.
   [
-    [9, 11],
+    [4, 6],
+    [8, 11],
     [19, 20],
     [33, 34],
   ],
   // The daisies at the sand pocket's west side (18..19,21) are ground.
   [
-    [9, 11],
+    [5, 11],
     [18, 20],
   ],
   [[10, 11]],

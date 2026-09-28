@@ -75,5 +75,12 @@ object; do not reopen the cell:
 - the south-east bank path runs on under the canopy from (34,21);
 - the east clearing reaches the rim past the banner fence at (34..35, 12);
 - the back lane behind the north-west house, (4..5, 0..1), is unreachable, so it
-  is low priority;
-- the garden slabs west of the porch steps, (8,20) and (5..8, 21).
+  is low priority.
+
+The garden slabs west of the porch steps are a clear stone walkway, so (8,20)
+and (5..8,21) are open, with no prop on them. By the flower rule the lawn they
+cross, (4..6,20), is open too. The garden needs no added stop: the walkway ends
+against painted solids on every side. Those are the boulders at (4,21), the
+tea-house fence (4..6,19), its corner post (7,20), and the trees along row 22.
+(8,21) must be open because movement is four-way: it is the walkway's only link
+from (9,21). The small rock painted on it is left as it is, under the feet.
