@@ -11,7 +11,8 @@
  * while a sheet is open: then the toast is usually the sheet's own answer
  * ("Saved.", "Could not erase"), so it rises above the overlay at the bottom of
  * the screen, clear of the sheet's title; or, where the sheet itself reaches
- * the bottom, inside it just above its footer, clear of its buttons too.
+ * the bottom, inside it just above its footer, clear of its buttons too. There
+ * the room under the title holds one toast, so only the newest shows.
  */
 
 import { el } from './dom';
@@ -73,7 +74,13 @@ export class Toasts {
   private place = (): void => {
     if (this.frame) cancelAnimationFrame(this.frame);
     this.frame = 0;
-    if (this.host.childElementCount === 0) return;
+    if (this.host.childElementCount === 0) {
+      // The last toast has gone: forget the lift, so the next one measures
+      // whatever sheet is open then rather than inheriting this answer.
+      delete this.host.dataset.place;
+      this.placed = { where: 'top', anchor: '', panel: null };
+      return;
+    }
     const origin = this.host.parentElement;
     let where: Placement = 'top';
     let anchor = '';
@@ -83,15 +90,18 @@ export class Toasts {
       // A tall sheet reaches the foot of the screen (Largest text, a phone on
       // its side), and there the toast would sit on its Import and Close.
       // Then it rises into the sheet, just above the footer, and stays there
-      // while that sheet is open, so it never hops between the two.
-      let lifted = this.placed.where === 'sheet-lifted' && this.placed.panel === panel;
-      if (!lifted) {
+      // while that sheet is open, so it never hops between the two. A sheet
+      // with no footer has nothing down there to cover, and lifting above its
+      // top edge would push the toast off the screen, so it stays at the foot.
+      const footer = panel.querySelector('.dialog-footer');
+      let lifted =
+        footer !== null && this.placed.where === 'sheet-lifted' && this.placed.panel === panel;
+      if (footer && !lifted) {
         if (this.host.dataset.place !== 'sheet') this.host.dataset.place = 'sheet';
         lifted = overlaps(this.host, panel);
       }
       where = lifted ? 'sheet-lifted' : 'sheet';
-      if (lifted) {
-        const footer = panel.querySelector('.dialog-footer') ?? panel;
+      if (footer && lifted) {
         const bottom = origin.getBoundingClientRect().bottom;
         anchor = `${Math.round(bottom - footer.getBoundingClientRect().top)}px`;
       }

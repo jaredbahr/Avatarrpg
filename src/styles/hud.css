@@ -1904,6 +1904,17 @@ html[data-contrast='high'] .hud-panel::after {
   bottom: calc(var(--toast-anchor) + var(--sp-2));
 }
 
+/*
+ * Lifted, the stack grows up from the footer into the room under the sheet's
+ * title, which on a phone on its side at Largest text holds one toast and no
+ * more: two answers in a row put the older one over the title. So only the
+ * newest shows there. It is the sheet's latest answer, and the older ones were
+ * announced when they arrived.
+ */
+.toasts[data-place='sheet-lifted'] > .toast:not(:last-child) {
+  display: none;
+}
+
 .toast {
   padding: var(--sp-2) var(--sp-4);
   border-radius: 999px;

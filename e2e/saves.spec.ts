@@ -3,40 +3,58 @@ import type { Page } from '@playwright/test';
 import { enterNode, resetStorage, setLargeText, settleDialog, startGame } from './helpers';
 
 /**
- * A toast raised from inside the save sheet is the sheet's answer, so it must
- * be seen: visible, the topmost thing at its centre (toBeVisible alone passes
- * for a toast buried under the overlay), and clear of the sheet's title.
+ * A toast raised from inside a sheet is the sheet's answer, so it must be
+ * seen: visible, the topmost thing at its centre (toBeVisible alone passes for
+ * a toast buried under the overlay), clear of the sheet's title and footer, and
+ * on screen. That holds for every toast the stack shows, not only the newest:
+ * two answers in a row once stacked the older one up over the title.
  *
  * The stack is `pointer-events: none` so it never eats a tap, and
  * `elementFromPoint` skips such elements: without lifting that for the one
  * probe, the element under a toast is always whatever is behind it.
  */
-async function expectToastOverSheet(page: Page, text: string | RegExp): Promise<void> {
-  const toast = page.locator('.toast').filter({ hasText: text }).last();
-  await expect(toast).toBeVisible();
+async function expectToastOverSheet(page: Page, text: string): Promise<void> {
+  await expect(page.locator('.toast').filter({ hasText: text }).last()).toBeVisible();
   await expect
     .poll(
       () =>
-        toast.evaluate((node) => {
-          const box = node.getBoundingClientRect();
-          const stack = node.parentElement;
-          stack?.style.setProperty('pointer-events', 'auto');
-          const top = document.elementFromPoint(box.left + box.width / 2, box.top + box.height / 2);
-          stack?.style.removeProperty('pointer-events');
-          const clear = (selector: string) => {
-            const edge = document.querySelector(selector)?.getBoundingClientRect();
-            return !edge || box.top >= edge.bottom || box.bottom <= edge.top;
-          };
-          return {
-            onTop: top !== null && node.contains(top),
-            clearOfHead: clear('.dialog .dialog-head'),
-            clearOfFooter: clear('.dialog .dialog-footer'),
-            onScreen: box.top >= 0 && box.bottom <= window.innerHeight,
-          };
-        }),
-      { message: `The toast "${text}" must show over the open sheet` },
+        page.evaluate((text) => {
+          // The sheet on top: the save sheet opens over the pause sheet.
+          const sheets = document.querySelectorAll('.overlay > .dialog');
+          const sheet = sheets[sheets.length - 1];
+          const head = sheet?.querySelector('.dialog-head')?.getBoundingClientRect();
+          const footer = sheet?.querySelector('.dialog-footer')?.getBoundingClientRect();
+          const problems: string[] = [];
+          // The poll must not pass on an empty stack once the toasts expire.
+          let seen = false;
+          for (const node of document.querySelectorAll('.toasts > .toast')) {
+            // A toast the stack has collapsed away draws nothing to check.
+            if (node.getClientRects().length === 0) continue;
+            if (node.textContent?.includes(text)) seen = true;
+            const box = node.getBoundingClientRect();
+            const stack = node.parentElement;
+            stack?.style.setProperty('pointer-events', 'auto');
+            const top = document.elementFromPoint(
+              box.left + box.width / 2,
+              box.top + box.height / 2,
+            );
+            stack?.style.removeProperty('pointer-events');
+            const clear = (edge: DOMRect | undefined) =>
+              !edge || box.top >= edge.bottom || box.bottom <= edge.top;
+            const label = `"${node.textContent ?? ''}"`;
+            if (top === null || !node.contains(top)) problems.push(`${label} is covered`);
+            if (!clear(head)) problems.push(`${label} overlaps the sheet's title`);
+            if (!clear(footer)) problems.push(`${label} overlaps the sheet's footer`);
+            if (box.top < 0 || box.bottom > window.innerHeight) {
+              problems.push(`${label} is off screen`);
+            }
+          }
+          if (!seen) problems.push(`"${text}" is not showing`);
+          return problems;
+        }, text),
+      { message: `The toast "${text}" and every toast with it must show over the open sheet` },
     )
-    .toEqual({ onTop: true, clearOfHead: true, clearOfFooter: true, onScreen: true });
+    .toEqual([]);
 }
 
 /** Saves twice from the pause sheet at Largest text, the second write refused. */
@@ -70,8 +88,15 @@ async function toastsFromTheSaveSheet(page: Page, seed: string): Promise<void> {
     .getByRole('button', { name: 'Save here', exact: true })
     .click();
   await expect(page.locator('.toast.toast-warn')).toBeVisible();
+  // Both answers are up together: the stack is two toasts deep.
+  await expect(page.locator('.toast')).toHaveCount(2);
   const warning = (await page.locator('.toast.toast-warn').last().textContent()) ?? '';
   await expectToastOverSheet(page, warning);
+
+  // Once every toast has gone the stack forgets where it was, so the next one
+  // measures the sheet afresh rather than inheriting a stale lift.
+  await expect(page.locator('.toast')).toHaveCount(0);
+  await expect(page.locator('.toasts')).not.toHaveAttribute('data-place');
 }
 
 /**
@@ -266,5 +291,23 @@ test.describe('toasts raised inside the save sheet, phone landscape', () => {
 
   test('stay clear of Import and Close at Largest text', async ({ page }) => {
     await toastsFromTheSaveSheet(page, 'toast-over-sheet-landscape');
+  });
+
+  // The pause sheet has no footer to rise above: it keeps its toasts at the
+  // foot of the screen rather than hanging them off its top edge.
+  test('stay on screen over a sheet with no footer', async ({ page }) => {
+    await resetStorage(page);
+    await startGame(page, ['Elias'], ['kaya'], 'toast-over-footerless-sheet');
+    await enterNode(page, 'village_explore');
+    await setLargeText(page, 'huge');
+    await page.evaluate(() => window.fnt?.app.openPause());
+    const sheet = page.locator('.dialog').last();
+    await settleDialog(sheet);
+    await expect(sheet.locator('.dialog-footer')).toHaveCount(0);
+    await page.evaluate(() => {
+      window.fnt?.app.toasts.show('First answer.');
+      window.fnt?.app.toasts.show('Second answer.', 'warn');
+    });
+    await expectToastOverSheet(page, 'Second answer.');
   });
 });
