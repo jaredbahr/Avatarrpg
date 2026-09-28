@@ -100,7 +100,11 @@ export function connectAct1(map: MapDef): MapDef {
             'ba_dan_village',
             { x: 18, y: 14 },
             'South path → Ba Dan Village',
-            [{ x: 10, y: 20 }, { x: 9, y: 20 }, { x: 9, y: 21 }],
+            [
+              { x: 10, y: 20 },
+              { x: 9, y: 20 },
+              { x: 9, y: 21 },
+            ],
           ),
         ],
       };

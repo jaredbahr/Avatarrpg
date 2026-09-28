@@ -185,7 +185,10 @@ suite('findSettleTile', () => {
     const grid: Grid = { width: 3, height: 3, tiles };
     const mouth: MapExit = {
       pos: { x: 1, y: 0 },
-      area: [{ x: 1, y: 0 }, { x: 2, y: 0 }],
+      area: [
+        { x: 1, y: 0 },
+        { x: 2, y: 0 },
+      ],
       toMapId: 'settle_elsewhere',
       toPos: { x: 1, y: 1 },
       label: 'Widened mouth',

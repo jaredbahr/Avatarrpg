@@ -4,7 +4,13 @@ import { nearestExitCell } from './LocalMap';
 
 const mouth: MapExit = {
   pos: { x: 19, y: 4 },
-  area: [{ x: 19, y: 4 }, { x: 19, y: 5 }, { x: 19, y: 6 }, { x: 19, y: 7 }, { x: 19, y: 8 }],
+  area: [
+    { x: 19, y: 4 },
+    { x: 19, y: 5 },
+    { x: 19, y: 6 },
+    { x: 19, y: 7 },
+    { x: 19, y: 8 },
+  ],
   toMapId: 'quarry_gate',
   toPos: { x: 1, y: 5 },
   label: 'East → Quarry Gate',

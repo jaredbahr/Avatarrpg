@@ -76,7 +76,10 @@ describe('map edge contract', () => {
       exits: [
         {
           pos: { x: 0, y: 0 },
-          area: [{ x: 0, y: 0 }, { x: 0, y: 1 }],
+          area: [
+            { x: 0, y: 0 },
+            { x: 0, y: 1 },
+          ],
           toMapId: 'fixture_elsewhere',
           toPos: { x: 1, y: 1 },
           label: 'Widened west gate',
@@ -86,7 +89,10 @@ describe('map edge contract', () => {
     const issues = validateMapContracts([withMouth]);
     // 14 border cells, two covered by the exit area: the other 12 warn.
     expect(issues).toHaveLength(12);
-    for (const cell of [{ x: 0, y: 0 }, { x: 0, y: 1 }]) {
+    for (const cell of [
+      { x: 0, y: 0 },
+      { x: 0, y: 1 },
+    ]) {
       expect(
         issues.some((issue) => issue.message.includes(`walkable border (${cell.x},${cell.y}) `)),
         `area cell ${cell.x},${cell.y} warned`,
