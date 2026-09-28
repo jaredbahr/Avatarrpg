@@ -88,6 +88,8 @@ test('six-person combat keeps initiative navigation usable on a narrow screen wi
   expect(box?.width).toBeGreaterThanOrEqual(44);
   expect(box?.height).toBeGreaterThanOrEqual(44);
   await last.tap();
+  // A phone folds the header's view buttons behind More.
+  await page.getByRole('button', { name: 'More', exact: true }).tap();
   await page.getByRole('button', { name: 'Acting unit', exact: true }).tap();
   await expect(page.locator('.toast')).toHaveCount(0, { timeout: 10000 });
   expect((await page.locator('.map-canvas').boundingBox())?.height).toBeGreaterThan(160);

@@ -196,6 +196,17 @@
   gap: var(--sp-1);
 }
 
+/* The view and help buttons. Inline wherever the header has room: the group
+ * draws no box of its own and More is not shown. A phone folds them into a
+ * list under More (see "Phone battle" at the end of this file). */
+.combat-more {
+  display: contents;
+}
+
+.combat-bar .combat-more-toggle {
+  display: none;
+}
+
 /* The encounter's name on a plate, in the display face, the round under it.
  * The plate gives way before the header does: `min-width: 0` lets it shrink
  * past its text, so a long encounter name ellipses instead of pushing Pause
@@ -2023,8 +2034,8 @@ html[data-contrast='high'] .hud-panel::after {
     flex-wrap: nowrap;
   }
 
-  html[data-large-text='on'] .combat-scene .combat-bar > button,
-  html[data-large-text='huge'] .combat-scene .combat-bar > button {
+  html[data-large-text='on'] .combat-scene .combat-bar button,
+  html[data-large-text='huge'] .combat-scene .combat-bar button {
     flex-shrink: 0;
   }
 
@@ -2929,16 +2940,104 @@ html[data-contrast='high'] .hud-panel::after {
   min-width: 0;
 }
 
-@media (max-width: 36rem) {
+/* ------------------------------------------------------------------ */
+/* Phone battle                                                        */
+/* ------------------------------------------------------------------ */
+
+/* A phone, either way up: the header is one row that never scrolls. The plate
+ * yields, Pause keeps its place, and the view and help buttons fold into a
+ * list under More, which drops over the board. */
+@media (max-width: 36rem), (max-height: 34rem) {
   .combat-scene .combat-bar {
+    position: relative;
+    z-index: var(--z-menu);
     flex-wrap: nowrap;
-    overflow-x: auto;
   }
-  .combat-scene .combat-bar > * {
+
+  .combat-scene .combat-bar > button {
     flex-shrink: 0;
+    padding-inline: var(--sp-2);
   }
-  .combat-scene .hud {
-    max-height: 40dvh;
-    overflow-y: auto;
+
+  .combat-scene .combat-bar .combat-more-toggle {
+    display: grid;
+    place-items: center;
+  }
+
+  /* A few letters and an ellipsis is not a title: on a phone the name takes a
+     second line before it gives up any of itself. */
+  .combat-scene .title-plate > .title-plate-name {
+    display: -webkit-box;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 2;
+    line-clamp: 2;
+    white-space: normal;
+  }
+
+  .combat-scene .title-plate-round {
+    white-space: nowrap;
+  }
+
+  .combat-scene .combat-more {
+    position: absolute;
+    top: 100%;
+    right: var(--sp-3);
+    display: none;
+    flex-direction: column;
+    gap: var(--sp-1);
+    min-width: 12rem;
+    padding: var(--sp-2);
+    border: var(--hairline) solid var(--c-ink-line);
+    border-radius: var(--radius);
+    background: var(--surface-1);
+    box-shadow: var(--shadow-2);
+  }
+
+  .combat-scene .combat-more.open {
+    display: flex;
+  }
+
+  .combat-scene .combat-more > button {
+    text-align: start;
+  }
+
+  /* Toasts hang in the overlay host, above the whole scene, and the map's
+     place for them is right where the list drops. They wait while it is
+     open; a tap on Tip closes the list first, so its answer still shows. */
+  body:has(.combat-scene .combat-more.open) .toasts[data-place='map'] {
+    visibility: hidden;
+  }
+}
+
+/* Upright at Large text, Pause is its mark alone too; its label stays in the
+ * accessible name, hidden the way `.visually-hidden` hides one. The plate
+ * steps its name down one size, which at Largest is still bigger than the
+ * default's, so "Ambush on the Forest Road" reads whole on two lines. */
+@media (max-width: 36rem) {
+  html:not([data-large-text='off']) .combat-scene .title-plate {
+    padding-inline: var(--sp-2);
+  }
+
+  html:not([data-large-text='off']) .combat-scene .title-plate-name {
+    font-size: var(--fs-md);
+  }
+
+  html:not([data-large-text='off']) .combat-scene .combat-pause {
+    display: grid;
+    place-items: center;
+  }
+
+  html:not([data-large-text='off']) .combat-scene .combat-pause .mark-inline {
+    margin-right: 0;
+  }
+
+  html:not([data-large-text='off']) .combat-scene .combat-pause-label {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0 0 0 0);
+    white-space: nowrap;
   }
 }
