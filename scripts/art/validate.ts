@@ -450,6 +450,36 @@ export function validateBackdrops(publicDir = 'public'): string[] {
   return problems;
 }
 
+/**
+ * Every map flock's flap strip: present, and wide enough for `frames` crops of
+ * `frameSize`. The content schema cannot see the file, and a frame cropped past
+ * the image's edge is dropped by `sceneSourceRect`, so a short strip would fly
+ * birds that blink out mid-flap with no error.
+ */
+export function validateFlocks(publicDir = 'public', maps = ALL_MAPS): string[] {
+  const problems: string[] = [];
+  for (const map of maps) {
+    const flock = map.scene?.flock;
+    if (!flock) continue;
+    const path = resolve(publicDir, flock.url);
+    const size = existsSync(path) ? webpSize(new Uint8Array(readFileSync(path))) : null;
+    if (!size) {
+      problems.push(`${map.id}: flock ${flock.url} is missing or not a readable WebP`);
+      continue;
+    }
+    if (size.width < flock.frames * flock.frameSize || size.height < flock.frameSize) {
+      problems.push(
+        `${map.id}: flock ${flock.url} is ${size.width}x${size.height}, too small for ` +
+          `${flock.frames} frames of ${flock.frameSize} px`,
+      );
+    }
+    if (size.width > MAX_ATLAS || size.height > MAX_ATLAS) {
+      problems.push(`${map.id}: flock ${flock.url} exceeds the ${MAX_ATLAS} px texture limit`);
+    }
+  }
+  return problems;
+}
+
 /** Cels need clear gutters so adjacent frames cannot bleed into a GPU sample. */
 export function validateFxCels(publicDir = 'public'): string[] {
   const problems: string[] = [];
@@ -484,6 +514,7 @@ if (process.argv[1]?.endsWith('validate.ts')) {
     ...(await validateSheets()),
     ...validateImages(),
     ...validateBackdrops(),
+    ...validateFlocks(),
     ...validateFxCels(),
   ];
   if (problems.length === 0) {

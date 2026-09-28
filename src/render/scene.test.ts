@@ -420,7 +420,12 @@ describe('scene image residency', () => {
     const scene = map.scene;
     if (!scene || scene.groundMode !== 'partial') continue;
     it(`${map.id} holds every ground and scenery image under the cap`, () => {
-      const distinct = new Set([...scene.ground, ...scene.scenery].map((piece) => piece.url));
+      // The flock's strip counts too: it is asked for once per scene and must not be evicted.
+      const distinct = new Set(
+        [...scene.ground, ...scene.scenery, ...(scene.flock ? [scene.flock] : [])].map(
+          (piece) => piece.url,
+        ),
+      );
       expect(scene.ground.length).toBeGreaterThan(0);
       expect(
         distinct.size,

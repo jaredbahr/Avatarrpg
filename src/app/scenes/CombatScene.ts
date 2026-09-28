@@ -46,9 +46,7 @@ import { formatShoveMovement } from '../ui/combatPreviewText';
 import { UnitInspector } from '../ui/UnitInspector';
 import { enemyScale, partyScale } from '../anim/actorScale';
 import { createMovementThreatQuery } from '../ui/movementThreats';
-
-/** The curtain has lifted and the opening beat is up before the birds go. */
-const FLUSH_DELAY_MS = 700;
+import { flushTime } from './flockFlush';
 
 type Mode =
   | { readonly kind: 'idle' }
@@ -1487,15 +1485,8 @@ export class CombatScene implements Scene {
       };
     });
 
-    // "They step out of the trees": the birds go first, once the board is in
-    // view of the player whose fight it is. A save loaded mid-fight stays quiet.
-    if (
-      this.flushedAt === null &&
-      battle.round === 1 &&
-      battle.turnIndex === 0 &&
-      !this.needsHandoff()
-    )
-      this.flushedAt = now + FLUSH_DELAY_MS;
+    // "They step out of the trees": the birds go first.
+    this.flushedAt = flushTime(this.flushedAt, battle, this.needsHandoff(), now);
 
     // The air over the board is fidelity: WebGL only, and still under reduce motion.
     const ambient =

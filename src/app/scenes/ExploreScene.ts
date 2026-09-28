@@ -1086,6 +1086,7 @@ export class ExploreScene implements Scene {
       backdrop: this.app.backdropFor(map.id),
       scene: map.scene,
       time: now,
+      reducedMotion: motionReduced(),
     };
 
     renderer.draw(view);

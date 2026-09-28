@@ -10,8 +10,8 @@
   (`docs/art/forest-birds.md`). All of it runs on the render clock only, so
   it never touches the RNG, the saves or the event log, and it stays still
   under Reduce motion. Canvas 2D draws the lean in three held steps, and it
-  draws the birds too. The strip adds 1.5 KB of art; the JS bundle goes 315.5
-  → 316.8 KB gzipped of 320.
+  draws the birds too. The strip adds 1.5 KB of art, and the JS bundle
+  measures 318.7 KB gzipped of 320 with it.
 - Paint the quarry floor's oil pools and mud patch on their own ground. The
   ground generator left every **dynamic** cell transparent, so the Driller
   floor's four spills and one mud patch were procedural slate standing beside

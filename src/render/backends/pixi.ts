@@ -29,12 +29,19 @@ import {
   UniformGroup,
 } from 'pixi.js';
 
-import type { MapScene, SceneImage, TerrainId, Vec2 } from '../../core/types';
+import type { MapScene, SceneFlock, SceneImage, TerrainId, Vec2 } from '../../core/types';
 import { authoredForBothSides } from '../../content/assets/clips';
 import { resolveAsset } from '../../content/assets/manifest';
 import { backdrops } from '../backdrops';
 import { sceneForGrid, sceneImage, sceneryOpacities } from '../scene';
-import { flockAt, flockFrame, gustCrests, sway } from '../living/wind';
+import {
+  firstGustCrest,
+  flockAt,
+  flockFrame,
+  flushElapsed,
+  GUST_LENGTH,
+  sway,
+} from '../living/wind';
 import { SceneTextures } from './sceneTextures';
 import { SURFACE_INDEX, surfaceIsPainted, surfaceTexel } from '../sceneSurfaces';
 import { TILE } from '../camera';
@@ -89,6 +96,15 @@ const GROUND_RESOLUTION = 0.5;
 
 /** How far firelight reaches, in tiles. */
 const GLOW_RADIUS = 2;
+
+/** Half-widths of the grass band's three nested stripes, widest first, in scene pixels. */
+const BREEZE_HALVES = [260, 175, 90] as const;
+
+/** A wind plate's add-blended stripes; `used` counts those drawn this frame. */
+interface BreezePool {
+  stripes: Sprite[];
+  used: number;
+}
 
 /**
  * Sprite textures are rasterised for the zoom actually on screen, in steps this
@@ -180,6 +196,10 @@ export class PixiBackend implements RenderBackend {
   private scenerySprites = new Map<string, Sprite>();
   /** A gust's light on the grass: slices of the wind ground added back onto it. */
   private breeze = new Container();
+  /** Each wind plate's breeze stripes, kept from frame to frame. */
+  private breezePools = new Map<string, BreezePool>();
+  /** The flock whose page was last asked for, so a scene change asks once. */
+  private flock: SceneFlock | undefined;
   /** The birds a fight flushes out of the trees, over every upright. */
   private flockLayer = new Container();
   /** Scene textures live only as long as their manifest, independently of actor LRU. */
@@ -448,6 +468,7 @@ export class PixiBackend implements RenderBackend {
     this.groundOverlayFilter = null;
     this.dropTextures();
     this.unitSprites.clear();
+    this.breezePools.clear();
     this.sceneTextures.clear();
     this.groundChunks.clear();
     this.scenerySprites.clear();
@@ -655,57 +676,85 @@ export class PixiBackend implements RenderBackend {
    * the add, and a stencil mask broke the particle layers' batches.
    */
   private syncBreeze(ground: readonly SceneImage[], view: MapView): void {
-    const stripes: { slice: SceneImage; texture: Texture }[] = [];
+    for (const pool of this.breezePools.values()) pool.used = 0;
     for (const piece of view.reducedMotion ? [] : ground) {
       const image = piece.wind && !piece.sourceRect ? sceneImage(piece) : null;
-      if (!image) continue;
+      const plate = image && this.sceneTextures.get(piece);
+      // The same page limit a sourceRect crop has (sceneSourceRect).
+      if (!image || !plate || Math.max(image.naturalWidth, image.naturalHeight) > 2048) continue;
+      let pool = this.breezePools.get(piece.url);
+      if (!pool) this.breezePools.set(piece.url, (pool = { stripes: [], used: 0 }));
       const scale = image.naturalWidth / piece.width;
-      for (const crest of gustCrests(view.time, piece.x - 260, piece.x + piece.width + 260))
-        for (const half of [260, 175, 90]) {
+      const end = piece.x + piece.width + BREEZE_HALVES[0];
+      for (
+        let crest = firstGustCrest(view.time, piece.x - BREEZE_HALVES[0]);
+        crest <= end;
+        crest += GUST_LENGTH
+      )
+        for (const half of BREEZE_HALVES) {
           const from = Math.round(Math.max(0, crest - half - piece.x) * scale);
           const to = Math.round(Math.min(piece.width, crest + half - piece.x) * scale);
           if (to <= from) continue;
-          const slice: SceneImage = {
-            url: piece.url,
-            sourceRect: { x: from, y: 0, width: to - from, height: image.naturalHeight },
-            x: piece.x + from / scale,
-            y: piece.y,
-            width: (to - from) / scale,
-            height: piece.height,
-          };
-          const texture = this.sceneTextures.get(slice);
-          if (texture) stripes.push({ slice, texture });
+          const stripe = this.breezeStripe(pool, plate);
+          const { texture } = stripe;
+          texture.frame.x = from;
+          texture.frame.width = to - from;
+          texture.update();
+          stripe.visible = true;
+          stripe.position.set(piece.x + from / scale, piece.y);
+          stripe.width = (to - from) / scale;
+          stripe.height = piece.height;
         }
     }
-    while (this.breeze.children.length < stripes.length) {
-      const sprite = new Sprite();
-      sprite.blendMode = 'add';
-      sprite.alpha = 0.05;
-      this.breeze.addChild(sprite);
-    }
-    this.breeze.children.forEach((child, index) => {
-      const stripe = stripes[index];
-      child.visible = Boolean(stripe);
-      if (!stripe || !(child instanceof Sprite)) return;
-      child.texture = stripe.texture;
-      child.position.set(stripe.slice.x, stripe.slice.y);
-      child.width = stripe.slice.width;
-      child.height = stripe.slice.height;
-    });
+    for (const pool of this.breezePools.values())
+      for (let i = pool.used; i < pool.stripes.length; i++) {
+        const stripe = pool.stripes[i];
+        if (stripe) stripe.visible = false;
+      }
   }
 
-  /** The flush over every upright; its page stays loaded while it waits for a fight. */
+  /**
+   * The next stripe of a plate's pool. Each owns a full-height crop Texture on
+   * the plate's source and moves its frame in place, so a frame builds no GPU
+   * texture: one is made only when the pool first grows or the plate's page
+   * reloads. The crop is a plain view, so the one it replaces goes with the
+   * page's destroyed source and needs no destroy of its own.
+   */
+  private breezeStripe(pool: BreezePool, plate: Texture): Sprite {
+    let stripe = pool.stripes[pool.used++];
+    if (!stripe) {
+      stripe = new Sprite();
+      stripe.blendMode = 'add';
+      stripe.alpha = 0.05;
+      this.breeze.addChild(stripe);
+      pool.stripes.push(stripe);
+    }
+    if (stripe.texture.source !== plate.source)
+      stripe.texture = new Texture({
+        source: plate.source,
+        frame: new Rectangle(0, 0, 1, plate.height),
+        dynamic: true,
+      });
+    return stripe;
+  }
+
+  /** The flush over every upright, only while a bird is still in the air. */
   private syncFlock(scene: MapScene | undefined, view: MapView): void {
     const flock = scene?.flock;
+    // The page is asked for once per scene, so it is in by the time a fight opens.
+    if (flock !== this.flock) {
+      this.flock = flock;
+      if (flock) sceneImage(flockFrame(flock, 0));
+    }
+    const elapsed = flushElapsed(view);
     const birds =
-      flock && view.flushedAt != null && !view.reducedMotion
+      flock && elapsed >= 0
         ? flockAt(
             flock,
             scene.scenery.filter((piece) => piece.wind),
-            view.time - view.flushedAt,
+            elapsed,
           )
         : [];
-    if (flock) this.sceneTextures.get(flockFrame(flock, 0));
     while (this.flockLayer.children.length < birds.length) {
       const sprite = new Sprite();
       sprite.anchor.set(0.5);

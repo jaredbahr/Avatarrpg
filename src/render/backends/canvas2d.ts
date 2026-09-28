@@ -10,7 +10,7 @@
  * context, they never own one.
  */
 
-import type { SceneImage, Vec2 } from '../../core/types';
+import type { SceneFlock, SceneImage, Vec2 } from '../../core/types';
 import { authoredForBothSides } from '../../content/assets/clips';
 import { resolveAsset } from '../../content/assets/manifest';
 import { Camera } from '../camera';
@@ -28,7 +28,7 @@ import { sampleAt, smoothPath } from '../geometry/curve';
 import { CanvasFxLayer } from '../fx/canvasFx';
 import { backdrops } from '../backdrops';
 import { sceneForGrid, sceneImage, drawSceneImage, sceneryOpacities } from '../scene';
-import { flockAt, flockFrame, heldSway } from '../living/wind';
+import { flockAt, flockFrame, flushElapsed, sway } from '../living/wind';
 import { surfaceIsPainted } from '../sceneSurfaces';
 import { FACTION_RING, OVERLAY, STATUS_BADGE, hpColor } from '../palettes';
 import { paintElevationBase, paintTileDecor, paintTileSeams } from '../painters/board';
@@ -78,6 +78,8 @@ export class Canvas2DBackend implements RenderBackend {
   /** Cliffs, rims and wall outlines, rebuilt only when a tile's footing changes. */
   private relief: ReadonlyMap<number, TileRelief> = new Map();
   private reliefSignature = '';
+  /** The flock whose page was last asked for, so a scene change asks once. */
+  private flock: SceneFlock | undefined;
 
   constructor(private canvas: HTMLCanvasElement) {
     // Transparent, so the page's mood wash shows round the board (ADR 0008).
@@ -227,7 +229,7 @@ export class Canvas2DBackend implements RenderBackend {
             ctx.save();
             ctx.globalAlpha = opacities.get(piece) ?? 1;
             // Three held drawings of the lean, sheared about the foot.
-            const lean = piece.wind && !view.reducedMotion ? heldSway(view.time, piece) : 0;
+            const lean = piece.wind && !view.reducedMotion ? sway(view.time, piece, true) : 0;
             ctx.transform(
               1,
               0,
@@ -766,15 +768,18 @@ export class Canvas2DBackend implements RenderBackend {
     }
   }
 
-  /** The birds a fight flushes out of the trees; the page is asked for early so it is in. */
+  /** The birds a fight flushes out of the trees; the page is asked for once per scene so it is in. */
   private drawFlock(view: MapView, camera: Camera): void {
     const flock = view.scene?.flock;
-    if (!flock) return;
-    sceneImage(flockFrame(flock, 0));
-    if (view.flushedAt == null || view.reducedMotion) return;
+    if (flock !== this.flock) {
+      this.flock = flock;
+      if (flock) sceneImage(flockFrame(flock, 0));
+    }
+    const elapsed = flushElapsed(view);
+    if (!flock || !(elapsed >= 0)) return;
     const perches = view.scene?.scenery.filter((piece) => piece.wind) ?? [];
     const size = flock.size * camera.scale;
-    for (const bird of flockAt(flock, perches, view.time - view.flushedAt)) {
+    for (const bird of flockAt(flock, perches, elapsed)) {
       const frame = flockFrame(flock, bird.frame);
       const image = sceneImage(frame);
       if (!image) continue;
