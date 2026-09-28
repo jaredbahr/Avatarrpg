@@ -8,7 +8,7 @@ import { bendFxIndex, parseBendFxPage } from '../../render/fx/bendFx';
 import { BEND_FX_PX_PER_TILE } from '../../render/fx/bendFxSample';
 import type { ContentIndex } from '../../core/types';
 import { Animator } from '../animator';
-import { bendStep, flightMs, whipHead } from '../../render/fx/trajectory';
+import { bendStep, flightDurationMs, whipHead } from '../../render/fx/trajectory';
 import type { Point } from '../../render/fx/trajectory';
 import { projectGround } from '../../render/projection';
 import type { BendCel, BendPlan, BendSpec } from './bendChoreo';
@@ -58,6 +58,7 @@ function spec(
         }
       : null;
   const scale = extra.scale ?? 1;
+  const tiles = extra.tiles ?? 3;
   return {
     heading,
     facing,
@@ -70,6 +71,7 @@ function spec(
       y: target.y + (effect.impact.offsetPx.y / BEND_FX_PX_PER_TILE) * scale,
     },
     scale,
+    tiles,
     ...extra,
   };
 }
@@ -149,11 +151,11 @@ describe('fire: two releases, one damage', () => {
     expect(plan.shot.releases.map((r) => r.launchAt)).toEqual([120, 440]);
     expect(plan.arrivals.every((a) => a !== undefined)).toBe(true);
     expect(plan.arrivals[1]!).toBeGreaterThan(plan.arrivals[0]!);
-    // Launch, then impact, holds for each: 60 / 60 and 100 / 100.
+    // At three tiles the jab lands before the cross launches; each keeps its hold.
     expect(plan.holds.map((h) => [h.causes[0]!.kind, h.causes[0]!.release, h.ms])).toEqual([
       ['launch', 0, 60],
-      ['launch', 1, 100],
       ['impact', 0, 60],
+      ['launch', 1, 100],
       ['impact', 1, 100],
     ]);
   });
@@ -166,45 +168,43 @@ describe('fire: two releases, one damage', () => {
     expect(hold?.causes).toEqual([{ kind: 'impact', release: 1 }]);
   });
 
-  it('keeps the cross in the air, frozen, through the jab’s impact hold', () => {
-    // At range 5 the jab lands while the cross is still flying.
-    const far = planBend(fx, spec('fire', 'southEast', board(6, 6)));
+  it('freezes the cross launch with the five-tile jab impact', () => {
+    // At range 5 the jab lands within one frame of the cross launch, so the holds merge.
+    const far = planBend(fx, spec('fire', 'southEast', board(6, 6), { tiles: 5 }));
     const jabImpact = far.holds.find((h) =>
       h.causes.some((c) => c.kind === 'impact' && c.release === 0),
     )!;
-    expect(jabImpact.at).toBeGreaterThan(far.shot.releases[1]!.launchAt);
+    expect(jabImpact.at).toBe(far.shot.releases[1]!.launchAt);
+    expect(jabImpact.causes).toEqual([
+      { kind: 'launch', release: 1 },
+      { kind: 'impact', release: 0 },
+    ]);
     expect(jabImpact.at).toBeLessThan(far.arrivals[1]!);
     const begins = bendSceneAt(far, jabImpact.at);
-    const ball = (t: number) =>
-      bendFxAt(fx, far, t).find((s) => s.frame.w === 41 && s.frame.h === 46);
-    expect(ball(begins)).toBeDefined();
-    expect(ball(begins + jabImpact.ms - 1)).toEqual(ball(begins));
-    expect(ball(begins + jabImpact.ms + 20)?.at).not.toEqual(ball(begins)?.at);
+    const frozen = bendFxAt(fx, far, begins);
+    expect(frozen.length).toBeGreaterThan(0);
+    expect(bendFxAt(fx, far, begins + jabImpact.ms - 1)).toEqual(frozen);
+    expect(bendFxAt(fx, far, begins + jabImpact.ms + 20)).not.toEqual(frozen);
   });
 });
 
 describe('the overlapping-hold rule', () => {
   it('merges holds within one frame into one, as long as the longest', () => {
-    // Search the jab's range for a landing inside a frame of the cross's contact.
-    let found: BendPlan | undefined;
-    for (let d = 0.2; d < 3 && !found; d += 0.0005) {
-      const plan = planBend(fx, spec('fire', 'southEast', { x: FOOT.x + d, y: FOOT.y }));
-      const jab = plan.arrivals[0]!;
-      if (jab >= 440 && jab - 440 < HOLD_MERGE_MS) found = plan;
-    }
-    expect(found).toBeDefined();
-    const merged = found!.holds.find((h) => h.causes.length > 1)!;
+    // At five tiles the 280 ms jab flight stretches to 336 ms and lands at
+    // 456, within one 60 Hz frame of the cross's 440 ms contact.
+    const plan = planBend(fx, spec('fire', 'southEast', board(6, 6), { tiles: 5 }));
+    const merged = plan.holds.find((h) => h.causes.length > 1)!;
     expect(merged.at).toBe(440);
     expect(merged.ms).toBe(100);
     expect(merged.causes).toEqual([
       { kind: 'launch', release: 1 },
       { kind: 'impact', release: 0 },
     ]);
-    expect(found!.holds).toHaveLength(3);
+    expect(plan.holds).toHaveLength(3);
   });
 
   it('plays holds a frame or more apart one after the other, in full', () => {
-    const plan = planBend(fx, spec('fire', 'southEast', board(6, 6)));
+    const plan = planBend(fx, spec('fire', 'southEast', board(10, 6), { tiles: 9 }));
     for (let i = 1; i < plan.holds.length; i++)
       expect(plan.holds[i]!.at - plan.holds[i - 1]!.at).toBeGreaterThanOrEqual(HOLD_MERGE_MS);
     expect(plan.duration).toBeCloseTo(plan.ends + 60 + 100 + 60 + 100, 9);
@@ -254,7 +254,7 @@ describe('earth: a stomp that cracks, a drive that throws', () => {
 });
 
 describe('water: one release that never touches the target early', () => {
-  const plan = planBend(fx, spec('water', 'southEast', board(6, 6)));
+  const plan = planBend(fx, spec('water', 'southEast', board(6, 6), { tiles: 5 }));
   const to = plan.shot.to;
   const cue = plan.shot.releases[0]!;
   const launch = cue.socket.at(-1)!;
@@ -284,10 +284,7 @@ describe('water: one release that never touches the target early', () => {
       }
     }
     expect(bendFxAt(fx, plan, arrival).some((s) => s.at.x === to.x && s.at.y === to.y)).toBe(true);
-    expect(lands).toBeCloseTo(
-      cue.launchAt + 140 + flightMs(plan.shot.effect.trajectory, head, to, bendStep(1)),
-      9,
-    );
+    expect(lands).toBeCloseTo(cue.launchAt + 140 + flightDurationMs(180, 5), 9);
   });
 
   it('holds the follow-through until a long throw lands, then recovers to the stance', () => {
@@ -303,7 +300,10 @@ describe('water: one release that never touches the target early', () => {
     expect(bendCelAt(plan, lands - 1)).toBe(recovery.frame - 1);
     expect(bendCelAt(plan, lands)).toBe(recovery.frame);
     // A throw that lands before the recovery does not wait.
-    const near = planBend(fx, spec('water', 'southEast', { x: FOOT.x + 0.4, y: FOOT.y - 0.5 }));
+    const near = planBend(
+      fx,
+      spec('water', 'southEast', { x: FOOT.x + 0.4, y: FOOT.y - 0.5 }, { tiles: 1 }),
+    );
     expect(near.arrivals[0]!).toBeLessThan(near.wait.at);
     expect(near.wait.ms).toBe(0);
   });

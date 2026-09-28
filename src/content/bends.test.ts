@@ -886,9 +886,9 @@ describe('bend schemas are strict', () => {
     ],
     ['a bend set', bendSetDefSchema, { ...setOf(), ...extra }],
     ['a layer', bendEffectLayerSchema, { ...layerOf('travel', 'bolt'), ...extra }],
-    ['a straight trajectory', bendTrajectorySchema, { ...straight(4), ...extra }],
+    ['a straight trajectory', bendTrajectorySchema, { ...straight(), ...extra }],
     ['an arc trajectory', bendTrajectorySchema, { ...arc(4), ...extra }],
-    ['a whipBolt trajectory', bendTrajectorySchema, { ...whipBolt(0.5, 2, 5), ...extra }],
+    ['a whipBolt trajectory', bendTrajectorySchema, { ...whipBolt(0.5, 2), ...extra }],
     [
       'a residue',
       bendResidueSchema,

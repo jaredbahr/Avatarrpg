@@ -171,8 +171,9 @@ for the impact holds, flashes and shakes.
   `phase`, its depth (`z`), its painted `sequence`, its cel timing (16-1000 ms,
   like a bend cel), where it starts (`origin`) and how it blends. `trajectory`
   is `straight`, `arc` (0-4 tiles high, -8..8 whole turns of spin) or `whipBolt`
-  (a whip of at most 16 tiles); every speed is above 0 and at most 64 tiles a
-  second, and nothing accepts an infinity. Because the effect is drawn to the
+  (a whip of at most 16 tiles). Every travel layer records a finite prototype
+  `flightMs` from 16 through 2000 ms; non-travel layers cannot record one.
+  Because the effect is drawn to the
   resolved target rather than painted into the frame, an off-frame, moving or
   2-tile target is still hit in the right place.
 - **Residue is a drawing, never a surface.** `residue.gameplaySurface` is the
@@ -320,10 +321,10 @@ source: its painted layer sprites and the renderer that composited them,
   packer stops if any shipped heading is timed otherwise. The one exception is
   the earth tumble's travel loop, hard-coded at `[100, 100, 100, 100]` ms: the
   prototype drew one tumble cel per bend cel of the flight, and a loop that
-  outlasts those cels has no r9 timing to read. A tile is one
-  prototype board step (96 x 48 px). The speeds are the approved 3-tile throw
-  over the cels it flew across: fire 9.8 tiles/s (the mean of the jab and the
-  cross), earth 8.1, and the water bolt 11.1. Fire arcs 0.2 tiles high and the
+  outlasts those cels has no r9 timing to read. Each travel layer also records
+  the approved prototype flight represented by those cels: fire jab 280 ms
+  (cels 2-4), fire cross 330 ms (6-8), earth rock 370 ms (6-8), and water bolt
+  180 ms (6-7, after the lash). Fire arcs 0.2 tiles high and the
   rock 0.89. The rock's spin is its painted tumble, so `spin` is 0. The water
   whip reaches a third of the way, at most 1.5 tiles.
 - **The earth tumble is the one packed cel set beyond the approved frames.**
@@ -405,16 +406,14 @@ painted effects on both backends from a time the caller gives. It wires
 neither combat nor the choreography clock: holds, freezes, shake timing and
 the combat handoff stay with steps 6 and 7.
 
-- **Board units, and a tile is one board step.** Every position is in the
+- **Board units; character-relative shape, duration-led travel.** Every position is in the
   space `projectGround` returns, one unit a tile's width on screen, y down: a
   socket (`celOffset` from the foot), the landing point (the target's foot
-  plus `impact.offsetPx / 128`) and every point of a flight. Distances are in
-  tiles of one board step, the screen length of one grid step
-  (`boardStep`: `hypot(1, 0.5)` oblique, 1 square). That is the prototype's
-  `hypot(96, 48)` px, the unit its speeds, arc heights and whip cap were
-  measured in, and its whip cap is `math.dist((0, 0), STEP) * 1.5` in the
-  renderer itself. So a flight lasts its real on-screen length over its
-  speed: a diagonal or a throw to a raised hand takes as long as it looks.
+  plus `impact.offsetPx / 128`) and every point of a flight. Effect size, arc
+  height and whip reach use `bendStep(scale)`, the prototype's board step
+  measured against the drawn character. Flight duration does not: the sampler
+  covers the actual on-screen chord in the range-adjusted time below, so speed
+  is derived from real distance divided by that duration.
 - **Trajectories are pure** (`src/render/fx/trajectory.ts`). An arc lifts by
   `heightTiles` board steps at its middle (`4 h t (1 - t)`, the prototype's
   `arc()`) and adds `spin` whole turns over the flight; a straight path and a
@@ -425,9 +424,12 @@ the combat handoff stay with steps 6 and 7.
   `angle` is fixed; a `segment` cel is centred between two points, turned
   along them and stretched to `segment` times their distance.
 - **Clocks.** The travel clock starts at the launch for a straight path or an
-  arc (the approved speeds are the 3-tile throw over the launch and flight
-  cels) and when the launch cels end for a whip-bolt (its speed is the bolt's
-  two tiles over the cels after the whip). The rest are the conventions
+  arc and when the launch cels end for a whip-bolt. A release lasts its travel
+  layer's prototype `flightMs` times
+  `clamp(1 + 0.1 * (tiles - 3), 0.8, 1.3)`. Here `tiles` is the rules' integer
+  Chebyshev caster-to-target distance (`distance` in `src/core/rules/grid.ts`),
+  not a projected screen length. Thus 3 tiles reproduces the prototype, 5 is
+  1.2 times it, and 9 is capped at 1.3. The rest are the conventions
   above. A gather's cel `k` of `n` is drawn on the bend cel `n - k` before the
   launch; a socket gather follows the socket there, and its `r`th segment
   layer spans the socket's step `r` cels back (water's lead, then trail).
@@ -480,10 +482,9 @@ the combat handoff stay with steps 6 and 7.
   about 1.25 game tiles on screen, and an effect thrown 3 real tiles flies
   2.4 times as far against the character, the whip reaches 2.4 times as far
   and the arcs lift 2.4 times as high, while the effect cels stay the size
-  they were against the character. The speeds in tiles a second hold the
-  flight times, not the look. Whether to keep board-scaled motion or rescale
-  `heightTiles`, `whipMaxTiles` and the speeds to the character is a visual
-  decision for review before step 7; it is data, and nothing here changes it.
+  they were against the character. Step 6 settled the visual scale against
+  the character and, after timing review, settled travel independently by the
+  prototype duration and the bounded Chebyshev range stretch above.
 - **Budget.** JavaScript is 321,922 B gzip, 745 B more than the same build
   of the base (321,177 B), 5,758 B under the 327,680 B gate. Only the draw
   path is in the bundle; the sampler and the trajectories tree-shake until
@@ -538,21 +539,19 @@ track). Nothing maps an ability to it yet; that is step 7.
   recovery back to the stance. The pose that threw stays out while the throw
   is in the air, and the recovery never plays while the effect still flies.
   Effects never wait for the character.
-- **Scale: the character is the ruler.** Supervisor decision. The effect cels
+- **Scale and flight are separate rulers.** Supervisor decision. The effect cels
   already keep their size against the character (packed at the unit cels'
   128 px a tile, and scaled with the actor's own draw scale). The motion now
-  does too: the data's "tiles" (speeds, `heightTiles`, `whipMaxTiles`,
-  `shakeTiles`) are converted, not re-authored, through `bendStep(scale)`,
+  does too: `heightTiles`, `whipMaxTiles` and `shakeTiles` are converted,
+  not re-authored, through `bendStep(scale)`,
   the prototype's `hypot(96, 48)` px step measured against the character:
   `hypot(96, 48) * 0.75 / 1.35 / 128`, about 0.466 of a game tile at scale 1
-  and 2.4 times shorter than an oblique board step. A throw's speed, its
-  arc's lift and the whip's reach against the character are the approved
-  prototype's, whatever the projection, so the arc is as high against the
-  character as it was, not 2.4 times higher. A game tile is a longer throw
-  than the prototype's 3-step one, so it flies for longer, at the approved
-  speed: the rhythm for the same visual distance is the prototype's, and a
-  far target reads as far. No data value changed, and the schema bounds are
-  untouched.
+  and 2.4 times shorter than an oblique board step. Arc lift and whip reach
+  therefore keep the approved proportions against the character, whatever the
+  projection. Flight uses the per-release prototype duration table above,
+  stretched only by the bounded Chebyshev rule; its speed is whatever covers
+  the real on-screen distance in that time. Launch/impact holds and shake are
+  unchanged.
 - **Leftward throws flip, the character never does.** Supervisor decision.
   A cel turned to an aim with `|aim| > 90°` (toward the screen's left) is
   mirrored top to bottom about its pivot before it turns (`flipsFor`,
