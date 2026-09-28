@@ -30,7 +30,8 @@ export interface BendFxCelMeta {
   readonly angle?: number;
   /**
    * The cel is a segment laid between two points: centred on their midpoint,
-   * turned along them and stretched along to this many times their distance.
+   * turned along them, and its whole width stretched to this many times their
+   * distance (its ink overshoots the points a little, as the prototype drew it).
    */
   readonly segment?: number;
 }

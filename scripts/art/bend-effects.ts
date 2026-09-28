@@ -279,10 +279,14 @@ const segment = (frame: number, thickness: number, opacity: number): CelRecipe =
       thickness,
     },
   ],
-  // The ink runs tail to tip along +x; the renderer fits it between two points
-  // at 1.12 times their distance, centred on their midpoint.
-  meta: { facing: 0, segment: 1.12 },
+  // The ink runs tail to tip along +x; the renderer fit it between two points
+  // at 1.12 times their distance, centred on their midpoint. The packer turns
+  // that into the stretch of the whole cel, margin and all.
+  meta: { facing: 0, segment: SEGMENT_OVERSHOOT },
 });
+
+/** `painted_water_segment` laid the ink over 1.12 times the distance it spans. */
+export const SEGMENT_OVERSHOOT = 1.12;
 
 /** The fire refs were painted pointing 32 degrees clockwise of +x. */
 const FIRE_FACING = 32;
@@ -485,9 +489,12 @@ export function packEffectCel(
   for (let y = 0; y < ink.height; y++)
     for (let x = 0; x < ink.width; x++)
       setPixel(image, x + MARGIN, y + MARGIN, pixelAt(canvas, ink.x + x, ink.y + y));
+  const segment = recipe.meta?.segment;
   const meta: BendFxCelMeta = {
     pivot: { x: round3(pivot.x - box.x), y: round3(pivot.y - box.y) },
     ...recipe.meta,
+    // A segment's ink spans `segment` times the distance; the cel is wider by its margins.
+    ...(segment === undefined ? {} : { segment: round3((segment * box.width) / ink.width) }),
   };
   return { image, meta };
 }

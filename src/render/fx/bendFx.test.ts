@@ -108,7 +108,10 @@ describe('the shipped bend effects', () => {
     expect(index.cel('fx.fire.fireball/jab-ball/0')?.meta.facing).toBe(32);
     expect(index.cel('fx.water.bolt/bolt/0')?.meta.facing).toBe(0);
     expect(index.cel('fx.water.bolt/coil/0')?.meta.angle).toBe(-8);
-    expect(index.cel('fx.water.bolt/lash/0')?.meta.segment).toBe(1.12);
+    // The ink spans 1.12 times the distance; the whole cel, margins and all, a little more.
+    const lash = index.cel('fx.water.bolt/lash/0');
+    const ink = (lash?.frame.w ?? 0) - 16;
+    expect(lash?.meta.segment).toBeCloseTo((1.12 * (lash?.frame.w ?? 0)) / ink, 3);
     expect(index.cel('fx.earth.rock/shatter/0')?.meta).not.toHaveProperty('facing');
   });
 
