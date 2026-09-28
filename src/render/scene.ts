@@ -160,15 +160,18 @@ export function sceneryOpacity(scenery: SceneScenery, view: MapView, camera: Cam
   ];
   for (const { pos, size, scale } of occupants) {
     const foot = camera.groundPoint({ x: pos.x + size / 2, y: pos.y + 0.5 });
-    if (foot.y > depth) continue;
+    // Level with the piece is in front of it on both backends (depthOrder.ts),
+    // so a figure at the tie has nothing to see through.
+    if (foot.y >= depth) continue;
     // Head, torso and feet probes follow upright figures, not the ground's
     // affine transform. Future route points cannot fade an unoccupied building.
+    const across = (foot.x - scenery.x) / scenery.width;
     for (const lift of [8, 32, 56]) {
       if (
         covers(
           image,
           scenery,
-          (foot.x - scenery.x) / scenery.width,
+          scenery.flip ? 1 - across : across,
           (foot.y - lift * scale - scenery.y) / scenery.height,
         )
       )

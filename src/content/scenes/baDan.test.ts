@@ -16,7 +16,9 @@ import {
   BA_DAN_APRON_MAP,
   BA_DAN_APRON_PIECES,
   BA_DAN_EXTERIOR_APRON,
+  BA_DAN_PLANTER_CUT,
   BA_DAN_SCENE,
+  BA_DAN_SOUTHEAST_PLANTER,
 } from './baDan';
 import { buildGrid, reachable, posKey, tileAt } from '../../core/rules/grid';
 import { CONTENT_BUNDLE } from '../index';
@@ -132,6 +134,53 @@ it('keeps painted low boundaries solid while preserving every village destinatio
     { x: 23, y: 7 },
   ])
     expect(paths.has(posKey(p)), `Unreachable village destination ${posKey(p)}`).toBe(true);
+});
+
+it("stands the courtyard planter, turned, on the south-east house's blocked strip", () => {
+  const grid = buildGrid(BA_DAN_VILLAGE);
+  const scenery = BA_DAN_SCENE.scenery;
+  const house = scenery.findIndex((piece) => piece.id === 'southeast-house');
+  const planter = scenery.findIndex((piece) => piece.id === 'southeast-planter');
+  const houseDepth = scenery[house]?.depth;
+  const houseBox = scenery[house];
+  const piece = scenery[planter];
+  const far = scenery.find((p) => p.id === 'southeast-planter-far');
+  if (!houseDepth || !houseBox || !piece || !far)
+    throw new Error('Missing south-east house or planter');
+  for (const cell of BA_DAN_SOUTHEAST_PLANTER) {
+    // `rows` already blocks the strip; the house art stops at x 16.
+    expect(tileAt(grid, cell)?.blocked).toBe(true);
+    expect(scenery[house]?.footprint).not.toContainEqual(cell);
+  }
+  for (const slice of [piece, far])
+    expect(slice).toMatchObject({
+      url: 'art/maps/ba-dan-scene/low-planter.webp',
+      footprint: [...BA_DAN_SOUTHEAST_PLANTER],
+      flip: true,
+      height: 110.625,
+    });
+  // Ties the house's depth and paints after it, like the other frontage.
+  expect(piece.depth.x + piece.depth.y).toBe(houseDepth.x + houseDepth.y);
+  expect(planter).toBeGreaterThan(house);
+  // Mirrored, its front corner is (18,12): 0.325 of the whole 192 from its left.
+  expect(piece.x + 192 * 0.325).toBeCloseTo(1024 + (18 - 12) * 64);
+  expect(piece.y + piece.height).toBe((18 + 12) * 32);
+  // The far end's slice sorts level with (18,10), so a figure there is in front.
+  expect(far.depth.x + far.depth.y).toBe(18.5 + 10.5);
+  // The two slices are the whole planter, the near one a texel over the join,
+  // and together they crop the whole texture.
+  expect(far.x + far.width).toBeCloseTo(piece.x + 192);
+  expect(piece.x + piece.width - far.x).toBeCloseTo(192 / 512);
+  expect(far.sourceRect).toEqual({ x: 0, y: 0, width: BA_DAN_PLANTER_CUT, height: 295 });
+  expect(piece.sourceRect).toEqual({
+    x: BA_DAN_PLANTER_CUT - 1,
+    y: 0,
+    width: 512 - BA_DAN_PLANTER_CUT + 1,
+    height: 295,
+  });
+  // Shallower than the house, the far slice must lie clear of the house's
+  // image, or the house (its awning post) would paint over it.
+  expect(far.x).toBeGreaterThanOrEqual(houseBox.x + houseBox.width);
 });
 
 it('registers the painted canal to every actual permanent-water cell', () => {
@@ -386,5 +435,38 @@ it('keeps court trunks solid and both shop doors and village routes reachable', 
     expect(paths.has(posKey(pos)), `Unreachable court destination ${posKey(pos)}`).toBe(true);
   for (const y of [7, 8]) {
     for (let x = 0; x < map.width; x++) expect(tileAt(grid, { x, y })?.blocked).not.toBe(true);
+  }
+});
+
+it('raises chimney smoke from the painted roof of a dwelling', async () => {
+  const chimneys = BA_DAN_SCENE.chimneys ?? [];
+  expect(chimneys).toHaveLength(2);
+  const bytes = readFileSync('public/art/maps/ba-dan-scene/dwelling.webp');
+  const roof = await decode(
+    bytes.buffer.slice(bytes.byteOffset, bytes.byteOffset + bytes.byteLength),
+  );
+  for (const at of chimneys) {
+    // The oblique camera's scene pixel for the ground point.
+    const px = 1024 + (at.x - at.y) * 64;
+    const py = (at.x + at.y) * 32;
+    const house = BA_DAN_SCENE.scenery.find(
+      (piece) =>
+        piece.url.endsWith('dwelling.webp') &&
+        px >= piece.x &&
+        px < piece.x + piece.width &&
+        py >= piece.y &&
+        py < piece.y + piece.height,
+    );
+    expect(house, `chimney at ${px},${py} is on a dwelling`).toBeDefined();
+    if (!house) continue;
+    const u = Math.floor(((px - house.x) / house.width) * roof.width);
+    const v = Math.floor(((py - house.y) / house.height) * roof.height);
+    // On the roof itself, in its upper band, not in the clear air round it.
+    const at4 = (v * roof.width + u) * 4;
+    expect(roof.data[at4 + 3], `${house.id} roof pixel`).toBeGreaterThan(200);
+    expect(v / roof.height).toBeLessThan(0.2);
+    // Red roof tile, not a ridge-end block or the wall: the wisp starts on the tiles.
+    const [r = 0, g = 0] = [roof.data[at4], roof.data[at4 + 1]];
+    expect(r - g, `${house.id} roof tile`).toBeGreaterThan(40);
   }
 });

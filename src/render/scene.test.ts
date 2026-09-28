@@ -170,6 +170,15 @@ for (const projection of ['orthographic', 'oblique'] as const satisfies readonly
       ).toBe(1);
     });
 
+    it('probes a mirrored drawing where it is drawn, not where its texture is', () => {
+      // Opaque only in the texture's right half; the actor stands a quarter in.
+      installImage((x) => (x >= 64 ? 255 : 0));
+      const scene = { ...roof(camera), x: roof(camera).x + 32 },
+        state = view({ units: [unit(origin)] });
+      expect(sceneryOpacity(scene, state, camera)).toBe(1);
+      expect(sceneryOpacity({ ...scene, flip: true }, state, camera)).toBe(0.28);
+    });
+
     it('does not fade for an actor in front of the roof or outside its rectangle', () => {
       installImage(() => 255);
       const scene = roof(camera);
@@ -184,6 +193,18 @@ for (const projection of ['orthographic', 'oblique'] as const satisfies readonly
       expect(sceneryOpacity(scene, view({ units: [unit(origin, { fallen: true })] }), camera)).toBe(
         1,
       );
+    });
+
+    it('does not fade for an actor level with the piece, who draws in front of it', () => {
+      installImage(() => 255);
+      const scene = roof(camera),
+        state = view({ units: [unit(origin)] });
+      const foot = { x: origin.x + 0.5, y: origin.y + 0.5 };
+      // Both backends draw a figure at an equal-depth tie over the scenery.
+      expect(sceneryOpacity({ ...scene, depth: foot }, state, camera)).toBe(1);
+      expect(
+        sceneryOpacity({ ...scene, depth: { ...foot, y: foot.y + 0.01 } }, state, camera),
+      ).toBe(0.28);
     });
 
     it('ignores distant NPCs but reveals a nearby conversation partner', () => {

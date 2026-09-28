@@ -308,14 +308,20 @@ export class ExploreScene implements Scene {
     return seated;
   }
 
-  /** Where people stand, residents and background roles alike: nobody is seated there. */
+  /**
+   * Where people stand, residents and background roles alike, and where a
+   * routine has taken someone: nobody is seated there.
+   */
   private standing(state: GameState): Vec2[] {
     const map = this.map;
     if (!map) return [];
     const { content } = this.app;
-    return [...visibleNpcs(content, map, state), ...backgroundFigures(content, map, state)].map(
-      (who) => who.pos,
-    );
+    return [
+      ...[...visibleNpcs(content, map, state), ...backgroundFigures(content, map, state)].map(
+        (who) => who.pos,
+      ),
+      ...this.app.residents.errandTiles(),
+    ];
   }
 
   /** The camera as plain numbers, for the e2e suite to map a tile to a pixel. */
@@ -929,8 +935,14 @@ export class ExploreScene implements Scene {
     residents.tick(now, held);
     const live = !this.departing && !this.conversationMode && state.screen === 'explore';
     const party = this.ensureTrail(state, grid).positions(state.party.length);
+    // A routine keeps clear of the party: its tiles, where it is drawn, the way it walks.
+    const clear = [...party, ...(this.walking?.path ?? [])];
+    for (const member of state.party) {
+      const drawn = this.app.animator.renderPos(now, member.id);
+      if (drawn) clear.push({ x: Math.round(drawn.x), y: Math.round(drawn.y) });
+    }
     // A follower on a tile someone is walking to steps aside.
-    if (residents.update(map, state, party, live)) this.needsSettle = true;
+    if (residents.update(map, state, party, live, clear)) this.needsSettle = true;
     if (!this.app.animator.busy(now)) {
       if (!this.conversationMode) {
         if (this.walking) {
@@ -1053,11 +1065,15 @@ export class ExploreScene implements Scene {
       .map((npc) => ({ at: npc.renderPos ?? npc.pos, scale: npc.scale ?? 1, to: npc.pos }));
     this.lastNpcs = npcs;
 
-    // The air over the village is fidelity: WebGL only, and still under reduce motion.
-    const ambient =
-      renderer.capabilities.shaders && !motionReduced()
-        ? ambientEmitters(ambienceFx(map.ambience), grid, now)
-        : [];
+    // The air over the village is fidelity: WebGL only, and still under reduce
+    // motion. Chimney smoke stays on both as one still wisp.
+    const ambient = ambientEmitters(
+      ambienceFx(map.ambience),
+      grid,
+      now,
+      map.scene?.chimneys,
+      !renderer.capabilities.shaders || motionReduced(),
+    );
 
     const cue = this.nextWalk.preview(state) ?? this.walking;
     const view: MapView = {

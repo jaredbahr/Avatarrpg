@@ -50,12 +50,8 @@ import type {
   BendSocket,
   HeadingBendDef,
 } from '../../src/content/bends';
-import {
-  BEND_SOCKETS,
-  EFFECTS_NOT_YET_AUTHORED,
-  bendSetDefSchema,
-  validateBendSets,
-} from '../../src/content/bends';
+import type { BendEffectDef } from '../../src/content/bends';
+import { BEND_SOCKETS, bendSetDefSchema, validateBendSets } from '../../src/content/bends';
 import { atlasJsonText, parseAtlasJson } from '../../src/render/sheets/atlasJson';
 import type { AtlasFrame } from '../../src/render/sheets/atlasJson';
 import {
@@ -75,7 +71,7 @@ import type { Image } from './lib/image';
 import { newImage, pixelAt, readPng, setPixel } from './lib/image';
 import { alphaBounds, crop } from './lib/trim';
 import { decodeWebp, encodeWebp } from './lib/webp';
-import { celHash } from './validate';
+import { celHash, readBendEffects } from './validate';
 
 /** The largest texture every device in the matrix takes. */
 const MAX_PAGE = 2048;
@@ -128,6 +124,13 @@ export interface BendHeading {
   readonly dy: number;
 }
 
+/** The prototype's flash (the cel added onto itself at 0.75) and shake per release. */
+export interface ReleaseCue {
+  readonly impactHoldMs: number;
+  readonly flash?: number;
+  readonly shakeTiles?: number;
+}
+
 export interface BendCharacter {
   readonly name: string;
   /** The unit asset key the atlas frames are named under. */
@@ -140,7 +143,14 @@ export interface BendCharacter {
   /** The G stance page, relative to `public/`. */
   readonly stancePage: string;
   readonly attackId: string;
+  /** The painted effect every release draws (`scripts/art/bend-effects.ts`). */
   readonly effectId: string;
+  /**
+   * What each release adds at its contact and its impact, in release order:
+   * the approved prototype's target hold, its local flash and its board shake
+   * in tiles (`render_v7.py`'s `IMPACTS`, `Brightness(1.75)` and `SHAKES`).
+   */
+  readonly releaseCues: readonly ReleaseCue[];
   /** The shared role of each key frame the timing names (ADR 0055). */
   readonly roles: Readonly<Record<string, BendKeyRole>>;
   /**
@@ -183,7 +193,12 @@ export const BEND_CHARACTERS: Readonly<Record<'kaya' | 'sura' | 'bo', BendCharac
     gPins: CHARACTERS.kaya.pins,
     stancePage: 'art/units/kaya-g-2.json',
     attackId: 'fire-strike',
-    effectId: 'fx.fire.jet',
+    effectId: 'fx.fire.fireball',
+    // Both fists flash and shake at launch; each fireball holds on impact.
+    releaseCues: [
+      { impactHoldMs: 60, flash: 0.75, shakeTiles: 0.021 },
+      { impactHoldMs: 100, flash: 0.75, shakeTiles: 0.034 },
+    ],
     // F1 is the jab and F3 the cross: both strike peaks, so both contacts.
     roles: { F1: 'contact', F2: 'anticipation', F3: 'contact', F4: 'recovery' },
     holds: CROSS_HOLD,
@@ -197,7 +212,9 @@ export const BEND_CHARACTERS: Readonly<Record<'kaya' | 'sura' | 'bo', BendCharac
     gPins: CHARACTERS.sura.pins,
     stancePage: 'art/units/sura-g-2.json',
     attackId: 'water-strike',
-    effectId: 'fx.water.whip',
+    effectId: 'fx.water.bolt',
+    // The lash leaves without a flash; the bolt holds on impact.
+    releaseCues: [{ impactHoldMs: 80, shakeTiles: 0.034 }],
     // W4 is the push's peak and its release on one frame: a contact.
     roles: { W2: 'anticipation', W3: 'anticipation', W4: 'contact', W5: 'recovery' },
     // South and north-west hold the W4 drawing through f6 (r10 cleanup swaps).
@@ -212,7 +229,12 @@ export const BEND_CHARACTERS: Readonly<Record<'kaya' | 'sura' | 'bo', BendCharac
     gPins: CHARACTERS.bo.pins,
     stancePage: 'art/units/bo-g-2.json',
     attackId: 'earth-strike',
-    effectId: 'fx.earth.slab',
+    effectId: 'fx.earth.rock',
+    // The stomp throws nothing, so only the drive's rock holds on impact.
+    releaseCues: [
+      { impactHoldMs: 0, flash: 0.75, shakeTiles: 0.034 },
+      { impactHoldMs: 110, flash: 0.75, shakeTiles: 0.042 },
+    ],
     roles: { E2: 'anticipation', E3: 'contact', E4: 'contact', E5: 'recovery' },
     holds: {},
     headings: gHeadings('bo'),
@@ -603,16 +625,23 @@ function packHeading(
   const attack: BendAttackCue = {
     id: character.attackId,
     effectId: character.effectId,
-    releases: timing.attacks.map((a) => {
+    releases: timing.attacks.map((a, index) => {
       if (!(BEND_SOCKETS as readonly string[]).includes(a.socket))
         throw new Error(`${label}: attack ${a.name} leaves from unknown socket ${a.socket}.`);
+      const cue = character.releaseCues[index];
+      if (!cue || character.releaseCues.length !== timing.attacks.length)
+        throw new Error(
+          `${label}: ${timing.attacks.length} releases, ${character.releaseCues.length} cues.`,
+        );
       return {
         frame: a.frame,
         launchFrame: a.launch_frame,
         socket: a.socket as BendSocket,
         launchHoldMs: a.hitstop_ms,
-        // r10 times one hold, at launch; the impact hold is the effects' to set.
-        impactHoldMs: 0,
+        // r10 times one hold, at launch; the impact hold is the effects'.
+        impactHoldMs: cue.impactHoldMs,
+        ...(cue.flash === undefined ? {} : { flash: cue.flash }),
+        ...(cue.shakeTiles === undefined ? {} : { shakeTiles: cue.shakeTiles }),
       };
     }),
     damageRelease: timing.attacks.length - 1,
@@ -784,6 +813,8 @@ export interface BendBuildOptions {
   readonly stance: (h: BendHeading) => Image;
   /** Unit asset keys the set is checked against; defaults to the manifest's. */
   readonly knownUnitAssets?: readonly string[];
+  /** The painted effects the attacks name; defaults to the shipped `BEND_FX` data. */
+  readonly effects?: readonly BendEffectDef[];
   readonly log?: (line: string) => void;
 }
 
@@ -842,7 +873,8 @@ export async function buildBend(
   if (!parsed.success)
     throw new Error(`${name} bend set fails its schema: ${parsed.error.message}`);
   const known = options.knownUnitAssets ?? Object.keys(ASSETS);
-  const setProblems = validateBendSets([set], EFFECTS_NOT_YET_AUTHORED, known, [...cels.keys()]);
+  const effects = options.effects ?? readBendEffects();
+  const setProblems = validateBendSets([set], effects, known, [...cels.keys()]);
   if (setProblems.length > 0) throw new Error(`${name} bend set:\n${setProblems.join('\n')}`);
 
   // Every page is encoded and checked as it decodes before anything is

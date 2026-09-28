@@ -194,7 +194,7 @@ export function sampleParticles(
     out[at + 2] = size;
     out[at + 3] = rotation;
     const air = def.cel === 'wind' || def.cel === 'cyclone' || def.cel === 'cushion';
-    out[at + 4] = alpha * (air ? 0.62 : 1);
+    out[at + 4] = alpha * (air ? 0.62 : 1) * (def.opacity ?? 1);
     written += 1;
   }
   return written;

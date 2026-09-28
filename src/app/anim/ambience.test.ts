@@ -41,4 +41,46 @@ describe('ambientEmitters', () => {
     expect(a?.seed).not.toBe(next?.seed);
     expect(next?.elapsed).toBe(a?.elapsed);
   });
+
+  it('raises smoke from each chimney, at the chimney', () => {
+    const village = FX_AMBIENCE.village;
+    if (!village?.chimney) throw new Error('no village chimney smoke');
+    const chimneys = [
+      { x: 3.5, y: -1.25 },
+      { x: 8, y: 6 },
+    ];
+    const live = ambientEmitters(village, grid, 4000, chimneys);
+    const smoke = live.filter((emitter) => emitter.def === village.chimney);
+    expect(smoke).toHaveLength(4);
+    expect(smoke.map((emitter) => emitter.from)).toEqual([
+      chimneys[0],
+      chimneys[0],
+      chimneys[1],
+      chimneys[1],
+    ]);
+    for (const emitter of smoke) expect(emitter.to).toEqual(emitter.from);
+    // A haze on the roof, never a solid column, and standing up off the oblique ground.
+    expect(village.chimney.opacity).toBeLessThanOrEqual(0.6);
+    expect(village.chimney.upright).toBe(true);
+  });
+
+  it('holds still: no motes, and the same wisp at every moment', () => {
+    const village = FX_AMBIENCE.village;
+    if (!village?.chimney) throw new Error('no village chimney smoke');
+    const chimneys = [{ x: 8, y: 6 }];
+    const early = ambientEmitters(village, grid, 100, chimneys, true);
+    const late = ambientEmitters(village, grid, 987_654, chimneys, true);
+    expect(early).toHaveLength(2);
+    expect(early.every((emitter) => emitter.def === village.chimney)).toBe(true);
+    expect(late).toEqual(early);
+    // Frozen mid-life, so the wisp is there rather than between loops.
+    expect(early.every((emitter) => emitter.elapsed > 1000)).toBe(true);
+  });
+
+  it('draws no smoke where the scene has no chimneys', () => {
+    const village = FX_AMBIENCE.village;
+    if (!village) throw new Error('no village ambience');
+    expect(ambientEmitters(village, grid, 4000, [], true)).toEqual([]);
+    expect(ambientEmitters(village, grid, 4000)).toHaveLength(village.emitters.length * 2);
+  });
 });

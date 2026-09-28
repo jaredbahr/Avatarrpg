@@ -112,6 +112,8 @@ export interface EmitterInstance {
   /** Lob height in tiles for a projectile flight. */
   readonly arc: number;
   readonly attachments?: EmitterAttachments;
+  /** Frozen at `elapsed` (a still wisp): every frame samples the same, so a backend may keep it. */
+  readonly still?: boolean;
 }
 
 export interface Floater {

@@ -43,6 +43,7 @@ import {
   sway,
 } from '../living/wind';
 import { SceneTextures } from './sceneTextures';
+import { sceneryZ, shadowZ } from './depthOrder';
 import { SURFACE_INDEX, surfaceIsPainted, surfaceTexel } from '../sceneSurfaces';
 import { TILE } from '../camera';
 import type { Camera, Viewport } from '../camera';
@@ -545,8 +546,9 @@ export class PixiBackend implements RenderBackend {
       camera.projection,
       TILE * camera.scale * camera.viewport.dpr,
     );
-    this.fxUnder.draw(emitters);
-    this.fxOver.draw(emitters);
+    const oblique = camera.projection === 'oblique';
+    this.fxUnder.draw(emitters, oblique);
+    this.fxOver.draw(emitters, oblique);
     this.drawFloaters(view, camera);
 
     app.renderer.render(app.stage);
@@ -643,12 +645,17 @@ export class PixiBackend implements RenderBackend {
       }
       sprite.texture = texture;
       // Wind leans the crown about the foot; the trunk's base never moves.
-      sprite.anchor.set(0, 1);
+      // A mirrored piece anchors on its texture's right edge, which the
+      // negative scale lays on the box's left.
+      sprite.anchor.set(item.flip ? 1 : 0, 1);
       sprite.position.set(item.x, item.y + item.height);
       sprite.width = item.width;
       sprite.height = item.height;
+      sprite.scale.x = Math.abs(sprite.scale.x) * (item.flip ? -1 : 1);
       sprite.skew.x = item.wind && !view.reducedMotion ? -sway(view.time, item) : 0;
-      sprite.zIndex = camera.groundPoint(item.depth).y;
+      // A figure level with a piece of frontage stands in front of it, as on
+      // Canvas 2D (depthOrder.ts).
+      sprite.zIndex = sceneryZ(camera.groundPoint(item.depth).y);
       sprite.alpha = opacities.get(item) ?? 1;
     }
     for (const [key, sprite] of this.groundChunks) {
@@ -1409,7 +1416,7 @@ export class PixiBackend implements RenderBackend {
         shadow.position.set(footX, ground + FOOT_LINE * TILE);
         shadow.width = shadow.height = TILE * scale;
         shadow.alpha = alpha;
-        shadow.zIndex = sprite.zIndex - 0.001;
+        shadow.zIndex = shadowZ(sprite.zIndex);
         shadow.visible = true;
       }
 
@@ -1494,7 +1501,7 @@ export class PixiBackend implements RenderBackend {
         shadow.position.set(anchor.x + width / 2, anchor.y + (0.86 - lift) * TILE);
         shadow.width = shadow.height = TILE * (unit.scale ?? 1);
         shadow.alpha = alpha;
-        shadow.zIndex = depth(pos, unit.size) - 0.001;
+        shadow.zIndex = shadowZ(depth(pos, unit.size));
         shadow.visible = true;
       }
       const scale = unit.scale ?? 1;

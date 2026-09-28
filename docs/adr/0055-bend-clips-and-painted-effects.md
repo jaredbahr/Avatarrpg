@@ -1,8 +1,9 @@
 # ADR 0055: One bend a character, painted effects a layer set
 
 **Status:** accepted, 2026-09-27 (contract); amended 2026-09-28 (packer and
-packed data), and again 2026-09-28 (manifest plumbing, lazy bend loading and
-the socket convention; playback follows)
+packed data), again 2026-09-28 (manifest plumbing, lazy bend loading and the
+socket convention), and again 2026-09-28 (the painted effects; playback
+follows)
 
 ## Context
 
@@ -46,32 +47,34 @@ The budgets are measured on the packed r10 pages (one page a character):
 
 | character      | page WebP | page JSON | bend JSON |         total |
 | -------------- | --------: | --------: | --------: | ------------: |
-| Kaya (fire)    | 171,242 B |  16,532 B |  22,681 B |     210,455 B |
-| Sura (water)   | 152,664 B |  14,668 B |  19,506 B |     186,838 B |
-| Bo (earth)     | 180,072 B |  16,431 B |  21,275 B |     217,778 B |
-| **three sets** |           |           |           | **615,071 B** |
+| Kaya (fire)    | 171,242 B |  16,532 B |  23,257 B |     211,031 B |
+| Sura (water)   | 152,664 B |  14,668 B |  19,666 B |     186,998 B |
+| Bo (earth)     | 180,072 B |  16,431 B |  21,803 B |     218,306 B |
+| **three sets** |           |           |           | **616,335 B** |
 
-- **Units:** 4,954,409 B before the bends; 5,569,480 B (5.31 MiB) of the
-  7,077,888 B (6.75 MiB) ceiling with the three bends, leaving 1,508,408 B
+Every figure here and in the step 5 section is measured on the painted effects'
+head with the plumbing (lazy bend loading) and `main` (the JavaScript headroom
+work, ADR 0057) merged in. The bend JSON includes the 1,264 B step 5 added
+for the impact holds, flashes and shakes.
+
+- **Units:** 4,954,409 B before the bends; 5,570,744 B (5.31 MiB) of the
+  7,077,888 B (6.75 MiB) ceiling with the three bends, leaving 1,507,144 B
   (1.44 MiB). A bend costs about 0.2 MiB a
   character, so the three approved characters fit with room to spare, and
   about seven more would fill the headroom. The roster is heading for about ten
   benders: before the bends go past what the headroom holds, a units-budget
   ADR either raises the ceiling or cuts the art. This ADR does not raise it.
-- **Effects:** the `fx` family is 1,527,899 B (1.46 MiB) of its 4 MiB ceiling,
-  so painted bend sequences for four elements fit inside the remaining 2.5 MiB.
-- **Precache:** 19,262,721 B (18.37 MiB) of the 25 MiB ceiling, measured on
-  the plumbing's head after lazy bend loading, with `main` merged in; the
-  bends are the same 615,071 B of it. They stay in the precache although they
-  load lazily: combat needs them offline.
-- **JavaScript, gzip:** 327,675 B (320.0 KB) on the same head, 5 B under the
-  327,680 B (320 KB) gate (ADR 0048), where `main` stands at about 319.2 KB.
-  The plumbing and its lazy loading cost about 0.8 KB between them, so the
-  gate has no room left: step 5 onward has to find its own bytes, and the
-  budget ADR in step 3 should look at the JavaScript gate too. The bend data
-  is JSON the packer writes, not a TypeScript table, so it does not enter the
-  bundle. The zod schemas in `bends.ts` are for the packer's output and CI and
-  must stay out of the runtime bundle too: runtime code imports the types with
+- **Effects:** the `fx` family was 1,527,899 B (1.46 MiB) of its 4 MiB ceiling
+  before the painted bend effects and is 1,592,849 B (1.52 MiB) with them, so
+  a fourth element fits inside the remaining 2.48 MiB.
+- **Precache:** 19,307,947 B (18.41 MiB) of the 25 MiB ceiling; the bends are
+  616,335 B of it and the painted effects 64,950 B. The bends stay in the
+  precache although they load lazily: combat needs them offline.
+- **JavaScript, gzip:** 319,678 B (312.2 KB), 8,002 B (7.8 KB) under the
+  327,680 B (320 KB) gate (ADR 0048). The bend data and the effects are JSON
+  the packers write, not TypeScript tables, so they do not enter the bundle.
+  The zod schemas in `bends.ts` are for the packers' output and CI and must
+  stay out of the runtime bundle too: runtime code imports the types with
   `import type`, never a value from this module.
 
 ## Decision
@@ -154,11 +157,15 @@ The budgets are measured on the packed r10 pages (one page a character):
 
 - **Flash, hit-stop and shake land on contact.** At a release's contact frame
   the character and the effect freeze together for `launchHoldMs` (0-300 ms),
-  a flash frame draws at `flash` - the peak opacity of an additive white flash,
-  0-1 - and the board shakes by `shakeTiles` of amplitude, 0-0.5 tiles. When the
-  effect reaches the target, `impactHoldMs` freezes again and `impact` carries
-  its own `flash` and `shakeTiles` on the same scales. All of it is clamped in
-  the data rather than hard-coded in the runtime.
+  the effect's launch cels flash by `flash`, and the board shakes by
+  `shakeTiles` of amplitude, 0-0.5 tiles. `flash` is how much of the cel is
+  added onto itself, 0-1: at `f` the cel's colour is multiplied by `1 + f`, so
+  the approved prototype's `Brightness(1.75)` is 0.75. It brightens the painted
+  cel in its own colours; it is not an additive white flash and not a white
+  overlay. When the effect reaches the target, `impactHoldMs` freezes again and
+  `impact` carries its own `flash` (on the impact's first cel) and
+  `shakeTiles` on the same scales. All of it is clamped in the data rather
+  than hard-coded in the runtime.
 - **Effects are per element and travel to the real target.** A layer names its
   `phase`, its depth (`z`), its painted `sequence`, its cel timing (16-1000 ms,
   like a bend cel), where it starts (`origin`) and how it blends. `trajectory`
@@ -215,8 +222,8 @@ The budgets are measured on the packed r10 pages (one page a character):
   timing, key frames, sockets and attack cues are written by the packer into
   `<name>-bend.json` beside the pages, one `BendSetDef` a character, and read
   at load; `bends.ts` holds the shapes and the rules, not a second copy of the
-  data. The impact holds are 0 until the effects set them: r10 times one hold
-  per release, at launch.
+  data. r10 times one hold per release, at launch; the impact holds, flashes
+  and shakes come from the effect prototype (step 5, below).
 - **On the character's own sheet, loaded lazily and apart from it.** The
   manifest registers the bend page as the G sheet's `bendPages` and the bend
   data as its `bend`, rather than as a sibling sheet, and never among its
@@ -248,16 +255,146 @@ The budgets are measured on the packed r10 pages (one page a character):
   `frameSize`, since the anchor is a fraction of it.
 - **Validated in CI, not at runtime.** `art:validate` holds the manifest's
   registration to `BEND_SHEETS` (the pins and pages it checks), and the data to
-  its schema and `validateBendSets`, which skips only the effect
-  cross-reference until the effects are authored. The skip is explicit: the
-  packer, `art:validate` and the shipped-data test pass
-  `EFFECTS_NOT_YET_AUTHORED`, a `unique symbol` so no literal can stand in for
-  it, and a test fails once any `BendEffectDef` or effect registry exists
-  while a non-test caller still passes it, including a registry initialised
-  in `bends.ts` itself. Nothing plays a bend yet.
+  its schema and `validateBendSets` against the painted effects, so every
+  attack's `effectId` resolves to an effect of its element. Until step 5 the
+  effect cross-reference was skipped by passing `EFFECTS_NOT_YET_AUTHORED`, a
+  `unique symbol` so no literal can stand in for it; the effects are authored
+  now, and the bend packer, `art:validate` and the shipped-data test pass
+  them. The symbol stays in the contract for its tripwire test, which fails
+  once any `BendEffectDef` or effect registry exists while a non-test caller
+  still passes it. Nothing plays a bend yet.
 - **Which ability plays which attack is not decided here.** The contract names
   a set's attacks and their effects; mapping abilities onto them is the combat
   handoff's job (step 7 below) and gets its field then.
+
+## The painted effects (step 5, amended 2026-09-28)
+
+The approved VFX prototype (v8.1, which Jared called "WAYYY BETTER") is the
+source: its painted layer sprites and the renderer that composited them,
+`render_v7.py`. `scripts/art/bend-effects.ts` packs them; nothing is redrawn.
+
+- **One effect an element, as data.** `fx.fire.fireball` (Kaya's jab and
+  cross), `fx.earth.rock` (Bo's crack, rising rock, tumble and shatter) and
+  `fx.water.bolt` (Sura's gather, lash, bolt, splash and puddle) replace the
+  `fx.fire.jet`, `fx.earth.slab` and `fx.water.whip` placeholders, and the bend
+  packer rewrote the three bend sets to name them. There is no air bend yet, so
+  there is no air effect. The effects are JSON the packer writes,
+  `public/art/fx/bend-effects.json`, beside one atlas page,
+  `public/art/fx/bend-fx.webp` and `.json`. `BEND_FX` in `fxCels.ts` registers
+  them beside the other effect atlases. Nothing draws them yet.
+- **A layer may play for one release.** An attack's releases need not draw the
+  same thing: the jab throws a comet-tailed fireball and the cross a round one,
+  and Bo's stomp opens the crack that his drive throws the rock out of. So
+  `BendEffectLayer.release` names the release a layer plays for; a layer
+  without one plays for every release. `validateBendSets` rejects a layer keyed
+  past the releases of any attack that draws the effect. It is optional, so
+  the contract and the r9 fixture stand.
+- **Cels are `<sequence>/<index>`, one a timed cel.** `validateEffectCels`
+  holds the atlas to the layers: every cel a layer's `frameMs` times is on the
+  page, no page cel is left undrawn, and two layers that share a sequence (the
+  jab's and the cross's burst, timed to their own bend cels) agree on its
+  length. `validateBendSets` also requires `impact.sequence` to be drawn by an
+  impact layer, as it already did for `residue`.
+- **Game scale is the prototype's ratio to the character.** The prototype drew
+  the 320 px character cels and the effects at 1.35x; the game draws the
+  character at 0.75x. So every effect cel packs at 0.75 / 1.35 of the size the
+  prototype stamped it, and its size against the character is unchanged. The
+  resize is an area filter on premultiplied alpha, with only sums, products
+  and quotients so every platform writes the same bytes. The scale and opacity
+  each prototype draw used are baked into the cel. Anything that depends on
+  the board is left to the runtime: rotation toward the target, the path, and
+  the stretch of a water segment between two hand positions.
+- **Each cel says how it is placed.** Its atlas entry carries `fx`: a `pivot`
+  in cel pixels (the point laid on the socket, the tile or the path); `facing`
+  (the art points that way, and the runtime turns it by travel minus facing);
+  `angle` (a fixed turn); or `segment` (the cel is laid between two points and
+  its whole width stretched to that many times their distance). Angles are
+  degrees clockwise on screen. `src/render/fx/bendFx.ts` parses a page, samples
+  a layer by its cumulative `frameMs` (travel loops, everything else plays
+  once), and answers which layers a release plays. It imports the contract's
+  types only, so zod stays out of the bundle.
+- **Timing and motion are the prototype's.** A layer's `frameMs` are the bend
+  cels the prototype drew it over, read from the pinned r9 timing, and the
+  packer stops if any shipped heading is timed otherwise. The one exception is
+  the earth tumble's travel loop, hard-coded at `[100, 100, 100, 100]` ms: the
+  prototype drew one tumble cel per bend cel of the flight, and a loop that
+  outlasts those cels has no r9 timing to read. A tile is one
+  prototype board step (96 x 48 px). The speeds are the approved 3-tile throw
+  over the cels it flew across: fire 9.8 tiles/s (the mean of the jab and the
+  cross), earth 8.1, and the water bolt 11.1. Fire arcs 0.2 tiles high and the
+  rock 0.89. The rock's spin is its painted tumble, so `spin` is 0. The water
+  whip reaches a third of the way, at most 1.5 tiles.
+- **The earth tumble is the one packed cel set beyond the approved frames.**
+  The approved GIF shows tumble cels 9 and 0 (the renderer's
+  `(frame * 3) % 12` on bend cels 7 and 8). Cels 3 and 6, on the same stride,
+  are packed too, so the four close into a loop for a flight longer than the
+  prototype's. That is a supervisor-accepted exception to "only the approved
+  frames"; every other cel is one the approved GIFs draw.
+- **Effects land on the body, not the feet.** The prototype aimed and burst
+  every effect at `destination = (TARGET[0], TARGET[1] - 120)`: 120 of its
+  pixels above the target's feet. `origin: 'targetTile'` alone carries no
+  height, so `impact.offsetPx` does: the point the effect lands on, in
+  unit-cel pixels from the target's foot anchor, -y up, each axis within
+  +-256 in the schema. The packer writes the prototype's 120 px at the game's
+  scale, `{ x: 0, y: -66.667 }`, on all three effects. Step 7 ends the
+  trajectory there and places every `targetTile` layer's pivot there, the
+  impact and the water puddle alike, scaled with the unit cels by the camera's
+  zoom. Ground shadows, which the prototype drew at the feet, are code and
+  are not moved by it.
+- **Holds, flashes and shakes come from the prototype too.** The bend packer
+  now writes each release's `impactHoldMs` (the prototype's target hold:
+  60/100 fire, 0/110 earth, 80 water), `flash` 0.75 where the prototype
+  brightened the launch (`Brightness(1.75)`, the cel added onto itself at
+  0.75; water's lash has none), and `shakeTiles` from its board shakes. Each
+  effect's `impact` carries the same scales, and flash 0.75 on its first cel.
+- **Run order: the effect packer, then the bend packer.** The bend packer
+  validates the sets it writes against the shipped effects, so after an
+  effect id or layer changes, pack the effects first and then each bend:
+
+  ```bash
+  node --import tsx scripts/art/bend-effects.ts --source <vfx-proto>
+  node --import tsx scripts/art/bend-sprites.ts --character kaya --source <bend-r10-8dir>/kaya
+  node --import tsx scripts/art/bend-sprites.ts --character sura --source <bend-r10-8dir>/sura
+  node --import tsx scripts/art/bend-sprites.ts --character bo --source <bend-r10-8dir>/bo
+  ```
+
+  Run the other way round, the bend packer checks the sets against the old
+  effects and may stop on, or pass, the wrong ones.
+
+- **Conventions steps 6 and 7 inherit.** These are how the review composites
+  were built, and what the approved GIFs show:
+  - gather layers end at their release's launch;
+  - launch layers start at it;
+  - the travel clock starts at the launch, and the travel cel draws once the
+    launch cels are done;
+  - impact starts on arrival;
+  - residue starts after the impact.
+
+  `previousPhaseEnd` is the layer before this one in the effect's own layer
+  order, whichever release played it: the rock rises in the stomp's crack.
+  Water's gather segments span the launch socket's positions over the last
+  bend cels, the lead segment from the previous cel and the trail segment from
+  the one before.
+
+- **Residue is the prototype's.** Water leaves the puddle for the 120 ms the
+  prototype held it. Earth's hole is the crack itself, which fades out on its
+  own clock by the end of the bend. Fire leaves nothing.
+- **Pinned both ways, written last.** The pin file
+  (`art/source/bend-effects/pins.json`) holds every numbered PNG of the source
+  folders, the three timing files and the renderer. A missing, stray or
+  changed file stops the build. The build records every decoded cel's hash for
+  `art:validate`, runs every check before the first write, and writes the same
+  bytes twice.
+- **Budgets, measured on the merged head:** the page is 54,376 B of WebP and
+  7,270 B of JSON, and the effects 3,304 B, 64,950 B together. The `fx` family
+  goes from 1,527,899 to 1,592,849 B (1.52 MiB of 4 MiB). The bend sets grow
+  1,264 B with their impact holds, flashes and shakes, which takes units to
+  5,570,744 B (5.31 MiB of 6.75 MiB). The precache is 19,307,947 B (18.41 MiB
+  of 25 MiB). The effects' only JavaScript is their three precache entries in
+  `sw.js`, 46 B gzip (the difference with the entries stripped); no effect
+  code or data enters the bundle. The whole JavaScript total is 319,678 B
+  (312.2 KB) gzip, which leaves a headroom of 8,002 B (7.8 KB) under the
+  320 KB gate.
 
 ## Planned PR sequence
 
@@ -273,11 +410,12 @@ The budgets are measured on the packed r10 pages (one page a character):
    sheets, load them lazily and apart from the sheet, resolve a cel by its
    heading's anchor on both backends, settle the socket convention, and hold
    the registration to the pins in CI. Done: see the decisions above.
-5. **Effect data.** The painted `BendEffectDef`s and sequences for the four
-   elements. Precondition: the packer, `art:validate` and the shipped-data
-   test stop passing `EFFECTS_NOT_YET_AUTHORED` and pass the effects, so every
-   attack's `effectId` is checked; the skip's tripwire test fails until the
-   packer and `art:validate` do.
+5. **Effect data.** The painted `BendEffectDef`s and sequences for the
+   elements that bend. Precondition, done: the packer, `art:validate` and the
+   shipped-data test stop passing `EFFECTS_NOT_YET_AUTHORED` and pass the
+   effects, so every attack's `effectId` is checked, and the skip's tripwire
+   test passes with no non-test caller left. Done for fire, earth and water:
+   see above. Air follows its bend.
 6. **Trajectories.** Straight, arc and whipBolt travel on the presentation
    clock, aimed at the resolved target.
 7. **Choreography and combat handoff.** Attach to sockets; flash, hold and
@@ -308,7 +446,21 @@ The budgets are measured on the packed r10 pages (one page a character):
      the entire page it is given. A contact flash on a bend cel would make a
      second 2048 px canvas for the bend page, about 7 MB for Kaya's, on the
      device class the canvas cap bites. Mask the cel, not the page, before a
-     bend flashes on Canvas 2D; not fixed in step 4.
+     bend flashes on Canvas 2D; not fixed in step 4. Step 5 makes this live:
+     the shipped releases and impacts now carry `flash` 0.75. That flash is
+     the effect cel added onto itself (above), not the unit's white mask, so
+     step 7 draws it on the effect cel (on Canvas 2D, a `lighter` second draw
+     of the cel at 0.75) and must not route it through `mask` on the bend or
+     effect page.
+   - **Effect ids share a namespace with the ability FX keys.**
+     The bend effect `fx.earth.rock` is also the earth ability's `fx` key
+     (`src/content/fx.ts`, `sounds.ts`, `bendingCels.ts`, `marks.ts`), where
+     it names something else. `fx.water.whip`, the placeholder the water
+     effect replaced, is still an ability key too, so the water bend's move to
+     `fx.water.bolt` avoids a clash by chance, not by rule. Nothing joins the
+     two registries yet. Before step 7 maps
+     abilities to attacks it either renames the bend effects into their own
+     prefix or states that a lookup always says which registry it means; open.
 
 8. **Gallery.** Capture the four elements for review against the visual target.
 

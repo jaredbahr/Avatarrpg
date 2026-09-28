@@ -133,6 +133,72 @@ function courtyardProp({ id, image, x, y }: (typeof BA_DAN_COURTYARD_PROPS)[numb
   };
 }
 
+/**
+ * The south-east house is drawn over x 13..16, but `rows` blocks its footprint
+ * out to (17,10) and (17,11), a paved strip that read as open ground. The
+ * courtyard's own low planter stands on it, mirrored so its long side runs
+ * along y. Its depth ties the house (x + y = 30) and it is listed after it, so
+ * it paints in front of the plinth like the rest of the frontage.
+ *
+ * Like the canal bridge it is two depth slices. The far end, on (17,10), sorts
+ * one row shallower, so someone standing east of it at (18,10) is level with
+ * it and stands in front, instead of behind the whole planter. The cut is not
+ * at the cells' join, (18,11): the house's awning post comes down behind the
+ * planter there, and a slice shallower than the house would sort under it.
+ * It is at the house image's east edge, so nothing of the house is over it.
+ */
+export const BA_DAN_SOUTHEAST_PLANTER = [
+  { x: 17, y: 10 },
+  { x: 17, y: 11 },
+] as const;
+
+/** The far slice's width in texture columns of the unmirrored planter. */
+export const BA_DAN_PLANTER_CUT = 82;
+
+function turnedPlanter(): SceneScenery[] {
+  const natural = { width: 512, height: 295 };
+  const width = 192;
+  const height = (width * natural.height) / natural.width;
+  const front = { x: 18, y: 12 };
+  // Mirrored, the front corner sits the other side of centre.
+  const x = 1024 + (front.x - front.y) * 64 - width * (1 - 0.675);
+  // Mirrored, the texture's left columns draw at the box's right.
+  const far = (BA_DAN_PLANTER_CUT * width) / natural.width;
+  const piece = {
+    url: `${root}low-planter.webp`,
+    y: (front.x + front.y) * 32 - height,
+    height,
+    footprint: [...BA_DAN_SOUTHEAST_PLANTER],
+    flip: true,
+  };
+  // The near slice reaches one texel past the cut and paints over the far
+  // one there, so the join never shows a hairline of the ground between.
+  const overlap = width / natural.width;
+  return [
+    {
+      ...piece,
+      id: 'southeast-planter',
+      x,
+      width: width - far + overlap,
+      sourceRect: {
+        x: BA_DAN_PLANTER_CUT - 1,
+        y: 0,
+        width: natural.width - BA_DAN_PLANTER_CUT + 1,
+        height: natural.height,
+      },
+      depth: { x: 17.5, y: 12.5 },
+    },
+    {
+      ...piece,
+      id: 'southeast-planter-far',
+      x: x + width - far,
+      width: far,
+      sourceRect: { x: 0, y: 0, width: BA_DAN_PLANTER_CUT, height: natural.height },
+      depth: { x: 17.5, y: 11.5 },
+    },
+  ];
+}
+
 /** Low crossing over the canal's dry centre, split at the near rail so actors
  * can stand on the deck instead of disappearing behind one opaque sprite. */
 function canalBridge(): SceneScenery[] {
@@ -239,8 +305,30 @@ function tree(x: number, y: number, size = 360): SceneScenery {
   };
 }
 
+const NORTH_HOUSE = house('north-house', 12, 1, 4, 3, 'dwelling');
+const SOUTHWEST_HOUSE = house('southwest-house', 6, 10, 4, 4, 'dwelling');
+
+/** The ground point the oblique camera draws under (u, v) of a house image. */
+function roofPoint(piece: SceneScenery, u: number, v: number): Vec2 {
+  const across = (piece.x + u * piece.width - 1024) / 64;
+  const down = (piece.y + v * piece.height) / 64;
+  return { x: down + across / 2, y: down - across / 2 };
+}
+
+/**
+ * The dwellings have no painted chimney: a cooking fire's smoke leaves by a
+ * vent in the ridge tiles, halfway along the main ridge, so the wisp starts
+ * on the roof and not at the ridge end over the paving behind. Mira's house
+ * and Pella's household's.
+ */
+export const BA_DAN_CHIMNEYS: readonly Vec2[] = [
+  roofPoint(NORTH_HOUSE, 0.55, 0.19),
+  roofPoint(SOUTHWEST_HOUSE, 0.55, 0.19),
+];
+
 /** Calibrated projected pixels; textures are already painted in the target camera. */
 export const BA_DAN_SCENE: MapScene = {
+  chimneys: BA_DAN_CHIMNEYS,
   groundMode: 'partial',
   ground: [
     westernApproachGround(),
@@ -259,12 +347,13 @@ export const BA_DAN_SCENE: MapScene = {
   ],
   scenery: [
     house('gao-house', 6, 1, 4, 3),
-    house('north-house', 12, 1, 4, 3, 'dwelling'),
-    house('southwest-house', 6, 10, 4, 4, 'dwelling'),
+    NORTH_HOUSE,
+    SOUTHWEST_HOUSE,
     house('southeast-house', 13, 10, 4, 4),
     ...canalBridge(),
     // Equal-depth frontage must paint after the building behind it.
     ...BA_DAN_COURTYARD_PROPS.map(courtyardProp),
+    ...turnedPlanter(),
     ...BA_DAN_COURT_TREES.map(({ x, y }) => tree(x, y, 320)),
     tree(0, 3),
     tree(0, 6, 400),

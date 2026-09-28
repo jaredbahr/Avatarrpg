@@ -732,7 +732,7 @@ export interface MapDef {
    * `edgeContract: 'enforce'`.
    */
   readonly edges?: readonly MapEdge[];
-  /** Opt this map into edge-contract errors. No map sets it yet (M1). */
+  /** Opt this map into edge-contract errors (M1); the riverside is the first. */
   readonly edgeContract?: 'enforce';
   /**
    * A painting drawn under the rules grid in place of the procedural ground,
@@ -806,6 +806,12 @@ export interface SceneScenery extends SceneImage {
   readonly fadeWhenOccluding?: boolean;
   /** Connected depth slices share the lowest cutaway opacity within this scene. */
   readonly fadeGroup?: string;
+  /**
+   * Mirror the drawing left to right inside its own box, so one piece of art
+   * can turn its long side from x to y (ADR 0058). The box, footprint and
+   * depth are authored for the mirrored drawing.
+   */
+  readonly flip?: boolean;
 }
 
 export interface MapScene {
@@ -815,6 +821,8 @@ export interface MapScene {
   readonly groundMode?: 'partial';
   /** Exact cells whose permanent rubble is already represented by registered art. */
   readonly paintedRubble?: readonly Vec2[];
+  /** Where smoke leaves a painted roof, in ground tiles (fractional, may lie off the grid). */
+  readonly chimneys?: readonly Vec2[];
   readonly ground: readonly SceneImage[];
   readonly scenery: readonly SceneScenery[];
   readonly flock?: SceneFlock;
