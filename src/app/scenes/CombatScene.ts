@@ -220,6 +220,7 @@ export class CombatScene implements Scene {
     }
     this.revealPendingMoveAfterViewportChange();
     this.syncRecentre();
+    if (this.moreOpen) this.measureMoreRoom();
   }
 
   /**
@@ -541,6 +542,9 @@ export class CombatScene implements Scene {
         this.handedOffTo = null;
       }
       if (unit) announce(`${this.app.session.labelFor(unit)}'s turn.`);
+      // The More list was opened for the last turn; the next player at the
+      // table finds it closed. The rebuild below hands focus to the toggle.
+      this.setMoreOpen(false, false);
 
       // Where the board cannot fit, whoever is acting is what to look at.
       const camera = this.renderer?.camera;
@@ -590,6 +594,12 @@ export class CombatScene implements Scene {
     const bar = this.host?.querySelector<HTMLElement>('.combat-bar');
     const battle = this.battle();
     if (!bar || !battle) return;
+    // Every sync rebuilds the header, an AI turn several times a second. The
+    // button that had focus is found again by its key, so a keyboard or
+    // switch user reading the More list is not dropped to the page.
+    const active = document.activeElement;
+    const focusedKey =
+      active instanceof HTMLElement && bar.contains(active) ? active.dataset.key : undefined;
     clear(bar);
 
     const encounter = this.app.content.encounters.get(battle.encounterId);
@@ -620,11 +630,13 @@ export class CombatScene implements Scene {
     toggle.append(mark(UI_MARKS.more), el('span', { class: 'visually-hidden', text: 'More' }));
     toggle.setAttribute('aria-controls', 'combat-more');
     toggle.setAttribute('aria-expanded', String(this.moreOpen));
+    toggle.dataset.key = 'more';
     bar.appendChild(toggle);
+    // `data-toast-clear`: toasts move their band clear of the list while it is open.
     const more = el('div', {
       class: `combat-more${this.moreOpen ? ' open' : ''}`,
       id: 'combat-more',
-      attrs: { role: 'group', 'aria-label': 'View and help' },
+      attrs: { role: 'group', 'aria-label': 'View and help', 'data-toast-clear': '' },
     });
     bar.appendChild(more);
     // A folded button closes the list and hands focus back to More.
@@ -640,6 +652,7 @@ export class CombatScene implements Scene {
     );
     recentre.prepend(mark(UI_MARKS.recentre, 'mark-inline'));
     recentre.hidden = this.renderer?.camera.fitted ?? true;
+    recentre.dataset.key = 'recentre';
     this.recentreButton = recentre;
     more.appendChild(recentre);
     const actor = button(
@@ -651,6 +664,7 @@ export class CombatScene implements Scene {
       { class: 'btn-ghost', title: 'Return to the acting unit without changing zoom' },
     );
     actor.hidden = this.renderer?.camera.fitted ?? true;
+    actor.dataset.key = 'actor';
     this.actorButton = actor;
     more.appendChild(actor);
 
@@ -662,22 +676,22 @@ export class CombatScene implements Scene {
         { class: 'btn-ghost', title: advice },
       );
       tipButton.prepend(mark(UI_MARKS.tip, 'mark-inline'));
+      tipButton.dataset.key = 'tip';
       more.appendChild(tipButton);
     }
     const logButton = button(
       this.logOpen ? 'Hide log' : 'Log',
       () => {
-        const wasOpen = this.moreOpen;
+        // Focus stays on Log through the rebuild, or on More where the list folded it.
         this.setMoreOpen(false, false);
         this.logOpen = !this.logOpen;
         this.renderTopBar();
         this.renderHud();
-        // The rebuild replaced the toggle that focus would have gone back to.
-        if (wasOpen) bar.querySelector<HTMLElement>('.combat-more-toggle')?.focus();
       },
       { class: 'btn-ghost' },
     );
     logButton.prepend(mark(UI_MARKS.log, 'mark-inline'));
+    logButton.dataset.key = 'log';
     more.appendChild(logButton);
     // The label is its own span so a phone at Large text can show the mark alone.
     const pauseButton = button(
@@ -692,7 +706,29 @@ export class CombatScene implements Scene {
       mark(UI_MARKS.pause, 'mark-inline'),
       el('span', { class: 'combat-pause-label', text: 'Pause' }),
     );
+    pauseButton.dataset.key = 'pause';
     bar.appendChild(pauseButton);
+
+    if (focusedKey) {
+      // Back to the same button if it is still on screen; if the list it sat
+      // in has closed, to the toggle that reopens it.
+      const shown = (key: string) => {
+        const found = bar.querySelector<HTMLElement>(`[data-key="${key}"]`);
+        return found && found.getClientRects().length > 0 ? found : null;
+      };
+      (shown(focusedKey) ?? shown('more'))?.focus();
+    }
+  }
+
+  /**
+   * How far the More list may drop before it meets the foot of the scene.
+   * Written on the bar, which outlives every rebuild of the list inside it.
+   */
+  private measureMoreRoom(): void {
+    const bar = this.host?.querySelector<HTMLElement>('.combat-bar');
+    if (!bar || !this.host) return;
+    const room = this.host.getBoundingClientRect().bottom - bar.getBoundingClientRect().bottom;
+    bar.style.setProperty('--more-room', `${Math.max(0, Math.round(room))}px`);
   }
 
   /**
@@ -712,9 +748,11 @@ export class CombatScene implements Scene {
     list?.classList.toggle('open', open);
     toggle?.setAttribute('aria-expanded', String(open));
     if (!open) {
-      if (focus) toggle?.focus();
+      // Focus never stays behind in a list that has just been hidden.
+      if (focus || list?.contains(document.activeElement)) toggle?.focus();
       return;
     }
+    this.measureMoreRoom();
     const onPointer = (event: PointerEvent) => {
       if (!(event.target instanceof Node) || !bar.contains(event.target))
         this.setMoreOpen(false, false);

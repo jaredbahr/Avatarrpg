@@ -179,6 +179,143 @@ test('a phone battle gives the board half the screen and keeps its header on one
 });
 
 /**
+ * The phone's More list drops over the map, where toasts hang. A toast raised
+ * while it is open moves its band clear of the list — under it upright,
+ * beside it on its side — and the live region stays on screen, so a screen
+ * reader still hears it. On its side at Largest text the list is taller than
+ * the room under the header, so it scrolls and every button stays a full tap.
+ * An AI turn rebuilds the header on every sync; focus in the list survives
+ * that, and the list closes, focus on More, when the acting unit changes.
+ */
+test('the phone More list keeps clear of toasts, fits the screen and keeps focus', async ({
+  page,
+}) => {
+  await page.setViewportSize({ width: 390, height: 844 });
+  await resetStorage(page, '?renderer=canvas');
+  await startGame(page, ['Riko', 'Tal'], ['nima', 'kaya', 'sura', 'bo'], 'hud-phone-more');
+  await enterNode(page, 'battle_quarry_gate');
+  await takeTurn(page);
+  await waitForIdle(page);
+  await settleLayout(page);
+
+  const more = page.getByRole('button', { name: 'More', exact: true });
+  const list = page.locator('#combat-more');
+  const live = page.locator('.toasts[aria-live="polite"]');
+
+  /** Raises a toast and reports the boxes once its band has settled. */
+  const raise = async (text: string) => {
+    await page.evaluate((line) => window.fnt!.app.toasts.show(line, 'info', 20_000), text);
+    await expect(live).toBeVisible();
+    await expect(live).toContainText(text);
+    await expect
+      .poll(() =>
+        page.evaluate(() => {
+          const menu = document.querySelector('#combat-more')?.getBoundingClientRect();
+          const toast = document
+            .querySelector('.toasts .toast:last-child')
+            ?.getBoundingClientRect();
+          if (!menu || !toast || menu.height === 0 || toast.height === 0) return 'missing';
+          const hits =
+            menu.left < toast.right &&
+            toast.left < menu.right &&
+            menu.top < toast.bottom &&
+            toast.top < menu.bottom;
+          const onScreen =
+            toast.left >= 0 &&
+            toast.top >= 0 &&
+            toast.right <= innerWidth &&
+            toast.bottom <= innerHeight;
+          return hits ? 'overlap' : onScreen ? 'clear' : 'off-screen';
+        }),
+      )
+      .toBe('clear');
+    await page.evaluate(() => window.fnt!.app.toasts.clear());
+  };
+
+  // Upright: the band drops under the open list.
+  await more.tap();
+  await expect(list).toBeVisible();
+  await raise('Upright, under the list.');
+
+  // Focus inside the list survives a rebuild of the header by a sync.
+  await page.keyboard.press('Escape');
+  await expect(more).toBeFocused();
+  await page.keyboard.press('Enter');
+  await expect(more).toHaveAttribute('aria-expanded', 'true');
+  const tip = page.getByRole('button', { name: 'Tip', exact: true });
+  await tip.focus();
+  await page.evaluate(() => window.fnt!.app.updateSettings({}));
+  await expect(more).toHaveAttribute('aria-expanded', 'true');
+  await expect(tip).toBeFocused();
+
+  // The next unit's turn finds the list closed, with focus on More, not the page.
+  const handedOver = await page.evaluate(() => {
+    const app = window.fnt!.app;
+    const battle = app.state!.battle!;
+    const unitId = battle.order[battle.turnIndex]!;
+    app.dispatch({ type: 'endTurn', unitId });
+    const active = document.activeElement;
+    return {
+      changed: app.state?.battle?.order[app.state.battle.turnIndex] !== unitId,
+      expanded: document.querySelector('.combat-more-toggle')?.getAttribute('aria-expanded'),
+      open: document.querySelector('#combat-more')?.classList.contains('open'),
+      onToggle: active?.classList.contains('combat-more-toggle') ?? false,
+    };
+  });
+  expect(handedOver).toEqual({ changed: true, expanded: 'false', open: false, onToggle: true });
+
+  // On its side at Largest text: the list scrolls inside the room it has,
+  // every button a full tap and the last one reachable, and a toast sits
+  // beside it.
+  await takeTurn(page);
+  await waitForIdle(page);
+  await page.setViewportSize({ width: 844, height: 390 });
+  await setLargeText(page, 'huge');
+  await settleLayout(page);
+  await more.tap();
+  await expect(list).toBeVisible();
+  // Chromium here can report the list's box from before the room was written
+  // until the next frame; what is painted is already capped, so read it then.
+  await expect
+    .poll(() =>
+      page.evaluate(() => document.querySelector('#combat-more')?.getBoundingClientRect().bottom),
+    )
+    .toBeLessThanOrEqual(390);
+  const fit = await page.evaluate(() => {
+    const menu = document.querySelector<HTMLElement>('#combat-more')!;
+    const rem = parseFloat(getComputedStyle(document.documentElement).fontSize);
+    const tap =
+      parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--tap')) * rem;
+    const buttons = [...menu.querySelectorAll<HTMLElement>('button')].filter(
+      (button) => button.getClientRects().length > 0,
+    );
+    return {
+      overflowY: getComputedStyle(menu).overflowY,
+      scrolls: menu.scrollHeight > menu.clientHeight,
+      tap,
+      sizes: buttons.map((button) => {
+        const box = button.getBoundingClientRect();
+        return Math.min(box.width, box.height);
+      }),
+    };
+  });
+  // The list is taller than the room here: that is the case being held.
+  expect(fit.scrolls).toBe(true);
+  expect(fit.overflowY).toBe('auto');
+  expect(fit.sizes.length).toBeGreaterThanOrEqual(2);
+  for (const size of fit.sizes) expect(size).toBeGreaterThanOrEqual(fit.tap - 0.5);
+  const last = list.locator('button:visible').last();
+  await last.scrollIntoViewIfNeeded();
+  const lastBox = await last.boundingBox();
+  const listBox = await list.boundingBox();
+  expect(lastBox && listBox).toBeTruthy();
+  expect((lastBox?.y ?? 0) + (lastBox?.height ?? 0)).toBeLessThanOrEqual(
+    (listBox?.y ?? 0) + (listBox?.height ?? 0) + 0.5,
+  );
+  await raise('On its side, beside the list.');
+});
+
+/**
  * The frame-time readout is debug chrome and sits over the board, not over
  * the header. Pinned to the top-left corner it covered the encounter plate on
  * the quarry floor gallery beat — a dark rounded blob behind `Grumbler` — and

@@ -1895,8 +1895,21 @@ html[data-contrast='high'] .hud-panel::after {
   max-width: min(36rem, 92vw);
 }
 
-.toasts[data-place='map'] {
+.toasts[data-place='map'],
+.toasts[data-place='map-beside'] {
   top: calc(var(--toast-anchor) + var(--sp-2));
+}
+
+/*
+ * Beside a list open over the map (the phone battle header's More), centred in
+ * the width left of it, which Toasts.ts measures as --toast-aside.
+ */
+.toasts[data-place='map-beside'] {
+  left: var(--sp-2);
+  right: calc(var(--toast-aside) + var(--sp-2));
+  margin-inline: auto;
+  transform: none;
+  max-width: calc(100% - var(--toast-aside) - var(--sp-4));
 }
 
 /*
@@ -2991,22 +3004,28 @@ html[data-contrast='high'] .hud-panel::after {
     border-radius: var(--radius);
     background: var(--surface-1);
     box-shadow: var(--shadow-2);
+    /* A phone on its side at Largest text has less room under the header than
+       the list is tall, so it scrolls within what is left (CombatScene
+       measures --more-room) rather than running off the foot of the screen. */
+    max-height: calc(var(--more-room, 100dvh) - var(--sp-2));
+    overflow-y: auto;
+    overscroll-behavior: contain;
   }
 
   .combat-scene .combat-more.open {
     display: flex;
   }
 
+  /* Each a full `--tap`, however short the list: it scrolls, they never squash. */
   .combat-scene .combat-more > button {
+    flex-shrink: 0;
     text-align: start;
   }
 
   /* Toasts hang in the overlay host, above the whole scene, and the map's
-     place for them is right where the list drops. They wait while it is
-     open; a tap on Tip closes the list first, so its answer still shows. */
-  body:has(.combat-scene .combat-more.open) .toasts[data-place='map'] {
-    visibility: hidden;
-  }
+     place for them is right where the list drops. The list carries
+     `data-toast-clear`, so Toasts.ts moves their band beside or under it while
+     it is open, and the live region keeps announcing. */
 }
 
 /* Upright at Large text, Pause is its mark alone too; its label stays in the
