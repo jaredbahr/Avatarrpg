@@ -93,8 +93,12 @@ beforeAll(async () => {
       }),
     ),
   );
-  for (const key of PARTY) store.bendSet(key);
-  await new Promise((resolve) => setTimeout(resolve, 20));
+  for (const key of PARTY) store.preloadBend(key);
+  // Poll the loads rather than guess how long they take.
+  const settled = () => PARTY.every((key) => store.bendState(key) !== 'loading');
+  for (let tries = 0; tries < 1000 && !settled(); tries++)
+    await new Promise((resolve) => setTimeout(resolve, 5));
+  for (const key of PARTY) expect(store.bendState(key)).toBe('loaded');
 });
 
 afterAll(() => {

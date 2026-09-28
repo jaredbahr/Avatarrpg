@@ -371,8 +371,8 @@ export async function validateSheets(
 
 /**
  * The bend pages on each G sheet and the bend set they draw (ADR 0055). The
- * manifest registers the pages among the sheet's `atlasPages` and the set as
- * its `bend`, and the runtime reads the set without its schema, so this is
+ * manifest registers the pages as the sheet's `bendPages`, never among its
+ * `atlasPages`, and the set as its `bend`, and the runtime reads the set without its schema, so this is
  * where the set is checked: the registration against this table, the same page
  * rules and decoded-cel pins as a sheet's pages, the set against its schema and
  * `validateBendSets` (with `EFFECTS_NOT_YET_AUTHORED` until step 5), and every
@@ -443,8 +443,8 @@ export async function validateBends(
           `${key}: the manifest's bend is ${registered.bend ?? 'unset'}, not ${bend.data}`,
         );
       for (const path of bend.pages)
-        if (!registered.atlasPages?.includes(path))
-          problems.push(`${key}: the manifest's sheet does not load the bend page ${path}`);
+        if (!registered.bendPages?.includes(path) || registered.atlasPages?.includes(path))
+          problems.push(`${key}: the manifest does not load the bend page ${path} as a bend page`);
     }
     const pages: Page[] = [];
     for (const path of bend.pages) {

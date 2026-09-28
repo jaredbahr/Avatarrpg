@@ -76,13 +76,24 @@ interface LoadedAtlas {
   readonly pages: readonly AtlasPage[];
   /** Stable silhouette envelope measured once across the asset's authored clips. */
   readonly headroom: number;
-  /** The entry's `bend` data, when it names one; loaded with the pages. */
-  readonly bend?: BendSetDef;
 }
+
+/** A sheet's bend (ADR 0055): its own pages and its data, loaded apart from the sheet. */
+interface LoadedBend {
+  readonly pages: readonly AtlasPage[];
+  readonly set: BendSetDef;
+}
+
+/**
+ * Where a sheet's bend stands. `none`: the key has no bend. `idle`: nothing
+ * has asked for it. `loading`: asked, waiting on the sheet or its own files.
+ * `failed`: its own files, or the sheet under it, failed, for the session.
+ */
+export type BendLoadState = 'none' | 'idle' | 'loading' | 'loaded' | 'failed';
 
 /** The page a frame lives on, and its rectangle there. */
 function findFrame(
-  loaded: LoadedAtlas,
+  loaded: { readonly pages: readonly AtlasPage[] },
   name: string | undefined,
 ): { readonly image: HTMLImageElement; readonly frame: AtlasFrame } | undefined {
   if (name === undefined) return undefined;
@@ -136,6 +147,9 @@ export class SheetStore {
   private baked = new Map<string, BakedSheet>();
   private bakedBytes = 0;
   private loaded = new Map<string, LoadedAtlas | 'loading' | 'failed'>();
+  private bends = new Map<string, LoadedBend | 'loading' | 'failed'>();
+  /** Bends asked for before their sheet was in; each loads once its sheet does. */
+  private bendsWanted = new Set<string>();
 
   /** Drops every baked sheet; loaded atlases stay, they are the same at any zoom. */
   clear(): void {
@@ -238,27 +252,53 @@ export class SheetStore {
     };
   }
 
+  /** Where `key`'s bend load stands (ADR 0055). Tests poll it. */
+  bendState(key: string): BendLoadState {
+    const entry = resolveAsset(key);
+    if (entry.kind !== 'sheet' || !entry.bend) return 'none';
+    const state = this.bends.get(key);
+    if (state === 'loading' || state === 'failed') return state;
+    if (state) return 'loaded';
+    if (this.loaded.get(key) === 'failed') return 'failed';
+    return this.bendsWanted.has(key) ? 'loading' : 'idle';
+  }
+
   /**
-   * The bend set `key`'s sheet names, once the sheet has loaded; undefined
-   * before then or when the sheet has no bend. Asking starts the load.
+   * Starts loading `key`'s bend, and its sheet first if that is not in yet,
+   * so a scene about to bend (combat, at its start) has the cels by the first
+   * cast. Otherwise the first `bendSet` or `bendFrame` starts it, and a scene
+   * that never bends never fetches it.
+   */
+  preloadBend(key: string): void {
+    const entry = resolveAsset(key);
+    if (entry.kind === 'sheet') this.bend(key, entry);
+  }
+
+  /**
+   * The bend set `key`'s sheet names, once it has loaded; undefined before
+   * then, after it failed, or when the sheet has no bend. Asking starts the load.
    */
   bendSet(key: string): BendSetDef | undefined {
     const entry = resolveAsset(key);
-    return entry.kind === 'sheet' ? this.atlas(key, entry)?.bend : undefined;
+    return entry.kind === 'sheet' ? this.bend(key, entry)?.set : undefined;
   }
 
   /**
    * Cel `index` of `key`'s bend facing `heading`: the page and rectangle it is
-   * on, the heading's own anchor, and its hold and sockets. Null until the
-   * sheet has loaded, for a sheet with no bend, and for an index or a cel the
-   * bend does not have. Nothing plays a bend yet (ADR 0055, steps 6 and 7).
+   * on, the heading's own anchor, and its hold and sockets. Null until both
+   * the sheet and its bend have loaded, after either failed, for a sheet with
+   * no bend, for an index with no cel or no hold, and for a cel whose
+   * rectangle is not its heading's `frameSize`. Asking starts the load.
+   * Nothing plays a bend yet (ADR 0055, steps 6 and 7).
    */
   bendFrame(key: string, heading: Heading, index: number): ResolvedBendFrame | null {
     const entry = resolveAsset(key);
-    const loaded = entry.kind === 'sheet' ? this.atlas(key, entry) : null;
-    const facing = loaded?.bend?.facings[heading];
-    if (!loaded || !facing || entry.kind !== 'sheet') return null;
-    const found = findFrame(loaded, facing.frames[index]);
+    if (entry.kind !== 'sheet') return null;
+    const loaded = this.atlas(key, entry);
+    const bend = this.bend(key, entry);
+    const facing = bend?.set.facings[heading];
+    if (!loaded || !bend || !facing) return null;
+    const found = findFrame(bend, facing.frames[index]);
     const ms = facing.frameMs[index];
     const { width, height } = facing.frameSize;
     // The anchor is a fraction of `frameSize`; a cel of any other size would
@@ -310,8 +350,7 @@ export class SheetStore {
   /**
    * The loaded atlas for a sheet key, kicking off the load on first ask. A
    * sheet with further pages (ADR 0052) is loaded only once every page is, so
-   * a clip never draws from half a sheet, and the same holds for its bend
-   * data (ADR 0055).
+   * a clip never draws from half a sheet. Its bend is not one of them.
    */
   private atlas(key: string, entry: SheetEntry): LoadedAtlas | null {
     const state = this.loaded.get(key);
@@ -319,21 +358,51 @@ export class SheetStore {
     if (state !== undefined) return null;
 
     this.loaded.set(key, 'loading');
-    Promise.all([
-      Promise.all([entry.atlas, ...(entry.atlasPages ?? [])].map(loadPage)),
-      // Checked by its schema in CI (`art:validate`), so only typed here.
-      entry.bend ? fetchText(entry.bend).then((text) => JSON.parse(text) as BendSetDef) : undefined,
-    ])
-      .then(([pages, bend]) =>
+    Promise.all([entry.atlas, ...(entry.atlasPages ?? [])].map(loadPage))
+      .then((pages) => {
         this.loaded.set(key, {
           pages,
           headroom: Math.max(...pages.map((page) => atlasHeadroom(entry, page.atlas, page.image))),
-          ...(bend ? { bend } : {}),
-        }),
-      )
+        });
+        if (this.bendsWanted.has(key)) this.bend(key, entry);
+      })
       .catch((reason: unknown) => {
         this.loaded.set(key, 'failed');
+        this.bendsWanted.delete(key);
         console.warn(`Sheet "${key}" failed to load; using the drawn placeholder.`, reason);
+      });
+    return null;
+  }
+
+  /**
+   * The loaded bend for a sheet key (ADR 0055), kicking off the load on first
+   * ask but only once the sheet itself is in. Its pages and its data arrive
+   * together or not at all, apart from the sheet, so a bend that fails leaves
+   * the sheet, its locomotion and its stance drawing. A failed bend stays
+   * failed for the session, as a failed sheet does: nothing retries.
+   */
+  private bend(key: string, entry: SheetEntry): LoadedBend | null {
+    const path = entry.bend;
+    if (!path) return null;
+    const state = this.bends.get(key);
+    if (state && state !== 'loading' && state !== 'failed') return state;
+    if (state !== undefined) return null;
+    if (!this.atlas(key, entry)) {
+      if (this.loaded.get(key) !== 'failed') this.bendsWanted.add(key);
+      return null;
+    }
+
+    this.bendsWanted.delete(key);
+    this.bends.set(key, 'loading');
+    Promise.all([
+      Promise.all((entry.bendPages ?? []).map(loadPage)),
+      // Checked by its schema in CI (`art:validate`), so only typed here.
+      fetchText(path).then((text) => JSON.parse(text) as BendSetDef),
+    ])
+      .then(([pages, set]) => this.bends.set(key, { pages, set }))
+      .catch((reason: unknown) => {
+        this.bends.set(key, 'failed');
+        console.warn(`The bend of "${key}" failed to load; the sheet still draws.`, reason);
       });
     return null;
   }
