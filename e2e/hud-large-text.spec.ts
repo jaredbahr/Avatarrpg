@@ -272,15 +272,13 @@ test('the phone More list keeps clear of toasts, fits the screen and keeps focus
   await page.setViewportSize({ width: 844, height: 390 });
   await setLargeText(page, 'huge');
   await settleLayout(page);
-  await more.tap();
+  // The list is capped the moment it opens, not a frame or a restyle later.
+  const opened = await page.evaluate(() => {
+    document.querySelector<HTMLElement>('.combat-more-toggle')?.click();
+    return document.querySelector('#combat-more')?.getBoundingClientRect().bottom ?? Infinity;
+  });
+  expect(opened).toBeLessThanOrEqual(390);
   await expect(list).toBeVisible();
-  // Chromium here can report the list's box from before the room was written
-  // until the next frame; what is painted is already capped, so read it then.
-  await expect
-    .poll(() =>
-      page.evaluate(() => document.querySelector('#combat-more')?.getBoundingClientRect().bottom),
-    )
-    .toBeLessThanOrEqual(390);
   const fit = await page.evaluate(() => {
     const menu = document.querySelector<HTMLElement>('#combat-more')!;
     const rem = parseFloat(getComputedStyle(document.documentElement).fontSize);

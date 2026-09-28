@@ -745,6 +745,10 @@ export class CombatScene implements Scene {
     if (!bar) return;
     const list = bar.querySelector<HTMLElement>('.combat-more');
     const toggle = bar.querySelector<HTMLElement>('.combat-more-toggle');
+    // The room is written before the list is shown: Chromium resolves a list
+    // opened in the same step as its room with the fallback, the whole screen,
+    // until something else restyles it, and so draws it off the foot.
+    if (open) this.measureMoreRoom();
     list?.classList.toggle('open', open);
     toggle?.setAttribute('aria-expanded', String(open));
     if (!open) {
@@ -752,7 +756,6 @@ export class CombatScene implements Scene {
       if (focus || list?.contains(document.activeElement)) toggle?.focus();
       return;
     }
-    this.measureMoreRoom();
     const onPointer = (event: PointerEvent) => {
       if (!(event.target instanceof Node) || !bar.contains(event.target))
         this.setMoreOpen(false, false);
