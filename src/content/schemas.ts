@@ -37,6 +37,7 @@ import type {
   DisciplineDef,
   EncounterDef,
   EnemyDef,
+  MapEdgeSide,
   MapDef,
   NpcDef,
   PropDef,
@@ -504,6 +505,18 @@ export const mapSchema = z
         }),
       )
       .optional(),
+    // Authored border claims (M1). Shape only here; `validateMapContracts`
+    // cross-checks them and stays report-only until a map opts into errors.
+    edges: z
+      .array(
+        z.object({
+          side: z.enum(['north', 'south', 'east', 'west']),
+          span: z.tuple([z.number().int(), z.number().int()]),
+          treatment: z.enum(['barrier', 'band', 'exit']),
+        }),
+      )
+      .optional(),
+    edgeContract: z.literal('enforce').optional(),
     // A painting under the grid (ADR 0009). Between 32 px a tile (the probe) and
     // 256, so a 24-wide map stays inside the 2048 px texture every iPad takes.
     projection: z.literal('oblique').optional(),
@@ -915,6 +928,162 @@ function isWalkable(map: MapDef, x: number, y: number): boolean {
   const template = map.legend[ch];
   if (!template) return false;
   return !(template.blocked ?? template.terrain === 'wall');
+}
+
+/* ------------------------------------------------------------------ */
+/* Map contract (M1, report-only)                                      */
+/* ------------------------------------------------------------------ */
+
+export type MapContractSeverity = 'warning' | 'error';
+
+/**
+ * One finding from `validateMapContracts`. Report-only for now: every finding
+ * is a `warning` unless its map opts into errors with
+ * `edgeContract: 'enforce'`, and `validateContent` folds only the errors into
+ * its problems, so an unconverted map can never fail CI on a contract alone.
+ */
+export interface MapContractIssue {
+  readonly mapId: string;
+  readonly severity: MapContractSeverity;
+  readonly message: string;
+}
+
+const NEIGHBOURS = [[1, 0], [-1, 0], [0, 1], [0, -1]] as const;
+
+/** East and south only: this checks every orthogonal pair exactly once. */
+const STEP_DIRECTIONS = [[1, 0], [0, 1]] as const;
+
+const cellKey = (x: number, y: number): string => `${x},${y}`;
+
+/** The coordinate a border cell sits at along its side. */
+function edgeCoordinate(side: MapEdgeSide, x: number, y: number): number {
+  if (side === 'north' || side === 'south') return x;
+  return y;
+}
+
+function touchesSide(map: MapDef, side: MapEdgeSide, x: number, y: number): boolean {
+  switch (side) {
+    case 'north':
+      return y === 0;
+    case 'south':
+      return y === map.height - 1;
+    case 'west':
+      return x === 0;
+    case 'east':
+      return x === map.width - 1;
+  }
+}
+
+function onBorder(map: MapDef, x: number, y: number): boolean {
+  return x === 0 || y === 0 || x === map.width - 1 || y === map.height - 1;
+}
+
+function coveredByEdge(map: MapDef, x: number, y: number): boolean {
+  return (map.edges ?? []).some((edge) => {
+    if (!touchesSide(map, edge.side, x, y)) return false;
+    const coordinate = edgeCoordinate(edge.side, x, y);
+    const [from, to] = edge.span;
+    return coordinate >= Math.min(from, to) && coordinate <= Math.max(from, to);
+  });
+}
+
+function tileElevation(map: MapDef, x: number, y: number): number {
+  const row = map.rows[y];
+  const ch = row?.[x];
+  const template = ch === undefined ? undefined : map.legend[ch];
+  return template?.elevation ?? 0;
+}
+
+/** Every cell a party could stand on, in row-major order. */
+function walkableCells(map: MapDef): readonly Vec2[] {
+  const cells: Vec2[] = [];
+  for (let y = 0; y < map.height; y++) {
+    for (let x = 0; x < map.width; x++) {
+      if (isWalkable(map, x, y)) cells.push({ x, y });
+    }
+  }
+  return cells;
+}
+
+/** The tiles a map's exits lead out from: the explore exit and world routes. */
+function exitTiles(map: MapDef): ReadonlySet<string> {
+  const cells = new Set<string>();
+  if (map.exit) cells.add(cellKey(map.exit.pos.x, map.exit.pos.y));
+  for (const exit of map.exits ?? []) cells.add(cellKey(exit.pos.x, exit.pos.y));
+  return cells;
+}
+
+/** Four-way flood fill over walkable cells; returns the set of reached keys. */
+function reachedFrom(map: MapDef, start: Vec2): ReadonlySet<string> {
+  const reached = new Set<string>([cellKey(start.x, start.y)]);
+  const queue: Vec2[] = [start];
+  while (queue.length > 0) {
+    const cell = queue.pop();
+    if (!cell) continue;
+    for (const [dx, dy] of NEIGHBOURS) {
+      const x = cell.x + dx;
+      const y = cell.y + dy;
+      const key = cellKey(x, y);
+      if (reached.has(key) || !isWalkable(map, x, y)) continue;
+      reached.add(key);
+      queue.push({ x, y });
+    }
+  }
+  return reached;
+}
+
+/**
+ * The M1 map contracts, report-only:
+ *
+ *  - every walkable border cell is an exit tile or covered by a declared edge;
+ *  - no two adjacent walkable cells differ by two elevation tiers (0 next to 2);
+ *  - the walkable footprint is connected to the first party spawn.
+ *
+ * A map whose `edgeContract` is `'enforce'` raises findings to `error`; every
+ * other map's findings are `warning`s, so converting maps one at a time cannot
+ * block the ones that have not been converted yet.
+ */
+export function validateMapContracts(maps: readonly MapDef[]): readonly MapContractIssue[] {
+  const issues: MapContractIssue[] = [];
+  for (const map of maps) {
+    const severity: MapContractSeverity = map.edgeContract === 'enforce' ? 'error' : 'warning';
+    const report = (message: string) => issues.push({ mapId: map.id, severity, message });
+    const walkable = walkableCells(map);
+
+    const exits = exitTiles(map);
+    for (const cell of walkable) {
+      if (!onBorder(map, cell.x, cell.y)) continue;
+      if (exits.has(cellKey(cell.x, cell.y)) || coveredByEdge(map, cell.x, cell.y)) continue;
+      report(
+        `map "${map.id}" edge contract: walkable border (${cell.x},${cell.y}) has no exit or declared edge`,
+      );
+    }
+
+    for (const cell of walkable) {
+      for (const [dx, dy] of STEP_DIRECTIONS) {
+        if (!isWalkable(map, cell.x + dx, cell.y + dy)) continue;
+        const here = tileElevation(map, cell.x, cell.y);
+        const there = tileElevation(map, cell.x + dx, cell.y + dy);
+        if (Math.abs(here - there) !== 2) continue;
+        report(
+          `map "${map.id}" step contract: walkable (${cell.x},${cell.y}) tier ${here} meets (${cell.x + dx},${cell.y + dy}) tier ${there}`,
+        );
+      }
+    }
+
+    const spawn = map.partySpawns.find((cell) => isWalkable(map, cell.x, cell.y));
+    if (!spawn) continue;
+    const reached = reachedFrom(map, spawn);
+    const unreached = walkable.filter((cell) => !reached.has(cellKey(cell.x, cell.y)));
+    if (unreached.length === 0) continue;
+    const first = unreached[0];
+    if (first) {
+      report(
+        `map "${map.id}" footprint contract: ${unreached.length} walkable cell(s) unreachable from the first party spawn (first at ${first.x},${first.y})`,
+      );
+    }
+  }
+  return issues;
 }
 
 /**
@@ -1416,6 +1585,13 @@ export function validateContent(bundle: ContentBundle): string[] {
         `map "${m.id}" is a combat map with only ${m.partySpawns.length} spawns; six players need six`,
       );
     }
+  }
+
+  /* --- map edge / step / footprint contract (M1, report-only) -------- */
+  // Warnings never fail content: only a map that sets `edgeContract:
+  // 'enforce'` contributes errors here, and no map does yet.
+  for (const issue of validateMapContracts(bundle.maps)) {
+    if (issue.severity === 'error') problems.push(issue.message);
   }
 
   /* --- encounters --------------------------------------------------- */

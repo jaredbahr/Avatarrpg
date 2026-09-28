@@ -24,6 +24,17 @@ export const LEGEND: Readonly<Record<string, TileTemplate>> = {
   T: { terrain: 'grass', blocked: true, blocksSight: true },
   B: { terrain: 'wood', blocked: true, blocksSight: true },
   P: { terrain: 'pit', blocked: true, blocksSight: false },
+  // A rock face: taller than a wall, still an opaque stop, so a painted cliff
+  // reads as something the party can never walk up or see over.
+  X: { terrain: 'wall', elevation: 2, blocked: true, blocksSight: true },
+  // Deep water stops feet, not eyes: you can see and shoot across it.
+  W: { terrain: 'water_deep', blocked: true, blocksSight: false },
+  // A barred timber gate: wood, not a wall, but still opaque and impassable.
+  G: { terrain: 'wood', blocked: true, blocksSight: true },
+  // A fence or rail: low timber you can neither cross nor see through.
+  F: { terrain: 'wood', blocked: true, blocksSight: false },
+  // A thicket: dense grass that hides whatever stands behind it.
+  U: { terrain: 'grass', blocked: true, blocksSight: true },
 
   /* Cover without blocking ----------------------------------------- */
   c: { terrain: 'wood', cover: true },
@@ -34,6 +45,8 @@ export const LEGEND: Readonly<Record<string, TileTemplate>> = {
   // (`grantsCover`, read by `hasCover`), so water turning the heap to mud — or
   // the rubble clearing — takes the cover with it.
   r: { terrain: 'sand', surface: 'rubble', surfaceDuration: -1 },
+  // The same rubble on a tier-1 bench, for heaps lifted off the spoil floor.
+  R: { terrain: 'sand', elevation: 1, surface: 'rubble', surfaceDuration: -1 },
 
   /* Elevation ------------------------------------------------------ */
   '^': { terrain: 'stone', elevation: 1 },
