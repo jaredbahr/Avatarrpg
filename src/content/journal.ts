@@ -7,6 +7,8 @@ export interface JournalNote {
   readonly hint: string;
   readonly found: string;
   readonly when: Condition;
+  /** While unfound, the hint shows only while this holds; a lead the story has moved past drops out. */
+  readonly hintWhile?: Condition;
 }
 
 /** Discoveries are derived from story flags. The journal never owns a second copy. */
@@ -50,7 +52,7 @@ export const JOURNAL_NOTES: readonly JournalNote[] = [
     title: 'The crews’ rest stop',
     hint: 'A little workers’ rest sits along the southern verge of the cutting.',
     found:
-      'The quarry crews built the bench. Sen keeps tea ready while he waits for them to come back.',
+      'Two shifts built the bench from offcuts and never agreed on its height. Sen keeps the kettle going in case they come down.',
     when: { kind: 'flag', key: 'world.tea_shared', op: 'set' },
   },
   {
@@ -59,8 +61,17 @@ export const JOURNAL_NOTES: readonly JournalNote[] = [
     title: 'A borrowed sock, a safer nest',
     hint: 'Look for a little nest beside the southwestern woodland path.',
     found:
-      'Quarry silt covers the old nest by the stream. The ducklings have a dry nest uphill, lined with a sock.',
+      'Three ducklings crowd into the heel of a woollen sock. Their old nest by the stream lies under dried silt.',
     when: { kind: 'flag', key: 'world.discovered.duck_nest', op: 'set' },
+  },
+  {
+    id: 'roadblock_workers',
+    mapId: 'forest_road',
+    title: 'Quarry dust on their cuffs',
+    hint: 'Someone is watching the pine road from behind the trees.',
+    found:
+      'The people blocking the road had stone dust on their cuffs and hammer calluses on their thumbs. They worked the quarry.',
+    when: { kind: 'visited', nodeId: 'after_forest' },
   },
   {
     id: 'runoff_marker',
@@ -76,7 +87,50 @@ export const JOURNAL_NOTES: readonly JournalNote[] = [
     mapId: 'ambush_road',
     title: 'The seventh cup',
     hint: 'Look beside Sen’s rest stop for a shared kettle and mismatched cups.',
-    found: 'Washed the seventh cup. Its handle is held on with wire.',
+    found:
+      'Washed the seventh cup, the one with the wire-mended handle. The bench says: “Wash your own cup, Hesh.”',
     when: { kind: 'flag', key: 'world.discovered.tea_station', op: 'set' },
+  },
+  {
+    id: 'bo_shan_cart',
+    mapId: 'ba_dan_village',
+    title: 'Five missing, not four',
+    hint: 'Someone in Ba Dan knows who else went up to the quarry.',
+    found:
+      'Pella’s brother, Bo-shan, took vegetables up before Mira’s messengers went. Look for a cart with cabbages piled above the seat.',
+    when: { kind: 'flag', key: 'pella_asked', op: 'set' },
+    hintWhile: { kind: 'not', of: { kind: 'flag', key: 'act1_complete', op: 'set' } },
+  },
+  {
+    id: 'gate_wages',
+    mapId: 'quarry_gate',
+    title: 'Why the gate shut',
+    hint: 'Workers with slings hold the quarry gate. Someone there gives the orders.',
+    found:
+      'Ruon says the crews went unpaid, then the guards. His quartermaster wanted to hold the stone; Ruon let him shut the gate. Then people were locked in the galleries.',
+    when: {
+      kind: 'any',
+      of: [
+        { kind: 'flag', key: 'ruon_spared', op: 'set' },
+        { kind: 'flag', key: 'ruon_traded', op: 'set' },
+      ],
+    },
+  },
+  {
+    id: 'galleries',
+    mapId: 'quarry_floor',
+    title: 'Out of the galleries',
+    hint: 'Below the stone ledges, the gallery entrances have been barred with timber.',
+    found:
+      'Pulled the bars from the gallery doors. Mira’s four messengers came out, then Bo-shan, asking where Pella was.',
+    when: { kind: 'flag', key: 'act1_complete', op: 'set' },
+  },
+  {
+    id: 'maker_plate',
+    mapId: 'quarry_floor',
+    title: 'The maker’s plate',
+    hint: 'Look the driller over once it stops moving.',
+    found: 'The driller carries a maker’s plate. Took a rubbing for Mira’s report to the province.',
+    when: { kind: 'flag', key: 'act1_complete', op: 'set' },
   },
 ];
