@@ -237,14 +237,28 @@ test('the phone More list keeps clear of toasts, fits the screen and keeps focus
   await expect(list).toBeVisible();
   await raise('Upright, under the list.');
 
-  // Focus inside the list survives a rebuild of the header by a sync.
+  // Focus inside the list survives a sync. A sync that changes nothing the
+  // header draws leaves it alone: the focused button is the same node and
+  // focus is never set again, so a screen reader does not re-announce it
+  // several times a second through an AI turn.
   await page.keyboard.press('Escape');
   await expect(more).toBeFocused();
   await page.keyboard.press('Enter');
   await expect(more).toHaveAttribute('aria-expanded', 'true');
   const tip = page.getByRole('button', { name: 'Tip', exact: true });
   await tip.focus();
-  await page.evaluate(() => window.fnt!.app.updateSettings({}));
+  const synced = await page.evaluate(() => {
+    const before = document.activeElement;
+    let moves = 0;
+    const count = () => moves++;
+    document.addEventListener('focusin', count, true);
+    document.addEventListener('focusout', count, true);
+    for (let i = 0; i < 5; i++) window.fnt!.app.updateSettings({});
+    document.removeEventListener('focusin', count, true);
+    document.removeEventListener('focusout', count, true);
+    return { moves, same: document.activeElement === before };
+  });
+  expect(synced).toEqual({ moves: 0, same: true });
   await expect(more).toHaveAttribute('aria-expanded', 'true');
   await expect(tip).toBeFocused();
 

@@ -114,6 +114,8 @@ export class CombatScene implements Scene {
   /** The phone header's More list, and the listeners that close it. */
   private moreOpen = false;
   private moreDismiss: (() => void) | null = null;
+  /** What the header last drew, so a sync that changes none of it leaves it alone. */
+  private topBarKey = '';
   private layoutMeasuredAfterSync = false;
   /** When the scene's birds burst out of the trees: once, as a fresh fight is first seen. */
   private flushedAt: number | null = null;
@@ -156,6 +158,7 @@ export class CombatScene implements Scene {
     this.moreDismiss?.();
     this.moreDismiss = null;
     this.moreOpen = false;
+    this.topBarKey = '';
     this.detach?.();
     this.detach = null;
     this.inspector?.close();
@@ -594,9 +597,16 @@ export class CombatScene implements Scene {
     const bar = this.host?.querySelector<HTMLElement>('.combat-bar');
     const battle = this.battle();
     if (!bar || !battle) return;
-    // Every sync rebuilds the header, an AI turn several times a second. The
-    // button that had focus is found again by its key, so a keyboard or
-    // switch user reading the More list is not dropped to the page.
+    // An AI turn syncs several times a second, and a rebuild that moved focus
+    // onto a new button would have a screen reader announce it each time. So
+    // the header is rebuilt only when something it draws has changed: More's
+    // open state and the view buttons' visibility are updated in place, by
+    // setMoreOpen and syncRecentre.
+    const key = `${battle.encounterId}|${battle.variantId ?? ''}|${battle.round}|${this.logOpen}`;
+    if (key === this.topBarKey && bar.childElementCount > 0) return;
+    this.topBarKey = key;
+    // On a rebuild, the button that had focus is found again by its key, so a
+    // keyboard or switch user reading the More list is not dropped to the page.
     const active = document.activeElement;
     const focusedKey =
       active instanceof HTMLElement && bar.contains(active) ? active.dataset.key : undefined;
@@ -716,7 +726,7 @@ export class CombatScene implements Scene {
         const found = bar.querySelector<HTMLElement>(`[data-key="${key}"]`);
         return found && found.getClientRects().length > 0 ? found : null;
       };
-      (shown(focusedKey) ?? shown('more'))?.focus();
+      (shown(focusedKey) ?? shown('more'))?.focus({ preventScroll: true });
     }
   }
 
@@ -753,7 +763,7 @@ export class CombatScene implements Scene {
     toggle?.setAttribute('aria-expanded', String(open));
     if (!open) {
       // Focus never stays behind in a list that has just been hidden.
-      if (focus || list?.contains(document.activeElement)) toggle?.focus();
+      if (focus || list?.contains(document.activeElement)) toggle?.focus({ preventScroll: true });
       return;
     }
     const onPointer = (event: PointerEvent) => {
