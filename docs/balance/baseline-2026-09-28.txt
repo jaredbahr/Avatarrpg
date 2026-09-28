@@ -1,0 +1,45 @@
+
+Balance report - 80 AI-vs-AI trials per encounter, per table size
+
+--- 1 player ---
+Encounter                           Lv   Win %   Rounds   Deaths  HP left
+Ambush on the Forest Road           1    100.0      3.2     0.0    94.5%
+The Quarry Gate                     2    100.0      3.1     0.0    69.5%
+The Cutting                         3    100.0      3.4     0.0    96.8%
+Grumbler                            3    100.0      5.9     0.0    61.7%
+  overall: 100.0%
+
+--- 3 players ---
+Encounter                           Lv   Win %   Rounds   Deaths  HP left
+Ambush on the Forest Road           1    100.0      3.1     0.1    79.0%
+The Quarry Gate                     2    100.0      3.2     0.0    74.3%
+The Cutting                         3    100.0      3.1     0.5    79.2%
+Grumbler                            3     97.5      8.1     1.8    28.6%
+  overall: 99.4%
+
+--- 6 players ---
+Encounter                           Lv   Win %   Rounds   Deaths  HP left
+Ambush on the Forest Road           1    100.0      3.0     0.6    85.5%
+The Quarry Gate                     2    100.0      3.3     2.4    45.2%
+The Cutting                         3    100.0      3.2     0.8    82.5%
+Grumbler                            3     88.8     11.0     3.1    36.3%
+  overall: 97.2%
+
+Target band for a full table is 70-85%. Both sides are driven by the
+same AI, which does not set up combos, so treat these as a floor.
+Set BALANCE_VARIANTS=1 to report each roster variant separately.
+
+--- disciplines, six players at level 7, 30 trials per encounter ---
+Path                Element     Win %   Rounds   Deaths
+Flame Shaping       fire        100.0      4.4     0.7
+Earth Shaping       earth       100.0      4.4     0.8
+Metalbending        earth       100.0      4.2     0.7
+Air Shaping         air         100.0      4.6     0.9
+Engineering         nonbender   100.0      4.3     0.9
+Ice Shaping         water        99.2      4.7     0.8
+Healing             water        99.2      5.3     1.0
+Sound Bending       air          99.2      4.4     1.0
+Field Craft         nonbender    99.2      4.4     0.7
+Lightning           fire         98.3      4.3     0.8
+  spread: 1.7 points between the best and worst path
+

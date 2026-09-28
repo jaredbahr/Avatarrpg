@@ -38,6 +38,7 @@ import type {
   EncounterDef,
   EnemyDef,
   MapDef,
+  MapExit,
   NpcDef,
   PropDef,
   ResidentDef,
@@ -484,6 +485,7 @@ export const mapSchema = z
       .array(
         z.object({
           pos: vec2,
+          area: z.array(vec2).min(1).optional(),
           toMapId: id,
           toPos: vec2,
           label: z.string().min(1),
@@ -1340,14 +1342,30 @@ export function validateContent(bundle: ContentBundle): string[] {
         );
       }
     });
-    const exitCells = new Set<string>();
+    const exitCells = new Map<string, MapExit>();
     for (const exit of m.exits ?? []) {
-      const key = `${exit.pos.x},${exit.pos.y}`;
-      if (exitCells.has(key)) problems.push(`map "${m.id}" repeats exit (${key})`);
-      exitCells.add(key);
-      const target = bundle.maps.find((map) => map.id === exit.toMapId);
+      // `area`, when authored, widens the single-tile `pos` entrance.
+      for (const cell of exit.area ?? [exit.pos]) {
+        const key = `${cell.x},${cell.y}`;
+        const owner = exitCells.get(key);
+        if (owner === exit) problems.push(`map "${m.id}" exit "${exit.label}" repeats (${key})`);
+        else if (owner)
+          problems.push(`map "${m.id}" exits "${owner.label}" and "${exit.label}" share (${key})`);
+        exitCells.set(key, exit);
+      }
+      if (exit.area && !exit.area.some((cell) => cell.x === exit.pos.x && cell.y === exit.pos.y)) {
+        problems.push(
+          `map "${m.id}" exit at (${exit.pos.x},${exit.pos.y}) is not part of its area`,
+        );
+      }
       if (!isWalkable(m, exit.pos.x, exit.pos.y))
         problems.push(`map "${m.id}" has a blocked world exit`);
+      for (const cell of exit.area ?? []) {
+        if (cell.x === exit.pos.x && cell.y === exit.pos.y) continue;
+        if (!isWalkable(m, cell.x, cell.y))
+          problems.push(`map "${m.id}" exit area cell (${cell.x},${cell.y}) is blocked or off-map`);
+      }
+      const target = bundle.maps.find((map) => map.id === exit.toMapId);
       if (!target || !isWalkable(target, exit.toPos.x, exit.toPos.y))
         problems.push(`map "${m.id}" has an invalid exit destination "${exit.toMapId}"`);
       if (exit.requires && !exit.lockedHint)

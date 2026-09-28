@@ -165,6 +165,36 @@ describe('connected world traversal', () => {
     }
   });
 
+  it('takes a multi-tile exit from any cell of its area (M2)', () => {
+    const base = CONTENT.maps.get('ba_dan_village');
+    const [east, ...rest] = base?.exits ?? [];
+    if (!base || !east) throw new Error('Missing the village east exit');
+    // The gate tile and the road tile immediately west of it.
+    const area = [
+      { x: 23, y: 7 },
+      { x: 22, y: 7 },
+    ];
+    const map = { ...base, exits: [{ ...east, area }, ...rest] };
+    const content = { ...CONTENT, maps: new Map(CONTENT.maps).set(map.id, map) };
+
+    for (const pos of area) {
+      const entered = apply(content, start(), { type: 'walkTo', pos });
+      expect(entered.state.location, `from (${pos.x},${pos.y})`).toEqual({
+        mapId: 'forest_road',
+        pos: { x: 1, y: 4 },
+      });
+      // The remembered return stands on the cell that was entered, not on `pos`.
+      expect(entered.state.world.returnPos.ba_dan_village, `from (${pos.x},${pos.y})`).toEqual(pos);
+    }
+  });
+
+  it('keeps a single-tile exit exactly as it was when no area is given (M2)', () => {
+    const beside = walk(start(), 22, 7);
+    expect(beside.state.location).toEqual({ mapId: 'ba_dan_village', pos: { x: 22, y: 7 } });
+    const entered = walk(start(), 23, 7);
+    expect(entered.state.location).toEqual({ mapId: 'forest_road', pos: { x: 1, y: 4 } });
+  });
+
   for (const loss of ['forest', 'gate', 'ambush', 'boss']) {
     it(`keeps the ${loss} defeat route playable through real map connections`, () => {
       let state = resolve(walk(forest(), 19, 4).state, loss === 'forest');

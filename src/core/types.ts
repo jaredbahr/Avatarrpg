@@ -651,6 +651,12 @@ export interface BackgroundRole {
 
 export interface MapExit {
   readonly pos: Vec2;
+  /**
+   * Multi-tile entrance (M2): the leader triggers the exit from any of these
+   * cells. Absent means the single `pos` tile. When present it must contain
+   * `pos`, and no cell may belong to two exits on the same map.
+   */
+  readonly area?: readonly Vec2[];
   readonly toMapId: string;
   readonly toPos: Vec2;
   readonly label: string;
@@ -1270,6 +1276,25 @@ export interface StepResult {
 /* ------------------------------------------------------------------ */
 
 /**
+ * Combat tuning numbers that used to be literals in `core/rules/damage.ts`.
+ *
+ * Content owns the values (`src/content/tuning.ts` checks them with zod); core
+ * only ever reads them off the index it was handed. Keeping them in one data
+ * file is what lets `scripts/balance.ts` A/B a variant without a code edit.
+ */
+export interface CombatTuning {
+  /** Accuracy before elevation, cover and statuses. */
+  readonly baseHitChance: number;
+  /** Accuracy gained per elevation tier of advantage; a tier down loses it. */
+  readonly elevationStep: number;
+  /** Accuracy removed when the defender has cover and is not adjacent. */
+  readonly coverPenalty: number;
+  /** Hit chance is clamped into this band, lowest bound first. */
+  readonly hitChanceMin: number;
+  readonly hitChanceMax: number;
+}
+
+/**
  * The only way core code reaches content. Built once in `src/content/index.ts`
  * and threaded through every rules call, which keeps `src/core` importable
  * from a test that supplies its own tiny fixture content instead.
@@ -1286,6 +1311,11 @@ export interface ContentIndex {
   readonly surfaces: ReadonlyMap<SurfaceId, SurfaceDef>;
   readonly props: ReadonlyMap<string, PropDef>;
   readonly combos: readonly ComboRule[];
+  /**
+   * The hit-chance numbers. Reached through the index for the same reason as
+   * everything else here — core may not import content values.
+   */
+  readonly tuning: CombatTuning;
   readonly story: ReadonlyMap<string, StoryNode>;
   /** Living-world records (ADR 0047 §2). Map order is declaration order, which ranks ties. */
   readonly anchors: ReadonlyMap<string, WorldAnchor>;

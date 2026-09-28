@@ -263,6 +263,57 @@ describe('content', () => {
   });
 
   /*
+   * M2: an exit may cover several tiles. `pos` stays the authored anchor, so
+   * the validator refuses an area that drops it, a cell that is blocked or off
+   * the grid, and two exits that share an entrance.
+   */
+  it('validates multi-tile exit areas', () => {
+    const map = CONTENT_BUNDLE.maps.find((m) => m.id === 'ba_dan_village');
+    const [east, ...rest] = map?.exits ?? [];
+    if (!map || !east) throw new Error('Missing the village east exit');
+    const mapId = map.id;
+    const first = east;
+    const withArea = (area: { x: number; y: number }[]) =>
+      CONTENT_BUNDLE.maps.map((m) => {
+        if (m.id !== mapId) return m;
+        return { ...m, exits: [{ ...first, area }, ...(m.exits ?? []).slice(1)] };
+      });
+    const probe = (area: { x: number; y: number }[]) =>
+      validateContent({ ...CONTENT_BUNDLE, maps: withArea(area) });
+
+    // The gate tile and the road tile immediately west of it.
+    const gate = { x: 23, y: 7 };
+    const beside = { x: 22, y: 7 };
+    expect(probe([gate, beside]).filter((p) => p.includes('exit'))).toEqual([]);
+    expect(probe([beside])).toContain(
+      `map "${mapId}" exit at (${gate.x},${gate.y}) is not part of its area`,
+    );
+    // A tree tile and an off-grid cell are both refused.
+    expect(probe([gate, { x: 0, y: 0 }])).toContain(
+      `map "${mapId}" exit area cell (0,0) is blocked or off-map`,
+    );
+    expect(probe([gate, { x: 99, y: 0 }])).toContain(
+      `map "${mapId}" exit area cell (99,0) is blocked or off-map`,
+    );
+    // The riverside exit already owns (19,14); the east area cannot also claim it.
+    const riverside = rest[0];
+    if (!riverside) throw new Error('Missing the village riverside exit');
+    const overlap = probe([gate, riverside.pos]);
+    const shared = `share (${riverside.pos.x},${riverside.pos.y})`;
+    expect(overlap.some((p) => p.includes(shared))).toBe(true);
+  });
+
+  it('parses a multi-tile exit area through the schema', () => {
+    const map = CONTENT_BUNDLE.maps.find((m) => (m.exits ?? []).length > 0);
+    const exit = map?.exits?.[0];
+    if (!map || !exit) throw new Error('Missing a map exit');
+    const parsed = mapSchema.safeParse({ ...map, exits: [{ ...exit, area: [exit.pos] }] });
+    if (!parsed.success) throw new Error('Exit area should parse');
+    expect(parsed.data.exits?.[0]?.area).toEqual([exit.pos]);
+    expect(mapSchema.safeParse({ ...map, exits: [{ ...exit, area: [] }] }).success).toBe(false);
+  });
+
+  /*
    * An authored `flags` node may advance the clock (ADR 0047 §1), but the
    * validator only allows it where a replay cannot reach it: a phase change
    * that opens straight into a conversation, or that a repeatable NPC

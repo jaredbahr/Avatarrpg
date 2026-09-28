@@ -12,6 +12,7 @@ import {
   GUARD_ALPHA,
   apronDepth,
   apronLogical,
+  apronTerrain,
   baseField,
   loadBasePlates,
   loadGuardField,
@@ -150,6 +151,30 @@ it('carries the material of the cell it leaves, and fades with the page', () => 
     expect(covered, `${point.x},${point.y} is closed`).toBeGreaterThan(245);
   }
   expect(APRON_SEAM).toBeGreaterThan(0.2);
+
+  // The raised shelf stands on the east rim's cells, so the mirror of every
+  // shallow depth there falls into its hole. Continued from the hole's first
+  // ground, each of those depths read the same pixel and the band combed into
+  // one-row streaks; mirrored across the hole's far edge, they move with depth.
+  // Row 4.5 is the road between the shelf's two arms, which never blocked.
+  for (const y of [2.5, 3.5, 5.5, 6.5]) {
+    const colours = new Set<string>();
+    for (let depth = 0.05; depth < 1; depth += 0.05) {
+      const terrain = apronTerrain(field, FOREST_APRON_MAP.width + depth, y);
+      if (terrain) colours.add(`${terrain.r},${terrain.g},${terrain.b}`);
+    }
+    expect(colours.size, `row ${y} beside the shelf is not combed`).toBeGreaterThan(12);
+    // The shallowest depths mirror into the rim's own feather, where the plate
+    // is nearly opaque, so they must move with depth too. Treated as a corner,
+    // they sawtooth through the few pixels just past the hole — seven colours
+    // across the band — where a reflection walks half a tile of ground.
+    const shallow = new Set<string>();
+    for (let depth = 0.05; depth <= 0.3; depth += 0.01) {
+      const terrain = apronTerrain(field, FOREST_APRON_MAP.width + depth, y);
+      if (terrain) shallow.add(`${terrain.r},${terrain.g},${terrain.b}`);
+    }
+    expect(shallow.size, `row ${y} at the rim is not one colour`).toBeGreaterThan(9);
+  }
 
   for (const point of [
     { x: -2.35, y: 6 },

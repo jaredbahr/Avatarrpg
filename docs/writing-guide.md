@@ -151,6 +151,20 @@ The optional scenes stay optional; there is no compulsory roll call.
 | Riko      | `escort_chosen`          | Sets clear custody terms and plans for Jin's pursuit; escort branch                                                 |
 | Wen       | `quarry_assessment`      | Recognizes the damaged drive and keeps the escape ramp in mind; before the driller battle                           |
 
+Further voices cover the road, the defeats and the quarry floor. Where a node
+has two, the first present hero speaks.
+
+| Node                | Voices in priority order | Contribution and when to encounter it                                                  |
+| ------------------- | ------------------------ | -------------------------------------------------------------------------------------- |
+| `defeat_forest`     | Tenzo                    | Mourns the stolen food, then sets off after the tracks; forest road loss               |
+| `forest_dema_again` | Sura                     | A fishing boast, then the runoff is still owed an answer; any return visit to Dema     |
+| `defeat_gate`       | Riko, Kaya               | Kept the retreat together / was first back up; the gate is open on return; gate loss   |
+| `gate_kinship`      | Bo, Lin Mei              | Lin Mei reads the fresh falls on the east face when Bo is absent; earthbender approach |
+| `defeat_ambush`     | Nilak, Jinu              | Tends to Ruon after he carries the party clear / misremembers a route; cutting loss    |
+| `cutting_tea_again` | Nima                     | Finds the cloth and dries the cups, turning up the blue handle; return to Sen          |
+| `quarry_assessment` | Wen, Bo                  | Both name Grumbler; Bo keeps the ramp clear and counts heads; before the driller       |
+| `defeat_boss`       | Wen                      | Owns the plan that missed the blocked ramp; Mira arrives; boss loss                    |
+
 All are available during Act 1 without advanced disciplines or extra XP. The
 content tests cover solo availability, unconscious/absent fallbacks and pairs;
 the integrated route playtest must still confirm that ordinary movement reaches

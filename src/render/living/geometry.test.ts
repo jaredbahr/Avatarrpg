@@ -1,8 +1,9 @@
 import { describe, expect, it } from 'vitest';
 import { Camera } from '../camera';
-import { FOOT_Y, hitsPebble, hitsVillager, riversideWalkTime } from './geometry';
+import { FIGURE_SCALE, FOOT_Y, hitsPebble, hitsVillager, riversideWalkTime } from './geometry';
 import { frameIndex, resolveClip } from '../sheets/resolveClip';
-import { ASSETS } from '../../content/assets/manifest';
+import { HEADINGS, headingClip } from '../../content/assets/clips';
+import { ASSETS, G_TRAVEL } from '../../content/assets/manifest';
 
 describe('riverside ground and gesture coordinates', () => {
   it('places feet at the clicked tile centre at different zoom and pan values', () => {
@@ -26,29 +27,31 @@ describe('riverside ground and gesture coordinates', () => {
     expect(hitsPebble({ x: 17.6, y: 15.5 }, { x: 17, y: 15 })).toBe(true);
     expect(hitsPebble({ x: 16.5, y: 15.5 }, { x: 17, y: 15 })).toBe(false);
   });
-  it('plays all four riverside drawings once over two tiles of travel', () => {
-    const entry = ASSETS['unit.village.sura'];
-    if (!entry || entry.kind !== 'sheet') throw new Error('Expected riverside sheet');
-    const clip = resolveClip(entry.clips, 'walk');
-    if (!clip) throw new Error('Expected walk clip');
-    expect(
-      [0, 0.5, 1, 1.5, 2].map((distance) =>
-        frameIndex(clip, riversideWalkTime(distance * 500, true), undefined),
-      ),
-    ).toEqual([0, 1, 2, 3, 0]);
+  it('keeps a four-way sheet on its 500 ms a tile', () => {
     expect(riversideWalkTime(500, false)).toBe(500);
   });
-  it('keeps the front/back stride in step with the retained side walk', () => {
-    const entry = ASSETS['unit.village.sura'];
-    if (!entry || entry.kind !== 'sheet') throw new Error('Expected riverside sheet');
-    for (const direction of ['walkNorth', 'walkSouth'] as const) {
-      const clip = resolveClip(entry.clips, direction);
-      if (!clip) throw new Error('Expected directional clip');
-      expect(
-        [0, 0.5, 1, 1.5, 2].map((distance) =>
-          frameIndex(clip, riversideWalkTime(distance * 500, true, true), undefined),
-        ),
-      ).toEqual([0, 1, 2, 3, 0]);
+  it('plants the G feet at the riverside figure scale in every heading', () => {
+    // Kaya and Sura walk the riverside on their G sheets (ADR 0054). A tile of
+    // ground must advance the walk by exactly the cels whose measured stride,
+    // drawn at FIGURE_SCALE, covers one tile: fewer cels than at one tile to
+    // 128 px, or the feet slide backwards.
+    for (const [key, name] of [
+      ['unit.fire.kaya', 'kaya'],
+      ['unit.water.sura', 'sura'],
+    ] as const) {
+      const entry = ASSETS[key];
+      if (entry?.kind !== 'sheet' || !entry.locomotion) throw new Error(`G sheet ${key}`);
+      const travel = G_TRAVEL[name];
+      for (const heading of HEADINGS) {
+        const clip = resolveClip(entry.clips, headingClip('walk', heading));
+        if (!clip?.exact) throw new Error(`${key} walk ${heading}`);
+        const clipTime = riversideWalkTime(entry.locomotion.walkMsPerTile[heading], true);
+        const cels = clipTime * (clip.def.fps / 1000);
+        const tiles = (cels * travel[heading] * 0.75 * FIGURE_SCALE) / entry.pixelsPerTile;
+        expect(tiles, `${key} ${heading}`).toBeCloseTo(1, 6);
+        // The cel index the life layer asks for is that same clock.
+        expect(frameIndex(clip, clipTime, undefined)).toBe(Math.floor(cels) % 12);
+      }
     }
   });
 });

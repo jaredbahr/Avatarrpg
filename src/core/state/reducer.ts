@@ -14,7 +14,7 @@ import { evaluate } from '../story/conditions';
 import { advancePhase } from '../story/clock';
 import { findSettleTile, settle } from '../story/settle';
 import { resolveResidents } from '../story/residents';
-import { activeTriggers, backgroundFigures, triggerKey, visibleNpcs } from '../story/world';
+import { activeTriggers, backgroundFigures, exitAt, triggerKey, visibleNpcs } from '../story/world';
 import type {
   BattleState,
   Command,
@@ -482,7 +482,7 @@ function handleWalkTo(content: ContentIndex, state: GameState, pos: Vec2): StepR
 
   const moved: GameState = { ...state, location: { ...state.location, pos } };
   const walk = partyWalked(state, route.path);
-  const exit = map.exits?.find((item) => samePos(item.pos, pos));
+  const exit = exitAt(map, pos);
   if (exit) {
     if (!evaluate(moved, exit.requires))
       return {

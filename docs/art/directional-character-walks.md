@@ -4,12 +4,14 @@ The ten playable heroes have front (south) and back (north) standing and walking
 poses matched to their existing character references. These are 2D sprite
 atlases, used by the existing animation system.
 
-| Asset                       | Location                                                  |
-| --------------------------- | --------------------------------------------------------- |
-| Hero PNG and frame metadata | `public/art/units/walking-{name}.{png,json}`              |
-| Riverside Kaya and Sura     | `public/art/units/riverside-locomotion-{name}.{png,json}` |
-| Importer                    | `scripts/art/directional-motion.ts`                       |
-| Rendering contract          | `docs/adr/0018-directional-character-locomotion.md`       |
+| Asset                       | Location                                            |
+| --------------------------- | --------------------------------------------------- |
+| Hero PNG and frame metadata | `public/art/units/walking-{name}.{png,json}`        |
+| Importer                    | `scripts/art/directional-motion.ts`                 |
+| Rendering contract          | `docs/adr/0018-directional-character-locomotion.md` |
+
+Kaya, Sura and Bo are PixelLab G sets everywhere, the riverside included
+(ADR 0050, ADR 0051, ADR 0054); the riverside's four-way sheets are retired.
 
 Names are `kaya`, `tenzo`, `nilak`, `sura`, `bo`, `linmei`, `nima`, `jinu`, `riko`,
 and `wen`. Existing atlases are retained as source references. The new atlases
