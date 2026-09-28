@@ -6,22 +6,22 @@ export const WORLD_STORY: readonly StoryNode[] = [
     id: 'gate_escort_explore',
     kind: 'explore',
     mapId: 'quarry_gate',
-    objective: 'Ruon walks with you. Take the east path through the cutting to the quarry floor.',
+    objective:
+      'Ruon walks with you. Explore the east path through the cutting to the quarry floor.',
     next: 'cutting_explore',
   },
   {
     id: 'gate_trade_explore',
     kind: 'explore',
     mapId: 'quarry_gate',
-    objective:
-      'The gate is open, and Jin’s crew will let you pass. Follow the cutting east to the quarry floor.',
+    objective: 'The gate is open. Explore the cutting east to the quarry floor.',
     next: 'cutting_after_explore',
   },
   {
     id: 'forest_explore',
     kind: 'explore',
     mapId: 'forest_road',
-    objective: 'Follow the pine road east to the quarry gate, or go back west to Ba Dan.',
+    objective: 'Explore the pine road east to the quarry gate, or go back west to Ba Dan.',
     next: 'battle_forest_road',
   },
   {
@@ -35,7 +35,7 @@ export const WORLD_STORY: readonly StoryNode[] = [
     id: 'cutting_explore',
     kind: 'explore',
     mapId: 'ambush_road',
-    objective: 'Lead Ruon through the cutting. Jin’s people may be waiting on the road.',
+    objective: 'Explore the cutting with Ruon. Jin’s people may be waiting on the road.',
     next: 'battle_ambush',
   },
   {
@@ -53,7 +53,7 @@ export const WORLD_STORY: readonly StoryNode[] = [
     lines: [
       'Mind your feet. There are ducklings under that fern. Yes, the one you are about to step on.',
       "They used to nest down by the stream. Now it's full of quarry silt, and I've got a turtle-duck sitting in my clean washing.",
-      'If you are going up there, ask them about the runoff. The duck can keep the sock. I want my stream back.',
+      'If you are going up there, ask them about the runoff. The duck can keep whichever sock it took. I want my stream back.',
     ],
     next: 'forest_ducks_seen',
   },

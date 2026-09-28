@@ -400,7 +400,7 @@ export const ACT1_NODES: readonly StoryNode[] = [
       'Captain Ruon, provincial guard. Nineteen years. I still give the rank, though I doubt they would claim me now.',
       'The crews stopped getting paid. Then our wages stopped too. My quartermaster said holding the stone would make somebody listen. I let him shut the gate.',
       'Then he locked people in the galleries. I kept my post. Their families will want to know that.',
-      'Jin’s mercenaries hold the inner gate. She carries a provincial bounty on me, and she will pay whoever hands me over.',
+      'Jin’s mercenaries keep the inner gate. Jin holds a provincial bounty on me, and she will pay whoever hands me over.',
     ],
     next: 'ruon_choice',
   },
@@ -440,7 +440,7 @@ export const ACT1_NODES: readonly StoryNode[] = [
     speaker: 'Captain Ruon',
     portrait: 'portrait.ruon',
     lines: [
-      'Ba Dan, then, once the galleries are open. I will not leave the crews down there either.',
+      'Ba Dan, then, once the galleries are open.',
       "Jin will not let her bounty walk down the hill. She'll send people after us.",
       "If they catch us in the cutting, I'll need my sabre. You can take it back afterwards.",
     ],
