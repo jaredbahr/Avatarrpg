@@ -506,7 +506,8 @@ export const mapSchema = z
       )
       .optional(),
     // Authored border claims (M1). Shape only here; `validateMapContracts`
-    // cross-checks them and stays report-only until a map opts into errors.
+    // cross-checks them, and its findings stay report-only until a map opts
+    // into errors — except a malformed span, which is always an error.
     edges: z
       .array(
         z.object({
@@ -937,10 +938,13 @@ function isWalkable(map: MapDef, x: number, y: number): boolean {
 export type MapContractSeverity = 'warning' | 'error';
 
 /**
- * One finding from `validateMapContracts`. Report-only for now: every finding
- * is a `warning` unless its map opts into errors with
- * `edgeContract: 'enforce'`, and `validateContent` folds only the errors into
- * its problems, so an unconverted map can never fail CI on a contract alone.
+ * One finding from `validateMapContracts`. Report-only for now: an unconverted
+ * map's findings are `warning`s, and `validateContent` folds only the errors
+ * into its problems, so a map that has not opted into `edgeContract: 'enforce'`
+ * can never fail CI on a boundary or step it has not declared yet. The one
+ * exception is malformed edge data: an inverted, fractional or off-the-side
+ * span is an `error` on every map, because it is bad data rather than an
+ * undeclared boundary.
  */
 export interface MapContractIssue {
   readonly mapId: string;
@@ -985,6 +989,36 @@ function coveredByEdge(map: MapDef, x: number, y: number): boolean {
     const [from, to] = edge.span;
     return coordinate >= Math.min(from, to) && coordinate <= Math.max(from, to);
   });
+}
+
+/** The largest coordinate a span may name on `side`, inclusive. */
+function edgeSpanLimit(map: MapDef, side: MapEdgeSide): number {
+  return side === 'north' || side === 'south' ? map.width - 1 : map.height - 1;
+}
+
+/**
+ * Malformed edge data, always an `error` even on a map that has not opted into
+ * enforcement. `coveredByEdge` normalises its endpoints, so an unvalidated span
+ * like `[-100, 100]` silently claims a whole border; a span must name integers,
+ * run low to high, and lie inside its own side.
+ */
+function malformedEdgeSpans(map: MapDef): readonly string[] {
+  const problems: string[] = [];
+  for (const edge of map.edges ?? []) {
+    const [from, to] = edge.span;
+    const span = `${edge.side} span (${from},${to})`;
+    if (!Number.isInteger(from) || !Number.isInteger(to)) {
+      problems.push(`map "${map.id}" edge contract: ${span} is not a pair of integers`);
+    } else if (from > to) {
+      problems.push(`map "${map.id}" edge contract: ${span} is inverted`);
+    } else {
+      const limit = edgeSpanLimit(map, edge.side);
+      if (from < 0 || to > limit) {
+        problems.push(`map "${map.id}" edge contract: ${span} is outside 0..${limit}`);
+      }
+    }
+  }
+  return problems;
 }
 
 function tileElevation(map: MapDef, x: number, y: number): number {
@@ -1036,12 +1070,15 @@ function reachedFrom(map: MapDef, start: Vec2): ReadonlySet<string> {
  * The M1 map contracts, report-only:
  *
  *  - every walkable border cell is an exit tile or covered by a declared edge;
- *  - no two adjacent walkable cells differ by two elevation tiers (0 next to 2);
+ *  - no two adjacent walkable cells differ by more than one elevation tier, so
+ *    a single tier is a ramp and two or three are a cliff;
  *  - the walkable footprint is connected to the first party spawn.
  *
  * A map whose `edgeContract` is `'enforce'` raises findings to `error`; every
  * other map's findings are `warning`s, so converting maps one at a time cannot
- * block the ones that have not been converted yet.
+ * block the ones that have not been converted yet. Malformed edge data is the
+ * exception: an inverted, fractional or off-the-side span is an `error` on
+ * every map.
  */
 export function validateMapContracts(maps: readonly MapDef[]): readonly MapContractIssue[] {
   const issues: MapContractIssue[] = [];
@@ -1049,6 +1086,12 @@ export function validateMapContracts(maps: readonly MapDef[]): readonly MapContr
     const severity: MapContractSeverity = map.edgeContract === 'enforce' ? 'error' : 'warning';
     const report = (message: string) => issues.push({ mapId: map.id, severity, message });
     const walkable = walkableCells(map);
+
+    // Bad edge data is an error even here: it is malformed content, not a
+    // boundary the map has merely not declared yet.
+    for (const message of malformedEdgeSpans(map)) {
+      issues.push({ mapId: map.id, severity: 'error', message });
+    }
 
     const exits = exitTiles(map);
     for (const cell of walkable) {
@@ -1064,7 +1107,7 @@ export function validateMapContracts(maps: readonly MapDef[]): readonly MapContr
         if (!isWalkable(map, cell.x + dx, cell.y + dy)) continue;
         const here = tileElevation(map, cell.x, cell.y);
         const there = tileElevation(map, cell.x + dx, cell.y + dy);
-        if (Math.abs(here - there) !== 2) continue;
+        if (Math.abs(here - there) < 2) continue;
         report(
           `map "${map.id}" step contract: walkable (${cell.x},${cell.y}) tier ${here} meets (${cell.x + dx},${cell.y + dy}) tier ${there}`,
         );
@@ -1588,8 +1631,8 @@ export function validateContent(bundle: ContentBundle): string[] {
   }
 
   /* --- map edge / step / footprint contract (M1, report-only) -------- */
-  // Warnings never fail content: only a map that sets `edgeContract:
-  // 'enforce'` contributes errors here, and no map does yet.
+  // Warnings never fail content, and no map sets `edgeContract: 'enforce'`
+  // yet; only a malformed edge span is an error on every map.
   for (const issue of validateMapContracts(bundle.maps)) {
     if (issue.severity === 'error') problems.push(issue.message);
   }
