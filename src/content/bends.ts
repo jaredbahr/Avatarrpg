@@ -80,7 +80,12 @@ export const BEND_FRAME_MS_MIN = 16;
 export const BEND_FRAME_MS_MAX = 1000;
 /** Hit-stop is 0-300 ms, at launch/contact and again at impact. */
 export const BEND_HOLD_MS_MAX = 300;
-/** Flash is the peak opacity of the additive white flash frame, 0-1. */
+/**
+ * Flash is how much of the flashed cel is added onto itself, 0-1: at `f` its
+ * colour is multiplied by `1 + f` (the approved prototype's `Brightness(1.75)`
+ * is 0.75). It brightens the painted cel in its own colours; it is not a white
+ * overlay.
+ */
 export const BEND_FLASH_MAX = 1;
 /** The impact point sits at most 256 unit-cel pixels from the target's feet, each way. */
 export const BEND_IMPACT_OFFSET_MAX = 256;
@@ -118,7 +123,10 @@ export interface BendRelease {
   readonly launchHoldMs: number;
   /** Hit-stop when the effect lands on the target, 0-300 ms. */
   readonly impactHoldMs: number;
-  /** Peak opacity of the contact flash frame, 0-1; absent means no flash. */
+  /**
+   * The contact flash: the launch cels added onto themselves at this weight,
+   * 0-1 (`BEND_FLASH_MAX`); absent means no flash.
+   */
   readonly flash?: number;
   /** Contact shake amplitude in tiles, 0-0.5; absent means no shake. */
   readonly shakeTiles?: number;
@@ -246,7 +254,10 @@ export type BendTrajectory =
 /** What the effect draws when it lands on the target, and where. */
 export interface BendImpact {
   readonly sequence: string;
-  /** Peak opacity of the impact flash frame, 0-1. */
+  /**
+   * The impact flash: the impact's first cel added onto itself at this
+   * weight, 0-1 (`BEND_FLASH_MAX`), never a white overlay.
+   */
   readonly flash: number;
   /**
    * Where on the target the effect lands, in unit-cel pixels (the scale the
