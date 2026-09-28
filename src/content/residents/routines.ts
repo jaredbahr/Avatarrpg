@@ -1,5 +1,5 @@
 /**
- * Working Ba Dan: two people at their work between the day's placements.
+ * Working Ba Dan: people at their work between the day's placements.
  *
  * Presentation only (`residentRoutineSchema`). A routine runs while its
  * resident is placed at the anchor doing one of the listed activities, so it
@@ -43,6 +43,17 @@ export const BA_DAN_ROUTINES: readonly ResidentRoutine[] = [
       { path: [{ x: 9, y: 4 }], hold: 6000 },
     ],
   },
+];
+
+/**
+ * Waiting on household art: routes that are authored and checked against the
+ * village but not run, because the person who walks them is still a flat
+ * placeholder figure and would walk it into the square among painted
+ * residents. None of the painted residents fits the errand (Mira, Pella and
+ * Dorin are each held to their own places by the story), so it waits for
+ * the household adult's art rather than move to someone else.
+ */
+export const PARKED_ROUTINES: readonly ResidentRoutine[] = [
   {
     // Pella's household carries a basket up to the square and back: along
     // the front of the house, a pause at the kerb, over the bridge, a pause

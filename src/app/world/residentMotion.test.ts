@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { CONTENT } from '../../content';
+import { BA_DAN_ROUTINES, PARKED_ROUTINES } from '../../content/residents/routines';
 import { createGame } from '../../core/state/createGame';
 import { apply } from '../../core/state/reducer';
 import { buildGrid, posKey, samePos, tileAt } from '../../core/rules/grid';
@@ -394,7 +395,9 @@ describe('routines (Working Ba Dan)', () => {
   const AWAY: Vec2[] = [{ x: 20, y: 11 }];
   const key = (p: Vec2) => posKey({ x: Math.round(p.x), y: Math.round(p.y) });
   const within2 = (a: Vec2, b: Vec2) => Math.max(Math.abs(a.x - b.x), Math.abs(a.y - b.y)) <= 2;
-  const walks = (reduced = false) => new ResidentWalks(CONTENT, () => reduced);
+  /** The parked basket runs here as it will once the household adult has art. */
+  const walks = (reduced = false) =>
+    new ResidentWalks(CONTENT, () => reduced, [...BA_DAN_ROUTINES, ...PARKED_ROUTINES]);
 
   /**
    * Plays `ms` of the scene loop at 50 ms a frame, as ExploreScene does: the
@@ -422,6 +425,19 @@ describe('routines (Working Ba Dan)', () => {
       const f = figures.find((each) => each.id === id);
       return f ? [{ t, ...f }] : [];
     });
+
+  it('runs no basket errand in the game until the household adult is painted', () => {
+    const frames = play(
+      new ResidentWalks(CONTENT, () => false),
+      at('afternoon', AWAY[0], []),
+      0,
+      40_000,
+    );
+    const carrier = of(frames, CARRIER);
+    expect(carrier).toHaveLength(frames.length);
+    for (const f of carrier) expect(f).toMatchObject({ drawPos: YARD, walking: false });
+    expect(new Set(of(frames, GAO).map((f) => key(f.drawPos))).size).toBeGreaterThan(1);
+  });
 
   it('runs Gao between his shopfront, the display and his steps, smoothly, his rules tile fixed', () => {
     const w = walks();

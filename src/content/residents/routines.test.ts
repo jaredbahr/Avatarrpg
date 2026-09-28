@@ -7,7 +7,7 @@
 import { expect, it } from 'vitest';
 import { CONTENT } from '../index';
 import { residentRoutineSchema } from '../schemas';
-import { BA_DAN_ROUTINES } from './routines';
+import { BA_DAN_ROUTINES, PARKED_ROUTINES } from './routines';
 import { cachedGrid, pathCost, posKey } from '../../core/rules/grid';
 import { exitCells } from '../../core/story/world';
 import type { ResidentSlot, Vec2 } from '../../core/types';
@@ -36,16 +36,20 @@ function activities(id: string): Set<string> {
   );
 }
 
+/** The parked routes are checked too, so they are ready the day their art lands. */
+const ROUTINES = [...BA_DAN_ROUTINES, ...PARKED_ROUTINES];
+
 it('parses, one routine a person', () => {
-  for (const routine of BA_DAN_ROUTINES)
-    expect(() => residentRoutineSchema.parse(routine)).not.toThrow();
-  const ids = BA_DAN_ROUTINES.map((routine) => routine.id);
+  for (const routine of ROUTINES) expect(() => residentRoutineSchema.parse(routine)).not.toThrow();
+  const ids = ROUTINES.map((routine) => routine.id);
   expect(new Set(ids).size).toBe(ids.length);
-  expect(ids).toEqual(['lw.npc.gao', 'bg.pella_household']);
+  expect(BA_DAN_ROUTINES.map((routine) => routine.id)).toEqual(['lw.npc.gao']);
+  // The household adult is still a placeholder figure: its basket waits for art.
+  expect(PARKED_ROUTINES.map((routine) => routine.id)).toEqual(['bg.pella_household']);
 });
 
 it('runs from a real anchor, in activities the schedule really places them doing', () => {
-  for (const routine of BA_DAN_ROUTINES) {
+  for (const routine of ROUTINES) {
     const known = activities(routine.id);
     expect(known.size, `${routine.id} is a resident or a role`).toBeGreaterThan(0);
     for (const activity of routine.activities)
@@ -56,7 +60,7 @@ it('runs from a real anchor, in activities the schedule really places them doing
 });
 
 it('walks legal steps on open ground and closes the loop at the anchor', () => {
-  for (const routine of BA_DAN_ROUTINES) {
+  for (const routine of ROUTINES) {
     const map = CONTENT.maps.get(routine.mapId);
     const site = CONTENT.anchors.get(routine.anchor)?.site;
     if (!map || site?.kind !== 'map') throw new Error(`${routine.id} has no map anchor`);
@@ -77,7 +81,7 @@ it('walks legal steps on open ground and closes the loop at the anchor', () => {
 });
 
 it('keeps off every tile someone else needs: anchors, doors, signs, benches, exits, walls', () => {
-  for (const routine of BA_DAN_ROUTINES) {
+  for (const routine of ROUTINES) {
     const map = CONTENT.maps.get(routine.mapId);
     if (!map) throw new Error(routine.mapId);
     const home = CONTENT.residents.get(routine.id)?.home;
