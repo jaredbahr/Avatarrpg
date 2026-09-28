@@ -288,6 +288,22 @@ export default defineConfig({
             'the SVG path exclusion',
           );
         }
+        // Tagged text only runs for a style with `tagStyles`, and no label the
+        // game draws has one; `hasTagStyles` stays, so the stub is never reached.
+        if (
+          /[/\\]pixi\.js[/\\]lib[/\\]scene[/\\]text[/\\]canvas[/\\]CanvasTextMetrics\.mjs$/.test(id)
+        ) {
+          return replaceExactly(
+            code,
+            [
+              [
+                "import { measureTaggedText } from './utils/measureTaggedText.mjs';",
+                omittedPixi('measureTaggedText'),
+              ],
+            ],
+            'the tagged-text exclusion',
+          );
+        }
         if (
           /[/\\]pixi\.js[/\\]lib[/\\](accessibility|events|dom|spritesheet)[/\\]init\.mjs$/.test(id)
         ) {
