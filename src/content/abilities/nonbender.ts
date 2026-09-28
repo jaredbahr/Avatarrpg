@@ -126,7 +126,7 @@ export const NONBENDER_ABILITIES: readonly Ability[] = [
       { kind: 'status', status: 'guarded', duration: 1, chance: 1, to: 'self' },
     ],
     description:
-      'Drive a shield into an adjacent enemy, pushing them back a tile with a 35% chance to Stun. You stay Guarded for 1 round.',
+      'Drive a shield into an adjacent enemy, pushing them back a tile with a 35% chance to Stun. You become Guarded for 1 round.',
     flavor: 'Somebody has to stand in front.',
     fx: 'fx.non.bash',
     tags: ['attack', 'control', 'buff'],
@@ -202,7 +202,7 @@ export const NONBENDER_ABILITIES: readonly Ability[] = [
       { kind: 'surface', surface: 'oil', duration: 3, area: 'center' },
     ],
     description:
-      'A mine thrown onto a 3×3 area. Everyone there, friend or foe, takes lightning damage with an 80% chance of Shocked, and its casing leaks oil onto the centre tile for 3 rounds.',
+      'A mine thrown onto a 3×3 area. Everyone there, friend or foe, takes lightning damage with an 80% chance of being Shocked, and its casing leaks oil onto the centre tile for 3 rounds.',
     flavor: 'She keeps meaning to fix the leak. She has stopped meaning to.',
     fx: 'fx.non.mine',
     tags: ['attack', 'control', 'surface'],
@@ -221,7 +221,7 @@ export const NONBENDER_ABILITIES: readonly Ability[] = [
       { kind: 'status', status: 'shocked', duration: 2, chance: 0.6, to: 'hit' },
     ],
     description:
-      'Emitters thrown across a 5×5 area fire at once. Everyone caught, friend or foe, takes lightning damage and may be Chi-Blocked (70%) or Shocked (60%) for 2 rounds.',
+      'Emitters thrown across a 5×5 area fire at once. Everyone caught, friend or foe, takes lightning damage and may be Chi-Blocked (70%) and/or Shocked (60%) for 2 rounds.',
     flavor: 'No bending required. That was always the argument.',
     fx: 'fx.non.array',
     tags: ['attack', 'control', 'signature'],

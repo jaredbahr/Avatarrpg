@@ -102,7 +102,7 @@ export const ENEMY_ABILITIES: readonly Ability[] = [
     cooldown: 1,
     effects: [{ kind: 'surface', surface: 'fire', duration: 2, area: 'center' }],
     description:
-      'Lobs a lit torch onto one tile, setting it ablaze for 2 rounds. Oil there catches and spreads the fire.',
+      'Lobs a lit torch onto one tile, setting it ablaze for 2 rounds. Oil there catches and spreads the fire; water flashes into steam.',
     flavor: 'Aimed at the oil, obviously.',
     fx: 'fx.enemy.torch',
     tags: ['surface'],

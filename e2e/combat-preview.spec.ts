@@ -183,7 +183,7 @@ test('movement prevention disables Move and explains the status', async ({ page 
 
   const move = page.getByRole('button', { name: /^Move/ });
   await expect(move).toBeDisabled();
-  await expect(move).toHaveAttribute('title', 'Rooted: Stuck in place, but can still attack.');
+  await expect(move).toHaveAttribute('title', 'Rooted: Cannot walk, but can still use abilities.');
   await move.click({ force: true });
   await expect(page.locator('.confirm-bar')).toHaveCount(0);
 
@@ -195,7 +195,7 @@ test('movement prevention disables Move and explains the status', async ({ page 
   await expect(moveInstead).toBeDisabled();
   await expect(moveInstead).toHaveAttribute(
     'title',
-    'Rooted: Stuck in place, but can still attack.',
+    'Rooted: Cannot walk, but can still use abilities.',
   );
   await moveInstead.click({ force: true });
   await expect(page.locator('.confirm-dialog')).toHaveCount(0);

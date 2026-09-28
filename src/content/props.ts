@@ -124,7 +124,7 @@ export const PROPS: readonly PropDef[] = [
     id: 'cabbage_cart',
     name: 'Cabbage Cart',
     description:
-      'A market cart stacked far too high with cabbages. It gives cover and can be shoved. Smash it and flying cabbages push everyone beside it back a tile, very likely Blinded.',
+      'A market cart stacked far too high with cabbages. It gives cover and can be shoved. Smash it and flying cabbages push everyone beside it back a tile, and they are very likely Blinded.',
     sprite: 'prop.cart',
     hp: 7,
     blocksMove: true,

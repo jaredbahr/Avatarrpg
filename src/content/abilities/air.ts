@@ -54,7 +54,7 @@ export const AIR_ABILITIES: readonly Ability[] = [
       { kind: 'status', status: 'blinded', duration: 2, chance: 0.4, to: 'hit' },
     ],
     description:
-      'A fan of wind and dust three tiles deep. Everyone in it, friend or foe, is pushed back a tile with a 40% chance of Blinded. It clears steam but spreads fire.',
+      'A fan of wind and dust three tiles deep. Everyone in it, friend or foe, is pushed back a tile with a 40% chance of being Blinded. It clears steam but spreads fire.',
     flavor: 'Wind also feeds a fire. Watch what you fan.',
     fx: 'fx.air.gust',
     tags: ['attack', 'control'],
@@ -129,7 +129,7 @@ export const AIR_ABILITIES: readonly Ability[] = [
       { kind: 'status', status: 'slowed', duration: 2, chance: 0.5, to: 'hit' },
     ],
     description:
-      'A full funnel over a 5×5 area. Everyone caught, friend or foe, is thrown 3 tiles outward, with a 75% chance of Blinded and an even chance of Slowed.',
+      'A full funnel over a 5×5 area. Everyone caught, friend or foe, is thrown 3 tiles outward, with a 75% chance of being Blinded and an even chance of being Slowed.',
     flavor: 'The air is never still. It only waits.',
     fx: 'fx.air.tornado',
     tags: ['attack', 'control', 'signature'],

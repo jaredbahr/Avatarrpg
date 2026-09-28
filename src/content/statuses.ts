@@ -92,7 +92,7 @@ export const STATUSES: readonly StatusDef[] = [
     id: 'chilled',
     name: 'Chilled',
     description:
-      'Numb with cold: 1 less Move, 2 less Speed and 5% lower hit chance. Chilled again while Chilled, they become Frozen instead.',
+      '1 less Move, 2 less Speed and 5% lower hit chance. If a Chilled unit is Chilled again, it becomes Frozen.',
     kind: 'debuff',
     defaultDuration: 2,
     modifiers: { move: -1, speed: -2, accuracy: -5 },
@@ -114,8 +114,7 @@ export const STATUSES: readonly StatusDef[] = [
   status({
     id: 'shocked',
     name: 'Shocked',
-    description:
-      'Muscles twitching: 1 less AP, 3 less Speed and 10% lower hit chance while it lasts.',
+    description: '1 less AP, 3 less Speed and 10% lower hit chance while it lasts.',
     kind: 'debuff',
     defaultDuration: 2,
     modifiers: { speed: -3, accuracy: -10, ap: -1 },
@@ -131,7 +130,7 @@ export const STATUSES: readonly StatusDef[] = [
   status({
     id: 'slowed',
     name: 'Slowed',
-    description: 'Heavy legs: 2 less Move while it lasts.',
+    description: '2 less Move while it lasts.',
     kind: 'debuff',
     defaultDuration: 2,
     modifiers: { move: -2 },
@@ -139,7 +138,7 @@ export const STATUSES: readonly StatusDef[] = [
   status({
     id: 'blinded',
     name: 'Blinded',
-    description: 'Eyes full of smoke or grit: 30% lower hit chance on every attack.',
+    description: '30% lower hit chance on every attack.',
     kind: 'debuff',
     defaultDuration: 2,
     modifiers: { accuracy: -30 },
@@ -147,7 +146,7 @@ export const STATUSES: readonly StatusDef[] = [
   status({
     id: 'rooted',
     name: 'Rooted',
-    description: 'Feet held fast: cannot walk, but can still use abilities.',
+    description: 'Cannot walk, but can still use abilities.',
     kind: 'debuff',
     defaultDuration: 2,
     preventsMove: true,
@@ -155,8 +154,7 @@ export const STATUSES: readonly StatusDef[] = [
   status({
     id: 'chiBlocked',
     name: 'Chi-Blocked',
-    description:
-      'Pressure points struck: cannot use any ability, bending or otherwise, but can still walk.',
+    description: 'Cannot use any ability, bending or otherwise, but can still walk.',
     kind: 'debuff',
     defaultDuration: 2,
     preventsAbilities: true,
@@ -164,8 +162,7 @@ export const STATUSES: readonly StatusDef[] = [
   status({
     id: 'guarded',
     name: 'Guarded',
-    description:
-      'Braced for impact: 3 more Defence, and fire and physical hits deal a quarter less.',
+    description: '3 more Defence, and fire and physical hits deal a quarter less.',
     kind: 'buff',
     defaultDuration: 2,
     modifiers: { defense: 3, incomingMultiplier: { fire: 0.75, physical: 0.75 } },
@@ -174,7 +171,7 @@ export const STATUSES: readonly StatusDef[] = [
     id: 'inspired',
     name: 'Inspired',
     description:
-      'Fired up: 2 more Power, 10% higher hit chance and 5% more Focus, their chance of a critical hit.',
+      '2 more Power, 10% higher hit chance and 5% more Focus, their chance of a critical hit.',
     kind: 'buff',
     defaultDuration: 2,
     modifiers: { power: 2, accuracy: 10, focus: 5 },
