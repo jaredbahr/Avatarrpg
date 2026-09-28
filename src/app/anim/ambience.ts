@@ -20,8 +20,8 @@ import type { EmitterInstance } from '../../render/view';
 
 /** Loops run at once per emitter, spaced evenly through the period. */
 const LOOPS = 2;
-/** The moment a still wisp is frozen at: both loops well under way. */
-const STILL_MS = 5200;
+/** The moment a still wisp is frozen at: the village smoke's fullest column. */
+const STILL_MS = 2400;
 
 export function ambientEmitters(
   recipe: AmbienceRecipe | null,
