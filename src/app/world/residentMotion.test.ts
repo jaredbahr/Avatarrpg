@@ -2,9 +2,9 @@ import { describe, expect, it } from 'vitest';
 import { CONTENT } from '../../content';
 import { createGame } from '../../core/state/createGame';
 import { apply } from '../../core/state/reducer';
-import { buildGrid, posKey, tileAt } from '../../core/rules/grid';
+import { buildGrid, posKey, samePos, tileAt } from '../../core/rules/grid';
 import type { DayPhase, GameState, MapDef, Vec2 } from '../../core/types';
-import { ResidentWalks, planResidentMotion } from './residentMotion';
+import { ResidentWalks, planResidentMotion, standingOn } from './residentMotion';
 import type { ResidentMotion } from './residentMotion';
 
 /**
@@ -382,5 +382,219 @@ describe('ResidentWalks', () => {
     expect(w.update(VILLAGE, waited(before, 'afternoon'), party, true)).toBe(false);
     expect(w.moving()).toBe(false);
     expect(figure(w, 'lw.npc.dorin')?.drawPos).toEqual({ x: 17, y: 6 });
+  });
+});
+
+describe('routines (Working Ba Dan)', () => {
+  const GAO = 'lw.npc.gao';
+  const CARRIER = 'bg.pella_household';
+  const SHOP: Vec2 = { x: 9, y: 4 };
+  const YARD: Vec2 = { x: 11, y: 13 };
+  /** Out on the east lawn, well clear of the square, the bridge and the lanes. */
+  const AWAY: Vec2[] = [{ x: 20, y: 11 }];
+  const key = (p: Vec2) => posKey({ x: Math.round(p.x), y: Math.round(p.y) });
+  const within2 = (a: Vec2, b: Vec2) => Math.max(Math.abs(a.x - b.x), Math.abs(a.y - b.y)) <= 2;
+  const walks = (reduced = false) => new ResidentWalks(CONTENT, () => reduced);
+
+  /**
+   * Plays `ms` of the scene loop at 50 ms a frame, as ExploreScene does: the
+   * clock, then `update` with where the party is. Returns each frame's figures.
+   */
+  function play(
+    w: ResidentWalks,
+    state: GameState,
+    from: number,
+    ms: number,
+    clear: (t: number) => readonly Vec2[] = () => AWAY,
+    frozen = false,
+  ) {
+    const frames: { t: number; figures: ReturnType<ResidentWalks['figures']> }[] = [];
+    for (let t = from; t <= from + ms; t += 50) {
+      w.tick(t, frozen);
+      w.update(VILLAGE, state, AWAY, !frozen, clear(t));
+      frames.push({ t, figures: w.figures() });
+    }
+    return frames;
+  }
+
+  const of = (frames: ReturnType<typeof play>, id: string) =>
+    frames.flatMap(({ t, figures }) => {
+      const f = figures.find((each) => each.id === id);
+      return f ? [{ t, ...f }] : [];
+    });
+
+  it('runs Gao between his shopfront, the display and his steps, smoothly, his rules tile fixed', () => {
+    const w = walks();
+    const frames = play(w, at('morning', AWAY[0]), 0, 60_000);
+    const gao = of(frames, GAO);
+    expect(gao).toHaveLength(frames.length);
+    const stops = new Set(gao.filter((f) => !f.walking).map((f) => key(f.drawPos)));
+    expect(stops).toEqual(new Set(['9,4', '8,5', '10,3']));
+    // Walking the lane to the display, never cutting the display's corner.
+    expect(gao.some((f) => key(f.drawPos) === '9,5')).toBe(true);
+    for (let i = 1; i < gao.length; i++) {
+      const a = gao[i - 1]!.drawPos;
+      const b = gao[i]!.drawPos;
+      expect(Math.hypot(b.x - a.x, b.y - a.y)).toBeLessThan(0.25);
+    }
+    // A tap still finds him at his shop: the rules never see the errand.
+    expect(gao.every((f) => f.pos && samePos(f.pos, SHOP))).toBe(true);
+    expect(gao.some((f) => f.walking)).toBe(true);
+    // A work beat at the display: he reaches in and back.
+    expect(gao.some((f) => key(f.drawPos) === '8,5' && (f.squash ?? 0) > 0.3)).toBe(true);
+    // An errand is not a walk to a new place: nothing waits on it.
+    expect(w.moving()).toBe(false);
+    expect(w.walkingTo(SHOP)).toBe(false);
+  });
+
+  it('carries the basket over the bridge and back, pausing on each side', () => {
+    const w = walks();
+    const frames = play(w, at('midday', AWAY[0]), 0, 60_000);
+    const carrier = of(frames, CARRIER);
+    const tiles = carrier.map((f) => key(f.drawPos));
+    expect(tiles).toContain('9,6'); // on the bridge deck
+    const held = (tile: string) =>
+      carrier.filter((f) => !f.walking && key(f.drawPos) === tile).length * 50;
+    expect(held('9,9')).toBeGreaterThanOrEqual(1500); // the kerb, south of the road
+    expect(held('9,5')).toBeGreaterThanOrEqual(3500); // the square, north of the canal
+    expect(held('11,13')).toBeGreaterThanOrEqual(9000); // home in the yard
+    expect(carrier.every((f) => f.pos && samePos(f.pos, YARD))).toBe(true);
+  });
+
+  it('is deterministic: the same clock and the same party give the same frames', () => {
+    const run = () => {
+      const w = walks();
+      const state = at('afternoon', AWAY[0], []);
+      return play(w, state, 0, 45_000, (t) => (t > 20_000 && t < 26_000 ? [{ x: 9, y: 7 }] : AWAY));
+    };
+    const a = run();
+    expect(JSON.stringify(run())).toBe(JSON.stringify(a));
+    // Both routines ran in that afternoon (Pella kept from the river keeps her household home).
+    expect(new Set(of(a, GAO).map((f) => key(f.drawPos))).size).toBeGreaterThan(1);
+    expect(new Set(of(a, CARRIER).map((f) => key(f.drawPos))).size).toBeGreaterThan(1);
+  });
+
+  it('never steps onto anyone’s tile, and the two errands never share one', () => {
+    const w = walks();
+    const state = at('afternoon', AWAY[0], []);
+    const frames = play(w, state, 0, 90_000);
+    const people = standingOn(CONTENT, VILLAGE, state);
+    for (const { figures } of frames) {
+      const gao = figures.find((f) => f.id === GAO);
+      const carrier = figures.find((f) => f.id === CARRIER);
+      if (!gao || !carrier) throw new Error('both routines are placed this afternoon');
+      expect(key(gao.drawPos)).not.toBe(key(carrier.drawPos));
+      for (const f of [gao, carrier])
+        for (const other of people)
+          if (other.id !== f.id) expect(key(f.drawPos)).not.toBe(posKey(other.pos));
+    }
+  });
+
+  it('holds rather than cross the party’s way, and sets off once it has passed', () => {
+    const w = walks();
+    // The party stands on the road beside the bridge.
+    const road: Vec2[] = [{ x: 9, y: 7 }];
+    const waiting = play(w, at('midday', AWAY[0]), 0, 40_000, () => road);
+    const carrier = of(waiting, CARRIER);
+    for (const f of carrier)
+      expect(Math.max(Math.abs(f.drawPos.x - 9), Math.abs(f.drawPos.y - 7))).toBeGreaterThan(2);
+    // It can reach the front of the house, but never the kerb next to the party.
+    expect(carrier.some((f) => key(f.drawPos) === '9,9')).toBe(false);
+    // The party moves on: the basket goes over the bridge.
+    const going = of(play(w, at('midday', AWAY[0]), 40_050, 30_000), CARRIER);
+    expect(going.some((f) => key(f.drawPos) === '9,6')).toBe(true);
+  });
+
+  it('comes home early when the party comes close', () => {
+    const w = walks();
+    const state = at('morning', AWAY[0]);
+    const frames = play(w, state, 0, 30_000);
+    const reached = of(frames, GAO).find((f) => !f.walking && key(f.drawPos) === '8,5');
+    if (!reached) throw new Error('Gao reached the display');
+    // Replay to that moment, then bring the party to the square beside him.
+    const v = walks();
+    play(v, state, 0, reached.t);
+    // The scene seats no follower where he stands.
+    expect(v.errandTiles()).toContainEqual({ x: 8, y: 5 });
+    // Mira's bench, two tiles from the display.
+    const near: Vec2[] = [{ x: 10, y: 5 }];
+    const after = of(
+      play(v, state, reached.t + 50, 1500, () => near),
+      GAO,
+    );
+    // His hold at the display was four seconds; he is back at the shop in well under two.
+    expect(after.at(-1)?.drawPos).toEqual(SHOP);
+    // And stays there while the party is close.
+    const stay = of(
+      play(v, state, reached.t + 1600, 20_000, () => near),
+      GAO,
+    );
+    expect(stay.every((f) => samePos(f.drawPos, SHOP))).toBe(true);
+  });
+
+  it('goes back to the shop while the party walks up to talk, and nowhere else', () => {
+    const w = walks();
+    const state = at('morning', AWAY[0]);
+    const reached = of(play(w, state, 0, 30_000), GAO).find(
+      (f) => !f.walking && key(f.drawPos) === '8,5',
+    );
+    if (!reached) throw new Error('Gao reached the display');
+    const v = walks();
+    play(v, state, 0, reached.t);
+    // A tap on him: the talk opens on his shop tile as the party sets off.
+    const talk = apply(CONTENT, state, { type: 'walkTo', pos: SHOP }).state;
+    expect(talk.world.talk?.npcId).toBe('shopkeeper_gao');
+    // The party arriving beside the shop is within reach of the display.
+    const arrived = [talk.location.pos];
+    expect(within2(arrived[0]!, { x: 8, y: 5 })).toBe(true);
+    const frames: Vec2[] = [];
+    for (let t = reached.t + 50; t <= reached.t + 20_000; t += 50) {
+      v.tick(t, false);
+      v.update(VILLAGE, talk, arrived, false, arrived);
+      frames.push(v.figures().find((f) => f.id === GAO)?.drawPos ?? { x: -1, y: -1 });
+    }
+    expect(frames.slice(40).every((p) => samePos(p, SHOP))).toBe(true);
+  });
+
+  it('holds the anchor under reduce motion', () => {
+    const w = walks(true);
+    const frames = play(w, at('afternoon', AWAY[0], []), 0, 40_000);
+    for (const f of of(frames, GAO)) expect(f).toMatchObject({ drawPos: SHOP, walking: false });
+    for (const f of of(frames, CARRIER)) expect(f).toMatchObject({ drawPos: YARD, walking: false });
+    expect(of(frames, GAO).every((f) => !f.lean && !f.squash)).toBe(true);
+  });
+
+  it('stands still through a conversation: the errand clock is the walk clock', () => {
+    const w = walks();
+    const state = at('morning', AWAY[0]);
+    play(w, state, 0, 5_000);
+    const before = w.figures();
+    play(w, state, 5_050, 10_000, () => AWAY, true);
+    expect(w.figures()).toEqual(before);
+  });
+
+  it('ends an errand with the placement: a phase change walks them on from where they are', () => {
+    const w = walks();
+    const morning = at('morning', AWAY[0]);
+    const frames = play(w, morning, 0, 30_000);
+    const reached = of(frames, GAO).find((f) => !f.walking && key(f.drawPos) === '8,5');
+    if (!reached) throw new Error('Gao reached the display');
+    const v = walks();
+    play(v, morning, 0, reached.t);
+    // Midday is his break: no restocking, back to the shopfront by a real walk.
+    const midday: GameState = {
+      ...morning,
+      world: { ...morning.world, clock: { day: 1, phase: 'midday' } },
+    };
+    v.tick(reached.t + 50, false);
+    expect(v.update(VILLAGE, midday, AWAY, true, AWAY)).toBe(true);
+    expect(v.moving()).toBe(true);
+    const back = of(play(v, midday, reached.t + 100, 3000), GAO);
+    expect(back[0]?.drawPos.x).toBeLessThan(9);
+    expect(back.at(-1)).toMatchObject({ drawPos: SHOP, walking: false });
+    expect(v.moving()).toBe(false);
+    // And no errand starts again during the break.
+    const rest = of(play(v, midday, reached.t + 3200, 20_000), GAO);
+    expect(rest.every((f) => samePos(f.drawPos, SHOP))).toBe(true);
   });
 });

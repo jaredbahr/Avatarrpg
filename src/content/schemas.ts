@@ -867,6 +867,36 @@ export const backgroundRoleSchema = z.object({
     .optional(),
 });
 
+/**
+ * A resident's working routine (presentation only): while they are placed at
+ * `anchor` doing one of `activities`, they walk its legs in a loop, holding
+ * at the end of each. The last leg comes home to the anchor. The rules never
+ * see it: their tile stays the anchor, and nothing of it is saved.
+ */
+export const residentRoutineSchema = z.object({
+  /** Resident or background-role id. */
+  id,
+  mapId: id,
+  anchor: id,
+  activities: z.array(z.string().min(1)).min(1),
+  legs: z
+    .array(
+      z.object({
+        /** Tiles walked from the last stop, each a step from the one before. */
+        path: z.array(vec2).min(1).max(8),
+        /** Ms held at the end of the path. */
+        hold: z.number().int().min(0).max(20_000),
+        /** A work beat while held: reaching into the stall, the basket. */
+        work: z.boolean().optional(),
+        /** Which way to face while held; the walk's own facing otherwise. */
+        face: z.union([z.literal(1), z.literal(-1)]).optional(),
+      }),
+    )
+    .min(2)
+    .max(8),
+});
+export type ResidentRoutine = z.infer<typeof residentRoutineSchema>;
+
 export interface ContentBundle {
   /** The art manifest, so every sprite key content names is checked against it. */
   readonly assets?: Readonly<Record<string, AssetEntry>>;
