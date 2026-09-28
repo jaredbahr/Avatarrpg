@@ -26,7 +26,7 @@ import type {
   ResidentSlotValue,
   Vec2,
 } from '../types';
-import { DIRECTIONS, cachedGrid, inBounds, posKey, tileAt } from '../rules/grid';
+import { cachedGrid, tileAt } from '../rules/grid';
 import { specializationsUpTo } from '../rules/leveling';
 import { settle } from '../story/settle';
 import { npcResident } from '../story/residents';
@@ -124,45 +124,33 @@ function entrySpawn(map: MapDef): Vec2 {
 }
 
 /**
- * The nearest walkable cell to `from`, breadth-first, at most `radius` steps
- * away. Ties break row-major — smallest y, then smallest x — and neighbours
- * are tried in `DIRECTIONS` order (orthogonals, then diagonals), so the same
- * map and cell always snap to the same tile. A diagonal may not squeeze
- * between two blocked or off-grid corners, matching `findPath` and
- * `findSettleTile`. Returns null when nothing walkable is that close.
+ * The nearest walkable cell to `from`, searched geometrically: ring by ring
+ * outward by Chebyshev distance, up to `radius` steps. This is not pathing —
+ * a map edit only buries the saved cell, so the repair is a distance search,
+ * not a route. Candidates are in-bounds, non-blocked cells; an off-grid cell
+ * is simply not one, and the rings still reach past it, so a position off the
+ * map edge finds that edge's walkable cells. The first ring holding a
+ * candidate wins, and ties break row-major — smallest y, then smallest x — so
+ * the same map and cell always snap to the same tile. Returns null when
+ * nothing walkable is that close.
  */
 function nearestWalkable(grid: Grid, from: Vec2, radius: number): Vec2 | null {
-  const visited = new Set<string>([posKey(from)]);
-  let frontier: readonly Vec2[] = [from];
-
-  for (let depth = 1; depth <= radius && frontier.length > 0; depth++) {
-    const reached: Vec2[] = [];
-    const next: Vec2[] = [];
-    for (const node of frontier) {
-      for (const d of DIRECTIONS) {
-        const cell = { x: node.x + d.x, y: node.y + d.y };
-        if (!inBounds(grid, cell) || !walkable(grid, cell)) continue;
-        const key = posKey(cell);
-        if (visited.has(key)) continue;
-        if (cell.x !== node.x && cell.y !== node.y && cornerBlocked(grid, node, cell)) continue;
-        visited.add(key);
-        next.push(cell);
-        reached.push(cell);
+  for (let distance = 1; distance <= radius; distance++) {
+    let best: Vec2 | null = null;
+    for (let dy = -distance; dy <= distance; dy++) {
+      for (let dx = -distance; dx <= distance; dx++) {
+        if (Math.max(Math.abs(dx), Math.abs(dy)) !== distance) continue;
+        const cell = { x: from.x + dx, y: from.y + dy };
+        if (!walkable(grid, cell)) continue;
+        if (best === null || cell.y < best.y || (cell.y === best.y && cell.x < best.x)) {
+          best = cell;
+        }
       }
     }
-    if (reached.length > 0) {
-      reached.sort((a, b) => a.y - b.y || a.x - b.x);
-      return reached[0] ?? null;
-    }
-    frontier = next;
+    if (best !== null) return best;
   }
 
   return null;
-}
-
-/** A diagonal's two orthogonal corners must both be walkable, as in `findPath`. */
-function cornerBlocked(grid: Grid, from: Vec2, to: Vec2): boolean {
-  return !walkable(grid, { x: to.x, y: from.y }) || !walkable(grid, { x: from.x, y: to.y });
 }
 
 /** Every authored public slot a resident may occupy, independent of the loaded state's phase. */

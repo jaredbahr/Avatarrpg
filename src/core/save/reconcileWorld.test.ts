@@ -248,6 +248,30 @@ const SNAP_ROWS = [
   '###.......',
 ];
 
+/**
+ * A 15x15 chamber: a walkable rim around a blocked core, so the rim is seven
+ * Chebyshev steps from the centre — one past the snap radius. The enclosed
+ * case needs a pocket this deep: a merely one-step ring no longer defeats a
+ * geometric search.
+ */
+const POCKET_ROWS = [
+  '...............',
+  '.#############.',
+  '.#############.',
+  '.#############.',
+  '.#############.',
+  '.#############.',
+  '.#############.',
+  '.#############.',
+  '.#############.',
+  '.#############.',
+  '.#############.',
+  '.#############.',
+  '.#############.',
+  '.#############.',
+  '...............',
+];
+
 /** A fabricated explore map added to the real content, keyed by its own id. */
 function snapFixture(
   id: string,
@@ -300,10 +324,14 @@ suite('reconcileWorld: the explore snap (M9)', () => {
     expect(tileAt(buildGrid(map), reconciled.location.pos)?.blocked).toBe(false);
   });
 
-  it('snaps an off-grid saved position onto the map', () => {
-    const reconciled = loadOldSave(exploring({ location: { mapId, pos: { x: 10, y: 5 } } }));
+  it('snaps a position three cells off the map edge onto the map', () => {
+    // (12,5) is three cells past the right edge (width 10). Off-grid cells are
+    // not candidates, so the third ring is the first with any, and row-major
+    // picks the topmost of the equidistant cells in column x=9.
+    const reconciled = loadOldSave(exploring({ location: { mapId, pos: { x: 12, y: 5 } } }));
 
-    expect(reconciled.location.pos).toEqual({ x: 9, y: 5 });
+    expect(reconciled.location.pos).toEqual({ x: 9, y: 2 });
+    expect(tileAt(buildGrid(map), reconciled.location.pos)?.blocked).toBe(false);
   });
 
   it('leaves an already-walkable position byte-identical', () => {
@@ -313,13 +341,27 @@ suite('reconcileWorld: the explore snap (M9)', () => {
     expect(serialize(reconcileWorld(content, state), META)).toBe(serialize(state, META));
   });
 
-  it('falls back to the map entry when the saved cell is fully enclosed', () => {
-    // (4,3) is wall at the centre of the 3x3 block: all eight neighbours are wall.
+  it('snaps the centre of a 3x3 wall block to the nearest walkable cell outside it', () => {
+    // (4,3) is the centre of the block at x 3..5, y 2..4: the whole first ring
+    // is wall, so the search reaches the second ring and takes its (2,1) corner.
     const reconciled = loadOldSave(exploring({ location: { mapId, pos: { x: 4, y: 3 } } }));
 
+    expect(reconciled.location.pos).toEqual({ x: 2, y: 1 });
+    expect(tileAt(buildGrid(map), reconciled.location.pos)?.blocked).toBe(false);
+  });
+
+  it('falls back to the map entry when no walkable cell is within the snap radius', () => {
+    // The chamber's centre is seven steps from the walkable rim, one past the
+    // radius, so the search finds nothing and the entry wins.
+    const pocket = snapFixture('m9_pocket', POCKET_ROWS, { x: 0, y: 0 });
+    const reconciled = reconcileWorld(
+      pocket.content,
+      exploring({ location: { mapId: pocket.mapId, pos: { x: 7, y: 7 } } }),
+    );
+
     // The entry is `partySpawns[0]`, the same cell `enterStoryNode` starts the party on.
-    expect(reconciled.location.pos).toEqual(map.partySpawns[0]);
-    expect(reconciled.location.pos).toEqual({ x: 8, y: 8 });
+    expect(reconciled.location.pos).toEqual(pocket.map.partySpawns[0]);
+    expect(reconciled.location.pos).toEqual({ x: 0, y: 0 });
   });
 
   it('falls back to the entry when the map has no walkable cells at all', () => {
