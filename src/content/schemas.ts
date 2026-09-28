@@ -25,6 +25,7 @@ import {
 } from './assets/clips';
 import type { AssetEntry } from './assets/manifest';
 import { SCENE_PREFIX, SCENE_VALUES, STANDING_PREFIX } from '../core/story/conditions';
+import { exitCells } from '../core/story/world';
 import { DAY_PHASES, RESIDENT_PROFILES, RESIDENT_TIERS } from '../core/types';
 import type {
   Ability,
@@ -1049,11 +1050,17 @@ function walkableCells(map: MapDef): readonly Vec2[] {
   return cells;
 }
 
-/** The tiles a map's exits lead out from: the explore exit and world routes. */
+/**
+ * The tiles a map's exits lead out from: the explore exit and world routes.
+ * A world exit covers every cell of its `area` when it has one (M2), so a
+ * widened mouth exempts all of its cells, not just `pos`.
+ */
 function exitTiles(map: MapDef): ReadonlySet<string> {
   const cells = new Set<string>();
   if (map.exit) cells.add(cellKey(map.exit.pos.x, map.exit.pos.y));
-  for (const exit of map.exits ?? []) cells.add(cellKey(exit.pos.x, exit.pos.y));
+  for (const exit of map.exits ?? []) {
+    for (const cell of exitCells(exit)) cells.add(cellKey(cell.x, cell.y));
+  }
   return cells;
 }
 
@@ -1552,16 +1559,16 @@ export function validateContent(bundle: ContentBundle): string[] {
         );
       }
     });
-    const exitCells = new Map<string, MapExit>();
+    const exitOwners = new Map<string, MapExit>();
     for (const exit of m.exits ?? []) {
       // `area`, when authored, widens the single-tile `pos` entrance.
       for (const cell of exit.area ?? [exit.pos]) {
         const key = `${cell.x},${cell.y}`;
-        const owner = exitCells.get(key);
+        const owner = exitOwners.get(key);
         if (owner === exit) problems.push(`map "${m.id}" exit "${exit.label}" repeats (${key})`);
         else if (owner)
           problems.push(`map "${m.id}" exits "${owner.label}" and "${exit.label}" share (${key})`);
-        exitCells.set(key, exit);
+        exitOwners.set(key, exit);
       }
       if (exit.area && !exit.area.some((cell) => cell.x === exit.pos.x && cell.y === exit.pos.y)) {
         problems.push(

@@ -129,6 +129,16 @@ describe('planResidentMotion', () => {
         for (const step of motion.path) expect(standing.has(posKey(step))).toBe(false);
   });
 
+  it('fades out at the exit `pos` while the rest of a widened mouth stays open (M2)', () => {
+    const east = VILLAGE.exits?.find((exit) => exit.toMapId === 'forest_road');
+    if (!east || !east.area) throw new Error('Missing the widened east mouth');
+    // A leader triggers from any area cell, but the residents still leave from
+    // the canonical tile, and the other mouth cells are ordinary ground.
+    for (const cell of east.area) expect(tileAt(buildGrid(VILLAGE), cell)?.blocked).toBe(false);
+    const watch = byId(plan).get('bg.relief_watch');
+    expect(watch?.kind === 'walk' ? watch.path.at(-1) : null).toEqual(east.pos);
+  });
+
   it('goes home by the door: Gao at night', () => {
     const evening = at('evening');
     const night = waited(evening, 'night');
