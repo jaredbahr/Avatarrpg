@@ -45,6 +45,13 @@ on each backend.
   cutaway follows: `sceneryOpacity` skips a figure at the tie, since nothing
   of it is behind the piece. Kaya at (18,11), level with the turned planter
   and the south-east house, no longer ghosts the house.
+- **The turned planter is two depth slices**, cropped from the one texture
+  with `sourceRect` like any atlas piece. Its far end sorts level with (18,10),
+  so a figure there stands in front of it rather than behind the whole
+  planter. The cut sits at the house image's east edge, not at the cells'
+  join: shallower than the house, a slice under the house's awning post would
+  lose to it. A mirrored slice crops the texture's other end, since the box
+  mirrors the crop.
 
 ## Consequences
 
