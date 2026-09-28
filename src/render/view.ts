@@ -114,6 +114,40 @@ export interface EmitterInstance {
   readonly attachments?: EmitterAttachments;
 }
 
+/**
+ * One painted bend-effect cel, resolved (ADR 0055): the page rectangle, where
+ * its pivot lands, and its turn, size, opacity and flash. The caller samples
+ * these from its own clock (`sampleBendFx`); both backends draw them as they
+ * are and never time, turn, mirror or shake anything themselves. The board
+ * shake is the view's `cameraNudge`.
+ */
+export interface BendFxSprite {
+  /** The page image, relative to the site root. */
+  readonly image: string;
+  readonly frame: {
+    readonly x: number;
+    readonly y: number;
+    readonly w: number;
+    readonly h: number;
+  };
+  /** The cel point laid on `at`, in cel pixels from its corner. */
+  readonly pivot: Vec2;
+  /** In board units: the space `projectGround` returns, a tile's width to one. */
+  readonly at: Vec2;
+  /** Drawn size, in tiles. */
+  readonly width: number;
+  readonly height: number;
+  /** Degrees clockwise about the pivot. */
+  readonly turn: number;
+  readonly alpha: number;
+  /** `add` lights what is under the cel instead of covering it. */
+  readonly blend: 'normal' | 'add';
+  /** 0..1: the cel added onto itself, its colour times `1 + flash`; not a white flash. */
+  readonly flash: number;
+  /** `ground` and `underActor` draw under the upright actors, `overActor` over them. */
+  readonly z: 'ground' | 'underActor' | 'overActor';
+}
+
 export interface Floater {
   readonly pos: Vec2;
   readonly text: string;
@@ -188,6 +222,8 @@ export interface MapView {
   /** The throw being aimed, or null. */
   readonly aimArc: AimArc | null;
   readonly emitters: readonly EmitterInstance[];
+  /** Painted bend effects in draw order, ground first; absent draws none. */
+  readonly bendFx?: readonly BendFxSprite[];
   readonly floaters: readonly Floater[];
   /** How far the camera is knocked, in tiles. */
   readonly cameraNudge: Vec2;
