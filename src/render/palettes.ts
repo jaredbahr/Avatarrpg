@@ -7,7 +7,7 @@
  * the duplication — if you change one, change both.
  */
 
-import type { ElementId, StatusId, SurfaceId, TerrainId } from '../core/types';
+import type { ElementId, Faction, StatusId, SurfaceId, TerrainId } from '../core/types';
 
 export interface Palette {
   readonly base: string;
@@ -220,13 +220,6 @@ export const OVERLAY = {
   edgeWidth: 0.05,
 } as const;
 
-/** Ring drawn under a unit, so faction is readable without reading names. */
-export const FACTION_RING: Record<'party' | 'enemy' | 'ally', string> = {
-  party: OVERLAY.friendly,
-  ally: 'rgba(160, 220, 170, 0.9)',
-  enemy: OVERLAY.hostile,
-};
-
 /** Short badges drawn under a unit so statuses are visible without a tooltip. */
 export const STATUS_BADGE: Record<StatusId, { letter: string; color: string }> = {
   burning: { letter: 'B', color: '#e0521f' },
@@ -243,15 +236,74 @@ export const STATUS_BADGE: Record<StatusId, { letter: string; color: string }> =
   inspired: { letter: '★', color: '#f0c674' },
 };
 
+/** A friendly bar turns `mid` at or below the first, `low` at or below the second. */
+export const HP_THRESHOLDS = { mid: 0.6, low: 0.3 } as const;
+
+interface HpTints {
+  readonly party: string;
+  readonly ally: string;
+  readonly mid: string;
+  /** A friend in trouble: warm and loud, but never the hostile red. */
+  readonly low: string;
+  /** Every enemy bar, full or not. */
+  readonly hostile: string;
+}
+
 export const HP_COLORS = {
-  high: '#6fbf73',
-  mid: '#e0b23c',
-  low: '#e2584a',
-  back: 'rgba(0,0,0,0.55)',
+  /*
+   * hostile is --c-danger-soft. Under simulated protan, deutan and tritan
+   * vision (palettes.test.ts) hostile stays clear of every friendly tint, but
+   * this set is not colourblind-safe within the friendly side: mid and low all
+   * but merge under deutan, and party and ally draw close under tritan. There
+   * the fill's length says how hurt, and the cap says whose side.
+   */
+  tints: {
+    party: '#6fbf73',
+    ally: '#5fc4b8',
+    mid: '#e0b23c',
+    low: '#f5913e',
+    hostile: '#d94a3a',
+  } satisfies HpTints,
+  /*
+   * The colourblind (hatch) setting swaps in the Okabe-Ito set. Simulated
+   * (Machado 2009, full severity), every pair of the five stays at least
+   * ΔE 15 apart under protan, deutan and tritan vision; party and ally are the
+   * closest, under tritan, so the caps below still carry the side.
+   */
+  hatchTints: {
+    party: '#56b4e9',
+    ally: '#009e73',
+    mid: '#f0e442',
+    low: '#cc79a7',
+    hostile: '#d55e00',
+  } satisfies HpTints,
+  /** The empty part of the bar, and the 1px frame round it: the art bible's ink. */
+  back: 'rgba(27,20,16,0.55)',
+  frame: '#1b1410',
 } as const;
 
-export function hpColor(fraction: number): string {
-  if (fraction > 0.6) return HP_COLORS.high;
-  if (fraction > 0.3) return HP_COLORS.mid;
-  return HP_COLORS.low;
+/**
+ * The mark at a bar's left end, so the side reads by shape as well as colour:
+ * the party's bar is plain, an ally's carries a diamond and an enemy's a spike.
+ * It is what the faction-coloured ring round the bar used to say.
+ */
+export type HpCap = 'none' | 'diamond' | 'spike';
+
+export const HP_CAP: Record<Faction, HpCap> = {
+  party: 'none',
+  ally: 'diamond',
+  enemy: 'spike',
+};
+
+/**
+ * A unit's bar fill. The side reads before the number does: an enemy's bar is
+ * hostile red however full it is; a friendly bar keeps its side's colour when
+ * healthy, turns amber when hurt, and a warm orange when low, never the red.
+ */
+export function hpFill(faction: Faction, fraction: number, hatch = false): string {
+  const tints = hatch ? HP_COLORS.hatchTints : HP_COLORS.tints;
+  if (faction === 'enemy') return tints.hostile;
+  if (fraction <= HP_THRESHOLDS.low) return tints.low;
+  if (fraction <= HP_THRESHOLDS.mid) return tints.mid;
+  return tints[faction];
 }

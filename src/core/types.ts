@@ -773,6 +773,23 @@ export interface SceneImage {
   readonly y: number;
   readonly width: number;
   readonly height: number;
+  /**
+   * Moves in the wind, on the render clock only: ground brightens as a gust
+   * crosses it, upright scenery leans. Presentation; the rules never read it.
+   */
+  readonly wind?: boolean;
+}
+
+/** Small birds that lift out of the wind-moved scenery when a fight opens. */
+export interface SceneFlock {
+  /** One row of square flap frames. */
+  readonly url: string;
+  readonly frames: number;
+  /** Source pixels per frame. */
+  readonly frameSize: number;
+  /** Drawn size in scene pixels. */
+  readonly size: number;
+  readonly count: number;
 }
 
 export interface SceneScenery extends SceneImage {
@@ -802,6 +819,7 @@ export interface MapScene {
   readonly chimneys?: readonly Vec2[];
   readonly ground: readonly SceneImage[];
   readonly scenery: readonly SceneScenery[];
+  readonly flock?: SceneFlock;
 }
 
 /* ------------------------------------------------------------------ */

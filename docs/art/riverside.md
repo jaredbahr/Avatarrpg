@@ -29,3 +29,40 @@ Review at fitted zoom and zoomed in: foot sliding, readability of the two forms,
 foreground occlusion near the banyan, path-to-paint alignment, Pebble's scale,
 text contrast and the cost of the second canvas on actual iPads. The cliff and
 roof boundaries are intentionally conservative in this first art-first area.
+
+## Walkable ground against the painting (R1)
+
+The grid was re-traced against the painting cell by cell. Sand that is plainly
+open is now walkable:
+
+- the west lane (1..4, 6..9);
+- the path north of the square at (10,3) and (11,5);
+- the south path beside the exit (11,19..21);
+- the sand pocket south of the square (17..20, 18..21);
+- the south-east bank path (32..34, 16..20) and the tea deck at (7,19).
+
+A painted solid now blocks the one cell its base stands on:
+
+- the practice posts (31,10), (30,11), (30,12) and (33,13);
+- the lantern (30,14), the rock (31,14) and the trunk (30,16) on the lower
+  east-bank lane;
+- the rocky bank (20,13);
+- the garden fences (16,5) and (10,15..17);
+- the unreachable flowerbed (20,6).
+
+Canopy is still not a footprint. Every walkable cell of the south path belongs
+to the exit mouth, so the map sets `edgeContract: 'enforce'`.
+
+These blocked cells still read as open ground and need a painted stop. Paint an
+object; do not reopen the cell:
+
+- the lane north between the middle and north-east houses, (15..17, 0..3), runs
+  to the rim;
+- the lane west past (10,3) continues at (9,2) behind the north-west house
+  fence;
+- the west lane reaches the rim at (0,6);
+- the south-east bank path runs on under the canopy from (34,21);
+- the east clearing reaches the rim past the banner fence at (34..35, 12);
+- the back lane behind the north-west house, (4..5, 0..1), is unreachable, so it
+  is low priority;
+- the garden slabs west of the porch steps, (8,20) and (5..8, 21).

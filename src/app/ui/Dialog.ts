@@ -21,6 +21,7 @@ export abstract class Dialog {
   protected body: HTMLElement | null = null;
   private previousFocus: Element | null = null;
   private keyHandler: ((event: KeyboardEvent) => void) | null = null;
+  private resizeObserver: ResizeObserver | null = null;
 
   protected abstract options: DialogOptions;
 
@@ -64,6 +65,12 @@ export abstract class Dialog {
     host.appendChild(overlay);
     this.build(body);
 
+    // Scroll events do not bubble; capture them from any region in the sheet.
+    panel.addEventListener('scroll', () => this.markScrollEdges(), { capture: true });
+    this.resizeObserver = new ResizeObserver(() => this.markScrollEdges());
+    this.resizeObserver.observe(panel);
+    this.markScrollEdges();
+
     this.keyHandler = (event: KeyboardEvent) => {
       if (event.key === 'Escape' && this.options.dismissable !== false) {
         event.preventDefault();
@@ -86,12 +93,30 @@ export abstract class Dialog {
     if (!this.body) return;
     clear(this.body);
     this.build(this.body);
+    this.markScrollEdges();
+  }
+
+  /**
+   * Tags each of the sheet's scroll regions with the edges that have more
+   * behind them, so the CSS fades only those: a clipped button then reads as
+   * "there is more" rather than as broken, and a region at rest keeps its
+   * first row crisp.
+   */
+  private markScrollEdges(): void {
+    if (!this.body) return;
+    for (const region of [this.body, ...this.body.querySelectorAll<HTMLElement>('.slot-list')]) {
+      const below = region.scrollHeight - region.clientHeight - region.scrollTop;
+      region.classList.toggle('has-more-above', region.scrollTop > 1);
+      region.classList.toggle('has-more-below', below > 1);
+    }
   }
 
   close(): void {
     if (!this.overlay) return;
     if (this.keyHandler) document.removeEventListener('keydown', this.keyHandler);
     this.keyHandler = null;
+    this.resizeObserver?.disconnect();
+    this.resizeObserver = null;
     this.overlay.remove();
     this.overlay = null;
     this.body = null;

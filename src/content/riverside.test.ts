@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { CONTENT, CONTENT_BUNDLE } from './index';
 import { npcStandTiles } from './schemas';
 import { RIVERSIDE, RIVERSIDE_ENTRY, RIVERSIDE_SPOTS } from './maps/riverside';
-import { buildGrid, findPath } from '../core/rules/grid';
+import { buildGrid, findPath, tileAt } from '../core/rules/grid';
 import { createGame } from '../core/state/createGame';
 import { apply } from '../core/state/reducer';
 
@@ -93,6 +93,53 @@ describe('the riverside paths', () => {
       expect(result.state.location.pos).toEqual(pos);
       state = result.state;
     }
+  });
+  it('matches the painting: open sand is walkable and painted solids block (R1 audit)', () => {
+    const walkable = (x: number, y: number) => tileAt(grid, { x, y })?.blocked === false;
+    // The west lane, the path north of the square, the south path beside the
+    // exit, the sand pocket south of the square and the south-east bank path.
+    for (const [x, y] of [
+      [1, 6],
+      [3, 8],
+      [4, 9],
+      [10, 3],
+      [11, 5],
+      [11, 20],
+      [18, 19],
+      [20, 21],
+      [32, 18],
+      [34, 20],
+    ] as const) {
+      expect(walkable(x, y), `(${x},${y})`).toBe(true);
+    }
+    // The flowerbed island, garden fences, the rocky bank, the practice posts,
+    // and the lantern, rock and trunk on the lower east-bank lane.
+    for (const [x, y] of [
+      [20, 6],
+      [16, 5],
+      [10, 16],
+      [20, 13],
+      [31, 10],
+      [30, 11],
+      [30, 12],
+      [33, 13],
+      [30, 14],
+      [31, 14],
+      [30, 16],
+    ] as const) {
+      expect(walkable(x, y), `(${x},${y})`).toBe(false);
+    }
+  });
+  it('leaves by any cell of the south path, never by an invisible edge', () => {
+    const exit = CONTENT.maps.get(RIVERSIDE.id)?.exits?.[0];
+    const area = new Set((exit?.area ?? []).map((cell) => `${cell.x},${cell.y}`));
+    for (let y = 20; y < RIVERSIDE.height; y++) {
+      for (let x = 9; x <= 11; x++) {
+        if (tileAt(grid, { x, y })?.blocked === false)
+          expect(area.has(`${x},${y}`), `(${x},${y})`).toBe(true);
+      }
+    }
+    expect(area.has('10,19')).toBe(false);
   });
   it('returns from the shrine to the same bank, with the discovery recorded', () => {
     let state = apply(CONTENT, start(), { type: 'walkTo', pos: RIVERSIDE_SPOTS.shrine }).state;

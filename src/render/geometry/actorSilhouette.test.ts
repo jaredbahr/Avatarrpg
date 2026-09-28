@@ -1,5 +1,12 @@
 import { describe, expect, it } from 'vitest';
-import { actorHealthBar } from './actorSilhouette';
+import type { Grid, TerrainId, Tile } from '../../core/types';
+import {
+  GRASS_SHADOW_DENSITY,
+  HP_CAP_MIN_PX,
+  actorHealthBar,
+  actorShadowDensity,
+  healthBarCap,
+} from './actorSilhouette';
 import { FOOT_LINE, headroomFromPixels } from '../sheets/bake';
 
 describe('upright actor health bar', () => {
@@ -22,7 +29,7 @@ describe('upright actor health bar', () => {
           const bar = actorHealthBar(100, y, tile, tile, scale, headroom);
           expect(bar.silhouetteTop).toBeCloseTo(top, 8);
           expect(bar.y + bar.height + 1).toBeLessThan(top);
-          expect(top - (bar.y + bar.height + 1)).toBeCloseTo(Math.max(2, tile * 0.04), 8);
+          expect(top - (bar.y + bar.height + 1)).toBeCloseTo(Math.max(1.4, tile * 0.028), 8);
         }
       }
     }
@@ -43,5 +50,107 @@ describe('upright actor health bar', () => {
     expect(base.y + base.height + 1).toBeLessThan(fallbackTop);
     expect(shifted.y - base.y).toBe(-17);
     expect(shifted.x - base.x).toBe(12);
+  });
+});
+
+describe('upright actor contact shadow', () => {
+  const tile = (terrain: TerrainId): Tile => ({
+    terrain,
+    elevation: 0,
+    blocked: false,
+    blocksSight: false,
+    cover: false,
+    surface: null,
+  });
+  const grid: Grid = { width: 2, height: 1, tiles: [tile('grass'), tile('road')] };
+
+  it('is denser on grass, for every figure, and unchanged elsewhere', () => {
+    expect(actorShadowDensity(grid, { x: 0, y: 0 }, false)).toBe(GRASS_SHADOW_DENSITY);
+    expect(actorShadowDensity(grid, { x: 0, y: 0 }, true)).toBe(GRASS_SHADOW_DENSITY);
+    expect(GRASS_SHADOW_DENSITY).toBeGreaterThan(1);
+    // Off grass a combat figure keeps no pool and an explore figure the standard one.
+    expect(actorShadowDensity(grid, { x: 1, y: 0 }, false)).toBe(0);
+    expect(actorShadowDensity(grid, { x: 1, y: 0 }, true)).toBe(1);
+    expect(actorShadowDensity(grid, { x: 5, y: 0 }, true)).toBe(1);
+  });
+});
+
+describe('contact shadow sampling', () => {
+  const tile = (terrain: TerrainId): Tile => ({
+    terrain,
+    elevation: 0,
+    blocked: false,
+    blocksSight: false,
+    cover: false,
+    surface: null,
+  });
+  const grid: Grid = { width: 3, height: 1, tiles: [tile('road'), tile('road'), tile('grass')] };
+
+  it('reads the tile under a walking figure, not the one it set out from', () => {
+    expect(actorShadowDensity(grid, { x: 1.4, y: 0 }, false)).toBe(0);
+    expect(actorShadowDensity(grid, { x: 1.6, y: 0 }, false)).toBe(GRASS_SHADOW_DENSITY);
+  });
+
+  it('seats a two-wide figure on grass under either half', () => {
+    expect(actorShadowDensity(grid, { x: 0, y: 0 }, false, 2)).toBe(0);
+    expect(actorShadowDensity(grid, { x: 1, y: 0 }, false, 2)).toBe(GRASS_SHADOW_DENSITY);
+    expect(actorShadowDensity(grid, { x: 2, y: 0 }, true, 2)).toBe(GRASS_SHADOW_DENSITY);
+  });
+});
+
+describe('health bar cap', () => {
+  const extent = (points: number[]) => {
+    const xs = points.filter((_, i) => i % 2 === 0);
+    const ys = points.filter((_, i) => i % 2 === 1);
+    return {
+      left: Math.min(...xs),
+      right: Math.max(...xs),
+      top: Math.min(...ys),
+      bottom: Math.max(...ys),
+    };
+  };
+
+  it('draws nothing for the party', () => {
+    expect(healthBarCap({ x: 10, y: 20, height: 4 }, 'none', 0)).toEqual([]);
+  });
+
+  it('keeps its minimum height however thin the bar, centred on it', () => {
+    const bar = { x: 20, y: 20, height: 4 };
+    for (const cap of ['diamond', 'spike'] as const) {
+      const box = extent(healthBarCap(bar, cap, 0));
+      expect(box.right).toBeLessThanOrEqual(bar.x - 1);
+      expect(box.bottom - box.top).toBe(HP_CAP_MIN_PX);
+      expect((box.top + box.bottom) / 2).toBe(bar.y + bar.height / 2);
+    }
+    expect(healthBarCap(bar, 'spike', 0)).toHaveLength(6);
+    expect(healthBarCap(bar, 'diamond', 0)).toHaveLength(8);
+  });
+
+  it('grows past the minimum with a thick bar, to the framed height', () => {
+    const bar = { x: 40, y: 20, height: 12 };
+    const box = extent(healthBarCap(bar, 'spike', 0));
+    expect(box.top).toBe(bar.y - 1);
+    expect(box.bottom).toBe(bar.y + bar.height + 1);
+  });
+
+  it('measures the minimum in CSS px, whatever the world scale', () => {
+    // Pixi draws in world units: at camera scale 1.5, one CSS px is 2/3 of one.
+    const scale = 1.5;
+    const bar = { x: 20, y: 20, height: 3 };
+    const box = extent(healthBarCap(bar, 'diamond', 0, 1 / scale));
+    expect((box.bottom - box.top) * scale).toBeCloseTo(HP_CAP_MIN_PX);
+  });
+
+  it('stays over its own figure, narrowing on the smallest board', () => {
+    // The fitted board's floor: a 40px tile, whose bar leaves ~5.6px either side.
+    for (const tile of [40, 64, 96]) {
+      const bar = actorHealthBar(0, 100, tile, tile, 1);
+      for (const cap of ['diamond', 'spike'] as const) {
+        const box = extent(healthBarCap(bar, cap, 0));
+        expect(box.left).toBeGreaterThanOrEqual(0);
+        expect(box.right).toBeLessThanOrEqual(bar.x - 1);
+        expect(box.right - box.left).toBeGreaterThan(3);
+      }
+    }
   });
 });
