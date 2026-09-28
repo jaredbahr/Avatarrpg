@@ -35,6 +35,9 @@ function stubPages(): void {
     [entry.atlas]: atlasJson('kaya-g.webp', `${KEY}/idle/0`),
     [entry.atlasPages[0]]: atlasJson('kaya-g-2.webp', `${KEY}/stance/0`),
   };
+  // Any further page (Kaya's lossless riverside page, ADR 0054) loads too.
+  for (const [index, path] of entry.atlasPages.slice(1).entries())
+    pages[path] = atlasJson(`kaya-page-${index + 3}.png`, `${KEY}/wave/${index}`);
   vi.stubGlobal('Image', FakeImage);
   vi.stubGlobal(
     'fetch',

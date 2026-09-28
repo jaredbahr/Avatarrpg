@@ -20,12 +20,17 @@ Sura generation: `exec-88c0fa8a-d867-4b91-a201-7d82347d584d`, corrected by
 `exec-02e14322-630b-4ab9-a632-5446822b8b7d`. Built-in output was copied into the
 repository; no API fallback or external character art was used.
 
-Reproduce packing with `node --import tsx scripts/art/riverside-tea.ts`.
+Reproduce packing with `node --import tsx scripts/art/riverside-page.ts`.
 The existing alpha-aware trim/box-filter/baseline utilities split each strip,
 uniformly reduce its visible height to 88 pixels and place it in 128×192 cells.
-No anatomy is stretched, repainted or sliced. The only atlas writes are cells
-(768,384) and (896,384), previously empty; atlas dimensions are unchanged.
-The normalizer preserves alpha and creates no new ground shadow.
+No anatomy is stretched, repainted or sliced. The normalizer preserves alpha
+and creates no new ground shadow.
+
+The cels were first packed into the retired `riverside-locomotion-{name}`
+sheets. Since ADR 0054 the riverside draws Kaya and Sura from their G sheets,
+and the tea cels, with the preserved wave cels, live on a small lossless page
+of those sheets, `public/art/units/riverside-{name}.png`. The same packing
+rebuilds them byte for byte.
 
 The two output cels are `tea/0.png` (cup in lap) and `tea/1.png` (sip).
 
@@ -35,5 +40,5 @@ sparse, with no claim of a smooth sit/rise animation. Reduced motion holds the
 lap cel. A standing procedural fallback remains available during image load.
 
 Before/after captures and browser evidence are recorded in the task handoff.
-The PNGs add 41,027 bytes; the units family remains below its unchanged
-4.75 MiB cap. Existing atlas-cell pixels are preserved exactly.
+The PNGs first added 41,027 bytes; the units family remained below its then
+4.75 MiB cap. Existing atlas-cell pixels were preserved exactly.

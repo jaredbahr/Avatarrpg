@@ -12,8 +12,23 @@ import type { ResolvedFrame } from '../sheets/store';
 import { RIVERSIDE_SCENERY, behindScenery, sceneryShade } from './scenery';
 import type { SceneryLayer } from './scenery';
 import { paintForm } from './forms';
-import { FOOT_Y } from './geometry';
+import { FIGURE_SCALE, FOOT_Y } from './geometry';
 import type { ClipName } from '../../content/assets/clips';
+import { authoredForBothSides } from '../../content/assets/clips';
+import { resolveAsset } from '../../content/assets/manifest';
+
+/**
+ * The side a sheet frame is drawn to. A `facing: 'both'` sheet authors its
+ * idle, walk, rest and stance for every heading, so those draw unflipped;
+ * its legacy actions (cast, wave, tea) mirror like any other sheet's. The
+ * same test both board backends apply (ADR 0052, ADR 0054).
+ */
+function frameFacing(actor: VillageActor, frame: ResolvedFrame): 1 | -1 {
+  const asset = actor.sprite ? resolveAsset(actor.sprite) : undefined;
+  return asset?.kind === 'sheet' && asset.facing === 'both' && authoredForBothSides(frame.clip)
+    ? 1
+    : actor.facing;
+}
 
 export interface VillageActor {
   readonly id: string;
@@ -179,12 +194,12 @@ export class VillageLayer {
       ink.fillStyle = '#344236';
       ink.fillRect(0, 0, this.tint.width, this.tint.height);
       ink.globalCompositeOperation = 'source-over';
-      const factor = (s * 1.45) / frame.pixelsPerTile;
+      const factor = (s * FIGURE_SCALE) / frame.pixelsPerTile;
       c.save();
       c.globalAlpha *= 0.19 * (1 - shade * 0.65);
       c.translate(x + weight * s * actor.facing, y);
       // Project the actual silhouette, keeping both boot contacts attached.
-      c.transform(actor.facing, 0, 0.52, -0.19, 0, 0);
+      c.transform(frameFacing(actor, frame), 0, 0.52, -0.19, 0, 0);
       if (casting && !reduced) c.scale(1, 1 - beat.gather * (1 - beat.release) * 0.018);
       c.drawImage(
         this.tint,
@@ -287,7 +302,7 @@ export class VillageLayer {
     const frame = this.actorFrame(actor, s, camera.viewport.dpr, reduced);
     if (casting && !reduced) paintForm(c, actor, box, false);
     if (frame && !frame.placeholder) {
-      const factor = (s * 1.45) / frame.pixelsPerTile;
+      const factor = (s * FIGURE_SCALE) / frame.pixelsPerTile;
       const w = frame.frame.w * factor,
         h = frame.frame.h * factor;
       const ink = this.copyFrame(frame);
@@ -307,7 +322,7 @@ export class VillageLayer {
       ink.globalCompositeOperation = 'source-over';
       c.save();
       c.translate(box.x + s * 0.5, box.y + s * FOOT_Y);
-      c.scale(actor.facing, 1);
+      c.scale(frameFacing(actor, frame), 1);
       if (casting && !reduced) {
         c.translate(beat.weight * s, 0);
         c.scale(1, 1 - beat.gather * (1 - beat.release) * 0.018);

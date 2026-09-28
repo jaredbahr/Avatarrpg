@@ -1,6 +1,7 @@
 import { expect, test } from '@playwright/test';
 import { allowSoftwareWebgl } from './budget';
 import { enterNode, pauseClock, resetStorage, startGame, waitForIdle } from './helpers';
+import { ASSETS } from '../src/content/assets/manifest';
 import type { MapView, RenderUnit } from '../src/render/view';
 
 for (const renderer of ['canvas', 'webgl'] as const) {
@@ -123,9 +124,13 @@ for (const renderer of ['canvas', 'webgl'] as const) {
         }
         expect(sawWalk, `the ${direction} walk pose reached the renderer`).toBe(true);
         if (riverside) {
-          // The riverside draws its leader from a four-way village sheet, so
-          // the walk is timed from that sheet: 500 ms of clip a tile, not the
-          // eight-way gait of the unit art it replaces (ADR 0051).
+          // The riverside draws its leader from the G unit art (ADR 0054), so
+          // the walk is timed from that sheet's own eight-way gait, not the
+          // 500 ms a tile of the four-way village sheets it retired.
+          const sprite = await page.evaluate(() => window.fnt!.app.state!.party[0]!.sprite);
+          const sheet = ASSETS[sprite];
+          if (sheet?.kind !== 'sheet' || !sheet.locomotion) throw new Error(`G leader ${sprite}`);
+          const msPerTile = sheet.locomotion.walkMsPerTile[dy < 0 ? 'north' : 'south'];
           const paces = await page.evaluate(
             ({ clip, startY }) =>
               (
@@ -145,7 +150,9 @@ for (const renderer of ['canvas', 'webgl'] as const) {
           );
           expect(paces.length).toBeGreaterThan(0);
           for (const { travelled, clipTime } of paces)
-            expect(Math.abs(clipTime - 500 * travelled), `${travelled} tiles`).toBeLessThan(40);
+            expect(Math.abs(clipTime - msPerTile * travelled), `${travelled} tiles`).toBeLessThan(
+              40,
+            );
         }
         // One frame finishes the walk rather than a second's worth of them.
         await page.clock.fastForward(2000);

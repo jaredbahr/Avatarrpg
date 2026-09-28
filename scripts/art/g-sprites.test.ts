@@ -6,7 +6,7 @@ import { ASSETS } from '../../src/content/assets/manifest';
 import type { SheetEntry } from '../../src/content/assets/manifest';
 import { parseAtlasJson } from '../../src/render/sheets/atlasJson';
 import type { Image } from './lib/image';
-import { newImage, pixelAt, setPixel } from './lib/image';
+import { newImage, pixelAt, readPng, setPixel, writePng } from './lib/image';
 import { decodeWebp, encodeWebpLossless } from './lib/webp';
 import { CHARACTERS, STANCE_CELS, checkSources, sha256, sourceFiles } from './g-sprites';
 import type { GCharacter, GPins } from './g-sprites';
@@ -92,9 +92,11 @@ function decodedAtlas(character: GCharacter) {
   let decoded: Image[] = [];
   const load = async () => {
     decoded = await Promise.all(
-      atlases.map(
-        async (atlas) =>
-          await decodeWebp(new Uint8Array(readFileSync(`public/art/units/${atlas.image}`))),
+      // Kaya's and Sura's lossless riverside page (ADR 0054) is a PNG.
+      atlases.map(async (atlas) =>
+        atlas.image.endsWith('.png')
+          ? readPng(`public/art/units/${atlas.image}`)
+          : await decodeWebp(new Uint8Array(readFileSync(`public/art/units/${atlas.image}`))),
       ),
     );
   };
@@ -120,7 +122,9 @@ function decodedAtlas(character: GCharacter) {
     for (const [index, atlas] of atlases.entries()) {
       const page = pages[index];
       if (!page) throw new Error(`Missing page ${index}`);
-      writeFileSync(join(dir, 'art', 'units', atlas.image), await encodeWebpLossless(page));
+      const out = join(dir, 'art', 'units', atlas.image);
+      if (atlas.image.endsWith('.png')) writePng(out, page);
+      else writeFileSync(out, await encodeWebpLossless(page));
     }
     return dir;
   }
