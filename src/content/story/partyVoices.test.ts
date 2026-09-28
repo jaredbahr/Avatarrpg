@@ -96,6 +96,11 @@ describe('party contributions in the quarry run', () => {
 describe('party voices along the road and the quarry floor', () => {
   const name = (id: string) => CONTENT.characters.get(id)?.name;
 
+  it('voices only nodes that exist in the story', () => {
+    const missing = VOICES.map((voice) => voice.node).filter((node) => !CONTENT.story.has(node));
+    expect(missing).toEqual([]);
+  });
+
   it('finds road voices in the authored list', () => {
     expect(ROAD_VOICES.length).toBeGreaterThan(0);
   });
