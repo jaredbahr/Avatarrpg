@@ -107,7 +107,7 @@ const heroSheet = (key: string, palette: string): SheetEntry => {
       idleSouth: { frames: frames('idleSouth', 1), fps: 1, loop: true },
       walkNorth: { frames: frames('walkNorth', 4), fps: 4, loop: true },
       walkSouth: { frames: frames('walkSouth', 4), fps: 4, loop: true },
-      ...(!key.startsWith('unit.village.') && ['nima', 'wen'].includes(name)
+      ...(['nima', 'wen'].includes(name)
         ? {
             rest: { frames: frames('rest', 1), fps: 1, loop: true },
             restNorth: { frames: frames('restNorth', 1), fps: 1, loop: true },
@@ -117,23 +117,6 @@ const heroSheet = (key: string, palette: string): SheetEntry => {
     },
   };
 };
-
-function villageSheet(name: string, palette: string): SheetEntry {
-  const key = `unit.village.${name}`;
-  const base = heroSheet(key, palette);
-  const frames = (clip: ClipName, count: number) =>
-    Array.from({ length: count }, (_, i) => `${key}/${clip}/${i}`);
-  return {
-    ...base,
-    atlas: `art/units/riverside-locomotion-${name}.json`,
-    clips: {
-      ...base.clips,
-      walk: { frames: frames('walk', 4), fps: 8, loop: true },
-      wave: { frames: frames('wave', 2), fps: 4, loop: true },
-      tea: { frames: frames('tea', 2), fps: 0.25, loop: true },
-    },
-  };
-}
 
 function rikoSheet(): SheetEntry {
   const key = 'unit.non.riko';
@@ -164,7 +147,7 @@ function rikoSheet(): SheetEntry {
  */
 type GTravel = Readonly<Record<Heading, number>>;
 
-const G_TRAVEL: Readonly<Record<'kaya' | 'sura' | 'bo', GTravel>> = {
+export const G_TRAVEL: Readonly<Record<'kaya' | 'sura' | 'bo', GTravel>> = {
   kaya: {
     north: 3.81,
     northEast: 9.11,
@@ -231,11 +214,22 @@ function gSheet(key: string, name: keyof typeof G_TRAVEL, palette: string): Shee
     clips[headingClip('rest', heading)] = rest(headingClip('rest', heading));
     clips[headingClip('stance', heading)] = stance(headingClip('stance', heading));
   }
+  // The riverside draws Kaya and Sura from this sheet too (ADR 0054). Their
+  // wave and seated tea have no G art yet, so the preserved legacy cels ride
+  // on a small lossless page of their own and are mirrored like cast and KO.
+  const riverside = name === 'kaya' || name === 'sura';
+  if (riverside) {
+    clips.wave = { frames: frames('wave', 2), fps: 4, loop: true };
+    clips.tea = { frames: frames('tea', 2), fps: 0.25, loop: true };
+  }
   return {
     kind: 'sheet',
     atlas: `art/units/${name}-g.json`,
     // Page 2 holds the fighting stance; locomotion and actions fill page 1.
-    atlasPages: [`art/units/${name}-g-2.json`],
+    atlasPages: [
+      `art/units/${name}-g-2.json`,
+      ...(riverside ? [`art/units/riverside-${name}.json`] : []),
+    ],
     pixelsPerTile: 128,
     footprint: { w: 1, h: 1 },
     anchor: { x: 0.5, y: 0.85 },
@@ -295,8 +289,6 @@ function cuttingSheet(name: string, palette: string): SheetEntry {
 }
 
 export const ASSETS: Readonly<Record<string, AssetEntry>> = {
-  'unit.village.sura': villageSheet('sura', 'water'),
-  'unit.village.kaya': villageSheet('kaya', 'fire'),
   /* ------------------------------------------------------ Party sprites */
   'unit.fire.kaya': gSheet('unit.fire.kaya', 'kaya', 'fire'),
   'unit.fire.tenzo': heroSheet('unit.fire.tenzo', 'fire'),

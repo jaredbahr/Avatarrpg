@@ -29,7 +29,7 @@ export const PROPS: readonly PropDef[] = [
     id: 'water_barrel',
     name: 'Water Barrel',
     description:
-      'A big open barrel of quarry water. Break it and the water goes everywhere — which is exactly what a waterbender or an icebender wants.',
+      'A barrel of quarry water. It gives cover and can be shoved. Stone and blows break it fastest, flooding the tiles around it and soaking anyone standing there.',
     sprite: 'prop.barrel',
     hp: 6,
     blocksMove: true,
@@ -45,7 +45,7 @@ export const PROPS: readonly PropDef[] = [
     id: 'oil_flask',
     name: 'Oil Flask',
     description:
-      'A clay jar of lamp oil. Harmless until somebody brings a flame, and then it is the most dangerous thing on the field.',
+      'A clay jar of lamp oil. Flame or a blow breaks it easily, coating the tiles around it in oil that stays until lit. Lit oil spreads fire and sets people Burning.',
     sprite: 'prop.flask',
     hp: 4,
     blocksMove: false,
@@ -62,7 +62,7 @@ export const PROPS: readonly PropDef[] = [
     id: 'brazier',
     name: 'Brazier',
     description:
-      'A standing iron basket of hot coals. Tip it over and the coals go with it. Water will not break it, but it will put it out.',
+      'An iron stand of hot coals. Fire and water cannot break it; stone and blows can. When it topples, coals burn everyone beside it and flames fill its tile.',
     sprite: 'prop.brazier',
     hp: 8,
     blocksMove: true,
@@ -83,7 +83,7 @@ export const PROPS: readonly PropDef[] = [
     id: 'hay_bale',
     name: 'Hay Bale',
     description:
-      'Feed for the quarry ox-mules. Good cover, right up until the moment somebody sets it alight.',
+      'Fodder for the quarry animals. It blocks sight and gives cover, but fire and wind tear through it, and a broken bale bursts into flame across the tiles around it.',
     sprite: 'prop.hay',
     hp: 5,
     blocksMove: true,
@@ -99,7 +99,7 @@ export const PROPS: readonly PropDef[] = [
     id: 'rubble_pile',
     name: 'Loose Rubble',
     description:
-      'A heap of broken quarry stone. It will not burn and it will not move, but an earthbender can bring it down on somebody.',
+      'A heap of broken quarry stone. It blocks sight, gives cover and cannot be shoved. Earthbending brings it down fastest, onto everyone beside it, leaving rubble behind.',
     sprite: 'prop.rubble',
     hp: 12,
     blocksMove: true,
@@ -124,7 +124,7 @@ export const PROPS: readonly PropDef[] = [
     id: 'cabbage_cart',
     name: 'Cabbage Cart',
     description:
-      "A produce hauler's cart, stacked far too high. Nobody has ever been hurt by a cabbage. Plenty of people have been embarrassed by one.",
+      'A market cart stacked far too high with cabbages. It gives cover and can be shoved. Smash it and flying cabbages push everyone beside it back a tile, and they are very likely Blinded.',
     sprite: 'prop.cart',
     hp: 7,
     blocksMove: true,

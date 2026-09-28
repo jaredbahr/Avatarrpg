@@ -58,7 +58,7 @@ test('the quarry marker assessment keeps the floor visible across save and reloa
   await expect(page.locator('.explore-scene')).toBeVisible();
   await expect(page.locator('.conversation-panel-compact')).toBeVisible();
   await expect(page.locator('.conversation-compact-speaker')).toHaveText(/^Wen/);
-  await expect(page.locator('.dialogue-line')).toContainText("I've repaired drives like that.");
+  await expect(page.locator('.dialogue-line')).toContainText("I've repaired drives like his");
   expect(
     await page.evaluate(() => ({
       node: window.fnt?.app.state?.story.nodeId,

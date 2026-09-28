@@ -6,26 +6,26 @@ const TEXT = {
     first: [
       'A turtle-duck stands over a nest lined with reeds and a woollen sock. Three ducklings crowd into the heel.',
       'She spreads her wings when you get close. You step back. One duckling carries on pulling at a loose thread.',
-      'Down by the stream, white silt has dried over an empty nest. The reeds around it are bent flat.',
+      'Down by the stream, white silt has dried over the old nest. The reeds are bent flat, and a wooden clothes peg is stuck in the crust.',
     ],
     again: ['The ducklings are asleep in the sock. Their mother opens one eye as you pass.'],
     afterRescue: [
       'The nest is still tucked above the bank, untouched. A ring of fresh reeds keeps boots away.',
-      'Dema has tied a strip of cloth to the branch. The water is still cloudy, but the nest is dry.',
+      'Someone has tied a strip of cloth to the branch above it. The water is still cloudy, but the nest is dry.',
     ],
   },
   runoff_marker: {
     first: [
-      'Flood marks are cut into the stone beside the stream. A tied reed marks the usual water level.',
+      'Flood marks are cut into the stone beside the stream, each with initials scratched next to it. A tied reed marks the usual water level.',
       'Pale silt covers the lower notches. Someone has scratched an arrow towards the quarry and the words “Settling pit blocked?”',
-      'You dip a hand in the stream. The water leaves white grit between your fingers.',
+      'You dip a hand in the stream. The water leaves white grit between your fingers. A bucket lies upside down on the bank, its rim crusted white.',
     ],
     again: [
       'Another thin layer of silt has caught against the reed. The arrow on the stone points uphill.',
     ],
     afterRescue: [
       'The old silt line is still white. Fresh notches mark the water level beside it.',
-      'A row of stakes points uphill toward the settling pit. The crews have marked where they will start when they are fit to work; the stream is not clear yet.',
+      'A row of fresh stakes climbs toward the settling pit, marked in quarry chalk. Nobody has started digging. The stream is not clear yet.',
     ],
   },
   tea_station: {
@@ -38,7 +38,7 @@ const TEXT = {
       'The mended cup is back in the washing bowl. This time, someone has left a cloth beside it.',
     ],
     afterRescue: [
-      'Used cups cover the bench and the flat stones beside it. The crews have filled the place and gone on.',
+      'Used cups cover the bench and the flat stones beside it, far more than seven. The wired cup sits upside down to dry.',
       'The kettle has only hot water left. The crews drank the last of the tea before taking the west road.',
     ],
   },

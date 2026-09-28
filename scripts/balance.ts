@@ -7,9 +7,58 @@
  *
  * CI runs this for the printed report; the hard assertions live in
  * `src/core/sim/runCombat.test.ts` so a regression fails the test suite too.
+ *
+ * BALANCE_TUNING=/path/to/tuning.json overlays a *partial* combat tuning block
+ * on the authored one, so a variant can be A/B tested without a code edit:
+ *
+ *   BALANCE_TUNING=variant.json npm run balance
+ *
+ * The file is checked against the same zod schema as `src/content/tuning.ts`,
+ * so a typo fails here instead of quietly simulating something else.
  */
+import { readFileSync } from 'node:fs';
 import { CONTENT } from '../src/content';
+import { combatTuningOverrideSchema, combatTuningSchema } from '../src/content/tuning';
 import { runDisciplineSweep, runTableSizeSweep } from '../src/core/sim/balance';
+import type { ContentIndex } from '../src/core/types';
+
+/** The override file's JSON, or a readable exit when it cannot be read. */
+function readTuningFile(path: string): unknown {
+  try {
+    return JSON.parse(readFileSync(path, 'utf8'));
+  } catch (error) {
+    console.error(`Could not read tuning override ${path}:`, error);
+    process.exit(1);
+  }
+}
+
+/** The authored content, with any `BALANCE_TUNING` overlay applied on top. */
+function withTuningOverride(base: ContentIndex, path: string | undefined): ContentIndex {
+  if (!path) return base;
+
+  const override = combatTuningOverrideSchema.safeParse(readTuningFile(path));
+  if (!override.success) {
+    console.error(`Invalid tuning override ${path}:`);
+    for (const issue of override.error.issues) {
+      console.error(`  ${issue.path.join('.') || '(root)'}: ${issue.message}`);
+    }
+    process.exit(1);
+  }
+
+  const merged = combatTuningSchema.safeParse({ ...base.tuning, ...override.data });
+  if (!merged.success) {
+    console.error(`Tuning override ${path} produces an invalid block:`);
+    for (const issue of merged.error.issues) {
+      console.error(`  ${issue.path.join('.') || '(root)'}: ${issue.message}`);
+    }
+    process.exit(1);
+  }
+
+  console.log(`Tuning override: ${path}`);
+  return { ...base, tuning: merged.data };
+}
+
+const content = withTuningOverride(CONTENT, process.env.BALANCE_TUNING);
 
 const trials = Number(process.env.BALANCE_TRIALS ?? 80);
 const sizes = (process.env.BALANCE_SIZES ?? '1,3,6').split(',').map(Number);
@@ -20,7 +69,7 @@ const sizes = (process.env.BALANCE_SIZES ?? '1,3,6').split(',').map(Number);
  * proves they *play* the same.
  */
 const perVariant = process.env.BALANCE_VARIANTS === '1';
-const sweep = runTableSizeSweep(CONTENT, sizes, { trials, perVariant });
+const sweep = runTableSizeSweep(content, sizes, { trials, perVariant });
 
 const pad = (s: string, n: number) => s.padEnd(n);
 const num = (n: number, w: number) => n.toFixed(1).padStart(w);
@@ -60,7 +109,7 @@ console.log('');
  */
 const disciplineLevel = Number(process.env.BALANCE_DISCIPLINE_LEVEL ?? 7);
 const disciplineTrials = Number(process.env.BALANCE_DISCIPLINE_TRIALS ?? 30);
-const paths = runDisciplineSweep(CONTENT, {
+const paths = runDisciplineSweep(content, {
   trials: disciplineTrials,
   partyLevel: disciplineLevel,
 });

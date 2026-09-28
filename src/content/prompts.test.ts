@@ -269,7 +269,7 @@ describe('sheet prompt packs', () => {
       Object.entries(ASSETS)
         .filter(([, asset]) => asset.kind === 'sheet' && asset.clips.tea)
         .map(([key]) => key),
-    ).toEqual(['unit.village.sura', 'unit.village.kaya']);
+    ).toEqual(['unit.fire.kaya', 'unit.water.sura']);
   });
 
   it('never ship a hero sheet without its portrait pack describing the same figure', () => {

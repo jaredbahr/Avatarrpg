@@ -43,7 +43,9 @@ export function travelJournal(content: ContentIndex, state: GameState) {
       detail: evaluate(state, exit.requires) ? 'Open path' : (exit.lockedHint ?? 'Not open yet'),
     })),
     discoveries: JOURNAL_NOTES.filter(
-      (note) => visited.has(note.mapId) || evaluate(state, note.when),
+      (note) =>
+        evaluate(state, note.when) ||
+        (visited.has(note.mapId) && (!note.hintWhile || evaluate(state, note.hintWhile))),
     ).map((note) => ({
       id: note.id,
       title: note.title,

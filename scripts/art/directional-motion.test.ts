@@ -10,14 +10,11 @@ import { decodeWebp } from './lib/webp';
 import { STAND_TOLERANCE, validateSheets } from './validate';
 
 describe('directional art compatibility', () => {
-  it('preserves every original pose and the foot anchor for all heroes and both riverside sheets', async () => {
-    const keys = [...CHARACTERS.map((c) => c.sprite), 'unit.village.kaya', 'unit.village.sura'];
-    for (const key of keys) {
+  it('preserves every original pose and the foot anchor for all heroes', async () => {
+    for (const key of CHARACTERS.map((c) => c.sprite)) {
       const entry = ASSETS[key];
       if (entry?.kind !== 'sheet') throw new Error(`Missing ${key}`);
-      const originalStem = key.startsWith('unit.village.')
-        ? `riverside-${key.split('.').at(-1)}`
-        : key.split('.').at(-1);
+      const originalStem = key.split('.').at(-1);
       const oldAtlas = parseAtlasJson(
         readFileSync(`assets/reference/character-poses/${originalStem}.json`, 'utf8'),
       );

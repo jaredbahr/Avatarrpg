@@ -10,12 +10,11 @@ import { placeOnBaseline } from './lib/align';
 import { splitGrid } from './split-sheet';
 import { parseAtlasJson } from '../../src/render/sheets/atlasJson';
 
-export function packDirectional(name: string, input: string, village = false): void {
-  const originalStem = village ? `riverside-${name}` : name;
-  const outputStem = village ? `riverside-locomotion-${name}` : `locomotion-${name}`;
-  const original = readPng(`assets/reference/character-poses/${originalStem}.png`);
+export function packDirectional(name: string, input: string): void {
+  const outputStem = `locomotion-${name}`;
+  const original = readPng(`assets/reference/character-poses/${name}.png`);
   const atlas = parseAtlasJson(
-    readFileSync(`assets/reference/character-poses/${originalStem}.json`, 'utf8'),
+    readFileSync(`assets/reference/character-poses/${name}.json`, 'utf8'),
   );
   const idle = [...atlas.frames.entries()].find(([id]) => id.endsWith('/idle/0'));
   if (!idle) throw new Error('The existing sheet must have an idle pose.');
@@ -60,7 +59,7 @@ export function packDirectional(name: string, input: string, village = false): v
       for (let x = 0; x < 128; x++) setPixel(output, x0 + x, y0 + y, pixelAt(frame, x, y));
     rectangles[id] = { frame: { x: x0, y: y0, w: 128, h: 192 } };
   }
-  const outputDir = village ? 'public/art/units' : 'assets/reference/character-locomotion';
+  const outputDir = 'assets/reference/character-locomotion';
   writePng(`${outputDir}/${outputStem}.png`, output);
   writeFileSync(
     `${outputDir}/${outputStem}.json`,
@@ -83,11 +82,10 @@ if (process.argv[1]?.endsWith('directional-motion.ts')) {
   if (
     !name ||
     !input ||
-    !['kaya', 'tenzo', 'nilak', 'sura', 'linmei', 'nima', 'jinu', 'riko', 'wen'].includes(name)
+    !['tenzo', 'nilak', 'linmei', 'nima', 'jinu', 'riko', 'wen'].includes(name)
   )
     throw new Error('Supply a playable hero name and transparent 5x2 PNG.');
-  // Kaya, Sura and Bo's unit art is their PixelLab G set (scripts/art/g-sprites.ts,
-  // ADR 0050 and ADR 0051); only Kaya's and Sura's riverside sheets pack here.
-  if (name === 'kaya' || name === 'sura') packDirectional(name, input, true);
-  else packDirectional(name, input);
+  // Kaya, Sura and Bo's art is their PixelLab G set everywhere, the riverside
+  // included (scripts/art/g-sprites.ts; ADR 0050, ADR 0051, ADR 0054).
+  packDirectional(name, input);
 }
