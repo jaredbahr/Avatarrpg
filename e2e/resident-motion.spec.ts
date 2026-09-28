@@ -148,6 +148,28 @@ for (const renderer of ['canvas', 'webgl'] as const) {
   });
 }
 
+test('Gao restocks his display in trading hours, his tap tile never leaving the shop', async ({
+  page,
+}) => {
+  // The party out on the east lawn, clear of the square.
+  await village(page, 'canvas', 'morning', { x: 20, y: 11 });
+  await pauseClock(page);
+  const seen = new Set<string>();
+  let moving = false;
+  for (let step = 0; step < 40 && !seen.has('8,5'); step++) {
+    await page.clock.runFor(500);
+    const frame = await residentFrame(page);
+    const gao = frame.markers.find((m) => m.id === 'lw.npc.gao');
+    expect(gao?.pos).toEqual({ x: 9, y: 4 });
+    if (gao) seen.add(`${Math.round(gao.at.x)},${Math.round(gao.at.y)}`);
+    moving ||= frame.moving;
+  }
+  await page.clock.resume();
+  // Round by the lane to the display's crates; an errand is not a walk anyone waits on.
+  expect([...seen]).toEqual(expect.arrayContaining(['9,4', '9,5', '8,5']));
+  expect(moving).toBe(false);
+});
+
 test('the relief watch holds the gate at midday, and the party stops beside them', async ({
   page,
 }) => {
