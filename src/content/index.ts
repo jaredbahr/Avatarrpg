@@ -25,6 +25,7 @@ import { WORLD_STORY } from './story/world';
 import { PROPS, PROP_BY_ID } from './props';
 import { STATUSES, STATUS_BY_ID } from './statuses';
 import { SURFACES, SURFACE_BY_ID } from './surfaces';
+import { COMBAT_TUNING } from './tuning';
 import { UNIVERSAL_ABILITY_IDS } from './abilities';
 import { ACT1_NODES } from './story/act1';
 import { withPartyVoices } from './story/partyVoices';
@@ -83,6 +84,7 @@ export const CONTENT: ContentIndex = {
   surfaces: SURFACE_BY_ID as ReadonlyMap<SurfaceId, (typeof SURFACES)[number]>,
   props: PROP_BY_ID,
   combos: COMBOS,
+  tuning: COMBAT_TUNING,
   story: new Map(ALL_STORY.map((n) => [n.id, n])),
   anchors: new Map(ANCHORS.map((a) => [a.id, a])),
   residents: new Map(RESIDENTS.map((r) => [r.id, r])),
