@@ -56,6 +56,17 @@ if (missing.length > 0) {
   process.exit(1);
 }
 
+// The omitted Pixi functions ship as throwing stubs (ADR 0057). If a stub is
+// missing, the transform in vite.config.ts stopped applying and the bytes are back.
+const shipped = js.map((file) => readFileSync(file, 'utf8')).join('\n');
+const stubs = ['SVGParser', 'parseSVGPath', 'measureTaggedText'].filter(
+  (name) => !shipped.includes(`Pixi ${name} is omitted from this build (ADR 0057).`),
+);
+if (stubs.length > 0) {
+  console.error(`\nMissing ADR 0057 stubs for: ${stubs.join(', ')}`);
+  process.exit(1);
+}
+
 if (totalKb > BUDGET_KB) {
   console.error(`\nOver budget by ${(totalKb - BUDGET_KB).toFixed(1)} KB.`);
   process.exit(1);
