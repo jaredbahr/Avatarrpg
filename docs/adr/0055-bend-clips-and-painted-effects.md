@@ -521,7 +521,10 @@ track). Nothing maps an ability to it yet; that is step 7.
   fall within `HOLD_MERGE_MS` (17 ms, one 60 Hz frame) of the first of them
   are one hold, as long as the longest: two contacts at once cost one
   hit-stop, never their sum and never a one-frame twitch between two. A
-  track's duration is its presentation length plus every hold, so `busy()`
+  merged contact uses the hold boundary for its arrival, impact presentation,
+  damage timing and shake, so it does not appear one frame after the frozen
+  clock. A track's duration is its presentation length plus every hold, so
+  `busy()`
   and the queue wait them out, and `bendSceneAt` gives the scene time of any
   presentation moment for step 7 to lay the struck unit and the damage on.
 - **The kick is the view's `cameraNudge`.** Each release with `shakeTiles`

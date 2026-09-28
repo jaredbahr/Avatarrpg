@@ -164,7 +164,7 @@ export function planBend(fx: BendFxIndex, spec: BendSpec): BendPlan {
     heading: headingDeg(spec.heading),
   };
   const fxPlan = planBendFx(fx, shot);
-  const arrivals = fxPlan.arrivals;
+  const rawArrivals = fxPlan.arrivals;
 
   // Every hold, then merged: a group is every hold within HOLD_MERGE_MS of its first.
   const raw = attack.releases.flatMap((release, index) => {
@@ -176,7 +176,7 @@ export function planBend(fx: BendFxIndex, spec: BendSpec): BendPlan {
         release: index,
       },
     ];
-    const lands = arrivals[index];
+    const lands = rawArrivals[index];
     if (lands !== undefined)
       out.push({ at: lands, ms: release.impactHoldMs, kind: 'impact', release: index });
     return out;
@@ -205,6 +205,12 @@ export function planBend(fx: BendFxIndex, spec: BendSpec): BendPlan {
       holdOf.set(entry, hold);
     }
   }
+
+  const arrivals = rawArrivals.map((arrival, release) => {
+    if (arrival === undefined) return undefined;
+    const impact = raw.find((entry) => entry.kind === 'impact' && entry.release === release);
+    return impact ? holdOf.get(impact)?.at ?? arrival : arrival;
+  });
 
   // The follow-through waits for the last landing.
   const recovery = Object.values(facing.keyFrames).find((key) => key.role === 'recovery');
@@ -310,7 +316,7 @@ export function bendPoseAt(
 
 /** The painted effect's sprites `elapsed` scene ms in. */
 export function bendFxAt(fx: BendFxIndex, plan: BendPlan, elapsed: number): BendFxSprite[] {
-  return sampleBendFx(fx, plan.shot, bendClock(plan, elapsed).p);
+  return sampleBendFx(fx, plan.shot, bendClock(plan, elapsed).p, plan.arrivals);
 }
 
 /** How far the board is kicked `elapsed` scene ms in, in board units (the view's `cameraNudge`). */

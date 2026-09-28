@@ -94,6 +94,7 @@ export interface BendFxShot {
 /** One layer played for one release, with everything that does not depend on the time. */
 interface Run {
   readonly layer: BendEffectLayer;
+  readonly release: number;
   readonly cue: BendReleaseCue;
   /** When its first cel starts. */
   readonly start: number;
@@ -201,6 +202,7 @@ export function planBendFx(fx: BendFxIndex, shot: BendFxShot): BendFxPlan {
       }
       runs.push({
         layer,
+        release,
         cue,
         start,
         lands,
@@ -225,14 +227,25 @@ export function planBendFx(fx: BendFxIndex, shot: BendFxShot): BendFxPlan {
 }
 
 /** Every sprite the shot draws at `now`, in the effect's layer order. */
-export function sampleBendFx(fx: BendFxIndex, shot: BendFxShot, now: number): BendFxSprite[] {
+export function sampleBendFx(
+  fx: BendFxIndex,
+  shot: BendFxShot,
+  now: number,
+  arrivalOverrides?: readonly (number | undefined)[],
+): BendFxSprite[] {
   const { effect, to, scale } = shot;
   const step = bendStep(scale);
+  const fxPlan = planBendFx(fx, shot);
   const sprites: BendFxSprite[] = [];
-  for (const run of planBendFx(fx, shot).runs) {
+  for (const run of fxPlan.runs) {
     const { layer, cue, launch, aim, flip } = run;
+    const originalArrival = fxPlan.arrivals[run.release];
+    const arrival = arrivalOverrides?.[run.release] ?? originalArrival;
+    const shift =
+      originalArrival !== undefined && arrival !== undefined ? arrival - originalArrival : 0;
     if (layer.phase === 'travel') {
-      if (now < run.start || now >= run.lands) continue;
+      const lands = arrival ?? run.lands;
+      if (now < run.start || now >= lands) continue;
       const cel = fx.layerCel(layer, now - run.start);
       if (!cel) continue;
       const at = flightPoint(
@@ -241,13 +254,15 @@ export function sampleBendFx(fx: BendFxIndex, shot: BendFxShot, now: number): Be
         to,
         step,
         now - run.clock,
-        run.lands - run.clock,
+        lands - run.clock,
       );
       const turn = celTurnDeg(cel.meta, aim, flip) + at.spin;
       sprites.push(sprite(layer, cel, at, turn, 0, scale, flip));
       continue;
     }
-    const elapsed = now - run.start;
+    const start =
+      layer.phase === 'impact' || layer.phase === 'residue' ? run.start + shift : run.start;
+    const elapsed = now - start;
     const k = celAt(layer.frameMs, elapsed);
     const cel = k === null ? null : fx.layerCel(layer, elapsed);
     if (k === null || !cel) continue;
