@@ -2,7 +2,7 @@ import type { StoryNode } from '../../core/types';
 import { CHARACTER_BY_ID } from '../characters';
 
 /** Separate encounters give companions room to contribute without competing for one line. */
-const VOICES = [
+export const VOICES = [
   {
     node: 'cutting_tea',
     character: 'tenzo',
@@ -79,7 +79,7 @@ const VOICES = [
     node: 'quarry_assessment',
     character: 'wen',
     lines: [
-      "I've repaired drives like that. He's running it with a split oil hose.",
+      "Hear them in the galleries? They're calling him Grumbler. I've repaired drives like his; he's running it on a split oil hose.",
       'There is oil under the treads. Keep a route back to the ramp; we still have people to bring out.',
     ],
   },
@@ -96,14 +96,14 @@ const VOICES = [
     character: 'sura',
     lines: [
       'Is this stream any good for fishing, Dema? Back home I pulled one through the ice as long as your washing line.',
-      "Half your washing line. Nothing will bite in water this white, though. I'll ask about the runoff when I get up there.",
+      'Half your washing line. Nothing will bite in water this white, though. Somebody up at that quarry owes you an answer about the runoff.',
     ],
   },
   {
     node: 'defeat_gate',
     character: 'riko',
     lines: [
-      'They throw from that wall in pairs, one high and one low. I counted all the way down the switchbacks.',
+      'All the way down the switchbacks under their stones, and I kept us in one line. Nobody fell behind.',
       'Nobody followed. Now the gate is open and the wall is empty. Ruon is waiting in the yard, laying his sabre down.',
     ],
   },
@@ -143,7 +143,7 @@ const VOICES = [
     node: 'cutting_tea_again',
     character: 'nima',
     lines: [
-      'The cloth is under the bench? If I bundle all the cups up in it, I can dry them in one go.',
+      'Is there a cloth? ... Found it under the bench. If I bundle all the cups up in it, I can dry them in one go.',
       "Nearly all of them. Here's the blue one's handle. It was in the bundle.",
     ],
   },
@@ -151,7 +151,7 @@ const VOICES = [
     node: 'quarry_assessment',
     character: 'bo',
     lines: [
-      "Hear that? They're shouting his name. The driver knows every one of those voices.",
+      'Hear that? They\'re shouting "Grumbler!" The driver knows every one of those voices.',
       "Nobody parks anything on that ramp. Everyone in those galleries comes out that way, and I'll be counting heads when they do.",
     ],
   },
@@ -159,7 +159,7 @@ const VOICES = [
     node: 'defeat_boss',
     character: 'wen',
     lines: [
-      'I planned for the treads and the hose. Not for him parking the whole thing across the ramp, so it was the loose stone.',
+      'I planned for the treads and the hose. Not for him parking the whole thing across the ramp. So: the loose stone.',
       "The drill's still going down there. Mira's coming up the switchback with Dorin and a handcart. She's going to tell me to sit.",
     ],
   },

@@ -3,6 +3,7 @@ import { CHARACTERS, CONTENT } from '../index';
 import { createGame } from '../../core/state/createGame';
 import { resolveDialogue } from '../../core/story/storyEngine';
 import type { GameState } from '../../core/types';
+import { VOICES } from './partyVoices';
 
 const MOMENTS = [
   ['kaya', 'after_forest'],
@@ -17,17 +18,16 @@ const MOMENTS = [
   ['wen', 'quarry_assessment'],
 ] as const;
 
-/** Nodes with more than one voice list them in priority order; single-voice nodes list one. */
+/**
+ * Every voiced node beyond a hero's single moment, derived from VOICES so a new voice is
+ * tested without being listed twice. Heroes stay in priority order.
+ */
 const ROAD_VOICES = [
-  ['defeat_forest', ['tenzo']],
-  ['forest_dema_again', ['sura']],
-  ['defeat_gate', ['riko', 'kaya']],
-  ['gate_kinship', ['bo', 'lin_mei']],
-  ['defeat_ambush', ['nilak', 'jinu']],
-  ['cutting_tea_again', ['nima']],
-  ['quarry_assessment', ['wen', 'bo']],
-  ['defeat_boss', ['wen']],
-] as const;
+  ...VOICES.reduce((nodes, voice) => {
+    nodes.set(voice.node, [...(nodes.get(voice.node) ?? []), voice.character]);
+    return nodes;
+  }, new Map<string, string[]>()),
+].filter(([node, ids]) => ids.length > 1 || !MOMENTS.some(([, moment]) => moment === node));
 
 function game(ids: readonly string[]): GameState {
   return createGame(CONTENT, {
@@ -96,6 +96,10 @@ describe('party contributions in the quarry run', () => {
 describe('party voices along the road and the quarry floor', () => {
   const name = (id: string) => CONTENT.characters.get(id)?.name;
 
+  it('finds road voices in the authored list', () => {
+    expect(ROAD_VOICES.length).toBeGreaterThan(0);
+  });
+
   it.each(ROAD_VOICES)('%s speaks for each listed hero on their own', (node, ids) => {
     for (const id of ids) {
       expect(said(game([id]), node).speaker).toBe(name(id));
@@ -112,6 +116,7 @@ describe('party voices along the road and the quarry floor', () => {
 
   it.each(ROAD_VOICES)('%s gives the first listed hero priority', (node, ids) => {
     const [first, ...rest] = ids;
+    if (!first) throw new Error(node);
     expect(said(game([...rest, first]), node).speaker).toBe(name(first));
   });
 
