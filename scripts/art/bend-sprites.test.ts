@@ -609,4 +609,29 @@ describe('the packed r10 bends', () => {
       `unit.fire.kaya: decoded bend cel "${name}" does not match its pin`,
     ]);
   }, 60_000);
+
+  it('art:validate holds the manifest to the bend it registers', async () => {
+    const key = 'unit.fire.kaya';
+    const kaya = ASSETS[key];
+    if (kaya?.kind !== 'sheet') throw new Error('no kaya sheet');
+    const unregistered = {
+      ...ASSETS,
+      [key]: {
+        ...kaya,
+        bend: 'art/units/sura-bend.json',
+        atlasPages: kaya.atlasPages?.filter((path) => !path.endsWith('-g-bend.json')),
+      },
+    };
+    expect(await validateBends('public', BEND_SHEETS, unregistered)).toEqual([
+      `${key}: the manifest's bend is art/units/sura-bend.json, not art/units/kaya-bend.json`,
+      `${key}: the manifest's sheet does not load the bend page art/units/kaya-g-bend.json`,
+    ]);
+    // A bend the manifest names that this table does not check is a problem too.
+    const rest = Object.fromEntries(
+      Object.entries(BEND_SHEETS).filter(([other]) => other !== key),
+    ) as typeof BEND_SHEETS;
+    expect(await validateBends('public', rest)).toEqual([
+      `${key}: its bend art/units/kaya-bend.json has no pins or pages to check it against`,
+    ]);
+  }, 60_000);
 });

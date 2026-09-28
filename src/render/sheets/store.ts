@@ -14,8 +14,10 @@
  * the iOS canvas cap; a resize clears them.
  */
 
-import type { ClipDef, ClipName, MeleeDirection } from '../../content/assets/clips';
+import type { ClipDef, ClipName, Heading, MeleeDirection } from '../../content/assets/clips';
 import type { SheetEntry } from '../../content/assets/manifest';
+// Types only: the bend schemas stay out of the bundle (ADR 0055).
+import type { BendSetDef, BendSocket } from '../../content/bends';
 import { resolveAsset } from '../../content/assets/manifest';
 import { resolvePainter } from '../painters/registry';
 import { assetUrl } from '../spriteCache';
@@ -42,6 +44,28 @@ export interface ResolvedFrame {
   readonly placeholder: boolean;
 }
 
+/**
+ * One cel of a character's bend (ADR 0055), drawn like any sheet frame but by
+ * its own heading's foot anchor, never the sheet's: every heading of a bend is
+ * trimmed to its own rectangle. Placed by that anchor on the unit's foot, the
+ * cel stands exactly where the stance does.
+ */
+export interface ResolvedBendFrame extends Omit<ResolvedFrame, 'clip'> {
+  readonly heading: Heading;
+  /** How long this cel holds, in ms, before any hit-stop. */
+  readonly ms: number;
+  /**
+   * The sockets this cel records, in cel pixels measured from the cel's
+   * top-left corner, as continuous points: a pixel (u, v) of the cel covers
+   * [u, u+1) x [v, v+1), so its centre is (u + 0.5, v + 0.5). This is the
+   * space `frame` draws in, so a socket moves with the cel exactly as the
+   * anchor does (ADR 0055, sub-pixel sockets).
+   */
+  readonly sockets: Readonly<
+    Partial<Record<BendSocket, { readonly x: number; readonly y: number }>>
+  >;
+}
+
 interface AtlasPage {
   readonly atlas: AtlasJson;
   readonly image: HTMLImageElement;
@@ -52,6 +76,8 @@ interface LoadedAtlas {
   readonly pages: readonly AtlasPage[];
   /** Stable silhouette envelope measured once across the asset's authored clips. */
   readonly headroom: number;
+  /** The entry's `bend` data, when it names one; loaded with the pages. */
+  readonly bend?: BendSetDef;
 }
 
 /** The page a frame lives on, and its rectangle there. */
@@ -212,6 +238,49 @@ export class SheetStore {
     };
   }
 
+  /**
+   * The bend set `key`'s sheet names, once the sheet has loaded; undefined
+   * before then or when the sheet has no bend. Asking starts the load.
+   */
+  bendSet(key: string): BendSetDef | undefined {
+    const entry = resolveAsset(key);
+    return entry.kind === 'sheet' ? this.atlas(key, entry)?.bend : undefined;
+  }
+
+  /**
+   * Cel `index` of `key`'s bend facing `heading`: the page and rectangle it is
+   * on, the heading's own anchor, and its hold and sockets. Null until the
+   * sheet has loaded, for a sheet with no bend, and for an index or a cel the
+   * bend does not have. Nothing plays a bend yet (ADR 0055, steps 6 and 7).
+   */
+  bendFrame(key: string, heading: Heading, index: number): ResolvedBendFrame | null {
+    const entry = resolveAsset(key);
+    const loaded = entry.kind === 'sheet' ? this.atlas(key, entry) : null;
+    const facing = loaded?.bend?.facings[heading];
+    if (!loaded || !facing || entry.kind !== 'sheet') return null;
+    const found = findFrame(loaded, facing.frames[index]);
+    const ms = facing.frameMs[index];
+    const { width, height } = facing.frameSize;
+    // The anchor is a fraction of `frameSize`; a cel of any other size would
+    // stand somewhere else.
+    if (!found || ms === undefined || found.frame.w !== width || found.frame.h !== height) {
+      return null;
+    }
+    return {
+      source: found.image,
+      frame: found.frame,
+      pixelsPerTile: entry.pixelsPerTile,
+      footprint: entry.footprint,
+      anchor: facing.anchor,
+      headroom: loaded.headroom,
+      index,
+      placeholder: false,
+      heading,
+      ms,
+      sockets: facing.socketsPerFrame[index]?.sockets ?? {},
+    };
+  }
+
   private bake(key: string, pixelsPerTile: number, widthTiles: 1 | 2): BakedSheet | null {
     const px = Math.min(
       MAX_BAKE_PX,
@@ -241,7 +310,8 @@ export class SheetStore {
   /**
    * The loaded atlas for a sheet key, kicking off the load on first ask. A
    * sheet with further pages (ADR 0052) is loaded only once every page is, so
-   * a clip never draws from half a sheet.
+   * a clip never draws from half a sheet, and the same holds for its bend
+   * data (ADR 0055).
    */
   private atlas(key: string, entry: SheetEntry): LoadedAtlas | null {
     const state = this.loaded.get(key);
@@ -249,11 +319,16 @@ export class SheetStore {
     if (state !== undefined) return null;
 
     this.loaded.set(key, 'loading');
-    Promise.all([entry.atlas, ...(entry.atlasPages ?? [])].map(loadPage))
-      .then((pages) =>
+    Promise.all([
+      Promise.all([entry.atlas, ...(entry.atlasPages ?? [])].map(loadPage)),
+      // Checked by its schema in CI (`art:validate`), so only typed here.
+      entry.bend ? fetchText(entry.bend).then((text) => JSON.parse(text) as BendSetDef) : undefined,
+    ])
+      .then(([pages, bend]) =>
         this.loaded.set(key, {
           pages,
           headroom: Math.max(...pages.map((page) => atlasHeadroom(entry, page.atlas, page.image))),
+          ...(bend ? { bend } : {}),
         }),
       )
       .catch((reason: unknown) => {
@@ -264,12 +339,17 @@ export class SheetStore {
   }
 }
 
+/** A site-relative text file. */
+async function fetchText(path: string): Promise<string> {
+  const url = assetUrl(path);
+  const response = await fetch(url);
+  if (!response.ok) throw new Error(`${response.status} for ${url}`);
+  return response.text();
+}
+
 /** One atlas page: its JSON, then the image its `meta.image` names beside it. */
 async function loadPage(path: string): Promise<AtlasPage> {
-  const jsonUrl = assetUrl(path);
-  const response = await fetch(jsonUrl);
-  if (!response.ok) throw new Error(`${response.status} for ${jsonUrl}`);
-  const atlas = parseAtlasJson(await response.text());
+  const atlas = parseAtlasJson(await fetchText(path));
   const image = new Image();
   image.decoding = 'async';
   await new Promise<void>((resolve, reject) => {

@@ -12,8 +12,9 @@
  * way `validateContent` holds the rest of the content to its.
  *
  * The schemas are for the packer's output and CI. The runtime imports types
- * from here, never values, so zod stays out of the bundle (ADR 0048).
- * Nothing here is wired into `src/content/index.ts` or the manifest yet.
+ * from here, never values, so zod stays out of the bundle (ADR 0048): the
+ * manifest names each character's bend data beside its sheet, the sheet store
+ * reads it as typed JSON, and `art:validate` holds it to these schemas.
  */
 
 import { z } from 'zod';

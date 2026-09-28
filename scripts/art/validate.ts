@@ -370,12 +370,14 @@ export async function validateSheets(
 }
 
 /**
- * The bend pages beside each G sheet and the bend set they draw (ADR 0055).
- * They are not in the manifest until its plumbing lands, so they are checked
- * here on their own: the same page rules and decoded-cel pins as a sheet's
- * pages, the set against its schema and `validateBendSets` (with
- * `EFFECTS_NOT_YET_AUTHORED` until step 5), and every heading's first and last frame on
- * the stance cel's exact alpha, so the bend starts and ends on its feet.
+ * The bend pages on each G sheet and the bend set they draw (ADR 0055). The
+ * manifest registers the pages among the sheet's `atlasPages` and the set as
+ * its `bend`, and the runtime reads the set without its schema, so this is
+ * where the set is checked: the registration against this table, the same page
+ * rules and decoded-cel pins as a sheet's pages, the set against its schema and
+ * `validateBendSets` (with `EFFECTS_NOT_YET_AUTHORED` until step 5), and every
+ * heading's first and last frame on the stance cel's exact alpha, so the bend
+ * starts and ends on its feet.
  */
 export const BEND_SHEETS: Readonly<
   Record<
@@ -429,7 +431,21 @@ export async function validateBends(
   entries: Readonly<Record<string, AssetEntry>> = ASSETS,
 ): Promise<string[]> {
   const problems: string[] = [];
+  for (const [key, entry] of Object.entries(entries)) {
+    if (entry.kind === 'sheet' && entry.bend && !sheets[key])
+      problems.push(`${key}: its bend ${entry.bend} has no pins or pages to check it against`);
+  }
   for (const [key, bend] of Object.entries(sheets)) {
+    const registered = entries[key];
+    if (registered?.kind === 'sheet') {
+      if (registered.bend !== bend.data)
+        problems.push(
+          `${key}: the manifest's bend is ${registered.bend ?? 'unset'}, not ${bend.data}`,
+        );
+      for (const path of bend.pages)
+        if (!registered.atlasPages?.includes(path))
+          problems.push(`${key}: the manifest's sheet does not load the bend page ${path}`);
+    }
     const pages: Page[] = [];
     for (const path of bend.pages) {
       const page = await readPage(publicDir, key, path);

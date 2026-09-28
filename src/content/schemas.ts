@@ -757,6 +757,10 @@ export const assetEntrySchema = z.discriminatedUnion('kind', [
       .array(z.string().regex(/\.json$/, 'must point at the atlas JSON'))
       .min(1)
       .optional(),
+    bend: z
+      .string()
+      .regex(/\.json$/, 'must point at the bend JSON')
+      .optional(),
     pixelsPerTile: z.union([z.literal(128), z.literal(256)]),
     frameSize: z
       .object({ w: z.number().int().min(1).max(512), h: z.number().int().min(1).max(512) })

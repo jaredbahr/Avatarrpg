@@ -245,7 +245,8 @@ for (const character of PARTY) {
 
     it('fails a lossy sheet with no pin file', async () => {
       expect(await validateSheets('public', { [KEY]: g.entry }, {})).toEqual([
-        `${KEY}: lossy ${character.name}-g.webp + ${character.name}-g-2.webp has no cel pin file`,
+        `${KEY}: lossy ${character.name}-g.webp + ${character.name}-g-2.webp + ` +
+          `${character.name}-g-bend.webp has no cel pin file`,
       ]);
     }, 60_000);
 
