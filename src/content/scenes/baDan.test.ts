@@ -16,6 +16,7 @@ import {
   BA_DAN_APRON_MAP,
   BA_DAN_APRON_PIECES,
   BA_DAN_EXTERIOR_APRON,
+  BA_DAN_PLANTER_CUT,
   BA_DAN_SCENE,
   BA_DAN_SOUTHEAST_PLANTER,
 } from './baDan';
@@ -141,26 +142,45 @@ it("stands the courtyard planter, turned, on the south-east house's blocked stri
   const house = scenery.findIndex((piece) => piece.id === 'southeast-house');
   const planter = scenery.findIndex((piece) => piece.id === 'southeast-planter');
   const houseDepth = scenery[house]?.depth;
+  const houseBox = scenery[house];
   const piece = scenery[planter];
-  if (!houseDepth || !piece) throw new Error('Missing south-east house or planter');
+  const far = scenery.find((p) => p.id === 'southeast-planter-far');
+  if (!houseDepth || !houseBox || !piece || !far)
+    throw new Error('Missing south-east house or planter');
   for (const cell of BA_DAN_SOUTHEAST_PLANTER) {
     // `rows` already blocks the strip; the house art stops at x 16.
     expect(tileAt(grid, cell)?.blocked).toBe(true);
     expect(scenery[house]?.footprint).not.toContainEqual(cell);
   }
-  expect(piece).toMatchObject({
-    url: 'art/maps/ba-dan-scene/low-planter.webp',
-    footprint: [...BA_DAN_SOUTHEAST_PLANTER],
-    flip: true,
-    width: 192,
-    height: 110.625,
-  });
+  for (const slice of [piece, far])
+    expect(slice).toMatchObject({
+      url: 'art/maps/ba-dan-scene/low-planter.webp',
+      footprint: [...BA_DAN_SOUTHEAST_PLANTER],
+      flip: true,
+      height: 110.625,
+    });
   // Ties the house's depth and paints after it, like the other frontage.
   expect(piece.depth.x + piece.depth.y).toBe(houseDepth.x + houseDepth.y);
   expect(planter).toBeGreaterThan(house);
-  // Mirrored, its front corner is (18,12): 0.325 of the width from its left.
-  expect(piece.x + piece.width * 0.325).toBeCloseTo(1024 + (18 - 12) * 64);
+  // Mirrored, its front corner is (18,12): 0.325 of the whole 192 from its left.
+  expect(piece.x + 192 * 0.325).toBeCloseTo(1024 + (18 - 12) * 64);
   expect(piece.y + piece.height).toBe((18 + 12) * 32);
+  // The far end's slice sorts level with (18,10), so a figure there is in front.
+  expect(far.depth.x + far.depth.y).toBe(18.5 + 10.5);
+  // The two slices are the whole planter, the near one a texel over the join,
+  // and together they crop the whole texture.
+  expect(far.x + far.width).toBeCloseTo(piece.x + 192);
+  expect(piece.x + piece.width - far.x).toBeCloseTo(192 / 512);
+  expect(far.sourceRect).toEqual({ x: 0, y: 0, width: BA_DAN_PLANTER_CUT, height: 295 });
+  expect(piece.sourceRect).toEqual({
+    x: BA_DAN_PLANTER_CUT - 1,
+    y: 0,
+    width: 512 - BA_DAN_PLANTER_CUT + 1,
+    height: 295,
+  });
+  // Shallower than the house, the far slice must lie clear of the house's
+  // image, or the house (its awning post) would paint over it.
+  expect(far.x).toBeGreaterThanOrEqual(houseBox.x + houseBox.width);
 });
 
 it('registers the painted canal to every actual permanent-water cell', () => {

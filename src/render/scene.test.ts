@@ -195,6 +195,18 @@ for (const projection of ['orthographic', 'oblique'] as const satisfies readonly
       );
     });
 
+    it('does not fade for an actor level with the piece, who draws in front of it', () => {
+      installImage(() => 255);
+      const scene = roof(camera),
+        state = view({ units: [unit(origin)] });
+      const foot = { x: origin.x + 0.5, y: origin.y + 0.5 };
+      // Both backends draw a figure at an equal-depth tie over the scenery.
+      expect(sceneryOpacity({ ...scene, depth: foot }, state, camera)).toBe(1);
+      expect(
+        sceneryOpacity({ ...scene, depth: { ...foot, y: foot.y + 0.01 } }, state, camera),
+      ).toBe(0.28);
+    });
+
     it('ignores distant NPCs but reveals a nearby conversation partner', () => {
       installImage(() => 255);
       const scene = roof(camera);

@@ -11,6 +11,10 @@
  * behind a stop and the props can live in the painting rather than as runtime
  * scenery.
  *
+ * A cell that has opened since the painting was made can still have
+ * something painted on it. A ground patch clones the painting's own ground
+ * over it, light-matched, before any stop is laid (`GROUND_PATCHES`).
+ *
  * The bake starts from the unmodified painting in `art/source/ba-dan-riverside`
  * and writes the map's WebP through the same encode path as every map
  * painting (`paintingWebp` in map.ts, 40 px a tile at quality 88).
@@ -206,6 +210,120 @@ export const EDGE_STOPS: readonly EdgeStop[] = [
   },
 ];
 
+/**
+ * Something painted on a cell that has since opened, cloned over with the
+ * painting's own ground. Method (b) run the other way: nothing is drawn, a
+ * patch of ground from elsewhere in the painting is laid over the element and
+ * matched to the light round it.
+ */
+export interface GroundPatch {
+  readonly id: string;
+  /** The walkable cell the element stood on. */
+  readonly cell: Point;
+  /** The element, traced on the painting a pixel or two outside its edge. */
+  readonly points: readonly Point[];
+  /** Where the ground is cloned from, as an offset from the patch. */
+  readonly offset: Point;
+}
+
+/** How far out from the traced polygon the light is measured. */
+const PATCH_RING = 4;
+
+export const GROUND_PATCHES: readonly GroundPatch[] = [
+  {
+    // The small mossy rock on the grass strip beside the garden walkway, the
+    // one `rock-small.png` was cut from. (8,21) is walkable now, so the rock
+    // goes and the strip runs on; the cutout still stands once, at (34,21).
+    // The ground comes from the same sunlit verge where it meets the lane, in
+    // front of the tea garden's east rail. The offset was the best of a
+    // search of every offset within 90 px, scored by how the light-matched
+    // clone meets the ring round the rock, then checked by eye.
+    id: 'garden-rock',
+    cell: { x: 8, y: 21 },
+    points: [
+      { x: 327, y: 848 },
+      { x: 332, y: 843 },
+      { x: 340, y: 841 },
+      { x: 349, y: 843 },
+      { x: 353, y: 848 },
+      { x: 356, y: 856 },
+      { x: 354, y: 865 },
+      { x: 345, y: 868 },
+      { x: 336, y: 867 },
+      { x: 329, y: 862 },
+      { x: 326, y: 855 },
+    ],
+    offset: { x: 63, y: -77 },
+  },
+];
+
+/** A patch's polygon bounds, grown by `pad` on every side. */
+export function patchBounds(patch: GroundPatch, pad = 0): Bounds {
+  const xs = patch.points.map((p) => p.x);
+  const ys = patch.points.map((p) => p.y);
+  const x = Math.min(...xs) - pad;
+  const y = Math.min(...ys) - pad;
+  return { x, y, width: Math.max(...xs) + 1 + pad - x, height: Math.max(...ys) + 1 + pad - y };
+}
+
+/**
+ * Per channel, how much to scale the donor so its ground meets the patch's:
+ * the ratio of the two rings of ground just outside the traced polygon.
+ */
+export function patchLight(source: Image, patch: GroundPatch): readonly number[] {
+  const box = patchBounds(patch, PATCH_RING);
+  const sum = [0, 0, 0, 0, 0, 0];
+  for (let y = box.y; y < box.y + box.height; y++)
+    for (let x = box.x; x < box.x + box.width; x++) {
+      if (insidePolygon(patch.points, x + 0.5, y + 0.5)) continue;
+      const at = (y * source.width + x) * 4;
+      const from = ((y + patch.offset.y) * source.width + x + patch.offset.x) * 4;
+      for (let c = 0; c < 3; c++) {
+        sum[c] = (sum[c] ?? 0) + (source.data[at + c] ?? 0);
+        sum[c + 3] = (sum[c + 3] ?? 0) + (source.data[from + c] ?? 0);
+      }
+    }
+  return [0, 1, 2].map((c) => (sum[c] ?? 0) / (sum[c + 3] || 1));
+}
+
+/**
+ * Lay the light-matched donor over the polygon through a mask softened by two
+ * one-pixel box blurs, so the clone has no hard edge.
+ */
+export function patchGround(source: Image, patch: GroundPatch): Image {
+  const out = copy(source);
+  const box = patchBounds(patch, 2);
+  let cover = new Float32Array(box.width * box.height);
+  for (let y = 0; y < box.height; y++)
+    for (let x = 0; x < box.width; x++)
+      if (insidePolygon(patch.points, box.x + x + 0.5, box.y + y + 0.5))
+        cover[y * box.width + x] = 1;
+  for (let pass = 0; pass < 2; pass++) {
+    const next = new Float32Array(cover.length);
+    for (let y = 1; y < box.height - 1; y++)
+      for (let x = 1; x < box.width - 1; x++) {
+        let sum = 0;
+        for (let dy = -1; dy <= 1; dy++)
+          for (let dx = -1; dx <= 1; dx++) sum += cover[(y + dy) * box.width + x + dx] ?? 0;
+        next[y * box.width + x] = sum / 9;
+      }
+    cover = next;
+  }
+  const light = patchLight(source, patch);
+  for (let y = 0; y < box.height; y++)
+    for (let x = 0; x < box.width; x++) {
+      const a = cover[y * box.width + x] ?? 0;
+      if (a === 0) continue;
+      const at = ((box.y + y) * source.width + box.x + x) * 4;
+      const from = ((box.y + y + patch.offset.y) * source.width + box.x + x + patch.offset.x) * 4;
+      for (let c = 0; c < 3; c++) {
+        const clone = Math.min(255, (source.data[from + c] ?? 0) * (light[c] ?? 1));
+        out.data[at + c] = Math.round(clone * a + (source.data[at + c] ?? 0) * (1 - a));
+      }
+    }
+  return out;
+}
+
 function copy(image: Image): Image {
   return { width: image.width, height: image.height, data: new Uint8Array(image.data) };
 }
@@ -311,7 +429,7 @@ export function castShadow(
   return { image, pad };
 }
 
-function insidePolygon(points: readonly Point[], x: number, y: number): boolean {
+export function insidePolygon(points: readonly Point[], x: number, y: number): boolean {
   let inside = false;
   for (let i = 0, j = points.length - 1; i < points.length; j = i++) {
     const a = points[i];
@@ -341,12 +459,18 @@ export function readCutouts(dir = RIVERSIDE_PROPS): Cutouts {
   };
 }
 
-/** The painting with every edge stop laid on it. */
+/**
+ * The painting with every opened cell's ground patched, then every edge stop
+ * laid on it. The stops read their light and occluders from the patched
+ * painting, so a stop could stand next to a patch.
+ */
 export function bakeEdgeProps(
-  source: Image,
+  painting: Image,
   cutouts: Cutouts,
   stops: readonly EdgeStop[] = EDGE_STOPS,
+  patches: readonly GroundPatch[] = GROUND_PATCHES,
 ): Image {
+  const source = patches.reduce(patchGround, painting);
   const out = copy(source);
   for (const stop of stops) {
     let sprite = stopSprite(cutouts[stop.cutout], stop);

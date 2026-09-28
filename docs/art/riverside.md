@@ -114,4 +114,7 @@ cross, (4..6,20), is open too. The garden needs no added stop: the walkway ends
 against painted solids on every side. Those are the boulders at (4,21), the
 tea-house fence (4..6,19), its corner post (7,20), and the trees along row 22.
 (8,21) must be open because movement is four-way: it is the walkway's only link
-from (9,21). The small rock painted on it is left as it is, under the feet.
+from (9,21). The small rock painted on it read as a stop that was not there,
+so the bake paints it out with a light-matched patch of the painting's own
+grass verge (`GROUND_PATCHES` in `scripts/art/riverside-edge-props.ts`). The
+same rock, cut out, still stands once, on the south-east bank at (34,21).
