@@ -152,3 +152,77 @@ it('marks each side with its own cap shape, not colour alone', () => {
   expect(HP_CAP.party).toBe('none');
   expect(new Set(Object.values(HP_CAP)).size).toBe(3);
 });
+
+/*
+ * Colour-vision deficiency, simulated with Machado, Oliveira & Fernandes (2009)
+ * at full severity: the matrix acts on linear sRGB, and the result is compared
+ * in CIELAB (D65) by ΔE76.
+ */
+type Mat3 = readonly [Rgb, Rgb, Rgb];
+const CVD: Record<'protan' | 'deutan' | 'tritan', Mat3> = {
+  protan: [
+    [0.152286, 1.052583, -0.204868],
+    [0.114503, 0.786281, 0.099216],
+    [-0.003882, -0.048116, 1.051998],
+  ],
+  deutan: [
+    [0.367322, 0.860646, -0.227968],
+    [0.280085, 0.672501, 0.047413],
+    [-0.01182, 0.04294, 0.968881],
+  ],
+  tritan: [
+    [1.255528, -0.076749, -0.178779],
+    [-0.078411, 0.930809, 0.147602],
+    [0.004733, 0.691367, 0.3039],
+  ],
+};
+const linear = (c: number): number => {
+  const v = c / 255;
+  return v <= 0.04045 ? v / 12.92 : ((v + 0.055) / 1.055) ** 2.4;
+};
+const simulate = (hex: string, m: Mat3): Rgb => {
+  const [r8, g8, b8] = rgb(hex);
+  const [r, g, b] = [linear(r8), linear(g8), linear(b8)];
+  const row = ([x, y, z]: Rgb) => Math.min(1, Math.max(0, x * r + y * g + z * b));
+  return [row(m[0]), row(m[1]), row(m[2])];
+};
+const lab = ([r, g, b]: Rgb): Rgb => {
+  const f = (t: number) => (t > 216 / 24389 ? Math.cbrt(t) : ((24389 / 27) * t + 16) / 116);
+  const fx = f((0.4124 * r + 0.3576 * g + 0.1805 * b) / 0.95047);
+  const fy = f(0.2126 * r + 0.7152 * g + 0.0722 * b);
+  const fz = f((0.0193 * r + 0.1192 * g + 0.9505 * b) / 1.08883);
+  return [116 * fy - 16, 500 * (fx - fy), 200 * (fy - fz)];
+};
+const cvdDelta = (a: string, b: string, m: Mat3): number => {
+  const [l1, a1, b1] = lab(simulate(a, m));
+  const [l2, a2, b2] = lab(simulate(b, m));
+  return Math.hypot(l1 - l2, a1 - a2, b1 - b2);
+};
+type Tint = keyof typeof HP_COLORS.tints;
+const pairs = (keys: readonly Tint[]): [Tint, Tint][] =>
+  keys.flatMap((a, i) => keys.slice(i + 1).map((b): [Tint, Tint] => [a, b]));
+
+it('keeps every colourblind bar tint apart under simulated CVD', () => {
+  const tints = HP_COLORS.hatchTints;
+  for (const [kind, m] of Object.entries(CVD))
+    for (const [a, b] of pairs(['party', 'ally', 'mid', 'low', 'hostile'])) {
+      expect(cvdDelta(tints[a], tints[b], m), `${kind} ${a}/${b}`).toBeGreaterThanOrEqual(15);
+    }
+});
+
+it('keeps hostile clear of every friendly tint under simulated CVD, in both sets', () => {
+  for (const tints of [HP_COLORS.tints, HP_COLORS.hatchTints])
+    for (const [kind, m] of Object.entries(CVD))
+      for (const friend of ['party', 'ally', 'mid', 'low'] as const) {
+        const delta = cvdDelta(tints[friend], tints.hostile, m);
+        expect(delta, `${kind} ${friend}/hostile`).toBeGreaterThanOrEqual(20);
+      }
+});
+
+it('leans on the cap and fill length where the default set merges', () => {
+  // palettes.ts owns up to these two; if a retint fixes them, drop the caveat.
+  const { tints } = HP_COLORS;
+  expect(cvdDelta(tints.mid, tints.low, CVD.deutan)).toBeLessThan(15);
+  expect(cvdDelta(tints.party, tints.ally, CVD.tritan)).toBeLessThan(15);
+  expect(HP_CAP.party).not.toBe(HP_CAP.ally);
+});

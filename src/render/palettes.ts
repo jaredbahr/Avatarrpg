@@ -250,7 +250,13 @@ interface HpTints {
 }
 
 export const HP_COLORS = {
-  /** hostile is --c-danger-soft. */
+  /*
+   * hostile is --c-danger-soft. Under simulated protan, deutan and tritan
+   * vision (palettes.test.ts) hostile stays clear of every friendly tint, but
+   * this set is not colourblind-safe within the friendly side: mid and low all
+   * but merge under deutan, and party and ally draw close under tritan. There
+   * the fill's length says how hurt, and the cap says whose side.
+   */
   tints: {
     party: '#6fbf73',
     ally: '#5fc4b8',
@@ -259,9 +265,10 @@ export const HP_COLORS = {
     hostile: '#d94a3a',
   } satisfies HpTints,
   /*
-   * The colourblind (hatch) setting swaps in the Okabe-Ito set, which keeps the
-   * five apart under protan, deutan and tritan vision; the caps below carry the
-   * side either way.
+   * The colourblind (hatch) setting swaps in the Okabe-Ito set. Simulated
+   * (Machado 2009, full severity), every pair of the five stays at least
+   * ΔE 15 apart under protan, deutan and tritan vision; party and ally are the
+   * closest, under tritan, so the caps below still carry the side.
    */
   hatchTints: {
     party: '#56b4e9',
