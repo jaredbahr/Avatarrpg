@@ -36,7 +36,8 @@ import { R9_EARTH, R9_FIRE, R9_TAKES, R9_WATER, r9FrameNames, r9Heading } from '
 
 const KNOWN_UNIT_ASSETS = ['unit.fire.kaya', 'unit.earth.bo', 'unit.water.sura'];
 const KNOWN_FRAMES = ['bend/0', 'bend/1', 'bend/2'];
-const SOURCE_SIZE = { width: 96, height: 96 };
+const SOURCE_SIZE = { width: 128, height: 128 };
+const FRAME_SIZE = { width: 96, height: 96 };
 
 function releaseOf(overrides: Partial<BendRelease> = {}): BendRelease {
   return {
@@ -87,7 +88,9 @@ function facingOf(overrides: Partial<HeadingBendDef> = {}): HeadingBendDef {
     frames: [...KNOWN_FRAMES],
     frameMs: [80, 80, 120],
     sourceSize: SOURCE_SIZE,
-    root: { x: 48, y: 88 },
+    root: { x: 64, y: 117 },
+    scale: 0.75,
+    frameSize: FRAME_SIZE,
     anchor: { x: 0.5, y: 0.9 },
     keyFrames: { gather: { frame: 0, role: 'anticipation' }, hit: { frame: 1, role: 'contact' } },
     smearFrame: 1,
@@ -307,7 +310,24 @@ describe('bend data contract', () => {
       damageRelease: 1,
     });
     const set = setOf({ headings: { east: { attacks: [attack] } } });
-    expect(problemsFor([set])).toContain('release 1 frame 1 is not after 2');
+    expect(problemsFor([set])).toContain('release 1 frame 1 is before 2');
+  });
+
+  it('accepts two releases on one frame from different sockets', () => {
+    const attack = attackOf({
+      releases: [releaseOf(), releaseOf({ socket: 'RW' })],
+      damageRelease: 1,
+    });
+    const set = setOf({
+      headings: Object.fromEntries(HEADINGS.map((h) => [h, { attacks: [attack] }])),
+    });
+    expect(problemsFor([set])).toBe('');
+  });
+
+  it('rejects two releases on one frame from the same socket', () => {
+    const attack = attackOf({ releases: [releaseOf(), releaseOf()], damageRelease: 1 });
+    const set = setOf({ headings: { east: { attacks: [attack] } } });
+    expect(problemsFor([set])).toContain('release 1 repeats socket LW on frame 1');
   });
 
   it('rejects two attacks with one id in a heading', () => {
@@ -334,7 +354,7 @@ describe('bend data contract', () => {
     expect(problemsFor([set])).toContain('west: attacks [] differ from east [jab/fx.fire.jab/1/0]');
   });
 
-  it('rejects a socket outside the source size', () => {
+  it('rejects a socket outside the packed frame', () => {
     const sockets: readonly BendFrameSockets[] = [
       { frame: 0, sockets: {} },
       { frame: 1, sockets: { LW: { x: 200, y: 48 } } },
@@ -342,6 +362,25 @@ describe('bend data contract', () => {
     ];
     const set = setOf({ headings: { east: { socketsPerFrame: sockets } } });
     expect(problemsFor([set])).toContain('socket LW at 200,48 is outside 96x96');
+  });
+
+  it('rejects a scale outside (0,1]', () => {
+    const set = setOf({ headings: { east: { scale: 1.5 } } });
+    expect(problemsFor([set])).toContain('scale 1.5 must be in (0,1]');
+  });
+
+  it('skips only the effect check while the effects are not authored', () => {
+    const attack = attackOf({ effectId: 'fx.none.thing' });
+    const everywhere = Object.fromEntries(HEADINGS.map((h) => [h, { attacks: [attack] }]));
+    expect(validateBendSets([setOf({ headings: everywhere })], null, KNOWN_UNIT_ASSETS)).toEqual(
+      [],
+    );
+    const late = attackOf({ effectId: 'fx.none.thing', releases: [releaseOf({ frame: 3 })] });
+    const bad = setOf({ headings: { east: { attacks: [late] } } });
+    const problems = validateBendSets([bad], null, KNOWN_UNIT_ASSETS).join('\n');
+    expect(problems).toContain('release 0 frame 3 is outside 0..2');
+    expect(problems).toContain('differ from east [jab/fx.none.thing/1/0]');
+    expect(problems).not.toContain('unknown effect');
   });
 
   it('rejects an attack pointing at an unknown effect', () => {
@@ -532,6 +571,34 @@ describe('the approved r9 bends', () => {
     expect(attack?.damageRelease).toBe(0);
   });
 
+  it('keys every strike as a contact, the same way in all three elements', () => {
+    for (const take of R9_TAKES) {
+      const heading = r9Heading(take);
+      const contacts = Object.values(heading.keyFrames)
+        .filter((key) => key.role === 'contact')
+        .map((key) => key.frame);
+      const strikes = heading.attacks.flatMap((attack) => attack.releases.map((r) => r.frame));
+      expect(contacts, take.take).toEqual(strikes);
+    }
+  });
+
+  it('maps the root-lock point onto the foot anchor at the G scale', () => {
+    for (const take of R9_TAKES) {
+      const heading = r9Heading(take);
+      const foot = {
+        x: heading.anchor.x * heading.frameSize.width,
+        y: heading.anchor.y * heading.frameSize.height,
+      };
+      expect(heading.root.x * heading.scale).toBeCloseTo(foot.x, 6);
+      expect(heading.root.y * heading.scale).toBeCloseTo(foot.y, 6);
+      // The stance cel's corner, (64, 64) in the source, lands where the G
+      // packer puts it: 8 px left of and 31 px below a 128x192 cel's corner,
+      // whose foot anchor is (64, 163.2).
+      expect(64 * heading.scale - foot.x).toBeCloseTo(-8 - 64, 6);
+      expect(64 * heading.scale - foot.y).toBeCloseTo(31 - 163.2, 6);
+    }
+  });
+
   it('rejects fire if its damage moves to the jab', () => {
     const set = r9Set(R9_FIRE);
     const heading = r9Heading(R9_FIRE);
@@ -609,6 +676,9 @@ describe('bend schemas', () => {
     ['fractional smear frame', { smearFrame: 1.5 }],
     ['negative smear frame', { smearFrame: -1 }],
     ['an infinite root', { root: { x: Infinity, y: 0 } }],
+    ['a zero scale', { scale: 0 }],
+    ['a scale above one', { scale: 1.5 }],
+    ['a fractional frame size', { frameSize: { width: 96.5, height: 96 } }],
   ])('rejects a heading with %s', (_label, override) => {
     expectSchemaFailure(headingBendDefSchema, facingOf(override as Partial<HeadingBendDef>));
   });
@@ -691,6 +761,11 @@ describe('bend schemas are strict', () => {
       'a heading source size',
       headingBendDefSchema,
       { ...heading, sourceSize: { ...SOURCE_SIZE, ...extra } },
+    ],
+    [
+      'a heading frame size',
+      headingBendDefSchema,
+      { ...heading, frameSize: { ...FRAME_SIZE, ...extra } },
     ],
     ['a bend set', bendSetDefSchema, { ...setOf(), ...extra }],
     ['a layer', bendEffectLayerSchema, { ...layerOf('travel', 'bolt'), ...extra }],

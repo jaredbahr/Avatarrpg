@@ -35,7 +35,14 @@ export type BendElement = (typeof BEND_ELEMENTS)[number];
 /**
  * The shared roles a key frame plays. The name of a key frame is free (`F1`,
  * `stomp`); its role is one of these, so choreography can ask for "the
- * contact" without knowing each clip's names.
+ * contact" without knowing each clip's names (ADR 0055):
+ *
+ * - `anticipation`: a wind-up or chamber before a strike;
+ * - `release`: the frame the effect leaves the hand or foot, when that is not
+ *   the strike's peak (a launch before the contact);
+ * - `contact`: the strike pose's peak, every strike's key, whether or not the
+ *   effect leaves on the same frame;
+ * - `recovery`: the return toward the stance.
  */
 export const BEND_KEY_ROLES = ['anticipation', 'release', 'contact', 'recovery'] as const;
 export type BendKeyRole = (typeof BEND_KEY_ROLES)[number];
@@ -121,7 +128,10 @@ export interface BendAttackCue {
   readonly id: string;
   /** The painted effect every release of this attack draws. */
   readonly effectId: string;
-  /** The visual hits, in play order; at least one. */
+  /**
+   * The visual hits, in play order; at least one. Two may share a frame when
+   * they leave from different sockets (both hands at once).
+   */
   readonly releases: readonly BendRelease[];
   /**
    * The index into `releases` whose impact applies the attack's one damage.
@@ -137,23 +147,38 @@ export interface BendKeyFrame {
   readonly role: BendKeyRole;
 }
 
-/** The sockets one cel records, in source-atlas pixels. */
+/** The sockets one cel records, in packed-cel pixels (`frameSize`). */
 export interface BendFrameSockets {
   readonly frame: number;
   readonly sockets: Partial<Record<BendSocket, { x: number; y: number }>>;
 }
 
-/** One heading's bend: its cels, timing, sockets and attack cues. */
+/**
+ * One heading's bend: its cels, timing, sockets and attack cues.
+ *
+ * `root`, `scale` and `anchor` are the whole mapping from a source cel to the
+ * packed one: a source point `p` lands at `(p - root) * scale + anchor *
+ * frameSize` in the packed cel. `root` is the source point that stands on the
+ * foot anchor, so the bend draws on the same foot and at the same size as the
+ * character's stance.
+ */
 export interface HeadingBendDef {
-  /** Atlas frame names, in play order. */
+  /**
+   * Atlas frame names, in play order. A name may repeat: a held pose, or the
+   * return to the stance on the last frame, is timing on one packed cel.
+   */
   readonly frames: readonly string[];
   /** How long each cel holds, in ms (16-1000). */
   readonly frameMs: readonly number[];
-  /** The untrimmed page the cels were cut from. */
+  /** The untrimmed source cel the frames were drawn on, in source pixels. */
   readonly sourceSize: { readonly width: number; readonly height: number };
-  /** The root-lock point, in source pixels. */
+  /** The source point that lands on the foot anchor: the root-lock point. */
   readonly root: { readonly x: number; readonly y: number };
-  /** The foot anchor, as fractions of the trimmed cel (ADR 0003). */
+  /** Packed pixels per source pixel (nearest-neighbour), in (0, 1]. */
+  readonly scale: number;
+  /** Every packed cel of the heading, trimmed to the heading's ink plus a margin. */
+  readonly frameSize: { readonly width: number; readonly height: number };
+  /** The foot anchor, as fractions of `frameSize` (ADR 0003). */
   readonly anchor: { readonly x: number; readonly y: number };
   /** Named pose frames, each with a shared role. */
   readonly keyFrames: Readonly<Record<string, BendKeyFrame>>;
@@ -161,7 +186,7 @@ export interface HeadingBendDef {
   readonly smearFrame?: number;
   /** The rules-level attacks this heading's bend can play. */
   readonly attacks: readonly BendAttackCue[];
-  /** Socket positions, one entry per cel, indexed by `frame`. */
+  /** Socket positions in packed-cel pixels, one entry per cel, indexed by `frame`. */
   readonly socketsPerFrame: readonly BendFrameSockets[];
 }
 
@@ -307,6 +332,8 @@ export const headingBendDefSchema: z.ZodType<HeadingBendDef> = z
     frameMs: z.array(frameMsValue).min(BEND_FRAME_MIN).max(BEND_FRAME_MAX),
     sourceSize: pixelSize,
     root: bendPoint,
+    scale: z.number().gt(0).max(1),
+    frameSize: pixelSize,
     anchor: anchorPoint,
     keyFrames: z.record(bendKeyFrameSchema),
     smearFrame: celIndex.optional(),
@@ -453,7 +480,7 @@ function validateFacing(
   element: BendElement,
   heading: Heading,
   facing: HeadingBendDef,
-  effectById: ReadonlyMap<string, BendEffectDef>,
+  effectById: ReadonlyMap<string, BendEffectDef> | null,
   knownFrames: ReadonlySet<string> | undefined,
   problems: string[],
 ): void {
@@ -464,7 +491,8 @@ function validateFacing(
   const count = facing.frames.length;
   const last = count - 1;
   const range = `0..${last}`;
-  const { width, height } = facing.sourceSize;
+  const { width, height } = facing.frameSize;
+  if (!(facing.scale > 0 && facing.scale <= 1)) note(`scale ${facing.scale} must be in (0,1]`);
   if (count < BEND_FRAME_MIN || count > BEND_FRAME_MAX) {
     note(`has ${count} frames, needs ${BEND_FRAME_MIN}..${BEND_FRAME_MAX}`);
   }
@@ -519,11 +547,17 @@ function validateFacing(
     }
     attack.releases.forEach((release, index) => {
       validateRelease(`attack "${id}" release ${index}`, release, facing, note);
+      // Two hands may release together, never one hand twice on one frame.
       const before = attack.releases[index - 1];
-      if (before && release.frame <= before.frame) {
-        note(`attack "${id}" release ${index} frame ${release.frame} is not after ${before.frame}`);
+      if (before && release.frame < before.frame) {
+        note(`attack "${id}" release ${index} frame ${release.frame} is before ${before.frame}`);
+      } else if (before && release.frame === before.frame && release.socket === before.socket) {
+        note(
+          `attack "${id}" release ${index} repeats socket ${release.socket} on frame ${release.frame}`,
+        );
       }
     });
+    if (!effectById) continue;
     const effect = effectById.get(attack.effectId);
     if (!effect) note(`attack "${id}" uses unknown effect "${attack.effectId}"`);
     if (effect && effect.element !== element) {
@@ -631,27 +665,29 @@ function validateEffect(effect: BendEffectDef, problems: string[]): void {
  * Returns a list of human-readable problems with the bend data. Empty means
  * the contract is sound. `knownUnitAssets` is the manifest's unit keys, and
  * `knownFrames`, when given, is every frame name the unit atlases carry, so a
- * bend cannot name a cel the packer never wrote. Deliberately collects
- * everything rather than throwing on the first fault, so one CI run reports
- * every broken link at once.
+ * bend cannot name a cel the packer never wrote. `effects` is `null` only
+ * while the painted effects are not authored yet (ADR 0055, step 5): the
+ * packed sets are checked in full except for the effect each attack names.
+ * Deliberately collects everything rather than throwing on the first fault,
+ * so one CI run reports every broken link at once.
  */
 export function validateBendSets(
   sets: readonly BendSetDef[],
-  effects: readonly BendEffectDef[],
+  effects: readonly BendEffectDef[] | null,
   knownUnitAssets: readonly string[],
   knownFrames?: readonly string[],
 ): string[] {
   const problems: string[] = [];
   const assets = new Set(knownUnitAssets);
   const frames = knownFrames ? new Set(knownFrames) : undefined;
-  const effectById = new Map(effects.map((effect) => [effect.id, effect]));
-  for (const id of repeats(effects.map((effect) => effect.id))) {
+  const effectById = effects ? new Map(effects.map((effect) => [effect.id, effect])) : null;
+  for (const id of repeats((effects ?? []).map((effect) => effect.id))) {
     problems.push(`effect id "${id}" repeats`);
   }
   for (const id of repeats(sets.map((set) => set.id))) {
     problems.push(`bend id "${id}" repeats`);
   }
-  for (const effect of effects) validateEffect(effect, problems);
+  for (const effect of effects ?? []) validateEffect(effect, problems);
 
   const claimed = new Map<string, string>();
   for (const set of sets) {
