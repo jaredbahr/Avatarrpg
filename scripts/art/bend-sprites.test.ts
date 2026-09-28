@@ -109,7 +109,12 @@ const TEST_EFFECTS: readonly BendEffectDef[] = [
       },
     ],
     trajectory: { kind: 'straight', speedTilesPerSecond: 8 },
-    impact: { sequence: 'fx.test.hit/burst', flash: 0.5, shakeTiles: 0.02 },
+    impact: {
+      sequence: 'fx.test.hit/burst',
+      flash: 0.5,
+      shakeTiles: 0.02,
+      offsetPx: { x: 0, y: -66.667 },
+    },
   },
 ];
 

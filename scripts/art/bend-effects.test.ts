@@ -8,6 +8,7 @@ import {
   EFFECT_IDS,
   EFFECT_PINS,
   GAME_SCALE,
+  IMPACT_OFFSET,
   RENDERER,
   SEQUENCES,
   TIMING_FILES,
@@ -251,6 +252,13 @@ describe('the shipped effects', () => {
       durationMs: 120,
       gameplaySurface: false,
     });
+  });
+
+  it('land where the prototype did: 120 of its px above the target’s feet', () => {
+    // The renderer's `destination = (TARGET[0], TARGET[1] - 120)`, at the game's scale.
+    expect(IMPACT_OFFSET).toEqual({ x: 0, y: -66.667 });
+    expect(IMPACT_OFFSET.y).toBeCloseTo(-120 * GAME_SCALE, 3);
+    for (const effect of shipped) expect(effect.impact.offsetPx).toEqual(IMPACT_OFFSET);
   });
 
   it('art:validate holds the shipped page to its pins', async () => {

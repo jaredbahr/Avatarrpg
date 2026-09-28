@@ -82,6 +82,8 @@ export const BEND_FRAME_MS_MAX = 1000;
 export const BEND_HOLD_MS_MAX = 300;
 /** Flash is the peak opacity of the additive white flash frame, 0-1. */
 export const BEND_FLASH_MAX = 1;
+/** The impact point sits at most 256 unit-cel pixels from the target's feet, each way. */
+export const BEND_IMPACT_OFFSET_MAX = 256;
 /** Screen shake is at most half a tile of amplitude. */
 export const BEND_SHAKE_TILES_MAX = 0.5;
 /** Residue lingers at most 3 s after impact. */
@@ -241,11 +243,19 @@ export type BendTrajectory =
       readonly boltSpeedTilesPerSecond: number;
     };
 
-/** What the effect draws when it lands on the target. */
+/** What the effect draws when it lands on the target, and where. */
 export interface BendImpact {
   readonly sequence: string;
   /** Peak opacity of the impact flash frame, 0-1. */
   readonly flash: number;
+  /**
+   * Where on the target the effect lands, in unit-cel pixels (the scale the
+   * character cels are packed at, so it zooms with them) from the target's
+   * foot anchor; -y is up. The trajectory ends here, and every `targetTile`
+   * layer is placed by its pivot here, so bursts hit the body rather than the
+   * feet. Each axis is within +-`BEND_IMPACT_OFFSET_MAX`.
+   */
+  readonly offsetPx: { readonly x: number; readonly y: number };
   /** Impact shake amplitude in tiles, 0-0.5. */
   readonly shakeTiles: number;
 }
@@ -296,6 +306,12 @@ const impactSchema: z.ZodType<BendImpact> = z
     sequence: z.string().min(1),
     flash: flashValue,
     shakeTiles: shakeValue,
+    offsetPx: z
+      .object({
+        x: z.number().min(-BEND_IMPACT_OFFSET_MAX).max(BEND_IMPACT_OFFSET_MAX),
+        y: z.number().min(-BEND_IMPACT_OFFSET_MAX).max(BEND_IMPACT_OFFSET_MAX),
+      })
+      .strict(),
   })
   .strict();
 
@@ -672,6 +688,14 @@ function validateEffect(effect: BendEffectDef, problems: string[]): void {
   }
   if (!within(effect.impact.shakeTiles, 0, BEND_SHAKE_TILES_MAX)) {
     note(`impact shakeTiles ${effect.impact.shakeTiles} is outside 0..${BEND_SHAKE_TILES_MAX}`);
+  }
+  for (const axis of ['x', 'y'] as const) {
+    const value = effect.impact.offsetPx[axis];
+    if (!within(value, -BEND_IMPACT_OFFSET_MAX, BEND_IMPACT_OFFSET_MAX)) {
+      note(
+        `impact offsetPx.${axis} ${value} is outside -${BEND_IMPACT_OFFSET_MAX}..${BEND_IMPACT_OFFSET_MAX}`,
+      );
+    }
   }
   effect.layers.forEach((layer, index) => {
     if (layer.frameMs.length === 0) note(`layer ${index} (${layer.phase}) has no frameMs`);

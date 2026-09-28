@@ -138,7 +138,7 @@ function effectOf(overrides: Partial<BendEffectDef> = {}): BendEffectDef {
       layerOf('residue', 'bend-scorch'),
     ],
     trajectory: straight(6),
-    impact: { sequence: 'bend-burst', flash: 0.4, shakeTiles: 0.1 },
+    impact: { sequence: 'bend-burst', flash: 0.4, shakeTiles: 0.1, offsetPx: { x: 0, y: -60 } },
     residue: { sequence: 'bend-scorch', durationMs: 600, gameplaySurface: false },
     ...overrides,
   };
@@ -472,11 +472,14 @@ describe('bend data contract', () => {
     expect(problemsFor([set])).toContain(message);
   });
 
-  it('rejects an impact flash or shake out of range', () => {
-    const effect = effectOf({ impact: { sequence: 'bend-burst', flash: 2, shakeTiles: 1 } });
+  it('rejects an impact flash, shake or offset out of range', () => {
+    const effect = effectOf({
+      impact: { sequence: 'bend-burst', flash: 2, shakeTiles: 1, offsetPx: { x: 0, y: -300 } },
+    });
     const problems = problemsFor([], [effect]);
     expect(problems).toContain('impact flash 2 is outside 0..1');
     expect(problems).toContain('impact shakeTiles 1 is outside 0..0.5');
+    expect(problems).toContain('impact offsetPx.y -300 is outside -256..256');
   });
 
   it('rejects an effect layer cel outside 16..1000 ms', () => {
@@ -593,7 +596,7 @@ describe('bend data contract', () => {
   });
 
   it('rejects an impact no impact layer draws', () => {
-    const effect = effectOf({ impact: { sequence: 'bend-gather', flash: 0.4, shakeTiles: 0.1 } });
+    const effect = effectOf({ impact: { ...effectOf().impact, sequence: 'bend-gather' } });
     expect(problemsFor([], [effect])).toContain('impact "bend-gather" has no impact layer');
   });
 });
@@ -844,6 +847,16 @@ describe('bend schemas', () => {
   ])('rejects an effect layer with %s', (_label, layer) => {
     expectSchemaFailure(bendEffectLayerSchema, layer);
   });
+
+  it.each([
+    ['no impact offset', undefined],
+    ['an impact offset above 256 px', { x: 0, y: -257 }],
+    ['an infinite impact offset', { x: Infinity, y: 0 }],
+    ['an impact offset without y', { x: 0 }],
+  ])('rejects an effect with %s', (_label, offsetPx) => {
+    const effect = effectOf();
+    expectSchemaFailure(bendEffectDefSchema, { ...effect, impact: { ...effect.impact, offsetPx } });
+  });
 });
 
 describe('bend schemas are strict', () => {
@@ -890,6 +903,11 @@ describe('bend schemas are strict', () => {
       'an effect impact',
       bendEffectDefSchema,
       { ...effect, impact: { ...effect.impact, ...extra } },
+    ],
+    [
+      'an impact offset',
+      bendEffectDefSchema,
+      { ...effect, impact: { ...effect.impact, offsetPx: { x: 0, y: -60, ...extra } } },
     ],
   ])('rejects an unknown key on %s', (_label, schema, value) => {
     expectSchemaFailure(schema, value);

@@ -24,7 +24,9 @@
  * The timing is the prototype's too: each layer's `frameMs` are the bend cels
  * the prototype drew it on, read from the pinned r9 timing, which every
  * shipped heading must still carry. Speeds and heights are the prototype's
- * 3-tile south-east throw in tiles (one tile is one board step, 96 x 48 px).
+ * 3-tile south-east throw in tiles (one tile is one board step, 96 x 48 px),
+ * and every effect lands 120 prototype px above the target's feet, where the
+ * renderer's `destination` put it.
  *
  * Any directory is not accepted: every numbered PNG in the source folders the
  * build reads, the three timing files and the renderer must match their
@@ -526,6 +528,12 @@ const tiles = (px: number, places = 3): number => {
 export const shake = (dx: number, dy: number): number => tiles(Math.hypot(dx, dy));
 /** The prototype's local brightening (`Brightness(1.75)`): the cel added onto itself at 0.75. */
 export const PROTO_FLASH = 0.75;
+/**
+ * Where the prototype landed every effect: `destination = (TARGET[0],
+ * TARGET[1] - 120)`, 120 of its pixels above the target's feet, moved to
+ * unit-cel pixels at the game's scale.
+ */
+export const IMPACT_OFFSET = { x: 0, y: round3(-120 * GAME_SCALE) };
 
 /**
  * The effects, built from the r9 timing: `ms(f, g)` is the time the prototype
@@ -586,7 +594,12 @@ export function effectDefs(timing: Readonly<Record<Element, R9Timing>>): BendEff
       heightTiles: tiles(22, 2),
       spin: 0,
     },
-    impact: { sequence: seq('fire', 'burst'), flash: PROTO_FLASH, shakeTiles: shake(-3, 2) },
+    impact: {
+      sequence: seq('fire', 'burst'),
+      flash: PROTO_FLASH,
+      shakeTiles: shake(-3, 2),
+      offsetPx: IMPACT_OFFSET,
+    },
   };
   // The stomp (release 0) opens the crack on bend cel 4 and it fades out by
   // cel 10; the rock rises in it on cel 5, hangs at the drive (release 1) on
@@ -607,7 +620,12 @@ export function effectDefs(timing: Readonly<Record<Element, R9Timing>>): BendEff
       heightTiles: tiles(96, 2),
       spin: 0,
     },
-    impact: { sequence: seq('earth', 'shatter'), flash: PROTO_FLASH, shakeTiles: shake(4, -3) },
+    impact: {
+      sequence: seq('earth', 'shatter'),
+      flash: PROTO_FLASH,
+      shakeTiles: shake(4, -3),
+      offsetPx: IMPACT_OFFSET,
+    },
   };
   // The gather trails the palm on bend cels 2-4 and curls on 4; the lash
   // leaves on 5, a third of the way and at most 1.5 tiles; the bolt flies
@@ -630,7 +648,12 @@ export function effectDefs(timing: Readonly<Record<Element, R9Timing>>): BendEff
       whipMaxTiles: 1.5,
       boltSpeedTilesPerSecond: speed(2, w(6, 7)),
     },
-    impact: { sequence: seq('water', 'splash'), flash: PROTO_FLASH, shakeTiles: shake(-3, 2) },
+    impact: {
+      sequence: seq('water', 'splash'),
+      flash: PROTO_FLASH,
+      shakeTiles: shake(-3, 2),
+      offsetPx: IMPACT_OFFSET,
+    },
     residue: { sequence: seq('water', 'puddle'), durationMs: w(10), gameplaySurface: false },
   };
   return [fire, earth, water];
