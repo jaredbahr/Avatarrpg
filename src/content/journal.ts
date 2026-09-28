@@ -69,14 +69,7 @@ export const JOURNAL_NOTES: readonly JournalNote[] = [
     hint: 'Someone is watching the pine road from behind the trees.',
     found:
       'The people blocking the road had stone dust on their cuffs and hammer calluses on their thumbs. They worked the quarry.',
-    when: {
-      kind: 'any',
-      of: [
-        { kind: 'flag', key: 'lost_forest_road', op: 'set' },
-        { kind: 'flag', key: 'ruon_spared', op: 'set' },
-        { kind: 'flag', key: 'ruon_traded', op: 'set' },
-      ],
-    },
+    when: { kind: 'visited', nodeId: 'after_forest' },
   },
   {
     id: 'runoff_marker',
@@ -98,7 +91,7 @@ export const JOURNAL_NOTES: readonly JournalNote[] = [
   },
   {
     id: 'bo_shan_cart',
-    mapId: 'quarry_gate',
+    mapId: 'quarry_floor',
     title: 'Five missing, not four',
     hint: 'Someone in Ba Dan knows who else went up this road.',
     found:
@@ -111,7 +104,7 @@ export const JOURNAL_NOTES: readonly JournalNote[] = [
     title: 'Why the gate shut',
     hint: 'Workers with slings hold the quarry gate. Someone there gives the orders.',
     found:
-      'Ruon says the crews went unpaid, then the guards. His quartermaster shut the gate and locked people in the galleries. Ruon kept his post.',
+      'Ruon says the crews went unpaid, then the guards. His quartermaster wanted to hold the stone; Ruon let him shut the gate. Then people were locked in the galleries.',
     when: {
       kind: 'any',
       of: [
