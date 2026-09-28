@@ -221,7 +221,7 @@ export const ACT1_NODES: readonly StoryNode[] = [
     lines: [
       'You wake beside the road with grit in your mouth. Your food is gone. The robbers left the empty wrapping in your pocket.',
       'Nothing seems broken. Getting upright still takes a while.',
-      'Their tracks lead uphill. You follow once you can stand.',
+      'Their tracks lead uphill, towards the quarry.',
     ],
     next: 'lost_forest_road',
   },
@@ -342,7 +342,7 @@ export const ACT1_NODES: readonly StoryNode[] = [
     portrait: 'portrait.ruon',
     lines: [
       'Hold on. You know the galleries? The supports under the east face?',
-      'I told him those needed replacing. He sent the crew back in anyway.',
+      'I told my quartermaster those needed replacing. He sent the crew back in anyway.',
       'All right. Lower the slings. Open the gate.',
       'You want someone to answer for this, you can talk to me. Leave the crew out of it.',
     ],
@@ -400,6 +400,7 @@ export const ACT1_NODES: readonly StoryNode[] = [
       'Captain Ruon, provincial guard. Nineteen years. I still give the rank, though I doubt they would claim me now.',
       'The crews stopped getting paid. Then our wages stopped too. My quartermaster said holding the stone would make somebody listen. I let him shut the gate.',
       'Then he locked people in the galleries. I kept my post. Their families will want to know that.',
+      'Jin’s mercenaries hold the inner gate. She carries a provincial bounty on me, and she will pay whoever hands me over.',
     ],
     next: 'ruon_choice',
   },
@@ -439,8 +440,8 @@ export const ACT1_NODES: readonly StoryNode[] = [
     speaker: 'Captain Ruon',
     portrait: 'portrait.ruon',
     lines: [
-      'Ba Dan, then. I know the way.',
-      "Jin has been waiting to collect the bounty on me. She'll send people after us.",
+      'Ba Dan, then, once the galleries are open. I will not leave the crews down there either.',
+      "Jin will not let her bounty walk down the hill. She'll send people after us.",
       "If they catch us in the cutting, I'll need my sabre. You can take it back afterwards.",
     ],
     next: 'gate_escort_explore',
@@ -480,7 +481,7 @@ export const ACT1_NODES: readonly StoryNode[] = [
     portrait: 'portrait.ruon',
     lines: [
       'We cannot stay on the road. There is a path through the cutting to the quarry floor.',
-      'The man down there was my quartermaster. We called him Grumbler. He could find something wrong with a day off.',
+      'My quartermaster will be down there. The crews call him Grumbler. He could find something wrong with a day off.',
       'He got hold of a mecha-driller last month. I signed for the delivery without asking who paid for it.',
     ],
     next: 'cutting_after_explore',
