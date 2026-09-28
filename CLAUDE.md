@@ -203,11 +203,16 @@ Never run `npx playwright install` in the dev container — Chromium is already 
   `branch` node or a `conditionalEnemies` group pointing at a standing key reads
   neutral as "unset" and silently takes the wrong road. `validateContent` rejects
   both; go through `getStanding`/`adjustStanding` and the `standing` condition.
-- **Adding a field to `GameState` or `BattleState` means adding it to the zod
-  schema in `src/core/save/serialize.ts`.** zod strips unknown keys and `toBlob`
-  writes through an unchecked cast, so a forgotten field serialises fine, parses
-  back as `undefined`, and crashes only on a loaded mid-battle save.
+- **Adding a field to `GameState` or `BattleState` means adding it to the
+  schema in `src/core/save/serialize.ts`.** It strips unknown keys as zod does and
+  `toBlob` writes through an unchecked cast, so a forgotten field serialises fine,
+  parses back as `undefined`, and crashes only on a loaded mid-battle save.
   `serialize.test.ts` deep-compares a real mid-battle round trip to catch it.
+- **Shipped code validates with `src/core/schema.ts`, not zod** (ADR 0059). It
+  is zod's v3 API for the combinators the save, fx, sound and tuning schemas use,
+  and `schema.test.ts` holds it to zod's verdicts, data and issue paths. A shipped
+  module that needs a combinator it lacks adds it there, with a case in that test;
+  importing zod instead fails the bundle gate. CI-only schemas stay on zod.
 - A prop bakes its `blocksMove` / `blocksSight` / `grantsCover` into the `Tile`
   and journals the tile it replaced, exactly as `raiseWall` does. That is why
   movement, sight, cover and AI positioning need no knowledge of props at all —

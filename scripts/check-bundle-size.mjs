@@ -67,6 +67,15 @@ if (stubs.length > 0) {
   process.exit(1);
 }
 
+// Runtime validation goes through src/core/schema.ts (ADR 0059). zod is for CI
+// and dev only; a value import of it from a shipped module brings ~10 KB back.
+if (shipped.includes('ZodError')) {
+  console.error(
+    '\nzod is in the shipped JavaScript; import src/core/schema.ts instead (ADR 0059).',
+  );
+  process.exit(1);
+}
+
 if (totalKb > BUDGET_KB) {
   console.error(`\nOver budget by ${(totalKb - BUDGET_KB).toFixed(1)} KB.`);
   process.exit(1);
