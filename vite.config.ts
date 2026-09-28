@@ -43,6 +43,11 @@ function replaceExactly(
   return { code: next, map: null };
 }
 
+/** A stand-in for an omitted Pixi function that fails loudly if it is ever reached. */
+function omittedPixi(name: string): string {
+  return `const ${name} = () => { throw new Error('Pixi ${name} is omitted from this build (ADR 0056).'); };`;
+}
+
 /**
  * `GH_PAGES_BASE` is set by the deploy workflow to `/<repo>/` so that the
  * built asset URLs resolve on GitHub Pages. Locally it stays `/`.
@@ -252,6 +257,35 @@ export default defineConfig({
               ['      gpuProgram,\n', ''],
             ],
             'the particle WGSL exclusion',
+          );
+        }
+        // Every path the game draws is built from points; nothing hands Pixi
+        // SVG markup or an SVG path string, so the parser becomes a loud stub.
+        if (
+          /[/\\]pixi\.js[/\\]lib[/\\]scene[/\\]graphics[/\\]shared[/\\]GraphicsContext\.mjs$/.test(
+            id,
+          )
+        ) {
+          return replaceExactly(
+            code,
+            [["import { SVGParser } from './svg/SVGParser.mjs';", omittedPixi('SVGParser')]],
+            'the SVG parser exclusion',
+          );
+        }
+        if (
+          /[/\\]pixi\.js[/\\]lib[/\\]scene[/\\]graphics[/\\]shared[/\\]path[/\\]GraphicsPath\.mjs$/.test(
+            id,
+          )
+        ) {
+          return replaceExactly(
+            code,
+            [
+              [
+                "import { parseSVGPath } from '../svg/parseSVGPath.mjs';",
+                omittedPixi('parseSVGPath'),
+              ],
+            ],
+            'the SVG path exclusion',
           );
         }
         if (
