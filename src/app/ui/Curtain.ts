@@ -8,7 +8,7 @@
  * the swap. It drops opaque over the *new* scene in the same frame and lifts
  * over --dur-slow; the old scene is simply gone.
  *
- * It lives in the overlay host above dialogs and below toasts, and takes no
+ * It lives in the overlay host above dialogs and toasts, and takes no
  * pointer events, so a tap during the lift lands on the scene underneath
  * exactly as it would without it. Under reduce motion it does nothing.
  */
