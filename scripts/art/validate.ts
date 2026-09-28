@@ -40,12 +40,15 @@ import type { Image } from './lib/image';
 import { imageSize, readPng } from './lib/image';
 import { alphaBounds, crop, lowestOpaqueRow } from './lib/trim';
 import { decodeWebp, webpSize } from './lib/webp';
-import { CEL_FRAMES, CEL_SIZE, FX_CEL_SHEETS } from '../../src/content/fxCels';
+import { BEND_FX, CEL_FRAMES, CEL_SIZE, FX_CEL_SHEETS } from '../../src/content/fxCels';
+import type { BendEffectDef } from '../../src/content/bends';
 import {
-  EFFECTS_NOT_YET_AUTHORED,
+  bendEffectDefSchema,
   bendSetDefSchema,
   validateBendSets,
+  validateEffectCels,
 } from '../../src/content/bends';
+import { parseBendFxPage } from '../../src/render/fx/bendFx';
 
 /** The largest texture every device in the matrix takes. */
 const MAX_ATLAS = 2048;
@@ -131,7 +134,7 @@ function footCentre(cel: Image, rows = 6): number | null {
 export const MAX_IMAGE_BYTES = 512 * 1024;
 
 /** True if any pixel on the frame's outer `margin` rows and columns is opaque. */
-function borderTouched(
+export function borderTouched(
   image: Image,
   frame: { x: number; y: number; w: number; h: number },
   margin: number,
@@ -375,7 +378,7 @@ export async function validateSheets(
  * its `bend`, and the runtime reads the set without its schema, so this is
  * where the set is checked: the registration against this table, the same page
  * rules and decoded-cel pins as a sheet's pages, the set against its schema and
- * `validateBendSets` (with `EFFECTS_NOT_YET_AUTHORED` until step 5), and every
+ * `validateBendSets` against the painted effects (`validateBendFx`), and every
  * heading's first and last frame on the stance cel's exact alpha, so the bend
  * starts and ends on its feet.
  */
@@ -484,7 +487,13 @@ export async function validateBends(
     if (set.unitAsset !== key) problems.push(`${key}: ${bend.data} draws ${set.unitAsset}`);
     const known = Object.keys(entries);
     const names = [...where.keys()];
-    for (const problem of validateBendSets([set], EFFECTS_NOT_YET_AUTHORED, known, names))
+    let effects: BendEffectDef[] = [];
+    try {
+      effects = readBendEffects(publicDir);
+    } catch (error) {
+      problems.push(`${key}: ${error instanceof Error ? error.message : String(error)}`);
+    }
+    for (const problem of validateBendSets([set], effects, known, names))
       problems.push(`${key}: ${problem}`);
 
     const pinned = existsSync(bend.pins)
@@ -559,6 +568,80 @@ export async function validateBends(
       }
     }
   }
+  return problems;
+}
+
+/** The painted bend effects `BEND_FX` registers, held to their schema; throws on any fault. */
+export function readBendEffects(
+  publicDir = 'public',
+  path: string = BEND_FX.data,
+): BendEffectDef[] {
+  const file = resolve(publicDir, path);
+  if (!existsSync(file)) throw new Error(`${path} is missing under ${publicDir}/`);
+  const raw = JSON.parse(readFileSync(file, 'utf8')) as unknown;
+  if (!Array.isArray(raw)) throw new Error(`${path} is not a list of effects`);
+  return raw.map((entry, index) => {
+    const parsed = bendEffectDefSchema.safeParse(entry);
+    if (!parsed.success)
+      throw new Error(`${path} effect ${index} fails the effect schema: ${parsed.error.message}`);
+    return parsed.data;
+  });
+}
+
+/** The effect atlas's pin file: the decoded cels `scripts/art/bend-effects.ts` wrote. */
+export const BEND_FX_PINS = 'art/source/bend-effects/pins.json';
+
+/**
+ * The painted bend effects (ADR 0055): the data parses and passes the effect
+ * rules, every cel a layer times is on a registered page and no page carries
+ * a cel no layer draws, every cel keeps the art bible's clear margin and a
+ * readable pivot, and every decoded cel matches the pin its build wrote.
+ */
+export async function validateBendFx(
+  publicDir = 'public',
+  registration: { readonly data: string; readonly pages: readonly string[] } = BEND_FX,
+  pinsPath = BEND_FX_PINS,
+): Promise<string[]> {
+  const problems: string[] = [];
+  let effects: BendEffectDef[];
+  try {
+    effects = readBendEffects(publicDir, registration.data);
+  } catch (error) {
+    return [`bend effects: ${error instanceof Error ? error.message : String(error)}`];
+  }
+  for (const problem of validateBendSets([], effects, []))
+    problems.push(`bend effects: ${problem}`);
+  const pinned = existsSync(pinsPath)
+    ? (JSON.parse(readFileSync(pinsPath, 'utf8')) as { frames?: Record<string, string> }).frames
+    : undefined;
+  if (!pinned) problems.push(`bend effects: ${pinsPath} pins no effect cels`);
+  const names: string[] = [];
+  for (const path of registration.pages) {
+    const page = await readPage(publicDir, 'bend effects', path);
+    if (typeof page === 'string') {
+      problems.push(page);
+      continue;
+    }
+    try {
+      parseBendFxPage(readFileSync(resolve(publicDir, path), 'utf8'), path);
+    } catch (error) {
+      problems.push(
+        `bend effects: ${path}: ${error instanceof Error ? error.message : String(error)}`,
+      );
+    }
+    for (const [name, frame] of page.frames) {
+      if (names.includes(name)) problems.push(`bend effects: cel "${name}" is on two pages`);
+      names.push(name);
+      if (borderTouched(page.image, frame, MARGIN))
+        problems.push(`bend effects: cel "${name}" has art inside the ${MARGIN} px margin`);
+      if (pinned && pinned[name] !== celHash(page.image, frame))
+        problems.push(`bend effects: decoded cel "${name}" does not match its pin`);
+    }
+  }
+  for (const name of Object.keys(pinned ?? {}))
+    if (!names.includes(name)) problems.push(`bend effects: pinned cel "${name}" is on no page`);
+  for (const problem of validateEffectCels(effects, names))
+    problems.push(`bend effects: ${problem}`);
   return problems;
 }
 
@@ -713,6 +796,7 @@ if (process.argv[1]?.endsWith('validate.ts')) {
   const problems = [
     ...(await validateSheets()),
     ...(await validateBends()),
+    ...(await validateBendFx()),
     ...validateImages(),
     ...validateBackdrops(),
     ...validateFlocks(),
