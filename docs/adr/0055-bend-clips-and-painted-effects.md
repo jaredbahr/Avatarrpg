@@ -14,7 +14,8 @@ rotated per facing as a change of camera rather than mirrored, and generated
 with PixelLab's skeleton animation (v3), keys first and then the in-betweens
 seeded from the approved keys. Every heading's first frame is that heading's
 approved stance cel, sent with the skeleton it was drawn from, so frame 0 and
-the last frame are the shipped stance cel exactly. Sura's and Bo's cels are
+the last frame reproduce the shipped stance cel: alpha exact, colour within
+the stance page's WebP noise. Sura's and Bo's cels are
 toned with the frozen party-consistency parameters (ADR 0052), Kaya's never
 are. This is the redo ADR 0052 left pending. The packer maps the cels onto the
 G party's root-locked stance coordinates, trims them to their ink, gives them
@@ -60,7 +61,7 @@ The budgets are measured on the packed r10 pages (one page a character):
   so painted bend sequences for four elements fit inside the remaining 2.5 MiB.
 - **Precache:** 19,244,262 B (18.35 MiB) of the 25 MiB ceiling with the three
   bends' pages and data in the service worker's precache.
-- **JavaScript, gzip:** 313.4 KB of the 320 KB gate (ADR 0048). The bend data
+- **JavaScript, gzip:** 317.4 KB of the 320 KB gate (ADR 0048). The bend data
   is JSON the packer writes, not a TypeScript table, so it does not enter the
   bundle. The zod schemas in `bends.ts` are for the packer's output and CI and
   must stay out of the runtime bundle too: runtime code imports the types with
@@ -106,8 +107,17 @@ The budgets are measured on the packed r10 pages (one page a character):
   only frames, sockets and holds follow each heading's art. Attack ids are
   unique within a heading, and set ids and effect ids are unique.
 - **Sockets are checked on the frames that use them.** Each release's socket
-  must be recorded on both its launch frame and its contact frame, and every
-  socket lies inside the source page.
+  must be recorded on both its launch frame and its contact frame. Sockets are
+  in packed-cel pixels, and every socket lies inside the heading's
+  `frameSize`.
+- **Sub-pixel sockets (open, step 3).** The packer treats an r10 socket's
+  integer coordinates as a point on the source grid, the corner of the source
+  pixel it names, and moves it through the continuous map below, while the
+  packed pixels sample their source nearest-neighbour from their own corner.
+  So a stored socket can sit up to 0.75 packed px (one source pixel at 75%)
+  from the drawn pixel it names, and if r10 meant pixel centres every socket
+  is 0.375 px up and left of where it should be. Step 3 settles which
+  convention the hand-off uses and whether the packer adds the half pixel.
 - **Key frames have free names and shared roles.** A key frame is
   `{ frame, role }` under whatever name the take uses (`F1`, `E3`), so the
   choreography can find "the contact" without knowing each clip's names. The
@@ -121,7 +131,9 @@ The budgets are measured on the packed r10 pages (one page a character):
   All three approved bends launch on the strike's peak, so every strike is a
   `contact`: fire's jab F1 and cross F3, earth's stomp E3 and drive E4, and
   water's push W4. Their wind-ups (F2; E2; W2 and W3) are `anticipation` and
-  F4, E5 and W5 are `recovery`.
+  F4, E5 and W5 are `recovery`. `validateBendSets` holds the roles and the
+  releases to each other: every release's `frame` carries a `contact` key
+  frame, and a `launchFrame` before it carries a `release` one.
 
 - **Flash, hit-stop and shake land on contact.** At a release's contact frame
   the character and the effect freeze together for `launchHoldMs` (0-300 ms),
@@ -156,8 +168,10 @@ The budgets are measured on the packed r10 pages (one page a character):
   heading's idle and stance shifts. On all 24 r10 headings the stance sits at
   (64, 64) of the 320 px cel. So the bend starts and ends on the stance's feet
   at the stance's size, and frame 0 and the last frame must reproduce the
-  packed stance - alpha exact, colour within the stance page's WebP noise -
-  or the build stops. `art:validate` checks the same alpha on the shipped
+  packed stance - alpha exact, colour within the stance page's WebP noise
+  (`STANCE_TOLERANCE`) - or the build stops. The decoded bend page's frame 0
+  is held to the same, and the build prints each heading's numbers and the
+  worst of them. `art:validate` checks the same alpha on the shipped
   pages. The r9 timing's `stance_base_offset_in_cel` is not a root-lock point
   and is not used.
 - **The map is data.** `root` is the source point that stands on the foot
@@ -170,13 +184,16 @@ The budgets are measured on the packed r10 pages (one page a character):
   margin, with its foot anchor recorded per heading (ADR 0003). A bend page is
   an extra sheet page beside locomotion and stance (ADR 0052),
   `<name>-g-bend.webp`, shelf-packed in heading order without rotation. A cel
-  whose pixels repeat an earlier cel's is packed once; a repeat the packer is
-  not told is a hold stops the build.
+  whose pixels repeat an earlier cel's is packed once, as a hold the character
+  declares; an undeclared repeat, or a declared hold that is not a repeat,
+  stops the build.
 - **Pinned both ways.** The character's pin file (`art/source/<name>-bend/`)
   records the SHA-256 of every source cel and timing file, and a missing,
   stray or changed one stops the build before anything is written; the build
-  then records every decoded atlas cel's hash for `art:validate`. Two builds
-  write byte-identical pages, data and pins.
+  then records every decoded atlas cel's hash for `art:validate`. Every check,
+  the decoded pages' included, runs before the first file is written, so a
+  failed build leaves the shipped files as they were. Two builds write
+  byte-identical pages, data and pins.
 - **JSON timing and sockets, not TypeScript tables.** Frame names, per-cel
   timing, key frames, sockets and attack cues are written by the packer into
   `<name>-bend.json` beside the pages, one `BendSetDef` a character, and read
@@ -186,8 +203,10 @@ The budgets are measured on the packed r10 pages (one page a character):
 - **Unwired until the plumbing.** `src/content/index.ts`, the manifest and the
   runtime do not read the bend pages or data yet. `art:validate` checks them
   on their own (`BEND_SHEETS`), with `validateBendSets` skipping only the
-  effect cross-reference until the effects are authored; the asset budget
-  counts them because it walks the folder.
+  effect cross-reference until the effects are authored. The skip is explicit:
+  the packer and `art:validate` pass `EFFECTS_NOT_YET_AUTHORED`, and a test
+  fails once any `BendEffectDef` or effect registry exists while either still
+  does. The asset budget counts the pages because it walks the folder.
 - **Which ability plays which attack is not decided here.** The contract names
   a set's attacks and their effects; mapping abilities onto them is the combat
   handoff's job (step 7 below) and gets its field then.
@@ -205,7 +224,9 @@ The budgets are measured on the packed r10 pages (one page a character):
 4. **Manifest plumbing.** Register the bend pages on the character sheets and
    surface the bend sets through content so CI validates them.
 5. **Effect data.** The painted `BendEffectDef`s and sequences for the four
-   elements.
+   elements. Precondition: the packer and `art:validate` stop passing
+   `EFFECTS_NOT_YET_AUTHORED` and pass the effects, so every attack's
+   `effectId` is checked; the skip's tripwire test fails until they do.
 6. **Trajectories.** Straight, arc and whipBolt travel on the presentation
    clock, aimed at the resolved target.
 7. **Choreography and combat handoff.** Attach to sockets; flash, hold and
