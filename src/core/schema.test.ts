@@ -135,10 +135,10 @@ function mutate<T>(value: T, random: () => number): T {
     return copy;
   }
   if (roll < 0.25 && keys.length > 0) delete target[pick(keys)];
-  // No '__proto__' here: `target['__proto__'] = 1` runs the setter and adds no own
-  // key, and a real own key starves the strict tuning schema of passing cases.
-  // The JSON.parse corpus cases cover the key as untrusted input instead.
-  else if (roll < 0.35) target[pick(['extra', 'toString', 'kind'])] = 1;
+  // '__proto__' is a no-op here (`target['__proto__'] = 1` runs the setter and adds
+  // no own key); it stays in the pick list so the seeded sequence is unchanged.
+  // The JSON.parse corpus cases cover a real own '__proto__' key.
+  else if (roll < 0.35) target[pick(['extra', '__proto__', 'toString', 'kind'])] = 1;
   else if (keys.length > 0) target[pick(keys)] = structuredClone(pick(REPLACEMENTS));
   return copy;
 }
