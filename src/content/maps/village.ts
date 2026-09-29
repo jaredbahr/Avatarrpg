@@ -25,20 +25,28 @@ export const BA_DAN_VILLAGE: MapDef = {
   height: 16,
   ambience: 'village',
   legend: { ...LEGEND, l: { terrain: 'stone', blocked: true, blocksSight: false } },
+  /*
+   * The house bodies are solid: their plank floors (`w` until the edges pass)
+   * were walkable cells under the painted roofs. Only the `=` doorsteps where
+   * each paved path meets its house stay open; Gao's routine steps from his
+   * lane at (9,4) up to (10,3), a diagonal that needs (9,3) open. The west
+   * road ends at the ford, `W` at (0,7) and (0,8), flooded this season; a
+   * future west region opens there behind a `Condition`, not through the rim.
+   */
   rows: [
     'TTTT,,,,,,,,,,,,,,TTTTTT',
     'TT,,,,BBBB,,BBBB,,,,,,TT',
-    'T,,,,,BwwB,,BwwB,,,,,,,T',
-    'T,,,,,Bww=,,=wwB,,,,,,,T',
+    'T,,,,,BBBB,,BBBB,,,,,,,T',
+    'T,,,,,BBB=,,=BBB,,,,,,,T',
     'T,,,,,,,,=,,=,,,,,,,,,,T',
     'T,,,,,,,,=====,,,,,,,,,T',
     'T,,,,,~~~=~~~=,,,,,,,,,T',
-    '======================..',
-    '======================..',
+    'W=====================..',
+    'W=====================..',
     'T,,,,,,,,=====,,,,,,,,,T',
     'T,,,,,BBB=,,,=BBBB,,,,,T',
-    'T,,,,,Bww=,,,=BwwB,,,,,T',
-    'T,,,,,BwwB,,,BwwB,,,,,,T',
+    'T,,,,,BBB=,,,=BBBB,,,,,T',
+    'T,,,,,BBBB,,,BBBB,,,,,,T',
     'T,,,,,BBBB,,,BBBB,,,,,,T',
     'TT,,,,,,,,,,,,,,,,,,,,TT',
     'TTTT,,,,,,,,,,,,,,TTTTTT',
@@ -55,6 +63,17 @@ export const BA_DAN_VILLAGE: MapDef = {
   ),
   partySpawns: [{ x: 3, y: 7 }],
   exit: { pos: { x: 23, y: 7 }, label: 'The east road, toward the quarry' },
+  /*
+   * The only walkable rim is the lawn along the north and south edges, and
+   * both are bands drawn just outside it: north, a dry-stone tea terrace
+   * (`BA_DAN_NORTH_TERRACE`); south, the canal's low kerb and water. Every
+   * other rim cell is a tree, the ford, or the east road's two-cell mouth.
+   */
+  edges: [
+    { side: 'north', span: [4, 17], treatment: 'band' },
+    { side: 'south', span: [4, 17], treatment: 'band' },
+  ],
+  edgeContract: 'enforce',
   restSpots: [{ pos: { x: 10, y: 5 }, label: "Mira's table" }],
   npcs: [
     {

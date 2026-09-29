@@ -75,7 +75,14 @@ export function connectAct1(map: MapDef): MapDef {
             'East road → Forest Road',
             mouth(23, [7, 8]),
           ),
-          route({ x: 19, y: 14 }, 'ba_dan_riverside', { x: 10, y: 19 }, 'River path → Riverside'),
+          route(
+            { x: 19, y: 14 },
+            'ba_dan_riverside',
+            { x: 10, y: 19 },
+            'River path → Riverside',
+            // The path's mouth between the rim trees at (18,15) and (21,15).
+            [18, 19, 20].map((x) => ({ x, y: 14 })),
+          ),
         ],
       };
     case 'ba_dan_riverside':
@@ -98,7 +105,8 @@ export function connectAct1(map: MapDef): MapDef {
           route(
             { x: 10, y: 20 },
             'ba_dan_village',
-            { x: 18, y: 14 },
+            // One step inside the village's river-path mouth, never on it.
+            { x: 19, y: 13 },
             'South path → Ba Dan Village',
             // The south path from row 20 to the rim: it leaves with no tile to miss.
             [

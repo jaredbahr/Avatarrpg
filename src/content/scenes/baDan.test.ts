@@ -443,8 +443,10 @@ it('keeps court trunks solid and both shop doors and village routes reachable', 
     { x: 17, y: 6 },
   ])
     expect(paths.has(posKey(pos)), `Unreachable court destination ${posKey(pos)}`).toBe(true);
+  // The road is open from the ford's bank to the east gate; the ford is not.
   for (const y of [7, 8]) {
-    for (let x = 0; x < map.width; x++) expect(tileAt(grid, { x, y })?.blocked).not.toBe(true);
+    expect(tileAt(grid, { x: 0, y })).toMatchObject({ terrain: 'water_deep', blocked: true });
+    for (let x = 1; x < map.width; x++) expect(tileAt(grid, { x, y })?.blocked).not.toBe(true);
   }
 });
 

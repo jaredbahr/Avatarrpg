@@ -99,11 +99,13 @@ describe('nearby exploration guidance', () => {
   });
 
   it('keeps a single-tile exit matching only its own tile (M2)', () => {
-    const village = CONTENT.maps.get('ba_dan_village');
-    if (!village) throw new Error('Missing Ba Dan village');
-    const single = village.exits?.find((exit) => exit.toMapId === 'ba_dan_riverside');
-    if (!single) throw new Error('Missing the river path');
-    expect(nearbyExits(village, single.pos)).toContain(single);
-    expect(nearbyExits(village, { x: single.pos.x - 2, y: single.pos.y })).toEqual([]);
+    // The village's river path became a three-cell mouth; the quarry floor's
+    // west path is still one tile.
+    const floor = CONTENT.maps.get('quarry_floor');
+    if (!floor) throw new Error('Missing the quarry floor');
+    const single = floor.exits?.find((exit) => exit.toMapId === 'ambush_road');
+    if (!single || single.area) throw new Error('Missing the single-tile west path');
+    expect(nearbyExits(floor, single.pos)).toContain(single);
+    expect(nearbyExits(floor, { x: single.pos.x + 2, y: single.pos.y })).toEqual([]);
   });
 });
