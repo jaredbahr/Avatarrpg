@@ -112,6 +112,75 @@ test.describe('map viewport', () => {
 });
 
 /**
+ * A raised tile is drawn lifted a quarter tile a tier (ADR 0065), so the top of
+ * its lifted diamond lies over the flat cell up and to the left of it. Pointing
+ * there must still act on the raised tile, on both backends, for the hover
+ * highlight and for a Move tap alike: the pick follows the lift, not the grid.
+ */
+for (const renderer of ['canvas', 'webgl'] as const) {
+  test(`a raised tile's lifted top picks that tile on ${renderer}`, async ({ page }) => {
+    allowSoftwareWebgl(test, renderer);
+    await resetStorage(page, `?renderer=${renderer}`);
+    await startGame(page, ['Solo'], ['kaya'], 'raised-picking');
+    await enterNode(page, 'battle_grumbler');
+    await expect(page.locator('.action-bar')).toBeVisible();
+    await takeTurn(page);
+    await waitForIdle(page);
+    await settleLayout(page);
+    expect(await page.evaluate(() => window.fnt?.app.rendererBackend())).toBe(renderer);
+
+    // The Driller floor's ramp benches and gantry perches: find one whose
+    // lifted top is on the canvas and not under the HUD.
+    const aim = await page.evaluate(() => {
+      const app = window.fnt?.app;
+      const camera = app?.rendererCamera();
+      const grid = app?.state?.battle?.grid;
+      const canvas = document.querySelector<HTMLCanvasElement>('.map-canvas');
+      if (!camera || !grid || !canvas) return null;
+      const rect = canvas.getBoundingClientRect();
+      const m = camera.groundTransform;
+      for (const cell of [
+        { x: 8, y: 10 },
+        { x: 5, y: 10 },
+        { x: 12, y: 10 },
+        { x: 8, y: 1 },
+        { x: 5, y: 1 },
+        { x: 2, y: 10 },
+        { x: 17, y: 10 },
+      ]) {
+        const tile = grid.tiles[cell.y * grid.width + cell.x];
+        if (!tile || tile.blocked || tile.elevation < 1) continue;
+        // Near the far corner of the lifted top: a quarter tile a tier up the screen.
+        const gx = (cell.x + 0.15) * 64;
+        const gy = (cell.y + 0.15) * 64;
+        const x = rect.left + m.a * gx + m.c * gy + m.tx;
+        const y = rect.top + m.b * gx + m.d * gy + m.ty - camera.tilePx * 0.25 * tile.elevation;
+        if (x < rect.left + 20 || x > rect.right - 20 || y < rect.top + 20 || y > rect.bottom - 20)
+          continue;
+        if (document.elementFromPoint(x, y) !== canvas) continue;
+        return { cell, x, y };
+      }
+      return null;
+    });
+    expect(aim, 'no raised tile on screen').not.toBeNull();
+    if (!aim) return;
+    type Picks = { hover: { x: number; y: number } | null; pending: { x: number; y: number } | null };
+    const picks = () =>
+      page.evaluate(() => {
+        const scene = (window.fnt?.app as unknown as { scene: Picks }).scene;
+        return { hover: scene.hover, pending: scene.pending };
+      });
+
+    await page.mouse.move(aim.x, aim.y);
+    await expect.poll(async () => (await picks()).hover).toEqual(aim.cell);
+
+    await page.getByRole('button', { name: /^Move/ }).click();
+    await page.mouse.click(aim.x, aim.y);
+    await expect.poll(async () => (await picks()).pending).toEqual(aim.cell);
+  });
+}
+
+/**
  * Independent of groundTransform and camera.project: these clicks use the
  * approved 2:1 diamond basis itself. Clicks do not follow a faulty exposed
  * affine back to the same wrong tile. Off-centre samples cover both diamond edges.
