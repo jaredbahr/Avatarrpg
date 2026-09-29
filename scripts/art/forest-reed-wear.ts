@@ -17,7 +17,11 @@
  * following a tile edge. `forest-route-ground.ts` paints it into the route plate.
  */
 import { readFileSync } from 'node:fs';
-import { FOREST_BANK_NEST_REEDS, FOREST_POND_REEDS } from '../../src/content/scenes/forestRoad';
+import {
+  FOREST_BANK_NEST_REEDS,
+  FOREST_CREEK_REEDS,
+  FOREST_POND_REEDS,
+} from '../../src/content/scenes/forestRoad';
 import type { SceneScenery } from '../../src/core/types';
 import { tileNoise } from '../../src/render/painters/shapes';
 import { parseHex, pixelAt } from './lib/image';
@@ -26,7 +30,11 @@ import { decodeWebp } from './lib/webp';
 import { FOREST_PIECE_TONES } from './forest-village-material';
 
 /** The pieces this seats: every forest scenery piece that opts out of the contact shadow. */
-export const REED_PIECES: readonly SceneScenery[] = [...FOREST_POND_REEDS, FOREST_BANK_NEST_REEDS];
+export const REED_PIECES: readonly SceneScenery[] = [
+  ...FOREST_POND_REEDS,
+  ...FOREST_CREEK_REEDS,
+  FOREST_BANK_NEST_REEDS,
+];
 
 /** A painted foot, in scene world pixels. */
 export interface ReedFoot {

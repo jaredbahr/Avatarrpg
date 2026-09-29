@@ -294,27 +294,45 @@ export const FOREST_BANK_NEST_REEDS: SceneScenery = {
  */
 /** The packed fringe's own pixel size; every placement keeps this aspect. */
 export const REED_PLATE = { width: 512, height: 313 } as const;
-export const FOREST_POND_REEDS: readonly SceneScenery[] = (
-  [
-    { x: 4, y: 5, width: 96 },
-    { x: 7, y: 7, width: 104 },
-    { x: 5, y: 8, width: 120 },
-  ] as const
-).map(({ x, y, width }) => {
+interface ReedPlacement {
+  readonly x: number;
+  readonly y: number;
+  readonly width: number;
+  /** Where in its cell the fringe's foot stands, in tiles; the middle by default. */
+  readonly foot?: Vec2;
+}
+function reedFringe(water: string, { x, y, width, foot }: ReedPlacement): SceneScenery {
   // The packed plate's own aspect, so the artist's fringe is never stretched.
   const height = Math.round((width * REED_PLATE.height) / REED_PLATE.width);
+  const fx = x + (foot?.x ?? 0.5),
+    fy = y + (foot?.y ?? 0.5);
   return {
-    id: `forest-pond-reeds-${x}-${y}`,
+    id: `forest-${water}-reeds-${x}-${y}`,
     url: `${root}pond-reeds.webp`,
-    x: 768 + (x - y) * 64 - width / 2,
-    y: (x + y + 1) * 32 - height,
+    x: 768 + (fx - fy) * 64 - width / 2,
+    y: (fx + fy) * 32 - height,
     width,
     height,
     footprint: [{ x, y }],
     depth: { x: x + 0.1, y: y + 0.08 },
     contactShadow: false,
   };
-});
+}
+export const FOREST_POND_REEDS: readonly SceneScenery[] = [
+  { x: 4, y: 5, width: 96 },
+  { x: 7, y: 7, width: 104 },
+  { x: 5, y: 8, width: 120 },
+].map((placement) => reedFringe('pond', placement));
+/**
+ * The same fringe on the creek's north bank, rooted at the water's edge of
+ * its cell rather than the middle so it leans out over the bank: at the
+ * corner where the grass pokes into the west pool, and part-way along the
+ * east pool's straight run, so neither reads as a ruled edge.
+ */
+export const FOREST_CREEK_REEDS: readonly SceneScenery[] = [
+  { x: 3, y: 10, width: 100, foot: { x: 0.84, y: 0.84 } },
+  { x: 13, y: 10, width: 116, foot: { x: 0.45, y: 1 } },
+].map((placement) => reedFringe('creek', placement));
 
 /**
  * The forest road does not end where the rules stop. This apron carries the
@@ -419,6 +437,7 @@ export const FOREST_ROAD_SCENE: MapScene = {
     FOREST_DEADFALL,
     FOREST_BANK_NEST_REEDS,
     ...FOREST_POND_REEDS,
+    ...FOREST_CREEK_REEDS,
   ],
   flock: FOREST_FLOCK,
 };
