@@ -7,8 +7,11 @@ import {
   GARDEN_TONES,
   GRAIN,
   MATERIAL_TONES,
+  flagstoneTexel,
   gardenPlatePath,
+  onExit,
   packGardenPlate,
+  worldLogical,
 } from './ba-dan-garden';
 
 describe('Ba Dan outer garden', () => {
@@ -30,6 +33,7 @@ describe('Ba Dan outer garden', () => {
     );
     let painted = 0;
     let clear = 0;
+    let exit = 0;
     for (const plate of BA_DAN_GARDEN_PLATES) {
       const image = packGardenPlate(plate);
       for (let y = 0; y < image.height; y += GRAIN) {
@@ -39,7 +43,14 @@ describe('Ba Dan outer garden', () => {
           else {
             painted++;
             expect(rgba[3]).toBe(255);
-            expect(allowed.has(rgba.slice(0, 3).join(','))).toBe(true);
+            const tx = (plate.x + x) / GRAIN;
+            const ty = (plate.y + y) / GRAIN;
+            const at = worldLogical((tx + 0.5) * GRAIN, (ty + 0.5) * GRAIN);
+            // A road exit's last tile is the painted flagstone, not a garden tone.
+            if (onExit(at.x, at.y)) {
+              exit++;
+              expect(rgba.slice(0, 3)).toEqual([...flagstoneTexel(tx, ty)]);
+            } else expect(allowed.has(rgba.slice(0, 3).join(','))).toBe(true);
           }
           for (let dy = 0; dy < GRAIN; dy++)
             for (let dx = 0; dx < GRAIN; dx++) expect(pixelAt(image, x + dx, y + dy)).toEqual(rgba);
@@ -48,35 +59,35 @@ describe('Ba Dan outer garden', () => {
     }
     expect(painted).toBeGreaterThan(100_000);
     expect(clear).toBeGreaterThan(1_000);
+    expect(exit, 'both road exits carry flagstone under the courts').toBeGreaterThan(1_000);
   });
 
-  it('uses a clustered transition mask rather than a repeating ordered screen', () => {
-    const isTransition = (rgba: readonly number[]): boolean =>
-      rgba[0] === MATERIAL_TONES.road.shadow[0] &&
-      rgba[1] === MATERIAL_TONES.road.shadow[1] &&
-      rgba[2] === MATERIAL_TONES.road.shadow[2] &&
-      rgba[3] === 255;
-    const samples = BA_DAN_GARDEN_PLATES.map((plate) => {
+  it('wears the ground in clusters rather than a repeating ordered screen', () => {
+    const wear = MATERIAL_TONES.road.shadow.join(',');
+    let worn = 0;
+    let singles = 0;
+    for (const plate of BA_DAN_GARDEN_PLATES) {
       const image = packGardenPlate(plate);
-      return Array.from({ length: image.height / GRAIN }, (_, y) =>
-        Array.from({ length: image.width / GRAIN }, (_, x) =>
-          isTransition(pixelAt(image, x * GRAIN, y * GRAIN)),
-        ),
-      );
-    });
-    let sameAtFour = 0;
-    let compared = 0;
-    for (const sample of samples)
-      for (let y = 0; y < sample.length - 2; y++)
-        for (let x = 0; x < (sample[y]?.length ?? 0) - 2; x++) {
-          const current = sample[y]?.[x] ?? false;
-          const diagonal = sample[y + 2]?.[x + 2] ?? false;
-          if (!current && !diagonal) continue;
-          compared++;
-          if (current === diagonal) sameAtFour++;
+      const isWear = (tx: number, ty: number): boolean =>
+        pixelAt(image, tx * GRAIN, ty * GRAIN)
+          .slice(0, 3)
+          .join(',') === wear;
+      for (let ty = 1; ty < image.height / GRAIN - 1; ty++)
+        for (let tx = 1; tx < image.width / GRAIN - 1; tx++) {
+          if (!isWear(tx, ty)) continue;
+          worn++;
+          // A worn texel with no worn neighbour: the unit an ordered screen is made of.
+          const neighbours = [
+            [-1, 0],
+            [1, 0],
+            [0, -1],
+            [0, 1],
+          ] as const;
+          if (!neighbours.some(([dx, dy]) => isWear(tx + dx, ty + dy))) singles++;
         }
-    // A 4x4 Bayer screen repeats exactly on this diagonal; painted clusters do not.
-    expect(compared).toBeGreaterThan(0);
-    expect(sameAtFour).toBeLessThan(compared * 0.85);
+    }
+    expect(worn).toBeGreaterThan(1_000);
+    // Measured: 37% for the 4x4 Bayer wear of 0fbcc40, 1.6% for these clusters.
+    expect(singles / worn).toBeLessThan(0.05);
   });
 });

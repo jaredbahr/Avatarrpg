@@ -4,22 +4,30 @@
  * The village's authored pieces cover the playable diamond; outside it the page
  * showed through, so the rim read as the edge of a board rather than the edge of
  * a village. This plate carries the terrain that borders the rim outward: the
- * outer garden's pixel-grain meadow (`ba-dan-garden.ts`), continued for about a
- * tile where the outermost logical cell is road or paving, then dissolved into
- * the page in soft stepped bands over the next tile and a half.
+ * outer garden's pixel-grain meadow (`ba-dan-garden.ts`), and where the
+ * outermost logical cell is road or paving, the painted flagstone running on
+ * off the map with grass creeping into it. Past a solid half-tile the whole
+ * plate dissolves into the page in soft stepped bands.
  *
  * Nothing here touches a playable pixel — every sample inside the board stays
  * transparent, which `ba-dan-exterior-apron.test.ts` asserts.
  *
  * npx tsx scripts/art/ba-dan-exterior-apron.ts
  */
-import { BA_DAN_VILLAGE } from '../../src/content/maps/village';
 import {
   BA_DAN_APRON_BANDS,
   BA_DAN_APRON_MAP,
   BA_DAN_EXTERIOR_APRON,
 } from '../../src/content/scenes/baDan';
-import { GRAIN, grassTexel, materialTexel, transitionCluster, worldLogical } from './ba-dan-garden';
+import {
+  flagstoneTexel,
+  GRAIN,
+  grassTexel,
+  rimBorder,
+  texelTouchesBoard,
+  transitionCluster,
+  worldLogical,
+} from './ba-dan-garden';
 import { writeApronPlates } from './lib/apron-plates';
 import { newImage, setPixel } from './lib/image';
 import type { Image } from './lib/image';
@@ -30,12 +38,14 @@ export const STEM = 'exterior-apron';
 export const QUALITY = 90;
 /** Terrain is fully faded out by this far outside the rim, in logical tiles. */
 export const APRON_FADE = 2.2;
-/** The outer cell's road or paving is carried this far before meadow takes over. */
-export const MATERIAL_REACH = 1.15;
+/**
+ * A road exit's flagstone is whole at the rim and loses this share of its
+ * texels to grass by `APRON_FADE`, in clusters: a road running on into the
+ * country, not one that stops.
+ */
+export const EXIT_WEAR = 0.7;
 /** The projection's origin in local pixels, matching the scene's own pieces. */
 const ORIGIN = 1024;
-
-type Terrain = 'grass' | 'road' | 'stone';
 
 function clamp(value: number, min: number, max: number): number {
   return Math.max(min, Math.min(max, value));
@@ -62,24 +72,6 @@ export function apronDepth(x: number, y: number): number {
   return Math.max(-x, x - width, -y, y - height);
 }
 
-/** The terrain of the board cell this exterior point borders, and its depth. */
-export function apronBorders(x: number, y: number): { terrain: Terrain; depth: number } {
-  const { width, height, rows } = BA_DAN_VILLAGE;
-  const column = clamp(Math.floor(x), 0, width - 1);
-  const row = clamp(Math.floor(y), 0, height - 1);
-  const sides = [
-    { depth: -x, cell: rows[row]?.[0] },
-    { depth: x - width, cell: rows[row]?.[width - 1] },
-    { depth: -y, cell: rows[0]?.[column] },
-    { depth: y - height, cell: rows[height - 1]?.[column] },
-  ];
-  const nearest = sides.reduce((best, side) => (side.depth > best.depth ? side : best));
-  const key = nearest.cell ?? ',';
-  const terrain: Terrain =
-    key === '=' ? 'road' : key === '.' || key === 'l' || key === 'B' ? 'stone' : 'grass';
-  return { terrain, depth: nearest.depth };
-}
-
 /** The apron stays solid this far out, then steps softly to nothing by `APRON_FADE`. */
 export const APRON_SOLID = 0.45;
 
@@ -98,11 +90,11 @@ export function apronAlpha(depth: number): number {
 
 /**
  * The garden field (`ba-dan-garden.ts`) continued past the rim. Where the
- * outer cell is road or paving, that material carries on for
- * `MATERIAL_REACH` and hands over to grass in broad two-pixel-grain clusters;
- * the whole plate then dissolves into the page in five continuous alpha bands.
- * It agrees with the garden base texel for texel at the rim because both read
- * the same world lattice.
+ * outer cell is road or paving, the painted flagstone runs on and gives up
+ * `EXIT_WEAR` of itself to grass in broad clusters; the whole plate then
+ * dissolves into the page in five continuous alpha bands. It meets the garden
+ * base texel for texel at the rim because both read the same world lattice
+ * and split the rim texels by `texelTouchesBoard`.
  */
 export function packApron(): Image {
   const image = newImage(BA_DAN_EXTERIOR_APRON.width, BA_DAN_EXTERIOR_APRON.height);
@@ -115,21 +107,22 @@ export function packApron(): Image {
       if (depth <= 0 || depth >= APRON_FADE) continue;
       // A texel covers four screen pixels. At the diamond rim its centre can
       // lie outside while one of those pixel centres lies on playable ground;
-      // skip the whole texel so the apron never overpaints the board and the
-      // two-pixel grain does not fracture into one-pixel teeth.
-      const crossesBoard = [0.5, GRAIN - 0.5].some((dx) =>
-        [0.5, GRAIN - 0.5].some((dy) =>
-          ((point) => apronDepth(point.x, point.y) <= 0)(
-            worldLogical(tx * GRAIN + dx, ty * GRAIN + dy),
-          ),
-        ),
+      // the garden base paints that texel, so skip it here and the apron never
+      // overpaints the board. At the outer edge, likewise, a texel with any
+      // pixel past the fade stays clear, so no pixel lands beyond it.
+      if (texelTouchesBoard(tx, ty)) continue;
+      const pastFade = [0.5, GRAIN - 0.5].some((dx) =>
+        [0.5, GRAIN - 0.5].some((dy) => {
+          const point = worldLogical(tx * GRAIN + dx, ty * GRAIN + dy);
+          return apronDepth(point.x, point.y) >= APRON_FADE;
+        }),
       );
-      if (crossesBoard) continue;
-      const { terrain } = apronBorders(x, y);
+      if (pastFade) continue;
+      const { terrain } = rimBorder(x, y, true);
       const carried =
         terrain !== 'grass' &&
-        transitionCluster(x, y, 83) < 1 - clamp(depth / MATERIAL_REACH, 0, 1);
-      const colour = carried ? materialTexel(terrain, tx, ty) : grassTexel(tx, ty);
+        transitionCluster(x, y, 83) < 1 - EXIT_WEAR * clamp(depth / APRON_FADE, 0, 1);
+      const colour = carried ? flagstoneTexel(tx, ty) : grassTexel(tx, ty);
       const alpha = apronAlpha(depth);
       for (let dy = 0; dy < GRAIN; dy++)
         for (let dx = 0; dx < GRAIN; dx++)

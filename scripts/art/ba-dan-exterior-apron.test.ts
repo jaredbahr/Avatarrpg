@@ -1,19 +1,17 @@
 import { expect, it } from 'vitest';
-import { TERRAIN_STYLES } from '../../src/render/palettes';
-import { pixelAt, parseHex } from './lib/image';
+import { pixelAt } from './lib/image';
+import type { Image } from './lib/image';
+import { GARDEN_TONES, GRAIN } from './ba-dan-garden';
 import {
   APRON_ALPHA_STEPS,
   APRON_FADE,
-  MATERIAL_TONES,
-  MATERIAL_REACH,
   apronDepth,
   apronLogical,
   apronPixel,
   packApron,
 } from './ba-dan-exterior-apron';
 
-const distance = (a: readonly number[], b: readonly number[]): number =>
-  Math.hypot((a[0] ?? 0) - (b[0] ?? 0), (a[1] ?? 0) - (b[1] ?? 0), (a[2] ?? 0) - (b[2] ?? 0));
+const grassTones = new Set(Object.values(GARDEN_TONES).map((tone) => tone.join(',')));
 
 // The shipped files are the ring cut into bands; `apron-plates.test.ts` proves
 // that cut byte-for-byte. These are the ring's own promises.
@@ -31,7 +29,8 @@ it('packs an apron that never paints a playable pixel', () => {
       const { x, y } = apronLogical(px, py);
       const depth = apronDepth(x, y);
       if (alpha === 0) {
-        if (depth > 0.6 && depth < APRON_FADE) transitionHoles++;
+        // A texel straddling the fade stays clear, so allow its width there.
+        if (depth > 0.6 && depth < APRON_FADE - 0.05) transitionHoles++;
         continue;
       }
       if (depth <= 0) inside++;
@@ -46,7 +45,7 @@ it('packs an apron that never paints a playable pixel', () => {
   expect(transitionHoles, 'stepped bands have no halftone holes before the outer edge').toBe(0);
 });
 
-it('starts opaque at the rim, has room for the whole band, and carries grass outward', () => {
+it('starts opaque at the rim, has room for the whole band, and runs the roads on', () => {
   // Byte-identical to the shipped file, which the first test pins.
   const image = packApron();
   const alphaAt = (x: number, y: number): number => {
@@ -60,48 +59,75 @@ it('starts opaque at the rim, has room for the whole band, and carries grass out
   expect(image.height).toBe(1600);
   expect(apronDepth(-2.4, 8)).toBeGreaterThan(0);
   expect(apronDepth(26.4, 8)).toBeGreaterThan(0);
-  // The meadow takes over once the outer cell's material has had its say.
-  const grass = parseHex(TERRAIN_STYLES.grass.fill);
-  const road = parseHex(TERRAIN_STYLES.road.fill);
-  const sample = (x: number, y: number): readonly number[] => {
+
+  const isGrass = (x: number, y: number): boolean => {
     const px = apronPixel(x, y);
-    return pixelAt(image, px.x, px.y).slice(0, 3);
+    return grassTones.has(pixelAt(image, px.x, px.y).slice(0, 3).join(','));
   };
-  expect(distance(sample(-0.4, 7.5), road)).toBeLessThan(distance(sample(-0.4, 7.5), grass));
-  expect(distance(sample(10.5, -MATERIAL_REACH - 0.2), grass)).toBeLessThan(
-    distance(sample(10.5, -MATERIAL_REACH - 0.2), road),
-  );
-  expect(distance(sample(-1.6, 3.5), grass)).toBeLessThan(distance(sample(-1.6, 3.5), road));
+  // Share of an exit's painted texels, between two depths past the rim, that
+  // are flagstone.
+  const paved = (side: 'west' | 'east', from: number, to: number): number => {
+    let stone = 0,
+      all = 0;
+    for (let depth = from; depth < to; depth += 0.05)
+      for (let along = 7.1; along < 8.9; along += 0.05) {
+        const x = side === 'west' ? -depth : 24 + depth;
+        if (alphaAt(x, along) === 0) continue;
+        all++;
+        if (!isGrass(x, along)) stone++;
+      }
+    return stone / all;
+  };
+  // A road exit is whole at the rim and still a road out into the fade; grass
+  // creeps into it rather than closing it off.
+  for (const side of ['west', 'east'] as const) {
+    const rim = paved(side, 0, 0.5);
+    const fade = paved(side, 1.5, APRON_FADE);
+    expect(rim, `${side} exit at the rim`).toBeGreaterThan(0.95);
+    expect(fade, `${side} exit into the fade`).toBeGreaterThan(0.2);
+    expect(fade, `${side} exit wears to grass`).toBeLessThan(rim - 0.2);
+  }
+  // Grass borders carry grass.
+  expect(isGrass(10.5, -1.35), 'north lawn').toBe(true);
+  expect(isGrass(-1.6, 3.5), 'west trees').toBe(true);
 });
 
-it('uses a clustered transition mask rather than a repeating ordered screen', () => {
-  const image = packApron();
-  const materialColours = new Set(
-    Object.values(MATERIAL_TONES)
-      .flatMap((tones) => Object.values(tones))
-      .map((tone) => tone.join(',')),
-  );
-  const samples = Array.from({ length: image.height / 2 }, (_, y) =>
-    Array.from({ length: image.width / 2 }, (_, x) => {
-      const px = x * 2;
-      const py = y * 2;
-      const rgba = pixelAt(image, px, py);
-      if (rgba[3] === 0) return null;
-      return materialColours.has(rgba.slice(0, 3).join(','));
-    }),
-  );
-  let sameAtFour = 0;
-  let compared = 0;
-  for (let y = 0; y < samples.length - 2; y++)
-    for (let x = 0; x < (samples[y]?.length ?? 0) - 2; x++) {
-      const current = samples[y]?.[x];
-      const diagonal = samples[y + 2]?.[x + 2];
-      if (current === null || diagonal === null) continue;
-      if (!current && !diagonal) continue;
-      compared++;
-      if (current === diagonal) sameAtFour++;
+/**
+ * Texels that differ from all four neighbours. An ordered screen is made of
+ * them; painted clusters and flat bands have almost none. The class of a texel
+ * is its coverage and, if painted, whether it is meadow.
+ */
+function singletons(image: Image): { singles: number; painted: number } {
+  const w = image.width / GRAIN;
+  const h = image.height / GRAIN;
+  const cls = new Int8Array(w * h);
+  for (let ty = 0; ty < h; ty++)
+    for (let tx = 0; tx < w; tx++) {
+      const rgba = pixelAt(image, tx * GRAIN, ty * GRAIN);
+      cls[ty * w + tx] = rgba[3] === 0 ? 0 : grassTones.has(rgba.slice(0, 3).join(',')) ? 1 : 2;
     }
-  // A 4x4 Bayer screen repeats exactly on this diagonal; carried clusters do not.
-  expect(compared).toBeGreaterThan(0);
-  expect(sameAtFour).toBeLessThan(compared * 0.85);
+  let singles = 0,
+    painted = 0;
+  for (let ty = 1; ty < h - 1; ty++)
+    for (let tx = 1; tx < w - 1; tx++) {
+      const self = cls[ty * w + tx];
+      const around = [
+        cls[ty * w + tx - 1],
+        cls[ty * w + tx + 1],
+        cls[(ty - 1) * w + tx],
+        cls[(ty + 1) * w + tx],
+      ];
+      // Only the band itself: a painted texel, or a hole with paint around it.
+      if (self === 0 && around.every((c) => c === 0)) continue;
+      if (self !== 0) painted++;
+      if (around.every((c) => c !== self)) singles++;
+    }
+  return { singles, painted };
+}
+
+it('uses clusters and flat bands rather than a repeating ordered screen', () => {
+  const { singles, painted } = singletons(packApron());
+  expect(painted).toBeGreaterThan(10_000);
+  // Measured: 45% for the 4x4 Bayer apron of 0fbcc40, 0.002% for this one.
+  expect(singles / painted).toBeLessThan(0.02);
 });

@@ -20,21 +20,27 @@
  * - the exterior apron (`ba-dan-exterior-apron.ts`), which continues it past
  *   the rim and dissolves it into the page in soft stepped bands.
  *
+ * Where a road leaves the map both carry the painted flagstone instead
+ * (`flagstoneTexel`), so the road runs on off the board rather than ending in
+ * a strip of meadow and a patch of some other stone.
+ *
  * Flat clusters of four tones and a few tufts, no gradient: the ground ink
  * rule keeps plain grass free of outline.
  *
  * npx tsx scripts/art/ba-dan-garden.ts
  */
-import { mkdirSync, writeFileSync } from 'node:fs';
+import { mkdirSync, readFileSync, writeFileSync } from 'node:fs';
+import { BA_DAN_VILLAGE } from '../../src/content/maps/village';
 import {
   BA_DAN_APRON_MAP,
+  BA_DAN_COURTYARD_GROUND,
   BA_DAN_GARDEN_PLATES,
   BA_DAN_SCENE,
 } from '../../src/content/scenes/baDan';
 import { tileNoise } from '../../src/render/painters/shapes';
-import { newImage, setPixel } from './lib/image';
+import { newImage, pixelAt, setPixel } from './lib/image';
 import type { Image } from './lib/image';
-import { encodeWebpLossless } from './lib/webp';
+import { decodeWebp, encodeWebpLossless } from './lib/webp';
 
 export const DIRECTORY = 'public/art/maps/ba-dan-scene';
 /** World pixels per texel: the restyled scenery's two-screen-pixel grain at zoom 1.2. */
@@ -57,10 +63,14 @@ export const GARDEN_TONES = {
   light: [170, 175, 101],
 } as const satisfies Record<string, Rgb>;
 
-/** Road and paving tones, the art bible's ground triples, for the exits the apron carries on. */
+/**
+ * The art bible's road triple. Only its shadow is used, as the packed-earth
+ * wear around an upright piece's footprint; the road exits are the painted
+ * flagstone itself (`flagstoneTexel`). The bible's paving triple is near white
+ * and read as a glitch where it carried the east road past the rim.
+ */
 export const MATERIAL_TONES = {
   road: { shadow: [0x8e, 0x70, 0x49], base: [0xb3, 0x90, 0x64], light: [0xc7, 0xa8, 0x7d] },
-  stone: { shadow: [0xb3, 0xa4, 0x88], base: [0xd8, 0xcb, 0xb0], light: [0xef, 0xe6, 0xd2] },
 } as const satisfies Record<string, Record<'shadow' | 'base' | 'light', Rgb>>;
 
 /** World pixel to logical map coordinates; the inverse of the projection. */
@@ -74,6 +84,87 @@ export function worldLogical(wx: number, wy: number): { x: number; y: number } {
 export function boardDepth(x: number, y: number): number {
   const { width, height } = BA_DAN_APRON_MAP;
   return Math.max(-x, x - width, -y, y - height);
+}
+
+/**
+ * Whether any of a texel's four screen-pixel centres lies on the board. The
+ * garden paints exactly these texels and the apron exactly the rest, so the
+ * two meet along the rim with neither a gap nor an overlap. (Painting only
+ * texels whose centre was on the board left a dotted line of page along the
+ * whole rim: the texels the apron skips because they touch the board.)
+ */
+export function texelTouchesBoard(tx: number, ty: number): boolean {
+  return [0.5, GRAIN - 0.5].some((dx) =>
+    [0.5, GRAIN - 0.5].some((dy) => {
+      const { x, y } = worldLogical(tx * GRAIN + dx, ty * GRAIN + dy);
+      return boardDepth(x, y) <= 0;
+    }),
+  );
+}
+
+type Terrain = 'grass' | 'road' | 'stone';
+
+/**
+ * The rim side nearest a logical point, on or off the board: its signed depth
+ * (negative inside) and the terrain of the rim cell the point lines up with.
+ * `ragged` jitters that line-up by up to a sixth of a tile on a clustered
+ * mask, so a road carried past the rim keeps no ruled edge.
+ */
+export function rimBorder(
+  x: number,
+  y: number,
+  ragged = false,
+): { terrain: Terrain; depth: number } {
+  const { width, height, rows } = BA_DAN_VILLAGE;
+  const jitter = ragged ? (transitionCluster(x, y, 89) - 0.5) / 3 : 0;
+  const column = Math.max(0, Math.min(width - 1, Math.floor(x + jitter)));
+  const row = Math.max(0, Math.min(height - 1, Math.floor(y + jitter)));
+  const sides = [
+    { depth: -x, cell: rows[row]?.[0] },
+    { depth: x - width, cell: rows[row]?.[width - 1] },
+    { depth: -y, cell: rows[0]?.[column] },
+    { depth: y - height, cell: rows[height - 1]?.[column] },
+  ];
+  const nearest = sides.reduce((best, side) => (side.depth > best.depth ? side : best));
+  const key = nearest.cell ?? ',';
+  const terrain: Terrain =
+    key === '=' ? 'road' : key === '.' || key === 'l' || key === 'B' ? 'stone' : 'grass';
+  return { terrain, depth: nearest.depth };
+}
+
+/**
+ * How far inside the rim the garden base lays an exit's flagstone. The painted
+ * courts feather out over the last 0.4 tiles; under that feather the road now
+ * fades into road instead of into a strip of meadow.
+ */
+export const EXIT_INSET = 1;
+
+/** Whether a point is on a road exit: the rim cell it lines up with is road or paving. */
+export function onExit(x: number, y: number): boolean {
+  const { terrain, depth } = rimBorder(x, y, true);
+  return terrain !== 'grass' && depth > -EXIT_INSET;
+}
+
+const COURTYARD = await decodeWebp(
+  new Uint8Array(readFileSync(`${DIRECTORY}/courtyard-ground.webp`)),
+);
+
+/**
+ * The painted flagstone at a world texel: the courtyard plate's broad
+ * flagstone interior (cells x5..9, y7..8), tiled on the logical grid exactly as
+ * `ba-dan-neighborhood-ground.ts` tiles it for the east gate approach, so the
+ * slabs carry on across the rim instead of changing material there.
+ */
+export function flagstoneTexel(tx: number, ty: number): Rgb {
+  const { x, y } = worldLogical((tx + 0.5) * GRAIN, (ty + 0.5) * GRAIN);
+  const sx = 5 + (((Math.floor(x) % 5) + 5) % 5) + (x - Math.floor(x));
+  const sy = 7 + (((Math.floor(y) % 2) + 2) % 2) + (y - Math.floor(y));
+  const [r, g, b] = pixelAt(
+    COURTYARD,
+    Math.floor(ORIGIN + (sx - sy) * 64 - BA_DAN_COURTYARD_GROUND.x),
+    Math.floor((sx + sy) * 32 - BA_DAN_COURTYARD_GROUND.y),
+  );
+  return [r, g, b];
 }
 
 /** The texel's centre in world pixels, for a world pixel inside it. */
@@ -181,14 +272,6 @@ export function grassTexel(tx: number, ty: number): Rgb {
   return tone === 0 ? GARDEN_TONES.shadow : tone === 1 ? GARDEN_TONES.base : GARDEN_TONES.light;
 }
 
-/** A material (road or paving) texel, clustered like the grass. */
-export function materialTexel(material: keyof typeof MATERIAL_TONES, tx: number, ty: number): Rgb {
-  const { x, y } = worldLogical((tx + 0.5) * GRAIN, (ty + 0.5) * GRAIN);
-  const tones = MATERIAL_TONES[material];
-  const tone = band(x, y, tx, ty);
-  return tone === 0 ? tones.shadow : tone === 1 ? tones.base : tones.light;
-}
-
 const FOOTPRINT_CELLS = BA_DAN_SCENE.scenery.flatMap((piece) => piece.footprint);
 
 /** Clustered packed-earth wear outside an upright piece's logical footprint. */
@@ -209,8 +292,9 @@ function footprintWear(x: number, y: number, tx: number, ty: number): Rgb | null
 }
 
 /**
- * One opaque plate of the garden base: every texel whose centre is on the
- * board is grass; everything else is clear, for the apron to continue.
+ * One opaque plate of the garden base: every texel that touches the board is
+ * grass, or flagstone on a road exit's last tile; everything else is clear,
+ * for the apron to continue.
  */
 export function packGardenPlate(plate: {
   readonly x: number;
@@ -223,9 +307,11 @@ export function packGardenPlate(plate: {
   const image = newImage(plate.width, plate.height);
   for (let ty = plate.y / GRAIN; ty < (plate.y + plate.height) / GRAIN; ty++) {
     for (let tx = plate.x / GRAIN; tx < (plate.x + plate.width) / GRAIN; tx++) {
+      if (!texelTouchesBoard(tx, ty)) continue;
       const at = worldLogical((tx + 0.5) * GRAIN, (ty + 0.5) * GRAIN);
-      if (boardDepth(at.x, at.y) > 0) continue;
-      const colour = footprintWear(at.x, at.y, tx, ty) ?? grassTexel(tx, ty);
+      const colour = onExit(at.x, at.y)
+        ? flagstoneTexel(tx, ty)
+        : (footprintWear(at.x, at.y, tx, ty) ?? grassTexel(tx, ty));
       for (let dy = 0; dy < GRAIN; dy++)
         for (let dx = 0; dx < GRAIN; dx++)
           setPixel(image, tx * GRAIN - plate.x + dx, ty * GRAIN - plate.y + dy, [...colour, 255]);
