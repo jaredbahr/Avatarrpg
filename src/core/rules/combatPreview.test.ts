@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { CONTENT } from '../../content';
 import { RngCursor } from '../rng';
 import { DEFAULT_TILE, tileAt, withSurface, withTile } from './grid';
-import { hitChance, rollHit } from './damage';
+import { hitBreakdown, hitChance, rollHit } from './damage';
 import { weatherAt } from './obscurement';
 import { previewAbility, resolveAbility } from './abilities';
 import { BattleDraft } from '../state/battleDraft';
@@ -43,6 +43,31 @@ function resolve(battle: BattleState, caster: Unit, abilityId: string, target: V
   if (!live) throw new Error('caster missing from draft');
   resolveAbility(draft, live, ability(abilityId), target, draft.rng);
   return draft;
+}
+
+/** Flat, empty ground so a shove path has nothing to snag on. */
+function openGround(battle: BattleState): BattleState {
+  return {
+    ...battle,
+    grid: {
+      ...battle.grid,
+      tiles: battle.grid.tiles.map((tile) => ({
+        ...tile,
+        blocked: false,
+        blocksSight: false,
+        cover: false,
+        elevation: 0,
+        terrain: 'dirt',
+      })),
+    },
+  };
+}
+
+/** Wall a single cell's sight without changing anything else about the ground. */
+function withSightBlocker(battle: BattleState, pos: Vec2): BattleState {
+  const tile = tileAt(battle.grid, pos);
+  if (!tile) throw new Error(`Off-grid blocker ${pos.x},${pos.y}`);
+  return { ...battle, grid: withTile(battle.grid, pos, { ...tile, blocksSight: true }) };
 }
 
 function withStatus(unit: Unit, id: StatusId): Unit {
@@ -176,6 +201,8 @@ describe('bounded combat outcome previews', () => {
     const selfHeal = healing.targets.find((target) => target.unitId === caster.id);
     expect(selfHeal?.heal).toBe(caster.base.maxHp - caster.hp);
     expect(selfHeal?.healAtCapacity).toBe(false);
+    // Nothing was rolled, so there is nothing to break down.
+    expect(selfHeal?.hitBreakdown).toBeNull();
     expect(selfHeal?.clearedStatuses).toEqual(['burning', 'blinded']);
 
     const ally = battle.units.find((unit) => unit.id === 'p1');
@@ -435,6 +462,41 @@ describe('bounded combat outcome previews', () => {
     const refreshPreview = previewAbility(CONTENT, alreadyIced, bossCaster, refreshIce, boss.pos);
     expect(refreshPreview.surfaceContacts).toEqual([]);
     expect(refreshPreview.targets).toEqual([]);
+  });
+
+  it('pushes a size-2 caster away from the cell that reached the target', () => {
+    const source = battleFor('enc_quarry_gate');
+    const casterId = source.units.find((unit) => unit.faction === 'party')?.id;
+    const victimId = source.units.find((unit) => unit.faction === 'enemy')?.id;
+    if (!casterId || !victimId) throw new Error('size-2 caster fixture is incomplete');
+
+    const target = { x: 2, y: 5 };
+    const placedBattle = placed(
+      openGround(source),
+      { [casterId]: { x: 2, y: 2 }, [victimId]: target },
+      [casterId, victimId],
+    );
+    /*
+     * (2,3) walls the anchor cell (2,2) off from the target, so only the second
+     * cell (3,2) can see it. That cell is the firing origin, and the push has
+     * to run away from it — down-left here, not straight down from the anchor.
+     */
+    const blocked = withSightBlocker(placedBattle, { x: 2, y: 3 });
+    const battle: BattleState = {
+      ...blocked,
+      units: blocked.units.map((unit) =>
+        unit.id === casterId ? { ...unit, size: 2 as const } : unit,
+      ),
+    };
+    const caster = battle.units.find((unit) => unit.id === casterId);
+    if (!caster) throw new Error('size-2 caster is missing');
+    expect(caster.size).toBe(2);
+
+    const preview = previewAbility(CONTENT, battle, caster, ability('air_blast'), target);
+    expect(preview.shoves.find((shove) => shove.id === victimId)?.to).toEqual({ x: 0, y: 7 });
+
+    const actual = resolve(battle, caster, 'air_blast', target);
+    expect(actual.unit(victimId)?.pos).toEqual({ x: 0, y: 7 });
   });
 
   it('records lethal surface contact with actual HP loss and no post-death status', () => {
@@ -736,5 +798,48 @@ describe('obscurement preview parity', () => {
     expect(rolls(CONTENT, [{ x: 5, y: 2 }], 0)).toBe(0.65);
     expect(rolls(CONTENT, [{ x: 3, y: 2 }], 0)).toBe(0.75);
     expect(rolls(stormContent(), [], 2)).toBe(0.6);
+  });
+
+  it('hands the confirm step the whole breakdown, not just the total', () => {
+    // A cloud on the target and one on the line, cover on the target's tile and
+    // the caster a tier above: every component is non-zero at once.
+    const base = pair(CONTENT, [
+      { x: 5, y: 2 },
+      { x: 3, y: 2 },
+    ]);
+    const casterTile = tileAt(base.battle.grid, base.caster.pos);
+    const victimTile = tileAt(base.battle.grid, base.victim.pos);
+    if (!casterTile || !victimTile) throw new Error('Missing breakdown fixture tiles');
+    const grid = withTile(
+      withTile(base.battle.grid, base.caster.pos, { ...casterTile, elevation: 1 }),
+      base.victim.pos,
+      { ...victimTile, cover: true },
+    );
+    const battle: BattleState = { ...base.battle, grid };
+    const { caster, victim } = base;
+
+    const preview = previewAbility(CONTENT, battle, caster, ability('rock_throw'), victim.pos);
+    const row = preview.targets.find((t) => t.unitId === victim.id);
+    if (!row) throw new Error('Preview lost the breakdown target');
+
+    const weather = weatherAt(CONTENT, battle.encounterId, battle.round);
+    expect(row.hitBreakdown).toEqual(hitBreakdown(CONTENT, grid, caster, victim, weather));
+    expect(row.hitChance).toBe(row.hitBreakdown?.chance);
+    expect(row.hitBreakdown).toMatchObject({
+      chance: 50,
+      base: 90,
+      elevation: 10,
+      cover: -20,
+      plunging: 10,
+      statuses: 0,
+      obscurement: { inside: -25, through: -15, attacker: 0, weather: 0, total: -40 },
+    });
+
+    // RNG-free: the second preview is identical and the source battle is not
+    // touched, so opening and closing the confirm step cannot change the shot.
+    const before = JSON.stringify(battle);
+    const again = previewAbility(CONTENT, battle, caster, ability('rock_throw'), victim.pos);
+    expect(again.targets).toEqual(preview.targets);
+    expect(JSON.stringify(battle)).toBe(before);
   });
 });

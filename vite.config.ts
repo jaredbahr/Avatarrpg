@@ -73,7 +73,7 @@ export default defineConfig({
     // Vite passes terser `safari10: true` by default. That Safari 10/11 workaround
     // costs 0.7 KB gzipped and cannot matter: an es2022 target needs Safari 15.
     terserOptions: { compress: { passes: 2 }, safari10: false },
-    // The whole game is one bundle; 320 KB gzipped is the budget we verify in CI.
+    // The whole game is one bundle; 350 KB gzipped is the budget we verify in CI.
     chunkSizeWarningLimit: 900,
   },
   server: {

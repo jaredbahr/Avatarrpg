@@ -133,10 +133,10 @@ export const DRILLER_BAND_ROWS = [3, 7] as const;
  * rather than a faint diamond among decorative heaps.
  */
 export const CUTTING_RUBBLE_CELLS: readonly Vec2[] = [
-  { x: 8, y: 2 },
-  { x: 12, y: 3 },
+  { x: 6, y: 2 },
+  { x: 13, y: 3 },
   { x: 6, y: 8 },
-  { x: 12, y: 9 },
+  { x: 13, y: 8 },
 ];
 export const DRILLER_RUBBLE_CELLS: readonly Vec2[] = [
   { x: 8, y: 1 },
@@ -147,29 +147,45 @@ export const DRILLER_RUBBLE_CELLS: readonly Vec2[] = [
   { x: 11, y: 10 },
 ];
 
-/** The Cutting's pool (legend `~`), checked against the map rows in `quarryProjected.test.ts`. */
+/**
+ * The Cutting's pool (legend `~`), checked against the map rows in
+ * `quarryProjected.test.ts`. M5 (Option A) shifted it one tile west as the
+ * chokepoint narrowed to x9-10; the plate below moves with these cells.
+ */
 export const CUTTING_WATER_CELLS: readonly Vec2[] = [
+  { x: 6, y: 5 },
   { x: 7, y: 5 },
   { x: 8, y: 5 },
   { x: 9, y: 5 },
-  { x: 10, y: 5 },
+  { x: 6, y: 6 },
   { x: 7, y: 6 },
   { x: 8, y: 6 },
   { x: 9, y: 6 },
-  { x: 10, y: 6 },
 ];
 /**
  * The pool's plate: its eight cells plus the narrow dry margin round them, at
  * the forest pond's 16-pixel pad (`FOREST_POND_PATCH`). It is packed at twice
  * this size, as the forest's is.
+ *
+ * The patch sits one tile west and one half-tile north of its pre-M5
+ * registration (752, 368), a `(-64, -32)` translation that follows the cells.
+ * The plate itself is repacked there with the organic shore (PR 162's
+ * `organic` option), so its wet line rounds off the cells' steps.
  */
-export const CUTTING_POOL_PATCH = { x: 752, y: 368, width: 416, height: 224 } as const;
+export const CUTTING_POOL_PATCH = { x: 688, y: 336, width: 416, height: 224 } as const;
 
 /**
  * The reviewed projected ground pages for The Cutting, the pool's bank and bed
  * (packed like the forest pond's), and the painted heap on each cover cell. The
  * live water film, oil, mud and props remain overlays on top of these.
  */
+/**
+ * The top row of each two-row cribbed bank on the Cutting's west edge. Each
+ * spans its band cell and the rock beside it: rows 2-3 above the road mouth,
+ * rows 8-9 below it (`AMBUSH_ROAD.edges`).
+ */
+export const CUTTING_BAND_TOPS = [2, 8] as const;
+
 export const CUTTING_SCENE: MapScene = {
   groundMode: 'partial',
   paintedRubble: CUTTING_RUBBLE_CELLS,
@@ -180,7 +196,14 @@ export const CUTTING_SCENE: MapScene = {
     { url: 'art/maps/cutting-scene/pool-bank.webp', ...CUTTING_POOL_PATCH },
     ...CUTTING_RUBBLE_CELLS.map(rubbleHeap),
   ],
-  scenery: CUTTING_EXTERIOR_RIM,
+  // The rear rim, and the M5 west bands: the gate's cribbed spoil bank either
+  // side of the rows 4-7 road mouth, standing beyond the band cells (0,3) and
+  // (0,8). The east band (19,8) is the front edge, left to the surround's own
+  // low rock so nothing tall stands between the camera and the bay.
+  scenery: [
+    ...CUTTING_EXTERIOR_RIM,
+    ...CUTTING_BAND_TOPS.map((top) => quarryCribbing('cutting', top)),
+  ],
 };
 
 /** The same scene contract for the Driller floor, including its intentional rear gap. */

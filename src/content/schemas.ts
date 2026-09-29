@@ -661,6 +661,31 @@ const weatherScheduleEntry = z
   })
   .strict();
 
+/**
+ * An encounter's area obscurement. The schedule has to climb: `weatherAt`
+ * takes the last entry whose `fromRound` is not after the round, so a repeated
+ * or backwards `fromRound` would quietly mean something the author did not
+ * write. Shape-checking it here turns that into a content error.
+ */
+const encounterWeatherSchema = z
+  .object({
+    id: z.literal('sandstorm'),
+    schedule: z.array(weatherScheduleEntry).min(1),
+  })
+  .strict()
+  .superRefine((weather, ctx) => {
+    weather.schedule.forEach((entry, index) => {
+      const previous = weather.schedule[index - 1];
+      if (previous && entry.fromRound <= previous.fromRound) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          path: ['schedule', index, 'fromRound'],
+          message: `must be after the previous entry (${previous.fromRound})`,
+        });
+      }
+    });
+  });
+
 export const encounterSchema = z.object({
   id,
   name: z.string().min(1),
@@ -687,13 +712,7 @@ export const encounterSchema = z.object({
     }),
   ),
   reinforcements: z.array(placement),
-  weather: z
-    .object({
-      id: z.literal('sandstorm'),
-      schedule: z.array(weatherScheduleEntry).min(1),
-    })
-    .strict()
-    .optional(),
+  weather: encounterWeatherSchema.optional(),
   expectedLevel: z.number().int().min(1).max(10),
   intro: z.string().min(1),
   tip: z.string().min(1),

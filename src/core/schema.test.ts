@@ -135,6 +135,9 @@ function mutate<T>(value: T, random: () => number): T {
     return copy;
   }
   if (roll < 0.25 && keys.length > 0) delete target[pick(keys)];
+  // '__proto__' is a no-op here (`target['__proto__'] = 1` runs the setter and adds
+  // no own key); it stays in the pick list so the seeded sequence is unchanged.
+  // The JSON.parse corpus cases cover a real own '__proto__' key.
   else if (roll < 0.35) target[pick(['extra', '__proto__', 'toString', 'kind'])] = 1;
   else if (keys.length > 0) target[pick(keys)] = structuredClone(pick(REPLACEMENTS));
   return copy;
@@ -270,6 +273,31 @@ describe('the runtime validator matches zod', () => {
     );
   });
 
+  it('names itself and renders the issues through its lazy message', () => {
+    const schema = schemaShipped.object({
+      party: schemaShipped.array(schemaShipped.object({ level: schemaShipped.number() })),
+    });
+    const parsed = schema.safeParse({ party: [{ level: 'low' }] });
+    expect(parsed.success).toBe(false);
+    if (parsed.success) return;
+
+    const error = parsed.error;
+    expect(error).toBeInstanceOf(schemaShipped.SchemaError);
+    expect(error.name).toBe('SchemaError');
+    expect(error.constructor.name).toBe('SchemaError');
+    expect(error.stack).toContain('SchemaError');
+
+    // `message` is a lazy getter over the issues, paths included; String(error)
+    // is what a console prints and a stack trace is built from.
+    expect(error.issues.map((issue) => [...issue.path])).toEqual([['party', 0, 'level']]);
+    const json = JSON.stringify(error.issues, null, 2);
+    expect(error.message).toBe(json);
+    expect(error.message).toContain('"party"');
+    expect(error.message).toContain('"level"');
+    expect(String(error)).toBe(`SchemaError: ${json}`);
+    expect(String(error)).toContain(json);
+  });
+
   it('on saves, as parsed and as the player is told', () => {
     const state = midBattleState();
     const battle = saveShipped.toBlob(state, META);
@@ -287,14 +315,33 @@ describe('the runtime validator matches zod', () => {
       { ...META, session: { players: [] } },
     );
     const legacy = legacySaveFixtures(explore);
+
+    // A legacy blob (format 1) whose state owns a `__proto__` key. Only
+    // JSON.parse makes an own key -- assignment runs the setter -- and the
+    // migration spreads the state four times, so this holds the old-format path
+    // to zod's verdict without letting a spread touch a prototype.
+    const legacyProtoJson = JSON.stringify(legacy[1]).replace(
+      '"state":{',
+      '"state":{"__proto__":{"polluted":true},',
+    );
+    const legacyProto = JSON.parse(legacyProtoJson) as { state: Record<string, unknown> };
+    expect(Object.hasOwn(legacyProto.state, '__proto__')).toBe(true);
+
     const seeds = [battle, explore];
     fuzz(saveShipped.saveBlobSchema, zodBuilt.save.saveBlobSchema, seeds, 3000, 1);
 
-    for (const value of [...legacy, ...MALFORMED_SAVE_CORPUS]) {
+    for (const value of [...legacy, legacyProto, ...MALFORMED_SAVE_CORPUS]) {
       expectSameVerdict(saveShipped.saveBlobSchema, zodBuilt.save.saveBlobSchema, value, 'corpus');
       const json = JSON.stringify(value);
       expect(saveShipped.deserialize(json), json).toEqual(zodBuilt.save.deserialize(json));
     }
+
+    // The migrated blob loads, and the key is stripped rather than polluting.
+    const protoLoad = saveShipped.deserialize(legacyProtoJson);
+    expect(protoLoad).toEqual(zodBuilt.save.deserialize(legacyProtoJson));
+    expect(protoLoad.ok).toBe(true);
+    if (protoLoad.ok) expect(Object.hasOwn(protoLoad.blob.state, '__proto__')).toBe(false);
+    expect((Object.prototype as { polluted?: unknown }).polluted).toBeUndefined();
 
     const random = lcg(2);
     for (let n = 0; n < 500; n++) {

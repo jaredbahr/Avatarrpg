@@ -3,6 +3,7 @@ import { CONTENT } from '../../content';
 import { DEFAULT_MAX_ROUNDS, SOLO_PARTY, STANDARD_PARTY, runCombat, seedFor } from './runCombat';
 import { partyOfSize, runBalanceReport } from './balance';
 import { encounterRoster } from '../state/createGame';
+import type { ContentIndex, EncounterDef } from '../types';
 
 /**
  * These are the tests that would catch a rules bug before a family does.
@@ -252,5 +253,86 @@ describe('balance', () => {
       expect(row.stalemates, row.label).toBe(0);
     }
     expect(plusOne.anomalies, `\n${plusOne.anomalies.join('\n')}\n`).toEqual([]);
+  });
+});
+
+/**
+ * The sandstorm fixture: the forest road plus a schedule, built here rather
+ * than authored in `content/`, because no demo encounter uses weather yet. It
+ * is the measurement that proves the whole chain — schedule → `hitBreakdown`
+ * → the roll and the AI — survives a real fight, and it prints the numbers the
+ * O-b brief asks for.
+ *
+ * The index holds *only* the forest road. `runBalanceReport` walks every
+ * encounter it is handed, so spreading the full `CONTENT` in here ran the rest
+ * of the act only to filter the rows back out — a large slice of this file's
+ * runtime for three rows it never looked at.
+ */
+function forestRoadSandstorm(): ContentIndex {
+  const encounter = CONTENT.encounters.get('enc_forest_road');
+  if (!encounter) throw new Error('Missing forest road encounter');
+  const stormed: EncounterDef = {
+    ...encounter,
+    weather: { id: 'sandstorm', schedule: [{ fromRound: 1, intensity: 2 }] },
+  };
+  return { ...CONTENT, encounters: new Map([['enc_forest_road', stormed]]) };
+}
+
+describe('sandstorm balance fixture', () => {
+  it('runs the forest road under weather through the balance runner', () => {
+    /*
+     * Twelve trials per variant, not the report default: these rows are a
+     * smoke test and a printed shape check, not a tuned win rate. The sharp
+     * weather assertions — determinism, and "the storm changes the fight" —
+     * live in the seed test below and do not depend on this count.
+     */
+    const report = runBalanceReport(forestRoadSandstorm(), { trials: 12, perVariant: true });
+    const rows = report.encounters.filter((row) => row.encounterId === 'enc_forest_road');
+    expect(rows.length).toBeGreaterThan(0);
+
+    for (const row of rows) {
+      expect(row.stalemates, row.label).toBe(0);
+      expect(row.winRate, row.label).toBeGreaterThanOrEqual(0);
+      expect(row.winRate, row.label).toBeLessThanOrEqual(1);
+      expect(row.averageRounds, row.label).toBeGreaterThan(1);
+      expect(row.averageRounds, row.label).toBeLessThan(40);
+    }
+    expect(report.anomalies, `\n${report.anomalies.join('\n')}\n`).toEqual([]);
+
+    // The numbers this fixture exists to publish.
+    const summary = rows
+      .map((row) => {
+        const win = Math.round(row.winRate * 100);
+        const rounds = row.averageRounds.toFixed(1);
+        const hp = Math.round(row.averageHpRemaining * 100);
+        return `${row.label}: win ${win}%, ${rounds} rounds, ${hp}% party HP`;
+      })
+      .join(' | ');
+    console.log(`[sandstorm fixture] ${summary}`);
+  });
+
+  it('is deterministic for a seed, and weather moves the fight', () => {
+    const storm = forestRoadSandstorm();
+    const run = (content: ContentIndex, trial: number) =>
+      runCombat(content, {
+        seed: seedFor('sandstorm-fixture', trial),
+        encounterId: 'enc_forest_road',
+        // The all-ranged roster, so the schedule cannot be a no-op.
+        variantId: 'slingers',
+        party: STANDARD_PARTY,
+        recordEvents: true,
+      });
+
+    for (let trial = 0; trial < 4; trial++) {
+      const a = run(storm, trial);
+      const b = run(storm, trial);
+      expect(a.signature, `storm trial ${trial}`).toBe(b.signature);
+      expect(a.rounds, `storm trial ${trial}`).toBe(b.rounds);
+    }
+
+    const seeds = [0, 1, 2, 3, 4, 5, 6, 7];
+    const weathered = seeds.map((trial) => run(storm, trial).signature);
+    const clear = seeds.map((trial) => run(CONTENT, trial).signature);
+    expect(weathered.some((signature, index) => signature !== clear[index])).toBe(true);
   });
 });
