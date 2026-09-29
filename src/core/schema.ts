@@ -2,7 +2,8 @@
  * The runtime validator: the slice of zod's v3 API that the shipped modules use.
  *
  * Save files, fx recipes, sounds and the combat tuning parse at runtime, and
- * zod cost about 10 KB gzipped of a 320 KB JavaScript gate for the dozen
+ * zod cost about 10 KB gzipped of the then 320 KB JavaScript gate (350 KB since
+ * ADR 0066) for the dozen
  * combinators they need (ADR 0060). Everything validated only in CI and dev —
  * `content/schemas.ts`, the bend packer's schemas — stays on real zod.
  *
