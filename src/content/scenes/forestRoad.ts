@@ -50,7 +50,17 @@ export const FOREST_WATER_CELLS: readonly Vec2[] = [
  * line and damp margin, packed by the pond's own shoreline packer
  * (`scripts/art/forest-creek.ts`) so the creek and the pond are one water.
  */
-export const FOREST_CREEK_POOLS = [
+export interface ForestCreekPool {
+  readonly name: string;
+  readonly patch: {
+    readonly x: number;
+    readonly y: number;
+    readonly width: number;
+    readonly height: number;
+  };
+  readonly cells: readonly Vec2[];
+}
+export const FOREST_CREEK_POOLS: readonly ForestCreekPool[] = [
   {
     name: 'west',
     patch: { x: 112, y: 400, width: 416, height: 224 },
@@ -75,7 +85,7 @@ export const FOREST_CREEK_POOLS = [
       { x: 16, y: 11 },
     ],
   },
-] as const;
+];
 export const FOREST_RUBBLE_CELLS: readonly Vec2[] = [
   { x: 7, y: 3 },
   { x: 8, y: 9 },
@@ -249,7 +259,6 @@ export const FOREST_DEADFALL: SceneScenery = (() => {
     depth: { x: 5.5, y: 10.5 },
   };
 })();
-
 
 /** Songbirds that burst out of the pines as the ambush opens (docs/art/forest-birds.md). */
 export const FOREST_FLOCK = {

@@ -14,6 +14,7 @@
  */
 import { mkdirSync, writeFileSync } from 'node:fs';
 import { FOREST_APRON_MAP, FOREST_CREEK_POOLS } from '../../src/content/scenes/forestRoad';
+import type { ForestCreekPool } from '../../src/content/scenes/forestRoad';
 import { setPixel } from './lib/image';
 import { encodeWebp } from './lib/webp';
 import { FOREST_GROUND_QUALITY, loadForestMaterial } from './forest-village-material';
@@ -32,7 +33,7 @@ export const creekOutput = (name: string): string =>
  */
 export const CREEK_RUNS_ON = 2;
 
-export function packCreekPool(material: ForestMaterial, pool: (typeof FOREST_CREEK_POOLS)[number]) {
+export function packCreekPool(material: ForestMaterial, pool: ForestCreekPool) {
   const rim = FOREST_APRON_MAP.height;
   const runOn = pool.cells
     .filter(({ y }) => y === rim - 1)
