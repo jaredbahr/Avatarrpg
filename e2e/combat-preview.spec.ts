@@ -116,7 +116,7 @@ for (const renderer of ['canvas', 'webgl'] as const) {
     await targetChip.click();
     await expect(page.locator('.hit-breakdown')).toContainText('Base 90');
     await expect(page.locator('.hit-breakdown')).toContainText('High ground +10');
-    await expect(page.locator('.hit-breakdown')).toContainText('Cloud (inside) −25');
+    await expect(page.locator('.hit-breakdown')).toContainText('Target in cloud −25');
     const reticle = await page.evaluate(() => {
       const scene = (
         window.fnt?.app as unknown as {
