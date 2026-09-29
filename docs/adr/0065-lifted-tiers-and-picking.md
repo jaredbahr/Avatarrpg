@@ -52,12 +52,22 @@ quarry pages (the Cutting and the Driller floor) stand each bench at the old
    rather than ruling one long stripe. The face gets one lit course per step.
    A plain ledge gets one.
 
-3. **One op list, two interpreters.** The ops are plain data in screen pixels.
-   Canvas 2D copies the frame once to a snapshot, then clips each top and draws
-   the snapshot shifted. WebGL renders the flat ground stack into a render
-   texture, shows that texture, and fills each top from it with a global-space
-   texture fill. Both draw every op, so this is board-correctness parity, not
-   fidelity.
+3. **One op list, two interpreters, drawn once.** The ops are plain data in
+   screen pixels, grouped by cell (`liftPlan`), and both backends draw every
+   op, so this is board-correctness parity, not fidelity. They draw them into
+   a **lift layer**: a canvas on Canvas 2D, a render target on WebGL, cropped
+   to the raised blocks on screen (`LiftPlan.bounds`) and snapped to device
+   pixels. The layer is redrawn only when the plan (camera, viewport,
+   footing) or the ground it copies changes. Each frame the flat ground is
+   drawn as it was before this ADR, and the layer goes over it in one copy.
+   - Canvas 2D builds the layer from the frame it has just drawn, copying
+     each top and face from the box round it, never the whole canvas.
+   - WebGL renders the ground stack, cropped to where the ops read
+     (`LiftPlan.sources`), into a source target, fills the ops from it into
+     the layer, and lets the source go once the layer has held for a frame.
+   - The layer is released (its canvas zeroed, its target destroyed) when no
+     raised block is on screen, on the orthographic board, and when the
+     backend is destroyed.
 4. **Art keeps what it already lifts.** `MapScene.reliefLift` says how far the
    loaded ground art already lifts a tier: 0.25 for the forest and 0.06 for the
    quarry pages. The pass samples each top from where the art stands and lifts
@@ -77,16 +87,29 @@ quarry pages (the Cutting and the Driller floor) stand each bench at the old
    Every tap, hover and long press goes through `Camera.pickTile(x, y, grid)`.
    No lift is more than half a tile, so a flat tile centre still picks its own
    cell, and the existing tap specs are unchanged.
-6. **Live marks take the whole lift.** Surfaces over art, move and attack
-   ranges, the path, the aim arc, ground effects, hover, exits and the
-   High-contrast rule markers are drawn apart from the ground: to a second
-   canvas on Canvas 2D, and to a second render texture on WebGL by hiding
-   the ground's layers. That layer goes over the flat ground once. The tops
-   and faces then cover the raised cells' flat copy, and an `overlay` op per
-   raised cell copies its marks back onto its top, shifted by the cell's
-   whole lift, whatever `reliefLift` says. The tops and faces still sample the
-   ground by only what the art has not lifted. Procedural ground's surfaces
-   and decor stay with the ground, which lifts in full anyway.
+6. **Marks take the whole lift.** The marks over art go on each raised top
+   shifted by the cell's whole lift, whatever `reliefLift` says; the tops and
+   faces still sample the ground by only what the art has not lifted.
+   Procedural ground's surfaces and decor stay with the ground, which lifts in
+   full anyway. The marks are drawn flat with the ground, as before, and the
+   layer covers the raised blocks' flat copy. They then come in two kinds:
+   - **Static marks** change only with the ground: the seams and rule markers
+     over art, and on Canvas 2D the surfaces over art. They are baked into the
+     layer by each cell's `overlay` op, drawn straight under the top's clip
+     and translated transform (Canvas 2D) or filled from a cropped render of
+     them (WebGL).
+   - **Live marks** change between frames: ranges, hover, the path, the aim
+     arc, exits, ground effects, and on WebGL the surfaces over art, whose
+     shader moves. `markedCells` finds the cells one may reach, and
+     `marksSchedule` lists the raised tops near them in painter order. Only
+     those tops take the marks again. A taller block in front of a marked top
+     is copied back from the layer first, so a mark never shows through a
+     block drawn after it. Canvas 2D draws the marks straight onto each such
+     top, with the tile painters kept to the cells round it. WebGL renders
+     the live layers into small targets cropped to groups of nearby tops
+     (`clusters`), only when the marks change, or every frame only while
+     something that moves by itself (a pulse, a spray, water, fire) is on a
+     marked top.
 7. **Actors stand on the lifted top.** Units, NPCs, props, rings, markers and
    attachment sockets use `liftAt`. A figure between cells uses `liftAlong`, a
    blend of the four cells round it, so a walk up a ramp climbs rather than
@@ -107,12 +130,29 @@ quarry pages (the Cutting and the Driller floor) stand each bench at the old
   without the marks layer. A path or aim arc that crosses a tier boundary is
   cut at the lip. A painted plate that overhangs its cell lifts only its
   in-cell part.
-- With raised ground on the board, including the forest, the WebGL backend
-  renders the ground stack into two textures a frame (the ground, then the
-  marks) and Canvas 2D keeps two board-sized canvases (the snapshot and the
-  marks). Boards with no raised walkable cell take the old single pass.
-- Ground effects drawn with additive blending go into the transparent marks
-  layer, so on a raised board they composite a little softer than they add.
+- **Cost.** A still raised board costs the flat pass plus one copy of the
+  layer a frame: no rebuild and no render into a target until the camera, the
+  viewport or the ground changes. `liftCost` (on `window.fnt`) counts layer
+  builds, target renders and canvas copies and the pixels each covers, and
+  `renderer.spec.ts` holds a still Driller board on both backends to no
+  rebuild and no board-sized copy or render. The pass holds one layer no
+  bigger than the raised blocks on screen, plus small marks targets on WebGL.
+  On the Driller its two benches run corner to corner, so that crop is still
+  most of the screen: about 14 MiB at the iPad Pro's 2732x1462 map canvas,
+  where the first cut held two full-size stores (about 30 MiB). Boards with
+  no raised walkable cell on screen hold nothing and take the old single
+  pass.
+- Things that move by themselves in the ground are not re-copied every frame
+  for a raised block. WebGL's breeze over the grass stays on the flat pass and
+  is left out of the layer, and the terrain shader's motion under partial art
+  is baked into it, so both pause on a raised block's top. A board drawn
+  wholly procedurally (a non-partial scene whose art has not loaded) is the
+  exception: its surfaces live in the ground, so its layer is rebuilt every
+  frame, as the first cut did. Live marks on a top are drawn over the top's
+  back-edge ink, where the first cut drew them under it.
+- Ground effects drawn with additive blending onto a raised top go through a
+  transparent marks target on WebGL, so there they composite a little softer
+  than they add. Canvas 2D draws them straight on.
 - New ground art should be painted at `TIER_LIFT` with its own faces, or flat,
   and declare which in `reliefLift`.
 - Not done here from the ADR 0061 plan: grass-tuft overhangs on forest
