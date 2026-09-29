@@ -52,9 +52,10 @@ import {
   tileAt,
   withTile,
 } from './grid';
-import { canMove, effectiveStats, isAlive, startingAp } from './stats';
+import { canMove, effectiveStats, isAlive } from './stats';
 import { findCombo } from './surfaces';
 import { directAttackThreats, type ThreatBudget } from './directAttackThreats';
+import { refreshTurnResources, tickTurnStart } from './turnStart';
 
 /** How much the AI wants to inflict each status, in "points of damage". */
 const STATUS_VALUE: Record<StatusId, number> = {
@@ -319,16 +320,24 @@ function canHitFrom(
   return false;
 }
 
-function nextTurnThreatBudget(content: ContentIndex, enemy: Unit): ThreatBudget {
-  const cooldowns: Record<string, number> = {};
-  for (const [abilityId, rounds] of Object.entries(enemy.cooldowns)) {
-    if (rounds > 1) cooldowns[abilityId] = rounds - 1;
-  }
+/**
+ * The budget an enemy will have when its own turn starts, or null when it
+ * loses that activation outright (Frozen, Stunned). Built through the same
+ * turn-start steps `beginTurn` uses, so one-round statuses that tick off before
+ * the enemy acts — a lone Chi-Block — are not mistaken for lasting ones.
+ *
+ * `move` stays zero: this rule asks what the enemy can attack from where it
+ * already stands, not what it could walk into range for.
+ */
+function nextTurnThreatBudget(content: ContentIndex, enemy: Unit): ThreatBudget | null {
+  const opening = tickTurnStart(content, enemy);
+  if (opening.skipping) return null;
+  const next = refreshTurnResources(content, opening.unit, opening.skipping);
   return {
-    ap: startingAp(content, enemy),
+    ap: next.ap,
     move: 0,
-    cooldowns,
-    statuses: enemy.statuses,
+    cooldowns: next.cooldowns,
+    statuses: next.statuses,
   };
 }
 
@@ -344,13 +353,9 @@ function preWallThreats(
   const cached = cache.get(key);
   if (cached) return cached;
   const threats = enemies.filter((enemy) => {
-    const result = directAttackThreats(
-      content,
-      battle,
-      enemy.id,
-      caster.id,
-      nextTurnThreatBudget(content, enemy),
-    );
+    const budget = nextTurnThreatBudget(content, enemy);
+    if (!budget) return false;
+    const result = directAttackThreats(content, battle, enemy.id, caster.id, budget);
     return result.valid && result.threats.length > 0;
   });
   cache.set(key, threats);
@@ -414,13 +419,9 @@ export function wallStrandsCaster(
 
   // A wall that shuts down a next-turn direct attack is doing its job.
   for (const enemy of preWallThreats(content, before, caster, enemies, cache)) {
-    const result = directAttackThreats(
-      content,
-      after,
-      enemy.id,
-      caster.id,
-      nextTurnThreatBudget(content, enemy),
-    );
+    const budget = nextTurnThreatBudget(content, enemy);
+    if (!budget) continue;
+    const result = directAttackThreats(content, after, enemy.id, caster.id, budget);
     if (result.valid && result.threats.length === 0) return false;
   }
   return true;

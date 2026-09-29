@@ -3,7 +3,7 @@ import { CONTENT } from '../../content';
 import { RngCursor } from '../rng';
 import { BattleDraft, raisedWallTile } from '../state/battleDraft';
 import { createBattle, createGame } from '../state/createGame';
-import type { Grid, Tile, Unit, Vec2 } from '../types';
+import type { Grid, StatusInstance, Tile, Unit, Vec2 } from '../types';
 import { isValidTarget } from './abilities';
 import { planAiTurn, wallStrandsCaster } from './ai';
 import { DEFAULT_TILE, hasLineOfSight, tileAt, withTile } from './grid';
@@ -78,6 +78,7 @@ function setup(options: {
     ap?: number;
     size?: 1 | 2;
     defense?: number;
+    statuses?: readonly StatusInstance[];
   }[];
 }): Fixture {
   const state = createGame(CONTENT, {
@@ -114,6 +115,7 @@ function setup(options: {
     ap: enemy.ap ?? 4,
     move: enemy.move ?? 0,
     size: enemy.size ?? 1,
+    statuses: enemy.statuses ?? [],
     base: { ...enemyBase.base, defense: enemy.defense ?? enemyBase.base.defense },
   }));
 
@@ -393,6 +395,53 @@ describe('the AI and its own walls', () => {
     const longCooling = planned({ sling_stone: 5 });
     expect(longCooling.used).toContain('rock_throw');
     expect(longCooling.sight).toBe(true);
+  });
+
+  it('reads the attacker statuses as beginTurn will leave them next turn', () => {
+    /*
+     * Same board as the budget test. A Frozen or Stunned slinger reads its skip
+     * before statuses tick, so it loses the next activation whether one round
+     * is left or two: not a threat, and a wall across its lane would strand the
+     * caster. A Chi-Block is different — it only stops abilities, and a single
+     * round wears off before the slinger acts, so it is still a threat and the
+     * wall is doing real defensive work.
+     */
+    const wallTile: Vec2 = { x: 4, y: 4 };
+    const base: SetupOptions = {
+      grid: openGrid(12, 9),
+      casters: [{ pos: { x: 5, y: 4 }, abilities: ['rock_throw', 'earth_wall'] }],
+      enemies: [{ pos: { x: 2, y: 4 }, abilities: ['sling_stone'] }],
+    };
+    const stranding = (fixture: Fixture) =>
+      wallStrandsCaster(fixture.draft, unit(fixture.draft, fixture.casterIds[0]), [wallTile]);
+
+    for (const id of ['frozen', 'stunned'] as const) {
+      for (const duration of [1, 2]) {
+        const skipped = setup({
+          ...base,
+          enemies: [
+            {
+              pos: { x: 2, y: 4 },
+              abilities: ['sling_stone'],
+              statuses: [{ id, duration, stacks: 1 }],
+            },
+          ],
+        });
+        expect(stranding(skipped), `${id} ${duration}`).toBe(true);
+      }
+    }
+
+    const chiBlocked = setup({
+      ...base,
+      enemies: [
+        {
+          pos: { x: 2, y: 4 },
+          abilities: ['sling_stone'],
+          statuses: [{ id: 'chiBlocked', duration: 1, stacks: 1 }],
+        },
+      ],
+    });
+    expect(stranding(chiBlocked)).toBe(false);
   });
 
   it('raises the wall on a cell vacated by a planned move', () => {

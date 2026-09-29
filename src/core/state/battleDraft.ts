@@ -42,16 +42,14 @@ import {
   withTile,
 } from '../rules/grid';
 import type { MoveContext } from '../rules/grid';
-import { applyStatus, removeStatuses, tickStatuses } from '../rules/status';
+import { applyStatus, removeStatuses } from '../rules/status';
 import {
   MAX_BANKED_TOTAL_AP as MAX_TOTAL_AP,
   clampHp,
-  effectiveStats,
   incomingMultiplier,
   isAlive,
-  isSkippingTurn,
-  startingAp,
 } from '../rules/stats';
+import { refreshTurnResources, tickTurnStart } from '../rules/turnStart';
 import type { SurfaceReaction } from '../rules/surfaces';
 import { applyImpact, contactEffects, paintSurface, tickSurfaces } from '../rules/surfaces';
 
@@ -842,27 +840,21 @@ export class BattleDraft {
    * "Skips turn" is read *before* statuses tick, so a 1-round Freeze costs
    * exactly one turn and then falls off — rather than expiring on the turn it
    * was supposed to take away.
+   *
+   * The rules for reading the skip, dropping cooldowns, ticking statuses and
+   * refilling AP/move live in `rules/turnStart.ts` so the wall planner judges an
+   * enemy's next activation by the same code instead of a second copy.
    */
   beginTurn(unitId: string): boolean {
     const start = this.unit(unitId);
     if (!start || !isAlive(start)) return false;
 
-    const skipping = isSkippingTurn(this.content, start);
-
-    const cooldowns: Record<string, number> = {};
-    for (const [abilityId, rounds] of Object.entries(start.cooldowns)) {
-      if (rounds > 1) cooldowns[abilityId] = rounds - 1;
-    }
-    this.replace({ ...start, cooldowns });
-
-    const ticking = this.unit(unitId);
-    if (!ticking) return skipping;
-    const tick = tickStatuses(this.content, ticking);
-    this.replace(tick.unit);
-    for (const status of tick.expired) {
+    const opening = tickTurnStart(this.content, start);
+    this.replace(opening.unit);
+    for (const status of opening.expired) {
       this.emit({ type: 'statusExpired', unitId, status });
     }
-    for (const dot of tick.tickDamage) {
+    for (const dot of opening.tickDamage) {
       const type = this.content.statuses.get(dot.source)?.tickDamageType ?? 'pure';
       this.dealDamage(unitId, dot.amount, type, null, { applyMultiplier: true });
     }
@@ -871,16 +863,9 @@ export class BattleDraft {
     this.applyContact(unitId);
 
     const refreshed = this.unit(unitId);
-    if (!refreshed || !isAlive(refreshed)) return skipping;
-    const stats = effectiveStats(this.content, refreshed);
-    this.replace({
-      ...refreshed,
-      ap: skipping ? 0 : startingAp(this.content, refreshed),
-      move: skipping ? 0 : stats.maxMove,
-      bankedAp: 0,
-      pendingAp: 0,
-    });
-    return skipping;
+    if (!refreshed || !isAlive(refreshed)) return opening.skipping;
+    this.replace(refreshTurnResources(this.content, refreshed, opening.skipping));
+    return opening.skipping;
   }
 
   /** End-of-turn: bank at most one unused AP. */
