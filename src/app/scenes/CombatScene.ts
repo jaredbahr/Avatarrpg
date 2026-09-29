@@ -46,6 +46,7 @@ import { formatShoveMovement } from '../ui/combatPreviewText';
 import { UnitInspector } from '../ui/UnitInspector';
 import { enemyScale, partyScale } from '../anim/actorScale';
 import { sheetLocomotion } from '../../content/assets/manifest';
+import { sheets } from '../../render/sheets/store';
 import { createMovementThreatQuery } from '../ui/movementThreats';
 import { flushTime } from './flockFlush';
 
@@ -355,6 +356,12 @@ export class CombatScene implements Scene {
     if (!canvas || !battle) return;
 
     this.renderer = new Renderer(canvas, { width: battle.grid.width, height: battle.grid.height });
+    // Bends are owned by party unit assets. Preload only those assets at the
+    // combat boundary so the first eligible cast does not arrive mid-clip;
+    // enemies and legacy-only units remain completely untouched.
+    for (const unit of battle.units) {
+      if (unit.faction === 'party') sheets.preloadBend(unit.sprite);
+    }
     this.renderer.resize({ width: battle.grid.width, height: battle.grid.height });
     this.renderer.camera.projection =
       this.app.content.maps.get(battle.mapId)?.projection ?? 'orthographic';
