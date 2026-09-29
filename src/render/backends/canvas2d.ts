@@ -760,11 +760,15 @@ export class Canvas2DBackend implements RenderBackend {
       ctx.beginPath();
       for (let step = 0.1; step < 1; step += 0.2) {
         if (horizontal) {
-          ctx.moveTo(x + size * (step - 0.08), y - size * 0.1);
-          ctx.lineTo(x + size * (step + 0.08), y + size * 0.1);
+          const inward = edge.side === 'south' ? -1 : 1;
+          const inset = size * 0.03;
+          ctx.moveTo(x + size * (step - 0.08), y + inward * inset);
+          ctx.lineTo(x + size * (step + 0.08), y + inward * (inset + size * 0.1));
         } else {
-          ctx.moveTo(x - size * 0.1, y + size * (step - 0.08));
-          ctx.lineTo(x + size * 0.1, y + size * (step + 0.08));
+          const inward = edge.side === 'east' ? -1 : 1;
+          const inset = size * 0.03;
+          ctx.moveTo(x + inward * inset, y + size * (step - 0.08));
+          ctx.lineTo(x + inward * (inset + size * 0.1), y + size * (step + 0.08));
         }
       }
       ctx.stroke();
@@ -799,8 +803,8 @@ export class Canvas2DBackend implements RenderBackend {
       ctx.textAlign = 'center';
       ctx.textBaseline = 'middle';
       ctx.lineWidth = Math.max(2, size * 0.045);
-      ctx.strokeText(String(marker.cost), cx + size * 0.15, cy);
-      ctx.fillText(String(marker.cost), cx + size * 0.15, cy);
+      ctx.strokeText(`+${marker.surcharge}`, cx + size * 0.2, cy);
+      ctx.fillText(`+${marker.surcharge}`, cx + size * 0.2, cy);
     }
 
     const cue = view.targetReticle;

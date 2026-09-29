@@ -1,4 +1,5 @@
 import { expect, test } from '@playwright/test';
+import { allowSoftwareWebgl, SOFTWARE_WEBGL_BUDGET_MS } from './budget';
 import {
   enterNode,
   resetStorage,
@@ -13,11 +14,13 @@ import { tileCentre } from './gallery/stage';
 for (const renderer of ['canvas', 'webgl'] as const) {
   test(`elevation preview explains the shot and ledge drop on ${renderer}`, async ({ page }) => {
     test.setTimeout(renderer === 'webgl' ? 90_000 : 30_000);
+    allowSoftwareWebgl(test, renderer);
     await resetStorage(page, `?renderer=${renderer}`);
     await startGame(page, ['Climber'], ['kaya'], `elevation-preview-${renderer}`);
     await enterNode(page, 'battle_quarry_gate');
     await takeTurn(page);
     await waitForIdle(page);
+    expect(await page.evaluate(() => window.fnt?.app.rendererBackend())).toBe(renderer);
     await setLargeText(page, 'huge');
 
     await page.evaluate(() => {
@@ -67,7 +70,9 @@ for (const renderer of ['canvas', 'webgl'] as const) {
 
     await page.getByRole('button', { name: /^Shove/ }).click();
     await tapTile({ x: 3, y: 4 });
-    await expect(page.locator('.shove-drop-forecast')).toHaveText('Drops 1 → 3 damage');
+    await expect(page.locator('.shove-drop-forecast')).toHaveText(
+      'Fire Nation Deserter drops 1 → 3 damage',
+    );
     await page.getByRole('button', { name: /^Cancel$/ }).click();
 
     await page.evaluate(() => {
@@ -113,19 +118,25 @@ for (const renderer of ['canvas', 'webgl'] as const) {
 
     const targetChip = page.locator('.preview-target-chip').filter({ hasText: '%' }).first();
     await expect(targetChip).toContainText('%');
+    await expect(page.locator('.hit-breakdown')).toBeHidden();
     await targetChip.click();
+    await expect(page.locator('.hit-breakdown')).toBeVisible();
     await expect(page.locator('.hit-breakdown')).toContainText('Base 90');
     await expect(page.locator('.hit-breakdown')).toContainText('High ground +10');
     await expect(page.locator('.hit-breakdown')).toContainText('Target in cloud −25');
-    const reticle = await page.evaluate(() => {
-      const scene = (
-        window.fnt?.app as unknown as {
-          scene?: { renderer?: { lastView?: { targetReticle?: unknown } } };
-        }
-      )?.scene;
-      return scene?.renderer?.lastView?.targetReticle ?? null;
-    });
-    expect(reticle).toMatchObject({ elevation: 'above', obscured: true });
+    const readReticle = () =>
+      page.evaluate(() => {
+        const scene = (
+          window.fnt?.app as unknown as {
+            scene?: { renderer?: { lastView?: { targetReticle?: unknown } } };
+          }
+        )?.scene;
+        return scene?.renderer?.lastView?.targetReticle ?? null;
+      });
+    const reticlePoll = { timeout: renderer === 'webgl' ? SOFTWARE_WEBGL_BUDGET_MS : 30_000 };
+    await expect
+      .poll(readReticle, reticlePoll)
+      .toMatchObject({ elevation: 'above', obscured: true });
 
     await page.getByRole('button', { name: /^Cancel$/ }).click();
     await page.evaluate(() => {
@@ -147,15 +158,7 @@ for (const renderer of ['canvas', 'webgl'] as const) {
     // Cancelling a confirmation returns to the active aim, so choose the new
     // fixture target directly; clicking Fire Jab again would toggle aim off.
     await tapTile({ x: 4, y: 2 });
-    const lowerReticle = await page.evaluate(() => {
-      const scene = (
-        window.fnt?.app as unknown as {
-          scene?: { renderer?: { lastView?: { targetReticle?: unknown } } };
-        }
-      )?.scene;
-      return scene?.renderer?.lastView?.targetReticle ?? null;
-    });
-    expect(lowerReticle).toMatchObject({ elevation: 'below' });
+    await expect.poll(readReticle, reticlePoll).toMatchObject({ elevation: 'below' });
   });
 }
 

@@ -58,17 +58,15 @@ export class UnitInspector extends Dialog {
     const rows: HTMLElement[] = [];
     const ground = tileAt(battle.grid, this.unit.pos);
     if (ground && (ground.elevation > 0 || ground.ramp)) {
+      const heading = ground.elevation > 0 ? `High ground (tier ${ground.elevation})` : 'Stairs';
       rows.push(
         el(
           'div',
           { class: 'status-row status-terrain' },
-          ground.elevation > 0
-            ? el('strong', { text: `High ground (tier ${ground.elevation})` })
+          el('strong', { text: heading }),
+          ground.elevation > 0 && ground.ramp
+            ? el('span', { class: 'tiny muted', text: 'Stairs' })
             : null,
-          el('span', {
-            class: 'tiny muted',
-            text: ground.ramp ? 'Stairs' : `Climb +${this.app.content.tuning.climbCost}`,
-          }),
         ),
       );
     }

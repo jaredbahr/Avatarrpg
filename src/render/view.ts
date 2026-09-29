@@ -101,8 +101,11 @@ export interface OverlayLayer {
 
 export interface ClimbMarker {
   readonly pos: Vec2;
-  /** Total move cost returned by the movement rules for a route that climbs. */
-  readonly cost: number;
+  /**
+   * The climb surcharge for the step that enters this cell. This is not the
+   * route's total move cost: flat cells after a climb have no marker.
+   */
+  readonly surcharge: number;
 }
 
 export interface CliffEdge {
@@ -126,13 +129,18 @@ export function cliffEdgesFor(grid: Grid): CliffEdge[] {
       if (!here) continue;
       const east = tileAt(grid, { x: x + 1, y });
       const south = tileAt(grid, { x, y: y + 1 });
-      if (east && Math.abs(here.elevation - east.elevation) >= 2)
+      if (east && !here.blocked && !east.blocked && Math.abs(here.elevation - east.elevation) >= 2)
         edges.push(
           here.elevation > east.elevation
             ? { pos: { x, y }, side: 'east' }
             : { pos: { x: x + 1, y }, side: 'west' },
         );
-      if (south && Math.abs(here.elevation - south.elevation) >= 2)
+      if (
+        south &&
+        !here.blocked &&
+        !south.blocked &&
+        Math.abs(here.elevation - south.elevation) >= 2
+      )
         edges.push(
           here.elevation > south.elevation
             ? { pos: { x, y }, side: 'south' }
@@ -302,7 +310,7 @@ export interface MapView {
   readonly grid: Grid;
   readonly units: readonly RenderUnit[];
   readonly overlays: readonly OverlayLayer[];
-  /** Per-cell climb surcharge for the current move preview. */
+  /** Move-preview cells entered by a climbing step, labelled with that step's surcharge. */
   readonly climbMarkers?: readonly ClimbMarker[];
   /** Two-tier elevation breaks shown with the move overlay. */
   readonly cliffEdges?: readonly CliffEdge[];

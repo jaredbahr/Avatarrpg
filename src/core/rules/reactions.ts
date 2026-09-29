@@ -97,6 +97,8 @@ export interface ShoveForecast {
   /** Surface contact caused by landing, including the damage/status chance. */
   readonly landingSurfaces: readonly SurfaceId[];
   readonly landingDamage: number;
+  /** Nominal tier count from the forced-movement rule, for display only. */
+  readonly ledgeDropTiers: number;
   /** Defense-ignoring damage from the largest tier drop across the footprint. */
   readonly ledgeDropDamage: number;
   readonly landingStatuses: readonly { readonly id: StatusId; readonly chance: number }[];
@@ -348,6 +350,13 @@ export function forecastReactions(
         mode: 'push',
         blocked: false,
         ...landingInfo(content, draft, unit),
+        ledgeDropTiers:
+          draft.shoveLedgeTiers.get(eventIndex) ??
+          (previous?.type === 'damaged' &&
+          previous.cause === 'ledgeDrop' &&
+          content.tuning.ledgeDropDamage > 0
+            ? Math.round(previous.amount / content.tuning.ledgeDropDamage)
+            : 0),
         ledgeDropDamage:
           previous?.type === 'damaged' &&
           previous.cause === 'ledgeDrop' &&
@@ -466,10 +475,16 @@ function landingInfo(
   unit: Unit | undefined,
 ): Pick<
   ShoveForecast,
-  'landingSurfaces' | 'landingDamage' | 'ledgeDropDamage' | 'landingStatuses'
+  'landingSurfaces' | 'landingDamage' | 'ledgeDropTiers' | 'ledgeDropDamage' | 'landingStatuses'
 > {
   if (!unit) {
-    return { landingSurfaces: [], landingDamage: 0, ledgeDropDamage: 0, landingStatuses: [] };
+    return {
+      landingSurfaces: [],
+      landingDamage: 0,
+      ledgeDropTiers: 0,
+      ledgeDropDamage: 0,
+      landingStatuses: [],
+    };
   }
 
   const surfaces: SurfaceId[] = [];
@@ -485,6 +500,7 @@ function landingInfo(
   return {
     landingSurfaces: surfaces,
     landingDamage: damage,
+    ledgeDropTiers: 0,
     ledgeDropDamage: 0,
     landingStatuses: statuses,
   };
@@ -516,7 +532,7 @@ function shoveUnitForecast(
     };
   }
   const eventStart = draft.events.length;
-  draft.shove(unitId, origin, distance, mode);
+  const ledgeDropTiers = draft.shove(unitId, origin, distance, mode);
   const after = draft.unit(unitId) ?? before;
   const ledgeDropDamage = draft.events
     .slice(eventStart)
@@ -542,6 +558,7 @@ function shoveUnitForecast(
       Math.max(Math.abs(after.pos.x - before.pos.x), Math.abs(after.pos.y - before.pos.y)) <
       distance,
     ...landingInfo(content, draft, after),
+    ledgeDropTiers,
     ledgeDropDamage,
   };
 }

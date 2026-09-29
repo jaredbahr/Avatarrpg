@@ -62,4 +62,15 @@ describe('cliff edge presentation', () => {
       { pos: { x: 2, y: 1 }, side: 'south' },
     ]);
   });
+
+  it('does not hatch blocked masses whose elevation is scenery, not footing', () => {
+    const tiles = Array.from({ length: 4 }, () => ({ ...DEFAULT_TILE }));
+    tiles[0] = { ...DEFAULT_TILE, elevation: 2, blocked: true };
+    tiles[1] = { ...DEFAULT_TILE, elevation: 0 };
+    tiles[2] = { ...DEFAULT_TILE, elevation: 0 };
+    tiles[3] = { ...DEFAULT_TILE, elevation: 2, blocked: true };
+    const grid: Grid = { width: 2, height: 2, tiles };
+
+    expect(cliffEdgesFor(grid)).toEqual([]);
+  });
 });

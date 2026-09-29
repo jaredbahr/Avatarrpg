@@ -283,7 +283,10 @@ describe('obscurement', () => {
   it('describes footing from the data, not from prose', () => {
     const steamDef = CONTENT.surfaces.get('steam');
     if (!steamDef?.obscures) throw new Error('Missing steam obscurement');
-    const expected = '−25 to hit anyone inside, −15 to shoot through';
+    const penalty = (value: number) => (value < 0 ? `−${Math.abs(value)}` : `+${value}`);
+    const expected =
+      `${penalty(steamDef.obscures.inside)} to hit anyone inside, ` +
+      `${penalty(steamDef.obscures.through)} to shoot through`;
     const line = describeFooting(CONTENT, 'steam');
     expect(line).toContain(expected);
     expect(line.endsWith('.')).toBe(true);
@@ -295,7 +298,8 @@ describe('obscurement', () => {
       surfaces: new Map(CONTENT.surfaces).set('steam', retuned),
     };
     expect(describeFooting(tuned, 'steam')).toContain(
-      '−7 to hit anyone inside, −3 to shoot through',
+      `${penalty(retuned.obscures!.inside)} to hit anyone inside, ` +
+        `${penalty(retuned.obscures!.through)} to shoot through`,
     );
     expect(describeFooting(CONTENT, 'rubble')).not.toContain('to shoot through');
   });

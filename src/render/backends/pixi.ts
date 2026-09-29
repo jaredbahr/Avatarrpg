@@ -1550,16 +1550,28 @@ export class PixiBackend implements RenderBackend {
 
   private drawCliffCues(view: MapView): void {
     const g = this.overlayGfx;
-    const hatch = TILE * 0.12;
+    const tangent = TILE * 0.08;
+    const normal = TILE * 0.1;
+    const inset = TILE * 0.03;
     for (const edge of view.cliffEdges ?? []) {
       const horizontal = edge.side === 'north' || edge.side === 'south';
       const x = edge.pos.x * TILE + (edge.side === 'east' ? TILE : 0);
       const y = edge.pos.y * TILE + (edge.side === 'south' ? TILE : 0);
       for (let step = 0.1; step < 1; step += 0.2) {
         if (horizontal) {
-          g.moveTo(x + TILE * step - hatch, y - hatch).lineTo(x + TILE * step + hatch, y + hatch);
+          // The hatch belongs to the higher tile's lip. Keep its normal
+          // component on that tile instead of spilling onto the lower ground.
+          const inward = edge.side === 'south' ? -1 : 1;
+          g.moveTo(x + TILE * step - tangent, y + inward * inset).lineTo(
+            x + TILE * step + tangent,
+            y + inward * (inset + normal),
+          );
         } else {
-          g.moveTo(x - hatch, y + TILE * step - hatch).lineTo(x + hatch, y + TILE * step + hatch);
+          const inward = edge.side === 'east' ? -1 : 1;
+          g.moveTo(x + inward * inset, y + TILE * step - tangent).lineTo(
+            x + inward * (inset + normal),
+            y + TILE * step + tangent,
+          );
         }
       }
     }
@@ -1577,7 +1589,13 @@ export class PixiBackend implements RenderBackend {
       };
     };
     for (const marker of view.climbMarkers ?? []) {
-      const box = projectedBox(marker.pos);
+      // Markers are anchored at the tile top, like Canvas. spriteBox is an
+      // actor-foot anchor and sits substantially higher on the oblique board.
+      const top = camera.toScreen(marker.pos);
+      const box = {
+        x: (top.x + camera.offsetX) / camera.scale,
+        y: (top.y + camera.offsetY) / camera.scale,
+      };
       const cx = box.x + TILE * 0.72;
       const cy = box.y - liftAt(view.grid, marker.pos, camera.projection) * TILE + TILE * 0.2;
       const arrow = [
@@ -1589,12 +1607,13 @@ export class PixiBackend implements RenderBackend {
         cy + TILE * 0.07,
       ];
       g.poly(arrow, true)
-        .fill({ color: OVERLAY.climb })
         .stroke({
           width: Math.max(3 / camera.scale, TILE * 0.065),
           color: OVERLAY.pathUnder,
-        });
-      this.drawSmallDigit(g, marker.cost, cx + TILE * 0.15, cy, TILE * 0.07);
+        })
+        .fill({ color: OVERLAY.climb });
+      this.drawSmallPlus(g, cx + TILE * 0.12, cy, TILE * 0.035);
+      this.drawSmallDigit(g, marker.surcharge, cx + TILE * 0.25, cy, TILE * 0.07);
     }
 
     const cue = view.targetReticle;
@@ -1618,8 +1637,8 @@ export class PixiBackend implements RenderBackend {
         ],
         true,
       )
-        .fill({ color: OVERLAY.reticleCue })
-        .stroke({ width: outline, color: OVERLAY.pathUnder });
+        .stroke({ width: outline, color: OVERLAY.pathUnder })
+        .fill({ color: OVERLAY.reticleCue });
     }
     if (cue.obscured) {
       const cloudX = cx + TILE * 0.27;
@@ -1628,9 +1647,21 @@ export class PixiBackend implements RenderBackend {
         .circle(cloudX + TILE * 0.03, cloudY - TILE * 0.025, TILE * 0.095)
         .circle(cloudX + TILE * 0.12, cloudY, TILE * 0.065)
         .rect(cloudX - TILE * 0.12, cloudY, TILE * 0.25, TILE * 0.07)
-        .fill({ color: OVERLAY.reticleCue })
-        .stroke({ width: outline, color: OVERLAY.pathUnder });
+        .stroke({ width: outline, color: OVERLAY.pathUnder })
+        .fill({ color: OVERLAY.reticleCue });
     }
+  }
+
+  private drawSmallPlus(g: Graphics, cx: number, cy: number, unit: number): void {
+    const half = unit;
+    const trace = () => {
+      g.moveTo(cx - half, cy).lineTo(cx + half, cy);
+      g.moveTo(cx, cy - half).lineTo(cx, cy + half);
+    };
+    trace();
+    g.stroke({ width: Math.max(3, unit * 0.75), color: OVERLAY.pathUnder, cap: 'round' });
+    trace();
+    g.stroke({ width: Math.max(2, unit * 0.28), color: OVERLAY.climb, cap: 'round' });
   }
 
   private drawSmallDigit(g: Graphics, value: number, cx: number, cy: number, unit: number): void {
@@ -1646,24 +1677,31 @@ export class PixiBackend implements RenderBackend {
       [0, 1, 2, 3, 4, 5, 6],
       [0, 1, 2, 3, 5, 6],
     ];
-    const digit = Math.abs(Math.trunc(value)) % 10;
-    const active = segments[digit] ?? [];
-    const x = cx - unit;
+    const digits = String(Math.abs(Math.trunc(value)))
+      .split('')
+      .map(Number);
+    const gap = unit * 0.35;
+    const width = digits.length * unit + Math.max(0, digits.length - 1) * gap;
+    const startX = cx - width / 2;
     const y = cy - unit * 1.5;
     const lines: readonly (readonly [number, number, number, number])[] = [
-      [x, y, x + unit, y],
-      [x, y, x, y + unit],
-      [x + unit, y, x + unit, y + unit],
-      [x, y + unit, x + unit, y + unit],
-      [x, y + unit, x, y + unit * 2],
-      [x + unit, y + unit, x + unit, y + unit * 2],
-      [x, y + unit * 2, x + unit, y + unit * 2],
+      [0, y, unit, y],
+      [0, y, 0, y + unit],
+      [unit, y, unit, y + unit],
+      [0, y + unit, unit, y + unit],
+      [0, y + unit, 0, y + unit * 2],
+      [unit, y + unit, unit, y + unit * 2],
+      [0, y + unit * 2, unit, y + unit * 2],
     ];
     const trace = () => {
-      for (const index of active) {
-        const line = lines[index];
-        if (line) g.moveTo(line[0], line[1]).lineTo(line[2], line[3]);
-      }
+      digits.forEach((digit, digitIndex) => {
+        const active = segments[digit] ?? [];
+        const x = startX + digitIndex * (unit + gap);
+        for (const index of active) {
+          const line = lines[index];
+          if (line) g.moveTo(line[0] + x, line[1]).lineTo(line[2] + x, line[3]);
+        }
+      });
     };
     trace();
     g.stroke({ width: Math.max(3, unit * 0.75), color: OVERLAY.pathUnder, cap: 'round' });

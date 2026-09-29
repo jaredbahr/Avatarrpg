@@ -26,6 +26,7 @@ import {
 } from '../../core/rules/abilities';
 import {
   distance,
+  climbSurcharge,
   occupiedCells,
   pathCost,
   posKey,
@@ -66,6 +67,15 @@ type Mode =
   | { readonly kind: 'idle' }
   | { readonly kind: 'move' }
   | { readonly kind: 'aim'; readonly abilityId: string };
+
+interface OverlayBuild {
+  readonly overlays: OverlayLayer[];
+  readonly path: readonly Vec2[];
+  readonly climbMarkers: NonNullable<MapView['climbMarkers']>;
+  readonly cliffEdges: NonNullable<MapView['cliffEdges']>;
+  readonly rangeBonusTiles: readonly Vec2[];
+  readonly targetReticle: TargetReticleCue | null;
+}
 
 export class CombatScene implements Scene {
   readonly name = 'combat';
@@ -116,12 +126,12 @@ export class CombatScene implements Scene {
    * inputs that decide them change, not every frame: on a tablet the
    * flood-fill is the one per-frame cost that shows up.
    */
-  private overlayMemo: {
-    battle: BattleState;
-    key: string;
-    overlays: OverlayLayer[];
-    path: readonly Vec2[];
-  } | null = null;
+  private overlayMemo:
+    | ({
+        battle: BattleState;
+        key: string;
+      } & OverlayBuild)
+    | null = null;
   private aiScheduled = false;
   private resultShown = false;
   private logOpen = false;
@@ -1215,7 +1225,7 @@ export class CombatScene implements Scene {
     ) {
       chips.appendChild(el('span', { class: 'chip', text: 'Nobody in the area' }));
     }
-    for (const entry of preview.targets) {
+    for (const [entryIndex, entry] of preview.targets.entries()) {
       const parts: string[] = [];
       if (entry.hitChance !== null) parts.push(`${entry.hitChance}%`);
       if (entry.damage > 0) parts.push(`~${entry.damage} dmg`);
@@ -1238,37 +1248,33 @@ export class CombatScene implements Scene {
         if (!parts.some((part) => part === `clears ${name}`)) parts.push(`clears ${name}`);
       }
       const breakdownRows = formatHitBreakdownRows(entry.hitBreakdown);
+      const label = `${entry.name}: ${parts.join(' · ')}${entry.lethal ? ' — lethal' : ''}`;
+      const chipClass = `chip ${entry.friendly ? 'chip-friendly' : 'chip-hostile'}${
+        entry.lethal ? ' chip-lethal' : ''
+      }`;
+      if (breakdownRows.length === 0) {
+        chips.appendChild(el('span', { class: chipClass, text: label }));
+        continue;
+      }
+
+      const breakdownId = `hit-breakdown-${entryIndex}`;
+      const breakdown = el(
+        'div',
+        { class: 'hit-breakdown', id: breakdownId },
+        ...breakdownRows.map((row) => el('span', { text: row })),
+      );
+      breakdown.hidden = true;
       const targetChip = button(
-        `${entry.name}: ${parts.join(' · ')}${entry.lethal ? ' — lethal' : ''}`,
+        label,
         () => {
-          if (breakdownRows.length === 0) return;
           const expanded = targetChip.getAttribute('aria-expanded') !== 'true';
           targetChip.setAttribute('aria-expanded', String(expanded));
           breakdown.hidden = !expanded;
         },
-        {
-          class: `chip preview-target-chip ${entry.friendly ? 'chip-friendly' : 'chip-hostile'}${
-            entry.lethal ? ' chip-lethal' : ''
-          }`,
-        },
+        { class: `${chipClass} preview-target-chip` },
       );
-      const breakdown = el(
-        'div',
-        {
-          class: 'hit-breakdown',
-          attrs: { 'aria-label': `${entry.name} hit chance breakdown` },
-        },
-        ...breakdownRows.map((row) => el('span', { text: row })),
-      );
-      breakdown.hidden = true;
-      if (breakdownRows.length > 0) {
-        targetChip.setAttribute('aria-expanded', 'false');
-        targetChip.addEventListener('focus', () => {
-          if (!targetChip.matches(':focus-visible')) return;
-          targetChip.setAttribute('aria-expanded', 'true');
-          breakdown.hidden = false;
-        });
-      }
+      targetChip.setAttribute('aria-expanded', 'false');
+      targetChip.setAttribute('aria-controls', breakdownId);
       chips.append(targetChip, breakdown);
     }
     for (const contact of preview.surfaceContacts) {
@@ -1352,14 +1358,11 @@ export class CombatScene implements Scene {
             : `${formatShoveMovement(shove.name, shove.mode, destination)}${landing}`,
         }),
       );
-      if (shove.ledgeDropDamage > 0) {
-        const fromElevation = tileAt(battle.grid, shove.from)?.elevation ?? 0;
-        const toElevation = tileAt(battle.grid, shove.to)?.elevation ?? 0;
-        const tiers = Math.max(1, fromElevation - toElevation);
+      if (shove.ledgeDropTiers > 0) {
         chips.appendChild(
           el('span', {
             class: `chip shove-drop-forecast ${shove.friendly ? 'chip-friendly' : 'chip-terrain'}`,
-            text: `Drops ${tiers} → ${shove.ledgeDropDamage} damage`,
+            text: `${shove.name} drops ${shove.ledgeDropTiers} → ${shove.ledgeDropDamage} damage`,
           }),
         );
       }
@@ -1614,27 +1617,33 @@ export class CombatScene implements Scene {
     let overlays: readonly OverlayLayer[] = [];
     let path: readonly Vec2[] = [];
     let climbMarkers: MapView['climbMarkers'] = [];
+    let cliffEdges: MapView['cliffEdges'] = [];
+    let rangeBonusTiles: readonly Vec2[] = [];
+    let targetReticle: TargetReticleCue | null = null;
 
     const interactive = this.isPlayerTurn() && !this.needsHandoff() && !this.app.animator.busy(now);
 
     if (interactive && unit) {
       const key = `${this.mode.kind}|${this.mode.kind === 'aim' ? this.mode.abilityId : ''}|${
         this.pending ? posKey(this.pending) : ''
-      }|${unit.id}`;
+      }|${this.mode.kind === 'aim' && this.hover ? posKey(this.hover) : ''}|${unit.id}`;
       const memo = this.overlayMemo;
       if (memo && memo.battle === battle && memo.key === key) {
         overlays = memo.overlays;
         path = memo.path;
+        climbMarkers = memo.climbMarkers;
+        cliffEdges = memo.cliffEdges;
+        rangeBonusTiles = memo.rangeBonusTiles;
+        targetReticle = memo.targetReticle;
       } else {
         const built = this.buildOverlays(battle, unit);
         this.overlayMemo = { battle, key, ...built };
         overlays = built.overlays;
         path = built.path;
-      }
-      if (this.mode.kind === 'move') {
-        climbMarkers = [...this.reachableCells().values()]
-          .filter((cell) => cell.cost > 0 && cell.climbCost > 0)
-          .map((cell) => ({ pos: cell.pos, cost: cell.cost }));
+        climbMarkers = built.climbMarkers;
+        cliffEdges = built.cliffEdges;
+        rangeBonusTiles = built.rangeBonusTiles;
+        targetReticle = built.targetReticle;
       }
     }
 
@@ -1684,58 +1693,6 @@ export class CombatScene implements Scene {
         ),
       };
     });
-
-    const cliffEdges = interactive && this.mode.kind === 'move' ? cliffEdgesFor(battle.grid) : [];
-
-    let rangeBonusTiles: Vec2[] = [];
-    let targetReticle: TargetReticleCue | null = null;
-    if (interactive && unit && this.mode.kind === 'aim') {
-      const ability = this.app.content.abilities.get(this.mode.abilityId);
-      if (ability) {
-        const targets = overlays.find((layer) => layer.kind === 'target')?.tiles ?? [];
-        const originTile = tileAt(battle.grid, unit.pos);
-        rangeBonusTiles = targets.filter((pos) => {
-          const targetTile = tileAt(battle.grid, pos);
-          return Boolean(
-            originTile &&
-            targetTile &&
-            heightReachBonus(
-              this.app.content,
-              ability,
-              originTile.elevation,
-              targetTile.elevation,
-            ) > 0 &&
-            distance(unit.pos, pos) > ability.range,
-          );
-        });
-
-        const aimed = [this.pending, this.hover].find(
-          (pos): pos is Vec2 => pos !== null && targets.some((target) => samePos(target, pos)),
-        );
-        if (aimed) {
-          const target = battle.units.find(
-            (candidate) =>
-              isAlive(candidate) && occupiedCells(candidate).some((cell) => samePos(cell, aimed)),
-          );
-          if (target) {
-            const preview = previewAbility(this.app.content, battle, unit, ability, aimed);
-            const breakdown = preview.targets.find(
-              (entry) => entry.unitId === target.id,
-            )?.hitBreakdown;
-            if (breakdown) {
-              targetReticle = {
-                pos: target.pos,
-                elevation:
-                  breakdown.elevation > 0 ? 'above' : breakdown.elevation < 0 ? 'below' : null,
-                obscured: breakdown.obscurement.total < 0,
-              };
-            }
-          }
-        }
-        if (rangeBonusTiles.length > 0)
-          overlays = [...overlays, { kind: 'rangeBonus', tiles: rangeBonusTiles }];
-      }
-    }
 
     // Resolved here, not in the renderer: the renderer never reads content.
     const props: RenderProp[] = battle.props.map((p) => {
@@ -1884,18 +1841,34 @@ export class CombatScene implements Scene {
     };
   }
 
-  private buildOverlays(
-    battle: BattleState,
-    unit: Unit,
-  ): { overlays: OverlayLayer[]; path: readonly Vec2[] } {
+  private buildOverlays(battle: BattleState, unit: Unit): OverlayBuild {
     const overlays: OverlayLayer[] = [];
     let path: readonly Vec2[] = [];
+    let climbMarkers: NonNullable<MapView['climbMarkers']> = [];
+    let cliffEdges: NonNullable<MapView['cliffEdges']> = [];
+    let rangeBonusTiles: readonly Vec2[] = [];
+    let targetReticle: TargetReticleCue | null = null;
 
     if (this.mode.kind === 'move') {
-      if (this.movementBlockReason(unit)) return { overlays, path };
+      if (this.movementBlockReason(unit)) {
+        return { overlays, path, climbMarkers, cliffEdges, rangeBonusTiles, targetReticle };
+      }
       const reach = this.reachableCells();
       const cells = [...reach.values()].filter((c) => c.cost > 0);
       overlays.push({ kind: 'move', tiles: cells.map((c) => c.pos) });
+      const moveContext = this.moveContext(unit);
+      const occupied = new Set(
+        battle.units.flatMap((candidate) =>
+          isAlive(candidate) ? occupiedCells(candidate).map(posKey) : [],
+        ),
+      );
+      climbMarkers = cells.flatMap((cell) => {
+        const from = cell.path.length > 1 ? cell.path[cell.path.length - 2] : unit.pos;
+        if (!from || occupied.has(posKey(cell.pos))) return [];
+        const surcharge = climbSurcharge(moveContext, from, cell.pos) ?? 0;
+        return surcharge > 0 ? [{ pos: cell.pos, surcharge }] : [];
+      });
+      cliffEdges = cliffEdgesFor(battle.grid);
       if (this.pending) {
         const chosen = reach.get(posKey(this.pending));
         if (chosen) path = chosen.path;
@@ -1903,9 +1876,10 @@ export class CombatScene implements Scene {
     } else if (this.mode.kind === 'aim') {
       const ability = this.app.content.abilities.get(this.mode.abilityId);
       if (ability) {
+        const targets = targetableTiles(this.app.content, battle, unit, ability);
         overlays.push({
           kind: 'target',
-          tiles: targetableTiles(this.app.content, battle, unit, ability),
+          tiles: targets,
         });
         if (this.pending) {
           overlays.push({
@@ -1913,9 +1887,50 @@ export class CombatScene implements Scene {
             tiles: affectedTiles(this.app.content, battle.grid, unit, ability, this.pending),
           });
         }
+        const originTile = tileAt(battle.grid, unit.pos);
+        rangeBonusTiles = targets.filter((pos) => {
+          const targetTile = tileAt(battle.grid, pos);
+          return Boolean(
+            originTile &&
+            targetTile &&
+            heightReachBonus(
+              this.app.content,
+              ability,
+              originTile.elevation,
+              targetTile.elevation,
+            ) > 0 &&
+            distance(unit.pos, pos) > ability.range,
+          );
+        });
+        if (rangeBonusTiles.length > 0) {
+          overlays.push({ kind: 'rangeBonus', tiles: rangeBonusTiles });
+        }
+        const aimed = [this.pending, this.hover].find(
+          (pos): pos is Vec2 => pos !== null && targets.some((target) => samePos(target, pos)),
+        );
+        if (aimed) {
+          const target = battle.units.find(
+            (candidate) =>
+              isAlive(candidate) && occupiedCells(candidate).some((cell) => samePos(cell, aimed)),
+          );
+          if (target) {
+            const preview = previewAbility(this.app.content, battle, unit, ability, aimed);
+            const breakdown = preview.targets.find(
+              (entry) => entry.unitId === target.id,
+            )?.hitBreakdown;
+            if (breakdown) {
+              targetReticle = {
+                pos: target.pos,
+                elevation:
+                  breakdown.elevation > 0 ? 'above' : breakdown.elevation < 0 ? 'below' : null,
+                obscured: breakdown.obscurement.total < 0,
+              };
+            }
+          }
+        }
       }
     }
 
-    return { overlays, path };
+    return { overlays, path, climbMarkers, cliffEdges, rangeBonusTiles, targetReticle };
   }
 }
