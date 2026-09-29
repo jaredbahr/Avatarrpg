@@ -23,12 +23,19 @@ import { strollTiming } from './stroll';
 import type { AnyTrack, ClipName } from './timeline';
 import { attackMotion } from './attackMotion';
 import { screenDirection, screenMeleeDirection } from './direction';
-import type { MeleeDirection } from '../../content/assets/clips';
+import type { Heading, MeleeDirection } from '../../content/assets/clips';
 import { HEADINGS, KO_HEADINGS, clipDurationMs, hitClip, koClip } from '../../content/assets/clips';
 import type { SheetClips } from '../../render/sheets/store';
 import type { Projection } from '../../render/projection';
+import { projectGround } from '../../render/projection';
 import type { ActorAttachment, EmitterAttachments } from '../../render/view';
 import { enemyScale, partyScale } from './actorScale';
+import type { BendFxIndex } from '../../render/fx/bendFx';
+import type { BendSetDef } from '../../content/bends';
+import type { ResolvedBendFrame } from '../../render/sheets/store';
+import { BEND_FX_PX_PER_TILE } from '../../render/fx/bendFxSample';
+import { planBend, bendSceneAt } from './bendChoreo';
+import { resolveBendAttack } from './bendHandoff';
 
 /** Base durations in milliseconds, before the motion setting is applied. */
 export const TIMING = {
@@ -77,6 +84,14 @@ export interface ChoreographyInput {
    * is the legacy pose.
    */
   readonly clipsOf?: (sprite: string) => SheetClips | undefined;
+  /** Loaded bend assets only. Undefined preserves the legacy cast exactly. */
+  readonly bendSetOf?: (sprite: string) => BendSetDef | undefined;
+  readonly bendFrameOf?: (
+    sprite: string,
+    heading: Heading,
+    index: number,
+  ) => ResolvedBendFrame | null;
+  readonly bendFx?: BendFxIndex;
 }
 
 /**
@@ -400,6 +415,67 @@ export function choreograph(input: ChoreographyInput): Choreography {
         // These directed fundamentals have calibrated cast palms. Earth,
         // area and surface techniques retain their separate ground contract.
         const casterUnit = unitsBefore.find((unit) => unit.id === event.unitId);
+        const bendSet = casterUnit ? input.bendSetOf?.(casterUnit.sprite) : undefined;
+        const bend = casterUnit
+          ? resolveBendAttack(
+              casterUnit,
+              ability,
+              bendSet,
+              caster,
+              target,
+              input.projection ?? 'orthographic',
+            )
+          : undefined;
+        const bendFacing = bend && input.bendFx ? bendSet?.facings[bend.heading] : undefined;
+        const bendEffect =
+          bend && input.bendFx ? input.bendFx.effect(bend.attack.effectId) : undefined;
+        if (casterUnit && bend && bendFacing && bendEffect && input.bendFx && input.bendFrameOf) {
+          const scale = partyScale(input.projection);
+          const plan = planBend(input.bendFx, {
+            heading: bend.heading,
+            facing: bendFacing,
+            attack: bend.attack,
+            effect: bendEffect,
+            cel: (index) => input.bendFrameOf!(casterUnit.sprite, bend.heading, index),
+            foot: projectGround(caster, input.projection ?? 'orthographic'),
+            to: (() => {
+              const landing = projectGround(target, input.projection ?? 'orthographic');
+              return {
+                x: landing.x + (bendEffect.impact.offsetPx.x / BEND_FX_PX_PER_TILE) * scale,
+                y: landing.y + (bendEffect.impact.offsetPx.y / BEND_FX_PX_PER_TILE) * scale,
+              };
+            })(),
+            scale,
+            tiles: chebyshev(casterPos, event.target),
+            ...(rate < 1 ? { still: true } : {}),
+          });
+          tracks.push({
+            kind: 'bend',
+            unitId: event.unitId,
+            plan,
+            fx: input.bendFx,
+            start: cursor,
+            duration: plan.duration,
+          });
+          const release = bend.attack.damageRelease;
+          const arrival =
+            plan.arrivals[release] ?? plan.shot.releases[release]?.launchAt ?? plan.ends;
+          const impactAt = cursor + bendSceneAt(plan, arrival);
+          cue(
+            ability.fx,
+            cursor + bendSceneAt(plan, plan.shot.releases[0]?.launchAt ?? 0),
+            1,
+            eventIndex,
+          );
+          pending = {
+            at: impactAt,
+            hitStop: 0,
+            flash: bendEffect.impact.flash,
+            casterId: event.unitId,
+          };
+          cursor += plan.duration + TIMING.gap * rate;
+          break;
+        }
         const victim = unitsBefore.find((unit) => {
           if (unit.hp <= 0) return false;
           const pos = positions.get(unit.id) ?? unit.pos;

@@ -45,7 +45,7 @@ import { reactionNotes } from '../ui/ReactionNote';
 import { formatShoveMovement } from '../ui/combatPreviewText';
 import { UnitInspector } from '../ui/UnitInspector';
 import { enemyScale, partyScale } from '../anim/actorScale';
-import { sheetLocomotion } from '../../content/assets/manifest';
+import { resolveAsset, sheetLocomotion } from '../../content/assets/manifest';
 import { sheets } from '../../render/sheets/store';
 import { createMovementThreatQuery } from '../ui/movementThreats';
 import { flushTime } from './flockFlush';
@@ -360,8 +360,11 @@ export class CombatScene implements Scene {
     // combat boundary so the first eligible cast does not arrive mid-clip;
     // enemies and legacy-only units remain completely untouched.
     for (const unit of battle.units) {
-      if (unit.faction === 'party') sheets.preloadBend(unit.sprite);
+      const asset = resolveAsset(unit.sprite);
+      if (unit.faction === 'party' && asset.kind === 'sheet' && asset.bend)
+        sheets.preloadBend(unit.sprite);
     }
+    this.app.preloadBendFx();
     this.renderer.resize({ width: battle.grid.width, height: battle.grid.height });
     this.renderer.camera.projection =
       this.app.content.maps.get(battle.mapId)?.projection ?? 'orthographic';
@@ -1664,6 +1667,7 @@ export class CombatScene implements Scene {
       pathFrom: unit?.pos ?? null,
       aimArc,
       emitters: [...this.app.animator.emitters(now), ...ambient],
+      bendFx: this.app.animator.bendFx(now),
       floaters: this.app.animator.floaters(now),
       cameraNudge: this.app.animator.cameraNudge(now),
       activeUnitId: unit?.id ?? null,

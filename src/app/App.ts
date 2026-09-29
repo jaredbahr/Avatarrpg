@@ -62,6 +62,9 @@ import { ExploreScene } from './scenes/ExploreScene';
 import { ResidentWalks } from './world/residentMotion';
 import { CombatScene } from './scenes/CombatScene';
 import { worldConversationFor } from '../content/story/presentations';
+import { BEND_FX } from '../content/fxCels';
+import { loadBendFx } from '../render/fx/bendFx';
+import type { BendFxIndex } from '../render/fx/bendFx';
 
 /** What `rendererCamera()` reports: tile size and offset in CSS px, and whether the whole board is on screen. */
 export interface CameraInfo {
@@ -151,6 +154,22 @@ export class App {
   private resolving = false;
   private resizeQueued = false;
   private routeTimer: number | null = null;
+  private bendFx: BendFxIndex | undefined;
+  private bendFxLoading = false;
+
+  /** Combat warms the shared painted bend effects; failure leaves legacy casts available. */
+  preloadBendFx(): void {
+    if (this.bendFx || this.bendFxLoading) return;
+    this.bendFxLoading = true;
+    void loadBendFx(BEND_FX, import.meta.env.BASE_URL)
+      .then((fx) => {
+        this.bendFx = fx;
+      })
+      .catch(() => undefined)
+      .finally(() => {
+        this.bendFxLoading = false;
+      });
+  }
 
   private cancelRoute(): void {
     if (this.routeTimer !== null) window.clearTimeout(this.routeTimer);
@@ -174,6 +193,10 @@ export class App {
       onSounds: (cues, now) => this.audio.play(cues, now),
       // The G knockouts arrive with the sheet, not the bundle (ADR 0059).
       sheetClips: (sprite) => sheets.clips(sprite),
+      bendSet: (sprite) =>
+        sheets.bendState(sprite) === 'loaded' ? sheets.bendSet(sprite) : undefined,
+      bendFrame: (sprite, heading, index) => sheets.bendFrame(sprite, heading, index),
+      bendFx: () => this.bendFx,
     });
     this.residents = new ResidentWalks(content);
     applySettings(this.settings);

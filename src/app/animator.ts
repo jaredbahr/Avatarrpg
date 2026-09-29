@@ -40,6 +40,8 @@ import { headingClip, hitClip, koClip } from '../content/assets/clips';
 import type { Heading, MeleeDirection } from '../content/assets/clips';
 import { sheetLocomotion } from '../content/assets/manifest';
 import type { SheetClips } from '../render/sheets/store';
+import type { BendSetDef } from '../content/bends';
+import type { ResolvedBendFrame } from '../render/sheets/store';
 
 /** A clip time past the end of any clip: an unlooped clip shows its last frame. */
 const HELD = 3_600_000;
@@ -100,6 +102,13 @@ export interface AnimatorOptions {
    * the sheet is in, a knockout is the legacy pose and keeps its timing.
    */
   readonly sheetClips?: (sprite: string) => SheetClips | undefined;
+  readonly bendSet?: (sprite: string) => BendSetDef | undefined;
+  readonly bendFrame?: (
+    sprite: string,
+    heading: Heading,
+    index: number,
+  ) => ResolvedBendFrame | null;
+  readonly bendFx?: () => BendFxIndex | undefined;
 }
 
 /** Everything the renderer needs to draw a unit mid-playback. */
@@ -212,6 +221,7 @@ export class Animator {
     this.lastCursor = base;
     const rate = this.rate;
     const cursor = base + Math.max(0, options.delayMs ?? 0) * rate;
+    const bendFx = this.options.bendFx?.();
     const result = choreograph({
       content: this.content,
       events,
@@ -222,6 +232,9 @@ export class Animator {
       silentSteps: options.silentSteps ?? options.alongside,
       projection: this.projection,
       ...(this.options.sheetClips ? { clipsOf: this.options.sheetClips } : {}),
+      ...(this.options.bendSet ? { bendSetOf: this.options.bendSet } : {}),
+      ...(this.options.bendFrame ? { bendFrameOf: this.options.bendFrame } : {}),
+      ...(bendFx ? { bendFx } : {}),
     });
     const affected = new Set(result.health.map((change) => change.unitId));
     // State is already the reducer's final result. Seed each affected unit at
@@ -241,7 +254,8 @@ export class Animator {
       this.healthCues.push({ ...change, order: this.healthOrder++ });
     this.healthCues.sort((a, b) => a.at - b.at || a.order - b.order);
     for (const track of result.tracks) {
-      this.timeline.add(track);
+      if (track.kind === 'bend') this.pushBend(track.start, track.unitId, track.plan, track.fx);
+      else this.timeline.add(track);
       if (track.kind === 'move') {
         if (track.gait === 'slide') {
           // A push takes the stance over: the struck figure does not settle
