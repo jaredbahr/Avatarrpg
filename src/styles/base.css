@@ -147,6 +147,8 @@
   --z-banner: 20;
   /* Under the dialog overlay: a toast never covers an open sheet. */
   --z-toast: 30;
+  /* The phone battle header's More list: over the board and its toasts, under a sheet. */
+  --z-menu: 35;
   --z-overlay: 40;
   /* A toast raised while a sheet is open: over the sheet, under the curtain. */
   --z-toast-sheet: 45;

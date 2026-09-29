@@ -34,6 +34,25 @@ on each backend.
   south-east house (x + y = 30) and it is listed after the house, as
   `baDan.ts` already requires for equal-depth frontage.
 
+- **At an equal-depth tie, the figure wins on both backends.** Canvas 2D
+  lists scenery ahead of every figure and sorts stably, so a figure level
+  with a piece draws over it. Pixi used the bare ground depth for both and
+  broke the tie by child order. That order was accidental: scenery sprites
+  are added when a scene first loads and figure sprites are reused across
+  map changes, so which one won depended on how the player had reached the
+  map. Scenery now sits 0.002 under the tie, below a figure's shadow at
+  0.001 as well (`backends/depthOrder.ts`, with a test of the sort). The
+  cutaway follows: `sceneryOpacity` skips a figure at the tie, since nothing
+  of it is behind the piece. Kaya at (18,11), level with the turned planter
+  and the south-east house, no longer ghosts the house.
+- **The turned planter is two depth slices**, cropped from the one texture
+  with `sourceRect` like any atlas piece. Its far end sorts level with (18,10),
+  so a figure there stands in front of it rather than behind the whole
+  planter. The cut sits at the house image's east edge, not at the cells'
+  join: shallower than the house, a slice under the house's awning post would
+  lose to it. A mirrored slice crops the texture's other end, since the box
+  mirrors the crop.
+
 ## Consequences
 
 - Any upright scenery can be turned without a second asset. Ground images

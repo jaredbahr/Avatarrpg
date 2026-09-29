@@ -24,6 +24,8 @@ import type { AnyTrack, ClipName } from './timeline';
 import { attackMotion } from './attackMotion';
 import { screenDirection, screenMeleeDirection } from './direction';
 import type { MeleeDirection } from '../../content/assets/clips';
+import { KO_HEADINGS, clipDurationMs, koClip } from '../../content/assets/clips';
+import type { SheetClips } from '../../render/sheets/store';
 import type { Projection } from '../../render/projection';
 import type { ActorAttachment, EmitterAttachments } from '../../render/view';
 import { enemyScale, partyScale } from './actorScale';
@@ -69,6 +71,12 @@ export interface ChoreographyInput {
   readonly pushIndex: number;
   /** Followers share the leader's footfalls rather than multiplying the sound. */
   readonly silentSteps?: boolean;
+  /**
+   * A sprite's clips as its loaded sheet draws them, fetched ones among them
+   * (ADR 0059); undefined before the sheet is in. Without it every knockout
+   * is the legacy pose.
+   */
+  readonly clipsOf?: (sprite: string) => SheetClips | undefined;
 }
 
 /**
@@ -135,6 +143,20 @@ function facingFor(dir: Vec2): 1 | -1 | undefined {
 }
 
 const chebyshev = (a: Vec2, b: Vec2): number => Math.max(Math.abs(a.x - b.x), Math.abs(a.y - b.y));
+
+/**
+ * The longest a sheet's G knockout plays, in ms at full motion, over every
+ * diagonal it is authored on; 0 for clips without one (ADR 0059). The
+ * longest, because which heading falls is the animator's to know.
+ */
+export function knockoutSpan(clips: SheetClips | undefined): number {
+  let span = 0;
+  for (const heading of KO_HEADINGS) {
+    const def = clips?.[koClip(heading)];
+    if (def?.frameMs) span = Math.max(span, clipDurationMs(def));
+  }
+  return span;
+}
 
 export function choreograph(input: ChoreographyInput): Choreography {
   const { content, events, unitsBefore, rate, pushIndex } = input;
@@ -232,6 +254,12 @@ export function choreograph(input: ChoreographyInput): Choreography {
       ...(extra.frame !== undefined ? { frame: extra.frame } : {}),
       ...(extra.meleeDirection ? { meleeDirection: extra.meleeDirection } : {}),
     });
+  };
+
+  /** How long a unit's G knockout plays, at the motion rate; 0 without one (ADR 0059). */
+  const knockout = (unitId: string): number => {
+    const sprite = unitsBefore.find((unit) => unit.id === unitId)?.sprite;
+    return sprite ? knockoutSpan(input.clipsOf?.(sprite)) * rate : 0;
   };
 
   const floater = (pos: Vec2, text: string, color: string, at: number): void => {
@@ -382,7 +410,7 @@ export function choreograph(input: ChoreographyInput): Choreography {
                 scale:
                   unit.faction === 'party'
                     ? partyScale(input.projection, poseScale)
-                    : enemyScale(unit.sprite, poseScale),
+                    : enemyScale(unit.sprite, poseScale, input.projection),
                 offset,
               }
             : undefined;
@@ -815,16 +843,27 @@ export function choreograph(input: ChoreographyInput): Choreography {
       case 'unitDied': {
         const pos = positions.get(event.unitId);
         const at = Math.max(cursor, landing().at + landing().hitStop);
+        // A G knockout (ADR 0059) falls in its own drawing, at full strength,
+        // and plays out in full; the unit is marked fallen once it lies still.
+        // The legacy pose has no fall of its own, so it sinks and fades under
+        // the mark instead.
+        const span = pos ? knockout(event.unitId) : 0;
+        const duration = Math.max(TIMING.ko * rate, span);
         const before = unitHealth.get(event.unitId);
         if (before) {
           unitHealth.set(event.unitId, { ...before, hp: 0, fallen: true });
-          health.push({ unitId: event.unitId, hp: 0, fallen: true, at });
+          health.push({
+            unitId: event.unitId,
+            hp: 0,
+            fallen: true,
+            at: span > 0 ? at + duration : at,
+          });
         }
         cue('ko', at, 8, eventIndex);
         if (pos) {
-          const duration = TIMING.ko * rate;
-          pose(event.unitId, 'ko', at, duration, { x: 0, y: 0 }, { x: 0, y: 0.08 }, easeOutQuad, {
-            alpha: { from: 1, to: 0.35 },
+          const sink = span > 0 ? { x: 0, y: 0 } : { x: 0, y: 0.08 };
+          pose(event.unitId, 'ko', at, duration, { x: 0, y: 0 }, sink, easeOutQuad, {
+            ...(span > 0 ? {} : { alpha: { from: 1, to: 0.35 } }),
             frame: 0,
           });
           const { recipe, palette } = effect('fx.ko.fall');

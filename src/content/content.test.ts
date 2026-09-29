@@ -1,6 +1,14 @@
+import { readFileSync } from 'node:fs';
 import { describe, expect, it } from 'vitest';
 import { CONTENT, CONTENT_BUNDLE, STORY_ENTRY } from './index';
-import { conditionSchema, mapSchema, storyNodeSchema, validateContent } from './schemas';
+import {
+  conditionSchema,
+  mapSchema,
+  sheetClipProblems,
+  storyNodeSchema,
+  validateContent,
+} from './schemas';
+import type { ClipDef, ClipName } from './assets/clips';
 import type { ContentBundle } from './schemas';
 import { ELEMENTS } from './elements';
 import { resolveAsset } from './assets/manifest';
@@ -74,6 +82,63 @@ describe('content', () => {
       }),
     ).toContain('asset unit.earth.linmei: a stance needs declared eight-way locomotion');
     expect(check({ 'unit.water.sura': sura })).toEqual([]);
+  });
+
+  it('holds a G knockout to every diagonal, timed cel by cel (ADR 0059)', () => {
+    const bo = CONTENT_BUNDLE.assets?.['unit.earth.bo'];
+    const linmei = CONTENT_BUNDLE.assets?.['unit.earth.linmei'];
+    if (bo?.kind !== 'sheet' || linmei?.kind !== 'sheet') throw new Error('Expected sheets');
+    // Fetched with the sheet, never bundled: the clip data is read from disk.
+    if (!bo.clipData) throw new Error('Expected Bo to fetch his knockouts');
+    const fetched = JSON.parse(readFileSync(`public/${bo.clipData}`, 'utf8')) as Partial<
+      Record<ClipName, ClipDef>
+    >;
+    const clips = { ...bo.clips, ...fetched };
+    const key = 'unit.earth.bo';
+    expect(sheetClipProblems(key, clips, true)).toEqual([]);
+    const { koNorthEast: _ko, ...partial } = clips;
+    expect(sheetClipProblems(key, partial, true)).toEqual([
+      'asset unit.earth.bo: has koSouthEast but no koNorthEast clip',
+    ]);
+    expect(sheetClipProblems(key, clips, false)).toEqual([
+      'asset unit.earth.bo: koSouthEast needs declared eight-way locomotion',
+    ]);
+    // Sura's south-west knockout holds a cel through an unusable in-between.
+    const sura = CONTENT_BUNDLE.assets?.['unit.water.sura'];
+    if (sura?.kind !== 'sheet' || !sura.clipData) throw new Error('Expected Sura’s knockouts');
+    const suraClips = JSON.parse(readFileSync(`public/${sura.clipData}`, 'utf8')) as Partial<
+      Record<ClipName, ClipDef>
+    >;
+    const held = suraClips.koSouthWest;
+    if (!held) throw new Error('Expected a south-west knockout');
+    expect(held.frames[5]).toBe(held.frames[4]);
+    const { frameMs: _timing, ...untimed } = held;
+    expect(
+      sheetClipProblems('unit.water.sura', { ...suraClips, koSouthWest: untimed }, true),
+    ).toEqual([
+      'asset unit.water.sura: koSouthWest is not timed cel by cel',
+      // Only a timed clip may hold a cel by naming it again.
+      'asset unit.water.sura: koSouthWest frame 5 is "unit.water.sura/koSouthWest/4", expected "unit.water.sura/koSouthWest/5"',
+    ]);
+    // A timed clip may hold an earlier cel of its own, never another clip's.
+    const borrowed = {
+      ...held,
+      frames: [...held.frames.slice(0, 5), 'unit.water.sura/koNorthEast/0'],
+    };
+    expect(
+      sheetClipProblems('unit.water.sura', { ...suraClips, koSouthWest: borrowed }, true),
+    ).toEqual([
+      'asset unit.water.sura: koSouthWest frame 5 is "unit.water.sura/koNorthEast/0", expected "unit.water.sura/koSouthWest/5"',
+    ]);
+    // Clip data is only read for a sheet declaring the headings it is asked for by.
+    const check = (assets: Record<string, unknown>) =>
+      validateContent({ ...CONTENT_BUNDLE, assets } as ContentBundle).filter((p) =>
+        p.startsWith('asset '),
+      );
+    expect(check({ 'unit.earth.linmei': { ...linmei, clipData: bo.clipData } })).toContain(
+      'asset unit.earth.linmei: clip data needs declared eight-way locomotion',
+    );
+    expect(check({ 'unit.earth.bo': bo })).toEqual([]);
   });
 
   it('requires pos only on an NpcDef that binds no resident', () => {

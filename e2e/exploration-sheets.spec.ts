@@ -29,12 +29,14 @@ for (const renderer of ['canvas', 'webgl'] as const) {
     const idle1 = atlasData.frames['unit.enemy.thug/idle/1'];
     if (!idle0 || !idle1) throw new Error('Probe atlas is missing an idle frame');
     idle1.frame = { ...idle0.frame };
-    atlasData.meta.image = 'thug.png';
+    // The thug's G sheet (ADR 0059) idles four cels a heading.
+    for (let i = 2; i < 4; i++) atlasData.frames[`unit.enemy.thug/idle/${i}`] = { ...idle0 };
+    atlasData.meta.image = 'thug-g.webp';
     const atlas = JSON.stringify(atlasData);
-    await page.route('**/art/units/thug.json', (route) =>
+    await page.route('**/art/units/thug-g.json', (route) =>
       route.fulfill({ contentType: 'application/json', body: atlas }),
     );
-    await page.route('**/art/units/thug.png', (route) =>
+    await page.route('**/art/units/thug-g.webp', (route) =>
       route.fulfill({ contentType: 'image/png', body: readFileSync('public/art/test/probe.png') }),
     );
     await resetStorage(page, `?renderer=${renderer}`);

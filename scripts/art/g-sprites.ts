@@ -331,7 +331,8 @@ function crop(source: Image, x0: number, y0: number, width: number, height: numb
   return out;
 }
 
-function normalise(source: Image, dx = 0, dy = 0): Image {
+/** A 192 px PixelLab cel on the 128x192 G cel: 75% nearest-neighbour, placed, clear stays clear. */
+export function normalise(source: Image, dx = 0, dy = 0): Image {
   if (source.width !== 192 || source.height !== 192)
     throw new Error(`Expected a 192x192 PixelLab cel; got ${source.width}x${source.height}.`);
   const out = newImage(FRAME_W, FRAME_H);

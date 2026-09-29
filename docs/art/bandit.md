@@ -1,5 +1,12 @@
 # Bandit art and weapon sound pass
 
+> **Superseded for idle and walk (ADR 0059).** The thug now draws from a G
+> sheet, `public/art/units/thug-g.webp`, built by `scripts/art/thug-g.ts`
+> from the toned PixelLab thug: eight-heading idle, walk and rest at the
+> party's scale. Its three cast cels, hit and kneeling defeat are the ones
+> below, copied verbatim into `art/source/thug-actions` and still mirrored.
+> The rest of this page records the first pass.
+
 The first illustrated enemy replaces `unit.enemy.thug` through the existing
 sheet contract. `public/art/units/thug.png` and `thug.json` contain nine
 128 x 192 frames: two idle, two walk, three cast, one hit and one kneeling

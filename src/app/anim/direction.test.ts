@@ -207,11 +207,16 @@ describe('heading vocabulary is a declared sheet capability', () => {
     expect(walkHeading({ x: 0, y: 0 }, 'southWest')).toBe('southWest');
   });
 
-  it('only the G party (Kaya, Sura, Bo) declares eight-way locomotion today', () => {
-    const eightWay = Object.entries(ASSETS)
-      .filter(([, entry]) => entry.kind === 'sheet' && entry.locomotion?.headings === 8)
-      .map(([key]) => key);
-    expect(eightWay).toEqual(['unit.fire.kaya', 'unit.water.sura', 'unit.earth.bo']);
+  it('only the G sheets (the party and the thug) declare eight-way locomotion today', () => {
+    const eightWay = Object.entries(ASSETS).flatMap(([key, entry]) =>
+      entry.kind === 'sheet' && entry.locomotion?.headings === 8 ? [[key, entry.atlas]] : [],
+    );
+    expect(eightWay).toEqual([
+      ['unit.fire.kaya', 'art/units/kaya-g.json'],
+      ['unit.water.sura', 'art/units/sura-g.json'],
+      ['unit.earth.bo', 'art/units/bo-g.json'],
+      ['unit.enemy.thug', 'art/units/thug-g.json'],
+    ]);
   });
 
   // A continuous route of straight legs, each starting where the last ended,

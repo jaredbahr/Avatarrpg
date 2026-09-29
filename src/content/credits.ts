@@ -13,15 +13,28 @@
  * document. Add the entry in the same commit as the files.
  */
 
-/** Licences this project accepts. `own work` is ours; the rest are third-party. */
+/**
+ * Licences this project accepts. `own work` is ours; the rest are third-party.
+ * The CMU database's terms allow its motion in a product, not resale of the
+ * data, and ask for an acknowledgement; Mixamo's allow its animations in a
+ * game, not redistribution of the files. Neither is share-alike, which is why
+ * they are here and CC BY-SA is not (ADR 0059).
+ */
 export type Licence =
-  'own work' | 'CC0 1.0' | 'CC BY 3.0' | 'CC BY 4.0' | 'SIL Open Font License 1.1';
+  | 'own work'
+  | 'CC0 1.0'
+  | 'CC BY 3.0'
+  | 'CC BY 4.0'
+  | 'SIL Open Font License 1.1'
+  | 'CMU Motion Capture Database terms'
+  | 'Adobe Mixamo terms';
 
 /** Licences that require the author to be named wherever the work is used. */
 const ATTRIBUTION_REQUIRED: readonly Licence[] = [
   'CC BY 3.0',
   'CC BY 4.0',
   'SIL Open Font License 1.1',
+  'CMU Motion Capture Database terms',
 ];
 
 export function needsAttribution(licence: Licence): boolean {
@@ -75,6 +88,34 @@ export const THIRD_PARTY_CREDITS: readonly CreditEntry[] = [
     source: 'https://kenney.nl',
     covers: ['audio'],
     note: 'Footsteps, impacts, splintering wood and the interface. The bending sounds are not here: these packs contain none, so an element’s voice is rendered in the Web Audio graph from the description in src/content/sounds.ts rather than played from a file.',
+  },
+  {
+    what: 'The motion of the party’s knockouts',
+    work: 'CMU Graphics Lab Motion Capture Database, subject 90 trial 18 and subject 77 trials 16 and 18',
+    authors: 'Carnegie Mellon University Graphics Lab',
+    licence: 'CMU Motion Capture Database terms',
+    source: 'https://mocap.cs.cmu.edu',
+    covers: [
+      'art/units/kaya-g-3.webp',
+      'art/units/kaya-g-3.json',
+      'art/units/kaya-g-clips.json',
+      'art/units/sura-g-3.webp',
+      'art/units/sura-g-3.json',
+      'art/units/sura-g-clips.json',
+      'art/units/bo-g-3.webp',
+      'art/units/bo-g-3.json',
+      'art/units/bo-g-clips.json',
+    ],
+    note: 'The data used in this project was obtained from mocap.cs.cmu.edu. The database was created with funding from NSF EIA-0196217. Kaya falls to 90_18 (RugPullFall), frames 64 to 170; Sura to 77_18 and Bo to 77_16, each lying down played in reverse; every take is retargeted onto the character’s own stance; the cels are drawn for this project with PixelLab. See docs/adr/0059-g-knockout-and-thug.md.',
+  },
+  {
+    what: 'The motion of the thug’s walk',
+    work: 'Mixamo “Unarmed Walk Forward”',
+    authors: 'Adobe Mixamo',
+    licence: 'Adobe Mixamo terms',
+    source: 'https://www.mixamo.com',
+    covers: ['art/units/thug-g.webp', 'art/units/thug-g.json'],
+    note: 'Projected onto each of the thug’s eight headings and root-locked; the cels are drawn for this project with PixelLab, and the idle and the cast, hit and defeat poses are this project’s own. The animation file itself is not redistributed. See docs/adr/0059-g-knockout-and-thug.md.',
   },
 ];
 

@@ -53,11 +53,11 @@ export const APRON_SEAM = FOREST_APRON_SEAM;
 /** Ground this opaque is the scene's own painting and is left alone. */
 export const GUARD_ALPHA = 250;
 /**
- * How far inside the board the continuation may reach to find real ground. Two
- * tiles of ledge stand on the eastern rim's cells, so the walk has to be able
- * to cross them to the grass bank they are cut into.
+ * How far inside the board the continuation may reach to find real ground. The
+ * enlarged NE bank reaches five cells in from the eastern rim, so the walk has
+ * to be able to cross it to the grass bank it is cut into.
  */
-const SAMPLE_REACH = 3.4;
+const SAMPLE_REACH = 6;
 /** The walk's stride along the normal, in tiles. */
 const SAMPLE_STEP = 0.08;
 /** Tile centre of logical (0,0) in scene-local pixels, as every piece uses it. */

@@ -21,10 +21,12 @@ class FakeImage {
   }
 }
 
-/** One frame per page: the atlas JSON the store fetches for `path`. */
-function atlasJson(image: string, frame: string): string {
+/** The atlas JSON the store fetches for `path`, holding the named frames. */
+function atlasJson(image: string, ...frames: string[]): string {
   return JSON.stringify({
-    frames: { [frame]: { frame: { x: 0, y: 0, w: 128, h: 192 } } },
+    frames: Object.fromEntries(
+      frames.map((frame) => [frame, { frame: { x: 0, y: 0, w: 128, h: 192 } }]),
+    ),
     meta: { image, size: { w: 128, h: 192 } },
   });
 }
@@ -33,21 +35,27 @@ const KEY = 'unit.fire.kaya';
 
 const BEND_PAGE = 'art/units/kaya-g-bend.json';
 const BEND_DATA = 'art/units/kaya-bend.json';
+const CLIP_PAGE = 'art/units/kaya-g-3.json';
+const CLIP_DATA = 'art/units/kaya-g-clips.json';
 const shipped = (path: string): string => readFileSync(`public/${path}`, 'utf8');
 
-function stubPages(): void {
+function stubPages(failing: readonly string[] = []): void {
   const entry = resolveAsset(KEY);
   if (entry.kind !== 'sheet' || !entry.atlasPages?.[0]) throw new Error('Expected a paged sheet');
   const pages: Record<string, string> = {
-    [entry.atlas]: atlasJson('kaya-g.webp', `${KEY}/idle/0`),
+    [entry.atlas]: atlasJson('kaya-g.webp', `${KEY}/idle/0`, `${KEY}/ko/0`),
     [entry.atlasPages[0]]: atlasJson('kaya-g-2.webp', `${KEY}/stance/0`),
   };
   // Any further page (Kaya's lossless riverside page, ADR 0054) loads too.
   for (const [index, path] of entry.atlasPages.slice(1).entries())
     pages[path] = atlasJson(`kaya-page-${index + 3}.png`, `${KEY}/wave/${index}`);
+  // The knockout page and its clips are the shipped files (ADR 0059).
+  pages[CLIP_PAGE] = shipped(CLIP_PAGE);
+  pages[CLIP_DATA] = shipped(CLIP_DATA);
   // The bend page and its data are the shipped files (ADR 0055).
   pages[BEND_PAGE] = shipped(BEND_PAGE);
   pages[BEND_DATA] = shipped(BEND_DATA);
+  for (const path of failing) delete pages[path];
   vi.stubGlobal('Image', FakeImage);
   vi.stubGlobal(
     'fetch',
@@ -99,6 +107,79 @@ describe('a sheet on more than one atlas page (ADR 0052)', () => {
     await settle();
     expect(store.loadedFor(KEY)).toBe(false);
     expect(store.frame(KEY, 'idle', 0, undefined, 128, 1)).toBeNull();
+  });
+});
+
+describe('a G knockout fetched with its sheet (ADR 0059)', () => {
+  afterEach(() => vi.unstubAllGlobals());
+
+  it('draws each by its own trimmed cel and anchor, timed cel by cel', async () => {
+    stubPages();
+    const entry = resolveAsset(KEY);
+    if (entry.kind !== 'sheet') throw new Error('Expected a sheet');
+    expect(entry.atlasPages).toContain(CLIP_PAGE);
+    expect(entry.clipData).toBe(CLIP_DATA);
+    // The manifest does not carry them: they cost the bundle nothing.
+    expect(entry.clips.koNorthWest).toBeUndefined();
+    const store = new SheetStore();
+    expect(store.clips(KEY)).toBeUndefined();
+    store.frame(KEY, 'idle', 0, undefined, 128, 1);
+    await until(() => store.loadedFor(KEY));
+    const clips = store.clips(KEY);
+    expect(clips?.idle).toBe(entry.clips.idle);
+    for (const clip of ['koSouthEast', 'koNorthWest'] as const) {
+      const def = clips?.[clip];
+      if (!def?.frameMs || !def.frameSize) throw new Error(`Expected a timed ${clip}`);
+      let at = 0;
+      def.frameMs.forEach((ms, index) => {
+        // A named frame does not stop a timed clip from playing by time.
+        const frame = store.frame(KEY, clip, at + ms / 2, 0, 128, 1);
+        expect(frame?.clip).toBe(clip);
+        expect(frame?.index).toBe(index);
+        expect(frame?.anchor).toEqual(def.anchor);
+        expect({ w: frame?.frame.w, h: frame?.frame.h }).toEqual(def.frameSize);
+        at += ms;
+      });
+      // Played through, it holds its last frame.
+      expect(store.frame(KEY, clip, at + 10_000, undefined, 128, 1)?.index).toBe(
+        def.frames.length - 1,
+      );
+    }
+    // The stance still stands by the sheet's anchor.
+    expect(store.frame(KEY, 'stance', 0, undefined, 128, 1)?.anchor).toEqual(entry.anchor);
+  });
+
+  // A missing clip file drops only the extra clips; a `koX` falls back to `ko`.
+  it('drops only the extra clips when its clip data is missing', async () => {
+    stubPages([CLIP_DATA]);
+    const store = new SheetStore();
+    const warn = vi.spyOn(console, 'warn').mockImplementation(() => undefined);
+    store.frame(KEY, 'idle', 0, undefined, 128, 1);
+    await until(() => store.loadedFor(KEY));
+    // The sheet and its own clips are in; only the fetched clips are missing.
+    expect(store.loadedFor(KEY)).toBe(true);
+    expect(store.clips(KEY)?.koNorthWest).toBeUndefined();
+    expect(store.frame(KEY, 'idle', 0, undefined, 128, 1)?.placeholder).toBe(false);
+    // A G knockout resolves back to the sheet's legacy `ko` pose.
+    const ko = store.frame(KEY, 'koNorthWest', 0, undefined, 128, 1);
+    expect(ko?.clip).toBe('ko');
+    expect(ko?.placeholder).toBe(false);
+    expect(warn).toHaveBeenCalled();
+    warn.mockRestore();
+  });
+
+  it('still fails the whole sheet when one of its pages fails', async () => {
+    stubPages([CLIP_PAGE]);
+    const store = new SheetStore();
+    const warn = vi.spyOn(console, 'warn').mockImplementation(() => undefined);
+    store.frame(KEY, 'idle', 0, undefined, 128, 1);
+    await settle();
+    await settle();
+    expect(store.loadedFor(KEY)).toBe(false);
+    expect(store.clips(KEY)).toBeUndefined();
+    expect(store.frame(KEY, 'idle', 0, undefined, 128, 1)).toBeNull();
+    expect(warn).toHaveBeenCalled();
+    warn.mockRestore();
   });
 });
 

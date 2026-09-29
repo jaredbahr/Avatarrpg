@@ -71,9 +71,13 @@ interface AtlasPage {
   readonly image: HTMLImageElement;
 }
 
+/** A sheet's clips: the manifest's, with its fetched `clipData` over them (ADR 0059). */
+export type SheetClips = Readonly<Partial<Record<ClipName, ClipDef>>>;
+
 interface LoadedAtlas {
   /** `atlas` first, then each of `atlasPages` (ADR 0052). */
   readonly pages: readonly AtlasPage[];
+  readonly clips: SheetClips;
   /** Stable silhouette envelope measured once across the asset's authored clips. */
   readonly headroom: number;
 }
@@ -113,24 +117,28 @@ export function atlasHeadroom(
   entry: SheetEntry,
   atlas: AtlasJson,
   image: CanvasImageSource,
+  clips: SheetClips = entry.clips,
 ): number {
-  const names = new Set([
-    ...Object.values(entry.clips).flatMap((clip) => clip?.frames ?? []),
-    ...Object.values(entry.meleeDirections ?? {}).flatMap((frames) => frames ?? []),
-  ]);
+  // Each frame is measured from the anchor it stands by: a trimmed clip's own
+  // (ADR 0059), or the sheet's.
+  const names = new Map<string, number>();
+  for (const clip of Object.values(clips))
+    for (const name of clip?.frames ?? []) names.set(name, clip?.anchor?.y ?? entry.anchor.y);
+  for (const frames of Object.values(entry.meleeDirections ?? {}))
+    for (const name of frames ?? []) names.set(name, entry.anchor.y);
   const scratch = typeof document === 'undefined' ? null : document.createElement('canvas');
   const ctx = scratch?.getContext('2d');
   let envelope = 0;
-  for (const name of names) {
+  for (const [name, anchorY] of names) {
     const frame = atlas.frames.get(name);
     if (!frame || frame.w === 0 || frame.h === 0) continue;
-    let height = frameHeadroom(frame, entry.anchor.y, entry.pixelsPerTile);
+    let height = frameHeadroom(frame, anchorY, entry.pixelsPerTile);
     if (scratch && ctx) {
       scratch.width = frame.w;
       scratch.height = frame.h;
       ctx.drawImage(image, frame.x, frame.y, frame.w, frame.h, 0, 0, frame.w, frame.h);
       const data = ctx.getImageData(0, 0, frame.w, frame.h).data;
-      height = headroomFromPixels(data, frame.w, frame.h, entry.pixelsPerTile, entry.anchor.y);
+      height = headroomFromPixels(data, frame.w, frame.h, entry.pixelsPerTile, anchorY);
     }
     envelope = Math.max(envelope, height);
   }
@@ -234,7 +242,7 @@ export class SheetStore {
           placeholder: false,
         };
     }
-    const resolved = resolveClip(entry.clips, clip);
+    const resolved = resolveClip(loaded.clips, clip);
     if (!resolved) return null;
     const index = frameIndex(resolved, clipTime, clipFrame);
     const found = findFrame(loaded, resolved.def.frames[index]);
@@ -244,12 +252,23 @@ export class SheetStore {
       frame: found.frame,
       pixelsPerTile: entry.pixelsPerTile,
       footprint: entry.footprint,
-      anchor: entry.anchor,
+      // A trimmed clip (a G knockout, ADR 0059) stands by its own anchor.
+      anchor: resolved.def.anchor ?? entry.anchor,
       headroom: loaded.headroom,
       clip: resolved.clip,
       index,
       placeholder: false,
     };
+  }
+
+  /**
+   * Every clip `key`'s sheet draws once it has loaded, its fetched
+   * `clipData` among them (ADR 0059); undefined before then, after it
+   * failed, and for a key that is not a sheet. Asking starts the load.
+   */
+  clips(key: string): SheetClips | undefined {
+    const entry = resolveAsset(key);
+    return entry.kind === 'sheet' ? this.atlas(key, entry)?.clips : undefined;
   }
 
   /** Where `key`'s bend load stands (ADR 0055). Tests poll it. */
@@ -350,7 +369,10 @@ export class SheetStore {
   /**
    * The loaded atlas for a sheet key, kicking off the load on first ask. A
    * sheet with further pages (ADR 0052) is loaded only once every page is, so
-   * a clip never draws from half a sheet. Its bend is not one of them.
+   * a clip never draws from half a sheet; a page that fails fails the sheet.
+   * Its clip data (ADR 0059) rides along but is best-effort: if it is missing
+   * or malformed, only the extra clips it carries are dropped, and a `koX`
+   * falls back to the sheet's legacy `ko` pose. Its bend is not one of them.
    */
   private atlas(key: string, entry: SheetEntry): LoadedAtlas | null {
     const state = this.loaded.get(key);
@@ -358,11 +380,29 @@ export class SheetStore {
     if (state !== undefined) return null;
 
     this.loaded.set(key, 'loading');
-    Promise.all([entry.atlas, ...(entry.atlasPages ?? [])].map(loadPage))
-      .then((pages) => {
+    const pages = Promise.all([entry.atlas, ...(entry.atlasPages ?? [])].map(loadPage));
+    // A sheet's extra clips (ADR 0059) are optional to the sheet: losing the
+    // file costs the clips it carries, not the art, so a `koX` resolves back
+    // to the legacy `ko` pose (`resolveClip`). The schema is checked in CI
+    // (`art:validate`), so this only types the parse.
+    const clipsPromise = entry.clipData
+      ? fetchText(entry.clipData)
+          .then((text) => JSON.parse(text) as SheetClips)
+          .catch((reason: unknown) => {
+            console.warn(`Sheet "${key}" clip data failed; drawing its own clips.`, reason);
+            return undefined;
+          })
+      : Promise.resolve(undefined);
+    // Only a page failure rejects here; the clip data already caught its own.
+    Promise.all([pages, clipsPromise])
+      .then(([pages, fetched]) => {
+        const clips: SheetClips = fetched ? { ...entry.clips, ...fetched } : entry.clips;
         this.loaded.set(key, {
           pages,
-          headroom: Math.max(...pages.map((page) => atlasHeadroom(entry, page.atlas, page.image))),
+          clips,
+          headroom: Math.max(
+            ...pages.map((page) => atlasHeadroom(entry, page.atlas, page.image, clips)),
+          ),
         });
         if (this.bendsWanted.has(key)) this.bend(key, entry);
       })

@@ -13,7 +13,7 @@
  * examples that today's numbers produce, so moving one is a deliberate act.
  */
 
-import { z } from 'zod';
+import * as z from '../core/schema';
 import type { CombatTuning } from '../core/types';
 
 const combatTuningShape = {

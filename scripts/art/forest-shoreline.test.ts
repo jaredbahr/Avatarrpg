@@ -206,12 +206,12 @@ it('keeps the bed blue enough for the authored-water gate', () => {
   }
 });
 
-it('preserves all eight permanent walkable water cells without adding shore collision', () => {
+it('preserves all nine permanent walkable water cells without adding shore collision', () => {
   const actual = FOREST_ROAD.rows.flatMap((row, y) =>
     [...row].flatMap((key, x) => (key === '~' ? [{ x, y }] : [])),
   );
   expect(actual).toEqual(FOREST_WATER_CELLS);
-  expect(actual).toHaveLength(8);
+  expect(actual).toHaveLength(9);
   expect(FOREST_ROAD.legend['~']).toEqual({
     terrain: 'dirt',
     surface: 'water',

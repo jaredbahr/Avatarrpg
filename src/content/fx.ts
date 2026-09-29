@@ -16,7 +16,7 @@
  * any zoom.
  */
 
-import { z } from 'zod';
+import * as z from '../core/schema';
 import { FX_CELS, type FxCel } from './fxCels';
 import { BENDING_CEL_CUES } from './bendingCels';
 

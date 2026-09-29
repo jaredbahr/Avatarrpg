@@ -14,8 +14,8 @@ export function npcPresentationScale(sprite: string, projection: MapDef['project
 
 /** An encounter marker and its combat actor are the same adult at the same scale. */
 export function triggerPresentationScale(
-  _map: Pick<MapDef, 'id' | 'projection'>,
+  map: Pick<MapDef, 'id' | 'projection'>,
   sprite: string,
 ): number {
-  return enemyScale(sprite);
+  return enemyScale(sprite, 1, map.projection);
 }
