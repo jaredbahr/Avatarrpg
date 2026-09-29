@@ -22,7 +22,7 @@
  * sound.
  */
 
-import { z } from 'zod';
+import * as z from '../core/schema';
 
 /* ------------------------------------------------------------------ */
 /* Shapes                                                              */
