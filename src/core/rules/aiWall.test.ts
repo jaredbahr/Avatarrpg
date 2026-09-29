@@ -16,9 +16,8 @@ import { DEFAULT_TILE, hasLineOfSight, tileAt, withTile } from './grid';
  * the rest of the fight. A placement is now refused when, from where the caster
  * *stands*, the post-wall ground holds no enemy a usable attack could still
  * reach — unless the wall is a real block, shutting down an attack that can hit
- * the caster right now. Threats count only while they are usable, and "did the
- * wall break it" is judged with the real `isValidTarget` against the post-wall
- * battle, so a size-2 attacker keeps its second firing cell.
+ * the caster next turn. Threats use next-turn AP and cooldowns, and the shared
+ * direct-threat rule checks every occupied cell of a size-2 unit.
  */
 
 const WALL: Tile = {
@@ -69,6 +68,7 @@ function setup(options: {
     cooldowns?: Readonly<Record<string, number>>;
     move?: number;
     ap?: number;
+    size?: 1 | 2;
   }[];
   enemies: readonly {
     pos: Vec2;
@@ -101,6 +101,7 @@ function setup(options: {
     cooldowns: caster.cooldowns ?? {},
     ap: caster.ap ?? 4,
     move: caster.move ?? 0,
+    size: caster.size ?? 1,
   }));
   const enemies: Unit[] = options.enemies.map((enemy, index) => ({
     ...enemyBase,
@@ -169,14 +170,13 @@ function bender(pos: Vec2, extra: { move?: number } = {}) {
 describe('the AI and its own walls', () => {
   it('does not wall off its only target when nothing is shooting back', () => {
     /*
-     * The Quarry Bender has already thrown (Rock Throw cooling) and the archer
-     * across the corridor is out of its own range, so the only scored action is
-     * the wall. The wall buys nothing defensively, and it would cut the caster
-     * off from the enemy it is waiting to shoot, so it is refused.
+     * Rock Throw is ready and the archer across the corridor is out of its own
+     * range. The wall buys nothing defensively and would cut off the caster's
+     * only ready shot, so it is refused on line-of-sight grounds.
      */
     const { draft, casterIds, enemyIds } = setup({
       grid: corridor(12, 7),
-      casters: [bender({ x: 2, y: 3 })],
+      casters: [{ pos: { x: 2, y: 3 }, abilities: ['rock_throw', 'earth_wall'] }],
       enemies: [{ pos: { x: 7, y: 3 }, abilities: ['flame_arc'] }],
     });
     const casterId = casterIds[0];
@@ -187,8 +187,8 @@ describe('the AI and its own walls', () => {
 
     const caster = unit(draft, casterId);
     const enemy = unit(draft, enemyId);
-    expect(usedAbilities(draft)).toEqual([]);
-    // The line it could not afford to lose is still open.
+    expect(usedAbilities(draft)).not.toContain('earth_wall');
+    // The ready firing line it could not afford to lose is still open.
     expect(hasLineOfSight(draft.grid, caster.pos, enemy.pos)).toBe(true);
   });
 
@@ -292,17 +292,17 @@ describe('the AI and its own walls', () => {
     expect(wallStrandsCaster(draft, caster, [wallTile])).toBe(false);
   });
 
-  it('does not treat an attacker that cannot act right now as a threat', () => {
+  it('uses the attacker next-turn AP and cooldown budget', () => {
     /*
      * Same board three times: the only difference is whether the slinger can
-     * actually use its attack. A ready sling makes the wall a real block; a
-     * cooling or unaffordable one does not, and then the wall is refused because
-     * it strands the caster for no defensive gain.
+     * attack will be ready on its next activation. Current AP is irrelevant
+     * because beginTurn refills it; a cooldown longer than one round remains a
+     * real reason the attack cannot threaten next turn.
      */
     const wallTile: Vec2 = { x: 4, y: 4 };
     const base: SetupOptions = {
       grid: openGrid(12, 9),
-      casters: [bender({ x: 5, y: 4 })],
+      casters: [{ pos: { x: 5, y: 4 }, abilities: ['rock_throw', 'earth_wall'] }],
       enemies: [{ pos: { x: 2, y: 4 }, abilities: ['sling_stone'] }],
     };
     const stranding = (fixture: Fixture) =>
@@ -321,17 +321,58 @@ describe('the AI and its own walls', () => {
       ...base,
       enemies: [{ pos: { x: 2, y: 4 }, abilities: ['sling_stone'], ap: 0 }],
     });
-    expect(stranding(spent)).toBe(true);
+    expect(stranding(spent)).toBe(false);
 
-    // End to end: no wall is raised while the only attacker is still cooling.
-    const casterId = cooling.casterIds[0];
-    const enemyId = cooling.enemyIds[0];
+    // End to end: after the attacker has really ended its turn (and has 0 AP),
+    // the following caster still recognizes the refreshed next-turn threat.
+    const casterId = spent.casterIds[0];
+    const enemyId = spent.enemyIds[0];
     if (!casterId || !enemyId) throw new Error('Missing wall fixture units');
-    planAiTurn(cooling.draft, casterId, new RngCursor(7));
-    const caster = unit(cooling.draft, casterId);
-    const enemy = unit(cooling.draft, enemyId);
-    expect(usedAbilities(cooling.draft)).not.toContain('earth_wall');
-    expect(hasLineOfSight(cooling.draft.grid, caster.pos, enemy.pos)).toBe(true);
+    spent.draft.endTurn(enemyId);
+    planAiTurn(spent.draft, casterId, new RngCursor(7));
+    expect(usedAbilities(spent.draft)).toContain('earth_wall');
+  });
+
+  it('raises the wall on a cell vacated by a planned move', () => {
+    const { draft, casterIds, enemyIds } = setup({
+      grid: openGrid(12, 9),
+      casters: [{ pos: { x: 3, y: 4 }, abilities: ['rock_throw', 'earth_wall'] }],
+      enemies: [{ pos: { x: 1, y: 4 }, abilities: ['sling_stone'] }],
+    });
+    const movedCaster = { ...unit(draft, casterIds[0]), pos: { x: 5, y: 4 } };
+    const enemy = unit(draft, enemyIds[0]);
+    const wallTile = { x: 3, y: 4 };
+    const battle = draft.toBattle();
+    const after = {
+      ...battle,
+      grid: raised(draft.grid, [wallTile]),
+      units: battle.units.map((candidate) =>
+        candidate.id === movedCaster.id ? movedCaster : candidate,
+      ),
+    };
+
+    expect(isValidTarget(CONTENT, after, enemy, ability('sling_stone'), movedCaster.pos).ok).toBe(
+      false,
+    );
+    expect(wallStrandsCaster(draft, movedCaster, [wallTile])).toBe(false);
+  });
+
+  it('does not call a size-2 caster safe when only its anchor is blocked', () => {
+    const wallTile = { x: 4, y: 4 };
+    const { draft, casterIds, enemyIds } = setup({
+      grid: openGrid(12, 9),
+      casters: [{ pos: { x: 5, y: 4 }, abilities: ['sling_stone', 'earth_wall'], size: 2 }],
+      enemies: [{ pos: { x: 1, y: 2 }, abilities: ['sling_stone'] }],
+    });
+    const caster = unit(draft, casterIds[0]);
+    const enemy = unit(draft, enemyIds[0]);
+    const after = { ...draft.toBattle(), grid: raised(draft.grid, [wallTile]) };
+
+    expect(isValidTarget(CONTENT, after, enemy, ability('sling_stone'), caster.pos).ok).toBe(false);
+    expect(isValidTarget(CONTENT, after, enemy, ability('sling_stone'), { x: 6, y: 4 }).ok).toBe(
+      true,
+    );
+    expect(wallStrandsCaster(draft, caster, [wallTile])).toBe(true);
   });
 
   it('does not treat a size-2 attacker as blocked while its second cell fires', () => {

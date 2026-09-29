@@ -43,9 +43,18 @@ import {
 } from './abilities';
 import { averageDamage, hitChance, positionHasCover } from './damage';
 import { positionObscurement, weatherAt } from './obscurement';
-import { distance, distanceToUnit, posKey, reachable, tileAt, withTile } from './grid';
-import { canMove, effectiveStats, isAlive } from './stats';
+import {
+  distance,
+  distanceToUnit,
+  occupiedCells,
+  posKey,
+  reachable,
+  tileAt,
+  withTile,
+} from './grid';
+import { canMove, effectiveStats, isAlive, startingAp } from './stats';
 import { findCombo } from './surfaces';
+import { directAttackThreats, type ThreatBudget } from './directAttackThreats';
 
 /** How much the AI wants to inflict each status, in "points of damage". */
 const STATUS_VALUE: Record<StatusId, number> = {
@@ -222,12 +231,12 @@ interface Plan {
  * its own wall belongs to the movement scorer, not here.
  *
  * The one good reason to accept that cost is the wall's defensive purpose:
- * shutting down an attack that can reach the caster *right now*. Both halves are
- * judged with the rules the planner itself uses: a threat counts only while it
- * is usable (`usableAbilities` filters out cooldowns, unaffordable AP and
- * chi-blocking), and "did the wall break it" re-runs the real `isValidTarget`
- * against the post-wall ground, so a size-2 attacker keeps its second firing
- * cell and a second attack is not mistaken for a blocked one.
+ * shutting down an attack that can reach the caster on the attacker's next
+ * turn. The shared direct-threat query receives the AP and cooldowns that
+ * `beginTurn` would provide (with movement held at zero because this rule asks
+ * whether this wall breaks the current firing lane), so an enemy that already
+ * ended its turn still counts and a cooldown with more than one round left does
+ * not. That query also checks every occupied cell of a size-2 defender.
  *
  * Everything below is pure geometry through the same targeting helpers the
  * planner uses, so the preview path stays RNG-free and the answer matches what
@@ -257,6 +266,9 @@ function isOffensiveAbility(content: ContentIndex, ability: Ability): boolean {
  */
 type WallTargetCache = Map<string, readonly Unit[]>;
 
+// This cache is scoped to one unchanged BattleDraft scoring pass. Never reuse it
+// after the draft changes: its target and threat sets describe one battle snapshot.
+
 /**
  * Battle snapshot for scoring a caster from a prospective standing position.
  *
@@ -280,7 +292,7 @@ function preWallTargets(
   enemies: readonly Unit[],
   cache: WallTargetCache,
 ): readonly Unit[] {
-  const key = `${caster.id}|${posKey(caster.pos)}`;
+  const key = `targets|${caster.id}|${posKey(caster.pos)}`;
   const cached = cache.get(key);
   if (cached) return cached;
   const targets = enemies.filter((enemy) => canHitFrom(content, battle, caster, enemy));
@@ -302,25 +314,54 @@ function canHitFrom(
   return false;
 }
 
-/** Can this enemy, right now, turn a usable offensive ability onto the caster? */
-function threatensCaster(
+function nextTurnThreatBudget(content: ContentIndex, enemy: Unit): ThreatBudget {
+  const cooldowns: Record<string, number> = {};
+  for (const [abilityId, rounds] of Object.entries(enemy.cooldowns)) {
+    if (rounds > 1) cooldowns[abilityId] = rounds - 1;
+  }
+  return {
+    ap: startingAp(content, enemy),
+    move: 0,
+    cooldowns,
+    statuses: enemy.statuses,
+  };
+}
+
+/** Enemies that can directly attack the caster on their next activation. */
+function preWallThreats(
   content: ContentIndex,
   battle: BattleState,
-  enemy: Unit,
   caster: Unit,
-): boolean {
-  for (const ability of usableAbilities(content, enemy)) {
-    if (!isOffensiveAbility(content, ability)) continue;
-    if (isValidTarget(content, battle, enemy, ability, caster.pos).ok) return true;
-  }
-  return false;
+  enemies: readonly Unit[],
+  cache: WallTargetCache,
+): readonly Unit[] {
+  const key = `threats|${caster.id}|${posKey(caster.pos)}`;
+  const cached = cache.get(key);
+  if (cached) return cached;
+  const threats = enemies.filter((enemy) => {
+    const result = directAttackThreats(
+      content,
+      battle,
+      enemy.id,
+      caster.id,
+      nextTurnThreatBudget(content, enemy),
+    );
+    return result.valid && result.threats.length > 0;
+  });
+  cache.set(key, threats);
+  return threats;
 }
 
 /** The clear ground a wall would actually fill; units and existing walls are skipped. */
-function wallTilesThatRise(draft: BattleDraft, tiles: readonly Vec2[]): Vec2[] {
+function wallTilesThatRise(
+  draft: BattleDraft,
+  battle: BattleState,
+  tiles: readonly Vec2[],
+): Vec2[] {
+  const occupied = new Set(battle.units.flatMap(occupiedCells).map(posKey));
   return tiles.filter((pos) => {
     const tile = tileAt(draft.grid, pos);
-    return tile !== undefined && !tile.blocked && draft.unitAt(pos) === undefined;
+    return tile !== undefined && !tile.blocked && !occupied.has(posKey(pos));
   });
 }
 
@@ -347,14 +388,19 @@ export function wallStrandsCaster(
   cache: Map<string, readonly Unit[]> = new Map(),
 ): boolean {
   const content = draft.content;
-  const raised = wallTilesThatRise(draft, tiles);
+  const before = battleWithHypotheticalCaster(draft.toBattle(), caster);
+  const raised = wallTilesThatRise(draft, before, tiles);
   if (raised.length === 0) return false;
 
   const enemies = opponentsOf(draft, caster);
   if (enemies.length === 0) return false;
 
-  const before = battleWithHypotheticalCaster(draft.toBattle(), caster);
   const targets = preWallTargets(content, before, caster, enemies, cache);
+
+  // With no ready shot before the wall, the placement costs the caster no
+  // target and therefore cannot strand it. Future-turn opportunity is outside
+  // this current-turn action scorer.
+  if (targets.length === 0) return false;
 
   // The world exactly as the placement would leave it.
   const after: BattleState = { ...before, grid: gridWithWall(draft, raised) };
@@ -362,10 +408,16 @@ export function wallStrandsCaster(
   // Still a shot at something it could hit before the wall? Then it costs nothing.
   if (targets.some((enemy) => canHitFrom(content, after, caster, enemy))) return false;
 
-  // A wall that shuts down a usable attack aimed at the caster is doing its job.
-  for (const enemy of enemies) {
-    if (!threatensCaster(content, before, enemy, caster)) continue;
-    if (!threatensCaster(content, after, enemy, caster)) return false;
+  // A wall that shuts down a next-turn direct attack is doing its job.
+  for (const enemy of preWallThreats(content, before, caster, enemies, cache)) {
+    const result = directAttackThreats(
+      content,
+      after,
+      enemy.id,
+      caster.id,
+      nextTurnThreatBudget(content, enemy),
+    );
+    if (result.valid && result.threats.length === 0) return false;
   }
   return true;
 }
