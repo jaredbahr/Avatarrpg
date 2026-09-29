@@ -314,8 +314,8 @@ function reedFringe(water: string, { x, y, width, foot }: ReedPlacement): SceneS
     width,
     height,
     footprint: [{ x, y }],
-    // Sorted from the painted foot, with the centred fringe's old offset (0.1, 0.08 into
-    // the cell), so an offset foot sorts where it is drawn.
+    // The centred fringe's anchor (0.1, 0.08 into its cell) carried along with an offset
+    // foot, so a unit standing in the reed's own cell still draws in front of it.
     depth: { x: fx - 0.4, y: fy - 0.42 },
     contactShadow: false,
   };
