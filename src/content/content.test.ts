@@ -3,6 +3,7 @@ import { describe, expect, it } from 'vitest';
 import { CONTENT, CONTENT_BUNDLE, STORY_ENTRY } from './index';
 import {
   conditionSchema,
+  encounterSchema,
   mapSchema,
   sheetClipProblems,
   storyNodeSchema,
@@ -40,6 +41,43 @@ describe('content', () => {
   it('passes shape and cross-reference validation', () => {
     const problems = validateContent(CONTENT_BUNDLE);
     expect(problems, `\n${problems.join('\n')}\n`).toEqual([]);
+  });
+
+  it('holds a weather schedule to the 0-2 ladder and a climbing order', () => {
+    const source = CONTENT_BUNDLE.encounters.find(
+      (encounter) => encounter.id === 'enc_forest_road',
+    );
+    if (!source) throw new Error('Missing forest road encounter');
+    const parses = (schedule: unknown) =>
+      encounterSchema.safeParse({ ...source, weather: { id: 'sandstorm', schedule } }).success;
+
+    expect(
+      parses([
+        { fromRound: 1, intensity: 0 },
+        { fromRound: 3, intensity: 1 },
+        { fromRound: 6, intensity: 2 },
+      ]),
+    ).toBe(true);
+
+    // Two entries on the same round say two things at once.
+    expect(
+      parses([
+        { fromRound: 3, intensity: 1 },
+        { fromRound: 3, intensity: 2 },
+      ]),
+    ).toBe(false);
+    // A backwards round is a gap the author meant to fill.
+    expect(
+      parses([
+        { fromRound: 6, intensity: 2 },
+        { fromRound: 3, intensity: 1 },
+      ]),
+    ).toBe(false);
+
+    // Intensity is the ladder, not any integer, and round 0 is not a round.
+    expect(parses([{ fromRound: 3, intensity: 3 }])).toBe(false);
+    expect(parses([{ fromRound: 0, intensity: 1 }])).toBe(false);
+    expect(parses([])).toBe(false);
   });
 
   it('holds eight-way locomotion to a declared, complete heading set', () => {
