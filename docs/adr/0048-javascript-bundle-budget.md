@@ -1,6 +1,6 @@
 # ADR 0048: Raise the JavaScript bundle gate to 320 KB
 
-**Status:** accepted, 2026-09-24
+**Status:** accepted, 2026-09-24; amended by ADR 0066 (2026-09-29)
 
 Supersedes the 300 KB JavaScript ceiling in ADR 0001 and ADR 0003. Their
 renderer, asset-contract and fallback decisions are unchanged.

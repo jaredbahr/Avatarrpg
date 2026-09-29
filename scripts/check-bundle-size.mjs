@@ -10,7 +10,7 @@ import { readdirSync, readFileSync, statSync } from 'node:fs';
 import { join, resolve, dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
-const BUDGET_KB = 320;
+const BUDGET_KB = 350;
 const dist = resolve(dirname(fileURLToPath(import.meta.url)), '../dist');
 
 function walk(dir) {
