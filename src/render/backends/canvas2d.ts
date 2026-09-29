@@ -50,6 +50,7 @@ import {
 import { npcPose, sprites } from '../spriteCache';
 import {
   fallenAlpha,
+  floaterScale,
   unitMarkerGroundPoint,
   type AimArc,
   type MapView,
@@ -1092,7 +1093,14 @@ export class Canvas2DBackend implements RenderBackend {
     const { ctx } = this;
     for (const floater of view.floaters) {
       const box = camera.toScreen(floater.pos);
-      paintFloatingNumber(ctx, box, floater.text, floater.color, floater.progress);
+      paintFloatingNumber(
+        ctx,
+        box,
+        floater.text,
+        floater.color,
+        floater.progress,
+        floaterScale(floater.progress, floater.emphasis),
+      );
     }
   }
 }

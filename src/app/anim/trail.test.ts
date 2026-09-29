@@ -37,11 +37,12 @@ describe('placeParty', () => {
   });
 
   it('leads the line straight away from the exit', () => {
+    // Straight west along the road until the ford at (0,7), then beside it.
     expect(placeParty(grid, spawn, 4, { awayFrom: exit })).toEqual([
       { x: 3, y: 7 },
       { x: 2, y: 7 },
       { x: 1, y: 7 },
-      { x: 0, y: 7 },
+      { x: 1, y: 8 },
     ]);
   });
 

@@ -210,11 +210,14 @@ for (const custody of ['trade', 'escort'] as const) {
       custody === 'trade'
         ? ['kaya', 'nilak', 'bo']
         : ['kaya', 'nilak', 'bo', 'tenzo', 'lin_mei', 'nima'];
+    // The seed only stages a scripted win; this spec proves the route, not the
+    // fight's odds (the balance report owns those). On the M6 Driller floor the
+    // old trade seed lost the Grumbler to finishBattle's autopilot.
     await startGame(
       page,
       names,
       characters,
-      custody === 'trade' ? 'quarry-return-campaign' : 'quarry-return-escort',
+      custody === 'trade' ? 'quarry-return-trade-route' : 'quarry-return-escort',
     );
     await continueStory(page);
     expect(await page.evaluate(() => window.fnt?.app.state?.story.nodeId)).toBe('village_explore');
@@ -251,7 +254,7 @@ for (const custody of ['trade', 'escort'] as const) {
     }
     await takeRoute(page, 'East → Quarry Floor', 'quarry_floor');
     await expectJournalObjective(page, 'driller waits');
-    await walkTo(page, 18, 5);
+    await walkTo(page, 17, 5);
     expect(await page.evaluate(() => window.fnt?.app.state?.story.nodeId)).toBe('quarry_descent');
     await continueStory(page);
     await finishBattle(page, 'enc_grumbler');
@@ -344,7 +347,7 @@ for (const custody of ['trade', 'escort'] as const) {
     await takeRoute(page, 'East → Quarry Gate', 'quarry_gate');
     await takeRoute(page, 'East → The Cutting', 'ambush_road');
     await takeRoute(page, 'East → Quarry Floor', 'quarry_floor');
-    await walkTo(page, 18, 5); // The resolved driller trigger must stay quiet.
+    await walkTo(page, 17, 5); // The resolved driller trigger must stay quiet.
     expect(await page.evaluate(() => window.fnt?.app.state?.screen)).toBe('explore');
     expect(await page.evaluate(() => window.fnt?.app.state?.battle)).toBeNull();
     expect(await page.evaluate(() => window.fnt?.app.state?.party.map((unit) => unit.xp))).toEqual(

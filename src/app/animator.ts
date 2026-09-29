@@ -639,6 +639,7 @@ export class Animator {
         text: track.text,
         color: track.color,
         progress: Timeline.progress(track, now),
+        ...(track.emphasis ? { emphasis: track.emphasis } : {}),
       });
     }
     return out;

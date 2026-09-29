@@ -29,6 +29,7 @@ export const TILE_CLASSES = {
   rock: { label: 'cut quarry rock, two steps up', color: '#7a7064' },
   ledge2: { label: 'high ledges, two steps up', color: '#d6d3ca' },
   ledge: { label: 'ledges, one step up', color: '#b3b0a6' },
+  ledgeRubble: { label: 'heaps of tumbled rock on a ledge, one step up', color: '#9f998c' },
   pit: { label: 'pits', color: '#141010' },
   rubble: { label: 'heaps of tumbled rock', color: '#8c8577' },
   cover: { label: 'crates and cover', color: '#b07b3a' },
@@ -67,7 +68,8 @@ export function classify(tile: TileTemplate, key?: string): TileClassId {
   }
   const elevation = tile.elevation ?? 0;
   if (elevation >= 2) return 'ledge2';
-  if (elevation === 1) return 'ledge';
+  // A heap lifted onto a bench is cover a painting must place, not open ledge.
+  if (elevation === 1) return tile.surface === 'rubble' ? 'ledgeRubble' : 'ledge';
   if (tile.surface === 'water') return 'water';
   if (tile.surface === 'oil') return 'oil';
   if (tile.surface === 'mud') return 'mud';

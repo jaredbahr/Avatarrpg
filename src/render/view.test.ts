@@ -1,5 +1,23 @@
 import { describe, expect, it } from 'vitest';
-import { FALLEN_ALPHA, FALLEN_KNOCKOUT_ALPHA, fallenAlpha, unitMarkerGroundPoint } from './view';
+import {
+  FALLEN_ALPHA,
+  FALLEN_KNOCKOUT_ALPHA,
+  fallenAlpha,
+  floaterScale,
+  unitMarkerGroundPoint,
+} from './view';
+
+describe('floating number pop', () => {
+  it('pops in past full size, settles, and holds for the rise', () => {
+    expect(floaterScale(0)).toBeCloseTo(0.6, 9);
+    expect(floaterScale(0.1)).toBeCloseTo(1.3, 9);
+    expect(floaterScale(0.22)).toBeCloseTo(1, 9);
+    expect(floaterScale(0.7)).toBe(1);
+    // Emphasis scales the whole curve: a crit is bigger throughout.
+    expect(floaterScale(0.7, 1.35)).toBe(1.35);
+    expect(floaterScale(0.1, 1.35)).toBeCloseTo(1.3 * 1.35, 9);
+  });
+});
 
 describe('directional melee marker ground point', () => {
   it('keeps the contact marker under a lunge on elevated terrain', () => {

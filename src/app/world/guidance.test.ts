@@ -24,7 +24,7 @@ describe('nearby exploration guidance', () => {
     const map = CONTENT.maps.get('ba_dan_village');
     if (!map) throw new Error('Missing Ba Dan village');
 
-    const atPortal = nearbyExploreTarget(CONTENT, map, villageAt({ x: 19, y: 14 }));
+    const atPortal = nearbyExploreTarget(CONTENT, map, villageAt({ x: 19, y: 15 }));
     expect(atPortal).toMatchObject({
       kind: 'exit',
       destination: 'Riverside',
@@ -99,11 +99,14 @@ describe('nearby exploration guidance', () => {
   });
 
   it('keeps a single-tile exit matching only its own tile (M2)', () => {
-    const village = CONTENT.maps.get('ba_dan_village');
-    if (!village) throw new Error('Missing Ba Dan village');
-    const single = village.exits?.find((exit) => exit.toMapId === 'ba_dan_riverside');
-    if (!single) throw new Error('Missing the river path');
-    expect(nearbyExits(village, single.pos)).toContain(single);
-    expect(nearbyExits(village, { x: single.pos.x - 2, y: single.pos.y })).toEqual([]);
+    // Every shipped exit is a multi-tile mouth now (M2 to M6), so the rule is
+    // held on a copy of the quarry floor whose west path is one tile again.
+    const floor = CONTENT.maps.get('quarry_floor');
+    const mouth = floor?.exits?.find((exit) => exit.toMapId === 'ambush_road');
+    if (!floor || !mouth) throw new Error('Missing the quarry floor west path');
+    const single = { ...mouth, area: undefined };
+    const map = { ...floor, exits: [single] };
+    expect(nearbyExits(map, single.pos)).toContain(single);
+    expect(nearbyExits(map, { x: single.pos.x + 2, y: single.pos.y })).toEqual([]);
   });
 });

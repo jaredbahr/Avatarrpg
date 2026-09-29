@@ -57,11 +57,10 @@ export const FOREST_ROAD: MapDef = {
    * walkable border cell is either one of those two exit mouths or covered by the
    * `edges` entries below, which is what `edgeContract: 'enforce'` holds it to.
    *
-   * The interactables are the authored ground, not props: the central nine-cell
-   * puddle is the Wet/Frozen/Shocked lesson and the shove target (the encounter
-   * tells the player to put a bandit in it), and the two rubble heaps at (7,3)
-   * and (8,9) are cover. This map authors no barrels, oil or braziers — those
-   * belong to the Quarry Gate.
+   * The central nine-cell puddle is the Wet/Frozen/Shocked lesson and the
+   * shove target (the encounter tells the player to put a bandit in it), and
+   * the two rubble heaps at (7,3) and (8,9) are cover. The two props below
+   * are the only other interactables.
    */
   rows: [
     'TTTT,,TTTTTTTT,TTTTT',
@@ -79,7 +78,20 @@ export const FOREST_ROAD: MapDef = {
   ],
   partySpawns: COMBAT_PARTY_SPAWNS,
   npcs: [],
-  props: [],
+  /*
+   * Two of the catalogue's toys, both on the bandits' side of the road, which
+   * is the Quarry Gate's lesson about which side a hazard sits on (see the
+   * flask and cart there).
+   *
+   * Dema's water barrel stands at the foot of the NE bank, under the slinger's
+   * perch. Broken, it soaks the bank's edge and the road below it: the map's
+   * own Wet lesson carried up to the ones throwing stones, ready to freeze,
+   * shock or steam. The oil flask lies on the grass island the thugs cross to
+   * reach the party; it blocks nothing, and a firebender turns it into a wall
+   * of flame between the two sides. Neither stands in a road row, so both exit
+   * mouths and every lane between them stay open.
+   */
+  props: [propAt('water_barrel', 15, 3), propAt('oil_flask', 13, 6)],
   /*
    * The authored border claims. North keeps its truncated pines and the deer
    * paths between them; the south creek and alders are in-grid barriers. The
@@ -250,18 +262,18 @@ export const QUARRY_FLOOR: MapDef = {
   ambience: 'quarry',
   legend: LEGEND,
   rows: [
-    'AAA^^..........^^AAA',
-    'AA^^....r..r....^^AA',
-    '^^.....oo..oo.....^^',
+    'XXXXXXXXXXXXXXXXXXXX',
+    'XXASSSSSRSSRSSSSSAXX',
+    'XXS....oo..oo...SSXX',
     '.......oo..oo.......',
-    '..r.....#...........',
-    '..........mm........',
-    '..........mm........',
-    '..r........#........',
+    '..r.....#.........PP',
+    '===.......mm......PP',
+    '===.......mm......PP',
+    '..r........#......PP',
     '.......oo..oo.......',
-    '^^.....oo..oo.....^^',
-    'AA^^....r..r....^^AA',
-    'AAA^^..........^^AAA',
+    'XXS....oo..oo...SSXX',
+    'XXASSSSSRSSRSSSSSAXX',
+    'XXXXXXXXXXXXXXXXXXXX',
   ],
   partySpawns: COMBAT_PARTY_SPAWNS,
   npcs: [],
@@ -285,6 +297,19 @@ export const QUARRY_FLOOR: MapDef = {
       when: { kind: 'flag', key: 'pella_asked', op: 'set' },
     },
   ],
+  /*
+   * The pit is closed north and south by the terrace wall (`X`) and east by
+   * the drill shaft (`P`). Rows 5-6 west are the haul-road mouth, declared by
+   * connectAct1's multi-tile exit; the cribbed timber either side of it and
+   * the floor corners beside the shaft, under its headframe, are exterior band.
+   */
+  edges: [
+    { side: 'west', span: [3, 4], treatment: 'band' },
+    { side: 'west', span: [7, 8], treatment: 'band' },
+    { side: 'east', span: [3, 3], treatment: 'band' },
+    { side: 'east', span: [8, 8], treatment: 'band' },
+  ],
+  edgeContract: 'enforce',
 };
 
 export const COMBAT_MAPS: readonly MapDef[] = [FOREST_ROAD, QUARRY_GATE, AMBUSH_ROAD, QUARRY_FLOOR];

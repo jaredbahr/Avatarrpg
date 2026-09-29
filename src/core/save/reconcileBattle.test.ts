@@ -44,6 +44,22 @@ const OLD_FOREST_ROWS = [
   'TT,,,,,,,,,,,,,,,,TT',
 ] as const;
 
+/** The Driller floor as it shipped before M6 (plan 1.6). */
+const OLD_DRILLER_ROWS = [
+  'AAA^^..........^^AAA',
+  'AA^^....r..r....^^AA',
+  '^^.....oo..oo.....^^',
+  '.......oo..oo.......',
+  '..r.....#...........',
+  '..........mm........',
+  '..........mm........',
+  '..r........#........',
+  '.......oo..oo.......',
+  '^^.....oo..oo.....^^',
+  'AA^^....r..r....^^AA',
+  'AAA^^..........^^AAA',
+] as const;
+
 /** The Cutting as it shipped before M5 (plan 1.5, Option A). */
 const OLD_CUTTING_ROWS = [
   'AAAAAAA^^^^^^^AAAAAA',
@@ -63,6 +79,7 @@ const OLD_CUTTING_ROWS = [
 const FIXTURES = {
   quarry_gate: { startNode: 'battle_quarry_gate', encounterId: 'enc_quarry_gate' },
   forest_road: { startNode: 'battle_forest_road', encounterId: 'enc_forest_road' },
+  quarry_floor: { startNode: '', encounterId: 'enc_grumbler' },
   ambush_road: { startNode: '', encounterId: 'enc_ambush' },
 } as const;
 
@@ -286,6 +303,88 @@ describe('reconcileBattle', () => {
       kind: 'no-free-cell',
       unitId: old.battle?.units.find((unit) => unit.hp > 0)?.id,
     });
+  });
+
+  it('reconciles a pre-M6 mid-battle Driller save onto the approved floor', () => {
+    const old = battleState('quarry_floor', OLD_DRILLER_ROWS);
+    if (!old.battle) throw new Error('fixture did not create a battle');
+    const boss = old.battle.units.find((unit) => unit.size === 2);
+    const party = old.battle.units.find((unit) => unit.faction === 'party');
+    if (!boss || !party) throw new Error('fixture is missing the Grumbler or a party unit');
+    // Live fire on a floor cell M6 left alone, and on one it raised to the bench.
+    const fire = { id: 'fire' as const, duration: 2, spread: 1 };
+    const floorFire = { x: 5, y: 3 };
+    const benchFire = { x: 5, y: 1 };
+    const state: GameState = {
+      ...old,
+      battle: {
+        ...old.battle,
+        grid: withSurface(withSurface(old.battle.grid, floorFire, fire), benchFire, fire),
+        units: old.battle.units.map((unit) =>
+          // The boss's second cell stands where the drill shaft is now, and the
+          // party unit stands in the old rear gap, now the terrace wall.
+          unit.id === boss.id
+            ? { ...unit, pos: { x: 17, y: 5 } }
+            : unit.id === party.id
+              ? { ...unit, pos: { x: 10, y: 0 } }
+              : unit,
+        ),
+      },
+    };
+
+    const loaded = load(state);
+    const grid = loaded.battle?.grid;
+    if (!grid) throw new Error('the reconciled save lost its battle');
+    expect(tileAt(grid, { x: 10, y: 0 })).toMatchObject({ blocked: true, blocksSight: true });
+    expect(tileAt(grid, { x: 0, y: 1 })).toMatchObject({ blocked: true, elevation: 2 });
+    expect(tileAt(grid, { x: 18, y: 5 })).toMatchObject({
+      terrain: 'pit',
+      blocked: true,
+      blocksSight: false,
+    });
+    expect(tileAt(grid, { x: 5, y: 1 })).toMatchObject({ elevation: 1, surface: fire });
+    expect(tileAt(grid, { x: 5, y: 3 })?.surface).toEqual(fire);
+    // The heap lifted onto the bench keeps its authored, permanent rubble.
+    expect(tileAt(grid, { x: 8, y: 1 })).toMatchObject({
+      elevation: 1,
+      surface: { id: 'rubble', duration: -1 },
+    });
+
+    // The Grumbler snaps whole: the nearest origin whose two cells are free
+    // floor, clear of the shaft; the party unit off the wall onto the bench.
+    const snappedBoss = loaded.battle?.units.find((unit) => unit.id === boss.id);
+    expect(snappedBoss?.pos).toEqual({ x: 16, y: 4 });
+    for (const cell of [
+      { x: 16, y: 4 },
+      { x: 17, y: 4 },
+    ])
+      expect(tileAt(grid, cell)).toMatchObject({ blocked: false, elevation: 0 });
+    expect(loaded.battle?.units.find((unit) => unit.id === party.id)?.pos).toEqual({
+      x: 9,
+      y: 1,
+    });
+    // Every other unit was already on open ground and has not moved.
+    for (const unit of state.battle!.units)
+      if (unit.id !== boss.id && unit.id !== party.id)
+        expect(loaded.battle?.units.find((candidate) => candidate.id === unit.id)?.pos).toEqual(
+          unit.pos,
+        );
+    expect(reconcileBattle(CONTENT, loaded)).toEqual(loaded);
+  });
+
+  it('leaves a real current Driller battle byte-for-byte unchanged', () => {
+    const seeded = createGame(CONTENT, {
+      seed: 'current-driller-byte-for-byte',
+      party: [{ characterId: 'kaya' }, { characterId: 'bo' }],
+      startNode: '',
+    });
+    const rng = new RngCursor(seeded.rng);
+    const current = {
+      ...seeded,
+      screen: 'combat' as const,
+      battle: createBattle(CONTENT, seeded, 'enc_grumbler', rng),
+    };
+    expect(serialize(reconcileBattle(CONTENT, current), META)).toBe(serialize(current, META));
   });
 
   it('reconciles a pre-M5 mid-battle Cutting save onto the cut', () => {

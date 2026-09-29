@@ -86,8 +86,8 @@ export interface Pond {
   };
   readonly cells: readonly Vec2[];
   /**
-   * Round the shoreline off the grid's steps (`organicShore`). The Cutting's
-   * runoff pool takes it (M5); the forest's pond and creek take it with PR 162.
+   * Round the shoreline off the grid's steps (`organicShore`). The forest's
+   * pond and creek take it, and so does the Cutting's runoff pool (M5).
    */
   readonly organic?: boolean;
   /**
@@ -112,7 +112,11 @@ export function overgrown(x: number, y: number, into: number): boolean {
 /** How far back from the wet line the grass takes over, in cells, and how far that wanders. */
 export const GRASS_LINE = 0.03;
 export const GRASS_LINE_WANDER = 0.26;
-export const FOREST_POND: Pond = { patch: FOREST_POND_PATCH, cells: FOREST_WATER_CELLS };
+export const FOREST_POND: Pond = {
+  patch: FOREST_POND_PATCH,
+  cells: FOREST_WATER_CELLS,
+  organic: true,
+};
 
 /**
  * The organic shore's smoothing radius, in cells. The water's cells are

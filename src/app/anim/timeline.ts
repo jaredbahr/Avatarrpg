@@ -70,6 +70,12 @@ export interface EmitterTrack extends Track {
   /** Lob height in tiles for a projectile flight. */
   readonly arc: number;
   readonly attachments?: EmitterAttachments;
+  /**
+   * Dust settling after the moment it belongs to: drawn to the end, but it
+   * never holds playback, so a footstep's puff does not keep the board
+   * locked (or the AI waiting) after the walk has finished.
+   */
+  readonly trailing?: boolean;
 }
 
 export interface FloaterTrack extends Track {
@@ -77,6 +83,8 @@ export interface FloaterTrack extends Track {
   readonly pos: Vec2;
   readonly text: string;
   readonly color: string;
+  /** Size over the normal number: a crit lands bigger. */
+  readonly emphasis?: number;
 }
 
 export interface ShakeTrack extends Track {
@@ -110,6 +118,7 @@ export class Timeline {
 
   add(track: AnyTrack): void {
     this.tracks.push(track);
+    if (track.kind === 'emitter' && track.trailing) return;
     this.endsAt = Math.max(this.endsAt, track.start + track.duration);
   }
 

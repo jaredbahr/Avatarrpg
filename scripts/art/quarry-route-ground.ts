@@ -52,6 +52,7 @@ import { packShoreline } from './forest-shoreline';
 import { heapFits, loadQuarryMaterial, QUARRY_GROUND_QUALITY } from './quarry-village-material';
 import { ROCK_COURSE, rockPainter } from './quarry-rock';
 import { cuttingRaised } from './cutting-rock';
+import { buildDrillerGantry, buildDrillerShaft, DRILLER_GANTRY_CELLS } from './driller-shaft';
 import type { QuarryMaterial, QuarryTone, Rgb } from './quarry-village-material';
 
 /** One logical tile is 64x32 scene pixels; see `forest-route-ground.ts`. */
@@ -88,7 +89,7 @@ type Kind = 'dirt' | 'road' | 'stone' | 'water' | 'void';
 const kind = (key: string | undefined): Kind =>
   key === '='
     ? 'road'
-    : key === '^' || key === 'A' || key === 'o' || key === 'X'
+    : key === '^' || key === 'S' || key === 'A' || key === 'o' || key === 'X'
       ? 'stone'
       : key === '~'
         ? 'water'
@@ -107,6 +108,7 @@ const materialOf = (key: string | undefined): QuarryTone | null => {
     // The Driller's terrace wall (`X`) is the gate's cut rock
     // (`quarry-rock.ts`), the same block key standing above the bench.
     case '^':
+    case 'S':
     case 'A':
     case 'X':
       return 'block';
@@ -151,6 +153,8 @@ const plain = (key: string | undefined): boolean =>
  */
 function groundKey(map: MapDef, x: number, y: number): string | undefined {
   const key = map.rows[y]?.[x];
+  // A heap lifted onto the Driller's bench (legend `R`) stands on the bench.
+  if (key === 'R') return '^';
   if (key !== 'r') return key;
   const around = [
     map.rows[y]?.[x - 1],
@@ -521,6 +525,32 @@ export async function writeQuarryGround(
     `export const ${exportName} = ${JSON.stringify(regions, null, 2)} as const;`,
     new RegExp(`export const ${exportName} = [\\s\\S]*? as const;`),
   );
+  if (mapId === 'driller') {
+    // The shaft and the gantry decks, each its own plate over the pages.
+    const plates: PackedRegion[] = [];
+    for (const [name, built] of [
+      ['shaft', buildDrillerShaft()],
+      ...DRILLER_GANTRY_CELLS.map(
+        (cell) => [`gantry-${cell.x}-${cell.y}`, buildDrillerGantry(cell)] as const,
+      ),
+    ] as const) {
+      const packed = await encodeWebp(built.image, QUARRY_GROUND_QUALITY, true);
+      writeFileSync(`public/art/maps/${root}/${name}.webp`, packed);
+      total += packed.length;
+      plates.push({
+        name,
+        x: built.x,
+        y: built.y,
+        width: built.image.width,
+        height: built.image.height,
+        bytes: packed.length,
+      });
+    }
+    register(
+      `export const DRILLER_PLATES = ${JSON.stringify(plates, null, 2)} as const;`,
+      /export const DRILLER_PLATES = [\s\S]*? as const;/,
+    );
+  }
   if (mapId === 'cutting') {
     const pool = await encodeWebp(await buildCuttingPool(), QUARRY_GROUND_QUALITY, true);
     writeFileSync(CUTTING_POOL_OUTPUT, pool);

@@ -401,6 +401,38 @@ const dust = (count: number, size: [number, number] = [0.18, 0.3]): ParticleEmit
     layer: 'under',
   });
 
+/**
+ * Ground kicked up by a foot or a landing body: a soft, edgeless haze in the
+ * neutral palette's warm tan, not `dust`'s inked stone clumps, which read as
+ * pebbles left on grass. All of it is gone by 340 ms.
+ */
+const kickedDust = (
+  count: number,
+  size: [number, number],
+  opacity: number,
+  color: FxColor = 'light',
+): ParticleEmitterDef =>
+  particles({
+    shape: 'ring',
+    cell: 'glow',
+    count,
+    duration: 40,
+    life: [220, 300],
+    delay: [0, 30],
+    speed: [0.5, 1],
+    spread: 0.15,
+    gravity: -0.2,
+    drag: 5,
+    size,
+    grow: 1.6,
+    spin: 0,
+    color,
+    fade: 'out',
+    opacity,
+    blend: 'normal',
+    layer: 'under',
+  });
+
 const cracks = (count: number, reach: number): StrokeEmitterDef =>
   strokes({
     shape: 'crack',
@@ -1294,6 +1326,44 @@ const DRAWN_RECIPES: Readonly<Record<string, FxRecipeInput>> = {
   'fx.surface.oil': { palette: 'neutral', impact: [droplets(8, 'ink')], flash: 0 },
   'fx.surface.rubble': { palette: 'earth', impact: [shards(6, 'dark'), dust(6)], flash: 0 },
   'fx.surface.doused': { palette: 'neutral', impact: [smokePuff(6, [0.18, 0.3])], flash: 0 },
+
+  /* Bodies meeting the ground, and whose turn it is. These trail: the choreography
+     never holds playback for them (see `EmitterTrack.trailing`). ---------- */
+  // A footfall's puff: a faint pale haze under the feet, gone in a third of a second. Paler
+  // than the landing's tan, which vanished against the tan of a dirt road.
+  'fx.move.step': {
+    palette: 'neutral',
+    impact: [kickedDust(2, [0.2, 0.3], 0.4, 'accent')],
+    flash: 0,
+  },
+  // A shoved or dropped body landing: the same haze, wider and a touch denser.
+  'fx.move.land': { palette: 'neutral', impact: [kickedDust(6, [0.28, 0.42], 0.42)], flash: 0 },
+  // A ring spreading on the ground under whoever's turn it now is.
+  'fx.turn.start': {
+    palette: 'neutral',
+    impact: [
+      particles({
+        shape: 'burst',
+        cell: 'ring',
+        count: 1,
+        duration: 480,
+        life: [480, 480],
+        delay: [0, 0],
+        speed: [0, 0],
+        spread: 0,
+        gravity: 0,
+        drag: 0,
+        size: [0.45, 0.45],
+        grow: 1.9,
+        spin: 0,
+        color: 'light',
+        fade: 'out',
+        blend: 'add',
+        layer: 'under',
+      }),
+    ],
+    flash: 0,
+  },
 
   'fx.prop.water_barrel': {
     palette: 'water',

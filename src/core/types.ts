@@ -858,6 +858,14 @@ export interface SceneScenery extends SceneImage {
    * depth are authored for the mirrored drawing.
    */
   readonly flip?: boolean;
+  /**
+   * `false` for low, passable growth — reeds, a nest — that stands on its cell
+   * rather than filling it. The runtime contact shadow is keyed to the whole
+   * footprint, so under a piece this small it showed as a dark tile-shaped
+   * patch; such a piece is seated instead by wear its scene's ground pack lays
+   * at its painted foot.
+   */
+  readonly contactShadow?: false;
 }
 
 export interface MapScene {

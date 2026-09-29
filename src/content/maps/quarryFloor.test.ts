@@ -22,6 +22,23 @@ const WALL_CELLS: readonly Vec2[] = [
   { x: 11, y: 7 },
 ];
 
+const TERRACE_WALL_CELLS: readonly Vec2[] = [
+  ...Array.from({ length: 20 }, (_, x) => ({ x, y: 0 })),
+  ...[1, 2, 9, 10].flatMap((y) => [0, 1, 18, 19].map((x) => ({ x, y }))),
+  ...Array.from({ length: 20 }, (_, x) => ({ x, y: 11 })),
+];
+
+const DRILL_SHAFT_CELLS: readonly Vec2[] = [
+  ...[4, 5, 6, 7].flatMap((y) => [18, 19].map((x) => ({ x, y }))),
+];
+
+const BENCH_RUBBLE_CELLS: readonly Vec2[] = [
+  { x: 8, y: 1 },
+  { x: 11, y: 1 },
+  { x: 8, y: 10 },
+  { x: 11, y: 10 },
+];
+
 const PARTY_SPAWNS: readonly Vec2[] = [
   { x: 1, y: 3 },
   { x: 3, y: 4 },
@@ -64,8 +81,11 @@ function battleDraft(flags: Record<string, boolean> = {}) {
 }
 
 describe('Driller quarry interior', () => {
-  it('keeps the permanent wall cells and live prop placements explicit', () => {
+  it('keeps the terrace, shaft, stacks and live prop placements explicit', () => {
     expect(cellsWith(QUARRY_FLOOR, '#')).toEqual(WALL_CELLS);
+    expect(cellsWith(QUARRY_FLOOR, 'X')).toEqual(TERRACE_WALL_CELLS);
+    expect(cellsWith(QUARRY_FLOOR, 'P')).toEqual(DRILL_SHAFT_CELLS);
+    expect(cellsWith(QUARRY_FLOOR, 'R')).toEqual(BENCH_RUBBLE_CELLS);
     expect(QUARRY_FLOOR.props.map(({ propId, pos }) => ({ propId, pos }))).toEqual([
       { propId: 'rubble_pile', pos: { x: 6, y: 7 } },
       { propId: 'rubble_pile', pos: { x: 13, y: 4 } },
@@ -78,6 +98,12 @@ describe('Driller quarry interior', () => {
     for (const cell of WALL_CELLS) {
       expect(tileAt(original, cell)).toMatchObject({ blocked: true, blocksSight: true });
     }
+    for (const cell of TERRACE_WALL_CELLS)
+      expect(tileAt(original, cell)).toMatchObject({ blocked: true, blocksSight: true });
+    for (const cell of DRILL_SHAFT_CELLS)
+      expect(tileAt(original, cell)).toMatchObject({ blocked: true, blocksSight: false });
+    for (const cell of BENCH_RUBBLE_CELLS)
+      expect(tileAt(original, cell)).toMatchObject({ elevation: 1, surface: { id: 'rubble' } });
     for (const placement of QUARRY_FLOOR.props) {
       expect(tileAt(original, placement.pos)?.blocked, `${placement.propId} is on a wall`).toBe(
         false,
@@ -142,6 +168,7 @@ describe('Driller quarry interior', () => {
     expect(boss?.size).toBe(2);
     if (!boss) return;
     const twoCell = { ...context, size: 2 as const };
+    expect(standCost(twoCell, { x: 17, y: 5 })).toBeNull();
     expect(standCost(twoCell, { x: 7, y: 4 })).toBeNull();
     expect(standCost(twoCell, { x: 10, y: 7 })).toBeNull();
     expect(findPath(twoCell, boss.pos, { x: 9, y: 5 }, 99)).not.toBeNull();
