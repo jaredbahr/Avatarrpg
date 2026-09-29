@@ -81,12 +81,7 @@ import {
   type RenderUnit,
 } from '../view';
 import type { BackendCapabilities, RenderBackend } from './backend';
-import {
-  EDGE_SHADE_ALPHA,
-  EDGE_SHADE_TILES,
-  VIGNETTE_ALPHA,
-  overlayColors,
-} from './canvas2d';
+import { EDGE_SHADE_ALPHA, EDGE_SHADE_TILES, VIGNETTE_ALPHA, overlayColors } from './canvas2d';
 import { liftAlong, liftAt } from '../geometry/elevation';
 import { FILTER_VERTEX, GROUND_FRAGMENT } from './shaders';
 
@@ -1573,8 +1568,7 @@ export class PixiBackend implements RenderBackend {
           : null;
       const anchor = box(at, width);
       const x = anchor.x;
-      const ground =
-        anchor.y - liftAlong(view.grid, at, camera.projection) * TILE;
+      const ground = anchor.y - liftAlong(view.grid, at, camera.projection) * TILE;
       // The walk bob lifts the figure; its contact shadow stays on the ground.
       const y = ground + (npc.offset?.y ?? 0) * TILE;
       const footX = x + (width * TILE) / 2;

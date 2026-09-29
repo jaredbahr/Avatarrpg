@@ -55,8 +55,7 @@ describe('pickCell', () => {
         const ground = { x: c.x + fx - lift, y: c.y + fy - lift };
         const picked = pickCell(grid, ground, 'oblique');
         // A later, taller block may stand in front; otherwise the top is what is hit.
-        const front =
-          picked.x + picked.y > c.x + c.y && liftAt(grid, picked, 'oblique') > lift;
+        const front = picked.x + picked.y > c.x + c.y && liftAt(grid, picked, 'oblique') > lift;
         if (!front) expect(picked, `${c.x},${c.y} at ${fx},${fy}`).toEqual(c);
         if (Math.floor(ground.x) !== c.x || Math.floor(ground.y) !== c.y) missedFlat++;
       }
