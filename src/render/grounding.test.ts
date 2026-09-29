@@ -39,4 +39,22 @@ describe('scene grounding rasters', () => {
     expect(first && opaqueTexels(first.data)).toBeGreaterThan(100);
     expect(contactRaster([], affine)).toBeNull();
   });
+
+  it('steps the shadow in flat bands, with no ordered screen at its edge', () => {
+    const raster = contactRaster([piece], affine);
+    if (!raster) throw new Error('no raster');
+    const { width, height, data } = raster;
+    const alpha = (x: number, y: number): number => data[(y * width + x) * 4 + 3] ?? 0;
+    let painted = 0;
+    let singles = 0;
+    for (let y = 1; y < height - 1; y++)
+      for (let x = 1; x < width - 1; x++) {
+        const a = alpha(x, y);
+        if (a) painted++;
+        const around = [alpha(x - 1, y), alpha(x + 1, y), alpha(x, y - 1), alpha(x, y + 1)];
+        if (a && around.every((n) => n !== a)) singles++;
+      }
+    // A texel unlike all four neighbours is the unit a dither screen is made of.
+    expect(singles / painted).toBeLessThan(0.02);
+  });
 });

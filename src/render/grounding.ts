@@ -11,8 +11,8 @@
  *   contact shadow cast a little down-right, away from the art's warm
  *   upper-left light, over a tighter ring of ambient occlusion. Authored ground
  *   packs add their material-specific wear beneath this shared layer.
- * Both are pixel art on the restyle's two-world-pixel grain: flat bands and an
- * ordered dither, never a gradient. The rasters are pure data; the backends
+ * Both are pixel art on the restyle's two-world-pixel grain: flat bands, never
+ * a gradient or an ordered screen. The rasters are pure data; the backends
  * turn them into a canvas or a texture and draw them with nearest sampling.
  */
 import type { SceneScenery, Vec2 } from '../core/types';
@@ -110,12 +110,6 @@ export function footprintDistance(shape: Contour, p: Vec2, inset = shape.inset):
   return best;
 }
 
-/** 4x4 ordered-dither threshold in (0, 1), on the world texel lattice. */
-export function bayer(tx: number, ty: number): number {
-  const m = [0, 8, 2, 10, 12, 4, 14, 6, 3, 11, 1, 9, 15, 7, 13, 5];
-  return ((m[(ty & 3) * 4 + (tx & 3)] ?? 0) + 0.5) / 16;
-}
-
 /** Straight-alpha ink over the optional wear already in a texel. */
 function ink(data: Uint8ClampedArray, i: number, alpha: number): void {
   const a0 = (data[i + 3] ?? 0) / 255;
@@ -191,20 +185,10 @@ export function contactRaster(
       const s = cast[i] ?? Infinity;
       if (d > REACH && s > REACH) continue;
       const at = i * 4;
-      // The outermost band is dithered, so the shadow's edge breaks into
-      // texels instead of reading as a drawn line.
-      const shadow =
-        s >= 0.2 && bayer(tx + 2, ty + 1) >= 0.5
-          ? 0
-          : s < 0
-            ? 0.42
-            : s < 0.1
-              ? 0.34
-              : s < 0.2
-                ? 0.24
-                : s < 0.3
-                  ? 0.13
-                  : 0;
+      // The outermost band is flat and faint, the mean of the half-covered
+      // ordered screen it replaces: a screen read as a checkerboard on the
+      // painted ground, a faint band reads as the shadow's soft edge.
+      const shadow = s < 0 ? 0.42 : s < 0.1 ? 0.34 : s < 0.2 ? 0.24 : s < 0.3 ? 0.07 : 0;
       const occlusion = d < 0.05 ? 0.36 : d < 0.12 ? 0.2 : 0;
       const alpha = 1 - (1 - shadow) * (1 - occlusion);
       if (alpha > 0) ink(data, at, alpha);
