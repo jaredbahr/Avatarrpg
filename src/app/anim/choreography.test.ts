@@ -3,9 +3,10 @@ import { describe, expect, it } from 'vitest';
 import type { Ability, ContentIndex, GameEvent, Unit } from '../../core/types';
 import { resolveFx } from '../../content/fx';
 import type { SheetClips } from '../../render/sheets/store';
-import { TIMING, choreograph, hitSpan, knockoutSpan } from './choreography';
+import { TIMING, TURN_AFTER_ROUND, choreograph, hitSpan, knockoutSpan } from './choreography';
 import { attackMotion } from './attackMotion';
 import { enemyScale } from './actorScale';
+import { Timeline } from './timeline';
 import type { AnyTrack, EmitterTrack, PoseTrack } from './timeline';
 import { PARTICLE_STRIDE, sampleParticles } from '../../render/fx/simulate';
 
@@ -1061,17 +1062,44 @@ describe('feel pass: every table beat is heard, and dust never holds the turn', 
     ]);
     expect(sounds.map((s) => [s.key, s.at])).toEqual([
       ['round', 1000],
-      ['turn', 1350],
+      ['turn', 1000 + TURN_AFTER_ROUND],
     ]);
     const ring = tracks.filter((t): t is EmitterTrack => t.kind === 'emitter');
     expect(ring.length).toBeGreaterThan(0);
-    expect(ring.every((t) => t.trailing && t.start === 1350 && t.def.layer === 'under')).toBe(true);
+    // The ring is the turn beginning, not a flourish after the gong: it starts
+    // at the turn's own moment and only trails, so it cannot hold the batch.
+    expect(ring.every((t) => t.trailing && t.start === 1000 && t.def.layer === 'under')).toBe(true);
     // Trailing: the turn is playable the moment it starts.
     expect(cursor).toBe(1000);
 
     const enemy = play([{ type: 'turnStarted', unitId: 'e0', round: 2 }]);
     expect(enemy.sounds.map((s) => [s.key, s.at])).toEqual([['turnEnemy', 1000]]);
     expect(play([{ type: 'turnStarted', unitId: 'e0', round: 2 }], 0.02).tracks).toEqual([]);
+  });
+
+  it('never schedules the turn beat past the moment the next action can start', () => {
+    const { tracks, sounds, cursor } = play([
+      { type: 'roundStarted', round: 2 },
+      { type: 'turnStarted', unitId: 'p0', round: 2 },
+    ]);
+    // Replay the batch as the animator does: every track, then the cursor as a
+    // floor. Input opens at `finishesAt`; the AI waits a further 260 ms
+    // (`maybeRunAi`). A trailing ring cannot push `finishesAt` out, so any beat
+    // scheduled after it lands under an action that has already begun.
+    const timeline = new Timeline();
+    for (const track of tracks) timeline.add(track);
+    timeline.holdUntil(cursor);
+
+    const ring = tracks.find((t): t is EmitterTrack => t.kind === 'emitter');
+    if (!ring) throw new Error('expected a turn ring');
+    expect(ring.trailing).toBe(true);
+    expect(ring.start).toBeLessThanOrEqual(timeline.finishesAt);
+
+    // The chime still beats the AI's turn, so a foe's action never pre-empts
+    // the sound that says whose turn it is.
+    const turn = sounds.find((s) => s.key === 'turn');
+    if (!turn) throw new Error('expected a turn chime');
+    expect(turn.at).toBeLessThanOrEqual(timeline.finishesAt + 260);
   });
 
   it('gives statuses, surfaces and the end of a fight a voice', () => {

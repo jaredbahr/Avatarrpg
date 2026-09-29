@@ -62,8 +62,13 @@ const DODGE = 0.2;
 /** A critical's camera kick in tiles, and how much bigger its number lands. */
 const CRIT_KICK = 0.05;
 const CRIT_EMPHASIS = 1.35;
-/** How long a round's first turn chime waits after the round's gong, in ms. */
-const TURN_AFTER_ROUND = 350;
+/**
+ * How long a round's first turn chime waits after the round's gong, in ms.
+ * Kept short: the gong still lands first, but the chime must beat the moment
+ * the next action can start (input opens at the batch's end, and the AI acts
+ * 260 ms later), or it announces a turn that has already begun.
+ */
+export const TURN_AFTER_ROUND = 120;
 
 export interface ChoreographyInput {
   readonly projection?: Projection;
@@ -1092,10 +1097,13 @@ export function choreograph(input: ChoreographyInput): Choreography {
         const unit = unitsBefore.find((u) => u.id === event.unitId);
         const pos = positions.get(event.unitId);
         if (!unit || unit.hp <= 0 || !pos) break;
-        // After a round's gong, not on top of it.
+        // The chime follows a round's gong, but only just. The ring, though,
+        // is the turn itself: it starts at the turn's own moment, never after
+        // the gong. It trails, so it cannot hold the batch open, and any delay
+        // would put it past the moment input and the AI are already live.
         const at = cursor + (roundAt === cursor ? TURN_AFTER_ROUND * rate : 0);
         cue(unit.faction === 'enemy' ? 'turnEnemy' : 'turn', at, 16, eventIndex);
-        ground('fx.turn.start', at, pos, eventIndex, 16);
+        ground('fx.turn.start', cursor, pos, eventIndex, 16);
         break;
       }
 
