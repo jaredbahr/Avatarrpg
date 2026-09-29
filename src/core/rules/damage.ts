@@ -17,7 +17,7 @@
 
 import type { RngCursor } from '../rng';
 import type { AbilityEffect, ContentIndex, Grid, Unit, Vec2 } from '../types';
-import { distanceToUnit, occupiedCells, tileAt } from './grid';
+import { distanceBetweenUnits, occupiedCells, tileAt } from './grid';
 import { accuracyModifier, effectiveStats, incomingMultiplier } from './stats';
 
 export const CRIT_MULTIPLIER = 1.5;
@@ -73,7 +73,7 @@ export function hitBreakdown(
   const elevationDelta = elevationOf(grid, attacker) - elevationOf(grid, defender);
   const elevation = elevationDelta * tuning.elevationStep;
 
-  const adjacent = distanceToUnit(attacker.pos, defender) <= 1;
+  const adjacent = distanceBetweenUnits(attacker, defender) <= 1;
   const covered = !adjacent && hasCover(content, grid, defender);
   const plunging =
     covered && elevationDelta > 0

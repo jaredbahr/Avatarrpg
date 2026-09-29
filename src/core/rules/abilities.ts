@@ -218,11 +218,17 @@ export function targetableTiles(
     !ability.effects.some((effect) => effect.kind === 'dash')
       ? ability.range + content.tuning.heightReachBonus
       : ability.range;
-  for (let dy = -reach; dy <= reach; dy++) {
-    for (let dx = -reach; dx <= reach; dx++) {
-      const pos = { x: caster.pos.x + dx, y: caster.pos.y + dy };
-      if (!inBounds(battle.grid, pos)) continue;
-      if (isValidTarget(content, battle, caster, ability, pos).ok) out.push(pos);
+  const seen = new Set<string>();
+  for (const cell of occupiedCells(caster)) {
+    for (let dy = -reach; dy <= reach; dy++) {
+      for (let dx = -reach; dx <= reach; dx++) {
+        const pos = { x: cell.x + dx, y: cell.y + dy };
+        if (!inBounds(battle.grid, pos) || seen.has(posKey(pos))) continue;
+        if (isValidTarget(content, battle, caster, ability, pos).ok) {
+          seen.add(posKey(pos));
+          out.push(pos);
+        }
+      }
     }
   }
   return out;

@@ -152,6 +152,21 @@ describe('hit chance', () => {
     );
   });
 
+  it('treats a defender adjacent to a size-2 attacker cell as adjacent', () => {
+    const { attacker, defender } = fixture();
+    const highAttacker = place(place(openGrid(), ATTACKER, { elevation: 1 }), RANGED, {
+      cover: true,
+    });
+    expect(
+      hitBreakdown(
+        CONTENT,
+        highAttacker,
+        at({ ...attacker, size: 2 }, ATTACKER),
+        at(defender, RANGED),
+      ),
+    ).toEqual(expect.objectContaining({ cover: 0, plunging: 0 }));
+  });
+
   it('reads the numbers from the index, so a variant can move them', () => {
     const { attacker, defender } = fixture();
     const uphill = place(openGrid(), ADJACENT, { elevation: 1 });

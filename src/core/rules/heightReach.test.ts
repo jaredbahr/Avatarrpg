@@ -4,7 +4,8 @@ import { RngCursor } from '../rng';
 import { createBattle, createGame } from '../state/createGame';
 import { BattleDraft } from '../state/battleDraft';
 import type { Ability, BattleState } from '../types';
-import { isValidTarget, previewAbility, resolveAbility } from './abilities';
+import { isValidTarget, previewAbility, resolveAbility, targetableTiles } from './abilities';
+import { distance, inBounds, posKey } from './grid';
 import { hitChance } from './damage';
 
 function fixture(): { battle: BattleState; caster: BattleState['units'][number] } {
@@ -108,6 +109,41 @@ describe('height reach', () => {
         caster.pos,
       ).ok,
     ).toBe(true);
+  });
+
+  it('enumerates every valid tile from every occupied caster cell', () => {
+    const { battle: source, caster: originalCaster } = fixture();
+    const caster = { ...originalCaster, size: 2 as const };
+    const battle = open({
+      ...source,
+      units: source.units.map((unit) => (unit.id === caster.id ? caster : unit)),
+      grid: {
+        ...source.grid,
+        tiles: source.grid.tiles.map((tile, index) => ({
+          ...tile,
+          elevation:
+            index === caster.pos.y * source.grid.width + caster.pos.x ||
+            index === caster.pos.y * source.grid.width + caster.pos.x + 1
+              ? 1
+              : 0,
+        })),
+      },
+    });
+    const valid = [] as { x: number; y: number }[];
+    for (let y = 0; y < battle.grid.height; y++) {
+      for (let x = 0; x < battle.grid.width; x++) {
+        const tile = { x, y };
+        if (isValidTarget(CONTENT, battle, caster, longRange, tile).ok) valid.push(tile);
+      }
+    }
+    expect(new Set(targetableTiles(CONTENT, battle, caster, longRange).map(posKey))).toEqual(
+      new Set(valid.map(posKey)),
+    );
+
+    const pastOriginRange = valid.find(
+      (tile) => distance(caster.pos, tile) > longRange.range + 1 && inBounds(battle.grid, tile),
+    );
+    expect(pastOriginRange).toBeDefined();
   });
 
   it('uses the same non-random hit calculation for preview and resolution', () => {

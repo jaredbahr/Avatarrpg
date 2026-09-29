@@ -89,6 +89,16 @@ export function distanceToUnit(from: Vec2, unit: Pick<Unit, 'pos' | 'size'>): nu
   return best;
 }
 
+/** Chebyshev distance between the nearest cells of two possibly-large units. */
+export function distanceBetweenUnits(
+  first: Pick<Unit, 'pos' | 'size'>,
+  second: Pick<Unit, 'pos' | 'size'>,
+): number {
+  let best = Infinity;
+  for (const cell of occupiedCells(first)) best = Math.min(best, distanceToUnit(cell, second));
+  return best;
+}
+
 /* ------------------------------------------------------------------ */
 /* Building a grid from an authored map                                */
 /* ------------------------------------------------------------------ */
