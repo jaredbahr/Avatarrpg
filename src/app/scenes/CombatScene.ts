@@ -45,6 +45,7 @@ import { reactionNotes } from '../ui/ReactionNote';
 import { formatShoveMovement } from '../ui/combatPreviewText';
 import { UnitInspector } from '../ui/UnitInspector';
 import { enemyScale, partyScale } from '../anim/actorScale';
+import { sheetLocomotion } from '../../content/assets/manifest';
 import { createMovementThreatQuery } from '../ui/movementThreats';
 import { flushTime } from './flockFlush';
 
@@ -114,6 +115,8 @@ export class CombatScene implements Scene {
   /** The phone header's More list, and the listeners that close it. */
   private moreOpen = false;
   private moreDismiss: (() => void) | null = null;
+  /** What the header last drew, so a sync that changes none of it leaves it alone. */
+  private topBarKey = '';
   private layoutMeasuredAfterSync = false;
   /** When the scene's birds burst out of the trees: once, as a fresh fight is first seen. */
   private flushedAt: number | null = null;
@@ -156,6 +159,7 @@ export class CombatScene implements Scene {
     this.moreDismiss?.();
     this.moreDismiss = null;
     this.moreOpen = false;
+    this.topBarKey = '';
     this.detach?.();
     this.detach = null;
     this.inspector?.close();
@@ -594,9 +598,16 @@ export class CombatScene implements Scene {
     const bar = this.host?.querySelector<HTMLElement>('.combat-bar');
     const battle = this.battle();
     if (!bar || !battle) return;
-    // Every sync rebuilds the header, an AI turn several times a second. The
-    // button that had focus is found again by its key, so a keyboard or
-    // switch user reading the More list is not dropped to the page.
+    // An AI turn syncs several times a second, and a rebuild that moved focus
+    // onto a new button would have a screen reader announce it each time. So
+    // the header is rebuilt only when something it draws has changed: More's
+    // open state and the view buttons' visibility are updated in place, by
+    // setMoreOpen and syncRecentre.
+    const key = `${battle.encounterId}|${battle.variantId ?? ''}|${battle.round}|${this.logOpen}`;
+    if (key === this.topBarKey && bar.childElementCount > 0) return;
+    this.topBarKey = key;
+    // On a rebuild, the button that had focus is found again by its key, so a
+    // keyboard or switch user reading the More list is not dropped to the page.
     const active = document.activeElement;
     const focusedKey =
       active instanceof HTMLElement && bar.contains(active) ? active.dataset.key : undefined;
@@ -716,7 +727,7 @@ export class CombatScene implements Scene {
         const found = bar.querySelector<HTMLElement>(`[data-key="${key}"]`);
         return found && found.getClientRects().length > 0 ? found : null;
       };
-      (shown(focusedKey) ?? shown('more'))?.focus();
+      (shown(focusedKey) ?? shown('more'))?.focus({ preventScroll: true });
     }
   }
 
@@ -745,14 +756,17 @@ export class CombatScene implements Scene {
     if (!bar) return;
     const list = bar.querySelector<HTMLElement>('.combat-more');
     const toggle = bar.querySelector<HTMLElement>('.combat-more-toggle');
+    // The room is written before the list is shown: Chromium resolves a list
+    // opened in the same step as its room with the fallback, the whole screen,
+    // until something else restyles it, and so draws it off the foot.
+    if (open) this.measureMoreRoom();
     list?.classList.toggle('open', open);
     toggle?.setAttribute('aria-expanded', String(open));
     if (!open) {
       // Focus never stays behind in a list that has just been hidden.
-      if (focus || list?.contains(document.activeElement)) toggle?.focus();
+      if (focus || list?.contains(document.activeElement)) toggle?.focus({ preventScroll: true });
       return;
     }
-    this.measureMoreRoom();
     const onPointer = (event: PointerEvent) => {
       if (!(event.target instanceof Node) || !bar.contains(event.target))
         this.setMoreOpen(false, false);
@@ -1599,6 +1613,7 @@ export class CombatScene implements Scene {
           u.faction === 'enemy' ? -1 : 1,
           u.faction === 'party',
           u.sprite,
+          health.fallen,
         ),
       };
     });
@@ -1682,6 +1697,7 @@ export class CombatScene implements Scene {
     restFacing: 1 | -1,
     directional: boolean,
     sprite: string,
+    fallen = false,
   ): Pick<
     RenderUnit,
     | 'offset'
@@ -1696,15 +1712,27 @@ export class CombatScene implements Scene {
   > {
     const pose = this.app.animator.unitPose(now, unitId, sprite);
     const walked = this.app.animator.facing(unitId);
-    // The party stands in its fighting stance between moves (ADR 0052).
-    const movement = directional
-      ? this.app.animator.locomotion(now, unitId, 'stance', sprite)
-      : undefined;
+    // The party stands in its fighting stance between moves (ADR 0052); an
+    // enemy on an eight-way sheet (the thug, ADR 0059) idles and walks by
+    // heading the same way.
+    const movement =
+      directional || sheetLocomotion(sprite)?.headings === 8
+        ? this.app.animator.locomotion(
+            now,
+            unitId,
+            directional ? 'stance' : 'idle',
+            sprite,
+            restFacing,
+          )
+        : undefined;
     const mapId = this.app.state?.battle?.mapId;
     const projection = mapId ? this.app.content.maps.get(mapId)?.projection : undefined;
     const scale = directional
       ? partyScale(projection, pose?.scale)
-      : enemyScale(sprite, pose?.scale);
+      : enemyScale(sprite, pose?.scale, projection);
+    // Once a G knockout has played, the body stays where it fell (ADR 0059).
+    const down = !pose && fallen ? this.app.animator.fallenPose(unitId, sprite) : undefined;
+    if (down) return { ...down, facing: 1, scale };
     if (!pose) return { ...(movement ?? { facing: walked ?? restFacing }), scale };
     return {
       offset: pose.offset,

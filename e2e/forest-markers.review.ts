@@ -47,7 +47,7 @@ for (const renderer of ['canvas', 'webgl'] as const) {
       const blockedAssets: string[] = [];
       page.on('pageerror', (e) => errors.push(e.message));
       if (fallback)
-        await page.route('**/art/units/thug.*', async (route) => {
+        await page.route('**/art/units/thug-g.*', async (route) => {
           blockedAssets.push(route.request().url());
           await route.abort();
         });

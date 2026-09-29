@@ -46,6 +46,7 @@ import {
 } from '../painters/tiles';
 import { npcPose, sprites } from '../spriteCache';
 import {
+  fallenAlpha,
   unitMarkerGroundPoint,
   type AimArc,
   type MapView,
@@ -890,7 +891,7 @@ export class Canvas2DBackend implements RenderBackend {
 
       ctx.save();
       // A pose scales about the feet; the fallen fade sits on top of any alpha.
-      const alpha = (unit.alpha ?? 1) * (unit.fallen ? 0.35 : 1);
+      const alpha = (unit.alpha ?? 1) * fallenAlpha(unit);
       const shadowDensity = actorShadowDensity(view.grid, pos, unit.shadow === true, unit.size);
       if (shadowDensity > 0) {
         // On the ground, not on the bob: the tile's foot line, less the ledge.

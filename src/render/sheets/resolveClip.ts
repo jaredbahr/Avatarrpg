@@ -50,6 +50,12 @@ const FALLBACK: Readonly<Record<ClipName, readonly ClipName[]>> = {
   stanceSouthWest: ['idleSouthWest', 'idleSouth', 'idle'],
   stanceWest: ['idleWest', 'idle'],
   stanceNorthWest: ['idleNorthWest', 'idleNorth', 'idle'],
+  // A G knockout (ADR 0059) falls back to the legacy pose on a sheet without
+  // one, or before its clip data has loaded.
+  koNorthEast: ['ko', 'hit', 'idle'],
+  koSouthEast: ['ko', 'hit', 'idle'],
+  koSouthWest: ['ko', 'hit', 'idle'],
+  koNorthWest: ['ko', 'hit', 'idle'],
 };
 
 export interface ResolvedClip {
@@ -87,6 +93,9 @@ export function frameIndex(
 ): number {
   const count = resolved.def.frames.length;
   if (count <= 1) return 0;
+  // A clip timed cel by cel plays by time, whatever frame was named (ADR 0059).
+  const holds = resolved.def.frameMs;
+  if (holds) return timedFrame(holds, resolved.def.loop, clipTime);
   // Melee borrows cast's compatible wind-up/release poses. Treating it as an
   // unrelated fallback held the recovery drawing through the entire attack.
   if (clipFrame !== undefined && (resolved.exact || resolved.clip === 'cast')) {
@@ -95,4 +104,20 @@ export function frameIndex(
   if (clipFrame !== undefined) return count - 1;
   const raw = Math.floor((Math.max(0, clipTime) / 1000) * resolved.def.fps);
   return resolved.def.loop ? raw % count : Math.min(count - 1, raw);
+}
+
+/** The frame `clipTime` ms into a clip of per-frame holds; past the end, the last or around again. */
+function timedFrame(holds: readonly number[], loop: boolean, clipTime: number): number {
+  const total = holds.reduce((sum, ms) => sum + ms, 0);
+  if (total <= 0) return 0;
+  let t = Math.max(0, clipTime);
+  if (t >= total) {
+    if (!loop) return holds.length - 1;
+    t %= total;
+  }
+  for (let i = 0; i < holds.length; i++) {
+    t -= holds[i] ?? 0;
+    if (t < 0) return i;
+  }
+  return holds.length - 1;
 }

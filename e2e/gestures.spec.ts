@@ -472,20 +472,25 @@ test.describe('zoom and pan', () => {
       return battle ? battle.order[battle.turnIndex] : null;
     });
     expect(activeBefore).not.toBeNull();
-    await page.evaluate(() => {
+    // The hand-over is read in the same evaluate as the dispatch: an AI unit
+    // next in line takes its turn about 260 ms later and can hand play back
+    // to the same unit before a poll from outside would see the change.
+    const handedOver = await page.evaluate(() => {
       const app = window.fnt?.app;
       const battle = app?.state?.battle;
       const unit = battle?.units.find((u) => u.id === battle.order[battle.turnIndex]);
       if (app && unit) app.dispatch({ type: 'endTurn', unitId: unit.id });
+      const after = app?.state?.battle;
+      return {
+        active: after ? after.order[after.turnIndex] : null,
+        tilePx: app?.rendererCamera()?.tilePx ?? null,
+      };
     });
-    await expect
-      .poll(async () =>
-        page.evaluate(
-          () =>
-            window.fnt?.app.state?.battle?.order[window.fnt?.app.state?.battle?.turnIndex ?? -1],
-        ),
-      )
-      .not.toBe(activeBefore);
+    expect(handedOver.active).not.toBeNull();
+    expect(handedOver.active).not.toBe(activeBefore);
+    expect(handedOver.tilePx ?? 0).toBeCloseTo(panned.tilePx, 3);
+    // And whatever the next turns do to the HUD, the zoom survives the reflow.
+    await settleLayout(page);
     const afterActorChange = await camera(page);
     expect(afterActorChange.tilePx).toBeCloseTo(panned.tilePx, 3);
   });

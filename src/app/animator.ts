@@ -33,9 +33,13 @@ import {
   screenDirection,
 } from './anim/direction';
 import type { WalkDirection } from './anim/direction';
-import { headingClip } from '../content/assets/clips';
+import { headingClip, koClip } from '../content/assets/clips';
 import type { Heading, MeleeDirection } from '../content/assets/clips';
 import { sheetLocomotion } from '../content/assets/manifest';
+import type { SheetClips } from '../render/sheets/store';
+
+/** A clip time past the end of any clip: an unlooped clip shows its last frame. */
+const HELD = 3_600_000;
 
 /** Height of the walk bob in tiles, once per tile of travel. */
 const BOB = 0.05;
@@ -87,6 +91,12 @@ export interface AnimatorOptions {
    * identical (ADR 0012).
    */
   readonly onSounds?: (cues: readonly SoundCue[], now: number) => void;
+  /**
+   * A sprite's clips as its loaded sheet draws them (ADR 0059): the G
+   * knockouts arrive with the sheet, not the bundle. Without it, or before
+   * the sheet is in, a knockout is the legacy pose and keeps its timing.
+   */
+  readonly sheetClips?: (sprite: string) => SheetClips | undefined;
 }
 
 /** Everything the renderer needs to draw a unit mid-playback. */
@@ -208,6 +218,7 @@ export class Animator {
       pushIndex: this.pushes++,
       silentSteps: options.silentSteps ?? options.alongside,
       projection: this.projection,
+      ...(this.options.sheetClips ? { clipsOf: this.options.sheetClips } : {}),
     });
     const affected = new Set(result.health.map((change) => change.unitId));
     // State is already the reducer's final result. Seed each affected unit at
@@ -336,12 +347,16 @@ export class Animator {
    * `sprite` selects the heading vocabulary: only a sheet that declares
    * eight-way locomotion is given diagonal and west clips. Everything else,
    * including an unknown sprite, keeps the four-way side/front/back choice.
+   * `restFacing` is the side a unit faces before it has turned: an enemy on
+   * an eight-way sheet (the thug, ADR 0059) stands facing west, as its
+   * mirrored sheet did.
    */
   locomotion(
     now: number,
     unitId: string,
     resting: 'idle' | 'rest' | 'stance' = 'idle',
     sprite?: string,
+    restFacing: 1 | -1 = 1,
   ): { clip: ClipName; facing: 1 | -1 } {
     this.settleHeadings(now);
     const travel = this.walkTravel(now, unitId);
@@ -349,12 +364,17 @@ export class Animator {
       this.rememberDirection(unitId, sampleAt(travel.track.curve, travel.distance).tangent);
     const stop = !travel && this.settling(now, unitId);
     const base = travel ? 'walk' : stop ? 'rest' : resting;
-    const heading = this.headings.get(unitId);
+    const heading = this.heading(unitId, restFacing);
     const clip =
       sheetLocomotion(sprite)?.headings === 8 && heading
         ? headingClip(base, heading)
         : directionalClip(base, this.directions.get(unitId));
-    return { clip, facing: verticalClip(clip) ? 1 : (this.facings.get(unitId) ?? 1) };
+    return { clip, facing: verticalClip(clip) ? 1 : (this.facings.get(unitId) ?? restFacing) };
+  }
+
+  /** The eight-way heading a unit last turned to, or west for one that has not and faces left. */
+  private heading(unitId: string, restFacing: 1 | -1): Heading | undefined {
+    return this.headings.get(unitId) ?? (restFacing === -1 ? 'west' : undefined);
   }
 
   /** True while a finished walk is still holding the settled stop pose. */
@@ -493,7 +513,7 @@ export class Animator {
     const facing = pose?.facing;
     const frame = pose?.frame;
     return {
-      clip: pose ? pose.clip : bob ? 'walk' : 'idle',
+      clip: pose ? this.reactionClip(pose.clip, unitId, sprite) : bob ? 'walk' : 'idle',
       clipTime: pose ? now - pose.start : travel ? this.walkClipTime(travel, sprite) : 0,
       offset,
       scale,
@@ -503,6 +523,28 @@ export class Animator {
       ...(pose?.meleeDirection ? { meleeDirection: pose.meleeDirection } : {}),
       ...(frame !== undefined ? { frame } : {}),
     };
+  }
+
+  /**
+   * A knockout as the unit's sheet draws it (ADR 0059): a sheet whose clips
+   * carry G knockouts falls on the diagonal `koClip` gives the heading the
+   * unit faces; one that does not, or has not loaded, keeps the legacy pose.
+   * A unit that has not turned yet faces east, as its stance does.
+   */
+  private reactionClip(clip: ClipName, unitId: string, sprite?: string): ClipName {
+    if (clip !== 'ko' || !sprite || sheetLocomotion(sprite)?.headings !== 8) return clip;
+    const authored = koClip(this.headings.get(unitId) ?? 'east');
+    return this.options.sheetClips?.(sprite)?.[authored] ? authored : clip;
+  }
+
+  /**
+   * What a fallen unit draws once its knockout has played: the knockout's
+   * last frame, held, for a sheet that authors one; undefined otherwise, and
+   * the scene keeps its standing pose under the fallen fade (ADR 0059).
+   */
+  fallenPose(unitId: string, sprite: string): { clip: ClipName; clipTime: number } | undefined {
+    const clip = this.reactionClip('ko', unitId, sprite);
+    return clip === 'ko' ? undefined : { clip, clipTime: HELD };
   }
 
   /** Live particle and stroke emitters at `now`, with their age. */

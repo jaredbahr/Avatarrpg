@@ -68,6 +68,13 @@ export type AssetEntry =
       readonly bend?: string;
       /** The atlas pages `bend` draws from, each a JSON and image like `atlas`. */
       readonly bendPages?: readonly string[];
+      /**
+       * Further clips, as a JSON of `ClipDef`s by clip name relative to the
+       * site root, whose cels live on the pages above (the G knockouts, ADR
+       * 0059). Fetched with the pages, so it costs the bundle nothing: the
+       * sheet draws once it is in, and those clips are asked of the store.
+       */
+      readonly clipData?: string;
       /** Pixels a tile is drawn at in the atlas: 128, or 256 for a sharper sheet. */
       readonly pixelsPerTile: number;
       /** Explicit art bounds when weapon reach exceeds the default frame (ADR 0032). */
@@ -189,6 +196,17 @@ export const G_TRAVEL: Readonly<Record<'kaya' | 'sura' | 'bo', GTravel>> = {
   },
 };
 
+/**
+ * The measured travel per 114 ms cel, converted to clip time per 128 px tile
+ * at the in-game 0.75 scale. Movement duration stays gameplay-driven; only
+ * distance-phased cel selection changes.
+ */
+function walkMsPerTile(travel: GTravel): Record<Heading, number> {
+  return Object.fromEntries(
+    HEADINGS.map((heading) => [heading, (128 / (travel[heading] * 0.75)) * 114]),
+  ) as Record<Heading, number>;
+}
+
 /** PixelLab G locomotion and fighting stance plus the existing authored action poses. */
 function gSheet(key: string, name: keyof typeof G_TRAVEL, palette: string): SheetEntry {
   const frames = (clip: ClipName, count: number) =>
@@ -206,13 +224,6 @@ function gSheet(key: string, name: keyof typeof G_TRAVEL, palette: string): Shee
     fps: 1000 / 150,
     loop: true,
   });
-  const travel = G_TRAVEL[name];
-  // The measured travel per cel, converted to clip time per 128 px tile at the
-  // in-game 0.75 scale. Movement duration stays gameplay-driven; only
-  // distance-phased cel selection changes.
-  const walkMsPerTile = Object.fromEntries(
-    HEADINGS.map((heading) => [heading, (128 / (travel[heading] * 0.75)) * 114]),
-  ) as Record<Heading, number>;
   const clips: Partial<Record<ClipName, ClipDef>> = {
     cast: { frames: frames('cast', 3), fps: 8, loop: false },
     ko: { frames: frames('ko', 1), fps: 1, loop: false },
@@ -234,11 +245,14 @@ function gSheet(key: string, name: keyof typeof G_TRAVEL, palette: string): Shee
   return {
     kind: 'sheet',
     atlas: `art/units/${name}-g.json`,
-    // Page 2 holds the fighting stance; locomotion and actions fill page 1.
+    // Page 2 holds the fighting stance; locomotion and actions fill page 1;
+    // page 3 the knockouts, whose clips arrive with it (ADR 0059).
     atlasPages: [
       `art/units/${name}-g-2.json`,
+      `art/units/${name}-g-3.json`,
       ...(riverside ? [`art/units/riverside-${name}.json`] : []),
     ],
+    clipData: `art/units/${name}-g-clips.json`,
     // The bend loads on its own, only when something asks for it (ADR 0055).
     bend: `art/units/${name}-bend.json`,
     bendPages: [`art/units/${name}-g-bend.json`],
@@ -246,8 +260,68 @@ function gSheet(key: string, name: keyof typeof G_TRAVEL, palette: string): Shee
     footprint: { w: 1, h: 1 },
     anchor: { x: 0.5, y: 0.85 },
     facing: 'both',
-    locomotion: { headings: 8, walkMsPerTile },
+    locomotion: { headings: 8, walkMsPerTile: walkMsPerTile(G_TRAVEL[name]) },
     palette,
+    clips,
+  };
+}
+
+/**
+ * The thug's measured root travel per walk cel, in source px, per heading:
+ * `speed_px_per_frame` in each toned walk's gates.json, south-east the r2b
+ * retake's (ADR 0059).
+ */
+const THUG_TRAVEL: GTravel = {
+  north: 9.75,
+  northEast: 13.07,
+  east: 11.59,
+  southEast: 15.29,
+  south: 9.17,
+  southWest: 13.55,
+  west: 11.8,
+  northWest: 12.83,
+};
+
+/**
+ * The toned PixelLab thug on a G sheet (ADR 0059): eight-way idle, walk and
+ * rest at the party's scale and walk rate, and the old sheet's cast, hit and
+ * KO cels, mirrored as the party's legacy actions are.
+ */
+function thugSheet(): SheetEntry {
+  const key = 'unit.enemy.thug';
+  const frames = (clip: ClipName, count: number) =>
+    Array.from({ length: count }, (_, i) => `${key}/${clip}/${i}`);
+  const clips: Partial<Record<ClipName, ClipDef>> = {
+    cast: { frames: frames('cast', 3), fps: 8, loop: false },
+    hit: { frames: frames('hit', 1), fps: 1, loop: false },
+    ko: { frames: frames('ko', 1), fps: 1, loop: false },
+  };
+  for (const heading of HEADINGS) {
+    clips[headingClip('idle', heading)] = {
+      frames: frames(headingClip('idle', heading), 4),
+      fps: 4,
+      loop: true,
+    };
+    clips[headingClip('walk', heading)] = {
+      frames: frames(headingClip('walk', heading), 8),
+      fps: 1000 / 114,
+      loop: true,
+    };
+    clips[headingClip('rest', heading)] = {
+      frames: frames(headingClip('rest', heading), 1),
+      fps: 1,
+      loop: true,
+    };
+  }
+  return {
+    kind: 'sheet',
+    atlas: 'art/units/thug-g.json',
+    pixelsPerTile: 128,
+    footprint: { w: 1, h: 1 },
+    anchor: { x: 0.5, y: 0.85 },
+    facing: 'both',
+    locomotion: { headings: 8, walkMsPerTile: walkMsPerTile(THUG_TRAVEL) },
+    palette: 'enemy',
     clips,
   };
 }
@@ -314,26 +388,7 @@ export const ASSETS: Readonly<Record<string, AssetEntry>> = {
   'unit.non.wen': heroSheet('unit.non.wen', 'nonbender'),
 
   /* ----------------------------------------------------- Enemy sprites */
-  'unit.enemy.thug': {
-    kind: 'sheet',
-    atlas: 'art/units/thug.json',
-    pixelsPerTile: 128,
-    footprint: { w: 1, h: 1 },
-    anchor: { x: 0.5, y: 0.85 },
-    facing: 'mirror',
-    palette: 'enemy',
-    clips: {
-      idle: { frames: ['unit.enemy.thug/idle/0', 'unit.enemy.thug/idle/1'], fps: 1, loop: true },
-      walk: { frames: ['unit.enemy.thug/walk/0', 'unit.enemy.thug/walk/1'], fps: 4, loop: true },
-      cast: {
-        frames: ['unit.enemy.thug/cast/0', 'unit.enemy.thug/cast/1', 'unit.enemy.thug/cast/2'],
-        fps: 8,
-        loop: false,
-      },
-      hit: { frames: ['unit.enemy.thug/hit/0'], fps: 1, loop: false },
-      ko: { frames: ['unit.enemy.thug/ko/0'], fps: 1, loop: false },
-    },
-  },
+  'unit.enemy.thug': thugSheet(),
   'unit.enemy.slinger': quarryEnemySheet('slinger', 'enemy'),
   'unit.enemy.bruiser': quarryEnemySheet('bruiser', 'enemy'),
   'unit.enemy.quarrybender': quarryEnemySheet('quarrybender', 'earth'),

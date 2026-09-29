@@ -11,6 +11,31 @@ const clip = (count: number, fps = 4, loop = false): ClipDef => ({
 const minimal = { idle: clip(2, 1, true), cast: clip(3, 8) };
 const full = { ...minimal, walk: clip(4, 4, true), melee: clip(2), hit: clip(1), ko: clip(1) };
 
+describe('a clip timed cel by cel (ADR 0059)', () => {
+  const timed: ClipDef = { ...clip(4), frameMs: [40, 150, 120, 80] };
+
+  it('plays each frame for its own hold, whatever frame was named', () => {
+    const resolved = { clip: 'koSouthEast' as const, def: timed, exact: true };
+    expect(frameIndex(resolved, 0, 0)).toBe(0);
+    expect(frameIndex(resolved, 39, 0)).toBe(0);
+    expect(frameIndex(resolved, 40, 0)).toBe(1);
+    expect(frameIndex(resolved, 189, undefined)).toBe(1);
+    expect(frameIndex(resolved, 190, undefined)).toBe(2);
+    expect(frameIndex(resolved, 350, 0)).toBe(3);
+  });
+
+  it('holds the last frame once played unless it loops', () => {
+    expect(frameIndex({ clip: 'koSouthEast', def: timed, exact: true }, 10_000, 0)).toBe(3);
+    const looped = { clip: 'koSouthEast' as const, def: { ...timed, loop: true }, exact: true };
+    expect(frameIndex(looped, 390 + 45, undefined)).toBe(1);
+  });
+
+  it('falls back to the legacy pose on a sheet without one', () => {
+    expect(resolveClip(full, 'koSouthWest')).toMatchObject({ clip: 'ko', exact: false });
+    expect(resolveClip(minimal, 'koSouthWest')?.clip).toBe('idle');
+  });
+});
+
 describe('resolveClip', () => {
   it('keeps optional exploration rests compatible with existing directional sheets', () => {
     const directional = { ...minimal, idleNorth: clip(1), idleSouth: clip(1) };
