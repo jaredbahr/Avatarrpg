@@ -1,10 +1,16 @@
+import { readFileSync } from 'node:fs';
 import { expect, it } from 'vitest';
+import { BA_DAN_APRON_BANDS } from '../../src/content/scenes/baDan';
+import { apronPlatePath } from './lib/apron-plates';
 import { pixelAt } from './lib/image';
 import type { Image } from './lib/image';
+import { decodeWebp } from './lib/webp';
 import { GARDEN_TONES, GRAIN } from './ba-dan-garden';
 import {
   APRON_ALPHA_STEPS,
   APRON_FADE,
+  DIRECTORY,
+  STEM,
   apronDepth,
   apronLogical,
   apronPixel,
@@ -124,6 +130,31 @@ function singletons(image: Image): { singles: number; painted: number } {
     }
   return { singles, painted };
 }
+
+it('ships a rim with no light fringe from the lossy encoder', async () => {
+  // The bands are lossy. A clear texel's colour still feeds the encoder, and
+  // black ones beside the rim smeared a light line along all of it.
+  const ring = packApron();
+  let rim = 0,
+    fringe = 0;
+  for (const [index, band] of BA_DAN_APRON_BANDS.entries()) {
+    const shipped = await decodeWebp(readFileSync(apronPlatePath(DIRECTORY, STEM, index)));
+    for (let py = 0; py < band.height; py++)
+      for (let px = 0; px < band.width; px++) {
+        const packed = pixelAt(ring, band.x + px, band.y + py);
+        if (packed[3] !== 255) continue;
+        const { x, y } = apronLogical(band.x + px, band.y + py);
+        if (apronDepth(x, y) > 0.1) continue;
+        rim++;
+        const got = pixelAt(shipped, px, py);
+        const luma = (c: readonly number[]): number =>
+          0.299 * (c[0] ?? 0) + 0.587 * (c[1] ?? 0) + 0.114 * (c[2] ?? 0);
+        if (Math.abs(got[2] - packed[2]) > 16 || luma(got) - luma(packed) > 12) fringe++;
+      }
+  }
+  expect(rim).toBeGreaterThan(1_000);
+  expect(fringe / rim).toBeLessThan(0.02);
+});
 
 it('uses clusters and flat bands rather than a repeating ordered screen', () => {
   const { singles, painted } = singletons(packApron());

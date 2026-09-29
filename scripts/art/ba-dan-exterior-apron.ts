@@ -22,6 +22,7 @@ import {
 import {
   contactWear,
   flagstoneTexel,
+  gardenTexel,
   GRAIN,
   grassTexel,
   rimBorder,
@@ -45,6 +46,11 @@ export const APRON_FADE = 2.2;
  * country, not one that stops.
  */
 export const EXIT_WEAR = 0.7;
+/**
+ * How far either side of the painted band the clear texels still carry the
+ * neighbouring ground's colour, in tiles: past a lossy macroblock's width.
+ */
+export const RIM_BLEED = 0.4;
 /** The projection's origin in local pixels, matching the scene's own pieces. */
 const ORIGIN = 1024;
 
@@ -125,30 +131,45 @@ export function packApron(): Image {
     for (let tx = ox / GRAIN; tx < (ox + image.width) / GRAIN; tx++) {
       const { x, y } = worldLogical((tx + 0.5) * GRAIN, (ty + 0.5) * GRAIN);
       const depth = apronDepth(x, y);
-      if (depth <= 0 || depth >= APRON_FADE) continue;
+      const paint = (colour: readonly number[], alpha: number): void => {
+        for (let dy = 0; dy < GRAIN; dy++)
+          for (let dx = 0; dx < GRAIN; dx++)
+            setPixel(image, tx * GRAIN - ox + dx, ty * GRAIN - oy + dy, [...colour, alpha]);
+      };
+      // The clear texels next to the painted ones still carry the colour of
+      // the ground beside them: the lossy encoder smears a clear texel's black
+      // across the edge, which drew a light line along the whole rim.
+      if (depth <= 0 || depth >= APRON_FADE) {
+        if (depth > -RIM_BLEED && depth <= 0) paint(gardenTexel(tx, ty), 0);
+        else if (depth < APRON_FADE + RIM_BLEED && depth > 0) paint(grassTexel(tx, ty), 0);
+        continue;
+      }
       // A texel covers four screen pixels. At the diamond rim its centre can
       // lie outside while one of those pixel centres lies on playable ground;
       // the garden base paints that texel, so skip it here and the apron never
       // overpaints the board. At the outer edge, likewise, a texel with any
       // pixel past the fade stays clear, so no pixel lands beyond it.
-      if (texelTouchesBoard(tx, ty)) continue;
+      if (texelTouchesBoard(tx, ty)) {
+        paint(gardenTexel(tx, ty), 0);
+        continue;
+      }
       const pastFade = [0.5, GRAIN - 0.5].some((dx) =>
         [0.5, GRAIN - 0.5].some((dy) => {
           const point = worldLogical(tx * GRAIN + dx, ty * GRAIN + dy);
           return apronDepth(point.x, point.y) >= APRON_FADE;
         }),
       );
-      if (pastFade) continue;
+      if (pastFade) {
+        paint(grassTexel(tx, ty), 0);
+        continue;
+      }
       const { terrain } = rimBorder(x, y, true);
       const carried =
         terrain !== 'grass' &&
         transitionCluster(x, y, 83) < 1 - EXIT_WEAR * clamp(depth / APRON_FADE, 0, 1);
       // A rim tree's roots and litter run on past the rim with the grass.
       const colour = carried ? flagstoneTexel(tx, ty) : (contactWear(tx, ty) ?? grassTexel(tx, ty));
-      const alpha = apronAlpha(depth, x, y);
-      for (let dy = 0; dy < GRAIN; dy++)
-        for (let dx = 0; dx < GRAIN; dx++)
-          setPixel(image, tx * GRAIN - ox + dx, ty * GRAIN - oy + dy, [...colour, alpha]);
+      paint(colour, apronAlpha(depth, x, y));
     }
   }
   return image;
