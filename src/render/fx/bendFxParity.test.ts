@@ -86,6 +86,9 @@ function canvasDraws(sprites: readonly BendFxSprite[], camera: Camera): Drawn[] 
     translate: (x: number, y: number) => {
       state.m = mul(state.m, [1, 0, 0, 1, x, y]);
     },
+    scale: (x: number, y: number) => {
+      state.m = mul(state.m, [x, 0, 0, y, 0, 0]);
+    },
     rotate: (r: number) => {
       state.m = mul(state.m, [Math.cos(r), Math.sin(r), -Math.sin(r), Math.cos(r), 0, 0]);
     },
@@ -213,6 +216,8 @@ const SPRITES: readonly BendFxSprite[] = [
     turn: 153.4,
   }),
   sprite({ pivot: { x: 96, y: 24 }, turn: -90, alpha: 0.6, blend: 'add' }),
+  // Thrown to the left: mirrored top to bottom about an off-centre pivot, then turned.
+  sprite({ pivot: { x: 96, y: 18 }, turn: 191.3, flipY: true, at: { x: 0.8, y: 2.6 } }),
 ];
 
 const cameras = (): Camera[] => {
@@ -258,7 +263,38 @@ describe('bend effects on Canvas 2D and WebGL', () => {
   it('draws the ground and under-actor cels before the actors and the rest after', () => {
     const [camera] = cameras();
     const order = canvasDraws(SPRITES, camera!).map((d) => d.rect[0]);
-    expect(order).toEqual([396, 41, 41, 171, 41].map((x, i) => (i === 1 ? 0 : x)));
+    expect(order).toEqual([396, 41, 41, 171, 41, 41].map((x, i) => (i === 1 ? 0 : x)));
+  });
+
+  it('mirrors a flipped cel top to bottom about its pivot, on both backends', () => {
+    for (const camera of cameras()) {
+      const flipped = SPRITES[5]!;
+      const plain = { ...flipped, flipY: false };
+      for (const draws of [canvasDraws, pixiDraws]) {
+        const [a] = draws([flipped], camera);
+        const [b] = draws([plain], camera);
+        // Pivot fixed; the cel's top edge lands where the plain cel's bottom edge
+        // would be mirrored through the pivot's horizontal line (in cel space).
+        const pivot = (c: Pt[]) => {
+          const [p0, p1, , p3] = c as [Pt, Pt, Pt, Pt];
+          const u = 96 / 53;
+          const v = 18 / 44;
+          return {
+            x: p0.x + (p1.x - p0.x) * u + (p3.x - p0.x) * v,
+            y: p0.y + (p1.y - p0.y) * u + (p3.y - p0.y) * v,
+          };
+        };
+        expect(pivot(a!.corners).x).toBeCloseTo(pivot(b!.corners).x, 6);
+        expect(pivot(a!.corners).y).toBeCloseTo(pivot(b!.corners).y, 6);
+        // Same across (top-left to top-right), opposite down (top-left to bottom-left).
+        const across = (c: Pt[]) => ({ x: c[1]!.x - c[0]!.x, y: c[1]!.y - c[0]!.y });
+        const down = (c: Pt[]) => ({ x: c[3]!.x - c[0]!.x, y: c[3]!.y - c[0]!.y });
+        expect(across(a!.corners).x).toBeCloseTo(across(b!.corners).x, 6);
+        expect(across(a!.corners).y).toBeCloseTo(across(b!.corners).y, 6);
+        expect(down(a!.corners).x).toBeCloseTo(-down(b!.corners).x, 6);
+        expect(down(a!.corners).y).toBeCloseTo(-down(b!.corners).y, 6);
+      }
+    }
   });
 
   it('lands the pivot on the board point, the quad the cel size at the zoom, never mirrored', () => {

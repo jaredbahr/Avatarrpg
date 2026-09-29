@@ -93,8 +93,9 @@ export const BEND_IMPACT_OFFSET_MAX = 256;
 export const BEND_SHAKE_TILES_MAX = 0.5;
 /** Residue lingers at most 3 s after impact. */
 export const BEND_RESIDUE_MS_MAX = 3000;
-/** Any travel speed is at most 64 tiles a second. */
-export const BEND_SPEED_MAX = 64;
+/** A travel layer's prototype flight is 16-2000 ms. */
+export const BEND_FLIGHT_MS_MIN = 16;
+export const BEND_FLIGHT_MS_MAX = 2000;
 /** An arc rises at most 4 tiles above the straight line. */
 export const BEND_ARC_HEIGHT_MAX = 4;
 /** An arc turns at most 8 whole turns either way over its flight. */
@@ -231,14 +232,24 @@ export interface BendEffectLayer {
   readonly blend: BendBlend;
   /** The release this layer plays for; absent means every release. */
   readonly release?: number;
+  /**
+   * A travel layer's flight, and only a travel layer's: how long the approved
+   * prototype's flight took over its 3-tile throw, in ms
+   * (`BEND_FLIGHT_MS_MIN..MAX`), from its travel clock's start to its landing
+   * with no hold inside. The renderer stretches it with the range
+   * (`flightDurationMs`); the speed is whatever covers the distance in that.
+   */
+  readonly flightMs?: number;
 }
 
-/** What travels from the caster to the target. */
+/**
+ * What travels from the caster to the target. Its shape only: how long a
+ * flight takes is its travel layer's `flightMs`.
+ */
 export type BendTrajectory =
-  | { readonly kind: 'straight'; readonly speedTilesPerSecond: number }
+  | { readonly kind: 'straight' }
   | {
       readonly kind: 'arc';
-      readonly speedTilesPerSecond: number;
       /** Peak rise above the straight line, 0-4 tiles. */
       readonly heightTiles: number;
       /** Whole turns over the flight, -8..8; the sign is the direction. */
@@ -248,7 +259,6 @@ export type BendTrajectory =
       readonly kind: 'whipBolt';
       readonly whipFraction: number;
       readonly whipMaxTiles: number;
-      readonly boltSpeedTilesPerSecond: number;
     };
 
 /** What the effect draws when it lands on the target, and where. */
@@ -305,7 +315,7 @@ const frameMsValue = z.number().int().min(BEND_FRAME_MS_MIN).max(BEND_FRAME_MS_M
 const holdMs = z.number().min(0).max(BEND_HOLD_MS_MAX);
 const flashValue = z.number().min(0).max(BEND_FLASH_MAX);
 const shakeValue = z.number().min(0).max(BEND_SHAKE_TILES_MAX);
-const speedValue = z.number().positive().max(BEND_SPEED_MAX);
+const flightMsValue = z.number().min(BEND_FLIGHT_MS_MIN).max(BEND_FLIGHT_MS_MAX);
 const pixelSize = z
   .object({
     width: z.number().int().positive(),
@@ -412,15 +422,15 @@ export const bendEffectLayerSchema: z.ZodType<BendEffectLayer> = z
     origin: z.enum(BEND_LAYER_ORIGINS),
     blend: z.enum(BEND_BLENDS),
     release: celIndex.optional(),
+    flightMs: flightMsValue.optional(),
   })
   .strict();
 
 export const bendTrajectorySchema: z.ZodType<BendTrajectory> = z.discriminatedUnion('kind', [
-  z.object({ kind: z.literal('straight'), speedTilesPerSecond: speedValue }).strict(),
+  z.object({ kind: z.literal('straight') }).strict(),
   z
     .object({
       kind: z.literal('arc'),
-      speedTilesPerSecond: speedValue,
       heightTiles: z.number().min(0).max(BEND_ARC_HEIGHT_MAX),
       spin: z.number().min(-BEND_ARC_SPIN_MAX).max(BEND_ARC_SPIN_MAX),
     })
@@ -430,7 +440,6 @@ export const bendTrajectorySchema: z.ZodType<BendTrajectory> = z.discriminatedUn
       kind: z.literal('whipBolt'),
       whipFraction: z.number().gt(0).max(1),
       whipMaxTiles: z.number().positive().max(BEND_WHIP_TILES_MAX),
-      boltSpeedTilesPerSecond: speedValue,
     })
     .strict(),
 ]);
@@ -663,18 +672,11 @@ function validateEffect(effect: BendEffectDef, problems: string[]): void {
     problems.push(`${where}: ${detail}`);
   };
   if (effect.layers.length === 0) note(`has no layers`);
-  const speed = (name: string, value: number): void => {
-    if (!(value > 0 && value <= BEND_SPEED_MAX)) {
-      note(`${name} ${value} must be above 0 and at most ${BEND_SPEED_MAX}`);
-    }
-  };
   const trajectory = effect.trajectory;
   switch (trajectory.kind) {
     case 'straight':
-      speed('speedTilesPerSecond', trajectory.speedTilesPerSecond);
       break;
     case 'arc':
-      speed('speedTilesPerSecond', trajectory.speedTilesPerSecond);
       if (!within(trajectory.heightTiles, 0, BEND_ARC_HEIGHT_MAX)) {
         note(`heightTiles ${trajectory.heightTiles} is outside 0..${BEND_ARC_HEIGHT_MAX}`);
       }
@@ -691,7 +693,6 @@ function validateEffect(effect: BendEffectDef, problems: string[]): void {
           `whipMaxTiles ${trajectory.whipMaxTiles} must be above 0 and at most ${BEND_WHIP_TILES_MAX}`,
         );
       }
-      speed('boltSpeedTilesPerSecond', trajectory.boltSpeedTilesPerSecond);
       break;
   }
   if (!within(effect.impact.flash, 0, BEND_FLASH_MAX)) {
@@ -712,6 +713,16 @@ function validateEffect(effect: BendEffectDef, problems: string[]): void {
     if (layer.frameMs.length === 0) note(`layer ${index} (${layer.phase}) has no frameMs`);
     if (layer.release !== undefined && !(Number.isInteger(layer.release) && layer.release >= 0)) {
       note(`layer ${index} release ${layer.release} is not a release index`);
+    }
+    if (layer.phase === 'travel') {
+      if (layer.flightMs === undefined) note(`layer ${index} (travel) has no flightMs`);
+      else if (!within(layer.flightMs, BEND_FLIGHT_MS_MIN, BEND_FLIGHT_MS_MAX)) {
+        note(
+          `layer ${index} flightMs ${layer.flightMs} is outside ${BEND_FLIGHT_MS_MIN}..${BEND_FLIGHT_MS_MAX}`,
+        );
+      }
+    } else if (layer.flightMs !== undefined) {
+      note(`layer ${index} (${layer.phase}) has a flightMs; only a travel layer flies`);
     }
     layer.frameMs.forEach((held, cel) => {
       if (!within(held, BEND_FRAME_MS_MIN, BEND_FRAME_MS_MAX)) {

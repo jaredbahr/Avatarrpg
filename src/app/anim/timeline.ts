@@ -14,6 +14,8 @@ import type { Curve } from '../../render/geometry/curve';
 import type { ClipName, EmitterAttachments } from '../../render/view';
 import type { MeleeDirection } from '../../content/assets/clips';
 import type { Easing } from './easing';
+import type { BendFxIndex } from '../../render/fx/bendFx';
+import type { BendPlan } from './bendChoreo';
 
 export type { ClipName };
 
@@ -84,8 +86,20 @@ export interface ShakeTrack extends Track {
   readonly seed: number;
 }
 
+/**
+ * A character's bend and its painted effect (ADR 0055, step 6). Its duration
+ * is scene time, every hold included, so `busy()`, `finishesAt` and pruning
+ * wait out the hit-stops; the plan maps scene time to its own frozen clock.
+ */
+export interface BendTrack extends Track {
+  readonly kind: 'bend';
+  readonly unitId: string;
+  readonly plan: BendPlan;
+  readonly fx: BendFxIndex;
+}
+
 export type AnyTrack =
-  MoveTrack | PoseTrack | FlashTrack | EmitterTrack | FloaterTrack | ShakeTrack;
+  MoveTrack | PoseTrack | FlashTrack | EmitterTrack | FloaterTrack | ShakeTrack | BendTrack;
 
 export type TrackKind = AnyTrack['kind'];
 export type TrackOf<K extends TrackKind> = Extract<AnyTrack, { kind: K }>;
