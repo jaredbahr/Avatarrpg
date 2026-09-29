@@ -64,6 +64,15 @@ const WALL_TILE: Tile = {
   surface: null,
 };
 
+/**
+ * The tile a raised wall leaves behind. `raiseWall` builds it and the AI's wall
+ * planner reasons about it, so the two cannot drift apart: a placement that
+ * strands the caster is judged against the exact grid the reducer will produce.
+ */
+export function raisedWallTile(previous: Tile): Tile {
+  return { ...WALL_TILE, elevation: previous.elevation };
+}
+
 /** A contact status described without choosing a chance branch. */
 export interface SurfaceContactStatusRecord {
   readonly requestedStatus: StatusId;
@@ -765,7 +774,7 @@ export class BattleDraft {
       if (!tile || tile.blocked) continue;
       if (this.unitAt(pos)) continue;
       this.temporaryWalls.push({ pos, untilRound: this.round + duration, previous: tile });
-      this.grid = withTile(this.grid, pos, { ...WALL_TILE, elevation: tile.elevation });
+      this.grid = withTile(this.grid, pos, raisedWallTile(tile));
       this.emit({
         type: 'surfaceChanged',
         pos,
