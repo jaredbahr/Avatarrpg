@@ -803,6 +803,9 @@ describe('choreograph', () => {
     const flinch = poses([blow], 1, loaded);
     expect(flinch).toHaveLength(1);
     expect(flinch[0]).toMatchObject({ clip: 'hit', start: 1000, duration: 480 });
+    const flash = at([blow]).tracks.find((track) => track.kind === 'flash');
+    expect(flash?.start).toBe(1000);
+    expect(flinch[0]?.start).toBeGreaterThanOrEqual(1000);
     expect(flinch[0]?.offset).toEqual({ from: { x: 0, y: 0 }, to: { x: 0, y: 0 } });
     // A push under it does not restart it; a push alone plays one through.
     const shove: GameEvent = { type: 'unitPushed', unitId: 'p0', to: { x: 0, y: 3 } };
@@ -834,6 +837,14 @@ describe('choreograph', () => {
     expect(ko?.alpha).toBeUndefined();
     const down = at([died]).health.find((h) => h.fallen);
     expect(down?.at).toBe((ko?.start ?? 0) + (ko?.duration ?? 0));
+
+    const lethalG = poses([{ ...blow, amount: 20 }, died], 1, loaded);
+    const lethalHit = lethalG.find((track) => track.clip === 'hit');
+    const lethalKo = lethalG.find((track) => track.clip === 'ko');
+    expect(lethalHit).toMatchObject({ start: 1000, duration: 480 });
+    expect(lethalKo?.start).toBe(1480);
+    expect(lethalKo?.start).toBeGreaterThan(lethalHit?.start ?? 0);
+    expect(at([{ ...blow, amount: 20 }, died]).health.find((h) => h.fallen)?.at).toBe(1480);
     // The thug, and Kaya before her sheet is in, keep the legacy knockout.
     for (const [event, clipsOf] of [
       [{ type: 'unitDied', unitId: 'e0' }, loaded],

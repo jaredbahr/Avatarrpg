@@ -232,6 +232,35 @@ describe('Animator', () => {
     expect([0, 40, 189, 190, 310, 390, 479].map((at) => renderedHitFrame(at))).toEqual([
       0, 1, 1, 2, 3, 4, 4,
     ]);
+
+    // The contact cel is already on screen when the impact flash lands, even
+    // when the reaction was pre-rolled by its stance cel.
+    const impactEvents: GameEvent[] = [
+      {
+        type: 'abilityUsed',
+        unitId: 'p0',
+        abilityId: 'fire_jab',
+        target: { x: 7, y: 4 },
+        tiles: [{ x: 7, y: 4 }],
+      },
+      { ...blow('p0', 'e0'), amount: 3 },
+    ];
+    const impact = choreograph({
+      content: CONTENT,
+      events: impactEvents,
+      unitsBefore: roster,
+      cursor: 0,
+      rate: 1,
+      pushIndex: 0,
+      clipsOf: (sprite) => (sprite === kaya ? kayaClips : undefined),
+    }).tracks.find((track) => track.kind === 'flash' && track.unitId === 'p0');
+    if (!impact) throw new Error('Expected G hit flash');
+    const impactAnimator = new Animator(CONTENT, {
+      motionReduced: () => false,
+      sheetClips: (sprite) => (sprite === kaya ? kayaClips : undefined),
+    });
+    impactAnimator.push(0, impactEvents, roster);
+    expect(renderedHitFrame(impact.start, impactAnimator)).toBe(1);
     expect(a.unitPose(100, 'e0', 'unit.enemy.thug')?.clip).toBe('hit');
     expect(a.unitPose(100, 'e0', 'unit.enemy.thug')?.frame).toBe(0);
     // The thug's sheet has no G knockout: the legacy pose, and nothing held.
