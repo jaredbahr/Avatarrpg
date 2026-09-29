@@ -97,6 +97,8 @@ export interface ShoveForecast {
   /** Surface contact caused by landing, including the damage/status chance. */
   readonly landingSurfaces: readonly SurfaceId[];
   readonly landingDamage: number;
+  /** Defense-ignoring damage from the largest tier drop across the footprint. */
+  readonly ledgeDropDamage: number;
   readonly landingStatuses: readonly { readonly id: StatusId; readonly chance: number }[];
 }
 
@@ -446,8 +448,13 @@ function landingInfo(
   content: ContentIndex,
   draft: BattleDraft,
   unit: Unit | undefined,
-): Pick<ShoveForecast, 'landingSurfaces' | 'landingDamage' | 'landingStatuses'> {
-  if (!unit) return { landingSurfaces: [], landingDamage: 0, landingStatuses: [] };
+): Pick<
+  ShoveForecast,
+  'landingSurfaces' | 'landingDamage' | 'ledgeDropDamage' | 'landingStatuses'
+> {
+  if (!unit) {
+    return { landingSurfaces: [], landingDamage: 0, ledgeDropDamage: 0, landingStatuses: [] };
+  }
 
   const surfaces: SurfaceId[] = [];
   const statuses: { id: StatusId; chance: number }[] = [];
@@ -459,7 +466,12 @@ function landingInfo(
     damage += contact.damage;
     if (contact.status) statuses.push({ id: contact.status, chance: contact.statusChance });
   }
-  return { landingSurfaces: surfaces, landingDamage: damage, landingStatuses: statuses };
+  return {
+    landingSurfaces: surfaces,
+    landingDamage: damage,
+    ledgeDropDamage: 0,
+    landingStatuses: statuses,
+  };
 }
 
 function shoveUnitForecast(
@@ -487,8 +499,16 @@ function shoveUnitForecast(
       ...landingInfo(content, draft, undefined),
     };
   }
+  const eventStart = draft.events.length;
   draft.shove(unitId, origin, distance, mode);
   const after = draft.unit(unitId) ?? before;
+  const ledgeDropDamage = draft.events
+    .slice(eventStart)
+    .reduce(
+      (total, event) =>
+        event.type === 'damaged' && event.cause === 'ledgeDrop' ? total + event.amount : total,
+      0,
+    );
   return {
     kind: 'unit',
     id: before.id,
@@ -506,6 +526,7 @@ function shoveUnitForecast(
       Math.max(Math.abs(after.pos.x - before.pos.x), Math.abs(after.pos.y - before.pos.y)) <
       distance,
     ...landingInfo(content, draft, after),
+    ledgeDropDamage,
   };
 }
 

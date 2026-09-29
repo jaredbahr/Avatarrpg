@@ -1289,6 +1289,7 @@ export class CombatScene implements Scene {
         (id) => this.app.content.surfaces.get(id)?.name ?? id,
       );
       if (shove.landingDamage > 0) landingEffects.push(`${shove.landingDamage} damage`);
+      if (shove.ledgeDropDamage > 0) landingEffects.push(`${shove.ledgeDropDamage} ledge damage`);
       for (const status of shove.landingStatuses) {
         const name = this.app.content.statuses.get(status.id)?.name ?? status.id;
         landingEffects.push(

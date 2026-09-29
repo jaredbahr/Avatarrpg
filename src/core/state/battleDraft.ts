@@ -32,7 +32,6 @@ import type {
 import {
   DIRECTIONS,
   distance,
-  enterCost,
   inBounds,
   occupiedCells,
   occupancy,
@@ -211,7 +210,12 @@ export class BattleDraft {
     amount: number,
     damageType: DamageType,
     sourceId: string | null,
-    options: { crit?: boolean; applyMultiplier?: boolean } = {},
+    options: {
+      crit?: boolean;
+      applyMultiplier?: boolean;
+      minHp?: number;
+      cause?: 'ledgeDrop';
+    } = {},
   ): void {
     const unit = this.unit(unitId);
     if (!unit || !isAlive(unit)) return;
@@ -222,7 +226,7 @@ export class BattleDraft {
     const final = Math.max(0, Math.round(scaled));
     if (final <= 0) return;
 
-    const hp = clampHp(unit.hp - final, unit.base.maxHp);
+    const hp = Math.max(options.minHp ?? 0, clampHp(unit.hp - final, unit.base.maxHp));
     this.replace({ ...unit, hp });
     this.emit({
       type: 'damaged',
@@ -231,6 +235,7 @@ export class BattleDraft {
       crit: options.crit ?? false,
       damageType,
       sourceId,
+      ...(options.cause ? { cause: options.cause } : {}),
     });
 
     if (hp <= 0) this.emit({ type: 'unitDied', unitId });
@@ -390,10 +395,35 @@ export class BattleDraft {
       if (!inBounds(this.grid, next)) break;
       // Pulling past the origin would look absurd; stop when adjacent.
       if (mode === 'pull' && distance(next, origin) === 0) break;
-      if (enterCost(ctx, current, next) === null) break;
+      if (!this.canShoveStep(ctx, current, next)) break;
       current = next;
     }
     return current;
+  }
+
+  /** Forced movement can fall down a cliff, but cannot push a unit up onto a ledge. */
+  private canShoveStep(ctx: MoveContext, from: Vec2, to: Vec2): boolean {
+    if (standCost(ctx, to) === null) return false;
+    const width = ctx.size === 2 ? 2 : 1;
+    for (let dx = 0; dx < width; dx++) {
+      const fromTile = tileAt(this.grid, { x: from.x + dx, y: from.y });
+      const toTile = tileAt(this.grid, { x: to.x + dx, y: to.y });
+      if (!fromTile || !toTile || toTile.elevation > fromTile.elevation) return false;
+    }
+    return true;
+  }
+
+  /** Largest elevation loss across the unit footprint for this forced step. */
+  private ledgeDrop(from: Unit, to: Unit): number {
+    let largest = 0;
+    const fromCells = occupiedCells(from);
+    const toCells = occupiedCells(to);
+    for (let index = 0; index < fromCells.length; index++) {
+      const before = tileAt(this.grid, fromCells[index]);
+      const after = tileAt(this.grid, toCells[index]);
+      if (before && after) largest = Math.max(largest, before.elevation - after.elevation);
+    }
+    return largest;
   }
 
   shove(unitId: string, origin: Vec2, tiles: number, mode: 'push' | 'pull'): void {
@@ -402,7 +432,15 @@ export class BattleDraft {
 
     const current = this.slideFrom(this.moveContext(unit), unit.pos, origin, tiles, mode);
     if (samePos(current, unit.pos)) return;
+    const moved = { ...unit, pos: current };
     this.placeUnit(unitId, current);
+    const drop = this.ledgeDrop(unit, moved);
+    if (drop > 0) {
+      this.dealDamage(unitId, drop * this.content.tuning.ledgeDropDamage, 'pure', null, {
+        minHp: 1,
+        cause: 'ledgeDrop',
+      });
+    }
     this.emit({ type: 'unitPushed', unitId, to: current });
   }
 

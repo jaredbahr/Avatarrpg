@@ -1277,6 +1277,7 @@ export type GameEvent =
       readonly crit: boolean;
       readonly damageType: DamageType;
       readonly sourceId: string | null;
+      readonly cause?: 'ledgeDrop';
     }
   | { readonly type: 'healed'; readonly unitId: string; readonly amount: number }
   | {
@@ -1401,6 +1402,8 @@ export interface CombatTuning {
   readonly climbCost: number;
   /** Extra range for range-three-plus line-of-sight abilities from higher ground. */
   readonly heightReachBonus: number;
+  /** Defense-ignoring damage dealt per tier when forced movement drops a unit. */
+  readonly ledgeDropDamage: number;
   /** Hit chance is clamped into this band, lowest bound first. */
   readonly hitChanceMin: number;
   readonly hitChanceMax: number;

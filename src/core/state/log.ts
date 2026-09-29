@@ -47,6 +47,8 @@ export function describeEvent(
 
     case 'damaged': {
       const target = nameOf(units, event.unitId);
+      if (event.cause === 'ledgeDrop')
+        return `${target} fell from the ledge for ${event.amount} damage.`;
       const crit = event.crit ? ' Critical hit!' : '';
       if (!event.sourceId) return `${target} takes ${event.amount} damage.${crit}`;
       return `${nameOf(units, event.sourceId)} hits ${target} for ${event.amount}.${crit}`;
