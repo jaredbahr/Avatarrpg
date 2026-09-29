@@ -42,19 +42,14 @@ import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { AMBUSH_ROAD, QUARRY_FLOOR } from '../../src/content/maps/combat';
 import { CUTTING_POOL_PATCH, CUTTING_WATER_CELLS } from '../../src/content/scenes/quarryProjected';
 import type { MapDef, Vec2 } from '../../src/core/types';
-import { newImage, parseHex, setPixel } from './lib/image';
+import { newImage, setPixel } from './lib/image';
 import type { Image } from './lib/image';
 import { tileNoise } from '../../src/render/painters/shapes';
 import { alphaBounds, crop } from './lib/trim';
 import { encodeWebp } from './lib/webp';
 import { spillDepth, spillWins } from './forest-rubble';
 import { packShoreline } from './forest-shoreline';
-import {
-  heapFits,
-  loadQuarryMaterial,
-  QUARRY_GROUND_QUALITY,
-  QUARRY_GROUND_TONES,
-} from './quarry-village-material';
+import { heapFits, loadQuarryMaterial, QUARRY_GROUND_QUALITY } from './quarry-village-material';
 import { ROCK_COURSE, rockPainter } from './quarry-rock';
 import { cuttingRaised } from './cutting-rock';
 import type { QuarryMaterial, QuarryTone, Rgb } from './quarry-village-material';
