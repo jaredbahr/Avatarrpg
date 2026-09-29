@@ -3,7 +3,7 @@ import { describe, expect, it } from 'vitest';
 import type { Ability, ContentIndex, GameEvent, Unit } from '../../core/types';
 import { resolveFx } from '../../content/fx';
 import type { SheetClips } from '../../render/sheets/store';
-import { TIMING, TURN_AFTER_ROUND, choreograph, hitSpan, knockoutSpan } from './choreography';
+import { TIMING, choreograph, hitSpan, knockoutSpan } from './choreography';
 import { attackMotion } from './attackMotion';
 import { enemyScale } from './actorScale';
 import { Timeline } from './timeline';
@@ -1055,14 +1055,14 @@ describe('feel pass: every table beat is heard, and dust never holds the turn', 
     expect(still.tracks.some((t) => t.kind === 'shake')).toBe(false);
   });
 
-  it('says whose turn it is: a chime and a ring for the party, a knock for a foe, after the gong', () => {
+  it('says whose turn it is: a chime and a ring for the party, a knock for a foe, with the gong', () => {
     const { sounds, tracks, cursor } = play([
       { type: 'roundStarted', round: 2 },
       { type: 'turnStarted', unitId: 'p0', round: 2 },
     ]);
     expect(sounds.map((s) => [s.key, s.at])).toEqual([
       ['round', 1000],
-      ['turn', 1000 + TURN_AFTER_ROUND],
+      ['turn', 1000],
     ]);
     const ring = tracks.filter((t): t is EmitterTrack => t.kind === 'emitter');
     expect(ring.length).toBeGreaterThan(0);
@@ -1095,11 +1095,11 @@ describe('feel pass: every table beat is heard, and dust never holds the turn', 
     expect(ring.trailing).toBe(true);
     expect(ring.start).toBeLessThanOrEqual(timeline.finishesAt);
 
-    // The chime still beats the AI's turn, so a foe's action never pre-empts
-    // the sound that says whose turn it is.
+    // The chime sounds no later than input opens, so no tap or foe's action
+    // pre-empts the sound that says whose turn it is.
     const turn = sounds.find((s) => s.key === 'turn');
     if (!turn) throw new Error('expected a turn chime');
-    expect(turn.at).toBeLessThanOrEqual(timeline.finishesAt + 260);
+    expect(turn.at).toBeLessThanOrEqual(timeline.finishesAt);
   });
 
   it('gives statuses, surfaces and the end of a fight a voice', () => {
