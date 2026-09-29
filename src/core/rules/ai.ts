@@ -303,31 +303,63 @@ function preWallTargets(
   battle: BattleState,
   caster: Unit,
   enemies: readonly Unit[],
+  aims: readonly Vec2[],
   cache: WallTargetCache,
 ): readonly Unit[] {
   const key = `targets|${caster.id}|${posKey(caster.pos)}`;
   const cached = cache.get(key);
   if (cached) return cached;
-  const targets = enemies.filter((enemy) => canHitFrom(content, battle, caster, enemy));
+  const targets = enemies.filter((enemy) => canHitFrom(content, battle, caster, enemy, aims));
   cache.set(key, targets);
   return targets;
 }
 
 /**
+ * The aims a stranding check may test: the same candidate tiles the planner
+ * scores (`candidateTargets`), plus every cell an enemy occupies. A size-1
+ * enemy's cell is already among the candidates; a size-2 unit's far cell only
+ * joins the ring when the caster has an area shape, and it is a legal direct
+ * aim either way.
+ */
+function strandingAims(draft: BattleDraft, caster: Unit, enemies: readonly Unit[]): Vec2[] {
+  const aims = candidateTargets(draft, caster, usableAbilities(draft.content, caster));
+  const seen = new Set(aims.map(posKey));
+  for (const enemy of enemies) {
+    for (const cell of occupiedCells(enemy)) {
+      const key = posKey(cell);
+      if (seen.has(key)) continue;
+      seen.add(key);
+      aims.push(cell);
+    }
+  }
+  return aims;
+}
+
+/**
  * Can the caster turn a usable offensive ability onto `enemy` from where it
- * stands? Every occupied cell is a legal aim, as in `candidateTargets`, so a
- * size-2 enemy whose anchor is hidden is still a target through its other cell.
+ * stands?
+ *
+ * An enemy counts as hittable when any legal aim's `affectedTiles` cover one of
+ * its occupied cells, not only when an occupied cell is itself a legal aim. An
+ * area ability can be aimed beside a target — a blast centred next to an enemy
+ * still catches it — so the check walks the same candidate aims the planner
+ * hands `bestActionFrom` rather than a hand-rolled rule.
  */
 function canHitFrom(
   content: ContentIndex,
   battle: BattleState,
   caster: Unit,
   enemy: Unit,
+  aims: readonly Vec2[],
 ): boolean {
-  const cells = occupiedCells(enemy);
+  const cells = new Set(occupiedCells(enemy).map(posKey));
   for (const ability of usableAbilities(content, caster)) {
     if (!isOffensiveAbility(content, ability)) continue;
-    if (cells.some((cell) => isValidTarget(content, battle, caster, ability, cell).ok)) return true;
+    for (const aim of aims) {
+      if (!isValidTarget(content, battle, caster, ability, aim).ok) continue;
+      const affected = affectedTiles(content, battle.grid, caster, ability, aim);
+      if (affected.some((tile) => cells.has(posKey(tile)))) return true;
+    }
   }
   return false;
 }
@@ -417,7 +449,8 @@ export function wallStrandsCaster(
   const enemies = opponentsOf(draft, caster);
   if (enemies.length === 0) return false;
 
-  const targets = preWallTargets(content, before, caster, enemies, cache);
+  const aims = strandingAims(draft, caster, enemies);
+  const targets = preWallTargets(content, before, caster, enemies, aims, cache);
 
   // With no ready shot before the wall, the placement costs the caster no
   // target and therefore cannot strand it. Future-turn opportunity is outside
@@ -427,7 +460,7 @@ export function wallStrandsCaster(
   // The world exactly as the placement would leave it.
   const after: BattleState = { ...before, grid: gridWithWall(draft, raised) };
   // Still a shot at something it could hit before the wall? Then it costs nothing.
-  if (targets.some((enemy) => canHitFrom(content, after, caster, enemy))) return false;
+  if (targets.some((enemy) => canHitFrom(content, after, caster, enemy, aims))) return false;
 
   // A wall that shuts down a next-turn direct attack is doing its job.
   for (const enemy of preWallThreats(content, before, caster, enemies, cache)) {
