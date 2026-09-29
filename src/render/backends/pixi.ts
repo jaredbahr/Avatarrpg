@@ -617,6 +617,7 @@ export class PixiBackend implements RenderBackend {
     this.drawPath(view);
     this.drawDecor(view);
     this.drawUnits(view, camera);
+    this.drawScreenCues(view, camera);
     const bendFx = view.bendFx ?? [];
     const bendTexture = (sprite: BendFxSprite) => {
       const source = bendFxSource(sprite);
@@ -1544,17 +1545,18 @@ export class PixiBackend implements RenderBackend {
         color: OVERLAY.hover,
       });
     }
-    this.drawElevationCues(view);
+    this.drawCliffCues(view);
   }
 
-  private drawElevationCues(view: MapView): void {
+  private drawCliffCues(view: MapView): void {
     const g = this.overlayGfx;
     const hatch = TILE * 0.12;
     for (const edge of view.cliffEdges ?? []) {
+      const horizontal = edge.side === 'north' || edge.side === 'south';
       const x = edge.pos.x * TILE + (edge.side === 'east' ? TILE : 0);
       const y = edge.pos.y * TILE + (edge.side === 'south' ? TILE : 0);
       for (let step = 0.1; step < 1; step += 0.2) {
-        if (edge.side === 'south') {
+        if (horizontal) {
           g.moveTo(x + TILE * step - hatch, y - hatch).lineTo(x + TILE * step + hatch, y + hatch);
         } else {
           g.moveTo(x - hatch, y + TILE * step - hatch).lineTo(x + hatch, y + TILE * step + hatch);
@@ -1562,63 +1564,72 @@ export class PixiBackend implements RenderBackend {
       }
     }
     g.stroke({ width: Math.max(2, TILE * 0.045), color: OVERLAY.cliffHatch });
+  }
 
+  /** Upright overlay marks in the labels layer, projected but never ground-skewed. */
+  private drawScreenCues(view: MapView, camera: Camera): void {
+    const g = this.fxGfx;
+    const projectedBox = (pos: Vec2, footprint = 1) => {
+      const box = camera.spriteBox(pos, footprint);
+      return {
+        x: (box.x + camera.offsetX) / camera.scale,
+        y: (box.y + camera.offsetY) / camera.scale,
+      };
+    };
     for (const marker of view.climbMarkers ?? []) {
-      const cx = marker.pos.x * TILE + TILE * 0.72;
-      const cy = marker.pos.y * TILE + TILE * 0.27;
-      g.poly(
-        [
-          cx - TILE * 0.11,
-          cy + TILE * 0.08,
-          cx,
-          cy - TILE * 0.1,
-          cx + TILE * 0.11,
-          cy + TILE * 0.08,
-        ],
-        true,
-      ).fill({ color: OVERLAY.climb });
+      const box = projectedBox(marker.pos);
+      const cx = box.x + TILE * 0.72;
+      const cy = box.y - liftAt(view.grid, marker.pos, camera.projection) * TILE + TILE * 0.2;
+      const arrow = [
+        cx - TILE * 0.1,
+        cy + TILE * 0.07,
+        cx,
+        cy - TILE * 0.1,
+        cx + TILE * 0.1,
+        cy + TILE * 0.07,
+      ];
+      g.poly(arrow, true)
+        .fill({ color: OVERLAY.climb })
+        .stroke({
+          width: Math.max(3 / camera.scale, TILE * 0.065),
+          color: OVERLAY.pathUnder,
+        });
       this.drawSmallDigit(g, marker.cost, cx + TILE * 0.15, cy, TILE * 0.07);
     }
 
     const cue = view.targetReticle;
     if (!cue) return;
-    const cx = cue.pos.x * TILE + TILE * 0.5;
-    const cy = cue.pos.y * TILE + TILE * 0.2;
-    if (cue.elevation === 'above') {
+    const target = view.units.find((unit) => unit.pos.x === cue.pos.x && unit.pos.y === cue.pos.y);
+    const pos = target?.renderPos ?? target?.pos ?? cue.pos;
+    const box = projectedBox(pos, target?.size ?? 1);
+    const cx = box.x + (target?.size ?? 1) * TILE + TILE * 0.12;
+    const cy = box.y - liftAlong(view.grid, pos, camera.projection) * TILE - TILE * 0.04;
+    const outline = Math.max(3 / camera.scale, TILE * 0.065);
+    if (cue.elevation) {
+      const direction = cue.elevation === 'above' ? -1 : 1;
       g.poly(
         [
           cx - TILE * 0.13,
-          cy + TILE * 0.08,
+          cy - direction * TILE * 0.08,
           cx,
-          cy - TILE * 0.13,
+          cy + direction * TILE * 0.13,
           cx + TILE * 0.13,
-          cy + TILE * 0.08,
+          cy - direction * TILE * 0.08,
         ],
         true,
-      ).fill({ color: OVERLAY.reticleCue });
-    } else if (cue.elevation === 'below') {
-      g.poly(
-        [
-          cx - TILE * 0.13,
-          cy - TILE * 0.08,
-          cx + TILE * 0.13,
-          cy - TILE * 0.08,
-          cx,
-          cy + TILE * 0.13,
-        ],
-        true,
-      ).fill({ color: OVERLAY.reticleCue });
+      )
+        .fill({ color: OVERLAY.reticleCue })
+        .stroke({ width: outline, color: OVERLAY.pathUnder });
     }
     if (cue.obscured) {
-      const cloudX = cx + TILE * 0.24;
+      const cloudX = cx + TILE * 0.27;
       const cloudY = cy;
       g.circle(cloudX - TILE * 0.06, cloudY, TILE * 0.075)
         .circle(cloudX + TILE * 0.03, cloudY - TILE * 0.025, TILE * 0.095)
         .circle(cloudX + TILE * 0.12, cloudY, TILE * 0.065)
-        .fill({ color: OVERLAY.reticleCue });
-      g.rect(cloudX - TILE * 0.12, cloudY, TILE * 0.25, TILE * 0.07).fill({
-        color: OVERLAY.reticleCue,
-      });
+        .rect(cloudX - TILE * 0.12, cloudY, TILE * 0.25, TILE * 0.07)
+        .fill({ color: OVERLAY.reticleCue })
+        .stroke({ width: outline, color: OVERLAY.pathUnder });
     }
   }
 
@@ -1648,10 +1659,15 @@ export class PixiBackend implements RenderBackend {
       [x + unit, y + unit, x + unit, y + unit * 2],
       [x, y + unit * 2, x + unit, y + unit * 2],
     ];
-    for (const index of active) {
-      const line = lines[index];
-      if (line) g.moveTo(line[0], line[1]).lineTo(line[2], line[3]);
-    }
+    const trace = () => {
+      for (const index of active) {
+        const line = lines[index];
+        if (line) g.moveTo(line[0], line[1]).lineTo(line[2], line[3]);
+      }
+    };
+    trace();
+    g.stroke({ width: Math.max(3, unit * 0.75), color: OVERLAY.pathUnder, cap: 'round' });
+    trace();
     g.stroke({ width: Math.max(2, unit * 0.28), color: OVERLAY.climb, cap: 'round' });
   }
 

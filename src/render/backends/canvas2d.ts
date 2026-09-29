@@ -348,6 +348,7 @@ export class Canvas2DBackend implements RenderBackend {
         })),
       ].sort((a, b) => camera.groundPoint(a.pos).y - camera.groundPoint(b.pos).y);
       for (const occupant of occupants) occupant.draw();
+      this.drawScreenCues(view, camera);
       this.drawFlock(view, camera);
       drawBendFx(ctx, view.bendFx ?? [], camera, true);
       ctx.save();
@@ -369,6 +370,7 @@ export class Canvas2DBackend implements RenderBackend {
       this.drawNpcs(view, camera);
       this.drawProps(view, camera);
       this.drawUnits(view, camera);
+      this.drawScreenCues(view, camera);
       drawBendFx(ctx, view.bendFx ?? [], camera, true);
       this.drawFxLayer(view, camera, 'over');
     }
@@ -741,10 +743,10 @@ export class Canvas2DBackend implements RenderBackend {
         ctx.restore();
       }
     }
-    this.drawElevationCues(view, camera);
+    this.drawCliffCues(view, camera);
   }
 
-  private drawElevationCues(view: MapView, camera: Camera): void {
+  private drawCliffCues(view: MapView, camera: Camera): void {
     const ctx = this.ctx;
     const size = camera.toScreen({ x: 0, y: 0 }).size;
     ctx.save();
@@ -752,9 +754,9 @@ export class Canvas2DBackend implements RenderBackend {
     ctx.lineWidth = Math.max(2, size * 0.045);
     for (const edge of view.cliffEdges ?? []) {
       const box = camera.toScreen(edge.pos);
-      const horizontal = edge.side === 'south';
-      const x = horizontal ? box.x : box.x + box.size;
-      const y = horizontal ? box.y + box.size : box.y;
+      const horizontal = edge.side === 'north' || edge.side === 'south';
+      const x = horizontal ? box.x : box.x + (edge.side === 'east' ? box.size : 0);
+      const y = horizontal ? box.y + (edge.side === 'south' ? box.size : 0) : box.y;
       ctx.beginPath();
       for (let step = 0.1; step < 1; step += 0.2) {
         if (horizontal) {
@@ -768,36 +770,72 @@ export class Canvas2DBackend implements RenderBackend {
       ctx.stroke();
     }
 
-    ctx.fillStyle = OVERLAY.climb;
-    ctx.textAlign = 'center';
-    ctx.textBaseline = 'middle';
+    ctx.restore();
+  }
+
+  /** Upright overlay marks: projected anchors, but no oblique ground transform. */
+  private drawScreenCues(view: MapView, camera: Camera): void {
+    const ctx = this.ctx;
+    const size = camera.toScreen({ x: 0, y: 0 }).size;
+    ctx.save();
+    ctx.lineJoin = 'round';
+    ctx.lineCap = 'round';
     for (const marker of view.climbMarkers ?? []) {
       const box = camera.toScreen(marker.pos);
       const cx = box.x + box.size * 0.72;
-      const cy = box.y + box.size * 0.25;
+      const cy =
+        box.y - liftAt(view.grid, marker.pos, camera.projection) * box.size + box.size * 0.2;
+      ctx.beginPath();
+      ctx.moveTo(cx - size * 0.1, cy + size * 0.07);
+      ctx.lineTo(cx, cy - size * 0.1);
+      ctx.lineTo(cx + size * 0.1, cy + size * 0.07);
+      ctx.closePath();
+      ctx.fillStyle = OVERLAY.climb;
+      ctx.strokeStyle = OVERLAY.pathUnder;
+      ctx.lineWidth = Math.max(3, size * 0.065);
+      ctx.stroke();
+      ctx.fill();
       ctx.font = `600 ${Math.max(10, size * 0.2)}px sans-serif`;
-      ctx.fillText(`▲${marker.cost}`, cx, cy);
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      ctx.lineWidth = Math.max(2, size * 0.045);
+      ctx.strokeText(String(marker.cost), cx + size * 0.15, cy);
+      ctx.fillText(String(marker.cost), cx + size * 0.15, cy);
     }
 
     const cue = view.targetReticle;
     if (cue) {
-      const box = camera.toScreen(cue.pos);
-      ctx.font = `700 ${Math.max(14, size * 0.28)}px sans-serif`;
-      if (cue.elevation)
-        ctx.fillText(
-          cue.elevation === 'above' ? '▲' : '▼',
-          box.x + box.size * 0.5,
-          box.y + box.size * 0.2,
-        );
+      const target = view.units.find(
+        (unit) => unit.pos.x === cue.pos.x && unit.pos.y === cue.pos.y,
+      );
+      const pos = target?.renderPos ?? target?.pos ?? cue.pos;
+      const box = camera.spriteBox(pos, target?.size ?? 1);
+      const width = (target?.size ?? 1) * box.size;
+      const cx = box.x + width + box.size * 0.12;
+      const cy = box.y - liftAlong(view.grid, pos, camera.projection) * box.size - box.size * 0.04;
+      ctx.fillStyle = OVERLAY.reticleCue;
+      ctx.strokeStyle = OVERLAY.pathUnder;
+      ctx.lineWidth = Math.max(3, size * 0.065);
+      if (cue.elevation) {
+        const direction = cue.elevation === 'above' ? -1 : 1;
+        ctx.beginPath();
+        ctx.moveTo(cx - size * 0.13, cy - direction * size * 0.08);
+        ctx.lineTo(cx, cy + direction * size * 0.13);
+        ctx.lineTo(cx + size * 0.13, cy - direction * size * 0.08);
+        ctx.closePath();
+        ctx.stroke();
+        ctx.fill();
+      }
       if (cue.obscured) {
-        const x = box.x + box.size * 0.76;
-        const y = box.y + box.size * 0.25;
+        const x = cx + size * 0.27;
+        const y = cy;
         ctx.beginPath();
         ctx.arc(x - size * 0.06, y, size * 0.07, Math.PI, 0);
         ctx.arc(x + size * 0.04, y - size * 0.015, size * 0.09, Math.PI, 0);
         ctx.lineTo(x + size * 0.12, y + size * 0.06);
         ctx.lineTo(x - size * 0.13, y + size * 0.06);
         ctx.closePath();
+        ctx.stroke();
         ctx.fill();
       }
     }

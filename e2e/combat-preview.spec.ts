@@ -144,7 +144,8 @@ for (const renderer of ['canvas', 'webgl'] as const) {
       app.state = { ...state, battle: { ...battle, grid: { ...battle.grid, tiles } } };
       app.resync();
     });
-    await page.getByRole('button', { name: /^Fire Jab/ }).click();
+    // Cancelling a confirmation returns to the active aim, so choose the new
+    // fixture target directly; clicking Fire Jab again would toggle aim off.
     await tapTile({ x: 4, y: 2 });
     const lowerReticle = await page.evaluate(() => {
       const scene = (

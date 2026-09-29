@@ -107,7 +107,8 @@ export interface ClimbMarker {
 
 export interface CliffEdge {
   readonly pos: Vec2;
-  readonly side: 'east' | 'south';
+  /** Edge of the higher tile: the hatch belongs on the lip, never at the foot of the slab. */
+  readonly side: 'north' | 'east' | 'south' | 'west';
 }
 
 export interface TargetReticleCue {
@@ -126,9 +127,17 @@ export function cliffEdgesFor(grid: Grid): CliffEdge[] {
       const east = tileAt(grid, { x: x + 1, y });
       const south = tileAt(grid, { x, y: y + 1 });
       if (east && Math.abs(here.elevation - east.elevation) >= 2)
-        edges.push({ pos: { x, y }, side: 'east' });
+        edges.push(
+          here.elevation > east.elevation
+            ? { pos: { x, y }, side: 'east' }
+            : { pos: { x: x + 1, y }, side: 'west' },
+        );
       if (south && Math.abs(here.elevation - south.elevation) >= 2)
-        edges.push({ pos: { x, y }, side: 'south' });
+        edges.push(
+          here.elevation > south.elevation
+            ? { pos: { x, y }, side: 'south' }
+            : { pos: { x, y: y + 1 }, side: 'north' },
+        );
     }
   }
   return edges;

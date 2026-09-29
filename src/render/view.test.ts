@@ -58,7 +58,7 @@ describe('cliff edge presentation', () => {
     const grid: Grid = { width: 3, height: 3, tiles };
 
     expect(cliffEdgesFor(grid)).toEqual([
-      { pos: { x: 1, y: 1 }, side: 'east' },
+      { pos: { x: 2, y: 1 }, side: 'west' },
       { pos: { x: 2, y: 1 }, side: 'south' },
     ]);
   });
