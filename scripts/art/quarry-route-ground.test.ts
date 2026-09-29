@@ -382,10 +382,10 @@ it('ships the plates the packers build, inside the registered page', async () =>
  * budget, so its pins live here rather than as a `bytes` field on each region.
  */
 const QUARRY_GATE_GROUND_BYTES = [
-  { name: 'earth-west', bytes: 55_350 },
-  { name: 'earth-east', bytes: 51_038 },
+  { name: 'earth-west', bytes: 46_294 },
+  { name: 'earth-east', bytes: 46_054 },
   { name: 'road', bytes: 18_076 },
-  { name: 'limestone', bytes: 20_936 },
+  { name: 'limestone', bytes: 33_794 },
 ] as const;
 
 it('pins a size for every gate page', () => {

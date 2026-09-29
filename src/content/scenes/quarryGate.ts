@@ -4,10 +4,10 @@ import { QUARRY_WEST_FRAMES } from './quarryWestFrames';
 
 const root = 'art/maps/quarry-gate-scene/';
 export const QUARRY_GATE_GROUND_REGIONS = [
-  { name: 'earth-west', x: -1, y: -2, width: 1410, height: 708 },
-  { name: 'earth-east', x: 639, y: 318, width: 1410, height: 708 },
+  { name: 'earth-west', x: 191, y: 94, width: 1218, height: 612 },
+  { name: 'earth-east', x: 639, y: 318, width: 1282, height: 644 },
   { name: 'road', x: 319, y: 158, width: 1410, height: 708 },
-  { name: 'limestone', x: 191, y: 94, width: 1730, height: 868 },
+  { name: 'limestone', x: -1, y: -2, width: 2050, height: 1028 },
 ] as const;
 export const QUARRY_GATE_COVER_CELLS: readonly Vec2[] = [
   { x: 13, y: 2 },
