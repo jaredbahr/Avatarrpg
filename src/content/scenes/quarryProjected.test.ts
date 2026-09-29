@@ -10,7 +10,9 @@ import {
   CUTTING_RUBBLE_CELLS,
   CUTTING_SCENE,
   CUTTING_WATER_CELLS,
-  DRILLER_FLOOR_EXTERIOR_RIM,
+  DRILLER_BAND_ROWS,
+  DRILLER_HEADFRAME,
+  DRILLER_HEADFRAME_LINE,
   DRILLER_FLOOR_SCENE,
   DRILLER_RUBBLE_CELLS,
   DRILLER_FLOOR_WALL_CELLS,
@@ -169,10 +171,13 @@ describe('projected quarry scenes', () => {
   });
 
   it('stands the route heap on every cover cell and lays the pool over every water cell', () => {
-    const cells = (map: typeof AMBUSH_ROAD, key: string) =>
-      map.rows.flatMap((row, y) => [...row].flatMap((v, x) => (v === key ? [{ x, y }] : [])));
+    const cells = (map: typeof AMBUSH_ROAD, ...keys: string[]) =>
+      map.rows.flatMap((row, y) =>
+        [...row].flatMap((v, x) => (keys.includes(v) ? [{ x, y }] : [])),
+      );
     expect(CUTTING_RUBBLE_CELLS).toEqual(cells(AMBUSH_ROAD, 'r'));
-    expect(DRILLER_RUBBLE_CELLS).toEqual(cells(QUARRY_FLOOR, 'r'));
+    // The Driller's include the two heaps lifted onto each bench (`R`).
+    expect(DRILLER_RUBBLE_CELLS).toEqual(cells(QUARRY_FLOOR, 'r', 'R'));
     expect(CUTTING_WATER_CELLS).toEqual(cells(AMBUSH_ROAD, '~'));
     for (const [scene, heaps] of [
       [CUTTING_SCENE, CUTTING_RUBBLE_CELLS],
@@ -234,10 +239,17 @@ describe('projected quarry scenes', () => {
     expect(DRILLER_FLOOR_SCENE.ground.slice(2).map((piece) => piece.url)).toEqual([
       'art/maps/driller-floor-scene/dirt-west.webp',
       'art/maps/driller-floor-scene/dirt-east.webp',
+      'art/maps/driller-floor-scene/road.webp',
       'art/maps/driller-floor-scene/stone.webp',
+      'art/maps/driller-floor-scene/shaft.webp',
+      'art/maps/driller-floor-scene/gantry-2-1.webp',
+      'art/maps/driller-floor-scene/gantry-17-1.webp',
+      'art/maps/driller-floor-scene/gantry-2-10.webp',
+      'art/maps/driller-floor-scene/gantry-17-10.webp',
       ...DRILLER_RUBBLE_CELLS.map(rubbleHeapUrl),
     ]);
-    expect(DRILLER_FLOOR_SCENE.scenery).toHaveLength(3 + DRILLER_FLOOR_EXTERIOR_RIM.length);
+    // Two stacks, the rear stub, the two cribbed bands and the headframe.
+    expect(DRILLER_FLOOR_SCENE.scenery).toHaveLength(6);
     expect(DRILLER_FLOOR_SCENE.scenery.slice(0, 2).map((piece) => piece.footprint[0])).toEqual(
       DRILLER_FLOOR_WALL_CELLS,
     );
@@ -281,7 +293,45 @@ describe('projected quarry scenes', () => {
         exterior: true,
       },
     ]);
-    expect(DRILLER_FLOOR_SCENE.scenery.slice(3)).toEqual(DRILLER_FLOOR_EXTERIOR_RIM);
     expect(DRILLER_FLOOR_SCENE.paintedWater).toBeUndefined();
+  });
+
+  it('dresses the Driller floor’s declared bands off the playable diamond (M6)', () => {
+    // West: the gate's cribbed spoil bank either side of the haul-road mouth.
+    const west = (QUARRY_FLOOR.edges ?? []).filter((edge) => edge.side === 'west');
+    expect(west.map(({ span }) => span[0])).toEqual([...DRILLER_BAND_ROWS]);
+    for (const top of DRILLER_BAND_ROWS) {
+      const bank = DRILLER_FLOOR_SCENE.scenery.find((p) => p.id === `driller-cribbing-${top}`);
+      if (!bank) throw new Error(`no cribbing at ${top}`);
+      expect(bank.footprint).toEqual([
+        { x: -1, y: top },
+        { x: -1, y: top + 1 },
+      ]);
+      // Its base runs down its two rows of the x=0 edge exactly.
+      expect({ x: bank.x, right: bank.x + bank.width }).toEqual({
+        x: point(0, top + 2).x,
+        right: point(0, top).x,
+      });
+    }
+    // East: the headframe stands beyond the shaft, centred on its four rows,
+    // with its mirrored base on the x = LINE edge, so the mouth stays in view.
+    const shaftRows = [4, 5, 6, 7].filter((y) => QUARRY_FLOOR.rows[y]?.slice(18) === 'PP');
+    expect(shaftRows).toEqual([4, 5, 6, 7]);
+    expect(DRILLER_FLOOR_SCENE.scenery).toContain(DRILLER_HEADFRAME);
+    expect(DRILLER_HEADFRAME.flip).toBe(true);
+    expect(DRILLER_HEADFRAME.x + DRILLER_HEADFRAME.width / 2).toBe(
+      point(DRILLER_HEADFRAME_LINE, 6).x,
+    );
+    const foot = point(DRILLER_HEADFRAME_LINE, 6 + DRILLER_HEADFRAME.width / 2 / 64);
+    expect(DRILLER_HEADFRAME.x).toBe(foot.x);
+    expect(DRILLER_HEADFRAME.y + 298).toBe(foot.y + 4);
+    for (const piece of DRILLER_FLOOR_SCENE.scenery.slice(3)) {
+      expect(piece.exterior).toBe(true);
+      for (const cell of piece.footprint)
+        expect(
+          cell.x < 0 || cell.y < 0 || cell.x >= QUARRY_FLOOR.width,
+          `${piece.id} is off the board`,
+        ).toBe(true);
+    }
   });
 });

@@ -102,3 +102,28 @@ export const DRILLER_FLOOR_EXTERIOR_RIM = [
     exterior: true,
   },
 ] as const satisfies readonly ExteriorRimSource[];
+
+/**
+ * West edge band: a spoil bank held back by timber cribbing. The span is the
+ * cribbed stretch of the Driller floor's approved rear-rim panel, which the
+ * connected quarry surround replaced there, mirrored (ADR 0058) so its long
+ * side runs down the x=0 edge; its measured base (a 1:2 slope) stands on that
+ * edge, rows `top`..`top + 1`, so no alpha lands on a playable cell. The Quarry
+ * Gate and the Driller floor both band their west road mouth with it.
+ */
+export const quarryCribbing = (prefix: string, top: number): SceneScenery => ({
+  id: `${prefix}-cribbing-${top}`,
+  url: 'art/maps/driller-floor-scene/exterior-rim.webp',
+  sourceRect: { x: 110, y: 186, width: 128, height: 206 },
+  x: 768 - (top + 2) * 64,
+  y: (top + 2) * 32 - 204,
+  width: 128,
+  height: 206,
+  flip: true,
+  footprint: [
+    { x: -1, y: top },
+    { x: -1, y: top + 1 },
+  ],
+  depth: { x: -0.5, y: top + 1 },
+  exterior: true,
+});

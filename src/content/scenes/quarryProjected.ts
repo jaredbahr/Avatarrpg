@@ -1,7 +1,11 @@
 import type { MapScene, SceneScenery, Vec2 } from '../../core/types';
 import { rubbleHeap } from './forestRoad';
-import { CUTTING_EXTERIOR_RIM, DRILLER_FLOOR_EXTERIOR_RIM } from './quarryExteriorRims';
-import { CUTTING_GROUND_REGIONS, DRILLER_GROUND_REGIONS } from './quarryRouteGround';
+import { CUTTING_EXTERIOR_RIM, quarryCribbing } from './quarryExteriorRims';
+import {
+  CUTTING_GROUND_REGIONS,
+  DRILLER_GROUND_REGIONS,
+  DRILLER_PLATES,
+} from './quarryRouteGround';
 
 // Shared exterior painting, clipped clear of the authoritative 20 x 12 floor.
 // The Cutting, the Driller floor and the gatehouse all sit on the same
@@ -85,6 +89,43 @@ export const DRILLER_REAR_LOADING_SCENERY: readonly SceneScenery[] = [
 ];
 
 /**
+ * The drill shaft's headframe (M6 §1.6), in the exterior band beyond the shaft
+ * (legend `P`, x 18-19, rows 4-7). It is the winch panel of the Driller floor's
+ * approved rear-rim sheet — timber frame, sheave and hanging chain on cut
+ * block — mirrored (ADR 0058) so its 1:2 base runs down the east edge, and
+ * stood on the `DRILLER_HEADFRAME_LINE` edge centred on the shaft, far enough
+ * out that the shaft's mouth stays open to see across. It stands in front of
+ * the board, so it fades for a figure behind it.
+ */
+export const DRILLER_HEADFRAME_LINE = 22;
+const HEADFRAME_SOURCE = { x: 397, y: 152, width: 330, height: 302 } as const;
+/** Mirrored, the panel's base runs from (0, 298) of its box up to (330, 133). */
+const HEADFRAME_FOOT = 298;
+const HEADFRAME_SINK = 4;
+const headframeLeft = 768 + (DRILLER_HEADFRAME_LINE - 6) * 64 - HEADFRAME_SOURCE.width / 2;
+export const DRILLER_HEADFRAME: SceneScenery = {
+  id: 'driller-headframe',
+  url: 'art/maps/driller-floor-scene/exterior-rim.webp',
+  sourceRect: HEADFRAME_SOURCE,
+  x: headframeLeft,
+  // The x = LINE edge runs through y = (2 * LINE - (x - 768) / 64) * 32.
+  y:
+    (2 * DRILLER_HEADFRAME_LINE - (headframeLeft - 768) / 64) * 32 -
+    HEADFRAME_FOOT +
+    HEADFRAME_SINK,
+  width: HEADFRAME_SOURCE.width,
+  height: HEADFRAME_SOURCE.height,
+  flip: true,
+  footprint: [4, 5, 6, 7].map((y) => ({ x: DRILLER_HEADFRAME_LINE - 1, y })),
+  depth: { x: DRILLER_HEADFRAME_LINE - 0.5, y: 6 },
+  exterior: true,
+  fadeWhenOccluding: true,
+};
+
+/** The two-row cribbed bands either side of the rows 5-6 haul-road mouth (`QUARRY_FLOOR.edges`). */
+export const DRILLER_BAND_ROWS = [3, 7] as const;
+
+/**
  * The cover cells (legend `r`) of The Cutting and the Driller floor, checked
  * against the authoritative map rows in `quarryProjected.test.ts`. Each stands
  * the route's painted heap on the spill its ground pages lay round it, exactly
@@ -148,9 +189,18 @@ export const DRILLER_FLOOR_SCENE: MapScene = {
   ground: [
     ...QUARRY_SURROUND,
     ...routeGround('driller-floor-scene', DRILLER_GROUND_REGIONS),
+    // The drill shaft and the four gantry decks (M6), over the pages.
+    ...routeGround('driller-floor-scene', DRILLER_PLATES),
     ...DRILLER_RUBBLE_CELLS.map(rubbleHeap),
   ],
   // The surround owns the exterior mass; these walls and the rear stub own the
-  // new structural context without changing the playable floor.
-  scenery: [...DRILLER_FLOOR_WALLS, ...DRILLER_REAR_LOADING_SCENERY, ...DRILLER_FLOOR_EXTERIOR_RIM],
+  // new structural context without changing the playable floor. The M6 edges
+  // dress their bands: cribbed spoil either side of the west haul road, as at
+  // the gate, and the drill shaft's headframe east.
+  scenery: [
+    ...DRILLER_FLOOR_WALLS,
+    ...DRILLER_REAR_LOADING_SCENERY,
+    ...DRILLER_BAND_ROWS.map((top) => quarryCribbing('driller', top)),
+    DRILLER_HEADFRAME,
+  ],
 };
