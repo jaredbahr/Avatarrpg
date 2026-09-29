@@ -1,6 +1,7 @@
 # Cutting and Driller floor scene boundary
 
-Ground registration is complete; no map registration has started. This follows
+Ground registration is complete, and the Cutting's ground follows its M5 rows
+(below). This follows
 the southwest depth comparison and stays within the opening-through-Driller
 slice. Use the established oblique `MapScene` contract and the existing 96px
 runtime camera; do not replace the renderer or alter rules.
@@ -15,27 +16,54 @@ That projected source is not a 20:12 backdrop: upright cliffs/terraces are
 separate depth-owned `MapScene.scenery` slices with exact footprints and depths.
 Preserve every row and tile coordinate.
 
-The Cutting (`ambush_road`) mask is:
+The Cutting (`ambush_road`) mask, since M5 (plan 1.5, Option A), is:
 
 ```text
-AAAAAAA^^^^^^^AAAAAA
-AA^^^,,,,,,,,,,^^^AA
-^^,,,,,,r,,,,,,,,^^A
-,,,,,,,,,,,,r,,,,,^^
+XXXXXXXXXXXXXXXXXXXX
+XXX^^^XXXXXXXX^^^XXX
+XX^^,,r,XXXXX,^^^^XX
+,,,,,,,,,XX,,r,^^^,X
 ====================
-=====,,~~~~,,,,,====
-=====,,~~~~,,,,,====
+=====,~~~~====,,,,,=
+=====,~~~~====,,,,,=
 ====================
-,,,,,,r,,,,,,,,,,,^^
-^^,,,,,,,,,,r,,,,^^A
-AA^^^,,,,,,,,,,^^^AA
-AAAAAAA^^^^^^^AAAAAA
+,,,,,,r,,XX,,r,,,,,,
+XX,,,,,,XXXXX,,,,^^X
+XXX^^^XXXXXXXX^^^^XX
+XXXXXXXXXXXXXXXXXXXX
 ```
 
-Counts are A36, ^38, grass96, road58, rubble4, water8. The art should read as
-a narrow rock cutting with stepped high walls at the edges, a continuous road,
-the two-tile live water patch and four live rubble anchors. Keep party spawns at
-(1,3),(3,4),(1,5),(3,6),(1,7),(3,8); no props are baked into the painting.
+Counts are X89 (blocked cut rock, tier 2), ^24, floor55, road60, rubble4,
+water8: 151 walkable cells, down from 240. There is no walkable tier 2 and no
+0-to-2 step. The pinch is x9-10, open only on the road rows 4-7. Keep party
+spawns at (1,3),(3,4),(1,5),(3,6),(1,7),(3,8); no props are baked into the
+painting.
+
+How the M5 art draws it (all composed from existing pieces, no new imagery):
+
+- **Rock (`X`)** is painted on the `stone` page by the cut-rock painter shared
+  with the Quarry Gate and the Driller floor (`scripts/art/quarry-rock.ts`).
+  Its faces follow the tiers in front of them: two courses (32 px) over the
+  road and bays, one over a ledge, and one outward at the board's edge. So the
+  south run facing the camera is a one-course sawn lip, and nothing upright
+  stands between the camera and the southern bays. Every blocked cell is
+  painted; `quarryProjected.test.ts` exempts only `#` from coverage.
+- **North faces** (rows 0-3) carry plug-and-feather drill scars: a lit
+  half-pipe every 8 px, in the `block` row's own rim and base tones
+  (`drillScars` in `quarry-route-ground.ts`). The stone page's darkest window
+  (the NE ledge corner) measures a 1.248 span against the §3 limit of 1.25;
+  a darker scar breaks it.
+- **Ledges (`^`)** are the `block` material a course below the rock, divided
+  from it by the ink edge and that course of face.
+- **The runoff pool** is packed by the forest pond's packer with PR 162's
+  organic shore (`organic: true`), at its moved patch.
+- **West bands** (0,3) and (0,8) stand against the gate's cribbed spoil bank
+  (`quarryCribbing`, rows 2-3 and 8-9). The east band (19,8) is the front edge,
+  so it is left to the surround's low rock.
+- **Not dressed, for want of an existing asset:** the tea-station awning,
+  prayer ribbons, and the wedged hand-cart with a broken wheel. The only cart is
+  the live cabbage cart, which would read as the interactive prop. The tea
+  station itself is the explore-mode discovery at (3,9), beside Sen at (5,9).
 
 The Driller floor (`quarry_floor`) mask is:
 
