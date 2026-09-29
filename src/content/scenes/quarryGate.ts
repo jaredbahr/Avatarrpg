@@ -81,6 +81,53 @@ export function quarryGatePosts(y: number): SceneScenery[] {
   });
 }
 
+/** The two-row edge bands either side of the rows 5-6 road mouths (`QUARRY_GATE.edges`). */
+export const QUARRY_GATE_BAND_ROWS = [3, 7] as const;
+
+/**
+ * West: a spoil bank held back by timber cribbing. The span is the cribbed
+ * stretch of the Driller floor's approved rear-rim panel, which the connected
+ * quarry surround replaced there, mirrored (ADR 0058) so its long side runs
+ * down the x=0 edge; its measured base (a 1:2 slope) stands on that edge,
+ * rows `top`..`top + 1`, so no alpha lands on a playable cell.
+ */
+const cribbing = (top: number): SceneScenery => ({
+  id: `quarry-gate-cribbing-${top}`,
+  url: 'art/maps/driller-floor-scene/exterior-rim.webp',
+  sourceRect: { x: 110, y: 186, width: 128, height: 206 },
+  x: 768 - (top + 2) * 64,
+  y: (top + 2) * 32 - 204,
+  width: 128,
+  height: 206,
+  flip: true,
+  footprint: [
+    { x: -1, y: top },
+    { x: -1, y: top + 1 },
+  ],
+  depth: { x: -0.5, y: top + 1 },
+  exterior: true,
+});
+
+/**
+ * East: the quarry's outer curtain wall, one gatehouse block outside each
+ * band cell, so the road mouth between them reads as the way out through it.
+ * They stand in front of the board, so they fade for a figure behind them.
+ */
+const curtain = (top: number): SceneScenery[] =>
+  [top, top + 1].map((y) => ({
+    id: `quarry-gate-curtain-20-${y}`,
+    url: `${root}wall-end.webp`,
+    x: 768 + (20 - y) * 64 - 64,
+    y: (20 + y + 1) * 32 - 144,
+    width: 128,
+    height: 176,
+    footprint: [{ x: 20, y }],
+    depth: { x: 20.5, y: y + 0.5 },
+    exterior: true,
+    fadeWhenOccluding: true,
+    fadeGroup: `quarry-gate-curtain-${top}`,
+  }));
+
 /** Registered gate art only. Gameplay owns projection opt-in and live surfaces/props. */
 export const QUARRY_GATE_SCENE: MapScene = {
   // Each local region is sampled from reusable material panels against the
@@ -124,5 +171,8 @@ export const QUARRY_GATE_SCENE: MapScene = {
     // The barred side gates stand in the gatehouse gaps (M4 §1.4).
     ...quarryGatePosts(0),
     ...quarryGatePosts(11),
+    // The rim bands (M4 §1.4): cribbed spoil bank west, curtain wall east.
+    ...QUARRY_GATE_BAND_ROWS.map(cribbing),
+    ...QUARRY_GATE_BAND_ROWS.flatMap(curtain),
   ],
 };

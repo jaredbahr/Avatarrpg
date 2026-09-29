@@ -5,6 +5,7 @@ import { expect, it } from 'vitest';
 import { beforeAll } from 'vitest';
 import { QUARRY_GATE } from '../maps/combat';
 import {
+  QUARRY_GATE_BAND_ROWS,
   QUARRY_GATE_GATE_CELLS,
   QUARRY_GATE_GROUND_REGIONS,
   QUARRY_GATE_SCENE,
@@ -208,6 +209,46 @@ it('stands a barred gate on every G cell and nowhere else', () => {
     expect(post.fadeWhenOccluding).toBe(true);
     // A gate is wood, not wall: the `wall` guard would hide it on every grid.
     expect(post.wall).toBeUndefined();
+  }
+});
+
+it('dresses every declared rim band from existing exterior pieces, off the playable diamond', () => {
+  const bands = (QUARRY_GATE.edges ?? []).map(({ side, span }) => `${side} ${span.join('-')}`);
+  expect(bands.sort()).toEqual(
+    QUARRY_GATE_BAND_ROWS.flatMap((top) =>
+      ['west', 'east'].map((side) => `${side} ${top}-${top + 1}`),
+    ).sort(),
+  );
+  const pieces = QUARRY_GATE_SCENE.scenery.filter(
+    (piece) =>
+      piece.id.startsWith('quarry-gate-cribbing-') || piece.id.startsWith('quarry-gate-curtain-'),
+  );
+  for (const top of QUARRY_GATE_BAND_ROWS)
+    for (const y of [top, top + 1]) {
+      // West: the cribbed bank stands on the x=0 edge; east: the curtain on x=20.
+      expect(
+        pieces.some((p) => p.footprint.some((c) => c.x === -1 && c.y === y)),
+        `west ${y}`,
+      ).toBe(true);
+      expect(
+        pieces.some((p) => p.footprint.some((c) => c.x === 20 && c.y === y)),
+        `east ${y}`,
+      ).toBe(true);
+    }
+  for (const piece of pieces) {
+    expect(piece.exterior).toBe(true);
+    for (const cell of piece.footprint)
+      expect(cell.x < 0 || cell.x >= QUARRY_GATE.width, `${piece.id} is off the board`).toBe(true);
+  }
+  // The cribbing's base runs down its two rows of the x=0 edge exactly.
+  for (const top of QUARRY_GATE_BAND_ROWS) {
+    const bank = pieces.find((p) => p.id === `quarry-gate-cribbing-${top}`);
+    if (!bank) throw new Error(`no cribbing at ${top}`);
+    expect({ x: bank.x, right: bank.x + bank.width }).toEqual({
+      x: worldPoint(0, top + 2).x,
+      right: worldPoint(0, top).x,
+    });
+    expect(bank.flip).toBe(true);
   }
 });
 
