@@ -4,6 +4,7 @@ import type { GameEvent, GameState, Vec2 } from '../types';
 import { createGame } from './createGame';
 import { apply } from './reducer';
 import { serialize, deserialize, stateFromBlob } from '../save/serialize';
+import { reconcileWorld } from '../save/reconcile';
 import { buildGrid, tileAt } from '../rules/grid';
 import { visibleNpcs } from '../story/world';
 
@@ -53,8 +54,10 @@ describe('walking the village', () => {
         }),
       );
       if (!loaded.ok) throw new Error('Could not reload village save');
-      const restored = stateFromBlob(loaded.blob);
-      expect(restored.location).toEqual(before.location);
+      // A load reconciles as `App.adoptSave` does: (7,3) was Gao's plank
+      // floor until the house bodies closed, and the M9 snap moves it out.
+      const restored = reconcileWorld(CONTENT, stateFromBlob(loaded.blob));
+      expect(tileAt(buildGrid(map), restored.location.pos)?.blocked).toBe(false);
       const result = apply(CONTENT, restored, { type: 'walkTo', pos: gao.pos });
       expect(result.state.screen).toBe('dialogue');
       expect(result.state.story.nodeId).toBe('gao_friendly');

@@ -101,17 +101,17 @@ describe('planResidentMotion', () => {
       // Dorin comes up the river path to the post.
       {
         id: 'lw.npc.dorin',
-        from: { x: 19, y: 14 },
+        from: { x: 19, y: 15 },
         to: { x: 17, y: 6 },
         enter: true,
         leave: false,
       },
       // Mira and Pella go down the river path to the riverside.
-      { id: 'lw.npc.mira', from: { x: 11, y: 5 }, to: { x: 19, y: 14 }, enter: false, leave: true },
+      { id: 'lw.npc.mira', from: { x: 11, y: 5 }, to: { x: 19, y: 15 }, enter: false, leave: true },
       {
         id: 'lw.npc.pella',
         from: { x: 11, y: 12 },
-        to: { x: 19, y: 14 },
+        to: { x: 19, y: 15 },
         enter: false,
         leave: true,
       },
@@ -231,7 +231,7 @@ describe('ResidentWalks', () => {
     // Dorin's rules tile is the post at once; the drawing starts at the river path.
     expect(figure(w, 'lw.npc.dorin')).toMatchObject({
       pos: { x: 17, y: 6 },
-      drawPos: { x: 19, y: 14 },
+      drawPos: { x: 19, y: 15 },
       alpha: 0,
     });
     expect(w.walkingTo({ x: 17, y: 6 })).toBe(true);
@@ -673,12 +673,14 @@ describe('routines (Working Ba Dan)', () => {
     v.tick(reached.t + 50, false);
     expect(v.update(VILLAGE, midday, AWAY, true, AWAY)).toBe(true);
     expect(v.moving()).toBe(true);
-    const back = of(play(v, midday, reached.t + 100, 3000), GAO);
+    // Long enough for Dorin, off watch at midday, to walk the river path out
+    // to its mouth on the rim, (19,15), and fade.
+    const back = of(play(v, midday, reached.t + 100, 3500), GAO);
     expect(back[0]?.drawPos.x).toBeLessThan(9);
     expect(back.at(-1)).toMatchObject({ drawPos: SHOP, walking: false });
     expect(v.moving()).toBe(false);
     // And no errand starts again during the break.
-    const rest = of(play(v, midday, reached.t + 3200, 20_000), GAO);
+    const rest = of(play(v, midday, reached.t + 3700, 20_000), GAO);
     expect(rest.every((f) => samePos(f.drawPos, SHOP))).toBe(true);
   });
 });

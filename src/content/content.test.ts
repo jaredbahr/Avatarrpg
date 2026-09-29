@@ -358,10 +358,12 @@ describe('content', () => {
     const probe = (area: { x: number; y: number }[]) =>
       validateContent({ ...CONTENT_BUNDLE, maps: withArea(area) });
 
-    // The gate tile and the road tile immediately west of it.
+    // The gate tile and the road tile immediately west of it. The village
+    // enforces its edge contract, so the gate's second rim cell stays covered.
     const gate = { x: 23, y: 7 };
     const beside = { x: 22, y: 7 };
-    expect(probe([gate, beside]).filter((p) => p.includes('exit'))).toEqual([]);
+    const rim = { x: 23, y: 8 };
+    expect(probe([gate, rim, beside]).filter((p) => p.includes('exit'))).toEqual([]);
     expect(probe([beside])).toContain(
       `map "${mapId}" exit at (${gate.x},${gate.y}) is not part of its area`,
     );
@@ -372,7 +374,7 @@ describe('content', () => {
     expect(probe([gate, { x: 99, y: 0 }])).toContain(
       `map "${mapId}" exit area cell (99,0) is blocked or off-map`,
     );
-    // The riverside exit already owns (19,14); the east area cannot also claim it.
+    // The riverside exit already owns (19,15); the east area cannot also claim it.
     const riverside = rest[0];
     if (!riverside) throw new Error('Missing the village riverside exit');
     const overlap = probe([gate, riverside.pos]);

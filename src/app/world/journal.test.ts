@@ -173,9 +173,9 @@ describe('travel journal and riverside routes', () => {
     const initial = start();
     let state = apply(CONTENT, initial, { type: 'setFlags', flags: { riverside_pet: true } }).state;
     state = apply(CONTENT, state, { type: 'walkTo', pos: { x: 10, y: 20 } }).state;
-    expect(state.location).toEqual({ mapId: 'ba_dan_village', pos: { x: 18, y: 14 } });
+    expect(state.location).toEqual({ mapId: 'ba_dan_village', pos: { x: 19, y: 14 } });
     expect(state.story.nodeId).toBeNull();
-    state = apply(CONTENT, state, { type: 'walkTo', pos: { x: 19, y: 14 } }).state;
+    state = apply(CONTENT, state, { type: 'walkTo', pos: { x: 19, y: 15 } }).state;
     expect(state.location).toEqual({ mapId: 'ba_dan_riverside', pos: { x: 10, y: 19 } });
     expect(state.party).toEqual(initial.party);
     const saved = deserialize(

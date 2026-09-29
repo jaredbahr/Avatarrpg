@@ -1,15 +1,22 @@
+import { readFileSync } from 'node:fs';
 import { expect, it } from 'vitest';
 import { FOREST_ROAD } from '../../src/content/maps/combat';
 import {
+  FOREST_APRON_BANDS,
   FOREST_APRON_MAP,
   FOREST_APRON_PIECES,
   FOREST_EXTERIOR_APRON,
   FOREST_ROAD_SCENE,
 } from '../../src/content/scenes/forestRoad';
+import { APRON_ALPHA_STEPS } from './ba-dan-exterior-apron';
+import { apronPlatePath } from './lib/apron-plates';
+import { decodeWebp } from './lib/webp';
 import {
   APRON_FADE,
   APRON_SEAM,
+  DIRECTORY,
   GUARD_ALPHA,
+  STEM,
   apronDepth,
   apronLogical,
   apronTerrain,
@@ -68,6 +75,46 @@ it('packs an apron that never overpaints authored ground', () => {
   expect(inside, 'the plate closes the seam the authored ground leaves').toBeGreaterThan(1_000);
   expect(opaque, 'the plate has an opaque band').toBeGreaterThan(1_000);
   expect(feather, 'the plate fades out rather than stopping').toBeGreaterThan(1_000);
+});
+
+it('ships a rim with no light fringe from the lossy encoder', async () => {
+  // The bands are lossy. A clear pixel's colour still feeds the encoder, and
+  // black ones beside the band smeared a light line along the rim, as they did
+  // on Ba Dan's apron.
+  let rim = 0,
+    fringe = 0;
+  for (const [index, band] of FOREST_APRON_BANDS.entries()) {
+    const shipped = await decodeWebp(readFileSync(apronPlatePath(DIRECTORY, STEM, index)));
+    for (let py = 0; py < band.height; py++)
+      for (let px = 0; px < band.width; px++) {
+        const packed = pixelAt(apron, band.x + px, band.y + py);
+        if (packed[3] !== 255) continue;
+        const { x, y } = apronLogical(band.x + px, band.y + py);
+        if (apronDepth(x, y) > 0.1) continue;
+        rim++;
+        const got = pixelAt(shipped, px, py);
+        const luma = (c: readonly number[]): number =>
+          0.299 * (c[0] ?? 0) + 0.587 * (c[1] ?? 0) + 0.114 * (c[2] ?? 0);
+        if (Math.abs((got[2] ?? 0) - (packed[2] ?? 0)) > 16 || luma(got) - luma(packed) > 12)
+          fringe++;
+      }
+  }
+  expect(rim).toBeGreaterThan(1_000);
+  expect(fringe / rim).toBeLessThan(0.02);
+});
+
+it('fades in flat steps, never a continuous haze', () => {
+  // A smoothstep ramp read as a pale smear over the corners; Ba Dan's ten
+  // wandering steps are the approved fade, so no other alpha may appear.
+  const alphas = new Set<number>();
+  for (let py = 0; py < apron.height; py++)
+    for (let px = 0; px < apron.width; px++) {
+      const alpha = pixelAt(apron, px, py)[3] ?? 0;
+      if (alpha > 0) alphas.add(alpha);
+    }
+  expect([...alphas].filter((a) => !(APRON_ALPHA_STEPS as readonly number[]).includes(a))).toEqual(
+    [],
+  );
 });
 
 it('is pinned to the map it surrounds and to the scene that paints it', () => {
