@@ -63,14 +63,9 @@ const ROCK_COURSE = ROCK_RISE / 2;
 const ROCK_BLOCK = 32;
 const LIP_INK = 2;
 
-/**
- * Rock, for the face test. Off the grid counts as rock: the corner masses run
- * on into the exterior surround, which owns the terrace's outer drop, so a
- * face stands only where the rock meets the playable board.
- */
 const isRock = (x: number, y: number): boolean => {
   const key = QUARRY_GATE.rows[y]?.[x];
-  return key === undefined || key === 'X';
+  return key === 'X';
 };
 
 const regionAt = (x: number, y: number): GateRegionName | null => {
@@ -121,6 +116,10 @@ const rockAt = (wx: number, wy: number): boolean => {
   const { x, y } = logical(wx, wy);
   return isRock(Math.floor(x), Math.floor(y));
 };
+const offGrid = (wx: number, wy: number): boolean => {
+  const { x, y } = logical(wx, wy);
+  return QUARRY_GATE.rows[Math.floor(y)]?.[Math.floor(x)] === undefined;
+};
 
 /**
  * One pixel of the cut rock, painted the way `forest-raised-shelf.ts` stands
@@ -137,7 +136,10 @@ const rockAt = (wx: number, wy: number): boolean => {
 function rockPixel(material: QuarryMaterial, wx: number, wy: number, rim: boolean): Rgb {
   let drop = 1;
   while (drop <= ROCK_RISE && rockAt(wx, wy + drop)) drop++;
-  if (drop > ROCK_RISE) {
+  // Toward the exterior the rock stands one course over the surround's own
+  // terrace, not two over the board's floor.
+  const outward = offGrid(wx, wy + drop);
+  if (drop > ROCK_RISE || (outward && drop > ROCK_COURSE)) {
     // The top, sampled where it stands, so its incident rides up with the lift.
     if (rim) return material.rimOf('block');
     const top = logical(wx, wy + ROCK_RISE);
@@ -149,12 +151,14 @@ function rockPixel(material: QuarryMaterial, wx: number, wy: number, rim: boolea
   const right =
     Math.floor(exit.x) > Math.floor(foot.x) && Math.floor(exit.y) === Math.floor(foot.y);
   const height = drop - 1;
-  if (drop > ROCK_RISE - LIP_INK || height < LIP_INK) return material.ink;
+  const rise = outward ? ROCK_COURSE : ROCK_RISE;
+  if (drop > rise - LIP_INK || height < LIP_INK) return material.ink;
   const course = Math.floor(height / ROCK_COURSE);
   // Blocks break joint course to course, and each runs its own length.
   const run = Math.floor(wx) + course * (ROCK_BLOCK / 2);
   const index = Math.floor(run / ROCK_BLOCK);
-  const jointAt = index * ROCK_BLOCK + 4 + Math.floor(tileNoise(index, course, 7) * (ROCK_BLOCK - 8));
+  const jointAt =
+    index * ROCK_BLOCK + 4 + Math.floor(tileNoise(index, course, 7) * (ROCK_BLOCK - 8));
   const joint = height % ROCK_COURSE === 0 || run === jointAt;
   if (right) return joint ? material.ink : parseHex(block.shadow);
   return parseHex(joint ? block.joint : block.shadow);
