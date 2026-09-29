@@ -580,7 +580,10 @@ export const mapSchema = z
                 });
               }),
           )
-          .max(32),
+          // The Forest Road's authored pine wall occupies 38 distinct cells,
+          // plus its small reed pieces. Keep a finite draw-count guard while
+          // admitting that approved footprint.
+          .max(48),
         flock: z
           .object({
             url: z.string().min(1),

@@ -8,7 +8,7 @@
 
 **Layout** `forest_road-layout.png` beside this file: the tile grid as flat colour blocks at 32 px a tile, with the grid drawn. Hand it to the generator as the composition reference (image-to-image or a structure control) at a strength that keeps every edge where it is; upscale it to the delivery size first so the generator does not invent a border.
 
-**Palette** hue anchors from the game's own ground (`src/render/palettes.ts`): grass `#6f9e4c`, stone `#d8cbb0`, sand `#c7a87d`, road `#b39064`, dirt `#b39064`, still water `#3e8fb0`. The painting replaces those tones outright, so lighter and more saturated is fine; stay in the same families so the effects and the parchment HUD still read over it.
+**Palette** hue anchors from the game's own ground (`src/render/palettes.ts`): grass `#6f9e4c`, stone `#d8cbb0`, sand `#c7a87d`, road `#b39064`, dirt `#b39064`, water deep `#1f4a5e`, still water `#3e8fb0`. The painting replaces those tones outright, so lighter and more saturated is fine; stay in the same families so the effects and the parchment HUD still read over it.
 
 ## Where
 
@@ -18,32 +18,34 @@ A road through lowland woods a day out of the village, where the party is first 
 
 20 columns by 12 rows, counted from 0 at the top-left corner. The painting is the ground and what stands on it, nothing else: the game draws its own grid, movement contours, units, props and effects over it, so every edge in the painting that matters to the rules sits exactly on a tile edge.
 
-- Road (68 tiles): 68 tiles (the centre), rows 4 and 8: columns 0–19; rows 5 and 7: columns 0–4 and 7–11; row 6: columns 0–3 and 8–11.
-- Still water (8 tiles): 8 tiles (middle left), rows 5 and 7: columns 5–6; row 6: columns 4–7.
-- Trees (15 tiles): 3 tiles (top left), row 0: columns 0–1; row 1: column 0; 3 tiles (top right), row 0: columns 18–19; row 1: column 19; 3 tiles (bottom left), row 10: column 0; row 11: columns 0–1; 3 tiles (bottom right), row 10: column 19; row 11: columns 18–19; one tile at column 8, row 0 (top centre); one tile at column 14, row 1 (top right); one tile at column 14, row 10 (bottom right).
-- Ledges, one step up (6 tiles): 3 tiles (top right), row 2: column 19; row 3: columns 18–19; 3 tiles (middle right), row 5: columns 18–19; row 6: column 19.
+- Road (58 tiles): 58 tiles (the centre), row 4: columns 0–19; row 5: columns 1–4 and 8–11; row 6: columns 2–3 and 8–11; row 7: columns 2–4 and 7–11; row 8: columns 2–17.
+- Still water (9 tiles): 9 tiles (middle left), row 5: columns 5–7; row 6: columns 4–7; row 7: columns 5–6.
+- Trees (38 tiles): 11 tiles (top centre), row 0: columns 6–13; row 1: columns 7–9; 7 tiles (top left), row 0: columns 0–3; row 1: columns 0–1; row 2: column 0; 7 tiles (top right), row 0: columns 15–19; row 1: columns 18–19; a 5×1 block at columns 7–11, row 11 (bottom centre); 4 tiles (bottom right), row 10: column 19; row 11: columns 17–19; 3 tiles (bottom left), row 10: column 0; row 11: columns 0–1; one tile at column 15, row 10 (bottom right).
+- Stone walls (12 tiles): 7 tiles (bottom left), row 10: columns 4–5; row 11: columns 2–6; a 5×1 block at columns 12–16, row 11 (bottom right).
+- High ledges, two steps up (1 tile): one tile at column 19, row 2 (top right).
+- Ledges, one step up (13 tiles): 10 tiles (top right), row 1: columns 16–17; row 2: columns 15–18; row 3: columns 16–19; 3 tiles (middle right), row 5: columns 18–19; row 6: column 19.
 - Heaps of tumbled rock (2 tiles): one tile at column 7, row 3 (top centre); one tile at column 8, row 9 (bottom centre).
-- Open ground everywhere else: grass (141 tiles).
+- Open ground everywhere else: grass (107 tiles).
 - The party enters from the left, standing at (1, 3), (3, 4), (1, 5), (3, 6), (1, 7), (3, 8); enemies come from the right. Paint nothing there that would read as an object to walk round.
 
 The rows as the rules read them:
 
 ```
-TT,,,,,,T,,,,,,,,,TT
-T,,,,,,,,,,,,,T,,,,T
-,,,,,,,,,,,,,,,,,,,^
-,,,,,,,r,,,,,,,,,,^^
+TTTT,,TTTTTTTT,TTTTT
+TT,,,,,TTT,,,,,,^^TT
+T,,,,,,,,,,,,,,^^^^A
+,,,,,,,r,,,,,,,,^^^^
 ====================
-=====~~=====,,,,,,^^
-====~~~~====,,,,,,,^
-=====~~=====,,,,,,,,
-====================
+,====~~~====,,,,,,^^
+,,==~~~~====,,,,,,,^
+,,===~~=====,,,,,,,,
+,,================,,
 ,,,,,,,,r,,,,,,,,,,,
-T,,,,,,,,,,,,,T,,,,T
-TT,,,,,,,,,,,,,,,,TT
+T,,,WW,,,,,,,,,T,,,T
+TTWWWWWTTTTTWWWWWTTT
 ```
 
-Legend: `T` trees; `,` grass; `^` ledges, one step up; `r` heaps of tumbled rock; `=` road; `~` still water.
+Legend: `T` trees; `,` grass; `^` ledges, one step up; `A` high ledges, two steps up; `r` heaps of tumbled rock; `=` road; `~` still water; `W` stone walls.
 
 ## Prompt
 

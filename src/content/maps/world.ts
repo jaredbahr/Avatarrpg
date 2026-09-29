@@ -127,6 +127,8 @@ export function connectAct1(map: MapDef): MapDef {
             'ba_dan_village',
             { x: 22, y: 7 },
             'West → Ba Dan Village',
+            // Preserve the road's five-cell mouth; these walkable rim cells are
+            // exits rather than edge-band terrain.
             mouth(0, [4, 5, 6, 7, 8]),
           ),
           route(
@@ -134,6 +136,8 @@ export function connectAct1(map: MapDef): MapDef {
             'quarry_gate',
             { x: 1, y: 5 },
             'East → Quarry Gate',
+            // Preserve the road's five-cell mouth past the NE bank; these
+            // walkable rim cells remain exits rather than edge-band terrain.
             mouth(19, [4, 5, 6, 7, 8]),
             visited('after_forest'),
             'Deal with the roadblock before heading to the quarry.',

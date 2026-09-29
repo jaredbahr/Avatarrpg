@@ -50,23 +50,52 @@ export const FOREST_ROAD: MapDef = {
   height: 12,
   ambience: 'forest',
   legend: LEGEND,
+  /*
+   * The road's footprint is shaped inside the 20x12 grid (M3): a pine wall with
+   * three clearings closes the north, the through-road leaves through rows 4-8
+   * on both sides, and the south is a deep-water creek (`W`) between alders. Every
+   * walkable border cell is either one of those two exit mouths or covered by the
+   * `edges` entries below, which is what `edgeContract: 'enforce'` holds it to.
+   *
+   * The interactables are the authored ground, not props: the central nine-cell
+   * puddle is the Wet/Frozen/Shocked lesson and the shove target (the encounter
+   * tells the player to put a bandit in it), and the two rubble heaps at (7,3)
+   * and (8,9) are cover. This map authors no barrels, oil or braziers — those
+   * belong to the Quarry Gate.
+   */
   rows: [
-    'TT,,,,,,T,,,,,,,,,TT',
-    'T,,,,,,,,,,,,,T,,,,T',
-    ',,,,,,,,,,,,,,,,,,,^',
-    ',,,,,,,r,,,,,,,,,,^^',
+    'TTTT,,TTTTTTTT,TTTTT',
+    'TT,,,,,TTT,,,,,,^^TT',
+    'T,,,,,,,,,,,,,,^^^^A',
+    ',,,,,,,r,,,,,,,,^^^^',
     '====================',
-    '=====~~=====,,,,,,^^',
-    '====~~~~====,,,,,,,^',
-    '=====~~=====,,,,,,,,',
-    '====================',
+    ',====~~~====,,,,,,^^',
+    ',,==~~~~====,,,,,,,^',
+    ',,===~~=====,,,,,,,,',
+    ',,================,,',
     ',,,,,,,,r,,,,,,,,,,,',
-    'T,,,,,,,,,,,,,T,,,,T',
-    'TT,,,,,,,,,,,,,,,,TT',
+    'T,,,WW,,,,,,,,,T,,,T',
+    'TTWWWWWTTTTTWWWWWTTT',
   ],
   partySpawns: COMBAT_PARTY_SPAWNS,
   npcs: [],
   props: [],
+  /*
+   * The authored border claims. North keeps its truncated pines and the deer
+   * paths between them; the south creek and alders are in-grid barriers. The
+   * five-cell exit mouths occupy rows 4-8 on both sides and are deliberately
+   * absent from these edge bands. West rows 3 and 9 and east rows 0-3 and 9
+   * retain their authored edge treatments.
+   */
+  edges: [
+    { side: 'north', span: [0, 19], treatment: 'band' },
+    { side: 'south', span: [0, 19], treatment: 'barrier' },
+    { side: 'west', span: [3, 3], treatment: 'band' },
+    { side: 'west', span: [9, 9], treatment: 'band' },
+    { side: 'east', span: [0, 3], treatment: 'band' },
+    { side: 'east', span: [9, 9], treatment: 'band' },
+  ],
+  edgeContract: 'enforce',
 };
 
 export const QUARRY_GATE: MapDef = {

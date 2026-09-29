@@ -92,17 +92,17 @@ describe('layout words', () => {
     expect(water).toHaveLength(1);
     const [pond] = water;
     if (!pond) return;
-    expect(pond.tiles).toHaveLength(8);
+    expect(pond.tiles).toHaveLength(9);
     expect([pond.x0, pond.y0, pond.x1, pond.y1]).toEqual([4, 5, 7, 7]);
     expect(describeRegion(FOREST_ROAD, pond)).toBe(
-      '8 tiles (middle left), rows 5 and 7: columns 5–6; row 6: columns 4–7',
+      '9 tiles (middle left), row 5: columns 5–7; row 6: columns 4–7; row 7: columns 5–6',
     );
   });
 
   it('call a full-width band edge to edge and a solid patch a block', () => {
     const road = regions(FOREST_ROAD).find((r) => r.cls === 'road');
     expect(road && describeRegion(FOREST_ROAD, road)).toMatch(
-      /^68 tiles \(the centre\), rows 4 and 8: columns 0–19/,
+      /^58 tiles \(the centre\), row 4: columns 0–19/,
     );
     const rock = regions(FOREST_ROAD).find((r) => r.cls === 'rubble');
     expect(rock && describeRegion(FOREST_ROAD, rock)).toBe(
@@ -118,8 +118,8 @@ describe('layout words', () => {
 
   it('put the features first and sum the open ground', () => {
     const words = describeLayout(FOREST_ROAD);
-    expect(words.features[0]).toMatch(/^Road \(68 tiles\)/);
-    expect(words.ground).toBe('Open ground everywhere else: grass (141 tiles).');
+    expect(words.features[0]).toMatch(/^Road \(58 tiles\)/);
+    expect(words.ground).toBe('Open ground everywhere else: grass (107 tiles).');
   });
 });
 
