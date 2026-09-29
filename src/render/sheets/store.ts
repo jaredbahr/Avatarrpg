@@ -158,6 +158,8 @@ export class SheetStore {
   private bends = new Map<string, LoadedBend | 'loading' | 'failed'>();
   /** Bends asked for before their sheet was in; each loads once its sheet does. */
   private bendsWanted = new Set<string>();
+  /** Invalidates bend promises from a combat that has already ended. */
+  private bendGeneration = 0;
 
   /** Drops every baked sheet; loaded atlases stay, they are the same at any zoom. */
   clear(): void {
@@ -294,6 +296,18 @@ export class SheetStore {
   }
 
   /**
+   * Forgets every loaded bend, so its pages can be collected: combat, the
+   * one scene that bends, calls it on its way out, and preloads again at its
+   * next start. A failed bend stays failed; one still loading is cancelled
+   * so its eventual pages cannot be retained after combat has ended.
+   */
+  releaseBends(): void {
+    this.bendGeneration++;
+    this.bendsWanted.clear();
+    for (const [key, state] of this.bends) if (state !== 'failed') this.bends.delete(key);
+  }
+
+  /**
    * The bend set `key`'s sheet names, once it has loaded; undefined before
    * then, after it failed, or when the sheet has no bend. Asking starts the load.
    */
@@ -308,7 +322,7 @@ export class SheetStore {
    * the sheet and its bend have loaded, after either failed, for a sheet with
    * no bend, for an index with no cel or no hold, and for a cel whose
    * rectangle is not its heading's `frameSize`. Asking starts the load.
-   * Nothing plays a bend yet (ADR 0055, steps 6 and 7).
+   * Both backends draw a bending unit's cel from here (ADR 0055, step 7).
    */
   bendFrame(key: string, heading: Heading, index: number): ResolvedBendFrame | null {
     const entry = resolveAsset(key);
@@ -434,13 +448,18 @@ export class SheetStore {
 
     this.bendsWanted.delete(key);
     this.bends.set(key, 'loading');
+    const generation = this.bendGeneration;
     Promise.all([
       Promise.all((entry.bendPages ?? []).map(loadPage)),
       // Checked by its schema in CI (`art:validate`), so only typed here.
       fetchText(path).then((text) => JSON.parse(text) as BendSetDef),
     ])
-      .then(([pages, set]) => this.bends.set(key, { pages, set }))
+      .then(([pages, set]) => {
+        if (generation !== this.bendGeneration) return;
+        this.bends.set(key, { pages, set });
+      })
       .catch((reason: unknown) => {
+        if (generation !== this.bendGeneration) return;
         this.bends.set(key, 'failed');
         console.warn(`The bend of "${key}" failed to load; the sheet still draws.`, reason);
       });

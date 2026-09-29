@@ -4,7 +4,7 @@
 packed data), again 2026-09-28 (manifest plumbing, lazy bend loading and the
 socket convention), again 2026-09-28 (the painted effects), and again
 2026-09-28 (drawing them: trajectories, sprites and the flash; playback
-follows)
+follows), and again 2026-09-29 (the combat handoff, step 7)
 
 ## Context
 
@@ -581,6 +581,84 @@ track). Nothing maps an ability to it yet; that is step 7.
   build with step 6's runtime files at the base's contents (323,947 B), and
   1,836 B under the 327,680 B gate. No asset changes.
 
+## The combat handoff (step 7, amended 2026-09-29)
+
+Combat now plays a character's bend for its bending attacks
+(`src/app/anim/bendHandoff.ts`, wired through the choreography, the
+animator and `CombatScene`). No rule, AP, damage or save changes.
+
+- **Which casts bend: single-target bending attacks only.** Supervisor
+  decision. A cast plays the caster's bend when the caster is a party unit,
+  the ability is of the caster's element, it aims at one unit
+  (`targeting.shape === 'unit'`) beyond arm's reach (`range > 1`) and not at
+  the caster's own tile, it deals damage, and it is not tagged heal, buff or
+  mobility. Today that is `fire_jab` and `lightning` (Kaya), `water_whip` and
+  `water_pull` (Sura), and `rock_throw`, `metalbending` and `metal_cable`
+  (Bo). Every one plays the character's one bend and its one effect
+  (`attacks[0]` of the heading): `lightning` throws Kaya's fireball, and
+  `metal_cable` and `metalbending` Bo's rock. Area, cone, line and blast
+  abilities (`flame_arc`, `dragon_breath`, `fire_blast`, `lightning_arc`,
+  `lightning_storm`, `ice_spikes`, `tidal_wave`, `octopus_form`,
+  `shockwave`, `mudslide`, `boulder`, `fissure`) keep the legacy cast with
+  its area, impact and shake visuals: a one-target bend would draw Dragon
+  Breath as one fireball at the centre tile. How they should bend is
+  Jared's visual call and is open.
+- **Anything not ready is the legacy cast, exactly.** The bend is taken only
+  when its data and pages are loaded (`bendState === 'loaded'`, every cel of
+  the heading resolving), the painted effects are loaded and every effect
+  page has decoded, and the attack's effect resolves. Idle, loading, failed,
+  a missing cel or effect, and undecoded effect pages all fall back, and the
+  tests hold the fallback's tracks, sounds and health equal to a run with no
+  bends at all. Enemies never bend, even on a sheet that has one.
+- **Reduced motion keeps the legacy cast.** Its clock collapses every
+  duration to 2%, which the legacy cast is built for; the bend's holds and
+  cels are not, so a bend never plays under reduced motion.
+- **Preloaded at combat's start, released at its end.** `CombatScene`
+  preloads the bend of each party unit whose sheet has one
+  (`partyBendSprites`) and has the app load the effects and decode every
+  page they draw from (`BendFxIndex.images`, `bendFxPages.whenLoaded`).
+  Leaving combat calls `SheetStore.releaseBends`, which forgets every loaded
+  bend so its decoded pages (about 17.7 MB of RGBA for the three) can be
+  collected; the next combat preloads again. A failed bend stays failed; one
+  still loading when combat ends lands and is released on the next exit.
+  The effect page (one 54 KB page) stays in its 4-entry store.
+- **The body draws as the unit.** `RenderUnit.bend` names the heading and
+  play index; both backends resolve it through `SheetStore.bendFrame` in
+  place of the sheet frame and place it by the heading's anchor through
+  `placeFrame`, never mirrored. So the bend keeps the unit's depth order,
+  shadow, elevation, rings and health bar, and a cel that does not resolve
+  draws the stance. Canvas 2D does not route a bend cel through its
+  page-wide white `mask`. The scene draws it at `partyScale`, the scale the
+  plan placed the sockets at.
+- **Aimed from the drawn feet.** The plan's `foot` is the point both
+  backends stand a frame's anchor on (`unitFoot`: `spriteBox` plus
+  `FOOT_LINE`, less the tile's elevation lift), and `to` is the struck
+  unit's foot (a 2-tile unit's own centre) plus `impact.offsetPx`. Heading
+  is `walkHeading(screenDirection(...))` toward the struck unit.
+- **One damage, at the damage release.** The track starts exactly at the
+  choreography's cursor (the animator adds it as laid, never re-queued). The
+  hit sound, the health change, the flash, the struck unit's pose, the
+  floater and a miss all land once, at `bendSceneAt(plan,
+arrivals[damageRelease])`; nothing of the rules result shows at the jab.
+  The struck unit's hit-stop is that impact's merged hold, so a G hit
+  (ADR 0063) plays `max(flinch, hold)` and a legacy hit holds its struck
+  drawing through it. A knockout follows once the bend has finished, as it
+  followed the legacy cast's recovery. The ability's voice cue plays at the
+  first release's launch.
+- **The stance keeps the heading.** When a bend starts, the animator
+  records its heading for the unit, so the stance after it faces where it
+  threw.
+- **Pushes.** A pull or push that follows (Sura's `water_pull`, Bo's
+  `metal_cable`) plays after the bend, as it did after the legacy cast;
+  no party air bend exists yet, so no bend carries `pushIds`.
+- **The id namespaces, settled: the lookup says which registry.** A bend
+  effect id (`fx.earth.rock`) is only ever looked up through
+  `BendFxIndex.effect`, and an ability's `fx` key only through `resolveFx`,
+  `resolveSound` and the legacy recipes; the handoff passes neither to the
+  other, and the ability's `fx` key still names its sound. So the shared
+  `fx.earth.rock` string is not a collision, and the effects are not
+  renamed.
+
 ## Planned PR sequence
 
 1. **The contract.** `src/content/bends.ts`, its tests, the r9 fixture and
@@ -648,7 +726,8 @@ track). Nothing maps an ability to it yet; that is step 7.
      `fx.water.bolt` avoids a clash by chance, not by rule. Nothing joins the
      two registries yet. Before step 7 maps
      abilities to attacks it either renames the bend effects into their own
-     prefix or states that a lookup always says which registry it means; open.
+     prefix or states that a lookup always says which registry it means.
+     Settled by step 7: the lookup says which registry (above).
 
 8. **Gallery.** Capture the four elements for review against the visual target.
 

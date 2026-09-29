@@ -29,6 +29,8 @@ import type { SheetClips } from '../../render/sheets/store';
 import type { Projection } from '../../render/projection';
 import type { ActorAttachment, EmitterAttachments } from '../../render/view';
 import { enemyScale, partyScale } from './actorScale';
+import type { BendSources } from './bendHandoff';
+import { planBendCast } from './bendHandoff';
 
 /** Base durations in milliseconds, before the motion setting is applied. */
 export const TIMING = {
@@ -77,6 +79,13 @@ export interface ChoreographyInput {
    * is the legacy pose.
    */
   readonly clipsOf?: (sprite: string) => SheetClips | undefined;
+  /**
+   * The loaded bends and painted effects (ADR 0055, step 7). Without them, or
+   * for a cast `planBendCast` turns down, the cast is the legacy one exactly.
+   */
+  readonly bends?: BendSources;
+  /** How far the ground lifts a unit's drawing at a tile, in tiles; flat without it. */
+  readonly liftOf?: (pos: Vec2) => number;
 }
 
 /**
@@ -409,6 +418,43 @@ export function choreograph(input: ChoreographyInput): Choreography {
             event.target.x < pos.x + unit.size
           );
         });
+        // A bending attack plays the caster's bend instead (ADR 0055, step 7).
+        // Reduced motion keeps the legacy cast, whose collapsed clock it is
+        // built for, and so does anything the bend lookups cannot draw yet.
+        const bend =
+          casterUnit && rate >= 1
+            ? planBendCast(
+                input.bends,
+                casterUnit,
+                casterPos,
+                ability,
+                event.target,
+                victim && { pos: positions.get(victim.id) ?? victim.pos, size: victim.size },
+                input.projection ?? 'orthographic',
+                input.liftOf,
+              )
+            : undefined;
+        if (bend) {
+          tracks.push({
+            kind: 'bend',
+            unitId: event.unitId,
+            plan: bend.plan,
+            fx: bend.fx,
+            start: cursor,
+            duration: bend.plan.duration,
+          });
+          cue(ability.fx, cursor + bend.launchAt, 1, eventIndex);
+          // The one rules result shows once, when the damage release lands,
+          // and the struck unit holds through that impact's hit-stop.
+          pending = {
+            at: cursor + bend.impactAt,
+            hitStop: bend.hitStop,
+            flash: bend.flash,
+            casterId: event.unitId,
+          };
+          cursor += bend.plan.duration + TIMING.gap * rate;
+          break;
+        }
         const snapshot = (
           unit: Unit | undefined,
           socket: ActorAttachment['socket'],
