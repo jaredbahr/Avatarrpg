@@ -32,7 +32,6 @@ import type {
 import {
   DIRECTIONS,
   distance,
-  enterCost,
   inBounds,
   occupiedCells,
   occupancy,
@@ -211,7 +210,12 @@ export class BattleDraft {
     amount: number,
     damageType: DamageType,
     sourceId: string | null,
-    options: { crit?: boolean; applyMultiplier?: boolean } = {},
+    options: {
+      crit?: boolean;
+      applyMultiplier?: boolean;
+      minHp?: number;
+      cause?: 'ledgeDrop';
+    } = {},
   ): void {
     const unit = this.unit(unitId);
     if (!unit || !isAlive(unit)) return;
@@ -222,15 +226,20 @@ export class BattleDraft {
     const final = Math.max(0, Math.round(scaled));
     if (final <= 0) return;
 
-    const hp = clampHp(unit.hp - final, unit.base.maxHp);
+    const hp = Math.max(options.minHp ?? 0, clampHp(unit.hp - final, unit.base.maxHp));
+    const dealt = unit.hp - hp;
+    // A ledge event also records a harmless fall at the 1-HP floor so the log
+    // can explain the movement without inventing a damage number.
+    if (dealt <= 0 && options.cause !== 'ledgeDrop') return;
     this.replace({ ...unit, hp });
     this.emit({
       type: 'damaged',
       unitId,
-      amount: final,
+      amount: options.cause === 'ledgeDrop' ? dealt : final,
       crit: options.crit ?? false,
       damageType,
       sourceId,
+      ...(options.cause ? { cause: options.cause } : {}),
     });
 
     if (hp <= 0) this.emit({ type: 'unitDied', unitId });
@@ -378,31 +387,71 @@ export class BattleDraft {
     origin: Vec2,
     tiles: number,
     mode: 'push' | 'pull',
-  ): Vec2 {
+  ): { readonly pos: Vec2; readonly ledgeDrop: number } {
     const sign = mode === 'push' ? 1 : -1;
     const dx = Math.sign(from.x - origin.x) * sign;
     const dy = Math.sign(from.y - origin.y) * sign;
-    if (dx === 0 && dy === 0) return from;
+    if (dx === 0 && dy === 0) return { pos: from, ledgeDrop: 0 };
 
     let current = from;
+    let ledgeDrop = 0;
     for (let step = 0; step < tiles; step++) {
       const next = { x: current.x + dx, y: current.y + dy };
       if (!inBounds(this.grid, next)) break;
       // Pulling past the origin would look absurd; stop when adjacent.
       if (mode === 'pull' && distance(next, origin) === 0) break;
-      if (enterCost(ctx, current, next) === null) break;
+      if (!this.canShoveStep(ctx, current, next)) break;
+      ledgeDrop += this.ledgeDrop(ctx.size, current, next);
       current = next;
     }
-    return current;
+    return { pos: current, ledgeDrop };
+  }
+
+  /** Forced movement follows a one-tier ramp, but cannot push up a bare ledge. */
+  private canShoveStep(ctx: MoveContext, from: Vec2, to: Vec2): boolean {
+    if (standCost(ctx, to) === null) return false;
+    const width = ctx.size === 2 ? 2 : 1;
+    for (let dx = 0; dx < width; dx++) {
+      const fromTile = tileAt(this.grid, { x: from.x + dx, y: from.y });
+      const toTile = tileAt(this.grid, { x: to.x + dx, y: to.y });
+      if (!fromTile || !toTile) return false;
+      const climb = toTile.elevation - fromTile.elevation;
+      if (climb > 0 && (climb > 1 || (!fromTile.ramp && !toTile.ramp))) return false;
+    }
+    return true;
+  }
+
+  /** Largest non-ramp elevation loss across the footprint for one forced step. */
+  private ledgeDrop(size: Unit['size'], from: Vec2, to: Vec2): number {
+    let largest = 0;
+    const width = size === 2 ? 2 : 1;
+    for (let dx = 0; dx < width; dx++) {
+      const before = tileAt(this.grid, { x: from.x + dx, y: from.y });
+      const after = tileAt(this.grid, { x: to.x + dx, y: to.y });
+      if (before && after) {
+        const drop = before.elevation - after.elevation;
+        if (drop > 1 || (drop === 1 && !before.ramp && !after.ramp)) {
+          largest = Math.max(largest, drop);
+        }
+      }
+    }
+    return largest;
   }
 
   shove(unitId: string, origin: Vec2, tiles: number, mode: 'push' | 'pull'): void {
     const unit = this.unit(unitId);
     if (!unit || !isAlive(unit) || tiles <= 0) return;
 
-    const current = this.slideFrom(this.moveContext(unit), unit.pos, origin, tiles, mode);
+    const slide = this.slideFrom(this.moveContext(unit), unit.pos, origin, tiles, mode);
+    const current = slide.pos;
     if (samePos(current, unit.pos)) return;
     this.placeUnit(unitId, current);
+    if (slide.ledgeDrop > 0) {
+      this.dealDamage(unitId, slide.ledgeDrop * this.content.tuning.ledgeDropDamage, 'pure', null, {
+        minHp: 1,
+        cause: 'ledgeDrop',
+      });
+    }
     this.emit({ type: 'unitPushed', unitId, to: current });
   }
 
@@ -577,7 +626,7 @@ export class BattleDraft {
       size: 1,
       climbCost: this.content.tuning.climbCost,
     };
-    const landing = this.slideFrom(ctx, prop.pos, origin, tiles, mode);
+    const landing = this.slideFrom(ctx, prop.pos, origin, tiles, mode).pos;
 
     if (samePos(landing, prop.pos)) {
       this.bakeProp(prop, def);

@@ -29,6 +29,8 @@ import type { SheetClips } from '../../render/sheets/store';
 import type { Projection } from '../../render/projection';
 import type { ActorAttachment, EmitterAttachments } from '../../render/view';
 import { enemyScale, partyScale } from './actorScale';
+import type { BendSources } from './bendHandoff';
+import { planBendCast } from './bendHandoff';
 
 /** Base durations in milliseconds, before the motion setting is applied. */
 export const TIMING = {
@@ -77,6 +79,13 @@ export interface ChoreographyInput {
    * is the legacy pose.
    */
   readonly clipsOf?: (sprite: string) => SheetClips | undefined;
+  /**
+   * The loaded bends and painted effects (ADR 0055, step 7). Without them, or
+   * for a cast `planBendCast` turns down, the cast is the legacy one exactly.
+   */
+  readonly bends?: BendSources;
+  /** How far the ground lifts a unit's drawing at a tile, in tiles; flat without it. */
+  readonly liftOf?: (pos: Vec2) => number;
 }
 
 /**
@@ -275,6 +284,7 @@ export function choreograph(input: ChoreographyInput): Choreography {
   };
   /** Until when a unit's G hit plays, so a push under it does not restart it. */
   const flinching = new Map<string, number>();
+  const harmlessLedgePushes = new Set<number>();
   const still: Vec2 = { x: 0, y: 0 };
 
   const floater = (pos: Vec2, text: string, color: string, at: number): void => {
@@ -408,6 +418,43 @@ export function choreograph(input: ChoreographyInput): Choreography {
             event.target.x < pos.x + unit.size
           );
         });
+        // A bending attack plays the caster's bend instead (ADR 0055, step 7).
+        // Reduced motion keeps the legacy cast, whose collapsed clock it is
+        // built for, and so does anything the bend lookups cannot draw yet.
+        const bend =
+          casterUnit && rate >= 1
+            ? planBendCast(
+                input.bends,
+                casterUnit,
+                casterPos,
+                ability,
+                event.target,
+                victim && { pos: positions.get(victim.id) ?? victim.pos, size: victim.size },
+                input.projection ?? 'orthographic',
+                input.liftOf,
+              )
+            : undefined;
+        if (bend) {
+          tracks.push({
+            kind: 'bend',
+            unitId: event.unitId,
+            plan: bend.plan,
+            fx: bend.fx,
+            start: cursor,
+            duration: bend.plan.duration,
+          });
+          cue(ability.fx, cursor + bend.launchAt, 1, eventIndex);
+          // The one rules result shows once, when the damage release lands,
+          // and the struck unit holds through that impact's hit-stop.
+          pending = {
+            at: cursor + bend.impactAt,
+            hitStop: bend.hitStop,
+            flash: bend.flash,
+            casterId: event.unitId,
+          };
+          cursor += bend.plan.duration + TIMING.gap * rate;
+          break;
+        }
         const snapshot = (
           unit: Unit | undefined,
           socket: ActorAttachment['socket'],
@@ -694,8 +741,21 @@ export function choreograph(input: ChoreographyInput): Choreography {
       }
 
       case 'damaged': {
-        const pos = positions.get(event.unitId);
-        const hit = landing();
+        const next = events[eventIndex + 1];
+        const ledgeLanding =
+          event.cause === 'ledgeDrop' &&
+          next?.type === 'unitPushed' &&
+          next.unitId === event.unitId;
+        const pos = ledgeLanding ? next.to : positions.get(event.unitId);
+        const hit = ledgeLanding
+          ? {
+              at:
+                (pending?.pushIds?.includes(event.unitId) ? pending.at + pending.hitStop : cursor) +
+                TIMING.step * 2 * rate,
+              hitStop: 0,
+              flash: 0.6,
+            }
+          : landing();
         const before = unitHealth.get(event.unitId);
         if (before) {
           const hp = Math.max(0, before.hp - event.amount);
@@ -707,8 +767,8 @@ export function choreograph(input: ChoreographyInput): Choreography {
         // The blow landing, under whatever voice threw it. `landing()` is the
         // aimed moment when a projectile is in flight, so the sound arrives
         // with the projectile rather than with the command.
-        cue('hit', hit.at, 5, eventIndex);
-        if (pos && hit.flash > 0) {
+        if (event.amount > 0) cue('hit', hit.at, 5, eventIndex);
+        if (event.amount > 0 && pos && hit.flash > 0) {
           tracks.push({
             kind: 'flash',
             unitId: event.unitId,
@@ -717,7 +777,7 @@ export function choreograph(input: ChoreographyInput): Choreography {
             duration: (TIMING.flash + hit.hitStop) * (rate < 1 ? rate : 1),
           });
         }
-        if (pos) {
+        if (event.amount > 0 && pos) {
           const source = pending
             ? unitCentre(pending.casterId)
             : event.sourceId
@@ -781,7 +841,8 @@ export function choreograph(input: ChoreographyInput): Choreography {
             recoilAt + 30 * rate,
           );
         }
-        cursor = Math.max(cursor, hit.at + hit.hitStop) + TIMING.gap * rate;
+        if (ledgeLanding && event.amount === 0) harmlessLedgePushes.add(eventIndex + 1);
+        if (!ledgeLanding) cursor = Math.max(cursor, hit.at + hit.hitStop) + TIMING.gap * rate;
         break;
       }
 
@@ -857,7 +918,10 @@ export function choreograph(input: ChoreographyInput): Choreography {
           });
           // A G hit already playing carries the push; restarting it would flash
           // the stance. A push alone plays one through, past the slide.
-          if ((flinching.get(event.unitId) ?? -Infinity) <= start) {
+          if (
+            !harmlessLedgePushes.has(eventIndex) &&
+            (flinching.get(event.unitId) ?? -Infinity) <= start
+          ) {
             const flinch = timed(event.unitId, hitSpan);
             const hold = Math.max(duration, flinch);
             pose(event.unitId, 'hit', start, hold, still, still, easeOutQuad, {

@@ -66,6 +66,7 @@ describe('hit chance', () => {
       hitChanceMax: 99,
       climbCost: 1,
       heightReachBonus: 1,
+      ledgeDropDamage: 3,
     });
   });
 
