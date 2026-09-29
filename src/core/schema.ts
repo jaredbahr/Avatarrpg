@@ -33,6 +33,9 @@ export type SafeParseResult<T> =
 export class SchemaError extends Error {
   constructor(readonly issues: readonly Issue[]) {
     super();
+    // Own property so console output and stack traces say "SchemaError"; the
+    // prototype's name is only "Error".
+    this.name = 'SchemaError';
     Object.defineProperty(this, 'message', {
       configurable: true,
       get: () => JSON.stringify(this.issues, null, 2),
