@@ -1,6 +1,6 @@
 # ADR 0064: Low growth opts out of the footprint contact shadow
 
-**Status:** proposed, 2026-09-29
+**Status:** accepted by the supervisor, 2026-09-29 (a presentation detail inside the approved grounding direction)
 
 ## Context
 
