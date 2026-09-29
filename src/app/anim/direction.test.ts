@@ -207,7 +207,7 @@ describe('heading vocabulary is a declared sheet capability', () => {
     expect(walkHeading({ x: 0, y: 0 }, 'southWest')).toBe('southWest');
   });
 
-  it('only the G sheets (the party and the thug) declare eight-way locomotion today', () => {
+  it('only the G sheets (the party, the thug and the quarry bandits) declare eight-way locomotion today', () => {
     const eightWay = Object.entries(ASSETS).flatMap(([key, entry]) =>
       entry.kind === 'sheet' && entry.locomotion?.headings === 8 ? [[key, entry.atlas]] : [],
     );
@@ -216,6 +216,9 @@ describe('heading vocabulary is a declared sheet capability', () => {
       ['unit.water.sura', 'art/units/sura-g.json'],
       ['unit.earth.bo', 'art/units/bo-g.json'],
       ['unit.enemy.thug', 'art/units/thug-g.json'],
+      ['unit.enemy.slinger', 'art/units/slinger-g.json'],
+      ['unit.enemy.bruiser', 'art/units/bruiser-g.json'],
+      ['unit.enemy.quarrybender', 'art/units/quarrybender-g.json'],
     ]);
   });
 
