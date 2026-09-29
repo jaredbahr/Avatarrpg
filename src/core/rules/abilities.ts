@@ -38,7 +38,8 @@ import {
   samePos,
   tileAt,
 } from './grid';
-import { expectedDamage, healAmount, hitChance, rollDamage, rollHit } from './damage';
+import { expectedDamage, healAmount, hitBreakdown, rollDamage, rollHit } from './damage';
+import type { HitBreakdown } from './damage';
 import { weatherAt } from './obscurement';
 import { forecastReactions } from './reactions';
 import type {
@@ -273,6 +274,12 @@ export interface PreviewTarget {
   readonly friendly: boolean;
   /** Percentage, 5-99. Null when the effect cannot miss (heals, buffs). */
   readonly hitChance: number | null;
+  /**
+   * The same components `hitChance` was summed from — base, elevation, cover,
+   * plunging, statuses and obscurement — so the confirm step can show *why* a
+   * shot reads 70%. Null wherever `hitChance` is: nothing was rolled.
+   */
+  readonly hitBreakdown: HitBreakdown | null;
   readonly damage: number;
   readonly heal: number;
   /** True when a heal effect finds this friendly target already at max HP. */
@@ -343,6 +350,7 @@ export function previewAbility(
     let healAtCapacity = false;
     let remainingHealCapacity: number | null = null;
     let chance: number | null = null;
+    let breakdown: HitBreakdown | null = null;
     const statuses: {
       id: StatusId;
       chance: number;
@@ -356,7 +364,10 @@ export function previewAbility(
       switch (effect.kind) {
         case 'damage':
           damage += expectedDamage(content, caster, unit, effect);
-          chance = hitChance(content, battle.grid, caster, unit, weather);
+          // One call, so the chip's percentage and its explanation cannot
+          // disagree: `chance` *is* `breakdown.chance`.
+          breakdown = hitBreakdown(content, battle.grid, caster, unit, weather);
+          chance = breakdown.chance;
           break;
         case 'heal':
           if (friendly) {
@@ -401,6 +412,7 @@ export function previewAbility(
       name: unit.name,
       friendly,
       hitChance: chance,
+      hitBreakdown: breakdown,
       damage,
       heal,
       healAtCapacity,
