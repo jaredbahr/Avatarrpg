@@ -5,6 +5,7 @@ import { BattleDraft } from '../state/battleDraft';
 import { createBattle, createGame } from '../state/createGame';
 import type { Grid, Unit, Vec2 } from '../types';
 import { planAiTurn, previewAiPlan, scoreAbility, weightsFor } from './ai';
+import { resolveAbility } from './abilities';
 import { DEFAULT_TILE, tileAt, withTile } from './grid';
 
 /**
@@ -145,6 +146,10 @@ describe('the AI and ledges', () => {
 const CART: Vec2 = { x: 3, y: 1 };
 const CART_VICTIM: Vec2 = { x: 4, y: 1 };
 const CART_CASTER: Vec2 = { x: 1, y: 1 };
+/** A caster south of the cart, so a shove sends the cart north, clear of the victim. */
+const CART_SOUTH: Vec2 = { x: 3, y: 2 };
+/** Where that shove leaves the cart: one tile north, still intact. */
+const CART_NORTH: Vec2 = { x: 3, y: 0 };
 
 /**
  * A cabbage cart on a two-tier plateau with a victim beside it (E-c). A damage
@@ -161,7 +166,12 @@ const CART_CASTER: Vec2 = { x: 1, y: 1 };
  * drop alone and read 1.235 where the fall is worth 2. The ledge has to be the
  * only difference between the two boards being subtracted.
  */
-function cartFixture(options: { readonly ledge: boolean; readonly cart: boolean }): {
+function cartFixture(options: {
+  readonly ledge: boolean;
+  readonly cart: boolean;
+  readonly caster?: Vec2;
+  readonly abilities?: readonly string[];
+}): {
   readonly draft: BattleDraft;
   readonly caster: Unit;
 } {
@@ -197,8 +207,8 @@ function cartFixture(options: { readonly ledge: boolean; readonly cart: boolean 
   const caster: Unit = {
     ...casterBase,
     ai: 'aggressive',
-    pos: CART_CASTER,
-    abilities: ['shatterpoint'],
+    pos: options.caster ?? CART_CASTER,
+    abilities: options.abilities ?? ['shatterpoint'],
     cooldowns: {},
     ap: 6,
     move: 0,
@@ -265,5 +275,36 @@ describe('the AI, the cabbage cart and the ledge', () => {
     const flat = priceCartAim({ ledge: false, cart: false });
 
     expect(ledge - flat).toBeCloseTo(drop / shatterpoint.apCost, 5);
+  });
+
+  it('prices no fall for the shove that only slides an intact cart', () => {
+    const shove = CONTENT.abilities.get('shove');
+    if (!shove) throw new Error('shove is missing from content');
+    const weights = weightsFor('aggressive');
+    const walls = new Map<string, readonly Unit[]>();
+    const price = (board: ReturnType<typeof cartFixture>): number =>
+      scoreAbility(board.draft, board.caster, shove, CART, weights, walls);
+
+    // A caster south of the cart, armed only with Shove: the shove slides the
+    // cart north into a free tile while the victim stays beside its old cell.
+    const shover = { caster: CART_SOUTH, abilities: ['shove'] };
+    // One seed and one board shape; only the tier past the victim differs.
+    // Shoving a prop slides it and never breaks it, so there is no cabbage burst
+    // and no fall to price: the two aims must cost exactly the same.
+    const ledge = cartFixture({ ledge: true, cart: true, ...shover });
+    const flat = cartFixture({ ledge: false, cart: true, ...shover });
+    expect(price(ledge)).toBe(price(flat));
+    // And with no unit struck either, the aim is worth nothing at all.
+    expect(price(ledge)).toBe(-Infinity);
+
+    // The board is the scenario, not a shove the victim blocks: Shove really
+    // does move the cart a tile north, and the cart survives it.
+    const before = ledge.draft.propAt(CART);
+    if (!before) throw new Error('missing cart fixture');
+    resolveAbility(ledge.draft, ledge.caster, shove, CART, new RngCursor(0x5a0e));
+    expect(ledge.draft.propAt(CART)).toBeUndefined();
+    const moved = ledge.draft.propAt(CART_NORTH);
+    expect(moved?.propId).toBe('cabbage_cart');
+    expect(moved?.hp).toBe(before.hp);
   });
 });

@@ -674,13 +674,15 @@ export function scoreAbility(
 }
 
 /**
- * What breaking (or shoving) the props in `tiles` is worth.
+ * What breaking a prop in `tiles` is worth.
  *
  * A prop is not a unit, so `unitsOnTiles` never sees one and none of the scoring
  * above applies. What matters is not the prop but what it is holding: an oil
  * flask beside three people is a good target and an identical flask in an empty
  * corner is worthless, so everything here is valued by who is standing in the
- * blast, using the same friendly/hostile weights as a direct hit.
+ * blast, using the same friendly/hostile weights as a direct hit. Only a prop
+ * this ability's own damage opens is priced at all; a shove that merely moves
+ * one is not a break and is worth nothing here.
  *
  * Pure arithmetic, no RNG — `scoreAbility` is called from the preview path and
  * determinism depends on it staying that way.
@@ -696,7 +698,6 @@ function scoreProps(
   if (props.length === 0) return 0;
 
   const damage = ability.effects.find((e) => e.kind === 'damage');
-  const shoves = ability.effects.some((e) => e.kind === 'push' || e.kind === 'pull');
   let total = 0;
 
   // Only a prop whose break shoves somebody needs a battle snapshot, so build
@@ -718,7 +719,16 @@ function scoreProps(
       const dealt = def.vulnerableTo.includes(damage.damageType) ? damage.base * 2 : damage.base;
       breaks = dealt >= prop.hp;
     }
-    if (!breaks && !shoves) continue;
+    /*
+     * A shove on its own never opens a prop, so it never runs `onBreak`.
+     * `resolveAbility` moves a shove-targeted prop through `shoveProp`, which
+     * cannot damage it — and the only damaging surface is fire at 4, which opens
+     * no prop whose break would move or hurt the people beside it. Reading
+     * `onBreak` off a shoved cart priced a cabbage burst resolution never
+     * delivers, and its break push awarded a ledge drop for a victim the shove
+     * never moves. Only a break this ability deals itself earns the forecast.
+     */
+    if (!breaks) continue;
 
     let value = 0;
     for (const effect of def.onBreak) {
