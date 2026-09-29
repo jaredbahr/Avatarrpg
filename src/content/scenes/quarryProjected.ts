@@ -126,9 +126,10 @@ export const CUTTING_WATER_CELLS: readonly Vec2[] = [
  * the forest pond's 16-pixel pad (`FOREST_POND_PATCH`). It is packed at twice
  * this size, as the forest's is.
  *
- * The same plate, one tile west and one half-tile north of its pre-M5
- * registration (752, 368): a pure `(-64, -32)` translation of the drawing the
- * live water film sits on, not a repaint.
+ * The patch sits one tile west and one half-tile north of its pre-M5
+ * registration (752, 368), a `(-64, -32)` translation that follows the cells.
+ * The plate itself is repacked there with the organic shore (PR 162's
+ * `organic` option), so its wet line rounds off the cells' steps.
  */
 export const CUTTING_POOL_PATCH = { x: 688, y: 336, width: 416, height: 224 } as const;
 

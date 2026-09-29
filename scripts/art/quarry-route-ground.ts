@@ -471,7 +471,13 @@ const CUTTING_TRACK = { centre: 6, offset: 1.5 } as const;
 export const CUTTING_POOL_OUTPUT = 'public/art/maps/cutting-scene/pool-bank.webp';
 export async function buildCuttingPool(): Promise<Image> {
   const material = await loadQuarryMaterial(CUTTING_TRACK);
-  return packShoreline(material, { patch: CUTTING_POOL_PATCH, cells: CUTTING_WATER_CELLS }).image;
+  // The runoff pool is organic (M5): its wet line rounds off the cells'
+  // steps, where the plain bite left a flat teal rectangle in the cut.
+  return packShoreline(material, {
+    patch: CUTTING_POOL_PATCH,
+    cells: CUTTING_WATER_CELLS,
+    organic: true,
+  }).image;
 }
 
 /** Rewrite one generated declaration in the registration file, or append it. */
