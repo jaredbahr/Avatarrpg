@@ -87,7 +87,7 @@ export interface Pond {
   readonly cells: readonly Vec2[];
   /**
    * Round the shoreline off the grid's steps (`organicShore`). The forest's
-   * pond and creek take it; the Cutting's pool keeps the plain bite.
+   * pond and creek take it, and so does the Cutting's runoff pool (M5).
    */
   readonly organic?: boolean;
   /**

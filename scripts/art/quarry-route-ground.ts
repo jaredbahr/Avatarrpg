@@ -51,6 +51,7 @@ import { spillDepth, spillWins } from './forest-rubble';
 import { packShoreline } from './forest-shoreline';
 import { heapFits, loadQuarryMaterial, QUARRY_GROUND_QUALITY } from './quarry-village-material';
 import { ROCK_COURSE, rockPainter } from './quarry-rock';
+import { cuttingRaised } from './cutting-rock';
 import { buildDrillerGantry, buildDrillerShaft, DRILLER_GANTRY_CELLS } from './driller-shaft';
 import type { QuarryMaterial, QuarryTone, Rgb } from './quarry-village-material';
 
@@ -229,6 +230,9 @@ export function packQuarryGround(
       ? ROCK_COURSE
       : Math.max(0, 2 - (map.legend[key]?.elevation ?? 0)) * ROCK_COURSE,
   );
+  // The Cutting stands its rock and its ledges with its own painter
+  // (`cutting-rock.ts`): a tall north cut, rough rock tops, faced ledges.
+  const raised = map.id === AMBUSH_ROAD.id ? cuttingRaised(map) : null;
 
   for (let py = 0; py < QUARRY_PAGE.height; py++)
     for (let px = 0; px < QUARRY_PAGE.width; px++) {
@@ -330,14 +334,18 @@ export function packQuarryGround(
 
       const wx = QUARRY_PAGE.x + px + 0.5,
         wy = QUARRY_PAGE.y + py + 0.5;
+      const lifted =
+        edge < INK_HALF ? null : raised?.(material, wx, wy, lit && edge < INK_HALF + RIM_WIDTH);
       paint(
         edge < INK_HALF
           ? material.ink
-          : key === 'X'
-            ? rockPixel(material, wx, wy, lit && edge < INK_HALF + RIM_WIDTH)
-            : lit && edge < INK_HALF + RIM_WIDTH
-              ? material.rimOf(tone)
-              : (heap ?? material.colour(tone, gx, gy)),
+          : lifted
+            ? lifted
+            : key === 'X'
+              ? rockPixel(material, wx, wy, lit && edge < INK_HALF + RIM_WIDTH)
+              : lit && edge < INK_HALF + RIM_WIDTH
+                ? material.rimOf(tone)
+                : (heap ?? material.colour(tone, gx, gy)),
       );
     }
   return images;
@@ -419,7 +427,13 @@ const CUTTING_TRACK = { centre: 6, offset: 1.5 } as const;
 export const CUTTING_POOL_OUTPUT = 'public/art/maps/cutting-scene/pool-bank.webp';
 export async function buildCuttingPool(): Promise<Image> {
   const material = await loadQuarryMaterial(CUTTING_TRACK);
-  return packShoreline(material, { patch: CUTTING_POOL_PATCH, cells: CUTTING_WATER_CELLS }).image;
+  // The runoff pool is organic (M5): its wet line rounds off the cells'
+  // steps, where the plain bite left a flat teal rectangle in the cut.
+  return packShoreline(material, {
+    patch: CUTTING_POOL_PATCH,
+    cells: CUTTING_WATER_CELLS,
+    organic: true,
+  }).image;
 }
 
 /** Rewrite one generated declaration in the registration file, or append it. */
