@@ -35,20 +35,20 @@ The rows as the rules read them:
 
 ```
 XXXXXXXXXXXXXXXXXXXX
-XXA^^^^^R^^R^^^^^AXX
-XX^....oo..oo...^^XX
+XXASSSSSRSSRSSSSSAXX
+XXS....oo..oo...SSXX
 .......oo..oo.......
 ..r.....#.........PP
 ===.......mm......PP
 ===.......mm......PP
 ..r........#......PP
 .......oo..oo.......
-XX^....oo..oo...^^XX
-XXA^^^^^R^^R^^^^^AXX
+XXS....oo..oo...SSXX
+XXASSSSSRSSRSSSSSAXX
 XXXXXXXXXXXXXXXXXXXX
 ```
 
-Legend: `X` cut quarry rock, two steps up; `A` high ledges, two steps up; `^` ledges, one step up; `R` heaps of tumbled rock on a ledge, one step up; `.` bare earth; `o` spilled oil; `r` heaps of tumbled rock; `#` stone walls; `P` pits; `=` road; `m` churned mud.
+Legend: `X` cut quarry rock, two steps up; `A` high ledges, two steps up; `S` ledges, one step up; `R` heaps of tumbled rock on a ledge, one step up; `.` bare earth; `o` spilled oil; `r` heaps of tumbled rock; `#` stone walls; `P` pits; `=` road; `m` churned mud.
 
 ## Prompt
 

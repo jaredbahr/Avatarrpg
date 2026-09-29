@@ -88,7 +88,7 @@ type Kind = 'dirt' | 'road' | 'stone' | 'water' | 'void';
 const kind = (key: string | undefined): Kind =>
   key === '='
     ? 'road'
-    : key === '^' || key === 'A' || key === 'o' || key === 'X'
+    : key === '^' || key === 'S' || key === 'A' || key === 'o' || key === 'X'
       ? 'stone'
       : key === '~'
         ? 'water'
@@ -107,6 +107,7 @@ const materialOf = (key: string | undefined): QuarryTone | null => {
     // The Driller's terrace wall (`X`) is the gate's cut rock
     // (`quarry-rock.ts`), the same block key standing above the bench.
     case '^':
+    case 'S':
     case 'A':
     case 'X':
       return 'block';

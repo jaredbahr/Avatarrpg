@@ -53,8 +53,8 @@ describe('map legend (M1 keys)', () => {
 });
 
 /**
- * The E4 ramp. `S` is a new key only: no shipped map draws it yet, so adding
- * it cannot change a tile on any existing battlefield.
+ * The E4 ramp. It shares tier 1 with `^` and only differs in the climb cost, so
+ * the key itself changes no tile's terrain, elevation, blocking or cover.
  */
 describe('map legend (E4 ramp key)', () => {
   it('resolves S to a tier-1 stone ramp', () => {
