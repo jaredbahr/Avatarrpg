@@ -3,7 +3,7 @@ import { CONTENT } from '../../content';
 import { DEFAULT_MAX_ROUNDS, SOLO_PARTY, STANDARD_PARTY, runCombat, seedFor } from './runCombat';
 import { partyOfSize, runBalanceReport } from './balance';
 import { encounterRoster } from '../state/createGame';
-import type { ContentIndex } from '../types';
+import type { ContentIndex, EncounterDef } from '../types';
 
 /**
  * These are the tests that would catch a rules bug before a family does.
@@ -262,22 +262,31 @@ describe('balance', () => {
  * is the measurement that proves the whole chain — schedule → `hitBreakdown`
  * → the roll and the AI — survives a real fight, and it prints the numbers the
  * O-b brief asks for.
+ *
+ * The index holds *only* the forest road. `runBalanceReport` walks every
+ * encounter it is handed, so spreading the full `CONTENT` in here ran the rest
+ * of the act only to filter the rows back out — a large slice of this file's
+ * runtime for three rows it never looked at.
  */
 function forestRoadSandstorm(): ContentIndex {
   const encounter = CONTENT.encounters.get('enc_forest_road');
   if (!encounter) throw new Error('Missing forest road encounter');
-  return {
-    ...CONTENT,
-    encounters: new Map(CONTENT.encounters).set('enc_forest_road', {
-      ...encounter,
-      weather: { id: 'sandstorm', schedule: [{ fromRound: 1, intensity: 2 }] },
-    }),
+  const stormed: EncounterDef = {
+    ...encounter,
+    weather: { id: 'sandstorm', schedule: [{ fromRound: 1, intensity: 2 }] },
   };
+  return { ...CONTENT, encounters: new Map([['enc_forest_road', stormed]]) };
 }
 
 describe('sandstorm balance fixture', () => {
   it('runs the forest road under weather through the balance runner', () => {
-    const report = runBalanceReport(forestRoadSandstorm(), { trials: 24, perVariant: true });
+    /*
+     * Twelve trials per variant, not the report default: these rows are a
+     * smoke test and a printed shape check, not a tuned win rate. The sharp
+     * weather assertions — determinism, and "the storm changes the fight" —
+     * live in the seed test below and do not depend on this count.
+     */
+    const report = runBalanceReport(forestRoadSandstorm(), { trials: 12, perVariant: true });
     const rows = report.encounters.filter((row) => row.encounterId === 'enc_forest_road');
     expect(rows.length).toBeGreaterThan(0);
 
