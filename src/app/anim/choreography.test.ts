@@ -844,7 +844,12 @@ describe('choreograph', () => {
     expect(lethalHit).toMatchObject({ start: 1000, duration: 480 });
     expect(lethalKo?.start).toBe(1480);
     expect(lethalKo?.start).toBeGreaterThan(lethalHit?.start ?? 0);
-    expect(at([{ ...blow, amount: 20 }, died]).health.find((h) => h.fallen)?.at).toBe(1480);
+    // A G knockout remains upright in presentation until its authored fall is
+    // complete; delaying its start behind the hit therefore delays `fallen`
+    // to the end of both clips, not merely to the new KO start.
+    expect(at([{ ...blow, amount: 20 }, died]).health.find((h) => h.fallen)?.at).toBe(
+      (lethalKo?.start ?? 0) + (lethalKo?.duration ?? 0),
+    );
     // The thug, and Kaya before her sheet is in, keep the legacy knockout.
     for (const [event, clipsOf] of [
       [{ type: 'unitDied', unitId: 'e0' }, loaded],

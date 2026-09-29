@@ -207,7 +207,7 @@ describe('Animator', () => {
       { ...combatUnit('p0', 4, 4, 20), sprite: kaya },
       { ...combatUnit('e0', 7, 4, 20), faction: 'enemy' as const, sprite: 'unit.enemy.thug' },
     ];
-    const blow = (unitId: string, sourceId: string): GameEvent => ({
+    const blow = (unitId: string, sourceId: string): Extract<GameEvent, { type: 'damaged' }> => ({
       type: 'damaged',
       unitId,
       amount: 3,
