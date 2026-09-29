@@ -52,9 +52,11 @@ describe('hit chance', () => {
       baseHitChance: 90,
       elevationStep: 10,
       coverPenalty: 20,
+      plungingCoverDivisor: 2,
       hitChanceMin: 5,
       hitChanceMax: 99,
       climbCost: 1,
+      heightReachBonus: 1,
     });
   });
 
@@ -66,7 +68,14 @@ describe('hit chance', () => {
       at(attacker, ATTACKER),
       at(defender, ADJACENT),
     );
-    expect(breakdown).toEqual({ chance: 90, base: 90, elevation: 0, cover: 0, statuses: 0 });
+    expect(breakdown).toEqual({
+      chance: 90,
+      base: 90,
+      elevation: 0,
+      cover: 0,
+      plunging: 0,
+      statuses: 0,
+    });
   });
 
   it('adds a step for each tier of high ground and never passes 99', () => {
@@ -89,6 +98,7 @@ describe('hit chance', () => {
       base: 90,
       elevation: 0,
       cover: -20,
+      plunging: 0,
       statuses: 0,
     });
   });
@@ -99,7 +109,47 @@ describe('hit chance', () => {
     expect(hitChance(CONTENT, covered, at(attacker, ATTACKER), at(defender, ADJACENT))).toBe(90);
 
     const stacked = place(openGrid(), RANGED, { cover: true, elevation: 2 });
-    expect(hitChance(CONTENT, stacked, at(attacker, ATTACKER), at(defender, RANGED))).toBe(50);
+    expect(hitBreakdown(CONTENT, stacked, at(attacker, ATTACKER), at(defender, RANGED))).toEqual({
+      chance: 50,
+      base: 90,
+      elevation: -20,
+      cover: -20,
+      plunging: 0,
+      statuses: 0,
+    });
+  });
+
+  it('halves cover only for a non-adjacent attacker above the defender', () => {
+    const { attacker, defender } = fixture();
+    const highAttacker = place(place(openGrid(), ATTACKER, { elevation: 1 }), RANGED, {
+      cover: true,
+    });
+    expect(
+      hitBreakdown(CONTENT, highAttacker, at(attacker, ATTACKER), at(defender, RANGED)),
+    ).toEqual(expect.objectContaining({ cover: -20, plunging: 10, chance: 90 }));
+
+    const equal = place(place(openGrid(), ATTACKER, { elevation: 1 }), RANGED, {
+      cover: true,
+      elevation: 1,
+    });
+    expect(hitBreakdown(CONTENT, equal, at(attacker, ATTACKER), at(defender, RANGED))).toEqual(
+      expect.objectContaining({ cover: -20, plunging: 0 }),
+    );
+
+    const lower = place(place(openGrid(), ATTACKER, { elevation: 0 }), RANGED, {
+      cover: true,
+      elevation: 1,
+    });
+    expect(hitBreakdown(CONTENT, lower, at(attacker, ATTACKER), at(defender, RANGED))).toEqual(
+      expect.objectContaining({ cover: -20, plunging: 0 }),
+    );
+
+    const adjacent = place(place(openGrid(), ATTACKER, { elevation: 1 }), ADJACENT, {
+      cover: true,
+    });
+    expect(hitBreakdown(CONTENT, adjacent, at(attacker, ATTACKER), at(defender, ADJACENT))).toEqual(
+      expect.objectContaining({ cover: 0, plunging: 0 }),
+    );
   });
 
   it('reads the numbers from the index, so a variant can move them', () => {

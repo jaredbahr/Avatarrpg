@@ -23,11 +23,15 @@ const combatTuningShape = {
   elevationStep: z.number().int().min(0),
   /** Accuracy removed when the defender has cover and is not adjacent. */
   coverPenalty: z.number().int().min(0),
+  /** Divisor used to reduce ranged cover against a higher-tier defender. */
+  plungingCoverDivisor: z.number().int().min(1),
   /**
    * Extra move points a one-tier climb costs, unless either end is a ramp
    * (`S`). A drop is always free and a two-tier step is never legal.
    */
   climbCost: z.number().int().min(0),
+  /** Extra range for long-range line-of-sight abilities from higher ground. */
+  heightReachBonus: z.number().int().min(0),
   /** Hit chance is clamped into this band, lowest bound first. */
   hitChanceMin: z.number().int().min(0).max(100),
   hitChanceMax: z.number().int().min(0).max(100),
@@ -53,7 +57,9 @@ export const COMBAT_TUNING: CombatTuning = combatTuningSchema.parse({
   baseHitChance: 90,
   elevationStep: 10,
   coverPenalty: 20,
+  plungingCoverDivisor: 2,
   climbCost: 1,
+  heightReachBonus: 1,
   hitChanceMin: 5,
   hitChanceMax: 99,
 });

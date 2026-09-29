@@ -127,7 +127,19 @@ export function isValidTarget(
   if (!inBounds(battle.grid, target)) return { ok: false, reason: 'Off the map.' };
 
   const range = distanceToUnit(target, caster);
-  if (range > ability.range) return { ok: false, reason: 'Out of range.' };
+  const casterElevation = Math.max(
+    ...occupiedCells(caster).map((cell) => tileAt(battle.grid, cell)?.elevation ?? 0),
+  );
+  const targetElevation = tileAt(battle.grid, target)?.elevation ?? 0;
+  const hasDash = ability.effects.some((effect) => effect.kind === 'dash');
+  const heightReach =
+    ability.range >= 3 &&
+    ability.requiresLineOfSight &&
+    !hasDash &&
+    casterElevation > targetElevation
+      ? content.tuning.heightReachBonus
+      : 0;
+  if (range > ability.range + heightReach) return { ok: false, reason: 'Out of range.' };
   if (range < ability.minRange) return { ok: false, reason: 'Too close.' };
 
   if (ability.requiresLineOfSight && !hasLineOfSight(battle.grid, caster.pos, target)) {
@@ -200,7 +212,12 @@ export function targetableTiles(
   if (ability.targeting.shape === 'self') return occupiedCells(caster);
 
   const out: Vec2[] = [];
-  const reach = ability.range;
+  const reach =
+    ability.range >= 3 &&
+    ability.requiresLineOfSight &&
+    !ability.effects.some((effect) => effect.kind === 'dash')
+      ? ability.range + content.tuning.heightReachBonus
+      : ability.range;
   for (let dy = -reach; dy <= reach; dy++) {
     for (let dx = -reach; dx <= reach; dx++) {
       const pos = { x: caster.pos.x + dx, y: caster.pos.y + dy };
