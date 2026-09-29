@@ -69,16 +69,9 @@ export function validatingOrigin(
   checkLineOfSight = true,
 ): Vec2 | null {
   const targetElevation = tileAt(grid, target)?.elevation ?? 0;
-  const hasDash = ability.effects.some((effect) => effect.kind === 'dash');
   for (const cell of occupiedCells(caster)) {
     const casterElevation = tileAt(grid, cell)?.elevation ?? 0;
-    const heightReach =
-      ability.range >= 3 &&
-      ability.requiresLineOfSight &&
-      !hasDash &&
-      casterElevation > targetElevation
-        ? content.tuning.heightReachBonus
-        : 0;
+    const heightReach = heightReachBonus(content, ability, casterElevation, targetElevation);
     if (distance(cell, target) > ability.range + heightReach) continue;
     if (checkLineOfSight && ability.requiresLineOfSight && !hasLineOfSight(grid, cell, target)) {
       continue;
@@ -86,6 +79,36 @@ export function validatingOrigin(
     return cell;
   }
   return null;
+}
+
+/**
+ * Whether an ability can ever gain height reach: range 3 or more, line of
+ * sight required, and not a dash. Extracted so `targetableTiles` and the AI
+ * reuse the exact qualification `validatingOrigin` applies.
+ */
+export function canReachFromHeight(ability: Ability): boolean {
+  return (
+    ability.range >= 3 &&
+    ability.requiresLineOfSight &&
+    !ability.effects.some((effect) => effect.kind === 'dash')
+  );
+}
+
+/**
+ * The extra range a downward shot gets. A range-3-plus line-of-sight ability
+ * (never a dash) reaches `tuning.heightReachBonus` further when fired from a
+ * cell strictly higher than the target tile. This is the single definition of
+ * the height-reach rule: target validation, tile enumeration and the AI's
+ * reach and threat estimates all read it from here.
+ */
+export function heightReachBonus(
+  content: ContentIndex,
+  ability: Ability,
+  fromElevation: number,
+  toElevation: number,
+): number {
+  if (!canReachFromHeight(ability)) return 0;
+  return fromElevation > toElevation ? content.tuning.heightReachBonus : 0;
 }
 
 /** Every tile an ability touches when aimed at `target`. */
@@ -242,12 +265,9 @@ export function targetableTiles(
   if (ability.targeting.shape === 'self') return occupiedCells(caster);
 
   const out: Vec2[] = [];
-  const reach =
-    ability.range >= 3 &&
-    ability.requiresLineOfSight &&
-    !ability.effects.some((effect) => effect.kind === 'dash')
-      ? ability.range + content.tuning.heightReachBonus
-      : ability.range;
+  const reach = canReachFromHeight(ability)
+    ? ability.range + content.tuning.heightReachBonus
+    : ability.range;
   const seen = new Set<string>();
   for (const cell of occupiedCells(caster)) {
     for (let dy = -reach; dy <= reach; dy++) {
@@ -333,10 +353,23 @@ export function previewAbility(
   target: Vec2,
 ): AbilityPreview {
   const tiles = affectedTiles(content, battle.grid, caster, ability, target);
+  // The previewed to-hit uses the same firing cell as resolution, so a size-2
+  // caster's elevation (and plunging) read from its validating origin.
+  const origin = validatingOrigin(content, battle.grid, caster, ability, target) ?? caster.pos;
   const inArea = unitsOnTiles(battle.units, tiles).filter(
     (u) => allowsCasterTarget(ability) || u.id !== caster.id,
   );
-  const forecast = forecastReactions(content, battle, caster, ability, target, tiles);
+  // Pushes preview from the same cell resolution uses: the blast centre for
+  // area shapes, otherwise the validating firing cell.
+  const forecast = forecastReactions(
+    content,
+    battle,
+    caster,
+    ability,
+    target,
+    tiles,
+    shoveOrigin(content, battle.grid, caster, ability, target),
+  );
   // The roll uses the same intensity, resolved the same way, so the preview
   // percentage and the actual shot cannot disagree.
   const weather = weatherAt(content, battle.encounterId, battle.round);
@@ -366,7 +399,7 @@ export function previewAbility(
           damage += expectedDamage(content, caster, unit, effect);
           // One call, so the chip's percentage and its explanation cannot
           // disagree: `chance` *is* `breakdown.chance`.
-          breakdown = hitBreakdown(content, battle.grid, caster, unit, weather);
+          breakdown = hitBreakdown(content, battle.grid, caster, unit, weather, origin);
           chance = breakdown.chance;
           break;
         case 'heal':
@@ -478,12 +511,21 @@ export function previewAbility(
 
 /**
  * Where a push or pull measures from. Area shapes shove outward from (or drag
- * toward) the centre of the blast; everything else shoves away from the caster.
+ * toward) the centre of the blast; everything else shoves away from the cell
+ * the caster actually fired from. That cell is the validating origin, so a
+ * size-2 caster's line or cone pushes away from whichever occupied cell
+ * reached the target, exactly as `affectedTiles` draws it.
  */
-function shoveOrigin(caster: Unit, ability: Ability, target: Vec2): Vec2 {
+function shoveOrigin(
+  content: ContentIndex,
+  grid: Grid,
+  caster: Unit,
+  ability: Ability,
+  target: Vec2,
+): Vec2 {
   return ability.targeting.shape === 'blast' || ability.targeting.shape === 'tile'
     ? target
-    : caster.pos;
+    : (validatingOrigin(content, grid, caster, ability, target) ?? caster.pos);
 }
 
 /**
@@ -501,6 +543,10 @@ export function resolveAbility(
   rng: RngCursor,
 ): void {
   const tiles = affectedTiles(draft.content, draft.grid, caster, ability, target);
+  // The cell the shot is fired from. Hit elevation must measure from this same
+  // cell, or a size-2 attacker could fire from its low second cell and still
+  // claim its first cell's high ground on the to-hit roll.
+  const origin = validatingOrigin(draft.content, draft.grid, caster, ability, target) ?? caster.pos;
 
   draft.emit({ type: 'abilityUsed', unitId: caster.id, abilityId: ability.id, target, tiles });
 
@@ -514,7 +560,7 @@ export function resolveAbility(
 
   /** Ids that a to-hit roll actually connected with, per damage effect. */
   for (const effect of ability.effects) {
-    applyEffect(draft, caster, ability, effect, target, tiles, hitIds, friendlyIds, rng);
+    applyEffect(draft, caster, ability, effect, target, origin, tiles, hitIds, friendlyIds, rng);
   }
 }
 
@@ -524,6 +570,7 @@ function applyEffect(
   ability: Ability,
   effect: AbilityEffect,
   target: Vec2,
+  origin: Vec2,
   tiles: readonly Vec2[],
   hitIds: readonly string[],
   friendlyIds: readonly string[],
@@ -538,7 +585,7 @@ function applyEffect(
       for (const id of hitIds) {
         const victim = draft.unit(id);
         if (!victim || !isAlive(victim)) continue;
-        if (!rollHit(rng, content, draft.grid, caster, victim, weather)) {
+        if (!rollHit(rng, content, draft.grid, caster, victim, weather, origin)) {
           draft.emit({ type: 'attackMissed', unitId: caster.id, targetId: id });
           continue;
         }
@@ -600,14 +647,14 @@ function applyEffect(
 
     case 'push':
     case 'pull': {
-      const origin = shoveOrigin(caster, ability, target);
+      const shoveFrom = shoveOrigin(content, draft.grid, caster, ability, target);
       const mode = effect.kind;
       for (const id of hitIds) {
-        draft.shove(id, origin, effect.distance, mode);
+        draft.shove(id, shoveFrom, effect.distance, mode);
       }
       // Shoving a barrel is the whole reason Shove is a universal ability.
       for (const prop of draft.propsOnTiles(tiles)) {
-        draft.shoveProp(prop.id, origin, effect.distance, mode);
+        draft.shoveProp(prop.id, shoveFrom, effect.distance, mode);
       }
       break;
     }

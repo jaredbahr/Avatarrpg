@@ -66,7 +66,7 @@ import { BEND_FX } from '../content/fxCels';
 import { loadBendFx } from '../render/fx/bendFx';
 import type { BendFxIndex } from '../render/fx/bendFx';
 import { bendFxPages } from '../render/fx/bendFxDraw';
-import { elevationAt, ELEVATION_LIFT } from '../render/geometry/elevation';
+import { liftAt } from '../render/geometry/elevation';
 
 /** What `rendererCamera()` reports: tile size and offset in CSS px, and whether the whole board is on screen. */
 export interface CameraInfo {
@@ -211,7 +211,7 @@ export class App {
       },
       liftOf: (pos) => {
         const grid = this.state?.battle?.grid;
-        return grid ? elevationAt(grid, pos) * ELEVATION_LIFT : 0;
+        return grid ? liftAt(grid, pos, this.rendererCamera()?.projection ?? 'orthographic') : 0;
       },
     });
     this.residents = new ResidentWalks(content);

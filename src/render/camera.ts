@@ -19,6 +19,7 @@
 import type { Grid, Vec2 } from '../core/types';
 import { groundBounds, projectGround, unprojectGround } from './projection';
 import type { Projection } from './projection';
+import { pickCell } from './geometry/elevation';
 
 /** Logical tile size before the fit scale is applied. */
 export const TILE = 64;
@@ -213,6 +214,18 @@ export class Camera {
   toTile(screenX: number, screenY: number): Vec2 {
     const point = this.unproject({ x: screenX, y: screenY });
     return { x: Math.floor(point.x), y: Math.floor(point.y) };
+  }
+
+  /**
+   * The tile drawn under a pointer: like `toTile`, but a raised tile's lifted
+   * top and faces pick that tile rather than the flat one they cover
+   * (`pickCell`). Every tap, hover and long press goes through this.
+   */
+  pickTile(screenX: number, screenY: number, grid: Grid | null | undefined): Vec2 {
+    const point = this.unproject({ x: screenX, y: screenY });
+    return grid
+      ? pickCell(grid, point, this.projection)
+      : { x: Math.floor(point.x), y: Math.floor(point.y) };
   }
 
   /** True when any part of the tile is on screen. Used to skip drawing. */

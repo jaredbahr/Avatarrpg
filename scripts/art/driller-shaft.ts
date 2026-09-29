@@ -54,8 +54,6 @@ const pit = {
 
 const rows = QUARRY_FLOOR.rows;
 const keyAt = (x: number, y: number): string | undefined => rows[y]?.[x];
-const elevationOf = (key: string | undefined): number =>
-  key === undefined ? 0 : (QUARRY_FLOOR.legend[key]?.elevation ?? 0);
 
 /** Logical point of a world pixel. */
 const logical = (wx: number, wy: number): { gx: number; gy: number } => ({
@@ -141,23 +139,29 @@ export const DRILLER_GANTRY_CELLS: readonly Vec2[] = rows.flatMap((row, y) =>
 /**
  * One pixel of a perch at `cell`. As the cut rock stands (`quarry-rock.ts`):
  * the deck is the footprint lifted `DECK_RISE`, and where the ground under a
- * pixel's deck would already be off it onto lower ground, the pixel is the
- * joist face. Toward higher ground (the terrace wall behind a perch) there is
- * no face: the rock hides it.
+ * pixel's deck would already be off the deck, the pixel is the joist face.
+ * Only off the board's edge is there no face.
  */
 function deckPixel(cell: Vec2, wx: number, wy: number): Rgb | null {
   const here = logical(wx, wy);
-  if (Math.floor(here.gx) !== cell.x || Math.floor(here.gy) !== cell.y) return null;
   const onDeck = (x: number, y: number): boolean => x === cell.x && y === cell.y;
-  let drop = 1;
+  const inCell = onDeck(Math.floor(here.gx), Math.floor(here.gy));
+  const top = logical(wx, wy + DECK_RISE);
+  // The whole deck is painted, back corner and all, even where it stands above
+  // the cell's own footprint: the board lifts a perch a full step (ADR 0065)
+  // and samples its top from here, so a deck cut to the footprint would lift
+  // with a piece of the wall behind it.
+  if (!inCell && !onDeck(Math.floor(top.gx), Math.floor(top.gy))) return null;
+  let drop = inCell ? 1 : DECK_RISE + 1;
   let right = false;
   while (drop <= DECK_RISE) {
     const at = logical(wx, wy + drop);
     const x = Math.floor(at.gx),
       y = Math.floor(at.gy);
     if (!onDeck(x, y)) {
-      // Higher ground or the board's edge: the deck runs on under it.
-      if (elevationOf(keyAt(x, y)) >= 2 || keyAt(x, y) === undefined) drop = DECK_RISE + 1;
+      // The board's edge: the deck runs on under it. Toward the terrace
+      // wall it keeps its joists, which the board lifts over the wall's lip.
+      if (keyAt(x, y) === undefined) drop = DECK_RISE + 1;
       // Off the +x edge the face turns right, away from the light.
       else right = x > cell.x;
       break;
@@ -172,9 +176,7 @@ function deckPixel(cell: Vec2, wx: number, wy: number): Rgb | null {
     if (Math.floor(wx) % 32 < 4) return right ? ink : wood.edge;
     return right ? wood.edge : wood.fill;
   }
-  const top = logical(wx, wy + DECK_RISE);
-  const topInset = inset(top.gx, top.gy, onDeck).depth;
-  if (inset(here.gx, here.gy, onDeck).depth < INK || topInset < INK) return ink;
+  if (inset(top.gx, top.gy, onDeck).depth < INK) return ink;
   // Planks run along x, five to the cell, each with its own butt joint.
   const across = (top.gy - cell.y) * 5;
   const plank = Math.floor(across);
@@ -254,5 +256,8 @@ export function buildDrillerShaft(): Plate {
 }
 
 export function buildDrillerGantry(cell: Vec2): Plate {
-  return plate(cellBox([cell]), (wx, wy) => deckPixel(cell, wx, wy));
+  const box = cellBox([cell]);
+  // Room above the footprint for the deck's back corner.
+  const tall = { ...box, y: box.y - DECK_RISE, height: box.height + DECK_RISE };
+  return plate(tall, (wx, wy) => deckPixel(cell, wx, wy));
 }
