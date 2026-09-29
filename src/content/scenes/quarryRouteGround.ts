@@ -39,17 +39,17 @@ export const CUTTING_GROUND_REGIONS = [
     name: 'dirt-west',
     x: 191,
     y: 94,
-    width: 1218,
-    height: 612,
-    bytes: 35572,
+    width: 962,
+    height: 484,
+    bytes: 21018,
   },
   {
     name: 'dirt-east',
-    x: 665,
-    y: 332,
-    width: 1064,
-    height: 534,
-    bytes: 36586,
+    x: 895,
+    y: 446,
+    width: 898,
+    height: 484,
+    bytes: 21444,
   },
   {
     name: 'road',
@@ -57,7 +57,7 @@ export const CUTTING_GROUND_REGIONS = [
     y: 126,
     width: 1538,
     height: 772,
-    bytes: 27448,
+    bytes: 28588,
   },
   {
     name: 'stone',
@@ -65,11 +65,11 @@ export const CUTTING_GROUND_REGIONS = [
     y: -2,
     width: 2050,
     height: 1028,
-    bytes: 43804,
+    bytes: 64232,
   },
 ] as const;
 
-export const CUTTING_POOL_BYTES = 10490;
+export const CUTTING_POOL_BYTES = 15468;
 
 export const DRILLER_PLATES = [
   {
