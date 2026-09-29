@@ -4,7 +4,7 @@ import { RngCursor } from '../rng';
 import { BattleDraft } from '../state/battleDraft';
 import { createBattle, createGame } from '../state/createGame';
 import type { ContentIndex, GameEvent, Grid, Unit, Vec2 } from '../types';
-import { planAiTurn } from './ai';
+import { planAiTurn, threatAt } from './ai';
 import { averageDamage, hitChance } from './damage';
 import { DEFAULT_TILE, distance, withSurface } from './grid';
 
@@ -55,7 +55,12 @@ function stormContent(): ContentIndex {
 }
 
 /** A cautious slinger six tiles from a lone hero, on a clean board. */
-function standoff(content: ContentIndex): { draft: BattleDraft; enemyId: string; heroPos: Vec2 } {
+function standoff(content: ContentIndex): {
+  draft: BattleDraft;
+  enemyId: string;
+  heroId: string;
+  heroPos: Vec2;
+} {
   const state = createGame(content, {
     seed: 'ai-sandstorm-standoff',
     party: [{ characterId: 'kaya', level: 3 }],
@@ -84,7 +89,7 @@ function standoff(content: ContentIndex): { draft: BattleDraft; enemyId: string;
     },
     new RngCursor(0x5eed),
   );
-  return { draft, enemyId: enemy.id, heroPos };
+  return { draft, enemyId: enemy.id, heroId: hero.id, heroPos };
 }
 
 /** Whether the AI repositioned before it took its first shot. */
@@ -153,9 +158,7 @@ describe('the AI and obscurement', () => {
     const far = at(attacker, { x: 0, y: 0 });
 
     // With no weather, distance does not move the shot at all.
-    expect(hitChance(CONTENT, grid, near, target)).toBe(
-      hitChance(CONTENT, grid, far, target),
-    );
+    expect(hitChance(CONTENT, grid, near, target)).toBe(hitChance(CONTENT, grid, far, target));
     expect(averageDamage(CONTENT, grid, near, target, effect)).toBe(
       averageDamage(CONTENT, grid, far, target, effect),
     );
@@ -174,6 +177,23 @@ describe('the AI and obscurement', () => {
     );
     expect(hitChance(CONTENT, grid, far, target, 1)).toBeLessThan(
       hitChance(CONTENT, grid, far, target, 0),
+    );
+  });
+
+  it('uses a candidate tile for threat under weather, while clear weather stays unchanged', () => {
+    const clear = standoff(CONTENT);
+    const clearHero = clear.draft.unit(clear.heroId);
+    if (!clearHero) throw new Error('Clear-weather hero vanished');
+    const near = { x: 5, y: 3 };
+    const far = { x: 1, y: 3 };
+
+    expect(threatAt(clear.draft, clearHero, near)).toBe(threatAt(clear.draft, clearHero, far));
+
+    const storm = standoff(stormContent());
+    const stormHero = storm.draft.unit(storm.heroId);
+    if (!stormHero) throw new Error('Storm-weather hero vanished');
+    expect(threatAt(storm.draft, stormHero, far)).toBeLessThan(
+      threatAt(storm.draft, stormHero, near),
     );
   });
 

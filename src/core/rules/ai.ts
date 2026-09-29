@@ -33,7 +33,7 @@ import {
 } from './abilities';
 import { averageDamage, hitChance, positionHasCover } from './damage';
 import { positionObscurement, weatherAt } from './obscurement';
-import { distance, distanceToUnit, euclidean, posKey, reachable, tileAt } from './grid';
+import { distance, distanceToUnit, posKey, reachable, tileAt } from './grid';
 import { canMove, effectiveStats, isAlive } from './stats';
 import { findCombo } from './surfaces';
 
@@ -775,8 +775,9 @@ export function threatAt(draft: BattleDraft, unit: Unit, pos: Vec2): number {
           (sum, e) => sum + e.base + e.scale * effectiveStats(draft.content, opponent).power,
           0,
         );
-      threat += damage * (hitChance(draft.content, draft.grid, opponent, unit, weather) / 100);
+      threat +=
+        damage * (hitChance(draft.content, draft.grid, opponent, { ...unit, pos }, weather) / 100);
     }
   }
-  return threat + euclidean(pos, unit.pos) * 0;
+  return threat;
 }
