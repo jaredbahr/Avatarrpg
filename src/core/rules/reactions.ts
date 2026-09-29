@@ -178,6 +178,11 @@ function friendlyTo(caster: Unit, other: Unit): boolean {
  * The draft owns movement, prop restoration, landing contact and the combo
  * engine. The preview cursor is deliberately detached from the live game RNG;
  * chance-based statuses are described below instead of being treated as facts.
+ *
+ * `origin` is the cell push and pull measure from — the blast centre for area
+ * shapes, otherwise the firing cell (see `shoveOrigin` and
+ * `validatingOrigin`). Callers that omit it fall back to the old anchor-based
+ * choice, which is only correct for size-1 casters.
  */
 export function forecastReactions(
   content: ContentIndex,
@@ -186,6 +191,7 @@ export function forecastReactions(
   ability: Ability,
   target: Vec2,
   tiles: readonly Vec2[],
+  origin?: Vec2,
 ): ReactionForecast {
   if (tiles.length === 0) return EMPTY;
 
@@ -210,8 +216,11 @@ export function forecastReactions(
     return to === 'allies' ? friendlyIds : hitIds;
   };
 
-  const origin =
-    ability.targeting.shape === 'blast' || ability.targeting.shape === 'tile' ? target : caster.pos;
+  const shoveFrom =
+    origin ??
+    (ability.targeting.shape === 'blast' || ability.targeting.shape === 'tile'
+      ? target
+      : caster.pos);
 
   for (const effect of ability.effects) {
     switch (effect.kind) {
@@ -230,12 +239,12 @@ export function forecastReactions(
       case 'pull': {
         for (const id of hitIds) {
           shoves.push(
-            shoveUnitForecast(content, draft, caster, id, origin, effect.distance, effect.kind),
+            shoveUnitForecast(content, draft, caster, id, shoveFrom, effect.distance, effect.kind),
           );
         }
         for (const prop of draft.propsOnTiles(tiles)) {
           shoves.push(
-            shovePropForecast(content, draft, prop.id, origin, effect.distance, effect.kind),
+            shovePropForecast(content, draft, prop.id, shoveFrom, effect.distance, effect.kind),
           );
         }
         break;
