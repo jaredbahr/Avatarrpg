@@ -53,8 +53,9 @@ for (const renderer of ['canvas', 'webgl'] as const) {
 
     const push = await stageMotionTransition(page, 'push');
     await page.clock.runFor(64);
+    // Pushed, she flinches in her G hit for the heading she faces (ADR 0063).
     expect(await rendered(push.id)).toMatchObject({
-      clip: 'hit',
+      clip: 'hitNorthWest',
       facing: -1,
       offset: { x: 0, y: 0 },
     });

@@ -24,7 +24,7 @@ import type { AnyTrack, ClipName } from './timeline';
 import { attackMotion } from './attackMotion';
 import { screenDirection, screenMeleeDirection } from './direction';
 import type { MeleeDirection } from '../../content/assets/clips';
-import { KO_HEADINGS, clipDurationMs, koClip } from '../../content/assets/clips';
+import { HEADINGS, KO_HEADINGS, clipDurationMs, hitClip, koClip } from '../../content/assets/clips';
 import type { SheetClips } from '../../render/sheets/store';
 import type { Projection } from '../../render/projection';
 import type { ActorAttachment, EmitterAttachments } from '../../render/view';
@@ -150,9 +150,18 @@ const chebyshev = (a: Vec2, b: Vec2): number => Math.max(Math.abs(a.x - b.x), Ma
  * longest, because which heading falls is the animator's to know.
  */
 export function knockoutSpan(clips: SheetClips | undefined): number {
+  return timedSpan(clips, KO_HEADINGS.map(koClip));
+}
+
+/** The same for a sheet's G hits (ADR 0063), which share one timing per character. */
+export function hitSpan(clips: SheetClips | undefined): number {
+  return timedSpan(clips, HEADINGS.map(hitClip));
+}
+
+function timedSpan(clips: SheetClips | undefined, names: readonly ClipName[]): number {
   let span = 0;
-  for (const heading of KO_HEADINGS) {
-    const def = clips?.[koClip(heading)];
+  for (const name of names) {
+    const def = clips?.[name];
     if (def?.frameMs) span = Math.max(span, clipDurationMs(def));
   }
   return span;
@@ -256,11 +265,17 @@ export function choreograph(input: ChoreographyInput): Choreography {
     });
   };
 
-  /** How long a unit's G knockout plays, at the motion rate; 0 without one (ADR 0059). */
-  const knockout = (unitId: string): number => {
+  /**
+   * How long a unit's G knockout (ADR 0059) or hit (ADR 0063) plays, at the
+   * motion rate; 0 without one.
+   */
+  const timed = (unitId: string, span: typeof knockoutSpan): number => {
     const sprite = unitsBefore.find((unit) => unit.id === unitId)?.sprite;
-    return sprite ? knockoutSpan(input.clipsOf?.(sprite)) * rate : 0;
+    return sprite ? span(input.clipsOf?.(sprite)) * rate : 0;
   };
+  /** Until when a unit's G hit plays, so a push under it does not restart it. */
+  const flinching = new Map<string, number>();
+  const still: Vec2 = { x: 0, y: 0 };
 
   const floater = (pos: Vec2, text: string, color: string, at: number): void => {
     tracks.push({ kind: 'floater', pos, text, color, start: at, duration: TIMING.floater * rate });
@@ -713,9 +728,17 @@ export function choreograph(input: ChoreographyInput): Choreography {
             : { x: 0, y: -1 };
           const out = scaled(away, RECOIL * (event.crit ? 1.5 : 1));
           const recoilAt = hit.at + hit.hitStop;
-          // Hold the struck drawing at contact, then let the body recoil.
-          // Waiting until recoil left the victim idling through the hit-stop.
-          if (hit.hitStop > 0)
+          const flinch = timed(event.unitId, hitSpan);
+          if (flinch > 0) {
+            // A G hit (ADR 0063) flinches in its own drawing from the contact,
+            // its hit-stop on its contact cel, and its feet stay planted: no
+            // shove, which would skate them.
+            const duration = Math.max(flinch, hit.hitStop);
+            pose(event.unitId, 'hit', hit.at, duration, still, still, easeOutQuad, { frame: 0 });
+            flinching.set(event.unitId, hit.at + duration);
+          } else if (hit.hitStop > 0) {
+            // Hold the struck drawing at contact, then let the body recoil.
+            // Waiting until recoil left the victim idling through the hit-stop.
             pose(
               event.unitId,
               'hit',
@@ -728,7 +751,8 @@ export function choreograph(input: ChoreographyInput): Choreography {
                 frame: 0,
               },
             );
-          if (!pending?.pushIds?.includes(event.unitId)) {
+          }
+          if (flinch === 0 && !pending?.pushIds?.includes(event.unitId)) {
             pose(
               event.unitId,
               'hit',
@@ -831,9 +855,14 @@ export function choreograph(input: ChoreographyInput): Choreography {
             start,
             duration,
           });
-          pose(event.unitId, 'hit', start, duration, { x: 0, y: 0 }, { x: 0, y: 0 }, easeOutQuad, {
-            frame: 0,
-          });
+          // A G hit already playing carries the push; restarting it would flash
+          // the stance. A push alone plays one through, past the slide.
+          if ((flinching.get(event.unitId) ?? -Infinity) <= start) {
+            const flinch = timed(event.unitId, hitSpan);
+            const hold = Math.max(duration, flinch);
+            pose(event.unitId, 'hit', start, hold, still, still, easeOutQuad, { frame: 0 });
+            if (flinch > 0) flinching.set(event.unitId, start + hold);
+          }
           positions.set(event.unitId, event.to);
           cursor = Math.max(cursor, start + duration);
         }
@@ -847,7 +876,7 @@ export function choreograph(input: ChoreographyInput): Choreography {
         // and plays out in full; the unit is marked fallen once it lies still.
         // The legacy pose has no fall of its own, so it sinks and fades under
         // the mark instead.
-        const span = pos ? knockout(event.unitId) : 0;
+        const span = pos ? timed(event.unitId, knockoutSpan) : 0;
         const duration = Math.max(TIMING.ko * rate, span);
         const before = unitHealth.get(event.unitId);
         if (before) {

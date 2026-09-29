@@ -3,7 +3,7 @@ import { describe, expect, it } from 'vitest';
 import type { Ability, ContentIndex, GameEvent, Unit } from '../../core/types';
 import { resolveFx } from '../../content/fx';
 import type { SheetClips } from '../../render/sheets/store';
-import { TIMING, choreograph, knockoutSpan } from './choreography';
+import { TIMING, choreograph, hitSpan, knockoutSpan } from './choreography';
 import { attackMotion } from './attackMotion';
 import { enemyScale } from './actorScale';
 import type { AnyTrack, EmitterTrack, PoseTrack } from './timeline';
@@ -746,7 +746,7 @@ describe('choreograph', () => {
     expect(tracks.find((t) => t.kind === 'floater')?.text).toBe('down');
   });
 
-  it('plays a G knockout out in full once its sheet is in, and the legacy one as before (ADR 0059)', () => {
+  it('plays a G hit and knockout out in full once the sheet is in, and the legacy ones as before (ADR 0059, ADR 0063)', () => {
     const kaya = { ...unit('p0', 1, 3), sprite: 'unit.fire.kaya', hp: 20 } as Unit;
     const thug = {
       ...unit('e0', 5, 3),
@@ -774,7 +774,6 @@ describe('choreograph', () => {
     const end = (tracks: readonly PoseTrack[]) =>
       Math.max(...tracks.map((t) => t.start + t.duration));
 
-    // A blow is the legacy hit for everyone: the party has no G hit.
     const blow: GameEvent = {
       type: 'damaged',
       unitId: 'p0',
@@ -783,9 +782,31 @@ describe('choreograph', () => {
       damageType: 'fire',
       sourceId: 'e0',
     };
-    const hit = poses([blow], 1, loaded);
-    expect(hit.every((t) => t.clip === 'hit')).toBe(true);
-    expect(end(hit)).toBeCloseTo(1000 + (TIMING.recoilOut + TIMING.recoilBack));
+    // Kaya's G hit (ADR 0063) plays once, in full, from the contact, feet
+    // planted: 400 ms and her 80 ms hit-stop, and no shove.
+    expect(hitSpan(kayaClips)).toBe(480);
+    expect(hitSpan(undefined)).toBe(0);
+    const flinch = poses([blow], 1, loaded);
+    expect(flinch).toHaveLength(1);
+    expect(flinch[0]).toMatchObject({ clip: 'hit', start: 1000, duration: 480 });
+    expect(flinch[0]?.offset).toEqual({ from: { x: 0, y: 0 }, to: { x: 0, y: 0 } });
+    // A push under it does not restart it; a push alone plays one through.
+    const shove: GameEvent = { type: 'unitPushed', unitId: 'p0', to: { x: 0, y: 3 } };
+    expect(poses([blow, shove])).toHaveLength(1);
+    expect(poses([shove])).toMatchObject([{ clip: 'hit', start: 1000, duration: 480 }]);
+    expect(poses([shove], 1, null)).toMatchObject([
+      { clip: 'hit', start: 1000, duration: TIMING.step * 2 },
+    ]);
+    // The thug, and Kaya before her sheet is in, keep the legacy hit and recoil.
+    for (const [event, clipsOf] of [
+      [{ ...blow, unitId: 'e0', sourceId: 'p0' }, loaded],
+      [blow, null],
+    ] as const) {
+      const hit = poses([event], 1, clipsOf);
+      expect(hit).toHaveLength(2);
+      expect(hit.every((t) => t.clip === 'hit')).toBe(true);
+      expect(end(hit)).toBeCloseTo(1000 + (TIMING.recoilOut + TIMING.recoilBack));
+    }
 
     const span = knockoutSpan(kayaClips);
     expect(knockoutSpan(undefined)).toBe(0);
