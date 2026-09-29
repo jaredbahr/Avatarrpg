@@ -26,6 +26,7 @@ import {
   buildQuarryGround,
 } from './quarry-route-ground';
 import { buildGateGround, plainSpoil } from './quarry-modular-ground';
+import { COURSE, NORTH_RISE, SOUTH_RISE } from './cutting-rock';
 import { luma, measure, readPlate } from './forest-ground-measure';
 
 /** DL-2 §3: no 128 px window inside a packed plate may span more than this. */
@@ -347,6 +348,80 @@ it("keeps the Cutting's lane apart from its spoil shoulders", () => {
   // closed the old 96 shoulder cells down to the bays either side of the road.
   expect(lanes).toBe(60);
   expect(shoulders).toBe(55);
+});
+
+/** The stone plate's colour at a world pixel, or null where it is clear. */
+function stoneAt(built: Built, wx: number, wy: number): string | null {
+  const { image, x, y } = plate(built, 'stone');
+  const rgba = pixelAt(image, Math.floor(wx - x), Math.floor(wy - y));
+  return rgba[3] === 255 ? toHex([rgba[0], rgba[1], rgba[2]]) : null;
+}
+
+/**
+ * M5 round 2. The Cutting's north cut is sheer and tall and its south run a
+ * low lip: read up the plate from the foot of a face, the top lip's ink sits
+ * where the face's height says it does. Before round 2 every face was at most
+ * two courses, so the north one would find its lip at 32, not 64.
+ */
+it.each([
+  // X (12,2) over the floor at (12,3): the north cut, four courses. Its
+  // column climbs through rock the whole way; a column that climbs into a
+  // ledge is cut short there, because no face paints over a playable cell.
+  ['north cut over the floor', 12.5, 3, NORTH_RISE],
+  // X (12,9) over the bay at (13,9): the south run, two courses.
+  ['south run over a bay', 13, 9.5, SOUTH_RISE],
+  // X (5,11) at the board's south edge: a one-course lip.
+  ['south edge lip', 5.5, 12, COURSE],
+] as const)("stands the Cutting's %s at its height", (_name, gx, gy, rise) => {
+  const wx = 768 + (gx - gy) * 64,
+    foot = (gx + gy) * 32;
+  const inkBetween = (from: number, to: number): number => {
+    let found = 0;
+    for (let k = from; k <= to; k++) if (stoneAt(cutting, wx, foot - k - 0.5) === INK) found++;
+    return found;
+  };
+  // The top lip, a pixel either side of the rise for rounding.
+  expect(inkBetween(rise - 3, rise + 1), 'lip ink at the rise').toBeGreaterThan(0);
+  // A clean face below it: joints are the joint tone, never ink.
+  expect(inkBetween(4, rise - 5), 'no ink on the face').toBe(0);
+  // And the rough top above it carries none either.
+  expect(inkBetween(rise + 3, rise + 12), 'no ink on the top').toBe(0);
+});
+
+/**
+ * M5 round 2. A ledge is walkable and the rock is not, and they must read
+ * apart: the ledge keeps the block's dressed paving, whose pale rim share is
+ * the slabs' worn arrises, while the rock's rough top takes the rim only on
+ * the lip of a chipped hollow.
+ */
+it("tells the Cutting's ledge tops from its rock tops", () => {
+  const rim: string = QUARRY_GROUND_TONES.block.rim;
+  const share = (cells: readonly (readonly [number, number])[]): number => {
+    let hits = 0,
+      all = 0;
+    for (const [cx, cy] of cells)
+      for (let v = 0.3; v <= 0.7; v += 0.02)
+        for (let u = 0.3; u <= 0.7; u += 0.02) {
+          const hex = stoneAt(cutting, 768 + (cx + u - cy - v) * 64, (cx + u + cy + v) * 32);
+          if (!hex) continue;
+          all++;
+          if (hex === rim) hits++;
+        }
+    return hits / all;
+  };
+  // The NE ledge's middle, and the rock top behind the cut's tallest run.
+  const ledge = share([
+    [15, 2],
+    [16, 2],
+    [16, 3],
+  ]);
+  const rock = share([
+    [9, 0],
+    [10, 0],
+    [11, 0],
+  ]);
+  expect(ledge).toBeGreaterThan(0.08);
+  expect(rock).toBeLessThan(ledge / 2);
 });
 
 it('ships the plates the packers build, inside the registered page', async () => {

@@ -56,6 +56,7 @@ import {
   QUARRY_GROUND_TONES,
 } from './quarry-village-material';
 import { ROCK_COURSE, rockPainter } from './quarry-rock';
+import { cuttingRaised } from './cutting-rock';
 import type { QuarryMaterial, QuarryTone, Rgb } from './quarry-village-material';
 
 /** One logical tile is 64x32 scene pixels; see `forest-route-ground.ts`. */
@@ -214,54 +215,6 @@ function cellAt(px: number, py: number): { gx: number; gy: number; x: number; y:
   return { gx, gy, x: Math.floor(gx), y: Math.floor(gy) };
 }
 
-/**
- * The last row of the Cutting's north wall: rows 0-3 are the cut the road was
- * driven through, rows 8-11 the sawn south lip facing the camera.
- */
-export const CUTTING_NORTH_FACE_LAST_ROW = 3;
-/** One drill scar every this many world pixels along a face, give or take a missed hole. */
-export const DRILL_PITCH = 8;
-
-/**
- * Plug-and-feather drill scars on the Cutting's north faces (M5, plan 1.5):
- * the half-pipe each drilled hole leaves when the block splits away, one
- * every `DRILL_PITCH` pixels, the odd one missed. Each runs the whole height of
- * the face as the half-pipe's lit side — a pixel of the `block` rim, then one
- * of its base, with the face's own shadow as the groove's floor — so they read
- * as tooling on the one rock the gate and the Driller share and the palette
- * stays the rock's own. A dark groove would push the stone page's darkest
- * window (the NE ledge's corner, where the faces crowd) outside the §3 span of
- * its paving; the lit side lifts it instead. Only
- * the face's field is scarred — its course joints, lip ink and top are left as
- * the shared painter draws them — and the south faces stay a clean sawn lip.
- * Every other map's rock is passed through untouched.
- */
-function drillScars(map: MapDef, paint: ReturnType<typeof rockPainter>): typeof paint {
-  if (map.id !== AMBUSH_ROAD.id) return paint;
-  const field = parseHex(QUARRY_GROUND_TONES.block.shadow);
-  const lip = parseHex(QUARRY_GROUND_TONES.block.rim);
-  const scar = parseHex(QUARRY_GROUND_TONES.block.base);
-  return (material, wx, wy, rim) => {
-    const rgb = paint(material, wx, wy, rim);
-    if (rgb[0] !== field[0] || rgb[1] !== field[1] || rgb[2] !== field[2]) return rgb;
-    const { y } = logicalCell(wx, wy);
-    if (y > CUTTING_NORTH_FACE_LAST_ROW) return rgb;
-    const column = Math.floor(wx);
-    const hole = Math.floor(column / DRILL_PITCH);
-    const across = column % DRILL_PITCH;
-    if (across > 1 || tileNoise(hole, 0, 13) < 0.2) return rgb;
-    return across === 0 ? lip : scar;
-  };
-}
-
-/** The cell a world pixel falls in. */
-function logicalCell(wx: number, wy: number): { x: number; y: number } {
-  return {
-    x: Math.floor(((wx - 768) / 64 + wy / 32) / 2),
-    y: Math.floor((wy / 32 - (wx - 768) / 64) / 2),
-  };
-}
-
 export function packQuarryGround(
   map: MapDef,
   material: QuarryMaterial,
@@ -273,14 +226,14 @@ export function packQuarryGround(
   const spoilFloor = openFloor(map, 'spoil');
   const earthFloor = openFloor(map, 'earth');
   // The terrace wall's faces follow the tiers in front of them.
-  const rockPixel = drillScars(
-    map,
-    rockPainter(map.rows, (key) =>
-      key === undefined
-        ? ROCK_COURSE
-        : Math.max(0, 2 - (map.legend[key]?.elevation ?? 0)) * ROCK_COURSE,
-    ),
+  const rockPixel = rockPainter(map.rows, (key) =>
+    key === undefined
+      ? ROCK_COURSE
+      : Math.max(0, 2 - (map.legend[key]?.elevation ?? 0)) * ROCK_COURSE,
   );
+  // The Cutting stands its rock and its ledges with its own painter
+  // (`cutting-rock.ts`): a tall north cut, rough rock tops, faced ledges.
+  const raised = map.id === AMBUSH_ROAD.id ? cuttingRaised(map) : null;
 
   for (let py = 0; py < QUARRY_PAGE.height; py++)
     for (let px = 0; px < QUARRY_PAGE.width; px++) {
@@ -382,14 +335,18 @@ export function packQuarryGround(
 
       const wx = QUARRY_PAGE.x + px + 0.5,
         wy = QUARRY_PAGE.y + py + 0.5;
+      const lifted =
+        edge < INK_HALF ? null : raised?.(material, wx, wy, lit && edge < INK_HALF + RIM_WIDTH);
       paint(
         edge < INK_HALF
           ? material.ink
-          : key === 'X'
-            ? rockPixel(material, wx, wy, lit && edge < INK_HALF + RIM_WIDTH)
-            : lit && edge < INK_HALF + RIM_WIDTH
-              ? material.rimOf(tone)
-              : (heap ?? material.colour(tone, gx, gy)),
+          : lifted
+            ? lifted
+            : key === 'X'
+              ? rockPixel(material, wx, wy, lit && edge < INK_HALF + RIM_WIDTH)
+              : lit && edge < INK_HALF + RIM_WIDTH
+                ? material.rimOf(tone)
+                : (heap ?? material.colour(tone, gx, gy)),
       );
     }
   return images;

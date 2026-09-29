@@ -57,7 +57,7 @@ export const CUTTING_GROUND_REGIONS = [
     y: -2,
     width: 2050,
     height: 1028,
-    bytes: 67822,
+    bytes: 64232,
   },
 ] as const;
 
