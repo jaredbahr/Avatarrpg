@@ -7,6 +7,7 @@ import { Animator } from './animator';
 import { CONTENT } from '../content';
 import { sampleParticles, PARTICLE_STRIDE } from '../render/fx/simulate';
 import { choreograph } from './anim/choreography';
+import { frameIndex, resolveClip } from '../render/sheets/resolveClip';
 
 /**
  * The animator runs in Node here with the reduce-motion lookup injected, so
@@ -217,9 +218,22 @@ describe('Animator', () => {
     // Unturned, she faces east and flinches in the east hit, frame by frame;
     // the thug's sheet has none and keeps the legacy hit.
     a.push(0, [blow('p0', 'e0'), blow('e0', 'p0')], roster);
+    const renderedHitFrame = (at: number, animator = a) => {
+      const pose = animator.unitPose(at, 'p0', kaya);
+      if (!pose) throw new Error(`Expected Kaya hit pose at ${at}`);
+      const clip = resolveClip(kayaClips, pose.clip);
+      if (!clip) throw new Error(`Expected Kaya clip ${pose.clip}`);
+      return frameIndex(clip, pose.clipTime, pose.frame);
+    };
     expect(a.unitPose(0, 'p0', kaya)?.clip).toBe('hitEast');
+    expect(a.unitPose(0, 'p0', kaya)?.frame).toBeUndefined();
     expect(a.unitPose(479, 'p0', kaya)?.clipTime).toBe(479);
+    // stance -> H1 contact (including its authored hit-stop) -> H2 -> H3 -> stance.
+    expect([0, 40, 189, 190, 310, 390, 479].map((at) => renderedHitFrame(at))).toEqual([
+      0, 1, 1, 2, 3, 4, 4,
+    ]);
     expect(a.unitPose(100, 'e0', 'unit.enemy.thug')?.clip).toBe('hit');
+    expect(a.unitPose(100, 'e0', 'unit.enemy.thug')?.frame).toBe(0);
     // The thug's sheet has no G knockout: the legacy pose, and nothing held.
     expect(a.fallenPose('e0', 'unit.enemy.thug')).toBeUndefined();
 
@@ -245,10 +259,39 @@ describe('Animator', () => {
     const cold = new Animator(CONTENT, { motionReduced: () => false });
     cold.push(0, [blow('p0', 'e0')], roster);
     expect(cold.unitPose(0, 'p0', kaya)?.clip).toBe('hit');
+    expect(cold.unitPose(0, 'p0', kaya)?.frame).toBe(0);
     cold.clear();
     cold.push(0, [{ type: 'unitDied', unitId: 'p0' }], roster);
     expect(cold.unitPose(1, 'p0', kaya)?.clip).toBe('ko');
     expect(cold.fallenPose('p0', kaya)).toBeUndefined();
+
+    // A push on its own plays the G reaction through rather than pinning it
+    // while the unit slides.
+    const pushed = new Animator(CONTENT, {
+      motionReduced: () => false,
+      sheetClips: (sprite) => (sprite === kaya ? kayaClips : undefined),
+    });
+    pushed.push(0, [{ type: 'unitPushed', unitId: 'p0', to: { x: 3, y: 4 } }], roster);
+    expect(pushed.unitPose(40, 'p0', kaya)?.frame).toBeUndefined();
+    expect([0, 40, 189, 190, 310, 390, 479].map((at) => renderedHitFrame(at, pushed))).toEqual([
+      0, 1, 1, 2, 3, 4, 4,
+    ]);
+
+    // A shove landing with damage shares that one playing G reaction instead
+    // of restarting it.
+    const struckAndPushed = new Animator(CONTENT, {
+      motionReduced: () => false,
+      sheetClips: (sprite) => (sprite === kaya ? kayaClips : undefined),
+    });
+    struckAndPushed.push(
+      0,
+      [blow('p0', 'e0'), { type: 'unitPushed', unitId: 'p0', to: { x: 3, y: 4 } }],
+      roster,
+    );
+    expect(struckAndPushed.unitPose(40, 'p0', kaya)?.frame).toBeUndefined();
+    expect(
+      [0, 40, 189, 190, 310, 390, 479].map((at) => renderedHitFrame(at, struckAndPushed)),
+    ).toEqual([0, 1, 1, 2, 3, 4, 4]);
   });
 
   for (const reduced of [false, true]) {

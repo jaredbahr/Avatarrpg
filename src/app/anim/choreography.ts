@@ -734,7 +734,7 @@ export function choreograph(input: ChoreographyInput): Choreography {
             // its hit-stop on its contact cel, and its feet stay planted: no
             // shove, which would skate them.
             const duration = Math.max(flinch, hit.hitStop);
-            pose(event.unitId, 'hit', hit.at, duration, still, still, easeOutQuad, { frame: 0 });
+            pose(event.unitId, 'hit', hit.at, duration, still, still, easeOutQuad);
             flinching.set(event.unitId, hit.at + duration);
           } else if (hit.hitStop > 0) {
             // Hold the struck drawing at contact, then let the body recoil.
@@ -860,7 +860,9 @@ export function choreograph(input: ChoreographyInput): Choreography {
           if ((flinching.get(event.unitId) ?? -Infinity) <= start) {
             const flinch = timed(event.unitId, hitSpan);
             const hold = Math.max(duration, flinch);
-            pose(event.unitId, 'hit', start, hold, still, still, easeOutQuad, { frame: 0 });
+            pose(event.unitId, 'hit', start, hold, still, still, easeOutQuad, {
+              ...(flinch > 0 ? {} : { frame: 0 }),
+            });
             if (flinch > 0) flinching.set(event.unitId, start + hold);
           }
           positions.set(event.unitId, event.to);
