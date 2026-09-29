@@ -1,6 +1,6 @@
 import type { MapScene, SceneScenery, Vec2 } from '../../core/types';
 import { rubbleHeap } from './forestRoad';
-import { CUTTING_EXTERIOR_RIM } from './quarryExteriorRims';
+import { CUTTING_EXTERIOR_RIM, quarryCribbing } from './quarryExteriorRims';
 import { CUTTING_GROUND_REGIONS, DRILLER_GROUND_REGIONS } from './quarryRouteGround';
 
 // Shared exterior painting, clipped clear of the authoritative 20 x 12 floor.
@@ -138,6 +138,13 @@ export const CUTTING_POOL_PATCH = { x: 688, y: 336, width: 416, height: 224 } as
  * (packed like the forest pond's), and the painted heap on each cover cell. The
  * live water film, oil, mud and props remain overlays on top of these.
  */
+/**
+ * The top row of each two-row cribbed bank on the Cutting's west edge. Each
+ * spans its band cell and the rock beside it: rows 2-3 above the road mouth,
+ * rows 8-9 below it (`AMBUSH_ROAD.edges`).
+ */
+export const CUTTING_BAND_TOPS = [2, 8] as const;
+
 export const CUTTING_SCENE: MapScene = {
   groundMode: 'partial',
   paintedRubble: CUTTING_RUBBLE_CELLS,
@@ -147,7 +154,14 @@ export const CUTTING_SCENE: MapScene = {
     { url: 'art/maps/cutting-scene/pool-bank.webp', ...CUTTING_POOL_PATCH },
     ...CUTTING_RUBBLE_CELLS.map(rubbleHeap),
   ],
-  scenery: CUTTING_EXTERIOR_RIM,
+  // The rear rim, and the M5 west bands: the gate's cribbed spoil bank either
+  // side of the rows 4-7 road mouth, standing beyond the band cells (0,3) and
+  // (0,8). The east band (19,8) is the front edge, left to the surround's own
+  // low rock so nothing tall stands between the camera and the bay.
+  scenery: [
+    ...CUTTING_EXTERIOR_RIM,
+    ...CUTTING_BAND_TOPS.map((top) => quarryCribbing('cutting', top)),
+  ],
 };
 
 /** The same scene contract for the Driller floor, including its intentional rear gap. */

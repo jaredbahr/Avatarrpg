@@ -198,8 +198,10 @@ export const AMBUSH_ROAD: MapDef = {
    * Rock faces, not tier-2 paving: the old map's walkable `A` slabs and its six
    * 0-to-2 steps are gone, so every adjacent pair of walkable cells is exactly
    * one tier apart, which is the rule E4 climbing assumes. North and south are
-   * the cut faces themselves — the art pass draws the south run as a low sawn
-   * lip with `fadeWhenOccluding` so it cannot hide the southern bay.
+   * the cut faces themselves, painted on the ground page (`quarry-rock.ts`):
+   * the north faces stand up to two courses with drill scars, and the south
+   * run's only face is a one-course sawn lip at the board's edge, so no rock
+   * stands between the camera and the southern bays.
    *
    * Every walkable border cell is either one of the two four-cell road mouths
    * that `connectAct1` declares as M2 exits, or one of the three bands below;
@@ -224,8 +226,9 @@ export const AMBUSH_ROAD: MapDef = {
   props: [],
   /*
    * The flanks the road does not cover: (0,3), (0,8) and (19,8) stay walkable,
-   * so rule-space needs them claimed. Each is drawn as an edge band of cut rock
-   * flush with the rim, never open ground running off the board.
+   * so rule-space needs them claimed. West, each stands against the gate's
+   * cribbed spoil bank (`CUTTING_BAND_TOPS`); east, the front edge, against the
+   * surround's low rock, never open ground running off the board.
    */
   edges: [
     { side: 'west', span: [3, 3], treatment: 'band' },

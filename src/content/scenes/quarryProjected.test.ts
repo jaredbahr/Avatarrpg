@@ -6,6 +6,7 @@ import type { MapScene } from '../../core/types';
 import { AMBUSH_ROAD, QUARRY_FLOOR } from '../maps/combat';
 import { rubbleHeap, rubbleHeapUrl } from './forestRoad';
 import {
+  CUTTING_BAND_TOPS,
   CUTTING_POOL_PATCH,
   CUTTING_RUBBLE_CELLS,
   CUTTING_SCENE,
@@ -234,7 +235,8 @@ describe('projected quarry scenes', () => {
       'art/maps/cutting-scene/pool-bank.webp',
       ...CUTTING_RUBBLE_CELLS.map(rubbleHeapUrl),
     ]);
-    expect(CUTTING_SCENE.scenery).toHaveLength(3);
+    // The three rear-rim pieces and the two west cribbed banks (M5).
+    expect(CUTTING_SCENE.scenery).toHaveLength(5);
     expect(CUTTING_SCENE.paintedWater).toBeUndefined();
   });
 
@@ -293,5 +295,32 @@ describe('projected quarry scenes', () => {
       },
     ]);
     expect(DRILLER_FLOOR_SCENE.paintedWater).toBeUndefined();
+  });
+
+  it('dresses the Cutting’s west bands off the playable diamond (M5)', () => {
+    // Each declared west band cell sits inside one cribbed bank's two rows.
+    const west = (AMBUSH_ROAD.edges ?? []).filter((edge) => edge.side === 'west');
+    expect(west.map(({ span }) => span[0])).toEqual([3, 8]);
+    for (const { span } of west)
+      expect(CUTTING_BAND_TOPS.some((top) => span[0] >= top && span[1] <= top + 1)).toBe(true);
+    for (const top of CUTTING_BAND_TOPS) {
+      const bank = CUTTING_SCENE.scenery.find((p) => p.id === `cutting-cribbing-${top}`);
+      if (!bank) throw new Error(`no cribbing at ${top}`);
+      expect(bank.exterior).toBe(true);
+      expect(bank.footprint).toEqual([
+        { x: -1, y: top },
+        { x: -1, y: top + 1 },
+      ]);
+      // Its base runs down its two rows of the x=0 edge exactly, and none of
+      // its rows is the road mouth.
+      expect({ x: bank.x, right: bank.x + bank.width }).toEqual({
+        x: point(0, top + 2).x,
+        right: point(0, top).x,
+      });
+      for (const y of [top, top + 1]) expect(AMBUSH_ROAD.rows[y]?.[0]).not.toBe('=');
+    }
+    // Nothing is dressed beyond the east edge: it faces the camera.
+    for (const piece of CUTTING_SCENE.scenery)
+      for (const cell of piece.footprint) expect(cell.x < AMBUSH_ROAD.width).toBe(true);
   });
 });
