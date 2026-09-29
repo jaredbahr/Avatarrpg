@@ -5,7 +5,7 @@ import { createBattle, createGame } from '../state/createGame';
 import { BattleDraft } from '../state/battleDraft';
 import type { Ability, BattleState } from '../types';
 import { isValidTarget, previewAbility, resolveAbility, targetableTiles } from './abilities';
-import { distance, inBounds, posKey } from './grid';
+import { distance, hasLineOfSight, inBounds, posKey } from './grid';
 import { hitChance } from './damage';
 
 function fixture(): { battle: BattleState; caster: BattleState['units'][number] } {
@@ -144,6 +144,100 @@ describe('height reach', () => {
       (tile) => distance(caster.pos, tile) > longRange.range + 1 && inBounds(battle.grid, tile),
     );
     expect(pastOriginRange).toBeDefined();
+  });
+
+  it('accepts a size-2 target when only the second occupied cell has line of sight', () => {
+    const { battle: source, caster: originalCaster } = fixture();
+    const caster = { ...originalCaster, pos: { x: 2, y: 2 }, size: 2 as const };
+    const target = { x: 3, y: 5 };
+    const battle = open({
+      ...source,
+      units: source.units.map((unit) => (unit.id === caster.id ? caster : unit)),
+    });
+    const wallIndex = 3 * battle.grid.width + 2;
+    const blocked = {
+      ...battle,
+      grid: {
+        ...battle.grid,
+        tiles: battle.grid.tiles.map((tile, index) =>
+          index === wallIndex ? { ...tile, blocksSight: true } : tile,
+        ),
+      },
+    };
+
+    expect(hasLineOfSight(blocked.grid, caster.pos, target)).toBe(false);
+    expect(hasLineOfSight(blocked.grid, { x: 3, y: 2 }, target)).toBe(true);
+    expect(isValidTarget(CONTENT, blocked, caster, longRange, target).ok).toBe(true);
+  });
+
+  it('does not combine elevation from one occupied cell with LOS from another', () => {
+    const { battle: source, caster: originalCaster } = fixture();
+    const caster = { ...originalCaster, pos: { x: 2, y: 2 }, size: 2 as const };
+    const target = { x: 3, y: 6 };
+    const battle = open({
+      ...source,
+      units: source.units.map((unit) => (unit.id === caster.id ? caster : unit)),
+    });
+    const elevatedIndex = caster.pos.y * battle.grid.width + caster.pos.x;
+    const wallIndex = 3 * battle.grid.width + 2;
+    const splitOrigins = {
+      ...battle,
+      grid: {
+        ...battle.grid,
+        tiles: battle.grid.tiles.map((tile, index) => ({
+          ...tile,
+          elevation: index === elevatedIndex ? 1 : 0,
+          blocksSight: index === wallIndex,
+        })),
+      },
+    };
+
+    expect(hasLineOfSight(splitOrigins.grid, caster.pos, target)).toBe(false);
+    expect(hasLineOfSight(splitOrigins.grid, { x: 3, y: 2 }, target)).toBe(true);
+    expect(isValidTarget(CONTENT, splitOrigins, caster, longRange, target).ok).toBe(false);
+
+    const joinedOrigin = {
+      ...splitOrigins,
+      grid: {
+        ...splitOrigins.grid,
+        tiles: splitOrigins.grid.tiles.map((tile, index) =>
+          index === elevatedIndex + 1 ? { ...tile, elevation: 1 } : tile,
+        ),
+      },
+    };
+    expect(isValidTarget(CONTENT, joinedOrigin, caster, longRange, target).ok).toBe(true);
+  });
+
+  it('keeps size-1 range, height reach, and anchor LOS unchanged over the whole board', () => {
+    const { battle: source, caster: originalCaster } = fixture();
+    const caster = { ...originalCaster, pos: { x: 2, y: 2 }, size: 1 as const };
+    const battle = open({
+      ...source,
+      units: source.units.map((unit) => (unit.id === caster.id ? caster : unit)),
+    });
+    const casterIndex = caster.pos.y * battle.grid.width + caster.pos.x;
+    const wallIndex = 3 * battle.grid.width + 2;
+    const varied = {
+      ...battle,
+      grid: {
+        ...battle.grid,
+        tiles: battle.grid.tiles.map((tile, index) => ({
+          ...tile,
+          elevation: index === casterIndex ? 1 : 0,
+          blocksSight: index === wallIndex,
+        })),
+      },
+    };
+
+    for (let y = 0; y < varied.grid.height; y++) {
+      for (let x = 0; x < varied.grid.width; x++) {
+        const target = { x, y };
+        const expected =
+          distance(caster.pos, target) <= longRange.range + CONTENT.tuning.heightReachBonus &&
+          hasLineOfSight(varied.grid, caster.pos, target);
+        expect(isValidTarget(CONTENT, varied, caster, longRange, target).ok).toBe(expected);
+      }
+    }
   });
 
   it('uses the same non-random hit calculation for preview and resolution', () => {

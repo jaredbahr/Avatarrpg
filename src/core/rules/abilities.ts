@@ -127,22 +127,27 @@ export function isValidTarget(
   if (!inBounds(battle.grid, target)) return { ok: false, reason: 'Off the map.' };
 
   const range = distanceToUnit(target, caster);
-  const casterElevation = Math.max(
-    ...occupiedCells(caster).map((cell) => tileAt(battle.grid, cell)?.elevation ?? 0),
-  );
+  const casterCells = occupiedCells(caster);
   const targetElevation = tileAt(battle.grid, target)?.elevation ?? 0;
   const hasDash = ability.effects.some((effect) => effect.kind === 'dash');
-  const heightReach =
-    ability.range >= 3 &&
-    ability.requiresLineOfSight &&
-    !hasDash &&
-    casterElevation > targetElevation
-      ? content.tuning.heightReachBonus
-      : 0;
-  if (range > ability.range + heightReach) return { ok: false, reason: 'Out of range.' };
+  const originsInRange = casterCells.filter((cell) => {
+    const casterElevation = tileAt(battle.grid, cell)?.elevation ?? 0;
+    const heightReach =
+      ability.range >= 3 &&
+      ability.requiresLineOfSight &&
+      !hasDash &&
+      casterElevation > targetElevation
+        ? content.tuning.heightReachBonus
+        : 0;
+    return distance(cell, target) <= ability.range + heightReach;
+  });
+  if (originsInRange.length === 0) return { ok: false, reason: 'Out of range.' };
   if (range < ability.minRange) return { ok: false, reason: 'Too close.' };
 
-  if (ability.requiresLineOfSight && !hasLineOfSight(battle.grid, caster.pos, target)) {
+  if (
+    ability.requiresLineOfSight &&
+    !originsInRange.some((cell) => hasLineOfSight(battle.grid, cell, target))
+  ) {
     return { ok: false, reason: 'No line of sight.' };
   }
 
