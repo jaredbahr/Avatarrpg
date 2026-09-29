@@ -16,7 +16,9 @@ import { BattleDraft } from '../state/battleDraft';
 import { createBattle, createGame } from '../state/createGame';
 import type { BattleState, Grid, Unit, Vec2 } from '../types';
 import { bestReach, candidateTargets, threatAt } from './ai';
+import { hitChance } from './damage';
 import { DEFAULT_TILE, posKey, tileAt, withTile } from './grid';
+import { weatherAt } from './obscurement';
 import { effectiveStats } from './stats';
 
 /** An open, empty field: no terrain, no props, nothing for a range check to snag on. */
@@ -98,6 +100,48 @@ describe('AI height reach', () => {
 
     expect(threatAt(flatDraft, unitById(flatDraft, party.id), pos)).toBe(0);
     expect(threatAt(highDraft, unitById(highDraft, party.id), pos)).toBeGreaterThan(0);
+  });
+
+  it("reports a size-2 opponent's raised second cell for the movement estimate", () => {
+    const { party, enemy, battle } = reachFixture();
+    const anchor = { x: 2, y: 3 };
+    const secondCell = { x: anchor.x + 1, y: anchor.y };
+    const airBlast = CONTENT.abilities.get('air_blast');
+    if (!airBlast) throw new Error('missing air_blast fixture');
+    // The raised second cell reaches one further than the flat anchor with the
+    // height bonus, and can step `maxMove` first. The tile sits that one tile
+    // past the anchor's reach plus its move, so only the second cell reaches it.
+    const maxMove = effectiveStats(CONTENT, enemy).maxMove;
+    const pos = {
+      x: secondCell.x + airBlast.range + CONTENT.tuning.heightReachBonus + maxMove,
+      y: anchor.y,
+    };
+    const heroUnit: Unit = { ...party, pos: { x: 1, y: 1 }, abilities: ['air_blast'] };
+    const bossUnit: Unit = {
+      ...enemy,
+      size: 2 as const,
+      pos: anchor,
+      abilities: ['air_blast'],
+    };
+    const state = withUnits({ ...battle, grid: raised(battle.grid, [secondCell], 1) }, [
+      heroUnit,
+      bossUnit,
+    ]);
+    const draft = new BattleDraft(CONTENT, state, new RngCursor(6));
+    const hero = unitById(draft, heroUnit.id);
+    const boss = unitById(draft, bossUnit.id);
+
+    const weather = weatherAt(CONTENT, draft.encounterId, draft.round);
+    const damage = airBlast.effects
+      .filter((e): e is Extract<typeof e, { kind: 'damage' }> => e.kind === 'damage')
+      .reduce((sum, e) => sum + e.base + e.scale * effectiveStats(CONTENT, boss).power, 0);
+    const threatFrom = (origin: Vec2) =>
+      damage * (hitChance(CONTENT, draft.grid, boss, { ...hero, pos }, weather, origin) / 100);
+
+    // The high second cell is the better firing position, so its hit chance is
+    // the one that belongs in the estimate, not the low anchor's.
+    expect(threatFrom(secondCell)).toBeGreaterThan(threatFrom(anchor));
+    expect(threatAt(draft, hero, pos)).toBeCloseTo(threatFrom(secondCell), 6);
   });
 });
 

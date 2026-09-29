@@ -802,6 +802,26 @@ export function weightsFor(profile: AiProfile): Weights {
   return WEIGHTS[profile] ?? WEIGHTS.none;
 }
 
+/**
+ * The occupied cell nearest a point, for the "if it moves" half of a threat
+ * estimate. A size-2 unit stands on two cells and either may be the closer
+ * firing position; checking both keeps the reach and the hit elevation honest.
+ * Ties keep `occupiedCells` order (the anchor first), so the result is
+ * deterministic.
+ */
+function nearestOccupiedCell(unit: Unit, pos: Vec2): Vec2 {
+  let best = unit.pos;
+  let bestDistance = distance(best, pos);
+  for (const cell of occupiedCells(unit)) {
+    const cellDistance = distance(cell, pos);
+    if (cellDistance < bestDistance) {
+      best = cell;
+      bestDistance = cellDistance;
+    }
+  }
+  return best;
+}
+
 /** Utility used by the hint system: how threatened is this tile? */
 export function threatAt(draft: BattleDraft, unit: Unit, pos: Vec2): number {
   let threat = 0;
@@ -812,8 +832,17 @@ export function threatAt(draft: BattleDraft, unit: Unit, pos: Vec2): number {
     for (const ability of usableAbilities(draft.content, opponent)) {
       // The threatening enemy reaches a tile further when it stands higher
       // than this tile, using the same height-reach rule as target validation.
+      //
+      // When the tile is already in reach, `validatingOrigin` picks the firing
+      // cell. Otherwise the estimate is "could it close and hit from here", so
+      // the origin is the occupied cell it would move from — the nearest one,
+      // ties going to `occupiedCells` order. Falling back to the anchor alone
+      // would ignore a size-2 opponent's second cell, which can be a step
+      // closer and higher, changing both the height reach and the hit
+      // elevation.
       const origin =
-        validatingOrigin(draft.content, draft.grid, opponent, ability, pos, false) ?? opponent.pos;
+        validatingOrigin(draft.content, draft.grid, opponent, ability, pos, false) ??
+        nearestOccupiedCell(opponent, pos);
       const reach =
         ability.range +
         heightReachBonus(
