@@ -29,6 +29,7 @@ import {
   FOREST_ROAD_SCENE,
 } from '../../src/content/scenes/forestRoad';
 import { tileNoise } from '../../src/render/painters/shapes';
+import { apronAlpha } from './ba-dan-exterior-apron';
 import { writeApronPlates } from './lib/apron-plates';
 import { newImage, pixelAt, setPixel } from './lib/image';
 import type { Image } from './lib/image';
@@ -53,6 +54,11 @@ export const APRON_SEAM = FOREST_APRON_SEAM;
 /** Ground this opaque is the scene's own painting and is left alone. */
 export const GUARD_ALPHA = 250;
 /**
+ * How far either side of the painted band the clear pixels still carry the
+ * neighbouring ground's colour, in tiles: past a lossy macroblock's width.
+ */
+export const RIM_BLEED = 0.4;
+/**
  * How far inside the board the continuation may reach to find real ground. The
  * enlarged NE bank reaches five cells in from the eastern rim, so the walk has
  * to be able to cross it to the grass bank it is cut into.
@@ -68,13 +74,27 @@ const TILE = { width: 64, height: 32 } as const;
  * The pond, the raised shelf and the rubble keep their authored edges: they are
  * objects standing on the ground, not ground to be smeared outward.
  */
-const BASE_PLATES = ['grass-north.webp', 'grass-south.webp', 'route-ground.webp'] as const;
+const BASE_PLATES = [
+  'grass-north.webp',
+  'grass-south.webp',
+  'route-ground.webp',
+  /*
+   * The creek is a watercourse, not an object standing on the ground: like the
+   * road it leaves the board. Left out, the mirror beyond the south rim found
+   * no ground in the pools, reached on past them and carried row 8's cart track
+   * out past the creek as a strip of paving.
+   */
+  'creek-west.webp',
+  'creek-east.webp',
+] as const;
 /** Every ground plate, in draw order, for the overpaint guard. */
 const GUARD_PLATES = [
   'grass-north.webp',
   'grass-south.webp',
   'route-ground.webp',
   'pond-bank.webp',
+  'creek-west.webp',
+  'creek-east.webp',
   'raised-shelf.webp',
   'rubble.webp',
 ] as const;
@@ -270,9 +290,26 @@ export function packApron(plates: readonly ApronPlate[], guard: Image): Image {
       const { x, y } = apronLogical(px, py);
       const depth = apronDepth(x, y);
       const inside = depth <= 0;
-      if (inside ? depth <= -APRON_SEAM : depth >= APRON_FADE) continue;
+      // A clear pixel beside the band still carries the ground's colour at
+      // alpha 0: left black, the lossy encoder smeared it across the edge into
+      // a light line round the rim, as it did on Ba Dan's apron.
+      const bleed = (): void => {
+        const under = inside ? pixelAt(field, px, py) : null;
+        const colour =
+          under && (under[3] ?? 0) > 0
+            ? { r: under[0] ?? 0, g: under[1] ?? 0, b: under[2] ?? 0 }
+            : apronTerrain(field, x, y);
+        if (colour) setPixel(image, px, py, [colour.r, colour.g, colour.b, 0]);
+      };
+      if (inside ? depth <= -APRON_SEAM : depth >= APRON_FADE) {
+        if (depth > -APRON_SEAM - RIM_BLEED && depth < APRON_FADE + RIM_BLEED) bleed();
+        continue;
+      }
       // Inside the board this plate only closes what the scene left open.
-      if (inside && (pixelAt(guard, px, py)[3] ?? 0) >= GUARD_ALPHA) continue;
+      if (inside && (pixelAt(guard, px, py)[3] ?? 0) >= GUARD_ALPHA) {
+        bleed();
+        continue;
+      }
       const terrain = apronTerrain(field, x, y);
       if (!terrain) continue;
       // Grain and recession ramp in from the rim, so the board's own edge is
@@ -283,7 +320,10 @@ export function packApron(plates: readonly ApronPlate[], guard: Image): Image {
       const recession = 1 - 0.1 * smoothstep(0.1, APRON_FADE, Math.max(depth, 0));
       const shade = (channel: number): number =>
         clamp(Math.round(channel * grain * recession), 0, 255);
-      const alpha = inside ? 255 : Math.round(255 * (1 - smoothstep(0.05, APRON_FADE, depth)));
+      // Ba Dan's fade: ten flat alpha steps whose edges wander on a broad
+      // clustered mask. A continuous ramp read as a pale haze smeared across
+      // the forest's corners, and a screen would read as a checkerboard.
+      const alpha = inside ? 255 : apronAlpha(depth, x, y);
       setPixel(image, px, py, [shade(terrain.r), shade(terrain.g), shade(terrain.b), alpha]);
     }
   }

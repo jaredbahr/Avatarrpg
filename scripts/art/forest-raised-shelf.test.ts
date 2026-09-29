@@ -3,6 +3,7 @@ import { createRequire } from 'node:module';
 import decode, { init } from '@jsquash/webp/decode.js';
 import { expect, it } from 'vitest';
 import {
+  FOREST_PERCH_CELLS,
   FOREST_RAISED_SHELF,
   FOREST_RAISED_SHELF_CELLS,
 } from '../../src/content/scenes/forestRoad';
@@ -15,13 +16,20 @@ import {
   FOREST_PIECE_TONES,
   loadForestMaterial,
 } from './forest-village-material';
-import { FOREST_RAISED_SHELF_OUTPUT, SHELF_RISE, packRaisedShelf } from './forest-raised-shelf';
+import {
+  FOREST_RAISED_SHELF_OUTPUT,
+  SHELF_RISE,
+  packRaisedShelf,
+  shelfTiers,
+} from './forest-raised-shelf';
 
 const OUTPUT = FOREST_RAISED_SHELF_OUTPUT;
 const EXIT = { x: 19, y: 4 };
-const raised = new Set(FOREST_RAISED_SHELF_CELLS.map(({ x, y }) => `${x},${y}`));
+const raised = new Set(
+  [...FOREST_RAISED_SHELF_CELLS, ...FOREST_PERCH_CELLS].map(({ x, y }) => `${x},${y}`),
+);
 
-it('decodes complete six-cell shelf coverage while leaving the road exit clear', async () => {
+it('decodes complete bank and perch coverage while leaving the road exit clear', async () => {
   const packed = readFileSync(OUTPUT);
   const require = createRequire(import.meta.url);
   await init(
@@ -73,19 +81,36 @@ it('ships the shelf the packer builds: a trodden top on a cut stone face in shad
     stone.joint,
   ]);
   const seen = new Set<string>();
+  const pale = { n: 0, outside: 0 };
+  const [perch] = FOREST_PERCH_CELLS;
   for (let i = 0; i < image.data.length; i += 4) {
     if ((image.data[i + 3] ?? 0) === 0) continue;
-    seen.add(toHex([image.data[i] ?? 0, image.data[i + 1] ?? 0, image.data[i + 2] ?? 0]));
+    const hex = toHex([image.data[i] ?? 0, image.data[i + 1] ?? 0, image.data[i + 2] ?? 0]);
+    // The perch's top is the one place the cut-stone row's pale pair belongs:
+    // bare rock. It may overhang the bank cells behind it, never anywhere else.
+    if (hex === stone.base || hex === stone.rim) {
+      pale.n++;
+      const px = (i / 4) % image.width,
+        py = Math.floor(i / 4 / image.width);
+      const worldX = FOREST_RAISED_SHELF.x + px + 0.5,
+        worldY = FOREST_RAISED_SHELF.y + py + 0.5;
+      const cellX = Math.floor(((worldX - 768) / 64 + worldY / 32) / 2);
+      const cellY = Math.floor((worldY / 32 - (worldX - 768) / 64) / 2);
+      if (Math.abs(cellX - (perch?.x ?? 0)) > 1 || Math.abs(cellY - (perch?.y ?? 0)) > 1)
+        pale.outside++;
+      continue;
+    }
+    seen.add(hex);
   }
   // Two materials, two flat tones each plus a thin pale rim, and the ink: no
   // continuous tone is left for a gradient or a distance haze to live in.
   expect([...seen].filter((hex) => !allowed.has(hex))).toEqual([]);
   for (const hex of [trodden.base, stone.shadow, stone.joint, FOREST_INK])
     expect(seen, `${hex} is painted`).toContain(hex);
-  // The face sits on the shadow side, so the cut-stone row's pale entries,
-  // which made it read as a curb, never reach it.
-  expect(seen).not.toContain(stone.base);
-  expect(seen).not.toContain(stone.rim);
+  // The faces sit on the shadow side, so the cut-stone row's pale entries,
+  // which made them read as a curb, reach only the perch's top.
+  expect(pale.n).toBeGreaterThan(500);
+  expect(pale.outside).toBe(0);
   // Nothing from the forest's other materials reaches this plate.
   for (const hex of Object.values(FOREST_ALL_TONES.verge)) expect(seen).not.toContain(hex);
 });
@@ -103,9 +128,19 @@ it('stands the top above a darker face, with ink along the lip', async () => {
         0.0722 * (image.data[i + 2] ?? 0),
     };
   };
-  // Walk down every column: wherever the shelf ends below, the last
-  // SHELF_RISE pixels above that end are the face, and the two at its top are
-  // the lip. The road beside the shelf has neither, which is the difference.
+  // The tier of the cell a face stands in: one rise for the bank, two for the
+  // perch where its east face drops past the rim to the ground.
+  const tierOf = shelfTiers(FOREST_RAISED_SHELF_CELLS, FOREST_PERCH_CELLS);
+  const tierAt = (px: number, py: number): number => {
+    const worldX = FOREST_RAISED_SHELF.x + px + 0.5,
+      worldY = FOREST_RAISED_SHELF.y + py + 0.5;
+    const diagonal = (worldX - 768) / 64,
+      sum = worldY / 32;
+    return tierOf(Math.floor((diagonal + sum) / 2), Math.floor((sum - diagonal) / 2));
+  };
+  // Walk down every column: wherever the shelf ends below, the last rise (or
+  // two) of pixels above that end are the face, and the two at its top are the
+  // lip. The road beside the shelf has neither, which is the difference.
   const face = { n: 0, sum: 0 },
     top = { n: 0, sum: 0 };
   let columns = 0,
@@ -118,10 +153,11 @@ it('stands the top above a darker face, with ink along the lip', async () => {
         run++;
         continue;
       }
-      if (run > SHELF_RISE + 8) {
+      const rise = Math.max(1, tierAt(px, py - 1)) * SHELF_RISE;
+      if (run > rise + 8) {
         columns++;
         const end = py;
-        const lip = end - SHELF_RISE;
+        const lip = end - rise;
         if (at(px, lip).hex === FOREST_INK || at(px, lip + 1).hex === FOREST_INK) inkedLips++;
         for (let y = lip + 2; y < end - 2; y++) {
           face.n++;

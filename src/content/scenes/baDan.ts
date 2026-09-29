@@ -99,6 +99,64 @@ export const BA_DAN_APRON_PIECES: readonly SceneImage[] = BA_DAN_APRON_BANDS.map
 }));
 
 /**
+ * The edge water (`scripts/art/ba-dan-edges.ts`): the same kerbed channel as
+ * the courtyard canal, cut to logical cells and painted in the garden's grain.
+ *
+ * - **The west ford.** The road's last two cells, (0,7) and (0,8), are `W`:
+ *   the road runs down into standing water that carries on west past the rim
+ *   into the apron's fade, over a line of drowned stepping stones.
+ * - **The south canal.** The south edge band: one row of water just outside
+ *   the open lawn x4..17, its near kerb at the lawn's edge. It is ground, so it
+ *   never stands in front of anyone.
+ *
+ * Neither is runtime water: the ford is a blocked tile and the canal is off
+ * the board, so the film the renderer lays over `~` is baked in instead.
+ * Both pieces are painted after the apron, and fade with it past the rim.
+ */
+export const BA_DAN_FORD_CELLS: readonly Vec2[] = [-2, -1, 0].flatMap((x) => [
+  { x, y: 7 },
+  { x, y: 8 },
+]);
+export const BA_DAN_SOUTH_CANAL_CELLS: readonly Vec2[] = Array.from({ length: 14 }, (_, i) => ({
+  x: 4 + i,
+  y: 16,
+}));
+/** Ground-plane centres of the ford's drowned stepping stones, west from the road's end. */
+export const BA_DAN_FORD_STONES: readonly Vec2[] = [
+  { x: 0.6, y: 7.55 },
+  { x: 0.05, y: 8.2 },
+  { x: -0.55, y: 7.6 },
+  { x: -1.15, y: 8.25 },
+  { x: -1.75, y: 7.65 },
+];
+/**
+ * Each edge piece's world rectangle, its cells' kerb envelope on the texel
+ * lattice, and where it sits on the one page both ship on (`source`): the
+ * village already asks for all but two of `SCENE_IMAGE_CAP`'s images.
+ */
+export const BA_DAN_EDGE_WATER = [
+  {
+    id: 'south-canal',
+    cells: BA_DAN_SOUTH_CANAL_CELLS,
+    x: 164,
+    y: 626,
+    width: 1016,
+    height: 508,
+    source: { x: 0, y: 0 },
+  },
+  {
+    id: 'west-ford',
+    cells: BA_DAN_FORD_CELLS,
+    x: 288,
+    y: 144,
+    width: 384,
+    height: 192,
+    source: { x: 0, y: 508 },
+  },
+] as const;
+export const BA_DAN_EDGE_WATER_PAGE = { width: 1016, height: 700 } as const;
+
+/**
  * Pixel size of each upright texture. They are pixel-art redraws at two
  * screen pixels a texel, shipped nearest-upscaled by a whole number
  * (`scripts/art/ba-dan-restyle.ts`), so the pieces keep their world widths
@@ -145,7 +203,14 @@ export const BA_DAN_COURTYARD_FOOTPRINTS: readonly Vec2[] = BA_DAN_COURTYARD_PRO
   ],
 );
 
-function courtyardProp({ id, image, x, y }: (typeof BA_DAN_COURTYARD_PROPS)[number]): SceneScenery {
+interface CourtyardProp {
+  readonly id: string;
+  readonly image: 'low-planter' | 'merchant-display';
+  readonly x: number;
+  readonly y: number;
+}
+
+function courtyardProp({ id, image, x, y }: CourtyardProp): SceneScenery {
   const width = 192;
   const height = aspectHeight(image, width);
   const frontAnchor = image === 'low-planter' ? 0.675 : 0.695;
@@ -163,6 +228,22 @@ function courtyardProp({ id, image, x, y }: (typeof BA_DAN_COURTYARD_PROPS)[numb
     ],
     depth: { x: x + 1.5, y: y + 0.5 },
   };
+}
+
+/**
+ * The north edge band (`BA_DAN_VILLAGE.edges`): the lawn along row 0 ends at a
+ * dry-stone tea terrace just outside the rim, the courtyard's own planter —
+ * laid stone round a bed of bushes — set end to end in a row one cell out, so
+ * the open rim x4..17 meets a wall rather than a stretch of lawn that stops.
+ * It is the back edge: everyone on the board stands in front of it.
+ */
+export const BA_DAN_NORTH_TERRACE: readonly CourtyardProp[] = Array.from(
+  { length: 7 },
+  (_, index) => ({ id: `north-terrace-${index}`, image: 'low-planter', x: 4 + 2 * index, y: -1 }),
+);
+
+function terracePiece(piece: CourtyardProp): SceneScenery {
+  return { ...courtyardProp(piece), exterior: true };
 }
 
 /**
@@ -325,20 +406,91 @@ function house(
   };
 }
 
-function tree(x: number, y: number, size = 360): SceneScenery {
+function tree(x: number, y: number, size = 360, flip = false): SceneScenery {
   const height = aspectHeight('village-tree', size);
   return {
     id: `tree-${x}-${y}`,
     url: `${root}village-tree.webp`,
-    x: 1024 + (x - y) * 64 - size * 0.51,
+    // Mirrored, the trunk's centre (51% across) lands at 49%.
+    x: 1024 + (x - y) * 64 - size * (flip ? 0.49 : 0.51),
     y: (x + y + 1) * 32 - height * 0.96,
     width: size,
     height,
     footprint: [{ x, y }],
     depth: { x, y },
     fadeWhenOccluding: true,
+    ...(flip ? { flip: true } : {}),
   };
 }
+
+/**
+ * The full canopies the rim had before every trunk cell was drawn, less the
+ * one at (18,15): that cell is now the river path's mouth, open ground.
+ */
+export const BA_DAN_RIM_CANOPIES = [
+  { x: 0, y: 3, size: 360 },
+  { x: 0, y: 6, size: 400 },
+  { x: 0, y: 10, size: 420 },
+  { x: 0, y: 13, size: 380 },
+  { x: 3, y: 15, size: 400 },
+  { x: 21, y: 15, size: 420 },
+  { x: 23, y: 12, size: 390 },
+  { x: 23, y: 9, size: 420 },
+  { x: 23, y: 5, size: 400 },
+  { x: 22, y: 1, size: 360 },
+  { x: 19, y: 0, size: 380 },
+] as const;
+
+/**
+ * Every other `T` on the rim was a tree the rules knew about and the picture
+ * did not: lawn you could not walk onto. Each now stands a younger tree of
+ * the same restyled piece, so the rim reads as woodland all the way round.
+ * The back edges (north, west) take the taller ones; the front edges (east
+ * and south, nearest the camera) stay small, so their canopies cover less
+ * of the board, and alternate trees are mirrored so no two neighbours repeat.
+ */
+export const BA_DAN_RIM_TRUNKS = [
+  // North, row 0, and the north-west and north-east corners.
+  { x: 0, y: 0, size: 300 },
+  { x: 1, y: 0, size: 260 },
+  { x: 2, y: 0, size: 320 },
+  { x: 3, y: 0, size: 280 },
+  { x: 18, y: 0, size: 300 },
+  { x: 20, y: 0, size: 280 },
+  { x: 21, y: 0, size: 320 },
+  { x: 22, y: 0, size: 260 },
+  { x: 23, y: 0, size: 280 },
+  { x: 0, y: 1, size: 280 },
+  { x: 1, y: 1, size: 320 },
+  { x: 23, y: 1, size: 250 },
+  // West, x = 0.
+  { x: 0, y: 2, size: 300 },
+  { x: 0, y: 4, size: 280 },
+  { x: 0, y: 5, size: 320 },
+  { x: 0, y: 9, size: 300 },
+  { x: 0, y: 11, size: 280 },
+  { x: 0, y: 12, size: 320 },
+  // East, x = 23: the front edge, nearest the camera. Saplings under the old
+  // canopies, so the board's near quarter is not walled off.
+  { x: 23, y: 2, size: 170 },
+  { x: 23, y: 3, size: 150 },
+  { x: 23, y: 4, size: 170 },
+  { x: 23, y: 6, size: 160 },
+  { x: 23, y: 10, size: 160 },
+  { x: 23, y: 11, size: 170 },
+  { x: 23, y: 13, size: 150 },
+  // South, rows 14 and 15: its west corner is a side, its east end the front.
+  // (18..20,15) is the river path's mouth, so no tree stands there.
+  { x: 0, y: 14, size: 280 },
+  { x: 1, y: 14, size: 240 },
+  { x: 22, y: 14, size: 160 },
+  { x: 23, y: 14, size: 150 },
+  { x: 0, y: 15, size: 260 },
+  { x: 1, y: 15, size: 230 },
+  { x: 2, y: 15, size: 260 },
+  { x: 22, y: 15, size: 160 },
+  { x: 23, y: 15, size: 150 },
+] as const;
 
 const NORTH_HOUSE = house('north-house', 12, 1, 4, 3, 'dwelling');
 const SOUTHWEST_HOUSE = house('southwest-house', 6, 10, 4, 4, 'dwelling');
@@ -383,6 +535,15 @@ export const BA_DAN_SCENE: MapScene = {
     canalBanks(),
     // Painted last: transparent everywhere the board can be walked.
     ...BA_DAN_APRON_PIECES,
+    // Over the apron, since both run on past the rim into its fade.
+    ...BA_DAN_EDGE_WATER.map(({ x, y, width, height, source }) => ({
+      url: `${root}edge-water.webp`,
+      sourceRect: { ...source, width, height },
+      x,
+      y,
+      width,
+      height,
+    })),
   ],
   scenery: [
     house('gao-house', 6, 1, 4, 3),
@@ -393,18 +554,9 @@ export const BA_DAN_SCENE: MapScene = {
     // Equal-depth frontage must paint after the building behind it.
     ...BA_DAN_COURTYARD_PROPS.map(courtyardProp),
     ...turnedPlanter(),
+    ...BA_DAN_NORTH_TERRACE.map(terracePiece),
     ...BA_DAN_COURT_TREES.map(({ x, y }) => tree(x, y, 320)),
-    tree(0, 3),
-    tree(0, 6, 400),
-    tree(0, 10, 420),
-    tree(0, 13, 380),
-    tree(3, 15, 400),
-    tree(18, 15, 390),
-    tree(21, 15, 420),
-    tree(23, 12, 390),
-    tree(23, 9, 420),
-    tree(23, 5, 400),
-    tree(22, 1, 360),
-    tree(19, 0, 380),
+    ...BA_DAN_RIM_CANOPIES.map(({ x, y, size }) => tree(x, y, size)),
+    ...BA_DAN_RIM_TRUNKS.map(({ x, y, size }) => tree(x, y, size, (x + y) % 2 === 1)),
   ],
 };

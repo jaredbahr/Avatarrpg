@@ -58,3 +58,23 @@ describe('scene grounding rasters', () => {
     expect(singles / painted).toBeLessThan(0.02);
   });
 });
+
+describe('low growth that opts out of the contact shadow', () => {
+  const reeds: SceneScenery = {
+    ...piece,
+    id: 'test-reeds',
+    footprint: [{ x: 6, y: 6 }],
+    depth: { x: 6.1, y: 6.08 },
+    contactShadow: false,
+  };
+
+  it('casts no footprint patch, alone or beside a piece that does', () => {
+    // Alone it leaves nothing to draw at all.
+    expect(contactRaster([reeds], affine)).toBeNull();
+    // Beside a house, the house's own contact is unchanged by it.
+    const both = contactRaster([piece, reeds], affine);
+    const house = contactRaster([piece], affine);
+    if (!both || !house) throw new Error('no raster');
+    expect(opaqueTexels(both.data)).toBe(opaqueTexels(house.data));
+  });
+});

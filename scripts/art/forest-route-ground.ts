@@ -13,7 +13,8 @@
  * `ba-dan-neighborhood-ground.ts` re-derives the outer courts.
  *
  * Three materials, not two: the packed-earth road, the Earth-family verge, and
- * path wear along the cart ruts. Each is exactly two flat tones plus a thin
+ * path wear along the cart ruts. The low reeds' damp feet (`forest-reed-wear.ts`)
+ * borrow the pond margin's two tones. Each is exactly two flat tones plus a thin
  * pale rim, so there is no continuous tone left for a gradient to hide in, and
  * road and verge feather together without ink; gameplay objects own their edges.
  */
@@ -26,6 +27,7 @@ import type { ForestMaterial, ToneName } from './forest-village-material';
 import { tileNoise } from '../../src/render/painters/shapes';
 import { encodeWebp } from './lib/webp';
 import { spillAt } from './forest-rubble';
+import { REED_WEAR_RGB, reedWear } from './forest-reed-wear';
 
 export const FOREST_ROUTE_GROUND = { x: 128, y: 32, width: 1984, height: 960 } as const;
 function clamp(value: number): number {
@@ -103,7 +105,10 @@ export function packRouteGround(material: ForestMaterial): Image {
       const featherWidth = 0.26 + 0.06 * (0.5 + 0.5 * Math.sin(x * 5.9 + y * 3.7));
       const alpha = key === ',' ? Math.round(255 * clamp(outerDistance / featherWidth)) : 255;
 
-      const rgb = material.colour(tone, x, y);
+      // The low reeds carry no contact shadow; the ground they grow from is
+      // worn damp at their painted feet instead (`forest-reed-wear.ts`).
+      const wear = reedWear(worldX, worldY);
+      const rgb = wear ? REED_WEAR_RGB[wear] : material.colour(tone, x, y);
       setPixel(image, px, py, [rgb[0], rgb[1], rgb[2], alpha]);
     }
   return image;
