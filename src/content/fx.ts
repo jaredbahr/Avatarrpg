@@ -401,6 +401,33 @@ const dust = (count: number, size: [number, number] = [0.18, 0.3]): ParticleEmit
     layer: 'under',
   });
 
+/**
+ * Ground kicked up by a foot or a landing body: a soft, edgeless haze in the
+ * neutral palette's warm tan, not `dust`'s inked stone clumps, which read as
+ * pebbles left on grass. All of it is gone by 340 ms.
+ */
+const kickedDust = (count: number, size: [number, number], opacity: number): ParticleEmitterDef =>
+  particles({
+    shape: 'ring',
+    cell: 'glow',
+    count,
+    duration: 40,
+    life: [220, 300],
+    delay: [0, 30],
+    speed: [0.5, 1],
+    spread: 0.15,
+    gravity: -0.2,
+    drag: 5,
+    size,
+    grow: 1.6,
+    spin: 0,
+    color: 'light',
+    fade: 'out',
+    opacity,
+    blend: 'normal',
+    layer: 'under',
+  });
+
 const cracks = (count: number, reach: number): StrokeEmitterDef =>
   strokes({
     shape: 'crack',
@@ -1297,10 +1324,10 @@ const DRAWN_RECIPES: Readonly<Record<string, FxRecipeInput>> = {
 
   /* Bodies meeting the ground, and whose turn it is. These trail: the choreography
      never holds playback for them (see `EmitterTrack.trailing`). ---------- */
-  // A footfall's puff, small enough to sit under the feet and never over a bar.
-  'fx.move.step': { palette: 'neutral', impact: [dust(3, [0.08, 0.14])], flash: 0 },
-  // A shoved or dropped body landing.
-  'fx.move.land': { palette: 'neutral', impact: [dust(9, [0.16, 0.28])], flash: 0 },
+  // A footfall's puff: a faint haze of warm tan under the feet, gone in a third of a second.
+  'fx.move.step': { palette: 'neutral', impact: [kickedDust(2, [0.2, 0.3], 0.3)], flash: 0 },
+  // A shoved or dropped body landing: the same haze, wider and a touch denser.
+  'fx.move.land': { palette: 'neutral', impact: [kickedDust(6, [0.28, 0.42], 0.42)], flash: 0 },
   // A ring spreading on the ground under whoever's turn it now is.
   'fx.turn.start': {
     palette: 'neutral',
