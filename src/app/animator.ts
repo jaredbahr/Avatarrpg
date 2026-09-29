@@ -36,7 +36,7 @@ import {
   screenDirection,
 } from './anim/direction';
 import type { WalkDirection } from './anim/direction';
-import { headingClip, koClip } from '../content/assets/clips';
+import { headingClip, hitClip, koClip } from '../content/assets/clips';
 import type { Heading, MeleeDirection } from '../content/assets/clips';
 import { sheetLocomotion } from '../content/assets/manifest';
 import type { SheetClips } from '../render/sheets/store';
@@ -559,14 +559,17 @@ export class Animator {
   }
 
   /**
-   * A knockout as the unit's sheet draws it (ADR 0059): a sheet whose clips
-   * carry G knockouts falls on the diagonal `koClip` gives the heading the
-   * unit faces; one that does not, or has not loaded, keeps the legacy pose.
-   * A unit that has not turned yet faces east, as its stance does.
+   * A knockout or hit as the unit's sheet draws it (ADR 0059, ADR 0063): a
+   * sheet whose clips carry G knockouts falls on the diagonal `koClip` gives
+   * the heading the unit faces, and one carrying G hits flinches in that
+   * heading's own; one that does not, or has not loaded, keeps the legacy
+   * pose. A unit that has not turned yet faces east, as its stance does.
    */
   private reactionClip(clip: ClipName, unitId: string, sprite?: string): ClipName {
-    if (clip !== 'ko' || !sprite || sheetLocomotion(sprite)?.headings !== 8) return clip;
-    const authored = koClip(this.headings.get(unitId) ?? 'east');
+    if ((clip !== 'ko' && clip !== 'hit') || !sprite || sheetLocomotion(sprite)?.headings !== 8)
+      return clip;
+    const heading = this.headings.get(unitId) ?? 'east';
+    const authored = clip === 'ko' ? koClip(heading) : hitClip(heading);
     return this.options.sheetClips?.(sprite)?.[authored] ? authored : clip;
   }
 

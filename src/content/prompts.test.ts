@@ -239,13 +239,14 @@ describe('sheet prompt packs', () => {
   it('ask for exactly the frames the clip table allows', () => {
     for (const key of sheetKeys) {
       const text = readFileSync(join(SHEETS, `${key}.md`), 'utf8');
-      // Riverside tea, PixelLab's eight-way runtime locomotion and its
-      // fighting stance (ADR 0052) have their own bounded source packs rather
-      // than the legacy hero prompt table.
+      // Riverside tea, PixelLab's eight-way runtime locomotion, its fighting
+      // stance (ADR 0052) and its G hits (ADR 0063) have their own bounded
+      // source packs rather than the legacy hero prompt table.
       for (const clip of CLIP_NAMES.filter(
         (clip) =>
           clip !== 'tea' &&
           !clip.startsWith('stance') &&
+          !/^hit[A-Z]/.test(clip) &&
           !/(NorthEast|SouthEast|SouthWest|NorthWest|West)$/.test(clip),
       )) {
         const { min, max } = CLIP_FRAME_COUNTS[clip];

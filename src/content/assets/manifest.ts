@@ -246,10 +246,12 @@ function gSheet(key: string, name: keyof typeof G_TRAVEL, palette: string): Shee
     kind: 'sheet',
     atlas: `art/units/${name}-g.json`,
     // Page 2 holds the fighting stance; locomotion and actions fill page 1;
-    // page 3 the knockouts, whose clips arrive with it (ADR 0059).
+    // page 3 the knockouts and page 4 the hits, whose clips arrive with them
+    // (ADR 0059, ADR 0063).
     atlasPages: [
       `art/units/${name}-g-2.json`,
       `art/units/${name}-g-3.json`,
+      `art/units/${name}-g-4.json`,
       ...(riverside ? [`art/units/riverside-${name}.json`] : []),
     ],
     clipData: `art/units/${name}-g-clips.json`,

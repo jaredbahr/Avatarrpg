@@ -23,6 +23,7 @@ import {
   KO_HEADINGS,
   REQUIRED_CLIPS,
   headingClip,
+  hitClip,
   koClip,
 } from './assets/clips';
 import type { ClipDef, ClipName } from './assets/clips';
@@ -825,7 +826,7 @@ export const clipSetSchema = z.object(
 
 /**
  * What is wrong with a sheet's clips: their frame counts and names, and a G
- * knockout family (ADR 0059) that is not whole, timed cel by cel, and on a
+ * knockout (ADR 0059) or hit (ADR 0063) family that is not whole, timed cel by cel, and on a
  * sheet declaring the headings it is asked for by. `validateContent` runs it
  * on the manifest's clips, `art:validate` on those with the fetched ones.
  */
@@ -835,9 +836,10 @@ export function sheetClipProblems(
   eightWay: boolean,
 ): string[] {
   const problems: string[] = [];
-  const family = KO_HEADINGS.map(koClip);
-  const authored = family.filter((clip) => clips[clip]);
-  if (authored.length > 0) {
+  // The knockouts on four diagonals, and the hits (ADR 0063) in all eight.
+  for (const family of [KO_HEADINGS.map(koClip), HEADINGS.map(hitClip)]) {
+    const authored = family.filter((clip) => clips[clip]);
+    if (authored.length === 0) continue;
     if (!eightWay)
       problems.push(`asset ${key}: ${authored[0]} needs declared eight-way locomotion`);
     for (const clip of family) {

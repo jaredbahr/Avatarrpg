@@ -2,7 +2,7 @@
  * Local review of the G knockouts (ADR 0059) and the G thug, on both
  * backends, at the combat camera's own scale: the forest ambush's thugs
  * roster beside Kaya, Sura and Bo, the thugs idling and one walking, each
- * party member struck (the legacy hit: the party has no G hit) and then
+ * party member struck (its G hit, ADR 0063) and then
  * downed, and held where it fell on the grass. Crops are named for the clip
  * the animator is playing in them.
  *

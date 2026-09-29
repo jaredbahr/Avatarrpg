@@ -9,13 +9,16 @@ import { average, screenshotClipPixels } from './pixels';
 // network response instead of receiving the cached page.
 test.use({ serviceWorkers: 'block' });
 
-/** Kaya's knockout page (ADR 0059), served as flat blue so any of its cels reads plainly. */
-function bluePage(): Buffer {
+/**
+ * A flat page: Kaya's knockout page (ADR 0059) is served blue and her hit page
+ * (ADR 0063) green, so any of their cels reads plainly.
+ */
+function flatPage([r, g, b]: readonly [number, number, number]): Buffer {
   const png = new PNG({ width: 2048, height: 1024 });
   for (let i = 0; i < png.data.length; i += 4) {
-    png.data[i] = 0;
-    png.data[i + 1] = 0;
-    png.data[i + 2] = 255;
+    png.data[i] = r;
+    png.data[i + 1] = g;
+    png.data[i + 2] = b;
     png.data[i + 3] = 255;
   }
   return PNG.sync.write(png);
@@ -37,16 +40,20 @@ async function torso(page: Page, id: string): Promise<{ x: number; y: number }> 
 }
 
 for (const renderer of ['canvas', 'webgl'] as const) {
-  test(`a struck G party member plays the legacy hit, and a downed one holds its knockout, on ${renderer}`, async ({
+  test(`a struck G party member plays its G hit, and a downed one holds its knockout, on ${renderer}`, async ({
     page,
   }) => {
     test.setTimeout(180_000);
     allowSoftwareWebgl(test, renderer);
     const errors: string[] = [];
     page.on('pageerror', (error) => errors.push(error.message));
-    const png = bluePage();
+    const blueKo = flatPage([0, 0, 255]);
+    const greenHit = flatPage([0, 255, 0]);
     await page.route('**/art/units/kaya-g-3.webp', (route) =>
-      route.fulfill({ contentType: 'image/png', body: png }),
+      route.fulfill({ contentType: 'image/png', body: blueKo }),
+    );
+    await page.route('**/art/units/kaya-g-4.webp', (route) =>
+      route.fulfill({ contentType: 'image/png', body: greenHit }),
     );
     await page.clock.install();
     await resetStorage(page, `?renderer=${renderer}`);
@@ -98,6 +105,10 @@ for (const renderer of ['canvas', 'webgl'] as const) {
       const c = average(await screenshotClipPixels(page, clip), radius, radius, 2);
       return c.b > c.r + 20 && c.b > c.g + 20;
     };
+    const green = async () => {
+      const c = average(await screenshotClipPixels(page, clip), radius, radius, 2);
+      return c.g > c.r + 20 && c.g > c.b + 20;
+    };
     const clipOf = () =>
       page.evaluate(
         (unitId) =>
@@ -106,13 +117,13 @@ for (const renderer of ['canvas', 'webgl'] as const) {
       );
     const poll = { timeout: renderer === 'webgl' ? SOFTWARE_WEBGL_BUDGET_MS : 30_000 };
 
-    // Mid-reaction: the legacy hit, never from the knockout page (the party
-    // has no G hit: its motion was CC BY-SA, ADR 0059).
+    // Mid-reaction, on her contact cel: her G hit for the heading she faces,
+    // from the hit page and never the knockout page (ADR 0063).
     await page.clock.runFor(150);
-    expect(await clipOf()).toBe('hit');
-    await expect
-      .poll(blue, { ...poll, message: 'the hit drew from the knockout page' })
-      .toBe(false);
+    expect(await clipOf()).toMatch(
+      /^hit(East|West|North|South|NorthEast|NorthWest|SouthEast|SouthWest)$/,
+    );
+    await expect.poll(green, { ...poll, message: 'the hit never drew from its page' }).toBe(true);
 
     // Played out: back in her stance, from the stance page.
     await page.clock.runFor(1500);
@@ -120,6 +131,7 @@ for (const renderer of ['canvas', 'webgl'] as const) {
     await expect
       .poll(blue, { ...poll, message: 'the stance drew from the knockout page' })
       .toBe(false);
+    await expect.poll(green, { ...poll, message: 'the stance drew from the hit page' }).toBe(false);
 
     // Downed: the knockout plays, and once it has she stays where she fell.
     await page.evaluate((unitId) => {
