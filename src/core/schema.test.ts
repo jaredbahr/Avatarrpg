@@ -15,13 +15,14 @@
  */
 
 import { beforeAll, describe, expect, it, vi } from 'vitest';
+import { z } from 'zod';
 import { CONTENT } from '../content';
 import * as fxShipped from '../content/fx';
 import * as soundsShipped from '../content/sounds';
 import * as tuningShipped from '../content/tuning';
 import { RngCursor } from './rng';
 import * as saveShipped from './save/serialize';
-import { SchemaError } from './schema';
+import * as schemaShipped from './schema';
 import { apply } from './state/reducer';
 import { createBattle, createGame } from './state/createGame';
 import type { GameState } from './types';
@@ -45,7 +46,7 @@ let zodBuilt: Modules;
 
 beforeAll(async () => {
   vi.resetModules();
-  vi.doMock('./schema', async () => ({ ...(await import('zod')).z }));
+  vi.doMock('./schema', () => ({ ...z }));
   zodBuilt = {
     save: await import('./save/serialize'),
     fx: await import('../content/fx'),
@@ -117,7 +118,7 @@ const REPLACEMENTS: readonly unknown[] = [
   { x: 1, y: 2 },
 ];
 
-/** A deep copy with one thing changed: a key dropped, a value swapped, a key added or an array resized. */
+/** A deep copy with one thing changed: a key dropped, value swapped, key added, array resized or hole made. */
 function mutate<T>(value: T, random: () => number): T {
   const copy = structuredClone(value);
   const all = containers(copy);
@@ -129,6 +130,7 @@ function mutate<T>(value: T, random: () => number): T {
   if (Array.isArray(target)) {
     if (roll < 0.2) target.length = Math.floor(random() * target.length);
     else if (roll < 0.35) target.push(structuredClone(target[0] ?? pick(REPLACEMENTS)));
+    else if (roll < 0.5 && keys.length > 0) delete target[Number(pick(keys))];
     else if (keys.length > 0) target[Number(pick(keys))] = structuredClone(pick(REPLACEMENTS));
     return copy;
   }
@@ -248,6 +250,26 @@ const MALFORMED_SAVE_CORPUS: readonly unknown[] = [
 ];
 
 describe('the runtime validator matches zod', () => {
+  it('validates every array index, including sparse holes', () => {
+    const sparse = new Array<string>(2);
+    sparse[1] = 'present';
+    expectSameVerdict(
+      schemaShipped.array(schemaShipped.string()),
+      z.array(z.string()),
+      sparse,
+      'sparse',
+    );
+
+    const nested = { values: ['present', 'also present'] };
+    delete nested.values[1];
+    expectSameVerdict(
+      schemaShipped.object({ values: schemaShipped.array(schemaShipped.string()) }),
+      z.object({ values: z.array(z.string()) }),
+      nested,
+      'nested sparse',
+    );
+  });
+
   it('on saves, as parsed and as the player is told', () => {
     const state = midBattleState();
     const battle = saveShipped.toBlob(state, META);
@@ -324,8 +346,8 @@ describe('the runtime validator matches zod', () => {
   it('really did load zod for the comparison', () => {
     const shipped = saveShipped.saveBlobSchema.safeParse(null);
     const zod = zodBuilt.save.saveBlobSchema.safeParse(null);
-    expect(shipped.success || shipped.error).toBeInstanceOf(SchemaError);
-    expect(zod.success || zod.error).not.toBeInstanceOf(SchemaError);
+    expect(shipped.success || shipped.error).toBeInstanceOf(schemaShipped.SchemaError);
+    expect(zod.success || zod.error).not.toBeInstanceOf(schemaShipped.SchemaError);
     expect((zod.success || zod.error).constructor.name).toBe('ZodError');
   });
 });

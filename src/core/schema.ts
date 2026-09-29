@@ -161,11 +161,12 @@ class ArraySchema<T extends AnySchema> extends Schema<T['_output'][], T['_input'
     super(
       leaf('array', Array.isArray, checks, (items, p, i) => {
         let aborted = false;
-        const out = items.map((v, k) => {
-          const r = item._parse(v, [...p, k], i);
+        const out: unknown[] = [];
+        for (let k = 0; k < items.length; k++) {
+          const r = item._parse(items[k], [...p, k], i);
           if (r === ABORT) aborted = true;
-          return r;
-        });
+          out.push(r);
+        }
         return aborted ? ABORT : out;
       }),
     );
