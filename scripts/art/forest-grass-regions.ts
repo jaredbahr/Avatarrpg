@@ -21,6 +21,7 @@ import { FOREST_GROUND_QUALITY, loadForestMaterial } from './forest-village-mate
 import type { ForestMaterial } from './forest-village-material';
 import { encodeWebp } from './lib/webp';
 import { spillAt } from './forest-rubble';
+import { REED_WEAR_RGB, reedWear } from './forest-reed-wear';
 
 export const FOREST_GRASS_PACKS = [
   {
@@ -88,8 +89,13 @@ export function packGrassRegion(
         alpha = Math.min(alpha, clamp(distance / width));
       }
 
-      // Round a rubble heap the verge gives way to the spill it has shed.
-      const colour = material.colour(spillAt(material, x, y) ? 'spill' : 'verge', x, y);
+      // Round a rubble heap the verge gives way to the spill it has shed; at
+      // a reed clump's painted feet it is worn to damp soil, the same wear the
+      // route plate lays over the shared row (`forest-reed-wear.ts`).
+      const wear = reedWear(region.x + px + 0.5, region.y + py + 0.5);
+      const colour = wear
+        ? REED_WEAR_RGB[wear]
+        : material.colour(spillAt(material, x, y) ? 'spill' : 'verge', x, y);
       setPixel(image, px, py, [colour[0], colour[1], colour[2], Math.round(alpha * 255)]);
     }
   return image;

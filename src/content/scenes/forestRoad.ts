@@ -279,13 +279,18 @@ export const FOREST_BANK_NEST_REEDS: SceneScenery = {
   height: 58,
   footprint: [{ x: 6, y: 9 }],
   depth: { x: 6.1, y: 9.08 },
+  // Seated by the wear `forest-route-ground.ts` lays at its painted foot.
+  contactShadow: false,
 };
 
 /**
  * The pond's own bank planting: three low reed fringes cut from the same
  * authored flood-bank reeds, standing on the cells that touch the water so the
  * wet line carries growth instead of meeting the road as a bare edge. They are
- * passable scenery like the nest: no wall, no collision, no ground disk.
+ * passable scenery like the nest: no wall, no collision, no ground disk. Nor
+ * the runtime contact shadow, which is keyed to the whole cell and drew a dark
+ * diamond round each clump: the route plate wears the ground at the fringe's
+ * painted foot instead (`scripts/art/forest-reed-wear.ts`).
  */
 /** The packed fringe's own pixel size; every placement keeps this aspect. */
 export const REED_PLATE = { width: 512, height: 313 } as const;
@@ -307,6 +312,7 @@ export const FOREST_POND_REEDS: readonly SceneScenery[] = (
     height,
     footprint: [{ x, y }],
     depth: { x: x + 0.1, y: y + 0.08 },
+    contactShadow: false,
   };
 });
 
