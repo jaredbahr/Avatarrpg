@@ -38,6 +38,7 @@ import {
   occupancy,
   posKey,
   samePos,
+  standCost,
   tileAt,
   withTile,
 } from '../rules/grid';
@@ -192,6 +193,7 @@ export class BattleDraft {
       blocked: this.blockedCells(unit.id),
       surfaces: this.content.surfaces,
       size: unit.size,
+      climbCost: this.content.tuning.climbCost,
     };
   }
 
@@ -388,7 +390,7 @@ export class BattleDraft {
       if (!inBounds(this.grid, next)) break;
       // Pulling past the origin would look absurd; stop when adjacent.
       if (mode === 'pull' && distance(next, origin) === 0) break;
-      if (enterCost(ctx, next) === null) break;
+      if (enterCost(ctx, current, next) === null) break;
       current = next;
     }
     return current;
@@ -573,6 +575,7 @@ export class BattleDraft {
       blocked: this.blockedCells(),
       surfaces: this.content.surfaces,
       size: 1,
+      climbCost: this.content.tuning.climbCost,
     };
     const landing = this.slideFrom(ctx, prop.pos, origin, tiles, mode);
 
@@ -837,7 +840,7 @@ export class BattleDraft {
     let bestDistance = Infinity;
     for (const d of DIRECTIONS) {
       const candidate = { x: origin.x + d.x, y: origin.y + d.y };
-      if (enterCost(ctx, candidate) === null) continue;
+      if (standCost(ctx, candidate) === null) continue;
       const dist = distance(candidate, origin);
       if (dist < bestDistance) {
         bestDistance = dist;
