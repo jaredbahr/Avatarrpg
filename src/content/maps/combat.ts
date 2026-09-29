@@ -52,9 +52,9 @@ export const FOREST_ROAD: MapDef = {
   legend: LEGEND,
   /*
    * The road's footprint is shaped inside the 20x12 grid (M3): a pine wall with
-   * three clearings closes the north, the through-road leaves at (0,4) and
-   * (19,4), and the south is a deep-water creek (`W`) between alders. Every
-   * walkable border cell is either one of those two exits or covered by the
+   * three clearings closes the north, the through-road leaves through rows 4-8
+   * on both sides, and the south is a deep-water creek (`W`) between alders. Every
+   * walkable border cell is either one of those two exit mouths or covered by the
    * `edges` entries below, which is what `edgeContract: 'enforce'` holds it to.
    *
    * The interactables are the authored ground, not props: the central nine-cell
@@ -82,18 +82,18 @@ export const FOREST_ROAD: MapDef = {
   props: [],
   /*
    * The authored border claims. North keeps its truncated pines and the deer
-   * paths between them; the south creek and alders are in-grid barriers; west
-   * rows 3 and 5-9 are the tree line and deadfall beside the road mouth, and
-   * east rows 0-3 and 5-9 are the NE bank and the thicket below it. Rows 4 of
-   * both sides are the exits, so they are left to `world.ts`'s `exits`.
+   * paths between them; the south creek and alders are in-grid barriers. The
+   * five-cell exit mouths occupy rows 4-8 on both sides and are deliberately
+   * absent from these edge bands. West rows 3 and 9 and east rows 0-3 and 9
+   * retain their authored edge treatments.
    */
   edges: [
     { side: 'north', span: [0, 19], treatment: 'band' },
     { side: 'south', span: [0, 19], treatment: 'barrier' },
     { side: 'west', span: [3, 3], treatment: 'band' },
-    { side: 'west', span: [5, 9], treatment: 'band' },
+    { side: 'west', span: [9, 9], treatment: 'band' },
     { side: 'east', span: [0, 3], treatment: 'band' },
-    { side: 'east', span: [5, 9], treatment: 'band' },
+    { side: 'east', span: [9, 9], treatment: 'band' },
   ],
   edgeContract: 'enforce',
 };
