@@ -181,23 +181,58 @@ export const AMBUSH_ROAD: MapDef = {
   height: 12,
   ambience: 'forest',
   legend: LEGEND,
+  /*
+   * A chokepoint, not a clearing (M5, Option A). Rows 4-7 are the only place
+   * the road leaves the cutting, so the board is a four-wide corridor with the
+   * runoff pool in its middle, two tier-1 ledges facing each other across it,
+   * and everything else closed down to `X` rock. The NE ledge (14-17, 1-3)
+   * holds the crossbow and the NW ledge (2-5, 1-2) is the party's answer; the
+   * sergeant arrives on the SE bench (17-18, 9 / 14-17, 10) and the tea bay
+   * (2-7, 9, with its lookout at 3-5, 10) sits under the southwest rim.
+   *
+   * The pool only reaches x6-9 and rows 4 and 7 are open wall-to-wall, so the
+   * pinch is two dry lanes plus a wade rather than single file. Between the two
+   * halves of the board, the only walking crossing is x9-10 on rows 4-7, which
+   * is what keeps `crossing()` at column 8 impossible to slip past.
+   *
+   * Rock faces, not tier-2 paving: the old map's walkable `A` slabs and its six
+   * 0-to-2 steps are gone, so every adjacent pair of walkable cells is exactly
+   * one tier apart, which is the rule E4 climbing assumes. North and south are
+   * the cut faces themselves — the art pass draws the south run as a low sawn
+   * lip with `fadeWhenOccluding` so it cannot hide the southern bay.
+   *
+   * Every walkable border cell is either one of the two four-cell road mouths
+   * that `connectAct1` declares as M2 exits, or one of the three bands below;
+   * `edgeContract: 'enforce'` holds the map to that.
+   */
   rows: [
-    'AAAAAAA^^^^^^^AAAAAA',
-    'AA^^^,,,,,,,,,,^^^AA',
-    '^^,,,,,,r,,,,,,,,^^A',
-    ',,,,,,,,,,,,r,,,,,^^',
+    'XXXXXXXXXXXXXXXXXXXX',
+    'XXX^^^XXXXXXXX^^^XXX',
+    'XX^^,,r,XXXXX,^^^^XX',
+    ',,,,,,,,,XX,,r,^^^,X',
     '====================',
-    '=====,,~~~~,,,,,====',
-    '=====,,~~~~,,,,,====',
+    '=====,~~~~====,,,,,=',
+    '=====,~~~~====,,,,,=',
     '====================',
-    ',,,,,,r,,,,,,,,,,,^^',
-    '^^,,,,,,,,,,r,,,,^^A',
-    'AA^^^,,,,,,,,,,^^^AA',
-    'AAAAAAA^^^^^^^AAAAAA',
+    ',,,,,,r,,XX,,r,,,,,,',
+    'XX,,,,,,XXXXX,,,,^^X',
+    'XXX^^^XXXXXXXX^^^^XX',
+    'XXXXXXXXXXXXXXXXXXXX',
   ],
   partySpawns: COMBAT_PARTY_SPAWNS,
   npcs: [],
   props: [],
+  /*
+   * The flanks the road does not cover: (0,3), (0,8) and (19,8) stay walkable,
+   * so rule-space needs them claimed. Each is drawn as an edge band of cut rock
+   * flush with the rim, never open ground running off the board.
+   */
+  edges: [
+    { side: 'west', span: [3, 3], treatment: 'band' },
+    { side: 'west', span: [8, 8], treatment: 'band' },
+    { side: 'east', span: [8, 8], treatment: 'band' },
+  ],
+  edgeContract: 'enforce',
 };
 
 export const QUARRY_FLOOR: MapDef = {

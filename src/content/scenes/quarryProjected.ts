@@ -92,10 +92,10 @@ export const DRILLER_REAR_LOADING_SCENERY: readonly SceneScenery[] = [
  * rather than a faint diamond among decorative heaps.
  */
 export const CUTTING_RUBBLE_CELLS: readonly Vec2[] = [
-  { x: 8, y: 2 },
-  { x: 12, y: 3 },
+  { x: 6, y: 2 },
+  { x: 13, y: 3 },
   { x: 6, y: 8 },
-  { x: 12, y: 9 },
+  { x: 13, y: 8 },
 ];
 export const DRILLER_RUBBLE_CELLS: readonly Vec2[] = [
   { x: 8, y: 1 },
@@ -106,23 +106,31 @@ export const DRILLER_RUBBLE_CELLS: readonly Vec2[] = [
   { x: 11, y: 10 },
 ];
 
-/** The Cutting's pool (legend `~`), checked against the map rows in `quarryProjected.test.ts`. */
+/**
+ * The Cutting's pool (legend `~`), checked against the map rows in
+ * `quarryProjected.test.ts`. M5 (Option A) shifted it one tile west as the
+ * chokepoint narrowed to x9-10; the plate below moves with these cells.
+ */
 export const CUTTING_WATER_CELLS: readonly Vec2[] = [
+  { x: 6, y: 5 },
   { x: 7, y: 5 },
   { x: 8, y: 5 },
   { x: 9, y: 5 },
-  { x: 10, y: 5 },
+  { x: 6, y: 6 },
   { x: 7, y: 6 },
   { x: 8, y: 6 },
   { x: 9, y: 6 },
-  { x: 10, y: 6 },
 ];
 /**
  * The pool's plate: its eight cells plus the narrow dry margin round them, at
  * the forest pond's 16-pixel pad (`FOREST_POND_PATCH`). It is packed at twice
  * this size, as the forest's is.
+ *
+ * The same plate, one tile west and one half-tile north of its pre-M5
+ * registration (752, 368): a pure `(-64, -32)` translation of the drawing the
+ * live water film sits on, not a repaint.
  */
-export const CUTTING_POOL_PATCH = { x: 752, y: 368, width: 416, height: 224 } as const;
+export const CUTTING_POOL_PATCH = { x: 688, y: 336, width: 416, height: 224 } as const;
 
 /**
  * The reviewed projected ground pages for The Cutting, the pool's bank and bed
