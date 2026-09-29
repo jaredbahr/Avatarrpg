@@ -5,6 +5,8 @@ import { expect, it } from 'vitest';
 import { beforeAll } from 'vitest';
 import { QUARRY_GATE } from '../maps/combat';
 import {
+  QUARRY_GATE_BAND_ROWS,
+  QUARRY_GATE_GATE_CELLS,
   QUARRY_GATE_GROUND_REGIONS,
   QUARRY_GATE_SCENE,
   QUARRY_GATE_WALL_CELLS,
@@ -34,7 +36,7 @@ beforeAll(async () => {
 
 const groundClass = (x: number, y: number) => {
   const key = QUARRY_GATE.rows[y]?.[x] ?? '.';
-  return key === '=' ? 'road' : key === '^' || key === 'o' ? 'limestone' : 'earth';
+  return key === '=' ? 'road' : key === '^' || key === 'o' || key === 'X' ? 'limestone' : 'earth';
 };
 const worldPoint = (x: number, y: number) => ({
   x: 768 + (x - y) * 64,
@@ -150,9 +152,10 @@ it('uses exactly the existing 32 blocked wall cells and keeps their projected fe
     [...row].flatMap((key, x) => (key === '#' ? [{ x, y }] : [])),
   );
   expect(QUARRY_GATE_WALL_CELLS).toEqual(cells);
-  expect(QUARRY_GATE_SCENE.scenery).toHaveLength(32);
+  const walls = QUARRY_GATE_SCENE.scenery.filter((piece) => piece.id.startsWith('quarry-wall-'));
+  expect(walls).toHaveLength(32);
   expect(QUARRY_GATE.legend['#']).toMatchObject({ blocked: true, blocksSight: true });
-  for (const wall of QUARRY_GATE_SCENE.scenery) {
+  for (const wall of walls) {
     expect(wall.footprint).toHaveLength(1);
     const cell = wall.footprint[0];
     if (!cell) throw new Error('Missing wall footprint');
@@ -178,6 +181,75 @@ it('uses exactly the existing 32 blocked wall cells and keeps their projected fe
   expect(QUARRY_GATE.legend['^']?.blocked).not.toBe(true);
   expect(QUARRY_GATE.legend.c).toMatchObject({ terrain: 'wood', cover: true });
   expect(QUARRY_GATE.legend.c?.blocked).not.toBe(true);
+});
+
+it('stands a barred gate on every G cell and nowhere else', () => {
+  const cells = QUARRY_GATE.rows.flatMap((row, y) =>
+    [...row].flatMap((key, x) => (key === 'G' ? [{ x, y }] : [])),
+  );
+  expect(QUARRY_GATE_GATE_CELLS).toEqual(cells);
+  expect(QUARRY_GATE.legend.G).toMatchObject({ terrain: 'wood', blocked: true, blocksSight: true });
+  const posts = QUARRY_GATE_SCENE.scenery.filter((piece) =>
+    piece.id.startsWith('quarry-gate-post-'),
+  );
+  const standing = new Set(posts.flatMap((post) => post.footprint.map(({ x, y }) => `${x},${y}`)));
+  expect([...standing].sort()).toEqual(cells.map(({ x, y }) => `${x},${y}`).sort());
+  for (const post of posts) {
+    // The gatehouse's own jamb post, so the gate is its timber and iron.
+    expect(post.url).toBe('art/maps/quarry-gate-scene/west-structure.webp');
+    expect(post.sourceRect).toBeDefined();
+    const cell = post.footprint[0];
+    if (!cell) throw new Error('Missing gate footprint');
+    // Each post stands on its own cell's centre line and sorts by its foot.
+    expect(post.depth.y).toBe(cell.y + 0.5);
+    expect(Math.floor(post.depth.x)).toBe(cell.x);
+    const footY = (post.depth.x + post.depth.y) * 32;
+    expect(post.y + post.height).toBeGreaterThanOrEqual(footY);
+    expect(post.y + post.height).toBeLessThanOrEqual(footY + 8);
+    expect(post.fadeWhenOccluding).toBe(true);
+    // A gate is wood, not wall: the `wall` guard would hide it on every grid.
+    expect(post.wall).toBeUndefined();
+  }
+});
+
+it('dresses every declared rim band from existing exterior pieces, off the playable diamond', () => {
+  const bands = (QUARRY_GATE.edges ?? []).map(({ side, span }) => `${side} ${span.join('-')}`);
+  expect(bands.sort()).toEqual(
+    QUARRY_GATE_BAND_ROWS.flatMap((top) =>
+      ['west', 'east'].map((side) => `${side} ${top}-${top + 1}`),
+    ).sort(),
+  );
+  const pieces = QUARRY_GATE_SCENE.scenery.filter(
+    (piece) =>
+      piece.id.startsWith('quarry-gate-cribbing-') || piece.id.startsWith('quarry-gate-curtain-'),
+  );
+  for (const top of QUARRY_GATE_BAND_ROWS)
+    for (const y of [top, top + 1]) {
+      // West: the cribbed bank stands on the x=0 edge; east: the curtain on x=20.
+      expect(
+        pieces.some((p) => p.footprint.some((c) => c.x === -1 && c.y === y)),
+        `west ${y}`,
+      ).toBe(true);
+      expect(
+        pieces.some((p) => p.footprint.some((c) => c.x === 20 && c.y === y)),
+        `east ${y}`,
+      ).toBe(true);
+    }
+  for (const piece of pieces) {
+    expect(piece.exterior).toBe(true);
+    for (const cell of piece.footprint)
+      expect(cell.x < 0 || cell.x >= QUARRY_GATE.width, `${piece.id} is off the board`).toBe(true);
+  }
+  // The cribbing's base runs down its two rows of the x=0 edge exactly.
+  for (const top of QUARRY_GATE_BAND_ROWS) {
+    const bank = pieces.find((p) => p.id === `quarry-gate-cribbing-${top}`);
+    if (!bank) throw new Error(`no cribbing at ${top}`);
+    expect({ x: bank.x, right: bank.x + bank.width }).toEqual({
+      x: worldPoint(0, top + 2).x,
+      right: worldPoint(0, top).x,
+    });
+    expect(bank.flip).toBe(true);
+  }
 });
 
 it('selects bonded interiors, exposed ends and corners from actual cardinal wall adjacency', () => {

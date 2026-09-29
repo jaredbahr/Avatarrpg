@@ -16,6 +16,7 @@
  */
 
 import type {
+  BattleState,
   ContentIndex,
   GameState,
   Grid,
@@ -26,7 +27,7 @@ import type {
   ResidentSlotValue,
   Vec2,
 } from '../types';
-import { cachedGrid, tileAt } from '../rules/grid';
+import { buildGrid, cachedGrid, occupiedCells, posKey, tileAt, withTile } from '../rules/grid';
 import { specializationsUpTo } from '../rules/leveling';
 import { settle } from '../story/settle';
 import { npcResident } from '../story/residents';
@@ -70,7 +71,7 @@ export function reconcileWorld(content: ContentIndex, state: GameState): GameSta
   // Snap first, so `settle` then sees the repaired tile: if the nearest
   // walkable cell happens to be one somebody else is standing on, the
   // leader step moves the party off it in the same pass.
-  const snapped = snapExplore(content, state);
+  const snapped = snapExplore(content, reconcileBattle(content, state));
   const settled = settle(content, snapped, snapped).state;
   const talk = settled.world.talk;
   if (!talk) return settled;
@@ -83,6 +84,223 @@ export function reconcileWorld(content: ContentIndex, state: GameState): GameSta
     site?.kind === 'map' &&
     site.mapId === talk.mapId;
   return holds ? settled : { ...settled, world: { ...settled.world, talk: null } };
+}
+
+export type BattleReconcileWarning =
+  | { readonly kind: 'missing-map'; readonly mapId: string }
+  | { readonly kind: 'disconnected-snap'; readonly unitId: string; readonly pos: Vec2 }
+  | { readonly kind: 'no-free-cell'; readonly unitId: string };
+
+export interface BattleReconcileResult {
+  readonly state: GameState;
+  readonly warnings: readonly BattleReconcileWarning[];
+}
+
+/**
+ * Re-applies an in-progress battle's current authored terrain after a map edit.
+ * Surfaces, props and temporary walls are battle state, so they are layered
+ * back over that terrain and their restore journals are updated. Idempotent:
+ * when the saved static cells already match the current map, the original
+ * state is returned without rebuilding anything. Rebuilding is atomic: if a
+ * living unit cannot fit in the rebuilt map's main walkable component, the old
+ * battle grid is retained so its units and terrain remain mutually consistent.
+ */
+export function reconcileBattle(content: ContentIndex, state: GameState): GameState {
+  return reconcileBattleResult(content, state).state;
+}
+
+/** Detailed form used by the load path so an unsafe repair is never silent. */
+export function reconcileBattleResult(
+  content: ContentIndex,
+  state: GameState,
+): BattleReconcileResult {
+  const battle = state.battle;
+  if (!battle || battle.phase !== 'active') return { state, warnings: [] };
+  const map = content.maps.get(battle.mapId);
+  if (!map) return { state, warnings: [{ kind: 'missing-map', mapId: battle.mapId }] };
+
+  const authored = buildGrid(map);
+  if (staticGridMatches(authored, battle)) return { state, warnings: [] };
+
+  let grid: Grid = {
+    ...authored,
+    tiles: authored.tiles.map((tile, index) => {
+      const pos = { x: index % authored.width, y: Math.floor(index / authored.width) };
+      const saved = savedBaseTile(battle, pos);
+      const staticChanged = saved === undefined || !staticTileMatches(tile, saved);
+      const savedSurface = saved?.surface ?? null;
+      // Temporary surfaces remain live battle state. Null/permanent surfaces on a
+      // changed cell follow the newly authored map (for example M3's added water).
+      const surface =
+        staticChanged && (savedSurface === null || savedSurface.duration === -1)
+          ? tile.surface
+          : savedSurface;
+      return { ...tile, surface: tile.blocked ? null : surface };
+    }),
+  };
+
+  const props: BattleState['props'][number][] = [];
+  for (const prop of battle.props) {
+    const tile = tileAt(grid, prop.pos);
+    const authoredTile = tileAt(authored, prop.pos);
+    const def = content.props.get(prop.propId);
+    // Decide whether the prop survives from authored terrain only. `tile` can
+    // already be blocked by another saved prop legally pushed onto this cell.
+    if (!tile || !authoredTile || authoredTile.blocked || !def) continue;
+    // The journal deliberately captures the current rebuilt tile, including a
+    // prior prop's saved original tile/surface. Breaking this prop in play then
+    // restores exactly the same chained state as it did before the load (F2).
+    props.push({ ...prop, previous: tile });
+    grid = withTile(grid, prop.pos, {
+      ...tile,
+      blocked: tile.blocked || def.blocksMove,
+      blocksSight: tile.blocksSight || def.blocksSight,
+      cover: tile.cover || def.grantsCover,
+    });
+  }
+
+  const temporaryWalls: BattleState['temporaryWalls'][number][] = [];
+  for (const wall of battle.temporaryWalls) {
+    const tile = tileAt(grid, wall.pos);
+    if (!tile) continue;
+    temporaryWalls.push({ ...wall, previous: tile });
+    grid = withTile(grid, wall.pos, {
+      terrain: 'wall',
+      elevation: tile.elevation,
+      blocked: true,
+      blocksSight: true,
+      cover: false,
+      surface: null,
+    });
+  }
+
+  const snapped = snapBattleUnits(grid, map, battle.units);
+  if (!snapped.units) return { state, warnings: snapped.warnings };
+  return {
+    state: {
+      ...state,
+      battle: { ...battle, grid, props, temporaryWalls, units: snapped.units },
+    },
+    warnings: snapped.warnings,
+  };
+}
+
+/** Read through baked dynamic overlays to the tile whose static fields came from the map. */
+function savedBaseTile(battle: BattleState, pos: Vec2) {
+  const prop = battle.props.find((item) => item.pos.x === pos.x && item.pos.y === pos.y);
+  const wall = battle.temporaryWalls.find((item) => item.pos.x === pos.x && item.pos.y === pos.y);
+  return prop?.previous ?? wall?.previous ?? tileAt(battle.grid, pos);
+}
+
+function staticGridMatches(authored: Grid, battle: BattleState): boolean {
+  if (authored.width !== battle.grid.width || authored.height !== battle.grid.height) return false;
+  return authored.tiles.every((current, index) => {
+    const saved = savedBaseTile(battle, {
+      x: index % authored.width,
+      y: Math.floor(index / authored.width),
+    });
+    return saved !== undefined && staticTileMatches(current, saved);
+  });
+}
+
+function staticTileMatches(current: Grid['tiles'][number], saved: Grid['tiles'][number]): boolean {
+  return (
+    current.terrain === saved.terrain &&
+    current.elevation === saved.elevation &&
+    current.blocked === saved.blocked &&
+    current.blocksSight === saved.blocksSight &&
+    current.cover === saved.cover
+  );
+}
+
+/** Snap buried living units in array order; distance ties are row-major. */
+function snapBattleUnits(
+  grid: Grid,
+  map: MapDef,
+  units: BattleState['units'],
+): { units: BattleState['units'] | null; warnings: BattleReconcileWarning[] } {
+  const warnings: BattleReconcileWarning[] = [];
+  const main = mainWalkableCells(grid, map);
+  const occupied = new Set<string>();
+  for (const unit of units) {
+    if (unit.hp <= 0) continue;
+    const cells = occupiedCells(unit);
+    if (
+      cells.every((cell) => {
+        const tile = tileAt(grid, cell);
+        return tile !== undefined && !tile.blocked;
+      })
+    ) {
+      for (const cell of cells) occupied.add(posKey(cell));
+    }
+  }
+  const valid = (unit: BattleState['units'][number], pos = unit.pos): boolean =>
+    occupiedCells({ pos, size: unit.size }).every((cell) => {
+      const tile = tileAt(grid, cell);
+      return tile !== undefined && !tile.blocked && !occupied.has(posKey(cell));
+    });
+  const connected = (unit: BattleState['units'][number], pos: Vec2): boolean =>
+    occupiedCells({ pos, size: unit.size }).every((cell) => main.has(posKey(cell)));
+
+  const result: BattleState['units'][number][] = [];
+  for (const unit of units) {
+    if (unit.hp <= 0) {
+      result.push(unit);
+      continue;
+    }
+    for (const cell of occupiedCells(unit)) occupied.delete(posKey(cell));
+    let pos = unit.pos;
+    if (!valid(unit)) {
+      const candidates: Vec2[] = [];
+      for (let y = 0; y < grid.height; y++) {
+        for (let x = 0; x < grid.width; x++) candidates.push({ x, y });
+      }
+      candidates.sort(
+        (a, b) =>
+          Math.max(Math.abs(a.x - unit.pos.x), Math.abs(a.y - unit.pos.y)) -
+            Math.max(Math.abs(b.x - unit.pos.x), Math.abs(b.y - unit.pos.y)) ||
+          a.y - b.y ||
+          a.x - b.x,
+      );
+      const usable = candidates.filter((candidate) => valid(unit, candidate));
+      const candidate = usable.find((item) => connected(unit, item));
+      const nearest = usable[0];
+      if (nearest && !connected(unit, nearest))
+        warnings.push({ kind: 'disconnected-snap', unitId: unit.id, pos: nearest });
+      if (!candidate) {
+        warnings.push({ kind: 'no-free-cell', unitId: unit.id });
+        return { units: null, warnings };
+      }
+      pos = candidate;
+    }
+    for (const cell of occupiedCells({ pos, size: unit.size })) occupied.add(posKey(cell));
+    result.push(pos === unit.pos ? unit : { ...unit, pos });
+  }
+  return { units: result, warnings };
+}
+
+function mainWalkableCells(grid: Grid, map: MapDef): Set<string> {
+  const first = map.partySpawns.find((pos) => walkable(grid, pos));
+  const start =
+    first ??
+    grid.tiles
+      .map((_, index) => ({ x: index % grid.width, y: Math.floor(index / grid.width) }))
+      .find((pos) => walkable(grid, pos));
+  const seen = new Set<string>();
+  if (!start) return seen;
+  const pending = [start];
+  while (pending.length > 0) {
+    const pos = pending.shift();
+    if (!pos || seen.has(posKey(pos)) || !walkable(grid, pos)) continue;
+    seen.add(posKey(pos));
+    pending.push(
+      { x: pos.x, y: pos.y - 1 },
+      { x: pos.x - 1, y: pos.y },
+      { x: pos.x + 1, y: pos.y },
+      { x: pos.x, y: pos.y + 1 },
+    );
+  }
+  return seen;
 }
 
 /**

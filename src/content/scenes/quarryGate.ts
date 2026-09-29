@@ -1,4 +1,4 @@
-import type { MapScene, Vec2 } from '../../core/types';
+import type { MapScene, SceneScenery, Vec2 } from '../../core/types';
 import { QUARRY_SURROUND } from './quarryProjected';
 import { QUARRY_WEST_FRAMES } from './quarryWestFrames';
 
@@ -30,6 +30,104 @@ export function quarryWallVariant({ x, y }: Vec2): 'interior' | 'end' | 'corner'
   return horizontal > 0 && vertical > 0 ? 'corner' : 'interior';
 }
 
+/** The barred side gates (legend `G`), one pair of cells in each gatehouse gap. */
+export const QUARRY_GATE_GATE_CELLS: readonly Vec2[] = [0, 11].flatMap((y) =>
+  [10, 11].map((x) => ({ x, y })),
+);
+
+/**
+ * The timber post of the north-west gatehouse's jamb (`quarry-wall-9-0`), from
+ * its cap to just below its lower iron band. A gate is `GATE_POSTS` of them
+ * shoulder to shoulder, so the gatehouse's own planks and straps bar the gap
+ * rather than a second drawing of timber.
+ */
+const GATE_POST_SOURCE = { x: 653, y: 546, width: 67, height: 386 } as const;
+/**
+ * Posts overlap by a third, so the gate's top steps down the slope in short
+ * plank-width treads rather than a sawtooth of whole posts.
+ */
+const GATE_POSTS = 8;
+/** World pixels per source pixel: a gate a little under the jamb, above the curtain wall. */
+const GATE_POST_SCALE = 0.38;
+/** The flat foot sits this far below the gate line, so it never floats on the slope. */
+const GATE_POST_SINK = 4;
+
+/**
+ * One gate, standing on the centre line of its two cells from the jamb face to
+ * the next wall. Posts alternate their mirror so the rivets do not repeat.
+ */
+export function quarryGatePosts(y: number): SceneScenery[] {
+  const width = GATE_POST_SOURCE.width * GATE_POST_SCALE;
+  const height = GATE_POST_SOURCE.height * GATE_POST_SCALE;
+  return Array.from({ length: GATE_POSTS }, (_, index) => {
+    const gx = 10 + (2 * (index + 0.5)) / GATE_POSTS;
+    const gy = y + 0.5;
+    const footX = 768 + (gx - gy) * 64;
+    const footY = (gx + gy) * 32;
+    return {
+      id: `quarry-gate-post-${y}-${index}`,
+      url: `${root}west-structure.webp`,
+      sourceRect: GATE_POST_SOURCE,
+      x: footX - width / 2,
+      y: footY + GATE_POST_SINK - height,
+      width,
+      height,
+      footprint: [{ x: Math.floor(gx), y }],
+      depth: { x: gx, y: gy },
+      fadeWhenOccluding: true,
+      fadeGroup: `quarry-gate-${y}`,
+      ...(index % 2 === 1 ? { flip: true } : {}),
+    };
+  });
+}
+
+/** The two-row edge bands either side of the rows 5-6 road mouths (`QUARRY_GATE.edges`). */
+export const QUARRY_GATE_BAND_ROWS = [3, 7] as const;
+
+/**
+ * West: a spoil bank held back by timber cribbing. The span is the cribbed
+ * stretch of the Driller floor's approved rear-rim panel, which the connected
+ * quarry surround replaced there, mirrored (ADR 0058) so its long side runs
+ * down the x=0 edge; its measured base (a 1:2 slope) stands on that edge,
+ * rows `top`..`top + 1`, so no alpha lands on a playable cell.
+ */
+const cribbing = (top: number): SceneScenery => ({
+  id: `quarry-gate-cribbing-${top}`,
+  url: 'art/maps/driller-floor-scene/exterior-rim.webp',
+  sourceRect: { x: 110, y: 186, width: 128, height: 206 },
+  x: 768 - (top + 2) * 64,
+  y: (top + 2) * 32 - 204,
+  width: 128,
+  height: 206,
+  flip: true,
+  footprint: [
+    { x: -1, y: top },
+    { x: -1, y: top + 1 },
+  ],
+  depth: { x: -0.5, y: top + 1 },
+  exterior: true,
+});
+
+/**
+ * East: the quarry's outer curtain wall, one gatehouse block outside each
+ * band cell, so the road mouth between them reads as the way out through it.
+ * They stand in front of the board, so they fade for a figure behind them.
+ */
+const curtain = (top: number): SceneScenery[] =>
+  [top, top + 1].map((y) => ({
+    id: `quarry-gate-curtain-20-${y}`,
+    url: `${root}wall-end.webp`,
+    x: 768 + (20 - y) * 64 - 64,
+    y: (20 + y + 1) * 32 - 144,
+    width: 128,
+    height: 176,
+    footprint: [{ x: 20, y }],
+    depth: { x: 20.5, y: y + 0.5 },
+    exterior: true,
+    fadeWhenOccluding: true,
+    fadeGroup: `quarry-gate-curtain-${top}`,
+  }));
+
 /** Registered gate art only. Gameplay owns projection opt-in and live surfaces/props. */
 export const QUARRY_GATE_SCENE: MapScene = {
   // Each local region is sampled from reusable material panels against the
@@ -53,20 +151,28 @@ export const QUARRY_GATE_SCENE: MapScene = {
       height: 48,
     })),
   ],
-  scenery: QUARRY_GATE_WALL_CELLS.map(
-    ({ x, y }) =>
-      QUARRY_WEST_FRAMES.find(
-        (piece) => piece.footprint[0].x === x && piece.footprint[0].y === y,
-      ) ?? {
-        id: `quarry-wall-${x}-${y}`,
-        url: `${root}wall-${quarryWallVariant({ x, y })}.webp`,
-        x: 768 + (x - y) * 64 - 64,
-        y: (x + y + 1) * 32 - 144,
-        width: 128,
-        height: 176,
-        footprint: [{ x, y }],
-        depth: { x: x + 0.5, y: y + 0.5 },
-        fadeWhenOccluding: true,
-      },
-  ),
+  scenery: [
+    ...QUARRY_GATE_WALL_CELLS.map(
+      ({ x, y }) =>
+        QUARRY_WEST_FRAMES.find(
+          (piece) => piece.footprint[0].x === x && piece.footprint[0].y === y,
+        ) ?? {
+          id: `quarry-wall-${x}-${y}`,
+          url: `${root}wall-${quarryWallVariant({ x, y })}.webp`,
+          x: 768 + (x - y) * 64 - 64,
+          y: (x + y + 1) * 32 - 144,
+          width: 128,
+          height: 176,
+          footprint: [{ x, y }],
+          depth: { x: x + 0.5, y: y + 0.5 },
+          fadeWhenOccluding: true,
+        },
+    ),
+    // The barred side gates stand in the gatehouse gaps (M4 §1.4).
+    ...quarryGatePosts(0),
+    ...quarryGatePosts(11),
+    // The rim bands (M4 §1.4): cribbed spoil bank west, curtain wall east.
+    ...QUARRY_GATE_BAND_ROWS.map(cribbing),
+    ...QUARRY_GATE_BAND_ROWS.flatMap(curtain),
+  ],
 };

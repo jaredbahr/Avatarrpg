@@ -385,7 +385,7 @@ const QUARRY_GATE_GROUND_BYTES = [
   { name: 'earth-west', bytes: 46_294 },
   { name: 'earth-east', bytes: 46_054 },
   { name: 'road', bytes: 18_076 },
-  { name: 'limestone', bytes: 29_930 },
+  { name: 'limestone', bytes: 34_340 },
 ] as const;
 
 it('pins a size for every gate page', () => {
