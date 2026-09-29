@@ -18,7 +18,7 @@
  *   scene's ground, so the painted courts feather into matching grass
  *   instead of into the procedural fill;
  * - the exterior apron (`ba-dan-exterior-apron.ts`), which continues it past
- *   the rim and dissolves it into the page on an ordered dither, not a ramp.
+ *   the rim and dissolves it into the page in soft stepped bands.
  *
  * Flat clusters of four tones and a few tufts, no gradient: the ground ink
  * rule keeps plain grass free of outline.
@@ -97,10 +97,14 @@ function valueNoise(x: number, y: number, salt: number): number {
   return (a * (1 - fx) + b * fx) * (1 - fy) + (c * (1 - fx) + d * fx) * fy;
 }
 
-/** 4x4 ordered-dither threshold in (0, 1). */
-export function bayer(tx: number, ty: number): number {
-  const m = [0, 8, 2, 10, 12, 4, 14, 6, 3, 11, 1, 9, 15, 7, 13, 5];
-  return ((m[(ty & 3) * 4 + (tx & 3)] ?? 0) + 0.5) / 16;
+/**
+ * A world-anchored clustered mask for material transitions. Unlike an ordered
+ * dither this has no short repeating lattice: neighbouring two-pixel texels
+ * tend to agree, so a sparse transition reads as small painted chips rather
+ * than a screen of alternating dots.
+ */
+export function transitionCluster(x: number, y: number, salt: number): number {
+  return valueNoise(x * 2.2, y * 2.2, salt) * 0.72 + valueNoise(x * 5.1, y * 5.1, salt + 2) * 0.28;
 }
 
 /**
@@ -187,7 +191,7 @@ export function materialTexel(material: keyof typeof MATERIAL_TONES, tx: number,
 
 const FOOTPRINT_CELLS = BA_DAN_SCENE.scenery.flatMap((piece) => piece.footprint);
 
-/** Dithered packed-earth wear outside an upright piece's logical footprint. */
+/** Clustered packed-earth wear outside an upright piece's logical footprint. */
 function footprintWear(x: number, y: number, tx: number, ty: number): Rgb | null {
   const distance = Math.min(
     ...FOOTPRINT_CELLS.map(
@@ -196,7 +200,12 @@ function footprintWear(x: number, y: number, tx: number, ty: number): Rgb | null
   );
   if (distance < 0 || distance >= 0.22) return null;
   const share = distance < 0.06 ? 0.8 : distance < 0.14 ? 0.45 : 0.15;
-  return bayer(tx, ty) < share ? MATERIAL_TONES.road.shadow : null;
+  // Include a small texel-scale term only to roughen the edges of the broad
+  // clusters; it must never become the repeating transition pattern itself.
+  const clustered =
+    transitionCluster(x, y, 71) * 0.88 +
+    tileNoise(Math.floor(tx / 2), Math.floor(ty / 2), 73) * 0.12;
+  return clustered < share ? MATERIAL_TONES.road.shadow : null;
 }
 
 /**

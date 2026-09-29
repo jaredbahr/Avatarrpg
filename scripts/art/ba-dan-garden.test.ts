@@ -7,6 +7,7 @@ import {
   GARDEN_TONES,
   GRAIN,
   MATERIAL_TONES,
+  transitionCluster,
   gardenPlatePath,
   packGardenPlate,
 } from './ba-dan-garden';
@@ -48,5 +49,20 @@ describe('Ba Dan outer garden', () => {
     }
     expect(painted).toBeGreaterThan(100_000);
     expect(clear).toBeGreaterThan(1_000);
+  });
+
+  it('uses a clustered transition mask rather than a repeating ordered screen', () => {
+    const samples = Array.from({ length: 16 }, (_, y) =>
+      Array.from({ length: 16 }, (_, x) => transitionCluster(x / 8, y / 8, 71) < 0.45),
+    );
+    let sameAtFour = 0;
+    let compared = 0;
+    for (let y = 0; y < 12; y++)
+      for (let x = 0; x < 12; x++) {
+        compared++;
+        if (samples[y]?.[x] === samples[y + 4]?.[x + 4]) sameAtFour++;
+      }
+    // A 4x4 Bayer screen repeats exactly on this diagonal; painted clusters do not.
+    expect(sameAtFour).toBeLessThan(compared * 0.85);
   });
 });

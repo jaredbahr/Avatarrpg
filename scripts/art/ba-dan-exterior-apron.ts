@@ -6,7 +6,7 @@
  * a village. This plate carries the terrain that borders the rim outward: the
  * outer garden's pixel-grain meadow (`ba-dan-garden.ts`), continued for about a
  * tile where the outermost logical cell is road or paving, then dissolved into
- * the page on an ordered dither over the next tile and a half.
+ * the page in soft stepped bands over the next tile and a half.
  *
  * Nothing here touches a playable pixel — every sample inside the board stays
  * transparent, which `ba-dan-exterior-apron.test.ts` asserts.
@@ -19,7 +19,7 @@ import {
   BA_DAN_APRON_MAP,
   BA_DAN_EXTERIOR_APRON,
 } from '../../src/content/scenes/baDan';
-import { bayer, GRAIN, grassTexel, materialTexel, worldLogical } from './ba-dan-garden';
+import { GRAIN, grassTexel, materialTexel, transitionCluster, worldLogical } from './ba-dan-garden';
 import { writeApronPlates } from './lib/apron-plates';
 import { newImage, setPixel } from './lib/image';
 import type { Image } from './lib/image';
@@ -80,16 +80,29 @@ export function apronBorders(x: number, y: number): { terrain: Terrain; depth: n
   return { terrain, depth: nearest.depth };
 }
 
-/** The dither stays solid this far out, then thins to nothing by `APRON_FADE`. */
+/** The apron stays solid this far out, then steps softly to nothing by `APRON_FADE`. */
 export const APRON_SOLID = 0.45;
+
+/** Flat alpha steps: broad, continuous painted bands with no halftone holes. */
+export const APRON_ALPHA_STEPS = [255, 208, 144, 80, 32] as const;
+
+export function apronAlpha(depth: number): number {
+  if (depth <= APRON_SOLID) return APRON_ALPHA_STEPS[0];
+  const progress = clamp((depth - APRON_SOLID) / (APRON_FADE - APRON_SOLID), 0, 1);
+  const index = Math.min(
+    APRON_ALPHA_STEPS.length - 1,
+    Math.floor(progress * APRON_ALPHA_STEPS.length),
+  );
+  return APRON_ALPHA_STEPS[index] ?? 0;
+}
 
 /**
  * The garden field (`ba-dan-garden.ts`) continued past the rim. Where the
  * outer cell is road or paving, that material carries on for
- * `MATERIAL_REACH` and hands over to grass through the ordered dither; the
- * whole plate then dissolves into the page the same way. Every texel is
- * either fully painted or clear, and it agrees with the garden base texel for
- * texel at the rim because both read the same world lattice.
+ * `MATERIAL_REACH` and hands over to grass in broad two-pixel-grain clusters;
+ * the whole plate then dissolves into the page in five continuous alpha bands.
+ * It agrees with the garden base texel for texel at the rim because both read
+ * the same world lattice.
  */
 export function packApron(): Image {
   const image = newImage(BA_DAN_EXTERIOR_APRON.width, BA_DAN_EXTERIOR_APRON.height);
@@ -112,15 +125,15 @@ export function packApron(): Image {
         ),
       );
       if (crossesBoard) continue;
-      const threshold = bayer(tx, ty);
-      const cover = 1 - clamp((depth - APRON_SOLID) / (APRON_FADE - APRON_SOLID), 0, 1);
-      if (threshold >= cover) continue;
       const { terrain } = apronBorders(x, y);
-      const carried = terrain !== 'grass' && threshold < 1 - depth / MATERIAL_REACH;
+      const carried =
+        terrain !== 'grass' &&
+        transitionCluster(x, y, 83) < 1 - clamp(depth / MATERIAL_REACH, 0, 1);
       const colour = carried ? materialTexel(terrain, tx, ty) : grassTexel(tx, ty);
+      const alpha = apronAlpha(depth);
       for (let dy = 0; dy < GRAIN; dy++)
         for (let dx = 0; dx < GRAIN; dx++)
-          setPixel(image, tx * GRAIN - ox + dx, ty * GRAIN - oy + dy, [...colour, 255]);
+          setPixel(image, tx * GRAIN - ox + dx, ty * GRAIN - oy + dy, [...colour, alpha]);
     }
   }
   return image;

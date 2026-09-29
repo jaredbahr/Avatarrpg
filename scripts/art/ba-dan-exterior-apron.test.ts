@@ -2,6 +2,7 @@ import { expect, it } from 'vitest';
 import { TERRAIN_STYLES } from '../../src/render/palettes';
 import { pixelAt, parseHex } from './lib/image';
 import {
+  APRON_ALPHA_STEPS,
   APRON_FADE,
   MATERIAL_REACH,
   apronDepth,
@@ -22,25 +23,26 @@ it('packs an apron that never paints a playable pixel', () => {
     beyond = 0,
     opaque = 0,
     feather = 0,
-    ditherHoles = 0;
+    transitionHoles = 0;
   for (let py = 0; py < image.height; py++)
     for (let px = 0; px < image.width; px++) {
       const alpha = pixelAt(image, px, py)[3];
       const { x, y } = apronLogical(px, py);
       const depth = apronDepth(x, y);
       if (alpha === 0) {
-        if (depth > 0.6 && depth < APRON_FADE) ditherHoles++;
+        if (depth > 0.6 && depth < APRON_FADE) transitionHoles++;
         continue;
       }
       if (depth <= 0) inside++;
       if (depth >= APRON_FADE) beyond++;
       if (alpha === 255) opaque++;
       else feather++;
+      expect(APRON_ALPHA_STEPS).toContain(alpha);
     }
   expect({ inside, beyond }).toEqual({ inside: 0, beyond: 0 });
   expect(opaque, 'the plate has an opaque band').toBeGreaterThan(1_000);
-  expect(feather, 'ordered dithering uses no smooth alpha ramp').toBe(0);
-  expect(ditherHoles, 'the opaque texels thin outward instead of stopping').toBeGreaterThan(1_000);
+  expect(feather, 'the fade uses broad flat alpha steps').toBeGreaterThan(1_000);
+  expect(transitionHoles, 'stepped bands have no halftone holes before the outer edge').toBe(0);
 });
 
 it('starts opaque at the rim, has room for the whole band, and carries grass outward', () => {
