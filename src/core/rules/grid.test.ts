@@ -138,7 +138,10 @@ describe('climbing (E4)', () => {
 
   it('charges a size-2 footprint the worst cell of the step once', () => {
     const ctx = battleContext(
-      laidOut([{ pos: { x: 1, y: 0 }, tile: tier(1) }, { pos: { x: 2, y: 0 }, tile: tier(1) }]),
+      laidOut([
+        { pos: { x: 1, y: 0 }, tile: tier(1) },
+        { pos: { x: 2, y: 0 }, tile: tier(1) },
+      ]),
       1,
       2,
     );
