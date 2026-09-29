@@ -247,9 +247,17 @@ export const QUARRY_FLOOR: MapDef = {
       when: { kind: 'flag', key: 'pella_asked', op: 'set' },
     },
   ],
+  /*
+   * The pit is closed north and south by the terrace wall (`X`) and east by
+   * the drill shaft (`P`). Rows 5-6 west are the haul-road mouth, declared by
+   * connectAct1's multi-tile exit; the cribbed timber either side of it and
+   * the floor corners beside the shaft, under its headframe, are exterior band.
+   */
   edges: [
     { side: 'west', span: [3, 4], treatment: 'band' },
     { side: 'west', span: [7, 8], treatment: 'band' },
+    { side: 'east', span: [3, 3], treatment: 'band' },
+    { side: 'east', span: [8, 8], treatment: 'band' },
   ],
   edgeContract: 'enforce',
 };
