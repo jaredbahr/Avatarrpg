@@ -149,22 +149,56 @@ const COURTYARD = await decodeWebp(
   new Uint8Array(readFileSync(`${DIRECTORY}/courtyard-ground.webp`)),
 );
 
-/**
- * The painted flagstone at a world texel: the courtyard plate's broad
- * flagstone interior (cells x5..9, y7..8), tiled on the logical grid exactly as
- * `ba-dan-neighborhood-ground.ts` tiles it for the east gate approach, so the
- * slabs carry on across the rim instead of changing material there.
- */
-export function flagstoneTexel(tx: number, ty: number): Rgb {
-  const { x, y } = worldLogical((tx + 0.5) * GRAIN, (ty + 0.5) * GRAIN);
-  const sx = 5 + (((Math.floor(x) % 5) + 5) % 5) + (x - Math.floor(x));
-  const sy = 7 + (((Math.floor(y) % 2) + 2) % 2) + (y - Math.floor(y));
+/** The courtyard plate's broad flagstone at a logical point of the tiled swatch. */
+function swatch(sx: number, sy: number): Rgb {
   const [r, g, b] = pixelAt(
     COURTYARD,
     Math.floor(ORIGIN + (sx - sy) * 64 - BA_DAN_COURTYARD_GROUND.x),
     Math.floor((sx + sy) * 32 - BA_DAN_COURTYARD_GROUND.y),
   );
   return [r, g, b];
+}
+
+const luma = ([r, g, b]: Rgb): number => 0.299 * r + 0.587 * g + 0.114 * b;
+
+/**
+ * The flagstone's own tones, as `GARDEN_TONES` are the grass's: the swatch
+ * split into eight luma bands of equal count, each band's median colour.
+ * Flat tones keep the exits on the garden's grain, and keep the garden plates
+ * few-coloured enough to pack as a palette.
+ */
+export const FLAGSTONE_TONES: readonly { readonly upTo: number; readonly tone: Rgb }[] = (() => {
+  const samples: Rgb[] = [];
+  for (let sy = 7.02; sy < 9; sy += 0.04)
+    for (let sx = 5.02; sx < 10; sx += 0.02) samples.push(swatch(sx, sy));
+  samples.sort((a, b) => luma(a) - luma(b));
+  return Array.from({ length: 8 }, (_, band) => {
+    const part = samples.slice(
+      Math.floor((band * samples.length) / 8),
+      Math.floor(((band + 1) * samples.length) / 8),
+    );
+    const median = (ch: number): number =>
+      part.map((c) => c[ch] ?? 0).sort((a, b) => a - b)[Math.floor(part.length / 2)] ?? 0;
+    return {
+      upTo: band === 7 ? Infinity : luma(part[part.length - 1] ?? [0, 0, 0]),
+      tone: [median(0), median(1), median(2)] as Rgb,
+    };
+  });
+})();
+
+/**
+ * The painted flagstone at a world texel: the courtyard plate's broad
+ * flagstone interior (cells x5..9, y7..8), tiled on the logical grid exactly as
+ * `ba-dan-neighborhood-ground.ts` tiles it for the east gate approach, so the
+ * slabs carry on across the rim instead of changing material there. Each
+ * sample takes its band's tone in `FLAGSTONE_TONES`.
+ */
+export function flagstoneTexel(tx: number, ty: number): Rgb {
+  const { x, y } = worldLogical((tx + 0.5) * GRAIN, (ty + 0.5) * GRAIN);
+  const sx = 5 + (((Math.floor(x) % 5) + 5) % 5) + (x - Math.floor(x));
+  const sy = 7 + (((Math.floor(y) % 2) + 2) % 2) + (y - Math.floor(y));
+  const l = luma(swatch(sx, sy));
+  return (FLAGSTONE_TONES.find((band) => l <= band.upTo) ?? FLAGSTONE_TONES[7]!).tone;
 }
 
 /** The texel's centre in world pixels, for a world pixel inside it. */

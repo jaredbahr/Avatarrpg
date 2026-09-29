@@ -4,6 +4,7 @@ import { BA_DAN_GARDEN_PLATES } from '../../src/content/scenes/baDan';
 import { pixelAt } from './lib/image';
 import { decodeWebp } from './lib/webp';
 import {
+  FLAGSTONE_TONES,
   GARDEN_TONES,
   GRAIN,
   MATERIAL_TONES,
@@ -34,6 +35,7 @@ describe('Ba Dan outer garden', () => {
     let painted = 0;
     let clear = 0;
     let exit = 0;
+    const stone = new Set(FLAGSTONE_TONES.map(({ tone }) => tone.join(',')));
     for (const plate of BA_DAN_GARDEN_PLATES) {
       const image = packGardenPlate(plate);
       for (let y = 0; y < image.height; y += GRAIN) {
@@ -50,6 +52,7 @@ describe('Ba Dan outer garden', () => {
             if (onExit(at.x, at.y)) {
               exit++;
               expect(rgba.slice(0, 3)).toEqual([...flagstoneTexel(tx, ty)]);
+              expect(stone.has(rgba.slice(0, 3).join(','))).toBe(true);
             } else expect(allowed.has(rgba.slice(0, 3).join(','))).toBe(true);
           }
           for (let dy = 0; dy < GRAIN; dy++)
