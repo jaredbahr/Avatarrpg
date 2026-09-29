@@ -406,7 +406,12 @@ const dust = (count: number, size: [number, number] = [0.18, 0.3]): ParticleEmit
  * neutral palette's warm tan, not `dust`'s inked stone clumps, which read as
  * pebbles left on grass. All of it is gone by 340 ms.
  */
-const kickedDust = (count: number, size: [number, number], opacity: number): ParticleEmitterDef =>
+const kickedDust = (
+  count: number,
+  size: [number, number],
+  opacity: number,
+  color: FxColor = 'light',
+): ParticleEmitterDef =>
   particles({
     shape: 'ring',
     cell: 'glow',
@@ -421,7 +426,7 @@ const kickedDust = (count: number, size: [number, number], opacity: number): Par
     size,
     grow: 1.6,
     spin: 0,
-    color: 'light',
+    color,
     fade: 'out',
     opacity,
     blend: 'normal',
@@ -1324,8 +1329,13 @@ const DRAWN_RECIPES: Readonly<Record<string, FxRecipeInput>> = {
 
   /* Bodies meeting the ground, and whose turn it is. These trail: the choreography
      never holds playback for them (see `EmitterTrack.trailing`). ---------- */
-  // A footfall's puff: a faint haze of warm tan under the feet, gone in a third of a second.
-  'fx.move.step': { palette: 'neutral', impact: [kickedDust(2, [0.2, 0.3], 0.3)], flash: 0 },
+  // A footfall's puff: a faint pale haze under the feet, gone in a third of a second. Paler
+  // than the landing's tan, which vanished against the tan of a dirt road.
+  'fx.move.step': {
+    palette: 'neutral',
+    impact: [kickedDust(2, [0.2, 0.3], 0.4, 'accent')],
+    flash: 0,
+  },
   // A shoved or dropped body landing: the same haze, wider and a touch denser.
   'fx.move.land': { palette: 'neutral', impact: [kickedDust(6, [0.28, 0.42], 0.42)], flash: 0 },
   // A ring spreading on the ground under whoever's turn it now is.
