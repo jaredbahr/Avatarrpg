@@ -2,7 +2,7 @@ import { readFileSync } from 'node:fs';
 import { createRequire } from 'node:module';
 import decode, { init } from '@jsquash/webp/decode.js';
 import { beforeAll, describe, expect, it } from 'vitest';
-import type { MapDef, MapScene } from '../../core/types';
+import type { MapScene } from '../../core/types';
 import { AMBUSH_ROAD, QUARRY_FLOOR } from '../maps/combat';
 import { rubbleHeap, rubbleHeapUrl } from './forestRoad';
 import {
@@ -81,15 +81,6 @@ function pieceAlpha(piece: MapScene['ground'][number], world: { x: number; y: nu
   return entry.image.data[(y * entry.image.width + x) * 4 + 3] ?? 0;
 }
 
-/**
- * Whether a cell's terrain is drawn on the packed ground pages at all. `#` and,
- * since M5, the Cutting's `X` rock faces are blocked objects standing on the
- * board: the packer reads them as `void` and leaves a hole, and the runtime face
- * painter draws the cliff over it.
- */
-const onGroundPages = (map: MapDef, key: string | undefined): boolean =>
-  key !== undefined && !(map.legend[key]?.blocked ?? false);
-
 describe('projected quarry scenes', () => {
   it('covers authored centers and boundaries, including the ground under a spill and the pool', () => {
     for (const { map, scene } of routeScenes)
@@ -100,17 +91,16 @@ describe('projected quarry scenes', () => {
           // Every walkable cell is painted. Oil and mud are opaque ground with
           // the live surface drawn over it; the Cutting's pool is its own bed
           // and bank plate, which the live water film tints, as the forest
-          // pond's is. Blocked objects (`#` walls, M5's `X` rock) are objects on
-          // the board rather than ground, and are drawn by their own painters.
-          if (onGroundPages(map, key))
-            expect(value, `${map.id} ground ${x},${y}`).toBeGreaterThan(240);
-          if (!onGroundPages(map, key) || key === '~') continue;
+          // pond's is. M5's `X` rock is on the stone page too, so no blocked
+          // cell of the Cutting is an invisible wall over bare surround.
+          if (key !== '#') expect(value, `${map.id} ground ${x},${y}`).toBeGreaterThan(240);
+          if (key === '#' || key === '~') continue;
           for (const [dx, dy] of [
             [1, 0],
             [0, 1],
           ] as const) {
             const neighbor = map.rows[y + dy]?.[x + dx];
-            if (!onGroundPages(map, neighbor) || neighbor === '~') continue;
+            if (!neighbor || neighbor === '#' || neighbor === '~') continue;
             for (const inset of [-0.02, 0.02])
               expect(
                 alpha(scene, point(x + 0.5 + dx * (0.5 + inset), y + 0.5 + dy * (0.5 + inset))),

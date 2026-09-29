@@ -343,8 +343,10 @@ it("keeps the Cutting's lane apart from its spoil shoulders", () => {
         expect(tally.shoulder / tally.all, `shoulder ${x},${y} is spoil`).toBeGreaterThan(0.95);
       }
     }
-  expect(lanes).toBeGreaterThan(50);
-  expect(shoulders).toBeGreaterThan(70);
+  // Every lane and shoulder cell of the M5 footprint (60 and 55): the cut
+  // closed the old 96 shoulder cells down to the bays either side of the road.
+  expect(lanes).toBe(60);
+  expect(shoulders).toBe(55);
 });
 
 it('ships the plates the packers build, inside the registered page', async () => {
