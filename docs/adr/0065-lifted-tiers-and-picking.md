@@ -62,7 +62,8 @@ quarry pages (the Cutting and the Driller floor) stand each bench at the old
    loaded ground art already lifts a tier: 0.25 for the forest and 0.06 for the
    quarry pages. The pass samples each top from where the art stands and lifts
    it the rest of the way. Art painted at the full lift draws its own blocks,
-   so the pass leaves those cells alone and the forest shelf is not drawn twice.
+   so the pass does not draw the forest shelf's tops or faces again: it only
+   puts the painted block back over the marks drawn flat beneath it.
    While scene art is still loading, the procedural ground is lifted in full.
    A list gives each tier's top in turn. The Driller declares `[0.06, 0.25]`
    because its gantry plates paint each tier-2 deck a full step up, whole, with
@@ -76,7 +77,17 @@ quarry pages (the Cutting and the Driller floor) stand each bench at the old
    Every tap, hover and long press goes through `Camera.pickTile(x, y, grid)`.
    No lift is more than half a tile, so a flat tile centre still picks its own
    cell, and the existing tap specs are unchanged.
-6. **Actors stand on the lifted top.** Units, NPCs, props, rings, markers and
+6. **Live marks take the whole lift.** Surfaces over art, move and attack
+   ranges, the path, the aim arc, ground effects, hover, exits and the
+   High-contrast rule markers are drawn apart from the ground: to a second
+   canvas on Canvas 2D, and to a second render texture on WebGL by hiding
+   the ground's layers. That layer goes over the flat ground once. The tops
+   and faces then cover the raised cells' flat copy, and an `overlay` op per
+   raised cell copies its marks back onto its top, shifted by the cell's
+   whole lift, whatever `reliefLift` says. The tops and faces still sample the
+   ground by only what the art has not lifted. Procedural ground's surfaces
+   and decor stay with the ground, which lifts in full anyway.
+7. **Actors stand on the lifted top.** Units, NPCs, props, rings, markers and
    attachment sockets use `liftAt`. A figure between cells uses `liftAlong`, a
    blend of the four cells round it, so a walk up a ramp climbs rather than
    popping.
@@ -89,12 +100,19 @@ quarry pages (the Cutting and the Driller floor) stand each bench at the old
   that the lifted bench's stone covers the dirt behind it. Both fail with the
   lift or the lifted pick turned off.
 - Anything drawn flat on a raised cell lifts with it, including overlays,
-  surfaces and the hover highlight. A path or aim arc that crosses a tier
-  boundary is cut at the lip. A painted plate that overhangs its cell lifts
-  only its in-cell part.
-- The WebGL backend renders the ground twice a frame when the board has raised
-  ground, once into the texture and once as the sprite. Boards with no raised
-  walkable cell, and the forest, take the old single pass.
+  surfaces and the hover highlight, by the same lift the pick and the actors
+  use, on the forest shelf as on the Driller's benches. `renderer.spec.ts`
+  hovers a raised tile on both maps and both backends: the lifted top must
+  lighten and the tile's own south face must not. It fails on the pass
+  without the marks layer. A path or aim arc that crosses a tier boundary is
+  cut at the lip. A painted plate that overhangs its cell lifts only its
+  in-cell part.
+- With raised ground on the board, including the forest, the WebGL backend
+  renders the ground stack into two textures a frame (the ground, then the
+  marks) and Canvas 2D keeps two board-sized canvases (the snapshot and the
+  marks). Boards with no raised walkable cell take the old single pass.
+- Ground effects drawn with additive blending go into the transparent marks
+  layer, so on a raised board they composite a little softer than they add.
 - New ground art should be painted at `TIER_LIFT` with its own faces, or flat,
   and declare which in `reliefLift`.
 - Not done here from the ADR 0061 plan: grass-tuft overhangs on forest
