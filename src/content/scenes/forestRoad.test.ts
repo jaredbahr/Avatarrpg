@@ -1,7 +1,14 @@
 import { expect, it } from 'vitest';
 import { FOREST_ROAD } from '../maps/combat';
 import {
+  FOREST_ALDER_CELLS,
+  FOREST_CREEK_POOLS,
+  FOREST_DEADFALL,
+  FOREST_LODGE,
+  FOREST_LODGE_CELLS,
+  FOREST_PERCH_CELLS,
   FOREST_PINE_CELLS,
+  FOREST_THICKET_CELLS,
   FOREST_RAISED_SHELF,
   FOREST_RAISED_SHELF_CELLS,
   FOREST_BANK_NEST_REEDS,
@@ -32,14 +39,11 @@ it('registers forest art only to the existing water, cover and blocked tree cell
     'art/maps/forest-scene/water.webp',
   );
   expect(FOREST_WATER_CELLS).toEqual(cells('~'));
-  // The painted shelf is the two authored elevated groups, and every cell it
-  // paints has to be raised on the map: tier 1, or (19,2)'s tier-2 perch. M3
-  // widens the NE bank past these six cells, and the extra tiers are drawn by
-  // the relief painter until the shelf plate is repacked, so the plate may only
-  // ever under-claim, never paint a cell the rules call flat.
-  for (const cell of FOREST_RAISED_SHELF_CELLS) {
-    expect(cells('^').concat(cells('A')), `${cell.x},${cell.y} is raised`).toContainEqual(cell);
-  }
+  // The painted shelf is exactly the rules' raised cells: every tier-1 cell of
+  // the NE bank and the shoulder, and (19,2)'s tier-2 perch standing on it. A
+  // raised cell it missed would fall back to the relief painter's bare slab.
+  expect(FOREST_RAISED_SHELF_CELLS).toEqual(cells('^'));
+  expect(FOREST_PERCH_CELLS).toEqual(cells('A'));
   expect(cells('A')).toEqual([{ x: 19, y: 2 }]);
   expect(FOREST_ROAD.legend[FOREST_ROAD.rows[2]?.[19] ?? '']?.elevation).toBe(2);
   expect(FOREST_RAISED_SHELF_CELLS).not.toContainEqual({ x: 19, y: 4 });
@@ -48,7 +52,20 @@ it('registers forest art only to the existing water, cover and blocked tree cell
     ...FOREST_RAISED_SHELF,
   });
   expect(FOREST_RUBBLE_CELLS).toEqual(cells('r'));
-  expect(FOREST_PINE_CELLS).toEqual(cells('T'));
+  // Every blocked tree cell is visibly something: a pine, an alder or the
+  // keeper's lodge, and no cell is two of them.
+  const standing = [...FOREST_PINE_CELLS, ...FOREST_ALDER_CELLS, ...FOREST_LODGE_CELLS];
+  const byKey = (list: readonly { x: number; y: number }[]) =>
+    list.map(({ x, y }) => `${x},${y}`).sort();
+  expect(byKey(standing)).toEqual(byKey(cells('T')));
+  expect(new Set(byKey(standing)).size).toBe(standing.length);
+  expect(FOREST_LODGE.footprint).toEqual(FOREST_LODGE_CELLS);
+  // Exterior trees stand past the rim, never on the board.
+  for (const cell of FOREST_THICKET_CELLS)
+    expect(FOREST_ROAD.rows[cell.y]?.[cell.x], `${cell.x},${cell.y}`).toBeUndefined();
+  // The creek's pools are exactly the deep-water cells, and the deadfall lies in one.
+  expect(byKey(FOREST_CREEK_POOLS.flatMap((pool) => pool.cells))).toEqual(byKey(cells('W')));
+  expect(cells('W')).toContainEqual(FOREST_DEADFALL.footprint[0]);
   // Cover rides on the live rubble surface, never a permanent tile flag: a
   // converted or cleared cell must stop giving cover.
   expect(FOREST_ROAD.legend.r).toMatchObject({ surface: 'rubble', surfaceDuration: -1 });

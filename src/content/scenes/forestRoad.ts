@@ -8,21 +8,29 @@ const root = 'art/maps/forest-scene/';
  */
 export const FOREST_POND_PATCH = { x: 560, y: 304, width: 416, height: 192 } as const;
 /**
- * The painted shelf covers the two authored elevated groups with the road exit
- * left open. M3 widens the rules' NE bank past these six cells (a tier-1 slope
- * up to (19,2)'s tier-2 perch); the extra tiers are drawn by the relief painter
- * until the shelf plate is repacked, so every cell here must stay raised.
+ * The painted shelf covers every tier-1 cell of M3's NE bank and the road-side
+ * shoulder south of the exit, with the road exit left open. The tier-2 boulder
+ * perch at (19,2) is `FOREST_PERCH_CELLS`; the plate stands it on the bank.
  */
 export const FOREST_RAISED_SHELF_CELLS: readonly Vec2[] = [
-  { x: 19, y: 2 },
+  { x: 16, y: 1 },
+  { x: 17, y: 1 },
+  { x: 15, y: 2 },
+  { x: 16, y: 2 },
+  { x: 17, y: 2 },
+  { x: 18, y: 2 },
+  { x: 16, y: 3 },
+  { x: 17, y: 3 },
   { x: 18, y: 3 },
   { x: 19, y: 3 },
   { x: 18, y: 5 },
   { x: 19, y: 5 },
   { x: 19, y: 6 },
 ];
+/** The tier-2 boulder perch, reached from the bank (`A` in the rows). */
+export const FOREST_PERCH_CELLS: readonly Vec2[] = [{ x: 19, y: 2 }];
 /** Projected bounds include a small trim margin; the (19,4) exit stays alpha-clear. */
-export const FOREST_RAISED_SHELF = { x: 1528, y: 664, width: 400, height: 208 } as const;
+export const FOREST_RAISED_SHELF = { x: 1528, y: 536, width: 400, height: 336 } as const;
 /** Asset footprints are checked against the authoritative map rows in forestRoad.test.ts. */
 export const FOREST_WATER_CELLS: readonly Vec2[] = [
   { x: 5, y: 5 },
@@ -35,13 +43,86 @@ export const FOREST_WATER_CELLS: readonly Vec2[] = [
   { x: 5, y: 7 },
   { x: 6, y: 7 },
 ];
+/**
+ * M3's southern creek (`W`, deep water: it stops feet, not eyes), in its two
+ * pools either side of the alder stand. Nothing draws over a `W` cell at
+ * runtime but the flat procedural fill, so each pool carries its own bed, wet
+ * line and damp margin, packed by the pond's own shoreline packer
+ * (`scripts/art/forest-creek.ts`) so the creek and the pond are one water.
+ */
+export interface ForestCreekPool {
+  readonly name: string;
+  readonly patch: {
+    readonly x: number;
+    readonly y: number;
+    readonly width: number;
+    readonly height: number;
+  };
+  readonly cells: readonly Vec2[];
+}
+export const FOREST_CREEK_POOLS: readonly ForestCreekPool[] = [
+  {
+    name: 'west',
+    patch: { x: 112, y: 400, width: 416, height: 224 },
+    cells: [
+      { x: 4, y: 10 },
+      { x: 5, y: 10 },
+      { x: 2, y: 11 },
+      { x: 3, y: 11 },
+      { x: 4, y: 11 },
+      { x: 5, y: 11 },
+      { x: 6, y: 11 },
+    ],
+  },
+  {
+    name: 'east',
+    patch: { x: 752, y: 720, width: 416, height: 224 },
+    cells: [
+      { x: 12, y: 11 },
+      { x: 13, y: 11 },
+      { x: 14, y: 11 },
+      { x: 15, y: 11 },
+      { x: 16, y: 11 },
+    ],
+  },
+];
 export const FOREST_RUBBLE_CELLS: readonly Vec2[] = [
   { x: 7, y: 3 },
   { x: 8, y: 9 },
 ];
-export const FOREST_PINE_CELLS: readonly Vec2[] = [
+/**
+ * Dema's road-keeper lodge: the village's own dwelling, at half its Ba Dan
+ * size, standing on the four blocked pine cells of the north-west corner, two
+ * tiles from where she keeps the road at (3,1). It is the one building on the
+ * route, and it is on cells the rules already close.
+ */
+export const FOREST_LODGE_CELLS: readonly Vec2[] = [
   { x: 0, y: 0 },
   { x: 1, y: 0 },
+  { x: 0, y: 1 },
+  { x: 1, y: 1 },
+];
+/**
+ * The alders between the creek's pools and at the south corners: the village
+ * tree, drawn low so the front edge never hides a unit (plan 1.3).
+ */
+export const FOREST_ALDER_CELLS: readonly Vec2[] = [
+  { x: 0, y: 10 },
+  { x: 15, y: 10 },
+  { x: 19, y: 10 },
+  { x: 0, y: 11 },
+  { x: 1, y: 11 },
+  { x: 7, y: 11 },
+  { x: 8, y: 11 },
+  { x: 9, y: 11 },
+  { x: 10, y: 11 },
+  { x: 11, y: 11 },
+  { x: 17, y: 11 },
+  { x: 18, y: 11 },
+  { x: 19, y: 11 },
+];
+/** The north pine wall; with the lodge and the alders, every `T` cell. */
+export const FOREST_PINE_CELLS: readonly Vec2[] = [
   { x: 2, y: 0 },
   { x: 3, y: 0 },
   { x: 6, y: 0 },
@@ -57,27 +138,33 @@ export const FOREST_PINE_CELLS: readonly Vec2[] = [
   { x: 17, y: 0 },
   { x: 18, y: 0 },
   { x: 19, y: 0 },
-  { x: 0, y: 1 },
-  { x: 1, y: 1 },
   { x: 7, y: 1 },
   { x: 8, y: 1 },
   { x: 9, y: 1 },
   { x: 18, y: 1 },
   { x: 19, y: 1 },
   { x: 0, y: 2 },
-  { x: 0, y: 10 },
-  { x: 15, y: 10 },
-  { x: 19, y: 10 },
-  { x: 0, y: 11 },
-  { x: 1, y: 11 },
-  { x: 7, y: 11 },
-  { x: 8, y: 11 },
-  { x: 9, y: 11 },
-  { x: 10, y: 11 },
-  { x: 11, y: 11 },
-  { x: 17, y: 11 },
-  { x: 18, y: 11 },
-  { x: 19, y: 11 },
+];
+/**
+ * Pines outside the rim. The north clearings at (4,0), (5,0) and (14,0) are
+ * deer paths that end in thicket rather than at the page, a staggered second
+ * rank makes the wall read as forest instead of a single file, and the
+ * walkable rim cells the edge contract calls a band at west rows 3 and 9 and
+ * east row 9 have trees standing just past them. East row 3 has none: a pine there
+ * stands in front of the boulder perch and hides it. Exterior pieces carry no
+ * rule; the rows and `edges` in `combat.ts` do.
+ */
+export const FOREST_THICKET_CELLS: readonly Vec2[] = [
+  { x: 1, y: -1 },
+  { x: 4, y: -1 },
+  { x: 5, y: -1 },
+  { x: 8, y: -1 },
+  { x: 11, y: -1 },
+  { x: 14, y: -1 },
+  { x: 17, y: -1 },
+  { x: -1, y: 3 },
+  { x: -1, y: 9 },
+  { x: 20, y: 9 },
 ];
 
 function pine({ x, y }: Vec2): SceneScenery {
@@ -96,6 +183,82 @@ function pine({ x, y }: Vec2): SceneScenery {
     wind: true,
   };
 }
+
+/** A pine past the rim: the same tree, carrying no footprint the rules read. */
+function thicketPine(cell: Vec2): SceneScenery {
+  return { ...pine(cell), exterior: true };
+}
+
+/**
+ * Art borrowed from the other scenes, by URL, so it costs no bytes: the village
+ * tree, the village dwelling and the Quarry Gate's cut timber. Each keeps its
+ * own aspect and its own painted foot anchor.
+ */
+const BORROWED = {
+  alder: { url: 'art/maps/ba-dan-scene/village-tree.webp', width: 750, height: 732 },
+  lodge: { url: 'art/maps/ba-dan-scene/dwelling.webp', width: 602, height: 388 },
+  deadfall: { url: 'art/maps/quarry-gate-scene/cover-timber.webp', width: 224, height: 96 },
+} as const;
+const aspect = (art: keyof typeof BORROWED, width: number): number =>
+  (width * BORROWED[art].height) / BORROWED[art].width;
+
+/** Low alder: Ba Dan's tree anchor (trunk foot at 51% across, 96% down). */
+export const ALDER_WIDTH = 150;
+function alder({ x, y }: Vec2): SceneScenery {
+  const width = ALDER_WIDTH,
+    height = aspect('alder', width);
+  return {
+    id: `forest-alder-${x}-${y}`,
+    url: BORROWED.alder.url,
+    x: 768 + (x - y) * 64 - width * 0.51,
+    y: (x + y + 1) * 32 - height * 0.96,
+    width,
+    height,
+    // Mirrored on alternate cells, so the stand is not one tree stamped.
+    ...((x + y) % 2 === 1 ? { flip: true } : {}),
+    footprint: [{ x, y }],
+    depth: { x: x + 0.5, y: y + 0.5 },
+    fadeWhenOccluding: true,
+  };
+}
+
+/** Ba Dan's house anchor: the plinth's foremost corner at 43.2% across, 99.5% down. */
+export const FOREST_LODGE: SceneScenery = (() => {
+  const front = { x: 2, y: 2 };
+  const width = 4 * 64,
+    height = aspect('lodge', width);
+  return {
+    id: 'forest-keeper-lodge',
+    url: BORROWED.lodge.url,
+    x: 768 + (front.x - front.y) * 64 - width * 0.432,
+    y: (front.x + front.y) * 32 - height * 0.995,
+    width,
+    height,
+    footprint: FOREST_LODGE_CELLS,
+    depth: { x: front.x - 0.5, y: front.y - 0.5 },
+    fadeWhenOccluding: true,
+  };
+})();
+
+/**
+ * Deadfall across the west pool: split timber lying in the water at (5,10),
+ * where the creek turns north toward the verge. The cell is deep water, so the
+ * logs change no rule; they are what the creek has caught.
+ */
+export const FOREST_DEADFALL: SceneScenery = (() => {
+  const width = 120,
+    height = aspect('deadfall', width);
+  return {
+    id: 'forest-creek-deadfall',
+    url: BORROWED.deadfall.url,
+    x: 768 + (5 - 10) * 64 - width * 0.5,
+    y: (5 + 10 + 1) * 32 - height * 0.9,
+    width,
+    height,
+    footprint: [{ x: 5, y: 10 }],
+    depth: { x: 5.5, y: 10.5 },
+  };
+})();
 
 /** Songbirds that burst out of the pines as the ambush opens (docs/art/forest-birds.md). */
 export const FOREST_FLOCK = {
@@ -116,36 +279,62 @@ export const FOREST_BANK_NEST_REEDS: SceneScenery = {
   height: 58,
   footprint: [{ x: 6, y: 9 }],
   depth: { x: 6.1, y: 9.08 },
+  // Seated by the wear `forest-route-ground.ts` lays at its painted foot.
+  contactShadow: false,
 };
 
 /**
  * The pond's own bank planting: three low reed fringes cut from the same
  * authored flood-bank reeds, standing on the cells that touch the water so the
  * wet line carries growth instead of meeting the road as a bare edge. They are
- * passable scenery like the nest: no wall, no collision, no ground disk.
+ * passable scenery like the nest: no wall, no collision, no ground disk. Nor
+ * the runtime contact shadow, which is keyed to the whole cell and drew a dark
+ * diamond round each clump: the route plate wears the ground at the fringe's
+ * painted foot instead (`scripts/art/forest-reed-wear.ts`).
  */
 /** The packed fringe's own pixel size; every placement keeps this aspect. */
 export const REED_PLATE = { width: 512, height: 313 } as const;
-export const FOREST_POND_REEDS: readonly SceneScenery[] = (
-  [
-    { x: 4, y: 5, width: 96 },
-    { x: 7, y: 7, width: 104 },
-    { x: 5, y: 8, width: 120 },
-  ] as const
-).map(({ x, y, width }) => {
+interface ReedPlacement {
+  readonly x: number;
+  readonly y: number;
+  readonly width: number;
+  /** Where in its cell the fringe's foot stands, in tiles; the middle by default. */
+  readonly foot?: Vec2;
+}
+function reedFringe(water: string, { x, y, width, foot }: ReedPlacement): SceneScenery {
   // The packed plate's own aspect, so the artist's fringe is never stretched.
   const height = Math.round((width * REED_PLATE.height) / REED_PLATE.width);
+  const fx = x + (foot?.x ?? 0.5),
+    fy = y + (foot?.y ?? 0.5);
   return {
-    id: `forest-pond-reeds-${x}-${y}`,
+    id: `forest-${water}-reeds-${x}-${y}`,
     url: `${root}pond-reeds.webp`,
-    x: 768 + (x - y) * 64 - width / 2,
-    y: (x + y + 1) * 32 - height,
+    x: 768 + (fx - fy) * 64 - width / 2,
+    y: (fx + fy) * 32 - height,
     width,
     height,
     footprint: [{ x, y }],
-    depth: { x: x + 0.1, y: y + 0.08 },
+    // The centred fringe's anchor (0.1, 0.08 into its cell) carried along with an offset
+    // foot, so a unit standing in the reed's own cell still draws in front of it.
+    depth: { x: fx - 0.4, y: fy - 0.42 },
+    contactShadow: false,
   };
-});
+}
+export const FOREST_POND_REEDS: readonly SceneScenery[] = [
+  { x: 4, y: 5, width: 96 },
+  { x: 7, y: 7, width: 104 },
+  { x: 5, y: 8, width: 120 },
+].map((placement) => reedFringe('pond', placement));
+/**
+ * The same fringe on the creek's north bank, rooted at the water's edge of
+ * its cell rather than the middle so it leans out over the bank: at the
+ * corner where the grass pokes into the west pool, and part-way along the
+ * east pool's straight run, so neither reads as a ruled edge.
+ */
+export const FOREST_CREEK_REEDS: readonly SceneScenery[] = [
+  { x: 3, y: 10, width: 100, foot: { x: 0.84, y: 0.84 } },
+  { x: 13, y: 10, width: 116, foot: { x: 0.45, y: 1 } },
+].map((placement) => reedFringe('creek', placement));
 
 /**
  * The forest road does not end where the rules stop. This apron carries the
@@ -236,11 +425,21 @@ export const FOREST_ROAD_SCENE: MapScene = {
     { url: `${root}grass-south.webp`, ...FOREST_GRASS_REGIONS.south, wind: true },
     { url: `${root}route-ground.webp`, x: 128, y: 32, width: 1984, height: 960 },
     { url: `${root}pond-bank.webp`, ...FOREST_POND_PATCH },
+    ...FOREST_CREEK_POOLS.map((pool) => ({ url: `${root}creek-${pool.name}.webp`, ...pool.patch })),
     { url: `${root}raised-shelf.webp`, ...FOREST_RAISED_SHELF },
     ...FOREST_RUBBLE_CELLS.map(rubbleHeap),
     // Painted last: transparent everywhere the board can be walked.
     ...FOREST_APRON_PIECES,
   ],
-  scenery: [...FOREST_PINE_CELLS.map(pine), FOREST_BANK_NEST_REEDS, ...FOREST_POND_REEDS],
+  scenery: [
+    ...FOREST_THICKET_CELLS.map(thicketPine),
+    ...FOREST_PINE_CELLS.map(pine),
+    FOREST_LODGE,
+    ...FOREST_ALDER_CELLS.map(alder),
+    FOREST_DEADFALL,
+    FOREST_BANK_NEST_REEDS,
+    ...FOREST_POND_REEDS,
+    ...FOREST_CREEK_REEDS,
+  ],
   flock: FOREST_FLOCK,
 };

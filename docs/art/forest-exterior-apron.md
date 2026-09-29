@@ -36,6 +36,25 @@ The band is 2.5 logical tiles wide, opaque at the rim, faded out by 2.2 tiles,
 with grain and recession ramping in from 0.35 tiles so the board's own edge is
 not redrawn as a line.
 
+- The creek (M3's `W` pools, `creek-west` and `creek-east`) **is** sampled. It
+  is a watercourse, not an object: left out, the mirror beyond the south rim
+  found no ground in the pools, reached on past them and carried row 8's cart
+  track out past the creek as a strip of paving. The pools are packed open to
+  the south rim (`scripts/art/forest-creek.ts`), so the apron continues the
+  water off the board instead of mirroring a second, banked channel.
+
+## The fade (A1)
+
+The fade was a smoothstep ramp from the rim to 2.2 tiles. Against the page it
+read as a pale haze smeared across the corners of the board. It now uses Ba
+Dan's approved fade (`apronAlpha` in `ba-dan-exterior-apron.ts`): solid for
+0.45 tiles, then ten flat alpha steps whose edges wander on a broad clustered
+mask, so there is no continuous tone and no ruled contour. The bands are lossy,
+so the clear pixels within `RIM_BLEED` (0.4 tiles) either side of the painted
+band carry the ground's colour at alpha 0; left black, the encoder smeared them
+into a light fringe along the rim, as it did on Ba Dan's. The test holds the
+shipped rim's fringe under 2% and every painted alpha to one of the ten steps.
+
 ## The continuation is a mirror, not a translation
 
 The first in-engine frame showed the band combed into long diagonal streaks.
