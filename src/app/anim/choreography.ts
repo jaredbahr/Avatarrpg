@@ -170,6 +170,16 @@ export function hitSpan(clips: SheetClips | undefined): number {
   return timedSpan(clips, HEADINGS.map(hitClip));
 }
 
+/** The stance cel at the front of a G hit, before its H1 contact cel. */
+function hitLead(clips: SheetClips | undefined): number {
+  let lead = 0;
+  for (const name of HEADINGS.map(hitClip)) {
+    const first = clips?.[name]?.frameMs?.[0];
+    if (first !== undefined) lead = Math.max(lead, first);
+  }
+  return lead;
+}
+
 function timedSpan(clips: SheetClips | undefined, names: readonly ClipName[]): number {
   let span = 0;
   for (const name of names) {
@@ -294,6 +304,10 @@ export function choreograph(input: ChoreographyInput): Choreography {
   const timed = (unitId: string, span: typeof knockoutSpan): number => {
     const sprite = unitsBefore.find((unit) => unit.id === unitId)?.sprite;
     return sprite ? span(input.clipsOf?.(sprite)) * rate : 0;
+  };
+  const timedHitLead = (unitId: string): number => {
+    const sprite = unitsBefore.find((unit) => unit.id === unitId)?.sprite;
+    return sprite ? hitLead(input.clipsOf?.(sprite)) * rate : 0;
   };
   /** Until when a unit's G hit plays, so a push under it does not restart it. */
   const flinching = new Map<string, number>();
@@ -826,9 +840,13 @@ export function choreograph(input: ChoreographyInput): Choreography {
             // A G hit (ADR 0063) flinches in its own drawing from the contact,
             // its hit-stop on its contact cel, and its feet stay planted: no
             // shove, which would skate them.
-            const duration = Math.max(flinch, hit.hitStop);
-            pose(event.unitId, 'hit', hit.at, duration, still, still, easeOutQuad);
-            flinching.set(event.unitId, hit.at + duration);
+            // Start on the stance cel so H1 is the pose at contact, alongside
+            // the flash and damage number. Never pre-roll before this batch.
+            const start = Math.max(input.cursor, hit.at - timedHitLead(event.unitId));
+            const preContact = hit.at - start;
+            const duration = Math.max(flinch + preContact, hit.hitStop + preContact);
+            pose(event.unitId, 'hit', start, duration, still, still, easeOutQuad);
+            flinching.set(event.unitId, start + duration);
           } else if (hit.hitStop > 0) {
             // Hold the struck drawing at contact, then let the body recoil.
             // Waiting until recoil left the victim idling through the hit-stop.
@@ -974,7 +992,10 @@ export function choreograph(input: ChoreographyInput): Choreography {
 
       case 'unitDied': {
         const pos = positions.get(event.unitId);
-        const at = Math.max(cursor, landing().at + landing().hitStop);
+        const hit = landing();
+        // A lethal G hit owns the unit until its reaction finishes. Legacy
+        // hits never enter `flinching`, so their KO timing is unchanged.
+        const at = Math.max(cursor, hit.at + hit.hitStop, flinching.get(event.unitId) ?? 0);
         // A G knockout (ADR 0059) falls in its own drawing, at full strength,
         // and plays out in full; the unit is marked fallen once it lies still.
         // The legacy pose has no fall of its own, so it sinks and fades under
