@@ -77,6 +77,7 @@ function setup(options: {
     move?: number;
     ap?: number;
     size?: 1 | 2;
+    defense?: number;
   }[];
 }): Fixture {
   const state = createGame(CONTENT, {
@@ -113,6 +114,7 @@ function setup(options: {
     ap: enemy.ap ?? 4,
     move: enemy.move ?? 0,
     size: enemy.size ?? 1,
+    base: { ...enemyBase.base, defense: enemy.defense ?? enemyBase.base.defense },
   }));
 
   const units = [...casters, ...enemies];
@@ -192,6 +194,30 @@ describe('the AI and its own walls', () => {
     expect(hasLineOfSight(draft.grid, caster.pos, enemy.pos)).toBe(true);
   });
 
+  it('does not call a wall stranding when the caster had no ready shot to lose', () => {
+    /*
+     * Same corridor, but Rock Throw is cooling: before the wall the caster could
+     * hit nobody, so the wall costs it nothing this turn and is not stranding.
+     * With the rock ready, the same wall is.
+     */
+    const wallTile: Vec2 = { x: 4, y: 3 };
+    const board = {
+      grid: corridor(12, 7),
+      enemies: [{ pos: { x: 7, y: 3 }, abilities: ['flame_arc'] }],
+    };
+    const cooling = setup({ ...board, casters: [bender({ x: 2, y: 3 })] });
+    expect(
+      wallStrandsCaster(cooling.draft, unit(cooling.draft, cooling.casterIds[0]), [wallTile]),
+    ).toBe(false);
+    const ready = setup({
+      ...board,
+      casters: [{ pos: { x: 2, y: 3 }, abilities: ['rock_throw', 'earth_wall'] }],
+    });
+    expect(wallStrandsCaster(ready.draft, unit(ready.draft, ready.casterIds[0]), [wallTile])).toBe(
+      true,
+    );
+  });
+
   it('steps into a live archer line, then walls it off', () => {
     /*
      * Rock Throw is cooling, so the bender has to move before Earth Wall is in
@@ -218,9 +244,11 @@ describe('the AI and its own walls', () => {
 
   it('raises a wall that breaks a live attacker with no shot of its own', () => {
     /*
-     * The slinger on the left can hit the caster right now, so the wall has a
-     * defensive job even though it costs the caster its own (cooling) attack.
-     * This is the one case the stranding rule deliberately lets through.
+     * The slinger on the left can hit the caster, so the wall has a defensive
+     * job. Rock Throw is cooling, so the wall costs the caster no ready shot and
+     * the stranding rule has nothing to refuse; the planner raises it across the
+     * slinger's line. (The threat exemption proper is covered by the rule tests
+     * below, where the caster does give up a ready shot.)
      */
     const { draft, casterIds, enemyIds } = setup({
       grid: openGrid(12, 9),
@@ -317,20 +345,54 @@ describe('the AI and its own walls', () => {
     });
     expect(stranding(cooling)).toBe(true);
 
+    // One round left ticks off at the slinger's own turn start: ready again.
+    const readyNext = setup({
+      ...base,
+      enemies: [{ pos: { x: 2, y: 4 }, abilities: ['sling_stone'], cooldowns: { sling_stone: 1 } }],
+    });
+    expect(stranding(readyNext)).toBe(false);
+
     const spent = setup({
       ...base,
       enemies: [{ pos: { x: 2, y: 4 }, abilities: ['sling_stone'], ap: 0 }],
     });
     expect(stranding(spent)).toBe(false);
 
-    // End to end: after the attacker has really ended its turn (and has 0 AP),
-    // the following caster still recognizes the refreshed next-turn threat.
-    const casterId = spent.casterIds[0];
-    const enemyId = spent.enemyIds[0];
-    if (!casterId || !enemyId) throw new Error('Missing wall fixture units');
-    spent.draft.endTurn(enemyId);
-    planAiTurn(spent.draft, casterId, new RngCursor(7));
-    expect(usedAbilities(spent.draft)).toContain('earth_wall');
+    /*
+     * End to end, through the real turn cycle: the slinger ends its turn (0 AP)
+     * before the caster plans. Its hide is thick enough that Rock Throw scores
+     * below the wall, so the planner wants the wall — and whether it may raise
+     * it depends only on the threat budget. The refreshed slinger still counts,
+     * so the wall goes up across the lane; the long-cooling one does not, so a
+     * wall across the lane would strand the caster. It may still spend a wall
+     * somewhere harmless, but the lane stays open and the rock still flies.
+     */
+    const planned = (cooldowns: Readonly<Record<string, number>>) => {
+      const fixture = setup({
+        ...base,
+        enemies: [{ pos: { x: 2, y: 4 }, abilities: ['sling_stone'], cooldowns, defense: 60 }],
+      });
+      const casterId = fixture.casterIds[0];
+      const enemyId = fixture.enemyIds[0];
+      if (!casterId || !enemyId) throw new Error('Missing wall fixture units');
+      fixture.draft.endTurn(enemyId);
+      expect(unit(fixture.draft, enemyId).ap).toBe(0);
+      planAiTurn(fixture.draft, casterId, new RngCursor(7));
+      const caster = unit(fixture.draft, casterId);
+      const enemy = unit(fixture.draft, enemyId);
+      return {
+        used: usedAbilities(fixture.draft),
+        sight: hasLineOfSight(fixture.draft.grid, enemy.pos, caster.pos),
+      };
+    };
+
+    const refreshed = planned({});
+    expect(refreshed.used).toContain('earth_wall');
+    expect(refreshed.sight).toBe(false);
+
+    const longCooling = planned({ sling_stone: 5 });
+    expect(longCooling.used).toContain('rock_throw');
+    expect(longCooling.sight).toBe(true);
   });
 
   it('raises the wall on a cell vacated by a planned move', () => {
@@ -357,50 +419,154 @@ describe('the AI and its own walls', () => {
     expect(wallStrandsCaster(draft, movedCaster, [wallTile])).toBe(false);
   });
 
-  it('does not call a size-2 caster safe when only its anchor is blocked', () => {
-    const wallTile = { x: 4, y: 4 };
+  it('judges a wall on a vacated cell, and skips the planned cell', () => {
+    /*
+     * The caster will step back from (4,3) to (2,3) in the corridor. A wall on
+     * the cell it leaves really rises and cuts its only shot at an archer who
+     * cannot reach it, so it strands the caster. Read occupancy from where the
+     * caster stands now and the tile looks taken, the wall looks empty, and the
+     * placement slips through. Its planned cell, by contrast, will not take a wall.
+     */
     const { draft, casterIds, enemyIds } = setup({
-      grid: openGrid(12, 9),
-      casters: [{ pos: { x: 5, y: 4 }, abilities: ['sling_stone', 'earth_wall'], size: 2 }],
-      enemies: [{ pos: { x: 1, y: 2 }, abilities: ['sling_stone'] }],
+      grid: corridor(12, 7),
+      casters: [{ pos: { x: 4, y: 3 }, abilities: ['rock_throw', 'earth_wall'] }],
+      enemies: [{ pos: { x: 7, y: 3 }, abilities: ['flame_arc'] }],
+    });
+    const movedCaster = { ...unit(draft, casterIds[0]), pos: { x: 2, y: 3 } };
+    const enemy = unit(draft, enemyIds[0]);
+    const rock = ability('rock_throw');
+    const battle = draft.toBattle();
+    const moved = {
+      ...battle,
+      units: battle.units.map((candidate) =>
+        candidate.id === movedCaster.id ? movedCaster : candidate,
+      ),
+    };
+    const vacated: Vec2 = { x: 4, y: 3 };
+
+    expect(isValidTarget(CONTENT, moved, movedCaster, rock, enemy.pos).ok).toBe(true);
+    expect(
+      isValidTarget(
+        CONTENT,
+        { ...moved, grid: raised(draft.grid, [vacated]) },
+        movedCaster,
+        rock,
+        enemy.pos,
+      ).ok,
+    ).toBe(false);
+    expect(wallStrandsCaster(draft, movedCaster, [vacated])).toBe(true);
+    expect(wallStrandsCaster(draft, movedCaster, [movedCaster.pos])).toBe(false);
+  });
+
+  it('does not call a size-2 caster safe when only its anchor is blocked', () => {
+    /*
+     * The caster stands on (6,7) and (7,7). Its only target is the clubber at
+     * (4,5); the slinger at (2,1) is past Rock Throw's range but inside its own.
+     * A wall at (5,6) cuts the caster off from the clubber and hides the anchor
+     * cell from the slinger — but the slinger still sees (7,7), so the threat is
+     * not broken and the wall strands the caster for nothing.
+     */
+    const { draft, casterIds, enemyIds } = setup({
+      grid: openGrid(14, 15),
+      casters: [{ pos: { x: 6, y: 7 }, abilities: ['rock_throw', 'earth_wall'], size: 2 }],
+      enemies: [
+        { pos: { x: 2, y: 1 }, abilities: ['sling_stone'] },
+        { pos: { x: 4, y: 5 }, abilities: ['club_swing'] },
+      ],
     });
     const caster = unit(draft, casterIds[0]);
-    const enemy = unit(draft, enemyIds[0]);
-    const after = { ...draft.toBattle(), grid: raised(draft.grid, [wallTile]) };
+    const slinger = unit(draft, enemyIds[0]);
+    const clubber = unit(draft, enemyIds[1]);
+    const sling = ability('sling_stone');
+    const rock = ability('rock_throw');
+    const before = draft.toBattle();
+    const second: Vec2 = { x: 7, y: 7 };
 
-    expect(isValidTarget(CONTENT, after, enemy, ability('sling_stone'), caster.pos).ok).toBe(false);
-    expect(isValidTarget(CONTENT, after, enemy, ability('sling_stone'), { x: 6, y: 4 }).ok).toBe(
-      true,
-    );
-    expect(wallStrandsCaster(draft, caster, [wallTile])).toBe(true);
+    // The slinger is a threat the caster cannot answer; the clubber is its target.
+    expect(isValidTarget(CONTENT, before, caster, rock, slinger.pos).ok).toBe(false);
+    expect(isValidTarget(CONTENT, before, slinger, sling, caster.pos).ok).toBe(true);
+    expect(isValidTarget(CONTENT, before, caster, rock, clubber.pos).ok).toBe(true);
+
+    const anchorWall: Vec2 = { x: 5, y: 6 };
+    const anchorAfter = { ...before, grid: raised(draft.grid, [anchorWall]) };
+    expect(isValidTarget(CONTENT, anchorAfter, caster, rock, clubber.pos).ok).toBe(false);
+    expect(isValidTarget(CONTENT, anchorAfter, slinger, sling, caster.pos).ok).toBe(false);
+    expect(isValidTarget(CONTENT, anchorAfter, slinger, sling, second).ok).toBe(true);
+    expect(wallStrandsCaster(draft, caster, [anchorWall])).toBe(true);
+
+    // Close the second cell's lane as well and the same trade becomes a block.
+    const bothWalls: Vec2[] = [anchorWall, { x: 6, y: 6 }];
+    const bothAfter = { ...before, grid: raised(draft.grid, bothWalls) };
+    expect(isValidTarget(CONTENT, bothAfter, caster, rock, clubber.pos).ok).toBe(false);
+    expect(isValidTarget(CONTENT, bothAfter, slinger, sling, caster.pos).ok).toBe(false);
+    expect(isValidTarget(CONTENT, bothAfter, slinger, sling, second).ok).toBe(false);
+    expect(wallStrandsCaster(draft, caster, bothWalls)).toBe(false);
   });
 
   it('does not treat a size-2 attacker as blocked while its second cell fires', () => {
     /*
-     * The enemy stands on two tiles. A wall at (4,4) sits on the anchor cell's
-     * line to the caster but not on the second cell's, so `isValidTarget` still
-     * finds a firing origin and the threat is not broken — the wall is refused.
-     * A wall at (3,3) crosses both lines, so that one is a genuine block.
+     * The slinger stands on (2,1) and (3,1), past Rock Throw's range; the
+     * caster's only target is the clubber at (3,3). A wall at (4,4) cuts the
+     * caster off from the clubber and sits on the slinger's anchor line, but not
+     * on the second cell's, so `isValidTarget` still finds a firing origin: the
+     * threat is not broken and the wall is refused. Adding (5,5) crosses the
+     * second line too, and then the same trade is a genuine block.
      */
     const { draft, casterIds, enemyIds } = setup({
-      grid: openGrid(12, 9),
-      casters: [bender({ x: 5, y: 4 })],
-      enemies: [{ pos: { x: 1, y: 2 }, abilities: ['sling_stone'], size: 2 }],
+      grid: openGrid(14, 15),
+      casters: [{ pos: { x: 6, y: 7 }, abilities: ['rock_throw', 'earth_wall'] }],
+      enemies: [
+        { pos: { x: 2, y: 1 }, abilities: ['sling_stone'], size: 2 },
+        { pos: { x: 3, y: 3 }, abilities: ['club_swing'] },
+      ],
     });
     const caster = unit(draft, casterIds[0]);
-    const enemy = unit(draft, enemyIds[0]);
+    const slinger = unit(draft, enemyIds[0]);
+    const clubber = unit(draft, enemyIds[1]);
+    const anchorOnly: Unit = { ...slinger, size: 1 };
     const sling = ability('sling_stone');
+    const rock = ability('rock_throw');
     const before = draft.toBattle();
+
+    expect(isValidTarget(CONTENT, before, caster, rock, slinger.pos).ok).toBe(false);
+    expect(isValidTarget(CONTENT, before, caster, rock, { x: 3, y: 1 }).ok).toBe(false);
+    expect(isValidTarget(CONTENT, before, caster, rock, clubber.pos).ok).toBe(true);
+    expect(isValidTarget(CONTENT, before, slinger, sling, caster.pos).ok).toBe(true);
 
     const anchorWall: Vec2 = { x: 4, y: 4 };
     const anchorAfter = { ...before, grid: raised(draft.grid, [anchorWall]) };
-    expect(isValidTarget(CONTENT, anchorAfter, enemy, sling, caster.pos).ok).toBe(true);
+    expect(isValidTarget(CONTENT, anchorAfter, caster, rock, clubber.pos).ok).toBe(false);
+    expect(isValidTarget(CONTENT, anchorAfter, anchorOnly, sling, caster.pos).ok).toBe(false);
+    expect(isValidTarget(CONTENT, anchorAfter, slinger, sling, caster.pos).ok).toBe(true);
     expect(wallStrandsCaster(draft, caster, [anchorWall])).toBe(true);
 
-    const bothWall: Vec2 = { x: 3, y: 3 };
-    const bothAfter = { ...before, grid: raised(draft.grid, [bothWall]) };
-    expect(isValidTarget(CONTENT, bothAfter, enemy, sling, caster.pos).ok).toBe(false);
-    expect(wallStrandsCaster(draft, caster, [bothWall])).toBe(false);
+    const bothWalls: Vec2[] = [anchorWall, { x: 5, y: 5 }];
+    const bothAfter = { ...before, grid: raised(draft.grid, bothWalls) };
+    expect(isValidTarget(CONTENT, bothAfter, caster, rock, clubber.pos).ok).toBe(false);
+    expect(isValidTarget(CONTENT, bothAfter, slinger, sling, caster.pos).ok).toBe(false);
+    expect(wallStrandsCaster(draft, caster, bothWalls)).toBe(false);
+  });
+
+  it('still counts a size-2 target whose anchor the wall hides', () => {
+    /*
+     * The clubber stands on (2,2) and (3,2) and cannot reach the caster. A wall
+     * at (3,3) hides the anchor cell from the caster, but Rock Throw can still
+     * be aimed at (3,2), so the caster keeps its target and is not stranded.
+     */
+    const wallTile: Vec2 = { x: 3, y: 3 };
+    const { draft, casterIds, enemyIds } = setup({
+      grid: openGrid(12, 9),
+      casters: [{ pos: { x: 5, y: 4 }, abilities: ['rock_throw', 'earth_wall'] }],
+      enemies: [{ pos: { x: 2, y: 2 }, abilities: ['club_swing'], size: 2 }],
+    });
+    const caster = unit(draft, casterIds[0]);
+    const clubber = unit(draft, enemyIds[0]);
+    const rock = ability('rock_throw');
+    const after = { ...draft.toBattle(), grid: raised(draft.grid, [wallTile]) };
+
+    expect(isValidTarget(CONTENT, after, caster, rock, clubber.pos).ok).toBe(false);
+    expect(isValidTarget(CONTENT, after, caster, rock, { x: 3, y: 2 }).ok).toBe(true);
+    expect(wallStrandsCaster(draft, caster, [wallTile])).toBe(false);
   });
 
   it('scores a full turn for three casters on a 20x12 board inside a budget', () => {

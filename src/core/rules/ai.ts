@@ -300,16 +300,21 @@ function preWallTargets(
   return targets;
 }
 
-/** Can the caster turn a usable offensive ability onto `enemy` from where it stands? */
+/**
+ * Can the caster turn a usable offensive ability onto `enemy` from where it
+ * stands? Every occupied cell is a legal aim, as in `candidateTargets`, so a
+ * size-2 enemy whose anchor is hidden is still a target through its other cell.
+ */
 function canHitFrom(
   content: ContentIndex,
   battle: BattleState,
   caster: Unit,
   enemy: Unit,
 ): boolean {
+  const cells = occupiedCells(enemy);
   for (const ability of usableAbilities(content, caster)) {
     if (!isOffensiveAbility(content, ability)) continue;
-    if (isValidTarget(content, battle, caster, ability, enemy.pos).ok) return true;
+    if (cells.some((cell) => isValidTarget(content, battle, caster, ability, cell).ok)) return true;
   }
   return false;
 }
@@ -404,7 +409,6 @@ export function wallStrandsCaster(
 
   // The world exactly as the placement would leave it.
   const after: BattleState = { ...before, grid: gridWithWall(draft, raised) };
-
   // Still a shot at something it could hit before the wall? Then it costs nothing.
   if (targets.some((enemy) => canHitFrom(content, after, caster, enemy))) return false;
 
