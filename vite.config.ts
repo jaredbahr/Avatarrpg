@@ -305,6 +305,34 @@ export default defineConfig({
             'the tagged-text exclusion',
           );
         }
+        // Text fill styles reach into the Canvas renderer's tinting utilities
+        // for one pattern transform; with that call inlined, the whole module
+        // (and the blend-mode probe it runs on load) leaves the bundle. Same
+        // behaviour, including its guards; `invert` is always false here (ADR 0065).
+        if (
+          /[/\\]pixi\.js[/\\]lib[/\\]scene[/\\]text[/\\]canvas[/\\]utils[/\\]getCanvasFillStyle\.mjs$/.test(
+            id,
+          )
+        ) {
+          return replaceExactly(
+            code,
+            [
+              [
+                "import { canvasUtils } from '../../../../rendering/renderers/canvas/utils/canvasUtils.mjs';",
+                '',
+              ],
+              [
+                'canvasUtils.applyPatternTransform(pattern, fillPattern.transform, false);',
+                `{
+      const m = fillPattern.transform;
+      if (m && pattern.setTransform && globalThis.DOMMatrix)
+        pattern.setTransform(new globalThis.DOMMatrix([m.a, m.b, m.c, m.d, m.tx, m.ty]));
+    }`,
+              ],
+            ],
+            'the canvas pattern-transform inline',
+          );
+        }
         if (
           /[/\\]pixi\.js[/\\]lib[/\\](accessibility|events|dom|spritesheet)[/\\]init\.mjs$/.test(id)
         ) {
