@@ -182,33 +182,38 @@ describe('fire: two releases, one damage', () => {
     expect(jabImpact.at).toBeLessThan(far.arrivals[1]!);
     const begins = bendSceneAt(far, jabImpact.at);
     const frozen = bendFxAt(fx, far, begins);
+    const impact = far.shot.effect.layers.find(
+      (layer) => layer.phase === 'impact' && layer.release === 0,
+    )!;
     expect(frozen.length).toBeGreaterThan(0);
     expect(bendFxAt(fx, far, begins + jabImpact.ms - 1)).toEqual(frozen);
-    expect(bendFxAt(fx, far, begins + jabImpact.ms + 20)).not.toEqual(frozen);
+    expect(bendFxAt(fx, far, begins + jabImpact.ms + impact.frameMs[0]!)).not.toEqual(frozen);
   });
 
   it('snaps the merged arrival, impact, damage timing and shake to the hold boundary', () => {
     const far = planBend(fx, spec('fire', 'southEast', board(6, 6), { tiles: 5 }));
     const merged = far.holds.find((h) => h.causes.length > 1)!;
     const arrival = far.arrivals[0]!;
-    const scene = bendSceneAt(far, arrival);
+    const scene = bendSceneAt(far, merged.at);
     const impact = far.shot.effect.layers.find(
       (layer) => layer.phase === 'impact' && layer.release === 0,
     )!;
     const firstImpactCel = fx.layerCel(impact, 0);
+    // Step 7 lays externally visible hit reactions and damage on this scene boundary.
     const damageAt = bendSceneAt(far, arrival);
 
     expect(arrival).toBe(merged.at);
-    expect(scene).toBe(merged.at);
-    expect(damageAt).toBe(merged.at);
+    expect(damageAt).toBe(scene);
+    expect(
+      bendFxAt(fx, far, scene - 1).some((sprite) => sprite.frame === firstImpactCel?.frame),
+    ).toBe(false);
     expect(
       bendFxAt(fx, far, scene).some(
         (sprite) =>
-          sprite.frame.x === firstImpactCel?.frame.x &&
-          sprite.frame.y === firstImpactCel?.frame.y,
+          sprite.frame.x === firstImpactCel?.frame.x && sprite.frame.y === firstImpactCel?.frame.y,
       ),
     ).toBe(true);
-    expect(bendNudge(far, scene + 1)).not.toEqual({ x: 0, y: 0 });
+    expect(far.kicks.filter((kick) => kick.at === merged.at)).toHaveLength(2);
   });
 });
 

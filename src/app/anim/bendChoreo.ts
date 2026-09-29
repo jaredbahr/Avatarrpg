@@ -209,7 +209,7 @@ export function planBend(fx: BendFxIndex, spec: BendSpec): BendPlan {
   const arrivals = rawArrivals.map((arrival, release) => {
     if (arrival === undefined) return undefined;
     const impact = raw.find((entry) => entry.kind === 'impact' && entry.release === release);
-    return impact ? holdOf.get(impact)?.at ?? arrival : arrival;
+    return impact ? (holdOf.get(impact)?.at ?? arrival) : arrival;
   });
 
   // The follow-through waits for the last landing.
