@@ -892,6 +892,11 @@ export function describeFooting(content: ContentIndex, surface: SurfaceId): stri
   if (def.moveCost > 0) parts.push(`costs ${def.moveCost} extra move`);
   if (def.blocksSight) parts.push('blocks line of sight');
   if (def.grantsCover) parts.push('gives cover');
+  if (def.obscures) {
+    parts.push(
+      `${def.obscures.inside} to hit anyone inside, ${def.obscures.through} to shoot through`,
+    );
+  }
   if (parts.length === 0) return 'No effect on whoever stands in it.';
   return `${parts.join(', ')}.`;
 }

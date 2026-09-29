@@ -1,11 +1,13 @@
 import { describe, expect, it } from 'vitest';
 import { CONTENT } from '../../content';
 import { RngCursor } from '../rng';
-import { tileAt, withSurface } from './grid';
+import { DEFAULT_TILE, tileAt, withSurface } from './grid';
+import { hitChance, rollHit } from './damage';
+import { weatherAt } from './obscurement';
 import { previewAbility, resolveAbility } from './abilities';
 import { BattleDraft } from '../state/battleDraft';
 import { createBattle, createGame } from '../state/createGame';
-import type { Ability, BattleState, StatusId, Unit, Vec2 } from '../types';
+import type { Ability, BattleState, ContentIndex, Grid, StatusId, Unit, Vec2 } from '../types';
 
 function ability(id: string) {
   const found = CONTENT.abilities.get(id);
@@ -578,5 +580,125 @@ describe('bounded combat outcome previews', () => {
       appliedStatus: 'stunned',
       chance: 1,
     });
+  });
+});
+
+/**
+ * Obscurement must reach the confirm step, or the preview lies about a mechanic
+ * the player can see on the board.
+ */
+describe('obscurement preview parity', () => {
+  function openGrid(width = 10, height = 5): Grid {
+    return { width, height, tiles: Array.from({ length: width * height }, () => DEFAULT_TILE) };
+  }
+
+  /** The forest road plus a sandstorm, kept out of `content/` on purpose. */
+  function stormContent(): ContentIndex {
+    const encounter = CONTENT.encounters.get('enc_forest_road');
+    if (!encounter) throw new Error('Missing forest road encounter');
+    return {
+      ...CONTENT,
+      encounters: new Map(CONTENT.encounters).set('enc_forest_road', {
+        ...encounter,
+        weather: { id: 'sandstorm', schedule: [{ fromRound: 1, intensity: 2 }] },
+      }),
+    };
+  }
+
+  /** One caster and one victim four tiles apart on a clean board. */
+  function pair(content: ContentIndex, steamCells: readonly Vec2[] = []) {
+    const game = createGame(content, {
+      seed: 'obscurement-preview',
+      party: [{ characterId: 'kaya', level: 3, autoChoose: true }],
+      startNode: '',
+    });
+    const rng = new RngCursor(game.rng);
+    const base = createBattle(content, game, 'enc_forest_road', rng, { variantId: 'thugs' });
+    const casterBase = base.units.find((unit) => unit.faction === 'party');
+    const victimBase = base.units.find((unit) => unit.faction === 'enemy');
+    if (!casterBase || !victimBase) throw new Error('Missing preview fixture units');
+
+    let grid = openGrid();
+    for (const cell of steamCells) {
+      grid = withSurface(grid, cell, { id: 'steam', duration: 2, spread: 0 });
+    }
+
+    const caster: Unit = { ...casterBase, pos: { x: 1, y: 2 } };
+    const victim: Unit = { ...victimBase, pos: { x: 5, y: 2 } };
+    const units = [caster, victim];
+    // Props keep their real-map coordinates, which belong to a grid we replaced.
+    const battle: BattleState = {
+      ...base,
+      grid,
+      units,
+      order: units.map((unit) => unit.id),
+      props: [],
+    };
+    return { content, battle, caster, victim };
+  }
+
+  it('previews the same chance the roll uses inside, through and under weather', () => {
+    const inside = pair(CONTENT, [{ x: 5, y: 2 }]);
+    const insidePreview = previewAbility(
+      CONTENT,
+      inside.battle,
+      inside.caster,
+      ability('rock_throw'),
+      inside.victim.pos,
+    );
+    const insideRow = insidePreview.targets.find((t) => t.unitId === inside.victim.id);
+    expect(insideRow?.hitChance).toBe(65);
+    expect(insideRow?.hitChance).toBe(
+      hitChance(CONTENT, inside.battle.grid, inside.caster, inside.victim),
+    );
+
+    const through = pair(CONTENT, [{ x: 3, y: 2 }]);
+    const throughPreview = previewAbility(
+      CONTENT,
+      through.battle,
+      through.caster,
+      ability('rock_throw'),
+      through.victim.pos,
+    );
+    expect(throughPreview.targets.find((t) => t.unitId === through.victim.id)?.hitChance).toBe(75);
+    expect(throughPreview.targets.find((t) => t.unitId === through.victim.id)?.hitChance).toBe(
+      hitChance(CONTENT, through.battle.grid, through.caster, through.victim),
+    );
+
+    const storm = stormContent();
+    const weather = pair(storm);
+    expect(weatherAt(storm, weather.battle.encounterId, weather.battle.round)).toBe(2);
+    const weatherPreview = previewAbility(
+      storm,
+      weather.battle,
+      weather.caster,
+      ability('rock_throw'),
+      weather.victim.pos,
+    );
+    const weatherRow = weatherPreview.targets.find((t) => t.unitId === weather.victim.id);
+    expect(weatherRow?.hitChance).toBe(60);
+    expect(weatherRow?.hitChance).toBe(
+      hitChance(storm, weather.battle.grid, weather.caster, weather.victim, 2),
+    );
+  });
+
+  it('hands the roll the exact probability the preview showed', () => {
+    const rolls = (content: ContentIndex, steamCells: readonly Vec2[], weather: 0 | 1 | 2) => {
+      const { battle, caster, victim } = pair(content, steamCells);
+      const probabilities: number[] = [];
+      // A cursor that records the probability it is asked for and never misses.
+      const spy = {
+        chance: (probability: number) => {
+          probabilities.push(probability);
+          return true;
+        },
+      } as unknown as RngCursor;
+      rollHit(spy, content, battle.grid, caster, victim, weather);
+      return probabilities[0];
+    };
+
+    expect(rolls(CONTENT, [{ x: 5, y: 2 }], 0)).toBe(0.65);
+    expect(rolls(CONTENT, [{ x: 3, y: 2 }], 0)).toBe(0.75);
+    expect(rolls(stormContent(), [], 2)).toBe(0.6);
   });
 });

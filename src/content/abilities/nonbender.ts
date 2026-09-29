@@ -89,7 +89,7 @@ export const NONBENDER_ABILITIES: readonly Ability[] = [
       { kind: 'surface', surface: 'steam', duration: 2, area: 'area' },
     ],
     description:
-      'Smoke fills a 3×3 area. Everyone inside, friend or foe, has a 90% chance to be Blinded, and the cloud blocks sight and gives cover for 2 rounds.',
+      'Smoke fills a 3×3 area. Everyone inside, friend or foe, has a 90% chance to be Blinded, and the cloud is hard to see through for 2 rounds.',
     flavor: 'Half of any escape is the second half.',
     fx: 'fx.non.smoke',
     tags: ['control', 'surface'],

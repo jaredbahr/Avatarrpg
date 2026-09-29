@@ -1,6 +1,14 @@
 import { describe, expect, it } from 'vitest';
 import type { Grid } from '../types';
-import { DEFAULT_TILE, pathCost, posKey, reachable, withTile } from './grid';
+import {
+  DEFAULT_TILE,
+  hasLineOfSight,
+  pathCost,
+  posKey,
+  reachable,
+  withSurface,
+  withTile,
+} from './grid';
 import type { MoveContext } from './grid';
 
 function openGrid(width: number, height: number): Grid {
@@ -46,5 +54,28 @@ describe('diagonal movement', () => {
 
     expect(pathCost(ctx, start, [goal])).toBeNull();
     expect(reachable(ctx, start, 1).has(posKey(goal))).toBe(false);
+  });
+});
+
+describe('line of sight and obscurement', () => {
+  const from = { x: 0, y: 1 };
+  const to = { x: 4, y: 1 };
+
+  it('looks through a steam cloud, which obscures rather than blocks', () => {
+    const grid = withSurface(
+      openGrid(5, 3),
+      { x: 2, y: 1 },
+      { id: 'steam', duration: 2, spread: 0 },
+    );
+    expect(hasLineOfSight(grid, from, to)).toBe(true);
+  });
+
+  it('still stops at a wall', () => {
+    const grid = withTile(
+      openGrid(5, 3),
+      { x: 2, y: 1 },
+      { ...DEFAULT_TILE, blocked: true, blocksSight: true },
+    );
+    expect(hasLineOfSight(grid, from, to)).toBe(false);
   });
 });

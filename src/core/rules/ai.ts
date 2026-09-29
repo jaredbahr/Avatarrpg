@@ -32,6 +32,7 @@ import {
   usableAbilities,
 } from './abilities';
 import { averageDamage, hitChance, positionHasCover } from './damage';
+import { positionObscurement, weatherAt } from './obscurement';
 import { distance, distanceToUnit, euclidean, posKey, reachable, tileAt } from './grid';
 import { canMove, effectiveStats, isAlive } from './stats';
 import { findCombo } from './surfaces';
@@ -215,6 +216,7 @@ function scoreAbility(
   const content = draft.content;
   const tiles = affectedTiles(draft.grid, caster, ability, target);
   const struck = unitsOnTiles(draft.units, tiles).filter((u) => u.id !== caster.id);
+  const weather = weatherAt(content, draft.encounterId, draft.round);
 
   let score = 0;
   let touchedAnyone = false;
@@ -226,7 +228,7 @@ function scoreAbility(
     for (const effect of ability.effects) {
       switch (effect.kind) {
         case 'damage': {
-          const expected = averageDamage(content, draft.grid, caster, victim, effect);
+          const expected = averageDamage(content, draft.grid, caster, victim, effect, weather);
           if (friendly) {
             score -= expected * weights.friendlyFire;
           } else {
@@ -569,6 +571,9 @@ function positionScore(
   }
 
   if (positionHasCover(draft.content, draft.grid, pos)) score += weights.cover;
+  // A cloud is cover that the opponent can still shoot into, so it is worth a
+  // fraction of real cover — a full steam cloud scores a full `weights.cover`.
+  score += weights.cover * positionObscurement(draft.content, draft.grid, pos);
   const tile = tileAt(draft.grid, pos);
   score += (tile?.elevation ?? 0) * 1.5;
 
@@ -755,6 +760,7 @@ export function weightsFor(profile: AiProfile): Weights {
 /** Utility used by the hint system: how threatened is this tile? */
 export function threatAt(draft: BattleDraft, unit: Unit, pos: Vec2): number {
   let threat = 0;
+  const weather = weatherAt(draft.content, draft.encounterId, draft.round);
   for (const opponent of opponentsOf(draft, unit)) {
     for (const ability of usableAbilities(draft.content, opponent)) {
       if (
@@ -769,7 +775,7 @@ export function threatAt(draft: BattleDraft, unit: Unit, pos: Vec2): number {
           (sum, e) => sum + e.base + e.scale * effectiveStats(draft.content, opponent).power,
           0,
         );
-      threat += damage * (hitChance(draft.content, draft.grid, opponent, unit) / 100);
+      threat += damage * (hitChance(draft.content, draft.grid, opponent, unit, weather) / 100);
     }
   }
   return threat + euclidean(pos, unit.pos) * 0;
