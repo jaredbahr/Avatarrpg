@@ -319,7 +319,7 @@ export class SheetStore {
    * the sheet and its bend have loaded, after either failed, for a sheet with
    * no bend, for an index with no cel or no hold, and for a cel whose
    * rectangle is not its heading's `frameSize`. Asking starts the load.
-   * Nothing plays a bend yet (ADR 0055, steps 6 and 7).
+   * Both backends draw a bending unit's cel from here (ADR 0055, step 7).
    */
   bendFrame(key: string, heading: Heading, index: number): ResolvedBendFrame | null {
     const entry = resolveAsset(key);
