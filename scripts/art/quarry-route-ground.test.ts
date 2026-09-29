@@ -5,6 +5,7 @@ import {
   CUTTING_GROUND_REGIONS,
   CUTTING_POOL_BYTES,
   DRILLER_GROUND_REGIONS,
+  DRILLER_PLATES,
 } from '../../src/content/scenes/quarryRouteGround';
 import { QUARRY_GATE_GROUND_REGIONS } from '../../src/content/scenes/quarryGate';
 import type { Image } from './lib/image';
@@ -26,6 +27,9 @@ import {
   buildQuarryGround,
 } from './quarry-route-ground';
 import { buildGateGround, plainSpoil } from './quarry-modular-ground';
+import { buildDrillerGantry, buildDrillerShaft, DRILLER_GANTRY_CELLS } from './driller-shaft';
+import type { Plate } from './driller-shaft';
+import { TERRAIN_STYLES } from '../../src/render/palettes';
 import { luma, measure, readPlate } from './forest-ground-measure';
 
 /** DL-2 §3: no 128 px window inside a packed plate may span more than this. */
@@ -243,7 +247,8 @@ it.each([
  * on the Cutting's shoulders, where it is the spoil row the other way up.
  */
 it.each([
-  ['driller', () => driller, QUARRY_FLOOR, 6],
+  // The Driller's other four heaps stand on its benches (`R`), not on spill.
+  ['driller', () => driller, QUARRY_FLOOR, 2],
   ['cutting', () => cutting, AMBUSH_ROAD, 4],
 ] as const)(
   'stands every %s cover cell on its spill, not on an inked diamond',
@@ -409,6 +414,56 @@ it.each([
 
 it("pins the Cutting's pool plate to its recorded size on disk", () => {
   expect(statSync(CUTTING_POOL_OUTPUT).size).toBe(CUTTING_POOL_BYTES);
+});
+
+/**
+ * M6. The drill shaft and the four gantry decks are plates of their own over
+ * the Driller's pages: shipped as the packer builds them, registered where it
+ * puts them, pinned on disk, and painted only in the game's wood, pit and ink.
+ */
+it("ships, registers and pins the Driller's shaft and gantry plates", async () => {
+  const built: [string, Plate][] = [
+    ['shaft', buildDrillerShaft()],
+    ...DRILLER_GANTRY_CELLS.map((cell): [string, Plate] => [
+      `gantry-${cell.x}-${cell.y}`,
+      buildDrillerGantry(cell),
+    ]),
+  ];
+  expect(DRILLER_PLATES.map(({ name }) => name)).toEqual(built.map(([name]) => name));
+  const allowed = new Set<string>([
+    INK,
+    ...Object.values(TERRAIN_STYLES.wood),
+    ...Object.values(TERRAIN_STYLES.pit),
+  ]);
+  for (const [name, { image, x, y }] of built) {
+    const region = DRILLER_PLATES.find((plate) => plate.name === name);
+    expect(region, name).toBeDefined();
+    if (!region) continue;
+    expect({ x, y, width: image.width, height: image.height }).toEqual({
+      x: region.x,
+      y: region.y,
+      width: region.width,
+      height: region.height,
+    });
+    const path = `public/art/maps/driller-floor-scene/${name}.webp`;
+    expect(Buffer.from(await encodeWebp(image, QUARRY_GROUND_QUALITY, true)), path).toEqual(
+      readFileSync(path),
+    );
+    expect(statSync(path).size, path).toBe(region.bytes);
+    const off: string[] = [];
+    for (let i = 0; i < image.data.length; i += 4) {
+      if ((image.data[i + 3] ?? 0) === 0) continue;
+      const hex = toHex([image.data[i] ?? 0, image.data[i + 1] ?? 0, image.data[i + 2] ?? 0]);
+      if (!allowed.has(hex)) off.push(hex);
+    }
+    expect(off, `${name} paints only wood, pit and ink`).toEqual([]);
+  }
+  // One deck per perch, and the shaft is the whole of legend `P`.
+  expect(DRILLER_GANTRY_CELLS).toEqual(
+    QUARRY_FLOOR.rows.flatMap((row, y) =>
+      [...row].flatMap((k, x) => (k === 'A' ? [{ x, y }] : [])),
+    ),
+  );
 });
 
 /**

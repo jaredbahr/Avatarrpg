@@ -43,7 +43,7 @@ test('the quarry marker assessment keeps the floor visible across save and reloa
   await page.getByRole('button', { name: 'Skip scene' }).click();
   await enterNode(page, 'quarry_after_explore');
   await expect(page.locator('.explore-scene')).toBeVisible();
-  await page.evaluate(() => window.fnt?.app.dispatch({ type: 'walkTo', pos: { x: 18, y: 5 } }));
+  await page.evaluate(() => window.fnt?.app.dispatch({ type: 'walkTo', pos: { x: 17, y: 5 } }));
   await expect
     .poll(() => page.evaluate(() => window.fnt?.app.state?.story.nodeId))
     .toBe('quarry_descent');

@@ -206,7 +206,7 @@ describe('connected world traversal', () => {
       state = walk(state, 19, 5).state;
       state = resolve(walk(state, 19, 4).state, loss === 'ambush');
       state = walk(state, 19, 4).state;
-      state = finishDialogue(walk(state, 18, 5).state);
+      state = finishDialogue(walk(state, 17, 5).state);
       state = resolve(state, loss === 'boss');
       expect(state.screen).toBe('ended');
       expect(state.flags[loss === 'boss' ? 'act1_lost' : 'act1_complete']).toBe(true);
@@ -264,7 +264,7 @@ describe('connected world traversal', () => {
         state = walk(state, 19, 5).state;
         state = walk(state, 19, 4).state;
         expect(state.party.map((unit) => unit.xp)).toEqual(before);
-        state = finishDialogue(walk(state, 18, 5).state);
+        state = finishDialogue(walk(state, 17, 5).state);
         expect(state.battle?.encounterId).toBe('enc_grumbler');
         state = resolve(state);
         expect(state.screen).toBe('ended');
