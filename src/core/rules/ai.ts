@@ -17,6 +17,10 @@
  *   cautious    hold range, respect cover, avoid standing in fire
  *   support     buffing and healing outrank damage
  *   boss        as aggressive, but values reshaping the ground highly
+ *
+ * Height is a profile opinion rather than a flat constant (ADR 0061, E6): a
+ * cautious archer pays 4 per tier for the high ground, support 3, aggressive 1
+ * and the boss 0 — the Driller would rather close than climb.
  */
 
 import type { RngCursor } from '../rng';
@@ -65,6 +69,8 @@ interface Weights {
   readonly closeDistance: number;
   /** Points gained for ending the move in cover. */
   readonly cover: number;
+  /** Points gained per elevation tier of the tile it ends its move on. */
+  readonly elevation: number;
   /** Friendly-fire aversion. Above 1 means it actively avoids its own side. */
   readonly friendlyFire: number;
 }
@@ -79,6 +85,7 @@ const WEIGHTS: Record<AiProfile, Weights> = {
     selfPreservation: 0.3,
     closeDistance: 1.4,
     cover: 1,
+    elevation: 1,
     friendlyFire: 1.5,
   },
   cautious: {
@@ -90,6 +97,7 @@ const WEIGHTS: Record<AiProfile, Weights> = {
     selfPreservation: 1.2,
     closeDistance: 0.5,
     cover: 5,
+    elevation: 4,
     friendlyFire: 2,
   },
   support: {
@@ -101,6 +109,7 @@ const WEIGHTS: Record<AiProfile, Weights> = {
     selfPreservation: 1,
     closeDistance: 0.4,
     cover: 4,
+    elevation: 3,
     friendlyFire: 2.5,
   },
   boss: {
@@ -112,6 +121,7 @@ const WEIGHTS: Record<AiProfile, Weights> = {
     selfPreservation: 0.2,
     closeDistance: 1,
     cover: 0,
+    elevation: 0,
     friendlyFire: 0.8,
   },
   none: {
@@ -123,6 +133,8 @@ const WEIGHTS: Record<AiProfile, Weights> = {
     selfPreservation: 1,
     closeDistance: 1,
     cover: 1,
+    // Unchanged from the old flat value: `none` is not a personality.
+    elevation: 1.5,
     friendlyFire: 2,
   },
 };
@@ -575,7 +587,7 @@ function positionScore(
   // fraction of real cover — a full steam cloud scores a full `weights.cover`.
   score += weights.cover * positionObscurement(draft.content, draft.grid, pos);
   const tile = tileAt(draft.grid, pos);
-  score += (tile?.elevation ?? 0) * 1.5;
+  score += (tile?.elevation ?? 0) * weights.elevation;
 
   return score;
 }

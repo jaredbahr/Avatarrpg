@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { CONTENT } from '../../content';
 import { RngCursor } from '../rng';
 import { DEFAULT_TILE, tileAt, withSurface, withTile } from './grid';
-import { hitChance, rollHit } from './damage';
+import { hitBreakdown, hitChance, rollHit } from './damage';
 import { weatherAt } from './obscurement';
 import { previewAbility, resolveAbility } from './abilities';
 import { BattleDraft } from '../state/battleDraft';
@@ -176,6 +176,8 @@ describe('bounded combat outcome previews', () => {
     const selfHeal = healing.targets.find((target) => target.unitId === caster.id);
     expect(selfHeal?.heal).toBe(caster.base.maxHp - caster.hp);
     expect(selfHeal?.healAtCapacity).toBe(false);
+    // Nothing was rolled, so there is nothing to break down.
+    expect(selfHeal?.hitBreakdown).toBeNull();
     expect(selfHeal?.clearedStatuses).toEqual(['burning', 'blinded']);
 
     const ally = battle.units.find((unit) => unit.id === 'p1');
@@ -736,5 +738,48 @@ describe('obscurement preview parity', () => {
     expect(rolls(CONTENT, [{ x: 5, y: 2 }], 0)).toBe(0.65);
     expect(rolls(CONTENT, [{ x: 3, y: 2 }], 0)).toBe(0.75);
     expect(rolls(stormContent(), [], 2)).toBe(0.6);
+  });
+
+  it('hands the confirm step the whole breakdown, not just the total', () => {
+    // A cloud on the target and one on the line, cover on the target's tile and
+    // the caster a tier above: every component is non-zero at once.
+    const base = pair(CONTENT, [
+      { x: 5, y: 2 },
+      { x: 3, y: 2 },
+    ]);
+    const casterTile = tileAt(base.battle.grid, base.caster.pos);
+    const victimTile = tileAt(base.battle.grid, base.victim.pos);
+    if (!casterTile || !victimTile) throw new Error('Missing breakdown fixture tiles');
+    const grid = withTile(
+      withTile(base.battle.grid, base.caster.pos, { ...casterTile, elevation: 1 }),
+      base.victim.pos,
+      { ...victimTile, cover: true },
+    );
+    const battle: BattleState = { ...base.battle, grid };
+    const { caster, victim } = base;
+
+    const preview = previewAbility(CONTENT, battle, caster, ability('rock_throw'), victim.pos);
+    const row = preview.targets.find((t) => t.unitId === victim.id);
+    if (!row) throw new Error('Preview lost the breakdown target');
+
+    const weather = weatherAt(CONTENT, battle.encounterId, battle.round);
+    expect(row.hitBreakdown).toEqual(hitBreakdown(CONTENT, grid, caster, victim, weather));
+    expect(row.hitChance).toBe(row.hitBreakdown?.chance);
+    expect(row.hitBreakdown).toMatchObject({
+      chance: 50,
+      base: 90,
+      elevation: 10,
+      cover: -20,
+      plunging: 10,
+      statuses: 0,
+      obscurement: { inside: -25, through: -15, attacker: 0, weather: 0, total: -40 },
+    });
+
+    // RNG-free: the second preview is identical and the source battle is not
+    // touched, so opening and closing the confirm step cannot change the shot.
+    const before = JSON.stringify(battle);
+    const again = previewAbility(CONTENT, battle, caster, ability('rock_throw'), victim.pos);
+    expect(again.targets).toEqual(preview.targets);
+    expect(JSON.stringify(battle)).toBe(before);
   });
 });
