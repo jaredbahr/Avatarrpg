@@ -839,6 +839,36 @@ describe('choreograph', () => {
   /* Sound cues                                                        */
   /* ---------------------------------------------------------------- */
 
+  it('lands ledge damage with the shove and keeps a harmless stumble quiet', () => {
+    const pushed: GameEvent = { type: 'unitPushed', unitId: 'p0', to: { x: 3, y: 3 } };
+    const fall = (amount: number): GameEvent => ({
+      type: 'damaged',
+      unitId: 'p0',
+      amount,
+      crit: false,
+      damageType: 'pure',
+      sourceId: null,
+      cause: 'ledgeDrop',
+    });
+
+    const harmful = run([fall(3), pushed]);
+    const move = harmful.tracks.find((track) => track.kind === 'move');
+    const landingAt = (move?.start ?? 0) + (move?.duration ?? 0);
+    expect(harmful.health).toContainEqual(expect.objectContaining({ unitId: 'p0', at: landingAt }));
+    expect(harmful.sounds).toContainEqual(expect.objectContaining({ key: 'hit', at: landingAt }));
+    expect(
+      harmful.tracks.find((track) => track.kind === 'flash' && track.unitId === 'p0')?.start,
+    ).toBe(landingAt);
+
+    const harmless = run([fall(0), pushed]);
+    expect(harmless.sounds.some((sound) => sound.key === 'hit')).toBe(false);
+    expect(
+      harmless.tracks.some(
+        (track) => (track.kind === 'flash' || track.kind === 'pose') && track.unitId === 'p0',
+      ),
+    ).toBe(false);
+  });
+
   it('cue a footstep a tile along a walk', () => {
     const { sounds } = run([
       {

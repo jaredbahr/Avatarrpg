@@ -55,6 +55,8 @@ const combatTuningShape = {
   climbCost: z.number().int().min(0),
   /** Extra range for long-range line-of-sight abilities from higher ground. */
   heightReachBonus: z.number().int().min(0),
+  /** Defense-ignoring damage dealt per tier when forced movement drops a unit. */
+  ledgeDropDamage: z.number().int().min(0),
   /** Hit chance is clamped into this band, lowest bound first. */
   hitChanceMin: z.number().int().min(0).max(100),
   hitChanceMax: z.number().int().min(0).max(100),
@@ -94,6 +96,7 @@ export const COMBAT_TUNING: CombatTuning = combatTuningSchema.parse({
   ],
   climbCost: 1,
   heightReachBonus: 1,
+  ledgeDropDamage: 3,
   hitChanceMin: 5,
   hitChanceMax: 99,
 });

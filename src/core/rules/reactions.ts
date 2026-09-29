@@ -97,6 +97,8 @@ export interface ShoveForecast {
   /** Surface contact caused by landing, including the damage/status chance. */
   readonly landingSurfaces: readonly SurfaceId[];
   readonly landingDamage: number;
+  /** Defense-ignoring damage from the largest tier drop across the footprint. */
+  readonly ledgeDropDamage: number;
   readonly landingStatuses: readonly { readonly id: StatusId; readonly chance: number }[];
 }
 
@@ -316,13 +318,14 @@ export function forecastReactions(
     shoves.map((shove) => `${shove.kind}:${shove.id}:${posKey(shove.to)}`),
   );
   const lastUnitPositions = new Map(battle.units.map((unit) => [unit.id, unit.pos]));
-  for (const event of draft.events) {
+  for (const [eventIndex, event] of draft.events.entries()) {
     if (event.type !== 'unitPushed') continue;
     const from = lastUnitPositions.get(event.unitId);
     const unit = draft.unit(event.unitId);
     if (!from || !unit) continue;
     const key = `unit:${event.unitId}:${posKey(event.to)}`;
     if (!knownShoves.has(key)) {
+      const previous = draft.events[eventIndex - 1];
       const movedDistance = Math.max(Math.abs(event.to.x - from.x), Math.abs(event.to.y - from.y));
       shoves.push({
         kind: 'unit',
@@ -336,6 +339,12 @@ export function forecastReactions(
         mode: 'push',
         blocked: false,
         ...landingInfo(content, draft, unit),
+        ledgeDropDamage:
+          previous?.type === 'damaged' &&
+          previous.cause === 'ledgeDrop' &&
+          previous.unitId === event.unitId
+            ? previous.amount
+            : 0,
       });
       knownShoves.add(key);
     }
@@ -446,8 +455,13 @@ function landingInfo(
   content: ContentIndex,
   draft: BattleDraft,
   unit: Unit | undefined,
-): Pick<ShoveForecast, 'landingSurfaces' | 'landingDamage' | 'landingStatuses'> {
-  if (!unit) return { landingSurfaces: [], landingDamage: 0, landingStatuses: [] };
+): Pick<
+  ShoveForecast,
+  'landingSurfaces' | 'landingDamage' | 'ledgeDropDamage' | 'landingStatuses'
+> {
+  if (!unit) {
+    return { landingSurfaces: [], landingDamage: 0, ledgeDropDamage: 0, landingStatuses: [] };
+  }
 
   const surfaces: SurfaceId[] = [];
   const statuses: { id: StatusId; chance: number }[] = [];
@@ -459,7 +473,12 @@ function landingInfo(
     damage += contact.damage;
     if (contact.status) statuses.push({ id: contact.status, chance: contact.statusChance });
   }
-  return { landingSurfaces: surfaces, landingDamage: damage, landingStatuses: statuses };
+  return {
+    landingSurfaces: surfaces,
+    landingDamage: damage,
+    ledgeDropDamage: 0,
+    landingStatuses: statuses,
+  };
 }
 
 function shoveUnitForecast(
@@ -487,8 +506,16 @@ function shoveUnitForecast(
       ...landingInfo(content, draft, undefined),
     };
   }
+  const eventStart = draft.events.length;
   draft.shove(unitId, origin, distance, mode);
   const after = draft.unit(unitId) ?? before;
+  const ledgeDropDamage = draft.events
+    .slice(eventStart)
+    .reduce(
+      (total, event) =>
+        event.type === 'damaged' && event.cause === 'ledgeDrop' ? total + event.amount : total,
+      0,
+    );
   return {
     kind: 'unit',
     id: before.id,
@@ -506,6 +533,7 @@ function shoveUnitForecast(
       Math.max(Math.abs(after.pos.x - before.pos.x), Math.abs(after.pos.y - before.pos.y)) <
       distance,
     ...landingInfo(content, draft, after),
+    ledgeDropDamage,
   };
 }
 

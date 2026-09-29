@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { CONTENT } from '../../content';
 import { RngCursor } from '../rng';
-import { DEFAULT_TILE, tileAt, withSurface } from './grid';
+import { DEFAULT_TILE, tileAt, withSurface, withTile } from './grid';
 import { hitChance, rollHit } from './damage';
 import { weatherAt } from './obscurement';
 import { previewAbility, resolveAbility } from './abilities';
@@ -256,7 +256,19 @@ describe('bounded combat outcome previews', () => {
 
   it('reports cabbage-cart status collateral and both shove destinations', () => {
     const source = battleFor('enc_quarry_gate');
-    const battle = placed(source, { p0: { x: 4, y: 6 }, e6: { x: 7, y: 6 } }, ['p0', 'e6']);
+    const placedBattle = placed(source, { p0: { x: 4, y: 6 }, e6: { x: 7, y: 6 } }, ['p0', 'e6']);
+    let grid = placedBattle.grid;
+    for (const [x, elevation] of [
+      [7, 2],
+      [8, 1],
+      [9, 1],
+      [10, 0],
+    ] as const) {
+      const tile = tileAt(grid, { x, y: 6 });
+      if (!tile) throw new Error('cart ledge fixture is off-grid');
+      grid = withTile(grid, { x, y: 6 }, { ...tile, elevation });
+    }
+    const battle = { ...placedBattle, grid };
     const caster = battle.units.find((unit) => unit.id === 'p0');
     const victim = battle.units.find((unit) => unit.id === 'e6');
     if (!caster || !victim) throw new Error('cart fixture missing a unit');
@@ -272,6 +284,11 @@ describe('bounded combat outcome previews', () => {
     expect(preview.shoves.filter((shove) => shove.id === victim.id).length).toBe(2);
     expect(preview.shoves.some((shove) => shove.to.x === 8)).toBe(true);
     expect(preview.shoves.some((shove) => shove.to.x === 10)).toBe(true);
+    expect(
+      preview.shoves
+        .filter((shove) => shove.id === victim.id)
+        .map((shove) => shove.ledgeDropDamage),
+    ).toEqual([3, 3]);
 
     const actual = resolve(battle, caster, 'shatterpoint', target);
     expect(actual.unit(victim.id)?.pos).toEqual({ x: 10, y: 6 });
