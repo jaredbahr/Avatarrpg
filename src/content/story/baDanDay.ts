@@ -293,6 +293,7 @@ export const BA_DAN_DAY_STORY: readonly StoryNode[] = [
     ],
     next: 'village_leave',
   },
+
   {
     id: 'village_leave',
     kind: 'branch',

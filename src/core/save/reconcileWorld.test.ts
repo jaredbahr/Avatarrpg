@@ -400,3 +400,36 @@ suite('reconcileWorld: the explore snap (M9)', () => {
     expect(reconciled.battle).toEqual(state.battle);
   });
 });
+
+suite('reconcileWorld: the Ba Dan edge rebuild (A5)', () => {
+  const map = CONTENT.maps.get('ba_dan_village');
+  if (!map) throw new Error('Missing Ba Dan village');
+  const grid = buildGrid(map);
+
+  /** A save written before the rebuild, loaded through the app's real path. */
+  function loadOldVillageSave(pos: Vec2): GameState {
+    const saved = exploring({ location: { mapId: 'ba_dan_village', pos } });
+    const result = deserialize(serialize(saved, META));
+    if (!result.ok) throw new Error(result.error);
+    return reconcileWorld(CONTENT, stateFromBlob(result.blob));
+  }
+
+  it('moves a party saved on the old west road end off the flooded ford', () => {
+    // (0,7) was the road's last cell and is the ford now. Its first ring
+    // holds (1,6) grass and (1,7), (1,8) road; row-major takes the topmost.
+    expect(tileAt(grid, { x: 0, y: 7 })?.blocked).toBe(true);
+    const reconciled = loadOldVillageSave({ x: 0, y: 7 });
+
+    expect(reconciled.location).toEqual({ mapId: 'ba_dan_village', pos: { x: 1, y: 6 } });
+    expect(tileAt(grid, reconciled.location.pos)?.blocked).toBe(false);
+    expect(reconcileWorld(CONTENT, reconciled).location).toEqual(reconciled.location);
+  });
+
+  it('moves a party saved on a house floor out to open ground', () => {
+    // (7,11) was the south-west dwelling's plank floor.
+    const reconciled = loadOldVillageSave({ x: 7, y: 11 });
+
+    expect(reconciled.location.pos).not.toEqual({ x: 7, y: 11 });
+    expect(tileAt(grid, reconciled.location.pos)?.blocked).toBe(false);
+  });
+});

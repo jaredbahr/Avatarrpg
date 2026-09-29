@@ -221,6 +221,45 @@ new imagery is generated: the pinned redraws are the only source, and
 seated piece's foot is darker, or cut flush, compared with the same piece
 unseated.
 
+## Edges (A5, 29 September 2026)
+
+Jared asked for no invisible walls and a village that does not read as a
+rectangle; the plan's section 1.1 and its approved J5 (the west ford) set the
+structure. Nothing here is new imagery: every piece is an existing restyle
+texture placed again, or ground packed from the garden's flagstone.
+
+- **Woodland rim.** 36 perimeter `T` cells had no sprite. Each now stands a
+  `village-tree` (`BA_DAN_RIM_TRUNKS`), alternately mirrored, taller on the
+  back edges (north, west) and sapling-sized on the front edges (east and the
+  south-east), where a full canopy would wall off the board's near quarter. The
+  original canopies are `BA_DAN_RIM_CANOPIES`, less the one at (18,15), which
+  stood in the river path's mouth. The garden and apron are
+  re-packed so every new trunk is worn at its painted foot.
+- **North band.** The open lawn x4..17 on row 0 ends at a tea terrace one cell
+  outside the rim: seven courtyard `low-planter` pieces end to end
+  (`BA_DAN_NORTH_TERRACE`, `exterior`). It is the back edge, so everyone on
+  the board stands in front of it.
+- **South band and west ford.** `scripts/art/ba-dan-edges.ts` packs one page,
+  `edge-water.webp`, cut by `sourceRect` into two ground pieces painted after
+  the apron. Both reuse the courtyard canal's construction — its diamond
+  metric and kerb radius, `bedShade`, `BED_COOL`, `kerbShade` — over the
+  garden's `flagstoneTexel`, in flat steps at the garden's two-pixel grain. The
+  bed's depth is the distance to the shore, not to each cell's centre, so the
+  joins between cells leave no ridges. Neither is runtime water (the ford is
+  blocked `W`, the canal is off the board), so the renderer's film is baked in
+  at the strength its two coats add up to. Past the rim both take the apron's
+  own stepped fade. The south canal is one row of water under the lawn x4..17,
+  its near kerb at the lawn's edge; the ford floods (0,7) and (0,8) and runs
+  on west into the fade over five drowned stepping stones. A route-sign marker
+  on the ford's south bank, (1,9), says why the road stops there.
+
+The village declares both lawn edges as `band` and sets
+`edgeContract: 'enforce'`. Every other walkable rim cell is an exit mouth: the
+east road's two cells, and the river path's three. The river path's are the
+rim cells themselves, (18..20,15), walkable dirt with no tree on them; like the
+east road's, the garden base paints them flagstone and the apron carries it on
+south off the board. The riverside arrives at (19,14), one step inside.
+
 The canal packer takes no arguments: unlike the courtyard and the historical
 ground page, its material source is the tracked
 `public/art/maps/ba-dan-scene/courtyard-ground.webp`, so the shipped

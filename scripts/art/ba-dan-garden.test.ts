@@ -15,6 +15,7 @@ import {
   gardenPlatePath,
   onExit,
   packGardenPlate,
+  wearOwner,
   worldLogical,
 } from './ba-dan-garden';
 
@@ -132,7 +133,9 @@ describe('Ba Dan outer garden', () => {
           const arc = arcs[Math.min(15, Math.floor(turn * 16))];
           if (!arc) continue;
           arc.all++;
-          if (contactWear(tx, ty)) arc.worn++;
+          // Only this piece's own wear: along the woodland rim a neighbouring
+          // trunk's spill reaches round a tree, and that is not a ring.
+          if (contactWear(tx, ty) && wearOwner(tx, ty) === piece.id) arc.worn++;
         }
       const sampled = arcs.filter((arc) => arc.all > 0);
       const share = sampled.filter((arc) => arc.worn / arc.all >= 0.2).length / sampled.length;

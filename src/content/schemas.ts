@@ -585,9 +585,11 @@ export const mapSchema = z
           )
           // The Forest Road's authored pine wall occupies 38 distinct cells,
           // plus its small reed pieces, and the Quarry Gate's rock corners,
-          // barred gates and dressed rim bands bring it to 54 (M4/A2). Keep a
-          // finite draw-count guard while admitting those approved footprints.
-          .max(64),
+          // barred gates and dressed rim bands bring it to 54 (M4/A2). Ba Dan's
+          // woodland rim draws all 48 of its perimeter trees and its north tea
+          // terrace, 72 pieces in all (A5). Keep a finite draw-count guard
+          // while admitting those approved footprints.
+          .max(80),
         flock: z
           .object({
             url: z.string().min(1),
