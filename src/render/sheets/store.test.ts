@@ -262,6 +262,21 @@ describe('a bend on its sheet (ADR 0055)', () => {
     expect(store.bendState('unit.enemy.thug')).toBe('none');
   });
 
+  it('releases a loaded bend on combat exit, keeps the sheet, and loads it again when asked', async () => {
+    stubPages();
+    const store = new SheetStore();
+    store.preloadBend(KEY);
+    await until(() => store.bendState(KEY) === 'loaded');
+    store.releaseBends();
+    expect(store.bendState(KEY)).toBe('idle');
+    expect(store.loadedFor(KEY)).toBe(true);
+    expect(fetched(BEND_DATA)).toBe(1);
+    store.preloadBend(KEY);
+    await until(() => store.bendState(KEY) === 'loaded');
+    expect(fetched(BEND_DATA)).toBe(2);
+    expect(store.bendFrame(KEY, 'east', 0)).not.toBeNull();
+  });
+
   it('draws each cel from the bend page by its heading’s anchor, not the sheet’s', async () => {
     stubPages();
     const store = new SheetStore();
