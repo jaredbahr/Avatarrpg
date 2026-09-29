@@ -24,6 +24,8 @@
  * `--check` re-packs every asset and fails if a shipped file's pixels differ.
  */
 import { readFileSync, writeFileSync } from 'node:fs';
+import { tileNoise } from '../../src/render/painters/shapes';
+import { GARDEN_TONES } from './ba-dan-garden';
 import type { Image } from './lib/image';
 import { newImage, readImage } from './lib/image';
 import { scaleTo } from './lib/scale';
@@ -50,8 +52,45 @@ export interface Variation {
   readonly shade: number;
 }
 
+/**
+ * How a piece meets the ground (docs/art/ba-dan-scene.md, "Seated in the
+ * ground"). The redraws stand on a bright, evenly lit base course, so a
+ * planter or the bridge's abutments read as blocks set down on the board.
+ * Seating works up each column from the inked foot, on stone texels only
+ * (`isStone`), in three ways:
+ *
+ * - `sink` cuts away the shaded side face under a top slab and inks the new
+ *   foot, so the slab lies flush and the real ground shows where the plinth
+ *   stood;
+ * - `rise` steps the lowest stone toward the ground it stands in, in three
+ *   flat bands with a ragged top;
+ * - `tufts` lays the garden's own grass tufts over the foot.
+ *
+ * It is deterministic and draws only the three step tones and the four
+ * garden tones.
+ */
+export interface Seat {
+  /** At most this many shaded side-face texels are cut away under the slab. */
+  readonly sink?: number;
+  /** Texels above the inked foot that weather. */
+  readonly rise: number;
+  /** The ground the base steps toward. */
+  readonly toward: readonly [number, number, number];
+  /** Grass tufts over the foot, about this many texels apart. */
+  readonly tufts?: number;
+}
+
+/** Stone, not timber, mortar, leaves or ink: warm, but not as orange as the wood. */
+export function isStone(r: number, g: number, b: number): boolean {
+  return luma(r, g, b) >= 60 && r >= g && g >= 0.75 * r;
+}
+
+/** A side face is in shade: a stone texel darker than this is under the slab. */
+const SIDE_LUMA = 150;
+
 export interface RestyleAsset {
   readonly name: string;
+  readonly seat?: Seat;
   /** How much of the redraw's own chroma survives the lock (0 = all from the shipped piece). */
   readonly keep: number;
   /** The whole-number nearest upscale the texture ships at. */
@@ -101,10 +140,27 @@ export const RESTYLE_ASSETS: readonly RestyleAsset[] = [
     scale: 4,
     // One kerb block of the evenly repeated run, a shade cooler.
     variations: [{ x: 58, y: 40, width: 14, height: 10, shade: 0.93 }],
+    // Grass-stained and damp at the foot, with the lawn growing up its sides:
+    // toward damp earth, the garden's deep tone and the bible's road shadow
+    // mixed evenly, in shade (x 0.65).
+    seat: { rise: 6, toward: [85, 79, 46], tufts: 9 },
   },
   { name: 'village-tree', keep: 0.5, scale: 3, holes: true, variations: [] },
-  { name: 'canal-bridge', keep: 0.5, scale: 4, variations: [] },
+  {
+    name: 'canal-bridge',
+    keep: 0.5,
+    scale: 4,
+    variations: [],
+    // The abutments go down into the canal banks: their shaded sides are cut
+    // away so the slabs lie flush with the paving, and what stays of the foot
+    // darkens toward the kerb's wet stone (`canal-banks.webp`'s 10th luma
+    // percentile, in shade).
+    seat: { sink: 10, rise: 2, toward: [68, 70, 62] },
+  },
 ];
+
+/** A seat's three flat tones, lightest first: its stone median stepped toward the ground. */
+export const SEAT_STEPS = [0.3, 0.5, 0.68] as const;
 
 type Rgb = [number, number, number];
 
@@ -473,7 +529,169 @@ export function restyle(
       image.data.set([rgb[0]!, rgb[1]!, rgb[2]!, 255], p * 4);
     }
   }
+  if (asset.seat) seatBase(image, asset.seat);
   return { image, palette };
+}
+
+/** The lowest opaque texel of each column, or -1. */
+function feet(image: Image): number[] {
+  const { width, height, data } = image;
+  return Array.from({ length: width }, (_, x) => {
+    for (let y = height - 1; y >= 0; y--) if (data[(y * width + x) * 4 + 3]) return y;
+    return -1;
+  });
+}
+
+/**
+ * The tones a seat can draw: its three weathering steps, from the median of
+ * the stone it weathers toward the ground, then the tuft tones.
+ */
+export function seatTones(image: Image, seat: Seat): Rgb[] {
+  const stone: Rgb[] = [];
+  feet(image).forEach((bottom, x) => {
+    for (let y = bottom - 1; y >= 0 && y >= bottom - seat.rise; y--) {
+      const i = (y * image.width + x) * 4;
+      const c: Rgb = [image.data[i]!, image.data[i + 1]!, image.data[i + 2]!];
+      if (isStone(...c)) stone.push(c);
+    }
+  });
+  const median = [0, 1, 2].map((ch) => {
+    const values = stone.map((c) => c[ch]!).sort((a, b) => a - b);
+    return values[Math.floor(values.length / 2)] ?? 0;
+  });
+  const steps = SEAT_STEPS.map(
+    (t) => median.map((v, ch) => Math.round(v + ((seat.toward[ch] ?? 0) - v) * t)) as Rgb,
+  );
+  const tufts = seat.tufts ? Object.values(GARDEN_TONES).map((c) => [...c] as Rgb) : [];
+  return [...steps, ...tufts];
+}
+
+/**
+ * A tuft from its root upward, the garden's own glyph (`ba-dan-garden.ts`):
+ * `[dx, tone]`, tones indexing `GARDEN_TONES` deep, shadow, base, light.
+ */
+const TUFT: readonly (readonly (readonly [number, number])[])[] = [
+  [
+    [-1, 0],
+    [0, 0],
+    [1, 0],
+  ],
+  [
+    [-1, 1],
+    [0, 0],
+    [1, 1],
+  ],
+  [
+    [-2, 1],
+    [0, 2],
+    [2, 1],
+  ],
+  [
+    [-2, 3],
+    [0, 3],
+    [3, 2],
+  ],
+];
+
+/**
+ * Seat a restyled piece in the ground: sink its slabs, weather its lowest
+ * stone and grow tufts over its foot. Works per column from the inked foot
+ * upward, so it follows the base however the piece is turned. The silhouette
+ * stays ink.
+ */
+function seatBase(image: Image, seat: Seat): void {
+  const { width, height, data } = image;
+  const rgbAt = (x: number, y: number): Rgb => {
+    const i = (y * width + x) * 4;
+    return [data[i]!, data[i + 1]!, data[i + 2]!];
+  };
+  const opaque = (x: number, y: number): boolean =>
+    x >= 0 && y >= 0 && x < width && y < height && data[(y * width + x) * 4 + 3] !== 0;
+  const inked = (x: number, y: number): boolean => {
+    const [r, g, b] = rgbAt(x, y);
+    return r === INK[0] && g === INK[1] && b === INK[2];
+  };
+
+  if (seat.sink) {
+    // The first cleared row of each cut column.
+    const cutFrom: (number | null)[] = Array.from({ length: width }, () => null);
+    const bottoms = feet(image);
+    bottoms.forEach((bottom, x) => {
+      // The side face, with its joints and ink, runs up from the foot to the
+      // first lit slab texel. A column that meets no slab within `sink` is
+      // timber or open deck, and keeps its foot.
+      let run = 1;
+      while (run <= seat.sink!) {
+        const y = bottom - run;
+        if (y < 0 || !opaque(x, y)) return;
+        const c = rgbAt(x, y);
+        if (isStone(...c) && luma(...c) >= SIDE_LUMA) break;
+        run++;
+      }
+      if (run > seat.sink! || run === 1) return;
+      cutFrom[x] = bottom - run + 1;
+      for (let y = bottom - run + 1; y <= bottom; y++)
+        data.fill(0, (y * width + x) * 4, (y * width + x) * 4 + 4);
+    });
+    // A joint or a stray line can leave one or two columns of side face
+    // standing between cut ones; they would ink into hanging legs.
+    for (let x = 1; x < width - 1; x++) {
+      if (cutFrom[x] !== null || cutFrom[x - 1] === null) continue;
+      const end = [x + 1, x + 2].find((e) => e < width && cutFrom[e] !== null);
+      if (end === undefined) continue;
+      const from = Math.max(cutFrom[x - 1]!, cutFrom[end]!);
+      for (let c = x; c < end; c++)
+        for (let y = from; y <= bottoms[c]!; y++)
+          data.fill(0, (y * width + c) * 4, (y * width + c) * 4 + 4);
+    }
+    // And a single column left standing at the image edge or beside a post.
+    for (let x = 0; x < width; x++) {
+      const near = cutFrom.slice(Math.max(0, x - 3), x + 4).filter((y) => y !== null);
+      if (!near.length) continue;
+      for (let y = Math.min(...near); y < height; y++)
+        if (opaque(x, y) && !opaque(x - 1, y) && !opaque(x + 1, y))
+          data.fill(0, (y * width + x) * 4, (y * width + x) * 4 + 4);
+    }
+    // Ink the new foot, as the restyle inks every silhouette.
+    const edge: number[] = [];
+    for (let y = 0; y < height; y++)
+      for (let x = 0; x < width; x++)
+        if (opaque(x, y) && NEIGHBOURS_4.some(([dx, dy]) => !opaque(x + dx, y + dy)))
+          edge.push((y * width + x) * 4);
+    for (const i of edge) data.set([...INK], i);
+  }
+
+  const tones = seatTones(image, seat);
+  const foot = feet(image);
+  const paint = (x: number, y: number, tone: Rgb): void => {
+    if (!opaque(x, y) || inked(x, y)) return;
+    data.set([...tone, 255], (y * width + x) * 4);
+  };
+  for (let x = 0; x < width; x++) {
+    const bottom = foot[x]!;
+    if (bottom < 0) continue;
+    // The band tops wander by a texel on a hash of the column, so the damp
+    // line is not a ruled copy of the foot.
+    const wander = Math.floor(tileNoise(x >> 1, 0, 97) * 3) - 1;
+    for (let h = 1; h <= seat.rise + 1; h++) {
+      const y = bottom - h;
+      if (!opaque(x, y) || inked(x, y) || !isStone(...rgbAt(x, y))) continue;
+      const reach = h + wander;
+      const step =
+        reach <= seat.rise / 3 ? 2 : reach <= (2 * seat.rise) / 3 ? 1 : reach <= seat.rise ? 0 : -1;
+      if (step >= 0) paint(x, y, tones[step]!);
+    }
+  }
+  if (!seat.tufts) return;
+  const grass = tones.slice(SEAT_STEPS.length);
+  for (let x = 2; x < width - 3;) {
+    const bottom = foot[x]!;
+    if (bottom >= 0)
+      TUFT.forEach((row, r) => {
+        for (const [dx, tone] of row) paint(x + dx, bottom - 1 - r, grass[tone]!);
+      });
+    x += seat.tufts - 2 + Math.floor(tileNoise(x, 1, 98) * 5);
+  }
 }
 
 /** Nearest-neighbour upscale by a whole number: every texel becomes a `k`×`k` block. */
@@ -494,12 +712,44 @@ export function packAsset(asset: RestyleAsset): Image {
   return upscale(restyle(redraw, shipped, asset).image, asset.scale);
 }
 
+/**
+ * The bridge's near-bank layer: the packed bridge's pixels on the near side
+ * of a line in the texture's own proportions, so a walker can render between
+ * the deck and its front rail (`canal-bridge-front` in `baDan.ts`). The cut
+ * was measured on the 512 x 323 bridge, `y - 0.5 x >= 55`; it is written here
+ * with the bridge so the two can never disagree.
+ */
+export function bridgeFront(bridge: Image): Image {
+  const front = newImage(bridge.width, bridge.height);
+  const sx = 512 / bridge.width;
+  const sy = 323 / bridge.height;
+  for (let y = 0; y < bridge.height; y++)
+    for (let x = 0; x < bridge.width; x++) {
+      if (y * sy - 0.5 * x * sx < 55) continue;
+      const i = (y * bridge.width + x) * 4;
+      front.data.set(bridge.data.subarray(i, i + 4), i);
+    }
+  return front;
+}
+
+/** Every file the restyle writes: each asset, and the bridge's front layer. */
+export function packOutputs(): { name: string; image: Image }[] {
+  return RESTYLE_ASSETS.flatMap((asset) => {
+    const image = packAsset(asset);
+    return asset.name === 'canal-bridge'
+      ? [
+          { name: asset.name, image },
+          { name: 'canal-bridge-front', image: bridgeFront(image) },
+        ]
+      : [{ name: asset.name, image }];
+  });
+}
+
 async function main(): Promise<void> {
   const check = process.argv.includes('--check');
   let failed = false;
-  for (const asset of RESTYLE_ASSETS) {
-    const image = packAsset(asset);
-    const output = `${OUTPUT_DIR}/${asset.name}.webp`;
+  for (const { name, image } of packOutputs()) {
+    const output = `${OUTPUT_DIR}/${name}.webp`;
     if (check) {
       const shipped = await decodeWebp(new Uint8Array(readFileSync(output)));
       const same =
@@ -507,11 +757,11 @@ async function main(): Promise<void> {
         shipped.height === image.height &&
         shipped.data.every((v, i) => v === image.data[i]);
       if (!same) failed = true;
-      console.log(`${asset.name}: ${same ? 'matches' : 'DIFFERS'}`);
+      console.log(`${name}: ${same ? 'matches' : 'DIFFERS'}`);
       continue;
     }
     writeFileSync(output, await encodeWebpLossless(image));
-    console.log(JSON.stringify({ asset: asset.name, width: image.width, height: image.height }));
+    console.log(JSON.stringify({ asset: name, width: image.width, height: image.height }));
   }
   if (failed) process.exit(1);
 }

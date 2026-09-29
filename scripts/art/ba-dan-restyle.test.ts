@@ -9,7 +9,10 @@ import {
   INK,
   OUTPUT_DIR,
   RESTYLE_ASSETS,
+  SEAT_STEPS,
   SOURCE_DIR,
+  bridgeFront,
+  isStone,
   packAsset,
   restyle,
 } from './ba-dan-restyle';
@@ -71,9 +74,49 @@ describe.each(RESTYLE_ASSETS)('$name', (asset) => {
     }
     expect(broken).toBe(0);
     expect(soft).toBe(0);
-    // The quantised palette plus the ink.
-    expect(colours.size).toBeLessThanOrEqual(COLOURS + 1);
+    // The quantised palette plus the ink, and a seated piece's own few tones.
+    const seat = asset.seat ? SEAT_STEPS.length + (asset.seat.tufts ? 4 : 0) : 0;
+    expect(colours.size).toBeLessThanOrEqual(COLOURS + 1 + seat);
     expect(colours.has((INK[0] << 16) | (INK[1] << 8) | INK[2])).toBe(true);
+  });
+
+  it.runIf(asset.seat)('is seated in the ground rather than set down on it', () => {
+    const redraw = readImage(`${SOURCE_DIR}/pixellab/${asset.name}.png`);
+    const source = readImage(`${SOURCE_DIR}/shipped/${asset.name}.png`);
+    const seated = restyle(redraw, source, asset).image;
+    const standing = restyle(redraw, source, { ...asset, seat: undefined }).image;
+    // Mean luma of the stone in the lowest few texels of each column.
+    const foot = (image: typeof seated): { luma: number; opaque: number } => {
+      let sum = 0,
+        count = 0,
+        opaque = 0;
+      for (let x = 0; x < image.width; x++) {
+        let bottom = -1;
+        for (let y = image.height - 1; y >= 0; y--)
+          if (image.data[(y * image.width + x) * 4 + 3]) {
+            bottom = y;
+            break;
+          }
+        for (let y = 0; y <= bottom; y++) if (image.data[(y * image.width + x) * 4 + 3]) opaque++;
+        for (let y = bottom - 1; y >= 0 && y >= bottom - 4; y--) {
+          const i = (y * image.width + x) * 4;
+          const [r, g, b] = [image.data[i]!, image.data[i + 1]!, image.data[i + 2]!];
+          if (!isStone(r, g, b)) continue;
+          sum += 0.299 * r + 0.587 * g + 0.114 * b;
+          count++;
+        }
+      }
+      return { luma: sum / count, opaque };
+    };
+    const before = foot(standing);
+    const after = foot(seated);
+    if (asset.seat?.sink) {
+      // The shaded side faces are gone: the slabs lie flush.
+      expect(after.opaque).toBeLessThan(before.opaque * 0.95);
+    } else {
+      expect(after.luma, 'the base course weathers darker').toBeLessThan(before.luma * 0.8);
+    }
+    expect(after.opaque).toBeGreaterThan(before.opaque * 0.8);
   });
 
   it('draws its silhouette in the bible ink, never black', () => {
@@ -100,4 +143,24 @@ describe.each(RESTYLE_ASSETS)('$name', (asset) => {
     expect(black).toBe(0);
     expect(unInked).toBe(0);
   });
+});
+
+it("ships the bridge's front layer cut from the bridge it ships", async () => {
+  const bridge = await shipped('canal-bridge');
+  const front = await shipped('canal-bridge-front');
+  const expected = bridgeFront(bridge);
+  expect({ width: front.width, height: front.height }).toEqual({
+    width: bridge.width,
+    height: bridge.height,
+  });
+  expect(Buffer.from(front.data).equals(Buffer.from(expected.data))).toBe(true);
+  // The near half, not all of it and not none of it.
+  let near = 0,
+    all = 0;
+  for (let i = 3; i < bridge.data.length; i += 4) {
+    if (bridge.data[i]) all++;
+    if (front.data[i]) near++;
+  }
+  expect(near).toBeGreaterThan(all * 0.2);
+  expect(near).toBeLessThan(all * 0.8);
 });
