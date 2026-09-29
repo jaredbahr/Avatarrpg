@@ -17,10 +17,24 @@
  *   cautious    hold range, respect cover, avoid standing in fire
  *   support     buffing and healing outrank damage
  *   boss        as aggressive, but values reshaping the ground highly
+ *
+ * Height is a profile opinion rather than a flat constant (ADR 0061, E6): a
+ * cautious archer pays 4 per tier for the high ground, support 3, aggressive 1
+ * and the boss 0 — the Driller would rather close than climb.
  */
 
 import type { RngCursor } from '../rng';
-import type { Ability, AiProfile, StatusId, Unit, Vec2 } from '../types';
+import type {
+  Ability,
+  AiProfile,
+  BattleState,
+  ContentIndex,
+  Grid,
+  StatusId,
+  Unit,
+  Vec2,
+} from '../types';
+import { raisedWallTile } from '../state/battleDraft';
 import type { BattleDraft } from '../state/battleDraft';
 import {
   affectedTiles,
@@ -35,9 +49,19 @@ import {
 } from './abilities';
 import { averageDamage, hitChance, positionHasCover } from './damage';
 import { positionObscurement, weatherAt } from './obscurement';
-import { distance, distanceToUnit, occupiedCells, posKey, reachable, tileAt } from './grid';
+import {
+  distance,
+  distanceToUnit,
+  occupiedCells,
+  posKey,
+  reachable,
+  tileAt,
+  withTile,
+} from './grid';
 import { canMove, effectiveStats, isAlive } from './stats';
 import { findCombo } from './surfaces';
+import { directAttackThreats, type ThreatBudget } from './directAttackThreats';
+import { refreshTurnResources, tickTurnStart } from './turnStart';
 
 /** How much the AI wants to inflict each status, in "points of damage". */
 const STATUS_VALUE: Record<StatusId, number> = {
@@ -67,6 +91,8 @@ interface Weights {
   readonly closeDistance: number;
   /** Points gained for ending the move in cover. */
   readonly cover: number;
+  /** Points gained per elevation tier of the tile it ends its move on. */
+  readonly elevation: number;
   /** Friendly-fire aversion. Above 1 means it actively avoids its own side. */
   readonly friendlyFire: number;
 }
@@ -81,6 +107,7 @@ const WEIGHTS: Record<AiProfile, Weights> = {
     selfPreservation: 0.3,
     closeDistance: 1.4,
     cover: 1,
+    elevation: 1,
     friendlyFire: 1.5,
   },
   cautious: {
@@ -92,6 +119,7 @@ const WEIGHTS: Record<AiProfile, Weights> = {
     selfPreservation: 1.2,
     closeDistance: 0.5,
     cover: 5,
+    elevation: 4,
     friendlyFire: 2,
   },
   support: {
@@ -103,6 +131,7 @@ const WEIGHTS: Record<AiProfile, Weights> = {
     selfPreservation: 1,
     closeDistance: 0.4,
     cover: 4,
+    elevation: 3,
     friendlyFire: 2.5,
   },
   boss: {
@@ -114,6 +143,7 @@ const WEIGHTS: Record<AiProfile, Weights> = {
     selfPreservation: 0.2,
     closeDistance: 1,
     cover: 0,
+    elevation: 0,
     friendlyFire: 0.8,
   },
   none: {
@@ -125,6 +155,8 @@ const WEIGHTS: Record<AiProfile, Weights> = {
     selfPreservation: 1,
     closeDistance: 1,
     cover: 1,
+    // Unchanged from the old flat value: `none` is not a personality.
+    elevation: 1.5,
     friendlyFire: 2,
   },
 };
@@ -202,6 +234,214 @@ interface Plan {
 }
 
 /**
+ * Wall planning.
+ *
+ * A cautious bender will happily raise `earth_wall` across its own firing lane,
+ * score the "shaped the ground" points, and then stand there with AP and no
+ * legal action for the rest of the fight. Before paying for a wall we ask what
+ * it costs the caster: if, from where it *stands*, the world after the wall
+ * holds no enemy this unit could still strike, the placement is refused. A cell
+ * it could walk to next turn does not count — that shot is already lost this
+ * turn, which is the cost being judged, and a full-map search for a way around
+ * its own wall belongs to the movement scorer, not here.
+ *
+ * The one good reason to accept that cost is the wall's defensive purpose:
+ * shutting down an attack that can reach the caster on the attacker's next
+ * turn. The shared direct-threat query receives the AP and cooldowns that
+ * `beginTurn` would provide (with movement held at zero because this rule asks
+ * whether this wall breaks the current firing lane), so an enemy that already
+ * ended its turn still counts and a cooldown with more than one round left does
+ * not. That query also checks every occupied cell of a size-2 defender.
+ *
+ * Everything below is pure geometry through the same targeting helpers the
+ * planner uses, so the preview path stays RNG-free and the answer matches what
+ * the AI will actually have available.
+ */
+
+/** Could this ability be turned on an enemy at all — damage, shove or a hex? */
+function isOffensiveAbility(content: ContentIndex, ability: Ability): boolean {
+  return ability.effects.some((effect) => {
+    switch (effect.kind) {
+      case 'damage':
+      case 'push':
+      case 'pull':
+        return true;
+      case 'status':
+        return effect.to === 'hit' && content.statuses.get(effect.status)?.kind !== 'buff';
+      default:
+        return false;
+    }
+  });
+}
+
+/**
+ * Enemies this caster can hit from where it stands, keyed by the caster's
+ * identity and cell. One turn scores many walls from the same spot, so the scan
+ * is paid for once per position rather than once per placement.
+ */
+type WallTargetCache = Map<string, readonly Unit[]>;
+
+// This cache is scoped to one unchanged BattleDraft scoring pass. Never reuse it
+// after the draft changes: its target and threat sets describe one battle snapshot.
+
+/**
+ * Battle snapshot for scoring a caster from a prospective standing position.
+ *
+ * The planner passes hypothetical casters into its scoring helpers, but the
+ * draft still contains the unit at its current position. Keep the snapshot's
+ * occupancy in step with that hypothetical (including every occupied cell of
+ * a size-2 unit), so unit-target validation sees the caster where it would
+ * actually stand.
+ */
+function battleWithHypotheticalCaster(battle: BattleState, caster: Unit): BattleState {
+  return {
+    ...battle,
+    units: battle.units.map((unit) => (unit.id === caster.id ? caster : unit)),
+  };
+}
+
+function preWallTargets(
+  content: ContentIndex,
+  battle: BattleState,
+  caster: Unit,
+  enemies: readonly Unit[],
+  cache: WallTargetCache,
+): readonly Unit[] {
+  const key = `targets|${caster.id}|${posKey(caster.pos)}`;
+  const cached = cache.get(key);
+  if (cached) return cached;
+  const targets = enemies.filter((enemy) => canHitFrom(content, battle, caster, enemy));
+  cache.set(key, targets);
+  return targets;
+}
+
+/**
+ * Can the caster turn a usable offensive ability onto `enemy` from where it
+ * stands? Every occupied cell is a legal aim, as in `candidateTargets`, so a
+ * size-2 enemy whose anchor is hidden is still a target through its other cell.
+ */
+function canHitFrom(
+  content: ContentIndex,
+  battle: BattleState,
+  caster: Unit,
+  enemy: Unit,
+): boolean {
+  const cells = occupiedCells(enemy);
+  for (const ability of usableAbilities(content, caster)) {
+    if (!isOffensiveAbility(content, ability)) continue;
+    if (cells.some((cell) => isValidTarget(content, battle, caster, ability, cell).ok)) return true;
+  }
+  return false;
+}
+
+/**
+ * The budget an enemy will have when its own turn starts, or null when it
+ * loses that activation outright (Frozen, Stunned). Built through the same
+ * turn-start steps `beginTurn` uses, so one-round statuses that tick off before
+ * the enemy acts — a lone Chi-Block — are not mistaken for lasting ones.
+ *
+ * `move` stays zero: this rule asks what the enemy can attack from where it
+ * already stands, not what it could walk into range for.
+ */
+function nextTurnThreatBudget(content: ContentIndex, enemy: Unit): ThreatBudget | null {
+  const opening = tickTurnStart(content, enemy);
+  if (opening.skipping) return null;
+  const next = refreshTurnResources(content, opening.unit, opening.skipping);
+  return {
+    ap: next.ap,
+    move: 0,
+    cooldowns: next.cooldowns,
+    statuses: next.statuses,
+  };
+}
+
+/** Enemies that can directly attack the caster on their next activation. */
+function preWallThreats(
+  content: ContentIndex,
+  battle: BattleState,
+  caster: Unit,
+  enemies: readonly Unit[],
+  cache: WallTargetCache,
+): readonly Unit[] {
+  const key = `threats|${caster.id}|${posKey(caster.pos)}`;
+  const cached = cache.get(key);
+  if (cached) return cached;
+  const threats = enemies.filter((enemy) => {
+    const budget = nextTurnThreatBudget(content, enemy);
+    if (!budget) return false;
+    const result = directAttackThreats(content, battle, enemy.id, caster.id, budget);
+    return result.valid && result.threats.length > 0;
+  });
+  cache.set(key, threats);
+  return threats;
+}
+
+/** The clear ground a wall would actually fill; units and existing walls are skipped. */
+function wallTilesThatRise(
+  draft: BattleDraft,
+  battle: BattleState,
+  tiles: readonly Vec2[],
+): Vec2[] {
+  const occupied = new Set(battle.units.flatMap(occupiedCells).map(posKey));
+  return tiles.filter((pos) => {
+    const tile = tileAt(draft.grid, pos);
+    return tile !== undefined && !tile.blocked && !occupied.has(posKey(pos));
+  });
+}
+
+/** The grid exactly as `raiseWall` would leave it for these tiles. */
+function gridWithWall(draft: BattleDraft, tiles: readonly Vec2[]): Grid {
+  let grid = draft.grid;
+  for (const pos of tiles) {
+    const tile = tileAt(grid, pos);
+    if (!tile) continue;
+    grid = withTile(grid, pos, raisedWallTile(tile));
+  }
+  return grid;
+}
+
+/**
+ * True when this wall would shut the caster out of every enemy it can hit from
+ * where it stands, and is not buying a defensive block in exchange. Exposed so
+ * the wall tests can judge one specific placement without the planner's noise.
+ */
+export function wallStrandsCaster(
+  draft: BattleDraft,
+  caster: Unit,
+  tiles: readonly Vec2[],
+  cache: Map<string, readonly Unit[]> = new Map(),
+): boolean {
+  const content = draft.content;
+  const before = battleWithHypotheticalCaster(draft.toBattle(), caster);
+  const raised = wallTilesThatRise(draft, before, tiles);
+  if (raised.length === 0) return false;
+
+  const enemies = opponentsOf(draft, caster);
+  if (enemies.length === 0) return false;
+
+  const targets = preWallTargets(content, before, caster, enemies, cache);
+
+  // With no ready shot before the wall, the placement costs the caster no
+  // target and therefore cannot strand it. Future-turn opportunity is outside
+  // this current-turn action scorer.
+  if (targets.length === 0) return false;
+
+  // The world exactly as the placement would leave it.
+  const after: BattleState = { ...before, grid: gridWithWall(draft, raised) };
+  // Still a shot at something it could hit before the wall? Then it costs nothing.
+  if (targets.some((enemy) => canHitFrom(content, after, caster, enemy))) return false;
+
+  // A wall that shuts down a next-turn direct attack is doing its job.
+  for (const enemy of preWallThreats(content, before, caster, enemies, cache)) {
+    const budget = nextTurnThreatBudget(content, enemy);
+    if (!budget) continue;
+    const result = directAttackThreats(content, after, enemy.id, caster.id, budget);
+    if (result.valid && result.threats.length === 0) return false;
+  }
+  return true;
+}
+
+/**
  * Value of one ability aimed at one tile, from one standing position.
  *
  * `caster` is a hypothetical: when the AI is considering moving first, it is
@@ -214,6 +454,7 @@ function scoreAbility(
   ability: Ability,
   target: Vec2,
   weights: Weights,
+  wallTargets: WallTargetCache,
 ): number {
   const content = draft.content;
   const tiles = affectedTiles(content, draft.grid, caster, ability, target);
@@ -325,6 +566,10 @@ function scoreAbility(
         const opponents = opponentsOf(draft, caster);
         const near = tiles.some((pos) => opponents.some((o) => distanceToUnit(pos, o) <= 2));
         if (!near) break;
+        // Refuse a placement that seals the caster off from every enemy. A wall
+        // that shuts a usable attack down is the defensive case and is allowed
+        // through; one that merely walls the caster in is not.
+        if (wallStrandsCaster(draft, caster, tiles, wallTargets)) return -Infinity;
         score += 4 * weights.terrain;
         touchedAnyone = true;
         break;
@@ -463,13 +708,16 @@ function bestActionFrom(
   weights: Weights,
   candidateTargets: readonly Vec2[],
 ): { score: number; ability: Ability; target: Vec2 } | null {
-  const battle = draft.toBattle();
+  const battle = battleWithHypotheticalCaster(draft.toBattle(), caster);
+  // One scoring pass, one wall-target scan: every wall on the board is judged
+  // from this caster's position before the pass ends.
+  const wallTargets: WallTargetCache = new Map();
   let best: { score: number; ability: Ability; target: Vec2 } | null = null;
 
   for (const ability of abilities) {
     for (const target of candidateTargets) {
       if (!isValidTarget(draft.content, battle, caster, ability, target).ok) continue;
-      const score = scoreAbility(draft, caster, ability, target, weights);
+      const score = scoreAbility(draft, caster, ability, target, weights, wallTargets);
       if (score === -Infinity || score <= 0) continue;
       if (!best || score > best.score) best = { score, ability, target };
     }
@@ -620,7 +868,7 @@ function positionScore(
   // fraction of real cover — a full steam cloud scores a full `weights.cover`.
   score += weights.cover * positionObscurement(draft.content, draft.grid, pos);
   const tile = tileAt(draft.grid, pos);
-  score += (tile?.elevation ?? 0) * 1.5;
+  score += (tile?.elevation ?? 0) * weights.elevation;
 
   return score;
 }

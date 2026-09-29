@@ -75,7 +75,8 @@ export const SURFACES: readonly SurfaceDef[] = [
   {
     id: 'steam',
     name: 'Steam',
-    description: 'A scalding cloud. Hard to see through, and easy to lose a shot in.',
+    description:
+      'A scalding cloud. Anyone inside is much harder to hit, and shots through it or out of it are trickier.',
     moveCost: 0,
     enterDamage: 0,
     enterDamageType: 'fire',
