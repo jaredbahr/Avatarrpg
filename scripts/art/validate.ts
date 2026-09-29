@@ -90,6 +90,9 @@ export const WEBP_SHEET_PINS: Readonly<Record<string, readonly string[]>> = {
     'art/source/bo-hits/pins.json',
   ],
   'unit.enemy.thug': ['art/source/thug-g/pins.json'],
+  'unit.enemy.slinger': ['art/source/slinger-g/pins.json'],
+  'unit.enemy.bruiser': ['art/source/bruiser-g/pins.json'],
+  'unit.enemy.quarrybender': ['art/source/quarrybender-g/pins.json'],
 };
 
 /** How far a standing cel's lowest opaque row may sit from the anchor's foot line. */

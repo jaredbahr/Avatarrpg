@@ -130,7 +130,6 @@ function repackLossless(): void {
     string,
     { deflateLevel: number; deflateStrategy: number; filterType: number }
   > = {
-    'bruiser.png': { deflateLevel: 9, deflateStrategy: 0, filterType: -1 },
     'crossbow.png': { deflateLevel: 9, deflateStrategy: 0, filterType: -1 },
     'grumbler.png': { deflateLevel: 9, deflateStrategy: 1, filterType: -1 },
   };

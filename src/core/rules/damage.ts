@@ -16,8 +16,10 @@
  */
 
 import type { RngCursor } from '../rng';
-import type { AbilityEffect, ContentIndex, Grid, Unit, Vec2 } from '../types';
+import type { AbilityEffect, ContentIndex, Grid, Unit, Vec2, WeatherIntensity } from '../types';
 import { distanceToUnit, occupiedCells, tileAt } from './grid';
+import { obscurementFor } from './obscurement';
+import type { ObscurementBreakdown } from './obscurement';
 import { accuracyModifier, effectiveStats, incomingMultiplier } from './stats';
 
 export const CRIT_MULTIPLIER = 1.5;
@@ -55,17 +57,24 @@ export interface HitBreakdown {
   readonly elevation: number;
   readonly cover: number;
   readonly statuses: number;
+  /** Clouds and weather, component by component and in total. */
+  readonly obscurement: ObscurementBreakdown;
 }
 
 /**
  * Melee (range 1) attacks ignore cover — you are standing next to them. Every
  * other modifier applies the same way to everyone.
+ *
+ * `weather` is the intensity in effect this round; the caller resolves it from
+ * the encounter's schedule and the round (`weatherAt`), so the roll and the
+ * preview take the exact same value.
  */
 export function hitBreakdown(
   content: ContentIndex,
   grid: Grid,
   attacker: Unit,
   defender: Unit,
+  weather: WeatherIntensity = 0,
 ): HitBreakdown {
   const tuning = content.tuning;
   const elevationDelta = elevationOf(grid, attacker) - elevationOf(grid, defender);
@@ -75,14 +84,16 @@ export function hitBreakdown(
   const cover = !adjacent && hasCover(content, grid, defender) ? -tuning.coverPenalty : 0;
 
   const statuses = accuracyModifier(content, attacker);
+  const obscurement = obscurementFor(content, grid, attacker, defender, weather);
 
-  const raw = tuning.baseHitChance + elevation + cover + statuses;
+  const raw = tuning.baseHitChance + elevation + cover + statuses + obscurement.total;
   return {
     chance: Math.max(tuning.hitChanceMin, Math.min(tuning.hitChanceMax, raw)),
     base: tuning.baseHitChance,
     elevation,
     cover,
     statuses,
+    obscurement,
   };
 }
 
@@ -91,8 +102,9 @@ export function hitChance(
   grid: Grid,
   attacker: Unit,
   defender: Unit,
+  weather: WeatherIntensity = 0,
 ): number {
-  return hitBreakdown(content, grid, attacker, defender).chance;
+  return hitBreakdown(content, grid, attacker, defender, weather).chance;
 }
 
 export function critChance(content: ContentIndex, attacker: Unit): number {
@@ -145,8 +157,9 @@ export function averageDamage(
   attacker: Unit,
   defender: Unit,
   effect: Extract<AbilityEffect, { kind: 'damage' }>,
+  weather: WeatherIntensity = 0,
 ): number {
-  const hit = hitChance(content, grid, attacker, defender) / 100;
+  const hit = hitChance(content, grid, attacker, defender, weather) / 100;
   const crit = critChance(content, attacker) / 100;
   const normal = compute(content, attacker, defender, effect, 1, false);
   const critical = compute(content, attacker, defender, effect, 1, true);
@@ -171,8 +184,9 @@ export function rollHit(
   grid: Grid,
   attacker: Unit,
   defender: Unit,
+  weather: WeatherIntensity = 0,
 ): boolean {
-  return rng.chance(hitChance(content, grid, attacker, defender) / 100);
+  return rng.chance(hitChance(content, grid, attacker, defender, weather) / 100);
 }
 
 /** Healing has no variance and no crit — predictable support is friendlier. */

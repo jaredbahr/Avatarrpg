@@ -27,6 +27,7 @@ export const SURFACES: readonly SurfaceDef[] = [
     enterStatusChance: 1,
     blocksSight: false,
     grantsCover: false,
+    obscures: null,
     defaultDuration: 4,
   },
   {
@@ -40,6 +41,7 @@ export const SURFACES: readonly SurfaceDef[] = [
     enterStatusChance: 0.4,
     blocksSight: false,
     grantsCover: false,
+    obscures: null,
     defaultDuration: 3,
   },
   {
@@ -53,6 +55,7 @@ export const SURFACES: readonly SurfaceDef[] = [
     enterStatusChance: 1,
     blocksSight: false,
     grantsCover: false,
+    obscures: null,
     defaultDuration: 2,
   },
   {
@@ -66,19 +69,23 @@ export const SURFACES: readonly SurfaceDef[] = [
     enterStatusChance: 0.25,
     blocksSight: false,
     grantsCover: false,
+    obscures: null,
     defaultDuration: 3,
   },
   {
     id: 'steam',
     name: 'Steam',
-    description: 'A scalding cloud. Nothing can see through it.',
+    description: 'A scalding cloud. Hard to see through, and easy to lose a shot in.',
     moveCost: 0,
     enterDamage: 0,
     enterDamageType: 'fire',
     enterStatus: null,
     enterStatusChance: 0,
-    blocksSight: true,
-    grantsCover: true,
+    // Obscurement replaces both: you can always shoot into or through a cloud,
+    // you just miss more, and the preview says so.
+    blocksSight: false,
+    grantsCover: false,
+    obscures: { inside: -25, through: -15 },
     defaultDuration: 1,
   },
   {
@@ -92,6 +99,7 @@ export const SURFACES: readonly SurfaceDef[] = [
     enterStatusChance: 0,
     blocksSight: false,
     grantsCover: false,
+    obscures: null,
     defaultDuration: -1,
   },
   {
@@ -105,6 +113,7 @@ export const SURFACES: readonly SurfaceDef[] = [
     enterStatusChance: 0,
     blocksSight: false,
     grantsCover: true,
+    obscures: null,
     defaultDuration: -1,
   },
 ];

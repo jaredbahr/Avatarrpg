@@ -269,28 +269,61 @@ function gSheet(key: string, name: keyof typeof G_TRAVEL, palette: string): Shee
 }
 
 /**
- * The thug's measured root travel per walk cel, in source px, per heading:
- * `speed_px_per_frame` in each toned walk's gates.json, south-east the r2b
- * retake's (ADR 0059).
+ * Each G enemy's measured root travel per walk cel, in source px, per
+ * heading: `speed_px_per_frame` in each selected toned walk's gates.json
+ * (the thug, ADR 0059; the quarry bandits, ADR 0062).
  */
-const THUG_TRAVEL: GTravel = {
-  north: 9.75,
-  northEast: 13.07,
-  east: 11.59,
-  southEast: 15.29,
-  south: 9.17,
-  southWest: 13.55,
-  west: 11.8,
-  northWest: 12.83,
+const ENEMY_TRAVEL: Readonly<Record<'thug' | 'slinger' | 'bruiser' | 'quarrybender', GTravel>> = {
+  thug: {
+    north: 9.75,
+    northEast: 13.07,
+    east: 11.59,
+    southEast: 15.29,
+    south: 9.17,
+    southWest: 13.55,
+    west: 11.8,
+    northWest: 12.83,
+  },
+  slinger: {
+    north: 7.69,
+    northEast: 12.43,
+    east: 14.53,
+    southEast: 16.33,
+    south: 4.0,
+    southWest: 13.02,
+    west: 13.64,
+    northWest: 13.38,
+  },
+  bruiser: {
+    north: 8.67,
+    northEast: 12.51,
+    east: 12.22,
+    southEast: 15.35,
+    south: 8.83,
+    southWest: 14.01,
+    west: 12.83,
+    northWest: 13.68,
+  },
+  quarrybender: {
+    north: 5.76,
+    northEast: 12.79,
+    east: 12.6,
+    southEast: 14.75,
+    south: 9.01,
+    southWest: 13.78,
+    west: 14.46,
+    northWest: 13.08,
+  },
 };
 
 /**
- * The toned PixelLab thug on a G sheet (ADR 0059): eight-way idle, walk and
- * rest at the party's scale and walk rate, and the old sheet's cast, hit and
- * KO cels, mirrored as the party's legacy actions are.
+ * A toned PixelLab enemy on a G sheet (ADR 0059, ADR 0062): eight-way idle,
+ * walk and rest at the party's scale and walk rate, and the old sheet's
+ * cast, hit and KO cels, mirrored as the party's legacy actions are. The
+ * bruiser's club needs a 160 px cel.
  */
-function thugSheet(): SheetEntry {
-  const key = 'unit.enemy.thug';
+function enemyGSheet(name: keyof typeof ENEMY_TRAVEL, palette: string): SheetEntry {
+  const key = `unit.enemy.${name}`;
   const frames = (clip: ClipName, count: number) =>
     Array.from({ length: count }, (_, i) => `${key}/${clip}/${i}`);
   const clips: Partial<Record<ClipName, ClipDef>> = {
@@ -317,13 +350,14 @@ function thugSheet(): SheetEntry {
   }
   return {
     kind: 'sheet',
-    atlas: 'art/units/thug-g.json',
+    atlas: `art/units/${name}-g.json`,
     pixelsPerTile: 128,
+    ...(name === 'bruiser' ? { frameSize: { w: 160, h: 192 } } : {}),
     footprint: { w: 1, h: 1 },
     anchor: { x: 0.5, y: 0.85 },
     facing: 'both',
-    locomotion: { headings: 8, walkMsPerTile: walkMsPerTile(THUG_TRAVEL) },
-    palette: 'enemy',
+    locomotion: { headings: 8, walkMsPerTile: walkMsPerTile(ENEMY_TRAVEL[name]) },
+    palette,
     clips,
   };
 }
@@ -390,10 +424,10 @@ export const ASSETS: Readonly<Record<string, AssetEntry>> = {
   'unit.non.wen': heroSheet('unit.non.wen', 'nonbender'),
 
   /* ----------------------------------------------------- Enemy sprites */
-  'unit.enemy.thug': thugSheet(),
-  'unit.enemy.slinger': quarryEnemySheet('slinger', 'enemy'),
-  'unit.enemy.bruiser': quarryEnemySheet('bruiser', 'enemy'),
-  'unit.enemy.quarrybender': quarryEnemySheet('quarrybender', 'earth'),
+  'unit.enemy.thug': enemyGSheet('thug', 'enemy'),
+  'unit.enemy.slinger': enemyGSheet('slinger', 'enemy'),
+  'unit.enemy.bruiser': enemyGSheet('bruiser', 'enemy'),
+  'unit.enemy.quarrybender': enemyGSheet('quarrybender', 'earth'),
   'unit.enemy.deserter': quarryEnemySheet('deserter', 'fire'),
   'unit.enemy.merc': cuttingSheet('merc', 'enemy'),
   'unit.enemy.crossbow': {

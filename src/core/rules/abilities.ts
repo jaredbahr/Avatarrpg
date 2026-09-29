@@ -39,6 +39,7 @@ import {
   tileAt,
 } from './grid';
 import { expectedDamage, healAmount, hitChance, rollDamage, rollHit } from './damage';
+import { weatherAt } from './obscurement';
 import { forecastReactions } from './reactions';
 import type {
   ForecastEntry,
@@ -278,6 +279,9 @@ export function previewAbility(
     (u) => allowsCasterTarget(ability) || u.id !== caster.id,
   );
   const forecast = forecastReactions(content, battle, caster, ability, target, tiles);
+  // The roll uses the same intensity, resolved the same way, so the preview
+  // percentage and the actual shot cannot disagree.
+  const weather = weatherAt(content, battle.encounterId, battle.round);
 
   const targets: PreviewTarget[] = [];
   const terrain: string[] = [];
@@ -301,7 +305,7 @@ export function previewAbility(
       switch (effect.kind) {
         case 'damage':
           damage += expectedDamage(content, caster, unit, effect);
-          chance = hitChance(content, battle.grid, caster, unit);
+          chance = hitChance(content, battle.grid, caster, unit, weather);
           break;
         case 'heal':
           if (friendly) {
@@ -467,10 +471,11 @@ function applyEffect(
   switch (effect.kind) {
     case 'damage': {
       const landed: string[] = [];
+      const weather = weatherAt(content, draft.encounterId, draft.round);
       for (const id of hitIds) {
         const victim = draft.unit(id);
         if (!victim || !isAlive(victim)) continue;
-        if (!rollHit(rng, content, draft.grid, caster, victim)) {
+        if (!rollHit(rng, content, draft.grid, caster, victim, weather)) {
           draft.emit({ type: 'attackMissed', unitId: caster.id, targetId: id });
           continue;
         }

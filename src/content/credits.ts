@@ -125,13 +125,22 @@ export const THIRD_PARTY_CREDITS: readonly CreditEntry[] = [
     note: 'The data used in this project was obtained from mocap.cs.cmu.edu. The database was created with funding from NSF EIA-0196217. Kaya flinches to CMU 79_73 (scared), frames 48 to 72; Sura to CMU 76_03 (avoid attacker), frames 256 to 288; Bo to CMU 77_09 (duck to avoid flying object), frames 212 to 234; every take is retargeted onto the character’s own stance in each of eight headings; the cels are drawn for this project with PixelLab, and their clips ride in the same clip data as the knockouts. See docs/adr/0063-g-hit-reactions.md.',
   },
   {
-    what: 'The motion of the thug’s walk',
+    what: 'The motion of the thug’s and the quarry bandits’ walks',
     work: 'Mixamo “Unarmed Walk Forward”',
     authors: 'Adobe Mixamo',
     licence: 'Adobe Mixamo terms',
     source: 'https://www.mixamo.com',
-    covers: ['art/units/thug-g.webp', 'art/units/thug-g.json'],
-    note: 'Projected onto each of the thug’s eight headings and root-locked; the cels are drawn for this project with PixelLab, and the idle and the cast, hit and defeat poses are this project’s own. The animation file itself is not redistributed. See docs/adr/0059-g-knockout-and-thug.md.',
+    covers: [
+      'art/units/thug-g.webp',
+      'art/units/thug-g.json',
+      'art/units/slinger-g.webp',
+      'art/units/slinger-g.json',
+      'art/units/bruiser-g.webp',
+      'art/units/bruiser-g.json',
+      'art/units/quarrybender-g.webp',
+      'art/units/quarrybender-g.json',
+    ],
+    note: 'Projected onto each unit’s eight headings and root-locked; the cels are drawn for this project with PixelLab, and the idle and the cast, hit and defeat poses are this project’s own. The animation file itself is not redistributed. See docs/adr/0059-g-knockout-and-thug.md and docs/adr/0062-g-quarry-bandits.md.',
   },
 ];
 
