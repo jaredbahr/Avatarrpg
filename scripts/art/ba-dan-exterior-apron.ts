@@ -76,12 +76,32 @@ export function apronDepth(x: number, y: number): number {
 /** The apron stays solid this far out, then steps softly to nothing by `APRON_FADE`. */
 export const APRON_SOLID = 0.45;
 
-/** Flat alpha steps: broad, continuous painted bands with no halftone holes. */
-export const APRON_ALPHA_STEPS = [255, 208, 144, 80, 32] as const;
+/**
+ * Flat alpha steps: continuous painted bands with no halftone holes. Ten small
+ * steps rather than five large ones, so no one step reads as a stripe.
+ */
+export const APRON_ALPHA_STEPS = [255, 230, 204, 178, 152, 126, 100, 74, 48, 24] as const;
 
-export function apronAlpha(depth: number): number {
+/** How far the step edges wander, in tiles, so they never run as ruled diagonals. */
+export const APRON_STEP_WANDER = 0.18;
+
+/**
+ * The alpha at a depth past the rim. Given the logical point, the step edges
+ * wander on the broad clustered mask; it has no per-texel term, so each edge
+ * stays a smooth contour rather than a screen. The solid band stays solid, and
+ * the wander settles to the true depth at the outer edge, which ends on the
+ * faintest step.
+ */
+export function apronAlpha(depth: number, x?: number, y?: number): number {
   if (depth <= APRON_SOLID) return APRON_ALPHA_STEPS[0];
-  const progress = clamp((depth - APRON_SOLID) / (APRON_FADE - APRON_SOLID), 0, 1);
+  const wander =
+    x === undefined || y === undefined
+      ? 0
+      : (transitionCluster(x * 0.5, y * 0.5, 91) - 0.5) *
+        2 *
+        APRON_STEP_WANDER *
+        clamp((APRON_FADE - depth) / (2 * APRON_STEP_WANDER), 0, 1);
+  const progress = clamp((depth + wander - APRON_SOLID) / (APRON_FADE - APRON_SOLID), 0, 1);
   const index = Math.min(
     APRON_ALPHA_STEPS.length - 1,
     Math.floor(progress * APRON_ALPHA_STEPS.length),
@@ -93,7 +113,7 @@ export function apronAlpha(depth: number): number {
  * The garden field (`ba-dan-garden.ts`) continued past the rim. Where the
  * outer cell is road or paving, the painted flagstone runs on and gives up
  * `EXIT_WEAR` of itself to grass in broad clusters; the whole plate then
- * dissolves into the page in five continuous alpha bands. It meets the garden
+ * dissolves into the page in ten wandering alpha bands. It meets the garden
  * base texel for texel at the rim because both read the same world lattice
  * and split the rim texels by `texelTouchesBoard`.
  */
@@ -125,7 +145,7 @@ export function packApron(): Image {
         transitionCluster(x, y, 83) < 1 - EXIT_WEAR * clamp(depth / APRON_FADE, 0, 1);
       // A rim tree's roots and litter run on past the rim with the grass.
       const colour = carried ? flagstoneTexel(tx, ty) : (contactWear(tx, ty) ?? grassTexel(tx, ty));
-      const alpha = apronAlpha(depth);
+      const alpha = apronAlpha(depth, x, y);
       for (let dy = 0; dy < GRAIN; dy++)
         for (let dx = 0; dx < GRAIN; dx++)
           setPixel(image, tx * GRAIN - ox + dx, ty * GRAIN - oy + dy, [...colour, alpha]);
