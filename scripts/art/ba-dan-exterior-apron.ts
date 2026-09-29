@@ -20,6 +20,7 @@ import {
   BA_DAN_EXTERIOR_APRON,
 } from '../../src/content/scenes/baDan';
 import {
+  contactWear,
   flagstoneTexel,
   GRAIN,
   grassTexel,
@@ -122,7 +123,8 @@ export function packApron(): Image {
       const carried =
         terrain !== 'grass' &&
         transitionCluster(x, y, 83) < 1 - EXIT_WEAR * clamp(depth / APRON_FADE, 0, 1);
-      const colour = carried ? flagstoneTexel(tx, ty) : grassTexel(tx, ty);
+      // A rim tree's roots and litter run on past the rim with the grass.
+      const colour = carried ? flagstoneTexel(tx, ty) : (contactWear(tx, ty) ?? grassTexel(tx, ty));
       const alpha = apronAlpha(depth);
       for (let dy = 0; dy < GRAIN; dy++)
         for (let dx = 0; dx < GRAIN; dx++)

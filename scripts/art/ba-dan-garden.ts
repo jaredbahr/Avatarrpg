@@ -31,9 +31,11 @@
  */
 import { mkdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { BA_DAN_VILLAGE } from '../../src/content/maps/village';
+import type { Vec2 } from '../../src/core/types';
 import {
   BA_DAN_APRON_MAP,
   BA_DAN_COURTYARD_GROUND,
+  BA_DAN_EXTERIOR_APRON,
   BA_DAN_GARDEN_PLATES,
   BA_DAN_SCENE,
 } from '../../src/content/scenes/baDan';
@@ -64,8 +66,8 @@ export const GARDEN_TONES = {
 } as const satisfies Record<string, Rgb>;
 
 /**
- * The art bible's road triple. Only its shadow is used, as the packed-earth
- * wear around an upright piece's footprint; the road exits are the painted
+ * The art bible's road triple. Only its shadow is used, as the damp soil at
+ * an upright piece's foot (`contactWear`); the road exits are the painted
  * flagstone itself (`flagstoneTexel`). The bible's paving triple is near white
  * and read as a glitch where it carried the east road past the rim.
  */
@@ -306,23 +308,131 @@ export function grassTexel(tx: number, ty: number): Rgb {
   return tone === 0 ? GARDEN_TONES.shadow : tone === 1 ? GARDEN_TONES.base : GARDEN_TONES.light;
 }
 
-const FOOTPRINT_CELLS = BA_DAN_SCENE.scenery.flatMap((piece) => piece.footprint);
-
-/** Clustered packed-earth wear outside an upright piece's logical footprint. */
-function footprintWear(x: number, y: number, tx: number, ty: number): Rgb | null {
-  const distance = Math.min(
-    ...FOOTPRINT_CELLS.map(
-      (cell) => Math.max(Math.abs(x - cell.x - 0.5), Math.abs(y - cell.y - 0.5)) - 0.5,
-    ),
+/** Chebyshev distance in tiles from a logical point to a set of cells; negative inside. */
+export function footprintDistance(x: number, y: number, cells: readonly Vec2[]): number {
+  return Math.min(
+    ...cells.map((cell) => Math.max(Math.abs(x - cell.x - 0.5), Math.abs(y - cell.y - 0.5)) - 0.5),
   );
-  if (distance < 0 || distance >= 0.22) return null;
-  const share = distance < 0.06 ? 0.8 : distance < 0.14 ? 0.45 : 0.15;
-  // Include a small texel-scale term only to roughen the edges of the broad
-  // clusters; it must never become the repeating transition pattern itself.
-  const clustered =
-    transitionCluster(x, y, 71) * 0.88 +
-    tileNoise(Math.floor(tx / 2), Math.floor(ty / 2), 73) * 0.12;
-  return clustered < share ? MATERIAL_TONES.road.shadow : null;
+}
+
+type Foot = { readonly x: number; readonly y: number; readonly tree: boolean };
+
+/**
+ * Where each upright piece really meets the ground: for every texel column of
+ * its sprite, the lowest opaque pixel, kept only when that pixel projects to
+ * within a third of a tile of the piece's footprint. A tree's canopy hangs
+ * well clear of the ground and projects far from its cell, so only the trunk
+ * and roots survive; a house keeps its plinth line; a planter its base course.
+ * Wear laid from these points follows the painted silhouette, never the
+ * logical footprint's square (docs/art-bible.md, "construction seams").
+ */
+export const CONTACT_FEET: readonly Foot[] = await (async () => {
+  const textures = new Map<string, Image>();
+  const feet: Foot[] = [];
+  for (const piece of BA_DAN_SCENE.scenery) {
+    let texture = textures.get(piece.url);
+    if (!texture) {
+      texture = await decodeWebp(new Uint8Array(readFileSync(`public/${piece.url}`)));
+      textures.set(piece.url, texture);
+    }
+    const rect = piece.sourceRect ?? { x: 0, y: 0, width: texture.width, height: texture.height };
+    const tree = piece.url.endsWith('village-tree.webp');
+    const first = Math.ceil(piece.x / GRAIN);
+    for (let tx = first; (tx + 0.5) * GRAIN < piece.x + piece.width; tx++) {
+      const u = ((tx + 0.5) * GRAIN - piece.x) / piece.width;
+      const column = Math.floor(u * rect.width);
+      const sx = rect.x + (piece.flip ? rect.width - 1 - column : column);
+      let row = -1;
+      for (let sy = rect.y + rect.height - 1; sy >= rect.y; sy--)
+        if (pixelAt(texture, sx, sy)[3] > 128) {
+          row = sy;
+          break;
+        }
+      if (row < 0) continue;
+      const wx = (tx + 0.5) * GRAIN;
+      const wy = piece.y + ((row - rect.y + 1) * piece.height) / rect.height;
+      const at = worldLogical(wx, wy);
+      if (footprintDistance(at.x, at.y, piece.footprint) <= 0.35) feet.push({ x: wx, y: wy, tree });
+    }
+  }
+  return feet;
+})();
+
+/** Farthest reach of contact wear from a foot, in foreshortened world pixels. */
+const WEAR_REACH = 44;
+
+/**
+ * The nearest foot to every world texel within `WEAR_REACH`, measured on the
+ * ground plane (vertical world pixels count double, undoing the projection's
+ * squash), stamped once so the plates need not search the feet per texel.
+ */
+const WEAR_FIELD = (() => {
+  const x0 = Math.floor(BA_DAN_EXTERIOR_APRON.x / GRAIN);
+  const y0 = Math.floor(BA_DAN_EXTERIOR_APRON.y / GRAIN);
+  const width = Math.ceil(BA_DAN_EXTERIOR_APRON.width / GRAIN) + 1;
+  const height = Math.ceil(BA_DAN_EXTERIOR_APRON.height / GRAIN) + 1;
+  const distance = new Float32Array(width * height).fill(Infinity);
+  const foot = new Int32Array(width * height).fill(-1);
+  const reachX = Math.ceil(WEAR_REACH / GRAIN);
+  const reachY = Math.ceil(WEAR_REACH / 2 / GRAIN);
+  CONTACT_FEET.forEach((f, index) => {
+    const fx = Math.floor(f.x / GRAIN);
+    const fy = Math.floor(f.y / GRAIN);
+    for (let ty = fy - reachY; ty <= fy + reachY; ty++)
+      for (let tx = fx - reachX; tx <= fx + reachX; tx++) {
+        const i = (ty - y0) * width + (tx - x0);
+        if (tx < x0 || ty < y0 || tx - x0 >= width || ty - y0 >= height) continue;
+        const d = Math.hypot((tx + 0.5) * GRAIN - f.x, 2 * ((ty + 0.5) * GRAIN - f.y));
+        if (d < (distance[i] ?? Infinity)) {
+          distance[i] = d;
+          foot[i] = index;
+        }
+      }
+  });
+  return (tx: number, ty: number): { distance: number; foot: Foot } | null => {
+    if (tx < x0 || ty < y0 || tx - x0 >= width || ty - y0 >= height) return null;
+    const i = (ty - y0) * width + (tx - x0);
+    const f = CONTACT_FEET[foot[i] ?? -1];
+    return f ? { distance: distance[i] ?? Infinity, foot: f } : null;
+  };
+})();
+
+/**
+ * Contact wear at a world texel: damp soil and leaf litter at the foot of an
+ * upright piece, or null for plain ground.
+ *
+ * The reach is set by broad value noise on the ground plane, so it swells and
+ * dies away along a plinth and around a trunk: patches of trodden earth at
+ * some stretches of a house's base course and none at others, and under a
+ * tree a lopsided spill of roots and litter that leans into its shade, the
+ * south-east. Nothing about it follows a tile edge. The tones are the
+ * garden's deep grass and the road's shadow, flat, in clusters.
+ */
+export function contactWear(tx: number, ty: number): Rgb | null {
+  const near = WEAR_FIELD(tx, ty);
+  if (!near) return null;
+  const { distance, foot } = near;
+  const wx = (tx + 0.5) * GRAIN;
+  const wy = (ty + 0.5) * GRAIN;
+  const { x, y } = worldLogical(wx, wy);
+  const patch = valueNoise(x * 1.4, y * 1.4, foot.tree ? 101 : 103);
+  // Broad and lopsided for a tree, a narrow and broken skirt for a plinth.
+  const lean = foot.tree ? Math.max(0, wx - foot.x) / 64 + Math.max(0, wy - foot.y) / 24 : 0;
+  const reach = foot.tree
+    ? 8 + 26 * patch + 10 * Math.min(1, lean)
+    : Math.max(0, (16 * (patch - 0.35)) / 0.65);
+  if (distance >= Math.min(WEAR_REACH, reach)) return null;
+  const inner = distance / reach;
+  const chip = transitionCluster(x, y, foot.tree ? 105 : 107);
+  if (inner < 0.55 && chip < 0.7) return MATERIAL_TONES.road.shadow;
+  if (chip < (foot.tree ? 0.55 : 0.4)) return GARDEN_TONES.deep;
+  return null;
+}
+
+/** What the garden base paints at a world texel on the board. */
+export function gardenTexel(tx: number, ty: number): Rgb {
+  const at = worldLogical((tx + 0.5) * GRAIN, (ty + 0.5) * GRAIN);
+  return onExit(at.x, at.y) ? flagstoneTexel(tx, ty) : (contactWear(tx, ty) ?? grassTexel(tx, ty));
 }
 
 /**
@@ -342,10 +452,7 @@ export function packGardenPlate(plate: {
   for (let ty = plate.y / GRAIN; ty < (plate.y + plate.height) / GRAIN; ty++) {
     for (let tx = plate.x / GRAIN; tx < (plate.x + plate.width) / GRAIN; tx++) {
       if (!texelTouchesBoard(tx, ty)) continue;
-      const at = worldLogical((tx + 0.5) * GRAIN, (ty + 0.5) * GRAIN);
-      const colour = onExit(at.x, at.y)
-        ? flagstoneTexel(tx, ty)
-        : (footprintWear(at.x, at.y, tx, ty) ?? grassTexel(tx, ty));
+      const colour = gardenTexel(tx, ty);
       for (let dy = 0; dy < GRAIN; dy++)
         for (let dx = 0; dx < GRAIN; dx++)
           setPixel(image, tx * GRAIN - plate.x + dx, ty * GRAIN - plate.y + dy, [...colour, 255]);

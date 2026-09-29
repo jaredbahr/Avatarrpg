@@ -1,10 +1,13 @@
 import { readFileSync } from 'node:fs';
 import { describe, expect, it } from 'vitest';
-import { BA_DAN_GARDEN_PLATES } from '../../src/content/scenes/baDan';
+import { BA_DAN_GARDEN_PLATES, BA_DAN_SCENE } from '../../src/content/scenes/baDan';
 import { pixelAt } from './lib/image';
 import { decodeWebp } from './lib/webp';
 import {
+  CONTACT_FEET,
   FLAGSTONE_TONES,
+  contactWear,
+  footprintDistance,
   GARDEN_TONES,
   GRAIN,
   MATERIAL_TONES,
@@ -92,5 +95,51 @@ describe('Ba Dan outer garden', () => {
     expect(worn).toBeGreaterThan(1_000);
     // Measured: 37% for the 4x4 Bayer wear of 0fbcc40, 1.6% for these clusters.
     expect(singles / worn).toBeLessThan(0.05);
+  });
+
+  it('grounds scenery at its painted foot, never in a ring that traces the footprint', () => {
+    expect(CONTACT_FEET.some((foot) => foot.tree)).toBe(true);
+    expect(CONTACT_FEET.some((foot) => !foot.tree)).toBe(true);
+    // Walk the band just outside each piece's logical footprint in sixteen arcs
+    // around its centre, and count the arcs that are noticeably worn. A ring
+    // drawn from the footprint wears nearly all of them: 0.75 to 1.0 for every
+    // tree, 0.84 of all arcs over the scene, for the ring of 3bc0ce5. Wear laid
+    // from the sprite's foot is lopsided and patchy.
+    const shares: number[] = [];
+    for (const piece of BA_DAN_SCENE.scenery) {
+      const cells = piece.footprint;
+      const cx = cells.reduce((sum, cell) => sum + cell.x + 0.5, 0) / cells.length;
+      const cy = cells.reduce((sum, cell) => sum + cell.y + 0.5, 0) / cells.length;
+      const arcs = Array.from({ length: 16 }, () => ({ all: 0, worn: 0 }));
+      const xs = cells.map((cell) => cell.x);
+      const ys = cells.map((cell) => cell.y);
+      const [minX, maxX] = [Math.min(...xs) - 1, Math.max(...xs) + 2];
+      const [minY, maxY] = [Math.min(...ys) - 1, Math.max(...ys) + 2];
+      for (
+        let ty = Math.floor(((minX + minY) * 32) / GRAIN);
+        ty < ((maxX + maxY) * 32) / GRAIN;
+        ty++
+      )
+        for (
+          let tx = Math.floor((1024 + (minX - maxY) * 64) / GRAIN);
+          tx < (1024 + (maxX - minY) * 64) / GRAIN;
+          tx++
+        ) {
+          const { x, y } = worldLogical((tx + 0.5) * GRAIN, (ty + 0.5) * GRAIN);
+          const distance = footprintDistance(x, y, cells);
+          if (distance <= 0.02 || distance > 0.2) continue;
+          const turn = (Math.atan2(y - cy, x - cx) + Math.PI) / (2 * Math.PI);
+          const arc = arcs[Math.min(15, Math.floor(turn * 16))];
+          if (!arc) continue;
+          arc.all++;
+          if (contactWear(tx, ty)) arc.worn++;
+        }
+      const sampled = arcs.filter((arc) => arc.all > 0);
+      const share = sampled.filter((arc) => arc.worn / arc.all >= 0.2).length / sampled.length;
+      expect(share, `${piece.id} is worn all round its footprint`).toBeLessThan(0.75);
+      shares.push(share);
+    }
+    const mean = shares.reduce((sum, share) => sum + share, 0) / shares.length;
+    expect(mean, 'the scene wears footprints in rings').toBeLessThan(0.5);
   });
 });
