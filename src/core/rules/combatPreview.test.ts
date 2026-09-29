@@ -341,7 +341,8 @@ describe('bounded combat outcome previews', () => {
     const bossSource = battleFor('enc_grumbler', ['nima', 'kaya']);
     const bossId = bossSource.units.find((unit) => unit.name === 'Grumbler')?.id;
     if (!bossId) throw new Error('boss fixture has no Grumbler');
-    const bossBattle = placed(bossSource, { p0: { x: 13, y: 5 }, [bossId]: { x: 15, y: 5 } }, [
+    // Row 3 runs clear to the east edge; rows 4-7 end in the drill shaft.
+    const bossBattle = placed(bossSource, { p0: { x: 13, y: 3 }, [bossId]: { x: 15, y: 3 } }, [
       'p0',
       bossId,
     ]);
@@ -357,16 +358,34 @@ describe('bounded combat outcome previews', () => {
       boss.pos,
     );
     expect(bossPreview.shoves.find((shove) => shove.id === boss.id)).toMatchObject({
-      from: { x: 15, y: 5 },
-      to: { x: 17, y: 5 },
+      from: { x: 15, y: 3 },
+      to: { x: 17, y: 3 },
       distance: 2,
       movedDistance: 2,
       blocked: false,
     });
     expect(resolve(bossBattle, bossCaster, 'air_blast', boss.pos).unit(boss.id)?.pos).toEqual({
       x: 17,
-      y: 5,
+      y: 3,
     });
+
+    // Its second cell stops at the shaft's lip: one step, then blocked.
+    const shaftBattle = placed(bossSource, { p0: { x: 13, y: 5 }, [bossId]: { x: 15, y: 5 } }, [
+      'p0',
+      bossId,
+    ]);
+    const shaftCaster = shaftBattle.units.find((unit) => unit.id === 'p0');
+    const shaftBoss = shaftBattle.units.find((unit) => unit.id === bossId);
+    if (!shaftCaster || !shaftBoss) throw new Error('shaft fixture missing a unit');
+    expect(
+      previewAbility(
+        CONTENT,
+        shaftBattle,
+        shaftCaster,
+        ability('air_blast'),
+        shaftBoss.pos,
+      ).shoves.find((shove) => shove.id === shaftBoss.id),
+    ).toMatchObject({ to: { x: 16, y: 5 }, movedDistance: 1, blocked: true });
 
     const icePath = previewAbility(CONTENT, bossBattle, bossCaster, ability('ice_path'), boss.pos);
     expect(icePath.targets).toHaveLength(0);
