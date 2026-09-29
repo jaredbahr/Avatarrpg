@@ -13,7 +13,7 @@
  * examples that today's numbers produce, so moving one is a deliberate act.
  */
 
-import { z } from 'zod';
+import * as z from '../core/schema';
 import type { CombatTuning } from '../core/types';
 
 /** One weather intensity's obscurement curve, checked band by band. */
@@ -42,7 +42,12 @@ const combatTuningShape = {
   /** The `inside` value a full cloud is worth to AI positioning (steam's 25). */
   obscurementReference: z.number().int().min(1),
   /** Indexed by intensity; index 0 is clear. A second weather type would key this by id. */
-  weather: z.array(weatherLevelSchema).length(3),
+  weather: z.array(weatherLevelSchema).min(3).max(3),
+  /**
+   * Extra move points a one-tier climb costs, unless either end is a ramp
+   * (`S`). A drop is always free and a two-tier step is never legal.
+   */
+  climbCost: z.number().int().min(0),
   /** Hit chance is clamped into this band, lowest bound first. */
   hitChanceMin: z.number().int().min(0).max(100),
   hitChanceMax: z.number().int().min(0).max(100),
@@ -79,6 +84,7 @@ export const COMBAT_TUNING: CombatTuning = combatTuningSchema.parse({
     { perTile: 5, minDistance: 3, cap: 20 },
     { perTile: 10, minDistance: 2, cap: 40 },
   ],
+  climbCost: 1,
   hitChanceMin: 5,
   hitChanceMax: 99,
 });

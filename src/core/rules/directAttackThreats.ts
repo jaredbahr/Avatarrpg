@@ -1,6 +1,6 @@
 import type { BattleState, ContentIndex, Unit, Vec2 } from '../types';
 import { affectedTiles, isValidTarget, movePoints, usableAbilities } from './abilities';
-import { enterCost, occupiedCells, posKey, reachable } from './grid';
+import { occupiedCells, posKey, reachable, standCost } from './grid';
 import { canMove, isAlive } from './stats';
 
 /** Caller chooses the resource/status snapshot; no next-turn timing is inferred. */
@@ -58,7 +58,7 @@ export function directAttackThreats(
       .map(posKey),
   );
   if (
-    enterCost(
+    standCost(
       {
         grid: battle.grid,
         blocked: occupiedByOthers,
@@ -85,7 +85,13 @@ export function directAttackThreats(
       .map(posKey),
   );
   const cells = reachable(
-    { grid: battle.grid, blocked, surfaces: content.surfaces, size: attacker.size },
+    {
+      grid: battle.grid,
+      blocked,
+      surfaces: content.surfaces,
+      size: attacker.size,
+      climbCost: content.tuning.climbCost,
+    },
     attacker.pos,
     canMove(content, attacker) ? movePoints(content, attacker) : 0,
   );

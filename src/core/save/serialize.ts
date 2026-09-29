@@ -12,7 +12,7 @@
  * instead of a half-loaded game.
  */
 
-import { z } from 'zod';
+import * as z from '../schema';
 import { DAY_PHASES, RESIDENT_PROFILES, RUNOFF_STATES } from '../types';
 import type { GameState } from '../types';
 import { MAX_BANKED_TOTAL_AP } from '../rules/stats';
@@ -81,6 +81,9 @@ const tile = z.object({
   blocked: z.boolean(),
   blocksSight: z.boolean(),
   cover: z.boolean(),
+  // Additive: a mid-battle save written before climbing shipped has none, and
+  // dropping it here would silently delete a ramp and change movement on load.
+  ramp: z.boolean().optional(),
   surface: z.object({ id: z.string(), duration: z.number(), spread: z.number() }).nullable(),
 });
 

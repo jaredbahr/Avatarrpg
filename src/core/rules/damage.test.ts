@@ -63,6 +63,7 @@ describe('hit chance', () => {
       ],
       hitChanceMin: 5,
       hitChanceMax: 99,
+      climbCost: 1,
     });
   });
 
