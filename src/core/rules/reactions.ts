@@ -85,6 +85,13 @@ export interface PropForecast {
 
 export interface ShoveForecast {
   readonly kind: 'unit' | 'prop';
+  /**
+   * What released the shove. `'ability'` is the action's own push/pull or a
+   * prop it moved; `'propBreak'` is a body thrown clear by a destroyed prop's
+   * on-break push. A scorer prices the break itself through `scoreProps`, so it
+   * must read only the ability's own shoves or it counts the fall twice.
+   */
+  readonly cause: 'ability' | 'propBreak';
   readonly id: string;
   readonly name: string;
   readonly friendly: boolean;
@@ -329,6 +336,7 @@ export function forecastReactions(
       const movedDistance = Math.max(Math.abs(event.to.x - from.x), Math.abs(event.to.y - from.y));
       shoves.push({
         kind: 'unit',
+        cause: 'propBreak',
         id: event.unitId,
         name: unit.name,
         friendly: friendlyTo(caster, unit),
@@ -494,6 +502,7 @@ function shoveUnitForecast(
   if (!before) {
     return {
       kind: 'unit',
+      cause: 'ability',
       id: unitId,
       name: unitId,
       friendly: false,
@@ -518,6 +527,7 @@ function shoveUnitForecast(
     );
   return {
     kind: 'unit',
+    cause: 'ability',
     id: before.id,
     name: before.name,
     friendly: friendlyTo(caster, before),
@@ -574,6 +584,7 @@ function shovePropForecast(
   if (!before) {
     return {
       kind: 'prop',
+      cause: 'ability',
       id: propId,
       name: propId,
       friendly: false,
@@ -606,6 +617,7 @@ function shovePropForecast(
     : undefined;
   return {
     kind: 'prop',
+    cause: 'ability',
     id: before.id,
     name: draft.propDef(before)?.name ?? before.propId,
     friendly: false,

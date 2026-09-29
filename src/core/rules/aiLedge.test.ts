@@ -4,7 +4,7 @@ import { RngCursor } from '../rng';
 import { BattleDraft } from '../state/battleDraft';
 import { createBattle, createGame } from '../state/createGame';
 import type { Grid, Unit, Vec2 } from '../types';
-import { planAiTurn, previewAiPlan } from './ai';
+import { planAiTurn, previewAiPlan, scoreAbility, weightsFor } from './ai';
 import { DEFAULT_TILE, tileAt, withTile } from './grid';
 
 /**
@@ -138,5 +138,119 @@ describe('the AI and ledges', () => {
     expect(after).toBeDefined();
     expect(after?.hp).toBe(1);
     expect(after?.pos).toEqual(LANDING);
+  });
+});
+
+/** The cart, its neighbour and the caster, all on the same eastern run. */
+const CART: Vec2 = { x: 3, y: 1 };
+const CART_VICTIM: Vec2 = { x: 4, y: 1 };
+const CART_CASTER: Vec2 = { x: 1, y: 1 };
+
+/**
+ * A cabbage cart on a two-tier plateau with a victim beside it (E-c). A damage
+ * push like Shatterpoint breaks the cart and shoves the victim clear, then
+ * shoves the same victim again — the case where a prop's fall and the ability's
+ * fall both land on one unit.
+ */
+function cartFixture(options: { readonly ledge: boolean; readonly cart: boolean }): {
+  readonly draft: BattleDraft;
+  readonly caster: Unit;
+} {
+  const seeded = createGame(CONTENT, {
+    seed: `ai-cart-${options.ledge}-${options.cart}`,
+    party: [
+      { characterId: 'kaya', level: 3, autoChoose: true },
+      { characterId: 'bo', level: 3, autoChoose: true },
+    ],
+    startNode: '',
+  });
+  const rng = new RngCursor(seeded.rng);
+  const battle = createBattle(CONTENT, seeded, 'enc_forest_road', rng);
+  const casterBase = battle.units.find((unit) => unit.faction === 'enemy');
+  const victimBase = battle.units.find((unit) => unit.faction === 'party');
+  if (!casterBase || !victimBase) throw new Error('missing cart fixture units');
+
+  // Every tile sits a tier above the fall; only the eastern run drops away.
+  const tiles = Array.from({ length: 8 * 3 }, () => ({ ...DEFAULT_TILE, elevation: 2 }));
+  let grid: Grid = { width: 8, height: 3, tiles };
+  if (options.ledge) {
+    for (const [x, elevation] of [
+      [5, 1],
+      [6, 1],
+      [7, 0],
+    ] as const) {
+      const tile = tileAt(grid, { x, y: CART_VICTIM.y });
+      if (!tile) throw new Error('cart ledge fixture is off the grid');
+      grid = withTile(grid, { x, y: CART_VICTIM.y }, { ...tile, elevation });
+    }
+  }
+
+  const caster: Unit = {
+    ...casterBase,
+    ai: 'aggressive',
+    pos: CART_CASTER,
+    abilities: ['shatterpoint'],
+    cooldowns: {},
+    ap: 6,
+    move: 0,
+  };
+  const victim: Unit = { ...victimBase, pos: CART_VICTIM };
+  const units = [victim, caster];
+
+  const draft = new BattleDraft(
+    CONTENT,
+    {
+      ...battle,
+      grid,
+      units,
+      order: units.map((unit) => unit.id),
+      turnIndex: 0,
+      props: [],
+    },
+    new RngCursor(0xca27),
+  );
+  if (options.cart) draft.placeProp('cabbage_cart', CART);
+  return { draft, caster };
+}
+
+/** Shatterpoint aimed at the cart tile, priced by the AI's own scorer. */
+function priceCartAim(options: { readonly ledge: boolean; readonly cart: boolean }): number {
+  const { draft, caster } = cartFixture(options);
+  const shatterpoint = CONTENT.abilities.get('shatterpoint');
+  if (!shatterpoint) throw new Error('shatterpoint is missing from content');
+  return scoreAbility(
+    draft,
+    caster,
+    shatterpoint,
+    CART,
+    weightsFor('aggressive'),
+    new Map<string, readonly Unit[]>(),
+  );
+}
+
+describe('the AI, the cabbage cart and the ledge', () => {
+  it('prices a cart-thrown victim’s fall once, not twice', () => {
+    const shatterpoint = CONTENT.abilities.get('shatterpoint');
+    if (!shatterpoint) throw new Error('shatterpoint is missing from content');
+    const drop = CONTENT.tuning.ledgeDropDamage;
+
+    const ledge = priceCartAim({ ledge: true, cart: true });
+    const flat = priceCartAim({ ledge: false, cart: true });
+
+    // The victim falls twice — once clear of the cart, once off the push — and
+    // each fall is paid for once. Charging the cart's fall to the push as well
+    // added a third.
+    expect(ledge - flat).toBeCloseTo((2 * drop) / shatterpoint.apCost, 5);
+  });
+
+  it('prices a plain push at a single fall, unchanged', () => {
+    const shatterpoint = CONTENT.abilities.get('shatterpoint');
+    if (!shatterpoint) throw new Error('shatterpoint is missing from content');
+    const drop = CONTENT.tuning.ledgeDropDamage;
+
+    const ledge = priceCartAim({ ledge: true, cart: false });
+    const flat = priceCartAim({ ledge: false, cart: false });
+
+    expect(ledge - flat).toBeCloseTo(drop / shatterpoint.apCost, 5);
   });
 });

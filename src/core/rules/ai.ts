@@ -448,8 +448,11 @@ export function wallStrandsCaster(
  * `caster` is a hypothetical: when the AI is considering moving first, it is
  * passed a copy with the prospective position, so range and line of sight are
  * evaluated from where it *would* be.
+ *
+ * Exposed so the prop and ledge tests can price one specific aim without the
+ * planner's choice of target getting in the way.
  */
-function scoreAbility(
+export function scoreAbility(
   draft: BattleDraft,
   caster: Unit,
   ability: Ability,
@@ -466,8 +469,11 @@ function scoreAbility(
    * Ledge-drop damage is read from the confirm-step forecast rather than
    * re-derived, so a change to the shove pathing or the tier rule reaches the
    * AI for free and the price it pays cannot drift from the number the preview
-   * promises. Built lazily: only a shove pays for it, and `forecastReactions`
-   * runs on a throwaway draft so the live planning state is untouched.
+   * promises. Only the ability's own shove counts here: a unit flung by a
+   * prop's on-break push has that fall priced by `scoreProps`, and adding it
+   * again would charge the same drop twice. Built lazily: only a shove pays for
+   * it, and `forecastReactions` runs on a throwaway draft so the live planning
+   * state is untouched.
    */
   let ledgeByUnit: Map<string, number> | null = null;
   const ledgeDropFor = (victimId: string): number => {
@@ -476,7 +482,7 @@ function scoreAbility(
       const forecast = forecastReactions(content, battle, caster, ability, target, tiles);
       ledgeByUnit = new Map<string, number>();
       for (const shove of forecast.shoves) {
-        if (shove.kind !== 'unit') continue;
+        if (shove.kind !== 'unit' || shove.cause !== 'ability') continue;
         ledgeByUnit.set(shove.id, (ledgeByUnit.get(shove.id) ?? 0) + shove.ledgeDropDamage);
       }
     }
