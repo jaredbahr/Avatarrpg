@@ -14,6 +14,7 @@ import './styles/a11y.css';
 import { CONTENT, CONTENT_BUNDLE, STORY_ENTRY } from './content';
 import { App } from './app/App';
 import { bakeReview } from './render/sheets/review';
+import { liftCost } from './render/geometry/lift';
 import { fxCelsReady, celReady } from './render/fx/atlas';
 import { FX_CELS } from './content/fxCels';
 
@@ -48,7 +49,12 @@ app.start();
 // `bakeReview` is for the gallery's figure page: every placeholder sheet as a picture.
 declare global {
   interface Window {
-    fnt?: { app: App; bakeReview?: typeof bakeReview; loadedFxCels: typeof loadedFxCels };
+    fnt?: {
+      app: App;
+      bakeReview?: typeof bakeReview;
+      loadedFxCels: typeof loadedFxCels;
+      liftCost: typeof liftCost;
+    };
   }
 }
-window.fnt = { app, bakeReview, loadedFxCels };
+window.fnt = { app, bakeReview, loadedFxCels, liftCost };

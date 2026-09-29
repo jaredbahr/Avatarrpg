@@ -365,6 +365,83 @@ test.describe('renderer backends', () => {
       });
     }
   }
+
+  /**
+   * The lift pass's cost, read from its probe (`window.fnt.liftCost`). A
+   * still raised board is drawn every frame, and each of those frames must
+   * be the flat ground plus one copy of the cached raised blocks: no rebuild
+   * of the blocks, and no render of the ground into a target, until the
+   * camera or the ground moves. The layer holds less than the screen does.
+   */
+  for (const renderer of ['canvas', 'webgl'] as const) {
+    test(`holds a still raised board without redrawing its blocks on ${renderer}`, async ({
+      page,
+    }) => {
+      test.setTimeout(120_000);
+      allowSoftwareWebgl(test, renderer);
+
+      await resetStorage(page, `?renderer=${renderer}`);
+      await startGame(page, ['Elias'], ['kaya'], 'lift-cost');
+      await enterNode(page, 'battle_grumbler');
+      await takeTurn(page);
+      await waitForIdle(page);
+      await settleLayout(page);
+      expect(await page.evaluate(() => window.fnt?.app.rendererBackend())).toBe(renderer);
+      // Out of the way of the board, so no hover changes under the pointer.
+      await page.mouse.move(1, 1);
+
+      const frames = (count: number) =>
+        page.evaluate(
+          (n) =>
+            new Promise((done) => {
+              let left = n;
+              const tick = () => (--left > 0 ? requestAnimationFrame(tick) : done(null));
+              requestAnimationFrame(tick);
+            }),
+          count,
+        );
+      const cost = () => page.evaluate(() => ({ ...window.fnt?.liftCost }));
+      await frames(10);
+      const before = await cost();
+      await frames(40);
+      const after = await cost();
+      const d = (key: keyof typeof before) => (after[key] ?? 0) - (before[key] ?? 0);
+      const seen = JSON.stringify({ before, after });
+      const drawn = d('frames');
+      const screen = await page.evaluate(() => {
+        const canvas = document.querySelector<HTMLCanvasElement>('.map-canvas');
+        return (canvas?.width ?? 0) * (canvas?.height ?? 0);
+      });
+
+      expect(drawn, `raised frames were drawn: ${seen}`).toBeGreaterThan(10);
+      expect(d('layerBuilds'), `no rebuild while still: ${seen}`).toBe(0);
+      expect(after.heldPx, `the layer is cropped: ${seen}`).toBeGreaterThan(0);
+      expect(after.heldPx ?? Infinity, `the layer is cropped: ${seen}`).toBeLessThan(screen);
+      if (renderer === 'webgl') {
+        // Anything still rendered into a target is a lifted mark that moves,
+        // cropped to it: never the ground.
+        expect(d('targetPx') / drawn, `no board-sized render: ${seen}`).toBeLessThan(screen / 8);
+      } else {
+        // One copy of the layer a frame, and the odd copy over a marked top.
+        expect(d('copiedPx') / drawn, `no board-sized copy: ${seen}`).toBeLessThan(
+          (after.heldPx ?? 0) * 1.25,
+        );
+      }
+
+      // A pan is a new camera: the blocks are drawn again, once.
+      await page.evaluate(() => {
+        const scene = (
+          window.fnt?.app as unknown as {
+            scene: { renderer?: { camera: { centreOn(pos: { x: number; y: number }): void } } };
+          }
+        ).scene;
+        scene.renderer?.camera.centreOn({ x: 9, y: 9 });
+      });
+      await frames(20);
+      const panned = await cost();
+      expect((panned.layerBuilds ?? 0) - (after.layerBuilds ?? 0)).toBe(1);
+    });
+  }
 });
 
 /** Screen point at a tile's centre, inside the canvas element, through the camera. */
