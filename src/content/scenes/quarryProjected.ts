@@ -1,6 +1,6 @@
 import type { MapScene, SceneScenery, Vec2 } from '../../core/types';
 import { rubbleHeap } from './forestRoad';
-import { CUTTING_EXTERIOR_RIM } from './quarryExteriorRims';
+import { CUTTING_EXTERIOR_RIM, DRILLER_FLOOR_EXTERIOR_RIM } from './quarryExteriorRims';
 import { CUTTING_GROUND_REGIONS, DRILLER_GROUND_REGIONS } from './quarryRouteGround';
 
 // Shared exterior painting, clipped clear of the authoritative 20 x 12 floor.
@@ -152,5 +152,5 @@ export const DRILLER_FLOOR_SCENE: MapScene = {
   ],
   // The surround owns the exterior mass; these walls and the rear stub own the
   // new structural context without changing the playable floor.
-  scenery: [...DRILLER_FLOOR_WALLS, ...DRILLER_REAR_LOADING_SCENERY],
+  scenery: [...DRILLER_FLOOR_WALLS, ...DRILLER_REAR_LOADING_SCENERY, ...DRILLER_FLOOR_EXTERIOR_RIM],
 };

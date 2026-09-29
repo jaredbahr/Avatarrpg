@@ -10,6 +10,7 @@ import {
   CUTTING_RUBBLE_CELLS,
   CUTTING_SCENE,
   CUTTING_WATER_CELLS,
+  DRILLER_FLOOR_EXTERIOR_RIM,
   DRILLER_FLOOR_SCENE,
   DRILLER_RUBBLE_CELLS,
   DRILLER_FLOOR_WALL_CELLS,
@@ -236,7 +237,7 @@ describe('projected quarry scenes', () => {
       'art/maps/driller-floor-scene/stone.webp',
       ...DRILLER_RUBBLE_CELLS.map(rubbleHeapUrl),
     ]);
-    expect(DRILLER_FLOOR_SCENE.scenery).toHaveLength(3);
+    expect(DRILLER_FLOOR_SCENE.scenery).toHaveLength(3 + DRILLER_FLOOR_EXTERIOR_RIM.length);
     expect(DRILLER_FLOOR_SCENE.scenery.slice(0, 2).map((piece) => piece.footprint[0])).toEqual(
       DRILLER_FLOOR_WALL_CELLS,
     );
@@ -280,6 +281,7 @@ describe('projected quarry scenes', () => {
         exterior: true,
       },
     ]);
+    expect(DRILLER_FLOOR_SCENE.scenery.slice(3)).toEqual(DRILLER_FLOOR_EXTERIOR_RIM);
     expect(DRILLER_FLOOR_SCENE.paintedWater).toBeUndefined();
   });
 });

@@ -327,7 +327,15 @@ export function connectAct1(map: MapDef): MapDef {
             text: 'The workers are out. Take the west path through the cutting towards Ba Dan.',
           },
         ],
-        exits: [route({ x: 0, y: 5 }, 'ambush_road', { x: 18, y: 4 }, 'West → The Cutting')],
+        exits: [
+          route(
+            { x: 0, y: 5 },
+            'ambush_road',
+            { x: 18, y: 4 },
+            'West → The Cutting',
+            mouth(0, [5, 6]),
+          ),
+        ],
         triggers: [
           crossing(map, 9, 5, 'quarry_descent', 'The mecha-driller', 'unit.enemy.grumbler', {
             kind: 'all',
