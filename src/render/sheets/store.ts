@@ -158,6 +158,8 @@ export class SheetStore {
   private bends = new Map<string, LoadedBend | 'loading' | 'failed'>();
   /** Bends asked for before their sheet was in; each loads once its sheet does. */
   private bendsWanted = new Set<string>();
+  /** Invalidates bend promises from a combat that has already ended. */
+  private bendGeneration = 0;
 
   /** Drops every baked sheet; loaded atlases stay, they are the same at any zoom. */
   clear(): void {
@@ -296,12 +298,13 @@ export class SheetStore {
   /**
    * Forgets every loaded bend, so its pages can be collected: combat, the
    * one scene that bends, calls it on its way out, and preloads again at its
-   * next start. A failed bend stays failed; one still loading lands later
-   * and is released on the next exit.
+   * next start. A failed bend stays failed; one still loading is cancelled
+   * so its eventual pages cannot be retained after combat has ended.
    */
   releaseBends(): void {
-    for (const [key, state] of this.bends)
-      if (state !== 'loading' && state !== 'failed') this.bends.delete(key);
+    this.bendGeneration++;
+    this.bendsWanted.clear();
+    for (const [key, state] of this.bends) if (state !== 'failed') this.bends.delete(key);
   }
 
   /**
@@ -445,13 +448,18 @@ export class SheetStore {
 
     this.bendsWanted.delete(key);
     this.bends.set(key, 'loading');
+    const generation = this.bendGeneration;
     Promise.all([
       Promise.all((entry.bendPages ?? []).map(loadPage)),
       // Checked by its schema in CI (`art:validate`), so only typed here.
       fetchText(path).then((text) => JSON.parse(text) as BendSetDef),
     ])
-      .then(([pages, set]) => this.bends.set(key, { pages, set }))
+      .then(([pages, set]) => {
+        if (generation !== this.bendGeneration) return;
+        this.bends.set(key, { pages, set });
+      })
       .catch((reason: unknown) => {
+        if (generation !== this.bendGeneration) return;
         this.bends.set(key, 'failed');
         console.warn(`The bend of "${key}" failed to load; the sheet still draws.`, reason);
       });

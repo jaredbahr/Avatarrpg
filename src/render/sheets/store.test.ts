@@ -277,6 +277,42 @@ describe('a bend on its sheet (ADR 0055)', () => {
     expect(store.bendFrame(KEY, 'east', 0)).not.toBeNull();
   });
 
+  it('discards a bend that finishes after combat exit, then preloads it normally', async () => {
+    stubPages();
+    const fetch = fetchStub();
+    const original = fetch.getMockImplementation();
+    let bendFetches = 0;
+    let resolveFirst: ((body: string) => void) | undefined;
+    const firstData = new Promise<string>((resolve) => {
+      resolveFirst = resolve;
+    });
+    fetch.mockImplementation((url: string) => {
+      if (!url.endsWith(BEND_DATA)) return original?.(url);
+      bendFetches++;
+      const body = bendFetches === 1 ? firstData : Promise.resolve(shipped(BEND_DATA));
+      return Promise.resolve({ ok: true, status: 200, text: () => body });
+    });
+
+    const store = new SheetStore();
+    store.preloadBend(KEY);
+    await until(() => bendFetches === 1);
+    store.releaseBends();
+    expect(store.bendState(KEY)).toBe('idle');
+    expect(store.loadedFor(KEY)).toBe(true);
+    expect(store.frame(KEY, 'stance', 0, undefined, 128, 1)?.placeholder).toBe(false);
+
+    resolveFirst?.(shipped(BEND_DATA));
+    await settle();
+    expect(store.bendState(KEY)).toBe('idle');
+    expect(store.bendSet(KEY)).toBeUndefined();
+    expect(store.bendFrame(KEY, 'east', 0)).toBeNull();
+
+    store.preloadBend(KEY);
+    await until(() => store.bendState(KEY) === 'loaded');
+    expect(bendFetches).toBe(2);
+    expect(store.bendFrame(KEY, 'east', 0)).not.toBeNull();
+  });
+
   it('draws each cel from the bend page by its heading’s anchor, not the sheet’s', async () => {
     stubPages();
     const store = new SheetStore();
