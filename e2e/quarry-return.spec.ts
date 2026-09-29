@@ -251,7 +251,7 @@ for (const custody of ['trade', 'escort'] as const) {
     }
     await takeRoute(page, 'East → Quarry Floor', 'quarry_floor');
     await expectJournalObjective(page, 'driller waits');
-    await walkTo(page, 18, 5);
+    await walkTo(page, 17, 5);
     expect(await page.evaluate(() => window.fnt?.app.state?.story.nodeId)).toBe('quarry_descent');
     await continueStory(page);
     await finishBattle(page, 'enc_grumbler');
@@ -344,7 +344,7 @@ for (const custody of ['trade', 'escort'] as const) {
     await takeRoute(page, 'East → Quarry Gate', 'quarry_gate');
     await takeRoute(page, 'East → The Cutting', 'ambush_road');
     await takeRoute(page, 'East → Quarry Floor', 'quarry_floor');
-    await walkTo(page, 18, 5); // The resolved driller trigger must stay quiet.
+    await walkTo(page, 17, 5); // The resolved driller trigger must stay quiet.
     expect(await page.evaluate(() => window.fnt?.app.state?.screen)).toBe('explore');
     expect(await page.evaluate(() => window.fnt?.app.state?.battle)).toBeNull();
     expect(await page.evaluate(() => window.fnt?.app.state?.party.map((unit) => unit.xp))).toEqual(
