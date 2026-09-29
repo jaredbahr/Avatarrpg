@@ -217,5 +217,9 @@ it('preserves all nine permanent walkable water cells without adding shore colli
     surface: 'water',
     surfaceDuration: -1,
   });
-  expect(FOREST_ROAD.props).toEqual([]);
+  // The map's two props (the barrel under the NE bank, the flask on the
+  // thugs' island) stand well clear of the pond: nothing solid or spillable
+  // sits in the water or on the shore ring round it.
+  for (const { pos } of FOREST_ROAD.props)
+    expect(shoreDistance(pos.x + 0.5, pos.y + 0.5), `${pos.x},${pos.y}`).toBeGreaterThan(1);
 });
