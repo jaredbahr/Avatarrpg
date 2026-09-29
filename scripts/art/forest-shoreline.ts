@@ -85,8 +85,137 @@ export interface Pond {
     readonly height: number;
   };
   readonly cells: readonly Vec2[];
+  /**
+   * Round the shoreline off the grid's steps (`organicShore`). The forest's
+   * pond and creek take it; the Cutting's pool keeps the plain bite.
+   */
+  readonly organic?: boolean;
+  /**
+   * The land the shore stands in, where it grows over an organic bank: given
+   * a logical point, the colour that ground paints there. A creek in grass
+   * passes the verge, which the grass plates paint on the same lattice, so the
+   * grass runs on over the bank in clumps instead of meeting it along a band.
+   */
+  readonly overgrowth?: (x: number, y: number) => Rgb;
 }
-export const FOREST_POND: Pond = { patch: FOREST_POND_PATCH, cells: FOREST_WATER_CELLS };
+
+/**
+ * Whether the land's overgrowth covers a bank pixel `into` cells back from the
+ * wet line (`Infinity` on the damp margin outside the water). The grass holds
+ * everything past a second wandering line, from a hair's breadth off the water
+ * to most of a bank's width, so the bare bank is a strip between two organic
+ * lines and never reaches the cells' own edge.
+ */
+export function overgrown(x: number, y: number, into: number): boolean {
+  return into > GRASS_LINE + GRASS_LINE_WANDER * shoreNoise(x * 3.7 + 1.7, y * 3.7 + 9.1);
+}
+/** How far back from the wet line the grass takes over, in cells, and how far that wanders. */
+export const GRASS_LINE = 0.03;
+export const GRASS_LINE_WANDER = 0.26;
+export const FOREST_POND: Pond = {
+  patch: FOREST_POND_PATCH,
+  cells: FOREST_WATER_CELLS,
+  organic: true,
+};
+
+/**
+ * The organic shore's smoothing radius, in cells. The water's cells are
+ * blurred by a separable tent this wide, so a straight run of edge sits at
+ * 0.5, the corner of a water cell that sticks out at 0.25 and the corner of
+ * dry land that pokes in at 0.75. Under half a cell's reach past 0.5, so a
+ * water cell's middle always reads close to 1 however it is surrounded.
+ */
+export const SHORE_BLUR = 0.65;
+/** Where the wet line sits on the blurred water, and how far it wanders. */
+export const SHORE_LEVEL = 0.66;
+export const SHORE_LEVEL_WANDER = 0.5;
+/** Where the damp margin outside the cells gives out, and how far that wanders. */
+export const MARGIN_LEVEL = 0.36;
+export const MARGIN_LEVEL_WANDER = 0.5;
+/** The margin's own feather, in blurred-water units. */
+export const MARGIN_FEATHER = 0.08;
+
+/** The mass of a tent of half-width `SHORE_BLUR` below `u`. */
+function tentBelow(u: number): number {
+  const r = SHORE_BLUR;
+  if (u <= -r) return 0;
+  if (u >= r) return 1;
+  return u <= 0 ? (u + r) ** 2 / (2 * r * r) : 1 - (r - u) ** 2 / (2 * r * r);
+}
+
+/**
+ * The pond's cells blurred by the tent at a logical point: 1 deep in open
+ * water, 0 well clear of it. Separable and exact, so its level lines are
+ * smooth curves that round a staircase of cells off into a shore.
+ */
+export function blurredWater(x: number, y: number, cells: readonly Vec2[]): number {
+  let sum = 0;
+  for (const c of cells) {
+    if (Math.abs(c.x + 0.5 - x) >= SHORE_BLUR + 0.5 || Math.abs(c.y + 0.5 - y) >= SHORE_BLUR + 0.5)
+      continue;
+    sum +=
+      (tentBelow(c.x + 1 - x) - tentBelow(c.x - x)) * (tentBelow(c.y + 1 - y) - tentBelow(c.y - y));
+  }
+  return sum;
+}
+
+/**
+ * Straight-line distance, in cells, from a point in the water to the nearest
+ * cell that is not water. Measured on the ground plane rather than across
+ * packed pixels, so a line held at a fixed distance from the land rounds each
+ * corner of land that pokes into the water on a circle.
+ */
+const WATER_SETS = new WeakMap<readonly Vec2[], ReadonlySet<string>>();
+export function landDistance(x: number, y: number, cells: readonly Vec2[]): number {
+  let water = WATER_SETS.get(cells);
+  if (!water) {
+    water = new Set(cells.map((c) => `${c.x},${c.y}`));
+    WATER_SETS.set(cells, water);
+  }
+  const cx = Math.floor(x),
+    cy = Math.floor(y);
+  let best = 2;
+  for (let oy = -2; oy <= 2; oy++)
+    for (let ox = -2; ox <= 2; ox++) {
+      const lx = cx + ox,
+        ly = cy + oy;
+      if (water.has(`${lx},${ly}`)) continue;
+      const dx = Math.max(lx - x, x - lx - 1, 0),
+        dy = Math.max(ly - y, y - ly - 1, 0);
+      best = Math.min(best, Math.hypot(dx, dy));
+    }
+  return best;
+}
+
+/**
+ * How far a point inside the water lies on the wet side of the organic line,
+ * in cells (negative on the bank). Two lines, and the bank takes whichever
+ * reaches further in: one on the blurred water's wandering level, which rounds
+ * off the corners water cells push out; one at the bite's wandering depth
+ * from the land, which rounds the corners the land pushes in.
+ */
+export function organicShore(x: number, y: number, cells: readonly Vec2[]): number {
+  const level = SHORE_LEVEL + SHORE_LEVEL_WANDER * (shoreNoise(x * 1.9 + 3.1, y * 1.9 + 8.3) - 0.5);
+  const e = 0.01;
+  const b = blurredWater(x, y, cells);
+  const gx = (blurredWater(x + e, y, cells) - blurredWater(x - e, y, cells)) / (2 * e);
+  const gy = (blurredWater(x, y + e, cells) - blurredWater(x, y - e, cells)) / (2 * e);
+  const fromLevel = (b - level) / Math.max(0.5, Math.hypot(gx, gy));
+  return Math.min(fromLevel, landDistance(x, y, cells) - biteDepth(x, y));
+}
+
+/**
+ * The damp margin's alpha at a dry point just outside the water: opaque near
+ * the shore and feathered out where the blurred water falls to a wandering
+ * level, so the ring's outer edge is a soft wandering line rather than the
+ * cells' outline at a fixed offset.
+ */
+function organicMargin(x: number, y: number, cells: readonly Vec2[]): number {
+  const level =
+    MARGIN_LEVEL + MARGIN_LEVEL_WANDER * (shoreNoise(x * 2.3 + 17.9, y * 2.3 + 5.3) - 0.5);
+  const b = blurredWater(x, y, cells);
+  return Math.round(255 * clamp((b - level) / MARGIN_FEATHER));
+}
 
 export function shorePosition(px: number, py: number, density = 2, pond: Pond = FOREST_POND) {
   const worldX = pond.patch.x + (px + 0.5) / density;
@@ -234,17 +363,18 @@ interface WetPaint {
 }
 
 /**
- * One wet pixel of a pond, `inside` cells in from the water's edge with the
- * bank biting `depth` cells in at that point (`biteDepth`). The forest pond and
- * the Cutting's pool both paint every wet pixel here, which is what makes them
- * one water language rather than two that happen to share tones.
+ * One wet pixel of a pond, `inside` cells in from the water's edge and
+ * `fromLine` cells on the water side of the wet line (negative on the bank).
+ * The forest pond and the Cutting's pool both paint every wet pixel here,
+ * which is what makes them one water language rather than two that happen to
+ * share tones.
  */
 function wetPixel(
   material: Pick<VillagePalette<'margin' | 'bed'>, 'classOf' | 'ink'>,
   x: number,
   y: number,
   inside: number,
-  depth: number,
+  fromLine: number,
 ): WetPaint {
   // The bed is opaque across every wet pixel, so the 0.4-alpha water film
   // always tints authored bottom rather than whatever ground the pond
@@ -252,8 +382,7 @@ function wetPixel(
   // between the bite and the bed, which is where the ink belongs: the
   // tile edge is not a material edge, and never was. The ink meets the bed
   // directly: a pale band on its water side read as a selection ring.
-  const fromLine = inside - depth;
-  const part = Math.abs(fromLine) < INK_HALF ? 'ink' : inside < depth ? 'bank' : 'bed';
+  const part = Math.abs(fromLine) < INK_HALF ? 'ink' : fromLine < 0 ? 'bank' : 'bed';
   if (part === 'ink') return { part, rgb: material.ink, deep: false };
   if (part === 'bank')
     return {
@@ -302,23 +431,42 @@ export function packShoreline(
       const distance = shoreDistance(x, y, pond.cells);
       const depth = biteDepth(x, y);
       const inside = inset[py * out.width + px] ?? 0;
-      const dryOutside = distance > 0 && distance < SHORE_LIMIT;
+      /*
+       * The organic shore's damp margin gives out on the blurred water, not at
+       * a fixed offset from the cells, so it has no alpha to spend where the
+       * blur says dry ground.
+       */
+      const marginAlpha =
+        pond.organic && distance > 0 && inside <= 0 ? organicMargin(x, y, pond.cells) : 0;
+      const dryOutside = pond.organic
+        ? marginAlpha > 0
+        : distance > 0 && distance < SHORE_LIMIT;
       /*
        * Inside a water cell the bank reaches in by `depth`, so the wet outline
        * wanders instead of running along the tile's own edge. The bite is
        * bounded well below half a cell, so the middle of every water cell —
        * where a unit stands and where the runtime water reads as water — is
        * never covered.
+       *
+       * An organic shore also takes the bank in wherever the blurred water
+       * falls short of its wandering level. That rounds off every corner a
+       * water cell pushes out, so the wet line runs as one curve across the
+       * steps of the cells instead of stepping with them; the bite still
+       * rounds the land that pokes into the water.
        */
-      const dryInside = inside > 0 && inside < depth;
       const wet = inside > 0;
+      const fromLine = wet && pond.organic ? organicShore(x, y, pond.cells) : inside - depth;
+      const dryInside = wet && fromLine < 0;
       if (!dryOutside && !wet) continue;
 
       let rgb: readonly number[];
       let alpha = 255;
       if (wet) {
-        const paint = wetPixel(material, x, y, inside, depth);
-        rgb = paint.rgb;
+        const paint = wetPixel(material, x, y, inside, fromLine);
+        rgb =
+          pond.overgrowth && paint.part === 'bank' && overgrown(x, y, -fromLine - INK_HALF)
+            ? pond.overgrowth(x, y)
+            : paint.rgb;
         if (paint.part === 'ink') inkPixels++;
         if (dryInside) {
           bitePixels++;
@@ -333,10 +481,14 @@ export function packShoreline(
         // Nothing lies under this band, outside the water: it keeps the damp
         // margin, opaque against the bank and feathered out to the dry ground
         // so the plate's own rim never ends on a ruled line.
-        rgb = material.colour('margin', x, y);
+        rgb =
+          pond.overgrowth && overgrown(x, y, Infinity)
+            ? pond.overgrowth(x, y)
+            : material.colour('margin', x, y);
         record(bands.dry, rgb);
-        alpha =
-          distance <= COVER_LIMIT
+        alpha = pond.organic
+          ? marginAlpha
+          : distance <= COVER_LIMIT
             ? 255
             : Math.round((255 * (SHORE_LIMIT - distance)) / (SHORE_LIMIT - COVER_LIMIT));
       }

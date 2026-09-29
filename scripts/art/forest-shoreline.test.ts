@@ -13,11 +13,13 @@ import {
 import {
   BED_DEEP_AT,
   BED_DEEP_BAND,
-  BITE_FEATHER,
+  FOREST_POND,
   INK_HALF,
-  SHORE_BITE,
-  SHORE_LIMIT,
-  biteDepth,
+  MARGIN_LEVEL,
+  MARGIN_LEVEL_WANDER,
+  SHORE_BLUR,
+  blurredWater,
+  organicShore,
   packShoreline,
   pondInset,
   SHORE_OUTPUT,
@@ -32,6 +34,7 @@ const luminance = (pixel: readonly number[]): number =>
 const material = await loadForestMaterial();
 const { image, bedPixels, bitePixels } = packShoreline(material);
 const inset = pondInset(image.width, image.height);
+const BED_HEXES = new Set<string>(Object.values(FOREST_PIECE_TONES.bed));
 
 it('ships the pond plate the packer builds', async () => {
   expect(Buffer.from(await encodeWebp(image, FOREST_GROUND_QUALITY, true))).toEqual(
@@ -62,32 +65,34 @@ it('paints only the damp margin, the bed and the ink', () => {
   expect(seen, 'no waterline halo').not.toContain(FOREST_PIECE_TONES.bed.rim);
 });
 
-it('keeps the bank, its wandering bite and the opaque bed of ADR 0045', () => {
-  let missingBank = 0,
-    leaks = 0,
+it('keeps the organic bank and the opaque bed of ADR 0045', () => {
+  expect(FOREST_POND.organic).toBe(true);
+  let leaks = 0,
     wetDryBank = 0,
     waterPixels = 0,
     clearWater = 0,
-    intruding = 0,
-    deepestBite = 0,
-    deepBite = 0,
-    featherBand = 0;
+    deepestBank = 0,
+    strayInk = 0;
   /** Mean brightness of the plate's own bands: the dry bank and the bed. */
   const band = {
     bank: { n: 0, sum: 0 },
     shelf: { n: 0, sum: 0 },
     deep: { n: 0, sum: 0 },
-    featherOuter: { n: 0, sum: 0 },
-    featherInner: { n: 0, sum: 0 },
   };
+  // The margin gives out where the blurred water falls to its wandering
+  // level, and that level never drops below this: nothing past it is painted.
+  const marginFloor = MARGIN_LEVEL - MARGIN_LEVEL_WANDER / 2;
+  const wetBank = new Map<string, number>();
+  let shadowUnderFilm = 0;
   for (let py = 0; py < image.height; py++)
     for (let px = 0; px < image.width; px++) {
       const { x, y } = shorePosition(px, py);
       const distance = shoreDistance(x, y);
       const pixel = pixelAt(image, px, py);
       const [r, g, b, alpha] = pixel;
-      if (distance > 0 && distance <= 0.08 && alpha !== 255) missingBank++;
-      if (distance >= SHORE_LIMIT && alpha !== 0) leaks++;
+      const hex = toHex(pixel.slice(0, 3));
+      if (distance > 0 && alpha > 0 && blurredWater(x, y, FOREST_WATER_CELLS) <= marginFloor)
+        leaks++;
       // Outside the water the plate is dry land: nothing there may be wet-keyed.
       if (distance > 0 && alpha > 0 && b > r + 5 && g > r + 5) wetDryBank++;
       if (distance > 0 && distance <= 0.06 && alpha === 255) {
@@ -95,56 +100,40 @@ it('keeps the bank, its wandering bite and the opaque bed of ADR 0045', () => {
         band.bank.sum += luminance(pixel);
       }
       const inside = inset[py * image.width + px] ?? 0;
-      if (inside > 0) {
-        waterPixels++;
-        // The bed is opaque across the whole pond, so the 0.4-alpha water film
-        // always tints authored bottom rather than bare backdrop.
-        if (alpha === 0) clearWater++;
-        if (inside >= 0.3 && inside < 0.6) {
-          band.shelf.n++;
-          band.shelf.sum += luminance(pixel);
-        }
-        if (inside >= 0.9) {
-          band.deep.n++;
-          band.deep.sum += luminance(pixel);
-        }
-        const depth = biteDepth(x, y);
-        if (inside < depth) {
-          intruding++;
-          // The bank never reaches half a cell in: the middle of every water
-          // tile stays water, and the rules' tile is never repainted as dry.
-          deepestBite = Math.max(deepestBite, inside);
-          if (inside > SHORE_BITE * 0.6) deepBite++;
-        }
-        if (inside > depth - BITE_FEATHER && inside < depth) {
-          featherBand++;
-          const slice =
-            (depth - inside) / BITE_FEATHER > 0.6
-              ? band.featherOuter
-              : (depth - inside) / BITE_FEATHER < 0.4
-                ? band.featherInner
-                : null;
-          if (slice) {
-            slice.n++;
-            slice.sum += luminance(pixel);
-          }
-        }
+      if (inside <= 0) continue;
+      waterPixels++;
+      // The bed is opaque across the whole pond, so the 0.4-alpha water film
+      // always tints authored bottom rather than bare backdrop.
+      if (alpha === 0) clearWater++;
+      if (inside >= 0.3 && inside < 0.6) {
+        band.shelf.n++;
+        band.shelf.sum += luminance(pixel);
       }
+      if (inside >= 0.9) {
+        band.deep.n++;
+        band.deep.sum += luminance(pixel);
+      }
+      const fromLine = organicShore(x, y, FOREST_WATER_CELLS);
+      if (fromLine < 0) deepestBank = Math.max(deepestBank, inside);
+      // The ink is the wet line and nothing else.
+      if ((hex === FOREST_INK) !== Math.abs(fromLine) < INK_HALF) strayInk++;
+      if (hex === FOREST_PIECE_TONES.margin.shadow) shadowUnderFilm++;
+      // Clear of the ink, the bank shows only its own paint.
+      if (fromLine < -2 * INK_HALF) wetBank.set(hex, (wetBank.get(hex) ?? 0) + 1);
     }
-  expect({ missingBank, leaks, wetDryBank }).toEqual({
-    missingBank: 0,
+  expect({ leaks, wetDryBank, clearWater, strayInk }).toEqual({
     leaks: 0,
     wetDryBank: 0,
+    clearWater: 0,
+    strayInk: 0,
   });
-  expect(clearWater).toBe(0);
   expect(bedPixels + bitePixels).toBe(waterPixels);
-  expect(deepestBite).toBeLessThanOrEqual(SHORE_BITE);
-  // The shore really does come in, and wanders as it does: a uniform ring
-  // would leave the pond reading as the rules' own cross.
-  expect(intruding).toBeGreaterThan(5_000);
-  expect(deepBite).toBeGreaterThan(300);
-  expect(intruding / waterPixels).toBeLessThan(0.35);
-  expect(featherBand).toBeGreaterThan(5_000);
+  // The bank never reaches half a cell in: the middle of every water tile
+  // stays water, and the rules' tile is never repainted as dry.
+  expect(deepestBank).toBeLessThan(0.4);
+  // The shore really does come in, without eating the pond.
+  expect(bitePixels / waterPixels).toBeGreaterThan(0.15);
+  expect(bitePixels / waterPixels).toBeLessThan(0.4);
   /*
    * The bed still deepens away from the shore (ADR 0045) — but by *which* of
    * its two flat tones a pixel takes, not by a ramp: the deep tone's share
@@ -154,26 +143,11 @@ it('keeps the bank, its wandering bite and the opaque bed of ADR 0045', () => {
   const mean = (b: { n: number; sum: number }): number => b.sum / b.n;
   expect(mean(band.shelf)).toBeLessThan(mean(band.bank) * 0.85);
   expect(mean(band.deep)).toBeLessThan(mean(band.shelf) * 0.8);
-  // The wet line: ink, with the bed on its wet side and the wet bank on its
-  // dry one, so the bite's inner sliver darkens into the line.
-  expect(mean(band.featherOuter)).toBeGreaterThan(mean(band.featherInner));
   expect(BED_DEEP_AT).toBeGreaterThan(BED_DEEP_BAND / 2);
   // Under the water film the bank keeps the damp margin's base and rim. Its
   // shadow there, darkened again by the film, read as a grey-olive band of mud
   // round the water (the DL-2 W5 gate), so no wet pixel takes it; and the
   // bank's lifted rim patches really are painted, so the choice is exercised.
-  const wetBank = new Map<string, number>();
-  let shadowUnderFilm = 0;
-  for (let py = 0; py < image.height; py++)
-    for (let px = 0; px < image.width; px++) {
-      const inside = inset[py * image.width + px] ?? 0;
-      if (inside <= 0) continue;
-      const hex = toHex(pixelAt(image, px, py).slice(0, 3));
-      if (hex === FOREST_PIECE_TONES.margin.shadow) shadowUnderFilm++;
-      const { x, y } = shorePosition(px, py);
-      // Clear of the ink on both sides, so only the bank's own paint counts.
-      if (inside < biteDepth(x, y) - 2 * INK_HALF) wetBank.set(hex, (wetBank.get(hex) ?? 0) + 1);
-    }
   expect(shadowUnderFilm).toBe(0);
   expect([...wetBank.keys()].sort()).toEqual([WET_BANK.field, WET_BANK.lifted].sort());
   expect(wetBank.get(WET_BANK.field) ?? 0).toBeGreaterThan(wetBank.get(WET_BANK.lifted) ?? 0);
@@ -193,6 +167,46 @@ it('keeps the bank, its wandering bite and the opaque bed of ADR 0045', () => {
     expect(clearSamples, `water at ${x},${y}`).toBe(0);
     expect(brightest, `water at ${x},${y}`).toBeLessThan(mean(band.bank));
   }
+});
+
+it('rounds the shore off the steps of the cells', () => {
+  /*
+   * docs/art-bible.md: construction seams disappear in normal presentation.
+   * A shore held a fixed distance inside the cells keeps every step they make
+   * as a sharp corner, so the bed runs to within about the bite times root two
+   * of each corner a water cell pushes out (0.20 cells at worst, measured on
+   * the plain packer) and within the bite of each corner the land pushes in
+   * (0.09). The organic shore rounds both: the blur takes the water's corners
+   * off and the bite, measured in a straight line from the land, turns each
+   * land corner on a circle.
+   */
+  const bed: { x: number; y: number }[] = [];
+  for (let py = 0; py < image.height; py++)
+    for (let px = 0; px < image.width; px++)
+      if (
+        (inset[py * image.width + px] ?? 0) > 0 &&
+        BED_HEXES.has(toHex(pixelAt(image, px, py).slice(0, 3)))
+      )
+        bed.push(shorePosition(px, py));
+  const water = new Set(FOREST_WATER_CELLS.map((c) => `${c.x},${c.y}`));
+  const wet = (x: number, y: number): number => (water.has(`${x},${y}`) ? 1 : 0);
+  const clearance = { convex: Infinity, concave: Infinity };
+  let corners = 0;
+  for (let y = 0; y <= 12; y++)
+    for (let x = 0; x <= 20; x++) {
+      const quadrants = wet(x - 1, y - 1) + wet(x, y - 1) + wet(x - 1, y) + wet(x, y);
+      const kind = quadrants === 1 ? 'convex' : quadrants === 3 ? 'concave' : null;
+      if (!kind) continue;
+      corners++;
+      for (const b of bed)
+        if (Math.abs(b.x - x) < 0.8 && Math.abs(b.y - y) < 0.8)
+          clearance[kind] = Math.min(clearance[kind], Math.hypot(b.x - x, b.y - y));
+    }
+  expect(corners).toBe(10);
+  expect(clearance.convex).toBeGreaterThan(0.3);
+  expect(clearance.concave).toBeGreaterThan(0.15);
+  // And the blur stays short of every water cell's middle.
+  expect(SHORE_BLUR).toBeLessThan(0.7);
 });
 
 it('keeps the bed blue enough for the authored-water gate', () => {

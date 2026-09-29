@@ -38,7 +38,13 @@ export function packCreekPool(material: ForestMaterial, pool: ForestCreekPool) {
   const runOn = pool.cells
     .filter(({ y }) => y === rim - 1)
     .flatMap(({ x }) => Array.from({ length: CREEK_RUNS_ON }, (_, i) => ({ x, y: rim + i })));
-  const packed = packShoreline(material, { patch: pool.patch, cells: [...pool.cells, ...runOn] });
+  const packed = packShoreline(material, {
+    patch: pool.patch,
+    cells: [...pool.cells, ...runOn],
+    organic: true,
+    // The creek runs through grass: the verge grows over its bank in clumps.
+    overgrowth: (x, y) => material.colour('verge', x, y),
+  });
   const { image } = packed;
   for (let py = 0; py < image.height; py++)
     for (let px = 0; px < image.width; px++) {
