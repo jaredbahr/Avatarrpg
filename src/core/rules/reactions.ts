@@ -537,6 +537,31 @@ function shoveUnitForecast(
   };
 }
 
+/**
+ * HP one forced move would knock off by dropping the unit over a ledge,
+ * measured through the same `shoveUnitForecast` the confirm preview reads.
+ *
+ * A caller that already knows the origin — the AI pricing a prop's break shove
+ * — can ask for a single shove without running the whole ability forecast. The
+ * detached preview draft and cursor keep it pure and RNG-free, exactly like the
+ * confirm step.
+ */
+export function shoveLedgeDropDamage(
+  content: ContentIndex,
+  battle: BattleState,
+  caster: Unit,
+  unitId: string,
+  origin: Vec2,
+  distance: number,
+  mode: 'push' | 'pull',
+): number {
+  const preview = new BattleDraft(content, battle, new RngCursor(0), {
+    resolveChanceStatuses: false,
+  });
+  return shoveUnitForecast(content, preview, caster, unitId, origin, distance, mode)
+    .ledgeDropDamage;
+}
+
 function shovePropForecast(
   content: ContentIndex,
   draft: BattleDraft,

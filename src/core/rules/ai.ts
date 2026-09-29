@@ -40,6 +40,7 @@ import {
   affectedTiles,
   canUseAbility,
   isValidTarget,
+  knownAbilities,
   resolveAbility,
   sameSide,
   unitsOnTiles,
@@ -48,6 +49,7 @@ import {
 import { averageDamage, hitChance, positionHasCover } from './damage';
 import { positionObscurement, weatherAt } from './obscurement';
 import {
+  ORTHOGONAL,
   distance,
   distanceToUnit,
   occupiedCells,
@@ -56,6 +58,7 @@ import {
   tileAt,
   withTile,
 } from './grid';
+import { forecastReactions, shoveLedgeDropDamage } from './reactions';
 import { canMove, effectiveStats, isAlive } from './stats';
 import { findCombo } from './surfaces';
 import { directAttackThreats, type ThreatBudget } from './directAttackThreats';
@@ -459,6 +462,27 @@ function scoreAbility(
   const struck = unitsOnTiles(draft.units, tiles).filter((u) => u.id !== caster.id);
   const weather = weatherAt(content, draft.encounterId, draft.round);
 
+  /*
+   * Ledge-drop damage is read from the confirm-step forecast rather than
+   * re-derived, so a change to the shove pathing or the tier rule reaches the
+   * AI for free and the price it pays cannot drift from the number the preview
+   * promises. Built lazily: only a shove pays for it, and `forecastReactions`
+   * runs on a throwaway draft so the live planning state is untouched.
+   */
+  let ledgeByUnit: Map<string, number> | null = null;
+  const ledgeDropFor = (victimId: string): number => {
+    if (!ledgeByUnit) {
+      const battle = battleWithHypotheticalCaster(draft.toBattle(), caster);
+      const forecast = forecastReactions(content, battle, caster, ability, target, tiles);
+      ledgeByUnit = new Map<string, number>();
+      for (const shove of forecast.shoves) {
+        if (shove.kind !== 'unit') continue;
+        ledgeByUnit.set(shove.id, (ledgeByUnit.get(shove.id) ?? 0) + shove.ledgeDropDamage);
+      }
+    }
+    return ledgeByUnit.get(victimId) ?? 0;
+  };
+
   let score = 0;
   let touchedAnyone = false;
 
@@ -500,6 +524,9 @@ function scoreAbility(
           if (friendly) break;
           // Shoving somebody into fire is worth more than the shove itself.
           score += 2;
+          // Over a ledge more still. The forecast already respects the 1-HP
+          // floor, so a target that cannot take the fall is worth no extra.
+          score += ledgeDropFor(victim.id) * weights.damage;
           break;
         }
         default:
@@ -620,6 +647,14 @@ function scoreProps(
   const shoves = ability.effects.some((e) => e.kind === 'push' || e.kind === 'pull');
   let total = 0;
 
+  // Only a prop whose break shoves somebody needs a battle snapshot, so build
+  // it the first time a push effect actually lands on a victim.
+  let shoveBattle: BattleState | null = null;
+  const battleForShove = (): BattleState => {
+    if (!shoveBattle) shoveBattle = battleWithHypotheticalCaster(draft.toBattle(), caster);
+    return shoveBattle;
+  };
+
   for (const prop of props) {
     const def = draft.content.props.get(prop.propId);
     if (!def) continue;
@@ -657,9 +692,21 @@ function scoreProps(
             value += friendly ? -worth * weights.friendlyFire : worth * weights.status;
             break;
           }
-          case 'push':
-            value += friendly ? -2 : 2;
+          case 'push': {
+            // A burst prop can knock people over an edge too. Price that fall
+            // through the same forecast the confirm preview reads.
+            const drop = shoveLedgeDropDamage(
+              draft.content,
+              battleForShove(),
+              caster,
+              victim.id,
+              prop.pos,
+              effect.distance,
+              'push',
+            );
+            value += friendly ? -2 - drop * weights.friendlyFire : 2 + drop * weights.damage;
             break;
+          }
           case 'surface': {
             // Only the ground-shaping half is a terrain decision, so only this
             // half takes the terrain weight.
@@ -784,6 +831,52 @@ function bestReach(draft: BattleDraft, unit: Unit): number {
   return reach;
 }
 
+/** A shove ability moves a target against its will. */
+function isShoveAbility(ability: Ability): boolean {
+  return ability.effects.some((effect) => effect.kind === 'push' || effect.kind === 'pull');
+}
+
+/**
+ * The points a unit gives up for standing on a shoveable lip, before its
+ * profile's self-preservation scales them.
+ */
+const LEDGE_EDGE_RISK = 3;
+
+/**
+ * Is this tile a lip a shove could send somebody over? Only orthogonal steps
+ * count, because that is the only direction a push or pull travels, and the
+ * drop has to clear the same tier rule the fall does.
+ */
+function atLedgeLip(draft: BattleDraft, pos: Vec2): boolean {
+  const tile = tileAt(draft.grid, pos);
+  if (!tile) return false;
+  for (const step of ORTHOGONAL) {
+    const below = tileAt(draft.grid, { x: pos.x + step.x, y: pos.y + step.y });
+    if (!below) continue;
+    const drop = tile.elevation - below.elevation;
+    if (drop > 1 || (drop === 1 && !tile.ramp && !below.ramp)) return true;
+  }
+  return false;
+}
+
+/**
+ * Standing on an edge with an enemy in shove reach of it risks a free fall.
+ * Kept deliberately small and deterministic: it nudges a unit back from the
+ * lip without outbidding cover or closing the distance.
+ */
+function ledgeExposure(draft: BattleDraft, unit: Unit, pos: Vec2): number {
+  if (!atLedgeLip(draft, pos)) return 0;
+  const shover = draft
+    .living()
+    .some(
+      (other) =>
+        !sameSide(unit, other) &&
+        distanceToUnit(pos, other) <= 1 &&
+        knownAbilities(draft.content, other).some(isShoveAbility),
+    );
+  return shover ? LEDGE_EDGE_RISK : 0;
+}
+
 /**
  * How good it is to simply be standing on a tile, before any ability.
  *
@@ -824,6 +917,8 @@ function positionScore(
   score += weights.cover * positionObscurement(draft.content, draft.grid, pos);
   const tile = tileAt(draft.grid, pos);
   score += (tile?.elevation ?? 0) * weights.elevation;
+  // An edge is only worth holding if nobody can turn it into a shortcut down.
+  score -= ledgeExposure(draft, unit, pos) * weights.selfPreservation;
 
   return score;
 }
