@@ -91,7 +91,7 @@ describe('ledge drops', () => {
   it('uses the worst occupied-cell drop once for a size-2 unit', () => {
     const { battle, caster, victim } = fixture();
     const start = { x: 6, y: 5 };
-    const wide = { ...victim, size: 2, pos: start };
+    const wide = { ...victim, size: 2 as const, pos: start };
     const positioned = elevated(
       placed(
         { ...battle, units: battle.units.map((unit) => (unit.id === victim.id ? wide : unit)) },
