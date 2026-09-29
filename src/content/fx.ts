@@ -1295,6 +1295,39 @@ const DRAWN_RECIPES: Readonly<Record<string, FxRecipeInput>> = {
   'fx.surface.rubble': { palette: 'earth', impact: [shards(6, 'dark'), dust(6)], flash: 0 },
   'fx.surface.doused': { palette: 'neutral', impact: [smokePuff(6, [0.18, 0.3])], flash: 0 },
 
+  /* Bodies meeting the ground, and whose turn it is. These trail: the choreography
+     never holds playback for them (see `EmitterTrack.trailing`). ---------- */
+  // A footfall's puff, small enough to sit under the feet and never over a bar.
+  'fx.move.step': { palette: 'neutral', impact: [dust(3, [0.08, 0.14])], flash: 0 },
+  // A shoved or dropped body landing.
+  'fx.move.land': { palette: 'neutral', impact: [dust(9, [0.16, 0.28])], flash: 0 },
+  // A ring spreading on the ground under whoever's turn it now is.
+  'fx.turn.start': {
+    palette: 'neutral',
+    impact: [
+      particles({
+        shape: 'burst',
+        cell: 'ring',
+        count: 1,
+        duration: 480,
+        life: [480, 480],
+        delay: [0, 0],
+        speed: [0, 0],
+        spread: 0,
+        gravity: 0,
+        drag: 0,
+        size: [0.45, 0.45],
+        grow: 1.9,
+        spin: 0,
+        color: 'light',
+        fade: 'out',
+        blend: 'add',
+        layer: 'under',
+      }),
+    ],
+    flash: 0,
+  },
+
   'fx.prop.water_barrel': {
     palette: 'water',
     impact: [droplets(16), shards(6, 'dark'), dust(4)],

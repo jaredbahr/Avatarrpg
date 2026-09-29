@@ -460,7 +460,10 @@ describe('choreograph', () => {
         cost: 2,
       },
     ]);
-    expect(kinds(tracks)).toEqual(['move']);
+    // A puff at each footfall, trailing, so the walk's clock is its own.
+    expect(kinds(tracks)).toEqual(['move', 'emitter', 'emitter']);
+    for (const puff of tracks.slice(1))
+      expect(puff.kind === 'emitter' && puff.trailing, 'a footstep puff trails').toBe(true);
     expect(tracks[0]?.start).toBe(1000);
     expect(tracks[0]?.duration).toBe(680);
     expect(cursor).toBe(1680);
@@ -537,7 +540,17 @@ describe('choreograph', () => {
       expect(hit.clip).toBe('hit');
       expect(hit.duration).toBe(move.duration);
       expect(cursor).toBe(1000 + 220 * rate);
-      expect(sounds).toEqual([]);
+      // No footsteps: one thud where the slide stops.
+      expect(sounds.map((s) => [s.key, s.at])).toEqual([['land', 1000 + 220 * rate]]);
+      // The landing dust trails at full motion and is gone under reduce motion.
+      const dust = tracks.filter((t) => t.kind === 'emitter');
+      if (rate === 1) {
+        expect(dust.length).toBeGreaterThan(0);
+        for (const puff of dust) {
+          expect(puff.start).toBe(1220);
+          expect(puff.kind === 'emitter' && puff.trailing).toBe(true);
+        }
+      } else expect(dust).toEqual([]);
     }
   });
 
@@ -1005,4 +1018,75 @@ it('projects attack and reaction poses without changing timing, particles or sou
   expect(attacks.some((t) => t.offset.to.x < 0 && t.offset.to.y > 0)).toBe(true);
   const recoil = poses.filter((t) => t.unitId === 'e0');
   expect(recoil.some((t) => t.offset.to.x < 0 && t.offset.to.y > 0)).toBe(true);
+});
+
+describe('feel pass: every table beat is heard, and dust never holds the turn', () => {
+  const foe = { ...unit('e0', 5, 3), faction: 'enemy' as const };
+  const units = [unit('p0', 1, 3), foe];
+  const play = (events: GameEvent[], rate = 1) =>
+    choreograph({ content, events, unitsBefore: units, cursor: 1000, rate, pushIndex: 0 });
+  const keys = (sounds: readonly { key: string }[]) => sounds.map((s) => s.key);
+
+  it('lands a critical bigger, with a snap and a camera kick; a graze gets neither', () => {
+    const hit = (crit: boolean): GameEvent => ({
+      type: 'damaged',
+      unitId: 'e0',
+      amount: 6,
+      crit,
+      damageType: 'physical',
+      sourceId: 'p0',
+    });
+    const crit = play([hit(true)]);
+    expect(keys(crit.sounds)).toEqual(['hit', 'crit']);
+    expect(crit.tracks.filter((t) => t.kind === 'shake')).toHaveLength(1);
+    const number = crit.tracks.find((t) => t.kind === 'floater');
+    expect(number?.kind === 'floater' && number.emphasis).toBeGreaterThan(1);
+
+    const plain = play([hit(false)]);
+    expect(keys(plain.sounds)).toEqual(['hit']);
+    expect(plain.tracks.some((t) => t.kind === 'shake')).toBe(false);
+    const graze = plain.tracks.find((t) => t.kind === 'floater');
+    expect(graze?.kind === 'floater' && graze.emphasis).toBeFalsy();
+
+    // Reduce motion keeps the sound and drops the kick.
+    const still = play([hit(true)], 0.02);
+    expect(keys(still.sounds)).toEqual(['hit', 'crit']);
+    expect(still.tracks.some((t) => t.kind === 'shake')).toBe(false);
+  });
+
+  it('says whose turn it is: a chime and a ring for the party, a knock for a foe, after the gong', () => {
+    const { sounds, tracks, cursor } = play([
+      { type: 'roundStarted', round: 2 },
+      { type: 'turnStarted', unitId: 'p0', round: 2 },
+    ]);
+    expect(sounds.map((s) => [s.key, s.at])).toEqual([
+      ['round', 1000],
+      ['turn', 1350],
+    ]);
+    const ring = tracks.filter((t): t is EmitterTrack => t.kind === 'emitter');
+    expect(ring.length).toBeGreaterThan(0);
+    expect(ring.every((t) => t.trailing && t.start === 1350 && t.def.layer === 'under')).toBe(true);
+    // Trailing: the turn is playable the moment it starts.
+    expect(cursor).toBe(1000);
+
+    const enemy = play([{ type: 'turnStarted', unitId: 'e0', round: 2 }]);
+    expect(enemy.sounds.map((s) => [s.key, s.at])).toEqual([['turnEnemy', 1000]]);
+    expect(play([{ type: 'turnStarted', unitId: 'e0', round: 2 }], 0.02).tracks).toEqual([]);
+  });
+
+  it('gives statuses, surfaces and the end of a fight a voice', () => {
+    const { sounds } = play([
+      { type: 'statusApplied', unitId: 'e0', status: 'burning', duration: 2 },
+      { type: 'surfaceChanged', pos: { x: 5, y: 3 }, from: null, to: 'fire', label: '' },
+      { type: 'surfaceChanged', pos: { x: 6, y: 3 }, from: 'fire', to: null, label: '' },
+      { type: 'battleEnded', outcome: 'victory' },
+    ]);
+    expect(keys(sounds)).toEqual([
+      'fx.status.burning',
+      'fx.surface.fire',
+      'fx.surface.doused',
+      'victory',
+    ]);
+    expect(keys(play([{ type: 'battleEnded', outcome: 'defeat' }]).sounds)).toEqual(['defeat']);
+  });
 });

@@ -520,6 +520,7 @@ export class App {
         ? new DisciplineDialog(this, choice, done)
         : new LevelUpDialog(this, choice, done);
     this.levelUp.open(this.overlayHost);
+    this.audio.play([{ key: 'levelUp', at: 0, seed: 0 }], 0);
   }
 
   /* ---------------------------------------------------------------- */
