@@ -2,9 +2,17 @@ import type { MapScene, SceneImage, SceneScenery, Vec2 } from '../../core/types'
 import { FOREST_GRASS_REGIONS } from './forestRoadGround';
 
 const root = 'art/maps/forest-scene/';
-/** Water stays on its eight cells; padding carries only a narrow dry shoreline matte. */
-export const FOREST_POND_PATCH = { x: 560, y: 304, width: 352, height: 192 } as const;
-/** The eastern shelf is two shallow elevated groups with the road exit left open. */
+/**
+ * Water stays on the pond's nine cells (M3 grew the plus sign by (7,5)); the
+ * patch widens east to keep the same 16-pixel dry shoreline matte round them.
+ */
+export const FOREST_POND_PATCH = { x: 560, y: 304, width: 416, height: 192 } as const;
+/**
+ * The painted shelf covers the two authored elevated groups with the road exit
+ * left open. M3 widens the rules' NE bank past these six cells (a tier-1 slope
+ * up to (19,2)'s tier-2 perch); the extra tiers are drawn by the relief painter
+ * until the shelf plate is repacked, so every cell here must stay raised.
+ */
 export const FOREST_RAISED_SHELF_CELLS: readonly Vec2[] = [
   { x: 19, y: 2 },
   { x: 18, y: 3 },
@@ -19,6 +27,7 @@ export const FOREST_RAISED_SHELF = { x: 1528, y: 664, width: 400, height: 208 } 
 export const FOREST_WATER_CELLS: readonly Vec2[] = [
   { x: 5, y: 5 },
   { x: 6, y: 5 },
+  { x: 7, y: 5 },
   { x: 4, y: 6 },
   { x: 5, y: 6 },
   { x: 6, y: 6 },
@@ -33,17 +42,40 @@ export const FOREST_RUBBLE_CELLS: readonly Vec2[] = [
 export const FOREST_PINE_CELLS: readonly Vec2[] = [
   { x: 0, y: 0 },
   { x: 1, y: 0 },
+  { x: 2, y: 0 },
+  { x: 3, y: 0 },
+  { x: 6, y: 0 },
+  { x: 7, y: 0 },
   { x: 8, y: 0 },
+  { x: 9, y: 0 },
+  { x: 10, y: 0 },
+  { x: 11, y: 0 },
+  { x: 12, y: 0 },
+  { x: 13, y: 0 },
+  { x: 15, y: 0 },
+  { x: 16, y: 0 },
+  { x: 17, y: 0 },
   { x: 18, y: 0 },
   { x: 19, y: 0 },
   { x: 0, y: 1 },
-  { x: 14, y: 1 },
+  { x: 1, y: 1 },
+  { x: 7, y: 1 },
+  { x: 8, y: 1 },
+  { x: 9, y: 1 },
+  { x: 18, y: 1 },
   { x: 19, y: 1 },
+  { x: 0, y: 2 },
   { x: 0, y: 10 },
-  { x: 14, y: 10 },
+  { x: 15, y: 10 },
   { x: 19, y: 10 },
   { x: 0, y: 11 },
   { x: 1, y: 11 },
+  { x: 7, y: 11 },
+  { x: 8, y: 11 },
+  { x: 9, y: 11 },
+  { x: 10, y: 11 },
+  { x: 11, y: 11 },
+  { x: 17, y: 11 },
   { x: 18, y: 11 },
   { x: 19, y: 11 },
 ];

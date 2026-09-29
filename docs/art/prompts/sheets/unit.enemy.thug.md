@@ -1,5 +1,11 @@
 # Sheet: Bandit — `unit.enemy.thug`
 
+> **Superseded (ADR 0059).** The thug now draws from the G sheet,
+> `public/art/units/thug-g.webp`; its cast, hit and KO cels are preserved in
+> `art/source/thug-actions`. The `public/art/units/thug.png` and `thug.json`
+> this page shipped through `art:pack` are removed, so do not paste its output
+> into the manifest. The poses below still document those preserved cels.
+
 |               |                                                                                                                                                                                                                                        |
 | ------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | **Palette**   | `enemy` — base `#8a4b3c`, light `#b8705c`, dark `#4d241b`, accent `#e5a48c`, ink `#1b1410`, key `#00ff00`                                                                                                                              |
