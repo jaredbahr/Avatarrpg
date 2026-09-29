@@ -161,6 +161,12 @@ export interface Tile {
   readonly blocked: boolean;
   readonly blocksSight: boolean;
   readonly cover: boolean;
+  /**
+   * True on the `S` legend tile: a slope joining two tiers. When either end of
+   * a one-tier step is a ramp the climb is free, so a run of ramps reads as a
+   * way up the bench.
+   */
+  readonly ramp?: boolean;
   readonly surface: SurfaceInstance | null;
 }
 
@@ -445,6 +451,8 @@ export interface TileTemplate {
   readonly blocked?: boolean;
   readonly blocksSight?: boolean;
   readonly cover?: boolean;
+  /** Marks a slope: a one-tier step onto or off it costs no extra move. */
+  readonly ramp?: boolean;
   readonly surface?: SurfaceId;
   readonly surfaceDuration?: number;
 }
@@ -1326,6 +1334,8 @@ export interface CombatTuning {
   readonly elevationStep: number;
   /** Accuracy removed when the defender has cover and is not adjacent. */
   readonly coverPenalty: number;
+  /** Extra move points a one-tier climb costs when neither end is a ramp. */
+  readonly climbCost: number;
   /** Hit chance is clamped into this band, lowest bound first. */
   readonly hitChanceMin: number;
   readonly hitChanceMax: number;

@@ -303,6 +303,7 @@ export class ExploreScene implements Scene {
         awayFrom: this.map?.exit?.pos,
         avoid: this.standing(state),
       }),
+      { climbCost: this.app.content.tuning.climbCost },
     );
     this.trail = seated;
     return seated;

@@ -51,6 +51,10 @@ export const LEGEND: Readonly<Record<string, TileTemplate>> = {
   /* Elevation ------------------------------------------------------ */
   '^': { terrain: 'stone', elevation: 1 },
   A: { terrain: 'stone', elevation: 2 },
+  // The way up: a stone slope at tier 1. A one-tier step onto or off a ramp
+  // costs no extra move, so a line of `S` reads as stairs up the bench while
+  // the bare `^` beside it costs a move to climb (`E4` climbing).
+  S: { terrain: 'stone', elevation: 1, ramp: true },
 
   /* Authored surfaces ---------------------------------------------- */
   '~': { terrain: 'dirt', surface: 'water', surfaceDuration: -1 },

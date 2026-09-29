@@ -51,3 +51,31 @@ describe('map legend (M1 keys)', () => {
     expect(parsed.success, parsed.success ? '' : JSON.stringify(parsed.error.issues)).toBe(true);
   });
 });
+
+/**
+ * The E4 ramp. `S` is a new key only: no shipped map draws it yet, so adding
+ * it cannot change a tile on any existing battlefield.
+ */
+describe('map legend (E4 ramp key)', () => {
+  it('resolves S to a tier-1 stone ramp', () => {
+    expect(LEGEND.S).toEqual({ terrain: 'stone', elevation: 1, ramp: true });
+    expect(LEGEND_KEYS).toContain('S');
+  });
+
+  it('parses a map that draws a ramp beside a bare tier step', () => {
+    const parsed = mapSchema.safeParse({
+      id: 'ramp_probe',
+      name: 'Ramp probe',
+      kind: 'combat',
+      width: 4,
+      height: 4,
+      rows: ['..S^', '..,^', '....', '....'],
+      legend: LEGEND,
+      partySpawns: [{ x: 0, y: 0 }],
+      npcs: [],
+      props: [],
+      ambience: 'none',
+    });
+    expect(parsed.success, parsed.success ? '' : JSON.stringify(parsed.error.issues)).toBe(true);
+  });
+});
