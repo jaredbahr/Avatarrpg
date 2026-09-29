@@ -54,6 +54,7 @@ describe('hit chance', () => {
       coverPenalty: 20,
       hitChanceMin: 5,
       hitChanceMax: 99,
+      climbCost: 1,
     });
   });
 
