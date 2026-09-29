@@ -299,7 +299,7 @@ trips through the five Act 1 locations. This keeps ordered encounter levels and
 the exact progression audit; the broader region-band and direct-encounter work
 below remains open.
 
-- **Living-world Slice B:** W0 engineering contract recorded in ADR 0049; gameplay not activated; target <=318.5 KB aggregate JavaScript under the unchanged 320 KB gate.
+- **Living-world Slice B:** W0 engineering contract recorded in ADR 0049; gameplay not activated; target <=318.5 KB aggregate JavaScript under the 350 KB gate (ADR 0066).
 
 - [ ] W1: `MapDef.exits` with `toMapId`, `toPos`, `requires`, `lockedHint`; `MapDef.exit` removed
 - [ ] W1: regions with `minLevel` / `maxLevel`; region membership on every map
@@ -316,7 +316,7 @@ below remains open.
 ## Governance
 
 - **ADRs** in `docs/adr/` for any decision that changes an engine, a contract or a budget.
-- **Budgets checked in CI:** 320 KB gzipped JavaScript (`scripts/check-bundle-size.mjs`); 4 MB per art family and 25 MB precached (`scripts/check-asset-budget.mjs`); every sheet the manifest names validated against its files (`npm run art:validate`).
+- **Budgets checked in CI:** 350 KB gzipped JavaScript (`scripts/check-bundle-size.mjs`); 4 MB per art family and 25 MB precached (`scripts/check-asset-budget.mjs`); every sheet the manifest names validated against its files (`npm run art:validate`).
 - **Prompt hygiene:** nothing under `docs/art` names the franchise, a character or a faction, and every hex a pack quotes is a palette value (`src/content/prompts.test.ts`).
 - **Parity:** anything the rules care about is drawn on both backends (ADR 0002).
 - **Determinism:** presentation randomness (particles) is seeded per instance and never touches the game RNG.
