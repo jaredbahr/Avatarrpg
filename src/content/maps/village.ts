@@ -196,16 +196,6 @@ export const BA_DAN_VILLAGE: MapDef = {
       node: 'school_notice',
     },
     {
-      // The marker post where the west road runs into the ford, on its south
-      // bank, clear of the road so the party can still stand at the water.
-      id: 'west_ford_marker',
-      name: 'Ford marker',
-      pos: { x: 1, y: 9 },
-      sprite: 'world.route_sign',
-      interaction: 'route-sign',
-      node: 'west_ford_marker',
-    },
-    {
       id: 'bo_shan',
       name: 'Bo-shan',
       resident: 'lw.npc.bo_shan',
