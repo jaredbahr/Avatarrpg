@@ -1,6 +1,6 @@
 /**
  * A Ba Dan day (ADR 0047 §8, W6): Gao's plant scene (LW-S-BD-01), the gate
- * handover (LW-S-BD-03), Hanru's watch and the school notice.
+ * handover (LW-S-BD-03), Hanru's watch, the school notice and the ford marker.
  *
  * Voice for Hanru is set here, since the story bible is not available: few
  * words, practical, kind without saying so. Hanru uses they/them (D7).
@@ -290,6 +290,20 @@ export const BA_DAN_DAY_STORY: readonly StoryNode[] = [
           'Underneath, in careful chalk: “PELLA IS AT SCHOOL. BO-SHAN, DO NOT MOVE MY STONES.”',
         ],
       },
+    ],
+    next: 'village_leave',
+  },
+
+  /* ----------------------------------------------------- The west ford marker */
+  // The west road ends in water this season (A5, J5): the reason, told in place.
+  {
+    id: 'west_ford_marker',
+    kind: 'dialogue',
+    speaker: 'Ford marker',
+    portrait: 'portrait.narrator',
+    lines: [
+      'A post at the water’s edge, painted in bands to show how deep the ford runs. The water is over the top band.',
+      'Chalked on the post: “FORD SHUT TILL THE RIVER DROPS. EAST ROAD FOR CARTS.” Under it, smaller: “NOT FOR SKIPPING STONES EITHER. — DORIN”',
     ],
     next: 'village_leave',
   },

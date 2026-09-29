@@ -44,6 +44,7 @@ const NPC_PRESENTATIONS: readonly (readonly [string, string])[] = [
   ['handover_float', 'ba_dan_village'],
   ['hanru_watch', 'ba_dan_village'],
   ['school_notice', 'ba_dan_village'],
+  ['west_ford_marker', 'ba_dan_village'],
 
   // Riverside.
   ['riverside_mira', 'ba_dan_riverside'],
