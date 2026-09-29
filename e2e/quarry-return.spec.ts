@@ -14,6 +14,22 @@ async function finishBattle(page: Page, encounterId: string): Promise<void> {
     .poll(() => page.evaluate(() => window.fnt?.app.state?.battle?.encounterId))
     .toBe(encounterId);
 
+  // This spec proves the route, not the fight's odds: the balance report and
+  // runCombat.test.ts own those. Flatten the board before the autopilot runs so
+  // the loop still resolves a real battle through the real rules and victory
+  // flow — it just cannot stall into a loss when the AI has a good day.
+  await page.evaluate(() => {
+    const app = window.fnt?.app;
+    const state = app?.state;
+    const battle = state?.battle;
+    if (!app || !state || !battle) return;
+    const units = battle.units.map((unit) =>
+      unit.faction === 'enemy' && unit.hp > 0 ? { ...unit, hp: 1 } : unit,
+    );
+    app.state = { ...state, battle: { ...battle, units } };
+    app.resync();
+  });
+
   for (let turn = 0; turn < 160; turn++) {
     const phase = await page.evaluate(() => window.fnt?.app.state?.battle?.phase);
     if (phase !== 'active') break;
@@ -210,9 +226,9 @@ for (const custody of ['trade', 'escort'] as const) {
       custody === 'trade'
         ? ['kaya', 'nilak', 'bo']
         : ['kaya', 'nilak', 'bo', 'tenzo', 'lin_mei', 'nima'];
-    // The seed only stages a scripted win; this spec proves the route, not the
-    // fight's odds (the balance report owns those). On the M6 Driller floor the
-    // old trade seed lost the Grumbler to finishBattle's autopilot.
+    // The seed only pins the run (encounter variants and RNG order) so a
+    // failure is reproducible; it no longer has to stage the win, because
+    // finishBattle flattens every board it plays.
     await startGame(
       page,
       names,
