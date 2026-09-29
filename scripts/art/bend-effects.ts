@@ -540,8 +540,10 @@ export const IMPACT_OFFSET = { x: 0, y: round3(-120 * GAME_SCALE) };
 
 /**
  * The effects, built from the r9 timing: `ms(f, g)` is the time the prototype
- * held bend cels `f..g`, which is how long it drew a layer's cel. Travel speed
- * is the prototype's 3-tile throw over the cels it flew across.
+ * held bend cels `f..g`, which is how long it drew a layer's cel. A travel
+ * layer's `flightMs` is the prototype's flight over its 3-tile throw: the cels
+ * from its travel clock's start to the impact cel, less the hold, which the
+ * prototype added to the contact cel and the game plays as its own hold.
  */
 export function effectDefs(timing: Readonly<Record<Element, R9Timing>>): BendEffectDef[] {
   const ms =
@@ -563,6 +565,7 @@ export function effectDefs(timing: Readonly<Record<Element, R9Timing>>): BendEff
     origin: BendEffectLayer['origin'],
     frameMs: number[],
     release?: number,
+    flightMs?: number,
   ): BendEffectLayer => ({
     phase,
     z,
@@ -571,29 +574,27 @@ export function effectDefs(timing: Readonly<Record<Element, R9Timing>>): BendEff
     origin,
     blend: 'normal',
     ...(release === undefined ? {} : { release }),
+    ...(flightMs === undefined ? {} : { flightMs }),
   });
-  const speed = (tilesFlown: number, flightMs: number): number =>
-    Math.round((tilesFlown / (flightMs / 1000)) * 10) / 10;
 
   const f = ms('fire');
   const e = ms('earth');
   const w = ms('water');
-  // The jab flies bend cels 2-4 and bursts on 5-7; the cross flies 6-8 and
-  // bursts on 9-11. One speed serves both: the mean of the two flights.
+  // The jab flies from its launch on bend cel 2 over cels 2-4 and bursts on
+  // 5-7; the cross flies 6-8 and bursts on 9-11. Each keeps its own flight.
   const fire: BendEffectDef = {
     id: EFFECT_IDS.fire,
     element: 'fire',
     layers: [
       layer('fire', 'jab-launch', 'launch', 'underActor', 'socket', [f(2)], 0),
-      layer('fire', 'jab-ball', 'travel', 'overActor', 'previousPhaseEnd', [f(3, 4)], 0),
+      layer('fire', 'jab-ball', 'travel', 'overActor', 'previousPhaseEnd', [f(3, 4)], 0, f(2, 4)),
       layer('fire', 'burst', 'impact', 'overActor', 'targetTile', [f(5), f(6), f(7)], 0),
       layer('fire', 'cross-launch', 'launch', 'underActor', 'socket', [f(6)], 1),
-      layer('fire', 'cross-ball', 'travel', 'overActor', 'previousPhaseEnd', [f(7, 8)], 1),
+      layer('fire', 'cross-ball', 'travel', 'overActor', 'previousPhaseEnd', [f(7, 8)], 1, f(6, 8)),
       layer('fire', 'burst', 'impact', 'overActor', 'targetTile', [f(9), f(10), f(11)], 1),
     ],
     trajectory: {
       kind: 'arc',
-      speedTilesPerSecond: speed(3, (f(2, 4) + f(6, 8)) / 2),
       heightTiles: tiles(22, 2),
       spin: 0,
     },
@@ -606,7 +607,7 @@ export function effectDefs(timing: Readonly<Record<Element, R9Timing>>): BendEff
   };
   // The stomp (release 0) opens the crack on bend cel 4 and it fades out by
   // cel 10; the rock rises in it on cel 5, hangs at the drive (release 1) on
-  // cel 6, flies 6-8 and shatters on 9-11. The painted tumble is the spin. Its
+  // cel 6, flies from there over 6-8 and shatters on 9-11. The painted tumble is the spin. Its
   // loop's 100 ms a cel is hard-coded here, not read from the r9 timing: the
   // prototype drew one tumble cel per bend cel, and the loop has no bend cels.
   const earth: BendEffectDef = {
@@ -616,12 +617,20 @@ export function effectDefs(timing: Readonly<Record<Element, R9Timing>>): BendEff
       layer('earth', 'crack', 'launch', 'ground', 'socket', [e(4), e(5, 7), e(8), e(9), e(10)], 0),
       layer('earth', 'emerge', 'gather', 'underActor', 'previousPhaseEnd', [e(5)], 1),
       layer('earth', 'hang', 'launch', 'underActor', 'socket', [e(6)], 1),
-      layer('earth', 'tumble', 'travel', 'overActor', 'previousPhaseEnd', [100, 100, 100, 100], 1),
+      layer(
+        'earth',
+        'tumble',
+        'travel',
+        'overActor',
+        'previousPhaseEnd',
+        [100, 100, 100, 100],
+        1,
+        e(6, 8),
+      ),
       layer('earth', 'shatter', 'impact', 'overActor', 'targetTile', [e(9), e(10), e(11)], 1),
     ],
     trajectory: {
       kind: 'arc',
-      speedTilesPerSecond: speed(3, e(6, 8)),
       heightTiles: tiles(96, 2),
       spin: 0,
     },
@@ -634,7 +643,8 @@ export function effectDefs(timing: Readonly<Record<Element, R9Timing>>): BendEff
   };
   // The gather trails the palm on bend cels 2-4 and curls on 4; the lash
   // leaves on 5, a third of the way and at most 1.5 tiles; the bolt flies
-  // the rest over 6-7 and splashes on 8-9; the puddle is left on 10.
+  // the rest over 6-7, its clock starting once the lash is out, and splashes
+  // on 8-9; the puddle is left on 10.
   const water: BendEffectDef = {
     id: EFFECT_IDS.water,
     element: 'water',
@@ -643,7 +653,16 @@ export function effectDefs(timing: Readonly<Record<Element, R9Timing>>): BendEff
       layer('water', 'gather-trail', 'gather', 'underActor', 'socket', [w(3), w(4)]),
       layer('water', 'coil', 'gather', 'underActor', 'socket', [w(4)]),
       layer('water', 'lash', 'launch', 'underActor', 'socket', [w(5)]),
-      layer('water', 'bolt', 'travel', 'overActor', 'previousPhaseEnd', [w(6), w(7)]),
+      layer(
+        'water',
+        'bolt',
+        'travel',
+        'overActor',
+        'previousPhaseEnd',
+        [w(6), w(7)],
+        undefined,
+        w(6, 7),
+      ),
       layer('water', 'splash', 'impact', 'overActor', 'targetTile', [w(8), w(9)]),
       layer('water', 'puddle', 'residue', 'overActor', 'targetTile', [w(10)]),
     ],
@@ -651,7 +670,6 @@ export function effectDefs(timing: Readonly<Record<Element, R9Timing>>): BendEff
       kind: 'whipBolt',
       whipFraction: 0.333,
       whipMaxTiles: 1.5,
-      boltSpeedTilesPerSecond: speed(2, w(6, 7)),
     },
     impact: {
       sequence: seq('water', 'splash'),

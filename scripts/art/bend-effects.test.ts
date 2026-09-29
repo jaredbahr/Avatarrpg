@@ -239,12 +239,7 @@ describe('the shipped effects', () => {
   it('carry the prototype’s holds, flashes and shakes in tiles', () => {
     expect(shake(3, -2)).toBe(0.034);
     const fire = shipped.find((effect) => effect.id === 'fx.fire.fireball');
-    expect(fire?.trajectory).toEqual({
-      kind: 'arc',
-      speedTilesPerSecond: 9.8,
-      heightTiles: 0.2,
-      spin: 0,
-    });
+    expect(fire?.trajectory).toEqual({ kind: 'arc', heightTiles: 0.2, spin: 0 });
     const water = shipped.find((effect) => effect.id === 'fx.water.bolt');
     expect(water?.trajectory).toMatchObject({ kind: 'whipBolt', whipMaxTiles: 1.5 });
     expect(water?.residue).toEqual({
@@ -252,6 +247,28 @@ describe('the shipped effects', () => {
       durationMs: 120,
       gameplaySurface: false,
     });
+  });
+
+  it('fly each release for the prototype’s own flight at 3 tiles, holds excluded', () => {
+    // render_v7.py: the jab leaves on cel 2 and bursts on 5 (110 + 50 + 120),
+    // the cross 6 and 9 (150 + 110 + 70), the rock 6 and 9 (170 + 120 + 80);
+    // the bolt leaves the lash head once cel 5 is done and splashes on 8 (110 + 70).
+    const flights = shipped.flatMap((effect) =>
+      effect.layers
+        .filter((layer) => layer.phase === 'travel')
+        .map((layer) => [layer.sequence, layer.flightMs]),
+    );
+    expect(flights).toEqual([
+      ['fx.fire.fireball/jab-ball', 280],
+      ['fx.fire.fireball/cross-ball', 330],
+      ['fx.earth.rock/tumble', 370],
+      ['fx.water.bolt/bolt', 180],
+    ]);
+    for (const effect of shipped) {
+      for (const layer of effect.layers) {
+        if (layer.phase !== 'travel') expect(layer.flightMs).toBeUndefined();
+      }
+    }
   });
 
   it('land where the prototype did: 120 of its px above the target’s feet', () => {

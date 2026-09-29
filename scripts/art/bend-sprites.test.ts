@@ -108,7 +108,7 @@ const TEST_EFFECTS: readonly BendEffectDef[] = [
         blend: 'normal',
       },
     ],
-    trajectory: { kind: 'straight', speedTilesPerSecond: 8 },
+    trajectory: { kind: 'straight' },
     impact: {
       sequence: 'fx.test.hit/burst',
       flash: 0.5,

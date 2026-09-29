@@ -430,6 +430,7 @@ const tileTemplate = z.object({
   blocked: z.boolean().optional(),
   blocksSight: z.boolean().optional(),
   cover: z.boolean().optional(),
+  ramp: z.boolean().optional(),
   surface: surfaceId.optional(),
   surfaceDuration: z.number().int().min(-1).optional(),
 });

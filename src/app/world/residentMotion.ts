@@ -31,6 +31,7 @@ import type { ContentIndex, GameState, Grid, MapDef, Vec2 } from '../../core/typ
 import type { ResidentRoutine } from '../../content/schemas';
 import { BA_DAN_ROUTINES } from '../../content/residents/routines';
 import { cachedGrid, euclidean, findPath, posKey, samePos } from '../../core/rules/grid';
+import type { MoveContext } from '../../core/rules/grid';
 import { resolveResidents } from '../../core/story/residents';
 import { backgroundFigures, visibleNpcs } from '../../core/story/world';
 import { Animator } from '../animator';
@@ -148,12 +149,14 @@ function route(
     for (const goal of goals) {
       if (!at) break;
       const blocked = new Set(avoid.filter((key) => key !== posKey(goal)));
-      const step = findPath(
-        { grid, blocked, surfaces: content.surfaces, size: 1 },
-        at,
-        goal,
-        grid.width * grid.height,
-      );
+      const context: MoveContext = {
+        grid,
+        blocked,
+        surfaces: content.surfaces,
+        size: 1,
+        climbCost: content.tuning.climbCost,
+      };
+      const step = findPath(context, at, goal, grid.width * grid.height);
       at = step ? goal : null;
       if (step) path.push(...step.path);
     }

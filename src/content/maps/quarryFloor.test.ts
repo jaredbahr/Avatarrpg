@@ -3,12 +3,12 @@ import { CONTENT } from '../../content';
 import { RngCursor } from '../../core/rng';
 import {
   buildGrid,
-  enterCost,
   findPath,
   hasLineOfSight,
   occupiedCells,
   posKey,
   reachable,
+  standCost,
   tileAt,
 } from '../../core/rules/grid';
 import { BattleDraft } from '../../core/state/battleDraft';
@@ -122,6 +122,7 @@ describe('Driller quarry interior', () => {
       blocked: new Set<string>(),
       surfaces: CONTENT.surfaces,
       size: 1 as const,
+      climbCost: CONTENT.tuning.climbCost,
     };
     const oneCellReachable = reachable(context, { x: 3, y: 6 }, 99);
     const targets = [
@@ -141,8 +142,8 @@ describe('Driller quarry interior', () => {
     expect(boss?.size).toBe(2);
     if (!boss) return;
     const twoCell = { ...context, size: 2 as const };
-    expect(enterCost(twoCell, { x: 7, y: 4 })).toBeNull();
-    expect(enterCost(twoCell, { x: 10, y: 7 })).toBeNull();
+    expect(standCost(twoCell, { x: 7, y: 4 })).toBeNull();
+    expect(standCost(twoCell, { x: 10, y: 7 })).toBeNull();
     expect(findPath(twoCell, boss.pos, { x: 9, y: 5 }, 99)).not.toBeNull();
   });
 

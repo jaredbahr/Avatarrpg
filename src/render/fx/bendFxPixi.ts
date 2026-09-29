@@ -30,6 +30,8 @@ export function syncBendFx(
     s.rotation = p.rotation;
     s.width = p.w;
     s.height = p.h;
+    // After the size: Pixi's height setter keeps the sign of `scale.y`.
+    s.scale.y = Math.abs(s.scale.y) * p.sy;
     s.alpha = sprite.alpha;
     s.blendMode = sprite.blend === 'add' ? 'add' : 'normal';
     s.visible = true;

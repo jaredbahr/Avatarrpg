@@ -172,7 +172,14 @@ export function isValidTarget(
           .flatMap((u) => occupiedCells(u).map(posKey)),
       );
       const cost = enterCost(
-        { grid: battle.grid, blocked, surfaces: content.surfaces, size: caster.size },
+        {
+          grid: battle.grid,
+          blocked,
+          surfaces: content.surfaces,
+          size: caster.size,
+          climbCost: content.tuning.climbCost,
+        },
+        caster.pos,
         target,
       );
       if (cost === null) return { ok: false, reason: 'Cannot land there.' };

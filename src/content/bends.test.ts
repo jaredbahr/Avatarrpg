@@ -64,21 +64,16 @@ function attackOf(overrides: Partial<BendAttackCue> = {}): BendAttackCue {
   };
 }
 
-function straight(speed: number): BendTrajectory {
-  return { kind: 'straight', speedTilesPerSecond: speed };
+function straight(): BendTrajectory {
+  return { kind: 'straight' };
 }
 
-function arc(speed: number, heightTiles = 1, spin = 1): BendTrajectory {
-  return { kind: 'arc', speedTilesPerSecond: speed, heightTiles, spin };
+function arc(heightTiles = 1, spin = 1): BendTrajectory {
+  return { kind: 'arc', heightTiles, spin };
 }
 
-function whipBolt(fraction: number, maxTiles: number, boltSpeed: number): BendTrajectory {
-  return {
-    kind: 'whipBolt',
-    whipFraction: fraction,
-    whipMaxTiles: maxTiles,
-    boltSpeedTilesPerSecond: boltSpeed,
-  };
+function whipBolt(fraction: number, maxTiles: number): BendTrajectory {
+  return { kind: 'whipBolt', whipFraction: fraction, whipMaxTiles: maxTiles };
 }
 
 function layerOf(phase: BendPhase, sequence: string): BendEffectLayer {
@@ -137,7 +132,7 @@ function effectOf(overrides: Partial<BendEffectDef> = {}): BendEffectDef {
       layerOf('impact', 'bend-burst'),
       layerOf('residue', 'bend-scorch'),
     ],
-    trajectory: straight(6),
+    trajectory: straight(),
     impact: { sequence: 'bend-burst', flash: 0.4, shakeTiles: 0.1, offsetPx: { x: 0, y: -60 } },
     residue: { sequence: 'bend-scorch', durationMs: 600, gameplaySurface: false },
     ...overrides,
@@ -526,43 +521,45 @@ describe('bend data contract', () => {
   });
 
   it('rejects a whipFraction outside (0,1]', () => {
-    const effect = effectOf({ trajectory: whipBolt(0, 2, 5) });
+    const effect = effectOf({ trajectory: whipBolt(0, 2) });
     expect(problemsFor([], [effect])).toContain('whipFraction 0 must be in (0,1]');
   });
 
   it('rejects a whipMaxTiles that does not reach or reaches too far', () => {
-    expect(problemsFor([], [effectOf({ trajectory: whipBolt(0.5, 0, 5) })])).toContain(
+    expect(problemsFor([], [effectOf({ trajectory: whipBolt(0.5, 0) })])).toContain(
       'whipMaxTiles 0 must be above 0',
     );
-    expect(problemsFor([], [effectOf({ trajectory: whipBolt(0.5, 17, 5) })])).toContain(
+    expect(problemsFor([], [effectOf({ trajectory: whipBolt(0.5, 17) })])).toContain(
       'whipMaxTiles 17 must be above 0 and at most 16',
     );
   });
 
-  it('rejects a straight trajectory that does not travel', () => {
-    const effect = effectOf({ trajectory: straight(0) });
-    expect(problemsFor([], [effect])).toContain('speedTilesPerSecond 0 must be above 0');
-  });
-
-  it('rejects an infinite speed', () => {
-    const effect = effectOf({ trajectory: straight(Infinity) });
-    expect(problemsFor([], [effect])).toContain('speedTilesPerSecond Infinity must be above 0');
-  });
-
-  it('rejects an arc trajectory that does not travel', () => {
-    const effect = effectOf({ trajectory: arc(0) });
-    expect(problemsFor([], [effect])).toContain('speedTilesPerSecond 0 must be above 0');
+  it('times every travel layer by its prototype flight, and no other layer', () => {
+    const travel = (flightMs?: number): BendEffectLayer => ({
+      ...layerOf('travel', 'bend-ball'),
+      ...(flightMs === undefined ? {} : { flightMs }),
+    });
+    const withTravel = (layer: BendEffectLayer) =>
+      effectOf({ layers: [layer, ...effectOf().layers] });
+    expect(problemsFor([], [withTravel(travel(280))])).toBe('');
+    expect(problemsFor([], [withTravel(travel())])).toContain('layer 0 (travel) has no flightMs');
+    expect(problemsFor([], [withTravel(travel(0))])).toContain(
+      'layer 0 flightMs 0 is outside 16..2000',
+    );
+    expect(problemsFor([], [withTravel(travel(Infinity))])).toContain(
+      'layer 0 flightMs Infinity is outside 16..2000',
+    );
+    const gather = { ...layerOf('gather', 'bend-gather'), flightMs: 280 };
+    const layers = [gather, ...effectOf().layers.slice(1)];
+    expect(problemsFor([], [effectOf({ layers })])).toContain(
+      'layer 0 (gather) has a flightMs; only a travel layer flies',
+    );
   });
 
   it('rejects an arc height or spin out of range', () => {
-    const problems = problemsFor([], [effectOf({ trajectory: arc(4, Infinity, -9) })]);
+    const problems = problemsFor([], [effectOf({ trajectory: arc(Infinity, -9) })]);
     expect(problems).toContain('heightTiles Infinity is outside 0..4');
     expect(problems).toContain('spin -9 is outside -8..8');
-  });
-
-  it('rejects a whipBolt whose bolt does not travel', () => {
-    const effect = effectOf({ trajectory: whipBolt(0.5, 2, 0) });
-    expect(problemsFor([], [effect])).toContain('boltSpeedTilesPerSecond 0 must be above 0');
   });
 
   it('checks frame names against the unit atlas when the caller knows them', () => {
@@ -821,20 +818,16 @@ describe('bend schemas', () => {
   });
 
   it.each([
-    ['straight speed', straight(0)],
-    ['infinite straight speed', straight(Infinity)],
-    ['arc speed', arc(0)],
-    ['arc height below zero', arc(4, -1)],
-    ['arc height above four', arc(4, 4.5)],
-    ['infinite arc height', arc(4, Infinity)],
-    ['arc spin above eight', arc(4, 1, 9)],
-    ['infinite arc spin', arc(4, 1, -Infinity)],
-    ['whip fraction at zero', whipBolt(0, 2, 5)],
-    ['whip fraction above one', whipBolt(1.01, 2, 5)],
-    ['whip maximum distance', whipBolt(0.5, 0, 5)],
-    ['whip maximum distance above sixteen', whipBolt(0.5, 17, 5)],
-    ['whip bolt speed', whipBolt(0.5, 2, 0)],
-    ['infinite whip bolt speed', whipBolt(0.5, 2, Infinity)],
+    ['arc height below zero', arc(-1)],
+    ['arc height above four', arc(4.5)],
+    ['infinite arc height', arc(Infinity)],
+    ['arc spin above eight', arc(1, 9)],
+    ['infinite arc spin', arc(1, -Infinity)],
+    ['whip fraction at zero', whipBolt(0, 2)],
+    ['whip fraction above one', whipBolt(1.01, 2)],
+    ['whip maximum distance', whipBolt(0.5, 0)],
+    ['whip maximum distance above sixteen', whipBolt(0.5, 17)],
+    ['speed, which the flight time replaced', { kind: 'straight', speedTilesPerSecond: 6 }],
   ])('rejects a non-positive or out-of-range %s', (_label, trajectory) => {
     expectSchemaFailure(bendTrajectorySchema, trajectory);
   });
@@ -844,6 +837,9 @@ describe('bend schemas', () => {
     ['timing below sixteen', { ...layerOf('travel', 'bolt'), frameMs: [15] }],
     ['timing above one thousand', { ...layerOf('travel', 'bolt'), frameMs: [1001] }],
     ['fractional timing', { ...layerOf('travel', 'bolt'), frameMs: [16.5] }],
+    ['a flight below sixteen', { ...layerOf('travel', 'bolt'), flightMs: 15 }],
+    ['a flight above two seconds', { ...layerOf('travel', 'bolt'), flightMs: 2001 }],
+    ['an infinite flight', { ...layerOf('travel', 'bolt'), flightMs: Infinity }],
   ])('rejects an effect layer with %s', (_label, layer) => {
     expectSchemaFailure(bendEffectLayerSchema, layer);
   });
@@ -890,9 +886,9 @@ describe('bend schemas are strict', () => {
     ],
     ['a bend set', bendSetDefSchema, { ...setOf(), ...extra }],
     ['a layer', bendEffectLayerSchema, { ...layerOf('travel', 'bolt'), ...extra }],
-    ['a straight trajectory', bendTrajectorySchema, { ...straight(4), ...extra }],
+    ['a straight trajectory', bendTrajectorySchema, { ...straight(), ...extra }],
     ['an arc trajectory', bendTrajectorySchema, { ...arc(4), ...extra }],
-    ['a whipBolt trajectory', bendTrajectorySchema, { ...whipBolt(0.5, 2, 5), ...extra }],
+    ['a whipBolt trajectory', bendTrajectorySchema, { ...whipBolt(0.5, 2), ...extra }],
     [
       'a residue',
       bendResidueSchema,

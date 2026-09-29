@@ -452,7 +452,13 @@ function handleWalkTo(content: ContentIndex, state: GameState, pos: Vec2): StepR
    * have no move points; it only has to bound the search.
    */
   const route = findPath(
-    { grid, blocked: new Set<string>(), surfaces: content.surfaces, size: 1 },
+    {
+      grid,
+      blocked: new Set<string>(),
+      surfaces: content.surfaces,
+      size: 1,
+      climbCost: content.tuning.climbCost,
+    },
     state.location.pos,
     pos,
     grid.width * grid.height,
@@ -659,7 +665,13 @@ function findApproach(content: ContentIndex, state: GameState, target: Vec2): Ve
       const tile = tileAt(grid, candidate);
       if (!tile || tile.blocked) continue;
       const path = findPath(
-        { grid, blocked: occupied, surfaces: content.surfaces, size: 1 },
+        {
+          grid,
+          blocked: occupied,
+          surfaces: content.surfaces,
+          size: 1,
+          climbCost: content.tuning.climbCost,
+        },
         state.location.pos,
         candidate,
         grid.width * grid.height,
