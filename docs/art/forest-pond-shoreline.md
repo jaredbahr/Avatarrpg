@@ -127,3 +127,48 @@ water cells and their bed still read as water under the film, and the forest
 apron (which reads this plate only as an overpaint guard) is byte-identical.
 `pond-bank.webp` went from 21,434 to 18,050 B and `pool-bank.webp` from 13,184
 to 10,490 B. Both packers were run twice and produced byte-identical files.
+
+## Organic shore and reed feet (A1 round 2, 29 September 2026)
+
+The supervisor's review of the A1 captures found two things. The pond's and
+the creek's shorelines stepped with the diamond grid, and each reed clump
+stood on a dark tile-shaped patch. `docs/art-bible.md` asks for construction
+seams to disappear in normal presentation. The rules' cells did not move:
+nine `~` cells, twelve `W` cells.
+
+- **Organic shore** (`Pond.organic`, forest pond and both creek pools; the
+  Cutting's pool keeps the plain bite and its plate is byte-identical). The
+  wet line is the nearer of two lines. The first is a wandering level
+  (`SHORE_LEVEL` ± `SHORE_LEVEL_WANDER`/2) on the water cells blurred by a
+  separable tent of half-width `SHORE_BLUR` 0.65. That takes the corners the
+  water pushes out off in curves. The second is the bite's wandering depth,
+  measured in a straight line on the ground plane from the nearest dry cell
+  (`landDistance`), which turns each corner the land pushes in on a circle.
+  The old bite was a chamfer distance over packed pixels, which kept those
+  corners sharp. The damp margin outside the cells gives out on the same
+  blur at its own wandering level (`MARGIN_LEVEL`), not at a fixed 0.12-cell
+  offset. Measured on the pond, the bed now stays at least 0.32 cells from
+  every water corner (0.20 before) and 0.17 from every land corner (0.09).
+  The test holds 0.3 and 0.15.
+- **Bank overgrowth** (`Pond.overgrowth`, creek only). The creek runs through
+  grass, and the verge takes the bank back past a second wandering line
+  (`GRASS_LINE`), in the colour the grass plates paint on the same lattice.
+  So the bare bank is a strip between two organic lines, and its outer edge is
+  never the cells' own edge.
+- **Reeds.** Two more fringes of the same art stand on the creek's north bank
+  at (3,10) and (13,10), rooted at the water side of their cells so the leaves
+  hang out over the bank edge. Every reed fringe and the nest set
+  `contactShadow: false` (ADR 0064). The runtime footprint shadow was the dark
+  diamond under each clump. The route plate and the grass regions wear the
+  ground at their painted feet instead (`scripts/art/forest-reed-wear.ts`).
+
+What the plates cannot reach is the runtime water film. It is still drawn over
+every whole `~` cell, as ADR 0045 and `surfaceIsPainted` require for a partial
+scene. Over the bank that now reaches into those cells, it shows as a faint
+pale rim whose outer edge still follows the cells. Removing or softening it is
+a renderer and readability decision, not an art one, and it is left for review.
+The canvas backend also shows faint seams between the film's cells inside the
+pond. These were there before this pass.
+
+Sizes: `pond-bank.webp` 19,892 → 23,654 B, `creek-west.webp` 13,942 → 17,208 B,
+`creek-east.webp` 10,628 → 14,432 B.
