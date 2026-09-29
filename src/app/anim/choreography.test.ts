@@ -120,7 +120,7 @@ describe('directed Fire Jab attachments', () => {
         expect(travel?.attachments?.to).toMatchObject({
           sprite: target.sprite,
           pos: target.pos,
-          // A G enemy (ADR 0059, ADR 0060) stands at the party's scale on `play`'s oblique map.
+          // A G enemy (ADR 0059, ADR 0062) stands at the party's scale on `play`'s oblique map.
           scale: enemyScale(target.sprite, 1, 'oblique'),
           size: 1,
         });

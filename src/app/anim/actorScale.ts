@@ -15,7 +15,7 @@ const ADULT_ENEMIES: Readonly<Record<string, number>> = {
 /**
  * Shared by the visible body, effect sockets and exploration encounter markers.
  * An enemy drawn on a G sheet (the thug, ADR 0059; the quarry bandits, ADR
- * 0060) is packed at the party's size, so it stands at the party's scale.
+ * 0062) is packed at the party's size, so it stands at the party's scale.
  */
 export function enemyScale(sprite: string, poseScale = 1, projection?: Projection): number {
   if (sheetLocomotion(sprite)?.headings === 8) return partyScale(projection, poseScale);

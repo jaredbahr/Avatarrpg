@@ -269,7 +269,7 @@ function gSheet(key: string, name: keyof typeof G_TRAVEL, palette: string): Shee
 /**
  * Each G enemy's measured root travel per walk cel, in source px, per
  * heading: `speed_px_per_frame` in each selected toned walk's gates.json
- * (the thug, ADR 0059; the quarry bandits, ADR 0060).
+ * (the thug, ADR 0059; the quarry bandits, ADR 0062).
  */
 const ENEMY_TRAVEL: Readonly<Record<'thug' | 'slinger' | 'bruiser' | 'quarrybender', GTravel>> = {
   thug: {
@@ -315,7 +315,7 @@ const ENEMY_TRAVEL: Readonly<Record<'thug' | 'slinger' | 'bruiser' | 'quarrybend
 };
 
 /**
- * A toned PixelLab enemy on a G sheet (ADR 0059, ADR 0060): eight-way idle,
+ * A toned PixelLab enemy on a G sheet (ADR 0059, ADR 0062): eight-way idle,
  * walk and rest at the party's scale and walk rate, and the old sheet's
  * cast, hit and KO cels, mirrored as the party's legacy actions are. The
  * bruiser's club needs a 160 px cel.

@@ -25,7 +25,7 @@ afterEach(() => {
 const pinsOf = (name: BanditName) =>
   JSON.parse(readFileSync(BANDITS[name].pins, 'utf8')) as EnemyGPins;
 
-describe('quarry bandit G sheets (ADR 0060)', () => {
+describe('quarry bandit G sheets (ADR 0062)', () => {
   it.each(BANDIT_NAMES)('pins exactly the copied cels and preserved actions of the %s', (name) => {
     const def = BANDITS[name];
     const pins = pinsOf(name);

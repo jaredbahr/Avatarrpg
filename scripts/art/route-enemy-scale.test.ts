@@ -22,7 +22,7 @@ const standing = async (asset: string, clip: string) => {
 };
 
 it.each(['thug', 'slinger', 'bruiser', 'quarrybender'])(
-  'stands the G %s at the party G body’s height and scale (ADR 0059, ADR 0060)',
+  'stands the G %s at the party G body’s height and scale (ADR 0059, ADR 0062)',
   async (name) => {
     const key = `unit.enemy.${name}`;
     // Same camera, same 75% map: within a few px of Kaya's, 113-121 px.

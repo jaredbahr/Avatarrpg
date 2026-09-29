@@ -1,5 +1,5 @@
 /**
- * The shared packer for an enemy's G sheet (ADR 0059, ADR 0060): a toned
+ * The shared packer for an enemy's G sheet (ADR 0059, ADR 0062): a toned
  * PixelLab unit's eight-heading idle and walk, packed as the party's G
  * locomotion is, beside the old sheet's cast, hit and KO cels. The thug
  * (`thug-g.ts`) and the quarry bandits (`bandits-g.ts`) are definitions of it.
@@ -24,7 +24,7 @@
  * - `headingDx` moves a whole heading sideways, idle and walk together, the
  *   fewest pixels that bring idle cel 0's feet within `art:validate`'s 16 px
  *   of the anchor column. Facing south-east, the lowest rows hold only the
- *   near foot, drawn left of a body that stands on the column (ADR 0060).
+ *   near foot, drawn left of a body that stands on the column (ADR 0062).
  *
  * A sheet may be wider than 128 px (`frameW`, the manifest's `frameSize`,
  * ADR 0032) when a weapon reaches past the margin; every cel, the legacy

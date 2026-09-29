@@ -124,7 +124,7 @@ export const THIRD_PARTY_CREDITS: readonly CreditEntry[] = [
       'art/units/quarrybender-g.webp',
       'art/units/quarrybender-g.json',
     ],
-    note: 'Projected onto each unit’s eight headings and root-locked; the cels are drawn for this project with PixelLab, and the idle and the cast, hit and defeat poses are this project’s own. The animation file itself is not redistributed. See docs/adr/0059-g-knockout-and-thug.md and docs/adr/0060-g-quarry-bandits.md.',
+    note: 'Projected onto each unit’s eight headings and root-locked; the cels are drawn for this project with PixelLab, and the idle and the cast, hit and defeat poses are this project’s own. The animation file itself is not redistributed. See docs/adr/0059-g-knockout-and-thug.md and docs/adr/0062-g-quarry-bandits.md.',
   },
 ];
 

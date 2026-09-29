@@ -1,4 +1,4 @@
-# ADR 0060: The quarry bandits on G sheets
+# ADR 0062: The quarry bandits on G sheets
 
 **Status:** accepted, 2026-09-28
 

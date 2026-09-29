@@ -1,5 +1,5 @@
 /**
- * Reproducibly builds the quarry bandits' G sheets (ADR 0060): the toned
+ * Reproducibly builds the quarry bandits' G sheets (ADR 0062): the toned
  * PixelLab slinger, bruiser and quarry bender, each with an eight-heading
  * idle and walk packed by the shared enemy packer (`enemy-g.ts`), beside its
  * old sheet's cast, hit and KO cels.

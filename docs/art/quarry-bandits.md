@@ -1,6 +1,6 @@
 # Remaining mandatory-route quarry bandits
 
-> **Superseded for idle and walk (ADR 0060).** The slinger, bruiser and quarry
+> **Superseded for idle and walk (ADR 0062).** The slinger, bruiser and quarry
 > stone-worker now draw from G sheets, `public/art/units/<name>-g.webp`, built by
 > `scripts/art/bandits-g.ts` from the toned PixelLab P1 bandits: eight-heading
 > idle, walk and rest at the party's scale. Their three cast cels, hit and
