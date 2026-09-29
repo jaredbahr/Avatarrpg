@@ -5,6 +5,7 @@ import { createBattle, createGame } from '../state/createGame';
 import type { ContentIndex, Grid, Unit, Vec2 } from '../types';
 import { hitBreakdown, hitChance } from './damage';
 import { DEFAULT_TILE, tileAt, withTile } from './grid';
+import { NO_OBSCUREMENT } from './obscurement';
 
 /**
  * Hit chance, pinned number by number.
@@ -52,6 +53,14 @@ describe('hit chance', () => {
       baseHitChance: 90,
       elevationStep: 10,
       coverPenalty: 20,
+      obscurementCap: 40,
+      adjacentObscurementPenalty: 10,
+      obscurementReference: 25,
+      weather: [
+        { perTile: 0, minDistance: 1, cap: 0 },
+        { perTile: 5, minDistance: 3, cap: 20 },
+        { perTile: 10, minDistance: 2, cap: 40 },
+      ],
       hitChanceMin: 5,
       hitChanceMax: 99,
       climbCost: 1,
@@ -66,7 +75,14 @@ describe('hit chance', () => {
       at(attacker, ATTACKER),
       at(defender, ADJACENT),
     );
-    expect(breakdown).toEqual({ chance: 90, base: 90, elevation: 0, cover: 0, statuses: 0 });
+    expect(breakdown).toEqual({
+      chance: 90,
+      base: 90,
+      elevation: 0,
+      cover: 0,
+      statuses: 0,
+      obscurement: NO_OBSCUREMENT,
+    });
   });
 
   it('adds a step for each tier of high ground and never passes 99', () => {
@@ -90,6 +106,7 @@ describe('hit chance', () => {
       elevation: 0,
       cover: -20,
       statuses: 0,
+      obscurement: NO_OBSCUREMENT,
     });
   });
 

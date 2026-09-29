@@ -230,6 +230,14 @@ export const surfaceSchema = z.object({
   enterStatusChance: z.number().min(0).max(1),
   blocksSight: z.boolean(),
   grantsCover: z.boolean(),
+  obscures: z
+    .object({
+      // Penalties, so a value above zero would heal accuracy instead of costing it.
+      inside: z.number().int().max(0),
+      through: z.number().int().max(0),
+    })
+    .strict()
+    .nullable(),
   defaultDuration: z.number().int().min(-1),
 });
 
@@ -637,6 +645,14 @@ const placement = z.object({
   nameSuffix: z.string().optional(),
 });
 
+/** One authored step of a weather schedule; intensity is a 0-2 ladder. */
+const weatherScheduleEntry = z
+  .object({
+    fromRound: z.number().int().min(1),
+    intensity: z.union([z.literal(0), z.literal(1), z.literal(2)]),
+  })
+  .strict();
+
 export const encounterSchema = z.object({
   id,
   name: z.string().min(1),
@@ -663,6 +679,13 @@ export const encounterSchema = z.object({
     }),
   ),
   reinforcements: z.array(placement),
+  weather: z
+    .object({
+      id: z.literal('sandstorm'),
+      schedule: z.array(weatherScheduleEntry).min(1),
+    })
+    .strict()
+    .optional(),
   expectedLevel: z.number().int().min(1).max(10),
   intro: z.string().min(1),
   tip: z.string().min(1),

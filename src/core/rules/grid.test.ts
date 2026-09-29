@@ -1,6 +1,16 @@
 import { describe, expect, it } from 'vitest';
 import type { Grid, Tile, Vec2 } from '../types';
-import { DEFAULT_TILE, enterCost, pathCost, posKey, reachable, standCost, withTile } from './grid';
+import {
+  DEFAULT_TILE,
+  enterCost,
+  hasLineOfSight,
+  pathCost,
+  posKey,
+  reachable,
+  standCost,
+  withSurface,
+  withTile,
+} from './grid';
 import type { MoveContext } from './grid';
 
 function openGrid(width: number, height: number): Grid {
@@ -153,5 +163,28 @@ describe('climbing (E4)', () => {
     const grid = laidOut([{ pos: bench, tile: tier(2) }]);
 
     expect(standCost(battleContext(grid), bench)).toBe(1);
+  });
+});
+
+describe('line of sight and obscurement', () => {
+  const from = { x: 0, y: 1 };
+  const to = { x: 4, y: 1 };
+
+  it('looks through a steam cloud, which obscures rather than blocks', () => {
+    const grid = withSurface(
+      openGrid(5, 3),
+      { x: 2, y: 1 },
+      { id: 'steam', duration: 2, spread: 0 },
+    );
+    expect(hasLineOfSight(grid, from, to)).toBe(true);
+  });
+
+  it('still stops at a wall', () => {
+    const grid = withTile(
+      openGrid(5, 3),
+      { x: 2, y: 1 },
+      { ...DEFAULT_TILE, blocked: true, blocksSight: true },
+    );
+    expect(hasLineOfSight(grid, from, to)).toBe(false);
   });
 });

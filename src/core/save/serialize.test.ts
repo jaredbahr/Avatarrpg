@@ -20,7 +20,8 @@ import { apply } from '../state/reducer';
 import { unitAbilities } from '../rules/abilities';
 import { createBattle, createGame } from '../state/createGame';
 import { reconcileDisciplines } from './reconcile';
-import type { GameState } from '../types';
+import type { ContentIndex, GameState } from '../types';
+import { weatherAt } from '../rules/obscurement';
 import {
   SAVE_FORMAT_VERSION,
   SAVE_MAGIC,
@@ -211,6 +212,70 @@ describe('save round trip', () => {
 
     expect(turns).toBeGreaterThan(1);
     expect(resumed.rng).not.toBe(initialRng);
+  });
+
+  it('keeps a weather battle deterministic across a save/load', () => {
+    /*
+     * Weather is derived from the encounter and the round rather than stored,
+     * so the save schema does not change. That only holds up if a loaded battle
+     * keeps rolling the same shots: this runs one uninterrupted fight and one
+     * interrupted by a save, both under the same sandstorm, and compares the
+     * event log turn for turn.
+     */
+    const encounter = CONTENT.encounters.get('enc_quarry_gate');
+    if (!encounter) throw new Error('Missing quarry gate encounter');
+    const storm: ContentIndex = {
+      ...CONTENT,
+      encounters: new Map(CONTENT.encounters).set('enc_quarry_gate', {
+        ...encounter,
+        weather: { id: 'sandstorm', schedule: [{ fromRound: 1, intensity: 2 }] },
+      }),
+    };
+
+    const seeded = createGame(storm, {
+      seed: 'weather-save-round-trip',
+      party: [
+        { characterId: 'kaya', level: 2, autoChoose: true },
+        { characterId: 'bo', level: 2, autoChoose: true },
+      ],
+      startNode: '',
+    });
+    const rng = new RngCursor(seeded.rng);
+    const battle = createBattle(storm, seeded, 'enc_quarry_gate', rng);
+    let uninterrupted: GameState = {
+      ...seeded,
+      screen: 'combat',
+      rng: rng.state,
+      battle: {
+        ...battle,
+        units: battle.units.map((unit) =>
+          unit.faction === 'party' ? { ...unit, ai: 'aggressive' } : unit,
+        ),
+      },
+    };
+    for (let i = 0; i < 3 && uninterrupted.battle?.phase === 'active'; i++) {
+      uninterrupted = apply(storm, uninterrupted, { type: 'runAiTurn' }).state;
+    }
+    expect(uninterrupted.battle?.phase).toBe('active');
+
+    const result = deserialize(serialize(uninterrupted, META));
+    if (!result.ok) throw new Error(result.error);
+    let resumed = stateFromBlob(result.blob);
+
+    // The weather is live and identical on both sides without being in the blob.
+    expect(weatherAt(storm, 'enc_quarry_gate', uninterrupted.battle?.round ?? 0)).toBe(2);
+
+    let turns = 0;
+    while (uninterrupted.battle?.phase === 'active' && turns < 40) {
+      const command = { type: 'runAiTurn' } as const;
+      const expected = apply(storm, uninterrupted, command);
+      const actual = apply(storm, resumed, command);
+      expect(actual.events, `events after resumed turn ${turns}`).toEqual(expected.events);
+      uninterrupted = expected.state;
+      resumed = actual.state;
+      turns++;
+    }
+    expect(turns).toBeGreaterThan(1);
   });
 });
 
