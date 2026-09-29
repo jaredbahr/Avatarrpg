@@ -41,11 +41,11 @@ export class DecorSheets {
    * Points the sheets at a grid. Returns true when the decor changed, which
    * the caller uses to know its sprites' textures are stale.
    */
-  sync(grid: Grid): boolean {
-    const signature = decorSignature(grid);
+  sync(grid: Grid, lifted = false): boolean {
+    const signature = decorSignature(grid) + (lifted ? '|lifted' : '');
     if (signature === this.signature) return false;
     this.signature = signature;
-    this.relief = boardRelief(grid);
+    this.relief = boardRelief(grid, lifted);
     this.chunks.clear();
     return true;
   }

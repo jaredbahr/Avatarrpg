@@ -22,6 +22,7 @@ import {
   Graphics,
   Matrix,
   Rectangle,
+  RenderTexture,
   Sprite,
   Text,
   TextStyle,
@@ -56,7 +57,9 @@ import { bendFxSource } from '../fx/bendFxDraw';
 import { syncBendFx } from '../fx/bendFxPixi';
 import { aimArcPoints, arcHeading, arrowheadPolygon } from '../geometry/arc';
 import { actorHealthBar, actorShadowDensity, healthBarCap } from '../geometry/actorSilhouette';
-import { DECOR_CHUNK, decorChunks } from '../geometry/board';
+import { DECOR_CHUNK, decorChunks, decorSignature } from '../geometry/board';
+import { liftOps } from '../geometry/lift';
+import type { LiftOp, Pt } from '../geometry/lift';
 import { contourLoops, isHole } from '../geometry/contour';
 import type { Curve } from '../geometry/curve';
 import { sampleAt, smoothPath } from '../geometry/curve';
@@ -81,11 +84,10 @@ import type { BackendCapabilities, RenderBackend } from './backend';
 import {
   EDGE_SHADE_ALPHA,
   EDGE_SHADE_TILES,
-  ELEVATION_LIFT,
   VIGNETTE_ALPHA,
-  elevationAt,
   overlayColors,
 } from './canvas2d';
+import { liftAlong, liftAt } from '../geometry/elevation';
 import { FILTER_VERTEX, GROUND_FRAGMENT } from './shaders';
 
 /** Must match terrainBase() in shaders.ts. */
@@ -197,6 +199,19 @@ export class PixiBackend implements RenderBackend {
 
   /** Logical ground pixels; all ground marks share the camera affine. */
   private root = new Container();
+  /**
+   * Everything drawn flat on the ground, painting to paths. With raised
+   * ground on the board it renders into `groundTexture` instead of the
+   * screen, and the lift pass (ADR 0065) draws that texture back with each
+   * raised top lifted over its faces.
+   */
+  private groundStack = new Container();
+  private groundTexture: RenderTexture | null = null;
+  private groundTextureSprite = new Sprite(Texture.EMPTY);
+  private liftGfx = new Graphics();
+  private liftCache: { key: string; ops: LiftOp[] } | null = null;
+  /** The oblique board, where raised ground is lifted rather than banded. */
+  private lifted = false;
   /** Projected world pixels; actors and labels remain upright. */
   private upright = new Container();
   private labels = new Container();
@@ -400,7 +415,7 @@ export class PixiBackend implements RenderBackend {
     // The painting sits under it, placed from the same camera numbers.
     this.backdropSprite.visible = false;
     this.groundOverlaySprite.visible = false;
-    app.stage.addChild(
+    this.groundStack.addChild(
       this.backdropSprite,
       this.groundSprite,
       this.elevationBaseLayer,
@@ -437,7 +452,16 @@ export class PixiBackend implements RenderBackend {
       this.bendOver,
     );
     this.labels.addChild(this.fxGfx, this.floaterLayer);
-    app.stage.addChild(this.root, this.upright, this.fxOver.container, this.labels);
+    this.groundStack.addChild(this.root);
+    this.groundTextureSprite.visible = false;
+    app.stage.addChild(
+      this.groundStack,
+      this.groundTextureSprite,
+      this.liftGfx,
+      this.upright,
+      this.fxOver.container,
+      this.labels,
+    );
 
     if (this.pending) {
       const { view, camera } = this.pending;
@@ -484,7 +508,11 @@ export class PixiBackend implements RenderBackend {
     // the renderer own the shared GPU program and release only filter state.
     this.groundFilter?.destroy();
     this.groundOverlayFilter?.destroy();
+    // A lifted board keeps the ground off the stage; destroy it either way.
+    if (this.groundStack.parent !== this.app?.stage) this.groundStack.destroy({ children: true });
     this.app?.stage.destroy({ children: true });
+    this.groundTexture?.destroy(true);
+    this.groundTexture = null;
     this.app?.renderer.destroy(false);
     this.app = null;
     this.groundFilter = null;
@@ -514,6 +542,7 @@ export class PixiBackend implements RenderBackend {
       return;
     }
 
+    this.lifted = camera.projection === 'oblique';
     // The shake moves the world: a knocked camera shows the margin, as a fit does.
     const nudge = TILE * camera.scale;
     const m = camera.groundMatrix();
@@ -592,8 +621,87 @@ export class PixiBackend implements RenderBackend {
     this.fxUnder.draw(emitters, oblique);
     this.fxOver.draw(emitters, oblique);
     this.drawFloaters(view, camera);
+    this.syncLift(view, camera, oblique && scenePainted ? (view.scene?.reliefLift ?? 0) : 0);
 
     app.renderer.render(app.stage);
+  }
+
+  /**
+   * Raised ground as blocks (ADR 0065), from the same op list the Canvas 2D
+   * backend draws. The flat ground renders into a texture; each raised top
+   * is that texture again, sampled lower down, filled over its faces.
+   */
+  private syncLift(view: MapView, camera: Camera, artLift: number): void {
+    const app = this.app;
+    if (!app) return;
+    const tilePx = TILE * camera.scale;
+    const key = [
+      decorSignature(view.grid),
+      camera.scale,
+      camera.offsetX,
+      camera.offsetY,
+      artLift,
+      view.crispOverlays ? 1 : 0,
+      this.lifted ? 1 : 0,
+    ].join('|');
+    if (this.liftCache?.key !== key) {
+      const ops = this.lifted
+        ? liftOps({
+            grid: view.grid,
+            project: (pos) => camera.project(pos),
+            tilePx,
+            artLift,
+            contrast: Boolean(view.crispOverlays),
+          })
+        : [];
+      this.liftCache = { key, ops };
+    }
+    const { ops } = this.liftCache;
+    const g = this.liftGfx;
+    g.clear();
+    if (ops.length === 0) {
+      this.groundTextureSprite.visible = false;
+      if (this.groundStack.parent !== app.stage) app.stage.addChildAt(this.groundStack, 0);
+      return;
+    }
+
+    const { width, height, dpr } = this.viewport;
+    if (!this.groundTexture) {
+      this.groundTexture = RenderTexture.create({ width, height, resolution: dpr, dynamic: true });
+      this.groundTextureSprite.texture = this.groundTexture;
+    } else if (
+      this.groundTexture.width !== width ||
+      this.groundTexture.height !== height ||
+      this.groundTexture.source.resolution !== dpr
+    ) {
+      this.groundTexture.resize(width, height, dpr);
+    }
+    if (this.groundStack.parent === app.stage) app.stage.removeChild(this.groundStack);
+    app.renderer.render({ container: this.groundStack, target: this.groundTexture, clear: true });
+    this.groundTextureSprite.visible = true;
+
+    // The ops are in camera space; the texture already carries the shake.
+    const dx = view.cameraNudge.x * tilePx;
+    const dy = view.cameraNudge.y * tilePx;
+    g.position.set(dx, dy);
+    const flat = (poly: readonly Pt[]) => poly.flatMap((p) => [p.x, p.y]);
+    for (const op of ops) {
+      if (op.kind === 'top') {
+        // Global texture space maps a point through the inverse of `matrix`:
+        // this one samples the texture `shift` pixels below, shaken as drawn.
+        g.poly(flat(op.poly)).fill({
+          texture: this.groundTexture,
+          matrix: new Matrix(1, 0, 0, 1, -dx, -dy - op.shift),
+          textureSpace: 'global',
+        });
+      } else if (op.kind === 'fill') {
+        g.poly(flat(op.poly)).fill({ color: op.color, alpha: op.alpha });
+      } else {
+        g.moveTo(op.a.x, op.a.y)
+          .lineTo(op.b.x, op.b.y)
+          .stroke({ color: op.color, alpha: op.alpha, width: op.width, cap: 'round' });
+      }
+    }
   }
 
   /* ---------------------------------------------------------------- */
@@ -886,13 +994,14 @@ export class PixiBackend implements RenderBackend {
     const layers = partial
       ? [this.groundSprite, this.elevationBaseLayer, this.sceneGround, this.groundOverlaySprite]
       : [this.sceneGround, this.groundSprite, this.elevationBaseLayer, this.groundOverlaySprite];
-    const first = app.stage.getChildIndex(this.backdropSprite) + 1;
-    for (const [offset, layer] of layers.entries()) app.stage.setChildIndex(layer, first + offset);
+    const stack = this.groundStack;
+    const first = stack.getChildIndex(this.backdropSprite) + 1;
+    for (const [offset, layer] of layers.entries()) stack.setChildIndex(layer, first + offset);
   }
 
   /** Both baked passes share a grid cache, so one grid change invalidates both sprite buckets. */
   private syncDecorGrid(grid: MapView['grid']): boolean {
-    const changed = this.decor.sync(grid);
+    const changed = this.decor.sync(grid, this.lifted);
     if (changed) {
       this.decorPx = 0;
       this.elevationBasePx = 0;
@@ -1465,10 +1574,7 @@ export class PixiBackend implements RenderBackend {
       const anchor = box(at, width);
       const x = anchor.x;
       const ground =
-        anchor.y -
-        elevationAt(view.grid, { x: Math.round(at.x), y: Math.round(at.y) }) *
-          ELEVATION_LIFT *
-          TILE;
+        anchor.y - liftAlong(view.grid, at, camera.projection) * TILE;
       // The walk bob lifts the figure; its contact shadow stays on the ground.
       const y = ground + (npc.offset?.y ?? 0) * TILE;
       const footX = x + (width * TILE) / 2;
@@ -1528,7 +1634,7 @@ export class PixiBackend implements RenderBackend {
       sprite.anchor.set(0, 0);
       sprite.position.set(
         anchor.x,
-        anchor.y - elevationAt(view.grid, prop.pos) * ELEVATION_LIFT * TILE,
+        anchor.y - liftAt(view.grid, prop.pos, camera.projection) * TILE,
       );
       sprite.zIndex = depth(prop.pos);
       sprite.width = TILE;
@@ -1554,7 +1660,7 @@ export class PixiBackend implements RenderBackend {
       const pos = unit.renderPos ?? unit.pos;
       // The bob lifts the drawing, never the sort: zIndex stays on the tile.
       // So does the ground: a unit on a ledge stands a little higher on screen.
-      const lift = elevationAt(view.grid, unit.pos) * ELEVATION_LIFT;
+      const lift = liftAlong(view.grid, pos, camera.projection);
       const anchor = box(pos, unit.size);
       const x = anchor.x + (unit.offset?.x ?? 0) * TILE;
       const y = anchor.y + ((unit.offset?.y ?? 0) - lift) * TILE;

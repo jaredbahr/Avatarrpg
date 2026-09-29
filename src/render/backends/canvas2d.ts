@@ -10,20 +10,21 @@
  * context, they never own one.
  */
 
-import type { SceneFlock, SceneImage, Vec2 } from '../../core/types';
+import type { Grid, SceneFlock, SceneImage, Vec2 } from '../../core/types';
 import { authoredForBothSides } from '../../content/assets/clips';
 import { resolveAsset } from '../../content/assets/manifest';
-import { Camera } from '../camera';
+import { Camera, TILE } from '../camera';
 import type { Viewport } from '../camera';
 import type { TileRelief } from '../geometry/board';
 import { boardRelief, decorSignature, seamMaterial, surfaceEdges } from '../geometry/board';
 import { aimArcPoints, arcHeading, arrowheadPolygon } from '../geometry/arc';
 import { actorHealthBar, actorShadowDensity, healthBarCap } from '../geometry/actorSilhouette';
 import { resolveActorEmitters } from '../geometry/actorAttachments';
-import { elevationAt, ELEVATION_LIFT } from '../geometry/elevation';
-export { elevationAt, ELEVATION_LIFT } from '../geometry/elevation';
+import { liftAlong, liftAt } from '../geometry/elevation';
 import { contourLoops } from '../geometry/contour';
 import type { Curve } from '../geometry/curve';
+import { liftOps } from '../geometry/lift';
+import type { LiftOp, Pt } from '../geometry/lift';
 import { sampleAt, smoothPath } from '../geometry/curve';
 import { CanvasFxLayer } from '../fx/canvasFx';
 import { drawBendFx } from '../fx/bendFxDraw';
@@ -85,6 +86,11 @@ export class Canvas2DBackend implements RenderBackend {
   /** Cliffs, rims and wall outlines, rebuilt only when a tile's footing changes. */
   private relief: ReadonlyMap<number, TileRelief> = new Map();
   private reliefSignature = '';
+  /** The oblique board, where raised ground is lifted rather than banded. */
+  private lifted = false;
+  /** The flat ground as drawn, which the lift pass copies raised tops from. */
+  private snapshot: HTMLCanvasElement | null = null;
+  private liftCache: { key: string; ops: LiftOp[] } | null = null;
   /** The flock whose page was last asked for, so a scene change asks once. */
   private flock: SceneFlock | undefined;
 
@@ -121,6 +127,7 @@ export class Canvas2DBackend implements RenderBackend {
       ),
     };
 
+    this.lifted = camera.projection === 'oblique';
     ctx.save();
     ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
     ctx.imageSmoothingEnabled = true;
@@ -232,6 +239,7 @@ export class Canvas2DBackend implements RenderBackend {
         this.drawExit(view, ground);
         ctx.restore();
       }
+      this.drawLift(view, camera, sceneGround ? (view.scene?.reliefLift ?? 0) : 0);
       this.drawUnitRings(view, camera);
       drawBendFx(ctx, view.bendFx ?? [], camera, false);
       // All upright occupants share depth order, including NPCs and props.
@@ -369,14 +377,94 @@ export class Canvas2DBackend implements RenderBackend {
     }
   }
 
+  /**
+   * Raised ground as blocks (ADR 0065): the ground drawn so far is copied once,
+   * and each raised top is redrawn from that copy higher up, over its faces.
+   */
+  private drawLift(view: MapView, camera: Camera, artLift: number): void {
+    const { ctx, canvas } = this;
+    const tilePx = TILE * camera.scale;
+    const dx = view.cameraNudge.x * tilePx;
+    const dy = view.cameraNudge.y * tilePx;
+    // The ctx already carries the shake, so the ops stay in camera space.
+    const key = [
+      decorSignature(view.grid),
+      camera.scale,
+      camera.offsetX,
+      camera.offsetY,
+      artLift,
+      view.crispOverlays ? 1 : 0,
+    ].join('|');
+    if (this.liftCache?.key !== key) {
+      const ops = liftOps({
+        grid: view.grid,
+        project: (pos) => camera.project(pos),
+        tilePx,
+        artLift,
+        contrast: Boolean(view.crispOverlays),
+      });
+      this.liftCache = { key, ops };
+    }
+    const { ops } = this.liftCache;
+    if (ops.length === 0) return;
+
+    const snapshot = (this.snapshot ??= document.createElement('canvas'));
+    if (snapshot.width !== canvas.width || snapshot.height !== canvas.height) {
+      snapshot.width = canvas.width;
+      snapshot.height = canvas.height;
+    }
+    const copy = snapshot.getContext('2d');
+    if (!copy) return;
+    copy.clearRect(0, 0, snapshot.width, snapshot.height);
+    copy.drawImage(canvas, 0, 0);
+
+    const dpr = camera.viewport.dpr;
+    const trace = (poly: readonly Pt[]) => {
+      ctx.beginPath();
+      for (const p of poly) ctx.lineTo(p.x, p.y);
+      ctx.closePath();
+    };
+    ctx.save();
+    ctx.lineCap = 'round';
+    for (const op of ops) {
+      if (op.kind === 'top') {
+        ctx.save();
+        trace(op.poly);
+        ctx.clip();
+        // The snapshot is in device pixels and already shaken; undo both.
+        ctx.globalAlpha = 1;
+        ctx.drawImage(snapshot, -dx, -dy - op.shift, snapshot.width / dpr, snapshot.height / dpr);
+        ctx.restore();
+      } else if (op.kind === 'fill') {
+        ctx.globalAlpha = op.alpha;
+        ctx.fillStyle = op.color;
+        trace(op.poly);
+        ctx.fill();
+      } else {
+        ctx.globalAlpha = op.alpha;
+        ctx.strokeStyle = op.color;
+        ctx.lineWidth = op.width;
+        ctx.beginPath();
+        ctx.moveTo(op.a.x, op.a.y);
+        ctx.lineTo(op.b.x, op.b.y);
+        ctx.stroke();
+      }
+    }
+    ctx.restore();
+  }
+
+  /** The relief painters read, rebuilt only when the footing or the projection changes. */
+  private syncRelief(grid: Grid): void {
+    const signature = decorSignature(grid) + (this.lifted ? '|lifted' : '');
+    if (signature === this.reliefSignature) return;
+    this.reliefSignature = signature;
+    this.relief = boardRelief(grid, this.lifted);
+  }
+
   /** Cliffs, canopies, walls, cover and decals: a second pass so overhangs land on neighbours. */
   private drawElevationBase(view: MapView, camera: Camera): void {
     const { ctx } = this;
-    const signature = decorSignature(view.grid);
-    if (signature !== this.reliefSignature) {
-      this.reliefSignature = signature;
-      this.relief = boardRelief(view.grid);
-    }
+    this.syncRelief(view.grid);
     const bounds = camera.visibleBounds(view.grid);
     for (let y = bounds.y0; y <= bounds.y1; y++)
       for (let x = bounds.x0; x <= bounds.x1; x++) {
@@ -389,11 +477,7 @@ export class Canvas2DBackend implements RenderBackend {
 
   private drawDecor(view: MapView, camera: Camera): void {
     const { ctx } = this;
-    const signature = decorSignature(view.grid);
-    if (signature !== this.reliefSignature) {
-      this.reliefSignature = signature;
-      this.relief = boardRelief(view.grid);
-    }
+    this.syncRelief(view.grid);
     const bounds = camera.visibleBounds(view.grid);
     for (let y = bounds.y0; y <= bounds.y1; y++) {
       for (let x = bounds.x0; x <= bounds.x1; x++) {
@@ -416,11 +500,7 @@ export class Canvas2DBackend implements RenderBackend {
    */
   private drawSeams(view: MapView, camera: Camera, ready: boolean): void {
     const { ctx } = this;
-    const signature = decorSignature(view.grid);
-    if (signature !== this.reliefSignature) {
-      this.reliefSignature = signature;
-      this.relief = boardRelief(view.grid);
-    }
+    this.syncRelief(view.grid);
     const bounds = camera.visibleBounds(view.grid);
     for (let y = bounds.y0; y <= bounds.y1; y++) {
       for (let x = bounds.x0; x <= bounds.x1; x++) {
@@ -691,10 +771,7 @@ export class Canvas2DBackend implements RenderBackend {
       const width = this.npcWidth(npc.sprite);
       const at = npc.renderPos ?? npc.pos;
       const box = camera.spriteBox(at, width);
-      box.y -=
-        elevationAt(view.grid, { x: Math.round(at.x), y: Math.round(at.y) }) *
-        ELEVATION_LIFT *
-        box.size;
+      box.y -= liftAlong(view.grid, at, camera.projection) * box.size;
       const entry = resolveAsset(npc.sprite);
       const scale = npc.scale ?? 1;
       const alpha = npc.alpha ?? 1;
@@ -771,7 +848,7 @@ export class Canvas2DBackend implements RenderBackend {
     for (const prop of view.props) {
       if (!camera.isVisible(prop.pos)) continue;
       const box = camera.spriteBox(prop.pos);
-      box.y -= elevationAt(view.grid, prop.pos) * ELEVATION_LIFT * box.size;
+      box.y -= liftAt(view.grid, prop.pos, camera.projection) * box.size;
       const sprite = sprites.get(prop.sprite, box.size * dpr, { facing: 1 });
       ctx.drawImage(sprite, box.x, box.y, box.size, box.size);
 
@@ -828,7 +905,7 @@ export class Canvas2DBackend implements RenderBackend {
       const marker = unitMarkerGroundPoint(
         { x: box.x, y: box.y },
         box.size,
-        elevationAt(view.grid, unit.pos) * ELEVATION_LIFT,
+        liftAlong(view.grid, unit.renderPos ?? unit.pos, camera.projection),
         unit.meleeDirection ? unit.offset : undefined,
       );
       const width = box.size * unit.size;
@@ -890,7 +967,7 @@ export class Canvas2DBackend implements RenderBackend {
         box.x += unit.offset.x * box.size;
         box.y += unit.offset.y * box.size;
       }
-      box.y -= elevationAt(view.grid, unit.pos) * ELEVATION_LIFT * box.size;
+      box.y -= liftAlong(view.grid, pos, camera.projection) * box.size;
       const facing = unit.facing ?? (unit.faction === 'enemy' ? -1 : 1);
       const asset = resolveAsset(unit.sprite);
       const locomotion = unit.clip ?? 'idle';

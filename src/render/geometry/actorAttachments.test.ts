@@ -62,7 +62,7 @@ describe('actor attachment geometry', () => {
           for (const facing of [-1, 1] as const) {
             for (const scale of [0.93, 1.25, 1.35]) {
               const a = { ...actor, sprite, socket, facing, scale };
-              const actual = camera.project(attachmentPoint(a, projection, 2, frame));
+              const actual = camera.project(attachmentPoint(a, projection, 0.12, frame));
               const box = camera.spriteBox(a.pos, a.size);
               const footX = box.x + box.size / 2 + a.offset.x * box.size;
               const footY = box.y + 0.85 * box.size + (a.offset.y - 0.12) * box.size;
@@ -127,7 +127,7 @@ describe('actor attachment geometry', () => {
 
   it('raises an oblique socket vertically without an unintended horizontal shift', () => {
     const low = projectGround(attachmentPoint(actor, 'oblique', 0, frame), 'oblique');
-    const high = projectGround(attachmentPoint(actor, 'oblique', 3, frame), 'oblique');
+    const high = projectGround(attachmentPoint(actor, 'oblique', 0.18, frame), 'oblique');
     expect(high.x).toBeCloseTo(low.x, 9);
     expect(high.y - low.y).toBeCloseTo(-0.18, 9);
   });

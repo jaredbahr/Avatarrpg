@@ -16,7 +16,6 @@
 import { mkdirSync, writeFileSync } from 'node:fs';
 import { AMBUSH_ROAD, QUARRY_FLOOR } from '../../src/content/maps/combat';
 import type { MapDef } from '../../src/core/types';
-import { ELEVATION_LIFT } from '../../src/render/geometry/elevation';
 import { newImage, pixelAt, readImage, setPixel, type Image } from './lib/image';
 import { encodeWebp } from './lib/webp';
 
@@ -44,8 +43,9 @@ const source = readImage(sourcePath);
 const terrace = terracePath ? readImage(terracePath) : undefined;
 if (terrace && (terrace.width !== source.width || terrace.height !== source.height))
   throw new Error('Terrace source must retain the original canvas registration.');
-// Existing actor lift: 64 source pixels per tile � 0.06 per tier.
-const TERRACE_LIFT = 64 * ELEVATION_LIFT;
+// The lift the pages are packed at: 64 source pixels a tile, 0.06 a tier. The
+// scenes declare it as `reliefLift`, and the renderers lift the rest (ADR 0065).
+const TERRACE_LIFT = 64 * 0.06;
 if (Math.abs(source.width / source.height - GUIDE_WIDTH / GUIDE_HEIGHT) > 0.001)
   throw new Error(
     `Expected the reviewed guide aspect ${GUIDE_WIDTH}:${GUIDE_HEIGHT}; received ${source.width}:${source.height}.`,

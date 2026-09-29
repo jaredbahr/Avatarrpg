@@ -390,7 +390,9 @@ export class CombatScene implements Scene {
       },
       onWheel: (wheel) => this.zoomBy(wheelZoomFactor(wheel), wheel.point),
       onHover: (point) => {
-        this.hover = point ? (this.renderer?.camera.toTile(point.x, point.y) ?? null) : null;
+        this.hover = point
+          ? (this.renderer?.camera.pickTile(point.x, point.y, this.battle()?.grid) ?? null)
+          : null;
       },
     });
   }
@@ -494,7 +496,7 @@ export class CombatScene implements Scene {
     if (!this.isPlayerTurn()) return;
     if (this.needsHandoff()) return;
 
-    const tile = renderer.camera.toTile(x, y);
+    const tile = renderer.camera.pickTile(x, y, battle.grid);
 
     if (this.mode.kind === 'idle') {
       // Tapping a unit in idle mode inspects it; that is the only tap that
@@ -512,7 +514,7 @@ export class CombatScene implements Scene {
     const renderer = this.renderer;
     const battle = this.battle();
     if (!renderer || !battle) return;
-    const tile = renderer.camera.toTile(x, y);
+    const tile = renderer.camera.pickTile(x, y, battle.grid);
     const unit = battle.units.find(
       (u) =>
         samePos(u.pos, tile) || (u.size === 2 && samePos({ x: u.pos.x + 1, y: u.pos.y }, tile)),

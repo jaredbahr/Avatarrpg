@@ -194,6 +194,21 @@ export const SURFACE_STYLES: Record<SurfaceId, SurfaceStyle> = {
  */
 export const RUBBLE_CHIP = TERRAIN_STYLES.sand.detail;
 
+/**
+ * Raised ground (ADR 0065): DL-2's cut-stone faces, lit to the south and in
+ * shade to the east, the bible's ink on the breaks, a pale lit rim, and each
+ * tier's top a little lighter and warmer (twice as much under High contrast).
+ */
+export const ELEVATION = {
+  southFace: '#cfc2a6',
+  eastFace: '#a2957c',
+  ink: '#1b1410',
+  rim: '#fff6e0',
+  tint: '#ffe9c2',
+  tintPerTier: 0.06,
+  shadow: '#1b1410',
+} as const;
+
 /* ------------------------------------------------------------------ */
 /* Overlays                                                            */
 /* ------------------------------------------------------------------ */

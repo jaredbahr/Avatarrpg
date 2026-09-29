@@ -6,7 +6,7 @@ import { FOOT_LINE } from '../sheets/bake';
 import { sheets } from '../sheets/store';
 import type { ResolvedFrame } from '../sheets/store';
 import { BUILDS, FOOT, figureScale, poseFor, solve } from '../painters/figure';
-import { elevationAt, ELEVATION_LIFT } from './elevation';
+import { liftAt } from './elevation';
 
 type FrameGeometry = Pick<ResolvedFrame, 'frame' | 'anchor' | 'pixelsPerTile' | 'placeholder'>;
 
@@ -100,7 +100,7 @@ export function socketOffset(actor: ActorAttachment, frame?: FrameGeometry): Vec
 export function attachmentPoint(
   actor: ActorAttachment,
   projection: Projection,
-  elevation: number,
+  lift: number,
   frame?: FrameGeometry,
 ): Vec2 {
   const ground = projectGround(
@@ -114,7 +114,7 @@ export function attachmentPoint(
   return unprojectGround(
     {
       x: ground.x + actor.offset.x + socket.x * actor.facing * actor.scale,
-      y: ground.y + foot + actor.offset.y - elevation * ELEVATION_LIFT + socket.y * actor.scale,
+      y: ground.y + foot + actor.offset.y - lift + socket.y * actor.scale,
     },
     projection,
   );
@@ -142,7 +142,7 @@ export function resolveActorEmitters(
     const resolved = attachmentPoint(
       actor,
       projection,
-      elevationAt(grid, actor.pos),
+      liftAt(grid, actor.pos, projection),
       frame ?? undefined,
     );
     presented.set(actor, { projection, point: resolved });
