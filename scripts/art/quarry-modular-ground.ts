@@ -15,7 +15,8 @@
  *
  * - `limestone` region → the §3 limestone paving of the gatehouse terrace,
  *   and the cut quarry rock (`X`) in the corners: the Cutting's `block` key,
- *   stood `ROCK_RISE` above the terrace on a two-course block face so it
+ *   stood `ROCK_RISE` above the terrace on a two-course block face
+ *   (`quarry-rock.ts`, shared with the Driller floor's terrace wall) so it
  *   reads as the rock it is, never as open floor.
  * - `road` region → §3 packed earth, with the haul tracks running down its two
  *   rows in the cart-rut tone.
@@ -31,17 +32,13 @@
  */
 import { mkdirSync, writeFileSync } from 'node:fs';
 import { QUARRY_GATE } from '../../src/content/maps/combat';
-import { newImage, parseHex, setPixel } from './lib/image';
+import { newImage, setPixel } from './lib/image';
 import type { Image } from './lib/image';
 import { tileNoise } from '../../src/render/painters/shapes';
 import { alphaBounds, crop } from './lib/trim';
 import { encodeWebp } from './lib/webp';
-import {
-  heapFits,
-  loadQuarryMaterial,
-  QUARRY_GROUND_QUALITY,
-  QUARRY_GROUND_TONES,
-} from './quarry-village-material';
+import { heapFits, loadQuarryMaterial, QUARRY_GROUND_QUALITY } from './quarry-village-material';
+import { rockPainter } from './quarry-rock';
 import type { QuarryMaterial, QuarryTone, Rgb } from './quarry-village-material';
 
 const TILE_DIAGONAL = Math.hypot(64, 32);
@@ -51,22 +48,6 @@ const RIM_WIDTH = 3 / TILE_DIAGONAL;
 export const QUARRY_GATE_PAGE = { x: -128, y: -192, width: 2304, height: 1280 } as const;
 export const QUARRY_GATE_REGION_NAMES = ['earth-west', 'earth-east', 'road', 'limestone'] as const;
 export type GateRegionName = (typeof QUARRY_GATE_REGION_NAMES)[number];
-
-/**
- * How far the cut rock (`X`) stands above the terrace, in world pixels: two
- * courses of `COURSE`, one per tier of its elevation, so it reads a full step
- * above the tier-1 `^` shoulders in front of it. The forest's tier-1 shelf
- * stands `SHELF_RISE` (16); this is the same face at twice the height.
- */
-export const ROCK_RISE = 32;
-const ROCK_COURSE = ROCK_RISE / 2;
-const ROCK_BLOCK = 32;
-const LIP_INK = 2;
-
-const isRock = (x: number, y: number): boolean => {
-  const key = QUARRY_GATE.rows[y]?.[x];
-  return key === 'X';
-};
 
 const regionAt = (x: number, y: number): GateRegionName | null => {
   const key = QUARRY_GATE.rows[y]?.[x];
@@ -107,62 +88,7 @@ export const plainSpoil = (x: number, y: number): boolean => {
   return materialOf(key) === 'spoil' && plain(key);
 };
 
-/** Logical cell coordinates of a world pixel. */
-const logical = (wx: number, wy: number): { x: number; y: number } => ({
-  x: ((wx - 768) / 64 + wy / 32) / 2,
-  y: (wy / 32 - (wx - 768) / 64) / 2,
-});
-const rockAt = (wx: number, wy: number): boolean => {
-  const { x, y } = logical(wx, wy);
-  return isRock(Math.floor(x), Math.floor(y));
-};
-const offGrid = (wx: number, wy: number): boolean => {
-  const { x, y } = logical(wx, wy);
-  return QUARRY_GATE.rows[Math.floor(y)]?.[Math.floor(x)] === undefined;
-};
-
-/**
- * One pixel of the cut rock, painted the way `forest-raised-shelf.ts` stands
- * its shelf: the top is the footprint lifted by `ROCK_RISE`, and wherever the
- * ground under a pixel's top would already be off the rock, that pixel is the
- * block face instead, so the face stands straight up from the rock's
- * down-screen (+x/+y) edges inside the rules' own cells. The face is the
- * `block` row's shadow, never its pale tones: joint-tone joints on the
- * left-facing wall, ink joints on the right-facing one, turned further from
- * the light. It is one step lighter than the shelf's right wall (whose field is
- * the joint tone) because the rock shares the limestone page, and the page's
- * darkest window has to stay inside the §3 span of its brightest paving.
- */
-function rockPixel(material: QuarryMaterial, wx: number, wy: number, rim: boolean): Rgb {
-  let drop = 1;
-  while (drop <= ROCK_RISE && rockAt(wx, wy + drop)) drop++;
-  // Toward the exterior the rock stands one course over the surround's own
-  // terrace, not two over the board's floor.
-  const outward = offGrid(wx, wy + drop);
-  if (drop > ROCK_RISE || (outward && drop > ROCK_COURSE)) {
-    // The top, sampled where it stands, so its incident rides up with the lift.
-    if (rim) return material.rimOf('block');
-    const top = logical(wx, wy + ROCK_RISE);
-    return material.colour('block', top.x, top.y);
-  }
-  const block = QUARRY_GROUND_TONES.block;
-  const foot = logical(wx, wy + drop - 1);
-  const exit = logical(wx, wy + drop);
-  const right =
-    Math.floor(exit.x) > Math.floor(foot.x) && Math.floor(exit.y) === Math.floor(foot.y);
-  const height = drop - 1;
-  const rise = outward ? ROCK_COURSE : ROCK_RISE;
-  if (drop > rise - LIP_INK || height < LIP_INK) return material.ink;
-  const course = Math.floor(height / ROCK_COURSE);
-  // Blocks break joint course to course, and each runs its own length.
-  const run = Math.floor(wx) + course * (ROCK_BLOCK / 2);
-  const index = Math.floor(run / ROCK_BLOCK);
-  const jointAt =
-    index * ROCK_BLOCK + 4 + Math.floor(tileNoise(index, course, 7) * (ROCK_BLOCK - 8));
-  const joint = height % ROCK_COURSE === 0 || run === jointAt;
-  if (right) return joint ? material.ink : parseHex(block.shadow);
-  return parseHex(joint ? block.joint : block.shadow);
-}
+const rockPixel = rockPainter(QUARRY_GATE.rows);
 
 export function packGateGround(material: QuarryMaterial): Map<GateRegionName, Image> {
   const images = new Map(
