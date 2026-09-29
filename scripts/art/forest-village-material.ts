@@ -344,13 +344,17 @@ export interface ForestMaterial extends VillagePalette<ToneName> {
 }
 
 /**
- * The centre of the five road rows (y 4..8). The ruts run with the road, along
- * x, which is why the wear is a function of y and a slow wander in x rather
- * than a radius: a cart leaves two lines, not a stain.
+ * The centres of the two cart tracks M3 left on the route: the through-road
+ * along row 4 and the cart track along row 8, which stops short of both rims.
+ * The ruts run with the road, along x, which is why the wear is a function of y
+ * and a slow wander in x rather than a radius: a cart leaves two lines, not a
+ * stain. They used to straddle the middle of five road rows, which M3 turned
+ * into the pond and the verge, so they ran across grass and the pond's edge and
+ * never down either road.
  */
-const ROAD_CENTRE = 6.5;
-const RUT_OFFSET = 1.05;
-const RUT_HALF = 0.3;
+const TRACK_CENTRES = [4.5, 8.5] as const;
+const RUT_OFFSET = 0.24;
+const RUT_HALF = 0.085;
 
 /**
  * Which village crop lends each material its structure, and the salt that
@@ -391,10 +395,12 @@ export async function loadForestMaterial(): Promise<ForestMaterial> {
       // Two ruts either side of the centre line, wandering by about a tenth of
       // a tile so the pair never reads as a ruled stripe, plus the occasional
       // scuffed cell away from them.
-      const wander = 0.12 * Math.sin(x * 1.7) + 0.06 * Math.sin(x * 4.3 + 1.1);
+      const wander = 0.04 * Math.sin(x * 1.7) + 0.025 * Math.sin(x * 4.3 + 1.1);
       const rut = Math.min(
-        Math.abs(y - (ROAD_CENTRE - RUT_OFFSET) - wander),
-        Math.abs(y - (ROAD_CENTRE + RUT_OFFSET) + wander),
+        ...TRACK_CENTRES.flatMap((centre) => [
+          Math.abs(y - (centre - RUT_OFFSET) - wander),
+          Math.abs(y - (centre + RUT_OFFSET) - wander),
+        ]),
       );
       if (rut < RUT_HALF) return true;
       return tileNoise(Math.floor(x), Math.floor(y), 23) > 0.86;
