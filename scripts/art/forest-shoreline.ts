@@ -438,9 +438,7 @@ export function packShoreline(
        */
       const marginAlpha =
         pond.organic && distance > 0 && inside <= 0 ? organicMargin(x, y, pond.cells) : 0;
-      const dryOutside = pond.organic
-        ? marginAlpha > 0
-        : distance > 0 && distance < SHORE_LIMIT;
+      const dryOutside = pond.organic ? marginAlpha > 0 : distance > 0 && distance < SHORE_LIMIT;
       /*
        * Inside a water cell the bank reaches in by `depth`, so the wet outline
        * wanders instead of running along the tile's own edge. The bite is

@@ -1,6 +1,12 @@
 import { expect, it } from 'vitest';
 import { FOREST_ROAD_SCENE } from '../../src/content/scenes/forestRoad';
-import { REED_FEET, REED_PIECES, REED_WEAR_REACH, reedWear, worldLogical } from './forest-reed-wear';
+import {
+  REED_FEET,
+  REED_PIECES,
+  REED_WEAR_REACH,
+  reedWear,
+  worldLogical,
+} from './forest-reed-wear';
 
 it('seats exactly the pieces that opt out of the contact shadow', () => {
   const optedOut = FOREST_ROAD_SCENE.scenery.filter((piece) => piece.contactShadow === false);
@@ -11,7 +17,10 @@ it('seats exactly the pieces that opt out of the contact shadow', () => {
   for (const piece of REED_PIECES) {
     const feet = REED_FEET.filter(
       (f) =>
-        f.x >= piece.x && f.x <= piece.x + piece.width && f.y >= piece.y && f.y <= piece.y + 2 * piece.height,
+        f.x >= piece.x &&
+        f.x <= piece.x + piece.width &&
+        f.y >= piece.y &&
+        f.y <= piece.y + 2 * piece.height,
     );
     expect(feet.length, piece.id).toBeGreaterThan(10);
   }
