@@ -165,7 +165,21 @@ export const SOUND_FAMILIES: Readonly<Record<string, SoundDefInput>> = {
   heal: voice(600, 2400, { noise: 'white', q: 5, attack: 80, decay: 520, gain: 0.5 }),
   // A shell closing.
   shield: voice(900, 300, { noise: 'brown', q: 3.5, attack: 12, decay: 340, gain: 0.6 }),
+  // A status taking hold: a thin shimmer under the hit, never over it.
+  status: voice(1800, 3400, { q: 8, attack: 25, decay: 280, gain: 0.3 }),
+  // The ground changing: a soft settle, for any surface without its own row.
+  surface: voice(700, 250, { noise: 'brown', q: 1.2, attack: 12, decay: 280, gain: 0.35 }),
 };
+
+/**
+ * Pitched cues. Noise through a narrow band (high `q`) reads as a note, so a
+ * sting needs no file: the corners barely move, and the layers are the chord.
+ * A band that narrow passes a small share of the noise (about 20 dB under the
+ * element voices at q 12), so the level is lifted to match, up to the cap.
+ * These are first cuts, meant to be tuned by ear on the tablet.
+ */
+const note = (hz: number, to: number, gain: number, decay: number) =>
+  voice(hz, to, { q: 12, attack: 12, decay, body: 0.35, gain: Math.min(4, gain * 2.5) });
 
 /* ------------------------------------------------------------------ */
 /* Named cues                                                          */
@@ -326,6 +340,77 @@ export const SOUND_CUES: Readonly<Record<string, SoundDefInput>> = {
   // A prop taking a hit, and a prop coming apart.
   prop: sample('audio/prop-a.ogg', { variants: ['audio/prop-b.ogg'], gain: 0.7 }),
   propBroke: sample('audio/prop-break.ogg', { gain: 0.85 }),
+  // A body shoved or dropped onto the ground: the thud under the landing dust.
+  land: voice(320, 80, {
+    noise: 'brown',
+    filter: 'lowpass',
+    q: 1.2,
+    attack: 3,
+    decay: 260,
+    gain: 0.8,
+    crack: true,
+  }),
+  // A critical: a bright snap laid over the ordinary hit.
+  crit: voice(5200, 1600, { q: 2, attack: 1, decay: 130, gain: 0.45, crack: true }),
+
+  /* The ground catching ---------------------------------------------- */
+  // Fire takes: a low whump and a crackle.
+  'fx.surface.fire': {
+    kind: 'layers',
+    voices: [
+      voice(520, 160, { noise: 'brown', filter: 'lowpass', attack: 10, decay: 380, gain: 0.5 }),
+      voice(3200, 1400, { attack: 4, decay: 200, gain: 0.2, crack: true }),
+    ],
+  },
+  // Water on fire, or steam rising: a hiss.
+  'fx.surface.steam': voice(6000, 3500, { filter: 'highpass', attack: 25, decay: 520, gain: 0.3 }),
+  'fx.surface.doused': voice(5200, 3000, { filter: 'highpass', attack: 15, decay: 420, gain: 0.3 }),
+  'fx.surface.ice': voice(6200, 2600, {
+    filter: 'highpass',
+    q: 3,
+    attack: 3,
+    decay: 220,
+    gain: 0.35,
+    crack: true,
+  }),
+  'fx.surface.water': voice(1400, 300, {
+    noise: 'brown',
+    q: 1.5,
+    attack: 6,
+    decay: 260,
+    gain: 0.4,
+  }),
+  'fx.status.burning': voice(2400, 600, { attack: 10, decay: 300, gain: 0.35 }),
+  'fx.status.frozen': voice(6000, 2400, {
+    filter: 'highpass',
+    q: 3,
+    attack: 2,
+    decay: 260,
+    gain: 0.4,
+    crack: true,
+  }),
+  'fx.status.shocked': voice(7000, 2600, { q: 4, attack: 2, decay: 200, gain: 0.35, crack: true }),
+
+  /* The table -------------------------------------------------------- */
+  // Someone's turn: a party member gets a bright two-note chime, a foe a low knock.
+  turn: { kind: 'layers', voices: [note(880, 890, 1.4, 380), note(1320, 1330, 0.8, 300)] },
+  turnEnemy: voice(230, 110, {
+    noise: 'brown',
+    filter: 'lowpass',
+    attack: 4,
+    decay: 240,
+    gain: 0.6,
+  }),
+  // A new round: a low gong.
+  round: { kind: 'layers', voices: [note(196, 190, 2, 900), note(392, 384, 1, 700)] },
+  // The end of a fight: a rising chord, or a falling one.
+  victory: {
+    kind: 'layers',
+    voices: [note(523, 1046, 1.6, 1000), note(659, 1318, 1.1, 1000), note(784, 1568, 0.8, 1100)],
+  },
+  defeat: { kind: 'layers', voices: [note(440, 196, 1.6, 1300), note(330, 147, 1.2, 1400)] },
+  // A level gained, as the dialog opens.
+  levelUp: { kind: 'layers', voices: [note(660, 1760, 1.4, 750), note(990, 2640, 0.8, 700)] },
 
   /* The interface --------------------------------------------------- */
   // Every control goes through `button()`, which asks for one of these two:

@@ -125,12 +125,13 @@ export function paintFloatingNumber(
   text: string,
   color: string,
   progress: number,
+  scale = 1,
 ): void {
   const t = Math.max(0, Math.min(1, progress));
   const s = box.size;
   ctx.save();
   ctx.globalAlpha = 1 - t * t;
-  ctx.font = `700 ${Math.round(s * 0.34)}px 'Trebuchet MS', system-ui, sans-serif`;
+  ctx.font = `700 ${Math.round(s * 0.34 * scale)}px 'Trebuchet MS', system-ui, sans-serif`;
   ctx.textAlign = 'center';
   ctx.textBaseline = 'middle';
   const x = box.x + s / 2;

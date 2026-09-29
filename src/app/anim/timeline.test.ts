@@ -13,6 +13,28 @@ const floater = (start: number, duration: number): FloaterTrack => ({
   duration,
 });
 
+describe('trailing emitters', () => {
+  it('draw to their end but never hold playback', () => {
+    const timeline = new Timeline();
+    timeline.add(floater(0, 300));
+    timeline.add({
+      kind: 'emitter',
+      def: {} as never,
+      from: { x: 0, y: 0 },
+      to: { x: 0, y: 0 },
+      seed: 1,
+      palette: 'neutral',
+      arc: 0,
+      trailing: true,
+      start: 200,
+      duration: 600,
+    });
+    expect(timeline.finishesAt).toBe(300);
+    expect(timeline.busy(400)).toBe(false);
+    expect(timeline.active(700, 'emitter')).toHaveLength(1);
+  });
+});
+
 const pose = (start: number, duration: number, unitId = 'p0'): PoseTrack => ({
   kind: 'pose',
   unitId,

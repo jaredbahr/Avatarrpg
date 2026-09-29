@@ -82,15 +82,15 @@ float fbm(vec2 p) {
 /** Base colour per terrain, mirroring TERRAIN_STYLES in palettes.ts. */
 const TERRAIN_COLORS = `
 vec3 terrainBase(int t) {
-  if (t == 0) return vec3(0.435, 0.620, 0.298); // grass
-  if (t == 1) return vec3(0.702, 0.565, 0.392); // dirt
-  if (t == 2) return vec3(0.702, 0.565, 0.392); // road
-  if (t == 3) return vec3(0.847, 0.796, 0.690); // stone
-  if (t == 4) return vec3(0.780, 0.659, 0.490); // sand
-  if (t == 5) return vec3(0.420, 0.310, 0.200); // wood
-  if (t == 6) return vec3(0.122, 0.290, 0.369); // water_deep
-  if (t == 7) return vec3(0.227, 0.208, 0.184); // wall
-  return vec3(0.078, 0.063, 0.047);             // pit
+  if (t == 0) return vec3(0.435, 0.620, 0.298); ${/* grass */ ''}
+  if (t == 1) return vec3(0.702, 0.565, 0.392); ${/* dirt */ ''}
+  if (t == 2) return vec3(0.702, 0.565, 0.392); ${/* road */ ''}
+  if (t == 3) return vec3(0.847, 0.796, 0.690); ${/* stone */ ''}
+  if (t == 4) return vec3(0.780, 0.659, 0.490); ${/* sand */ ''}
+  if (t == 5) return vec3(0.420, 0.310, 0.200); ${/* wood */ ''}
+  if (t == 6) return vec3(0.122, 0.290, 0.369); ${/* water_deep */ ''}
+  if (t == 7) return vec3(0.227, 0.208, 0.184); ${/* wall */ ''}
+  return vec3(0.078, 0.063, 0.047); ${/* pit */ ''}
 }`;
 
 export const GROUND_FRAGMENT = `#version 300 es
@@ -120,60 +120,40 @@ out vec4 fragColor;
 ${NOISE}
 ${TERRAIN_COLORS}
 
-/** The surface index packed into a map texel, or -1 off the map. */
+${/* The surface index packed into a map texel, or -1 off the map. */ ''}
 int surfaceAt(vec2 cell) {
   if (cell.x < 0.0 || cell.y < 0.0 || cell.x >= uGrid.x || cell.y >= uGrid.y) return -1;
   int packed = int(texture(uMap, (cell + 0.5) / uGrid).r * 255.0 + 0.5);
   return packed - (packed / 8) * 8;
 }
 
-/*
- * Everything the pass paints accumulates as premultiplied colour and
- * coverage. Bare ground starts as the terrain at full coverage, so every step
- * below is the plain mix it always was; over a painting it starts clear, and
- * each step lays its tint over the painting with the same weight, so a puddle
- * tints painted ground exactly as it tints procedural ground.
- */
+${/* Everything the pass paints accumulates as premultiplied colour and coverage. Bare ground starts as the terrain at full coverage, so every step below is the plain mix it always was; over a painting it starts clear, and each step lays its tint over the painting with the same weight, so a puddle tints painted ground exactly as it tints procedural ground. */ ''}
 void lay(inout vec4 acc, vec3 tint, float k) {
   acc.rgb = mix(acc.rgb, tint, k);
   acc.a = mix(acc.a, 1.0, k);
 }
-/** Scales everything under the pixel by m, the painting included. */
+${/* Scales everything under the pixel by m, the painting included. */ ''}
 void dim(inout vec4 acc, float m) {
   acc.rgb *= m;
   acc.a = 1.0 - m * (1.0 - acc.a);
 }
 
-/** Diagonal / cross / dot hatching, for the colourblind setting. */
+${/* Diagonal / cross / dot hatching, for the colourblind setting. */ ''}
 float hatchPattern(int s, vec2 p) {
-  if (s == 1) return step(0.5, fract((p.x + p.y) * 7.0));            // water: diagonal
-  if (s == 2) return step(0.5, fract((p.x - p.y) * 8.0));            // ice
-  if (s == 3) return step(0.5, fract(p.y * 9.0));                    // fire: vertical
-  if (s == 4) return step(0.72, vnoise(p * 26.0));                   // mud: dots
+  if (s == 1) return step(0.5, fract((p.x + p.y) * 7.0)); ${/* water: diagonal */ ''}
+  if (s == 2) return step(0.5, fract((p.x - p.y) * 8.0)); ${/* ice */ ''}
+  if (s == 3) return step(0.5, fract(p.y * 9.0)); ${/* fire: vertical */ ''}
+  if (s == 4) return step(0.72, vnoise(p * 26.0)); ${/* mud: dots */ ''}
   if (s == 5) return max(step(0.6, fract(p.x * 8.0)), step(0.6, fract(p.y * 8.0)));
-  if (s == 6) return step(0.5, fract((p.x + p.y) * 6.0));            // oil
-  return step(0.74, vnoise(p * 22.0));                               // rubble
+  if (s == 6) return step(0.5, fract((p.x + p.y) * 6.0)); ${/* oil */ ''}
+  return step(0.74, vnoise(p * 22.0)); ${/* rubble */ ''}
 }
 
 void main(void) {
   vec4 quad = texture(uTexture, vTextureCoord);
   if (quad.a < 0.01) { fragColor = vec4(0.0); return; }
 
-  /*
-   * The quad is screen-sized and lives outside the camera transform, and tile
-   * coordinates are derived from the camera uniforms rather than from the
-   * quad's own UVs. A filter renders only the CLIPPED VISIBLE bounds of what it
-   * is attached to, so a world-sized quad running off the edge of the screen
-   * would hand us UVs covering the visible part alone — which silently
-   * rescales the whole board.
-   *
-   * Nor do the UVs span 0..1 over the quad. Pixi pools filter textures at the
-   * next power of two, so vTextureCoord runs from 0 to frame / texture on
-   * each axis: at 1368x912 and half resolution that is 0.67 by 0.89, and
-   * multiplying by the viewport drew the board wide, tall and offset on every
-   * device. uInputSize is the pooled texture's logical size and uOutputFrame
-   * the frame's origin, which together put the fragment back in CSS pixels.
-   */
+  ${/* The quad is screen-sized and lives outside the camera transform, and tile coordinates are derived from the camera uniforms rather than from the quad's own UVs. A filter renders only the CLIPPED VISIBLE bounds of what it is attached to, so a world-sized quad running off the edge of the screen would hand us UVs covering the visible part alone — which silently rescales the whole board. Nor do the UVs span 0..1 over the quad. Pixi pools filter textures at the next power of two, so vTextureCoord runs from 0 to frame / texture on each axis: at 1368x912 and half resolution that is 0.67 by 0.89, and multiplying by the viewport drew the board wide, tall and offset on every device. uInputSize is the pooled texture's logical size and uOutputFrame the frame's origin, which together put the fragment back in CSS pixels. */ ''}
   vec2 screen = vTextureCoord * uInputSize.xy + uOutputFrame.xy;
   vec2 delta = screen - uGroundOrigin;
   vec2 tileUv = vec2(dot(uGroundInverse.xy, delta), dot(uGroundInverse.zw, delta)) / uTileSize;
@@ -185,12 +165,7 @@ void main(void) {
     return;
   }
 
-  /*
-   * Terrain and surface share the red channel (terrain * 8 + surface) so that
-   * blue can carry precomputed firelight and alpha can stay at 255 — a canvas
-   * with partial alpha is premultiplied on upload, which would corrupt the
-   * other channels.
-   */
+  ${/* Terrain and surface share the red channel (terrain * 8 + surface) so that blue can carry precomputed firelight and alpha can stay at 255 — a canvas with partial alpha is premultiplied on upload, which would corrupt the other channels. */ ''}
   vec4 data = texture(uMap, (cell + 0.5) / uGrid);
   int packed = int(data.r * 255.0 + 0.5);
   int terrain = packed / 8;
@@ -235,19 +210,13 @@ void main(void) {
   }
 
   if (uSurfaces > 0.5) {
-  /* ---------------- surfaces ---------------- */
+  ${/* surfaces */ ''}
 
   vec3 tint = vec3(0.0), rim = vec3(0.0), detail = vec3(0.0);
   float opacity = 0.0;
   ${MATERIAL_STYLES}
 
-  /*
-   * How far this pixel is from the material's own boundary, as Canvas measures
-   * it: the footprint stays the full square tile, but the bank wanders inside
-   * it by world noise so a pool never wears a ruled rim. Four texel reads, paid
-   * on the pixels of a pooled material and nowhere else — a software
-   * rasteriser runs this quad for the whole board.
-   */
+  ${/* How far this pixel is from the material's own boundary, as Canvas measures it: the footprint stays the full square tile, but the bank wanders inside it by world noise so a pool never wears a ruled rim. Four texel reads, paid on the pixels of a pooled material and nowhere else — a software rasteriser runs this quad for the whole board. */ ''}
   float edgeDistance = 1.0;
   float wash = 1.0;
   if (opacity > 0.0) {
@@ -263,7 +232,7 @@ void main(void) {
       ${SURFACE_RIM.coat.interior} * smoothstep(0.0, washDepth, edgeDistance);
   }
 
-  if (surface == 1) {                 // water
+  if (surface == 1) { ${/* water */ ''}
     float ripple = fbm(w * 4.0 + vec2(uTime * 0.25, uTime * 0.17));
     vec3 tint = mix(vec3(0.153, 0.424, 0.482), vec3(0.243, 0.561, 0.690), ripple);
     lay(acc, tint, 0.42 * intensity);
@@ -279,14 +248,14 @@ void main(void) {
     bank = clamp(bank, 0.0, 1.0);
     float lap = 0.55 + 0.45 * vnoise(w * 9.0 + vec2(uTime * 0.6, -uTime * 0.3));
     lay(acc, vec3(0.80, 0.92, 0.95), bank * bank * lap * 0.22 * intensity);
-  } else if (surface == 2) {          // ice
+  } else if (surface == 2) { ${/* ice */ ''}
     ${/* Continuous world-space frost, not quantised square facets. Fine veins */ ''}
     ${/* suggest ice without replacing the underlying painted stone texture. */ ''}
     float frost = vnoise(w * 3.5);
     lay(acc, tint, opacity * (0.88 + 0.12 * frost) * wash * intensity);
     float vein = 1.0 - smoothstep(0.012, 0.030, abs(vnoise(w * 6.0) - 0.52));
     lay(acc, rim, vein * 0.23 * intensity);
-  } else if (surface == 3) {          // fire
+  } else if (surface == 3) { ${/* fire */ ''}
     vec2 q = w * vec2(2.4, 1.7);
     q.y -= uTime * 1.15;
     vec2 warp = vec2(fbm(q + vec2(0.0, uTime * 0.4)), fbm(q + vec2(5.2, 1.3)));
@@ -303,15 +272,15 @@ void main(void) {
     lay(acc, fire, smoothstep(0.06, 0.42, flame));
     float ember = smoothstep(0.94, 1.0, vnoise(w * vec2(26.0, 14.0) - vec2(0.0, uTime * 2.4)));
     lay(acc, vec3(1.0, 0.80, 0.45), ember * 0.7 * intensity);
-  } else if (surface == 4) {          // mud
+  } else if (surface == 4) { ${/* mud */ ''}
     float churn = fbm(w * 5.0);
     lay(acc, tint, opacity * (0.88 + 0.12 * churn) * wash * intensity);
     float streak = smoothstep(0.70, 0.84, vnoise(w * vec2(9.0, 17.0)));
     lay(acc, detail, streak * 0.21 * intensity);
-  } else if (surface == 5) {          // steam
+  } else if (surface == 5) { ${/* steam */ ''}
     float billow = fbm(w * 2.2 + vec2(uTime * 0.16, -uTime * 0.22));
     lay(acc, vec3(0.85, 0.86, 0.87), (0.45 + 0.35 * billow) * intensity);
-  } else if (surface == 6) {          // oil
+  } else if (surface == 6) { ${/* oil */ ''}
     float sheenBand = vnoise(w * vec2(3.0, 5.0));
     lay(acc, tint, opacity * wash * intensity);
     ${/* A restrained sage sheen, rather than moving rainbow colour over stone. */ ''}
@@ -319,7 +288,7 @@ void main(void) {
     lay(acc, detail, sheen * 0.14 * intensity);
     float glint = 1.0 - smoothstep(0.008, 0.022, abs(sheenBand - 0.57));
     lay(acc, mix(rim, vec3(0.68, 0.68, 0.56), 0.35), glint * 0.25 * intensity);
-  } else if (surface == 7) {          // rubble
+  } else if (surface == 7) { ${/* rubble */ ''}
     float chunk = vnoise(w * 11.0);
     lay(acc, tint, opacity * wash * intensity);
     lay(acc, ${glslColor(RUBBLE_CHIP)}, smoothstep(0.74, 0.87, chunk) * 0.28 * intensity);
@@ -342,7 +311,7 @@ void main(void) {
     dim(acc, 1.0 - 0.225 * hatchPattern(surface, w) * intensity);
   }
 
-  /* ---------------- light thrown by nearby fire ---------------- */
+  ${/* light thrown by nearby fire */ ''}
 
   ${/* Accumulated per tile on the CPU when the map changes, because it only */ ''}
   ${/* changes when fire does. Gathering it here instead would cost 25 texture */ ''}
@@ -351,7 +320,7 @@ void main(void) {
   acc.rgb += vec3(1.0, 0.55, 0.22) * firelight * 0.42 * flicker;
   acc.rgb = min(acc.rgb, vec3(1.0));
 
-  /* ---------------- grid ---------------- */
+  ${/* grid */ ''}
 
   ${/* Off by default (ADR 0007); the Show grid setting and High contrast turn it */ ''}
   ${/* on. A darkening, so it shows on a painting as it does on the terrain. */ ''}

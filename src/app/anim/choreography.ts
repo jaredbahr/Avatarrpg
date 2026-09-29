@@ -59,6 +59,9 @@ const LUNGE = 0.24;
 const MELEE_LUNGE = 0.42;
 const RECOIL = 0.18;
 const DODGE = 0.2;
+/** A critical's camera kick in tiles, and how much bigger its number lands. */
+const CRIT_KICK = 0.05;
+const CRIT_EMPHASIS = 1.35;
 
 export interface ChoreographyInput {
   readonly projection?: Projection;
@@ -206,6 +209,7 @@ export function choreograph(input: ChoreographyInput): Choreography {
   };
 
   let pending: PendingHit | null = null;
+  /** Where this push's round began, so its first turn's chime waits out the gong. */
 
   const emit = (
     defs: readonly EmitterDef[],
@@ -217,6 +221,7 @@ export function choreograph(input: ChoreographyInput): Choreography {
     slot: number,
     arc = 0,
     attachments?: EmitterAttachments,
+    trailing = false,
   ): void => {
     // Reduce motion collapses playback to a frame; particles would be a smear.
     if (rate < 1) return;
@@ -231,6 +236,7 @@ export function choreograph(input: ChoreographyInput): Choreography {
         palette,
         arc,
         ...(attachments ? { attachments } : {}),
+        ...(trailing ? { trailing } : {}),
         start: at,
         duration,
       });
@@ -240,6 +246,13 @@ export function choreograph(input: ChoreographyInput): Choreography {
   const effect = (key: string): { recipe: FxRecipe; palette: string } => {
     const recipe = resolveFx(key);
     return { recipe, palette: fxPalette(key, recipe) };
+  };
+
+  /** A recipe's impact on the ground at a tile, trailing: dust and rings settle after the beat. */
+  const ground = (key: string, at: number, tile: Vec2, eventIndex: number, slot: number): void => {
+    const { recipe, palette } = effect(key);
+    const c = centre(tile);
+    emit(recipe.impact, at, c, c, palette, eventIndex, slot, 0, undefined, true);
   };
 
   const pose = (
@@ -287,8 +300,16 @@ export function choreograph(input: ChoreographyInput): Choreography {
   const harmlessLedgePushes = new Set<number>();
   const still: Vec2 = { x: 0, y: 0 };
 
-  const floater = (pos: Vec2, text: string, color: string, at: number): void => {
-    tracks.push({ kind: 'floater', pos, text, color, start: at, duration: TIMING.floater * rate });
+  const floater = (pos: Vec2, text: string, color: string, at: number, emphasis?: number): void => {
+    tracks.push({
+      kind: 'floater',
+      pos,
+      text,
+      color,
+      start: at,
+      duration: TIMING.floater * rate,
+      ...(emphasis ? { emphasis } : {}),
+    });
   };
 
   /**
@@ -325,14 +346,13 @@ export function choreograph(input: ChoreographyInput): Choreography {
           start: cursor,
           duration,
         });
-        if (!input.silentSteps)
-          for (let d = 0; d < curve.length; d++)
-            cue(
-              'step',
-              cursor + (timing.atDistance(d) / timing.duration) * duration,
-              20 + d,
-              eventIndex,
-            );
+        for (let d = 0; d < curve.length; d++) {
+          const at = cursor + (timing.atDistance(d) / timing.duration) * duration;
+          if (!input.silentSteps) cue('step', at, 20 + d, eventIndex);
+          // A puff where the foot comes down, trailing so it never holds the turn.
+          const tile = d === 0 ? from : event.path[d - 1];
+          if (tile) ground('fx.move.step', at, tile, eventIndex, 20 + d);
+        }
         const last = event.path[event.path.length - 1];
         if (last) positions.set(event.unitId, last);
         cursor += duration;
@@ -768,6 +788,19 @@ export function choreograph(input: ChoreographyInput): Choreography {
         // aimed moment when a projectile is in flight, so the sound arrives
         // with the projectile rather than with the command.
         if (event.amount > 0) cue('hit', hit.at, 5, eventIndex);
+        if (event.amount > 0 && event.crit) {
+          // A critical snaps over the hit and kicks the camera, on top of
+          // whatever the technique's own recipe shook.
+          cue('crit', hit.at, 11, eventIndex);
+          if (rate >= 1)
+            tracks.push({
+              kind: 'shake',
+              amplitude: CRIT_KICK,
+              seed: hashSeed(pushIndex, eventIndex, 12),
+              start: hit.at,
+              duration: TIMING.shake,
+            });
+        }
         if (event.amount > 0 && pos && hit.flash > 0) {
           tracks.push({
             kind: 'flash',
@@ -839,6 +872,7 @@ export function choreograph(input: ChoreographyInput): Choreography {
             event.crit ? `${event.amount}!` : String(event.amount),
             event.crit ? '#ffd98a' : '#ff9d8d',
             recoilAt + 30 * rate,
+            event.crit ? CRIT_EMPHASIS : undefined,
           );
         }
         if (ledgeLanding && event.amount === 0) harmlessLedgePushes.add(eventIndex + 1);
@@ -929,6 +963,9 @@ export function choreograph(input: ChoreographyInput): Choreography {
             });
             if (flinch > 0) flinching.set(event.unitId, start + hold);
           }
+          // The body meets the ground where the slide stops.
+          cue('land', start + duration, 13, eventIndex);
+          ground('fx.move.land', start + duration, event.to, eventIndex, 14);
           positions.set(event.unitId, event.to);
           cursor = Math.max(cursor, start + duration);
         }
@@ -979,6 +1016,7 @@ export function choreograph(input: ChoreographyInput): Choreography {
 
       case 'statusApplied': {
         const pos = positions.get(event.unitId);
+        cue(`fx.status.${event.status}`, Math.max(cursor, landing().at), 14, eventIndex);
         if (pos) {
           const { recipe, palette } = effect(`fx.status.${event.status}`);
           emit(
@@ -996,6 +1034,8 @@ export function choreograph(input: ChoreographyInput): Choreography {
 
       case 'surfaceChanged': {
         const key = event.to ? `fx.surface.${event.to}` : 'fx.surface.doused';
+        // One sound however many tiles change together: the bus coalesces a key.
+        cue(key, Math.max(cursor, landing().at), 15, eventIndex);
         const { recipe, palette } = effect(key);
         emit(
           recipe.impact,
@@ -1042,10 +1082,33 @@ export function choreograph(input: ChoreographyInput): Choreography {
         break;
       }
 
-      case 'turnStarted':
-      case 'turnEnded':
+      case 'turnStarted': {
+        pending = null;
+        // Whose turn it is, said on the board: the hot-seat banner is DOM and
+        // only shows between players, so solo play and enemy turns had nothing.
+        const unit = unitsBefore.find((u) => u.id === event.unitId);
+        const pos = positions.get(event.unitId);
+        if (!unit || unit.hp <= 0 || !pos) break;
+        // The chime and the ring are the turn itself: both start at the turn's
+        // own moment, together with a round's gong when there is one. Neither
+        // holds the batch open, so any delay would land after input and the AI
+        // are already live.
+        cue(unit.faction === 'enemy' ? 'turnEnemy' : 'turn', cursor, 16, eventIndex);
+        ground('fx.turn.start', cursor, pos, eventIndex, 16);
+        break;
+      }
+
       case 'roundStarted':
         pending = null;
+        cue('round', cursor, 17, eventIndex);
+        break;
+
+      case 'turnEnded':
+        pending = null;
+        break;
+
+      case 'battleEnded':
+        cue(event.outcome, cursor + TIMING.gap * rate, 18, eventIndex);
         break;
 
       default:
