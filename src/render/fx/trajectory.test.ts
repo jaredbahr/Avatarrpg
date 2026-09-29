@@ -5,31 +5,30 @@ import {
   aimDeg,
   boardStep,
   celTurnDeg,
-  flightMs,
+  flightDurationMs,
   flightPoint,
+  flightStretch,
+  lerp,
   segmentBetween,
   whipHead,
 } from './trajectory';
 
 /** The shipped trajectories (public/art/fx/bend-effects.json). */
-const FIRE: BendTrajectory = { kind: 'arc', speedTilesPerSecond: 9.8, heightTiles: 0.2, spin: 0 };
-const WATER: BendTrajectory = {
-  kind: 'whipBolt',
-  whipFraction: 0.333,
-  whipMaxTiles: 1.5,
-  boltSpeedTilesPerSecond: 11.1,
-};
-const STRAIGHT: BendTrajectory = { kind: 'straight', speedTilesPerSecond: 10 };
+const FIRE: BendTrajectory = { kind: 'arc', heightTiles: 0.2, spin: 0 };
+const WATER: BendTrajectory = { kind: 'whipBolt', whipFraction: 0.333, whipMaxTiles: 1.5 };
+const STRAIGHT: BendTrajectory = { kind: 'straight' };
+/** Any flight's length: the sampler hands it in. */
+const TOTAL = 300;
 
 const STEP = Math.hypot(1, 0.5);
 const board = (x: number, y: number) => projectGround({ x, y }, 'oblique');
 const ORIGIN = board(0, 0);
 /** A grid axis is a screen diagonal on the oblique board; a grid diagonal is screen-horizontal. */
 const CASES = {
-  shortCardinal: { to: board(3, 0), tiles: 3 },
-  longCardinal: { to: board(5, 0), tiles: 5 },
-  shortDiagonal: { to: board(3, -3), tiles: 6 / STEP },
-  longDiagonal: { to: board(5, -5), tiles: 10 / STEP },
+  shortCardinal: { to: board(3, 0) },
+  longCardinal: { to: board(5, 0) },
+  shortDiagonal: { to: board(3, -3) },
+  longDiagonal: { to: board(5, -5) },
 } as const;
 
 describe('bend trajectories', () => {
@@ -41,50 +40,72 @@ describe('bend trajectories', () => {
     expect(board(3, -3)).toEqual({ x: 6, y: 0 });
   });
 
-  it('times a flight by its real length over its speed', () => {
-    for (const [name, { to, tiles }] of Object.entries(CASES)) {
-      expect(flightMs(FIRE, ORIGIN, to, STEP), name).toBeCloseTo((tiles / 9.8) * 1000, 9);
+  it('stretches the prototype flight by a tenth a tile of range from 3, within 0.8-1.3', () => {
+    const stretch: [number, number][] = [
+      [0, 0.8],
+      [1, 0.8],
+      [2, 0.9],
+      [3, 1],
+      [4, 1.1],
+      [5, 1.2],
+      [6, 1.3],
+      [9, 1.3],
+      [20, 1.3],
+    ];
+    for (const [tiles, k] of stretch) expect(flightStretch(tiles), `${tiles}`).toBeCloseTo(k, 12);
+    // The prototype's own flight at its own 3-tile range; the rest follow the rule.
+    expect(flightDurationMs(280, 3)).toBe(280);
+    expect(flightDurationMs(280, 1)).toBeCloseTo(224, 9);
+    expect(flightDurationMs(280, 5)).toBeCloseTo(336, 9);
+    expect(flightDurationMs(280, 9)).toBeCloseTo(364, 9);
+  });
+
+  it('covers any distance in the flight it is given, at an even speed', () => {
+    for (const { to } of Object.values(CASES)) {
+      expect(flightPoint(STRAIGHT, ORIGIN, to, STEP, TOTAL / 2, TOTAL)).toEqual({
+        ...lerp(ORIGIN, to, 0.5),
+        spin: 0,
+      });
+      expect(flightPoint(STRAIGHT, ORIGIN, to, STEP, TOTAL, TOTAL)).toMatchObject(to);
     }
-    expect(flightMs(FIRE, ORIGIN, CASES.shortCardinal.to, STEP)).toBeCloseTo(306.1224489796, 9);
-    expect(flightMs(FIRE, ORIGIN, CASES.longDiagonal.to, STEP)).toBeCloseTo(912.6808071428, 9);
-    // A square board's step is a tile width.
-    expect(flightMs(STRAIGHT, { x: 0, y: 0 }, { x: 3, y: 4 }, 1)).toBeCloseTo(500, 9);
-    // Nowhere to go takes no time.
-    expect(flightMs(FIRE, ORIGIN, ORIGIN, STEP)).toBe(0);
+    // A flight with no time left is already there.
+    expect(flightPoint(FIRE, ORIGIN, CASES.shortCardinal.to, STEP, 0, 0)).toMatchObject({
+      x: 3,
+      y: 1.5,
+    });
   });
 
   it('lifts an arc by its height in tiles at the middle and lands on the target', () => {
     const { to } = CASES.shortCardinal;
-    const total = flightMs(FIRE, ORIGIN, to, STEP);
-    const mid = flightPoint(FIRE, ORIGIN, to, STEP, total / 2);
+    const mid = flightPoint(FIRE, ORIGIN, to, STEP, TOTAL / 2, TOTAL);
     expect(mid.x).toBeCloseTo(1.5, 12);
     expect(mid.y).toBeCloseTo(0.75 - 0.2 * STEP, 12);
-    const quarter = flightPoint(FIRE, ORIGIN, to, STEP, total / 4);
+    const quarter = flightPoint(FIRE, ORIGIN, to, STEP, TOTAL / 4, TOTAL);
     expect(quarter.x).toBeCloseTo(0.75, 12);
     expect(quarter.y).toBeCloseTo(0.375 - 4 * 0.2 * STEP * 0.25 * 0.75, 12);
-    expect(flightPoint(FIRE, ORIGIN, to, STEP, -50)).toMatchObject({ x: 0, y: 0 });
-    expect(flightPoint(FIRE, ORIGIN, to, STEP, total + 50)).toMatchObject({ x: 3, y: 1.5 });
+    expect(flightPoint(FIRE, ORIGIN, to, STEP, -50, TOTAL)).toMatchObject({ x: 0, y: 0 });
+    expect(flightPoint(FIRE, ORIGIN, to, STEP, TOTAL + 50, TOTAL)).toMatchObject({ x: 3, y: 1.5 });
     // The long diagonal lifts by the same height: it is in tiles, not a fraction of the path.
-    const far = CASES.longDiagonal.to;
-    const farMid = flightPoint(FIRE, ORIGIN, far, STEP, flightMs(FIRE, ORIGIN, far, STEP) / 2);
+    const farMid = flightPoint(FIRE, ORIGIN, CASES.longDiagonal.to, STEP, TOTAL / 2, TOTAL);
     expect(farMid.x).toBeCloseTo(5, 12);
     expect(farMid.y).toBeCloseTo(-0.2 * STEP, 12);
   });
 
   it('keeps a straight path and a bolt on the chord', () => {
     const { to } = CASES.shortDiagonal;
-    const half = flightMs(STRAIGHT, ORIGIN, to, STEP) / 2;
-    expect(flightPoint(STRAIGHT, ORIGIN, to, STEP, half)).toEqual({ x: 3, y: 0, spin: 0 });
-    const bolt = flightPoint(WATER, ORIGIN, to, STEP, flightMs(WATER, ORIGIN, to, STEP) / 2);
-    expect(bolt).toEqual({ x: 3, y: 0, spin: 0 });
+    expect(flightPoint(STRAIGHT, ORIGIN, to, STEP, TOTAL / 2, TOTAL)).toEqual({
+      x: 3,
+      y: 0,
+      spin: 0,
+    });
+    expect(flightPoint(WATER, ORIGIN, to, STEP, TOTAL / 2, TOTAL)).toEqual({ x: 3, y: 0, spin: 0 });
   });
 
   it('spins an arc by whole turns over the flight', () => {
     const spun: BendTrajectory = { ...FIRE, spin: 2 };
     const { to } = CASES.longCardinal;
-    const total = flightMs(spun, ORIGIN, to, STEP);
-    expect(flightPoint(spun, ORIGIN, to, STEP, total / 4).spin).toBeCloseTo(180, 9);
-    expect(flightPoint(spun, ORIGIN, to, STEP, total).spin).toBeCloseTo(720, 9);
+    expect(flightPoint(spun, ORIGIN, to, STEP, TOTAL / 4, TOTAL).spin).toBeCloseTo(180, 9);
+    expect(flightPoint(spun, ORIGIN, to, STEP, TOTAL, TOTAL).spin).toBeCloseTo(720, 9);
   });
 
   it('stops the whip at a third of the way, and never past 1.5 tiles', () => {
@@ -98,9 +119,6 @@ describe('bend trajectories', () => {
     const diagonal = whipHead(WATER, ORIGIN, CASES.shortDiagonal.to, STEP);
     expect(diagonal.x).toBeCloseTo(1.5 * STEP, 12);
     expect(diagonal.y).toBe(0);
-    // The bolt flies the rest at its own speed.
-    const rest = flightMs(WATER, diagonal, CASES.shortDiagonal.to, STEP);
-    expect(rest).toBeCloseTo(((6 / STEP - 1.5) / 11.1) * 1000, 9);
     // Anything but a whip-bolt has no whip.
     expect(whipHead(FIRE, ORIGIN, CASES.shortCardinal.to, STEP)).toBe(ORIGIN);
     expect(whipHead(WATER, ORIGIN, ORIGIN, STEP)).toBe(ORIGIN);
