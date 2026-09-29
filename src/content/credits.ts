@@ -109,6 +109,22 @@ export const THIRD_PARTY_CREDITS: readonly CreditEntry[] = [
     note: 'The data used in this project was obtained from mocap.cs.cmu.edu. The database was created with funding from NSF EIA-0196217. Kaya falls to 90_18 (RugPullFall), frames 64 to 170; Sura to 77_18 and Bo to 77_16, each lying down played in reverse; every take is retargeted onto the character’s own stance; the cels are drawn for this project with PixelLab. See docs/adr/0059-g-knockout-and-thug.md.',
   },
   {
+    what: 'The motion of the party’s hit reactions',
+    work: 'CMU Graphics Lab Motion Capture Database, subject 79 trial 73, subject 76 trial 03 and subject 77 trial 09',
+    authors: 'Carnegie Mellon University Graphics Lab',
+    licence: 'CMU Motion Capture Database terms',
+    source: 'https://mocap.cs.cmu.edu',
+    covers: [
+      'art/units/kaya-g-4.webp',
+      'art/units/kaya-g-4.json',
+      'art/units/sura-g-4.webp',
+      'art/units/sura-g-4.json',
+      'art/units/bo-g-4.webp',
+      'art/units/bo-g-4.json',
+    ],
+    note: 'The data used in this project was obtained from mocap.cs.cmu.edu. The database was created with funding from NSF EIA-0196217. Kaya flinches to CMU 79_73 (scared), frames 48 to 72; Sura to CMU 76_03 (avoid attacker), frames 256 to 288; Bo to CMU 77_09 (duck to avoid flying object), frames 212 to 234; every take is retargeted onto the character’s own stance in each of eight headings; the cels are drawn for this project with PixelLab, and their clips ride in the same clip data as the knockouts. See docs/adr/0063-g-hit-reactions.md.',
+  },
+  {
     what: 'The motion of the thug’s walk',
     work: 'Mixamo “Unarmed Walk Forward”',
     authors: 'Adobe Mixamo',

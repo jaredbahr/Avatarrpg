@@ -36,6 +36,7 @@ import {
   HEADINGS,
   KO_HEADINGS,
   headingClip,
+  hitClip,
   koClip,
 } from '../../src/content/assets/clips';
 import type { ClipDef, ClipName } from '../../src/content/assets/clips';
@@ -73,9 +74,21 @@ export const IMAGE_SIZES: Readonly<Record<string, { width: number; height: numbe
  * reference.
  */
 export const WEBP_SHEET_PINS: Readonly<Record<string, readonly string[]>> = {
-  'unit.fire.kaya': ['art/source/kaya-g/pins.json', 'art/source/kaya-clips/pins.json'],
-  'unit.water.sura': ['art/source/sura-g/pins.json', 'art/source/sura-clips/pins.json'],
-  'unit.earth.bo': ['art/source/bo-g/pins.json', 'art/source/bo-clips/pins.json'],
+  'unit.fire.kaya': [
+    'art/source/kaya-g/pins.json',
+    'art/source/kaya-clips/pins.json',
+    'art/source/kaya-hits/pins.json',
+  ],
+  'unit.water.sura': [
+    'art/source/sura-g/pins.json',
+    'art/source/sura-clips/pins.json',
+    'art/source/sura-hits/pins.json',
+  ],
+  'unit.earth.bo': [
+    'art/source/bo-g/pins.json',
+    'art/source/bo-clips/pins.json',
+    'art/source/bo-hits/pins.json',
+  ],
   'unit.enemy.thug': ['art/source/thug-g/pins.json'],
 };
 
@@ -390,11 +403,15 @@ export async function validateSheets(
           }
         }
       }
-      // A G knockout starts on the stance's feet at its size: placed by its
-      // own anchor, frame 0 has the stance cel's exact alpha (ADR 0059).
+      // A G knockout or hit starts on the stance's feet at its size: placed by
+      // its own anchor, frame 0 has the stance cel's exact alpha (ADR 0059,
+      // ADR 0063). A hit's last frame is that same cel, held.
       const foot = { x: column, y: entry.anchor.y * wantH };
-      for (const heading of KO_HEADINGS) {
-        const clip = koClip(heading);
+      const registered = [
+        ...KO_HEADINGS.map((heading) => [koClip(heading), heading] as const),
+        ...HEADINGS.map((heading) => [hitClip(heading), heading] as const),
+      ];
+      for (const [clip, heading] of registered) {
         const def = clips[clip];
         if (!def?.anchor) continue;
         const stanceFound = find(`${key}/${headingClip('stance', heading)}/0`);
@@ -409,6 +426,8 @@ export async function validateSheets(
           height: stanceFound.frame.h,
         });
         const name = def.frames[0];
+        if (clip.startsWith('hit') && def.frames[def.frames.length - 1] !== name)
+          problems.push(`${key}: ${clip} does not end on its first cel, the stance`);
         const found = name ? find(name) : undefined;
         if (!found) continue;
         const cel = crop(found.image, {

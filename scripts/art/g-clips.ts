@@ -1,7 +1,8 @@
 /**
  * Reproducibly packs a G party member's approved knockouts (four screen
- * diagonals) onto a further page of the character's G sheet, and writes the
- * clips that draw them beside it (ADR 0059).
+ * diagonals) and hit reactions (all eight headings) onto further pages of the
+ * character's G sheet, and writes the clips that draw them beside it (ADR
+ * 0059, ADR 0063).
  *
  * Usage:
  *   node --import tsx scripts/art/g-clips.ts --character <kaya|sura|bo> \
@@ -11,9 +12,14 @@
  * on the 320 px canvas the bend uses, and its timing as
  * `proc/<take>/timing.json`. Kaya's cels are the untoned `proc` set; Sura's
  * and Bo's are the `toned` set, already toned and never re-toned. The cels
- * are read-only. Bo's north-west knockout is the r2 retake. The hand-off's hit
- * reactions are not packed: their motion is CC BY-SA, which this project
- * does not ship (ADR 0059).
+ * are read-only. Bo's north-west knockout is the r2 retake. The hits are the
+ * round-3 `-lic` takes, retargeted CMU capture; the round-1 hits were
+ * mocapdata.com CC BY-SA motion, which this project does not ship, and a hit
+ * timing file that does not credit mocap.cs.cmu.edu stops the build.
+ *
+ * Each set (knockouts, hits) has its own pin file and its own pages: the
+ * knockouts on `<name>-g-3`, the hits on the pages after them. So adding a set
+ * never re-encodes another's page.
  *
  * Registration is the bend packer's (`bend-sprites.ts`), not a second copy
  * of it: each take's frame 0 is the approved stance cel of its heading, found
@@ -28,21 +34,22 @@
  * lying flat does not fit a standing cel. A cel whose pixels repeat an
  * earlier cel's is packed once and named twice: a hold is timing, never a
  * second cel. A repeat that is not declared in `holds` stops the build, and
- * so does a declared hold that is not a repeat. The take's hit-stop, "hold
- * the contact frame an extra hitstop.ms", is added to that frame's time.
+ * so does a declared hold that is not a repeat; a hit's last frame is its
+ * first, the stance it returns to. The take's hit-stop, "hold the contact
+ * frame an extra hitstop.ms", is added to that frame's time.
  *
  * Any directory is not accepted: every cel and timing file must match its
- * SHA-256 in the character's checked-in pin file, and a missing, stray or
- * changed file stops the build before anything is written. `--pin` writes the
- * pin file from a source set once, and refuses when one exists. The build
- * then records the SHA-256 of every decoded atlas cel in the same file, which
+ * SHA-256 in the set's checked-in pin file, and a missing, stray or changed
+ * file stops the build before anything is written. `--pin` writes each set's
+ * pin file that does not exist yet, and never rewrites one. The build then
+ * records the SHA-256 of every decoded atlas cel in the same file, which
  * `art:validate` holds the shipped WebP to.
  */
 
 import { existsSync, mkdirSync, readFileSync, readdirSync, writeFileSync } from 'node:fs';
 import { join, resolve } from 'node:path';
 import type { ClipName } from '../../src/content/assets/clips';
-import { KO_HEADINGS, koClip } from '../../src/content/assets/clips';
+import { HEADINGS, KO_HEADINGS, hitClip, koClip } from '../../src/content/assets/clips';
 import { ASSETS } from '../../src/content/assets/manifest';
 import { atlasJsonText } from '../../src/render/sheets/atlasJson';
 import type { BendCharacter, BendHeading, Box } from './bend-sprites';
@@ -88,8 +95,13 @@ export interface PackedClip {
   readonly anchor: { readonly x: number; readonly y: number };
 }
 
-/** One approved take: a diagonal's knockout. */
+/** The sets a build packs, each on its own pages with its own pin file, in page order. */
+export const CLIP_SETS = ['ko', 'hit'] as const;
+export type ClipSet = (typeof CLIP_SETS)[number];
+
+/** One approved take: a diagonal's knockout, or a heading's hit. */
 export interface ClipTake {
+  readonly set: ClipSet;
   readonly clip: ClipName;
   readonly heading: BendHeading;
   /** The take's folder name in the hand-off, e.g. `sura-ko-se`. */
@@ -100,8 +112,8 @@ export interface ClipCharacter {
   readonly name: 'kaya' | 'sura' | 'bo';
   /** The unit asset key the atlas frames are named under. */
   readonly key: string;
-  /** The pin file, relative to the repo root. */
-  readonly pins: string;
+  /** Each set's pin file, relative to the repo root. */
+  readonly pins: Readonly<Record<ClipSet, string>>;
   /** True for Sura and Bo, whose cels are the toned set. */
   readonly toned: boolean;
   /** The bend character whose headings and shipped stance registration reads. */
@@ -128,7 +140,7 @@ export const CLIP_CHARACTERS: Readonly<Record<'kaya' | 'sura' | 'bo', ClipCharac
   kaya: {
     name: 'kaya',
     key: 'unit.fire.kaya',
-    pins: 'art/source/kaya-clips/pins.json',
+    pins: { ko: 'art/source/kaya-clips/pins.json', hit: 'art/source/kaya-hits/pins.json' },
     toned: false,
     bend: BEND_CHARACTERS.kaya,
     holds: {},
@@ -137,7 +149,7 @@ export const CLIP_CHARACTERS: Readonly<Record<'kaya' | 'sura' | 'bo', ClipCharac
   sura: {
     name: 'sura',
     key: 'unit.water.sura',
-    pins: 'art/source/sura-clips/pins.json',
+    pins: { ko: 'art/source/sura-clips/pins.json', hit: 'art/source/sura-hits/pins.json' },
     toned: true,
     bend: BEND_CHARACTERS.sura,
     // The f5 in-between was unusable, so K3 holds through its slot (REPORT §5).
@@ -147,7 +159,7 @@ export const CLIP_CHARACTERS: Readonly<Record<'kaya' | 'sura' | 'bo', ClipCharac
   bo: {
     name: 'bo',
     key: 'unit.earth.bo',
-    pins: 'art/source/bo-clips/pins.json',
+    pins: { ko: 'art/source/bo-clips/pins.json', hit: 'art/source/bo-hits/pins.json' },
     toned: true,
     bend: BEND_CHARACTERS.bo,
     holds: {},
@@ -156,15 +168,24 @@ export const CLIP_CHARACTERS: Readonly<Record<'kaya' | 'sura' | 'bo', ClipCharac
   },
 };
 
-/** Every take a character's build packs: a knockout on each diagonal. */
-export function clipTakes(character: ClipCharacter): ClipTake[] {
-  return KO_HEADINGS.map((heading) => {
+/**
+ * Every take a set packs: a knockout on each diagonal, or a hit in each
+ * heading. A hit is always the round-3 `-lic` take, never round 1's.
+ */
+export function clipTakes(character: ClipCharacter, set: ClipSet): ClipTake[] {
+  const headings = set === 'ko' ? KO_HEADINGS : HEADINGS;
+  return headings.map((heading) => {
     const h = character.bend.headings.find((candidate) => candidate.heading === heading);
     if (!h) throw new Error(`${character.name} has no ${heading} heading.`);
-    const plain = `${character.name}-ko-${ABBREVIATION[h.direction] ?? h.direction}`;
-    return { clip: koClip(heading), heading: h, take: character.retakes[plain] ?? plain };
+    const dir = ABBREVIATION[h.direction] ?? h.direction;
+    const plain = set === 'ko' ? `${character.name}-ko-${dir}` : `${character.name}-hit-${dir}-lic`;
+    const clip = set === 'ko' ? koClip(heading) : hitClip(heading);
+    return { set, clip, heading: h, take: character.retakes[plain] ?? plain };
   });
 }
+
+/** A hit ends on its first cel, the stance it returns to. */
+const HIT_HOLDS: Readonly<Record<number, number>> = { 4: 0 };
 
 /* ------------------------------------------------------------------ */
 /* The P0 timing file                                                   */
@@ -172,24 +193,34 @@ export function clipTakes(character: ClipCharacter): ClipTake[] {
 
 export interface ClipTiming {
   readonly take: string;
-  readonly kind: 'ko';
+  readonly kind: ClipSet;
   readonly n_frames: number;
   readonly ms_per_frame: readonly number[];
   readonly hitstop: { readonly frame: number; readonly ms: number };
   readonly last_frame_holds: boolean;
   readonly cel: { readonly size: readonly [number, number] };
+  readonly attribution?: string;
 }
+
+/** The capture a shipped hit is retargeted from; the round-1 hits named mocapdata.com. */
+const HIT_SOURCE = /mocap\.cs\.cmu\.edu/;
 
 export const timingFile = (take: string): string => `proc/${take}/timing.json`;
 export const celFile = (character: ClipCharacter, take: string, index: number): string =>
   `${character.toned ? 'toned' : 'proc'}/${take}/${String(index).padStart(2, '0')}.png`;
 
-export function parseTiming(text: string, label: string): ClipTiming {
+/**
+ * A take's timing, for its set: a knockout holds its last frame, a hit
+ * returns to the stance and credits the CMU capture it is drawn from.
+ */
+export function parseTiming(text: string, label: string, set: ClipSet = 'ko'): ClipTiming {
   const raw = JSON.parse(text) as Partial<ClipTiming>;
   const n = raw.n_frames;
+  if (set === 'hit' && (!HIT_SOURCE.test(raw.attribution ?? '') || /mocapdata/i.test(text)))
+    throw new Error(`${label} does not credit CMU capture; a hit ships no other motion.`);
   if (
-    raw.kind !== 'ko' ||
-    raw.last_frame_holds !== true ||
+    raw.kind !== set ||
+    raw.last_frame_holds !== (set === 'ko') ||
     typeof n !== 'number' ||
     !Array.isArray(raw.ms_per_frame) ||
     raw.ms_per_frame.length !== n ||
@@ -201,7 +232,9 @@ export function parseTiming(text: string, label: string): ClipTiming {
     raw.cel?.size?.[0] !== SOURCE_SIZE ||
     raw.cel.size[1] !== SOURCE_SIZE
   )
-    throw new Error(`${label} is not a P0 knockout timing file with ${String(n)} frames.`);
+    throw new Error(
+      `${label} is not a P0 ${set === 'ko' ? 'knockout' : 'hit'} timing file with ${String(n)} frames.`,
+    );
   return raw as ClipTiming;
 }
 
@@ -278,7 +311,7 @@ export function packTake(
   const reg = register(first, stance, take.heading.dy, label);
 
   // Every repeat is declared, and every declaration is a repeat.
-  const holds = character.holds[take.take] ?? {};
+  const holds = character.holds[take.take] ?? (take.set === 'hit' ? HIT_HOLDS : {});
   const cel = new Map<number, number>();
   const firstSeen = new Map<string, number>();
   sources.forEach((image, index) => {
@@ -365,12 +398,13 @@ export function packTake(
 /* The build                                                            */
 /* ------------------------------------------------------------------ */
 
-/** Every source file a character's build reads, relative to its set. */
+/** Every source file a set's build reads, relative to the source set. */
 export function clipSourceFiles(
   character: ClipCharacter,
+  set: ClipSet,
   timings: ReadonlyMap<string, ClipTiming>,
 ): { timing: string[]; cels: string[] } {
-  const takes = clipTakes(character);
+  const takes = clipTakes(character, set);
   const timing = takes.map((t) => timingFile(t.take));
   const cels: string[] = [];
   for (const t of takes) {
@@ -381,9 +415,14 @@ export function clipSourceFiles(
 }
 
 /** Any PNG in a take's cel folder the build does not read: a stray cel. */
-function strayCels(source: string, character: ClipCharacter, files: readonly string[]): string[] {
+function strayCels(
+  source: string,
+  character: ClipCharacter,
+  set: ClipSet,
+  files: readonly string[],
+): string[] {
   const problems: string[] = [];
-  for (const t of clipTakes(character)) {
+  for (const t of clipTakes(character, set)) {
     const folder = celFile(character, t.take, 0).replace(/\/00\.png$/, '');
     const dir = join(source, folder);
     if (!existsSync(dir)) continue;
@@ -396,43 +435,53 @@ function strayCels(source: string, character: ClipCharacter, files: readonly str
   return problems;
 }
 
-function readTimings(source: string, character: ClipCharacter): Map<string, ClipTiming> {
+function readTimings(
+  source: string,
+  character: ClipCharacter,
+  set: ClipSet,
+): Map<string, ClipTiming> {
   const timings = new Map<string, ClipTiming>();
-  for (const t of clipTakes(character)) {
+  for (const t of clipTakes(character, set)) {
     const path = join(source, timingFile(t.take));
-    if (existsSync(path)) timings.set(t.take, parseTiming(readFileSync(path, 'utf8'), path));
+    if (existsSync(path)) timings.set(t.take, parseTiming(readFileSync(path, 'utf8'), path, set));
   }
   return timings;
 }
 
-/** Problems with a source set against the character's pins; empty is clean. */
+/** Problems with a source set against a set's pins; empty is clean. */
 export function checkClipSources(
   source: string,
   character: ClipCharacter,
+  set: ClipSet,
   pins: ClipPins,
 ): string[] {
-  const timingFiles = clipTakes(character).map((t) => timingFile(t.take));
+  const timingFiles = clipTakes(character, set).map((t) => timingFile(t.take));
   const timingProblems = checkSources(source, timingFiles, pins.timing, 'clip timing');
   // A timing that does not match its pin says nothing about how many cels to expect.
   if (timingProblems.length > 0) return timingProblems;
-  const files = clipSourceFiles(character, readTimings(source, character));
+  const files = clipSourceFiles(character, set, readTimings(source, character, set));
   return [
     ...checkSources(source, files.cels, pins.cels, 'clip cel'),
-    ...strayCels(source, character, files.cels),
+    ...strayCels(source, character, set, files.cels),
   ];
 }
 
-/** Writes a fresh pin file for a source set. Refuses to overwrite one. */
-export function pinClipSources(source: string, character: ClipCharacter, pinsPath: string): void {
+/** Writes a fresh pin file for one set of a source set. Refuses to overwrite one. */
+export function pinClipSources(
+  source: string,
+  character: ClipCharacter,
+  set: ClipSet,
+  pinsPath: string,
+): void {
   if (existsSync(pinsPath))
     throw new Error(`${pinsPath} exists; a pin file is never rewritten by --pin.`);
-  const files = clipSourceFiles(character, readTimings(source, character));
+  const files = clipSourceFiles(character, set, readTimings(source, character, set));
   const missing = [...files.timing, ...files.cels].filter(
     (file) => !existsSync(join(source, file)),
   );
   const problems = [
     ...missing.map((file) => `${file} is missing`),
-    ...strayCels(source, character, files.cels),
+    ...strayCels(source, character, set, files.cels),
   ];
   if (problems.length > 0)
     throw new Error(`${source} is not a complete clip set:\n${problems.join('\n')}`);
@@ -451,8 +500,10 @@ export interface ClipBuildOptions {
   readonly outDir: string;
   /** Where the clip data goes: `public/art/units/<name>-g-clips.json`. */
   readonly dataPath: string;
-  /** The pin file; defaults to the character's. */
-  readonly pinsPath?: string;
+  /** Each set's pin file; defaults to the character's. */
+  readonly pinsPaths?: Partial<Record<ClipSet, string>>;
+  /** The sets to pack, in page order; defaults to every set. */
+  readonly sets?: readonly ClipSet[];
   /** The packed stance cel frame 0 must reproduce, per heading. */
   readonly stance: (h: BendHeading) => Image;
   readonly log?: (line: string) => void;
@@ -471,40 +522,55 @@ export async function buildClips(
   bytes: Record<string, number>;
 }> {
   const { name, key } = character;
-  const pinsPath = options.pinsPath ?? character.pins;
+  const sets = options.sets ?? CLIP_SETS;
+  const pinsPathOf = (set: ClipSet) => options.pinsPaths?.[set] ?? character.pins[set];
   const log = options.log ?? console.log;
-  if (!existsSync(pinsPath)) throw new Error(`${pinsPath} is missing; pin the sources with --pin.`);
-  const pins = JSON.parse(readFileSync(pinsPath, 'utf8')) as ClipPins;
-  const problems = checkClipSources(source, character, pins);
-  if (problems.length > 0)
-    throw new Error(`${name} clip sources do not match ${pinsPath}:\n${problems.join('\n')}`);
+  const pinsOf = new Map<ClipSet, ClipPins>();
+  for (const set of sets) {
+    const pinsPath = pinsPathOf(set);
+    if (!existsSync(pinsPath))
+      throw new Error(`${pinsPath} is missing; pin the sources with --pin.`);
+    const pins = JSON.parse(readFileSync(pinsPath, 'utf8')) as ClipPins;
+    const problems = checkClipSources(source, character, set, pins);
+    if (problems.length > 0)
+      throw new Error(`${name} clip sources do not match ${pinsPath}:\n${problems.join('\n')}`);
+    pinsOf.set(set, pins);
+  }
 
-  const timings = readTimings(source, character);
   const clips: Record<string, PackedClip> = {};
   const boxes = new Map<string, { box: Box; heading: BendHeading }>();
-  const cels = new Map<string, Image>();
-  for (const take of clipTakes(character)) {
-    const timing = timings.get(take.take);
-    if (!timing) throw new Error(`${name} ${take.take} has no timing.`);
-    const sources = Array.from({ length: timing.n_frames }, (_, i) =>
-      readPng(join(source, celFile(character, take.take, i))),
-    );
-    const packed = packTake(character, take, timing, sources, options.stance(take.heading));
-    clips[take.clip] = packed.clip;
-    boxes.set(clipFrameName(key, take.clip, 0), { box: packed.box, heading: take.heading });
-    for (const [frame, image] of packed.cels) cels.set(frame, image);
+  // Each set's cels go on pages of their own.
+  const setCels = new Map<ClipSet, Map<string, Image>>();
+  for (const set of sets) {
+    const timings = readTimings(source, character, set);
+    const cels = new Map<string, Image>();
+    for (const take of clipTakes(character, set)) {
+      const timing = timings.get(take.take);
+      if (!timing) throw new Error(`${name} ${take.take} has no timing.`);
+      const sources = Array.from({ length: timing.n_frames }, (_, i) =>
+        readPng(join(source, celFile(character, take.take, i))),
+      );
+      const packed = packTake(character, take, timing, sources, options.stance(take.heading));
+      clips[take.clip] = packed.clip;
+      boxes.set(clipFrameName(key, take.clip, 0), { box: packed.box, heading: take.heading });
+      for (const [frame, image] of packed.cels) cels.set(frame, image);
+    }
+    setCels.set(set, cels);
   }
 
   // Every page is encoded and checked as it decodes before anything is
   // written, so a failed check leaves the shipped files as they were.
-  const layouts = layoutBendPages(cels);
-  const frameHashes: Record<string, string> = {};
+  const layouts = sets.flatMap((set) =>
+    layoutBendPages(setCels.get(set) ?? new Map()).map((layout) => ({ set, layout })),
+  );
+  const cels = new Map([...setCels.values()].flatMap((m) => [...m]));
+  const frameHashes = new Map<ClipSet, Record<string, string>>(sets.map((set) => [set, {}]));
   const bytes: Record<string, number> = {};
   const pages: string[] = [];
   const writes: { file: string; content: Uint8Array | string; line: string }[] = [];
   let worstMean = 0;
   let worstBias = 0;
-  for (const [index, layout] of layouts.entries()) {
+  for (const [index, { set, layout }] of layouts.entries()) {
     const stem = clipPageStem(name, index);
     const atlas = newImage(layout.width, layout.height);
     for (const [frame, rect] of layout.frames) {
@@ -520,8 +586,9 @@ export async function buildClips(
     bytes[`${stem}.json`] = Buffer.byteLength(json);
     pages.push(`art/units/${stem}.json`);
     const decoded = await decodeWebp(webp);
+    const hashes = frameHashes.get(set) ?? {};
     for (const [frame, rect] of layout.frames) {
-      frameHashes[frame] = celHash(decoded, rect);
+      hashes[frame] = celHash(decoded, rect);
       // Each clip's frame 0 is checked again as it decodes.
       const placed = boxes.get(frame);
       if (!placed) continue;
@@ -548,19 +615,20 @@ export async function buildClips(
     `${name} decoded frame 0 of every clip: alpha exact, worst mean ${worstMean.toFixed(2)} of ` +
       `${STANCE_TOLERANCE.meanRgb}, worst bias ${worstBias.toFixed(2)} of ${STANCE_TOLERANCE.bias}`,
   );
-  writes.push(
-    {
-      file: options.dataPath,
-      // Compact, as the atlas pages are: the sheet fetches it with them.
-      content: `${JSON.stringify(clips)}\n`,
-      line: `wrote ${options.dataPath}`,
-    },
-    {
+  writes.push({
+    file: options.dataPath,
+    // Compact, as the atlas pages are: the sheet fetches it with them.
+    content: `${JSON.stringify(clips)}\n`,
+    line: `wrote ${options.dataPath}`,
+  });
+  for (const set of sets) {
+    const pinsPath = pinsPathOf(set);
+    writes.push({
       file: pinsPath,
-      content: `${JSON.stringify({ ...pins, frames: frameHashes }, null, 2)}\n`,
+      content: `${JSON.stringify({ ...pinsOf.get(set), frames: frameHashes.get(set) }, null, 2)}\n`,
       line: `wrote ${pinsPath} cel pins`,
-    },
-  );
+    });
+  }
 
   mkdirSync(options.outDir, { recursive: true });
   mkdirSync(resolve(options.dataPath, '..'), { recursive: true });
@@ -595,8 +663,13 @@ if (process.argv[1]?.endsWith('g-clips.ts')) {
   if (!sourceArg) throw new Error('Pass --source <models-p0p1/work>.');
   const source = resolve(sourceArg);
   if (argv.includes('--pin')) {
-    pinClipSources(source, character, character.pins);
-    console.log(`wrote ${character.pins} source pins`);
+    // Only the sets not pinned yet: a pin file is never rewritten.
+    for (const set of CLIP_SETS) {
+      const pinsPath = character.pins[set];
+      if (existsSync(pinsPath)) continue;
+      pinClipSources(source, character, set, pinsPath);
+      console.log(`wrote ${pinsPath} source pins`);
+    }
   } else {
     await buildClips(character, source, {
       outDir: resolve('public/art/units'),

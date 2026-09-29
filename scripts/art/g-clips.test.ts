@@ -2,7 +2,13 @@ import { mkdirSync, mkdtempSync, readFileSync, readdirSync, rmSync, writeFileSyn
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { afterEach, describe, expect, it } from 'vitest';
-import { HEADINGS, KO_HEADINGS, headingClip, koClip } from '../../src/content/assets/clips';
+import {
+  HEADINGS,
+  KO_HEADINGS,
+  headingClip,
+  hitClip,
+  koClip,
+} from '../../src/content/assets/clips';
 import type { Heading } from '../../src/content/assets/clips';
 import { ASSETS } from '../../src/content/assets/manifest';
 import type { BendCharacter, Registration } from './bend-sprites';
@@ -21,7 +27,7 @@ import {
   pinClipSources,
   timingFile,
 } from './g-clips';
-import type { ClipCharacter, ClipPins, PackedClip } from './g-clips';
+import type { ClipCharacter, ClipPins, ClipSet, PackedClip } from './g-clips';
 import { FRAME_H, FRAME_W } from './g-sprites';
 import type { Image } from './lib/image';
 import { newImage, setPixel, writePng } from './lib/image';
@@ -93,7 +99,7 @@ function character(overrides: Partial<ClipCharacter> = {}): ClipCharacter {
   return {
     name: 'kaya',
     key: 'unit.fire.kaya',
-    pins: 'unused',
+    pins: { ko: 'unused', hit: 'unused' },
     toned: false,
     bend,
     holds: {},
@@ -102,19 +108,31 @@ function character(overrides: Partial<ClipCharacter> = {}): ClipCharacter {
   };
 }
 
-function timing(frames: number) {
+const CMU =
+  'motion: CMU Graphics Lab Motion Capture Database (mocap.cs.cmu.edu), subject 79 trial 73';
+
+function timing(frames: number, set: ClipSet = 'ko') {
   return {
     take: 'synthetic',
-    kind: 'ko',
+    kind: set,
     n_frames: frames,
     ms_per_frame: Array.from({ length: frames }, (_, i) => (i === frames - 1 ? 400 : 60)),
     hitstop: { frame: 1, ms: 80 },
-    last_frame_holds: true,
+    last_frame_holds: set === 'ko',
     cel: { size: [320, 320] },
+    ...(set === 'hit' ? { attribution: CMU } : {}),
   };
 }
 
 const koCels = (): Image[] => [stanceCel(), flinchCel(8), flinchCel(20), lyingCel()];
+/** A hit: stance, contact, extreme, recovery, and the stance again. */
+const hitCels = (): Image[] => [
+  stanceCel(),
+  flinchCel(4),
+  flinchCel(12),
+  flinchCel(6),
+  stanceCel(),
+];
 
 const TEMP: string[] = [];
 function temp(prefix: string): string {
@@ -126,35 +144,47 @@ afterEach(() => {
   for (const dir of TEMP.splice(0)) rmSync(dir, { recursive: true, force: true });
 });
 
-/** Writes a source set for every take; `cels` may replace a take's cels. */
-function sourceSet(who: ClipCharacter, cels: (take: string) => Image[] = () => koCels()): string {
+/** Writes a source set for every take of the sets; `cels` may replace a take's cels. */
+function sourceSet(
+  who: ClipCharacter,
+  cels: (take: string, set: ClipSet) => Image[] = (_, set) =>
+    set === 'hit' ? hitCels() : koCels(),
+  sets: readonly ClipSet[] = ['ko'],
+): string {
   const root = temp('clips-src-');
-  for (const t of clipTakes(who)) {
-    const images = cels(t.take);
-    mkdirSync(join(root, 'proc', t.take), { recursive: true });
-    mkdirSync(join(root, who.toned ? 'toned' : 'proc', t.take), { recursive: true });
-    images.forEach((image, index) => writePng(join(root, celFile(who, t.take, index)), image));
-    writeFileSync(join(root, timingFile(t.take)), JSON.stringify(timing(images.length)));
-  }
+  for (const set of sets)
+    for (const t of clipTakes(who, set)) {
+      const images = cels(t.take, set);
+      mkdirSync(join(root, 'proc', t.take), { recursive: true });
+      mkdirSync(join(root, who.toned ? 'toned' : 'proc', t.take), { recursive: true });
+      images.forEach((image, index) => writePng(join(root, celFile(who, t.take, index)), image));
+      writeFileSync(join(root, timingFile(t.take)), JSON.stringify(timing(images.length, set)));
+    }
   return root;
 }
 
 /** The packed stance a G build would ship for the synthetic stance. */
 const STANCE = packCel(stanceCel(), REG, { x: 0, y: 0, w: FRAME_W, h: FRAME_H });
 
-function pinned(source: string, who: ClipCharacter): string {
+function pinned(source: string, who: ClipCharacter, set: ClipSet = 'ko'): string {
   const pinsPath = join(temp('clips-pins-'), 'pins.json');
-  pinClipSources(source, who, pinsPath);
+  pinClipSources(source, who, set, pinsPath);
   return pinsPath;
 }
 
-async function build(source: string, pinsPath: string, who: ClipCharacter) {
+async function build(
+  source: string,
+  pinsPath: string | Partial<Record<ClipSet, string>>,
+  who: ClipCharacter,
+  sets: readonly ClipSet[] = ['ko'],
+) {
   const outDir = temp('clips-out-');
   const dataPath = join(outDir, 'data.json');
   const result = await buildClips(who, source, {
     outDir,
     dataPath,
-    pinsPath,
+    pinsPaths: typeof pinsPath === 'string' ? { ko: pinsPath } : pinsPath,
+    sets,
     stance: () => STANCE,
     log: () => undefined,
   });
@@ -167,43 +197,59 @@ const foot = { x: 0.5 * FRAME_W, y: 0.85 * FRAME_H };
 /* Tests                                                                */
 /* ------------------------------------------------------------------ */
 
-describe('G knockout packer (ADR 0059)', () => {
-  it('takes a knockout on each diagonal and no hit, and Bo’s NW retake', () => {
+describe('G knockout and hit packer (ADR 0059, ADR 0063)', () => {
+  it('takes a knockout on each diagonal, Bo’s NW retake, and only the licence-safe hits', () => {
     for (const who of Object.values(CLIP_CHARACTERS)) {
-      const takes = clipTakes(who);
+      const takes = clipTakes(who, 'ko');
       expect(takes.map((t) => t.clip)).toEqual(KO_HEADINGS.map(koClip));
-      // The hand-off's hits are CC BY-SA motion, which does not ship.
       expect(takes.some((t) => /-hit-/.test(t.take))).toBe(false);
       for (const t of takes)
         expect(t.heading.stance).toBe(headingClip('stance', t.heading.heading));
+      // Round 1's hits are CC BY-SA motion, which does not ship; round 3's
+      // `-lic` takes are CMU capture, one in every heading (ADR 0063).
+      const hits = clipTakes(who, 'hit');
+      expect(hits.map((t) => t.clip)).toEqual(HEADINGS.map(hitClip));
+      for (const t of hits) {
+        expect(t.take).toMatch(new RegExp(`^${who.name}-hit-(se|s|e|sw|ne|w|n|nw)-lic$`));
+        expect(t.heading.heading).toBe(
+          t.clip.replace(/^hit(.)/, (_, c: string) => c.toLowerCase()),
+        );
+      }
     }
-    const bo = clipTakes(CLIP_CHARACTERS.bo).map((t) => t.take);
+    const bo = clipTakes(CLIP_CHARACTERS.bo, 'ko').map((t) => t.take);
     expect(bo).toContain('bo-ko-nw-r2');
     expect(bo).not.toContain('bo-ko-nw');
-    expect(clipTakes(CLIP_CHARACTERS.kaya).map((t) => t.take)).toContain('kaya-ko-nw');
+    expect(clipTakes(CLIP_CHARACTERS.kaya, 'ko').map((t) => t.take)).toContain('kaya-ko-nw');
   });
 
-  it('pins exactly the files each character’s build reads: Kaya untoned, Sura and Bo toned', () => {
+  it('pins exactly the files each set’s build reads: Kaya untoned, Sura and Bo toned', () => {
     for (const who of Object.values(CLIP_CHARACTERS)) {
-      const pins = JSON.parse(readFileSync(who.pins, 'utf8')) as ClipPins;
-      const takes = clipTakes(who);
-      expect(Object.keys(pins.timing).sort()).toEqual(takes.map((t) => timingFile(t.take)).sort());
-      const folders = new Set(
-        Object.keys(pins.cels).map((file) => file.replace(/\/\d\d\.png$/, '')),
-      );
-      expect([...folders].sort()).toEqual(
-        takes.map((t) => `${who.toned ? 'toned' : 'proc'}/${t.take}`).sort(),
-      );
-      for (const t of takes) {
-        const count = Object.keys(pins.cels).filter((file) =>
-          file.startsWith(`${who.toned ? 'toned' : 'proc'}/${t.take}/`),
-        ).length;
-        expect(count, t.take).toBe(7);
+      for (const [set, cels] of [
+        ['ko', 7],
+        ['hit', 5],
+      ] as const) {
+        const pins = JSON.parse(readFileSync(who.pins[set], 'utf8')) as ClipPins;
+        const takes = clipTakes(who, set);
+        expect(Object.keys(pins.timing).sort()).toEqual(
+          takes.map((t) => timingFile(t.take)).sort(),
+        );
+        const folders = new Set(
+          Object.keys(pins.cels).map((file) => file.replace(/\/\d\d\.png$/, '')),
+        );
+        expect([...folders].sort()).toEqual(
+          takes.map((t) => `${who.toned ? 'toned' : 'proc'}/${t.take}`).sort(),
+        );
+        for (const t of takes) {
+          const count = Object.keys(pins.cels).filter((file) =>
+            file.startsWith(`${who.toned ? 'toned' : 'proc'}/${t.take}/`),
+          ).length;
+          expect(count, t.take).toBe(cels);
+        }
+        for (const hash of [...Object.values(pins.cels), ...Object.values(pins.timing)])
+          expect(hash).toMatch(/^[0-9a-f]{64}$/);
+        expect(Object.keys(pins.frames).length).toBeGreaterThan(0);
+        expect(Object.keys(pins.frames).every((name) => name.includes(`/${set}`))).toBe(true);
       }
-      for (const hash of [...Object.values(pins.cels), ...Object.values(pins.timing)])
-        expect(hash).toMatch(/^[0-9a-f]{64}$/);
-      expect(Object.keys(pins.frames).length).toBeGreaterThan(0);
-      expect(Object.keys(pins.frames).every((name) => name.includes('/ko'))).toBe(true);
     }
   });
 
@@ -216,28 +262,55 @@ describe('G knockout packer (ADR 0059)', () => {
       const entry = ASSETS[who.key];
       if (entry?.kind !== 'sheet') throw new Error(`${who.key} is not a sheet`);
       expect(entry.atlasPages).toContain(`art/units/${who.name}-g-3.json`);
+      expect(entry.atlasPages).toContain(`art/units/${who.name}-g-4.json`);
       expect(entry.clipData).toBe(clipDataFile(who.name));
-      const pins = JSON.parse(readFileSync(who.pins, 'utf8')) as ClipPins;
-      expect(Object.keys(data)).toEqual(clipTakes(who).map((t) => t.clip));
-      for (const t of clipTakes(who)) {
+      const takes = [...clipTakes(who, 'ko'), ...clipTakes(who, 'hit')];
+      expect(Object.keys(data)).toEqual(takes.map((t) => t.clip));
+      for (const t of takes) {
+        const pins = JSON.parse(readFileSync(who.pins[t.set], 'utf8')) as ClipPins;
         const packed = data[t.clip];
         // Fetched, never bundled: the manifest itself does not carry it.
         expect(entry.clips[t.clip], t.clip).toBeUndefined();
         expect(packed?.loop, t.clip).toBe(false);
         for (const name of packed?.frames ?? []) expect(pins.frames[name], name).toBeDefined();
       }
+      // One timing per character, its hit-stop on the contact cel (REPORT-3 §3).
+      const [ms, stop] = ({ kaya: [400, 80], sura: [470, 70], bo: [540, 110] } as const)[who.name];
+      for (const heading of HEADINGS) {
+        const hit = data[hitClip(heading)];
+        expect(
+          hit?.frameMs.reduce((sum, t) => sum + t, 0),
+          heading,
+        ).toBe(ms + stop);
+        expect(hit?.frames.at(-1), heading).toBe(hit?.frames[0]);
+      }
     }
   });
 
-  it('adds the hit-stop to its contact frame, and reads only a knockout’s timing', () => {
+  it('adds the hit-stop to its contact frame, and reads only its own set’s timing', () => {
     const t = parseTiming(JSON.stringify(timing(5)), 'synthetic');
     expect(frameHolds(t)).toEqual([60, 140, 60, 60, 400]);
     expect(() => parseTiming(JSON.stringify({ ...timing(5), n_frames: 4 }), 's')).toThrow(
       /not a P0 knockout timing file/,
     );
-    expect(() =>
-      parseTiming(JSON.stringify({ ...timing(5), kind: 'hit', last_frame_holds: false }), 's'),
-    ).toThrow(/not a P0 knockout timing file/);
+    expect(() => parseTiming(JSON.stringify(timing(5, 'hit')), 's')).toThrow(
+      /not a P0 knockout timing file/,
+    );
+    const hit = parseTiming(JSON.stringify(timing(5, 'hit')), 's', 'hit');
+    expect(frameHolds(hit)).toEqual([60, 140, 60, 60, 400]);
+    expect(() => parseTiming(JSON.stringify(timing(5)), 's', 'hit')).toThrow(
+      /does not credit CMU capture/,
+    );
+  });
+
+  it('refuses a hit whose timing does not credit CMU capture', () => {
+    const noCredit = { ...timing(5, 'hit'), attribution: undefined };
+    expect(() => parseTiming(JSON.stringify(noCredit), 's', 'hit')).toThrow(/CMU/);
+    const banned = {
+      ...timing(5, 'hit'),
+      attribution: `${CMU}; also mocapdata.com hit-reaction, CC BY-SA`,
+    };
+    expect(() => parseTiming(JSON.stringify(banned), 's', 'hit')).toThrow(/CMU/);
   });
 
   it('is deterministic and registers frame 0 on the stance', async () => {
@@ -337,10 +410,10 @@ describe('G knockout packer (ADR 0059)', () => {
     const source = sourceSet(who);
     const pinsPath = pinned(source, who);
     const pins = JSON.parse(readFileSync(pinsPath, 'utf8')) as ClipPins;
-    expect(checkClipSources(source, who, pins)).toEqual([]);
+    expect(checkClipSources(source, who, 'ko', pins)).toEqual([]);
     writePng(join(source, celFile(who, 'kaya-ko-ne', 2)), flinchCel(11));
     writePng(join(source, 'proc', 'kaya-ko-ne', '09.png'), flinchCel(1));
-    expect(checkClipSources(source, who, pins)).toEqual([
+    expect(checkClipSources(source, who, 'ko', pins)).toEqual([
       'clip cel proc/kaya-ko-ne/02.png does not match its pin',
       'clip cel proc/kaya-ko-ne/09.png is in ' + source + ' but not in the timing',
     ]);
@@ -349,12 +422,61 @@ describe('G knockout packer (ADR 0059)', () => {
       buildClips(who, source, {
         outDir,
         dataPath: join(outDir, 'data.json'),
-        pinsPath,
+        pinsPaths: { ko: pinsPath },
+        sets: ['ko'],
         stance: () => STANCE,
         log: () => undefined,
       }),
     ).rejects.toThrow(/do not match/);
     expect(readdirSync(outDir)).toEqual([]);
-    expect(() => pinClipSources(source, who, pinsPath)).toThrow(/never rewritten/);
+    expect(() => pinClipSources(source, who, 'ko', pinsPath)).toThrow(/never rewritten/);
+  });
+
+  it('packs the hits on pages of their own, leaving the knockouts’ page as it was', async () => {
+    const who = character();
+    const source = sourceSet(who, undefined, ['ko', 'hit']);
+    const pins = { ko: pinned(source, who, 'ko'), hit: pinned(source, who, 'hit') };
+    const alone = await build(source, pins.ko, who, ['ko']);
+    const both = await build(source, pins, who, ['ko', 'hit']);
+    expect(readdirSync(both.outDir).sort()).toEqual([
+      'data.json',
+      'kaya-g-3.json',
+      'kaya-g-3.webp',
+      'kaya-g-4.json',
+      'kaya-g-4.webp',
+    ]);
+    for (const file of ['kaya-g-3.json', 'kaya-g-3.webp'])
+      expect(
+        readFileSync(join(both.outDir, file)).equals(readFileSync(join(alone.outDir, file))),
+        file,
+      ).toBe(true);
+    expect(Object.keys(both.clips)).toEqual([...KO_HEADINGS.map(koClip), ...HEADINGS.map(hitClip)]);
+    // The last frame returns to the stance, one cel named twice, on one camera.
+    const hit = both.clips.hitNorthWest;
+    if (!hit) throw new Error('Expected a hit');
+    expect(hit.frames).toEqual([0, 1, 2, 3, 0].map((i) => `unit.fire.kaya/hitNorthWest/${i}`));
+    expect(hit.frameMs).toEqual([60, 140, 60, 60, 400]);
+    const hitPins = JSON.parse(readFileSync(pins.hit, 'utf8')) as ClipPins;
+    expect(Object.keys(hitPins.frames)).toHaveLength(8 * 4);
+    expect(Object.keys(hitPins.frames).every((name) => name.includes('/hit'))).toBe(true);
+    const koPins = JSON.parse(readFileSync(pins.ko, 'utf8')) as ClipPins;
+    expect(Object.keys(koPins.frames)).toHaveLength(4 * 4);
+  });
+
+  it('stops on a hit that does not return to its stance', async () => {
+    const who = character();
+    const source = sourceSet(
+      who,
+      (take, set) =>
+        take === 'kaya-hit-sw-lic'
+          ? [stanceCel(), flinchCel(4), flinchCel(12), flinchCel(6), flinchCel(2)]
+          : set === 'hit'
+            ? hitCels()
+            : koCels(),
+      ['hit'],
+    );
+    await expect(build(source, { hit: pinned(source, who, 'hit') }, who, ['hit'])).rejects.toThrow(
+      /kaya-hit-sw-lic: frame 4 should repeat cel 0 and does not/,
+    );
   });
 });

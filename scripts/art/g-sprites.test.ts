@@ -253,9 +253,14 @@ for (const character of PARTY) {
       });
       const problems = await validateSheets(dir, { [KEY]: g.entry });
       expect(problems.some((p) => p.includes('clip "stance" has its mean foot row'))).toBe(true);
-      expect(problems.every((p) => p.includes(`${KEY}/stance/`) || p.includes('"stance"'))).toBe(
-        true,
-      );
+      // The east hit (ADR 0063) starts on that stance, and no longer does.
+      const off = new RegExp(`^${KEY}: hitEast frame "${KEY}/hitEast/0" is \\d+ alpha px off`);
+      expect(problems.some((p) => off.test(p))).toBe(true);
+      expect(
+        problems.every(
+          (p) => p.includes(`${KEY}/stance/`) || p.includes('"stance"') || p.includes('hitEast'),
+        ),
+      ).toBe(true);
     }, 60_000);
 
     it('fails a walk that sinks below where its idle stands', async () => {
@@ -284,7 +289,7 @@ for (const character of PARTY) {
     it('fails a lossy sheet with no pin file', async () => {
       expect(await validateSheets('public', { [KEY]: g.entry }, {})).toEqual([
         `${KEY}: lossy ${character.name}-g.webp + ${character.name}-g-2.webp + ` +
-          `${character.name}-g-3.webp has no cel pin file`,
+          `${character.name}-g-3.webp + ${character.name}-g-4.webp has no cel pin file`,
       ]);
     }, 60_000);
 
