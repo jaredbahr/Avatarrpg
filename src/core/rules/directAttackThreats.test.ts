@@ -106,7 +106,9 @@ describe('possible direct attack threats', () => {
     if (!ability) throw new Error('Missing ability');
     const caster = { ...enemy, ...budget, pos: witness.origin };
     expect(isValidTarget(CONTENT, battle, caster, ability, witness.aim).ok).toBe(true);
-    expect(affectedTiles(battle.grid, caster, ability, witness.aim).map(posKey)).toContain('5,3');
+    expect(affectedTiles(CONTENT, battle.grid, caster, ability, witness.aim).map(posKey)).toContain(
+      '5,3',
+    );
     expect({ state, battle, budget }).toEqual(before);
   });
 

@@ -23,7 +23,10 @@ const combatTuningShape = {
   elevationStep: z.number().int().min(0),
   /** Accuracy removed when the defender has cover and is not adjacent. */
   coverPenalty: z.number().int().min(0),
-  /** Divisor used to reduce ranged cover against a higher-tier defender. */
+  /**
+   * Divisor used to reduce ranged cover from a higher-tier attacker against a
+   * lower defender.
+   */
   plungingCoverDivisor: z.number().int().min(1),
   /**
    * Extra move points a one-tier climb costs, unless either end is a ramp

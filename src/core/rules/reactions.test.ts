@@ -154,7 +154,7 @@ function resolvedChanges(battle: BattleState, caster: Unit, ability: Ability, ta
 }
 
 function forecastChanges(battle: BattleState, caster: Unit, ability: Ability, target: Vec2) {
-  const tiles = affectedTiles(battle.grid, caster, ability, target);
+  const tiles = affectedTiles(CONTENT, battle.grid, caster, ability, target);
   const forecast = forecastReactions(CONTENT, battle, caster, ability, target, tiles);
   return forecast.entries.flatMap((entry) =>
     // One entry stands for every tile it changed, which is how the resolver
@@ -207,7 +207,13 @@ describe('reaction forecast', () => {
 
       const seededScene = scene([{ pos: target, id: rule.existing }]);
       const ability = applier(rule.applied);
-      const tiles = affectedTiles(seededScene.battle.grid, seededScene.caster, ability, target);
+      const tiles = affectedTiles(
+        CONTENT,
+        seededScene.battle.grid,
+        seededScene.caster,
+        ability,
+        target,
+      );
       const forecast = forecastReactions(
         CONTENT,
         seededScene.battle,
@@ -236,7 +242,7 @@ describe('the reactions the README promises', () => {
 
     const oiled = scene([{ pos: target, id: 'oil' }]);
     const ability = applier('fire');
-    const tiles = affectedTiles(oiled.battle.grid, oiled.caster, ability, target);
+    const tiles = affectedTiles(CONTENT, oiled.battle.grid, oiled.caster, ability, target);
     const forecast = forecastReactions(CONTENT, oiled.battle, oiled.caster, ability, target, tiles);
 
     const entry = forecast.entries[0];
@@ -252,7 +258,7 @@ describe('the reactions the README promises', () => {
 
     const wet = scene([{ pos: target, id: 'water' }]);
     const ability = applier('fire');
-    const tiles = affectedTiles(wet.battle.grid, wet.caster, ability, target);
+    const tiles = affectedTiles(CONTENT, wet.battle.grid, wet.caster, ability, target);
     const forecast = forecastReactions(CONTENT, wet.battle, wet.caster, ability, target, tiles);
 
     expect(forecast.entries[0]?.to).toBe('steam');
@@ -266,7 +272,7 @@ describe('the reactions the README promises', () => {
     if (!target) throw new Error('no target');
 
     const ability = applier('lightning');
-    const tiles = affectedTiles(flooded.battle.grid, flooded.caster, ability, target);
+    const tiles = affectedTiles(CONTENT, flooded.battle.grid, flooded.caster, ability, target);
     const forecast = forecastReactions(
       CONTENT,
       flooded.battle,
@@ -312,7 +318,7 @@ describe('forecast hygiene', () => {
 
     const before = JSON.stringify(fixture.battle.grid);
     const ability = applier('fire');
-    const tiles = affectedTiles(fixture.battle.grid, fixture.caster, ability, target);
+    const tiles = affectedTiles(CONTENT, fixture.battle.grid, fixture.caster, ability, target);
 
     const a = forecastReactions(CONTENT, fixture.battle, fixture.caster, ability, target, tiles);
     const b = forecastReactions(CONTENT, fixture.battle, fixture.caster, ability, target, tiles);
@@ -365,7 +371,7 @@ describe('forecast bounds', () => {
     if (!target) throw new Error('no target');
 
     const ability = applier('lightning');
-    const tiles = affectedTiles(flooded.battle.grid, flooded.caster, ability, target);
+    const tiles = affectedTiles(CONTENT, flooded.battle.grid, flooded.caster, ability, target);
     const forecast = forecastReactions(
       CONTENT,
       flooded.battle,

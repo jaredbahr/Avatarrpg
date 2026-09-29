@@ -4,8 +4,15 @@ import { RngCursor } from '../rng';
 import { createBattle, createGame } from '../state/createGame';
 import { BattleDraft } from '../state/battleDraft';
 import type { Ability, BattleState } from '../types';
-import { isValidTarget, previewAbility, resolveAbility, targetableTiles } from './abilities';
-import { distance, hasLineOfSight, inBounds, posKey } from './grid';
+import {
+  affectedTiles,
+  isValidTarget,
+  previewAbility,
+  resolveAbility,
+  targetableTiles,
+  validatingOrigin,
+} from './abilities';
+import { distance, hasLineOfSight, inBounds, lineTiles, posKey } from './grid';
 import { hitChance } from './damage';
 
 function fixture(): { battle: BattleState; caster: BattleState['units'][number] } {
@@ -30,6 +37,7 @@ function open(battle: BattleState): BattleState {
         blocked: false,
         blocksSight: false,
         cover: false,
+        elevation: 0,
         terrain: 'dirt',
       })),
     },
@@ -114,21 +122,24 @@ describe('height reach', () => {
   it('enumerates every valid tile from every occupied caster cell', () => {
     const { battle: source, caster: originalCaster } = fixture();
     const caster = { ...originalCaster, size: 2 as const };
-    const battle = open({
+    const opened = open({
       ...source,
       units: source.units.map((unit) => (unit.id === caster.id ? caster : unit)),
+    });
+    const battle = {
+      ...opened,
       grid: {
-        ...source.grid,
-        tiles: source.grid.tiles.map((tile, index) => ({
+        ...opened.grid,
+        tiles: opened.grid.tiles.map((tile, index) => ({
           ...tile,
           elevation:
-            index === caster.pos.y * source.grid.width + caster.pos.x ||
-            index === caster.pos.y * source.grid.width + caster.pos.x + 1
+            index === caster.pos.y * opened.grid.width + caster.pos.x ||
+            index === caster.pos.y * opened.grid.width + caster.pos.x + 1
               ? 1
               : 0,
         })),
       },
-    });
+    };
     const valid = [] as { x: number; y: number }[];
     for (let y = 0; y < battle.grid.height; y++) {
       for (let x = 0; x < battle.grid.width; x++) {
@@ -208,6 +219,60 @@ describe('height reach', () => {
     expect(isValidTarget(CONTENT, joinedOrigin, caster, longRange, target).ok).toBe(true);
   });
 
+  it('draws a size-2 line from whichever occupied cell validates, in anchor-first order', () => {
+    const { battle: source, caster: originalCaster } = fixture();
+    const caster = { ...originalCaster, pos: { x: 2, y: 2 }, size: 2 as const };
+    const target = { x: 5, y: 5 };
+    const ability: Ability = {
+      ...longRange,
+      range: 5,
+      targeting: { shape: 'line', length: 4 },
+    };
+    const battle = open({
+      ...source,
+      units: source.units.map((unit) => (unit.id === caster.id ? caster : unit)),
+    });
+    const withSightBlocker = (x: number, y: number): BattleState => ({
+      ...battle,
+      grid: {
+        ...battle.grid,
+        tiles: battle.grid.tiles.map((tile, index) =>
+          index === y * battle.grid.width + x ? { ...tile, blocksSight: true } : tile,
+        ),
+      },
+    });
+
+    const anchorBlocked = withSightBlocker(3, 3);
+    expect(lineTiles(anchorBlocked.grid, caster.pos, target, 4)).toContainEqual({ x: 3, y: 3 });
+    expect(lineTiles(anchorBlocked.grid, { x: 3, y: 2 }, target, 4)).not.toContainEqual({
+      x: 3,
+      y: 3,
+    });
+    expect(validatingOrigin(CONTENT, anchorBlocked.grid, caster, ability, target)).toEqual({
+      x: 3,
+      y: 2,
+    });
+    expect(affectedTiles(CONTENT, anchorBlocked.grid, caster, ability, target)).toEqual(
+      lineTiles(anchorBlocked.grid, { x: 3, y: 2 }, target, 4),
+    );
+
+    const secondBlocked = withSightBlocker(4, 3);
+    expect(lineTiles(secondBlocked.grid, { x: 3, y: 2 }, target, 4)).toContainEqual({
+      x: 4,
+      y: 3,
+    });
+    expect(lineTiles(secondBlocked.grid, caster.pos, target, 4)).not.toContainEqual({
+      x: 4,
+      y: 3,
+    });
+    expect(validatingOrigin(CONTENT, secondBlocked.grid, caster, ability, target)).toEqual(
+      caster.pos,
+    );
+    expect(affectedTiles(CONTENT, secondBlocked.grid, caster, ability, target)).toEqual(
+      lineTiles(secondBlocked.grid, caster.pos, target, 4),
+    );
+  });
+
   it('keeps size-1 range, height reach, and anchor LOS unchanged over the whole board', () => {
     const { battle: source, caster: originalCaster } = fixture();
     const caster = { ...originalCaster, pos: { x: 2, y: 2 }, size: 1 as const };
@@ -228,6 +293,11 @@ describe('height reach', () => {
         })),
       },
     };
+    const lineAbility: Ability = {
+      ...longRange,
+      range: 5,
+      targeting: { shape: 'line', length: 4 },
+    };
 
     for (let y = 0; y < varied.grid.height; y++) {
       for (let x = 0; x < varied.grid.width; x++) {
@@ -236,27 +306,63 @@ describe('height reach', () => {
           distance(caster.pos, target) <= longRange.range + CONTENT.tuning.heightReachBonus &&
           hasLineOfSight(varied.grid, caster.pos, target);
         expect(isValidTarget(CONTENT, varied, caster, longRange, target).ok).toBe(expected);
+        expect(affectedTiles(CONTENT, varied.grid, caster, lineAbility, target)).toEqual(
+          lineTiles(varied.grid, caster.pos, target, 4),
+        );
       }
     }
   });
 
-  it('uses the same non-random hit calculation for preview and resolution', () => {
-    const { battle, caster } = fixture();
-    const target = battle.units.find((unit) => unit.faction === 'enemy');
+  it('previews the same plunging hit chance used by resolution without mutating state', () => {
+    const { battle: source, caster: originalCaster } = fixture();
+    const target = source.units.find((unit) => unit.faction === 'enemy');
     if (!target) throw new Error('Missing target fixture');
     const ability = CONTENT.abilities.get('fire_blast');
     if (!ability) throw new Error('Missing fire blast');
-    const previewRng = new RngCursor(1);
-    const preview = previewAbility(CONTENT, battle, caster, ability, target.pos);
-    expect(previewRng.state).toBe(1);
-    expect(preview.targets.find((entry) => entry.unitId === target.id)?.hitChance).toBe(
-      hitChance(CONTENT, battle.grid, caster, target),
+    const caster = { ...originalCaster, pos: { x: 2, y: 2 } };
+    const defender = { ...target, pos: { x: 2, y: 5 } };
+    const battle = open({
+      ...source,
+      units: source.units.map((unit) =>
+        unit.id === caster.id ? caster : unit.id === defender.id ? defender : unit,
+      ),
+    });
+    const casterIndex = caster.pos.y * battle.grid.width + caster.pos.x;
+    const defenderIndex = defender.pos.y * battle.grid.width + defender.pos.x;
+    const plungingBattle = {
+      ...battle,
+      grid: {
+        ...battle.grid,
+        tiles: battle.grid.tiles.map((tile, index) => ({
+          ...tile,
+          elevation: index === casterIndex ? 1 : 0,
+          cover: index === defenderIndex,
+        })),
+      },
+    };
+    const tuning = CONTENT.tuning;
+    const rawExpectedChance =
+      tuning.baseHitChance +
+      tuning.elevationStep -
+      tuning.coverPenalty +
+      Math.floor(tuning.coverPenalty / tuning.plungingCoverDivisor);
+    const expectedChance = Math.max(
+      tuning.hitChanceMin,
+      Math.min(tuning.hitChanceMax, rawExpectedChance),
     );
-    const before = JSON.stringify(battle);
-    previewAbility(CONTENT, battle, caster, ability, target.pos);
-    expect(JSON.stringify(battle)).toBe(before);
-    const draft = new BattleDraft(CONTENT, battle, new RngCursor(1));
-    resolveAbility(draft, caster, ability, target.pos, draft.rng);
+
+    const before = JSON.stringify(plungingBattle);
+    const preview = previewAbility(CONTENT, plungingBattle, caster, ability, defender.pos);
+    expect(preview.targets.find((entry) => entry.unitId === defender.id)?.hitChance).toBe(
+      expectedChance,
+    );
+    expect(hitChance(CONTENT, plungingBattle.grid, caster, defender)).toBe(expectedChance);
+    expect(expectedChance).toBeGreaterThan(
+      tuning.baseHitChance + tuning.elevationStep - tuning.coverPenalty,
+    );
+    expect(JSON.stringify(plungingBattle)).toBe(before);
+    const draft = new BattleDraft(CONTENT, plungingBattle, new RngCursor(1));
+    resolveAbility(draft, caster, ability, defender.pos, draft.rng);
     expect(draft.events.some((event) => event.type === 'abilityUsed')).toBe(true);
   });
 });

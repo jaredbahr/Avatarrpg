@@ -116,7 +116,9 @@ export function directAttackThreats(
         for (let x = 0; x < battle.grid.width; x++) {
           const aim = { x, y };
           if (!isValidTarget(content, atOrigin, caster, ability, aim).ok) continue;
-          const affected = new Set(affectedTiles(battle.grid, caster, ability, aim).map(posKey));
+          const affected = new Set(
+            affectedTiles(content, battle.grid, caster, ability, aim).map(posKey),
+          );
           const caught = defenderCells.filter((p) => affected.has(posKey(p)));
           if (caught.length === 0) continue;
           threats.push({

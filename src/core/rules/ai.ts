@@ -213,7 +213,7 @@ function scoreAbility(
   weights: Weights,
 ): number {
   const content = draft.content;
-  const tiles = affectedTiles(draft.grid, caster, ability, target);
+  const tiles = affectedTiles(content, draft.grid, caster, ability, target);
   const struck = unitsOnTiles(draft.units, tiles).filter((u) => u.id !== caster.id);
 
   let score = 0;
