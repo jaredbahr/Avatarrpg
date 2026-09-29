@@ -191,7 +191,7 @@ export const WATER_ABILITIES: readonly Ability[] = [
       { kind: 'surface', surface: 'steam', duration: 2, area: 'area' },
     ],
     description:
-      'Warm mist fills a 3×3 area, healing every ally inside except you and clearing Burning, Blinded, Shocked and Chi-Blocked. The steam blocks sight for 2 rounds.',
+      'Warm mist fills a 3×3 area, healing every ally inside except you and clearing Burning, Blinded, Shocked and Chi-Blocked. The cloud does not block sight, but makes anyone inside much harder to hit; shots through it or out of it are trickier for 2 rounds.',
     flavor: 'Breathe in. You are all right.',
     fx: 'fx.water.mist',
     tags: ['heal', 'surface'],
