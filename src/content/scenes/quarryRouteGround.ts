@@ -4,17 +4,25 @@ export const DRILLER_GROUND_REGIONS = [
     name: 'dirt-west',
     x: 191,
     y: 94,
-    width: 1282,
-    height: 644,
-    bytes: 43254,
+    width: 1154,
+    height: 580,
+    bytes: 29412,
   },
   {
     name: 'dirt-east',
-    x: 601,
-    y: 300,
-    width: 1256,
-    height: 630,
-    bytes: 43322,
+    x: 729,
+    y: 364,
+    width: 1128,
+    height: 566,
+    bytes: 28198,
+  },
+  {
+    name: 'road',
+    x: 319,
+    y: 158,
+    width: 322,
+    height: 164,
+    bytes: 3164,
   },
   {
     name: 'stone',
@@ -22,7 +30,7 @@ export const DRILLER_GROUND_REGIONS = [
     y: -2,
     width: 2050,
     height: 1028,
-    bytes: 39282,
+    bytes: 66670,
   },
 ] as const;
 
@@ -62,3 +70,46 @@ export const CUTTING_GROUND_REGIONS = [
 ] as const;
 
 export const CUTTING_POOL_BYTES = 10490;
+
+export const DRILLER_PLATES = [
+  {
+    name: 'shaft',
+    x: 1407,
+    y: 702,
+    width: 386,
+    height: 196,
+    bytes: 3192,
+  },
+  {
+    name: 'gantry-2-1',
+    x: 767,
+    y: 94,
+    width: 130,
+    height: 68,
+    bytes: 812,
+  },
+  {
+    name: 'gantry-17-1',
+    x: 1727,
+    y: 574,
+    width: 130,
+    height: 68,
+    bytes: 858,
+  },
+  {
+    name: 'gantry-2-10',
+    x: 191,
+    y: 382,
+    width: 130,
+    height: 68,
+    bytes: 814,
+  },
+  {
+    name: 'gantry-17-10',
+    x: 1151,
+    y: 862,
+    width: 130,
+    height: 68,
+    bytes: 862,
+  },
+] as const;

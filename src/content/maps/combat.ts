@@ -224,18 +224,18 @@ export const QUARRY_FLOOR: MapDef = {
   ambience: 'quarry',
   legend: LEGEND,
   rows: [
-    'AAA^^..........^^AAA',
-    'AA^^....r..r....^^AA',
-    '^^.....oo..oo.....^^',
+    'XXXXXXXXXXXXXXXXXXXX',
+    'XXASSSSSRSSRSSSSSAXX',
+    'XXS....oo..oo...SSXX',
     '.......oo..oo.......',
-    '..r.....#...........',
-    '..........mm........',
-    '..........mm........',
-    '..r........#........',
+    '..r.....#.........PP',
+    '===.......mm......PP',
+    '===.......mm......PP',
+    '..r........#......PP',
     '.......oo..oo.......',
-    '^^.....oo..oo.....^^',
-    'AA^^....r..r....^^AA',
-    'AAA^^..........^^AAA',
+    'XXS....oo..oo...SSXX',
+    'XXASSSSSRSSRSSSSSAXX',
+    'XXXXXXXXXXXXXXXXXXXX',
   ],
   partySpawns: COMBAT_PARTY_SPAWNS,
   npcs: [],
@@ -259,6 +259,19 @@ export const QUARRY_FLOOR: MapDef = {
       when: { kind: 'flag', key: 'pella_asked', op: 'set' },
     },
   ],
+  /*
+   * The pit is closed north and south by the terrace wall (`X`) and east by
+   * the drill shaft (`P`). Rows 5-6 west are the haul-road mouth, declared by
+   * connectAct1's multi-tile exit; the cribbed timber either side of it and
+   * the floor corners beside the shaft, under its headframe, are exterior band.
+   */
+  edges: [
+    { side: 'west', span: [3, 4], treatment: 'band' },
+    { side: 'west', span: [7, 8], treatment: 'band' },
+    { side: 'east', span: [3, 3], treatment: 'band' },
+    { side: 'east', span: [8, 8], treatment: 'band' },
+  ],
+  edgeContract: 'enforce',
 };
 
 export const COMBAT_MAPS: readonly MapDef[] = [FOREST_ROAD, QUARRY_GATE, AMBUSH_ROAD, QUARRY_FLOOR];

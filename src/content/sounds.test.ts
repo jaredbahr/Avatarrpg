@@ -13,6 +13,33 @@ import {
 } from './sounds';
 
 describe('sounds', () => {
+  it('voice every beat the choreography and the level-up dialog cue by name', () => {
+    // Keys a silent miss would hide: resolveSound returns null and the bus plays nothing.
+    for (const key of [
+      'land',
+      'crit',
+      'turn',
+      'turnEnemy',
+      'round',
+      'victory',
+      'defeat',
+      'levelUp',
+      'fx.surface.fire',
+      'fx.surface.steam',
+      'fx.surface.doused',
+      'fx.surface.ice',
+      'fx.surface.water',
+      'fx.surface.mud',
+      'fx.surface.oil',
+      'fx.surface.rubble',
+      'fx.status.burning',
+      'fx.status.frozen',
+      'fx.status.wet',
+      'fx.status.inspired',
+    ])
+      expect(resolveSound(key), key).not.toBeNull();
+  });
+
   it('parse every row in the table', () => {
     for (const { key, def } of ALL_SOUNDS) {
       expect(() => soundSchema.parse(def), key).not.toThrow();

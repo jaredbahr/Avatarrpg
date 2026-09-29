@@ -69,6 +69,7 @@ import { idlePhase, sheets } from '../sheets/store';
 import { MAX_SPRITE_PX, npcPose, sprites } from '../spriteCache';
 import {
   fallenAlpha,
+  floaterScale,
   unitMarkerGroundPoint,
   type AimArc,
   type BendFxSprite,
@@ -1811,6 +1812,8 @@ export class PixiBackend implements RenderBackend {
       const center = camera.groundPoint({ x: floater.pos.x + 0.5, y: floater.pos.y + 0.5 });
       text.position.set(center.x, center.y - TILE * 0.1 - floater.progress * TILE * 0.7);
       text.alpha = 1 - floater.progress;
+      // Scaled rather than re-sized, so the pop never rebuilds the glyphs.
+      text.scale.set(floaterScale(floater.progress, floater.emphasis));
       text.visible = true;
     });
 

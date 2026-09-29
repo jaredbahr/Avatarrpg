@@ -295,6 +295,10 @@ button:hover:not(:disabled) {
 
 button:active:not(:disabled) {
   background-color: var(--surface-pressed);
+  /* A tablet has no hover, so the press itself has to answer the finger. A
+     transform moves no layout, and reduce motion (--motion-scale 0) leaves it flat. */
+  transform: translateY(calc(0.0625rem * var(--motion-scale)))
+    scale(calc(1 - 0.03 * var(--motion-scale)));
 }
 
 button:disabled {

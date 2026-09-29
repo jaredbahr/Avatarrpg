@@ -182,6 +182,20 @@ export interface Floater {
   readonly text: string;
   readonly color: string;
   readonly progress: number;
+  /** Size over the normal number, 1 when absent: a crit lands bigger. */
+  readonly emphasis?: number;
+}
+
+/**
+ * How big a floating number is drawn, over its base size, at `progress`: it
+ * pops in past full size and settles, so the number lands with the blow
+ * rather than fading up. Both backends draw through this. Under reduce
+ * motion the floater lives a frame, so the pop never shows.
+ */
+export function floaterScale(progress: number, emphasis = 1): number {
+  const t = Math.max(0, Math.min(1, progress));
+  const pop = t < 0.1 ? 0.6 + 0.7 * (t / 0.1) : t < 0.22 ? 1.3 - 0.3 * ((t - 0.1) / 0.12) : 1;
+  return pop * emphasis;
 }
 
 export interface NpcMarker {

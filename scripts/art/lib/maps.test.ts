@@ -62,6 +62,14 @@ describe('tile classes', () => {
     expect(classify(B, 'B')).toBe('building');
     expect(classify(G)).toBe('building');
   });
+
+  it('name a rubble heap on a bench apart from the bare ledge beside it', () => {
+    const { R, S } = LEGEND;
+    if (!R || !S) throw new Error('missing legend key');
+    expect(classify(R)).toBe('ledgeRubble');
+    // A ramp is still ledge: only the heap is cover.
+    expect(classify(S)).toBe('ledge');
+  });
 });
 
 describe('layout images', () => {
