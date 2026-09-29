@@ -423,14 +423,16 @@ function tree(x: number, y: number, size = 360, flip = false): SceneScenery {
   };
 }
 
-/** The twelve full canopies the rim had before every trunk cell was drawn. */
+/**
+ * The full canopies the rim had before every trunk cell was drawn, less the
+ * one at (18,15): that cell is now the river path's mouth, open ground.
+ */
 export const BA_DAN_RIM_CANOPIES = [
   { x: 0, y: 3, size: 360 },
   { x: 0, y: 6, size: 400 },
   { x: 0, y: 10, size: 420 },
   { x: 0, y: 13, size: 380 },
   { x: 3, y: 15, size: 400 },
-  { x: 18, y: 15, size: 390 },
   { x: 21, y: 15, size: 420 },
   { x: 23, y: 12, size: 390 },
   { x: 23, y: 9, size: 420 },
@@ -478,6 +480,7 @@ export const BA_DAN_RIM_TRUNKS = [
   { x: 23, y: 11, size: 170 },
   { x: 23, y: 13, size: 150 },
   // South, rows 14 and 15: its west corner is a side, its east end the front.
+  // (18..20,15) is the river path's mouth, so no tree stands there.
   { x: 0, y: 14, size: 280 },
   { x: 1, y: 14, size: 240 },
   { x: 22, y: 14, size: 160 },
@@ -485,8 +488,6 @@ export const BA_DAN_RIM_TRUNKS = [
   { x: 0, y: 15, size: 260 },
   { x: 1, y: 15, size: 230 },
   { x: 2, y: 15, size: 260 },
-  { x: 19, y: 15, size: 160 },
-  { x: 20, y: 15, size: 150 },
   { x: 22, y: 15, size: 160 },
   { x: 23, y: 15, size: 150 },
 ] as const;

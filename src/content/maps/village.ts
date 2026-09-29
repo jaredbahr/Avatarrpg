@@ -49,7 +49,7 @@ export const BA_DAN_VILLAGE: MapDef = {
     'T,,,,,BBBB,,,BBBB,,,,,,T',
     'T,,,,,BBBB,,,BBBB,,,,,,T',
     'TT,,,,,,,,,,,,,,,,,,,,TT',
-    'TTTT,,,,,,,,,,,,,,TTTTTT',
+    'TTTT,,,,,,,,,,,,,,...TTT',
   ].map((row, y) =>
     [...row]
       .map((tile, x) =>
@@ -67,7 +67,9 @@ export const BA_DAN_VILLAGE: MapDef = {
    * The only walkable rim is the lawn along the north and south edges, and
    * both are bands drawn just outside it: north, a dry-stone tea terrace
    * (`BA_DAN_NORTH_TERRACE`); south, the canal's low kerb and water. Every
-   * other rim cell is a tree, the ford, or the east road's two-cell mouth.
+   * other rim cell is a tree, the ford, or an exit mouth: the east road's two
+   * cells, and the river path's three at (18..20,15), which run on south off
+   * the board as flagstone like the east road does.
    */
   edges: [
     { side: 'north', span: [4, 17], treatment: 'band' },

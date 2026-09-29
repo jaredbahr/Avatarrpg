@@ -24,7 +24,7 @@ describe('nearby exploration guidance', () => {
     const map = CONTENT.maps.get('ba_dan_village');
     if (!map) throw new Error('Missing Ba Dan village');
 
-    const atPortal = nearbyExploreTarget(CONTENT, map, villageAt({ x: 19, y: 14 }));
+    const atPortal = nearbyExploreTarget(CONTENT, map, villageAt({ x: 19, y: 15 }));
     expect(atPortal).toMatchObject({
       kind: 'exit',
       destination: 'Riverside',

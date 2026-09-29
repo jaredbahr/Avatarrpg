@@ -76,12 +76,13 @@ export function connectAct1(map: MapDef): MapDef {
             mouth(23, [7, 8]),
           ),
           route(
-            { x: 19, y: 14 },
+            { x: 19, y: 15 },
             'ba_dan_riverside',
             { x: 10, y: 19 },
             'River path → Riverside',
-            // The path's mouth between the rim trees at (18,15) and (21,15).
-            [18, 19, 20].map((x) => ({ x, y: 14 })),
+            // The path's mouth on the rim, between the canal's end and the
+            // tree at (21,15): the walkable border cells are the exit.
+            [18, 19, 20].map((x) => ({ x, y: 15 })),
           ),
         ],
       };
@@ -106,7 +107,7 @@ export function connectAct1(map: MapDef): MapDef {
             { x: 10, y: 20 },
             'ba_dan_village',
             // One step inside the village's river-path mouth, never on it.
-            { x: 19, y: 13 },
+            { x: 19, y: 14 },
             'South path → Ba Dan Village',
             // The south path from row 20 to the rim: it leaves with no tile to miss.
             [

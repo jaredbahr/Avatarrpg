@@ -447,7 +447,7 @@ it('keeps court trunks solid and both shop doors and village routes reachable', 
     { x: 9, y: 3 },
     { x: 11, y: 3 },
     { x: 23, y: 7 },
-    { x: 19, y: 14 },
+    { x: 19, y: 15 },
     { x: 5, y: 6 },
     { x: 17, y: 6 },
   ])

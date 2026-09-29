@@ -374,7 +374,7 @@ describe('content', () => {
     expect(probe([gate, { x: 99, y: 0 }])).toContain(
       `map "${mapId}" exit area cell (99,0) is blocked or off-map`,
     );
-    // The riverside exit already owns (19,14); the east area cannot also claim it.
+    // The riverside exit already owns (19,15); the east area cannot also claim it.
     const riverside = rest[0];
     if (!riverside) throw new Error('Missing the village riverside exit');
     const overlap = probe([gate, riverside.pos]);
