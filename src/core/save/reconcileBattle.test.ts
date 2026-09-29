@@ -44,13 +44,35 @@ const OLD_FOREST_ROWS = [
   'TT,,,,,,,,,,,,,,,,TT',
 ] as const;
 
-function battleState(mapId: 'quarry_gate' | 'forest_road', oldRows: readonly string[]): GameState {
+/** The Cutting as it shipped before M5 (plan 1.5, Option A). */
+const OLD_CUTTING_ROWS = [
+  'AAAAAAA^^^^^^^AAAAAA',
+  'AA^^^,,,,,,,,,,^^^AA',
+  '^^,,,,,,r,,,,,,,,^^A',
+  ',,,,,,,,,,,,r,,,,,^^',
+  '====================',
+  '=====,,~~~~,,,,,====',
+  '=====,,~~~~,,,,,====',
+  '====================',
+  ',,,,,,r,,,,,,,,,,,^^',
+  '^^,,,,,,,,,,r,,,,^^A',
+  'AA^^^,,,,,,,,,,^^^AA',
+  'AAAAAAA^^^^^^^AAAAAA',
+] as const;
+
+const FIXTURES = {
+  quarry_gate: { startNode: 'battle_quarry_gate', encounterId: 'enc_quarry_gate' },
+  forest_road: { startNode: 'battle_forest_road', encounterId: 'enc_forest_road' },
+  ambush_road: { startNode: '', encounterId: 'enc_ambush' },
+} as const;
+
+function battleState(mapId: keyof typeof FIXTURES, oldRows: readonly string[]): GameState {
   const seeded = createGame(CONTENT, {
     seed: `reconcile-${mapId}`,
     party: [{ characterId: 'kaya' }, { characterId: 'bo' }],
-    startNode: mapId === 'quarry_gate' ? 'battle_quarry_gate' : 'battle_forest_road',
+    startNode: FIXTURES[mapId].startNode,
   });
-  const encounterId = mapId === 'quarry_gate' ? 'enc_quarry_gate' : 'enc_forest_road';
+  const encounterId = FIXTURES[mapId].encounterId;
   const rng = new RngCursor(seeded.rng);
   const battle = createBattle(CONTENT, seeded, encounterId, rng);
   const currentMap = CONTENT.maps.get(mapId);
@@ -264,6 +286,99 @@ describe('reconcileBattle', () => {
       kind: 'no-free-cell',
       unitId: old.battle?.units.find((unit) => unit.hp > 0)?.id,
     });
+  });
+
+  it('reconciles a pre-M5 mid-battle Cutting save onto the cut', () => {
+    const old = battleState('ambush_road', OLD_CUTTING_ROWS);
+    if (!old.battle) throw new Error('fixture did not create a battle');
+    const party = old.battle.units.find((unit) => unit.faction === 'party');
+    const enemy = old.battle.units.find((unit) => unit.faction === 'enemy');
+    if (!party || !enemy) throw new Error('fixture is missing a party unit or an enemy');
+    // Live fire on a bay cell M5 left alone, and on one it closed down to rock.
+    const fire = { id: 'fire' as const, duration: 2, spread: 1 };
+    const bayFire = { x: 7, y: 2 };
+    const rockFire = { x: 10, y: 1 };
+    const state: GameState = {
+      ...old,
+      battle: {
+        ...old.battle,
+        grid: withSurface(withSurface(old.battle.grid, bayFire, fire), rockFire, fire),
+        units: old.battle.units.map((unit) =>
+          // The party unit stands in the old open middle, now the pinch's rock;
+          // the enemy on an old tier-2 slab in the east corner, now cut rock.
+          unit.id === party.id
+            ? { ...unit, pos: { x: 10, y: 2 } }
+            : unit.id === enemy.id
+              ? { ...unit, pos: { x: 19, y: 0 } }
+              : unit,
+        ),
+      },
+    };
+
+    const loaded = load(state);
+    const grid = loaded.battle?.grid;
+    if (!grid) throw new Error('the reconciled save lost its battle');
+    // The cut is rock wherever M5 closed it, and walkable tier-2 is gone.
+    for (const pos of [
+      { x: 10, y: 2 },
+      { x: 19, y: 0 },
+      { x: 10, y: 1 },
+      { x: 9, y: 8 },
+    ])
+      expect(tileAt(grid, pos), `${pos.x},${pos.y}`).toMatchObject({
+        blocked: true,
+        blocksSight: true,
+        elevation: 2,
+        surface: null,
+      });
+    expect(grid.tiles.some((tile) => !tile.blocked && tile.elevation === 2)).toBe(false);
+    // The tier-1 ledges the crossbow and the party face each other from.
+    expect(tileAt(grid, { x: 16, y: 3 })).toMatchObject({ blocked: false, elevation: 1 });
+    expect(tileAt(grid, { x: 17, y: 9 })).toMatchObject({ blocked: false, elevation: 1 });
+    // The pool moved one tile west: its authored water follows the new rows,
+    // and the old east column is dry road.
+    for (const y of [5, 6]) {
+      expect(tileAt(grid, { x: 6, y })?.surface).toEqual({ id: 'water', duration: -1, spread: 0 });
+      expect(tileAt(grid, { x: 10, y })?.surface).toBeNull();
+    }
+    expect(tileAt(grid, bayFire)?.surface).toEqual(fire);
+    // Authored rubble on the moved heaps, and none left on the old anchors.
+    expect(tileAt(grid, { x: 13, y: 3 })?.surface).toMatchObject({ id: 'rubble', duration: -1 });
+    expect(tileAt(grid, { x: 12, y: 3 })?.surface).toBeNull();
+
+    const snappedParty = loaded.battle?.units.find((unit) => unit.id === party.id)?.pos;
+    const snappedEnemy = loaded.battle?.units.find((unit) => unit.id === enemy.id)?.pos;
+    // The party unit to the nearest open cell east of the pinch (row-major
+    // ahead of the road at (10,4)); the enemy down off the rock onto the NE
+    // ledge, still above the road.
+    expect({ snappedParty, snappedEnemy }).toEqual({
+      snappedParty: { x: 11, y: 3 },
+      snappedEnemy: { x: 17, y: 2 },
+    });
+    for (const pos of [snappedParty, snappedEnemy])
+      expect(pos && tileAt(grid, pos)?.blocked).toBe(false);
+    // Every other unit was already on open ground and has not moved.
+    for (const unit of state.battle!.units)
+      if (unit.id !== party.id && unit.id !== enemy.id)
+        expect(loaded.battle?.units.find((candidate) => candidate.id === unit.id)?.pos).toEqual(
+          unit.pos,
+        );
+    expect(reconcileBattle(CONTENT, loaded)).toEqual(loaded);
+  });
+
+  it('leaves a real current Cutting battle byte-for-byte unchanged', () => {
+    const seeded = createGame(CONTENT, {
+      seed: 'current-cutting-byte-for-byte',
+      party: [{ characterId: 'kaya' }, { characterId: 'bo' }],
+      startNode: '',
+    });
+    const rng = new RngCursor(seeded.rng);
+    const current = {
+      ...seeded,
+      screen: 'combat' as const,
+      battle: createBattle(CONTENT, seeded, 'enc_ambush', rng),
+    };
+    expect(serialize(reconcileBattle(CONTENT, current), META)).toBe(serialize(current, META));
   });
 
   it('reports an isolated geometric snap candidate and uses the main component', () => {
