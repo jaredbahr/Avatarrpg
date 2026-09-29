@@ -99,12 +99,15 @@ the quiet-grass family already used by the courtyard; authored courts and lawns
 remain above it, so their feathered edges blend into the same material. The two
 lossless `garden-*.webp` plates are first in `BA_DAN_SCENE.ground`.
 `scripts/art/ba-dan-exterior-apron.ts` continues the same world-aligned texel
-lattice outside the diamond and dissolves it into the page in five flat alpha
-steps; material transitions are world-anchored clusters, never an ordered
+lattice outside the diamond and dissolves it into the page in ten flat alpha
+steps whose edges wander up to 0.18 tiles on a broad clustered mask (five
+straight steps read as diagonal stripes); material transitions are world-anchored clusters, never an ordered
 screen. The garden paints every texel that touches the board and the apron
 every texel that does not, so they meet along the rim with no gap (an earlier
 split left a dotted line of page there) and the apron never covers a playable
-pixel; no apron pixel lies past its fade either.
+pixel; no apron pixel lies past its fade either. The apron bands are lossy, so
+the clear texels within `RIM_BLEED` of the band carry the ground beneath them:
+left black, the encoder smeared them into a light line along the whole rim.
 
 The two road exits, west and east on rows 7–8, continue the courts' own
 flagstone rather than the art bible's paving triple, which is near white and
@@ -119,9 +122,17 @@ edge.
 Upright scene pieces are seated at runtime by `src/render/grounding.ts`, keyed
 to their declared logical footprints rather than to Ba Dan asset names. One
 shared contact raster combines a stepped down-right shadow with tight ambient
-occlusion. The garden pack uses those same footprints to cluster packed-earth
-wear into grass before it writes the plates; existing ivy, weeds, and grass
-painted into the scenery overlap the worn footprint where natural. Canvas and
+occlusion. The garden pack wears the ground at each piece's _painted_ foot,
+not its footprint: `CONTACT_FEET` takes every sprite column's lowest opaque
+pixel that projects within a third of a tile of the footprint, so a tree keeps
+its trunk and roots (its canopy projects far from the cell) and a house its
+plinth line. `contactWear` lays damp soil and deep-grass litter out from those
+feet over a reach set by broad ground-plane noise: a lopsided spill under a
+tree that leans into its south-east shade, a broken skirt along a plinth with
+bare stretches. An earlier pass wore a band around every logical footprint and
+drew square and diamond outlines round the trees and buildings; the garden
+test now fails on wear that covers a footprint's boundary band all round.
+The apron carries a rim tree's wear past the rim. Canvas and
 WebGL consume the same cached contact data with nearest sampling and retain the
 same scenery/figure depth order. Runtime damageable props keep their existing
 art-measured shadow in `SpriteCache`, so buildings, stalls, planters, trees,
