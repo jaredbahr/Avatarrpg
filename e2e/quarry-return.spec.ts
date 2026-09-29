@@ -210,11 +210,14 @@ for (const custody of ['trade', 'escort'] as const) {
       custody === 'trade'
         ? ['kaya', 'nilak', 'bo']
         : ['kaya', 'nilak', 'bo', 'tenzo', 'lin_mei', 'nima'];
+    // The seed only stages a scripted win; this spec proves the route, not the
+    // fight's odds (the balance report owns those). On the M6 Driller floor the
+    // old trade seed lost the Grumbler to finishBattle's autopilot.
     await startGame(
       page,
       names,
       characters,
-      custody === 'trade' ? 'quarry-return-campaign' : 'quarry-return-escort',
+      custody === 'trade' ? 'quarry-return-trade-route' : 'quarry-return-escort',
     );
     await continueStory(page);
     expect(await page.evaluate(() => window.fnt?.app.state?.story.nodeId)).toBe('village_explore');
