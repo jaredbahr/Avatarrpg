@@ -1,0 +1,57 @@
+{
+  "pixellab": {
+    "tool": "image_to_pixelart",
+    "settings": "faithful=false, init_image_strength=0, text_guidance_scale=8",
+    "input": "https://raw.githubusercontent.com/jaredbahr/avatarrpg/main/public/art/maps/ba-dan-scene/<name>.webp (sha256-identical to shipped/<name>.png's WebP)",
+    "generated": "2026-09-28",
+    "assets": {
+      "merchant-house": {
+        "seed": 3103,
+        "size": "307x198",
+        "job": "f7ab4485-88c4-4e22-8281-57b67d0f69c4",
+        "sha256": "4af213fff9b484f57a63b42f2b419adf42596cac2069692aa2d2a5281f81823a"
+      },
+      "dwelling": {
+        "seed": 3203,
+        "size": "307x198",
+        "job": "952ce91b-ecd1-4254-a38b-864b39d2accc",
+        "sha256": "04b04c68a56b9b15330b0a13becfb3459303181809649efada3952bb39d58ced"
+      },
+      "merchant-display": {
+        "seed": 3302,
+        "size": "115x74",
+        "job": "eafa9462-f4d0-4410-81e5-bbb05b7ef075",
+        "sha256": "520498bc73b13fe5013a4e6a8f33a13bd4a8d5ca67d7b077077f09824e7102e4"
+      },
+      "low-planter": {
+        "seed": 3402,
+        "size": "115x66",
+        "job": "faed76de-b0a1-435b-974d-f5a2f0e654bc",
+        "sha256": "ba8bb6e98fdc55d8761918f3dbb9cd41ca051dc3858fef83083fb87c94393f5a"
+      },
+      "village-tree": {
+        "seed": 3502,
+        "size": "252x251",
+        "job": "86feefbb-7873-4148-8c98-708173c0573d",
+        "sha256": "db09ca0172f9f8ec5e11acd13c4d674154ae9fd453f4e46c11e7886a12283231"
+      },
+      "canal-bridge": {
+        "seed": 3602,
+        "size": "115x73",
+        "job": "e0e8e052-224d-44a1-b6d0-9a9d793868da",
+        "sha256": "dba7bb7e30680e75cd20277f6963d7eb71734ab75a6840c9d53165952b41d672"
+      }
+    }
+  },
+  "shipped": {
+    "from": "public/art/maps/ba-dan-scene/<name>.webp at 59d951f, decoded by scripts/art/lib/webp.ts",
+    "assets": {
+      "merchant-house": "2d67c41b945454d25d44e62a469913b1af267b41a2095f7ae973e432c769f3c8",
+      "dwelling": "9d4efd6d2b1897a745ece176c3a48d07dd42f70aa809693c83750e1930801944",
+      "merchant-display": "5dcc4584af2d42369eeaf1d00d327a93e00a40cc6edc95b43d53dffcbbb6d991",
+      "low-planter": "a17ef856b10bdf1b7bec18f1473e29df531935f359528079a99eceb6c0bd587f",
+      "village-tree": "6358f68f0a5e4dd7221750e53e9fb7743ef0511999e3d21772922a86b75f8855",
+      "canal-bridge": "9b219055cb5fc0072b4baec416322f0ad877451f6cb01358393d3a5f83edcb58"
+    }
+  }
+}

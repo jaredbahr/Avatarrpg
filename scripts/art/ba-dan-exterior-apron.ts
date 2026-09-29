@@ -4,48 +4,58 @@
  * The village's authored pieces cover the playable diamond; outside it the page
  * showed through, so the rim read as the edge of a board rather than the edge of
  * a village. This plate carries the terrain that borders the rim outward: the
- * same grass the procedural cells paint, continued for about a tile where the
- * outermost logical cell is road or paving, then faded out over the next tile so
- * the page wash takes over gradually.
+ * outer garden's pixel-grain meadow (`ba-dan-garden.ts`), and where the
+ * outermost logical cell is road or paving, the painted flagstone running on
+ * off the map with grass creeping into it. Past a solid half-tile the whole
+ * plate dissolves into the page in soft stepped bands.
  *
  * Nothing here touches a playable pixel — every sample inside the board stays
  * transparent, which `ba-dan-exterior-apron.test.ts` asserts.
  *
  * npx tsx scripts/art/ba-dan-exterior-apron.ts
  */
-import { BA_DAN_VILLAGE } from '../../src/content/maps/village';
 import {
   BA_DAN_APRON_BANDS,
   BA_DAN_APRON_MAP,
   BA_DAN_EXTERIOR_APRON,
 } from '../../src/content/scenes/baDan';
-import { TERRAIN_STYLES } from '../../src/render/palettes';
-import { tileNoise } from '../../src/render/painters/shapes';
+import {
+  contactWear,
+  flagstoneTexel,
+  gardenTexel,
+  GRAIN,
+  grassTexel,
+  rimBorder,
+  texelTouchesBoard,
+  transitionCluster,
+  worldLogical,
+} from './ba-dan-garden';
 import { writeApronPlates } from './lib/apron-plates';
-import { newImage, parseHex, pixelAt, setPixel } from './lib/image';
+import { newImage, setPixel } from './lib/image';
 import type { Image } from './lib/image';
 
 /** The bands are written here, one file per entry in `BA_DAN_APRON_BANDS`. */
 export const DIRECTORY = 'public/art/maps/ba-dan-scene';
 export const STEM = 'exterior-apron';
-export const QUALITY = 74;
+export const QUALITY = 90;
 /** Terrain is fully faded out by this far outside the rim, in logical tiles. */
 export const APRON_FADE = 2.2;
-/** The outer cell's road or paving is carried this far before meadow takes over. */
-export const MATERIAL_REACH = 1.15;
-const TILE_PX = 64;
+/**
+ * A road exit's flagstone is whole at the rim and loses this share of its
+ * texels to grass by `APRON_FADE`, in clusters: a road running on into the
+ * country, not one that stops.
+ */
+export const EXIT_WEAR = 0.7;
+/**
+ * How far either side of the painted band the clear texels still carry the
+ * neighbouring ground's colour, in tiles: past a lossy macroblock's width.
+ */
+export const RIM_BLEED = 0.4;
 /** The projection's origin in local pixels, matching the scene's own pieces. */
 const ORIGIN = 1024;
 
-type Terrain = 'grass' | 'road' | 'stone';
-
 function clamp(value: number, min: number, max: number): number {
   return Math.max(min, Math.min(max, value));
-}
-
-function smoothstep(edge0: number, edge1: number, value: number): number {
-  const t = clamp((value - edge0) / (edge1 - edge0), 0, 1);
-  return t * t * (3 - 2 * t);
 }
 
 /** Local image pixels to logical map coordinates; the inverse of the projection. */
@@ -69,128 +79,97 @@ export function apronDepth(x: number, y: number): number {
   return Math.max(-x, x - width, -y, y - height);
 }
 
-/** The terrain of the board cell this exterior point borders, and its depth. */
-export function apronBorders(x: number, y: number): { terrain: Terrain; depth: number } {
-  const { width, height, rows } = BA_DAN_VILLAGE;
-  const column = clamp(Math.floor(x), 0, width - 1);
-  const row = clamp(Math.floor(y), 0, height - 1);
-  const sides = [
-    { depth: -x, cell: rows[row]?.[0] },
-    { depth: x - width, cell: rows[row]?.[width - 1] },
-    { depth: -y, cell: rows[0]?.[column] },
-    { depth: y - height, cell: rows[height - 1]?.[column] },
-  ];
-  const nearest = sides.reduce((best, side) => (side.depth > best.depth ? side : best));
-  const key = nearest.cell ?? ',';
-  const terrain: Terrain =
-    key === '=' ? 'road' : key === '.' || key === 'l' || key === 'B' ? 'stone' : 'grass';
-  return { terrain, depth: nearest.depth };
-}
+/** The apron stays solid this far out, then steps softly to nothing by `APRON_FADE`. */
+export const APRON_SOLID = 0.45;
 
-/** A glyph of detail: half the material colour and half the detail ink. */
-function blend(image: Image, px: number, py: number, detail: readonly number[]): void {
-  if (px < 0 || py < 0 || px >= image.width || py >= image.height) return;
-  const [r, g, b, a] = pixelAt(image, px, py);
-  if (a === 0) return;
-  setPixel(image, px, py, [
-    Math.round(r * 0.5 + (detail[0] ?? 0) * 0.5),
-    Math.round(g * 0.5 + (detail[1] ?? 0) * 0.5),
-    Math.round(b * 0.5 + (detail[2] ?? 0) * 0.5),
-    a,
-  ]);
+/**
+ * Flat alpha steps: continuous painted bands with no halftone holes. Ten small
+ * steps rather than five large ones, so no one step reads as a stripe.
+ */
+export const APRON_ALPHA_STEPS = [255, 230, 204, 178, 152, 126, 100, 74, 48, 24] as const;
+
+/** How far the step edges wander, in tiles, so they never run as ruled diagonals. */
+export const APRON_STEP_WANDER = 0.18;
+
+/**
+ * The alpha at a depth past the rim. Given the logical point, the step edges
+ * wander on the broad clustered mask; it has no per-texel term, so each edge
+ * stays a smooth contour rather than a screen. The solid band stays solid, and
+ * the wander settles to the true depth at the outer edge, which ends on the
+ * faintest step.
+ */
+export function apronAlpha(depth: number, x?: number, y?: number): number {
+  if (depth <= APRON_SOLID) return APRON_ALPHA_STEPS[0];
+  const wander =
+    x === undefined || y === undefined
+      ? 0
+      : (transitionCluster(x * 0.5, y * 0.5, 91) - 0.5) *
+        2 *
+        APRON_STEP_WANDER *
+        clamp((APRON_FADE - depth) / (2 * APRON_STEP_WANDER), 0, 1);
+  const progress = clamp((depth + wander - APRON_SOLID) / (APRON_FADE - APRON_SOLID), 0, 1);
+  const index = Math.min(
+    APRON_ALPHA_STEPS.length - 1,
+    Math.floor(progress * APRON_ALPHA_STEPS.length),
+  );
+  return APRON_ALPHA_STEPS[index] ?? 0;
 }
 
 /**
- * The tile painter's own detail pass, at 50% over the terrain fill: four short
- * blades on grass, two or three pebbles on road and paving. Positions come from
- * the same hash over the cell's logical coordinates, so the density and rhythm
- * outside the board match the cells inside it.
+ * The garden field (`ba-dan-garden.ts`) continued past the rim. Where the
+ * outer cell is road or paving, the painted flagstone runs on and gives up
+ * `EXIT_WEAR` of itself to grass in broad clusters; the whole plate then
+ * dissolves into the page in ten wandering alpha bands. It meets the garden
+ * base texel for texel at the rim because both read the same world lattice
+ * and split the rim texels by `texelTouchesBoard`.
  */
-function paintDetail(
-  image: Image,
-  left: number,
-  top: number,
-  tile: { x: number; y: number },
-  salt: number,
-  terrain: Terrain,
-  detail: readonly number[],
-): void {
-  const size = TILE_PX;
-  const nx = tileNoise(tile.x, tile.y, salt * 3 + 1);
-  const ny = tileNoise(tile.x, tile.y, salt * 3 + 2);
-  const nr = tileNoise(tile.x, tile.y, salt * 3 + 3);
-  if (terrain === 'grass') {
-    const x = Math.round(left + nx * size);
-    const y = Math.round(top + ny * size - size * 0.06);
-    const width = Math.max(1, Math.round(size * 0.02));
-    const height = Math.round(size * 0.08 + nr * size * 0.04);
-    for (let py = y; py < y + height; py++)
-      for (let px = x; px < x + width; px++) blend(image, px, py, detail);
-    return;
-  }
-  const cx = left + nx * size;
-  const cy = top + ny * size;
-  const radius = size * (0.02 + nr * 0.03);
-  for (let py = Math.floor(cy - radius); py <= Math.ceil(cy + radius); py++)
-    for (let px = Math.floor(cx - radius); px <= Math.ceil(cx + radius); px++)
-      if ((px - cx) ** 2 + (py - cy) ** 2 <= radius * radius) blend(image, px, py, detail);
-}
-
 export function packApron(): Image {
   const image = newImage(BA_DAN_EXTERIOR_APRON.width, BA_DAN_EXTERIOR_APRON.height);
-  const terrains: Record<Terrain, readonly number[]> = {
-    grass: parseHex(TERRAIN_STYLES.grass.fill),
-    road: parseHex(TERRAIN_STYLES.road.fill),
-    stone: parseHex(TERRAIN_STYLES.stone.fill),
-  };
-  const details: Record<Terrain, readonly number[]> = {
-    grass: parseHex(TERRAIN_STYLES.grass.detail),
-    road: parseHex(TERRAIN_STYLES.road.detail),
-    stone: parseHex(TERRAIN_STYLES.stone.detail),
-  };
-  for (let py = 0; py < image.height; py++) {
-    for (let px = 0; px < image.width; px++) {
-      const { x, y } = apronLogical(px, py);
+  const { x: ox, y: oy } = BA_DAN_EXTERIOR_APRON;
+  if (ox % GRAIN || oy % GRAIN) throw new Error('The apron must start on the texel lattice.');
+  for (let ty = oy / GRAIN; ty < (oy + image.height) / GRAIN; ty++) {
+    for (let tx = ox / GRAIN; tx < (ox + image.width) / GRAIN; tx++) {
+      const { x, y } = worldLogical((tx + 0.5) * GRAIN, (ty + 0.5) * GRAIN);
       const depth = apronDepth(x, y);
-      if (depth <= 0 || depth >= APRON_FADE) continue;
-      const { terrain } = apronBorders(x, y);
-      const weight = 1 - smoothstep(0.08, MATERIAL_REACH, depth);
-      // Two octaves of the tile hash keep the field from reading as flat paint,
-      // and the slow recession keeps the far edge from shouting at the page.
-      // Both fade in from the rim, so the board's own edge is not drawn again as
-      // a line between flat procedural ground and its grained continuation.
-      const settle = smoothstep(0, 0.35, depth);
-      const grain =
-        1 + settle * ((tileNoise(px, py, 7) - 0.5) * 0.09 + (tileNoise(px, py, 11) - 0.5) * 0.05);
-      const recession = 1 - 0.1 * smoothstep(0.1, APRON_FADE, depth);
-      const grass = terrains.grass;
-      const outer = terrains[terrain];
-      const shade = (channel: 0 | 1 | 2): number =>
-        clamp(
-          Math.round(
-            ((grass[channel] ?? 0) * (1 - weight) + (outer[channel] ?? 0) * weight) *
-              grain *
-              recession,
-          ),
-          0,
-          255,
-        );
-      const alpha = Math.round(255 * (1 - smoothstep(0.05, APRON_FADE, depth)));
-      setPixel(image, px, py, [shade(0), shade(1), shade(2), alpha]);
-    }
-  }
-  const { width, height } = BA_DAN_APRON_MAP;
-  for (let i = -3; i <= width + 3; i++) {
-    for (let j = -3; j <= height + 3; j++) {
-      if (i >= 0 && i < width && j >= 0 && j < height) continue;
-      const centerX = ORIGIN + (i - j) * TILE_PX - BA_DAN_EXTERIOR_APRON.x;
-      const centerY = (i + j + 1) * 32 - BA_DAN_EXTERIOR_APRON.y;
-      const { terrain, depth } = apronBorders(i + 0.5, j + 0.5);
-      if (depth <= 0 || depth >= APRON_FADE) continue;
-      const box = { cx: centerX - TILE_PX / 2, cy: centerY - TILE_PX / 2 };
-      const count = terrain === 'grass' ? 4 : terrain === 'stone' ? 3 : 2;
-      for (let k = 0; k < count; k++)
-        paintDetail(image, box.cx, box.cy, { x: i, y: j }, k, terrain, details[terrain]);
+      const paint = (colour: readonly number[], alpha: number): void => {
+        for (let dy = 0; dy < GRAIN; dy++)
+          for (let dx = 0; dx < GRAIN; dx++)
+            setPixel(image, tx * GRAIN - ox + dx, ty * GRAIN - oy + dy, [...colour, alpha]);
+      };
+      // The clear texels next to the painted ones still carry the colour of
+      // the ground beside them: the lossy encoder smears a clear texel's black
+      // across the edge, which drew a light line along the whole rim.
+      if (depth <= 0 || depth >= APRON_FADE) {
+        if (depth > -RIM_BLEED && depth <= 0) paint(gardenTexel(tx, ty), 0);
+        else if (depth < APRON_FADE + RIM_BLEED && depth > 0) paint(grassTexel(tx, ty), 0);
+        continue;
+      }
+      // A texel covers four screen pixels. At the diamond rim its centre can
+      // lie outside while one of those pixel centres lies on playable ground;
+      // the garden base paints that texel, so skip it here and the apron never
+      // overpaints the board. At the outer edge, likewise, a texel with any
+      // pixel past the fade stays clear, so no pixel lands beyond it.
+      if (texelTouchesBoard(tx, ty)) {
+        paint(gardenTexel(tx, ty), 0);
+        continue;
+      }
+      const pastFade = [0.5, GRAIN - 0.5].some((dx) =>
+        [0.5, GRAIN - 0.5].some((dy) => {
+          const point = worldLogical(tx * GRAIN + dx, ty * GRAIN + dy);
+          return apronDepth(point.x, point.y) >= APRON_FADE;
+        }),
+      );
+      if (pastFade) {
+        paint(grassTexel(tx, ty), 0);
+        continue;
+      }
+      const { terrain } = rimBorder(x, y, true);
+      const carried =
+        terrain !== 'grass' &&
+        transitionCluster(x, y, 83) < 1 - EXIT_WEAR * clamp(depth / APRON_FADE, 0, 1);
+      // A rim tree's roots and litter run on past the rim with the grass.
+      const colour = carried ? flagstoneTexel(tx, ty) : (contactWear(tx, ty) ?? grassTexel(tx, ty));
+      paint(colour, apronAlpha(depth, x, y));
     }
   }
   return image;

@@ -29,6 +29,9 @@ import { CanvasFxLayer } from '../fx/canvasFx';
 import { drawBendFx } from '../fx/bendFxDraw';
 import { backdrops } from '../backdrops';
 import { sceneForGrid, sceneImage, drawSceneImage, sceneryOpacities } from '../scene';
+import type { GroundingCanvas } from '../groundingLayer';
+import { sceneGrounding } from '../groundingLayer';
+import { GROUNDING_GRAIN } from '../grounding';
 import { flockAt, flockFrame, flushElapsed, sway } from '../living/wind';
 import { surfaceIsPainted } from '../sceneSurfaces';
 import { HP_CAP, HP_COLORS, OVERLAY, STATUS_BADGE, hpFill } from '../palettes';
@@ -139,6 +142,7 @@ export class Canvas2DBackend implements RenderBackend {
       !partialScene && compatible && view.backdrop ? backdrops.get(view.backdrop.url) : null;
     if (painting) this.drawBackdrop(painting, view, camera);
     let sceneGround = false;
+    let grounding: GroundingCanvas | null = null;
     let sceneGroundPieces: { piece: SceneImage; image: HTMLImageElement | null }[] = [];
     if (camera.projection === 'oblique' && view.scene) {
       const ground = view.scene.ground.map((piece) => ({
@@ -150,7 +154,7 @@ export class Canvas2DBackend implements RenderBackend {
         ground.length > 0 &&
         ground.every(({ image }) => image !== null) &&
         view.scene.scenery.every((piece) => sceneImage(piece) !== null);
-      if (sceneGround && !partialScene)
+      if (sceneGround && !partialScene) {
         for (const { piece, image } of ground) {
           if (image)
             drawSceneImage(
@@ -163,6 +167,12 @@ export class Canvas2DBackend implements RenderBackend {
               piece.height * camera.scale,
             );
         }
+      }
+      if (sceneGround)
+        grounding = sceneGrounding(view.scene, {
+          toWorld: (pos) => camera.groundPoint(pos),
+        });
+      if (sceneGround && !partialScene) drawGrounding(ctx, grounding, camera);
     }
     if (camera.projection === 'oblique') {
       // Ground receives one affine transform. Upright scenery and actors never do.
@@ -194,6 +204,7 @@ export class Canvas2DBackend implements RenderBackend {
             piece.height * camera.scale,
           );
         }
+        drawGrounding(ctx, grounding, camera);
         ctx.save();
         ctx.transform(m.a, m.b, m.c, m.d, m.tx, m.ty);
         this.drawGround(view, ground, sceneGround, false, true);
@@ -1128,4 +1139,23 @@ export function uprightSpriteVisible(
     bottom >= 0 &&
     top <= viewport.height
   );
+}
+
+/** A grounding raster at its scene rectangle, texel-sharp like the scenery it seats. */
+function drawGrounding(
+  ctx: CanvasRenderingContext2D,
+  layer: GroundingCanvas | null | undefined,
+  camera: Camera,
+): void {
+  if (!layer) return;
+  const smoothing = ctx.imageSmoothingEnabled;
+  ctx.imageSmoothingEnabled = false;
+  ctx.drawImage(
+    layer.canvas,
+    layer.x * camera.scale - camera.offsetX,
+    layer.y * camera.scale - camera.offsetY,
+    layer.canvas.width * GROUNDING_GRAIN * camera.scale,
+    layer.canvas.height * GROUNDING_GRAIN * camera.scale,
+  );
+  ctx.imageSmoothingEnabled = smoothing;
 }

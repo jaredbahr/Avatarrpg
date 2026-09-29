@@ -44,6 +44,9 @@ import {
 } from '../living/wind';
 import { SceneTextures } from './sceneTextures';
 import { sceneryZ, shadowZ } from './depthOrder';
+import type { GroundingCanvas } from '../groundingLayer';
+import { sceneGrounding } from '../groundingLayer';
+import { GROUNDING_GRAIN } from '../grounding';
 import { SURFACE_INDEX, surfaceIsPainted, surfaceTexel } from '../sceneSurfaces';
 import { TILE } from '../camera';
 import type { Camera, Viewport } from '../camera';
@@ -200,6 +203,10 @@ export class PixiBackend implements RenderBackend {
   private sceneGround = new Container();
   private groundChunks = new Map<string, Sprite>();
   private scenerySprites = new Map<string, Sprite>();
+  /** Contact shadow and wear under the scenery (grounding.ts), above the ground chunks. */
+  private groundingSprite: Sprite | null = null;
+  private groundingCanvas: HTMLCanvasElement | null = null;
+  private groundingTexture: Texture | null = null;
   /** A gust's light on the grass: slices of the wind ground added back onto it. */
   private breeze = new Container();
   /** Each wind plate's breeze stripes, kept from frame to frame. */
@@ -487,6 +494,10 @@ export class PixiBackend implements RenderBackend {
     this.sceneTextures.clear();
     this.groundChunks.clear();
     this.scenerySprites.clear();
+    this.groundingSprite = null;
+    this.groundingTexture?.destroy(true);
+    this.groundingTexture = null;
+    this.groundingCanvas = null;
     this.mapTexture.destroy(true);
   }
 
@@ -700,10 +711,55 @@ export class PixiBackend implements RenderBackend {
         this.scenerySprites.delete(key);
       }
     }
+    this.syncGrounding(complete ? scene : undefined, camera);
     this.syncBreeze(scene?.ground ?? [], view);
     this.syncFlock(scene, view);
     this.sceneTextures.end();
     return complete;
+  }
+
+  private textureForGrounding(layer: GroundingCanvas): Texture {
+    if (this.groundingCanvas !== layer.canvas || !this.groundingTexture) {
+      this.groundingTexture?.destroy(true);
+      // Never Pixi's global cache: the canvas belongs to groundingLayer's.
+      this.groundingCanvas = layer.canvas;
+      this.groundingTexture = Texture.from(layer.canvas, true);
+      this.groundingTexture.source.scaleMode = 'nearest';
+    }
+    return this.groundingTexture;
+  }
+
+  /** Contact shadow, ambient occlusion, and wear between ground and scenery. */
+  private syncGrounding(scene: MapScene | undefined, camera: Camera): void {
+    const grounding = scene
+      ? sceneGrounding(scene, { toWorld: (pos) => camera.groundPoint(pos) })
+      : null;
+    const contact = grounding;
+    if (contact) {
+      let sprite = this.groundingSprite;
+      if (!sprite) {
+        sprite = new Sprite();
+        this.groundingSprite = sprite;
+      }
+      // Over every chunk, under the breeze, whenever a chunk arrived.
+      if (
+        sprite.parent !== this.sceneGround ||
+        this.sceneGround.getChildIndex(sprite) !== this.sceneGround.getChildIndex(this.breeze) - 1
+      ) {
+        sprite.removeFromParent();
+        this.sceneGround.addChildAt(sprite, this.sceneGround.getChildIndex(this.breeze));
+      }
+      sprite.texture = this.textureForGrounding(contact);
+      sprite.position.set(contact.x, contact.y);
+      sprite.width = contact.canvas.width * GROUNDING_GRAIN;
+      sprite.height = contact.canvas.height * GROUNDING_GRAIN;
+      sprite.visible = true;
+    } else if (this.groundingSprite) this.groundingSprite.visible = false;
+    if (!contact && this.groundingTexture) {
+      this.groundingTexture.destroy(true);
+      this.groundingTexture = null;
+      this.groundingCanvas = null;
+    }
   }
 
   /**

@@ -19,6 +19,7 @@ import {
   BA_DAN_PLANTER_CUT,
   BA_DAN_SCENE,
   BA_DAN_SOUTHEAST_PLANTER,
+  BA_DAN_TEXTURES,
 } from './baDan';
 import { buildGrid, reachable, posKey, tileAt } from '../../core/rules/grid';
 import { CONTENT_BUNDLE } from '../index';
@@ -145,6 +146,7 @@ it("stands the courtyard planter, turned, on the south-east house's blocked stri
   const houseBox = scenery[house];
   const piece = scenery[planter];
   const far = scenery.find((p) => p.id === 'southeast-planter-far');
+  const planterTexture = BA_DAN_TEXTURES['low-planter'];
   if (!houseDepth || !houseBox || !piece || !far)
     throw new Error('Missing south-east house or planter');
   for (const cell of BA_DAN_SOUTHEAST_PLANTER) {
@@ -157,7 +159,7 @@ it("stands the courtyard planter, turned, on the south-east house's blocked stri
       url: 'art/maps/ba-dan-scene/low-planter.webp',
       footprint: [...BA_DAN_SOUTHEAST_PLANTER],
       flip: true,
-      height: 110.625,
+      height: (192 * planterTexture.height) / planterTexture.width,
     });
   // Ties the house's depth and paints after it, like the other frontage.
   expect(piece.depth.x + piece.depth.y).toBe(houseDepth.x + houseDepth.y);
@@ -170,13 +172,18 @@ it("stands the courtyard planter, turned, on the south-east house's blocked stri
   // The two slices are the whole planter, the near one a texel over the join,
   // and together they crop the whole texture.
   expect(far.x + far.width).toBeCloseTo(piece.x + 192);
-  expect(piece.x + piece.width - far.x).toBeCloseTo(192 / 512);
-  expect(far.sourceRect).toEqual({ x: 0, y: 0, width: BA_DAN_PLANTER_CUT, height: 295 });
+  expect(piece.x + piece.width - far.x).toBeCloseTo(192 / planterTexture.width);
+  expect(far.sourceRect).toEqual({
+    x: 0,
+    y: 0,
+    width: BA_DAN_PLANTER_CUT,
+    height: planterTexture.height,
+  });
   expect(piece.sourceRect).toEqual({
     x: BA_DAN_PLANTER_CUT - 1,
     y: 0,
-    width: 512 - BA_DAN_PLANTER_CUT + 1,
-    height: 295,
+    width: planterTexture.width - BA_DAN_PLANTER_CUT + 1,
+    height: planterTexture.height,
   });
   // Shallower than the house, the far slice must lie clear of the house's
   // image, or the house (its awning post) would paint over it.
@@ -202,13 +209,16 @@ it('keeps the canal walkable and registers one low bridge at the dry crossing', 
   const bridgeFront = BA_DAN_VILLAGE.scene?.scenery.find(
     (piece) => piece.id === 'canal-bridge-front',
   );
+  const bridgeTexture = BA_DAN_TEXTURES['canal-bridge'];
+  const bridgeHeight = (192 * bridgeTexture.height) / bridgeTexture.width;
   expect(bridge).toMatchObject({
     footprint: [BA_DAN_CANAL_BRIDGE],
     width: 192,
-    height: 121.125,
+    height: bridgeHeight,
   });
+  // The deck's centre sits on the crossing diamond's centre.
   expect(bridge?.x).toBe(1120);
-  expect(bridge?.y).toBe(451.4375);
+  expect(bridge?.y).toBe((9 + 6 + 1) * 32 - bridgeHeight / 2);
   expect(bridge?.depth).toEqual({ x: 9.5, y: 6.25 });
   expect(bridgeFront).toMatchObject({
     url: 'art/maps/ba-dan-scene/canal-bridge-front.webp',

@@ -55,7 +55,7 @@ checks cover all NPCs, both exits and the spawn.
 The bridge is a single logical scenery footprint split into two depth slices:
 `canal-bridge.webp` is the deck/back layer and `canal-bridge-front.webp` is the
 near-bank mask. Both are centred on the `(9,6)` projected diamond. The front
-mask is derived by `scripts/art/ba-dan-bridge-front.py`, allowing a walker to
+mask is cut from the bridge by `scripts/art/ba-dan-restyle.ts`, allowing a walker to
 remain visible between the deck and near rail. The renderer, not the image,
 owns the actor depth and collision behaviour.
 

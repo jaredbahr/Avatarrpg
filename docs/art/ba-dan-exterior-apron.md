@@ -18,8 +18,8 @@ plate and its generator cannot drift.
 | Logical depth         | 2.5 tiles outside the rim, on all four sides (`BA_DAN_APRON_DEPTH`) |
 | Registered rectangle  | `BA_DAN_EXTERIOR_APRON`, 3200×1600 local pixels                     |
 | Opaque band           | from the rim outward; `APRON_FADE` 2.2 tiles to fully transparent   |
-| Terrain               | the procedural cells' own grass, road and paving colours            |
-| Material continuation | the outer cell's road or paving for `MATERIAL_REACH` 1.15 tiles     |
+| Terrain               | the outer garden's grass tones (`ba-dan-garden.ts`)                 |
+| Material continuation | road exits run on in painted flagstone, `EXIT_WEAR` 0.7 to grass    |
 | Playable coverage     | none — every sample inside the board is alpha 0                     |
 
 Each apron sample takes the terrain of the board cell it borders: the terrace
