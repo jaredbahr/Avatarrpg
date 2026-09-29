@@ -15,6 +15,7 @@ import {
   BA_DAN_COURT_TREES,
   BA_DAN_APRON_MAP,
   BA_DAN_APRON_PIECES,
+  BA_DAN_EDGE_WATER,
   BA_DAN_EXTERIOR_APRON,
   BA_DAN_PLANTER_CUT,
   BA_DAN_SCENE,
@@ -45,7 +46,15 @@ it('carries the village ground outside the rim, painted after every local piece'
       BA_DAN_EXTERIOR_APRON.y + BA_DAN_EXTERIOR_APRON.height,
     );
   }
-  expect(BA_DAN_SCENE.ground.slice(-BA_DAN_APRON_PIECES.length)).toEqual([...BA_DAN_APRON_PIECES]);
+  // The apron follows every local piece; only the edge water, which runs on
+  // past the rim into the apron's fade, is painted over it.
+  const edges = BA_DAN_EDGE_WATER.length;
+  expect(BA_DAN_SCENE.ground.slice(-BA_DAN_APRON_PIECES.length - edges, -edges)).toEqual([
+    ...BA_DAN_APRON_PIECES,
+  ]);
+  expect(BA_DAN_SCENE.ground.slice(-edges).map((piece) => piece.url)).toEqual(
+    BA_DAN_EDGE_WATER.map(() => 'art/maps/ba-dan-scene/edge-water.webp'),
+  );
 });
 
 let decodedGround: Map<string, ImageData>;

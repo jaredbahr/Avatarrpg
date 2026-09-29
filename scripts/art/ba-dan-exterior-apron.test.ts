@@ -86,13 +86,14 @@ it('starts opaque at the rim, has room for the whole band, and runs the roads on
   };
   // A road exit is whole at the rim and still a road out into the fade; grass
   // creeps into it rather than closing it off.
-  for (const side of ['west', 'east'] as const) {
-    const rim = paved(side, 0, 0.5);
-    const fade = paved(side, 1.5, APRON_FADE);
-    expect(rim, `${side} exit at the rim`).toBeGreaterThan(0.95);
-    expect(fade, `${side} exit into the fade`).toBeGreaterThan(0.2);
-    expect(fade, `${side} exit wears to grass`).toBeLessThan(rim - 0.2);
-  }
+  const rim = paved('east', 0, 0.5);
+  const fade = paved('east', 1.5, APRON_FADE);
+  expect(rim, 'east exit at the rim').toBeGreaterThan(0.95);
+  expect(fade, 'east exit into the fade').toBeGreaterThan(0.2);
+  expect(fade, 'east exit wears to grass').toBeLessThan(rim - 0.2);
+  // The west road ends at the ford (`ba-dan-edges.ts` lays the water over
+  // this): the apron carries no road on past it.
+  expect(paved('west', 0, APRON_FADE), 'west road past the ford').toBeLessThan(0.1);
   // Grass borders carry grass.
   expect(isGrass(10.5, -1.35), 'north lawn').toBe(true);
   expect(isGrass(-1.6, 3.5), 'west trees').toBe(true);

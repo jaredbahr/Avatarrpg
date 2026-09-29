@@ -315,7 +315,13 @@ export function footprintDistance(x: number, y: number, cells: readonly Vec2[]):
   );
 }
 
-type Foot = { readonly x: number; readonly y: number; readonly tree: boolean };
+/** A point where a piece meets the ground, and which scenery piece it belongs to. */
+type Foot = {
+  readonly x: number;
+  readonly y: number;
+  readonly tree: boolean;
+  readonly piece: string;
+};
 
 /**
  * Where each upright piece really meets the ground: for every texel column of
@@ -352,7 +358,8 @@ export const CONTACT_FEET: readonly Foot[] = await (async () => {
       const wx = (tx + 0.5) * GRAIN;
       const wy = piece.y + ((row - rect.y + 1) * piece.height) / rect.height;
       const at = worldLogical(wx, wy);
-      if (footprintDistance(at.x, at.y, piece.footprint) <= 0.35) feet.push({ x: wx, y: wy, tree });
+      if (footprintDistance(at.x, at.y, piece.footprint) <= 0.35)
+        feet.push({ x: wx, y: wy, tree, piece: piece.id });
     }
   }
   return feet;
@@ -396,6 +403,11 @@ const WEAR_FIELD = (() => {
     return f ? { distance: distance[i] ?? Infinity, foot: f } : null;
   };
 })();
+
+/** The scenery piece whose foot is nearest a world texel within wear reach, if any. */
+export function wearOwner(tx: number, ty: number): string | null {
+  return WEAR_FIELD(tx, ty)?.foot.piece ?? null;
+}
 
 /**
  * Contact wear at a world texel: damp soil and leaf litter at the foot of an
