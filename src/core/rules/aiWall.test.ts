@@ -192,6 +192,30 @@ describe('the AI and its own walls', () => {
     expect(hasLineOfSight(draft.grid, caster.pos, enemy.pos)).toBe(true);
   });
 
+  it('steps into a live archer line, then walls it off', () => {
+    /*
+     * Rock Throw is cooling, so the bender has to move before Earth Wall is in
+     * range. The archer is a real threat from that prospective tile; the wall
+     * between them is therefore defensive rather than self-stranding.
+     */
+    const { draft, casterIds, enemyIds } = setup({
+      grid: openGrid(12, 9),
+      casters: [bender({ x: 2, y: 4 }, { move: 3 })],
+      enemies: [{ pos: { x: 8, y: 4 }, abilities: ['sling_stone'] }],
+    });
+    const casterId = casterIds[0];
+    const archerId = enemyIds[0];
+    if (!casterId || !archerId) throw new Error('Missing wall fixture units');
+
+    planAiTurn(draft, casterId, new RngCursor(7));
+
+    const caster = unit(draft, casterId);
+    const archer = unit(draft, archerId);
+    expect(caster.pos).not.toEqual({ x: 2, y: 4 });
+    expect(usedAbilities(draft)).toContain('earth_wall');
+    expect(hasLineOfSight(draft.grid, archer.pos, caster.pos)).toBe(false);
+  });
+
   it('raises a wall that breaks a live attacker with no shot of its own', () => {
     /*
      * The slinger on the left can hit the caster right now, so the wall has a

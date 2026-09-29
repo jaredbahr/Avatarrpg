@@ -257,6 +257,22 @@ function isOffensiveAbility(content: ContentIndex, ability: Ability): boolean {
  */
 type WallTargetCache = Map<string, readonly Unit[]>;
 
+/**
+ * Battle snapshot for scoring a caster from a prospective standing position.
+ *
+ * The planner passes hypothetical casters into its scoring helpers, but the
+ * draft still contains the unit at its current position. Keep the snapshot's
+ * occupancy in step with that hypothetical (including every occupied cell of
+ * a size-2 unit), so unit-target validation sees the caster where it would
+ * actually stand.
+ */
+function battleWithHypotheticalCaster(battle: BattleState, caster: Unit): BattleState {
+  return {
+    ...battle,
+    units: battle.units.map((unit) => (unit.id === caster.id ? caster : unit)),
+  };
+}
+
 function preWallTargets(
   content: ContentIndex,
   battle: BattleState,
@@ -337,7 +353,7 @@ export function wallStrandsCaster(
   const enemies = opponentsOf(draft, caster);
   if (enemies.length === 0) return false;
 
-  const before = draft.toBattle();
+  const before = battleWithHypotheticalCaster(draft.toBattle(), caster);
   const targets = preWallTargets(content, before, caster, enemies, cache);
 
   // The world exactly as the placement would leave it.
@@ -610,7 +626,7 @@ function bestActionFrom(
   weights: Weights,
   candidateTargets: readonly Vec2[],
 ): { score: number; ability: Ability; target: Vec2 } | null {
-  const battle = draft.toBattle();
+  const battle = battleWithHypotheticalCaster(draft.toBattle(), caster);
   // One scoring pass, one wall-target scan: every wall on the board is judged
   // from this caster's position before the pass ends.
   const wallTargets: WallTargetCache = new Map();
