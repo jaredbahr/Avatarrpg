@@ -138,8 +138,52 @@ describe('liftOps', () => {
   });
 
   it('leaves art painted at the full lift in charge', () => {
-    expect(ops(TIER_LIFT)).toEqual([]);
+    const list = ops(TIER_LIFT);
+    // Nothing is drawn over it: its blocks are only put back, unshifted.
+    expect(list.every((op) => op.kind === 'top' || op.kind === 'overlay')).toBe(true);
+    for (const op of list) if (op.kind === 'top') expect(op.shift).toBe(0);
   });
+
+  /*
+   * The live marks (hover, ranges, the path, surfaces, exits, High-contrast
+   * markers) must sit where a tap picks the tile, whatever the art paints:
+   * moved by the cell's whole lift, onto the same top the pick hits.
+   */
+  for (const artLift of [0, 0.06, TIER_LIFT, [0.06, TIER_LIFT]]) {
+    it(`lifts each raised cell's marks by its whole lift over art at ${String(artLift)}`, () => {
+      const list = liftOps({ grid, project, tilePx, artLift, contrast: false });
+      const marks = list.flatMap((op) => (op.kind === 'overlay' ? [op] : []));
+      expect(marks).toHaveLength(raised.length);
+      for (const op of marks) {
+        const sx = op.poly.reduce((sum, p) => sum + p.x, 0) / 4;
+        const sy = op.poly.reduce((sum, p) => sum + p.y, 0) / 4;
+        const unproject = (y: number) => ({
+          x: y / tilePx + sx / tilePx / 2,
+          y: y / tilePx - sx / tilePx / 2,
+        });
+        const flat = unproject(sy + op.shift);
+        const cell = { x: Math.floor(flat.x), y: Math.floor(flat.y) };
+        const lift = liftAt(grid, cell, 'oblique');
+        expect(lift, `${cell.x},${cell.y}`).toBeGreaterThan(0);
+        // The shift is the cell's whole lift, the lift an actor and a pick use.
+        expect(op.shift).toBeCloseTo(lift * tilePx, 9);
+        // The polygon is that cell's lifted top: its corners, a lift up the screen.
+        const corners = [
+          [0, 0],
+          [1, 0],
+          [1, 1],
+          [0, 1],
+        ].map(([gx = 0, gy = 0]) => project({ x: cell.x + gx, y: cell.y + gy }));
+        op.poly.forEach((p, i) => {
+          expect(p.x).toBeCloseTo(corners[i]?.x ?? NaN, 9);
+          expect(p.y).toBeCloseTo((corners[i]?.y ?? NaN) - lift * tilePx, 9);
+        });
+        // And a tap on its centre picks it, unless a taller block stands in front.
+        const picked = pickCell(grid, unproject(sy), 'oblique');
+        if (liftAt(grid, picked, 'oblique') <= lift) expect(picked).toEqual(cell);
+      }
+    });
+  }
 
   it('gives a ramp stair treads that a plain ledge does not get', () => {
     const one = (key: 'S' | '^') =>

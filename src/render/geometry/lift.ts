@@ -8,13 +8,22 @@
  * picture, and fills the gap below with its exposed faces. The result is the
  * same shape `pickCell` hits, so what is drawn is what a tap picks.
  *
+ * The live marks on the ground — surfaces, ranges, the path, hover, exits and
+ * High-contrast rule markers — are a second, transparent picture. Both
+ * backends lay it over the flat ground before the ops run, so tops and faces
+ * cover the raised cells' flat copy, and each raised top then takes its own
+ * marks back by the cell's whole lift: however much the art already paints,
+ * a mark sits where a tap picks its tile.
+ *
  * It is plain data in screen pixels so the two backends interpret one list:
  * Canvas 2D clips and copies from a snapshot, WebGL fills with the ground's
  * render texture. Board correctness, so both draw every op.
  */
 
 import type { Grid, Tile, Vec2 } from '../../core/types';
+import { TILE, type Camera } from '../camera';
 import { ELEVATION } from '../palettes';
+import { decorSignature } from './board';
 import { TIER_LIFT, liftAt } from './elevation';
 
 export interface Pt {
@@ -23,10 +32,15 @@ export interface Pt {
 }
 
 export type LiftOp =
-  /** Redraw the flat picture inside `poly`, sampled `shift` pixels further down. */
-  | { readonly kind: 'top'; readonly poly: readonly Pt[]; readonly shift: number }
-  /** An exposed face: the same copy as a top, sampled from inside the cell's edge. */
-  | { readonly kind: 'face'; readonly poly: readonly Pt[]; readonly shift: number }
+  /**
+   * Redraw inside `poly`, sampled `shift` pixels further down: a top or an
+   * exposed face from the flat ground, an overlay from the live marks.
+   */
+  | {
+      readonly kind: 'top' | 'face' | 'overlay';
+      readonly poly: readonly Pt[];
+      readonly shift: number;
+    }
   | {
       readonly kind: 'fill';
       readonly poly: readonly Pt[];
@@ -70,10 +84,44 @@ const SIDES = [
   { dx: -1, dy: 0, a: [0, 0], b: [0, 1] }, // west: upper left
 ] as const;
 
+let plan: { key: string; ops: LiftOp[] } | undefined;
+
+/**
+ * The ops for this board through this camera, kept until either moves: the
+ * backend asks every frame, and most frames nothing on the ground changes.
+ */
+export function liftPlan(
+  grid: Grid,
+  camera: Camera,
+  artLift: number | readonly number[],
+  contrast: boolean,
+): LiftOp[] {
+  const key = [
+    decorSignature(grid),
+    camera.scale,
+    camera.offsetX,
+    camera.offsetY,
+    artLift,
+    contrast,
+  ].join('|');
+  if (plan?.key !== key)
+    plan = {
+      key,
+      ops: liftOps({
+        grid,
+        project: (pos) => camera.project(pos),
+        tilePx: TILE * camera.scale,
+        artLift,
+        contrast,
+      }),
+    };
+  return plan.ops;
+}
+
 export function liftOps(input: LiftInput): LiftOp[] {
   const { grid, project, tilePx, artLift, contrast } = input;
   // Art painted at the full lift draws its own blocks; it stays in charge.
-  if (typeof artLift === 'number' && artLift >= TIER_LIFT) return [];
+  const full = typeof artLift === 'number' && artLift >= TIER_LIFT;
   const lift = (x: number, y: number) => liftAt(grid, { x, y }, 'oblique');
   const ops: LiftOp[] = [];
   const point = (gx: number, gy: number, up: number): Pt => {
@@ -100,8 +148,31 @@ export function liftOps(input: LiftInput): LiftOp[] {
     // How far the art already lifts this cell's top.
     const art =
       typeof artLift === 'number' ? artLift * tile.elevation : (artLift[tile.elevation - 1] ?? 0);
+    const top = quad(0, 0, 1, 1, mine);
+    const marks: LiftOp = { kind: 'overlay', poly: top, shift: mine * tilePx };
+    if (full) {
+      // Only the marks move: the art is put back over the block's whole
+      // outline, top and faces, as it was painted, then its marks go on top.
+      // That outline is the top's back corners and the flat cell's front ones.
+      if (mine > 0)
+        ops.push(
+          {
+            kind: 'top',
+            poly: [
+              point(x, y, mine),
+              point(x + 1, y, mine),
+              point(x + 1, y, 0),
+              point(x + 1, y + 1, 0),
+              point(x, y + 1, 0),
+              point(x, y + 1, mine),
+            ],
+            shift: 0,
+          },
+          marks,
+        );
+      continue;
+    }
     if (mine > 0) {
-      const top = quad(0, 0, 1, 1, mine);
       ops.push({ kind: 'top', poly: top, shift: (mine - art) * tilePx });
       ops.push({
         kind: 'fill',
@@ -167,6 +238,7 @@ export function liftOps(input: LiftInput): LiftOp[] {
         ops.push({ kind: 'fill', poly: band(u, u + 0.06), color: ELEVATION.rim, alpha: 0.32 });
       }
     }
+    ops.push(marks);
 
     for (const { side, below } of down) {
       if (below >= mine) continue;

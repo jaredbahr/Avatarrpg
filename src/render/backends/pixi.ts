@@ -57,9 +57,9 @@ import { bendFxSource } from '../fx/bendFxDraw';
 import { syncBendFx } from '../fx/bendFxPixi';
 import { aimArcPoints, arcHeading, arrowheadPolygon } from '../geometry/arc';
 import { actorHealthBar, actorShadowDensity, healthBarCap } from '../geometry/actorSilhouette';
-import { DECOR_CHUNK, decorChunks, decorSignature } from '../geometry/board';
-import { liftOps } from '../geometry/lift';
-import type { LiftOp, Pt } from '../geometry/lift';
+import { DECOR_CHUNK, decorChunks } from '../geometry/board';
+import { liftPlan } from '../geometry/lift';
+import type { Pt } from '../geometry/lift';
 import { contourLoops, isHole } from '../geometry/contour';
 import type { Curve } from '../geometry/curve';
 import { sampleAt, smoothPath } from '../geometry/curve';
@@ -203,8 +203,10 @@ export class PixiBackend implements RenderBackend {
   private groundStack = new Container();
   private groundTexture: RenderTexture | null = null;
   private groundTextureSprite = new Sprite(Texture.EMPTY);
+  /** The live marks on that ground, rendered apart so each raised top lifts its own. */
+  private marksTexture: RenderTexture | null = null;
+  private marksSprite = new Sprite(Texture.EMPTY);
   private liftGfx = new Graphics();
-  private liftCache: { key: string; ops: LiftOp[] } | null = null;
   /** The oblique board, where raised ground is lifted rather than banded. */
   private lifted = false;
   /** Projected world pixels; actors and labels remain upright. */
@@ -449,9 +451,11 @@ export class PixiBackend implements RenderBackend {
     this.labels.addChild(this.fxGfx, this.floaterLayer);
     this.groundStack.addChild(this.root);
     this.groundTextureSprite.visible = false;
+    this.marksSprite.visible = false;
     app.stage.addChild(
       this.groundStack,
       this.groundTextureSprite,
+      this.marksSprite,
       this.liftGfx,
       this.upright,
       this.fxOver.container,
@@ -508,6 +512,8 @@ export class PixiBackend implements RenderBackend {
     this.app?.stage.destroy({ children: true });
     this.groundTexture?.destroy(true);
     this.groundTexture = null;
+    this.marksTexture?.destroy(true);
+    this.marksTexture = null;
     this.app?.renderer.destroy(false);
     this.app = null;
     this.groundFilter = null;
@@ -616,7 +622,19 @@ export class PixiBackend implements RenderBackend {
     this.fxUnder.draw(emitters, oblique);
     this.fxOver.draw(emitters, oblique);
     this.drawFloaters(view, camera);
-    this.syncLift(view, camera, oblique && scenePainted ? (view.scene?.reliefLift ?? 0) : 0);
+    // The live marks, drawn after the ground and its art: what the lift pass
+    // moves by a raised cell's whole lift. Over art, that includes the
+    // surfaces and the decor; procedural ground lifts them with the ground.
+    const marks: Container[] = [
+      this.groundOverlaySprite,
+      this.overlayGfx,
+      this.pathGfx,
+      this.fxUnder.container,
+      this.decorGfx,
+    ];
+    if (painted) marks.push(this.decorLayer);
+    if (painted && !partialScene) marks.push(this.groundSprite);
+    this.syncLift(view, camera, oblique && scenePainted ? (view.scene?.reliefLift ?? 0) : 0, marks);
 
     app.renderer.render(app.stage);
   }
@@ -626,54 +644,49 @@ export class PixiBackend implements RenderBackend {
    * backend draws. The flat ground renders into a texture; each raised top
    * is that texture again, sampled lower down, filled over its faces.
    */
-  private syncLift(view: MapView, camera: Camera, artLift: number | readonly number[]): void {
+  private syncLift(
+    view: MapView,
+    camera: Camera,
+    artLift: number | readonly number[],
+    marks: Container[],
+  ): void {
     const app = this.app;
     if (!app) return;
     const tilePx = TILE * camera.scale;
-    const key = [
-      decorSignature(view.grid),
-      camera.scale,
-      camera.offsetX,
-      camera.offsetY,
-      artLift,
-      view.crispOverlays ? 1 : 0,
-      this.lifted ? 1 : 0,
-    ].join('|');
-    if (this.liftCache?.key !== key) {
-      const ops = this.lifted
-        ? liftOps({
-            grid: view.grid,
-            project: (pos) => camera.project(pos),
-            tilePx,
-            artLift,
-            contrast: Boolean(view.crispOverlays),
-          })
-        : [];
-      this.liftCache = { key, ops };
-    }
-    const { ops } = this.liftCache;
+    const ops = this.lifted
+      ? liftPlan(view.grid, camera, artLift, Boolean(view.crispOverlays))
+      : [];
     const g = this.liftGfx;
     g.clear();
-    if (ops.length === 0) {
-      this.groundTextureSprite.visible = false;
+    const lifted = ops.length > 0;
+    this.groundTextureSprite.visible = this.marksSprite.visible = lifted;
+    if (!lifted) {
       if (this.groundStack.parent !== app.stage) app.stage.addChildAt(this.groundStack, 0);
       return;
     }
 
     const { width, height, dpr } = this.viewport;
-    if (!this.groundTexture) {
-      this.groundTexture = RenderTexture.create({ width, height, resolution: dpr, dynamic: true });
-      this.groundTextureSprite.texture = this.groundTexture;
-    } else if (
-      this.groundTexture.width !== width ||
-      this.groundTexture.height !== height ||
-      this.groundTexture.source.resolution !== dpr
-    ) {
-      this.groundTexture.resize(width, height, dpr);
-    }
+    // A resize to the size a texture already has does nothing.
+    const target = (texture: RenderTexture | null, sprite: Sprite) =>
+      (sprite.texture = (texture ?? RenderTexture.create({ dynamic: true })).resize(
+        width,
+        height,
+        dpr,
+      )) as RenderTexture;
+    const ground = (this.groundTexture = target(this.groundTexture, this.groundTextureSprite));
+    const marked = (this.marksTexture = target(this.marksTexture, this.marksSprite));
     if (this.groundStack.parent === app.stage) app.stage.removeChild(this.groundStack);
-    app.renderer.render({ container: this.groundStack, target: this.groundTexture, clear: true });
-    this.groundTextureSprite.visible = true;
+    // The ground without its marks, then the marks alone.
+    const rest = [...this.groundStack.children, ...this.root.children].filter(
+      (layer) => layer !== this.root && !marks.includes(layer),
+    );
+    const render = (hide: Container[], into: RenderTexture) => {
+      for (const layer of hide) layer.renderable = false;
+      app.renderer.render({ container: this.groundStack, target: into, clear: true });
+      for (const layer of hide) layer.renderable = true;
+    };
+    render(marks, ground);
+    render(rest, marked);
 
     // The ops are in camera space; the texture already carries the shake.
     const dx = view.cameraNudge.x * tilePx;
@@ -681,11 +694,11 @@ export class PixiBackend implements RenderBackend {
     g.position.set(dx, dy);
     const flat = (poly: readonly Pt[]) => poly.flatMap((p) => [p.x, p.y]);
     for (const op of ops) {
-      if (op.kind === 'top' || op.kind === 'face') {
+      if ('shift' in op) {
         // Global texture space maps a point through the inverse of `matrix`:
         // this one samples the texture `shift` pixels below, shaken as drawn.
         g.poly(flat(op.poly)).fill({
-          texture: this.groundTexture,
+          texture: op.kind === 'overlay' ? marked : ground,
           matrix: new Matrix(1, 0, 0, 1, -dx, -dy - op.shift),
           textureSpace: 'global',
         });

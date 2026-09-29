@@ -18,7 +18,8 @@ const patch = (url: string, x: number, y: number) => ({
   height: 64,
 });
 
-type Pos = { readonly x: number; readonly y: number };
+/** A tile, and how far its top is lifted up the screen, in tiles (ADR 0065). */
+type Pos = { readonly x: number; readonly y: number; readonly up?: number };
 
 const PATCH = { x: 5, y: 7 } as const;
 const VALID = { x: 6, y: 7 } as const;
@@ -63,7 +64,13 @@ async function samples<P extends Record<string, Pos>>(
       entries.map(([name, p]) => {
         const x = (p.x + 0.5) * 64;
         const y = (p.y + 0.5) * 64;
-        return [name, { x: m.a * x + m.c * y + m.tx, y: m.b * x + m.d * y + m.ty }];
+        return [
+          name,
+          {
+            x: m.a * x + m.c * y + m.tx,
+            y: m.b * x + m.d * y + m.ty - camera.tilePx * (p.up ?? 0),
+          },
+        ];
       }),
     );
     const box = canvas.getBoundingClientRect();
@@ -380,7 +387,9 @@ for (const renderer of ['canvas', 'webgl'] as const) {
 
   test(`partial elevation keeps a live surface above its base on ${renderer}`, async ({ page }) => {
     allowSoftwareWebgl(test, renderer);
-    const raised = { x: 19, y: 2 } as const;
+    // The tier-2 perch: its water sits on its top, half a tile up the screen,
+    // where a tap picks it; its flat centre is the perch's face.
+    const raised = { x: 19, y: 2, up: 0.5 } as const;
     await resetStorage(page, `?renderer=${renderer}`);
     await startGame(page, ['Kaya'], ['kaya'], 'partial-elevation-surface');
     await enterNode(page, 'battle_forest_road');
@@ -394,7 +403,7 @@ for (const renderer of ['canvas', 'webgl'] as const) {
           return grid?.tiles[y * grid.width + x]?.elevation;
         }, raised),
       )
-      .toBeGreaterThan(0);
+      .toBe(2);
 
     const bare = (await samples(page, { raised })).raised;
     await setBattleWater(page, raised, true);
