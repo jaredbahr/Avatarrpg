@@ -15,14 +15,31 @@
  * marks back by the cell's whole lift: however much the art already paints,
  * a mark sits where a tap picks its tile.
  *
- * It is plain data in screen pixels so the two backends interpret one list:
- * Canvas 2D clips and copies from a snapshot, WebGL fills with the ground's
- * render texture. Board correctness, so both draw every op.
+ * It is plain data in screen pixels so the two backends interpret one list.
+ * Board correctness, so both draw every op. What they must not do is pay for
+ * it every frame (an iPad holds 2732x2048 device pixels, 22 MiB a layer):
+ *
+ * - The ops, less the live marks, are drawn once into a *lift layer* no
+ *   bigger than the raised blocks on screen (`LiftPlan.bounds`), and redrawn
+ *   only when the camera, the viewport or the ground under them changes. The
+ *   static marks (surfaces and seams over art, rule markers) are baked in at
+ *   their full lift, drawn straight under each top's translated transform.
+ * - Each frame the flat ground and its marks are drawn as they always were,
+ *   and the layer goes over them in one bounded copy, covering the raised
+ *   blocks' flat marks.
+ * - The live marks (ranges, hover, path, aim, exits, ground fx) then go on
+ *   the raised tops that have any near them (`markedCells`), in painter
+ *   order: `marksSchedule` also re-covers a later, taller block from the
+ *   layer where it stands in front of a top that took marks.
+ *
+ * `liftCost` counts what the pass does, for the render-cost probe.
  */
 
 import type { Grid, Tile, Vec2 } from '../../core/types';
 import { TILE, type Camera } from '../camera';
 import { ELEVATION } from '../palettes';
+import type { MapView } from '../view';
+import { aimArcPoints } from './arc';
 import { decorSignature } from './board';
 import { TIER_LIFT, liftAt } from './elevation';
 
@@ -84,46 +101,323 @@ const SIDES = [
   { dx: -1, dy: 0, a: [0, 0], b: [0, 1] }, // west: upper left
 ] as const;
 
-let plan: { key: string; ops: LiftOp[] } | undefined;
+/** A screen rectangle in CSS pixels. */
+export interface Rect {
+  readonly x: number;
+  readonly y: number;
+  readonly w: number;
+  readonly h: number;
+}
+
+/** One cell's share of the pass, in painter order. */
+export interface LiftCell {
+  readonly x: number;
+  readonly y: number;
+  /** Its lift in tiles; 0 for a flat cell shaded by a taller neighbour. */
+  readonly lift: number;
+  /** Everything drawn for it, overlay included. */
+  readonly ops: readonly LiftOp[];
+  /** The lifted top its marks go on, and how far they rise; null when flat. */
+  readonly top: readonly Pt[] | null;
+  readonly shift: number;
+  /** What its top and faces cover, which a mark from behind must not show through. */
+  readonly block: readonly (readonly Pt[])[];
+  readonly blockBounds: Rect | null;
+}
+
+export interface LiftPlan {
+  readonly key: string;
+  /** The cells with ops that reach the viewport, in painter order. */
+  readonly cells: readonly LiftCell[];
+  /** What the lift layer must hold: every op, clipped to the viewport. */
+  readonly bounds: Rect | null;
+  /** Where the ground that the tops, faces and static marks copy from lies. */
+  readonly sources: Rect | null;
+}
+
+/**
+ * The render-cost probe (dev console and e2e: `window.fnt.liftCost`). Counts
+ * only grow; a caller diffs two readings. `heldPx` is what the pass holds
+ * right now in extra canvases or render targets, in device pixels.
+ */
+export const liftCost = {
+  /** Frames drawn with raised ground on screen. */
+  frames: 0,
+  /** Times the lift layer was redrawn. */
+  layerBuilds: 0,
+  /** Renders into a WebGL target, and the device pixels they covered. */
+  targetRenders: 0,
+  targetPx: 0,
+  /** Canvas 2D copies between canvases, and the device pixels they read. */
+  copies: 0,
+  copiedPx: 0,
+  /** Raised tops that took live marks. */
+  markedTops: 0,
+  heldPx: 0,
+};
+
+const ids = new WeakMap<object, number>();
+let nextId = 1;
+/** A number per object, for cache keys that must change when the object does. */
+export function identity(value: object | null | undefined): number {
+  if (!value) return 0;
+  let id = ids.get(value);
+  if (id === undefined) ids.set(value, (id = nextId++));
+  return id;
+}
+
+let plan: LiftPlan | undefined;
 
 /**
  * The ops for this board through this camera, kept until either moves: the
  * backend asks every frame, and most frames nothing on the ground changes.
+ * Cells whose ops miss the viewport are left out.
  */
 export function liftPlan(
   grid: Grid,
   camera: Camera,
   artLift: number | readonly number[],
   contrast: boolean,
-): LiftOp[] {
+): LiftPlan {
+  const { width, height, dpr } = camera.viewport;
   const key = [
     decorSignature(grid),
     camera.scale,
     camera.offsetX,
     camera.offsetY,
+    width,
+    height,
+    dpr,
     artLift,
     contrast,
   ].join('|');
-  if (plan?.key !== key)
-    plan = {
-      key,
-      ops: liftOps({
-        grid,
-        project: (pos) => camera.project(pos),
-        tilePx: TILE * camera.scale,
-        artLift,
-        contrast,
-      }),
-    };
-  return plan.ops;
+  if (plan?.key === key) return plan;
+  const screen = { x: 0, y: 0, w: width, h: height };
+  const cells: LiftCell[] = [];
+  let bounds: Rect | null = null;
+  let sources: Rect | null = null;
+  const input = {
+    grid,
+    project: (pos: Vec2) => camera.project(pos),
+    tilePx: TILE * camera.scale,
+    artLift,
+    contrast,
+  };
+  for (const { x, y, ops } of liftCells(input)) {
+    const reach = clip(opsBounds(ops), screen);
+    if (!reach) continue;
+    bounds = union(bounds, reach);
+    let top: readonly Pt[] | null = null;
+    let shift = 0;
+    const block: (readonly Pt[])[] = [];
+    for (const op of ops) {
+      if (!('shift' in op)) continue;
+      sources = union(sources, clip(polyBounds(op.poly, op.shift), screen));
+      if (op.kind === 'overlay') ({ poly: top, shift } = op);
+      else block.push(op.poly);
+    }
+    cells.push({
+      x,
+      y,
+      lift: liftAt(grid, { x, y }, 'oblique'),
+      ops,
+      top,
+      shift,
+      block,
+      blockBounds: block.reduce<Rect | null>((r, poly) => union(r, polyBounds(poly, 0)), null),
+    });
+  }
+  plan = { key, cells, bounds: snapOut(bounds, dpr), sources: snapOut(sources, dpr) };
+  return plan;
+}
+
+export function union(a: Rect | null, b: Rect | null): Rect | null {
+  if (!a) return b;
+  if (!b) return a;
+  const x = Math.min(a.x, b.x);
+  const y = Math.min(a.y, b.y);
+  return { x, y, w: Math.max(a.x + a.w, b.x + b.w) - x, h: Math.max(a.y + a.h, b.y + b.h) - y };
+}
+
+export function clip(a: Rect | null, b: Rect): Rect | null {
+  if (!a) return null;
+  const x = Math.max(a.x, b.x);
+  const y = Math.max(a.y, b.y);
+  const w = Math.min(a.x + a.w, b.x + b.w) - x;
+  const h = Math.min(a.y + a.h, b.y + b.h) - y;
+  return w > 0 && h > 0 ? { x, y, w, h } : null;
+}
+
+/** Out to whole device pixels, so a layer's texels sit on the screen's. */
+export function snapOut(rect: Rect | null, dpr: number): Rect | null {
+  if (!rect) return null;
+  const x = Math.floor(rect.x * dpr) / dpr;
+  const y = Math.floor(rect.y * dpr) / dpr;
+  return {
+    x,
+    y,
+    w: Math.ceil((rect.x + rect.w) * dpr) / dpr - x,
+    h: Math.ceil((rect.y + rect.h) * dpr) / dpr - y,
+  };
+}
+
+/** A polygon's box, `down` pixels lower: where a copy with that shift reads. */
+export function polyBounds(poly: readonly Pt[], down: number): Rect {
+  let x0 = Infinity;
+  let y0 = Infinity;
+  let x1 = -Infinity;
+  let y1 = -Infinity;
+  for (const p of poly) {
+    x0 = Math.min(x0, p.x);
+    y0 = Math.min(y0, p.y);
+    x1 = Math.max(x1, p.x);
+    y1 = Math.max(y1, p.y);
+  }
+  // A pixel of slack for the antialiased edge.
+  return { x: x0 - 1, y: y0 + down - 1, w: x1 - x0 + 2, h: y1 - y0 + 2 };
+}
+
+function opsBounds(ops: readonly LiftOp[]): Rect | null {
+  let out: Rect | null = null;
+  for (const op of ops) {
+    if (op.kind !== 'line') {
+      out = union(out, polyBounds(op.poly, 0));
+      continue;
+    }
+    const pad = op.width / 2;
+    const r = polyBounds([op.a, op.b], 0);
+    out = union(out, { x: r.x - pad, y: r.y - pad, w: r.w + 2 * pad, h: r.h + 2 * pad });
+  }
+  return out;
+}
+
+/** What the live marks read from the view: the marks that change between frames. */
+export type LiveMarks = Pick<
+  MapView,
+  'overlays' | 'hoverTile' | 'path' | 'pathFrom' | 'aimArc' | 'exits' | 'exit' | 'emitters'
+>;
+
+/**
+ * The cells a live mark may reach, with a cell round each for strokes and for
+ * the lifted top that overhangs the cell behind; null when there are none.
+ * Over art on WebGL the surfaces are live too (they ripple), so `surfaces`
+ * says how far each tile's surface reaches (0 for none drawn), and the grid
+ * lines reach every tile.
+ */
+export function markedCells(
+  grid: Grid,
+  view: LiveMarks,
+  extra: { surfaces?: (tile: Tile, pos: Vec2) => number; gridLines?: boolean } = {},
+): Uint8Array | null {
+  const { width, height } = grid;
+  const out = new Uint8Array(width * height);
+  if (extra.gridLines) return out.fill(1);
+  let any = false;
+  const mark = (fx: number, fy: number, reach = 1) => {
+    const cx = Math.floor(fx);
+    const cy = Math.floor(fy);
+    for (let y = Math.max(0, cy - reach); y <= Math.min(height - 1, cy + reach); y++)
+      for (let x = Math.max(0, cx - reach); x <= Math.min(width - 1, cx + reach); x++) {
+        out[y * width + x] = 1;
+        any = true;
+      }
+  };
+  for (const layer of view.overlays) for (const p of layer.tiles) mark(p.x, p.y);
+  if (view.hoverTile) mark(view.hoverTile.x, view.hoverTile.y);
+  for (const p of view.path) mark(p.x, p.y);
+  if (view.path.length && view.pathFrom) mark(view.pathFrom.x, view.pathFrom.y);
+  const arc = view.aimArc;
+  if (arc) for (const p of aimArcPoints(arc.from, arc.to, arc.arc)) mark(p.x, p.y);
+  for (const exit of view.exits ?? (view.exit ? [view.exit] : [])) mark(exit.pos.x, exit.pos.y);
+  for (const { def, from, to } of view.emitters) {
+    if (def.layer !== 'under') continue;
+    // A spray reaches past the line it flies along.
+    for (let y = Math.min(from.y, to.y); y <= Math.max(from.y, to.y) + 1; y++)
+      for (let x = Math.min(from.x, to.x); x <= Math.max(from.x, to.x) + 1; x++) mark(x, y, 2);
+  }
+  const surfaces = extra.surfaces;
+  if (surfaces)
+    grid.tiles.forEach((tile, i) => {
+      const pos = { x: i % width, y: Math.floor(i / width) };
+      const reach = tile.surface ? surfaces(tile, pos) : 0;
+      if (reach > 0) mark(pos.x, pos.y, reach);
+    });
+  return any ? out : null;
+}
+
+/**
+ * Groups rectangles that touch or nearly do, so a target cropped to each
+ * group holds what they cover and not the empty board between two far ones.
+ * Returns each group's box and the indices of the rectangles in it.
+ */
+export function clusters(rects: readonly Rect[]): { rect: Rect; members: number[] }[] {
+  const out = rects.map((rect, i) => ({ rect, members: [i] }));
+  const area = (r: Rect) => r.w * r.h;
+  for (let merged = true; merged;) {
+    merged = false;
+    for (let i = 0; i < out.length && !merged; i++)
+      for (let j = i + 1; j < out.length && !merged; j++) {
+        const [a, b] = [out[i], out[j]];
+        const both = a && b && union(a.rect, b.rect);
+        // Joined only when the box round both wastes little on the gap.
+        if (!a || !b || !both || area(both) > 1.25 * (area(a.rect) + area(b.rect))) continue;
+        out[i] = { rect: both, members: [...a.members, ...b.members] };
+        out.splice(j, 1);
+        merged = true;
+      }
+  }
+  return out;
+}
+
+export interface MarkStep {
+  readonly cell: LiftCell;
+  /** Copy the layer back over its block first: a top behind it took marks. */
+  readonly recover: boolean;
+  /** Draw the live marks on its top. */
+  readonly marks: boolean;
+}
+
+/**
+ * The raised tops that take live marks, in painter order. A taller block just
+ * in front, drawn later, may stand over such a top, so that block is flagged
+ * to be copied back from the layer before its own marks go on.
+ */
+export function marksSchedule(plan: LiftPlan, grid: Grid, marked: Uint8Array | null): MarkStep[] {
+  if (!marked) return [];
+  const steps: MarkStep[] = [];
+  const flagged = new Set<number>();
+  for (const cell of plan.cells) {
+    if (!cell.top) continue;
+    const index = cell.y * grid.width + cell.x;
+    const marks = marked[index] === 1;
+    const recover = flagged.has(index);
+    if (!marks && !recover) continue;
+    steps.push({ cell, recover, marks });
+    if (!marks) continue;
+    // A lift of at most half a tile reaches back one cell, so whatever can
+    // stand over this top is a step or two in front of it.
+    for (let dy = 0; dy <= 2; dy++)
+      for (let dx = 0; dx <= 2; dx++) {
+        const x = cell.x + dx;
+        const y = cell.y + dy;
+        if ((dx || dy) && liftAt(grid, { x, y }, 'oblique') > cell.lift)
+          flagged.add(y * grid.width + x);
+      }
+  }
+  return steps;
 }
 
 export function liftOps(input: LiftInput): LiftOp[] {
+  return liftCells(input).flatMap((cell) => cell.ops);
+}
+
+/** The ops cell by cell, in painter order; cells with none are left out. */
+export function liftCells(input: LiftInput): { x: number; y: number; ops: LiftOp[] }[] {
   const { grid, project, tilePx, artLift, contrast } = input;
   // Art painted at the full lift draws its own blocks; it stays in charge.
   const full = typeof artLift === 'number' && artLift >= TIER_LIFT;
   const lift = (x: number, y: number) => liftAt(grid, { x, y }, 'oblique');
-  const ops: LiftOp[] = [];
+  const out: { x: number; y: number; ops: LiftOp[] }[] = [];
   const point = (gx: number, gy: number, up: number): Pt => {
     const p = project({ x: gx, y: gy });
     return { x: p.x, y: p.y - up * tilePx };
@@ -137,6 +431,8 @@ export function liftOps(input: LiftInput): LiftOp[] {
   for (const { x, y } of cells) {
     const tile = at(grid, x, y);
     if (!tile || tile.blocked) continue;
+    const ops: LiftOp[] = [];
+    out.push({ x, y, ops });
     const mine = lift(x, y);
     const quad = (x0: number, y0: number, x1: number, y1: number, up: number): Pt[] => [
       point(x + x0, y + y0, up),
@@ -313,5 +609,5 @@ export function liftOps(input: LiftInput): LiftOp[] {
       });
     }
   }
-  return ops;
+  return out.filter((cell) => cell.ops.length > 0);
 }

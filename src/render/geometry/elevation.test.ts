@@ -3,7 +3,8 @@ import { buildGrid } from '../../core/rules/grid';
 import { QUARRY_FLOOR } from '../../content/maps/combat';
 import { Camera, TILE } from '../camera';
 import { TIER_LIFT, liftAlong, liftAt, pickCell } from './elevation';
-import { liftOps } from './lift';
+import { clusters, liftOps, liftPlan, markedCells, marksSchedule } from './lift';
+import type { LiveMarks } from './lift';
 
 const grid = buildGrid(QUARRY_FLOOR);
 const cells = Array.from({ length: grid.width * grid.height }, (_, i) => ({
@@ -200,5 +201,119 @@ describe('liftOps', () => {
     expect(faces(ramp)).toBe(2);
     expect(faces(ledge)).toBe(2);
     expect(ramp.length).toBeGreaterThan(ledge.length + 5);
+  });
+});
+
+/*
+ * What keeps the pass cheap on an iPad: the layer is cropped to the raised
+ * blocks on screen, and the live marks go only on the tops near one.
+ */
+describe('liftPlan cost', () => {
+  const noMarks: LiveMarks = {
+    overlays: [],
+    hoverTile: null,
+    path: [],
+    pathFrom: null,
+    aimArc: null,
+    exit: null,
+    emitters: [],
+  };
+
+  it('crops the layer to the raised blocks on screen and drops it with none there', () => {
+    const cam = camera();
+    const plan = liftPlan(grid, cam, 0, false);
+    const { width, height, dpr } = cam.viewport;
+    const rect = plan.bounds;
+    expect(rect).not.toBeNull();
+    if (!rect) return;
+    expect(rect.x).toBeGreaterThanOrEqual(0);
+    expect(rect.y).toBeGreaterThanOrEqual(0);
+    expect(rect.x + rect.w).toBeLessThanOrEqual(width);
+    expect(rect.y + rect.h).toBeLessThanOrEqual(height);
+    // On whole device pixels, so the layer's texels sit on the screen's.
+    for (const v of [rect.x, rect.y, rect.w, rect.h])
+      expect(v * dpr).toBeCloseTo(Math.round(v * dpr), 6);
+    // Every op a cell draws lies inside it.
+    for (const cell of plan.cells)
+      for (const poly of cell.block)
+        for (const p of poly) {
+          if (p.x < 0 || p.y < 0 || p.x > width || p.y > height) continue;
+          expect(p.x).toBeGreaterThanOrEqual(rect.x);
+          expect(p.y).toBeLessThanOrEqual(rect.y + rect.h);
+        }
+    // Panned off the board, nothing raised is on screen: no layer at all.
+    cam.offsetX = -5000;
+    const off = liftPlan(grid, cam, 0, false);
+    expect(off.cells).toHaveLength(0);
+    expect(off.bounds).toBeNull();
+  });
+
+  it('asks the same plan back while nothing moves', () => {
+    const cam = camera();
+    const still = liftPlan(grid, cam, 0, false);
+    expect(liftPlan(grid, cam, 0, false)).toBe(still);
+    cam.offsetX += 1;
+    expect(liftPlan(grid, cam, 0, false)).not.toBe(still);
+  });
+
+  it('marks nothing with no live marks, and only the tops near one', () => {
+    const plan = liftPlan(grid, camera(), 0, false);
+    expect(markedCells(grid, noMarks)).toBeNull();
+    // A surface the art paints (reach 0) is no live mark.
+    expect(markedCells(grid, noMarks, { surfaces: () => 0 })).toBeNull();
+    expect(marksSchedule(plan, grid, markedCells(grid, noMarks))).toEqual([]);
+    // A hover on the (5,1) ramp bench marks it and its neighbours, no more.
+    const marked = markedCells(grid, { ...noMarks, hoverTile: { x: 5, y: 1 } });
+    const steps = marksSchedule(plan, grid, marked);
+    const tops = plan.cells.filter((c) => c.top);
+    expect(steps.length).toBeGreaterThan(0);
+    expect(steps.length).toBeLessThan(10);
+    expect(steps.length).toBeLessThan(tops.length / 3);
+    const hovered = steps.find((s) => s.cell.x === 5 && s.cell.y === 1);
+    expect(hovered?.marks).toBe(true);
+    for (const { cell } of steps)
+      expect(Math.max(Math.abs(cell.x - 5), Math.abs(cell.y - 1))).toBeLessThanOrEqual(2);
+    // In painter order, as the layer's own blocks are.
+    for (let i = 1; i < steps.length; i++) {
+      const [a, b] = [steps[i - 1]?.cell, steps[i]?.cell];
+      expect(a && b && a.x + a.y <= b.x + b.y).toBe(true);
+    }
+    // The grid lines reach every tile.
+    const all = markedCells(grid, noMarks, { gridLines: true });
+    expect(marksSchedule(plan, grid, all).filter((s) => s.marks)).toHaveLength(tops.length);
+  });
+
+  it('keeps far-apart marked tops in targets of their own', () => {
+    const a = { x: 0, y: 0, w: 100, h: 60 };
+    const near = { x: 90, y: 10, w: 100, h: 60 };
+    const far = { x: 900, y: 700, w: 100, h: 60 };
+    const groups = clusters([a, far, near]);
+    expect(groups).toHaveLength(2);
+    expect(groups.find((g) => g.members.includes(0))?.members.sort()).toEqual([0, 2]);
+    expect(groups.find((g) => g.members.includes(1))?.rect).toEqual(far);
+    expect(clusters([])).toEqual([]);
+  });
+
+  it('copies back a taller block in front of a marked top before its own marks', () => {
+    // A tier-1 bench with a tier-2 perch just in front of it.
+    const small = buildGrid({
+      ...QUARRY_FLOOR,
+      width: 4,
+      height: 4,
+      rows: ['....', '.^..', '.^A.', '....'],
+    });
+    const cam = new Camera({ width: 800, height: 600, dpr: 2 }, small, 'oblique');
+    cam.fit();
+    const plan = liftPlan(small, cam, 0, false);
+    const perch = { x: 2, y: 2 };
+    expect(liftAt(small, perch, 'oblique')).toBe(2 * TIER_LIFT);
+    const marked = markedCells(small, { ...noMarks, hoverTile: { x: 0, y: 0 } });
+    const steps = marksSchedule(plan, small, marked);
+    // The hover reaches (1,1), whose top the perch stands over: the perch is
+    // copied back over it, and takes no marks of its own.
+    expect(steps.find((s) => s.cell.x === 1 && s.cell.y === 1)?.marks).toBe(true);
+    expect(steps.find((s) => s.cell.x === perch.x && s.cell.y === perch.y)).toEqual(
+      expect.objectContaining({ recover: true, marks: false }),
+    );
   });
 });

@@ -30,7 +30,7 @@ import {
   UniformGroup,
 } from 'pixi.js';
 
-import type { MapScene, SceneFlock, SceneImage, TerrainId, Vec2 } from '../../core/types';
+import type { MapScene, SceneFlock, SceneImage, TerrainId, Tile, Vec2 } from '../../core/types';
 import { authoredForBothSides } from '../../content/assets/clips';
 import { resolveAsset } from '../../content/assets/manifest';
 import { backdrops } from '../backdrops';
@@ -58,8 +58,18 @@ import { syncBendFx } from '../fx/bendFxPixi';
 import { aimArcPoints, arcHeading, arrowheadPolygon } from '../geometry/arc';
 import { actorHealthBar, actorShadowDensity, healthBarCap } from '../geometry/actorSilhouette';
 import { DECOR_CHUNK, decorChunks } from '../geometry/board';
-import { liftPlan } from '../geometry/lift';
-import type { Pt } from '../geometry/lift';
+import {
+  clip,
+  identity,
+  liftCost,
+  liftPlan,
+  markedCells,
+  marksSchedule,
+  polyBounds,
+  snapOut,
+  clusters,
+} from '../geometry/lift';
+import type { LiftPlan, Pt, Rect } from '../geometry/lift';
 import { contourLoops, isHole } from '../geometry/contour';
 import type { Curve } from '../geometry/curve';
 import { sampleAt, smoothPath } from '../geometry/curve';
@@ -100,6 +110,18 @@ const TERRAIN_INDEX: Record<TerrainId, number> = {
 
 /** The ground pass renders at this fraction of device resolution. */
 const GROUND_RESOLUTION = 0.5;
+
+/**
+ * How far round it a surface the ground shader animates keeps moving: water
+ * ripples, fire and steam roll, and fire lights its neighbours. The rest of
+ * the surfaces are still washes.
+ */
+const MOVING_SURFACE = (tile: Tile): number =>
+  tile.surface?.id === 'fire'
+    ? 2
+    : tile.surface?.id === 'water' || tile.surface?.id === 'steam'
+      ? 1
+      : 0;
 
 /** How far firelight reaches, in tiles. */
 const GLOW_RADIUS = 2;
@@ -195,18 +217,24 @@ export class PixiBackend implements RenderBackend {
   /** Logical ground pixels; all ground marks share the camera affine. */
   private root = new Container();
   /**
-   * Everything drawn flat on the ground, painting to paths. With raised
-   * ground on the board it renders into `groundTexture` instead of the
-   * screen, and the lift pass (ADR 0065) draws that texture back with each
-   * raised top lifted over its faces.
+   * Everything drawn flat on the ground, painting to paths. The lift pass
+   * (ADR 0065) renders parts of it, cropped, into targets of its own.
    */
   private groundStack = new Container();
-  private groundTexture: RenderTexture | null = null;
-  private groundTextureSprite = new Sprite(Texture.EMPTY);
-  /** The live marks on that ground, rendered apart so each raised top lifts its own. */
-  private marksTexture: RenderTexture | null = null;
-  private marksSprite = new Sprite(Texture.EMPTY);
-  private liftGfx = new Graphics();
+  /**
+   * The raised blocks, rendered once into a target cropped to them and shown
+   * over the flat ground until the plan or the ground under them changes.
+   */
+  private liftLayer: RenderTexture | null = null;
+  private liftSprite = new Sprite(Texture.EMPTY);
+  private liftKey = '';
+  /** The flat ground and static marks the layer is built from, kept only while it keeps changing. */
+  private liftSources: RenderTexture[] = [];
+  private liftBuild = new Graphics();
+  /** The live marks near raised tops, cropped, and the tops that show them. */
+  private marksTargets: RenderTexture[] = [];
+  private marksGfx = new Graphics();
+  private marksKey = '';
   /** The oblique board, where raised ground is lifted rather than banded. */
   private lifted = false;
   /** Projected world pixels; actors and labels remain upright. */
@@ -450,13 +478,11 @@ export class PixiBackend implements RenderBackend {
     );
     this.labels.addChild(this.fxGfx, this.floaterLayer);
     this.groundStack.addChild(this.root);
-    this.groundTextureSprite.visible = false;
-    this.marksSprite.visible = false;
+    this.liftSprite.visible = false;
     app.stage.addChild(
       this.groundStack,
-      this.groundTextureSprite,
-      this.marksSprite,
-      this.liftGfx,
+      this.liftSprite,
+      this.marksGfx,
       this.upright,
       this.fxOver.container,
       this.labels,
@@ -507,13 +533,9 @@ export class PixiBackend implements RenderBackend {
     // the renderer own the shared GPU program and release only filter state.
     this.groundFilter?.destroy();
     this.groundOverlayFilter?.destroy();
-    // A lifted board keeps the ground off the stage; destroy it either way.
-    if (this.groundStack.parent !== this.app?.stage) this.groundStack.destroy({ children: true });
+    this.dropLift();
+    this.liftBuild.destroy();
     this.app?.stage.destroy({ children: true });
-    this.groundTexture?.destroy(true);
-    this.groundTexture = null;
-    this.marksTexture?.destroy(true);
-    this.marksTexture = null;
     this.app?.renderer.destroy(false);
     this.app = null;
     this.groundFilter = null;
@@ -622,94 +644,317 @@ export class PixiBackend implements RenderBackend {
     this.fxUnder.draw(emitters, oblique);
     this.fxOver.draw(emitters, oblique);
     this.drawFloaters(view, camera);
-    // The live marks, drawn after the ground and its art: what the lift pass
-    // moves by a raised cell's whole lift. Over art, that includes the
-    // surfaces and the decor; procedural ground lifts them with the ground.
-    const marks: Container[] = [
+    // The marks over the ground and its art, which the lift pass moves by a
+    // raised cell's whole lift: those that change only with the ground (the
+    // decor over art), and the live ones. Procedural ground lifts its own.
+    const live: Container[] = [
       this.groundOverlaySprite,
       this.overlayGfx,
       this.pathGfx,
       this.fxUnder.container,
       this.decorGfx,
     ];
-    if (painted) marks.push(this.decorLayer);
-    if (painted && !partialScene) marks.push(this.groundSprite);
-    this.syncLift(view, camera, oblique && scenePainted ? (view.scene?.reliefLift ?? 0) : 0, marks);
+    if (painted && !partialScene) live.push(this.groundSprite);
+    this.syncLift(view, camera, oblique && scenePainted ? (view.scene?.reliefLift ?? 0) : 0, {
+      static: painted ? [this.decorLayer] : [],
+      live,
+      // The surfaces the shader draws over art are on the live side.
+      surfaces:
+        painted || partialScene
+          ? (tile, pos) => (surfaceIsPainted(view, painted, tile, pos) ? 0 : 1)
+          : null,
+      ground: [
+        identity(view.grid),
+        // Not the scene: it is copied whenever its scenery is filtered.
+        identity(view.scene?.ground),
+        scenePainted,
+        backdropPainted,
+        partialScene,
+        this.backdropSprite.visible && this.backdropSprite.texture.uid,
+        [...this.groundChunks.values()].map((s) => (s.visible ? s.texture.uid : 0)).join(','),
+        this.groundingSprite?.visible && this.groundingSprite.texture.uid,
+        this.decorLayer.visible && `${this.decorMode}@${this.decorPx}`,
+        this.elevationBaseLayer.visible && this.elevationBasePx,
+        this.shadeLayer.visible,
+        view.hatch,
+        view.gridLines,
+        // Bare procedural ground carries its surfaces, which move every frame.
+        !painted && !partialScene && view.time,
+      ].join('|'),
+    });
 
     app.renderer.render(app.stage);
   }
 
   /**
-   * Raised ground as blocks (ADR 0065), from the same op list the Canvas 2D
-   * backend draws. The flat ground renders into a texture; each raised top
-   * is that texture again, sampled lower down, filled over its faces.
+   * Raised ground as blocks (ADR 0065), from the same plan the Canvas 2D
+   * backend draws. The blocks are rendered once into a target cropped to
+   * them, from cropped renders of the flat ground and its static marks, and
+   * shown over the flat ground; the live marks go on the tops that have one
+   * near them, from a cropped target rendered only when they change.
    */
   private syncLift(
     view: MapView,
     camera: Camera,
     artLift: number | readonly number[],
-    marks: Container[],
+    marks: {
+      static: Container[];
+      live: Container[];
+      surfaces: ((tile: Tile, pos: Vec2) => number) | null;
+      ground: string;
+    },
   ): void {
     const app = this.app;
     if (!app) return;
-    const tilePx = TILE * camera.scale;
-    const ops = this.lifted
+    const plan = this.lifted
       ? liftPlan(view.grid, camera, artLift, Boolean(view.crispOverlays))
-      : [];
-    const g = this.liftGfx;
-    g.clear();
-    const lifted = ops.length > 0;
-    this.groundTextureSprite.visible = this.marksSprite.visible = lifted;
-    if (!lifted) {
-      if (this.groundStack.parent !== app.stage) app.stage.addChildAt(this.groundStack, 0);
+      : null;
+    const rect = plan?.bounds;
+    if (!plan || !rect) {
+      this.dropLift();
       return;
     }
+    liftCost.frames++;
+    const tilePx = TILE * camera.scale;
+    // The stack is drawn shaken; the layer and the marks target are not.
+    const nx = view.cameraNudge.x * tilePx;
+    const ny = view.cameraNudge.y * tilePx;
+    const key = `${plan.key}|${marks.ground}`;
+    const layer =
+      this.liftLayer && key === this.liftKey
+        ? this.releaseSources(this.liftLayer)
+        : this.buildLift(plan, rect, key, nx, ny, marks);
+    this.liftSprite.texture = layer;
+    this.liftSprite.position.set(rect.x + nx, rect.y + ny);
+    this.liftSprite.visible = true;
 
-    const { width, height, dpr } = this.viewport;
-    // A resize to the size a texture already has does nothing.
-    const target = (texture: RenderTexture | null, sprite: Sprite) =>
-      (sprite.texture = (texture ?? RenderTexture.create({ dynamic: true })).resize(
-        width,
-        height,
-        dpr,
-      )) as RenderTexture;
-    const ground = (this.groundTexture = target(this.groundTexture, this.groundTextureSprite));
-    const marked = (this.marksTexture = target(this.marksTexture, this.marksSprite));
-    if (this.groundStack.parent === app.stage) app.stage.removeChild(this.groundStack);
-    // The ground without its marks, then the marks alone.
-    const rest = [...this.groundStack.children, ...this.root.children].filter(
-      (layer) => layer !== this.root && !marks.includes(layer),
+    const drawn = marks.surfaces ?? undefined;
+    const steps = marksSchedule(
+      plan,
+      view.grid,
+      markedCells(view.grid, view, { surfaces: drawn, gridLines: view.gridLines }),
     );
-    const render = (hide: Container[], into: RenderTexture) => {
-      for (const layer of hide) layer.renderable = false;
-      app.renderer.render({ container: this.groundStack, target: into, clear: true });
-      for (const layer of hide) layer.renderable = true;
-    };
-    render(marks, ground);
-    render(rest, marked);
+    // Where each marked top reads its marks from, grouped so that tops far
+    // apart get a small target each rather than one spanning the board.
+    const screen = { x: 0, y: 0, w: this.viewport.width, h: this.viewport.height };
+    const reads = steps.map(({ cell, marks: shown }) =>
+      shown && cell.top ? clip(polyBounds(cell.top, cell.shift), screen) : null,
+    );
+    const marked = reads.flatMap((r, step) => (r ? [{ r, step }] : []));
+    const groupOf = new Map<number, number>();
+    const groups = clusters(marked.map(({ r }) => r)).map(({ rect: r, members }, group) => {
+      for (const k of members) groupOf.set(marked[k]?.step ?? -1, group);
+      return { rect: snapOut(r, this.viewport.dpr) ?? r };
+    });
+    // What moves by itself (a pulse, a spray, water and fire, and firelight
+    // round it) re-renders the target every frame, but only while it is on a
+    // marked top; the rest waits for a change.
+    const still = { overlays: [], hoverTile: null, path: [], pathFrom: null, aimArc: null };
+    const moving = markedCells(
+      view.grid,
+      { ...still, exit: view.exit, exits: view.exits, emitters: view.emitters },
+      {
+        surfaces: drawn && ((tile, pos) => (drawn(tile, pos) ? MOVING_SURFACE(tile) : 0)),
+      },
+    );
+    const w = view.grid.width;
+    const animated = steps.some((s) => s.marks && moving?.[s.cell.y * w + s.cell.x] === 1);
+    const liveKey = [
+      this.liftKey,
+      steps.map((s) => `${s.cell.x},${s.cell.y}${s.recover ? 'r' : ''}${s.marks ? 'm' : ''}`),
+      view.overlays.map(identity),
+      view.hoverTile && `${view.hoverTile.x},${view.hoverTile.y}`,
+      identity(view.path),
+      view.pathFrom && `${view.pathFrom.x},${view.pathFrom.y}`,
+      view.aimArc && JSON.stringify(view.aimArc),
+      view.crispOverlays,
+      animated && view.time,
+    ].join('|');
+    this.marksGfx.position.set(nx, ny);
+    if (liveKey === this.marksKey) return;
+    this.marksKey = liveKey;
 
-    // The ops are in camera space; the texture already carries the shake.
-    const dx = view.cameraNudge.x * tilePx;
-    const dy = view.cameraNudge.y * tilePx;
-    g.position.set(dx, dy);
+    const g = this.marksGfx;
+    g.clear();
+    for (const extra of this.marksTargets.splice(groups.length)) extra.destroy(true);
+    const targets = groups.map(({ rect: r }, i) => {
+      const target = this.target(this.marksTargets[i] ?? null, r);
+      this.marksTargets[i] = target;
+      this.renderStack(target, r, nx, ny, (layer) => marks.live.includes(layer));
+      return { rect: r, target };
+    });
     const flat = (poly: readonly Pt[]) => poly.flatMap((p) => [p.x, p.y]);
-    for (const op of ops) {
-      if ('shift' in op) {
-        // Global texture space maps a point through the inverse of `matrix`:
-        // this one samples the texture `shift` pixels below, shaken as drawn.
-        g.poly(flat(op.poly)).fill({
-          texture: op.kind === 'overlay' ? marked : ground,
-          matrix: new Matrix(1, 0, 0, 1, -dx, -dy - op.shift),
-          textureSpace: 'global',
-        });
-      } else if (op.kind === 'fill') {
-        g.poly(flat(op.poly)).fill({ color: op.color, alpha: op.alpha });
-      } else {
-        g.moveTo(op.a.x, op.a.y)
-          .lineTo(op.b.x, op.b.y)
-          .stroke({ color: op.color, alpha: op.alpha, width: op.width, cap: 'round' });
-      }
+    for (const [index, { cell, recover, marks: shown }] of steps.entries()) {
+      // A taller block in front of a marked top: the layer again, over it.
+      if (recover)
+        for (const poly of cell.block)
+          g.poly(flat(poly)).fill({
+            texture: layer,
+            matrix: new Matrix(1, 0, 0, 1, rect.x, rect.y),
+            textureSpace: 'global',
+          });
+      const from = targets[groupOf.get(index) ?? -1];
+      if (!shown || !cell.top || !from) continue;
+      liftCost.markedTops++;
+      // Global texture space maps a point through the inverse of `matrix`:
+      // this one reads the target at the top's flat place, `shift` below.
+      g.poly(flat(cell.top)).fill({
+        texture: from.target,
+        matrix: new Matrix(1, 0, 0, 1, from.rect.x, from.rect.y - cell.shift),
+        textureSpace: 'global',
+      });
     }
+    this.countHeld();
+  }
+
+  /** Draws the plan's ops into the lift layer, copying from cropped renders of the stack. */
+  private buildLift(
+    plan: LiftPlan,
+    rect: Rect,
+    key: string,
+    nx: number,
+    ny: number,
+    marks: { static: Container[]; live: Container[] },
+  ): RenderTexture {
+    const app = this.app as NonNullable<PixiBackend['app']>;
+    this.liftKey = key;
+    // A new layer shows new blocks; any marks on the old one go with it.
+    this.marksKey = '';
+    liftCost.layerBuilds++;
+    const from = plan.sources ?? rect;
+    const [groundSource, marksSource] = this.liftSources;
+    const ground = this.target(groundSource ?? null, from);
+    const hideMarks = [...marks.static, ...marks.live];
+    this.renderStack(ground, from, nx, ny, (layer) => !hideMarks.includes(layer), true);
+    const hasMarks = marks.static.some((layer) => layer.visible);
+    const statics = hasMarks ? this.target(marksSource ?? null, from) : null;
+    if (statics) this.renderStack(statics, from, nx, ny, (layer) => marks.static.includes(layer));
+    this.liftSources = statics ? [ground, statics] : [ground];
+    if (!statics) marksSource?.destroy(true);
+
+    const g = this.liftBuild;
+    g.clear();
+    const flat = (poly: readonly Pt[]) => poly.flatMap((p) => [p.x, p.y]);
+    // Global texture space maps a point through the inverse of `matrix`: this
+    // one reads the cropped source at the flat place, `shift` further down.
+    const read = (texture: RenderTexture, shift: number) => ({
+      texture,
+      matrix: new Matrix(1, 0, 0, 1, from.x, from.y - shift),
+      textureSpace: 'global' as const,
+    });
+    for (const cell of plan.cells)
+      for (const op of cell.ops) {
+        if (op.kind === 'overlay') {
+          if (statics) g.poly(flat(op.poly)).fill(read(statics, op.shift));
+        } else if ('shift' in op) {
+          g.poly(flat(op.poly)).fill(read(ground, op.shift));
+        } else if (op.kind === 'fill') {
+          g.poly(flat(op.poly)).fill({ color: op.color, alpha: op.alpha });
+        } else {
+          g.moveTo(op.a.x, op.a.y)
+            .lineTo(op.b.x, op.b.y)
+            .stroke({ color: op.color, alpha: op.alpha, width: op.width, cap: 'round' });
+        }
+      }
+    const layer = (this.liftLayer = this.target(this.liftLayer, rect));
+    app.renderer.render({
+      container: g,
+      target: layer,
+      clear: true,
+      transform: new Matrix(1, 0, 0, 1, -rect.x, -rect.y),
+    });
+    liftCost.targetRenders++;
+    liftCost.targetPx += layer.source.pixelWidth * layer.source.pixelHeight;
+    this.countHeld();
+    return layer;
+  }
+
+  /** A render target of `rect`'s size, reusing `texture` when it has one. */
+  private target(texture: RenderTexture | null, rect: Rect): RenderTexture {
+    // A resize to the size a texture already has does nothing.
+    return (texture ?? RenderTexture.create({ dynamic: true })).resize(
+      rect.w,
+      rect.h,
+      this.viewport.dpr,
+    ) as RenderTexture;
+  }
+
+  /**
+   * Renders the ground stack's `keep` layers, cropped to `rect` of the
+   * unshaken screen, into `target`. The ground quads work out their tiles
+   * from where their pixels land, so their origin moves with the crop.
+   */
+  private renderStack(
+    target: RenderTexture,
+    rect: Rect,
+    nx: number,
+    ny: number,
+    keep: (layer: Container) => boolean,
+    still = false,
+  ): void {
+    const app = this.app;
+    if (!app) return;
+    const dx = nx + rect.x;
+    const dy = ny + rect.y;
+    const hidden = [...this.groundStack.children, ...this.root.children].filter(
+      (layer) => layer !== this.root && layer.renderable && !keep(layer),
+    );
+    // The breeze is a moving light on the grass: it stays on the flat pass.
+    if (still && this.breeze.renderable) hidden.push(this.breeze);
+    for (const layer of hidden) layer.renderable = false;
+    this.moveGroundOrigin(-dx, -dy);
+    app.renderer.render({
+      container: this.groundStack,
+      target,
+      clear: true,
+      transform: new Matrix(1, 0, 0, 1, -dx, -dy),
+    });
+    this.moveGroundOrigin(dx, dy);
+    for (const layer of hidden) layer.renderable = true;
+    liftCost.targetRenders++;
+    liftCost.targetPx += target.source.pixelWidth * target.source.pixelHeight;
+  }
+
+  private moveGroundOrigin(dx: number, dy: number): void {
+    for (const group of [this.groundUniforms, this.groundOverlayUniforms]) {
+      const origin = (group.uniforms as { uGroundOrigin: Float32Array }).uGroundOrigin;
+      origin[0] = (origin[0] ?? 0) + dx;
+      origin[1] = (origin[1] ?? 0) + dy;
+      group.update();
+    }
+  }
+
+  /** The layer has held for a frame: the sources it was built from can go. */
+  private releaseSources(layer: RenderTexture): RenderTexture {
+    if (this.liftSources.length) {
+      for (const source of this.liftSources) source.destroy(true);
+      this.liftSources = [];
+      this.countHeld();
+    }
+    return layer;
+  }
+
+  /** No raised ground on screen, or the board is going: let every lift target go. */
+  private dropLift(): void {
+    if (!this.liftSprite.visible && !this.liftLayer && !this.marksTargets.length) return;
+    this.liftSprite.visible = false;
+    this.liftSprite.texture = Texture.EMPTY;
+    this.marksGfx.clear();
+    for (const texture of [this.liftLayer, ...this.marksTargets, ...this.liftSources])
+      texture?.destroy(true);
+    this.liftLayer = null;
+    this.marksTargets = [];
+    this.liftSources = [];
+    this.liftKey = '';
+    this.marksKey = '';
+    this.countHeld();
+  }
+
+  private countHeld(): void {
+    liftCost.heldPx = [this.liftLayer, ...this.marksTargets, ...this.liftSources].reduce(
+      (sum, t) => sum + (t ? t.source.pixelWidth * t.source.pixelHeight : 0),
+      0,
+    );
   }
 
   /* ---------------------------------------------------------------- */
