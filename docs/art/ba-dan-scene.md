@@ -85,6 +85,43 @@ npx tsx scripts/art/ba-dan-restyle.ts
 python scripts/art/ba-dan-bridge-front.py
 ```
 
+## Outer garden and grounding (28 September 2026)
+
+The previous outer garden mixed three unrelated treatments around the same
+courtyard: the authored lawns' quiet olive clusters, Canvas's flat procedural
+grass, and WebGL's brighter noise. Their seams were visible through the lawns'
+feathered edges, while the exterior apron extended the saturated procedural
+green with a smooth alpha fade. The result read as a rectangular game board
+around an otherwise painted village.
+
+`scripts/art/ba-dan-garden.ts` now builds one deterministic, two-world-pixel
+garden field beneath the whole playable diamond. Its four flat tones come from
+the quiet-grass family already used by the courtyard; authored courts and lawns
+remain above it, so their feathered edges blend into the same material. The two
+lossless `garden-*.webp` plates are first in `BA_DAN_SCENE.ground`.
+`scripts/art/ba-dan-exterior-apron.ts` continues the same world-aligned texel
+lattice outside the diamond, carries road or paving briefly through an exit,
+then hands it to grass and removes texels with ordered dithering. Every texel is
+fully opaque or clear—there is no smooth ramp—and a rim texel is omitted if any
+of its four screen-pixel centres would overlap playable ground.
+
+Upright scene pieces are seated at runtime by `src/render/grounding.ts`, keyed
+to their declared logical footprints rather than to Ba Dan asset names. One
+shared contact raster combines a stepped down-right shadow with tight ambient
+occlusion. The garden pack uses those same footprints to dither packed-earth
+wear into grass before it writes the plates; existing ivy, weeds, and grass
+painted into the scenery overlap the worn footprint where natural. Canvas and
+WebGL consume the same cached contact data with nearest sampling and retain the
+same scenery/figure depth order. Runtime damageable props keep their existing
+art-measured shadow in `SpriteCache`, so buildings, stalls, planters, trees,
+static props, and live props all have a contact treatment.
+
+The deterministic checks are `ba-dan-garden.test.ts`,
+`ba-dan-exterior-apron.test.ts`, `apron-plates.test.ts`, and
+`grounding.test.ts`. Local before/after walking frames and Canvas/WebGL lineups
+are written under ignored `review-evidence/badan/`; they are comparison
+evidence, not a declaration of visual acceptance.
+
 ## Restyle (direction B, 28 September 2026)
 
 The upright scenery — `merchant-house`, `dwelling`, `merchant-display` (the

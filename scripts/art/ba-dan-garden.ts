@@ -26,7 +26,11 @@
  * npx tsx scripts/art/ba-dan-garden.ts
  */
 import { mkdirSync, writeFileSync } from 'node:fs';
-import { BA_DAN_APRON_MAP, BA_DAN_GARDEN_PLATES } from '../../src/content/scenes/baDan';
+import {
+  BA_DAN_APRON_MAP,
+  BA_DAN_GARDEN_PLATES,
+  BA_DAN_SCENE,
+} from '../../src/content/scenes/baDan';
 import { tileNoise } from '../../src/render/painters/shapes';
 import { newImage, setPixel } from './lib/image';
 import type { Image } from './lib/image';
@@ -181,6 +185,20 @@ export function materialTexel(material: keyof typeof MATERIAL_TONES, tx: number,
   return tone === 0 ? tones.shadow : tone === 1 ? tones.base : tones.light;
 }
 
+const FOOTPRINT_CELLS = BA_DAN_SCENE.scenery.flatMap((piece) => piece.footprint);
+
+/** Dithered packed-earth wear outside an upright piece's logical footprint. */
+function footprintWear(x: number, y: number, tx: number, ty: number): Rgb | null {
+  const distance = Math.min(
+    ...FOOTPRINT_CELLS.map(
+      (cell) => Math.max(Math.abs(x - cell.x - 0.5), Math.abs(y - cell.y - 0.5)) - 0.5,
+    ),
+  );
+  if (distance < 0 || distance >= 0.22) return null;
+  const share = distance < 0.06 ? 0.8 : distance < 0.14 ? 0.45 : 0.15;
+  return bayer(tx, ty) < share ? MATERIAL_TONES.road.shadow : null;
+}
+
 /**
  * One opaque plate of the garden base: every texel whose centre is on the
  * board is grass; everything else is clear, for the apron to continue.
@@ -191,13 +209,14 @@ export function packGardenPlate(plate: {
   readonly width: number;
   readonly height: number;
 }): Image {
-  if (plate.x % GRAIN || plate.y % GRAIN) throw new Error('A plate must start on the texel lattice.');
+  if (plate.x % GRAIN || plate.y % GRAIN)
+    throw new Error('A plate must start on the texel lattice.');
   const image = newImage(plate.width, plate.height);
   for (let ty = plate.y / GRAIN; ty < (plate.y + plate.height) / GRAIN; ty++) {
     for (let tx = plate.x / GRAIN; tx < (plate.x + plate.width) / GRAIN; tx++) {
       const at = worldLogical((tx + 0.5) * GRAIN, (ty + 0.5) * GRAIN);
       if (boardDepth(at.x, at.y) > 0) continue;
-      const colour = grassTexel(tx, ty);
+      const colour = footprintWear(at.x, at.y, tx, ty) ?? grassTexel(tx, ty);
       for (let dy = 0; dy < GRAIN; dy++)
         for (let dx = 0; dx < GRAIN; dx++)
           setPixel(image, tx * GRAIN - plate.x + dx, ty * GRAIN - plate.y + dy, [...colour, 255]);

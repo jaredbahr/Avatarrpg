@@ -100,6 +100,18 @@ export function packApron(): Image {
       const { x, y } = worldLogical((tx + 0.5) * GRAIN, (ty + 0.5) * GRAIN);
       const depth = apronDepth(x, y);
       if (depth <= 0 || depth >= APRON_FADE) continue;
+      // A texel covers four screen pixels. At the diamond rim its centre can
+      // lie outside while one of those pixel centres lies on playable ground;
+      // skip the whole texel so the apron never overpaints the board and the
+      // two-pixel grain does not fracture into one-pixel teeth.
+      const crossesBoard = [0.5, GRAIN - 0.5].some((dx) =>
+        [0.5, GRAIN - 0.5].some((dy) =>
+          ((point) => apronDepth(point.x, point.y) <= 0)(
+            worldLogical(tx * GRAIN + dx, ty * GRAIN + dy),
+          ),
+        ),
+      );
+      if (crossesBoard) continue;
       const threshold = bayer(tx, ty);
       const cover = 1 - clamp((depth - APRON_SOLID) / (APRON_FADE - APRON_SOLID), 0, 1);
       if (threshold >= cover) continue;

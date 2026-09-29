@@ -21,13 +21,17 @@ it('packs an apron that never paints a playable pixel', () => {
   let inside = 0,
     beyond = 0,
     opaque = 0,
-    feather = 0;
+    feather = 0,
+    ditherHoles = 0;
   for (let py = 0; py < image.height; py++)
     for (let px = 0; px < image.width; px++) {
       const alpha = pixelAt(image, px, py)[3];
-      if (alpha === 0) continue;
       const { x, y } = apronLogical(px, py);
       const depth = apronDepth(x, y);
+      if (alpha === 0) {
+        if (depth > 0.6 && depth < APRON_FADE) ditherHoles++;
+        continue;
+      }
       if (depth <= 0) inside++;
       if (depth >= APRON_FADE) beyond++;
       if (alpha === 255) opaque++;
@@ -35,7 +39,8 @@ it('packs an apron that never paints a playable pixel', () => {
     }
   expect({ inside, beyond }).toEqual({ inside: 0, beyond: 0 });
   expect(opaque, 'the plate has an opaque band').toBeGreaterThan(1_000);
-  expect(feather, 'the plate fades out rather than stopping').toBeGreaterThan(1_000);
+  expect(feather, 'ordered dithering uses no smooth alpha ramp').toBe(0);
+  expect(ditherHoles, 'the opaque texels thin outward instead of stopping').toBeGreaterThan(1_000);
 });
 
 it('starts opaque at the rim, has room for the whole band, and carries grass outward', () => {
