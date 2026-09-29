@@ -45,6 +45,31 @@ function resolve(battle: BattleState, caster: Unit, abilityId: string, target: V
   return draft;
 }
 
+/** Flat, empty ground so a shove path has nothing to snag on. */
+function openGround(battle: BattleState): BattleState {
+  return {
+    ...battle,
+    grid: {
+      ...battle.grid,
+      tiles: battle.grid.tiles.map((tile) => ({
+        ...tile,
+        blocked: false,
+        blocksSight: false,
+        cover: false,
+        elevation: 0,
+        terrain: 'dirt',
+      })),
+    },
+  };
+}
+
+/** Wall a single cell's sight without changing anything else about the ground. */
+function withSightBlocker(battle: BattleState, pos: Vec2): BattleState {
+  const tile = tileAt(battle.grid, pos);
+  if (!tile) throw new Error(`Off-grid blocker ${pos.x},${pos.y}`);
+  return { ...battle, grid: withTile(battle.grid, pos, { ...tile, blocksSight: true }) };
+}
+
 function withStatus(unit: Unit, id: StatusId): Unit {
   return {
     ...unit,
@@ -435,6 +460,41 @@ describe('bounded combat outcome previews', () => {
     const refreshPreview = previewAbility(CONTENT, alreadyIced, bossCaster, refreshIce, boss.pos);
     expect(refreshPreview.surfaceContacts).toEqual([]);
     expect(refreshPreview.targets).toEqual([]);
+  });
+
+  it('pushes a size-2 caster away from the cell that reached the target', () => {
+    const source = battleFor('enc_quarry_gate');
+    const casterId = source.units.find((unit) => unit.faction === 'party')?.id;
+    const victimId = source.units.find((unit) => unit.faction === 'enemy')?.id;
+    if (!casterId || !victimId) throw new Error('size-2 caster fixture is incomplete');
+
+    const target = { x: 2, y: 5 };
+    const placedBattle = placed(
+      openGround(source),
+      { [casterId]: { x: 2, y: 2 }, [victimId]: target },
+      [casterId, victimId],
+    );
+    /*
+     * (2,3) walls the anchor cell (2,2) off from the target, so only the second
+     * cell (3,2) can see it. That cell is the firing origin, and the push has
+     * to run away from it — down-left here, not straight down from the anchor.
+     */
+    const blocked = withSightBlocker(placedBattle, { x: 2, y: 3 });
+    const battle: BattleState = {
+      ...blocked,
+      units: blocked.units.map((unit) =>
+        unit.id === casterId ? { ...unit, size: 2 as const } : unit,
+      ),
+    };
+    const caster = battle.units.find((unit) => unit.id === casterId);
+    if (!caster) throw new Error('size-2 caster is missing');
+    expect(caster.size).toBe(2);
+
+    const preview = previewAbility(CONTENT, battle, caster, ability('air_blast'), target);
+    expect(preview.shoves.find((shove) => shove.id === victimId)?.to).toEqual({ x: 0, y: 7 });
+
+    const actual = resolve(battle, caster, 'air_blast', target);
+    expect(actual.unit(victimId)?.pos).toEqual({ x: 0, y: 7 });
   });
 
   it('records lethal surface contact with actual HP loss and no post-death status', () => {

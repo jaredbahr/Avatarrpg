@@ -25,15 +25,17 @@ import type { BattleDraft } from '../state/battleDraft';
 import {
   affectedTiles,
   canUseAbility,
+  heightReachBonus,
   isValidTarget,
   resolveAbility,
   sameSide,
   unitsOnTiles,
   usableAbilities,
+  validatingOrigin,
 } from './abilities';
 import { averageDamage, hitChance, positionHasCover } from './damage';
 import { positionObscurement, weatherAt } from './obscurement';
-import { distance, distanceToUnit, posKey, reachable, tileAt } from './grid';
+import { distance, distanceToUnit, occupiedCells, posKey, reachable, tileAt } from './grid';
 import { canMove, effectiveStats, isAlive } from './stats';
 import { findCombo } from './surfaces';
 
@@ -215,6 +217,9 @@ function scoreAbility(
 ): number {
   const content = draft.content;
   const tiles = affectedTiles(content, draft.grid, caster, ability, target);
+  // Score with the same firing cell resolution uses, so the AI's hit estimate
+  // and the actual roll agree on elevation and plunging.
+  const origin = validatingOrigin(content, draft.grid, caster, ability, target) ?? caster.pos;
   const struck = unitsOnTiles(draft.units, tiles).filter((u) => u.id !== caster.id);
   const weather = weatherAt(content, draft.encounterId, draft.round);
 
@@ -228,7 +233,15 @@ function scoreAbility(
     for (const effect of ability.effects) {
       switch (effect.kind) {
         case 'damage': {
-          const expected = averageDamage(content, draft.grid, caster, victim, effect, weather);
+          const expected = averageDamage(
+            content,
+            draft.grid,
+            caster,
+            victim,
+            effect,
+            weather,
+            origin,
+          );
           if (friendly) {
             score -= expected * weights.friendlyFire;
           } else {
@@ -469,7 +482,11 @@ function bestActionFrom(
  * shapes — the tiles around them, so a blast can be centred between two
  * targets rather than always on one of them.
  */
-function candidateTargets(draft: BattleDraft, caster: Unit, abilities: readonly Ability[]): Vec2[] {
+export function candidateTargets(
+  draft: BattleDraft,
+  caster: Unit,
+  abilities: readonly Ability[],
+): Vec2[] {
   const wantsArea = abilities.some(
     (a) =>
       a.targeting.shape === 'blast' ||
@@ -488,11 +505,16 @@ function candidateTargets(draft: BattleDraft, caster: Unit, abilities: readonly 
   };
 
   for (const opponent of opponentsOf(draft, caster)) {
-    push(opponent.pos);
-    if (!wantsArea) continue;
-    for (let dy = -1; dy <= 1; dy++) {
-      for (let dx = -1; dx <= 1; dx++) {
-        push({ x: opponent.pos.x + dx, y: opponent.pos.y + dy });
+    // A size-2 opponent stands on two cells; both are targets, and for area
+    // shapes both of their neighbourhoods are, so a blast can land between a
+    // boss's cells rather than only on its anchor.
+    for (const cell of occupiedCells(opponent)) {
+      push(cell);
+      if (!wantsArea) continue;
+      for (let dy = -1; dy <= 1; dy++) {
+        for (let dx = -1; dx <= 1; dx++) {
+          push({ x: cell.x + dx, y: cell.y + dy });
+        }
       }
     }
   }
@@ -526,12 +548,35 @@ function candidateTargets(draft: BattleDraft, caster: Unit, abilities: readonly 
   return out;
 }
 
-/** Longest reach the unit currently has, for deciding whether it is "in the fight". */
-function bestReach(draft: BattleDraft, unit: Unit): number {
+/**
+ * Longest reach the unit currently has, for deciding whether it is "in the
+ * fight". A range-3-plus line-of-sight ability gains the height-reach bonus
+ * when it fires down from higher ground, so the estimate is measured against
+ * each opponent's cells with the same rule `validatingOrigin` applies.
+ */
+export function bestReach(draft: BattleDraft, unit: Unit): number {
   let reach = 1;
+  const opponents = opponentsOf(draft, unit);
   for (const ability of usableAbilities(draft.content, unit)) {
     if (ability.effects.every((e) => e.kind === 'dash')) continue;
-    reach = Math.max(reach, ability.range);
+    let abilityReach = ability.range;
+    for (const opponent of opponents) {
+      for (const target of occupiedCells(opponent)) {
+        const origin = validatingOrigin(draft.content, draft.grid, unit, ability, target, false);
+        if (!origin) continue;
+        abilityReach = Math.max(
+          abilityReach,
+          ability.range +
+            heightReachBonus(
+              draft.content,
+              ability,
+              tileAt(draft.grid, origin)?.elevation ?? 0,
+              tileAt(draft.grid, target)?.elevation ?? 0,
+            ),
+        );
+      }
+    }
+    reach = Math.max(reach, abilityReach);
   }
   return reach;
 }
@@ -761,14 +806,23 @@ export function weightsFor(profile: AiProfile): Weights {
 export function threatAt(draft: BattleDraft, unit: Unit, pos: Vec2): number {
   let threat = 0;
   const weather = weatherAt(draft.content, draft.encounterId, draft.round);
+  const targetElevation = tileAt(draft.grid, pos)?.elevation ?? 0;
   for (const opponent of opponentsOf(draft, unit)) {
+    const maxMove = effectiveStats(draft.content, opponent).maxMove;
     for (const ability of usableAbilities(draft.content, opponent)) {
-      if (
-        distance(opponent.pos, pos) >
-        ability.range + effectiveStats(draft.content, opponent).maxMove
-      ) {
-        continue;
-      }
+      // The threatening enemy reaches a tile further when it stands higher
+      // than this tile, using the same height-reach rule as target validation.
+      const origin =
+        validatingOrigin(draft.content, draft.grid, opponent, ability, pos, false) ?? opponent.pos;
+      const reach =
+        ability.range +
+        heightReachBonus(
+          draft.content,
+          ability,
+          tileAt(draft.grid, origin)?.elevation ?? 0,
+          targetElevation,
+        );
+      if (distance(origin, pos) > reach + maxMove) continue;
       const damage = ability.effects
         .filter((e): e is Extract<typeof e, { kind: 'damage' }> => e.kind === 'damage')
         .reduce(
@@ -776,7 +830,8 @@ export function threatAt(draft: BattleDraft, unit: Unit, pos: Vec2): number {
           0,
         );
       threat +=
-        damage * (hitChance(draft.content, draft.grid, opponent, { ...unit, pos }, weather) / 100);
+        damage *
+        (hitChance(draft.content, draft.grid, opponent, { ...unit, pos }, weather, origin) / 100);
     }
   }
   return threat;

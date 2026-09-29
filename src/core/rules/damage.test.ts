@@ -180,6 +180,26 @@ describe('hit chance', () => {
     ).toEqual(expect.objectContaining({ cover: 0, plunging: 0 }));
   });
 
+  it('measures hit elevation and plunging from the firing origin, not the highest cell', () => {
+    const { attacker, defender } = fixture();
+    const far = { x: 4, y: 1 };
+    const sizeTwo = at({ ...attacker, size: 2 }, ATTACKER);
+    const grid = place(place(openGrid(6), ATTACKER, { elevation: 1 }), far, { cover: true });
+    const guarded = at(defender, far);
+
+    // The anchor (1,1) is high ground, but the shot fires from the second cell
+    // (2,1) at ground level: no elevation step, no plunging, just the cover.
+    expect(hitBreakdown(CONTENT, grid, sizeTwo, guarded, 0, { x: 2, y: 1 })).toEqual(
+      expect.objectContaining({ elevation: 0, plunging: 0, cover: -20, chance: 70 }),
+    );
+
+    // With no firing cell (a reaction or a rough estimate) it falls back to the
+    // attacker's highest occupied cell, which is the old behaviour.
+    expect(hitBreakdown(CONTENT, grid, sizeTwo, guarded)).toEqual(
+      expect.objectContaining({ elevation: 10, plunging: 10, cover: -20, chance: 90 }),
+    );
+  });
+
   it('reads the numbers from the index, so a variant can move them', () => {
     const { attacker, defender } = fixture();
     const uphill = place(openGrid(), ADJACENT, { elevation: 1 });

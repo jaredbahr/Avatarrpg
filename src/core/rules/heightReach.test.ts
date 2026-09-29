@@ -365,4 +365,54 @@ describe('height reach', () => {
     resolveAbility(draft, caster, ability, defender.pos, draft.rng);
     expect(draft.events.some((event) => event.type === 'abilityUsed')).toBe(true);
   });
+
+  it('previews a size-2 caster from its validating origin, not its highest cell', () => {
+    const { battle: source, caster: originalCaster } = fixture();
+    const caster = { ...originalCaster, pos: { x: 2, y: 2 }, size: 2 as const };
+    const targetUnit = source.units.find((unit) => unit.faction === 'enemy');
+    if (!targetUnit) throw new Error('Missing size-2 preview target');
+    const target = { x: 2, y: 5 };
+    const airBlast = CONTENT.abilities.get('air_blast');
+    if (!airBlast) throw new Error('Missing air blast');
+
+    const opened = open({
+      ...source,
+      units: source.units.map((unit) =>
+        unit.id === caster.id
+          ? caster
+          : unit.id === targetUnit.id
+            ? { ...unit, pos: target }
+            : unit,
+      ),
+    });
+    // (2,3) walls the anchor (2,2) off from the target, so only the second cell
+    // (3,2) has line of sight; (2,2) is also the only high ground.
+    const blockedIndex = 3 * opened.grid.width + 2;
+    const raisedIndex = caster.pos.y * opened.grid.width + caster.pos.x;
+    const battle = {
+      ...opened,
+      grid: {
+        ...opened.grid,
+        tiles: opened.grid.tiles.map((tile, index) =>
+          index === blockedIndex
+            ? { ...tile, blocksSight: true }
+            : index === raisedIndex
+              ? { ...tile, elevation: 1 }
+              : tile,
+        ),
+      },
+    };
+
+    const origin = validatingOrigin(CONTENT, battle.grid, caster, airBlast, target);
+    expect(origin).toEqual({ x: 3, y: 2 });
+
+    const defender = battle.units.find((unit) => unit.id === targetUnit.id);
+    if (!defender) throw new Error('Missing size-2 preview defender');
+    const entry = previewAbility(CONTENT, battle, caster, airBlast, target).targets.find(
+      (candidate) => candidate.unitId === targetUnit.id,
+    );
+    expect(entry?.hitChance).toBe(hitChance(CONTENT, battle.grid, caster, defender, 0, origin));
+    // The old max-of-cells reading would have claimed the anchor's high ground.
+    expect(entry?.hitChance).not.toBe(hitChance(CONTENT, battle.grid, caster, defender));
+  });
 });

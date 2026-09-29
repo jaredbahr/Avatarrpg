@@ -27,11 +27,20 @@ export const VARIANCE_MIN = 0.9;
 export const VARIANCE_MAX = 1.1;
 export const MIN_DAMAGE = 1;
 
-/** Highest elevation among the cells a unit stands on. */
+/** Elevation of a single cell; off-map counts as ground level. */
+function elevationAt(grid: Grid, pos: Vec2): number {
+  return tileAt(grid, pos)?.elevation ?? 0;
+}
+
+/**
+ * Highest elevation among the cells a unit stands on. This is the fallback
+ * when no firing origin is known — a reaction or a rough threat estimate —
+ * where measuring from the attacker's best ground is the safest assumption.
+ */
 function elevationOf(grid: Grid, unit: Unit): number {
   let best = 0;
   for (const cell of occupiedCells(unit)) {
-    best = Math.max(best, tileAt(grid, cell)?.elevation ?? 0);
+    best = Math.max(best, elevationAt(grid, cell));
   }
   return best;
 }
@@ -77,9 +86,19 @@ export function hitBreakdown(
   attacker: Unit,
   defender: Unit,
   weather: WeatherIntensity = 0,
+  origin: Vec2 | null = null,
 ): HitBreakdown {
   const tuning = content.tuning;
-  const elevationDelta = elevationOf(grid, attacker) - elevationOf(grid, defender);
+  /*
+   * Hit elevation and plunging are measured from the cell the attack fires
+   * from — the same validating origin the ability's shape uses for range and
+   * the to-hit cell. A size-2 attacker at the low end of a line must not claim
+   * the high end's elevation. `origin` is null only where no firing cell is
+   * known (reactions, threat estimates), which falls back to the attacker's
+   * highest occupied cell.
+   */
+  const attackerElevation = origin ? elevationAt(grid, origin) : elevationOf(grid, attacker);
+  const elevationDelta = attackerElevation - elevationOf(grid, defender);
   const elevation = elevationDelta * tuning.elevationStep;
 
   const adjacent = distanceBetweenUnits(attacker, defender) <= 1;
@@ -111,8 +130,9 @@ export function hitChance(
   attacker: Unit,
   defender: Unit,
   weather: WeatherIntensity = 0,
+  origin: Vec2 | null = null,
 ): number {
-  return hitBreakdown(content, grid, attacker, defender, weather).chance;
+  return hitBreakdown(content, grid, attacker, defender, weather, origin).chance;
 }
 
 export function critChance(content: ContentIndex, attacker: Unit): number {
@@ -166,8 +186,9 @@ export function averageDamage(
   defender: Unit,
   effect: Extract<AbilityEffect, { kind: 'damage' }>,
   weather: WeatherIntensity = 0,
+  origin: Vec2 | null = null,
 ): number {
-  const hit = hitChance(content, grid, attacker, defender, weather) / 100;
+  const hit = hitChance(content, grid, attacker, defender, weather, origin) / 100;
   const crit = critChance(content, attacker) / 100;
   const normal = compute(content, attacker, defender, effect, 1, false);
   const critical = compute(content, attacker, defender, effect, 1, true);
@@ -193,8 +214,9 @@ export function rollHit(
   attacker: Unit,
   defender: Unit,
   weather: WeatherIntensity = 0,
+  origin: Vec2 | null = null,
 ): boolean {
-  return rng.chance(hitChance(content, grid, attacker, defender, weather) / 100);
+  return rng.chance(hitChance(content, grid, attacker, defender, weather, origin) / 100);
 }
 
 /** Healing has no variance and no crit — predictable support is friendlier. */
