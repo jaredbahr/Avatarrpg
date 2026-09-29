@@ -4,7 +4,7 @@ import { RngCursor } from '../rng';
 import { BattleDraft, raisedWallTile } from '../state/battleDraft';
 import { createBattle, createGame } from '../state/createGame';
 import type { Grid, StatusInstance, Tile, Unit, Vec2 } from '../types';
-import { isValidTarget } from './abilities';
+import { affectedTiles, isValidTarget } from './abilities';
 import { planAiTurn, wallStrandsCaster } from './ai';
 import { DEFAULT_TILE, hasLineOfSight, tileAt, withTile } from './grid';
 
@@ -300,6 +300,36 @@ describe('the AI and its own walls', () => {
     expect(isValidTarget(CONTENT, after, archer, sling, caster.pos).ok).toBe(false);
     // The caster keeps a shot of its own, so nobody is stranded.
     expect(isValidTarget(CONTENT, after, caster, ability('rock_throw'), other.pos).ok).toBe(true);
+    expect(wallStrandsCaster(draft, caster, [wallTile])).toBe(false);
+  });
+
+  it('counts a blast aimed beside a walled-off enemy', () => {
+    /*
+     * Fire Blast is the caster's only offense. A wall between it and the
+     * clubber blocks the direct line to the clubber's cell, but the caster can
+     * still centre the blast on the tile beside it and the radius catches the
+     * clubber anyway. That is a legal shot, so the wall does not strand it.
+     */
+    const wallTile: Vec2 = { x: 4, y: 4 };
+    const { draft, casterIds, enemyIds } = setup({
+      grid: openGrid(12, 9),
+      casters: [{ pos: { x: 2, y: 4 }, abilities: ['fire_blast'] }],
+      enemies: [{ pos: { x: 6, y: 4 }, abilities: ['club_swing'] }],
+    });
+    const caster = unit(draft, casterIds[0]);
+    const enemy = unit(draft, enemyIds[0]);
+    const blast = ability('fire_blast');
+    const before = draft.toBattle();
+    const after = { ...before, grid: raised(draft.grid, [wallTile]) };
+    const beside: Vec2 = { x: 6, y: 3 };
+
+    // The direct aim is lost to the wall...
+    expect(isValidTarget(CONTENT, before, caster, blast, enemy.pos).ok).toBe(true);
+    expect(isValidTarget(CONTENT, after, caster, blast, enemy.pos).ok).toBe(false);
+    // ...but the adjacent aim is still legal and its blast covers the enemy.
+    expect(isValidTarget(CONTENT, after, caster, blast, beside).ok).toBe(true);
+    expect(affectedTiles(CONTENT, after.grid, caster, blast, beside)).toContainEqual(enemy.pos);
+
     expect(wallStrandsCaster(draft, caster, [wallTile])).toBe(false);
   });
 
