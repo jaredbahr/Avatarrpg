@@ -110,18 +110,18 @@ export const QUARRY_GATE: MapDef = {
   ambience: 'quarry',
   legend: LEGEND,
   rows: [
-    '^^^^######..######^^',
-    '^^^^#....#..#....#^^',
-    '^^^..........c....^^',
+    'XXXX######GG######XX',
+    'XX^^#....#..#....#^X',
+    'X^^..........c....^X',
     '.....c....oo.......^',
     '..........oo........',
     '===========oo=======',
     '===========oo=======',
     '..........oo........',
     '.....c....oo.......^',
-    '^^^...........c...^^',
-    '^^^^#....#..#....#^^',
-    '^^^^######..######^^',
+    'X^^...........c...^X',
+    'XX^^#....#..#....#^X',
+    'XXXX######GG######XX',
   ],
   partySpawns: COMBAT_PARTY_SPAWNS,
   npcs: [],
@@ -156,6 +156,18 @@ export const QUARRY_GATE: MapDef = {
      */
     propAt('cabbage_cart', 6, 6),
   ],
+  /*
+   * The four-cell dead ends at each rim are an exterior spoil bank / curtain
+   * wall band. Rows 5-6 remain the full-width M2 road mouths and are declared
+   * by connectAct1's multi-tile exits, not narrowed into a single crossing.
+   */
+  edges: [
+    { side: 'west', span: [3, 4], treatment: 'band' },
+    { side: 'west', span: [7, 8], treatment: 'band' },
+    { side: 'east', span: [3, 4], treatment: 'band' },
+    { side: 'east', span: [7, 8], treatment: 'band' },
+  ],
+  edgeContract: 'enforce',
 };
 
 export const AMBUSH_ROAD: MapDef = {
