@@ -106,6 +106,8 @@ export interface BendFxIndex {
   cel(name: string): BendFxCel | undefined;
   /** The cel a layer shows `elapsedMs` after its phase begins, or null once it is done. */
   layerCel(layer: BendEffectLayer, elapsedMs: number): BendFxCel | null;
+  /** Every page image a cel is on, so a caller can have them decoded before the first draw. */
+  readonly images: readonly string[];
 }
 
 /**
@@ -144,6 +146,7 @@ export function bendFxIndex(
       const index = celIndexAt(layer.frameMs, elapsedMs, layerLoops(layer));
       return index === null ? null : (cels.get(effectCelName(layer.sequence, index)) ?? null);
     },
+    images: [...new Set([...cels.values()].map((cel) => cel.image))],
   };
 }
 

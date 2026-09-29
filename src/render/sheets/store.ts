@@ -294,6 +294,17 @@ export class SheetStore {
   }
 
   /**
+   * Forgets every loaded bend, so its pages can be collected: combat, the
+   * one scene that bends, calls it on its way out, and preloads again at its
+   * next start. A failed bend stays failed; one still loading lands later
+   * and is released on the next exit.
+   */
+  releaseBends(): void {
+    for (const [key, state] of this.bends)
+      if (state !== 'loading' && state !== 'failed') this.bends.delete(key);
+  }
+
+  /**
    * The bend set `key`'s sheet names, once it has loaded; undefined before
    * then, after it failed, or when the sheet has no bend. Asking starts the load.
    */

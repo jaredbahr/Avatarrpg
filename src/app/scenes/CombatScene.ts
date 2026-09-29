@@ -45,7 +45,8 @@ import { reactionNotes } from '../ui/ReactionNote';
 import { formatShoveMovement } from '../ui/combatPreviewText';
 import { UnitInspector } from '../ui/UnitInspector';
 import { enemyScale, partyScale } from '../anim/actorScale';
-import { resolveAsset, sheetLocomotion } from '../../content/assets/manifest';
+import { partyBendSprites } from '../anim/bendHandoff';
+import { sheetLocomotion } from '../../content/assets/manifest';
 import { sheets } from '../../render/sheets/store';
 import { createMovementThreatQuery } from '../ui/movementThreats';
 import { flushTime } from './flockFlush';
@@ -169,6 +170,8 @@ export class CombatScene implements Scene {
     this.renderer = null;
     this.canvas = null;
     this.host = null;
+    // Nothing outside combat bends: let the decoded bend pages go (ADR 0055).
+    sheets.releaseBends();
   }
 
   resize(): void {
@@ -356,14 +359,10 @@ export class CombatScene implements Scene {
     if (!canvas || !battle) return;
 
     this.renderer = new Renderer(canvas, { width: battle.grid.width, height: battle.grid.height });
-    // Bends are owned by party unit assets. Preload only those assets at the
-    // combat boundary so the first eligible cast does not arrive mid-clip;
-    // enemies and legacy-only units remain completely untouched.
-    for (const unit of battle.units) {
-      const asset = resolveAsset(unit.sprite);
-      if (unit.faction === 'party' && asset.kind === 'sheet' && asset.bend)
-        sheets.preloadBend(unit.sprite);
-    }
+    // Bends are owned by party unit assets. Preload only those at the combat
+    // boundary so the first eligible cast does not arrive mid-clip; enemies
+    // and legacy-only units stay untouched (ADR 0055, step 7).
+    for (const sprite of partyBendSprites(battle.units)) sheets.preloadBend(sprite);
     this.app.preloadBendFx();
     this.renderer.resize({ width: battle.grid.width, height: battle.grid.height });
     this.renderer.camera.projection =
@@ -1723,8 +1722,22 @@ export class CombatScene implements Scene {
     | 'scale'
     | 'alpha'
     | 'flash'
+    | 'bend'
   > {
     const pose = this.app.animator.unitPose(now, unitId, sprite);
+    const mapId = this.app.state?.battle?.mapId;
+    const projection = mapId ? this.app.content.maps.get(mapId)?.projection : undefined;
+    // A bend draws its own cels at the party's scale, where the plan put its sockets.
+    const bend = this.app.animator.bendPose(now, unitId);
+    if (bend) {
+      return {
+        facing: 1,
+        clip: 'stance',
+        bend: { heading: bend.heading, index: bend.index },
+        scale: partyScale(projection),
+        ...(pose ? { flash: pose.flash } : {}),
+      };
+    }
     const walked = this.app.animator.facing(unitId);
     // The party stands in its fighting stance between moves (ADR 0052); an
     // enemy on an eight-way sheet (the thug, ADR 0059) idles and walks by
@@ -1739,8 +1752,6 @@ export class CombatScene implements Scene {
             restFacing,
           )
         : undefined;
-    const mapId = this.app.state?.battle?.mapId;
-    const projection = mapId ? this.app.content.maps.get(mapId)?.projection : undefined;
     const scale = directional
       ? partyScale(projection, pose?.scale)
       : enemyScale(sprite, pose?.scale, projection);

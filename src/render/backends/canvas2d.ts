@@ -921,29 +921,34 @@ export class Canvas2DBackend implements RenderBackend {
       ctx.globalAlpha = alpha;
       // The frame comes from the unit's sheet, real or baked from its painter
       // at device resolution (ADR 0003); the anchor stands on the foot line.
-      const frame = sheets.frame(
-        unit.sprite,
-        unit.clip ?? 'idle',
-        unit.clipTime ?? view.time + idlePhase(unit.id),
-        unit.clipFrame,
-        box.size * dpr * scale,
-        unit.size,
-        unit.meleeDirection,
-      );
+      // A bend cel (ADR 0055) stands by its heading's own anchor and is never mirrored.
+      const bend = unit.bend && sheets.bendFrame(unit.sprite, unit.bend.heading, unit.bend.index);
+      const frame =
+        bend ||
+        sheets.frame(
+          unit.sprite,
+          unit.clip ?? 'idle',
+          unit.clipTime ?? view.time + idlePhase(unit.id),
+          unit.clipFrame,
+          box.size * dpr * scale,
+          unit.size,
+          unit.meleeDirection,
+        );
       let headroom = 0;
       if (frame) {
         headroom = frame.headroom;
         const ax = box.x + width / 2;
         const ay = box.y + FOOT_LINE * box.size;
         const { x: drawX, y: drawY, w: fw, h: fh } = placeFrame(frame, ax, ay, box.size * scale);
-        if (drawFacing === -1) {
+        if (drawFacing === -1 && !bend) {
           ctx.translate(ax, 0);
           ctx.scale(-1, 1);
           ctx.translate(-ax, 0);
         }
         const f = frame.frame;
         ctx.drawImage(frame.source, f.x, f.y, f.w, f.h, drawX, drawY, fw, fh);
-        if (unit.flash && unit.flash > 0) {
+        // The white mask is a copy of the whole page: never for a bend page.
+        if (unit.flash && unit.flash > 0 && !bend) {
           ctx.globalAlpha *= Math.min(1, unit.flash);
           ctx.drawImage(this.mask(frame.source), f.x, f.y, f.w, f.h, drawX, drawY, fw, fh);
         }

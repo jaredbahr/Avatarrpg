@@ -1593,15 +1593,19 @@ export class PixiBackend implements RenderBackend {
       const scale = unit.scale ?? 1;
       // The frame comes from the unit's sheet, real or baked from its painter
       // at the zoom's bucket (ADR 0003); the anchor stands on the foot line.
-      const frame = sheets.frame(
-        unit.sprite,
-        unit.clip ?? 'idle',
-        unit.clipTime ?? view.time + idlePhase(unit.id),
-        unit.clipFrame,
-        px * scale,
-        unit.size,
-        unit.meleeDirection,
-      );
+      // A bend cel (ADR 0055) stands by its heading's own anchor and is never mirrored.
+      const bend = unit.bend && sheets.bendFrame(unit.sprite, unit.bend.heading, unit.bend.index);
+      const frame =
+        bend ||
+        sheets.frame(
+          unit.sprite,
+          unit.clip ?? 'idle',
+          unit.clipTime ?? view.time + idlePhase(unit.id),
+          unit.clipFrame,
+          px * scale,
+          unit.size,
+          unit.meleeDirection,
+        );
       let headroom = 0;
       if (frame) {
         headroom = frame.headroom;
@@ -1611,7 +1615,7 @@ export class PixiBackend implements RenderBackend {
         const placed = placeFrame(frame, 0, 0, TILE * scale);
         sprite.width = placed.w;
         sprite.height = placed.h;
-        sprite.scale.x = Math.abs(sprite.scale.x) * drawFacing;
+        sprite.scale.x = Math.abs(sprite.scale.x) * (bend ? 1 : drawFacing);
       } else {
         sprite.texture = this.texture(sprites.get(unit.sprite, px * scale, { facing }, unit.size));
         sprite.anchor.set(0, 0);
