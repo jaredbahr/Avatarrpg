@@ -24,7 +24,9 @@ export const TILE_CLASSES = {
   water_deep: { label: 'deep water', color: '#2f6f8f' },
   tree: { label: 'trees', color: '#2f6b33' },
   building: { label: 'timber walls', color: '#6b4a2f' },
+  gate: { label: 'barred timber gates', color: '#9a6a36' },
   wall: { label: 'stone walls', color: '#3a3530' },
+  rock: { label: 'cut quarry rock, two steps up', color: '#7a7064' },
   ledge2: { label: 'high ledges, two steps up', color: '#d6d3ca' },
   ledge: { label: 'ledges, one step up', color: '#b3b0a6' },
   pit: { label: 'pits', color: '#141010' },
@@ -44,12 +46,23 @@ export type TileClassId = keyof typeof TILE_CLASSES;
 /** The open ground a map is mostly made of; summarised rather than placed. */
 const GROUND: readonly TileClassId[] = ['grass', 'dirt', 'stone'];
 
+/**
+ * Legend keys whose rules are another key's exactly but whose picture is not:
+ * `G` is a barred gate and `B` a timber building, both opaque impassable wood.
+ * Only the key tells them apart, so only the key can.
+ */
+const KEY_CLASSES: Readonly<Partial<Record<string, TileClassId>>> = { G: 'gate' };
+
 /** Which class a legend entry belongs to: what blocks, what stands up, what lies on top. */
-export function classify(tile: TileTemplate): TileClassId {
+export function classify(tile: TileTemplate, key?: string): TileClassId {
+  const named = key === undefined ? undefined : KEY_CLASSES[key];
+  if (named) return named;
   if (tile.blocked) {
     if (tile.terrain === 'pit') return 'pit';
     if (tile.terrain === 'grass') return 'tree';
     if (tile.terrain === 'wood') return 'building';
+    // A blocked tile two steps up is rock the quarry was cut from, not masonry.
+    if ((tile.elevation ?? 0) >= 2) return 'rock';
     return 'wall';
   }
   const elevation = tile.elevation ?? 0;
@@ -71,6 +84,11 @@ export function templateAt(map: MapDef, x: number, y: number): TileTemplate {
   return template;
 }
 
+/** The class a tile draws as, read with its legend key. */
+export function classAt(map: MapDef, x: number, y: number): TileClassId {
+  return classify(templateAt(map, x, y), map.rows[y]?.[x]);
+}
+
 export interface LayoutOptions {
   /** Darkens a one-pixel line along every tile's top and left edge, and the image's far edges. */
   readonly grid?: boolean;
@@ -87,8 +105,7 @@ export function renderLayout(map: MapDef, px: number, options: LayoutOptions = {
   }
   for (let y = 0; y < map.height; y++) {
     for (let x = 0; x < map.width; x++) {
-      const rgb =
-        marks.get(`${x},${y}`) ?? parseHex(TILE_CLASSES[classify(templateAt(map, x, y))].color);
+      const rgb = marks.get(`${x},${y}`) ?? parseHex(TILE_CLASSES[classAt(map, x, y)].color);
       for (let py = 0; py < px; py++) {
         for (let pxx = 0; pxx < px; pxx++) {
           setPixel(image, x * px + pxx, y * px + py, [rgb[0], rgb[1], rgb[2], 255]);
@@ -132,7 +149,7 @@ export function regions(map: MapDef): Region[] {
   const classes: TileClassId[][] = [];
   for (let y = 0; y < map.height; y++) {
     const row: TileClassId[] = [];
-    for (let x = 0; x < map.width; x++) row.push(classify(templateAt(map, x, y)));
+    for (let x = 0; x < map.width; x++) row.push(classAt(map, x, y));
     classes.push(row);
   }
   const seen = new Set<string>();
@@ -283,7 +300,7 @@ export function legendWords(map: MapDef): string[] {
   for (const row of map.rows) for (const ch of row) used.add(ch);
   return [...used].map((ch) => {
     const template = map.legend[ch];
-    const label = template ? TILE_CLASSES[classify(template)].label : 'unknown';
+    const label = template ? TILE_CLASSES[classify(template, ch)].label : 'unknown';
     return `\`${ch}\` ${label}`;
   });
 }

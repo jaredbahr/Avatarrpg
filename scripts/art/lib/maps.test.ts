@@ -52,6 +52,16 @@ describe('tile classes', () => {
       if (template) expect(classify(template), key).toBe(cls);
     }
   });
+
+  it('name the quarry rock and the barred gate apart from walls and buildings', () => {
+    const { X, G, B } = LEGEND;
+    if (!X || !G || !B) throw new Error('missing legend key');
+    expect(classify(X, 'X')).toBe('rock');
+    // G's rules are B's exactly; only its key makes it a gate.
+    expect(classify(G, 'G')).toBe('gate');
+    expect(classify(B, 'B')).toBe('building');
+    expect(classify(G)).toBe('building');
+  });
 });
 
 describe('layout images', () => {
