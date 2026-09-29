@@ -65,9 +65,17 @@ const VILLAGE_NPCS: Readonly<Record<DayPhase, readonly string[]>> = {
     'lw.npc.mira',
     'lw.npc.pella',
     'riverside_sign',
+    'west_ford_marker',
   ],
   // Pella is in class (the notice stands in for her) and Hanru is home.
-  morning: ['lw.npc.dorin', 'lw.npc.gao', 'lw.npc.mira', 'riverside_sign', 'school_notice'],
+  morning: [
+    'lw.npc.dorin',
+    'lw.npc.gao',
+    'lw.npc.mira',
+    'riverside_sign',
+    'west_ford_marker',
+    'school_notice',
+  ],
   // The relief watch takes the post; Dorin is at the riverside drill.
   midday: [
     'bg.pella_household',
@@ -76,9 +84,10 @@ const VILLAGE_NPCS: Readonly<Record<DayPhase, readonly string[]>> = {
     'lw.npc.mira',
     'lw.npc.pella',
     'riverside_sign',
+    'west_ford_marker',
   ],
   // Mira walks the bank and Pella watches the otter: both riverside.
-  afternoon: ['lw.npc.dorin', 'lw.npc.gao', 'riverside_sign'],
+  afternoon: ['lw.npc.dorin', 'lw.npc.gao', 'riverside_sign', 'west_ford_marker'],
   evening: [
     'bg.pella_household',
     'lw.npc.dorin',
@@ -87,8 +96,9 @@ const VILLAGE_NPCS: Readonly<Record<DayPhase, readonly string[]>> = {
     'lw.npc.mira',
     'lw.npc.pella',
     'riverside_sign',
+    'west_ford_marker',
   ],
-  night: ['lw.npc.hanru', 'riverside_sign'],
+  night: ['lw.npc.hanru', 'riverside_sign', 'west_ford_marker'],
 };
 
 const RIVERSIDE_NPCS: Readonly<Partial<Record<DayPhase, readonly string[]>>> = {
