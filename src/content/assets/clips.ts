@@ -47,6 +47,14 @@ export const CLIP_NAMES = [
   'koSouthEast',
   'koSouthWest',
   'koNorthWest',
+  'hitEast',
+  'hitSouthEast',
+  'hitSouth',
+  'hitSouthWest',
+  'hitWest',
+  'hitNorthWest',
+  'hitNorth',
+  'hitNorthEast',
 ] as const;
 export type ClipName = (typeof CLIP_NAMES)[number];
 
@@ -117,6 +125,15 @@ export const KO_HEADING: Readonly<Record<Heading, KoHeading>> = {
 export function koClip(heading: Heading): ClipName {
   const diagonal = KO_HEADING[heading];
   return `ko${diagonal[0]?.toUpperCase() ?? ''}${diagonal.slice(1)}` as ClipName;
+}
+
+/**
+ * A G sheet's hit reaction for a heading (ADR 0063): authored in all eight,
+ * so a heading flinches in its own drawing. Always suffixed, east too: the
+ * bare `hit` is the legacy mirrored cel.
+ */
+export function hitClip(heading: Heading): ClipName {
+  return `hit${heading[0]?.toUpperCase() ?? ''}${heading.slice(1)}` as ClipName;
 }
 
 /** Authored screen-facing melee contact variants, when a sheet carries them. */
@@ -192,6 +209,14 @@ export const CLIP_FRAME_COUNTS: Readonly<Record<ClipName, { min: number; max: nu
   koSouthEast: { min: 2, max: 8 },
   koSouthWest: { min: 2, max: 8 },
   koNorthWest: { min: 2, max: 8 },
+  hitEast: { min: 2, max: 8 },
+  hitSouthEast: { min: 2, max: 8 },
+  hitSouth: { min: 2, max: 8 },
+  hitSouthWest: { min: 2, max: 8 },
+  hitWest: { min: 2, max: 8 },
+  hitNorthWest: { min: 2, max: 8 },
+  hitNorth: { min: 2, max: 8 },
+  hitNorthEast: { min: 2, max: 8 },
 };
 
 /**
@@ -200,7 +225,7 @@ export const CLIP_FRAME_COUNTS: Readonly<Record<ClipName, { min: number; max: nu
  * still mirrored. One test for both backends (ADR 0002).
  */
 export function authoredForBothSides(clip: ClipName): boolean {
-  return /^(idle|walk|rest|stance)|^ko[A-Z]/.test(clip);
+  return /^(idle|walk|rest|stance)|^(ko|hit)[A-Z]/.test(clip);
 }
 
 /** The clip's length in ms when it plays once through: its frame holds, or its frames at `fps`. */

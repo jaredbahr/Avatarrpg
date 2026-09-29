@@ -84,7 +84,7 @@ describe('content', () => {
     expect(check({ 'unit.water.sura': sura })).toEqual([]);
   });
 
-  it('holds a G knockout to every diagonal, timed cel by cel (ADR 0059)', () => {
+  it('holds a G knockout to every diagonal and a G hit to every heading, timed cel by cel (ADR 0059, ADR 0063)', () => {
     const bo = CONTENT_BUNDLE.assets?.['unit.earth.bo'];
     const linmei = CONTENT_BUNDLE.assets?.['unit.earth.linmei'];
     if (bo?.kind !== 'sheet' || linmei?.kind !== 'sheet') throw new Error('Expected sheets');
@@ -102,6 +102,18 @@ describe('content', () => {
     ]);
     expect(sheetClipProblems(key, clips, false)).toEqual([
       'asset unit.earth.bo: koSouthEast needs declared eight-way locomotion',
+      'asset unit.earth.bo: hitEast needs declared eight-way locomotion',
+    ]);
+    // His hits (ADR 0063) are a family of eight, timed cel by cel, the same way.
+    const { hitWest: _hit, ...noWest } = clips;
+    expect(sheetClipProblems(key, noWest, true)).toEqual([
+      'asset unit.earth.bo: has hitEast but no hitWest clip',
+    ]);
+    const { frameMs: _ms, ...untimedHit } = clips.hitNorth ?? { frames: [], fps: 1, loop: false };
+    expect(sheetClipProblems(key, { ...clips, hitNorth: untimedHit }, true)).toEqual([
+      'asset unit.earth.bo: hitNorth is not timed cel by cel',
+      // Untimed, its return to the stance is no longer a hold.
+      'asset unit.earth.bo: hitNorth frame 4 is "unit.earth.bo/hitNorth/0", expected "unit.earth.bo/hitNorth/4"',
     ]);
     // Sura's south-west knockout holds a cel through an unusable in-between.
     const sura = CONTENT_BUNDLE.assets?.['unit.water.sura'];

@@ -56,6 +56,15 @@ const FALLBACK: Readonly<Record<ClipName, readonly ClipName[]>> = {
   koSouthEast: ['ko', 'hit', 'idle'],
   koSouthWest: ['ko', 'hit', 'idle'],
   koNorthWest: ['ko', 'hit', 'idle'],
+  // So does a G hit (ADR 0063), to the legacy mirrored cel.
+  hitEast: ['hit', 'idle'],
+  hitSouthEast: ['hit', 'idle'],
+  hitSouth: ['hit', 'idle'],
+  hitSouthWest: ['hit', 'idle'],
+  hitWest: ['hit', 'idle'],
+  hitNorthWest: ['hit', 'idle'],
+  hitNorth: ['hit', 'idle'],
+  hitNorthEast: ['hit', 'idle'],
 };
 
 export interface ResolvedClip {
