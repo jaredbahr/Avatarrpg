@@ -8,7 +8,7 @@
 
 **Layout** `quarry_gate-layout.png` beside this file: the tile grid as flat colour blocks at 32 px a tile, with the grid drawn. Hand it to the generator as the composition reference (image-to-image or a structure control) at a strength that keeps every edge where it is; upscale it to the delivery size first so the generator does not invent a border.
 
-**Palette** hue anchors from the game's own ground (`src/render/palettes.ts`): stone `#d8cbb0`, wall `#3a352f`, dirt `#b39064`, wood `#6b4f33`, road `#b39064`. The painting replaces those tones outright, so lighter and more saturated is fine; stay in the same families so the effects and the parchment HUD still read over it.
+**Palette** hue anchors from the game's own ground (`src/render/palettes.ts`): wall `#3a352f`, wood `#6b4f33`, stone `#d8cbb0`, dirt `#b39064`, road `#b39064`. The painting replaces those tones outright, so lighter and more saturated is fine; stay in the same families so the effects and the parchment HUD still read over it.
 
 ## Where
 
@@ -19,31 +19,32 @@ The gate of a stone quarry, its yard and the road that runs through it.
 20 columns by 12 rows, counted from 0 at the top-left corner. The painting is the ground and what stands on it, nothing else: the game draws its own grid, movement contours, units, props and effects over it, so every edge in the painting that matters to the rules sits exactly on a tile edge.
 
 - Road (36 tiles): a 11×2 block at columns 0–10, rows 5–6 (middle left); a 7×2 block at columns 13–19, rows 5–6 (middle right).
-- Stone walls (32 tiles): 8 tiles (top centre), row 0: columns 4–9; row 1: columns 4 and 9; 8 tiles (top right), row 0: columns 12–17; row 1: columns 12 and 17; 8 tiles (bottom centre), row 10: columns 4 and 9; row 11: columns 4–9; 8 tiles (bottom right), row 10: columns 12 and 17; row 11: columns 12–17.
-- Ledges, one step up (36 tiles): 11 tiles (top left), rows 0–1: columns 0–3; row 2: columns 0–2; 11 tiles (bottom left), row 9: columns 0–2; rows 10–11: columns 0–3; 7 tiles (top right), rows 0–2: columns 18–19; row 3: column 19; 7 tiles (bottom right), row 8: column 19; rows 9–11: columns 18–19.
+- Timber walls (4 tiles): a 2×1 block at columns 10–11, row 0 (top centre); a 2×1 block at columns 10–11, row 11 (bottom centre).
+- Stone walls (54 tiles): 15 tiles (top left), row 0: columns 0–9; row 1: columns 0–1, 4 and 9; row 2: column 0; 15 tiles (bottom left), row 9: column 0; row 10: columns 0–1, 4 and 9; row 11: columns 0–9; 12 tiles (top right), row 0: columns 12–19; row 1: columns 12, 17 and 19; row 2: column 19; 12 tiles (bottom right), row 9: column 19; row 10: columns 12, 17 and 19; row 11: columns 12–19.
+- Ledges, one step up (14 tiles): 4 tiles (top left), row 1: columns 2–3; row 2: columns 1–2; 4 tiles (bottom left), row 9: columns 1–2; row 10: columns 2–3; a 1×2 block at column 18, rows 1–2 (top right); a 1×2 block at column 18, rows 9–10 (bottom right); one tile at column 19, row 3 (top right); one tile at column 19, row 8 (bottom right).
 - Crates and cover (4 tiles): one tile at column 13, row 2 (top right); one tile at column 5, row 3 (top left); one tile at column 5, row 8 (bottom left); one tile at column 14, row 9 (bottom right).
 - Spilled oil (12 tiles): 12 tiles (the centre), rows 3–4 and 7–8: columns 10–11; rows 5–6: columns 11–12.
-- Open ground everywhere else: bare earth (120 tiles).
+- Open ground everywhere else: bare earth (116 tiles).
 - The party enters from the left, standing at (1, 3), (3, 4), (1, 5), (3, 6), (1, 7), (3, 8); enemies come from the right. Paint nothing there that would read as an object to walk round.
 
 The rows as the rules read them:
 
 ```
-^^^^######..######^^
-^^^^#....#..#....#^^
-^^^..........c....^^
+XXXX######GG######XX
+XX^^#....#..#....#^X
+X^^..........c....^X
 .....c....oo.......^
 ..........oo........
 ===========oo=======
 ===========oo=======
 ..........oo........
 .....c....oo.......^
-^^^...........c...^^
-^^^^#....#..#....#^^
-^^^^######..######^^
+X^^...........c...^X
+XX^^#....#..#....#^X
+XXXX######GG######XX
 ```
 
-Legend: `^` ledges, one step up; `#` stone walls; `.` bare earth; `c` crates and cover; `o` spilled oil; `=` road.
+Legend: `X` stone walls; `#` stone walls; `G` timber walls; `^` ledges, one step up; `.` bare earth; `c` crates and cover; `o` spilled oil; `=` road.
 
 ## Prompt
 
