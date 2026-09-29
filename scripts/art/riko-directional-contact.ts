@@ -133,7 +133,6 @@ function repackLossless(): void {
     'bruiser.png': { deflateLevel: 9, deflateStrategy: 0, filterType: -1 },
     'crossbow.png': { deflateLevel: 9, deflateStrategy: 0, filterType: -1 },
     'grumbler.png': { deflateLevel: 9, deflateStrategy: 1, filterType: -1 },
-    'thug.png': { deflateLevel: 9, deflateStrategy: 0, filterType: -1 },
   };
   for (const [name, options] of Object.entries(choices)) {
     const path = join(UNITS, name);
