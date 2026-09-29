@@ -24,6 +24,7 @@ function elevated(battle: BattleState, elevations: Readonly<Record<string, numbe
   let grid: Grid = battle.grid;
   for (const [key, elevation] of Object.entries(elevations)) {
     const [x, y] = key.split(',').map(Number);
+    if (x === undefined || y === undefined) throw new Error(`invalid tile key ${key}`);
     const pos = { x, y };
     const tile = tileAt(grid, pos);
     if (!tile) throw new Error(`missing tile ${key}`);
@@ -99,7 +100,7 @@ describe('ledge drops', () => {
           [victim.id]: start,
         },
       ),
-      { '6,5': 1, '7,5': 2, '8,5': 0, '9,5': 1 },
+      { '6,5': 2, '7,5': 2, '8,5': 1, '9,5': 0 },
     );
     const draft = new BattleDraft(CONTENT, positioned, new RngCursor(7));
     draft.shove(victim.id, { x: 5, y: 5 }, 2, 'push');
@@ -138,7 +139,10 @@ describe('ledge drops', () => {
     const draft = new BattleDraft(CONTENT, positioned, new RngCursor(7));
     resolveAbility(draft, draft.unit(caster.id) ?? caster, ability, start, draft.rng);
     expect(
-      draft.events.find((event) => event.type === 'damaged' && event.unitId === victim.id),
+      draft.events.find(
+        (event) =>
+          event.type === 'damaged' && event.unitId === victim.id && event.cause === 'ledgeDrop',
+      ),
     ).toEqual(expect.objectContaining({ amount: shove?.ledgeDropDamage, cause: 'ledgeDrop' }));
   });
 });

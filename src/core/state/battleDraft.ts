@@ -419,8 +419,11 @@ export class BattleDraft {
     const fromCells = occupiedCells(from);
     const toCells = occupiedCells(to);
     for (let index = 0; index < fromCells.length; index++) {
-      const before = tileAt(this.grid, fromCells[index]);
-      const after = tileAt(this.grid, toCells[index]);
+      const fromCell = fromCells[index];
+      const toCell = toCells[index];
+      if (!fromCell || !toCell) continue;
+      const before = tileAt(this.grid, fromCell);
+      const after = tileAt(this.grid, toCell);
       if (before && after) largest = Math.max(largest, before.elevation - after.elevation);
     }
     return largest;
