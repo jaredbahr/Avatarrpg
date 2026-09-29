@@ -156,6 +156,12 @@ export interface BendFxSprite {
   readonly height: number;
   /** Degrees clockwise about the pivot. */
   readonly turn: number;
+  /**
+   * Mirrored top to bottom about the pivot before the turn, so a cel thrown
+   * toward the screen's left keeps its painted light on top. Effect cels
+   * only; a character cel never mirrors.
+   */
+  readonly flipY?: boolean;
   readonly alpha: number;
   /** `add` lights what is under the cel instead of covering it. */
   readonly blend: 'normal' | 'add';

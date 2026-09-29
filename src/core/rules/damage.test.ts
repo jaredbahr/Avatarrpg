@@ -5,6 +5,7 @@ import { createBattle, createGame } from '../state/createGame';
 import type { ContentIndex, Grid, Unit, Vec2 } from '../types';
 import { hitBreakdown, hitChance } from './damage';
 import { DEFAULT_TILE, tileAt, withTile } from './grid';
+import { NO_OBSCUREMENT } from './obscurement';
 
 /**
  * Hit chance, pinned number by number.
@@ -53,6 +54,14 @@ describe('hit chance', () => {
       elevationStep: 10,
       coverPenalty: 20,
       plungingCoverDivisor: 2,
+      obscurementCap: 40,
+      adjacentObscurementPenalty: 10,
+      obscurementReference: 25,
+      weather: [
+        { perTile: 0, minDistance: 1, cap: 0 },
+        { perTile: 5, minDistance: 3, cap: 20 },
+        { perTile: 10, minDistance: 2, cap: 40 },
+      ],
       hitChanceMin: 5,
       hitChanceMax: 99,
       climbCost: 1,
@@ -75,6 +84,7 @@ describe('hit chance', () => {
       cover: 0,
       plunging: 0,
       statuses: 0,
+      obscurement: NO_OBSCUREMENT,
     });
   });
 
@@ -100,6 +110,7 @@ describe('hit chance', () => {
       cover: -20,
       plunging: 0,
       statuses: 0,
+      obscurement: NO_OBSCUREMENT,
     });
   });
 
@@ -116,6 +127,7 @@ describe('hit chance', () => {
       cover: -20,
       plunging: 0,
       statuses: 0,
+      obscurement: NO_OBSCUREMENT,
     });
   });
 

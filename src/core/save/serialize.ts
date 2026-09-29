@@ -12,7 +12,7 @@
  * instead of a half-loaded game.
  */
 
-import { z } from 'zod';
+import * as z from '../schema';
 import { DAY_PHASES, RESIDENT_PROFILES, RUNOFF_STATES } from '../types';
 import type { GameState } from '../types';
 import { MAX_BANKED_TOTAL_AP } from '../rules/stats';

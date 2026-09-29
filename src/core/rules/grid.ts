@@ -483,12 +483,14 @@ export function connectedSurface(grid: Grid, from: Vec2, surface: SurfaceId): Ve
 /* ------------------------------------------------------------------ */
 
 /**
- * Symmetric Bresenham line of sight. The origin and destination tiles never
- * block; anything between them that is `blocksSight` (a wall, or a steam
- * cloud) does.
+ * The cells strictly between `from` and `to` on the symmetric Bresenham line.
+ * Neither endpoint is included, so an origin or a destination tile can never
+ * block (or obscure) its own line. Obscurement walks the same path as sight so
+ * the two can never disagree about which tiles a shot crosses.
  */
-export function hasLineOfSight(grid: Grid, from: Vec2, to: Vec2): boolean {
-  if (samePos(from, to)) return true;
+export function lineBetween(from: Vec2, to: Vec2): Vec2[] {
+  const cells: Vec2[] = [];
+  if (samePos(from, to)) return cells;
 
   let x0 = from.x;
   let y0 = from.y;
@@ -501,7 +503,7 @@ export function hasLineOfSight(grid: Grid, from: Vec2, to: Vec2): boolean {
   let err = dx + dy;
 
   for (;;) {
-    if (x0 === x1 && y0 === y1) return true;
+    if (x0 === x1 && y0 === y1) return cells;
     const e2 = 2 * err;
     if (e2 >= dy) {
       err += dy;
@@ -511,13 +513,22 @@ export function hasLineOfSight(grid: Grid, from: Vec2, to: Vec2): boolean {
       err += dx;
       y0 += sy;
     }
-    if (x0 === x1 && y0 === y1) return true;
-    const tile = tileAt(grid, { x: x0, y: y0 });
+    if (x0 === x1 && y0 === y1) return cells;
+    cells.push({ x: x0, y: y0 });
+  }
+}
+
+/**
+ * Symmetric Bresenham line of sight. The origin and destination tiles never
+ * block; anything between them that is `blocksSight` (a wall, a solid prop or
+ * a tree) does. Steam and weather never block sight — they obscure, so the
+ * shot can still be taken, at a penalty the preview shows.
+ */
+export function hasLineOfSight(grid: Grid, from: Vec2, to: Vec2): boolean {
+  for (const cell of lineBetween(from, to)) {
+    const tile = tileAt(grid, cell);
     if (!tile) return false;
     if (tile.blocksSight) return false;
-    if (tile.surface) {
-      // Steam is authored as sight-blocking; the surface table decides.
-      if (tile.surface.id === 'steam') return false;
-    }
   }
+  return true;
 }

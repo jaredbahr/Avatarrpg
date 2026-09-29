@@ -171,8 +171,9 @@ for the impact holds, flashes and shakes.
   `phase`, its depth (`z`), its painted `sequence`, its cel timing (16-1000 ms,
   like a bend cel), where it starts (`origin`) and how it blends. `trajectory`
   is `straight`, `arc` (0-4 tiles high, -8..8 whole turns of spin) or `whipBolt`
-  (a whip of at most 16 tiles); every speed is above 0 and at most 64 tiles a
-  second, and nothing accepts an infinity. Because the effect is drawn to the
+  (a whip of at most 16 tiles). Every travel layer records a finite prototype
+  `flightMs` from 16 through 2000 ms; non-travel layers cannot record one.
+  Because the effect is drawn to the
   resolved target rather than painted into the frame, an off-frame, moving or
   2-tile target is still hit in the right place.
 - **Residue is a drawing, never a surface.** `residue.gameplaySurface` is the
@@ -320,10 +321,10 @@ source: its painted layer sprites and the renderer that composited them,
   packer stops if any shipped heading is timed otherwise. The one exception is
   the earth tumble's travel loop, hard-coded at `[100, 100, 100, 100]` ms: the
   prototype drew one tumble cel per bend cel of the flight, and a loop that
-  outlasts those cels has no r9 timing to read. A tile is one
-  prototype board step (96 x 48 px). The speeds are the approved 3-tile throw
-  over the cels it flew across: fire 9.8 tiles/s (the mean of the jab and the
-  cross), earth 8.1, and the water bolt 11.1. Fire arcs 0.2 tiles high and the
+  outlasts those cels has no r9 timing to read. Each travel layer also records
+  the approved prototype flight represented by those cels: fire jab 280 ms
+  (cels 2-4), fire cross 330 ms (6-8), earth rock 370 ms (6-8), and water bolt
+  180 ms (6-7, after the lash). Fire arcs 0.2 tiles high and the
   rock 0.89. The rock's spin is its painted tumble, so `spin` is 0. The water
   whip reaches a third of the way, at most 1.5 tiles.
 - **The earth tumble is the one packed cel set beyond the approved frames.**
@@ -405,16 +406,14 @@ painted effects on both backends from a time the caller gives. It wires
 neither combat nor the choreography clock: holds, freezes, shake timing and
 the combat handoff stay with steps 6 and 7.
 
-- **Board units, and a tile is one board step.** Every position is in the
+- **Board units; character-relative shape, duration-led travel.** Every position is in the
   space `projectGround` returns, one unit a tile's width on screen, y down: a
   socket (`celOffset` from the foot), the landing point (the target's foot
-  plus `impact.offsetPx / 128`) and every point of a flight. Distances are in
-  tiles of one board step, the screen length of one grid step
-  (`boardStep`: `hypot(1, 0.5)` oblique, 1 square). That is the prototype's
-  `hypot(96, 48)` px, the unit its speeds, arc heights and whip cap were
-  measured in, and its whip cap is `math.dist((0, 0), STEP) * 1.5` in the
-  renderer itself. So a flight lasts its real on-screen length over its
-  speed: a diagonal or a throw to a raised hand takes as long as it looks.
+  plus `impact.offsetPx / 128`) and every point of a flight. Effect size, arc
+  height and whip reach use `bendStep(scale)`, the prototype's board step
+  measured against the drawn character. Flight duration does not: the sampler
+  covers the actual on-screen chord in the range-adjusted time below, so speed
+  is derived from real distance divided by that duration.
 - **Trajectories are pure** (`src/render/fx/trajectory.ts`). An arc lifts by
   `heightTiles` board steps at its middle (`4 h t (1 - t)`, the prototype's
   `arc()`) and adds `spin` whole turns over the flight; a straight path and a
@@ -425,9 +424,12 @@ the combat handoff stay with steps 6 and 7.
   `angle` is fixed; a `segment` cel is centred between two points, turned
   along them and stretched to `segment` times their distance.
 - **Clocks.** The travel clock starts at the launch for a straight path or an
-  arc (the approved speeds are the 3-tile throw over the launch and flight
-  cels) and when the launch cels end for a whip-bolt (its speed is the bolt's
-  two tiles over the cels after the whip). The rest are the conventions
+  arc and when the launch cels end for a whip-bolt. A release lasts its travel
+  layer's prototype `flightMs` times
+  `clamp(1 + 0.1 * (tiles - 3), 0.8, 1.3)`. Here `tiles` is the rules' integer
+  Chebyshev caster-to-target distance (`distance` in `src/core/rules/grid.ts`),
+  not a projected screen length. Thus 3 tiles reproduces the prototype, 5 is
+  1.2 times it, and 9 is capped at 1.3. The rest are the conventions
   above. A gather's cel `k` of `n` is drawn on the bend cel `n - k` before the
   launch; a socket gather follows the socket there, and its `r`th segment
   layer spans the socket's step `r` cels back (water's lead, then trail).
@@ -480,14 +482,104 @@ the combat handoff stay with steps 6 and 7.
   about 1.25 game tiles on screen, and an effect thrown 3 real tiles flies
   2.4 times as far against the character, the whip reaches 2.4 times as far
   and the arcs lift 2.4 times as high, while the effect cels stay the size
-  they were against the character. The speeds in tiles a second hold the
-  flight times, not the look. Whether to keep board-scaled motion or rescale
-  `heightTiles`, `whipMaxTiles` and the speeds to the character is a visual
-  decision for review before step 7; it is data, and nothing here changes it.
+  they were against the character. Step 6 settled the visual scale against
+  the character and, after timing review, settled travel independently by the
+  prototype duration and the bounded Chebyshev range stretch above.
 - **Budget.** JavaScript is 321,922 B gzip, 745 B more than the same build
   of the base (321,177 B), 5,758 B under the 327,680 B gate. Only the draw
   path is in the bundle; the sampler and the trajectories tree-shake until
   step 6 calls them. No asset changes.
+
+## The choreography and the freeze clock (amended 2026-09-28)
+
+The integration plan's step 6 plays one attack of a bend on the presentation
+clock: the character's cels, its painted effect, the hit-stops and the board
+kick (`src/app/anim/bendChoreo.ts`, queued by `Animator.pushBend` as a `bend`
+track). Nothing maps an ability to it yet; that is step 7.
+
+- **One plan, pure samplers.** `planBend` lays the attack out once: cel
+  starts from the heading's `frameMs` (cumulative, exact), each release's
+  launch time and socket path, the effect's runs and arrivals
+  (`planBendFx`), the holds, the follow-through wait and the kicks.
+  `bendPoseAt`, `bendFxAt` and `bendNudge` sample it at a scene time, so a
+  skipped frame or a replay sees the same thing.
+- **The character.** It plays its heading's cels through `bendFrame`, never
+  mirrored, and each release reads its socket by play index, so a held cel
+  keeps its own sockets. A cel that records no socket borrows the nearest
+  earlier one that does, so the water gather follows the hand across every
+  pre-launch cel.
+- **The freeze clock.** Scene time runs on; the bend's presentation time
+  stops for every hold, and a hold freezes the character and every effect of
+  the bend together, in flight or not: a hit-stop, as the prototype froze the
+  whole frame. A launch hold (`launchHoldMs`) starts with the release's
+  contact cel; an impact hold (`impactHoldMs`) the moment its effect lands.
+- **Overlapping holds are serial, and simultaneous ones merge.** Because
+  presentation time does not move inside a hold, no second moment can come
+  due during one: a later hold starts when presentation time reaches its own
+  moment. So at 5 tiles the jab's impact hold freezes the cross in the air,
+  and the cross still takes its own hold when it lands. Holds whose moments
+  fall within `HOLD_MERGE_MS` (17 ms, one 60 Hz frame) of the first of them
+  are one hold, as long as the longest: two contacts at once cost one
+  hit-stop, never their sum and never a one-frame twitch between two. A
+  merged contact uses the hold boundary for its arrival, impact presentation,
+  damage timing and shake, so it does not appear one frame after the frozen
+  clock. A track's duration is its presentation length plus every hold, so
+  `busy()`
+  and the queue wait them out, and `bendSceneAt` gives the scene time of any
+  presentation moment for step 7 to lay the struck unit and the damage on.
+- **The kick is the view's `cameraNudge`.** Each release with `shakeTiles`
+  kicks the board when its contact cel lands, and each impact by
+  `impact.shakeTiles`, both in the data's tiles (below). A launch kick points
+  toward the throw's side of the screen and up, the prototype's `(3, -2)`,
+  mirrored in x for a throw to the left; an impact kick points the opposite
+  way. It holds still through its hold, then eases linearly to nothing over
+  the cel it landed on (the release's cel, or the impact layer's first cel),
+  on the presentation clock, so a later hold freezes it too. It adds to the
+  animator's other shake. Reduced motion has no kick.
+- **A throw that lands after the bend.** When the last effect lands after
+  the character reaches its `recovery` key frame, the character holds the
+  cel before that key, the follow-through, until the landing, then plays the
+  recovery back to the stance. The pose that threw stays out while the throw
+  is in the air, and the recovery never plays while the effect still flies.
+  Effects never wait for the character.
+- **Scale and flight are separate rulers.** Supervisor decision. The effect cels
+  already keep their size against the character (packed at the unit cels'
+  128 px a tile, and scaled with the actor's own draw scale). The motion now
+  does too: `heightTiles`, `whipMaxTiles` and `shakeTiles` are converted,
+  not re-authored, through `bendStep(scale)`,
+  the prototype's `hypot(96, 48)` px step measured against the character:
+  `hypot(96, 48) * 0.75 / 1.35 / 128`, about 0.466 of a game tile at scale 1
+  and 2.4 times shorter than an oblique board step. Arc lift and whip reach
+  therefore keep the approved proportions against the character, whatever the
+  projection. Flight uses the per-release prototype duration table above,
+  stretched only by the bounded Chebyshev rule; its speed is whatever covers
+  the real on-screen distance in that time. Launch/impact holds and shake are
+  unchanged.
+- **Leftward throws flip, the character never does.** Supervisor decision.
+  A cel turned to an aim with `|aim| > 90°` (toward the screen's left) is
+  mirrored top to bottom about its pivot before it turns (`flipsFor`,
+  `BendFxSprite.flipY`, drawn by both backends and held by the parity test),
+  so the painted light stays on top on a west or north-west throw. Only cels
+  that turn with the throw (`facing` or `segment`) flip; a fixed cel keeps
+  its drawing; exactly up or down does not flip. Character cels are never
+  mirrored.
+- **Step 5's review, settled.** `previousPhaseEnd` is kept per release (a
+  release that has played nothing yet picks up where the layer before left
+  off, so the rock rises in the stomp's crack); a socket path with no socket
+  falls back to the launch point, not the origin; a release thrown at its own
+  launch point aims along the actor's heading; and the per-effect segment
+  rank and launch length are planned once a shot, so a frame only picks
+  cels.
+- **Headroom.** `bendHeadroom.test.ts` decodes the shipped pages and holds
+  every cel of every heading of the three G bends under the sheet's headroom
+  envelope, so the health bar needs no move while a bend plays.
+- **The harness plays the choreography.** `dev/bend-fx.html` now plays the
+  plan itself (character, effect, holds and kick), and
+  `scripts/bend-fx-capture.ts` captures range 3 and 5 in east, south-east,
+  west and north-west on both backends.
+- **Budget.** JavaScript is 325,844 B gzip, 1,897 B more than the same
+  build with step 6's runtime files at the base's contents (323,947 B), and
+  1,836 B under the 327,680 B gate. No asset changes.
 
 ## Planned PR sequence
 
@@ -510,7 +602,9 @@ the combat handoff stay with steps 6 and 7.
    test passes with no non-test caller left. Done for fire, earth and water:
    see above. Air follows its bend.
 6. **Trajectories.** Straight, arc and whipBolt travel on the presentation
-   clock, aimed at the resolved target.
+   clock, aimed at the resolved target. Done, with the choreography and the
+   freeze clock: see above. Mirroring, sockets by play index and headroom
+   below are settled there; combat wiring stays with step 7.
 7. **Choreography and combat handoff.** Attach to sockets; flash, hold and
    shake at each contact and impact; follow the real target; map abilities to
    attacks; apply the one damage on the damage release. No rules, AP, damage or

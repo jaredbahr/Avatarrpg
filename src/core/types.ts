@@ -71,6 +71,17 @@ export interface SurfaceInstance {
   readonly spread: number;
 }
 
+/**
+ * How much harder a cloud makes an attack land, as a penalty (negative or
+ * zero). A surface carries one of these or `null` when it does not obscure.
+ */
+export interface SurfaceObscurement {
+  /** Applied when the target stands in the cloud. */
+  readonly inside: number;
+  /** Applied when the shot passes through at least one cloud tile. */
+  readonly through: number;
+}
+
 export interface SurfaceDef {
   readonly id: SurfaceId;
   readonly name: string;
@@ -86,6 +97,12 @@ export interface SurfaceDef {
   readonly blocksSight: boolean;
   /** Gives the occupant cover against ranged attacks. */
   readonly grantsCover: boolean;
+  /**
+   * Obscurement: the miss chance a cloud adds instead of blocking sight. Steam
+   * is the only obscuring surface today; sandstorm is area obscurement and
+   * lives on the encounter, not here.
+   */
+  readonly obscures: SurfaceObscurement | null;
   readonly defaultDuration: number;
 }
 
@@ -416,6 +433,25 @@ export interface EncounterVariant {
   readonly tip?: string;
 }
 
+/**
+ * Weather intensity: 0 is clear, 1 is "blowing sand", 2 is a sandstorm.
+ */
+export type WeatherIntensity = 0 | 1 | 2;
+
+/**
+ * Area obscurement (weather) authored on an encounter as a deterministic
+ * schedule with no RNG. The intensity in effect on a round is the last entry
+ * whose `fromRound` is not after it, so the value is derived from the
+ * encounter and the round rather than stored on `BattleState`.
+ */
+export interface EncounterWeather {
+  readonly id: 'sandstorm';
+  readonly schedule: readonly {
+    readonly fromRound: number;
+    readonly intensity: WeatherIntensity;
+  }[];
+}
+
 export interface EncounterDef {
   readonly id: string;
   readonly name: string;
@@ -439,6 +475,8 @@ export interface EncounterDef {
   readonly reinforcements: readonly EncounterPlacement[];
   /** Alternative rosters, drawn by seed. Empty means this fight is always the same. */
   readonly variants: readonly EncounterVariant[];
+  /** Area obscurement (sandstorm); weather is derived from this and the round. */
+  readonly weather?: EncounterWeather;
   readonly expectedLevel: number;
   readonly intro: string;
   /** Shown under the objective banner — a hint aimed at an 8-year-old. */
@@ -1336,6 +1374,29 @@ export interface CombatTuning {
   readonly coverPenalty: number;
   /** Divisor that halves the cover penalty for a non-adjacent higher attacker. */
   readonly plungingCoverDivisor: number;
+  /**
+   * Obscurement (steam, sandstorm) is summed from its components and then
+   * clamped to this many points, so stacked clouds and weather cannot floor
+   * every shot.
+   */
+  readonly obscurementCap: number;
+  /**
+   * Flat accuracy removed from an adjacent (range-1) attack when either the
+   * attacker or the defender is standing in a cloud. Adjacent attacks ignore
+   * weather.
+   */
+  readonly adjacentObscurementPenalty: number;
+  /**
+   * The `inside` value a full cloud is worth to AI positioning. Steam's
+   * authored inside (25) scores a full `weights.cover`; lighter clouds score
+   * proportionally less.
+   */
+  readonly obscurementReference: number;
+  /**
+   * Weather obscurement by intensity. Index 0 (clear) is unused and must be a
+   * zero row. A second weather type would promote this to a table keyed by id.
+   */
+  readonly weather: readonly WeatherLevel[];
   /** Extra move points a one-tier climb costs when neither end is a ramp. */
   readonly climbCost: number;
   /** Extra range for range-three-plus line-of-sight abilities from higher ground. */
@@ -1343,6 +1404,16 @@ export interface CombatTuning {
   /** Hit chance is clamped into this band, lowest bound first. */
   readonly hitChanceMin: number;
   readonly hitChanceMax: number;
+}
+
+/** One authored weather intensity's obscurement curve. */
+export interface WeatherLevel {
+  /** Accuracy removed per tile of distance past `minDistance - 1`. */
+  readonly perTile: number;
+  /** Attacks closer than this are unaffected. */
+  readonly minDistance: number;
+  /** This intensity's own ceiling, before the shared obscurement cap. */
+  readonly cap: number;
 }
 
 /**
