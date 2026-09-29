@@ -1,6 +1,7 @@
 # ADR 0061: Diegetic boundaries and readable elevation
 
-**Status:** accepted, 2026-09-28
+**Status:** accepted, 2026-09-28. §5's lift, faces, shadows, ramps and tier
+tint and §6's picking are implemented by ADR 0065, which sets the lift at 0.25.
 
 ## Context
 

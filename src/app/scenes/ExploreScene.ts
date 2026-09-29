@@ -797,7 +797,9 @@ export class ExploreScene implements Scene {
           this.hover = null;
           return;
         }
-        this.hover = point ? (this.renderer?.camera.toTile(point.x, point.y) ?? null) : null;
+        this.hover = point
+          ? (this.renderer?.camera.pickTile(point.x, point.y, this.grid) ?? null)
+          : null;
       },
     });
   }
@@ -817,7 +819,7 @@ export class ExploreScene implements Scene {
     const state = this.app.state;
     if (!renderer || !state) return;
     // A tap on someone walks to them, wherever their figure is drawn.
-    const tile = this.figureAt(x, y) ?? renderer.camera.toTile(x, y);
+    const tile = this.figureAt(x, y) ?? renderer.camera.pickTile(x, y, this.grid);
     // Ground taps can plan the next stroll without interrupting the current animation.
     if (this.app.animator.busy(performance.now())) {
       this.requestWalk(tile);

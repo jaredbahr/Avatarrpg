@@ -420,6 +420,8 @@ export const rubbleHeap = ({ x, y }: Vec2): SceneImage => ({
 export const FOREST_ROAD_SCENE: MapScene = {
   groundMode: 'partial',
   paintedRubble: FOREST_RUBBLE_CELLS,
+  // The shelf plate is painted at the full tier lift: `SHELF_RISE`, 16 of 64.
+  reliefLift: 0.25,
   ground: [
     { url: `${root}grass-north.webp`, ...FOREST_GRASS_REGIONS.north, wind: true },
     { url: `${root}grass-south.webp`, ...FOREST_GRASS_REGIONS.south, wind: true },

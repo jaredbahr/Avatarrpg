@@ -10,20 +10,29 @@
  * context, they never own one.
  */
 
-import type { SceneFlock, SceneImage, Vec2 } from '../../core/types';
+import type { Grid, SceneFlock, SceneImage, Vec2 } from '../../core/types';
 import { authoredForBothSides } from '../../content/assets/clips';
 import { resolveAsset } from '../../content/assets/manifest';
-import { Camera } from '../camera';
+import { Camera, TILE } from '../camera';
 import type { Viewport } from '../camera';
 import type { TileRelief } from '../geometry/board';
 import { boardRelief, decorSignature, seamMaterial, surfaceEdges } from '../geometry/board';
 import { aimArcPoints, arcHeading, arrowheadPolygon } from '../geometry/arc';
 import { actorHealthBar, actorShadowDensity, healthBarCap } from '../geometry/actorSilhouette';
 import { resolveActorEmitters } from '../geometry/actorAttachments';
-import { elevationAt, ELEVATION_LIFT } from '../geometry/elevation';
-export { elevationAt, ELEVATION_LIFT } from '../geometry/elevation';
+import { liftAlong, liftAt } from '../geometry/elevation';
 import { contourLoops } from '../geometry/contour';
 import type { Curve } from '../geometry/curve';
+import {
+  clip,
+  identity,
+  liftCost,
+  liftPlan,
+  markedCells,
+  marksSchedule,
+  polyBounds,
+} from '../geometry/lift';
+import type { LiftPlan, Pt, Rect } from '../geometry/lift';
 import { sampleAt, smoothPath } from '../geometry/curve';
 import { CanvasFxLayer } from '../fx/canvasFx';
 import { drawBendFx } from '../fx/bendFxDraw';
@@ -85,6 +94,13 @@ export class Canvas2DBackend implements RenderBackend {
   /** Cliffs, rims and wall outlines, rebuilt only when a tile's footing changes. */
   private relief: ReadonlyMap<number, TileRelief> = new Map();
   private reliefSignature = '';
+  /** The oblique board, where raised ground is lifted rather than banded. */
+  private lifted = false;
+  /** The raised blocks as drawn, cropped to them, and what they were drawn for. */
+  private liftLayer: HTMLCanvasElement | null = null;
+  private liftKey = '';
+  /** While set, the tile painters draw only these cells (a mark on one top). */
+  private only: { x0: number; y0: number; x1: number; y1: number } | null = null;
   /** The flock whose page was last asked for, so a scene change asks once. */
   private flock: SceneFlock | undefined;
 
@@ -105,6 +121,7 @@ export class Canvas2DBackend implements RenderBackend {
   destroy(): void {
     sprites.clear();
     sheets.clear();
+    this.dropLiftLayer();
   }
 
   draw(view: MapView, camera: Camera): void {
@@ -121,6 +138,7 @@ export class Canvas2DBackend implements RenderBackend {
       ),
     };
 
+    this.lifted = camera.projection === 'oblique';
     ctx.save();
     ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
     ctx.imageSmoothingEnabled = true;
@@ -182,17 +200,31 @@ export class Canvas2DBackend implements RenderBackend {
         camera.grid,
       );
       const m = camera.groundMatrix();
+      const painted = view.scene ? sceneGround : painting !== null;
+      const plan = liftPlan(
+        view.grid,
+        camera,
+        sceneGround ? (view.scene?.reliefLift ?? 0) : 0,
+        Boolean(view.crispOverlays),
+      );
+      // The ground, then its marks: the ones that change only with the ground
+      // (surfaces, seams and rule markers over art), then the live ones.
+      const onGround = (draw: () => void) => {
+        this.ctx.save();
+        this.ctx.transform(m.a, m.b, m.c, m.d, m.tx, m.ty);
+        draw();
+        this.ctx.restore();
+      };
       if (partialScene) {
         // A local authored region is an overlay, so the grid's procedural
         // terrain must be painted first and remain visible outside it.
-        ctx.save();
-        ctx.transform(m.a, m.b, m.c, m.d, m.tx, m.ty);
-        this.drawGround(view, ground, false, true, false);
-        // A complete normal partial scene keeps raised rule terrain below its
-        // authored ground and live surfaces. Full decor handles fallbacks and
-        // High contrast later in the pass.
-        if (sceneGround && !view.crispOverlays) this.drawElevationBase(view, ground);
-        ctx.restore();
+        onGround(() => {
+          this.drawGround(view, ground, false, true, false);
+          // A complete normal partial scene keeps raised rule terrain below its
+          // authored ground and live surfaces. Full decor handles fallbacks and
+          // High contrast later in the pass.
+          if (sceneGround && !view.crispOverlays) this.drawElevationBase(view, ground);
+        });
         for (const { piece, image } of sceneGroundPieces) {
           if (!image) continue;
           drawSceneImage(
@@ -206,32 +238,57 @@ export class Canvas2DBackend implements RenderBackend {
           );
         }
         drawGrounding(ctx, grounding, camera);
-        ctx.save();
-        ctx.transform(m.a, m.b, m.c, m.d, m.tx, m.ty);
-        this.drawGround(view, ground, sceneGround, false, true);
-        // A complete partial scene owns its local ground art; accessibility
-        // and unavailable pieces still need all procedural rule markers.
-        if (!sceneGround || view.crispOverlays) this.drawDecor(view, ground);
-        else this.drawSeams(view, ground, sceneGround);
-        this.drawOverlays(view, ground);
-        this.drawPath(view, ground);
-        if (view.aimArc) this.drawAimArc(view.aimArc, ground);
-        this.drawFxLayer(view, ground, 'under', true);
-        this.drawExit(view, ground);
-        ctx.restore();
-      } else {
-        ctx.save();
-        ctx.transform(m.a, m.b, m.c, m.d, m.tx, m.ty);
-        const painted = view.scene ? sceneGround : painting !== null;
-        this.drawGround(view, ground, painted);
-        if (!painted || view.crispOverlays) this.drawDecor(view, ground);
-        this.drawOverlays(view, ground);
-        this.drawPath(view, ground);
-        if (view.aimArc) this.drawAimArc(view.aimArc, ground);
-        this.drawFxLayer(view, ground, 'under', true);
-        this.drawExit(view, ground);
-        ctx.restore();
+      } else if (!painted) {
+        onGround(() => {
+          this.drawGround(view, ground, false);
+          this.drawDecor(view, ground);
+        });
       }
+      const staticMarks =
+        partialScene || painted
+          ? () => {
+              if (partialScene) {
+                this.drawGround(view, ground, sceneGround, false, true);
+                // A complete partial scene owns its local ground art; accessibility
+                // and unavailable pieces still need all procedural rule markers.
+                if (!sceneGround || view.crispOverlays) this.drawDecor(view, ground);
+                else this.drawSeams(view, ground, sceneGround);
+              } else {
+                this.drawGround(view, ground, true);
+                if (view.crispOverlays) this.drawDecor(view, ground);
+              }
+            }
+          : null;
+      const liveMarks = () => {
+        this.drawOverlays(view, ground);
+        this.drawPath(view, ground);
+        if (view.aimArc) this.drawAimArc(view.aimArc, ground);
+        this.drawFxLayer(view, ground, 'under', true);
+        this.drawExit(view, ground);
+      };
+      // The lift layer copies the flat ground, so it is brought up to date
+      // before any mark is drawn over it.
+      const layer = plan.bounds
+        ? this.syncLiftLayer(view, camera, plan, {
+            key: [
+              identity(view.grid),
+              // Not the scene: it is copied whenever its scenery is filtered.
+              identity(view.scene?.ground),
+              identity(grounding?.canvas),
+              sceneGround,
+              sceneGroundPieces.filter(({ image }) => image).length,
+              painting?.src,
+              view.hatch,
+              view.gridLines,
+            ].join('|'),
+            marks: staticMarks && (() => onGround(staticMarks)),
+          })
+        : this.dropLiftLayer();
+      onGround(() => {
+        staticMarks?.();
+        liveMarks();
+      });
+      if (layer && plan.bounds) this.drawLift(view, camera, plan, layer, () => onGround(liveMarks));
       this.drawUnitRings(view, camera);
       drawBendFx(ctx, view.bendFx ?? [], camera, false);
       // All upright occupants share depth order, including NPCs and props.
@@ -298,6 +355,7 @@ export class Canvas2DBackend implements RenderBackend {
       this.drawFxLayer(view, ground, 'over', true);
       ctx.restore();
     } else {
+      this.dropLiftLayer();
       this.drawGround(view, camera, painting !== null);
       if (!painting || view.crispOverlays) this.drawDecor(view, camera);
       if (view.atmosphere) this.drawShade(view, camera);
@@ -354,7 +412,7 @@ export class Canvas2DBackend implements RenderBackend {
     drawSurfaces = true,
   ): void {
     const { ctx } = this;
-    const bounds = camera.visibleBounds(view.grid);
+    const bounds = this.tileBounds(view, camera);
     for (let y = bounds.y0; y <= bounds.y1; y++) {
       for (let x = bounds.x0; x <= bounds.x1; x++) {
         const tile = view.grid.tiles[y * view.grid.width + x];
@@ -369,15 +427,173 @@ export class Canvas2DBackend implements RenderBackend {
     }
   }
 
+  /**
+   * The lift layer (ADR 0065): every raised block drawn once, on a canvas no
+   * bigger than the blocks on screen, and redrawn only when the plan (camera,
+   * viewport, footing) or the ground it copies changes. Its tops and faces
+   * are copied from the flat ground this frame has just drawn, a block's box
+   * at a time; its static marks are drawn straight onto each top, lifted.
+   */
+  private syncLiftLayer(
+    view: MapView,
+    camera: Camera,
+    plan: LiftPlan,
+    ground: { key: string; marks: (() => void) | null },
+  ): HTMLCanvasElement | null {
+    const rect = plan.bounds;
+    if (!rect) return this.dropLiftLayer();
+    const key = `${plan.key}|${ground.key}`;
+    if (this.liftLayer && key === this.liftKey) return this.liftLayer;
+    const dpr = camera.viewport.dpr;
+    const layer = (this.liftLayer ??= document.createElement('canvas'));
+    const width = Math.round(rect.w * dpr);
+    const height = Math.round(rect.h * dpr);
+    if (layer.width !== width || layer.height !== height) {
+      layer.width = width;
+      layer.height = height;
+    }
+    // A fresh canvas asked only ever for 2D always has one.
+    const out = layer.getContext('2d') as CanvasRenderingContext2D;
+    out.setTransform(1, 0, 0, 1, 0, 0);
+    out.clearRect(0, 0, width, height);
+    out.setTransform(dpr, 0, 0, dpr, -rect.x * dpr, -rect.y * dpr);
+    out.imageSmoothingEnabled = true;
+    out.lineCap = 'round';
+    this.liftKey = key;
+    liftCost.layerBuilds++;
+    liftCost.heldPx = width * height;
+
+    // The board canvas holds the flat ground, shaken; the layer is not.
+    const tilePx = TILE * camera.scale;
+    const nudge = { x: view.cameraNudge.x * tilePx, y: view.cameraNudge.y * tilePx };
+    for (const cell of plan.cells)
+      for (const op of cell.ops) {
+        if (op.kind === 'overlay') {
+          if (!ground.marks) continue;
+          out.save();
+          traceInto(out, op.poly);
+          out.clip();
+          out.translate(0, -op.shift);
+          this.drawOnly(out, cell, ground.marks);
+          out.restore();
+        } else if ('shift' in op) {
+          out.save();
+          traceInto(out, op.poly);
+          out.clip();
+          copyRect(out, this.canvas, polyBounds(op.poly, 0), dpr, nudge.x, nudge.y + op.shift);
+          out.restore();
+        } else if (op.kind === 'fill') {
+          out.globalAlpha = op.alpha;
+          out.fillStyle = op.color;
+          traceInto(out, op.poly);
+          out.fill();
+          out.globalAlpha = 1;
+        } else {
+          out.globalAlpha = op.alpha;
+          out.strokeStyle = op.color;
+          out.lineWidth = op.width;
+          out.beginPath();
+          out.moveTo(op.a.x, op.a.y);
+          out.lineTo(op.b.x, op.b.y);
+          out.stroke();
+          out.globalAlpha = 1;
+        }
+      }
+    return layer;
+  }
+
+  /** Lets the lift layer go: nothing raised is on screen, or the board is gone. */
+  private dropLiftLayer(): null {
+    if (this.liftLayer) {
+      // Zero the backing store: iOS frees canvas memory on that, not on GC.
+      this.liftLayer.width = 0;
+      this.liftLayer.height = 0;
+    }
+    this.liftLayer = null;
+    this.liftKey = '';
+    liftCost.heldPx = 0;
+    return null;
+  }
+
+  /** Draws `draw` into `ctx`, with the tile painters kept to the cells round `cell`. */
+  private drawOnly(ctx: CanvasRenderingContext2D, cell: Vec2, draw: () => void): void {
+    const own = this.ctx;
+    this.ctx = ctx;
+    this.only = { x0: cell.x - 2, y0: cell.y - 2, x1: cell.x + 2, y1: cell.y + 2 };
+    draw();
+    this.only = null;
+    this.ctx = own;
+  }
+
+  /**
+   * Raised ground as blocks (ADR 0065). The layer goes over the flat ground
+   * and its marks in one copy, covering each raised block's flat marks; then
+   * the tops with a live mark near them take the marks again, lifted.
+   */
+  private drawLift(
+    view: MapView,
+    camera: Camera,
+    plan: LiftPlan,
+    layer: HTMLCanvasElement,
+    liveMarks: () => void,
+  ): void {
+    const { ctx } = this;
+    const rect = plan.bounds;
+    if (!rect) return;
+    const dpr = camera.viewport.dpr;
+    liftCost.frames++;
+    // The ctx carries the shake, and the layer's rect is in camera space.
+    ctx.drawImage(layer, rect.x, rect.y, rect.w, rect.h);
+    liftCost.copies++;
+    liftCost.copiedPx += layer.width * layer.height;
+    const steps = marksSchedule(plan, view.grid, markedCells(view.grid, view));
+    for (const { cell, recover, marks } of steps) {
+      const box = recover && cell.blockBounds && clip(cell.blockBounds, rect);
+      if (box) {
+        ctx.save();
+        ctx.beginPath();
+        for (const poly of cell.block) traceInto(ctx, poly, false);
+        ctx.clip();
+        copyRect(ctx, layer, box, dpr, -rect.x, -rect.y);
+        ctx.restore();
+      }
+      if (!marks || !cell.top) continue;
+      liftCost.markedTops++;
+      ctx.save();
+      traceInto(ctx, cell.top);
+      ctx.clip();
+      ctx.translate(0, -cell.shift);
+      this.drawOnly(ctx, cell, liveMarks);
+      ctx.restore();
+    }
+  }
+
+  /** The cells the tile painters visit: those on screen, or only those round one top. */
+  private tileBounds(view: MapView, camera: Camera) {
+    const all = camera.visibleBounds(view.grid);
+    const only = this.only;
+    if (!only) return all;
+    return {
+      x0: Math.max(all.x0, only.x0),
+      y0: Math.max(all.y0, only.y0),
+      x1: Math.min(all.x1, only.x1),
+      y1: Math.min(all.y1, only.y1),
+    };
+  }
+
+  /** The relief painters read, rebuilt only when the footing or the projection changes. */
+  private syncRelief(grid: Grid): void {
+    const signature = decorSignature(grid) + (this.lifted ? '|lifted' : '');
+    if (signature === this.reliefSignature) return;
+    this.reliefSignature = signature;
+    this.relief = boardRelief(grid, this.lifted);
+  }
+
   /** Cliffs, canopies, walls, cover and decals: a second pass so overhangs land on neighbours. */
   private drawElevationBase(view: MapView, camera: Camera): void {
     const { ctx } = this;
-    const signature = decorSignature(view.grid);
-    if (signature !== this.reliefSignature) {
-      this.reliefSignature = signature;
-      this.relief = boardRelief(view.grid);
-    }
-    const bounds = camera.visibleBounds(view.grid);
+    this.syncRelief(view.grid);
+    const bounds = this.tileBounds(view, camera);
     for (let y = bounds.y0; y <= bounds.y1; y++)
       for (let x = bounds.x0; x <= bounds.x1; x++) {
         const index = y * view.grid.width + x;
@@ -389,12 +605,8 @@ export class Canvas2DBackend implements RenderBackend {
 
   private drawDecor(view: MapView, camera: Camera): void {
     const { ctx } = this;
-    const signature = decorSignature(view.grid);
-    if (signature !== this.reliefSignature) {
-      this.reliefSignature = signature;
-      this.relief = boardRelief(view.grid);
-    }
-    const bounds = camera.visibleBounds(view.grid);
+    this.syncRelief(view.grid);
+    const bounds = this.tileBounds(view, camera);
     for (let y = bounds.y0; y <= bounds.y1; y++) {
       for (let x = bounds.x0; x <= bounds.x1; x++) {
         const index = y * view.grid.width + x;
@@ -416,12 +628,8 @@ export class Canvas2DBackend implements RenderBackend {
    */
   private drawSeams(view: MapView, camera: Camera, ready: boolean): void {
     const { ctx } = this;
-    const signature = decorSignature(view.grid);
-    if (signature !== this.reliefSignature) {
-      this.reliefSignature = signature;
-      this.relief = boardRelief(view.grid);
-    }
-    const bounds = camera.visibleBounds(view.grid);
+    this.syncRelief(view.grid);
+    const bounds = this.tileBounds(view, camera);
     for (let y = bounds.y0; y <= bounds.y1; y++) {
       for (let x = bounds.x0; x <= bounds.x1; x++) {
         const index = y * view.grid.width + x;
@@ -691,10 +899,7 @@ export class Canvas2DBackend implements RenderBackend {
       const width = this.npcWidth(npc.sprite);
       const at = npc.renderPos ?? npc.pos;
       const box = camera.spriteBox(at, width);
-      box.y -=
-        elevationAt(view.grid, { x: Math.round(at.x), y: Math.round(at.y) }) *
-        ELEVATION_LIFT *
-        box.size;
+      box.y -= liftAlong(view.grid, at, camera.projection) * box.size;
       const entry = resolveAsset(npc.sprite);
       const scale = npc.scale ?? 1;
       const alpha = npc.alpha ?? 1;
@@ -771,7 +976,7 @@ export class Canvas2DBackend implements RenderBackend {
     for (const prop of view.props) {
       if (!camera.isVisible(prop.pos)) continue;
       const box = camera.spriteBox(prop.pos);
-      box.y -= elevationAt(view.grid, prop.pos) * ELEVATION_LIFT * box.size;
+      box.y -= liftAt(view.grid, prop.pos, camera.projection) * box.size;
       const sprite = sprites.get(prop.sprite, box.size * dpr, { facing: 1 });
       ctx.drawImage(sprite, box.x, box.y, box.size, box.size);
 
@@ -828,7 +1033,7 @@ export class Canvas2DBackend implements RenderBackend {
       const marker = unitMarkerGroundPoint(
         { x: box.x, y: box.y },
         box.size,
-        elevationAt(view.grid, unit.pos) * ELEVATION_LIFT,
+        liftAlong(view.grid, unit.renderPos ?? unit.pos, camera.projection),
         unit.meleeDirection ? unit.offset : undefined,
       );
       const width = box.size * unit.size;
@@ -890,7 +1095,7 @@ export class Canvas2DBackend implements RenderBackend {
         box.x += unit.offset.x * box.size;
         box.y += unit.offset.y * box.size;
       }
-      box.y -= elevationAt(view.grid, unit.pos) * ELEVATION_LIFT * box.size;
+      box.y -= liftAlong(view.grid, pos, camera.projection) * box.size;
       const facing = unit.facing ?? (unit.faction === 'enemy' ? -1 : 1);
       const asset = resolveAsset(unit.sprite);
       const locomotion = unit.clip ?? 'idle';
@@ -1152,6 +1357,46 @@ export function uprightSpriteVisible(
     bottom >= 0 &&
     top <= viewport.height
   );
+}
+
+/** Adds a closed polygon in screen pixels to `ctx`'s path, a fresh one unless `begin` is false. */
+function traceInto(ctx: CanvasRenderingContext2D, poly: readonly Pt[], begin = true): void {
+  if (begin) ctx.beginPath();
+  poly.forEach((p, index) => (index ? ctx.lineTo(p.x, p.y) : ctx.moveTo(p.x, p.y)));
+  ctx.closePath();
+}
+
+/**
+ * Copies `box` (camera pixels) from `from`, a device-pixel canvas whose pixel
+ * for camera point q is (q + (dx, dy)) × dpr, reading only what `from` has:
+ * a bounded copy, never the whole source for a small clip.
+ */
+function copyRect(
+  ctx: CanvasRenderingContext2D,
+  from: HTMLCanvasElement,
+  box: Rect,
+  dpr: number,
+  dx: number,
+  dy: number,
+): void {
+  const x0 = Math.max(0, (box.x + dx) * dpr);
+  const y0 = Math.max(0, (box.y + dy) * dpr);
+  const x1 = Math.min(from.width, (box.x + box.w + dx) * dpr);
+  const y1 = Math.min(from.height, (box.y + box.h + dy) * dpr);
+  if (x1 <= x0 || y1 <= y0) return;
+  ctx.drawImage(
+    from,
+    x0,
+    y0,
+    x1 - x0,
+    y1 - y0,
+    x0 / dpr - dx,
+    y0 / dpr - dy,
+    (x1 - x0) / dpr,
+    (y1 - y0) / dpr,
+  );
+  liftCost.copies++;
+  liftCost.copiedPx += (x1 - x0) * (y1 - y0);
 }
 
 /** A grounding raster at its scene rectangle, texel-sharp like the scenery it seats. */

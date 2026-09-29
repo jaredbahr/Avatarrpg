@@ -543,6 +543,9 @@ export const mapSchema = z
         paintedWater: z.boolean().optional(),
         groundMode: z.literal('partial').optional(),
         paintedRubble: z.array(vec2).optional(),
+        reliefLift: z
+          .union([z.number().min(0).max(0.5), z.array(z.number().min(0).max(0.5))])
+          .optional(),
         // Where smoke leaves a painted roof, in ground tiles; a roof stands
         // above the grid, so these may lie off it. A handful at most.
         chimneys: z

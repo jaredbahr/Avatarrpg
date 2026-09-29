@@ -194,6 +194,11 @@ Never run `npx playwright install` in the dev container — Chromium is already 
     do not span an object that runs off screen.
   - Assigning `filter.resources` after construction does not rebuild the bind
     group; create the texture before the filter and update it in place.
+- **A raised tile is drawn a quarter tile a tier up the screen** on the oblique
+  board (ADR 0065), so a pointer must go through `camera.pickTile(x, y, grid)`,
+  never `toTile`, or a tap on a bench's far corner acts on the cell behind it.
+  Ground art that already paints height declares it in `MapScene.reliefLift`;
+  anything that stands on a tile lifts by `liftAt` / `liftAlong`.
 - Taps on the battlefield are ignored while the animator is playing. That is
   intentional, and it is why the e2e helpers have `waitForIdle`.
 - Statuses that skip a turn are read _before_ statuses tick, so a 1-round Freeze
