@@ -32,7 +32,16 @@ it('registers forest art only to the existing water, cover and blocked tree cell
     'art/maps/forest-scene/water.webp',
   );
   expect(FOREST_WATER_CELLS).toEqual(cells('~'));
-  expect(FOREST_RAISED_SHELF_CELLS).toEqual(cells('^'));
+  // The painted shelf is the two authored elevated groups, and every cell it
+  // paints has to be raised on the map: tier 1, or (19,2)'s tier-2 perch. M3
+  // widens the NE bank past these six cells, and the extra tiers are drawn by
+  // the relief painter until the shelf plate is repacked, so the plate may only
+  // ever under-claim, never paint a cell the rules call flat.
+  for (const cell of FOREST_RAISED_SHELF_CELLS) {
+    expect(cells('^').concat(cells('A')), `${cell.x},${cell.y} is raised`).toContainEqual(cell);
+  }
+  expect(cells('A')).toEqual([{ x: 19, y: 2 }]);
+  expect(FOREST_ROAD.legend[FOREST_ROAD.rows[2]?.[19] ?? '']?.elevation).toBe(2);
   expect(FOREST_RAISED_SHELF_CELLS).not.toContainEqual({ x: 19, y: 4 });
   expect(FOREST_ROAD_SCENE.ground).toContainEqual({
     url: 'art/maps/forest-scene/raised-shelf.webp',
