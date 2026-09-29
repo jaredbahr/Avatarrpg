@@ -1474,6 +1474,35 @@ html[data-contrast='high'] .hud-panel::after {
   overflow-y: auto;
 }
 
+.preview-target-chip {
+  min-height: var(--tap);
+  width: auto;
+  font: inherit;
+  cursor: pointer;
+}
+
+.preview-target-chip[aria-expanded='true'] {
+  border-color: var(--c-gold);
+}
+
+.hit-breakdown {
+  flex: 1 0 100%;
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--sp-1) var(--sp-2);
+  color: var(--c-ink-dim);
+  font-size: var(--fs-sm);
+}
+
+.hit-breakdown[hidden] {
+  display: none;
+}
+
+.hit-breakdown > span:not(:last-child)::after {
+  content: ' ·';
+  color: var(--c-line);
+}
+
 .handoff-banner {
   position: absolute;
   inset: 0;

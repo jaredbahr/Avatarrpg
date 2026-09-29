@@ -1512,40 +1512,147 @@ export class PixiBackend implements RenderBackend {
 
     if (!view.crispOverlays) {
       this.drawContourOverlays(view);
-      return;
-    }
+    } else
+      for (const layer of view.overlays) {
+        if (layer.tiles.length === 0) continue;
+        const members = new Set(layer.tiles.map((p) => `${p.x},${p.y}`));
+        const [fill, edge] = overlayColors(layer.kind);
 
-    for (const layer of view.overlays) {
-      if (layer.tiles.length === 0) continue;
-      const members = new Set(layer.tiles.map((p) => `${p.x},${p.y}`));
-      const [fill, edge] = overlayColors(layer.kind);
-
-      for (const pos of layer.tiles) {
-        g.rect(pos.x * TILE, pos.y * TILE, TILE, TILE).fill({ color: fill });
-      }
-
-      // Only the outside of the region gets a border, so a move range reads as
-      // one shape instead of a grid of boxes.
-      if (edge) {
         for (const pos of layer.tiles) {
-          const x = pos.x * TILE;
-          const y = pos.y * TILE;
-          if (!members.has(`${pos.x},${pos.y - 1}`)) g.moveTo(x, y).lineTo(x + TILE, y);
-          if (!members.has(`${pos.x + 1},${pos.y}`))
-            g.moveTo(x + TILE, y).lineTo(x + TILE, y + TILE);
-          if (!members.has(`${pos.x},${pos.y + 1}`))
-            g.moveTo(x, y + TILE).lineTo(x + TILE, y + TILE);
-          if (!members.has(`${pos.x - 1},${pos.y}`)) g.moveTo(x, y).lineTo(x, y + TILE);
+          g.rect(pos.x * TILE, pos.y * TILE, TILE, TILE).fill({ color: fill });
         }
-        g.stroke({ width: 3, color: edge });
+
+        // Only the outside of the region gets a border, so a move range reads as
+        // one shape instead of a grid of boxes.
+        if (edge) {
+          for (const pos of layer.tiles) {
+            const x = pos.x * TILE;
+            const y = pos.y * TILE;
+            if (!members.has(`${pos.x},${pos.y - 1}`)) g.moveTo(x, y).lineTo(x + TILE, y);
+            if (!members.has(`${pos.x + 1},${pos.y}`))
+              g.moveTo(x + TILE, y).lineTo(x + TILE, y + TILE);
+            if (!members.has(`${pos.x},${pos.y + 1}`))
+              g.moveTo(x, y + TILE).lineTo(x + TILE, y + TILE);
+            if (!members.has(`${pos.x - 1},${pos.y}`)) g.moveTo(x, y).lineTo(x, y + TILE);
+          }
+          g.stroke({ width: 3, color: edge });
+        }
       }
-    }
 
     if (view.hoverTile) {
       g.rect(view.hoverTile.x * TILE, view.hoverTile.y * TILE, TILE, TILE).fill({
         color: OVERLAY.hover,
       });
     }
+    this.drawElevationCues(view);
+  }
+
+  private drawElevationCues(view: MapView): void {
+    const g = this.overlayGfx;
+    const hatch = TILE * 0.12;
+    for (const edge of view.cliffEdges ?? []) {
+      const x = edge.pos.x * TILE + (edge.side === 'east' ? TILE : 0);
+      const y = edge.pos.y * TILE + (edge.side === 'south' ? TILE : 0);
+      for (let step = 0.1; step < 1; step += 0.2) {
+        if (edge.side === 'south') {
+          g.moveTo(x + TILE * step - hatch, y - hatch).lineTo(x + TILE * step + hatch, y + hatch);
+        } else {
+          g.moveTo(x - hatch, y + TILE * step - hatch).lineTo(x + hatch, y + TILE * step + hatch);
+        }
+      }
+    }
+    g.stroke({ width: Math.max(2, TILE * 0.045), color: OVERLAY.cliffHatch });
+
+    for (const marker of view.climbMarkers ?? []) {
+      const cx = marker.pos.x * TILE + TILE * 0.72;
+      const cy = marker.pos.y * TILE + TILE * 0.27;
+      g.poly(
+        [
+          cx - TILE * 0.11,
+          cy + TILE * 0.08,
+          cx,
+          cy - TILE * 0.1,
+          cx + TILE * 0.11,
+          cy + TILE * 0.08,
+        ],
+        true,
+      ).fill({ color: OVERLAY.climb });
+      this.drawSmallDigit(g, marker.cost, cx + TILE * 0.15, cy, TILE * 0.07);
+    }
+
+    const cue = view.targetReticle;
+    if (!cue) return;
+    const cx = cue.pos.x * TILE + TILE * 0.5;
+    const cy = cue.pos.y * TILE + TILE * 0.2;
+    if (cue.elevation === 'above') {
+      g.poly(
+        [
+          cx - TILE * 0.13,
+          cy + TILE * 0.08,
+          cx,
+          cy - TILE * 0.13,
+          cx + TILE * 0.13,
+          cy + TILE * 0.08,
+        ],
+        true,
+      ).fill({ color: OVERLAY.reticleCue });
+    } else if (cue.elevation === 'below') {
+      g.poly(
+        [
+          cx - TILE * 0.13,
+          cy - TILE * 0.08,
+          cx + TILE * 0.13,
+          cy - TILE * 0.08,
+          cx,
+          cy + TILE * 0.13,
+        ],
+        true,
+      ).fill({ color: OVERLAY.reticleCue });
+    }
+    if (cue.obscured) {
+      const cloudX = cx + TILE * 0.24;
+      const cloudY = cy;
+      g.circle(cloudX - TILE * 0.06, cloudY, TILE * 0.075)
+        .circle(cloudX + TILE * 0.03, cloudY - TILE * 0.025, TILE * 0.095)
+        .circle(cloudX + TILE * 0.12, cloudY, TILE * 0.065)
+        .fill({ color: OVERLAY.reticleCue });
+      g.rect(cloudX - TILE * 0.12, cloudY, TILE * 0.25, TILE * 0.07).fill({
+        color: OVERLAY.reticleCue,
+      });
+    }
+  }
+
+  private drawSmallDigit(g: Graphics, value: number, cx: number, cy: number, unit: number): void {
+    const segments: readonly (readonly number[])[] = [
+      [0, 1, 2, 4, 5, 6],
+      [2, 5],
+      [0, 2, 3, 4, 6],
+      [0, 2, 3, 5, 6],
+      [1, 2, 3, 5],
+      [0, 1, 3, 5, 6],
+      [0, 1, 3, 4, 5, 6],
+      [0, 2, 5],
+      [0, 1, 2, 3, 4, 5, 6],
+      [0, 1, 2, 3, 5, 6],
+    ];
+    const digit = Math.abs(Math.trunc(value)) % 10;
+    const active = segments[digit] ?? [];
+    const x = cx - unit;
+    const y = cy - unit * 1.5;
+    const lines: readonly (readonly [number, number, number, number])[] = [
+      [x, y, x + unit, y],
+      [x, y, x, y + unit],
+      [x + unit, y, x + unit, y + unit],
+      [x, y + unit, x + unit, y + unit],
+      [x, y + unit, x, y + unit * 2],
+      [x + unit, y + unit, x + unit, y + unit * 2],
+      [x, y + unit * 2, x + unit, y + unit * 2],
+    ];
+    for (const index of active) {
+      const line = lines[index];
+      if (line) g.moveTo(line[0], line[1]).lineTo(line[2], line[3]);
+    }
+    g.stroke({ width: Math.max(2, unit * 0.28), color: OVERLAY.climb, cap: 'round' });
   }
 
   /**

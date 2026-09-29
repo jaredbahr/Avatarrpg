@@ -17,18 +17,29 @@ import type { App, Scene, CameraInfo } from '../App';
 import type { Ability, BattleState, Unit, Vec2 } from '../../core/types';
 import {
   canUseAbility,
+  heightReachBonus,
   isValidTarget,
   knownAbilities,
   previewAbility,
   targetableTiles,
   affectedTiles,
 } from '../../core/rules/abilities';
-import { pathCost, posKey, reachable, samePos } from '../../core/rules/grid';
+import {
+  distance,
+  occupiedCells,
+  pathCost,
+  posKey,
+  reachable,
+  samePos,
+  tileAt,
+  type ReachableCell,
+} from '../../core/rules/grid';
 import { canMove, effectiveStats, isAlive, statusDefs } from '../../core/rules/stats';
 import { activeUnit, upcomingOrder } from '../../core/rules/turnOrder';
 import { encounterText } from '../../core/story/encounterText';
 import { Renderer, TILE } from '../../render/renderer';
 import type { AimArc, MapView, OverlayLayer, RenderProp, RenderUnit } from '../../render/renderer';
+import { cliffEdgesFor, type TargetReticleCue } from '../../render/view';
 import { CONTENT } from '../../content';
 import { attachPointer, wheelZoomFactor } from '../input/pointer';
 import { ambienceFx, resolveFx } from '../../content/fx';
@@ -42,7 +53,7 @@ import { paletteFor } from '../../render/palettes';
 import { paintElementGlyph } from '../../render/painters/glyphs';
 import { showGridLines } from '../storage/localSaves';
 import { reactionNotes } from '../ui/ReactionNote';
-import { formatShoveMovement } from '../ui/combatPreviewText';
+import { formatHitBreakdownRows, formatShoveMovement } from '../ui/combatPreviewText';
 import { UnitInspector } from '../ui/UnitInspector';
 import { enemyScale, partyScale } from '../anim/actorScale';
 import { partyBendSprites } from '../anim/bendHandoff';
@@ -442,8 +453,7 @@ export class CombatScene implements Scene {
   private reachableCells() {
     const battle = this.battle();
     const unit = this.active();
-    if (!battle || !unit)
-      return new Map<string, { pos: Vec2; cost: number; path: readonly Vec2[] }>();
+    if (!battle || !unit) return new Map<string, ReachableCell>();
 
     const blocked = new Set<string>();
     for (const other of battle.units) {
@@ -1227,12 +1237,39 @@ export class CombatScene implements Scene {
         const name = this.app.content.statuses.get(cleared)?.name ?? cleared;
         if (!parts.some((part) => part === `clears ${name}`)) parts.push(`clears ${name}`);
       }
-      chips.appendChild(
-        el('span', {
-          class: `chip ${entry.friendly ? 'chip-friendly' : 'chip-hostile'}${entry.lethal ? ' chip-lethal' : ''}`,
-          text: `${entry.name}: ${parts.join(' · ')}${entry.lethal ? ' — lethal' : ''}`,
-        }),
+      const breakdownRows = formatHitBreakdownRows(entry.hitBreakdown);
+      const targetChip = button(
+        `${entry.name}: ${parts.join(' · ')}${entry.lethal ? ' — lethal' : ''}`,
+        () => {
+          if (breakdownRows.length === 0) return;
+          const expanded = targetChip.getAttribute('aria-expanded') !== 'true';
+          targetChip.setAttribute('aria-expanded', String(expanded));
+          breakdown.hidden = !expanded;
+        },
+        {
+          class: `chip preview-target-chip ${entry.friendly ? 'chip-friendly' : 'chip-hostile'}${
+            entry.lethal ? ' chip-lethal' : ''
+          }`,
+        },
       );
+      const breakdown = el(
+        'div',
+        {
+          class: 'hit-breakdown',
+          attrs: { 'aria-label': `${entry.name} hit chance breakdown` },
+        },
+        ...breakdownRows.map((row) => el('span', { text: row })),
+      );
+      breakdown.hidden = true;
+      if (breakdownRows.length > 0) {
+        targetChip.setAttribute('aria-expanded', 'false');
+        targetChip.addEventListener('focus', () => {
+          if (!targetChip.matches(':focus-visible')) return;
+          targetChip.setAttribute('aria-expanded', 'true');
+          breakdown.hidden = false;
+        });
+      }
+      chips.append(targetChip, breakdown);
     }
     for (const contact of preview.surfaceContacts) {
       const surface = this.app.content.surfaces.get(contact.surface)?.name ?? contact.surface;
@@ -1300,7 +1337,6 @@ export class CombatScene implements Scene {
         (id) => this.app.content.surfaces.get(id)?.name ?? id,
       );
       if (shove.landingDamage > 0) landingEffects.push(`${shove.landingDamage} damage`);
-      if (shove.ledgeDropDamage > 0) landingEffects.push(`falls: ${shove.ledgeDropDamage} damage`);
       for (const status of shove.landingStatuses) {
         const name = this.app.content.statuses.get(status.id)?.name ?? status.id;
         landingEffects.push(
@@ -1316,6 +1352,17 @@ export class CombatScene implements Scene {
             : `${formatShoveMovement(shove.name, shove.mode, destination)}${landing}`,
         }),
       );
+      if (shove.ledgeDropDamage > 0) {
+        const fromElevation = tileAt(battle.grid, shove.from)?.elevation ?? 0;
+        const toElevation = tileAt(battle.grid, shove.to)?.elevation ?? 0;
+        const tiers = Math.max(1, fromElevation - toElevation);
+        chips.appendChild(
+          el('span', {
+            class: `chip shove-drop-forecast ${shove.friendly ? 'chip-friendly' : 'chip-terrain'}`,
+            text: `Drops ${tiers} → ${shove.ledgeDropDamage} damage`,
+          }),
+        );
+      }
     }
 
     for (const status of preview.statuses) {
@@ -1566,6 +1613,7 @@ export class CombatScene implements Scene {
     const unit = this.active();
     let overlays: readonly OverlayLayer[] = [];
     let path: readonly Vec2[] = [];
+    let climbMarkers: MapView['climbMarkers'] = [];
 
     const interactive = this.isPlayerTurn() && !this.needsHandoff() && !this.app.animator.busy(now);
 
@@ -1582,6 +1630,11 @@ export class CombatScene implements Scene {
         this.overlayMemo = { battle, key, ...built };
         overlays = built.overlays;
         path = built.path;
+      }
+      if (this.mode.kind === 'move') {
+        climbMarkers = [...this.reachableCells().values()]
+          .filter((cell) => cell.cost > 0 && cell.climbCost > 0)
+          .map((cell) => ({ pos: cell.pos, cost: cell.cost }));
       }
     }
 
@@ -1632,6 +1685,58 @@ export class CombatScene implements Scene {
       };
     });
 
+    const cliffEdges = interactive && this.mode.kind === 'move' ? cliffEdgesFor(battle.grid) : [];
+
+    let rangeBonusTiles: Vec2[] = [];
+    let targetReticle: TargetReticleCue | null = null;
+    if (interactive && unit && this.mode.kind === 'aim') {
+      const ability = this.app.content.abilities.get(this.mode.abilityId);
+      if (ability) {
+        const targets = overlays.find((layer) => layer.kind === 'target')?.tiles ?? [];
+        const originTile = tileAt(battle.grid, unit.pos);
+        rangeBonusTiles = targets.filter((pos) => {
+          const targetTile = tileAt(battle.grid, pos);
+          return Boolean(
+            originTile &&
+            targetTile &&
+            heightReachBonus(
+              this.app.content,
+              ability,
+              originTile.elevation,
+              targetTile.elevation,
+            ) > 0 &&
+            distance(unit.pos, pos) > ability.range,
+          );
+        });
+
+        const aimed = [this.pending, this.hover].find(
+          (pos): pos is Vec2 => pos !== null && targets.some((target) => samePos(target, pos)),
+        );
+        if (aimed) {
+          const target = battle.units.find(
+            (candidate) =>
+              isAlive(candidate) && occupiedCells(candidate).some((cell) => samePos(cell, aimed)),
+          );
+          if (target) {
+            const preview = previewAbility(this.app.content, battle, unit, ability, aimed);
+            const breakdown = preview.targets.find(
+              (entry) => entry.unitId === target.id,
+            )?.hitBreakdown;
+            if (breakdown) {
+              targetReticle = {
+                pos: target.pos,
+                elevation:
+                  breakdown.elevation > 0 ? 'above' : breakdown.elevation < 0 ? 'below' : null,
+                obscured: breakdown.obscurement.total < 0,
+              };
+            }
+          }
+        }
+        if (rangeBonusTiles.length > 0)
+          overlays = [...overlays, { kind: 'rangeBonus', tiles: rangeBonusTiles }];
+      }
+    }
+
     // Resolved here, not in the renderer: the renderer never reads content.
     const props: RenderProp[] = battle.props.map((p) => {
       const def = CONTENT.props.get(p.propId);
@@ -1664,6 +1769,10 @@ export class CombatScene implements Scene {
       npcs: [],
       props,
       overlays,
+      climbMarkers,
+      cliffEdges,
+      rangeBonusTiles,
+      targetReticle,
       path,
       pathFrom: unit?.pos ?? null,
       aimArc,

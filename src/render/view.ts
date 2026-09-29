@@ -7,6 +7,7 @@
  */
 
 import type { Grid, MapBackdrop, MapScene, StatusId, Vec2 } from '../core/types';
+import { tileAt } from '../core/rules/grid';
 import type { ClipName, Heading, MeleeDirection } from '../content/assets/clips';
 import type { EmitterDef } from '../content/fx';
 
@@ -91,11 +92,46 @@ export function unitMarkerGroundPoint(
   };
 }
 
-export type OverlayKind = 'move' | 'target' | 'area' | 'hover';
+export type OverlayKind = 'move' | 'target' | 'area' | 'rangeBonus' | 'hover';
 
 export interface OverlayLayer {
   readonly kind: OverlayKind;
   readonly tiles: readonly Vec2[];
+}
+
+export interface ClimbMarker {
+  readonly pos: Vec2;
+  /** Total move cost returned by the movement rules for a route that climbs. */
+  readonly cost: number;
+}
+
+export interface CliffEdge {
+  readonly pos: Vec2;
+  readonly side: 'east' | 'south';
+}
+
+export interface TargetReticleCue {
+  readonly pos: Vec2;
+  readonly elevation: 'above' | 'below' | null;
+  readonly obscured: boolean;
+}
+
+/** Two-tier breaks are the only elevation boundaries that movement cannot cross. */
+export function cliffEdgesFor(grid: Grid): CliffEdge[] {
+  const edges: CliffEdge[] = [];
+  for (let y = 0; y < grid.height; y++) {
+    for (let x = 0; x < grid.width; x++) {
+      const here = tileAt(grid, { x, y });
+      if (!here) continue;
+      const east = tileAt(grid, { x: x + 1, y });
+      const south = tileAt(grid, { x, y: y + 1 });
+      if (east && Math.abs(here.elevation - east.elevation) >= 2)
+        edges.push({ pos: { x, y }, side: 'east' });
+      if (south && Math.abs(here.elevation - south.elevation) >= 2)
+        edges.push({ pos: { x, y }, side: 'south' });
+    }
+  }
+  return edges;
 }
 
 /**
@@ -257,6 +293,14 @@ export interface MapView {
   readonly grid: Grid;
   readonly units: readonly RenderUnit[];
   readonly overlays: readonly OverlayLayer[];
+  /** Per-cell climb surcharge for the current move preview. */
+  readonly climbMarkers?: readonly ClimbMarker[];
+  /** Two-tier elevation breaks shown with the move overlay. */
+  readonly cliffEdges?: readonly CliffEdge[];
+  /** Extra valid ranged targets granted by height, drawn in a lighter tone. */
+  readonly rangeBonusTiles?: readonly Vec2[];
+  /** Rule-resolved elevation and cloud cues for the active target reticle. */
+  readonly targetReticle?: TargetReticleCue | null;
   readonly npcs: readonly NpcMarker[];
   readonly props: readonly RenderProp[];
   readonly path: readonly Vec2[];

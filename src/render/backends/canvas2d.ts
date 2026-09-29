@@ -699,50 +699,109 @@ export class Canvas2DBackend implements RenderBackend {
   private drawOverlays(view: MapView, camera: Camera): void {
     if (view.crispOverlays) {
       this.drawCrispOverlays(view, camera);
-      return;
-    }
+    } else {
+      const { ctx } = this;
+      const origin = camera.toScreen({ x: 0, y: 0 });
+      const size = origin.size;
 
-    const { ctx } = this;
-    const origin = camera.toScreen({ x: 0, y: 0 });
-    const size = origin.size;
+      for (const layer of view.overlays) {
+        if (layer.tiles.length === 0) continue;
+        let loops = this.loops.get(layer);
+        if (!loops) {
+          loops = contourLoops(layer.tiles);
+          this.loops.set(layer, loops);
+        }
+        const [fill, edge] = overlayColors(layer.kind);
 
-    for (const layer of view.overlays) {
-      if (layer.tiles.length === 0) continue;
-      let loops = this.loops.get(layer);
-      if (!loops) {
-        loops = contourLoops(layer.tiles);
-        this.loops.set(layer, loops);
+        ctx.save();
+        ctx.beginPath();
+        for (const loop of loops) tracePolygon(ctx, loop, origin, size);
+        ctx.fillStyle = fill;
+        ctx.fill('evenodd');
+        if (edge) {
+          ctx.lineJoin = 'round';
+          ctx.strokeStyle = edge;
+          ctx.globalAlpha = OVERLAY.softAlpha;
+          ctx.lineWidth = size * OVERLAY.softWidth;
+          ctx.stroke();
+          ctx.globalAlpha = 1;
+          ctx.lineWidth = Math.max(2, size * OVERLAY.edgeWidth);
+          ctx.stroke();
+        }
+        ctx.restore();
       }
-      const [fill, edge] = overlayColors(layer.kind);
 
-      ctx.save();
-      ctx.beginPath();
-      for (const loop of loops) tracePolygon(ctx, loop, origin, size);
-      ctx.fillStyle = fill;
-      ctx.fill('evenodd');
-      if (edge) {
-        // A wide faint stroke under a thin crisp one: a soft edge with no blur.
-        ctx.lineJoin = 'round';
-        ctx.strokeStyle = edge;
-        ctx.globalAlpha = OVERLAY.softAlpha;
-        ctx.lineWidth = size * OVERLAY.softWidth;
-        ctx.stroke();
-        ctx.globalAlpha = 1;
-        ctx.lineWidth = Math.max(2, size * OVERLAY.edgeWidth);
-        ctx.stroke();
+      if (view.hoverTile) {
+        const box = camera.toScreen(view.hoverTile);
+        ctx.save();
+        ctx.beginPath();
+        tracePolygon(ctx, HOVER_LOOP, box, box.size);
+        ctx.fillStyle = OVERLAY.hover;
+        ctx.fill();
+        ctx.restore();
       }
-      ctx.restore();
+    }
+    this.drawElevationCues(view, camera);
+  }
+
+  private drawElevationCues(view: MapView, camera: Camera): void {
+    const ctx = this.ctx;
+    const size = camera.toScreen({ x: 0, y: 0 }).size;
+    ctx.save();
+    ctx.strokeStyle = OVERLAY.cliffHatch;
+    ctx.lineWidth = Math.max(2, size * 0.045);
+    for (const edge of view.cliffEdges ?? []) {
+      const box = camera.toScreen(edge.pos);
+      const horizontal = edge.side === 'south';
+      const x = horizontal ? box.x : box.x + box.size;
+      const y = horizontal ? box.y + box.size : box.y;
+      ctx.beginPath();
+      for (let step = 0.1; step < 1; step += 0.2) {
+        if (horizontal) {
+          ctx.moveTo(x + size * (step - 0.08), y - size * 0.1);
+          ctx.lineTo(x + size * (step + 0.08), y + size * 0.1);
+        } else {
+          ctx.moveTo(x - size * 0.1, y + size * (step - 0.08));
+          ctx.lineTo(x + size * 0.1, y + size * (step + 0.08));
+        }
+      }
+      ctx.stroke();
     }
 
-    if (view.hoverTile) {
-      const box = camera.toScreen(view.hoverTile);
-      ctx.save();
-      ctx.beginPath();
-      tracePolygon(ctx, HOVER_LOOP, box, box.size);
-      ctx.fillStyle = OVERLAY.hover;
-      ctx.fill();
-      ctx.restore();
+    ctx.fillStyle = OVERLAY.climb;
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    for (const marker of view.climbMarkers ?? []) {
+      const box = camera.toScreen(marker.pos);
+      const cx = box.x + box.size * 0.72;
+      const cy = box.y + box.size * 0.25;
+      ctx.font = `600 ${Math.max(10, size * 0.2)}px sans-serif`;
+      ctx.fillText(`▲${marker.cost}`, cx, cy);
     }
+
+    const cue = view.targetReticle;
+    if (cue) {
+      const box = camera.toScreen(cue.pos);
+      ctx.font = `700 ${Math.max(14, size * 0.28)}px sans-serif`;
+      if (cue.elevation)
+        ctx.fillText(
+          cue.elevation === 'above' ? '▲' : '▼',
+          box.x + box.size * 0.5,
+          box.y + box.size * 0.2,
+        );
+      if (cue.obscured) {
+        const x = box.x + box.size * 0.76;
+        const y = box.y + box.size * 0.25;
+        ctx.beginPath();
+        ctx.arc(x - size * 0.06, y, size * 0.07, Math.PI, 0);
+        ctx.arc(x + size * 0.04, y - size * 0.015, size * 0.09, Math.PI, 0);
+        ctx.lineTo(x + size * 0.12, y + size * 0.06);
+        ctx.lineTo(x - size * 0.13, y + size * 0.06);
+        ctx.closePath();
+        ctx.fill();
+      }
+    }
+    ctx.restore();
   }
 
   /** The pre-contour look, kept for High contrast: a square per tile, hard edges. */
@@ -1334,6 +1393,8 @@ export function overlayColors(kind: OverlayKind): [string, string | null] {
       return [OVERLAY.target, OVERLAY.targetEdge];
     case 'area':
       return [OVERLAY.area, OVERLAY.areaEdge];
+    case 'rangeBonus':
+      return [OVERLAY.rangeBonus, OVERLAY.rangeBonusEdge];
     case 'hover':
       return [OVERLAY.hover, null];
   }

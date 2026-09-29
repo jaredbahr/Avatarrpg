@@ -51,26 +51,47 @@ export class UnitInspector extends Dialog {
    * puddle under your own firebender is a warning — neither was visible
    * anywhere in the HUD before, only as a tint on the map.
    */
-  private footingRow(): HTMLElement | null {
+  private footingRows(): HTMLElement[] {
     const battle = this.app.state?.battle;
-    if (!battle) return null;
+    if (!battle) return [];
+
+    const rows: HTMLElement[] = [];
+    const ground = tileAt(battle.grid, this.unit.pos);
+    if (ground && (ground.elevation > 0 || ground.ramp)) {
+      rows.push(
+        el(
+          'div',
+          { class: 'status-row status-terrain' },
+          ground.elevation > 0
+            ? el('strong', { text: `High ground (tier ${ground.elevation})` })
+            : null,
+          el('span', {
+            class: 'tiny muted',
+            text: ground.ramp ? 'Stairs' : `Climb +${this.app.content.tuning.climbCost}`,
+          }),
+        ),
+      );
+    }
 
     // A 2-tile boss stands in whichever of its cells carries a surface; the
     // first one is close enough for an at-a-glance readout.
     const cell = occupiedCells(this.unit).find((c) => tileAt(battle.grid, c)?.surface);
     const surface = cell ? tileAt(battle.grid, cell)?.surface : undefined;
-    if (!surface) return null;
+    if (!surface) return rows;
 
     const def = this.app.content.surfaces.get(surface.id);
-    return el(
-      'div',
-      { class: 'status-row status-footing' },
-      el('strong', { text: `Standing in ${def?.name ?? surface.id}` }),
-      el('span', {
-        class: 'tiny muted',
-        text: describeFooting(this.app.content, surface.id),
-      }),
+    rows.push(
+      el(
+        'div',
+        { class: 'status-row status-footing' },
+        el('strong', { text: `Standing in ${def?.name ?? surface.id}` }),
+        el('span', {
+          class: 'tiny muted',
+          text: describeFooting(this.app.content, surface.id),
+        }),
+      ),
     );
+    return rows;
   }
 
   protected build(body: HTMLElement): void {
@@ -115,9 +136,9 @@ export class UnitInspector extends Dialog {
       ),
     );
 
-    const footing = this.footingRow();
+    const footing = this.footingRows();
 
-    if (unit.statuses.length > 0 || footing) {
+    if (unit.statuses.length > 0 || footing.length > 0) {
       const list = el('div', { class: 'stack tight status-list' });
       for (const status of unit.statuses) {
         const def = this.app.content.statuses.get(status.id);
@@ -136,7 +157,7 @@ export class UnitInspector extends Dialog {
           ),
         );
       }
-      if (footing) list.appendChild(footing);
+      for (const row of footing) list.appendChild(row);
       body.appendChild(el('h3', { text: 'Right now' }));
       body.appendChild(list);
     }

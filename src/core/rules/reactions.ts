@@ -930,9 +930,10 @@ export function describeFooting(content: ContentIndex, surface: SurfaceId): stri
   if (def.blocksSight) parts.push('blocks line of sight');
   if (def.grantsCover) parts.push('gives cover');
   if (def.obscures) {
-    parts.push(
-      `${def.obscures.inside} to hit anyone inside, ${def.obscures.through} to shoot through`,
-    );
+    const penalty = (value: number) => (value < 0 ? `−${Math.abs(value)}` : `+${value}`);
+    const inside = penalty(def.obscures.inside);
+    const through = penalty(def.obscures.through);
+    parts.push(`${inside} to hit anyone inside, ${through} to shoot through`);
   }
   if (parts.length === 0) return 'No effect on whoever stands in it.';
   return `${parts.join(', ')}.`;

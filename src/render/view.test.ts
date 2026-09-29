@@ -1,7 +1,10 @@
 import { describe, expect, it } from 'vitest';
+import type { Grid } from '../core/types';
+import { DEFAULT_TILE } from '../core/rules/grid';
 import {
   FALLEN_ALPHA,
   FALLEN_KNOCKOUT_ALPHA,
+  cliffEdgesFor,
   fallenAlpha,
   floaterScale,
   unitMarkerGroundPoint,
@@ -43,5 +46,20 @@ describe('the fallen fade (ADR 0059)', () => {
     for (const clip of ['koSouthEast', 'koSouthWest', 'koNorthEast', 'koNorthWest'] as const)
       expect(fallenAlpha({ fallen: true, clip })).toBe(FALLEN_KNOCKOUT_ALPHA);
     expect(FALLEN_KNOCKOUT_ALPHA).toBeGreaterThan(FALLEN_ALPHA);
+  });
+});
+
+describe('cliff edge presentation', () => {
+  it('marks only orthogonal boundaries with a two-tier break', () => {
+    const tiles = Array.from({ length: 9 }, () => ({ ...DEFAULT_TILE }));
+    tiles[1] = { ...DEFAULT_TILE, elevation: 1 };
+    tiles[2] = { ...DEFAULT_TILE, elevation: 2 };
+    tiles[5] = { ...DEFAULT_TILE, elevation: 2 };
+    const grid: Grid = { width: 3, height: 3, tiles };
+
+    expect(cliffEdgesFor(grid)).toEqual([
+      { pos: { x: 1, y: 1 }, side: 'east' },
+      { pos: { x: 2, y: 1 }, side: 'south' },
+    ]);
   });
 });
