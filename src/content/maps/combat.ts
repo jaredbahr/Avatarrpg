@@ -198,8 +198,8 @@ export const AMBUSH_ROAD: MapDef = {
    * Rock faces, not tier-2 paving: the old map's walkable `A` slabs and its six
    * 0-to-2 steps are gone, so every adjacent pair of walkable cells is exactly
    * one tier apart, which is the rule E4 climbing assumes. North and south are
-   * the cut faces themselves, painted on the ground page (`quarry-rock.ts`):
-   * the north faces stand up to two courses with drill scars, and the south
+   * the cut faces themselves, painted on the ground page (`cutting-rock.ts`):
+   * the north cut stands four courses with a few drill gouges, and the south
    * run's only face is a one-course sawn lip at the board's edge, so no rock
    * stands between the camera and the southern bays.
    *
