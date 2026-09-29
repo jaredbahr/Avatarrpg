@@ -54,8 +54,48 @@ import { canUseAbilities, effectiveStats, isAlive } from './stats';
 /* Targeting geometry                                                  */
 /* ------------------------------------------------------------------ */
 
+/**
+ * The first occupied caster cell that can legally reach and see `target`.
+ * `occupiedCells` lists the anchor first, making the choice deterministic and
+ * preserving the exact origin used by size-1 casters.
+ */
+export function validatingOrigin(
+  content: ContentIndex,
+  grid: Grid,
+  caster: Unit,
+  ability: Ability,
+  target: Vec2,
+  checkLineOfSight = true,
+): Vec2 | null {
+  const targetElevation = tileAt(grid, target)?.elevation ?? 0;
+  const hasDash = ability.effects.some((effect) => effect.kind === 'dash');
+  for (const cell of occupiedCells(caster)) {
+    const casterElevation = tileAt(grid, cell)?.elevation ?? 0;
+    const heightReach =
+      ability.range >= 3 &&
+      ability.requiresLineOfSight &&
+      !hasDash &&
+      casterElevation > targetElevation
+        ? content.tuning.heightReachBonus
+        : 0;
+    if (distance(cell, target) > ability.range + heightReach) continue;
+    if (checkLineOfSight && ability.requiresLineOfSight && !hasLineOfSight(grid, cell, target)) {
+      continue;
+    }
+    return cell;
+  }
+  return null;
+}
+
 /** Every tile an ability touches when aimed at `target`. */
-export function affectedTiles(grid: Grid, caster: Unit, ability: Ability, target: Vec2): Vec2[] {
+export function affectedTiles(
+  content: ContentIndex,
+  grid: Grid,
+  caster: Unit,
+  ability: Ability,
+  target: Vec2,
+): Vec2[] {
+  const origin = validatingOrigin(content, grid, caster, ability, target) ?? caster.pos;
   switch (ability.targeting.shape) {
     case 'self':
       return occupiedCells(caster);
@@ -65,9 +105,9 @@ export function affectedTiles(grid: Grid, caster: Unit, ability: Ability, target
     case 'blast':
       return blastTiles(grid, target, ability.targeting.radius);
     case 'line':
-      return lineTiles(grid, caster.pos, target, ability.targeting.length);
+      return lineTiles(grid, origin, target, ability.targeting.length);
     case 'cone':
-      return coneTiles(grid, caster.pos, target, ability.targeting.length);
+      return coneTiles(grid, origin, target, ability.targeting.length);
   }
 }
 
@@ -128,10 +168,10 @@ export function isValidTarget(
   if (!inBounds(battle.grid, target)) return { ok: false, reason: 'Off the map.' };
 
   const range = distanceToUnit(target, caster);
-  if (range > ability.range) return { ok: false, reason: 'Out of range.' };
+  const inRangeOrigin = validatingOrigin(content, battle.grid, caster, ability, target, false);
+  if (!inRangeOrigin) return { ok: false, reason: 'Out of range.' };
   if (range < ability.minRange) return { ok: false, reason: 'Too close.' };
-
-  if (ability.requiresLineOfSight && !hasLineOfSight(battle.grid, caster.pos, target)) {
+  if (!validatingOrigin(content, battle.grid, caster, ability, target)) {
     return { ok: false, reason: 'No line of sight.' };
   }
 
@@ -201,12 +241,23 @@ export function targetableTiles(
   if (ability.targeting.shape === 'self') return occupiedCells(caster);
 
   const out: Vec2[] = [];
-  const reach = ability.range;
-  for (let dy = -reach; dy <= reach; dy++) {
-    for (let dx = -reach; dx <= reach; dx++) {
-      const pos = { x: caster.pos.x + dx, y: caster.pos.y + dy };
-      if (!inBounds(battle.grid, pos)) continue;
-      if (isValidTarget(content, battle, caster, ability, pos).ok) out.push(pos);
+  const reach =
+    ability.range >= 3 &&
+    ability.requiresLineOfSight &&
+    !ability.effects.some((effect) => effect.kind === 'dash')
+      ? ability.range + content.tuning.heightReachBonus
+      : ability.range;
+  const seen = new Set<string>();
+  for (const cell of occupiedCells(caster)) {
+    for (let dy = -reach; dy <= reach; dy++) {
+      for (let dx = -reach; dx <= reach; dx++) {
+        const pos = { x: cell.x + dx, y: cell.y + dy };
+        if (!inBounds(battle.grid, pos) || seen.has(posKey(pos))) continue;
+        if (isValidTarget(content, battle, caster, ability, pos).ok) {
+          seen.add(posKey(pos));
+          out.push(pos);
+        }
+      }
     }
   }
   return out;
@@ -274,7 +325,7 @@ export function previewAbility(
   ability: Ability,
   target: Vec2,
 ): AbilityPreview {
-  const tiles = affectedTiles(battle.grid, caster, ability, target);
+  const tiles = affectedTiles(content, battle.grid, caster, ability, target);
   const inArea = unitsOnTiles(battle.units, tiles).filter(
     (u) => allowsCasterTarget(ability) || u.id !== caster.id,
   );
@@ -437,7 +488,7 @@ export function resolveAbility(
   target: Vec2,
   rng: RngCursor,
 ): void {
-  const tiles = affectedTiles(draft.grid, caster, ability, target);
+  const tiles = affectedTiles(draft.content, draft.grid, caster, ability, target);
 
   draft.emit({ type: 'abilityUsed', unitId: caster.id, abilityId: ability.id, target, tiles });
 

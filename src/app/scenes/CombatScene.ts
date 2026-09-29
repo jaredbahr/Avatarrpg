@@ -1776,7 +1776,7 @@ export class CombatScene implements Scene {
         if (this.pending) {
           overlays.push({
             kind: 'area',
-            tiles: affectedTiles(battle.grid, unit, ability, this.pending),
+            tiles: affectedTiles(this.app.content, battle.grid, unit, ability, this.pending),
           });
         }
       }

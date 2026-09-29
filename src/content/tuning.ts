@@ -44,10 +44,17 @@ const combatTuningShape = {
   /** Indexed by intensity; index 0 is clear. A second weather type would key this by id. */
   weather: z.array(weatherLevelSchema).min(3).max(3),
   /**
+   * Divisor used to reduce ranged cover from a higher-tier attacker against a
+   * lower defender.
+   */
+  plungingCoverDivisor: z.number().int().min(1),
+  /**
    * Extra move points a one-tier climb costs, unless either end is a ramp
    * (`S`). A drop is always free and a two-tier step is never legal.
    */
   climbCost: z.number().int().min(0),
+  /** Extra range for long-range line-of-sight abilities from higher ground. */
+  heightReachBonus: z.number().int().min(0),
   /** Hit chance is clamped into this band, lowest bound first. */
   hitChanceMin: z.number().int().min(0).max(100),
   hitChanceMax: z.number().int().min(0).max(100),
@@ -73,6 +80,7 @@ export const COMBAT_TUNING: CombatTuning = combatTuningSchema.parse({
   baseHitChance: 90,
   elevationStep: 10,
   coverPenalty: 20,
+  plungingCoverDivisor: 2,
   // Steam: -25 to hit anyone inside, -15 to shoot through, -15 from inside.
   // Level 1 sandstorm: -5 x (distance - 2), capped at -20.
   // Level 2 sandstorm: -10 x (distance - 1), capped at -40.
@@ -85,6 +93,7 @@ export const COMBAT_TUNING: CombatTuning = combatTuningSchema.parse({
     { perTile: 10, minDistance: 2, cap: 40 },
   ],
   climbCost: 1,
+  heightReachBonus: 1,
   hitChanceMin: 5,
   hitChanceMax: 99,
 });

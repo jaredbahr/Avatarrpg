@@ -17,7 +17,7 @@
 
 import type { RngCursor } from '../rng';
 import type { AbilityEffect, ContentIndex, Grid, Unit, Vec2, WeatherIntensity } from '../types';
-import { distanceToUnit, occupiedCells, tileAt } from './grid';
+import { distanceBetweenUnits, occupiedCells, tileAt } from './grid';
 import { obscurementFor } from './obscurement';
 import type { ObscurementBreakdown } from './obscurement';
 import { accuracyModifier, effectiveStats, incomingMultiplier } from './stats';
@@ -56,6 +56,8 @@ export interface HitBreakdown {
   readonly base: number;
   readonly elevation: number;
   readonly cover: number;
+  /** Positive offset that reduces the cover penalty; shown separately in previews. */
+  readonly plunging: number;
   readonly statuses: number;
   /** Clouds and weather, component by component and in total. */
   readonly obscurement: ObscurementBreakdown;
@@ -80,18 +82,24 @@ export function hitBreakdown(
   const elevationDelta = elevationOf(grid, attacker) - elevationOf(grid, defender);
   const elevation = elevationDelta * tuning.elevationStep;
 
-  const adjacent = distanceToUnit(attacker.pos, defender) <= 1;
-  const cover = !adjacent && hasCover(content, grid, defender) ? -tuning.coverPenalty : 0;
+  const adjacent = distanceBetweenUnits(attacker, defender) <= 1;
+  const covered = !adjacent && hasCover(content, grid, defender);
+  const plunging =
+    covered && elevationDelta > 0
+      ? Math.floor(tuning.coverPenalty / tuning.plungingCoverDivisor)
+      : 0;
+  const cover = covered ? -tuning.coverPenalty : 0;
 
   const statuses = accuracyModifier(content, attacker);
   const obscurement = obscurementFor(content, grid, attacker, defender, weather);
 
-  const raw = tuning.baseHitChance + elevation + cover + statuses + obscurement.total;
+  const raw = tuning.baseHitChance + elevation + cover + plunging + statuses + obscurement.total;
   return {
     chance: Math.max(tuning.hitChanceMin, Math.min(tuning.hitChanceMax, raw)),
     base: tuning.baseHitChance,
     elevation,
     cover,
+    plunging,
     statuses,
     obscurement,
   };

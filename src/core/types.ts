@@ -1372,6 +1372,8 @@ export interface CombatTuning {
   readonly elevationStep: number;
   /** Accuracy removed when the defender has cover and is not adjacent. */
   readonly coverPenalty: number;
+  /** Divisor that halves the cover penalty for a non-adjacent higher attacker. */
+  readonly plungingCoverDivisor: number;
   /**
    * Obscurement (steam, sandstorm) is summed from its components and then
    * clamped to this many points, so stacked clouds and weather cannot floor
@@ -1397,6 +1399,8 @@ export interface CombatTuning {
   readonly weather: readonly WeatherLevel[];
   /** Extra move points a one-tier climb costs when neither end is a ramp. */
   readonly climbCost: number;
+  /** Extra range for range-three-plus line-of-sight abilities from higher ground. */
+  readonly heightReachBonus: number;
   /** Hit chance is clamped into this band, lowest bound first. */
   readonly hitChanceMin: number;
   readonly hitChanceMax: number;
