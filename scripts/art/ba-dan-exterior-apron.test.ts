@@ -4,6 +4,7 @@ import { pixelAt, parseHex } from './lib/image';
 import {
   APRON_ALPHA_STEPS,
   APRON_FADE,
+  MATERIAL_TONES,
   MATERIAL_REACH,
   apronDepth,
   apronLogical,
@@ -71,4 +72,36 @@ it('starts opaque at the rim, has room for the whole band, and carries grass out
     distance(sample(10.5, -MATERIAL_REACH - 0.2), road),
   );
   expect(distance(sample(-1.6, 3.5), grass)).toBeLessThan(distance(sample(-1.6, 3.5), road));
+});
+
+it('uses a clustered transition mask rather than a repeating ordered screen', () => {
+  const image = packApron();
+  const materialColours = new Set(
+    Object.values(MATERIAL_TONES)
+      .flatMap((tones) => Object.values(tones))
+      .map((tone) => tone.join(',')),
+  );
+  const samples = Array.from({ length: image.height / 2 }, (_, y) =>
+    Array.from({ length: image.width / 2 }, (_, x) => {
+      const px = x * 2;
+      const py = y * 2;
+      const rgba = pixelAt(image, px, py);
+      if (rgba[3] === 0) return null;
+      return materialColours.has(rgba.slice(0, 3).join(','));
+    }),
+  );
+  let sameAtFour = 0;
+  let compared = 0;
+  for (let y = 0; y < samples.length - 2; y++)
+    for (let x = 0; x < (samples[y]?.length ?? 0) - 2; x++) {
+      const current = samples[y]?.[x];
+      const diagonal = samples[y + 2]?.[x + 2];
+      if (current === null || diagonal === null) continue;
+      if (!current && !diagonal) continue;
+      compared++;
+      if (current === diagonal) sameAtFour++;
+    }
+  // A 4x4 Bayer screen repeats exactly on this diagonal; carried clusters do not.
+  expect(compared).toBeGreaterThan(0);
+  expect(sameAtFour).toBeLessThan(compared * 0.85);
 });

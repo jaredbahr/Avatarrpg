@@ -7,7 +7,6 @@ import {
   GARDEN_TONES,
   GRAIN,
   MATERIAL_TONES,
-  transitionCluster,
   gardenPlatePath,
   packGardenPlate,
 } from './ba-dan-garden';
@@ -52,17 +51,32 @@ describe('Ba Dan outer garden', () => {
   });
 
   it('uses a clustered transition mask rather than a repeating ordered screen', () => {
-    const samples = Array.from({ length: 16 }, (_, y) =>
-      Array.from({ length: 16 }, (_, x) => transitionCluster(x / 8, y / 8, 71) < 0.45),
-    );
+    const isTransition = (rgba: readonly number[]): boolean =>
+      rgba[0] === MATERIAL_TONES.road.shadow[0] &&
+      rgba[1] === MATERIAL_TONES.road.shadow[1] &&
+      rgba[2] === MATERIAL_TONES.road.shadow[2] &&
+      rgba[3] === 255;
+    const samples = BA_DAN_GARDEN_PLATES.map((plate) => {
+      const image = packGardenPlate(plate);
+      return Array.from({ length: image.height / GRAIN }, (_, y) =>
+        Array.from({ length: image.width / GRAIN }, (_, x) =>
+          isTransition(pixelAt(image, x * GRAIN, y * GRAIN)),
+        ),
+      );
+    });
     let sameAtFour = 0;
     let compared = 0;
-    for (let y = 0; y < 12; y++)
-      for (let x = 0; x < 12; x++) {
-        compared++;
-        if (samples[y]?.[x] === samples[y + 4]?.[x + 4]) sameAtFour++;
-      }
+    for (const sample of samples)
+      for (let y = 0; y < sample.length - 2; y++)
+        for (let x = 0; x < (sample[y]?.length ?? 0) - 2; x++) {
+          const current = sample[y]?.[x] ?? false;
+          const diagonal = sample[y + 2]?.[x + 2] ?? false;
+          if (!current && !diagonal) continue;
+          compared++;
+          if (current === diagonal) sameAtFour++;
+        }
     // A 4x4 Bayer screen repeats exactly on this diagonal; painted clusters do not.
+    expect(compared).toBeGreaterThan(0);
     expect(sameAtFour).toBeLessThan(compared * 0.85);
   });
 });
