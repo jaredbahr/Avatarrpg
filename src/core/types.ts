@@ -875,6 +875,12 @@ export interface MapScene {
   readonly groundMode?: 'partial';
   /** Exact cells whose permanent rubble is already represented by registered art. */
   readonly paintedRubble?: readonly Vec2[];
+  /**
+   * How far the ground art already lifts a raised cell's top, in tiles per
+   * tier (ADR 0065). The renderers lift it the rest of the way and draw the
+   * faces; art painted at the full tier lift keeps its own faces. Absent, 0.
+   */
+  readonly reliefLift?: number;
   /** Where smoke leaves a painted roof, in ground tiles (fractional, may lie off the grid). */
   readonly chimneys?: readonly Vec2[];
   readonly ground: readonly SceneImage[];

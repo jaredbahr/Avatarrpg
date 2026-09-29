@@ -173,6 +173,7 @@ export const CUTTING_POOL_PATCH = { x: 752, y: 368, width: 416, height: 224 } as
 export const CUTTING_SCENE: MapScene = {
   groundMode: 'partial',
   paintedRubble: CUTTING_RUBBLE_CELLS,
+  reliefLift: 0.06,
   ground: [
     ...QUARRY_SURROUND,
     ...routeGround('cutting-scene', CUTTING_GROUND_REGIONS),
@@ -186,6 +187,8 @@ export const CUTTING_SCENE: MapScene = {
 export const DRILLER_FLOOR_SCENE: MapScene = {
   groundMode: 'partial',
   paintedRubble: DRILLER_RUBBLE_CELLS,
+  // The pages stand each bench at the old actor lift, 0.06 of a tile a tier.
+  reliefLift: 0.06,
   ground: [
     ...QUARRY_SURROUND,
     ...routeGround('driller-floor-scene', DRILLER_GROUND_REGIONS),
