@@ -36,7 +36,11 @@ import {
   saveToSlot,
 } from './storage/localSaves';
 import { describeProgress } from '../core/save/serialize';
-import { reconcileDisciplines, reconcileWorld } from '../core/save/reconcile';
+import {
+  reconcileBattleResult,
+  reconcileDisciplines,
+  reconcileWorld,
+} from '../core/save/reconcile';
 import type { SessionMeta } from '../core/save/serialize';
 import { announce, clear, el } from './ui/dom';
 import { loadIcons } from './ui/icons';
@@ -383,7 +387,11 @@ export class App {
     // hands back any pick the party is owed rather than swallowing it.
     // ADR 0047 §5: also clears a stale conversation pin and steps the
     // leader off a visible NPC tile if content moved under the save.
-    this.state = reconcileWorld(this.content, reconcileDisciplines(this.content, state));
+    const reconciled = reconcileBattleResult(this.content, state);
+    for (const warning of reconciled.warnings) {
+      console.warn('Battle save could not be fully reconciled.', warning);
+    }
+    this.state = reconcileWorld(this.content, reconcileDisciplines(this.content, reconciled.state));
     this.session.setPlayers(Session.fromMeta(session).players);
     this.animator.clear();
     this.residents.reset();
