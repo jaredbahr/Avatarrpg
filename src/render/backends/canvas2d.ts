@@ -786,9 +786,9 @@ export class Canvas2DBackend implements RenderBackend {
     ctx.lineCap = 'round';
     for (const marker of view.climbMarkers ?? []) {
       const box = camera.toScreen(marker.pos);
-      const cx = box.x + box.size * 0.72;
+      const cx = box.x + box.size * 0.4;
       const cy =
-        box.y - liftAt(view.grid, marker.pos, camera.projection) * box.size + box.size * 0.2;
+        box.y - liftAt(view.grid, marker.pos, camera.projection) * box.size + box.size * 0.72;
       ctx.beginPath();
       ctx.moveTo(cx - size * 0.1, cy + size * 0.07);
       ctx.lineTo(cx, cy - size * 0.1);

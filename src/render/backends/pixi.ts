@@ -295,6 +295,7 @@ export class PixiBackend implements RenderBackend {
   private bendUnder = new Container();
   private bendOver = new Container();
   private fxGfx = new Graphics();
+  private climbLabelLayer = new Container();
   private floaterLayer = new Container();
   /** Particles and strokes: ground-level ones under the units, the rest over them. */
   private fxUnder = new ParticleLayer('under');
@@ -341,6 +342,7 @@ export class PixiBackend implements RenderBackend {
   private unitSprites = new Map<string, Sprite>();
   private textureCache = new Map<HTMLCanvasElement | HTMLImageElement, Texture>();
   private frameTextures = new Map<string, Texture>();
+  private climbLabels: Text[] = [];
   private floaters: Text[] = [];
   private badgeText: Text[] = [];
 
@@ -476,7 +478,7 @@ export class PixiBackend implements RenderBackend {
       this.flockLayer,
       this.bendOver,
     );
-    this.labels.addChild(this.fxGfx, this.floaterLayer);
+    this.labels.addChild(this.fxGfx, this.climbLabelLayer, this.floaterLayer);
     this.groundStack.addChild(this.root);
     this.liftSprite.visible = false;
     app.stage.addChild(
@@ -1588,16 +1590,17 @@ export class PixiBackend implements RenderBackend {
         y: (box.y + camera.offsetY) / camera.scale,
       };
     };
-    for (const marker of view.climbMarkers ?? []) {
-      // Markers are anchored at the tile top, like Canvas. spriteBox is an
-      // actor-foot anchor and sits substantially higher on the oblique board.
+    const climbMarkers = view.climbMarkers ?? [];
+    climbMarkers.forEach((marker, index) => {
+      // Start from the tile box, like Canvas; spriteBox is an actor-foot
+      // anchor and sits substantially higher on the oblique board.
       const top = camera.toScreen(marker.pos);
       const box = {
         x: (top.x + camera.offsetX) / camera.scale,
         y: (top.y + camera.offsetY) / camera.scale,
       };
-      const cx = box.x + TILE * 0.72;
-      const cy = box.y - liftAt(view.grid, marker.pos, camera.projection) * TILE + TILE * 0.2;
+      const cx = box.x + TILE * 0.4;
+      const cy = box.y - liftAt(view.grid, marker.pos, camera.projection) * TILE + TILE * 0.72;
       const arrow = [
         cx - TILE * 0.1,
         cy + TILE * 0.07,
@@ -1612,8 +1615,15 @@ export class PixiBackend implements RenderBackend {
           color: OVERLAY.pathUnder,
         })
         .fill({ color: OVERLAY.climb });
-      this.drawSmallPlus(g, cx + TILE * 0.12, cy, TILE * 0.035);
-      this.drawSmallDigit(g, marker.surcharge, cx + TILE * 0.25, cy, TILE * 0.07);
+      const label = this.climbLabel(index);
+      const text = `+${marker.surcharge}`;
+      if (label.text !== text) label.text = text;
+      label.position.set(cx + TILE * 0.2, cy);
+      label.visible = true;
+    });
+    for (let i = climbMarkers.length; i < this.climbLabels.length; i++) {
+      const label = this.climbLabels[i];
+      if (label) label.visible = false;
     }
 
     const cue = view.targetReticle;
@@ -1652,61 +1662,24 @@ export class PixiBackend implements RenderBackend {
     }
   }
 
-  private drawSmallPlus(g: Graphics, cx: number, cy: number, unit: number): void {
-    const half = unit;
-    const trace = () => {
-      g.moveTo(cx - half, cy).lineTo(cx + half, cy);
-      g.moveTo(cx, cy - half).lineTo(cx, cy + half);
-    };
-    trace();
-    g.stroke({ width: Math.max(3, unit * 0.75), color: OVERLAY.pathUnder, cap: 'round' });
-    trace();
-    g.stroke({ width: Math.max(2, unit * 0.28), color: OVERLAY.climb, cap: 'round' });
-  }
-
-  private drawSmallDigit(g: Graphics, value: number, cx: number, cy: number, unit: number): void {
-    const segments: readonly (readonly number[])[] = [
-      [0, 1, 2, 4, 5, 6],
-      [2, 5],
-      [0, 2, 3, 4, 6],
-      [0, 2, 3, 5, 6],
-      [1, 2, 3, 5],
-      [0, 1, 3, 5, 6],
-      [0, 1, 3, 4, 5, 6],
-      [0, 2, 5],
-      [0, 1, 2, 3, 4, 5, 6],
-      [0, 1, 2, 3, 5, 6],
-    ];
-    const digits = String(Math.abs(Math.trunc(value)))
-      .split('')
-      .map(Number);
-    const gap = unit * 0.35;
-    const width = digits.length * unit + Math.max(0, digits.length - 1) * gap;
-    const startX = cx - width / 2;
-    const y = cy - unit * 1.5;
-    const lines: readonly (readonly [number, number, number, number])[] = [
-      [0, y, unit, y],
-      [0, y, 0, y + unit],
-      [unit, y, unit, y + unit],
-      [0, y + unit, unit, y + unit],
-      [0, y + unit, 0, y + unit * 2],
-      [unit, y + unit, unit, y + unit * 2],
-      [0, y + unit * 2, unit, y + unit * 2],
-    ];
-    const trace = () => {
-      digits.forEach((digit, digitIndex) => {
-        const active = segments[digit] ?? [];
-        const x = startX + digitIndex * (unit + gap);
-        for (const index of active) {
-          const line = lines[index];
-          if (line) g.moveTo(line[0] + x, line[1]).lineTo(line[2] + x, line[3]);
-        }
+  private climbLabel(index: number): Text {
+    let text = this.climbLabels[index];
+    if (!text) {
+      text = new Text({
+        text: '',
+        style: new TextStyle({
+          fontFamily: 'sans-serif',
+          fontWeight: '600',
+          fontSize: Math.max(10, TILE * 0.2),
+          fill: OVERLAY.climb,
+          stroke: { color: OVERLAY.pathUnder, width: Math.max(2, TILE * 0.045) },
+        }),
       });
-    };
-    trace();
-    g.stroke({ width: Math.max(3, unit * 0.75), color: OVERLAY.pathUnder, cap: 'round' });
-    trace();
-    g.stroke({ width: Math.max(2, unit * 0.28), color: OVERLAY.climb, cap: 'round' });
+      text.anchor.set(0.5);
+      this.climbLabels[index] = text;
+      this.climbLabelLayer.addChild(text);
+    }
+    return text;
   }
 
   /**
