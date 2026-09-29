@@ -77,7 +77,11 @@ describe('obscurement', () => {
 
   it('counts a cloud crossed once, however many tiles it spans', () => {
     const { attacker, defender } = fixture();
-    const grid = steam(openGrid(), [{ x: 1, y: 0 }, { x: 2, y: 0 }, { x: 3, y: 0 }]);
+    const grid = steam(openGrid(), [
+      { x: 1, y: 0 },
+      { x: 2, y: 0 },
+      { x: 3, y: 0 },
+    ]);
     const breakdown = hitBreakdown(
       CONTENT,
       grid,
@@ -115,7 +119,10 @@ describe('obscurement', () => {
 
   it('stacks inside and through, and clamps at the obscurement cap', () => {
     const { attacker, defender } = fixture();
-    const grid = steam(openGrid(), [{ x: 2, y: 0 }, { x: 4, y: 0 }]);
+    const grid = steam(openGrid(), [
+      { x: 2, y: 0 },
+      { x: 4, y: 0 },
+    ]);
     const attackerUnit = at(attacker, { x: 0, y: 0 });
     const defenderUnit = at(defender, { x: 4, y: 0 });
 
@@ -142,9 +149,13 @@ describe('obscurement', () => {
     const defenderUnit = at(defender, { x: 1, y: 0 });
 
     const defenderCloud = steam(openGrid(), [{ x: 1, y: 0 }]);
-    expect(
-      hitBreakdown(CONTENT, defenderCloud, attackerUnit, defenderUnit).obscurement,
-    ).toEqual({ inside: 0, through: 0, attacker: 0, weather: 0, total: -10 });
+    expect(hitBreakdown(CONTENT, defenderCloud, attackerUnit, defenderUnit).obscurement).toEqual({
+      inside: 0,
+      through: 0,
+      attacker: 0,
+      weather: 0,
+      total: -10,
+    });
 
     const attackerCloud = steam(openGrid(), [{ x: 0, y: 0 }]);
     expect(hitBreakdown(CONTENT, attackerCloud, attackerUnit, defenderUnit).chance).toBe(80);
@@ -165,7 +176,10 @@ describe('obscurement', () => {
 
     const whole = hitBreakdown(
       CONTENT,
-      steam(openGrid(), [{ x: 4, y: 0 }, { x: 5, y: 0 }]),
+      steam(openGrid(), [
+        { x: 4, y: 0 },
+        { x: 5, y: 0 },
+      ]),
       attackerUnit,
       big,
     );
@@ -231,7 +245,10 @@ describe('obscurement', () => {
         ...encounter,
         weather: {
           id: 'sandstorm',
-          schedule: [{ fromRound: 3, intensity: 1 }, { fromRound: 6, intensity: 2 }],
+          schedule: [
+            { fromRound: 3, intensity: 1 },
+            { fromRound: 6, intensity: 2 },
+          ],
         },
       }),
     };
@@ -252,7 +269,10 @@ describe('obscurement', () => {
         ...encounter,
         weather: {
           id: 'sandstorm',
-          schedule: [{ fromRound: 6, intensity: 2 }, { fromRound: 3, intensity: 1 }],
+          schedule: [
+            { fromRound: 6, intensity: 2 },
+            { fromRound: 3, intensity: 1 },
+          ],
         },
       }),
     };
@@ -263,8 +283,7 @@ describe('obscurement', () => {
   it('describes footing from the data, not from prose', () => {
     const steamDef = CONTENT.surfaces.get('steam');
     if (!steamDef?.obscures) throw new Error('Missing steam obscurement');
-    const expected =
-      `${steamDef.obscures.inside} to hit anyone inside, ${steamDef.obscures.through} to shoot through`;
+    const expected = `${steamDef.obscures.inside} to hit anyone inside, ${steamDef.obscures.through} to shoot through`;
     const line = describeFooting(CONTENT, 'steam');
     expect(line).toContain(expected);
     expect(line.endsWith('.')).toBe(true);
