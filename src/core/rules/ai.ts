@@ -36,7 +36,6 @@ import {
   affectedTiles,
   canUseAbility,
   isValidTarget,
-  knownAbilities,
   resolveAbility,
   sameSide,
   unitsOnTiles,
@@ -44,15 +43,7 @@ import {
 } from './abilities';
 import { averageDamage, hitChance, positionHasCover } from './damage';
 import { positionObscurement, weatherAt } from './obscurement';
-import {
-  distance,
-  distanceToUnit,
-  hasLineOfSight,
-  posKey,
-  reachable,
-  tileAt,
-  withTile,
-} from './grid';
+import { distance, distanceToUnit, posKey, reachable, tileAt, withTile } from './grid';
 import { canMove, effectiveStats, isAlive } from './stats';
 import { findCombo } from './surfaces';
 
@@ -224,11 +215,19 @@ interface Plan {
  * A cautious bender will happily raise `earth_wall` across its own firing lane,
  * score the "shaped the ground" points, and then stand there with AP and no
  * legal action for the rest of the fight. Before paying for a wall we ask what
- * it costs the caster: if the world *after* the wall holds no enemy this unit
- * could still strike — from where it stands, or from anywhere a turn's walk
- * reaches — the placement is refused. The one good reason to accept that price
- * is the wall's defensive purpose: breaking the line of sight of something that
- * can hit the caster right now.
+ * it costs the caster: if, from where it *stands*, the world after the wall
+ * holds no enemy this unit could still strike, the placement is refused. A cell
+ * it could walk to next turn does not count — that shot is already lost this
+ * turn, which is the cost being judged, and a full-map search for a way around
+ * its own wall belongs to the movement scorer, not here.
+ *
+ * The one good reason to accept that cost is the wall's defensive purpose:
+ * shutting down an attack that can reach the caster *right now*. Both halves are
+ * judged with the rules the planner itself uses: a threat counts only while it
+ * is usable (`usableAbilities` filters out cooldowns, unaffordable AP and
+ * chi-blocking), and "did the wall break it" re-runs the real `isValidTarget`
+ * against the post-wall ground, so a size-2 attacker keeps its second firing
+ * cell and a second attack is not mistaken for a blocked one.
  *
  * Everything below is pure geometry through the same targeting helpers the
  * planner uses, so the preview path stays RNG-free and the answer matches what
@@ -251,20 +250,52 @@ function isOffensiveAbility(content: ContentIndex, ability: Ability): boolean {
   });
 }
 
-/** Would the caster, standing at `origin` on `battle`, still have a shot at any enemy? */
-function hasOffensiveTarget(
+/**
+ * Enemies this caster can hit from where it stands, keyed by the caster's
+ * identity and cell. One turn scores many walls from the same spot, so the scan
+ * is paid for once per position rather than once per placement.
+ */
+type WallTargetCache = Map<string, readonly Unit[]>;
+
+function preWallTargets(
   content: ContentIndex,
   battle: BattleState,
   caster: Unit,
-  origin: Vec2,
   enemies: readonly Unit[],
+  cache: WallTargetCache,
+): readonly Unit[] {
+  const key = `${caster.id}|${posKey(caster.pos)}`;
+  const cached = cache.get(key);
+  if (cached) return cached;
+  const targets = enemies.filter((enemy) => canHitFrom(content, battle, caster, enemy));
+  cache.set(key, targets);
+  return targets;
+}
+
+/** Can the caster turn a usable offensive ability onto `enemy` from where it stands? */
+function canHitFrom(
+  content: ContentIndex,
+  battle: BattleState,
+  caster: Unit,
+  enemy: Unit,
 ): boolean {
-  const positioned: Unit = { ...caster, pos: origin };
-  for (const enemy of enemies) {
-    for (const ability of knownAbilities(content, positioned)) {
-      if (!isOffensiveAbility(content, ability)) continue;
-      if (isValidTarget(content, battle, positioned, ability, enemy.pos).ok) return true;
-    }
+  for (const ability of usableAbilities(content, caster)) {
+    if (!isOffensiveAbility(content, ability)) continue;
+    if (isValidTarget(content, battle, caster, ability, enemy.pos).ok) return true;
+  }
+  return false;
+}
+
+/** Can this enemy, right now, turn a usable offensive ability onto the caster? */
+function threatensCaster(
+  content: ContentIndex,
+  battle: BattleState,
+  enemy: Unit,
+  caster: Unit,
+): boolean {
+  for (const ability of usableAbilities(content, enemy)) {
+    if (!isOffensiveAbility(content, ability)) continue;
+    if (isValidTarget(content, battle, enemy, ability, caster.pos).ok) return true;
   }
   return false;
 }
@@ -288,40 +319,37 @@ function gridWithWall(draft: BattleDraft, tiles: readonly Vec2[]): Grid {
   return grid;
 }
 
-/** True when this wall would shut the caster out of every enemy on the field. */
-function wallStrandsCaster(draft: BattleDraft, caster: Unit, tiles: readonly Vec2[]): boolean {
+/**
+ * True when this wall would shut the caster out of every enemy it can hit from
+ * where it stands, and is not buying a defensive block in exchange. Exposed so
+ * the wall tests can judge one specific placement without the planner's noise.
+ */
+export function wallStrandsCaster(
+  draft: BattleDraft,
+  caster: Unit,
+  tiles: readonly Vec2[],
+  cache: Map<string, readonly Unit[]> = new Map(),
+): boolean {
   const content = draft.content;
   const raised = wallTilesThatRise(draft, tiles);
   if (raised.length === 0) return false;
-  const grid = gridWithWall(draft, raised);
+
   const enemies = opponentsOf(draft, caster);
+  if (enemies.length === 0) return false;
 
-  const battle: BattleState = { ...draft.toBattle(), grid };
-
-  // Still a shot from where it stands? Then the wall costs it nothing.
-  if (hasOffensiveTarget(content, battle, caster, caster.pos, enemies)) return false;
-
-  // A wall that breaks a live threat's line of sight is doing its job.
   const before = draft.toBattle();
-  for (const enemy of enemies) {
-    let threatens = false;
-    for (const ability of knownAbilities(content, enemy)) {
-      if (!isOffensiveAbility(content, ability)) continue;
-      if (isValidTarget(content, before, enemy, ability, caster.pos).ok) {
-        threatens = true;
-        break;
-      }
-    }
-    if (threatens && !hasLineOfSight(grid, enemy.pos, caster.pos)) return false;
-  }
+  const targets = preWallTargets(content, before, caster, enemies, cache);
 
-  // Otherwise it only counts as stranded if no tile it can walk to next turn
-  // restores a shot either.
-  const ctx = { ...draft.moveContext(caster), grid };
-  const walk = reachable(ctx, caster.pos, effectiveStats(content, caster).maxMove);
-  for (const cell of walk.values()) {
-    if (cell.cost === 0) continue;
-    if (hasOffensiveTarget(content, battle, caster, cell.pos, enemies)) return false;
+  // The world exactly as the placement would leave it.
+  const after: BattleState = { ...before, grid: gridWithWall(draft, raised) };
+
+  // Still a shot at something it could hit before the wall? Then it costs nothing.
+  if (targets.some((enemy) => canHitFrom(content, after, caster, enemy))) return false;
+
+  // A wall that shuts down a usable attack aimed at the caster is doing its job.
+  for (const enemy of enemies) {
+    if (!threatensCaster(content, before, enemy, caster)) continue;
+    if (!threatensCaster(content, after, enemy, caster)) return false;
   }
   return true;
 }
@@ -339,6 +367,7 @@ function scoreAbility(
   ability: Ability,
   target: Vec2,
   weights: Weights,
+  wallTargets: WallTargetCache,
 ): number {
   const content = draft.content;
   const tiles = affectedTiles(content, draft.grid, caster, ability, target);
@@ -440,9 +469,9 @@ function scoreAbility(
         const near = tiles.some((pos) => opponents.some((o) => distanceToUnit(pos, o) <= 2));
         if (!near) break;
         // Refuse a placement that seals the caster off from every enemy. A wall
-        // that breaks a live threat's line of sight is the defensive case and is
-        // allowed through; one that merely walls the caster in is not.
-        if (wallStrandsCaster(draft, caster, tiles)) return -Infinity;
+        // that shuts a usable attack down is the defensive case and is allowed
+        // through; one that merely walls the caster in is not.
+        if (wallStrandsCaster(draft, caster, tiles, wallTargets)) return -Infinity;
         score += 4 * weights.terrain;
         touchedAnyone = true;
         break;
@@ -582,12 +611,15 @@ function bestActionFrom(
   candidateTargets: readonly Vec2[],
 ): { score: number; ability: Ability; target: Vec2 } | null {
   const battle = draft.toBattle();
+  // One scoring pass, one wall-target scan: every wall on the board is judged
+  // from this caster's position before the pass ends.
+  const wallTargets: WallTargetCache = new Map();
   let best: { score: number; ability: Ability; target: Vec2 } | null = null;
 
   for (const ability of abilities) {
     for (const target of candidateTargets) {
       if (!isValidTarget(draft.content, battle, caster, ability, target).ok) continue;
-      const score = scoreAbility(draft, caster, ability, target, weights);
+      const score = scoreAbility(draft, caster, ability, target, weights, wallTargets);
       if (score === -Infinity || score <= 0) continue;
       if (!best || score > best.score) best = { score, ability, target };
     }

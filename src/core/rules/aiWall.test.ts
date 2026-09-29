@@ -1,21 +1,24 @@
 import { describe, expect, it } from 'vitest';
 import { CONTENT } from '../../content';
 import { RngCursor } from '../rng';
-import { BattleDraft } from '../state/battleDraft';
+import { BattleDraft, raisedWallTile } from '../state/battleDraft';
 import { createBattle, createGame } from '../state/createGame';
 import type { Grid, Tile, Unit, Vec2 } from '../types';
-import { planAiTurn } from './ai';
-import { DEFAULT_TILE, distance, hasLineOfSight, withTile } from './grid';
+import { isValidTarget } from './abilities';
+import { planAiTurn, wallStrandsCaster } from './ai';
+import { DEFAULT_TILE, hasLineOfSight, tileAt, withTile } from './grid';
 
 /**
  * The AI and its own walls.
  *
  * A cautious bender used to raise `earth_wall` straight across its firing lane,
  * bank the terrain points, and then stand there with AP and no legal action for
- * the rest of the fight: the wall it paid for was blocking its own line of sight
- * to every enemy. The scorer now asks what a placement costs the caster and
- * refuses one that seals it off, unless the wall is actually hiding it from a
- * threat that can reach it right now.
+ * the rest of the fight. A placement is now refused when, from where the caster
+ * *stands*, the post-wall ground holds no enemy a usable attack could still
+ * reach — unless the wall is a real block, shutting down an attack that can hit
+ * the caster right now. Threats count only while they are usable, and "did the
+ * wall break it" is judged with the real `isValidTarget` against the post-wall
+ * battle, so a size-2 attacker keeps its second firing cell.
  */
 
 const WALL: Tile = {
@@ -41,14 +44,41 @@ function corridor(width: number, height: number): Grid {
   return grid;
 }
 
+/** The grid exactly as `raiseWall` would leave it, for asserting against. */
+function raised(grid: Grid, tiles: readonly Vec2[]): Grid {
+  let out = grid;
+  for (const pos of tiles) {
+    const tile = tileAt(out, pos);
+    if (!tile) continue;
+    out = withTile(out, pos, raisedWallTile(tile));
+  }
+  return out;
+}
+
+interface Fixture {
+  readonly draft: BattleDraft;
+  readonly casterIds: readonly string[];
+  readonly enemyIds: readonly string[];
+}
+
 function setup(options: {
   grid: Grid;
-  casterPos: Vec2;
-  casterAbilities: readonly string[];
-  casterCooldowns: Readonly<Record<string, number>>;
-  casterMove: number;
-  enemies: readonly { pos: Vec2; abilities: readonly string[] }[];
-}): { draft: BattleDraft; casterId: string; enemyIds: readonly string[] } {
+  casters: readonly {
+    pos: Vec2;
+    abilities: readonly string[];
+    cooldowns?: Readonly<Record<string, number>>;
+    move?: number;
+    ap?: number;
+  }[];
+  enemies: readonly {
+    pos: Vec2;
+    abilities: readonly string[];
+    cooldowns?: Readonly<Record<string, number>>;
+    move?: number;
+    ap?: number;
+    size?: 1 | 2;
+  }[];
+}): Fixture {
   const state = createGame(CONTENT, {
     seed: 'ai-wall',
     party: [{ characterId: 'bo', level: 7, autoChoose: true }],
@@ -61,27 +91,30 @@ function setup(options: {
   const enemyBase = battle.units.find((unit) => unit.faction === 'enemy');
   if (!casterBase || !enemyBase) throw new Error('Missing wall fixture units');
 
-  const caster: Unit = {
+  const casters: Unit[] = options.casters.map((caster, index) => ({
     ...casterBase,
-    pos: options.casterPos,
+    id: `c${index}`,
+    name: `Caster ${index}`,
+    pos: caster.pos,
     ai: 'cautious',
-    abilities: options.casterAbilities,
-    cooldowns: options.casterCooldowns,
-    ap: 4,
-    move: options.casterMove,
-  };
+    abilities: caster.abilities,
+    cooldowns: caster.cooldowns ?? {},
+    ap: caster.ap ?? 4,
+    move: caster.move ?? 0,
+  }));
   const enemies: Unit[] = options.enemies.map((enemy, index) => ({
     ...enemyBase,
     id: `e${index}`,
     name: `Enemy ${index}`,
     pos: enemy.pos,
     abilities: enemy.abilities,
-    cooldowns: {},
-    ap: 4,
-    move: 3,
+    cooldowns: enemy.cooldowns ?? {},
+    ap: enemy.ap ?? 4,
+    move: enemy.move ?? 0,
+    size: enemy.size ?? 1,
   }));
 
-  const units = [caster, ...enemies];
+  const units = [...casters, ...enemies];
   const draft = new BattleDraft(
     CONTENT,
     {
@@ -94,7 +127,26 @@ function setup(options: {
     },
     new RngCursor(0x5eed),
   );
-  return { draft, casterId: caster.id, enemyIds: enemies.map((enemy) => enemy.id) };
+  return {
+    draft,
+    casterIds: casters.map((unit) => unit.id),
+    enemyIds: enemies.map((unit) => unit.id),
+  };
+}
+
+type SetupOptions = Parameters<typeof setup>[0];
+
+function unit(draft: BattleDraft, id: string | undefined): Unit {
+  if (!id) throw new Error('Missing fixture unit id');
+  const found = draft.unit(id);
+  if (!found) throw new Error(`Missing unit ${id}`);
+  return found;
+}
+
+function ability(id: string) {
+  const found = CONTENT.abilities.get(id);
+  if (!found) throw new Error(`Missing ability ${id}`);
+  return found;
 }
 
 /** Ids of every ability the unit actually spent AP on this turn. */
@@ -104,84 +156,217 @@ function usedAbilities(draft: BattleDraft): string[] {
     .map((event) => (event.type === 'abilityUsed' ? event.abilityId : ''));
 }
 
+/** The caster every rule fixture shares: rock cooling, only the wall to spend. */
+function bender(pos: Vec2, extra: { move?: number } = {}) {
+  return {
+    pos,
+    abilities: ['rock_throw', 'earth_wall'],
+    cooldowns: { rock_throw: 5 },
+    ...extra,
+  };
+}
+
 describe('the AI and its own walls', () => {
-  it('does not wall off its only line of sight to a ranged enemy that cannot reach it', () => {
+  it('does not wall off its only target when nothing is shooting back', () => {
     /*
      * The Quarry Bender has already thrown (Rock Throw cooling) and the archer
      * across the corridor is out of its own range, so the only scored action is
-     * the wall. Old behaviour: the bender raised it, lost sight of its single
-     * enemy and stood there. The wall buys nothing defensively here.
+     * the wall. The wall buys nothing defensively, and it would cut the caster
+     * off from the enemy it is waiting to shoot, so it is refused.
      */
-    const { draft, casterId, enemyIds } = setup({
+    const { draft, casterIds, enemyIds } = setup({
       grid: corridor(12, 7),
-      casterPos: { x: 2, y: 3 },
-      casterAbilities: ['rock_throw', 'earth_wall'],
-      casterCooldowns: { rock_throw: 5 },
-      casterMove: 0,
+      casters: [bender({ x: 2, y: 3 })],
       enemies: [{ pos: { x: 7, y: 3 }, abilities: ['flame_arc'] }],
     });
+    const casterId = casterIds[0];
     const enemyId = enemyIds[0];
-    if (!enemyId) throw new Error('Missing enemy');
+    if (!casterId || !enemyId) throw new Error('Missing wall fixture units');
 
     planAiTurn(draft, casterId, new RngCursor(7));
 
-    const caster = draft.unit(casterId);
-    const enemy = draft.unit(enemyId);
-    if (!caster || !enemy) throw new Error('Fixture units vanished');
+    const caster = unit(draft, casterId);
+    const enemy = unit(draft, enemyId);
     expect(usedAbilities(draft)).toEqual([]);
     // The line it could not afford to lose is still open.
     expect(hasLineOfSight(draft.grid, caster.pos, enemy.pos)).toBe(true);
   });
 
-  it('still walls when it breaks a live archer line while leaving a second target in view', () => {
+  it('raises a wall that breaks a live attacker with no shot of its own', () => {
     /*
-     * The slinger flanking on the left can hit the caster right now, so the wall
-     * has a defensive job. A second enemy stays in view on the right, so the
-     * bender is not sealing itself out of the fight. Both halves matter.
+     * The slinger on the left can hit the caster right now, so the wall has a
+     * defensive job even though it costs the caster its own (cooling) attack.
+     * This is the one case the stranding rule deliberately lets through.
      */
-    const { draft, casterId, enemyIds } = setup({
+    const { draft, casterIds, enemyIds } = setup({
       grid: openGrid(12, 9),
-      casterPos: { x: 5, y: 4 },
-      casterAbilities: ['rock_throw', 'earth_wall'],
-      casterCooldowns: { rock_throw: 5 },
-      casterMove: 0,
+      casters: [bender({ x: 5, y: 4 })],
       enemies: [
         { pos: { x: 2, y: 4 }, abilities: ['sling_stone'] },
         { pos: { x: 9, y: 4 }, abilities: ['club_swing'] },
       ],
     });
+    const casterId = casterIds[0];
     const archerId = enemyIds[0];
-    const otherId = enemyIds[1];
-    if (!archerId || !otherId) throw new Error('Missing enemies');
+    if (!casterId || !archerId) throw new Error('Missing wall fixture units');
 
     planAiTurn(draft, casterId, new RngCursor(7));
 
-    const caster = draft.unit(casterId);
-    const archer = draft.unit(archerId);
-    const other = draft.unit(otherId);
-    if (!caster || !archer || !other) throw new Error('Fixture units vanished');
+    const caster = unit(draft, casterId);
+    const archer = unit(draft, archerId);
     expect(usedAbilities(draft)).toContain('earth_wall');
     expect(hasLineOfSight(draft.grid, archer.pos, caster.pos)).toBe(false);
-    expect(hasLineOfSight(draft.grid, caster.pos, other.pos)).toBe(true);
-    expect(distance(caster.pos, other.pos)).toBeLessThanOrEqual(5);
   });
 
-  it('still raises a wall that does not seal the caster in', () => {
-    // On an open field the bender can walk around a three-tile wall, so the
-    // placement costs it no options and must not be refused.
-    const { draft, casterId, enemyIds } = setup({
-      grid: openGrid(12, 8),
-      casterPos: { x: 2, y: 3 },
-      casterAbilities: ['rock_throw', 'earth_wall'],
-      casterCooldowns: { rock_throw: 5 },
-      casterMove: 0,
-      enemies: [{ pos: { x: 7, y: 3 }, abilities: ['flame_arc'] }],
+  it('permits a wall that breaks a usable attack while leaving a target', () => {
+    /*
+     * The caster still has Rock Throw, so it can afford the wall: a second
+     * slinger across the board is untouched by it. The blocked attacker's own
+     * ability really does stop being valid against the post-wall battle, which
+     * is what makes this a defensive placement rather than a self-inflicted one.
+     */
+    const wallTile: Vec2 = { x: 4, y: 4 };
+    const { draft, casterIds, enemyIds } = setup({
+      grid: openGrid(12, 9),
+      casters: [{ pos: { x: 5, y: 4 }, abilities: ['rock_throw', 'earth_wall'] }],
+      enemies: [
+        { pos: { x: 2, y: 4 }, abilities: ['sling_stone'] },
+        { pos: { x: 8, y: 4 }, abilities: ['sling_stone'] },
+      ],
     });
-    const enemyId = enemyIds[0];
-    if (!enemyId) throw new Error('Missing enemy');
+    const caster = unit(draft, casterIds[0]);
+    const archer = unit(draft, enemyIds[0]);
+    const other = unit(draft, enemyIds[1]);
+    const sling = ability('sling_stone');
+    const before = draft.toBattle();
+    const after = { ...before, grid: raised(draft.grid, [wallTile]) };
 
-    planAiTurn(draft, casterId, new RngCursor(7));
+    // The attacker can reach the caster before the wall, and cannot after it.
+    expect(isValidTarget(CONTENT, before, archer, sling, caster.pos).ok).toBe(true);
+    expect(isValidTarget(CONTENT, after, archer, sling, caster.pos).ok).toBe(false);
+    // The caster keeps a shot of its own, so nobody is stranded.
+    expect(isValidTarget(CONTENT, after, caster, ability('rock_throw'), other.pos).ok).toBe(true);
+    expect(wallStrandsCaster(draft, caster, [wallTile])).toBe(false);
+  });
 
+  it('accepts a wall that shuts an attack down at the cost of its own shot', () => {
+    const wallTile: Vec2 = { x: 4, y: 4 };
+    const { draft, casterIds, enemyIds } = setup({
+      grid: openGrid(12, 9),
+      casters: [{ pos: { x: 5, y: 4 }, abilities: ['rock_throw', 'earth_wall'] }],
+      enemies: [{ pos: { x: 2, y: 4 }, abilities: ['sling_stone'] }],
+    });
+    const caster = unit(draft, casterIds[0]);
+    const archer = unit(draft, enemyIds[0]);
+    const rock = ability('rock_throw');
+    const before = draft.toBattle();
+    const after = { ...before, grid: raised(draft.grid, [wallTile]) };
+
+    expect(isValidTarget(CONTENT, before, caster, rock, archer.pos).ok).toBe(true);
+    expect(isValidTarget(CONTENT, after, caster, rock, archer.pos).ok).toBe(false);
+    // No shot of its own left, but the wall broke a live threat: still allowed.
+    expect(wallStrandsCaster(draft, caster, [wallTile])).toBe(false);
+  });
+
+  it('does not treat an attacker that cannot act right now as a threat', () => {
+    /*
+     * Same board three times: the only difference is whether the slinger can
+     * actually use its attack. A ready sling makes the wall a real block; a
+     * cooling or unaffordable one does not, and then the wall is refused because
+     * it strands the caster for no defensive gain.
+     */
+    const wallTile: Vec2 = { x: 4, y: 4 };
+    const base: SetupOptions = {
+      grid: openGrid(12, 9),
+      casters: [bender({ x: 5, y: 4 })],
+      enemies: [{ pos: { x: 2, y: 4 }, abilities: ['sling_stone'] }],
+    };
+    const stranding = (fixture: Fixture) =>
+      wallStrandsCaster(fixture.draft, unit(fixture.draft, fixture.casterIds[0]), [wallTile]);
+
+    const live = setup(base);
+    expect(stranding(live)).toBe(false);
+
+    const cooling = setup({
+      ...base,
+      enemies: [{ pos: { x: 2, y: 4 }, abilities: ['sling_stone'], cooldowns: { sling_stone: 5 } }],
+    });
+    expect(stranding(cooling)).toBe(true);
+
+    const spent = setup({
+      ...base,
+      enemies: [{ pos: { x: 2, y: 4 }, abilities: ['sling_stone'], ap: 0 }],
+    });
+    expect(stranding(spent)).toBe(true);
+
+    // End to end: no wall is raised while the only attacker is still cooling.
+    const casterId = cooling.casterIds[0];
+    const enemyId = cooling.enemyIds[0];
+    if (!casterId || !enemyId) throw new Error('Missing wall fixture units');
+    planAiTurn(cooling.draft, casterId, new RngCursor(7));
+    const caster = unit(cooling.draft, casterId);
+    const enemy = unit(cooling.draft, enemyId);
+    expect(usedAbilities(cooling.draft)).not.toContain('earth_wall');
+    expect(hasLineOfSight(cooling.draft.grid, caster.pos, enemy.pos)).toBe(true);
+  });
+
+  it('does not treat a size-2 attacker as blocked while its second cell fires', () => {
+    /*
+     * The enemy stands on two tiles. A wall at (4,4) sits on the anchor cell's
+     * line to the caster but not on the second cell's, so `isValidTarget` still
+     * finds a firing origin and the threat is not broken — the wall is refused.
+     * A wall at (3,3) crosses both lines, so that one is a genuine block.
+     */
+    const { draft, casterIds, enemyIds } = setup({
+      grid: openGrid(12, 9),
+      casters: [bender({ x: 5, y: 4 })],
+      enemies: [{ pos: { x: 1, y: 2 }, abilities: ['sling_stone'], size: 2 }],
+    });
+    const caster = unit(draft, casterIds[0]);
+    const enemy = unit(draft, enemyIds[0]);
+    const sling = ability('sling_stone');
+    const before = draft.toBattle();
+
+    const anchorWall: Vec2 = { x: 4, y: 4 };
+    const anchorAfter = { ...before, grid: raised(draft.grid, [anchorWall]) };
+    expect(isValidTarget(CONTENT, anchorAfter, enemy, sling, caster.pos).ok).toBe(true);
+    expect(wallStrandsCaster(draft, caster, [anchorWall])).toBe(true);
+
+    const bothWall: Vec2 = { x: 3, y: 3 };
+    const bothAfter = { ...before, grid: raised(draft.grid, [bothWall]) };
+    expect(isValidTarget(CONTENT, bothAfter, enemy, sling, caster.pos).ok).toBe(false);
+    expect(wallStrandsCaster(draft, caster, [bothWall])).toBe(false);
+  });
+
+  it('scores a full turn for three casters on a 20x12 board inside a budget', () => {
+    /*
+     * Guard against the tempting-but-wrong fix: asking "can the caster still hit
+     * something after this wall?" by sweeping every tile it could walk to. That
+     * search ran once per candidate placement, on every scored position, and was
+     * the expensive part of a wall-heavy turn. The rule now reads the caster's
+     * position only, so a three-bender turn should stay well inside the budget.
+     */
+    const { draft, casterIds } = setup({
+      grid: openGrid(20, 12),
+      casters: [
+        bender({ x: 3, y: 3 }, { move: 3 }),
+        bender({ x: 3, y: 6 }, { move: 3 }),
+        bender({ x: 3, y: 9 }, { move: 3 }),
+      ],
+      enemies: [
+        { pos: { x: 7, y: 3 }, abilities: ['sling_stone'] },
+        { pos: { x: 7, y: 6 }, abilities: ['sling_stone'] },
+        { pos: { x: 7, y: 9 }, abilities: ['sling_stone'] },
+      ],
+    });
+
+    const started = performance.now();
+    for (const id of casterIds) planAiTurn(draft, id, new RngCursor(0x51ce));
+    const elapsed = performance.now() - started;
+
+    // Sanity: the casters actually paid for walls rather than skipping the work.
     expect(usedAbilities(draft)).toContain('earth_wall');
+    // Generous for loaded CI machines; the rejected full-map search took seconds.
+    expect(elapsed).toBeLessThan(1500);
   });
 });
