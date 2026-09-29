@@ -143,6 +143,92 @@ test.describe('renderer backends', () => {
       expect(green.g).toBeGreaterThan(green.r);
     });
   }
+
+  /**
+   * Raised ground is board correctness (ADR 0065), so both backends draw the
+   * same block. The Driller floor's front bench stands a quarter tile up, so
+   * the far corner of its top is drawn over the dirt floor behind it: there
+   * the pixel must be the bench's stone, as at the top's centre, not the dirt
+   * that a flat board shows at that spot.
+   */
+  for (const renderer of ['canvas', 'webgl'] as const) {
+    test(`lifts a raised bench over the floor behind it on ${renderer}`, async ({ page }) => {
+      test.setTimeout(120_000);
+      allowSoftwareWebgl(test, renderer);
+
+      await resetStorage(page, `?renderer=${renderer}`);
+      await startGame(page, ['Elias'], ['kaya'], 'lift-spec');
+      await enterNode(page, 'battle_grumbler');
+      await takeTurn(page);
+      await waitForIdle(page);
+      await settleLayout(page);
+      expect(await page.evaluate(() => window.fnt?.app.rendererBackend())).toBe(renderer);
+      // The readable oblique fit pans; bring the front bench into view.
+      await page.evaluate(() => {
+        const scene = (
+          window.fnt?.app as unknown as {
+            scene: { renderer?: { camera: { centreOn(pos: { x: number; y: number }): void } } };
+          }
+        ).scene;
+        scene.renderer?.camera.centreOn({ x: 9, y: 9 });
+      });
+      await page.evaluate(
+        () => new Promise((done) => requestAnimationFrame(() => requestAnimationFrame(done))),
+      );
+
+      const probe = await page.evaluate(() => {
+        const app = window.fnt?.app;
+        const camera = app?.rendererCamera();
+        const battle = app?.state?.battle;
+        const canvas = document.querySelector<HTMLCanvasElement>('.map-canvas');
+        if (!camera || !battle || !canvas) return null;
+        const rect = canvas.getBoundingClientRect();
+        const m = camera.groundTransform;
+        const { grid } = battle;
+        const tile = (x: number, y: number) => grid.tiles[y * grid.width + x];
+        const near = (x: number, y: number) =>
+          battle.units.some((u) => Math.abs(u.pos.x - x) <= 2 && Math.abs(u.pos.y - y) <= 2) ||
+          battle.props.some((p) => Math.abs(p.pos.x - x) <= 2 && Math.abs(p.pos.y - y) <= 2);
+        const screen = (gx: number, gy: number, up: number) => ({
+          x: m.a * gx * 64 + m.c * gy * 64 + m.tx,
+          y: m.b * gx * 64 + m.d * gy * 64 + m.ty - camera.tilePx * up,
+        });
+        const clear = (p: { x: number; y: number }) =>
+          p.x > 8 &&
+          p.y > 8 &&
+          p.x < rect.width - 8 &&
+          p.y < rect.height - 8 &&
+          document.elementFromPoint(rect.left + p.x, rect.top + p.y) === canvas;
+        for (const x of [5, 6, 10, 14, 15, 4, 9, 13]) {
+          const bench = tile(x, 10);
+          const behind = tile(x - 1, 9);
+          if (!bench?.ramp || bench.surface || behind?.elevation !== 0 || behind.surface) continue;
+          if (near(x, 10)) continue;
+          // The top's far corner, a quarter tile up; its centre; the dirt it covers.
+          const corner = screen(x + 0.12, 10.12, 0.25);
+          const centre = screen(x + 0.5, 10.5, 0.25);
+          const dirt = screen(x - 0.5, 9.4, 0);
+          if (![corner, centre, dirt].every(clear)) continue;
+          return { corner, centre, dirt };
+        }
+        return null;
+      });
+      expect(probe, 'no clear front bench on screen').not.toBeNull();
+      if (!probe) return;
+
+      const pixels = await screenshotPixels(page.locator('.map-canvas'));
+      const corner = average(pixels, probe.corner.x, probe.corner.y, 2);
+      const centre = average(pixels, probe.centre.x, probe.centre.y, 2);
+      const dirt = average(pixels, probe.dirt.x, probe.dirt.y, 2);
+      const gap = (a: typeof corner, b: typeof corner) =>
+        Math.abs(a.r - b.r) + Math.abs(a.g - b.g) + Math.abs(a.b - b.b);
+      const seen = JSON.stringify({ corner, centre, dirt });
+      expect(gap(centre, dirt), `bench and floor differ: ${seen}`).toBeGreaterThan(60);
+      expect(gap(corner, centre), `the lifted corner is stone: ${seen}`).toBeLessThan(
+        gap(corner, dirt),
+      );
+    });
+  }
 });
 
 /** Screen point at a tile's centre, inside the canvas element, through the camera. */

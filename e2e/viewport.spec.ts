@@ -164,7 +164,10 @@ for (const renderer of ['canvas', 'webgl'] as const) {
     });
     expect(aim, 'no raised tile on screen').not.toBeNull();
     if (!aim) return;
-    type Picks = { hover: { x: number; y: number } | null; pending: { x: number; y: number } | null };
+    type Picks = {
+      hover: { x: number; y: number } | null;
+      pending: { x: number; y: number } | null;
+    };
     const picks = () =>
       page.evaluate(() => {
         const scene = (window.fnt?.app as unknown as { scene: Picks }).scene;
