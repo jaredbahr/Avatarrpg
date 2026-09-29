@@ -22,7 +22,6 @@ import type { Ability, BattleState, ContentIndex, StatusId, SurfaceId, Unit, Vec
 import { RngCursor } from '../rng';
 import { BattleDraft } from '../state/battleDraft';
 import type { SurfaceContactRecord } from '../state/battleDraft';
-import { expectedDamage } from './damage';
 import { allowsCasterTarget, blastTiles, occupiedCells, posKey, tileAt } from './grid';
 import { applyStatus, removeStatuses } from './status';
 import { contactEffects } from './surfaces';
@@ -217,29 +216,6 @@ export function forecastReactions(
   for (const effect of ability.effects) {
     switch (effect.kind) {
       case 'damage':
-        // A later shove must see the HP the hit is forecast to leave behind;
-        // otherwise its 1-HP ledge floor reports the nominal terrain damage.
-        for (const id of hitIds) {
-          const victim = draft.unit(id);
-          if (!victim || !isAlive(victim)) continue;
-          draft.dealDamage(
-            id,
-            expectedDamage(content, caster, victim, effect),
-            effect.damageType,
-            caster.id,
-          );
-        }
-        if (effect.includesCaster) {
-          const self = draft.unit(caster.id);
-          if (self) {
-            draft.dealDamage(
-              caster.id,
-              expectedDamage(content, caster, self, effect),
-              effect.damageType,
-              caster.id,
-            );
-          }
-        }
         // Keep this order in lockstep with abilities.ts: a prop can spill a
         // surface that the impact immediately reacts with.
         draft.damageProps(tiles, effect.base, effect.damageType);
@@ -342,18 +318,14 @@ export function forecastReactions(
     shoves.map((shove) => `${shove.kind}:${shove.id}:${posKey(shove.to)}`),
   );
   const lastUnitPositions = new Map(battle.units.map((unit) => [unit.id, unit.pos]));
-  const ledgeDamage = new Map<string, number>();
-  for (const event of draft.events) {
-    if (event.type === 'damaged' && event.cause === 'ledgeDrop') {
-      ledgeDamage.set(event.unitId, (ledgeDamage.get(event.unitId) ?? 0) + event.amount);
-      continue;
-    }
+  for (const [eventIndex, event] of draft.events.entries()) {
     if (event.type !== 'unitPushed') continue;
     const from = lastUnitPositions.get(event.unitId);
     const unit = draft.unit(event.unitId);
     if (!from || !unit) continue;
     const key = `unit:${event.unitId}:${posKey(event.to)}`;
     if (!knownShoves.has(key)) {
+      const previous = draft.events[eventIndex - 1];
       const movedDistance = Math.max(Math.abs(event.to.x - from.x), Math.abs(event.to.y - from.y));
       shoves.push({
         kind: 'unit',
@@ -367,7 +339,12 @@ export function forecastReactions(
         mode: 'push',
         blocked: false,
         ...landingInfo(content, draft, unit),
-        ledgeDropDamage: ledgeDamage.get(event.unitId) ?? 0,
+        ledgeDropDamage:
+          previous?.type === 'damaged' &&
+          previous.cause === 'ledgeDrop' &&
+          previous.unitId === event.unitId
+            ? previous.amount
+            : 0,
       });
       knownShoves.add(key);
     }

@@ -428,8 +428,11 @@ export class BattleDraft {
     for (let dx = 0; dx < width; dx++) {
       const before = tileAt(this.grid, { x: from.x + dx, y: from.y });
       const after = tileAt(this.grid, { x: to.x + dx, y: to.y });
-      if (before && after && !before.ramp && !after.ramp) {
-        largest = Math.max(largest, before.elevation - after.elevation);
+      if (before && after) {
+        const drop = before.elevation - after.elevation;
+        if (drop > 1 || (drop === 1 && !before.ramp && !after.ramp)) {
+          largest = Math.max(largest, drop);
+        }
       }
     }
     return largest;

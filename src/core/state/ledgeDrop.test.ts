@@ -194,6 +194,29 @@ describe('ledge drops', () => {
     ).toBe(false);
   });
 
+  it('deals full damage for a two-tier fall when either end is a ramp', () => {
+    const { battle, caster, victim } = fixture();
+    const start = { x: 6, y: 5 };
+    const destination = { x: 7, y: 5 };
+    const base = placed(battle, { [caster.id]: { x: 5, y: 5 }, [victim.id]: start });
+    for (const rampAt of [start, destination]) {
+      let grid = base.grid;
+      for (const [pos, elevation] of [
+        [start, 2],
+        [destination, 0],
+      ] as const) {
+        const tile = tileAt(grid, pos);
+        if (!tile) throw new Error('ramp fixture is off-grid');
+        grid = withTile(grid, pos, { ...tile, elevation, ramp: pos === rampAt });
+      }
+      const draft = new BattleDraft(CONTENT, { ...base, grid }, new RngCursor(7));
+      draft.shove(victim.id, { x: 5, y: 5 }, 1, 'push');
+      expect(draft.events).toContainEqual(
+        expect.objectContaining({ type: 'damaged', cause: 'ledgeDrop', amount: 6 }),
+      );
+    }
+  });
+
   it('does not add a drop event after the landing surface defeats the unit', () => {
     const { battle, caster, victim } = fixture();
     const start = { x: 6, y: 5 };
@@ -245,7 +268,7 @@ describe('ledge drops', () => {
     );
   });
 
-  it('forecasts the same ledge damage as resolution without consuming live RNG', () => {
+  it('forecasts the nominal pre-hit drop when hit damage does not change the floor outcome', () => {
     const { battle, caster, victim } = fixture();
     const start = { x: 6, y: 5 };
     const positioned = elevated(
@@ -267,53 +290,5 @@ describe('ledge drops', () => {
           event.type === 'damaged' && event.unitId === victim.id && event.cause === 'ledgeDrop',
       ),
     ).toEqual(expect.objectContaining({ amount: shove?.ledgeDropDamage, cause: 'ledgeDrop' }));
-  });
-
-  it('forecasts the resolved HP loss when the ability hit leaves 3 HP', () => {
-    const { battle, caster, victim } = fixture();
-    const start = { x: 6, y: 5 };
-    const base = elevated(placed(battle, { [caster.id]: { x: 5, y: 5 }, [victim.id]: start }), {
-      '6,5': 1,
-      '8,5': 0,
-    });
-    const ability = CONTENT.abilities.get('air_blast');
-    if (!ability) throw new Error('air_blast missing');
-    const expectedHit = previewAbility(CONTENT, base, caster, ability, start).targets.find(
-      (entry) => entry.unitId === victim.id,
-    )?.damage;
-    if (!expectedHit) throw new Error('air_blast did not forecast damage');
-    const positioned = {
-      ...base,
-      units: base.units.map((unit) =>
-        unit.id === victim.id ? { ...unit, hp: expectedHit + 3 } : unit,
-      ),
-    };
-    const preview = previewAbility(CONTENT, positioned, caster, ability, start);
-    const forecast = preview.shoves.find((entry) => entry.id === victim.id);
-    expect(forecast?.ledgeDropDamage).toBe(2);
-
-    // Select a deterministic cursor whose ordinary damage roll matches the
-    // no-variance preview, then compare the fall rather than its nominal 3.
-    let resolvedDrop: number | undefined;
-    for (let seed = 0; seed < 1_000 && resolvedDrop === undefined; seed++) {
-      const draft = new BattleDraft(CONTENT, positioned, new RngCursor(seed));
-      resolveAbility(draft, draft.unit(caster.id) ?? caster, ability, start, draft.rng);
-      const hit = draft.events.find(
-        (event) =>
-          event.type === 'damaged' &&
-          event.unitId === victim.id &&
-          event.sourceId === caster.id &&
-          event.cause !== 'ledgeDrop',
-      );
-      if (hit?.type !== 'damaged' || hit.amount !== expectedHit) continue;
-      const drop = draft.events.find(
-        (event) =>
-          event.type === 'damaged' && event.unitId === victim.id && event.cause === 'ledgeDrop',
-      );
-      resolvedDrop = drop?.type === 'damaged' ? drop.amount : undefined;
-    }
-    expect(resolvedDrop, 'no deterministic matching damage roll found').toBe(
-      forecast?.ledgeDropDamage,
-    );
   });
 });

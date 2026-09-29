@@ -275,6 +275,7 @@ export function choreograph(input: ChoreographyInput): Choreography {
   };
   /** Until when a unit's G hit plays, so a push under it does not restart it. */
   const flinching = new Map<string, number>();
+  const harmlessLedgePushes = new Set<number>();
   const still: Vec2 = { x: 0, y: 0 };
 
   const floater = (pos: Vec2, text: string, color: string, at: number): void => {
@@ -694,8 +695,21 @@ export function choreograph(input: ChoreographyInput): Choreography {
       }
 
       case 'damaged': {
-        const pos = positions.get(event.unitId);
-        const hit = landing();
+        const next = events[eventIndex + 1];
+        const ledgeLanding =
+          event.cause === 'ledgeDrop' &&
+          next?.type === 'unitPushed' &&
+          next.unitId === event.unitId;
+        const pos = ledgeLanding ? next.to : positions.get(event.unitId);
+        const hit = ledgeLanding
+          ? {
+              at:
+                (pending?.pushIds?.includes(event.unitId) ? pending.at + pending.hitStop : cursor) +
+                TIMING.step * 2 * rate,
+              hitStop: 0,
+              flash: 0.6,
+            }
+          : landing();
         const before = unitHealth.get(event.unitId);
         if (before) {
           const hp = Math.max(0, before.hp - event.amount);
@@ -707,8 +721,8 @@ export function choreograph(input: ChoreographyInput): Choreography {
         // The blow landing, under whatever voice threw it. `landing()` is the
         // aimed moment when a projectile is in flight, so the sound arrives
         // with the projectile rather than with the command.
-        cue('hit', hit.at, 5, eventIndex);
-        if (pos && hit.flash > 0) {
+        if (event.amount > 0) cue('hit', hit.at, 5, eventIndex);
+        if (event.amount > 0 && pos && hit.flash > 0) {
           tracks.push({
             kind: 'flash',
             unitId: event.unitId,
@@ -717,7 +731,7 @@ export function choreograph(input: ChoreographyInput): Choreography {
             duration: (TIMING.flash + hit.hitStop) * (rate < 1 ? rate : 1),
           });
         }
-        if (pos) {
+        if (event.amount > 0 && pos) {
           const source = pending
             ? unitCentre(pending.casterId)
             : event.sourceId
@@ -781,7 +795,8 @@ export function choreograph(input: ChoreographyInput): Choreography {
             recoilAt + 30 * rate,
           );
         }
-        cursor = Math.max(cursor, hit.at + hit.hitStop) + TIMING.gap * rate;
+        if (ledgeLanding && event.amount === 0) harmlessLedgePushes.add(eventIndex + 1);
+        if (!ledgeLanding) cursor = Math.max(cursor, hit.at + hit.hitStop) + TIMING.gap * rate;
         break;
       }
 
@@ -857,7 +872,10 @@ export function choreograph(input: ChoreographyInput): Choreography {
           });
           // A G hit already playing carries the push; restarting it would flash
           // the stance. A push alone plays one through, past the slide.
-          if ((flinching.get(event.unitId) ?? -Infinity) <= start) {
+          if (
+            !harmlessLedgePushes.has(eventIndex) &&
+            (flinching.get(event.unitId) ?? -Infinity) <= start
+          ) {
             const flinch = timed(event.unitId, hitSpan);
             const hold = Math.max(duration, flinch);
             pose(event.unitId, 'hit', start, hold, still, still, easeOutQuad, {
