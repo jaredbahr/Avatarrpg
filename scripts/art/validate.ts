@@ -77,6 +77,9 @@ export const WEBP_SHEET_PINS: Readonly<Record<string, readonly string[]>> = {
   'unit.water.sura': ['art/source/sura-g/pins.json', 'art/source/sura-clips/pins.json'],
   'unit.earth.bo': ['art/source/bo-g/pins.json', 'art/source/bo-clips/pins.json'],
   'unit.enemy.thug': ['art/source/thug-g/pins.json'],
+  'unit.enemy.slinger': ['art/source/slinger-g/pins.json'],
+  'unit.enemy.bruiser': ['art/source/bruiser-g/pins.json'],
+  'unit.enemy.quarrybender': ['art/source/quarrybender-g/pins.json'],
 };
 
 /** How far a standing cel's lowest opaque row may sit from the anchor's foot line. */

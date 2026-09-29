@@ -31,7 +31,7 @@ for (const renderer of ['canvas', 'webgl'] as const)
         page.on('pageerror', (error) => errors.push(error.message));
         if (fallback)
           await page.route(
-            /\/art\/units\/(thug-g\.webp|(bruiser|slinger|quarrybender|crossbow)\.png)$/,
+            /\/art\/units\/((thug|bruiser|slinger|quarrybender)-g\.webp|crossbow\.png)$/,
             async (route) => {
               blocked.push(route.request().url());
               await route.abort();

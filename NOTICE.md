@@ -9,13 +9,13 @@ Anything not listed here was made for this project.
 
 ## Third-party work
 
-| What                                | Work                                                                                          | By                                      | Licence                           | Source                                             |
-| ----------------------------------- | --------------------------------------------------------------------------------------------- | --------------------------------------- | --------------------------------- | -------------------------------------------------- |
-| The heading typeface                | Shippori Mincho 700, Latin subset                                                             | The Shippori Mincho Project Authors     | SIL Open Font License 1.1         | [link](https://github.com/fontdasu/ShipporiMincho) |
-| The action icons                    | Game Icons                                                                                    | the Game Icons contributors             | CC BY 3.0                         | [link](https://github.com/game-icons/icons)        |
-| The sound effects                   | Impact Sounds 1.0 and Interface Sounds 1.0                                                    | Kenney (kenney.nl)                      | CC0 1.0                           | [link](https://kenney.nl)                          |
-| The motion of the party’s knockouts | CMU Graphics Lab Motion Capture Database, subject 90 trial 18 and subject 77 trials 16 and 18 | Carnegie Mellon University Graphics Lab | CMU Motion Capture Database terms | [link](https://mocap.cs.cmu.edu)                   |
-| The motion of the thug’s walk       | Mixamo “Unarmed Walk Forward”                                                                 | Adobe Mixamo                            | Adobe Mixamo terms                | [link](https://www.mixamo.com)                     |
+| What | Work | By | Licence | Source |
+| --- | --- | --- | --- | --- |
+| The heading typeface | Shippori Mincho 700, Latin subset | The Shippori Mincho Project Authors | SIL Open Font License 1.1 | [link](https://github.com/fontdasu/ShipporiMincho) |
+| The action icons | Game Icons | the Game Icons contributors | CC BY 3.0 | [link](https://github.com/game-icons/icons) |
+| The sound effects | Impact Sounds 1.0 and Interface Sounds 1.0 | Kenney (kenney.nl) | CC0 1.0 | [link](https://kenney.nl) |
+| The motion of the party’s knockouts | CMU Graphics Lab Motion Capture Database, subject 90 trial 18 and subject 77 trials 16 and 18 | Carnegie Mellon University Graphics Lab | CMU Motion Capture Database terms | [link](https://mocap.cs.cmu.edu) |
+| The motion of the thug’s and the quarry bandits’ walks | Mixamo “Unarmed Walk Forward” | Adobe Mixamo | Adobe Mixamo terms | [link](https://www.mixamo.com) |
 
 These licences ask for the author to be named wherever the work is used,
 which is why the game carries the same list on its own Credits screen:
@@ -30,7 +30,7 @@ Notes:
 - **Game Icons.** One icon per kind of action, chosen in src/app/ui/icons.ts and built into a sprite by npm run art:icons. Each icon is by a named contributor; they are listed in the licence file at the source above.
 - **Impact Sounds 1.0 and Interface Sounds 1.0.** Footsteps, impacts, splintering wood and the interface. The bending sounds are not here: these packs contain none, so an element’s voice is rendered in the Web Audio graph from the description in src/content/sounds.ts rather than played from a file.
 - **CMU Graphics Lab Motion Capture Database, subject 90 trial 18 and subject 77 trials 16 and 18.** The data used in this project was obtained from mocap.cs.cmu.edu. The database was created with funding from NSF EIA-0196217. Kaya falls to 90_18 (RugPullFall), frames 64 to 170; Sura to 77_18 and Bo to 77_16, each lying down played in reverse; every take is retargeted onto the character’s own stance; the cels are drawn for this project with PixelLab. See docs/adr/0059-g-knockout-and-thug.md.
-- **Mixamo “Unarmed Walk Forward”.** Projected onto each of the thug’s eight headings and root-locked; the cels are drawn for this project with PixelLab, and the idle and the cast, hit and defeat poses are this project’s own. The animation file itself is not redistributed. See docs/adr/0059-g-knockout-and-thug.md.
+- **Mixamo “Unarmed Walk Forward”.** Projected onto each unit’s eight headings and root-locked; the cels are drawn for this project with PixelLab, and the idle and the cast, hit and defeat poses are this project’s own. The animation file itself is not redistributed. See docs/adr/0059-g-knockout-and-thug.md and docs/adr/0060-g-quarry-bandits.md.
 
 ## Made for this project
 
