@@ -144,7 +144,11 @@ export function contactRaster(
   scenery: readonly SceneScenery[],
   affine: Affine,
 ): GroundingRaster | null {
-  const pieces = scenery.filter((piece) => piece.footprint.length > 0).map(contour);
+  // Low growth opts out: its footprint's shadow is a tile-shaped patch round
+  // a clump that fills a fraction of it (`SceneScenery.contactShadow`).
+  const pieces = scenery
+    .filter((piece) => piece.footprint.length > 0 && piece.contactShadow !== false)
+    .map(contour);
   if (pieces.length === 0) return null;
   const inverse = invert(affine);
   const reach = REACH + CAST.x + CAST.y;
