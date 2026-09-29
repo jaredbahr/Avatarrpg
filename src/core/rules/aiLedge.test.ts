@@ -151,13 +151,22 @@ const CART_CASTER: Vec2 = { x: 1, y: 1 };
  * push like Shatterpoint breaks the cart and shoves the victim clear, then
  * shoves the same victim again — the case where a prop's fall and the ability's
  * fall both land on one unit.
+ *
+ * One seed for every board. `createBattle` draws the encounter variant from it
+ * (`enc_forest_road` fields thugs, slingers or bruisers), and a different
+ * variant means a different caster with different Power and Focus — which moves
+ * the damage half of the score by more than the fall these tests measure. A
+ * seed keyed on `ledge` put a slinger behind one board and a bruiser behind the
+ * other, so `ledge - flat` was 2.295 of caster plus the drop instead of the
+ * drop alone and read 1.235 where the fall is worth 2. The ledge has to be the
+ * only difference between the two boards being subtracted.
  */
 function cartFixture(options: { readonly ledge: boolean; readonly cart: boolean }): {
   readonly draft: BattleDraft;
   readonly caster: Unit;
 } {
   const seeded = createGame(CONTENT, {
-    seed: `ai-cart-${options.ledge}-${options.cart}`,
+    seed: 'ai-cart-ledge',
     party: [
       { characterId: 'kaya', level: 3, autoChoose: true },
       { characterId: 'bo', level: 3, autoChoose: true },
@@ -238,8 +247,12 @@ describe('the AI, the cabbage cart and the ledge', () => {
     const flat = priceCartAim({ ledge: false, cart: true });
 
     // The victim falls twice — once clear of the cart, once off the push — and
-    // each fall is paid for once. Charging the cart's fall to the push as well
-    // added a third.
+    // each fall is paid for once, at full weight. Neither is scaled by the
+    // attack's hit chance: `resolveAbility` applies a push to every struck unit
+    // whatever the to-hit roll does (only the damage and status effects read
+    // it), and the cart's break push happens whenever the cart breaks. So two
+    // drops, not one and a fraction of the second. Charging the cart's fall to
+    // the push as well added a third.
     expect(ledge - flat).toBeCloseTo((2 * drop) / shatterpoint.apCost, 5);
   });
 
