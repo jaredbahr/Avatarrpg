@@ -41,7 +41,9 @@ for (const renderer of ['canvas', 'webgl'] as const) {
         id,
       );
 
-    const cast = await stageMotionTransition(page, 'cast');
+    // A single-target bending attack now plays its bend (ADR 0055 step 7), so the
+    // legacy cast recovery is staged with a cone, which keeps the legacy cast.
+    const cast = await stageMotionTransition(page, 'cast', 'flame_arc');
     await page.clock.runFor(50);
     expect(await rendered(cast.id)).toMatchObject({ clip: 'cast', facing: -1 });
     await page.clock.fastForward(cast.duration);

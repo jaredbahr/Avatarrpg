@@ -35,16 +35,26 @@ for (const renderer of ['canvas', 'webgl'] as const) {
       await stageMotionTransition(page, 'cast', ability.id);
       await page.clock.fastForward(600);
       await page.clock.runFor(17);
-      const cels = await page.evaluate(() =>
-        window
-          .fnt!.app.animator.emitters(performance.now())
-          .flatMap((e) => (e.def.kind === 'particles' && e.def.cel ? [e.def.cel] : [])),
-      );
-      expect(cels.length, ability.id).toBeGreaterThan(0);
+      // Kaya's single-target bending attacks play her bend and its painted
+      // effect instead of particle cels (ADR 0055, step 7); the rest keep cels.
+      const drawn = await page.evaluate(() => {
+        const now = performance.now();
+        const animator = window.fnt!.app.animator;
+        return {
+          cels: animator
+            .emitters(now)
+            .flatMap((e) => (e.def.kind === 'particles' && e.def.cel ? [e.def.cel] : [])).length,
+          bend: animator.bendFx(now).length,
+        };
+      });
+      expect(drawn.cels + drawn.bend, ability.id).toBeGreaterThan(0);
     }
     await page.clock.fastForward(1500);
     await page.clock.runFor(17);
     expect(await page.evaluate(() => window.fnt!.app.animator.emitters(performance.now()))).toEqual(
+      [],
+    );
+    expect(await page.evaluate(() => window.fnt!.app.animator.bendFx(performance.now()))).toEqual(
       [],
     );
     expect(errors).toEqual([]);

@@ -62,6 +62,11 @@ import { ExploreScene } from './scenes/ExploreScene';
 import { ResidentWalks } from './world/residentMotion';
 import { CombatScene } from './scenes/CombatScene';
 import { worldConversationFor } from '../content/story/presentations';
+import { BEND_FX } from '../content/fxCels';
+import { loadBendFx } from '../render/fx/bendFx';
+import type { BendFxIndex } from '../render/fx/bendFx';
+import { bendFxPages } from '../render/fx/bendFxDraw';
+import { elevationAt, ELEVATION_LIFT } from '../render/geometry/elevation';
 
 /** What `rendererCamera()` reports: tile size and offset in CSS px, and whether the whole board is on screen. */
 export interface CameraInfo {
@@ -151,6 +156,24 @@ export class App {
   private resolving = false;
   private resizeQueued = false;
   private routeTimer: number | null = null;
+  private bendFx: BendFxIndex | undefined;
+  private bendFxLoading = false;
+
+  /**
+   * Combat warms the painted bend effects at its start: the data, then every
+   * page decoded, and only then may a cast bend (ADR 0055, step 7). Until
+   * then, and for the session if any of it fails, casts stay legacy.
+   */
+  preloadBendFx(): void {
+    if (this.bendFx || this.bendFxLoading) return;
+    this.bendFxLoading = true;
+    void loadBendFx(BEND_FX, import.meta.env.BASE_URL)
+      .then(async (fx) => {
+        const pages = await Promise.all(fx.images.map((url) => bendFxPages.whenLoaded(url)));
+        if (pages.every(Boolean)) this.bendFx = fx;
+      })
+      .catch(() => undefined);
+  }
 
   private cancelRoute(): void {
     if (this.routeTimer !== null) window.clearTimeout(this.routeTimer);
@@ -174,6 +197,22 @@ export class App {
       onSounds: (cues, now) => this.audio.play(cues, now),
       // The G knockouts arrive with the sheet, not the bundle (ADR 0059).
       sheetClips: (sprite) => sheets.clips(sprite),
+      bends: () => {
+        const fx = this.bendFx;
+        return fx
+          ? {
+              fx,
+              // Asking a bend that has not been preloaded must not load it.
+              setOf: (sprite) =>
+                sheets.bendState(sprite) === 'loaded' ? sheets.bendSet(sprite) : undefined,
+              frameOf: (sprite, heading, index) => sheets.bendFrame(sprite, heading, index),
+            }
+          : undefined;
+      },
+      liftOf: (pos) => {
+        const grid = this.state?.battle?.grid;
+        return grid ? elevationAt(grid, pos) * ELEVATION_LIFT : 0;
+      },
     });
     this.residents = new ResidentWalks(content);
     applySettings(this.settings);

@@ -40,6 +40,8 @@ import { headingClip, hitClip, koClip } from '../content/assets/clips';
 import type { Heading, MeleeDirection } from '../content/assets/clips';
 import { sheetLocomotion } from '../content/assets/manifest';
 import type { SheetClips } from '../render/sheets/store';
+import type { BendSources } from './anim/bendHandoff';
+import { headingDeg } from './anim/bendChoreo';
 
 /** A clip time past the end of any clip: an unlooped clip shows its last frame. */
 const HELD = 3_600_000;
@@ -100,6 +102,15 @@ export interface AnimatorOptions {
    * the sheet is in, a knockout is the legacy pose and keeps its timing.
    */
   readonly sheetClips?: (sprite: string) => SheetClips | undefined;
+  /**
+   * The bends a push can play (ADR 0055, step 7), asked once a push:
+   * undefined until the painted effects and their pages are in, and each
+   * lookup answers only for a bend that has loaded. Without it every cast is
+   * the legacy one.
+   */
+  readonly bends?: () => BendSources | undefined;
+  /** How far the ground lifts a unit's drawing at a tile, in tiles, so a bend aims from and at the drawn feet. */
+  readonly liftOf?: (pos: Vec2) => number;
 }
 
 /** Everything the renderer needs to draw a unit mid-playback. */
@@ -212,6 +223,7 @@ export class Animator {
     this.lastCursor = base;
     const rate = this.rate;
     const cursor = base + Math.max(0, options.delayMs ?? 0) * rate;
+    const bends = this.options.bends?.();
     const result = choreograph({
       content: this.content,
       events,
@@ -222,6 +234,8 @@ export class Animator {
       silentSteps: options.silentSteps ?? options.alongside,
       projection: this.projection,
       ...(this.options.sheetClips ? { clipsOf: this.options.sheetClips } : {}),
+      ...(bends ? { bends } : {}),
+      ...(this.options.liftOf ? { liftOf: this.options.liftOf } : {}),
     });
     const affected = new Set(result.health.map((change) => change.unitId));
     // State is already the reducer's final result. Seed each affected unit at
@@ -241,7 +255,19 @@ export class Animator {
       this.healthCues.push({ ...change, order: this.healthOrder++ });
     this.healthCues.sort((a, b) => a.at - b.at || a.order - b.order);
     for (const track of result.tracks) {
+      // Every track, a bend's too, starts exactly where the choreography laid
+      // it: the damage, flash and floater were timed from that start.
       this.timeline.add(track);
+      if (track.kind === 'bend') {
+        // The stance keeps the heading the bend threw toward.
+        const deg = (headingDeg(track.plan.heading) * Math.PI) / 180;
+        this.pendingHeadings.push({
+          unitId: track.unitId,
+          at: track.start,
+          tangent: { x: Math.cos(deg), y: Math.sin(deg) },
+          screenSpace: true,
+        });
+      }
       if (track.kind === 'move') {
         if (track.gait === 'slide') {
           // A push takes the stance over: the struck figure does not settle

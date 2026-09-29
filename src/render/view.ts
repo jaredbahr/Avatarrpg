@@ -7,7 +7,7 @@
  */
 
 import type { Grid, MapBackdrop, MapScene, StatusId, Vec2 } from '../core/types';
-import type { ClipName, MeleeDirection } from '../content/assets/clips';
+import type { ClipName, Heading, MeleeDirection } from '../content/assets/clips';
 import type { EmitterDef } from '../content/fx';
 
 /** The pose vocabulary from ADR 0003; the sheet runtime maps these to frames. */
@@ -50,6 +50,12 @@ export interface RenderUnit {
   readonly alpha?: number;
   /** 0..1 white flash on a hit. */
   readonly flash?: number;
+  /**
+   * A bend cel to draw in place of the clip (ADR 0055): the heading and play
+   * index `SheetStore.bendFrame` resolves, drawn as authored, never mirrored.
+   * A cel that does not resolve draws the clip instead.
+   */
+  readonly bend?: { readonly heading: Heading; readonly index: number };
 }
 
 /** How far the fallen fade takes a standing pose: nearly a ghost, under its cross. */
