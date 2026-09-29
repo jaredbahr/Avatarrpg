@@ -188,7 +188,7 @@ export const ENCOUNTERS: readonly EncounterDef[] = [
     ],
     intro:
       "Jin's people are already in the cutting. They knew which road you would take, and they have come for Ruon.",
-    tip: 'Ruon fights with you, and his orders make a hero hit harder. Take the raised ground at the edges for better aim, and catch mercenaries in the central pool with lightning or cold.',
+    tip: 'Ruon fights with you, and his orders make a hero hit harder. The road squeezes into a narrow gap, with a pool in the middle and ledges on both sides. High ground helps your aim. Shove someone off a ledge to make them fall and hurt; it never finishes them.',
   },
   {
     id: 'enc_grumbler',
