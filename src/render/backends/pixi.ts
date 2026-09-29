@@ -626,7 +626,7 @@ export class PixiBackend implements RenderBackend {
    * backend draws. The flat ground renders into a texture; each raised top
    * is that texture again, sampled lower down, filled over its faces.
    */
-  private syncLift(view: MapView, camera: Camera, artLift: number): void {
+  private syncLift(view: MapView, camera: Camera, artLift: number | readonly number[]): void {
     const app = this.app;
     if (!app) return;
     const tilePx = TILE * camera.scale;
@@ -681,7 +681,7 @@ export class PixiBackend implements RenderBackend {
     g.position.set(dx, dy);
     const flat = (poly: readonly Pt[]) => poly.flatMap((p) => [p.x, p.y]);
     for (const op of ops) {
-      if (op.kind === 'top') {
+      if (op.kind === 'top' || op.kind === 'face') {
         // Global texture space maps a point through the inverse of `matrix`:
         // this one samples the texture `shift` pixels below, shaken as drawn.
         g.poly(flat(op.poly)).fill({

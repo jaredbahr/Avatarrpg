@@ -25,6 +25,8 @@ export interface Pt {
 export type LiftOp =
   /** Redraw the flat picture inside `poly`, sampled `shift` pixels further down. */
   | { readonly kind: 'top'; readonly poly: readonly Pt[]; readonly shift: number }
+  /** An exposed face: the same copy as a top, sampled from inside the cell's edge. */
+  | { readonly kind: 'face'; readonly poly: readonly Pt[]; readonly shift: number }
   | {
       readonly kind: 'fill';
       readonly poly: readonly Pt[];
@@ -46,8 +48,11 @@ export interface LiftInput {
   readonly project: (pos: Vec2) => Pt;
   /** One tile in screen pixels. */
   readonly tilePx: number;
-  /** How far loaded ground art already lifts a tier, in tiles (`MapScene.reliefLift`). */
-  readonly artLift: number;
+  /**
+   * How far loaded ground art already lifts a tier, in tiles, or each tier's
+   * top in turn (`MapScene.reliefLift`).
+   */
+  readonly artLift: number | readonly number[];
   /** High contrast: a stronger tier tint and ink. */
   readonly contrast: boolean;
 }
@@ -68,7 +73,7 @@ const SIDES = [
 export function liftOps(input: LiftInput): LiftOp[] {
   const { grid, project, tilePx, artLift, contrast } = input;
   // Art painted at the full lift draws its own blocks; it stays in charge.
-  if (artLift >= TIER_LIFT) return [];
+  if (typeof artLift === 'number' && artLift >= TIER_LIFT) return [];
   const lift = (x: number, y: number) => liftAt(grid, { x, y }, 'oblique');
   const ops: LiftOp[] = [];
   const point = (gx: number, gy: number, up: number): Pt => {
@@ -92,9 +97,12 @@ export function liftOps(input: LiftInput): LiftOp[] {
       point(x + x0, y + y1, up),
     ];
 
+    // How far the art already lifts this cell's top.
+    const art =
+      typeof artLift === 'number' ? artLift * tile.elevation : (artLift[tile.elevation - 1] ?? 0);
     if (mine > 0) {
       const top = quad(0, 0, 1, 1, mine);
-      ops.push({ kind: 'top', poly: top, shift: (mine - artLift * tile.elevation) * tilePx });
+      ops.push({ kind: 'top', poly: top, shift: (mine - art) * tilePx });
       ops.push({
         kind: 'fill',
         poly: top,
@@ -121,14 +129,20 @@ export function liftOps(input: LiftInput): LiftOp[] {
     }
     if (mine <= 0) continue;
 
+    // A wall stands no lift of its own, but its painted rock is at least as
+    // high as this cell: a face toward it only drops the one tier this cell
+    // stands above the tier beneath, not all the way to the floor.
     const down = SIDES.map((side) => {
       const other = at(grid, x + side.dx, y + side.dy);
-      return { side, other, below: lift(x + side.dx, y + side.dy) };
+      const walled = other?.blocked && other.elevation >= tile.elevation;
+      const below = walled ? Math.max(0, mine - TIER_LIFT) : lift(x + side.dx, y + side.dy);
+      return { side, other, below };
     });
 
-    // A ramp is stairs: four treads across it, parallel to the side it steps
-    // down to (the front one first, so a corner reads one way, not as a grate),
-    // each with its riser's shadow on the low side and a lit nosing above.
+    // A ramp is a few broad steps down to its low side (the front one first,
+    // so a corner reads one way): two treads a tile, each a dark riser and a
+    // lit nosing, stopped short of the tile's ends and nudged per tile so a
+    // bench of ramps breaks into steps rather than ruling one long stripe.
     const stair = tile.ramp
       ? [2, 1, 0, 3]
           .map((i) => down[i])
@@ -139,16 +153,18 @@ export function liftOps(input: LiftInput): LiftOp[] {
       const along = side.dx === 0;
       // Distance from the low edge, in the cell's own coordinate.
       const at = (u: number) => (side.dx + side.dy > 0 ? 1 - u : u);
-      const band = (u0: number, u1: number) => {
-        const [p, q] = [at(u0), at(u1)].sort((m, n) => m - n) as [number, number];
-        return along ? quad(0, p, 1, q, mine) : quad(p, 0, q, 1, mine);
-      };
-      for (const k of [0.25, 0.5, 0.75]) {
-        ops.push({ kind: 'fill', poly: band(k - 0.08, k), color: ELEVATION.shadow, alpha: 0.16 });
-        const t = at(k);
-        const a = along ? point(x, y + t, mine) : point(x + t, y, mine);
-        const b = along ? point(x + 1, y + t, mine) : point(x + t, y + 1, mine);
-        ops.push({ kind: 'line', a, b, color: ELEVATION.rim, alpha: 0.6, width: ink });
+      const hash = (((x * 73856093) ^ (y * 19349663)) >>> 0) % 997;
+      const jitter = (k: number) => (((hash * (k + 3)) % 97) / 97 - 0.5) * 0.16;
+      for (const [i, k] of [0.34, 0.72].entries()) {
+        const e0 = 0.07 + Math.abs(jitter(i + 1));
+        const e1 = 0.93 - Math.abs(jitter(i + 5));
+        const band = (u0: number, u1: number) => {
+          const [p, q] = [at(u0), at(u1)].sort((m, n) => m - n) as [number, number];
+          return along ? quad(e0, p, e1, q, mine) : quad(p, e0, q, e1, mine);
+        };
+        const u = k + jitter(i);
+        ops.push({ kind: 'fill', poly: band(u - 0.13, u), color: ELEVATION.shadow, alpha: 0.2 });
+        ops.push({ kind: 'fill', poly: band(u, u + 0.06), color: ELEVATION.rim, alpha: 0.32 });
       }
     }
 
@@ -174,23 +190,45 @@ export function liftOps(input: LiftInput): LiftOp[] {
         ops.push({ kind: 'line', a: ia, b: ib, color: ELEVATION.rim, alpha: 0.55, width: ink });
         continue;
       }
-      // The front faces, from the lower neighbour's own height up to the lip.
+      // The front faces, from the lower neighbour's own height up to the lip,
+      // are the cell's own painted stone turned down: sampled from the strip
+      // just inside this edge, so the foot shows the art at the edge and the
+      // lip the art a face's height further in. Flat tone steps shade it:
+      // east deeper than south, darker towards the foot, a lit course under
+      // the lip, and one course for each step of a ramp.
       const footA = point(x + ax, y + ay, below);
       const footB = point(x + bx, y + by, below);
-      const face = side.dy === 1 ? ELEVATION.southFace : ELEVATION.eastFace;
-      ops.push({ kind: 'fill', poly: [footA, footB, lipB, lipA], color: face, alpha: 1 });
-      const rises = tile.ramp ? 3 : 2;
-      for (let i = 1; i < rises; i++) {
-        const u = i / rises;
-        const mix = (p: Pt, q: Pt): Pt => ({ x: p.x + (q.x - p.x) * u, y: p.y + (q.y - p.y) * u });
-        ops.push({
-          kind: 'line',
-          a: mix(footA, lipA),
-          b: mix(footB, lipB),
-          color: ELEVATION.ink,
-          alpha: tile.ramp ? 0.45 : 0.22,
-          width: Math.max(1, ink * 0.7),
-        });
+      const mix = (p: Pt, q: Pt, u: number): Pt => ({
+        x: p.x + (q.x - p.x) * u,
+        y: p.y + (q.y - p.y) * u,
+      });
+      const band = (u0: number, u1: number): Pt[] => [
+        mix(footA, lipA, u0),
+        mix(footB, lipB, u0),
+        mix(footB, lipB, u1),
+        mix(footA, lipA, u1),
+      ];
+      // Art that already paints a face as tall as this one (the Driller's
+      // gantry joists) is lifted with its top, face and all, and left unshaded.
+      const painted = art >= mine - below;
+      ops.push({
+        kind: 'face',
+        poly: band(0, 1),
+        shift: ((painted ? mine : below) - art) * tilePx,
+      });
+      const shade = side.dy === 1 ? ELEVATION.southShade : ELEVATION.eastShade;
+      if (!painted) {
+        ops.push({ kind: 'fill', poly: band(0, 1), color: ELEVATION.shadow, alpha: shade });
+        ops.push({ kind: 'fill', poly: band(0, 0.4), color: ELEVATION.shadow, alpha: 0.16 });
+      }
+      const steps = painted ? 0 : tile.ramp ? 3 : 1;
+      for (let i = 1; i <= steps; i++) {
+        const u = i / steps;
+        const lit = band(u - 0.14 / steps, u);
+        ops.push({ kind: 'fill', poly: lit, color: ELEVATION.rim, alpha: 0.2 });
+        if (i === steps) continue;
+        const dark = band(u - 0.3 / steps, u - 0.14 / steps);
+        ops.push({ kind: 'fill', poly: dark, color: ELEVATION.shadow, alpha: 0.14 });
       }
       ops.push({ kind: 'line', a: footA, b: footB, color: ELEVATION.ink, alpha: 0.7, width: ink });
       ops.push({

@@ -35,14 +35,22 @@ quarry pages (the Cutting and the Driller floor) stand each bench at the old
    - redraws the cell's top a lift higher, sampled from that flat picture;
    - tints the top a little lighter and warmer per tier, twice as much under
      High contrast;
-   - draws the cut-stone south (`#cfc2a6`) and east (`#a2957c`) faces from the
-     lower neighbour's height up to the lip;
+   - draws the south and east faces from the lower neighbour's height up to the
+     lip. A face is the cell's own painted stone, sampled from the strip just
+     inside that edge, in flat tone steps: a shadow (the east deeper than the
+     south), darker again toward the foot, and a lit course under the lip. Ink
+     goes only on the lip and the foot, so a face reads as the same painted
+     stone as the Quarry Gate's cut rock, not as a vector extrusion. A face
+     toward a wall drops one tier, not all the way to the floor;
    - inks the breaks and draws a lit rim on the north and west edges;
    - shades the lower tier along a higher north or west neighbour.
 
-   A ramp (`S`) gets stairs: three treads across it toward the side it steps
-   down to, taking the front side first so a corner does not cross-hatch, and
-   three risers on its face. A plain ledge gets one course line.
+   A ramp (`S`) reads as a few broad steps: two treads a tile toward the side
+   it steps down to (the front side first, so a corner does not cross-hatch).
+   Each tread is a dark riser band and a lit nosing. It stops short of the
+   tile's ends and is nudged per tile, so a bench of ramps breaks into steps
+   rather than ruling one long stripe. The face gets one lit course per step.
+   A plain ledge gets one.
 
 3. **One op list, two interpreters.** The ops are plain data in screen pixels.
    Canvas 2D copies the frame once to a snapshot, then clips each top and draws
@@ -56,6 +64,11 @@ quarry pages (the Cutting and the Driller floor) stand each bench at the old
    it the rest of the way. Art painted at the full lift draws its own blocks,
    so the pass leaves those cells alone and the forest shelf is not drawn twice.
    While scene art is still loading, the procedural ground is lifted in full.
+   A list gives each tier's top in turn. The Driller declares `[0.06, 0.25]`
+   because its gantry plates paint each tier-2 deck a full step up, whole, with
+   the joists beneath it. Where the art already paints a face as tall as the
+   one the pass needs, the face is lifted with the top, unshaded, so the perch
+   reads as the timber it is painted as.
 5. **Picking follows the lift.** `pickCell` treats a cell as its diamond swept
    up by its lift, which is exactly the shape the pass draws. A pointer lies
    over cell c when the segment from its flat ground point to that point plus

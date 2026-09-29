@@ -381,7 +381,7 @@ export class Canvas2DBackend implements RenderBackend {
    * Raised ground as blocks (ADR 0065): the ground drawn so far is copied once,
    * and each raised top is redrawn from that copy higher up, over its faces.
    */
-  private drawLift(view: MapView, camera: Camera, artLift: number): void {
+  private drawLift(view: MapView, camera: Camera, artLift: number | readonly number[]): void {
     const { ctx, canvas } = this;
     const tilePx = TILE * camera.scale;
     const dx = view.cameraNudge.x * tilePx;
@@ -427,7 +427,7 @@ export class Canvas2DBackend implements RenderBackend {
     ctx.save();
     ctx.lineCap = 'round';
     for (const op of ops) {
-      if (op.kind === 'top') {
+      if (op.kind === 'top' || op.kind === 'face') {
         ctx.save();
         trace(op.poly);
         ctx.clip();

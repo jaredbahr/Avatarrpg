@@ -152,8 +152,7 @@ describe('liftOps', () => {
       });
     const ramp = one('S');
     const ledge = one('^');
-    const faces = (list: typeof ramp) =>
-      list.filter((op) => op.kind === 'fill' && op.alpha === 1).length;
+    const faces = (list: typeof ramp) => list.filter((op) => op.kind === 'face').length;
     expect(faces(ramp)).toBe(2);
     expect(faces(ledge)).toBe(2);
     expect(ramp.length).toBeGreaterThan(ledge.length + 5);

@@ -187,8 +187,9 @@ export const CUTTING_SCENE: MapScene = {
 export const DRILLER_FLOOR_SCENE: MapScene = {
   groundMode: 'partial',
   paintedRubble: DRILLER_RUBBLE_CELLS,
-  // The pages stand each bench at the old actor lift, 0.06 of a tile a tier.
-  reliefLift: 0.06,
+  // The pages stand each bench at the old actor lift, 0.06 of a tile; the
+  // gantry plates paint each deck a full step up with its joists under it.
+  reliefLift: [0.06, 0.25],
   ground: [
     ...QUARRY_SURROUND,
     ...routeGround('driller-floor-scene', DRILLER_GROUND_REGIONS),
