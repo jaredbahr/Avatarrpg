@@ -13,7 +13,8 @@ gzipped: `v3/types.js` alone is 7.9 KB, because zod v3 ships every combinator
 whether or not it is used. Only four shipped modules call it:
 `core/save/serialize.ts` validates saves, and `content/fx.ts`,
 `content/sounds.ts` and `content/tuning.ts` parse their authored tables to fill
-defaults. Between them they use twelve combinators. `content/schemas.ts` is
+defaults. Between them they use eleven schema constructors, plus `refine`.
+`content/schemas.ts` is
 already dev-only (a `DEV`-gated dynamic import) and `content/bends.ts` ships
 types only (ADR 0055), so neither is in the bundle.
 

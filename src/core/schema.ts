@@ -32,7 +32,11 @@ export type SafeParseResult<T> =
 
 export class SchemaError extends Error {
   constructor(readonly issues: readonly Issue[]) {
-    super(JSON.stringify(issues, null, 2));
+    super();
+    Object.defineProperty(this, 'message', {
+      configurable: true,
+      get: () => JSON.stringify(this.issues, null, 2),
+    });
   }
 }
 
@@ -195,7 +199,7 @@ type AllOptional<S extends Shape> = {
 class ObjectSchema<S extends Shape> extends Schema<ObjectOutput<S>, ObjectInput<S>> {
   constructor(
     readonly shape: S,
-    strict = false,
+    private readonly isStrict = false,
   ) {
     const fields = Object.entries(shape);
     const keys = Object.keys(shape);
@@ -209,7 +213,7 @@ class ObjectSchema<S extends Shape> extends Schema<ObjectOutput<S>, ObjectInput<
         // As zod: an undefined result is kept only when the input had the key.
         else if (r !== undefined || key in v) out[key] = r;
       }
-      if (strict) {
+      if (isStrict) {
         const extra: string[] = [];
         for (const key in v) if (!keys.includes(key)) extra.push(key);
         if (extra.length > 0)
@@ -224,7 +228,7 @@ class ObjectSchema<S extends Shape> extends Schema<ObjectOutput<S>, ObjectInput<
   partial(): ObjectSchema<AllOptional<S>> {
     const shape: Record<string, AnySchema> = {};
     for (const [key, schema] of Object.entries(this.shape)) shape[key] = schema.optional();
-    return new ObjectSchema(shape as AllOptional<S>);
+    return new ObjectSchema(shape as AllOptional<S>, this.isStrict);
   }
 }
 

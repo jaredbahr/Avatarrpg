@@ -99,6 +99,7 @@ export const DEFAULT_TILE: Tile = {
   blocked: false,
   blocksSight: false,
   cover: false,
+  ramp: false,
   surface: null,
 };
 
@@ -125,6 +126,7 @@ export function buildGrid(map: MapDef): Grid {
         blocked,
         blocksSight: template.blocksSight ?? blocked,
         cover: template.cover ?? false,
+        ramp: template.ramp ?? false,
         surface: template.surface
           ? {
               id: template.surface,
@@ -204,10 +206,23 @@ export interface MoveContext {
   readonly surfaces: ReadonlyMap<SurfaceId, SurfaceDef>;
   /** 2-tile units need the cell to the right to be free as well. */
   readonly size: 1 | 2;
+  /**
+   * Extra move points a one-tier climb costs, from
+   * `content.tuning.climbCost`. Every shipped context carries it, combat and
+   * explore alike. A context that omits it declares no climb rule at all, and
+   * a climb in one is refused rather than silently made free — the safe
+   * default for a caller that forgot to pass the tuning.
+   */
+  readonly climbCost?: number;
 }
 
-/** Cost of *entering* a tile, or null when the tile cannot be entered at all. */
-export function enterCost(ctx: MoveContext, p: Vec2): number | null {
+/**
+ * Cost of putting the unit's whole footprint on `p`, ignoring how it got
+ * there, or null when a cell cannot be occupied at all. Used for a spawn, a
+ * projected destination or a free cell search, where there is no step from
+ * anywhere to measure.
+ */
+export function standCost(ctx: MoveContext, p: Vec2): number | null {
   const cells = ctx.size === 2 ? [p, { x: p.x + 1, y: p.y }] : [p];
   let cost = 1;
   for (const cell of cells) {
@@ -222,13 +237,52 @@ export function enterCost(ctx: MoveContext, p: Vec2): number | null {
   return cost;
 }
 
+/**
+ * Surcharge for one cell of a step, or null when that cell's step is illegal.
+ *
+ * A climb of a single tier adds `ctx.climbCost` move points unless either end
+ * is a ramp; a drop is free; and a cliff of two or more tiers cannot be
+ * crossed in either direction.
+ */
+function stepClimb(ctx: MoveContext, from: Vec2, to: Vec2): number | null {
+  const fromTile = tileAt(ctx.grid, from);
+  const toTile = tileAt(ctx.grid, to);
+  if (!fromTile || !toTile) return null;
+  const tiers = toTile.elevation - fromTile.elevation;
+  if (tiers >= 2 || tiers <= -2) return null;
+  if (tiers < 1) return 0;
+  if (fromTile.ramp || toTile.ramp) return 0;
+  return ctx.climbCost ?? null;
+}
+
+/**
+ * Cost of *entering* `to` from `from`, or null when the step cannot be taken.
+ *
+ * A size-2 unit steps both of its cells: the step is refused when either cell
+ * meets a cliff or an unpayable climb, and it pays the worst cell's surcharge
+ * once, the same way `standCost` charges the worst surface once for a
+ * footprint.
+ */
+export function enterCost(ctx: MoveContext, from: Vec2, to: Vec2): number | null {
+  const base = standCost(ctx, to);
+  if (base === null) return null;
+  const width = ctx.size === 2 ? 2 : 1;
+  let climb = 0;
+  for (let dx = 0; dx < width; dx++) {
+    const cell = stepClimb(ctx, { x: from.x + dx, y: from.y }, { x: to.x + dx, y: to.y });
+    if (cell === null) return null;
+    climb = Math.max(climb, cell);
+  }
+  return base + climb;
+}
+
 /** A diagonal step may not squeeze between impassable orthogonal neighbours. */
 function diagonalAllowed(ctx: MoveContext, from: Vec2, to: Vec2): boolean {
   if (from.x === to.x || from.y === to.y) return true;
   // Check the mover's whole footprint, including units standing in the gap.
   return (
-    enterCost(ctx, { x: to.x, y: from.y }) !== null &&
-    enterCost(ctx, { x: from.x, y: to.y }) !== null
+    enterCost(ctx, from, { x: to.x, y: from.y }) !== null &&
+    enterCost(ctx, from, { x: from.x, y: to.y }) !== null
   );
 }
 
@@ -266,7 +320,7 @@ export function reachable(
       const next = { x: current.pos.x + d.x, y: current.pos.y + d.y };
       if (!inBounds(ctx.grid, next)) continue;
       if (!diagonalAllowed(ctx, current.pos, next)) continue;
-      const step = enterCost(ctx, next);
+      const step = enterCost(ctx, current.pos, next);
       if (step === null) continue;
       const cost = current.cost + step;
       if (cost > budget) continue;
@@ -304,7 +358,7 @@ export function pathCost(ctx: MoveContext, start: Vec2, path: readonly Vec2[]): 
   for (const step of path) {
     if (distance(from, step) !== 1) return null;
     if (!diagonalAllowed(ctx, from, step)) return null;
-    const cost = enterCost(ctx, step);
+    const cost = enterCost(ctx, from, step);
     if (cost === null) return null;
     total += cost;
     from = step;
@@ -419,12 +473,14 @@ export function connectedSurface(grid: Grid, from: Vec2, surface: SurfaceId): Ve
 /* ------------------------------------------------------------------ */
 
 /**
- * Symmetric Bresenham line of sight. The origin and destination tiles never
- * block; anything between them that is `blocksSight` (a wall, or a steam
- * cloud) does.
+ * The cells strictly between `from` and `to` on the symmetric Bresenham line.
+ * Neither endpoint is included, so an origin or a destination tile can never
+ * block (or obscure) its own line. Obscurement walks the same path as sight so
+ * the two can never disagree about which tiles a shot crosses.
  */
-export function hasLineOfSight(grid: Grid, from: Vec2, to: Vec2): boolean {
-  if (samePos(from, to)) return true;
+export function lineBetween(from: Vec2, to: Vec2): Vec2[] {
+  const cells: Vec2[] = [];
+  if (samePos(from, to)) return cells;
 
   let x0 = from.x;
   let y0 = from.y;
@@ -437,7 +493,7 @@ export function hasLineOfSight(grid: Grid, from: Vec2, to: Vec2): boolean {
   let err = dx + dy;
 
   for (;;) {
-    if (x0 === x1 && y0 === y1) return true;
+    if (x0 === x1 && y0 === y1) return cells;
     const e2 = 2 * err;
     if (e2 >= dy) {
       err += dy;
@@ -447,13 +503,22 @@ export function hasLineOfSight(grid: Grid, from: Vec2, to: Vec2): boolean {
       err += dx;
       y0 += sy;
     }
-    if (x0 === x1 && y0 === y1) return true;
-    const tile = tileAt(grid, { x: x0, y: y0 });
+    if (x0 === x1 && y0 === y1) return cells;
+    cells.push({ x: x0, y: y0 });
+  }
+}
+
+/**
+ * Symmetric Bresenham line of sight. The origin and destination tiles never
+ * block; anything between them that is `blocksSight` (a wall, a solid prop or
+ * a tree) does. Steam and weather never block sight — they obscure, so the
+ * shot can still be taken, at a penalty the preview shows.
+ */
+export function hasLineOfSight(grid: Grid, from: Vec2, to: Vec2): boolean {
+  for (const cell of lineBetween(from, to)) {
+    const tile = tileAt(grid, cell);
     if (!tile) return false;
     if (tile.blocksSight) return false;
-    if (tile.surface) {
-      // Steam is authored as sight-blocking; the surface table decides.
-      if (tile.surface.id === 'steam') return false;
-    }
   }
+  return true;
 }

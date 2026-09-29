@@ -14,13 +14,16 @@
  */
 
 import type { ContentIndex, GameEvent, Unit, Vec2 } from '../core/types';
-import type { EmitterInstance, Floater } from '../render/view';
+import type { BendFxSprite, EmitterInstance, Floater } from '../render/view';
 import type { ClipName } from '../render/view';
 import { hashSeed, mulberry32 } from '../render/fx/rng';
 import { projectGround } from '../render/projection';
 import type { Projection } from '../render/projection';
 import { integrateAlong, sampleAt } from '../render/geometry/curve';
 import { choreograph } from './anim/choreography';
+import { bendFxAt, bendNudge, bendPoseAt } from './anim/bendChoreo';
+import type { BendPlan } from './anim/bendChoreo';
+import type { BendFxIndex } from '../render/fx/bendFx';
 import type { HealthChange, SoundCue } from './anim/choreography';
 import { Timeline } from './anim/timeline';
 import type { MoveTrack, PoseTrack } from './anim/timeline';
@@ -267,6 +270,36 @@ export class Animator {
     // The cues carry animator-clock times; `now` lets the sink convert them to
     // its own clock, which for Web Audio is the only one that schedules exactly.
     if (result.sounds.length > 0) this.options.onSounds?.(result.sounds, now);
+  }
+
+  /**
+   * Plays one attack of a character's bend (ADR 0055, step 6), queued after
+   * whatever is playing, and returns the scene time it starts at: the plan's
+   * times are from there (`bendSceneAt`), which is how the struck unit's pose
+   * and the damage are laid out round its holds. The track lasts the plan's
+   * whole scene duration, every hold included.
+   */
+  pushBend(now: number, unitId: string, plan: BendPlan, fx: BendFxIndex): number {
+    const start = Math.max(now, this.timeline.finishesAt);
+    this.timeline.add({ kind: 'bend', unitId, plan, fx, start, duration: plan.duration });
+    return start;
+  }
+
+  /** The bend cel a unit draws at `now`, by play index, or undefined when it is not bending. */
+  bendPose(now: number, unitId: string): ReturnType<typeof bendPoseAt> | undefined {
+    for (const track of this.timeline.active(now, 'bend')) {
+      if (track.unitId !== unitId) continue;
+      const pose = bendPoseAt(track.plan, now - track.start);
+      if (pose) return pose;
+    }
+    return undefined;
+  }
+
+  /** Every live bend's painted effect at `now`, in play order. */
+  bendFx(now: number): BendFxSprite[] {
+    return this.timeline
+      .active(now, 'bend')
+      .flatMap((track) => bendFxAt(track.fx, track.plan, now - track.start));
   }
 
   /** Drops finished tracks. Called once a frame so memory stays flat. */
@@ -584,7 +617,8 @@ export class Animator {
 
   /**
    * How far the camera is knocked at `now`, in tiles: every live shake picks
-   * a fresh direction every few frames, seeded, and dies off over its track.
+   * a fresh direction every few frames, seeded, and dies off over its track;
+   * a bend's kicks add theirs, on its own frozen clock.
    */
   cameraNudge(now: number): Vec2 {
     let x = 0;
@@ -596,6 +630,11 @@ export class Animator {
       const strength = track.amplitude * (1 - Timeline.progress(track, now));
       x += Math.cos(angle) * strength;
       y += Math.sin(angle) * strength;
+    }
+    for (const track of this.timeline.active(now, 'bend')) {
+      const kick = bendNudge(track.plan, now - track.start);
+      x += kick.x;
+      y += kick.y;
     }
     return { x, y };
   }

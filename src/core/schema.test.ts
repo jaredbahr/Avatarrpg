@@ -326,6 +326,44 @@ describe('the runtime validator matches zod', () => {
       1500,
       6,
     );
+
+    const strictPartialInput = JSON.parse('{"unknown":1}') as unknown;
+    expectSameVerdict(
+      schemaShipped.object({ known: schemaShipped.string() }).strict().partial(),
+      z.object({ known: z.string() }).strict().partial(),
+      strictPartialInput,
+      'strict partial unknown key',
+    );
+
+    const strictTuningProto = JSON.parse('{"__proto__":{"polluted":true}}') as unknown;
+    expectSameVerdict(
+      tuningShipped.combatTuningOverrideSchema,
+      zodBuilt.tuning.combatTuningOverrideSchema,
+      strictTuningProto,
+      'strict tuning __proto__ key',
+    );
+    expect((Object.prototype as { polluted?: unknown }).polluted).toBeUndefined();
+  });
+
+  it('does not pollute prototypes from JSON-parsed save keys', () => {
+    const battle = saveShipped.toBlob(midBattleState(), META);
+    const serialized = JSON.stringify(battle);
+    const malformedJson = serialized.replace(
+      '"flags":{',
+      '"flags":{"__proto__":{"polluted":true},',
+    );
+    const validJson = serialized.replace('"flags":{', '"flags":{"__proto__":1,');
+
+    for (const json of [malformedJson, validJson]) {
+      const parsed = JSON.parse(json) as { state: { flags: Record<string, unknown> } };
+      expect(Object.hasOwn(parsed.state.flags, '__proto__')).toBe(true);
+      expect(saveShipped.deserialize(json)).toEqual(zodBuilt.save.deserialize(json));
+      expect((Object.prototype as { polluted?: unknown }).polluted).toBeUndefined();
+    }
+
+    const result = saveShipped.deserialize(validJson);
+    expect(result.ok).toBe(true);
+    if (result.ok) expect(Object.hasOwn(result.blob.state.flags, '__proto__')).toBe(false);
   });
 
   it('gives what the shipped modules export the same values', () => {

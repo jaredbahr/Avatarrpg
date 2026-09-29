@@ -1,5 +1,15 @@
 # Remaining mandatory-route quarry bandits
 
+> **Superseded for idle and walk (ADR 0062).** The slinger, bruiser and quarry
+> stone-worker now draw from G sheets, `public/art/units/<name>-g.webp`, built by
+> `scripts/art/bandits-g.ts` from the toned PixelLab P1 bandits: eight-heading
+> idle, walk and rest at the party's scale. Their three cast cels, hit and
+> kneeling defeat are the ones below, copied verbatim into
+> `art/source/<name>-actions` and still mirrored. The `public/art/units/<name>.png`
+> and `.json` sheets this page shipped through `art:pack` are removed, so do not
+> paste its output into the manifest. The rest of this page records the first
+> pass; the portraits are unchanged.
+
 Original slinger, bruiser and quarry stone-worker sheets and matching portraits
 generated with the built-in OpenAI image-generation tool on 2026-09-18. Exact
 generation and correction prompts are in `quarry-bandits-prompts.json`.

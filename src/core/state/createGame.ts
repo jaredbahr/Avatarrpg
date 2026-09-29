@@ -26,7 +26,7 @@ import type {
   Vec2,
 } from '../types';
 import { evaluate } from '../story/conditions';
-import { buildGrid, enterCost, occupiedCells, posKey, tileAt, withTile } from '../rules/grid';
+import { buildGrid, occupiedCells, posKey, standCost, tileAt, withTile } from '../rules/grid';
 import { enemiesToDrop, scaleForTable } from '../rules/difficulty';
 import {
   combinedKit,
@@ -200,14 +200,14 @@ function placeAt(
   size: 1 | 2,
 ): Vec2 {
   const ctx = { grid, blocked: taken, surfaces: content.surfaces, size };
-  if (enterCost(ctx, preferred) !== null) return preferred;
+  if (standCost(ctx, preferred) !== null) return preferred;
 
   for (let radius = 1; radius <= 6; radius++) {
     for (let dy = -radius; dy <= radius; dy++) {
       for (let dx = -radius; dx <= radius; dx++) {
         if (Math.max(Math.abs(dx), Math.abs(dy)) !== radius) continue;
         const candidate = { x: preferred.x + dx, y: preferred.y + dy };
-        if (enterCost(ctx, candidate) !== null) return candidate;
+        if (standCost(ctx, candidate) !== null) return candidate;
       }
     }
   }
