@@ -5,7 +5,7 @@ import { BattleDraft } from '../state/battleDraft';
 import { createBattle, createGame } from '../state/createGame';
 import type { GameEvent, Unit } from '../types';
 import { planAiTurn } from './ai';
-import { pathCost, posKey, reachable } from './grid';
+import { pathCost, posKey, reachable, tileAt } from './grid';
 
 function rootedGrumbler(): { draft: BattleDraft; boss: Unit } {
   const state = createGame(CONTENT, {
@@ -83,8 +83,8 @@ describe('AI movement status gates', () => {
 /**
  * `planAiTurn` enumerates moves with `reachable(draft.moveContext(unit), …)`
  * (`ai.ts`), so the climb rule reaches the AI through that one context. These
- * pin it on a shipped battlefield: the Cutting's flat centre meets a tier-1
- * bench and, four cells away, a tier-2 corner.
+ * pin it on a shipped battlefield: in the Cutting's northwest bay the flat
+ * ground at (4,2) meets the party's tier-1 ledge at (3,2).
  */
 describe('AI movement over tiered ground', () => {
   function cuttingMover(): { draft: BattleDraft; mover: Unit } {
@@ -97,35 +97,57 @@ describe('AI movement over tiered ground', () => {
     const draft = new BattleDraft(CONTENT, battle, new RngCursor(0x5eed));
     const mover = draft.living().find((unit) => unit.characterId === 'sura');
     if (!mover) throw new Error('Missing the Cutting movement fixture');
-    // (5,1) is flat ground beside the tier-1 bench at (4,1); (5,0) is tier 2.
-    draft.replace({ ...mover, pos: { x: 5, y: 1 }, move: 1 });
+    draft.replace({ ...mover, pos: FLAT, move: 1 });
     const moved = draft.living().find((unit) => unit.id === mover.id);
     if (!moved) throw new Error('Missing the Cutting mover');
     return { draft, mover: moved };
   }
+  /** Flat tier-0 ground, with more flat ground east of it and the ledge west. */
+  const FLAT = { x: 4, y: 2 };
+  const BENCH = { x: 3, y: 2 };
+
+  it('stands the fixture on the tiers it names', () => {
+    const { draft, mover } = cuttingMover();
+    const { grid } = draft.moveContext(mover);
+    const tier = (pos: { x: number; y: number }) => tileAt(grid, pos)?.elevation;
+    expect([tier(FLAT), tier({ x: 5, y: 2 }), tier(BENCH)]).toEqual([0, 0, 1]);
+    expect(tileAt(grid, BENCH)?.blocked).toBe(false);
+  });
 
   it('counts a climb against the move budget the AI searches with', () => {
     const { draft, mover } = cuttingMover();
     const ctx = draft.moveContext(mover);
-    const flat = { x: 5, y: 1 };
-    const bench = { x: 4, y: 1 };
 
-    const onePoint = reachable(ctx, flat, 1);
-    expect(onePoint.has(posKey({ x: 6, y: 1 }))).toBe(true);
-    expect(onePoint.has(posKey(bench))).toBe(false);
+    const onePoint = reachable(ctx, FLAT, 1);
+    expect(onePoint.has(posKey({ x: 5, y: 2 }))).toBe(true);
+    expect(onePoint.has(posKey(BENCH))).toBe(false);
 
-    const twoPoints = reachable(ctx, flat, 2);
-    expect(twoPoints.get(posKey(bench))?.cost).toBe(2);
-    expect(pathCost(ctx, flat, [bench])).toBe(2);
+    const twoPoints = reachable(ctx, FLAT, 2);
+    expect(twoPoints.get(posKey(BENCH))?.cost).toBe(2);
+    expect(pathCost(ctx, FLAT, [BENCH])).toBe(2);
   });
 
+  /*
+   * Since M5 no shipped map has a walkable 0-to-2 step — the Cutting's tier-2
+   * slabs became blocked rock, which is what E4 climbing assumes — so the
+   * corner is raised on this context's own copy of the grid: the ledge cell
+   * north of the flat ground, lifted to a walkable tier 2. That keeps the test
+   * on the climb rule rather than on the rock simply being blocked.
+   */
   it('refuses the two-tier corner step the AI would otherwise consider', () => {
     const { draft, mover } = cuttingMover();
-    const ctx = draft.moveContext(mover);
-    const flat = { x: 5, y: 1 };
-    const corner = { x: 5, y: 0 };
+    const shipped = draft.moveContext(mover);
+    const corner = { x: 4, y: 1 };
+    const index = corner.y * shipped.grid.width + corner.x;
+    const ledge = shipped.grid.tiles[index];
+    if (!ledge || ledge.blocked || ledge.elevation !== 1) throw new Error('Expected a ledge');
+    const tiles = [...shipped.grid.tiles];
+    tiles[index] = { ...ledge, elevation: 2 };
+    const ctx = { ...shipped, grid: { ...shipped.grid, tiles } };
 
-    expect(pathCost(ctx, flat, [corner])).toBeNull();
-    expect(reachable(ctx, flat, 2).has(posKey(corner))).toBe(false);
+    expect(pathCost(ctx, FLAT, [corner])).toBeNull();
+    expect(reachable(ctx, FLAT, 2).has(posKey(corner))).toBe(false);
+    // The same cell at its shipped tier is one ordinary climb away.
+    expect(pathCost(shipped, FLAT, [corner])).toBe(2);
   });
 });
