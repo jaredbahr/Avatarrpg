@@ -260,7 +260,7 @@ export const ENCOUNTERS: readonly EncounterDef[] = [
     reinforcements: [
       { enemyId: 'bandit_thug', pos: { x: 14, y: 3 } },
       { enemyId: 'bandit_thug', pos: { x: 14, y: 8 } },
-      { enemyId: 'bandit_slinger', pos: { x: 13, y: 1 } },
+      { enemyId: 'bandit_slinger', pos: { x: 17, y: 9 } },
       { enemyId: 'bandit_earthbender', pos: { x: 13, y: 10 } },
     ],
     intro:

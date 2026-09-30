@@ -1,0 +1,96 @@
+
+> four-nations-tactics@0.2.11 balance
+> node --import tsx scripts/balance.ts
+
+
+Balance report - 200 AI-vs-AI trials per encounter, per table size
+
+--- 1 player ---
+Encounter                           Lv   Win %   Rounds   Deaths  HP left
+Ambush on the Forest Road (thugs)   1    100.0      3.0     0.0   100.0%
+Ambush on the Forest Road (slingers)1    100.0      3.0     0.0    93.2%
+Ambush on the Forest Road (bruisers)1    100.0      3.7     0.0    87.1%
+The Quarry Gate                     2    100.0      3.1     0.0    69.5%
+The Quarry Gate (bluffed)           2    100.0      3.7     0.0    87.5%
+The Cutting                         3    100.0      3.3     0.0    96.5%
+Grumbler                            3    100.0      6.1     0.0    43.7%
+Grumbler (jins_people)              3    100.0      6.1     0.0    42.6%
+  overall: 100.0%
+
+--- 2 players ---
+Encounter                           Lv   Win %   Rounds   Deaths  HP left
+Ambush on the Forest Road (thugs)   1    100.0      3.0     0.0    79.2%
+Ambush on the Forest Road (slingers)1    100.0      3.0     0.0    77.3%
+Ambush on the Forest Road (bruisers)1    100.0      3.0     0.0    81.7%
+The Quarry Gate                     2     99.0      3.3     0.3    53.2%
+The Quarry Gate (bluffed)           2     87.5      4.7     1.1    18.9%
+The Cutting                         3    100.0      4.0     0.4    62.5%
+Grumbler                            3    100.0      4.6     0.0    80.4%
+Grumbler (jins_people)              3    100.0      4.6     0.0    80.2%
+  overall: 98.3%
+
+--- 3 players ---
+Encounter                           Lv   Win %   Rounds   Deaths  HP left
+Ambush on the Forest Road (thugs)   1    100.0      3.0     0.0    80.0%
+Ambush on the Forest Road (slingers)1    100.0      3.0     0.0    82.7%
+Ambush on the Forest Road (bruisers)1    100.0      3.8     0.7    67.2%
+The Quarry Gate                     2    100.0      3.2     0.1    73.4%
+The Quarry Gate (bluffed)           2     99.0      4.1     1.1    52.8%
+The Cutting                         3    100.0      3.0     0.4    79.9%
+Grumbler                            3     88.0      7.7     1.9    27.3%
+Grumbler (jins_people)              3    100.0      6.3     0.5    56.1%
+  overall: 98.4%
+
+--- 4 players ---
+Encounter                           Lv   Win %   Rounds   Deaths  HP left
+Ambush on the Forest Road (thugs)   1    100.0      3.0     0.1    74.2%
+Ambush on the Forest Road (slingers)1    100.0      3.0     0.1    67.5%
+Ambush on the Forest Road (bruisers)1    100.0      3.0     0.1    78.3%
+The Quarry Gate                     2    100.0      3.1     0.4    73.0%
+The Quarry Gate (bluffed)           2    100.0      3.7     1.1    57.7%
+The Cutting                         3    100.0      3.0     0.2    86.2%
+Grumbler                            3     81.0      8.5     2.2    31.9%
+Grumbler (jins_people)              3     99.0      7.2     1.0    55.0%
+  overall: 97.5%
+
+--- 5 players ---
+Encounter                           Lv   Win %   Rounds   Deaths  HP left
+Ambush on the Forest Road (thugs)   1    100.0      3.0     0.8    80.7%
+Ambush on the Forest Road (slingers)1    100.0      3.0     1.0    67.4%
+Ambush on the Forest Road (bruisers)1    100.0      3.1     0.7    75.4%
+The Quarry Gate                     2     99.5      3.7     2.2    38.0%
+The Quarry Gate (bluffed)           2    100.0      3.6     1.4    62.3%
+The Cutting                         3    100.0      3.0     1.0    80.2%
+Grumbler                            3     78.0      9.8     3.1    28.2%
+Grumbler (jins_people)              3     99.5      7.6     1.3    54.1%
+  overall: 97.1%
+
+--- 6 players ---
+Encounter                           Lv   Win %   Rounds   Deaths  HP left
+Ambush on the Forest Road (thugs)   1    100.0      2.5     0.3    90.7%
+Ambush on the Forest Road (slingers)1    100.0      3.0     1.0    73.0%
+Ambush on the Forest Road (bruisers)1    100.0      3.0     0.8    81.0%
+The Quarry Gate                     2     99.5      3.2     2.2    48.1%
+The Quarry Gate (bluffed)           2    100.0      3.1     1.3    71.9%
+The Cutting                         3    100.0      3.1     1.1    81.0%
+Grumbler                            3     96.5      9.1     2.5    44.1%
+Grumbler (jins_people)              3    100.0      8.8     0.7    71.5%
+  overall: 99.5%
+
+Target band for a full table is 70-85%. Both sides are driven by the
+same AI, which does not set up combos, so treat these as a floor.
+
+--- disciplines, six players at level 7, 100 trials per encounter ---
+Path                Element     Win %   Rounds   Deaths
+Earth Shaping       earth       100.0      4.3     0.5
+Metalbending        earth       100.0      4.0     0.6
+Sound Bending       air         100.0      4.3     0.9
+Flame Shaping       fire         99.8      4.3     0.6
+Healing             water        99.8      5.3     0.8
+Lightning           fire         99.5      4.2     0.6
+Ice Shaping         water        99.5      4.4     0.7
+Air Shaping         air          99.5      4.3     0.7
+Field Craft         nonbender    99.5      4.4     0.7
+Engineering         nonbender    99.5      4.1     0.6
+  spread: 0.5 points between the best and worst path
+
