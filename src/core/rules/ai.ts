@@ -547,6 +547,38 @@ export function scoreAbility(
     const friendly = sameSide(caster, victim);
     touchedAnyone = true;
 
+    /*
+     * The forecast replays terrain and props, never the ability's own damage to
+     * a unit, so it prices a fall against the victim's *current* hit points. In
+     * play the damage lands first: a victim the hit is expected to kill pays
+     * nothing extra for a corpse, and one left on its last hit point cannot be
+     * dropped past the 1-HP floor. Sum the same expected damage the damage
+     * effect scores with and price the fall against the HP that is actually
+     * left when the shove arrives. Only built for an ability that can shove at
+     * all, so a plain attack pays for none of it.
+     */
+    let fallCap = 0;
+    if (isShoveAbility(ability)) {
+      let expectedDamage = 0;
+      for (const effect of ability.effects) {
+        if (effect.kind !== 'damage') continue;
+        expectedDamage += averageDamage(
+          content,
+          draft.grid,
+          caster,
+          victim,
+          effect,
+          weather,
+          origin,
+        );
+      }
+      fallCap = Math.max(0, victim.hp - expectedDamage - 1);
+    }
+    // `ledgeDropFor` already totals every push/pull effect's drop for the
+    // victim, so it is added once per victim below. Charging it on each
+    // qualifying effect counted an N-shove ability's drop N times over.
+    let fallPriced = false;
+
     for (const effect of ability.effects) {
       switch (effect.kind) {
         case 'damage': {
@@ -586,19 +618,22 @@ export function scoreAbility(
         }
         case 'push':
         case 'pull': {
+          const fall = fallPriced ? 0 : Math.min(ledgeDropFor(victim.id), fallCap);
+          fallPriced = true;
           if (friendly) {
             // A friendly unit thrown over a lip still takes the fall. The direct
             // and prop-break paths both charge their friendly damage, so the
             // shove has to as well: without this an action that dropped an ally
             // and an enemy together scored as though only the enemy fell.
-            score -= ledgeDropFor(victim.id) * weights.friendlyFire;
+            score -= fall * weights.friendlyFire;
             break;
           }
           // Shoving somebody into fire is worth more than the shove itself.
           score += 2;
-          // Over a ledge more still. The forecast already respects the 1-HP
-          // floor, so a target that cannot take the fall is worth no extra.
-          score += ledgeDropFor(victim.id) * weights.damage;
+          // Over a ledge more still, up to the HP the hit leaves: the forecast
+          // respects the 1-HP floor, but against the victim's full pool, so the
+          // cap above is the part the ability's own damage moves.
+          score += fall * weights.damage;
           break;
         }
         default:
@@ -974,25 +1009,37 @@ export function ledgeExposure(draft: BattleDraft, unit: Unit, pos: Vec2): number
       candidate.id === unit.id ? { ...candidate, pos } : candidate,
     ),
   };
+  /*
+   * A size-2 unit stands on two cells and an attacker may only be able to reach
+   * the trailing one — its anchor is two tiles away, so checking adjacency and
+   * targeting from `pos` alone missed a shover that can legally hit the
+   * footprint. Test every occupied cell and aim at whichever one the attacker
+   * actually reaches. The slide still runs from the anchor, exactly as
+   * `draft.shove` does.
+   */
+  const cells = occupiedCells({ ...unit, pos });
   for (const other of draft.living()) {
-    if (sameSide(unit, other) || distanceToUnit(pos, other) > 1) continue;
-    for (const ability of knownAbilities(draft.content, other)) {
-      if (!isShoveAbility(ability)) continue;
-      // Blast and tile shoves measure from the aimed cell, not the shover, and
-      // a self-target cannot hit this unit. This deliberately narrow term
-      // ignores those area-origin trajectories.
-      if (
-        ability.targeting.shape === 'self' ||
-        ability.targeting.shape === 'blast' ||
-        ability.targeting.shape === 'tile'
-      )
-        continue;
-      if (!isValidTarget(draft.content, battle, other, ability, pos).ok) continue;
-      for (const effect of ability.effects) {
-        if (effect.kind !== 'push' && effect.kind !== 'pull') continue;
-        const origin = shoveOrigin(draft.content, draft.grid, other, ability, pos);
-        const slide = draft.slideFrom(draft.moveContext(unit), pos, origin, 1, effect.kind);
-        if (!samePos(slide.pos, pos) && slide.ledgeDropTiers > 0) return LEDGE_EDGE_RISK;
+    if (sameSide(unit, other)) continue;
+    for (const cell of cells) {
+      if (distanceToUnit(cell, other) > 1) continue;
+      for (const ability of knownAbilities(draft.content, other)) {
+        if (!isShoveAbility(ability)) continue;
+        // Blast and tile shoves measure from the aimed cell, not the shover, and
+        // a self-target cannot hit this unit. This deliberately narrow term
+        // ignores those area-origin trajectories.
+        if (
+          ability.targeting.shape === 'self' ||
+          ability.targeting.shape === 'blast' ||
+          ability.targeting.shape === 'tile'
+        )
+          continue;
+        if (!isValidTarget(draft.content, battle, other, ability, cell).ok) continue;
+        for (const effect of ability.effects) {
+          if (effect.kind !== 'push' && effect.kind !== 'pull') continue;
+          const origin = shoveOrigin(draft.content, draft.grid, other, ability, cell);
+          const slide = draft.slideFrom(draft.moveContext(unit), pos, origin, 1, effect.kind);
+          if (!samePos(slide.pos, pos) && slide.ledgeDropTiers > 0) return LEDGE_EDGE_RISK;
+        }
       }
     }
   }

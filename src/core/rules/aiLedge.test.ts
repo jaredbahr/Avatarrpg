@@ -3,7 +3,7 @@ import { CONTENT } from '../../content';
 import { RngCursor } from '../rng';
 import { BattleDraft } from '../state/battleDraft';
 import { createBattle, createGame } from '../state/createGame';
-import type { Ability, Grid, Unit, Vec2 } from '../types';
+import type { Ability, AbilityEffect, Grid, Unit, Vec2 } from '../types';
 import { ledgeExposure, planAiTurn, previewAiPlan, scoreAbility, weightsFor } from './ai';
 import { resolveAbility } from './abilities';
 import { DEFAULT_TILE, tileAt, withTile } from './grid';
@@ -95,6 +95,21 @@ function fixture(options: { readonly includeFlat: boolean; readonly ledgeHp?: nu
   };
 }
 
+/** The universal Shove, cloned so a test can compose its own effect list. */
+function shoveLike(id: string, effects: readonly AbilityEffect[]): Ability {
+  const shove = CONTENT.abilities.get('shove');
+  if (!shove) throw new Error('shove is missing from content');
+  return { ...shove, id, effects };
+}
+
+/** One tile of knockback, the effect Shove is built from. */
+const PUSH: AbilityEffect = { kind: 'push', distance: 1 };
+
+/** A test-only hit that ignores Defence, so its expected damage is predictable. */
+function hit(base: number): AbilityEffect {
+  return { kind: 'damage', base, scale: 0, damageType: 'air', ignoreDefense: true };
+}
+
 describe('the AI and ledges', () => {
   it('shoves the target over the edge instead of taking the flat shove', () => {
     const { draft, casterId } = fixture({ includeFlat: true });
@@ -129,6 +144,96 @@ describe('the AI and ledges', () => {
     // No extra: the forecast reports zero HP lost at the floor, so the AI pays
     // only the flat shove value.
     expect(floorPlan?.score).toBe(2);
+  });
+
+  it('prices a victim’s fall once however many push effects the ability has', () => {
+    const { draft, casterId } = fixture({ includeFlat: false });
+    const caster = draft.unit(casterId);
+    if (!caster) throw new Error('missing ledge caster');
+    const drop = CONTENT.tuning.ledgeDropDamage;
+    const weights = weightsFor('aggressive');
+    const walls = new Map<string, readonly Unit[]>();
+
+    const single = CONTENT.abilities.get('shove');
+    if (!single) throw new Error('shove is missing from content');
+    const singleScore = scoreAbility(draft, caster, single, LEDGE, weights, walls);
+
+    // Two pushes, so the victim is shoved twice: clear of the ledge, then along
+    // the flat. `ledgeByUnit` totals both drops, and the bug charged that total
+    // again for each push effect, so the second push paid the first fall too.
+    const twice = shoveLike('test_double_push', [PUSH, PUSH]);
+    const doubleScore = scoreAbility(draft, caster, twice, LEDGE, weights, walls);
+
+    expect(singleScore).toBeCloseTo(2 + drop, 5);
+    // The second push buys its own flat 2, and nothing else.
+    expect(doubleScore - singleScore).toBeCloseTo(2, 5);
+  });
+
+  it('prices no fall when the ability’s own damage is expected to kill', () => {
+    const { draft, casterId } = fixture({ includeFlat: false });
+    const caster = draft.unit(casterId);
+    if (!caster) throw new Error('missing ledge caster');
+    const weights = weightsFor('aggressive');
+    const walls = new Map<string, readonly Unit[]>();
+
+    // The damage is certain to kill, but the forecast never applies unit damage,
+    // so it still reports a full drop. Pricing that drop would pay for a corpse.
+    const damageOnly = scoreAbility(
+      draft,
+      caster,
+      shoveLike('test_lethal_hit', [hit(10000)]),
+      LEDGE,
+      weights,
+      walls,
+    );
+    const withPush = scoreAbility(
+      draft,
+      caster,
+      shoveLike('test_lethal_shove', [hit(10000), PUSH]),
+      LEDGE,
+      weights,
+      walls,
+    );
+
+    // The kill weight is already paid by the hit; the shove adds its flat 2.
+    expect(withPush - damageOnly).toBeCloseTo(2, 5);
+  });
+
+  it('caps a low-HP victim’s fall at the hit points its damage leaves', () => {
+    const drop = CONTENT.tuning.ledgeDropDamage;
+    const { draft, casterId, ledgeId } = fixture({ includeFlat: false, ledgeHp: drop + 1 });
+    const caster = draft.unit(casterId);
+    const victim = draft.unit(ledgeId);
+    if (!caster || !victim) throw new Error('missing ledge fixture units');
+    const weights = weightsFor('aggressive');
+    const walls = new Map<string, readonly Unit[]>();
+
+    // A damage-only twin reads the same expected damage the scorer prices, so
+    // the drop it leaves behind is exactly (HP after the hit - 1).
+    const damageOnly = scoreAbility(
+      draft,
+      caster,
+      shoveLike('test_low_hp_hit', [hit(2)]),
+      LEDGE,
+      weights,
+      walls,
+    );
+    const withPush = scoreAbility(
+      draft,
+      caster,
+      shoveLike('test_low_hp_shove', [hit(2), PUSH]),
+      LEDGE,
+      weights,
+      walls,
+    );
+
+    const expected = damageOnly / weights.damage;
+    const fall = (withPush - damageOnly - 2) / weights.damage;
+    // It survives the hit, but the 1-HP floor bites lower than the forecast's.
+    expect(expected).toBeGreaterThan(0);
+    expect(expected).toBeLessThan(victim.hp);
+    expect(fall).toBeCloseTo(victim.hp - expected - 1, 5);
+    expect(fall).toBeLessThan(drop);
   });
 
   it('never drops a target below its last hit point when it is shoved off', () => {
@@ -543,14 +648,23 @@ describe('the AI and ledge exposure', () => {
   });
 
   it('ignores an adjacent area-origin shove by design', () => {
-    const { draft, hero } = exposureFixture(EXPOSURE_WEST);
-    const shover = draft.units.find((unit) => unit.id !== hero.id);
-    if (!shover) throw new Error('missing exposure shover');
-    draft.replace({ ...shover, abilities: ['shockwave'] });
+    // A size-2 footprint with the shover beside only its trailing cell, so the
+    // one legal blast aim is a cell whose origin is not the shover and not the
+    // unit's own anchor.
+    const { draft, hero } = shoveExposureFixture({
+      hero: FOOT_ANCHOR,
+      heroSize: 2,
+      shover: FOOT_TRAILING_SHOVER,
+      abilities: ['shockwave'],
+      raised: [FOOT_ANCHOR, FOOT_TRAILING],
+    });
 
-    // Blast and tile abilities push relative to their aimed cell. This narrow
-    // positional term only forecasts shoves whose origin is the shover itself.
-    expect(ledgeExposure(draft, hero, EXPOSURE_LIP)).toBe(0);
+    // Blast and tile abilities push relative to their aimed cell, not the
+    // shover, and this narrow positional term deliberately ignores those
+    // trajectories. Without the skip the trailing cell is a legal Shockwave aim
+    // (range 2) that would push the footprint west off the plateau, so this
+    // zero is the skip itself — not the early return an anchor-aimed blast gave.
+    expect(ledgeExposure(draft, hero, FOOT_ANCHOR)).toBe(0);
   });
 });
 
@@ -565,6 +679,8 @@ const FOOT_ANCHOR: Vec2 = { x: 2, y: 2 };
 const FOOT_TRAILING: Vec2 = { x: FOOT_ANCHOR.x + 1, y: FOOT_ANCHOR.y };
 /** The shover west of the anchor: a push runs east, over the trailing cell's drop. */
 const FOOT_SHOVER: Vec2 = { x: FOOT_ANCHOR.x - 1, y: FOOT_ANCHOR.y };
+/** East of the trailing cell: two tiles from the anchor, one from the foot. */
+const FOOT_TRAILING_SHOVER: Vec2 = { x: FOOT_TRAILING.x + 1, y: FOOT_TRAILING.y };
 
 /**
  * One party unit and one adjacent enemy on a flat five-by-five board, with the
@@ -670,6 +786,21 @@ describe('the AI and a size-2 footprint on a lip', () => {
     });
 
     // The flat lip penalty; nothing else reads it, so it is not exported.
+    expect(ledgeExposure(draft, hero, FOOT_ANCHOR)).toBe(3);
+  });
+
+  it('charges a shover that can only reach the trailing cell', () => {
+    const { draft, hero } = shoveExposureFixture({
+      hero: FOOT_ANCHOR,
+      heroSize: 2,
+      shover: FOOT_TRAILING_SHOVER,
+      abilities: ['shove'],
+      raised: [FOOT_ANCHOR, FOOT_TRAILING],
+    });
+
+    // The anchor is two tiles from this shover, so an anchor-only adjacency
+    // check called the footprint safe. Shove reaches the trailing cell, and the
+    // push runs west, carrying the whole footprint off the plateau.
     expect(ledgeExposure(draft, hero, FOOT_ANCHOR)).toBe(3);
   });
 });
