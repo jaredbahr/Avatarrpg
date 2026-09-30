@@ -53,6 +53,7 @@ import { TILE } from '../camera';
 import type { Camera, Viewport } from '../camera';
 import { DecorSheets } from '../decorSheets';
 import { ParticleLayer } from '../fx/particleLayer';
+import { steamPuffCanvas } from '../fx/steamPuff';
 import { bendFxSource } from '../fx/bendFxDraw';
 import { syncBendFx } from '../fx/bendFxPixi';
 import { aimArcPoints, arcHeading, arrowheadPolygon } from '../geometry/arc';
@@ -287,6 +288,9 @@ export class PixiBackend implements RenderBackend {
   private shadeLayer = new Container();
   private shadeSprites: Sprite[] = [];
   private overlayGfx = new Graphics();
+  /** Upright vapour below actors; sprites and their shared texture are reused. */
+  private steamLayer = new Container();
+  private steamPuffs: Sprite[] = [];
   private pathGfx = new Graphics();
   private decorGfx = new Graphics();
   private groundRings = new Graphics();
@@ -354,6 +358,7 @@ export class PixiBackend implements RenderBackend {
    * frame until something changes, and a WeakMap forgets them with it.
    */
   private loops = new WeakMap<OverlayLayer, Vec2[][]>();
+  private obscuringLoops = new WeakMap<readonly Vec2[], Vec2[][]>();
   private curve: { path: readonly Vec2[]; from: Vec2; curve: Curve } | null = null;
 
   constructor(private canvas: HTMLCanvasElement) {
@@ -476,6 +481,7 @@ export class PixiBackend implements RenderBackend {
     this.upright.addChild(
       this.groundRings,
       this.bendUnder,
+      this.steamLayer,
       this.unitLayer,
       this.flockLayer,
       this.bendOver,
@@ -624,6 +630,7 @@ export class PixiBackend implements RenderBackend {
     this.drawDecor(view);
     this.drawClimbMarkers(view, camera);
     this.drawUnits(view, camera);
+    this.drawSteamPuffs(view, camera);
     this.drawTargetReticle(view, camera);
     const bendFx = view.bendFx ?? [];
     const bendTexture = (sprite: BendFxSprite) => {
@@ -1558,45 +1565,95 @@ export class PixiBackend implements RenderBackend {
     this.drawCliffCues(view);
   }
 
-  /** Capped, deterministic particle field: the Graphics object is the pool and is reused. */
+  /** Warm, ground-hugging tactical veil and board-bounded sand weather. */
   private drawObscurement(view: MapView, g: Graphics): void {
     const tiles = view.obscuringTiles ?? [];
-    for (const pos of tiles) {
-      const x = pos.x * TILE;
-      const y = pos.y * TILE;
-      g.rect(x, y, TILE, TILE).fill({ color: OVERLAY.obscurementVeil });
-      const spacing = TILE * (view.crispOverlays ? 0.2 : 0.28);
-      for (let offset = -TILE; offset < TILE * 2; offset += spacing)
-        g.moveTo(x + offset, y + TILE).lineTo(x + offset + TILE, y);
-      g.stroke({
-        width: Math.max(view.crispOverlays ? 2 : 1, TILE * 0.025),
-        color: OVERLAY.obscurementHatch,
+    let loops = this.obscuringLoops.get(tiles);
+    if (!loops) {
+      loops = contourLoops(tiles);
+      this.obscuringLoops.set(tiles, loops);
+    }
+    const outers = loops.filter((loop) => !isHole(loop));
+    const holes = loops.filter(isHole);
+    for (const outer of outers) {
+      g.poly(flatten(outer), true);
+      for (const hole of holes) {
+        const probe = hole[0];
+        if (probe && insideLoop(probe, outer)) g.poly(flatten(hole), true).cut();
+      }
+      g.fill({ color: OVERLAY.obscurementVeil });
+    }
+    for (const loop of loops) {
+      g.poly(flatten(loop), true).stroke({
+        width: TILE * 0.12,
+        color: OVERLAY.obscurementVeil,
+        alpha: 0.5,
+      });
+      g.poly(flatten(loop), true).stroke({
+        width: Math.max(1, TILE * (view.crispOverlays ? 0.035 : 0.022)),
+        color: OVERLAY.obscurementEdge,
       });
     }
-
-    const moving = view.reducedMotion ? 0 : view.time * 0.000035;
-    const steamCount = Math.min(36, tiles.length * 4);
-    for (let i = 0; i < steamCount; i++) {
-      const tile = tiles[Math.floor(i / 4)];
-      if (!tile) break;
-      const phase = i * 0.61803398875;
-      const x = tile.x * TILE + ((((phase + moving) % 1) + 1) % 1) * TILE;
-      const y = tile.y * TILE + (0.25 + ((i * 0.37) % 0.55)) * TILE;
-      g.circle(x, y, TILE * (0.06 + (i % 3) * 0.018)).fill({ color: OVERLAY.steamWisp });
-    }
-
+    const moving = view.reducedMotion ? 0 : view.time * 0.000018;
     const weather = view.weatherIntensity ?? 0;
     if (weather > 0) {
-      const count = weather === 2 ? 48 : 28;
       const width = view.grid.width * TILE;
       const height = view.grid.height * TILE;
+      g.rect(0, 0, width, height).fill({
+        color: OVERLAY.sandHaze,
+        alpha: weather === 2 ? 1 : 0.58,
+      });
+      const count = weather === 2 ? 48 : 28;
       for (let i = 0; i < count; i++) {
         const phase = i * 0.754877666;
-        const x = ((((phase + moving * (weather + 1)) % 1) + 1) % 1) * width;
-        const y = ((i * 0.56984029) % 1) * height;
-        g.moveTo(x, y).lineTo(x + TILE * 0.2, y - TILE * 0.05);
+        const x = ((((phase + moving * (weather + 1)) % 1) + 1) % 1) * (width - TILE * 0.32);
+        const y = TILE * 0.08 + ((i * 0.56984029) % 1) * (height - TILE * 0.16);
+        g.moveTo(x, y).lineTo(x + TILE * 0.16, y - TILE * 0.07);
       }
-      g.stroke({ width: Math.max(1, TILE * 0.018), color: OVERLAY.sandWisp });
+      g.stroke({
+        width: Math.max(1, TILE * 0.022),
+        color: OVERLAY.sandWisp,
+        alpha: weather === 2 ? 1 : 0.66,
+      });
+    }
+  }
+
+  /** A capped sprite pool using the one cached procedural puff shared with Canvas. */
+  private drawSteamPuffs(view: MapView, camera: Camera): void {
+    const tiles = view.obscuringTiles ?? [];
+    const count = Math.min(36, tiles.length * 4);
+    const texture = count > 0 ? this.texture(steamPuffCanvas()) : Texture.EMPTY;
+    while (this.steamPuffs.length < count) {
+      const sprite = new Sprite(texture);
+      sprite.anchor.set(0.5);
+      this.steamPuffs.push(sprite);
+      this.steamLayer.addChild(sprite);
+    }
+    const clock = view.reducedMotion ? 0 : view.time * 0.000055;
+    for (let i = 0; i < this.steamPuffs.length; i++) {
+      const sprite = this.steamPuffs[i];
+      const tile = tiles[Math.floor(i / 4)];
+      if (!sprite || !tile || i >= count) {
+        if (sprite) sprite.visible = false;
+        continue;
+      }
+      const seed = (i * 0.61803398875) % 1;
+      const phase = view.reducedMotion ? seed : (seed + clock) % 1;
+      const point = camera.groundPoint({
+        x: tile.x + 0.2 + ((i * 0.37) % 0.62),
+        y: tile.y + 0.62 + ((i * 0.23) % 0.18),
+      });
+      const drift = view.reducedMotion ? 0 : Math.sin((phase + seed) * Math.PI * 2) * TILE * 0.045;
+      sprite.texture = texture;
+      sprite.position.set(
+        point.x + drift,
+        point.y - liftAt(view.grid, tile, camera.projection) * TILE - phase * TILE * 0.28,
+      );
+      const size = TILE * (0.34 + (i % 3) * 0.055);
+      sprite.width = size;
+      sprite.height = size * 0.75;
+      sprite.alpha = view.reducedMotion ? 0.78 : 0.62 + Math.sin(phase * Math.PI) * 0.33;
+      sprite.visible = true;
     }
   }
 
