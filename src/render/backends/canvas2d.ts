@@ -35,7 +35,7 @@ import {
 import type { LiftPlan, Pt, Rect } from '../geometry/lift';
 import { sampleAt, smoothPath } from '../geometry/curve';
 import { CanvasFxLayer } from '../fx/canvasFx';
-import { steamPuffCanvas } from '../fx/steamPuff';
+import { steamPuffCanvas, steamSeed } from '../fx/steamPuff';
 import { drawBendFx } from '../fx/bendFxDraw';
 import { backdrops } from '../backdrops';
 import { sceneForGrid, sceneImage, drawSceneImage, sceneryOpacities } from '../scene';
@@ -769,33 +769,14 @@ export class Canvas2DBackend implements RenderBackend {
       ctx.save();
       ctx.beginPath();
       for (const loop of loops) tracePolygon(ctx, loop, origin, size);
-      ctx.clip('evenodd');
-      ctx.fillStyle = OVERLAY.obscurementVeil;
-      ctx.fillRect(origin.x, origin.y, view.grid.width * size, view.grid.height * size);
-
-      // A sparse `/` hatch distinguishes steam from the tighter cliff cue.
-      ctx.beginPath();
-      const spacing = size * 0.72;
-      const boardWidth = view.grid.width * size;
-      const boardHeight = view.grid.height * size;
-      for (let offset = -boardHeight; offset < boardWidth; offset += spacing) {
-        ctx.moveTo(origin.x + offset, origin.y + boardHeight);
-        ctx.lineTo(origin.x + offset + boardHeight, origin.y);
-      }
-      ctx.strokeStyle = OVERLAY.obscurementHatch;
-      ctx.lineWidth = Math.max(1, size * 0.012);
-      ctx.stroke();
-
-      // The contour carries the softness and continuity; no tile diamonds.
-      ctx.beginPath();
-      for (const loop of loops) tracePolygon(ctx, loop, origin, size);
+      // Feather only the region boundary; never fill or hatch the interior.
       ctx.lineJoin = 'round';
-      ctx.strokeStyle = OVERLAY.obscurementVeil;
-      ctx.lineWidth = Math.max(2, size * 0.11);
-      ctx.stroke();
       ctx.strokeStyle = OVERLAY.obscurementEdge;
-      ctx.lineWidth = Math.max(1, size * 0.018);
-      ctx.stroke();
+      for (let band = 4; band >= 1; band--) {
+        ctx.globalAlpha = 0.25;
+        ctx.lineWidth = size * band * 0.035;
+        ctx.stroke();
+      }
       ctx.restore();
     }
 
@@ -809,7 +790,7 @@ export class Canvas2DBackend implements RenderBackend {
       ctx.rect(origin.x, origin.y, width, height);
       ctx.clip();
       ctx.fillStyle = OVERLAY.sandHaze;
-      ctx.globalAlpha = intensity === 2 ? 0.84 : 0.48;
+      ctx.globalAlpha = intensity === 2 ? 1 : 0.58;
       ctx.fillRect(origin.x, origin.y, width, height);
 
       // Fixed, short diagonal grains suggest one prevailing wind direction.
@@ -832,10 +813,12 @@ export class Canvas2DBackend implements RenderBackend {
         const length = origin.size * (0.11 + ((i * 7) % 5) * 0.018);
         ctx.moveTo(x, y);
         ctx.lineTo(x + length, y - length * 0.22);
+        ctx.moveTo(x - length * 0.45, y + length * 0.6);
+        ctx.lineTo(x - length * 0.36, y + length * 0.58);
       }
       ctx.strokeStyle = OVERLAY.sandWisp;
-      ctx.globalAlpha = intensity === 2 ? 0.4 : 0.28;
-      ctx.lineWidth = Math.max(1, origin.size * 0.014);
+      ctx.globalAlpha = intensity === 2 ? 0.95 : 0.65;
+      ctx.lineWidth = Math.max(1, origin.size * 0.024);
       ctx.lineCap = 'round';
       ctx.stroke();
       ctx.restore();
@@ -852,20 +835,16 @@ export class Canvas2DBackend implements RenderBackend {
     for (const pos of tiles) {
       if (!camera.isVisible(pos)) continue;
       const box = camera.toScreen(pos);
-      const cx = box.x + box.size * (0.35 + ((pos.x * 17 + pos.y * 11) % 5) * 0.065);
-      const cy = box.y + box.size * 0.7 - liftAt(view.grid, pos, camera.projection) * box.size;
-      const width = box.size * 0.68;
-      const height = box.size * 0.42;
-      ctx.globalAlpha = 0.78;
-      ctx.drawImage(puff, cx - width * 0.5, cy - height * 0.5, width, height);
-      ctx.globalAlpha = 0.64;
-      ctx.drawImage(
-        puff,
-        cx + box.size * 0.12 - width * 0.27,
-        cy - box.size * 0.17 - height * 0.34,
-        width * 0.54,
-        height * 0.68,
-      );
+      const cy = box.y + box.size * 0.5 - liftAt(view.grid, pos, camera.projection) * box.size;
+      for (let j = 0; j < 4; j++) {
+        const seed = steamSeed(pos.x, pos.y, j);
+        const width = box.size * (0.66 + seed * 0.24);
+        const height = width * (0.9 + seed * 0.15);
+        const cx = box.x + box.size * (0.24 + j * 0.17 + (seed - 0.5) * 0.16);
+        const rise = box.size * (0.08 + (j % 2) * 0.23 + seed * 0.1);
+        ctx.globalAlpha = 0.65;
+        ctx.drawImage(puff, cx - width / 2, cy - rise - height / 2, width, height);
+      }
     }
     ctx.restore();
   }

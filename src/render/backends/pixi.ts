@@ -53,7 +53,7 @@ import { TILE } from '../camera';
 import type { Camera, Viewport } from '../camera';
 import { DecorSheets } from '../decorSheets';
 import { ParticleLayer } from '../fx/particleLayer';
-import { steamPuffCanvas } from '../fx/steamPuff';
+import { steamPuffCanvas, steamSeed } from '../fx/steamPuff';
 import { bendFxSource } from '../fx/bendFxDraw';
 import { syncBendFx } from '../fx/bendFxPixi';
 import { aimArcPoints, arcHeading, arrowheadPolygon } from '../geometry/arc';
@@ -114,15 +114,11 @@ const GROUND_RESOLUTION = 0.5;
 
 /**
  * How far round it a surface the ground shader animates keeps moving: water
- * ripples, fire and steam roll, and fire lights its neighbours. The rest of
- * the surfaces are still washes.
+ * ripples and fire rolls and lights its neighbours. Steam is upright, so it
+ * does not invalidate the lifted ground cache.
  */
 const MOVING_SURFACE = (tile: Tile): number =>
-  tile.surface?.id === 'fire'
-    ? 2
-    : tile.surface?.id === 'water' || tile.surface?.id === 'steam'
-      ? 1
-      : 0;
+  tile.surface?.id === 'fire' ? 2 : tile.surface?.id === 'water' ? 1 : 0;
 
 /** How far firelight reaches, in tiles. */
 const GLOW_RADIUS = 2;
@@ -785,7 +781,7 @@ export class PixiBackend implements RenderBackend {
       identity(view.obscuringTiles),
       view.weatherIntensity,
       view.crispOverlays,
-      (animated || (!view.reducedMotion && (view.obscuringTiles?.length ?? 0) > 0)) && view.time,
+      (animated || (!view.reducedMotion && (view.weatherIntensity ?? 0) > 0)) && view.time,
     ].join('|');
     this.marksGfx.position.set(nx, ny);
     if (liveKey === this.marksKey) return;
@@ -1573,26 +1569,15 @@ export class PixiBackend implements RenderBackend {
       loops = contourLoops(tiles);
       this.obscuringLoops.set(tiles, loops);
     }
-    const outers = loops.filter((loop) => !isHole(loop));
-    const holes = loops.filter(isHole);
-    for (const outer of outers) {
-      g.poly(flatten(outer), true);
-      for (const hole of holes) {
-        const probe = hole[0];
-        if (probe && insideLoop(probe, outer)) g.poly(flatten(hole), true).cut();
-      }
-      g.fill({ color: OVERLAY.obscurementVeil });
-    }
     for (const loop of loops) {
-      g.poly(flatten(loop), true).stroke({
-        width: TILE * 0.12,
-        color: OVERLAY.obscurementVeil,
-        alpha: 0.5,
-      });
-      g.poly(flatten(loop), true).stroke({
-        width: Math.max(1, TILE * (view.crispOverlays ? 0.035 : 0.022)),
-        color: OVERLAY.obscurementEdge,
-      });
+      for (let band = 4; band >= 1; band--) {
+        g.poly(flatten(loop), true).stroke({
+          width: TILE * band * 0.035,
+          color: OVERLAY.obscurementEdge,
+          alpha: 0.25,
+          join: 'round',
+        });
+      }
     }
     const moving = view.reducedMotion ? 0 : view.time * 0.000018;
     const weather = view.weatherIntensity ?? 0;
@@ -1603,12 +1588,16 @@ export class PixiBackend implements RenderBackend {
         color: OVERLAY.sandHaze,
         alpha: weather === 2 ? 1 : 0.58,
       });
-      const count = weather === 2 ? 48 : 28;
+      const count = weather === 2 ? 96 : 52;
       for (let i = 0; i < count; i++) {
         const phase = i * 0.754877666;
         const x = ((((phase + moving * (weather + 1)) % 1) + 1) % 1) * (width - TILE * 0.32);
-        const y = TILE * 0.08 + ((i * 0.56984029) % 1) * (height - TILE * 0.16);
-        g.moveTo(x, y).lineTo(x + TILE * 0.16, y - TILE * 0.07);
+        const travel = (moving * (weather + 1) * width * 0.22) / height;
+        const y =
+          TILE * 0.08 + ((((i * 0.56984029 - travel) % 1) + 1) % 1) * (height - TILE * 0.16);
+        const length = TILE * (0.11 + ((i * 7) % 5) * 0.018);
+        g.moveTo(x, y).lineTo(x + length, y - length * 0.22);
+        g.moveTo(x + length * 0.3, y + TILE * 0.035).lineTo(x + length * 0.4, y + TILE * 0.032);
       }
       g.stroke({
         width: Math.max(1, TILE * 0.022),
@@ -1621,7 +1610,7 @@ export class PixiBackend implements RenderBackend {
   /** A capped sprite pool using the one cached procedural puff shared with Canvas. */
   private drawSteamPuffs(view: MapView, camera: Camera): void {
     const tiles = view.obscuringTiles ?? [];
-    const count = Math.min(36, tiles.length * 4);
+    const count = Math.min(128, tiles.length * 4);
     const texture = count > 0 ? this.texture(steamPuffCanvas()) : Texture.EMPTY;
     while (this.steamPuffs.length < count) {
       const sprite = new Sprite(texture);
@@ -1629,7 +1618,7 @@ export class PixiBackend implements RenderBackend {
       this.steamPuffs.push(sprite);
       this.steamLayer.addChild(sprite);
     }
-    const clock = view.reducedMotion ? 0 : view.time * 0.000055;
+    const clock = view.reducedMotion ? 0 : view.time * 0.000035;
     for (let i = 0; i < this.steamPuffs.length; i++) {
       const sprite = this.steamPuffs[i];
       const tile = tiles[Math.floor(i / 4)];
@@ -1637,22 +1626,27 @@ export class PixiBackend implements RenderBackend {
         if (sprite) sprite.visible = false;
         continue;
       }
-      const seed = (i * 0.61803398875) % 1;
-      const phase = view.reducedMotion ? seed : (seed + clock) % 1;
-      const point = camera.groundPoint({
-        x: tile.x + 0.2 + ((i * 0.37) % 0.62),
-        y: tile.y + 0.62 + ((i * 0.23) % 0.18),
-      });
-      const drift = view.reducedMotion ? 0 : Math.sin((phase + seed) * Math.PI * 2) * TILE * 0.045;
+      const j = i % 4;
+      const seed = steamSeed(tile.x, tile.y, j);
+      const phase = (seed + clock) % 1;
+      // Same footprint projection as Camera, without temporary points per puff.
+      const oblique = camera.projection === 'oblique';
+      const cx = (oblique ? tile.x - tile.y + view.grid.height : tile.x + 0.5) * TILE;
+      const cy = (oblique ? (tile.x + tile.y + 1) / 2 : tile.y + 0.5) * TILE;
+      const rise = 0.08 + (j % 2) * 0.23 + seed * 0.1;
+      const drift = view.reducedMotion ? 0 : (phase - 0.5) * TILE * 0.12;
       sprite.texture = texture;
       sprite.position.set(
-        point.x + drift,
-        point.y - liftAt(view.grid, tile, camera.projection) * TILE - phase * TILE * 0.28,
+        cx + TILE * (-0.26 + j * 0.17 + (seed - 0.5) * 0.16) + drift,
+        cy -
+          liftAt(view.grid, tile, camera.projection) * TILE -
+          rise * TILE -
+          (view.reducedMotion ? 0 : (phase - 0.5) * TILE * 0.16),
       );
-      const size = TILE * (0.34 + (i % 3) * 0.055);
+      const size = TILE * (0.66 + seed * 0.24);
       sprite.width = size;
-      sprite.height = size * 0.75;
-      sprite.alpha = view.reducedMotion ? 0.78 : 0.62 + Math.sin(phase * Math.PI) * 0.33;
+      sprite.height = size * (0.9 + seed * 0.15);
+      sprite.alpha = view.reducedMotion ? 0.65 : 0.72 * Math.sin(phase * Math.PI);
       sprite.visible = true;
     }
   }

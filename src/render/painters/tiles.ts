@@ -99,7 +99,8 @@ export function paintSurface(
   hatch: boolean,
   edges: Edges,
 ): void {
-  if (!tile.surface) return;
+  // Vapour is upright: no ground wash, rim or hatch beneath its billows.
+  if (!tile.surface || tile.surface.id === 'steam') return;
   const style = SURFACE_STYLES[tile.surface.id];
   const s = box.size;
 
@@ -190,7 +191,7 @@ export function paintSurface(
      * Irregular depth is decoration inside the tile, never a ragged or
      * misleading hazard boundary: the wash still covers every hazard tile.
      */
-    if (material !== 'ice' && material !== 'fire' && material !== 'steam') {
+    if (material !== 'ice' && material !== 'fire') {
       ctx.globalAlpha = SURFACE_POOL.alpha * intensity;
       ctx.fillStyle = style.detail;
       for (const rim of rims) {

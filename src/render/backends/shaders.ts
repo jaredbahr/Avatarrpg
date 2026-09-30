@@ -215,6 +215,7 @@ void main(void) {
   vec3 tint = vec3(0.0), rim = vec3(0.0), detail = vec3(0.0);
   float opacity = 0.0;
   ${MATERIAL_STYLES}
+  if (surface == 5) opacity = 0.0;
 
   ${/* How far this pixel is from the material's own boundary, as Canvas measures it: the footprint stays the full square tile, but the bank wanders inside it by world noise so a pool never wears a ruled rim. Four texel reads, paid on the pixels of a pooled material and nowhere else — a software rasteriser runs this quad for the whole board. */ ''}
   float edgeDistance = 1.0;
@@ -278,8 +279,7 @@ void main(void) {
     float streak = smoothstep(0.70, 0.84, vnoise(w * vec2(9.0, 17.0)));
     lay(acc, detail, streak * 0.21 * intensity);
   } else if (surface == 5) { ${/* steam */ ''}
-    float billow = fbm(w * 2.2 + vec2(uTime * 0.16, -uTime * 0.22));
-    lay(acc, vec3(0.85, 0.86, 0.87), (0.45 + 0.35 * billow) * intensity);
+    // Upright pooled vapour owns steam; no frosted ground sheet.
   } else if (surface == 6) { ${/* oil */ ''}
     float sheenBand = vnoise(w * vec2(3.0, 5.0));
     lay(acc, tint, opacity * wash * intensity);
@@ -307,7 +307,7 @@ void main(void) {
     lay(acc, rim, max(bank * 0.12, line * ${SURFACE_BANK.alpha}) * intensity);
   }
 
-  if (uHatch > 0.5 && surface > 0) {
+  if (uHatch > 0.5 && surface > 0 && surface != 5) {
     dim(acc, 1.0 - 0.225 * hatchPattern(surface, w) * intensity);
   }
 
