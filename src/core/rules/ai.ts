@@ -50,7 +50,7 @@ import {
   usableAbilities,
   validatingOrigin,
 } from './abilities';
-import { averageDamage, hitChance, positionHasCover } from './damage';
+import { averageDamage, hasCover, hitChance, positionHasCover } from './damage';
 import { positionObscurement, weatherAt } from './obscurement';
 import {
   distance,
@@ -1145,9 +1145,10 @@ export function ledgeExposure(draft: BattleDraft, unit: Unit, pos: Vec2): number
  * Comfort (cover, high ground) only counts once the unit is actually close
  * enough to do something. Otherwise a cautious unit will happily sit on a
  * rubble tile across the map forever, which is the other half of the stalemate
- * the simulator found.
+ * the simulator found. Exposed so the footprint tests can pin the cover rule
+ * directly rather than infer it from a whole turn's movement.
  */
-function positionScore(
+export function positionScore(
   draft: BattleDraft,
   unit: Unit,
   pos: Vec2,
@@ -1174,14 +1175,19 @@ function positionScore(
     return score;
   }
 
+  const cells = square ? footprintCells(pos, unit.size, true) : [pos];
   /*
-   * Read the whole footprint: a big unit is in cover when any of its cells is,
-   * and the same for the cloud-like obscurement that stands in for it. This is
+   * Read the whole footprint with the same rule a real attack uses: a big unit
+   * is in cover once half its cells (rounded up) are, not when any one of them
+   * is — a single covered corner must not shield the whole 2x2. The cloud-like
+   * obscurement that stands in for cover still reads every cell below. This is
    * gate-aware: with the square gate off it is the anchor alone, exactly as the
    * shipped AI scored it.
    */
-  const cells = square ? footprintCells(pos, unit.size, true) : [pos];
-  if (cells.some((cell) => positionHasCover(draft.content, draft.grid, cell))) {
+  const covered = square
+    ? hasCover(draft.content, draft.grid, { ...unit, pos }, true)
+    : positionHasCover(draft.content, draft.grid, pos);
+  if (covered) {
     score += weights.cover;
   }
   // A cloud is cover that the opponent can still shoot into, so it is worth a
