@@ -42,7 +42,11 @@ import { Renderer, TILE } from '../../render/renderer';
 import type { AimArc, MapView, OverlayLayer, RenderProp, RenderUnit } from '../../render/renderer';
 import { cliffEdgesFor, type TargetReticleCue } from '../../render/view';
 import { weatherAt } from '../../core/rules/obscurement';
-import { obscuringTiles, weatherChipText } from '../../core/rules/obscurementPresentation';
+import {
+  obscuringTiles,
+  weatherChipShortText,
+  weatherChipText,
+} from '../../core/rules/obscurementPresentation';
 import { CONTENT } from '../../content';
 import { attachPointer, wheelZoomFactor } from '../input/pointer';
 import { ambienceFx, resolveFx } from '../../content/fx';
@@ -56,7 +60,11 @@ import { paletteFor } from '../../render/palettes';
 import { paintElementGlyph } from '../../render/painters/glyphs';
 import { showGridLines } from '../storage/localSaves';
 import { reactionNotes } from '../ui/ReactionNote';
-import { formatHitBreakdownRows, formatShoveMovement } from '../ui/combatPreviewText';
+import {
+  formatHitBreakdownRows,
+  formatLedgeDrop,
+  formatShoveMovement,
+} from '../ui/combatPreviewText';
 import { UnitInspector } from '../ui/UnitInspector';
 import { enemyScale, partyScale } from '../anim/actorScale';
 import { partyBendSprites } from '../anim/bendHandoff';
@@ -69,6 +77,15 @@ type Mode =
   | { readonly kind: 'idle' }
   | { readonly kind: 'move' }
   | { readonly kind: 'aim'; readonly abilityId: string };
+
+/** A non-target tap must not pin the reticle while pointer hover keeps moving. */
+export function overlayMemoHoverKey(
+  aiming: boolean,
+  pendingIsValidTarget: boolean,
+  hover: Vec2 | null,
+): string {
+  return aiming && !pendingIsValidTarget && hover ? posKey(hover) : '';
+}
 
 interface OverlayBuild {
   readonly overlays: OverlayLayer[];
@@ -649,6 +666,7 @@ export class CombatScene implements Scene {
     // setMoreOpen and syncRecentre.
     const weather = weatherAt(this.app.content, battle.encounterId, battle.round);
     const weatherText = weatherChipText(this.app.content.tuning, weather);
+    const weatherShortText = weatherChipShortText(this.app.content.tuning, weather);
     const key = `${battle.encounterId}|${battle.variantId ?? ''}|${battle.round}|${weatherText ?? ''}|${this.logOpen}`;
     if (key === this.topBarKey && bar.childElementCount > 0) return;
     this.topBarKey = key;
@@ -676,11 +694,15 @@ export class CombatScene implements Scene {
           el('span', { class: 'title-plate-round', text: `Round ${battle.round}` }),
           ...(weatherText
             ? [
-                el('span', {
-                  class: 'weather-chip',
-                  text: weatherText,
-                  title: weatherText,
-                }),
+                el(
+                  'span',
+                  { class: 'weather-chip', title: weatherText },
+                  el('span', { class: 'weather-chip-full', text: weatherText }),
+                  el('span', {
+                    class: 'weather-chip-short',
+                    text: weatherShortText ?? weatherText,
+                  }),
+                ),
               ]
             : []),
         ),
@@ -1364,10 +1386,17 @@ export class CombatScene implements Scene {
     }
 
     for (const shove of preview.shoves) {
-      const destination = `(${shove.to.x + 1},${shove.to.y + 1})`;
-      const landingEffects = shove.landingSurfaces.map(
-        (id) => this.app.content.surfaces.get(id)?.name ?? id,
+      const movementText = formatShoveMovement(
+        shove.name,
+        shove.mode,
+        shove.from,
+        shove.to,
+        shove.movedDistance,
+        shove.landingSurfaces,
       );
+      const landingEffects = shove.landingSurfaces
+        .filter((id) => id !== 'water')
+        .map((id) => this.app.content.surfaces.get(id)?.name ?? id);
       if (shove.landingDamage > 0) landingEffects.push(`${shove.landingDamage} damage`);
       for (const status of shove.landingStatuses) {
         const name = this.app.content.statuses.get(status.id)?.name ?? status.id;
@@ -1380,15 +1409,21 @@ export class CombatScene implements Scene {
         el('span', {
           class: `chip ${shove.friendly ? 'chip-friendly' : 'chip-terrain'}`,
           text: shove.blocked
-            ? `${shove.name}: stops at ${destination} (${shove.movedDistance}/${shove.distance}; blocked)${landing}`
-            : `${formatShoveMovement(shove.name, shove.mode, destination)}${landing}`,
+            ? `${movementText} (${shove.movedDistance}/${shove.distance}; blocked)${landing}`
+            : `${movementText}${landing}`,
         }),
       );
-      if (shove.ledgeDropTiers > 0) {
+      const dropText = formatLedgeDrop(
+        shove.name,
+        shove.ledgeDropTiers,
+        shove.ledgeDropDamage,
+        this.app.content.tuning.ledgeDropDamage,
+      );
+      if (dropText) {
         chips.appendChild(
           el('span', {
             class: `chip shove-drop-forecast ${shove.friendly ? 'chip-friendly' : 'chip-terrain'}`,
-            text: `${shove.name} drops ${shove.ledgeDropTiers} → ${shove.ledgeDropDamage} damage`,
+            text: dropText,
           }),
         );
       }
@@ -1650,9 +1685,20 @@ export class CombatScene implements Scene {
     const interactive = this.isPlayerTurn() && !this.needsHandoff() && !this.app.animator.busy(now);
 
     if (interactive && unit) {
+      const pending = this.pending;
+      const ability =
+        this.mode.kind === 'aim' ? this.app.content.abilities.get(this.mode.abilityId) : undefined;
+      const pendingIsValidTarget = Boolean(
+        ability && pending && isValidTarget(this.app.content, battle, unit, ability, pending).ok,
+      );
+      const hoverKey = overlayMemoHoverKey(
+        this.mode.kind === 'aim',
+        pendingIsValidTarget,
+        this.hover,
+      );
       const key = `${this.mode.kind}|${this.mode.kind === 'aim' ? this.mode.abilityId : ''}|${
         this.pending ? posKey(this.pending) : ''
-      }|${this.mode.kind === 'aim' && this.hover ? posKey(this.hover) : ''}|${unit.id}`;
+      }|${hoverKey}|${unit.id}`;
       const memo = this.overlayMemo;
       if (memo && memo.battle === battle && memo.key === key) {
         overlays = memo.overlays;

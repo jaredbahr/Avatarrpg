@@ -13,13 +13,32 @@ export function obscuringTiles(content: ContentIndex, grid: Grid): { x: number; 
 
 const penalty = (value: number): string => `−${Math.abs(value)}`;
 
+function weatherLabels(intensity: WeatherIntensity): { full: string; short: string } {
+  return {
+    full: intensity === 1 ? 'Blowing sand' : 'Sandstorm',
+    short: 'Sand',
+  };
+}
+
 /** Header copy comes entirely from the active tuning rung. */
 export function weatherChipText(tuning: CombatTuning, intensity: WeatherIntensity): string | null {
   if (intensity === 0) return null;
   const level = tuning.weather[intensity];
   if (!level) return null;
-  const label = intensity === 1 ? 'Blowing sand' : 'Sandstorm';
+  const label = weatherLabels(intensity).full;
   return `${label} · long shots ${penalty(level.perTile)}/tile`;
+}
+
+/** Phone copy keeps both the weather and the tuned long-shot penalty legible. */
+export function weatherChipShortText(
+  tuning: CombatTuning,
+  intensity: WeatherIntensity,
+): string | null {
+  if (intensity === 0) return null;
+  const level = tuning.weather[intensity];
+  if (!level) return null;
+  const label = weatherLabels(intensity).short;
+  return `${label}: long shots ${penalty(level.perTile)}/tile`;
 }
 
 /** Extra sentence for a miss, selected from the terms the real hit roll used. */

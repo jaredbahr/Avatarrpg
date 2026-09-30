@@ -18,7 +18,16 @@
  * change the shot.
  */
 
-import type { Ability, BattleState, ContentIndex, StatusId, SurfaceId, Unit, Vec2 } from '../types';
+import type {
+  Ability,
+  BattleState,
+  ContentIndex,
+  GameEvent,
+  StatusId,
+  SurfaceId,
+  Unit,
+  Vec2,
+} from '../types';
 import { RngCursor } from '../rng';
 import { BattleDraft } from '../state/battleDraft';
 import type { SurfaceContactRecord } from '../state/battleDraft';
@@ -27,6 +36,25 @@ import { applyStatus, removeStatuses } from './status';
 import { contactEffects } from './surfaces';
 import type { ChainHit, StatusHit, SurfaceChange } from './surfaces';
 import { isAlive } from './stats';
+
+/** Only the unit that immediately follows a ledge-damage event owns that drop. */
+export function precedingLedgeDrop(
+  previous: GameEvent | undefined,
+  pushed: Extract<GameEvent, { type: 'unitPushed' }>,
+  damagePerTier: number,
+): { tiers: number; damage: number } {
+  if (
+    previous?.type !== 'damaged' ||
+    previous.cause !== 'ledgeDrop' ||
+    previous.unitId !== pushed.unitId
+  ) {
+    return { tiers: 0, damage: 0 };
+  }
+  return {
+    tiers: damagePerTier > 0 ? Math.round(previous.amount / damagePerTier) : 0,
+    damage: previous.amount,
+  };
+}
 
 /** A unit standing where a reaction lands. */
 export interface CaughtUnit {
@@ -344,6 +372,7 @@ export function forecastReactions(
     const key = `unit:${event.unitId}:${posKey(event.to)}`;
     if (!knownShoves.has(key)) {
       const previous = draft.events[eventIndex - 1];
+      const precedingDrop = precedingLedgeDrop(previous, event, content.tuning.ledgeDropDamage);
       const movedDistance = Math.max(Math.abs(event.to.x - from.x), Math.abs(event.to.y - from.y));
       shoves.push({
         kind: 'unit',
@@ -358,19 +387,8 @@ export function forecastReactions(
         mode: 'push',
         blocked: false,
         ...landingInfo(content, draft, unit),
-        ledgeDropTiers:
-          draft.shoveLedgeTiers.get(eventIndex) ??
-          (previous?.type === 'damaged' &&
-          previous.cause === 'ledgeDrop' &&
-          content.tuning.ledgeDropDamage > 0
-            ? Math.round(previous.amount / content.tuning.ledgeDropDamage)
-            : 0),
-        ledgeDropDamage:
-          previous?.type === 'damaged' &&
-          previous.cause === 'ledgeDrop' &&
-          previous.unitId === event.unitId
-            ? previous.amount
-            : 0,
+        ledgeDropTiers: draft.shoveLedgeTiers.get(eventIndex) ?? precedingDrop.tiers,
+        ledgeDropDamage: precedingDrop.damage,
       });
       knownShoves.add(key);
     }

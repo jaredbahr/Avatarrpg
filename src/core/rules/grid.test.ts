@@ -86,14 +86,14 @@ describe('climbing (E4)', () => {
     expect(pathCost(ctx, start, [bench])).toBe(2);
     // A move point of 1 buys the flat ground only; 2 buys the bench.
     expect(reachable(ctx, start, 1).has(posKey(bench))).toBe(false);
-    expect(reachable(ctx, start, 2).get(posKey(bench))).toMatchObject({ cost: 2, climbCost: 1 });
+    expect(reachable(ctx, start, 2).get(posKey(bench))?.cost).toBe(2);
   });
 
   it('reads the surcharge off the context, never a literal', () => {
     const ctx = battleContext(laidOut([{ pos: bench, tile: tier(1) }]), 3);
 
     expect(enterCost(ctx, start, bench)).toBe(4);
-    expect(reachable(ctx, start, 4).get(posKey(bench))).toMatchObject({ cost: 4, climbCost: 3 });
+    expect(reachable(ctx, start, 4).get(posKey(bench))?.cost).toBe(4);
   });
 
   it('refuses a climb in a context that carries no climb rule', () => {

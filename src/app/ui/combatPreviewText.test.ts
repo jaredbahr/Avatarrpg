@@ -1,10 +1,25 @@
 import { describe, expect, it } from 'vitest';
-import { formatHitBreakdownRows, formatShoveMovement } from './combatPreviewText';
+import { formatHitBreakdownRows, formatLedgeDrop, formatShoveMovement } from './combatPreviewText';
 
 describe('combat preview text', () => {
-  it('inflects push and pull in the named movement sentence', () => {
-    expect(formatShoveMovement('Mercenary', 'push', '(12,5)')).toBe('Mercenary: pushes to (12,5)');
-    expect(formatShoveMovement('Mercenary', 'pull', '(12,5)')).toBe('Mercenary: pulls to (12,5)');
+  it('describes shove movement without raw grid coordinates', () => {
+    expect(formatShoveMovement('Mercenary', 'push', { x: 1, y: 2 }, { x: 2, y: 1 }, 1, [])).toBe(
+      'Mercenary: pushed 1 tile away',
+    );
+    expect(
+      formatShoveMovement('Mercenary', 'pull', { x: 3, y: 1 }, { x: 1, y: 1 }, 2, ['water']),
+    ).toBe('Mercenary: pulled into the water');
+    expect(formatShoveMovement('Mercenary', 'pull', { x: 3, y: 1 }, { x: 2, y: 1 }, 1, [])).toBe(
+      'Mercenary: pulled 1 tile closer',
+    );
+  });
+
+  it('hides harmless drops and explains damage clamped by the HP floor', () => {
+    expect(formatLedgeDrop('Mercenary', 2, 0, 3)).toBeNull();
+    expect(formatLedgeDrop('Mercenary', 2, 1, 3)).toBe(
+      "Mercenary drops 2 → 1 damage (can't fall below 1 HP)",
+    );
+    expect(formatLedgeDrop('Mercenary', 2, 6, 3)).toBe('Mercenary drops 2 → 6 damage');
   });
 
   it('formats every hit component directly from the breakdown', () => {

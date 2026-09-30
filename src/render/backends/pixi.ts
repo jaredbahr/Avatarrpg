@@ -123,6 +123,15 @@ const MOVING_SURFACE = (tile: Tile): number =>
 /** How far firelight reaches, in tiles. */
 const GLOW_RADIUS = 2;
 
+/** Pooled climb labels share immutable typography instead of allocating a style per label. */
+const CLIMB_LABEL_STYLE = new TextStyle({
+  fontFamily: 'sans-serif',
+  fontWeight: '600',
+  fontSize: Math.max(10, TILE * 0.2),
+  fill: OVERLAY.climb,
+  stroke: { color: OVERLAY.pathUnder, width: Math.max(2, TILE * 0.045) },
+});
+
 /** Half-widths of the grass band's three nested stripes, widest first, in scene pixels. */
 const BREEZE_HALVES = [260, 175, 90] as const;
 
@@ -477,9 +486,9 @@ export class PixiBackend implements RenderBackend {
     );
     this.unitLayer.sortableChildren = true;
     this.upright.addChild(
-      this.bendUnder,
       this.steamLayer,
       this.groundRings,
+      this.bendUnder,
       this.unitLayer,
       this.flockLayer,
       this.bendOver,
@@ -1802,13 +1811,7 @@ export class PixiBackend implements RenderBackend {
     if (!text) {
       text = new Text({
         text: '',
-        style: new TextStyle({
-          fontFamily: 'sans-serif',
-          fontWeight: '600',
-          fontSize: Math.max(10, TILE * 0.2),
-          fill: OVERLAY.climb,
-          stroke: { color: OVERLAY.pathUnder, width: Math.max(2, TILE * 0.045) },
-        }),
+        style: CLIMB_LABEL_STYLE,
       });
       text.anchor.set(0.5);
       this.climbLabels[index] = text;
