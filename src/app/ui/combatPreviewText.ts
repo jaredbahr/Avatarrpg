@@ -1,5 +1,6 @@
 import type { ShoveForecast } from '../../core/rules/reactions';
 import type { HitBreakdown } from '../../core/rules/damage';
+import type { SurfaceId, Vec2 } from '../../core/types';
 
 function signed(value: number): string {
   if (value > 0) return `+${value}`;
@@ -40,15 +41,41 @@ export function formatHitBreakdownRows(breakdown: HitBreakdown | null): string[]
 }
 
 /** The visible subject is a unit or prop, so both displacement modes need -s. */
-function shoveVerb(mode: ShoveForecast['mode']): 'pushes' | 'pulls' {
-  return mode === 'push' ? 'pushes' : 'pulls';
+function shoveVerb(mode: ShoveForecast['mode']): 'pushed' | 'pulled' {
+  return mode === 'push' ? 'pushed' : 'pulled';
 }
 
-/** The unblocked movement sentence used by the combat confirmation chip. */
+function direction(from: Vec2, to: Vec2): string {
+  const vertical = to.y < from.y ? 'north' : to.y > from.y ? 'south' : '';
+  const horizontal = to.x < from.x ? 'west' : to.x > from.x ? 'east' : '';
+  return [vertical, horizontal].filter(Boolean).join('-');
+}
+
+/** The movement sentence uses board meaning, never developer-facing coordinates. */
 export function formatShoveMovement(
   name: string,
   mode: ShoveForecast['mode'],
-  destination: string,
+  from: Vec2,
+  to: Vec2,
+  movedDistance: number,
+  landingSurfaces: readonly SurfaceId[],
 ): string {
-  return `${name}: ${shoveVerb(mode)} to ${destination}`;
+  const verb = shoveVerb(mode);
+  if (landingSurfaces.includes('water')) return `${name}: ${verb} into the water`;
+  const tiles = `${movedDistance} ${movedDistance === 1 ? 'tile' : 'tiles'}`;
+  const bearing = direction(from, to);
+  return `${name}: ${verb} ${tiles}${bearing ? ` ${bearing}` : ''}`;
+}
+
+/** Omit harmless drops and disclose the one-HP floor whenever it clamps damage. */
+export function formatLedgeDrop(
+  name: string,
+  tiers: number,
+  damage: number,
+  damagePerTier: number,
+): string | null {
+  if (damage <= 0) return null;
+  const nominal = tiers * damagePerTier;
+  const clamp = damage < nominal ? ` (can't fall below 1 HP)` : '';
+  return `${name} drops ${tiers} → ${damage} damage${clamp}`;
 }

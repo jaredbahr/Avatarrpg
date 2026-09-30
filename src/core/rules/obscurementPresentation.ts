@@ -22,6 +22,18 @@ export function weatherChipText(tuning: CombatTuning, intensity: WeatherIntensit
   return `${label} · long shots ${penalty(level.perTile)}/tile`;
 }
 
+/** Phone copy keeps the same active tuning value without the explanatory clause. */
+export function weatherChipShortText(
+  tuning: CombatTuning,
+  intensity: WeatherIntensity,
+): string | null {
+  if (intensity === 0) return null;
+  const level = tuning.weather[intensity];
+  if (!level) return null;
+  const label = intensity === 1 ? 'Blowing sand' : 'Sandstorm';
+  return `${label} ${penalty(level.perTile)}/tile`;
+}
+
 /** Extra sentence for a miss, selected from the terms the real hit roll used. */
 export function obscurementMissLine(obscurement: ObscurementBreakdown | undefined): string | null {
   if (!obscurement || obscurement.total === 0) return null;

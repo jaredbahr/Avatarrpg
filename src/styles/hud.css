@@ -261,6 +261,10 @@
   line-height: 1.15;
 }
 
+.weather-chip-short {
+  display: none;
+}
+
 /*
  * Marks: the inline line drawings from app/ui/marks.ts. Drawn in the
  * current colour, so a button's element tints them and High contrast inks
@@ -333,7 +337,8 @@
 }
 .chip-terrain {
   border-color: var(--c-parchment-line);
-  color: var(--c-gold-deep);
+  background: var(--c-parchment-bg);
+  color: var(--c-ink);
 }
 .chip-status {
   border-color: var(--c-parchment-line);
@@ -3038,8 +3043,8 @@ html[data-contrast='high'] .hud-panel::after {
     place-items: center;
   }
 
-  /* Keep the full encounter name. Round and weather share the compact metadata
-     row; a narrow phone may wrap the chip, whose penalty stays untruncated. */
+  /* Keep the full encounter name. Round and the short weather form share one
+     compact metadata row, whose tuning-derived penalty stays untruncated. */
   .combat-scene .title-plate > .title-plate-name {
     white-space: normal;
     overflow: visible;
@@ -3055,6 +3060,14 @@ html[data-contrast='high'] .hud-panel::after {
     overflow: visible;
     white-space: normal;
     text-overflow: clip;
+  }
+
+  .combat-scene .weather-chip-full {
+    display: none;
+  }
+
+  .combat-scene .weather-chip-short {
+    display: inline;
   }
 
   .combat-scene .title-plate-round {

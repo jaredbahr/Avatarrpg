@@ -2,7 +2,12 @@ import { describe, expect, it } from 'vitest';
 import { CONTENT } from '../../content';
 import { DEFAULT_TILE, withSurface } from './grid';
 import type { Grid } from '../types';
-import { obscurementMissLine, obscuringTiles, weatherChipText } from './obscurementPresentation';
+import {
+  obscurementMissLine,
+  obscuringTiles,
+  weatherChipShortText,
+  weatherChipText,
+} from './obscurementPresentation';
 
 describe('obscurement presentation', () => {
   it('selects only tiles whose surface definition obscures', () => {
@@ -23,6 +28,10 @@ describe('obscurement presentation', () => {
     expect(weatherChipText(CONTENT.tuning, 0)).toBeNull();
     expect(weatherChipText(CONTENT.tuning, 2)).toBe(
       `Sandstorm · long shots −${CONTENT.tuning.weather[2]!.perTile}/tile`,
+    );
+    expect(weatherChipShortText(CONTENT.tuning, 0)).toBeNull();
+    expect(weatherChipShortText(CONTENT.tuning, 2)).toBe(
+      `Sandstorm −${CONTENT.tuning.weather[2]!.perTile}/tile`,
     );
   });
 

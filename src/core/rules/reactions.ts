@@ -354,6 +354,7 @@ export function forecastReactions(
           draft.shoveLedgeTiers.get(eventIndex) ??
           (previous?.type === 'damaged' &&
           previous.cause === 'ledgeDrop' &&
+          previous.unitId === event.unitId &&
           content.tuning.ledgeDropDamage > 0
             ? Math.round(previous.amount / content.tuning.ledgeDropDamage)
             : 0),
