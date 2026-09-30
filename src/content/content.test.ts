@@ -5,6 +5,7 @@ import {
   conditionSchema,
   encounterSchema,
   mapSchema,
+  propSchema,
   sheetClipProblems,
   storyNodeSchema,
   validateContent,
@@ -41,6 +42,50 @@ describe('content', () => {
   it('passes shape and cross-reference validation', () => {
     const problems = validateContent(CONTENT_BUNDLE);
     expect(problems, `\n${problems.join('\n')}\n`).toEqual([]);
+  });
+
+  it('accepts every shipped prop unchanged and the B-1 fields within bounds', () => {
+    for (const prop of CONTENT_BUNDLE.props) {
+      const result = propSchema.safeParse(prop);
+      expect(result.success, `prop "${prop.id}" should parse unchanged`).toBe(true);
+      // Nothing added and nothing stripped: today's props are unchanged by B-1.
+      if (result.success) expect(result.data, `prop "${prop.id}" changed`).toEqual(prop);
+    }
+
+    const sample = CONTENT_BUNDLE.props[0];
+    if (!sample) throw new Error('Missing prop');
+    const rich = propSchema.safeParse({
+      ...sample,
+      fuel: 10,
+      burnsInto: sample.onBreak,
+      ignites: { radius: 3, spread: 3 },
+      douse: ['water', 'cold', 'earth'],
+      hint: 'H'.repeat(80),
+      tags: ['container', 'fuel', 'iron', 'stone', 'cover'],
+    });
+    expect(rich.success, rich.success ? '' : rich.error.message).toBe(true);
+    // An explicit 0 fuel is a valid "fireproof" answer, not a missing field,
+    // and an empty `burnsInto` is a deliberate "burns away to nothing".
+    expect(propSchema.safeParse({ ...sample, fuel: 0, burnsInto: [], tags: [] }).success).toBe(
+      true,
+    );
+  });
+
+  it('rejects B-1 prop fields outside their bounds', () => {
+    const sample = CONTENT_BUNDLE.props[0];
+    if (!sample) throw new Error('Missing prop');
+    const rejects = (patch: Record<string, unknown>) =>
+      !propSchema.safeParse({ ...sample, ...patch }).success;
+
+    expect(rejects({ fuel: -1 })).toBe(true);
+    expect(rejects({ fuel: 11 })).toBe(true);
+    expect(rejects({ ignites: { radius: 4, spread: 0 } })).toBe(true);
+    expect(rejects({ ignites: { radius: 0, spread: -1 } })).toBe(true);
+    expect(rejects({ ignites: { radius: 0, spread: 4 } })).toBe(true);
+    expect(rejects({ hint: 'H'.repeat(81) })).toBe(true);
+    expect(rejects({ hint: '' })).toBe(true);
+    expect(rejects({ douse: ['air'] })).toBe(true);
+    expect(rejects({ tags: ['cabbage'] })).toBe(true);
   });
 
   it('holds a weather schedule to the 0-2 ladder and a climbing order', () => {

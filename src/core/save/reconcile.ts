@@ -150,6 +150,8 @@ export function reconcileBattleResult(
     // The journal deliberately captures the current rebuilt tile, including a
     // prior prop's saved original tile/surface. Breaking this prop in play then
     // restores exactly the same chained state as it did before the load (F2).
+    // The spread keeps live per-instance state too — `burning` (B-1) rides
+    // along here — so never rebuild a prop field by field.
     props.push({ ...prop, previous: tile });
     grid = withTile(grid, prop.pos, {
       ...tile,

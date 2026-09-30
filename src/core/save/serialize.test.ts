@@ -92,6 +92,47 @@ describe('save round trip', () => {
     expect(after).toEqual(before);
   });
 
+  it('round-trips a prop that is burning', () => {
+    const base = midBattleState();
+    const battle = base.battle;
+    if (!battle) throw new Error('fixture should be mid-battle');
+    const [first, ...rest] = battle.props;
+    if (!first) throw new Error('fixture should place props');
+    const before: GameState = {
+      ...base,
+      battle: { ...battle, props: [{ ...first, burning: 3 }, ...rest] },
+    };
+
+    const result = deserialize(serialize(before, META));
+    if (!result.ok) throw new Error(result.error);
+    const after = stateFromBlob(result.blob);
+
+    expect(after).toEqual(before);
+    expect(after.battle?.props[0]?.burning).toBe(3);
+  });
+
+  it('loads an older save with no burning field unchanged', () => {
+    const base = midBattleState();
+    const battle = base.battle;
+    if (!battle) throw new Error('fixture should be mid-battle');
+    if (battle.props.length === 0) throw new Error('fixture should place props');
+    // Simulate a save written before `burning` existed: drop the key entirely.
+    const props = battle.props.map((prop) => {
+      const { burning: _burning, ...rest } = prop;
+      return rest;
+    });
+    const before: GameState = { ...base, battle: { ...battle, props } };
+    for (const prop of before.battle?.props ?? []) expect('burning' in prop).toBe(false);
+
+    const result = deserialize(serialize(before, META));
+    if (!result.ok) throw new Error(result.error);
+    const after = stateFromBlob(result.blob);
+
+    expect(after).toEqual(before);
+    // Absent must stay absent, not come back as an explicit undefined or 0.
+    for (const prop of after.battle?.props ?? []) expect('burning' in prop).toBe(false);
+  });
+
   it('keeps every battle field the rules rely on', () => {
     const before = midBattleState();
     const result = deserialize(serialize(before, META));

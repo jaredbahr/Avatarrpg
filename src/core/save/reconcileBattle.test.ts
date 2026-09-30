@@ -480,6 +480,24 @@ describe('reconcileBattle', () => {
     expect(serialize(reconcileBattle(CONTENT, current), META)).toBe(serialize(current, META));
   });
 
+  it('keeps a burning prop alight through a load-time rebuild', () => {
+    const old = battleState('quarry_gate', OLD_QUARRY_ROWS);
+    if (!old.battle) throw new Error('fixture did not create a battle');
+    const burning = old.battle.props.map((prop, index) => ({ ...prop, burning: index + 1 }));
+    const state: GameState = { ...old, battle: { ...old.battle, props: burning } };
+
+    const loaded = load(state);
+    if (!loaded.battle) throw new Error('load dropped the battle');
+    // The fixture's map edit forces the rebuild path, which re-creates every
+    // prop instance from its saved self — the fire has to come with it.
+    expect(loaded.battle.props.length).toBe(burning.length);
+    for (const prop of loaded.battle.props) {
+      const source = burning.find((candidate) => candidate.id === prop.id);
+      expect(source, `prop ${prop.id} vanished across the rebuild`).toBeDefined();
+      expect(prop.burning, `prop ${prop.id} lost its fire`).toBe(source?.burning);
+    }
+  });
+
   it('reports an isolated geometric snap candidate and uses the main component', () => {
     const old = battleState('quarry_gate', OLD_QUARRY_ROWS);
     if (!old.battle) throw new Error('missing battle');

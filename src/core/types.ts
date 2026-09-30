@@ -530,6 +530,20 @@ export type PropEffect =
     }
   | { readonly kind: 'push'; readonly distance: number; readonly radius: number };
 
+/** How readily fire crosses from one prop to the next. */
+export interface PropIgnite {
+  /** Tiles fire reaches out to when this prop ignites. */
+  readonly radius: number;
+  /** How many tiles the fire advances per round while it burns. */
+  readonly spread: number;
+}
+
+/** Damage types that stop a burning prop without breaking it. */
+export type DousingType = 'water' | 'cold' | 'earth';
+
+/** Short semantic labels the inspect card and future prop rules can read. */
+export type PropTag = 'container' | 'fuel' | 'iron' | 'stone' | 'cover';
+
 /**
  * Something on the battlefield you can shove, break, or set on fire.
  *
@@ -557,6 +571,22 @@ export interface PropDef {
   readonly onBreak: readonly PropEffect[];
   /** Plain words for the combat log, exactly like a combo rule's label. */
   readonly breakLabel: string;
+  /**
+   * Rounds of fuel. Above 0 the prop can catch fire and keep burning; absent or
+   * 0 is today's inert prop. How it burns is B-2's business — nothing reads this
+   * yet.
+   */
+  readonly fuel?: number;
+  /** What a burning prop leaves when its fuel runs out. Defaults to `onBreak`. */
+  readonly burnsInto?: readonly PropEffect[];
+  /** How readily fire jumps from this prop: ignition reach and spread per round. */
+  readonly ignites?: PropIgnite;
+  /** Damage types that put the fire out without breaking the prop. */
+  readonly douse?: readonly DousingType[];
+  /** One short plain line for the inspect card. */
+  readonly hint?: string;
+  /** Semantics the inspect card and B-2 rules can key off, never behaviour here. */
+  readonly tags?: readonly PropTag[];
 }
 
 /** A prop authored onto a map, optionally only on some routes. */
@@ -580,6 +610,8 @@ export interface PropInstance {
   readonly pos: Vec2;
   readonly hp: number;
   readonly previous: Tile;
+  /** Rounds left burning. Absent means the prop is not on fire. */
+  readonly burning?: number;
 }
 
 export interface NpcDef {
