@@ -159,7 +159,7 @@ export const DISCIPLINES: readonly DisciplineDef[] = [
     element: 'air',
     blurb: 'Never where you swung.',
     description:
-      'The classical road: a cyclone that scatters a formation, a cushion that catches whoever is falling, and the tornado.',
+      'The classical road: a cyclone that gathers a scattered line into one knot, a cushion that catches whoever is falling, and the tornado.',
     flavor: 'Evade first. Always.',
     requiresFlag: null,
     lockedHint: '',
