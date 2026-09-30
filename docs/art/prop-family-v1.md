@@ -28,6 +28,6 @@ Per-item prompt lines:
 
 ## Packing and registration
 
-Run `npm run art:prop-family`. The family wrapper sends only the six shipped names through `scripts/art/prop.ts`; it does not copy the source-only crate or timber. The existing packer alpha-trims each source, scales it uniformly into its authored per-prop bounds, centers it in a transparent 256×256 frame, and registers its foot at the shared 85% baseline. The cart retains its wheel-contact correction because its forward shafts extend below the wheels.
+Run `npm run art:prop-family`. The family wrapper sends only the six shipped names through `scripts/art/prop.ts`; it does not copy the source-only crate or timber. The existing packer alpha-trims each source, enlarges it 4× with nearest-neighbour and then box-filters it down into its authored per-prop bounds (a non-integer effective scale of about 1.7–1.9×, which softens pixel-cluster edges by about a pixel), centers it in a transparent 256×256 frame, and registers its foot at the shared 85% baseline. The cart retains its wheel-contact correction because its forward shafts extend below the wheels.
 
 At the renderer's 128-world-pixel tile scale, the packed visible heights are intended to be: barrel 87 px (0.58 of a 151 px G adult), cart 84.5 px (0.56), brazier 79.5 px (0.53), rubble 71.5 px (0.47), flask 51 px (0.34), and hay 61.5 px (0.41). Final integer alpha bounds are reported from the generated PNGs after packing.

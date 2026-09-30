@@ -148,11 +148,12 @@ export const CREDITS: readonly CreditEntry[] = [
   {
     what: 'The bending animation cels',
     work: 'Fire, water, earth and air effects, with lightning, ice, healing and metal',
-    authors: 'This project, generated with OpenAI image generation',
+    authors:
+      'This project, generated with OpenAI image generation; the flask cels reuse the PixelLab flask prop',
     licence: 'own work',
     source: '',
     covers: ['art/fx'],
-    note: 'Hand-drawn-style effect sheets generated for this project, normalised into 48 transparent animation cels, plus a reused flask prop. Prompts and provenance: docs/art/elemental-cels.md; docs/art/deserter-material-fx.md. Output terms: https://openai.com/policies/row-terms-of-use/. No exclusive copyright in generated output is claimed.',
+    note: 'Hand-drawn-style effect sheets generated for this project, normalised into 48 transparent animation cels, plus the reused PixelLab flask prop (docs/art/prop-family-v1.md, https://pixellab.ai/termsofservice). Prompts and provenance: docs/art/elemental-cels.md; docs/art/deserter-material-fx.md. Output terms: https://openai.com/policies/row-terms-of-use/. No exclusive copyright in generated output is claimed.',
   },
   {
     what: 'The illustrated story scenes',
