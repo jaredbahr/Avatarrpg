@@ -517,6 +517,126 @@ describe('the AI and ledge exposure', () => {
   });
 });
 
+/** The lip in the pull case: one tier above the tile the puller stands on. */
+const PULL_LIP: Vec2 = { x: 2, y: 2 };
+/** West of the lip and a tier lower, so the step toward it reads as a fall. */
+const PULL_SHOVER: Vec2 = { x: 1, y: 2 };
+
+/** The size-2 unit's anchor, level with its trailing cell on the plateau. */
+const FOOT_ANCHOR: Vec2 = { x: 2, y: 2 };
+/** Its trailing cell: one tile east, also on the plateau. */
+const FOOT_TRAILING: Vec2 = { x: FOOT_ANCHOR.x + 1, y: FOOT_ANCHOR.y };
+/** The shover west of the anchor: a push runs east, over the trailing cell's drop. */
+const FOOT_SHOVER: Vec2 = { x: FOOT_ANCHOR.x - 1, y: FOOT_ANCHOR.y };
+
+/**
+ * One party unit and one adjacent enemy on a flat five-by-five board, with the
+ * listed tiles raised a tier. The seed is fixed, so the enemy behind every
+ * variant is the same and only the ability, the footprint or the raised tile
+ * under test differs between the boards being compared.
+ */
+function shoveExposureFixture(options: {
+  readonly hero: Vec2;
+  readonly heroSize?: 1 | 2;
+  readonly shover: Vec2;
+  readonly abilities: readonly string[];
+  readonly raised: readonly Vec2[];
+}): { readonly draft: BattleDraft; readonly hero: Unit } {
+  const seeded = createGame(CONTENT, {
+    seed: 'ai-ledge-exposure',
+    party: [{ characterId: 'kaya', level: 3, autoChoose: true }],
+    startNode: '',
+  });
+  const rng = new RngCursor(seeded.rng);
+  const battle = createBattle(CONTENT, seeded, 'enc_forest_road', rng);
+  const heroBase = battle.units.find((unit) => unit.faction === 'party');
+  const shoverBase = battle.units.find((unit) => unit.faction === 'enemy');
+  if (!heroBase || !shoverBase) throw new Error('missing exposure fixture units');
+
+  let grid: Grid = {
+    width: 5,
+    height: 5,
+    tiles: Array.from({ length: 5 * 5 }, () => DEFAULT_TILE),
+  };
+  for (const pos of options.raised) {
+    const tile = tileAt(grid, pos);
+    if (!tile) throw new Error('exposure fixture is off the grid');
+    grid = withTile(grid, pos, { ...tile, elevation: 1 });
+  }
+
+  const hero: Unit = { ...heroBase, pos: options.hero, size: options.heroSize ?? 1 };
+  const shover: Unit = {
+    ...shoverBase,
+    ai: 'aggressive',
+    pos: options.shover,
+    size: 1,
+    abilities: [...options.abilities],
+    cooldowns: {},
+    ap: 1,
+    move: 0,
+  };
+  const units = [hero, shover];
+
+  return {
+    draft: new BattleDraft(
+      CONTENT,
+      {
+        ...battle,
+        grid,
+        units,
+        order: units.map((unit) => unit.id),
+        turnIndex: 0,
+        props: [],
+      },
+      new RngCursor(0x1ed),
+    ),
+    hero,
+  };
+}
+
+describe('the AI and a pull that cannot move the unit', () => {
+  it('does not charge an adjacent puller for a lip it cannot drag the unit over', () => {
+    // The flat lip penalty; nothing else reads it, so it is not exported.
+    const risk = 3;
+    const board = (abilities: readonly string[]) =>
+      shoveExposureFixture({
+        hero: PULL_LIP,
+        shover: PULL_SHOVER,
+        abilities,
+        raised: [PULL_LIP],
+      });
+
+    // West of the lip is a tier down, so a step toward the puller reads as a
+    // fall — but `slideFrom` breaks a pull the moment its next cell is the
+    // puller's own origin, so nothing moves and nothing can drop. Same board
+    // and seed for both; only the adjacent enemy's ability differs.
+    const pull = board(['water_pull']);
+    expect(ledgeExposure(pull.draft, pull.hero, PULL_LIP)).toBe(0);
+
+    // The same lip under a push does run east over the drop, so the zero above
+    // is the pull rule and not terrain with nothing to fall over.
+    const push = board(['shove']);
+    expect(ledgeExposure(push.draft, push.hero, PULL_LIP)).toBe(risk);
+  });
+});
+
+describe('the AI and a size-2 footprint on a lip', () => {
+  it('charges the lip when the trailing cell crosses it, not just the anchor', () => {
+    const { draft, hero } = shoveExposureFixture({
+      hero: FOOT_ANCHOR,
+      heroSize: 2,
+      shover: FOOT_SHOVER,
+      abilities: ['shove'],
+      // The anchor and the trailing cell sit level on the plateau, and the tile
+      // past the trailing cell stays a tier down: only the trailing cell falls.
+      raised: [FOOT_ANCHOR, FOOT_TRAILING],
+    });
+
+    // The flat lip penalty; nothing else reads it, so it is not exported.
+    expect(ledgeExposure(draft, hero, FOOT_ANCHOR)).toBe(3);
+  });
+});
+
 /**
  * A cone shove in the Driller's slam shape — one tile of knockback out of a
  * wedge — but with the range a size-2 caster needs for its raised second cell

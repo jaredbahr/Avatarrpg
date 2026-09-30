@@ -57,6 +57,7 @@ import {
   occupiedCells,
   posKey,
   reachable,
+  samePos,
   tileAt,
   withTile,
 } from './grid';
@@ -969,17 +970,41 @@ function shoveStep(from: Vec2, origin: Vec2, mode: 'push' | 'pull'): Vec2 {
 }
 
 /**
- * Would one forced step in `step` take the unit over a ledge? The same tier
- * rule `BattleDraft.ledgeDrop` applies to a step, and the same one the old
- * board-wide lip check used.
+ * Would one forced step in `step` take the unit over a ledge? The whole
+ * footprint travels, so this mirrors the width-aware `BattleDraft.ledgeDrop`:
+ * the largest non-ramp elevation loss over *either* occupied cell counts, not
+ * just the anchor's. A size-2 unit falls when its trailing cell crosses the
+ * lip even though the anchor lands level.
  */
-function dropStep(draft: BattleDraft, pos: Vec2, step: Vec2): boolean {
+function dropStep(draft: BattleDraft, unit: Unit, pos: Vec2, step: Vec2): boolean {
   if (step.x === 0 && step.y === 0) return false;
-  const tile = tileAt(draft.grid, pos);
-  const below = tileAt(draft.grid, { x: pos.x + step.x, y: pos.y + step.y });
-  if (!tile || !below) return false;
-  const drop = tile.elevation - below.elevation;
-  return drop > 1 || (drop === 1 && !tile.ramp && !below.ramp);
+  for (const cell of occupiedCells({ pos, size: unit.size })) {
+    const before = tileAt(draft.grid, cell);
+    const after = tileAt(draft.grid, { x: cell.x + step.x, y: cell.y + step.y });
+    if (!before || !after) continue;
+    const drop = before.elevation - after.elevation;
+    if (drop > 1 || (drop === 1 && !before.ramp && !after.ramp)) return true;
+  }
+  return false;
+}
+
+/**
+ * Whether a pull cannot move the unit at all, so a lip on that side is no
+ * threat. `BattleDraft.slideFrom` breaks a pull the moment its next cell is the
+ * shover's own origin, and it refuses any step it cannot enter — off the map,
+ * into a wall, or into another unit. An adjacent puller's only step is onto its
+ * own occupied cell, so a pull that cannot move the target cannot drop it.
+ */
+function pullStalls(draft: BattleDraft, unit: Unit, pos: Vec2, origin: Vec2, step: Vec2): boolean {
+  if (samePos({ x: pos.x + step.x, y: pos.y + step.y }, origin)) return true;
+  for (const cell of occupiedCells({ pos, size: unit.size })) {
+    const to = { x: cell.x + step.x, y: cell.y + step.y };
+    const tile = tileAt(draft.grid, to);
+    if (!tile || tile.blocked) return true;
+    const occupant = draft.unitAt(to);
+    if (occupant && occupant.id !== unit.id) return true;
+  }
+  return false;
 }
 
 /**
@@ -1000,7 +1025,9 @@ export function ledgeExposure(draft: BattleDraft, unit: Unit, pos: Vec2): number
       if (!isShoveAbility(ability)) continue;
       for (const effect of ability.effects) {
         if (effect.kind !== 'push' && effect.kind !== 'pull') continue;
-        if (dropStep(draft, pos, shoveStep(pos, other.pos, effect.kind))) return LEDGE_EDGE_RISK;
+        const step = shoveStep(pos, other.pos, effect.kind);
+        if (effect.kind === 'pull' && pullStalls(draft, unit, pos, other.pos, step)) continue;
+        if (dropStep(draft, unit, pos, step)) return LEDGE_EDGE_RISK;
       }
     }
   }
