@@ -294,7 +294,15 @@ function opsBounds(ops: readonly LiftOp[]): Rect | null {
 /** What the live marks read from the view: the marks that change between frames. */
 export type LiveMarks = Pick<
   MapView,
-  'overlays' | 'hoverTile' | 'path' | 'pathFrom' | 'aimArc' | 'exits' | 'exit' | 'emitters'
+  | 'overlays'
+  | 'hoverTile'
+  | 'path'
+  | 'pathFrom'
+  | 'aimArc'
+  | 'exits'
+  | 'exit'
+  | 'emitters'
+  | 'cliffEdges'
 >;
 
 /**
@@ -323,6 +331,9 @@ export function markedCells(
       }
   };
   for (const layer of view.overlays) for (const p of layer.tiles) mark(p.x, p.y);
+  // Cliff hatching is authored on the higher cell's lip; always schedule that
+  // top for the lift pass even when no other live overlay crosses it.
+  for (const edge of view.cliffEdges ?? []) mark(edge.pos.x, edge.pos.y);
   if (view.hoverTile) mark(view.hoverTile.x, view.hoverTile.y);
   for (const p of view.path) mark(p.x, p.y);
   if (view.path.length && view.pathFrom) mark(view.pathFrom.x, view.pathFrom.y);

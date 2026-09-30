@@ -294,7 +294,10 @@ export class PixiBackend implements RenderBackend {
   /** Painted bend effects under and over the actors (ADR 0055). */
   private bendUnder = new Container();
   private bendOver = new Container();
+  private climbCues = new Container();
+  private climbGfx = new Graphics();
   private fxGfx = new Graphics();
+  private climbLabelLayer = new Container();
   private floaterLayer = new Container();
   /** Particles and strokes: ground-level ones under the units, the rest over them. */
   private fxUnder = new ParticleLayer('under');
@@ -341,6 +344,7 @@ export class PixiBackend implements RenderBackend {
   private unitSprites = new Map<string, Sprite>();
   private textureCache = new Map<HTMLCanvasElement | HTMLImageElement, Texture>();
   private frameTextures = new Map<string, Texture>();
+  private climbLabels: Text[] = [];
   private floaters: Text[] = [];
   private badgeText: Text[] = [];
 
@@ -476,6 +480,7 @@ export class PixiBackend implements RenderBackend {
       this.flockLayer,
       this.bendOver,
     );
+    this.climbCues.addChild(this.climbGfx, this.climbLabelLayer);
     this.labels.addChild(this.fxGfx, this.floaterLayer);
     this.groundStack.addChild(this.root);
     this.liftSprite.visible = false;
@@ -483,6 +488,7 @@ export class PixiBackend implements RenderBackend {
       this.groundStack,
       this.liftSprite,
       this.marksGfx,
+      this.climbCues,
       this.upright,
       this.fxOver.container,
       this.labels,
@@ -580,7 +586,7 @@ export class PixiBackend implements RenderBackend {
     this.root.setFromMatrix(this.groundTransform);
     this.elevationBaseLayer.setFromMatrix(this.groundTransform);
     this.fxOver.container.setFromMatrix(this.groundTransform);
-    for (const layer of [this.sceneGround, this.upright, this.labels]) {
+    for (const layer of [this.sceneGround, this.climbCues, this.upright, this.labels]) {
       layer.position.set(
         -camera.offsetX + view.cameraNudge.x * nudge,
         -camera.offsetY + view.cameraNudge.y * nudge,
@@ -616,7 +622,9 @@ export class PixiBackend implements RenderBackend {
     this.drawOverlays(view);
     this.drawPath(view);
     this.drawDecor(view);
+    this.drawClimbMarkers(view, camera);
     this.drawUnits(view, camera);
+    this.drawTargetReticle(view, camera);
     const bendFx = view.bendFx ?? [];
     const bendTexture = (sprite: BendFxSprite) => {
       const source = bendFxSource(sprite);
@@ -1512,40 +1520,173 @@ export class PixiBackend implements RenderBackend {
 
     if (!view.crispOverlays) {
       this.drawContourOverlays(view);
-      return;
-    }
+    } else
+      for (const layer of view.overlays) {
+        if (layer.tiles.length === 0) continue;
+        const members = new Set(layer.tiles.map((p) => `${p.x},${p.y}`));
+        const [fill, edge] = overlayColors(layer.kind);
 
-    for (const layer of view.overlays) {
-      if (layer.tiles.length === 0) continue;
-      const members = new Set(layer.tiles.map((p) => `${p.x},${p.y}`));
-      const [fill, edge] = overlayColors(layer.kind);
-
-      for (const pos of layer.tiles) {
-        g.rect(pos.x * TILE, pos.y * TILE, TILE, TILE).fill({ color: fill });
-      }
-
-      // Only the outside of the region gets a border, so a move range reads as
-      // one shape instead of a grid of boxes.
-      if (edge) {
         for (const pos of layer.tiles) {
-          const x = pos.x * TILE;
-          const y = pos.y * TILE;
-          if (!members.has(`${pos.x},${pos.y - 1}`)) g.moveTo(x, y).lineTo(x + TILE, y);
-          if (!members.has(`${pos.x + 1},${pos.y}`))
-            g.moveTo(x + TILE, y).lineTo(x + TILE, y + TILE);
-          if (!members.has(`${pos.x},${pos.y + 1}`))
-            g.moveTo(x, y + TILE).lineTo(x + TILE, y + TILE);
-          if (!members.has(`${pos.x - 1},${pos.y}`)) g.moveTo(x, y).lineTo(x, y + TILE);
+          g.rect(pos.x * TILE, pos.y * TILE, TILE, TILE).fill({ color: fill });
         }
-        g.stroke({ width: 3, color: edge });
+
+        // Only the outside of the region gets a border, so a move range reads as
+        // one shape instead of a grid of boxes.
+        if (edge) {
+          for (const pos of layer.tiles) {
+            const x = pos.x * TILE;
+            const y = pos.y * TILE;
+            if (!members.has(`${pos.x},${pos.y - 1}`)) g.moveTo(x, y).lineTo(x + TILE, y);
+            if (!members.has(`${pos.x + 1},${pos.y}`))
+              g.moveTo(x + TILE, y).lineTo(x + TILE, y + TILE);
+            if (!members.has(`${pos.x},${pos.y + 1}`))
+              g.moveTo(x, y + TILE).lineTo(x + TILE, y + TILE);
+            if (!members.has(`${pos.x - 1},${pos.y}`)) g.moveTo(x, y).lineTo(x, y + TILE);
+          }
+          g.stroke({ width: 3, color: edge });
+        }
       }
-    }
 
     if (view.hoverTile) {
       g.rect(view.hoverTile.x * TILE, view.hoverTile.y * TILE, TILE, TILE).fill({
         color: OVERLAY.hover,
       });
     }
+    this.drawCliffCues(view);
+  }
+
+  private drawCliffCues(view: MapView): void {
+    const g = this.overlayGfx;
+    const tangent = TILE * 0.08;
+    const normal = TILE * 0.1;
+    const inset = TILE * 0.03;
+    for (const edge of view.cliffEdges ?? []) {
+      const horizontal = edge.side === 'north' || edge.side === 'south';
+      const x = edge.pos.x * TILE + (edge.side === 'east' ? TILE : 0);
+      const y = edge.pos.y * TILE + (edge.side === 'south' ? TILE : 0);
+      for (let step = 0.1; step < 1; step += 0.2) {
+        if (horizontal) {
+          // The hatch belongs to the higher tile's lip. Keep its normal
+          // component on that tile instead of spilling onto the lower ground.
+          const inward = edge.side === 'south' ? -1 : 1;
+          g.moveTo(x + TILE * step - tangent, y + inward * inset).lineTo(
+            x + TILE * step + tangent,
+            y + inward * (inset + normal),
+          );
+        } else {
+          const inward = edge.side === 'east' ? -1 : 1;
+          g.moveTo(x + inward * inset, y + TILE * step - tangent).lineTo(
+            x + inward * (inset + normal),
+            y + TILE * step + tangent,
+          );
+        }
+      }
+    }
+    g.stroke({ width: Math.max(2, TILE * 0.045), color: OVERLAY.cliffHatch });
+  }
+
+  /** Upright ground cues, projected but never ground-skewed. */
+  private drawClimbMarkers(view: MapView, camera: Camera): void {
+    const g = this.climbGfx;
+    g.clear();
+    const climbMarkers = view.climbMarkers ?? [];
+    climbMarkers.forEach((marker, index) => {
+      // Start from the tile box, like Canvas; spriteBox is an actor-foot
+      // anchor and sits substantially higher on the oblique board.
+      const top = camera.toScreen(marker.pos);
+      const box = {
+        x: (top.x + camera.offsetX) / camera.scale,
+        y: (top.y + camera.offsetY) / camera.scale,
+      };
+      const cx = box.x + TILE * 0.4;
+      const cy = box.y - liftAt(view.grid, marker.pos, camera.projection) * TILE + TILE * 0.72;
+      const arrow = [
+        cx - TILE * 0.1,
+        cy + TILE * 0.07,
+        cx,
+        cy - TILE * 0.1,
+        cx + TILE * 0.1,
+        cy + TILE * 0.07,
+      ];
+      g.poly(arrow, true)
+        .stroke({
+          width: Math.max(3 / camera.scale, TILE * 0.065),
+          color: OVERLAY.pathUnder,
+        })
+        .fill({ color: OVERLAY.climb });
+      const label = this.climbLabel(index);
+      const text = `+${marker.surcharge}`;
+      if (label.text !== text) label.text = text;
+      label.position.set(cx + TILE * 0.2, cy);
+      label.visible = true;
+    });
+    for (let i = climbMarkers.length; i < this.climbLabels.length; i++) {
+      const label = this.climbLabels[i];
+      if (label) label.visible = false;
+    }
+  }
+
+  /** The target cue stays in the post-unit labels pass. */
+  private drawTargetReticle(view: MapView, camera: Camera): void {
+    const g = this.fxGfx;
+    const cue = view.targetReticle;
+    if (!cue) return;
+    const target = view.units.find((unit) => unit.pos.x === cue.pos.x && unit.pos.y === cue.pos.y);
+    const pos = target?.renderPos ?? target?.pos ?? cue.pos;
+    const screen = camera.spriteBox(pos, target?.size ?? 1);
+    const box = {
+      x: (screen.x + camera.offsetX) / camera.scale,
+      y: (screen.y + camera.offsetY) / camera.scale,
+    };
+    const cx = box.x + (target?.size ?? 1) * TILE + TILE * 0.12;
+    const cy = box.y - liftAlong(view.grid, pos, camera.projection) * TILE - TILE * 0.04;
+    const outline = Math.max(3 / camera.scale, TILE * 0.065);
+    if (cue.elevation) {
+      const direction = cue.elevation === 'above' ? -1 : 1;
+      g.poly(
+        [
+          cx - TILE * 0.13,
+          cy - direction * TILE * 0.08,
+          cx,
+          cy + direction * TILE * 0.13,
+          cx + TILE * 0.13,
+          cy - direction * TILE * 0.08,
+        ],
+        true,
+      )
+        .stroke({ width: outline, color: OVERLAY.pathUnder })
+        .fill({ color: OVERLAY.reticleCue });
+    }
+    if (cue.obscured) {
+      const cloudX = cx + TILE * 0.27;
+      const cloudY = cy;
+      g.circle(cloudX - TILE * 0.06, cloudY, TILE * 0.075)
+        .circle(cloudX + TILE * 0.03, cloudY - TILE * 0.025, TILE * 0.095)
+        .circle(cloudX + TILE * 0.12, cloudY, TILE * 0.065)
+        .rect(cloudX - TILE * 0.12, cloudY, TILE * 0.25, TILE * 0.07)
+        .stroke({ width: outline, color: OVERLAY.pathUnder })
+        .fill({ color: OVERLAY.reticleCue });
+    }
+  }
+
+  private climbLabel(index: number): Text {
+    let text = this.climbLabels[index];
+    if (!text) {
+      text = new Text({
+        text: '',
+        style: new TextStyle({
+          fontFamily: 'sans-serif',
+          fontWeight: '600',
+          fontSize: Math.max(10, TILE * 0.2),
+          fill: OVERLAY.climb,
+          stroke: { color: OVERLAY.pathUnder, width: Math.max(2, TILE * 0.045) },
+        }),
+      });
+      text.anchor.set(0.5);
+      this.climbLabels[index] = text;
+      this.climbLabelLayer.addChild(text);
+    }
+    return text;
   }
 
   /**

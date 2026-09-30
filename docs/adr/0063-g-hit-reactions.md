@@ -68,6 +68,14 @@ Units go from 5,890,807 B to 6,105,159 B (5.82 MiB), against the 6.75 MiB
 ceiling. The runtime cost is the clip names, their fallback rows and the
 choreography branch. This ADR does not raise any ceiling.
 
+## Timing
+
+G hit reactions pre-roll their stance cel by the clip's first-frame time so
+contact lands on the flash. A lethal G hit delays its knockout, and so the turn, by at most
+`authored hit span - hit-stop`: for Kaya (480 ms span) that is 450 ms after a
+Fire Jab and up to 480 ms for an effect with no hit-stop. When the pre-roll is clamped
+at the batch start, the stance cel shows during the flash.
+
 ## Consequences
 
 - A G party member flinches in its own drawing, in every heading, and the

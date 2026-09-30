@@ -276,6 +276,13 @@ function stepClimb(ctx: MoveContext, from: Vec2, to: Vec2): number | null {
 export function enterCost(ctx: MoveContext, from: Vec2, to: Vec2): number | null {
   const base = standCost(ctx, to);
   if (base === null) return null;
+  const climb = climbSurcharge(ctx, from, to);
+  if (climb === null) return null;
+  return base + climb;
+}
+
+/** The climb portion of one step's move cost, or null when the step is illegal. */
+export function climbSurcharge(ctx: MoveContext, from: Vec2, to: Vec2): number | null {
   const width = ctx.size === 2 ? 2 : 1;
   let climb = 0;
   for (let dx = 0; dx < width; dx++) {
@@ -283,7 +290,7 @@ export function enterCost(ctx: MoveContext, from: Vec2, to: Vec2): number | null
     if (cell === null) return null;
     climb = Math.max(climb, cell);
   }
-  return base + climb;
+  return climb;
 }
 
 /** A diagonal step may not squeeze between impassable orthogonal neighbours. */
@@ -299,6 +306,8 @@ function diagonalAllowed(ctx: MoveContext, from: Vec2, to: Vec2): boolean {
 export interface ReachableCell {
   readonly pos: Vec2;
   readonly cost: number;
+  /** Move points spent climbing on this route, kept separate for the map cue. */
+  readonly climbCost: number;
   /** Tiles walked through, excluding the start and including this cell. */
   readonly path: readonly Vec2[];
 }
@@ -314,10 +323,10 @@ export function reachable(
   budget: number,
 ): Map<string, ReachableCell> {
   const best = new Map<string, ReachableCell>();
-  best.set(posKey(start), { pos: start, cost: 0, path: [] });
+  best.set(posKey(start), { pos: start, cost: 0, climbCost: 0, path: [] });
 
   // Small budgets over a 20x12 grid: a sorted frontier is plenty.
-  const frontier: ReachableCell[] = [{ pos: start, cost: 0, path: [] }];
+  const frontier: ReachableCell[] = [{ pos: start, cost: 0, climbCost: 0, path: [] }];
 
   while (frontier.length > 0) {
     frontier.sort((a, b) => a.cost - b.cost);
@@ -337,7 +346,14 @@ export function reachable(
       const key = posKey(next);
       const prior = best.get(key);
       if (prior && prior.cost <= cost) continue;
-      const entry: ReachableCell = { pos: next, cost, path: [...current.path, next] };
+      const surcharge = climbSurcharge(ctx, current.pos, next);
+      if (surcharge === null) continue;
+      const entry: ReachableCell = {
+        pos: next,
+        cost,
+        climbCost: current.climbCost + surcharge,
+        path: [...current.path, next],
+      };
       best.set(key, entry);
       frontier.push(entry);
     }
@@ -353,7 +369,7 @@ export function findPath(
   goal: Vec2,
   budget: number,
 ): ReachableCell | null {
-  if (samePos(start, goal)) return { pos: start, cost: 0, path: [] };
+  if (samePos(start, goal)) return { pos: start, cost: 0, climbCost: 0, path: [] };
   return reachable(ctx, start, budget).get(posKey(goal)) ?? null;
 }
 
