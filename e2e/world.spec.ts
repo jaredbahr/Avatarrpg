@@ -99,6 +99,7 @@ test('rescued riverside return keeps the shrine discovery and party health', asy
   await expect(page.getByRole('button', { name: 'Visit the shrine', exact: true })).toBeVisible();
 
   await page.getByRole('button', { name: 'Visit the shrine', exact: true }).click();
+  await waitForIdle(page);
   await expect(page.locator('.explore-conversation')).toBeVisible();
   const next = page.locator('[data-conversation-control="next"]');
   for (let line = 1; line <= 3; line++) {

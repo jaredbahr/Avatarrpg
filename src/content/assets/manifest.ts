@@ -153,62 +153,25 @@ function rikoSheet(): SheetEntry {
   };
 }
 
-/**
- * Measured root travel per 114 ms walk cel, in source px, per heading: the
- * planted-sole `speed_px_per_frame` in each walk's gates.json for the
- * PixelLab G party (ADR 0050, ADR 0051). Kaya's and Sura's are their narrower
- * girls-walk-v2 "A" walks (ADR 0053), whose shorter strides cover 3.4-3.8 px
- * a cel walking north against 4.75-5.8 south; Bo's are the party-consistency
- * set.
- */
-type GTravel = Readonly<Record<Heading, number>>;
-
-export const G_TRAVEL: Readonly<Record<'kaya' | 'sura' | 'bo', GTravel>> = {
-  kaya: {
-    north: 3.81,
-    northEast: 9.11,
-    east: 12.48,
-    southEast: 9.36,
-    south: 5.8,
-    southWest: 9.49,
-    west: 11.75,
-    northWest: 9.14,
-  },
-  sura: {
-    north: 3.36,
-    northEast: 8.54,
-    east: 11.52,
-    southEast: 7.8,
-    south: 4.75,
-    southWest: 9.63,
-    west: 14.0,
-    northWest: 8.97,
-  },
-  bo: {
-    north: 6.13,
-    northEast: 11.02,
-    east: 12.92,
-    southEast: 11.35,
-    south: 6.3,
-    southWest: 11.13,
-    west: 12.7,
-    northWest: 9.97,
-  },
-};
+/** One complete authored G walk loop covers this many logical ground tiles. */
+export const G_STRIDE_TILES = 1.825;
 
 /**
- * The measured travel per 114 ms cel, converted to clip time per 128 px tile
- * at the in-game 0.75 scale. Movement duration stays gameplay-driven; only
- * distance-phased cel selection changes.
+ * Distance-phased clip time for a G walk. The source art's measured root
+ * travel varies sharply by heading and made short in-game moves cycle several
+ * times. One stride target keeps the authored loop coherent while preserving
+ * every existing cel and its order.
  */
-function walkMsPerTile(travel: GTravel): Record<Heading, number> {
-  return Object.fromEntries(
-    HEADINGS.map((heading) => [heading, (128 / (travel[heading] * 0.75)) * 114]),
-  ) as Record<Heading, number>;
+function gWalkMsPerTile(frameCount: number): Record<Heading, number> {
+  const msPerTile = (frameCount * 114) / G_STRIDE_TILES;
+  return Object.fromEntries(HEADINGS.map((heading) => [heading, msPerTile])) as Record<
+    Heading,
+    number
+  >;
 }
 
 /** PixelLab G locomotion and fighting stance plus the existing authored action poses. */
-function gSheet(key: string, name: keyof typeof G_TRAVEL, palette: string): SheetEntry {
+function gSheet(key: string, name: 'kaya' | 'sura' | 'bo', palette: string): SheetEntry {
   const frames = (clip: ClipName, count: number) =>
     Array.from({ length: count }, (_, i) => `${key}/${clip}/${i}`);
   const walk = (clip: ClipName): ClipDef => ({
@@ -262,59 +225,13 @@ function gSheet(key: string, name: keyof typeof G_TRAVEL, palette: string): Shee
     footprint: { w: 1, h: 1 },
     anchor: { x: 0.5, y: 0.85 },
     facing: 'both',
-    locomotion: { headings: 8, walkMsPerTile: walkMsPerTile(G_TRAVEL[name]) },
+    locomotion: { headings: 8, walkMsPerTile: gWalkMsPerTile(12) },
     palette,
     clips,
   };
 }
 
-/**
- * Each G enemy's measured root travel per walk cel, in source px, per
- * heading: `speed_px_per_frame` in each selected toned walk's gates.json
- * (the thug, ADR 0059; the quarry bandits, ADR 0062).
- */
-const ENEMY_TRAVEL: Readonly<Record<'thug' | 'slinger' | 'bruiser' | 'quarrybender', GTravel>> = {
-  thug: {
-    north: 9.75,
-    northEast: 13.07,
-    east: 11.59,
-    southEast: 15.29,
-    south: 9.17,
-    southWest: 13.55,
-    west: 11.8,
-    northWest: 12.83,
-  },
-  slinger: {
-    north: 7.69,
-    northEast: 12.43,
-    east: 14.53,
-    southEast: 16.33,
-    south: 4.0,
-    southWest: 13.02,
-    west: 13.64,
-    northWest: 13.38,
-  },
-  bruiser: {
-    north: 8.67,
-    northEast: 12.51,
-    east: 12.22,
-    southEast: 15.35,
-    south: 8.83,
-    southWest: 14.01,
-    west: 12.83,
-    northWest: 13.68,
-  },
-  quarrybender: {
-    north: 5.76,
-    northEast: 12.79,
-    east: 12.6,
-    southEast: 14.75,
-    south: 9.01,
-    southWest: 13.78,
-    west: 14.46,
-    northWest: 13.08,
-  },
-};
+type EnemyGName = 'thug' | 'slinger' | 'bruiser' | 'quarrybender';
 
 /**
  * A toned PixelLab enemy on a G sheet (ADR 0059, ADR 0062): eight-way idle,
@@ -322,7 +239,7 @@ const ENEMY_TRAVEL: Readonly<Record<'thug' | 'slinger' | 'bruiser' | 'quarrybend
  * cast, hit and KO cels, mirrored as the party's legacy actions are. The
  * bruiser's club needs a 160 px cel.
  */
-function enemyGSheet(name: keyof typeof ENEMY_TRAVEL, palette: string): SheetEntry {
+function enemyGSheet(name: EnemyGName, palette: string): SheetEntry {
   const key = `unit.enemy.${name}`;
   const frames = (clip: ClipName, count: number) =>
     Array.from({ length: count }, (_, i) => `${key}/${clip}/${i}`);
@@ -356,7 +273,7 @@ function enemyGSheet(name: keyof typeof ENEMY_TRAVEL, palette: string): SheetEnt
     footprint: { w: 1, h: 1 },
     anchor: { x: 0.5, y: 0.85 },
     facing: 'both',
-    locomotion: { headings: 8, walkMsPerTile: walkMsPerTile(ENEMY_TRAVEL[name]) },
+    locomotion: { headings: 8, walkMsPerTile: gWalkMsPerTile(8) },
     palette,
     clips,
   };

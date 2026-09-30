@@ -15,7 +15,7 @@
  *   that fails too, fade out where they stand and fade in where they belong.
  *   Nobody teleports mid-stride and nobody is lost.
  * - The walk is the party's own (`partyWalked` through a private `Animator`):
- *   the same 280 ms a tile, ramps, bob and facing, with no footsteps.
+ *   the same brisk stroll pace, ramps, bob and facing, with no footsteps.
  * - A conversation freezes everything: the clock stops, and no plan is made
  *   until the conversation ends, so a pinned speaker never moves.
  * - Between placements, someone with a routine (`BA_DAN_ROUTINES`) walks its

@@ -4,6 +4,15 @@ import { allowSoftwareWebgl } from './budget';
 import { enterNode, pauseClock, resetStorage, startGame, waitForIdle } from './helpers';
 import type { GameState } from '../src/core/types';
 import type { NpcMarker } from '../src/render/view';
+import { TIMING } from '../src/app/anim/choreography';
+import { STROLL_RAMP_MS } from '../src/app/anim/stroll';
+
+const CLOCK_STEP_MS = 60;
+const PHASE_ROUTE_TILES = 20;
+const PHASE_ROUTE_MARGIN_MS = 1_000;
+const PHASE_ROUTE_STEPS = Math.ceil(
+  (PHASE_ROUTE_TILES * TIMING.strollStep + STROLL_RAMP_MS + PHASE_ROUTE_MARGIN_MS) / CLOCK_STEP_MS,
+);
 
 /**
  * Residents walk between their places (ADR 0047 §7, W8): a phase change walks
@@ -120,11 +129,12 @@ for (const renderer of ['canvas', 'webgl'] as const) {
     const dorinSprites: number[] = [];
     let end: Marker[] = [];
     let coordinateSprites = 0;
-    // Sixty ms steps: at 280 ms a tile an even walk moves about 0.21 tile a step.
-    // Stop on the rendered settled state, rather than assuming 80 fake-clock
-    // advances produced 80 animation frames in every browser.
-    for (let step = 0; step < 120; step++) {
-      await page.clock.runFor(60);
+    // Size the fake-clock budget from the longest phase-change route, its
+    // acceleration/braking ramp, and a rendering margin at the current pace.
+    // Stop on the rendered settled state rather than assuming every fake-clock
+    // advance produced an animation frame in every browser.
+    for (let step = 0; step < PHASE_ROUTE_STEPS; step++) {
+      await page.clock.runFor(CLOCK_STEP_MS);
       const frame = await residentFrame(page);
       end = frame.markers;
       const mira = end.find((m) => m.id === 'lw.npc.mira');
@@ -171,7 +181,7 @@ test('Gao restocks his display in trading hours, his tap tile never leaving the 
   await pauseClock(page);
   const seen = new Set<string>();
   let moving = false;
-  // A tenth of a second a sample: a tile of walk is 280 ms.
+  // A tenth of a second is one fifth of a tile at the current stroll pace.
   for (let step = 0; step < 200 && !seen.has('8,5'); step++) {
     await page.clock.runFor(100);
     const frame = await residentFrame(page);

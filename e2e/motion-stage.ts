@@ -1,4 +1,6 @@
 import type { Page } from '@playwright/test';
+import { TIMING } from '../src/app/anim/choreography';
+import { strollTiming } from '../src/app/anim/stroll';
 
 /** Stage presentation events independently of hit rolls and enemy turn choices. */
 export async function stageMotionTransition(
@@ -6,8 +8,9 @@ export async function stageMotionTransition(
   kind: 'cast' | 'push',
   abilityId = 'fire_jab',
 ) {
+  const setupWalkDuration = strollTiming(1, TIMING.strollStep).duration;
   return page.evaluate(
-    ({ kind, abilityId }) => {
+    ({ kind, abilityId, setupWalkDuration }) => {
       const app = window.fnt!.app;
       const state = app.state;
       const battle = state?.battle;
@@ -39,7 +42,7 @@ export async function stageMotionTransition(
       const now = performance.now();
       // A northward walk before a cast, a westward walk before being pushed east.
       app.animator.push(
-        now - 500,
+        now - setupWalkDuration,
         [
           {
             type: 'partyWalked',
@@ -60,6 +63,6 @@ export async function stageMotionTransition(
       );
       return { id: hero.id, duration: app.animator.finishesAt - now };
     },
-    { kind, abilityId },
+    { kind, abilityId, setupWalkDuration },
   );
 }

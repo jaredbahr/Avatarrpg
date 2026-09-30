@@ -524,5 +524,7 @@ it('keeps the five-leg courtyard audit separated without the serial cadence regr
     expect(positions).toEqual(trail.positions(5));
     expect(trail.head).toEqual(target);
   }
-  expect(total).toBeLessThan(12000);
+  // The five walkers overlap within each phase. This is a pace-derived budget
+  // for the whole audit, not five copies of each route laid end to end.
+  expect(total).toBeLessThan(32 * TIMING.strollStep);
 });

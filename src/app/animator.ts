@@ -17,10 +17,9 @@ import type { ContentIndex, GameEvent, Unit, Vec2 } from '../core/types';
 import type { BendFxSprite, EmitterInstance, Floater } from '../render/view';
 import type { ClipName } from '../render/view';
 import { hashSeed, mulberry32 } from '../render/fx/rng';
-import { projectGround } from '../render/projection';
 import type { Projection } from '../render/projection';
 import { integrateAlong, sampleAt } from '../render/geometry/curve';
-import { choreograph } from './anim/choreography';
+import { choreograph, TIMING } from './anim/choreography';
 import { bendFxAt, bendNudge, bendPoseAt } from './anim/bendChoreo';
 import type { BendPlan } from './anim/bendChoreo';
 import type { BendFxIndex } from '../render/fx/bendFx';
@@ -51,10 +50,10 @@ const BOB = 0.05;
 
 /**
  * A walk clip advances by distance, not time: this many ms of clip per tile
- * of travel, so at the sheets' 4 fps a stride is two poses a tile whatever
- * the unit's speed.
+ * of travel. At the brisk exploration pace this keeps legacy four-way walks
+ * close to their authored 4 fps while G sheets use their declared stride.
  */
-const WALK_MS_PER_TILE = 500;
+export const WALK_MS_PER_TILE = TIMING.strollStep * 0.95;
 
 /**
  * How long a finished walk holds its settled pose before the ready stance is
@@ -62,7 +61,7 @@ const WALK_MS_PER_TILE = 500;
  * last stride's pose is not a stance: without this dwell the sprite cuts
  * straight from mid-stride to idle on the frame the route ends.
  */
-const STOP_SETTLE_MS = 140;
+export const STOP_SETTLE_MS = 140;
 
 /** How far off dead vertical the travel has to lean before the sprite turns. */
 const TURN_THRESHOLD = 0.2;
@@ -397,9 +396,9 @@ export class Animator {
    * Locomotion fields shared by the world, riverside and combat views.
    *
    * A walk that has just ended holds its settled pose for a moment before
-   * `resting` is selected, so the sprite does not cut from mid-stride to guard
-   * on the frame the route ends. Combat rests its party in `stance`, the
-   * fighting stance, which a sheet without one draws as its idle (ADR 0052).
+   * `resting` is selected. Legacy sheets use their authored rest; G sheets use
+   * directional idle because their rest cel is mid-stride. Combat then rests
+   * its party in `stance`, which a sheet without one draws as idle (ADR 0052).
    * The dwell is presentation only: `busy()` and `finishesAt` still end with
    * the travel.
    *
@@ -422,10 +421,14 @@ export class Animator {
     if (travel)
       this.rememberDirection(unitId, sampleAt(travel.track.curve, travel.distance).tangent);
     const stop = !travel && this.settling(now, unitId);
-    const base = travel ? 'walk' : stop ? 'rest' : resting;
+    const gait = sheetLocomotion(sprite);
+    // G rests are sampled mid-stride. Settle those sheets onto the planted
+    // idle for the last heading; legacy sheets retain their authored rest.
+    const standing = gait && resting === 'rest' ? 'idle' : resting;
+    const base = travel ? 'walk' : stop ? (gait ? 'idle' : 'rest') : standing;
     const heading = this.heading(unitId, restFacing);
     const clip =
-      sheetLocomotion(sprite)?.headings === 8 && heading
+      gait?.headings === 8 && heading
         ? headingClip(base, heading)
         : directionalClip(base, this.directions.get(unitId));
     return { clip, facing: verticalClip(clip) ? 1 : (this.facings.get(unitId) ?? restFacing) };
@@ -460,11 +463,7 @@ export class Animator {
   /**
    * Ms into the walk clip, `distance` along the route. Four-way art advances
    * a fixed `WALK_MS_PER_TILE`. An eight-way sheet declares its own clip time
-   * per tile for each heading, matched to its authored stride so the feet do
-   * not skate. That stride is measured on screen, so it is scaled by how far
-   * one logical tile of the route carries the figure on screen: 1 on
-   * orthographic ground, and on oblique ground about 1.12 along a grid axis,
-   * 1.41 screen-across and 0.71 screen-down.
+   * per logical tile for each heading.
    *
    * Because that rate changes with the heading, the phase is accumulated
    * along the route, each stretch at its own rate, rather than the current
@@ -476,11 +475,7 @@ export class Animator {
     const gait = sheetLocomotion(sprite);
     if (!gait) return travel.distance * WALK_MS_PER_TILE;
     return integrateAlong(travel.track.curve, travel.distance, (tangent) => {
-      const screen = projectGround(tangent, this.projection);
-      return (
-        gait.walkMsPerTile[walkHeading(screenDirection(tangent, this.projection))] *
-        Math.hypot(screen.x, screen.y)
-      );
+      return gait.walkMsPerTile[walkHeading(screenDirection(tangent, this.projection))];
     });
   }
 

@@ -1,3 +1,4 @@
+import { WALK_MS_PER_TILE } from '../animator';
 import { describe, expect, it } from 'vitest';
 import { screenMeleeDirection, walkDirection, walkHeading, directionalClip } from './direction';
 import type { WalkDirection } from './direction';
@@ -11,7 +12,7 @@ const content = { abilities: new Map() } as unknown as ContentIndex;
 
 /** The eight-way PixelLab G party (ADR 0050, ADR 0051). */
 const G_PARTY = ['unit.fire.kaya', 'unit.water.sura', 'unit.earth.bo'] as const;
-/** A sheet on the legacy four-way contract, fixed 500 ms a tile. */
+/** A sheet on the legacy four-way cadence contract. */
 const FOUR_WAY = 'unit.earth.linmei';
 
 describe('directional walking', () => {
@@ -281,8 +282,8 @@ describe('heading vocabulary is a declared sheet capability', () => {
           const vertical = clip !== 'walk';
           expect(got, `leg ${leg.x},${leg.y}`).toEqual({
             walk: { clip, facing: vertical ? 1 : facing },
-            // Legacy gait: 500 ms of clip time per tile.
-            clipTime: expect.closeTo(250 * length, 0) as unknown as number,
+            // Legacy gait: WALK_MS_PER_TILE of clip time per tile.
+            clipTime: expect.closeTo((WALK_MS_PER_TILE / 2) * length, 0) as unknown as number,
           });
         } else {
           const rest = legacyClip('rest', previous);
@@ -335,27 +336,26 @@ describe('heading vocabulary is a declared sheet capability', () => {
       const pose = a.unitPose(300, 'u', sprite);
       const legacy = a.unitPose(300, 'u', FOUR_WAY);
       expect(pose?.clipTime).toBeCloseTo(
-        ((legacy?.clipTime ?? 0) / 500) * sheet.locomotion.walkMsPerTile.south,
+        ((legacy?.clipTime ?? 0) / WALK_MS_PER_TILE) * sheet.locomotion.walkMsPerTile.south,
       );
     });
 
-    it(`phases ${sprite}'s oblique eight-way walk by the screen distance a tile covers`, () => {
+    it(`phases ${sprite}'s oblique eight-way walk by logical distance`, () => {
       const sheet = ASSETS[sprite];
       if (sheet?.kind !== 'sheet' || !sheet.locomotion) throw new Error(`${sprite} is eight-way`);
       const { walkMsPerTile } = sheet.locomotion;
-      // Logical +x is screen south-east (1, 0.5); logical (1, 1) is screen south
-      // (0, 1) over a route of length sqrt(2); logical (1, -1) is screen east (2, 0).
+      // Projection chooses the heading, but does not multiply the cadence.
       for (const [to, expected] of [
-        [{ x: 8, y: 4 }, walkMsPerTile.southEast * Math.hypot(1, 0.5)],
-        [{ x: 8, y: 8 }, walkMsPerTile.south * Math.SQRT1_2],
-        [{ x: 8, y: 0 }, walkMsPerTile.east * Math.SQRT2],
+        [{ x: 8, y: 4 }, walkMsPerTile.southEast],
+        [{ x: 8, y: 8 }, walkMsPerTile.south],
+        [{ x: 8, y: 0 }, walkMsPerTile.east],
       ] as const) {
         const a = new Animator(content, { motionReduced: () => false });
         a.setProjection('oblique');
         a.push(0, [{ type: 'partyWalked', unitId: 'u', from: { x: 4, y: 4 }, path: [to] }], []);
         const pose = a.unitPose(300, 'u', sprite);
         const legacy = a.unitPose(300, 'u', FOUR_WAY);
-        expect(pose?.clipTime).toBeCloseTo(((legacy?.clipTime ?? 0) / 500) * expected);
+        expect(pose?.clipTime).toBeCloseTo(((legacy?.clipTime ?? 0) / WALK_MS_PER_TILE) * expected);
       }
     });
   }
@@ -397,7 +397,7 @@ describe('the fighting stance (ADR 0052)', () => {
         expect(a.locomotion(a.finishesAt / 2, 'p', 'stance', sprite).clip).toBe(`walk${heading}`);
         const done = a.finishesAt + 1;
         a.prune(done);
-        expect(a.locomotion(done, 'p', 'stance', sprite).clip).toBe(`rest${heading}`);
+        expect(a.locomotion(done, 'p', 'stance', sprite).clip).toBe(`idle${heading}`);
         const guard = a.locomotion(done + 300, 'p', 'stance', sprite);
         // Authored for each side, so drawn unflipped whichever way she faces.
         expect(guard.clip).toBe(`stance${heading}`);
@@ -450,8 +450,11 @@ describe('eight-way oblique headings for a declaring sheet', () => {
       expect(a.locomotion(a.finishesAt / 2, 'p', 'idle', kaya).clip).toBe(`walk${clip}`);
       const done = a.finishesAt + 1;
       a.prune(done);
-      expect(a.locomotion(done, 'p', 'idle', kaya).clip).toBe(`rest${clip}`);
+      expect(a.locomotion(done, 'p', 'idle', kaya).clip).toBe(`idle${clip}`);
       expect(a.locomotion(done + 300, 'p', 'idle', kaya).clip).toBe(`idle${clip}`);
+      // Explore requests the legacy rest family; a G sheet substitutes its
+      // planted directional idle instead of holding the mid-stride rest cel.
+      expect(a.locomotion(done + 300, 'p', 'rest', kaya).clip).toBe(`idle${clip}`);
     });
   }
 });

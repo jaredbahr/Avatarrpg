@@ -14,7 +14,6 @@ import { phaseLabel } from '../world/journal';
 import { button, el, motionReduced } from '../ui/dom';
 import { WaitDialog } from '../ui/WaitDialog';
 import { seatHere } from '../world/waiting';
-import { sheetLocomotion } from '../../content/assets/manifest';
 
 const distance = (a: Vec2, b: Vec2) => Math.hypot(a.x - b.x, a.y - b.y);
 type Activity = { kind: 'water' | 'fire' | 'wave'; unitId: string; started: number };
@@ -349,7 +348,7 @@ export class VillageLife {
           : active
             ? now - active.started
             : u.renderPos
-              ? riversideWalkTime(u.clipTime ?? 0, sheetLocomotion(u.sprite) !== undefined)
+              ? riversideWalkTime(u.clipTime ?? 0)
               : time,
         label: u.name,
       };

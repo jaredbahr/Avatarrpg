@@ -26,8 +26,8 @@
  *   walks do, and the south-west 4 px (moved 5, commented below).
  * - `headingDx` is 0 throughout: his south-east feet stand inside the bound.
  *
- * The walk's clip time per tile comes from each walk's measured
- * `speed_px_per_frame` (`walkMsPerTile` in the manifest).
+ * The walk's clip time per tile comes from the shared G stride target
+ * (`G_STRIDE_TILES` via `walkMsPerTile` in the manifest).
  *
  * The cast, hit and KO cels are the old thug sheet's, copied verbatim into
  * `art/source/thug-actions` and still mirrored like the party's legacy

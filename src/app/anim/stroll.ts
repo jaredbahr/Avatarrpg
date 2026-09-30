@@ -1,7 +1,9 @@
 /** Distance-based exploration timing, with brief starts/stops even on long routes. */
+export const STROLL_RAMP_MS = 120;
+
 export function strollTiming(length: number, msPerTile: number) {
   const travel = Math.max(0, length) * msPerTile;
-  const ramp = Math.min(120, travel);
+  const ramp = Math.min(STROLL_RAMP_MS, travel);
   const duration = travel + ramp;
   const rampDistance = ramp / (2 * msPerTile);
   const distanceAt = (ms: number): number => {

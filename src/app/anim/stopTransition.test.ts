@@ -1,6 +1,8 @@
 import { describe, expect, it } from 'vitest';
 import type { ContentIndex, GameEvent, Unit, Vec2 } from '../../core/types';
 import { Animator } from '../animator';
+import { TIMING } from './choreography';
+import { STROLL_RAMP_MS, strollTiming } from './stroll';
 
 /**
  * Gait and stopping (M1), reproduced from the paired telemetry in
@@ -10,8 +12,8 @@ import { Animator } from '../animator';
  * the drawn position and pose at fixed times the way `CombatScene` builds its
  * view: a pose track wins, otherwise the locomotion clip.
  *
- * The acceptance row is "Motion and contact": no foot sliding, no unexplained
- * snap, no blank frames.
+ * The acceptance row is "Motion and contact": no unexplained snap or blank
+ * frames. ADR 0067 accepts bounded foot slide for the brisk pace.
  */
 
 const content = { abilities: new Map() } as unknown as ContentIndex;
@@ -98,29 +100,35 @@ describe('combat move gait', () => {
     const a = play([moved('p0', [2, 3], [3, 3])], [hero('p0', 1, 3)]);
     const rest = { x: 3, y: 3 };
     const end = a.finishesAt;
-    // Two tiles of stroll at 280 ms, plus the bounded 120 ms ramp.
-    expect(end - START).toBe(680);
+    const timing = strollTiming(2, TIMING.combatWalkStep);
+    expect(end - START).toBe(timing.duration);
 
     // Fixed-time samples: accelerating off the tile, cruising, braking in.
-    for (const [at, x] of [
-      [0, 1],
-      [120, 1.2142857],
-      [340, 2],
-      [560, 2.7857143],
-      [680, 3],
-    ] as const)
-      expect(drawn(a, START + at, 'p0', rest).pos.x, `${at} ms`).toBeCloseTo(x, 6);
+    for (const at of [
+      0,
+      STROLL_RAMP_MS,
+      timing.duration / 2,
+      timing.duration - STROLL_RAMP_MS,
+      timing.duration,
+    ])
+      expect(drawn(a, START + at, 'p0', rest).pos.x, `${at} ms`).toBeCloseTo(
+        1 + timing.ease(at / timing.duration) * 2,
+        6,
+      );
 
     // The live review measured 0.902 tile inside the first 40 ms of the old
-    // 110 ms-per-cell hop; the ramped stroll covers 0.024 tile.
-    expect(drawn(a, START + 40, 'p0', rest).pos.x - 1).toBeCloseTo(0.0238, 4);
+    // 110 ms-per-cell hop; the ramped stroll covers 0.010 tile.
+    expect(drawn(a, START + 40, 'p0', rest).pos.x - 1).toBeCloseTo(
+      timing.ease(40 / timing.duration) * 2,
+      6,
+    );
 
     // No sample at 60 fps moves further than the cruising pace of one tile
-    // per 280 ms, including the frame after the route ends.
+    // at the configured combat pace, including the frame after the route ends.
     const { max, steps } = maxStep(a, end, rest);
-    expect(steps).toBeGreaterThan(40);
-    expect(max).toBeLessThanOrEqual(16 / 280 + 1e-9);
-    expect(max).toBeCloseTo(16 / 280, 9);
+    expect(steps).toBeGreaterThan(timing.duration / 17);
+    expect(max).toBeLessThanOrEqual(16 / TIMING.combatWalkStep + 1e-9);
+    expect(max).toBeCloseTo(16 / TIMING.combatWalkStep, 9);
     expect(drawn(a, end, 'p0', rest).pos).toEqual(rest);
     expect(a.renderPos(end + 16, 'p0')).toBeUndefined();
   });
@@ -165,8 +173,8 @@ describe('combat move gait', () => {
     expect(clips.has('walk')).toBe(true);
 
     const { max } = maxStep(a, end, rest);
-    expect(max).toBeLessThanOrEqual(16 / 280 + 1e-9);
-    expect(max).toBeCloseTo(16 / 280, 9);
+    expect(max).toBeLessThanOrEqual(16 / TIMING.combatWalkStep + 1e-9);
+    expect(max).toBeCloseTo(16 / TIMING.combatWalkStep, 9);
     expect(drawn(a, end - 1, 'p0', rest)).toMatchObject({ clip: 'walk', facing: 1 });
     // The stop holds the settled east-facing pose, then the ready stance.
     expect(drawn(a, end + 1, 'p0', rest)).toMatchObject({ clip: 'rest', facing: 1 });
@@ -178,8 +186,8 @@ describe('combat move gait', () => {
     // A push takes the stance over: no settled walk-stop pose appears, and the
     // struck figure still slides in its hit pose.
     const slide = play([moved('p0', [4, 4]), pushed('p0', { x: 5, y: 4 })], [hero('p0', 3, 4)]);
-    const walkEnd = START + 400;
-    expect(slide.finishesAt).toBe(START + 400 + 220);
+    const walkEnd = START + strollTiming(1, TIMING.combatWalkStep).duration;
+    expect(slide.finishesAt).toBe(walkEnd + 2 * TIMING.step);
     // Forced displacement is not a stop the walk settles out of.
     expect(slide.locomotion(walkEnd + 1, 'p0')).toEqual({ clip: 'idle', facing: 1 });
     expect(drawn(slide, walkEnd + 1, 'p0', { x: 5, y: 4 }).clip).toBe('hit');
