@@ -31,6 +31,7 @@ import {
 } from 'pixi.js';
 
 import type { MapScene, SceneFlock, SceneImage, TerrainId, Tile, Vec2 } from '../../core/types';
+import { SQUARE_FOOTPRINTS, footprintCells, footprintFoot } from '../../core/rules/footprint';
 import { authoredForBothSides } from '../../content/assets/clips';
 import { resolveAsset } from '../../content/assets/manifest';
 import { backdrops } from '../backdrops';
@@ -155,6 +156,16 @@ const MAX_FRAME_TEXTURES = 512;
 
 /** The rounded square a hovered tile gets, in tile units from its corner. */
 const HOVER_LOOP = contourLoops([{ x: 0, y: 0 }])[0] ?? [];
+
+/** Pixi ordering point, exported so backend parity is testable without WebGL. */
+export function pixiActorDepth(
+  camera: Camera,
+  pos: Vec2,
+  size: 1 | 2,
+  square = SQUARE_FOOTPRINTS,
+): number {
+  return camera.groundPoint(footprintFoot(pos, size, square)).y;
+}
 
 /**
  * A small canvas holding a black gradient, for the board's edge shading and
@@ -1768,7 +1779,11 @@ export class PixiBackend implements RenderBackend {
     const g = this.fxGfx;
     const cue = view.targetReticle;
     if (!cue) return;
-    const target = view.units.find((unit) => unit.pos.x === cue.pos.x && unit.pos.y === cue.pos.y);
+    const target = view.units.find((unit) =>
+      footprintCells(unit.pos, unit.size).some(
+        (cell) => cell.x === cue.pos.x && cell.y === cue.pos.y,
+      ),
+    );
     const pos = target?.renderPos ?? target?.pos ?? cue.pos;
     const screen = camera.spriteBox(pos, target?.size ?? 1);
     const box = {
@@ -2055,15 +2070,11 @@ export class PixiBackend implements RenderBackend {
 
     const live = new Set<string>();
     // Back to front, so a unit lower on the map overlaps one above it.
-    const depth = (pos: Vec2, footprint = 1) =>
-      camera.groundPoint({
-        x: pos.x + footprint / 2,
-        y: pos.y + 0.5,
-      }).y;
+    const depth = (pos: Vec2, footprint: 1 | 2 = 1) => pixiActorDepth(camera, pos, footprint);
     const ordered = [...view.units].sort(
       (a, b) => depth(a.renderPos ?? a.pos, a.size) - depth(b.renderPos ?? b.pos, b.size),
     );
-    const box = (pos: Vec2, footprint = 1) => {
+    const box = (pos: Vec2, footprint: 1 | 2 = 1) => {
       const screen = camera.spriteBox(pos, footprint);
       return {
         x: (screen.x + camera.offsetX) / camera.scale,
@@ -2195,6 +2206,7 @@ export class PixiBackend implements RenderBackend {
         unit.meleeDirection ? unit.offset : undefined,
       );
       const width = unit.size === 2 ? TILE * 2 : TILE;
+      const heightTiles = SQUARE_FOOTPRINTS ? unit.size : 1;
       const facing = unit.facing ?? (unit.faction === 'enemy' ? -1 : 1);
       const asset = resolveAsset(unit.sprite);
       const locomotion = unit.clip ?? 'idle';
@@ -2236,6 +2248,7 @@ export class PixiBackend implements RenderBackend {
           px * scale,
           unit.size,
           unit.meleeDirection,
+          heightTiles,
         );
       let headroom = 0;
       if (frame) {
@@ -2248,10 +2261,12 @@ export class PixiBackend implements RenderBackend {
         sprite.height = placed.h;
         sprite.scale.x = Math.abs(sprite.scale.x) * (bend ? 1 : drawFacing);
       } else {
-        sprite.texture = this.texture(sprites.get(unit.sprite, px * scale, { facing }, unit.size));
+        sprite.texture = this.texture(
+          sprites.get(unit.sprite, px * scale, { facing }, unit.size, heightTiles),
+        );
         sprite.anchor.set(0, 0);
         const drawWidth = width * scale;
-        const drawHeight = TILE * scale;
+        const drawHeight = TILE * heightTiles * scale;
         sprite.position.set(x + (width - drawWidth) / 2, y + FOOT_LINE * (TILE - drawHeight));
         sprite.width = drawWidth;
         sprite.height = drawHeight;
@@ -2307,7 +2322,17 @@ export class PixiBackend implements RenderBackend {
 
       if (unit.showHealth !== false)
         this.drawHealthBar(g, unit, x, y, width, scale, headroom, view.hatch, camera.scale);
-      badgeIndex = this.drawStatusBadges(g, unit, x, y, width, badgeIndex);
+      badgeIndex = this.drawStatusBadges(
+        g,
+        unit,
+        x,
+        y,
+        width,
+        badgeIndex,
+        scale,
+        headroom,
+        heightTiles,
+      );
     }
 
     for (const [key, sprite] of this.unitSprites) {
@@ -2370,13 +2395,19 @@ export class PixiBackend implements RenderBackend {
     y: number,
     width: number,
     startIndex: number,
+    scale: number,
+    headroom: number,
+    heightTiles: number,
   ): number {
     if (unit.statuses.length === 0) return startIndex;
     const radius = Math.max(4, TILE * 0.09);
     const shown = unit.statuses.slice(0, 4);
     const totalWidth = shown.length * radius * 2.2;
     let bx = x + width / 2 - totalWidth / 2 + radius;
-    const by = y + TILE * 0.97;
+    const by =
+      heightTiles > 1
+        ? actorHealthBar(x, y, width, TILE, scale, headroom).y - radius * 1.4
+        : y + TILE * 0.97;
     let index = startIndex;
 
     for (const status of shown) {

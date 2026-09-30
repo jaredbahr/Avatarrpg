@@ -61,4 +61,17 @@ describe('oblique ground contract', () => {
     expect(box.y + box.size * 0.86).toBe(midpoint.y);
     expect(camera.toTile(midpoint.x, midpoint.y)).toEqual({ x: 9, y: 5 });
   });
+
+  it('anchors a gated 2x2 at the centre of its front row without moving legacy output', () => {
+    const camera = new Camera(
+      { width: 1000, height: 700, dpr: 1 },
+      { width: 20, height: 12 },
+      'oblique',
+    );
+    const legacy = camera.spriteBox({ x: 8, y: 5 }, 2, false);
+    const square = camera.spriteBox({ x: 8, y: 5 }, 2, true);
+    expect(legacy).toEqual(camera.spriteBox({ x: 8, y: 5 }, 2));
+    expect(square.x + square.size).toBe(camera.project({ x: 9, y: 6.5 }).x);
+    expect(square.y + square.size * 0.86).toBe(camera.project({ x: 9, y: 6.5 }).y);
+  });
 });

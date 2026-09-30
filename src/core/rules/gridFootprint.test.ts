@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { CONTENT } from '../../content';
 import type { Grid, Tile, Vec2 } from '../types';
+import type { Unit } from '../types';
 import {
   DEFAULT_TILE,
   DIRECTIONS,
@@ -11,6 +12,7 @@ import {
   standCost,
   withSurface,
   withTile,
+  unitAt,
 } from './grid';
 import type { MoveContext } from './grid';
 
@@ -53,6 +55,17 @@ function laidOut(steps: readonly { pos: Vec2; tile: Tile }[], width = 8, height 
 }
 
 describe('2x2 standCost', () => {
+  it('picks the same unit through every occupied cell', () => {
+    const unit = { id: 'driller', pos: { x: 2, y: 1 }, size: 2, hp: 1 } as Unit;
+    for (const pos of [
+      { x: 2, y: 1 },
+      { x: 3, y: 1 },
+      { x: 2, y: 2 },
+      { x: 3, y: 2 },
+    ])
+      expect(unitAt([unit], pos, true)?.id).toBe('driller');
+    expect(unitAt([unit], { x: 2, y: 2 }, false)).toBeUndefined();
+  });
   it('needs all four cells free', () => {
     const blocked = laidOut([{ pos: { x: 2, y: 2 }, tile: { ...DEFAULT_TILE, blocked: true } }]);
     expect(standCost(squareContext(openGrid(8, 6), 2), { x: 1, y: 1 })).toBe(1);

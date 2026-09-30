@@ -72,10 +72,16 @@ export class SpriteCache {
    * is the tile's height in device pixels; `widthTiles` differs from 1 only
    * for the 2-tile boss.
    */
-  get(key: string, size: number, options: PainterOptions = {}, widthTiles = 1): HTMLCanvasElement {
+  get(
+    key: string,
+    size: number,
+    options: PainterOptions = {},
+    widthTiles = 1,
+    heightTiles = 1,
+  ): HTMLCanvasElement {
     const bucketed = this.bucket(size);
     const pose = options.pose ? `${options.pose.clip}${options.pose.index}` : '';
-    const cacheKey = `${key}|${options.variant ?? ''}|${options.facing ?? 1}|${bucketed}|${widthTiles}|${pose}`;
+    const cacheKey = `${key}|${options.variant ?? ''}|${options.facing ?? 1}|${bucketed}|${widthTiles}|${heightTiles}|${pose}`;
     const existing = this.entries.get(cacheKey);
     if (existing) {
       // Re-insert so Map order doubles as recency.
@@ -86,7 +92,7 @@ export class SpriteCache {
 
     const canvas = document.createElement('canvas');
     canvas.width = Math.max(1, Math.round(bucketed * widthTiles));
-    canvas.height = Math.max(1, Math.round(bucketed));
+    canvas.height = Math.max(1, Math.round(bucketed * heightTiles));
 
     const ctx = canvas.getContext('2d');
     if (ctx) {
@@ -102,7 +108,15 @@ export class SpriteCache {
         ctx.drawImage(image, 0, 0, canvas.width, canvas.height);
       } else {
         const painter = resolvePainter(key);
-        painter.draw(ctx, { x: 0, y: 0, size: bucketed }, options);
+        painter.draw(
+          ctx,
+          { x: 0, y: bucketed * (heightTiles - 1), size: bucketed },
+          {
+            ...options,
+            footprintWidth: widthTiles === 2 ? 2 : 1,
+            footprintHeight: heightTiles === 2 ? 2 : 1,
+          },
+        );
       }
     }
 

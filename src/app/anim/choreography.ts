@@ -13,6 +13,7 @@
  */
 
 import type { ContentIndex, GameEvent, Unit, Vec2 } from '../../core/types';
+import { SQUARE_FOOTPRINTS, footprintCells, footprintFoot } from '../../core/rules/footprint';
 import { fxPalette, resolveFx, WATERSKIN_DRAW } from '../../content/fx';
 import type { EmitterDef, FxRecipe } from '../../content/fx';
 import { hashSeed } from '../../render/fx/rng';
@@ -89,6 +90,8 @@ export interface ChoreographyInput {
   readonly bends?: BendSources;
   /** How far the ground lifts a unit's drawing at a tile, in tiles; flat without it. */
   readonly liftOf?: (pos: Vec2) => number;
+  /** Temporary A-4 test hook; defaults to the shipped footprint gate. */
+  readonly squareFootprints?: boolean;
 }
 
 /**
@@ -215,7 +218,7 @@ export function choreograph(input: ChoreographyInput): Choreography {
     const pos = positions.get(id);
     if (!pos) return undefined;
     const size = sizes.get(id) ?? 1;
-    return { x: pos.x + size / 2, y: pos.y + 0.5 };
+    return footprintFoot(pos, size as 1 | 2, input.squareFootprints ?? SQUARE_FOOTPRINTS);
   };
 
   let pending: PendingHit | null = null;
@@ -451,10 +454,8 @@ export function choreograph(input: ChoreographyInput): Choreography {
         const victim = unitsBefore.find((unit) => {
           if (unit.hp <= 0) return false;
           const pos = positions.get(unit.id) ?? unit.pos;
-          return (
-            event.target.y === pos.y &&
-            event.target.x >= pos.x &&
-            event.target.x < pos.x + unit.size
+          return footprintCells(pos, unit.size, input.squareFootprints ?? SQUARE_FOOTPRINTS).some(
+            (cell) => cell.x === event.target.x && cell.y === event.target.y,
           );
         });
         // A bending attack plays the caster's bend instead (ADR 0055, step 7).
@@ -471,6 +472,7 @@ export function choreograph(input: ChoreographyInput): Choreography {
                 victim && { pos: positions.get(victim.id) ?? victim.pos, size: victim.size },
                 input.projection ?? 'orthographic',
                 input.liftOf,
+                input.squareFootprints ?? SQUARE_FOOTPRINTS,
               )
             : undefined;
         if (bend) {

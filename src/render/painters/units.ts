@@ -35,6 +35,9 @@ export interface PainterOptions {
    * grows into it, so a placeholder stands as tall as the generated art will.
    */
   readonly headroom?: number;
+  /** Footprint dimensions for generic loading/failure placeholders. */
+  readonly footprintWidth?: 1 | 2;
+  readonly footprintHeight?: 1 | 2;
 }
 
 export type UnitPainter = (ctx: Ctx, box: Box, palette: Palette, options: PainterOptions) => void;

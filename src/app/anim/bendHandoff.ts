@@ -17,6 +17,7 @@
  */
 
 import type { Ability, Unit, Vec2 } from '../../core/types';
+import { SQUARE_FOOTPRINTS, footprintFoot } from '../../core/rules/footprint';
 import type { BendSetDef } from '../../content/bends';
 import type { Heading } from '../../content/assets/clips';
 import { resolveAsset } from '../../content/assets/manifest';
@@ -59,12 +60,19 @@ export function partyBendSprites(units: readonly Unit[]): string[] {
  * place a sheet frame's anchor on (`Camera.spriteBox` plus `FOOT_LINE`),
  * lifted by `lift` tiles for the ground it stands on.
  */
-export function unitFoot(pos: Vec2, size: number, projection: Projection, lift = 0): Point {
+export function unitFoot(
+  pos: Vec2,
+  size: 1 | 2,
+  projection: Projection,
+  lift = 0,
+  square = SQUARE_FOOTPRINTS,
+): Point {
+  const point = footprintFoot(pos, size, square);
   if (projection === 'oblique') {
-    const ground = projectGround({ x: pos.x + size / 2, y: pos.y + 0.5 }, 'oblique');
+    const ground = projectGround(point, 'oblique');
     return { x: ground.x, y: ground.y - 0.86 + FOOT_LINE - lift };
   }
-  return { x: pos.x + size / 2, y: pos.y + FOOT_LINE - lift };
+  return { x: point.x, y: point.y - 0.5 + FOOT_LINE - lift };
 }
 
 /** What the bend lookups answer; all of it must be in, or the cast is legacy. */
@@ -103,13 +111,14 @@ export function planBendCast(
   struck: { readonly pos: Vec2; readonly size: number } | undefined,
   projection: Projection,
   lift: (pos: Vec2) => number = () => 0,
+  square = SQUARE_FOOTPRINTS,
 ): BendCast | undefined {
   if (!sources || !isBendingAttack(caster, ability)) return undefined;
   const set = sources.setOf(caster.sprite);
   if (!set || set.unitAsset !== caster.sprite) return undefined;
-  const from = { x: casterPos.x + caster.size / 2, y: casterPos.y + 0.5 };
+  const from = footprintFoot(casterPos, caster.size, square);
   const to = struck
-    ? { x: struck.pos.x + struck.size / 2, y: struck.pos.y + 0.5 }
+    ? footprintFoot(struck.pos, struck.size as 1 | 2, square)
     : { x: target.x + 0.5, y: target.y + 0.5 };
   const vector = { x: to.x - from.x, y: to.y - from.y };
   const tiles = Math.max(Math.abs(target.x - casterPos.x), Math.abs(target.y - casterPos.y));
@@ -124,7 +133,7 @@ export function planBendCast(
 
   const scale = partyScale(projection);
   const landing = struck
-    ? unitFoot(struck.pos, struck.size, projection, lift(struck.pos))
+    ? unitFoot(struck.pos, struck.size as 1 | 2, projection, lift(struck.pos), square)
     : unitFoot(target, 1, projection, lift(target));
   const plan = planBend(sources.fx, {
     heading,
@@ -132,7 +141,7 @@ export function planBendCast(
     attack,
     effect,
     cel,
-    foot: unitFoot(casterPos, caster.size, projection, lift(casterPos)),
+    foot: unitFoot(casterPos, caster.size, projection, lift(casterPos), square),
     to: {
       x: landing.x + (effect.impact.offsetPx.x / BEND_FX_PX_PER_TILE) * scale,
       y: landing.y + (effect.impact.offsetPx.y / BEND_FX_PX_PER_TILE) * scale,

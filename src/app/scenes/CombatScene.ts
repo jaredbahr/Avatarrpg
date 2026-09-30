@@ -36,6 +36,7 @@ import {
   type ReachableCell,
 } from '../../core/rules/grid';
 import { canMove, effectiveStats, isAlive, statusDefs } from '../../core/rules/stats';
+import { SQUARE_FOOTPRINTS, footprintCells, footprintFoot } from '../../core/rules/footprint';
 import { activeUnit, upcomingOrder } from '../../core/rules/turnOrder';
 import { encounterText } from '../../core/story/encounterText';
 import { Renderer, TILE } from '../../render/renderer';
@@ -85,6 +86,15 @@ export function overlayMemoHoverKey(
   hover: Vec2 | null,
 ): string {
   return aiming && !pendingIsValidTarget && hover ? posKey(hover) : '';
+}
+
+/** Cells painted by the move-hover ghost; exported for pointer/overlay unit coverage. */
+export function moveHoverFootprint(
+  anchor: Vec2 | null,
+  size: 1 | 2,
+  square = SQUARE_FOOTPRINTS,
+): readonly Vec2[] {
+  return anchor ? footprintCells(anchor, size, square) : [];
 }
 
 interface OverlayBuild {
@@ -353,7 +363,7 @@ export class CombatScene implements Scene {
       camera.fitExplore(this.preferredCombatTilePx ?? 96);
     } else camera.fit();
     const unit = this.active();
-    if (!camera.fitted && unit) camera.centreOn(unit.pos);
+    if (!camera.fitted && unit) camera.centreOn(unit.pos, unit.size);
     this.syncRecentre();
   }
 
@@ -381,7 +391,7 @@ export class CombatScene implements Scene {
     );
     const camera = this.renderer?.camera;
     if (!unit || !camera) return;
-    camera.centreOn({ x: unit.pos.x + (unit.size - 1) / 2, y: unit.pos.y });
+    camera.centreOn(unit.pos, unit.size);
     this.manualCamera = true;
     this.syncRecentre();
   }
@@ -613,7 +623,7 @@ export class CombatScene implements Scene {
 
       // Where the board cannot fit, whoever is acting is what to look at.
       const camera = this.renderer?.camera;
-      if (unit && camera && !camera.fitted) camera.centreOn(unit.pos);
+      if (unit && camera && !camera.fitted) camera.centreOn(unit.pos, unit.size);
     }
 
     if (battle.phase !== 'active' && !this.resultShown) {
@@ -1731,7 +1741,7 @@ export class CombatScene implements Scene {
         );
         if (target) {
           aimArc = {
-            from: { x: unit.pos.x + unit.size / 2, y: unit.pos.y + 0.5 },
+            from: footprintFoot(unit.pos, unit.size),
             to: { x: target.x + 0.5, y: target.y + 0.5 },
             arc: lob,
             color: paletteFor(ability.element).light,
@@ -1812,7 +1822,10 @@ export class CombatScene implements Scene {
       cameraNudge: this.app.animator.cameraNudge(now),
       activeUnitId: unit?.id ?? null,
       selectedUnitId: null,
-      hoverTile: interactive ? this.hover : null,
+      hoverTile:
+        interactive && !(SQUARE_FOOTPRINTS && this.mode.kind === 'move' && unit?.size === 2)
+          ? this.hover
+          : null,
       exit: null,
       hatch: this.app.settings.hatchSurfaces,
       gridLines: showGridLines(this.app.settings),
@@ -1929,6 +1942,8 @@ export class CombatScene implements Scene {
       const reach = this.reachableCells();
       const cells = [...reach.values()].filter((c) => c.cost > 0);
       overlays.push({ kind: 'move', tiles: cells.map((c) => c.pos) });
+      const ghost = moveHoverFootprint(this.hover, unit.size);
+      if (SQUARE_FOOTPRINTS && ghost.length > 1) overlays.push({ kind: 'hover', tiles: ghost });
       const moveContext = this.moveContext(unit);
       const occupied = new Set(
         battle.units.flatMap((candidate) =>
