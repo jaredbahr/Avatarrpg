@@ -509,6 +509,11 @@ export function previewAbility(
 /* Resolution                                                          */
 /* ------------------------------------------------------------------ */
 
+/** Area-centred shoves measure from the selected tile, not the caster. */
+export function isAreaShove(ability: Ability): boolean {
+  return ability.targeting.shape === 'blast' || ability.targeting.shape === 'tile';
+}
+
 /**
  * Where a push or pull measures from. Area shapes shove outward from (or drag
  * toward) the centre of the blast; everything else shoves away from the cell
@@ -524,7 +529,7 @@ export function shoveOrigin(
   ability: Ability,
   target: Vec2,
 ): Vec2 {
-  return ability.targeting.shape === 'blast' || ability.targeting.shape === 'tile'
+  return isAreaShove(ability)
     ? target
     : (validatingOrigin(content, grid, caster, ability, target) ?? caster.pos);
 }

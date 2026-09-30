@@ -1,4 +1,5 @@
 import { describe, expect, it } from 'vitest';
+import { formatShoveMovement } from '../../app/ui/combatPreviewText';
 import { CONTENT } from '../../content';
 import { RngCursor } from '../rng';
 import { DEFAULT_TILE, tileAt, withSurface, withTile } from './grid';
@@ -310,6 +311,12 @@ describe('bounded combat outcome previews', () => {
       0.9,
     );
     expect(preview.shoves.filter((shove) => shove.id === victim.id).length).toBe(2);
+    expect(
+      preview.shoves
+        .filter((shove) => shove.id === victim.id)
+        .map((shove) => shove.originKind)
+        .sort(),
+    ).toEqual(['area', 'propBreak']);
     expect(preview.shoves.some((shove) => shove.to.x === 8)).toBe(true);
     expect(preview.shoves.some((shove) => shove.to.x === 10)).toBe(true);
     expect(
@@ -320,6 +327,170 @@ describe('bounded combat outcome previews', () => {
 
     const actual = resolve(battle, caster, 'shatterpoint', target);
     expect(actual.unit(victim.id)?.pos).toEqual({ x: 10, y: 6 });
+  });
+
+  it('classifies shove origins and deliberate zero-movement stops', () => {
+    const source = battleFor('enc_forest_road');
+    const victimId = source.units.find((unit) => unit.faction === 'enemy')?.id;
+    if (!victimId) throw new Error('origin fixture has no enemy');
+    const battle = placed(openGround(source), { p0: { x: 5, y: 5 }, [victimId]: { x: 6, y: 5 } }, [
+      'p0',
+      victimId,
+    ]);
+    const caster = battle.units.find((unit) => unit.id === 'p0');
+    const victim = battle.units.find((unit) => unit.id === victimId);
+    if (!caster || !victim) throw new Error('origin fixture is incomplete');
+
+    const melee = previewAbility(CONTENT, battle, caster, ability('shove'), victim.pos).shoves[0];
+    expect(melee).toMatchObject({ originKind: 'caster', stopReason: null });
+
+    const pull = previewAbility(CONTENT, battle, caster, ability('water_pull'), victim.pos)
+      .shoves[0];
+    expect(pull).toMatchObject({
+      originKind: 'caster',
+      movedDistance: 0,
+      stopReason: 'adjacent',
+    });
+
+    const centre = previewAbility(CONTENT, battle, caster, ability('shockwave'), victim.pos)
+      .shoves[0];
+    expect(centre).toMatchObject({
+      originKind: 'area',
+      movedDistance: 0,
+      stopReason: 'centre',
+    });
+
+    const coneBattle = placed(battle, { p0: { x: 5, y: 5 }, [victimId]: { x: 7, y: 5 } }, [
+      'p0',
+      victimId,
+    ]);
+    const coneCaster = coneBattle.units.find((unit) => unit.id === 'p0');
+    const coneVictim = coneBattle.units.find((unit) => unit.id === victimId);
+    if (!coneCaster || !coneVictim) throw new Error('cone fixture is incomplete');
+    expect(
+      previewAbility(CONTENT, coneBattle, coneCaster, ability('gust'), coneVictim.pos).shoves[0],
+    ).toMatchObject({ originKind: 'caster' });
+
+    const tileShove: Ability = {
+      ...ability('shockwave'),
+      id: 'preview_tile_shove',
+      targeting: { shape: 'tile' },
+    };
+    expect(previewAbility(CONTENT, battle, caster, tileShove, victim.pos).shoves[0]).toMatchObject({
+      originKind: 'area',
+      stopReason: 'centre',
+    });
+
+    const selfPull: Ability = {
+      ...ability('water_pull'),
+      id: 'preview_self_pull',
+      targeting: { shape: 'self' },
+    };
+    expect(previewAbility(CONTENT, battle, caster, selfPull, caster.pos).shoves[0]).toMatchObject({
+      id: caster.id,
+      from: caster.pos,
+      originKind: 'caster',
+      stopReason: 'centre',
+    });
+  });
+
+  it('a real Water Pull that ends beside the caster moved, not "already there"', () => {
+    const source = openGround(battleFor('enc_forest_road'));
+    const victimId = source.units.find((unit) => unit.faction === 'enemy')?.id;
+    if (!victimId) throw new Error('water pull fixture has no enemy');
+    const battle = placed(source, { p0: { x: 3, y: 5 }, [victimId]: { x: 6, y: 5 } }, [
+      'p0',
+      victimId,
+    ]);
+    const caster = battle.units.find((unit) => unit.id === 'p0');
+    if (!caster) throw new Error('water pull caster is missing');
+    const shove = previewAbility(CONTENT, battle, caster, ability('water_pull'), { x: 6, y: 5 })
+      .shoves[0];
+    expect(shove).toMatchObject({ to: { x: 4, y: 5 }, movedDistance: 2, stopReason: 'adjacent' });
+    if (!shove) throw new Error('no shove forecast');
+    expect(
+      formatShoveMovement(
+        shove.name,
+        shove.mode,
+        shove.movedDistance,
+        shove.distance,
+        shove.stopReason,
+        [],
+        shove.originKind,
+      ),
+    ).toBe(`${shove.name}: pulled 2 tiles closer`);
+  });
+
+  it('uses slide stop reasons for diagonal blockers and caster-footprint contact', () => {
+    const source = openGround(battleFor('enc_forest_road'));
+    const victimId = source.units.find((unit) => unit.faction === 'enemy')?.id;
+    if (!victimId) throw new Error('stop-reason fixture has no enemy');
+
+    const diagonalBase = placed(source, { p0: { x: 3, y: 5 }, [victimId]: { x: 7, y: 6 } }, [
+      'p0',
+      victimId,
+    ]);
+    const blockingTile = tileAt(diagonalBase.grid, { x: 5, y: 4 });
+    if (!blockingTile) throw new Error('diagonal blocker is off-grid');
+    const diagonalBattle = {
+      ...diagonalBase,
+      grid: withTile(diagonalBase.grid, { x: 5, y: 4 }, { ...blockingTile, blocked: true }),
+    };
+    const diagonalCaster = diagonalBattle.units.find((unit) => unit.id === 'p0');
+    if (!diagonalCaster) throw new Error('diagonal caster is missing');
+    const blastPull: Ability = {
+      ...ability('water_pull'),
+      id: 'preview_diagonal_blast_pull',
+      range: 9,
+      requiresLineOfSight: false,
+      targeting: { shape: 'blast', radius: 2 },
+      effects: [{ kind: 'pull', distance: 2 }],
+    };
+    expect(
+      previewAbility(CONTENT, diagonalBattle, diagonalCaster, blastPull, { x: 5, y: 5 }).shoves[0],
+    ).toMatchObject({
+      to: { x: 6, y: 5 },
+      movedDistance: 1,
+      stopReason: 'obstacle',
+    });
+
+    const wideBase = placed(source, { p0: { x: 7, y: 5 }, [victimId]: { x: 5, y: 5 } }, [
+      'p0',
+      victimId,
+    ]);
+    const wideBattle: BattleState = {
+      ...wideBase,
+      units: wideBase.units.map((unit) =>
+        unit.id === victimId ? { ...unit, size: 2 as const } : unit,
+      ),
+    };
+    const wideCaster = wideBattle.units.find((unit) => unit.id === 'p0');
+    if (!wideCaster) throw new Error('wide-unit caster is missing');
+    expect(
+      previewAbility(CONTENT, wideBattle, wideCaster, ability('water_pull'), { x: 5, y: 5 })
+        .shoves[0],
+    ).toMatchObject({ movedDistance: 0, stopReason: 'adjacent', originKind: 'caster' });
+  });
+
+  it('keeps resolved push and pull destinations unchanged by stop-reason reporting', () => {
+    const source = openGround(battleFor('enc_forest_road'));
+    const victimId = source.units.find((unit) => unit.faction === 'enemy')?.id;
+    if (!victimId) throw new Error('resolution fixture has no enemy');
+    const battle = placed(source, { p0: { x: 5, y: 5 }, [victimId]: { x: 7, y: 5 } }, [
+      'p0',
+      victimId,
+    ]);
+    const caster = battle.units.find((unit) => unit.id === 'p0');
+    if (!caster) throw new Error('resolution caster is missing');
+
+    expect(resolve(battle, caster, 'air_blast', { x: 7, y: 5 }).unit(victimId)?.pos).toEqual({
+      x: 9,
+      y: 5,
+    });
+    expect(resolve(battle, caster, 'water_pull', { x: 7, y: 5 }).unit(victimId)?.pos).toEqual({
+      x: 6,
+      y: 5,
+    });
   });
 
   it('uses real shove pathing for edges, blockers, and a two-cell boss', () => {
@@ -381,6 +552,7 @@ describe('bounded combat outcome previews', () => {
       to: { x: 14, y: 3 },
       movedDistance: 0,
       blocked: true,
+      stopReason: 'obstacle',
     });
 
     const bossSource = battleFor('enc_grumbler', ['nima', 'kaya']);
@@ -494,7 +666,10 @@ describe('bounded combat outcome previews', () => {
     expect(caster.size).toBe(2);
 
     const preview = previewAbility(CONTENT, battle, caster, ability('air_blast'), target);
-    expect(preview.shoves.find((shove) => shove.id === victimId)?.to).toEqual({ x: 0, y: 7 });
+    expect(preview.shoves.find((shove) => shove.id === victimId)).toMatchObject({
+      to: { x: 0, y: 7 },
+      originKind: 'caster',
+    });
     expect(preview.terrain.some((note) => note.startsWith('Pushes '))).toBe(false);
 
     const actual = resolve(battle, caster, 'air_blast', target);

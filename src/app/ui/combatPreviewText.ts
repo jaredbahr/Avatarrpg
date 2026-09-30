@@ -1,6 +1,6 @@
 import type { ShoveForecast } from '../../core/rules/reactions';
 import type { HitBreakdown } from '../../core/rules/damage';
-import type { SurfaceId, Vec2 } from '../../core/types';
+import type { SurfaceId } from '../../core/types';
 
 function signed(value: number): string {
   if (value > 0) return `+${value}`;
@@ -45,20 +45,40 @@ function shoveVerb(mode: ShoveForecast['mode']): 'pushed' | 'pulled' {
   return mode === 'push' ? 'pushed' : 'pulled';
 }
 
-/** Describe displacement relative to its caster, since the board is drawn obliquely. */
+/**
+ * Describe caster-driven movement relatively, but use neutral wording when a
+ * blast, tile, or broken prop supplies the real origin.
+ */
 export function formatShoveMovement(
   name: string,
   mode: ShoveForecast['mode'],
-  _from: Vec2,
-  _to: Vec2,
   movedDistance: number,
+  distance: number,
+  stopReason: ShoveForecast['stopReason'],
   landingSurfaces: readonly SurfaceId[],
+  originKind: ShoveForecast['originKind'],
 ): string {
   const verb = shoveVerb(mode);
-  if (landingSurfaces.includes('water')) return `${name}: ${verb} into the water`;
+  if (movedDistance === 0) {
+    if (stopReason === 'adjacent') {
+      return `${name} is already next to ${originKind === 'caster' ? 'the caster' : 'the centre'}`;
+    }
+    if (stopReason === 'centre') {
+      return originKind === 'caster' ? `${name} stays put` : `${name} stays put — at the centre`;
+    }
+    return `${name} can't be ${verb} — blocked`;
+  }
+  const blocked = stopReason === 'obstacle';
+  if (landingSurfaces.includes('water')) {
+    const progress = blocked ? ` (${movedDistance} of ${distance} tiles; blocked)` : '';
+    return `${name}: ${verb} into the water${progress}`;
+  }
   const tiles = `${movedDistance} ${movedDistance === 1 ? 'tile' : 'tiles'}`;
-  const relative = mode === 'push' ? 'away' : 'closer';
-  return `${name}: ${verb} ${tiles} ${relative}`;
+  const movement =
+    originKind === 'caster'
+      ? `${verb} ${blocked ? `${movedDistance} of ${distance} tiles` : tiles} ${mode === 'push' ? 'away' : 'closer'}`
+      : `${mode === 'push' ? 'knocked' : verb} ${blocked ? `${movedDistance} of ${distance} tiles` : tiles}`;
+  return `${name}: ${movement}${blocked ? ' (blocked)' : ''}`;
 }
 
 /** Omit harmless drops and disclose the one-HP floor whenever it clamps damage. */

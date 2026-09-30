@@ -1389,10 +1389,11 @@ export class CombatScene implements Scene {
       const movementText = formatShoveMovement(
         shove.name,
         shove.mode,
-        shove.from,
-        shove.to,
         shove.movedDistance,
+        shove.distance,
+        shove.stopReason,
         shove.landingSurfaces,
+        shove.originKind,
       );
       const landingEffects = shove.landingSurfaces
         .filter((id) => id !== 'water')
@@ -1408,9 +1409,7 @@ export class CombatScene implements Scene {
       chips.appendChild(
         el('span', {
           class: `chip ${shove.friendly ? 'chip-friendly' : 'chip-terrain'}`,
-          text: shove.blocked
-            ? `${movementText} (${shove.movedDistance}/${shove.distance}; blocked)${landing}`
-            : `${movementText}${landing}`,
+          text: `${movementText}${landing}`,
         }),
       );
       const dropText = formatLedgeDrop(

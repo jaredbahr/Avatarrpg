@@ -396,24 +396,36 @@ export class BattleDraft {
     origin: Vec2,
     tiles: number,
     mode: 'push' | 'pull',
-  ): { readonly pos: Vec2; readonly ledgeDropTiers: number } {
+  ): {
+    readonly pos: Vec2;
+    readonly ledgeDropTiers: number;
+    readonly stopReason: 'none' | 'centre' | 'origin' | 'obstacle';
+  } {
     const sign = mode === 'push' ? 1 : -1;
     const dx = Math.sign(from.x - origin.x) * sign;
     const dy = Math.sign(from.y - origin.y) * sign;
-    if (dx === 0 && dy === 0) return { pos: from, ledgeDropTiers: 0 };
+    if (dx === 0 && dy === 0) {
+      return { pos: from, ledgeDropTiers: 0, stopReason: 'centre' };
+    }
 
     let current = from;
     let ledgeDropTiers = 0;
     for (let step = 0; step < tiles; step++) {
       const next = { x: current.x + dx, y: current.y + dy };
-      if (!inBounds(this.grid, next)) break;
+      if (!inBounds(this.grid, next)) {
+        return { pos: current, ledgeDropTiers, stopReason: 'obstacle' };
+      }
       // Pulling past the origin would look absurd; stop when adjacent.
-      if (mode === 'pull' && distance(next, origin) === 0) break;
-      if (!this.canShoveStep(ctx, current, next)) break;
+      if (mode === 'pull' && distance(next, origin) === 0) {
+        return { pos: current, ledgeDropTiers, stopReason: 'origin' };
+      }
+      if (!this.canShoveStep(ctx, current, next)) {
+        return { pos: current, ledgeDropTiers, stopReason: 'obstacle' };
+      }
       ledgeDropTiers += this.ledgeDrop(ctx.size, current, next);
       current = next;
     }
-    return { pos: current, ledgeDropTiers };
+    return { pos: current, ledgeDropTiers, stopReason: 'none' };
   }
 
   /** Forced movement follows a one-tier ramp, but cannot push up a bare ledge. */
@@ -627,7 +639,18 @@ export class BattleDraft {
   }
 
   /** Shoves a prop, if it is the sort of prop that shoves. */
-  shoveProp(propId: string, origin: Vec2, tiles: number, mode: 'push' | 'pull'): void {
+  shoveProp(
+    propId: string,
+    origin: Vec2,
+    tiles: number,
+    mode: 'push' | 'pull',
+  ):
+    | {
+        readonly pos: Vec2;
+        readonly ledgeDropTiers: number;
+        readonly stopReason: 'none' | 'centre' | 'origin' | 'obstacle';
+      }
+    | undefined {
     const prop = this.props.find((p) => p.id === propId);
     if (!prop || tiles <= 0) return;
     const def = this.propDef(prop);
@@ -644,17 +667,18 @@ export class BattleDraft {
       size: 1,
       climbCost: this.content.tuning.climbCost,
     };
-    const landing = this.slideFrom(ctx, prop.pos, origin, tiles, mode).pos;
+    const slide = this.slideFrom(ctx, prop.pos, origin, tiles, mode);
+    const landing = slide.pos;
 
     if (samePos(landing, prop.pos)) {
       this.bakeProp(prop, def);
-      return;
+      return slide;
     }
 
     const arriving = tileAt(this.grid, landing);
     if (!arriving) {
       this.bakeProp(prop, def);
-      return;
+      return slide;
     }
 
     const moved: PropInstance = { ...prop, pos: landing, previous: arriving };
@@ -665,6 +689,7 @@ export class BattleDraft {
     // A barrel rolled into a fire is the point of barrels.
     const contact = contactEffects(this.content, this.grid, landing);
     if (contact.damage > 0) this.damageProp(propId, contact.damage, contact.damageType);
+    return slide;
   }
 
   /**

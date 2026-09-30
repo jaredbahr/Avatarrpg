@@ -3,14 +3,75 @@ import { formatHitBreakdownRows, formatLedgeDrop, formatShoveMovement } from './
 
 describe('combat preview text', () => {
   it('describes shove movement without raw grid coordinates', () => {
-    expect(formatShoveMovement('Mercenary', 'push', { x: 1, y: 2 }, { x: 2, y: 1 }, 1, [])).toBe(
+    expect(formatShoveMovement('Mercenary', 'push', 1, 1, null, [], 'caster')).toBe(
       'Mercenary: pushed 1 tile away',
     );
-    expect(
-      formatShoveMovement('Mercenary', 'pull', { x: 3, y: 1 }, { x: 1, y: 1 }, 2, ['water']),
-    ).toBe('Mercenary: pulled into the water');
-    expect(formatShoveMovement('Mercenary', 'pull', { x: 3, y: 1 }, { x: 2, y: 1 }, 1, [])).toBe(
+    expect(formatShoveMovement('Mercenary', 'pull', 2, 2, null, ['water'], 'caster')).toBe(
+      'Mercenary: pulled into the water',
+    );
+    expect(formatShoveMovement('Mercenary', 'pull', 1, 1, null, [], 'caster')).toBe(
       'Mercenary: pulled 1 tile closer',
+    );
+  });
+
+  it('states fully blocked pushes and pulls without a zero-tile fraction', () => {
+    expect(formatShoveMovement('Mercenary', 'push', 0, 1, 'obstacle', [], 'caster')).toBe(
+      "Mercenary can't be pushed — blocked",
+    );
+    expect(formatShoveMovement('Mercenary', 'pull', 0, 2, 'obstacle', [], 'caster')).toBe(
+      "Mercenary can't be pulled — blocked",
+    );
+  });
+
+  it('states the completed distance when movement is partly blocked', () => {
+    expect(formatShoveMovement('Mercenary', 'push', 1, 2, 'obstacle', [], 'caster')).toBe(
+      'Mercenary: pushed 1 of 2 tiles away (blocked)',
+    );
+    expect(formatShoveMovement('Mercenary', 'pull', 1, 2, 'obstacle', [], 'area')).toBe(
+      'Mercenary: pulled 1 of 2 tiles (blocked)',
+    );
+  });
+
+  it('uses neutral movement with correct plurals for area movement', () => {
+    expect(formatShoveMovement('Mercenary', 'push', 2, 2, null, [], 'area')).toBe(
+      'Mercenary: knocked 2 tiles',
+    );
+    expect(formatShoveMovement('Mercenary', 'pull', 2, 2, null, [], 'area')).toBe(
+      'Mercenary: pulled 2 tiles',
+    );
+  });
+
+  it('uses neutral movement for a prop-break push', () => {
+    expect(formatShoveMovement('Mercenary', 'push', 1, 2, 'obstacle', [], 'propBreak')).toBe(
+      'Mercenary: knocked 1 of 2 tiles (blocked)',
+    );
+  });
+
+  it('distinguishes centre and adjacent stops from obstacles', () => {
+    expect(formatShoveMovement('Mercenary', 'push', 0, 1, 'centre', [], 'area')).toBe(
+      'Mercenary stays put — at the centre',
+    );
+    expect(formatShoveMovement('Mercenary', 'pull', 0, 3, 'adjacent', [], 'caster')).toBe(
+      'Mercenary is already next to the caster',
+    );
+    expect(formatShoveMovement('Mercenary', 'pull', 0, 2, 'adjacent', [], 'area')).toBe(
+      'Mercenary is already next to the centre',
+    );
+    expect(formatShoveMovement('Kaya', 'pull', 0, 2, 'centre', [], 'caster')).toBe(
+      'Kaya stays put',
+    );
+    // A pull that ends beside the caster moved; it says how far, not "already".
+    expect(formatShoveMovement('Grumbler', 'pull', 1, 3, 'adjacent', [], 'caster')).toBe(
+      'Grumbler: pulled 1 tile closer',
+    );
+    expect(formatShoveMovement('Grumbler', 'pull', 2, 3, 'adjacent', [], 'caster')).toBe(
+      'Grumbler: pulled 2 tiles closer',
+    );
+  });
+
+  it('states partial water movement and its obstacle', () => {
+    expect(formatShoveMovement('Mercenary', 'push', 1, 2, 'obstacle', ['water'], 'caster')).toBe(
+      'Mercenary: pushed into the water (1 of 2 tiles; blocked)',
     );
   });
 
