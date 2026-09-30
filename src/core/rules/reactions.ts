@@ -31,7 +31,8 @@ import type {
 import { RngCursor } from '../rng';
 import { BattleDraft } from '../state/battleDraft';
 import type { SurfaceContactRecord } from '../state/battleDraft';
-import { allowsCasterTarget, blastTiles, distance, occupiedCells, posKey, tileAt } from './grid';
+import { isAreaShove } from './abilities';
+import { allowsCasterTarget, blastTiles, occupiedCells, posKey, tileAt } from './grid';
 import { applyStatus, removeStatuses } from './status';
 import { contactEffects } from './surfaces';
 import type { ChainHit, StatusHit, SurfaceChange } from './surfaces';
@@ -257,13 +258,9 @@ export function forecastReactions(
     return to === 'allies' ? friendlyIds : hitIds;
   };
 
-  const shoveFrom =
-    origin ??
-    (ability.targeting.shape === 'blast' || ability.targeting.shape === 'tile'
-      ? target
-      : caster.pos);
-  const originKind =
-    ability.targeting.shape === 'blast' || ability.targeting.shape === 'tile' ? 'area' : 'caster';
+  const areaShove = isAreaShove(ability);
+  const shoveFrom = origin ?? (areaShove ? target : caster.pos);
+  const originKind = areaShove ? 'area' : 'caster';
 
   for (const effect of ability.effects) {
     switch (effect.kind) {
@@ -587,6 +584,7 @@ function shoveUnitForecast(
     };
   }
   const eventStart = draft.events.length;
+  const slide = draft.slideFrom(draft.moveContext(before), before.pos, origin, distance, mode);
   const ledgeDropTiers = draft.shove(unitId, origin, distance, mode);
   const after = draft.unit(unitId) ?? before;
   const movedDistance = Math.max(
@@ -612,7 +610,15 @@ function shoveUnitForecast(
     movedDistance,
     mode,
     originKind,
-    stopReason: shoveStopReason(before.pos, after.pos, origin, distance, movedDistance, mode),
+    stopReason: displayStopReason(
+      slide.stopReason,
+      before.pos,
+      slide.pos,
+      origin,
+      mode,
+      before.size,
+      caster,
+    ),
     blocked: movedDistance < distance,
     ...landingInfo(content, draft, after),
     ledgeDropTiers,
@@ -673,7 +679,7 @@ function shovePropForecast(
       ...landingInfo(content, draft, undefined),
     };
   }
-  draft.shoveProp(propId, origin, distance, mode);
+  const slide = draft.shoveProp(propId, origin, distance, mode);
   const after = draft.props.find((prop) => prop.id === propId);
   const pushed = [...draft.events]
     .reverse()
@@ -704,24 +710,46 @@ function shovePropForecast(
     movedDistance,
     mode,
     originKind,
-    stopReason: shoveStopReason(before.pos, to, origin, distance, movedDistance, mode),
+    stopReason: displayStopReason(
+      slide?.stopReason ?? 'obstacle',
+      before.pos,
+      slide?.pos ?? to,
+      origin,
+      mode,
+      1,
+      undefined,
+    ),
     blocked: movedDistance < distance,
     ...landingInfo(content, draft, unitLike),
   };
 }
 
-/** Mirrors `BattleDraft.slideFrom`'s two non-obstacle early-outs. */
-function shoveStopReason(
+/** Maps the movement rule's mechanical stop to the preview's player-facing reason. */
+function displayStopReason(
+  reason: 'none' | 'centre' | 'origin' | 'obstacle',
   from: Vec2,
   to: Vec2,
   origin: Vec2,
-  requestedDistance: number,
-  movedDistance: number,
   mode: 'push' | 'pull',
+  size: Unit['size'],
+  caster: Unit | undefined,
 ): ShoveForecast['stopReason'] {
-  if (movedDistance >= requestedDistance) return null;
-  if (samePosition(from, origin)) return 'centre';
-  if (mode === 'pull' && distance(to, origin) === 1) return 'adjacent';
+  if (reason === 'none') return null;
+  if (reason === 'centre') return 'centre';
+  if (reason === 'origin') return 'adjacent';
+  // The slide keeps the direction it started with (BattleDraft.slideFrom), so
+  // the blocked step is taken from the starting cell, not the stopping one.
+  const sign = mode === 'push' ? 1 : -1;
+  const next = {
+    x: to.x + Math.sign(from.x - origin.x) * sign,
+    y: to.y + Math.sign(from.y - origin.y) * sign,
+  };
+  const width = size === 2 ? 2 : 1;
+  const casterCells = new Set(caster ? occupiedCells(caster).map(posKey) : []);
+  for (let offset = 0; offset < width; offset++) {
+    const cell = { x: next.x + offset, y: next.y };
+    if (samePosition(cell, origin) || casterCells.has(posKey(cell))) return 'adjacent';
+  }
   return 'obstacle';
 }
 

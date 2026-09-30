@@ -27,6 +27,9 @@ describe('combat preview text', () => {
     expect(formatShoveMovement('Mercenary', 'push', 1, 2, 'obstacle', [], 'caster')).toBe(
       'Mercenary: pushed 1 of 2 tiles away (blocked)',
     );
+    expect(formatShoveMovement('Mercenary', 'pull', 1, 2, 'obstacle', [], 'area')).toBe(
+      'Mercenary: pulled 1 of 2 tiles (blocked)',
+    );
   });
 
   it('uses neutral movement with correct plurals for area movement', () => {
@@ -53,6 +56,12 @@ describe('combat preview text', () => {
     );
     expect(formatShoveMovement('Mercenary', 'pull', 0, 2, 'adjacent', [], 'area')).toBe(
       'Mercenary is already next to the centre',
+    );
+    expect(formatShoveMovement('Kaya', 'pull', 0, 2, 'centre', [], 'caster')).toBe(
+      'Kaya stays put',
+    );
+    expect(formatShoveMovement('Grumbler', 'pull', 1, 3, 'adjacent', [], 'caster')).toBe(
+      'Grumbler is already next to the caster',
     );
   });
 
