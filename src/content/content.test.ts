@@ -78,6 +78,7 @@ describe('content', () => {
       !propSchema.safeParse({ ...sample, ...patch }).success;
 
     expect(rejects({ fuel: -1 })).toBe(true);
+    expect(rejects({ fuel: 0.5 })).toBe(true);
     expect(rejects({ fuel: 11 })).toBe(true);
     expect(rejects({ ignites: { radius: 4, spread: 0 } })).toBe(true);
     expect(rejects({ ignites: { radius: 0, spread: -1 } })).toBe(true);

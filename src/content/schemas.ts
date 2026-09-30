@@ -430,7 +430,7 @@ export const propSchema = z.object({
    * today's inert prop; nothing in the rules reads them yet (B-2).
    */
   // Above 0 the prop can catch fire. 0 is explicit "fireproof".
-  fuel: z.number().min(0).max(10).optional(),
+  fuel: z.number().int().min(0).max(10).optional(),
   // What a burnt-out prop leaves behind. Absent means `onBreak`; an empty
   // array is a deliberate "burns away to nothing".
   burnsInto: z.array(propEffect).optional(),
