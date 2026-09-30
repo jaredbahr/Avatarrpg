@@ -65,7 +65,7 @@ export const QUARRY_BANDIT_BEATS: readonly Beat[] = CAST.map((spec) => ({
     await settleLayout(ctx.page, ctx.settleTimeout);
     await ctx.page.evaluate(async (name) => {
       await Promise.all(
-        [`art/units/${name}.png`, `art/portraits/enemy.${name}.png`].map(async (url) => {
+        [`art/units/${name}-g.webp`, `art/portraits/enemy.${name}.png`].map(async (url) => {
           const image = new Image();
           image.src = url;
           await image.decode();
