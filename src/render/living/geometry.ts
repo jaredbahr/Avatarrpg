@@ -9,13 +9,11 @@ export const FIGURE_SCALE = 1.45;
 /**
  * Walk clip time on the riverside, from the animator's. A four-way sheet
  * plays a fixed 500 ms a tile, a cadence rather than a stride, and keeps it.
- * An eight-way sheet's `walkMsPerTile` is its measured stride at one tile to
- * 128 atlas px (ADR 0050); drawn here at `FIGURE_SCALE`, the same stride
- * covers that much more ground, so the clip runs that much less a tile or
- * the feet slide backwards (ADR 0054).
+ * Eight-way sheets now declare cadence per logical tile, independent of draw
+ * scale, so the riverside uses the animator's phase unchanged too.
  */
-export function riversideWalkTime(clipTime: number, eightWay: boolean): number {
-  return eightWay ? clipTime / FIGURE_SCALE : clipTime;
+export function riversideWalkTime(clipTime: number, _eightWay: boolean): number {
+  return clipTime;
 }
 
 /** Tight world-space bounds around a standing villager, above its feet. */

@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import type { ContentIndex, GameEvent, Unit, Vec2 } from '../../core/types';
 import { Animator } from '../animator';
+import { TIMING } from './choreography';
 
 /**
  * Gait and stopping (M1), reproduced from the paired telemetry in
@@ -98,29 +99,29 @@ describe('combat move gait', () => {
     const a = play([moved('p0', [2, 3], [3, 3])], [hero('p0', 1, 3)]);
     const rest = { x: 3, y: 3 };
     const end = a.finishesAt;
-    // Two tiles of stroll at 280 ms, plus the bounded 120 ms ramp.
-    expect(end - START).toBe(680);
+    // Two tiles of stroll at 680 ms, plus the bounded 120 ms ramp.
+    expect(end - START).toBe(1480);
 
     // Fixed-time samples: accelerating off the tile, cruising, braking in.
     for (const [at, x] of [
       [0, 1],
-      [120, 1.2142857],
-      [340, 2],
-      [560, 2.7857143],
-      [680, 3],
+      [120, 1.0882353],
+      [740, 2],
+      [1360, 2.9117647],
+      [1480, 3],
     ] as const)
       expect(drawn(a, START + at, 'p0', rest).pos.x, `${at} ms`).toBeCloseTo(x, 6);
 
     // The live review measured 0.902 tile inside the first 40 ms of the old
-    // 110 ms-per-cell hop; the ramped stroll covers 0.024 tile.
-    expect(drawn(a, START + 40, 'p0', rest).pos.x - 1).toBeCloseTo(0.0238, 4);
+    // 110 ms-per-cell hop; the ramped stroll covers 0.010 tile.
+    expect(drawn(a, START + 40, 'p0', rest).pos.x - 1).toBeCloseTo(0.0098, 4);
 
     // No sample at 60 fps moves further than the cruising pace of one tile
-    // per 280 ms, including the frame after the route ends.
+    // per 680 ms, including the frame after the route ends.
     const { max, steps } = maxStep(a, end, rest);
-    expect(steps).toBeGreaterThan(40);
-    expect(max).toBeLessThanOrEqual(16 / 280 + 1e-9);
-    expect(max).toBeCloseTo(16 / 280, 9);
+    expect(steps).toBeGreaterThan(90);
+    expect(max).toBeLessThanOrEqual(16 / TIMING.combatWalkStep + 1e-9);
+    expect(max).toBeCloseTo(16 / TIMING.combatWalkStep, 9);
     expect(drawn(a, end, 'p0', rest).pos).toEqual(rest);
     expect(a.renderPos(end + 16, 'p0')).toBeUndefined();
   });
@@ -165,8 +166,8 @@ describe('combat move gait', () => {
     expect(clips.has('walk')).toBe(true);
 
     const { max } = maxStep(a, end, rest);
-    expect(max).toBeLessThanOrEqual(16 / 280 + 1e-9);
-    expect(max).toBeCloseTo(16 / 280, 9);
+    expect(max).toBeLessThanOrEqual(16 / TIMING.combatWalkStep + 1e-9);
+    expect(max).toBeCloseTo(16 / TIMING.combatWalkStep, 9);
     expect(drawn(a, end - 1, 'p0', rest)).toMatchObject({ clip: 'walk', facing: 1 });
     // The stop holds the settled east-facing pose, then the ready stance.
     expect(drawn(a, end + 1, 'p0', rest)).toMatchObject({ clip: 'rest', facing: 1 });

@@ -1,8 +1,8 @@
 import { describe, expect, it } from 'vitest';
-import { ASSETS } from '../../content/assets/manifest';
+import { ASSETS, G_STRIDE_TILES } from '../../content/assets/manifest';
+import { HEADINGS, headingClip } from '../../content/assets/clips';
 import type { ContentIndex, Vec2 } from '../../core/types';
 import { smoothPath } from '../../render/geometry/curve';
-import { projectGround } from '../../render/projection';
 import type { Projection } from '../../render/projection';
 import { Animator } from '../animator';
 import { screenDirection, walkHeading } from './direction';
@@ -22,8 +22,7 @@ function gait() {
 
 /** Kaya's clip ms per logical tile along `tangent`, as the sheet declares it. */
 function kayaRate(tangent: Vec2, projection: Projection): number {
-  const screen = projectGround(tangent, projection);
-  return gait()[walkHeading(screenDirection(tangent, projection))] * Math.hypot(screen.x, screen.y);
+  return gait()[walkHeading(screenDirection(tangent, projection))];
 }
 
 function walker(projection: Projection, from: Vec2, path: readonly Vec2[]): Animator {
@@ -65,6 +64,23 @@ const E: [number, number] = [1, 0];
 const N: [number, number] = [0, -1];
 
 describe('eight-way walk phase across a turn', () => {
+  it('plays every G walk at one full stride per 1.25-1.5 tiles in every heading', () => {
+    for (const [key, entry] of Object.entries(ASSETS)) {
+      if (entry?.kind !== 'sheet' || entry.facing !== 'both' || !entry.locomotion) continue;
+      for (const heading of HEADINGS) {
+        const walk = entry.clips[headingClip('walk', heading)];
+        if (!walk) throw new Error(`${key} walk ${heading}`);
+        const celsPerTile = entry.locomotion.walkMsPerTile[heading] * (walk.fps / 1000);
+        expect(celsPerTile, `${key} ${heading}`).toBeGreaterThanOrEqual(walk.frames.length / 1.5);
+        expect(celsPerTile, `${key} ${heading}`).toBeLessThanOrEqual(walk.frames.length / 1.25);
+        expect(walk.frames.length / celsPerTile, `${key} ${heading}`).toBeCloseTo(
+          G_STRIDE_TILES,
+          8,
+        );
+      }
+    }
+  });
+
   for (const projection of ['orthographic', 'oblique'] as const) {
     for (const [label, path] of [
       ['east then north', tiles(FROM, E, E, E, N, N, N)],

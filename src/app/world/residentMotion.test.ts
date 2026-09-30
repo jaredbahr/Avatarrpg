@@ -241,7 +241,7 @@ describe('ResidentWalks', () => {
       const mira = figure(w, 'lw.npc.mira');
       if (mira) trace.push(mira.drawPos);
     }
-    // No step longer than a stride at 280 ms a tile allows in 50 ms.
+    // No step longer than a stride at 760 ms a tile allows in 50 ms.
     for (let i = 1; i < trace.length; i++) {
       const a = trace[i - 1] as Vec2;
       const b = trace[i] as Vec2;

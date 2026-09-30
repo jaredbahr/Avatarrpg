@@ -75,8 +75,7 @@ export type Heading = (typeof HEADINGS)[number];
  * A sheet's declared locomotion capability (ADR 0050). Absent means the legacy
  * four-way contract: a mirrored side walk plus front and back poses. An
  * eight-way sheet carries an idle, walk and rest clip for every heading and
- * the clip time its walk plays per tile of travel in each, so the feet stay
- * planted whatever the authored stride.
+ * the clip time its walk plays per logical tile of travel in each.
  */
 export interface LocomotionDef {
   readonly headings: 8;

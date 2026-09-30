@@ -517,7 +517,8 @@ describe('choreograph', () => {
           move.ease(elapsed / move.duration) * move.curve.length;
         expect(distanceAt(0)).toBe(0);
         expect(distanceAt(move.duration)).toBeCloseTo(move.curve.length, 9);
-        if (rate === 1) expect(distanceAt(300) - distanceAt(200)).toBeCloseTo(100 / 280, 9);
+        if (rate === 1)
+          expect(distanceAt(300) - distanceAt(200)).toBeCloseTo(100 / TIMING.combatWalkStep, 9);
         else expect(move.duration).toBeCloseTo(count * 110 * rate, 9);
         expect(sounds).toHaveLength(Math.ceil(move.curve.length));
         sounds.forEach((sound, i) => {

@@ -339,16 +339,15 @@ describe('heading vocabulary is a declared sheet capability', () => {
       );
     });
 
-    it(`phases ${sprite}'s oblique eight-way walk by the screen distance a tile covers`, () => {
+    it(`phases ${sprite}'s oblique eight-way walk by logical distance`, () => {
       const sheet = ASSETS[sprite];
       if (sheet?.kind !== 'sheet' || !sheet.locomotion) throw new Error(`${sprite} is eight-way`);
       const { walkMsPerTile } = sheet.locomotion;
-      // Logical +x is screen south-east (1, 0.5); logical (1, 1) is screen south
-      // (0, 1) over a route of length sqrt(2); logical (1, -1) is screen east (2, 0).
+      // Projection chooses the heading, but does not multiply the cadence.
       for (const [to, expected] of [
-        [{ x: 8, y: 4 }, walkMsPerTile.southEast * Math.hypot(1, 0.5)],
-        [{ x: 8, y: 8 }, walkMsPerTile.south * Math.SQRT1_2],
-        [{ x: 8, y: 0 }, walkMsPerTile.east * Math.SQRT2],
+        [{ x: 8, y: 4 }, walkMsPerTile.southEast],
+        [{ x: 8, y: 8 }, walkMsPerTile.south],
+        [{ x: 8, y: 0 }, walkMsPerTile.east],
       ] as const) {
         const a = new Animator(content, { motionReduced: () => false });
         a.setProjection('oblique');
@@ -397,7 +396,7 @@ describe('the fighting stance (ADR 0052)', () => {
         expect(a.locomotion(a.finishesAt / 2, 'p', 'stance', sprite).clip).toBe(`walk${heading}`);
         const done = a.finishesAt + 1;
         a.prune(done);
-        expect(a.locomotion(done, 'p', 'stance', sprite).clip).toBe(`rest${heading}`);
+        expect(a.locomotion(done, 'p', 'stance', sprite).clip).toBe(`idle${heading}`);
         const guard = a.locomotion(done + 300, 'p', 'stance', sprite);
         // Authored for each side, so drawn unflipped whichever way she faces.
         expect(guard.clip).toBe(`stance${heading}`);
@@ -450,8 +449,11 @@ describe('eight-way oblique headings for a declaring sheet', () => {
       expect(a.locomotion(a.finishesAt / 2, 'p', 'idle', kaya).clip).toBe(`walk${clip}`);
       const done = a.finishesAt + 1;
       a.prune(done);
-      expect(a.locomotion(done, 'p', 'idle', kaya).clip).toBe(`rest${clip}`);
+      expect(a.locomotion(done, 'p', 'idle', kaya).clip).toBe(`idle${clip}`);
       expect(a.locomotion(done + 300, 'p', 'idle', kaya).clip).toBe(`idle${clip}`);
+      // Explore requests the legacy rest family; a G sheet substitutes its
+      // planted directional idle instead of holding the mid-stride rest cel.
+      expect(a.locomotion(done + 300, 'p', 'rest', kaya).clip).toBe(`idle${clip}`);
     });
   }
 });
