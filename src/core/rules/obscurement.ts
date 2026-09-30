@@ -22,6 +22,7 @@ import type {
   Vec2,
   WeatherIntensity,
 } from '../types';
+import { SQUARE_FOOTPRINTS } from './footprint';
 import { distanceToUnit, lineBetween, occupiedCells, tileAt } from './grid';
 
 /** The four components of an obscurement penalty, all zero or negative. */
@@ -80,7 +81,7 @@ function obscuresAt(content: ContentIndex, grid: Grid, pos: Vec2): SurfaceObscur
 interface CloudCover {
   /** At least one occupied cell is obscured. */
   readonly any: boolean;
-  /** Every occupied cell is obscured. */
+  /** Every cell of the footprint is obscured. */
   readonly all: boolean;
   /** The least penalty among obscured cells (ties broken in the attacker's favour). */
   readonly inside: number;
@@ -88,17 +89,23 @@ interface CloudCover {
 }
 
 /**
- * How a unit sits in a cloud. A size-2 unit only counts as *inside* when both
- * its cells are obscured, and it takes the gentler of the two values — the
- * size advantage always helps the attacker.
+ * How a unit sits in a cloud. A unit only counts as *inside* when every cell of
+ * its footprint is obscured — a 2x2 must have all four cells in the cloud — and
+ * it takes the gentlest of them, so the size advantage always helps the
+ * attacker.
  */
-function cloudCover(content: ContentIndex, grid: Grid, unit: Unit): CloudCover {
+function cloudCover(
+  content: ContentIndex,
+  grid: Grid,
+  unit: Unit,
+  squareFootprints: boolean,
+): CloudCover {
   let any = false;
   let all = true;
   let inside = 0;
   let through = 0;
   let seen = false;
-  for (const cell of occupiedCells(unit)) {
+  for (const cell of occupiedCells(unit, squareFootprints)) {
     const value = obscuresAt(content, grid, cell);
     if (!value) {
       all = false;
@@ -156,13 +163,15 @@ export function obscurementFor(
   attacker: Unit,
   defender: Unit,
   weather: WeatherIntensity,
+  squareFootprints: boolean = SQUARE_FOOTPRINTS,
 ): ObscurementBreakdown {
   const tuning = content.tuning;
-  const distance = distanceToUnit(attacker.pos, defender);
+  const distance = distanceToUnit(attacker.pos, defender, squareFootprints);
 
   if (distance <= 1) {
     const inCloud =
-      cloudCover(content, grid, attacker).any || cloudCover(content, grid, defender).any;
+      cloudCover(content, grid, attacker, squareFootprints).any ||
+      cloudCover(content, grid, defender, squareFootprints).any;
     const penalty = inCloud ? -tuning.adjacentObscurementPenalty : 0;
     return {
       inside: 0,
@@ -173,16 +182,16 @@ export function obscurementFor(
     };
   }
 
-  const target = cloudCover(content, grid, defender);
-  const shooter = cloudCover(content, grid, attacker);
+  const target = cloudCover(content, grid, defender, squareFootprints);
+  const shooter = cloudCover(content, grid, attacker, squareFootprints);
   const inside = target.all ? target.inside : 0;
   const attackerPenalty = shooter.all ? shooter.through : 0;
 
-  // For a size-2 defender take the best line, the same way sight does: the
-  // least-obscured path to any of its cells. Start below zero so a single
-  // clouded line is not silently dropped by the comparison.
+  // For a large defender take the best line, the same way sight does: the
+  // least-obscured path to any of its footprint cells. Start below zero so a
+  // single clouded line is not silently dropped by the comparison.
   let through = -Infinity;
-  for (const cell of occupiedCells(defender)) {
+  for (const cell of occupiedCells(defender, squareFootprints)) {
     through = Math.max(through, throughAlong(content, grid, attacker.pos, cell));
   }
   through = Math.min(0, through);

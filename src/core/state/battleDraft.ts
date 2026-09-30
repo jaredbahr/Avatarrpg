@@ -42,6 +42,7 @@ import {
   withTile,
 } from '../rules/grid';
 import type { MoveContext } from '../rules/grid';
+import { SQUARE_FOOTPRINTS, footprintCells, shoveStep } from '../rules/footprint';
 import { applyStatus, removeStatuses } from '../rules/status';
 import {
   MAX_BANKED_TOTAL_AP as MAX_TOTAL_AP,
@@ -103,6 +104,12 @@ export class BattleDraft {
   readonly mapId: string;
   /** Preview drafts describe chance branches without choosing one. */
   readonly resolveChanceStatuses: boolean;
+  /**
+   * TEMPORARY GATE (see `rules/footprint.ts`, removed in A-6): this draft
+   * treats size 2 as a 2x2 square. Defaults to `SQUARE_FOOTPRINTS`, so shipped
+   * battles keep the legacy 2x1 boss until A-6. Tests opt in per draft.
+   */
+  readonly squareFootprints: boolean;
   readonly events: GameEvent[] = [];
   /** Nominal tier count for each emitted forced-movement event, for forecasts. */
   readonly shoveLedgeTiers = new Map<number, number>();
@@ -124,7 +131,7 @@ export class BattleDraft {
     readonly content: ContentIndex,
     battle: BattleState,
     readonly rng: RngCursor,
-    options: { readonly resolveChanceStatuses?: boolean } = {},
+    options: { readonly resolveChanceStatuses?: boolean; readonly squareFootprints?: boolean } = {},
   ) {
     this.grid = battle.grid;
     this.units = [...battle.units];
@@ -139,6 +146,7 @@ export class BattleDraft {
     this.variantId = battle.variantId;
     this.mapId = battle.mapId;
     this.resolveChanceStatuses = options.resolveChanceStatuses ?? true;
+    this.squareFootprints = options.squareFootprints ?? SQUARE_FOOTPRINTS;
   }
 
   toBattle(): BattleState {
@@ -178,7 +186,9 @@ export class BattleDraft {
 
   unitAt(pos: Vec2): Unit | undefined {
     const key = posKey(pos);
-    return this.living().find((u) => occupiedCells(u).some((c) => posKey(c) === key));
+    return this.living().find((u) =>
+      occupiedCells(u, this.squareFootprints).some((c) => posKey(c) === key),
+    );
   }
 
   emit(event: GameEvent): void {
@@ -191,7 +201,10 @@ export class BattleDraft {
 
   /** Cells no unit may enter. `exceptId` frees the mover's own cells. */
   blockedCells(exceptId?: string): Set<string> {
-    const map = occupancy(this.units.filter((u) => u.id !== exceptId));
+    const map = occupancy(
+      this.units.filter((u) => u.id !== exceptId),
+      this.squareFootprints,
+    );
     return new Set(map.keys());
   }
 
@@ -201,6 +214,7 @@ export class BattleDraft {
       blocked: this.blockedCells(unit.id),
       surfaces: this.content.surfaces,
       size: unit.size,
+      squareFootprints: this.squareFootprints,
       climbCost: this.content.tuning.climbCost,
     };
   }
@@ -337,7 +351,7 @@ export class BattleDraft {
     if (!unit || !isAlive(unit)) return;
 
     const seen = new Set<SurfaceId>();
-    for (const cell of occupiedCells(unit)) {
+    for (const cell of occupiedCells(unit, this.squareFootprints)) {
       const contact = contactEffects(this.content, this.grid, cell);
       if (!contact.surface || seen.has(contact.surface)) continue;
       seen.add(contact.surface);
@@ -401,41 +415,103 @@ export class BattleDraft {
     readonly ledgeDropTiers: number;
     readonly stopReason: 'none' | 'centre' | 'origin' | 'obstacle';
   } {
-    const sign = mode === 'push' ? 1 : -1;
-    const dx = Math.sign(from.x - origin.x) * sign;
-    const dy = Math.sign(from.y - origin.y) * sign;
+    // Direction comes from `shoveStep`, shared with the confirm-step forecast.
+    const square = ctx.squareFootprints ?? SQUARE_FOOTPRINTS;
+    const { x: dx, y: dy } = shoveStep(from, origin, ctx.size, mode, square);
     if (dx === 0 && dy === 0) {
       return { pos: from, ledgeDropTiers: 0, stopReason: 'centre' };
     }
 
+    // STRICT square rule (see `footprint.ts`): a 2x2 block is never shoved or
+    // pulled off a non-ramp ledge, however far the knockback carries. The ledge
+    // acts like a wall, so the first step whose destination footprint would hang
+    // part of the block over a non-ramp drop stops the slide at the last flat
+    // position with `obstacle`. A one-tier ramp step is still crossable -- the
+    // block may straddle a ramp mid-slide -- but it must come to rest flat, so a
+    // knockback that runs out mid-ramp falls back to the last flat position too.
+    // The block therefore never leaves flat ground for a non-ramp ledge and
+    // never takes a fall: a square 2x2 shove always reports zero
+    // `ledgeDropTiers`. A size-1 unit is a single tile that cannot straddle, so
+    // it keeps ordinary ledge falls.
+    const squareBlock = square && ctx.size > 1;
     let current = from;
+    let resting = from;
     let ledgeDropTiers = 0;
+    let pendingDrop = 0;
+    let stopReason: 'none' | 'origin' | 'obstacle' = 'none';
     for (let step = 0; step < tiles; step++) {
       const next = { x: current.x + dx, y: current.y + dy };
       if (!inBounds(this.grid, next)) {
-        return { pos: current, ledgeDropTiers, stopReason: 'obstacle' };
+        stopReason = 'obstacle';
+        break;
       }
-      // Pulling past the origin would look absurd; stop when adjacent.
-      if (mode === 'pull' && distance(next, origin) === 0) {
-        return { pos: current, ledgeDropTiers, stopReason: 'origin' };
+      // Pulling past the origin would look absurd; stop before any footprint
+      // cell covers it. With the square gate off the legacy 2x1 keeps its
+      // anchor-only check.
+      const pullCells = square ? footprintCells(next, ctx.size, square) : [next];
+      if (mode === 'pull' && pullCells.some((cell) => samePos(cell, origin))) {
+        stopReason = 'origin';
+        break;
       }
       if (!this.canShoveStep(ctx, current, next)) {
-        return { pos: current, ledgeDropTiers, stopReason: 'obstacle' };
+        stopReason = 'obstacle';
+        break;
       }
-      ledgeDropTiers += this.ledgeDrop(ctx.size, current, next);
+      const drop = this.ledgeDrop(ctx, current, next);
+      if (squareBlock && drop > 0) {
+        // Part of the block would leave a non-ramp ledge: the ledge is a wall.
+        stopReason = 'obstacle';
+        break;
+      }
+      // The legacy 2x1 (and a size-1 unit) still falls off a ledge; only the
+      // square 2x2's strict rule suppresses the drop.
+      if (!squareBlock) pendingDrop += drop;
       current = next;
+      if (standCost(ctx, current) !== null) {
+        resting = current;
+        if (!squareBlock) {
+          ledgeDropTiers += pendingDrop;
+          pendingDrop = 0;
+        }
+      }
     }
-    return { pos: current, ledgeDropTiers, stopReason: 'none' };
+    if (squareBlock) {
+      // Flatness -- not the (always zero) drop tally -- decides whether the
+      // block finished on a footprint it may rest on.
+      if (stopReason === 'none' && samePos(resting, current)) {
+        return { pos: current, ledgeDropTiers: 0, stopReason: 'none' };
+      }
+      return {
+        pos: resting,
+        ledgeDropTiers: 0,
+        stopReason: stopReason === 'none' ? 'obstacle' : stopReason,
+      };
+    }
+    // Running out of tiles while still straddling is the same stop as hitting a
+    // wall: fall back to the last footprint the block could actually rest on.
+    if (stopReason === 'none' && pendingDrop === 0) {
+      return { pos: current, ledgeDropTiers, stopReason: 'none' };
+    }
+    return {
+      pos: resting,
+      ledgeDropTiers,
+      stopReason: stopReason === 'none' ? 'obstacle' : stopReason,
+    };
   }
 
   /** Forced movement follows a one-tier ramp, but cannot push up a bare ledge. */
   private canShoveStep(ctx: MoveContext, from: Vec2, to: Vec2): boolean {
-    if (standCost(ctx, to) === null) return false;
-    const width = ctx.size === 2 ? 2 : 1;
-    for (let dx = 0; dx < width; dx++) {
-      const fromTile = tileAt(this.grid, { x: from.x + dx, y: from.y });
-      const toTile = tileAt(this.grid, { x: to.x + dx, y: to.y });
-      if (!fromTile || !toTile) return false;
+    const square = ctx.squareFootprints ?? SQUARE_FOOTPRINTS;
+    // Forced movement is judged by bounds, bodies and the climb rule: a
+    // one-tier ramp is climbed for free and a bare one is refused. A drop is
+    // free here; `slideFrom` owns the square 2x2's strict no-straddle rule and
+    // turns a non-ramp lip into a wall for the block.
+    for (const offset of footprintCells({ x: 0, y: 0 }, ctx.size, square)) {
+      const fromTile = tileAt(this.grid, { x: from.x + offset.x, y: from.y + offset.y });
+      const toPos = { x: to.x + offset.x, y: to.y + offset.y };
+      const toTile = tileAt(this.grid, toPos);
+      if (!fromTile || !toTile || toTile.blocked) return false;
+      if (ctx.blocked.has(posKey(toPos))) return false;
       const climb = toTile.elevation - fromTile.elevation;
       if (climb > 0 && (climb > 1 || (!fromTile.ramp && !toTile.ramp))) return false;
     }
@@ -443,12 +519,12 @@ export class BattleDraft {
   }
 
   /** Largest non-ramp elevation loss across the footprint for one forced step. */
-  private ledgeDrop(size: Unit['size'], from: Vec2, to: Vec2): number {
+  private ledgeDrop(ctx: MoveContext, from: Vec2, to: Vec2): number {
     let largest = 0;
-    const width = size === 2 ? 2 : 1;
-    for (let dx = 0; dx < width; dx++) {
-      const before = tileAt(this.grid, { x: from.x + dx, y: from.y });
-      const after = tileAt(this.grid, { x: to.x + dx, y: to.y });
+    const square = ctx.squareFootprints ?? SQUARE_FOOTPRINTS;
+    for (const offset of footprintCells({ x: 0, y: 0 }, ctx.size, square)) {
+      const before = tileAt(this.grid, { x: from.x + offset.x, y: from.y + offset.y });
+      const after = tileAt(this.grid, { x: to.x + offset.x, y: to.y + offset.y });
       if (before && after) {
         const drop = before.elevation - after.elevation;
         if (drop > 1 || (drop === 1 && !before.ramp && !after.ramp)) {

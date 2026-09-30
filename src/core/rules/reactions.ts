@@ -33,6 +33,7 @@ import { BattleDraft } from '../state/battleDraft';
 import type { SurfaceContactRecord } from '../state/battleDraft';
 import { isAreaShove } from './abilities';
 import { allowsCasterTarget, blastTiles, occupiedCells, posKey, tileAt } from './grid';
+import { SQUARE_FOOTPRINTS, footprintCells, shoveStep } from './footprint';
 import { applyStatus, removeStatuses } from './status';
 import { contactEffects } from './surfaces';
 import type { ChainHit, StatusHit, SurfaceChange } from './surfaces';
@@ -234,6 +235,7 @@ export function forecastReactions(
   target: Vec2,
   tiles: readonly Vec2[],
   origin?: Vec2,
+  squareFootprints: boolean = SQUARE_FOOTPRINTS,
 ): ReactionForecast {
   if (tiles.length === 0) return EMPTY;
 
@@ -241,12 +243,17 @@ export function forecastReactions(
   // those chance outcomes here, and this detached cursor must never be the
   // live battle cursor or expose its seed in the preview.
   const previewRng = new RngCursor(0);
-  const draft = new BattleDraft(content, battle, previewRng, { resolveChanceStatuses: false });
+  const draft = new BattleDraft(content, battle, previewRng, {
+    resolveChanceStatuses: false,
+    squareFootprints,
+  });
   const struck = battle.units.filter(
     (unit) =>
       isAlive(unit) &&
       (allowsCasterTarget(ability) || unit.id !== caster.id) &&
-      occupiedCells(unit).some((cell) => tiles.some((tile) => posKey(tile) === posKey(cell))),
+      occupiedCells(unit, squareFootprints).some((cell) =>
+        tiles.some((tile) => posKey(tile) === posKey(cell)),
+      ),
   );
   const hitIds = struck.map((unit) => unit.id);
   const friendlyIds = struck.filter((unit) => friendlyTo(caster, unit)).map((unit) => unit.id);
@@ -538,7 +545,7 @@ function landingInfo(
   const surfaces: SurfaceId[] = [];
   const statuses: { id: StatusId; chance: number }[] = [];
   let damage = 0;
-  for (const cell of occupiedCells(unit)) {
+  for (const cell of occupiedCells(unit, draft.squareFootprints)) {
     const contact = contactEffects(content, draft.grid, cell);
     if (!contact.surface || surfaces.includes(contact.surface)) continue;
     surfaces.push(contact.surface);
@@ -620,6 +627,7 @@ function shoveUnitForecast(
       // Only a caster-origin shove can be stopped "next to the caster"; an area
       // shove is measured from its centre, and a caster never blocks itself.
       originKind === 'caster' && caster?.id !== before.id ? caster : undefined,
+      draft.squareFootprints,
     ),
     blocked: movedDistance < distance,
     ...landingInfo(content, draft, after),
@@ -645,9 +653,11 @@ export function shoveLedgeDropDamage(
   origin: Vec2,
   distance: number,
   mode: 'push' | 'pull',
+  squareFootprints: boolean = SQUARE_FOOTPRINTS,
 ): number {
   const preview = new BattleDraft(content, battle, new RngCursor(0), {
     resolveChanceStatuses: false,
+    squareFootprints,
   });
   return shoveUnitForecast(content, preview, caster, unitId, origin, distance, mode, 'caster')
     .ledgeDropDamage;
@@ -720,6 +730,7 @@ function shovePropForecast(
       mode,
       1,
       undefined,
+      false,
     ),
     blocked: movedDistance < distance,
     ...landingInfo(content, draft, unitLike),
@@ -735,21 +746,22 @@ function displayStopReason(
   mode: 'push' | 'pull',
   size: Unit['size'],
   caster: Unit | undefined,
+  square: boolean,
 ): ShoveForecast['stopReason'] {
   if (reason === 'none') return null;
   if (reason === 'centre') return 'centre';
   if (reason === 'origin') return 'adjacent';
   // The slide keeps the direction it started with (BattleDraft.slideFrom), so
   // the blocked step is taken from the starting cell, not the stopping one.
-  const sign = mode === 'push' ? 1 : -1;
+  // `shoveStep` is the same helper slideFrom uses, so the two cannot drift.
+  const step = shoveStep(from, origin, size, mode, square);
   const next = {
-    x: to.x + Math.sign(from.x - origin.x) * sign,
-    y: to.y + Math.sign(from.y - origin.y) * sign,
+    x: to.x + step.x,
+    y: to.y + step.y,
   };
-  const width = size === 2 ? 2 : 1;
-  const casterCells = new Set(caster ? occupiedCells(caster).map(posKey) : []);
-  for (let offset = 0; offset < width; offset++) {
-    const cell = { x: next.x + offset, y: next.y };
+  const casterCells = new Set(caster ? occupiedCells(caster, square).map(posKey) : []);
+  for (const offset of footprintCells({ x: 0, y: 0 }, size, square)) {
+    const cell = { x: next.x + offset.x, y: next.y + offset.y };
     if (samePosition(cell, origin) || casterCells.has(posKey(cell))) return 'adjacent';
   }
   return 'obstacle';

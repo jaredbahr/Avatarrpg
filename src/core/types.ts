@@ -211,6 +211,14 @@ export interface UnitStats {
 
 export type AiProfile = 'aggressive' | 'cautious' | 'support' | 'boss' | 'none';
 
+/**
+ * A unit's footprint as a side length in tiles: `1` is one tile, `2` is a 2x2
+ * block. The anchor (`Unit.pos`) is always the top-left cell of the block — the
+ * minimum x and minimum y. See `rules/footprint.ts`; until A-6 flips
+ * `SQUARE_FOOTPRINTS`, size 2 still resolves to the legacy 2x1 shape.
+ */
+export type UnitSize = 1 | 2;
+
 export interface Unit {
   readonly id: string;
   readonly name: string;
@@ -227,8 +235,8 @@ export interface Unit {
   readonly xp: number;
 
   readonly pos: Vec2;
-  /** 2 means the unit also occupies the tile to its right (the boss driller). */
-  readonly size: 1 | 2;
+  /** Side length in tiles: 2 is a 2x2 block (subject to the A-6 gate). */
+  readonly size: UnitSize;
 
   readonly hp: number;
   readonly ap: number;
@@ -388,7 +396,8 @@ export interface EnemyDef {
   readonly id: string;
   readonly name: string;
   readonly element: ElementId;
-  readonly size: 1 | 2;
+  /** Side length in tiles: 2 is a 2x2 block (subject to the A-6 gate). */
+  readonly size: UnitSize;
   readonly stats: UnitStats;
   readonly abilities: readonly string[];
   readonly ai: AiProfile;

@@ -9,7 +9,18 @@
  * orthogonal neighbours it passes between are walkable.
  */
 
-import type { Ability, Grid, MapDef, SurfaceDef, SurfaceId, Tile, Unit, Vec2 } from '../types';
+import type {
+  Ability,
+  Grid,
+  MapDef,
+  SurfaceDef,
+  SurfaceId,
+  Tile,
+  Unit,
+  UnitSize,
+  Vec2,
+} from '../types';
+import { SQUARE_FOOTPRINTS, footprintCells } from './footprint';
 
 export const DIRECTIONS: readonly Vec2[] = [
   { x: 1, y: 0 },
@@ -70,10 +81,16 @@ export function neighbors(grid: Grid, p: Vec2): Vec2[] {
   return out;
 }
 
-/** Every cell a unit stands on. The 2-tile boss occupies its tile and the one to its right. */
-export function occupiedCells(unit: Pick<Unit, 'pos' | 'size'>): Vec2[] {
-  if (unit.size === 2) return [unit.pos, { x: unit.pos.x + 1, y: unit.pos.y }];
-  return [unit.pos];
+/**
+ * Every cell a unit stands on. `size` is a side length, so 2 is a 2x2 block
+ * until A-6, and the legacy 2x1 boss while the gate is off (see
+ * `rules/footprint.ts`). Pass `square` to force the new geometry in tests.
+ */
+export function occupiedCells(
+  unit: Pick<Unit, 'pos' | 'size'>,
+  square: boolean = SQUARE_FOOTPRINTS,
+): Vec2[] {
+  return footprintCells(unit.pos, unit.size, square);
 }
 
 /** Whether a unit-targeted ability may resolve against its own caster. */
@@ -83,9 +100,13 @@ export function allowsCasterTarget(ability: Pick<Ability, 'targeting'>): boolean
 }
 
 /** Chebyshev distance from a point to the nearest cell of a possibly-large unit. */
-export function distanceToUnit(from: Vec2, unit: Pick<Unit, 'pos' | 'size'>): number {
+export function distanceToUnit(
+  from: Vec2,
+  unit: Pick<Unit, 'pos' | 'size'>,
+  square: boolean = SQUARE_FOOTPRINTS,
+): number {
   let best = Infinity;
-  for (const cell of occupiedCells(unit)) best = Math.min(best, distance(from, cell));
+  for (const cell of occupiedCells(unit, square)) best = Math.min(best, distance(from, cell));
   return best;
 }
 
@@ -93,9 +114,12 @@ export function distanceToUnit(from: Vec2, unit: Pick<Unit, 'pos' | 'size'>): nu
 export function distanceBetweenUnits(
   first: Pick<Unit, 'pos' | 'size'>,
   second: Pick<Unit, 'pos' | 'size'>,
+  square: boolean = SQUARE_FOOTPRINTS,
 ): number {
   let best = Infinity;
-  for (const cell of occupiedCells(first)) best = Math.min(best, distanceToUnit(cell, second));
+  for (const cell of occupiedCells(first, square)) {
+    best = Math.min(best, distanceToUnit(cell, second, square));
+  }
   return best;
 }
 
@@ -191,18 +215,25 @@ export function withSurface(
 /* ------------------------------------------------------------------ */
 
 /** Map of cell key -> unit id, for every living unit. */
-export function occupancy(units: readonly Unit[]): Map<string, string> {
+export function occupancy(
+  units: readonly Unit[],
+  square: boolean = SQUARE_FOOTPRINTS,
+): Map<string, string> {
   const map = new Map<string, string>();
   for (const u of units) {
     if (u.hp <= 0) continue;
-    for (const cell of occupiedCells(u)) map.set(posKey(cell), u.id);
+    for (const cell of occupiedCells(u, square)) map.set(posKey(cell), u.id);
   }
   return map;
 }
 
-export function unitAt(units: readonly Unit[], p: Vec2): Unit | undefined {
+export function unitAt(
+  units: readonly Unit[],
+  p: Vec2,
+  square: boolean = SQUARE_FOOTPRINTS,
+): Unit | undefined {
   const key = posKey(p);
-  return units.find((u) => u.hp > 0 && occupiedCells(u).some((c) => posKey(c) === key));
+  return units.find((u) => u.hp > 0 && occupiedCells(u, square).some((c) => posKey(c) === key));
 }
 
 /* ------------------------------------------------------------------ */
@@ -214,8 +245,14 @@ export interface MoveContext {
   /** Cell key -> unit id. Cells held by other units are impassable. */
   readonly blocked: ReadonlySet<string>;
   readonly surfaces: ReadonlyMap<SurfaceId, SurfaceDef>;
-  /** 2-tile units need the cell to the right to be free as well. */
-  readonly size: 1 | 2;
+  /** Footprint side length: every cell of the block must be free and legal. */
+  readonly size: UnitSize;
+  /**
+   * TEMPORARY GATE (see `rules/footprint.ts`, removed in A-6): when true a size
+   * 2 unit is a 2x2 square, when false/omitted it is the legacy 2x1. Defaults
+   * to `SQUARE_FOOTPRINTS`, so every shipped caller keeps today's behaviour.
+   */
+  readonly squareFootprints?: boolean;
   /**
    * Extra move points a one-tier climb costs, from
    * `content.tuning.climbCost`. Every shipped context carries it, combat and
@@ -227,13 +264,14 @@ export interface MoveContext {
 }
 
 /**
- * Cost of putting the unit's whole footprint on `p`, ignoring how it got
- * there, or null when a cell cannot be occupied at all. Used for a spawn, a
- * projected destination or a free cell search, where there is no step from
- * anywhere to measure.
+ * Occupancy and surface cost of a footprint on `p`: every cell in bounds and
+ * unblocked, none held by another unit, plus the worst surface `moveCost` once.
+ * No elevation rule — `standCost` layers that on; `enterCost` deliberately does
+ * not, so a large unit can haul itself across a one-tier step.
  */
-export function standCost(ctx: MoveContext, p: Vec2): number | null {
-  const cells = ctx.size === 2 ? [p, { x: p.x + 1, y: p.y }] : [p];
+function footprintCost(ctx: MoveContext, p: Vec2): number | null {
+  const square = ctx.squareFootprints ?? SQUARE_FOOTPRINTS;
+  const cells = footprintCells(p, ctx.size, square);
   let cost = 1;
   for (const cell of cells) {
     const tile = tileAt(ctx.grid, cell);
@@ -243,6 +281,30 @@ export function standCost(ctx: MoveContext, p: Vec2): number | null {
       const def = ctx.surfaces.get(tile.surface.id);
       if (def) cost = Math.max(cost, 1 + def.moveCost);
     }
+  }
+  return cost;
+}
+
+/**
+ * Cost of putting the unit's whole footprint on `p`, or null when it may not
+ * *stand* there. Used for a spawn, a projected destination or a free cell
+ * search, and to decide where a move may stop.
+ *
+ * A 2x2 may stand only on flat ground: all four of its cells must share one
+ * elevation. Gated with the square footprint, so the legacy 2x1 boss keeps its
+ * old, tier-straddling standability until A-6.
+ */
+export function standCost(ctx: MoveContext, p: Vec2): number | null {
+  const cost = footprintCost(ctx, p);
+  if (cost === null) return null;
+  const square = ctx.squareFootprints ?? SQUARE_FOOTPRINTS;
+  if (!square) return cost;
+  let elevation: number | null = null;
+  for (const cell of footprintCells(p, ctx.size, square)) {
+    const tile = tileAt(ctx.grid, cell);
+    if (!tile) return null;
+    if (elevation === null) elevation = tile.elevation;
+    else if (tile.elevation !== elevation) return null;
   }
   return cost;
 }
@@ -268,13 +330,16 @@ function stepClimb(ctx: MoveContext, from: Vec2, to: Vec2): number | null {
 /**
  * Cost of *entering* `to` from `from`, or null when the step cannot be taken.
  *
- * A size-2 unit steps both of its cells: the step is refused when either cell
- * meets a cliff or an unpayable climb, and it pays the worst cell's surcharge
- * once, the same way `standCost` charges the worst surface once for a
- * footprint.
+ * A large unit steps every cell of its footprint, pairing each one with the cell
+ * it comes from: the step is refused when any pair meets a cliff or an unpayable
+ * climb, and it pays the worst pair's surcharge once, the same way the footprint
+ * pays the worst surface once.
  */
 export function enterCost(ctx: MoveContext, from: Vec2, to: Vec2): number | null {
-  const base = standCost(ctx, to);
+  // Step legality is not standing legality: a 2x2 may cross a one-tier step
+  // (straddling it for a moment) even though it may not stop there. The
+  // per-cell climb pairing below is what prices and refuses the step.
+  const base = footprintCost(ctx, to);
   if (base === null) return null;
   const climb = climbSurcharge(ctx, from, to);
   if (climb === null) return null;
@@ -283,10 +348,14 @@ export function enterCost(ctx: MoveContext, from: Vec2, to: Vec2): number | null
 
 /** The climb portion of one step's move cost, or null when the step is illegal. */
 export function climbSurcharge(ctx: MoveContext, from: Vec2, to: Vec2): number | null {
-  const width = ctx.size === 2 ? 2 : 1;
+  const square = ctx.squareFootprints ?? SQUARE_FOOTPRINTS;
   let climb = 0;
-  for (let dx = 0; dx < width; dx++) {
-    const cell = stepClimb(ctx, { x: from.x + dx, y: from.y }, { x: to.x + dx, y: to.y });
+  for (const offset of footprintCells({ x: 0, y: 0 }, ctx.size, square)) {
+    const cell = stepClimb(
+      ctx,
+      { x: from.x + offset.x, y: from.y + offset.y },
+      { x: to.x + offset.x, y: to.y + offset.y },
+    );
     if (cell === null) return null;
     climb = Math.max(climb, cell);
   }
@@ -314,6 +383,10 @@ export interface ReachableCell {
  * Dijkstra over move points. Returns every cell reachable within `budget`,
  * keyed by position. Used for the move highlight, for pathing, and by the AI
  * when it enumerates (tile, ability, target) triples.
+ *
+ * The result is the set of cells the unit may *stop* on. A 2x2 may pass through
+ * a cell whose footprint straddles a one-tier step, but it may not rest there,
+ * so those cells stay out of the map while still being expanded through.
  */
 export function reachable(
   ctx: MoveContext,
@@ -321,10 +394,13 @@ export function reachable(
   budget: number,
 ): Map<string, ReachableCell> {
   const best = new Map<string, ReachableCell>();
-  best.set(posKey(start), { pos: start, cost: 0, path: [] });
+  const stops = new Map<string, ReachableCell>();
+  const startEntry: ReachableCell = { pos: start, cost: 0, path: [] };
+  best.set(posKey(start), startEntry);
+  stops.set(posKey(start), startEntry);
 
   // Small budgets over a 20x12 grid: a sorted frontier is plenty.
-  const frontier: ReachableCell[] = [{ pos: start, cost: 0, path: [] }];
+  const frontier: ReachableCell[] = [startEntry];
 
   while (frontier.length > 0) {
     frontier.sort((a, b) => a.cost - b.cost);
@@ -350,11 +426,12 @@ export function reachable(
         path: [...current.path, next],
       };
       best.set(key, entry);
+      if (standCost(ctx, next) !== null) stops.set(key, entry);
       frontier.push(entry);
     }
   }
 
-  return best;
+  return stops;
 }
 
 /** Shortest path from `start` to `goal` within `budget`, or null. */
@@ -384,6 +461,9 @@ export function pathCost(ctx: MoveContext, start: Vec2, path: readonly Vec2[]): 
     total += cost;
     from = step;
   }
+  // A move ends where the unit stands, so the destination footprint must be
+  // flat even though individual straddling steps were legal.
+  if (path.length > 0 && standCost(ctx, from) === null) return null;
   return total;
 }
 
