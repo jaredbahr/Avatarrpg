@@ -617,7 +617,9 @@ function shoveUnitForecast(
       origin,
       mode,
       before.size,
-      caster,
+      // Only a caster-origin shove can be stopped "next to the caster"; an area
+      // shove is measured from its centre, and a caster never blocks itself.
+      originKind === 'caster' && caster?.id !== before.id ? caster : undefined,
     ),
     blocked: movedDistance < distance,
     ...landingInfo(content, draft, after),

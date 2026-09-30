@@ -59,10 +59,10 @@ export function formatShoveMovement(
   originKind: ShoveForecast['originKind'],
 ): string {
   const verb = shoveVerb(mode);
-  if (stopReason === 'adjacent') {
-    return `${name} is already next to ${originKind === 'caster' ? 'the caster' : 'the centre'}`;
-  }
   if (movedDistance === 0) {
+    if (stopReason === 'adjacent') {
+      return `${name} is already next to ${originKind === 'caster' ? 'the caster' : 'the centre'}`;
+    }
     if (stopReason === 'centre') {
       return originKind === 'caster' ? `${name} stays put` : `${name} stays put — at the centre`;
     }

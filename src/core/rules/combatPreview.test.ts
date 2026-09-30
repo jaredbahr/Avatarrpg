@@ -1,4 +1,5 @@
 import { describe, expect, it } from 'vitest';
+import { formatShoveMovement } from '../../app/ui/combatPreviewText';
 import { CONTENT } from '../../content';
 import { RngCursor } from '../rng';
 import { DEFAULT_TILE, tileAt, withSurface, withTile } from './grid';
@@ -391,6 +392,33 @@ describe('bounded combat outcome previews', () => {
       originKind: 'caster',
       stopReason: 'centre',
     });
+  });
+
+  it('a real Water Pull that ends beside the caster moved, not "already there"', () => {
+    const source = openGround(battleFor('enc_forest_road'));
+    const victimId = source.units.find((unit) => unit.faction === 'enemy')?.id;
+    if (!victimId) throw new Error('water pull fixture has no enemy');
+    const battle = placed(source, { p0: { x: 3, y: 5 }, [victimId]: { x: 6, y: 5 } }, [
+      'p0',
+      victimId,
+    ]);
+    const caster = battle.units.find((unit) => unit.id === 'p0');
+    if (!caster) throw new Error('water pull caster is missing');
+    const shove = previewAbility(CONTENT, battle, caster, ability('water_pull'), { x: 6, y: 5 })
+      .shoves[0];
+    expect(shove).toMatchObject({ to: { x: 4, y: 5 }, movedDistance: 2, stopReason: 'adjacent' });
+    if (!shove) throw new Error('no shove forecast');
+    expect(
+      formatShoveMovement(
+        shove.name,
+        shove.mode,
+        shove.movedDistance,
+        shove.distance,
+        shove.stopReason,
+        [],
+        shove.originKind,
+      ),
+    ).toBe(`${shove.name}: pulled 2 tiles closer`);
   });
 
   it('uses slide stop reasons for diagonal blockers and caster-footprint contact', () => {

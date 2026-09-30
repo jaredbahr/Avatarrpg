@@ -60,8 +60,12 @@ describe('combat preview text', () => {
     expect(formatShoveMovement('Kaya', 'pull', 0, 2, 'centre', [], 'caster')).toBe(
       'Kaya stays put',
     );
+    // A pull that ends beside the caster moved; it says how far, not "already".
     expect(formatShoveMovement('Grumbler', 'pull', 1, 3, 'adjacent', [], 'caster')).toBe(
-      'Grumbler is already next to the caster',
+      'Grumbler: pulled 1 tile closer',
+    );
+    expect(formatShoveMovement('Grumbler', 'pull', 2, 3, 'adjacent', [], 'caster')).toBe(
+      'Grumbler: pulled 2 tiles closer',
     );
   });
 
