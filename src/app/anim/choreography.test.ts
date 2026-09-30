@@ -4,6 +4,7 @@ import type { Ability, ContentIndex, GameEvent, Unit } from '../../core/types';
 import { resolveFx } from '../../content/fx';
 import type { SheetClips } from '../../render/sheets/store';
 import { TIMING, choreograph, hitSpan, knockoutSpan } from './choreography';
+import { HEADINGS, hitClip } from '../../content/assets/clips';
 import { attackMotion } from './attackMotion';
 import { enemyScale } from './actorScale';
 import { Timeline } from './timeline';
@@ -1035,6 +1036,118 @@ it('projects attack and reaction poses without changing timing, particles or sou
   expect(attacks.some((t) => t.offset.to.x < 0 && t.offset.to.y > 0)).toBe(true);
   const recoil = poses.filter((t) => t.unitId === 'e0');
   expect(recoil.some((t) => t.offset.to.x < 0 && t.offset.to.y > 0)).toBe(true);
+});
+
+describe('G hit timing', () => {
+  const kayaClips = JSON.parse(
+    readFileSync('public/art/units/kaya-g-clips.json', 'utf8'),
+  ) as SheetClips;
+  const kaya = {
+    ...unit('p0', 1, 3),
+    sprite: 'unit.fire.kaya',
+    hp: 20,
+    base: { maxHp: 20 },
+  } as Unit;
+  const attacker = {
+    ...unit('e0', 5, 3),
+    faction: 'enemy' as const,
+    sprite: 'unit.enemy.thug',
+    hp: 20,
+    base: { maxHp: 20 },
+  } as Unit;
+  const loaded = (sprite: string) => (sprite === kaya.sprite ? kayaClips : undefined);
+  const play = (events: GameEvent[], rate = 1) =>
+    choreograph({
+      content,
+      events,
+      unitsBefore: [kaya, attacker],
+      cursor: 1000,
+      rate,
+      pushIndex: 0,
+      clipsOf: loaded,
+    });
+  const attack = (): GameEvent => ({
+    type: 'abilityUsed',
+    unitId: attacker.id,
+    abilityId: 'fire_jab',
+    target: kaya.pos,
+    tiles: [kaya.pos],
+  });
+  const damage = (amount: number): GameEvent => ({
+    type: 'damaged',
+    unitId: kaya.id,
+    amount,
+    crit: false,
+    damageType: 'fire',
+    sourceId: attacker.id,
+  });
+  const pose = (tracks: readonly AnyTrack[], clip: string) =>
+    tracks.find(
+      (track): track is PoseTrack =>
+        track.kind === 'pose' && track.unitId === kaya.id && track.clip === clip,
+    );
+
+  it('pre-rolls a pending lethal G hit after the attack wind-up and starts KO at the hit end', () => {
+    const out = play([attack(), damage(20), { type: 'unitDied', unitId: kaya.id }]);
+    const hit = pose(out.tracks, 'hit');
+    const ko = pose(out.tracks, 'ko');
+    const flash = out.tracks.find((track) => track.kind === 'flash' && track.unitId === kaya.id);
+    expect(hit).toBeDefined();
+    expect(flash).toBeDefined();
+    // The lead is the clip's own first-frame (stance) time, not a fixed number.
+    const lead = Math.max(
+      ...HEADINGS.map((heading) => kayaClips[hitClip(heading)]?.frameMs?.[0] ?? 0),
+    );
+    expect(lead).toBeGreaterThan(0);
+    expect(hit?.start).toBe((flash?.start ?? 0) - lead);
+    expect(hit?.start).toBeGreaterThan(1000);
+    expect(ko?.start).toBe((hit?.start ?? 0) + (hit?.duration ?? 0));
+  });
+
+  it('bounds lethal G post-contact delay by the hit span after hit-stop', () => {
+    const out = play([attack(), damage(20), { type: 'unitDied', unitId: kaya.id }]);
+    const ko = pose(out.tracks, 'ko')!;
+    const flash = out.tracks.find((track) => track.kind === 'flash' && track.unitId === kaya.id)!;
+    const hitStop = resolveFx('fx.fire.jab').hitStop;
+    const delay = ko.start - (flash.start + hitStop);
+    expect(delay).toBeGreaterThanOrEqual(0);
+    expect(delay).toBeLessThanOrEqual(hitSpan(kayaClips) - hitStop);
+  });
+
+  it('keeps the legacy damaged-plus-death KO start at the exact pre-PR time', () => {
+    const out = choreograph({
+      content,
+      events: [damage(4), { type: 'unitDied', unitId: kaya.id }],
+      unitsBefore: [kaya, attacker],
+      cursor: 1000,
+      rate: 1,
+      pushIndex: 0,
+      clipsOf: () => undefined,
+    });
+    const ko = out.tracks.find(
+      (track): track is PoseTrack =>
+        track.kind === 'pose' && track.unitId === kaya.id && track.clip === 'ko',
+    );
+    // The damage advances the cursor to 1000 + gap; the death then uses
+    // max(cursor, hit.at + hitStop), exactly as the pre-PR rule did.
+    expect(ko?.start).toBe(1000 + TIMING.gap);
+  });
+
+  it('scales the lethal G hit extra delay with reduced motion', () => {
+    const extraAt = (rate: number) => {
+      const out = play([attack(), damage(20), { type: 'unitDied', unitId: kaya.id }], rate);
+      const hit = pose(out.tracks, 'hit')!;
+      const ko = pose(out.tracks, 'ko')!;
+      const flash = out.tracks.find((track) => track.kind === 'flash' && track.unitId === kaya.id)!;
+      expect(ko.start).toBeCloseTo(hit.start + hit.duration, 7);
+      return ko.start - (flash.start + resolveFx('fx.fire.jab').hitStop * rate);
+    };
+    const full = extraAt(1);
+    const reduced = extraAt(0.02);
+    expect(full).toBeGreaterThan(0);
+    expect(reduced).toBeCloseTo(full * 0.02, 7);
+    expect(reduced).toBeLessThanOrEqual(10);
+  });
 });
 
 describe('feel pass: every table beat is heard, and dust never holds the turn', () => {

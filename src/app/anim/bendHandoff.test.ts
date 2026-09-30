@@ -9,7 +9,7 @@ import type { BendEffectDef, BendSetDef } from '../../content/bends';
 import { BEND_FX } from '../../content/fxCels';
 import { bendFxIndex, parseBendFxPage } from '../../render/fx/bendFx';
 import type { BendFxIndex } from '../../render/fx/bendFx';
-import type { ResolvedBendFrame } from '../../render/sheets/store';
+import type { ResolvedBendFrame, SheetClips } from '../../render/sheets/store';
 import { Animator } from '../animator';
 import { bendSceneAt } from './bendChoreo';
 import type { BendSources } from './bendHandoff';
@@ -44,6 +44,10 @@ function frameOf(sprite: string, heading: Heading, index: number): ResolvedBendF
 }
 
 const loaded: BendSources = { fx, setOf: (sprite) => SETS[sprite], frameOf };
+const gClips: Record<string, SheetClips> = {
+  'unit.fire.kaya': read('art/units/kaya-g-clips.json') as SheetClips,
+  'unit.water.sura': read('art/units/sura-g-clips.json') as SheetClips,
+};
 
 const unit = (
   id: string,
@@ -87,7 +91,7 @@ const hurt = (id: string, amount: number): GameEvent => ({
 const CURSOR = 1000;
 function run(
   events: GameEvent[],
-  options: { bends?: BendSources; rate?: number; units?: Unit[] } = {},
+  options: { bends?: BendSources; clips?: boolean; rate?: number; units?: Unit[] } = {},
 ) {
   return choreograph({
     content: CONTENT,
@@ -98,6 +102,7 @@ function run(
     pushIndex: 0,
     projection: 'oblique',
     ...(options.bends ? { bends: options.bends } : {}),
+    ...(options.clips ? { clipsOf: (sprite: string) => gClips[sprite] } : {}),
   });
 }
 
@@ -271,6 +276,46 @@ describe('a bending attack in the choreography', () => {
     expect(lethal.health[0]).toEqual({ unitId: 'foe', hp: 0, fallen: false, at: impactAt });
     expect(ko.start).toBeGreaterThanOrEqual(CURSOR + plan.duration);
     expect(lethal.health[1]).toMatchObject({ hp: 0, fallen: true, at: ko.start });
+  });
+
+  it('pre-rolls a G-sheet victim before the bend damage release', () => {
+    const victim = unit('sura', 'unit.water.sura', 'water', { x: 5, y: 3 }, 'enemy');
+    const out = run([used(kaya, 'fire_jab', victim.pos), hurt(victim.id, 7)], {
+      bends: loaded,
+      clips: true,
+      units: [kaya, victim],
+    });
+    const bend = out.tracks.find((track): track is BendTrack => track.kind === 'bend')!;
+    const impactAt = CURSOR + bendSceneAt(bend.plan, bend.plan.arrivals[1]!);
+    const reaction = out.tracks.find(
+      (track): track is PoseTrack =>
+        track.kind === 'pose' && track.unitId === victim.id && track.clip === 'hit',
+    );
+    expect(reaction?.start).toBeLessThan(impactAt);
+    expect(
+      out.tracks.find((track) => track.kind === 'flash' && track.unitId === victim.id)?.start,
+    ).toBe(impactAt);
+  });
+
+  it('keeps a lethal G-sheet victim in reaction until the KO starts after it ends', () => {
+    const victim = unit('sura', 'unit.water.sura', 'water', { x: 5, y: 3 }, 'enemy');
+    const out = run(
+      [
+        used(kaya, 'fire_jab', victim.pos),
+        hurt(victim.id, 20),
+        { type: 'unitDied', unitId: victim.id },
+      ],
+      { bends: loaded, clips: true, units: [kaya, victim] },
+    );
+    const reaction = out.tracks.find(
+      (track): track is PoseTrack =>
+        track.kind === 'pose' && track.unitId === victim.id && track.clip === 'hit',
+    )!;
+    const ko = out.tracks.find(
+      (track): track is PoseTrack =>
+        track.kind === 'pose' && track.unitId === victim.id && track.clip === 'ko',
+    )!;
+    expect(ko.start).toBeGreaterThanOrEqual(reaction.start + reaction.duration);
   });
 
   it('plays the other characters’ bends, one release each', () => {
