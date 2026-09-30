@@ -256,13 +256,18 @@ export const CREDITS: readonly CreditEntry[] = [
     note: 'Original transparent passable scenery. Source image, exact prompt and resize provenance: assets/source/forest-bank/. Output terms: https://openai.com/policies/row-terms-of-use/. No exclusive copyright in generated output is claimed.',
   },
   {
-    what: 'The forest pond bank reeds',
-    work: 'Low reed fringes cut from the flood-bank reed mass, standing on the pond bank',
-    authors: 'This project, generated with OpenAI image generation',
+    what: 'The forest pond and creek bank reeds',
+    work: 'Four varied reed, sedge and water-edge clumps with painted root mounds',
+    authors: 'This project, generated with PixelLab',
     licence: 'own work',
     source: '',
-    covers: ['art/maps/forest-scene/pond-reeds.webp'],
-    note: 'Cut, feathered and packed from assets/source/forest-bank/old-nest-reeds.png by scripts/art/pond-reeds.ts; the nest is not in the crop. Output terms: https://openai.com/policies/row-terms-of-use/. No exclusive copyright in generated output is claimed.',
+    covers: [
+      'art/maps/forest-scene/bank-reed-0.webp',
+      'art/maps/forest-scene/bank-reed-1.webp',
+      'art/maps/forest-scene/bank-reed-2.webp',
+      'art/maps/forest-scene/bank-reed-3.webp',
+    ],
+    note: 'Approved transparent source family in media/art-sources/forest-bank-reeds-v1/, alpha-trimmed without resampling by scripts/art/forest-bank-reeds.ts. No exclusive copyright in generated output is claimed.',
   },
   {
     what: 'The registered quarry gate art',
