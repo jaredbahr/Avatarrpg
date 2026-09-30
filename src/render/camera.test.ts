@@ -1,4 +1,5 @@
 import { describe, expect, it } from 'vitest';
+import { COMBAT_CAMERA_RING_TILES } from '../content/maps/combat';
 import { Camera, MIN_TILE_PX, TILE } from './camera';
 
 /** A Surface-sized map area in landscape: the whole 20x12 board fits. */
@@ -98,6 +99,43 @@ describe('Camera.zoomAt', () => {
     camera.viewport = { width: 1100, height: 650, dpr: 1 };
     camera.clamp();
     expect(camera.scale).toBe(scale);
+  });
+});
+
+describe('Camera.clamp painted ring', () => {
+  it.each([
+    ['forest', COMBAT_CAMERA_RING_TILES.forest_road, 2.5],
+    ['gate', COMBAT_CAMERA_RING_TILES.quarry_gate, 2],
+    ['Cutting', COMBAT_CAMERA_RING_TILES.ambush_road, 2.25],
+    ['floor', COMBAT_CAMERA_RING_TILES.quarry_floor, 2],
+  ] as const)(
+    'allows the %s ring but never the page beyond it',
+    (_map, ringTiles, expectedRingTiles) => {
+      expect(ringTiles).toBe(expectedRingTiles);
+      const camera = new Camera(NARROW, GRID, 'oblique', ringTiles);
+      camera.fitExplore(96);
+      const ringPx = ringTiles * TILE * camera.scale;
+
+      camera.panBy(100_000, 100_000);
+      expect(camera.offsetX).toBeCloseTo(-ringPx, 6);
+      expect(camera.offsetY).toBeCloseTo(-ringPx, 6);
+
+      camera.panBy(-200_000, -200_000);
+      expect(camera.offsetX).toBeCloseTo(camera.worldWidth - NARROW.width + ringPx, 6);
+      expect(camera.offsetY).toBeCloseTo(camera.worldHeight - NARROW.height + ringPx, 6);
+    },
+  );
+
+  it('does not change fit scale, tile size, or initial grid centring', () => {
+    const baseline = new Camera(NARROW, GRID, 'oblique');
+    const ringed = new Camera(NARROW, GRID, 'oblique', 2.5);
+    baseline.fitExplore(96);
+    ringed.fitExplore(96);
+
+    expect(ringed.scale).toBe(baseline.scale);
+    expect(TILE * ringed.scale).toBe(96);
+    expect(ringed.offsetX).toBe(baseline.offsetX);
+    expect(ringed.offsetY).toBe(baseline.offsetY);
   });
 });
 

@@ -57,6 +57,8 @@ export class Camera {
     public viewport: Viewport,
     public grid: { width: number; height: number },
     public projection: Projection = 'orthographic',
+    /** Painted ground outside the grid that may remain visible while panning. */
+    public clampRingTiles = 0,
   ) {}
 
   private get bounds() {
@@ -120,12 +122,15 @@ export class Camera {
     this.clamp();
   }
 
-  /** Keeps the map inside the frame; centres on whichever axis is smaller. */
+  /** Keeps the painted grid-plus-ring inside the frame; centres a smaller board. */
   clamp(): void {
     const slackX = this.worldWidth - this.viewport.width;
     const slackY = this.worldHeight - this.viewport.height;
-    this.offsetX = slackX <= 0 ? slackX / 2 : Math.max(0, Math.min(slackX, this.offsetX));
-    this.offsetY = slackY <= 0 ? slackY / 2 : Math.max(0, Math.min(slackY, this.offsetY));
+    const ring = Math.max(0, this.clampRingTiles) * TILE * this.scale;
+    this.offsetX =
+      slackX + ring * 2 <= 0 ? slackX / 2 : Math.max(-ring, Math.min(slackX + ring, this.offsetX));
+    this.offsetY =
+      slackY + ring * 2 <= 0 ? slackY / 2 : Math.max(-ring, Math.min(slackY + ring, this.offsetY));
   }
 
   panBy(dx: number, dy: number): void {

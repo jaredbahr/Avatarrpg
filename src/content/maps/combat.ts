@@ -23,6 +23,14 @@ import { FOREST_ROAD_SCENE } from '../scenes/forestRoad';
 import { QUARRY_GATE_SCENE } from '../scenes/quarryGate';
 import { CUTTING_SCENE, DRILLER_FLOOR_SCENE } from '../scenes/quarryProjected';
 
+/** Painted surroundings available to the combat camera beyond the full grid. */
+export const COMBAT_CAMERA_RING_TILES = {
+  forest_road: 2.5,
+  quarry_gate: 2,
+  ambush_road: 2.25,
+  quarry_floor: 2,
+} as const satisfies Readonly<Record<string, number>>;
+
 /** Shared because every combat map uses the same staggered party entrance. */
 const COMBAT_PARTY_SPAWNS: readonly Vec2[] = [
   { x: 1, y: 3 },
