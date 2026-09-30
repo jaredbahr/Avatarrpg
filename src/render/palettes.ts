@@ -230,6 +230,11 @@ export const OVERLAY = {
   pathUnderWidth: 0.045,
   pathArrowScale: 0.65,
   hover: 'rgba(255, 255, 255, 0.18)',
+  climb: '#fff6e0',
+  cliffHatch: '#4b3326',
+  rangeBonus: 'rgba(255, 238, 190, 0.34)',
+  rangeBonusEdge: 'rgba(255, 238, 190, 0.78)',
+  reticleCue: '#fff6e0',
   /** The wide faint stroke under a contour's crisp edge, in tiles and alpha. */
   softWidth: 0.3,
   softAlpha: 0.28,

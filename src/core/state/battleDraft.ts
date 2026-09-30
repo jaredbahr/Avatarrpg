@@ -104,6 +104,8 @@ export class BattleDraft {
   /** Preview drafts describe chance branches without choosing one. */
   readonly resolveChanceStatuses: boolean;
   readonly events: GameEvent[] = [];
+  /** Nominal tier count for each emitted forced-movement event, for forecasts. */
+  readonly shoveLedgeTiers = new Map<number, number>();
   /**
    * Terrain reactions produced while this draft runs.  The reducer does not
    * need this journal, but the confirm-step forecast can consume the exact
@@ -394,24 +396,24 @@ export class BattleDraft {
     origin: Vec2,
     tiles: number,
     mode: 'push' | 'pull',
-  ): { readonly pos: Vec2; readonly ledgeDrop: number } {
+  ): { readonly pos: Vec2; readonly ledgeDropTiers: number } {
     const sign = mode === 'push' ? 1 : -1;
     const dx = Math.sign(from.x - origin.x) * sign;
     const dy = Math.sign(from.y - origin.y) * sign;
-    if (dx === 0 && dy === 0) return { pos: from, ledgeDrop: 0 };
+    if (dx === 0 && dy === 0) return { pos: from, ledgeDropTiers: 0 };
 
     let current = from;
-    let ledgeDrop = 0;
+    let ledgeDropTiers = 0;
     for (let step = 0; step < tiles; step++) {
       const next = { x: current.x + dx, y: current.y + dy };
       if (!inBounds(this.grid, next)) break;
       // Pulling past the origin would look absurd; stop when adjacent.
       if (mode === 'pull' && distance(next, origin) === 0) break;
       if (!this.canShoveStep(ctx, current, next)) break;
-      ledgeDrop += this.ledgeDrop(ctx.size, current, next);
+      ledgeDropTiers += this.ledgeDrop(ctx.size, current, next);
       current = next;
     }
-    return { pos: current, ledgeDrop };
+    return { pos: current, ledgeDropTiers };
   }
 
   /** Forced movement follows a one-tier ramp, but cannot push up a bare ledge. */
@@ -445,21 +447,30 @@ export class BattleDraft {
     return largest;
   }
 
-  shove(unitId: string, origin: Vec2, tiles: number, mode: 'push' | 'pull'): void {
+  shove(unitId: string, origin: Vec2, tiles: number, mode: 'push' | 'pull'): number {
     const unit = this.unit(unitId);
-    if (!unit || !isAlive(unit) || tiles <= 0) return;
+    if (!unit || !isAlive(unit) || tiles <= 0) return 0;
 
     const slide = this.slideFrom(this.moveContext(unit), unit.pos, origin, tiles, mode);
     const current = slide.pos;
-    if (samePos(current, unit.pos)) return;
+    if (samePos(current, unit.pos)) return 0;
     this.placeUnit(unitId, current);
-    if (slide.ledgeDrop > 0) {
-      this.dealDamage(unitId, slide.ledgeDrop * this.content.tuning.ledgeDropDamage, 'pure', null, {
-        minHp: 1,
-        cause: 'ledgeDrop',
-      });
+    if (slide.ledgeDropTiers > 0) {
+      this.dealDamage(
+        unitId,
+        slide.ledgeDropTiers * this.content.tuning.ledgeDropDamage,
+        'pure',
+        null,
+        {
+          minHp: 1,
+          cause: 'ledgeDrop',
+        },
+      );
     }
+    const eventIndex = this.events.length;
     this.emit({ type: 'unitPushed', unitId, to: current });
+    this.shoveLedgeTiers.set(eventIndex, slide.ledgeDropTiers);
+    return slide.ledgeDropTiers;
   }
 
   /* ---------------------------------------------------------------- */

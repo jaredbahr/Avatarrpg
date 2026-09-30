@@ -289,6 +289,7 @@ export class Canvas2DBackend implements RenderBackend {
         liveMarks();
       });
       if (layer && plan.bounds) this.drawLift(view, camera, plan, layer, () => onGround(liveMarks));
+      this.drawClimbMarkers(view, camera);
       this.drawUnitRings(view, camera);
       drawBendFx(ctx, view.bendFx ?? [], camera, false);
       // All upright occupants share depth order, including NPCs and props.
@@ -348,6 +349,7 @@ export class Canvas2DBackend implements RenderBackend {
         })),
       ].sort((a, b) => camera.groundPoint(a.pos).y - camera.groundPoint(b.pos).y);
       for (const occupant of occupants) occupant.draw();
+      this.drawTargetReticle(view, camera);
       this.drawFlock(view, camera);
       drawBendFx(ctx, view.bendFx ?? [], camera, true);
       ctx.save();
@@ -364,11 +366,13 @@ export class Canvas2DBackend implements RenderBackend {
       if (view.aimArc) this.drawAimArc(view.aimArc, camera);
       this.drawFxLayer(view, camera, 'under');
       this.drawExit(view, camera);
+      this.drawClimbMarkers(view, camera);
       this.drawUnitRings(view, camera);
       drawBendFx(ctx, view.bendFx ?? [], camera, false);
       this.drawNpcs(view, camera);
       this.drawProps(view, camera);
       this.drawUnits(view, camera);
+      this.drawTargetReticle(view, camera);
       drawBendFx(ctx, view.bendFx ?? [], camera, true);
       this.drawFxLayer(view, camera, 'over');
     }
@@ -699,50 +703,158 @@ export class Canvas2DBackend implements RenderBackend {
   private drawOverlays(view: MapView, camera: Camera): void {
     if (view.crispOverlays) {
       this.drawCrispOverlays(view, camera);
-      return;
+    } else {
+      const { ctx } = this;
+      const origin = camera.toScreen({ x: 0, y: 0 });
+      const size = origin.size;
+
+      for (const layer of view.overlays) {
+        if (layer.tiles.length === 0) continue;
+        let loops = this.loops.get(layer);
+        if (!loops) {
+          loops = contourLoops(layer.tiles);
+          this.loops.set(layer, loops);
+        }
+        const [fill, edge] = overlayColors(layer.kind);
+
+        ctx.save();
+        ctx.beginPath();
+        for (const loop of loops) tracePolygon(ctx, loop, origin, size);
+        ctx.fillStyle = fill;
+        ctx.fill('evenodd');
+        if (edge) {
+          ctx.lineJoin = 'round';
+          ctx.strokeStyle = edge;
+          ctx.globalAlpha = OVERLAY.softAlpha;
+          ctx.lineWidth = size * OVERLAY.softWidth;
+          ctx.stroke();
+          ctx.globalAlpha = 1;
+          ctx.lineWidth = Math.max(2, size * OVERLAY.edgeWidth);
+          ctx.stroke();
+        }
+        ctx.restore();
+      }
+
+      if (view.hoverTile) {
+        const box = camera.toScreen(view.hoverTile);
+        ctx.save();
+        ctx.beginPath();
+        tracePolygon(ctx, HOVER_LOOP, box, box.size);
+        ctx.fillStyle = OVERLAY.hover;
+        ctx.fill();
+        ctx.restore();
+      }
+    }
+    this.drawCliffCues(view, camera);
+  }
+
+  private drawCliffCues(view: MapView, camera: Camera): void {
+    const ctx = this.ctx;
+    const size = camera.toScreen({ x: 0, y: 0 }).size;
+    ctx.save();
+    ctx.strokeStyle = OVERLAY.cliffHatch;
+    ctx.lineWidth = Math.max(2, size * 0.045);
+    for (const edge of view.cliffEdges ?? []) {
+      const box = camera.toScreen(edge.pos);
+      const horizontal = edge.side === 'north' || edge.side === 'south';
+      const x = horizontal ? box.x : box.x + (edge.side === 'east' ? box.size : 0);
+      const y = horizontal ? box.y + (edge.side === 'south' ? box.size : 0) : box.y;
+      ctx.beginPath();
+      for (let step = 0.1; step < 1; step += 0.2) {
+        if (horizontal) {
+          const inward = edge.side === 'south' ? -1 : 1;
+          const inset = size * 0.03;
+          ctx.moveTo(x + size * (step - 0.08), y + inward * inset);
+          ctx.lineTo(x + size * (step + 0.08), y + inward * (inset + size * 0.1));
+        } else {
+          const inward = edge.side === 'east' ? -1 : 1;
+          const inset = size * 0.03;
+          ctx.moveTo(x + inward * inset, y + size * (step - 0.08));
+          ctx.lineTo(x + inward * (inset + size * 0.1), y + size * (step + 0.08));
+        }
+      }
+      ctx.stroke();
     }
 
-    const { ctx } = this;
-    const origin = camera.toScreen({ x: 0, y: 0 });
-    const size = origin.size;
+    ctx.restore();
+  }
 
-    for (const layer of view.overlays) {
-      if (layer.tiles.length === 0) continue;
-      let loops = this.loops.get(layer);
-      if (!loops) {
-        loops = contourLoops(layer.tiles);
-        this.loops.set(layer, loops);
-      }
-      const [fill, edge] = overlayColors(layer.kind);
-
-      ctx.save();
+  /** Upright ground cues: projected anchors, but no oblique ground transform. */
+  private drawClimbMarkers(view: MapView, camera: Camera): void {
+    const ctx = this.ctx;
+    const size = camera.toScreen({ x: 0, y: 0 }).size;
+    ctx.save();
+    ctx.lineJoin = 'round';
+    ctx.lineCap = 'round';
+    for (const marker of view.climbMarkers ?? []) {
+      const box = camera.toScreen(marker.pos);
+      const cx = box.x + box.size * 0.4;
+      const cy =
+        box.y - liftAt(view.grid, marker.pos, camera.projection) * box.size + box.size * 0.72;
       ctx.beginPath();
-      for (const loop of loops) tracePolygon(ctx, loop, origin, size);
-      ctx.fillStyle = fill;
-      ctx.fill('evenodd');
-      if (edge) {
-        // A wide faint stroke under a thin crisp one: a soft edge with no blur.
-        ctx.lineJoin = 'round';
-        ctx.strokeStyle = edge;
-        ctx.globalAlpha = OVERLAY.softAlpha;
-        ctx.lineWidth = size * OVERLAY.softWidth;
-        ctx.stroke();
-        ctx.globalAlpha = 1;
-        ctx.lineWidth = Math.max(2, size * OVERLAY.edgeWidth);
-        ctx.stroke();
-      }
-      ctx.restore();
-    }
-
-    if (view.hoverTile) {
-      const box = camera.toScreen(view.hoverTile);
-      ctx.save();
-      ctx.beginPath();
-      tracePolygon(ctx, HOVER_LOOP, box, box.size);
-      ctx.fillStyle = OVERLAY.hover;
+      ctx.moveTo(cx - size * 0.1, cy + size * 0.07);
+      ctx.lineTo(cx, cy - size * 0.1);
+      ctx.lineTo(cx + size * 0.1, cy + size * 0.07);
+      ctx.closePath();
+      ctx.fillStyle = OVERLAY.climb;
+      ctx.strokeStyle = OVERLAY.pathUnder;
+      ctx.lineWidth = Math.max(3, size * 0.065);
+      ctx.stroke();
       ctx.fill();
-      ctx.restore();
+      ctx.font = `600 ${Math.max(10, size * 0.2)}px sans-serif`;
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      ctx.lineWidth = Math.max(2, size * 0.045);
+      ctx.strokeText(`+${marker.surcharge}`, cx + size * 0.2, cy);
+      ctx.fillText(`+${marker.surcharge}`, cx + size * 0.2, cy);
     }
+    ctx.restore();
+  }
+
+  /** The target cue stays above units so it remains attached to its target. */
+  private drawTargetReticle(view: MapView, camera: Camera): void {
+    const ctx = this.ctx;
+    const size = camera.toScreen({ x: 0, y: 0 }).size;
+    ctx.save();
+    ctx.lineJoin = 'round';
+    ctx.lineCap = 'round';
+    const cue = view.targetReticle;
+    if (cue) {
+      const target = view.units.find(
+        (unit) => unit.pos.x === cue.pos.x && unit.pos.y === cue.pos.y,
+      );
+      const pos = target?.renderPos ?? target?.pos ?? cue.pos;
+      const box = camera.spriteBox(pos, target?.size ?? 1);
+      const width = (target?.size ?? 1) * box.size;
+      const cx = box.x + width + box.size * 0.12;
+      const cy = box.y - liftAlong(view.grid, pos, camera.projection) * box.size - box.size * 0.04;
+      ctx.fillStyle = OVERLAY.reticleCue;
+      ctx.strokeStyle = OVERLAY.pathUnder;
+      ctx.lineWidth = Math.max(3, size * 0.065);
+      if (cue.elevation) {
+        const direction = cue.elevation === 'above' ? -1 : 1;
+        ctx.beginPath();
+        ctx.moveTo(cx - size * 0.13, cy - direction * size * 0.08);
+        ctx.lineTo(cx, cy + direction * size * 0.13);
+        ctx.lineTo(cx + size * 0.13, cy - direction * size * 0.08);
+        ctx.closePath();
+        ctx.stroke();
+        ctx.fill();
+      }
+      if (cue.obscured) {
+        const x = cx + size * 0.27;
+        const y = cy;
+        ctx.beginPath();
+        ctx.arc(x - size * 0.06, y, size * 0.07, Math.PI, 0);
+        ctx.arc(x + size * 0.04, y - size * 0.015, size * 0.09, Math.PI, 0);
+        ctx.lineTo(x + size * 0.12, y + size * 0.06);
+        ctx.lineTo(x - size * 0.13, y + size * 0.06);
+        ctx.closePath();
+        ctx.stroke();
+        ctx.fill();
+      }
+    }
+    ctx.restore();
   }
 
   /** The pre-contour look, kept for High contrast: a square per tile, hard edges. */
@@ -1334,6 +1446,8 @@ export function overlayColors(kind: OverlayKind): [string, string | null] {
       return [OVERLAY.target, OVERLAY.targetEdge];
     case 'area':
       return [OVERLAY.area, OVERLAY.areaEdge];
+    case 'rangeBonus':
+      return [OVERLAY.rangeBonus, OVERLAY.rangeBonusEdge];
     case 'hover':
       return [OVERLAY.hover, null];
   }

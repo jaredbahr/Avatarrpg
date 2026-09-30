@@ -17,18 +17,30 @@ import type { App, Scene, CameraInfo } from '../App';
 import type { Ability, BattleState, Unit, Vec2 } from '../../core/types';
 import {
   canUseAbility,
+  heightReachBonus,
   isValidTarget,
   knownAbilities,
   previewAbility,
   targetableTiles,
   affectedTiles,
 } from '../../core/rules/abilities';
-import { pathCost, posKey, reachable, samePos } from '../../core/rules/grid';
+import {
+  distance,
+  climbSurcharge,
+  occupiedCells,
+  pathCost,
+  posKey,
+  reachable,
+  samePos,
+  tileAt,
+  type ReachableCell,
+} from '../../core/rules/grid';
 import { canMove, effectiveStats, isAlive, statusDefs } from '../../core/rules/stats';
 import { activeUnit, upcomingOrder } from '../../core/rules/turnOrder';
 import { encounterText } from '../../core/story/encounterText';
 import { Renderer, TILE } from '../../render/renderer';
 import type { AimArc, MapView, OverlayLayer, RenderProp, RenderUnit } from '../../render/renderer';
+import { cliffEdgesFor, type TargetReticleCue } from '../../render/view';
 import { CONTENT } from '../../content';
 import { attachPointer, wheelZoomFactor } from '../input/pointer';
 import { ambienceFx, resolveFx } from '../../content/fx';
@@ -42,7 +54,7 @@ import { paletteFor } from '../../render/palettes';
 import { paintElementGlyph } from '../../render/painters/glyphs';
 import { showGridLines } from '../storage/localSaves';
 import { reactionNotes } from '../ui/ReactionNote';
-import { formatShoveMovement } from '../ui/combatPreviewText';
+import { formatHitBreakdownRows, formatShoveMovement } from '../ui/combatPreviewText';
 import { UnitInspector } from '../ui/UnitInspector';
 import { enemyScale, partyScale } from '../anim/actorScale';
 import { partyBendSprites } from '../anim/bendHandoff';
@@ -55,6 +67,15 @@ type Mode =
   | { readonly kind: 'idle' }
   | { readonly kind: 'move' }
   | { readonly kind: 'aim'; readonly abilityId: string };
+
+interface OverlayBuild {
+  readonly overlays: OverlayLayer[];
+  readonly path: readonly Vec2[];
+  readonly climbMarkers: NonNullable<MapView['climbMarkers']>;
+  readonly cliffEdges: NonNullable<MapView['cliffEdges']>;
+  readonly rangeBonusTiles: readonly Vec2[];
+  readonly targetReticle: TargetReticleCue | null;
+}
 
 export class CombatScene implements Scene {
   readonly name = 'combat';
@@ -105,12 +126,12 @@ export class CombatScene implements Scene {
    * inputs that decide them change, not every frame: on a tablet the
    * flood-fill is the one per-frame cost that shows up.
    */
-  private overlayMemo: {
-    battle: BattleState;
-    key: string;
-    overlays: OverlayLayer[];
-    path: readonly Vec2[];
-  } | null = null;
+  private overlayMemo:
+    | ({
+        battle: BattleState;
+        key: string;
+      } & OverlayBuild)
+    | null = null;
   private aiScheduled = false;
   private resultShown = false;
   private logOpen = false;
@@ -442,8 +463,7 @@ export class CombatScene implements Scene {
   private reachableCells() {
     const battle = this.battle();
     const unit = this.active();
-    if (!battle || !unit)
-      return new Map<string, { pos: Vec2; cost: number; path: readonly Vec2[] }>();
+    if (!battle || !unit) return new Map<string, ReachableCell>();
 
     const blocked = new Set<string>();
     for (const other of battle.units) {
@@ -1205,7 +1225,7 @@ export class CombatScene implements Scene {
     ) {
       chips.appendChild(el('span', { class: 'chip', text: 'Nobody in the area' }));
     }
-    for (const entry of preview.targets) {
+    for (const [entryIndex, entry] of preview.targets.entries()) {
       const parts: string[] = [];
       if (entry.hitChance !== null) parts.push(`${entry.hitChance}%`);
       if (entry.damage > 0) parts.push(`~${entry.damage} dmg`);
@@ -1227,12 +1247,35 @@ export class CombatScene implements Scene {
         const name = this.app.content.statuses.get(cleared)?.name ?? cleared;
         if (!parts.some((part) => part === `clears ${name}`)) parts.push(`clears ${name}`);
       }
-      chips.appendChild(
-        el('span', {
-          class: `chip ${entry.friendly ? 'chip-friendly' : 'chip-hostile'}${entry.lethal ? ' chip-lethal' : ''}`,
-          text: `${entry.name}: ${parts.join(' · ')}${entry.lethal ? ' — lethal' : ''}`,
-        }),
+      const breakdownRows = formatHitBreakdownRows(entry.hitBreakdown);
+      const label = `${entry.name}: ${parts.join(' · ')}${entry.lethal ? ' — lethal' : ''}`;
+      const chipClass = `chip ${entry.friendly ? 'chip-friendly' : 'chip-hostile'}${
+        entry.lethal ? ' chip-lethal' : ''
+      }`;
+      if (breakdownRows.length === 0) {
+        chips.appendChild(el('span', { class: chipClass, text: label }));
+        continue;
+      }
+
+      const breakdownId = `hit-breakdown-${entryIndex}`;
+      const breakdown = el(
+        'div',
+        { class: 'hit-breakdown', id: breakdownId },
+        ...breakdownRows.map((row) => el('span', { text: row })),
       );
+      breakdown.hidden = true;
+      const targetChip = button(
+        label,
+        () => {
+          const expanded = targetChip.getAttribute('aria-expanded') !== 'true';
+          targetChip.setAttribute('aria-expanded', String(expanded));
+          breakdown.hidden = !expanded;
+        },
+        { class: `${chipClass} preview-target-chip` },
+      );
+      targetChip.setAttribute('aria-expanded', 'false');
+      targetChip.setAttribute('aria-controls', breakdownId);
+      chips.append(targetChip, breakdown);
     }
     for (const contact of preview.surfaceContacts) {
       const surface = this.app.content.surfaces.get(contact.surface)?.name ?? contact.surface;
@@ -1300,7 +1343,6 @@ export class CombatScene implements Scene {
         (id) => this.app.content.surfaces.get(id)?.name ?? id,
       );
       if (shove.landingDamage > 0) landingEffects.push(`${shove.landingDamage} damage`);
-      if (shove.ledgeDropDamage > 0) landingEffects.push(`falls: ${shove.ledgeDropDamage} damage`);
       for (const status of shove.landingStatuses) {
         const name = this.app.content.statuses.get(status.id)?.name ?? status.id;
         landingEffects.push(
@@ -1316,6 +1358,14 @@ export class CombatScene implements Scene {
             : `${formatShoveMovement(shove.name, shove.mode, destination)}${landing}`,
         }),
       );
+      if (shove.ledgeDropTiers > 0) {
+        chips.appendChild(
+          el('span', {
+            class: `chip shove-drop-forecast ${shove.friendly ? 'chip-friendly' : 'chip-terrain'}`,
+            text: `${shove.name} drops ${shove.ledgeDropTiers} → ${shove.ledgeDropDamage} damage`,
+          }),
+        );
+      }
     }
 
     for (const status of preview.statuses) {
@@ -1566,22 +1616,34 @@ export class CombatScene implements Scene {
     const unit = this.active();
     let overlays: readonly OverlayLayer[] = [];
     let path: readonly Vec2[] = [];
+    let climbMarkers: MapView['climbMarkers'] = [];
+    let cliffEdges: MapView['cliffEdges'] = [];
+    let rangeBonusTiles: readonly Vec2[] = [];
+    let targetReticle: TargetReticleCue | null = null;
 
     const interactive = this.isPlayerTurn() && !this.needsHandoff() && !this.app.animator.busy(now);
 
     if (interactive && unit) {
       const key = `${this.mode.kind}|${this.mode.kind === 'aim' ? this.mode.abilityId : ''}|${
         this.pending ? posKey(this.pending) : ''
-      }|${unit.id}`;
+      }|${this.mode.kind === 'aim' && this.hover ? posKey(this.hover) : ''}|${unit.id}`;
       const memo = this.overlayMemo;
       if (memo && memo.battle === battle && memo.key === key) {
         overlays = memo.overlays;
         path = memo.path;
+        climbMarkers = memo.climbMarkers;
+        cliffEdges = memo.cliffEdges;
+        rangeBonusTiles = memo.rangeBonusTiles;
+        targetReticle = memo.targetReticle;
       } else {
         const built = this.buildOverlays(battle, unit);
         this.overlayMemo = { battle, key, ...built };
         overlays = built.overlays;
         path = built.path;
+        climbMarkers = built.climbMarkers;
+        cliffEdges = built.cliffEdges;
+        rangeBonusTiles = built.rangeBonusTiles;
+        targetReticle = built.targetReticle;
       }
     }
 
@@ -1664,6 +1726,10 @@ export class CombatScene implements Scene {
       npcs: [],
       props,
       overlays,
+      climbMarkers,
+      cliffEdges,
+      rangeBonusTiles,
+      targetReticle,
       path,
       pathFrom: unit?.pos ?? null,
       aimArc,
@@ -1775,18 +1841,34 @@ export class CombatScene implements Scene {
     };
   }
 
-  private buildOverlays(
-    battle: BattleState,
-    unit: Unit,
-  ): { overlays: OverlayLayer[]; path: readonly Vec2[] } {
+  private buildOverlays(battle: BattleState, unit: Unit): OverlayBuild {
     const overlays: OverlayLayer[] = [];
     let path: readonly Vec2[] = [];
+    let climbMarkers: NonNullable<MapView['climbMarkers']> = [];
+    let cliffEdges: NonNullable<MapView['cliffEdges']> = [];
+    let rangeBonusTiles: readonly Vec2[] = [];
+    let targetReticle: TargetReticleCue | null = null;
 
     if (this.mode.kind === 'move') {
-      if (this.movementBlockReason(unit)) return { overlays, path };
+      if (this.movementBlockReason(unit)) {
+        return { overlays, path, climbMarkers, cliffEdges, rangeBonusTiles, targetReticle };
+      }
       const reach = this.reachableCells();
       const cells = [...reach.values()].filter((c) => c.cost > 0);
       overlays.push({ kind: 'move', tiles: cells.map((c) => c.pos) });
+      const moveContext = this.moveContext(unit);
+      const occupied = new Set(
+        battle.units.flatMap((candidate) =>
+          isAlive(candidate) ? occupiedCells(candidate).map(posKey) : [],
+        ),
+      );
+      climbMarkers = cells.flatMap((cell) => {
+        const from = cell.path.length > 1 ? cell.path[cell.path.length - 2] : unit.pos;
+        if (!from || occupied.has(posKey(cell.pos))) return [];
+        const surcharge = climbSurcharge(moveContext, from, cell.pos) ?? 0;
+        return surcharge > 0 ? [{ pos: cell.pos, surcharge }] : [];
+      });
+      cliffEdges = cliffEdgesFor(battle.grid);
       if (this.pending) {
         const chosen = reach.get(posKey(this.pending));
         if (chosen) path = chosen.path;
@@ -1794,9 +1876,10 @@ export class CombatScene implements Scene {
     } else if (this.mode.kind === 'aim') {
       const ability = this.app.content.abilities.get(this.mode.abilityId);
       if (ability) {
+        const targets = targetableTiles(this.app.content, battle, unit, ability);
         overlays.push({
           kind: 'target',
-          tiles: targetableTiles(this.app.content, battle, unit, ability),
+          tiles: targets,
         });
         if (this.pending) {
           overlays.push({
@@ -1804,9 +1887,50 @@ export class CombatScene implements Scene {
             tiles: affectedTiles(this.app.content, battle.grid, unit, ability, this.pending),
           });
         }
+        const originTile = tileAt(battle.grid, unit.pos);
+        rangeBonusTiles = targets.filter((pos) => {
+          const targetTile = tileAt(battle.grid, pos);
+          return Boolean(
+            originTile &&
+            targetTile &&
+            heightReachBonus(
+              this.app.content,
+              ability,
+              originTile.elevation,
+              targetTile.elevation,
+            ) > 0 &&
+            distance(unit.pos, pos) > ability.range,
+          );
+        });
+        if (rangeBonusTiles.length > 0) {
+          overlays.push({ kind: 'rangeBonus', tiles: rangeBonusTiles });
+        }
+        const aimed = [this.pending, this.hover].find(
+          (pos): pos is Vec2 => pos !== null && targets.some((target) => samePos(target, pos)),
+        );
+        if (aimed) {
+          const target = battle.units.find(
+            (candidate) =>
+              isAlive(candidate) && occupiedCells(candidate).some((cell) => samePos(cell, aimed)),
+          );
+          if (target) {
+            const preview = previewAbility(this.app.content, battle, unit, ability, aimed);
+            const breakdown = preview.targets.find(
+              (entry) => entry.unitId === target.id,
+            )?.hitBreakdown;
+            if (breakdown) {
+              targetReticle = {
+                pos: target.pos,
+                elevation:
+                  breakdown.elevation > 0 ? 'above' : breakdown.elevation < 0 ? 'below' : null,
+                obscured: breakdown.obscurement.total < 0,
+              };
+            }
+          }
+        }
       }
     }
 
-    return { overlays, path };
+    return { overlays, path, climbMarkers, cliffEdges, rangeBonusTiles, targetReticle };
   }
 }
