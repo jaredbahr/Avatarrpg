@@ -65,7 +65,7 @@ export const AIR_ABILITIES: readonly Ability[] = [
     element: 'air',
     apCost: 3,
     range: 6,
-    targeting: blast(1),
+    targeting: blast(2),
     cooldown: 3,
     effects: [
       { kind: 'damage', base: 6, scale: 0.7, damageType: 'air' },
@@ -73,7 +73,7 @@ export const AIR_ABILITIES: readonly Ability[] = [
       { kind: 'status', status: 'slowed', duration: 2, chance: 0.6, to: 'hit' },
     ],
     description:
-      'A spinning column over a 3×3 area. Everyone caught, friend or foe, is hit and pulled towards the centre, with a 60% chance of being Slowed.',
+      'A spinning column over a 5×5 area. Everyone caught, friend or foe, is hit and pulled towards the centre, with a 60% chance of being Slowed.',
     flavor: 'Gather them up, then let the earthbender drop a rock on the pile.',
     fx: 'fx.air.cyclone',
     tags: ['attack', 'control'],
