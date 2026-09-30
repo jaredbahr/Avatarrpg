@@ -35,8 +35,8 @@ import { planBendCast } from './bendHandoff';
 /** Base durations in milliseconds, before the motion setting is applied. */
 export const TIMING = {
   step: 110,
-  combatWalkStep: 680,
-  strollStep: 760,
+  combatWalkStep: 480,
+  strollStep: 500,
   windUp: 260,
   release: 120,
   recover: 280,
@@ -395,8 +395,10 @@ export function choreograph(input: ChoreographyInput): Choreography {
         // Only the leader's route is cued: the followers walk the same tiles a
         // beat behind, and four sets of boots on one road is a stampede.
         if (!input.silentSteps)
-          for (let d = 0; d < curve.length; d++)
-            cue('step', cursor + timing.atDistance(d) * rate, 20 + d, eventIndex);
+          for (let d = 0; d < curve.length; d++) {
+            const at = cursor + (timing.atDistance(d) / timing.duration) * duration;
+            cue('step', at, 20 + d, eventIndex);
+          }
         const last = event.path[event.path.length - 1];
         if (last) positions.set(event.unitId, last);
         cursor += duration;

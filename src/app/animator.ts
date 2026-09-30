@@ -19,7 +19,7 @@ import type { ClipName } from '../render/view';
 import { hashSeed, mulberry32 } from '../render/fx/rng';
 import type { Projection } from '../render/projection';
 import { integrateAlong, sampleAt } from '../render/geometry/curve';
-import { choreograph } from './anim/choreography';
+import { choreograph, TIMING } from './anim/choreography';
 import { bendFxAt, bendNudge, bendPoseAt } from './anim/bendChoreo';
 import type { BendPlan } from './anim/bendChoreo';
 import type { BendFxIndex } from '../render/fx/bendFx';
@@ -50,10 +50,10 @@ const BOB = 0.05;
 
 /**
  * A walk clip advances by distance, not time: this many ms of clip per tile
- * of travel, so at the sheets' 4 fps a stride is two poses a tile whatever
- * the unit's speed.
+ * of travel. At the brisk exploration pace this keeps legacy four-way walks
+ * close to their authored 4 fps while G sheets use their declared stride.
  */
-const WALK_MS_PER_TILE = 500;
+export const WALK_MS_PER_TILE = TIMING.strollStep * 0.95;
 
 /**
  * How long a finished walk holds its settled pose before the ready stance is

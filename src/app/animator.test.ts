@@ -3,7 +3,7 @@ import { describe, expect, it } from 'vitest';
 import type { ContentIndex, GameEvent, Unit } from '../core/types';
 import { clipDurationMs } from '../content/assets/clips';
 import type { SheetClips } from '../render/sheets/store';
-import { Animator, STOP_SETTLE_MS } from './animator';
+import { Animator, STOP_SETTLE_MS, WALK_MS_PER_TILE } from './animator';
 import { CONTENT } from '../content';
 import { sampleParticles, PARTICLE_STRIDE } from '../render/fx/simulate';
 import { choreograph, TIMING } from './anim/choreography';
@@ -519,7 +519,7 @@ describe('Animator', () => {
     for (const at of [200, 339, 341, 619, 621, 900, a.finishesAt]) {
       const x = a.renderPos(at, 'p0')?.x ?? -1;
       const phase = a.unitPose(at, 'p0')?.clipTime ?? -1;
-      expect(phase).toBeCloseTo(x * 500, 8);
+      expect(phase).toBeCloseTo(x * WALK_MS_PER_TILE, 8);
       expect(phase).toBeGreaterThan(previous);
       previous = phase;
     }

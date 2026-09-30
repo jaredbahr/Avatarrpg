@@ -493,9 +493,32 @@ describe('choreograph', () => {
     if (move?.kind !== 'move') throw new Error('expected a move track');
     expect(move.unitId).toBe('leader');
     expect(move.start).toBe(1000);
-    expect(move.duration).toBe(TIMING.strollStep * 2 + 120);
+    expect(move.duration).toBe(TIMING.strollStep * 2 + STROLL_RAMP_MS);
     expect(cursor).toBe(1000 + move.duration);
     expect(move.duration).toBeGreaterThan(TIMING.step * 4);
+  });
+
+  it('keeps reduced-motion party footsteps inside the abbreviated walk', () => {
+    const path = Array.from({ length: 10 }, (_, i) => ({ x: 4 + i, y: 7 }));
+    const { tracks, sounds } = run(
+      [
+        {
+          type: 'partyWalked',
+          unitId: 'leader',
+          from: { x: 3, y: 7 },
+          path,
+        },
+      ],
+      0.02,
+    );
+    const [move] = tracks;
+    if (move?.kind !== 'move') throw new Error('expected a move track');
+    expect(move.duration).toBe(TIMING.step * path.length * 0.02);
+    expect(sounds).toHaveLength(Math.ceil(move.curve.length));
+    for (const sound of sounds) {
+      expect(sound.at).toBeGreaterThanOrEqual(move.start);
+      expect(sound.at).toBeLessThanOrEqual(move.start + move.duration);
+    }
   });
 
   it('keeps short, long and diagonal combat walks at the same distance pace and sounds at footfalls', () => {

@@ -154,7 +154,7 @@ function rikoSheet(): SheetEntry {
 }
 
 /** One complete authored G walk loop covers this many logical ground tiles. */
-export const G_STRIDE_TILES = 1.375;
+export const G_STRIDE_TILES = 1.825;
 
 /**
  * Distance-phased clip time for a G walk. The source art's measured root

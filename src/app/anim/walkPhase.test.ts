@@ -4,12 +4,12 @@ import { HEADINGS, headingClip } from '../../content/assets/clips';
 import type { ContentIndex, Vec2 } from '../../core/types';
 import { smoothPath } from '../../render/geometry/curve';
 import type { Projection } from '../../render/projection';
-import { Animator } from '../animator';
+import { Animator, WALK_MS_PER_TILE } from '../animator';
 import { screenDirection, walkHeading } from './direction';
 
 const content = { abilities: new Map() } as unknown as ContentIndex;
 const KAYA = 'unit.fire.kaya';
-/** A four-way sheet: a fixed 500 ms of clip a tile. */
+/** A four-way sheet: a fixed near-authored clip phase per tile. */
 const FOUR_WAY = 'unit.earth.linmei';
 /** Kaya's walk cel: the clip's nominal 114 ms cadence. */
 const CEL_MS = 114;
@@ -64,15 +64,13 @@ const E: [number, number] = [1, 0];
 const N: [number, number] = [0, -1];
 
 describe('eight-way walk phase across a turn', () => {
-  it('plays every G walk at one full stride per 1.25-1.5 tiles in every heading', () => {
+  it('plays every G walk at the declared stride in every heading', () => {
     for (const [key, entry] of Object.entries(ASSETS)) {
       if (entry?.kind !== 'sheet' || entry.facing !== 'both' || !entry.locomotion) continue;
       for (const heading of HEADINGS) {
         const walk = entry.clips[headingClip('walk', heading)];
         if (!walk) throw new Error(`${key} walk ${heading}`);
         const celsPerTile = entry.locomotion.walkMsPerTile[heading] * (walk.fps / 1000);
-        expect(celsPerTile, `${key} ${heading}`).toBeGreaterThanOrEqual(walk.frames.length / 1.5);
-        expect(celsPerTile, `${key} ${heading}`).toBeLessThanOrEqual(walk.frames.length / 1.25);
         expect(walk.frames.length / celsPerTile, `${key} ${heading}`).toBeCloseTo(
           G_STRIDE_TILES,
           8,
@@ -135,7 +133,7 @@ describe('eight-way walk phase across a turn', () => {
       for (const t of [50, 150, 300, a.finishesAt - 1]) {
         const legacy = a.unitPose(t, 'p', FOUR_WAY)?.clipTime ?? -1;
         expect(a.unitPose(t, 'p', KAYA)?.clipTime, `${projection} ${t}`).toBeCloseTo(
-          (legacy / 500) * rate,
+          (legacy / WALK_MS_PER_TILE) * rate,
           6,
         );
       }
@@ -155,7 +153,7 @@ describe('eight-way walk phase across a turn', () => {
     }
   });
 
-  it('leaves four-way art at a fixed 500 ms a tile through the same turn', () => {
+  it('leaves four-way art at its fixed cadence through the same turn', () => {
     for (const projection of ['orthographic', 'oblique'] as const) {
       const path = tiles(FROM, E, E, E, N, N, N);
       const a = walker(projection, FROM, path);
@@ -169,12 +167,12 @@ describe('eight-way walk phase across a turn', () => {
           if (previous) travelled += Math.hypot(pos.x - previous.x, pos.y - previous.y);
           previous = pos;
           expect(pose.clipTime).toBeCloseTo(
-            travelled * 500 + (a.unitPose(1, 'p', sprite)?.clipTime ?? 0),
+            travelled * WALK_MS_PER_TILE + (a.unitPose(1, 'p', sprite)?.clipTime ?? 0),
             0,
           );
         }
         const end = a.unitPose(a.finishesAt - 0.01, 'p', sprite)?.clipTime ?? -1;
-        expect(end).toBeCloseTo(smoothPath(FROM, path).length * 500, 0);
+        expect(end).toBeCloseTo(smoothPath(FROM, path).length * WALK_MS_PER_TILE, 0);
       }
     }
   });

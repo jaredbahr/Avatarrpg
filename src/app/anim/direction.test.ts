@@ -1,3 +1,4 @@
+import { WALK_MS_PER_TILE } from '../animator';
 import { describe, expect, it } from 'vitest';
 import { screenMeleeDirection, walkDirection, walkHeading, directionalClip } from './direction';
 import type { WalkDirection } from './direction';
@@ -11,7 +12,7 @@ const content = { abilities: new Map() } as unknown as ContentIndex;
 
 /** The eight-way PixelLab G party (ADR 0050, ADR 0051). */
 const G_PARTY = ['unit.fire.kaya', 'unit.water.sura', 'unit.earth.bo'] as const;
-/** A sheet on the legacy four-way contract, fixed 500 ms a tile. */
+/** A sheet on the legacy four-way cadence contract. */
 const FOUR_WAY = 'unit.earth.linmei';
 
 describe('directional walking', () => {
@@ -281,8 +282,8 @@ describe('heading vocabulary is a declared sheet capability', () => {
           const vertical = clip !== 'walk';
           expect(got, `leg ${leg.x},${leg.y}`).toEqual({
             walk: { clip, facing: vertical ? 1 : facing },
-            // Legacy gait: 500 ms of clip time per tile.
-            clipTime: expect.closeTo(250 * length, 0) as unknown as number,
+            // Legacy gait: WALK_MS_PER_TILE of clip time per tile.
+            clipTime: expect.closeTo((WALK_MS_PER_TILE / 2) * length, 0) as unknown as number,
           });
         } else {
           const rest = legacyClip('rest', previous);
@@ -335,7 +336,7 @@ describe('heading vocabulary is a declared sheet capability', () => {
       const pose = a.unitPose(300, 'u', sprite);
       const legacy = a.unitPose(300, 'u', FOUR_WAY);
       expect(pose?.clipTime).toBeCloseTo(
-        ((legacy?.clipTime ?? 0) / 500) * sheet.locomotion.walkMsPerTile.south,
+        ((legacy?.clipTime ?? 0) / WALK_MS_PER_TILE) * sheet.locomotion.walkMsPerTile.south,
       );
     });
 
@@ -354,7 +355,7 @@ describe('heading vocabulary is a declared sheet capability', () => {
         a.push(0, [{ type: 'partyWalked', unitId: 'u', from: { x: 4, y: 4 }, path: [to] }], []);
         const pose = a.unitPose(300, 'u', sprite);
         const legacy = a.unitPose(300, 'u', FOUR_WAY);
-        expect(pose?.clipTime).toBeCloseTo(((legacy?.clipTime ?? 0) / 500) * expected);
+        expect(pose?.clipTime).toBeCloseTo(((legacy?.clipTime ?? 0) / WALK_MS_PER_TILE) * expected);
       }
     });
   }

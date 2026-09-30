@@ -9,6 +9,11 @@ import {
   startGame,
   waitForIdle,
 } from './helpers';
+import { TIMING } from '../src/app/anim/choreography';
+
+const LEGACY_WALK_MS_PER_TILE = 280;
+const walkTimeout = (legacyMs: number): number =>
+  Math.ceil((legacyMs * TIMING.strollStep) / LEGACY_WALK_MS_PER_TILE / 1_000) * 1_000;
 
 async function openActivities(page: Page): Promise<void> {
   const toggle = page.getByRole('button', { name: 'Activities', exact: true });
@@ -164,9 +169,9 @@ for (const renderer of ['canvas', 'webgl']) {
     // takes two minutes there and five seconds on Canvas.
     test.setTimeout(90_000);
     allowSoftwareWebgl(test, renderer);
-    // Scenic routes now take 280 ms per tile; crossing the whole area can
-    // exceed the default assertion timeout even at a smooth frame rate.
-    const timeout = renderer === 'webgl' ? 30_000 : 20_000;
+    // Scenic-route assertions scale with the current stroll pace; crossing
+    // the whole area can exceed the default timeout even at a smooth frame rate.
+    const timeout = walkTimeout(renderer === 'webgl' ? 30_000 : 20_000);
     const errors: string[] = [];
     page.on('pageerror', (error) => errors.push(error.message));
     await resetStorage(page, `?renderer=${renderer}`);

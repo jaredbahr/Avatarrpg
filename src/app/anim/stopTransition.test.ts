@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 import type { ContentIndex, GameEvent, Unit, Vec2 } from '../../core/types';
 import { Animator } from '../animator';
 import { TIMING } from './choreography';
-import { strollTiming } from './stroll';
+import { STROLL_RAMP_MS, strollTiming } from './stroll';
 
 /**
  * Gait and stopping (M1), reproduced from the paired telemetry in
@@ -12,8 +12,8 @@ import { strollTiming } from './stroll';
  * the drawn position and pose at fixed times the way `CombatScene` builds its
  * view: a pose track wins, otherwise the locomotion clip.
  *
- * The acceptance row is "Motion and contact": no foot sliding, no unexplained
- * snap, no blank frames.
+ * The acceptance row is "Motion and contact": no unexplained snap or blank
+ * frames. ADR 0067 accepts bounded foot slide for the brisk pace.
  */
 
 const content = { abilities: new Map() } as unknown as ContentIndex;
@@ -100,27 +100,33 @@ describe('combat move gait', () => {
     const a = play([moved('p0', [2, 3], [3, 3])], [hero('p0', 1, 3)]);
     const rest = { x: 3, y: 3 };
     const end = a.finishesAt;
-    // Two tiles of stroll at 680 ms, plus the bounded 120 ms ramp.
-    expect(end - START).toBe(1480);
+    const timing = strollTiming(2, TIMING.combatWalkStep);
+    expect(end - START).toBe(timing.duration);
 
     // Fixed-time samples: accelerating off the tile, cruising, braking in.
-    for (const [at, x] of [
-      [0, 1],
-      [120, 1.0882353],
-      [740, 2],
-      [1360, 2.9117647],
-      [1480, 3],
-    ] as const)
-      expect(drawn(a, START + at, 'p0', rest).pos.x, `${at} ms`).toBeCloseTo(x, 6);
+    for (const at of [
+      0,
+      STROLL_RAMP_MS,
+      timing.duration / 2,
+      timing.duration - STROLL_RAMP_MS,
+      timing.duration,
+    ])
+      expect(drawn(a, START + at, 'p0', rest).pos.x, `${at} ms`).toBeCloseTo(
+        1 + timing.ease(at / timing.duration) * 2,
+        6,
+      );
 
     // The live review measured 0.902 tile inside the first 40 ms of the old
     // 110 ms-per-cell hop; the ramped stroll covers 0.010 tile.
-    expect(drawn(a, START + 40, 'p0', rest).pos.x - 1).toBeCloseTo(0.0098, 4);
+    expect(drawn(a, START + 40, 'p0', rest).pos.x - 1).toBeCloseTo(
+      timing.ease(40 / timing.duration) * 2,
+      6,
+    );
 
     // No sample at 60 fps moves further than the cruising pace of one tile
-    // per 680 ms, including the frame after the route ends.
+    // at the configured combat pace, including the frame after the route ends.
     const { max, steps } = maxStep(a, end, rest);
-    expect(steps).toBeGreaterThan(90);
+    expect(steps).toBeGreaterThan(timing.duration / 17);
     expect(max).toBeLessThanOrEqual(16 / TIMING.combatWalkStep + 1e-9);
     expect(max).toBeCloseTo(16 / TIMING.combatWalkStep, 9);
     expect(drawn(a, end, 'p0', rest).pos).toEqual(rest);

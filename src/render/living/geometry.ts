@@ -7,12 +7,10 @@ export const FOOT_Y = 0.5;
 export const FIGURE_SCALE = 1.45;
 
 /**
- * Walk clip time on the riverside, from the animator's. A four-way sheet
- * plays a fixed 500 ms a tile, a cadence rather than a stride, and keeps it.
- * Eight-way sheets now declare cadence per logical tile, independent of draw
- * scale, so the riverside uses the animator's phase unchanged too.
+ * Walk clip time on the riverside, from the animator. Every sheet now keeps
+ * the phase selected by the animator; G sheets declare their stride there.
  */
-export function riversideWalkTime(clipTime: number, _eightWay: boolean): number {
+export function riversideWalkTime(clipTime: number): number {
   return clipTime;
 }
 

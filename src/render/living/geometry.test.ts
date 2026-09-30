@@ -4,6 +4,7 @@ import { FOOT_Y, hitsPebble, hitsVillager, riversideWalkTime } from './geometry'
 import { frameIndex, resolveClip } from '../sheets/resolveClip';
 import { HEADINGS, headingClip } from '../../content/assets/clips';
 import { ASSETS, G_STRIDE_TILES } from '../../content/assets/manifest';
+import { WALK_MS_PER_TILE } from '../../app/animator';
 
 describe('riverside ground and gesture coordinates', () => {
   it('places feet at the clicked tile centre at different zoom and pan values', () => {
@@ -27,8 +28,8 @@ describe('riverside ground and gesture coordinates', () => {
     expect(hitsPebble({ x: 17.6, y: 15.5 }, { x: 17, y: 15 })).toBe(true);
     expect(hitsPebble({ x: 16.5, y: 15.5 }, { x: 17, y: 15 })).toBe(false);
   });
-  it('keeps a four-way sheet on its 500 ms a tile', () => {
-    expect(riversideWalkTime(500, false)).toBe(500);
+  it('keeps the animator phase for a four-way sheet', () => {
+    expect(riversideWalkTime(WALK_MS_PER_TILE)).toBe(WALK_MS_PER_TILE);
   });
   it('keeps the G logical stride cadence at riverside scale in every heading', () => {
     for (const key of ['unit.fire.kaya', 'unit.water.sura'] as const) {
@@ -37,7 +38,7 @@ describe('riverside ground and gesture coordinates', () => {
       for (const heading of HEADINGS) {
         const clip = resolveClip(entry.clips, headingClip('walk', heading));
         if (!clip?.exact) throw new Error(`${key} walk ${heading}`);
-        const clipTime = riversideWalkTime(entry.locomotion.walkMsPerTile[heading], true);
+        const clipTime = riversideWalkTime(entry.locomotion.walkMsPerTile[heading]);
         const cels = clipTime * (clip.def.fps / 1000);
         expect(clip.def.frames.length / cels, `${key} ${heading}`).toBeCloseTo(G_STRIDE_TILES, 8);
         // The cel index the life layer asks for is that same clock.
