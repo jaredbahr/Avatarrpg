@@ -220,9 +220,9 @@ it('carries the material of the cell it leaves, and fades with the page', () => 
       const terrain = apronTerrain(field, FOREST_APRON_MAP.width + depth, y);
       if (terrain) shallow.add(`${terrain.r},${terrain.g},${terrain.b}`);
     }
-    // The regression this guards produced seven. Row 5.5 measures nine since
-    // the 2026-09-30 reed wear moved with the new bank reeds, so the floor is
-    // nine rather than ten. Eight keeps a margin and still sits clear of the sawtooth.
+    // The regression this guards produced seven. Row 5.5 measures nine since the
+    // 2026-09-30 bank reeds moved the reed wear; a floor of eight keeps a margin
+    // and still sits clear of the sawtooth.
     expect(shallow.size, `row ${y} at the rim is not one colour`).toBeGreaterThanOrEqual(8);
   }
 

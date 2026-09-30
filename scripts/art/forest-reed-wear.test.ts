@@ -22,10 +22,9 @@ it('seats exactly the pieces that opt out of the contact shadow', () => {
         f.y >= piece.y &&
         f.y <= piece.y + 2 * piece.height,
     );
-    // The new 20 px sedge samples exactly ten opaque foot columns; that is
-    // enough to seat its deliberately smaller footprint without demanding
-    // the density of the broader reed fans.
-    expect(feet.length, piece.id).toBeGreaterThanOrEqual(10);
+    // The 27 px sedges sample fourteen opaque foot columns, the smallest of the
+    // family; the broader reed fans sample 19-26.
+    expect(feet.length, piece.id).toBeGreaterThan(10);
   }
 });
 

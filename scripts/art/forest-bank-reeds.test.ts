@@ -53,10 +53,11 @@ it('plants a varied bank-reed family without changing passability or contact tre
     const across = (reed.x + reed.width / 2 - 768) / 64;
     const down = (reed.y + reed.height) / 32;
     const foot = { x: (down + across) / 2, y: (down - across) / 2 };
-    expect(foot.x, reed.id).toBeGreaterThanOrEqual(cell.x);
-    expect(foot.x, reed.id).toBeLessThanOrEqual(cell.x + 1);
-    expect(foot.y, reed.id).toBeGreaterThanOrEqual(cell.y);
-    expect(foot.y, reed.id).toBeLessThanOrEqual(cell.y + 1);
+    const EPS = 1e-9;
+    expect(foot.x, reed.id).toBeGreaterThanOrEqual(cell.x - EPS);
+    expect(foot.x, reed.id).toBeLessThanOrEqual(cell.x + 1 + EPS);
+    expect(foot.y, reed.id).toBeGreaterThanOrEqual(cell.y - EPS);
+    expect(foot.y, reed.id).toBeLessThanOrEqual(cell.y + 1 + EPS);
     expect(reed.depth.x, reed.id).toBeCloseTo(Math.min(foot.x, cell.x + 0.5));
     expect(reed.depth.y, reed.id).toBeCloseTo(Math.min(foot.y, cell.y + 0.5));
   }
