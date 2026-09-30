@@ -413,11 +413,15 @@ describe('routines (Working Ba Dan)', () => {
     clear: (t: number) => readonly Vec2[] = () => AWAY,
     frozen = false,
   ) {
-    const frames: { t: number; figures: ReturnType<ResidentWalks['figures']> }[] = [];
+    const frames: {
+      t: number;
+      figures: ReturnType<ResidentWalks['figures']>;
+      moving: boolean;
+    }[] = [];
     for (let t = from; t <= from + ms; t += 50) {
       w.tick(t, frozen);
       w.update(VILLAGE, state, AWAY, !frozen, clear(t));
-      frames.push({ t, figures: w.figures() });
+      frames.push({ t, figures: w.figures(), moving: w.moving() });
     }
     return frames;
   }
@@ -460,9 +464,8 @@ describe('routines (Working Ba Dan)', () => {
     expect(gao.some((f) => f.walking)).toBe(true);
     // A work beat at the display: he reaches in and back.
     expect(gao.some((f) => key(f.drawPos) === '8,5' && (f.squash ?? 0) > 0.3)).toBe(true);
-    // An errand is not a walk to a new place: nothing waits on it.
-    expect(w.moving()).toBe(false);
-    expect(w.walkingTo(SHOP)).toBe(false);
+    // An errand is not a placement walk: nothing waits on any leg of it.
+    expect(frames.every((frame) => !frame.moving)).toBe(true);
   });
 
   it('carries the basket over the bridge and back, pausing on each side', () => {
