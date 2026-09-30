@@ -9,8 +9,10 @@
 import { mkdirSync, writeFileSync } from 'node:fs';
 import { dirname } from 'node:path';
 import { readImage } from './lib/image';
+import type { Image } from './lib/image';
 import { encodeWebp } from './lib/webp';
-import { packSceneImage } from './scene-image';
+import { scaleBy } from './lib/scale';
+import { alphaBounds, crop } from './lib/trim';
 
 export const BANK_REED_DIRECTORY = 'media/art-sources/forest-bank-reeds-v1';
 export const BANK_REED_OUTPUT_DIRECTORY = 'public/art/maps/forest-scene';
@@ -20,8 +22,16 @@ export const bankReedSource = (index: number): string => `${BANK_REED_DIRECTORY}
 export const bankReedOutput = (index: number): string =>
   `${BANK_REED_OUTPUT_DIRECTORY}/bank-reed-${index}.webp`;
 
+function packBankReedImage(raw: Image) {
+  const bounds = alphaBounds(raw);
+  if (!bounds) throw new Error('Bank reed source is empty.');
+  const trimmed = crop(raw, bounds);
+  const scale = Math.min(1, 128 / trimmed.width, 2048 / trimmed.height);
+  return { image: scaleBy(trimmed, scale), bounds };
+}
+
 export function packBankReed(index: number) {
-  return packSceneImage(readImage(bankReedSource(index)), 128);
+  return packBankReedImage(readImage(bankReedSource(index)));
 }
 
 async function main(): Promise<void> {

@@ -8,11 +8,7 @@ import {
   FOREST_ROAD_SCENE,
 } from '../../src/content/scenes/forestRoad';
 import { encodeWebp } from './lib/webp';
-import {
-  BANK_REED_COUNT,
-  bankReedOutput,
-  packBankReed,
-} from './forest-bank-reeds';
+import { BANK_REED_COUNT, bankReedOutput, packBankReed } from './forest-bank-reeds';
 
 it('ships four reproducible alpha-trimmed bank reeds', async () => {
   expect(BANK_REED_ART).toHaveLength(BANK_REED_COUNT);
@@ -29,7 +25,7 @@ it('plants a varied bank-reed family without changing passability or contact tre
   const reeds = [...FOREST_POND_REEDS, ...FOREST_CREEK_REEDS];
   expect(reeds).toHaveLength(5);
   expect(FOREST_ROAD_SCENE.scenery).toEqual(expect.arrayContaining(reeds));
-  expect(new Set(reeds.map(({ url }) => url)).toEqual(
+  expect(new Set(reeds.map(({ url }) => url))).toEqual(
     new Set(BANK_REED_ART.map((_, index) => `art/maps/forest-scene/bank-reed-${index}.webp`)),
   );
   expect(reeds.map(({ url }) => url)).toEqual([
@@ -52,9 +48,7 @@ it('plants a varied bank-reed family without changing passability or contact tre
     expect(reed.wall, reed.id).toBeUndefined();
     expect(reed.fadeWhenOccluding, reed.id).toBeUndefined();
     expect(reed.contactShadow, reed.id).toBe(false);
-    expect(reed.x + reed.width / 2, reed.id).toBeCloseTo(
-      768 + (reed.depth.x - reed.depth.y) * 64,
-    );
+    expect(reed.x + reed.width / 2, reed.id).toBeCloseTo(768 + (reed.depth.x - reed.depth.y) * 64);
     expect(reed.y + reed.height, reed.id).toBeCloseTo((reed.depth.x + reed.depth.y) * 32);
   }
 });
