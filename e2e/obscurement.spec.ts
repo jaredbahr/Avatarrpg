@@ -39,11 +39,15 @@ for (const renderer of ['canvas', 'webgl'] as const) {
     await expect(page.locator('.weather-chip-full')).toBeVisible();
     await expect(page.locator('.weather-chip-short')).toBeHidden();
 
+    const original = page.viewportSize();
     await page.setViewportSize({ width: 390, height: 844 });
     await settleLayout(page);
     await expect(page.locator('.weather-chip-short')).toHaveText('Sand: long shots −10/tile');
     await expect(page.locator('.weather-chip-short')).toBeVisible();
     await expect(page.locator('.weather-chip-full')).toBeHidden();
+    // Back to the project viewport: on a phone Log lives in the More drawer.
+    if (original) await page.setViewportSize(original);
+    await settleLayout(page);
     const read = () =>
       page.evaluate(() => {
         const scene = (
