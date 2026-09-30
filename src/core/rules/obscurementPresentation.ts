@@ -25,8 +25,9 @@ export function weatherChipText(tuning: CombatTuning, intensity: WeatherIntensit
 /** Extra sentence for a miss, selected from the terms the real hit roll used. */
 export function obscurementMissLine(obscurement: ObscurementBreakdown | undefined): string | null {
   if (!obscurement || obscurement.total === 0) return null;
+  const steam = obscurement.inside + obscurement.through + obscurement.attacker;
+  if (steam < 0 && Math.abs(steam) >= Math.abs(obscurement.weather)) return 'Lost in the steam.';
   if (obscurement.weather < 0) return 'The sand takes it.';
-  if (obscurement.inside < 0 || obscurement.through < 0 || obscurement.attacker < 0)
-    return 'Lost in the steam.';
+  if (steam < 0) return 'Lost in the steam.';
   return null;
 }

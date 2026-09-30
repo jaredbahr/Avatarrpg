@@ -283,6 +283,7 @@ export class Canvas2DBackend implements RenderBackend {
               painting?.src,
               view.hatch,
               view.gridLines,
+              view.obscuringTiles !== undefined,
             ].join('|'),
             marks: staticMarks && (() => onGround(staticMarks)),
           })
@@ -430,7 +431,15 @@ export class Canvas2DBackend implements RenderBackend {
         const box = camera.toScreen(pos);
         if (drawTerrain && !painted) paintTerrain(ctx, box, tile, pos);
         if (drawSurfaces && !surfaceIsPainted(view, painted, tile, pos))
-          paintSurface(ctx, box, tile, pos, view.hatch, surfaceEdges(view.grid, pos));
+          paintSurface(
+            ctx,
+            box,
+            tile,
+            pos,
+            view.hatch,
+            surfaceEdges(view.grid, pos),
+            view.obscuringTiles !== undefined,
+          );
         if (drawSurfaces && view.gridLines) paintGridLine(ctx, box, 'rgba(0,0,0,0.18)');
       }
     }
@@ -757,8 +766,8 @@ export class Canvas2DBackend implements RenderBackend {
   /** Combat-only warm veil traced around the whole steam region. */
   private drawObscurement(view: MapView, camera: Camera): void {
     const ctx = this.ctx;
-    const tiles = view.obscuringTiles ?? [];
-    if (tiles.length > 0) {
+    const tiles = view.obscuringTiles;
+    if (tiles && tiles.length > 0) {
       let loops = this.obscuringLoops.get(tiles);
       if (!loops) {
         loops = contourLoops(tiles);
@@ -769,14 +778,23 @@ export class Canvas2DBackend implements RenderBackend {
       ctx.save();
       ctx.beginPath();
       for (const loop of loops) tracePolygon(ctx, loop, origin, size);
-      // Feather only the region boundary; never fill or hatch the interior.
+      // One rounded footprint, including holes, without internal cell seams.
+      ctx.fillStyle = view.crispOverlays
+        ? OVERLAY.obscurementVeilContrast
+        : OVERLAY.obscurementVeil;
+      ctx.fill('evenodd');
       ctx.lineJoin = 'round';
-      ctx.strokeStyle = OVERLAY.obscurementEdge;
-      for (let band = 4; band >= 1; band--) {
-        ctx.globalAlpha = 0.25;
-        ctx.lineWidth = size * band * 0.035;
+      ctx.strokeStyle = view.crispOverlays
+        ? OVERLAY.obscurementEdgeContrast
+        : OVERLAY.obscurementEdge;
+      for (let band = 3; band >= 1; band--) {
+        ctx.globalAlpha = 0.12;
+        ctx.lineWidth = size * band * 0.04;
         ctx.stroke();
       }
+      ctx.globalAlpha = 1;
+      ctx.lineWidth = Math.max(1, size * (view.crispOverlays ? 0.032 : 0.018));
+      ctx.stroke();
       ctx.restore();
     }
 
@@ -835,15 +853,16 @@ export class Canvas2DBackend implements RenderBackend {
     for (const pos of tiles) {
       if (!camera.isVisible(pos)) continue;
       const box = camera.toScreen(pos);
-      const cy = box.y + box.size * 0.5 - liftAt(view.grid, pos, camera.projection) * box.size;
+      // Match the upright Pixi base while keeping Canvas vapour static.
+      const base = box.y + box.size * 0.78 - liftAt(view.grid, pos, camera.projection) * box.size;
       for (let j = 0; j < 4; j++) {
         const seed = steamSeed(pos.x, pos.y, j);
         const width = box.size * (0.66 + seed * 0.24);
         const height = width * (0.9 + seed * 0.15);
         const cx = box.x + box.size * (0.24 + j * 0.17 + (seed - 0.5) * 0.16);
-        const rise = box.size * (0.08 + (j % 2) * 0.23 + seed * 0.1);
-        ctx.globalAlpha = 0.65;
-        ctx.drawImage(puff, cx - width / 2, cy - rise - height / 2, width, height);
+        const rise = box.size * (0.02 + (j % 2) * 0.08 + seed * 0.05);
+        ctx.globalAlpha = view.crispOverlays ? 0.9 : 0.65;
+        ctx.drawImage(puff, cx - width / 2, base - rise - height * 0.88, width, height);
       }
     }
     ctx.restore();

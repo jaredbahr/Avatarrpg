@@ -156,4 +156,21 @@ describe('surface material painting', () => {
     expect(banked.filter((tone) => tone === SURFACE_STYLES.rubble.edge)).toHaveLength(4);
     expect(banked.filter((tone) => tone === RUBBLE_CHIP)).toHaveLength(chips.length);
   });
+
+  it('keeps steam hatched in combat while suppressing its per-cell wash', () => {
+    const { ctx, calls } = record();
+    paintSurface(ctx, BOX, surface('steam', -1), { x: 5, y: 6 }, true, SHORE, true);
+    expect(fills(calls)).toHaveLength(0);
+    expect(calls.filter((call) => call.op === 'stroke')).toHaveLength(5);
+    const plain = record();
+    paintSurface(plain.ctx, BOX, surface('steam', -1), { x: 5, y: 6 }, false, SHORE, true);
+    expect(plain.calls).toHaveLength(0);
+  });
+
+  it('retains the steam ground wash for views without a steam region', () => {
+    const { ctx, calls } = record();
+    paintSurface(ctx, BOX, surface('steam', -1), { x: 5, y: 6 }, false, SHORE);
+    expect(fills(calls)).toEqual([[40, 24, 64, 64]]);
+    expect(calls.some((call) => call.op === 'stroke')).toBe(true);
+  });
 });

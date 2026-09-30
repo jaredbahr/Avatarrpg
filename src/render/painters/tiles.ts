@@ -98,11 +98,19 @@ export function paintSurface(
   pos: Vec2,
   hatch: boolean,
   edges: Edges,
+  steamRegion = false,
 ): void {
-  // Vapour is upright: no ground wash, rim or hatch beneath its billows.
-  if (!tile.surface || tile.surface.id === 'steam') return;
+  if (!tile.surface) return;
   const style = SURFACE_STYLES[tile.surface.id];
   const s = box.size;
+
+  // Combat steam is painted as a region treatment with upright billows. Keep
+  // its per-tile accessibility hatch, while avoiding square washes and rims
+  // beneath the shared cloud. Exploration views retain the legacy ground wash.
+  if (tile.surface.id === 'steam' && steamRegion) {
+    if (hatch) paintHatch(ctx, box, style.hatch, style.edge, pos);
+    return;
+  }
 
   ctx.save();
   ctx.beginPath();

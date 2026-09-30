@@ -310,6 +310,7 @@ export class PixiBackend implements RenderBackend {
     uTileSize: { value: TILE, type: 'f32' },
     uTime: { value: 0, type: 'f32' },
     uHatch: { value: 0, type: 'f32' },
+    uSteamRegion: { value: 0, type: 'f32' },
     uGridLines: { value: 0, type: 'f32' },
     uSurfaces: { value: 1, type: 'f32' },
     uBackdrop: { value: 0, type: 'f32' },
@@ -321,6 +322,7 @@ export class PixiBackend implements RenderBackend {
     uTileSize: { value: TILE, type: 'f32' },
     uTime: { value: 0, type: 'f32' },
     uHatch: { value: 0, type: 'f32' },
+    uSteamRegion: { value: 0, type: 'f32' },
     uGridLines: { value: 0, type: 'f32' },
     uSurfaces: { value: 1, type: 'f32' },
     uBackdrop: { value: 1, type: 'f32' },
@@ -475,9 +477,9 @@ export class PixiBackend implements RenderBackend {
     );
     this.unitLayer.sortableChildren = true;
     this.upright.addChild(
-      this.groundRings,
       this.bendUnder,
       this.steamLayer,
+      this.groundRings,
       this.unitLayer,
       this.flockLayer,
       this.bendOver,
@@ -689,6 +691,7 @@ export class PixiBackend implements RenderBackend {
         this.shadeLayer.visible,
         view.hatch,
         view.gridLines,
+        view.obscuringTiles !== undefined,
         // Bare procedural ground carries its surfaces, which move every frame.
         !painted && !partialScene && view.time,
       ].join('|'),
@@ -1287,6 +1290,7 @@ export class PixiBackend implements RenderBackend {
       uTileSize: number;
       uTime: number;
       uHatch: number;
+      uSteamRegion: number;
       uGridLines: number;
       uSurfaces: number;
       uBackdrop: number;
@@ -1301,6 +1305,7 @@ export class PixiBackend implements RenderBackend {
     uniforms.uTileSize = TILE;
     uniforms.uTime = view.time / 1000;
     uniforms.uHatch = view.hatch ? 1 : 0;
+    uniforms.uSteamRegion = view.obscuringTiles !== undefined ? 1 : 0;
     uniforms.uGridLines = view.gridLines ? 1 : 0;
     uniforms.uSurfaces = partialScene ? 0 : 1;
     uniforms.uBackdrop = partialScene ? 0 : painted ? 1 : 0;
@@ -1324,6 +1329,7 @@ export class PixiBackend implements RenderBackend {
     overlay.uTileSize = TILE;
     overlay.uTime = view.time / 1000;
     overlay.uHatch = view.hatch ? 1 : 0;
+    overlay.uSteamRegion = uniforms.uSteamRegion;
     overlay.uGridLines = view.gridLines ? 1 : 0;
     overlay.uSurfaces = 1;
     overlay.uBackdrop = 1;
@@ -1563,18 +1569,36 @@ export class PixiBackend implements RenderBackend {
 
   /** Warm, ground-hugging tactical veil and board-bounded sand weather. */
   private drawObscurement(view: MapView, g: Graphics): void {
-    const tiles = view.obscuringTiles ?? [];
-    let loops = this.obscuringLoops.get(tiles);
-    if (!loops) {
-      loops = contourLoops(tiles);
-      this.obscuringLoops.set(tiles, loops);
-    }
-    for (const loop of loops) {
-      for (let band = 4; band >= 1; band--) {
+    const tiles = view.obscuringTiles;
+    if (tiles && tiles.length > 0) {
+      let loops = this.obscuringLoops.get(tiles);
+      if (!loops) {
+        loops = contourLoops(tiles);
+        this.obscuringLoops.set(tiles, loops);
+      }
+      const fill = view.crispOverlays ? OVERLAY.obscurementVeilContrast : OVERLAY.obscurementVeil;
+      const edge = view.crispOverlays ? OVERLAY.obscurementEdgeContrast : OVERLAY.obscurementEdge;
+      const holes = loops.filter(isHole);
+      for (const outer of loops.filter((loop) => !isHole(loop))) {
+        g.poly(flatten(outer), true);
+        for (const hole of holes) {
+          const probe = hole[0];
+          if (probe && insideLoop(probe, outer)) g.poly(flatten(hole), true).cut();
+        }
+        g.fill({ color: fill });
+      }
+      for (const loop of loops) {
+        for (let band = 3; band >= 1; band--) {
+          g.poly(flatten(loop), true).stroke({
+            width: TILE * band * 0.04,
+            color: edge,
+            alpha: 0.12,
+            join: 'round',
+          });
+        }
         g.poly(flatten(loop), true).stroke({
-          width: TILE * band * 0.035,
-          color: OVERLAY.obscurementEdge,
-          alpha: 0.25,
+          width: Math.max(1, TILE * (view.crispOverlays ? 0.032 : 0.018)),
+          color: edge,
           join: 'round',
         });
       }
@@ -1633,20 +1657,28 @@ export class PixiBackend implements RenderBackend {
       const oblique = camera.projection === 'oblique';
       const cx = (oblique ? tile.x - tile.y + view.grid.height : tile.x + 0.5) * TILE;
       const cy = (oblique ? (tile.x + tile.y + 1) / 2 : tile.y + 0.5) * TILE;
-      const rise = 0.08 + (j % 2) * 0.23 + seed * 0.1;
+      const rise = 0.02 + (j % 2) * 0.08 + seed * 0.05;
       const drift = view.reducedMotion ? 0 : (phase - 0.5) * TILE * 0.12;
+      const size = TILE * (0.66 + seed * 0.24);
+      const height = size * (0.9 + seed * 0.15);
+      // The soft base sits on this cell; only the upper billows rise above it.
       sprite.texture = texture;
       sprite.position.set(
         cx + TILE * (-0.26 + j * 0.17 + (seed - 0.5) * 0.16) + drift,
-        cy -
+        cy +
+          TILE * 0.28 -
           liftAt(view.grid, tile, camera.projection) * TILE -
+          height * 0.38 -
           rise * TILE -
           (view.reducedMotion ? 0 : (phase - 0.5) * TILE * 0.16),
       );
-      const size = TILE * (0.66 + seed * 0.24);
       sprite.width = size;
-      sprite.height = size * (0.9 + seed * 0.15);
-      sprite.alpha = view.reducedMotion ? 0.65 : 0.72 * Math.sin(phase * Math.PI);
+      sprite.height = height;
+      sprite.alpha = view.reducedMotion
+        ? view.crispOverlays
+          ? 0.9
+          : 0.65
+        : (view.crispOverlays ? 0.95 : 0.72) * Math.sin(phase * Math.PI);
       sprite.visible = true;
     }
   }

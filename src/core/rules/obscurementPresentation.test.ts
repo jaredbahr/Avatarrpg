@@ -34,6 +34,15 @@ describe('obscurement presentation', () => {
       obscurementMissLine({ inside: 0, through: 0, attacker: 0, weather: -10, total: -10 }),
     ).toBe('The sand takes it.');
     expect(
+      obscurementMissLine({ inside: -25, through: 0, attacker: 0, weather: -10, total: -35 }),
+    ).toBe('Lost in the steam.');
+    expect(
+      obscurementMissLine({ inside: -5, through: 0, attacker: 0, weather: -10, total: -15 }),
+    ).toBe('The sand takes it.');
+    expect(
+      obscurementMissLine({ inside: -10, through: 0, attacker: 0, weather: -10, total: -20 }),
+    ).toBe('Lost in the steam.');
+    expect(
       obscurementMissLine({ inside: 0, through: 0, attacker: 0, weather: 0, total: 0 }),
     ).toBeNull();
   });

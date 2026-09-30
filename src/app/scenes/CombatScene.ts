@@ -670,17 +670,20 @@ export class CombatScene implements Scene {
           text: encounter?.name ?? 'Battle',
           title: encounter?.name ?? 'Battle',
         }),
-        ...(weatherText
-          ? [
-              el('span', {
-                class: 'weather-chip',
-                text: weatherText,
-                title: weatherText,
-                attrs: { 'aria-label': weatherText },
-              }),
-            ]
-          : []),
-        el('span', { class: 'title-plate-round', text: `Round ${battle.round}` }),
+        el(
+          'div',
+          { class: 'title-plate-meta' },
+          el('span', { class: 'title-plate-round', text: `Round ${battle.round}` }),
+          ...(weatherText
+            ? [
+                el('span', {
+                  class: 'weather-chip',
+                  text: weatherText,
+                  title: weatherText,
+                }),
+              ]
+            : []),
+        ),
       ),
     );
     bar.appendChild(el('div', { class: 'spacer' }));
