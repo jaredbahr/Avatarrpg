@@ -431,6 +431,52 @@ describe('reconcileBattle', () => {
         blocked: false,
       });
     }
+    const elevations = [
+      { x: 6, y: 2 },
+      { x: 7, y: 2 },
+      { x: 6, y: 3 },
+      { x: 7, y: 3 },
+    ].map((cell) => tileAt(square.battle!.grid, cell)?.elevation);
+    expect(new Set(elevations).size).toBe(1);
+  });
+
+  it('keeps the earlier unit and snaps a later overlapping unit to a free square cell', () => {
+    const current = currentBattleState('quarry_floor');
+    const battle = current.battle;
+    if (!battle) throw new Error('fixture did not create a battle');
+    const boss = battle.units.find((unit) => unit.size === 2);
+    const anchor = battle.units.find((unit) => unit.size !== 2);
+    if (!boss || !anchor) throw new Error('fixture is missing a boss or anchor unit');
+    const state: GameState = {
+      ...current,
+      battle: {
+        ...battle,
+        units: [
+          { ...anchor, pos: { x: 6, y: 3 } },
+          { ...boss, pos: { x: 6, y: 2 } },
+          ...battle.units.filter((unit) => unit.id !== anchor.id && unit.id !== boss.id),
+        ],
+      },
+    };
+
+    const square = load(state, { squareFootprints: true });
+    const units = square.battle?.units;
+    if (!units) throw new Error('the reconciled save lost its battle');
+    expect(units[0]?.pos).toEqual({ x: 6, y: 3 });
+    expect(units[1]?.pos).not.toEqual({ x: 6, y: 2 });
+
+    const claims = new Set<string>();
+    for (const unit of units.filter((candidate) => candidate.hp > 0)) {
+      const cells = Array.from({ length: unit.size === 2 ? 4 : 1 }, (_, index) => ({
+        x: unit.pos.x + (unit.size === 2 && index % 2 ? 1 : 0),
+        y: unit.pos.y + (unit.size === 2 && index > 1 ? 1 : 0),
+      }));
+      for (const cell of cells) {
+        const key = `${cell.x},${cell.y}`;
+        expect(claims.has(key), `overlap at ${key}`).toBe(false);
+        claims.add(key);
+      }
+    }
   });
 
   it('snaps a legacy anchor the map edit never buried once square footprints are on', () => {
@@ -466,16 +512,18 @@ describe('reconcileBattle', () => {
     // snaps an anchor that is off-map as a 2x2.
     const square = load(state, { squareFootprints: true });
     const moved = square.battle?.units.find((unit) => unit.id === boss.id)?.pos;
-    // The nearest 2x2 that clears the pit column and the terrace wall.
-    expect(moved).toEqual({ x: 16, y: 1 });
+    // The nearest flat 2x2 that clears the pit column: (16,1) is nearer in
+    // row-major order but straddles the terrace (tiers 1 and 2), so it is skipped.
+    expect(moved).toEqual({ x: 16, y: 3 });
     for (const cell of [
-      { x: 16, y: 1 },
-      { x: 17, y: 1 },
-      { x: 16, y: 2 },
-      { x: 17, y: 2 },
+      { x: 16, y: 3 },
+      { x: 17, y: 3 },
+      { x: 16, y: 4 },
+      { x: 17, y: 4 },
     ]) {
       expect(tileAt(square.battle!.grid, cell), `${cell.x},${cell.y}`).toMatchObject({
         blocked: false,
+        elevation: 0,
       });
     }
     // Snapping is confined to the boss; every other unit keeps its saved cell.

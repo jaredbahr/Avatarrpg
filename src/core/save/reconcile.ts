@@ -257,23 +257,35 @@ function snapBattleUnits(
 ): { units: BattleState['units'] | null; warnings: BattleReconcileWarning[] } {
   const warnings: BattleReconcileWarning[] = [];
   const main = mainWalkableCells(grid, map);
-  const occupied = new Set<string>();
+  const owners = new Map<string, string>();
+  const flat = (unit: BattleState['units'][number], pos = unit.pos): boolean => {
+    if (!square || unit.size !== 2) return true;
+    let elevation: number | undefined;
+    return occupiedCells({ pos, size: unit.size }, square).every((cell) => {
+      const tile = tileAt(grid, cell);
+      if (!tile) return false;
+      if (elevation === undefined) elevation = tile.elevation;
+      return tile.elevation === elevation;
+    });
+  };
   for (const unit of units) {
     if (unit.hp <= 0) continue;
     const cells = occupiedCells(unit, square);
     if (
       cells.every((cell) => {
         const tile = tileAt(grid, cell);
-        return tile !== undefined && !tile.blocked;
-      })
+        return tile !== undefined && !tile.blocked && !owners.has(posKey(cell));
+      }) &&
+      flat(unit)
     ) {
-      for (const cell of cells) occupied.add(posKey(cell));
+      for (const cell of cells) owners.set(posKey(cell), unit.id);
     }
   }
   const valid = (unit: BattleState['units'][number], pos = unit.pos): boolean =>
+    flat(unit, pos) &&
     occupiedCells({ pos, size: unit.size }, square).every((cell) => {
       const tile = tileAt(grid, cell);
-      return tile !== undefined && !tile.blocked && !occupied.has(posKey(cell));
+      return tile !== undefined && !tile.blocked && !owners.has(posKey(cell));
     });
   const connected = (unit: BattleState['units'][number], pos: Vec2): boolean =>
     occupiedCells({ pos, size: unit.size }, square).every((cell) => main.has(posKey(cell)));
@@ -284,7 +296,11 @@ function snapBattleUnits(
       result.push(unit);
       continue;
     }
-    for (const cell of occupiedCells(unit, square)) occupied.delete(posKey(cell));
+    // Earlier living units claim shared cells first; only remove this unit's own claims.
+    for (const cell of occupiedCells(unit, square)) {
+      const key = posKey(cell);
+      if (owners.get(key) === unit.id) owners.delete(key);
+    }
     let pos = unit.pos;
     if (!valid(unit)) {
       const candidates: Vec2[] = [];
@@ -309,7 +325,8 @@ function snapBattleUnits(
       }
       pos = candidate;
     }
-    for (const cell of occupiedCells({ pos, size: unit.size }, square)) occupied.add(posKey(cell));
+    for (const cell of occupiedCells({ pos, size: unit.size }, square))
+      owners.set(posKey(cell), unit.id);
     result.push(pos === unit.pos ? unit : { ...unit, pos });
   }
   return { units: result, warnings };
