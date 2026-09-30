@@ -23,15 +23,21 @@ bounds.
 Combat fit scale, default tile sizes, initial centring on the acting unit or
 party, manual zoom, and reflow behaviour remain unchanged.
 
-Panning clamps to the projected full grid plus a map-authored painted ring on
-every screen-space side:
+Manual panning and anchored zoom clamp to the projected full grid plus a
+map-authored painted allowance on each screen-space side. Programmatic
+centring, including acting-unit focus and Recentre, still clamps to the grid:
 
-| Map          | Ring depth |
-| ------------ | ---------: |
-| Forest Road  |  2.5 tiles |
-| Quarry Gate  |    2 tiles |
-| The Cutting  | 2.25 tiles |
-| Quarry Floor |    2 tiles |
+| Map          |  Top | Right | Bottom | Left |
+| ------------ | ---: | ----: | -----: | ---: |
+| Forest Road  |  2.5 |   2.5 |    2.5 |  2.5 |
+| Quarry Gate  | 8.75 |     5 |   1.25 |    5 |
+| The Cutting  | 8.75 |     5 |   1.25 |    5 |
+| Quarry Floor | 8.75 |     5 |   1.25 |    5 |
+
+These are measured painted extents rather than a nominal ring depth. The three
+quarry values are derived from their shared `QUARRY_SURROUND`: relative to the
+2048x1024 projected grid box it spans 320 px left and right, 560 px above, and
+80 px below. The Forest Road keeps its authored 2.5-tile apron on every side.
 
 The camera may reach the outer edge of that ring but may not reveal page beyond
 it. Clamp calculations use the entire grid rectangle without inspecting tile
@@ -42,8 +48,8 @@ The ring art and its fade into the page colour are a separate change.
 ## Consequences
 
 - Characters and targets retain today's 96/64/40-pixel combat scales.
-- Initial combat framing is unchanged because fitting and centring still use
-  the grid bounds alone.
+- Initial combat framing is unchanged: fitting, acting-unit focus, Recentre,
+  and resize clamps use the grid bounds alone.
 - A player can pan farther into authored surroundings, up to each map's ring.
 - Unit tests pin both ring endpoints and ensure the ring does not affect scale
   or initial centring. Existing viewport tests continue to own device framing

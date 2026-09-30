@@ -43,6 +43,15 @@ export interface ScreenPoint {
   readonly y: number;
 }
 
+export interface CameraClampRing {
+  readonly top: number;
+  readonly right: number;
+  readonly bottom: number;
+  readonly left: number;
+}
+
+const NO_CLAMP_RING: CameraClampRing = { top: 0, right: 0, bottom: 0, left: 0 };
+
 export class Camera {
   /** World-space pixels per logical tile, after fitting. */
   scale = 1;
@@ -58,7 +67,7 @@ export class Camera {
     public grid: { width: number; height: number },
     public projection: Projection = 'orthographic',
     /** Painted ground outside the grid that may remain visible while panning. */
-    public clampRingTiles = 0,
+    public clampRingTiles: CameraClampRing = NO_CLAMP_RING,
   ) {}
 
   private get bounds() {
@@ -122,21 +131,39 @@ export class Camera {
     this.clamp();
   }
 
-  /** Keeps the painted grid-plus-ring inside the frame; centres a smaller board. */
+  /** Keeps the grid inside the frame; centres a smaller board. */
   clamp(): void {
     const slackX = this.worldWidth - this.viewport.width;
     const slackY = this.worldHeight - this.viewport.height;
-    const ring = Math.max(0, this.clampRingTiles) * TILE * this.scale;
+    this.offsetX = slackX <= 0 ? slackX / 2 : Math.max(0, Math.min(slackX, this.offsetX));
+    this.offsetY = slackY <= 0 ? slackY / 2 : Math.max(0, Math.min(slackY, this.offsetY));
+  }
+
+  /** Manual gestures may expose authored paint, but only on an overflowing axis. */
+  private clampManual(): void {
+    const slackX = this.worldWidth - this.viewport.width;
+    const slackY = this.worldHeight - this.viewport.height;
+    const pixels = (tiles: number) => Math.max(0, tiles) * TILE * this.scale;
     this.offsetX =
-      slackX + ring * 2 <= 0 ? slackX / 2 : Math.max(-ring, Math.min(slackX + ring, this.offsetX));
+      slackX <= 0
+        ? slackX / 2
+        : Math.max(
+            -pixels(this.clampRingTiles.left),
+            Math.min(slackX + pixels(this.clampRingTiles.right), this.offsetX),
+          );
     this.offsetY =
-      slackY + ring * 2 <= 0 ? slackY / 2 : Math.max(-ring, Math.min(slackY + ring, this.offsetY));
+      slackY <= 0
+        ? slackY / 2
+        : Math.max(
+            -pixels(this.clampRingTiles.top),
+            Math.min(slackY + pixels(this.clampRingTiles.bottom), this.offsetY),
+          );
   }
 
   panBy(dx: number, dy: number): void {
     this.offsetX -= dx;
     this.offsetY -= dy;
-    this.clamp();
+    this.clampManual();
   }
 
   /**
@@ -153,7 +180,7 @@ export class Camera {
     this.offsetX = (at.x + this.offsetX) * ratio - at.x;
     this.offsetY = (at.y + this.offsetY) * ratio - at.y;
     this.scale = next;
-    this.clamp();
+    this.clampManual();
   }
 
   /** Scrolls so a tile sits in the middle of the viewport, where possible. */

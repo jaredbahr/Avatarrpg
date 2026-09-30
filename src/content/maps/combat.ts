@@ -21,15 +21,19 @@ import type { MapDef, PropPlacement, Vec2 } from '../../core/types';
 import { LEGEND } from './legend';
 import { FOREST_ROAD_SCENE } from '../scenes/forestRoad';
 import { QUARRY_GATE_SCENE } from '../scenes/quarryGate';
-import { CUTTING_SCENE, DRILLER_FLOOR_SCENE } from '../scenes/quarryProjected';
+import {
+  CUTTING_SCENE,
+  DRILLER_FLOOR_SCENE,
+  QUARRY_SURROUND_EXTENTS_TILES,
+} from '../scenes/quarryProjected';
 
 /** Painted surroundings available to the combat camera beyond the full grid. */
 export const COMBAT_CAMERA_RING_TILES = {
-  forest_road: 2.5,
-  quarry_gate: 2,
-  ambush_road: 2.25,
-  quarry_floor: 2,
-} as const satisfies Readonly<Record<string, number>>;
+  forest_road: { top: 2.5, right: 2.5, bottom: 2.5, left: 2.5 },
+  quarry_gate: QUARRY_SURROUND_EXTENTS_TILES,
+  ambush_road: QUARRY_SURROUND_EXTENTS_TILES,
+  quarry_floor: QUARRY_SURROUND_EXTENTS_TILES,
+} as const;
 
 /** Shared because every combat map uses the same staggered party entrance. */
 const COMBAT_PARTY_SPAWNS: readonly Vec2[] = [

@@ -16,6 +16,25 @@ export const QUARRY_SURROUND = [
   { url: 'art/maps/quarry-surround/east.webp', x: 1024, y: -560, width: 1344, height: 1664 },
 ];
 
+// The shared 20x12 oblique grid projects to 2048x1024 px at the authored
+// 64px board unit. Derive each painted allowance from the surround itself so
+// the camera cannot travel past its shallow southern edge.
+const QUARRY_PROJECTED_GRID = { x: 0, y: 0, width: 2048, height: 1024 } as const;
+const quarrySurroundBounds = {
+  left: Math.min(...QUARRY_SURROUND.map((piece) => piece.x)),
+  top: Math.min(...QUARRY_SURROUND.map((piece) => piece.y)),
+  right: Math.max(...QUARRY_SURROUND.map((piece) => piece.x + piece.width)),
+  bottom: Math.max(...QUARRY_SURROUND.map((piece) => piece.y + piece.height)),
+};
+export const QUARRY_SURROUND_EXTENTS_TILES = {
+  top: (QUARRY_PROJECTED_GRID.y - quarrySurroundBounds.top) / 64,
+  right:
+    (quarrySurroundBounds.right - (QUARRY_PROJECTED_GRID.x + QUARRY_PROJECTED_GRID.width)) / 64,
+  bottom:
+    (quarrySurroundBounds.bottom - (QUARRY_PROJECTED_GRID.y + QUARRY_PROJECTED_GRID.height)) / 64,
+  left: (QUARRY_PROJECTED_GRID.x - quarrySurroundBounds.left) / 64,
+} as const;
+
 const routeGround = (
   directory: string,
   regions: readonly {

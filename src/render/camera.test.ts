@@ -104,31 +104,57 @@ describe('Camera.zoomAt', () => {
 
 describe('Camera.clamp painted ring', () => {
   it.each([
-    ['forest', COMBAT_CAMERA_RING_TILES.forest_road, 2.5],
-    ['gate', COMBAT_CAMERA_RING_TILES.quarry_gate, 2],
-    ['Cutting', COMBAT_CAMERA_RING_TILES.ambush_road, 2.25],
-    ['floor', COMBAT_CAMERA_RING_TILES.quarry_floor, 2],
+    [
+      'forest',
+      COMBAT_CAMERA_RING_TILES.forest_road,
+      { top: 2.5, right: 2.5, bottom: 2.5, left: 2.5 },
+    ],
+    ['gate', COMBAT_CAMERA_RING_TILES.quarry_gate, { top: 8.75, right: 5, bottom: 1.25, left: 5 }],
+    [
+      'Cutting',
+      COMBAT_CAMERA_RING_TILES.ambush_road,
+      { top: 8.75, right: 5, bottom: 1.25, left: 5 },
+    ],
+    [
+      'floor',
+      COMBAT_CAMERA_RING_TILES.quarry_floor,
+      { top: 8.75, right: 5, bottom: 1.25, left: 5 },
+    ],
   ] as const)(
     'allows the %s ring but never the page beyond it',
     (_map, ringTiles, expectedRingTiles) => {
-      expect(ringTiles).toBe(expectedRingTiles);
+      expect(ringTiles).toEqual(expectedRingTiles);
       const camera = new Camera(NARROW, GRID, 'oblique', ringTiles);
       camera.fitExplore(96);
-      const ringPx = ringTiles * TILE * camera.scale;
 
       camera.panBy(100_000, 100_000);
-      expect(camera.offsetX).toBeCloseTo(-ringPx, 6);
-      expect(camera.offsetY).toBeCloseTo(-ringPx, 6);
+      expect(camera.offsetX).toBeCloseTo(-ringTiles.left * TILE * camera.scale, 6);
+      expect(camera.offsetY).toBeCloseTo(-ringTiles.top * TILE * camera.scale, 6);
 
       camera.panBy(-200_000, -200_000);
-      expect(camera.offsetX).toBeCloseTo(camera.worldWidth - NARROW.width + ringPx, 6);
-      expect(camera.offsetY).toBeCloseTo(camera.worldHeight - NARROW.height + ringPx, 6);
+      expect(camera.offsetX).toBeCloseTo(
+        camera.worldWidth - NARROW.width + ringTiles.right * TILE * camera.scale,
+        6,
+      );
+      expect(camera.offsetY).toBeCloseTo(
+        camera.worldHeight - NARROW.height + ringTiles.bottom * TILE * camera.scale,
+        6,
+      );
     },
   );
 
-  it('does not change fit scale, tile size, or initial grid centring', () => {
+  it('keeps a fitted axis centred during manual pan', () => {
+    const camera = new Camera(LANDSCAPE, GRID, 'oblique', COMBAT_CAMERA_RING_TILES.forest_road);
+    camera.fit();
+    const initialY = camera.offsetY;
+    camera.panBy(0, 100_000);
+    expect(camera.offsetY).toBe(initialY);
+    expect(camera.offsetY).toBeCloseTo((camera.worldHeight - LANDSCAPE.height) / 2, 6);
+  });
+
+  it('does not change fit scale, tile size, or programmatic grid centring', () => {
     const baseline = new Camera(NARROW, GRID, 'oblique');
-    const ringed = new Camera(NARROW, GRID, 'oblique', 2.5);
+    const ringed = new Camera(NARROW, GRID, 'oblique', COMBAT_CAMERA_RING_TILES.forest_road);
     baseline.fitExplore(96);
     ringed.fitExplore(96);
 
@@ -136,6 +162,15 @@ describe('Camera.clamp painted ring', () => {
     expect(TILE * ringed.scale).toBe(96);
     expect(ringed.offsetX).toBe(baseline.offsetX);
     expect(ringed.offsetY).toBe(baseline.offsetY);
+  });
+
+  it('centreOn clamps an edge actor to the grid, not the painted ring', () => {
+    const camera = new Camera(NARROW, GRID, 'oblique', COMBAT_CAMERA_RING_TILES.quarry_floor);
+    camera.fitExplore(96);
+    camera.centreOn({ x: 1, y: 3 });
+
+    expect(camera.offsetX).toBeCloseTo(770, 6);
+    expect(camera.offsetY).toBe(0);
   });
 });
 
