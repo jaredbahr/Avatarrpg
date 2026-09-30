@@ -42,3 +42,13 @@ it('gives WebGL stone and wall no shader cracks, so they match Canvas', () => {
   }
   expect(TERRAIN_STYLES.wall.fill).toBe('#3a352f');
 });
+
+it('keeps steam hatched and restores its ground wash outside steam regions', () => {
+  expect(GROUND_FRAGMENT).toContain('uniform float uSteamRegion;');
+  expect(GROUND_FRAGMENT).toMatch(/opacity = uSteamRegion > 0\.5 \? 0\.0 : [\d.]+;/);
+  expect(GROUND_FRAGMENT).toMatch(
+    /if \(uSteamRegion < 0\.5\) lay\(acc, tint, opacity \* wash \* intensity\);/,
+  );
+  expect(GROUND_FRAGMENT).toMatch(/if \(uHatch > 0\.5 && surface > 0\)/);
+  expect(GROUND_FRAGMENT).not.toMatch(/surface > 0 && surface != 5/);
+});

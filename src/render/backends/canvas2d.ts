@@ -35,6 +35,7 @@ import {
 import type { LiftPlan, Pt, Rect } from '../geometry/lift';
 import { sampleAt, smoothPath } from '../geometry/curve';
 import { CanvasFxLayer } from '../fx/canvasFx';
+import { steamPuffCanvas, steamSeed } from '../fx/steamPuff';
 import { drawBendFx } from '../fx/bendFxDraw';
 import { backdrops } from '../backdrops';
 import { sceneForGrid, sceneImage, drawSceneImage, sceneryOpacities } from '../scene';
@@ -87,6 +88,8 @@ export class Canvas2DBackend implements RenderBackend {
    * frame until something changes, and a WeakMap forgets them with it.
    */
   private loops = new WeakMap<OverlayLayer, Vec2[][]>();
+  /** Steam regions are memoised by the view's stable obscuring-cell array. */
+  private obscuringLoops = new WeakMap<readonly Vec2[], Vec2[][]>();
   private curve: { path: readonly Vec2[]; from: Vec2; curve: Curve } | null = null;
   private fx = new CanvasFxLayer();
   /** White silhouettes of unit art, for the hit flash; forgotten with the source. */
@@ -280,6 +283,7 @@ export class Canvas2DBackend implements RenderBackend {
               painting?.src,
               view.hatch,
               view.gridLines,
+              view.obscuringTiles !== undefined,
             ].join('|'),
             marks: staticMarks && (() => onGround(staticMarks)),
           })
@@ -289,6 +293,7 @@ export class Canvas2DBackend implements RenderBackend {
         liveMarks();
       });
       if (layer && plan.bounds) this.drawLift(view, camera, plan, layer, () => onGround(liveMarks));
+      this.drawSteamPuffs(view, camera);
       this.drawClimbMarkers(view, camera);
       this.drawUnitRings(view, camera);
       drawBendFx(ctx, view.bendFx ?? [], camera, false);
@@ -362,6 +367,7 @@ export class Canvas2DBackend implements RenderBackend {
       if (!painting || view.crispOverlays) this.drawDecor(view, camera);
       if (view.atmosphere) this.drawShade(view, camera);
       this.drawOverlays(view, camera);
+      this.drawSteamPuffs(view, camera);
       this.drawPath(view, camera);
       if (view.aimArc) this.drawAimArc(view.aimArc, camera);
       this.drawFxLayer(view, camera, 'under');
@@ -425,7 +431,15 @@ export class Canvas2DBackend implements RenderBackend {
         const box = camera.toScreen(pos);
         if (drawTerrain && !painted) paintTerrain(ctx, box, tile, pos);
         if (drawSurfaces && !surfaceIsPainted(view, painted, tile, pos))
-          paintSurface(ctx, box, tile, pos, view.hatch, surfaceEdges(view.grid, pos));
+          paintSurface(
+            ctx,
+            box,
+            tile,
+            pos,
+            view.hatch,
+            surfaceEdges(view.grid, pos),
+            view.obscuringTiles !== undefined,
+          );
         if (drawSurfaces && view.gridLines) paintGridLine(ctx, box, 'rgba(0,0,0,0.18)');
       }
     }
@@ -701,6 +715,7 @@ export class Canvas2DBackend implements RenderBackend {
   }
 
   private drawOverlays(view: MapView, camera: Camera): void {
+    this.drawObscurement(view, camera);
     if (view.crispOverlays) {
       this.drawCrispOverlays(view, camera);
     } else {
@@ -746,6 +761,111 @@ export class Canvas2DBackend implements RenderBackend {
       }
     }
     this.drawCliffCues(view, camera);
+  }
+
+  /** Combat-only warm veil traced around the whole steam region. */
+  private drawObscurement(view: MapView, camera: Camera): void {
+    const ctx = this.ctx;
+    const tiles = view.obscuringTiles;
+    if (tiles && tiles.length > 0) {
+      let loops = this.obscuringLoops.get(tiles);
+      if (!loops) {
+        loops = contourLoops(tiles);
+        this.obscuringLoops.set(tiles, loops);
+      }
+      const origin = camera.toScreen({ x: 0, y: 0 });
+      const size = origin.size;
+      ctx.save();
+      ctx.beginPath();
+      for (const loop of loops) tracePolygon(ctx, loop, origin, size);
+      // One rounded footprint, including holes, without internal cell seams.
+      ctx.fillStyle = view.crispOverlays
+        ? OVERLAY.obscurementVeilContrast
+        : OVERLAY.obscurementVeil;
+      ctx.fill('evenodd');
+      ctx.lineJoin = 'round';
+      ctx.strokeStyle = view.crispOverlays
+        ? OVERLAY.obscurementEdgeContrast
+        : OVERLAY.obscurementEdge;
+      for (let band = 3; band >= 1; band--) {
+        ctx.globalAlpha = 0.12;
+        ctx.lineWidth = size * band * 0.04;
+        ctx.stroke();
+      }
+      ctx.globalAlpha = 1;
+      ctx.lineWidth = Math.max(1, size * (view.crispOverlays ? 0.032 : 0.018));
+      ctx.stroke();
+      ctx.restore();
+    }
+
+    const intensity = view.weatherIntensity ?? 0;
+    if (intensity > 0) {
+      const origin = camera.toScreen({ x: 0, y: 0 });
+      const width = view.grid.width * origin.size;
+      const height = view.grid.height * origin.size;
+      ctx.save();
+      ctx.beginPath();
+      ctx.rect(origin.x, origin.y, width, height);
+      ctx.clip();
+      ctx.fillStyle = OVERLAY.sandHaze;
+      ctx.globalAlpha = intensity === 2 ? 1 : 0.58;
+      ctx.fillRect(origin.x, origin.y, width, height);
+
+      // Fixed, short diagonal grains suggest one prevailing wind direction.
+      // They are built into one path and clipped to the board on every draw.
+      const count = Math.min(
+        intensity === 2 ? 96 : 52,
+        Math.max(
+          12,
+          Math.ceil(view.grid.width * view.grid.height * (intensity === 2 ? 0.4 : 0.22)),
+        ),
+      );
+      const columns = Math.max(1, Math.ceil(Math.sqrt((count * width) / Math.max(1, height))));
+      const rows = Math.max(1, Math.ceil(count / columns));
+      ctx.beginPath();
+      for (let i = 0; i < count; i++) {
+        const col = i % columns;
+        const row = Math.floor(i / columns);
+        const x = origin.x + ((col + 0.28 + ((i * 13) % 7) * 0.045) / columns) * width;
+        const y = origin.y + ((row + 0.28 + ((i * 5) % 7) * 0.045) / rows) * height;
+        const length = origin.size * (0.11 + ((i * 7) % 5) * 0.018);
+        ctx.moveTo(x, y);
+        ctx.lineTo(x + length, y - length * 0.22);
+        ctx.moveTo(x - length * 0.45, y + length * 0.6);
+        ctx.lineTo(x - length * 0.36, y + length * 0.58);
+      }
+      ctx.strokeStyle = OVERLAY.sandWisp;
+      ctx.globalAlpha = intensity === 2 ? 0.95 : 0.65;
+      ctx.lineWidth = Math.max(1, origin.size * 0.024);
+      ctx.lineCap = 'round';
+      ctx.stroke();
+      ctx.restore();
+    }
+  }
+
+  /** Static upright vapour sprites, drawn before occupants so feet stay legible. */
+  private drawSteamPuffs(view: MapView, camera: Camera): void {
+    const tiles = view.obscuringTiles ?? [];
+    if (tiles.length === 0) return;
+    const { ctx } = this;
+    const puff = steamPuffCanvas();
+    ctx.save();
+    for (const pos of tiles) {
+      if (!camera.isVisible(pos)) continue;
+      const box = camera.toScreen(pos);
+      // Match the upright Pixi base while keeping Canvas vapour static.
+      const base = box.y + box.size * 0.78 - liftAt(view.grid, pos, camera.projection) * box.size;
+      for (let j = 0; j < 4; j++) {
+        const seed = steamSeed(pos.x, pos.y, j);
+        const width = box.size * (0.66 + seed * 0.24);
+        const height = width * (0.9 + seed * 0.15);
+        const cx = box.x + box.size * (0.24 + j * 0.17 + (seed - 0.5) * 0.16);
+        const rise = box.size * (0.02 + (j % 2) * 0.08 + seed * 0.05);
+        ctx.globalAlpha = view.crispOverlays ? 0.9 : 0.65;
+        ctx.drawImage(puff, cx - width / 2, base - rise - height * 0.88, width, height);
+      }
+    }
+    ctx.restore();
   }
 
   private drawCliffCues(view: MapView, camera: Camera): void {

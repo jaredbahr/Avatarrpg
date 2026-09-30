@@ -243,6 +243,24 @@
   color: var(--c-ink-dim);
 }
 
+.title-plate-meta {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 0 var(--sp-2);
+  min-width: 0;
+}
+
+.weather-chip {
+  display: inline;
+  min-width: 0;
+  flex: 0 1 auto;
+  max-width: min(32rem, 52vw);
+  color: var(--c-ink-soft);
+  font-size: var(--fs-xs);
+  line-height: 1.15;
+}
+
 /*
  * Marks: the inline line drawings from app/ui/marks.ts. Drawn in the
  * current colour, so a button's element tints them and High contrast inks
@@ -3020,14 +3038,23 @@ html[data-contrast='high'] .hud-panel::after {
     place-items: center;
   }
 
-  /* A few letters and an ellipsis is not a title: on a phone the name takes a
-     second line before it gives up any of itself. */
+  /* Keep the full encounter name. Round and weather share the compact metadata
+     row; a narrow phone may wrap the chip, whose penalty stays untruncated. */
   .combat-scene .title-plate > .title-plate-name {
-    display: -webkit-box;
-    -webkit-box-orient: vertical;
-    -webkit-line-clamp: 2;
-    line-clamp: 2;
     white-space: normal;
+    overflow: visible;
+    text-overflow: clip;
+  }
+
+  .combat-scene .title-plate-meta {
+    column-gap: var(--sp-1);
+  }
+
+  .combat-scene .weather-chip {
+    max-width: 100%;
+    overflow: visible;
+    white-space: normal;
+    text-overflow: clip;
   }
 
   .combat-scene .title-plate-round {

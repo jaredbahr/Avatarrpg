@@ -303,6 +303,7 @@ export type LiveMarks = Pick<
   | 'exit'
   | 'emitters'
   | 'cliffEdges'
+  | 'obscuringTiles'
 >;
 
 /**
@@ -331,6 +332,7 @@ export function markedCells(
       }
   };
   for (const layer of view.overlays) for (const p of layer.tiles) mark(p.x, p.y);
+  for (const p of view.obscuringTiles ?? []) mark(p.x, p.y);
   // Cliff hatching is authored on the higher cell's lip; always schedule that
   // top for the lift pass even when no other live overlay crosses it.
   for (const edge of view.cliffEdges ?? []) mark(edge.pos.x, edge.pos.y);

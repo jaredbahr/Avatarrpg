@@ -38,7 +38,7 @@ import {
   samePos,
   tileAt,
 } from './grid';
-import { expectedDamage, healAmount, hitBreakdown, rollDamage, rollHit } from './damage';
+import { expectedDamage, healAmount, hitBreakdown, rollDamage } from './damage';
 import type { HitBreakdown } from './damage';
 import { weatherAt } from './obscurement';
 import { forecastReactions } from './reactions';
@@ -585,8 +585,14 @@ function applyEffect(
       for (const id of hitIds) {
         const victim = draft.unit(id);
         if (!victim || !isAlive(victim)) continue;
-        if (!rollHit(rng, content, draft.grid, caster, victim, weather, origin)) {
-          draft.emit({ type: 'attackMissed', unitId: caster.id, targetId: id });
+        const breakdown = hitBreakdown(content, draft.grid, caster, victim, weather, origin);
+        if (!rng.chance(breakdown.chance / 100)) {
+          draft.emit({
+            type: 'attackMissed',
+            unitId: caster.id,
+            targetId: id,
+            obscurement: breakdown.obscurement,
+          });
           continue;
         }
         const result = rollDamage(rng, content, caster, victim, effect);

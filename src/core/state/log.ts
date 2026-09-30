@@ -7,6 +7,7 @@
  */
 
 import type { BattleState, ContentIndex, DayPhase, GameEvent, Unit } from '../types';
+import { obscurementMissLine } from '../rules/obscurementPresentation';
 
 export const MAX_LOG_LINES = 120;
 
@@ -42,8 +43,10 @@ export function describeEvent(
       return `${nameOf(units, event.unitId)} uses ${ability?.name ?? event.abilityId}.`;
     }
 
-    case 'attackMissed':
-      return `${nameOf(units, event.unitId)} misses ${nameOf(units, event.targetId)}.`;
+    case 'attackMissed': {
+      const extra = obscurementMissLine(event.obscurement);
+      return `${nameOf(units, event.unitId)} misses ${nameOf(units, event.targetId)}.${extra ? ` ${extra}` : ''}`;
+    }
 
     case 'damaged': {
       const target = nameOf(units, event.unitId);

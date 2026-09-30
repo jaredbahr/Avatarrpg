@@ -98,10 +98,19 @@ export function paintSurface(
   pos: Vec2,
   hatch: boolean,
   edges: Edges,
+  steamRegion = false,
 ): void {
   if (!tile.surface) return;
   const style = SURFACE_STYLES[tile.surface.id];
   const s = box.size;
+
+  // Combat steam is painted as a region treatment with upright billows. Keep
+  // its per-tile accessibility hatch, while avoiding square washes and rims
+  // beneath the shared cloud. Exploration views retain the legacy ground wash.
+  if (tile.surface.id === 'steam' && steamRegion) {
+    if (hatch) paintHatch(ctx, box, style.hatch, style.edge, pos);
+    return;
+  }
 
   ctx.save();
   ctx.beginPath();
@@ -190,7 +199,7 @@ export function paintSurface(
      * Irregular depth is decoration inside the tile, never a ragged or
      * misleading hazard boundary: the wash still covers every hazard tile.
      */
-    if (material !== 'ice' && material !== 'fire' && material !== 'steam') {
+    if (material !== 'ice' && material !== 'fire') {
       ctx.globalAlpha = SURFACE_POOL.alpha * intensity;
       ctx.fillStyle = style.detail;
       for (const rim of rims) {

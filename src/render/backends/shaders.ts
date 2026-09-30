@@ -105,6 +105,7 @@ uniform vec4 uGroundInverse;
 uniform float uTileSize;
 uniform float uTime;
 uniform float uHatch;
+uniform float uSteamRegion;
 uniform float uGridLines;
 ${/* Partial authored scenes use a terrain-only base pass, followed by a */ ''}
 ${/* surfaces-only pass over their localized ground regions. */ ''}
@@ -215,6 +216,12 @@ void main(void) {
   vec3 tint = vec3(0.0), rim = vec3(0.0), detail = vec3(0.0);
   float opacity = 0.0;
   ${MATERIAL_STYLES}
+  if (surface == 5) {
+    tint = ${glslColor(SURFACE_STYLES.steam.fill)};
+    rim = ${glslColor(SURFACE_STYLES.steam.edge)};
+    detail = ${glslColor(SURFACE_STYLES.steam.detail)};
+    opacity = uSteamRegion > 0.5 ? 0.0 : ${SURFACE_STYLES.steam.alpha.toFixed(3)};
+  }
 
   ${/* How far this pixel is from the material's own boundary, as Canvas measures it: the footprint stays the full square tile, but the bank wanders inside it by world noise so a pool never wears a ruled rim. Four texel reads, paid on the pixels of a pooled material and nowhere else — a software rasteriser runs this quad for the whole board. */ ''}
   float edgeDistance = 1.0;
@@ -278,8 +285,9 @@ void main(void) {
     float streak = smoothstep(0.70, 0.84, vnoise(w * vec2(9.0, 17.0)));
     lay(acc, detail, streak * 0.21 * intensity);
   } else if (surface == 5) { ${/* steam */ ''}
-    float billow = fbm(w * 2.2 + vec2(uTime * 0.16, -uTime * 0.22));
-    lay(acc, vec3(0.85, 0.86, 0.87), (0.45 + 0.35 * billow) * intensity);
+    // Combat's shared vapour treatment owns the ground; other views retain
+    // the surface wash beneath steam as in the earlier painter.
+    if (uSteamRegion < 0.5) lay(acc, tint, opacity * wash * intensity);
   } else if (surface == 6) { ${/* oil */ ''}
     float sheenBand = vnoise(w * vec2(3.0, 5.0));
     lay(acc, tint, opacity * wash * intensity);

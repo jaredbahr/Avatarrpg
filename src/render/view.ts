@@ -310,6 +310,10 @@ export interface MapView {
   readonly grid: Grid;
   readonly units: readonly RenderUnit[];
   readonly overlays: readonly OverlayLayer[];
+  /** Combat-only rule veil cells; absent on exploration views. */
+  readonly obscuringTiles?: readonly Vec2[];
+  /** Active area-obscurement rung, for WebGL sand fidelity. */
+  readonly weatherIntensity?: 0 | 1 | 2;
   /** Move-preview cells entered by a climbing step, labelled with that step's surcharge. */
   readonly climbMarkers?: readonly ClimbMarker[];
   /** Two-tier elevation breaks shown with the move overlay. */

@@ -41,6 +41,8 @@ import { encounterText } from '../../core/story/encounterText';
 import { Renderer, TILE } from '../../render/renderer';
 import type { AimArc, MapView, OverlayLayer, RenderProp, RenderUnit } from '../../render/renderer';
 import { cliffEdgesFor, type TargetReticleCue } from '../../render/view';
+import { weatherAt } from '../../core/rules/obscurement';
+import { obscuringTiles, weatherChipText } from '../../core/rules/obscurementPresentation';
 import { CONTENT } from '../../content';
 import { attachPointer, wheelZoomFactor } from '../input/pointer';
 import { ambienceFx, resolveFx } from '../../content/fx';
@@ -132,6 +134,8 @@ export class CombatScene implements Scene {
         key: string;
       } & OverlayBuild)
     | null = null;
+  /** Surface cells are immutable with the battle grid, so do not rescan them every frame. */
+  private obscurementMemo: { grid: BattleState['grid']; tiles: readonly Vec2[] } | null = null;
   private aiScheduled = false;
   private resultShown = false;
   private logOpen = false;
@@ -440,6 +444,13 @@ export class CombatScene implements Scene {
     return this.app.state?.battle ?? null;
   }
 
+  private obscuringTilesFor(battle: BattleState): readonly Vec2[] {
+    if (this.obscurementMemo?.grid === battle.grid) return this.obscurementMemo.tiles;
+    const tiles = obscuringTiles(this.app.content, battle.grid);
+    this.obscurementMemo = { grid: battle.grid, tiles };
+    return tiles;
+  }
+
   private active(): Unit | undefined {
     const battle = this.battle();
     return battle ? activeUnit(battle) : undefined;
@@ -636,7 +647,9 @@ export class CombatScene implements Scene {
     // the header is rebuilt only when something it draws has changed: More's
     // open state and the view buttons' visibility are updated in place, by
     // setMoreOpen and syncRecentre.
-    const key = `${battle.encounterId}|${battle.variantId ?? ''}|${battle.round}|${this.logOpen}`;
+    const weather = weatherAt(this.app.content, battle.encounterId, battle.round);
+    const weatherText = weatherChipText(this.app.content.tuning, weather);
+    const key = `${battle.encounterId}|${battle.variantId ?? ''}|${battle.round}|${weatherText ?? ''}|${this.logOpen}`;
     if (key === this.topBarKey && bar.childElementCount > 0) return;
     this.topBarKey = key;
     // On a rebuild, the button that had focus is found again by its key, so a
@@ -657,7 +670,20 @@ export class CombatScene implements Scene {
           text: encounter?.name ?? 'Battle',
           title: encounter?.name ?? 'Battle',
         }),
-        el('span', { class: 'title-plate-round', text: `Round ${battle.round}` }),
+        el(
+          'div',
+          { class: 'title-plate-meta' },
+          el('span', { class: 'title-plate-round', text: `Round ${battle.round}` }),
+          ...(weatherText
+            ? [
+                el('span', {
+                  class: 'weather-chip',
+                  text: weatherText,
+                  title: weatherText,
+                }),
+              ]
+            : []),
+        ),
       ),
     );
     bar.appendChild(el('div', { class: 'spacer' }));
@@ -1726,6 +1752,8 @@ export class CombatScene implements Scene {
       npcs: [],
       props,
       overlays,
+      obscuringTiles: this.obscuringTilesFor(battle),
+      weatherIntensity: weatherAt(this.app.content, battle.encounterId, battle.round),
       climbMarkers,
       cliffEdges,
       rangeBonusTiles,
