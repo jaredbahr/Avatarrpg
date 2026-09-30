@@ -461,10 +461,10 @@ export function previewAbility(
         terrain.push('Raises a stone wall');
         break;
       case 'push':
-        terrain.push(`Pushes ${effect.distance}`);
+        if (forecast.shoves.length === 0) terrain.push(`Pushes ${effect.distance}`);
         break;
       case 'pull':
-        terrain.push(`Pulls ${effect.distance}`);
+        if (forecast.shoves.length === 0) terrain.push(`Pulls ${effect.distance}`);
         break;
       case 'dash':
         terrain.push('Moves you there');

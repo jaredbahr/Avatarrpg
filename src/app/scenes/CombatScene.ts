@@ -78,6 +78,15 @@ type Mode =
   | { readonly kind: 'move' }
   | { readonly kind: 'aim'; readonly abilityId: string };
 
+/** A non-target tap must not pin the reticle while pointer hover keeps moving. */
+export function overlayMemoHoverKey(
+  aiming: boolean,
+  pendingIsValidTarget: boolean,
+  hover: Vec2 | null,
+): string {
+  return aiming && !pendingIsValidTarget && hover ? posKey(hover) : '';
+}
+
 interface OverlayBuild {
   readonly overlays: OverlayLayer[];
   readonly path: readonly Vec2[];
@@ -1676,8 +1685,17 @@ export class CombatScene implements Scene {
     const interactive = this.isPlayerTurn() && !this.needsHandoff() && !this.app.animator.busy(now);
 
     if (interactive && unit) {
-      const hoverKey =
-        this.mode.kind === 'aim' && !this.pending && this.hover ? posKey(this.hover) : '';
+      const pending = this.pending;
+      const ability =
+        this.mode.kind === 'aim' ? this.app.content.abilities.get(this.mode.abilityId) : undefined;
+      const pendingIsValidTarget = Boolean(
+        ability && pending && isValidTarget(this.app.content, battle, unit, ability, pending).ok,
+      );
+      const hoverKey = overlayMemoHoverKey(
+        this.mode.kind === 'aim',
+        pendingIsValidTarget,
+        this.hover,
+      );
       const key = `${this.mode.kind}|${this.mode.kind === 'aim' ? this.mode.abilityId : ''}|${
         this.pending ? posKey(this.pending) : ''
       }|${hoverKey}|${unit.id}`;

@@ -31,7 +31,7 @@ describe('obscurement presentation', () => {
     );
     expect(weatherChipShortText(CONTENT.tuning, 0)).toBeNull();
     expect(weatherChipShortText(CONTENT.tuning, 2)).toBe(
-      `Sandstorm −${CONTENT.tuning.weather[2]!.perTile}/tile`,
+      `Sand: long shots −${CONTENT.tuning.weather[2]!.perTile}/tile`,
     );
   });
 

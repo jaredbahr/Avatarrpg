@@ -5,7 +5,7 @@ import { RngCursor, seedFromString } from '../rng';
 import { createBattle, createGame } from '../state/createGame';
 import { BattleDraft } from '../state/battleDraft';
 import { affectedTiles, previewAbility, resolveAbility } from './abilities';
-import { forecastReactions } from './reactions';
+import { forecastReactions, precedingLedgeDrop } from './reactions';
 import { posKey, tileAt, withSurface } from './grid';
 import type {
   Ability,
@@ -311,6 +311,23 @@ describe('the reactions the README promises', () => {
 });
 
 describe('forecast hygiene', () => {
+  it("does not attribute another unit's preceding ledge drop to a push", () => {
+    const previous = {
+      type: 'damaged' as const,
+      unitId: 'other-unit',
+      amount: CONTENT.tuning.ledgeDropDamage,
+      crit: false,
+      damageType: 'pure' as const,
+      sourceId: null,
+      cause: 'ledgeDrop' as const,
+    };
+    const pushed = { type: 'unitPushed' as const, unitId: 'pushed-unit', to: { x: 2, y: 1 } };
+    expect(precedingLedgeDrop(previous, pushed, CONTENT.tuning.ledgeDropDamage)).toEqual({
+      tiers: 0,
+      damage: 0,
+    });
+  });
+
   it('consumes no randomness', () => {
     const fixture = scene([{ pos: { x: 0, y: 0 }, id: 'water' }]);
     const target = fixture.run[3];

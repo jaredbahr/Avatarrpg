@@ -175,6 +175,7 @@ describe('bounded combat outcome previews', () => {
     expect(prop?.to).toEqual({ x: 11, y: 5 });
     expect(shove?.to).toEqual({ x: 11, y: 5 });
     expect(shove?.landingSurfaces).toContain('oil');
+    expect(preview.terrain).not.toContain('Pushes 1');
 
     const actual = resolve(battle, caster, 'shove', target);
     expect(actual.props.find((candidate) => candidate.propId === 'brazier')?.pos).toEqual({
@@ -494,6 +495,7 @@ describe('bounded combat outcome previews', () => {
 
     const preview = previewAbility(CONTENT, battle, caster, ability('air_blast'), target);
     expect(preview.shoves.find((shove) => shove.id === victimId)?.to).toEqual({ x: 0, y: 7 });
+    expect(preview.terrain.some((note) => note.startsWith('Pushes '))).toBe(false);
 
     const actual = resolve(battle, caster, 'air_blast', target);
     expect(actual.unit(victimId)?.pos).toEqual({ x: 0, y: 7 });

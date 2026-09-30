@@ -45,26 +45,20 @@ function shoveVerb(mode: ShoveForecast['mode']): 'pushed' | 'pulled' {
   return mode === 'push' ? 'pushed' : 'pulled';
 }
 
-function direction(from: Vec2, to: Vec2): string {
-  const vertical = to.y < from.y ? 'north' : to.y > from.y ? 'south' : '';
-  const horizontal = to.x < from.x ? 'west' : to.x > from.x ? 'east' : '';
-  return [vertical, horizontal].filter(Boolean).join('-');
-}
-
-/** The movement sentence uses board meaning, never developer-facing coordinates. */
+/** Describe displacement relative to its caster, since the board is drawn obliquely. */
 export function formatShoveMovement(
   name: string,
   mode: ShoveForecast['mode'],
-  from: Vec2,
-  to: Vec2,
+  _from: Vec2,
+  _to: Vec2,
   movedDistance: number,
   landingSurfaces: readonly SurfaceId[],
 ): string {
   const verb = shoveVerb(mode);
   if (landingSurfaces.includes('water')) return `${name}: ${verb} into the water`;
   const tiles = `${movedDistance} ${movedDistance === 1 ? 'tile' : 'tiles'}`;
-  const bearing = direction(from, to);
-  return `${name}: ${verb} ${tiles}${bearing ? ` ${bearing}` : ''}`;
+  const relative = mode === 'push' ? 'away' : 'closer';
+  return `${name}: ${verb} ${tiles} ${relative}`;
 }
 
 /** Omit harmless drops and disclose the one-HP floor whenever it clamps damage. */

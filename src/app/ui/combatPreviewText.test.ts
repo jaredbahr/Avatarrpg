@@ -4,11 +4,14 @@ import { formatHitBreakdownRows, formatLedgeDrop, formatShoveMovement } from './
 describe('combat preview text', () => {
   it('describes shove movement without raw grid coordinates', () => {
     expect(formatShoveMovement('Mercenary', 'push', { x: 1, y: 2 }, { x: 2, y: 1 }, 1, [])).toBe(
-      'Mercenary: pushed 1 tile north-east',
+      'Mercenary: pushed 1 tile away',
     );
     expect(
       formatShoveMovement('Mercenary', 'pull', { x: 3, y: 1 }, { x: 1, y: 1 }, 2, ['water']),
     ).toBe('Mercenary: pulled into the water');
+    expect(formatShoveMovement('Mercenary', 'pull', { x: 3, y: 1 }, { x: 2, y: 1 }, 1, [])).toBe(
+      'Mercenary: pulled 1 tile closer',
+    );
   });
 
   it('hides harmless drops and explains damage clamped by the HP floor', () => {

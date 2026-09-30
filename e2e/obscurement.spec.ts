@@ -35,7 +35,15 @@ for (const renderer of ['canvas', 'webgl'] as const) {
     });
     await settleLayout(page);
 
-    await expect(page.locator('.weather-chip')).toHaveText('Sandstorm · long shots −10/tile');
+    await expect(page.locator('.weather-chip-full')).toHaveText('Sandstorm · long shots −10/tile');
+    await expect(page.locator('.weather-chip-full')).toBeVisible();
+    await expect(page.locator('.weather-chip-short')).toBeHidden();
+
+    await page.setViewportSize({ width: 390, height: 844 });
+    await settleLayout(page);
+    await expect(page.locator('.weather-chip-short')).toHaveText('Sand: long shots −10/tile');
+    await expect(page.locator('.weather-chip-short')).toBeVisible();
+    await expect(page.locator('.weather-chip-full')).toBeHidden();
     const read = () =>
       page.evaluate(() => {
         const scene = (
