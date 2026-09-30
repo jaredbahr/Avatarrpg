@@ -390,7 +390,7 @@ export class BattleDraft {
    * Stopping early against a wall is deliberate: "shove them into the cliff"
    * should do something, and something is better than nothing happening at all.
    */
-  private slideFrom(
+  slideFrom(
     ctx: MoveContext,
     from: Vec2,
     origin: Vec2,

@@ -85,6 +85,13 @@ export interface PropForecast {
 
 export interface ShoveForecast {
   readonly kind: 'unit' | 'prop';
+  /**
+   * What released the shove. `'ability'` is the action's own push/pull or a
+   * prop it moved; `'propBreak'` is a body thrown clear by a destroyed prop's
+   * on-break push. A scorer prices the break itself through `scoreProps`, so it
+   * must read only the ability's own shoves or it counts the fall twice.
+   */
+  readonly cause: 'ability' | 'propBreak';
   readonly id: string;
   readonly name: string;
   readonly friendly: boolean;
@@ -340,6 +347,7 @@ export function forecastReactions(
       const movedDistance = Math.max(Math.abs(event.to.x - from.x), Math.abs(event.to.y - from.y));
       shoves.push({
         kind: 'unit',
+        cause: 'propBreak',
         id: event.unitId,
         name: unit.name,
         friendly: friendlyTo(caster, unit),
@@ -519,6 +527,7 @@ function shoveUnitForecast(
   if (!before) {
     return {
       kind: 'unit',
+      cause: 'ability',
       id: unitId,
       name: unitId,
       friendly: false,
@@ -543,6 +552,7 @@ function shoveUnitForecast(
     );
   return {
     kind: 'unit',
+    cause: 'ability',
     id: before.id,
     name: before.name,
     friendly: friendlyTo(caster, before),
@@ -563,6 +573,31 @@ function shoveUnitForecast(
   };
 }
 
+/**
+ * HP one forced move would knock off by dropping the unit over a ledge,
+ * measured through the same `shoveUnitForecast` the confirm preview reads.
+ *
+ * A caller that already knows the origin — the AI pricing a prop's break shove
+ * — can ask for a single shove without running the whole ability forecast. The
+ * detached preview draft and cursor keep it pure and RNG-free, exactly like the
+ * confirm step.
+ */
+export function shoveLedgeDropDamage(
+  content: ContentIndex,
+  battle: BattleState,
+  caster: Unit,
+  unitId: string,
+  origin: Vec2,
+  distance: number,
+  mode: 'push' | 'pull',
+): number {
+  const preview = new BattleDraft(content, battle, new RngCursor(0), {
+    resolveChanceStatuses: false,
+  });
+  return shoveUnitForecast(content, preview, caster, unitId, origin, distance, mode)
+    .ledgeDropDamage;
+}
+
 function shovePropForecast(
   content: ContentIndex,
   draft: BattleDraft,
@@ -575,6 +610,7 @@ function shovePropForecast(
   if (!before) {
     return {
       kind: 'prop',
+      cause: 'ability',
       id: propId,
       name: propId,
       friendly: false,
@@ -607,6 +643,7 @@ function shovePropForecast(
     : undefined;
   return {
     kind: 'prop',
+    cause: 'ability',
     id: before.id,
     name: draft.propDef(before)?.name ?? before.propId,
     friendly: false,
