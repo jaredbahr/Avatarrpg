@@ -31,7 +31,7 @@ import type {
 import { RngCursor } from '../rng';
 import { BattleDraft } from '../state/battleDraft';
 import type { SurfaceContactRecord } from '../state/battleDraft';
-import { allowsCasterTarget, blastTiles, occupiedCells, posKey, tileAt } from './grid';
+import { allowsCasterTarget, blastTiles, distance, occupiedCells, posKey, tileAt } from './grid';
 import { applyStatus, removeStatuses } from './status';
 import { contactEffects } from './surfaces';
 import type { ChainHit, StatusHit, SurfaceChange } from './surfaces';
@@ -128,6 +128,10 @@ export interface ShoveForecast {
   readonly distance: number;
   readonly movedDistance: number;
   readonly mode: 'push' | 'pull';
+  /** What the movement measures from, for truthful display wording. */
+  readonly originKind: 'caster' | 'area' | 'propBreak';
+  /** Why fewer than the authored number of tiles were travelled. */
+  readonly stopReason: 'obstacle' | 'centre' | 'adjacent' | null;
   readonly blocked: boolean;
   /** Surface contact caused by landing, including the damage/status chance. */
   readonly landingSurfaces: readonly SurfaceId[];
@@ -258,6 +262,8 @@ export function forecastReactions(
     (ability.targeting.shape === 'blast' || ability.targeting.shape === 'tile'
       ? target
       : caster.pos);
+  const originKind =
+    ability.targeting.shape === 'blast' || ability.targeting.shape === 'tile' ? 'area' : 'caster';
 
   for (const effect of ability.effects) {
     switch (effect.kind) {
@@ -276,12 +282,29 @@ export function forecastReactions(
       case 'pull': {
         for (const id of hitIds) {
           shoves.push(
-            shoveUnitForecast(content, draft, caster, id, shoveFrom, effect.distance, effect.kind),
+            shoveUnitForecast(
+              content,
+              draft,
+              caster,
+              id,
+              shoveFrom,
+              effect.distance,
+              effect.kind,
+              originKind,
+            ),
           );
         }
         for (const prop of draft.propsOnTiles(tiles)) {
           shoves.push(
-            shovePropForecast(content, draft, prop.id, shoveFrom, effect.distance, effect.kind),
+            shovePropForecast(
+              content,
+              draft,
+              prop.id,
+              shoveFrom,
+              effect.distance,
+              effect.kind,
+              originKind,
+            ),
           );
         }
         break;
@@ -385,6 +408,8 @@ export function forecastReactions(
         distance: movedDistance,
         movedDistance,
         mode: 'push',
+        originKind: 'propBreak',
+        stopReason: null,
         blocked: false,
         ...landingInfo(content, draft, unit),
         ledgeDropTiers: draft.shoveLedgeTiers.get(eventIndex) ?? precedingDrop.tiers,
@@ -540,6 +565,7 @@ function shoveUnitForecast(
   origin: Vec2,
   distance: number,
   mode: 'push' | 'pull',
+  originKind: ShoveForecast['originKind'],
 ): ShoveForecast {
   const before = draft.unit(unitId);
   if (!before) {
@@ -554,6 +580,8 @@ function shoveUnitForecast(
       distance,
       movedDistance: 0,
       mode,
+      originKind,
+      stopReason: 'obstacle',
       blocked: true,
       ...landingInfo(content, draft, undefined),
     };
@@ -561,6 +589,10 @@ function shoveUnitForecast(
   const eventStart = draft.events.length;
   const ledgeDropTiers = draft.shove(unitId, origin, distance, mode);
   const after = draft.unit(unitId) ?? before;
+  const movedDistance = Math.max(
+    Math.abs(after.pos.x - before.pos.x),
+    Math.abs(after.pos.y - before.pos.y),
+  );
   const ledgeDropDamage = draft.events
     .slice(eventStart)
     .reduce(
@@ -577,14 +609,11 @@ function shoveUnitForecast(
     from: before.pos,
     to: after.pos,
     distance,
-    movedDistance: Math.max(
-      Math.abs(after.pos.x - before.pos.x),
-      Math.abs(after.pos.y - before.pos.y),
-    ),
+    movedDistance,
     mode,
-    blocked:
-      Math.max(Math.abs(after.pos.x - before.pos.x), Math.abs(after.pos.y - before.pos.y)) <
-      distance,
+    originKind,
+    stopReason: shoveStopReason(before.pos, after.pos, origin, distance, movedDistance, mode),
+    blocked: movedDistance < distance,
     ...landingInfo(content, draft, after),
     ledgeDropTiers,
     ledgeDropDamage,
@@ -612,7 +641,7 @@ export function shoveLedgeDropDamage(
   const preview = new BattleDraft(content, battle, new RngCursor(0), {
     resolveChanceStatuses: false,
   });
-  return shoveUnitForecast(content, preview, caster, unitId, origin, distance, mode)
+  return shoveUnitForecast(content, preview, caster, unitId, origin, distance, mode, 'caster')
     .ledgeDropDamage;
 }
 
@@ -623,6 +652,7 @@ function shovePropForecast(
   origin: Vec2,
   distance: number,
   mode: 'push' | 'pull',
+  originKind: ShoveForecast['originKind'],
 ): ShoveForecast {
   const before = draft.props.find((prop) => prop.id === propId);
   if (!before) {
@@ -637,6 +667,8 @@ function shovePropForecast(
       distance,
       movedDistance: 0,
       mode,
+      originKind,
+      stopReason: 'obstacle',
       blocked: true,
       ...landingInfo(content, draft, undefined),
     };
@@ -651,6 +683,7 @@ function shovePropForecast(
     );
   const to = after?.pos ?? pushed?.to ?? before.pos;
   const moved = !samePosition(to, before.pos);
+  const movedDistance = Math.max(Math.abs(to.x - before.pos.x), Math.abs(to.y - before.pos.y));
   const unitLike = moved
     ? ({
         id: after?.id ?? before.id,
@@ -668,11 +701,28 @@ function shovePropForecast(
     from: before.pos,
     to,
     distance,
-    movedDistance: Math.max(Math.abs(to.x - before.pos.x), Math.abs(to.y - before.pos.y)),
+    movedDistance,
     mode,
-    blocked: Math.max(Math.abs(to.x - before.pos.x), Math.abs(to.y - before.pos.y)) < distance,
+    originKind,
+    stopReason: shoveStopReason(before.pos, to, origin, distance, movedDistance, mode),
+    blocked: movedDistance < distance,
     ...landingInfo(content, draft, unitLike),
   };
+}
+
+/** Mirrors `BattleDraft.slideFrom`'s two non-obstacle early-outs. */
+function shoveStopReason(
+  from: Vec2,
+  to: Vec2,
+  origin: Vec2,
+  requestedDistance: number,
+  movedDistance: number,
+  mode: 'push' | 'pull',
+): ShoveForecast['stopReason'] {
+  if (movedDistance >= requestedDistance) return null;
+  if (samePosition(from, origin)) return 'centre';
+  if (mode === 'pull' && distance(to, origin) === 1) return 'adjacent';
+  return 'obstacle';
 }
 
 function samePosition(a: Vec2, b: Vec2): boolean {

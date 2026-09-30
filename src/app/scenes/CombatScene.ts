@@ -1391,13 +1391,9 @@ export class CombatScene implements Scene {
         shove.mode,
         shove.movedDistance,
         shove.distance,
-        shove.blocked,
+        shove.stopReason,
         shove.landingSurfaces,
-        shove.cause === 'propBreak'
-          ? 'prop'
-          : ability.targeting.shape === 'blast' || ability.targeting.shape === 'tile'
-            ? 'blast'
-            : 'caster',
+        shove.originKind,
       );
       const landingEffects = shove.landingSurfaces
         .filter((id) => id !== 'water')

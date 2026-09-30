@@ -54,19 +54,26 @@ export function formatShoveMovement(
   mode: ShoveForecast['mode'],
   movedDistance: number,
   distance: number,
-  blocked: boolean,
+  stopReason: ShoveForecast['stopReason'],
   landingSurfaces: readonly SurfaceId[],
-  origin: 'caster' | 'blast' | 'prop',
+  originKind: ShoveForecast['originKind'],
 ): string {
   const verb = shoveVerb(mode);
-  if (movedDistance === 0) return `${name} can't be ${verb} — blocked`;
+  if (movedDistance === 0) {
+    if (stopReason === 'centre') return `${name} stays put — at the centre`;
+    if (stopReason === 'adjacent') {
+      return `${name} is already next to ${originKind === 'caster' ? 'the caster' : 'the centre'}`;
+    }
+    return `${name} can't be ${verb} — blocked`;
+  }
+  const blocked = stopReason === 'obstacle';
   if (landingSurfaces.includes('water')) {
     const progress = blocked ? ` (${movedDistance} of ${distance} tiles; blocked)` : '';
     return `${name}: ${verb} into the water${progress}`;
   }
   const tiles = `${movedDistance} ${movedDistance === 1 ? 'tile' : 'tiles'}`;
   const movement =
-    origin === 'caster'
+    originKind === 'caster'
       ? `${verb} ${blocked ? `${movedDistance} of ${distance} tiles` : tiles} ${mode === 'push' ? 'away' : 'closer'}`
       : `${mode === 'push' ? 'knocked' : verb} ${blocked ? `${movedDistance} of ${distance} tiles` : tiles}`;
   return `${name}: ${movement}${blocked ? ' (blocked)' : ''}`;

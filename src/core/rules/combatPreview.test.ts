@@ -310,6 +310,12 @@ describe('bounded combat outcome previews', () => {
       0.9,
     );
     expect(preview.shoves.filter((shove) => shove.id === victim.id).length).toBe(2);
+    expect(
+      preview.shoves
+        .filter((shove) => shove.id === victim.id)
+        .map((shove) => shove.originKind)
+        .sort(),
+    ).toEqual(['area', 'propBreak']);
     expect(preview.shoves.some((shove) => shove.to.x === 8)).toBe(true);
     expect(preview.shoves.some((shove) => shove.to.x === 10)).toBe(true);
     expect(
@@ -320,6 +326,49 @@ describe('bounded combat outcome previews', () => {
 
     const actual = resolve(battle, caster, 'shatterpoint', target);
     expect(actual.unit(victim.id)?.pos).toEqual({ x: 10, y: 6 });
+  });
+
+  it('classifies shove origins and deliberate zero-movement stops', () => {
+    const source = battleFor('enc_forest_road');
+    const victimId = source.units.find((unit) => unit.faction === 'enemy')?.id;
+    if (!victimId) throw new Error('origin fixture has no enemy');
+    const battle = placed(openGround(source), { p0: { x: 5, y: 5 }, [victimId]: { x: 6, y: 5 } }, [
+      'p0',
+      victimId,
+    ]);
+    const caster = battle.units.find((unit) => unit.id === 'p0');
+    const victim = battle.units.find((unit) => unit.id === victimId);
+    if (!caster || !victim) throw new Error('origin fixture is incomplete');
+
+    const melee = previewAbility(CONTENT, battle, caster, ability('shove'), victim.pos).shoves[0];
+    expect(melee).toMatchObject({ originKind: 'caster', stopReason: null });
+
+    const pull = previewAbility(CONTENT, battle, caster, ability('water_pull'), victim.pos)
+      .shoves[0];
+    expect(pull).toMatchObject({
+      originKind: 'caster',
+      movedDistance: 0,
+      stopReason: 'adjacent',
+    });
+
+    const centre = previewAbility(CONTENT, battle, caster, ability('shockwave'), victim.pos)
+      .shoves[0];
+    expect(centre).toMatchObject({
+      originKind: 'area',
+      movedDistance: 0,
+      stopReason: 'centre',
+    });
+
+    const coneBattle = placed(battle, { p0: { x: 5, y: 5 }, [victimId]: { x: 7, y: 5 } }, [
+      'p0',
+      victimId,
+    ]);
+    const coneCaster = coneBattle.units.find((unit) => unit.id === 'p0');
+    const coneVictim = coneBattle.units.find((unit) => unit.id === victimId);
+    if (!coneCaster || !coneVictim) throw new Error('cone fixture is incomplete');
+    expect(
+      previewAbility(CONTENT, coneBattle, coneCaster, ability('gust'), coneVictim.pos).shoves[0],
+    ).toMatchObject({ originKind: 'caster' });
   });
 
   it('uses real shove pathing for edges, blockers, and a two-cell boss', () => {
@@ -381,6 +430,7 @@ describe('bounded combat outcome previews', () => {
       to: { x: 14, y: 3 },
       movedDistance: 0,
       blocked: true,
+      stopReason: 'obstacle',
     });
 
     const bossSource = battleFor('enc_grumbler', ['nima', 'kaya']);
@@ -494,7 +544,10 @@ describe('bounded combat outcome previews', () => {
     expect(caster.size).toBe(2);
 
     const preview = previewAbility(CONTENT, battle, caster, ability('air_blast'), target);
-    expect(preview.shoves.find((shove) => shove.id === victimId)?.to).toEqual({ x: 0, y: 7 });
+    expect(preview.shoves.find((shove) => shove.id === victimId)).toMatchObject({
+      to: { x: 0, y: 7 },
+      originKind: 'caster',
+    });
     expect(preview.terrain.some((note) => note.startsWith('Pushes '))).toBe(false);
 
     const actual = resolve(battle, caster, 'air_blast', target);
