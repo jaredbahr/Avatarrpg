@@ -38,6 +38,7 @@ import {
   samePos,
   tileAt,
 } from './grid';
+import { SQUARE_FOOTPRINTS } from './footprint';
 import { expectedDamage, healAmount, hitBreakdown, rollDamage } from './damage';
 import type { HitBreakdown } from './damage';
 import { weatherAt } from './obscurement';
@@ -57,8 +58,14 @@ import { canUseAbilities, effectiveStats, isAlive } from './stats';
 
 /**
  * The first occupied caster cell that can legally reach and see `target`.
- * `occupiedCells` lists the anchor first, making the choice deterministic and
- * preserving the exact origin used by size-1 casters.
+ *
+ * Candidates are checked nearest-first by Chebyshev distance to the target,
+ * with ties broken by `occupiedCells` order (the anchor first). For a size-1
+ * caster there is only one cell, so this is the old behaviour exactly; for a
+ * 2x2 it picks the gun that is actually pointing at the target rather than
+ * whichever corner happens to come first. The reordering is switch-gated: the
+ * legacy 2x1 keeps strict anchor-first order until A-6. No RNG, so preview and
+ * resolution still agree.
  */
 export function validatingOrigin(
   content: ContentIndex,
@@ -67,9 +74,14 @@ export function validatingOrigin(
   ability: Ability,
   target: Vec2,
   checkLineOfSight = true,
+  squareFootprints: boolean = SQUARE_FOOTPRINTS,
 ): Vec2 | null {
   const targetElevation = tileAt(grid, target)?.elevation ?? 0;
-  for (const cell of occupiedCells(caster)) {
+  const cells = occupiedCells(caster, squareFootprints);
+  const ordered = squareFootprints
+    ? [...cells].sort((a, b) => distance(a, target) - distance(b, target))
+    : cells;
+  for (const cell of ordered) {
     const casterElevation = tileAt(grid, cell)?.elevation ?? 0;
     const heightReach = heightReachBonus(content, ability, casterElevation, targetElevation);
     if (distance(cell, target) > ability.range + heightReach) continue;
@@ -118,11 +130,13 @@ export function affectedTiles(
   caster: Unit,
   ability: Ability,
   target: Vec2,
+  squareFootprints: boolean = SQUARE_FOOTPRINTS,
 ): Vec2[] {
-  const origin = validatingOrigin(content, grid, caster, ability, target) ?? caster.pos;
+  const origin =
+    validatingOrigin(content, grid, caster, ability, target, true, squareFootprints) ?? caster.pos;
   switch (ability.targeting.shape) {
     case 'self':
-      return occupiedCells(caster);
+      return occupiedCells(caster, squareFootprints);
     case 'unit':
     case 'tile':
       return inBounds(grid, target) ? [target] : [];
@@ -142,9 +156,15 @@ export function sameSide(a: Unit, b: Unit): boolean {
 }
 
 /** Living units standing on any of `tiles`. */
-export function unitsOnTiles(units: readonly Unit[], tiles: readonly Vec2[]): Unit[] {
+export function unitsOnTiles(
+  units: readonly Unit[],
+  tiles: readonly Vec2[],
+  squareFootprints: boolean = SQUARE_FOOTPRINTS,
+): Unit[] {
   const keys = new Set(tiles.map(posKey));
-  return units.filter((u) => isAlive(u) && occupiedCells(u).some((c) => keys.has(posKey(c))));
+  return units.filter(
+    (u) => isAlive(u) && occupiedCells(u, squareFootprints).some((c) => keys.has(posKey(c))),
+  );
 }
 
 /* ------------------------------------------------------------------ */
@@ -351,12 +371,15 @@ export function previewAbility(
   caster: Unit,
   ability: Ability,
   target: Vec2,
+  squareFootprints: boolean = SQUARE_FOOTPRINTS,
 ): AbilityPreview {
-  const tiles = affectedTiles(content, battle.grid, caster, ability, target);
+  const tiles = affectedTiles(content, battle.grid, caster, ability, target, squareFootprints);
   // The previewed to-hit uses the same firing cell as resolution, so a size-2
   // caster's elevation (and plunging) read from its validating origin.
-  const origin = validatingOrigin(content, battle.grid, caster, ability, target) ?? caster.pos;
-  const inArea = unitsOnTiles(battle.units, tiles).filter(
+  const origin =
+    validatingOrigin(content, battle.grid, caster, ability, target, true, squareFootprints) ??
+    caster.pos;
+  const inArea = unitsOnTiles(battle.units, tiles, squareFootprints).filter(
     (u) => allowsCasterTarget(ability) || u.id !== caster.id,
   );
   // Pushes preview from the same cell resolution uses: the blast centre for
@@ -369,6 +392,7 @@ export function previewAbility(
     target,
     tiles,
     shoveOrigin(content, battle.grid, caster, ability, target),
+    squareFootprints,
   );
   // The roll uses the same intensity, resolved the same way, so the preview
   // percentage and the actual shot cannot disagree.

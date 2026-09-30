@@ -42,6 +42,7 @@ import {
   withTile,
 } from '../rules/grid';
 import type { MoveContext } from '../rules/grid';
+import { SQUARE_FOOTPRINTS, footprintCells, shoveStep } from '../rules/footprint';
 import { applyStatus, removeStatuses } from '../rules/status';
 import {
   MAX_BANKED_TOTAL_AP as MAX_TOTAL_AP,
@@ -103,6 +104,12 @@ export class BattleDraft {
   readonly mapId: string;
   /** Preview drafts describe chance branches without choosing one. */
   readonly resolveChanceStatuses: boolean;
+  /**
+   * TEMPORARY GATE (see `rules/footprint.ts`, removed in A-6): this draft
+   * treats size 2 as a 2x2 square. Defaults to `SQUARE_FOOTPRINTS`, so shipped
+   * battles keep the legacy 2x1 boss until A-6. Tests opt in per draft.
+   */
+  readonly squareFootprints: boolean;
   readonly events: GameEvent[] = [];
   /** Nominal tier count for each emitted forced-movement event, for forecasts. */
   readonly shoveLedgeTiers = new Map<number, number>();
@@ -124,7 +131,7 @@ export class BattleDraft {
     readonly content: ContentIndex,
     battle: BattleState,
     readonly rng: RngCursor,
-    options: { readonly resolveChanceStatuses?: boolean } = {},
+    options: { readonly resolveChanceStatuses?: boolean; readonly squareFootprints?: boolean } = {},
   ) {
     this.grid = battle.grid;
     this.units = [...battle.units];
@@ -139,6 +146,7 @@ export class BattleDraft {
     this.variantId = battle.variantId;
     this.mapId = battle.mapId;
     this.resolveChanceStatuses = options.resolveChanceStatuses ?? true;
+    this.squareFootprints = options.squareFootprints ?? SQUARE_FOOTPRINTS;
   }
 
   toBattle(): BattleState {
@@ -178,7 +186,9 @@ export class BattleDraft {
 
   unitAt(pos: Vec2): Unit | undefined {
     const key = posKey(pos);
-    return this.living().find((u) => occupiedCells(u).some((c) => posKey(c) === key));
+    return this.living().find((u) =>
+      occupiedCells(u, this.squareFootprints).some((c) => posKey(c) === key),
+    );
   }
 
   emit(event: GameEvent): void {
@@ -191,7 +201,10 @@ export class BattleDraft {
 
   /** Cells no unit may enter. `exceptId` frees the mover's own cells. */
   blockedCells(exceptId?: string): Set<string> {
-    const map = occupancy(this.units.filter((u) => u.id !== exceptId));
+    const map = occupancy(
+      this.units.filter((u) => u.id !== exceptId),
+      this.squareFootprints,
+    );
     return new Set(map.keys());
   }
 
@@ -201,6 +214,7 @@ export class BattleDraft {
       blocked: this.blockedCells(unit.id),
       surfaces: this.content.surfaces,
       size: unit.size,
+      squareFootprints: this.squareFootprints,
       climbCost: this.content.tuning.climbCost,
     };
   }
@@ -337,7 +351,7 @@ export class BattleDraft {
     if (!unit || !isAlive(unit)) return;
 
     const seen = new Set<SurfaceId>();
-    for (const cell of occupiedCells(unit)) {
+    for (const cell of occupiedCells(unit, this.squareFootprints)) {
       const contact = contactEffects(this.content, this.grid, cell);
       if (!contact.surface || seen.has(contact.surface)) continue;
       seen.add(contact.surface);
@@ -401,9 +415,9 @@ export class BattleDraft {
     readonly ledgeDropTiers: number;
     readonly stopReason: 'none' | 'centre' | 'origin' | 'obstacle';
   } {
-    const sign = mode === 'push' ? 1 : -1;
-    const dx = Math.sign(from.x - origin.x) * sign;
-    const dy = Math.sign(from.y - origin.y) * sign;
+    // Direction comes from `shoveStep`, shared with the confirm-step forecast.
+    const square = ctx.squareFootprints ?? SQUARE_FOOTPRINTS;
+    const { x: dx, y: dy } = shoveStep(from, origin, ctx.size, mode, square);
     if (dx === 0 && dy === 0) {
       return { pos: from, ledgeDropTiers: 0, stopReason: 'centre' };
     }
@@ -422,7 +436,7 @@ export class BattleDraft {
       if (!this.canShoveStep(ctx, current, next)) {
         return { pos: current, ledgeDropTiers, stopReason: 'obstacle' };
       }
-      ledgeDropTiers += this.ledgeDrop(ctx.size, current, next);
+      ledgeDropTiers += this.ledgeDrop(ctx, current, next);
       current = next;
     }
     return { pos: current, ledgeDropTiers, stopReason: 'none' };
@@ -430,12 +444,17 @@ export class BattleDraft {
 
   /** Forced movement follows a one-tier ramp, but cannot push up a bare ledge. */
   private canShoveStep(ctx: MoveContext, from: Vec2, to: Vec2): boolean {
-    if (standCost(ctx, to) === null) return false;
-    const width = ctx.size === 2 ? 2 : 1;
-    for (let dx = 0; dx < width; dx++) {
-      const fromTile = tileAt(this.grid, { x: from.x + dx, y: from.y });
-      const toTile = tileAt(this.grid, { x: to.x + dx, y: to.y });
-      if (!fromTile || !toTile) return false;
+    const square = ctx.squareFootprints ?? SQUARE_FOOTPRINTS;
+    // Forced movement is a fall as much as a push, so it is judged by bounds,
+    // bodies and the climb rule — not by the flat-ground rule that governs
+    // walking. A 2x2 can be shoved off a ledge; it just cannot walk onto the
+    // edge and stop there.
+    for (const offset of footprintCells({ x: 0, y: 0 }, ctx.size, square)) {
+      const fromTile = tileAt(this.grid, { x: from.x + offset.x, y: from.y + offset.y });
+      const toPos = { x: to.x + offset.x, y: to.y + offset.y };
+      const toTile = tileAt(this.grid, toPos);
+      if (!fromTile || !toTile || toTile.blocked) return false;
+      if (ctx.blocked.has(posKey(toPos))) return false;
       const climb = toTile.elevation - fromTile.elevation;
       if (climb > 0 && (climb > 1 || (!fromTile.ramp && !toTile.ramp))) return false;
     }
@@ -443,12 +462,12 @@ export class BattleDraft {
   }
 
   /** Largest non-ramp elevation loss across the footprint for one forced step. */
-  private ledgeDrop(size: Unit['size'], from: Vec2, to: Vec2): number {
+  private ledgeDrop(ctx: MoveContext, from: Vec2, to: Vec2): number {
     let largest = 0;
-    const width = size === 2 ? 2 : 1;
-    for (let dx = 0; dx < width; dx++) {
-      const before = tileAt(this.grid, { x: from.x + dx, y: from.y });
-      const after = tileAt(this.grid, { x: to.x + dx, y: to.y });
+    const square = ctx.squareFootprints ?? SQUARE_FOOTPRINTS;
+    for (const offset of footprintCells({ x: 0, y: 0 }, ctx.size, square)) {
+      const before = tileAt(this.grid, { x: from.x + offset.x, y: from.y + offset.y });
+      const after = tileAt(this.grid, { x: to.x + offset.x, y: to.y + offset.y });
       if (before && after) {
         const drop = before.elevation - after.elevation;
         if (drop > 1 || (drop === 1 && !before.ramp && !after.ramp)) {

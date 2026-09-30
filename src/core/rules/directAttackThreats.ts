@@ -54,7 +54,7 @@ export function directAttackThreats(
   const occupiedByOthers = new Set(
     battle.units
       .filter((u) => u.id !== defenderId && isAlive(u))
-      .flatMap(occupiedCells)
+      .flatMap((unit) => occupiedCells(unit))
       .map(posKey),
   );
   if (
@@ -81,7 +81,7 @@ export function directAttackThreats(
   const blocked = new Set(
     projected.units
       .filter((u) => u.id !== attackerId && isAlive(u))
-      .flatMap(occupiedCells)
+      .flatMap((unit) => occupiedCells(unit))
       .map(posKey),
   );
   const cells = reachable(

@@ -418,7 +418,7 @@ function wallTilesThatRise(
   battle: BattleState,
   tiles: readonly Vec2[],
 ): Vec2[] {
-  const occupied = new Set(battle.units.flatMap(occupiedCells).map(posKey));
+  const occupied = new Set(battle.units.flatMap((unit) => occupiedCells(unit)).map(posKey));
   return tiles.filter((pos) => {
     const tile = tileAt(draft.grid, pos);
     return tile !== undefined && !tile.blocked && !occupied.has(posKey(pos));
