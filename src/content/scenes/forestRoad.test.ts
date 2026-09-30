@@ -116,30 +116,40 @@ it('registers the varied pond and creek reeds on the existing bank cells', () =>
   expect(FOREST_POND_REEDS.map(placement)).toEqual([
     {
       url: 'art/maps/forest-scene/bank-reed-0.webp',
-      height: 48,
+      height: 54,
       footprint: [{ x: 4, y: 5 }],
     },
     {
       url: 'art/maps/forest-scene/bank-reed-1.webp',
-      height: 20,
+      height: 27,
       footprint: [{ x: 7, y: 7 }],
     },
     {
       url: 'art/maps/forest-scene/bank-reed-3.webp',
-      height: 36,
+      height: 45,
       footprint: [{ x: 5, y: 8 }],
     },
   ]);
   expect(FOREST_CREEK_REEDS.map(placement)).toEqual([
     {
       url: 'art/maps/forest-scene/bank-reed-2.webp',
-      height: 30,
+      height: 40,
       footprint: [{ x: 3, y: 10 }],
     },
     {
       url: 'art/maps/forest-scene/bank-reed-1.webp',
-      height: 20,
+      height: 27,
       footprint: [{ x: 13, y: 10 }],
     },
   ]);
+});
+
+it('draws a unit standing in a reed cell in front of the reeds', () => {
+  for (const reed of [...FOREST_POND_REEDS, ...FOREST_CREEK_REEDS]) {
+    const cell = reed.footprint?.[0];
+    if (!cell || !reed.depth) throw new Error(`${reed.id} has no cell or depth`);
+    // Units sort at their cell centre; scenery loses ties, so a reed must not
+    // sort deeper than the centre of its own cell.
+    expect(reed.depth.x + reed.depth.y, reed.id).toBeLessThanOrEqual(cell.x + cell.y + 1);
+  }
 });

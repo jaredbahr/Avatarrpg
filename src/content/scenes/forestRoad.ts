@@ -312,16 +312,18 @@ function bankReed(water: string, { x, y, art, height, foot }: ReedPlacement): Sc
     height,
     footprint: [{ x, y }],
     // The alpha trim ends at the mound; its centre/bottom is the registered foot.
-    depth: { x: fx, y: fy },
+    // Depth never passes the cell centre, so a unit standing in the reeds' own
+    // cell (they are passable) still draws in front of them.
+    depth: { x: Math.min(fx, x + 0.5), y: Math.min(fy, y + 0.5) },
     // The mound and route wear provide contact. A cell-wide runtime diamond is too broad.
     contactShadow: false,
   };
 }
 export const FOREST_POND_REEDS: readonly SceneScenery[] = (
   [
-    { x: 4, y: 5, art: 0, height: 48 },
-    { x: 7, y: 7, art: 1, height: 20 },
-    { x: 5, y: 8, art: 3, height: 36 },
+    { x: 4, y: 5, art: 0, height: 54 },
+    { x: 7, y: 7, art: 1, height: 27 },
+    { x: 5, y: 8, art: 3, height: 45 },
   ] satisfies readonly ReedPlacement[]
 ).map((placement) => bankReed('pond', placement));
 /**
@@ -332,8 +334,8 @@ export const FOREST_POND_REEDS: readonly SceneScenery[] = (
  */
 export const FOREST_CREEK_REEDS: readonly SceneScenery[] = (
   [
-    { x: 3, y: 10, art: 2, height: 30, foot: { x: 0.84, y: 0.84 } },
-    { x: 13, y: 10, art: 1, height: 20, foot: { x: 0.45, y: 1 } },
+    { x: 3, y: 10, art: 2, height: 40, foot: { x: 0.84, y: 0.84 } },
+    { x: 13, y: 10, art: 1, height: 27, foot: { x: 0.45, y: 1 } },
   ] satisfies readonly ReedPlacement[]
 ).map((placement) => bankReed('creek', placement));
 

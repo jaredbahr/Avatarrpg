@@ -48,7 +48,16 @@ it('plants a varied bank-reed family without changing passability or contact tre
     expect(reed.wall, reed.id).toBeUndefined();
     expect(reed.fadeWhenOccluding, reed.id).toBeUndefined();
     expect(reed.contactShadow, reed.id).toBe(false);
-    expect(reed.x + reed.width / 2, reed.id).toBeCloseTo(768 + (reed.depth.x - reed.depth.y) * 64);
-    expect(reed.y + reed.height, reed.id).toBeCloseTo((reed.depth.x + reed.depth.y) * 32);
+    // Recover the registered foot from where the image stands: it lies in the
+    // reed's own cell, and depth is that foot clamped to the cell centre.
+    const across = (reed.x + reed.width / 2 - 768) / 64;
+    const down = (reed.y + reed.height) / 32;
+    const foot = { x: (down + across) / 2, y: (down - across) / 2 };
+    expect(foot.x, reed.id).toBeGreaterThanOrEqual(cell.x);
+    expect(foot.x, reed.id).toBeLessThanOrEqual(cell.x + 1);
+    expect(foot.y, reed.id).toBeGreaterThanOrEqual(cell.y);
+    expect(foot.y, reed.id).toBeLessThanOrEqual(cell.y + 1);
+    expect(reed.depth.x, reed.id).toBeCloseTo(Math.min(foot.x, cell.x + 0.5));
+    expect(reed.depth.y, reed.id).toBeCloseTo(Math.min(foot.y, cell.y + 0.5));
   }
 });
