@@ -28,6 +28,7 @@ import type {
   Vec2,
 } from '../types';
 import { buildGrid, cachedGrid, occupiedCells, posKey, tileAt, withTile } from '../rules/grid';
+import { SQUARE_FOOTPRINTS } from '../rules/footprint';
 import { specializationsUpTo } from '../rules/leveling';
 import { settle } from '../story/settle';
 import { npcResident } from '../story/residents';
@@ -96,6 +97,16 @@ export interface BattleReconcileResult {
   readonly warnings: readonly BattleReconcileWarning[];
 }
 
+export interface ReconcileBattleOptions {
+  /**
+   * TEMPORARY GATE (see `rules/footprint.ts`, removed in A-6): when true a
+   * buried size-2 unit is snapped to a whole 2x2 square, not the legacy 2x1
+   * pair. Tests pass it in rather than mutating module state; shipped loads
+   * default to `SQUARE_FOOTPRINTS`, so gate-off behaviour is unchanged.
+   */
+  readonly squareFootprints?: boolean;
+}
+
 /**
  * Re-applies an in-progress battle's current authored terrain after a map edit.
  * Surfaces, props and temporary walls are battle state, so they are layered
@@ -105,19 +116,25 @@ export interface BattleReconcileResult {
  * living unit cannot fit in the rebuilt map's main walkable component, the old
  * battle grid is retained so its units and terrain remain mutually consistent.
  */
-export function reconcileBattle(content: ContentIndex, state: GameState): GameState {
-  return reconcileBattleResult(content, state).state;
+export function reconcileBattle(
+  content: ContentIndex,
+  state: GameState,
+  options: ReconcileBattleOptions = {},
+): GameState {
+  return reconcileBattleResult(content, state, options).state;
 }
 
 /** Detailed form used by the load path so an unsafe repair is never silent. */
 export function reconcileBattleResult(
   content: ContentIndex,
   state: GameState,
+  options: ReconcileBattleOptions = {},
 ): BattleReconcileResult {
   const battle = state.battle;
   if (!battle || battle.phase !== 'active') return { state, warnings: [] };
   const map = content.maps.get(battle.mapId);
   if (!map) return { state, warnings: [{ kind: 'missing-map', mapId: battle.mapId }] };
+  const square = options.squareFootprints ?? SQUARE_FOOTPRINTS;
 
   const authored = buildGrid(map);
   if (staticGridMatches(authored, battle)) return { state, warnings: [] };
@@ -174,7 +191,7 @@ export function reconcileBattleResult(
     });
   }
 
-  const snapped = snapBattleUnits(grid, map, battle.units);
+  const snapped = snapBattleUnits(grid, map, battle.units, square);
   if (!snapped.units) return { state, warnings: snapped.warnings };
   return {
     state: {
@@ -218,13 +235,14 @@ function snapBattleUnits(
   grid: Grid,
   map: MapDef,
   units: BattleState['units'],
+  square: boolean,
 ): { units: BattleState['units'] | null; warnings: BattleReconcileWarning[] } {
   const warnings: BattleReconcileWarning[] = [];
   const main = mainWalkableCells(grid, map);
   const occupied = new Set<string>();
   for (const unit of units) {
     if (unit.hp <= 0) continue;
-    const cells = occupiedCells(unit);
+    const cells = occupiedCells(unit, square);
     if (
       cells.every((cell) => {
         const tile = tileAt(grid, cell);
@@ -235,12 +253,12 @@ function snapBattleUnits(
     }
   }
   const valid = (unit: BattleState['units'][number], pos = unit.pos): boolean =>
-    occupiedCells({ pos, size: unit.size }).every((cell) => {
+    occupiedCells({ pos, size: unit.size }, square).every((cell) => {
       const tile = tileAt(grid, cell);
       return tile !== undefined && !tile.blocked && !occupied.has(posKey(cell));
     });
   const connected = (unit: BattleState['units'][number], pos: Vec2): boolean =>
-    occupiedCells({ pos, size: unit.size }).every((cell) => main.has(posKey(cell)));
+    occupiedCells({ pos, size: unit.size }, square).every((cell) => main.has(posKey(cell)));
 
   const result: BattleState['units'][number][] = [];
   for (const unit of units) {
@@ -248,7 +266,7 @@ function snapBattleUnits(
       result.push(unit);
       continue;
     }
-    for (const cell of occupiedCells(unit)) occupied.delete(posKey(cell));
+    for (const cell of occupiedCells(unit, square)) occupied.delete(posKey(cell));
     let pos = unit.pos;
     if (!valid(unit)) {
       const candidates: Vec2[] = [];
@@ -273,7 +291,7 @@ function snapBattleUnits(
       }
       pos = candidate;
     }
-    for (const cell of occupiedCells({ pos, size: unit.size })) occupied.add(posKey(cell));
+    for (const cell of occupiedCells({ pos, size: unit.size }, square)) occupied.add(posKey(cell));
     result.push(pos === unit.pos ? unit : { ...unit, pos });
   }
   return { units: result, warnings };

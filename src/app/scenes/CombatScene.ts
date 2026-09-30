@@ -33,6 +33,7 @@ import {
   reachable,
   samePos,
   tileAt,
+  unitAt,
   type ReachableCell,
 } from '../../core/rules/grid';
 import { canMove, effectiveStats, isAlive, statusDefs } from '../../core/rules/stats';
@@ -496,8 +497,7 @@ export class CombatScene implements Scene {
     const blocked = new Set<string>();
     for (const other of battle.units) {
       if (!isAlive(other) || other.id === unit.id) continue;
-      blocked.add(posKey(other.pos));
-      if (other.size === 2) blocked.add(posKey({ x: other.pos.x + 1, y: other.pos.y }));
+      for (const cell of occupiedCells(other)) blocked.add(posKey(cell));
     }
 
     return reachable(
@@ -519,8 +519,7 @@ export class CombatScene implements Scene {
     if (battle) {
       for (const other of battle.units) {
         if (!isAlive(other) || other.id === unit.id) continue;
-        blocked.add(posKey(other.pos));
-        if (other.size === 2) blocked.add(posKey({ x: other.pos.x + 1, y: other.pos.y }));
+        for (const cell of occupiedCells(other)) blocked.add(posKey(cell));
       }
     }
     return {
@@ -563,10 +562,7 @@ export class CombatScene implements Scene {
     const battle = this.battle();
     if (!renderer || !battle) return;
     const tile = renderer.camera.pickTile(x, y, battle.grid);
-    const unit = battle.units.find(
-      (u) =>
-        samePos(u.pos, tile) || (u.size === 2 && samePos({ x: u.pos.x + 1, y: u.pos.y }, tile)),
-    );
+    const unit = unitAt(battle.units, tile);
     if (unit) this.openInspector(unit);
   }
 

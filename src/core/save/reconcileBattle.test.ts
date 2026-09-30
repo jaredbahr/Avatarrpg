@@ -4,7 +4,7 @@ import { buildGrid, tileAt, withSurface, withTile } from '../rules/grid';
 import { RngCursor } from '../rng';
 import { createBattle, createGame } from '../state/createGame';
 import type { BattleState, ContentIndex, GameState, MapDef } from '../types';
-import { reconcileBattle, reconcileBattleResult } from './reconcile';
+import { reconcileBattle, reconcileBattleResult, type ReconcileBattleOptions } from './reconcile';
 import { deserialize, serialize, stateFromBlob } from './serialize';
 
 const META = {
@@ -123,10 +123,10 @@ function contentWithMap(map: MapDef): ContentIndex {
   return { ...CONTENT, maps };
 }
 
-function load(state: GameState): GameState {
+function load(state: GameState, options: ReconcileBattleOptions = {}): GameState {
   const parsed = deserialize(serialize(state, META));
   if (!parsed.ok) throw new Error(parsed.error);
-  return reconcileBattle(CONTENT, stateFromBlob(parsed.blob));
+  return reconcileBattle(CONTENT, stateFromBlob(parsed.blob), options);
 }
 
 describe('reconcileBattle', () => {
@@ -385,6 +385,45 @@ describe('reconcileBattle', () => {
       battle: createBattle(CONTENT, seeded, 'enc_grumbler', rng),
     };
     expect(serialize(reconcileBattle(CONTENT, current), META)).toBe(serialize(current, META));
+  });
+
+  it('snaps a Grumbler whose 2x2 is buried only once square footprints are on', () => {
+    const old = battleState('quarry_floor', OLD_DRILLER_ROWS);
+    if (!old.battle) throw new Error('fixture did not create a battle');
+    const boss = old.battle.units.find((unit) => unit.size === 2);
+    if (!boss) throw new Error('fixture is missing the Grumbler');
+    /*
+     * A legacy 2x1 stands happily on (7,3)-(8,3) in the rebuilt floor, but the
+     * 2x2's lower row walks into the drill-shaft wall at (8,4). Off, the save
+     * is untouched; on, the boss snaps to the nearest whole square that is free
+     * and still inside the floor the party can reach.
+     */
+    const state: GameState = {
+      ...old,
+      battle: {
+        ...old.battle,
+        units: old.battle.units.map((unit) =>
+          unit.id === boss.id ? { ...unit, pos: { x: 7, y: 3 } } : unit,
+        ),
+      },
+    };
+
+    const legacy = load(state);
+    expect(legacy.battle?.units.find((unit) => unit.id === boss.id)?.pos).toEqual({ x: 7, y: 3 });
+
+    const square = load(state, { squareFootprints: true });
+    const moved = square.battle?.units.find((unit) => unit.id === boss.id)?.pos;
+    expect(moved).toEqual({ x: 6, y: 2 });
+    for (const cell of [
+      { x: 6, y: 2 },
+      { x: 7, y: 2 },
+      { x: 6, y: 3 },
+      { x: 7, y: 3 },
+    ]) {
+      expect(tileAt(square.battle!.grid, cell), `${cell.x},${cell.y}`).toMatchObject({
+        blocked: false,
+      });
+    }
   });
 
   it('reconciles a pre-M5 mid-battle Cutting save onto the cut', () => {

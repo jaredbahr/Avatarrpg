@@ -1270,6 +1270,81 @@ function reachedFrom(map: MapDef, start: Vec2): ReadonlySet<string> {
 }
 
 /**
+ * Every walkable cell four-way reachable from *any* party spawn. A size-2
+ * placement is connected when each cell of its square lies in this set, which
+ * mirrors what `reconcileBattle` calls `connected` — the party must be able to
+ * walk to the fight, and the enemy must be able to walk to the party.
+ */
+function reachedFromPartySpawns(map: MapDef): ReadonlySet<string> {
+  const reached = new Set<string>();
+  const queue: Vec2[] = [];
+  for (const spawn of map.partySpawns) {
+    if (!isWalkable(map, spawn.x, spawn.y)) continue;
+    const key = cellKey(spawn.x, spawn.y);
+    if (reached.has(key)) continue;
+    reached.add(key);
+    queue.push(spawn);
+  }
+  while (queue.length > 0) {
+    const cell = queue.pop();
+    if (!cell) continue;
+    for (const [dx, dy] of NEIGHBOURS) {
+      const x = cell.x + dx;
+      const y = cell.y + dy;
+      const key = cellKey(x, y);
+      if (reached.has(key) || !isWalkable(map, x, y)) continue;
+      reached.add(key);
+      queue.push({ x, y });
+    }
+  }
+  return reached;
+}
+
+/**
+ * The cells one encounter placement claims. Size 1 is its anchor; size 2 is the
+ * legacy 2x1 pair, or the A-6 2x2 square once the gate is on. Mirrored from
+ * `rules/footprint.ts` because `src/content` is data and may not import core
+ * rules.
+ */
+function placementCells(pos: Vec2, size: number | undefined, square: boolean): readonly Vec2[] {
+  if (size !== 2) return [pos];
+  const cells = [pos, { x: pos.x + 1, y: pos.y }];
+  if (square) cells.push({ x: pos.x, y: pos.y + 1 }, { x: pos.x + 1, y: pos.y + 1 });
+  return cells;
+}
+
+/**
+ * Square-footprint findings for one size-2 placement, live only once the A-6
+ * gate is on. Blocked cells are already reported by the caller's walkability
+ * loop over `placementCells`, so this adds the two rules a 2x2 brings over a
+ * 2x1: it may stand only on flat ground (mirroring `standCost`) and every cell
+ * must sit in the party's walkable component.
+ */
+function squareFootprintProblems(
+  problems: string[],
+  label: string,
+  map: MapDef,
+  pos: Vec2,
+  reachable: ReadonlySet<string>,
+): void {
+  const cells = placementCells(pos, 2, true);
+  // A blocked or off-map cell is already named by the caller's walkability
+  // loop; standability is a prerequisite for the two rules below, so those
+  // findings only fire once the whole block has ground to stand on.
+  if (!cells.every((cell) => isWalkable(map, cell.x, cell.y))) return;
+  const elevation = tileElevation(map, pos.x, pos.y);
+  if (cells.some((cell) => tileElevation(map, cell.x, cell.y) !== elevation)) {
+    problems.push(
+      `${label} on a square footprint that is not flat ground — all four cells must share one tier`,
+    );
+    return;
+  }
+  if (!cells.every((cell) => reachable.has(cellKey(cell.x, cell.y)))) {
+    problems.push(`${label} on a square footprint cut off from the party spawns`);
+  }
+}
+
+/**
  * The M1 map contracts, report-only:
  *
  *  - every walkable border cell is an exit tile or covered by a declared edge;
@@ -1375,12 +1450,27 @@ export function npcStandTiles(bundle: ContentBundle, mapId: string, npc: NpcDef)
 }
 
 /**
+ * TEMPORARY GATE (see `core/rules/footprint.ts`, removed in A-6): when
+ * `squareFootprints` is true a size-2 encounter placement is validated as a
+ * whole 2x2 square. It defaults to the shipped gate value, so today's
+ * `validateContent(CONTENT_BUNDLE)` keeps the legacy 2x1 checks; A-6 flips the
+ * default together with the constant.
+ */
+export interface ValidateContentOptions {
+  readonly squareFootprints?: boolean;
+}
+
+/**
  * Returns a list of human-readable problems. Empty means the content is sound.
  * Deliberately collects everything rather than throwing on the first fault, so
  * one CI run reports every broken link at once.
  */
-export function validateContent(bundle: ContentBundle): string[] {
+export function validateContent(
+  bundle: ContentBundle,
+  options: ValidateContentOptions = {},
+): string[] {
   const problems: string[] = [];
+  const squareFootprints = options.squareFootprints ?? false;
 
   /* --- assets ------------------------------------------------------- */
   const assets = bundle.assets ?? {};
@@ -1853,6 +1943,10 @@ export function validateContent(bundle: ContentBundle): string[] {
     }
     if (!mapIds.has(e.mapId)) problems.push(`encounter "${e.id}" uses unknown map "${e.mapId}"`);
 
+    // Only needed once size 2 is a 2x2; computing it for the legacy 2x1 would
+    // be dead work on every load.
+    const squareReach = squareFootprints ? reachedFromPartySpawns(map) : null;
+
     // Every placement must be legal, including ones only some tables will see.
     const all = [
       ...e.enemies,
@@ -1867,7 +1961,7 @@ export function validateContent(bundle: ContentBundle): string[] {
         continue;
       }
       const def = bundle.enemies.find((x) => x.id === p.enemyId);
-      const cells = def?.size === 2 ? [p.pos, { x: p.pos.x + 1, y: p.pos.y }] : [p.pos];
+      const cells = placementCells(p.pos, def?.size, squareFootprints);
       for (const cell of cells) {
         if (!isWalkable(map, cell.x, cell.y)) {
           problems.push(
@@ -1879,6 +1973,15 @@ export function validateContent(bundle: ContentBundle): string[] {
           problems.push(`encounter "${e.id}" stacks two units on (${cell.x},${cell.y})`);
         }
         taken.add(key);
+      }
+      if (squareReach && def?.size === 2) {
+        squareFootprintProblems(
+          problems,
+          `encounter "${e.id}" places "${p.enemyId}"`,
+          map,
+          p.pos,
+          squareReach,
+        );
       }
     }
     for (const spawn of map.partySpawns) {
@@ -1965,7 +2068,7 @@ export function validateContent(bundle: ContentBundle): string[] {
           continue;
         }
         const def = bundle.enemies.find((x) => x.id === p.enemyId);
-        const cells = def?.size === 2 ? [p.pos, { x: p.pos.x + 1, y: p.pos.y }] : [p.pos];
+        const cells = placementCells(p.pos, def?.size, squareFootprints);
         for (const cell of cells) {
           if (!isWalkable(map, cell.x, cell.y)) {
             problems.push(
@@ -1977,6 +2080,15 @@ export function validateContent(bundle: ContentBundle): string[] {
               `encounter "${e.id}" variant "${variant.id}" places "${p.enemyId}" on party spawn (${cell.x},${cell.y})`,
             );
           }
+        }
+        if (squareReach && def?.size === 2) {
+          squareFootprintProblems(
+            problems,
+            `encounter "${e.id}" variant "${variant.id}" places "${p.enemyId}"`,
+            map,
+            p.pos,
+            squareReach,
+          );
         }
       }
 
