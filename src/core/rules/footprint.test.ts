@@ -39,7 +39,9 @@ describe('unit footprints', () => {
     // Legacy 2x1: one row, so the foot stays on the anchor row.
     expect(footprintFoot({ x: 4, y: 2 }, 2, false)).toEqual({ x: 5, y: 2.5 });
     // The default follows the gate constant.
-    expect(footprintFoot({ x: 4, y: 2 }, 2)).toEqual({ x: 5, y: 2.5 });
+    expect(footprintFoot({ x: 4, y: 2 }, 2)).toEqual(
+      SQUARE_FOOTPRINTS ? { x: 5, y: 3.5 } : { x: 5, y: 2.5 },
+    );
   });
 });
 

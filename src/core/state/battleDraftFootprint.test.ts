@@ -191,7 +191,7 @@ describe('2x2 forced movement', () => {
     expect(draft.unit(victim.id)?.pos).toEqual({ x: 6, y: 5 });
   });
 
-  it('stops a 2x2 at the edge instead of letting it straddle a ledge', () => {
+  it('stops a 2x2 at the edge of a ledge and takes no fall', () => {
     const { battle, caster, victim } = fixture();
     const field = elevated(
       withSize(
@@ -203,20 +203,22 @@ describe('2x2 forced movement', () => {
     );
     const draft = new BattleDraft(CONTENT, field, new RngCursor(1), { squareFootprints: true });
     const live = draft.unit(victim.id);
-    if (!live) throw new Error('missing drop victim');
-    draft.replace({ ...live, hp: 2 });
+    if (!live) throw new Error('missing edge victim');
+    // Far more HP than any fall could take, so damage would be visible.
+    draft.replace({ ...live, hp: 30 });
 
-    draft.shove(victim.id, { x: 5, y: 5 }, 1, 'push');
     // The next step would leave two cells on the plateau and two hanging off
-    // it: the ledge acts like a wall, so the block stays put and takes no fall.
+    // it: the strict reading makes the ledge a wall, so the block stays put,
+    // reports no drop tiers and takes no fall.
+    expect(draft.shove(victim.id, { x: 5, y: 5 }, 1, 'push')).toBe(0);
     expect(draft.unit(victim.id)?.pos).toEqual({ x: 6, y: 5 });
-    expect(draft.unit(victim.id)?.hp).toBe(2);
+    expect(draft.unit(victim.id)?.hp).toBe(30);
     expect(
       draft.events.some((event) => event.type === 'damaged' && event.cause === 'ledgeDrop'),
     ).toBe(false);
   });
 
-  it('drops the whole 2x2 onto the flat lower tier when the shove clears the ledge', () => {
+  it('stops a 2x2 at the edge however far the shove would carry it off', () => {
     const { battle, caster, victim } = fixture();
     const field = elevated(
       withSize(
@@ -228,19 +230,91 @@ describe('2x2 forced movement', () => {
     );
     const draft = new BattleDraft(CONTENT, field, new RngCursor(1), { squareFootprints: true });
     const live = draft.unit(victim.id);
-    if (!live) throw new Error('missing drop victim');
-    draft.replace({ ...live, hp: 2 });
+    if (!live) throw new Error('missing edge victim');
+    draft.replace({ ...live, hp: 30 });
 
-    // Two tiles of knockback carry the block over the lip. It may pass the
-    // straddling step but comes to rest with all four cells together on the
-    // flat lower tier, so the fall still lands (and hurts) rather than being
-    // walled off.
-    draft.shove(victim.id, { x: 5, y: 5 }, 2, 'push');
-    expect(draft.unit(victim.id)?.pos).toEqual({ x: 8, y: 5 });
-    expect(draft.unit(victim.id)?.hp).toBe(1);
-    expect(draft.events).toContainEqual(
-      expect.objectContaining({ type: 'damaged', cause: 'ledgeDrop', amount: 1 }),
+    // Two tiles of knockback would clear the lip and put the whole block on the
+    // lower tier. With the strict reading it never gets there: the first step
+    // straddles a non-ramp drop, so it stops at the edge with `obstacle` and
+    // takes no fall at all.
+    const slide = draft.slideFrom(
+      moveCtx(draft.grid, 2, true),
+      { x: 6, y: 5 },
+      { x: 5, y: 5 },
+      2,
+      'push',
     );
+    expect(slide).toEqual({ pos: { x: 6, y: 5 }, ledgeDropTiers: 0, stopReason: 'obstacle' });
+    expect(draft.shove(victim.id, { x: 5, y: 5 }, 2, 'push')).toBe(0);
+    expect(draft.unit(victim.id)?.pos).toEqual({ x: 6, y: 5 });
+    expect(draft.unit(victim.id)?.hp).toBe(30);
+    expect(
+      draft.events.some((event) => event.type === 'damaged' && event.cause === 'ledgeDrop'),
+    ).toBe(false);
+  });
+
+  it('falls back to the last flat footprint when a one-tile shove would end on a ramp', () => {
+    const { battle, caster, victim } = fixture();
+    let field = withSize(
+      openGround(placed(battle, { [caster.id]: { x: 5, y: 5 }, [victim.id]: { x: 6, y: 5 } })),
+      victim.id,
+      2,
+    );
+    // A single-column tier-1 ramp at x 8 rising to tier-1 ground from x 9 on.
+    field = setTile(field, { x: 8, y: 5 }, { elevation: 1, ramp: true });
+    field = setTile(field, { x: 8, y: 6 }, { elevation: 1, ramp: true });
+    field = setTile(field, { x: 9, y: 5 }, { elevation: 1 });
+    field = setTile(field, { x: 9, y: 6 }, { elevation: 1 });
+    field = setTile(field, { x: 10, y: 5 }, { elevation: 1 });
+    field = setTile(field, { x: 10, y: 6 }, { elevation: 1 });
+    const draft = new BattleDraft(CONTENT, field, new RngCursor(1), { squareFootprints: true });
+
+    // One tile of knockback would leave the block half on the ramp: a legal step
+    // to cross, but not a footprint to rest on. Flatness -- not the (zero) drop
+    // tally -- has to send it back to the last flat position.
+    const slide = draft.slideFrom(
+      moveCtx(draft.grid, 2, true),
+      { x: 6, y: 5 },
+      { x: 5, y: 5 },
+      1,
+      'push',
+    );
+    expect(slide).toEqual({ pos: { x: 6, y: 5 }, ledgeDropTiers: 0, stopReason: 'obstacle' });
+    expect(draft.shove(victim.id, { x: 5, y: 5 }, 1, 'push')).toBe(0);
+    expect(draft.unit(victim.id)?.pos).toEqual({ x: 6, y: 5 });
+  });
+
+  it('carries a 2x2 over a ramp when the shove is long enough to end flat', () => {
+    const { battle, caster, victim } = fixture();
+    let field = withSize(
+      openGround(placed(battle, { [caster.id]: { x: 5, y: 5 }, [victim.id]: { x: 6, y: 5 } })),
+      victim.id,
+      2,
+    );
+    field = setTile(field, { x: 8, y: 5 }, { elevation: 1, ramp: true });
+    field = setTile(field, { x: 8, y: 6 }, { elevation: 1, ramp: true });
+    field = setTile(field, { x: 9, y: 5 }, { elevation: 1 });
+    field = setTile(field, { x: 9, y: 6 }, { elevation: 1 });
+    field = setTile(field, { x: 10, y: 5 }, { elevation: 1 });
+    field = setTile(field, { x: 10, y: 6 }, { elevation: 1 });
+    const draft = new BattleDraft(CONTENT, field, new RngCursor(1), { squareFootprints: true });
+    const live = draft.unit(victim.id);
+    if (!live) throw new Error('missing ramp victim');
+    draft.replace({ ...live, hp: 30 });
+
+    // Three tiles carry the block across the ramp and clear of it, landing flat
+    // on the tier-1 ground beyond. A ramp is still a way up and over.
+    const slide = draft.slideFrom(
+      moveCtx(draft.grid, 2, true),
+      { x: 6, y: 5 },
+      { x: 5, y: 5 },
+      3,
+      'push',
+    );
+    expect(slide).toEqual({ pos: { x: 9, y: 5 }, ledgeDropTiers: 0, stopReason: 'none' });
+    expect(draft.shove(victim.id, { x: 5, y: 5 }, 3, 'push')).toBe(0);
+    expect(draft.unit(victim.id)?.pos).toEqual({ x: 9, y: 5 });
+    expect(draft.unit(victim.id)?.hp).toBe(30);
   });
 
   it('forecasts the same 2x2 shove the resolver performs', () => {

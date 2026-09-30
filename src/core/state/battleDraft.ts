@@ -422,11 +422,18 @@ export class BattleDraft {
       return { pos: from, ledgeDropTiers: 0, stopReason: 'centre' };
     }
 
-    // A 2x2 may not come to rest straddling two heights: the ledge acts like a
-    // wall, so a slide that would *end* on a non-flat footprint stops at the
-    // last step it could legally rest on. Passing *through* a straddle is still
-    // allowed when a later step lands the whole block back on one elevation,
-    // which is how a full-footprint drop off a ledge survives.
+    // STRICT square rule (see `footprint.ts`): a 2x2 block is never shoved or
+    // pulled off a non-ramp ledge, however far the knockback carries. The ledge
+    // acts like a wall, so the first step whose destination footprint would hang
+    // part of the block over a non-ramp drop stops the slide at the last flat
+    // position with `obstacle`. A one-tier ramp step is still crossable -- the
+    // block may straddle a ramp mid-slide -- but it must come to rest flat, so a
+    // knockback that runs out mid-ramp falls back to the last flat position too.
+    // The block therefore never leaves flat ground for a non-ramp ledge and
+    // never takes a fall: a square 2x2 shove always reports zero
+    // `ledgeDropTiers`. A size-1 unit is a single tile that cannot straddle, so
+    // it keeps ordinary ledge falls.
+    const squareBlock = square && ctx.size > 1;
     let current = from;
     let resting = from;
     let ledgeDropTiers = 0;
@@ -450,13 +457,35 @@ export class BattleDraft {
         stopReason = 'obstacle';
         break;
       }
-      pendingDrop += this.ledgeDrop(ctx, current, next);
+      const drop = this.ledgeDrop(ctx, current, next);
+      if (squareBlock && drop > 0) {
+        // Part of the block would leave a non-ramp ledge: the ledge is a wall.
+        stopReason = 'obstacle';
+        break;
+      }
+      // The legacy 2x1 (and a size-1 unit) still falls off a ledge; only the
+      // square 2x2's strict rule suppresses the drop.
+      if (!squareBlock) pendingDrop += drop;
       current = next;
       if (standCost(ctx, current) !== null) {
         resting = current;
-        ledgeDropTiers += pendingDrop;
-        pendingDrop = 0;
+        if (!squareBlock) {
+          ledgeDropTiers += pendingDrop;
+          pendingDrop = 0;
+        }
       }
+    }
+    if (squareBlock) {
+      // Flatness -- not the (always zero) drop tally -- decides whether the
+      // block finished on a footprint it may rest on.
+      if (stopReason === 'none' && samePos(resting, current)) {
+        return { pos: current, ledgeDropTiers: 0, stopReason: 'none' };
+      }
+      return {
+        pos: resting,
+        ledgeDropTiers: 0,
+        stopReason: stopReason === 'none' ? 'obstacle' : stopReason,
+      };
     }
     // Running out of tiles while still straddling is the same stop as hitting a
     // wall: fall back to the last footprint the block could actually rest on.
@@ -473,10 +502,10 @@ export class BattleDraft {
   /** Forced movement follows a one-tier ramp, but cannot push up a bare ledge. */
   private canShoveStep(ctx: MoveContext, from: Vec2, to: Vec2): boolean {
     const square = ctx.squareFootprints ?? SQUARE_FOOTPRINTS;
-    // Forced movement is a fall as much as a push, so a step is judged by
-    // bounds, bodies and the climb rule. The flat-ground rule that governs
-    // *resting* is applied by `slideFrom`, so a 2x2 may be shoved over the lip
-    // but can never stop there.
+    // Forced movement is judged by bounds, bodies and the climb rule: a
+    // one-tier ramp is climbed for free and a bare one is refused. A drop is
+    // free here; `slideFrom` owns the square 2x2's strict no-straddle rule and
+    // turns a non-ramp lip into a wall for the block.
     for (const offset of footprintCells({ x: 0, y: 0 }, ctx.size, square)) {
       const fromTile = tileAt(this.grid, { x: from.x + offset.x, y: from.y + offset.y });
       const toPos = { x: to.x + offset.x, y: to.y + offset.y };
