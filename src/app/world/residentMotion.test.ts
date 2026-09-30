@@ -615,7 +615,7 @@ describe('routines (Working Ba Dan)', () => {
 
   it('goes home round the party, never through it', () => {
     // The party on the lane tile his home leg crosses.
-    const home = homeFromCrates([{ x: 9, y: 5 }], 5 * TIMING.strollStep);
+    const home = homeFromCrates([{ x: 9, y: 5 }], 6 * TIMING.strollStep + 2 * STROLL_RAMP_MS);
     expect(home.at(-1)?.drawPos).toEqual(SHOP);
     expect(home.every((f) => f.alpha === 1)).toBe(true);
     expect(home.some((f) => f.walking)).toBe(true);

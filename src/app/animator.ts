@@ -61,7 +61,7 @@ const WALK_MS_PER_TILE = 500;
  * last stride's pose is not a stance: without this dwell the sprite cuts
  * straight from mid-stride to idle on the frame the route ends.
  */
-const STOP_SETTLE_MS = 140;
+export const STOP_SETTLE_MS = 140;
 
 /** How far off dead vertical the travel has to lean before the sprite turns. */
 const TURN_THRESHOLD = 0.2;

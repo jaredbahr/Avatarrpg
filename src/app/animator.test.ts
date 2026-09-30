@@ -3,7 +3,7 @@ import { describe, expect, it } from 'vitest';
 import type { ContentIndex, GameEvent, Unit } from '../core/types';
 import { clipDurationMs } from '../content/assets/clips';
 import type { SheetClips } from '../render/sheets/store';
-import { Animator } from './animator';
+import { Animator, STOP_SETTLE_MS } from './animator';
 import { CONTENT } from '../content';
 import { sampleParticles, PARTICLE_STRIDE } from '../render/fx/simulate';
 import { choreograph, TIMING } from './anim/choreography';
@@ -329,10 +329,12 @@ describe('Animator', () => {
       const a = new Animator(CONTENT, { motionReduced: () => reduced });
       a.push(0, [moved('p0', [4, 3])], [unit('p0', 4, 4)]);
       const walkEnd = a.finishesAt;
-      a.prune(walkEnd + 1);
       // The walk's stop holds the settled pose its facing implies for a beat
-      // before the ready stance is selected; reduce motion collapses the beat.
-      expect(a.locomotion(walkEnd + 1, 'p0').clip).toBe(reduced ? 'idleNorth' : 'restNorth');
+      // before the ready stance is selected; reduce motion shrinks the beat to
+      // a fraction, so sample just after that fraction has passed.
+      const afterBeat = walkEnd + (reduced ? STOP_SETTLE_MS * 0.02 + 1 : 1);
+      a.prune(afterBeat);
+      expect(a.locomotion(afterBeat, 'p0').clip).toBe(reduced ? 'idleNorth' : 'restNorth');
       a.prune(walkEnd + 200);
       expect(a.locomotion(walkEnd + 200, 'p0').clip).toBe('idleNorth');
       a.push(
