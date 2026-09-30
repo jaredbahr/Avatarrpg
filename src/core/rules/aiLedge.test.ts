@@ -515,6 +515,43 @@ describe('the AI and ledge exposure', () => {
     // A diagonal shover pushes diagonally, so the corner drop counts as well.
     expect(exposure(EXPOSURE_SOUTH_WEST)).toBe(risk);
   });
+
+  it('does not count a drop when the lower destination is blocked', () => {
+    const { draft, hero } = exposureFixture(EXPOSURE_WEST);
+    const landing = { x: EXPOSURE_LIP.x + 1, y: EXPOSURE_LIP.y };
+    const tile = tileAt(draft.grid, landing);
+    if (!tile) throw new Error('blocked landing is off the grid');
+    draft.grid = withTile(draft.grid, landing, { ...tile, blocked: true });
+
+    // `slideFrom` stops before an unenterable first step, so no fall occurs.
+    expect(ledgeExposure(draft, hero, EXPOSURE_LIP)).toBe(0);
+  });
+
+  it('does not count a drop when another unit occupies the lower destination', () => {
+    const { draft, hero } = exposureFixture(EXPOSURE_WEST);
+    const shover = draft.units.find((unit) => unit.id !== hero.id);
+    if (!shover) throw new Error('missing exposure shover');
+    draft.units.push({
+      ...shover,
+      id: 'occupied-landing',
+      pos: { x: EXPOSURE_LIP.x + 1, y: EXPOSURE_LIP.y },
+      abilities: [],
+    });
+
+    // Occupancy blocks the whole forced step before ledge damage is measured.
+    expect(ledgeExposure(draft, hero, EXPOSURE_LIP)).toBe(0);
+  });
+
+  it('ignores an adjacent area-origin shove by design', () => {
+    const { draft, hero } = exposureFixture(EXPOSURE_WEST);
+    const shover = draft.units.find((unit) => unit.id !== hero.id);
+    if (!shover) throw new Error('missing exposure shover');
+    draft.replace({ ...shover, abilities: ['shockwave'] });
+
+    // Blast and tile abilities push relative to their aimed cell. This narrow
+    // positional term only forecasts shoves whose origin is the shover itself.
+    expect(ledgeExposure(draft, hero, EXPOSURE_LIP)).toBe(0);
+  });
 });
 
 /** The lip in the pull case: one tier above the tile the puller stands on. */
