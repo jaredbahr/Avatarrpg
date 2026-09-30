@@ -4,7 +4,7 @@ import { RngCursor } from '../rng';
 import { BattleDraft } from '../state/battleDraft';
 import { createBattle, createGame } from '../state/createGame';
 import type { Grid, Unit, Vec2 } from '../types';
-import { planAiTurn, previewAiPlan, scoreAbility, weightsFor } from './ai';
+import { ledgeExposure, planAiTurn, previewAiPlan, scoreAbility, weightsFor } from './ai';
 import { resolveAbility } from './abilities';
 import { DEFAULT_TILE, tileAt, withTile } from './grid';
 
@@ -306,5 +306,213 @@ describe('the AI, the cabbage cart and the ledge', () => {
     const moved = ledge.draft.propAt(CART_NORTH);
     expect(moved?.propId).toBe('cabbage_cart');
     expect(moved?.hp).toBe(before.hp);
+  });
+});
+
+/** The party caster: west of the blast, outside its own area. */
+const FRIENDLY_CASTER: Vec2 = { x: 0, y: 2 };
+/** The blast centre: an empty tile with one victim either side of it. */
+const FRIENDLY_AIM: Vec2 = { x: 2, y: 2 };
+/** The ally, inside the blast; a shove away from its centre sends it south. */
+const ALLY_LIP: Vec2 = { x: 2, y: 3 };
+/** The enemy, inside the blast; a shove away from its centre sends it north. */
+const FOE_LIP: Vec2 = { x: 2, y: 1 };
+/** The ally's landing tile: the tier the ledge board removes. */
+const ALLY_LANDING: Vec2 = { x: 2, y: 4 };
+
+/**
+ * A party caster, one party ally and one enemy, each victim standing on a
+ * one-tier lip either side of the blast centre. Shatterpoint pushes them apart,
+ * so both fall. One seed for both boards and only the ally's landing tile
+ * differs, which is what lets the subtraction below isolate the ally's fall:
+ * the enemy falls in both, the way an area shove that catches both sides does.
+ */
+function friendlyFallFixture(options: { readonly ledge: boolean }): {
+  readonly draft: BattleDraft;
+  readonly caster: Unit;
+} {
+  const seeded = createGame(CONTENT, {
+    seed: 'ai-ledge-friendly',
+    party: [
+      { characterId: 'kaya', level: 3, autoChoose: true },
+      { characterId: 'bo', level: 3, autoChoose: true },
+    ],
+    startNode: '',
+  });
+  const rng = new RngCursor(seeded.rng);
+  const battle = createBattle(CONTENT, seeded, 'enc_forest_road', rng);
+  const party = battle.units.filter((unit) => unit.faction === 'party');
+  const casterBase = party[0];
+  const allyBase = party[1];
+  const foeBase = battle.units.find((unit) => unit.faction === 'enemy');
+  if (!casterBase || !allyBase || !foeBase) throw new Error('missing friendly fall units');
+
+  let grid: Grid = {
+    width: 5,
+    height: 5,
+    tiles: Array.from({ length: 5 * 5 }, () => DEFAULT_TILE),
+  };
+  const raise = (pos: Vec2, elevation: number) => {
+    const tile = tileAt(grid, pos);
+    if (!tile) throw new Error('friendly fall fixture is off the grid');
+    grid = withTile(grid, pos, { ...tile, elevation });
+  };
+  raise(ALLY_LIP, 1);
+  raise(FOE_LIP, 1);
+  if (!options.ledge) raise(ALLY_LANDING, 1);
+
+  const caster: Unit = {
+    ...casterBase,
+    ai: 'aggressive',
+    pos: FRIENDLY_CASTER,
+    abilities: ['shatterpoint'],
+    cooldowns: {},
+    ap: 3,
+    move: 0,
+  };
+  const ally: Unit = { ...allyBase, pos: ALLY_LIP };
+  const foe: Unit = { ...foeBase, pos: FOE_LIP };
+  const units = [ally, foe, caster];
+
+  return {
+    draft: new BattleDraft(
+      CONTENT,
+      {
+        ...battle,
+        grid,
+        units,
+        order: units.map((unit) => unit.id),
+        turnIndex: 0,
+        props: [],
+      },
+      new RngCursor(0xf1e5),
+    ),
+    caster,
+  };
+}
+
+/** Shatterpoint centred between the ally and the enemy, priced by the AI. */
+function priceFriendlyFall(options: { readonly ledge: boolean }): number {
+  const { draft, caster } = friendlyFallFixture(options);
+  const shatterpoint = CONTENT.abilities.get('shatterpoint');
+  if (!shatterpoint) throw new Error('shatterpoint is missing from content');
+  return scoreAbility(
+    draft,
+    caster,
+    shatterpoint,
+    FRIENDLY_AIM,
+    weightsFor('aggressive'),
+    new Map<string, readonly Unit[]>(),
+  );
+}
+
+describe('the AI and a friendly fall', () => {
+  it('charges an ally’s drop at the friendly-fire weight, not nothing', () => {
+    const shatterpoint = CONTENT.abilities.get('shatterpoint');
+    if (!shatterpoint) throw new Error('shatterpoint is missing from content');
+    const weights = weightsFor('aggressive');
+    const drop = CONTENT.tuning.ledgeDropDamage;
+
+    const ledge = priceFriendlyFall({ ledge: true });
+    const flat = priceFriendlyFall({ ledge: false });
+
+    // The enemy is thrown off in both boards, so it cancels. The ally's fall
+    // exists only on the ledge board and is charged like any other friendly
+    // damage. The push's early exit used to drop it entirely, which priced the
+    // two boards equal — as though only the enemy had fallen.
+    expect(ledge - flat).toBeCloseTo(-(drop * weights.friendlyFire) / shatterpoint.apCost, 5);
+  });
+});
+
+/** The lip the exposed unit stands on. */
+const EXPOSURE_LIP: Vec2 = { x: 2, y: 2 };
+/** Neighbours kept level with the lip, so it drops east and nowhere else. */
+const EXPOSURE_LEVEL: readonly Vec2[] = [
+  { x: 2, y: 1 },
+  { x: 2, y: 3 },
+  { x: 1, y: 2 },
+];
+/** North of the lip: a push travels south, away from the eastern edge. */
+const EXPOSURE_NORTH: Vec2 = { x: 2, y: 1 };
+/** West of the lip: the same push now runs straight over the edge. */
+const EXPOSURE_WEST: Vec2 = { x: 1, y: 2 };
+/** On the far corner: a push travels diagonally, off the corner drop. */
+const EXPOSURE_SOUTH_WEST: Vec2 = { x: 1, y: 3 };
+
+/**
+ * One party unit on a lip whose only fall is east, and one enemy that knows
+ * Shove, standing wherever the caller puts it. Every other neighbour of the lip
+ * is level, so the shove direction is the only thing that decides whether the
+ * edge is a threat.
+ */
+function exposureFixture(shoverAt: Vec2): { readonly draft: BattleDraft; readonly hero: Unit } {
+  const seeded = createGame(CONTENT, {
+    seed: 'ai-ledge-exposure',
+    party: [{ characterId: 'kaya', level: 3, autoChoose: true }],
+    startNode: '',
+  });
+  const rng = new RngCursor(seeded.rng);
+  const battle = createBattle(CONTENT, seeded, 'enc_forest_road', rng);
+  const heroBase = battle.units.find((unit) => unit.faction === 'party');
+  const shoverBase = battle.units.find((unit) => unit.faction === 'enemy');
+  if (!heroBase || !shoverBase) throw new Error('missing exposure fixture units');
+
+  let grid: Grid = {
+    width: 5,
+    height: 5,
+    tiles: Array.from({ length: 5 * 5 }, () => DEFAULT_TILE),
+  };
+  for (const pos of [EXPOSURE_LIP, ...EXPOSURE_LEVEL]) {
+    const tile = tileAt(grid, pos);
+    if (!tile) throw new Error('exposure fixture is off the grid');
+    grid = withTile(grid, pos, { ...tile, elevation: 1 });
+  }
+
+  const hero: Unit = { ...heroBase, pos: EXPOSURE_LIP };
+  const shover: Unit = {
+    ...shoverBase,
+    ai: 'aggressive',
+    pos: shoverAt,
+    abilities: ['shove'],
+    cooldowns: {},
+    ap: 1,
+    move: 0,
+  };
+  const units = [hero, shover];
+
+  return {
+    draft: new BattleDraft(
+      CONTENT,
+      {
+        ...battle,
+        grid,
+        units,
+        order: units.map((unit) => unit.id),
+        turnIndex: 0,
+        props: [],
+      },
+      new RngCursor(0x1ed),
+    ),
+    hero,
+  };
+}
+
+describe('the AI and ledge exposure', () => {
+  it('counts the lip only when the shove’s own trajectory runs off it', () => {
+    const exposure = (shover: Vec2): number => {
+      const { draft, hero } = exposureFixture(shover);
+      return ledgeExposure(draft, hero, EXPOSURE_LIP);
+    };
+    // The flat lip penalty; nothing else reads it, so it is not exported.
+    const risk = 3;
+
+    // Enemy north, drop east: the push travels south, off the level side, and
+    // cannot turn the edge into a fall. The board-wide check used to call this
+    // exposed because *an* edge existed somewhere.
+    expect(exposure(EXPOSURE_NORTH)).toBe(0);
+    // Enemy west: the shove now runs straight over the drop.
+    expect(exposure(EXPOSURE_WEST)).toBe(risk);
+    // A diagonal shover pushes diagonally, so the corner drop counts as well.
+    expect(exposure(EXPOSURE_SOUTH_WEST)).toBe(risk);
   });
 });

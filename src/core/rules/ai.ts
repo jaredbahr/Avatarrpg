@@ -51,7 +51,6 @@ import {
 import { averageDamage, hitChance, positionHasCover } from './damage';
 import { positionObscurement, weatherAt } from './obscurement';
 import {
-  ORTHOGONAL,
   distance,
   distanceToUnit,
   occupiedCells,
@@ -573,7 +572,14 @@ export function scoreAbility(
         }
         case 'push':
         case 'pull': {
-          if (friendly) break;
+          if (friendly) {
+            // A friendly unit thrown over a lip still takes the fall. The direct
+            // and prop-break paths both charge their friendly damage, so the
+            // shove has to as well: without this an action that dropped an ally
+            // and an enemy together scored as though only the enemy fell.
+            score -= ledgeDropFor(victim.id) * weights.friendlyFire;
+            break;
+          }
           // Shoving somebody into fire is worth more than the shove itself.
           score += 2;
           // Over a ledge more still. The forecast already respects the 1-HP
@@ -937,38 +943,55 @@ function isShoveAbility(ability: Ability): boolean {
 const LEDGE_EDGE_RISK = 3;
 
 /**
- * Is this tile a lip a shove could send somebody over? Only orthogonal steps
- * count, because that is the only direction a push or pull travels, and the
- * drop has to clear the same tier rule the fall does.
+ * The one tile a forced step travels: away from the shover for a push, toward
+ * it for a pull. The same sign arithmetic `BattleDraft.slideFrom` uses, so a
+ * direction read here is the direction resolution would actually deliver.
  */
-function atLedgeLip(draft: BattleDraft, pos: Vec2): boolean {
-  const tile = tileAt(draft.grid, pos);
-  if (!tile) return false;
-  for (const step of ORTHOGONAL) {
-    const below = tileAt(draft.grid, { x: pos.x + step.x, y: pos.y + step.y });
-    if (!below) continue;
-    const drop = tile.elevation - below.elevation;
-    if (drop > 1 || (drop === 1 && !tile.ramp && !below.ramp)) return true;
-  }
-  return false;
+function shoveStep(from: Vec2, origin: Vec2, mode: 'push' | 'pull'): Vec2 {
+  const sign = mode === 'push' ? 1 : -1;
+  return {
+    x: Math.sign(from.x - origin.x) * sign,
+    y: Math.sign(from.y - origin.y) * sign,
+  };
 }
 
 /**
- * Standing on an edge with an enemy in shove reach of it risks a free fall.
- * Kept deliberately small and deterministic: it nudges a unit back from the
- * lip without outbidding cover or closing the distance.
+ * Would one forced step in `step` take the unit over a ledge? The same tier
+ * rule `BattleDraft.ledgeDrop` applies to a step, and the same one the old
+ * board-wide lip check used.
  */
-function ledgeExposure(draft: BattleDraft, unit: Unit, pos: Vec2): number {
-  if (!atLedgeLip(draft, pos)) return 0;
-  const shover = draft
-    .living()
-    .some(
-      (other) =>
-        !sameSide(unit, other) &&
-        distanceToUnit(pos, other) <= 1 &&
-        knownAbilities(draft.content, other).some(isShoveAbility),
-    );
-  return shover ? LEDGE_EDGE_RISK : 0;
+function dropStep(draft: BattleDraft, pos: Vec2, step: Vec2): boolean {
+  if (step.x === 0 && step.y === 0) return false;
+  const tile = tileAt(draft.grid, pos);
+  const below = tileAt(draft.grid, { x: pos.x + step.x, y: pos.y + step.y });
+  if (!tile || !below) return false;
+  const drop = tile.elevation - below.elevation;
+  return drop > 1 || (drop === 1 && !tile.ramp && !below.ramp);
+}
+
+/**
+ * Standing where an adjacent enemy's shove would send it over an edge risks a
+ * free fall. The trajectory has to match, not just the board: an enemy north of
+ * a lip whose only drop is east pushes the unit south, away from the fall, and
+ * cannot turn that lip into a shortcut. Kept deliberately small and
+ * deterministic: it nudges a unit back from the lip without outbidding cover or
+ * closing the distance.
+ *
+ * Exposed so the ledge tests can price one standing tile directly, without the
+ * planner's choice of move in the way.
+ */
+export function ledgeExposure(draft: BattleDraft, unit: Unit, pos: Vec2): number {
+  for (const other of draft.living()) {
+    if (sameSide(unit, other) || distanceToUnit(pos, other) > 1) continue;
+    for (const ability of knownAbilities(draft.content, other)) {
+      if (!isShoveAbility(ability)) continue;
+      for (const effect of ability.effects) {
+        if (effect.kind !== 'push' && effect.kind !== 'pull') continue;
+        if (dropStep(draft, pos, shoveStep(pos, other.pos, effect.kind))) return LEDGE_EDGE_RISK;
+      }
+    }
+  }
+  return 0;
 }
 
 /**
