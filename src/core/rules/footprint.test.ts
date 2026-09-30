@@ -32,9 +32,14 @@ describe('unit footprints', () => {
     expect(footprintCells({ x: 2, y: 5 }, 2, false)).toEqual(legacy);
   });
 
-  it('puts the foot at the centre of the front row', () => {
+  it('puts the foot at the centre of the front row for each shape', () => {
     expect(footprintFoot({ x: 0, y: 0 }, 1)).toEqual({ x: 0.5, y: 0.5 });
-    expect(footprintFoot({ x: 4, y: 2 }, 2)).toEqual({ x: 5, y: 3.5 });
+    // Square gate on: the front row is the block's bottom row.
+    expect(footprintFoot({ x: 4, y: 2 }, 2, true)).toEqual({ x: 5, y: 3.5 });
+    // Legacy 2x1: one row, so the foot stays on the anchor row.
+    expect(footprintFoot({ x: 4, y: 2 }, 2, false)).toEqual({ x: 5, y: 2.5 });
+    // The default follows the gate constant.
+    expect(footprintFoot({ x: 4, y: 2 }, 2)).toEqual({ x: 5, y: 2.5 });
   });
 });
 

@@ -50,8 +50,18 @@ export function footprintCells(
  * The unit's "foot": the centre of its front (bottom) row, in tile units. An
  * anchor-relative point for presentation code that wants the ground contact
  * rather than the top-left corner — size 1 lands at {x+0.5, y+0.5}.
+ *
+ * With the square gate on, the front row is the block's bottom row; with it off
+ * the legacy 2x1 keeps its single-row foot one tile right of the anchor. Mirrors
+ * `footprintCells`, so consumers can pass the same flag they use there.
  */
-export function footprintFoot(pos: Vec2, size: UnitSize): Vec2 {
+export function footprintFoot(
+  pos: Vec2,
+  size: UnitSize,
+  square: boolean = SQUARE_FOOTPRINTS,
+): Vec2 {
+  if (size === 1) return { x: pos.x + 0.5, y: pos.y + 0.5 };
+  if (!square) return { x: pos.x + size / 2, y: pos.y + 0.5 };
   return { x: pos.x + size / 2, y: pos.y + size - 0.5 };
 }
 

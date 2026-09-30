@@ -422,33 +422,61 @@ export class BattleDraft {
       return { pos: from, ledgeDropTiers: 0, stopReason: 'centre' };
     }
 
+    // A 2x2 may not come to rest straddling two heights: the ledge acts like a
+    // wall, so a slide that would *end* on a non-flat footprint stops at the
+    // last step it could legally rest on. Passing *through* a straddle is still
+    // allowed when a later step lands the whole block back on one elevation,
+    // which is how a full-footprint drop off a ledge survives.
     let current = from;
+    let resting = from;
     let ledgeDropTiers = 0;
+    let pendingDrop = 0;
+    let stopReason: 'none' | 'origin' | 'obstacle' = 'none';
     for (let step = 0; step < tiles; step++) {
       const next = { x: current.x + dx, y: current.y + dy };
       if (!inBounds(this.grid, next)) {
-        return { pos: current, ledgeDropTiers, stopReason: 'obstacle' };
+        stopReason = 'obstacle';
+        break;
       }
-      // Pulling past the origin would look absurd; stop when adjacent.
-      if (mode === 'pull' && distance(next, origin) === 0) {
-        return { pos: current, ledgeDropTiers, stopReason: 'origin' };
+      // Pulling past the origin would look absurd; stop before any footprint
+      // cell covers it. With the square gate off the legacy 2x1 keeps its
+      // anchor-only check.
+      const pullCells = square ? footprintCells(next, ctx.size, square) : [next];
+      if (mode === 'pull' && pullCells.some((cell) => samePos(cell, origin))) {
+        stopReason = 'origin';
+        break;
       }
       if (!this.canShoveStep(ctx, current, next)) {
-        return { pos: current, ledgeDropTiers, stopReason: 'obstacle' };
+        stopReason = 'obstacle';
+        break;
       }
-      ledgeDropTiers += this.ledgeDrop(ctx, current, next);
+      pendingDrop += this.ledgeDrop(ctx, current, next);
       current = next;
+      if (standCost(ctx, current) !== null) {
+        resting = current;
+        ledgeDropTiers += pendingDrop;
+        pendingDrop = 0;
+      }
     }
-    return { pos: current, ledgeDropTiers, stopReason: 'none' };
+    // Running out of tiles while still straddling is the same stop as hitting a
+    // wall: fall back to the last footprint the block could actually rest on.
+    if (stopReason === 'none' && pendingDrop === 0) {
+      return { pos: current, ledgeDropTiers, stopReason: 'none' };
+    }
+    return {
+      pos: resting,
+      ledgeDropTiers,
+      stopReason: stopReason === 'none' ? 'obstacle' : stopReason,
+    };
   }
 
   /** Forced movement follows a one-tier ramp, but cannot push up a bare ledge. */
   private canShoveStep(ctx: MoveContext, from: Vec2, to: Vec2): boolean {
     const square = ctx.squareFootprints ?? SQUARE_FOOTPRINTS;
-    // Forced movement is a fall as much as a push, so it is judged by bounds,
-    // bodies and the climb rule — not by the flat-ground rule that governs
-    // walking. A 2x2 can be shoved off a ledge; it just cannot walk onto the
-    // edge and stop there.
+    // Forced movement is a fall as much as a push, so a step is judged by
+    // bounds, bodies and the climb rule. The flat-ground rule that governs
+    // *resting* is applied by `slideFrom`, so a 2x2 may be shoved over the lip
+    // but can never stop there.
     for (const offset of footprintCells({ x: 0, y: 0 }, ctx.size, square)) {
       const fromTile = tileAt(this.grid, { x: from.x + offset.x, y: from.y + offset.y });
       const toPos = { x: to.x + offset.x, y: to.y + offset.y };

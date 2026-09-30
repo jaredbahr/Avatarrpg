@@ -191,7 +191,7 @@ describe('2x2 forced movement', () => {
     expect(draft.unit(victim.id)?.pos).toEqual({ x: 6, y: 5 });
   });
 
-  it('drops a 2x2 off a ledge and holds it at the 1-HP floor', () => {
+  it('stops a 2x2 at the edge instead of letting it straddle a ledge', () => {
     const { battle, caster, victim } = fixture();
     const field = elevated(
       withSize(
@@ -207,7 +207,36 @@ describe('2x2 forced movement', () => {
     draft.replace({ ...live, hp: 2 });
 
     draft.shove(victim.id, { x: 5, y: 5 }, 1, 'push');
-    expect(draft.unit(victim.id)?.pos).toEqual({ x: 7, y: 5 });
+    // The next step would leave two cells on the plateau and two hanging off
+    // it: the ledge acts like a wall, so the block stays put and takes no fall.
+    expect(draft.unit(victim.id)?.pos).toEqual({ x: 6, y: 5 });
+    expect(draft.unit(victim.id)?.hp).toBe(2);
+    expect(
+      draft.events.some((event) => event.type === 'damaged' && event.cause === 'ledgeDrop'),
+    ).toBe(false);
+  });
+
+  it('drops the whole 2x2 onto the flat lower tier when the shove clears the ledge', () => {
+    const { battle, caster, victim } = fixture();
+    const field = elevated(
+      withSize(
+        openGround(placed(battle, { [caster.id]: { x: 5, y: 5 }, [victim.id]: { x: 6, y: 5 } })),
+        victim.id,
+        2,
+      ),
+      { '6,5': 2, '7,5': 2, '6,6': 2, '7,6': 2, '8,5': 0, '8,6': 0 },
+    );
+    const draft = new BattleDraft(CONTENT, field, new RngCursor(1), { squareFootprints: true });
+    const live = draft.unit(victim.id);
+    if (!live) throw new Error('missing drop victim');
+    draft.replace({ ...live, hp: 2 });
+
+    // Two tiles of knockback carry the block over the lip. It may pass the
+    // straddling step but comes to rest with all four cells together on the
+    // flat lower tier, so the fall still lands (and hurts) rather than being
+    // walled off.
+    draft.shove(victim.id, { x: 5, y: 5 }, 2, 'push');
+    expect(draft.unit(victim.id)?.pos).toEqual({ x: 8, y: 5 });
     expect(draft.unit(victim.id)?.hp).toBe(1);
     expect(draft.events).toContainEqual(
       expect.objectContaining({ type: 'damaged', cause: 'ledgeDrop', amount: 1 }),
@@ -240,5 +269,29 @@ describe('2x2 forced movement', () => {
     if (!resolvedCaster) throw new Error('missing parity caster');
     resolveAbility(draft, resolvedCaster, ability('air_blast'), target.pos, draft.rng);
     expect(draft.unit(victim.id)?.pos).toEqual(shove?.to);
+  });
+
+  it('stops a pull before any footprint cell covers the origin', () => {
+    const { battle, victim } = fixture();
+    const field = withSize(
+      openGround(placed(battle, { [victim.id]: { x: 4, y: 4 } })),
+      victim.id,
+      2,
+    );
+    const draft = new BattleDraft(CONTENT, field, new RngCursor(1), { squareFootprints: true });
+
+    // Pulling toward (8,4): the first step that would cover the origin puts the
+    // block's right cell on it, so the pull stops one step earlier, at (6,4).
+    const slide = draft.slideFrom(
+      moveCtx(draft.grid, 2, true),
+      { x: 4, y: 4 },
+      { x: 8, y: 4 },
+      5,
+      'pull',
+    );
+    expect(slide).toEqual({ pos: { x: 6, y: 4 }, ledgeDropTiers: 0, stopReason: 'origin' });
+
+    draft.shove(victim.id, { x: 8, y: 4 }, 5, 'pull');
+    expect(draft.unit(victim.id)?.pos).toEqual({ x: 6, y: 4 });
   });
 });
