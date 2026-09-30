@@ -775,8 +775,10 @@ export class PixiBackend implements RenderBackend {
       identity(view.path),
       view.pathFrom && `${view.pathFrom.x},${view.pathFrom.y}`,
       view.aimArc && JSON.stringify(view.aimArc),
+      identity(view.obscuringTiles),
+      view.weatherIntensity,
       view.crispOverlays,
-      animated && view.time,
+      (animated || (!view.reducedMotion && (view.obscuringTiles?.length ?? 0) > 0)) && view.time,
     ].join('|');
     this.marksGfx.position.set(nx, ny);
     if (liveKey === this.marksKey) return;
@@ -1517,6 +1519,7 @@ export class PixiBackend implements RenderBackend {
   private drawOverlays(view: MapView): void {
     const g = this.overlayGfx;
     g.clear();
+    this.drawObscurement(view, g);
 
     if (!view.crispOverlays) {
       this.drawContourOverlays(view);
@@ -1553,6 +1556,48 @@ export class PixiBackend implements RenderBackend {
       });
     }
     this.drawCliffCues(view);
+  }
+
+  /** Capped, deterministic particle field: the Graphics object is the pool and is reused. */
+  private drawObscurement(view: MapView, g: Graphics): void {
+    const tiles = view.obscuringTiles ?? [];
+    for (const pos of tiles) {
+      const x = pos.x * TILE;
+      const y = pos.y * TILE;
+      g.rect(x, y, TILE, TILE).fill({ color: OVERLAY.obscurementVeil });
+      const spacing = TILE * (view.crispOverlays ? 0.2 : 0.28);
+      for (let offset = -TILE; offset < TILE * 2; offset += spacing)
+        g.moveTo(x + offset, y + TILE).lineTo(x + offset + TILE, y);
+      g.stroke({
+        width: Math.max(view.crispOverlays ? 2 : 1, TILE * 0.025),
+        color: OVERLAY.obscurementHatch,
+      });
+    }
+
+    const moving = view.reducedMotion ? 0 : view.time * 0.000035;
+    const steamCount = Math.min(36, tiles.length * 4);
+    for (let i = 0; i < steamCount; i++) {
+      const tile = tiles[Math.floor(i / 4)];
+      if (!tile) break;
+      const phase = i * 0.61803398875;
+      const x = tile.x * TILE + ((((phase + moving) % 1) + 1) % 1) * TILE;
+      const y = tile.y * TILE + (0.25 + ((i * 0.37) % 0.55)) * TILE;
+      g.circle(x, y, TILE * (0.06 + (i % 3) * 0.018)).fill({ color: OVERLAY.steamWisp });
+    }
+
+    const weather = view.weatherIntensity ?? 0;
+    if (weather > 0) {
+      const count = weather === 2 ? 48 : 28;
+      const width = view.grid.width * TILE;
+      const height = view.grid.height * TILE;
+      for (let i = 0; i < count; i++) {
+        const phase = i * 0.754877666;
+        const x = ((((phase + moving * (weather + 1)) % 1) + 1) % 1) * width;
+        const y = ((i * 0.56984029) % 1) * height;
+        g.moveTo(x, y).lineTo(x + TILE * 0.2, y - TILE * 0.05);
+      }
+      g.stroke({ width: Math.max(1, TILE * 0.018), color: OVERLAY.sandWisp });
+    }
   }
 
   private drawCliffCues(view: MapView): void {

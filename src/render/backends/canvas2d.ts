@@ -701,6 +701,7 @@ export class Canvas2DBackend implements RenderBackend {
   }
 
   private drawOverlays(view: MapView, camera: Camera): void {
+    this.drawObscurement(view, camera);
     if (view.crispOverlays) {
       this.drawCrispOverlays(view, camera);
     } else {
@@ -746,6 +747,59 @@ export class Canvas2DBackend implements RenderBackend {
       }
     }
     this.drawCliffCues(view, camera);
+  }
+
+  /** Combat-only veil: a cool opposing-angle hatch and one still wisp per cloud cell. */
+  private drawObscurement(view: MapView, camera: Camera): void {
+    const ctx = this.ctx;
+    const tiles = view.obscuringTiles ?? [];
+    for (const pos of tiles) {
+      if (!camera.isVisible(pos)) continue;
+      const box = camera.toScreen(pos);
+      ctx.save();
+      ctx.beginPath();
+      ctx.rect(box.x, box.y, box.size, box.size);
+      ctx.clip();
+      ctx.fillStyle = OVERLAY.obscurementVeil;
+      ctx.fillRect(box.x, box.y, box.size, box.size);
+      ctx.strokeStyle = OVERLAY.obscurementHatch;
+      ctx.lineWidth = Math.max(view.crispOverlays ? 2 : 1, box.size * 0.025);
+      const spacing = box.size * (view.crispOverlays ? 0.2 : 0.28);
+      for (let offset = -box.size; offset < box.size * 2; offset += spacing) {
+        ctx.beginPath();
+        ctx.moveTo(box.x + offset, box.y + box.size);
+        ctx.lineTo(box.x + offset + box.size, box.y);
+        ctx.stroke();
+      }
+      ctx.strokeStyle = OVERLAY.steamWisp;
+      ctx.lineWidth = Math.max(2, box.size * 0.07);
+      ctx.lineCap = 'round';
+      ctx.beginPath();
+      ctx.moveTo(box.x + box.size * 0.2, box.y + box.size * 0.62);
+      ctx.bezierCurveTo(
+        box.x + box.size * 0.38,
+        box.y + box.size * 0.35,
+        box.x + box.size * 0.62,
+        box.y + box.size * 0.78,
+        box.x + box.size * 0.82,
+        box.y + box.size * 0.42,
+      );
+      ctx.stroke();
+      ctx.restore();
+    }
+    if ((view.weatherIntensity ?? 0) > 0) {
+      const origin = camera.toScreen({ x: 0, y: 0 });
+      ctx.save();
+      ctx.fillStyle = OVERLAY.sandWisp;
+      ctx.globalAlpha = view.weatherIntensity === 2 ? 0.24 : 0.13;
+      ctx.fillRect(
+        origin.x,
+        origin.y,
+        view.grid.width * origin.size,
+        view.grid.height * origin.size,
+      );
+      ctx.restore();
+    }
   }
 
   private drawCliffCues(view: MapView, camera: Camera): void {

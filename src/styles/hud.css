@@ -243,6 +243,17 @@
   color: var(--c-ink-dim);
 }
 
+.weather-chip {
+  display: block;
+  max-width: min(32rem, 52vw);
+  overflow: hidden;
+  color: var(--c-ink-soft);
+  font-size: var(--fs-xs);
+  line-height: 1.15;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
 /*
  * Marks: the inline line drawings from app/ui/marks.ts. Drawn in the
  * current colour, so a button's element tints them and High contrast inks

@@ -11,6 +11,7 @@
  */
 
 import type { RngState } from './rng';
+import type { ObscurementBreakdown } from './rules/obscurement';
 
 /* ------------------------------------------------------------------ */
 /* Primitives                                                          */
@@ -1285,7 +1286,12 @@ export type GameEvent =
       readonly target: Vec2;
       readonly tiles: readonly Vec2[];
     }
-  | { readonly type: 'attackMissed'; readonly unitId: string; readonly targetId: string }
+  | {
+      readonly type: 'attackMissed';
+      readonly unitId: string;
+      readonly targetId: string;
+      readonly obscurement?: ObscurementBreakdown;
+    }
   | {
       readonly type: 'damaged';
       readonly unitId: string;
