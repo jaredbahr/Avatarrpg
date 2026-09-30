@@ -283,58 +283,61 @@ export const FOREST_BANK_NEST_REEDS: SceneScenery = {
   contactShadow: false,
 };
 
-/**
- * The pond's own bank planting: three low reed fringes cut from the same
- * authored flood-bank reeds, standing on the cells that touch the water so the
- * wet line carries growth instead of meeting the road as a bare edge. They are
- * passable scenery like the nest: no wall, no collision, no ground disk. Nor
- * the runtime contact shadow, which is keyed to the whole cell and drew a dark
- * diamond round each clump: the route plate wears the ground at the fringe's
- * painted foot instead (`scripts/art/forest-reed-wear.ts`).
- */
-/** The packed fringe's own pixel size; every placement keeps this aspect. */
-export const REED_PLATE = { width: 512, height: 313 } as const;
+/** Alpha-trimmed sizes emitted by `scripts/art/forest-bank-reeds.ts`. */
+export const BANK_REED_ART = [
+  { width: 79, height: 110 },
+  { width: 68, height: 67 },
+  { width: 91, height: 69 },
+  { width: 94, height: 98 },
+] as const;
 interface ReedPlacement {
   readonly x: number;
   readonly y: number;
-  readonly width: number;
-  /** Where in its cell the fringe's foot stands, in tiles; the middle by default. */
+  readonly art: 0 | 1 | 2 | 3;
+  readonly height: number;
+  /** Where in its cell the root mound stands, in tiles; the middle by default. */
   readonly foot?: Vec2;
 }
-function reedFringe(water: string, { x, y, width, foot }: ReedPlacement): SceneScenery {
-  // The packed plate's own aspect, so the artist's fringe is never stretched.
-  const height = Math.round((width * REED_PLATE.height) / REED_PLATE.width);
+function bankReed(water: string, { x, y, art, height, foot }: ReedPlacement): SceneScenery {
+  const plate = BANK_REED_ART[art];
+  const width = (height * plate.width) / plate.height;
   const fx = x + (foot?.x ?? 0.5),
     fy = y + (foot?.y ?? 0.5);
   return {
     id: `forest-${water}-reeds-${x}-${y}`,
-    url: `${root}pond-reeds.webp`,
+    url: `${root}bank-reed-${art}.webp`,
     x: 768 + (fx - fy) * 64 - width / 2,
     y: (fx + fy) * 32 - height,
     width,
     height,
     footprint: [{ x, y }],
-    // The centred fringe's anchor (0.1, 0.08 into its cell) carried along with an offset
-    // foot, so a unit standing in the reed's own cell still draws in front of it.
-    depth: { x: fx - 0.4, y: fy - 0.42 },
+    // The alpha trim ends at the mound; its centre/bottom is the registered foot.
+    // Depth never passes the cell centre, so a unit standing in the reeds' own
+    // cell (they are passable) still draws in front of them.
+    depth: { x: Math.min(fx, x + 0.5), y: Math.min(fy, y + 0.5) },
+    // The mound and route wear provide contact. A cell-wide runtime diamond is too broad.
     contactShadow: false,
   };
 }
-export const FOREST_POND_REEDS: readonly SceneScenery[] = [
-  { x: 4, y: 5, width: 96 },
-  { x: 7, y: 7, width: 104 },
-  { x: 5, y: 8, width: 120 },
-].map((placement) => reedFringe('pond', placement));
+export const FOREST_POND_REEDS: readonly SceneScenery[] = (
+  [
+    { x: 4, y: 5, art: 0, height: 54 },
+    { x: 7, y: 7, art: 1, height: 27 },
+    { x: 5, y: 8, art: 3, height: 45 },
+  ] satisfies readonly ReedPlacement[]
+).map((placement) => bankReed('pond', placement));
 /**
  * The same fringe on the creek's north bank, rooted at the water's edge of
  * its cell rather than the middle so it leans out over the bank: at the
  * corner where the grass pokes into the west pool, and part-way along the
  * east pool's straight run, so neither reads as a ruled edge.
  */
-export const FOREST_CREEK_REEDS: readonly SceneScenery[] = [
-  { x: 3, y: 10, width: 100, foot: { x: 0.84, y: 0.84 } },
-  { x: 13, y: 10, width: 116, foot: { x: 0.45, y: 1 } },
-].map((placement) => reedFringe('creek', placement));
+export const FOREST_CREEK_REEDS: readonly SceneScenery[] = (
+  [
+    { x: 3, y: 10, art: 2, height: 40, foot: { x: 0.84, y: 0.84 } },
+    { x: 13, y: 10, art: 1, height: 27, foot: { x: 0.45, y: 1 } },
+  ] satisfies readonly ReedPlacement[]
+).map((placement) => bankReed('creek', placement));
 
 /**
  * The forest road does not end where the rules stop. This apron carries the

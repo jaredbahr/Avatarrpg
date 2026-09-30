@@ -1,7 +1,7 @@
 /**
  * Where the Forest Road's low reeds meet the ground, and the wear laid there.
  *
- * The pond's three reed fringes and the flood-bank nest are passable scenery
+ * The pond and creek bank reeds and the flood-bank nest are passable scenery
  * a fraction of their cell's size. The runtime contact shadow is keyed to the
  * whole footprint, so under them it drew a dark diamond: a placed tile, not a
  * clump growing out of the bank. They opt out of it (`contactShadow: false`)
