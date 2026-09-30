@@ -4,6 +4,7 @@ import type { Ability, ContentIndex, GameEvent, Unit } from '../../core/types';
 import { resolveFx } from '../../content/fx';
 import type { SheetClips } from '../../render/sheets/store';
 import { TIMING, choreograph, hitSpan, knockoutSpan } from './choreography';
+import { HEADINGS, hitClip } from '../../content/assets/clips';
 import { attackMotion } from './attackMotion';
 import { enemyScale } from './actorScale';
 import { Timeline } from './timeline';
@@ -1093,7 +1094,12 @@ describe('G hit timing', () => {
     const flash = out.tracks.find((track) => track.kind === 'flash' && track.unitId === kaya.id);
     expect(hit).toBeDefined();
     expect(flash).toBeDefined();
-    expect(hit?.start).toBe((flash?.start ?? 0) - 40);
+    // The lead is the clip's own first-frame (stance) time, not a fixed number.
+    const lead = Math.max(
+      ...HEADINGS.map((heading) => kayaClips[hitClip(heading)]?.frameMs?.[0] ?? 0),
+    );
+    expect(lead).toBeGreaterThan(0);
+    expect(hit?.start).toBe((flash?.start ?? 0) - lead);
     expect(hit?.start).toBeGreaterThan(1000);
     expect(ko?.start).toBe((hit?.start ?? 0) + (hit?.duration ?? 0));
   });
@@ -1125,7 +1131,7 @@ describe('G hit timing', () => {
     );
     // The damage advances the cursor to 1000 + gap; the death then uses
     // max(cursor, hit.at + hitStop), exactly as the pre-PR rule did.
-    expect(ko?.start).toBe(1060);
+    expect(ko?.start).toBe(1000 + TIMING.gap);
   });
 
   it('scales the lethal G hit extra delay with reduced motion', () => {
