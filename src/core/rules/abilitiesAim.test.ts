@@ -4,7 +4,7 @@ import { RngCursor } from '../rng';
 import { BattleDraft } from '../state/battleDraft';
 import { createBattle, createGame } from '../state/createGame';
 import type { Ability, BattleState, Grid, Unit, UnitSize, Vec2 } from '../types';
-import { previewAbility, resolveAbility, resolveAim } from './abilities';
+import { previewAbility, resolveAbility, resolveAim, targetableTiles } from './abilities';
 import { DEFAULT_TILE, withTile } from './grid';
 
 /**
@@ -153,6 +153,31 @@ describe('resolveAim', () => {
       x: 4,
       y: 4,
     });
+  });
+});
+
+describe('targetableTiles', () => {
+  it('includes every cell of a square target when only its near edge is in range', () => {
+    const { battle, caster } = placed({ x: 6, y: 3 }, 1, { x: 6, y: 1 }, 2);
+    const ability = unitAttack(1, false);
+
+    expect(targetableTiles(CONTENT, battle, caster, ability, true)).toEqual([
+      { x: 6, y: 2 },
+      { x: 6, y: 1 },
+      { x: 7, y: 1 },
+      { x: 7, y: 2 },
+    ]);
+  });
+
+  it('keeps the legacy target list with square footprints disabled', () => {
+    const { battle, caster } = placed({ x: 6, y: 3 }, 1, { x: 6, y: 1 }, 2);
+    const ability = unitAttack(10, false);
+
+    // Gate off the boss is the legacy 2x1 on row 1: only its two cells, no snap.
+    expect(targetableTiles(CONTENT, battle, caster, ability, false)).toEqual([
+      { x: 6, y: 1 },
+      { x: 7, y: 1 },
+    ]);
   });
 });
 

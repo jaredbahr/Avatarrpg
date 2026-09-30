@@ -352,9 +352,24 @@ export function targetableTiles(
       for (let dx = -reach; dx <= reach; dx++) {
         const pos = { x: cell.x + dx, y: cell.y + dy };
         if (!inBounds(battle.grid, pos) || seen.has(posKey(pos))) continue;
-        if (isValidTarget(content, battle, caster, ability, pos, squareFootprints).ok) {
+        // Square only: a tap on any cell of a 2x2 snaps to a legal cell.
+        const squareUnit = squareFootprints && ability.targeting.shape === 'unit';
+        const aim = squareUnit
+          ? resolveAim(content, battle, caster, ability, pos, squareFootprints)
+          : pos;
+        if (isValidTarget(content, battle, caster, ability, aim, squareFootprints).ok) {
           seen.add(posKey(pos));
           out.push(pos);
+          if (squareUnit) {
+            const occupant = unitsOnTiles(battle.units, [aim], squareFootprints)[0];
+            if (occupant) {
+              for (const footprintCell of occupiedCells(occupant, squareFootprints)) {
+                if (seen.has(posKey(footprintCell))) continue;
+                seen.add(posKey(footprintCell));
+                out.push(footprintCell);
+              }
+            }
+          }
         }
       }
     }

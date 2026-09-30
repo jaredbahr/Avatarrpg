@@ -54,6 +54,7 @@ import { averageDamage, hasCover, hitChance, positionHasCover } from './damage';
 import { positionObscurement, weatherAt } from './obscurement';
 import {
   distance,
+  distanceBetweenUnits,
   distanceToUnit,
   occupiedCells,
   posKey,
@@ -1161,7 +1162,12 @@ export function positionScore(
 
   let nearest = Infinity;
   for (const opponent of opponents) {
-    nearest = Math.min(nearest, distanceToUnit(pos, opponent, square));
+    nearest = Math.min(
+      nearest,
+      square
+        ? distanceBetweenUnits({ ...unit, pos }, opponent, square)
+        : distanceToUnit(pos, opponent, square),
+    );
   }
 
   // Danger is deliberately *not* folded in here: callers weight the positional

@@ -97,4 +97,10 @@ describe('square 2x2 cover in the AI position score', () => {
     expect(score(anchorCover, anchor, false)).toBe(score(flat, anchor, false) + weights.cover);
     expect(score(trailingCover, anchor, false)).toBe(score(flat, anchor, false));
   });
+
+  it('counts a right/lower footprint edge when deciding whether it is in reach', () => {
+    // The anchor is three tiles from the hero, but the square's right edge is
+    // two tiles away. The latter is within this unit's reach.
+    expect(score(flat, { x: 1, y: 2 }, true)).toBe(-1);
+  });
 });
