@@ -8,6 +8,8 @@ import type { DayPhase, GameState, MapDef, Vec2 } from '../../core/types';
 import { ResidentWalks, planResidentMotion, standingOn } from './residentMotion';
 import type { ResidentMotion } from './residentMotion';
 import { previewWalk } from './walking';
+import { TIMING } from '../anim/choreography';
+import { STROLL_RAMP_MS } from '../anim/stroll';
 
 /**
  * The resident walk planner (ADR 0047 §7, W8): who walks where when the
@@ -248,7 +250,7 @@ describe('ResidentWalks', () => {
       expect(Math.hypot(b.x - a.x, b.y - a.y)).toBeLessThan(0.2);
     }
     // Mira walks off down the river path and is gone once she has faded there.
-    for (let t = 4050; t <= 6000; t += 50) w.tick(t, false);
+    for (let t = 4050; t <= 20 * TIMING.strollStep; t += 50) w.tick(t, false);
     expect(figure(w, 'lw.npc.mira')).toBeUndefined();
     expect(figure(w, 'lw.npc.dorin')).toMatchObject({
       drawPos: { x: 17, y: 6 },
@@ -269,7 +271,7 @@ describe('ResidentWalks', () => {
       w.update(VILLAGE, after, party, true);
       const trace: Vec2[] = [];
       let ended = -1;
-      for (let t = 50; t <= 6000; t += 50) {
+      for (let t = 50; t <= 20 * TIMING.strollStep; t += 50) {
         if (interrupt && t === 1000) {
           // The party walks off; nobody's place changes.
           const walked = apply(CONTENT, after, { type: 'walkTo', pos: { x: 12, y: 7 } }).state;
@@ -535,7 +537,7 @@ describe('routines (Working Ba Dan)', () => {
     // Mira's bench, two tiles from the display.
     const near: Vec2[] = [{ x: 10, y: 5 }];
     const after = of(
-      play(v, state, reached.t + 50, 1500, () => near),
+      play(v, state, reached.t + 50, 2 * TIMING.strollStep + STROLL_RAMP_MS, () => near),
       GAO,
     );
     // His hold at the display was four seconds; he is back at the shop in well under two.
@@ -613,7 +615,7 @@ describe('routines (Working Ba Dan)', () => {
 
   it('goes home round the party, never through it', () => {
     // The party on the lane tile his home leg crosses.
-    const home = homeFromCrates([{ x: 9, y: 5 }], 3_000);
+    const home = homeFromCrates([{ x: 9, y: 5 }], 5 * TIMING.strollStep);
     expect(home.at(-1)?.drawPos).toEqual(SHOP);
     expect(home.every((f) => f.alpha === 1)).toBe(true);
     expect(home.some((f) => f.walking)).toBe(true);
@@ -675,12 +677,13 @@ describe('routines (Working Ba Dan)', () => {
     expect(v.moving()).toBe(true);
     // Long enough for Dorin, off watch at midday, to walk the river path out
     // to its mouth on the rim, (19,15), and fade.
-    const back = of(play(v, midday, reached.t + 100, 3500), GAO);
+    const transitionMs = 20 * TIMING.strollStep;
+    const back = of(play(v, midday, reached.t + 100, transitionMs), GAO);
     expect(back[0]?.drawPos.x).toBeLessThan(9);
     expect(back.at(-1)).toMatchObject({ drawPos: SHOP, walking: false });
     expect(v.moving()).toBe(false);
     // And no errand starts again during the break.
-    const rest = of(play(v, midday, reached.t + 3700, 20_000), GAO);
+    const rest = of(play(v, midday, reached.t + transitionMs + 200, 20_000), GAO);
     expect(rest.every((f) => samePos(f.drawPos, SHOP))).toBe(true);
   });
 });

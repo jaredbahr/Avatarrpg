@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { Camera } from '../camera';
-import { FIGURE_SCALE, FOOT_Y, hitsPebble, hitsVillager, riversideWalkTime } from './geometry';
+import { FOOT_Y, hitsPebble, hitsVillager, riversideWalkTime } from './geometry';
 import { frameIndex, resolveClip } from '../sheets/resolveClip';
 import { HEADINGS, headingClip } from '../../content/assets/clips';
 import { ASSETS, G_STRIDE_TILES } from '../../content/assets/manifest';

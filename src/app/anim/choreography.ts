@@ -380,7 +380,10 @@ export function choreograph(input: ChoreographyInput): Choreography {
         if (event.path.length === 0) break;
         const curve = smoothPath(event.from, event.path);
         const timing = strollTiming(curve.length, TIMING.strollStep);
-        const duration = timing.duration * rate;
+        // Reduced motion retains the same abbreviated, pace-independent action
+        // lock as combat movement. A long village route must not become slow
+        // again merely because the full-motion walking cadence was retuned.
+        const duration = (rate < 1 ? TIMING.step * event.path.length : timing.duration) * rate;
         tracks.push({
           kind: 'move',
           unitId: event.unitId,

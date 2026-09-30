@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest';
 import type { ContentIndex, GameEvent, Unit, Vec2 } from '../../core/types';
 import { Animator } from '../animator';
 import { TIMING } from './choreography';
+import { strollTiming } from './stroll';
 
 /**
  * Gait and stopping (M1), reproduced from the paired telemetry in
@@ -179,8 +180,8 @@ describe('combat move gait', () => {
     // A push takes the stance over: no settled walk-stop pose appears, and the
     // struck figure still slides in its hit pose.
     const slide = play([moved('p0', [4, 4]), pushed('p0', { x: 5, y: 4 })], [hero('p0', 3, 4)]);
-    const walkEnd = START + 400;
-    expect(slide.finishesAt).toBe(START + 400 + 220);
+    const walkEnd = START + strollTiming(1, TIMING.combatWalkStep).duration;
+    expect(slide.finishesAt).toBe(walkEnd + 2 * TIMING.step);
     // Forced displacement is not a stop the walk settles out of.
     expect(slide.locomotion(walkEnd + 1, 'p0')).toEqual({ clip: 'idle', facing: 1 });
     expect(drawn(slide, walkEnd + 1, 'p0', { x: 5, y: 4 }).clip).toBe('hit');

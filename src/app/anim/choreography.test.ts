@@ -8,6 +8,7 @@ import { HEADINGS, hitClip } from '../../content/assets/clips';
 import { attackMotion } from './attackMotion';
 import { enemyScale } from './actorScale';
 import { Timeline } from './timeline';
+import { STROLL_RAMP_MS } from './stroll';
 import type { AnyTrack, EmitterTrack, PoseTrack } from './timeline';
 import { PARTICLE_STRIDE, sampleParticles } from '../../render/fx/simulate';
 
@@ -467,8 +468,9 @@ describe('choreograph', () => {
     for (const puff of tracks.slice(1))
       expect(puff.kind === 'emitter' && puff.trailing, 'a footstep puff trails').toBe(true);
     expect(tracks[0]?.start).toBe(1000);
-    expect(tracks[0]?.duration).toBe(680);
-    expect(cursor).toBe(1680);
+    const duration = 2 * TIMING.combatWalkStep + STROLL_RAMP_MS;
+    expect(tracks[0]?.duration).toBe(duration);
+    expect(cursor).toBe(1000 + duration);
   });
 
   it('walks the party leader from where it stood, without needing the roster', () => {
@@ -914,7 +916,10 @@ describe('choreograph', () => {
       },
     ]);
     expect(sounds.map((s) => s.key)).toEqual(['step', 'step']);
-    expect(sounds.map((s) => s.at)).toEqual([1000, 1340]);
+    expect(sounds.map((s) => s.at)).toEqual([
+      1000,
+      1000 + TIMING.combatWalkStep + STROLL_RAMP_MS / 2,
+    ]);
     // Different seeds, or a walk machine-guns one sample.
     expect(sounds[0]?.seed).not.toBe(sounds[1]?.seed);
   });

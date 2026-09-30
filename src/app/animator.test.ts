@@ -6,7 +6,8 @@ import type { SheetClips } from '../render/sheets/store';
 import { Animator } from './animator';
 import { CONTENT } from '../content';
 import { sampleParticles, PARTICLE_STRIDE } from '../render/fx/simulate';
-import { choreograph } from './anim/choreography';
+import { choreograph, TIMING } from './anim/choreography';
+import { STROLL_RAMP_MS, strollTiming } from './anim/stroll';
 import { frameIndex, resolveClip } from '../render/sheets/resolveClip';
 
 /**
@@ -327,12 +328,13 @@ describe('Animator', () => {
     it(`keeps the attack facing after recovery (reduced motion: ${reduced})`, () => {
       const a = new Animator(CONTENT, { motionReduced: () => reduced });
       a.push(0, [moved('p0', [4, 3])], [unit('p0', 4, 4)]);
-      a.prune(500);
+      const walkEnd = a.finishesAt;
+      a.prune(walkEnd + 1);
       // The walk's stop holds the settled pose its facing implies for a beat
       // before the ready stance is selected; reduce motion collapses the beat.
-      expect(a.locomotion(500, 'p0').clip).toBe(reduced ? 'idleNorth' : 'restNorth');
-      a.prune(600);
-      expect(a.locomotion(600, 'p0').clip).toBe('idleNorth');
+      expect(a.locomotion(walkEnd + 1, 'p0').clip).toBe(reduced ? 'idleNorth' : 'restNorth');
+      a.prune(walkEnd + 200);
+      expect(a.locomotion(walkEnd + 200, 'p0').clip).toBe('idleNorth');
       a.push(
         1000,
         [
@@ -462,9 +464,10 @@ describe('Animator', () => {
     a.push(1000, [moved('p0', [2, 3], [3, 3], [4, 3])], [unit('p0', 1, 3)]);
     expect(a.busy(1000)).toBe(true);
     // Three tiles at cruising pace plus short acceleration and braking.
-    expect(a.finishesAt).toBe(1960);
-    expect(a.busy(1959)).toBe(true);
-    expect(a.busy(1960)).toBe(false);
+    const end = 1000 + 3 * TIMING.combatWalkStep + STROLL_RAMP_MS;
+    expect(a.finishesAt).toBe(end);
+    expect(a.busy(end - 1)).toBe(true);
+    expect(a.busy(end)).toBe(false);
   });
 
   it('draws the walker at its start and at its destination', () => {
@@ -533,8 +536,9 @@ describe('Animator', () => {
     expect(a.facing('p0')).toBe(-1);
     a.renderPos(500, 'p0');
     expect(a.facing('p0')).toBe(-1);
+    const secondStart = a.finishesAt;
     a.push(1000, [moved('p0', [1, 5])], [unit('p0', 0, 5)]);
-    a.renderPos(1050, 'p0');
+    a.renderPos(secondStart + 50, 'p0');
     expect(a.facing('p0')).toBe(1);
   });
 
@@ -542,7 +546,7 @@ describe('Animator', () => {
     const a = animator();
     expect(a.offset(0, 'p0')).toBeUndefined();
     a.push(0, [moved('p0', [1, 0], [2, 0])], [unit('p0', 0, 0)]);
-    const mid = a.offset(200, 'p0');
+    const mid = a.offset(strollTiming(2, TIMING.combatWalkStep).atDistance(0.5), 'p0');
     expect(mid?.x).toBe(0);
     // Half a tile of travel is the top of the first bob.
     expect(mid?.y ?? 0).toBeLessThan(0);
