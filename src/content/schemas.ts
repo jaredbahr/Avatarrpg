@@ -425,6 +425,24 @@ export const propSchema = z.object({
   immuneTo: z.array(damageType),
   onBreak: z.array(propEffect).min(1),
   breakLabel: z.string().min(8),
+  /*
+   * The prop interaction model (B-1). Every field is optional and defaults to
+   * today's inert prop; nothing in the rules reads them yet (B-2).
+   */
+  // Above 0 the prop can catch fire. 0 is explicit "fireproof".
+  fuel: z.number().int().min(0).max(10).optional(),
+  // What a burnt-out prop leaves behind. Absent means `onBreak`; an empty
+  // array is a deliberate "burns away to nothing".
+  burnsInto: z.array(propEffect).optional(),
+  ignites: z
+    .object({
+      radius: z.number().int().min(0).max(3),
+      spread: z.number().int().min(0).max(3),
+    })
+    .optional(),
+  douse: z.array(z.enum(['water', 'cold', 'earth'])).optional(),
+  hint: z.string().min(1).max(80).optional(),
+  tags: z.array(z.enum(['container', 'fuel', 'iron', 'stone', 'cover'])).optional(),
 });
 
 const propPlacement = z.object({

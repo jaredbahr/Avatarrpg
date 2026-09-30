@@ -120,6 +120,9 @@ const battle = z.object({
         propId: z.string(),
         pos: vec2,
         hp: z.number(),
+        // B-1: absent means "not burning", so an old save round-trips with the
+        // key still absent rather than getting a spurious 0.
+        burning: z.number().min(0).optional(),
         previous: tile,
       }),
     )
