@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { newImage, pixelAt, setPixel } from './lib/image';
 import { alphaBounds } from './lib/trim';
-import { normaliseProp } from './prop';
+import { normaliseProp, PROP_SIZES } from './prop';
 
 describe('transparent prop intake', () => {
   it('keeps aspect, green material, clear margins and a common ground line', () => {
@@ -27,5 +27,16 @@ describe('transparent prop intake', () => {
     source.data.fill(255);
     expect(() => normaliseProp(source, 'barrel')).toThrow(/transparent/);
     expect(() => normaliseProp(source, 'unknown')).toThrow(/Unknown prop/);
+  });
+
+  it('keeps the prop family in its approved adult-relative scale band', () => {
+    expect(PROP_SIZES).toEqual({
+      barrel: [0.62, 0.68],
+      flask: [0.42, 0.4],
+      brazier: [0.64, 0.62],
+      hay: [0.75, 0.48],
+      rubble: [0.76, 0.56],
+      cart: [0.94, 0.66],
+    });
   });
 });
