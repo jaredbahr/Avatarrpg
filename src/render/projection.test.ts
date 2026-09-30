@@ -74,4 +74,18 @@ describe('oblique ground contract', () => {
     expect(square.x + square.size).toBe(camera.project({ x: 9, y: 6.5 }).x);
     expect(square.y + square.size * 0.86).toBe(camera.project({ x: 9, y: 6.5 }).y);
   });
+
+  it('centres a gated 2x2 and gives its orthographic sprite the square front-row box', () => {
+    const camera = new Camera(
+      { width: 1000, height: 700, dpr: 1 },
+      { width: 200, height: 120 },
+      'orthographic',
+    );
+    camera.scale = 1;
+    // A board far wider than the viewport, so the pan clamp never binds.
+    camera.centreOn({ x: 40, y: 30 }, 2, true);
+    expect(camera.project({ x: 41, y: 31 })).toEqual({ x: 500, y: 350 });
+    const box = camera.spriteBox({ x: 4, y: 3 }, 2, true);
+    expect(box).toEqual(camera.toScreen({ x: 4, y: 4 }));
+  });
 });

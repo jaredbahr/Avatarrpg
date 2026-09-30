@@ -84,8 +84,14 @@ export function overlayMemoHoverKey(
   aiming: boolean,
   pendingIsValidTarget: boolean,
   hover: Vec2 | null,
+  movingSquare = false,
 ): string {
-  return aiming && !pendingIsValidTarget && hover ? posKey(hover) : '';
+  return ((aiming && !pendingIsValidTarget) || movingSquare) && hover ? posKey(hover) : '';
+}
+
+/** Preserve the old horizontal midpoint for the legacy 2x1 boss. */
+export function combatFocusPosition(unit: Pick<Unit, 'pos' | 'size'>, square = SQUARE_FOOTPRINTS) {
+  return square ? unit.pos : { x: unit.pos.x + (unit.size - 1) / 2, y: unit.pos.y };
 }
 
 /** Cells painted by the move-hover ghost; exported for pointer/overlay unit coverage. */
@@ -391,7 +397,7 @@ export class CombatScene implements Scene {
     );
     const camera = this.renderer?.camera;
     if (!unit || !camera) return;
-    camera.centreOn(unit.pos, unit.size);
+    camera.centreOn(combatFocusPosition(unit), unit.size);
     this.manualCamera = true;
     this.syncRecentre();
   }
@@ -1704,6 +1710,7 @@ export class CombatScene implements Scene {
         this.mode.kind === 'aim',
         pendingIsValidTarget,
         this.hover,
+        SQUARE_FOOTPRINTS && this.mode.kind === 'move' && unit.size === 2,
       );
       const key = `${this.mode.kind}|${this.mode.kind === 'aim' ? this.mode.abilityId : ''}|${
         this.pending ? posKey(this.pending) : ''

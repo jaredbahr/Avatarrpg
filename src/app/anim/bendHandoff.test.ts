@@ -181,6 +181,25 @@ describe('which casts bend', () => {
     );
     expect(cast?.plan.shot.from).toEqual(unitFoot(kaya.pos, 1, 'oblique', 0.12));
     expect(unitFoot({ x: 2, y: 3 }, 1, 'orthographic')).toEqual({ x: 2.5, y: 3.85 });
+    expect(unitFoot({ x: 2, y: 3 }, 2, 'orthographic', 0, true)).toEqual({ x: 3, y: 4.85 });
+  });
+
+  it('plans a gated size-2 cast between square footprint centres', () => {
+    const boss = { ...kaya, size: 2 as const };
+    const struck = { pos: { x: 7, y: 4 }, size: 2 };
+    const cast = planBendCast(
+      loaded,
+      boss,
+      boss.pos,
+      ability('fire_jab'),
+      struck.pos,
+      struck,
+      'orthographic',
+      () => 0,
+      true,
+    );
+    expect(cast?.plan.shot.from).toEqual(unitFoot(boss.pos, 2, 'orthographic', 0, true));
+    expect(cast?.plan.shot.to.x).toBeCloseTo(unitFoot(struck.pos, 2, 'orthographic', 0, true).x);
   });
 
   it('preloads only party units whose sheet has a bend', () => {

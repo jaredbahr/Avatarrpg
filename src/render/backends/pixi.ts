@@ -379,7 +379,10 @@ export class PixiBackend implements RenderBackend {
   private obscuringLoops = new WeakMap<readonly Vec2[], Vec2[][]>();
   private curve: { path: readonly Vec2[]; from: Vec2; curve: Curve } | null = null;
 
-  constructor(private canvas: HTMLCanvasElement) {
+  constructor(
+    private canvas: HTMLCanvasElement,
+    private readonly squareFootprints = SQUARE_FOOTPRINTS,
+  ) {
     this.mapCanvas.width = 1;
     this.mapCanvas.height = 1;
     this.mapTexture = Texture.from(this.mapCanvas);
@@ -1780,15 +1783,18 @@ export class PixiBackend implements RenderBackend {
     const cue = view.targetReticle;
     if (!cue) return;
     const target = view.units.find((unit) =>
-      footprintCells(unit.pos, unit.size).some(
+      footprintCells(unit.pos, unit.size, this.squareFootprints).some(
         (cell) => cell.x === cue.pos.x && cell.y === cue.pos.y,
       ),
     );
     const pos = target?.renderPos ?? target?.pos ?? cue.pos;
-    const screen = camera.spriteBox(pos, target?.size ?? 1);
+    const screen = camera.spriteBox(pos, target?.size ?? 1, this.squareFootprints);
+    const targetAsset = target ? resolveAsset(target.sprite) : undefined;
+    const heightTiles =
+      this.squareFootprints && targetAsset?.kind !== 'sheet' ? (target?.size ?? 1) : 1;
     const box = {
       x: (screen.x + camera.offsetX) / camera.scale,
-      y: (screen.y + camera.offsetY) / camera.scale,
+      y: (screen.y + camera.offsetY) / camera.scale - (heightTiles - 1) * TILE,
     };
     const cx = box.x + (target?.size ?? 1) * TILE + TILE * 0.12;
     const cy = box.y - liftAlong(view.grid, pos, camera.projection) * TILE - TILE * 0.04;
@@ -2070,12 +2076,13 @@ export class PixiBackend implements RenderBackend {
 
     const live = new Set<string>();
     // Back to front, so a unit lower on the map overlaps one above it.
-    const depth = (pos: Vec2, footprint: 1 | 2 = 1) => pixiActorDepth(camera, pos, footprint);
+    const depth = (pos: Vec2, footprint: 1 | 2 = 1, square = this.squareFootprints) =>
+      pixiActorDepth(camera, pos, footprint, square);
     const ordered = [...view.units].sort(
       (a, b) => depth(a.renderPos ?? a.pos, a.size) - depth(b.renderPos ?? b.pos, b.size),
     );
     const box = (pos: Vec2, footprint: 1 | 2 = 1) => {
-      const screen = camera.spriteBox(pos, footprint);
+      const screen = camera.spriteBox(pos, footprint, this.squareFootprints);
       return {
         x: (screen.x + camera.offsetX) / camera.scale,
         y: (screen.y + camera.offsetY) / camera.scale,
@@ -2107,13 +2114,17 @@ export class PixiBackend implements RenderBackend {
               width,
             )
           : null;
-      const anchor = box(at, width);
+      const screen = camera.spriteBox(at, width, false);
+      const anchor = {
+        x: (screen.x + camera.offsetX) / camera.scale,
+        y: (screen.y + camera.offsetY) / camera.scale,
+      };
       const x = anchor.x;
       const ground = anchor.y - liftAlong(view.grid, at, camera.projection) * TILE;
       // The walk bob lifts the figure; its contact shadow stays on the ground.
       const y = ground + (npc.offset?.y ?? 0) * TILE;
       const footX = x + (width * TILE) / 2;
-      sprite.zIndex = depth(at, width);
+      sprite.zIndex = depth(at, width, false);
       if (frame) {
         sprite.texture = this.frameTexture(frame);
         sprite.anchor.set(frame.anchor.x, frame.anchor.y);
@@ -2206,7 +2217,7 @@ export class PixiBackend implements RenderBackend {
         unit.meleeDirection ? unit.offset : undefined,
       );
       const width = unit.size === 2 ? TILE * 2 : TILE;
-      const heightTiles = SQUARE_FOOTPRINTS ? unit.size : 1;
+      const heightTiles = this.squareFootprints ? unit.size : 1;
       const facing = unit.facing ?? (unit.faction === 'enemy' ? -1 : 1);
       const asset = resolveAsset(unit.sprite);
       const locomotion = unit.clip ?? 'idle';
@@ -2227,8 +2238,12 @@ export class PixiBackend implements RenderBackend {
         const shadow = this.unitSprite(key);
         shadow.texture = this.texture(sprites.shadow(px * (unit.scale ?? 1), shadowDensity));
         shadow.anchor.set(0.5, 0.86);
-        shadow.position.set(anchor.x + width / 2, anchor.y + (0.86 - lift) * TILE);
-        shadow.width = shadow.height = TILE * (unit.scale ?? 1);
+        const footprint = this.squareFootprints ? unit.size : 1;
+        shadow.position.set(
+          anchor.x + width / 2,
+          anchor.y + (0.86 - lift - (footprint - 1) * 0.5) * TILE,
+        );
+        shadow.width = shadow.height = TILE * (unit.scale ?? 1) * footprint;
         shadow.alpha = alpha;
         shadow.zIndex = shadowZ(depth(pos, unit.size));
         shadow.visible = true;
@@ -2251,6 +2266,7 @@ export class PixiBackend implements RenderBackend {
           heightTiles,
         );
       let headroom = 0;
+      const fallback = !frame;
       if (frame) {
         headroom = frame.headroom;
         sprite.texture = this.frameTexture(frame);
@@ -2295,7 +2311,12 @@ export class PixiBackend implements RenderBackend {
 
       if (unit.id === view.activeUnitId) {
         rings
-          .ellipse(marker.x + width / 2, marker.y + 0.86 * TILE, width * 0.42, TILE * 0.14)
+          .ellipse(
+            marker.x + width / 2,
+            marker.y + (0.86 - (heightTiles - 1) * 0.5) * TILE,
+            width * 0.42,
+            TILE * heightTiles * 0.14,
+          )
           .stroke({
             width: Math.max(2, TILE * 0.06),
             color: OVERLAY.active,
@@ -2303,7 +2324,12 @@ export class PixiBackend implements RenderBackend {
           });
       } else if (unit.id === view.selectedUnitId) {
         rings
-          .ellipse(marker.x + width / 2, marker.y + 0.86 * TILE, width * 0.4, TILE * 0.12)
+          .ellipse(
+            marker.x + width / 2,
+            marker.y + (0.86 - (heightTiles - 1) * 0.5) * TILE,
+            width * 0.4,
+            TILE * heightTiles * 0.12,
+          )
           .stroke({
             width: Math.max(1, TILE * 0.03),
             color: 'rgba(255,255,255,0.6)',
@@ -2321,7 +2347,17 @@ export class PixiBackend implements RenderBackend {
       }
 
       if (unit.showHealth !== false)
-        this.drawHealthBar(g, unit, x, y, width, scale, headroom, view.hatch, camera.scale);
+        this.drawHealthBar(
+          g,
+          unit,
+          x,
+          y - (fallback ? (heightTiles - 1) * TILE : 0),
+          width,
+          scale,
+          headroom,
+          view.hatch,
+          camera.scale,
+        );
       badgeIndex = this.drawStatusBadges(
         g,
         unit,

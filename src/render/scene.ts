@@ -1,6 +1,6 @@
 import { resolveAsset } from '../content/assets/manifest';
 import { tileAt } from '../core/rules/grid';
-import { footprintFoot } from '../core/rules/footprint';
+import { SQUARE_FOOTPRINTS, footprintFoot } from '../core/rules/footprint';
 import type { Grid, MapScene, SceneImage, SceneScenery } from '../core/types';
 import type { Camera } from './camera';
 import type { MapView } from './view';
@@ -139,6 +139,7 @@ export function sceneryOpacity(scenery: SceneScenery, view: MapView, camera: Cam
         pos: unit.renderPos ?? unit.pos,
         size: unit.size,
         scale: unit.scale ?? 1,
+        square: SQUARE_FOOTPRINTS,
       })),
     // Nearby people remain readable for conversation; a distant villager does
     // not turn an entire neighbourhood transparent permanently.
@@ -156,11 +157,12 @@ export function sceneryOpacity(scenery: SceneScenery, view: MapView, camera: Cam
           pos: npc.renderPos ?? npc.pos,
           size: entry.kind === 'sheet' ? entry.footprint.w : 1,
           scale: npc.scale ?? 1,
+          square: false,
         };
       }),
   ];
-  for (const { pos, size, scale } of occupants) {
-    const foot = camera.groundPoint(footprintFoot(pos, size as 1 | 2));
+  for (const { pos, size, scale, square } of occupants) {
+    const foot = camera.groundPoint(footprintFoot(pos, size as 1 | 2, square));
     // Level with the piece is in front of it on both backends (depthOrder.ts),
     // so a figure at the tie has nothing to see through.
     if (foot.y >= depth) continue;
