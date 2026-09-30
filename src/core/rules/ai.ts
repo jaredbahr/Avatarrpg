@@ -44,6 +44,7 @@ import {
   knownAbilities,
   resolveAbility,
   sameSide,
+  shoveOrigin,
   unitsOnTiles,
   usableAbilities,
   validatingOrigin,
@@ -516,7 +517,19 @@ export function scoreAbility(
   const ledgeDropFor = (victimId: string): number => {
     if (!ledgeByUnit) {
       const battle = battleWithHypotheticalCaster(draft.toBattle(), caster);
-      const forecast = forecastReactions(content, battle, caster, ability, target, tiles);
+      // Measure the shove from the same cell resolution fires from, not the
+      // anchor. A size-2 caster's second cell can be the validating origin, and
+      // its push direction differs from `caster.pos`; omitting it here priced a
+      // fall the shot would not deal (or missed one it would).
+      const forecast = forecastReactions(
+        content,
+        battle,
+        caster,
+        ability,
+        target,
+        tiles,
+        shoveOrigin(content, battle.grid, caster, ability, target),
+      );
       ledgeByUnit = new Map<string, number>();
       for (const shove of forecast.shoves) {
         if (shove.kind !== 'unit' || shove.cause !== 'ability') continue;

@@ -514,9 +514,10 @@ export function previewAbility(
  * toward) the centre of the blast; everything else shoves away from the cell
  * the caster actually fired from. That cell is the validating origin, so a
  * size-2 caster's line or cone pushes away from whichever occupied cell
- * reached the target, exactly as `affectedTiles` draws it.
+ * reached the target, exactly as `affectedTiles` draws it. Exported so the
+ * AI's ledge pricing measures from the same cell the shot will.
  */
-function shoveOrigin(
+export function shoveOrigin(
   content: ContentIndex,
   grid: Grid,
   caster: Unit,

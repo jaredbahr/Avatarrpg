@@ -3,7 +3,7 @@ import { CONTENT } from '../../content';
 import { RngCursor } from '../rng';
 import { BattleDraft } from '../state/battleDraft';
 import { createBattle, createGame } from '../state/createGame';
-import type { Grid, Unit, Vec2 } from '../types';
+import type { Ability, Grid, Unit, Vec2 } from '../types';
 import { ledgeExposure, planAiTurn, previewAiPlan, scoreAbility, weightsFor } from './ai';
 import { resolveAbility } from './abilities';
 import { DEFAULT_TILE, tileAt, withTile } from './grid';
@@ -514,5 +514,142 @@ describe('the AI and ledge exposure', () => {
     expect(exposure(EXPOSURE_WEST)).toBe(risk);
     // A diagonal shover pushes diagonally, so the corner drop counts as well.
     expect(exposure(EXPOSURE_SOUTH_WEST)).toBe(risk);
+  });
+});
+
+/**
+ * A cone shove in the Driller's slam shape — one tile of knockback out of a
+ * wedge — but with the range a size-2 caster needs for its raised second cell
+ * to out-reach its anchor by one tier.
+ */
+const CONE_SLAM: Ability = {
+  id: 'test_cone_slam',
+  name: 'Test cone slam',
+  element: 'earth',
+  apCost: 1,
+  cooldown: 0,
+  range: 3,
+  minRange: 0,
+  requiresLineOfSight: true,
+  targeting: { shape: 'cone', length: 3 },
+  effects: [{ kind: 'push', distance: 1 }],
+  tags: ['attack', 'control'],
+  description: '',
+  flavor: '',
+  fx: 'fx.none',
+};
+
+/** The size-2 caster's anchor: its first occupied cell, on the low tier. */
+const CONE_ANCHOR: Vec2 = { x: 2, y: 2 };
+/** Its second occupied cell, one tier up: the only cell that can reach the aim. */
+const CONE_SECOND: Vec2 = { x: CONE_ANCHOR.x + 1, y: CONE_ANCHOR.y };
+/** The victim, straight ahead of the second cell and inside the wedge. */
+const CONE_VICTIM: Vec2 = { x: CONE_SECOND.x, y: CONE_SECOND.y + 1 };
+/** One tile past the anchor's reach and inside the second cell's height reach. */
+const CONE_AIM: Vec2 = { x: CONE_SECOND.x, y: CONE_ANCHOR.y + 4 };
+/** Where a shove measured from the second cell sends the victim: one tier down. */
+const CONE_LANDING: Vec2 = { x: CONE_SECOND.x, y: CONE_VICTIM.y + 1 };
+/** Where a shove measured from the anchor would send it: level, no fall. */
+const CONE_ANCHOR_LANDING: Vec2 = { x: CONE_SECOND.x + 1, y: CONE_VICTIM.y + 1 };
+
+/**
+ * A boss-sized caster and one victim in front of its raised second cell. The
+ * aim sits one tile past the anchor's reach and inside the second cell's, so
+ * `validatingOrigin` names the second cell the firing cell. Only the victim's
+ * landing tier differs between the compared boards.
+ */
+function coneOriginFixture(options: { readonly ledge: boolean }): {
+  readonly draft: BattleDraft;
+  readonly caster: Unit;
+} {
+  const seeded = createGame(CONTENT, {
+    seed: 'ai-cone-origin',
+    party: [
+      { characterId: 'kaya', level: 3, autoChoose: true },
+      { characterId: 'bo', level: 3, autoChoose: true },
+    ],
+    startNode: '',
+  });
+  const rng = new RngCursor(seeded.rng);
+  const battle = createBattle(CONTENT, seeded, 'enc_forest_road', rng);
+  const casterBase = battle.units.find((unit) => unit.faction === 'enemy');
+  const victimBase = battle.units.find((unit) => unit.faction === 'party');
+  if (!casterBase || !victimBase) throw new Error('missing cone-origin fixture units');
+
+  let grid: Grid = {
+    width: 8,
+    height: 8,
+    tiles: Array.from({ length: 8 * 8 }, () => DEFAULT_TILE),
+  };
+  const setElevation = (pos: Vec2, elevation: number) => {
+    const tile = tileAt(grid, pos);
+    if (!tile) throw new Error('cone-origin fixture is off the grid');
+    grid = withTile(grid, pos, { ...tile, elevation });
+  };
+  // The second cell stands a tier above the aim, so it reaches one further.
+  setElevation(CONE_SECOND, 1);
+  // The victim stands on a lip; its fall is the only difference between boards.
+  setElevation(CONE_VICTIM, 1);
+  setElevation(CONE_LANDING, options.ledge ? 0 : 1);
+  setElevation(CONE_ANCHOR_LANDING, 1);
+
+  const caster: Unit = {
+    ...casterBase,
+    ai: 'aggressive',
+    size: 2,
+    pos: CONE_ANCHOR,
+    abilities: [CONE_SLAM.id],
+    cooldowns: {},
+    ap: 1,
+    move: 0,
+  };
+  const victim: Unit = { ...victimBase, pos: CONE_VICTIM };
+  const units = [victim, caster];
+
+  return {
+    draft: new BattleDraft(
+      CONTENT,
+      {
+        ...battle,
+        grid,
+        units,
+        order: units.map((unit) => unit.id),
+        turnIndex: 0,
+        props: [],
+      },
+      new RngCursor(0xc04e),
+    ),
+    caster,
+  };
+}
+
+/** The cone aim priced by the AI's own scorer. */
+function priceConeOrigin(options: { readonly ledge: boolean }): number {
+  const { draft, caster } = coneOriginFixture(options);
+  return scoreAbility(
+    draft,
+    caster,
+    CONE_SLAM,
+    CONE_AIM,
+    weightsFor('aggressive'),
+    new Map<string, readonly Unit[]>(),
+  );
+}
+
+describe('the AI and a size-2 caster’s shove origin', () => {
+  it('measures the cone shove from the firing cell, not the anchor', () => {
+    const drop = CONTENT.tuning.ledgeDropDamage;
+
+    const ledge = priceConeOrigin({ ledge: true });
+    const flat = priceConeOrigin({ ledge: false });
+
+    // Flat ground: the shove alone, at the aggressive profile's damage weight.
+    expect(flat).toBeCloseTo(2, 5);
+    expect(ledge).toBeCloseTo(2 + drop, 5);
+    // The victim is shoved straight ahead of the second cell and falls a tier.
+    // Measured from the anchor instead, the same shove travels diagonally onto
+    // the level tile beside it, so a forecast that falls back to `caster.pos`
+    // prices no fall at all and this difference vanishes.
+    expect(ledge - flat).toBeCloseTo(drop, 5);
   });
 });
