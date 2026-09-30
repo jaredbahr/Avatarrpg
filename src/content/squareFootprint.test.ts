@@ -68,6 +68,15 @@ const SIX_SPAWNS: readonly Vec2[] = [
   { x: 0, y: 1 },
 ];
 
+const LEFT_SIX_SPAWNS: readonly Vec2[] = [
+  { x: 0, y: 0 },
+  { x: 1, y: 0 },
+  { x: 2, y: 0 },
+  { x: 0, y: 1 },
+  { x: 1, y: 1 },
+  { x: 2, y: 1 },
+];
+
 /** The real bundle plus one tiny map/encounter pair to place the Grumbler on. */
 function withFixture(
   rows: readonly string[],
@@ -121,6 +130,37 @@ describe('size-2 square footprints', () => {
       { x: 3, y: 0 },
     );
     expect(validateContent(bundle)).toEqual([]);
+    expect(validateContent(bundle, { squareFootprints: true })).toContain(
+      'encounter "square_fixture_encounter" places "grumbler" on a square footprint cut off from the party spawns',
+    );
+  });
+
+  it('reports a 2x2 behind a one-cell corridor, but accepts a two-cell corridor', () => {
+    const oneCellCorridor = withFixture(
+      ['...#....', '...#....', '........', '...#....', '...#....'],
+      LEFT_SIX_SPAWNS,
+      { x: 5, y: 1 },
+    );
+    expect(validateContent(oneCellCorridor)).toEqual([]);
+    expect(validateContent(oneCellCorridor, { squareFootprints: true })).toContain(
+      'encounter "square_fixture_encounter" places "grumbler" on a square footprint cut off from the party spawns',
+    );
+
+    const twoCellCorridor = withFixture(
+      ['...#....', '........', '........', '...#....', '...#....'],
+      LEFT_SIX_SPAWNS,
+      { x: 5, y: 1 },
+    );
+    expect(validateContent(twoCellCorridor, { squareFootprints: true })).not.toContain(
+      'encounter "square_fixture_encounter" places "grumbler" on a square footprint cut off from the party spawns',
+    );
+  });
+
+  it('reports a 2x2 separated by a two-tier cliff', () => {
+    const bundle = withFixture(['....AAA', '....AAA', '....AAA', '....AAA'], LEFT_SIX_SPAWNS, {
+      x: 4,
+      y: 1,
+    });
     expect(validateContent(bundle, { squareFootprints: true })).toContain(
       'encounter "square_fixture_encounter" places "grumbler" on a square footprint cut off from the party spawns',
     );

@@ -1270,37 +1270,6 @@ function reachedFrom(map: MapDef, start: Vec2): ReadonlySet<string> {
 }
 
 /**
- * Every walkable cell four-way reachable from *any* party spawn. A size-2
- * placement is connected when each cell of its square lies in this set, which
- * mirrors what `reconcileBattle` calls `connected` — the party must be able to
- * walk to the fight, and the enemy must be able to walk to the party.
- */
-function reachedFromPartySpawns(map: MapDef): ReadonlySet<string> {
-  const reached = new Set<string>();
-  const queue: Vec2[] = [];
-  for (const spawn of map.partySpawns) {
-    if (!isWalkable(map, spawn.x, spawn.y)) continue;
-    const key = cellKey(spawn.x, spawn.y);
-    if (reached.has(key)) continue;
-    reached.add(key);
-    queue.push(spawn);
-  }
-  while (queue.length > 0) {
-    const cell = queue.pop();
-    if (!cell) continue;
-    for (const [dx, dy] of NEIGHBOURS) {
-      const x = cell.x + dx;
-      const y = cell.y + dy;
-      const key = cellKey(x, y);
-      if (reached.has(key) || !isWalkable(map, x, y)) continue;
-      reached.add(key);
-      queue.push({ x, y });
-    }
-  }
-  return reached;
-}
-
-/**
  * The cells one encounter placement claims. Size 1 is its anchor; size 2 is the
  * legacy 2x1 pair, or the A-6 2x2 square once the gate is on. Mirrored from
  * `rules/footprint.ts` because `src/content` is data and may not import core
@@ -1313,6 +1282,55 @@ function placementCells(pos: Vec2, size: number | undefined, square: boolean): r
   return cells;
 }
 
+function squareAnchorCells(anchor: Vec2): readonly Vec2[] {
+  return placementCells(anchor, 2, true);
+}
+
+function isSquareAnchor(map: MapDef, anchor: Vec2): boolean {
+  return squareAnchorCells(anchor).every((cell) => isWalkable(map, cell.x, cell.y));
+}
+
+/**
+ * Floods the positions a 2x2 can occupy from an anchor. This mirrors core's
+ * `enterCost`/`reachable`: a square may pass through a non-flat footprint, but
+ * `standCost` only admits flat destinations, so the validator keeps the flood
+ * permissive and leaves the unchanged flat-footing check to its caller. Each
+ * leading cell is paired with the trailing cell it moves from; a two-tier
+ * cliff is illegal, while a one-tier step is legal without a ramp exception.
+ */
+function squareReachFrom(map: MapDef, anchor: Vec2): ReadonlySet<string> {
+  const reached = new Set<string>();
+  if (!isSquareAnchor(map, anchor)) return reached;
+  const queue: Vec2[] = [anchor];
+  reached.add(cellKey(anchor.x, anchor.y));
+
+  while (queue.length > 0) {
+    const current = queue.pop();
+    if (!current) continue;
+    for (const [dx, dy] of NEIGHBOURS) {
+      const next = { x: current.x + dx, y: current.y + dy };
+      if (!isSquareAnchor(map, next)) continue;
+      let legal = true;
+      for (const [offsetX, offsetY] of squareAnchorCells({ x: 0, y: 0 }).map(
+        (cell) => [cell.x, cell.y] as const,
+      )) {
+        const from = { x: current.x + offsetX, y: current.y + offsetY };
+        const to = { x: next.x + offsetX, y: next.y + offsetY };
+        if (Math.abs(tileElevation(map, from.x, from.y) - tileElevation(map, to.x, to.y)) >= 2) {
+          legal = false;
+          break;
+        }
+      }
+      const key = cellKey(next.x, next.y);
+      if (legal && !reached.has(key)) {
+        reached.add(key);
+        queue.push(next);
+      }
+    }
+  }
+  return reached;
+}
+
 /**
  * Square-footprint findings for one size-2 placement, live only once the A-6
  * gate is on. Blocked cells are already reported by the caller's walkability
@@ -1320,13 +1338,7 @@ function placementCells(pos: Vec2, size: number | undefined, square: boolean): r
  * 2x1: it may stand only on flat ground (mirroring `standCost`) and every cell
  * must sit in the party's walkable component.
  */
-function squareFootprintProblems(
-  problems: string[],
-  label: string,
-  map: MapDef,
-  pos: Vec2,
-  reachable: ReadonlySet<string>,
-): void {
+function squareFootprintProblems(problems: string[], label: string, map: MapDef, pos: Vec2): void {
   const cells = placementCells(pos, 2, true);
   // A blocked or off-map cell is already named by the caller's walkability
   // loop; standability is a prerequisite for the two rules below, so those
@@ -1339,7 +1351,19 @@ function squareFootprintProblems(
     );
     return;
   }
-  if (!cells.every((cell) => reachable.has(cellKey(cell.x, cell.y)))) {
+  // Connected means the square can walk into melee contact (Chebyshev 1) with
+  // at least one party spawn, not merely that its cells touch the party's
+  // one-cell component.
+  const reachable = squareReachFrom(map, pos);
+  const nearPartyAnchor = [...reachable].some((key) => {
+    const [x = 0, y = 0] = key.split(',').map(Number);
+    return squareAnchorCells({ x, y }).some((cell) =>
+      map.partySpawns.some(
+        (spawn) => Math.max(Math.abs(cell.x - spawn.x), Math.abs(cell.y - spawn.y)) <= 1,
+      ),
+    );
+  });
+  if (!nearPartyAnchor) {
     problems.push(`${label} on a square footprint cut off from the party spawns`);
   }
 }
@@ -1943,10 +1967,6 @@ export function validateContent(
     }
     if (!mapIds.has(e.mapId)) problems.push(`encounter "${e.id}" uses unknown map "${e.mapId}"`);
 
-    // Only needed once size 2 is a 2x2; computing it for the legacy 2x1 would
-    // be dead work on every load.
-    const squareReach = squareFootprints ? reachedFromPartySpawns(map) : null;
-
     // Every placement must be legal, including ones only some tables will see.
     const all = [
       ...e.enemies,
@@ -1974,14 +1994,8 @@ export function validateContent(
         }
         taken.add(key);
       }
-      if (squareReach && def?.size === 2) {
-        squareFootprintProblems(
-          problems,
-          `encounter "${e.id}" places "${p.enemyId}"`,
-          map,
-          p.pos,
-          squareReach,
-        );
+      if (squareFootprints && def?.size === 2) {
+        squareFootprintProblems(problems, `encounter "${e.id}" places "${p.enemyId}"`, map, p.pos);
       }
     }
     for (const spawn of map.partySpawns) {
@@ -2081,13 +2095,12 @@ export function validateContent(
             );
           }
         }
-        if (squareReach && def?.size === 2) {
+        if (squareFootprints && def?.size === 2) {
           squareFootprintProblems(
             problems,
             `encounter "${e.id}" variant "${variant.id}" places "${p.enemyId}"`,
             map,
             p.pos,
-            squareReach,
           );
         }
       }

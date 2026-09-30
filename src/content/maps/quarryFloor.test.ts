@@ -3,6 +3,7 @@ import { CONTENT, CONTENT_BUNDLE } from '../../content';
 import { RngCursor } from '../../core/rng';
 import {
   buildGrid,
+  findPath,
   hasLineOfSight,
   occupiedCells,
   posKey,
@@ -165,6 +166,7 @@ describe('Driller quarry interior', () => {
 
     const boss = battle.units.find((unit) => unit.enemyId === 'grumbler');
     expect(boss?.size).toBe(2);
+    if (!boss) return;
     /*
      * The boss's whole 2x2 is the validator's business now: run it with the A-6
      * square gate on and hold the Driller to a standable, party-connected
@@ -176,6 +178,13 @@ describe('Driller quarry interior', () => {
         problem.includes('enc_grumbler'),
       ),
     ).toEqual([]);
+
+    const squareContext = {
+      ...context,
+      size: 2 as const,
+      squareFootprints: true,
+    };
+    expect(findPath(squareContext, boss.pos, { x: 9, y: 5 }, 99)).not.toBeNull();
   });
 
   it('uses the new stacks for real sight breaks and removes live rubble cleanly', () => {
