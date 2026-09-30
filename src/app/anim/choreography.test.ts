@@ -1106,13 +1106,12 @@ describe('G hit timing', () => {
 
   it('bounds lethal G post-contact delay by the hit span after hit-stop', () => {
     const out = play([attack(), damage(20), { type: 'unitDied', unitId: kaya.id }]);
-    const hit = pose(out.tracks, 'hit')!;
     const ko = pose(out.tracks, 'ko')!;
     const flash = out.tracks.find((track) => track.kind === 'flash' && track.unitId === kaya.id)!;
     const hitStop = resolveFx('fx.fire.jab').hitStop;
     const delay = ko.start - (flash.start + hitStop);
     expect(delay).toBeGreaterThanOrEqual(0);
-    expect(delay).toBeLessThanOrEqual(hit.duration - hitStop);
+    expect(delay).toBeLessThanOrEqual(hitSpan(kayaClips) - hitStop);
   });
 
   it('keeps the legacy damaged-plus-death KO start at the exact pre-PR time', () => {
