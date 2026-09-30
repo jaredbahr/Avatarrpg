@@ -1,7 +1,9 @@
 # Act 1 environment asset pack
 
 Five illustrated map backgrounds and all six existing prop types are integrated
-through the game's asset manifest and map definitions. They extend the warm ink,
+through the game's asset manifest and map definitions. The prop artwork was
+subsequently replaced as one PixelLab family; see
+[`prop-family-v1.md`](prop-family-v1.md). Together they extend the warm ink,
 ochre paths and blue-grey stone of the riverside direction. No new encounters,
 prop placements, collision rules or story nodes are introduced.
 
@@ -42,8 +44,9 @@ adds ground contact in the game and retains the old prop drawings on load failur
 
 ## Source and processing
 
-Generated with the built-in OpenAI image tool from the project layout diagrams
-and original descriptions. No third-party asset packs were downloaded. The
+The five maps and tea station were generated with the built-in OpenAI image tool
+from the project layout diagrams and original descriptions. No third-party asset
+packs were downloaded. The
 [output terms](https://openai.com/policies/row-terms-of-use/) were checked on
 2026-09-17. Credits and NOTICE record provenance without claiming exclusive
 copyright in generated output. Exact accepted prompts and correction prompts
@@ -60,8 +63,7 @@ inside a house is not drawn over a roof.
 # Repeat for each of the four combat map IDs.
 npm run art:map -- --map forest_road --px 80 --quality 82
 npm run art:map -- --map ba_dan_village --px 64 --quality 82
-# Repeat for barrel, flask, brazier, hay, rubble and cart.
-npm run art:prop -- barrel art/raw/props/barrel.png
+npm run art:prop-family
 npm run art:map-pack
 npm run credits
 npm run art:validate
