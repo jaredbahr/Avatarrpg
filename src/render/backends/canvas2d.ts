@@ -289,6 +289,7 @@ export class Canvas2DBackend implements RenderBackend {
         liveMarks();
       });
       if (layer && plan.bounds) this.drawLift(view, camera, plan, layer, () => onGround(liveMarks));
+      this.drawClimbMarkers(view, camera);
       this.drawUnitRings(view, camera);
       drawBendFx(ctx, view.bendFx ?? [], camera, false);
       // All upright occupants share depth order, including NPCs and props.
@@ -348,7 +349,7 @@ export class Canvas2DBackend implements RenderBackend {
         })),
       ].sort((a, b) => camera.groundPoint(a.pos).y - camera.groundPoint(b.pos).y);
       for (const occupant of occupants) occupant.draw();
-      this.drawScreenCues(view, camera);
+      this.drawTargetReticle(view, camera);
       this.drawFlock(view, camera);
       drawBendFx(ctx, view.bendFx ?? [], camera, true);
       ctx.save();
@@ -365,12 +366,13 @@ export class Canvas2DBackend implements RenderBackend {
       if (view.aimArc) this.drawAimArc(view.aimArc, camera);
       this.drawFxLayer(view, camera, 'under');
       this.drawExit(view, camera);
+      this.drawClimbMarkers(view, camera);
       this.drawUnitRings(view, camera);
       drawBendFx(ctx, view.bendFx ?? [], camera, false);
       this.drawNpcs(view, camera);
       this.drawProps(view, camera);
       this.drawUnits(view, camera);
-      this.drawScreenCues(view, camera);
+      this.drawTargetReticle(view, camera);
       drawBendFx(ctx, view.bendFx ?? [], camera, true);
       this.drawFxLayer(view, camera, 'over');
     }
@@ -777,8 +779,8 @@ export class Canvas2DBackend implements RenderBackend {
     ctx.restore();
   }
 
-  /** Upright overlay marks: projected anchors, but no oblique ground transform. */
-  private drawScreenCues(view: MapView, camera: Camera): void {
+  /** Upright ground cues: projected anchors, but no oblique ground transform. */
+  private drawClimbMarkers(view: MapView, camera: Camera): void {
     const ctx = this.ctx;
     const size = camera.toScreen({ x: 0, y: 0 }).size;
     ctx.save();
@@ -806,7 +808,16 @@ export class Canvas2DBackend implements RenderBackend {
       ctx.strokeText(`+${marker.surcharge}`, cx + size * 0.2, cy);
       ctx.fillText(`+${marker.surcharge}`, cx + size * 0.2, cy);
     }
+    ctx.restore();
+  }
 
+  /** The target cue stays above units so it remains attached to its target. */
+  private drawTargetReticle(view: MapView, camera: Camera): void {
+    const ctx = this.ctx;
+    const size = camera.toScreen({ x: 0, y: 0 }).size;
+    ctx.save();
+    ctx.lineJoin = 'round';
+    ctx.lineCap = 'round';
     const cue = view.targetReticle;
     if (cue) {
       const target = view.units.find(

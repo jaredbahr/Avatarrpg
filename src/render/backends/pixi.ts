@@ -294,6 +294,8 @@ export class PixiBackend implements RenderBackend {
   /** Painted bend effects under and over the actors (ADR 0055). */
   private bendUnder = new Container();
   private bendOver = new Container();
+  private climbCues = new Container();
+  private climbGfx = new Graphics();
   private fxGfx = new Graphics();
   private climbLabelLayer = new Container();
   private floaterLayer = new Container();
@@ -478,13 +480,15 @@ export class PixiBackend implements RenderBackend {
       this.flockLayer,
       this.bendOver,
     );
-    this.labels.addChild(this.fxGfx, this.climbLabelLayer, this.floaterLayer);
+    this.climbCues.addChild(this.climbGfx, this.climbLabelLayer);
+    this.labels.addChild(this.fxGfx, this.floaterLayer);
     this.groundStack.addChild(this.root);
     this.liftSprite.visible = false;
     app.stage.addChild(
       this.groundStack,
       this.liftSprite,
       this.marksGfx,
+      this.climbCues,
       this.upright,
       this.fxOver.container,
       this.labels,
@@ -582,7 +586,7 @@ export class PixiBackend implements RenderBackend {
     this.root.setFromMatrix(this.groundTransform);
     this.elevationBaseLayer.setFromMatrix(this.groundTransform);
     this.fxOver.container.setFromMatrix(this.groundTransform);
-    for (const layer of [this.sceneGround, this.upright, this.labels]) {
+    for (const layer of [this.sceneGround, this.climbCues, this.upright, this.labels]) {
       layer.position.set(
         -camera.offsetX + view.cameraNudge.x * nudge,
         -camera.offsetY + view.cameraNudge.y * nudge,
@@ -618,8 +622,9 @@ export class PixiBackend implements RenderBackend {
     this.drawOverlays(view);
     this.drawPath(view);
     this.drawDecor(view);
+    this.drawClimbMarkers(view, camera);
     this.drawUnits(view, camera);
-    this.drawScreenCues(view, camera);
+    this.drawTargetReticle(view, camera);
     const bendFx = view.bendFx ?? [];
     const bendTexture = (sprite: BendFxSprite) => {
       const source = bendFxSource(sprite);
@@ -1580,16 +1585,10 @@ export class PixiBackend implements RenderBackend {
     g.stroke({ width: Math.max(2, TILE * 0.045), color: OVERLAY.cliffHatch });
   }
 
-  /** Upright overlay marks in the labels layer, projected but never ground-skewed. */
-  private drawScreenCues(view: MapView, camera: Camera): void {
-    const g = this.fxGfx;
-    const projectedBox = (pos: Vec2, footprint = 1) => {
-      const box = camera.spriteBox(pos, footprint);
-      return {
-        x: (box.x + camera.offsetX) / camera.scale,
-        y: (box.y + camera.offsetY) / camera.scale,
-      };
-    };
+  /** Upright ground cues, projected but never ground-skewed. */
+  private drawClimbMarkers(view: MapView, camera: Camera): void {
+    const g = this.climbGfx;
+    g.clear();
     const climbMarkers = view.climbMarkers ?? [];
     climbMarkers.forEach((marker, index) => {
       // Start from the tile box, like Canvas; spriteBox is an actor-foot
@@ -1625,12 +1624,20 @@ export class PixiBackend implements RenderBackend {
       const label = this.climbLabels[i];
       if (label) label.visible = false;
     }
+  }
 
+  /** The target cue stays in the post-unit labels pass. */
+  private drawTargetReticle(view: MapView, camera: Camera): void {
+    const g = this.fxGfx;
     const cue = view.targetReticle;
     if (!cue) return;
     const target = view.units.find((unit) => unit.pos.x === cue.pos.x && unit.pos.y === cue.pos.y);
     const pos = target?.renderPos ?? target?.pos ?? cue.pos;
-    const box = projectedBox(pos, target?.size ?? 1);
+    const screen = camera.spriteBox(pos, target?.size ?? 1);
+    const box = {
+      x: (screen.x + camera.offsetX) / camera.scale,
+      y: (screen.y + camera.offsetY) / camera.scale,
+    };
     const cx = box.x + (target?.size ?? 1) * TILE + TILE * 0.12;
     const cy = box.y - liftAlong(view.grid, pos, camera.projection) * TILE - TILE * 0.04;
     const outline = Math.max(3 / camera.scale, TILE * 0.065);
