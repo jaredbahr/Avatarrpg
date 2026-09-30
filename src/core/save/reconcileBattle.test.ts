@@ -123,6 +123,13 @@ function contentWithMap(map: MapDef): ContentIndex {
   return { ...CONTENT, maps };
 }
 
+/** A battle against the authored map, so its saved static grid already matches. */
+function currentBattleState(mapId: keyof typeof FIXTURES): GameState {
+  const map = CONTENT.maps.get(mapId);
+  if (!map) throw new Error(`missing ${mapId}`);
+  return battleState(mapId, map.rows);
+}
+
 function load(state: GameState, options: ReconcileBattleOptions = {}): GameState {
   const parsed = deserialize(serialize(state, META));
   if (!parsed.ok) throw new Error(parsed.error);
@@ -423,6 +430,60 @@ describe('reconcileBattle', () => {
       expect(tileAt(square.battle!.grid, cell), `${cell.x},${cell.y}`).toMatchObject({
         blocked: false,
       });
+    }
+  });
+
+  it('snaps a legacy anchor the map edit never buried once square footprints are on', () => {
+    const current = currentBattleState('quarry_floor');
+    const battle = current.battle;
+    if (!battle) throw new Error('fixture did not create a battle');
+    const boss = battle.units.find((unit) => unit.size === 2);
+    if (!boss) throw new Error('fixture is missing the Grumbler');
+    /*
+     * The authored floor is untouched, so the saved static grid already matches
+     * and the terrain pass has nothing to do. But (18,3) only works as a legacy
+     * 2x1: the square's lower row steps into the drill-shaft pits at (18,4) and
+     * (19,4). Under the A-6 flip that anchor is off-map, so the load has to snap
+     * it onto the nearest whole square instead of returning the save verbatim.
+     */
+    const state: GameState = {
+      ...current,
+      battle: {
+        ...battle,
+        units: battle.units.map((unit) =>
+          unit.id === boss.id ? { ...unit, pos: { x: 18, y: 3 } } : unit,
+        ),
+      },
+    };
+
+    // Gate off the early return stands: the same state comes back untouched, so
+    // the legacy anchor is left exactly where the save put it.
+    const legacy = reconcileBattleResult(CONTENT, state);
+    expect(legacy.state).toBe(state);
+    expect(legacy.warnings).toEqual([]);
+
+    // Flag on, the unchanged map still gets the square pass, and the load path
+    // snaps an anchor that is off-map as a 2x2.
+    const square = load(state, { squareFootprints: true });
+    const moved = square.battle?.units.find((unit) => unit.id === boss.id)?.pos;
+    // The nearest 2x2 that clears the pit column and the terrace wall.
+    expect(moved).toEqual({ x: 16, y: 1 });
+    for (const cell of [
+      { x: 16, y: 1 },
+      { x: 17, y: 1 },
+      { x: 16, y: 2 },
+      { x: 17, y: 2 },
+    ]) {
+      expect(tileAt(square.battle!.grid, cell), `${cell.x},${cell.y}`).toMatchObject({
+        blocked: false,
+      });
+    }
+    // Snapping is confined to the boss; every other unit keeps its saved cell.
+    for (const unit of battle.units) {
+      if (unit.id === boss.id) continue;
+      expect(square.battle?.units.find((candidate) => candidate.id === unit.id)?.pos).toEqual(
+        unit.pos,
+      );
     }
   });
 

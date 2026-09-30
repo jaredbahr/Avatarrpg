@@ -1,5 +1,36 @@
 import { describe, expect, it } from 'vitest';
-import { overlayMemoHoverKey } from './CombatScene';
+import type { Unit, Vec2 } from '../../core/types';
+import { unitAt } from '../../core/rules/grid';
+import { occupiedUnitAt, overlayMemoHoverKey } from './CombatScene';
+
+function unit(id: string, pos: Vec2, extra: Partial<Unit> = {}): Unit {
+  return {
+    id,
+    name: id,
+    faction: 'party',
+    element: 'fire',
+    characterId: null,
+    enemyId: null,
+    disciplineId: null,
+    level: 1,
+    xp: 0,
+    pos,
+    size: 1,
+    hp: 10,
+    ap: 2,
+    move: 3,
+    bankedAp: 0,
+    pendingAp: 0,
+    base: { maxHp: 10, maxAp: 2, maxMove: 3, power: 1, defense: 1, speed: 1, focus: 1 },
+    abilities: [],
+    cooldowns: {},
+    statuses: [],
+    ai: 'none',
+    temporary: false,
+    sprite: 'unit.test',
+    ...extra,
+  };
+}
 
 describe('combat overlay memo key', () => {
   it('tracks hover after a non-target tap, but pins a valid pending target', () => {
@@ -7,5 +38,21 @@ describe('combat overlay memo key', () => {
     expect(overlayMemoHoverKey(true, false, hover)).toBe('4,3');
     expect(overlayMemoHoverKey(true, true, hover)).toBe('');
     expect(overlayMemoHoverKey(false, false, hover)).toBe('');
+  });
+});
+
+describe('long-press unit lookup', () => {
+  it('finds a defeated unit that the living-unit lookup skips', () => {
+    const tile = { x: 4, y: 2 };
+    const units = [unit('hero', { x: 1, y: 1 }), unit('fallen', tile, { hp: 0 })];
+    // Holding on a body is how a player reads its sheet; `unitAt` never sees it.
+    expect(unitAt(units, tile)).toBeUndefined();
+    expect(occupiedUnitAt(units, tile)?.id).toBe('fallen');
+  });
+
+  it('picks a size-2 unit on a cell other than its anchor', () => {
+    const big = unit('big', { x: 5, y: 3 }, { size: 2 });
+    expect(occupiedUnitAt([big], { x: 6, y: 3 })?.id).toBe('big');
+    expect(occupiedUnitAt([big], { x: 7, y: 3 })).toBeUndefined();
   });
 });

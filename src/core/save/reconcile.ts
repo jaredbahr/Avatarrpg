@@ -111,10 +111,14 @@ export interface ReconcileBattleOptions {
  * Re-applies an in-progress battle's current authored terrain after a map edit.
  * Surfaces, props and temporary walls are battle state, so they are layered
  * back over that terrain and their restore journals are updated. Idempotent:
- * when the saved static cells already match the current map, the original
- * state is returned without rebuilding anything. Rebuilding is atomic: if a
- * living unit cannot fit in the rebuilt map's main walkable component, the old
- * battle grid is retained so its units and terrain remain mutually consistent.
+ * when the saved static cells already match the current map, the grid is not
+ * rebuilt. The square-footprint pass still runs over an unchanged map, because
+ * a legacy save can hold a size-2 anchor that is open as a 2x1 but buried as a
+ * 2x2 — the migration the A-6 flip needs — and snapping it touches no terrain.
+ * Rebuilding is atomic: if a living unit cannot fit in the rebuilt map's main
+ * walkable component, the old battle grid is retained so its units and terrain
+ * remain mutually consistent. With the footprint gate off, an unchanged map is
+ * still returned verbatim.
  */
 export function reconcileBattle(
   content: ContentIndex,
@@ -137,7 +141,21 @@ export function reconcileBattleResult(
   const square = options.squareFootprints ?? SQUARE_FOOTPRINTS;
 
   const authored = buildGrid(map);
-  if (staticGridMatches(authored, battle)) return { state, warnings: [] };
+  if (staticGridMatches(authored, battle)) {
+    if (!square) return { state, warnings: [] };
+    // Terrain needs no rebuild, but the saved anchor may still be illegal as a
+    // square: open as a legacy 2x1, yet blocked, off-map or overlapping as a
+    // 2x2. Snap it against the live grid (props and temporary walls included),
+    // and leave the save untouched when every unit already fits.
+    const snapped = snapBattleUnits(battle.grid, map, battle.units, square);
+    if (!snapped.units) return { state, warnings: snapped.warnings };
+    if (snapped.units.every((unit, index) => unit === battle.units[index]))
+      return { state, warnings: snapped.warnings };
+    return {
+      state: { ...state, battle: { ...battle, units: snapped.units } },
+      warnings: snapped.warnings,
+    };
+  }
 
   let grid: Grid = {
     ...authored,

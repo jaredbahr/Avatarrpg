@@ -33,7 +33,6 @@ import {
   reachable,
   samePos,
   tileAt,
-  unitAt,
   type ReachableCell,
 } from '../../core/rules/grid';
 import { canMove, effectiveStats, isAlive, statusDefs } from '../../core/rules/stats';
@@ -86,6 +85,18 @@ export function overlayMemoHoverKey(
   hover: Vec2 | null,
 ): string {
   return aiming && !pendingIsValidTarget && hover ? posKey(hover) : '';
+}
+
+/**
+ * The unit standing on `tile`, living or defeated, on any footprint cell.
+ *
+ * The long-press inspector deliberately includes the fallen: holding on a body
+ * is how a player reads why it dropped. `unitAt` filters to `hp > 0`, so it
+ * finds nobody there. Footprint-aware like `unitAt`, so a large unit is picked
+ * on each cell of its footprint rather than only its anchor.
+ */
+export function occupiedUnitAt(units: readonly Unit[], tile: Vec2): Unit | undefined {
+  return units.find((unit) => occupiedCells(unit).some((cell) => samePos(cell, tile)));
 }
 
 interface OverlayBuild {
@@ -562,7 +573,7 @@ export class CombatScene implements Scene {
     const battle = this.battle();
     if (!renderer || !battle) return;
     const tile = renderer.camera.pickTile(x, y, battle.grid);
-    const unit = unitAt(battle.units, tile);
+    const unit = occupiedUnitAt(battle.units, tile);
     if (unit) this.openInspector(unit);
   }
 
