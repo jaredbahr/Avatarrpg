@@ -3,14 +3,41 @@ import { formatHitBreakdownRows, formatLedgeDrop, formatShoveMovement } from './
 
 describe('combat preview text', () => {
   it('describes shove movement without raw grid coordinates', () => {
-    expect(formatShoveMovement('Mercenary', 'push', { x: 1, y: 2 }, { x: 2, y: 1 }, 1, [])).toBe(
+    expect(formatShoveMovement('Mercenary', 'push', 1, 1, false, [], 'caster')).toBe(
       'Mercenary: pushed 1 tile away',
     );
-    expect(
-      formatShoveMovement('Mercenary', 'pull', { x: 3, y: 1 }, { x: 1, y: 1 }, 2, ['water']),
-    ).toBe('Mercenary: pulled into the water');
-    expect(formatShoveMovement('Mercenary', 'pull', { x: 3, y: 1 }, { x: 2, y: 1 }, 1, [])).toBe(
+    expect(formatShoveMovement('Mercenary', 'pull', 2, 2, false, ['water'], 'caster')).toBe(
+      'Mercenary: pulled into the water',
+    );
+    expect(formatShoveMovement('Mercenary', 'pull', 1, 1, false, [], 'caster')).toBe(
       'Mercenary: pulled 1 tile closer',
+    );
+  });
+
+  it('states fully blocked pushes and pulls without a zero-tile fraction', () => {
+    expect(formatShoveMovement('Mercenary', 'push', 0, 1, true, [], 'caster')).toBe(
+      "Mercenary can't be pushed — blocked",
+    );
+    expect(formatShoveMovement('Mercenary', 'pull', 0, 2, true, [], 'caster')).toBe(
+      "Mercenary can't be pulled — blocked",
+    );
+  });
+
+  it('states the completed distance when movement is partly blocked', () => {
+    expect(formatShoveMovement('Mercenary', 'push', 1, 2, true, [], 'caster')).toBe(
+      'Mercenary: pushed 1 of 2 tiles away (blocked)',
+    );
+  });
+
+  it('uses neutral movement for a blast-driven push', () => {
+    expect(formatShoveMovement('Mercenary', 'push', 1, 1, false, [], 'blast')).toBe(
+      'Mercenary: knocked 1 tile',
+    );
+  });
+
+  it('uses neutral movement for a prop-break push', () => {
+    expect(formatShoveMovement('Mercenary', 'push', 1, 2, true, [], 'prop')).toBe(
+      'Mercenary: knocked 1 of 2 tiles (blocked)',
     );
   });
 
