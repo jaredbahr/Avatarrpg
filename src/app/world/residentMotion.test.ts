@@ -464,7 +464,7 @@ describe('routines (Working Ba Dan)', () => {
     expect(gao.some((f) => f.walking)).toBe(true);
     // A work beat at the display: he reaches in and back.
     expect(gao.some((f) => key(f.drawPos) === '8,5' && (f.squash ?? 0) > 0.3)).toBe(true);
-    // An errand is not a placement walk: nothing waits on any leg of it.
+    // No errand leg is a placement walk: nothing waits on any leg of it.
     expect(frames.every((frame) => !frame.moving)).toBe(true);
   });
 

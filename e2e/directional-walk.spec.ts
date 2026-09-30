@@ -2,6 +2,8 @@ import { expect, test } from '@playwright/test';
 import { allowSoftwareWebgl } from './budget';
 import { enterNode, pauseClock, resetStorage, startGame, waitForIdle } from './helpers';
 import { ASSETS } from '../src/content/assets/manifest';
+import { TIMING } from '../src/app/anim/choreography';
+import { strollTiming } from '../src/app/anim/stroll';
 import type { MapView, RenderUnit } from '../src/render/view';
 
 for (const renderer of ['canvas', 'webgl'] as const) {
@@ -87,7 +89,7 @@ for (const renderer of ['canvas', 'webgl'] as const) {
         const idleClip = `idle${projectedDirection}`;
         const facing = riverside || dy < 0 ? 1 : -1;
         /*
-         * The leader holds the walk pose for about 1.2 s of app time, and a
+         * The leader holds the four-tile walk pose for about 2.1 s of app time, and a
          * software-WebGL runner hands back a frame every few seconds: on a
          * real-time cadence the renderer can be handed only the rest pose on
          * either side of the walk, which is a coin flip rather than a claim
@@ -155,7 +157,7 @@ for (const renderer of ['canvas', 'webgl'] as const) {
             );
         }
         // One frame finishes the walk rather than a second's worth of them.
-        await page.clock.fastForward(2000);
+        await page.clock.fastForward(strollTiming(Math.abs(dy), TIMING.strollStep).duration);
         await page.clock.resume();
         await waitForIdle(page);
         await expect

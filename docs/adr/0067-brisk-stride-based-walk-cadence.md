@@ -3,7 +3,7 @@
 **Status:** Accepted  
 **Date:** 2026-09-30
 
-Amends ADR 0015, ADR 0050, ADR 0053 and ADR 0054 where they specify the old
+Amends ADR 0015, ADR 0047, ADR 0050, ADR 0053 and ADR 0054 where they specify the old
 280 ms travel pace, measured per-heading G travel, or a separate riverside
 scale correction.
 
