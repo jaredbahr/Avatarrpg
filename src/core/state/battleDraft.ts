@@ -925,9 +925,13 @@ export class BattleDraft {
    *
    * The list is snapshotted so one upkeep cannot cascade down a line of props:
    * a neighbour this fire ignites starts burning on the *next* upkeep.
+   *
+   * `skip` holds the ids `tickTerrain` already put out from the pre-tick
+   * ground, so a prop is not doused twice in one upkeep.
    */
-  private tickBurningProps(): void {
+  private tickBurningProps(skip: ReadonlySet<string>): void {
     for (const prop of [...this.props]) {
+      if (skip.has(prop.id)) continue;
       const live = this.props.find((p) => p.id === prop.id);
       if (!live || live.burning === undefined) continue;
       const def = this.propDef(live);
@@ -1057,6 +1061,27 @@ export class BattleDraft {
 
   /** Round upkeep for the ground: durations tick, fire crawls outward. */
   tickTerrain(): void {
+    /*
+     * B-2: a fuel prop has to see the ground as it is *now*, before
+     * `tickSurfaces` takes a duration-1 surface away. Water under a burning
+     * prop still puts it out, and fire beside an unlit one still catches it,
+     * even though both surfaces are about to fade. Only fuel props read this
+     * snapshot — a prop with no fuel keeps reading the post-tick grid, in the
+     * same order, exactly as it always has.
+     */
+    const dousedBySurface = new Set<string>();
+    const preExposure = new Map<string, { damage: number; damageType: DamageType }>();
+    for (const prop of this.props) {
+      const def = this.propDef(prop);
+      if (!def || (def.fuel ?? 0) <= 0) continue;
+      if (prop.burning !== undefined) {
+        if (this.hasDousingSurface(prop)) dousedBySurface.add(prop.id);
+        continue;
+      }
+      const exposure = this.surfaceExposure(prop);
+      if (exposure) preExposure.set(prop.id, exposure);
+    }
+
     const reaction = tickSurfaces(this.content, this.grid);
     this.applyReaction(reaction, null);
     for (const change of reaction.changes) {
@@ -1066,12 +1091,19 @@ export class BattleDraft {
     }
 
     /*
+     * Dousing wins the upkeep: a prop the ground was already putting out does
+     * not spread fire or spend fuel this round. It happens before
+     * `tickBurningProps`, which skips these ids so nothing is doused twice.
+     */
+    for (const propId of dousedBySurface) this.douseProp(propId);
+
+    /*
      * A prop that is already on fire feeds it and burns a round of fuel. This
      * runs before the exposure pass on purpose: the fire it just painted is
      * what lights the prop next door, and that ignition is read below rather
      * than written here, so one upkeep never cascades.
      */
-    this.tickBurningProps();
+    this.tickBurningProps(dousedBySurface);
 
     /*
      * Props burn too. Without this, fire creeping across the map stops dead at a
@@ -1085,7 +1117,11 @@ export class BattleDraft {
     for (const prop of [...this.props]) {
       if (!this.props.some((p) => p.id === prop.id)) continue;
       if (prop.burning !== undefined) continue;
-      const exposure = this.surfaceExposure(prop);
+      const live = this.surfaceExposure(prop);
+      const fuelled = (this.propDef(prop)?.fuel ?? 0) > 0;
+      // Fuel props fall back to the pre-tick reading; everything else, as ever,
+      // reads only the ground as it stands now.
+      const exposure = fuelled && live === undefined ? preExposure.get(prop.id) : live;
       if (exposure) this.damageProp(prop.id, exposure.damage, exposure.damageType);
     }
   }

@@ -85,11 +85,29 @@ const RACK = fuelProp({
   burnsInto: undefined,
 });
 
+/**
+ * Solid and fuel-less: `surfaceExposure` reads its neighbours, so it is the
+ * shape that would notice if the pre-tick snapshot leaked onto non-fuel props.
+ */
+const SOLID_RACK = fuelProp({
+  id: 'test_solid_rack',
+  name: 'Test Solid Rack',
+  hp: 12,
+  blocksMove: true,
+  blocksSight: true,
+  grantsCover: true,
+  fuel: undefined,
+  ignites: undefined,
+  douse: undefined,
+  burnsInto: undefined,
+});
+
 const testProps = new Map(CONTENT.props);
 testProps.set(HAYSTACK.id, HAYSTACK);
 testProps.set(KINDLING.id, KINDLING);
 testProps.set(SOLID_HAY.id, SOLID_HAY);
 testProps.set(RACK.id, RACK);
+testProps.set(SOLID_RACK.id, SOLID_RACK);
 
 const TEST_CONTENT: ContentIndex = { ...CONTENT, props: testProps };
 
@@ -276,6 +294,81 @@ describe('props that burn', () => {
       // The fire never got to spread first.
       expect(tileAt(local.grid, pos)?.surface?.id).toBe(surface);
     }
+  });
+
+  it('is doused by water or ice that expires this upkeep', () => {
+    for (const surface of ['water', 'ice'] as const) {
+      const local = freshDraft();
+      const pos = openTile(local);
+      const hay = place(local, HAYSTACK.id, pos);
+      local.damageProp(hay.id, 4, 'fire');
+      const lit = local.propAt(pos);
+      expect(lit?.burning).toBe(HAYSTACK.fuel);
+      local.paint([pos], surface, 1, null);
+      // Count only what the upkeep emits: the setup's own ignition is not it.
+      const before = local.events.length;
+
+      local.tickTerrain();
+      const emitted = local.events.slice(before);
+
+      // The surface was there at upkeep, so it still put the prop out — and
+      // dousing wins outright: no fire painted and no fuel spent.
+      expect(local.propAt(pos)?.burning, `doused by ${surface}`).toBeUndefined();
+      expect(tileAt(local.grid, pos)?.surface ?? null, `fire on ${surface}`).toBeNull();
+      expect(local.propAt(pos)?.hp).toBe(lit?.hp);
+      expect(emitted.filter((event) => event.type === 'propDoused')).toHaveLength(1);
+      expect(emitted.filter((event) => event.type === 'propIgnited')).toHaveLength(0);
+    }
+  });
+
+  it('ignites from fire that expires this upkeep', () => {
+    const pos = openTile(draft, 2);
+    const hay = place(draft, HAYSTACK.id, pos);
+    draft.paint([pos], 'fire', 1, null);
+    expect(tileAt(draft.grid, pos)?.surface?.id).toBe('fire');
+
+    draft.tickTerrain();
+
+    expect(tileAt(draft.grid, pos)?.surface ?? null).toBeNull();
+    expect(draft.propAt(pos)?.hp).toBe(hay.hp - 4);
+    expect(draft.propAt(pos)?.burning).toBe(HAYSTACK.fuel);
+    expect(draft.events.filter((event) => event.type === 'propIgnited')).toHaveLength(1);
+  });
+
+  it('lights a solid fuel prop from fire beside it that expires this upkeep', () => {
+    const pos = openTile(draft, 2);
+    place(draft, SOLID_HAY.id, pos);
+    draft.paint([{ x: pos.x + 1, y: pos.y }], 'fire', 1, null);
+
+    draft.tickTerrain();
+
+    expect(draft.propAt(pos)?.burning).toBe(SOLID_HAY.fuel);
+    expect(draft.events.filter((event) => event.type === 'propIgnited')).toHaveLength(1);
+  });
+
+  it('does not burn a fuel-less prop from fire that expires this upkeep', () => {
+    const pos = openTile(draft, 2);
+    const rack = place(draft, SOLID_RACK.id, pos);
+    draft.paint([{ x: pos.x + 1, y: pos.y }], 'fire', 1, null);
+
+    draft.tickTerrain();
+
+    // Exactly as on main: the surface is gone before a fuel-less prop reads it.
+    expect(draft.propAt(pos)?.hp).toBe(rack.hp);
+    expect(draft.propAt(pos)?.burning).toBeUndefined();
+    expect(draft.events.filter((event) => event.type === 'propDamaged')).toHaveLength(0);
+    expect(draft.events.filter((event) => event.type === 'propIgnited')).toHaveLength(0);
+  });
+
+  it('still burns a fuel-less prop from fire beside it that is still lit', () => {
+    const pos = openTile(draft, 2);
+    const rack = place(draft, SOLID_RACK.id, pos);
+    draft.paint([{ x: pos.x + 1, y: pos.y }], 'fire', 3, null);
+
+    draft.tickTerrain();
+
+    expect(draft.propAt(pos)?.hp).toBe(rack.hp - 4);
+    expect(draft.propAt(pos)?.burning).toBeUndefined();
   });
 
   it('ignores a damage type that is not in its douse list', () => {
