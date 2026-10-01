@@ -112,10 +112,35 @@ describe('long-press unit lookup', () => {
 describe('battlefield inspect selection', () => {
   const tile = { x: 4, y: 2 };
 
-  it('chooses a unit over a prop on the same tile', () => {
-    const target = inspectTargetAt([unit('hero', tile)], [prop('barrel', tile)], tile, true);
-    expect(target?.kind).toBe('unit');
-    expect(target?.kind === 'unit' && target.unit.id).toBe('hero');
+  it('lets a living unit anchor win on tap', () => {
+    const target = inspectTargetAt([unit('hero', tile)], [prop('barrel', tile)], tile, false);
+    expect(target).toMatchObject({ kind: 'unit', unit: { id: 'hero' } });
+  });
+
+  it('opens a prop under a fallen unit on tap but the body on hold', () => {
+    const fallen = unit('fallen', tile, { hp: 0 });
+    expect(inspectTargetAt([fallen], [prop('barrel', tile)], tile, false)).toMatchObject({
+      kind: 'prop',
+      prop: { id: 'barrel' },
+    });
+    expect(inspectTargetAt([fallen], [prop('barrel', tile)], tile, true)).toMatchObject({
+      kind: 'unit',
+      unit: { id: 'fallen' },
+    });
+  });
+
+  it('lets a size-2 unit win on a non-anchor cell for tap and hold', () => {
+    const big = unit('big', tile, { size: 2 });
+    const second = { x: tile.x + 1, y: tile.y };
+    const underneath = prop('barrel', second);
+    expect(inspectTargetAt([big], [underneath], second, false)).toMatchObject({
+      kind: 'unit',
+      unit: { id: 'big' },
+    });
+    expect(inspectTargetAt([big], [underneath], second, true)).toMatchObject({
+      kind: 'unit',
+      unit: { id: 'big' },
+    });
   });
 
   it('chooses a prop when no unit occupies its tile', () => {

@@ -1,4 +1,12 @@
-import type { DamageType, DousingType, PropDef, PropEffect, PropInstance } from '../../core/types';
+import type {
+  DamageType,
+  DousingType,
+  PropDef,
+  PropEffect,
+  PropInstance,
+  StatusDef,
+  StatusId,
+} from '../../core/types';
 import type { MarkKind } from './marks';
 
 export interface PropInspectChip {
@@ -10,7 +18,8 @@ export interface PropInspectText {
   readonly description: string;
   readonly hint?: string;
   readonly toughness: string;
-  readonly chips: readonly PropInspectChip[];
+  readonly actions: readonly PropInspectChip[];
+  readonly notes: readonly PropInspectChip[];
   readonly burning?: string;
 }
 
@@ -37,10 +46,6 @@ function list(words: readonly string[]): string {
   return `${words.slice(0, -1).join(', ')}, or ${words.at(-1)}`;
 }
 
-function plainId(id: string): string {
-  return id.replaceAll('_', ' ');
-}
-
 function andList(words: readonly string[]): string {
   if (words.length < 2) return words[0] ?? '';
   if (words.length === 2) return `${words[0]} and ${words[1]}`;
@@ -58,43 +63,101 @@ const SPILLS: Readonly<Record<string, string>> = {
   steam: 'steam rises',
 };
 
-function breakResult(effect: PropEffect): string {
+type StatusNames = ReadonlyMap<StatusId, Pick<StatusDef, 'name'>>;
+
+function surfaceResult(surface: string, radius: number): string {
+  if (radius === 0) {
+    const ownTile: Readonly<Record<string, string>> = {
+      fire: 'fire is left where it stood',
+      water: 'water pools where it stood',
+      oil: 'oil pools where it stood',
+      rubble: 'rubble is left where it stood',
+    };
+    return ownTile[surface] ?? `${surface.replaceAll('_', ' ')} is left where it stood`;
+  }
+  if (radius === 1)
+    return SPILLS[surface] ?? `${surface.replaceAll('_', ' ')} is left on the ground`;
+  return `${surface.replaceAll('_', ' ')} spreads ${radius} tiles around it`;
+}
+
+function nearbyResult(
+  radius: number,
+  own: string,
+  next: string,
+  within: (radius: number) => string,
+) {
+  if (radius === 0) return own;
+  if (radius === 1) return next;
+  return within(radius);
+}
+
+function breakResult(effect: PropEffect, statuses: StatusNames): string {
   switch (effect.kind) {
     case 'surface':
-      return SPILLS[effect.surface] ?? `${plainId(effect.surface)} is left on the ground`;
+      return surfaceResult(effect.surface, effect.radius);
     case 'damage':
-      return 'it hurts anyone next to it';
-    case 'status':
-      return `anyone next to it may end up ${plainId(effect.status)}`;
+      return nearbyResult(
+        effect.radius,
+        'it hurts anyone standing on it',
+        'it hurts anyone next to it',
+        (radius) => `it hurts anyone within ${radius} tiles`,
+      );
+    case 'status': {
+      const name = statuses.get(effect.status)?.name ?? effect.status.replaceAll('_', ' ');
+      const outcome = effect.chance >= 1 ? `ends up ${name}` : `may end up ${name}`;
+      return nearbyResult(
+        effect.radius,
+        `anyone standing on it ${outcome}`,
+        `anyone next to it ${outcome}`,
+        (radius) => `anyone within ${radius} tiles ${outcome}`,
+      );
+    }
     case 'push':
-      return 'it knocks back anyone next to it';
+      return nearbyResult(
+        effect.radius,
+        'it knocks back anyone standing on it',
+        'it knocks back anyone next to it',
+        (radius) => `it knocks back anyone within ${radius} tiles`,
+      );
   }
 }
 
 /** Plain, deterministic copy for the prop card. */
-export function propInspectText(def: PropDef, prop: PropInstance): PropInspectText {
-  const results = def.onBreak.map(breakResult);
-  const chips: PropInspectChip[] = [
+export function propInspectText(
+  def: PropDef,
+  prop: PropInstance,
+  statuses: StatusNames,
+): PropInspectText {
+  const results = def.onBreak.map((effect) => breakResult(effect, statuses));
+  const actions: PropInspectChip[] = [
     {
-      text: results.length > 0 ? `Break it: ${results.join(', and ')}` : 'Break it',
+      text: results.length > 0 ? `Break it: ${andList(results)}` : 'Break it',
       icon: 'fist',
     },
   ];
 
-  if (def.pushable) chips.push({ text: 'Shove it', icon: 'push' });
-  if (def.grantsCover) chips.push({ text: 'Hide behind it', icon: 'guard' });
-  if (def.blocksMove) chips.push({ text: 'Blocks the way', icon: 'wall' });
-  if (def.blocksSight) chips.push({ text: 'Blocks sight', icon: 'sense' });
-  if ((def.fuel ?? 0) > 0) chips.push({ text: `Burns for ${def.fuel} rounds`, icon: 'torch' });
-  if (def.douse && def.douse.length > 0)
-    chips.push({
-      text: `Put it out with ${list(def.douse.map((type) => DOUSE_NAMES[type]))}`,
+  if (def.pushable) actions.push({ text: 'Shove it', icon: 'push' });
+  if (def.grantsCover && !def.blocksMove)
+    actions.push({ text: 'Stand on it for cover', icon: 'guard' });
+  const douse = def.douse?.filter((type) => !def.immuneTo.includes(type)) ?? [];
+  if ((def.fuel ?? 0) > 0 && douse.length > 0)
+    actions.push({
+      text: `Put it out with ${list(douse.map((type) => DOUSE_NAMES[type]))}`,
       icon: 'wave',
     });
+
+  const notes: PropInspectChip[] = [];
+  if (def.blocksMove) notes.push({ text: 'Blocks the way', icon: 'wall' });
+  if (def.blocksSight) notes.push({ text: 'Blocks sight', icon: 'sense' });
+  if ((def.fuel ?? 0) > 0)
+    notes.push({
+      text: `Burns for ${def.fuel} ${def.fuel === 1 ? 'round' : 'rounds'}`,
+      icon: 'torch',
+    });
   if (def.vulnerableTo.length > 0)
-    chips.push({ text: `Weak to ${list(def.vulnerableTo.map((type) => DAMAGE_NAMES[type]))}` });
+    notes.push({ text: `Weak to ${list(def.vulnerableTo.map((type) => DAMAGE_NAMES[type]))}` });
   if (def.immuneTo.length > 0)
-    chips.push({
+    notes.push({
       text: `Shrugs off ${andList(def.immuneTo.map((type) => DAMAGE_NAMES[type]))}`,
       icon: 'guard',
     });
@@ -102,8 +165,11 @@ export function propInspectText(def: PropDef, prop: PropInstance): PropInspectTe
   return {
     description: def.description,
     ...(def.hint ? { hint: def.hint } : {}),
-    toughness: `Sturdy ${prop.hp} / ${def.hp}`,
-    chips,
-    ...(prop.burning !== undefined ? { burning: `On fire: ${prop.burning} rounds left` } : {}),
+    toughness: `${prop.hp} / ${def.hp} HP`,
+    actions,
+    notes,
+    ...(prop.burning !== undefined
+      ? { burning: `On fire: ${prop.burning} ${prop.burning === 1 ? 'round' : 'rounds'} left` }
+      : {}),
   };
 }

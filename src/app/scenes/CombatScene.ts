@@ -126,16 +126,14 @@ export type InspectTarget =
   | { readonly kind: 'unit'; readonly unit: Unit }
   | { readonly kind: 'prop'; readonly prop: PropInstance };
 
-/** Unit-first battlefield lookup shared by tap and hold inspection. */
+/** Unit-first battlefield lookup; taps omit fallen units while holds include them. */
 export function inspectTargetAt(
   units: readonly Unit[],
   props: readonly PropInstance[],
   tile: Vec2,
   includeFallen: boolean,
 ): InspectTarget | undefined {
-  const unit = includeFallen
-    ? occupiedUnitAt(units, tile)
-    : units.find((candidate) => isAlive(candidate) && samePos(candidate.pos, tile));
+  const unit = includeFallen ? occupiedUnitAt(units, tile) : unitAt(units, tile);
   if (unit) return { kind: 'unit', unit };
   const prop = props.find((candidate) => samePos(candidate.pos, tile));
   return prop ? { kind: 'prop', prop } : undefined;
@@ -641,7 +639,7 @@ export class CombatScene implements Scene {
     const def = this.app.content.props.get(prop.propId);
     if (!def) return;
     this.inspector?.close();
-    this.inspector = new PropInspector(def, prop, () => {
+    this.inspector = new PropInspector(def, prop, this.app.content.statuses, () => {
       this.inspector = null;
     });
     this.inspector.open(document.querySelector('.overlay-host') ?? document.body);
@@ -661,6 +659,13 @@ export class CombatScene implements Scene {
   sync(): void {
     const battle = this.battle();
     if (!battle) return;
+
+    if (this.inspector instanceof PropInspector) {
+      const inspector = this.inspector;
+      const prop = battle.props.find((candidate) => candidate.id === inspector.propId);
+      if (prop) inspector.update(prop);
+      else inspector.close();
+    }
 
     const unit = this.active();
     const activeId = unit?.id ?? null;

@@ -1,4 +1,5 @@
 import { describe, expect, it } from 'vitest';
+import { CONTENT } from '../../content';
 import type { PropDef, PropInstance } from '../../core/types';
 import { propInspectText } from './propInspectText';
 
@@ -43,28 +44,60 @@ const prop: PropInstance = {
 };
 
 describe('prop inspect text', () => {
-  it('covers every action, defense, break result, hint, and live state', () => {
-    const copy = propInspectText(def, prop);
+  it('groups actions and facts, uses display names, and omits unusable cover and dousing', () => {
+    const copy = propInspectText(def, prop, CONTENT.statuses);
     expect(copy).toMatchObject({
       description: 'A useful test prop.',
       hint: 'Try a clever combo.',
-      toughness: 'Sturdy 6 / 9',
+      toughness: '6 / 9 HP',
       burning: 'On fire: 2 rounds left',
     });
-    expect(copy.chips.map((chip) => chip.text)).toEqual([
-      'Break it: water spills out, and it hurts anyone next to it, and anyone next to it may end up blinded, and it knocks back anyone next to it',
+    expect(copy.actions.map((chip) => chip.text)).toEqual([
+      'Break it: water spills out, it hurts anyone next to it, anyone next to it ends up Blinded, and it knocks back anyone next to it',
       'Shove it',
-      'Hide behind it',
+      'Put it out with earth',
+    ]);
+    expect(copy.notes.map((chip) => chip.text)).toEqual([
       'Blocks the way',
       'Blocks sight',
       'Burns for 3 rounds',
-      'Put it out with water, cold, or earth',
       'Weak to fire or blows',
       'Shrugs off water and cold',
     ]);
   });
 
-  it('keeps an inert prop to its required break chip', () => {
+  it('describes radius zero, one, and larger break effects truthfully', () => {
+    const copy = propInspectText(
+      {
+        ...def,
+        onBreak: [
+          { kind: 'surface', surface: 'fire', duration: 2, radius: 0 },
+          { kind: 'damage', base: 2, damageType: 'fire', radius: 0 },
+          { kind: 'surface', surface: 'oil', duration: 2, radius: 2 },
+          { kind: 'damage', base: 2, damageType: 'fire', radius: 3 },
+          { kind: 'status', status: 'blinded', duration: 1, chance: 0.9, radius: 2 },
+        ],
+      },
+      prop,
+      CONTENT.statuses,
+    );
+    expect(copy.actions[0]?.text).toBe(
+      'Break it: fire is left where it stood, it hurts anyone standing on it, oil spreads 2 tiles around it, it hurts anyone within 3 tiles, and anyone within 2 tiles may end up Blinded',
+    );
+  });
+
+  it('uses singular round copy and offers walkable cover', () => {
+    const copy = propInspectText(
+      { ...def, blocksMove: false, grantsCover: true, fuel: 1, immuneTo: [], douse: ['water'] },
+      { ...prop, burning: 1 },
+      CONTENT.statuses,
+    );
+    expect(copy.actions.map((chip) => chip.text)).toContain('Stand on it for cover');
+    expect(copy.notes.map((chip) => chip.text)).toContain('Burns for 1 round');
+    expect(copy.burning).toBe('On fire: 1 round left');
+  });
+
+  it('keeps an inert prop to its required break chip and omits empty facts', () => {
     const copy = propInspectText(
       {
         ...def,
@@ -80,8 +113,10 @@ describe('prop inspect text', () => {
         hint: undefined,
       },
       { ...prop, burning: undefined },
+      CONTENT.statuses,
     );
-    expect(copy.chips.map((chip) => chip.text)).toEqual(['Break it']);
+    expect(copy.actions.map((chip) => chip.text)).toEqual(['Break it']);
+    expect(copy.notes).toEqual([]);
     expect(copy.hint).toBeUndefined();
     expect(copy.burning).toBeUndefined();
   });
