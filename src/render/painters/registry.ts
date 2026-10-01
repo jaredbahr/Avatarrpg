@@ -35,13 +35,40 @@ const FALLBACK: UnitPainter = (ctx, box, palette) => {
 };
 
 /** The stand-in while a bitmap loads: a disc in the entry's own colours, not a grey square. */
-const LOADING: UnitPainter = (ctx, box, palette) => {
+export function loadingPlaceholderBox(
+  box: Box,
+  options: PainterOptions = {},
+): Box & { height: number } {
+  const width = options.footprintWidth ?? 1;
+  const height = options.footprintHeight ?? 1;
+  return {
+    x: box.x,
+    y: box.y - box.size * (height - 1),
+    size: box.size * width,
+    height: box.size * height,
+  };
+}
+
+const LOADING: UnitPainter = (ctx, box, palette, options) => {
+  const bounds = loadingPlaceholderBox(box, options);
   ctx.save();
   ctx.beginPath();
-  ctx.arc(box.x + box.size / 2, box.y + box.size / 2, box.size * 0.46, 0, Math.PI * 2);
+  if (bounds.size === box.size && bounds.height === box.size) {
+    ctx.arc(box.x + box.size / 2, box.y + box.size / 2, box.size * 0.46, 0, Math.PI * 2);
+  } else {
+    ctx.ellipse(
+      bounds.x + bounds.size / 2,
+      bounds.y + bounds.height / 2,
+      bounds.size * 0.46,
+      bounds.height * 0.46,
+      0,
+      0,
+      Math.PI * 2,
+    );
+  }
   ctx.fillStyle = palette.dark;
   ctx.fill();
-  ctx.lineWidth = Math.max(1, box.size * 0.03);
+  ctx.lineWidth = Math.max(1, Math.min(bounds.size, bounds.height) * 0.03);
   ctx.strokeStyle = palette.base;
   ctx.stroke();
   ctx.restore();

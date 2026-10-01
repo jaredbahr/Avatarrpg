@@ -132,6 +132,20 @@ describe('actor attachment geometry', () => {
     expect(high.y - low.y).toBeCloseTo(-0.18, 9);
   });
 
+  it('anchors a gated size-2 attachment on the 2x2 footprint centre', () => {
+    const boss = { ...actor, pos: { x: 4, y: 3 }, size: 2 as const, offset: { x: 0, y: 0 } };
+    const legacy = projectGround(
+      attachmentPoint(boss, 'orthographic', 0, frame, false),
+      'orthographic',
+    );
+    const square = projectGround(
+      attachmentPoint(boss, 'orthographic', 0, frame, true),
+      'orthographic',
+    );
+    expect(square.x - legacy.x).toBeCloseTo(0);
+    expect(square.y - legacy.y).toBeCloseTo(1);
+  });
+
   it('uses the baked figure rig and its growth instead of bitmap pixel sockets', () => {
     const placeholder = { ...frame, placeholder: true };
     for (const [sprite, buildName] of [

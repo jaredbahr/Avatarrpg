@@ -17,6 +17,7 @@
  */
 
 import type { Grid, Vec2 } from '../core/types';
+import { SQUARE_FOOTPRINTS, footprintFoot } from '../core/rules/footprint';
 import { groundBounds, projectGround, unprojectGround } from './projection';
 import type { Projection } from './projection';
 import { pickCell } from './geometry/elevation';
@@ -152,8 +153,11 @@ export class Camera {
   }
 
   /** Scrolls so a tile sits in the middle of the viewport, where possible. */
-  centreOn(pos: Vec2): void {
-    const ground = this.groundPoint({ x: pos.x + 0.5, y: pos.y + 0.5 });
+  centreOn(pos: Vec2, footprint: 1 | 2 = 1, square = SQUARE_FOOTPRINTS): void {
+    const centre = square
+      ? { x: pos.x + (footprint - 1) / 2, y: pos.y + (footprint - 1) / 2 }
+      : pos;
+    const ground = this.groundPoint({ x: centre.x + 0.5, y: centre.y + 0.5 });
     const px = ground.x * this.scale;
     const py = ground.y * this.scale;
     this.offsetX = px - this.viewport.width / 2;
@@ -204,10 +208,18 @@ export class Camera {
   }
 
   /** Upright art stands at the logical footprint centre, never at a skewed sprite corner. */
-  spriteBox(pos: Vec2, footprint = 1): { x: number; y: number; size: number } {
-    if (this.projection === 'orthographic') return this.toScreen(pos);
+  spriteBox(
+    pos: Vec2,
+    footprint: 1 | 2 = 1,
+    square = SQUARE_FOOTPRINTS,
+  ): { x: number; y: number; size: number } {
+    if (this.projection === 'orthographic') {
+      return this.toScreen(
+        square ? { x: pos.x, y: footprintFoot(pos, footprint, true).y - 0.5 } : pos,
+      );
+    }
     const size = TILE * this.scale;
-    const foot = this.project({ x: pos.x + footprint / 2, y: pos.y + 0.5 });
+    const foot = this.project(footprintFoot(pos, footprint, square));
     return { x: foot.x - (size * footprint) / 2, y: foot.y - size * 0.86, size };
   }
 

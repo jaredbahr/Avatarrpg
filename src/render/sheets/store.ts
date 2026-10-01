@@ -186,13 +186,14 @@ export class SheetStore {
     pixelsPerTile: number,
     widthTiles: 1 | 2,
     meleeDirection?: MeleeDirection,
+    heightTiles: 1 | 2 = 1,
   ): ResolvedFrame | null {
     const entry = resolveAsset(key);
     if (entry.kind === 'sheet') {
       const atlas = this.atlas(key, entry);
       if (atlas) return this.fromAtlas(entry, atlas, clip, clipTime, clipFrame, meleeDirection);
     }
-    const sheet = this.bake(key, pixelsPerTile, widthTiles);
+    const sheet = this.bake(key, pixelsPerTile, widthTiles, heightTiles);
     if (!sheet) return null;
     const resolved = resolveClip(sheet.clips, clip);
     if (!resolved) return null;
@@ -354,19 +355,24 @@ export class SheetStore {
     };
   }
 
-  private bake(key: string, pixelsPerTile: number, widthTiles: 1 | 2): BakedSheet | null {
+  private bake(
+    key: string,
+    pixelsPerTile: number,
+    widthTiles: 1 | 2,
+    heightTiles: 1 | 2 = 1,
+  ): BakedSheet | null {
     const px = Math.min(
       MAX_BAKE_PX,
       Math.max(SIZE_BUCKET, Math.round(pixelsPerTile / SIZE_BUCKET) * SIZE_BUCKET),
     );
-    const cacheKey = `${key}|${px}|${widthTiles}`;
+    const cacheKey = `${key}|${px}|${widthTiles}|${heightTiles}`;
     const existing = this.baked.get(cacheKey);
     if (existing) {
       this.baked.delete(cacheKey);
       this.baked.set(cacheKey, existing);
       return existing;
     }
-    const sheet = bakeSheet(key, resolvePainter(key), px, widthTiles);
+    const sheet = bakeSheet(key, resolvePainter(key), px, widthTiles, heightTiles);
     if (!sheet) return null;
     this.baked.set(cacheKey, sheet);
     this.bakedBytes += sheet.bytes;

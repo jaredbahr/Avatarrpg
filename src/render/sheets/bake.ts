@@ -76,10 +76,11 @@ export function bakeSheet(
   painter: ResolvedPainter,
   pixelsPerTile: number,
   widthTiles: 1 | 2,
+  heightTiles: 1 | 2 = 1,
 ): BakedSheet | null {
   if (typeof document === 'undefined') return null;
   const frameWidth = Math.round(pixelsPerTile * widthTiles);
-  const frameHeight = Math.round(pixelsPerTile * FRAME_HEIGHT_TILES);
+  const frameHeight = Math.round(pixelsPerTile * Math.max(FRAME_HEIGHT_TILES, heightTiles));
   const counts: Partial<Record<ClipName, number>> = {};
   for (const [clip, def] of Object.entries(BAKED_CLIPS) as [ClipName, { count: number }][]) {
     counts[clip] = def.count;
@@ -110,6 +111,8 @@ export function bakeSheet(
         facing: 1,
         pose: { clip, index },
         headroom: (box.y - frame.y) / pixelsPerTile,
+        footprintWidth: widthTiles,
+        footprintHeight: heightTiles,
       });
       ctx.restore();
     });
@@ -120,7 +123,7 @@ export function bakeSheet(
     frames: layout.frames,
     clips,
     pixelsPerTile,
-    footprint: { w: widthTiles, h: 1 },
+    footprint: { w: widthTiles, h: heightTiles },
     anchor: { x: 0.5, y: FOOT_LINE },
     headroom: Math.max(
       0,

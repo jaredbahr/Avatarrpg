@@ -1,4 +1,5 @@
 import type { Grid, TerrainId, Vec2 } from '../../core/types';
+import { SQUARE_FOOTPRINTS, footprintCells } from '../../core/rules/footprint';
 import { FOOT_LINE } from '../sheets/bake';
 
 /** Shared upright geometry. `y` already includes elevation and the current pose offset. */
@@ -88,12 +89,13 @@ export function actorShadowDensity(
   pos: Vec2,
   always: boolean,
   width: 1 | 2 = 1,
+  square = SQUARE_FOOTPRINTS,
 ): number {
   const x0 = Math.round(pos.x);
-  const y = Math.round(pos.y);
-  for (let x = x0; x < x0 + width; x++) {
-    const inside = x >= 0 && y >= 0 && x < grid.width && y < grid.height;
-    const terrain = inside ? grid.tiles[y * grid.width + x]?.terrain : undefined;
+  const y0 = Math.round(pos.y);
+  for (const cell of footprintCells({ x: x0, y: y0 }, width, square)) {
+    const inside = cell.x >= 0 && cell.y >= 0 && cell.x < grid.width && cell.y < grid.height;
+    const terrain = inside ? grid.tiles[cell.y * grid.width + cell.x]?.terrain : undefined;
     if (terrain && GRASS_FAMILY.has(terrain)) return GRASS_SHADOW_DENSITY;
   }
   return always ? 1 : 0;
