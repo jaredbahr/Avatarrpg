@@ -77,6 +77,13 @@ describe('long-press unit lookup', () => {
     expect(occupiedUnitAt(units, tile)?.id).toBe('fallen');
   });
 
+  it('opens the living unit standing where another fell', () => {
+    const tile = { x: 4, y: 2 };
+    // The body comes first in the list: array order must not pick it.
+    const units = [unit('fallen', tile, { hp: 0 }), unit('standing', tile)];
+    expect(occupiedUnitAt(units, tile)?.id).toBe('standing');
+  });
+
   it('picks a size-2 unit on a cell other than its anchor', () => {
     const big = unit('big', { x: 5, y: 3 }, { size: 2 });
     expect(occupiedUnitAt([big], { x: 6, y: 3 })?.id).toBe('big');
