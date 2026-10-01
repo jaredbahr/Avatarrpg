@@ -358,11 +358,10 @@ function snapBattleUnits(
   // units blocked, defines contact reachability. Cache every stop in each
   // component so a buried unit does not run a full Infinity flood per anchor.
   const anchorInfo = new Map<string, AnchorInfo>();
-  const terrainFlooded = new Set<string>();
-  const contactFlooded = new Set<string>();
+  const contactInfo = new Map<string, boolean>();
   const anchorInfoFor = (unit: BattleState['units'][number], pos: Vec2): AnchorInfo => {
     const key = posKey(pos);
-    if (!terrainFlooded.has(key)) {
+    if (!anchorInfo.has(key)) {
       const anchors = flood(
         {
           grid,
@@ -375,17 +374,17 @@ function snapBattleUnits(
         pos,
         Infinity,
       );
+      const nearParty = [...anchors.values()].some((entry) => anchorNearParty(entry.pos));
       for (const entry of anchors.values()) {
         const entryKey = posKey(entry.pos);
         const existing = anchorInfo.get(entryKey);
         anchorInfo.set(entryKey, {
-          nearParty: anchorNearParty(entry.pos),
+          nearParty,
           canContact: existing?.canContact ?? false,
         });
-        terrainFlooded.add(entryKey);
       }
     }
-    if (!contactFlooded.has(key)) {
+    if (!contactInfo.has(key)) {
       const blocked = new Set(owners.keys());
       for (const cell of occupiedCells({ pos, size: unit.size }, true))
         blocked.delete(posKey(cell));
@@ -401,14 +400,15 @@ function snapBattleUnits(
         pos,
         Infinity,
       );
+      const canContact = [...anchors.values()].some((entry) => contactable(unit, entry.pos));
       for (const entry of anchors.values()) {
         const entryKey = posKey(entry.pos);
         const existing = anchorInfo.get(entryKey);
         anchorInfo.set(entryKey, {
           nearParty: existing?.nearParty ?? anchorNearParty(entry.pos),
-          canContact: contactable(unit, entry.pos),
+          canContact,
         });
-        contactFlooded.add(entryKey);
+        contactInfo.set(entryKey, canContact);
       }
     }
     return anchorInfo.get(key) ?? { nearParty: false, canContact: false };
@@ -435,8 +435,7 @@ function snapBattleUnits(
     // Unit cells and contact targets change after every repair; component
     // caches are therefore scoped to this unit's candidate search.
     anchorInfo.clear();
-    terrainFlooded.clear();
-    contactFlooded.clear();
+    contactInfo.clear();
     let pos = unit.pos;
     if (!valid(unit)) {
       const candidates: Vec2[] = [];
@@ -455,9 +454,12 @@ function snapBattleUnits(
       // living opponent is the most useful deterministic placement. Fall back
       // to the party-connected square component when combat contact is not yet
       // possible (for example, the opponent was also buried in the save).
+      const nearestConnected = usable.find((item) => connected(unit, item));
       const candidate =
-        usable.find((item) => canContact(unit, item) && connected(unit, item)) ??
-        usable.find((item) => connected(unit, item));
+        nearestConnected && canContact(unit, nearestConnected)
+          ? nearestConnected
+          : (usable.find((item) => connected(unit, item) && canContact(unit, item)) ??
+            nearestConnected);
       const nearest = usable[0];
       if (nearest && !connected(unit, nearest))
         warnings.push({ kind: 'disconnected-snap', unitId: unit.id, pos: nearest });

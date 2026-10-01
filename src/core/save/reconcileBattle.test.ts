@@ -719,6 +719,7 @@ describe('reconcileBattle', () => {
       for (const spawn of map.partySpawns) {
         if (spawn.y === y) next = `${next.slice(0, spawn.x)}#${next.slice(spawn.x + 1)}`;
       }
+      if (y === 6) next = `${next.slice(0, 19)}#${next.slice(20)}`;
       return next;
     });
     const content = contentWithMap({ ...map, rows, props: [] });
@@ -749,12 +750,11 @@ describe('reconcileBattle', () => {
     const rows = Array.from({ length: map.height }, (_, y) =>
       y === 2 || y === 3 ? '#..................#' : '#'.repeat(map.width),
     );
-    const corridor = { ...map, rows, partySpawns: [{ x: 1, y: 2 }], props: [] };
+    const corridor = { ...map, rows, partySpawns: [{ x: 18, y: 2 }], props: [] };
     const content = contentWithMap(corridor);
     const party = old.battle.units.filter((unit) => unit.faction === 'party');
     const boss = old.battle.units.find((unit) => unit.size === 2);
-    const support = old.battle.units.find((unit) => unit.faction === 'enemy' && unit.size === 1);
-    if (!boss || party.length < 2 || !support) throw new Error('fixture is missing units');
+    if (!boss || party.length < 2) throw new Error('fixture is missing units');
     const state: GameState = {
       ...old,
       battle: {
@@ -763,16 +763,22 @@ describe('reconcileBattle', () => {
         props: [],
         temporaryWalls: [],
         units: [
-          { ...party[0]!, pos: { x: 6, y: 2 } },
-          { ...party[1]!, pos: { x: 100, y: 100 } },
-          { ...support, pos: { x: 6, y: 3 } },
+          // Buried off the east edge on the corridor's own rows, so the nearest
+          // free cell is the east end (a diagonal burial would tie along the
+          // whole row and the row-major tie-break would send it west).
+          { ...party[0]!, pos: { x: 100, y: 2 } },
+          { ...party[1]!, faction: 'enemy', pos: { x: 6, y: 3 } },
           { ...boss, pos: { x: 1, y: 1 } },
         ],
       },
     };
     const result = reconcileBattleResult(content, state, { squareFootprints: true });
     const moved = result.state.battle?.units.find((unit) => unit.id === boss.id);
-    expect(moved?.pos.x).toBeGreaterThanOrEqual(7);
+    // The party unit snaps to the east end first. The boss's nearest connected
+    // square is (1,2), but the blocker in the two-wide corridor keeps it from
+    // ever reaching that opponent, so the first square past the blocker wins.
+    expect(result.state.battle?.units[0]?.pos).toEqual({ x: 18, y: 2 });
+    expect(moved?.pos).toEqual({ x: 7, y: 2 });
   });
 
   it('keeps a sealed boss save unchanged and reports no-free-cell', () => {
