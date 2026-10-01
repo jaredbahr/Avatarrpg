@@ -425,6 +425,7 @@ export const ASSETS: Readonly<Record<string, AssetEntry>> = {
         frames: Array.from({ length: 6 }, (_, i) => `unit.enemy.driller/idle/${i}`),
         fps: 4,
         loop: true,
+        frameMs: [260, 260, 280, 260, 260, 280],
       },
       walk: {
         frames: Array.from({ length: 6 }, (_, i) => `unit.enemy.driller/walk/${i}`),
@@ -435,16 +436,19 @@ export const ASSETS: Readonly<Record<string, AssetEntry>> = {
         frames: Array.from({ length: 8 }, (_, i) => `unit.enemy.driller/cast/${i}`),
         fps: 9,
         loop: false,
+        frameMs: [140, 140, 160, 120, 100, 120, 180, 240],
       },
       hit: {
         frames: Array.from({ length: 4 }, (_, i) => `unit.enemy.driller/hit/${i}`),
         fps: 10,
         loop: false,
+        frameMs: [100, 120, 140, 180],
       },
       ko: {
         frames: Array.from({ length: 8 }, (_, i) => `unit.enemy.driller/ko/${i}`),
         fps: 8,
         loop: false,
+        frameMs: [120, 120, 140, 160, 180, 220, 260, 360],
       },
     },
   },

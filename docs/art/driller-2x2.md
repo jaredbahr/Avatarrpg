@@ -11,13 +11,17 @@ recolour, resample, trim, or otherwise alter their pixels.
 - Terms: https://pixellab.ai/termsofservice
 - Sources: `media/art-sources/driller-2x2-v1/`
 - Packer: `scripts/art/driller-2x2.ts`
-- Output: `public/art/units/driller.png` and `public/art/units/driller.json`
+- Output: lossless `public/art/units/driller.webp` and `public/art/units/driller.json`
 
 Each source clip starts at frame 0 with the same unanimated base image and a
 baked ground shadow. Only those stills have alpha as low as row 141. The game
 draws its own contact treatment, so the packer drops source frame 0 of every
 clip and renumbers source frames 1 onward from packed frame 0. The 32 retained
 cells remain byte-identical RGBA pixels in uniform 160×160 atlas cells.
+The packer uses the repository's deterministic lossless WebP encoder; its
+round-trip test compares every decoded RGBA byte with the packed image. WebP is
+already supported by the shared browser atlas loader, art validator and offline
+precache glob, while avoiding the RGBA PNG's unnecessary storage overhead.
 
 ## Registration
 

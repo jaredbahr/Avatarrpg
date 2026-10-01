@@ -192,7 +192,7 @@ export const CREDITS: readonly CreditEntry[] = [
     authors: 'This project, generated with PixelLab',
     licence: 'own work',
     source: '',
-    covers: ['art/units/driller.png', 'art/units/driller.json'],
+    covers: ['art/units/driller.webp', 'art/units/driller.json'],
     note: 'Generated with PixelLab; provenance in docs/art/driller-2x2.md; sources in media/art-sources/driller-2x2-v1/, packed without resampling by scripts/art/driller-2x2.ts. Output terms: https://pixellab.ai/termsofservice. No exclusive copyright in generated output is claimed.',
   },
   {

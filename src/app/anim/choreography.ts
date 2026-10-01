@@ -165,12 +165,12 @@ const chebyshev = (a: Vec2, b: Vec2): number => Math.max(Math.abs(a.x - b.x), Ma
  * longest, because which heading falls is the animator's to know.
  */
 export function knockoutSpan(clips: SheetClips | undefined): number {
-  return timedSpan(clips, KO_HEADINGS.map(koClip));
+  return timedSpan(clips, ['ko', ...KO_HEADINGS.map(koClip)]);
 }
 
 /** The same for a sheet's G hits (ADR 0063), which share one timing per character. */
 export function hitSpan(clips: SheetClips | undefined): number {
-  return timedSpan(clips, HEADINGS.map(hitClip));
+  return timedSpan(clips, ['hit', ...HEADINGS.map(hitClip)]);
 }
 
 /** The stance cel at the front of a G hit, before its H1 contact cel. */
@@ -281,6 +281,7 @@ export function choreograph(input: ChoreographyInput): Choreography {
       scale?: { from: number; to: number };
       alpha?: { from: number; to: number };
       frame?: number;
+      clipTimeOffset?: number;
       meleeDirection?: MeleeDirection;
     } = {},
   ): void => {
@@ -296,6 +297,7 @@ export function choreograph(input: ChoreographyInput): Choreography {
       ...(extra.scale ? { scale: extra.scale } : {}),
       ...(extra.alpha ? { alpha: extra.alpha } : {}),
       ...(extra.frame !== undefined ? { frame: extra.frame } : {}),
+      ...(extra.clipTimeOffset !== undefined ? { clipTimeOffset: extra.clipTimeOffset } : {}),
       ...(extra.meleeDirection ? { meleeDirection: extra.meleeDirection } : {}),
     });
   };
@@ -440,9 +442,9 @@ export function choreograph(input: ChoreographyInput): Choreography {
             : facingFor(screenDir);
 
         const motion = attackMotion(ability.fx, melee, self);
-        const windUp = TIMING.windUp * motion.windUp * rate;
-        const release = TIMING.release * motion.release * rate;
-        const recover = TIMING.recover * motion.recover * rate;
+        let windUp = TIMING.windUp * motion.windUp * rate;
+        let release = TIMING.release * motion.release * rate;
+        let recover = TIMING.recover * motion.recover * rate;
         const back = self ? { x: 0, y: -0.06 } : scaled(screenDir, -LEAN_BACK);
         const forward = self
           ? { x: 0, y: 0.04 }
@@ -451,6 +453,21 @@ export function choreograph(input: ChoreographyInput): Choreography {
         // These directed fundamentals have calibrated cast palms. Earth,
         // area and surface techniques retain their separate ground contract.
         const casterUnit = unitsBefore.find((unit) => unit.id === event.unitId);
+        const castDef = !melee && casterUnit ? input.clipsOf?.(casterUnit.sprite)?.cast : undefined;
+        const castHolds = castDef?.frameMs;
+        // A timed bare cast owns its whole beat. Its fourth cel, when present,
+        // begins contact (the Driller's authored frame 3); up to three cels
+        // strike and the remainder recover. The offsets keep its cel clock
+        // continuous across the motion phases. Short legacy casts partition
+        // the same way without creating an empty release.
+        if (castHolds) {
+          const contactIndex = Math.min(3, castHolds.length - 1);
+          const recoverIndex = Math.min(contactIndex + 3, castHolds.length);
+          windUp = castHolds.slice(0, contactIndex).reduce((sum, ms) => sum + ms, 0) * rate;
+          release =
+            castHolds.slice(contactIndex, recoverIndex).reduce((sum, ms) => sum + ms, 0) * rate;
+          recover = castHolds.slice(recoverIndex).reduce((sum, ms) => sum + ms, 0) * rate;
+        }
         const victim = unitsBefore.find((unit) => {
           if (unit.hp <= 0) return false;
           const pos = positions.get(unit.id) ?? unit.pos;
@@ -535,6 +552,7 @@ export function choreograph(input: ChoreographyInput): Choreography {
           ...(facing !== undefined ? { facing } : {}),
           scale: { from: 1, to: motion.compression },
           frame: 0,
+          ...(castHolds ? { clipTimeOffset: 0 } : {}),
           ...(meleeDirection ? { meleeDirection } : {}),
         });
         const releaseAt = cursor + windUp;
@@ -542,6 +560,7 @@ export function choreograph(input: ChoreographyInput): Choreography {
           ...(facing !== undefined ? { facing } : {}),
           scale: { from: motion.compression, to: motion.extension },
           frame: 1,
+          ...(castHolds ? { clipTimeOffset: windUp } : {}),
           ...(meleeDirection ? { meleeDirection } : {}),
         });
         // The element gathers through the wind-up and is out of the hands by the release.
@@ -692,6 +711,11 @@ export function choreograph(input: ChoreographyInput): Choreography {
                 returnAt = Math.max(returnAt, launchAt + def.duration * rate);
         }
 
+        // The authored ground contact is the first striking cel. A timed bare
+        // cast therefore lands at frame 3 even when the generic FX recipe has
+        // a nominal travel phase.
+        if (castHolds) impactAt = releaseAt;
+
         // Keep the extension through flight and impact. Without this track a
         // long throw snaps to idle before its recovery starts.
         const hitStop = recipe.hitStop * rate;
@@ -702,12 +726,14 @@ export function choreograph(input: ChoreographyInput): Choreography {
             ...(facing !== undefined ? { facing } : {}),
             scale: { from: motion.extension, to: motion.extension },
             frame: 1,
+            ...(castHolds ? { clipTimeOffset: windUp + release } : {}),
             ...(meleeDirection ? { meleeDirection } : {}),
           });
         pose(event.unitId, clip, recoverAt, recover, forward, { x: 0, y: 0 }, easeInOutSine, {
           ...(facing !== undefined ? { facing } : {}),
           scale: { from: motion.extension, to: 1 },
           frame: melee ? 0 : 2,
+          ...(castHolds ? { clipTimeOffset: windUp + release } : {}),
           ...(meleeDirection ? { meleeDirection } : {}),
         });
 

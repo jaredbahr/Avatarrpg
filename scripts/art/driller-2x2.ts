@@ -5,16 +5,18 @@
  *
  * Usage: node --import tsx scripts/art/driller-2x2.ts
  */
-import { mkdirSync, writeFileSync } from 'node:fs';
+import { existsSync, mkdirSync, rmSync, writeFileSync } from 'node:fs';
 import { dirname } from 'node:path';
 import type { ClipName } from '../../src/content/assets/clips';
 import { atlasJsonText } from '../../src/render/sheets/atlasJson';
 import { layoutSheet } from '../../src/render/sheets/layout';
 import type { Image } from './lib/image';
-import { newImage, pixelAt, readPng, setPixel, writePng } from './lib/image';
+import { newImage, pixelAt, readPng, setPixel } from './lib/image';
+import { encodeWebpLossless } from './lib/webp';
 
 export const DRILLER_SOURCE_DIRECTORY = 'media/art-sources/driller-2x2-v1';
-export const DRILLER_PNG = 'public/art/units/driller.png';
+export const DRILLER_WEBP = 'public/art/units/driller.webp';
+export const OBSOLETE_DRILLER_PNG = 'public/art/units/driller.png';
 export const DRILLER_JSON = 'public/art/units/driller.json';
 export const DRILLER_KEY = 'unit.enemy.driller';
 export const DRILLER_FRAME_SIZE = 160;
@@ -49,16 +51,17 @@ export function packDriller(): { image: Image; json: string } {
   }
   return {
     image,
-    json: `${atlasJsonText(layout.frames, 'driller.png', layout.width, layout.height)}\n`,
+    json: `${atlasJsonText(layout.frames, 'driller.webp', layout.width, layout.height)}\n`,
   };
 }
 
-function main(): void {
+async function main(): Promise<void> {
   const { image, json } = packDriller();
-  mkdirSync(dirname(DRILLER_PNG), { recursive: true });
-  writePng(DRILLER_PNG, image);
+  mkdirSync(dirname(DRILLER_WEBP), { recursive: true });
+  writeFileSync(DRILLER_WEBP, await encodeWebpLossless(image));
   writeFileSync(DRILLER_JSON, json);
-  console.log(`wrote driller.png (${image.width}x${image.height}) and driller.json`);
+  if (existsSync(OBSOLETE_DRILLER_PNG)) rmSync(OBSOLETE_DRILLER_PNG);
+  console.log(`wrote lossless driller.webp (${image.width}x${image.height}) and driller.json`);
 }
 
-if (process.argv[1]?.endsWith('driller-2x2.ts')) main();
+if (process.argv[1]?.endsWith('driller-2x2.ts')) await main();

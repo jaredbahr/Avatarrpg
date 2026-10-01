@@ -568,7 +568,11 @@ export class Animator {
     const frame = pose?.frame;
     return {
       clip: pose ? this.reactionClip(pose.clip, unitId, sprite) : bob ? 'walk' : 'idle',
-      clipTime: pose ? now - pose.start : travel ? this.walkClipTime(travel, sprite) : 0,
+      clipTime: pose
+        ? now - pose.start + (pose.clipTimeOffset ?? 0)
+        : travel
+          ? this.walkClipTime(travel, sprite)
+          : 0,
       offset,
       scale,
       alpha,

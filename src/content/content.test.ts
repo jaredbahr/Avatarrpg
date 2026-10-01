@@ -148,6 +148,16 @@ describe('content', () => {
     expect(check({ 'unit.earth.bo': bo })).toEqual([]);
   });
 
+  it('allows up to twelve frames only for timed bare clips', () => {
+    const frames = Array.from({ length: 8 }, (_, index) => `unit.test/cast/${index}`);
+    const untimed: ClipDef = { frames, fps: 8, loop: false };
+    const timed: ClipDef = { ...untimed, frameMs: frames.map(() => 100) };
+    expect(sheetClipProblems('unit.test', { cast: untimed }, false)).toContain(
+      'asset unit.test: cast has 8 frames, needs 3-3',
+    );
+    expect(sheetClipProblems('unit.test', { cast: timed }, false)).toEqual([]);
+  });
+
   it('holds a fighting stance to every heading of declared eight-way locomotion', () => {
     const sura = CONTENT_BUNDLE.assets?.['unit.water.sura'];
     const linmei = CONTENT_BUNDLE.assets?.['unit.earth.linmei'];

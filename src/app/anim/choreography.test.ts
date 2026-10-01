@@ -59,6 +59,91 @@ function run(events: GameEvent[], rate = 1) {
   return choreograph({ content, events, unitsBefore: roster, cursor: 1000, rate, pushIndex: 0 });
 }
 
+describe('timed bare legacy clips', () => {
+  const holds = {
+    cast: [140, 140, 160, 120, 100, 120, 180, 240],
+    hit: [100, 120, 140, 180],
+    ko: [120, 120, 140, 160, 180, 220, 260, 360],
+  } as const;
+  const clips = Object.fromEntries(
+    Object.entries(holds).map(([clip, frameMs]) => [
+      clip,
+      {
+        frames: frameMs.map((_, index) => `unit.enemy.driller/${clip}/${index}`),
+        fps: 8,
+        loop: false,
+        frameMs,
+      },
+    ]),
+  ) as SheetClips;
+  const driller = {
+    ...unit('driller', 1, 3),
+    faction: 'enemy' as const,
+    sprite: 'unit.enemy.driller',
+    hp: 80,
+    base: { maxHp: 80 },
+  } as Unit;
+  const victim = { ...unit('victim', 5, 3), hp: 20, base: { maxHp: 20 } } as Unit;
+  const play = (events: GameEvent[]) =>
+    choreograph({
+      content,
+      events,
+      unitsBefore: [driller, victim],
+      cursor: 1000,
+      rate: 1,
+      pushIndex: 0,
+      clipsOf: (sprite) => (sprite === driller.sprite ? clips : undefined),
+    });
+
+  it('plays the whole cast and aligns impact with cast frame 3 contact', () => {
+    const out = play([
+      {
+        type: 'abilityUsed',
+        unitId: driller.id,
+        abilityId: 'fire_jab',
+        target: victim.pos,
+        tiles: [victim.pos],
+      },
+      {
+        type: 'damaged',
+        unitId: victim.id,
+        amount: 4,
+        crit: false,
+        damageType: 'fire',
+        sourceId: driller.id,
+      },
+    ]);
+    const cast = out.tracks.filter(
+      (track): track is PoseTrack => track.kind === 'pose' && track.unitId === driller.id,
+    );
+    const flash = out.tracks.find((track) => track.kind === 'flash' && track.unitId === victim.id);
+    const duration = holds.cast.reduce((sum, ms) => sum + ms, 0);
+    const contact = holds.cast.slice(0, 3).reduce((sum, ms) => sum + ms, 0);
+    expect(Math.max(...cast.map((track) => track.start + track.duration))).toBe(1000 + duration);
+    expect(flash?.start).toBe(1000 + contact);
+    expect(cast.map((track) => track.clipTimeOffset)).toEqual([0, contact, contact + 340]);
+  });
+
+  it('plays a timed hit through and a timed KO through its held last frame', () => {
+    const hit = play([
+      {
+        type: 'damaged',
+        unitId: driller.id,
+        amount: 4,
+        crit: false,
+        damageType: 'fire',
+        sourceId: victim.id,
+      },
+    ]).tracks.find((track): track is PoseTrack => track.kind === 'pose' && track.clip === 'hit');
+    expect(hit?.duration).toBe(holds.hit.reduce((sum, ms) => sum + ms, 0));
+    const ko = play([{ type: 'unitDied', unitId: driller.id }]).tracks.find(
+      (track): track is PoseTrack => track.kind === 'pose' && track.clip === 'ko',
+    );
+    expect(ko?.duration).toBe(holds.ko.reduce((sum, ms) => sum + ms, 0));
+    expect(ko?.alpha).toBeUndefined();
+  });
+});
+
 const kinds = (tracks: readonly AnyTrack[]) => tracks.map((t) => t.kind);
 
 describe('directed Fire Jab attachments', () => {

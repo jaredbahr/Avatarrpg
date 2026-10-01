@@ -22,8 +22,10 @@ import {
   HEADINGS,
   KO_HEADINGS,
   REQUIRED_CLIPS,
+  TIMED_BARE_CLIP_MAX_FRAMES,
   headingClip,
   hitClip,
+  isTimedBareClip,
   koClip,
 } from './assets/clips';
 import type { ClipDef, ClipName } from './assets/clips';
@@ -845,7 +847,7 @@ const clipDef = z
     fps: z.number().positive().max(60),
     loop: z.boolean(),
     events: z.object({ hit: z.number().int().min(0).optional() }).optional(),
-    // A G knockout (ADR 0059): timed cel by cel, trimmed to its own cel.
+    // Timed clips (ADR 0059, ADR 0069): cel holds, optionally trimmed.
     frameMs: z.array(z.number().positive().max(5000)).optional(),
     frameSize: z
       .object({ w: z.number().int().positive(), h: z.number().int().positive() })
@@ -895,7 +897,10 @@ export function sheetClipProblems(
   for (const clip of CLIP_NAMES) {
     const def = clips[clip];
     if (!def) continue;
-    const bounds = CLIP_FRAME_COUNTS[clip];
+    const legacyBounds = CLIP_FRAME_COUNTS[clip];
+    const bounds = isTimedBareClip(clip, def)
+      ? { min: legacyBounds.min, max: TIMED_BARE_CLIP_MAX_FRAMES }
+      : legacyBounds;
     if (def.frames.length < bounds.min || def.frames.length > bounds.max) {
       problems.push(
         `asset ${key}: ${clip} has ${def.frames.length} frames, needs ${bounds.min}-${bounds.max}`,
