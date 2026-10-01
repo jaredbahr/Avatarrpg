@@ -141,7 +141,7 @@ export class Camera {
   }
 
   /** Manual gestures may expose authored paint, but only on an overflowing axis. */
-  private clampManual(): void {
+  clampToPanBounds(): void {
     const slackX = this.worldWidth - this.viewport.width;
     const slackY = this.worldHeight - this.viewport.height;
     const pixels = (tiles: number) => Math.max(0, tiles) * TILE * this.scale;
@@ -164,7 +164,7 @@ export class Camera {
   panBy(dx: number, dy: number): void {
     this.offsetX -= dx;
     this.offsetY -= dy;
-    this.clampManual();
+    this.clampToPanBounds();
   }
 
   /**
@@ -181,7 +181,7 @@ export class Camera {
     this.offsetX = (at.x + this.offsetX) * ratio - at.x;
     this.offsetY = (at.y + this.offsetY) * ratio - at.y;
     this.scale = next;
-    this.clampManual();
+    this.clampToPanBounds();
   }
 
   /** Scrolls so a tile sits in the middle of the viewport, where possible. */

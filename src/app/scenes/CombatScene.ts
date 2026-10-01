@@ -300,7 +300,7 @@ export class CombatScene implements Scene {
     if (!this.manualCamera) this.recentre();
     else {
       camera.scale = Math.max(camera.scale, camera.fitScale());
-      camera.clamp();
+      camera.clampToPanBounds();
     }
     this.revealPendingMoveAfterViewportChange();
     this.syncRecentre();

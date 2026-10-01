@@ -107,7 +107,7 @@ describe('Camera.clamp painted ring', () => {
     [
       'forest',
       COMBAT_CAMERA_RING_TILES.forest_road,
-      { top: 2.5, right: 2.5, bottom: 2.5, left: 2.5 },
+      { top: 2.2, right: 4.4, bottom: 2.2, left: 4.4 },
     ],
     ['gate', COMBAT_CAMERA_RING_TILES.quarry_gate, { top: 8.75, right: 5, bottom: 1.25, left: 5 }],
     [
@@ -150,6 +150,24 @@ describe('Camera.clamp painted ring', () => {
     camera.panBy(0, 100_000);
     expect(camera.offsetY).toBe(initialY);
     expect(camera.offsetY).toBeCloseTo((camera.worldHeight - LANDSCAPE.height) / 2, 6);
+  });
+
+  it('reapplies painted pan bounds after the viewport changes', () => {
+    const camera = new Camera(NARROW, GRID, 'oblique', COMBAT_CAMERA_RING_TILES.forest_road);
+    camera.fitExplore(96);
+    camera.panBy(-200_000, -200_000);
+    camera.viewport = { width: 520, height: 640, dpr: 1 };
+    camera.clampToPanBounds();
+
+    expect(camera.offsetX).toBeCloseTo(
+      camera.worldWidth - camera.viewport.width + camera.clampRingTiles.right * TILE * camera.scale,
+      6,
+    );
+    expect(camera.offsetY).toBeCloseTo(
+      camera.worldHeight - camera.viewport.height +
+        camera.clampRingTiles.bottom * TILE * camera.scale,
+      6,
+    );
   });
 
   it('does not change fit scale, tile size, or programmatic grid centring', () => {

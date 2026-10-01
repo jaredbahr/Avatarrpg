@@ -349,6 +349,21 @@ export const FOREST_CREEK_REEDS: readonly SceneScenery[] = (
 export const FOREST_APRON_MAP = { width: 20, height: 12 } as const;
 /** Logical tiles of authored terrain outside the rim, on all four sides. */
 export const FOREST_APRON_DEPTH = 2.5;
+/** The painted alpha reaches zero here; the remaining plate margin is colour bleed only. */
+export const FOREST_APRON_FADE = 2.2;
+/** Exterior scenery feet stay inside this fully opaque part of the apron. */
+export const FOREST_APRON_SOLID = FOREST_APRON_FADE - 1;
+/**
+ * Projected screen-space reach of the painted ring. In the oblique projection
+ * x = logical x - y, so the two logical apron sides add across the screen;
+ * y = (logical x + y) / 2 leaves one logical fade depth above and below.
+ */
+export const FOREST_APRON_PAINTED_EXTENTS_TILES = {
+  top: FOREST_APRON_FADE,
+  right: FOREST_APRON_FADE * 2,
+  bottom: FOREST_APRON_FADE,
+  left: FOREST_APRON_FADE * 2,
+} as const;
 /**
  * How far inside the rim the apron reaches to close the feather the grass packs
  * leave: they fade to alpha 0 across their outermost ~0.2 tiles, which the page

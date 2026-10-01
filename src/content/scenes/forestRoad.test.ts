@@ -1,6 +1,9 @@
 import { expect, it } from 'vitest';
 import { FOREST_ROAD } from '../maps/combat';
 import {
+  FOREST_APRON_FADE,
+  FOREST_APRON_PAINTED_EXTENTS_TILES,
+  FOREST_APRON_SOLID,
   FOREST_ALDER_CELLS,
   FOREST_CREEK_POOLS,
   FOREST_DEADFALL,
@@ -24,6 +27,15 @@ const cells = (key: string) =>
   FOREST_ROAD.rows.flatMap((row, y) =>
     [...row].flatMap((value, x) => (value === key ? [{ x, y }] : [])),
   );
+
+it('derives projected camera extents from the apron fade', () => {
+  expect(FOREST_APRON_PAINTED_EXTENTS_TILES).toEqual({
+    top: FOREST_APRON_FADE,
+    right: FOREST_APRON_FADE * 2,
+    bottom: FOREST_APRON_FADE,
+    left: FOREST_APRON_FADE * 2,
+  });
+});
 
 it('registers forest art only to the existing water, cover and blocked tree cells', () => {
   expect(FOREST_ROAD_SCENE.groundMode).toBe('partial');
@@ -65,6 +77,18 @@ it('registers forest art only to the existing water, cover and blocked tree cell
   // Exterior trees stand past the rim, never on the board.
   for (const cell of FOREST_THICKET_CELLS)
     expect(FOREST_ROAD.rows[cell.y]?.[cell.x], `${cell.x},${cell.y}`).toBeUndefined();
+  for (const cell of FOREST_THICKET_CELLS) {
+    const foot = { x: cell.x + 0.5, y: cell.y + 0.5 };
+    const depth = Math.max(
+      -foot.x,
+      foot.x - FOREST_ROAD.width,
+      -foot.y,
+      foot.y - FOREST_ROAD.height,
+    );
+    expect(depth, `${cell.x},${cell.y} has opaque apron beneath its foot`).toBeLessThanOrEqual(
+      FOREST_APRON_SOLID,
+    );
+  }
   // The creek's pools are exactly the deep-water cells, and the deadfall lies in one.
   expect(byKey(FOREST_CREEK_POOLS.flatMap((pool) => pool.cells))).toEqual(byKey(cells('W')));
   expect(cells('W')).toContainEqual(FOREST_DEADFALL.footprint[0]);

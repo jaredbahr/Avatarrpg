@@ -26,10 +26,11 @@ import {
   DRILLER_FLOOR_SCENE,
   QUARRY_SURROUND_EXTENTS_TILES,
 } from '../scenes/quarryProjected';
+import { FOREST_APRON_PAINTED_EXTENTS_TILES } from '../scenes/forestRoad';
 
 /** Painted surroundings available to the combat camera beyond the full grid. */
 export const COMBAT_CAMERA_RING_TILES = {
-  forest_road: { top: 2.5, right: 2.5, bottom: 2.5, left: 2.5 },
+  forest_road: FOREST_APRON_PAINTED_EXTENTS_TILES,
   quarry_gate: QUARRY_SURROUND_EXTENTS_TILES,
   ambush_road: QUARRY_SURROUND_EXTENTS_TILES,
   quarry_floor: QUARRY_SURROUND_EXTENTS_TILES,
