@@ -113,7 +113,10 @@ export interface ReconcileBattleOptions {
    * default to `SQUARE_FOOTPRINTS`, so gate-off behaviour is unchanged.
    */
   readonly squareFootprints?: boolean;
-  /** Test hook for proving the square-anchor flood stays component-bounded. */
+  /**
+   * @internal Test seam for proving the square-anchor flood stays component-bounded.
+   * Callers must pass a flood with `reachable`'s stop/reachability semantics.
+   */
   readonly reachable?: typeof reachable;
 }
 
@@ -353,15 +356,14 @@ function snapBattleUnits(
         ),
     );
 
-  type AnchorInfo = { nearParty: boolean; canContact: boolean };
   // A terrain-only flood defines connectivity. A second flood, with living
   // units blocked, defines contact reachability. Cache every stop in each
   // component so a buried unit does not run a full Infinity flood per anchor.
-  const anchorInfo = new Map<string, AnchorInfo>();
+  const terrainInfo = new Map<string, boolean>();
   const contactInfo = new Map<string, boolean>();
-  const anchorInfoFor = (unit: BattleState['units'][number], pos: Vec2): AnchorInfo => {
+  const anchorInfoFor = (unit: BattleState['units'][number], pos: Vec2) => {
     const key = posKey(pos);
-    if (!anchorInfo.has(key)) {
+    if (!terrainInfo.has(key)) {
       const anchors = flood(
         {
           grid,
@@ -377,11 +379,7 @@ function snapBattleUnits(
       const nearParty = [...anchors.values()].some((entry) => anchorNearParty(entry.pos));
       for (const entry of anchors.values()) {
         const entryKey = posKey(entry.pos);
-        const existing = anchorInfo.get(entryKey);
-        anchorInfo.set(entryKey, {
-          nearParty,
-          canContact: existing?.canContact ?? false,
-        });
+        terrainInfo.set(entryKey, nearParty);
       }
     }
     if (!contactInfo.has(key)) {
@@ -403,15 +401,13 @@ function snapBattleUnits(
       const canContact = [...anchors.values()].some((entry) => contactable(unit, entry.pos));
       for (const entry of anchors.values()) {
         const entryKey = posKey(entry.pos);
-        const existing = anchorInfo.get(entryKey);
-        anchorInfo.set(entryKey, {
-          nearParty: existing?.nearParty ?? anchorNearParty(entry.pos),
-          canContact,
-        });
         contactInfo.set(entryKey, canContact);
       }
     }
-    return anchorInfo.get(key) ?? { nearParty: false, canContact: false };
+    return {
+      nearParty: terrainInfo.get(key) ?? false,
+      canContact: contactInfo.get(key) ?? false,
+    };
   };
   const connected = (unit: BattleState['units'][number], pos: Vec2): boolean => {
     if (!square || unit.size !== 2)
@@ -434,7 +430,7 @@ function snapBattleUnits(
     }
     // Unit cells and contact targets change after every repair; component
     // caches are therefore scoped to this unit's candidate search.
-    anchorInfo.clear();
+    terrainInfo.clear();
     contactInfo.clear();
     let pos = unit.pos;
     if (!valid(unit)) {
