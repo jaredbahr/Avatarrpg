@@ -28,11 +28,10 @@ export const creekOutput = (name: string): string =>
 /**
  * The creek runs on south past the rim, so a pool has no bank there: it is
  * packed as though its row-11 cells continued past the apron fade. Past the
- * rim the water and bank take the apron's own alpha contour, plus a short
- * dissolve at the finite plate crop so that crop cannot become a straight
- * visible edge before the shared contour reaches zero.
+ * rim the water and bank take the apron's own alpha contour. The plate extends
+ * beyond that contour, so its crop is fully clear and can never become an edge.
  */
-export const CREEK_RUNS_ON = 2;
+export const CREEK_RUNS_ON = 3;
 
 export function packCreekPool(material: ForestMaterial, pool: ForestCreekPool) {
   const rim = FOREST_APRON_MAP.height;
@@ -50,16 +49,12 @@ export function packCreekPool(material: ForestMaterial, pool: ForestCreekPool) {
   for (let py = 0; py < image.height; py++)
     for (let px = 0; px < image.width; px++) {
       const { x, y } = shorePosition(px, py, 2, { patch: pool.patch, cells: pool.cells });
-      if (y < rim) continue;
+      const depth = apronDepth(x, y);
+      if (depth <= 0) continue;
       const [r, g, b, alpha] = pixelAt(image, px, py);
       if (!alpha) continue;
-      const fade = forestApronAlpha(apronDepth(x, y), x, y);
-      // The packed patch is finite. Dissolve the run-on before its crop on all
-      // sides so neither the water film nor its damp bank can end as a vertical
-      // plate edge at the south-east corner.
-      const edge = Math.min(px, py, image.width - 1 - px, image.height - 1 - py);
-      const edgeFade = Math.max(0, Math.min(1, edge / 48));
-      setPixel(image, px, py, [r, g, b, Math.round((alpha * fade * edgeFade) / 255)]);
+      const fade = forestApronAlpha(depth, x, y);
+      setPixel(image, px, py, [r, g, b, Math.round((alpha * fade) / 255)]);
     }
   return packed;
 }

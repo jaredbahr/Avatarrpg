@@ -135,6 +135,7 @@ function smoothstep(edge0: number, edge1: number, value: number): number {
 /** Forest-specific outer-tile fade. It reaches a near-clear step before the crop edge. */
 export function forestApronAlpha(depth: number, x: number, y: number): number {
   if (depth <= APRON_SOLID) return 255;
+  if (depth >= APRON_FADE) return 0;
   const wander =
     (transitionCluster(x * 0.5, y * 0.5, 91) - 0.5) *
     0.12 *

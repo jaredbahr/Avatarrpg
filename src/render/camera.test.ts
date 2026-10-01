@@ -1,6 +1,13 @@
 import { describe, expect, it } from 'vitest';
 import { COMBAT_CAMERA_RING_TILES } from '../content/maps/combat';
-import { Camera, clampCentreToConvexPolygon, MIN_TILE_PX, TILE } from './camera';
+import {
+  Camera,
+  clampCentreToConvexPolygon,
+  insetConvexPolygon,
+  MIN_TILE_PX,
+  PAN_INSET,
+  TILE,
+} from './camera';
 
 /** A Surface-sized map area in landscape: the whole 20x12 board fits. */
 const LANDSCAPE = { width: 1344, height: 640, dpr: 1 };
@@ -249,6 +256,80 @@ describe('clampCentreToConvexPolygon', () => {
 });
 
 describe('Camera.clamp convex paint hull', () => {
+  const forestHull = [
+    { x: 0, y: -2.2 },
+    { x: 24.4, y: 10 },
+    { x: 8, y: 18.2 },
+    { x: -16.4, y: 6 },
+  ] as const;
+
+  it('insets the Forest Road hull by the viewport and grows reach when zoomed in', () => {
+    const viewport = { width: 1194, height: 455, dpr: 1 };
+    const camera = new Camera(viewport, GRID, 'oblique');
+    const boardHull = forestHull.map((point) => camera.boardPoint(point));
+    const insetAt = (zoom: number) =>
+      insetConvexPolygon(
+        boardHull,
+        (PAN_INSET * viewport.width) / (2 * zoom),
+        (PAN_INSET * viewport.height) / (2 * zoom),
+      );
+    const reach = (polygon: readonly { x: number }[]) =>
+      Math.max(...polygon.map((point) => point.x)) - Math.min(...polygon.map((point) => point.x));
+    // The inset is a fixed share of the viewport, so the pannable reach left
+    // inside the hull grows as the board is magnified.
+    expect(insetAt(1).length).toBeGreaterThan(0);
+    expect(reach(insetAt(2))).toBeGreaterThan(reach(insetAt(1)));
+    expect(reach(insetAt(3))).toBeGreaterThan(reach(insetAt(2)));
+  });
+
+  it('centres an axis when its viewport inset consumes the hull on that axis', () => {
+    const camera = new Camera({ width: 4000, height: 455, dpr: 1 }, GRID, 'oblique');
+    camera.clampPaintHull = forestHull;
+    camera.scale = 1;
+    camera.panBy(100_000, 0);
+    expect(camera.offsetX).toBeCloseTo((camera.worldWidth - camera.viewport.width) / 2, 6);
+  });
+
+  it('keeps at least half the 1194x455 viewport under Forest Road paint at every extreme', () => {
+    const camera = new Camera({ width: 1194, height: 455, dpr: 1 }, GRID, 'oblique');
+    camera.clampPaintHull = forestHull;
+    camera.fit();
+    const coveredFraction = (): number => {
+      const polygon = forestHull.map((point) => {
+        const board = camera.boardPoint(point);
+        return {
+          x: board.x * camera.scale - camera.offsetX,
+          y: board.y * camera.scale - camera.offsetY,
+        };
+      });
+      let covered = 0;
+      const samples = 120;
+      for (let sy = 0; sy < samples; sy += 1)
+        for (let sx = 0; sx < samples; sx += 1) {
+          const point = {
+            x: ((sx + 0.5) * camera.viewport.width) / samples,
+            y: ((sy + 0.5) * camera.viewport.height) / samples,
+          };
+          const crosses = polygon.map((a, index) => {
+            const b = polygon[(index + 1) % polygon.length] ?? a;
+            return (b.x - a.x) * (point.y - a.y) - (b.y - a.y) * (point.x - a.x);
+          });
+          if (crosses.every((cross) => cross >= 0) || crosses.every((cross) => cross <= 0))
+            covered += 1;
+        }
+      return covered / samples ** 2;
+    };
+    for (const [dx, dy] of [
+      [100_000, 0],
+      [-200_000, 0],
+      [100_000, 100_000],
+      [0, -200_000],
+    ] as const) {
+      camera.panBy(dx, dy);
+      expect(coveredFraction(), `${dx},${dy}`).toBeGreaterThanOrEqual(0.5);
+    }
+  });
+
   it.each(['orthographic', 'oblique'] as const)(
     'keeps a fitted axis centred while clamping the overflowing axis (%s)',
     (projection) => {

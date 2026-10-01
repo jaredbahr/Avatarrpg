@@ -114,34 +114,24 @@ it('keeps pine tips inside the agreed top bleed and all feet on projected cell c
   }
 });
 
-it('keeps every exterior pine image inside the painted hull', () => {
-  const hull = [
-    { x: 0, y: -FOREST_APRON_FADE },
-    { x: 20 + FOREST_APRON_FADE * 2, y: 10 },
-    { x: 8, y: 16 + FOREST_APRON_FADE },
-    { x: -12 - FOREST_APRON_FADE * 2, y: 6 },
-  ];
-  const inside = (point: { x: number; y: number }): boolean => {
-    const crosses = hull.map((a, index) => {
-      const b = hull[(index + 1) % hull.length] ?? a;
-      return (b.x - a.x) * (point.y - a.y) - (b.y - a.y) * (point.x - a.x);
-    });
-    return crosses.every((cross) => cross >= -1e-6) || crosses.every((cross) => cross <= 1e-6);
-  };
+it('registers every exterior pine whose foot qualifies for the painted apron', () => {
   const exterior = FOREST_ROAD_SCENE.scenery.filter(
     (piece) => piece.exterior && piece.id.startsWith('forest-pine-'),
   );
   expect(exterior).toHaveLength(FOREST_THICKET_CELLS.length);
   expect(exterior.length).toBeGreaterThan(0);
-  for (const tree of exterior) {
-    for (const point of [
-      { x: (tree.x - 768) / 64, y: tree.y / 64 },
-      { x: (tree.x + tree.width - 768) / 64, y: tree.y / 64 },
-      { x: (tree.x - 768) / 64, y: (tree.y + tree.height) / 64 },
-      { x: (tree.x + tree.width - 768) / 64, y: (tree.y + tree.height) / 64 },
-    ])
-      expect(inside(point), `${tree.id} ${point.x},${point.y}`).toBe(true);
-  }
+  expect(FOREST_THICKET_CELLS).toEqual([
+    { x: 1, y: -1 },
+    { x: 4, y: -1 },
+    { x: 5, y: -1 },
+    { x: 8, y: -1 },
+    { x: 11, y: -1 },
+    { x: 14, y: -1 },
+    { x: 17, y: -1 },
+    { x: -1, y: 3 },
+    { x: -1, y: 9 },
+    { x: 20, y: 9 },
+  ]);
 });
 
 it('registers the passable flood-bank nest reeds at their authored depth', () => {

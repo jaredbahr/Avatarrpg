@@ -63,7 +63,7 @@ export interface ForestCreekPool {
 export const FOREST_CREEK_POOLS: readonly ForestCreekPool[] = [
   {
     name: 'west',
-    patch: { x: 112, y: 400, width: 416, height: 224 },
+    patch: { x: -48, y: 304, width: 736, height: 416 },
     cells: [
       { x: 4, y: 10 },
       { x: 5, y: 10 },
@@ -76,7 +76,7 @@ export const FOREST_CREEK_POOLS: readonly ForestCreekPool[] = [
   },
   {
     name: 'east',
-    patch: { x: 752, y: 720, width: 416, height: 224 },
+    patch: { x: 592, y: 624, width: 736, height: 416 },
     cells: [
       { x: 12, y: 11 },
       { x: 13, y: 11 },
@@ -146,12 +146,22 @@ export const FOREST_PINE_CELLS: readonly Vec2[] = [
   { x: 0, y: 2 },
 ];
 /**
- * Pine decoration outside the rim. The former north and west ranks projected
- * beyond the ground fade and read as trees standing on the page, so only the
- * east-row-9 tree whose complete image remains inside the painted hull stays.
+ * Pine decoration outside the rim. A tree stays when its foot stands on at
+ * least 60%-opaque apron paint; its crown may silhouette against the page.
  * Exterior pieces carry no rule; the rows and `edges` in `combat.ts` do.
  */
-export const FOREST_THICKET_CELLS: readonly Vec2[] = [{ x: 20, y: 9 }];
+export const FOREST_THICKET_CELLS: readonly Vec2[] = [
+  { x: 1, y: -1 },
+  { x: 4, y: -1 },
+  { x: 5, y: -1 },
+  { x: 8, y: -1 },
+  { x: 11, y: -1 },
+  { x: 14, y: -1 },
+  { x: 17, y: -1 },
+  { x: -1, y: 3 },
+  { x: -1, y: 9 },
+  { x: 20, y: 9 },
+];
 
 function pine({ x, y }: Vec2): SceneScenery {
   const height = 224,

@@ -9,6 +9,7 @@ import {
   loadForestMaterial,
 } from './forest-village-material';
 import { creekOutput, packCreekPool } from './forest-creek';
+import { apronDepth, forestApronAlpha } from './forest-exterior-apron';
 import { shoreDistance, shorePosition } from './forest-shoreline';
 
 const material = await loadForestMaterial();
@@ -22,14 +23,17 @@ it('ships the creek plates the packer builds', async () => {
     );
 });
 
-it('fades the south run-on before every creek plate crop', () => {
+it('clips every exterior creek pixel to the apron contour before every plate crop', () => {
   for (const { pool, image } of packed) {
     let fadedRunOn = 0;
     for (let py = 0; py < image.height; py++)
       for (let px = 0; px < image.width; px++) {
-        const { y } = shorePosition(px, py, 2, pool);
-        if (y < 12) continue;
+        const { x, y } = shorePosition(px, py, 2, pool);
+        if (apronDepth(x, y) <= 0) continue;
         const alpha = pixelAt(image, px, py)[3] ?? 0;
+        const apronAlpha = forestApronAlpha(apronDepth(x, y), x, y);
+        if (alpha > 0) expect(apronAlpha, `${pool.name} ${px},${py} apron`).toBeGreaterThan(0);
+        expect(alpha, `${pool.name} ${px},${py} alpha mask`).toBeLessThanOrEqual(apronAlpha);
         if (alpha > 0 && alpha < 255) fadedRunOn++;
         if (px === 0 || py === 0 || px === image.width - 1 || py === image.height - 1)
           expect(alpha, `${pool.name} ${px},${py} crop edge`).toBe(0);

@@ -47,6 +47,9 @@ export interface ScreenPoint {
 /** A convex polygon in screen/world coordinates, closed implicitly. */
 export type ConvexPolygon = readonly ScreenPoint[];
 
+/** Fraction of each viewport half-size kept inside irregular painted hulls. */
+export const PAN_INSET = 0.7;
+
 const POINT_EPSILON = 1e-9;
 
 /**
@@ -92,6 +95,44 @@ export function clampCentreToConvexPolygon(
     }
   }
   return best;
+}
+
+/** Minkowski-erodes a convex polygon by an axis-aligned rectangle. */
+export function insetConvexPolygon(
+  polygon: ConvexPolygon,
+  halfWidth: number,
+  halfHeight: number,
+): ScreenPoint[] {
+  if (polygon.length < 3) return [...polygon];
+  const area = polygon.reduce((sum, point, index) => {
+    const next = polygon[(index + 1) % polygon.length] ?? point;
+    return sum + point.x * next.y - next.x * point.y;
+  }, 0);
+  const orientation = area >= 0 ? 1 : -1;
+  const lines = polygon.map((point, index) => {
+    const next = polygon[(index + 1) % polygon.length] ?? point;
+    const dx = next.x - point.x;
+    const dy = next.y - point.y;
+    const nx = orientation * -dy;
+    const ny = orientation * dx;
+    const shift = Math.abs(nx) * halfWidth + Math.abs(ny) * halfHeight;
+    return { nx, ny, c: nx * point.x + ny * point.y + shift };
+  });
+  const result: ScreenPoint[] = [];
+  for (let index = 0; index < lines.length; index += 1) {
+    const previous = lines[(index + lines.length - 1) % lines.length];
+    const line = lines[index];
+    if (!previous || !line) continue;
+    const determinant = previous.nx * line.ny - line.nx * previous.ny;
+    if (Math.abs(determinant) <= POINT_EPSILON) continue;
+    result.push({
+      x: (previous.c * line.ny - line.c * previous.ny) / determinant,
+      y: (previous.nx * line.c - line.nx * previous.c) / determinant,
+    });
+  }
+  return result.filter((point) =>
+    lines.every((line) => line.nx * point.x + line.ny * point.y >= line.c - POINT_EPSILON),
+  );
 }
 
 export interface CameraClampRing {
@@ -224,12 +265,28 @@ export class Camera {
       y: (this.offsetY + this.viewport.height / 2) / this.scale,
     };
     const hull = this.clampPaintHull?.map((point) => this.boardPoint(point)) ?? [];
-    const clamped = clampCentreToConvexPolygon(centre, hull);
+    const xs = hull.map((point) => point.x);
+    const ys = hull.map((point) => point.y);
+    const halfWidth =
+      Math.max(...xs) - Math.min(...xs) <= (PAN_INSET * this.viewport.width) / this.scale
+        ? 0
+        : (PAN_INSET * this.viewport.width) / (2 * this.scale);
+    const halfHeight =
+      Math.max(...ys) - Math.min(...ys) <= (PAN_INSET * this.viewport.height) / this.scale
+        ? 0
+        : (PAN_INSET * this.viewport.height) / (2 * this.scale);
+    const insetHull = insetConvexPolygon(hull, halfWidth, halfHeight);
+    const insetEmpty = insetHull.length < 3;
+    const clamped = insetEmpty ? centre : clampCentreToConvexPolygon(centre, insetHull);
     // A fitted axis has no room to pan. Keep its existing centred value even
     // when the other axis needs to follow a sloping hull edge.
     const next = {
-      x: slackX <= 0 ? this.worldWidth / this.scale / 2 : clamped.x,
-      y: slackY <= 0 ? this.worldHeight / this.scale / 2 : clamped.y,
+      x:
+        slackX <= 0 || halfWidth === 0 || insetEmpty ? this.worldWidth / this.scale / 2 : clamped.x,
+      y:
+        slackY <= 0 || halfHeight === 0 || insetEmpty
+          ? this.worldHeight / this.scale / 2
+          : clamped.y,
     };
     this.offsetX = next.x * this.scale - this.viewport.width / 2;
     this.offsetY = next.y * this.scale - this.viewport.height / 2;
