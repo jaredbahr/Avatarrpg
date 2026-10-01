@@ -311,9 +311,10 @@ export async function validateSheets(
       !Number.isInteger(wantW) ||
       !Number.isInteger(wantH) ||
       wantW < defaultW ||
-      wantW > defaultW * 2 + MARGIN * 2 ||
+      wantW > defaultW * 2 ||
       wantH < defaultH ||
-      wantH > entry.pixelsPerTile * 2 + MARGIN * 2
+      // A 2x2 footprint's square cel carries the art bible's gutter on top.
+      wantH > entry.pixelsPerTile * 2 + (entry.footprint.h === 2 ? MARGIN * 2 : 0)
     )
       problems.push(`${key}: declared frame exceeds the bounded art envelope`);
     for (const clip of CLIP_NAMES) {

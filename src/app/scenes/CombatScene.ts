@@ -104,6 +104,15 @@ export function moveHoverFootprint(
   return anchor ? footprintCells(anchor, size, square) : [];
 }
 
+/**
+ * Which way a held knockout is drawn. A G knockout is authored per heading, so
+ * it is never mirrored; the bare `ko` of a mirrored sheet (ADR 0069) lies the
+ * way the unit was facing when it fell.
+ */
+export function fallenFacing(clip: string, facing: 1 | -1): 1 | -1 {
+  return clip === 'ko' ? facing : 1;
+}
+
 interface OverlayBuild {
   readonly overlays: OverlayLayer[];
   readonly path: readonly Vec2[];
@@ -1927,7 +1936,7 @@ export class CombatScene implements Scene {
       : enemyScale(sprite, pose?.scale, projection);
     // Once a G knockout has played, the body stays where it fell (ADR 0059).
     const down = !pose && fallen ? this.app.animator.fallenPose(unitId, sprite) : undefined;
-    if (down) return { ...down, facing: 1, scale };
+    if (down) return { ...down, facing: fallenFacing(down.clip, walked ?? restFacing), scale };
     if (!pose) return { ...(movement ?? { facing: walked ?? restFacing }), scale };
     return {
       offset: pose.offset,

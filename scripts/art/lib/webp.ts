@@ -86,11 +86,13 @@ export function isLosslessWebp(bytes: Uint8Array): boolean {
   if (bytes.length < 20 || ascii(bytes, 0, 4) !== 'RIFF' || ascii(bytes, 8, 4) !== 'WEBP')
     return false;
   for (let offset = 12; offset + 8 <= bytes.length;) {
+    // Unsigned: a corrupt chunk size with its top bit set must not walk backwards.
     const size =
-      (bytes[offset + 4] ?? 0) |
-      ((bytes[offset + 5] ?? 0) << 8) |
-      ((bytes[offset + 6] ?? 0) << 16) |
-      ((bytes[offset + 7] ?? 0) << 24);
+      ((bytes[offset + 4] ?? 0) |
+        ((bytes[offset + 5] ?? 0) << 8) |
+        ((bytes[offset + 6] ?? 0) << 16) |
+        ((bytes[offset + 7] ?? 0) << 24)) >>>
+      0;
     if (ascii(bytes, offset, 4) === 'VP8L') return true;
     offset += 8 + size + (size & 1);
   }

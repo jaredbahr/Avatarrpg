@@ -41,13 +41,40 @@ The supervisor reviewed every source frame against one camera. Each source faces
 three-quarter front-left. Its packed horizontal mirror faces three-quarter
 front-right and keeps the same pitch.
 
-| Packed frames | Source frames | Packed facing             | Pitch     |
-| ------------- | ------------- | ------------------------- | --------- |
-| idle/0..5     | idle-1..6     | three-quarter front-right | unchanged |
-| walk/0..5     | walk-1..6     | three-quarter front-right | unchanged |
-| cast/0..7     | cast-1..8     | three-quarter front-right | unchanged |
-| hit/0..3      | hit-1..4      | three-quarter front-right | unchanged |
-| ko/0..7       | ko-1..8       | three-quarter front-right | unchanged |
+| Packed frame | Source frame | Packed facing             | Pitch     |
+| ------------ | ------------ | ------------------------- | --------- |
+| idle/0       | idle-1       | three-quarter front-right | unchanged |
+| idle/1       | idle-2       | three-quarter front-right | unchanged |
+| idle/2       | idle-3       | three-quarter front-right | unchanged |
+| idle/3       | idle-4       | three-quarter front-right | unchanged |
+| idle/4       | idle-5       | three-quarter front-right | unchanged |
+| idle/5       | idle-6       | three-quarter front-right | unchanged |
+| walk/0       | walk-1       | three-quarter front-right | unchanged |
+| walk/1       | walk-2       | three-quarter front-right | unchanged |
+| walk/2       | walk-3       | three-quarter front-right | unchanged |
+| walk/3       | walk-4       | three-quarter front-right | unchanged |
+| walk/4       | walk-5       | three-quarter front-right | unchanged |
+| walk/5       | walk-6       | three-quarter front-right | unchanged |
+| cast/0       | cast-1       | three-quarter front-right | unchanged |
+| cast/1       | cast-2       | three-quarter front-right | unchanged |
+| cast/2       | cast-3       | three-quarter front-right | unchanged |
+| cast/3       | cast-4       | three-quarter front-right | unchanged |
+| cast/4       | cast-5       | three-quarter front-right | unchanged |
+| cast/5       | cast-6       | three-quarter front-right | unchanged |
+| cast/6       | cast-7       | three-quarter front-right | unchanged |
+| cast/7       | cast-8       | three-quarter front-right | unchanged |
+| hit/0        | hit-1        | three-quarter front-right | unchanged |
+| hit/1        | hit-2        | three-quarter front-right | unchanged |
+| hit/2        | hit-3        | three-quarter front-right | unchanged |
+| hit/3        | hit-4        | three-quarter front-right | unchanged |
+| ko/0         | ko-1         | three-quarter front-right | unchanged |
+| ko/1         | ko-2         | three-quarter front-right | unchanged |
+| ko/2         | ko-3         | three-quarter front-right | unchanged |
+| ko/3         | ko-4         | three-quarter front-right | unchanged |
+| ko/4         | ko-5         | three-quarter front-right | unchanged |
+| ko/5         | ko-6         | three-quarter front-right | unchanged |
+| ko/6         | ko-7         | three-quarter front-right | unchanged |
+| ko/7         | ko-8         | three-quarter front-right | unchanged |
 
 The authored FX particles touch a cell edge in source `cast-5`, `cast-6`,
 `cast-7`, and `hit-2` (packed `cast/4..6` and `hit/1`). They are intentionally

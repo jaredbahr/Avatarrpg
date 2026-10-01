@@ -1,5 +1,21 @@
 import { describe, expect, it } from 'vitest';
-import { combatFocusPosition, moveHoverFootprint, overlayMemoHoverKey } from './CombatScene';
+import {
+  combatFocusPosition,
+  fallenFacing,
+  moveHoverFootprint,
+  overlayMemoHoverKey,
+} from './CombatScene';
+
+describe('held knockout facing', () => {
+  it("keeps a mirrored sheet's bare knockout the way the unit fell", () => {
+    expect(fallenFacing('ko', -1)).toBe(-1);
+    expect(fallenFacing('ko', 1)).toBe(1);
+  });
+
+  it('never mirrors a knockout authored per heading', () => {
+    expect(fallenFacing('koSouthWest', -1)).toBe(1);
+  });
+});
 
 describe('combat overlay memo key', () => {
   it('tracks hover after a non-target tap, but pins a valid pending target', () => {

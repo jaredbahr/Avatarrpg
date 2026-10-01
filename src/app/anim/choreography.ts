@@ -561,7 +561,7 @@ export function choreograph(input: ChoreographyInput): Choreography {
           ...(facing !== undefined ? { facing } : {}),
           scale: { from: motion.compression, to: motion.extension },
           frame: 1,
-          ...(castHolds ? { clipTimeOffset: windUp } : {}),
+          ...(castHolds ? { clipTimeOffset: windUp / rate } : {}),
           ...(meleeDirection ? { meleeDirection } : {}),
         });
         // The element gathers through the wind-up and is out of the hands by the release.
