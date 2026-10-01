@@ -219,6 +219,17 @@ export const CLIP_FRAME_COUNTS: Readonly<Record<ClipName, { min: number; max: nu
 };
 
 /**
+ * Legacy mirrored actions may opt into cel-by-cel timing and carry a fuller
+ * animation. Untimed clips retain the original pose-vocabulary limits above.
+ */
+export const TIMED_BARE_CLIP_MAX_FRAMES = 12;
+export const TIMED_BARE_CLIPS: readonly BaseClipName[] = ['idle', 'cast', 'hit', 'ko'];
+
+export function isTimedBareClip(clip: ClipName, def: ClipDef): boolean {
+  return def.frameMs !== undefined && (TIMED_BARE_CLIPS as readonly ClipName[]).includes(clip);
+}
+
+/**
  * Clips a `facing: 'both'` sheet authors for each side, so the renderer draws
  * them unflipped; its legacy actions (cast, hit and the bare KO) are
  * still mirrored. One test for both backends (ADR 0002).

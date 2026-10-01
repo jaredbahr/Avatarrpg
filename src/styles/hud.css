@@ -1879,6 +1879,24 @@ html[data-contrast='high'] .hud-panel::after {
   border-left-color: var(--c-ok);
 }
 
+.prop-inspector-lead,
+.prop-inspector-hint {
+  margin: 0;
+}
+
+.prop-toughness {
+  align-self: flex-start;
+}
+
+.prop-action-chip {
+  white-space: normal;
+}
+
+.status-burning {
+  border-left-color: var(--c-fire);
+  background: color-mix(in srgb, var(--c-fire) 12%, transparent);
+}
+
 /* What the ground under this unit is doing to them. */
 .status-footing {
   border-left-color: var(--c-gold);
