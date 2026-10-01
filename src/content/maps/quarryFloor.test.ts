@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { CONTENT } from '../../content';
+import { CONTENT, CONTENT_BUNDLE } from '../../content';
 import { RngCursor } from '../../core/rng';
 import {
   buildGrid,
@@ -8,7 +8,6 @@ import {
   occupiedCells,
   posKey,
   reachable,
-  standCost,
   tileAt,
 } from '../../core/rules/grid';
 import { BattleDraft } from '../../core/state/battleDraft';
@@ -16,6 +15,7 @@ import { createBattle, createGame } from '../../core/state/createGame';
 import { deserialize, serialize, stateFromBlob } from '../../core/save/serialize';
 import type { GameState, Vec2 } from '../../core/types';
 import { QUARRY_FLOOR } from './combat';
+import { validateContent } from '../schemas';
 
 const WALL_CELLS: readonly Vec2[] = [
   { x: 8, y: 4 },
@@ -167,11 +167,24 @@ describe('Driller quarry interior', () => {
     const boss = battle.units.find((unit) => unit.enemyId === 'grumbler');
     expect(boss?.size).toBe(2);
     if (!boss) return;
-    const twoCell = { ...context, size: 2 as const };
-    expect(standCost(twoCell, { x: 17, y: 5 })).toBeNull();
-    expect(standCost(twoCell, { x: 7, y: 4 })).toBeNull();
-    expect(standCost(twoCell, { x: 10, y: 7 })).toBeNull();
-    expect(findPath(twoCell, boss.pos, { x: 9, y: 5 }, 99)).not.toBeNull();
+    /*
+     * The boss's whole 2x2 is the validator's business now: run it with the A-6
+     * square gate on and hold the Driller to a standable, party-connected
+     * square. This replaces the hand-rolled `standCost`/`findPath` probe, which
+     * only ever saw the legacy 2x1.
+     */
+    expect(
+      validateContent(CONTENT_BUNDLE, { squareFootprints: true }).filter((problem) =>
+        problem.includes('enc_grumbler'),
+      ),
+    ).toEqual([]);
+
+    const squareContext = {
+      ...context,
+      size: 2 as const,
+      squareFootprints: true,
+    };
+    expect(findPath(squareContext, boss.pos, { x: 9, y: 5 }, 99)).not.toBeNull();
   });
 
   it('uses the new stacks for real sight breaks and removes live rubble cleanly', () => {

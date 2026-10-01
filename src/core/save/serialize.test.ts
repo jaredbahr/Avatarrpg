@@ -76,6 +76,22 @@ function midBattleState(): GameState {
   return state;
 }
 
+/**
+ * A save carrying a real size-2 enemy (the Grumbler). The footprint is written
+ * as `pos` + `size`, so a stripped or mistyped `size` only shows up on a loaded
+ * mid-battle save — exactly the failure this fixture exists to catch.
+ */
+function sizeTwoBattleState(): GameState {
+  const seeded = createGame(CONTENT, {
+    seed: 'save-round-trip-size-2',
+    party: [{ characterId: 'sura' }, { characterId: 'riko' }],
+    startNode: '',
+  });
+  const rng = new RngCursor(seeded.rng);
+  const battle = createBattle(CONTENT, seeded, 'enc_grumbler', rng);
+  return { ...seeded, screen: 'combat', rng: rng.state, battle };
+}
+
 describe('save round trip', () => {
   it('survives a round trip unchanged', () => {
     const before = midBattleState();
@@ -90,6 +106,21 @@ describe('save round trip', () => {
     // Deep equality, not a spot check: this is what fails when a new field is
     // added to GameState/BattleState and not to the schema in serialize.ts.
     expect(after).toEqual(before);
+  });
+
+  it('round-trips a size-2 unit and its anchor', () => {
+    const before = sizeTwoBattleState();
+    const boss = before.battle?.units.find((unit) => unit.size === 2);
+    if (!boss) throw new Error('fixture is missing the Grumbler');
+
+    const result = deserialize(serialize(before, META));
+    if (!result.ok) throw new Error(result.error);
+    const after = stateFromBlob(result.blob);
+
+    expect(after).toEqual(before);
+    const loaded = after.battle?.units.find((unit) => unit.id === boss.id);
+    expect(loaded?.size, 'the size-2 footprint was dropped by the save schema').toBe(2);
+    expect(loaded?.pos).toEqual(boss.pos);
   });
 
   it('round-trips a prop that is burning', () => {
