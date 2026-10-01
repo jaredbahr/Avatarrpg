@@ -18,6 +18,7 @@ import type {
   BattleState,
   ContentIndex,
   DamageType,
+  DousingType,
   GameEvent,
   Grid,
   PropDef,
@@ -70,6 +71,11 @@ const WALL_TILE: Tile = {
  */
 export function raisedWallTile(previous: Tile): Tile {
   return { ...WALL_TILE, elevation: previous.elevation };
+}
+
+/** The damage types B-2 lets a prop list in `douse`. */
+function isDousingDamage(type: DamageType): type is DousingType {
+  return type === 'water' || type === 'cold' || type === 'earth';
 }
 
 /** A contact status described without choosing a chance branch. */
@@ -650,11 +656,50 @@ export class BattleDraft {
 
     this.emit({ type: 'propDamaged', propId, name: def.name, amount: dealt, pos: prop.pos });
 
-    if (hp > 0) {
-      this.replaceProp({ ...prop, hp });
+    if (hp <= 0) {
+      this.breakProp(propId);
       return;
     }
-    this.breakProp(propId);
+
+    /*
+     * B-2: water — or cold, or earth — puts a fire out, and flame lights a prop
+     * that has fuel to give. Dousing wins a tie: the damage still lands, but a
+     * wet prop does not catch in the same breath.
+     */
+    const doused =
+      prop.burning !== undefined &&
+      isDousingDamage(damageType) &&
+      (def.douse?.includes(damageType) ?? false);
+    const ignited =
+      !doused && prop.burning === undefined && damageType === 'fire' && (def.fuel ?? 0) > 0;
+
+    if (doused) {
+      // Cleared, not set to 0: absent is what "not burning" means on the wire.
+      this.replaceProp({
+        id: prop.id,
+        propId: prop.propId,
+        pos: prop.pos,
+        hp,
+        previous: prop.previous,
+      });
+      this.emit({
+        type: 'propDoused',
+        propId,
+        pos: prop.pos,
+        label: `The ${def.name} is doused.`,
+      });
+      return;
+    }
+
+    this.replaceProp(ignited ? { ...prop, hp, burning: def.fuel } : { ...prop, hp });
+    if (ignited) {
+      this.emit({
+        type: 'propIgnited',
+        propId,
+        pos: prop.pos,
+        label: `The ${def.name} catches fire!`,
+      });
+    }
   }
 
   /**
@@ -665,6 +710,18 @@ export class BattleDraft {
    * painted would be painting onto itself and getting nothing.
    */
   breakProp(propId: string): void {
+    this.removeProp(propId, false);
+  }
+
+  /**
+   * Takes a prop off the board, restoring the tile journal, and runs the
+   * effects it leaves behind.
+   *
+   * `burnsAway` is B-2's consumption path, taken when a burning prop runs out
+   * of fuel: the log says so in its own words and the prop leaves `burnsInto`
+   * (falling back to `onBreak`) instead of its ordinary wreckage.
+   */
+  private removeProp(propId: string, burnsAway: boolean): void {
     const prop = this.props.find((p) => p.id === propId);
     if (!prop) return;
     const def = this.propDef(prop);
@@ -673,9 +730,13 @@ export class BattleDraft {
     this.grid = withTile(this.grid, prop.pos, prop.previous);
     if (!def) return;
 
-    this.emit({ type: 'propDestroyed', propId, pos: prop.pos, label: def.breakLabel });
+    const label = burnsAway ? `The ${def.name} burns away.` : def.breakLabel;
+    this.emit({ type: 'propDestroyed', propId, pos: prop.pos, label });
 
-    for (const effect of def.onBreak) {
+    // What a prop consumed by fire leaves behind: `burnsInto`, or its ordinary
+    // wreckage when the def does not say.
+    const leftover = burnsAway ? def.burnsInto : def.onBreak;
+    for (const effect of leftover ?? def.onBreak) {
       const tiles = this.tilesAround(prop.pos, effect.radius);
       switch (effect.kind) {
         case 'surface':
@@ -813,6 +874,79 @@ export class BattleDraft {
     return out;
   }
 
+  /** Cells within `radius` *orthogonal* steps of a centre — fire's own reach. */
+  private tilesOrthogonal(centre: Vec2, radius: number): Vec2[] {
+    const out: Vec2[] = [];
+    for (let dy = -radius; dy <= radius; dy++) {
+      for (let dx = -radius; dx <= radius; dx++) {
+        if (Math.abs(dx) + Math.abs(dy) > radius) continue;
+        const pos = { x: centre.x + dx, y: centre.y + dy };
+        if (inBounds(this.grid, pos)) out.push(pos);
+      }
+    }
+    return out;
+  }
+
+  /** B-2: a water or ice surface on a prop's own tile puts its fire out. */
+  private hasDousingSurface(prop: PropInstance): boolean {
+    const surface = tileAt(this.grid, prop.pos)?.surface?.id;
+    return surface === 'water' || surface === 'ice';
+  }
+
+  /** B-2: clears a burning prop's fire and puts the words in the log. */
+  private douseProp(propId: string): void {
+    const prop = this.props.find((p) => p.id === propId);
+    if (!prop || prop.burning === undefined) return;
+    const def = this.propDef(prop);
+    if (!def) return;
+
+    this.replaceProp({
+      id: prop.id,
+      propId: prop.propId,
+      pos: prop.pos,
+      hp: prop.hp,
+      previous: prop.previous,
+    });
+    this.emit({
+      type: 'propDoused',
+      propId,
+      pos: prop.pos,
+      label: `The ${def.name} is doused.`,
+    });
+  }
+
+  /**
+   * B-2: what a burning prop does at round upkeep.
+   *
+   * It feeds its own fire — its tile and everything within `ignites.radius`
+   * orthogonal steps, at `ignites.spread` — then burns one round of fuel. At 0
+   * it is consumed through the same removal path as a broken prop, leaving
+   * `burnsInto`. Water under it douses it before it spreads again.
+   *
+   * The list is snapshotted so one upkeep cannot cascade down a line of props:
+   * a neighbour this fire ignites starts burning on the *next* upkeep.
+   */
+  private tickBurningProps(): void {
+    for (const prop of [...this.props]) {
+      const live = this.props.find((p) => p.id === prop.id);
+      if (!live || live.burning === undefined) continue;
+      const def = this.propDef(live);
+      if (!def) continue;
+
+      if (this.hasDousingSurface(live)) {
+        this.douseProp(live.id);
+        continue;
+      }
+
+      const radius = def.ignites?.radius ?? 0;
+      this.paint(this.tilesOrthogonal(live.pos, radius), 'fire', 1, null, def.ignites?.spread ?? 0);
+
+      const left = live.burning - 1;
+      if (left > 0) this.replaceProp({ ...live, burning: left });
+      else this.removeProp(live.id, true);
+    }
+  }
+
   /* ---------------------------------------------------------------- */
   /* Terrain                                                           */
   /* ---------------------------------------------------------------- */
@@ -858,14 +992,20 @@ export class BattleDraft {
     return reaction;
   }
 
-  /** Paints a surface, giving the combo table first refusal on each tile. */
+  /**
+   * Paints a surface, giving the combo table first refusal on each tile.
+   *
+   * `spread` is fire's crawl distance per round; only B-2's burning props pass
+   * anything but the default.
+   */
   paint(
     tiles: readonly Vec2[],
     surface: SurfaceId,
     duration: number,
     sourceId: string | null,
+    spread = 0,
   ): SurfaceReaction {
-    const reaction = paintSurface(this.content, this.grid, tiles, surface, duration);
+    const reaction = paintSurface(this.content, this.grid, tiles, surface, duration, spread);
     this.terrainReactions.push(reaction);
     this.applyReaction(reaction, sourceId);
     // Anyone already standing where a surface just appeared feels it.
@@ -926,14 +1066,25 @@ export class BattleDraft {
     }
 
     /*
+     * A prop that is already on fire feeds it and burns a round of fuel. This
+     * runs before the exposure pass on purpose: the fire it just painted is
+     * what lights the prop next door, and that ignition is read below rather
+     * than written here, so one upkeep never cascades.
+     */
+    this.tickBurningProps();
+
+    /*
      * Props burn too. Without this, fire creeping across the map stops dead at a
      * hay bale, which is exactly backwards — and "light the oil at one end of the
      * line of flasks" is the sort of plan the whole feature exists to reward.
      *
-     * Snapshotted because breaking one prop can paint fire onto the next.
+     * A prop that is already burning is skipped: its fuel counter is its clock,
+     * and `tickBurningProps` has already handled it. Snapshotted because
+     * breaking one prop can paint fire onto the next.
      */
     for (const prop of [...this.props]) {
       if (!this.props.some((p) => p.id === prop.id)) continue;
+      if (prop.burning !== undefined) continue;
       const exposure = this.surfaceExposure(prop);
       if (exposure) this.damageProp(prop.id, exposure.damage, exposure.damageType);
     }

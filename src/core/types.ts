@@ -1373,6 +1373,20 @@ export type GameEvent =
       /** The prop's own plain-words line, printed straight into the log. */
       readonly label: string;
     }
+  | {
+      readonly type: 'propIgnited';
+      readonly propId: string;
+      readonly pos: Vec2;
+      /** Plain words for the log — "The hay bale catches fire!". */
+      readonly label: string;
+    }
+  | {
+      readonly type: 'propDoused';
+      readonly propId: string;
+      readonly pos: Vec2;
+      /** Plain words for the log — "The hay bale is doused.". */
+      readonly label: string;
+    }
   | { readonly type: 'propPushed'; readonly propId: string; readonly to: Vec2 }
   | {
       readonly type: 'standingChanged';
