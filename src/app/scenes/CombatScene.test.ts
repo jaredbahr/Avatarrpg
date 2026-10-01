@@ -3,6 +3,7 @@ import type { Unit, Vec2 } from '../../core/types';
 import { unitAt } from '../../core/rules/grid';
 import {
   combatFocusPosition,
+  fallenFacing,
   moveHoverFootprint,
   occupiedUnitAt,
   overlayMemoHoverKey,
@@ -36,6 +37,17 @@ function unit(id: string, pos: Vec2, extra: Partial<Unit> = {}): Unit {
     ...extra,
   };
 }
+
+describe('held knockout facing', () => {
+  it("keeps a mirrored sheet's bare knockout the way the unit fell", () => {
+    expect(fallenFacing('ko', -1)).toBe(-1);
+    expect(fallenFacing('ko', 1)).toBe(1);
+  });
+
+  it('never mirrors a knockout authored per heading', () => {
+    expect(fallenFacing('koSouthWest', -1)).toBe(1);
+  });
+});
 
 describe('combat overlay memo key', () => {
   it('tracks hover after a non-target tap, but pins a valid pending target', () => {
