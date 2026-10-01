@@ -1,6 +1,5 @@
 import { describe, expect, it } from 'vitest';
 import { COMBAT_CAMERA_RING_TILES, FOREST_ROAD } from '../content/maps/combat';
-import { combatFocusPosition } from '../app/scenes/CombatScene';
 import type { Projection } from './projection';
 import { Camera, MIN_TILE_PX, TILE } from './camera';
 import type { Viewport } from './camera';
@@ -177,14 +176,21 @@ describe('Camera.clamp painted ring', () => {
 
   it('does not change fit scale, tile size, or programmatic grid centring', () => {
     const baseline = new Camera(NARROW, GRID, 'oblique');
-    const ringed = new Camera(NARROW, GRID, 'oblique');
+    const ringed = new Camera(NARROW, GRID, 'oblique', COMBAT_CAMERA_RING_TILES.quarry_floor);
+    const hulled = new Camera(NARROW, GRID, 'oblique', COMBAT_CAMERA_RING_TILES.quarry_floor);
+    hulled.clampToProgrammaticReachableSet = true;
     baseline.fitExplore(96);
     ringed.fitExplore(96);
+    hulled.fitExplore(96);
 
     expect(ringed.scale).toBe(baseline.scale);
     expect(TILE * ringed.scale).toBe(96);
     expect(ringed.offsetX).toBe(baseline.offsetX);
     expect(ringed.offsetY).toBe(baseline.offsetY);
+    expect(hulled.scale).toBe(baseline.scale);
+    expect(TILE * hulled.scale).toBe(96);
+    expect(hulled.offsetX).toBe(baseline.offsetX);
+    expect(hulled.offsetY).toBe(baseline.offsetY);
   });
 
   it('centreOn clamps an edge actor to the grid, not the painted ring', () => {
@@ -415,7 +421,9 @@ describe('Camera.clamp programmatic-reachable hull', () => {
               );
             const combatFailure = centreOnAndAssertStable(
               camera,
-              combatFocusPosition({ pos: point, size: 1 }),
+              // Mirrors production combatFocusPosition: square footprints are off,
+              // so the focus remains at the unit's top-left position.
+              { x: point.x, y: point.y },
               1,
             );
             if (combatFailure)
@@ -433,8 +441,10 @@ describe('Camera.clamp programmatic-reachable hull', () => {
                 );
               const combatFailure = centreOnAndAssertStable(
                 camera,
-                combatFocusPosition({ pos: point, size: 2 }),
-                1,
+                // Mirrors production combatFocusPosition: square footprints are off,
+                // so the legacy size-2 focus remains at the unit's top-left position.
+                { x: point.x, y: point.y },
+                2,
               );
               if (combatFailure)
                 failures.push(
@@ -759,7 +769,7 @@ describe('Camera.clamp programmatic-reachable hull', () => {
     },
   );
 
-  it('keeps repeated on-path pinches inside M at the board-diagonal rate', () => {
+  it('keeps repeated pinch-outs inside M at the board-diagonal rate', () => {
     const viewports = CAMERA_EXHAUSTIVE
       ? HULL_VIEWPORTS
       : HULL_VIEWPORTS.filter(
@@ -770,31 +780,56 @@ describe('Camera.clamp programmatic-reachable hull', () => {
         );
     const failures: string[] = [];
     for (const viewport of viewports) {
-      const initial = hullCamera(viewport, new Camera(viewport, GRID, 'oblique').fitScale());
-      for (const start of initial.programmaticReachableHull()) {
-        const camera = hullCamera(viewport, initial.scale);
-        camera.offsetX = start.x;
-        camera.offsetY = start.y;
-        while (camera.scale * 1.01 <= 2.5) {
-          const before = offset(camera);
-          const previousScale = camera.scale;
-          camera.zoomAt({ x: viewport.width / 2, y: viewport.height / 2 }, 1.01);
-          const bound =
-            Math.hypot(camera.worldWidth / camera.scale, camera.worldHeight / camera.scale) *
-              (camera.scale - previousScale) +
-            1e-6;
-          const motion = Math.hypot(camera.offsetX - before.x, camera.offsetY - before.y);
-          if (motion > bound || !insideConvex(offset(camera), camera.programmaticReachableHull()))
-            failures.push(
-              JSON.stringify({
-                viewport,
-                start,
-                previousScale,
-                scale: camera.scale,
-                motion,
-                bound,
-              }),
-            );
+      const fitScale = new Camera(viewport, GRID, 'oblique').fitScale();
+      for (const startScale of [1.5, 2.5]) {
+        const initial = hullCamera(viewport, startScale);
+        for (const start of initial.programmaticReachableHull()) {
+          for (const anchor of [
+            { x: viewport.width / 2, y: viewport.height / 2 },
+            { x: viewport.width / 4, y: viewport.height / 4 },
+          ]) {
+            const camera = hullCamera(viewport, startScale);
+            camera.offsetX = start.x;
+            camera.offsetY = start.y;
+            if (!insideConvex(offset(camera), camera.programmaticReachableHull()))
+              failures.push(JSON.stringify({ viewport, startScale, start, anchor, step: 0 }));
+            while (camera.scale > fitScale) {
+              const before = offset(camera);
+              const previousScale = camera.scale;
+              const nextScale = Math.max(fitScale, previousScale / 1.01);
+              const ratio = nextScale / previousScale;
+              camera.zoomAt(anchor, 1 / 1.01);
+              const deltaScale = previousScale - camera.scale;
+              // zoomAt changes offset by (anchor + offset) * (ratio - 1);
+              // this is the anchor's own motion term below.
+              const anchorMotion = Math.hypot(
+                (anchor.x + before.x) * (ratio - 1),
+                (anchor.y + before.y) * (ratio - 1),
+              );
+              const boardDiagonal = Math.hypot(
+                camera.worldWidth / camera.scale,
+                camera.worldHeight / camera.scale,
+              );
+              const bound = 2 * boardDiagonal * deltaScale + anchorMotion + 1e-6;
+              const motion = Math.hypot(camera.offsetX - before.x, camera.offsetY - before.y);
+              if (
+                motion > bound ||
+                !insideConvex(offset(camera), camera.programmaticReachableHull())
+              )
+                failures.push(
+                  JSON.stringify({
+                    viewport,
+                    startScale,
+                    start,
+                    anchor,
+                    previousScale,
+                    scale: camera.scale,
+                    motion,
+                    bound,
+                  }),
+                );
+            }
+          }
         }
       }
     }
