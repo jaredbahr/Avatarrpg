@@ -16,11 +16,13 @@
  * The file is checked against the same zod schema as `src/content/tuning.ts`,
  * so a typo fails here instead of quietly simulating something else.
  */
-import { readFileSync } from 'node:fs';
+import { readFileSync, writeFileSync } from 'node:fs';
 import { CONTENT } from '../src/content';
 import { combatTuningOverrideSchema, combatTuningSchema } from '../src/content/tuning';
 import { runDisciplineSweep, runTableSizeSweep } from '../src/core/sim/balance';
 import type { ContentIndex } from '../src/core/types';
+import { applyScenario, readScenario, unsupportedKnobs } from './balance/scenario';
+import { runScenarioReport, type ScenarioReport, type ScenarioRow } from './balance/report';
 
 /** The override file's JSON, or a readable exit when it cannot be read. */
 function readTuningFile(path: string): unknown {
@@ -58,6 +60,16 @@ function withTuningOverride(base: ContentIndex, path: string | undefined): Conte
   return { ...base, tuning: merged.data };
 }
 
+function optionValue(name: string): string | undefined {
+  const index = process.argv.indexOf(name);
+  if (index < 0) return undefined;
+  const value = process.argv[index + 1];
+  if (!value || value.startsWith('--')) throw new Error(`${name} requires a path`);
+  return value;
+}
+
+const scenarioPath = optionValue('--scenario') ?? process.env.BALANCE_SCENARIO;
+const jsonPath = optionValue('--json');
 const content = withTuningOverride(CONTENT, process.env.BALANCE_TUNING);
 
 const trials = Number(process.env.BALANCE_TRIALS ?? 80);
@@ -69,10 +81,106 @@ const sizes = (process.env.BALANCE_SIZES ?? '1,3,6').split(',').map(Number);
  * proves they *play* the same.
  */
 const perVariant = process.env.BALANCE_VARIANTS === '1';
-const sweep = runTableSizeSweep(content, sizes, { trials, perVariant });
-
 const pad = (s: string, n: number) => s.padEnd(n);
 const num = (n: number, w: number) => n.toFixed(1).padStart(w);
+
+function pairedRow(report: ScenarioReport, encounterId: string, partySize: number): ScenarioRow {
+  const row = report.rows.find(
+    (candidate) => candidate.encounterId === encounterId && candidate.partySize === partySize,
+  );
+  if (!row) throw new Error(`Missing report row ${encounterId} at party size ${partySize}`);
+  return row;
+}
+
+if (scenarioPath) {
+  try {
+    const scenario = readScenario(scenarioPath);
+    const limitations = unsupportedKnobs(scenario);
+    const scenarioContent = applyScenario(content, scenario);
+    const baseline = runScenarioReport(content, sizes, trials);
+    const candidate = runScenarioReport(scenarioContent, sizes, trials);
+
+    console.log(`\nBalance scenario: ${scenarioPath}`);
+    console.log(
+      `Baseline and scenario - ${trials} paired AI-vs-AI trials per encounter and size\n`,
+    );
+    console.log(
+      `${pad('Encounter / size', 39)}${pad('Base win', 11)}${pad('Scen win', 11)}` +
+        `${pad('Base rnd', 11)}${pad('Scen rnd', 11)}${pad('Base HP', 11)}Scen HP`,
+    );
+    for (const base of baseline.rows) {
+      const next = pairedRow(candidate, base.encounterId, base.partySize);
+      console.log(
+        `${pad(`${base.label} / ${base.partySize}`, 39)}` +
+          `${num(base.winRate * 100, 7)}%   ${num(next.winRate * 100, 7)}%   ` +
+          `${num(base.meanRounds, 7)}   ${num(next.meanRounds, 7)}   ` +
+          `${num(base.meanPartyHpLeft, 7)}   ${num(next.meanPartyHpLeft, 7)}`,
+      );
+    }
+
+    const allPropIds = new Set(
+      [...baseline.rows, ...candidate.rows].flatMap((row) => Object.keys(row.props)),
+    );
+    if (allPropIds.size > 0) {
+      console.log('\nProp events (mean per trial, baseline -> scenario):');
+      for (const propId of [...allPropIds].sort()) {
+        const sum = (report: ScenarioReport, field: 'ignited' | 'burnedAway' | 'doused'): number =>
+          report.rows.reduce((total, row) => total + (row.props[propId]?.[field] ?? 0), 0) /
+          report.trials;
+        console.log(
+          `  ${propId}: ignited ${sum(baseline, 'ignited').toFixed(2)} -> ${sum(candidate, 'ignited').toFixed(2)}, ` +
+            `burned away ${sum(baseline, 'burnedAway').toFixed(2)} -> ${sum(candidate, 'burnedAway').toFixed(2)}, ` +
+            `doused ${sum(baseline, 'doused').toFixed(2)} -> ${sum(candidate, 'doused').toFixed(2)}`,
+        );
+      }
+      const fire = (report: ScenarioReport, side: 'party' | 'enemy'): number =>
+        report.rows.reduce(
+          (total, row) => total + row.unattributedEnvironmentalFireDamage[side],
+          0,
+        );
+      console.log(
+        `  environmental fire damage (not exactly attributable to props): party ${fire(baseline, 'party').toFixed(1)} -> ${fire(candidate, 'party').toFixed(1)}, ` +
+          `enemy ${fire(baseline, 'enemy').toFixed(1)} -> ${fire(candidate, 'enemy').toFixed(1)}`,
+      );
+    }
+
+    console.log(
+      `\nRuntime: baseline ${(baseline.runtimeMs / 1000).toFixed(1)}s; scenario ${(candidate.runtimeMs / 1000).toFixed(1)}s.`,
+    );
+    if (limitations.length > 0) {
+      console.log('Needs a rules hook (scenario value was not applied):');
+      for (const limitation of limitations) {
+        console.log(`  - ${limitation.knob}: ${limitation.reason}`);
+      }
+    }
+    if (jsonPath) {
+      writeFileSync(
+        jsonPath,
+        `${JSON.stringify(
+          {
+            scenario: scenarioPath,
+            baseline,
+            candidate,
+            limitations,
+            notes: {
+              propFireDamage:
+                'Existing damaged events do not identify prop provenance; reported fire damage is all fire damage with a null source.',
+            },
+          },
+          null,
+          2,
+        )}\n`,
+      );
+      console.log(`JSON report: ${jsonPath}`);
+    }
+    process.exit(0);
+  } catch (error) {
+    console.error(error instanceof Error ? error.message : error);
+    process.exit(1);
+  }
+}
+
+const sweep = runTableSizeSweep(content, sizes, { trials, perVariant });
 
 console.log(`\nBalance report - ${trials} AI-vs-AI trials per encounter, per table size\n`);
 

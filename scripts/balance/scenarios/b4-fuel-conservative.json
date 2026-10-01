@@ -1,0 +1,9 @@
+{
+  "props": {
+    "hay_bale": {
+      "fuel": 2,
+      "ignites": { "radius": 1, "spread": 0 },
+      "douse": ["water", "cold"]
+    }
+  }
+}
