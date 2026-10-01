@@ -91,7 +91,13 @@ for (const renderer of ['canvas', 'webgl'] as const) {
       };
       app.resync();
     });
+    // The resync does not recentre, because the acting unit is unchanged. The
+    // first HUD reflow does: the aim hint resizes the canvas and the camera pans
+    // to the moved hero. Map the tile only after that pan, or the tap lands a
+    // tile off and Confirm never enables.
+    await settleLayout(page);
     await page.getByRole('button', { name: /^Fire Jab/ }).click();
+    await settleLayout(page);
     const point = await tileCentre(page, { x: 4, y: 2 });
     const canvas = page.locator('.map-canvas');
     const box = await canvas.boundingBox();
