@@ -1073,12 +1073,7 @@ export class PixiBackend implements RenderBackend {
       sprite.width = chunk.width;
       sprite.height = chunk.height;
     }
-    const opacities = sceneryOpacities(
-      scene?.scenery ?? [],
-      view,
-      camera,
-      this.squareFootprints,
-    );
+    const opacities = sceneryOpacities(scene?.scenery ?? [], view, camera, this.squareFootprints);
     for (const item of scene?.scenery ?? []) {
       sceneryKeys.add(item.id);
       let sprite = this.scenerySprites.get(item.id);
@@ -1802,20 +1797,20 @@ export class PixiBackend implements RenderBackend {
     const heightTiles = this.squareFootprints ? (target?.size ?? 1) : 1;
     const scale = target?.scale ?? 1;
     const frame =
-      this.squareFootprints &&
-      target &&
-      (target.bend
-        ? sheets.bendFrame(target.sprite, target.bend.heading, target.bend.index)
-        : sheets.frame(
-            target.sprite,
-            target.clip ?? 'idle',
-            target.clipTime ?? view.time + idlePhase(target.id),
-            target.clipFrame,
-            this.spritePx(camera) * scale,
-            target.size,
-            target.meleeDirection,
-            heightTiles,
-          ));
+      this.squareFootprints && target
+        ? target.bend
+          ? sheets.bendFrame(target.sprite, target.bend.heading, target.bend.index)
+          : sheets.frame(
+              target.sprite,
+              target.clip ?? 'idle',
+              target.clipTime ?? view.time + idlePhase(target.id),
+              target.clipFrame,
+              this.spritePx(camera) * scale,
+              target.size,
+              target.meleeDirection,
+              heightTiles,
+            )
+        : null;
     const headroom = actorHeadroom(frame?.headroom, heightTiles);
     const box = {
       x: (screen.x + camera.offsetX) / camera.scale,
@@ -1831,7 +1826,8 @@ export class PixiBackend implements RenderBackend {
           TILE,
           scale,
           headroom,
-        ).silhouetteTop - TILE * 0.04
+        ).silhouetteTop -
+        TILE * 0.04
       : box.y - lift * TILE - TILE * 0.04;
     const outline = Math.max(3 / camera.scale, TILE * 0.065);
     if (cue.elevation) {
@@ -2307,7 +2303,6 @@ export class PixiBackend implements RenderBackend {
           heightTiles,
         );
       const headroom = actorHeadroom(frame?.headroom, heightTiles);
-      const fallback = !frame;
       if (frame) {
         sprite.texture = this.frameTexture(frame);
         sprite.anchor.set(frame.anchor.x, frame.anchor.y);
@@ -2387,17 +2382,7 @@ export class PixiBackend implements RenderBackend {
       }
 
       if (unit.showHealth !== false)
-        this.drawHealthBar(
-          g,
-          unit,
-          x,
-          y,
-          width,
-          scale,
-          headroom,
-          view.hatch,
-          camera.scale,
-        );
+        this.drawHealthBar(g, unit, x, y, width, scale, headroom, view.hatch, camera.scale);
       badgeIndex = this.drawStatusBadges(
         g,
         unit,

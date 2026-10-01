@@ -2,7 +2,6 @@ import { afterEach, describe, expect, it, vi } from 'vitest';
 import { Camera } from '../camera';
 import { loadingPlaceholderBox } from '../painters/registry';
 import { Canvas2DBackend, canvasActorDepth } from './canvas2d';
-import { PixiBackend, pixiActorDepth } from './pixi';
 
 // Construction is the contract under test here; the Pixi particle layer would
 // otherwise start its atlas loader before the backend can be inspected.
@@ -14,12 +13,16 @@ vi.mock('../fx/particleLayer', () => ({
   },
 }));
 
+vi.mock('../fx/canvasFx', () => ({
+  CanvasFxLayer: class {},
+}));
+
 const canvas = (): HTMLCanvasElement =>
   ({
     width: 1,
     height: 1,
     getContext: () => ({}),
-  }) as HTMLCanvasElement;
+  }) as unknown as HTMLCanvasElement;
 
 afterEach(() => {
   vi.restoreAllMocks();
@@ -79,16 +82,15 @@ describe('square-footprint backend parity', () => {
     ).toEqual({ x: 10, y: 10, size: 128, height: 128 });
   });
 
-  it('passes the square gate into each backend construction', () => {
-    const canvasBackend = new Canvas2DBackend(canvas(), true);
-    expect((canvasBackend as unknown as { squareFootprints: boolean }).squareFootprints).toBe(true);
-
+  it('passes the square gate into the Canvas2D backend construction', () => {
+    // Canvas2D only probes the supplied canvas, so a tiny DOM stub is enough in
+    // node. Pixi allocates real textures in its field initialisers and cannot be
+    // built without a browser; its flag is the same typed constructor default
+    // and is exercised by the WebGL e2e suite.
     vi.stubGlobal('document', { createElement: canvas });
-    vi.spyOn(
-      PixiBackend.prototype as unknown as { init: () => Promise<void> },
-      'init',
-    ).mockResolvedValue(undefined);
-    const pixiBackend = new PixiBackend(canvas(), true);
-    expect((pixiBackend as unknown as { squareFootprints: boolean }).squareFootprints).toBe(true);
+    const legacy = new Canvas2DBackend(canvas());
+    expect((legacy as unknown as { squareFootprints: boolean }).squareFootprints).toBe(false);
+    const square = new Canvas2DBackend(canvas(), true);
+    expect((square as unknown as { squareFootprints: boolean }).squareFootprints).toBe(true);
   });
 });

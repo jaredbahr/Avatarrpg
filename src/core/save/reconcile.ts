@@ -340,18 +340,21 @@ function snapBattleUnits(
         opponent.faction !== unit.faction &&
         occupiedCells(opponent, true).some((cell) =>
           occupiedCells({ pos: anchor, size: unit.size }, true).some(
-            (ownCell) =>
-              Math.max(Math.abs(cell.x - ownCell.x), Math.abs(cell.y - ownCell.y)) <= 1,
+            (ownCell) => Math.max(Math.abs(cell.x - ownCell.x), Math.abs(cell.y - ownCell.y)) <= 1,
           ),
         ),
     );
   const connected = (unit: BattleState['units'][number], pos: Vec2): boolean => {
     if (!square || unit.size !== 2)
-      return occupiedCells({ pos, size: unit.size }, square).every((cell) => main.has(posKey(cell)));
+      return occupiedCells({ pos, size: unit.size }, square).every((cell) =>
+        main.has(posKey(cell)),
+      );
     return squareAnchorsNear(unit, pos, anchorNearParty);
   };
   const canContact = (unit: BattleState['units'][number], pos: Vec2): boolean =>
-    square && unit.size === 2 && squareAnchorsNear(unit, pos, (anchor) => contactable(unit, anchor));
+    square &&
+    unit.size === 2 &&
+    squareAnchorsNear(unit, pos, (anchor) => contactable(unit, anchor));
 
   const result: BattleState['units'][number][] = [];
   for (const unit of units) {

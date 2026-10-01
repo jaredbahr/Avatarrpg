@@ -670,9 +670,11 @@ describe('reconcileBattle', () => {
   });
 
   it('does not snap a square boss into a chamber joined by a one-cell corridor', () => {
-    const old = currentBattleState('quarry_gate');
+    // Quarry Gate has no boss encounter. Start with the authored Driller
+    // battle instead, then replace its map with this small synthetic layout.
+    const old = currentBattleState('quarry_floor');
     if (!old.battle) throw new Error('missing battle');
-    const current = CONTENT.maps.get('quarry_gate');
+    const current = CONTENT.maps.get('quarry_floor');
     if (!current) throw new Error('missing map');
     const party = old.battle.units.find((unit) => unit.faction === 'party');
     const boss = old.battle.units.find((unit) => unit.size === 2);
@@ -693,6 +695,9 @@ describe('reconcileBattle', () => {
       ...old,
       battle: {
         ...old.battle,
+        grid: buildGrid(map),
+        props: [],
+        temporaryWalls: [],
         units: [
           { ...party, pos: { x: 1, y: 3 } },
           // The legacy 2x1 fits on the chamber's lower row; the square's

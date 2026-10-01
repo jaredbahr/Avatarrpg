@@ -974,30 +974,24 @@ export class Canvas2DBackend implements RenderBackend {
       const lift = liftAlong(view.grid, pos, camera.projection);
       const scale = target?.scale ?? 1;
       const frame =
-        this.squareFootprints &&
-        target &&
-        (target.bend
-          ? sheets.bendFrame(target.sprite, target.bend.heading, target.bend.index)
-          : sheets.frame(
-              target.sprite,
-              target.clip ?? 'idle',
-              target.clipTime ?? view.time + idlePhase(target.id),
-              target.clipFrame,
-              box.size * camera.viewport.dpr * scale,
-              target.size,
-              target.meleeDirection,
-              heightTiles,
-            ));
+        this.squareFootprints && target
+          ? target.bend
+            ? sheets.bendFrame(target.sprite, target.bend.heading, target.bend.index)
+            : sheets.frame(
+                target.sprite,
+                target.clip ?? 'idle',
+                target.clipTime ?? view.time + idlePhase(target.id),
+                target.clipFrame,
+                box.size * camera.viewport.dpr * scale,
+                target.size,
+                target.meleeDirection,
+                heightTiles,
+              )
+          : null;
       const headroom = actorHeadroom(frame?.headroom, heightTiles);
       const cy = this.squareFootprints
-        ? actorHealthBar(
-            box.x,
-            box.y - lift * box.size,
-            width,
-            box.size,
-            scale,
-            headroom,
-          ).silhouetteTop -
+        ? actorHealthBar(box.x, box.y - lift * box.size, width, box.size, scale, headroom)
+            .silhouetteTop -
           box.size * 0.04
         : box.y - lift * box.size - box.size * 0.04;
       ctx.fillStyle = OVERLAY.reticleCue;
@@ -1442,7 +1436,6 @@ export class Canvas2DBackend implements RenderBackend {
           heightTiles,
         );
       const headroom = actorHeadroom(frame?.headroom, heightTiles);
-      const fallback = !frame;
       if (frame) {
         const ax = box.x + width / 2;
         const ay = box.y + FOOT_LINE * box.size;
@@ -1482,16 +1475,7 @@ export class Canvas2DBackend implements RenderBackend {
 
       if (!unit.fallen) {
         if (unit.showHealth !== false) {
-          this.drawHealthBar(
-            unit,
-            box.x,
-            box.y,
-            width,
-            box.size,
-            scale,
-            headroom,
-            view.hatch,
-          );
+          this.drawHealthBar(unit, box.x, box.y, width, box.size, scale, headroom, view.hatch);
         }
         this.drawStatusBadges(unit, box.x, box.y, width, box.size, scale, headroom, heightTiles);
       } else {

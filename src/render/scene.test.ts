@@ -282,7 +282,10 @@ for (const projection of ['orthographic', 'oblique'] as const satisfies readonly
     it('lets an injected square gate move the 2x2 occlusion foot', () => {
       installImage(() => 255);
       const base = roof(camera);
-      const scene = { ...base, depth: { x: 4, y: 2.75 } };
+      // In oblique projection depth is (x + y) / 2. This point falls between
+      // the legacy 2x1 foot (2.75) and square 2x2 foot (3.25): only the legacy
+      // footprint is in front of the roof and should trigger the cutaway.
+      const scene = { ...base, depth: { x: 3, y: 3 } };
       const state = view({ units: [unit(origin, { size: 2 })] });
       expect(sceneryOpacity(scene, state, camera)).toBe(0.28);
       expect(sceneryOpacity(scene, state, camera, true)).toBe(1);
