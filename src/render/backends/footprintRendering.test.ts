@@ -2,6 +2,7 @@ import { afterEach, describe, expect, it, vi } from 'vitest';
 import { Camera } from '../camera';
 import { loadingPlaceholderBox } from '../painters/registry';
 import { Canvas2DBackend, canvasActorDepth } from './canvas2d';
+import { pixiActorDepth } from './pixi';
 
 // Construction is the contract under test here; the Pixi particle layer would
 // otherwise start its atlas loader before the backend can be inspected.
