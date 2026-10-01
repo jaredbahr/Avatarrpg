@@ -15,7 +15,8 @@
 import { mkdirSync, writeFileSync } from 'node:fs';
 import { FOREST_APRON_MAP, FOREST_CREEK_POOLS } from '../../src/content/scenes/forestRoad';
 import type { ForestCreekPool } from '../../src/content/scenes/forestRoad';
-import { setPixel } from './lib/image';
+import { apronDepth, forestApronAlpha } from './forest-exterior-apron';
+import { pixelAt, setPixel } from './lib/image';
 import { encodeWebp } from './lib/webp';
 import { FOREST_GROUND_QUALITY, loadForestMaterial } from './forest-village-material';
 import type { ForestMaterial } from './forest-village-material';
@@ -26,12 +27,11 @@ export const creekOutput = (name: string): string =>
 
 /**
  * The creek runs on south past the rim, so a pool has no bank there: it is
- * packed as though its row-11 cells continued two rows off the board, and
- * everything past the rim is then cleared for the apron, which continues the
- * water itself. Banked at the rim, the apron's mirror of the pool read as a
- * second channel beside it.
+ * packed as though its row-11 cells continued past the apron fade. Past the
+ * rim the water and bank take the apron's own alpha contour. The plate extends
+ * beyond that contour, so its crop is fully clear and can never become an edge.
  */
-export const CREEK_RUNS_ON = 2;
+export const CREEK_RUNS_ON = 3;
 
 export function packCreekPool(material: ForestMaterial, pool: ForestCreekPool) {
   const rim = FOREST_APRON_MAP.height;
@@ -42,14 +42,24 @@ export function packCreekPool(material: ForestMaterial, pool: ForestCreekPool) {
     patch: pool.patch,
     cells: [...pool.cells, ...runOn],
     organic: true,
-    // The creek runs through grass: the verge grows over its bank in clumps.
+    // The creek crosses the south rim into the apron. Its grass/bank edge
+    // follows the water contour; an independent grass wander leaves a brown
+    // one-pixel tooth where the west pool crosses that rim.
+    bankFollowsWater: true,
+    // The creek runs through grass: the verge carries its own material rhythm
+    // over the bank while the edge itself stays on the water contour.
     overgrowth: (x, y) => material.colour('verge', x, y),
   });
   const { image } = packed;
   for (let py = 0; py < image.height; py++)
     for (let px = 0; px < image.width; px++) {
-      const { y } = shorePosition(px, py, 2, { patch: pool.patch, cells: pool.cells });
-      if (y >= rim) setPixel(image, px, py, [0, 0, 0, 0]);
+      const { x, y } = shorePosition(px, py, 2, { patch: pool.patch, cells: pool.cells });
+      const depth = apronDepth(x, y);
+      if (depth <= 0) continue;
+      const [r, g, b, alpha] = pixelAt(image, px, py);
+      if (!alpha) continue;
+      const fade = forestApronAlpha(depth, x, y);
+      setPixel(image, px, py, [r, g, b, Math.round((alpha * fade) / 255)]);
     }
   return packed;
 }

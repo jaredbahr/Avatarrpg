@@ -44,6 +44,98 @@ export interface ScreenPoint {
   readonly y: number;
 }
 
+/** A convex polygon in screen/world coordinates, closed implicitly. */
+export type ConvexPolygon = readonly ScreenPoint[];
+
+const PAN_FOCUS_MARGIN_TILES = 0.5;
+const OFFSET_WRITE_EPSILON = 1e-6;
+
+function clampOffset(offset: number, slack: number): number {
+  return slack <= 0 ? slack / 2 : Math.max(0, Math.min(slack, offset));
+}
+
+function cross(a: ScreenPoint, b: ScreenPoint, point: ScreenPoint): number {
+  return (b.x - a.x) * (point.y - a.y) - (b.y - a.y) * (point.x - a.x);
+}
+
+function convexHull(points: readonly ScreenPoint[]): ScreenPoint[] {
+  const sorted = [...points].sort((a, b) => a.x - b.x || a.y - b.y);
+  const unique = sorted.filter(
+    (point, index) =>
+      index === 0 || point.x !== sorted[index - 1]?.x || point.y !== sorted[index - 1]?.y,
+  );
+  if (unique.length <= 1) return unique;
+
+  const half = (ordered: readonly ScreenPoint[]) => {
+    const result: ScreenPoint[] = [];
+    for (const point of ordered) {
+      while (
+        result.length >= 2 &&
+        cross(result[result.length - 2] ?? point, result[result.length - 1] ?? point, point) <= 0
+      )
+        result.pop();
+      result.push(point);
+    }
+    return result;
+  };
+  const lower = half(unique);
+  const upper = half([...unique].reverse());
+  return [...lower.slice(0, -1), ...upper.slice(0, -1)];
+}
+
+function nearestPointOnSegment(
+  point: ScreenPoint,
+  start: ScreenPoint,
+  end: ScreenPoint,
+): ScreenPoint {
+  const dx = end.x - start.x;
+  const dy = end.y - start.y;
+  const lengthSquared = dx * dx + dy * dy;
+  const t = lengthSquared
+    ? Math.max(
+        0,
+        Math.min(1, ((point.x - start.x) * dx + (point.y - start.y) * dy) / lengthSquared),
+      )
+    : 0;
+  return { x: start.x + dx * t, y: start.y + dy * t };
+}
+
+function clampToConvexHull(point: ScreenPoint, hull: ConvexPolygon): ScreenPoint {
+  const first = hull[0];
+  if (!first) return point;
+  if (hull.length === 1) return first;
+  const second = hull[1];
+  if (!second) return first;
+  if (hull.length === 2) {
+    // A fitted axis makes M an axis-aligned segment. Keep the free coordinate
+    // on clampOffset's arithmetic path so this face is bit-identical to clamp().
+    if (first.x === second.x)
+      return { x: first.x, y: clampOffset(point.y - first.y, second.y - first.y) + first.y };
+    if (first.y === second.y)
+      return { x: clampOffset(point.x - first.x, second.x - first.x) + first.x, y: first.y };
+    return nearestPointOnSegment(point, first, second);
+  }
+  if (
+    hull.every((start, index) => cross(start, hull[(index + 1) % hull.length] ?? start, point) >= 0)
+  )
+    return point;
+
+  let nearest = first;
+  let nearestDistance = Number.POSITIVE_INFINITY;
+  for (let index = 0; index < hull.length; index += 1) {
+    const start = hull[index];
+    const end = hull[(index + 1) % hull.length];
+    if (!start || !end) continue;
+    const candidate = nearestPointOnSegment(point, start, end);
+    const distance = (candidate.x - point.x) ** 2 + (candidate.y - point.y) ** 2;
+    if (distance < nearestDistance) {
+      nearest = candidate;
+      nearestDistance = distance;
+    }
+  }
+  return nearest;
+}
+
 export interface CameraClampRing {
   readonly top: number;
   readonly right: number;
@@ -70,6 +162,9 @@ export class Camera {
     /** Painted ground outside the grid that may remain visible while panning. */
     public clampRingTiles: CameraClampRing = NO_CLAMP_RING,
   ) {}
+
+  /** Opts irregular maps into the manual-pan hull reachable by programmatic centring. */
+  clampToProgrammaticReachableSet = false;
 
   private get bounds() {
     return groundBounds(this.grid.width, this.grid.height, this.projection);
@@ -136,14 +231,18 @@ export class Camera {
   clamp(): void {
     const slackX = this.worldWidth - this.viewport.width;
     const slackY = this.worldHeight - this.viewport.height;
-    this.offsetX = slackX <= 0 ? slackX / 2 : Math.max(0, Math.min(slackX, this.offsetX));
-    this.offsetY = slackY <= 0 ? slackY / 2 : Math.max(0, Math.min(slackY, this.offsetY));
+    this.offsetX = clampOffset(this.offsetX, slackX);
+    this.offsetY = clampOffset(this.offsetY, slackY);
   }
 
   /** Manual gestures may expose authored paint, but only on an overflowing axis. */
-  private clampManual(): void {
+  clampToPanBounds(): void {
     const slackX = this.worldWidth - this.viewport.width;
     const slackY = this.worldHeight - this.viewport.height;
+    if (this.clampToProgrammaticReachableSet) {
+      this.clampToReachableSet();
+      return;
+    }
     const pixels = (tiles: number) => Math.max(0, tiles) * TILE * this.scale;
     this.offsetX =
       slackX <= 0
@@ -161,10 +260,119 @@ export class Camera {
           );
   }
 
+  /** Exact convex hull of offsets reachable by programmatic focus within F. */
+  programmaticReachableHull(): ConvexPolygon {
+    const slackX = this.worldWidth - this.viewport.width;
+    const slackY = this.worldHeight - this.viewport.height;
+    const focus = [
+      { x: PAN_FOCUS_MARGIN_TILES, y: PAN_FOCUS_MARGIN_TILES },
+      { x: this.grid.width - PAN_FOCUS_MARGIN_TILES, y: PAN_FOCUS_MARGIN_TILES },
+      {
+        x: this.grid.width - PAN_FOCUS_MARGIN_TILES,
+        y: this.grid.height - PAN_FOCUS_MARGIN_TILES,
+      },
+      { x: PAN_FOCUS_MARGIN_TILES, y: this.grid.height - PAN_FOCUS_MARGIN_TILES },
+    ].map((point) => this.groundPoint(point));
+    const candidates = focus.map((point) => ({
+      x: clampOffset(point.x * this.scale - this.viewport.width / 2, slackX),
+      y: clampOffset(point.y * this.scale - this.viewport.height / 2, slackY),
+    }));
+    const emitBreakCrossings = (axis: 'x' | 'y', breakLine: number, brokenOffset: number) => {
+      for (let index = 0; index < focus.length; index += 1) {
+        const start = focus[index];
+        const end = focus[(index + 1) % focus.length];
+        if (!start || !end) continue;
+        if (!(
+          (start[axis] < breakLine && end[axis] > breakLine) ||
+          (start[axis] > breakLine && end[axis] < breakLine)
+        ))
+          continue;
+        const t = (breakLine - start[axis]) / (end[axis] - start[axis]);
+        const crossing = {
+          x: start.x + (end.x - start.x) * t,
+          y: start.y + (end.y - start.y) * t,
+        };
+        candidates.push(
+          axis === 'x'
+            ? {
+                x: brokenOffset,
+                y: clampOffset(crossing.y * this.scale - this.viewport.height / 2, slackY),
+              }
+            : {
+                x: clampOffset(crossing.x * this.scale - this.viewport.width / 2, slackX),
+                y: brokenOffset,
+              },
+        );
+      }
+    };
+
+    if (slackX > 0) {
+      emitBreakCrossings('x', this.viewport.width / (2 * this.scale), 0);
+      emitBreakCrossings(
+        'x',
+        this.bounds.width * TILE - this.viewport.width / (2 * this.scale),
+        slackX,
+      );
+    }
+    if (slackY > 0) {
+      emitBreakCrossings('y', this.viewport.height / (2 * this.scale), 0);
+      emitBreakCrossings(
+        'y',
+        this.bounds.height * TILE - this.viewport.height / (2 * this.scale),
+        slackY,
+      );
+    }
+
+    // T clamps each coordinate independently. Its affine subdivision of F has
+    // vertices not only on F's boundary, but also where an x and y break line
+    // meet inside F. Their images are required for exactly conv(T(F)); without
+    // them the hull can lose a real corner as a break line enters/leaves F.
+    const xBreaks =
+      slackX > 0
+        ? [
+            this.viewport.width / (2 * this.scale),
+            this.bounds.width * TILE - this.viewport.width / (2 * this.scale),
+          ]
+        : [];
+    const yBreaks =
+      slackY > 0
+        ? [
+            this.viewport.height / (2 * this.scale),
+            this.bounds.height * TILE - this.viewport.height / (2 * this.scale),
+          ]
+        : [];
+    for (const x of xBreaks)
+      for (const y of yBreaks) {
+        const point = { x, y };
+        if (
+          focus.every(
+            (start, index) =>
+              cross(start, focus[(index + 1) % focus.length] ?? start, point) >= -1e-9,
+          )
+        )
+          candidates.push({
+            x: clampOffset(x * this.scale - this.viewport.width / 2, slackX),
+            y: clampOffset(y * this.scale - this.viewport.height / 2, slackY),
+          });
+      }
+
+    return convexHull(candidates);
+  }
+
+  private clampToReachableSet(): void {
+    const next = clampToConvexHull(
+      { x: this.offsetX, y: this.offsetY },
+      this.programmaticReachableHull(),
+    );
+    if (Math.hypot(next.x - this.offsetX, next.y - this.offsetY) <= OFFSET_WRITE_EPSILON) return;
+    this.offsetX = next.x;
+    this.offsetY = next.y;
+  }
+
   panBy(dx: number, dy: number): void {
     this.offsetX -= dx;
     this.offsetY -= dy;
-    this.clampManual();
+    this.clampToPanBounds();
   }
 
   /**
@@ -181,7 +389,7 @@ export class Camera {
     this.offsetX = (at.x + this.offsetX) * ratio - at.x;
     this.offsetY = (at.y + this.offsetY) * ratio - at.y;
     this.scale = next;
-    this.clampManual();
+    this.clampToPanBounds();
   }
 
   /** Scrolls so a tile sits in the middle of the viewport, where possible. */

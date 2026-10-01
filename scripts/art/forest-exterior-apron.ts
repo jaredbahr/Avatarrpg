@@ -23,13 +23,15 @@ import { createRequire } from 'node:module';
 import decode, { init as initWebpDecode } from '@jsquash/webp/decode.js';
 import {
   FOREST_APRON_BANDS,
+  FOREST_APRON_FADE,
   FOREST_APRON_MAP,
+  FOREST_APRON_SOLID,
   FOREST_APRON_SEAM,
   FOREST_EXTERIOR_APRON,
   FOREST_ROAD_SCENE,
 } from '../../src/content/scenes/forestRoad';
 import { tileNoise } from '../../src/render/painters/shapes';
-import { apronAlpha } from './ba-dan-exterior-apron';
+import { transitionCluster } from './ba-dan-garden';
 import { writeApronPlates } from './lib/apron-plates';
 import { newImage, pixelAt, setPixel } from './lib/image';
 import type { Image } from './lib/image';
@@ -39,7 +41,13 @@ export const DIRECTORY = 'public/art/maps/forest-scene';
 export const STEM = 'exterior-apron';
 export const QUALITY = 86;
 /** Authored terrain is fully faded out by this far outside the rim, in tiles. */
-export const APRON_FADE = 2.2;
+export const APRON_FADE = FOREST_APRON_FADE;
+/** The exterior trees remain on fully painted ground; only the outer tile dissolves. */
+export const APRON_SOLID = FOREST_APRON_SOLID;
+/** Fine flat steps keep the fade soft without introducing a translucent haze. */
+export const FOREST_APRON_ALPHA_STEPS = [
+  255, 238, 221, 204, 187, 170, 153, 136, 119, 102, 85, 68, 51, 34, 17, 4,
+] as const;
 /**
  * How far inside the rim the plate may reach to close the authored ground's own
  * feather. The grass packs fade to alpha 0 across their outermost ~0.2 tiles; on
@@ -122,6 +130,22 @@ function clamp(value: number, min: number, max: number): number {
 function smoothstep(edge0: number, edge1: number, value: number): number {
   const t = clamp((value - edge0) / (edge1 - edge0), 0, 1);
   return t * t * (3 - 2 * t);
+}
+
+/** Forest-specific outer-tile fade. It reaches a near-clear step before the crop edge. */
+export function forestApronAlpha(depth: number, x: number, y: number): number {
+  if (depth <= APRON_SOLID) return 255;
+  if (depth >= APRON_FADE) return 0;
+  const wander =
+    (transitionCluster(x * 0.5, y * 0.5, 91) - 0.5) *
+    0.12 *
+    clamp((APRON_FADE - depth) / 0.25, 0, 1);
+  const progress = clamp((depth + wander - APRON_SOLID) / (APRON_FADE - APRON_SOLID), 0, 1);
+  const index = Math.min(
+    FOREST_APRON_ALPHA_STEPS.length - 1,
+    Math.floor(progress * FOREST_APRON_ALPHA_STEPS.length),
+  );
+  return FOREST_APRON_ALPHA_STEPS[index] ?? 0;
 }
 
 /** Plate-local image pixels to logical map coordinates; the inverse projection. */
@@ -320,10 +344,9 @@ export function packApron(plates: readonly ApronPlate[], guard: Image): Image {
       const recession = 1 - 0.1 * smoothstep(0.1, APRON_FADE, Math.max(depth, 0));
       const shade = (channel: number): number =>
         clamp(Math.round(channel * grain * recession), 0, 255);
-      // Ba Dan's fade: ten flat alpha steps whose edges wander on a broad
-      // clustered mask. A continuous ramp read as a pale haze smeared across
-      // the forest's corners, and a screen would read as a checkerboard.
-      const alpha = inside ? 255 : apronAlpha(depth, x, y);
+      // Sixteen fine flat steps dissolve the outer tile on every material,
+      // including creek water and bank pixels, before the plate boundary.
+      const alpha = inside ? 255 : forestApronAlpha(depth, x, y);
       setPixel(image, px, py, [shade(terrain.r), shade(terrain.g), shade(terrain.b), alpha]);
     }
   }

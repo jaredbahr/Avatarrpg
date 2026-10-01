@@ -828,6 +828,16 @@ export interface MapDef {
    * `ambience`: nothing in the rules reads it.
    */
   readonly backdrop?: MapBackdrop;
+  /**
+   * Marks maps whose non-rectangular paint needs the programmatic-reachable
+   * manual camera bound. Points are projected ground coordinates (the same
+   * space as `projectGround`) and describe only the painted fade used by exact
+   * blank-area tests; runtime clamp geometry is derived from the grid.
+   */
+  readonly cameraPaint?: {
+    readonly kind: 'convex-hull';
+    readonly points: readonly Vec2[];
+  };
 }
 
 /**

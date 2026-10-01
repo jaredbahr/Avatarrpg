@@ -7,15 +7,17 @@ import {
   FOREST_APRON_PIECES,
   FOREST_EXTERIOR_APRON,
   FOREST_ROAD_SCENE,
+  FOREST_THICKET_CELLS,
 } from '../../src/content/scenes/forestRoad';
-import { APRON_ALPHA_STEPS } from './ba-dan-exterior-apron';
 import { apronPlatePath } from './lib/apron-plates';
 import { decodeWebp } from './lib/webp';
 import {
   APRON_FADE,
+  APRON_SOLID,
   APRON_SEAM,
   DIRECTORY,
   GUARD_ALPHA,
+  FOREST_APRON_ALPHA_STEPS,
   STEM,
   apronDepth,
   apronLogical,
@@ -103,18 +105,31 @@ it('ships a rim with no light fringe from the lossy encoder', async () => {
   expect(fringe / rim).toBeLessThan(0.02);
 });
 
-it('fades in flat steps, never a continuous haze', () => {
-  // A smoothstep ramp read as a pale smear over the corners; Ba Dan's ten
-  // wandering steps are the approved fade, so no other alpha may appear.
+it('fades every material through fine flat steps over the outer tile', () => {
   const alphas = new Set<number>();
   for (let py = 0; py < apron.height; py++)
     for (let px = 0; px < apron.width; px++) {
       const alpha = pixelAt(apron, px, py)[3] ?? 0;
       if (alpha > 0) alphas.add(alpha);
     }
-  expect([...alphas].filter((a) => !(APRON_ALPHA_STEPS as readonly number[]).includes(a))).toEqual(
-    [],
-  );
+  expect(
+    [...alphas].filter((a) => !(FOREST_APRON_ALPHA_STEPS as readonly number[]).includes(a)),
+  ).toEqual([]);
+  expect(APRON_FADE - APRON_SOLID).toBeCloseTo(1);
+  expect(Math.min(...alphas)).toBeLessThanOrEqual(4);
+});
+
+it('keeps every exterior pine foot on at least sixty-percent apron paint', () => {
+  for (const cell of FOREST_THICKET_CELLS) {
+    const foot = { x: cell.x + 0.5, y: cell.y + 0.5 };
+    expect(
+      apronAt(apron, foot.x, foot.y)[3] ?? 0,
+      `${cell.x},${cell.y} exterior pine foot`,
+    ).toBeGreaterThanOrEqual(Math.ceil(255 * 0.6));
+    expect(apronDepth(foot.x, foot.y), `${cell.x},${cell.y} stays inside the fade`).toBeLessThan(
+      APRON_FADE,
+    );
+  }
 });
 
 it('is pinned to the map it surrounds and to the scene that paints it', () => {

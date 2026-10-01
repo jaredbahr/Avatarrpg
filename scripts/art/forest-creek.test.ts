@@ -9,6 +9,7 @@ import {
   loadForestMaterial,
 } from './forest-village-material';
 import { creekOutput, packCreekPool } from './forest-creek';
+import { apronDepth, forestApronAlpha } from './forest-exterior-apron';
 import { shoreDistance, shorePosition } from './forest-shoreline';
 
 const material = await loadForestMaterial();
@@ -20,6 +21,30 @@ it('ships the creek plates the packer builds', async () => {
     expect(Buffer.from(await encodeWebp(image, FOREST_GROUND_QUALITY, true)), pool.name).toEqual(
       readFileSync(creekOutput(pool.name)),
     );
+});
+
+it('clips every exterior creek pixel to the apron contour before every plate crop', () => {
+  for (const { pool, image } of packed) {
+    let fadedRunOn = 0;
+    const offenders: string[] = [];
+    for (let py = 0; py < image.height; py++)
+      for (let px = 0; px < image.width; px++) {
+        const { x, y } = shorePosition(px, py, 2, pool);
+        if (apronDepth(x, y) <= 0) continue;
+        const alpha = pixelAt(image, px, py)[3] ?? 0;
+        const apronAlpha = forestApronAlpha(apronDepth(x, y), x, y);
+        if (alpha > 0 && apronAlpha <= 0) offenders.push(`${px},${py}: painted beyond fade`);
+        if (alpha > apronAlpha) offenders.push(`${px},${py}: ${alpha}>${apronAlpha}`);
+        if (alpha > 0 && alpha < 255) fadedRunOn++;
+        if (
+          (px === 0 || py === 0 || px === image.width - 1 || py === image.height - 1) &&
+          alpha !== 0
+        )
+          offenders.push(`${px},${py}: non-clear crop edge (${alpha})`);
+      }
+    expect(offenders, `${pool.name} exterior contour offenders`).toEqual([]);
+    expect(fadedRunOn, `${pool.name} has a dissolving water/bank band`).toBeGreaterThan(1_000);
+  }
 });
 
 it('keeps bed at every creek cell centre and nothing wet on dry ground', () => {

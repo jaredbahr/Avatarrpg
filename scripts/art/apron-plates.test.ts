@@ -61,7 +61,12 @@ describe('the ring the scene registers', () => {
       apronBands({ ...BA_DAN_APRON_MAP, depth: BA_DAN_APRON_DEPTH }),
     );
     expect([...FOREST_APRON_BANDS]).toEqual(
-      apronBands({ ...FOREST_APRON_MAP, depth: FOREST_APRON_DEPTH, inset: FOREST_APRON_SEAM }),
+      apronBands({
+        ...FOREST_APRON_MAP,
+        depth: FOREST_APRON_DEPTH,
+        inset: FOREST_APRON_SEAM,
+        overlap: 1,
+      }),
     );
   });
 
@@ -74,7 +79,7 @@ describe('the ring the scene registers', () => {
         ).toBeLessThanOrEqual(TEXTURE_CAP);
   });
 
-  it('covers the whole plate, once, from bands that do not overlap', () => {
+  it('covers the whole plate, allowing only the requested seam overlap', () => {
     for (const scene of scenes) {
       const { ring, bands } = scene;
       const covered = new Uint8Array(ring.width * ring.height);
@@ -92,17 +97,21 @@ describe('the ring the scene registers', () => {
       let painted = 0;
       let missed = 0;
       let doubled = 0;
+      let tripled = 0;
       for (let y = 0; y < ring.height; y++)
         for (let x = 0; x < ring.width; x++) {
           const count = covered[y * ring.width + x] ?? 0;
-          if (count > 1) doubled++;
+          if (count === 2) doubled++;
+          if (count > 2) tripled++;
           if ((ring.data[(y * ring.width + x) * 4 + 3] ?? 0) < PAINTED) continue;
           painted++;
           if (count === 0) missed++;
         }
       expect(painted, `${scene.name} has painted apron`).toBeGreaterThan(100_000);
       expect(missed, `${scene.name} pixels no band covers`).toBe(0);
-      expect(doubled, `${scene.name} pixels two bands cover`).toBe(0);
+      expect(tripled, `${scene.name} pixels three bands cover`).toBe(0);
+      if (scene === village) expect(doubled, `${scene.name} pixels two bands cover`).toBe(0);
+      else expect(doubled, `${scene.name} has seam overlap`).toBeGreaterThan(0);
     }
   });
 

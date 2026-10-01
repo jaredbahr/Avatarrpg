@@ -1,6 +1,9 @@
 import { expect, it } from 'vitest';
 import { FOREST_ROAD } from '../maps/combat';
 import {
+  FOREST_APRON_FADE,
+  FOREST_APRON_PAINTED_EXTENTS_TILES,
+  FOREST_APRON_SOLID,
   FOREST_ALDER_CELLS,
   FOREST_CREEK_POOLS,
   FOREST_DEADFALL,
@@ -24,6 +27,15 @@ const cells = (key: string) =>
   FOREST_ROAD.rows.flatMap((row, y) =>
     [...row].flatMap((value, x) => (value === key ? [{ x, y }] : [])),
   );
+
+it('derives projected camera extents from the apron fade', () => {
+  expect(FOREST_APRON_PAINTED_EXTENTS_TILES).toEqual({
+    top: FOREST_APRON_FADE,
+    right: FOREST_APRON_FADE * 2,
+    bottom: FOREST_APRON_FADE,
+    left: FOREST_APRON_FADE * 2,
+  });
+});
 
 it('registers forest art only to the existing water, cover and blocked tree cells', () => {
   expect(FOREST_ROAD_SCENE.groundMode).toBe('partial');
@@ -65,6 +77,18 @@ it('registers forest art only to the existing water, cover and blocked tree cell
   // Exterior trees stand past the rim, never on the board.
   for (const cell of FOREST_THICKET_CELLS)
     expect(FOREST_ROAD.rows[cell.y]?.[cell.x], `${cell.x},${cell.y}`).toBeUndefined();
+  for (const cell of FOREST_THICKET_CELLS) {
+    const foot = { x: cell.x + 0.5, y: cell.y + 0.5 };
+    const depth = Math.max(
+      -foot.x,
+      foot.x - FOREST_ROAD.width,
+      -foot.y,
+      foot.y - FOREST_ROAD.height,
+    );
+    expect(depth, `${cell.x},${cell.y} has opaque apron beneath its foot`).toBeLessThanOrEqual(
+      FOREST_APRON_SOLID,
+    );
+  }
   // The creek's pools are exactly the deep-water cells, and the deadfall lies in one.
   expect(byKey(FOREST_CREEK_POOLS.flatMap((pool) => pool.cells))).toEqual(byKey(cells('W')));
   expect(cells('W')).toContainEqual(FOREST_DEADFALL.footprint[0]);
@@ -88,6 +112,26 @@ it('keeps pine tips inside the agreed top bleed and all feet on projected cell c
     expect(tree.y + tree.height * 0.99).toBeCloseTo((cell.x + cell.y + 1) * 32);
     expect((tree.depth.x + tree.depth.y) * 32).toBeCloseTo(tree.y + tree.height * 0.99);
   }
+});
+
+it('registers every exterior pine whose foot qualifies for the painted apron', () => {
+  const exterior = FOREST_ROAD_SCENE.scenery.filter(
+    (piece) => piece.exterior && piece.id.startsWith('forest-pine-'),
+  );
+  expect(exterior).toHaveLength(FOREST_THICKET_CELLS.length);
+  expect(exterior.length).toBeGreaterThan(0);
+  expect(FOREST_THICKET_CELLS).toEqual([
+    { x: 1, y: -1 },
+    { x: 4, y: -1 },
+    { x: 5, y: -1 },
+    { x: 8, y: -1 },
+    { x: 11, y: -1 },
+    { x: 14, y: -1 },
+    { x: 17, y: -1 },
+    { x: -1, y: 3 },
+    { x: -1, y: 9 },
+    { x: 20, y: 9 },
+  ]);
 });
 
 it('registers the passable flood-bank nest reeds at their authored depth', () => {
