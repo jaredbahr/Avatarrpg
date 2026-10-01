@@ -7,6 +7,7 @@ import {
   FOREST_APRON_PIECES,
   FOREST_EXTERIOR_APRON,
   FOREST_ROAD_SCENE,
+  FOREST_THICKET_CELLS,
 } from '../../src/content/scenes/forestRoad';
 import { apronPlatePath } from './lib/apron-plates';
 import { decodeWebp } from './lib/webp';
@@ -116,6 +117,19 @@ it('fades every material through fine flat steps over the outer tile', () => {
   ).toEqual([]);
   expect(APRON_FADE - APRON_SOLID).toBeCloseTo(1);
   expect(Math.min(...alphas)).toBeLessThanOrEqual(4);
+});
+
+it('keeps every exterior pine foot on at least sixty-percent apron paint', () => {
+  for (const cell of FOREST_THICKET_CELLS) {
+    const foot = { x: cell.x + 0.5, y: cell.y + 0.5 };
+    expect(
+      apronAt(apron, foot.x, foot.y)[3] ?? 0,
+      `${cell.x},${cell.y} exterior pine foot`,
+    ).toBeGreaterThanOrEqual(Math.ceil(255 * 0.6));
+    expect(apronDepth(foot.x, foot.y), `${cell.x},${cell.y} stays inside the fade`).toBeLessThan(
+      APRON_FADE,
+    );
+  }
 });
 
 it('is pinned to the map it surrounds and to the scene that paints it', () => {

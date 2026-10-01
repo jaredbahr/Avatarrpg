@@ -36,6 +36,14 @@ export const COMBAT_CAMERA_RING_TILES = {
   quarry_floor: QUARRY_SURROUND_EXTENTS_TILES,
 } as const;
 
+/** Forest's apron is a projected diamond, not the bounding rectangle around it. */
+const FOREST_CAMERA_PAINT_HULL = [
+  { x: 0, y: -FOREST_APRON_PAINTED_EXTENTS_TILES.top },
+  { x: 20 + FOREST_APRON_PAINTED_EXTENTS_TILES.right, y: 10 },
+  { x: 8, y: 16 + FOREST_APRON_PAINTED_EXTENTS_TILES.bottom },
+  { x: -12 - FOREST_APRON_PAINTED_EXTENTS_TILES.left, y: 6 },
+] as const;
+
 /** Shared because every combat map uses the same staggered party entrance. */
 const COMBAT_PARTY_SPAWNS: readonly Vec2[] = [
   { x: 1, y: 3 },
@@ -121,6 +129,7 @@ export const FOREST_ROAD: MapDef = {
     { side: 'east', span: [9, 9], treatment: 'band' },
   ],
   edgeContract: 'enforce',
+  cameraPaint: { kind: 'convex-hull', points: FOREST_CAMERA_PAINT_HULL },
 };
 
 export const QUARRY_GATE: MapDef = {

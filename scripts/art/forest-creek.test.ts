@@ -22,6 +22,22 @@ it('ships the creek plates the packer builds', async () => {
     );
 });
 
+it('fades the south run-on before every creek plate crop', () => {
+  for (const { pool, image } of packed) {
+    let fadedRunOn = 0;
+    for (let py = 0; py < image.height; py++)
+      for (let px = 0; px < image.width; px++) {
+        const { y } = shorePosition(px, py, 2, pool);
+        if (y < 12) continue;
+        const alpha = pixelAt(image, px, py)[3] ?? 0;
+        if (alpha > 0 && alpha < 255) fadedRunOn++;
+        if (px === 0 || py === 0 || px === image.width - 1 || py === image.height - 1)
+          expect(alpha, `${pool.name} ${px},${py} crop edge`).toBe(0);
+      }
+    expect(fadedRunOn, `${pool.name} has a dissolving water/bank band`).toBeGreaterThan(1_000);
+  }
+});
+
 it('keeps bed at every creek cell centre and nothing wet on dry ground', () => {
   for (const { pool, image } of packed) {
     for (const { x, y } of pool.cells) {

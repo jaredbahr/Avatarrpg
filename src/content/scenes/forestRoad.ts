@@ -146,26 +146,12 @@ export const FOREST_PINE_CELLS: readonly Vec2[] = [
   { x: 0, y: 2 },
 ];
 /**
- * Pines outside the rim. The north clearings at (4,0), (5,0) and (14,0) are
- * deer paths that end in thicket rather than at the page, a staggered second
- * rank makes the wall read as forest instead of a single file, and the
- * walkable rim cells the edge contract calls a band at west rows 3 and 9 and
- * east row 9 have trees standing just past them. East row 3 has none: a pine there
- * stands in front of the boulder perch and hides it. Exterior pieces carry no
- * rule; the rows and `edges` in `combat.ts` do.
+ * Pine decoration outside the rim. The former north and west ranks projected
+ * beyond the ground fade and read as trees standing on the page, so only the
+ * east-row-9 tree whose complete image remains inside the painted hull stays.
+ * Exterior pieces carry no rule; the rows and `edges` in `combat.ts` do.
  */
-export const FOREST_THICKET_CELLS: readonly Vec2[] = [
-  { x: 1, y: -1 },
-  { x: 4, y: -1 },
-  { x: 5, y: -1 },
-  { x: 8, y: -1 },
-  { x: 11, y: -1 },
-  { x: 14, y: -1 },
-  { x: 17, y: -1 },
-  { x: -1, y: 3 },
-  { x: -1, y: 9 },
-  { x: 20, y: 9 },
-];
+export const FOREST_THICKET_CELLS: readonly Vec2[] = [{ x: 20, y: 9 }];
 
 function pine({ x, y }: Vec2): SceneScenery {
   const height = 224,

@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { COMBAT_CAMERA_RING_TILES } from '../content/maps/combat';
-import { Camera, MIN_TILE_PX, TILE } from './camera';
+import { Camera, clampCentreToConvexPolygon, MIN_TILE_PX, TILE } from './camera';
 
 /** A Surface-sized map area in landscape: the whole 20x12 board fits. */
 const LANDSCAPE = { width: 1344, height: 640, dpr: 1 };
@@ -164,7 +164,8 @@ describe('Camera.clamp painted ring', () => {
       6,
     );
     expect(camera.offsetY).toBeCloseTo(
-      camera.worldHeight - camera.viewport.height +
+      camera.worldHeight -
+        camera.viewport.height +
         camera.clampRingTiles.bottom * TILE * camera.scale,
       6,
     );
@@ -190,6 +191,92 @@ describe('Camera.clamp painted ring', () => {
     expect(camera.offsetX).toBeCloseTo(770, 6);
     expect(camera.offsetY).toBe(0);
   });
+});
+
+describe('clampCentreToConvexPolygon', () => {
+  const diamond = [
+    { x: 0, y: -4 },
+    { x: 6, y: 0 },
+    { x: 0, y: 4 },
+    { x: -6, y: 0 },
+  ] as const;
+
+  it.each([
+    ['clockwise', diamond],
+    ['counter-clockwise', [...diamond].reverse()],
+  ] as const)('leaves an inside point unchanged (%s)', (_direction, polygon) => {
+    expect(clampCentreToConvexPolygon({ x: 1, y: 0.5 }, polygon)).toEqual({ x: 1, y: 0.5 });
+  });
+
+  it('projects an outside point to the nearest boundary point', () => {
+    expect(clampCentreToConvexPolygon({ x: 10, y: 0 }, diamond)).toEqual({ x: 6, y: 0 });
+    expect(clampCentreToConvexPolygon({ x: 0, y: -10 }, diamond)).toEqual({ x: 0, y: -4 });
+  });
+
+  it.each(['orthographic', 'oblique'] as const)(
+    'handles both projections at every zoom (%s)',
+    (projection) => {
+      const camera = new Camera(NARROW, GRID, projection);
+      const hull =
+        projection === 'oblique'
+          ? [
+              { x: 0, y: -2.2 },
+              { x: 24.4, y: 10 },
+              { x: 8, y: 18.2 },
+              { x: -16.4, y: 6 },
+            ]
+          : [
+              { x: -2, y: -2 },
+              { x: 22, y: -2 },
+              { x: 22, y: 14 },
+              { x: -2, y: 14 },
+            ];
+      camera.clampPaintHull = hull;
+      camera.fitExplore(96);
+      for (const factor of [1, 1.5, 2.5]) {
+        if (factor !== 1) camera.zoomAt({ x: 180, y: 260 }, factor);
+        camera.panBy(100_000, 100_000);
+        const point = {
+          x: (camera.offsetX + camera.viewport.width / 2) / camera.scale,
+          y: (camera.offsetY + camera.viewport.height / 2) / camera.scale,
+        };
+        const boardHull = hull.map((p) => camera.boardPoint(p));
+        expect(clampCentreToConvexPolygon(point, boardHull)).toEqual(point);
+        camera.panBy(-200_000, -200_000);
+      }
+    },
+  );
+});
+
+describe('Camera.clamp convex paint hull', () => {
+  it.each(['orthographic', 'oblique'] as const)(
+    'keeps a fitted axis centred while clamping the overflowing axis (%s)',
+    (projection) => {
+      const camera =
+        projection === 'oblique'
+          ? new Camera({ width: 1344, height: 500, dpr: 1 }, GRID, projection)
+          : new Camera({ width: 900, height: 300, dpr: 1 }, GRID, projection);
+      camera.clampPaintHull =
+        projection === 'oblique'
+          ? [
+              { x: 0, y: -2.2 },
+              { x: 24.4, y: 10 },
+              { x: 8, y: 18.2 },
+              { x: -16.4, y: 6 },
+            ]
+          : [
+              { x: -2, y: -2 },
+              { x: 22, y: -2 },
+              { x: 22, y: 14 },
+              { x: -2, y: 14 },
+            ];
+      camera.fit();
+      const centredX = camera.offsetX;
+      camera.panBy(0, 100_000);
+      expect(camera.offsetX).toBe(centredX);
+      expect(camera.offsetX).toBeCloseTo((camera.worldWidth - camera.viewport.width) / 2, 6);
+    },
+  );
 });
 
 function worldAt(camera: Camera, at: { x: number; y: number }): { x: number; y: number } {

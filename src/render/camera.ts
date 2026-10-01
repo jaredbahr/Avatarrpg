@@ -44,6 +44,56 @@ export interface ScreenPoint {
   readonly y: number;
 }
 
+/** A convex polygon in screen/world coordinates, closed implicitly. */
+export type ConvexPolygon = readonly ScreenPoint[];
+
+const POINT_EPSILON = 1e-9;
+
+/**
+ * Keeps a point inside a convex polygon. An interior point is returned as-is;
+ * an exterior point is projected to its nearest edge. The helper is kept
+ * independent of Camera so other screen-space paint bounds can use it too.
+ */
+export function clampCentreToConvexPolygon(
+  point: ScreenPoint,
+  polygon: ConvexPolygon,
+): ScreenPoint {
+  if (polygon.length < 3) return point;
+
+  let positive = false;
+  let negative = false;
+  for (let i = 0; i < polygon.length; i += 1) {
+    const a = polygon[i];
+    const b = polygon[(i + 1) % polygon.length];
+    if (!a || !b) continue;
+    const cross = (b.x - a.x) * (point.y - a.y) - (b.y - a.y) * (point.x - a.x);
+    positive ||= cross > POINT_EPSILON;
+    negative ||= cross < -POINT_EPSILON;
+  }
+  if (!(positive && negative)) return point;
+
+  let best = polygon[0] ?? point;
+  let bestDistance = Number.POSITIVE_INFINITY;
+  for (let i = 0; i < polygon.length; i += 1) {
+    const a = polygon[i];
+    const b = polygon[(i + 1) % polygon.length];
+    if (!a || !b) continue;
+    const dx = b.x - a.x;
+    const dy = b.y - a.y;
+    const lengthSquared = dx * dx + dy * dy;
+    const t = lengthSquared
+      ? Math.max(0, Math.min(1, ((point.x - a.x) * dx + (point.y - a.y) * dy) / lengthSquared))
+      : 0;
+    const candidate = { x: a.x + dx * t, y: a.y + dy * t };
+    const distance = (candidate.x - point.x) ** 2 + (candidate.y - point.y) ** 2;
+    if (distance < bestDistance) {
+      best = candidate;
+      bestDistance = distance;
+    }
+  }
+  return best;
+}
+
 export interface CameraClampRing {
   readonly top: number;
   readonly right: number;
@@ -70,6 +120,9 @@ export class Camera {
     /** Painted ground outside the grid that may remain visible while panning. */
     public clampRingTiles: CameraClampRing = NO_CLAMP_RING,
   ) {}
+
+  /** Optional convex paint hull in projected ground coordinates. */
+  clampPaintHull: readonly Vec2[] | null = null;
 
   private get bounds() {
     return groundBounds(this.grid.width, this.grid.height, this.projection);
@@ -144,6 +197,10 @@ export class Camera {
   clampToPanBounds(): void {
     const slackX = this.worldWidth - this.viewport.width;
     const slackY = this.worldHeight - this.viewport.height;
+    if (this.clampPaintHull && this.clampPaintHull.length >= 3) {
+      this.clampToPaintHull(slackX, slackY);
+      return;
+    }
     const pixels = (tiles: number) => Math.max(0, tiles) * TILE * this.scale;
     this.offsetX =
       slackX <= 0
@@ -159,6 +216,23 @@ export class Camera {
             -pixels(this.clampRingTiles.top),
             Math.min(slackY + pixels(this.clampRingTiles.bottom), this.offsetY),
           );
+  }
+
+  private clampToPaintHull(slackX: number, slackY: number): void {
+    const centre = {
+      x: (this.offsetX + this.viewport.width / 2) / this.scale,
+      y: (this.offsetY + this.viewport.height / 2) / this.scale,
+    };
+    const hull = this.clampPaintHull?.map((point) => this.boardPoint(point)) ?? [];
+    const clamped = clampCentreToConvexPolygon(centre, hull);
+    // A fitted axis has no room to pan. Keep its existing centred value even
+    // when the other axis needs to follow a sloping hull edge.
+    const next = {
+      x: slackX <= 0 ? this.worldWidth / this.scale / 2 : clamped.x,
+      y: slackY <= 0 ? this.worldHeight / this.scale / 2 : clamped.y,
+    };
+    this.offsetX = next.x * this.scale - this.viewport.width / 2;
+    this.offsetY = next.y * this.scale - this.viewport.height / 2;
   }
 
   panBy(dx: number, dy: number): void {

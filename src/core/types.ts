@@ -828,6 +828,16 @@ export interface MapDef {
    * `ambience`: nothing in the rules reads it.
    */
   readonly backdrop?: MapBackdrop;
+  /**
+   * Camera paint geometry for maps whose authored ground is not rectangular.
+   * Points are projected ground coordinates (the same space as `projectGround`)
+   * and form a convex polygon. Maps without this declaration retain the
+   * rectangular painted-ring clamp.
+   */
+  readonly cameraPaint?: {
+    readonly kind: 'convex-hull';
+    readonly points: readonly Vec2[];
+  };
 }
 
 /**

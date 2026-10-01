@@ -15,7 +15,8 @@
 import { mkdirSync, writeFileSync } from 'node:fs';
 import { FOREST_APRON_MAP, FOREST_CREEK_POOLS } from '../../src/content/scenes/forestRoad';
 import type { ForestCreekPool } from '../../src/content/scenes/forestRoad';
-import { setPixel } from './lib/image';
+import { apronDepth, forestApronAlpha } from './forest-exterior-apron';
+import { pixelAt, setPixel } from './lib/image';
 import { encodeWebp } from './lib/webp';
 import { FOREST_GROUND_QUALITY, loadForestMaterial } from './forest-village-material';
 import type { ForestMaterial } from './forest-village-material';
@@ -26,10 +27,10 @@ export const creekOutput = (name: string): string =>
 
 /**
  * The creek runs on south past the rim, so a pool has no bank there: it is
- * packed as though its row-11 cells continued two rows off the board, and
- * everything past the rim is then cleared for the apron, which continues the
- * water itself. Banked at the rim, the apron's mirror of the pool read as a
- * second channel beside it.
+ * packed as though its row-11 cells continued past the apron fade. Past the
+ * rim the water and bank take the apron's own alpha contour, plus a short
+ * dissolve at the finite plate crop so that crop cannot become a straight
+ * visible edge before the shared contour reaches zero.
  */
 export const CREEK_RUNS_ON = 2;
 
@@ -48,8 +49,17 @@ export function packCreekPool(material: ForestMaterial, pool: ForestCreekPool) {
   const { image } = packed;
   for (let py = 0; py < image.height; py++)
     for (let px = 0; px < image.width; px++) {
-      const { y } = shorePosition(px, py, 2, { patch: pool.patch, cells: pool.cells });
-      if (y >= rim) setPixel(image, px, py, [0, 0, 0, 0]);
+      const { x, y } = shorePosition(px, py, 2, { patch: pool.patch, cells: pool.cells });
+      if (y < rim) continue;
+      const [r, g, b, alpha] = pixelAt(image, px, py);
+      if (!alpha) continue;
+      const fade = forestApronAlpha(apronDepth(x, y), x, y);
+      // The packed patch is finite. Dissolve the run-on before its crop on all
+      // sides so neither the water film nor its damp bank can end as a vertical
+      // plate edge at the south-east corner.
+      const edge = Math.min(px, py, image.width - 1 - px, image.height - 1 - py);
+      const edgeFade = Math.max(0, Math.min(1, edge / 48));
+      setPixel(image, px, py, [r, g, b, Math.round((alpha * fade * edgeFade) / 255)]);
     }
   return packed;
 }

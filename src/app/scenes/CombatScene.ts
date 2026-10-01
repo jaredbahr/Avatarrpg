@@ -451,6 +451,10 @@ export class CombatScene implements Scene {
       bottom: 0,
       left: 0,
     };
+    this.renderer.camera.clampPaintHull =
+      this.app.content.maps.get(battle.mapId)?.cameraPaint?.kind === 'convex-hull'
+        ? (this.app.content.maps.get(battle.mapId)?.cameraPaint?.points ?? null)
+        : null;
     this.app.animator.setProjection(this.renderer.camera.projection);
     if (this.renderer.camera.projection === 'oblique') this.renderer.camera.fitExplore(96);
     else this.renderer.camera.fit();

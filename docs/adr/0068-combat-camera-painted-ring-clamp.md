@@ -24,8 +24,11 @@ Combat fit scale, default tile sizes, initial centring on the acting unit or
 party, manual zoom, and reflow behaviour remain unchanged.
 
 Manual panning and anchored zoom clamp to the projected full grid plus a
-map-authored painted allowance on each screen-space side. Programmatic
-centring, including acting-unit focus and Recentre, still clamps to the grid:
+map-authored painted allowance. Rectangular painted surrounds use the existing
+per-side clamp. A map whose paint is a diamond declares a convex screen-space
+hull instead; the viewport centre is clamped to that hull, so a diagonal corner
+cannot expose the hull's axis-aligned empty triangles. Programmatic centring,
+including acting-unit focus and Recentre, still clamps to the grid:
 
 | Map          |  Top | Right | Bottom | Left |
 | ------------ | ---: | ----: | -----: | ---: |
@@ -46,10 +49,12 @@ it. Clamp calculations use the entire grid rectangle without inspecting tile
 walkability, so blocked and `X` edge rows count as visible authored ground.
 
 Forest Road derives its screen-side allowances from the apron's painted fade
-extent rather than repeating a camera literal. Its oblique projection doubles
-the logical apron reach on the left and right while leaving one fade depth on
-the top and bottom. The plate has colour bleed beyond that alpha edge, but the
-camera may not count clear bleed as paint.
+extent rather than repeating a camera literal, and declares the resulting
+projected diamond hull. Its oblique projection doubles the logical apron reach
+on the left and right while leaving one fade depth on the top and bottom. The
+plate has colour bleed beyond that alpha edge, but the camera may not count
+clear bleed as paint. The hull clamp is applied at every zoom and preserves a
+fitted axis at its centred offset.
 
 ## Consequences
 
@@ -57,7 +62,8 @@ camera may not count clear bleed as paint.
 - Initial combat framing is unchanged: fitting, acting-unit focus and Recentre
   use the grid bounds. A resize that preserves a manually panned or zoomed
   camera reapplies the painted-ring bounds against the new viewport.
-- A player can pan farther into authored surroundings, up to each map's ring.
+- A player can pan farther into authored surroundings, up to each map's ring or
+  convex paint hull. Forest Road's diagonal corners never clamp into bare page.
 - Unit tests pin both ring endpoints and ensure the ring does not affect scale
   or initial centring. Existing viewport tests continue to own device framing
   and tile-size expectations.
