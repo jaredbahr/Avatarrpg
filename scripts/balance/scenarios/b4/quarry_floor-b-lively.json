@@ -1,0 +1,18 @@
+{
+  "props": {
+    "hay_bale": {
+      "fuel": 3,
+      "ignites": { "radius": 1, "spread": 1 },
+      "douse": ["water", "cold", "earth"]
+    }
+  },
+  "placements": {
+    "quarry_floor": {
+      "add": [
+        { "propId": "hay_bale", "pos": { "x": 14, "y": 9 } },
+        { "propId": "oil_flask", "pos": { "x": 13, "y": 8 } },
+        { "propId": "water_barrel", "pos": { "x": 15, "y": 7 } }
+      ]
+    }
+  }
+}

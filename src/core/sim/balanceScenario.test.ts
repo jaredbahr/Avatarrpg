@@ -1,6 +1,10 @@
 import { describe, expect, it } from 'vitest';
 import { CONTENT } from '../../content';
-import { applyScenario, balanceScenarioSchema } from '../../../scripts/balance/scenario';
+import {
+  applyScenario,
+  balanceScenarioSchema,
+  unsupportedKnobs,
+} from '../../../scripts/balance/scenario';
 import { countPropEvents } from '../../../scripts/balance/report';
 import type { GameEvent } from '../types';
 import { runBalanceReport } from './balance';
@@ -80,5 +84,15 @@ describe('balance scenario tooling', () => {
     expect(runBalanceReport(overlaidForest, { trials: 2 })).toEqual(
       runBalanceReport(onlyForest, { trials: 2 }),
     );
+  });
+  it('reports an unapplied rules knob whenever it is named, true or false', () => {
+    const knobs = (scenario: Parameters<typeof unsupportedKnobs>[0]) =>
+      unsupportedKnobs(scenario).map((entry) => entry.knob);
+    expect(knobs({ squareFootprints: false })).toEqual(['squareFootprints']);
+    expect(knobs({ breakRestoresLiveSurface: false, adjacentCover: true })).toEqual([
+      'breakRestoresLiveSurface',
+      'adjacentCover',
+    ]);
+    expect(knobs({})).toEqual([]);
   });
 });

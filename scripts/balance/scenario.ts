@@ -104,22 +104,27 @@ export interface UnsupportedScenarioKnob {
   readonly reason: string;
 }
 
+/**
+ * Every rules knob a scenario names but the simulation cannot apply. A knob is
+ * reported whenever it is specified, true or false: an ignored `false` must
+ * not read as a setting the run honoured.
+ */
 export function unsupportedKnobs(scenario: BalanceScenario): UnsupportedScenarioKnob[] {
   const unsupported: UnsupportedScenarioKnob[] = [];
-  if (scenario.squareFootprints === true) {
+  if (scenario.squareFootprints !== undefined) {
     unsupported.push({
       knob: 'squareFootprints',
       reason:
         'runCombat/createBattle and reducer application do not expose the existing footprint option',
     });
   }
-  if (scenario.breakRestoresLiveSurface === true) {
+  if (scenario.breakRestoresLiveSurface !== undefined) {
     unsupported.push({
       knob: 'breakRestoresLiveSurface',
       reason: 'prop break restoration is hard-coded in BattleDraft.removeProp',
     });
   }
-  if (scenario.adjacentCover === true) {
+  if (scenario.adjacentCover !== undefined) {
     unsupported.push({
       knob: 'adjacentCover',
       reason: 'adjacent cover is hard-coded in hitBreakdown',
