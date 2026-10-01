@@ -18,6 +18,10 @@ const PHASE_ROUTE_STEPS = Math.ceil(
  * Advance the residents' clamped presentation clock without rendering every
  * intermediate rAF, then bring Playwright's clock to the same timestamp.
  * ResidentWalks.tick accepts at most 100 ms per call, so keep those semantics.
+ * This is a clock advance with no pacing: walks already planned move exactly as
+ * rendered frames would, but an errand whose hold ends inside the skip starts
+ * its next leg on the first real frame afterwards, not at the hold's end. Do
+ * not use it across an errand leg boundary whose timing a test asserts.
  */
 async function advanceResidentsWithoutFrames(page: Page, ms: number) {
   await page.evaluate((duration) => {
@@ -163,6 +167,14 @@ for (const renderer of ['canvas', 'webgl'] as const) {
       await advanceResidentsWithoutFrames(page, 5_000);
       await sample();
       await sample();
+      // The mid window must catch the walk in progress, with Dorin drawn
+      // part-way along it on exactly one sprite, or it guards nothing.
+      expect(residentsMoving).toBe(true);
+      const midDorin = end.find((m) => m.id === 'lw.npc.dorin');
+      expect(
+        midDorin && (!Number.isInteger(midDorin.at.x) || !Number.isInteger(midDorin.at.y)),
+      ).toBe(true);
+      expect(dorinSprites.at(-1)).toBe(1);
       await advanceResidentsWithoutFrames(page, 5_000);
       for (let step = 0; step < 20; step++) {
         await sample();
