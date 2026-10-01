@@ -1,8 +1,30 @@
-import { describe, expect, it } from 'vitest';
+import { afterEach, describe, expect, it, vi } from 'vitest';
 import { Camera } from '../camera';
 import { loadingPlaceholderBox } from '../painters/registry';
-import { canvasActorDepth } from './canvas2d';
-import { pixiActorDepth } from './pixi';
+import { Canvas2DBackend, canvasActorDepth } from './canvas2d';
+import { PixiBackend, pixiActorDepth } from './pixi';
+
+// Construction is the contract under test here; the Pixi particle layer would
+// otherwise start its atlas loader before the backend can be inspected.
+vi.mock('../fx/particleLayer', () => ({
+  ParticleLayer: class {
+    readonly container = {};
+    draw(): void {}
+    destroy(): void {}
+  },
+}));
+
+const canvas = (): HTMLCanvasElement =>
+  ({
+    width: 1,
+    height: 1,
+    getContext: () => ({}),
+  }) as HTMLCanvasElement;
+
+afterEach(() => {
+  vi.restoreAllMocks();
+  vi.unstubAllGlobals();
+});
 
 describe('square-footprint backend parity', () => {
   it.each([
@@ -55,5 +77,18 @@ describe('square-footprint backend parity', () => {
     expect(
       loadingPlaceholderBox({ x: 10, y: 74, size: 64 }, { footprintWidth: 2, footprintHeight: 2 }),
     ).toEqual({ x: 10, y: 10, size: 128, height: 128 });
+  });
+
+  it('passes the square gate into each backend construction', () => {
+    const canvasBackend = new Canvas2DBackend(canvas(), true);
+    expect((canvasBackend as unknown as { squareFootprints: boolean }).squareFootprints).toBe(true);
+
+    vi.stubGlobal('document', { createElement: canvas });
+    vi.spyOn(
+      PixiBackend.prototype as unknown as { init: () => Promise<void> },
+      'init',
+    ).mockResolvedValue(undefined);
+    const pixiBackend = new PixiBackend(canvas(), true);
+    expect((pixiBackend as unknown as { squareFootprints: boolean }).squareFootprints).toBe(true);
   });
 });

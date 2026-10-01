@@ -126,7 +126,12 @@ function covers(image: HTMLImageElement, piece: SceneImage, x: number, y: number
 }
 
 /** Roof cutaway follows actual on-screen overlap and ground depth, on either backend. */
-export function sceneryOpacity(scenery: SceneScenery, view: MapView, camera: Camera): number {
+export function sceneryOpacity(
+  scenery: SceneScenery,
+  view: MapView,
+  camera: Camera,
+  squareFootprints = SQUARE_FOOTPRINTS,
+): number {
   if (!scenery.fadeWhenOccluding) return 1;
   const image = sceneImage(scenery);
   if (!image) return 1;
@@ -139,7 +144,7 @@ export function sceneryOpacity(scenery: SceneScenery, view: MapView, camera: Cam
         pos: unit.renderPos ?? unit.pos,
         size: unit.size,
         scale: unit.scale ?? 1,
-        square: SQUARE_FOOTPRINTS,
+        square: squareFootprints,
       })),
     // Nearby people remain readable for conversation; a distant villager does
     // not turn an entire neighbourhood transparent permanently.
@@ -191,11 +196,12 @@ export function sceneryOpacities(
   pieces: readonly SceneScenery[],
   view: MapView,
   camera: Camera,
+  squareFootprints = SQUARE_FOOTPRINTS,
 ): ReadonlyMap<SceneScenery, number> {
   const result = new Map<SceneScenery, number>();
   const groups = new Map<string, number>();
   for (const piece of pieces) {
-    const opacity = sceneryOpacity(piece, view, camera);
+    const opacity = sceneryOpacity(piece, view, camera, squareFootprints);
     result.set(piece, opacity);
     if (piece.fadeWhenOccluding && piece.fadeGroup)
       groups.set(piece.fadeGroup, Math.min(groups.get(piece.fadeGroup) ?? 1, opacity));

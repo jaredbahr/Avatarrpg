@@ -3,11 +3,20 @@ import type { Grid, TerrainId, Tile } from '../../core/types';
 import {
   GRASS_SHADOW_DENSITY,
   HP_CAP_MIN_PX,
+  actorHeadroom,
   actorHealthBar,
   actorShadowDensity,
   healthBarCap,
 } from './actorSilhouette';
 import { FOOT_LINE, headroomFromPixels } from '../sheets/bake';
+
+describe('upright actor headroom', () => {
+  it('uses measured frame headroom and the matching fallback footprint box', () => {
+    expect(actorHeadroom(0.62, 2)).toBe(0.62);
+    expect(actorHeadroom(undefined, 1)).toBe(0);
+    expect(actorHeadroom(undefined, 2)).toBe(1);
+  });
+});
 
 describe('upright actor health bar', () => {
   it('clears the actual opaque silhouette through scale, pose and elevation changes', () => {

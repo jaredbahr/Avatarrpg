@@ -278,6 +278,15 @@ for (const projection of ['orthographic', 'oblique'] as const satisfies readonly
         ),
       ).toBe(0.28);
     });
+
+    it('lets an injected square gate move the 2x2 occlusion foot', () => {
+      installImage(() => 255);
+      const base = roof(camera);
+      const scene = { ...base, depth: { x: 4, y: 2.75 } };
+      const state = view({ units: [unit(origin, { size: 2 })] });
+      expect(sceneryOpacity(scene, state, camera)).toBe(0.28);
+      expect(sceneryOpacity(scene, state, camera, true)).toBe(1);
+    });
   });
 }
 

@@ -2,6 +2,15 @@ import type { Grid, TerrainId, Vec2 } from '../../core/types';
 import { SQUARE_FOOTPRINTS, footprintCells } from '../../core/rules/footprint';
 import { FOOT_LINE } from '../sheets/bake';
 
+/**
+ * Headroom shared by every upright presentation cue. A loaded frame reports
+ * the measured distance above its tile; a painter fallback occupies the
+ * complete footprint box, adding one full row of headroom for a 2x2.
+ */
+export function actorHeadroom(frameHeadroom: number | undefined, heightTiles: 1 | 2): number {
+  return frameHeadroom ?? Math.max(0, heightTiles - 1);
+}
+
 /** Shared upright geometry. `y` already includes elevation and the current pose offset. */
 export function actorHealthBar(
   x: number,

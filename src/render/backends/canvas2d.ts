@@ -19,7 +19,12 @@ import type { Viewport } from '../camera';
 import type { TileRelief } from '../geometry/board';
 import { boardRelief, decorSignature, seamMaterial, surfaceEdges } from '../geometry/board';
 import { aimArcPoints, arcHeading, arrowheadPolygon } from '../geometry/arc';
-import { actorHealthBar, actorShadowDensity, healthBarCap } from '../geometry/actorSilhouette';
+import {
+  actorHeadroom,
+  actorHealthBar,
+  actorShadowDensity,
+  healthBarCap,
+} from '../geometry/actorSilhouette';
 import { resolveActorEmitters } from '../geometry/actorAttachments';
 import { liftAlong, liftAt } from '../geometry/elevation';
 import { contourLoops } from '../geometry/contour';
@@ -312,7 +317,12 @@ export class Canvas2DBackend implements RenderBackend {
       this.drawUnitRings(view, camera);
       drawBendFx(ctx, view.bendFx ?? [], camera, false);
       // All upright occupants share depth order, including NPCs and props.
-      const opacities = sceneryOpacities(view.scene?.scenery ?? [], view, camera);
+      const opacities = sceneryOpacities(
+        view.scene?.scenery ?? [],
+        view,
+        camera,
+        this.squareFootprints,
+      );
       const occupants = [
         ...(view.scene?.scenery ?? []).map((piece) => ({
           pos: piece.depth,
@@ -958,16 +968,38 @@ export class Canvas2DBackend implements RenderBackend {
       );
       const pos = target?.renderPos ?? target?.pos ?? cue.pos;
       const box = camera.spriteBox(pos, target?.size ?? 1, this.squareFootprints);
-      const targetAsset = target ? resolveAsset(target.sprite) : undefined;
-      const heightTiles =
-        this.squareFootprints && targetAsset?.kind !== 'sheet' ? (target?.size ?? 1) : 1;
+      const heightTiles = this.squareFootprints ? (target?.size ?? 1) : 1;
       const width = (target?.size ?? 1) * box.size;
       const cx = box.x + width + box.size * 0.12;
-      const cy =
-        box.y -
-        liftAlong(view.grid, pos, camera.projection) * box.size -
-        (heightTiles - 1) * box.size -
-        box.size * 0.04;
+      const lift = liftAlong(view.grid, pos, camera.projection);
+      const scale = target?.scale ?? 1;
+      const frame =
+        this.squareFootprints &&
+        target &&
+        (target.bend
+          ? sheets.bendFrame(target.sprite, target.bend.heading, target.bend.index)
+          : sheets.frame(
+              target.sprite,
+              target.clip ?? 'idle',
+              target.clipTime ?? view.time + idlePhase(target.id),
+              target.clipFrame,
+              box.size * camera.viewport.dpr * scale,
+              target.size,
+              target.meleeDirection,
+              heightTiles,
+            ));
+      const headroom = actorHeadroom(frame?.headroom, heightTiles);
+      const cy = this.squareFootprints
+        ? actorHealthBar(
+            box.x,
+            box.y - lift * box.size,
+            width,
+            box.size,
+            scale,
+            headroom,
+          ).silhouetteTop -
+          box.size * 0.04
+        : box.y - lift * box.size - box.size * 0.04;
       ctx.fillStyle = OVERLAY.reticleCue;
       ctx.strokeStyle = OVERLAY.pathUnder;
       ctx.lineWidth = Math.max(3, size * 0.065);
@@ -1164,7 +1196,7 @@ export class Canvas2DBackend implements RenderBackend {
       ctx.globalAlpha = alpha;
       if (entry.kind === 'image') {
         const s = box.size * scale;
-        const density = actorShadowDensity(view.grid, at, true, width);
+        const density = actorShadowDensity(view.grid, at, true, width, false);
         ctx.drawImage(sprites.shadow(s * dpr, density), footX - s / 2, footY - 0.86 * s, s, s);
       }
       const squash = npc.squash ?? 0;
@@ -1366,7 +1398,13 @@ export class Canvas2DBackend implements RenderBackend {
       ctx.save();
       // A pose scales about the feet; the fallen fade sits on top of any alpha.
       const alpha = (unit.alpha ?? 1) * fallenAlpha(unit);
-      const shadowDensity = actorShadowDensity(view.grid, pos, unit.shadow === true, unit.size);
+      const shadowDensity = actorShadowDensity(
+        view.grid,
+        pos,
+        unit.shadow === true,
+        unit.size,
+        this.squareFootprints,
+      );
       if (shadowDensity > 0) {
         // On the ground, not on the bob: the tile's foot line, less the ledge.
         const footprint = this.squareFootprints ? unit.size : 1;
@@ -1403,10 +1441,9 @@ export class Canvas2DBackend implements RenderBackend {
           unit.meleeDirection,
           heightTiles,
         );
-      let headroom = 0;
+      const headroom = actorHeadroom(frame?.headroom, heightTiles);
       const fallback = !frame;
       if (frame) {
-        headroom = frame.headroom;
         const ax = box.x + width / 2;
         const ay = box.y + FOOT_LINE * box.size;
         const { x: drawX, y: drawY, w: fw, h: fh } = placeFrame(frame, ax, ay, box.size * scale);
@@ -1448,7 +1485,7 @@ export class Canvas2DBackend implements RenderBackend {
           this.drawHealthBar(
             unit,
             box.x,
-            box.y - (fallback ? (heightTiles - 1) * box.size : 0),
+            box.y,
             width,
             box.size,
             scale,

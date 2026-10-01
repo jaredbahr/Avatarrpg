@@ -668,4 +668,54 @@ describe('reconcileBattle', () => {
     expect(result.warnings.some((warning) => warning.kind === 'disconnected-snap')).toBe(true);
     expect(result.state.battle?.units[0]?.pos).toEqual(current.partySpawns[0]);
   });
+
+  it('does not snap a square boss into a chamber joined by a one-cell corridor', () => {
+    const old = currentBattleState('quarry_gate');
+    if (!old.battle) throw new Error('missing battle');
+    const current = CONTENT.maps.get('quarry_gate');
+    if (!current) throw new Error('missing map');
+    const party = old.battle.units.find((unit) => unit.faction === 'party');
+    const boss = old.battle.units.find((unit) => unit.size === 2);
+    if (!party || !boss) throw new Error('fixture is missing the party or boss');
+
+    // Every cell is in the one-cell walkable component, but the connection to
+    // the 2x2 chamber is only one tile wide. A square cannot walk through it.
+    const rows = Array.from({ length: current.height }, (_, y) => {
+      const cells = Array.from({ length: current.width }, () => '#');
+      const open =
+        y === 2 ? [1, 2, 3, 10, 11] : y === 3 ? Array.from({ length: 11 }, (_, x) => x + 1) : [];
+      for (const x of open) cells[x] = '.';
+      return cells.join('');
+    });
+    const map = { ...current, rows, partySpawns: [{ x: 1, y: 3 }] };
+    const content = contentWithMap(map);
+    const state: GameState = {
+      ...old,
+      battle: {
+        ...old.battle,
+        units: [
+          { ...party, pos: { x: 1, y: 3 } },
+          // The legacy 2x1 fits on the chamber's lower row; the square's
+          // lower row is buried, making (10,2) the tempting sealed candidate.
+          { ...boss, pos: { x: 10, y: 3 } },
+        ],
+      },
+    };
+
+    const legacy = reconcileBattleResult(content, state, { squareFootprints: false });
+    expect(legacy.state.battle?.units.find((unit) => unit.id === boss.id)?.pos).toEqual({
+      x: 10,
+      y: 3,
+    });
+
+    const result = reconcileBattleResult(content, state, { squareFootprints: true });
+    const moved = result.state.battle?.units.find((unit) => unit.id === boss.id);
+    expect(moved?.pos).not.toEqual({ x: 10, y: 2 });
+    expect(moved?.pos).toEqual({ x: 2, y: 2 });
+    expect(result.warnings).toContainEqual({
+      kind: 'disconnected-snap',
+      unitId: boss.id,
+      pos: { x: 10, y: 2 },
+    });
+  });
 });

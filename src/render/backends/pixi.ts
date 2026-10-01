@@ -58,7 +58,12 @@ import { steamPuffCanvas, steamSeed } from '../fx/steamPuff';
 import { bendFxSource } from '../fx/bendFxDraw';
 import { syncBendFx } from '../fx/bendFxPixi';
 import { aimArcPoints, arcHeading, arrowheadPolygon } from '../geometry/arc';
-import { actorHealthBar, actorShadowDensity, healthBarCap } from '../geometry/actorSilhouette';
+import {
+  actorHeadroom,
+  actorHealthBar,
+  actorShadowDensity,
+  healthBarCap,
+} from '../geometry/actorSilhouette';
 import { DECOR_CHUNK, decorChunks } from '../geometry/board';
 import {
   clip,
@@ -1068,7 +1073,12 @@ export class PixiBackend implements RenderBackend {
       sprite.width = chunk.width;
       sprite.height = chunk.height;
     }
-    const opacities = sceneryOpacities(scene?.scenery ?? [], view, camera);
+    const opacities = sceneryOpacities(
+      scene?.scenery ?? [],
+      view,
+      camera,
+      this.squareFootprints,
+    );
     for (const item of scene?.scenery ?? []) {
       sceneryKeys.add(item.id);
       let sprite = this.scenerySprites.get(item.id);
@@ -1789,15 +1799,40 @@ export class PixiBackend implements RenderBackend {
     );
     const pos = target?.renderPos ?? target?.pos ?? cue.pos;
     const screen = camera.spriteBox(pos, target?.size ?? 1, this.squareFootprints);
-    const targetAsset = target ? resolveAsset(target.sprite) : undefined;
-    const heightTiles =
-      this.squareFootprints && targetAsset?.kind !== 'sheet' ? (target?.size ?? 1) : 1;
+    const heightTiles = this.squareFootprints ? (target?.size ?? 1) : 1;
+    const scale = target?.scale ?? 1;
+    const frame =
+      this.squareFootprints &&
+      target &&
+      (target.bend
+        ? sheets.bendFrame(target.sprite, target.bend.heading, target.bend.index)
+        : sheets.frame(
+            target.sprite,
+            target.clip ?? 'idle',
+            target.clipTime ?? view.time + idlePhase(target.id),
+            target.clipFrame,
+            this.spritePx(camera) * scale,
+            target.size,
+            target.meleeDirection,
+            heightTiles,
+          ));
+    const headroom = actorHeadroom(frame?.headroom, heightTiles);
     const box = {
       x: (screen.x + camera.offsetX) / camera.scale,
-      y: (screen.y + camera.offsetY) / camera.scale - (heightTiles - 1) * TILE,
+      y: (screen.y + camera.offsetY) / camera.scale,
     };
     const cx = box.x + (target?.size ?? 1) * TILE + TILE * 0.12;
-    const cy = box.y - liftAlong(view.grid, pos, camera.projection) * TILE - TILE * 0.04;
+    const lift = liftAlong(view.grid, pos, camera.projection);
+    const cy = this.squareFootprints
+      ? actorHealthBar(
+          box.x,
+          box.y - lift * TILE,
+          (target?.size ?? 1) * TILE,
+          TILE,
+          scale,
+          headroom,
+        ).silhouetteTop - TILE * 0.04
+      : box.y - lift * TILE - TILE * 0.04;
     const outline = Math.max(3 / camera.scale, TILE * 0.065);
     if (cue.elevation) {
       const direction = cue.elevation === 'above' ? -1 : 1;
@@ -2149,7 +2184,7 @@ export class PixiBackend implements RenderBackend {
         const shadowKey = `shadow:${npc.id}`;
         live.add(shadowKey);
         const shadow = this.unitSprite(shadowKey);
-        const density = actorShadowDensity(view.grid, at, true, width);
+        const density = actorShadowDensity(view.grid, at, true, width, false);
         shadow.texture = this.texture(sprites.shadow(px * scale, density));
         shadow.anchor.set(0.5, 0.86);
         shadow.position.set(footX, ground + FOOT_LINE * TILE);
@@ -2230,7 +2265,13 @@ export class PixiBackend implements RenderBackend {
       const sprite = this.unitSprite(unit.id);
       // A pose scales about the feet; the fallen fade sits on top of any alpha.
       const alpha = (unit.alpha ?? 1) * fallenAlpha(unit);
-      const shadowDensity = actorShadowDensity(view.grid, pos, unit.shadow === true, unit.size);
+      const shadowDensity = actorShadowDensity(
+        view.grid,
+        pos,
+        unit.shadow === true,
+        unit.size,
+        this.squareFootprints,
+      );
       if (shadowDensity > 0) {
         // On the ground, not on the bob (explore maps, ADR 0015; grass, canvas2d.ts).
         const key = `shadow:${unit.id}`;
@@ -2265,10 +2306,9 @@ export class PixiBackend implements RenderBackend {
           unit.meleeDirection,
           heightTiles,
         );
-      let headroom = 0;
+      const headroom = actorHeadroom(frame?.headroom, heightTiles);
       const fallback = !frame;
       if (frame) {
-        headroom = frame.headroom;
         sprite.texture = this.frameTexture(frame);
         sprite.anchor.set(frame.anchor.x, frame.anchor.y);
         sprite.position.set(x + width / 2, y + FOOT_LINE * TILE);
@@ -2351,7 +2391,7 @@ export class PixiBackend implements RenderBackend {
           g,
           unit,
           x,
-          y - (fallback ? (heightTiles - 1) * TILE : 0),
+          y,
           width,
           scale,
           headroom,
