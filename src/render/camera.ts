@@ -110,9 +110,9 @@ function clampToConvexHull(point: ScreenPoint, hull: ConvexPolygon): ScreenPoint
     // A fitted axis makes M an axis-aligned segment. Keep the free coordinate
     // on clampOffset's arithmetic path so this face is bit-identical to clamp().
     if (first.x === second.x)
-      return { x: first.x, y: clampOffset(point.y, second.y - first.y) + first.y };
+      return { x: first.x, y: clampOffset(point.y - first.y, second.y - first.y) + first.y };
     if (first.y === second.y)
-      return { x: clampOffset(point.x, second.x - first.x) + first.x, y: first.y };
+      return { x: clampOffset(point.x - first.x, second.x - first.x) + first.x, y: first.y };
     return nearestPointOnSegment(point, first, second);
   }
   if (

@@ -21,7 +21,8 @@ bounds.
 ## Decision
 
 Combat fit scale, default tile sizes, initial centring on the acting unit or
-party, manual zoom, and reflow behaviour remain unchanged.
+party, and manual zoom remain unchanged. After a HUD reflow, a manually panned
+camera is re-clamped to its pan bounds.
 
 Manual panning and anchored zoom normally clamp to the projected full grid plus
 the existing per-side painted allowance. Programmatic centring, including
@@ -53,14 +54,15 @@ piecewise-affine subdivision even though they are not on the quad boundary.
 A fitted axis therefore collapses naturally to `slack / 2`,
 one fitted axis produces a segment, and two fitted axes produce one point.
 
-The hull varies continuously with scale and viewport size, but nearest-point
-projection becomes steep beside a fitted threshold. For example, 390×700 has
-the exact oblique y-fit threshold `700 / 1024 = 0.68359375`; immediately above
-it the reachable hull is a very thin trapezoid. If its diameter is `D` and its
-smallest positive overflow is `m`, an edge endpoint motion `δ` can translate
-the edge by `δ` and rotate its far end by at most `Dδ/m`. Continuity tests
-therefore use the geometric condition bound `(1 + D/m)δ`, while retaining a
-strict `< 0.01px` comparison at `threshold ± 1e-6`.
+The hull varies continuously with scale and viewport size. The scale-continuity
+test checks the set itself in both directions: every vertex of M at one scale
+must lie within `boardDiagonal * Δs + 1e-6` pixels of M at the next scale. Its
+routine step is 1.01; `CAMERA_EXHAUSTIVE=1` uses 1.001. The separate fitted-
+threshold comparison at `threshold ± 1e-6` allows 0.1 px because projecting a
+far-off point onto the resulting sliver is ill-conditioned but still invisible.
+Only the viewport ±1 px test retains the geometric condition bound
+`(1 + D/m)δ`, where `D` is hull diameter and `m` is the smallest positive
+overflow.
 
 The painted Forest Road hull is not camera-clamp geometry. It remains map data
 only for exact viewport-versus-fade clipping tests. This separation guarantees
@@ -71,12 +73,19 @@ pan or zoom reapplies the same reachable-set bound. If the pending move target
 is still outside the padded viewport after the reflow's minimal pan, the scene
 uses its ordinary programmatic centring position.
 
+Two numerical tolerances are intentional. A projected offset within `1e-6` px
+of its current value is not written, preserving idempotence and avoiding
+sub-pixel churn. Break-line intersections use a `-1e-9` inclusion tolerance
+when classified against the focus quad; this keeps a mathematically boundary
+intersection from being discarded by floating-point cross-product rounding.
+
 ## Consequences
 
 - Characters and targets retain today's 96/64/40-pixel combat scales.
 - Initial combat framing is unchanged: fitting, acting-unit focus and Recentre
   use the grid bounds. A resize that preserves a manually panned or zoomed
-  camera reapplies the painted-ring bounds against the new viewport.
+  camera reapplies its pan bounds against the new viewport: the reachable-set
+  bound for Forest Road and the painted-ring bound for quarry maps.
 - Forest Road manual pan shows no more apron than programmatic centring on a rim
   cell, plus the tested three-percentage-point allowance. Exact worst manual
   blank fractions at the reviewed cases are 13.1026% (1194x455 at 1.5), 15.2477%

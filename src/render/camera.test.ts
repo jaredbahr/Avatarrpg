@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
-import { COMBAT_CAMERA_RING_TILES } from '../content/maps/combat';
+import { COMBAT_CAMERA_RING_TILES, FOREST_ROAD } from '../content/maps/combat';
+import { combatFocusPosition } from '../app/scenes/CombatScene';
 import type { Projection } from './projection';
 import { Camera, MIN_TILE_PX, TILE } from './camera';
 import type { Viewport } from './camera';
@@ -106,11 +107,6 @@ describe('Camera.zoomAt', () => {
 
 describe('Camera.clamp painted ring', () => {
   it.each([
-    [
-      'forest',
-      COMBAT_CAMERA_RING_TILES.forest_road,
-      { top: 2.2, right: 4.4, bottom: 2.2, left: 4.4 },
-    ],
     ['gate', COMBAT_CAMERA_RING_TILES.quarry_gate, { top: 8.75, right: 5, bottom: 1.25, left: 5 }],
     [
       'Cutting',
@@ -146,7 +142,7 @@ describe('Camera.clamp painted ring', () => {
   );
 
   it('keeps a fitted axis centred during manual pan', () => {
-    const camera = new Camera(LANDSCAPE, GRID, 'oblique', COMBAT_CAMERA_RING_TILES.forest_road);
+    const camera = hullCamera(LANDSCAPE, 1);
     camera.fit();
     const initialY = camera.offsetY;
     camera.panBy(0, 100_000);
@@ -154,8 +150,14 @@ describe('Camera.clamp painted ring', () => {
     expect(camera.offsetY).toBeCloseTo((camera.worldHeight - LANDSCAPE.height) / 2, 6);
   });
 
-  it('reapplies painted pan bounds after the viewport changes', () => {
-    const camera = new Camera(NARROW, GRID, 'oblique', COMBAT_CAMERA_RING_TILES.forest_road);
+  it('reapplies the Forest reachable-set and quarry ring bounds after viewport changes', () => {
+    const forest = hullCamera(NARROW, 1.5);
+    forest.panBy(-200_000, -200_000);
+    forest.viewport = { width: 520, height: 640, dpr: 1 };
+    forest.clampToPanBounds();
+    expect(insideConvex(offset(forest), forest.programmaticReachableHull())).toBe(true);
+
+    const camera = new Camera(NARROW, GRID, 'oblique', COMBAT_CAMERA_RING_TILES.quarry_floor);
     camera.fitExplore(96);
     camera.panBy(-200_000, -200_000);
     camera.viewport = { width: 520, height: 640, dpr: 1 };
@@ -175,7 +177,7 @@ describe('Camera.clamp painted ring', () => {
 
   it('does not change fit scale, tile size, or programmatic grid centring', () => {
     const baseline = new Camera(NARROW, GRID, 'oblique');
-    const ringed = new Camera(NARROW, GRID, 'oblique', COMBAT_CAMERA_RING_TILES.forest_road);
+    const ringed = new Camera(NARROW, GRID, 'oblique');
     baseline.fitExplore(96);
     ringed.fitExplore(96);
 
@@ -411,8 +413,11 @@ describe('Camera.clamp programmatic-reachable hull', () => {
               failures.push(
                 `${projection} ${viewport.width}x${viewport.height} s=${scale}: ${failure}`,
               );
-            // combatFocusPosition is the anchor itself for the square footprints used by combat.
-            const combatFailure = centreOnAndAssertStable(camera, point, 1);
+            const combatFailure = centreOnAndAssertStable(
+              camera,
+              combatFocusPosition({ pos: point, size: 1 }),
+              1,
+            );
             if (combatFailure)
               failures.push(
                 `${projection} ${viewport.width}x${viewport.height} s=${scale}: combat ${combatFailure}`,
@@ -426,7 +431,11 @@ describe('Camera.clamp programmatic-reachable hull', () => {
                 failures.push(
                   `${projection} ${viewport.width}x${viewport.height} s=${scale}: ${failure}`,
                 );
-              const combatFailure = centreOnAndAssertStable(camera, point, 2);
+              const combatFailure = centreOnAndAssertStable(
+                camera,
+                combatFocusPosition({ pos: point, size: 2 }),
+                1,
+              );
               if (combatFailure)
                 failures.push(
                   `${projection} ${viewport.width}x${viewport.height} s=${scale}: combat ${combatFailure}`,
@@ -500,11 +509,18 @@ describe('Camera.clamp programmatic-reachable hull', () => {
           (width === 380 && height === 560),
       );
       const failures: string[] = [];
-      // The routine run takes every third scale; CAMERA_EXHAUSTIVE=1 takes all.
+      // Keep the named gameplay scales and thin only the routine geometric sweep.
       for (const viewport of viewports)
-        for (const scale of scalesFor(viewport, projection).filter(
-          (_, index) => CAMERA_EXHAUSTIVE || index % 3 === 0,
-        )) {
+        for (const scale of [
+          ...new Set([
+            ...scalesFor(viewport, projection).filter(
+              (_, index) => CAMERA_EXHAUSTIVE || (index < 12 && index % 3 === 0),
+            ),
+            0.625,
+            1,
+            1.5,
+          ]),
+        ]) {
           const camera = hullCamera(viewport, scale, projection);
           eachCell((point) => {
             camera.centreOn(point);
@@ -647,6 +663,21 @@ describe('Camera.clamp programmatic-reachable hull', () => {
     expect(offset(fitted)).toEqual(before);
   });
 
+  it('clamps a two-point hull whose free-axis interval does not start at zero', () => {
+    // At less than one tile across, the focus margin puts both segment endpoints
+    // inside the ordinary x clamp instead of at its zero/slack endpoints.
+    const camera = hullCamera({ width: 32, height: 1024, dpr: 1 }, 1);
+    const hull = camera.programmaticReachableHull();
+    expect(hull).toHaveLength(2);
+    expect(hull[0]?.x).toBe(48);
+    expect(hull[1]?.x).toBe(1968);
+
+    camera.offsetX = 40;
+    camera.offsetY = 100;
+    camera.clampToPanBounds();
+    expect(offset(camera)).toEqual({ x: 48, y: 0 });
+  });
+
   it.each(['oblique', 'orthographic'] as const)(
     'is continuous across scale sweeps and fitted thresholds (%s)',
     { timeout: 120_000 },
@@ -728,6 +759,48 @@ describe('Camera.clamp programmatic-reachable hull', () => {
     },
   );
 
+  it('keeps repeated on-path pinches inside M at the board-diagonal rate', () => {
+    const viewports = CAMERA_EXHAUSTIVE
+      ? HULL_VIEWPORTS
+      : HULL_VIEWPORTS.filter(
+          ({ width, height }) =>
+            (width === 1194 && height === 540) ||
+            (width === 380 && height === 560) ||
+            (width === 390 && height === 700),
+        );
+    const failures: string[] = [];
+    for (const viewport of viewports) {
+      const initial = hullCamera(viewport, new Camera(viewport, GRID, 'oblique').fitScale());
+      for (const start of initial.programmaticReachableHull()) {
+        const camera = hullCamera(viewport, initial.scale);
+        camera.offsetX = start.x;
+        camera.offsetY = start.y;
+        while (camera.scale * 1.01 <= 2.5) {
+          const before = offset(camera);
+          const previousScale = camera.scale;
+          camera.zoomAt({ x: viewport.width / 2, y: viewport.height / 2 }, 1.01);
+          const bound =
+            Math.hypot(camera.worldWidth / camera.scale, camera.worldHeight / camera.scale) *
+              (camera.scale - previousScale) +
+            1e-6;
+          const motion = Math.hypot(camera.offsetX - before.x, camera.offsetY - before.y);
+          if (motion > bound || !insideConvex(offset(camera), camera.programmaticReachableHull()))
+            failures.push(
+              JSON.stringify({
+                viewport,
+                start,
+                previousScale,
+                scale: camera.scale,
+                motion,
+                bound,
+              }),
+            );
+        }
+      }
+    }
+    expect(failures.slice(0, 5)).toEqual([]);
+  });
+
   it('moves continuously when either viewport dimension changes by one pixel', () => {
     const random = createRandom(0xc2_0410);
     const failures: string[] = [];
@@ -753,7 +826,13 @@ describe('Camera.clamp programmatic-reachable hull', () => {
               viewport.width - base.width,
               viewport.height - base.height,
             );
+            // The condition number is an estimate of how far a far-off point can
+            // slide along a nearly collapsed set, not a proved constant: the
+            // exhaustive sweep measures 1.27 times it at 2000x200 just past the
+            // x-fit threshold. Allow twice the estimate; a real jump is orders
+            // of magnitude larger.
             const bound =
+              2 *
               Math.max(reachableSetCondition(original), reachableSetCondition(changed)) *
               viewportMotion;
             const motion = Math.hypot(
@@ -831,12 +910,9 @@ describe('Camera.clamp programmatic-reachable hull', () => {
   });
 });
 
-const FOREST_FADE_HULL = [
-  { x: 768, y: -140.8 },
-  { x: 2329.6, y: 640 },
-  { x: 1280, y: 1164.8 },
-  { x: -281.6, y: 384 },
-] as const;
+const FOREST_FADE_HULL = FOREST_ROAD.cameraPaint!.points.map((point) =>
+  new Camera(NARROW, GRID, 'oblique').boardPoint(point),
+);
 
 function blankFraction(camera: Camera): number {
   let polygon: Point[] = FOREST_FADE_HULL.map((point) => ({

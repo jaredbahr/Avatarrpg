@@ -146,7 +146,9 @@ describe('pending move reveal after a viewport reflow', () => {
       [2, -1],
     ] as const;
 
-    let fallbacks = 0;
+    let feasibleFallbacks = 0;
+    let blockedStarts = 0;
+    let blockedFallbacks = 0;
     for (let y = 0; y < grid.height; y += 1) {
       for (let x = 0; x < grid.width; x += 1) {
         for (const [dx, dy] of directions) {
@@ -156,8 +158,24 @@ describe('pending move reveal after a viewport reflow', () => {
           camera.clampToProgrammaticReachableSet = true;
           // Pan to an M-boundary vertex/edge before the reflow reveal.
           camera.panBy(dx * 100_000, dy * 100_000);
+          const start = { x: camera.offsetX, y: camera.offsetY };
+          const pointBefore = camera.project({ x: x + 0.5, y: y + 0.5 });
+          const padding = Math.min(16, viewport.width / 2, viewport.height / 2);
+          const desiredX = Math.min(viewport.width - padding, Math.max(padding, pointBefore.x));
+          const desiredY = Math.min(viewport.height - padding, Math.max(padding, pointBefore.y));
+          camera.panBy(desiredX - pointBefore.x, desiredY - pointBefore.y);
+          const minimallyRevealed = camera.project({ x: x + 0.5, y: y + 0.5 });
+          const blocked =
+            minimallyRevealed.x < padding - 0.5 ||
+            minimallyRevealed.x > viewport.width - padding + 0.5 ||
+            minimallyRevealed.y < padding - 0.5 ||
+            minimallyRevealed.y > viewport.height - padding + 0.5;
+          camera.offsetX = start.x;
+          camera.offsetY = start.y;
+          if (blocked) blockedStarts += 1;
           vi.spyOn(camera, 'centreOn').mockImplementation((...args) => {
-            fallbacks += 1;
+            if (blocked) blockedFallbacks += 1;
+            else feasibleFallbacks += 1;
             Camera.prototype.centreOn.call(camera, ...args);
           });
 
@@ -176,19 +194,20 @@ describe('pending move reveal after a viewport reflow', () => {
           scene.revealPendingMoveAfterViewportChange();
 
           const point = camera.project({ x: x + 0.5, y: y + 0.5 });
-          const padding = Math.min(16, viewport.width / 2, viewport.height / 2);
-          expect(point.x, `${x},${y} from ${dx},${dy}`).toBeGreaterThanOrEqual(padding);
+          expect(point.x, `${x},${y} from ${dx},${dy}`).toBeGreaterThanOrEqual(padding - 0.5);
           expect(point.x, `${x},${y} from ${dx},${dy}`).toBeLessThanOrEqual(
-            viewport.width - padding,
+            viewport.width - padding + 0.5,
           );
-          expect(point.y, `${x},${y} from ${dx},${dy}`).toBeGreaterThanOrEqual(padding);
+          expect(point.y, `${x},${y} from ${dx},${dy}`).toBeGreaterThanOrEqual(padding - 0.5);
           expect(point.y, `${x},${y} from ${dx},${dy}`).toBeLessThanOrEqual(
-            viewport.height - padding,
+            viewport.height - padding + 0.5,
           );
         }
       }
     }
-    expect(fallbacks).toBeGreaterThan(0);
+    expect(feasibleFallbacks).toBe(0);
+    expect(blockedStarts).toBeGreaterThan(0);
+    expect(blockedFallbacks).toBe(blockedStarts);
   });
 });
 

@@ -30,7 +30,6 @@ import { FOREST_APRON_PAINTED_EXTENTS_TILES } from '../scenes/forestRoad';
 
 /** Painted surroundings available to the combat camera beyond the full grid. */
 export const COMBAT_CAMERA_RING_TILES = {
-  forest_road: FOREST_APRON_PAINTED_EXTENTS_TILES,
   quarry_gate: QUARRY_SURROUND_EXTENTS_TILES,
   ambush_road: QUARRY_SURROUND_EXTENTS_TILES,
   quarry_floor: QUARRY_SURROUND_EXTENTS_TILES,

@@ -372,12 +372,13 @@ export class CombatScene implements Scene {
     // the same reachable set. centreOn() is deliberately used here instead
     // of writing offsets: it shares the camera's exact centring arithmetic.
     const revealed = camera.project({ x: target.x + 0.5, y: target.y + 0.5 });
+    const revealTolerance = 0.5;
     if (
       camera.clampToProgrammaticReachableSet &&
-      (revealed.x < padding ||
-        revealed.x > viewport.width - padding ||
-        revealed.y < padding ||
-        revealed.y > viewport.height - padding)
+      (revealed.x < padding - revealTolerance ||
+        revealed.x > viewport.width - padding + revealTolerance ||
+        revealed.y < padding - revealTolerance ||
+        revealed.y > viewport.height - padding + revealTolerance)
     ) {
       camera.centreOn(target, 1);
     }
