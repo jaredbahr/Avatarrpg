@@ -1,7 +1,7 @@
 import { expect, test } from '@playwright/test';
 import { allowSoftwareWebgl } from './budget';
 import { enterNode, resetStorage, settleLayout, startGame, takeTurn, waitForIdle } from './helpers';
-import { focusStagedUnit, tileCentre } from './gallery/stage';
+import { focusStagedUnit, setHp, tileCentre } from './gallery/stage';
 
 for (const renderer of ['canvas', 'webgl'] as const) {
   test(`long-pressing a prop opens its inspect card on ${renderer}`, async ({ page }) => {
@@ -98,3 +98,106 @@ for (const renderer of ['canvas', 'webgl'] as const) {
     await expect(page.getByRole('dialog', { name: new RegExp(`^${unit.name}`) })).toBeVisible();
   });
 }
+
+test('live canvas inspectors refresh focus and close when their subject disappears', async ({
+  page,
+}) => {
+  test.setTimeout(60_000);
+  await resetStorage(page, '?renderer=canvas');
+  await startGame(page, ['Inspector'], ['kaya'], 'inspector-live-refresh');
+  await enterNode(page, 'battle_quarry_gate');
+  await takeTurn(page);
+  await waitForIdle(page);
+
+  const unit = await page.evaluate(() => {
+    const found = window.fnt?.app.state?.battle?.units.find(
+      (candidate) => candidate.faction === 'party' && candidate.hp > 1,
+    );
+    return found ? { id: found.id, name: found.name, pos: found.pos, hp: found.hp } : null;
+  });
+  if (!unit) throw new Error('The Quarry Gate should place a living party unit.');
+
+  const openUnitCard = async () => {
+    await focusStagedUnit(page, unit.id, 10_000);
+    await settleLayout(page);
+    const point = await tileCentre(page, unit.pos);
+    await page.mouse.click(point.x, point.y);
+    const dialog = page.getByRole('dialog', { name: new RegExp(`^${unit.name}`) });
+    await expect(dialog).toBeVisible();
+    return dialog;
+  };
+
+  let dialog = await openUnitCard();
+  let close = dialog.getByRole('button', { name: 'Close' });
+  for (let presses = 0; presses < 20; presses += 1) {
+    if (await close.evaluate((element) => document.activeElement === element)) break;
+    await page.keyboard.press('Tab');
+  }
+  await expect(close).toBeFocused();
+  await setHp(page, unit.id, unit.hp - 1);
+  dialog = page.getByRole('dialog', { name: new RegExp(`^${unit.name}`) });
+  close = dialog.getByRole('button', { name: 'Close' });
+  await expect(dialog.getByText(`${unit.hp - 1} /`, { exact: false }).first()).toBeVisible();
+  await expect(close).toBeFocused();
+  await close.click();
+
+  dialog = await openUnitCard();
+  const heading = dialog.getByRole('heading', { level: 2 });
+  await expect(heading).toBeFocused();
+  await setHp(page, unit.id, unit.hp - 2);
+  dialog = page.getByRole('dialog', { name: new RegExp(`^${unit.name}`) });
+  await expect(dialog.getByText(`${unit.hp - 2} /`, { exact: false }).first()).toBeVisible();
+  await expect(dialog.getByRole('heading', { level: 2 })).toBeFocused();
+  await dialog.getByRole('button', { name: 'Close' }).click();
+
+  await settleLayout(page);
+  const canvas = page.locator('.map-canvas');
+  const box = await canvas.boundingBox();
+  if (!box) throw new Error('No combat canvas.');
+  const prop = await page.evaluate(() => {
+    const app = window.fnt?.app;
+    const battle = app?.state?.battle;
+    if (!app || !battle) return null;
+    const found = battle.props.find(
+      (candidate) =>
+        !battle.units.some(
+          (unitAtProp) =>
+            unitAtProp.pos.x === candidate.pos.x && unitAtProp.pos.y === candidate.pos.y,
+        ),
+    );
+    return found
+      ? { id: found.id, pos: found.pos, name: app.content.props.get(found.propId)?.name ?? '' }
+      : null;
+  });
+  if (!prop || !prop.name) throw new Error('The Quarry Gate should place an inspectable prop.');
+
+  const centre = { x: box.x + box.width / 2, y: box.y + box.height / 2 };
+  const before = await tileCentre(page, prop.pos);
+  await page.mouse.move(centre.x, centre.y);
+  await page.mouse.down();
+  await page.mouse.move(centre.x + (centre.x - before.x), centre.y + (centre.y - before.y), {
+    steps: 12,
+  });
+  await page.mouse.up();
+  await settleLayout(page);
+  const point = await tileCentre(page, prop.pos);
+  await page.mouse.move(point.x, point.y);
+  await page.mouse.down();
+  await page.waitForTimeout(650);
+  const propDialog = page.getByRole('dialog', { name: prop.name });
+  await expect(propDialog).toBeVisible();
+  await page.mouse.up();
+
+  await page.evaluate((propId) => {
+    const app = window.fnt?.app;
+    const state = app?.state;
+    const battle = state?.battle;
+    if (!app || !state || !battle) throw new Error('No fight is running.');
+    app.state = {
+      ...state,
+      battle: { ...battle, props: battle.props.filter((candidate) => candidate.id !== propId) },
+    };
+    app.resync();
+  }, prop.id);
+  await expect(propDialog).toBeHidden();
+});

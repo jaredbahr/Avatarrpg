@@ -1,18 +1,10 @@
 import type { ContentIndex, PropDef, PropInstance } from '../../core/types';
-import { Dialog } from './Dialog';
-import type { DialogOptions, InspectorSyncDecision } from './Dialog';
+import { Dialog, inspectorSyncDecision } from './Dialog';
+import type { DialogOptions } from './Dialog';
 import { assetCanvas } from './assetCanvas';
 import { button, el, mark } from './dom';
 import { iconMarkup } from './icons';
 import { propInspectText } from './propInspectText';
-
-export function propInspectorSyncDecision(
-  current: PropInstance,
-  resolved: PropInstance | undefined,
-): InspectorSyncDecision {
-  if (!resolved) return 'close';
-  return resolved === current ? 'unchanged' : 'refresh';
-}
 
 export class PropInspector extends Dialog {
   protected options: DialogOptions;
@@ -95,7 +87,7 @@ export class PropInspector extends Dialog {
   }
 
   update(prop: PropInstance | undefined): void {
-    const decision = propInspectorSyncDecision(this.prop, prop);
+    const decision = inspectorSyncDecision(this.prop, prop);
     if (decision === 'close') this.close();
     else if (decision === 'refresh' && prop) {
       this.prop = prop;

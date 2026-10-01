@@ -17,15 +17,27 @@ export interface DialogOptions {
 }
 
 export type RefreshFocusTarget = 'close' | 'heading' | null;
+export type RefreshFocusLocation = 'body' | 'overlay' | 'outside';
 export type InspectorSyncDecision = 'unchanged' | 'refresh' | 'close';
 
 /** Pure focus decision kept separate so node-only tests can cover refreshes. */
 export function refreshFocusTarget(
-  focusWasInside: boolean,
+  focusLocation: RefreshFocusLocation,
   hasCloseControl: boolean,
 ): RefreshFocusTarget {
-  if (!focusWasInside) return null;
+  if (focusLocation !== 'body') return null;
   return hasCloseControl ? 'close' : 'heading';
+}
+
+/** Shared identity/detail decision for live inspectors. */
+export function inspectorSyncDecision<T>(
+  current: T,
+  resolved: T | undefined,
+  currentDetailKey?: string,
+  resolvedDetailKey?: string,
+): InspectorSyncDecision {
+  if (!resolved) return 'close';
+  return resolved === current && currentDetailKey === resolvedDetailKey ? 'unchanged' : 'refresh';
 }
 
 export abstract class Dialog {
@@ -103,13 +115,22 @@ export abstract class Dialog {
   /** Rebuilds the body in place, keeping the dialog open. */
   refresh(): void {
     if (!this.body || !this.overlay) return;
-    const focusWasInside = this.overlay.contains(document.activeElement);
+    // Only focus in the body is about to be destroyed. The heading and other
+    // overlay content survive this rebuild and must keep their existing focus.
+    const activeElement = document.activeElement;
+    const focusLocation: RefreshFocusLocation = this.body.contains(activeElement)
+      ? 'body'
+      : this.overlay.contains(activeElement)
+        ? 'overlay'
+        : 'outside';
+    const scrollTop = this.body.scrollTop;
     clear(this.body);
     this.build(this.body);
+    this.body.scrollTop = scrollTop;
     this.markScrollEdges();
 
     const close = this.body.querySelector<HTMLElement>('.dialog-close');
-    const target = refreshFocusTarget(focusWasInside, close !== null);
+    const target = refreshFocusTarget(focusLocation, close !== null);
     if (target === 'close') close?.focus({ preventScroll: true });
     else if (target === 'heading')
       this.overlay.querySelector<HTMLElement>('h2')?.focus({ preventScroll: true });

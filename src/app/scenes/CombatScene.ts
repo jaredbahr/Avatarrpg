@@ -695,7 +695,7 @@ export class CombatScene implements Scene {
     } else if (this.inspector instanceof UnitInspector) {
       const inspector = this.inspector;
       const unit = battle.units.find((candidate) => candidate.id === inspector.unitId);
-      inspector.update(unit);
+      inspector.update(unit, battle.grid);
     }
 
     const unit = this.active();
