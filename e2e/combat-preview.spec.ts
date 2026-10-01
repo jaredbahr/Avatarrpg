@@ -191,6 +191,9 @@ test('touching a prop target names its break consequence before confirmation', a
   await settleLayout(page);
 
   await page.getByRole('button', { name: /^Fire Jab/ }).click();
+  // The aim hint resizes the canvas and the camera pans to the moved hero: map
+  // the tile only once that has settled.
+  await settleLayout(page);
   const canvas = page.locator('.map-canvas');
   const box = await canvas.boundingBox();
   if (!box) throw new Error('No combat canvas.');
