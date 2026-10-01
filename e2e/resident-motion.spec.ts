@@ -166,10 +166,19 @@ for (const renderer of ['canvas', 'webgl'] as const) {
       coordinateSprites = Math.max(coordinateSprites, frame.coordinateSprites);
     };
     if (renderer === 'webgl') {
-      await sample();
-      await sample();
+      // Do not spend the cheap clock-only advance until a rendered frame has
+      // actually planned Dorin's phase-change walk. WebKit may deliver only one
+      // rAF for a runFor window, so elapsed fake time alone is not that proof.
+      let dorinStarted = false;
+      for (let step = 0; step < 100 && !dorinStarted; step++) {
+        await sample();
+        const dorin = end.find((m) => m.id === 'lw.npc.dorin');
+        dorinStarted = Boolean(
+          dorin && (!Number.isInteger(dorin.at.x) || !Number.isInteger(dorin.at.y)),
+        );
+      }
+      expect(dorinStarted).toBe(true);
       await advanceResidentsWithoutFrames(page, 5_000);
-      await sample();
       await sample();
       // The mid window must catch the walk in progress, with Dorin drawn
       // part-way along it on exactly one sprite, or it guards nothing.
@@ -194,19 +203,24 @@ for (const renderer of ['canvas', 'webgl'] as const) {
           break;
       }
     } else {
-      // Ten adjacent frames cover more than a tile at the current stroll pace:
-      // enough to retain the continuous-trail assertion without rendering the
-      // remainder of the longest route. Do not append the post-skip window to
-      // `trail`, since adjacency across a clock-only skip is not meaningful.
-      for (let step = 0; step < 10; step++) {
+      // First observe Mira between tiles. That proves a rendered frame planned
+      // the phase-change walk before either sampling or skipping it. Continue
+      // until the assertion's seven distinct adjacent positions are present;
+      // this depends on motion, not how many rAF callbacks a browser batches.
+      for (let step = 0; step < 100; step++) {
         await sample();
         const mira = end.find((m) => m.id === 'lw.npc.mira');
         if (mira && mira.alpha === 1) trail.push(mira.at);
+        const underway = Boolean(
+          mira && (!Number.isInteger(mira.at.x) || !Number.isInteger(mira.at.y)),
+        );
+        if (underway && new Set(trail.map((p) => `${p.x},${p.y}`)).size > 6) break;
       }
+      expect(new Set(trail.map((p) => `${p.x},${p.y}`)).size).toBeGreaterThan(6);
       await advanceResidentsWithoutFrames(page, 10_000);
-      // Render a short settling window after the skip. It still ends on the
-      // observed settled frame rather than assuming rAF cadence.
-      for (let step = 0; step < 10; step++) {
+      // Render until the observed settled frame after the skip rather than
+      // assuming a particular number of rAF callbacks will be delivered.
+      for (let step = 0; step < 100; step++) {
         await sample();
         const mira = end.find((m) => m.id === 'lw.npc.mira');
         const dorin = end.find((m) => m.id === 'lw.npc.dorin');
@@ -372,13 +386,19 @@ test('a tap on Gao at his crates brings him home before the talk opens', async (
   const home = { pos: { x: 9, y: 4 }, at: { x: 9, y: 4 }, walking: false };
   // The initial six-second shop hold has no motion to render.
   await advanceResidentsWithoutFrames(page, 6_000);
-  // Start the already-due crates leg, then skip within its two-tile stroll.
-  // Keep the leg boundary rendered because the crates endpoint is asserted.
-  await page.clock.runFor(100);
-  await advanceResidentsWithoutFrames(page, 900);
+  // Wait for a rendered frame to plan the already-due crates leg. In
+  // particular, do not let a WebKit runFor window with no useful rAF turn the
+  // following clock-only advance into more hold time instead of walk time.
+  let cratesLegStarted = false;
+  for (let step = 0; step < 100 && !cratesLegStarted; step++) {
+    await page.clock.runFor(100);
+    cratesLegStarted = Boolean((await gao())?.walking);
+  }
+  expect(cratesLegStarted).toBe(true);
+  await advanceResidentsWithoutFrames(page, 700);
   // Wait for him to stop at the display's crates, off his rules tile.
   let crates = false;
-  for (let step = 0; step < 5 && !crates; step++) {
+  for (let step = 0; step < 100 && !crates; step++) {
     await page.clock.runFor(100);
     const now = await gao();
     crates = now?.at.x === 8 && now.at.y === 5 && !now.walking;
@@ -399,11 +419,17 @@ test('a tap on Gao at his crates brings him home before the talk opens', async (
   // The talk waits for him: the party sets off, and nothing opens yet.
   expect(await page.evaluate(() => window.fnt!.app.state!.screen)).toBe('explore');
   await expect(page.locator('.walk-feedback')).toContainText(/Next: .*Gao/);
-  // The click's rendered frame recalled Gao and planned both walks. Skip within
-  // his two-tile return, then render its asserted home boundary.
-  await advanceResidentsWithoutFrames(page, 900);
+  // The click recalls Gao, but planning that return still belongs to a rendered
+  // frame. Observe it before taking the cheap interior skip.
+  let homeLegStarted = false;
+  for (let step = 0; step < 100 && !homeLegStarted; step++) {
+    await page.clock.runFor(100);
+    homeLegStarted = Boolean((await gao())?.walking);
+  }
+  expect(homeLegStarted).toBe(true);
+  await advanceResidentsWithoutFrames(page, 700);
   let homeReached = false;
-  for (let step = 0; step < 5 && !homeReached; step++) {
+  for (let step = 0; step < 100 && !homeReached; step++) {
     await page.clock.runFor(100);
     const now = await gao();
     homeReached = now?.at.x === 9 && now.at.y === 4 && !now.walking;
