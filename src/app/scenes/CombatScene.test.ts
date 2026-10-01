@@ -1,12 +1,30 @@
 import { describe, expect, it } from 'vitest';
-import type { Unit, Vec2 } from '../../core/types';
+import type { PropInstance, Unit, Vec2 } from '../../core/types';
 import { unitAt } from '../../core/rules/grid';
 import {
   combatFocusPosition,
+  inspectTargetAt,
   moveHoverFootprint,
   occupiedUnitAt,
   overlayMemoHoverKey,
 } from './CombatScene';
+
+function prop(id: string, pos: Vec2): PropInstance {
+  return {
+    id,
+    propId: 'water_barrel',
+    pos,
+    hp: 6,
+    previous: {
+      terrain: 'road',
+      elevation: 0,
+      blocked: false,
+      blocksSight: false,
+      cover: false,
+      surface: null,
+    },
+  };
+}
 
 function unit(id: string, pos: Vec2, extra: Partial<Unit> = {}): Unit {
   return {
@@ -88,5 +106,25 @@ describe('long-press unit lookup', () => {
     const big = unit('big', { x: 5, y: 3 }, { size: 2 });
     expect(occupiedUnitAt([big], { x: 6, y: 3 })?.id).toBe('big');
     expect(occupiedUnitAt([big], { x: 7, y: 3 })).toBeUndefined();
+  });
+});
+
+describe('battlefield inspect selection', () => {
+  const tile = { x: 4, y: 2 };
+
+  it('chooses a unit over a prop on the same tile', () => {
+    const target = inspectTargetAt([unit('hero', tile)], [prop('barrel', tile)], tile, true);
+    expect(target?.kind).toBe('unit');
+    expect(target?.kind === 'unit' && target.unit.id).toBe('hero');
+  });
+
+  it('chooses a prop when no unit occupies its tile', () => {
+    const target = inspectTargetAt([], [prop('barrel', tile)], tile, true);
+    expect(target?.kind).toBe('prop');
+    expect(target?.kind === 'prop' && target.prop.id).toBe('barrel');
+  });
+
+  it('returns nothing for an empty tile', () => {
+    expect(inspectTargetAt([], [], tile, true)).toBeUndefined();
   });
 });
