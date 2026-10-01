@@ -106,7 +106,15 @@ function clampToConvexHull(point: ScreenPoint, hull: ConvexPolygon): ScreenPoint
   if (hull.length === 1) return first;
   const second = hull[1];
   if (!second) return first;
-  if (hull.length === 2) return nearestPointOnSegment(point, first, second);
+  if (hull.length === 2) {
+    // A fitted axis makes M an axis-aligned segment. Keep the free coordinate
+    // on clampOffset's arithmetic path so this face is bit-identical to clamp().
+    if (first.x === second.x)
+      return { x: first.x, y: clampOffset(point.y, second.y - first.y) + first.y };
+    if (first.y === second.y)
+      return { x: clampOffset(point.x, second.x - first.x) + first.x, y: first.y };
+    return nearestPointOnSegment(point, first, second);
+  }
   if (
     hull.every((start, index) => cross(start, hull[(index + 1) % hull.length] ?? start, point) >= 0)
   )
@@ -232,7 +240,7 @@ export class Camera {
     const slackX = this.worldWidth - this.viewport.width;
     const slackY = this.worldHeight - this.viewport.height;
     if (this.clampToProgrammaticReachableSet) {
-      this.clampToReachableSet(slackX, slackY);
+      this.clampToReachableSet();
       return;
     }
     const pixels = (tiles: number) => Math.max(0, tiles) * TILE * this.scale;
@@ -252,7 +260,10 @@ export class Camera {
           );
   }
 
-  private clampToReachableSet(slackX: number, slackY: number): void {
+  /** Exact convex hull of offsets reachable by programmatic focus within F. */
+  programmaticReachableHull(): ConvexPolygon {
+    const slackX = this.worldWidth - this.viewport.width;
+    const slackY = this.worldHeight - this.viewport.height;
     const focus = [
       { x: PAN_FOCUS_MARGIN_TILES, y: PAN_FOCUS_MARGIN_TILES },
       { x: this.grid.width - PAN_FOCUS_MARGIN_TILES, y: PAN_FOCUS_MARGIN_TILES },
@@ -312,7 +323,47 @@ export class Camera {
       );
     }
 
-    const next = clampToConvexHull({ x: this.offsetX, y: this.offsetY }, convexHull(candidates));
+    // T clamps each coordinate independently. Its affine subdivision of F has
+    // vertices not only on F's boundary, but also where an x and y break line
+    // meet inside F. Their images are required for exactly conv(T(F)); without
+    // them the hull can lose a real corner as a break line enters/leaves F.
+    const xBreaks =
+      slackX > 0
+        ? [
+            this.viewport.width / (2 * this.scale),
+            this.bounds.width * TILE - this.viewport.width / (2 * this.scale),
+          ]
+        : [];
+    const yBreaks =
+      slackY > 0
+        ? [
+            this.viewport.height / (2 * this.scale),
+            this.bounds.height * TILE - this.viewport.height / (2 * this.scale),
+          ]
+        : [];
+    for (const x of xBreaks)
+      for (const y of yBreaks) {
+        const point = { x, y };
+        if (
+          focus.every(
+            (start, index) =>
+              cross(start, focus[(index + 1) % focus.length] ?? start, point) >= -1e-9,
+          )
+        )
+          candidates.push({
+            x: clampOffset(x * this.scale - this.viewport.width / 2, slackX),
+            y: clampOffset(y * this.scale - this.viewport.height / 2, slackY),
+          });
+      }
+
+    return convexHull(candidates);
+  }
+
+  private clampToReachableSet(): void {
+    const next = clampToConvexHull(
+      { x: this.offsetX, y: this.offsetY },
+      this.programmaticReachableHull(),
+    );
     if (Math.hypot(next.x - this.offsetX, next.y - this.offsetY) <= OFFSET_WRITE_EPSILON) return;
     this.offsetX = next.x;
     this.offsetY = next.y;

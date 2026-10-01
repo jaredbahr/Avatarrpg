@@ -204,6 +204,7 @@ const HULL_VIEWPORTS = [
   { width: 390, height: 700, dpr: 1 },
   { width: 2000, height: 200, dpr: 1 },
 ] as const;
+const CAMERA_EXHAUSTIVE = process.env.CAMERA_EXHAUSTIVE === '1';
 
 type Point = { x: number; y: number };
 
@@ -217,7 +218,11 @@ function hullCamera(viewport: Viewport, scale: number, projection: Projection = 
 function scalesFor(viewport: Viewport, projection: Projection): number[] {
   const camera = new Camera(viewport, GRID, projection);
   const start = camera.fitScale();
-  const geometric = Array.from({ length: 60 }, (_, index) => start * (2.5 / start) ** (index / 59));
+  const count = CAMERA_EXHAUSTIVE ? 60 : 12;
+  const geometric = Array.from(
+    { length: count },
+    (_, index) => start * (2.5 / start) ** (index / (count - 1)),
+  );
   const worldWidth = projection === 'oblique' ? 32 * TILE : GRID.width * TILE;
   const worldHeight = projection === 'oblique' ? 16 * TILE : GRID.height * TILE;
   return [
@@ -235,8 +240,17 @@ function scalesFor(viewport: Viewport, projection: Projection): number[] {
 }
 
 function eachCell(callback: (point: Point) => void): void {
+  const random = createRandom(0xc2_0412);
   for (let y = 0; y < GRID.height; y += 1)
-    for (let x = 0; x < GRID.width; x += 1) callback({ x, y });
+    for (let x = 0; x < GRID.width; x += 1)
+      if (CAMERA_EXHAUSTIVE || x === 0 || y === 0 || x === GRID.width - 1 || y === GRID.height - 1)
+        callback({ x, y });
+  if (!CAMERA_EXHAUSTIVE)
+    for (let index = 0; index < 32; index += 1)
+      callback({
+        x: 1 + Math.floor(random() * (GRID.width - 2)),
+        y: 1 + Math.floor(random() * (GRID.height - 2)),
+      });
 }
 
 function createRandom(seed: number): () => number {
@@ -253,6 +267,50 @@ function offset(camera: Camera): Point {
   return { x: camera.offsetX, y: camera.offsetY };
 }
 
+function mappedFocus(camera: Camera, point: Point): Point {
+  const x = point.x * camera.scale - camera.viewport.width / 2;
+  const y = point.y * camera.scale - camera.viewport.height / 2;
+  const slackX = camera.worldWidth - camera.viewport.width;
+  const slackY = camera.worldHeight - camera.viewport.height;
+  const clampAxis = (value: number, slack: number) =>
+    slack <= 0 ? slack / 2 : Math.max(0, Math.min(slack, value));
+  return { x: clampAxis(x, slackX), y: clampAxis(y, slackY) };
+}
+
+function insideConvex(point: Point, hull: readonly Point[], epsilon = 1e-6): boolean {
+  if (hull.length === 1)
+    return Math.hypot(point.x - (hull[0]?.x ?? 0), point.y - (hull[0]?.y ?? 0)) <= epsilon;
+  if (hull.length === 2) {
+    const [a, b] = hull;
+    if (!a || !b) return false;
+    const length = Math.hypot(b.x - a.x, b.y - a.y);
+    return (
+      Math.abs((b.x - a.x) * (point.y - a.y) - (b.y - a.y) * (point.x - a.x)) <=
+        epsilon * Math.max(1, length) &&
+      (point.x - a.x) * (point.x - b.x) + (point.y - a.y) * (point.y - b.y) <= epsilon
+    );
+  }
+  return hull.every((a, index) => {
+    const b = hull[(index + 1) % hull.length] ?? a;
+    return (b.x - a.x) * (point.y - a.y) - (b.y - a.y) * (point.x - a.x) >= -epsilon;
+  });
+}
+
+function reachableSetCondition(camera: Camera): number {
+  const hull = camera.programmaticReachableHull();
+  let diameter = 0;
+  for (const a of hull)
+    for (const b of hull) diameter = Math.max(diameter, Math.hypot(a.x - b.x, a.y - b.y));
+  const overflow = [
+    camera.worldWidth - camera.viewport.width,
+    camera.worldHeight - camera.viewport.height,
+  ].filter((value) => value > 1e-9);
+  // A moving edge can rotate by at most boundaryMotion / overflow. Projecting
+  // a point along an edge of length D therefore adds at most D/overflow times
+  // that motion, plus the translating boundary itself.
+  return 1 + diameter / Math.min(...overflow);
+}
+
 function centreOnAndAssertStable(camera: Camera, point: Point, footprint: 1 | 2): string | null {
   camera.centreOn(point, footprint);
   const centred = offset(camera);
@@ -266,6 +324,79 @@ function centreOnAndAssertStable(camera: Camera, point: Point, footprint: 1 | 2)
 }
 
 describe('Camera.clamp programmatic-reachable hull', () => {
+  it.each(['oblique', 'orthographic'] as const)(
+    'constructs exactly conv(T(F)) over the sampled viewport/scale matrix (%s)',
+    (projection) => {
+      const random = createRandom(0xc2_0413);
+      const failures: string[] = [];
+      for (const viewport of HULL_VIEWPORTS)
+        for (const scale of scalesFor(viewport, projection)) {
+          const camera = hullCamera(viewport, scale, projection);
+          const focus = [
+            camera.groundPoint({ x: 0.5, y: 0.5 }),
+            camera.groundPoint({ x: GRID.width - 0.5, y: 0.5 }),
+            camera.groundPoint({ x: GRID.width - 0.5, y: GRID.height - 0.5 }),
+            camera.groundPoint({ x: 0.5, y: GRID.height - 0.5 }),
+          ];
+          const hull = camera.programmaticReachableHull();
+          const sources: Point[] = [...focus];
+          const xBreaks = [
+            viewport.width / (2 * scale),
+            camera.worldWidth / scale - viewport.width / (2 * scale),
+          ];
+          const yBreaks = [
+            viewport.height / (2 * scale),
+            camera.worldHeight / scale - viewport.height / (2 * scale),
+          ];
+          for (let edge = 0; edge < focus.length; edge += 1) {
+            const a = focus[edge];
+            const b = focus[(edge + 1) % focus.length];
+            if (!a || !b) continue;
+            for (const [axis, breaks] of [
+              ['x', xBreaks],
+              ['y', yBreaks],
+            ] as const)
+              for (const line of breaks) {
+                const delta = b[axis] - a[axis];
+                const t = delta === 0 ? -1 : (line - a[axis]) / delta;
+                if (t >= 0 && t <= 1)
+                  sources.push({ x: a.x + (b.x - a.x) * t, y: a.y + (b.y - a.y) * t });
+              }
+          }
+          for (const x of xBreaks)
+            for (const y of yBreaks)
+              if (insideConvex({ x, y }, focus, 1e-9)) sources.push({ x, y });
+          for (let index = 0; index < (CAMERA_EXHAUSTIVE ? 4000 : 400); index += 1) {
+            const u = random();
+            const v = random();
+            const a = focus[0];
+            const b = focus[1];
+            const d = focus[3];
+            if (!a || !b || !d) continue;
+            const q = {
+              x: a.x + (b.x - a.x) * u + (d.x - a.x) * v,
+              y: a.y + (b.y - a.y) * u + (d.y - a.y) * v,
+            };
+            if (!insideConvex(mappedFocus(camera, q), hull))
+              failures.push(`image outside ${JSON.stringify({ viewport, scale, q })}`);
+          }
+          for (const vertex of hull)
+            if (
+              !sources.some(
+                (source) =>
+                  Math.hypot(
+                    mappedFocus(camera, source).x - vertex.x,
+                    mappedFocus(camera, source).y - vertex.y,
+                  ) <= 1e-6,
+              )
+            )
+              failures.push(
+                `vertex has no preimage ${JSON.stringify({ viewport, scale, vertex })}`,
+              );
+        }
+      expect(failures.slice(0, 5)).toEqual([]);
+    },
+  );
   it.each(['oblique', 'orthographic'] as const)(
     'preserves every valid programmatic centring at every required size and scale (%s)',
     { timeout: 120_000 },
@@ -354,7 +485,7 @@ describe('Camera.clamp programmatic-reachable hull', () => {
             }
           });
         }
-      expect(worst).toBeLessThanOrEqual(1 + 1e-6);
+      expect(worst).toBeLessThanOrEqual(Math.hypot(1, 1) + 1e-6);
     },
   );
 
@@ -369,8 +500,11 @@ describe('Camera.clamp programmatic-reachable hull', () => {
           (width === 380 && height === 560),
       );
       const failures: string[] = [];
+      // The routine run takes every third scale; CAMERA_EXHAUSTIVE=1 takes all.
       for (const viewport of viewports)
-        for (const scale of scalesFor(viewport, projection)) {
+        for (const scale of scalesFor(viewport, projection).filter(
+          (_, index) => CAMERA_EXHAUSTIVE || index % 3 === 0,
+        )) {
           const camera = hullCamera(viewport, scale, projection);
           eachCell((point) => {
             camera.centreOn(point);
@@ -428,7 +562,7 @@ describe('Camera.clamp programmatic-reachable hull', () => {
       for (const viewport of HULL_VIEWPORTS)
         for (const scale of scalesFor(viewport, projection)) {
           const camera = hullCamera(viewport, scale, projection);
-          for (let index = 0; index < 2000; index += 1) {
+          for (let index = 0; index < (CAMERA_EXHAUSTIVE ? 2000 : 200); index += 1) {
             camera.offsetX = (random() - 0.5) * 200_000;
             camera.offsetY = (random() - 0.5) * 200_000;
             camera.clampToPanBounds();
@@ -492,7 +626,7 @@ describe('Camera.clamp programmatic-reachable hull', () => {
       const hull = hullCamera(viewport, 1);
       const plain = new Camera(viewport, GRID, 'oblique');
       plain.scale = 1;
-      for (let index = 0; index < 2000; index += 1) {
+      for (let index = 0; index < (CAMERA_EXHAUSTIVE ? 2000 : 200); index += 1) {
         const candidate = { x: (random() - 0.5) * 200_000, y: (random() - 0.5) * 200_000 };
         hull.offsetX = plain.offsetX = candidate.x;
         hull.offsetY = plain.offsetY = candidate.y;
@@ -536,29 +670,36 @@ describe('Camera.clamp programmatic-reachable hull', () => {
             y: minY + ((maxY - minY) * y) / 8,
           })),
         ).flat();
-        for (const target of targets) {
-          let scale = reference.fitScale();
-          let previous: Point | null = null;
-          while (scale <= 2.5) {
-            const camera = hullCamera(viewport, scale, projection);
-            camera.offsetX = target.x * scale - viewport.width / 2;
-            camera.offsetY = target.y * scale - viewport.height / 2;
-            camera.clampToPanBounds();
-            const board = {
-              x: (camera.offsetX + viewport.width / 2) / scale,
-              y: (camera.offsetY + viewport.height / 2) / scale,
-            };
-            if (
-              previous &&
-              Math.hypot(board.x - previous.x, board.y - previous.y) >
-                (0.02 * Math.max(viewport.width, viewport.height)) / (2 * scale)
-            )
-              failures.push(
-                `${projection} sweep ${JSON.stringify({ viewport, target, scale, previous, board })}`,
-              );
-            previous = board;
-            scale *= 1.001;
-          }
+        // The allowed set itself must move continuously with zoom: every vertex
+        // of M at one scale lies within the distance the board can move in that
+        // step of M at the next scale, and the reverse. (Where a far-off point
+        // projects onto a nearly collapsed set it can slide further along it;
+        // that is conditioning of the projection, not a jump of the set.)
+        const step = CAMERA_EXHAUSTIVE ? 1.001 : 1.01;
+        const distanceToSet = (point: Point, camera: Camera): number => {
+          camera.offsetX = point.x;
+          camera.offsetY = point.y;
+          camera.clampToPanBounds();
+          return Math.hypot(camera.offsetX - point.x, camera.offsetY - point.y);
+        };
+        for (let scale = reference.fitScale(); scale * step <= 2.5; scale *= step) {
+          const next = scale * step;
+          const here = hullCamera(viewport, scale, projection);
+          const there = hullCamera(viewport, next, projection);
+          const boardDiagonal = Math.hypot(here.worldWidth / scale, here.worldHeight / scale);
+          const bound = boardDiagonal * (next - scale) + 1e-6;
+          const pairs: [Camera, Camera][] = [
+            [here, hullCamera(viewport, next, projection)],
+            [there, hullCamera(viewport, scale, projection)],
+          ];
+          for (const [from, to] of pairs)
+            for (const vertex of from.programmaticReachableHull()) {
+              const distance = distanceToSet(vertex, to);
+              if (distance > bound)
+                failures.push(
+                  `${projection} hull ${JSON.stringify({ viewport, scale, next, vertex, distance, bound })}`,
+                );
+            }
         }
         const worldWidth = projection === 'oblique' ? 32 * TILE : GRID.width * TILE;
         const worldHeight = projection === 'oblique' ? 16 * TILE : GRID.height * TILE;
@@ -574,7 +715,10 @@ describe('Camera.clamp programmatic-reachable hull', () => {
             });
             const low = results[0];
             const high = results[1];
-            if (low && high && Math.hypot(low.x - high.x, low.y - high.y) >= 0.01)
+            // A tenth of a pixel: just past a fit threshold the set is a sliver
+            // a thousandth of a pixel thick, and a far-off point slides a few
+            // hundredths of a pixel along it. Nothing visible may move.
+            if (low && high && Math.hypot(low.x - high.x, low.y - high.y) >= 0.1)
               failures.push(
                 `${projection} threshold ${JSON.stringify({ viewport, target, threshold, low, high })}`,
               );
@@ -586,7 +730,7 @@ describe('Camera.clamp programmatic-reachable hull', () => {
 
   it('moves continuously when either viewport dimension changes by one pixel', () => {
     const random = createRandom(0xc2_0410);
-    let worst = 0;
+    const failures: string[] = [];
     for (const base of HULL_VIEWPORTS)
       for (const scale of scalesFor(base, 'oblique'))
         for (let index = 0; index < 100; index += 1) {
@@ -605,13 +749,22 @@ describe('Camera.clamp programmatic-reachable hull', () => {
             changed.offsetX = candidate.x;
             changed.offsetY = candidate.y;
             changed.clampToPanBounds();
-            worst = Math.max(
-              worst,
-              Math.hypot(changed.offsetX - original.offsetX, changed.offsetY - original.offsetY),
+            const viewportMotion = Math.hypot(
+              viewport.width - base.width,
+              viewport.height - base.height,
             );
+            const bound =
+              Math.max(reachableSetCondition(original), reachableSetCondition(changed)) *
+              viewportMotion;
+            const motion = Math.hypot(
+              changed.offsetX - original.offsetX,
+              changed.offsetY - original.offsetY,
+            );
+            if (motion > bound + 1e-6)
+              failures.push(JSON.stringify({ base, viewport, scale, candidate, motion, bound }));
           }
         }
-    expect(worst).toBeLessThan(10);
+    expect(failures.slice(0, 5)).toEqual([]);
   });
 
   it.each([

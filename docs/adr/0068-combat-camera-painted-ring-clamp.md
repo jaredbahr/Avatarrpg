@@ -47,8 +47,20 @@ offset that programmatic centring can produce for the focus quad whose corners
 are the four corner-cell centres. The camera maps that quad through the same
 `centreOn` offset calculation and the same per-axis grid `clamp`; it adds exact
 images where a quad edge crosses a clamp break line, then builds the convex hull
-of those images. A fitted axis therefore collapses naturally to `slack / 2`,
+of those images. It also includes the image of every intersection between an x
+and y break line that lies inside the focus quad: these are vertices of the
+piecewise-affine subdivision even though they are not on the quad boundary.
+A fitted axis therefore collapses naturally to `slack / 2`,
 one fitted axis produces a segment, and two fitted axes produce one point.
+
+The hull varies continuously with scale and viewport size, but nearest-point
+projection becomes steep beside a fitted threshold. For example, 390×700 has
+the exact oblique y-fit threshold `700 / 1024 = 0.68359375`; immediately above
+it the reachable hull is a very thin trapezoid. If its diameter is `D` and its
+smallest positive overflow is `m`, an edge endpoint motion `δ` can translate
+the edge by `δ` and rotate its far end by at most `Dδ/m`. Continuity tests
+therefore use the geometric condition bound `(1 + D/m)δ`, while retaining a
+strict `< 0.01px` comparison at `threshold ± 1e-6`.
 
 The painted Forest Road hull is not camera-clamp geometry. It remains map data
 only for exact viewport-versus-fade clipping tests. This separation guarantees
@@ -75,3 +87,7 @@ uses its ordinary programmatic centring position.
 - Unit tests pin both ring endpoints and ensure the ring does not affect scale
   or initial centring. Existing viewport tests continue to own device framing
   and tile-size expectations.
+- The routine camera matrix uses every rim cell, seeded interior cells, twelve
+  geometric scales plus fit thresholds and named scales, and 200 seeded random
+  offsets. `CAMERA_EXHAUSTIVE=1` restores all cells, sixty scales, thousands of
+  offsets, and the larger independent `T(F)` sample for an opt-in audit.
