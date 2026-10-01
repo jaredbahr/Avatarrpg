@@ -882,6 +882,12 @@ export function sheetClipProblems(
   eightWay: boolean,
 ): string[] {
   const problems: string[] = [];
+  const timedBareMaxMs: Readonly<Partial<Record<ClipName, number>>> = {
+    idle: 6000,
+    cast: 3000,
+    hit: 3000,
+    ko: 4000,
+  };
   // The knockouts on four diagonals, and the hits (ADR 0063) in all eight.
   for (const family of [KO_HEADINGS.map(koClip), HEADINGS.map(hitClip)]) {
     const authored = family.filter((clip) => clips[clip]);
@@ -905,6 +911,12 @@ export function sheetClipProblems(
       problems.push(
         `asset ${key}: ${clip} has ${def.frames.length} frames, needs ${bounds.min}-${bounds.max}`,
       );
+    }
+    const maxMs = timedBareMaxMs[clip];
+    if (isTimedBareClip(clip, def) && maxMs !== undefined) {
+      const total = def.frameMs?.reduce((sum, ms) => sum + ms, 0) ?? 0;
+      if (total > maxMs)
+        problems.push(`asset ${key}: ${clip} lasts ${total} ms, exceeds ${maxMs} ms`);
     }
     def.frames.forEach((name, index) => {
       const expected = `${key}/${clip}/${index}`;
@@ -1462,6 +1474,13 @@ export function validateContent(bundle: ContentBundle): string[] {
     // only read for a sheet that declares the headings it is asked for by.
     if (entry.clipData && !entry.locomotion)
       problems.push(`asset ${key}: clip data needs declared eight-way locomotion`);
+    if (
+      entry.footprint.w === 2 &&
+      entry.footprint.h === 2 &&
+      entry.frameSize &&
+      entry.frameSize.w !== entry.frameSize.h
+    )
+      problems.push(`asset ${key}: a 2x2 footprint needs a square frameSize`);
     problems.push(...sheetClipProblems(key, entry.clips, entry.locomotion !== undefined));
   }
   if (bundle.assets) {

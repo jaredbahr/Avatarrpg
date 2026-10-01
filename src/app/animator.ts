@@ -605,7 +605,8 @@ export class Animator {
    */
   fallenPose(unitId: string, sprite: string): { clip: ClipName; clipTime: number } | undefined {
     const clip = this.reactionClip('ko', unitId, sprite);
-    return clip === 'ko' ? undefined : { clip, clipTime: HELD };
+    const def = this.options.sheetClips?.(sprite)?.[clip];
+    return clip === 'ko' && !def?.frameMs ? undefined : { clip, clipTime: HELD };
   }
 
   /** Live particle and stroke emitters at `now`, with their age. */

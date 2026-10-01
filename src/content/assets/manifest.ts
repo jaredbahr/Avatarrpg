@@ -416,8 +416,9 @@ export const ASSETS: Readonly<Record<string, AssetEntry>> = {
     kind: 'sheet',
     atlas: 'art/units/driller.json',
     pixelsPerTile: 80,
+    frameSize: { w: 176, h: 176 },
     footprint: { w: 2, h: 2 },
-    anchor: { x: 0.5, y: 0.8625 },
+    anchor: { x: 0.5, y: 0.8295454545454546 },
     facing: 'mirror',
     palette: 'enemy',
     clips: {

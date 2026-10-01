@@ -9,15 +9,15 @@
  * under `public/`, parses, names every frame the clips use at the size the
  * entry promises, points at a PNG or WebP that exists at the size the JSON
  * claims, stays inside 2048 px, and keeps the art bible's clear margin on
- * every frame's border. A WebP sheet is lossy, so it is checked on its
- * decoded pixels: the margin, a pin per cel written by the sheet's build
+ * every frame's border. A lossy WebP sheet is checked on its decoded pixels:
+ * the margin, a pin per cel written by the sheet's build
  * script (a hand-edited or re-encoded cel fails), and, for a sheet declaring
  * eight-way locomotion, feet on the anchor's foot line, a rest cel's feet under
  * the column and each walk's and stance's mean foot row level with its idle's.
  * A sheet's further atlas pages (ADR 0052) are held to all of it, page by
  * page, and a frame may live on only one of them; the pins cover the cels on
- * a sheet's lossy pages, and a lossless PNG page beside them (ADR 0054) is
- * checked as any PNG sheet is. The bend pages beside the G sheets (ADR 0055)
+ * a sheet's lossy pages; a VP8L WebP or lossless PNG page is its own source
+ * record and needs no decoded-cel pin. The bend pages beside the G sheets (ADR 0055)
  * are held to the same page rules and pins, and their bend sets to the bend
  * contract (`validateBends`). Every `image` entry's file exists, is the PNG or WebP its
  * name says, and measures what its kind of key promises (a portrait is
@@ -48,7 +48,7 @@ import { MARGIN } from './lib/align';
 import type { Image } from './lib/image';
 import { imageSize, readPng } from './lib/image';
 import { alphaBounds, crop, lowestOpaqueRow } from './lib/trim';
-import { decodeWebp, webpSize } from './lib/webp';
+import { decodeWebp, isLosslessWebp, webpSize } from './lib/webp';
 import { BEND_FX, CEL_FRAMES, CEL_SIZE, FX_CEL_SHEETS } from '../../src/content/fxCels';
 import type { BendEffectDef } from '../../src/content/bends';
 import {
@@ -204,11 +204,12 @@ async function readPage(publicDir: string, key: string, path: string): Promise<P
   }
   const imagePath = join(dirname(jsonPath), atlas.image);
   if (!existsSync(imagePath)) return `${key}: ${atlas.image} is missing beside ${path}`;
-  const lossy = atlas.image.endsWith('.webp');
+  let lossy = false;
   let image: Image | undefined;
   if (atlas.image.endsWith('.png')) image = readPng(imagePath);
-  else if (lossy) {
+  else if (atlas.image.endsWith('.webp')) {
     const bytes = new Uint8Array(readFileSync(imagePath));
+    lossy = !isLosslessWebp(bytes);
     if (webpSize(bytes)) image = await decodeWebp(bytes).catch(() => undefined);
   }
   if (!image) return `${key}: ${atlas.image} must be a readable PNG or WebP`;
@@ -259,22 +260,31 @@ export async function validateSheets(
         seen.set(name, page.path);
       }
     }
+    /*
+     * A page is pin-checked when it is lossy, and also whenever its sheet has
+     * registered pins: a pinned sheet's WebP is held to its pins however it
+     * happens to be encoded, so re-encoding it losslessly is no way round them.
+     * Only an unpinned VP8L page is its own source record.
+     */
+    const pinnedSheet = (pins[key] ?? []).length > 0;
+    const pinChecked = (page: Page): boolean =>
+      page.lossy || (pinnedSheet && page.file.endsWith('.webp'));
     /** The page a frame lives on, its image and its rectangle there. */
     const find = (name: string) => {
       for (const page of pages) {
         const frame = page.frames.get(name);
-        if (frame) return { image: page.image, frame, lossy: page.lossy };
+        if (frame) return { image: page.image, frame, lossy: pinChecked(page) };
       }
       return undefined;
     };
     const atlasNames = pages.map((page) => page.path).join(' + ');
-    const lossy = pages.some((page) => page.lossy);
+    const lossy = pages.some(pinChecked);
     let pinned: Readonly<Record<string, string>> | undefined;
     if (lossy) {
       const pinPaths = pins[key] ?? [];
       if (pinPaths.length === 0 || !pinPaths.every((path) => existsSync(path))) {
         const files = pages
-          .filter((page) => page.lossy)
+          .filter(pinChecked)
           .map((page) => page.file)
           .join(' + ');
         problems.push(`${key}: lossy ${files} has no cel pin file`);
@@ -301,9 +311,9 @@ export async function validateSheets(
       !Number.isInteger(wantW) ||
       !Number.isInteger(wantH) ||
       wantW < defaultW ||
-      wantW > defaultW * 2 ||
+      wantW > defaultW * 2 + MARGIN * 2 ||
       wantH < defaultH ||
-      wantH > entry.pixelsPerTile * 2
+      wantH > entry.pixelsPerTile * 2 + MARGIN * 2
     )
       problems.push(`${key}: declared frame exceeds the bounded art envelope`);
     for (const clip of CLIP_NAMES) {

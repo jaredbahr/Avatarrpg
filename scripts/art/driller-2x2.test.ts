@@ -3,10 +3,12 @@ import { expect, it } from 'vitest';
 import { ASSETS } from '../../src/content/assets/manifest';
 import { parseAtlasJson } from '../../src/render/sheets/atlasJson';
 import { pixelAt, readPng } from './lib/image';
-import { decodeWebp, encodeWebpLossless } from './lib/webp';
+import { decodeWebp, encodeWebpLossless, isLosslessWebp } from './lib/webp';
 import {
   DRILLER_CLIPS,
   DRILLER_FRAME_SIZE,
+  DRILLER_MARGIN,
+  DRILLER_PACKED_FRAME_SIZE,
   DRILLER_JSON,
   DRILLER_KEY,
   DRILLER_WEBP,
@@ -34,6 +36,8 @@ it('keeps every Driller source at the approved 160x160 size', () => {
 it('ships the deterministic lossless 32-frame atlas with the shadowed stills removed', async () => {
   const packed = packDriller();
   const encoded = await encodeWebpLossless(packed.image);
+  expect(isLosslessWebp(encoded)).toBe(true);
+  expect(isLosslessWebp(new Uint8Array(readFileSync('public/art/units/thug-g.webp')))).toBe(false);
   expect(encoded).toEqual(new Uint8Array(readFileSync(DRILLER_WEBP)));
   expect(await decodeWebp(encoded)).toEqual(packed.image);
   expect(packed.json).toBe(readFileSync(DRILLER_JSON, 'utf8'));
@@ -45,25 +49,32 @@ it('ships the deterministic lossless 32-frame atlas with the shadowed stills rem
   expect([...atlas.frames.keys()]).toEqual(expected);
   expect(atlas.frames.size).toBe(32);
 
-  // The shadowed still is source cel 0 of every clip: packed cel n must be
-  // source cel n + 1, pixel for pixel, so no still can have slipped in.
+  // The shadowed still is source cel 0 of every clip. Inside the transparent
+  // gutter, packed cel n is the horizontal mirror of source cel n + 1.
   for (const [name, frame] of atlas.frames) {
     const match = /\/(idle|walk|cast|hit|ko)\/(\d+)$/.exec(name);
     if (!match) throw new Error(`Unexpected Driller frame id: ${name}`);
     const source = readPng(
       drillerSource(match[1] as keyof typeof DRILLER_CLIPS, Number(match[2]) + 1),
     );
-    for (let y = 0; y < frame.h; y++)
-      for (let x = 0; x < frame.w; x++)
-        if (pixelAt(packed.image, frame.x + x, frame.y + y).join() !== pixelAt(source, x, y).join())
+    expect(frame).toMatchObject({ w: DRILLER_PACKED_FRAME_SIZE, h: DRILLER_PACKED_FRAME_SIZE });
+    for (let y = 0; y < DRILLER_FRAME_SIZE; y++)
+      for (let x = 0; x < DRILLER_FRAME_SIZE; x++)
+        if (
+          pixelAt(
+            packed.image,
+            frame.x + DRILLER_MARGIN + x,
+            frame.y + DRILLER_MARGIN + y,
+          ).join() !== pixelAt(source, DRILLER_FRAME_SIZE - 1 - x, y).join()
+        )
           throw new Error(`${name} differs from its source cel at ${x},${y}`);
   }
   // The standing loops never reach the shadow's rows; a cast or hit may, with
   // the drill and its burst.
   for (const [name, frame] of atlas.frames) {
     if (!/\/(idle|walk)\//.test(name)) continue;
-    for (let y = 139; y < frame.h; y++)
-      for (let x = 0; x < frame.w; x++)
+    for (let y = DRILLER_MARGIN + 139; y < frame.h; y++)
+      for (let x = DRILLER_MARGIN; x < frame.w - DRILLER_MARGIN; x++)
         if (pixelAt(packed.image, frame.x + x, frame.y + y)[3] !== 0)
           throw new Error(`${name} has paint at ${x},${y}, below the tracks`);
   }

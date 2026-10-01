@@ -1,5 +1,6 @@
 /**
- * Pack the approved 2x2 Driller animation without changing a source pixel.
+ * Pack the approved 2x2 Driller animation without recolouring or resampling.
+ * Each cel is mirrored to face screen-right and placed inside an 8 px gutter.
  * Each clip's first cel is the shared still with a baked ground shadow, so it
  * is deliberately omitted and the remaining cels are renumbered from zero.
  *
@@ -20,6 +21,8 @@ export const OBSOLETE_DRILLER_PNG = 'public/art/units/driller.png';
 export const DRILLER_JSON = 'public/art/units/driller.json';
 export const DRILLER_KEY = 'unit.enemy.driller';
 export const DRILLER_FRAME_SIZE = 160;
+export const DRILLER_MARGIN = 8;
+export const DRILLER_PACKED_FRAME_SIZE = DRILLER_FRAME_SIZE + DRILLER_MARGIN * 2;
 export const DRILLER_CLIPS = {
   idle: 6,
   walk: 6,
@@ -32,7 +35,12 @@ export const drillerSource = (clip: keyof typeof DRILLER_CLIPS, sourceIndex: num
   `${DRILLER_SOURCE_DIRECTORY}/${clip}-${sourceIndex}.png`;
 
 export function packDriller(): { image: Image; json: string } {
-  const layout = layoutSheet(DRILLER_KEY, DRILLER_CLIPS, DRILLER_FRAME_SIZE, DRILLER_FRAME_SIZE);
+  const layout = layoutSheet(
+    DRILLER_KEY,
+    DRILLER_CLIPS,
+    DRILLER_PACKED_FRAME_SIZE,
+    DRILLER_PACKED_FRAME_SIZE,
+  );
   const image = newImage(layout.width, layout.height);
   for (const [name, rect] of layout.frames) {
     const match = /\/(idle|walk|cast|hit|ko)\/(\d+)$/.exec(name);
@@ -47,7 +55,12 @@ export function packDriller(): { image: Image; json: string } {
     }
     for (let y = 0; y < DRILLER_FRAME_SIZE; y++)
       for (let x = 0; x < DRILLER_FRAME_SIZE; x++)
-        setPixel(image, rect.x + x, rect.y + y, pixelAt(source, x, y));
+        setPixel(
+          image,
+          rect.x + DRILLER_MARGIN + x,
+          rect.y + DRILLER_MARGIN + y,
+          pixelAt(source, DRILLER_FRAME_SIZE - 1 - x, y),
+        );
   }
   return {
     image,

@@ -81,6 +81,22 @@ export async function encodeWebp(
 const ascii = (bytes: Uint8Array, offset: number, length: number): string =>
   String.fromCharCode(...bytes.subarray(offset, offset + length));
 
+/** True when a RIFF WebP contains a lossless VP8L image chunk. */
+export function isLosslessWebp(bytes: Uint8Array): boolean {
+  if (bytes.length < 20 || ascii(bytes, 0, 4) !== 'RIFF' || ascii(bytes, 8, 4) !== 'WEBP')
+    return false;
+  for (let offset = 12; offset + 8 <= bytes.length;) {
+    const size =
+      (bytes[offset + 4] ?? 0) |
+      ((bytes[offset + 5] ?? 0) << 8) |
+      ((bytes[offset + 6] ?? 0) << 16) |
+      ((bytes[offset + 7] ?? 0) << 24);
+    if (ascii(bytes, offset, 4) === 'VP8L') return true;
+    offset += 8 + size + (size & 1);
+  }
+  return false;
+}
+
 /**
  * The pixel size in a WebP's header: the lossy frame's 14-bit dimensions,
  * the lossless stream's, or the extended container's canvas. Null when the

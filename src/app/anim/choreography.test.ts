@@ -11,6 +11,8 @@ import { Timeline } from './timeline';
 import { STROLL_RAMP_MS } from './stroll';
 import type { AnyTrack, EmitterTrack, PoseTrack } from './timeline';
 import { PARTICLE_STRIDE, sampleParticles } from '../../render/fx/simulate';
+import { Animator } from '../animator';
+import { frameIndex, resolveClip } from '../../render/sheets/resolveClip';
 
 /**
  * The choreography is a pure function, so these pin the shape of a playback:
@@ -47,6 +49,8 @@ const content = {
     ['earth_wall', { ...waterWhip, id: 'earth_wall', fx: 'fx.earth.wall', range: 6 }],
     ['water_whip', waterWhip],
     ['air_blast', { ...waterWhip, id: 'air_blast', fx: 'fx.air.blast', range: 6 }],
+    ['driller_slam', { ...waterWhip, id: 'driller_slam', fx: 'fx.enemy.slam', range: 2 }],
+    ['driller_debris', { ...waterWhip, id: 'driller_debris', fx: 'fx.enemy.debris', range: 8 }],
   ]),
 } as unknown as ContentIndex;
 
@@ -95,12 +99,12 @@ describe('timed bare legacy clips', () => {
       clipsOf: (sprite) => (sprite === driller.sprite ? clips : undefined),
     });
 
-  it('plays the whole cast and aligns impact with cast frame 3 contact', () => {
+  it('aligns a no-travel impact with cast frame 3 contact', () => {
     const out = play([
       {
         type: 'abilityUsed',
         unitId: driller.id,
-        abilityId: 'fire_jab',
+        abilityId: 'driller_slam',
         target: victim.pos,
         tiles: [victim.pos],
       },
@@ -122,6 +126,78 @@ describe('timed bare legacy clips', () => {
     expect(Math.max(...cast.map((track) => track.start + track.duration))).toBe(1000 + duration);
     expect(flash?.start).toBe(1000 + contact);
     expect(cast.map((track) => track.clipTimeOffset)).toEqual([0, contact, contact + 340]);
+  });
+
+  it('lands a travel recipe at arrival and never replays a timed cast cel', () => {
+    const events: GameEvent[] = [
+      {
+        type: 'abilityUsed',
+        unitId: driller.id,
+        abilityId: 'driller_debris',
+        target: victim.pos,
+        tiles: [victim.pos],
+      },
+      {
+        type: 'damaged',
+        unitId: victim.id,
+        amount: 4,
+        crit: false,
+        damageType: 'earth',
+        sourceId: driller.id,
+      },
+    ];
+    const out = play(events);
+    const travel = out.tracks.find(
+      (track): track is EmitterTrack =>
+        track.kind === 'emitter' &&
+        track.def.kind === 'particles' &&
+        track.def.shape === 'projectile',
+    );
+    const flash = out.tracks.find((track) => track.kind === 'flash' && track.unitId === victim.id);
+    expect(travel).toBeDefined();
+    // Within a millisecond: the emitter's duration is rounded, the flash is not.
+    expect(flash?.start).toBeCloseTo((travel?.start ?? 0) + (travel?.def.duration ?? 0), 0);
+
+    const animator = new Animator(content, {
+      motionReduced: () => false,
+      sheetClips: (sprite) => (sprite === driller.sprite ? clips : undefined),
+    });
+    animator.push(1000, events, [driller, victim]);
+    const resolved = resolveClip(clips, 'cast');
+    if (!resolved) throw new Error('Expected timed cast');
+    const indices = Array.from({ length: 80 }, (_, step) => {
+      const pose = animator.unitPose(1000 + step * 25, driller.id, driller.sprite);
+      return pose?.clip === 'cast' ? frameIndex(resolved, pose.clipTime, pose.frame) : undefined;
+    }).filter((index): index is number => index !== undefined);
+    expect(indices.length).toBeGreaterThan(0);
+    expect(indices.every((index, i) => i === 0 || index >= indices[i - 1]!)).toBe(true);
+  });
+
+  it('keeps timed cast offsets when melee falls back to cast', () => {
+    const meleeContent = {
+      abilities: new Map<string, Ability>([['strike', strike]]),
+    } as unknown as ContentIndex;
+    const out = choreograph({
+      content: meleeContent,
+      events: [
+        {
+          type: 'abilityUsed',
+          unitId: driller.id,
+          abilityId: 'strike',
+          target: { x: 2, y: 3 },
+          tiles: [],
+        },
+      ],
+      unitsBefore: [driller, { ...victim, pos: { x: 2, y: 3 } }],
+      cursor: 1000,
+      rate: 1,
+      pushIndex: 0,
+      clipsOf: (sprite) => (sprite === driller.sprite ? clips : undefined),
+    });
+    const poses = out.tracks.filter(
+      (track): track is PoseTrack => track.kind === 'pose' && track.unitId === driller.id,
+    );
+    expect(poses.map((pose) => pose.clipTimeOffset)).toEqual([0, 440, 780]);
   });
 
   it('plays a timed hit through and a timed KO through its held last frame', () => {

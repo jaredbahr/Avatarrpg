@@ -453,7 +453,8 @@ export function choreograph(input: ChoreographyInput): Choreography {
         // These directed fundamentals have calibrated cast palms. Earth,
         // area and surface techniques retain their separate ground contract.
         const casterUnit = unitsBefore.find((unit) => unit.id === event.unitId);
-        const castDef = !melee && casterUnit ? input.clipsOf?.(casterUnit.sprite)?.cast : undefined;
+        const casterClips = casterUnit ? input.clipsOf?.(casterUnit.sprite) : undefined;
+        const castDef = !melee || !casterClips?.melee ? casterClips?.cast : undefined;
         const castHolds = castDef?.frameMs;
         // A timed bare cast owns its whole beat. Its fourth cel, when present,
         // begins contact (the Driller's authored frame 3); up to three cels
@@ -461,7 +462,7 @@ export function choreograph(input: ChoreographyInput): Choreography {
         // continuous across the motion phases. Short legacy casts partition
         // the same way without creating an empty release.
         if (castHolds) {
-          const contactIndex = Math.min(3, castHolds.length - 1);
+          const contactIndex = Math.min(castDef?.events?.hit ?? 3, castHolds.length - 1);
           const recoverIndex = Math.min(contactIndex + 3, castHolds.length);
           windUp = castHolds.slice(0, contactIndex).reduce((sum, ms) => sum + ms, 0) * rate;
           release =
@@ -711,10 +712,9 @@ export function choreograph(input: ChoreographyInput): Choreography {
                 returnAt = Math.max(returnAt, launchAt + def.duration * rate);
         }
 
-        // The authored ground contact is the first striking cel. A timed bare
-        // cast therefore lands at frame 3 even when the generic FX recipe has
-        // a nominal travel phase.
-        if (castHolds) impactAt = releaseAt;
+        // Without travel, authored contact is the first striking cel. A real
+        // projectile still lands when its flight reaches the target.
+        if (castHolds && !recipe.travel) impactAt = releaseAt;
 
         // Keep the extension through flight and impact. Without this track a
         // long throw snaps to idle before its recovery starts.
@@ -726,14 +726,16 @@ export function choreograph(input: ChoreographyInput): Choreography {
             ...(facing !== undefined ? { facing } : {}),
             scale: { from: motion.extension, to: motion.extension },
             frame: 1,
-            ...(castHolds ? { clipTimeOffset: windUp + release } : {}),
+            ...(castHolds ? { clipTimeOffset: (windUp + release) / rate } : {}),
             ...(meleeDirection ? { meleeDirection } : {}),
           });
         pose(event.unitId, clip, recoverAt, recover, forward, { x: 0, y: 0 }, easeInOutSine, {
           ...(facing !== undefined ? { facing } : {}),
           scale: { from: motion.extension, to: 1 },
           frame: melee ? 0 : 2,
-          ...(castHolds ? { clipTimeOffset: windUp + release } : {}),
+          ...(castHolds
+            ? { clipTimeOffset: (windUp + release + (recoverAt - holdAt)) / rate }
+            : {}),
           ...(meleeDirection ? { meleeDirection } : {}),
         });
 

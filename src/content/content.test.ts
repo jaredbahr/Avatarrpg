@@ -3,6 +3,7 @@ import { describe, expect, it } from 'vitest';
 import { CONTENT, CONTENT_BUNDLE, STORY_ENTRY } from './index';
 import {
   conditionSchema,
+  assetEntrySchema,
   encounterSchema,
   mapSchema,
   propSchema,
@@ -156,6 +157,43 @@ describe('content', () => {
       'asset unit.test: cast has 8 frames, needs 3-3',
     );
     expect(sheetClipProblems('unit.test', { cast: timed }, false)).toEqual([]);
+    const thirteen = Array.from({ length: 13 }, (_, index) => `unit.test/cast/${index}`);
+    expect(
+      sheetClipProblems(
+        'unit.test',
+        { cast: { ...timed, frames: thirteen, frameMs: thirteen.map(() => 100) } },
+        false,
+      ),
+    ).toContain('asset unit.test: cast has 13 frames, needs 3-12');
+    expect(
+      sheetClipProblems(
+        'unit.test',
+        { walk: { frames: thirteen, fps: 8, loop: true, frameMs: thirteen.map(() => 100) } },
+        false,
+      ),
+    ).toContain('asset unit.test: walk has 13 frames, needs 2-12');
+    expect(
+      sheetClipProblems('unit.test', { cast: { ...timed, frameMs: frames.map(() => 400) } }, false),
+    ).toContain('asset unit.test: cast lasts 3200 ms, exceeds 3000 ms');
+  });
+
+  it('rejects malformed sheet dimensions and clip timing', () => {
+    const source = CONTENT_BUNDLE.assets?.['unit.enemy.driller'];
+    if (source?.kind !== 'sheet') throw new Error('Expected dormant Driller sheet');
+    expect(assetEntrySchema.safeParse({ ...source, footprint: { w: 1, h: 2 } }).success).toBe(
+      false,
+    );
+    expect(
+      assetEntrySchema.safeParse({
+        ...source,
+        clips: { ...source.clips, cast: { ...source.clips.cast!, frameMs: [100] } },
+      }).success,
+    ).toBe(false);
+    const problems = validateContent({
+      ...CONTENT_BUNDLE,
+      assets: { ...CONTENT_BUNDLE.assets, test: { ...source, frameSize: { w: 176, h: 175 } } },
+    } as ContentBundle);
+    expect(problems).toContain('asset test: a 2x2 footprint needs a square frameSize');
   });
 
   it('holds a fighting stance to every heading of declared eight-way locomotion', () => {
