@@ -5,6 +5,7 @@ import {
   HP_CAP_MIN_PX,
   actorHeadroom,
   actorHealthBar,
+  actorSilhouetteGeometry,
   actorShadowDensity,
   healthBarCap,
 } from './actorSilhouette';
@@ -14,8 +15,42 @@ describe('upright actor headroom', () => {
   it('uses measured frame headroom and the matching fallback footprint box', () => {
     expect(actorHeadroom(0.62, 2)).toBe(0.62);
     expect(actorHeadroom(undefined, 1)).toBe(0);
-    expect(actorHeadroom(undefined, 2)).toBe(1);
+    expect(actorHeadroom(undefined, 2)).toBe(FOOT_LINE);
   });
+});
+
+describe('shared actor silhouette geometry', () => {
+  it('keeps gate-off anchors equal to the legacy one-tile formulas at scaled size', () => {
+    const box = { x: 12, y: 100, size: 96 };
+    const scale = 1.25;
+    const geometry = actorSilhouetteGeometry(box, 1, null, scale);
+    const legacy = actorHealthBar(box.x, box.y, box.size, box.size, scale, 0);
+    expect(geometry.barY).toBe(legacy.y);
+    expect(geometry.badgeY).toBe(box.y + box.size * 0.97);
+    expect(geometry.reticleY).toBe(box.y - box.size * 0.04);
+  });
+
+  it.each([
+    ['sheet frame', 0.62, 0.62],
+    ['baked painter', 0.37, 0.37],
+    ['raw fallback', null, FOOT_LINE],
+  ] as const)(
+    'uses %s headroom for the gate-on 2x2 anchors at scaled size',
+    (_kind, frameHeadroom, expectedHeadroom) => {
+      const box = { x: 12, y: 100, size: 96 };
+      const scale = 1.25;
+      const geometry = actorSilhouetteGeometry(box, 2, frameHeadroom, scale);
+      const legacy = actorHealthBar(box.x, box.y, box.size, box.size, scale, expectedHeadroom);
+      const radius = Math.max(4, box.size * 0.09);
+      expect(geometry.barY).toBe(legacy.y);
+      expect(geometry.badgeY).toBe(legacy.y - radius * 1.4);
+      expect(geometry.reticleY).toBe(legacy.silhouetteTop - box.size * 0.04);
+      if (frameHeadroom === null) {
+        const rawTop = box.y + FOOT_LINE * box.size - FOOT_LINE * 2 * box.size * scale;
+        expect(geometry.reticleY).toBeCloseTo(rawTop - box.size * 0.04, 8);
+      }
+    },
+  );
 });
 
 describe('upright actor health bar', () => {

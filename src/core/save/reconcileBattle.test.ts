@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { CONTENT } from '../../content';
-import { buildGrid, tileAt, withSurface, withTile } from '../rules/grid';
+import { buildGrid, reachable, tileAt, withSurface, withTile } from '../rules/grid';
 import { RngCursor } from '../rng';
 import { createBattle, createGame } from '../state/createGame';
 import type { BattleState, ContentIndex, GameState, MapDef } from '../types';
@@ -667,6 +667,153 @@ describe('reconcileBattle', () => {
     const result = reconcileBattleResult(content, state);
     expect(result.warnings.some((warning) => warning.kind === 'disconnected-snap')).toBe(true);
     expect(result.state.battle?.units[0]?.pos).toEqual(current.partySpawns[0]);
+  });
+
+  it('keeps the shipped enc_grumbler turn-1 boss connected through a two-wide passage', () => {
+    const current = currentBattleState('quarry_floor');
+    if (!current.battle) throw new Error('missing battle');
+    const boss = current.battle.units.find((unit) => unit.size === 2);
+    const party = current.battle.units.filter((unit) => unit.faction === 'party');
+    if (!boss || party.length < 2) throw new Error('fixture is missing the boss or party');
+    const state: GameState = {
+      ...current,
+      battle: {
+        ...current.battle,
+        units: current.battle.units.map((unit) => {
+          if (unit.id === boss.id) return { ...unit, pos: { x: 18, y: 5 } };
+          if (unit.id === party[0]?.id) return { ...unit, pos: { x: 13, y: 5 } };
+          if (unit.id === party[1]?.id) return { ...unit, pos: { x: 13, y: 6 } };
+          return unit;
+        }),
+      },
+    };
+
+    const result = reconcileBattleResult(CONTENT, state, { squareFootprints: true });
+    const moved = result.state.battle?.units.find((unit) => unit.id === boss.id);
+    expect(result.warnings.some((warning) => warning.kind === 'no-free-cell')).toBe(false);
+    expect(moved?.pos).not.toEqual({ x: 18, y: 5 });
+    for (const cell of [
+      ...(moved
+        ? [
+            { x: moved.pos.x, y: moved.pos.y },
+            { x: moved.pos.x + 1, y: moved.pos.y },
+          ]
+        : []),
+      ...(moved
+        ? [
+            { x: moved.pos.x, y: moved.pos.y + 1 },
+            { x: moved.pos.x + 1, y: moved.pos.y + 1 },
+          ]
+        : []),
+    ])
+      expect(tileAt(result.state.battle!.grid, cell)?.blocked).toBe(false);
+  });
+
+  it('falls back to the first walkable terrain cell when every party spawn is buried', () => {
+    const old = currentBattleState('quarry_floor');
+    if (!old.battle) throw new Error('missing battle');
+    const map = CONTENT.maps.get('quarry_floor');
+    if (!map) throw new Error('missing map');
+    const rows = map.rows.map((row, y) => {
+      let next = row.replace(/[XASP]/g, '.');
+      for (const spawn of map.partySpawns) {
+        if (spawn.y === y) next = `${next.slice(0, spawn.x)}#${next.slice(spawn.x + 1)}`;
+      }
+      return next;
+    });
+    const content = contentWithMap({ ...map, rows, props: [] });
+    const boss = old.battle.units.find((unit) => unit.size === 2);
+    if (!boss) throw new Error('missing boss');
+    const state: GameState = {
+      ...old,
+      battle: {
+        ...old.battle,
+        units: old.battle.units.map((unit) =>
+          unit.id === boss.id ? { ...unit, pos: { x: 18, y: 5 } } : unit,
+        ),
+      },
+    };
+    const result = reconcileBattleResult(content, state, { squareFootprints: true });
+    expect(result.warnings.some((warning) => warning.kind === 'no-free-cell')).toBe(false);
+    expect(result.state.battle?.units.find((unit) => unit.id === boss.id)?.pos).not.toEqual({
+      x: 18,
+      y: 5,
+    });
+  });
+
+  it('prefers a farther connected candidate after an earlier opponent moves', () => {
+    const old = currentBattleState('quarry_floor');
+    if (!old.battle) throw new Error('missing battle');
+    const map = CONTENT.maps.get('quarry_floor');
+    if (!map) throw new Error('missing map');
+    const rows = Array.from({ length: map.height }, (_, y) =>
+      y === 2 || y === 3 ? '#..................#' : '#'.repeat(map.width),
+    );
+    const corridor = { ...map, rows, partySpawns: [{ x: 1, y: 2 }], props: [] };
+    const content = contentWithMap(corridor);
+    const party = old.battle.units.filter((unit) => unit.faction === 'party');
+    const boss = old.battle.units.find((unit) => unit.size === 2);
+    const support = old.battle.units.find((unit) => unit.faction === 'enemy' && unit.size === 1);
+    if (!boss || party.length < 2 || !support) throw new Error('fixture is missing units');
+    const state: GameState = {
+      ...old,
+      battle: {
+        ...old.battle,
+        grid: buildGrid(corridor),
+        props: [],
+        temporaryWalls: [],
+        units: [
+          { ...party[0]!, pos: { x: 6, y: 2 } },
+          { ...party[1]!, pos: { x: 100, y: 100 } },
+          { ...support, pos: { x: 6, y: 3 } },
+          { ...boss, pos: { x: 1, y: 1 } },
+        ],
+      },
+    };
+    const result = reconcileBattleResult(content, state, { squareFootprints: true });
+    const moved = result.state.battle?.units.find((unit) => unit.id === boss.id);
+    expect(moved?.pos.x).toBeGreaterThanOrEqual(7);
+  });
+
+  it('keeps a sealed boss save unchanged and reports no-free-cell', () => {
+    const old = battleState('quarry_gate', OLD_QUARRY_ROWS);
+    const current = CONTENT.maps.get('quarry_gate');
+    if (!old.battle || !current) throw new Error('missing sealed-boss fixture');
+    const rows = current.rows.map(() => '#'.repeat(current.width));
+    const content = contentWithMap({ ...current, rows, props: [] });
+    const result = reconcileBattleResult(content, old, { squareFootprints: true });
+    expect(result.state).toBe(old);
+    expect(result.state.battle?.grid).toBe(old.battle.grid);
+    expect(result.warnings).toContainEqual({
+      kind: 'no-free-cell',
+      unitId: old.battle.units[0]?.id,
+    });
+  });
+
+  it('bounds reachable floods when searching a sealed-boss worst case', () => {
+    const old = currentBattleState('quarry_floor');
+    if (!old.battle) throw new Error('missing battle');
+    const boss = old.battle.units.find((unit) => unit.size === 2);
+    if (!boss) throw new Error('missing boss');
+    const state: GameState = {
+      ...old,
+      battle: {
+        ...old.battle,
+        units: old.battle.units.map((unit) =>
+          unit.id === boss.id ? { ...unit, pos: { x: 100, y: 100 } } : unit,
+        ),
+      },
+    };
+    let floods = 0;
+    const countingReachable: typeof reachable = (...args) => {
+      floods += 1;
+      return reachable(...args);
+    };
+    reconcileBattleResult(CONTENT, state, {
+      squareFootprints: true,
+      reachable: countingReachable,
+    });
+    expect(floods).toBeLessThanOrEqual(10);
   });
 
   it('does not snap a square boss into a chamber joined by a one-cell corridor', () => {

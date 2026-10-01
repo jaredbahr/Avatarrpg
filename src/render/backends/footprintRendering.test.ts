@@ -1,19 +1,12 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
+import { SQUARE_FOOTPRINTS } from '../../core/rules/footprint';
 import { Camera } from '../camera';
 import { loadingPlaceholderBox } from '../painters/registry';
 import { Canvas2DBackend, canvasActorDepth } from './canvas2d';
 import { pixiActorDepth } from './pixi';
 
-// Construction is the contract under test here; the Pixi particle layer would
-// otherwise start its atlas loader before the backend can be inspected.
-vi.mock('../fx/particleLayer', () => ({
-  ParticleLayer: class {
-    readonly container = {};
-    draw(): void {}
-    destroy(): void {}
-  },
-}));
-
+// CanvasFxLayer paints its atlas in the constructor; keep the node test focused
+// on backend construction without requiring a browser canvas implementation.
 vi.mock('../fx/canvasFx', () => ({
   CanvasFxLayer: class {},
 }));
@@ -86,11 +79,12 @@ describe('square-footprint backend parity', () => {
   it('passes the square gate into the Canvas2D backend construction', () => {
     // Canvas2D only probes the supplied canvas, so a tiny DOM stub is enough in
     // node. Pixi allocates real textures in its field initialisers and cannot be
-    // built without a browser; its flag is the same typed constructor default
-    // and is exercised by the WebGL e2e suite.
+    // built without a browser.
     vi.stubGlobal('document', { createElement: canvas });
     const legacy = new Canvas2DBackend(canvas());
-    expect((legacy as unknown as { squareFootprints: boolean }).squareFootprints).toBe(false);
+    expect((legacy as unknown as { squareFootprints: boolean }).squareFootprints).toBe(
+      SQUARE_FOOTPRINTS,
+    );
     const square = new Canvas2DBackend(canvas(), true);
     expect((square as unknown as { squareFootprints: boolean }).squareFootprints).toBe(true);
   });

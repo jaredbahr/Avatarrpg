@@ -22,6 +22,7 @@ import { aimArcPoints, arcHeading, arrowheadPolygon } from '../geometry/arc';
 import {
   actorHeadroom,
   actorHealthBar,
+  actorSilhouetteGeometry,
   actorShadowDensity,
   healthBarCap,
 } from '../geometry/actorSilhouette';
@@ -975,24 +976,28 @@ export class Canvas2DBackend implements RenderBackend {
       const scale = target?.scale ?? 1;
       const frame =
         this.squareFootprints && target
-          ? target.bend
-            ? sheets.bendFrame(target.sprite, target.bend.heading, target.bend.index)
-            : sheets.frame(
-                target.sprite,
-                target.clip ?? 'idle',
-                target.clipTime ?? view.time + idlePhase(target.id),
-                target.clipFrame,
-                box.size * camera.viewport.dpr * scale,
-                target.size,
-                target.meleeDirection,
-                heightTiles,
-              )
+          ? (target.bend
+              ? sheets.bendFrame(target.sprite, target.bend.heading, target.bend.index)
+              : null) ||
+            sheets.frame(
+              target.sprite,
+              target.clip ?? 'idle',
+              target.clipTime ?? view.time + idlePhase(target.id),
+              target.clipFrame,
+              box.size * camera.viewport.dpr * scale,
+              target.size,
+              target.meleeDirection,
+              heightTiles,
+            )
           : null;
-      const headroom = actorHeadroom(frame?.headroom, heightTiles);
+      const silhouette = actorSilhouetteGeometry(
+        { x: box.x, y: box.y - lift * box.size, size: box.size },
+        heightTiles,
+        this.squareFootprints ? (frame?.headroom ?? null) : null,
+        scale,
+      );
       const cy = this.squareFootprints
-        ? actorHealthBar(box.x, box.y - lift * box.size, width, box.size, scale, headroom)
-            .silhouetteTop -
-          box.size * 0.04
+        ? silhouette.reticleY
         : box.y - lift * box.size - box.size * 0.04;
       ctx.fillStyle = OVERLAY.reticleCue;
       ctx.strokeStyle = OVERLAY.pathUnder;
@@ -1436,6 +1441,12 @@ export class Canvas2DBackend implements RenderBackend {
           heightTiles,
         );
       const headroom = actorHeadroom(frame?.headroom, heightTiles);
+      const silhouette = actorSilhouetteGeometry(
+        { x: box.x, y: box.y, size: box.size },
+        heightTiles,
+        frame?.headroom ?? null,
+        scale,
+      );
       if (frame) {
         const ax = box.x + width / 2;
         const ay = box.y + FOOT_LINE * box.size;
@@ -1475,9 +1486,29 @@ export class Canvas2DBackend implements RenderBackend {
 
       if (!unit.fallen) {
         if (unit.showHealth !== false) {
-          this.drawHealthBar(unit, box.x, box.y, width, box.size, scale, headroom, view.hatch);
+          this.drawHealthBar(
+            unit,
+            box.x,
+            box.y,
+            width,
+            box.size,
+            scale,
+            headroom,
+            view.hatch,
+            silhouette.barY,
+          );
         }
-        this.drawStatusBadges(unit, box.x, box.y, width, box.size, scale, headroom, heightTiles);
+        this.drawStatusBadges(
+          unit,
+          box.x,
+          box.y,
+          width,
+          box.size,
+          scale,
+          headroom,
+          heightTiles,
+          silhouette.badgeY,
+        );
       } else {
         // A fallen unit gets a clear cross rather than just fading out.
         ctx.save();
@@ -1503,10 +1534,12 @@ export class Canvas2DBackend implements RenderBackend {
     scale: number,
     headroom: number,
     hatch: boolean,
+    barYOverride?: number,
   ): void {
     const { ctx } = this;
     const fraction = Math.max(0, Math.min(1, unit.hp / Math.max(1, unit.maxHp)));
     const bar = actorHealthBar(x, y, width, size, scale, headroom);
+    if (barYOverride !== undefined) bar.y = barYOverride;
     const { x: barX, y: barY, width: barWidth, height: barHeight } = bar;
     const fill = hpFill(unit.faction, fraction, hatch);
 
@@ -1539,6 +1572,7 @@ export class Canvas2DBackend implements RenderBackend {
     scale: number,
     headroom: number,
     heightTiles: number,
+    badgeY?: number,
   ): void {
     if (unit.statuses.length === 0) return;
     const { ctx } = this;
@@ -1547,9 +1581,10 @@ export class Canvas2DBackend implements RenderBackend {
     const totalWidth = shown.length * radius * 2.2;
     let bx = x + width / 2 - totalWidth / 2 + radius;
     const by =
-      heightTiles > 1
+      badgeY ??
+      (heightTiles > 1
         ? actorHealthBar(x, y, width, size, scale, headroom).y - radius * 1.4
-        : y + size * 0.97;
+        : y + size * 0.97);
 
     ctx.save();
     ctx.font = `700 ${Math.round(radius * 1.2)}px system-ui, sans-serif`;

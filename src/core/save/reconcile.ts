@@ -113,6 +113,8 @@ export interface ReconcileBattleOptions {
    * default to `SQUARE_FOOTPRINTS`, so gate-off behaviour is unchanged.
    */
   readonly squareFootprints?: boolean;
+  /** Test hook for proving the square-anchor flood stays component-bounded. */
+  readonly reachable?: typeof reachable;
 }
 
 /**
@@ -155,7 +157,14 @@ export function reconcileBattleResult(
     // square: open as a legacy 2x1, yet blocked, off-map or overlapping as a
     // 2x2. Snap it against the live grid (props and temporary walls included),
     // and leave the save untouched when every unit already fits.
-    const snapped = snapBattleUnits(battle.grid, map, battle.units, square, content);
+    const snapped = snapBattleUnits(
+      battle.grid,
+      map,
+      battle.units,
+      square,
+      content,
+      options.reachable,
+    );
     if (!snapped.units) return { state, warnings: snapped.warnings };
     if (snapped.units.every((unit, index) => unit === battle.units[index]))
       return { state, warnings: snapped.warnings };
@@ -219,7 +228,7 @@ export function reconcileBattleResult(
     });
   }
 
-  const snapped = snapBattleUnits(grid, map, battle.units, square, content);
+  const snapped = snapBattleUnits(grid, map, battle.units, square, content, options.reachable);
   if (!snapped.units) return { state, warnings: snapped.warnings };
   return {
     state: {
@@ -265,8 +274,10 @@ function snapBattleUnits(
   units: BattleState['units'],
   square: boolean,
   content: ContentIndex,
+  reachableOverride?: typeof reachable,
 ): { units: BattleState['units'] | null; warnings: BattleReconcileWarning[] } {
   const warnings: BattleReconcileWarning[] = [];
+  const flood = reachableOverride ?? reachable;
   const main = mainWalkableCells(grid, map);
   const owners = new Map<string, string>();
   const flat = (unit: BattleState['units'][number], pos = unit.pos): boolean => {
@@ -306,57 +317,111 @@ function snapBattleUnits(
    * (non-flat) footprints and only records standable anchors, mirroring the
    * content validator's squareReachFrom flood.
    */
-  const squareAnchorsNear = (
-    unit: BattleState['units'][number],
-    pos: Vec2,
-    near: (anchor: Vec2) => boolean,
-  ): boolean => {
-    const blocked = new Set(owners.keys());
-    for (const cell of occupiedCells({ pos, size: unit.size }, true)) blocked.delete(posKey(cell));
-    const anchors = reachable(
-      {
-        grid,
-        blocked,
-        surfaces: content.surfaces,
-        size: unit.size,
-        squareFootprints: true,
-        climbCost: content.tuning.climbCost,
-      },
-      pos,
-      Infinity,
-    );
-    return [...anchors.values()].some((entry) => near(entry.pos));
-  };
+  // A spawn buried by a map edit is not a meaningful connectivity target. When
+  // every authored spawn is buried, retain mainWalkableCells' deterministic
+  // fallback to the first walkable terrain cell instead.
+  const walkableSpawns = map.partySpawns.filter((spawn) => walkable(grid, spawn));
+  const partyTargets =
+    walkableSpawns.length > 0
+      ? walkableSpawns
+      : grid.tiles
+          .map((_, index) => ({ x: index % grid.width, y: Math.floor(index / grid.width) }))
+          .filter((pos) => walkable(grid, pos))
+          .slice(0, 1);
   const anchorNearParty = (anchor: Vec2): boolean =>
     occupiedCells({ pos: anchor, size: 2 }, true).some((cell) =>
-      map.partySpawns.some(
+      partyTargets.some(
         (spawn) => Math.max(Math.abs(cell.x - spawn.x), Math.abs(cell.y - spawn.y)) <= 1,
       ),
     );
+
+  // `result` contains the units already repaired in this pass. Keep later
+  // units from disappearing from contact checks, while ensuring an opponent
+  // moved earlier in the loop is tested at its current (not stale) position.
+  const result: BattleState['units'][number][] = [];
+  const currentUnit = (unit: BattleState['units'][number]): BattleState['units'][number] =>
+    result.find((candidate) => candidate.id === unit.id) ?? unit;
   const contactable = (unit: BattleState['units'][number], anchor: Vec2): boolean =>
     units.some(
       (opponent) =>
         opponent.hp > 0 &&
         opponent.faction !== unit.faction &&
-        occupiedCells(opponent, true).some((cell) =>
+        occupiedCells(currentUnit(opponent), true).some((cell) =>
           occupiedCells({ pos: anchor, size: unit.size }, true).some(
             (ownCell) => Math.max(Math.abs(cell.x - ownCell.x), Math.abs(cell.y - ownCell.y)) <= 1,
           ),
         ),
     );
+
+  type AnchorInfo = { nearParty: boolean; canContact: boolean };
+  // A terrain-only flood defines connectivity. A second flood, with living
+  // units blocked, defines contact reachability. Cache every stop in each
+  // component so a buried unit does not run a full Infinity flood per anchor.
+  const anchorInfo = new Map<string, AnchorInfo>();
+  const terrainFlooded = new Set<string>();
+  const contactFlooded = new Set<string>();
+  const anchorInfoFor = (unit: BattleState['units'][number], pos: Vec2): AnchorInfo => {
+    const key = posKey(pos);
+    if (!terrainFlooded.has(key)) {
+      const anchors = flood(
+        {
+          grid,
+          blocked: new Set<string>(),
+          surfaces: content.surfaces,
+          size: unit.size,
+          squareFootprints: true,
+          climbCost: content.tuning.climbCost,
+        },
+        pos,
+        Infinity,
+      );
+      for (const entry of anchors.values()) {
+        const entryKey = posKey(entry.pos);
+        const existing = anchorInfo.get(entryKey);
+        anchorInfo.set(entryKey, {
+          nearParty: anchorNearParty(entry.pos),
+          canContact: existing?.canContact ?? false,
+        });
+        terrainFlooded.add(entryKey);
+      }
+    }
+    if (!contactFlooded.has(key)) {
+      const blocked = new Set(owners.keys());
+      for (const cell of occupiedCells({ pos, size: unit.size }, true))
+        blocked.delete(posKey(cell));
+      const anchors = flood(
+        {
+          grid,
+          blocked,
+          surfaces: content.surfaces,
+          size: unit.size,
+          squareFootprints: true,
+          climbCost: content.tuning.climbCost,
+        },
+        pos,
+        Infinity,
+      );
+      for (const entry of anchors.values()) {
+        const entryKey = posKey(entry.pos);
+        const existing = anchorInfo.get(entryKey);
+        anchorInfo.set(entryKey, {
+          nearParty: existing?.nearParty ?? anchorNearParty(entry.pos),
+          canContact: contactable(unit, entry.pos),
+        });
+        contactFlooded.add(entryKey);
+      }
+    }
+    return anchorInfo.get(key) ?? { nearParty: false, canContact: false };
+  };
   const connected = (unit: BattleState['units'][number], pos: Vec2): boolean => {
     if (!square || unit.size !== 2)
       return occupiedCells({ pos, size: unit.size }, square).every((cell) =>
         main.has(posKey(cell)),
       );
-    return squareAnchorsNear(unit, pos, anchorNearParty);
+    return anchorInfoFor(unit, pos).nearParty;
   };
   const canContact = (unit: BattleState['units'][number], pos: Vec2): boolean =>
-    square &&
-    unit.size === 2 &&
-    squareAnchorsNear(unit, pos, (anchor) => contactable(unit, anchor));
-
-  const result: BattleState['units'][number][] = [];
+    square && unit.size === 2 && anchorInfoFor(unit, pos).canContact;
   for (const unit of units) {
     if (unit.hp <= 0) {
       result.push(unit);
@@ -367,6 +432,11 @@ function snapBattleUnits(
       const key = posKey(cell);
       if (owners.get(key) === unit.id) owners.delete(key);
     }
+    // Unit cells and contact targets change after every repair; component
+    // caches are therefore scoped to this unit's candidate search.
+    anchorInfo.clear();
+    terrainFlooded.clear();
+    contactFlooded.clear();
     let pos = unit.pos;
     if (!valid(unit)) {
       const candidates: Vec2[] = [];
