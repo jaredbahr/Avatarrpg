@@ -10,7 +10,7 @@
 import type { App } from '../App';
 import type { Unit } from '../../core/types';
 import { Dialog } from './Dialog';
-import type { DialogOptions } from './Dialog';
+import type { DialogOptions, InspectorSyncDecision } from './Dialog';
 import { button, el } from './dom';
 import { assetCanvas } from './assetCanvas';
 import { portraitKeyFor } from './PartyRoster';
@@ -20,6 +20,14 @@ import { describeIncoming } from '../../core/rules/status';
 import { describeFooting } from '../../core/rules/reactions';
 import { occupiedCells, tileAt } from '../../core/rules/grid';
 import { levelProgress, xpToNextLevel } from '../../core/rules/leveling';
+
+export function unitInspectorSyncDecision(
+  current: Unit,
+  resolved: Unit | undefined,
+): InspectorSyncDecision {
+  if (!resolved) return 'close';
+  return resolved === current ? 'unchanged' : 'refresh';
+}
 
 export class UnitInspector extends Dialog {
   protected options: DialogOptions;
@@ -201,8 +209,21 @@ export class UnitInspector extends Dialog {
         'div',
         { class: 'row dialog-footer' },
         el('div', { class: 'spacer' }),
-        button('Close', () => this.close(), { class: 'btn-primary' }),
+        button('Close', () => this.close(), { class: 'btn-primary dialog-close' }),
       ),
     );
+  }
+
+  get unitId(): string {
+    return this.unit.id;
+  }
+
+  update(unit: Unit | undefined): void {
+    const decision = unitInspectorSyncDecision(this.unit, unit);
+    if (decision === 'close') this.close();
+    else if (decision === 'refresh' && unit) {
+      this.unit = unit;
+      this.refresh();
+    }
   }
 }

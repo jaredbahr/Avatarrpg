@@ -1,10 +1,18 @@
 import type { ContentIndex, PropDef, PropInstance } from '../../core/types';
 import { Dialog } from './Dialog';
-import type { DialogOptions } from './Dialog';
+import type { DialogOptions, InspectorSyncDecision } from './Dialog';
 import { assetCanvas } from './assetCanvas';
 import { button, el, mark } from './dom';
 import { iconMarkup } from './icons';
 import { propInspectText } from './propInspectText';
+
+export function propInspectorSyncDecision(
+  current: PropInstance,
+  resolved: PropInstance | undefined,
+): InspectorSyncDecision {
+  if (!resolved) return 'close';
+  return resolved === current ? 'unchanged' : 'refresh';
+}
 
 export class PropInspector extends Dialog {
   protected options: DialogOptions;
@@ -77,7 +85,7 @@ export class PropInspector extends Dialog {
         'div',
         { class: 'row dialog-footer' },
         el('div', { class: 'spacer' }),
-        button('Close', () => this.close(), { class: 'btn-primary' }),
+        button('Close', () => this.close(), { class: 'btn-primary dialog-close' }),
       ),
     );
   }
@@ -86,9 +94,12 @@ export class PropInspector extends Dialog {
     return this.prop.id;
   }
 
-  update(prop: PropInstance): void {
-    if (prop === this.prop) return;
-    this.prop = prop;
-    this.refresh();
+  update(prop: PropInstance | undefined): void {
+    const decision = propInspectorSyncDecision(this.prop, prop);
+    if (decision === 'close') this.close();
+    else if (decision === 'refresh' && prop) {
+      this.prop = prop;
+      this.refresh();
+    }
   }
 }

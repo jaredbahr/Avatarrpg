@@ -91,7 +91,7 @@ for (const renderer of ['canvas', 'webgl'] as const) {
       return found ? { id: found.id, name: found.name, pos: found.pos } : null;
     });
     if (!unit) throw new Error('The Quarry Gate should place a living party unit.');
-    await focusStagedUnit(page, unit.id, 10_000);
+    await focusStagedUnit(page, unit.id, renderer === 'webgl' ? 30_000 : 10_000);
     await settleLayout(page);
     const point = await tileCentre(page, unit.pos);
     await page.mouse.click(point.x, point.y);

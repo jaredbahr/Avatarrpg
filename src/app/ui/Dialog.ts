@@ -16,6 +16,18 @@ export interface DialogOptions {
   readonly wide?: boolean;
 }
 
+export type RefreshFocusTarget = 'close' | 'heading' | null;
+export type InspectorSyncDecision = 'unchanged' | 'refresh' | 'close';
+
+/** Pure focus decision kept separate so node-only tests can cover refreshes. */
+export function refreshFocusTarget(
+  focusWasInside: boolean,
+  hasCloseControl: boolean,
+): RefreshFocusTarget {
+  if (!focusWasInside) return null;
+  return hasCloseControl ? 'close' : 'heading';
+}
+
 export abstract class Dialog {
   protected overlay: HTMLElement | null = null;
   protected body: HTMLElement | null = null;
@@ -90,10 +102,17 @@ export abstract class Dialog {
 
   /** Rebuilds the body in place, keeping the dialog open. */
   refresh(): void {
-    if (!this.body) return;
+    if (!this.body || !this.overlay) return;
+    const focusWasInside = this.overlay.contains(document.activeElement);
     clear(this.body);
     this.build(this.body);
     this.markScrollEdges();
+
+    const close = this.body.querySelector<HTMLElement>('.dialog-close');
+    const target = refreshFocusTarget(focusWasInside, close !== null);
+    if (target === 'close') close?.focus({ preventScroll: true });
+    else if (target === 'heading')
+      this.overlay.querySelector<HTMLElement>('h2')?.focus({ preventScroll: true });
   }
 
   /**
