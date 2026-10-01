@@ -15,6 +15,22 @@ const PHASE_ROUTE_STEPS = Math.ceil(
 );
 
 /**
+ * Advance the residents' clamped presentation clock without rendering every
+ * intermediate rAF, then bring Playwright's clock to the same timestamp.
+ * ResidentWalks.tick accepts at most 100 ms per call, so keep those semantics.
+ */
+async function advanceResidentsWithoutFrames(page: Page, ms: number) {
+  await page.evaluate((duration) => {
+    const residents = window.fnt!.app.residents;
+    const start = performance.now();
+    for (let elapsed = Math.min(100, duration); elapsed <= duration; elapsed += 100)
+      residents.tick(start + elapsed, false);
+    if (duration % 100) residents.tick(start + duration, false);
+  }, ms);
+  await page.clock.fastForward(ms);
+}
+
+/**
  * Residents walk between their places (ADR 0047 §7, W8): a phase change walks
  * each person across the map instead of popping them, a walking resident
  * keeps one sprite on WebGL, the midday relief watch holds the gate, and a
@@ -129,32 +145,64 @@ for (const renderer of ['canvas', 'webgl'] as const) {
     const dorinSprites: number[] = [];
     let end: Marker[] = [];
     let coordinateSprites = 0;
-    // Size the fake-clock budget from the longest phase-change route, its
-    // acceleration/braking ramp, and a rendering margin at the current pace.
-    // Stop on the rendered settled state rather than assuming every fake-clock
-    // advance produced an animation frame in every browser.
-    for (let step = 0; step < PHASE_ROUTE_STEPS; step++) {
+    let residentsMoving = true;
+    // Canvas covers the per-frame trail. Software WebGL instead renders short
+    // start/mid/end windows around clock-only advances: its regression is
+    // sprite identity, and rendering the full trail can take minutes on CI.
+    const sample = async () => {
       await page.clock.runFor(CLOCK_STEP_MS);
       const frame = await residentFrame(page);
       end = frame.markers;
-      const mira = end.find((m) => m.id === 'lw.npc.mira');
-      if (mira && mira.alpha === 1) trail.push(mira.at);
-      if (renderer === 'webgl') {
-        dorinSprites.push(frame.dorinSprites);
-        coordinateSprites = Math.max(coordinateSprites, frame.coordinateSprites);
+      residentsMoving = frame.moving;
+      dorinSprites.push(frame.dorinSprites);
+      coordinateSprites = Math.max(coordinateSprites, frame.coordinateSprites);
+    };
+    if (renderer === 'webgl') {
+      await sample();
+      await sample();
+      await advanceResidentsWithoutFrames(page, 5_000);
+      await sample();
+      await sample();
+      await advanceResidentsWithoutFrames(page, 5_000);
+      for (let step = 0; step < 20; step++) {
+        await sample();
+        const mira = end.find((m) => m.id === 'lw.npc.mira');
+        const dorin = end.find((m) => m.id === 'lw.npc.dorin');
+        if (
+          !residentsMoving &&
+          !mira &&
+          dorin?.at.x === 17 &&
+          dorin.at.y === 6 &&
+          dorin.alpha === 1
+        )
+          break;
       }
-      const dorin = end.find((m) => m.id === 'lw.npc.dorin');
-      if (!frame.moving && !mira && dorin?.at.x === 17 && dorin.at.y === 6 && dorin.alpha === 1)
-        break;
+    } else {
+      // Size the fake-clock budget from the longest phase-change route, its
+      // acceleration/braking ramp, and a rendering margin at the current pace.
+      // Stop on the rendered settled state rather than assuming every fake-clock
+      // advance produced an animation frame in every browser.
+      for (let step = 0; step < PHASE_ROUTE_STEPS; step++) {
+        await page.clock.runFor(CLOCK_STEP_MS);
+        const frame = await residentFrame(page);
+        end = frame.markers;
+        const mira = end.find((m) => m.id === 'lw.npc.mira');
+        if (mira && mira.alpha === 1) trail.push(mira.at);
+        const dorin = end.find((m) => m.id === 'lw.npc.dorin');
+        if (!frame.moving && !mira && dorin?.at.x === 17 && dorin.at.y === 6 && dorin.alpha === 1)
+          break;
+      }
     }
     await page.clock.resume();
-    // Mira was seen part-way along her walk to the river path, never jumping a tile.
-    expect(new Set(trail.map((p) => `${p.x},${p.y}`)).size).toBeGreaterThan(6);
-    expect(trail.some((p) => !Number.isInteger(p.x) || !Number.isInteger(p.y))).toBe(true);
-    for (let i = 1; i < trail.length; i++) {
-      const a = trail[i - 1]!;
-      const b = trail[i]!;
-      expect(Math.hypot(b.x - a.x, b.y - a.y)).toBeLessThan(0.25);
+    if (renderer === 'canvas') {
+      // Mira was seen part-way along her walk to the river path, never jumping a tile.
+      expect(new Set(trail.map((p) => `${p.x},${p.y}`)).size).toBeGreaterThan(6);
+      expect(trail.some((p) => !Number.isInteger(p.x) || !Number.isInteger(p.y))).toBe(true);
+      for (let i = 1; i < trail.length; i++) {
+        const a = trail[i - 1]!;
+        const b = trail[i]!;
+        expect(Math.hypot(b.x - a.x, b.y - a.y)).toBeLessThan(0.25);
+      }
     }
     expect(end.find((m) => m.id === 'lw.npc.mira')).toBeUndefined();
     expect(end.find((m) => m.id === 'lw.npc.dorin')).toMatchObject({
@@ -179,6 +227,8 @@ test('Gao restocks his display in trading hours, his tap tile never leaving the 
   // The party out on the east lawn, clear of the square.
   await village(page, 'canvas', 'morning', { x: 20, y: 11 });
   await pauseClock(page);
+  // The initial six-second shop hold has no motion to render.
+  await advanceResidentsWithoutFrames(page, 6_000);
   const seen = new Set<string>();
   let moving = false;
   // A tenth of a second is one fifth of a tile at the current stroll pace.
@@ -285,6 +335,8 @@ test('a tap on Gao at his crates brings him home before the talk opens', async (
       return figure && { pos: figure.pos, at: figure.drawPos, walking: figure.walking };
     });
   const home = { pos: { x: 9, y: 4 }, at: { x: 9, y: 4 }, walking: false };
+  // The initial six-second shop hold has no motion to render.
+  await advanceResidentsWithoutFrames(page, 6_000);
   // Wait for him to stop at the display's crates, off his rules tile.
   let crates = false;
   for (let step = 0; step < 200 && !crates; step++) {
