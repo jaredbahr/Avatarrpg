@@ -91,7 +91,12 @@ for (const renderer of ['canvas', 'webgl'] as const) {
       };
       app.resync();
     });
+    // The resync moved both units and the ability bar reflows the board: let the
+    // camera hold still before a tile is mapped to the screen, or the tap lands
+    // a tile off and Confirm never enables.
+    await settleLayout(page);
     await page.getByRole('button', { name: /^Fire Jab/ }).click();
+    await settleLayout(page);
     const point = await tileCentre(page, { x: 4, y: 2 });
     const canvas = page.locator('.map-canvas');
     const box = await canvas.boundingBox();
