@@ -14,7 +14,7 @@
  */
 
 import type { App, Scene, CameraInfo } from '../App';
-import type { Ability, BattleState, Unit, Vec2 } from '../../core/types';
+import type { Ability, BattleState, PropInstance, Unit, Vec2 } from '../../core/types';
 import {
   canUseAbility,
   heightReachBonus,
@@ -69,6 +69,7 @@ import {
   formatShoveMovement,
 } from '../ui/combatPreviewText';
 import { UnitInspector } from '../ui/UnitInspector';
+import { PropInspector } from '../ui/PropInspector';
 import { enemyScale, partyScale } from '../anim/actorScale';
 import { partyBendSprites } from '../anim/bendHandoff';
 import { sheetLocomotion } from '../../content/assets/manifest';
@@ -130,6 +131,23 @@ export function occupiedUnitAt(units: readonly Unit[], tile: Vec2): Unit | undef
   );
 }
 
+export type InspectTarget =
+  | { readonly kind: 'unit'; readonly unit: Unit }
+  | { readonly kind: 'prop'; readonly prop: PropInstance };
+
+/** Unit-first battlefield lookup; taps omit fallen units while holds include them. */
+export function inspectTargetAt(
+  units: readonly Unit[],
+  props: readonly PropInstance[],
+  tile: Vec2,
+  includeFallen: boolean,
+): InspectTarget | undefined {
+  const unit = includeFallen ? occupiedUnitAt(units, tile) : unitAt(units, tile);
+  if (unit) return { kind: 'unit', unit };
+  const prop = props.find((candidate) => samePos(candidate.pos, tile));
+  return prop ? { kind: 'prop', prop } : undefined;
+}
+
 interface OverlayBuild {
   readonly overlays: OverlayLayer[];
   readonly path: readonly Vec2[];
@@ -153,7 +171,7 @@ export class CombatScene implements Scene {
   private hover: Vec2 | null = null;
   /** How high each ability's flight lobs, or null when nothing flies; read once from its recipe. */
   private lobs = new Map<string, number | null>();
-  private inspector: UnitInspector | null = null;
+  private inspector: UnitInspector | PropInspector | null = null;
   private readonly movementThreatQuery: ReturnType<typeof createMovementThreatQuery>;
 
   /** Unit whose hand-off banner has been acknowledged. */
@@ -596,10 +614,11 @@ export class CombatScene implements Scene {
     const tile = renderer.camera.pickTile(x, y, battle.grid);
 
     if (this.mode.kind === 'idle') {
-      // Tapping a unit in idle mode inspects it; that is the only tap that
-      // does anything, so a stray tap never costs AP.
-      const unit = battle.units.find((u) => isAlive(u) && samePos(u.pos, tile));
-      if (unit) this.openInspector(unit);
+      // Tapping a unit or prop in idle mode inspects it; that is the only tap
+      // that does anything, so a stray tap never costs AP.
+      const target = inspectTargetAt(battle.units, battle.props, tile, false);
+      if (target?.kind === 'unit') this.openUnitInspector(target.unit);
+      if (target?.kind === 'prop') this.openPropInspector(target.prop);
       return;
     }
 
@@ -612,13 +631,24 @@ export class CombatScene implements Scene {
     const battle = this.battle();
     if (!renderer || !battle) return;
     const tile = renderer.camera.pickTile(x, y, battle.grid);
-    const unit = occupiedUnitAt(battle.units, tile);
-    if (unit) this.openInspector(unit);
+    const target = inspectTargetAt(battle.units, battle.props, tile, true);
+    if (target?.kind === 'unit') this.openUnitInspector(target.unit);
+    if (target?.kind === 'prop') this.openPropInspector(target.prop);
   }
 
-  private openInspector(unit: Unit): void {
+  private openUnitInspector(unit: Unit): void {
     this.inspector?.close();
     this.inspector = new UnitInspector(this.app, unit, () => {
+      this.inspector = null;
+    });
+    this.inspector.open(document.querySelector('.overlay-host') ?? document.body);
+  }
+
+  private openPropInspector(prop: PropInstance): void {
+    const def = this.app.content.props.get(prop.propId);
+    if (!def) return;
+    this.inspector?.close();
+    this.inspector = new PropInspector(def, prop, this.app.content.statuses, () => {
       this.inspector = null;
     });
     this.inspector.open(document.querySelector('.overlay-host') ?? document.body);
@@ -638,6 +668,13 @@ export class CombatScene implements Scene {
   sync(): void {
     const battle = this.battle();
     if (!battle) return;
+
+    if (this.inspector instanceof PropInspector) {
+      const inspector = this.inspector;
+      const prop = battle.props.find((candidate) => candidate.id === inspector.propId);
+      if (prop) inspector.update(prop);
+      else inspector.close();
+    }
 
     const unit = this.active();
     const activeId = unit?.id ?? null;
