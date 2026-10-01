@@ -74,6 +74,17 @@ const SOLID_HAY = fuelProp({
   grantsCover: true,
 });
 
+/** Solid, burns, and leaves nothing: the tile after it is the tile under it. */
+const SOLID_ASH = fuelProp({
+  id: 'test_solid_ash',
+  name: 'Test Solid Ash',
+  blocksMove: true,
+  blocksSight: true,
+  grantsCover: true,
+  onBreak: [],
+  burnsInto: [],
+});
+
 /** No fuel: the shape every shipped prop has today. */
 const RACK = fuelProp({
   id: 'test_rack',
@@ -108,6 +119,7 @@ testProps.set(KINDLING.id, KINDLING);
 testProps.set(SOLID_HAY.id, SOLID_HAY);
 testProps.set(RACK.id, RACK);
 testProps.set(SOLID_RACK.id, SOLID_RACK);
+testProps.set(SOLID_ASH.id, SOLID_ASH);
 
 const TEST_CONTENT: ContentIndex = { ...CONTENT, props: testProps };
 
@@ -319,6 +331,28 @@ describe('props that burn', () => {
       expect(emitted.filter((event) => event.type === 'propDoused')).toHaveLength(1);
       expect(emitted.filter((event) => event.type === 'propIgnited')).toHaveLength(0);
     }
+  });
+
+  it('does not bring back an expired surface when a solid prop burns away', () => {
+    const pos = openTile(draft, 2);
+    // Water under the prop when it is placed: the journal remembers it.
+    draft.paint([pos], 'water', 2, null);
+    const hay = place(draft, SOLID_ASH.id, pos);
+    expect(hay.previous.surface?.id).toBe('water');
+    // The puddle dries out under the prop while it stands.
+    draft.tickTerrain();
+    draft.tickTerrain();
+    expect(tileAt(draft.grid, pos)?.surface ?? null).toBeNull();
+
+    draft.damageProp(hay.id, 1, 'fire');
+    for (let round = 0; round < (SOLID_ASH.fuel ?? 0) && draft.propAt(pos); round++) {
+      draft.tickTerrain();
+    }
+
+    expect(draft.propAt(pos)).toBeUndefined();
+    const after = tileAt(draft.grid, pos);
+    expect(after?.blocked, 'the baked flags are lifted').toBe(false);
+    expect(after?.surface?.id, 'the dried puddle stays dry').not.toBe('water');
   });
 
   it('ignites from fire that expires this upkeep', () => {

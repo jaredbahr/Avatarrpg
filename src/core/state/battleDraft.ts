@@ -727,7 +727,20 @@ export class BattleDraft {
     const def = this.propDef(prop);
 
     this.props = this.props.filter((p) => p.id !== propId);
-    this.grid = withTile(this.grid, prop.pos, prop.previous);
+    /*
+     * The journal is the tile as it was when the prop was placed, and the ground
+     * under a prop keeps ticking. A prop that burns away rounds later must not
+     * bring back a surface that has since expired or changed, so that path keeps
+     * the live surface and restores only the flags the prop baked in. Breaking
+     * keeps main's whole-journal restore: changing it would change shipped prop
+     * chemistry, which is a balance call.
+     */
+    const live = tileAt(this.grid, prop.pos);
+    this.grid = withTile(
+      this.grid,
+      prop.pos,
+      burnsAway && live ? { ...prop.previous, surface: live.surface } : prop.previous,
+    );
     if (!def) return;
 
     const label = burnsAway ? `The ${def.name} burns away.` : def.breakLabel;
