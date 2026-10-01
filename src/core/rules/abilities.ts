@@ -167,6 +167,54 @@ export function unitsOnTiles(
   );
 }
 
+/**
+ * The aim cell a tap actually resolves against.
+ *
+ * A big unit fills several cells, but a player taps one of them — often the
+ * nearest corner rather than the anchor — and validation and resolution work on
+ * a single cell. Without this, tapping the boss's far cell could report "out of
+ * range" or "no line of sight" while another cell of the same body was a clean
+ * shot. For a `unit`-shaped ability the tap snaps to the first footprint cell
+ * (anchor first) the caster can both reach and see. Anything else — a size-1
+ * unit, an empty tile, an area aim — is returned untouched, so the caller still
+ * gets the usual reason when nothing on the body is targetable.
+ *
+ * Pure geometry, no RNG: preview and resolution snap identically. The scene
+ * applies this before `isValidTarget` (wiring is A-4).
+ */
+export function resolveAim(
+  content: ContentIndex,
+  battle: BattleState,
+  caster: Unit,
+  ability: Ability,
+  tapped: Vec2,
+  squareFootprints: boolean = SQUARE_FOOTPRINTS,
+): Vec2 {
+  if (ability.targeting.shape !== 'unit') return tapped;
+  const occupant = unitsOnTiles(battle.units, [tapped], squareFootprints)[0];
+  if (!occupant) return tapped;
+  for (const cell of occupiedCells(occupant, squareFootprints)) {
+    if (aimCellTargetable(content, battle.grid, caster, ability, cell, squareFootprints)) {
+      return cell;
+    }
+  }
+  return tapped;
+}
+
+/** Whether `cell` is both in the caster's range and visible from it. */
+function aimCellTargetable(
+  content: ContentIndex,
+  grid: Grid,
+  caster: Unit,
+  ability: Ability,
+  cell: Vec2,
+  squareFootprints: boolean,
+): boolean {
+  if (!inBounds(grid, cell)) return false;
+  if (distanceToUnit(cell, caster, squareFootprints) < ability.minRange) return false;
+  return validatingOrigin(content, grid, caster, ability, cell, true, squareFootprints) !== null;
+}
+
 /* ------------------------------------------------------------------ */
 /* Validation                                                          */
 /* ------------------------------------------------------------------ */
@@ -207,20 +255,29 @@ export function isValidTarget(
   caster: Unit,
   ability: Ability,
   target: Vec2,
+  squareFootprints: boolean = SQUARE_FOOTPRINTS,
 ): UseCheck {
   if (ability.targeting.shape === 'self') return OK;
   if (!inBounds(battle.grid, target)) return { ok: false, reason: 'Off the map.' };
 
-  const range = distanceToUnit(target, caster);
-  const inRangeOrigin = validatingOrigin(content, battle.grid, caster, ability, target, false);
+  const range = distanceToUnit(target, caster, squareFootprints);
+  const inRangeOrigin = validatingOrigin(
+    content,
+    battle.grid,
+    caster,
+    ability,
+    target,
+    false,
+    squareFootprints,
+  );
   if (!inRangeOrigin) return { ok: false, reason: 'Out of range.' };
   if (range < ability.minRange) return { ok: false, reason: 'Too close.' };
-  if (!validatingOrigin(content, battle.grid, caster, ability, target)) {
+  if (!validatingOrigin(content, battle.grid, caster, ability, target, true, squareFootprints)) {
     return { ok: false, reason: 'No line of sight.' };
   }
 
   if (ability.targeting.shape === 'unit') {
-    const occupant = unitsOnTiles(battle.units, [target])[0];
+    const occupant = unitsOnTiles(battle.units, [target], squareFootprints)[0];
     if (!occupant) {
       /*
        * A prop is a legal target for anything that would take an enemy or
@@ -254,7 +311,7 @@ export function isValidTarget(
       const blocked = new Set(
         battle.units
           .filter((u) => isAlive(u) && u.id !== caster.id)
-          .flatMap((u) => occupiedCells(u).map(posKey)),
+          .flatMap((u) => occupiedCells(u, squareFootprints).map(posKey)),
       );
       const cost = enterCost(
         {
@@ -281,22 +338,38 @@ export function targetableTiles(
   battle: BattleState,
   caster: Unit,
   ability: Ability,
+  squareFootprints: boolean = SQUARE_FOOTPRINTS,
 ): Vec2[] {
-  if (ability.targeting.shape === 'self') return occupiedCells(caster);
+  if (ability.targeting.shape === 'self') return occupiedCells(caster, squareFootprints);
 
   const out: Vec2[] = [];
   const reach = canReachFromHeight(ability)
     ? ability.range + content.tuning.heightReachBonus
     : ability.range;
   const seen = new Set<string>();
-  for (const cell of occupiedCells(caster)) {
+  for (const cell of occupiedCells(caster, squareFootprints)) {
     for (let dy = -reach; dy <= reach; dy++) {
       for (let dx = -reach; dx <= reach; dx++) {
         const pos = { x: cell.x + dx, y: cell.y + dy };
         if (!inBounds(battle.grid, pos) || seen.has(posKey(pos))) continue;
-        if (isValidTarget(content, battle, caster, ability, pos).ok) {
+        // Square only: a tap on any cell of a 2x2 snaps to a legal cell.
+        const squareUnit = squareFootprints && ability.targeting.shape === 'unit';
+        const aim = squareUnit
+          ? resolveAim(content, battle, caster, ability, pos, squareFootprints)
+          : pos;
+        if (isValidTarget(content, battle, caster, ability, aim, squareFootprints).ok) {
           seen.add(posKey(pos));
           out.push(pos);
+          if (squareUnit) {
+            const occupant = unitsOnTiles(battle.units, [aim], squareFootprints)[0];
+            if (occupant) {
+              for (const footprintCell of occupiedCells(occupant, squareFootprints)) {
+                if (seen.has(posKey(footprintCell))) continue;
+                seen.add(posKey(footprintCell));
+                out.push(footprintCell);
+              }
+            }
+          }
         }
       }
     }
@@ -391,7 +464,7 @@ export function previewAbility(
     ability,
     target,
     tiles,
-    shoveOrigin(content, battle.grid, caster, ability, target),
+    shoveOrigin(content, battle.grid, caster, ability, target, squareFootprints),
     squareFootprints,
   );
   // The roll uses the same intensity, resolved the same way, so the preview
@@ -423,7 +496,15 @@ export function previewAbility(
           damage += expectedDamage(content, caster, unit, effect);
           // One call, so the chip's percentage and its explanation cannot
           // disagree: `chance` *is* `breakdown.chance`.
-          breakdown = hitBreakdown(content, battle.grid, caster, unit, weather, origin);
+          breakdown = hitBreakdown(
+            content,
+            battle.grid,
+            caster,
+            unit,
+            weather,
+            origin,
+            squareFootprints,
+          );
           chance = breakdown.chance;
           break;
         case 'heal':
@@ -552,10 +633,12 @@ export function shoveOrigin(
   caster: Unit,
   ability: Ability,
   target: Vec2,
+  squareFootprints: boolean = SQUARE_FOOTPRINTS,
 ): Vec2 {
-  return isAreaShove(ability)
-    ? target
-    : (validatingOrigin(content, grid, caster, ability, target) ?? caster.pos);
+  if (isAreaShove(ability)) return target;
+  return (
+    validatingOrigin(content, grid, caster, ability, target, true, squareFootprints) ?? caster.pos
+  );
 }
 
 /**
@@ -572,17 +655,20 @@ export function resolveAbility(
   target: Vec2,
   rng: RngCursor,
 ): void {
-  const tiles = affectedTiles(draft.content, draft.grid, caster, ability, target);
+  const squareFootprints = draft.squareFootprints;
+  const tiles = affectedTiles(draft.content, draft.grid, caster, ability, target, squareFootprints);
   // The cell the shot is fired from. Hit elevation must measure from this same
   // cell, or a size-2 attacker could fire from its low second cell and still
   // claim its first cell's high ground on the to-hit roll.
-  const origin = validatingOrigin(draft.content, draft.grid, caster, ability, target) ?? caster.pos;
+  const origin =
+    validatingOrigin(draft.content, draft.grid, caster, ability, target, true, squareFootprints) ??
+    caster.pos;
 
   draft.emit({ type: 'abilityUsed', unitId: caster.id, abilityId: ability.id, target, tiles });
 
   // Snapshot who is standing where *before* anything moves, so a push in one
   // effect does not pull a unit out of the next effect's area.
-  const struck = unitsOnTiles(draft.units, tiles).filter(
+  const struck = unitsOnTiles(draft.units, tiles, squareFootprints).filter(
     (u) => allowsCasterTarget(ability) || u.id !== caster.id,
   );
   const hitIds = struck.map((u) => u.id);
@@ -590,7 +676,19 @@ export function resolveAbility(
 
   /** Ids that a to-hit roll actually connected with, per damage effect. */
   for (const effect of ability.effects) {
-    applyEffect(draft, caster, ability, effect, target, origin, tiles, hitIds, friendlyIds, rng);
+    applyEffect(
+      draft,
+      caster,
+      ability,
+      effect,
+      target,
+      origin,
+      tiles,
+      hitIds,
+      friendlyIds,
+      squareFootprints,
+      rng,
+    );
   }
 }
 
@@ -604,6 +702,7 @@ function applyEffect(
   tiles: readonly Vec2[],
   hitIds: readonly string[],
   friendlyIds: readonly string[],
+  squareFootprints: boolean,
   rng: RngCursor,
 ): void {
   const content = draft.content;
@@ -615,7 +714,15 @@ function applyEffect(
       for (const id of hitIds) {
         const victim = draft.unit(id);
         if (!victim || !isAlive(victim)) continue;
-        const breakdown = hitBreakdown(content, draft.grid, caster, victim, weather, origin);
+        const breakdown = hitBreakdown(
+          content,
+          draft.grid,
+          caster,
+          victim,
+          weather,
+          origin,
+          squareFootprints,
+        );
         if (!rng.chance(breakdown.chance / 100)) {
           draft.emit({
             type: 'attackMissed',
@@ -683,7 +790,7 @@ function applyEffect(
 
     case 'push':
     case 'pull': {
-      const shoveFrom = shoveOrigin(content, draft.grid, caster, ability, target);
+      const shoveFrom = shoveOrigin(content, draft.grid, caster, ability, target, squareFootprints);
       const mode = effect.kind;
       for (const id of hitIds) {
         draft.shove(id, shoveFrom, effect.distance, mode);
