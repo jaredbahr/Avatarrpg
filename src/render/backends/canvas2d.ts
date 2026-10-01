@@ -11,6 +11,7 @@
  */
 
 import type { Grid, SceneFlock, SceneImage, Vec2 } from '../../core/types';
+import { SQUARE_FOOTPRINTS, footprintCells, footprintFoot } from '../../core/rules/footprint';
 import { authoredForBothSides } from '../../content/assets/clips';
 import { resolveAsset } from '../../content/assets/manifest';
 import { Camera, TILE } from '../camera';
@@ -73,6 +74,16 @@ import type { BackendCapabilities, RenderBackend } from './backend';
 /** The rounded square a hovered tile gets, in tile units from its corner. */
 const HOVER_LOOP = contourLoops([{ x: 0, y: 0 }])[0] ?? [];
 
+/** Canvas ordering point, exported so parity can be tested without a drawing context. */
+export function canvasActorDepth(
+  camera: Camera,
+  pos: Vec2,
+  size: 1 | 2,
+  square = SQUARE_FOOTPRINTS,
+): number {
+  return camera.groundPoint(footprintFoot(pos, size, square)).y;
+}
+
 /** How far in from the board's edge the shading reaches, in tiles. */
 export const EDGE_SHADE_TILES = 1.4;
 export const EDGE_SHADE_ALPHA = 0.42;
@@ -107,7 +118,10 @@ export class Canvas2DBackend implements RenderBackend {
   /** The flock whose page was last asked for, so a scene change asks once. */
   private flock: SceneFlock | undefined;
 
-  constructor(private canvas: HTMLCanvasElement) {
+  constructor(
+    private canvas: HTMLCanvasElement,
+    private readonly squareFootprints = SQUARE_FOOTPRINTS,
+  ) {
     // Transparent, so the page's mood wash shows round the board (ADR 0008).
     const ctx = canvas.getContext('2d', { alpha: true });
     if (!ctx) throw new Error('Canvas 2D is not available in this browser');
@@ -346,10 +360,7 @@ export class Canvas2DBackend implements RenderBackend {
           draw: () => this.drawProps({ ...view, props: [prop] }, camera),
         })),
         ...view.units.map((unit) => ({
-          pos: {
-            x: (unit.renderPos ?? unit.pos).x + unit.size / 2,
-            y: (unit.renderPos ?? unit.pos).y + 0.5,
-          },
+          pos: footprintFoot(unit.renderPos ?? unit.pos, unit.size, this.squareFootprints),
           draw: () => this.drawUnits({ ...view, units: [unit] }, camera),
         })),
       ].sort((a, b) => camera.groundPoint(a.pos).y - camera.groundPoint(b.pos).y);
@@ -940,14 +951,23 @@ export class Canvas2DBackend implements RenderBackend {
     ctx.lineCap = 'round';
     const cue = view.targetReticle;
     if (cue) {
-      const target = view.units.find(
-        (unit) => unit.pos.x === cue.pos.x && unit.pos.y === cue.pos.y,
+      const target = view.units.find((unit) =>
+        footprintCells(unit.pos, unit.size, this.squareFootprints).some(
+          (cell) => cell.x === cue.pos.x && cell.y === cue.pos.y,
+        ),
       );
       const pos = target?.renderPos ?? target?.pos ?? cue.pos;
-      const box = camera.spriteBox(pos, target?.size ?? 1);
+      const box = camera.spriteBox(pos, target?.size ?? 1, this.squareFootprints);
+      const targetAsset = target ? resolveAsset(target.sprite) : undefined;
+      const heightTiles =
+        this.squareFootprints && targetAsset?.kind !== 'sheet' ? (target?.size ?? 1) : 1;
       const width = (target?.size ?? 1) * box.size;
       const cx = box.x + width + box.size * 0.12;
-      const cy = box.y - liftAlong(view.grid, pos, camera.projection) * box.size - box.size * 0.04;
+      const cy =
+        box.y -
+        liftAlong(view.grid, pos, camera.projection) * box.size -
+        (heightTiles - 1) * box.size -
+        box.size * 0.04;
       ctx.fillStyle = OVERLAY.reticleCue;
       ctx.strokeStyle = OVERLAY.pathUnder;
       ctx.lineWidth = Math.max(3, size * 0.065);
@@ -1130,7 +1150,7 @@ export class Canvas2DBackend implements RenderBackend {
     for (const npc of view.npcs) {
       const width = this.npcWidth(npc.sprite);
       const at = npc.renderPos ?? npc.pos;
-      const box = camera.spriteBox(at, width);
+      const box = camera.spriteBox(at, width, false);
       box.y -= liftAlong(view.grid, at, camera.projection) * box.size;
       const entry = resolveAsset(npc.sprite);
       const scale = npc.scale ?? 1;
@@ -1261,14 +1281,16 @@ export class Canvas2DBackend implements RenderBackend {
   private drawUnitRings(view: MapView, camera: Camera): void {
     const { ctx } = this;
     for (const unit of view.units) {
-      const box = camera.spriteBox(unit.renderPos ?? unit.pos, unit.size);
+      const box = camera.spriteBox(unit.renderPos ?? unit.pos, unit.size, this.squareFootprints);
       const marker = unitMarkerGroundPoint(
         { x: box.x, y: box.y },
         box.size,
         liftAlong(view.grid, unit.renderPos ?? unit.pos, camera.projection),
         unit.meleeDirection ? unit.offset : undefined,
       );
+      const footprint = this.squareFootprints ? unit.size : 1;
       const width = box.size * unit.size;
+      const centreLift = (footprint - 1) * box.size * 0.5;
       // Active-unit ring, drawn under the sprite.
       if (unit.id === view.activeUnitId) {
         ctx.save();
@@ -1278,9 +1300,9 @@ export class Canvas2DBackend implements RenderBackend {
         ctx.beginPath();
         ctx.ellipse(
           marker.x + width / 2,
-          marker.y + box.size * 0.86,
+          marker.y + box.size * 0.86 - centreLift,
           width * 0.42,
-          box.size * 0.14,
+          box.size * footprint * 0.14,
           0,
           0,
           Math.PI * 2,
@@ -1294,9 +1316,9 @@ export class Canvas2DBackend implements RenderBackend {
         ctx.beginPath();
         ctx.ellipse(
           marker.x + width / 2,
-          marker.y + box.size * 0.86,
+          marker.y + box.size * 0.86 - centreLift,
           width * 0.4,
-          box.size * 0.12,
+          box.size * footprint * 0.12,
           0,
           0,
           Math.PI * 2,
@@ -1313,12 +1335,14 @@ export class Canvas2DBackend implements RenderBackend {
 
     // Draw back to front so a unit lower on the map overlaps one above it.
     const ordered = [...view.units].sort(
-      (a, b) => (a.renderPos ?? a.pos).y - (b.renderPos ?? b.pos).y,
+      (a, b) =>
+        canvasActorDepth(camera, a.renderPos ?? a.pos, a.size, this.squareFootprints) -
+        canvasActorDepth(camera, b.renderPos ?? b.pos, b.size, this.squareFootprints),
     );
 
     for (const unit of ordered) {
       const pos = unit.renderPos ?? unit.pos;
-      const box = camera.spriteBox(pos, unit.size);
+      const box = camera.spriteBox(pos, unit.size, this.squareFootprints);
       const width = unit.size === 2 ? box.size * 2 : box.size;
 
       // The bob lifts the drawing, never the sort: it is applied after ordering.
@@ -1336,7 +1360,8 @@ export class Canvas2DBackend implements RenderBackend {
           ? 1
           : facing;
       const scale = unit.scale ?? 1;
-      if (!uprightSpriteVisible(box, camera.viewport, unit.size, scale)) continue;
+      const heightTiles = this.squareFootprints ? unit.size : 1;
+      if (!uprightSpriteVisible(box, camera.viewport, unit.size, scale, heightTiles)) continue;
 
       ctx.save();
       // A pose scales about the feet; the fallen fade sits on top of any alpha.
@@ -1344,9 +1369,14 @@ export class Canvas2DBackend implements RenderBackend {
       const shadowDensity = actorShadowDensity(view.grid, pos, unit.shadow === true, unit.size);
       if (shadowDensity > 0) {
         // On the ground, not on the bob: the tile's foot line, less the ledge.
-        const s = box.size * scale;
+        const footprint = this.squareFootprints ? unit.size : 1;
+        const s = box.size * scale * footprint;
         const footX = box.x - (unit.offset?.x ?? 0) * box.size + width / 2;
-        const footY = box.y - (unit.offset?.y ?? 0) * box.size + 0.86 * box.size;
+        const footY =
+          box.y -
+          (unit.offset?.y ?? 0) * box.size +
+          0.86 * box.size -
+          (footprint - 1) * box.size * 0.5;
         ctx.globalAlpha = alpha;
         ctx.drawImage(
           sprites.shadow(s * dpr, shadowDensity),
@@ -1371,8 +1401,10 @@ export class Canvas2DBackend implements RenderBackend {
           box.size * dpr * scale,
           unit.size,
           unit.meleeDirection,
+          heightTiles,
         );
       let headroom = 0;
+      const fallback = !frame;
       if (frame) {
         headroom = frame.headroom;
         const ax = box.x + width / 2;
@@ -1392,11 +1424,17 @@ export class Canvas2DBackend implements RenderBackend {
         }
       } else {
         const drawWidth = width * scale;
-        const drawHeight = box.size * scale;
+        const drawHeight = box.size * heightTiles * scale;
         const drawX = box.x + (width - drawWidth) / 2;
         const drawY = box.y + FOOT_LINE * (box.size - drawHeight);
         // Painted at device resolution, drawn at CSS size under the dpr transform.
-        const sprite = sprites.get(unit.sprite, box.size * dpr * scale, { facing }, unit.size);
+        const sprite = sprites.get(
+          unit.sprite,
+          box.size * dpr * scale,
+          { facing },
+          unit.size,
+          heightTiles,
+        );
         ctx.drawImage(sprite, drawX, drawY, drawWidth, drawHeight);
         if (unit.flash && unit.flash > 0) {
           ctx.globalAlpha *= Math.min(1, unit.flash);
@@ -1407,9 +1445,18 @@ export class Canvas2DBackend implements RenderBackend {
 
       if (!unit.fallen) {
         if (unit.showHealth !== false) {
-          this.drawHealthBar(unit, box.x, box.y, width, box.size, scale, headroom, view.hatch);
+          this.drawHealthBar(
+            unit,
+            box.x,
+            box.y - (fallback ? (heightTiles - 1) * box.size : 0),
+            width,
+            box.size,
+            scale,
+            headroom,
+            view.hatch,
+          );
         }
-        this.drawStatusBadges(unit, box.x, box.y, width, box.size);
+        this.drawStatusBadges(unit, box.x, box.y, width, box.size, scale, headroom, heightTiles);
       } else {
         // A fallen unit gets a clear cross rather than just fading out.
         ctx.save();
@@ -1468,6 +1515,9 @@ export class Canvas2DBackend implements RenderBackend {
     y: number,
     width: number,
     size: number,
+    scale: number,
+    headroom: number,
+    heightTiles: number,
   ): void {
     if (unit.statuses.length === 0) return;
     const { ctx } = this;
@@ -1475,7 +1525,10 @@ export class Canvas2DBackend implements RenderBackend {
     const shown = unit.statuses.slice(0, 4);
     const totalWidth = shown.length * radius * 2.2;
     let bx = x + width / 2 - totalWidth / 2 + radius;
-    const by = y + size * 0.97;
+    const by =
+      heightTiles > 1
+        ? actorHealthBar(x, y, width, size, scale, headroom).y - radius * 1.4
+        : y + size * 0.97;
 
     ctx.save();
     ctx.font = `700 ${Math.round(radius * 1.2)}px system-ui, sans-serif`;
@@ -1579,11 +1632,12 @@ export function uprightSpriteVisible(
   viewport: Pick<Viewport, 'width' | 'height'>,
   footprint = 1,
   scale = 1,
+  heightTiles = 1,
 ): boolean {
   const footX = box.x + (footprint * box.size) / 2;
   const footY = box.y + FOOT_LINE * box.size;
   const halfWidth = ((footprint + 0.5) * box.size * scale) / 2;
-  const top = footY - (FOOT_LINE + 1.5) * box.size * scale;
+  const top = footY - (FOOT_LINE + Math.max(1.5, heightTiles)) * box.size * scale;
   const bottom = footY + (1 - FOOT_LINE) * box.size * scale;
   return (
     footX + halfWidth >= 0 &&

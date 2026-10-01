@@ -96,6 +96,16 @@ describe('contact shadow sampling', () => {
     expect(actorShadowDensity(grid, { x: 1, y: 0 }, false, 2)).toBe(GRASS_SHADOW_DENSITY);
     expect(actorShadowDensity(grid, { x: 2, y: 0 }, true, 2)).toBe(GRASS_SHADOW_DENSITY);
   });
+
+  it('samples both rows of a gated 2x2 shadow', () => {
+    const square: Grid = {
+      width: 2,
+      height: 2,
+      tiles: [tile('road'), tile('road'), tile('road'), tile('grass')],
+    };
+    expect(actorShadowDensity(square, { x: 0, y: 0 }, false, 2, false)).toBe(0);
+    expect(actorShadowDensity(square, { x: 0, y: 0 }, false, 2, true)).toBe(GRASS_SHADOW_DENSITY);
+  });
 });
 
 describe('health bar cap', () => {

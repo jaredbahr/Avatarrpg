@@ -18,6 +18,7 @@
 import type { RngCursor } from '../rng';
 import type { AbilityEffect, ContentIndex, Grid, Unit, Vec2, WeatherIntensity } from '../types';
 import { distanceBetweenUnits, occupiedCells, tileAt } from './grid';
+import { SQUARE_FOOTPRINTS } from './footprint';
 import { obscurementFor } from './obscurement';
 import type { ObscurementBreakdown } from './obscurement';
 import { accuracyModifier, effectiveStats, incomingMultiplier } from './stats';
@@ -37,26 +38,48 @@ function elevationAt(grid: Grid, pos: Vec2): number {
  * when no firing origin is known — a reaction or a rough threat estimate —
  * where measuring from the attacker's best ground is the safest assumption.
  */
-function elevationOf(grid: Grid, unit: Unit): number {
+function elevationOf(
+  grid: Grid,
+  unit: Unit,
+  squareFootprints: boolean = SQUARE_FOOTPRINTS,
+): number {
   let best = 0;
-  for (const cell of occupiedCells(unit)) {
+  for (const cell of occupiedCells(unit, squareFootprints)) {
     best = Math.max(best, elevationAt(grid, cell));
   }
   return best;
 }
 
-/** True when any cell the defender occupies gives cover. */
-export function hasCover(content: ContentIndex, grid: Grid, unit: Unit): boolean {
-  for (const cell of occupiedCells(unit)) {
+/**
+ * Whether the terrain the unit stands on counts as cover.
+ *
+ * A single-tile unit needs its one cell covered. A big unit is covered once at
+ * least half its footprint (rounded up) is: 1 of 2 for the legacy 2x1 that
+ * shipped, 2 of 4 for the square 2x2. Reading the whole block stops a boss with
+ * one corner behind a rock from counting as fully exposed, without letting a
+ * single covered cell shield the whole body.
+ */
+export function hasCover(
+  content: ContentIndex,
+  grid: Grid,
+  unit: Unit,
+  squareFootprints: boolean = SQUARE_FOOTPRINTS,
+): boolean {
+  const cells = occupiedCells(unit, squareFootprints);
+  let covered = 0;
+  for (const cell of cells) {
     const tile = tileAt(grid, cell);
     if (!tile) continue;
-    if (tile.cover) return true;
+    if (tile.cover) {
+      covered++;
+      continue;
+    }
     if (tile.surface) {
       const def = content.surfaces.get(tile.surface.id);
-      if (def?.grantsCover) return true;
+      if (def?.grantsCover) covered++;
     }
   }
-  return false;
+  return covered >= Math.ceil(cells.length / 2);
 }
 
 export interface HitBreakdown {
@@ -87,6 +110,7 @@ export function hitBreakdown(
   defender: Unit,
   weather: WeatherIntensity = 0,
   origin: Vec2 | null = null,
+  squareFootprints: boolean = SQUARE_FOOTPRINTS,
 ): HitBreakdown {
   const tuning = content.tuning;
   /*
@@ -97,12 +121,14 @@ export function hitBreakdown(
    * known (reactions, threat estimates), which falls back to the attacker's
    * highest occupied cell.
    */
-  const attackerElevation = origin ? elevationAt(grid, origin) : elevationOf(grid, attacker);
-  const elevationDelta = attackerElevation - elevationOf(grid, defender);
+  const attackerElevation = origin
+    ? elevationAt(grid, origin)
+    : elevationOf(grid, attacker, squareFootprints);
+  const elevationDelta = attackerElevation - elevationOf(grid, defender, squareFootprints);
   const elevation = elevationDelta * tuning.elevationStep;
 
-  const adjacent = distanceBetweenUnits(attacker, defender) <= 1;
-  const covered = !adjacent && hasCover(content, grid, defender);
+  const adjacent = distanceBetweenUnits(attacker, defender, squareFootprints) <= 1;
+  const covered = !adjacent && hasCover(content, grid, defender, squareFootprints);
   const plunging =
     covered && elevationDelta > 0
       ? Math.floor(tuning.coverPenalty / tuning.plungingCoverDivisor)
@@ -110,7 +136,7 @@ export function hitBreakdown(
   const cover = covered ? -tuning.coverPenalty : 0;
 
   const statuses = accuracyModifier(content, attacker);
-  const obscurement = obscurementFor(content, grid, attacker, defender, weather);
+  const obscurement = obscurementFor(content, grid, attacker, defender, weather, squareFootprints);
 
   const raw = tuning.baseHitChance + elevation + cover + plunging + statuses + obscurement.total;
   return {
@@ -131,8 +157,18 @@ export function hitChance(
   defender: Unit,
   weather: WeatherIntensity = 0,
   origin: Vec2 | null = null,
+  squareFootprints: boolean = SQUARE_FOOTPRINTS,
 ): number {
-  return hitBreakdown(content, grid, attacker, defender, weather, origin).chance;
+  const breakdown = hitBreakdown(
+    content,
+    grid,
+    attacker,
+    defender,
+    weather,
+    origin,
+    squareFootprints,
+  );
+  return breakdown.chance;
 }
 
 export function critChance(content: ContentIndex, attacker: Unit): number {
@@ -187,8 +223,10 @@ export function averageDamage(
   effect: Extract<AbilityEffect, { kind: 'damage' }>,
   weather: WeatherIntensity = 0,
   origin: Vec2 | null = null,
+  squareFootprints: boolean = SQUARE_FOOTPRINTS,
 ): number {
-  const hit = hitChance(content, grid, attacker, defender, weather, origin) / 100;
+  const chance = hitChance(content, grid, attacker, defender, weather, origin, squareFootprints);
+  const hit = chance / 100;
   const crit = critChance(content, attacker) / 100;
   const normal = compute(content, attacker, defender, effect, 1, false);
   const critical = compute(content, attacker, defender, effect, 1, true);
@@ -215,8 +253,11 @@ export function rollHit(
   defender: Unit,
   weather: WeatherIntensity = 0,
   origin: Vec2 | null = null,
+  squareFootprints: boolean = SQUARE_FOOTPRINTS,
 ): boolean {
-  return rng.chance(hitChance(content, grid, attacker, defender, weather, origin) / 100);
+  return rng.chance(
+    hitChance(content, grid, attacker, defender, weather, origin, squareFootprints) / 100,
+  );
 }
 
 /** Healing has no variance and no crit — predictable support is friendlier. */

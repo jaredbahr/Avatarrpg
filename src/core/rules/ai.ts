@@ -32,6 +32,7 @@ import type {
   Grid,
   StatusId,
   Unit,
+  UnitSize,
   Vec2,
 } from '../types';
 import { raisedWallTile } from '../state/battleDraft';
@@ -49,10 +50,11 @@ import {
   usableAbilities,
   validatingOrigin,
 } from './abilities';
-import { averageDamage, hitChance, positionHasCover } from './damage';
+import { averageDamage, hasCover, hitChance, positionHasCover } from './damage';
 import { positionObscurement, weatherAt } from './obscurement';
 import {
   distance,
+  distanceBetweenUnits,
   distanceToUnit,
   occupiedCells,
   posKey,
@@ -62,6 +64,7 @@ import {
   withTile,
 } from './grid';
 import { forecastReactions, shoveLedgeDropDamage } from './reactions';
+import { SQUARE_FOOTPRINTS, footprintCells } from './footprint';
 import { canMove, effectiveStats, isAlive } from './stats';
 import { findCombo } from './surfaces';
 import { directAttackThreats, type ThreatBudget } from './directAttackThreats';
@@ -165,31 +168,29 @@ const WEIGHTS: Record<AiProfile, Weights> = {
   },
 };
 
-/** How unpleasant it is to stand on a tile: fire hurts, oil is a liability. */
-function tileDanger(draft: BattleDraft, pos: Vec2): number {
+/** How much a surface on one cell hurts: fire burns, oil is a liability. */
+function surfaceDanger(draft: BattleDraft, pos: Vec2): number {
   const tile = tileAt(draft.grid, pos);
-  let danger = propDanger(draft, pos);
-  if (!tile?.surface) return danger;
+  if (!tile?.surface) return 0;
   switch (tile.surface.id) {
     case 'fire':
-      danger += 14;
-      break;
+      return 14;
     case 'oil':
-      danger += 5;
-      break;
+      return 5;
     case 'mud':
-      danger += 2;
-      break;
+      return 2;
     case 'water':
-      danger += 1;
-      break;
+      return 1;
     case 'ice':
-      danger += 1;
-      break;
+      return 1;
     default:
-      break;
+      return 0;
   }
-  return danger;
+}
+
+/** How unpleasant it is to stand on a single cell: fire hurts, oil is a liability. */
+function tileDanger(draft: BattleDraft, pos: Vec2): number {
+  return propDanger(draft, pos) + surfaceDanger(draft, pos);
 }
 
 /**
@@ -201,10 +202,22 @@ function tileDanger(draft: BattleDraft, pos: Vec2): number {
  * brazier when a clear tile is right there, not enough to override wanting to
  * break it.
  */
-function propDanger(draft: BattleDraft, pos: Vec2): number {
+function propDanger(
+  draft: BattleDraft,
+  pos: Vec2,
+  size: UnitSize = 1,
+  square: boolean = SQUARE_FOOTPRINTS,
+): number {
   let worst = 0;
   for (const prop of draft.props) {
-    if (distance(prop.pos, pos) > 1) continue;
+    // A big unit can brush a barrel with any of its cells, not only the anchor.
+    // Gate-aware: with the square gate off this stays the anchor's distance, so
+    // the shipped 2x1 keeps the danger it was tuned against.
+    const near =
+      square && size > 1
+        ? distanceToUnit(prop.pos, { pos, size }, square) <= 1
+        : distance(prop.pos, pos) <= 1;
+    if (!near) continue;
     const def = draft.content.props.get(prop.propId);
     if (!def) continue;
     for (const effect of def.onBreak) {
@@ -216,15 +229,41 @@ function propDanger(draft: BattleDraft, pos: Vec2): number {
 }
 
 /**
+ * Danger of standing with the unit's footprint anchored on `pos`.
+ *
+ * A big unit can have fire or a barrel under any of its cells, not only the
+ * anchor that `reachable` reports. Gate-aware: with the square gate off this is
+ * the anchor alone, exactly as the shipped AI scored it.
+ */
+function footprintDanger(
+  draft: BattleDraft,
+  unit: Pick<Unit, 'size'>,
+  pos: Vec2,
+  square: boolean,
+): number {
+  if (!square || unit.size === 1) return tileDanger(draft, pos);
+  let danger = propDanger(draft, pos, unit.size, true);
+  for (const cell of footprintCells(pos, unit.size, true)) {
+    danger = Math.max(danger, surfaceDanger(draft, cell));
+  }
+  return danger;
+}
+
+/**
  * Total danger of walking a path, not just of standing at the end of it.
  *
  * Without this the AI happily strolls through a burning tile to reach a safe
  * one, taking 4 damage and catching fire on the way. It was the single biggest
  * source of simulated party deaths on the oil map.
  */
-function pathDanger(draft: BattleDraft, path: readonly Vec2[]): number {
+function pathDanger(
+  draft: BattleDraft,
+  unit: Pick<Unit, 'size'>,
+  path: readonly Vec2[],
+  square: boolean,
+): number {
   let total = 0;
-  for (const step of path) total += tileDanger(draft, step);
+  for (const step of path) total += footprintDanger(draft, unit, step, square);
   return total;
 }
 
@@ -311,11 +350,14 @@ function preWallTargets(
   enemies: readonly Unit[],
   aims: readonly Vec2[],
   cache: WallTargetCache,
+  squareFootprints: boolean,
 ): readonly Unit[] {
   const key = `targets|${caster.id}|${posKey(caster.pos)}`;
   const cached = cache.get(key);
   if (cached) return cached;
-  const targets = enemies.filter((enemy) => canHitFrom(content, battle, caster, enemy, aims));
+  const targets = enemies.filter((enemy) =>
+    canHitFrom(content, battle, caster, enemy, aims, squareFootprints),
+  );
   cache.set(key, targets);
   return targets;
 }
@@ -331,7 +373,7 @@ function strandingAims(draft: BattleDraft, caster: Unit, enemies: readonly Unit[
   const aims = candidateTargets(draft, caster, usableAbilities(draft.content, caster));
   const seen = new Set(aims.map(posKey));
   for (const enemy of enemies) {
-    for (const cell of occupiedCells(enemy)) {
+    for (const cell of occupiedCells(enemy, draft.squareFootprints)) {
       const key = posKey(cell);
       if (seen.has(key)) continue;
       seen.add(key);
@@ -357,13 +399,14 @@ function canHitFrom(
   caster: Unit,
   enemy: Unit,
   aims: readonly Vec2[],
+  squareFootprints: boolean,
 ): boolean {
-  const cells = new Set(occupiedCells(enemy).map(posKey));
+  const cells = new Set(occupiedCells(enemy, squareFootprints).map(posKey));
   for (const ability of usableAbilities(content, caster)) {
     if (!isOffensiveAbility(content, ability)) continue;
     for (const aim of aims) {
-      if (!isValidTarget(content, battle, caster, ability, aim).ok) continue;
-      const affected = affectedTiles(content, battle.grid, caster, ability, aim);
+      if (!isValidTarget(content, battle, caster, ability, aim, squareFootprints).ok) continue;
+      const affected = affectedTiles(content, battle.grid, caster, ability, aim, squareFootprints);
       if (affected.some((tile) => cells.has(posKey(tile)))) return true;
     }
   }
@@ -418,7 +461,10 @@ function wallTilesThatRise(
   battle: BattleState,
   tiles: readonly Vec2[],
 ): Vec2[] {
-  const occupied = new Set(battle.units.flatMap((unit) => occupiedCells(unit)).map(posKey));
+  const occupied = new Set<string>();
+  for (const unit of battle.units) {
+    for (const cell of occupiedCells(unit, draft.squareFootprints)) occupied.add(posKey(cell));
+  }
   return tiles.filter((pos) => {
     const tile = tileAt(draft.grid, pos);
     return tile !== undefined && !tile.blocked && !occupied.has(posKey(pos));
@@ -448,6 +494,7 @@ export function wallStrandsCaster(
   cache: Map<string, readonly Unit[]> = new Map(),
 ): boolean {
   const content = draft.content;
+  const squareFootprints = draft.squareFootprints;
   const before = battleWithHypotheticalCaster(draft.toBattle(), caster);
   const raised = wallTilesThatRise(draft, before, tiles);
   if (raised.length === 0) return false;
@@ -456,7 +503,7 @@ export function wallStrandsCaster(
   if (enemies.length === 0) return false;
 
   const aims = strandingAims(draft, caster, enemies);
-  const targets = preWallTargets(content, before, caster, enemies, aims, cache);
+  const targets = preWallTargets(content, before, caster, enemies, aims, cache, squareFootprints);
 
   // With no ready shot before the wall, the placement costs the caster no
   // target and therefore cannot strand it. Future-turn opportunity is outside
@@ -466,7 +513,9 @@ export function wallStrandsCaster(
   // The world exactly as the placement would leave it.
   const after: BattleState = { ...before, grid: gridWithWall(draft, raised) };
   // Still a shot at something it could hit before the wall? Then it costs nothing.
-  if (targets.some((enemy) => canHitFrom(content, after, caster, enemy, aims))) return false;
+  if (targets.some((enemy) => canHitFrom(content, after, caster, enemy, aims, squareFootprints))) {
+    return false;
+  }
 
   // A wall that shuts down a next-turn direct attack is doing its job.
   for (const enemy of preWallThreats(content, before, caster, enemies, cache)) {
@@ -497,11 +546,16 @@ export function scoreAbility(
   wallTargets: WallTargetCache,
 ): number {
   const content = draft.content;
-  const tiles = affectedTiles(content, draft.grid, caster, ability, target);
+  const squareFootprints = draft.squareFootprints;
+  const tiles = affectedTiles(content, draft.grid, caster, ability, target, squareFootprints);
   // Score with the same firing cell resolution uses, so the AI's hit estimate
   // and the actual roll agree on elevation and plunging.
-  const origin = validatingOrigin(content, draft.grid, caster, ability, target) ?? caster.pos;
-  const struck = unitsOnTiles(draft.units, tiles).filter((u) => u.id !== caster.id);
+  const origin =
+    validatingOrigin(content, draft.grid, caster, ability, target, true, squareFootprints) ??
+    caster.pos;
+  const struck = unitsOnTiles(draft.units, tiles, squareFootprints).filter(
+    (u) => u.id !== caster.id,
+  );
   const weather = weatherAt(content, draft.encounterId, draft.round);
 
   /*
@@ -529,7 +583,8 @@ export function scoreAbility(
         ability,
         target,
         tiles,
-        shoveOrigin(content, battle.grid, caster, ability, target),
+        shoveOrigin(content, battle.grid, caster, ability, target, squareFootprints),
+        squareFootprints,
       );
       ledgeByUnit = new Map<string, number>();
       for (const shove of forecast.shoves) {
@@ -570,6 +625,7 @@ export function scoreAbility(
           effect,
           weather,
           origin,
+          squareFootprints,
         );
       }
       fallCap = Math.max(0, victim.hp - expectedDamage - 1);
@@ -590,6 +646,7 @@ export function scoreAbility(
             effect,
             weather,
             origin,
+            squareFootprints,
           );
           if (friendly) {
             score -= expected * weights.friendlyFire;
@@ -661,7 +718,7 @@ export function scoreAbility(
 
         for (const pos of painted) {
           const nearestOpponent = opponents.reduce(
-            (best, o) => Math.min(best, distanceToUnit(pos, o)),
+            (best, o) => Math.min(best, distanceToUnit(pos, o, squareFootprints)),
             Infinity,
           );
           if (nearestOpponent > 2) continue;
@@ -685,7 +742,9 @@ export function scoreAbility(
       case 'wall': {
         // Same gate: a wall in empty countryside accomplishes nothing.
         const opponents = opponentsOf(draft, caster);
-        const near = tiles.some((pos) => opponents.some((o) => distanceToUnit(pos, o) <= 2));
+        const near = tiles.some((pos) =>
+          opponents.some((o) => distanceToUnit(pos, o, squareFootprints) <= 2),
+        );
         if (!near) break;
         // Refuse a placement that seals the caster off from every enemy. A wall
         // that shuts a usable attack down is the defensive case and is allowed
@@ -749,6 +808,7 @@ function scoreProps(
   tiles: readonly Vec2[],
   weights: Weights,
 ): number {
+  const squareFootprints = draft.squareFootprints;
   const props = draft.propsOnTiles(tiles);
   if (props.length === 0) return 0;
 
@@ -790,7 +850,7 @@ function scoreProps(
       const radius = Math.max(1, effect.radius);
       for (const victim of draft.living()) {
         if (victim.id === caster.id) continue;
-        if (distanceToUnit(prop.pos, victim) > radius) continue;
+        if (distanceToUnit(prop.pos, victim, squareFootprints) > radius) continue;
         const friendly = sameSide(caster, victim);
 
         switch (effect.kind) {
@@ -820,6 +880,7 @@ function scoreProps(
               prop.pos,
               effect.distance,
               'push',
+              squareFootprints,
             );
             value += friendly ? -2 - drop * weights.friendlyFire : 2 + drop * weights.damage;
             break;
@@ -867,7 +928,15 @@ function bestActionFrom(
 
   for (const ability of abilities) {
     for (const target of candidateTargets) {
-      if (!isValidTarget(draft.content, battle, caster, ability, target).ok) continue;
+      const valid = isValidTarget(
+        draft.content,
+        battle,
+        caster,
+        ability,
+        target,
+        draft.squareFootprints,
+      );
+      if (!valid.ok) continue;
       const score = scoreAbility(draft, caster, ability, target, weights, wallTargets);
       if (score === -Infinity || score <= 0) continue;
       if (!best || score > best.score) best = { score, ability, target };
@@ -907,7 +976,7 @@ export function candidateTargets(
     // A size-2 opponent stands on two cells; both are targets, and for area
     // shapes both of their neighbourhoods are, so a blast can land between a
     // boss's cells rather than only on its anchor.
-    for (const cell of occupiedCells(opponent)) {
+    for (const cell of occupiedCells(opponent, draft.squareFootprints)) {
       push(cell);
       if (!wantsArea) continue;
       for (let dy = -1; dy <= 1; dy++) {
@@ -930,7 +999,7 @@ export function candidateTargets(
   const opponents = opponentsOf(draft, caster);
   for (const prop of draft.props) {
     const nearest = opponents.reduce(
-      (best, o) => Math.min(best, distanceToUnit(prop.pos, o)),
+      (best, o) => Math.min(best, distanceToUnit(prop.pos, o, draft.squareFootprints)),
       Infinity,
     );
     if (nearest > 2) continue;
@@ -960,8 +1029,16 @@ export function bestReach(draft: BattleDraft, unit: Unit): number {
     if (ability.effects.every((e) => e.kind === 'dash')) continue;
     let abilityReach = ability.range;
     for (const opponent of opponents) {
-      for (const target of occupiedCells(opponent)) {
-        const origin = validatingOrigin(draft.content, draft.grid, unit, ability, target, false);
+      for (const target of occupiedCells(opponent, draft.squareFootprints)) {
+        const origin = validatingOrigin(
+          draft.content,
+          draft.grid,
+          unit,
+          ability,
+          target,
+          false,
+          draft.squareFootprints,
+        );
         if (!origin) continue;
         abilityReach = Math.max(
           abilityReach,
@@ -1003,6 +1080,15 @@ const LEDGE_EDGE_RISK = 3;
  * planner's choice of move in the way.
  */
 export function ledgeExposure(draft: BattleDraft, unit: Unit, pos: Vec2): number {
+  const squareFootprints = draft.squareFootprints;
+  /*
+   * The square 2x2 cannot be knocked off a non-ramp ledge at all: `slideFrom`
+   * turns the lip into a wall for the whole block (its strict rule), so it
+   * never reports a drop. Mirror that here — the position score must not pay for
+   * a fall the shove cannot deal. With the gate off a size-2 unit keeps the
+   * legacy 2x1 exposure it was tuned against.
+   */
+  if (squareFootprints && unit.size > 1) return 0;
   const battle = {
     ...draft.toBattle(),
     units: draft.units.map((candidate) =>
@@ -1017,11 +1103,11 @@ export function ledgeExposure(draft: BattleDraft, unit: Unit, pos: Vec2): number
    * actually reaches. The slide still runs from the anchor, exactly as
    * `draft.shove` does.
    */
-  const cells = occupiedCells({ ...unit, pos });
+  const cells = occupiedCells({ ...unit, pos }, squareFootprints);
   for (const other of draft.living()) {
     if (sameSide(unit, other)) continue;
     for (const cell of cells) {
-      if (distanceToUnit(cell, other) > 1) continue;
+      if (distanceToUnit(cell, other, squareFootprints) > 1) continue;
       for (const ability of knownAbilities(draft.content, other)) {
         if (!isShoveAbility(ability)) continue;
         // Blast and tile shoves measure from the aimed cell, not the shover, and
@@ -1033,10 +1119,18 @@ export function ledgeExposure(draft: BattleDraft, unit: Unit, pos: Vec2): number
           ability.targeting.shape === 'tile'
         )
           continue;
-        if (!isValidTarget(draft.content, battle, other, ability, cell).ok) continue;
+        if (!isValidTarget(draft.content, battle, other, ability, cell, squareFootprints).ok)
+          continue;
         for (const effect of ability.effects) {
           if (effect.kind !== 'push' && effect.kind !== 'pull') continue;
-          const origin = shoveOrigin(draft.content, draft.grid, other, ability, cell);
+          const origin = shoveOrigin(
+            draft.content,
+            draft.grid,
+            other,
+            ability,
+            cell,
+            squareFootprints,
+          );
           const slide = draft.slideFrom(draft.moveContext(unit), pos, origin, 1, effect.kind);
           if (!samePos(slide.pos, pos) && slide.ledgeDropTiers > 0) return LEDGE_EDGE_RISK;
         }
@@ -1052,21 +1146,28 @@ export function ledgeExposure(draft: BattleDraft, unit: Unit, pos: Vec2): number
  * Comfort (cover, high ground) only counts once the unit is actually close
  * enough to do something. Otherwise a cautious unit will happily sit on a
  * rubble tile across the map forever, which is the other half of the stalemate
- * the simulator found.
+ * the simulator found. Exposed so the footprint tests can pin the cover rule
+ * directly rather than infer it from a whole turn's movement.
  */
-function positionScore(
+export function positionScore(
   draft: BattleDraft,
   unit: Unit,
   pos: Vec2,
   weights: Weights,
   reach: number,
+  square: boolean,
 ): number {
   const opponents = opponentsOf(draft, unit);
   if (opponents.length === 0) return 0;
 
   let nearest = Infinity;
   for (const opponent of opponents) {
-    nearest = Math.min(nearest, distanceToUnit(pos, opponent));
+    nearest = Math.min(
+      nearest,
+      square
+        ? distanceBetweenUnits({ ...unit, pos }, opponent, square)
+        : distanceToUnit(pos, opponent, square),
+    );
   }
 
   // Danger is deliberately *not* folded in here: callers weight the positional
@@ -1080,10 +1181,28 @@ function positionScore(
     return score;
   }
 
-  if (positionHasCover(draft.content, draft.grid, pos)) score += weights.cover;
+  const cells = square ? footprintCells(pos, unit.size, true) : [pos];
+  /*
+   * Read the whole footprint with the same rule a real attack uses: a big unit
+   * is in cover once half its cells (rounded up) are, not when any one of them
+   * is — a single covered corner must not shield the whole 2x2. The cloud-like
+   * obscurement that stands in for cover still reads every cell below. This is
+   * gate-aware: with the square gate off it is the anchor alone, exactly as the
+   * shipped AI scored it.
+   */
+  const covered = square
+    ? hasCover(draft.content, draft.grid, { ...unit, pos }, true)
+    : positionHasCover(draft.content, draft.grid, pos);
+  if (covered) {
+    score += weights.cover;
+  }
   // A cloud is cover that the opponent can still shoot into, so it is worth a
   // fraction of real cover — a full steam cloud scores a full `weights.cover`.
-  score += weights.cover * positionObscurement(draft.content, draft.grid, pos);
+  let cloud = 0;
+  for (const cell of cells) {
+    cloud = Math.max(cloud, positionObscurement(draft.content, draft.grid, cell));
+  }
+  score += weights.cover * cloud;
   const tile = tileAt(draft.grid, pos);
   score += (tile?.elevation ?? 0) * weights.elevation;
   // An edge is only worth holding if nobody can turn it into a shortcut down.
@@ -1139,11 +1258,13 @@ export function planAiTurn(draft: BattleDraft, unitId: string, rng: RngCursor): 
         const action = bestActionFrom(draft, hypothetical, abilities, weights, targets);
         if (!action) continue;
         // Moving costs nothing in AP, but standing somewhere bad costs plenty.
+        const danger = footprintDanger(draft, unit, cell.pos, draft.squareFootprints);
+        const pathRisk = pathDanger(draft, unit, cell.path, draft.squareFootprints);
         const adjusted =
           action.score +
-          positionScore(draft, unit, cell.pos, weights, reach) * 0.25 -
-          tileDanger(draft, cell.pos) * weights.selfPreservation -
-          pathDanger(draft, cell.path) * weights.selfPreservation * 0.8 -
+          positionScore(draft, unit, cell.pos, weights, reach, draft.squareFootprints) * 0.25 -
+          danger * weights.selfPreservation -
+          pathRisk * weights.selfPreservation * 0.8 -
           cell.cost * 0.05;
         if (!plan || adjusted > plan.score) {
           plan = {
@@ -1166,7 +1287,15 @@ export function planAiTurn(draft: BattleDraft, unitId: string, rng: RngCursor): 
       const caster = draft.unit(unitId);
       if (!caster) return;
       if (!canUseAbility(content, caster, plan.ability).ok) return;
-      if (!isValidTarget(content, draft.toBattle(), caster, plan.ability, plan.target).ok) continue;
+      const valid = isValidTarget(
+        content,
+        draft.toBattle(),
+        caster,
+        plan.ability,
+        plan.target,
+        draft.squareFootprints,
+      );
+      if (!valid.ok) continue;
 
       draft.spendAp(unitId, plan.ability.apCost);
       draft.setCooldown(unitId, plan.ability.id, plan.ability.cooldown);
@@ -1238,10 +1367,12 @@ function repositionToward(
   let best: { pos: Vec2; path: readonly Vec2[]; score: number } | null = null;
 
   for (const cell of cells.values()) {
+    const danger = footprintDanger(draft, unit, cell.pos, draft.squareFootprints);
+    const pathRisk = pathDanger(draft, unit, cell.path, draft.squareFootprints);
     const score =
-      positionScore(draft, unit, cell.pos, weights, reach) -
-      tileDanger(draft, cell.pos) * weights.selfPreservation -
-      pathDanger(draft, cell.path) * weights.selfPreservation * 0.8 -
+      positionScore(draft, unit, cell.pos, weights, reach, draft.squareFootprints) -
+      danger * weights.selfPreservation -
+      pathRisk * weights.selfPreservation * 0.8 -
       cell.cost * 0.05;
     if (!best || score > best.score) best = { pos: cell.pos, path: cell.path, score };
   }
@@ -1276,10 +1407,10 @@ export function weightsFor(profile: AiProfile): Weights {
  * Ties keep `occupiedCells` order (the anchor first), so the result is
  * deterministic.
  */
-function nearestOccupiedCell(unit: Unit, pos: Vec2): Vec2 {
+function nearestOccupiedCell(unit: Unit, pos: Vec2, square: boolean): Vec2 {
   let best = unit.pos;
   let bestDistance = distance(best, pos);
-  for (const cell of occupiedCells(unit)) {
+  for (const cell of occupiedCells(unit, square)) {
     const cellDistance = distance(cell, pos);
     if (cellDistance < bestDistance) {
       best = cell;
@@ -1293,6 +1424,7 @@ function nearestOccupiedCell(unit: Unit, pos: Vec2): Vec2 {
 export function threatAt(draft: BattleDraft, unit: Unit, pos: Vec2): number {
   let threat = 0;
   const weather = weatherAt(draft.content, draft.encounterId, draft.round);
+  const square = draft.squareFootprints;
   const targetElevation = tileAt(draft.grid, pos)?.elevation ?? 0;
   for (const opponent of opponentsOf(draft, unit)) {
     const maxMove = effectiveStats(draft.content, opponent).maxMove;
@@ -1308,8 +1440,8 @@ export function threatAt(draft: BattleDraft, unit: Unit, pos: Vec2): number {
       // closer and higher, changing both the height reach and the hit
       // elevation.
       const origin =
-        validatingOrigin(draft.content, draft.grid, opponent, ability, pos, false) ??
-        nearestOccupiedCell(opponent, pos);
+        validatingOrigin(draft.content, draft.grid, opponent, ability, pos, false, square) ??
+        nearestOccupiedCell(opponent, pos, square);
       const reach =
         ability.range +
         heightReachBonus(
@@ -1325,9 +1457,16 @@ export function threatAt(draft: BattleDraft, unit: Unit, pos: Vec2): number {
           (sum, e) => sum + e.base + e.scale * effectiveStats(draft.content, opponent).power,
           0,
         );
-      threat +=
-        damage *
-        (hitChance(draft.content, draft.grid, opponent, { ...unit, pos }, weather, origin) / 100);
+      const hit = hitChance(
+        draft.content,
+        draft.grid,
+        opponent,
+        { ...unit, pos },
+        weather,
+        origin,
+        square,
+      );
+      threat += damage * (hit / 100);
     }
   }
   return threat;

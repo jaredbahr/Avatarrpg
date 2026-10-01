@@ -9,17 +9,17 @@ import { alphaBounds, crop } from './lib/trim';
 
 const FRAME = 256;
 /** Maximum width and height as fractions of one tile; the flask stays small. */
-const SIZES: Readonly<Record<string, readonly [number, number]>> = {
+export const PROP_SIZES: Readonly<Record<string, readonly [number, number]>> = {
   barrel: [0.62, 0.68],
-  flask: [0.42, 0.46],
+  flask: [0.42, 0.4],
   brazier: [0.64, 0.62],
   hay: [0.75, 0.48],
-  rubble: [0.76, 0.5],
-  cart: [0.94, 0.81],
+  rubble: [0.76, 0.56],
+  cart: [0.94, 0.66],
 };
 
 export function normaliseProp(source: Image, name: string): Image {
-  const size = SIZES[name];
+  const size = PROP_SIZES[name];
   if (!size) throw new Error(`Unknown prop: ${name}`);
   const bounds = alphaBounds(source);
   if (!bounds) throw new Error('The prop image is empty.');

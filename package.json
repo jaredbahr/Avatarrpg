@@ -33,6 +33,7 @@
     "art:icons": "node --import tsx scripts/art/icons.ts",
     "art:portrait": "node --import tsx scripts/art/portrait.ts",
     "art:prop": "node --import tsx scripts/art/prop.ts",
+    "art:prop-family": "node --import tsx scripts/art/prop-family.ts",
     "check:assets": "node scripts/check-asset-budget.mjs",
     "credits": "node --import tsx scripts/credits.ts"
   },
