@@ -412,6 +412,42 @@ export const ASSETS: Readonly<Record<string, AssetEntry>> = {
       ko: { frames: ['unit.enemy.grumbler/ko/0'], fps: 1, loop: false },
     },
   },
+  'unit.enemy.driller': {
+    kind: 'sheet',
+    atlas: 'art/units/driller.json',
+    pixelsPerTile: 80,
+    footprint: { w: 2, h: 2 },
+    anchor: { x: 0.5, y: 0.8625 },
+    facing: 'mirror',
+    palette: 'enemy',
+    clips: {
+      idle: {
+        frames: Array.from({ length: 6 }, (_, i) => `unit.enemy.driller/idle/${i}`),
+        fps: 4,
+        loop: true,
+      },
+      walk: {
+        frames: Array.from({ length: 6 }, (_, i) => `unit.enemy.driller/walk/${i}`),
+        fps: 8,
+        loop: true,
+      },
+      cast: {
+        frames: Array.from({ length: 8 }, (_, i) => `unit.enemy.driller/cast/${i}`),
+        fps: 9,
+        loop: false,
+      },
+      hit: {
+        frames: Array.from({ length: 4 }, (_, i) => `unit.enemy.driller/hit/${i}`),
+        fps: 10,
+        loop: false,
+      },
+      ko: {
+        frames: Array.from({ length: 8 }, (_, i) => `unit.enemy.driller/ko/${i}`),
+        fps: 8,
+        loop: false,
+      },
+    },
+  },
   'unit.ally.ruon': cuttingSheet('ruon', 'neutral'),
 
   /* --------------------------------------------------------------- NPCs */

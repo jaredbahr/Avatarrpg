@@ -187,6 +187,15 @@ export const CREDITS: readonly CreditEntry[] = [
     note: 'Original quarry machine artwork, generated and packed into nine transparent poses and a UI portrait. Prompts and processing notes: docs/art/grumbler.md. Output terms: https://openai.com/policies/row-terms-of-use/. No exclusive copyright in generated output is claimed.',
   },
   {
+    what: 'The 2x2 Driller animation',
+    work: 'Bronze quarry machine idle, walk, cast, hit and knockout animation',
+    authors: 'This project, generated with PixelLab',
+    licence: 'own work',
+    source: '',
+    covers: ['art/units/driller.png', 'art/units/driller.json'],
+    note: 'Generated with PixelLab; provenance in docs/art/driller-2x2.md; sources in media/art-sources/driller-2x2-v1/, packed without resampling by scripts/art/driller-2x2.ts. Output terms: https://pixellab.ai/termsofservice. No exclusive copyright in generated output is claimed.',
+  },
+  {
     what: 'The village NPC sprites',
     work: 'Mira, Gao, Pella and Dorin idle illustrations',
     authors: 'This project, generated with OpenAI image generation',

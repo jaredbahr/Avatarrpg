@@ -948,11 +948,18 @@ export const assetEntrySchema = z.discriminatedUnion('kind', [
       .string()
       .regex(/\.json$/, 'must point at the clip JSON')
       .optional(),
-    pixelsPerTile: z.union([z.literal(128), z.literal(256)]),
+    // 80 is the 2x2 Driller sheet: a 160 px cel across a two-tile body.
+    pixelsPerTile: z.union([z.literal(80), z.literal(128), z.literal(256)]),
     frameSize: z
       .object({ w: z.number().int().min(1).max(512), h: z.number().int().min(1).max(512) })
       .optional(),
-    footprint: z.object({ w: z.union([z.literal(1), z.literal(2)]), h: z.literal(1) }),
+    // A footprint is one tile, the legacy 2x1, or the square 2x2: never 1x2.
+    footprint: z
+      .object({
+        w: z.union([z.literal(1), z.literal(2)]),
+        h: z.union([z.literal(1), z.literal(2)]),
+      })
+      .refine((value) => value.h === 1 || value.w === 2, 'a two-tile-deep footprint must be 2x2'),
     anchor: z.object({ x: z.number().min(0).max(1), y: z.number().min(0).max(1) }),
     facing: z.enum(['mirror', 'both']),
     locomotion: z
