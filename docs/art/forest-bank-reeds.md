@@ -1,7 +1,8 @@
 # Forest bank reeds v1 (2026-09-30)
 
-Replaces the stamped `pond-reeds.webp` nest crop on the Forest Road (environment art
-direction v1, audit P0; Jared approved the direction on 2026-09-30).
+The Forest Road uses this four-piece bank-reed family for its pond and creek
+fringes (environment art direction v1, audit P0; Jared approved the direction
+on 2026-09-30). The former stamped pond-reed crop has been retired.
 
 ## Source
 
@@ -31,4 +32,3 @@ direction v1, audit P0; Jared approved the direction on 2026-09-30).
   adult). Depth is clamped to the cell centre so a unit in the reeds' cell draws in front.
 - The forest route ground, south grass and exterior apron plates bake reed wear from these
   placements and were regenerated with their packers.
-- `pond-reeds.webp` still ships but no scene uses it; retire it with its packer later.

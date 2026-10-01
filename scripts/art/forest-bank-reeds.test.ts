@@ -35,10 +35,6 @@ it('plants a varied bank-reed family without changing passability or contact tre
     'art/maps/forest-scene/bank-reed-2.webp',
     'art/maps/forest-scene/bank-reed-1.webp',
   ]);
-  expect(FOREST_ROAD_SCENE.scenery.map(({ url }) => url)).not.toContain(
-    'art/maps/forest-scene/pond-reeds.webp',
-  );
-
   for (const reed of reeds) {
     const cell = reed.footprint[0];
     if (!cell) throw new Error(`${reed.id} has no footprint`);
