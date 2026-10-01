@@ -93,6 +93,11 @@ export function describeEvent(
       // The prop's own plain-words line, exactly like a combo rule's label.
       return event.label;
 
+    case 'propIgnited':
+    case 'propDoused':
+      // B-2 writes these labels the same way a prop's break line is written.
+      return event.label;
+
     case 'propPushed': {
       const name = battle?.props.find((p) => p.id === event.propId)?.propId;
       const def = name ? content.props.get(name) : undefined;

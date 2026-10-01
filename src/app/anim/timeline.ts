@@ -49,6 +49,8 @@ export interface PoseTrack extends Track {
   readonly meleeDirection?: MeleeDirection;
   /** The clip's frame this track shows, when the choreography knows it (a wind-up is frame 0). */
   readonly frame?: number;
+  /** Elapsed clip time at this track's start, for a timed clip split across motion phases. */
+  readonly clipTimeOffset?: number;
 }
 
 export interface FlashTrack extends Track {
