@@ -186,6 +186,9 @@ function toDamageType(applied: DamageType | SurfaceId): DamageType {
  * If the tile already carries a surface, the combo table gets first refusal —
  * a Fire Wall cast into a puddle makes steam rather than stubbornly becoming
  * fire. Only when no rule matches does the new surface simply replace the old.
+ *
+ * `spread` is how many tiles the surface crawls per round. Only fire reads it,
+ * and only B-2's burning props pass anything but the 0 this has always been.
  */
 export function paintSurface(
   content: ContentIndex,
@@ -193,6 +196,7 @@ export function paintSurface(
   positions: readonly Vec2[],
   surface: SurfaceId,
   duration: number,
+  spread = 0,
 ): SurfaceReaction {
   let next = grid;
   const changes: SurfaceChange[] = [];
@@ -219,13 +223,13 @@ export function paintSurface(
         next = withSurface(next, pos, {
           id: surface,
           duration: Math.max(tile.surface?.duration ?? 0, duration),
-          spread: tile.surface?.spread ?? 0,
+          spread: Math.max(tile.surface?.spread ?? 0, spread),
         });
         continue;
       }
     }
 
-    next = withSurface(next, pos, { id: surface, duration, spread: 0 });
+    next = withSurface(next, pos, { id: surface, duration, spread });
     changes.push({
       pos,
       from: existing,
