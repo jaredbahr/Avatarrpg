@@ -33,6 +33,7 @@ import {
   reachable,
   samePos,
   tileAt,
+  unitAt,
   type ReachableCell,
 } from '../../core/rules/grid';
 import { canMove, effectiveStats, isAlive, statusDefs } from '../../core/rules/stats';
@@ -111,6 +112,22 @@ export function moveHoverFootprint(
  */
 export function fallenFacing(clip: string, facing: 1 | -1): 1 | -1 {
   return clip === 'ko' ? facing : 1;
+}
+
+/**
+ * The unit standing on `tile`, living or defeated, on any footprint cell.
+ *
+ * The long-press inspector deliberately includes the fallen: holding on a body
+ * is how a player reads why it dropped. `unitAt` filters to `hp > 0`, so it
+ * finds nobody there. Footprint-aware like `unitAt`, so a large unit is picked
+ * on each cell of its footprint rather than only its anchor. The living win: a
+ * unit standing where another fell is the one a hold on that tile opens.
+ */
+export function occupiedUnitAt(units: readonly Unit[], tile: Vec2): Unit | undefined {
+  return (
+    unitAt(units, tile) ??
+    units.find((unit) => occupiedCells(unit).some((cell) => samePos(cell, tile)))
+  );
 }
 
 interface OverlayBuild {
@@ -530,8 +547,7 @@ export class CombatScene implements Scene {
     const blocked = new Set<string>();
     for (const other of battle.units) {
       if (!isAlive(other) || other.id === unit.id) continue;
-      blocked.add(posKey(other.pos));
-      if (other.size === 2) blocked.add(posKey({ x: other.pos.x + 1, y: other.pos.y }));
+      for (const cell of occupiedCells(other)) blocked.add(posKey(cell));
     }
 
     return reachable(
@@ -553,8 +569,7 @@ export class CombatScene implements Scene {
     if (battle) {
       for (const other of battle.units) {
         if (!isAlive(other) || other.id === unit.id) continue;
-        blocked.add(posKey(other.pos));
-        if (other.size === 2) blocked.add(posKey({ x: other.pos.x + 1, y: other.pos.y }));
+        for (const cell of occupiedCells(other)) blocked.add(posKey(cell));
       }
     }
     return {
@@ -597,10 +612,7 @@ export class CombatScene implements Scene {
     const battle = this.battle();
     if (!renderer || !battle) return;
     const tile = renderer.camera.pickTile(x, y, battle.grid);
-    const unit = battle.units.find(
-      (u) =>
-        samePos(u.pos, tile) || (u.size === 2 && samePos({ x: u.pos.x + 1, y: u.pos.y }, tile)),
-    );
+    const unit = occupiedUnitAt(battle.units, tile);
     if (unit) this.openInspector(unit);
   }
 
