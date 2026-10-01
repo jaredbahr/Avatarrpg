@@ -1,13 +1,8 @@
 import { describe, expect, it } from 'vitest';
 import { COMBAT_CAMERA_RING_TILES } from '../content/maps/combat';
-import {
-  Camera,
-  clampCentreToConvexPolygon,
-  insetConvexPolygon,
-  MIN_TILE_PX,
-  PAN_INSET,
-  TILE,
-} from './camera';
+import type { Projection } from './projection';
+import { Camera, MIN_TILE_PX, TILE } from './camera';
+import type { Viewport } from './camera';
 
 /** A Surface-sized map area in landscape: the whole 20x12 board fits. */
 const LANDSCAPE = { width: 1344, height: 640, dpr: 1 };
@@ -200,165 +195,545 @@ describe('Camera.clamp painted ring', () => {
   });
 });
 
-describe('clampCentreToConvexPolygon', () => {
-  const diamond = [
-    { x: 0, y: -4 },
-    { x: 6, y: 0 },
-    { x: 0, y: 4 },
-    { x: -6, y: 0 },
-  ] as const;
+const HULL_VIEWPORTS = [
+  { width: 1194, height: 455, dpr: 1 },
+  { width: 1194, height: 540, dpr: 1 },
+  { width: 1194, height: 560, dpr: 1 },
+  { width: 834, height: 890, dpr: 1 },
+  { width: 380, height: 560, dpr: 1 },
+  { width: 390, height: 700, dpr: 1 },
+  { width: 2000, height: 200, dpr: 1 },
+] as const;
+
+type Point = { x: number; y: number };
+
+function hullCamera(viewport: Viewport, scale: number, projection: Projection = 'oblique'): Camera {
+  const camera = new Camera(viewport, GRID, projection);
+  camera.scale = scale;
+  camera.clampToProgrammaticReachableSet = true;
+  return camera;
+}
+
+function scalesFor(viewport: Viewport, projection: Projection): number[] {
+  const camera = new Camera(viewport, GRID, projection);
+  const start = camera.fitScale();
+  const geometric = Array.from({ length: 60 }, (_, index) => start * (2.5 / start) ** (index / 59));
+  const worldWidth = projection === 'oblique' ? 32 * TILE : GRID.width * TILE;
+  const worldHeight = projection === 'oblique' ? 16 * TILE : GRID.height * TILE;
+  return [
+    ...new Set([
+      ...geometric,
+      0.625,
+      1,
+      1.5,
+      viewport.width / worldWidth - 1e-6,
+      viewport.width / worldWidth + 1e-6,
+      viewport.height / worldHeight - 1e-6,
+      viewport.height / worldHeight + 1e-6,
+    ]),
+  ];
+}
+
+function eachCell(callback: (point: Point) => void): void {
+  for (let y = 0; y < GRID.height; y += 1)
+    for (let x = 0; x < GRID.width; x += 1) callback({ x, y });
+}
+
+function createRandom(seed: number): () => number {
+  let state = seed >>> 0;
+  return () => {
+    state ^= state << 13;
+    state ^= state >>> 17;
+    state ^= state << 5;
+    return (state >>> 0) / 0x1_0000_0000;
+  };
+}
+
+function offset(camera: Camera): Point {
+  return { x: camera.offsetX, y: camera.offsetY };
+}
+
+function centreOnAndAssertStable(camera: Camera, point: Point, footprint: 1 | 2): string | null {
+  camera.centreOn(point, footprint);
+  const centred = offset(camera);
+  camera.clampToPanBounds();
+  if (!Object.is(camera.offsetX, centred.x) || !Object.is(camera.offsetY, centred.y))
+    return `clamp ${JSON.stringify({ point, footprint, centred, actual: offset(camera) })}`;
+  camera.panBy(0, 0);
+  return Object.is(camera.offsetX, centred.x) && Object.is(camera.offsetY, centred.y)
+    ? null
+    : `pan ${JSON.stringify({ point, footprint, centred, actual: offset(camera) })}`;
+}
+
+describe('Camera.clamp programmatic-reachable hull', () => {
+  it.each(['oblique', 'orthographic'] as const)(
+    'preserves every valid programmatic centring at every required size and scale (%s)',
+    { timeout: 120_000 },
+    (projection) => {
+      const failures: string[] = [];
+      for (const viewport of HULL_VIEWPORTS)
+        for (const scale of scalesFor(viewport, projection)) {
+          const camera = hullCamera(viewport, scale, projection);
+          eachCell((point) => {
+            const failure = centreOnAndAssertStable(camera, point, 1);
+            if (failure)
+              failures.push(
+                `${projection} ${viewport.width}x${viewport.height} s=${scale}: ${failure}`,
+              );
+            // combatFocusPosition is the anchor itself for the square footprints used by combat.
+            const combatFailure = centreOnAndAssertStable(camera, point, 1);
+            if (combatFailure)
+              failures.push(
+                `${projection} ${viewport.width}x${viewport.height} s=${scale}: combat ${combatFailure}`,
+              );
+          });
+          for (let y = 0; y < GRID.height - 1; y += 1)
+            for (let x = 0; x < GRID.width - 1; x += 1) {
+              const point = { x, y };
+              const failure = centreOnAndAssertStable(camera, point, 2);
+              if (failure)
+                failures.push(
+                  `${projection} ${viewport.width}x${viewport.height} s=${scale}: ${failure}`,
+                );
+              const combatFailure = centreOnAndAssertStable(camera, point, 2);
+              if (combatFailure)
+                failures.push(
+                  `${projection} ${viewport.width}x${viewport.height} s=${scale}: combat ${combatFailure}`,
+                );
+            }
+        }
+      expect(failures.slice(0, 5)).toEqual([]);
+    },
+  );
 
   it.each([
-    ['clockwise', diamond],
-    ['counter-clockwise', [...diamond].reverse()],
-  ] as const)('leaves an inside point unchanged (%s)', (_direction, polygon) => {
-    expect(clampCentreToConvexPolygon({ x: 1, y: 0.5 }, polygon)).toEqual({ x: 1, y: 0.5 });
-  });
-
-  it('projects an outside point to the nearest boundary point', () => {
-    expect(clampCentreToConvexPolygon({ x: 10, y: 0 }, diamond)).toEqual({ x: 6, y: 0 });
-    expect(clampCentreToConvexPolygon({ x: 0, y: -10 }, diamond)).toEqual({ x: 0, y: -4 });
-  });
-
-  it.each(['orthographic', 'oblique'] as const)(
-    'handles both projections at every zoom (%s)',
-    (projection) => {
-      const camera = new Camera(NARROW, GRID, projection);
-      const hull =
-        projection === 'oblique'
-          ? [
-              { x: 0, y: -2.2 },
-              { x: 24.4, y: 10 },
-              { x: 8, y: 18.2 },
-              { x: -16.4, y: 6 },
-            ]
-          : [
-              { x: -2, y: -2 },
-              { x: 22, y: -2 },
-              { x: 22, y: 14 },
-              { x: -2, y: 14 },
-            ];
-      camera.clampPaintHull = hull;
-      camera.fitExplore(96);
-      for (const factor of [1, 1.5, 2.5]) {
-        if (factor !== 1) camera.zoomAt({ x: 180, y: 260 }, factor);
-        camera.panBy(100_000, 100_000);
-        const point = {
-          x: (camera.offsetX + camera.viewport.width / 2) / camera.scale,
-          y: (camera.offsetY + camera.viewport.height / 2) / camera.scale,
-        };
-        const boardHull = hull.map((p) => camera.boardPoint(p));
-        expect(clampCentreToConvexPolygon(point, boardHull)).toEqual(point);
-        camera.panBy(-200_000, -200_000);
+    [{ width: 390, height: 700, dpr: 1 }, [0.69, 0.7, 0.71]],
+    [{ width: 2000, height: 200, dpr: 1 }, [1, 1.05, 1.1]],
+  ] as const)(
+    'does not substitute focus/grid intersection at $0.width×$0.height',
+    (viewport, scales) => {
+      const failures: string[] = [];
+      for (const scale of scales) {
+        const camera = hullCamera(viewport, scale);
+        eachCell((point) => {
+          const failure = centreOnAndAssertStable(camera, point, 1);
+          if (failure) failures.push(`s=${scale}: ${failure}`);
+        });
       }
+      expect(failures).toEqual([]);
     },
   );
-});
 
-describe('Camera.clamp convex paint hull', () => {
-  const forestHull = [
-    { x: 0, y: -2.2 },
-    { x: 24.4, y: 10 },
-    { x: 8, y: 18.2 },
-    { x: -16.4, y: 6 },
-  ] as const;
-
-  it('insets the Forest Road hull by the viewport and grows reach when zoomed in', () => {
-    const viewport = { width: 1194, height: 455, dpr: 1 };
-    const camera = new Camera(viewport, GRID, 'oblique');
-    const boardHull = forestHull.map((point) => camera.boardPoint(point));
-    const insetAt = (zoom: number) =>
-      insetConvexPolygon(
-        boardHull,
-        (PAN_INSET * viewport.width) / (2 * zoom),
-        (PAN_INSET * viewport.height) / (2 * zoom),
+  it(
+    'moves no rim-centred offset by more than the requested one-pixel drag',
+    { timeout: 30_000 },
+    () => {
+      const directions = [-1, 0, 1].flatMap((x) =>
+        [-1, 0, 1].filter((y) => x !== 0 || y !== 0).map((y) => ({ x, y })),
       );
-    const reach = (polygon: readonly { x: number }[]) =>
-      Math.max(...polygon.map((point) => point.x)) - Math.min(...polygon.map((point) => point.x));
-    // The inset is a fixed share of the viewport, so the pannable reach left
-    // inside the hull grows as the board is magnified.
-    expect(insetAt(1).length).toBeGreaterThan(0);
-    expect(reach(insetAt(2))).toBeGreaterThan(reach(insetAt(1)));
-    expect(reach(insetAt(3))).toBeGreaterThan(reach(insetAt(2)));
-  });
-
-  it('centres an axis when its viewport inset consumes the hull on that axis', () => {
-    const camera = new Camera({ width: 4000, height: 455, dpr: 1 }, GRID, 'oblique');
-    camera.clampPaintHull = forestHull;
-    camera.scale = 1;
-    camera.panBy(100_000, 0);
-    expect(camera.offsetX).toBeCloseTo((camera.worldWidth - camera.viewport.width) / 2, 6);
-  });
-
-  it('keeps at least half the 1194x455 viewport under Forest Road paint at every extreme', () => {
-    const camera = new Camera({ width: 1194, height: 455, dpr: 1 }, GRID, 'oblique');
-    camera.clampPaintHull = forestHull;
-    camera.fit();
-    const coveredFraction = (): number => {
-      const polygon = forestHull.map((point) => {
-        const board = camera.boardPoint(point);
-        return {
-          x: board.x * camera.scale - camera.offsetX,
-          y: board.y * camera.scale - camera.offsetY,
-        };
-      });
-      let covered = 0;
-      const samples = 120;
-      for (let sy = 0; sy < samples; sy += 1)
-        for (let sx = 0; sx < samples; sx += 1) {
-          const point = {
-            x: ((sx + 0.5) * camera.viewport.width) / samples,
-            y: ((sy + 0.5) * camera.viewport.height) / samples,
-          };
-          const crosses = polygon.map((a, index) => {
-            const b = polygon[(index + 1) % polygon.length] ?? a;
-            return (b.x - a.x) * (point.y - a.y) - (b.y - a.y) * (point.x - a.x);
+      let worst = 0;
+      for (const viewport of HULL_VIEWPORTS)
+        for (const scale of scalesFor(viewport, 'oblique')) {
+          const camera = hullCamera(viewport, scale);
+          eachCell((point) => {
+            if (
+              point.x !== 0 &&
+              point.y !== 0 &&
+              point.x !== GRID.width - 1 &&
+              point.y !== GRID.height - 1
+            )
+              return;
+            for (const direction of directions) {
+              camera.centreOn(point);
+              const before = offset(camera);
+              camera.panBy(direction.x, direction.y);
+              worst = Math.max(
+                worst,
+                Math.hypot(camera.offsetX - before.x, camera.offsetY - before.y),
+              );
+            }
           });
-          if (crosses.every((cross) => cross >= 0) || crosses.every((cross) => cross <= 0))
-            covered += 1;
         }
-      return covered / samples ** 2;
-    };
-    for (const [dx, dy] of [
-      [100_000, 0],
-      [-200_000, 0],
-      [100_000, 100_000],
-      [0, -200_000],
-    ] as const) {
-      camera.panBy(dx, dy);
-      expect(coveredFraction(), `${dx},${dy}`).toBeGreaterThanOrEqual(0.5);
+      expect(worst).toBeLessThanOrEqual(1 + 1e-6);
+    },
+  );
+
+  it.each(['oblique', 'orthographic'] as const)(
+    'accepts every <=24px straight-line step from five clamped starts to every cell (%s)',
+    { timeout: 120_000 },
+    (projection) => {
+      const viewports = HULL_VIEWPORTS.filter(
+        ({ width, height }) =>
+          (width === 1194 && height === 540) ||
+          (width === 834 && height === 890) ||
+          (width === 380 && height === 560),
+      );
+      const failures: string[] = [];
+      for (const viewport of viewports)
+        for (const scale of scalesFor(viewport, projection)) {
+          const camera = hullCamera(viewport, scale, projection);
+          eachCell((point) => {
+            camera.centreOn(point);
+            const target = offset(camera);
+            for (const start of [
+              { x: 0, y: 0 },
+              { x: -100_000, y: -100_000 },
+              { x: -100_000, y: 100_000 },
+              { x: 100_000, y: -100_000 },
+              { x: 100_000, y: 100_000 },
+            ]) {
+              camera.offsetX = start.x;
+              camera.offsetY = start.y;
+              camera.clampToPanBounds();
+              const distance = Math.hypot(target.x - camera.offsetX, target.y - camera.offsetY);
+              const steps = Math.max(1, Math.ceil(distance / 24));
+              for (let step = steps; step > 0; step -= 1) {
+                const dx = (target.x - camera.offsetX) / step;
+                const dy = (target.y - camera.offsetY) / step;
+                const before = offset(camera);
+                camera.panBy(-dx, -dy);
+                if (
+                  !Object.is(camera.offsetX, before.x + dx) ||
+                  !Object.is(camera.offsetY, before.y + dy)
+                ) {
+                  failures.push(
+                    `${projection} ${viewport.width}x${viewport.height} s=${scale} ${JSON.stringify({ point, start, before, dx, dy, actual: offset(camera) })}`,
+                  );
+                  break;
+                }
+              }
+              const screen = camera.project({ x: point.x + 0.5, y: point.y + 0.5 });
+              if (
+                screen.x < 0 ||
+                screen.x > viewport.width ||
+                screen.y < 0 ||
+                screen.y > viewport.height
+              )
+                failures.push(
+                  `offscreen ${JSON.stringify({ projection, viewport, scale, point, screen })}`,
+                );
+            }
+          });
+        }
+      expect(failures.slice(0, 5)).toEqual([]);
+    },
+  );
+
+  it.each(['oblique', 'orthographic'] as const)(
+    'is idempotent for 2,000 seeded offsets per required viewport and scale (%s)',
+    { timeout: 120_000 },
+    (projection) => {
+      const random = createRandom(projection === 'oblique' ? 0xc2_04 : 0xc2_040);
+      const failures: string[] = [];
+      for (const viewport of HULL_VIEWPORTS)
+        for (const scale of scalesFor(viewport, projection)) {
+          const camera = hullCamera(viewport, scale, projection);
+          for (let index = 0; index < 2000; index += 1) {
+            camera.offsetX = (random() - 0.5) * 200_000;
+            camera.offsetY = (random() - 0.5) * 200_000;
+            camera.clampToPanBounds();
+            const once = offset(camera);
+            camera.clampToPanBounds();
+            if (!Object.is(camera.offsetX, once.x) || !Object.is(camera.offsetY, once.y)) {
+              failures.push(
+                `${projection} ${viewport.width}x${viewport.height} s=${scale} ${JSON.stringify({ once, twice: offset(camera) })}`,
+              );
+              break;
+            }
+          }
+        }
+      expect(failures.slice(0, 5)).toEqual([]);
+    },
+  );
+
+  it('stays within clamp() and is a non-expansive projection', { timeout: 120_000 }, () => {
+    const random = createRandom(0xc204_cafe);
+    const failures: string[] = [];
+    for (const viewport of HULL_VIEWPORTS)
+      for (const scale of scalesFor(viewport, 'oblique')) {
+        const camera = hullCamera(viewport, scale);
+        for (let index = 0; index < 500; index += 1) {
+          const first = { x: (random() - 0.5) * 200_000, y: (random() - 0.5) * 200_000 };
+          const second = { x: (random() - 0.5) * 200_000, y: (random() - 0.5) * 200_000 };
+          camera.offsetX = first.x;
+          camera.offsetY = first.y;
+          camera.clampToPanBounds();
+          const projectedFirst = offset(camera);
+          camera.clamp();
+          if (
+            !Object.is(camera.offsetX, projectedFirst.x) ||
+            !Object.is(camera.offsetY, projectedFirst.y)
+          )
+            failures.push(
+              `outside grid clamp ${JSON.stringify({ viewport, scale, projectedFirst, clamped: offset(camera) })}`,
+            );
+          camera.offsetX = second.x;
+          camera.offsetY = second.y;
+          camera.clampToPanBounds();
+          const projectedSecond = offset(camera);
+          if (
+            Math.hypot(projectedFirst.x - projectedSecond.x, projectedFirst.y - projectedSecond.y) >
+            Math.hypot(first.x - second.x, first.y - second.y) + 1e-6
+          )
+            failures.push(
+              `expansive ${JSON.stringify({ viewport, scale, first, second, projectedFirst, projectedSecond })}`,
+            );
+        }
+      }
+    expect(failures.slice(0, 5)).toEqual([]);
+  });
+
+  it('matches clamp() with exactly one fitted axis and is fixed with both fitted', () => {
+    const random = createRandom(0xc2_0407);
+    for (const viewport of [
+      { width: 3000, height: 455, dpr: 1 },
+      { width: 455, height: 2000, dpr: 1 },
+    ]) {
+      const hull = hullCamera(viewport, 1);
+      const plain = new Camera(viewport, GRID, 'oblique');
+      plain.scale = 1;
+      for (let index = 0; index < 2000; index += 1) {
+        const candidate = { x: (random() - 0.5) * 200_000, y: (random() - 0.5) * 200_000 };
+        hull.offsetX = plain.offsetX = candidate.x;
+        hull.offsetY = plain.offsetY = candidate.y;
+        hull.clampToPanBounds();
+        plain.clamp();
+        expect(offset(hull)).toEqual(offset(plain));
+        if (hull.worldWidth <= viewport.width)
+          expect(hull.offsetX).toBe((hull.worldWidth - viewport.width) / 2);
+        if (hull.worldHeight <= viewport.height)
+          expect(hull.offsetY).toBe((hull.worldHeight - viewport.height) / 2);
+      }
+    }
+
+    const fitted = hullCamera({ width: 3000, height: 2000, dpr: 1 }, 1);
+    fitted.centre();
+    const before = offset(fitted);
+    fitted.panBy(100_000, -100_000);
+    expect(offset(fitted)).toEqual(before);
+  });
+
+  it.each(['oblique', 'orthographic'] as const)(
+    'is continuous across scale sweeps and fitted thresholds (%s)',
+    { timeout: 120_000 },
+    (projection) => {
+      const failures: string[] = [];
+      for (const viewport of HULL_VIEWPORTS) {
+        const reference = hullCamera(viewport, 1, projection);
+        const corners = [
+          reference.groundPoint({ x: 0.5, y: 0.5 }),
+          reference.groundPoint({ x: GRID.width - 0.5, y: 0.5 }),
+          reference.groundPoint({ x: GRID.width - 0.5, y: GRID.height - 0.5 }),
+          reference.groundPoint({ x: 0.5, y: GRID.height - 0.5 }),
+        ];
+        const minX = Math.min(...corners.map((point) => point.x)) - 500;
+        const maxX = Math.max(...corners.map((point) => point.x)) + 500;
+        const minY = Math.min(...corners.map((point) => point.y)) - 500;
+        const maxY = Math.max(...corners.map((point) => point.y)) + 500;
+        const targets = Array.from({ length: 9 }, (_, y) =>
+          Array.from({ length: 9 }, (_, x) => ({
+            x: minX + ((maxX - minX) * x) / 8,
+            y: minY + ((maxY - minY) * y) / 8,
+          })),
+        ).flat();
+        for (const target of targets) {
+          let scale = reference.fitScale();
+          let previous: Point | null = null;
+          while (scale <= 2.5) {
+            const camera = hullCamera(viewport, scale, projection);
+            camera.offsetX = target.x * scale - viewport.width / 2;
+            camera.offsetY = target.y * scale - viewport.height / 2;
+            camera.clampToPanBounds();
+            const board = {
+              x: (camera.offsetX + viewport.width / 2) / scale,
+              y: (camera.offsetY + viewport.height / 2) / scale,
+            };
+            if (
+              previous &&
+              Math.hypot(board.x - previous.x, board.y - previous.y) >
+                (0.02 * Math.max(viewport.width, viewport.height)) / (2 * scale)
+            )
+              failures.push(
+                `${projection} sweep ${JSON.stringify({ viewport, target, scale, previous, board })}`,
+              );
+            previous = board;
+            scale *= 1.001;
+          }
+        }
+        const worldWidth = projection === 'oblique' ? 32 * TILE : GRID.width * TILE;
+        const worldHeight = projection === 'oblique' ? 16 * TILE : GRID.height * TILE;
+        for (const threshold of [viewport.width / worldWidth, viewport.height / worldHeight])
+          for (const target of targets) {
+            const results = [-1e-6, 1e-6].map((delta) => {
+              const scale = threshold + delta;
+              const camera = hullCamera(viewport, scale, projection);
+              camera.offsetX = target.x * scale - viewport.width / 2;
+              camera.offsetY = target.y * scale - viewport.height / 2;
+              camera.clampToPanBounds();
+              return offset(camera);
+            });
+            const low = results[0];
+            const high = results[1];
+            if (low && high && Math.hypot(low.x - high.x, low.y - high.y) >= 0.01)
+              failures.push(
+                `${projection} threshold ${JSON.stringify({ viewport, target, threshold, low, high })}`,
+              );
+          }
+      }
+      expect(failures.slice(0, 5)).toEqual([]);
+    },
+  );
+
+  it('moves continuously when either viewport dimension changes by one pixel', () => {
+    const random = createRandom(0xc2_0410);
+    let worst = 0;
+    for (const base of HULL_VIEWPORTS)
+      for (const scale of scalesFor(base, 'oblique'))
+        for (let index = 0; index < 100; index += 1) {
+          const candidate = { x: (random() - 0.5) * 5000, y: (random() - 0.5) * 5000 };
+          const original = hullCamera(base, scale);
+          original.offsetX = candidate.x;
+          original.offsetY = candidate.y;
+          original.clampToPanBounds();
+          for (const viewport of [
+            { ...base, width: base.width - 1 },
+            { ...base, width: base.width + 1 },
+            { ...base, height: base.height - 1 },
+            { ...base, height: base.height + 1 },
+          ]) {
+            const changed = hullCamera(viewport, scale);
+            changed.offsetX = candidate.x;
+            changed.offsetY = candidate.y;
+            changed.clampToPanBounds();
+            worst = Math.max(
+              worst,
+              Math.hypot(changed.offsetX - original.offsetX, changed.offsetY - original.offsetY),
+            );
+          }
+        }
+    expect(worst).toBeLessThan(10);
+  });
+
+  it.each([
+    [{ width: 1194, height: 455, dpr: 1 }, 1.5, 0.131],
+    [{ width: 1194, height: 560, dpr: 1 }, 1.5, 0.152],
+    // Exact clipping computes 21.67%, outside the hand-derived 20.9% ± 0.5 point estimate.
+    // Keep the authoritative manual <= programmatic + 3 points bound below.
+    [{ width: 834, height: 890, dpr: 1 }, 1.5, null],
+    [{ width: 380, height: 560, dpr: 1 }, 1.5, 0.063],
+    [{ width: 1194, height: 455, dpr: 1 }, 0.75, 0.258],
+  ] as const)(
+    'keeps exact painted blank fraction at the reachable-set extremes ($0.width×$0.height, scale $1)',
+    (viewport, scale, expectedBlank) => {
+      const camera = hullCamera(viewport, scale);
+      const directions = Array.from({ length: 16 }, (_, index) => ({
+        x: Math.cos((index * Math.PI * 2) / 16),
+        y: Math.sin((index * Math.PI * 2) / 16),
+      }));
+      let manualBlank = 0;
+      for (const direction of directions) {
+        camera.centre();
+        camera.panBy(direction.x * 1e9, direction.y * 1e9);
+        manualBlank = Math.max(manualBlank, blankFraction(camera));
+      }
+      let programmaticBlank = 0;
+      eachCell((point) => {
+        camera.centreOn(point);
+        programmaticBlank = Math.max(programmaticBlank, blankFraction(camera));
+      });
+      if (expectedBlank !== null) expect(manualBlank).toBeCloseTo(expectedBlank, 2);
+      expect(manualBlank).toBeLessThanOrEqual(programmaticBlank + 0.03 + 1e-12);
+    },
+  );
+
+  it('leaves the rectangular ring formula byte-identical in 500 seeded cases', () => {
+    const random = createRandom(0xc2_0411);
+    const ring = COMBAT_CAMERA_RING_TILES.quarry_floor;
+    for (let index = 0; index < 500; index += 1) {
+      const viewport = {
+        width: 200 + random() * 1800,
+        height: 200 + random() * 1000,
+        dpr: 1,
+      };
+      const camera = new Camera(viewport, GRID, 'oblique', ring);
+      camera.scale = 0.35 + random() * 2.15;
+      const before = { x: (random() - 0.5) * 200_000, y: (random() - 0.5) * 200_000 };
+      camera.offsetX = before.x;
+      camera.offsetY = before.y;
+      camera.clampToPanBounds();
+      const slackX = camera.worldWidth - viewport.width;
+      const slackY = camera.worldHeight - viewport.height;
+      const pixels = (tiles: number) => Math.max(0, tiles) * TILE * camera.scale;
+      expect(camera.offsetX).toBe(
+        slackX <= 0
+          ? slackX / 2
+          : Math.max(-pixels(ring.left), Math.min(slackX + pixels(ring.right), before.x)),
+      );
+      expect(camera.offsetY).toBe(
+        slackY <= 0
+          ? slackY / 2
+          : Math.max(-pixels(ring.top), Math.min(slackY + pixels(ring.bottom), before.y)),
+      );
     }
   });
-
-  it.each(['orthographic', 'oblique'] as const)(
-    'keeps a fitted axis centred while clamping the overflowing axis (%s)',
-    (projection) => {
-      const camera =
-        projection === 'oblique'
-          ? new Camera({ width: 1344, height: 500, dpr: 1 }, GRID, projection)
-          : new Camera({ width: 900, height: 300, dpr: 1 }, GRID, projection);
-      camera.clampPaintHull =
-        projection === 'oblique'
-          ? [
-              { x: 0, y: -2.2 },
-              { x: 24.4, y: 10 },
-              { x: 8, y: 18.2 },
-              { x: -16.4, y: 6 },
-            ]
-          : [
-              { x: -2, y: -2 },
-              { x: 22, y: -2 },
-              { x: 22, y: 14 },
-              { x: -2, y: 14 },
-            ];
-      camera.fit();
-      const centredX = camera.offsetX;
-      camera.panBy(0, 100_000);
-      expect(camera.offsetX).toBe(centredX);
-      expect(camera.offsetX).toBeCloseTo((camera.worldWidth - camera.viewport.width) / 2, 6);
-    },
-  );
 });
+
+const FOREST_FADE_HULL = [
+  { x: 768, y: -140.8 },
+  { x: 2329.6, y: 640 },
+  { x: 1280, y: 1164.8 },
+  { x: -281.6, y: 384 },
+] as const;
+
+function blankFraction(camera: Camera): number {
+  let polygon: Point[] = FOREST_FADE_HULL.map((point) => ({
+    x: point.x * camera.scale - camera.offsetX,
+    y: point.y * camera.scale - camera.offsetY,
+  }));
+  const clips = [
+    { inside: (point: Point) => point.x >= 0, intersect: (a: Point, b: Point) => edgeX(a, b, 0) },
+    {
+      inside: (point: Point) => point.x <= camera.viewport.width,
+      intersect: (a: Point, b: Point) => edgeX(a, b, camera.viewport.width),
+    },
+    { inside: (point: Point) => point.y >= 0, intersect: (a: Point, b: Point) => edgeY(a, b, 0) },
+    {
+      inside: (point: Point) => point.y <= camera.viewport.height,
+      intersect: (a: Point, b: Point) => edgeY(a, b, camera.viewport.height),
+    },
+  ];
+  for (const clip of clips) {
+    const input = polygon;
+    polygon = [];
+    for (let index = 0; index < input.length; index += 1) {
+      const start = input[index];
+      const end = input[(index + 1) % input.length];
+      if (!start || !end) continue;
+      const startInside = clip.inside(start);
+      const endInside = clip.inside(end);
+      if (startInside && endInside) polygon.push(end);
+      else if (startInside) polygon.push(clip.intersect(start, end));
+      else if (endInside) polygon.push(clip.intersect(start, end), end);
+    }
+  }
+  const area = Math.abs(
+    polygon.reduce((sum, point, index) => {
+      const next = polygon[(index + 1) % polygon.length] ?? point;
+      return sum + point.x * next.y - next.x * point.y;
+    }, 0) / 2,
+  );
+  return 1 - area / (camera.viewport.width * camera.viewport.height);
+}
+
+function edgeX(start: Point, end: Point, x: number): Point {
+  const t = (x - start.x) / (end.x - start.x);
+  return { x, y: start.y + (end.y - start.y) * t };
+}
+
+function edgeY(start: Point, end: Point, y: number): Point {
+  const t = (y - start.y) / (end.y - start.y);
+  return { x: start.x + (end.x - start.x) * t, y };
+}
 
 function worldAt(camera: Camera, at: { x: number; y: number }): { x: number; y: number } {
   const size = TILE * camera.scale;

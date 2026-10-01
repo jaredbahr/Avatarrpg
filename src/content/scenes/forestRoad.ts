@@ -146,8 +146,13 @@ export const FOREST_PINE_CELLS: readonly Vec2[] = [
   { x: 0, y: 2 },
 ];
 /**
- * Pine decoration outside the rim. A tree stays when its foot stands on at
- * least 60%-opaque apron paint; its crown may silhouette against the page.
+ * Pines outside the rim. The north clearings at (4,0), (5,0) and (14,0) are
+ * deer paths that end in thicket rather than at the page, a staggered second
+ * rank makes the wall read as forest instead of a single file, and the
+ * walkable rim cells the edge contract calls a band at west rows 3 and 9 and
+ * east row 9 have trees standing just past them. East row 3 has none: a pine
+ * there stands in front of the boulder perch and hides it. Every foot stays on
+ * at least 60%-opaque apron paint; its crown may silhouette against the page.
  * Exterior pieces carry no rule; the rows and `edges` in `combat.ts` do.
  */
 export const FOREST_THICKET_CELLS: readonly Vec2[] = [
@@ -378,20 +383,21 @@ export const FOREST_EXTERIOR_APRON = {
  * it is clear. These are the ring's pixels, in plate coordinates, from
  * `scripts/art/lib/apron-bands.ts`; the packer cuts the same rectangles, and
  * `scripts/art/apron-plates.test.ts` pins the table, the cut and the shipped
- * files together.
+ * files together. The forest cut shares one row at each translucent vertical
+ * join so WebP filtering cannot expose a pale seam at a fade vertex.
  */
 export const FOREST_APRON_BANDS = [
-  { x: 723, y: 0, width: 730, height: 182 },
-  { x: 362, y: 182, width: 726, height: 181 },
-  { x: 1088, y: 182, width: 726, height: 181 },
-  { x: 0, y: 363, width: 726, height: 181 },
-  { x: 1450, y: 363, width: 726, height: 181 },
-  { x: 0, y: 544, width: 877, height: 256 },
-  { x: 1811, y: 544, width: 877, height: 256 },
-  { x: 512, y: 800, width: 726, height: 181 },
-  { x: 1962, y: 800, width: 726, height: 181 },
-  { x: 874, y: 981, width: 726, height: 181 },
-  { x: 1600, y: 981, width: 726, height: 181 },
+  { x: 723, y: 0, width: 730, height: 183 },
+  { x: 362, y: 182, width: 726, height: 182 },
+  { x: 1088, y: 182, width: 726, height: 182 },
+  { x: 0, y: 363, width: 726, height: 182 },
+  { x: 1450, y: 363, width: 726, height: 182 },
+  { x: 0, y: 544, width: 877, height: 257 },
+  { x: 1811, y: 544, width: 877, height: 257 },
+  { x: 512, y: 800, width: 726, height: 182 },
+  { x: 1962, y: 800, width: 726, height: 182 },
+  { x: 874, y: 981, width: 726, height: 182 },
+  { x: 1600, y: 981, width: 726, height: 182 },
   { x: 1235, y: 1162, width: 730, height: 182 },
 ] as const;
 export const FOREST_APRON_PIECES: readonly SceneImage[] = FOREST_APRON_BANDS.map((band, index) => ({

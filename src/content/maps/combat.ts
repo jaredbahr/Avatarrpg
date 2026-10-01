@@ -36,7 +36,7 @@ export const COMBAT_CAMERA_RING_TILES = {
   quarry_floor: QUARRY_SURROUND_EXTENTS_TILES,
 } as const;
 
-/** Forest's apron is a projected diamond, not the bounding rectangle around it. */
+/** Forest's projected fade polygon, retained for exact blank-area validation. */
 const FOREST_CAMERA_PAINT_HULL = [
   { x: 0, y: -FOREST_APRON_PAINTED_EXTENTS_TILES.top },
   { x: 20 + FOREST_APRON_PAINTED_EXTENTS_TILES.right, y: 10 },

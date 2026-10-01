@@ -52,6 +52,12 @@ export interface ApronBandsOptions {
    * authored ground leaves, which is a band inside the rim.
    */
   readonly inset?: number;
+  /**
+   * Rows shared by consecutive vertical bands. A lossy alpha plate can expose
+   * a filtered seam at a translucent join, so a scene may put one interior
+   * row in both crops. The default keeps the original disjoint village cut.
+   */
+  readonly overlap?: number;
 }
 
 interface Geometry {
@@ -146,9 +152,10 @@ function spans(from: number, to: number, geometry: Geometry): readonly (readonly
 }
 
 /**
- * The ring as bands, in paint order. Every rectangle is exact: its own rows and
- * columns are the extremes of the ring's edges across that band, so nothing
- * here covers a pixel a neighbouring band already covers.
+ * The ring as bands, in paint order. Every rectangle is exact: its columns are
+ * the extremes of the ring's edges across that band. A scene can request a
+ * one-row vertical overlap to keep a translucent lossy join from exposing a
+ * filtered seam; the final band is never extended past the packed ring.
  */
 export function apronBands(options: ApronBandsOptions): ApronBand[] {
   const geometry: Geometry = {
@@ -157,13 +164,17 @@ export function apronBands(options: ApronBandsOptions): ApronBand[] {
     depth: options.depth,
     inset: options.inset ?? 0,
   };
+  const overlap = Math.max(0, Math.floor(options.overlap ?? 0));
   const bands: ApronBand[] = [];
   const edges = stops(geometry);
   for (let i = 0; i + 1 < edges.length; i++) {
     const from = edges[i] ?? 0;
     const to = edges[i + 1] ?? 0;
     const top = Math.max(0, rowOf(from, geometry));
-    const bottom = Math.max(0, rowOf(to, geometry));
+    const bottom = Math.max(
+      0,
+      rowOf(to, geometry) + (overlap && i + 1 < edges.length - 1 ? overlap : 0),
+    );
     if (bottom <= top) continue;
     for (const [u0, u1] of spans(from, to, geometry)) {
       const left = Math.max(0, columnOf(u0 ?? 0, geometry));

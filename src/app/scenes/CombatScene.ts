@@ -339,6 +339,22 @@ export class CombatScene implements Scene {
     const desiredY = Math.min(viewport.height - padding, Math.max(padding, point.y));
     camera.panBy(desiredX - point.x, desiredY - point.y);
 
+    // A non-rectangular reachable-set projection can push the requested pan
+    // back along a diagonal edge. If that leaves the selected tile outside
+    // the padded viewport, use its programmatic centre as the final point on
+    // the same reachable set. centreOn() is deliberately used here instead
+    // of writing offsets: it shares the camera's exact centring arithmetic.
+    const revealed = camera.project({ x: target.x + 0.5, y: target.y + 0.5 });
+    if (
+      camera.clampToProgrammaticReachableSet &&
+      (revealed.x < padding ||
+        revealed.x > viewport.width - padding ||
+        revealed.y < padding ||
+        revealed.y > viewport.height - padding)
+    ) {
+      camera.centreOn(target, 1);
+    }
+
     this.lastPendingMoveReveal = {
       target: { ...target },
       width: viewport.width,
@@ -451,10 +467,8 @@ export class CombatScene implements Scene {
       bottom: 0,
       left: 0,
     };
-    this.renderer.camera.clampPaintHull =
-      this.app.content.maps.get(battle.mapId)?.cameraPaint?.kind === 'convex-hull'
-        ? (this.app.content.maps.get(battle.mapId)?.cameraPaint?.points ?? null)
-        : null;
+    this.renderer.camera.clampToProgrammaticReachableSet =
+      this.app.content.maps.get(battle.mapId)?.cameraPaint?.kind === 'convex-hull';
     this.app.animator.setProjection(this.renderer.camera.projection);
     if (this.renderer.camera.projection === 'oblique') this.renderer.camera.fitExplore(96);
     else this.renderer.camera.fit();

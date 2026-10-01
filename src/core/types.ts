@@ -829,10 +829,10 @@ export interface MapDef {
    */
   readonly backdrop?: MapBackdrop;
   /**
-   * Camera paint geometry for maps whose authored ground is not rectangular.
-   * Points are projected ground coordinates (the same space as `projectGround`)
-   * and form a convex polygon. Maps without this declaration retain the
-   * rectangular painted-ring clamp.
+   * Marks maps whose non-rectangular paint needs the programmatic-reachable
+   * manual camera bound. Points are projected ground coordinates (the same
+   * space as `projectGround`) and describe only the painted fade used by exact
+   * blank-area tests; runtime clamp geometry is derived from the grid.
    */
   readonly cameraPaint?: {
     readonly kind: 'convex-hull';

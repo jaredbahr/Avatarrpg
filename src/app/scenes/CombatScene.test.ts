@@ -1,7 +1,9 @@
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 import type { Unit, Vec2 } from '../../core/types';
 import { unitAt } from '../../core/rules/grid';
+import { Camera } from '../../render/camera';
 import {
+  CombatScene,
   combatFocusPosition,
   moveHoverFootprint,
   occupiedUnitAt,
@@ -88,5 +90,74 @@ describe('long-press unit lookup', () => {
     const big = unit('big', { x: 5, y: 3 }, { size: 2 });
     expect(occupiedUnitAt([big], { x: 6, y: 3 })?.id).toBe('big');
     expect(occupiedUnitAt([big], { x: 7, y: 3 })).toBeUndefined();
+  });
+});
+
+describe('pending move reveal after a viewport reflow', () => {
+  it('keeps every cell inside the padded viewport from each reachable-set boundary', () => {
+    const viewport = { width: 1194, height: 540, dpr: 1 };
+    const grid = { width: 20, height: 12 };
+    const directions = [
+      [1, 0],
+      [2, 1],
+      [1, 1],
+      [1, 2],
+      [0, 1],
+      [-1, 2],
+      [-1, 1],
+      [-2, 1],
+      [-1, 0],
+      [-2, -1],
+      [-1, -1],
+      [-1, -2],
+      [0, -1],
+      [1, -2],
+      [1, -1],
+      [2, -1],
+    ] as const;
+
+    let fallbacks = 0;
+    for (let y = 0; y < grid.height; y += 1) {
+      for (let x = 0; x < grid.width; x += 1) {
+        for (const [dx, dy] of directions) {
+          const camera = new Camera(viewport, grid, 'oblique');
+          camera.scale = 1.5;
+          camera.centre();
+          camera.clampToProgrammaticReachableSet = true;
+          // Pan to an M-boundary vertex/edge before the reflow reveal.
+          camera.panBy(dx * 100_000, dy * 100_000);
+          vi.spyOn(camera, 'centreOn').mockImplementation((...args) => {
+            fallbacks += 1;
+            Camera.prototype.centreOn.call(camera, ...args);
+          });
+
+          type RevealHarness = {
+            renderer: { camera: Camera };
+            pending: Vec2;
+            mode: { kind: 'move' };
+            lastPendingMoveReveal: null;
+            revealPendingMoveAfterViewportChange: () => void;
+          };
+          const scene = Object.create(CombatScene.prototype) as RevealHarness;
+          scene.renderer = { camera };
+          scene.pending = { x, y };
+          scene.mode = { kind: 'move' };
+          scene.lastPendingMoveReveal = null;
+          scene.revealPendingMoveAfterViewportChange();
+
+          const point = camera.project({ x: x + 0.5, y: y + 0.5 });
+          const padding = Math.min(16, viewport.width / 2, viewport.height / 2);
+          expect(point.x, `${x},${y} from ${dx},${dy}`).toBeGreaterThanOrEqual(padding);
+          expect(point.x, `${x},${y} from ${dx},${dy}`).toBeLessThanOrEqual(
+            viewport.width - padding,
+          );
+          expect(point.y, `${x},${y} from ${dx},${dy}`).toBeGreaterThanOrEqual(padding);
+          expect(point.y, `${x},${y} from ${dx},${dy}`).toBeLessThanOrEqual(
+            viewport.height - padding,
+          );
+        }
+      }
+    }
+    expect(fallbacks).toBeGreaterThan(0);
   });
 });

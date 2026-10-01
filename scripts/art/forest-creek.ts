@@ -42,7 +42,12 @@ export function packCreekPool(material: ForestMaterial, pool: ForestCreekPool) {
     patch: pool.patch,
     cells: [...pool.cells, ...runOn],
     organic: true,
-    // The creek runs through grass: the verge grows over its bank in clumps.
+    // The creek crosses the south rim into the apron. Its grass/bank edge
+    // follows the water contour; an independent grass wander leaves a brown
+    // one-pixel tooth where the west pool crosses that rim.
+    bankFollowsWater: true,
+    // The creek runs through grass: the verge carries its own material rhythm
+    // over the bank while the edge itself stays on the water contour.
     overgrowth: (x, y) => material.colour('verge', x, y),
   });
   const { image } = packed;

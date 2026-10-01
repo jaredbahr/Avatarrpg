@@ -47,92 +47,85 @@ export interface ScreenPoint {
 /** A convex polygon in screen/world coordinates, closed implicitly. */
 export type ConvexPolygon = readonly ScreenPoint[];
 
-/** Fraction of each viewport half-size kept inside irregular painted hulls. */
-export const PAN_INSET = 0.7;
+const PAN_FOCUS_MARGIN_TILES = 0.5;
+const OFFSET_WRITE_EPSILON = 1e-6;
 
-const POINT_EPSILON = 1e-9;
-
-/**
- * Keeps a point inside a convex polygon. An interior point is returned as-is;
- * an exterior point is projected to its nearest edge. The helper is kept
- * independent of Camera so other screen-space paint bounds can use it too.
- */
-export function clampCentreToConvexPolygon(
-  point: ScreenPoint,
-  polygon: ConvexPolygon,
-): ScreenPoint {
-  if (polygon.length < 3) return point;
-
-  let positive = false;
-  let negative = false;
-  for (let i = 0; i < polygon.length; i += 1) {
-    const a = polygon[i];
-    const b = polygon[(i + 1) % polygon.length];
-    if (!a || !b) continue;
-    const cross = (b.x - a.x) * (point.y - a.y) - (b.y - a.y) * (point.x - a.x);
-    positive ||= cross > POINT_EPSILON;
-    negative ||= cross < -POINT_EPSILON;
-  }
-  if (!(positive && negative)) return point;
-
-  let best = polygon[0] ?? point;
-  let bestDistance = Number.POSITIVE_INFINITY;
-  for (let i = 0; i < polygon.length; i += 1) {
-    const a = polygon[i];
-    const b = polygon[(i + 1) % polygon.length];
-    if (!a || !b) continue;
-    const dx = b.x - a.x;
-    const dy = b.y - a.y;
-    const lengthSquared = dx * dx + dy * dy;
-    const t = lengthSquared
-      ? Math.max(0, Math.min(1, ((point.x - a.x) * dx + (point.y - a.y) * dy) / lengthSquared))
-      : 0;
-    const candidate = { x: a.x + dx * t, y: a.y + dy * t };
-    const distance = (candidate.x - point.x) ** 2 + (candidate.y - point.y) ** 2;
-    if (distance < bestDistance) {
-      best = candidate;
-      bestDistance = distance;
-    }
-  }
-  return best;
+function clampOffset(offset: number, slack: number): number {
+  return slack <= 0 ? slack / 2 : Math.max(0, Math.min(slack, offset));
 }
 
-/** Minkowski-erodes a convex polygon by an axis-aligned rectangle. */
-export function insetConvexPolygon(
-  polygon: ConvexPolygon,
-  halfWidth: number,
-  halfHeight: number,
-): ScreenPoint[] {
-  if (polygon.length < 3) return [...polygon];
-  const area = polygon.reduce((sum, point, index) => {
-    const next = polygon[(index + 1) % polygon.length] ?? point;
-    return sum + point.x * next.y - next.x * point.y;
-  }, 0);
-  const orientation = area >= 0 ? 1 : -1;
-  const lines = polygon.map((point, index) => {
-    const next = polygon[(index + 1) % polygon.length] ?? point;
-    const dx = next.x - point.x;
-    const dy = next.y - point.y;
-    const nx = orientation * -dy;
-    const ny = orientation * dx;
-    const shift = Math.abs(nx) * halfWidth + Math.abs(ny) * halfHeight;
-    return { nx, ny, c: nx * point.x + ny * point.y + shift };
-  });
-  const result: ScreenPoint[] = [];
-  for (let index = 0; index < lines.length; index += 1) {
-    const previous = lines[(index + lines.length - 1) % lines.length];
-    const line = lines[index];
-    if (!previous || !line) continue;
-    const determinant = previous.nx * line.ny - line.nx * previous.ny;
-    if (Math.abs(determinant) <= POINT_EPSILON) continue;
-    result.push({
-      x: (previous.c * line.ny - line.c * previous.ny) / determinant,
-      y: (previous.nx * line.c - line.nx * previous.c) / determinant,
-    });
-  }
-  return result.filter((point) =>
-    lines.every((line) => line.nx * point.x + line.ny * point.y >= line.c - POINT_EPSILON),
+function cross(a: ScreenPoint, b: ScreenPoint, point: ScreenPoint): number {
+  return (b.x - a.x) * (point.y - a.y) - (b.y - a.y) * (point.x - a.x);
+}
+
+function convexHull(points: readonly ScreenPoint[]): ScreenPoint[] {
+  const sorted = [...points].sort((a, b) => a.x - b.x || a.y - b.y);
+  const unique = sorted.filter(
+    (point, index) =>
+      index === 0 || point.x !== sorted[index - 1]?.x || point.y !== sorted[index - 1]?.y,
   );
+  if (unique.length <= 1) return unique;
+
+  const half = (ordered: readonly ScreenPoint[]) => {
+    const result: ScreenPoint[] = [];
+    for (const point of ordered) {
+      while (
+        result.length >= 2 &&
+        cross(result[result.length - 2] ?? point, result[result.length - 1] ?? point, point) <= 0
+      )
+        result.pop();
+      result.push(point);
+    }
+    return result;
+  };
+  const lower = half(unique);
+  const upper = half([...unique].reverse());
+  return [...lower.slice(0, -1), ...upper.slice(0, -1)];
+}
+
+function nearestPointOnSegment(
+  point: ScreenPoint,
+  start: ScreenPoint,
+  end: ScreenPoint,
+): ScreenPoint {
+  const dx = end.x - start.x;
+  const dy = end.y - start.y;
+  const lengthSquared = dx * dx + dy * dy;
+  const t = lengthSquared
+    ? Math.max(
+        0,
+        Math.min(1, ((point.x - start.x) * dx + (point.y - start.y) * dy) / lengthSquared),
+      )
+    : 0;
+  return { x: start.x + dx * t, y: start.y + dy * t };
+}
+
+function clampToConvexHull(point: ScreenPoint, hull: ConvexPolygon): ScreenPoint {
+  const first = hull[0];
+  if (!first) return point;
+  if (hull.length === 1) return first;
+  const second = hull[1];
+  if (!second) return first;
+  if (hull.length === 2) return nearestPointOnSegment(point, first, second);
+  if (
+    hull.every((start, index) => cross(start, hull[(index + 1) % hull.length] ?? start, point) >= 0)
+  )
+    return point;
+
+  let nearest = first;
+  let nearestDistance = Number.POSITIVE_INFINITY;
+  for (let index = 0; index < hull.length; index += 1) {
+    const start = hull[index];
+    const end = hull[(index + 1) % hull.length];
+    if (!start || !end) continue;
+    const candidate = nearestPointOnSegment(point, start, end);
+    const distance = (candidate.x - point.x) ** 2 + (candidate.y - point.y) ** 2;
+    if (distance < nearestDistance) {
+      nearest = candidate;
+      nearestDistance = distance;
+    }
+  }
+  return nearest;
 }
 
 export interface CameraClampRing {
@@ -162,8 +155,8 @@ export class Camera {
     public clampRingTiles: CameraClampRing = NO_CLAMP_RING,
   ) {}
 
-  /** Optional convex paint hull in projected ground coordinates. */
-  clampPaintHull: readonly Vec2[] | null = null;
+  /** Opts irregular maps into the manual-pan hull reachable by programmatic centring. */
+  clampToProgrammaticReachableSet = false;
 
   private get bounds() {
     return groundBounds(this.grid.width, this.grid.height, this.projection);
@@ -230,16 +223,16 @@ export class Camera {
   clamp(): void {
     const slackX = this.worldWidth - this.viewport.width;
     const slackY = this.worldHeight - this.viewport.height;
-    this.offsetX = slackX <= 0 ? slackX / 2 : Math.max(0, Math.min(slackX, this.offsetX));
-    this.offsetY = slackY <= 0 ? slackY / 2 : Math.max(0, Math.min(slackY, this.offsetY));
+    this.offsetX = clampOffset(this.offsetX, slackX);
+    this.offsetY = clampOffset(this.offsetY, slackY);
   }
 
   /** Manual gestures may expose authored paint, but only on an overflowing axis. */
   clampToPanBounds(): void {
     const slackX = this.worldWidth - this.viewport.width;
     const slackY = this.worldHeight - this.viewport.height;
-    if (this.clampPaintHull && this.clampPaintHull.length >= 3) {
-      this.clampToPaintHull(slackX, slackY);
+    if (this.clampToProgrammaticReachableSet) {
+      this.clampToReachableSet(slackX, slackY);
       return;
     }
     const pixels = (tiles: number) => Math.max(0, tiles) * TILE * this.scale;
@@ -259,37 +252,70 @@ export class Camera {
           );
   }
 
-  private clampToPaintHull(slackX: number, slackY: number): void {
-    const centre = {
-      x: (this.offsetX + this.viewport.width / 2) / this.scale,
-      y: (this.offsetY + this.viewport.height / 2) / this.scale,
+  private clampToReachableSet(slackX: number, slackY: number): void {
+    const focus = [
+      { x: PAN_FOCUS_MARGIN_TILES, y: PAN_FOCUS_MARGIN_TILES },
+      { x: this.grid.width - PAN_FOCUS_MARGIN_TILES, y: PAN_FOCUS_MARGIN_TILES },
+      {
+        x: this.grid.width - PAN_FOCUS_MARGIN_TILES,
+        y: this.grid.height - PAN_FOCUS_MARGIN_TILES,
+      },
+      { x: PAN_FOCUS_MARGIN_TILES, y: this.grid.height - PAN_FOCUS_MARGIN_TILES },
+    ].map((point) => this.groundPoint(point));
+    const candidates = focus.map((point) => ({
+      x: clampOffset(point.x * this.scale - this.viewport.width / 2, slackX),
+      y: clampOffset(point.y * this.scale - this.viewport.height / 2, slackY),
+    }));
+    const emitBreakCrossings = (axis: 'x' | 'y', breakLine: number, brokenOffset: number) => {
+      for (let index = 0; index < focus.length; index += 1) {
+        const start = focus[index];
+        const end = focus[(index + 1) % focus.length];
+        if (!start || !end) continue;
+        if (!(
+          (start[axis] < breakLine && end[axis] > breakLine) ||
+          (start[axis] > breakLine && end[axis] < breakLine)
+        ))
+          continue;
+        const t = (breakLine - start[axis]) / (end[axis] - start[axis]);
+        const crossing = {
+          x: start.x + (end.x - start.x) * t,
+          y: start.y + (end.y - start.y) * t,
+        };
+        candidates.push(
+          axis === 'x'
+            ? {
+                x: brokenOffset,
+                y: clampOffset(crossing.y * this.scale - this.viewport.height / 2, slackY),
+              }
+            : {
+                x: clampOffset(crossing.x * this.scale - this.viewport.width / 2, slackX),
+                y: brokenOffset,
+              },
+        );
+      }
     };
-    const hull = this.clampPaintHull?.map((point) => this.boardPoint(point)) ?? [];
-    const xs = hull.map((point) => point.x);
-    const ys = hull.map((point) => point.y);
-    const halfWidth =
-      Math.max(...xs) - Math.min(...xs) <= (PAN_INSET * this.viewport.width) / this.scale
-        ? 0
-        : (PAN_INSET * this.viewport.width) / (2 * this.scale);
-    const halfHeight =
-      Math.max(...ys) - Math.min(...ys) <= (PAN_INSET * this.viewport.height) / this.scale
-        ? 0
-        : (PAN_INSET * this.viewport.height) / (2 * this.scale);
-    const insetHull = insetConvexPolygon(hull, halfWidth, halfHeight);
-    const insetEmpty = insetHull.length < 3;
-    const clamped = insetEmpty ? centre : clampCentreToConvexPolygon(centre, insetHull);
-    // A fitted axis has no room to pan. Keep its existing centred value even
-    // when the other axis needs to follow a sloping hull edge.
-    const next = {
-      x:
-        slackX <= 0 || halfWidth === 0 || insetEmpty ? this.worldWidth / this.scale / 2 : clamped.x,
-      y:
-        slackY <= 0 || halfHeight === 0 || insetEmpty
-          ? this.worldHeight / this.scale / 2
-          : clamped.y,
-    };
-    this.offsetX = next.x * this.scale - this.viewport.width / 2;
-    this.offsetY = next.y * this.scale - this.viewport.height / 2;
+
+    if (slackX > 0) {
+      emitBreakCrossings('x', this.viewport.width / (2 * this.scale), 0);
+      emitBreakCrossings(
+        'x',
+        this.bounds.width * TILE - this.viewport.width / (2 * this.scale),
+        slackX,
+      );
+    }
+    if (slackY > 0) {
+      emitBreakCrossings('y', this.viewport.height / (2 * this.scale), 0);
+      emitBreakCrossings(
+        'y',
+        this.bounds.height * TILE - this.viewport.height / (2 * this.scale),
+        slackY,
+      );
+    }
+
+    const next = clampToConvexHull({ x: this.offsetX, y: this.offsetY }, convexHull(candidates));
+    if (Math.hypot(next.x - this.offsetX, next.y - this.offsetY) <= OFFSET_WRITE_EPSILON) return;
+    this.offsetX = next.x;
+    this.offsetY = next.y;
   }
 
   panBy(dx: number, dy: number): void {
