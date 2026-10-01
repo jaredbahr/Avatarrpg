@@ -22,8 +22,10 @@ import {
   HEADINGS,
   KO_HEADINGS,
   REQUIRED_CLIPS,
+  TIMED_BARE_CLIP_MAX_FRAMES,
   headingClip,
   hitClip,
+  isTimedBareClip,
   koClip,
 } from './assets/clips';
 import type { ClipDef, ClipName } from './assets/clips';
@@ -846,7 +848,7 @@ const clipDef = z
     fps: z.number().positive().max(60),
     loop: z.boolean(),
     events: z.object({ hit: z.number().int().min(0).optional() }).optional(),
-    // A G knockout (ADR 0059): timed cel by cel, trimmed to its own cel.
+    // Timed clips (ADR 0059, ADR 0069): cel holds, optionally trimmed.
     frameMs: z.array(z.number().positive().max(5000)).optional(),
     frameSize: z
       .object({ w: z.number().int().positive(), h: z.number().int().positive() })
@@ -881,6 +883,12 @@ export function sheetClipProblems(
   eightWay: boolean,
 ): string[] {
   const problems: string[] = [];
+  const timedBareMaxMs: Readonly<Partial<Record<ClipName, number>>> = {
+    idle: 6000,
+    cast: 3000,
+    hit: 3000,
+    ko: 4000,
+  };
   // The knockouts on four diagonals, and the hits (ADR 0063) in all eight.
   for (const family of [KO_HEADINGS.map(koClip), HEADINGS.map(hitClip)]) {
     const authored = family.filter((clip) => clips[clip]);
@@ -896,11 +904,20 @@ export function sheetClipProblems(
   for (const clip of CLIP_NAMES) {
     const def = clips[clip];
     if (!def) continue;
-    const bounds = CLIP_FRAME_COUNTS[clip];
+    const legacyBounds = CLIP_FRAME_COUNTS[clip];
+    const bounds = isTimedBareClip(clip, def)
+      ? { min: legacyBounds.min, max: TIMED_BARE_CLIP_MAX_FRAMES }
+      : legacyBounds;
     if (def.frames.length < bounds.min || def.frames.length > bounds.max) {
       problems.push(
         `asset ${key}: ${clip} has ${def.frames.length} frames, needs ${bounds.min}-${bounds.max}`,
       );
+    }
+    const maxMs = timedBareMaxMs[clip];
+    if (isTimedBareClip(clip, def) && maxMs !== undefined) {
+      const total = def.frameMs?.reduce((sum, ms) => sum + ms, 0) ?? 0;
+      if (total > maxMs)
+        problems.push(`asset ${key}: ${clip} lasts ${total} ms, exceeds ${maxMs} ms`);
     }
     def.frames.forEach((name, index) => {
       const expected = `${key}/${clip}/${index}`;
@@ -949,11 +966,18 @@ export const assetEntrySchema = z.discriminatedUnion('kind', [
       .string()
       .regex(/\.json$/, 'must point at the clip JSON')
       .optional(),
-    pixelsPerTile: z.union([z.literal(128), z.literal(256)]),
+    // 80 is the 2x2 Driller sheet: a 160 px cel across a two-tile body.
+    pixelsPerTile: z.union([z.literal(80), z.literal(128), z.literal(256)]),
     frameSize: z
       .object({ w: z.number().int().min(1).max(512), h: z.number().int().min(1).max(512) })
       .optional(),
-    footprint: z.object({ w: z.union([z.literal(1), z.literal(2)]), h: z.literal(1) }),
+    // A footprint is one tile, the legacy 2x1, or the square 2x2: never 1x2.
+    footprint: z
+      .object({
+        w: z.union([z.literal(1), z.literal(2)]),
+        h: z.union([z.literal(1), z.literal(2)]),
+      })
+      .refine((value) => value.h === 1 || value.w === 2, 'a two-tile-deep footprint must be 2x2'),
     anchor: z.object({ x: z.number().min(0).max(1), y: z.number().min(0).max(1) }),
     facing: z.enum(['mirror', 'both']),
     locomotion: z
@@ -1565,6 +1589,13 @@ export function validateContent(
     // only read for a sheet that declares the headings it is asked for by.
     if (entry.clipData && !entry.locomotion)
       problems.push(`asset ${key}: clip data needs declared eight-way locomotion`);
+    if (
+      entry.footprint.w === 2 &&
+      entry.footprint.h === 2 &&
+      entry.frameSize &&
+      entry.frameSize.w !== entry.frameSize.h
+    )
+      problems.push(`asset ${key}: a 2x2 footprint needs a square frameSize`);
     problems.push(...sheetClipProblems(key, entry.clips, entry.locomotion !== undefined));
   }
   if (bundle.assets) {

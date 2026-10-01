@@ -1,0 +1,14 @@
+{
+  "props": {
+    "hay_bale": {
+      "fuel": 2,
+      "ignites": { "radius": 1, "spread": 0 },
+      "douse": ["water", "cold", "earth"]
+    }
+  },
+  "placements": {
+    "quarry_gate": {
+      "add": [{ "propId": "hay_bale", "pos": { "x": 13, "y": 7 } }]
+    }
+  }
+}

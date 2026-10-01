@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { CONTENT } from '../../content';
 import { RngCursor } from '../rng';
 import { createBattle, createGame } from '../state/createGame';
+import { BattleDraft } from '../state/battleDraft';
 import type { ContentIndex, Grid, Unit, Vec2 } from '../types';
 import { hitBreakdown, hitChance } from './damage';
 import { DEFAULT_TILE, tileAt, withTile } from './grid';
@@ -113,6 +114,36 @@ describe('hit chance', () => {
       statuses: 0,
       obscurement: NO_OBSCUREMENT,
     });
+  });
+
+  it('does not give cover to a defender beside a water barrel', () => {
+    const { attacker, defender } = fixture();
+    const battle = createBattle(
+      CONTENT,
+      createGame(CONTENT, {
+        seed: 'prop-cover',
+        party: [{ characterId: 'kaya', level: 3 }],
+        startNode: '',
+      }),
+      'enc_quarry_gate',
+      new RngCursor(1),
+    );
+    const field = {
+      ...battle,
+      grid: openGrid(),
+      props: [],
+      units: [at(attacker, ATTACKER), at(defender, RANGED)],
+    };
+    const draft = new BattleDraft(CONTENT, field, new RngCursor(2));
+    const barrel = draft.placeProp('water_barrel', { x: 2, y: 1 });
+    expect(barrel).toBeDefined();
+    expect(tileAt(draft.grid, barrel?.pos ?? { x: -1, y: -1 })).toMatchObject({
+      blocked: true,
+      cover: true,
+    });
+    expect(hitBreakdown(CONTENT, draft.grid, draft.units[0]!, draft.units[1]!)).toEqual(
+      expect.objectContaining({ cover: 0 }),
+    );
   });
 
   it('ignores cover next to the defender, and stacks elevation onto cover', () => {

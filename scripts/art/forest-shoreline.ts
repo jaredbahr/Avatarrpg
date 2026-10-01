@@ -97,6 +97,12 @@ export interface Pond {
    * grass runs on over the bank in clumps instead of meeting it along a band.
    */
   readonly overgrowth?: (x: number, y: number) => Rgb;
+  /**
+   * Keep an organic creek's grass/bank boundary on the same contour as its
+   * waterline. Ponds retain their independent grass wander; creek banks cross
+   * the apron and must not grow a separate brown tooth at the rim.
+   */
+  readonly bankFollowsWater?: boolean;
 }
 
 /**
@@ -106,8 +112,10 @@ export interface Pond {
  * to most of a bank's width, so the bare bank is a strip between two organic
  * lines and never reaches the cells' own edge.
  */
-export function overgrown(x: number, y: number, into: number): boolean {
-  return into > GRASS_LINE + GRASS_LINE_WANDER * shoreNoise(x * 3.7 + 1.7, y * 3.7 + 9.1);
+export function overgrown(x: number, y: number, into: number, bankFollowsWater = false): boolean {
+  return bankFollowsWater
+    ? into > GRASS_LINE
+    : into > GRASS_LINE + GRASS_LINE_WANDER * shoreNoise(x * 3.7 + 1.7, y * 3.7 + 9.1);
 }
 /** How far back from the wet line the grass takes over, in cells, and how far that wanders. */
 export const GRASS_LINE = 0.03;
@@ -462,7 +470,9 @@ export function packShoreline(
       if (wet) {
         const paint = wetPixel(material, x, y, inside, fromLine);
         rgb =
-          pond.overgrowth && paint.part === 'bank' && overgrown(x, y, -fromLine - INK_HALF)
+          pond.overgrowth &&
+          paint.part === 'bank' &&
+          overgrown(x, y, -fromLine - INK_HALF, pond.bankFollowsWater)
             ? pond.overgrowth(x, y)
             : paint.rgb;
         if (paint.part === 'ink') inkPixels++;

@@ -100,6 +100,8 @@ test.describe('a session', () => {
     // A fixed screen fraction can land behind another unit as the battle changes.
     await waitForIdle(page);
     await page.getByRole('button', { name: /^Move/ }).click();
+    // Move reflows the HUD and the camera refits on the following frame.
+    await settleLayout(page);
     const view = await page.evaluate(() => {
       const app = window.fnt?.app;
       const canvas = document.querySelector<HTMLCanvasElement>('.map-canvas');

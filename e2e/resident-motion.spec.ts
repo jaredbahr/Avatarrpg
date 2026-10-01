@@ -7,6 +7,15 @@ import type { NpcMarker } from '../src/render/view';
 import { TIMING } from '../src/app/anim/choreography';
 import { STROLL_RAMP_MS } from '../src/app/anim/stroll';
 
+/**
+ * What a fake-clock resident walk is allowed on a slow runner. These cases step
+ * the clock a few hundred times and every step renders a frame. Main run
+ * 36910180483 on e675f238 passed every assertion of the Gao tap case on WebKit iPad
+ * and then ran out of the 60 s default on its last line, twice. This is a cap,
+ * not a sleep: a case that finishes early still finishes early.
+ */
+const FAKE_CLOCK_WALK_BUDGET_MS = 180_000;
+
 const CLOCK_STEP_MS = 60;
 const PHASE_ROUTE_TILES = 20;
 const PHASE_ROUTE_MARGIN_MS = 1_000;
@@ -140,6 +149,8 @@ for (const renderer of ['canvas', 'webgl'] as const) {
   test(`a phase change walks residents across the village, one sprite each (${renderer})`, async ({
     page,
   }) => {
+    // The canvas variant renders the whole walk frame by frame; WebGL takes the larger cap.
+    test.setTimeout(FAKE_CLOCK_WALK_BUDGET_MS);
     allowSoftwareWebgl(test, renderer);
     await village(page, renderer, 'midday', { x: 10, y: 5 });
     await expect.poll(async () => (await markers(page)).map((m) => m.id)).toContain('lw.npc.mira');
@@ -236,6 +247,7 @@ for (const renderer of ['canvas', 'webgl'] as const) {
 test('Gao restocks his display in trading hours, his tap tile never leaving the shop', async ({
   page,
 }) => {
+  test.setTimeout(FAKE_CLOCK_WALK_BUDGET_MS);
   // The party out on the east lawn, clear of the square.
   await village(page, 'canvas', 'morning', { x: 20, y: 11 });
   await pauseClock(page);
@@ -261,6 +273,7 @@ test('Gao restocks his display in trading hours, his tap tile never leaving the 
 test('the relief watch holds the gate at midday, and the party stops beside them', async ({
   page,
 }) => {
+  test.setTimeout(FAKE_CLOCK_WALK_BUDGET_MS);
   await village(page, 'canvas', 'midday', { x: 13, y: 7 });
   const watch = (await markers(page)).find((m) => m.id === 'bg.relief_watch');
   expect(watch).toMatchObject({ pos: { x: 17, y: 6 }, alpha: 1, quiet: true });
@@ -275,6 +288,7 @@ test('the relief watch holds the gate at midday, and the party stops beside them
 });
 
 test('a tap on someone walking takes the party to them once they arrive', async ({ page }) => {
+  test.setTimeout(FAKE_CLOCK_WALK_BUDGET_MS);
   await village(page, 'canvas', 'midday', { x: 17, y: 11 });
   await pauseClock(page);
   // Let the afternoon arrive without a wait at the seat: Dorin comes up from the river.
@@ -339,6 +353,7 @@ test('a tap on someone walking takes the party to them once they arrive', async 
 });
 
 test('a tap on Gao at his crates brings him home before the talk opens', async ({ page }) => {
+  test.setTimeout(FAKE_CLOCK_WALK_BUDGET_MS);
   await village(page, 'canvas', 'morning', { x: 20, y: 11 });
   await pauseClock(page);
   const gao = () =>

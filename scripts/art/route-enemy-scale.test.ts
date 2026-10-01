@@ -39,6 +39,12 @@ it.each(['thug', 'slinger', 'bruiser', 'quarrybender'])(
   60_000,
 );
 
+it('validates the dormant lossless Driller sheet', async () => {
+  expect(
+    await validateSheets('public', { 'unit.enemy.driller': ASSETS['unit.enemy.driller']! }),
+  ).toEqual([]);
+});
+
 it('keeps the legacy route crossbow near party height without changing its pixels or feet', async () => {
   for (const name of ['crossbow']) {
     const key = `unit.enemy.${name}`;

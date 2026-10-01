@@ -1,0 +1,6 @@
+{
+  "props": {
+    "hay_bale": { "fuel": 3, "ignites": { "radius": 1, "spread": 1 } },
+    "cabbage_cart": { "fuel": 2 }
+  }
+}

@@ -295,6 +295,14 @@ describe('Animator', () => {
     expect(cold.unitPose(1, 'p0', kaya)?.clip).toBe('ko');
     expect(cold.fallenPose('p0', kaya)).toBeUndefined();
 
+    const bareKo = new Animator(CONTENT, {
+      motionReduced: () => false,
+      sheetClips: () => ({
+        ko: { frames: ['ko/0', 'ko/1'], fps: 8, loop: false, frameMs: [100, 200] },
+      }),
+    });
+    expect(bareKo.fallenPose('p0', kaya)).toEqual({ clip: 'ko', clipTime: 3_600_000 });
+
     // A push on its own plays the G reaction through rather than pinning it
     // while the unit slides.
     const pushed = new Animator(CONTENT, {
