@@ -1817,7 +1817,11 @@ export class PixiBackend implements RenderBackend {
       x: (screen.x + camera.offsetX) / camera.scale,
       y: (screen.y + camera.offsetY) / camera.scale,
     };
-    const cx = actorReticleX({ ...box, size: TILE, width: (target?.size ?? 1) * TILE }, scale);
+    const cx = actorReticleX(
+      { ...box, size: TILE, width: (target?.size ?? 1) * TILE },
+      scale,
+      target?.size ?? 1,
+    );
     const lift = liftAlong(view.grid, pos, camera.projection);
     const silhouette = actorSilhouetteGeometry(
       { x: box.x, y: box.y - lift * TILE, size: TILE },

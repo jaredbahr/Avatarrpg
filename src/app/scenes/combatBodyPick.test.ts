@@ -105,6 +105,37 @@ describe('large upright actor body picking', () => {
     ).toEqual({ tile: behind.pos });
   });
 
+  it('leaves a prop cell unchanged', () => {
+    const { boss, box, point } = fixture('oblique');
+    const groundTile = { x: 12, y: 3 };
+    expect(
+      resolveCombatBodyPick({
+        point,
+        groundTile,
+        actors: [{ unit: boss, box, scale: 2, frameHeadroom: null }],
+        units: [boss],
+        props: [
+          {
+            id: 'crate',
+            propId: 'crate',
+            pos: groundTile,
+            hp: 1,
+            previous: {
+              terrain: 'road',
+              elevation: 0,
+              blocked: false,
+              blocksSight: false,
+              cover: false,
+              surface: null,
+            },
+          },
+        ],
+        protectedTiles: new Set(),
+        caster: null,
+      }),
+    ).toEqual({ tile: groundTile });
+  });
+
   it('leaves a pointer outside the silhouette unchanged', () => {
     const { boss, box } = fixture('orthographic');
     const groundTile = { x: 12, y: 3 };
@@ -143,6 +174,23 @@ describe('large upright actor body picking', () => {
     }
   });
 
+  it('leaves a point well inside a scaled 1x1 body unchanged', () => {
+    const { boss, box } = fixture('oblique', 1);
+    const groundTile = { x: 12, y: 3 };
+    const point = { x: box.x + box.size / 2, y: box.y + box.size / 2 };
+    expect(
+      resolveCombatBodyPick({
+        point,
+        groundTile,
+        actors: [{ unit: boss, box, scale: 1.25, frameHeadroom: null }],
+        units: [boss],
+        props: [],
+        protectedTiles: new Set(),
+        caster: null,
+      }),
+    ).toEqual({ tile: groundTile });
+  });
+
   it('aims at the nearest legal footprint cell', () => {
     const { boss, box, point } = fixture('oblique');
     const result = resolveCombatBodyPick({
@@ -152,9 +200,52 @@ describe('large upright actor body picking', () => {
       units: [boss],
       props: [],
       protectedTiles: new Set(),
-      legalTargets: new Set(['16,5', '15,6']),
+      isLegalAim: (cell) => cell.x === 15 && cell.y === 6,
       caster: { x: 15, y: 8 },
     });
     expect(result.tile).toEqual({ x: 15, y: 6 });
+  });
+
+  it('falls back to the ground tile when no footprint cell is a legal raw aim', () => {
+    const { boss, box, point } = fixture('oblique');
+    const groundTile = { x: 12, y: 3 };
+    expect(
+      resolveCombatBodyPick({
+        point,
+        groundTile,
+        actors: [{ unit: boss, box, scale: 2, frameHeadroom: null }],
+        units: [boss],
+        props: [],
+        protectedTiles: new Set(),
+        isLegalAim: () => false,
+        caster: { x: 15, y: 8 },
+      }),
+    ).toEqual({ tile: groundTile });
+  });
+
+  it("does not pick the boss through another living 1x1 actor's upright body", () => {
+    const { boss, box, point } = fixture('oblique');
+    const groundTile = { x: 12, y: 3 };
+    const other = unit('other', { x: 12, y: 4 }, 1);
+    expect(
+      resolveCombatBodyPick({
+        point,
+        groundTile,
+        actors: [{ unit: boss, box, scale: 2, frameHeadroom: null }],
+        units: [boss, other],
+        props: [],
+        protectedTiles: new Set(),
+        otherActorBounds: [
+          {
+            unitId: other.id,
+            left: point.x - 20,
+            right: point.x + 20,
+            top: point.y - 20,
+            bottom: point.y + 20,
+          },
+        ],
+        caster: null,
+      }),
+    ).toEqual({ tile: groundTile });
   });
 });

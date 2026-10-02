@@ -28,7 +28,14 @@ export function resolveCombatBodyPick(options: {
   readonly props: readonly PropInstance[];
   readonly protectedTiles: ReadonlySet<string>;
   readonly caster: Vec2 | null;
-  readonly legalTargets?: ReadonlySet<string>;
+  readonly isLegalAim?: (cell: Vec2) => boolean;
+  readonly otherActorBounds?: readonly {
+    readonly unitId: string;
+    readonly left: number;
+    readonly top: number;
+    readonly right: number;
+    readonly bottom: number;
+  }[];
   readonly squareFootprints?: boolean;
 }): BodyPickResult {
   const {
@@ -39,7 +46,8 @@ export function resolveCombatBodyPick(options: {
     props,
     protectedTiles,
     caster,
-    legalTargets,
+    isLegalAim,
+    otherActorBounds = [],
     squareFootprints = true,
   } = options;
   const occupied = units.some((unit) =>
@@ -47,6 +55,17 @@ export function resolveCombatBodyPick(options: {
   );
   const prop = props.some((candidate) => samePos(candidate.pos, groundTile));
   if (occupied || prop || protectedTiles.has(posKey(groundTile))) return { tile: groundTile };
+
+  if (
+    otherActorBounds.some(
+      (bounds) =>
+        point.x >= bounds.left &&
+        point.x <= bounds.right &&
+        point.y >= bounds.top &&
+        point.y <= bounds.bottom,
+    )
+  )
+    return { tile: groundTile };
 
   // Prefer the later candidate if enlarged bodies happen to overlap.
   for (let index = actors.length - 1; index >= 0; index -= 1) {
@@ -69,10 +88,10 @@ export function resolveCombatBodyPick(options: {
     )
       continue;
 
-    const cells = occupiedCells(unit, squareFootprints)
-      .filter((cell) => !legalTargets || legalTargets.has(posKey(cell)))
-      .sort((a, b) => (caster ? distance(caster, a) - distance(caster, b) : 0));
-    const tile = cells[0];
+    const cells = occupiedCells(unit, squareFootprints).sort((a, b) =>
+      caster ? distance(caster, a) - distance(caster, b) : 0,
+    );
+    const tile = cells.find((cell) => !isLegalAim || isLegalAim(cell));
     if (tile) return { tile, unit };
   }
   return { tile: groundTile };

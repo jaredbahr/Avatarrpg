@@ -78,9 +78,11 @@ export function actorBodyBounds(
 }
 
 /** The target cue sits just beyond the scaled silhouette's right edge. */
-export function actorReticleX(box: ActorSpriteBox, scale: number): number {
+export function actorReticleX(box: ActorSpriteBox, scale: number, size: 1 | 2 = 1): number {
   const width = box.width ?? box.size;
-  return box.x + width / 2 + (width * scale) / 2 + box.size * 0.12;
+  return size === 2
+    ? box.x + width + (width * (scale - 1)) / 2 + box.size * 0.12
+    : box.x + width + box.size * 0.12;
 }
 
 /**

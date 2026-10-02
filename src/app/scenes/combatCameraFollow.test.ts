@@ -1,5 +1,9 @@
 import { describe, expect, it } from 'vitest';
-import { actorKeepInViewDelta, shouldFollowAnimatedLargeActor } from './combatCameraFollow';
+import {
+  actorKeepInViewDelta,
+  combatCameraFollowDecision,
+  shouldFollowAnimatedLargeActor,
+} from './combatCameraFollow';
 
 describe('animated large-actor camera follow', () => {
   const viewport = { width: 800, height: 500 };
@@ -22,10 +26,22 @@ describe('animated large-actor camera follow', () => {
     });
   });
 
-  it('leaves 1x1, scale-1, gate-off, stationary and manual-camera behavior unchanged', () => {
+  it.each([
+    ['horizontal', { left: -100, top: 100, right: 740, bottom: 300 }],
+    ['vertical', { left: 100, top: -100, right: 300, bottom: 460 }],
+  ] as const)('centres an oversized body stably on the %s axis', (_axis, body) => {
+    const delta = actorKeepInViewDelta(body, viewport);
+    const moved = {
+      left: body.left + delta.x,
+      right: body.right + delta.x,
+      top: body.top + delta.y,
+      bottom: body.bottom + delta.y,
+    };
+    expect(actorKeepInViewDelta(moved, viewport)).toEqual({ x: 0, y: 0 });
+  });
+
+  it('limits eligibility to enlarged square 2x2 actors', () => {
     const eligible = {
-      animated: true,
-      manualCamera: false,
       size: 2 as const,
       scale: 2,
       squareFootprints: true,
@@ -34,7 +50,48 @@ describe('animated large-actor camera follow', () => {
     expect(shouldFollowAnimatedLargeActor({ ...eligible, size: 1 })).toBe(false);
     expect(shouldFollowAnimatedLargeActor({ ...eligible, scale: 1 })).toBe(false);
     expect(shouldFollowAnimatedLargeActor({ ...eligible, squareFootprints: false })).toBe(false);
-    expect(shouldFollowAnimatedLargeActor({ ...eligible, animated: false })).toBe(false);
-    expect(shouldFollowAnimatedLargeActor({ ...eligible, manualCamera: true })).toBe(false);
+  });
+
+  it('moves idle -> following -> release recentre, with one owner per frame', () => {
+    const following = combatCameraFollowDecision(
+      { kind: 'idle' },
+      { animatedUnitId: 'boss', activeUnitId: 'hero', manualCamera: false },
+    );
+    expect(following).toEqual({
+      state: { kind: 'following', unitId: 'boss' },
+      owner: 'follow',
+    });
+    expect(
+      combatCameraFollowDecision(following.state, {
+        animatedUnitId: 'boss',
+        activeUnitId: 'hero',
+        manualCamera: false,
+      }),
+    ).toEqual({ state: following.state, owner: 'follow' });
+    expect(
+      combatCameraFollowDecision(following.state, {
+        animatedUnitId: null,
+        activeUnitId: 'hero',
+        manualCamera: false,
+      }),
+    ).toEqual({ state: { kind: 'idle' }, owner: 'recentre' });
+  });
+
+  it('manual framing suspends follow and suppresses release recentring', () => {
+    const state = { kind: 'following', unitId: 'boss' } as const;
+    expect(
+      combatCameraFollowDecision(state, {
+        animatedUnitId: 'boss',
+        activeUnitId: 'hero',
+        manualCamera: true,
+      }).owner,
+    ).toBe('idle');
+    expect(
+      combatCameraFollowDecision(state, {
+        animatedUnitId: null,
+        activeUnitId: 'hero',
+        manualCamera: true,
+      }),
+    ).toEqual({ state: { kind: 'idle' }, owner: 'idle' });
   });
 });

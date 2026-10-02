@@ -80,7 +80,12 @@ import { flushTime } from './flockFlush';
 import { resolveCombatBodyPick } from './combatBodyPick';
 import { liftAlong } from '../../render/geometry/elevation';
 import { actorBodyBounds } from '../../render/geometry/actorSilhouette';
-import { actorKeepInViewDelta, shouldFollowAnimatedLargeActor } from './combatCameraFollow';
+import {
+  actorKeepInViewDelta,
+  combatCameraFollowDecision,
+  shouldFollowAnimatedLargeActor,
+  type CombatCameraFollowState,
+} from './combatCameraFollow';
 
 type Mode =
   | { readonly kind: 'idle' }
@@ -187,6 +192,7 @@ export class CombatScene implements Scene {
   private actorButton: HTMLButtonElement | null = null;
   /** True after a user zoom/pan; HUD reflows must preserve that manual framing. */
   private manualCamera = false;
+  private cameraFollow: CombatCameraFollowState = { kind: 'idle' };
   /**
    * The last pending move target revealed for a particular viewport. A
    * confirmation dock can shorten the canvas after the target was selected;
@@ -632,24 +638,39 @@ export class CombatScene implements Scene {
     if (!renderer || !battle) return null;
     const groundTile = renderer.camera.pickTile(x, y, battle.grid);
     const active = this.active();
-    const protectedTiles = new Set<string>();
-    let legalTargets: Set<string> | undefined;
-    if (intent === 'tap' && this.mode.kind === 'move') {
-      for (const cell of this.reachableCells().values()) protectedTiles.add(posKey(cell.pos));
-    } else if (intent === 'tap' && this.mode.kind === 'aim' && active) {
-      const ability = this.app.content.abilities.get(this.mode.abilityId);
-      if (ability) {
-        legalTargets = new Set(
-          targetableTiles(this.app.content, battle, active, ability).map(posKey),
-        );
-        for (const key of legalTargets) protectedTiles.add(key);
-      }
-    }
     const projection = renderer.camera.projection;
+    const point = { x, y };
+    const eligible = battle.units.filter((unit) => {
+      if (intent !== 'inspect' && !isAlive(unit)) return false;
+      const scale =
+        unit.faction === 'party' ? partyScale(projection) : enemyScale(unit.sprite, 1, projection);
+      if (!SQUARE_FOOTPRINTS || unit.size !== 2 || scale <= 1) return false;
+      const pos = this.app.animator.renderPos(performance.now(), unit.id) ?? unit.pos;
+      const box = renderer.camera.spriteBox(pos, unit.size, true);
+      box.y -= liftAlong(battle.grid, pos, projection) * box.size;
+      const bounds = actorBodyBounds(
+        { ...box, width: box.size * unit.size },
+        unit.size,
+        null,
+        scale,
+      );
+      return x >= bounds.left && x <= bounds.right && y >= bounds.top && y <= bounds.bottom;
+    });
+    if (eligible.length === 0) return { tile: groundTile };
+
+    const protectedTiles = new Set<string>();
+    const memo = this.overlayMemo?.battle === battle ? this.overlayMemo : null;
+    if (intent === 'tap' && (this.mode.kind === 'move' || this.mode.kind === 'aim')) {
+      const kind = this.mode.kind === 'move' ? 'move' : 'target';
+      const tiles = memo?.overlays.find((layer) => layer.kind === kind)?.tiles;
+      // The render pass normally established this memo. Until it has, ground
+      // picking is safer than letting a body steal a meaningful rules tile.
+      if (!tiles) return { tile: groundTile };
+      for (const tile of tiles) protectedTiles.add(posKey(tile));
+    }
     const now = performance.now();
-    const actors = battle.units
-      .filter((unit) => intent === 'inspect' || isAlive(unit))
-      .map((unit) => {
+    const geometryFor = (units: readonly Unit[]) =>
+      units.map((unit) => {
         const health = this.app.animator.unitHealth(now, unit);
         const pose = this.poseFields(
           now,
@@ -668,35 +689,40 @@ export class CombatScene implements Scene {
         }
         box.y -= liftAlong(battle.grid, pos, projection) * box.size;
         const bend = pose.bend && sheets.bendFrame(unit.sprite, pose.bend.heading, pose.bend.index);
-        const heightTiles = SQUARE_FOOTPRINTS ? unit.size : 1;
-        const frame =
-          bend ||
-          sheets.frame(
-            unit.sprite,
-            pose.clip ?? 'idle',
-            pose.clipTime ?? now + idlePhase(unit.id),
-            pose.clipFrame,
-            box.size * renderer.viewport.dpr * scale,
-            unit.size,
-            pose.meleeDirection,
-            heightTiles,
-          );
         return {
           unit,
           scale,
           box,
-          frameHeadroom: frame?.headroom ?? null,
+          frameHeadroom: bend?.headroom ?? sheets.silhouetteHeadroom(unit.sprite),
         };
       });
+    const actors = geometryFor(eligible);
+    const eligibleIds = new Set(eligible.map((unit) => unit.id));
+    const otherActorBounds = geometryFor(
+      battle.units.filter((unit) => isAlive(unit) && !eligibleIds.has(unit.id)),
+    ).map(({ unit, box, scale, frameHeadroom }) => ({
+      unitId: unit.id,
+      ...actorBodyBounds({ ...box, width: box.size * unit.size }, unit.size, frameHeadroom, scale),
+    }));
+    const ability =
+      intent === 'tap' && this.mode.kind === 'aim' && active
+        ? this.app.content.abilities.get(this.mode.abilityId)
+        : undefined;
     return resolveCombatBodyPick({
-      point: { x, y },
+      point,
       groundTile,
       actors,
       units: battle.units,
       props: battle.props,
       protectedTiles,
       caster: active?.pos ?? null,
-      ...(legalTargets ? { legalTargets } : {}),
+      ...(ability && active
+        ? {
+            isLegalAim: (cell: Vec2) =>
+              isValidTarget(this.app.content, battle, active, ability, cell).ok,
+          }
+        : {}),
+      otherActorBounds,
       squareFootprints: SQUARE_FOOTPRINTS,
     });
   }
@@ -804,7 +830,13 @@ export class CombatScene implements Scene {
 
       // Where the board cannot fit, whoever is acting is what to look at.
       const camera = this.renderer?.camera;
-      if (unit && camera && !camera.fitted) camera.centreOn(unit.pos, unit.size);
+      // A turn change re-arms follow after any manual action. An animation
+      // already owned by follow keeps ownership until its release frame.
+      this.manualCamera = false;
+      const followedStillMoving =
+        this.cameraFollow.kind === 'following' &&
+        this.app.animator.renderPos(performance.now(), this.cameraFollow.unitId) !== undefined;
+      if (!followedStillMoving) this.centreOnActiveUnit(unit, camera);
     }
 
     if (battle.phase !== 'active' && !this.resultShown) {
@@ -2035,6 +2067,12 @@ export class CombatScene implements Scene {
     const camera = renderer.camera;
     const projection = camera.projection;
 
+    let followed: {
+      unit: Unit;
+      pos: Vec2;
+      scale: number;
+      pose: ReturnType<CombatScene['poseFields']>;
+    } | null = null;
     for (const unit of battle.units) {
       const pos = this.app.animator.renderPos(now, unit.id);
       if (!pos) continue;
@@ -2050,8 +2088,6 @@ export class CombatScene implements Scene {
       const scale = pose.scale ?? 1;
       if (
         !shouldFollowAnimatedLargeActor({
-          animated: true,
-          manualCamera: this.manualCamera,
           size: unit.size,
           scale,
           squareFootprints: SQUARE_FOOTPRINTS,
@@ -2059,35 +2095,54 @@ export class CombatScene implements Scene {
       )
         continue;
 
-      const box = camera.spriteBox(pos, unit.size, true);
-      if (pose.offset) {
-        box.x += pose.offset.x * box.size;
-        box.y += pose.offset.y * box.size;
-      }
-      box.y -= liftAlong(battle.grid, pos, projection) * box.size;
-      const bend = pose.bend && sheets.bendFrame(unit.sprite, pose.bend.heading, pose.bend.index);
-      const frame =
-        bend ||
-        sheets.frame(
-          unit.sprite,
-          pose.clip ?? 'idle',
-          pose.clipTime ?? now + idlePhase(unit.id),
-          pose.clipFrame,
-          box.size * renderer.viewport.dpr * scale,
-          unit.size,
-          pose.meleeDirection,
-          unit.size,
-        );
-      const body = actorBodyBounds(
-        { ...box, width: box.size * unit.size },
-        unit.size,
-        frame?.headroom ?? null,
-        scale,
-      );
-      const delta = actorKeepInViewDelta(body, camera.viewport);
-      if (delta.x !== 0 || delta.y !== 0) camera.panBy(delta.x, delta.y);
+      followed = { unit, pos, scale, pose };
+      break;
+    }
+    const decision = combatCameraFollowDecision(this.cameraFollow, {
+      animatedUnitId: followed?.unit.id ?? null,
+      activeUnitId: this.active()?.id ?? null,
+      manualCamera: this.manualCamera,
+    });
+    this.cameraFollow = decision.state;
+    if (decision.owner === 'recentre') {
+      this.centreOnActiveUnit(this.active(), camera);
       return;
     }
+    if (decision.owner !== 'follow' || !followed) return;
+
+    const { unit, pos, scale, pose } = followed;
+    const box = camera.spriteBox(pos, unit.size, true);
+    if (pose.offset) {
+      box.x += pose.offset.x * box.size;
+      box.y += pose.offset.y * box.size;
+    }
+    box.y -= liftAlong(battle.grid, pos, projection) * box.size;
+    const bend = pose.bend && sheets.bendFrame(unit.sprite, pose.bend.heading, pose.bend.index);
+    const frame =
+      bend ||
+      sheets.frame(
+        unit.sprite,
+        pose.clip ?? 'idle',
+        pose.clipTime ?? now + idlePhase(unit.id),
+        pose.clipFrame,
+        box.size * renderer.viewport.dpr * scale,
+        unit.size,
+        pose.meleeDirection,
+        unit.size,
+      );
+    const body = actorBodyBounds(
+      { ...box, width: box.size * unit.size },
+      unit.size,
+      frame?.headroom ?? null,
+      scale,
+    );
+    const delta = actorKeepInViewDelta(body, camera.viewport);
+    if (delta.x !== 0 || delta.y !== 0) camera.panBy(delta.x, delta.y);
+  }
+
+  /** Shared turn-change and follow-release centring path. */
+  private centreOnActiveUnit(unit: Unit | undefined, camera = this.renderer?.camera): void {
+    if (unit && camera && !camera.fitted) camera.centreOn(unit.pos, unit.size);
   }
 
   /**
