@@ -1474,8 +1474,13 @@ describe('feel pass: every table beat is heard, and dust never holds the turn', 
       },
     ];
     const { sounds, tracks } = play(events);
+    const ignition = events[0];
+    if (!ignition) throw new Error('expected a prop ignition event');
+    const ignitionEmitters = play([ignition]).tracks.filter((track) => track.kind === 'emitter');
 
     expect(keys(sounds)).toEqual(['fx.surface.fire', 'fx.surface.doused']);
     expect(tracks.filter((track) => track.kind === 'emitter').length).toBeGreaterThanOrEqual(2);
+    expect(ignitionEmitters.some((track) => track.def.kind === 'particles')).toBe(true);
+    expect(ignitionEmitters.some((track) => track.def.kind === 'strokes')).toBe(false);
   });
 });

@@ -2,6 +2,124 @@ import { expect, test } from '@playwright/test';
 import { allowSoftwareWebgl } from './budget';
 import { enterNode, resetStorage, setLargeText, startGame, takeTurn, waitForIdle } from './helpers';
 import { paintedTileCentre } from './projection';
+import type { MapView } from '../src/render/view';
+
+test('camera follows the moving boss and returns to the next actor with motion on', async ({
+  page,
+}) => {
+  test.setTimeout(40_000);
+  await resetStorage(page, '?renderer=canvas');
+  await startGame(page, ['Kaya'], ['kaya'], 'boss-camera-follow', { reduceMotion: false });
+  await enterNode(page, 'battle_grumbler');
+  await takeTurn(page);
+  await waitForIdle(page);
+
+  await page.evaluate(() => {
+    type FollowProbe = {
+      animatedFrames: number;
+      outside: {
+        points: { x: number; y: number }[];
+        viewport: { width: number; height: number };
+      }[];
+    };
+    const win = window as Window & { bossFollowProbe?: FollowProbe };
+    win.bossFollowProbe = { animatedFrames: 0, outside: [] };
+    const app = window.fnt!.app;
+    const scene = (
+      app as unknown as {
+        scene: {
+          renderer: {
+            camera: {
+              viewport: { width: number; height: number };
+              project(pos: { x: number; y: number }): { x: number; y: number };
+            };
+            draw(view: MapView): void;
+          };
+        };
+      }
+    ).scene;
+    const draw = scene.renderer.draw.bind(scene.renderer);
+    scene.renderer.draw = (view) => {
+      draw(view);
+      const boss = view.units.find((unit) => unit.name === 'Grumbler');
+      if (!boss?.renderPos) return;
+      const points = [0.5, 1.5].flatMap((dy) =>
+        [0.5, 1.5].map((dx) =>
+          scene.renderer.camera.project({ x: boss.renderPos!.x + dx, y: boss.renderPos!.y + dy }),
+        ),
+      );
+      const viewport = scene.renderer.camera.viewport;
+      win.bossFollowProbe!.animatedFrames += 1;
+      if (
+        points.some(
+          (point) =>
+            point.x < 0 || point.y < 0 || point.x > viewport.width || point.y > viewport.height,
+        )
+      ) {
+        win.bossFollowProbe!.outside.push({ points, viewport: { ...viewport } });
+      }
+    };
+  });
+
+  await page.evaluate(() => {
+    const app = window.fnt!.app;
+    const battle = app.state!.battle!;
+    const actor = battle.units.find((unit) => unit.id === battle.order[battle.turnIndex]);
+    if (!actor || actor.faction !== 'party') throw new Error('Party turn was not ready');
+    app.dispatch({ type: 'endTurn', unitId: actor.id });
+  });
+
+  await expect
+    .poll(() =>
+      page.evaluate(
+        () =>
+          (window as Window & { bossFollowProbe?: { animatedFrames: number } }).bossFollowProbe
+            ?.animatedFrames ?? 0,
+      ),
+    )
+    .toBeGreaterThan(0);
+  await waitForIdle(page);
+  await takeTurn(page);
+  const follow = await page.evaluate(
+    () =>
+      (
+        window as Window & {
+          bossFollowProbe?: {
+            animatedFrames: number;
+            outside: unknown[];
+          };
+        }
+      ).bossFollowProbe,
+  );
+  expect(follow?.animatedFrames).toBeGreaterThan(0);
+  expect(follow?.outside).toEqual([]);
+
+  await expect
+    .poll(() =>
+      page.evaluate(() => {
+        const app = window.fnt!.app;
+        const battle = app.state!.battle!;
+        const actor = battle.units.find((unit) => unit.id === battle.order[battle.turnIndex]);
+        const scene = (
+          app as unknown as {
+            scene: {
+              renderer: {
+                camera: {
+                  viewport: { width: number; height: number };
+                  project(pos: { x: number; y: number }): { x: number; y: number };
+                };
+              };
+            };
+          }
+        ).scene;
+        if (!actor || actor.faction !== 'party') return false;
+        const point = scene.renderer.camera.project({ x: actor.pos.x + 0.5, y: actor.pos.y + 0.5 });
+        const { width, height } = scene.renderer.camera.viewport;
+        return point.x >= 0 && point.y >= 0 && point.x <= width && point.y <= height;
+      }),
+    )
+    .toBe(true);
+});
 
 for (const renderer of ['canvas', 'webgl']) {
   test(`portrait initiative locates threats without changing actions on ${renderer}`, async ({

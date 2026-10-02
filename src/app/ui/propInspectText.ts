@@ -7,6 +7,7 @@ import type {
   StatusDef,
   StatusId,
 } from '../../core/types';
+import { FIRE_ABILITIES } from '../../content/abilities/fire';
 import type { MarkKind } from './marks';
 
 export interface PropInspectChip {
@@ -39,6 +40,14 @@ const DOUSE_NAMES: Readonly<Record<DousingType, string>> = {
   cold: 'cold',
   earth: 'earth',
 };
+
+const SMALLEST_SHIPPED_FIRE_HIT = Math.min(
+  ...FIRE_ABILITIES.flatMap((ability) =>
+    ability.effects.flatMap((effect) =>
+      effect.kind === 'damage' && effect.damageType === 'fire' ? [effect.base] : [],
+    ),
+  ),
+);
 
 function list(words: readonly string[]): string {
   if (words.length < 2) return words[0] ?? '';
@@ -149,14 +158,18 @@ export function propInspectText(
   const notes: PropInspectChip[] = [];
   if (def.blocksMove) notes.push({ text: 'Blocks the way', icon: 'wall' });
   if (def.blocksSight) notes.push({ text: 'Blocks sight', icon: 'sense' });
-  if ((def.fuel ?? 0) > 0)
+  if ((def.fuel ?? 0) > 0) {
+    const fireDamage = SMALLEST_SHIPPED_FIRE_HIT * (def.vulnerableTo.includes('fire') ? 2 : 1);
     notes.push({
       text:
         prop.burning === undefined
           ? `Fire lights it; burns for ${def.fuel} ${def.fuel === 1 ? 'round' : 'rounds'}`
-          : 'Fire will break it now',
+          : prop.hp - fireDamage <= 0
+            ? 'Fire will break it now'
+            : 'Fire hurts it now',
       icon: 'torch',
     });
+  }
   const vulnerable =
     (def.fuel ?? 0) > 0 && prop.burning === undefined
       ? def.vulnerableTo.filter((type) => type !== 'fire')

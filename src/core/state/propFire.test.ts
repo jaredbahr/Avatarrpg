@@ -349,6 +349,30 @@ describe('props that burn', () => {
     }
   });
 
+  it('does not relight a prop doused beside lasting fire in the same upkeep', () => {
+    const local = freshDraft();
+    const pos = openTile(local);
+    const hay = place(local, SOLID_HAY.id, pos);
+    local.damageProp(hay.id, 1, 'fire');
+    local.paint([{ x: pos.x - 1, y: pos.y }], 'water', 3, null);
+    local.paint([{ x: pos.x + 1, y: pos.y }], 'fire', 3, null);
+    const before = local.events.length;
+
+    local.tickTerrain();
+
+    const emitted = local.events.slice(before);
+    expect(local.propAt(pos)?.burning).toBeUndefined();
+    expect(emitted).toEqual([
+      {
+        type: 'propDoused',
+        propId: hay.id,
+        pos,
+        label: 'The Test Solid Hay is put out.',
+      },
+    ]);
+    expect(emitted.filter((event) => event.type === 'propIgnited')).toHaveLength(0);
+  });
+
   it('is doused by water or ice that expires this upkeep', () => {
     for (const surface of ['water', 'ice'] as const) {
       const local = freshDraft();
@@ -661,7 +685,7 @@ describe('props that burn', () => {
     if (!hay || !kaya) throw new Error('shipped reducer hay fixture is incomplete');
 
     // Two tiles up the road with a clear line: outside the bale's own cross of fire.
-    const adjacent = { x: hay.pos.x, y: hay.pos.y - 2 };
+    const twoTilesAway = { x: hay.pos.x, y: hay.pos.y - 2 };
     let state: GameState = {
       ...seeded,
       screen: 'combat',
@@ -670,7 +694,7 @@ describe('props that burn', () => {
         ...battle,
         units: battle.units.map((unit) => ({
           ...unit,
-          ...(unit.id === kaya.id ? { pos: adjacent } : {}),
+          ...(unit.id === kaya.id ? { pos: twoTilesAway } : {}),
           ai: unit.id === kaya.id ? 'none' : unit.ai,
         })),
         order: [kaya.id, ...battle.order.filter((id) => id !== kaya.id)],
