@@ -267,6 +267,27 @@ describe('directed Fire Jab attachments', () => {
     expect(first.some((t) => t.attachments?.translateTogether)).toBe(true);
   });
 
+  it('centres damage and status cues on a square size-2 footprint', () => {
+    const tracks = play([
+      {
+        type: 'damaged',
+        unitId: boss.id,
+        amount: 4,
+        crit: false,
+        damageType: 'fire',
+        sourceId: caster.id,
+      },
+      { type: 'statusApplied', unitId: boss.id, status: 'burning', duration: 2 },
+    ]).tracks;
+    const damage = tracks.find((track) => track.kind === 'floater');
+    const status = tracks.find((track): track is EmitterTrack => track.kind === 'emitter');
+
+    // Floaters use the equivalent cell-like origin because renderers add half a tile.
+    expect(damage?.kind === 'floater' && damage.pos).toEqual({ x: 5.5, y: 3.5 });
+    expect(status?.from).toEqual({ x: 6, y: 4 });
+    expect(status?.to).toEqual({ x: 6, y: 4 });
+  });
+
   it('matches route enemy torso sockets to the visible adult scale at either motion rate', () => {
     for (const name of ['thug', 'bruiser', 'slinger', 'quarrybender', 'crossbow']) {
       const target = { ...boss, sprite: `unit.enemy.${name}`, size: 1 as const };

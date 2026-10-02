@@ -41,7 +41,11 @@ may darken the amber cab without changing the design or adding damage.
 ## Check
 
 Inspect the 512-pixel portrait, 40-pixel circular turn strip and enlarged
-inspector. Cab, armor and drill must match the battlefield machine. Run
-`npm run art:portrait -- --key enemy.grumbler --in art/raw/grumbler/portrait.png`
-and `npm run art:validate` before shipping. Review the `36-grumbler-portrait`
+inspector. Cab, armor and drill must match the battlefield machine. The manifest
+key is `portrait.enemy.driller`, while the shipped file retains its earlier
+`enemy.grumbler.png` name. The portrait processor derives its output filename
+from the key, so `npm run art:portrait -- --key enemy.driller --in
+art/raw/grumbler/portrait.png` writes `enemy.driller.png`, not the shipped legacy
+filename. Preserve `enemy.grumbler.png` unless the manifest and asset are migrated
+together, then run `npm run art:validate`. Review the `36-grumbler-portrait`
 gallery on both renderers and the portrait and landscape layouts.

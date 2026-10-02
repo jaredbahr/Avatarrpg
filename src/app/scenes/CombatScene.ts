@@ -74,9 +74,13 @@ import { PropInspector } from '../ui/PropInspector';
 import { enemyScale, partyScale } from '../anim/actorScale';
 import { partyBendSprites } from '../anim/bendHandoff';
 import { sheetLocomotion } from '../../content/assets/manifest';
-import { sheets } from '../../render/sheets/store';
+import { idlePhase, sheets } from '../../render/sheets/store';
 import { createMovementThreatQuery } from '../ui/movementThreats';
 import { flushTime } from './flockFlush';
+import { resolveCombatBodyPick } from './combatBodyPick';
+import { liftAlong } from '../../render/geometry/elevation';
+import { actorBodyBounds } from '../../render/geometry/actorSilhouette';
+import { actorKeepInViewDelta, shouldFollowAnimatedLargeActor } from './combatCameraFollow';
 
 type Mode =
   | { readonly kind: 'idle' }
@@ -521,9 +525,7 @@ export class CombatScene implements Scene {
       },
       onWheel: (wheel) => this.zoomBy(wheelZoomFactor(wheel), wheel.point),
       onHover: (point) => {
-        this.hover = point
-          ? (this.renderer?.camera.pickTile(point.x, point.y, this.battle()?.grid) ?? null)
-          : null;
+        this.hover = point ? (this.resolvePointer(point.x, point.y, 'tap')?.tile ?? null) : null;
       },
     });
   }
@@ -623,6 +625,82 @@ export class CombatScene implements Scene {
   /* Input                                                             */
   /* ---------------------------------------------------------------- */
 
+  /** The one pointer-to-battlefield resolution path used by taps, hovers and holds. */
+  private resolvePointer(x: number, y: number, intent: 'tap' | 'inspect') {
+    const renderer = this.renderer;
+    const battle = this.battle();
+    if (!renderer || !battle) return null;
+    const groundTile = renderer.camera.pickTile(x, y, battle.grid);
+    const active = this.active();
+    const protectedTiles = new Set<string>();
+    let legalTargets: Set<string> | undefined;
+    if (intent === 'tap' && this.mode.kind === 'move') {
+      for (const cell of this.reachableCells().values()) protectedTiles.add(posKey(cell.pos));
+    } else if (intent === 'tap' && this.mode.kind === 'aim' && active) {
+      const ability = this.app.content.abilities.get(this.mode.abilityId);
+      if (ability) {
+        legalTargets = new Set(
+          targetableTiles(this.app.content, battle, active, ability).map(posKey),
+        );
+        for (const key of legalTargets) protectedTiles.add(key);
+      }
+    }
+    const projection = renderer.camera.projection;
+    const now = performance.now();
+    const actors = battle.units
+      .filter((unit) => intent === 'inspect' || isAlive(unit))
+      .map((unit) => {
+        const health = this.app.animator.unitHealth(now, unit);
+        const pose = this.poseFields(
+          now,
+          unit.id,
+          unit.faction === 'enemy' ? -1 : 1,
+          unit.faction === 'party',
+          unit.sprite,
+          health.fallen,
+        );
+        const scale = pose.scale ?? 1;
+        const pos = this.app.animator.renderPos(now, unit.id) ?? unit.pos;
+        const box = renderer.camera.spriteBox(pos, unit.size, SQUARE_FOOTPRINTS);
+        if (pose.offset) {
+          box.x += pose.offset.x * box.size;
+          box.y += pose.offset.y * box.size;
+        }
+        box.y -= liftAlong(battle.grid, pos, projection) * box.size;
+        const bend = pose.bend && sheets.bendFrame(unit.sprite, pose.bend.heading, pose.bend.index);
+        const heightTiles = SQUARE_FOOTPRINTS ? unit.size : 1;
+        const frame =
+          bend ||
+          sheets.frame(
+            unit.sprite,
+            pose.clip ?? 'idle',
+            pose.clipTime ?? now + idlePhase(unit.id),
+            pose.clipFrame,
+            box.size * renderer.viewport.dpr * scale,
+            unit.size,
+            pose.meleeDirection,
+            heightTiles,
+          );
+        return {
+          unit,
+          scale,
+          box,
+          frameHeadroom: frame?.headroom ?? null,
+        };
+      });
+    return resolveCombatBodyPick({
+      point: { x, y },
+      groundTile,
+      actors,
+      units: battle.units,
+      props: battle.props,
+      protectedTiles,
+      caster: active?.pos ?? null,
+      ...(legalTargets ? { legalTargets } : {}),
+      squareFootprints: SQUARE_FOOTPRINTS,
+    });
+  }
+
   private onTap(x: number, y: number): void {
     const renderer = this.renderer;
     const battle = this.battle();
@@ -631,12 +709,16 @@ export class CombatScene implements Scene {
     if (!this.isPlayerTurn()) return;
     if (this.needsHandoff()) return;
 
-    const tile = renderer.camera.pickTile(x, y, battle.grid);
+    const resolved = this.resolvePointer(x, y, 'tap');
+    if (!resolved) return;
+    const tile = resolved.tile;
 
     if (this.mode.kind === 'idle') {
       // Tapping a unit or prop in idle mode inspects it; that is the only tap
       // that does anything, so a stray tap never costs AP.
-      const target = inspectTargetAt(battle.units, battle.props, tile, false);
+      const target = resolved.unit
+        ? ({ kind: 'unit', unit: resolved.unit } as const)
+        : inspectTargetAt(battle.units, battle.props, tile, false);
       if (target?.kind === 'unit') this.openUnitInspector(target.unit);
       if (target?.kind === 'prop') this.openPropInspector(target.prop);
       return;
@@ -650,8 +732,11 @@ export class CombatScene implements Scene {
     const renderer = this.renderer;
     const battle = this.battle();
     if (!renderer || !battle) return;
-    const tile = renderer.camera.pickTile(x, y, battle.grid);
-    const target = inspectTargetAt(battle.units, battle.props, tile, true);
+    const resolved = this.resolvePointer(x, y, 'inspect');
+    if (!resolved) return;
+    const target = resolved.unit
+      ? ({ kind: 'unit', unit: resolved.unit } as const)
+      : inspectTargetAt(battle.units, battle.props, resolved.tile, true);
     if (target?.kind === 'unit') this.openUnitInspector(target.unit);
     if (target?.kind === 'prop') this.openPropInspector(target.prop);
   }
@@ -1778,6 +1863,7 @@ export class CombatScene implements Scene {
     const now = performance.now();
     this.app.stats?.frame(now);
     this.app.animator.prune(now);
+    this.keepAnimatedLargeActorInView(now, battle);
 
     const unit = this.active();
     let overlays: readonly OverlayLayer[] = [];
@@ -1937,6 +2023,72 @@ export class CombatScene implements Scene {
 
     renderer.draw(view);
   };
+
+  /**
+   * Automatic combat framing follows only an enlarged animated body. Manual
+   * pan/zoom deliberately suspends it, and ordinary actors retain the shipped
+   * turn-start centring behavior.
+   */
+  private keepAnimatedLargeActorInView(now: number, battle: BattleState): void {
+    const renderer = this.renderer;
+    if (!renderer) return;
+    const camera = renderer.camera;
+    const projection = camera.projection;
+
+    for (const unit of battle.units) {
+      const pos = this.app.animator.renderPos(now, unit.id);
+      if (!pos) continue;
+      const health = this.app.animator.unitHealth(now, unit);
+      const pose = this.poseFields(
+        now,
+        unit.id,
+        unit.faction === 'enemy' ? -1 : 1,
+        unit.faction === 'party',
+        unit.sprite,
+        health.fallen,
+      );
+      const scale = pose.scale ?? 1;
+      if (
+        !shouldFollowAnimatedLargeActor({
+          animated: true,
+          manualCamera: this.manualCamera,
+          size: unit.size,
+          scale,
+          squareFootprints: SQUARE_FOOTPRINTS,
+        })
+      )
+        continue;
+
+      const box = camera.spriteBox(pos, unit.size, true);
+      if (pose.offset) {
+        box.x += pose.offset.x * box.size;
+        box.y += pose.offset.y * box.size;
+      }
+      box.y -= liftAlong(battle.grid, pos, projection) * box.size;
+      const bend = pose.bend && sheets.bendFrame(unit.sprite, pose.bend.heading, pose.bend.index);
+      const frame =
+        bend ||
+        sheets.frame(
+          unit.sprite,
+          pose.clip ?? 'idle',
+          pose.clipTime ?? now + idlePhase(unit.id),
+          pose.clipFrame,
+          box.size * renderer.viewport.dpr * scale,
+          unit.size,
+          pose.meleeDirection,
+          unit.size,
+        );
+      const body = actorBodyBounds(
+        { ...box, width: box.size * unit.size },
+        unit.size,
+        frame?.headroom ?? null,
+        scale,
+      );
+      const delta = actorKeepInViewDelta(body, camera.viewport);
+      if (delta.x !== 0 || delta.y !== 0) camera.panBy(delta.x, delta.y);
+      return;
+    }
+  }
 
   /**
    * The lob of an ability's flight in tiles, or null when nothing flies to

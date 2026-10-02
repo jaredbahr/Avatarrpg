@@ -52,6 +52,37 @@ export interface ActorSilhouetteGeometry {
   readonly reticleY: number;
 }
 
+export interface ActorBodyBounds {
+  readonly left: number;
+  readonly top: number;
+  readonly right: number;
+  readonly bottom: number;
+}
+
+/** Conservative screen-space envelope of the upright art both backends draw. */
+export function actorBodyBounds(
+  box: ActorSpriteBox,
+  heightTiles: 1 | 2,
+  frameHeadroom: number | null,
+  scale: number,
+): ActorBodyBounds {
+  const width = box.width ?? box.size;
+  const scaledWidth = width * scale;
+  const geometry = actorSilhouetteGeometry(box, heightTiles, frameHeadroom, scale);
+  return {
+    left: box.x + (width - scaledWidth) / 2,
+    top: geometry.bar.silhouetteTop,
+    right: box.x + (width + scaledWidth) / 2,
+    bottom: box.y + FOOT_LINE * box.size,
+  };
+}
+
+/** The target cue sits just beyond the scaled silhouette's right edge. */
+export function actorReticleX(box: ActorSpriteBox, scale: number): number {
+  const width = box.width ?? box.size;
+  return box.x + width / 2 + (width * scale) / 2 + box.size * 0.12;
+}
+
 /**
  * Shared vertical anchors for the health bar, status badges and target cue.
  * `frameHeadroom` is the measured sheet/painter headroom, or null when the
