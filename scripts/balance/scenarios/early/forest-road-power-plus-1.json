@@ -1,0 +1,11 @@
+{
+  "encounters": {
+    "enc_forest_road": {
+      "enemyStats": {
+        "bandit_thug": { "power": 6 },
+        "bandit_slinger": { "power": 5 },
+        "bandit_bruiser": { "power": 7 }
+      }
+    }
+  }
+}

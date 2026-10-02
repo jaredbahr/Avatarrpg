@@ -1,0 +1,7 @@
+{
+  "encounters": {
+    "enc_forest_road": {
+      "addEnemies": [{ "enemyId": "bandit_thug", "pos": { "x": 16, "y": 6 } }]
+    }
+  }
+}
