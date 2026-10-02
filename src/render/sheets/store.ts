@@ -94,6 +94,7 @@ interface LoadedBend {
  * `failed`: its own files, or the sheet under it, failed, for the session.
  */
 export type BendLoadState = 'none' | 'idle' | 'loading' | 'loaded' | 'failed';
+export type SheetLoadState = 'ready' | 'loading' | 'failed';
 
 /** The page a frame lives on, and its rectangle there. */
 function findFrame(
@@ -155,6 +156,7 @@ export class SheetStore {
   private baked = new Map<string, BakedSheet>();
   private bakedBytes = 0;
   private loaded = new Map<string, LoadedAtlas | 'loading' | 'failed'>();
+  private loading = new Map<string, Promise<boolean>>();
   private bends = new Map<string, LoadedBend | 'loading' | 'failed'>();
   /** Bends asked for before their sheet was in; each loads once its sheet does. */
   private bendsWanted = new Set<string>();
@@ -171,6 +173,27 @@ export class SheetStore {
   loadedFor(key: string): boolean {
     const state = this.loaded.get(key);
     return state !== undefined && state !== 'loading' && state !== 'failed';
+  }
+
+  /**
+   * Starts the existing atlas load and reports its state without baking a
+   * fallback. Non-sheet actors have no atlas to hold a scene reveal for.
+   */
+  loadState(key: string): SheetLoadState {
+    const entry = resolveAsset(key);
+    if (entry.kind !== 'sheet') return 'ready';
+    this.atlas(key, entry);
+    const state = this.loaded.get(key);
+    if (state === 'loading' || state === 'failed') return state;
+    return 'ready';
+  }
+
+  /** Settles true when the existing sheet load is resident, false on failure. */
+  whenLoaded(key: string): Promise<boolean> {
+    const state = this.loadState(key);
+    if (state === 'ready') return Promise.resolve(true);
+    if (state === 'failed') return Promise.resolve(false);
+    return this.loading.get(key) ?? Promise.resolve(false);
   }
 
   /** Loaded silhouette envelope, without baking a painter fallback at a new size. */
@@ -421,7 +444,7 @@ export class SheetStore {
           })
       : Promise.resolve(undefined);
     // Only a page failure rejects here; the clip data already caught its own.
-    Promise.all([pages, clipsPromise])
+    const loading = Promise.all([pages, clipsPromise])
       .then(([pages, fetched]) => {
         const clips: SheetClips = fetched ? { ...entry.clips, ...fetched } : entry.clips;
         this.loaded.set(key, {
@@ -433,12 +456,15 @@ export class SheetStore {
           ),
         });
         if (this.bendsWanted.has(key)) this.bend(key, entry);
+        return true;
       })
       .catch((reason: unknown) => {
         this.loaded.set(key, 'failed');
         this.bendsWanted.delete(key);
         console.warn(`Sheet "${key}" failed to load; using the drawn placeholder.`, reason);
+        return false;
       });
+    this.loading.set(key, loading);
     return null;
   }
 

@@ -227,6 +227,10 @@ export class CombatScene implements Scene {
    */
   private preferredCombatTilePx: number | null = null;
   private preferredCombatFrameKey: string | null = null;
+
+  firstFrameSheetKeys(): readonly string[] {
+    return this.battle()?.units.map((unit) => unit.sprite) ?? [];
+  }
   /**
    * The reachable set and the target/area tiles are rebuilt only when the
    * inputs that decide them change, not every frame: on a tablet the

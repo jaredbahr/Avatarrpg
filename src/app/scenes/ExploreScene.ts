@@ -101,6 +101,13 @@ export class ExploreScene implements Scene {
 
   constructor(private app: App) {}
 
+  firstFrameSheetKeys(): readonly string[] {
+    return [
+      ...(this.app.state?.party.map((member) => member.sprite) ?? []),
+      ...this.lastNpcs.map((npc) => npc.sprite),
+    ];
+  }
+
   mount(host: HTMLElement): void {
     this.host = host;
     clear(host);

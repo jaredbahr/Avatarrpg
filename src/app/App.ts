@@ -99,6 +99,8 @@ export interface Scene {
   unmount(): void;
   /** Called after every state change. */
   sync(): void;
+  /** Sprite sheets needed by actors already present in the first map frame. */
+  firstFrameSheetKeys?(): readonly string[];
   resize?(): void;
   /**
    * The events a command produced, before the scene may be swapped for the
@@ -293,7 +295,7 @@ export class App {
     scene.mount(this.sceneHost);
     scene.sync();
     // After the swap, never instead of it: see Curtain.
-    this.curtain.reveal();
+    this.curtain.reveal(scene.firstFrameSheetKeys?.() ?? []);
   }
 
   /** Tints the backdrop. Scenes call it when they know better than the map does. */
