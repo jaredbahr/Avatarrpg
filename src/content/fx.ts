@@ -262,6 +262,43 @@ const fireBurst = (count: number): ParticleEmitterDef =>
     layer: 'over',
   });
 
+/**
+ * A small steady flame for something that keeps burning: round tongues that
+ * rise up the screen and taper. Like the chimney smoke it is `upright` and
+ * drifts along a heading, because under the oblique camera an effect lies on
+ * the ground plane: a burst or a ribbon there reads as a puddle beside the
+ * prop. `OBLIQUE_UP` is straight up the screen on that ground; the caller
+ * swaps in `ORTHOGRAPHIC_UP` on a flat map (see `burningPropEmitters`).
+ */
+export const OBLIQUE_UP = (Math.PI * 5) / 4;
+export const ORTHOGRAPHIC_UP = (Math.PI * 3) / 2;
+const flameTongues = (
+  count: number,
+  color: FxColor,
+  size: [number, number],
+  speed: [number, number],
+): ParticleEmitterDef =>
+  particles({
+    shape: 'drift',
+    cell: 'glow',
+    count,
+    duration: 520,
+    life: [360, 560],
+    delay: [0, 520],
+    speed,
+    spread: OBLIQUE_UP,
+    gravity: 0,
+    drag: 0,
+    size,
+    grow: 0.25,
+    spin: 0,
+    color,
+    fade: 'out',
+    upright: true,
+    blend: 'normal',
+    layer: 'over',
+  });
+
 const fireLicks = (count: number, duration = 460): StrokeEmitterDef =>
   strokes({
     shape: 'ribbon',
@@ -1385,6 +1422,15 @@ const DRAWN_RECIPES: Readonly<Record<string, FxRecipeInput>> = {
   'fx.prop.hay_bale': {
     palette: 'fire',
     impact: [fireBurst(8), embers(10), shards(8, 'accent')],
+    flash: 0,
+  },
+  // A prop whose fuel is burning: looped for as long as it burns (see `burningPropEmitters`).
+  'fx.prop.burning': {
+    palette: 'fire',
+    impact: [
+      flameTongues(8, 'base', [0.42, 0.56], [1.4, 2.0]),
+      flameTongues(8, 'accent', [0.26, 0.34], [1.2, 1.8]),
+    ],
     flash: 0,
   },
   'fx.prop.rubble_pile': {

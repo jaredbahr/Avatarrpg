@@ -104,6 +104,10 @@ export interface PropForecast {
   readonly from: Vec2;
   readonly to: Vec2 | null;
   readonly destroyed: boolean;
+  /** The action starts this prop's fuel clock without reducing its HP. */
+  readonly catchesFire: boolean;
+  /** The action clears this prop's running fuel clock. */
+  readonly doused: boolean;
   readonly moved: boolean;
   readonly coverRemoved: boolean;
   readonly hpBefore: number;
@@ -784,6 +788,8 @@ function propForecasts(
     if (
       event.type === 'propDamaged' ||
       event.type === 'propDestroyed' ||
+      event.type === 'propIgnited' ||
+      event.type === 'propDoused' ||
       event.type === 'propPushed'
     ) {
       touched.add(event.propId);
@@ -805,6 +811,12 @@ function propForecasts(
     if (!def) continue;
     const after = draft.props.find((candidate) => candidate.id === prop.id);
     const destroyed = !after;
+    const catchesFire = draft.events.some(
+      (event) => event.type === 'propIgnited' && event.propId === prop.id,
+    );
+    const doused = draft.events.some(
+      (event) => event.type === 'propDoused' && event.propId === prop.id,
+    );
     const moved = after ? posKey(after.pos) !== posKey(prop.pos) : false;
     const coverRemoved = Boolean(
       tileAt(battle.grid, prop.pos)?.cover && !tileAt(draft.grid, prop.pos)?.cover,
@@ -817,6 +829,8 @@ function propForecasts(
       from: prop.pos,
       to: after?.pos ?? null,
       destroyed,
+      catchesFire,
+      doused,
       moved,
       coverRemoved,
       hpBefore: prop.hp,

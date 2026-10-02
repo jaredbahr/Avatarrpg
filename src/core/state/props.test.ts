@@ -176,9 +176,9 @@ describe('props on the battlefield', () => {
     draft.paint([beside], 'fire', 3, null);
     expect(tileAt(draft.grid, pos)?.surface, 'its own tile stays bare').toBeNull();
 
-    // 5 hp, vulnerable to fire, 4 damage a round doubled.
+    // Fire beside a fuel prop lights it; it does not break it (5 hp untouched).
     draft.tickTerrain();
-    expect(draft.propAt(pos), 'the hay should have caught').toBeUndefined();
+    expect(draft.propAt(pos), 'the hay should have caught').toMatchObject({ hp: 5, burning: 2 });
   });
 
   it('leaves a solid prop alone when the fire beside it cannot hurt it', () => {

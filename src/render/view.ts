@@ -291,6 +291,8 @@ export interface RenderProp {
   readonly name: string;
   readonly hp: number;
   readonly maxHp: number;
+  /** Fuel rounds remaining; present only while this prop is burning. */
+  readonly burning?: number;
 }
 
 /**

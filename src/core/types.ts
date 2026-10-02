@@ -1394,7 +1394,13 @@ export type GameEvent =
       readonly type: 'propDoused';
       readonly propId: string;
       readonly pos: Vec2;
-      /** Plain words for the log — "The hay bale is doused.". */
+      /** Plain words for the log — "The hay bale is put out.". */
+      readonly label: string;
+    }
+  | {
+      readonly type: 'propSpread';
+      readonly propId: string;
+      /** Upkeep detail for the combat log; presentation does not announce it. */
       readonly label: string;
     }
   | { readonly type: 'propPushed'; readonly propId: string; readonly to: Vec2 }

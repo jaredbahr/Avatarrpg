@@ -55,6 +55,7 @@ import { COMBAT_CAMERA_RING_TILES } from '../../content/maps/combat';
 import { attachPointer, wheelZoomFactor } from '../input/pointer';
 import { ambienceFx, resolveFx } from '../../content/fx';
 import { ambientEmitters } from '../anim/ambience';
+import { burningPropEmitters } from '../anim/propFire';
 import { announce, button, clear, el, mark, motionReduced, painterCanvas, tip } from '../ui/dom';
 import { assetCanvas } from '../ui/assetCanvas';
 import { portraitKeyFor } from '../ui/PartyRoster';
@@ -65,6 +66,7 @@ import { paintElementGlyph } from '../../render/painters/glyphs';
 import { showGridLines } from '../storage/localSaves';
 import { reactionNotes } from '../ui/ReactionNote';
 import {
+  formatPropConsequence,
   formatHitBreakdownRows,
   formatLedgeDrop,
   formatShoveMovement,
@@ -1614,17 +1616,10 @@ export class CombatScene implements Scene {
 
     for (const prop of preview.props) {
       const from = `(${prop.from.x + 1},${prop.from.y + 1})`;
-      const destination = prop.to ? `to (${prop.to.x + 1},${prop.to.y + 1})` : 'breaks here';
       const affected = [...prop.affectedAllies, ...prop.affectedEnemies]
         .map((unit) => unit.name)
         .join(', ');
-      const consequence = prop.destroyed
-        ? (prop.breakLabel ?? `${prop.name} breaks`)
-        : prop.moved
-          ? `${prop.name} ${destination}`
-          : prop.hpAfter !== null && prop.hpAfter < prop.hpBefore
-            ? `${prop.name} takes ${prop.hpBefore - prop.hpAfter} damage (${prop.hpAfter} hp left)`
-            : `${prop.name} holds here`;
+      const consequence = formatPropConsequence(prop);
       const cover = prop.coverRemoved ? ' (cover removed)' : '';
       const suffix = `${cover}${affected ? ` — affects ${affected}` : ''}`;
       chips.appendChild(
@@ -2026,6 +2021,7 @@ export class CombatScene implements Scene {
         name: def?.name ?? 'Something',
         hp: p.hp,
         maxHp: def?.hp ?? p.hp,
+        ...(p.burning !== undefined ? { burning: p.burning } : {}),
       };
     });
 
@@ -2057,7 +2053,11 @@ export class CombatScene implements Scene {
       path,
       pathFrom: unit?.pos ?? null,
       aimArc,
-      emitters: [...this.app.animator.emitters(now), ...ambient],
+      emitters: [
+        ...this.app.animator.emitters(now),
+        ...burningPropEmitters(props, now, renderer.camera.projection, motionReduced()),
+        ...ambient,
+      ],
       bendFx: this.app.animator.bendFx(now),
       floaters: this.app.animator.floaters(now),
       cameraNudge: this.app.animator.cameraNudge(now),

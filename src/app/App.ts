@@ -491,6 +491,13 @@ export class App {
       if (event.type === 'battleEnded') {
         announce(event.outcome === 'victory' ? 'The fight is won.' : 'The party has fallen.');
       }
+      if (
+        event.type === 'propIgnited' ||
+        event.type === 'propDoused' ||
+        event.type === 'propDestroyed'
+      ) {
+        announce(event.label);
+      }
       if (event.type === 'message') this.toasts.show(event.text);
     }
   }

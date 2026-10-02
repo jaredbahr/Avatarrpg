@@ -83,7 +83,7 @@ export const PROPS: readonly PropDef[] = [
     id: 'hay_bale',
     name: 'Hay Bale',
     description:
-      'Fodder for the quarry animals. It blocks the way and sight, but fire and wind tear through it, and a broken bale bursts into flame across the tiles around it.',
+      'Fodder for the quarry animals. It blocks the way and sight. Fire lights it without hurting it. It spreads fire while it burns, then burns away in a burst of fire.',
     sprite: 'prop.hay',
     hp: 5,
     blocksMove: true,
@@ -94,6 +94,11 @@ export const PROPS: readonly PropDef[] = [
     immuneTo: [],
     onBreak: [{ kind: 'surface', surface: 'fire', duration: 2, radius: 1 }],
     breakLabel: 'The hay goes up in a rush of flame.',
+    fuel: 2,
+    ignites: { radius: 1, spread: 0 },
+    douse: ['water', 'cold', 'earth'],
+    hint: 'Fire sets it burning for two rounds. Water, cold or earth puts it out.',
+    tags: ['fuel'],
   },
   {
     id: 'rubble_pile',

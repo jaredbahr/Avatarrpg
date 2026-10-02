@@ -21,7 +21,7 @@ import { apply } from '../state/reducer';
 import { BattleDraft } from '../state/battleDraft';
 import { createBattle, createGame } from '../state/createGame';
 import type { GameEvent, GameState, Unit, Vec2 } from '../types';
-import { previewAiPlan } from './ai';
+import { previewAiPlan, propDanger, scoreAbility } from './ai';
 import { posKey, tileAt } from './grid';
 
 function setup() {
@@ -101,6 +101,39 @@ function gatePairState(): { state: GameState; rikoId: string } {
 }
 
 describe('the AI and props', () => {
+  it('does not price lighting unlit hay as a break, but prices burning hay through onBreak', () => {
+    const draft = setup();
+    const caster = draft.units.find((unit) => unit.characterId === 'kaya');
+    const victim = enemyOf(draft);
+    const jab = CONTENT.abilities.get('fire_jab');
+    if (!caster || !jab) throw new Error('missing shipped fire scorer fixture');
+    const spot = clearing(draft);
+    draft.placeProp('hay_bale', spot);
+    draft.placeUnit(caster.id, { x: spot.x, y: spot.y + 2 }, { contact: false });
+    draft.placeUnit(victim.id, { x: spot.x + 1, y: spot.y }, { contact: false });
+    const weights = {
+      damage: 1,
+      kill: 25,
+      status: 0.8,
+      support: 0.5,
+      terrain: 0.4,
+      selfPreservation: 0.3,
+      closeDistance: 1.4,
+      cover: 1,
+      elevation: 1,
+      friendlyFire: 1.5,
+    };
+
+    const unlit = scoreAbility(draft, caster, jab, spot, weights, new Map());
+    expect(unlit).toBe(-Infinity);
+
+    draft.props = draft.props.map((prop) =>
+      prop.propId === 'hay_bale' ? { ...prop, burning: 2 } : prop,
+    );
+    const burning = scoreAbility(draft, caster, jab, spot, weights, new Map());
+    expect(burning).toBeGreaterThan(0);
+  });
+
   it('tips a brazier into the party rather than hitting one of them', () => {
     const draft = setup();
     const enemy = enemyOf(draft);
@@ -220,6 +253,15 @@ describe('the AI and props', () => {
     // crash the planner from either position.
     expect(near === null || typeof near.score === 'number').toBe(true);
     expect(far === null || typeof far.score === 'number').toBe(true);
+  });
+
+  it('keeps the break-burst danger beside unlit fuel', () => {
+    const draft = setup();
+    const spot = clearing(draft);
+    draft.placeProp('hay_bale', spot);
+
+    expect(propDanger(draft, { x: spot.x + 1, y: spot.y })).toBe(3);
+    expect(propDanger(draft, { x: spot.x + 3, y: spot.y })).toBe(0);
   });
 
   it('plans identically twice for the same board', () => {

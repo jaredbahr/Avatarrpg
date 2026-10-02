@@ -1,7 +1,48 @@
 import { describe, expect, it } from 'vitest';
-import { formatHitBreakdownRows, formatLedgeDrop, formatShoveMovement } from './combatPreviewText';
+import {
+  formatHitBreakdownRows,
+  formatLedgeDrop,
+  formatPropConsequence,
+  formatShoveMovement,
+} from './combatPreviewText';
+import type { PropForecast } from '../../core/rules/reactions';
 
 describe('combat preview text', () => {
+  it('says whether hay catches, is put out, or is destroyed', () => {
+    const prop: PropForecast = {
+      id: 'hay-1',
+      propId: 'hay_bale',
+      name: 'Hay Bale',
+      from: { x: 12, y: 5 },
+      to: { x: 12, y: 5 },
+      destroyed: false,
+      catchesFire: true,
+      doused: false,
+      moved: false,
+      coverRemoved: false,
+      hpBefore: 5,
+      hpAfter: 5,
+      breakLabel: null,
+      affectedAllies: [],
+      affectedEnemies: [],
+    };
+
+    expect(formatPropConsequence(prop)).toBe('Hay Bale catches fire');
+    expect(formatPropConsequence({ ...prop, catchesFire: false, doused: true, hpAfter: 1 })).toBe(
+      'Hay Bale is put out',
+    );
+    expect(
+      formatPropConsequence({
+        ...prop,
+        destroyed: true,
+        catchesFire: false,
+        to: null,
+        hpAfter: null,
+        breakLabel: 'The hay goes up in a rush of flame.',
+      }),
+    ).toBe('The hay goes up in a rush of flame.');
+  });
+
   it('describes shove movement without raw grid coordinates', () => {
     expect(formatShoveMovement('Mercenary', 'push', 1, 1, null, [], 'caster')).toBe(
       'Mercenary: pushed 1 tile away',

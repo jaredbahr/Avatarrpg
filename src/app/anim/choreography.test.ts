@@ -1457,4 +1457,25 @@ describe('feel pass: every table beat is heard, and dust never holds the turn', 
     ]);
     expect(keys(play([{ type: 'battleEnded', outcome: 'defeat' }]).sounds)).toEqual(['defeat']);
   });
+
+  it('gives lighting and putting out a prop their existing fire and douse cues', () => {
+    const events = [
+      {
+        type: 'propIgnited' as const,
+        propId: 'hay-1',
+        pos: { x: 5, y: 3 },
+        label: 'The Hay Bale catches fire!',
+      },
+      {
+        type: 'propDoused' as const,
+        propId: 'hay-1',
+        pos: { x: 5, y: 3 },
+        label: 'The Hay Bale is put out.',
+      },
+    ];
+    const { sounds, tracks } = play(events);
+
+    expect(keys(sounds)).toEqual(['fx.surface.fire', 'fx.surface.doused']);
+    expect(tracks.filter((track) => track.kind === 'emitter').length).toBeGreaterThanOrEqual(2);
+  });
 });

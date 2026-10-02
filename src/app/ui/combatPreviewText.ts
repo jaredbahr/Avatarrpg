@@ -1,4 +1,4 @@
-import type { ShoveForecast } from '../../core/rules/reactions';
+import type { PropForecast, ShoveForecast } from '../../core/rules/reactions';
 import type { HitBreakdown } from '../../core/rules/damage';
 import type { SurfaceId } from '../../core/types';
 
@@ -6,6 +6,22 @@ function signed(value: number): string {
   if (value > 0) return `+${value}`;
   if (value < 0) return `−${Math.abs(value)}`;
   return '0';
+}
+
+/** Plain words for the deterministic prop result in the confirm step. */
+export function formatPropConsequence(prop: PropForecast): string {
+  if (prop.destroyed) return prop.breakLabel ?? `${prop.name} breaks`;
+  if (prop.catchesFire) return `${prop.name} catches fire`;
+  if (prop.doused) return `${prop.name} is put out`;
+  if (prop.moved) {
+    return prop.to
+      ? `${prop.name} to (${prop.to.x + 1},${prop.to.y + 1})`
+      : `${prop.name} breaks here`;
+  }
+  if (prop.hpAfter !== null && prop.hpAfter < prop.hpBefore) {
+    return `${prop.name} takes ${prop.hpBefore - prop.hpAfter} damage (${prop.hpAfter} hp left)`;
+  }
+  return `${prop.name} holds here`;
 }
 
 /**
