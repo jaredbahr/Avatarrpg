@@ -56,6 +56,19 @@ it('schema preserves optional integer source rectangles and existing scenes', ()
     expect(mapSchema.safeParse(withCrop(bad)).success).toBe(false);
 });
 
+it('schema preserves positive horizontal feathers and rejects invalid distances', () => {
+  const withFeather = (feather: object) => ({
+    ...QUARRY_GATE,
+    scene: { ground: [{ ...whole, feather }], scenery: [] },
+  });
+  expect(mapSchema.parse(withFeather({ left: 12, right: 18 })).scene?.ground[0]?.feather).toEqual({
+    left: 12,
+    right: 18,
+  });
+  for (const feather of [{ left: 0 }, { right: -1 }])
+    expect(mapSchema.safeParse(withFeather(feather)).success).toBe(false);
+});
+
 it('schema retains connected fade groups and rejects empty names', () => {
   const parsed = mapSchema.parse(QUARRY_GATE);
   expect(

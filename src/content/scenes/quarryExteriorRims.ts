@@ -120,6 +120,7 @@ export const quarryCribbing = (prefix: string, top: number): SceneScenery => ({
   width: 128,
   height: 206,
   flip: true,
+  feather: { left: 28, right: 28 },
   footprint: [
     { x: -1, y: top },
     { x: -1, y: top + 1 },

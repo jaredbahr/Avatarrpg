@@ -872,6 +872,15 @@ export interface SceneImage {
   readonly width: number;
   readonly height: number;
   /**
+   * Multiplies alpha by a horizontal smoothstep at either drawn end, measured
+   * in source pixels. Left/right describe the on-screen orientation after
+   * `SceneScenery.flip`, rather than the unmirrored source image.
+   */
+  readonly feather?: {
+    readonly left?: number;
+    readonly right?: number;
+  };
+  /**
    * Moves in the wind, on the render clock only: ground brightens as a gust
    * crosses it, upright scenery leans. Presentation; the rules never read it.
    */

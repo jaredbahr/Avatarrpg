@@ -2,8 +2,8 @@ import { readFileSync } from 'node:fs';
 import { createRequire } from 'node:module';
 import decode, { init } from '@jsquash/webp/decode.js';
 import { beforeAll, describe, expect, it } from 'vitest';
-import type { MapScene } from '../../core/types';
-import { AMBUSH_ROAD, QUARRY_FLOOR } from '../maps/combat';
+import type { MapScene, SceneScenery } from '../../core/types';
+import { AMBUSH_ROAD, QUARRY_FLOOR, QUARRY_GATE } from '../maps/combat';
 import { rubbleHeap, rubbleHeapUrl } from './forestRoad';
 import {
   CUTTING_BAND_TOPS,
@@ -86,6 +86,24 @@ function pieceAlpha(piece: MapScene['ground'][number], world: { x: number; y: nu
 }
 
 describe('projected quarry scenes', () => {
+  it('keeps every authored feather below half its source width', () => {
+    const maps = [QUARRY_GATE, AMBUSH_ROAD, QUARRY_FLOOR];
+    const ground = maps.flatMap((map) => map.scene?.ground ?? []);
+    const scenery: SceneScenery[] = maps.flatMap((map) => map.scene?.scenery ?? []);
+    const feathered = [...ground, ...scenery].filter((piece) => piece.feather);
+    expect(feathered.length).toBeGreaterThan(0);
+    for (const piece of feathered) {
+      const width = piece.sourceRect?.width ?? piece.width;
+      expect(piece.feather?.left ?? 0, `${piece.url} left`).toBeLessThan(width / 2);
+      expect(piece.feather?.right ?? 0, `${piece.url} right`).toBeLessThan(width / 2);
+    }
+    // A feathered piece of upright scenery is border dressing: outside the board, never a cutaway.
+    for (const piece of scenery.filter((candidate) => candidate.feather)) {
+      expect(piece.exterior, `${piece.id} exterior`).toBe(true);
+      expect(piece.fadeWhenOccluding, `${piece.id} cutaway`).toBeUndefined();
+    }
+  });
+
   it('covers authored centers and boundaries, including the ground under a spill and the pool', () => {
     for (const { map, scene } of routeScenes)
       for (let y = 0; y < map.height; y++)

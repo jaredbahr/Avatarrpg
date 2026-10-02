@@ -1,6 +1,6 @@
 import { Rectangle, Texture } from 'pixi.js';
 import type { SceneImage } from '../../core/types';
-import { sceneImage, sceneSourceRect } from '../scene';
+import { sceneDrawable, sceneImage, sceneSourceRect } from '../scene';
 
 interface Page {
   image: HTMLImageElement;
@@ -22,6 +22,20 @@ export class SceneTextures {
     if (!image) return null;
     const rect = sceneSourceRect(piece, image);
     if (!rect) return null;
+    if (piece.feather) {
+      const source = sceneDrawable(piece, image);
+      if (!source) return null;
+      const featherKey = `${piece.feather.left ?? 0},${piece.feather.right ?? 0},${'flip' in piece && piece.flip ? 1 : 0}`;
+      const key = `${piece.url}|${piece.x},${piece.y},${piece.width},${piece.height}|${rect.x},${rect.y},${rect.width},${rect.height}|${featherKey}`;
+      let page = this.pages.get(key);
+      if (!page || page.image !== image) {
+        if (page) this.drop(page);
+        page = { image, texture: Texture.from(source, true), slices: new Map() };
+        this.pages.set(key, page);
+      }
+      this.used.set(key, new Set());
+      return page.texture;
+    }
     let page = this.pages.get(piece.url);
     if (page?.image !== image) {
       if (page) this.drop(page);
