@@ -37,7 +37,9 @@ clip animation or change collision.
 
 The Driller uses tuning Option A: base HP 130 and move 4. Power, defense, speed,
 focus, abilities, AI and XP remain unchanged. With the square gate on, the
-100-trial scenario measured 91 / 82 / 81% party wins at 1 / 3 / 6 players.
+100-trial tuning-branch scenario measured 91 / 82 / 81% party wins at 1 / 3 / 6
+players. At this head, the supervisor's default 80-trial run measured 92.5 /
+78.8 / 81.3% at the same table sizes.
 
 The sheet keeps its authored 80 pixels-per-tile density. Frames are placed as
 `frame pixels / pixelsPerTile` upright tiles; they are not fitted to the rules

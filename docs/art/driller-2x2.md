@@ -32,8 +32,8 @@ The body and tracks span about x=13..142 (130 px) and the tracks end near y=138.
 At 80 atlas pixels per tile, the 160 px frame is exactly 2×2 tiles and the
 130 px track span is 1.625 tiles. Padding moves the source foot line from y=138
 to y=146. The anchor is `(88/176, 146/176) = (0.5, 0.8295454545454546)`. With
-square footprints enabled, `footprintFoot` puts that
-point at `(x + 1, y + 1.5)`, the centre of the 2×2 block's front row.
+square footprints enabled, the rules foot is `(x + 1, y + 1.5)`, the centre of
+the 2×2 block's front row. The oblique render foot is `(x + 1.5, y + 1.5)`.
 
 ## Packed-frame camera review
 

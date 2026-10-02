@@ -200,7 +200,7 @@ describe('content', () => {
 
   it('rejects malformed sheet dimensions and clip timing', () => {
     const source = CONTENT_BUNDLE.assets?.['unit.enemy.driller'];
-    if (source?.kind !== 'sheet') throw new Error('Expected dormant Driller sheet');
+    if (source?.kind !== 'sheet') throw new Error('Expected live Driller sheet');
     expect(assetEntrySchema.safeParse({ ...source, footprint: { w: 1, h: 2 } }).success).toBe(
       false,
     );

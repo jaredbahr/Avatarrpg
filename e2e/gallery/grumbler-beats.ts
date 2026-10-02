@@ -49,7 +49,7 @@ export const GRUMBLER_BEATS: readonly Beat[] = [
       );
       const point = await tileCentre(ctx.page, boss.pos);
       await ctx.page.mouse.click(point.x, point.y, { button: 'right' });
-      await ctx.page.locator('.dialog canvas[data-asset="portrait.enemy.grumbler"]').waitFor();
+      await ctx.page.locator('.dialog canvas[data-asset="portrait.enemy.driller"]').waitFor();
       // Review the portrait at the top; initial Close-button focus currently
       // scrolls this unusually long inspector to its end (reported to UI owner).
       await ctx.page.evaluate(async () => {

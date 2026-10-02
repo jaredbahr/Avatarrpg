@@ -93,7 +93,7 @@ export function overlayMemoHoverKey(
   return ((aiming && !pendingIsValidTarget) || movingSquare) && hover ? posKey(hover) : '';
 }
 
-/** Preserve the old horizontal midpoint for the legacy 2x1 boss. */
+/** Preserve the old horizontal midpoint for the gate-off 2x1 compatibility shape. */
 export function combatFocusPosition(unit: Pick<Unit, 'pos' | 'size'>, square = SQUARE_FOOTPRINTS) {
   return square ? unit.pos : { x: unit.pos.x + (unit.size - 1) / 2, y: unit.pos.y };
 }

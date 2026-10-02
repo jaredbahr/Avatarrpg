@@ -1,11 +1,11 @@
-# Portrait: Grumbler — `portrait.enemy.grumbler`
+# Portrait: Grumbler — `portrait.enemy.driller`
 
-|              |                                                                                                           |
-| ------------ | --------------------------------------------------------------------------------------------------------- |
-| **Palette**  | `enemy` — rust armor, charcoal iron, dull brass, amber cab, dark-brown ink, background `#f4e9d8`          |
-| **Deliver**  | `art/raw/grumbler/portrait.png`, square PNG, 512 pixels or larger                                         |
-| **Ships as** | `public/art/portraits/enemy.grumbler.png`, 512 x 512                                                      |
-| **Manifest** | `'portrait.enemy.grumbler': { kind: 'image', url: 'art/portraits/enemy.grumbler.png', palette: 'enemy' }` |
+|              |                                                                                                          |
+| ------------ | -------------------------------------------------------------------------------------------------------- |
+| **Palette**  | `enemy` — rust armor, charcoal iron, dull brass, amber cab, dark-brown ink, background `#f4e9d8`         |
+| **Deliver**  | `art/raw/grumbler/portrait.png`, square PNG, 512 pixels or larger                                        |
+| **Ships as** | `public/art/portraits/enemy.grumbler.png`, 512 x 512                                                     |
+| **Manifest** | `'portrait.enemy.driller': { kind: 'image', url: 'art/portraits/enemy.grumbler.png', palette: 'enemy' }` |
 
 ## Who
 

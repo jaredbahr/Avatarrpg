@@ -64,8 +64,8 @@ export const paintMercenary: UnitPainter = figurePainter('mercenary');
 export const paintVillager: UnitPainter = figurePainter('villager');
 
 /**
- * The boss. Occupies two tiles, so the box passed in is twice as wide as it is
- * tall and everything is measured against the *height*.
+ * The boss. Occupies a 2x2 square, so the box passed in spans its full footprint
+ * and everything is measured against the *height*.
  */
 export const paintDriller: UnitPainter = (ctx, box, palette, options) => {
   const s = box.size;

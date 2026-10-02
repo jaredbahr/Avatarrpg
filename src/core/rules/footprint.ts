@@ -73,7 +73,7 @@ export function footprintFoot(
  * inside — the footprint contributes no motion on that axis. That is what stops
  * a 2x2 from sliding sideways when the shover lines up with its middle. With the
  * gate off the original anchor-relative `sign()` is kept, because it is what the
- * shipped 2x1 boss and every existing test were tuned against. For size 1 the
+ * gate-off 2x1 boss compatibility shape and its tests were tuned against. For size 1 the
  * two forms are identical.
  */
 export function shoveStep(

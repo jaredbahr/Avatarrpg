@@ -8,7 +8,7 @@ The Driller is `grumbler`: 100 HP, 5 AP, move 3, power 7, defence 5, speed 4, wi
 
 The quarry floor is 20×12. The party enters on the west in a staggered column; the Driller starts at (15,5), beside the eastern pit/shaft. Tier-one stone/oil benches run across the north and south, with ramps near their ends. Mud occupies the middle floor, and walls, pits, the shaft, and height changes leave a large 2×2 unit far fewer legal anchors than the legacy 2×1 body. With the square gate on it must keep all four cells on one elevation and cannot be shoved off a ledge. That explains the regression: it loses access to bench targets and spends less time applying its short-range pressure.
 
-For measurement only, `BALANCE_SQUARE=1` activates a narrowly marked balance-process hook. Production code never calls it, and its default is still `false`. Scenario runs were restricted with `BALANCE_ENCOUNTERS=enc_grumbler`. The encounter's existing table-size reinforcements remained active; no new body was added. The authored comments and prior measurements say head count is unusually explosive here, so adding another reinforcement is a poor family-table lever.
+The synchronized square-footprint gate constants are on in shipped rules and content validation. Scenario runs were restricted with `BALANCE_ENCOUNTERS=enc_grumbler`. The encounter's existing table-size reinforcements remained active; no new body was added. The authored comments and prior measurements say head count is unusually explosive here, so adding another reinforcement is a poor family-table lever.
 
 ## Baselines
 

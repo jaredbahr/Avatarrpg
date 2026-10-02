@@ -79,7 +79,7 @@ export type AssetEntry =
       readonly pixelsPerTile: number;
       /** Explicit art bounds when weapon reach exceeds the default frame (ADR 0032). */
       readonly frameSize?: { readonly w: number; readonly h: number };
-      /** Tiles the unit stands on: 1x1, or 2x1 for the boss. */
+      /** Tiles the unit stands on: 1x1, or 2x2 for the square boss. */
       readonly footprint: { readonly w: number; readonly h: number };
       /** The point of the frame that stands on the tile's foot line, as fractions of the frame. */
       readonly anchor: { readonly x: number; readonly y: number };
@@ -484,7 +484,7 @@ export const ASSETS: Readonly<Record<string, AssetEntry>> = {
     url: 'art/portraits/enemy.deserter.webp',
     palette: 'fire',
   },
-  'portrait.enemy.grumbler': {
+  'portrait.enemy.driller': {
     kind: 'image',
     url: 'art/portraits/enemy.grumbler.png',
     palette: 'enemy',

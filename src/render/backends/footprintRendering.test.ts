@@ -64,7 +64,7 @@ describe('square-footprint backend parity', () => {
         expect(propFront).toBe(square);
       } else {
         // The oblique key is the front cell (5,4): (6,3) is on the same depth row,
-        // a full tile to its right on screen and clear of the body, so a tie is safe.
+        // two tiles to its right on screen and clear of the body, so a tie is safe.
         expect(propBack).toBe(square);
         expect(propFront).toBeGreaterThan(square);
       }

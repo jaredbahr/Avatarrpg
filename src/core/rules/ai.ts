@@ -212,7 +212,7 @@ function propDanger(
   for (const prop of draft.props) {
     // A big unit can brush a barrel with any of its cells, not only the anchor.
     // Gate-aware: with the square gate off this stays the anchor's distance, so
-    // the shipped 2x1 keeps the danger it was tuned against.
+    // the gate-off 2x1 compatibility shape keeps the danger it was tuned against.
     const near =
       square && size > 1
         ? distanceToUnit(prop.pos, { pos, size }, square) <= 1
@@ -973,9 +973,9 @@ export function candidateTargets(
   };
 
   for (const opponent of opponentsOf(draft, caster)) {
-    // A size-2 opponent stands on two cells; both are targets, and for area
-    // shapes both of their neighbourhoods are, so a blast can land between a
-    // boss's cells rather than only on its anchor.
+    // Every occupied cell is a target, and for area shapes all of their
+    // neighbourhoods are too, so a blast can land inside a large footprint
+    // rather than only on its anchor.
     for (const cell of occupiedCells(opponent, draft.squareFootprints)) {
       push(cell);
       if (!wantsArea) continue;
@@ -1086,7 +1086,7 @@ export function ledgeExposure(draft: BattleDraft, unit: Unit, pos: Vec2): number
    * turns the lip into a wall for the whole block (its strict rule), so it
    * never reports a drop. Mirror that here — the position score must not pay for
    * a fall the shove cannot deal. With the gate off a size-2 unit keeps the
-   * legacy 2x1 exposure it was tuned against.
+   * gate-off 2x1 exposure it was tuned against.
    */
   if (squareFootprints && unit.size > 1) return 0;
   const battle = {
@@ -1096,8 +1096,8 @@ export function ledgeExposure(draft: BattleDraft, unit: Unit, pos: Vec2): number
     ),
   };
   /*
-   * A size-2 unit stands on two cells and an attacker may only be able to reach
-   * the trailing one — its anchor is two tiles away, so checking adjacency and
+   * A gate-off size-2 unit stands on two cells and an attacker may only be able
+   * to reach the trailing one — its anchor is two tiles away, so checking adjacency and
    * targeting from `pos` alone missed a shover that can legally hit the
    * footprint. Test every occupied cell and aim at whichever one the attacker
    * actually reaches. The slide still runs from the anchor, exactly as
@@ -1402,8 +1402,8 @@ export function weightsFor(profile: AiProfile): Weights {
 
 /**
  * The occupied cell nearest a point, for the "if it moves" half of a threat
- * estimate. A size-2 unit stands on two cells and either may be the closer
- * firing position; checking both keeps the reach and the hit elevation honest.
+ * estimate. A gate-off size-2 unit stands on two cells and either may be the
+ * closer firing position; checking both keeps the reach and hit elevation honest.
  * Ties keep `occupiedCells` order (the anchor first), so the result is
  * deterministic.
  */

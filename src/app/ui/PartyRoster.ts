@@ -14,7 +14,10 @@ import { assetCanvas } from './assetCanvas';
 import { el, painterCanvas } from './dom';
 
 /** Character portraits win; units may supply a matching portrait.<family>.<name> asset. */
-export function portraitKeyFor(content: ContentIndex, unit: Unit): string {
+export function portraitKeyFor(
+  content: ContentIndex,
+  unit: Pick<Unit, 'characterId' | 'sprite'>,
+): string {
   const character = unit.characterId ? content.characters.get(unit.characterId) : undefined;
   if (character) return character.portrait;
   const portrait = unit.sprite.replace(/^unit\./, 'portrait.');
