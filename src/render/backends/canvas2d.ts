@@ -11,7 +11,7 @@
  */
 
 import type { Grid, SceneFlock, SceneImage, Vec2 } from '../../core/types';
-import { SQUARE_FOOTPRINTS, footprintCells, footprintFoot } from '../../core/rules/footprint';
+import { SQUARE_FOOTPRINTS, footprintCells } from '../../core/rules/footprint';
 import { authoredForBothSides } from '../../content/assets/clips';
 import { resolveAsset } from '../../content/assets/manifest';
 import { Camera, TILE } from '../camera';
@@ -74,6 +74,7 @@ import {
   type RenderUnit,
 } from '../view';
 import type { BackendCapabilities, RenderBackend } from './backend';
+import { renderFoot } from '../renderFoot';
 
 /** The rounded square a hovered tile gets, in tile units from its corner. */
 const HOVER_LOOP = contourLoops([{ x: 0, y: 0 }])[0] ?? [];
@@ -85,7 +86,7 @@ export function canvasActorDepth(
   size: 1 | 2,
   square = SQUARE_FOOTPRINTS,
 ): number {
-  return camera.groundPoint(footprintFoot(pos, size, square)).y;
+  return camera.groundPoint(renderFoot(pos, size, square, camera.projection)).y;
 }
 
 /** How far in from the board's edge the shading reaches, in tiles. */
@@ -369,7 +370,12 @@ export class Canvas2DBackend implements RenderBackend {
           draw: () => this.drawProps({ ...view, props: [prop] }, camera),
         })),
         ...view.units.map((unit) => ({
-          pos: footprintFoot(unit.renderPos ?? unit.pos, unit.size, this.squareFootprints),
+          pos: renderFoot(
+            unit.renderPos ?? unit.pos,
+            unit.size,
+            this.squareFootprints,
+            camera.projection,
+          ),
           draw: () => this.drawUnits({ ...view, units: [unit] }, camera),
         })),
       ].sort((a, b) => camera.groundPoint(a.pos).y - camera.groundPoint(b.pos).y);

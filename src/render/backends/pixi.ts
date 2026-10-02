@@ -31,7 +31,7 @@ import {
 } from 'pixi.js';
 
 import type { MapScene, SceneFlock, SceneImage, TerrainId, Tile, Vec2 } from '../../core/types';
-import { SQUARE_FOOTPRINTS, footprintCells, footprintFoot } from '../../core/rules/footprint';
+import { SQUARE_FOOTPRINTS, footprintCells } from '../../core/rules/footprint';
 import { authoredForBothSides } from '../../content/assets/clips';
 import { resolveAsset } from '../../content/assets/manifest';
 import { backdrops } from '../backdrops';
@@ -46,6 +46,7 @@ import {
 } from '../living/wind';
 import { SceneTextures } from './sceneTextures';
 import { sceneryZ, shadowZ } from './depthOrder';
+import { renderFoot } from '../renderFoot';
 import type { GroundingCanvas } from '../groundingLayer';
 import { sceneGrounding } from '../groundingLayer';
 import { GROUNDING_GRAIN } from '../grounding';
@@ -168,7 +169,7 @@ export function pixiActorDepth(
   size: 1 | 2,
   square = SQUARE_FOOTPRINTS,
 ): number {
-  return camera.groundPoint(footprintFoot(pos, size, square)).y;
+  return camera.groundPoint(renderFoot(pos, size, square, camera.projection)).y;
 }
 
 /**

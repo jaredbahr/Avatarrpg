@@ -46,6 +46,11 @@ footprint. Orthographic therefore uses scale 1, while oblique combat applies a
 world crossing marker remains scale 1, and ground shadows/rings remain tied to
 the 2x2 rules footprint rather than the upright-art scale.
 
+In oblique projection, render-only actor placement uses the centre of the
+square footprint's front cell (`pos + (1.5, 1.5)`) as a 2x2 actor's foot point.
+Orthographic, 1x1, and gate-off 2x1 placement retain the rules foot point; the
+contact shadow, selection ring, and move ghost remain on the footprint diamond.
+
 ## Consequences
 
 - Cover requires at least two of the Driller's four cells.

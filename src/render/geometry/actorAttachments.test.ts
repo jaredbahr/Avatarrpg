@@ -4,6 +4,7 @@ import type { ActorAttachment, EmitterInstance } from '../view';
 import { Camera } from '../camera';
 import { projectGround } from '../projection';
 import { BUILDS, FOOT, figureScale, poseFor, solve } from '../painters/figure';
+import { FOOT_LINE } from '../sheets/bake';
 import { sheets } from '../sheets/store';
 import type { ResolvedFrame } from '../sheets/store';
 import { attachmentPoint, resolveActorEmitters, socketOffset } from './actorAttachments';
@@ -144,6 +145,19 @@ describe('actor attachment geometry', () => {
     );
     expect(square.x - legacy.x).toBeCloseTo(0);
     expect(square.y - legacy.y).toBeCloseTo(1);
+  });
+
+  it('anchors an oblique gated size-2 attachment on the front cell centre', () => {
+    const boss = {
+      ...actor,
+      pos: { x: 4, y: 3 },
+      size: 2 as const,
+      offset: { x: 0, y: 0 },
+    };
+    const point = projectGround(attachmentPoint(boss, 'oblique', 0, frame, true), 'oblique');
+    const socket = socketOffset(boss, frame);
+    expect(point.x).toBeCloseTo(1 + socket.x * boss.facing * boss.scale);
+    expect(point.y).toBeCloseTo(5 + FOOT_LINE - 0.86 + socket.y * boss.scale);
   });
 
   it('uses the baked figure rig and its growth instead of bitmap pixel sockets', () => {

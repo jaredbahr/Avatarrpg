@@ -10,6 +10,21 @@ const LANDSCAPE = { width: 1344, height: 640, dpr: 1 };
 const NARROW = { width: 380, height: 560, dpr: 1 };
 const GRID = { width: 20, height: 12 };
 
+describe('Camera.spriteBox actor foot', () => {
+  it('stands an oblique square 2x2 on the front cell centre', () => {
+    const camera = new Camera(LANDSCAPE, GRID, 'oblique');
+    const box = camera.spriteBox({ x: 15, y: 5 }, 2, true);
+    const foot = camera.project({ x: 16.5, y: 6.5 });
+    expect(box.x + box.size).toBeCloseTo(foot.x, 9);
+    expect(box.y + box.size * 0.86).toBeCloseTo(foot.y, 9);
+  });
+
+  it('keeps the orthographic square 2x2 box unchanged', () => {
+    const camera = new Camera(LANDSCAPE, GRID, 'orthographic');
+    expect(camera.spriteBox({ x: 15, y: 5 }, 2, true)).toEqual(camera.toScreen({ x: 15, y: 6 }));
+  });
+});
+
 describe('Camera.fit', () => {
   it('fits the whole board when a tile stays at fingertip size', () => {
     const camera = new Camera(LANDSCAPE, GRID);

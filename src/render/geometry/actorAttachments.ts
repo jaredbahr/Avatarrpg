@@ -1,5 +1,5 @@
 import type { Grid, Vec2 } from '../../core/types';
-import { SQUARE_FOOTPRINTS, footprintFoot } from '../../core/rules/footprint';
+import { SQUARE_FOOTPRINTS } from '../../core/rules/footprint';
 import type { ActorAttachment, EmitterInstance } from '../view';
 import { projectGround, unprojectGround } from '../projection';
 import type { Projection } from '../projection';
@@ -8,6 +8,7 @@ import { sheets } from '../sheets/store';
 import type { ResolvedFrame } from '../sheets/store';
 import { BUILDS, FOOT, figureScale, poseFor, solve } from '../painters/figure';
 import { liftAt } from './elevation';
+import { renderFoot } from '../renderFoot';
 
 type FrameGeometry = Pick<ResolvedFrame, 'frame' | 'anchor' | 'pixelsPerTile' | 'placeholder'>;
 
@@ -105,7 +106,7 @@ export function attachmentPoint(
   frame?: FrameGeometry,
   square = SQUARE_FOOTPRINTS,
 ): Vec2 {
-  const ground = projectGround(footprintFoot(actor.pos, actor.size, square), projection);
+  const ground = projectGround(renderFoot(actor.pos, actor.size, square, projection), projection);
   const socket = socketOffset(actor, frame);
   // Orthographic sprites have a foot line below their cell centre. Oblique
   // sprites stand at it (Camera.spriteBox uses 0.86, and the sheet uses 0.85).

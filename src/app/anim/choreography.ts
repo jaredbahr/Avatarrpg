@@ -13,7 +13,7 @@
  */
 
 import type { ContentIndex, GameEvent, Unit, Vec2 } from '../../core/types';
-import { SQUARE_FOOTPRINTS, footprintCells, footprintFoot } from '../../core/rules/footprint';
+import { SQUARE_FOOTPRINTS, footprintCells } from '../../core/rules/footprint';
 import { fxPalette, resolveFx, WATERSKIN_DRAW } from '../../content/fx';
 import type { EmitterDef, FxRecipe } from '../../content/fx';
 import { hashSeed } from '../../render/fx/rng';
@@ -28,6 +28,7 @@ import type { MeleeDirection } from '../../content/assets/clips';
 import { HEADINGS, KO_HEADINGS, clipDurationMs, hitClip, koClip } from '../../content/assets/clips';
 import type { SheetClips } from '../../render/sheets/store';
 import type { Projection } from '../../render/projection';
+import { renderFoot } from '../../render/renderFoot';
 import type { ActorAttachment, EmitterAttachments } from '../../render/view';
 import { enemyScale, partyScale } from './actorScale';
 import type { BendSources } from './bendHandoff';
@@ -218,7 +219,12 @@ export function choreograph(input: ChoreographyInput): Choreography {
     const pos = positions.get(id);
     if (!pos) return undefined;
     const size = sizes.get(id) ?? 1;
-    return footprintFoot(pos, size as 1 | 2, input.squareFootprints ?? SQUARE_FOOTPRINTS);
+    return renderFoot(
+      pos,
+      size as 1 | 2,
+      input.squareFootprints ?? SQUARE_FOOTPRINTS,
+      input.projection ?? 'orthographic',
+    );
   };
 
   let pending: PendingHit | null = null;

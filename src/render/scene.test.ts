@@ -262,11 +262,14 @@ for (const projection of ['orthographic', 'oblique'] as const satisfies readonly
     });
 
     it('uses the shipped 2x2 footprint centre and animated position', () => {
-      // The square foot is (3,3.5), one row south of the legacy foot (3,2.5).
-      // Orthographic keeps the probe's column (96/128 across the roof); oblique
-      // moves it to 32/128, because a row south shifts the foot left on screen.
-      const column = projection === 'oblique' ? 32 : 96;
-      installImage((x) => (x >= column - 2 && x <= column + 2 ? 255 : 0));
+      // The orthographic square foot is (3,3.5), one row south of the legacy foot
+      // (3,2.5), so the probe keeps its column (96/128 across the roof). The oblique
+      // foot is the front cell's centre (3.5,3.5), on the diamond's vertical axis:
+      // the same screen column as the one-tile unit at the origin (64/128) but a
+      // tile lower, so only rows below that unit's feet tell the two apart.
+      const column = projection === 'oblique' ? 64 : 96;
+      const fromRow = projection === 'oblique' ? 68 : 0;
+      installImage((x, y) => (x >= column - 2 && x <= column + 2 && y >= fromRow ? 255 : 0));
       const scene = roof(camera);
       expect(sceneryOpacity(scene, view({ units: [unit(origin)] }), camera)).toBe(1);
       expect(sceneryOpacity(scene, view({ units: [unit(origin, { size: 2 })] }), camera)).toBe(

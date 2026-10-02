@@ -21,6 +21,7 @@ import { SQUARE_FOOTPRINTS, footprintFoot } from '../core/rules/footprint';
 import { groundBounds, projectGround, unprojectGround } from './projection';
 import type { Projection } from './projection';
 import { pickCell } from './geometry/elevation';
+import { renderFoot } from './renderFoot';
 
 /** Logical tile size before the fit scale is applied. */
 export const TILE = 64;
@@ -459,7 +460,7 @@ export class Camera {
       );
     }
     const size = TILE * this.scale;
-    const foot = this.project(footprintFoot(pos, footprint, square));
+    const foot = this.project(renderFoot(pos, footprint, square, this.projection));
     return { x: foot.x - (size * footprint) / 2, y: foot.y - size * 0.86, size };
   }
 

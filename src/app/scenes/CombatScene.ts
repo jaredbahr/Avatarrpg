@@ -37,10 +37,11 @@ import {
   type ReachableCell,
 } from '../../core/rules/grid';
 import { canMove, effectiveStats, isAlive, statusDefs } from '../../core/rules/stats';
-import { SQUARE_FOOTPRINTS, footprintCells, footprintFoot } from '../../core/rules/footprint';
+import { SQUARE_FOOTPRINTS, footprintCells } from '../../core/rules/footprint';
 import { activeUnit, upcomingOrder } from '../../core/rules/turnOrder';
 import { encounterText } from '../../core/story/encounterText';
 import { Renderer, TILE } from '../../render/renderer';
+import { renderFoot } from '../../render/renderFoot';
 import type { AimArc, MapView, OverlayLayer, RenderProp, RenderUnit } from '../../render/renderer';
 import { cliffEdgesFor, type TargetReticleCue } from '../../render/view';
 import { weatherAt } from '../../core/rules/obscurement';
@@ -1837,7 +1838,7 @@ export class CombatScene implements Scene {
         );
         if (target) {
           aimArc = {
-            from: footprintFoot(unit.pos, unit.size),
+            from: renderFoot(unit.pos, unit.size, SQUARE_FOOTPRINTS, renderer.camera.projection),
             to: { x: target.x + 0.5, y: target.y + 0.5 },
             arc: lob,
             color: paletteFor(ability.element).light,

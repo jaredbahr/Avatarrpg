@@ -17,7 +17,7 @@
  */
 
 import type { Ability, Unit, Vec2 } from '../../core/types';
-import { SQUARE_FOOTPRINTS, footprintFoot } from '../../core/rules/footprint';
+import { SQUARE_FOOTPRINTS } from '../../core/rules/footprint';
 import type { BendSetDef } from '../../content/bends';
 import type { Heading } from '../../content/assets/clips';
 import { resolveAsset } from '../../content/assets/manifest';
@@ -27,6 +27,7 @@ import type { Point } from '../../render/fx/trajectory';
 import type { Projection } from '../../render/projection';
 import { projectGround } from '../../render/projection';
 import { FOOT_LINE } from '../../render/sheets/bake';
+import { renderFoot } from '../../render/renderFoot';
 import type { ResolvedBendFrame } from '../../render/sheets/store';
 import { partyScale } from './actorScale';
 import type { BendPlan } from './bendChoreo';
@@ -67,7 +68,7 @@ export function unitFoot(
   lift = 0,
   square = SQUARE_FOOTPRINTS,
 ): Point {
-  const point = footprintFoot(pos, size, square);
+  const point = renderFoot(pos, size, square, projection);
   if (projection === 'oblique') {
     const ground = projectGround(point, 'oblique');
     return { x: ground.x, y: ground.y - 0.86 + FOOT_LINE - lift };
@@ -116,9 +117,9 @@ export function planBendCast(
   if (!sources || !isBendingAttack(caster, ability)) return undefined;
   const set = sources.setOf(caster.sprite);
   if (!set || set.unitAsset !== caster.sprite) return undefined;
-  const from = footprintFoot(casterPos, caster.size, square);
+  const from = renderFoot(casterPos, caster.size, square, projection);
   const to = struck
-    ? footprintFoot(struck.pos, struck.size as 1 | 2, square)
+    ? renderFoot(struck.pos, struck.size as 1 | 2, square, projection)
     : { x: target.x + 0.5, y: target.y + 0.5 };
   const vector = { x: to.x - from.x, y: to.y - from.y };
   const tiles = Math.max(Math.abs(target.x - casterPos.x), Math.abs(target.y - casterPos.y));
