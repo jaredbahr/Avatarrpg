@@ -88,8 +88,8 @@ describe('a sheet on more than one atlas page (ADR 0052)', () => {
     stubPages();
     const store = new SheetStore();
     expect(store.frame(KEY, 'stance', 0, undefined, 128, 1)).toBeNull();
-    await settle();
-    expect(store.loadedFor(KEY)).toBe(true);
+    // Wait for the load itself: a fixed 5 ms was not always enough on a busy runner.
+    await until(() => store.loadedFor(KEY));
     const idle = store.frame(KEY, 'idle', 0, undefined, 128, 1);
     const stance = store.frame(KEY, 'stance', 0, undefined, 128, 1);
     expect(idle?.clip).toBe('idle');
