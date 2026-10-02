@@ -202,7 +202,7 @@ function tileDanger(draft: BattleDraft, pos: Vec2): number {
  * brazier when a clear tile is right there, not enough to override wanting to
  * break it.
  */
-function propDanger(
+export function propDanger(
   draft: BattleDraft,
   pos: Vec2,
   size: UnitSize = 1,
@@ -220,6 +220,9 @@ function propDanger(
     if (!near) continue;
     const def = draft.content.props.get(prop.propId);
     if (!def) continue;
+    // An unlit fuel prop is safe from the first *fire* hit, but movement danger
+    // has no damage type: earth, air, or a blow can still break it and release
+    // the same burst. Keep pricing that break hazard here.
     for (const effect of def.onBreak) {
       if (effect.kind === 'damage') worst = Math.max(worst, effect.base * 0.4);
       else if (effect.kind === 'surface' && effect.surface === 'fire') worst = Math.max(worst, 3);
@@ -773,7 +776,15 @@ export function scoreAbility(
     }
   }
 
-  const propValue = scoreProps(draft, caster, ability, tiles, weights);
+  const propValue = scoreProps(
+    draft,
+    caster,
+    ability,
+    target,
+    tiles,
+    shoveOrigin(content, draft.grid, caster, ability, target, squareFootprints),
+    weights,
+  );
   if (propValue !== 0) {
     score += propValue;
     // Without this the plan scores well and is then thrown away at the check
@@ -805,7 +816,9 @@ function scoreProps(
   draft: BattleDraft,
   caster: Unit,
   ability: Ability,
+  target: Vec2,
   tiles: readonly Vec2[],
+  origin: Vec2,
   weights: Weights,
 ): number {
   const squareFootprints = draft.squareFootprints;
@@ -814,6 +827,25 @@ function scoreProps(
 
   const damage = ability.effects.find((e) => e.kind === 'damage');
   let total = 0;
+
+  /*
+   * Only fuel changes the old arithmetic. Ask the shared forecast once when a
+   * scored aim actually contains fuel; ordinary props keep the cheap comparison
+   * below exactly as before.
+   */
+  const fuelInAim = props.some((prop) => (draft.content.props.get(prop.propId)?.fuel ?? 0) > 0);
+  const forecast = fuelInAim
+    ? forecastReactions(
+        draft.content,
+        battleWithHypotheticalCaster(draft.toBattle(), caster),
+        caster,
+        ability,
+        target,
+        tiles,
+        origin,
+        squareFootprints,
+      )
+    : null;
 
   // Only a prop whose break shoves somebody needs a battle snapshot, so build
   // it the first time a push effect actually lands on a victim.
@@ -829,11 +861,14 @@ function scoreProps(
 
     // Would this actually open it? A plan that chips a barrel is worth much
     // less than one that bursts it.
-    let breaks = false;
-    if (damage && damage.kind === 'damage' && !def.immuneTo.includes(damage.damageType)) {
-      const dealt = def.vulnerableTo.includes(damage.damageType) ? damage.base * 2 : damage.base;
-      breaks = dealt >= prop.hp;
-    }
+    const breaks =
+      damage?.kind === 'damage' &&
+      ((def.fuel ?? 0) > 0
+        ? (forecast?.props.some((candidate) => candidate.id === prop.id && candidate.destroyed) ??
+          false)
+        : !def.immuneTo.includes(damage.damageType) &&
+          (def.vulnerableTo.includes(damage.damageType) ? damage.base * 2 : damage.base) >=
+            prop.hp);
     /*
      * A shove on its own never opens a prop, so it never runs `onBreak`.
      * `resolveAbility` moves a shove-targeted prop through `shoveProp`, which

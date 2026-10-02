@@ -650,6 +650,51 @@ export class BattleDraft {
     if (!def) return;
 
     if (def.immuneTo.includes(damageType)) return;
+
+    /*
+     * Like the first fire contact below, a listed dousing contact changes the
+     * fuel state instead of damaging the prop. Keep both state changes ahead
+     * of vulnerability, HP loss and the break path so a strong dousing move
+     * cannot release the burning prop's break burst.
+     */
+    if (
+      prop.burning !== undefined &&
+      isDousingDamage(damageType) &&
+      (def.douse?.includes(damageType) ?? false)
+    ) {
+      this.replaceProp({
+        id: prop.id,
+        propId: prop.propId,
+        pos: prop.pos,
+        hp: prop.hp,
+        previous: prop.previous,
+      });
+      this.emit({
+        type: 'propDoused',
+        propId,
+        pos: prop.pos,
+        label: `The ${def.name} is put out.`,
+      });
+      return;
+    }
+
+    /*
+     * A first fire contact spends itself lighting fuel, regardless of how much
+     * damage that contact would otherwise deal. This comes before vulnerability,
+     * HP loss and the break path on purpose: dry hay catches instead of bursting,
+     * while later fire hits use the ordinary damage rule below.
+     */
+    if (prop.burning === undefined && damageType === 'fire' && (def.fuel ?? 0) > 0) {
+      this.replaceProp({ ...prop, burning: def.fuel });
+      this.emit({
+        type: 'propIgnited',
+        propId,
+        pos: prop.pos,
+        label: `The ${def.name} catches fire!`,
+      });
+      return;
+    }
+
     const dealt = def.vulnerableTo.includes(damageType) ? amount * 2 : amount;
     const hp = prop.hp - dealt;
 
@@ -660,45 +705,7 @@ export class BattleDraft {
       return;
     }
 
-    /*
-     * B-2: water — or cold, or earth — puts a fire out, and flame lights a prop
-     * that has fuel to give. Dousing wins a tie: the damage still lands, but a
-     * wet prop does not catch in the same breath.
-     */
-    const doused =
-      prop.burning !== undefined &&
-      isDousingDamage(damageType) &&
-      (def.douse?.includes(damageType) ?? false);
-    const ignited =
-      !doused && prop.burning === undefined && damageType === 'fire' && (def.fuel ?? 0) > 0;
-
-    if (doused) {
-      // Cleared, not set to 0: absent is what "not burning" means on the wire.
-      this.replaceProp({
-        id: prop.id,
-        propId: prop.propId,
-        pos: prop.pos,
-        hp,
-        previous: prop.previous,
-      });
-      this.emit({
-        type: 'propDoused',
-        propId,
-        pos: prop.pos,
-        label: `The ${def.name} is doused.`,
-      });
-      return;
-    }
-
-    this.replaceProp(ignited ? { ...prop, hp, burning: def.fuel } : { ...prop, hp });
-    if (ignited) {
-      this.emit({
-        type: 'propIgnited',
-        propId,
-        pos: prop.pos,
-        label: `The ${def.name} catches fire!`,
-      });
-    }
+    this.replaceProp({ ...prop, hp });
   }
 
   /**
@@ -899,10 +906,16 @@ export class BattleDraft {
     return out;
   }
 
-  /** B-2: a water or ice surface on a prop's own tile puts its fire out. */
+  /** B-2: water or ice under a prop, or beside a solid one, puts its fire out. */
   private hasDousingSurface(prop: PropInstance): boolean {
     const surface = tileAt(this.grid, prop.pos)?.surface?.id;
-    return surface === 'water' || surface === 'ice';
+    if (surface === 'water' || surface === 'ice') return true;
+    const tile = tileAt(this.grid, prop.pos);
+    if (!tile?.blocked) return false;
+    return DIRECTIONS.some((dir) => {
+      const neighbour = tileAt(this.grid, { x: prop.pos.x + dir.x, y: prop.pos.y + dir.y });
+      return neighbour?.surface?.id === 'water' || neighbour?.surface?.id === 'ice';
+    });
   }
 
   /** B-2: clears a burning prop's fire and puts the words in the log. */
@@ -923,7 +936,7 @@ export class BattleDraft {
       type: 'propDoused',
       propId,
       pos: prop.pos,
-      label: `The ${def.name} is doused.`,
+      label: `The ${def.name} is put out.`,
     });
   }
 
@@ -955,7 +968,20 @@ export class BattleDraft {
       }
 
       const radius = def.ignites?.radius ?? 0;
-      this.paint(this.tilesOrthogonal(live.pos, radius), 'fire', 1, null, def.ignites?.spread ?? 0);
+      const spread = this.paint(
+        this.tilesOrthogonal(live.pos, radius),
+        'fire',
+        1,
+        null,
+        def.ignites?.spread ?? 0,
+      );
+      if (spread.changes.length > 0) {
+        this.emit({
+          type: 'propSpread',
+          propId: live.id,
+          label: `The ${def.name} burns and spreads fire.`,
+        });
+      }
 
       const left = live.burning - 1;
       if (left > 0) this.replaceProp({ ...live, burning: left });

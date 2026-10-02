@@ -44,6 +44,33 @@ const prop: PropInstance = {
 };
 
 describe('prop inspect text', () => {
+  it('explains the shipped hay bale fuel and every way to douse it', () => {
+    const hay = CONTENT.props.get('hay_bale');
+    if (!hay) throw new Error('Missing shipped hay bale');
+    const copy = propInspectText(
+      hay,
+      { ...prop, propId: hay.id, hp: hay.hp, burning: undefined },
+      CONTENT.statuses,
+    );
+
+    expect(copy.notes.map((chip) => chip.text)).toContain('Fire lights it; burns for 2 rounds');
+    expect(copy.notes.map((chip) => chip.text)).toContain('Weak to air');
+    expect(copy.actions.map((chip) => chip.text)).not.toContain(
+      'Put it out with water, cold, or earth',
+    );
+
+    const burning = propInspectText(
+      hay,
+      { ...prop, propId: hay.id, hp: hay.hp, burning: 2 },
+      CONTENT.statuses,
+    );
+    expect(burning.actions.map((chip) => chip.text)).toContain(
+      'Put it out with water, cold, or earth',
+    );
+    expect(burning.notes.map((chip) => chip.text)).toContain('Fire will break it now');
+    expect(burning.notes.map((chip) => chip.text)).toContain('Weak to fire or air');
+  });
+
   it('groups actions and facts, uses display names, and omits unusable cover and dousing', () => {
     const copy = propInspectText(def, prop, CONTENT.statuses);
     expect(copy).toMatchObject({
@@ -60,7 +87,7 @@ describe('prop inspect text', () => {
     expect(copy.notes.map((chip) => chip.text)).toEqual([
       'Blocks the way',
       'Blocks sight',
-      'Burns for 3 rounds',
+      'Fire will break it now',
       'Weak to fire or blows',
       'Shrugs off water and cold',
     ]);
@@ -93,7 +120,7 @@ describe('prop inspect text', () => {
       CONTENT.statuses,
     );
     expect(copy.actions.map((chip) => chip.text)).toContain('Stand on it for cover');
-    expect(copy.notes.map((chip) => chip.text)).toContain('Burns for 1 round');
+    expect(copy.notes.map((chip) => chip.text)).toContain('Fire will break it now');
     expect(copy.burning).toBe('On fire: 1 round left');
   });
 

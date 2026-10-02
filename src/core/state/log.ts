@@ -98,6 +98,9 @@ export function describeEvent(
       // B-2 writes these labels the same way a prop's break line is written.
       return event.label;
 
+    case 'propSpread':
+      return event.label;
+
     case 'propPushed': {
       const name = battle?.props.find((p) => p.id === event.propId)?.propId;
       const def = name ? content.props.get(name) : undefined;

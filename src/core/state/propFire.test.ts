@@ -3,8 +3,7 @@
  *
  * B-1 added the data — `fuel`, `burnsInto`, `ignites`, `douse` and
  * `PropInstance.burning` — and nothing read it. These tests are the first code
- * that does, so they double as the specification: no shipped prop declares
- * `fuel`, which is why a shipped battle must come out of these rules untouched.
+ * that does. The shipped hay bale now exercises the same rules in real battles.
  *
  * Everything here is rules only. No RNG is consumed on any path, so the
  * confirm-step preview keeps its promise of being roll-free.
@@ -14,6 +13,7 @@ import { beforeEach, describe, expect, it } from 'vitest';
 import { CONTENT } from '../../content';
 import { RngCursor } from '../rng';
 import { posKey, tileAt, withTile } from '../rules/grid';
+import { resolveAbility } from '../rules/abilities';
 import type {
   BattleState,
   ContentIndex,
@@ -33,8 +33,8 @@ import type { SaveMeta } from '../save/serialize';
 /**
  * Test-only fuel props.
  *
- * They deliberately do not live in `src/content/`: no shipped prop may take
- * `fuel`, and the shipped-content test at the bottom is the proof.
+ * They deliberately do not live in `src/content/`: they isolate edge cases that
+ * the shipped hay bale does not need to encode.
  */
 function fuelProp(overrides: Partial<PropDef> & Pick<PropDef, 'id' | 'name'>): PropDef {
   return {
@@ -93,7 +93,7 @@ const SOLID_ASH = fuelProp({
   burnsInto: [],
 });
 
-/** No fuel: the shape every shipped prop has today. */
+/** No fuel: isolates the ordinary-prop path from the shipped hay rule. */
 const RACK = fuelProp({
   id: 'test_rack',
   name: 'Test Rack',
@@ -220,13 +220,13 @@ describe('props that burn', () => {
     draft = freshDraft();
   });
 
-  it('catches fire when a fire hit leaves it standing', () => {
+  it('catches fire instead of taking damage from the first fire hit', () => {
     const pos = openTile(draft);
     const hay = place(draft, HAYSTACK.id, pos);
 
     draft.damageProp(hay.id, 4, 'fire');
 
-    expect(draft.propAt(pos)?.hp).toBe(16);
+    expect(draft.propAt(pos)?.hp).toBe(hay.hp);
     expect(draft.propAt(pos)?.burning).toBe(HAYSTACK.fuel);
     expect(eventOf(draft, 'propIgnited')).toMatchObject({
       type: 'propIgnited',
@@ -239,14 +239,14 @@ describe('props that burn', () => {
     );
   });
 
-  it('does not catch fire when the same hit breaks it', () => {
+  it('catches even when the ordinary vulnerable hit would have broken it', () => {
     const pos = openTile(draft);
     const kindling = place(draft, KINDLING.id, pos);
 
     draft.damageProp(kindling.id, 4, 'fire');
 
-    expect(draft.propAt(pos)).toBeUndefined();
-    expect(draft.events.some((event) => event.type === 'propIgnited')).toBe(false);
+    expect(draft.propAt(pos)).toMatchObject({ hp: kindling.hp, burning: 1 });
+    expect(draft.events.some((event) => event.type === 'propDestroyed')).toBe(false);
   });
 
   it('paints fire in its ignite radius and burns a round of fuel', () => {
@@ -287,7 +287,7 @@ describe('props that burn', () => {
     const fallback = freshDraft();
     const other = openTile(fallback, 1);
     const kindling = place(fallback, KINDLING.id, other);
-    fallback.damageProp(kindling.id, 1, 'fire'); // 3 hp, doubled to 2: it survives
+    fallback.damageProp(kindling.id, 1, 'fire');
     expect(fallback.propAt(other)?.burning).toBe(1);
 
     fallback.tickTerrain();
@@ -298,7 +298,7 @@ describe('props that burn', () => {
     expect(last).toMatchObject({ label: 'The Test Kindling burns away.' });
   });
 
-  it('is doused by water damage, which still lands', () => {
+  it('is put out by listed damage without taking that hit', () => {
     const pos = openTile(draft);
     const hay = place(draft, HAYSTACK.id, pos);
     draft.damageProp(hay.id, 4, 'fire');
@@ -306,11 +306,11 @@ describe('props that burn', () => {
     draft.damageProp(hay.id, 1, 'water');
 
     const after = draft.propAt(pos);
-    expect(after?.hp).toBe(15);
+    expect(after?.hp).toBe(hay.hp);
     expect(after?.burning).toBeUndefined();
     expect(after !== undefined && 'burning' in after).toBe(false);
     expect(eventOf(draft, 'propDoused')).toMatchObject({
-      label: 'The Test Haystack is doused.',
+      label: 'The Test Haystack is put out.',
     });
   });
 
@@ -325,9 +325,27 @@ describe('props that burn', () => {
       local.tickTerrain();
 
       expect(local.propAt(pos)?.burning, `doused by ${surface}`).toBeUndefined();
-      expect(eventOf(local, 'propDoused')).toMatchObject({ label: 'The Test Haystack is doused.' });
+      expect(eventOf(local, 'propDoused')).toMatchObject({
+        label: 'The Test Haystack is put out.',
+      });
       // The fire never got to spread first.
       expect(tileAt(local.grid, pos)?.surface?.id).toBe(surface);
+    }
+  });
+
+  it('is put out without damage by water or ice beside a solid burning prop', () => {
+    for (const surface of ['water', 'ice'] as const) {
+      const local = freshDraft();
+      const pos = openTile(local);
+      const hay = place(local, SOLID_ASH.id, pos);
+      local.damageProp(hay.id, 1, 'fire');
+      local.paint([{ x: pos.x + 1, y: pos.y }], surface, 3, null);
+
+      local.tickTerrain();
+
+      expect(local.propAt(pos)).toMatchObject({ hp: hay.hp });
+      expect(local.propAt(pos)?.burning, `put out beside ${surface}`).toBeUndefined();
+      expect(local.events.some((event) => event.type === 'propDoused')).toBe(true);
     }
   });
 
@@ -387,7 +405,7 @@ describe('props that burn', () => {
     draft.tickTerrain();
 
     expect(tileAt(draft.grid, pos)?.surface ?? null).toBeNull();
-    expect(draft.propAt(pos)?.hp).toBe(hay.hp - 4);
+    expect(draft.propAt(pos)?.hp).toBe(hay.hp);
     expect(draft.propAt(pos)?.burning).toBe(HAYSTACK.fuel);
     expect(draft.events.filter((event) => event.type === 'propIgnited')).toHaveLength(1);
   });
@@ -532,7 +550,7 @@ describe('props that burn', () => {
     ).toBe(true);
   });
 
-  it('leaves a shipped-content battle with props exactly as it was', () => {
+  it('runs the complete shipped hay rule and never burns another shipped prop', () => {
     const seeded = createGame(CONTENT, {
       seed: 'props-fire-shipped',
       party: [
@@ -546,36 +564,157 @@ describe('props that burn', () => {
     const battle = createBattle(CONTENT, seeded, 'enc_quarry_gate', rng);
     expect(battle.props.length, 'the quarry gate should place props').toBeGreaterThan(0);
 
+    const hay = battle.props.find((prop) => prop.propId === 'hay_bale');
+    const kaya = battle.units.find((unit) => unit.characterId === 'kaya');
+    const jab = CONTENT.abilities.get('fire_jab');
+    if (!hay || !kaya || !jab) throw new Error('shipped hay fixture is incomplete');
+    const live = new BattleDraft(CONTENT, battle, rng);
+    resolveAbility(live, live.unit(kaya.id) ?? kaya, jab, hay.pos, live.rng);
+
+    expect(live.props.find((prop) => prop.id === hay.id)).toMatchObject({
+      hp: hay.hp,
+      burning: 2,
+    });
+    expect(live.events.some((event) => event.type === 'propIgnited')).toBe(true);
+    expect(live.events.some((event) => event.type === 'propDestroyed')).toBe(false);
+
+    for (let upkeep = 0; upkeep < 2; upkeep++) {
+      const eventStart = live.events.length;
+      live.tickTerrain();
+      expect(appendLog(CONTENT, live.toBattle(), [], live.events.slice(eventStart))).toContain(
+        'The Hay Bale burns and spreads fire.',
+      );
+      // The first round is the bale's own cross of fire, with its solid tile left bare.
+      if (upkeep === 0) {
+        for (const pos of orthogonal(hay.pos, 1).filter((at) => posKey(at) !== posKey(hay.pos))) {
+          expect(tileAt(live.grid, pos)?.surface?.id, `first upkeep fire at ${posKey(pos)}`).toBe(
+            'fire',
+          );
+        }
+        expect(tileAt(live.grid, hay.pos)?.surface ?? null).toBeNull();
+      }
+    }
+    /*
+     * The second round is the map joining in. The water barrel at (14,8) stands
+     * beside two of the burning tiles: one round of fire weakens it, the second
+     * breaks it, and its water puts out the fire next to it. The far side of the
+     * bale keeps burning.
+     */
+    const barrel = battle.props.find(
+      (prop) => prop.propId === 'water_barrel' && prop.pos.x === 14 && prop.pos.y === 8,
+    );
+    expect(barrel, 'the gatehouse barrel beside the bale').toBeDefined();
+    expect(live.props.some((prop) => prop.id === barrel?.id)).toBe(false);
+    expect(tileAt(live.grid, { x: 14, y: 7 })?.surface?.id).not.toBe('fire');
+    expect(tileAt(live.grid, { x: 13, y: 8 })?.surface?.id).not.toBe('fire');
+    expect(tileAt(live.grid, { x: 12, y: 7 })?.surface?.id).toBe('fire');
+    expect(tileAt(live.grid, { x: 13, y: 6 })?.surface?.id).toBe('fire');
+    expect(live.props.some((prop) => prop.id === hay.id)).toBe(false);
+    expect(
+      live.events.some(
+        (event) => event.type === 'propDestroyed' && event.label === 'The Hay Bale burns away.',
+      ),
+    ).toBe(true);
+    expect(appendLog(CONTENT, live.toBattle(), [], live.events)).toEqual(
+      expect.arrayContaining([
+        'The Hay Bale catches fire!',
+        'The Hay Bale burns and spreads fire.',
+        'The Hay Bale burns away.',
+      ]),
+    );
+
+    for (const damageType of ['water', 'cold', 'earth'] as const) {
+      const local = new BattleDraft(CONTENT, battle, new RngCursor(1));
+      local.damageProp(hay.id, 1, 'fire');
+      local.damageProp(hay.id, 1, damageType);
+      expect(local.props.find((prop) => prop.id === hay.id)?.burning).toBeUndefined();
+      expect(local.events.some((event) => event.type === 'propDoused')).toBe(true);
+      expect(appendLog(CONTENT, local.toBattle(), [], local.events)).toContain(
+        'The Hay Bale is put out.',
+      );
+    }
+
+    const secondFire = new BattleDraft(CONTENT, battle, new RngCursor(2));
+    secondFire.damageProp(hay.id, 1, 'fire');
+    secondFire.damageProp(hay.id, 4, 'fire');
+    expect(secondFire.props.some((prop) => prop.id === hay.id)).toBe(false);
+
+    const wind = new BattleDraft(CONTENT, battle, new RngCursor(3));
+    wind.damageProp(hay.id, 4, 'air');
+    expect(wind.props.some((prop) => prop.id === hay.id)).toBe(false);
+
+    for (const prop of live.props) {
+      if (prop.propId !== 'hay_bale') expect(prop.burning).toBeUndefined();
+    }
+  });
+
+  it('lights and burns away shipped hay through reducer actions and real round upkeep', () => {
+    const seeded = createGame(CONTENT, {
+      seed: 'props-fire-reducer',
+      party: [{ characterId: 'kaya', level: 3, autoChoose: true }],
+      startNode: '',
+    });
+    const rng = new RngCursor(seeded.rng);
+    const battle = createBattle(CONTENT, seeded, 'enc_quarry_gate', rng);
+    const hay = battle.props.find((prop) => prop.propId === 'hay_bale');
+    const kaya = battle.units.find((unit) => unit.characterId === 'kaya');
+    if (!hay || !kaya) throw new Error('shipped reducer hay fixture is incomplete');
+
+    // Two tiles up the road with a clear line: outside the bale's own cross of fire.
+    const adjacent = { x: hay.pos.x, y: hay.pos.y - 2 };
     let state: GameState = {
       ...seeded,
       screen: 'combat',
       rng: rng.state,
-      // As in the save fixture: lend the party an AI profile so runAiTurn acts.
       battle: {
         ...battle,
-        units: battle.units.map((unit) =>
-          unit.faction === 'party' ? { ...unit, ai: 'aggressive' } : unit,
-        ),
+        units: battle.units.map((unit) => ({
+          ...unit,
+          ...(unit.id === kaya.id ? { pos: adjacent } : {}),
+          ai: unit.id === kaya.id ? 'none' : unit.ai,
+        })),
+        order: [kaya.id, ...battle.order.filter((id) => id !== kaya.id)],
+        turnIndex: 0,
       },
     };
 
-    const seen: GameEvent[] = [];
-    for (let i = 0; i < 30 && state.battle?.phase === 'active'; i++) {
-      const step = apply(CONTENT, state, { type: 'runAiTurn' });
+    const ignition = apply(CONTENT, state, {
+      type: 'useAbility',
+      unitId: kaya.id,
+      abilityId: 'fire_jab',
+      target: hay.pos,
+    });
+    state = ignition.state;
+    expect(ignition.events.some((event) => event.type === 'propIgnited')).toBe(true);
+
+    const ended = apply(CONTENT, state, { type: 'endTurn', unitId: kaya.id });
+    state = ended.state;
+    const events: GameEvent[] = [...ignition.events, ...ended.events];
+    let steps = 0;
+    while (
+      events.filter((event) => event.type === 'roundStarted').length < 2 &&
+      state.battle?.phase === 'active' &&
+      steps++ < 40
+    ) {
+      // The hero has no AI here: when her turn comes round again she simply passes.
+      const acting = state.battle.order[state.battle.turnIndex];
+      const step =
+        acting === kaya.id
+          ? apply(CONTENT, state, { type: 'endTurn', unitId: kaya.id })
+          : apply(CONTENT, state, { type: 'runAiTurn' });
       state = step.state;
-      seen.push(...step.events);
-      // No shipped prop has fuel, so `burning` must never appear at all.
+      events.push(...step.events);
       for (const prop of state.battle?.props ?? []) {
-        expect(prop.burning, `${prop.propId} must never burn`).toBeUndefined();
+        if (prop.burning !== undefined) expect(prop.propId).toBe('hay_bale');
       }
     }
 
-    const upkeepRan = seen.some((event) => event.type === 'roundStarted');
-    expect(upkeepRan, 'upkeep should have run').toBe(true);
-    const fireEvents = seen.filter(
-      (event) => event.type === 'propIgnited' || event.type === 'propDoused',
+    expect(events.filter((event) => event.type === 'roundStarted')).toHaveLength(2);
+    expect(state.battle?.props.some((prop) => prop.id === hay.id)).toBe(false);
+    // The fight is live, so the bale ends one of two ways: its fuel runs out, or an enemy's
+    // fire breaks it while it burns. Either way it is gone, through the destroy path.
+    expect(events.some((event) => event.type === 'propDestroyed' && event.propId === hay.id)).toBe(
+      true,
     );
-    expect(fireEvents).toHaveLength(0);
-    expect(seen.length, 'the fight should have done something').toBeGreaterThan(0);
   });
 });

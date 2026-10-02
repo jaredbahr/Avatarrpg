@@ -1138,6 +1138,37 @@ export function choreograph(input: ChoreographyInput): Choreography {
         break;
       }
 
+      case 'propIgnited': {
+        const key = 'fx.surface.fire';
+        const at = Math.max(cursor, landing().at);
+        const { recipe, palette } = effect(key);
+        cue(key, at, 15, eventIndex);
+        // Particles only: with nowhere to travel, the recipe's ribbon lies flat beside the prop.
+        emit(
+          recipe.impact.filter((def) => def.kind === 'particles'),
+          at,
+          centre(event.pos),
+          centre(event.pos),
+          palette,
+          eventIndex,
+          8,
+        );
+        break;
+      }
+
+      case 'propDoused': {
+        const key = 'fx.surface.doused';
+        const at = Math.max(cursor, landing().at);
+        const { recipe, palette } = effect(key);
+        cue(key, at, 15, eventIndex);
+        emit(recipe.impact, at, centre(event.pos), centre(event.pos), palette, eventIndex, 8);
+        break;
+      }
+
+      case 'propSpread':
+        // Log-only upkeep detail: changed tiles already carry their own cues.
+        break;
+
       case 'propDestroyed': {
         const { recipe, palette } = effect(`fx.prop.${event.propId}`);
         const at = Math.max(cursor, landing().at);

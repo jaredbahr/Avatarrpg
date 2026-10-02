@@ -34,7 +34,7 @@ describe('balance scenario tooling', () => {
     expect(overlaid).not.toBe(CONTENT);
     expect(overlaid.props.get('hay_bale')).not.toBe(originalProp);
     expect(overlaid.props.get('hay_bale')?.fuel).toBe(3);
-    expect(originalProp?.fuel).toBeUndefined();
+    expect(originalProp?.fuel).toBe(2);
     expect(overlaid.maps.get('ambush_road')).not.toBe(originalMap);
     expect(overlaid.maps.get('ambush_road')?.props).toHaveLength(1);
     expect(originalMap?.props).toEqual([]);
@@ -55,7 +55,7 @@ describe('balance scenario tooling', () => {
         type: 'propDoused',
         propId: 'prop6',
         pos: { x: 1, y: 1 },
-        label: 'The Hay Bale is doused.',
+        label: 'The Hay Bale is put out.',
       },
       {
         type: 'propDestroyed',

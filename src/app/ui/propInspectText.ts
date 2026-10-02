@@ -140,7 +140,7 @@ export function propInspectText(
   if (def.grantsCover && !def.blocksMove)
     actions.push({ text: 'Stand on it for cover', icon: 'guard' });
   const douse = def.douse?.filter((type) => !def.immuneTo.includes(type)) ?? [];
-  if ((def.fuel ?? 0) > 0 && douse.length > 0)
+  if ((def.fuel ?? 0) > 0 && prop.burning !== undefined && douse.length > 0)
     actions.push({
       text: `Put it out with ${list(douse.map((type) => DOUSE_NAMES[type]))}`,
       icon: 'wave',
@@ -151,11 +151,18 @@ export function propInspectText(
   if (def.blocksSight) notes.push({ text: 'Blocks sight', icon: 'sense' });
   if ((def.fuel ?? 0) > 0)
     notes.push({
-      text: `Burns for ${def.fuel} ${def.fuel === 1 ? 'round' : 'rounds'}`,
+      text:
+        prop.burning === undefined
+          ? `Fire lights it; burns for ${def.fuel} ${def.fuel === 1 ? 'round' : 'rounds'}`
+          : 'Fire will break it now',
       icon: 'torch',
     });
-  if (def.vulnerableTo.length > 0)
-    notes.push({ text: `Weak to ${list(def.vulnerableTo.map((type) => DAMAGE_NAMES[type]))}` });
+  const vulnerable =
+    (def.fuel ?? 0) > 0 && prop.burning === undefined
+      ? def.vulnerableTo.filter((type) => type !== 'fire')
+      : def.vulnerableTo;
+  if (vulnerable.length > 0)
+    notes.push({ text: `Weak to ${list(vulnerable.map((type) => DAMAGE_NAMES[type]))}` });
   if (def.immuneTo.length > 0)
     notes.push({
       text: `Shrugs off ${andList(def.immuneTo.map((type) => DAMAGE_NAMES[type]))}`,

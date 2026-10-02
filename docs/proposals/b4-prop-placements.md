@@ -4,23 +4,37 @@
 
 Jared approved Forest Road option B: a hay bale at (12,5) and a water barrel at
 (14,4). He approved Quarry Gate option A: one hay bale at (13,7). The Cutting
-keeps no burnables, and nothing was added to the Quarry Floor. Those three
-placements are shipped.
+keeps no burnables, and nothing was added to the Quarry Floor. Those placements
+are shipped.
 
-The hay bale's fuel values are **not** shipped yet. Review found that the shipped
-bale can never catch: it has 5 HP and takes double damage from fire, and every
-shipped fire source deals at least 4, so any fire breaks it at once (its `onBreak`
-burst) before the ignite rule is reached. That is also why `I/B/D` was 0/0/0 in
-every row below. Until the rule or the numbers change, the bale behaves as it
-always has: break it and it bursts into flame around itself. The scenario files
-under `scripts/balance/scenarios/b4/` still carry the proposed fuel values.
+Jared approved the burning rule on 2026-10-01. The rule is:
+the first fire hit on an unlit prop with fuel lights it without reducing HP; fire
+on an already-burning prop is ordinary damage and can break it. Non-fire damage,
+fuel-less props, upkeep spreading and burn-away are otherwise unchanged. The
+supervisor's matching dousing recommendation, awaiting the owner's approval, is:
+a hit of a type listed in a burning fuel prop's `douse` list puts the fire out
+without reducing HP; the same hit against an unlit prop is ordinary damage. The
+shipped hay values are fuel 2, ignition radius 1, spread 0, doused by water,
+cold or earth.
+
+Wet ground does the same at round upkeep: water or ice under a burning prop, or
+on any of the eight tiles beside a solid one (a solid prop's own tile cannot hold
+a surface), puts it out before it spreads. This part also awaits the owner's
+approval.
+
+One thing the rule does on the shipped Quarry Gate: the bale at (13,7) stands
+diagonal to the water barrel at (14,8). The bale's fire reaches two tiles beside
+that barrel, so the barrel breaks on the second round and its water puts out the
+fire on that side. A unit test pins this.
 
 The measurements below predate the decision; at measurement time, no shipped
 content, tuning, or rules had changed. Each result is 80 paired AI-vs-AI trials
 at the default party sizes (1, 3, 6). Values are baseline → scenario.
 `Fire P/E` is mean source-less environmental fire damage to party/enemies; events
 cannot attribute that damage to a prop. `I/B/D` is mean prop ignitions, burn-aways,
-and douses. It was **0/0/0 in every row**: the AI never used the proposed fire loop.
+and douses. It was **0/0/0 in every historical row** because the old damage order
+broke vulnerable hay before it could ignite. These tables do not measure the
+shipped rule.
 
 Placement validation used the authoritative rows plus all party spawns, authored
 and variant enemies, reinforcements, existing props, and complete exit areas. A
@@ -150,26 +164,14 @@ fight is already asking them to read slam range, mud, oil, cover, and a two-cell
 first find a cell that does not change boss routing, then human-playtest it; these
 two options are useful rejection cases.
 
-## Minimal AI proposal (no code)
+## AI scope of the burning rule
 
-The AI already enumerates a prop only when it is within two tiles of an opponent,
-and its prop score values immediate `onBreak` effects. It does not value starting
-the B-2 fuel cycle, future painted fire, a later burn-away, or dousing a burning
-prop. Minimal proposal:
-
-1. In prop scoring, add a small deterministic value when fire damage would ignite
-   an unlit fuel prop: estimate one round of `ignites` tiles against nearby units,
-   using the existing friendly-fire and terrain weights. Do not project the whole
-   fuel duration; that would overvalue uncertain future control.
-2. Add the mirrored negative danger to movement/target scoring for a fuel prop
-   that is burning or can be ignited by adjacent fire, scaled by self-preservation.
-3. Value water/cold/earth damage that douses a burning prop when the projected
-   fire threatens allies more than enemies. Keep prop targeting gated to the
-   existing two-tile opponent/ally neighbourhood so enemies do not shoot scenery.
-
-This would make some enemies light, avoid, or douse a prop without adding a new
-planner or randomness. Re-run these exact scenarios afterward; the current numbers
-measure geometry and ordinary surfaces, not the intended fuel interaction.
+Prop pricing now reads the same deterministic forecast as the confirm step. A
+fire attack on unlit hay therefore receives no immediate `onBreak` value, while
+a fire attack on already-burning hay can receive that value when it really will
+break the bale. This correction does not add goals for deliberately lighting,
+avoiding or dousing hay. The AI may still hit hay when an action has value for
+another target, but it will not mistake ignition for the break burst.
 
 ## Decisions for Jared
 

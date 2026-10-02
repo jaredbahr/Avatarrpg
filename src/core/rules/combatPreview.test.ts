@@ -91,6 +91,77 @@ function statusIds(unit: Unit | undefined): StatusId[] {
 }
 
 describe('bounded combat outcome previews', () => {
+  it('matches resolution for shipped fire and dousing moves against shipped hay', () => {
+    const source = battleFor('enc_forest_road', ['kaya', 'nilak', 'bo']);
+    const hay = source.props.find((prop) => prop.propId === 'hay_bale');
+    const kaya = source.units.find((unit) => unit.characterId === 'kaya');
+    const nilak = source.units.find((unit) => unit.characterId === 'nilak');
+    const bo = source.units.find((unit) => unit.characterId === 'bo');
+    if (!hay || !kaya || !nilak || !bo)
+      throw new Error('shipped hay preview fixture is incomplete');
+
+    const before = JSON.stringify(source);
+    const unlit = previewAbility(CONTENT, source, kaya, ability('fire_jab'), hay.pos);
+    expect(unlit.props.find((prop) => prop.id === hay.id)).toMatchObject({
+      destroyed: false,
+      catchesFire: true,
+      doused: false,
+      hpBefore: hay.hp,
+      hpAfter: hay.hp,
+      breakLabel: null,
+    });
+    expect(JSON.stringify(source)).toBe(before);
+    const litResolution = resolve(source, kaya, 'fire_jab', hay.pos);
+    expect(litResolution.props.find((prop) => prop.id === hay.id)).toMatchObject({
+      hp: hay.hp,
+      burning: 2,
+    });
+    expect(litResolution.events.some((event) => event.type === 'propIgnited')).toBe(true);
+    expect(litResolution.events.some((event) => event.type === 'propDestroyed')).toBe(false);
+
+    const burning: BattleState = {
+      ...source,
+      props: source.props.map((prop) => (prop.id === hay.id ? { ...prop, burning: 2 } : prop)),
+    };
+    const secondFire = previewAbility(CONTENT, burning, kaya, ability('fire_jab'), hay.pos);
+    expect(secondFire.props.find((prop) => prop.id === hay.id)).toMatchObject({
+      destroyed: true,
+      catchesFire: false,
+    });
+    const brokenResolution = resolve(burning, kaya, 'fire_jab', hay.pos);
+    expect(brokenResolution.props.some((prop) => prop.id === hay.id)).toBe(false);
+    expect(brokenResolution.events.some((event) => event.type === 'propDestroyed')).toBe(true);
+
+    for (const [abilityId, caster] of [
+      ['water_whip', nilak],
+      ['rock_throw', bo],
+      ['ice_spikes', nilak],
+    ] as const) {
+      const preview = previewAbility(CONTENT, burning, caster, ability(abilityId), hay.pos);
+      expect(preview.props.find((prop) => prop.id === hay.id)).toMatchObject({
+        destroyed: false,
+        catchesFire: false,
+        doused: true,
+        hpBefore: hay.hp,
+        hpAfter: hay.hp,
+      });
+      const resolution = resolve(burning, caster, abilityId, hay.pos);
+      expect(resolution.props.find((prop) => prop.id === hay.id)).toMatchObject({ hp: hay.hp });
+      expect(resolution.props.find((prop) => prop.id === hay.id)?.burning).toBeUndefined();
+      expect(resolution.events.some((event) => event.type === 'propDoused')).toBe(true);
+      // The put-out hit takes no hp from the bale; other props in the blast are their own business.
+      expect(
+        resolution.events.some((event) => event.type === 'propDamaged' && event.propId === hay.id),
+      ).toBe(false);
+    }
+
+    const unlitRock = previewAbility(CONTENT, source, bo, ability('rock_throw'), hay.pos);
+    expect(unlitRock.props.find((prop) => prop.id === hay.id)?.destroyed).toBe(true);
+    expect(
+      resolve(source, bo, 'rock_throw', hay.pos).props.some((prop) => prop.id === hay.id),
+    ).toBe(false);
+  });
+
   it('runs prop break before impact and leaves the source battle untouched', () => {
     const source = battleFor('enc_quarry_gate');
     const battle = placed(source, { p0: { x: 11, y: 4 } }, ['p0']);
