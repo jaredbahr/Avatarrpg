@@ -1,8 +1,27 @@
-import { describe, expect, it } from 'vitest';
+import { afterEach, describe, expect, it, vi } from 'vitest';
+import { SQUARE_FOOTPRINTS } from '../../core/rules/footprint';
 import { Camera } from '../camera';
 import { loadingPlaceholderBox } from '../painters/registry';
-import { canvasActorDepth } from './canvas2d';
+import { Canvas2DBackend, canvasActorDepth } from './canvas2d';
 import { pixiActorDepth } from './pixi';
+
+// CanvasFxLayer paints its atlas in the constructor; keep the node test focused
+// on backend construction without requiring a browser canvas implementation.
+vi.mock('../fx/canvasFx', () => ({
+  CanvasFxLayer: class {},
+}));
+
+const canvas = (): HTMLCanvasElement =>
+  ({
+    width: 1,
+    height: 1,
+    getContext: () => ({}),
+  }) as unknown as HTMLCanvasElement;
+
+afterEach(() => {
+  vi.restoreAllMocks();
+  vi.unstubAllGlobals();
+});
 
 describe('square-footprint backend parity', () => {
   it.each([
@@ -55,5 +74,18 @@ describe('square-footprint backend parity', () => {
     expect(
       loadingPlaceholderBox({ x: 10, y: 74, size: 64 }, { footprintWidth: 2, footprintHeight: 2 }),
     ).toEqual({ x: 10, y: 10, size: 128, height: 128 });
+  });
+
+  it('passes the square gate into the Canvas2D backend construction', () => {
+    // Canvas2D only probes the supplied canvas, so a tiny DOM stub is enough in
+    // node. Pixi allocates real textures in its field initialisers and cannot be
+    // built without a browser.
+    vi.stubGlobal('document', { createElement: canvas });
+    const legacy = new Canvas2DBackend(canvas());
+    expect((legacy as unknown as { squareFootprints: boolean }).squareFootprints).toBe(
+      SQUARE_FOOTPRINTS,
+    );
+    const square = new Canvas2DBackend(canvas(), true);
+    expect((square as unknown as { squareFootprints: boolean }).squareFootprints).toBe(true);
   });
 });

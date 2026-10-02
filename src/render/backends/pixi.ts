@@ -58,7 +58,13 @@ import { steamPuffCanvas, steamSeed } from '../fx/steamPuff';
 import { bendFxSource } from '../fx/bendFxDraw';
 import { syncBendFx } from '../fx/bendFxPixi';
 import { aimArcPoints, arcHeading, arrowheadPolygon } from '../geometry/arc';
-import { actorHealthBar, actorShadowDensity, healthBarCap } from '../geometry/actorSilhouette';
+import {
+  actorHeadroom,
+  actorHealthBar,
+  actorSilhouetteGeometry,
+  actorShadowDensity,
+  healthBarCap,
+} from '../geometry/actorSilhouette';
 import { DECOR_CHUNK, decorChunks } from '../geometry/board';
 import {
   clip,
@@ -1068,7 +1074,7 @@ export class PixiBackend implements RenderBackend {
       sprite.width = chunk.width;
       sprite.height = chunk.height;
     }
-    const opacities = sceneryOpacities(scene?.scenery ?? [], view, camera);
+    const opacities = sceneryOpacities(scene?.scenery ?? [], view, camera, this.squareFootprints);
     for (const item of scene?.scenery ?? []) {
       sceneryKeys.add(item.id);
       let sprite = this.scenerySprites.get(item.id);
@@ -1789,15 +1795,37 @@ export class PixiBackend implements RenderBackend {
     );
     const pos = target?.renderPos ?? target?.pos ?? cue.pos;
     const screen = camera.spriteBox(pos, target?.size ?? 1, this.squareFootprints);
-    const targetAsset = target ? resolveAsset(target.sprite) : undefined;
-    const heightTiles =
-      this.squareFootprints && targetAsset?.kind !== 'sheet' ? (target?.size ?? 1) : 1;
+    const heightTiles = this.squareFootprints ? (target?.size ?? 1) : 1;
+    const scale = target?.scale ?? 1;
+    const frame =
+      this.squareFootprints && target
+        ? (target.bend
+            ? sheets.bendFrame(target.sprite, target.bend.heading, target.bend.index)
+            : null) ||
+          sheets.frame(
+            target.sprite,
+            target.clip ?? 'idle',
+            target.clipTime ?? view.time + idlePhase(target.id),
+            target.clipFrame,
+            this.spritePx(camera) * scale,
+            target.size,
+            target.meleeDirection,
+            heightTiles,
+          )
+        : null;
     const box = {
       x: (screen.x + camera.offsetX) / camera.scale,
-      y: (screen.y + camera.offsetY) / camera.scale - (heightTiles - 1) * TILE,
+      y: (screen.y + camera.offsetY) / camera.scale,
     };
     const cx = box.x + (target?.size ?? 1) * TILE + TILE * 0.12;
-    const cy = box.y - liftAlong(view.grid, pos, camera.projection) * TILE - TILE * 0.04;
+    const lift = liftAlong(view.grid, pos, camera.projection);
+    const silhouette = actorSilhouetteGeometry(
+      { x: box.x, y: box.y - lift * TILE, size: TILE },
+      heightTiles,
+      this.squareFootprints ? (frame?.headroom ?? null) : null,
+      scale,
+    );
+    const cy = this.squareFootprints ? silhouette.reticleY : box.y - lift * TILE - TILE * 0.04;
     const outline = Math.max(3 / camera.scale, TILE * 0.065);
     if (cue.elevation) {
       const direction = cue.elevation === 'above' ? -1 : 1;
@@ -2149,7 +2177,7 @@ export class PixiBackend implements RenderBackend {
         const shadowKey = `shadow:${npc.id}`;
         live.add(shadowKey);
         const shadow = this.unitSprite(shadowKey);
-        const density = actorShadowDensity(view.grid, at, true, width);
+        const density = actorShadowDensity(view.grid, at, true, width, false);
         shadow.texture = this.texture(sprites.shadow(px * scale, density));
         shadow.anchor.set(0.5, 0.86);
         shadow.position.set(footX, ground + FOOT_LINE * TILE);
@@ -2230,7 +2258,13 @@ export class PixiBackend implements RenderBackend {
       const sprite = this.unitSprite(unit.id);
       // A pose scales about the feet; the fallen fade sits on top of any alpha.
       const alpha = (unit.alpha ?? 1) * fallenAlpha(unit);
-      const shadowDensity = actorShadowDensity(view.grid, pos, unit.shadow === true, unit.size);
+      const shadowDensity = actorShadowDensity(
+        view.grid,
+        pos,
+        unit.shadow === true,
+        unit.size,
+        this.squareFootprints,
+      );
       if (shadowDensity > 0) {
         // On the ground, not on the bob (explore maps, ADR 0015; grass, canvas2d.ts).
         const key = `shadow:${unit.id}`;
@@ -2265,10 +2299,14 @@ export class PixiBackend implements RenderBackend {
           unit.meleeDirection,
           heightTiles,
         );
-      let headroom = 0;
-      const fallback = !frame;
+      const headroom = actorHeadroom(frame?.headroom, heightTiles);
+      const silhouette = actorSilhouetteGeometry(
+        { x, y, size: TILE },
+        heightTiles,
+        frame?.headroom ?? null,
+        scale,
+      );
       if (frame) {
-        headroom = frame.headroom;
         sprite.texture = this.frameTexture(frame);
         sprite.anchor.set(frame.anchor.x, frame.anchor.y);
         sprite.position.set(x + width / 2, y + FOOT_LINE * TILE);
@@ -2351,12 +2389,13 @@ export class PixiBackend implements RenderBackend {
           g,
           unit,
           x,
-          y - (fallback ? (heightTiles - 1) * TILE : 0),
+          y,
           width,
           scale,
           headroom,
           view.hatch,
           camera.scale,
+          silhouette.barY,
         );
       badgeIndex = this.drawStatusBadges(
         g,
@@ -2368,6 +2407,7 @@ export class PixiBackend implements RenderBackend {
         scale,
         headroom,
         heightTiles,
+        silhouette.badgeY,
       );
     }
 
@@ -2401,9 +2441,11 @@ export class PixiBackend implements RenderBackend {
     hatch: boolean,
     /** CSS px per world unit (the camera scale), so the cap keeps its minimum. */
     cssScale: number,
+    barYOverride?: number,
   ): void {
     const fraction = Math.max(0, Math.min(1, unit.hp / Math.max(1, unit.maxHp)));
     const bar = actorHealthBar(x, y, width, TILE, scale, headroom);
+    if (barYOverride !== undefined) bar.y = barYOverride;
     const { x: barX, y: barY, width: barWidth, height: barHeight } = bar;
 
     // An ink-framed track, filled in the unit's side colour (canvas2d.ts matches).
@@ -2434,6 +2476,7 @@ export class PixiBackend implements RenderBackend {
     scale: number,
     headroom: number,
     heightTiles: number,
+    badgeY?: number,
   ): number {
     if (unit.statuses.length === 0) return startIndex;
     const radius = Math.max(4, TILE * 0.09);
@@ -2441,9 +2484,10 @@ export class PixiBackend implements RenderBackend {
     const totalWidth = shown.length * radius * 2.2;
     let bx = x + width / 2 - totalWidth / 2 + radius;
     const by =
-      heightTiles > 1
+      badgeY ??
+      (heightTiles > 1
         ? actorHealthBar(x, y, width, TILE, scale, headroom).y - radius * 1.4
-        : y + TILE * 0.97;
+        : y + TILE * 0.97);
     let index = startIndex;
 
     for (const status of shown) {

@@ -4,6 +4,8 @@ import { validateContent } from './schemas';
 import type { ContentBundle } from './schemas';
 import { LEGEND } from './maps/legend';
 import type { EncounterDef, MapDef, Vec2 } from '../core/types';
+import { SQUARE_FOOTPRINTS } from '../core/rules/footprint';
+import { SQUARE_FOOTPRINT_CONTENT_DEFAULT } from './footprint';
 
 /**
  * A-3: size-2 encounter placements validated as whole 2x2 squares. The rule is
@@ -93,6 +95,10 @@ function withFixture(
 }
 
 describe('size-2 square footprints', () => {
+  it('keeps the content validator default aligned with the core gate', () => {
+    expect(SQUARE_FOOTPRINT_CONTENT_DEFAULT).toBe(SQUARE_FOOTPRINTS);
+  });
+
   it('leaves the shipped content clean under both geometries', () => {
     expect(validateContent(CONTENT_BUNDLE)).toEqual([]);
     expect(validateContent(CONTENT_BUNDLE, { squareFootprints: true })).toEqual([]);

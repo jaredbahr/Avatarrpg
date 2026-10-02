@@ -2,6 +2,18 @@ import type { Grid, TerrainId, Vec2 } from '../../core/types';
 import { SQUARE_FOOTPRINTS, footprintCells } from '../../core/rules/footprint';
 import { FOOT_LINE } from '../sheets/bake';
 
+/**
+ * Headroom shared by every upright presentation cue. A loaded frame reports
+ * the measured distance above its tile; the raw painter fallback's top is
+ * `FOOT_LINE * (heightTiles - 1)` above the foot line.
+ */
+export function actorHeadroom(
+  frameHeadroom: number | null | undefined,
+  heightTiles: 1 | 2,
+): number {
+  return frameHeadroom ?? FOOT_LINE * (heightTiles - 1);
+}
+
 /** Shared upright geometry. `y` already includes elevation and the current pose offset. */
 export function actorHealthBar(
   x: number,
@@ -24,6 +36,50 @@ export function actorHealthBar(
     width: barWidth,
     height: barHeight,
     silhouetteTop,
+  };
+}
+
+export interface ActorSpriteBox {
+  readonly x: number;
+  readonly y: number;
+  readonly size: number;
+}
+
+export interface ActorSilhouetteGeometry {
+  readonly barY: number;
+  readonly badgeY: number;
+  readonly reticleY: number;
+}
+
+/**
+ * Shared vertical anchors for the health bar, status badges and target cue.
+ * `frameHeadroom` is the measured sheet/painter headroom, or null when the
+ * raw footprint fallback is being drawn.
+ */
+export function actorSilhouetteGeometry(
+  box: ActorSpriteBox,
+  heightTiles: 1 | 2,
+  frameHeadroom: number | null,
+  scale: number,
+): ActorSilhouetteGeometry {
+  const bar = actorHealthBar(
+    box.x,
+    box.y,
+    box.size,
+    box.size,
+    scale,
+    actorHeadroom(frameHeadroom, heightTiles),
+  );
+  const radius = Math.max(4, box.size * 0.09);
+  return {
+    barY: bar.y,
+    badgeY: heightTiles > 1 ? bar.y - radius * 1.4 : box.y + box.size * 0.97,
+    // Legacy one-tile cues sit at the foot line unless a loaded frame gives
+    // us measured headroom; two-tile and measured silhouettes use their top.
+    reticleY:
+      heightTiles > 1 || frameHeadroom !== null
+        ? bar.silhouetteTop - box.size * 0.04
+        : box.y - box.size * 0.04,
   };
 }
 

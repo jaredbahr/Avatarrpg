@@ -58,6 +58,7 @@ import type {
   Vec2,
   WorldAnchor,
 } from '../core/types';
+import { SQUARE_FOOTPRINT_CONTENT_DEFAULT } from './footprint';
 import { STORY_PRESENTATIONS, validateStoryPresentations } from './story/presentations';
 import {
   FORBIDDEN_BINDINGS,
@@ -1536,7 +1537,7 @@ export function validateContent(
   options: ValidateContentOptions = {},
 ): string[] {
   const problems: string[] = [];
-  const squareFootprints = options.squareFootprints ?? false;
+  const squareFootprints = options.squareFootprints ?? SQUARE_FOOTPRINT_CONTENT_DEFAULT;
 
   /* --- assets ------------------------------------------------------- */
   const assets = bundle.assets ?? {};
