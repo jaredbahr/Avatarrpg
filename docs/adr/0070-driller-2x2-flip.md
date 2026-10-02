@@ -2,8 +2,7 @@
 
 ## Status
 
-Accepted for review and capture. Do not merge until Jared selects the related
-balance tuning.
+Accepted. Jared approved Option A on 2026-10-01.
 
 ## Context
 
@@ -36,9 +35,16 @@ the unscaled two-tile body envelope, so transient steam and debris do not pull
 the reticle or status UI upward. This cap changes presentation only; it does not
 clip animation or change collision.
 
-Enemy hit points, movement, power, defense, speed, focus, abilities, AI and XP
-are unchanged. Any response to the measured win-rate increase is a separate
-choice recorded outside this flip.
+The Driller uses tuning Option A: base HP 130 and move 4. Power, defense, speed,
+focus, abilities, AI and XP remain unchanged. With the square gate on, the
+100-trial scenario measured 91 / 82 / 81% party wins at 1 / 3 / 6 players.
+
+The sheet keeps its authored 80 pixels-per-tile density. Frames are placed as
+`frame pixels / pixelsPerTile` upright tiles; they are not fitted to the rules
+footprint. Orthographic therefore uses scale 1, while oblique combat applies a
+2x Driller-only compensation for the projection's 2:1 horizontal squash. The
+world crossing marker remains scale 1, and ground shadows/rings remain tied to
+the 2x2 rules footprint rather than the upright-art scale.
 
 ## Consequences
 
@@ -49,4 +55,5 @@ choice recorded outside this flip.
   valid placements unnecessarily.
 - Captures must verify both renderers and projections, especially the UI cap
   during cast steam/debris and the held knockout facing in both directions.
-- This review branch remains unmerged until Jared chooses the tuning.
+- Option A is the approved shipping tuning; human capture review remains part
+  of final acceptance.

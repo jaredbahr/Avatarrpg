@@ -2275,7 +2275,10 @@ export class PixiBackend implements RenderBackend {
           anchor.x + width / 2,
           anchor.y + (0.86 - lift - (footprint - 1) * 0.5) * TILE,
         );
-        shadow.width = shadow.height = TILE * (unit.scale ?? 1) * footprint;
+        // Keep a square unit's contact shadow on its rules footprint even when
+        // its upright cel has projection-specific presentation compensation.
+        const shadowScale = this.squareFootprints && unit.size === 2 ? 1 : (unit.scale ?? 1);
+        shadow.width = shadow.height = TILE * shadowScale * footprint;
         shadow.alpha = alpha;
         shadow.zIndex = shadowZ(depth(pos, unit.size));
         shadow.visible = true;

@@ -1405,7 +1405,10 @@ export class Canvas2DBackend implements RenderBackend {
       if (shadowDensity > 0) {
         // On the ground, not on the bob: the tile's foot line, less the ledge.
         const footprint = this.squareFootprints ? unit.size : 1;
-        const s = box.size * scale * footprint;
+        // A square unit's ground contact is its rules footprint. Presentation
+        // compensation (the Driller in oblique) enlarges the upright cel only.
+        const shadowScale = this.squareFootprints && unit.size === 2 ? 1 : scale;
+        const s = box.size * shadowScale * footprint;
         const footX = box.x - (unit.offset?.x ?? 0) * box.size + width / 2;
         const footY =
           box.y -
