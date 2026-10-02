@@ -56,7 +56,7 @@ it('schema preserves optional integer source rectangles and existing scenes', ()
     expect(mapSchema.safeParse(withCrop(bad)).success).toBe(false);
 });
 
-it('schema preserves positive horizontal feathers and rejects invalid distances', () => {
+it('schema preserves bounded integer horizontal feathers and rejects invalid definitions', () => {
   const withFeather = (feather: object) => ({
     ...QUARRY_GATE,
     scene: { ground: [{ ...whole, feather }], scenery: [] },
@@ -65,8 +65,24 @@ it('schema preserves positive horizontal feathers and rejects invalid distances'
     left: 12,
     right: 18,
   });
-  for (const feather of [{ left: 0 }, { right: -1 }])
+  for (const feather of [
+    {},
+    { left: 0 },
+    { right: -1 },
+    { left: 1.5 },
+    { left: 32 },
+    { right: 33 },
+  ])
     expect(mapSchema.safeParse(withFeather(feather)).success).toBe(false);
+  expect(
+    mapSchema.safeParse({
+      ...QUARRY_GATE,
+      scene: {
+        ground: [{ ...whole, sourceRect: { ...crop, width: 20 }, feather: { right: 10 } }],
+        scenery: [],
+      },
+    }).success,
+  ).toBe(false);
 });
 
 it('schema retains connected fade groups and rejects empty names', () => {

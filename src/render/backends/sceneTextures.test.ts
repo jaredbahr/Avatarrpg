@@ -4,7 +4,7 @@ import { SceneTextures } from './sceneTextures';
 import type { SceneImage } from '../../core/types';
 
 const state = vi.hoisted(() => ({
-  created: [] as { source: object; destroy: ReturnType<typeof vi.fn> }[],
+  created: [] as { source: object; frame?: object; destroy: ReturnType<typeof vi.fn> }[],
   disposal: [] as boolean[],
 }));
 vi.mock('pixi.js', () => ({
@@ -23,6 +23,7 @@ vi.mock('pixi.js', () => ({
     });
     constructor(options: { source: object; frame?: object }) {
       this.source = options.source;
+      Object.assign(this, options.frame ? { frame: options.frame } : {});
       state.created.push(this);
     }
     static from(image: object) {
@@ -32,6 +33,7 @@ vi.mock('pixi.js', () => ({
 }));
 afterEach(() => {
   vi.restoreAllMocks();
+  vi.unstubAllGlobals();
   state.created.length = 0;
   state.disposal.length = 0;
 });
@@ -95,6 +97,24 @@ it('supports whole images and refuses missing or out-of-bounds regions without a
   cache.end();
   cache.clear();
   expect(state.disposal).toEqual([true]);
+});
+
+it('falls back to the normal atlas slice when feather preparation has no 2D context', () => {
+  const atlas = image();
+  vi.spyOn(sceneImages, 'get').mockReturnValue(atlas);
+  vi.stubGlobal('document', {
+    createElement: vi.fn(() => ({ width: 0, height: 0, getContext: vi.fn(() => null) })),
+  });
+  const cache = new SceneTextures();
+  cache.begin();
+  const texture = cache.get({ ...piece(), feather: { left: 4 } });
+  cache.end();
+
+  expect(state.created).toHaveLength(2);
+  expect(state.created[0]?.source).toBe(atlas);
+  expect(texture?.source).toBe(atlas);
+  expect(texture).toHaveProperty('frame');
+  cache.clear();
 });
 
 it('keeps all 32 depth-owned slices resident on one page without per-frame allocation', () => {
