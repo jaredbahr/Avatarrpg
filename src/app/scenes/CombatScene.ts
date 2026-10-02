@@ -74,9 +74,18 @@ import { PropInspector } from '../ui/PropInspector';
 import { enemyScale, partyScale } from '../anim/actorScale';
 import { partyBendSprites } from '../anim/bendHandoff';
 import { sheetLocomotion } from '../../content/assets/manifest';
-import { sheets } from '../../render/sheets/store';
+import { idlePhase, sheets } from '../../render/sheets/store';
 import { createMovementThreatQuery } from '../ui/movementThreats';
 import { flushTime } from './flockFlush';
+import { resolveCombatBodyPick } from './combatBodyPick';
+import { liftAlong } from '../../render/geometry/elevation';
+import { actorBodyBounds } from '../../render/geometry/actorSilhouette';
+import {
+  actorKeepInViewDelta,
+  combatCameraFollowDecision,
+  shouldFollowAnimatedLargeActor,
+  type CombatCameraFollowState,
+} from './combatCameraFollow';
 
 type Mode =
   | { readonly kind: 'idle' }
@@ -183,6 +192,13 @@ export class CombatScene implements Scene {
   private actorButton: HTMLButtonElement | null = null;
   /** True after a user zoom/pan; HUD reflows must preserve that manual framing. */
   private manualCamera = false;
+  /**
+   * True after a user zoom/pan/focus until the next turn change or Recentre:
+   * the camera stops following a moving actor. Kept apart from `manualCamera`,
+   * which must outlive turn changes so a HUD reflow keeps the player's zoom.
+   */
+  private followSuspended = false;
+  private cameraFollow: CombatCameraFollowState = { kind: 'idle' };
   /**
    * The last pending move target revealed for a particular viewport. A
    * confirmation dock can shorten the canvas after the target was selected;
@@ -402,6 +418,7 @@ export class CombatScene implements Scene {
     const camera = this.renderer?.camera;
     if (!camera) return;
     this.manualCamera = false;
+    this.followSuspended = false;
     if (camera.projection === 'oblique') {
       // Key off both the layout and visual viewports and the text setting,
       // then use the first settled canvas height to account for the full
@@ -441,7 +458,10 @@ export class CombatScene implements Scene {
     if (!camera) return;
     const before = camera.scale;
     camera.zoomAt(at, factor);
-    if (camera.scale !== before) this.manualCamera = true;
+    if (camera.scale !== before) {
+      this.manualCamera = true;
+      this.followSuspended = true;
+    }
     this.syncRecentre();
   }
 
@@ -450,7 +470,10 @@ export class CombatScene implements Scene {
     if (!camera) return;
     const before = { x: camera.offsetX, y: camera.offsetY };
     camera.panBy(dx, dy);
-    if (camera.offsetX !== before.x || camera.offsetY !== before.y) this.manualCamera = true;
+    if (camera.offsetX !== before.x || camera.offsetY !== before.y) {
+      this.manualCamera = true;
+      this.followSuspended = true;
+    }
   }
 
   /** Camera navigation never selects a target or spends an action. */
@@ -462,6 +485,7 @@ export class CombatScene implements Scene {
     if (!unit || !camera) return;
     camera.centreOn(combatFocusPosition(unit), unit.size);
     this.manualCamera = true;
+    this.followSuspended = true;
     this.syncRecentre();
   }
 
@@ -521,9 +545,7 @@ export class CombatScene implements Scene {
       },
       onWheel: (wheel) => this.zoomBy(wheelZoomFactor(wheel), wheel.point),
       onHover: (point) => {
-        this.hover = point
-          ? (this.renderer?.camera.pickTile(point.x, point.y, this.battle()?.grid) ?? null)
-          : null;
+        this.hover = point ? (this.resolvePointer(point.x, point.y, 'tap')?.tile ?? null) : null;
       },
     });
   }
@@ -623,6 +645,102 @@ export class CombatScene implements Scene {
   /* Input                                                             */
   /* ---------------------------------------------------------------- */
 
+  /** The one pointer-to-battlefield resolution path used by taps, hovers and holds. */
+  private resolvePointer(x: number, y: number, intent: 'tap' | 'inspect') {
+    const renderer = this.renderer;
+    const battle = this.battle();
+    if (!renderer || !battle) return null;
+    const groundTile = renderer.camera.pickTile(x, y, battle.grid);
+    const active = this.active();
+    const projection = renderer.camera.projection;
+    const point = { x, y };
+    const eligible = battle.units.filter((unit) => {
+      if (intent !== 'inspect' && !isAlive(unit)) return false;
+      const scale =
+        unit.faction === 'party' ? partyScale(projection) : enemyScale(unit.sprite, 1, projection);
+      if (!SQUARE_FOOTPRINTS || unit.size !== 2 || scale <= 1) return false;
+      const pos = this.app.animator.renderPos(performance.now(), unit.id) ?? unit.pos;
+      const box = renderer.camera.spriteBox(pos, unit.size, true);
+      box.y -= liftAlong(battle.grid, pos, projection) * box.size;
+      const bounds = actorBodyBounds(
+        { ...box, width: box.size * unit.size },
+        unit.size,
+        null,
+        scale,
+      );
+      return x >= bounds.left && x <= bounds.right && y >= bounds.top && y <= bounds.bottom;
+    });
+    if (eligible.length === 0) return { tile: groundTile };
+
+    const protectedTiles = new Set<string>();
+    const memo = this.overlayMemo?.battle === battle ? this.overlayMemo : null;
+    if (intent === 'tap' && (this.mode.kind === 'move' || this.mode.kind === 'aim')) {
+      const kind = this.mode.kind === 'move' ? 'move' : 'target';
+      const tiles = memo?.overlays.find((layer) => layer.kind === kind)?.tiles;
+      // The render pass normally established this memo. Until it has, ground
+      // picking is safer than letting a body steal a meaningful rules tile.
+      if (!tiles) return { tile: groundTile };
+      for (const tile of tiles) protectedTiles.add(posKey(tile));
+    }
+    const now = performance.now();
+    const geometryFor = (units: readonly Unit[]) =>
+      units.map((unit) => {
+        const health = this.app.animator.unitHealth(now, unit);
+        const pose = this.poseFields(
+          now,
+          unit.id,
+          unit.faction === 'enemy' ? -1 : 1,
+          unit.faction === 'party',
+          unit.sprite,
+          health.fallen,
+        );
+        const scale = pose.scale ?? 1;
+        const pos = this.app.animator.renderPos(now, unit.id) ?? unit.pos;
+        const box = renderer.camera.spriteBox(pos, unit.size, SQUARE_FOOTPRINTS);
+        if (pose.offset) {
+          box.x += pose.offset.x * box.size;
+          box.y += pose.offset.y * box.size;
+        }
+        box.y -= liftAlong(battle.grid, pos, projection) * box.size;
+        const bend = pose.bend && sheets.bendFrame(unit.sprite, pose.bend.heading, pose.bend.index);
+        return {
+          unit,
+          scale,
+          box,
+          frameHeadroom: bend?.headroom ?? sheets.silhouetteHeadroom(unit.sprite),
+        };
+      });
+    const actors = geometryFor(eligible);
+    const eligibleIds = new Set(eligible.map((unit) => unit.id));
+    const otherActorBounds = geometryFor(
+      battle.units.filter((unit) => isAlive(unit) && !eligibleIds.has(unit.id)),
+    ).map(({ unit, box, scale, frameHeadroom }) => ({
+      unitId: unit.id,
+      ...actorBodyBounds({ ...box, width: box.size * unit.size }, unit.size, frameHeadroom, scale),
+    }));
+    const ability =
+      intent === 'tap' && this.mode.kind === 'aim' && active
+        ? this.app.content.abilities.get(this.mode.abilityId)
+        : undefined;
+    return resolveCombatBodyPick({
+      point,
+      groundTile,
+      actors,
+      units: battle.units,
+      props: battle.props,
+      protectedTiles,
+      caster: active?.pos ?? null,
+      ...(ability && active
+        ? {
+            isLegalAim: (cell: Vec2) =>
+              isValidTarget(this.app.content, battle, active, ability, cell).ok,
+          }
+        : {}),
+      otherActorBounds,
+      squareFootprints: SQUARE_FOOTPRINTS,
+    });
+  }
+
   private onTap(x: number, y: number): void {
     const renderer = this.renderer;
     const battle = this.battle();
@@ -631,12 +749,16 @@ export class CombatScene implements Scene {
     if (!this.isPlayerTurn()) return;
     if (this.needsHandoff()) return;
 
-    const tile = renderer.camera.pickTile(x, y, battle.grid);
+    const resolved = this.resolvePointer(x, y, 'tap');
+    if (!resolved) return;
+    const tile = resolved.tile;
 
     if (this.mode.kind === 'idle') {
       // Tapping a unit or prop in idle mode inspects it; that is the only tap
       // that does anything, so a stray tap never costs AP.
-      const target = inspectTargetAt(battle.units, battle.props, tile, false);
+      const target = resolved.unit
+        ? ({ kind: 'unit', unit: resolved.unit } as const)
+        : inspectTargetAt(battle.units, battle.props, tile, false);
       if (target?.kind === 'unit') this.openUnitInspector(target.unit);
       if (target?.kind === 'prop') this.openPropInspector(target.prop);
       return;
@@ -650,8 +772,11 @@ export class CombatScene implements Scene {
     const renderer = this.renderer;
     const battle = this.battle();
     if (!renderer || !battle) return;
-    const tile = renderer.camera.pickTile(x, y, battle.grid);
-    const target = inspectTargetAt(battle.units, battle.props, tile, true);
+    const resolved = this.resolvePointer(x, y, 'inspect');
+    if (!resolved) return;
+    const target = resolved.unit
+      ? ({ kind: 'unit', unit: resolved.unit } as const)
+      : inspectTargetAt(battle.units, battle.props, resolved.tile, true);
     if (target?.kind === 'unit') this.openUnitInspector(target.unit);
     if (target?.kind === 'prop') this.openPropInspector(target.prop);
   }
@@ -719,7 +844,14 @@ export class CombatScene implements Scene {
 
       // Where the board cannot fit, whoever is acting is what to look at.
       const camera = this.renderer?.camera;
-      if (unit && camera && !camera.fitted) camera.centreOn(unit.pos, unit.size);
+      // A turn change re-arms follow after any manual action. An animation
+      // already owned by follow keeps ownership until its release frame. The
+      // player's zoom (`manualCamera`) is theirs until they press Recentre.
+      this.followSuspended = false;
+      const followedStillMoving =
+        this.cameraFollow.kind === 'following' &&
+        this.app.animator.renderPos(performance.now(), this.cameraFollow.unitId) !== undefined;
+      if (!followedStillMoving) this.centreOnActiveUnit(unit, camera);
     }
 
     if (battle.phase !== 'active' && !this.resultShown) {
@@ -1778,6 +1910,7 @@ export class CombatScene implements Scene {
     const now = performance.now();
     this.app.stats?.frame(now);
     this.app.animator.prune(now);
+    this.keepAnimatedLargeActorInView(now, battle);
 
     const unit = this.active();
     let overlays: readonly OverlayLayer[] = [];
@@ -1937,6 +2070,95 @@ export class CombatScene implements Scene {
 
     renderer.draw(view);
   };
+
+  /**
+   * Automatic combat framing follows only an enlarged animated body. Manual
+   * pan/zoom deliberately suspends it, and ordinary actors retain the shipped
+   * turn-start centring behavior.
+   */
+  private keepAnimatedLargeActorInView(now: number, battle: BattleState): void {
+    const renderer = this.renderer;
+    if (!renderer) return;
+    const camera = renderer.camera;
+    const projection = camera.projection;
+
+    let followed: {
+      unit: Unit;
+      pos: Vec2;
+      scale: number;
+      pose: ReturnType<CombatScene['poseFields']>;
+    } | null = null;
+    for (const unit of battle.units) {
+      const pos = this.app.animator.renderPos(now, unit.id);
+      if (!pos) continue;
+      const health = this.app.animator.unitHealth(now, unit);
+      const pose = this.poseFields(
+        now,
+        unit.id,
+        unit.faction === 'enemy' ? -1 : 1,
+        unit.faction === 'party',
+        unit.sprite,
+        health.fallen,
+      );
+      const scale = pose.scale ?? 1;
+      if (
+        !shouldFollowAnimatedLargeActor({
+          size: unit.size,
+          scale,
+          squareFootprints: SQUARE_FOOTPRINTS,
+        })
+      )
+        continue;
+
+      followed = { unit, pos, scale, pose };
+      break;
+    }
+    const decision = combatCameraFollowDecision(this.cameraFollow, {
+      animatedUnitId: followed?.unit.id ?? null,
+      activeUnitId: this.active()?.id ?? null,
+      manualCamera: this.followSuspended,
+    });
+    this.cameraFollow = decision.state;
+    if (decision.owner === 'recentre') {
+      this.centreOnActiveUnit(this.active(), camera);
+      return;
+    }
+    if (decision.owner !== 'follow' || !followed) return;
+
+    const { unit, pos, scale, pose } = followed;
+    const box = camera.spriteBox(pos, unit.size, true);
+    if (pose.offset) {
+      box.x += pose.offset.x * box.size;
+      box.y += pose.offset.y * box.size;
+    }
+    box.y -= liftAlong(battle.grid, pos, projection) * box.size;
+    const bend = pose.bend && sheets.bendFrame(unit.sprite, pose.bend.heading, pose.bend.index);
+    const frame =
+      bend ||
+      sheets.frame(
+        unit.sprite,
+        pose.clip ?? 'idle',
+        pose.clipTime ?? now + idlePhase(unit.id),
+        pose.clipFrame,
+        box.size * renderer.viewport.dpr * scale,
+        unit.size,
+        pose.meleeDirection,
+        unit.size,
+      );
+    const body = actorBodyBounds(
+      { ...box, width: box.size * unit.size },
+      unit.size,
+      frame?.headroom ?? null,
+      scale,
+    );
+    const delta = actorKeepInViewDelta(body, camera.viewport);
+    if (delta.x !== 0 || delta.y !== 0) camera.panBy(delta.x, delta.y);
+  }
+
+  /** Shared turn-change and follow-release centring path. */
+  private centreOnActiveUnit(unit: Unit | undefined, camera = this.renderer?.camera): void {
+    if (unit && camera && !camera.fitted) camera.centreOn(unit.pos, unit.size);
+  }
 
   /**
    * The lob of an ability's flight in tiles, or null when nothing flies to

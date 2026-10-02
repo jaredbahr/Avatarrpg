@@ -60,6 +60,7 @@ import { bendFxSource } from '../fx/bendFxDraw';
 import { syncBendFx } from '../fx/bendFxPixi';
 import { aimArcPoints, arcHeading, arrowheadPolygon } from '../geometry/arc';
 import {
+  actorReticleX,
   actorSilhouetteGeometry,
   actorShadowDensity,
   healthBarCap,
@@ -1816,7 +1817,11 @@ export class PixiBackend implements RenderBackend {
       x: (screen.x + camera.offsetX) / camera.scale,
       y: (screen.y + camera.offsetY) / camera.scale,
     };
-    const cx = box.x + (target?.size ?? 1) * TILE + TILE * 0.12;
+    const cx = actorReticleX(
+      { ...box, size: TILE, width: (target?.size ?? 1) * TILE },
+      scale,
+      target?.size ?? 1,
+    );
     const lift = liftAlong(view.grid, pos, camera.projection);
     const silhouette = actorSilhouetteGeometry(
       { x: box.x, y: box.y - lift * TILE, size: TILE },

@@ -17,8 +17,12 @@ The portrait and prompts remain durable deliverables. Output terms:
 https://openai.com/policies/row-terms-of-use/. No exclusive copyright in generated
 output is claimed.
 
-The portrait can be reproduced with `npm run art:portrait -- --key enemy.grumbler
---in art/raw/grumbler/portrait.png`, followed by `npm run art:validate`.
+The manifest key is `portrait.enemy.driller`, while the shipped portrait retains
+its earlier `enemy.grumbler.png` filename. The portrait processor derives the
+output filename from the key, so `npm run art:portrait -- --key enemy.driller
+--in art/raw/grumbler/portrait.png` writes `enemy.driller.png`, not the shipped
+legacy filename. Preserve `enemy.grumbler.png` unless the manifest and asset are
+migrated together, then run `npm run art:validate`.
 
 ## Visual review
 

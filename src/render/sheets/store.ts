@@ -173,6 +173,13 @@ export class SheetStore {
     return state !== undefined && state !== 'loading' && state !== 'failed';
   }
 
+  /** Loaded silhouette envelope, without baking a painter fallback at a new size. */
+  silhouetteHeadroom(key: string): number | null {
+    const entry = resolveAsset(key);
+    if (entry.kind !== 'sheet') return null;
+    return this.atlas(key, entry)?.headroom ?? null;
+  }
+
   /**
    * The frame to draw for `key` in `clip` at `clipTime` ms, or `clipFrame`
    * when the choreography named one, baked at `pixelsPerTile` device pixels

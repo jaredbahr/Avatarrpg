@@ -5,6 +5,7 @@ import {
   HP_CAP_MIN_PX,
   actorHeadroom,
   actorHealthBar,
+  actorReticleX,
   actorSilhouetteGeometry,
   actorShadowDensity,
   healthBarCap,
@@ -20,6 +21,30 @@ describe('upright actor headroom', () => {
 });
 
 describe('shared actor silhouette geometry', () => {
+  it.each([
+    ['one tile', 96],
+    ['two tiles', 192],
+  ] as const)('keeps the scale-1 %s reticle at the legacy box edge', (_kind, width) => {
+    const box = { x: 12, y: 100, size: 96, width };
+    expect(actorReticleX(box, 1, width === 192 ? 2 : 1)).toBe(box.x + width + box.size * 0.12);
+  });
+
+  it('places a scaled reticle just beyond the silhouette right edge', () => {
+    const box = { x: 12, y: 100, size: 96, width: 192 };
+    const scale = 2;
+    expect(actorReticleX(box, scale, 2)).toBe(
+      box.x + box.width + (box.width * (scale - 1)) / 2 + box.size * 0.12,
+    );
+    expect(actorReticleX(box, scale, 2)).toBeGreaterThan(
+      box.x + box.width / 2 + (box.width * scale) / 2,
+    );
+  });
+
+  it('keeps a scaled 1x1 reticle at the exact legacy x', () => {
+    const box = { x: 12, y: 100, size: 96, width: 96 };
+    expect(actorReticleX(box, 1.25, 1)).toBe(box.x + box.width + box.size * 0.12);
+  });
+
   it('keeps gate-off anchors equal to the legacy one-tile formulas at scaled size', () => {
     const box = { x: 12, y: 100, size: 96 };
     const scale = 1.25;

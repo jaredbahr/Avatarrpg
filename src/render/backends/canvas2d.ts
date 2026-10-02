@@ -20,6 +20,7 @@ import type { TileRelief } from '../geometry/board';
 import { boardRelief, decorSignature, seamMaterial, surfaceEdges } from '../geometry/board';
 import { aimArcPoints, arcHeading, arrowheadPolygon } from '../geometry/arc';
 import {
+  actorReticleX,
   actorSilhouetteGeometry,
   actorShadowDensity,
   healthBarCap,
@@ -975,9 +976,13 @@ export class Canvas2DBackend implements RenderBackend {
       const box = camera.spriteBox(pos, target?.size ?? 1, this.squareFootprints);
       const heightTiles = this.squareFootprints ? (target?.size ?? 1) : 1;
       const width = (target?.size ?? 1) * box.size;
-      const cx = box.x + width + box.size * 0.12;
-      const lift = liftAlong(view.grid, pos, camera.projection);
       const scale = target?.scale ?? 1;
+      const cx = actorReticleX(
+        { x: box.x, y: box.y, size: box.size, width },
+        scale,
+        target?.size ?? 1,
+      );
+      const lift = liftAlong(view.grid, pos, camera.projection);
       const frame =
         this.squareFootprints && target
           ? (target.bend
