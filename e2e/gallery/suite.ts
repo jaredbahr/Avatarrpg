@@ -103,14 +103,33 @@ class Stage implements BeatContext {
     return Math.max(30_000, this.settleTimeout);
   }
 
+  /**
+   * One screenshot, tried again if the browser itself refuses it. On the WebGL
+   * projects Chromium now and then answers `Page.captureScreenshot` with
+   * "Unable to capture screenshot" on a page it captures a moment later (the
+   * nightly gallery lost a shard to it two nights running, on a different beat
+   * each time). That is the capture failing, not the page: nothing about the
+   * picture is retried or relaxed, and any other error is thrown at once.
+   */
+  private async capture(path: string): Promise<void> {
+    const attempts = 3;
+    for (let attempt = 1; ; attempt += 1) {
+      try {
+        await this.page.screenshot({ path, scale: 'css', caret: 'hide' });
+        return;
+      } catch (error) {
+        const refused =
+          error instanceof Error && /Unable to capture screenshot/.test(error.message);
+        if (!refused || attempt >= attempts) throw error;
+        await this.page.waitForTimeout(250 * attempt);
+      }
+    }
+  }
+
   async shoot(note: string, suffix?: string): Promise<void> {
     const file = suffix ? `${this.beat.id}-${suffix}.png` : `${this.beat.id}.png`;
     if (!this.paused) await settleCurtain(this.page, this.curtainTimeout);
-    await this.page.screenshot({
-      path: join(this.dir, file),
-      scale: 'css',
-      caret: 'hide',
-    });
+    await this.capture(join(this.dir, file));
     this.shots += 1;
     appendFileSync(
       join(this.dir, 'shots.jsonl'),
