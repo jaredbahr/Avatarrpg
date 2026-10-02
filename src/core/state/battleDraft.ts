@@ -1154,6 +1154,8 @@ export class BattleDraft {
      */
     for (const prop of [...this.props]) {
       if (!this.props.some((p) => p.id === prop.id)) continue;
+      // A dousing surface wins this upkeep, including over neighboring fire.
+      if (dousedBySurface.has(prop.id)) continue;
       if (prop.burning !== undefined) continue;
       const live = this.surfaceExposure(prop);
       const fuelled = (this.propDef(prop)?.fuel ?? 0) > 0;

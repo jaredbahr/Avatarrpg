@@ -93,6 +93,16 @@ describe('prop inspect text', () => {
     ]);
   });
 
+  it('says fire hurts a burning fuel prop that survives the smallest shipped fire hit', () => {
+    const copy = propInspectText(
+      { ...def, hp: 12 },
+      { ...prop, hp: 10, burning: 2 },
+      CONTENT.statuses,
+    );
+    expect(copy.notes.map((chip) => chip.text)).toContain('Fire hurts it now');
+    expect(copy.notes.map((chip) => chip.text)).not.toContain('Fire will break it now');
+  });
+
   it('describes radius zero, one, and larger break effects truthfully', () => {
     const copy = propInspectText(
       {

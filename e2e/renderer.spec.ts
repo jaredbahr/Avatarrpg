@@ -54,6 +54,10 @@ async function stablePixelProbe<T>(
     });
     if (after && sameCamera(candidate.camera, after)) return { probe: candidate.probe, pixels };
     cameraMoved = true;
+    test.info().annotations.push({
+      type: 'camera-moved',
+      description: `${label}: retry ${attempt + 1} of ${MAX_STABLE_PROBE_ATTEMPTS}`,
+    });
   }
   if (cameraMoved) {
     throw new Error(
@@ -398,6 +402,15 @@ test.describe('renderer backends', () => {
             return { camera: cameraSnapshot, cell: cells[0] ?? null, aim: null };
           });
         let probe = await find();
+        if (probe?.aim) {
+          // Keep the already-clear tile under the camera chosen by this read;
+          // a late canvas resize must not refit between the before/after probes.
+          await page.evaluate(() => {
+            const scene = (window.fnt?.app as unknown as { scene: { manualCamera: boolean } })
+              .scene;
+            scene.manualCamera = true;
+          });
+        }
         if (probe?.cell && !probe.aim) {
           // The readable oblique fit pans; bring the tile into view.
           await page.evaluate((cell) => {
@@ -443,6 +456,7 @@ test.describe('renderer backends', () => {
             `raised tile mark pixel probe on ${node} (${renderer})`,
           );
           if (!captured) throw new Error(`no clear raised tile on ${node} (${renderer})`);
+          expect(captured.probe.cell).toEqual(cell);
           const next = captured.probe.aim;
           if (!next) throw new Error(`no clear raised tile on ${node} (${renderer})`);
           const pixels = captured.pixels;
