@@ -479,6 +479,12 @@ const sceneImageSchema = z.object({
   y: z.number(),
   width: z.number().positive(),
   height: z.number().positive(),
+  feather: z
+    .object({
+      left: z.number().positive().optional(),
+      right: z.number().positive().optional(),
+    })
+    .optional(),
   wind: z.boolean().optional(),
 });
 

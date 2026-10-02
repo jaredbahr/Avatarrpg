@@ -6,6 +6,7 @@ import type { Camera } from './camera';
 import type { MapView } from './view';
 import { renderFoot } from './renderFoot';
 import { BackdropStore } from './backdrops';
+import { featherAlpha } from './geometry/feather';
 
 /**
  * How many distinct scene images stay decoded at once.
@@ -85,6 +86,40 @@ export function sceneImage(piece: SceneImage): HTMLImageElement | null {
   return image && sceneSourceRect(piece, image) ? image : null;
 }
 
+const featheredImages = new WeakMap<
+  object,
+  { image: HTMLImageElement; canvas: HTMLCanvasElement }
+>();
+
+/** Alpha-only preparation, cached for the lifetime of the scene piece. */
+export function sceneDrawable(
+  piece: SceneImage,
+  image = sceneImage(piece),
+): HTMLImageElement | HTMLCanvasElement | null {
+  if (!image || !piece.feather) return image;
+  const cached = featheredImages.get(piece);
+  if (cached?.image === image) return cached.canvas;
+  const rect = sceneSourceRect(piece, image);
+  if (!rect) return null;
+  const canvas = document.createElement('canvas');
+  canvas.width = rect.width;
+  canvas.height = rect.height;
+  const context = canvas.getContext('2d', { willReadFrequently: true });
+  if (!context) return image;
+  context.drawImage(image, rect.x, rect.y, rect.width, rect.height, 0, 0, rect.width, rect.height);
+  const pixels = context.getImageData(0, 0, rect.width, rect.height);
+  for (let y = 0; y < rect.height; y++)
+    for (let x = 0; x < rect.width; x++) {
+      const alpha = (y * rect.width + x) * 4 + 3;
+      pixels.data[alpha] = Math.round(
+        (pixels.data[alpha] ?? 0) * featherAlpha(piece, x, rect.width),
+      );
+    }
+  context.putImageData(pixels, 0, 0);
+  featheredImages.set(piece, { image, canvas });
+  return canvas;
+}
+
 export function drawSceneImage(
   context: CanvasRenderingContext2D,
   image: HTMLImageElement,
@@ -95,7 +130,12 @@ export function drawSceneImage(
   height: number,
 ): void {
   const rect = sceneSourceRect(piece, image);
-  if (rect) context.drawImage(image, rect.x, rect.y, rect.width, rect.height, x, y, width, height);
+  if (!rect) return;
+  const source = sceneDrawable(piece, image);
+  if (!source) return;
+  if (source === image)
+    context.drawImage(image, rect.x, rect.y, rect.width, rect.height, x, y, width, height);
+  else context.drawImage(source, 0, 0, rect.width, rect.height, x, y, width, height);
 }
 
 function covers(image: HTMLImageElement, piece: SceneImage, x: number, y: number): boolean {
