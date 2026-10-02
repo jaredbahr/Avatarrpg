@@ -38,8 +38,16 @@ function placed(
   return { ...battle, units, order: units.map((unit) => unit.id), turnIndex: 0 };
 }
 
-function resolve(battle: BattleState, caster: Unit, abilityId: string, target: Vec2): BattleDraft {
-  const draft = new BattleDraft(CONTENT, battle, new RngCursor(0x12345678));
+function resolve(
+  battle: BattleState,
+  caster: Unit,
+  abilityId: string,
+  target: Vec2,
+  squareFootprints?: boolean,
+): BattleDraft {
+  const draft = new BattleDraft(CONTENT, battle, new RngCursor(0x12345678), {
+    squareFootprints,
+  });
   const live = draft.unit(caster.id);
   if (!live) throw new Error('caster missing from draft');
   resolveAbility(draft, live, ability(abilityId), target, draft.rng);
@@ -504,7 +512,7 @@ describe('bounded combat outcome previews', () => {
     });
   });
 
-  it('uses real shove pathing for edges, blockers, and a two-cell boss', () => {
+  it('uses real shove pathing for edges, blockers, and a legacy 2x1 boss', () => {
     const edgeSource = battleFor('enc_forest_road');
     const edgeVictimId = edgeSource.units.find((unit) => unit.faction === 'enemy')?.id;
     if (!edgeVictimId) throw new Error('edge fixture has no enemy');
@@ -584,6 +592,7 @@ describe('bounded combat outcome previews', () => {
       bossCaster,
       ability('air_blast'),
       boss.pos,
+      false,
     );
     expect(bossPreview.shoves.find((shove) => shove.id === boss.id)).toMatchObject({
       from: { x: 15, y: 3 },
@@ -592,10 +601,22 @@ describe('bounded combat outcome previews', () => {
       movedDistance: 2,
       blocked: false,
     });
-    expect(resolve(bossBattle, bossCaster, 'air_blast', boss.pos).unit(boss.id)?.pos).toEqual({
-      x: 17,
-      y: 3,
-    });
+    expect(
+      resolve(bossBattle, bossCaster, 'air_blast', boss.pos, false).unit(boss.id)?.pos,
+    ).toEqual({ x: 17, y: 3 });
+    // Shipped 2x2 twin: the preview and reducer must agree even though the
+    // square's lower row changes where this legacy-clear lane stops it.
+    const squareBossShove = previewAbility(
+      CONTENT,
+      bossBattle,
+      bossCaster,
+      ability('air_blast'),
+      boss.pos,
+      true,
+    ).shoves.find((shove) => shove.id === boss.id);
+    expect(resolve(bossBattle, bossCaster, 'air_blast', boss.pos, true).unit(boss.id)?.pos).toEqual(
+      squareBossShove?.to,
+    );
 
     // Its second cell stops at the shaft's lip: one step, then blocked.
     const shaftBattle = placed(bossSource, { p0: { x: 13, y: 5 }, [bossId]: { x: 15, y: 5 } }, [
@@ -612,10 +633,18 @@ describe('bounded combat outcome previews', () => {
         shaftCaster,
         ability('air_blast'),
         shaftBoss.pos,
+        false,
       ).shoves.find((shove) => shove.id === shaftBoss.id),
     ).toMatchObject({ to: { x: 16, y: 5 }, movedDistance: 1, blocked: true });
 
-    const icePath = previewAbility(CONTENT, bossBattle, bossCaster, ability('ice_path'), boss.pos);
+    const icePath = previewAbility(
+      CONTENT,
+      bossBattle,
+      bossCaster,
+      ability('ice_path'),
+      boss.pos,
+      false,
+    );
     expect(icePath.targets).toHaveLength(0);
     expect(icePath.surfaceContacts).toHaveLength(2);
     for (const contact of icePath.surfaceContacts) {
@@ -643,12 +672,19 @@ describe('bounded combat outcome previews', () => {
       targeting: { shape: 'tile' },
       effects: [{ kind: 'surface', surface: 'ice', duration: 3, area: 'center' }],
     };
-    const refreshPreview = previewAbility(CONTENT, alreadyIced, bossCaster, refreshIce, boss.pos);
+    const refreshPreview = previewAbility(
+      CONTENT,
+      alreadyIced,
+      bossCaster,
+      refreshIce,
+      boss.pos,
+      false,
+    );
     expect(refreshPreview.surfaceContacts).toEqual([]);
     expect(refreshPreview.targets).toEqual([]);
   });
 
-  it('pushes a size-2 caster away from the cell that reached the target', () => {
+  it('pushes a legacy 2x1 caster away from the cell that reached the target', () => {
     const source = battleFor('enc_quarry_gate');
     const casterId = source.units.find((unit) => unit.faction === 'party')?.id;
     const victimId = source.units.find((unit) => unit.faction === 'enemy')?.id;
@@ -676,15 +712,29 @@ describe('bounded combat outcome previews', () => {
     if (!caster) throw new Error('size-2 caster is missing');
     expect(caster.size).toBe(2);
 
-    const preview = previewAbility(CONTENT, battle, caster, ability('air_blast'), target);
+    const preview = previewAbility(CONTENT, battle, caster, ability('air_blast'), target, false);
     expect(preview.shoves.find((shove) => shove.id === victimId)).toMatchObject({
       to: { x: 0, y: 7 },
       originKind: 'caster',
     });
     expect(preview.terrain.some((note) => note.startsWith('Pushes '))).toBe(false);
 
-    const actual = resolve(battle, caster, 'air_blast', target);
+    const actual = resolve(battle, caster, 'air_blast', target, false);
     expect(actual.unit(victimId)?.pos).toEqual({ x: 0, y: 7 });
+
+    // Shipped 2x2 twin: its extra firing origins may choose a different shove
+    // vector, but bounded preview and actual resolution stay identical.
+    const squareShove = previewAbility(
+      CONTENT,
+      battle,
+      caster,
+      ability('air_blast'),
+      target,
+      true,
+    ).shoves.find((shove) => shove.id === victimId);
+    expect(resolve(battle, caster, 'air_blast', target, true).unit(victimId)?.pos).toEqual(
+      squareShove?.to,
+    );
   });
 
   it('records lethal surface contact with actual HP loss and no post-death status', () => {

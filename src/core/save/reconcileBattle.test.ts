@@ -459,11 +459,13 @@ describe('reconcileBattle', () => {
       },
     };
 
-    const legacy = load(state);
+    const legacy = load(state, { squareFootprints: false });
     expect(legacy.battle?.units.find((unit) => unit.id === boss.id)?.pos).toEqual({ x: 7, y: 3 });
 
     const square = load(state, { squareFootprints: true });
     const moved = square.battle?.units.find((unit) => unit.id === boss.id)?.pos;
+    // The search expands in row-major rings. Its first legal flat 2x2 is
+    // (6,2)-(7,3); candidates nearer the shaft intersect walls or split tiers.
     expect(moved).toEqual({ x: 6, y: 2 });
     for (const cell of [
       { x: 6, y: 2 },
@@ -548,7 +550,7 @@ describe('reconcileBattle', () => {
 
     // Gate off the early return stands: the same state comes back untouched, so
     // the legacy anchor is left exactly where the save put it.
-    const legacy = reconcileBattleResult(CONTENT, state);
+    const legacy = reconcileBattleResult(CONTENT, state, { squareFootprints: false });
     expect(legacy.state).toBe(state);
     expect(legacy.warnings).toEqual([]);
 

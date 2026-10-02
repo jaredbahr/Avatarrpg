@@ -694,6 +694,7 @@ function shoveExposureFixture(options: {
   readonly shover: Vec2;
   readonly abilities: readonly string[];
   readonly raised: readonly Vec2[];
+  readonly squareFootprints?: boolean;
 }): { readonly draft: BattleDraft; readonly hero: Unit } {
   const seeded = createGame(CONTENT, {
     seed: 'ai-ledge-exposure',
@@ -742,6 +743,7 @@ function shoveExposureFixture(options: {
         props: [],
       },
       new RngCursor(0x1ed),
+      { squareFootprints: options.squareFootprints },
     ),
     hero,
   };
@@ -773,7 +775,7 @@ describe('the AI and a pull that cannot move the unit', () => {
   });
 });
 
-describe('the AI and a size-2 footprint on a lip', () => {
+describe('the AI and a legacy 2x1 footprint on a lip', () => {
   it('charges the lip when the trailing cell crosses it, not just the anchor', () => {
     const { draft, hero } = shoveExposureFixture({
       hero: FOOT_ANCHOR,
@@ -783,6 +785,7 @@ describe('the AI and a size-2 footprint on a lip', () => {
       // The anchor and the trailing cell sit level on the plateau, and the tile
       // past the trailing cell stays a tier down: only the trailing cell falls.
       raised: [FOOT_ANCHOR, FOOT_TRAILING],
+      squareFootprints: false,
     });
 
     // The flat lip penalty; nothing else reads it, so it is not exported.
@@ -796,12 +799,31 @@ describe('the AI and a size-2 footprint on a lip', () => {
       shover: FOOT_TRAILING_SHOVER,
       abilities: ['shove'],
       raised: [FOOT_ANCHOR, FOOT_TRAILING],
+      squareFootprints: false,
     });
 
     // The anchor is two tiles from this shover, so an anchor-only adjacency
     // check called the footprint safe. Shove reaches the trailing cell, and the
     // push runs west, carrying the whole footprint off the plateau.
     expect(ledgeExposure(draft, hero, FOOT_ANCHOR)).toBe(3);
+  });
+});
+
+describe('the AI and the shipped 2x2 footprint on the legacy lip fixture', () => {
+  it('does not charge a fall when the square cannot make that legacy-only shove', () => {
+    for (const shover of [FOOT_SHOVER, FOOT_TRAILING_SHOVER]) {
+      const { draft, hero } = shoveExposureFixture({
+        hero: FOOT_ANCHOR,
+        heroSize: 2,
+        shover,
+        abilities: ['shove'],
+        raised: [FOOT_ANCHOR, FOOT_TRAILING],
+        squareFootprints: true,
+      });
+      // The second row is on the lower tier, so this is not a level 2x2 lip;
+      // the square rules reject the legacy-only displacement and charge zero.
+      expect(ledgeExposure(draft, hero, FOOT_ANCHOR)).toBe(0);
+    }
   });
 });
 
@@ -906,6 +928,7 @@ function coneOriginFixture(options: { readonly ledge: boolean }): {
         props: [],
       },
       new RngCursor(0xc04e),
+      { squareFootprints: false },
     ),
     caster,
   };
@@ -924,7 +947,7 @@ function priceConeOrigin(options: { readonly ledge: boolean }): number {
   );
 }
 
-describe('the AI and a size-2 caster’s shove origin', () => {
+describe('the AI and a legacy 2x1 caster’s shove origin', () => {
   it('measures the cone shove from the firing cell, not the anchor', () => {
     const drop = CONTENT.tuning.ledgeDropDamage;
 
@@ -939,5 +962,24 @@ describe('the AI and a size-2 caster’s shove origin', () => {
     // the level tile beside it, so a forecast that falls back to `caster.pos`
     // prices no fall at all and this difference vanishes.
     expect(ledge - flat).toBeCloseTo(drop, 5);
+  });
+});
+
+describe('the AI and the shipped 2x2 caster on the legacy cone fixture', () => {
+  it('rejects an aim whose height setup covers only the legacy front row', () => {
+    const { draft, caster } = coneOriginFixture({ ledge: true });
+    const squareDraft = new BattleDraft(CONTENT, draft.toBattle(), new RngCursor(0xc04e), {
+      squareFootprints: true,
+    });
+    expect(
+      scoreAbility(
+        squareDraft,
+        caster,
+        CONE_SLAM,
+        CONE_AIM,
+        weightsFor('aggressive'),
+        new Map<string, readonly Unit[]>(),
+      ),
+    ).toBe(-Infinity);
   });
 });

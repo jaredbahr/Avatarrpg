@@ -142,7 +142,7 @@ export const ENEMIES: readonly EnemyDef[] = [
     xp: 360,
     sprite: 'unit.enemy.driller',
     description:
-      'A quartermaster at the controls of a two-tile mecha-driller. Slams a cone once a turn, sprays oil, hurls debris and churns the floor to mud.',
+      'A quartermaster at the controls of a four-tile mecha-driller. Slams a cone once a turn, sprays oil, hurls debris and churns the floor to mud.',
   },
 
   /* --------------------------------------------------------------------- */

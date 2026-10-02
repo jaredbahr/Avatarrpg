@@ -46,8 +46,8 @@ describe('big-unit cover', () => {
 
   it('keeps the legacy 2x1 rule: one covered cell of two is enough', () => {
     const grid = coverAt(flat, { x: 2, y: 1 });
-    expect(hasCover(CONTENT, grid, at(unit, { x: 1, y: 1 }, 2))).toBe(true);
-    expect(hasCover(CONTENT, flat, at(unit, { x: 1, y: 1 }, 2))).toBe(false);
+    expect(hasCover(CONTENT, grid, at(unit, { x: 1, y: 1 }, 2), false)).toBe(true);
+    expect(hasCover(CONTENT, flat, at(unit, { x: 1, y: 1 }, 2), false)).toBe(false);
   });
 
   it('needs two covered cells of four on the square 2x2', () => {

@@ -181,7 +181,7 @@ describe('height reach', () => {
     expect(isValidTarget(CONTENT, blocked, caster, longRange, target).ok).toBe(true);
   });
 
-  it('does not combine elevation from one occupied cell with LOS from another', () => {
+  it('does not combine elevation from one legacy 2x1 cell with LOS from another', () => {
     const { battle: source, caster: originalCaster } = fixture();
     const caster = { ...originalCaster, pos: { x: 2, y: 2 }, size: 2 as const };
     const target = { x: 3, y: 6 };
@@ -205,7 +205,7 @@ describe('height reach', () => {
 
     expect(hasLineOfSight(splitOrigins.grid, caster.pos, target)).toBe(false);
     expect(hasLineOfSight(splitOrigins.grid, { x: 3, y: 2 }, target)).toBe(true);
-    expect(isValidTarget(CONTENT, splitOrigins, caster, longRange, target).ok).toBe(false);
+    expect(isValidTarget(CONTENT, splitOrigins, caster, longRange, target, false).ok).toBe(false);
 
     const joinedOrigin = {
       ...splitOrigins,
@@ -216,10 +216,35 @@ describe('height reach', () => {
         ),
       },
     };
-    expect(isValidTarget(CONTENT, joinedOrigin, caster, longRange, target).ok).toBe(true);
+    expect(isValidTarget(CONTENT, joinedOrigin, caster, longRange, target, false).ok).toBe(true);
   });
 
-  it('draws a size-2 line from whichever occupied cell validates, in anchor-first order', () => {
+  it('uses either complete origin from the shipped 2x2 in the split-origin fixture', () => {
+    const { battle: source, caster: originalCaster } = fixture();
+    const caster = { ...originalCaster, pos: { x: 2, y: 2 }, size: 2 as const };
+    const target = { x: 3, y: 6 };
+    const battle = open({
+      ...source,
+      units: source.units.map((unit) => (unit.id === caster.id ? caster : unit)),
+    });
+    const elevatedIndex = caster.pos.y * battle.grid.width + caster.pos.x;
+    const wallIndex = 3 * battle.grid.width + 2;
+    const splitOrigins = {
+      ...battle,
+      grid: {
+        ...battle.grid,
+        tiles: battle.grid.tiles.map((tile, index) => ({
+          ...tile,
+          elevation: index === elevatedIndex ? 1 : 0,
+          blocksSight: index === wallIndex,
+        })),
+      },
+    };
+    // The square adds (3,3), which has both clear LOS and sufficient reach.
+    expect(isValidTarget(CONTENT, splitOrigins, caster, longRange, target, true).ok).toBe(true);
+  });
+
+  it('draws a legacy 2x1 line from whichever occupied cell validates, in anchor-first order', () => {
     const { battle: source, caster: originalCaster } = fixture();
     const caster = { ...originalCaster, pos: { x: 2, y: 2 }, size: 2 as const };
     const target = { x: 5, y: 5 };
@@ -248,11 +273,10 @@ describe('height reach', () => {
       x: 3,
       y: 3,
     });
-    expect(validatingOrigin(CONTENT, anchorBlocked.grid, caster, ability, target)).toEqual({
-      x: 3,
-      y: 2,
-    });
-    expect(affectedTiles(CONTENT, anchorBlocked.grid, caster, ability, target)).toEqual(
+    expect(
+      validatingOrigin(CONTENT, anchorBlocked.grid, caster, ability, target, true, false),
+    ).toEqual({ x: 3, y: 2 });
+    expect(affectedTiles(CONTENT, anchorBlocked.grid, caster, ability, target, false)).toEqual(
       lineTiles(anchorBlocked.grid, { x: 3, y: 2 }, target, 4),
     );
 
@@ -265,12 +289,34 @@ describe('height reach', () => {
       x: 4,
       y: 3,
     });
-    expect(validatingOrigin(CONTENT, secondBlocked.grid, caster, ability, target)).toEqual(
-      caster.pos,
-    );
-    expect(affectedTiles(CONTENT, secondBlocked.grid, caster, ability, target)).toEqual(
+    expect(
+      validatingOrigin(CONTENT, secondBlocked.grid, caster, ability, target, true, false),
+    ).toEqual(caster.pos);
+    expect(affectedTiles(CONTENT, secondBlocked.grid, caster, ability, target, false)).toEqual(
       lineTiles(secondBlocked.grid, caster.pos, target, 4),
     );
+  });
+
+  it('draws the shipped 2x2 line from its first validating square cell', () => {
+    const { battle: source, caster: originalCaster } = fixture();
+    const caster = { ...originalCaster, pos: { x: 2, y: 2 }, size: 2 as const };
+    const target = { x: 5, y: 5 };
+    const ability: Ability = { ...longRange, range: 5, targeting: { shape: 'line', length: 4 } };
+    const battle = open({
+      ...source,
+      units: source.units.map((unit) => (unit.id === caster.id ? caster : unit)),
+    });
+    const grid = {
+      ...battle.grid,
+      tiles: battle.grid.tiles.map((tile, index) =>
+        index === 3 * battle.grid.width + 3 ? { ...tile, blocksSight: true } : tile,
+      ),
+    };
+    // Anchor and east cell cross (3,3); the first clear square origin is (3,3).
+    expect(validatingOrigin(CONTENT, grid, caster, ability, target, true, true)).toEqual({
+      x: 3,
+      y: 3,
+    });
   });
 
   it('keeps size-1 range, height reach, and anchor LOS unchanged over the whole board', () => {
@@ -366,7 +412,7 @@ describe('height reach', () => {
     expect(draft.events.some((event) => event.type === 'abilityUsed')).toBe(true);
   });
 
-  it('previews a size-2 caster from its validating origin, not its highest cell', () => {
+  it('previews a legacy 2x1 caster from its validating origin, not its highest cell', () => {
     const { battle: source, caster: originalCaster } = fixture();
     const caster = { ...originalCaster, pos: { x: 2, y: 2 }, size: 2 as const };
     const targetUnit = source.units.find((unit) => unit.faction === 'enemy');
@@ -403,16 +449,42 @@ describe('height reach', () => {
       },
     };
 
-    const origin = validatingOrigin(CONTENT, battle.grid, caster, airBlast, target);
+    const origin = validatingOrigin(CONTENT, battle.grid, caster, airBlast, target, true, false);
     expect(origin).toEqual({ x: 3, y: 2 });
 
     const defender = battle.units.find((unit) => unit.id === targetUnit.id);
     if (!defender) throw new Error('Missing size-2 preview defender');
-    const entry = previewAbility(CONTENT, battle, caster, airBlast, target).targets.find(
+    const entry = previewAbility(CONTENT, battle, caster, airBlast, target, false).targets.find(
       (candidate) => candidate.unitId === targetUnit.id,
     );
-    expect(entry?.hitChance).toBe(hitChance(CONTENT, battle.grid, caster, defender, 0, origin));
+    expect(entry?.hitChance).toBe(
+      hitChance(CONTENT, battle.grid, caster, defender, 0, origin, false),
+    );
     // The old max-of-cells reading would have claimed the anchor's high ground.
-    expect(entry?.hitChance).not.toBe(hitChance(CONTENT, battle.grid, caster, defender));
+    expect(entry?.hitChance).not.toBe(
+      hitChance(CONTENT, battle.grid, caster, defender, 0, undefined, false),
+    );
+  });
+
+  it('previews the shipped 2x2 caster from its first validating square origin', () => {
+    const { battle: source, caster: originalCaster } = fixture();
+    const caster = { ...originalCaster, pos: { x: 2, y: 2 }, size: 2 as const };
+    const target = { x: 2, y: 5 };
+    const airBlast = CONTENT.abilities.get('air_blast');
+    if (!airBlast) throw new Error('Missing air blast');
+    const opened = open({
+      ...source,
+      units: source.units.map((unit) => (unit.id === caster.id ? caster : unit)),
+    });
+    const grid = {
+      ...opened.grid,
+      tiles: opened.grid.tiles.map((tile, index) =>
+        index === 3 * opened.grid.width + 2 ? { ...tile, blocksSight: true } : tile,
+      ),
+    };
+    expect(validatingOrigin(CONTENT, grid, caster, airBlast, target, true, true)).toEqual({
+      x: 2,
+      y: 3,
+    });
   });
 });

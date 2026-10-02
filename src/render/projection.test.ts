@@ -49,17 +49,18 @@ describe('oblique ground contract', () => {
     expect(camera.project({ x: 12.5, y: 8.5 })).toEqual({ x: 417, y: 450 });
   });
 
-  it('anchors a two-cell boss at its true footprint midpoint', () => {
+  it('anchors a shipped 2x2 boss at the centre of its front row', () => {
     const camera = new Camera(
       { width: 1000, height: 700, dpr: 1 },
       { width: 20, height: 12 },
       'oblique',
     );
     const box = camera.spriteBox({ x: 8, y: 5 }, 2);
-    const midpoint = camera.project({ x: 9, y: 5.5 });
+    // A 2x2 at (8,5) has front row y=6; its foot is the row centre (9,6.5).
+    const midpoint = camera.project({ x: 9, y: 6.5 });
     expect(box.x + box.size).toBe(midpoint.x);
     expect(box.y + box.size * 0.86).toBe(midpoint.y);
-    expect(camera.toTile(midpoint.x, midpoint.y)).toEqual({ x: 9, y: 5 });
+    expect(camera.toTile(midpoint.x, midpoint.y)).toEqual({ x: 9, y: 6 });
   });
 
   it('anchors a gated 2x2 at the centre of its front row without moving legacy output', () => {
@@ -70,7 +71,9 @@ describe('oblique ground contract', () => {
     );
     const legacy = camera.spriteBox({ x: 8, y: 5 }, 2, false);
     const square = camera.spriteBox({ x: 8, y: 5 }, 2, true);
-    expect(legacy).toEqual(camera.spriteBox({ x: 8, y: 5 }, 2));
+    expect(square).toEqual(camera.spriteBox({ x: 8, y: 5 }, 2));
+    expect(legacy.x + legacy.size).toBe(camera.project({ x: 9, y: 5.5 }).x);
+    expect(legacy.y + legacy.size * 0.86).toBe(camera.project({ x: 9, y: 5.5 }).y);
     expect(square.x + square.size).toBe(camera.project({ x: 9, y: 6.5 }).x);
     expect(square.y + square.size * 0.86).toBe(camera.project({ x: 9, y: 6.5 }).y);
   });

@@ -11,7 +11,7 @@ import {
   storyNodeSchema,
   validateContent,
 } from './schemas';
-import type { ClipDef, ClipName } from './assets/clips';
+import { CLIP_FRAME_COUNTS, isTimedBareClip, type ClipDef, type ClipName } from './assets/clips';
 import type { ContentBundle } from './schemas';
 import { ELEMENTS } from './elements';
 import { resolveAsset } from './assets/manifest';
@@ -903,7 +903,15 @@ describe('content', () => {
       expect(['painter', 'image', 'sheet'], key).toContain(entry.kind);
       if (entry.kind === 'sheet') {
         expect(entry.clips.idle?.frames.length, `${key} idle`).toBeGreaterThanOrEqual(2);
-        expect(entry.clips.cast?.frames.length, `${key} cast`).toBe(3);
+        const cast = entry.clips.cast;
+        expect(cast, `${key} cast`).toBeDefined();
+        if (cast) {
+          const bounds = isTimedBareClip('cast', cast)
+            ? { min: CLIP_FRAME_COUNTS.cast.min, max: 12 }
+            : CLIP_FRAME_COUNTS.cast;
+          expect(cast.frames.length, `${key} cast`).toBeGreaterThanOrEqual(bounds.min);
+          expect(cast.frames.length, `${key} cast`).toBeLessThanOrEqual(bounds.max);
+        }
       }
       if (entry.palette !== undefined) expect(palettes, `${key} palette`).toContain(entry.palette);
     }

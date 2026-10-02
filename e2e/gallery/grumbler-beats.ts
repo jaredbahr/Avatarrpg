@@ -25,7 +25,7 @@ export const GRUMBLER_BEATS: readonly Beat[] = [
   {
     id: '36-grumbler-portrait',
     title: 'Quarry driller: matching machine portrait and battlefield art',
-    note: 'The amber cab, rust armor, brass hinges and steel drill identify the same machine in the turn strip, inspector and two-tile board footprint.',
+    note: 'The amber cab, rust armor, brass hinges and steel drill identify the same machine in the turn strip, inspector and square 2x2 board footprint.',
     projects: ['surface-canvas', 'surface-webgl', 'ipad-canvas', 'ipad-webgl', 'portrait-canvas'],
     async run(ctx) {
       await openGrumbler(ctx);
@@ -38,12 +38,15 @@ export const GRUMBLER_BEATS: readonly Beat[] = [
       });
       // The camera has to own the machine before the floor still, or the frame
       // shows the party alone: the driller sits outside the default focus, so
-      // its two-tile footprint never enters the picture. The same focus also
+      // its square 2x2 footprint never enters the picture. The same focus also
       // puts its tile where the right-click below can reach it, or the click
       // lands on the chrome and the inspector never opens. Same repair as the
       // bandit portrait beat (b0fbc8b) and the crossbow beat.
       await focusStagedUnit(ctx.page, boss.id, ctx.settleTimeout);
-      await ctx.shoot('The two-tile machine stands on the quarry floor beside the party.', 'floor');
+      await ctx.shoot(
+        'The square 2x2 machine stands on the quarry floor beside the party.',
+        'floor',
+      );
       const point = await tileCentre(ctx.page, boss.pos);
       await ctx.page.mouse.click(point.x, point.y, { button: 'right' });
       await ctx.page.locator('.dialog canvas[data-asset="portrait.enemy.grumbler"]').waitFor();

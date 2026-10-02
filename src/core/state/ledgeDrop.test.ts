@@ -119,7 +119,7 @@ describe('ledge drops', () => {
     );
   });
 
-  it('uses the worst occupied-cell drop once for a size-2 unit', () => {
+  it('uses the worst occupied-cell drop once for a legacy 2x1 unit', () => {
     const { battle, caster, victim } = fixture();
     const start = { x: 6, y: 5 };
     const wide = { ...victim, size: 2 as const, pos: start };
@@ -133,10 +133,31 @@ describe('ledge drops', () => {
       ),
       { '6,5': 2, '7,5': 2, '8,5': 1, '9,5': 0 },
     );
-    const draft = new BattleDraft(CONTENT, positioned, new RngCursor(7));
+    const draft = new BattleDraft(CONTENT, positioned, new RngCursor(7), {
+      squareFootprints: false,
+    });
     draft.shove(victim.id, { x: 5, y: 5 }, 2, 'push');
     expect(draft.unit(victim.id)?.hp).toBe(victim.hp - 6);
     expect(draft.events.filter((event) => event.type === 'damaged')).toHaveLength(1);
+  });
+
+  it('stops the shipped 2x2 before the split-tier ledge fixture', () => {
+    const { battle, caster, victim } = fixture();
+    const start = { x: 6, y: 5 };
+    const wide = { ...victim, size: 2 as const, pos: start };
+    const positioned = elevated(
+      placed(
+        { ...battle, units: battle.units.map((unit) => (unit.id === victim.id ? wide : unit)) },
+        { [caster.id]: { x: 4, y: 5 }, [victim.id]: start },
+      ),
+      { '6,5': 2, '7,5': 2, '8,5': 1, '9,5': 0 },
+    );
+    const draft = new BattleDraft(CONTENT, positioned, new RngCursor(7), {
+      squareFootprints: true,
+    });
+    draft.shove(victim.id, { x: 5, y: 5 }, 2, 'push');
+    expect(draft.unit(victim.id)?.hp).toBe(victim.hp);
+    expect(draft.events.filter((event) => event.type === 'damaged')).toHaveLength(0);
   });
 
   it('lets a two-tier shove fall, but stops a shove up at the ledge', () => {
@@ -292,7 +313,7 @@ describe('ledge drops', () => {
     ).toEqual(expect.objectContaining({ amount: shove?.ledgeDropDamage, cause: 'ledgeDrop' }));
   });
 
-  it('forecasts summed drops while skipping a one-tier ramp step', () => {
+  it('forecasts summed drops for a legacy 2x1 while skipping a one-tier ramp step', () => {
     const { battle, caster, victim } = fixture();
     const start = { x: 6, y: 5 };
     const wide = { ...victim, size: 2 as const, pos: start };
@@ -316,9 +337,42 @@ describe('ledge drops', () => {
     }
     const ability = CONTENT.abilities.get('air_blast');
     if (!ability) throw new Error('air_blast missing');
-    const preview = previewAbility(CONTENT, { ...positioned, grid }, caster, ability, start);
+    const preview = previewAbility(CONTENT, { ...positioned, grid }, caster, ability, start, false);
     const shove = preview.shoves.find((entry) => entry.id === victim.id);
     expect(shove?.ledgeDropTiers).toBe(2);
     expect(shove?.ledgeDropDamage).toBe(6);
+  });
+
+  it('forecasts no drop when the shipped 2x2 cannot enter that ramp fixture', () => {
+    const { battle, caster, victim } = fixture();
+    const start = { x: 6, y: 5 };
+    const wide = { ...victim, size: 2 as const, pos: start };
+    const positioned = placed(
+      { ...battle, units: battle.units.map((unit) => (unit.id === victim.id ? wide : unit)) },
+      { [caster.id]: { x: 5, y: 5 }, [victim.id]: start },
+    );
+    let grid = positioned.grid;
+    for (const [pos, elevation, ramp] of [
+      [start, 2, true],
+      [{ x: 7, y: 5 }, 1, false],
+      [{ x: 8, y: 5 }, 2, true],
+      [{ x: 9, y: 5 }, 0, false],
+    ] as const) {
+      const tile = tileAt(grid, pos);
+      if (!tile) throw new Error('ledge fixture is off-grid');
+      grid = withTile(grid, pos, { ...tile, elevation, ramp });
+    }
+    const ability = CONTENT.abilities.get('air_blast');
+    if (!ability) throw new Error('air_blast missing');
+    const shove = previewAbility(
+      CONTENT,
+      { ...positioned, grid },
+      caster,
+      ability,
+      start,
+      true,
+    ).shoves.find((entry) => entry.id === victim.id);
+    expect(shove?.ledgeDropTiers).toBe(0);
+    expect(shove?.ledgeDropDamage).toBe(0);
   });
 });

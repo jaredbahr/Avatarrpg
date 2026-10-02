@@ -171,7 +171,9 @@ describe('2x2 forced movement', () => {
     squareDraft.shove(victim.id, { x: 5, y: 5 }, 2, 'push');
     expect(squareDraft.unit(victim.id)?.pos).toEqual({ x: 7, y: 5 });
 
-    const legacyDraft = new BattleDraft(CONTENT, field, new RngCursor(1));
+    const legacyDraft = new BattleDraft(CONTENT, field, new RngCursor(1), {
+      squareFootprints: false,
+    });
     legacyDraft.shove(victim.id, { x: 5, y: 5 }, 2, 'push');
     expect(legacyDraft.unit(victim.id)?.pos).toEqual({ x: 8, y: 5 });
   });

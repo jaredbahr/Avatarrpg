@@ -261,8 +261,12 @@ for (const projection of ['orthographic', 'oblique'] as const satisfies readonly
       ).toBe(0.28);
     });
 
-    it('uses the two-cell footprint centre and animated position', () => {
-      installImage((x) => (x >= 94 && x <= 98 ? 255 : 0));
+    it('uses the shipped 2x2 footprint centre and animated position', () => {
+      // The square foot is (3,3.5), one row south of the legacy foot (3,2.5).
+      // Orthographic keeps the probe's column (96/128 across the roof); oblique
+      // moves it to 32/128, because a row south shifts the foot left on screen.
+      const column = projection === 'oblique' ? 32 : 96;
+      installImage((x) => (x >= column - 2 && x <= column + 2 ? 255 : 0));
       const scene = roof(camera);
       expect(sceneryOpacity(scene, view({ units: [unit(origin)] }), camera)).toBe(1);
       expect(sceneryOpacity(scene, view({ units: [unit(origin, { size: 2 })] }), camera)).toBe(
