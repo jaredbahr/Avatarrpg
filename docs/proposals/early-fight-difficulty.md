@@ -30,6 +30,15 @@ each value as `1 / 3 / 6 player` results; paired runs use the same seeds, so
 the baseline row is the same in every run. `Deaths` is the report's count of
 party members down at combat end.
 
+## Decision (2026-10-03)
+
+Jared approved the recommendation: the Forest Road and the Quarry Gate stay as they are, and
+The Cutting's enemies get 40% more HP. Shipped as base HP on the three mercenary definitions
+(blade 36 to 50, crossbow 28 to 39, sergeant 44 to 62). The crossbow also stands in the boss
+fight's alternate roster, which measured easier than the authored one, so that branch gets a
+little harder too. The `cutting-hp-*` scenario files now describe changes against the old
+numbers and are kept only as the record of what was measured.
+
 ## Findings (measured 2026-10-02, 80 trials per party size)
 
 - The 70-85% win band is not reachable in the three early fights with any single mild lever. The simulated party wins 100% of trials in 32 of the 36 scenario rows; only the Quarry Gate at HP +40% (three and six players) and two solo rows (the extra-enemy rows in The Cutting and at the Quarry Gate) dip below. Read the extra-enemy rows with the two cautions noted under their tables.

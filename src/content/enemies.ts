@@ -89,7 +89,15 @@ export const ENEMIES: readonly EnemyDef[] = [
     name: 'Mercenary',
     element: 'nonbender',
     size: 1,
-    stats: { maxHp: 36, maxAp: 4, maxMove: 4, power: 6, defense: 2, speed: 6, focus: 10 },
+    /*
+     * Jin's crew take 40% more punishment than they first did (36, 28 and 44 HP
+     * for the blade, the crossbow and the sergeant). The Cutting was the third
+     * fight and the gentlest: the party kept 80-96% of its HP. With the extra HP
+     * it still wins every simulated trial, in about four rounds, keeping
+     * 80 / 58 / 70% at one, three and six players
+     * (docs/proposals/early-fight-difficulty.md; Jared, 2026-10-03).
+     */
+    stats: { maxHp: 50, maxAp: 4, maxMove: 4, power: 6, defense: 2, speed: 6, focus: 10 },
     abilities: ['merc_blade'],
     ai: 'aggressive',
     xp: 150,
@@ -101,7 +109,7 @@ export const ENEMIES: readonly EnemyDef[] = [
     name: 'Mercenary Crossbow',
     element: 'nonbender',
     size: 1,
-    stats: { maxHp: 28, maxAp: 4, maxMove: 4, power: 5, defense: 1, speed: 7, focus: 15 },
+    stats: { maxHp: 39, maxAp: 4, maxMove: 4, power: 5, defense: 1, speed: 7, focus: 15 },
     abilities: ['merc_crossbow'],
     ai: 'cautious',
     xp: 150,
@@ -114,7 +122,7 @@ export const ENEMIES: readonly EnemyDef[] = [
     name: 'Mercenary Sergeant',
     element: 'nonbender',
     size: 1,
-    stats: { maxHp: 44, maxAp: 5, maxMove: 4, power: 6, defense: 3, speed: 6, focus: 10 },
+    stats: { maxHp: 62, maxAp: 5, maxMove: 4, power: 6, defense: 3, speed: 6, focus: 10 },
     abilities: ['merc_blade', 'rally'],
     ai: 'support',
     xp: 210,
