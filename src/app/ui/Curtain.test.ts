@@ -15,11 +15,25 @@ describe('the first-frame sheet curtain decision', () => {
     );
   });
 
-  it('holds while any visible sheet is loading or failed before the bound', () => {
+  it('holds while any visible sheet is still loading, before the bound', () => {
     expect(curtainSheetDecision(states(['unit.kaya', 'loading']), 0)).toBe('hold');
     expect(
-      curtainSheetDecision(states(['unit.kaya', 'failed']), FIRST_FRAME_SHEET_WAIT_MS - 1),
+      curtainSheetDecision(
+        states(['unit.kaya', 'ready'], ['unit.bo', 'loading']),
+        FIRST_FRAME_SHEET_WAIT_MS - 1,
+      ),
     ).toBe('hold');
+  });
+
+  it('does not wait for a sheet that has already failed', () => {
+    // Failed is permanent for the session: waiting would ink every later scene for the full bound.
+    expect(curtainSheetDecision(states(['unit.kaya', 'failed']), 0)).toBe('lift');
+    expect(curtainSheetDecision(states(['unit.kaya', 'failed'], ['unit.bo', 'ready']), 0)).toBe(
+      'lift',
+    );
+    expect(curtainSheetDecision(states(['unit.kaya', 'failed'], ['unit.bo', 'loading']), 0)).toBe(
+      'hold',
+    );
   });
 
   it('lifts at the bound even when a visible sheet never became resident', () => {

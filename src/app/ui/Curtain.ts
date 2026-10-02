@@ -22,14 +22,20 @@ import { sheets, type SheetLoadState } from '../../render/sheets/store';
  * The timer is the guarantee it lifts.
  */
 const FALLBACK_MS = 600;
-/** A broken or cold atlas may never keep the game behind ink. */
+/** A cold atlas that never arrives may not keep the game behind ink. */
 export const FIRST_FRAME_SHEET_WAIT_MS = 2_500;
 
+/**
+ * Hold only for a sheet that is still on its way. One that has already failed
+ * stays failed for the session, so waiting for it would put every later scene
+ * behind ink for the whole bound: it lifts at once and the fallback draws.
+ */
 export function curtainSheetDecision(
   states: ReadonlyMap<string, SheetLoadState>,
   elapsedMs: number,
 ): 'hold' | 'lift' {
-  return elapsedMs >= FIRST_FRAME_SHEET_WAIT_MS || [...states.values()].every((s) => s === 'ready')
+  return elapsedMs >= FIRST_FRAME_SHEET_WAIT_MS ||
+    [...states.values()].every((s) => s !== 'loading')
     ? 'lift'
     : 'hold';
 }
@@ -67,6 +73,8 @@ export class Curtain {
         node.classList.contains('is-lifting')
       )
         return;
+      // The bound may still be pending when the sheets arrive early.
+      if (this.timer !== null) window.clearTimeout(this.timer);
       node.classList.add('is-lifting');
       this.timer = window.setTimeout(() => this.settle(), FALLBACK_MS);
     };
@@ -76,11 +84,10 @@ export class Curtain {
     }
 
     // The initial fallback frame has already been baked by scene mount. Once
-    // cold atlases arrive, give both backends one frame to install/draw them
-    // under opaque ink before beginning the reveal.
-    void Promise.all(keys.map((key) => sheets.whenLoaded(key))).then((ready) => {
-      if (ready.every(Boolean) && generation === this.revealGeneration)
-        requestAnimationFrame(() => lift());
+    // every cold atlas has arrived or failed, give both backends one frame to
+    // install and draw what did arrive under opaque ink, then begin the reveal.
+    void Promise.all(keys.map((key) => sheets.whenLoaded(key))).then(() => {
+      if (generation === this.revealGeneration) requestAnimationFrame(() => lift());
     });
     this.timer = window.setTimeout(lift, FIRST_FRAME_SHEET_WAIT_MS);
   }
