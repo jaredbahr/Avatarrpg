@@ -25,16 +25,20 @@ export class SceneTextures {
     if (piece.feather) {
       const source = sceneDrawable(piece, image);
       if (!source) return null;
-      const featherKey = `${piece.feather.left ?? 0},${piece.feather.right ?? 0},${'flip' in piece && piece.flip ? 1 : 0}`;
-      const key = `${piece.url}|${piece.x},${piece.y},${piece.width},${piece.height}|${rect.x},${rect.y},${rect.width},${rect.height}|${featherKey}`;
-      let page = this.pages.get(key);
-      if (!page || page.image !== image) {
-        if (page) this.drop(page);
-        page = { image, texture: Texture.from(source, true), slices: new Map() };
-        this.pages.set(key, page);
+      // Canvas allocation can fail under iOS memory pressure. In that case
+      // use the ordinary atlas slice below: unfeathered, but still the right art.
+      if (source !== image) {
+        const featherKey = `${piece.feather.left ?? 0},${piece.feather.right ?? 0},${'flip' in piece && piece.flip ? 1 : 0}`;
+        const key = `${piece.url}|${piece.x},${piece.y},${piece.width},${piece.height}|${rect.x},${rect.y},${rect.width},${rect.height}|${featherKey}`;
+        let page = this.pages.get(key);
+        if (!page || page.image !== image) {
+          if (page) this.drop(page);
+          page = { image, texture: Texture.from(source, true), slices: new Map() };
+          this.pages.set(key, page);
+        }
+        this.used.set(key, new Set());
+        return page.texture;
       }
-      this.used.set(key, new Set());
-      return page.texture;
     }
     let page = this.pages.get(piece.url);
     if (page?.image !== image) {

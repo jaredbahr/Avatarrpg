@@ -9,6 +9,7 @@ import { buildGrid, tileAt, withSurface } from '../core/rules/grid';
 import { applyImpact } from '../core/rules/surfaces';
 import {
   SCENE_IMAGE_CAP,
+  sceneDrawable,
   sceneForGrid,
   sceneImages,
   sceneryOpacity,
@@ -136,6 +137,37 @@ function installImage(alpha: (x: number, y: number) => number) {
 afterEach(() => {
   vi.restoreAllMocks();
   vi.unstubAllGlobals();
+});
+
+it('prepares each feathered piece once per decoded image', () => {
+  const drawImage = vi.fn();
+  const getImageData = vi.fn(() => ({ data: new Uint8ClampedArray(8 * 8 * 4) }));
+  const putImageData = vi.fn();
+  const canvases: object[] = [];
+  vi.stubGlobal('document', {
+    createElement: vi.fn(() => {
+      const canvas = {
+        width: 0,
+        height: 0,
+        getContext: vi.fn(() => ({ drawImage, getImageData, putImageData })),
+      };
+      canvases.push(canvas);
+      return canvas;
+    }),
+  });
+  const firstImage = { naturalWidth: 8, naturalHeight: 8 } as HTMLImageElement;
+  const secondImage = { naturalWidth: 8, naturalHeight: 8 } as HTMLImageElement;
+  const firstPiece = scenePiece('first', { feather: { left: 2 } });
+  const secondPiece = scenePiece('second', { feather: { right: 2 } });
+
+  const prepared = sceneDrawable(firstPiece, firstImage);
+  expect(sceneDrawable(firstPiece, firstImage)).toBe(prepared);
+  expect(sceneDrawable(secondPiece, firstImage)).not.toBe(prepared);
+  expect(sceneDrawable(firstPiece, secondImage)).not.toBe(prepared);
+  expect(canvases).toHaveLength(3);
+  expect(drawImage).toHaveBeenCalledTimes(3);
+  expect(getImageData).toHaveBeenCalledTimes(3);
+  expect(putImageData).toHaveBeenCalledTimes(3);
 });
 
 for (const projection of ['orthographic', 'oblique'] as const satisfies readonly Projection[]) {

@@ -86,25 +86,22 @@ export function sceneImage(piece: SceneImage): HTMLImageElement | null {
   return image && sceneSourceRect(piece, image) ? image : null;
 }
 
-const featheredImages = new WeakMap<
-  object,
-  { image: HTMLImageElement; canvas: HTMLCanvasElement }
->();
+const featheredImages = new WeakMap<HTMLImageElement, WeakMap<object, HTMLCanvasElement>>();
 
-/** Alpha-only preparation, cached for the lifetime of the scene piece. */
+/** Alpha-only preparation. Weak image keys release canvases with evicted decoded pages. */
 export function sceneDrawable(
   piece: SceneImage,
   image = sceneImage(piece),
 ): HTMLImageElement | HTMLCanvasElement | null {
   if (!image || !piece.feather) return image;
-  const cached = featheredImages.get(piece);
-  if (cached?.image === image) return cached.canvas;
+  const cached = featheredImages.get(image)?.get(piece);
+  if (cached) return cached;
   const rect = sceneSourceRect(piece, image);
   if (!rect) return null;
   const canvas = document.createElement('canvas');
   canvas.width = rect.width;
   canvas.height = rect.height;
-  const context = canvas.getContext('2d', { willReadFrequently: true });
+  const context = canvas.getContext('2d');
   if (!context) return image;
   context.drawImage(image, rect.x, rect.y, rect.width, rect.height, 0, 0, rect.width, rect.height);
   const pixels = context.getImageData(0, 0, rect.width, rect.height);
@@ -116,7 +113,12 @@ export function sceneDrawable(
       );
     }
   context.putImageData(pixels, 0, 0);
-  featheredImages.set(piece, { image, canvas });
+  let pieces = featheredImages.get(image);
+  if (!pieces) {
+    pieces = new WeakMap();
+    featheredImages.set(image, pieces);
+  }
+  pieces.set(piece, canvas);
   return canvas;
 }
 

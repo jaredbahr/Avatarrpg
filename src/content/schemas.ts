@@ -465,7 +465,7 @@ const tileTemplate = z.object({
   surfaceDuration: z.number().int().min(-1).optional(),
 });
 
-const sceneImageSchema = z.object({
+const sceneImageBaseSchema = z.object({
   url: z.string().min(1),
   sourceRect: z
     .object({
@@ -481,12 +481,34 @@ const sceneImageSchema = z.object({
   height: z.number().positive(),
   feather: z
     .object({
-      left: z.number().positive().optional(),
-      right: z.number().positive().optional(),
+      left: z.number().int().positive().optional(),
+      right: z.number().int().positive().optional(),
+    })
+    .refine((feather) => feather.left !== undefined || feather.right !== undefined, {
+      message: 'at least one feather side is required',
     })
     .optional(),
   wind: z.boolean().optional(),
 });
+
+function validateSceneFeather(
+  piece: z.infer<typeof sceneImageBaseSchema>,
+  context: z.RefinementCtx,
+): void {
+  if (!piece.feather) return;
+  const halfSourceWidth = (piece.sourceRect?.width ?? piece.width) / 2;
+  for (const side of ['left', 'right'] as const) {
+    const distance = piece.feather[side];
+    if (distance !== undefined && distance >= halfSourceWidth)
+      context.addIssue({
+        code: z.ZodIssueCode.custom,
+        path: ['feather', side],
+        message: `feather ${side} must be below half the source width`,
+      });
+  }
+}
+
+const sceneImageSchema = sceneImageBaseSchema.superRefine(validateSceneFeather);
 
 export const mapSchema = z
   .object({
@@ -588,7 +610,7 @@ export const mapSchema = z
         ground: z.array(sceneImageSchema).max(32),
         scenery: z
           .array(
-            sceneImageSchema
+            sceneImageBaseSchema
               .extend({
                 id,
                 footprint: z.array(sceneFootprintVec2).min(1),
@@ -600,6 +622,7 @@ export const mapSchema = z
                 flip: z.boolean().optional(),
                 contactShadow: z.literal(false).optional(),
               })
+              .superRefine(validateSceneFeather)
               .superRefine((piece, ctx) => {
                 if (piece.exterior) return;
                 piece.footprint.forEach((cell, index) => {
