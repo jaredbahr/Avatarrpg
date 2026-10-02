@@ -79,7 +79,7 @@ export const FOREST_ROAD: MapDef = {
    *
    * The central nine-cell puddle is the Wet/Frozen/Shocked lesson and the
    * shove target (the encounter tells the player to put a bandit in it), and
-   * the two rubble heaps at (7,3) and (8,9) are cover. The two props below
+   * the two rubble heaps at (7,3) and (8,9) are cover. The four props below
    * are the only other interactables.
    */
   rows: [
@@ -108,10 +108,15 @@ export const FOREST_ROAD: MapDef = {
    * own Wet lesson carried up to the ones throwing stones, ready to freeze,
    * shock or steam. The oil flask lies on the grass island the thugs cross to
    * reach the party; it blocks nothing, and a firebender turns it into a wall
-   * of flame between the two sides. Neither stands in a road row, so both exit
-   * mouths and every lane between them stay open.
+   * of flame between the two sides. The added hay and water sit beside that
+   * authored pair without occupying a spawn, enemy position or exit cell.
    */
-  props: [propAt('water_barrel', 15, 3), propAt('oil_flask', 13, 6)],
+  props: [
+    propAt('water_barrel', 15, 3),
+    propAt('oil_flask', 13, 6),
+    propAt('hay_bale', 12, 5),
+    propAt('water_barrel', 14, 4),
+  ],
   /*
    * The authored border claims. North keeps its truncated pines and the deer
    * paths between them; the south creek and alders are in-grid barriers. The
@@ -181,6 +186,7 @@ export const QUARRY_GATE: MapDef = {
      * now extends the hazard toward the people you are fighting.
      */
     propAt('oil_flask', 12, 4),
+    propAt('hay_bale', 13, 7),
     /*
      * Pella's cart, turned away at the gate, sitting on the road behind the
      * party. Same lesson: at (13,6) it walled off the escape lane exactly when

@@ -29,7 +29,7 @@ export const PROPS: readonly PropDef[] = [
     id: 'water_barrel',
     name: 'Water Barrel',
     description:
-      'A barrel of quarry water. It gives cover and can be shoved. Stone and blows break it fastest, flooding the tiles around it and soaking anyone standing there.',
+      'A barrel of quarry water. It blocks the way and can be shoved. Stone and blows break it fastest, flooding the tiles around it and soaking anyone standing there.',
     sprite: 'prop.barrel',
     hp: 6,
     blocksMove: true,
@@ -83,7 +83,7 @@ export const PROPS: readonly PropDef[] = [
     id: 'hay_bale',
     name: 'Hay Bale',
     description:
-      'Fodder for the quarry animals. It blocks sight and gives cover, but fire and wind tear through it, and a broken bale bursts into flame across the tiles around it.',
+      'Fodder for the quarry animals. It blocks the way and sight, but fire and wind tear through it, and a broken bale bursts into flame across the tiles around it.',
     sprite: 'prop.hay',
     hp: 5,
     blocksMove: true,
@@ -99,7 +99,7 @@ export const PROPS: readonly PropDef[] = [
     id: 'rubble_pile',
     name: 'Loose Rubble',
     description:
-      'A heap of broken quarry stone. It blocks sight, gives cover and cannot be shoved. Earthbending brings it down fastest, onto everyone beside it, leaving rubble behind.',
+      'A heap of broken quarry stone. It blocks the way and sight and cannot be shoved. Earthbending brings it down fastest, onto everyone beside it, leaving rubble behind.',
     sprite: 'prop.rubble',
     hp: 12,
     blocksMove: true,
@@ -124,7 +124,7 @@ export const PROPS: readonly PropDef[] = [
     id: 'cabbage_cart',
     name: 'Cabbage Cart',
     description:
-      'A market cart stacked far too high with cabbages. It gives cover and can be shoved. Smash it and flying cabbages push everyone beside it back a tile, and they are very likely Blinded.',
+      'A market cart stacked far too high with cabbages. It blocks the way and sight and can be shoved. Smash it and flying cabbages push everyone beside it back a tile, and they are very likely Blinded.',
     sprite: 'prop.cart',
     hp: 7,
     blocksMove: true,

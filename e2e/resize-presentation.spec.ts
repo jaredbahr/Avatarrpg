@@ -50,7 +50,7 @@ for (const renderer of ['canvas', 'webgl'] as const) {
         const battle = state.battle!;
         const actor = battle.units.find((u) => u.id === battle.order[battle.turnIndex])!;
         const enemy = battle.units.find((u) => u.faction === 'enemy' && u.hp > 0)!;
-        const target = { x: 13, y: 5 };
+        const target = { x: 13, y: 4 };
         app.state = {
           ...state,
           battle: {

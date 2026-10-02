@@ -109,9 +109,15 @@ describe('bounded combat outcome previews', () => {
 
   it('reports a broken water barrel and everyone its water will wet', () => {
     const source = battleFor('enc_quarry_gate');
-    const battle = placed(source, { p0: { x: 13, y: 3 }, e6: { x: 15, y: 3 } }, ['p0', 'e6']);
+    // Enemy ids follow the map's props in the serial, so look one up instead of naming it.
+    const enemyId = source.units.find((unit) => unit.faction === 'enemy')?.id;
+    if (!enemyId) throw new Error('water barrel fixture has no enemy');
+    const battle = placed(source, { p0: { x: 13, y: 3 }, [enemyId]: { x: 15, y: 3 } }, [
+      'p0',
+      enemyId,
+    ]);
     const caster = battle.units.find((unit) => unit.id === 'p0');
-    const victim = battle.units.find((unit) => unit.id === 'e6');
+    const victim = battle.units.find((unit) => unit.id === enemyId);
     if (!caster || !victim) throw new Error('water barrel fixture missing a unit');
     const target = { x: 14, y: 3 };
 
@@ -285,7 +291,12 @@ describe('bounded combat outcome previews', () => {
 
   it('reports cabbage-cart status collateral and both shove destinations', () => {
     const source = battleFor('enc_quarry_gate');
-    const placedBattle = placed(source, { p0: { x: 4, y: 6 }, e6: { x: 7, y: 6 } }, ['p0', 'e6']);
+    const enemyId = source.units.find((unit) => unit.faction === 'enemy')?.id;
+    if (!enemyId) throw new Error('cart fixture has no enemy');
+    const placedBattle = placed(source, { p0: { x: 4, y: 6 }, [enemyId]: { x: 7, y: 6 } }, [
+      'p0',
+      enemyId,
+    ]);
     let grid = placedBattle.grid;
     for (const [x, elevation] of [
       [7, 2],
@@ -299,7 +310,7 @@ describe('bounded combat outcome previews', () => {
     }
     const battle = { ...placedBattle, grid };
     const caster = battle.units.find((unit) => unit.id === 'p0');
-    const victim = battle.units.find((unit) => unit.id === 'e6');
+    const victim = battle.units.find((unit) => unit.id === enemyId);
     if (!caster || !victim) throw new Error('cart fixture missing a unit');
     const target = { x: 6, y: 6 };
 
