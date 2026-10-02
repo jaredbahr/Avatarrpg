@@ -1314,7 +1314,7 @@ function reachedFrom(map: MapDef, start: Vec2): ReadonlySet<string> {
 
 /**
  * The cells one encounter placement claims. Size 1 is its anchor; size 2 is the
- * legacy 2x1 pair, or the A-6 2x2 square once the gate is on. Mirrored from
+ * legacy 2x1 pair, or the shipped A-6 2x2 square. Mirrored from
  * `rules/footprint.ts` because `src/content` is data and may not import core
  * rules.
  */
@@ -1517,11 +1517,11 @@ export function npcStandTiles(bundle: ContentBundle, mapId: string, npc: NpcDef)
 }
 
 /**
- * TEMPORARY GATE (see `core/rules/footprint.ts`, removed in A-6): when
+ * TEMPORARY COMPATIBILITY GATE (see `core/rules/footprint.ts`): when
  * `squareFootprints` is true a size-2 encounter placement is validated as a
- * whole 2x2 square. It defaults to the shipped gate value, so today's
- * `validateContent(CONTENT_BUNDLE)` keeps the legacy 2x1 checks; A-6 flips the
- * default together with the constant.
+ * whole 2x2 square. It defaults to the shipped gate value, so
+ * `validateContent(CONTENT_BUNDLE)` uses the 2x2 checks; explicit false retains
+ * the injectable legacy validation path.
  */
 export interface ValidateContentOptions {
   readonly squareFootprints?: boolean;

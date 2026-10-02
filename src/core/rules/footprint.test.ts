@@ -3,9 +3,8 @@ import { SQUARE_FOOTPRINTS, footprintCells, footprintFoot, shoveStep } from './f
 
 /**
  * The footprint helper, below the game rules. `size` is a side length: 1 is one
- * tile, 2 is a 2x2 block anchored on its top-left cell. Until A-6 flips
- * `SQUARE_FOOTPRINTS`, size 2 resolves to the legacy 2x1 pair, and the tests
- * pass the shape in as a parameter rather than mutating that constant.
+ * tile, 2 is a 2x2 block anchored on its top-left cell. The compatibility
+ * parameter still lets tests exercise the legacy 2x1 without mutating state.
  */
 describe('unit footprints', () => {
   it('is a single tile at size 1, whichever shape is active', () => {
@@ -22,13 +21,18 @@ describe('unit footprints', () => {
     ]);
   });
 
-  it('keeps the legacy 2x1 while the A-6 gate is off', () => {
-    expect(SQUARE_FOOTPRINTS).toBe(false);
+  it('ships the 2x2 and keeps legacy 2x1 explicitly injectable', () => {
+    expect(SQUARE_FOOTPRINTS).toBe(true);
+    expect(footprintCells({ x: 2, y: 5 }, 2)).toEqual([
+      { x: 2, y: 5 },
+      { x: 3, y: 5 },
+      { x: 2, y: 6 },
+      { x: 3, y: 6 },
+    ]);
     const legacy = [
       { x: 2, y: 5 },
       { x: 3, y: 5 },
     ];
-    expect(footprintCells({ x: 2, y: 5 }, 2)).toEqual(legacy);
     expect(footprintCells({ x: 2, y: 5 }, 2, false)).toEqual(legacy);
   });
 
@@ -63,7 +67,7 @@ describe('shove direction', () => {
     expect(shoveStep({ x: 4, y: 4 }, { x: 2, y: 3 }, 2, 'pull', true)).toEqual({ x: -1, y: -1 });
   });
 
-  it('keeps the legacy 2x1 on the anchor sign until A-6', () => {
+  it('keeps the explicitly injected legacy 2x1 on the anchor sign', () => {
     expect(shoveStep({ x: 4, y: 4 }, { x: 5, y: 4 }, 2, 'push', false)).toEqual({ x: -1, y: 0 });
   });
 });

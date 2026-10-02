@@ -43,10 +43,11 @@ export interface ActorSpriteBox {
   readonly x: number;
   readonly y: number;
   readonly size: number;
+  readonly width?: number;
 }
 
 export interface ActorSilhouetteGeometry {
-  readonly barY: number;
+  readonly bar: ReturnType<typeof actorHealthBar>;
   readonly badgeY: number;
   readonly reticleY: number;
 }
@@ -65,14 +66,14 @@ export function actorSilhouetteGeometry(
   const bar = actorHealthBar(
     box.x,
     box.y,
-    box.size,
+    box.width ?? box.size,
     box.size,
     scale,
     actorHeadroom(frameHeadroom, heightTiles),
   );
   const radius = Math.max(4, box.size * 0.09);
   return {
-    barY: bar.y,
+    bar,
     badgeY: heightTiles > 1 ? bar.y - radius * 1.4 : box.y + box.size * 0.97,
     // Legacy one-tile cues sit at the foot line unless a loaded frame gives
     // us measured headroom; two-tile and measured silhouettes use their top.

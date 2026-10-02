@@ -5,21 +5,20 @@
  * A unit is anchored on the top-left cell of its block — the minimum x and
  * minimum y — so the extra cells always extend right and down from `pos`.
  *
- * TEMPORARY GATE — remove in A-6.
+ * TEMPORARY COMPATIBILITY GATE — keep until the post-A-6 plumbing cleanup.
  * The Driller spec (approved 2026-09-30) makes size 2 a 2x2 square that may
- * only stand on flat ground. Shipped content (the Grumbler) is still authored
- * as the legacy 2x1 boss, and this PR must not change play until A-6 flips the
- * semantics together with that content. So while `SQUARE_FOOTPRINTS` is false,
+ * only stand on flat ground. A-6 flipped the shipped semantics together with
+ * the Driller content. While `SQUARE_FOOTPRINTS` is false,
  * size 2 resolves to the old 2-wide, 1-tall cell set. Every consumer takes the
  * flag as an optional parameter (defaulting to this constant), which lets tests
- * exercise the new square geometry without mutating module state. A-6 deletes
- * the constant and the legacy branch, leaving `footprintCells(pos, size)`.
+ * exercise the legacy geometry without mutating module state. A later cleanup
+ * deletes the constant and legacy branch, leaving `footprintCells(pos, size)`.
  */
 
 import type { UnitSize, Vec2 } from '../types';
 
-/** Flip to true in A-6 to make size 2 a 2x2 square for shipped play. */
-export const SQUARE_FOOTPRINTS = false;
+/** Size 2 is a 2x2 square in shipped play; false remains injectable for compatibility tests. */
+export const SQUARE_FOOTPRINTS = true;
 
 /**
  * The cells a unit anchored at `pos` occupies, row-major: the anchor, the cell
@@ -74,7 +73,7 @@ export function footprintFoot(
  * inside — the footprint contributes no motion on that axis. That is what stops
  * a 2x2 from sliding sideways when the shover lines up with its middle. With the
  * gate off the original anchor-relative `sign()` is kept, because it is what the
- * shipped 2x1 boss and every existing test were tuned against. For size 1 the
+ * gate-off 2x1 boss compatibility shape and its tests were tuned against. For size 1 the
  * two forms are identical.
  */
 export function shoveStep(

@@ -111,9 +111,8 @@ export class BattleDraft {
   /** Preview drafts describe chance branches without choosing one. */
   readonly resolveChanceStatuses: boolean;
   /**
-   * TEMPORARY GATE (see `rules/footprint.ts`, removed in A-6): this draft
-   * treats size 2 as a 2x2 square. Defaults to `SQUARE_FOOTPRINTS`, so shipped
-   * battles keep the legacy 2x1 boss until A-6. Tests opt in per draft.
+   * TEMPORARY COMPATIBILITY GATE (see `rules/footprint.ts`): this draft treats
+   * size 2 as a 2x2 square by default. Tests may inject the legacy 2x1 per draft.
    */
   readonly squareFootprints: boolean;
   readonly events: GameEvent[] = [];

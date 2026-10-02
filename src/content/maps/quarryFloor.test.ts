@@ -168,21 +168,17 @@ describe('Driller quarry interior', () => {
     expect(boss?.size).toBe(2);
     if (!boss) return;
     /*
-     * The boss's whole 2x2 is the validator's business now: run it with the A-6
-     * square gate on and hold the Driller to a standable, party-connected
-     * square. This replaces the hand-rolled `standCost`/`findPath` probe, which
-     * only ever saw the legacy 2x1.
+     * The boss's whole 2x2 is the validator's business now: the shipped default
+     * holds the Driller to a standable, party-connected square. This replaces
+     * the old hand-rolled probe, which only saw the legacy 2x1.
      */
     expect(
-      validateContent(CONTENT_BUNDLE, { squareFootprints: true }).filter((problem) =>
-        problem.includes('enc_grumbler'),
-      ),
+      validateContent(CONTENT_BUNDLE).filter((problem) => problem.includes('enc_grumbler')),
     ).toEqual([]);
 
     const squareContext = {
       ...context,
       size: 2 as const,
-      squareFootprints: true,
     };
     expect(findPath(squareContext, boss.pos, { x: 9, y: 5 }, 99)).not.toBeNull();
   });

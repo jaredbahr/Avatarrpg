@@ -93,8 +93,9 @@ describe('combat overlay memo key', () => {
     ]);
   });
 
-  it('preserves the legacy size-2 focus midpoint until square footprints are enabled', () => {
+  it('focuses the shipped 2x2 at its anchor and retains explicit legacy focus', () => {
     const unit = { pos: { x: 4, y: 3 }, size: 2 as const };
+    expect(combatFocusPosition(unit)).toEqual(unit.pos);
     expect(combatFocusPosition(unit, false)).toEqual({ x: 4.5, y: 3 });
     expect(combatFocusPosition(unit, true)).toEqual(unit.pos);
   });
@@ -231,18 +232,24 @@ describe('battlefield inspect selection', () => {
     });
   });
 
-  it('lets a size-2 unit win on a non-anchor cell for tap and hold', () => {
+  it('lets every cell of a gate-on 2x2 win on tap and hold', () => {
     const big = unit('big', tile, { size: 2 });
-    const second = { x: tile.x + 1, y: tile.y };
-    const underneath = prop('barrel', second);
-    expect(inspectTargetAt([big], [underneath], second, false)).toMatchObject({
-      kind: 'unit',
-      unit: { id: 'big' },
-    });
-    expect(inspectTargetAt([big], [underneath], second, true)).toMatchObject({
-      kind: 'unit',
-      unit: { id: 'big' },
-    });
+    for (const cell of [
+      tile,
+      { x: tile.x + 1, y: tile.y },
+      { x: tile.x, y: tile.y + 1 },
+      { x: tile.x + 1, y: tile.y + 1 },
+    ]) {
+      const underneath = prop('barrel', cell);
+      expect(inspectTargetAt([big], [underneath], cell, false)).toMatchObject({
+        kind: 'unit',
+        unit: { id: 'big' },
+      });
+      expect(inspectTargetAt([big], [underneath], cell, true)).toMatchObject({
+        kind: 'unit',
+        unit: { id: 'big' },
+      });
+    }
   });
 
   it('chooses a prop when no unit occupies its tile', () => {

@@ -13,7 +13,7 @@
  */
 
 import type { ContentIndex, GameEvent, Unit, Vec2 } from '../../core/types';
-import { SQUARE_FOOTPRINTS, footprintCells, footprintFoot } from '../../core/rules/footprint';
+import { SQUARE_FOOTPRINTS, footprintCells } from '../../core/rules/footprint';
 import { fxPalette, resolveFx, WATERSKIN_DRAW } from '../../content/fx';
 import type { EmitterDef, FxRecipe } from '../../content/fx';
 import { hashSeed } from '../../render/fx/rng';
@@ -28,6 +28,7 @@ import type { MeleeDirection } from '../../content/assets/clips';
 import { HEADINGS, KO_HEADINGS, clipDurationMs, hitClip, koClip } from '../../content/assets/clips';
 import type { SheetClips } from '../../render/sheets/store';
 import type { Projection } from '../../render/projection';
+import { renderFoot } from '../../render/renderFoot';
 import type { ActorAttachment, EmitterAttachments } from '../../render/view';
 import { enemyScale, partyScale } from './actorScale';
 import type { BendSources } from './bendHandoff';
@@ -218,7 +219,23 @@ export function choreograph(input: ChoreographyInput): Choreography {
     const pos = positions.get(id);
     if (!pos) return undefined;
     const size = sizes.get(id) ?? 1;
-    return footprintFoot(pos, size as 1 | 2, input.squareFootprints ?? SQUARE_FOOTPRINTS);
+    return renderFoot(
+      pos,
+      size as 1 | 2,
+      input.squareFootprints ?? SQUARE_FOOTPRINTS,
+      input.projection ?? 'orthographic',
+    );
+  };
+  /** Geometric footprint centre for effects attached to a unit. */
+  const unitEffectCentre = (id: string, pos: Vec2): Vec2 => {
+    const square = input.squareFootprints ?? SQUARE_FOOTPRINTS;
+    const half = square && sizes.get(id) === 2 ? 1 : 0.5;
+    return { x: pos.x + half, y: pos.y + half };
+  };
+  /** Floaters store a cell-like origin; both backends add half a tile. */
+  const unitFloaterPos = (id: string, pos: Vec2): Vec2 => {
+    const at = unitEffectCentre(id, pos);
+    return { x: at.x - 0.5, y: at.y - 0.5 };
   };
 
   let pending: PendingHit | null = null;
@@ -866,7 +883,10 @@ export function choreograph(input: ChoreographyInput): Choreography {
               ? unitCentre(event.sourceId)
               : undefined;
           const away = source
-            ? screenDirection(direction(source, centre(pos)), input.projection ?? 'orthographic')
+            ? screenDirection(
+                direction(source, unitEffectCentre(event.unitId, pos)),
+                input.projection ?? 'orthographic',
+              )
             : { x: 0, y: -1 };
           const out = scaled(away, RECOIL * (event.crit ? 1.5 : 1));
           const recoilAt = hit.at + hit.hitStop;
@@ -921,7 +941,7 @@ export function choreograph(input: ChoreographyInput): Choreography {
             );
           }
           floater(
-            pos,
+            unitFloaterPos(event.unitId, pos),
             event.crit ? `${event.amount}!` : String(event.amount),
             event.crit ? '#ffd98a' : '#ff9d8d',
             recoilAt + 30 * rate,
@@ -946,8 +966,9 @@ export function choreograph(input: ChoreographyInput): Choreography {
         cue('heal', at, 6, eventIndex);
         if (pos) {
           const { recipe, palette } = effect('fx.heal.pulse');
-          emit(recipe.impact, at, centre(pos), centre(pos), palette, eventIndex, 4);
-          floater(pos, `+${event.amount}`, '#8fe39b', at + 30 * rate);
+          const centre = unitEffectCentre(event.unitId, pos);
+          emit(recipe.impact, at, centre, centre, palette, eventIndex, 4);
+          floater(unitFloaterPos(event.unitId, pos), `+${event.amount}`, '#8fe39b', at + 30 * rate);
         }
         cursor = Math.max(cursor, at) + TIMING.gap * rate;
         break;
@@ -960,7 +981,10 @@ export function choreograph(input: ChoreographyInput): Choreography {
         cue('miss', at, 7, eventIndex);
         if (pos) {
           const away = attacker
-            ? screenDirection(direction(attacker, centre(pos)), input.projection ?? 'orthographic')
+            ? screenDirection(
+                direction(attacker, unitEffectCentre(event.targetId, pos)),
+                input.projection ?? 'orthographic',
+              )
             : { x: 0, y: -1 };
           const out = scaled(away, DODGE);
           pose(
@@ -981,7 +1005,7 @@ export function choreograph(input: ChoreographyInput): Choreography {
             { x: 0, y: 0 },
             easeInOutSine,
           );
-          floater(pos, 'miss', '#cfc3ae', at + 30 * rate);
+          floater(unitFloaterPos(event.targetId, pos), 'miss', '#cfc3ae', at + 30 * rate);
         }
         cursor = Math.max(cursor, at) + TIMING.gap * rate;
         break;
@@ -1055,16 +1079,9 @@ export function choreograph(input: ChoreographyInput): Choreography {
             frame: 0,
           });
           const { recipe, palette } = effect('fx.ko.fall');
-          emit(
-            recipe.impact,
-            at + duration * 0.4,
-            centre(pos),
-            centre(pos),
-            palette,
-            eventIndex,
-            5,
-          );
-          floater(pos, 'down', '#e2584a', at + duration * 0.3);
+          const centre = unitEffectCentre(event.unitId, pos);
+          emit(recipe.impact, at + duration * 0.4, centre, centre, palette, eventIndex, 5);
+          floater(unitFloaterPos(event.unitId, pos), 'down', '#e2584a', at + duration * 0.3);
         }
         cursor = at + TIMING.gap * 2 * rate;
         break;
@@ -1075,11 +1092,12 @@ export function choreograph(input: ChoreographyInput): Choreography {
         cue(`fx.status.${event.status}`, Math.max(cursor, landing().at), 14, eventIndex);
         if (pos) {
           const { recipe, palette } = effect(`fx.status.${event.status}`);
+          const centre = unitEffectCentre(event.unitId, pos);
           emit(
             recipe.impact,
             Math.max(cursor, landing().at),
-            centre(pos),
-            centre(pos),
+            centre,
+            centre,
             palette,
             eventIndex,
             6,

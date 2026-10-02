@@ -25,7 +25,7 @@ describe('shared actor silhouette geometry', () => {
     const scale = 1.25;
     const geometry = actorSilhouetteGeometry(box, 1, null, scale);
     const legacy = actorHealthBar(box.x, box.y, box.size, box.size, scale, 0);
-    expect(geometry.barY).toBe(legacy.y);
+    expect(geometry.bar).toEqual(legacy);
     expect(geometry.badgeY).toBe(box.y + box.size * 0.97);
     expect(geometry.reticleY).toBe(box.y - box.size * 0.04);
   });
@@ -42,7 +42,7 @@ describe('shared actor silhouette geometry', () => {
       const geometry = actorSilhouetteGeometry(box, 2, frameHeadroom, scale);
       const legacy = actorHealthBar(box.x, box.y, box.size, box.size, scale, expectedHeadroom);
       const radius = Math.max(4, box.size * 0.09);
-      expect(geometry.barY).toBe(legacy.y);
+      expect(geometry.bar).toEqual(legacy);
       expect(geometry.badgeY).toBe(legacy.y - radius * 1.4);
       expect(geometry.reticleY).toBe(legacy.silhouetteTop - box.size * 0.04);
       if (frameHeadroom === null) {
@@ -141,13 +141,14 @@ describe('contact shadow sampling', () => {
     expect(actorShadowDensity(grid, { x: 2, y: 0 }, true, 2)).toBe(GRASS_SHADOW_DENSITY);
   });
 
-  it('samples both rows of a gated 2x2 shadow', () => {
+  it('samples both rows of the shipped 2x2 shadow and retains explicit legacy coverage', () => {
     const square: Grid = {
       width: 2,
       height: 2,
       tiles: [tile('road'), tile('road'), tile('road'), tile('grass')],
     };
     expect(actorShadowDensity(square, { x: 0, y: 0 }, false, 2, false)).toBe(0);
+    expect(actorShadowDensity(square, { x: 0, y: 0 }, false, 2)).toBe(GRASS_SHADOW_DENSITY);
     expect(actorShadowDensity(square, { x: 0, y: 0 }, false, 2, true)).toBe(GRASS_SHADOW_DENSITY);
   });
 });

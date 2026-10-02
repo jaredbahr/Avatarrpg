@@ -1,6 +1,5 @@
 import { describe, expect, it } from 'vitest';
 import { COMBAT_CAMERA_RING_TILES, FOREST_ROAD } from '../content/maps/combat';
-import { SQUARE_FOOTPRINTS } from '../core/rules/footprint';
 import type { Projection } from './projection';
 import { Camera, MIN_TILE_PX, TILE } from './camera';
 import type { Viewport } from './camera';
@@ -10,6 +9,21 @@ const LANDSCAPE = { width: 1344, height: 640, dpr: 1 };
 /** A phone-sized area: fitting the board would leave tiles far below a fingertip. */
 const NARROW = { width: 380, height: 560, dpr: 1 };
 const GRID = { width: 20, height: 12 };
+
+describe('Camera.spriteBox actor foot', () => {
+  it('stands an oblique square 2x2 on the front cell centre', () => {
+    const camera = new Camera(LANDSCAPE, GRID, 'oblique');
+    const box = camera.spriteBox({ x: 15, y: 5 }, 2, true);
+    const foot = camera.project({ x: 16.5, y: 6.5 });
+    expect(box.x + box.size).toBeCloseTo(foot.x, 9);
+    expect(box.y + box.size * 0.86).toBeCloseTo(foot.y, 9);
+  });
+
+  it('keeps the orthographic square 2x2 box unchanged', () => {
+    const camera = new Camera(LANDSCAPE, GRID, 'orthographic');
+    expect(camera.spriteBox({ x: 15, y: 5 }, 2, true)).toEqual(camera.toScreen({ x: 15, y: 6 }));
+  });
+});
 
 describe('Camera.fit', () => {
   it('fits the whole board when a tile stays at fingertip size', () => {
@@ -442,10 +456,9 @@ describe('Camera.clamp programmatic-reachable hull', () => {
                 );
               const combatFailure = centreOnAndAssertStable(
                 camera,
-                // Mirrors production combatFocusPosition (CombatScene.ts): with square
-                // footprints off the legacy 2x1 focus is the midpoint of its two
-                // cells, half a tile right of the anchor; with them on it is the anchor.
-                SQUARE_FOOTPRINTS ? point : { x: point.x + 0.5, y: point.y },
+                // Mirrors the shipped combatFocusPosition: a 2x2 focuses its anchor,
+                // and centreOn(pos, 2) then centres the whole square.
+                point,
                 2,
               );
               if (combatFailure)

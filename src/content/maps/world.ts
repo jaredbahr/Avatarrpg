@@ -346,7 +346,7 @@ export function connectAct1(map: MapDef): MapDef {
           ),
         ],
         triggers: [
-          crossing(map, 9, 5, 'quarry_descent', 'The mecha-driller', 'unit.enemy.grumbler', {
+          crossing(map, 9, 5, 'quarry_descent', 'The mecha-driller', 'unit.enemy.driller', {
             kind: 'all',
             of: [unvisited('act1_epilogue'), unvisited('act1_epilogue_lost')],
           }),

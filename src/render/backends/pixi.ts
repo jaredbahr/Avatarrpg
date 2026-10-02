@@ -31,7 +31,7 @@ import {
 } from 'pixi.js';
 
 import type { MapScene, SceneFlock, SceneImage, TerrainId, Tile, Vec2 } from '../../core/types';
-import { SQUARE_FOOTPRINTS, footprintCells, footprintFoot } from '../../core/rules/footprint';
+import { SQUARE_FOOTPRINTS, footprintCells } from '../../core/rules/footprint';
 import { authoredForBothSides } from '../../content/assets/clips';
 import { resolveAsset } from '../../content/assets/manifest';
 import { backdrops } from '../backdrops';
@@ -46,6 +46,7 @@ import {
 } from '../living/wind';
 import { SceneTextures } from './sceneTextures';
 import { sceneryZ, shadowZ } from './depthOrder';
+import { renderFoot } from '../renderFoot';
 import type { GroundingCanvas } from '../groundingLayer';
 import { sceneGrounding } from '../groundingLayer';
 import { GROUNDING_GRAIN } from '../grounding';
@@ -59,8 +60,6 @@ import { bendFxSource } from '../fx/bendFxDraw';
 import { syncBendFx } from '../fx/bendFxPixi';
 import { aimArcPoints, arcHeading, arrowheadPolygon } from '../geometry/arc';
 import {
-  actorHeadroom,
-  actorHealthBar,
   actorSilhouetteGeometry,
   actorShadowDensity,
   healthBarCap,
@@ -170,7 +169,7 @@ export function pixiActorDepth(
   size: 1 | 2,
   square = SQUARE_FOOTPRINTS,
 ): number {
-  return camera.groundPoint(footprintFoot(pos, size, square)).y;
+  return camera.groundPoint(renderFoot(pos, size, square, camera.projection)).y;
 }
 
 /**
@@ -2277,7 +2276,10 @@ export class PixiBackend implements RenderBackend {
           anchor.x + width / 2,
           anchor.y + (0.86 - lift - (footprint - 1) * 0.5) * TILE,
         );
-        shadow.width = shadow.height = TILE * (unit.scale ?? 1) * footprint;
+        // Keep a square unit's contact shadow on its rules footprint even when
+        // its upright cel has projection-specific presentation compensation.
+        const shadowScale = this.squareFootprints && unit.size === 2 ? 1 : (unit.scale ?? 1);
+        shadow.width = shadow.height = TILE * shadowScale * footprint;
         shadow.alpha = alpha;
         shadow.zIndex = shadowZ(depth(pos, unit.size));
         shadow.visible = true;
@@ -2299,9 +2301,8 @@ export class PixiBackend implements RenderBackend {
           unit.meleeDirection,
           heightTiles,
         );
-      const headroom = actorHeadroom(frame?.headroom, heightTiles);
       const silhouette = actorSilhouetteGeometry(
-        { x, y, size: TILE },
+        { x, y, size: TILE, width },
         heightTiles,
         frame?.headroom ?? null,
         scale,
@@ -2385,30 +2386,8 @@ export class PixiBackend implements RenderBackend {
       }
 
       if (unit.showHealth !== false)
-        this.drawHealthBar(
-          g,
-          unit,
-          x,
-          y,
-          width,
-          scale,
-          headroom,
-          view.hatch,
-          camera.scale,
-          silhouette.barY,
-        );
-      badgeIndex = this.drawStatusBadges(
-        g,
-        unit,
-        x,
-        y,
-        width,
-        badgeIndex,
-        scale,
-        headroom,
-        heightTiles,
-        silhouette.badgeY,
-      );
+        this.drawHealthBar(g, unit, silhouette.bar, x, view.hatch, camera.scale);
+      badgeIndex = this.drawStatusBadges(g, unit, x, width, badgeIndex, silhouette.badgeY);
     }
 
     for (const [key, sprite] of this.unitSprites) {
@@ -2433,19 +2412,13 @@ export class PixiBackend implements RenderBackend {
   private drawHealthBar(
     g: Graphics,
     unit: RenderUnit,
-    x: number,
-    y: number,
-    width: number,
-    scale: number,
-    headroom: number,
+    bar: ReturnType<typeof actorSilhouetteGeometry>['bar'],
+    actorX: number,
     hatch: boolean,
     /** CSS px per world unit (the camera scale), so the cap keeps its minimum. */
     cssScale: number,
-    barYOverride?: number,
   ): void {
     const fraction = Math.max(0, Math.min(1, unit.hp / Math.max(1, unit.maxHp)));
-    const bar = actorHealthBar(x, y, width, TILE, scale, headroom);
-    if (barYOverride !== undefined) bar.y = barYOverride;
     const { x: barX, y: barY, width: barWidth, height: barHeight } = bar;
 
     // An ink-framed track, filled in the unit's side colour (canvas2d.ts matches).
@@ -2459,7 +2432,7 @@ export class PixiBackend implements RenderBackend {
     });
 
     // The side's cap, so the bar reads by shape as well as colour.
-    const cap = healthBarCap(bar, HP_CAP[unit.faction], x, 1 / cssScale);
+    const cap = healthBarCap(bar, HP_CAP[unit.faction], actorX, 1 / cssScale);
     if (cap.length === 0) return;
     g.poly(cap)
       .fill({ color: hpFill(unit.faction, 1, hatch) })
@@ -2470,24 +2443,16 @@ export class PixiBackend implements RenderBackend {
     g: Graphics,
     unit: RenderUnit,
     x: number,
-    y: number,
     width: number,
     startIndex: number,
-    scale: number,
-    headroom: number,
-    heightTiles: number,
-    badgeY?: number,
+    badgeY: number,
   ): number {
     if (unit.statuses.length === 0) return startIndex;
     const radius = Math.max(4, TILE * 0.09);
     const shown = unit.statuses.slice(0, 4);
     const totalWidth = shown.length * radius * 2.2;
     let bx = x + width / 2 - totalWidth / 2 + radius;
-    const by =
-      badgeY ??
-      (heightTiles > 1
-        ? actorHealthBar(x, y, width, TILE, scale, headroom).y - radius * 1.4
-        : y + TILE * 0.97);
+    const by = badgeY;
     let index = startIndex;
 
     for (const status of shown) {

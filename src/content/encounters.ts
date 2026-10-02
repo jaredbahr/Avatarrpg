@@ -6,7 +6,7 @@
  *   forest road  three bandits and a puddle        -> learn Wet / Frozen / Shocked
  *   quarry gate  a deserter who sets the oil alight -> learn that fire spreads
  *   the cutting  professionals, in a chokepoint     -> learn positioning
- *   quarry floor a two-tile boss rewriting the map  -> use everything at once
+ *   quarry floor a four-cell boss rewriting the map -> use everything at once
  *
  * A flag-gated `variant` is how the Act 1 choice reaches the boss fight: trade
  * Ruon away and Jin's mercenaries are standing in the quarry when you get there,

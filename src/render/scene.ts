@@ -1,9 +1,10 @@
 import { resolveAsset } from '../content/assets/manifest';
 import { tileAt } from '../core/rules/grid';
-import { SQUARE_FOOTPRINTS, footprintFoot } from '../core/rules/footprint';
+import { SQUARE_FOOTPRINTS } from '../core/rules/footprint';
 import type { Grid, MapScene, SceneImage, SceneScenery } from '../core/types';
 import type { Camera } from './camera';
 import type { MapView } from './view';
+import { renderFoot } from './renderFoot';
 import { BackdropStore } from './backdrops';
 
 /**
@@ -167,7 +168,7 @@ export function sceneryOpacity(
       }),
   ];
   for (const { pos, size, scale, square } of occupants) {
-    const foot = camera.groundPoint(footprintFoot(pos, size as 1 | 2, square));
+    const foot = camera.groundPoint(renderFoot(pos, size as 1 | 2, square, camera.projection));
     // Level with the piece is in front of it on both backends (depthOrder.ts),
     // so a figure at the tie has nothing to see through.
     if (foot.y >= depth) continue;

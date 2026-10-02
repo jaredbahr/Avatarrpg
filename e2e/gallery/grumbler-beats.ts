@@ -25,28 +25,31 @@ export const GRUMBLER_BEATS: readonly Beat[] = [
   {
     id: '36-grumbler-portrait',
     title: 'Quarry driller: matching machine portrait and battlefield art',
-    note: 'The amber cab, rust armor, brass hinges and steel drill identify the same machine in the turn strip, inspector and two-tile board footprint.',
+    note: 'The amber cab, rust armor, brass hinges and steel drill identify the same machine in the turn strip, inspector and square 2x2 board footprint.',
     projects: ['surface-canvas', 'surface-webgl', 'ipad-canvas', 'ipad-webgl', 'portrait-canvas'],
     async run(ctx) {
       await openGrumbler(ctx);
       const boss = await ctx.page.evaluate(() => {
         const boss = window.fnt?.app.state?.battle?.units.find(
-          (u) => u.sprite === 'unit.enemy.grumbler',
+          (u) => u.sprite === 'unit.enemy.driller',
         );
         if (!boss) throw new Error('Missing Grumbler');
         return { id: boss.id, pos: boss.pos };
       });
       // The camera has to own the machine before the floor still, or the frame
       // shows the party alone: the driller sits outside the default focus, so
-      // its two-tile footprint never enters the picture. The same focus also
+      // its square 2x2 footprint never enters the picture. The same focus also
       // puts its tile where the right-click below can reach it, or the click
       // lands on the chrome and the inspector never opens. Same repair as the
       // bandit portrait beat (b0fbc8b) and the crossbow beat.
       await focusStagedUnit(ctx.page, boss.id, ctx.settleTimeout);
-      await ctx.shoot('The two-tile machine stands on the quarry floor beside the party.', 'floor');
+      await ctx.shoot(
+        'The square 2x2 machine stands on the quarry floor beside the party.',
+        'floor',
+      );
       const point = await tileCentre(ctx.page, boss.pos);
       await ctx.page.mouse.click(point.x, point.y, { button: 'right' });
-      await ctx.page.locator('.dialog canvas[data-asset="portrait.enemy.grumbler"]').waitFor();
+      await ctx.page.locator('.dialog canvas[data-asset="portrait.enemy.driller"]').waitFor();
       // Review the portrait at the top; initial Close-button focus currently
       // scrolls this unusually long inspector to its end (reported to UI owner).
       await ctx.page.evaluate(async () => {
@@ -72,7 +75,7 @@ export const GRUMBLER_BEATS: readonly Beat[] = [
       await openGrumbler(ctx);
       await ctx.page.evaluate(async () => {
         const image = new Image();
-        image.src = new URL('art/units/grumbler.png', document.baseURI).href;
+        image.src = new URL('art/units/driller.webp', document.baseURI).href;
         await image.decode();
       });
       await ctx.filmstrip(this.note, [60, 180, 330, 460, 620, 900], async () => {
@@ -80,7 +83,7 @@ export const GRUMBLER_BEATS: readonly Beat[] = [
           const app = window.fnt!.app;
           const state = app.state;
           const battle = state?.battle;
-          const boss = battle?.units.find((u) => u.sprite === 'unit.enemy.grumbler');
+          const boss = battle?.units.find((u) => u.sprite === 'unit.enemy.driller');
           const hero = battle?.units.find((u) => u.faction === 'party');
           if (!state || !battle || !boss || !hero) throw new Error('Missing quarry actors');
           const from = { x: 11, y: 5 };
@@ -128,7 +131,7 @@ export const GRUMBLER_BEATS: readonly Beat[] = [
           const app = window.fnt!.app;
           const state = app.state;
           const battle = state?.battle;
-          const boss = battle?.units.find((u) => u.sprite === 'unit.enemy.grumbler');
+          const boss = battle?.units.find((u) => u.sprite === 'unit.enemy.driller');
           if (!state || !battle || !boss) throw new Error('Missing Grumbler');
           app.state = {
             ...state,
@@ -151,10 +154,10 @@ export const GRUMBLER_BEATS: readonly Beat[] = [
   {
     id: '36-grumbler-fallback',
     title: 'Quarry driller remains a machine when its atlas cannot load',
-    note: 'The real Grumbler atlas request is blocked. Its original two-tile driller painter must remain visible, correctly grounded and recognizable.',
+    note: 'The live Driller atlas request is blocked. Its 2x2 machine painter must remain visible, correctly grounded and recognizable.',
     projects: ['surface-canvas', 'surface-webgl'],
     async run(ctx) {
-      await ctx.page.route('**/art/units/grumbler.*', (route) => route.abort());
+      await ctx.page.route('**/art/units/driller.*', (route) => route.abort());
       await openGrumbler(ctx);
       await ctx.shoot(this.note);
     },

@@ -41,7 +41,14 @@ function squareContext(grid: Grid, size: 1 | 2, climbCost = 1): MoveContext {
 }
 
 function legacyContext(grid: Grid, size: 1 | 2, climbCost = 1): MoveContext {
-  return { grid, blocked: new Set(), surfaces: CONTENT.surfaces, size, climbCost };
+  return {
+    grid,
+    blocked: new Set(),
+    surfaces: CONTENT.surfaces,
+    size,
+    squareFootprints: false,
+    climbCost,
+  };
 }
 
 function tier(elevation: number, extra: Partial<Tile> = {}): Tile {

@@ -254,17 +254,22 @@ for (const projection of ['orthographic', 'oblique'] as const satisfies readonly
           scene,
           view({
             units: [unit({ x: 5, y: 2 })],
-            npcs: [
-              { id: 'grumbler', pos: origin, sprite: 'unit.enemy.grumbler', name: 'Grumbler' },
-            ],
+            npcs: [{ id: 'grumbler', pos: origin, sprite: 'unit.enemy.driller', name: 'Grumbler' }],
           }),
           camera,
         ),
       ).toBe(0.28);
     });
 
-    it('uses the two-cell footprint centre and animated position', () => {
-      installImage((x) => (x >= 94 && x <= 98 ? 255 : 0));
+    it('uses the shipped 2x2 footprint centre and animated position', () => {
+      // The orthographic square foot is (3,3.5), one row south of the legacy foot
+      // (3,2.5), so the probe keeps its column (96/128 across the roof). The oblique
+      // foot is the front cell's centre (3.5,3.5), on the diamond's vertical axis:
+      // the same screen column as the one-tile unit at the origin (64/128) but a
+      // tile lower, so only rows below that unit's feet tell the two apart.
+      const column = projection === 'oblique' ? 64 : 96;
+      const fromRow = projection === 'oblique' ? 68 : 0;
+      installImage((x, y) => (x >= column - 2 && x <= column + 2 && y >= fromRow ? 255 : 0));
       const scene = roof(camera);
       expect(sceneryOpacity(scene, view({ units: [unit(origin)] }), camera)).toBe(1);
       expect(sceneryOpacity(scene, view({ units: [unit(origin, { size: 2 })] }), camera)).toBe(
@@ -279,7 +284,7 @@ for (const projection of ['orthographic', 'oblique'] as const satisfies readonly
       ).toBe(0.28);
     });
 
-    it('lets an injected square gate move the 2x2 occlusion foot', () => {
+    it('lets an injected legacy gate move the shipped 2x2 occlusion foot', () => {
       installImage(() => 255);
       const base = roof(camera);
       // In oblique projection depth is (x + y) / 2. This point falls between
@@ -287,8 +292,8 @@ for (const projection of ['orthographic', 'oblique'] as const satisfies readonly
       // footprint is behind the roof's depth line and should trigger the cutaway.
       const scene = { ...base, depth: { x: 3, y: 3 } };
       const state = view({ units: [unit(origin, { size: 2 })] });
-      expect(sceneryOpacity(scene, state, camera)).toBe(0.28);
-      expect(sceneryOpacity(scene, state, camera, true)).toBe(1);
+      expect(sceneryOpacity(scene, state, camera)).toBe(1);
+      expect(sceneryOpacity(scene, state, camera, false)).toBe(0.28);
     });
   });
 }

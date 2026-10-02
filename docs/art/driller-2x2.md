@@ -32,8 +32,8 @@ The body and tracks span about x=13..142 (130 px) and the tracks end near y=138.
 At 80 atlas pixels per tile, the 160 px frame is exactly 2×2 tiles and the
 130 px track span is 1.625 tiles. Padding moves the source foot line from y=138
 to y=146. The anchor is `(88/176, 146/176) = (0.5, 0.8295454545454546)`. With
-square footprints enabled in A-6, `footprintFoot` puts that
-point at `(x + 1, y + 1.5)`, the centre of the 2×2 block's front row.
+square footprints enabled, the rules foot is `(x + 1, y + 1.5)`, the centre of
+the 2×2 block's front row. The oblique render foot is `(x + 1.5, y + 1.5)`.
 
 ## Packed-frame camera review
 
@@ -78,6 +78,8 @@ front-right and keeps the same pitch.
 
 The authored FX particles touch a cell edge in source `cast-5`, `cast-6`,
 `cast-7`, and `hit-2` (packed `cast/4..6` and `hit/1`). They are intentionally
-preserved. The new `unit.enemy.driller` manifest entry is dormant: no enemy
-references this sheet until A-6 switches the Driller content and square-footprint
-gate together.
+preserved. A-6 made `unit.enemy.driller` the live quarry boss and world-marker
+sheet while enabling square footprints. Because those steam and debris pixels
+rise above the machine body, the manifest caps UI headroom at `0.85` tiles: the
+reticle, health bar and badges clear the 2x2 silhouette without following the
+highest transient particle.

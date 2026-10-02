@@ -182,6 +182,7 @@ describe('which casts bend', () => {
     expect(cast?.plan.shot.from).toEqual(unitFoot(kaya.pos, 1, 'oblique', 0.12));
     expect(unitFoot({ x: 2, y: 3 }, 1, 'orthographic')).toEqual({ x: 2.5, y: 3.85 });
     expect(unitFoot({ x: 2, y: 3 }, 2, 'orthographic', 0, true)).toEqual({ x: 3, y: 4.85 });
+    expect(unitFoot({ x: 2, y: 3 }, 2, 'oblique', 0, true)).toEqual({ x: -1, y: 3.99 });
   });
 
   it('plans a gated size-2 cast between square footprint centres', () => {

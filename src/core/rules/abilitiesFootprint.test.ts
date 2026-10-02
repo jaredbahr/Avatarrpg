@@ -54,7 +54,15 @@ describe('2x2 caster origin', () => {
   });
 
   it('keeps anchor-first order for the legacy 2x1', () => {
-    const origin = validatingOrigin(CONTENT, openGrid(), caster(), reach, { x: 6, y: 6 });
+    const origin = validatingOrigin(
+      CONTENT,
+      openGrid(),
+      caster(),
+      reach,
+      { x: 6, y: 6 },
+      true,
+      false,
+    );
     expect(origin).toEqual({ x: 2, y: 2 });
   });
 

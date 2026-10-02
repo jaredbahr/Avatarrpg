@@ -12,6 +12,13 @@ const ADULT_ENEMIES: Readonly<Record<string, number>> = {
   'unit.enemy.crossbow': 1.23,
 };
 
+// An oblique 2x2 diamond is four upright tile-widths across. The Driller's
+// 160px source cel is authored as a two-tile-wide orthographic figure, so it
+// needs the projection's 2:1 horizontal compensation in oblique combat.
+const OBLIQUE_ENEMIES: Readonly<Record<string, number>> = {
+  'unit.enemy.driller': 2,
+};
+
 /**
  * Shared by the visible body, effect sockets and exploration encounter markers.
  * An enemy drawn on a G sheet (the thug, ADR 0059; the quarry bandits, ADR
@@ -19,5 +26,6 @@ const ADULT_ENEMIES: Readonly<Record<string, number>> = {
  */
 export function enemyScale(sprite: string, poseScale = 1, projection?: Projection): number {
   if (sheetLocomotion(sprite)?.headings === 8) return partyScale(projection, poseScale);
-  return (ADULT_ENEMIES[sprite] ?? 1) * poseScale;
+  const projectionScale = projection === 'oblique' ? (OBLIQUE_ENEMIES[sprite] ?? 1) : 1;
+  return (ADULT_ENEMIES[sprite] ?? 1) * projectionScale * poseScale;
 }

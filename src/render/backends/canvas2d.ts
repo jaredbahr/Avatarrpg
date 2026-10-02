@@ -11,7 +11,7 @@
  */
 
 import type { Grid, SceneFlock, SceneImage, Vec2 } from '../../core/types';
-import { SQUARE_FOOTPRINTS, footprintCells, footprintFoot } from '../../core/rules/footprint';
+import { SQUARE_FOOTPRINTS, footprintCells } from '../../core/rules/footprint';
 import { authoredForBothSides } from '../../content/assets/clips';
 import { resolveAsset } from '../../content/assets/manifest';
 import { Camera, TILE } from '../camera';
@@ -20,8 +20,6 @@ import type { TileRelief } from '../geometry/board';
 import { boardRelief, decorSignature, seamMaterial, surfaceEdges } from '../geometry/board';
 import { aimArcPoints, arcHeading, arrowheadPolygon } from '../geometry/arc';
 import {
-  actorHeadroom,
-  actorHealthBar,
   actorSilhouetteGeometry,
   actorShadowDensity,
   healthBarCap,
@@ -76,6 +74,7 @@ import {
   type RenderUnit,
 } from '../view';
 import type { BackendCapabilities, RenderBackend } from './backend';
+import { renderFoot } from '../renderFoot';
 
 /** The rounded square a hovered tile gets, in tile units from its corner. */
 const HOVER_LOOP = contourLoops([{ x: 0, y: 0 }])[0] ?? [];
@@ -87,7 +86,7 @@ export function canvasActorDepth(
   size: 1 | 2,
   square = SQUARE_FOOTPRINTS,
 ): number {
-  return camera.groundPoint(footprintFoot(pos, size, square)).y;
+  return camera.groundPoint(renderFoot(pos, size, square, camera.projection)).y;
 }
 
 /** How far in from the board's edge the shading reaches, in tiles. */
@@ -371,7 +370,12 @@ export class Canvas2DBackend implements RenderBackend {
           draw: () => this.drawProps({ ...view, props: [prop] }, camera),
         })),
         ...view.units.map((unit) => ({
-          pos: footprintFoot(unit.renderPos ?? unit.pos, unit.size, this.squareFootprints),
+          pos: renderFoot(
+            unit.renderPos ?? unit.pos,
+            unit.size,
+            this.squareFootprints,
+            camera.projection,
+          ),
           draw: () => this.drawUnits({ ...view, units: [unit] }, camera),
         })),
       ].sort((a, b) => camera.groundPoint(a.pos).y - camera.groundPoint(b.pos).y);
@@ -1407,7 +1411,10 @@ export class Canvas2DBackend implements RenderBackend {
       if (shadowDensity > 0) {
         // On the ground, not on the bob: the tile's foot line, less the ledge.
         const footprint = this.squareFootprints ? unit.size : 1;
-        const s = box.size * scale * footprint;
+        // A square unit's ground contact is its rules footprint. Presentation
+        // compensation (the Driller in oblique) enlarges the upright cel only.
+        const shadowScale = this.squareFootprints && unit.size === 2 ? 1 : scale;
+        const s = box.size * shadowScale * footprint;
         const footX = box.x - (unit.offset?.x ?? 0) * box.size + width / 2;
         const footY =
           box.y -
@@ -1440,9 +1447,8 @@ export class Canvas2DBackend implements RenderBackend {
           unit.meleeDirection,
           heightTiles,
         );
-      const headroom = actorHeadroom(frame?.headroom, heightTiles);
       const silhouette = actorSilhouetteGeometry(
-        { x: box.x, y: box.y, size: box.size },
+        { x: box.x, y: box.y, size: box.size, width },
         heightTiles,
         frame?.headroom ?? null,
         scale,
@@ -1486,29 +1492,9 @@ export class Canvas2DBackend implements RenderBackend {
 
       if (!unit.fallen) {
         if (unit.showHealth !== false) {
-          this.drawHealthBar(
-            unit,
-            box.x,
-            box.y,
-            width,
-            box.size,
-            scale,
-            headroom,
-            view.hatch,
-            silhouette.barY,
-          );
+          this.drawHealthBar(unit, silhouette.bar, box.x, view.hatch);
         }
-        this.drawStatusBadges(
-          unit,
-          box.x,
-          box.y,
-          width,
-          box.size,
-          scale,
-          headroom,
-          heightTiles,
-          silhouette.badgeY,
-        );
+        this.drawStatusBadges(unit, box.x, width, box.size, silhouette.badgeY);
       } else {
         // A fallen unit gets a clear cross rather than just fading out.
         ctx.save();
@@ -1527,19 +1513,12 @@ export class Canvas2DBackend implements RenderBackend {
 
   private drawHealthBar(
     unit: RenderUnit,
-    x: number,
-    y: number,
-    width: number,
-    size: number,
-    scale: number,
-    headroom: number,
+    bar: ReturnType<typeof actorSilhouetteGeometry>['bar'],
+    actorX: number,
     hatch: boolean,
-    barYOverride?: number,
   ): void {
     const { ctx } = this;
     const fraction = Math.max(0, Math.min(1, unit.hp / Math.max(1, unit.maxHp)));
-    const bar = actorHealthBar(x, y, width, size, scale, headroom);
-    if (barYOverride !== undefined) bar.y = barYOverride;
     const { x: barX, y: barY, width: barWidth, height: barHeight } = bar;
     const fill = hpFill(unit.faction, fraction, hatch);
 
@@ -1553,7 +1532,7 @@ export class Canvas2DBackend implements RenderBackend {
     ctx.strokeRect(barX - 0.5, barY - 0.5, barWidth + 1, barHeight + 1);
 
     // The side's cap, so the bar reads by shape as well as colour.
-    const cap = healthBarCap(bar, HP_CAP[unit.faction], x);
+    const cap = healthBarCap(bar, HP_CAP[unit.faction], actorX);
     if (cap.length === 0) return;
     ctx.beginPath();
     for (let i = 0; i < cap.length; i += 2) ctx.lineTo(cap[i] ?? 0, cap[i + 1] ?? 0);
@@ -1566,13 +1545,9 @@ export class Canvas2DBackend implements RenderBackend {
   private drawStatusBadges(
     unit: RenderUnit,
     x: number,
-    y: number,
     width: number,
     size: number,
-    scale: number,
-    headroom: number,
-    heightTiles: number,
-    badgeY?: number,
+    badgeY: number,
   ): void {
     if (unit.statuses.length === 0) return;
     const { ctx } = this;
@@ -1580,11 +1555,7 @@ export class Canvas2DBackend implements RenderBackend {
     const shown = unit.statuses.slice(0, 4);
     const totalWidth = shown.length * radius * 2.2;
     let bx = x + width / 2 - totalWidth / 2 + radius;
-    const by =
-      badgeY ??
-      (heightTiles > 1
-        ? actorHealthBar(x, y, width, size, scale, headroom).y - radius * 1.4
-        : y + size * 0.97);
+    const by = badgeY;
 
     ctx.save();
     ctx.font = `700 ${Math.round(radius * 1.2)}px system-ui, sans-serif`;

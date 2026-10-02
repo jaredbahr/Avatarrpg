@@ -107,10 +107,10 @@ export interface BattleReconcileResult {
 
 export interface ReconcileBattleOptions {
   /**
-   * TEMPORARY GATE (see `rules/footprint.ts`, removed in A-6): when true a
+   * TEMPORARY COMPATIBILITY GATE (see `rules/footprint.ts`): when true a
    * buried size-2 unit is snapped to a whole 2x2 square, not the legacy 2x1
    * pair. Tests pass it in rather than mutating module state; shipped loads
-   * default to `SQUARE_FOOTPRINTS`, so gate-off behaviour is unchanged.
+   * default to `SQUARE_FOOTPRINTS`, so shipped loads use square behaviour.
    */
   readonly squareFootprints?: boolean;
   /**
@@ -152,24 +152,27 @@ export function reconcileBattleResult(
   const map = content.maps.get(battle.mapId);
   if (!map) return { state, warnings: [{ kind: 'missing-map', mapId: battle.mapId }] };
   const square = options.squareFootprints ?? SQUARE_FOOTPRINTS;
+  // Enemy definitions own presentation keys. This also covers story allies,
+  // whose enemyId points at the same definitions, without rebuilding saved
+  // health, stats, or any other battle state.
+  const units = battle.units.map((unit) => {
+    const sprite = unit.enemyId ? content.enemies.get(unit.enemyId)?.sprite : undefined;
+    return sprite && sprite !== unit.sprite ? { ...unit, sprite } : unit;
+  });
+  const presentationChanged = units.some((unit, index) => unit !== battle.units[index]);
+  // What to hand back when nothing else changes: the saved state, with fresh sprites if any moved on.
+  const refreshed = presentationChanged ? { ...state, battle: { ...battle, units } } : state;
 
   const authored = buildGrid(map);
   if (staticGridMatches(authored, battle)) {
-    if (!square) return { state, warnings: [] };
+    if (!square) return { state: refreshed, warnings: [] };
     // Terrain needs no rebuild, but the saved anchor may still be illegal as a
     // square: open as a legacy 2x1, yet blocked, off-map or overlapping as a
     // 2x2. Snap it against the live grid (props and temporary walls included),
     // and leave the save untouched when every unit already fits.
-    const snapped = snapBattleUnits(
-      battle.grid,
-      map,
-      battle.units,
-      square,
-      content,
-      options.reachable,
-    );
-    if (!snapped.units) return { state, warnings: snapped.warnings };
-    if (snapped.units.every((unit, index) => unit === battle.units[index]))
+    const snapped = snapBattleUnits(battle.grid, map, units, square, content, options.reachable);
+    if (!snapped.units) return { state: refreshed, warnings: snapped.warnings };
+    if (!presentationChanged && snapped.units.every((unit, index) => unit === units[index]))
       return { state, warnings: snapped.warnings };
     return {
       state: { ...state, battle: { ...battle, units: snapped.units } },
@@ -231,8 +234,8 @@ export function reconcileBattleResult(
     });
   }
 
-  const snapped = snapBattleUnits(grid, map, battle.units, square, content, options.reachable);
-  if (!snapped.units) return { state, warnings: snapped.warnings };
+  const snapped = snapBattleUnits(grid, map, units, square, content, options.reachable);
+  if (!snapped.units) return { state: refreshed, warnings: snapped.warnings };
   return {
     state: {
       ...state,

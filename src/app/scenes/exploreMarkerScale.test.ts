@@ -49,3 +49,10 @@ it('uses the existing forest attacker at both crossings without changing their a
   // The G thug (ADR 0059) stands at the party's scale on the map's projection.
   expect(enemyScale('unit.enemy.thug', 1, 'oblique')).toBe(1.25);
 });
+
+it('keeps the Driller crossing marker compact when its oblique combat body is compensated', () => {
+  expect(
+    triggerPresentationScale({ id: 'quarry_floor', projection: 'oblique' }, 'unit.enemy.driller'),
+  ).toBe(1);
+  expect(enemyScale('unit.enemy.driller', 1, 'oblique')).toBe(2);
+});

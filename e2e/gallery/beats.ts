@@ -138,7 +138,7 @@ const ENEMY_ROWS: readonly FigureRow[] = [
   { key: 'unit.enemy.merc', label: 'Mercenary' },
   { key: 'unit.enemy.crossbow', label: 'Crossbow' },
   { key: 'unit.enemy.sergeant', label: 'Sergeant' },
-  { key: 'unit.enemy.grumbler', label: 'The Grumbler (2 tiles)', widthTiles: 2 },
+  { key: 'unit.enemy.driller', label: 'The Driller (2x2)', widthTiles: 2 },
   { key: 'unit.ally.ruon', label: 'Captain Ruon (ally)' },
 ];
 const VILLAGE_ROWS: readonly FigureRow[] = [
@@ -594,14 +594,14 @@ export const BEATS: readonly Beat[] = [
   {
     id: '14-boss-blast',
     title: 'The quarry floor and a 5x5 storm',
-    note: 'The boss map with ledges, oil and mud, a two-tile machine, and the biggest effect in the game with the frame-time readout showing.',
+    note: 'The boss map with ledges, oil and mud, a square 2x2 machine, and the biggest effect in the game with the frame-time readout showing.',
     projects: STATS,
     async run(ctx) {
       await openBattle(ctx, { node: 'battle_grumbler', extra: { stats: '1' } });
       const kaya = await partyUnit(ctx.page, 'kaya');
       if (!kaya) throw new Error('Kaya is not in the party.');
       const boss = (await enemies(ctx.page)).find((u) => u.size === 2);
-      if (!boss) throw new Error('No two-tile boss on the floor.');
+      if (!boss) throw new Error('No square 2x2 boss on the floor.');
       await giveTurn(ctx.page, kaya.id);
       // Stand within range but off to one side, so the storm is not on top of the caster.
       const from = { x: Math.max(0, boss.pos.x - 5), y: boss.pos.y };

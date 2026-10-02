@@ -214,8 +214,8 @@ export type AiProfile = 'aggressive' | 'cautious' | 'support' | 'boss' | 'none';
 /**
  * A unit's footprint as a side length in tiles: `1` is one tile, `2` is a 2x2
  * block. The anchor (`Unit.pos`) is always the top-left cell of the block — the
- * minimum x and minimum y. See `rules/footprint.ts`; until A-6 flips
- * `SQUARE_FOOTPRINTS`, size 2 still resolves to the legacy 2x1 shape.
+ * minimum x and minimum y. See `rules/footprint.ts`; the shipped size-2 shape
+ * is square, with a legacy 2x1 path retained temporarily for compatibility.
  */
 export type UnitSize = 1 | 2;
 

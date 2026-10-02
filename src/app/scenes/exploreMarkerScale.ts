@@ -17,5 +17,7 @@ export function triggerPresentationScale(
   map: Pick<MapDef, 'id' | 'projection'>,
   sprite: string,
 ): number {
+  // The Driller marker is a compact crossing sign, not its four-cell combat body.
+  if (sprite === 'unit.enemy.driller') return 1;
   return enemyScale(sprite, 1, map.projection);
 }

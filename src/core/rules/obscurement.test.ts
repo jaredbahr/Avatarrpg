@@ -166,12 +166,20 @@ describe('obscurement', () => {
     expect(clear.chance).toBe(90);
   });
 
-  it('leaves the defender clear when a size-2 unit is only half in the cloud', () => {
+  it('leaves the defender clear when a legacy 2x1 unit is only half in the cloud', () => {
     const { attacker, defender } = fixture();
     const big: Unit = { ...at(defender, { x: 4, y: 0 }), size: 2 };
     const attackerUnit = at(attacker, { x: 0, y: 0 });
 
-    const half = hitBreakdown(CONTENT, steam(openGrid(), [{ x: 4, y: 0 }]), attackerUnit, big);
+    const half = hitBreakdown(
+      CONTENT,
+      steam(openGrid(), [{ x: 4, y: 0 }]),
+      attackerUnit,
+      big,
+      0,
+      undefined,
+      false,
+    );
     expect(half.obscurement.total).toBe(0);
 
     const whole = hitBreakdown(
@@ -182,9 +190,30 @@ describe('obscurement', () => {
       ]),
       attackerUnit,
       big,
+      0,
+      undefined,
+      false,
     );
     expect(whole.obscurement.inside).toBe(-25);
     expect(whole.obscurement.total).toBe(-25);
+  });
+
+  it('requires all four cells of a shipped 2x2 to be in the cloud', () => {
+    const { attacker, defender } = fixture();
+    const big: Unit = { ...at(defender, { x: 4, y: 0 }), size: 2 };
+    const attackerUnit = at(attacker, { x: 0, y: 0 });
+    // A unit is inside a cloud only when every cell of its footprint is: the
+    // size advantage always helps the attacker. Half the square is not enough.
+    const half = steam(openGrid(), [
+      { x: 4, y: 0 },
+      { x: 4, y: 1 },
+    ]);
+    const whole = steam(half, [
+      { x: 5, y: 0 },
+      { x: 5, y: 1 },
+    ]);
+    expect(hitBreakdown(CONTENT, half, attackerUnit, big).obscurement.inside).toBe(0);
+    expect(hitBreakdown(CONTENT, whole, attackerUnit, big).obscurement.inside).toBe(-25);
   });
 
   it('applies no obscurement on clear ground', () => {

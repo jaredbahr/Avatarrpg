@@ -174,17 +174,13 @@ export const CREDITS: readonly CreditEntry[] = [
     note: 'Generated from the project character references and prompt packs, then normalised and packed for the game. Dialogue portrait notes: docs/art/dialogue-portraits.md; bandit prompts: docs/art/bandit.md; remaining quarry bandits: docs/art/quarry-bandits.md; crossbow prompts and review: docs/art/crossbow.md; Cutting figures: docs/art/cutting-characters.md; fire deserter: docs/art/fire-deserter-runtime.md; hero walk prompts and review: docs/art/side-walks.md; Riko directional contact prompts, source provenance and reproducible packer: docs/art/prompts/sheets/unit.non.riko.md and docs/art/sources/riko-directional-contact/. Output terms: https://openai.com/policies/row-terms-of-use/. This credit does not claim exclusive copyright in generated output.',
   },
   {
-    what: 'The Grumbler artwork',
-    work: 'Quarry driller pose sheet and machine portrait',
+    what: 'The Grumbler portrait',
+    work: 'Quarry machine portrait',
     authors: 'This project, generated with OpenAI image generation',
     licence: 'own work',
     source: '',
-    covers: [
-      'art/units/grumbler.png',
-      'art/units/grumbler.json',
-      'art/portraits/enemy.grumbler.png',
-    ],
-    note: 'Original quarry machine artwork, generated and packed into nine transparent poses and a UI portrait. Prompts and processing notes: docs/art/grumbler.md. Output terms: https://openai.com/policies/row-terms-of-use/. No exclusive copyright in generated output is claimed.',
+    covers: ['art/portraits/enemy.grumbler.png'],
+    note: 'Original quarry machine UI portrait. Prompt and processing notes: docs/art/grumbler.md. Output terms: https://openai.com/policies/row-terms-of-use/. No exclusive copyright in generated output is claimed.',
   },
   {
     what: 'The 2x2 Driller animation',

@@ -375,7 +375,7 @@ describe('reconcileBattle', () => {
           // The boss's second cell stands where the drill shaft is now, and the
           // party unit stands in the old rear gap, now the terrace wall.
           unit.id === boss.id
-            ? { ...unit, pos: { x: 17, y: 5 } }
+            ? { ...unit, hp: 37, sprite: 'unit.enemy.grumbler', pos: { x: 17, y: 5 } }
             : unit.id === party.id
               ? { ...unit, pos: { x: 10, y: 0 } }
               : unit,
@@ -405,6 +405,8 @@ describe('reconcileBattle', () => {
     // floor, clear of the shaft; the party unit off the wall onto the bench.
     const snappedBoss = loaded.battle?.units.find((unit) => unit.id === boss.id);
     expect(snappedBoss?.pos).toEqual({ x: 16, y: 4 });
+    expect(snappedBoss?.sprite).toBe('unit.enemy.driller');
+    expect(snappedBoss?.hp).toBe(37);
     for (const cell of [
       { x: 16, y: 4 },
       { x: 17, y: 4 },
@@ -438,6 +440,29 @@ describe('reconcileBattle', () => {
     expect(serialize(reconcileBattle(CONTENT, current), META)).toBe(serialize(current, META));
   });
 
+  it('refreshes a legacy boss sprite without changing saved health or position', () => {
+    const old = currentBattleState('quarry_floor');
+    if (!old.battle) throw new Error('fixture did not create a battle');
+    const boss = old.battle.units.find((unit) => unit.enemyId === 'grumbler');
+    if (!boss) throw new Error('fixture is missing the boss');
+    const state: GameState = {
+      ...old,
+      battle: {
+        ...old.battle,
+        units: old.battle.units.map((unit) =>
+          unit.id === boss.id ? { ...unit, hp: 37, sprite: 'unit.enemy.grumbler' } : unit,
+        ),
+      },
+    };
+
+    const loaded = load(state);
+    expect(loaded.battle?.units.find((unit) => unit.id === boss.id)).toMatchObject({
+      sprite: 'unit.enemy.driller',
+      hp: 37,
+      pos: boss.pos,
+    });
+  });
+
   it('snaps a Grumbler whose 2x2 is buried only once square footprints are on', () => {
     const old = battleState('quarry_floor', OLD_DRILLER_ROWS);
     if (!old.battle) throw new Error('fixture did not create a battle');
@@ -459,11 +484,13 @@ describe('reconcileBattle', () => {
       },
     };
 
-    const legacy = load(state);
+    const legacy = load(state, { squareFootprints: false });
     expect(legacy.battle?.units.find((unit) => unit.id === boss.id)?.pos).toEqual({ x: 7, y: 3 });
 
     const square = load(state, { squareFootprints: true });
     const moved = square.battle?.units.find((unit) => unit.id === boss.id)?.pos;
+    // The search expands in row-major rings. Its first legal flat 2x2 is
+    // (6,2)-(7,3); candidates nearer the shaft intersect walls or split tiers.
     expect(moved).toEqual({ x: 6, y: 2 });
     for (const cell of [
       { x: 6, y: 2 },
@@ -548,7 +575,7 @@ describe('reconcileBattle', () => {
 
     // Gate off the early return stands: the same state comes back untouched, so
     // the legacy anchor is left exactly where the save put it.
-    const legacy = reconcileBattleResult(CONTENT, state);
+    const legacy = reconcileBattleResult(CONTENT, state, { squareFootprints: false });
     expect(legacy.state).toBe(state);
     expect(legacy.warnings).toEqual([]);
 

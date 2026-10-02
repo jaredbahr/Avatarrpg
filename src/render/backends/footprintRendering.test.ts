@@ -63,12 +63,29 @@ describe('square-footprint backend parity', () => {
         expect(propBack).toBeLessThan(square);
         expect(propFront).toBe(square);
       } else {
-        expect(propBack).toBeGreaterThan(square);
-        expect(propFront).toBeGreaterThan(propBack);
+        // The oblique key is the front cell (5,4): (6,3) is on the same depth row,
+        // two tiles to its right on screen and clear of the body, so a tie is safe.
+        expect(propBack).toBe(square);
+        expect(propFront).toBeGreaterThan(square);
       }
       expect(pixiActorDepth(camera, { x: 4, y: 3 }, 2, true)).toBe(square);
     },
   );
+
+  it('uses the shared front-cell foot for both oblique backend depth keys', () => {
+    const camera = new Camera(
+      { width: 1000, height: 700, dpr: 1 },
+      { width: 20, height: 12 },
+      'oblique',
+    );
+    const expected = camera.groundPoint({ x: 5.5, y: 4.5 }).y;
+    expect(canvasActorDepth(camera, { x: 4, y: 3 }, 2, true)).toBe(expected);
+    expect(pixiActorDepth(camera, { x: 4, y: 3 }, 2, true)).toBe(expected);
+    const behind = camera.groundPoint({ x: 5.5, y: 2.5 }).y;
+    const inFront = camera.groundPoint({ x: 5.5, y: 6.5 }).y;
+    expect(behind).toBeLessThan(expected);
+    expect(inFront).toBeGreaterThan(expected);
+  });
 
   it('gives a generic 2x2 placeholder the full footprint box', () => {
     expect(
@@ -81,11 +98,11 @@ describe('square-footprint backend parity', () => {
     // node. Pixi allocates real textures in its field initialisers and cannot be
     // built without a browser.
     vi.stubGlobal('document', { createElement: canvas });
-    const legacy = new Canvas2DBackend(canvas());
-    expect((legacy as unknown as { squareFootprints: boolean }).squareFootprints).toBe(
+    const shipped = new Canvas2DBackend(canvas());
+    expect((shipped as unknown as { squareFootprints: boolean }).squareFootprints).toBe(
       SQUARE_FOOTPRINTS,
     );
-    const square = new Canvas2DBackend(canvas(), true);
-    expect((square as unknown as { squareFootprints: boolean }).squareFootprints).toBe(true);
+    const legacy = new Canvas2DBackend(canvas(), false);
+    expect((legacy as unknown as { squareFootprints: boolean }).squareFootprints).toBe(false);
   });
 });
