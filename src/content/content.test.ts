@@ -45,6 +45,27 @@ describe('content', () => {
     expect(problems, `\n${problems.join('\n')}\n`).toEqual([]);
   });
 
+  it('ships the approved B-4 placements legally, and no shipped prop has fuel yet', () => {
+    const placements = (mapId: string) =>
+      CONTENT.maps.get(mapId)?.props.map(({ propId, pos }) => `${propId}@${pos.x},${pos.y}`) ?? [];
+
+    expect(placements('forest_road')).toEqual(
+      expect.arrayContaining(['hay_bale@12,5', 'water_barrel@14,4']),
+    );
+    expect(placements('quarry_gate')).toContain('hay_bale@13,7');
+    expect(placements('ambush_road')).not.toContainEqual(expect.stringMatching(/^hay_bale@/));
+    expect(placements('quarry_floor')).not.toContainEqual(expect.stringMatching(/^hay_bale@/));
+    // Fuel waits on a rules decision: any shipped fire breaks a 5 HP bale before it can catch.
+    expect(
+      CONTENT_BUNDLE.props.filter((prop) => (prop.fuel ?? 0) > 0).map((prop) => prop.id),
+    ).toEqual([]);
+
+    const placementProblems = validateContent(CONTENT_BUNDLE).filter((problem) =>
+      /places|prop|exit/.test(problem),
+    );
+    expect(placementProblems).toEqual([]);
+  });
+
   it('accepts every shipped prop unchanged and the B-1 fields within bounds', () => {
     for (const prop of CONTENT_BUNDLE.props) {
       const result = propSchema.safeParse(prop);

@@ -11,7 +11,7 @@ import {
   waitForIdle,
 } from './helpers';
 
-const target = { x: 13, y: 5 };
+const target = { x: 13, y: 4 };
 
 async function battleSnapshot(page: Page) {
   return page.evaluate(() => JSON.stringify(window.fnt!.app.state!.battle));

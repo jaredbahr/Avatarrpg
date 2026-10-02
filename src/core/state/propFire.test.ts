@@ -13,8 +13,16 @@
 import { beforeEach, describe, expect, it } from 'vitest';
 import { CONTENT } from '../../content';
 import { RngCursor } from '../rng';
-import { posKey, tileAt } from '../rules/grid';
-import type { ContentIndex, GameEvent, GameState, PropDef, PropInstance, Vec2 } from '../types';
+import { posKey, tileAt, withTile } from '../rules/grid';
+import type {
+  BattleState,
+  ContentIndex,
+  GameEvent,
+  GameState,
+  PropDef,
+  PropInstance,
+  Vec2,
+} from '../types';
 import { appendLog } from './log';
 import { BattleDraft } from './battleDraft';
 import { createBattle, createGame } from './createGame';
@@ -140,7 +148,22 @@ function freshDraft(content: ContentIndex = TEST_CONTENT): BattleDraft {
     startNode: '',
   });
   const rng = new RngCursor(seeded.rng);
-  return new BattleDraft(content, createBattle(content, seeded, 'enc_forest_road', rng), rng);
+  return new BattleDraft(content, forestRoadWithoutProps(content, seeded, rng), rng);
+}
+
+/**
+ * These tests place their own props on open ground, so lift the map's shipped
+ * ones off first: each put its tile's `previous` state aside when it was placed.
+ */
+function forestRoadWithoutProps(
+  content: ContentIndex,
+  seeded: GameState,
+  rng: RngCursor,
+): BattleState {
+  const battle = createBattle(content, seeded, 'enc_forest_road', rng);
+  let grid = battle.grid;
+  for (const prop of battle.props) grid = withTile(grid, prop.pos, prop.previous);
+  return { ...battle, grid, props: [] };
 }
 
 /** An empty, walkable tile with `radius` clear tiles around it, props included. */
@@ -471,7 +494,7 @@ describe('props that burn', () => {
       startNode: '',
     });
     const rng = new RngCursor(seeded.rng);
-    const battle = createBattle(TEST_CONTENT, seeded, 'enc_forest_road', rng);
+    const battle = forestRoadWithoutProps(TEST_CONTENT, seeded, rng);
     const live = new BattleDraft(TEST_CONTENT, battle, rng);
     const pos = openTile(live, 2);
     const hay = place(live, HAYSTACK.id, pos);

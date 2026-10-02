@@ -1,7 +1,23 @@
 # B-4 prop placements: measured options, not a balance decision
 
-No shipped content, tuning, or rules changed. Each result is 80 paired AI-vs-AI
-trials at the default party sizes (1, 3, 6). Values are baseline → scenario.
+## Decision
+
+Jared approved Forest Road option B: a hay bale at (12,5) and a water barrel at
+(14,4). He approved Quarry Gate option A: one hay bale at (13,7). The Cutting
+keeps no burnables, and nothing was added to the Quarry Floor. Those three
+placements are shipped.
+
+The hay bale's fuel values are **not** shipped yet. Review found that the shipped
+bale can never catch: it has 5 HP and takes double damage from fire, and every
+shipped fire source deals at least 4, so any fire breaks it at once (its `onBreak`
+burst) before the ignite rule is reached. That is also why `I/B/D` was 0/0/0 in
+every row below. Until the rule or the numbers change, the bale behaves as it
+always has: break it and it bursts into flame around itself. The scenario files
+under `scripts/balance/scenarios/b4/` still carry the proposed fuel values.
+
+The measurements below predate the decision; at measurement time, no shipped
+content, tuning, or rules had changed. Each result is 80 paired AI-vs-AI trials
+at the default party sizes (1, 3, 6). Values are baseline → scenario.
 `Fire P/E` is mean source-less environmental fire damage to party/enemies; events
 cannot attribute that damage to a prop. `I/B/D` is mean prop ignitions, burn-aways,
 and douses. It was **0/0/0 in every row**: the AI never used the proposed fire loop.

@@ -71,7 +71,7 @@ for (const renderer of ['canvas', 'webgl'] as const) {
     await enterNode(page, 'battle_forest_road');
     expect(await takeTurn(page)).toBe(true);
     await waitForIdle(page);
-    const target = { x: 13, y: 5 };
+    const target = { x: 13, y: 4 };
     // Stage only legal battle positions. Navigation and aiming use the actual UI.
     const backend = await page.evaluate((spot) => {
       const app = window.fnt!.app;
