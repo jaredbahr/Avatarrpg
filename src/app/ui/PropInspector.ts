@@ -1,5 +1,5 @@
 import type { ContentIndex, PropDef, PropInstance } from '../../core/types';
-import { Dialog } from './Dialog';
+import { Dialog, inspectorSyncDecision } from './Dialog';
 import type { DialogOptions } from './Dialog';
 import { assetCanvas } from './assetCanvas';
 import { button, el, mark } from './dom';
@@ -77,7 +77,7 @@ export class PropInspector extends Dialog {
         'div',
         { class: 'row dialog-footer' },
         el('div', { class: 'spacer' }),
-        button('Close', () => this.close(), { class: 'btn-primary' }),
+        button('Close', () => this.close(), { class: 'btn-primary dialog-close' }),
       ),
     );
   }
@@ -86,9 +86,12 @@ export class PropInspector extends Dialog {
     return this.prop.id;
   }
 
-  update(prop: PropInstance): void {
-    if (prop === this.prop) return;
-    this.prop = prop;
-    this.refresh();
+  update(prop: PropInstance | undefined): void {
+    const decision = inspectorSyncDecision(this.prop, prop);
+    if (decision === 'close') this.close();
+    else if (decision === 'refresh' && prop) {
+      this.prop = prop;
+      this.refresh();
+    }
   }
 }

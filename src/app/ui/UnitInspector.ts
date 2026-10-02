@@ -8,8 +8,8 @@
  */
 
 import type { App } from '../App';
-import type { Unit } from '../../core/types';
-import { Dialog } from './Dialog';
+import type { Grid, Unit } from '../../core/types';
+import { Dialog, inspectorSyncDecision } from './Dialog';
 import type { DialogOptions } from './Dialog';
 import { button, el } from './dom';
 import { assetCanvas } from './assetCanvas';
@@ -21,8 +21,16 @@ import { describeFooting } from '../../core/rules/reactions';
 import { occupiedCells, tileAt } from '../../core/rules/grid';
 import { levelProgress, xpToNextLevel } from '../../core/rules/leveling';
 
+export function unitFootingKey(unit: Unit, grid: Grid): string {
+  const ground = tileAt(grid, unit.pos);
+  const surfaceCell = occupiedCells(unit).find((cell) => tileAt(grid, cell)?.surface);
+  const surface = surfaceCell ? tileAt(grid, surfaceCell)?.surface : undefined;
+  return JSON.stringify([ground?.elevation ?? null, ground?.ramp === true, surface?.id ?? null]);
+}
+
 export class UnitInspector extends Dialog {
   protected options: DialogOptions;
+  private footingKey: string | undefined;
 
   constructor(
     private app: App,
@@ -30,6 +38,8 @@ export class UnitInspector extends Dialog {
     private onDismiss: () => void,
   ) {
     super();
+    const grid = app.state?.battle?.grid;
+    this.footingKey = grid ? unitFootingKey(unit, grid) : undefined;
     const player = app.session.playerFor(unit.id);
     this.options = {
       title: player ? `${unit.name} (${player.name})` : unit.name,
@@ -201,8 +211,23 @@ export class UnitInspector extends Dialog {
         'div',
         { class: 'row dialog-footer' },
         el('div', { class: 'spacer' }),
-        button('Close', () => this.close(), { class: 'btn-primary' }),
+        button('Close', () => this.close(), { class: 'btn-primary dialog-close' }),
       ),
     );
+  }
+
+  get unitId(): string {
+    return this.unit.id;
+  }
+
+  update(unit: Unit | undefined, grid: Grid): void {
+    const footingKey = unit ? unitFootingKey(unit, grid) : undefined;
+    const decision = inspectorSyncDecision(this.unit, unit, this.footingKey, footingKey);
+    if (decision === 'close') this.close();
+    else if (decision === 'refresh' && unit) {
+      this.unit = unit;
+      this.footingKey = footingKey;
+      this.refresh();
+    }
   }
 }
