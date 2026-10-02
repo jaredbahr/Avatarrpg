@@ -92,6 +92,13 @@ type Mode =
   | { readonly kind: 'move' }
   | { readonly kind: 'aim'; readonly abilityId: string };
 
+/** Inputs which decide which movement/target tiles the overlay memo contains. */
+export function overlayMemoInputKey(mode: Mode, pending: Vec2 | null, unitId: string): string {
+  return `${mode.kind}|${mode.kind === 'aim' ? mode.abilityId : ''}|${
+    pending ? posKey(pending) : ''
+  }|${unitId}`;
+}
+
 /** A non-target tap must not pin the reticle while pointer hover keeps moving. */
 export function overlayMemoHoverKey(
   aiming: boolean,
@@ -227,6 +234,7 @@ export class CombatScene implements Scene {
     | ({
         battle: BattleState;
         key: string;
+        inputKey: string;
       } & OverlayBuild)
     | null = null;
   /** Surface cells are immutable with the battle grid, so do not rescan them every frame. */
@@ -673,7 +681,11 @@ export class CombatScene implements Scene {
     if (eligible.length === 0) return { tile: groundTile };
 
     const protectedTiles = new Set<string>();
-    const memo = this.overlayMemo?.battle === battle ? this.overlayMemo : null;
+    const inputKey = overlayMemoInputKey(this.mode, this.pending, active?.id ?? '');
+    const memo =
+      this.overlayMemo?.battle === battle && this.overlayMemo.inputKey === inputKey
+        ? this.overlayMemo
+        : null;
     if (intent === 'tap' && (this.mode.kind === 'move' || this.mode.kind === 'aim')) {
       const kind = this.mode.kind === 'move' ? 'move' : 'target';
       const tiles = memo?.overlays.find((layer) => layer.kind === kind)?.tiles;
@@ -1935,9 +1947,8 @@ export class CombatScene implements Scene {
         this.hover,
         SQUARE_FOOTPRINTS && this.mode.kind === 'move' && unit.size === 2,
       );
-      const key = `${this.mode.kind}|${this.mode.kind === 'aim' ? this.mode.abilityId : ''}|${
-        this.pending ? posKey(this.pending) : ''
-      }|${hoverKey}|${unit.id}`;
+      const inputKey = overlayMemoInputKey(this.mode, this.pending, unit.id);
+      const key = `${inputKey}|${hoverKey}`;
       const memo = this.overlayMemo;
       if (memo && memo.battle === battle && memo.key === key) {
         overlays = memo.overlays;
@@ -1948,7 +1959,7 @@ export class CombatScene implements Scene {
         targetReticle = memo.targetReticle;
       } else {
         const built = this.buildOverlays(battle, unit);
-        this.overlayMemo = { battle, key, ...built };
+        this.overlayMemo = { battle, key, inputKey, ...built };
         overlays = built.overlays;
         path = built.path;
         climbMarkers = built.climbMarkers;
@@ -2116,7 +2127,8 @@ export class CombatScene implements Scene {
     const decision = combatCameraFollowDecision(this.cameraFollow, {
       animatedUnitId: followed?.unit.id ?? null,
       activeUnitId: this.active()?.id ?? null,
-      manualCamera: this.followSuspended,
+      followSuspended: this.followSuspended,
+      reducedMotion: motionReduced(),
     });
     this.cameraFollow = decision.state;
     if (decision.owner === 'recentre') {
