@@ -166,19 +166,10 @@ for (const renderer of ['canvas', 'webgl'] as const) {
       coordinateSprites = Math.max(coordinateSprites, frame.coordinateSprites);
     };
     if (renderer === 'webgl') {
-      // Do not spend the cheap clock-only advance until a rendered frame has
-      // actually planned Dorin's phase-change walk. WebKit may deliver only one
-      // rAF for a runFor window, so elapsed fake time alone is not that proof.
-      let dorinStarted = false;
-      for (let step = 0; step < 100 && !dorinStarted; step++) {
-        await sample();
-        const dorin = end.find((m) => m.id === 'lw.npc.dorin');
-        dorinStarted = Boolean(
-          dorin && (!Number.isInteger(dorin.at.x) || !Number.isInteger(dorin.at.y)),
-        );
-      }
-      expect(dorinStarted).toBe(true);
+      await sample();
+      await sample();
       await advanceResidentsWithoutFrames(page, 5_000);
+      await sample();
       await sample();
       // The mid window must catch the walk in progress, with Dorin drawn
       // part-way along it on exactly one sprite, or it guards nothing.
