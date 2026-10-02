@@ -354,9 +354,11 @@ export async function tileCentre(page: Page, pos: Vec2): Promise<{ x: number; y:
  *
  * `App.showScene` drops an opaque curtain over the new scene and lifts it over
  * a CSS transition; a still taken during the lift is mostly ink. The curtain
- * drops its classes on `transitionend` (or a fallback timer), so wait for
- * that. Only while the page clock is running: under a paused clock the lift
- * has long finished, and this polls on animation frames that would never fire.
+ * also holds for first-frame actor sheets, with a bounded production timeout,
+ * then drops its classes on `transitionend` (or a fallback timer), so wait for
+ * that whole observable state. Only while the page clock is running: under a
+ * paused clock the lift has long finished, and this polls on animation frames
+ * that would never fire.
  *
  * The budget is generous because software WebGL at 2x renders the village in
  * more than a second a frame, and the transition end queues behind it.
