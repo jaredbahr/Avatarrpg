@@ -192,6 +192,12 @@ export class CombatScene implements Scene {
   private actorButton: HTMLButtonElement | null = null;
   /** True after a user zoom/pan; HUD reflows must preserve that manual framing. */
   private manualCamera = false;
+  /**
+   * True after a user zoom/pan/focus until the next turn change or Recentre:
+   * the camera stops following a moving actor. Kept apart from `manualCamera`,
+   * which must outlive turn changes so a HUD reflow keeps the player's zoom.
+   */
+  private followSuspended = false;
   private cameraFollow: CombatCameraFollowState = { kind: 'idle' };
   /**
    * The last pending move target revealed for a particular viewport. A
@@ -412,6 +418,7 @@ export class CombatScene implements Scene {
     const camera = this.renderer?.camera;
     if (!camera) return;
     this.manualCamera = false;
+    this.followSuspended = false;
     if (camera.projection === 'oblique') {
       // Key off both the layout and visual viewports and the text setting,
       // then use the first settled canvas height to account for the full
@@ -451,7 +458,10 @@ export class CombatScene implements Scene {
     if (!camera) return;
     const before = camera.scale;
     camera.zoomAt(at, factor);
-    if (camera.scale !== before) this.manualCamera = true;
+    if (camera.scale !== before) {
+      this.manualCamera = true;
+      this.followSuspended = true;
+    }
     this.syncRecentre();
   }
 
@@ -460,7 +470,10 @@ export class CombatScene implements Scene {
     if (!camera) return;
     const before = { x: camera.offsetX, y: camera.offsetY };
     camera.panBy(dx, dy);
-    if (camera.offsetX !== before.x || camera.offsetY !== before.y) this.manualCamera = true;
+    if (camera.offsetX !== before.x || camera.offsetY !== before.y) {
+      this.manualCamera = true;
+      this.followSuspended = true;
+    }
   }
 
   /** Camera navigation never selects a target or spends an action. */
@@ -472,6 +485,7 @@ export class CombatScene implements Scene {
     if (!unit || !camera) return;
     camera.centreOn(combatFocusPosition(unit), unit.size);
     this.manualCamera = true;
+    this.followSuspended = true;
     this.syncRecentre();
   }
 
@@ -831,8 +845,9 @@ export class CombatScene implements Scene {
       // Where the board cannot fit, whoever is acting is what to look at.
       const camera = this.renderer?.camera;
       // A turn change re-arms follow after any manual action. An animation
-      // already owned by follow keeps ownership until its release frame.
-      this.manualCamera = false;
+      // already owned by follow keeps ownership until its release frame. The
+      // player's zoom (`manualCamera`) is theirs until they press Recentre.
+      this.followSuspended = false;
       const followedStillMoving =
         this.cameraFollow.kind === 'following' &&
         this.app.animator.renderPos(performance.now(), this.cameraFollow.unitId) !== undefined;
@@ -2101,7 +2116,7 @@ export class CombatScene implements Scene {
     const decision = combatCameraFollowDecision(this.cameraFollow, {
       animatedUnitId: followed?.unit.id ?? null,
       activeUnitId: this.active()?.id ?? null,
-      manualCamera: this.manualCamera,
+      manualCamera: this.followSuspended,
     });
     this.cameraFollow = decision.state;
     if (decision.owner === 'recentre') {
