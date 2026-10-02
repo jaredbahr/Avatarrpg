@@ -1,6 +1,5 @@
 import { describe, expect, it } from 'vitest';
 import { COMBAT_CAMERA_RING_TILES, FOREST_ROAD } from '../content/maps/combat';
-import { SQUARE_FOOTPRINTS } from '../core/rules/footprint';
 import type { Projection } from './projection';
 import { Camera, MIN_TILE_PX, TILE } from './camera';
 import type { Viewport } from './camera';
@@ -442,10 +441,9 @@ describe('Camera.clamp programmatic-reachable hull', () => {
                 );
               const combatFailure = centreOnAndAssertStable(
                 camera,
-                // Mirrors production combatFocusPosition (CombatScene.ts): with square
-                // footprints off the legacy 2x1 focus is the midpoint of its two
-                // cells, half a tile right of the anchor; with them on it is the anchor.
-                SQUARE_FOOTPRINTS ? point : { x: point.x + 0.5, y: point.y },
+                // Mirrors the shipped combatFocusPosition: a 2x2 focuses its anchor,
+                // and centreOn(pos, 2) then centres the whole square.
+                point,
                 2,
               );
               if (combatFailure)

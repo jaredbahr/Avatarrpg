@@ -31,7 +31,7 @@ export const GRUMBLER_BEATS: readonly Beat[] = [
       await openGrumbler(ctx);
       const boss = await ctx.page.evaluate(() => {
         const boss = window.fnt?.app.state?.battle?.units.find(
-          (u) => u.sprite === 'unit.enemy.grumbler',
+          (u) => u.sprite === 'unit.enemy.driller',
         );
         if (!boss) throw new Error('Missing Grumbler');
         return { id: boss.id, pos: boss.pos };
@@ -72,7 +72,7 @@ export const GRUMBLER_BEATS: readonly Beat[] = [
       await openGrumbler(ctx);
       await ctx.page.evaluate(async () => {
         const image = new Image();
-        image.src = new URL('art/units/grumbler.png', document.baseURI).href;
+        image.src = new URL('art/units/driller.webp', document.baseURI).href;
         await image.decode();
       });
       await ctx.filmstrip(this.note, [60, 180, 330, 460, 620, 900], async () => {
@@ -80,7 +80,7 @@ export const GRUMBLER_BEATS: readonly Beat[] = [
           const app = window.fnt!.app;
           const state = app.state;
           const battle = state?.battle;
-          const boss = battle?.units.find((u) => u.sprite === 'unit.enemy.grumbler');
+          const boss = battle?.units.find((u) => u.sprite === 'unit.enemy.driller');
           const hero = battle?.units.find((u) => u.faction === 'party');
           if (!state || !battle || !boss || !hero) throw new Error('Missing quarry actors');
           const from = { x: 11, y: 5 };
@@ -128,7 +128,7 @@ export const GRUMBLER_BEATS: readonly Beat[] = [
           const app = window.fnt!.app;
           const state = app.state;
           const battle = state?.battle;
-          const boss = battle?.units.find((u) => u.sprite === 'unit.enemy.grumbler');
+          const boss = battle?.units.find((u) => u.sprite === 'unit.enemy.driller');
           if (!state || !battle || !boss) throw new Error('Missing Grumbler');
           app.state = {
             ...state,
@@ -151,10 +151,10 @@ export const GRUMBLER_BEATS: readonly Beat[] = [
   {
     id: '36-grumbler-fallback',
     title: 'Quarry driller remains a machine when its atlas cannot load',
-    note: 'The real Grumbler atlas request is blocked. Its original two-tile driller painter must remain visible, correctly grounded and recognizable.',
+    note: 'The live Driller atlas request is blocked. Its 2x2 machine painter must remain visible, correctly grounded and recognizable.',
     projects: ['surface-canvas', 'surface-webgl'],
     async run(ctx) {
-      await ctx.page.route('**/art/units/grumbler.*', (route) => route.abort());
+      await ctx.page.route('**/art/units/driller.*', (route) => route.abort());
       await openGrumbler(ctx);
       await ctx.shoot(this.note);
     },

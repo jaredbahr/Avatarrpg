@@ -138,7 +138,7 @@ const ENEMY_ROWS: readonly FigureRow[] = [
   { key: 'unit.enemy.merc', label: 'Mercenary' },
   { key: 'unit.enemy.crossbow', label: 'Crossbow' },
   { key: 'unit.enemy.sergeant', label: 'Sergeant' },
-  { key: 'unit.enemy.grumbler', label: 'The Grumbler (2 tiles)', widthTiles: 2 },
+  { key: 'unit.enemy.driller', label: 'The Driller (2x2)', widthTiles: 2 },
   { key: 'unit.ally.ruon', label: 'Captain Ruon (ally)' },
 ];
 const VILLAGE_ROWS: readonly FigureRow[] = [

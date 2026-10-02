@@ -9,11 +9,8 @@ import { SQUARE_FOOTPRINT_CONTENT_DEFAULT } from './footprint';
 
 /**
  * A-3: size-2 encounter placements validated as whole 2x2 squares. The rule is
- * gated on the A-6 footprint gate, so every fixture asserts both halves — the
- * legacy 2x1 bundle is untouched, and the same bundle with
- * `squareFootprints: true` catches a buried square the legacy shape misses.
- * The shipped content is asserted clean under both, which is what lets A-6
- * flip the gate without a content rewrite.
+ * shipped by the A-6 footprint gate. Fixtures assert the default square path
+ * and retain explicit gate-off coverage for the injectable compatibility path.
  */
 
 function fixtureMap(rows: readonly string[], partySpawns: readonly Vec2[]): MapDef {
@@ -99,24 +96,24 @@ describe('size-2 square footprints', () => {
     expect(SQUARE_FOOTPRINT_CONTENT_DEFAULT).toBe(SQUARE_FOOTPRINTS);
   });
 
-  it('leaves the shipped content clean under both geometries', () => {
+  it('leaves the shipped content clean by default and under explicit legacy geometry', () => {
     expect(validateContent(CONTENT_BUNDLE)).toEqual([]);
-    expect(validateContent(CONTENT_BUNDLE, { squareFootprints: true })).toEqual([]);
+    expect(validateContent(CONTENT_BUNDLE, { squareFootprints: false })).toEqual([]);
   });
 
   it('reports a square whose lower row is blocked only with the gate on', () => {
     // The legacy 2x1 sits on (1,2)-(2,2); the 2x2's lower row hits the (1,3) wall.
     const bundle = withFixture(['.....', '.....', '.....', '.#...'], SIX_SPAWNS, { x: 1, y: 2 });
-    expect(validateContent(bundle)).toEqual([]);
-    expect(validateContent(bundle, { squareFootprints: true })).toContain(
+    expect(validateContent(bundle, { squareFootprints: false })).toEqual([]);
+    expect(validateContent(bundle)).toContain(
       'encounter "square_fixture_encounter" places "grumbler" on a blocked tile (1,3) of "square_fixture"',
     );
   });
 
   it('reports a square that straddles a tier only with the gate on', () => {
     const bundle = withFixture(['.....', '.....', '.^...', '.....'], SIX_SPAWNS, { x: 1, y: 1 });
-    expect(validateContent(bundle)).toEqual([]);
-    expect(validateContent(bundle, { squareFootprints: true })).toContain(
+    expect(validateContent(bundle, { squareFootprints: false })).toEqual([]);
+    expect(validateContent(bundle)).toContain(
       'encounter "square_fixture_encounter" places "grumbler" on a square footprint that is not flat ground — all four cells must share one tier',
     );
   });
@@ -135,8 +132,8 @@ describe('size-2 square footprints', () => {
       ],
       { x: 3, y: 0 },
     );
-    expect(validateContent(bundle)).toEqual([]);
-    expect(validateContent(bundle, { squareFootprints: true })).toContain(
+    expect(validateContent(bundle, { squareFootprints: false })).toEqual([]);
+    expect(validateContent(bundle)).toContain(
       'encounter "square_fixture_encounter" places "grumbler" on a square footprint cut off from the party spawns',
     );
   });
@@ -147,8 +144,8 @@ describe('size-2 square footprints', () => {
       LEFT_SIX_SPAWNS,
       { x: 5, y: 1 },
     );
-    expect(validateContent(oneCellCorridor)).toEqual([]);
-    expect(validateContent(oneCellCorridor, { squareFootprints: true })).toContain(
+    expect(validateContent(oneCellCorridor, { squareFootprints: false })).toEqual([]);
+    expect(validateContent(oneCellCorridor)).toContain(
       'encounter "square_fixture_encounter" places "grumbler" on a square footprint cut off from the party spawns',
     );
 
@@ -157,7 +154,7 @@ describe('size-2 square footprints', () => {
       LEFT_SIX_SPAWNS,
       { x: 5, y: 1 },
     );
-    expect(validateContent(twoCellCorridor, { squareFootprints: true })).not.toContain(
+    expect(validateContent(twoCellCorridor)).not.toContain(
       'encounter "square_fixture_encounter" places "grumbler" on a square footprint cut off from the party spawns',
     );
   });
@@ -167,7 +164,7 @@ describe('size-2 square footprints', () => {
       x: 4,
       y: 1,
     });
-    expect(validateContent(bundle, { squareFootprints: true })).toContain(
+    expect(validateContent(bundle)).toContain(
       'encounter "square_fixture_encounter" places "grumbler" on a square footprint cut off from the party spawns',
     );
   });
@@ -179,8 +176,8 @@ describe('size-2 square footprints', () => {
       { x: 3, y: 1 },
       { variant: { x: 1, y: 2 } },
     );
-    expect(validateContent(bundle)).toEqual([]);
-    expect(validateContent(bundle, { squareFootprints: true })).toContain(
+    expect(validateContent(bundle, { squareFootprints: false })).toEqual([]);
+    expect(validateContent(bundle)).toContain(
       'encounter "square_fixture_encounter" variant "fixture_variant" places "grumbler" on a blocked tile (1,3)',
     );
   });
@@ -192,8 +189,8 @@ describe('size-2 square footprints', () => {
       { x: 3, y: 1 },
       { reinforcement: { x: 1, y: 2 } },
     );
-    expect(validateContent(bundle)).toEqual([]);
-    expect(validateContent(bundle, { squareFootprints: true })).toContain(
+    expect(validateContent(bundle, { squareFootprints: false })).toEqual([]);
+    expect(validateContent(bundle)).toContain(
       'encounter "square_fixture_encounter" places "grumbler" on a blocked tile (1,3) of "square_fixture"',
     );
   });

@@ -9,7 +9,7 @@
 
 ## Who
 
-The same original quarry crawler as `unit.enemy.grumbler`: riveted rust armor,
+The same original quarry crawler as `unit.enemy.driller`: riveted rust armor,
 charcoal hull, dull brass bands, amber cab slit, one chimney, caterpillar tracks
 and a stout conical steel drill. Use `art/raw/grumbler/reference.png` to preserve
 the machine's identity and proportions. No operator appears.

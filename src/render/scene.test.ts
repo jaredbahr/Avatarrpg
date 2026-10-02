@@ -254,9 +254,7 @@ for (const projection of ['orthographic', 'oblique'] as const satisfies readonly
           scene,
           view({
             units: [unit({ x: 5, y: 2 })],
-            npcs: [
-              { id: 'grumbler', pos: origin, sprite: 'unit.enemy.grumbler', name: 'Grumbler' },
-            ],
+            npcs: [{ id: 'grumbler', pos: origin, sprite: 'unit.enemy.driller', name: 'Grumbler' }],
           }),
           camera,
         ),
@@ -279,7 +277,7 @@ for (const projection of ['orthographic', 'oblique'] as const satisfies readonly
       ).toBe(0.28);
     });
 
-    it('lets an injected square gate move the 2x2 occlusion foot', () => {
+    it('lets an injected legacy gate move the shipped 2x2 occlusion foot', () => {
       installImage(() => 255);
       const base = roof(camera);
       // In oblique projection depth is (x + y) / 2. This point falls between
@@ -287,8 +285,8 @@ for (const projection of ['orthographic', 'oblique'] as const satisfies readonly
       // footprint is behind the roof's depth line and should trigger the cutaway.
       const scene = { ...base, depth: { x: 3, y: 3 } };
       const state = view({ units: [unit(origin, { size: 2 })] });
-      expect(sceneryOpacity(scene, state, camera)).toBe(0.28);
-      expect(sceneryOpacity(scene, state, camera, true)).toBe(1);
+      expect(sceneryOpacity(scene, state, camera)).toBe(1);
+      expect(sceneryOpacity(scene, state, camera, false)).toBe(0.28);
     });
   });
 }

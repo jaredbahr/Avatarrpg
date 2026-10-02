@@ -83,6 +83,8 @@ export type AssetEntry =
       readonly footprint: { readonly w: number; readonly h: number };
       /** The point of the frame that stands on the tile's foot line, as fractions of the frame. */
       readonly anchor: { readonly x: number; readonly y: number };
+      /** UI-only headroom cap, in tiles, for sheets whose transient FX rise above the body. */
+      readonly uiHeadroomCap?: number;
       /** `mirror`: drawn facing screen-right and flipped for the other side. */
       readonly facing: 'mirror' | 'both';
       /** Eight-way locomotion, when the sheet authors it; absent is the four-way contract. */
@@ -380,38 +382,6 @@ export const ASSETS: Readonly<Record<string, AssetEntry>> = {
     },
   },
   'unit.enemy.sergeant': cuttingSheet('sergeant', 'enemy'),
-  'unit.enemy.grumbler': {
-    kind: 'sheet',
-    atlas: 'art/units/grumbler.json',
-    pixelsPerTile: 128,
-    footprint: { w: 2, h: 1 },
-    anchor: { x: 0.5, y: 0.85 },
-    facing: 'mirror',
-    palette: 'enemy',
-    clips: {
-      idle: {
-        frames: ['unit.enemy.grumbler/idle/0', 'unit.enemy.grumbler/idle/1'],
-        fps: 1,
-        loop: true,
-      },
-      walk: {
-        frames: ['unit.enemy.grumbler/walk/0', 'unit.enemy.grumbler/walk/1'],
-        fps: 4,
-        loop: true,
-      },
-      cast: {
-        frames: [
-          'unit.enemy.grumbler/cast/0',
-          'unit.enemy.grumbler/cast/1',
-          'unit.enemy.grumbler/cast/2',
-        ],
-        fps: 8,
-        loop: false,
-      },
-      hit: { frames: ['unit.enemy.grumbler/hit/0'], fps: 1, loop: false },
-      ko: { frames: ['unit.enemy.grumbler/ko/0'], fps: 1, loop: false },
-    },
-  },
   'unit.enemy.driller': {
     kind: 'sheet',
     atlas: 'art/units/driller.json',
@@ -419,6 +389,8 @@ export const ASSETS: Readonly<Record<string, AssetEntry>> = {
     frameSize: { w: 176, h: 176 },
     footprint: { w: 2, h: 2 },
     anchor: { x: 0.5, y: 0.8295454545454546 },
+    // Steam and debris reach above the rig; UI stays anchored to the 2x2 body envelope.
+    uiHeadroomCap: 0.85,
     facing: 'mirror',
     palette: 'enemy',
     clips: {

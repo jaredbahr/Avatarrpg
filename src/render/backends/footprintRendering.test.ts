@@ -81,11 +81,11 @@ describe('square-footprint backend parity', () => {
     // node. Pixi allocates real textures in its field initialisers and cannot be
     // built without a browser.
     vi.stubGlobal('document', { createElement: canvas });
-    const legacy = new Canvas2DBackend(canvas());
-    expect((legacy as unknown as { squareFootprints: boolean }).squareFootprints).toBe(
+    const shipped = new Canvas2DBackend(canvas());
+    expect((shipped as unknown as { squareFootprints: boolean }).squareFootprints).toBe(
       SQUARE_FOOTPRINTS,
     );
-    const square = new Canvas2DBackend(canvas(), true);
-    expect((square as unknown as { squareFootprints: boolean }).squareFootprints).toBe(true);
+    const legacy = new Canvas2DBackend(canvas(), false);
+    expect((legacy as unknown as { squareFootprints: boolean }).squareFootprints).toBe(false);
   });
 });

@@ -39,7 +39,8 @@ it.each(['thug', 'slinger', 'bruiser', 'quarrybender'])(
   60_000,
 );
 
-it('validates the dormant lossless Driller sheet', async () => {
+it('validates the live lossless Driller sheet and its UI headroom cap', async () => {
+  expect(ASSETS['unit.enemy.driller']).toMatchObject({ uiHeadroomCap: 0.85 });
   expect(
     await validateSheets('public', { 'unit.enemy.driller': ASSETS['unit.enemy.driller']! }),
   ).toEqual([]);
@@ -80,7 +81,7 @@ it('keeps the legacy route crossbow near party height without changing its pixel
     expect(enemyScale(key, 0.96)).toBeCloseTo(enemyScale(key) * 0.96);
   }
   for (const key of [
-    'unit.enemy.grumbler',
+    'unit.enemy.driller',
     'unit.ally.ruon',
     'unit.enemy.merc',
     'unit.enemy.sergeant',

@@ -107,10 +107,10 @@ export interface BattleReconcileResult {
 
 export interface ReconcileBattleOptions {
   /**
-   * TEMPORARY GATE (see `rules/footprint.ts`, removed in A-6): when true a
+   * TEMPORARY COMPATIBILITY GATE (see `rules/footprint.ts`): when true a
    * buried size-2 unit is snapped to a whole 2x2 square, not the legacy 2x1
    * pair. Tests pass it in rather than mutating module state; shipped loads
-   * default to `SQUARE_FOOTPRINTS`, so gate-off behaviour is unchanged.
+   * default to `SQUARE_FOOTPRINTS`, so shipped loads use square behaviour.
    */
   readonly squareFootprints?: boolean;
   /**

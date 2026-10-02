@@ -3,6 +3,6 @@
  *
  * Keep this in content because ESLint forbids content from importing
  * `core/rules` at runtime. The cross-layer equality test keeps the two
- * defaults synchronized until the gate is enabled.
+ * defaults synchronized until the compatibility plumbing is removed.
  */
-export const SQUARE_FOOTPRINT_CONTENT_DEFAULT = false;
+export const SQUARE_FOOTPRINT_CONTENT_DEFAULT = true;

@@ -129,7 +129,7 @@ export function resolvePainter(key: string): ResolvedPainter {
       banditVariants[key] ?? mercenaryVariants[key] ?? key.slice(key.lastIndexOf('.') + 1);
     // Missing atlases retain each enemy's original silhouette and equipment.
     const unitPainter =
-      (key === 'unit.enemy.grumbler' || key === 'unit.enemy.driller'
+      (key === 'unit.enemy.driller'
         ? UNIT_PAINTERS.driller
         : banditVariants[key]
           ? UNIT_PAINTERS.bandit

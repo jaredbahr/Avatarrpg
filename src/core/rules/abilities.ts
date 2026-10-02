@@ -64,7 +64,7 @@ import { canUseAbilities, effectiveStats, isAlive } from './stats';
  * caster there is only one cell, so this is the old behaviour exactly; for a
  * 2x2 it picks the gun that is actually pointing at the target rather than
  * whichever corner happens to come first. The reordering is switch-gated: the
- * legacy 2x1 keeps strict anchor-first order until A-6. No RNG, so preview and
+ * an explicitly injected legacy 2x1 keeps strict anchor-first order. No RNG, so preview and
  * resolution still agree.
  */
 export function validatingOrigin(

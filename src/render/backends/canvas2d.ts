@@ -20,8 +20,6 @@ import type { TileRelief } from '../geometry/board';
 import { boardRelief, decorSignature, seamMaterial, surfaceEdges } from '../geometry/board';
 import { aimArcPoints, arcHeading, arrowheadPolygon } from '../geometry/arc';
 import {
-  actorHeadroom,
-  actorHealthBar,
   actorSilhouetteGeometry,
   actorShadowDensity,
   healthBarCap,
@@ -1440,9 +1438,8 @@ export class Canvas2DBackend implements RenderBackend {
           unit.meleeDirection,
           heightTiles,
         );
-      const headroom = actorHeadroom(frame?.headroom, heightTiles);
       const silhouette = actorSilhouetteGeometry(
-        { x: box.x, y: box.y, size: box.size },
+        { x: box.x, y: box.y, size: box.size, width },
         heightTiles,
         frame?.headroom ?? null,
         scale,
@@ -1486,29 +1483,9 @@ export class Canvas2DBackend implements RenderBackend {
 
       if (!unit.fallen) {
         if (unit.showHealth !== false) {
-          this.drawHealthBar(
-            unit,
-            box.x,
-            box.y,
-            width,
-            box.size,
-            scale,
-            headroom,
-            view.hatch,
-            silhouette.barY,
-          );
+          this.drawHealthBar(unit, silhouette.bar, box.x, view.hatch);
         }
-        this.drawStatusBadges(
-          unit,
-          box.x,
-          box.y,
-          width,
-          box.size,
-          scale,
-          headroom,
-          heightTiles,
-          silhouette.badgeY,
-        );
+        this.drawStatusBadges(unit, box.x, width, box.size, silhouette.badgeY);
       } else {
         // A fallen unit gets a clear cross rather than just fading out.
         ctx.save();
@@ -1527,19 +1504,12 @@ export class Canvas2DBackend implements RenderBackend {
 
   private drawHealthBar(
     unit: RenderUnit,
-    x: number,
-    y: number,
-    width: number,
-    size: number,
-    scale: number,
-    headroom: number,
+    bar: ReturnType<typeof actorSilhouetteGeometry>['bar'],
+    actorX: number,
     hatch: boolean,
-    barYOverride?: number,
   ): void {
     const { ctx } = this;
     const fraction = Math.max(0, Math.min(1, unit.hp / Math.max(1, unit.maxHp)));
-    const bar = actorHealthBar(x, y, width, size, scale, headroom);
-    if (barYOverride !== undefined) bar.y = barYOverride;
     const { x: barX, y: barY, width: barWidth, height: barHeight } = bar;
     const fill = hpFill(unit.faction, fraction, hatch);
 
@@ -1553,7 +1523,7 @@ export class Canvas2DBackend implements RenderBackend {
     ctx.strokeRect(barX - 0.5, barY - 0.5, barWidth + 1, barHeight + 1);
 
     // The side's cap, so the bar reads by shape as well as colour.
-    const cap = healthBarCap(bar, HP_CAP[unit.faction], x);
+    const cap = healthBarCap(bar, HP_CAP[unit.faction], actorX);
     if (cap.length === 0) return;
     ctx.beginPath();
     for (let i = 0; i < cap.length; i += 2) ctx.lineTo(cap[i] ?? 0, cap[i + 1] ?? 0);
@@ -1566,13 +1536,9 @@ export class Canvas2DBackend implements RenderBackend {
   private drawStatusBadges(
     unit: RenderUnit,
     x: number,
-    y: number,
     width: number,
     size: number,
-    scale: number,
-    headroom: number,
-    heightTiles: number,
-    badgeY?: number,
+    badgeY: number,
   ): void {
     if (unit.statuses.length === 0) return;
     const { ctx } = this;
@@ -1580,11 +1546,7 @@ export class Canvas2DBackend implements RenderBackend {
     const shown = unit.statuses.slice(0, 4);
     const totalWidth = shown.length * radius * 2.2;
     let bx = x + width / 2 - totalWidth / 2 + radius;
-    const by =
-      badgeY ??
-      (heightTiles > 1
-        ? actorHealthBar(x, y, width, size, scale, headroom).y - radius * 1.4
-        : y + size * 0.97);
+    const by = badgeY;
 
     ctx.save();
     ctx.font = `700 ${Math.round(radius * 1.2)}px system-ui, sans-serif`;

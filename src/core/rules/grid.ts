@@ -82,9 +82,8 @@ export function neighbors(grid: Grid, p: Vec2): Vec2[] {
 }
 
 /**
- * Every cell a unit stands on. `size` is a side length, so 2 is a 2x2 block
- * until A-6, and the legacy 2x1 boss while the gate is off (see
- * `rules/footprint.ts`). Pass `square` to force the new geometry in tests.
+ * Every cell a unit stands on. `size` is a side length, so shipped size 2 is a
+ * 2x2 block. Pass false explicitly to exercise legacy 2x1 compatibility.
  */
 export function occupiedCells(
   unit: Pick<Unit, 'pos' | 'size'>,
@@ -248,9 +247,8 @@ export interface MoveContext {
   /** Footprint side length: every cell of the block must be free and legal. */
   readonly size: UnitSize;
   /**
-   * TEMPORARY GATE (see `rules/footprint.ts`, removed in A-6): when true a size
-   * 2 unit is a 2x2 square, when false/omitted it is the legacy 2x1. Defaults
-   * to `SQUARE_FOOTPRINTS`, so every shipped caller keeps today's behaviour.
+   * TEMPORARY COMPATIBILITY GATE (see `rules/footprint.ts`): true/default is a
+   * 2x2 square; explicit false retains legacy 2x1 behavior for tests and saves.
    */
   readonly squareFootprints?: boolean;
   /**
@@ -291,8 +289,7 @@ function footprintCost(ctx: MoveContext, p: Vec2): number | null {
  * search, and to decide where a move may stop.
  *
  * A 2x2 may stand only on flat ground: all four of its cells must share one
- * elevation. Gated with the square footprint, so the legacy 2x1 boss keeps its
- * old, tier-straddling standability until A-6.
+ * elevation. An explicitly injected legacy 2x1 retains tier-straddling behavior.
  */
 export function standCost(ctx: MoveContext, p: Vec2): number | null {
   const cost = footprintCost(ctx, p);

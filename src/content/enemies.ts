@@ -140,7 +140,7 @@ export const ENEMIES: readonly EnemyDef[] = [
     abilities: ['driller_slam', 'driller_debris', 'driller_spray', 'driller_churn', 'raise_rubble'],
     ai: 'boss',
     xp: 360,
-    sprite: 'unit.enemy.grumbler',
+    sprite: 'unit.enemy.driller',
     description:
       'A quartermaster at the controls of a two-tile mecha-driller. Slams a cone once a turn, sprays oil, hurls debris and churns the floor to mud.',
   },

@@ -420,8 +420,9 @@ export class SheetStore {
         this.loaded.set(key, {
           pages,
           clips,
-          headroom: Math.max(
-            ...pages.map((page) => atlasHeadroom(entry, page.atlas, page.image, clips)),
+          headroom: Math.min(
+            entry.uiHeadroomCap ?? Number.POSITIVE_INFINITY,
+            Math.max(...pages.map((page) => atlasHeadroom(entry, page.atlas, page.image, clips))),
           ),
         });
         if (this.bendsWanted.has(key)) this.bend(key, entry);
