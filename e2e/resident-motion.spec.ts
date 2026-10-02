@@ -4,8 +4,6 @@ import { allowSoftwareWebgl } from './budget';
 import { enterNode, pauseClock, resetStorage, startGame, waitForIdle } from './helpers';
 import type { GameState } from '../src/core/types';
 import type { NpcMarker } from '../src/render/view';
-import { TIMING } from '../src/app/anim/choreography';
-import { STROLL_RAMP_MS } from '../src/app/anim/stroll';
 
 /**
  * What a fake-clock resident walk is allowed on a slow runner. These cases step
@@ -17,11 +15,6 @@ import { STROLL_RAMP_MS } from '../src/app/anim/stroll';
 const FAKE_CLOCK_WALK_BUDGET_MS = 180_000;
 
 const CLOCK_STEP_MS = 60;
-const PHASE_ROUTE_TILES = 20;
-const PHASE_ROUTE_MARGIN_MS = 1_000;
-const PHASE_ROUTE_STEPS = Math.ceil(
-  (PHASE_ROUTE_TILES * TIMING.strollStep + STROLL_RAMP_MS + PHASE_ROUTE_MARGIN_MS) / CLOCK_STEP_MS,
-);
 
 /**
  * Advance the residents' clamped presentation clock without rendering every
@@ -149,7 +142,7 @@ for (const renderer of ['canvas', 'webgl'] as const) {
   test(`a phase change walks residents across the village, one sprite each (${renderer})`, async ({
     page,
   }) => {
-    // The canvas variant renders the whole walk frame by frame; WebGL takes the larger cap.
+    // Both variants retain sampled rendered windows under the larger fake-clock cap.
     test.setTimeout(FAKE_CLOCK_WALK_BUDGET_MS);
     allowSoftwareWebgl(test, renderer);
     await village(page, renderer, 'midday', { x: 10, y: 5 });
@@ -201,18 +194,34 @@ for (const renderer of ['canvas', 'webgl'] as const) {
           break;
       }
     } else {
-      // Size the fake-clock budget from the longest phase-change route, its
-      // acceleration/braking ramp, and a rendering margin at the current pace.
-      // Stop on the rendered settled state rather than assuming every fake-clock
-      // advance produced an animation frame in every browser.
-      for (let step = 0; step < PHASE_ROUTE_STEPS; step++) {
-        await page.clock.runFor(CLOCK_STEP_MS);
-        const frame = await residentFrame(page);
-        end = frame.markers;
+      // First observe Mira between tiles. That proves a rendered frame planned
+      // the phase-change walk before either sampling or skipping it. Continue
+      // until the assertion's seven distinct adjacent positions are present;
+      // this depends on motion, not how many rAF callbacks a browser batches.
+      for (let step = 0; step < 100; step++) {
+        await sample();
         const mira = end.find((m) => m.id === 'lw.npc.mira');
         if (mira && mira.alpha === 1) trail.push(mira.at);
+        const underway = Boolean(
+          mira && (!Number.isInteger(mira.at.x) || !Number.isInteger(mira.at.y)),
+        );
+        if (underway && new Set(trail.map((p) => `${p.x},${p.y}`)).size > 6) break;
+      }
+      expect(new Set(trail.map((p) => `${p.x},${p.y}`)).size).toBeGreaterThan(6);
+      await advanceResidentsWithoutFrames(page, 10_000);
+      // Render until the observed settled frame after the skip rather than
+      // assuming a particular number of rAF callbacks will be delivered.
+      for (let step = 0; step < 100; step++) {
+        await sample();
+        const mira = end.find((m) => m.id === 'lw.npc.mira');
         const dorin = end.find((m) => m.id === 'lw.npc.dorin');
-        if (!frame.moving && !mira && dorin?.at.x === 17 && dorin.at.y === 6 && dorin.alpha === 1)
+        if (
+          !residentsMoving &&
+          !mira &&
+          dorin?.at.x === 17 &&
+          dorin.at.y === 6 &&
+          dorin.alpha === 1
+        )
           break;
       }
     }
@@ -329,8 +338,12 @@ test('a tap on someone walking takes the party to them once they arrive', async 
   expect(Math.max(Math.abs(set.pos.x - 17), Math.abs(set.pos.y - 6))).toBe(1);
   await expect(page.locator('.walk-feedback')).toContainText(/Next: .*Dorin/);
   // No conversation opens while he is still walking.
+  // Dorin and the party are both already on planned walks. The resident helper
+  // advances Dorin's clamped clock, while fastForward also advances the party's
+  // timestamp-based animator; one rendered window then consumes the queued talk.
+  await advanceResidentsWithoutFrames(page, 10_000);
   let opened = false;
-  for (let step = 0; step < 80 && !opened; step++) {
+  for (let step = 0; step < 10 && !opened; step++) {
     await page.clock.runFor(100);
     const now = await page.evaluate(() => ({
       screen: window.fnt!.app.state!.screen,
@@ -364,9 +377,19 @@ test('a tap on Gao at his crates brings him home before the talk opens', async (
   const home = { pos: { x: 9, y: 4 }, at: { x: 9, y: 4 }, walking: false };
   // The initial six-second shop hold has no motion to render.
   await advanceResidentsWithoutFrames(page, 6_000);
+  // Wait for a rendered frame to plan the already-due crates leg. In
+  // particular, do not let a WebKit runFor window with no useful rAF turn the
+  // following clock-only advance into more hold time instead of walk time.
+  let cratesLegStarted = false;
+  for (let step = 0; step < 100 && !cratesLegStarted; step++) {
+    await page.clock.runFor(100);
+    cratesLegStarted = Boolean((await gao())?.walking);
+  }
+  expect(cratesLegStarted).toBe(true);
+  await advanceResidentsWithoutFrames(page, 700);
   // Wait for him to stop at the display's crates, off his rules tile.
   let crates = false;
-  for (let step = 0; step < 200 && !crates; step++) {
+  for (let step = 0; step < 100 && !crates; step++) {
     await page.clock.runFor(100);
     const now = await gao();
     crates = now?.at.x === 8 && now.at.y === 5 && !now.walking;
@@ -387,8 +410,28 @@ test('a tap on Gao at his crates brings him home before the talk opens', async (
   // The talk waits for him: the party sets off, and nothing opens yet.
   expect(await page.evaluate(() => window.fnt!.app.state!.screen)).toBe('explore');
   await expect(page.locator('.walk-feedback')).toContainText(/Next: .*Gao/);
+  // The click recalls Gao, but planning that return still belongs to a rendered
+  // frame. Observe it before taking the cheap interior skip.
+  let homeLegStarted = false;
+  for (let step = 0; step < 100 && !homeLegStarted; step++) {
+    await page.clock.runFor(100);
+    homeLegStarted = Boolean((await gao())?.walking);
+  }
+  expect(homeLegStarted).toBe(true);
+  await advanceResidentsWithoutFrames(page, 700);
+  let homeReached = false;
+  for (let step = 0; step < 100 && !homeReached; step++) {
+    await page.clock.runFor(100);
+    const now = await gao();
+    homeReached = now?.at.x === 9 && now.at.y === 4 && !now.walking;
+  }
+  expect(homeReached).toBe(true);
+  expect(await page.evaluate(() => window.fnt!.app.state!.screen)).toBe('explore');
+  // Advance only page time for the longer party stroll so Gao's home hold
+  // cannot start another errand mid-skip.
+  await page.clock.fastForward(10_000);
   let opened = false;
-  for (let step = 0; step < 80 && !opened; step++) {
+  for (let step = 0; step < 10 && !opened; step++) {
     await page.clock.runFor(100);
     opened = (await page.evaluate(() => window.fnt!.app.state!.screen)) === 'dialogue';
     // The conversation opens with him standing on his rules tile.
@@ -399,7 +442,7 @@ test('a tap on Gao at his crates brings him home before the talk opens', async (
     'shopkeeper_gao',
   );
   // And he stays there while they talk.
-  await page.clock.runFor(3000);
+  await page.clock.fastForward(3000);
   await page.clock.resume();
   expect(await gao()).toEqual(home);
 });
