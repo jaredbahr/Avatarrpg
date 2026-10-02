@@ -14,7 +14,9 @@ export interface ScenarioRow {
   readonly partySize: number;
   readonly winRate: number;
   readonly meanRounds: number;
-  readonly meanPartyHpLeft: number;
+  /** Fraction of starting party HP remaining, averaged across trials (0-1). */
+  readonly meanPartyHpRemaining: number;
+  readonly meanPartyDeaths: number;
   readonly props: Readonly<Record<string, PropCounts>>;
   /** Best available from existing events; see `limitations` in the JSON report. */
   readonly unattributedEnvironmentalFireDamage: { readonly party: number; readonly enemy: number };
@@ -73,7 +75,8 @@ export function runScenarioReport(
     for (const encounter of content.encounters.values()) {
       let wins = 0;
       let rounds = 0;
-      let hp = 0;
+      let hpRemaining = 0;
+      let deaths = 0;
       const props: Record<string, PropCounts> = Object.fromEntries(
         [...content.props.keys()].map((id) => [id, emptyCounts()]),
       );
@@ -88,7 +91,8 @@ export function runScenarioReport(
         });
         if (result.outcome === 'victory') wins++;
         rounds += result.rounds;
-        hp += result.partyHpRemaining;
+        hpRemaining += result.partyHpTotal > 0 ? result.partyHpRemaining / result.partyHpTotal : 0;
+        deaths += result.partyDeaths;
         const counted = countPropEvents(result.events, propNames);
         for (const [id, value] of Object.entries(counted.props)) {
           const aggregate = (props[id] ??= emptyCounts());
@@ -105,7 +109,8 @@ export function runScenarioReport(
         partySize,
         winRate: wins / trials,
         meanRounds: rounds / trials,
-        meanPartyHpLeft: hp / trials,
+        meanPartyHpRemaining: hpRemaining / trials,
+        meanPartyDeaths: deaths / trials,
         props,
         unattributedEnvironmentalFireDamage: {
           party: fire.party / trials,

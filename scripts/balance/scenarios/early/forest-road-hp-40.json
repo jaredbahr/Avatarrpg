@@ -1,0 +1,11 @@
+{
+  "encounters": {
+    "enc_forest_road": {
+      "enemyStats": {
+        "bandit_thug": { "maxHp": 39 },
+        "bandit_slinger": { "maxHp": 31 },
+        "bandit_bruiser": { "maxHp": 59 }
+      }
+    }
+  }
+}

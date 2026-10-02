@@ -1,0 +1,11 @@
+{
+  "encounters": {
+    "enc_ambush": {
+      "enemyStats": {
+        "merc_blade": { "power": 7 },
+        "merc_crossbow": { "power": 6 },
+        "merc_sergeant": { "power": 7 }
+      }
+    }
+  }
+}

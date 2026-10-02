@@ -1,0 +1,13 @@
+{
+  "encounters": {
+    "enc_quarry_gate": {
+      "enemyStats": {
+        "fire_deserter": { "power": 7 },
+        "bandit_thug": { "power": 6 },
+        "bandit_bruiser": { "power": 7 },
+        "bandit_slinger": { "power": 5 },
+        "bandit_earthbender": { "power": 7 }
+      }
+    }
+  }
+}

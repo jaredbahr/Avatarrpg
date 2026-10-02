@@ -1,0 +1,13 @@
+{
+  "encounters": {
+    "enc_quarry_gate": {
+      "enemyStats": {
+        "fire_deserter": { "maxHp": 41 },
+        "bandit_thug": { "maxHp": 34 },
+        "bandit_bruiser": { "maxHp": 50 },
+        "bandit_slinger": { "maxHp": 26 },
+        "bandit_earthbender": { "maxHp": 43 }
+      }
+    }
+  }
+}

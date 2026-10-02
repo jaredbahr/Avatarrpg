@@ -1,0 +1,7 @@
+{
+  "encounters": {
+    "enc_quarry_gate": {
+      "addEnemies": [{ "enemyId": "bandit_thug", "pos": { "x": 15, "y": 6 } }]
+    }
+  }
+}

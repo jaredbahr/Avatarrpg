@@ -105,16 +105,18 @@ if (scenarioPath) {
       `Baseline and scenario - ${trials} paired AI-vs-AI trials per encounter and size\n`,
     );
     console.log(
-      `${pad('Encounter / size', 39)}${pad('Base win', 11)}${pad('Scen win', 11)}` +
-        `${pad('Base rnd', 11)}${pad('Scen rnd', 11)}${pad('Base HP', 11)}Scen HP`,
+      `${pad('Encounter / size', 32)}${pad('Base win', 10)}${pad('Scen win', 10)}` +
+        `${pad('Base rnd', 10)}${pad('Scen rnd', 10)}${pad('Base deaths', 13)}` +
+        `${pad('Scen deaths', 13)}${pad('Base HP', 10)}Scen HP`,
     );
     for (const base of baseline.rows) {
       const next = pairedRow(candidate, base.encounterId, base.partySize);
       console.log(
-        `${pad(`${base.label} / ${base.partySize}`, 39)}` +
-          `${num(base.winRate * 100, 7)}%   ${num(next.winRate * 100, 7)}%   ` +
-          `${num(base.meanRounds, 7)}   ${num(next.meanRounds, 7)}   ` +
-          `${num(base.meanPartyHpLeft, 7)}   ${num(next.meanPartyHpLeft, 7)}`,
+        `${pad(`${base.label} / ${base.partySize}`, 32)}` +
+          `${num(base.winRate * 100, 6)}%   ${num(next.winRate * 100, 6)}%   ` +
+          `${num(base.meanRounds, 6)}   ${num(next.meanRounds, 6)}   ` +
+          `${num(base.meanPartyDeaths, 7)}   ${num(next.meanPartyDeaths, 7)}   ` +
+          `${num(base.meanPartyHpRemaining * 100, 5)}%   ${num(next.meanPartyHpRemaining * 100, 5)}%`,
       );
     }
 

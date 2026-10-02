@@ -1,0 +1,11 @@
+{
+  "encounters": {
+    "enc_ambush": {
+      "enemyStats": {
+        "merc_blade": { "maxHp": 50 },
+        "merc_crossbow": { "maxHp": 39 },
+        "merc_sergeant": { "maxHp": 62 }
+      }
+    }
+  }
+}

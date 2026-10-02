@@ -1,0 +1,7 @@
+{
+  "encounters": {
+    "enc_ambush": {
+      "addEnemies": [{ "enemyId": "merc_blade", "pos": { "x": 16, "y": 8 } }]
+    }
+  }
+}
