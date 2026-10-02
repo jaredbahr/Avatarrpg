@@ -8,6 +8,7 @@ import {
   fallenFacing,
   inspectTargetAt,
   moveHoverFootprint,
+  overlayMemoInputKey,
   occupiedUnitAt,
   overlayMemoHoverKey,
 } from './CombatScene';
@@ -91,6 +92,21 @@ describe('combat overlay memo key', () => {
       { x: 4, y: 3 },
       { x: 5, y: 3 },
     ]);
+  });
+
+  it('keys protected tiles by mode, ability, pending tile, and active unit', () => {
+    const pending = { x: 4, y: 3 };
+    const first = overlayMemoInputKey({ kind: 'aim', abilityId: 'first' }, pending, 'hero');
+    expect(overlayMemoInputKey({ kind: 'move' }, pending, 'hero')).not.toBe(first);
+    expect(overlayMemoInputKey({ kind: 'aim', abilityId: 'second' }, pending, 'hero')).not.toBe(
+      first,
+    );
+    expect(
+      overlayMemoInputKey({ kind: 'aim', abilityId: 'first' }, { x: 5, y: 3 }, 'hero'),
+    ).not.toBe(first);
+    expect(overlayMemoInputKey({ kind: 'aim', abilityId: 'first' }, pending, 'other')).not.toBe(
+      first,
+    );
   });
 
   it('focuses the shipped 2x2 at its anchor and retains explicit legacy focus', () => {

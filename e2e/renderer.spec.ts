@@ -1,8 +1,67 @@
 import { expect, test } from '@playwright/test';
-import type { Page } from '@playwright/test';
+import type { Locator, Page } from '@playwright/test';
 import { allowSoftwareWebgl } from './budget';
 import { enterNode, resetStorage, settleLayout, startGame, takeTurn, waitForIdle } from './helpers';
 import { average, screenshotPixels } from './pixels';
+
+type CameraSnapshot = {
+  a: number;
+  b: number;
+  c: number;
+  d: number;
+  tx: number;
+  ty: number;
+  tilePx: number;
+};
+
+const MAX_STABLE_PROBE_ATTEMPTS = 3;
+
+function sameCamera(a: CameraSnapshot, b: CameraSnapshot): boolean {
+  return (
+    a.a === b.a &&
+    a.b === b.b &&
+    a.c === b.c &&
+    a.d === b.d &&
+    a.tx === b.tx &&
+    a.ty === b.ty &&
+    a.tilePx === b.tilePx
+  );
+}
+
+async function stablePixelProbe<T>(
+  page: Page,
+  canvas: Locator,
+  sample: () => Promise<{ camera: CameraSnapshot; probe: T } | null>,
+  label: string,
+): Promise<{ probe: T; pixels: Awaited<ReturnType<typeof screenshotPixels>> } | null> {
+  let cameraMoved = false;
+  for (let attempt = 0; attempt < MAX_STABLE_PROBE_ATTEMPTS; attempt++) {
+    const candidate = await sample();
+    if (!candidate) {
+      if (cameraMoved) {
+        throw new Error(
+          `${label}: camera moved while sampling; no stable probe after ${MAX_STABLE_PROBE_ATTEMPTS} attempts`,
+        );
+      }
+      return null;
+    }
+    const pixels = await screenshotPixels(canvas);
+    const after = await page.evaluate(() => {
+      const camera = window.fnt?.app.rendererCamera?.();
+      if (!camera) return null;
+      const m = camera.groundTransform;
+      return { a: m.a, b: m.b, c: m.c, d: m.d, tx: m.tx, ty: m.ty, tilePx: camera.tilePx };
+    });
+    if (after && sameCamera(candidate.camera, after)) return { probe: candidate.probe, pixels };
+    cameraMoved = true;
+  }
+  if (cameraMoved) {
+    throw new Error(
+      `${label}: camera moved while sampling; no stable probe after ${MAX_STABLE_PROBE_ATTEMPTS} attempts`,
+    );
+  }
+  return null;
+}
 
 /**
  * The renderer picks a backend at runtime, so both paths need covering.
@@ -167,56 +226,79 @@ test.describe('renderer backends', () => {
       await page.evaluate(() => {
         const scene = (
           window.fnt?.app as unknown as {
-            scene: { renderer?: { camera: { centreOn(pos: { x: number; y: number }): void } } };
+            scene: {
+              manualCamera: boolean;
+              renderer?: { camera: { centreOn(pos: { x: number; y: number }): void } };
+            };
           }
         ).scene;
+        // This is the existing scene flag used by a player's manual pan; it
+        // keeps a ResizeObserver refit from undoing the test's centreOn().
+        scene.manualCamera = true;
         scene.renderer?.camera.centreOn({ x: 9, y: 9 });
       });
       await page.evaluate(
         () => new Promise((done) => requestAnimationFrame(() => requestAnimationFrame(done))),
       );
 
-      const probe = await page.evaluate(() => {
-        const app = window.fnt?.app;
-        const camera = app?.rendererCamera();
-        const battle = app?.state?.battle;
-        const canvas = document.querySelector<HTMLCanvasElement>('.map-canvas');
-        if (!camera || !battle || !canvas) return null;
-        const rect = canvas.getBoundingClientRect();
-        const m = camera.groundTransform;
-        const { grid } = battle;
-        const tile = (x: number, y: number) => grid.tiles[y * grid.width + x];
-        const near = (x: number, y: number) =>
-          battle.units.some((u) => Math.abs(u.pos.x - x) <= 2 && Math.abs(u.pos.y - y) <= 2) ||
-          battle.props.some((p) => Math.abs(p.pos.x - x) <= 2 && Math.abs(p.pos.y - y) <= 2);
-        const screen = (gx: number, gy: number, up: number) => ({
-          x: m.a * gx * 64 + m.c * gy * 64 + m.tx,
-          y: m.b * gx * 64 + m.d * gy * 64 + m.ty - camera.tilePx * up,
-        });
-        const clear = (p: { x: number; y: number }) =>
-          p.x > 8 &&
-          p.y > 8 &&
-          p.x < rect.width - 8 &&
-          p.y < rect.height - 8 &&
-          document.elementFromPoint(rect.left + p.x, rect.top + p.y) === canvas;
-        for (const x of [5, 6, 10, 14, 15, 4, 9, 13]) {
-          const bench = tile(x, 10);
-          const behind = tile(x - 1, 9);
-          if (!bench?.ramp || bench.surface || behind?.elevation !== 0 || behind.surface) continue;
-          if (near(x, 10)) continue;
-          // The top's far corner, a quarter tile up; its centre; the dirt it covers.
-          const corner = screen(x + 0.12, 10.12, 0.25);
-          const centre = screen(x + 0.5, 10.5, 0.25);
-          const dirt = screen(x - 0.5, 9.4, 0);
-          if (![corner, centre, dirt].every(clear)) continue;
-          return { corner, centre, dirt };
-        }
-        return null;
-      });
-      expect(probe, 'no clear front bench on screen').not.toBeNull();
-      if (!probe) return;
+      const canvas = page.locator('.map-canvas');
+      const captured = await stablePixelProbe(
+        page,
+        canvas,
+        () =>
+          page.evaluate(() => {
+            const app = window.fnt?.app;
+            const camera = app?.rendererCamera();
+            const battle = app?.state?.battle;
+            const canvas = document.querySelector<HTMLCanvasElement>('.map-canvas');
+            if (!camera || !battle || !canvas) return null;
+            const rect = canvas.getBoundingClientRect();
+            const m = camera.groundTransform;
+            const cameraSnapshot = {
+              a: m.a,
+              b: m.b,
+              c: m.c,
+              d: m.d,
+              tx: m.tx,
+              ty: m.ty,
+              tilePx: camera.tilePx,
+            };
+            const { grid } = battle;
+            const tile = (x: number, y: number) => grid.tiles[y * grid.width + x];
+            const near = (x: number, y: number) =>
+              battle.units.some((u) => Math.abs(u.pos.x - x) <= 2 && Math.abs(u.pos.y - y) <= 2) ||
+              battle.props.some((p) => Math.abs(p.pos.x - x) <= 2 && Math.abs(p.pos.y - y) <= 2);
+            const screen = (gx: number, gy: number, up: number) => ({
+              x: m.a * gx * 64 + m.c * gy * 64 + m.tx,
+              y: m.b * gx * 64 + m.d * gy * 64 + m.ty - camera.tilePx * up,
+            });
+            const clear = (p: { x: number; y: number }) =>
+              p.x > 8 &&
+              p.y > 8 &&
+              p.x < rect.width - 8 &&
+              p.y < rect.height - 8 &&
+              document.elementFromPoint(rect.left + p.x, rect.top + p.y) === canvas;
+            for (const x of [5, 6, 10, 14, 15, 4, 9, 13]) {
+              const bench = tile(x, 10);
+              const behind = tile(x - 1, 9);
+              if (!bench?.ramp || bench.surface || behind?.elevation !== 0 || behind.surface)
+                continue;
+              if (near(x, 10)) continue;
+              // The top's far corner, a quarter tile up; its centre; the dirt it covers.
+              const corner = screen(x + 0.12, 10.12, 0.25);
+              const centre = screen(x + 0.5, 10.5, 0.25);
+              const dirt = screen(x - 0.5, 9.4, 0);
+              if (![corner, centre, dirt].every(clear)) continue;
+              return { camera: cameraSnapshot, probe: { corner, centre, dirt } };
+            }
+            return null;
+          }),
+        'raised bench pixel probe',
+      );
+      expect(captured, 'no clear front bench on screen').not.toBeNull();
+      if (!captured) return;
 
-      const pixels = await screenshotPixels(page.locator('.map-canvas'));
+      const { probe, pixels } = captured;
       const corner = average(pixels, probe.corner.x, probe.corner.y, 2);
       const centre = average(pixels, probe.centre.x, probe.centre.y, 2);
       const dirt = average(pixels, probe.dirt.x, probe.dirt.y, 2);
@@ -262,6 +344,15 @@ test.describe('renderer backends', () => {
             if (!camera || !battle || !canvas) return null;
             const rect = canvas.getBoundingClientRect();
             const m = camera.groundTransform;
+            const cameraSnapshot = {
+              a: m.a,
+              b: m.b,
+              c: m.c,
+              d: m.d,
+              tx: m.tx,
+              ty: m.ty,
+              tilePx: camera.tilePx,
+            };
             const { grid } = battle;
             const tile = (x: number, y: number) =>
               x < 0 || y < 0 || x >= grid.width || y >= grid.height
@@ -298,9 +389,13 @@ test.describe('renderer backends', () => {
               const centre = screen(cell.x + 0.5, cell.y + 0.5, up);
               const face = screen(cell.x + 0.375, cell.y + 0.875, 0);
               if (![corner, centre, face].every(clear)) continue;
-              return { cell, aim: { corner, centre, face, x: rect.left, y: rect.top } };
+              return {
+                camera: cameraSnapshot,
+                cell,
+                aim: { corner, centre, face, x: rect.left, y: rect.top },
+              };
             }
-            return { cell: cells[0] ?? null, aim: null };
+            return { camera: cameraSnapshot, cell: cells[0] ?? null, aim: null };
           });
         let probe = await find();
         if (probe?.cell && !probe.aim) {
@@ -309,10 +404,12 @@ test.describe('renderer backends', () => {
             const scene = (
               window.fnt?.app as unknown as {
                 scene: {
+                  manualCamera: boolean;
                   renderer?: { camera: { centreOn(pos: { x: number; y: number }): void } };
                 };
               }
             ).scene;
+            scene.manualCamera = true;
             scene.renderer?.camera.centreOn(cell);
           }, probe.cell);
           await page.evaluate(
@@ -323,7 +420,7 @@ test.describe('renderer backends', () => {
         expect(probe?.aim, `no clear raised tile: ${JSON.stringify(probe)}`).toBeTruthy();
         if (!probe?.aim || !probe.cell) return;
         const { cell } = probe;
-        const { corner, centre, face, ...rect } = probe.aim;
+        const { corner, ...rect } = probe.aim;
 
         const hover = () =>
           page.evaluate(
@@ -336,10 +433,23 @@ test.describe('renderer backends', () => {
             () => new Promise((done) => requestAnimationFrame(() => requestAnimationFrame(done))),
           );
         const read = async () => {
-          const pixels = await screenshotPixels(page.locator('.map-canvas'));
+          const captured = await stablePixelProbe(
+            page,
+            page.locator('.map-canvas'),
+            async () => {
+              const next = await find();
+              return next?.aim ? { camera: next.camera, probe: next } : null;
+            },
+            `raised tile mark pixel probe on ${node} (${renderer})`,
+          );
+          if (!captured) throw new Error(`no clear raised tile on ${node} (${renderer})`);
+          const next = captured.probe.aim;
+          if (!next) throw new Error(`no clear raised tile on ${node} (${renderer})`);
+          const pixels = captured.pixels;
           return {
-            corner: average(pixels, corner.x, corner.y, 2),
-            face: average(pixels, face.x, face.y, 2),
+            corner: average(pixels, next.corner.x, next.corner.y, 2),
+            face: average(pixels, next.face.x, next.face.y, 2),
+            aim: next,
           };
         };
 
@@ -349,7 +459,10 @@ test.describe('renderer backends', () => {
         await expect.poll(async () => JSON.stringify(await hover())).not.toBe(JSON.stringify(cell));
         await frame();
         const before = await read();
-        await page.mouse.move(rect.x + centre.x, rect.y + centre.y);
+        await page.mouse.move(
+          before.aim.x + before.aim.centre.x,
+          before.aim.y + before.aim.centre.y,
+        );
         await expect.poll(hover).toEqual(cell);
         await frame();
         const after = await read();

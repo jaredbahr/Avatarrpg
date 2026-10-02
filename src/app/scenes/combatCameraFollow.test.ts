@@ -55,7 +55,12 @@ describe('animated large-actor camera follow', () => {
   it('moves idle -> following -> release recentre, with one owner per frame', () => {
     const following = combatCameraFollowDecision(
       { kind: 'idle' },
-      { animatedUnitId: 'boss', activeUnitId: 'hero', manualCamera: false },
+      {
+        animatedUnitId: 'boss',
+        activeUnitId: 'hero',
+        followSuspended: false,
+        reducedMotion: false,
+      },
     );
     expect(following).toEqual({
       state: { kind: 'following', unitId: 'boss' },
@@ -65,16 +70,32 @@ describe('animated large-actor camera follow', () => {
       combatCameraFollowDecision(following.state, {
         animatedUnitId: 'boss',
         activeUnitId: 'hero',
-        manualCamera: false,
+        followSuspended: false,
+        reducedMotion: false,
       }),
     ).toEqual({ state: following.state, owner: 'follow' });
     expect(
       combatCameraFollowDecision(following.state, {
         animatedUnitId: null,
         activeUnitId: 'hero',
-        manualCamera: false,
+        followSuspended: false,
+        reducedMotion: false,
       }),
     ).toEqual({ state: { kind: 'idle' }, owner: 'recentre' });
+  });
+
+  it('suspended framing keeps idle while an animation is present', () => {
+    expect(
+      combatCameraFollowDecision(
+        { kind: 'idle' },
+        {
+          animatedUnitId: 'boss',
+          activeUnitId: 'hero',
+          followSuspended: true,
+          reducedMotion: false,
+        },
+      ),
+    ).toEqual({ state: { kind: 'idle' }, owner: 'idle' });
   });
 
   it('manual framing suspends follow and suppresses release recentring', () => {
@@ -83,15 +104,42 @@ describe('animated large-actor camera follow', () => {
       combatCameraFollowDecision(state, {
         animatedUnitId: 'boss',
         activeUnitId: 'hero',
-        manualCamera: true,
+        followSuspended: true,
+        reducedMotion: false,
       }).owner,
     ).toBe('idle');
     expect(
       combatCameraFollowDecision(state, {
         animatedUnitId: null,
         activeUnitId: 'hero',
-        manualCamera: true,
+        followSuspended: true,
+        reducedMotion: false,
       }),
+    ).toEqual({ state: { kind: 'idle' }, owner: 'idle' });
+  });
+
+  it('does not follow or release an animated actor under reduced motion', () => {
+    expect(
+      combatCameraFollowDecision(
+        { kind: 'idle' },
+        {
+          animatedUnitId: 'boss',
+          activeUnitId: 'hero',
+          followSuspended: false,
+          reducedMotion: true,
+        },
+      ),
+    ).toEqual({ state: { kind: 'idle' }, owner: 'idle' });
+    expect(
+      combatCameraFollowDecision(
+        { kind: 'following', unitId: 'boss' },
+        {
+          animatedUnitId: null,
+          activeUnitId: 'hero',
+          followSuspended: false,
+          reducedMotion: true,
+        },
+      ),
     ).toEqual({ state: { kind: 'idle' }, owner: 'idle' });
   });
 });

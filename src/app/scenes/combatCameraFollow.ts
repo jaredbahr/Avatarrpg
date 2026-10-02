@@ -23,19 +23,23 @@ export function combatCameraFollowDecision(
   options: {
     readonly animatedUnitId: string | null;
     readonly activeUnitId: string | null;
-    readonly manualCamera: boolean;
+    readonly followSuspended: boolean;
+    readonly reducedMotion: boolean;
   },
 ): { readonly state: CombatCameraFollowState; readonly owner: CombatCameraOwner } {
+  if (options.reducedMotion) {
+    return { state: { kind: 'idle' }, owner: 'idle' };
+  }
   if (state.kind === 'following') {
     if (options.animatedUnitId === state.unitId) {
-      return { state, owner: options.manualCamera ? 'idle' : 'follow' };
+      return { state, owner: options.followSuspended ? 'idle' : 'follow' };
     }
     return {
       state: { kind: 'idle' },
-      owner: !options.manualCamera && options.activeUnitId ? 'recentre' : 'idle',
+      owner: !options.followSuspended && options.activeUnitId ? 'recentre' : 'idle',
     };
   }
-  if (options.animatedUnitId && !options.manualCamera) {
+  if (options.animatedUnitId && !options.followSuspended) {
     return {
       state: { kind: 'following', unitId: options.animatedUnitId },
       owner: 'follow',
