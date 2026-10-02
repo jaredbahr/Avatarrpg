@@ -25,16 +25,16 @@ $env:BALANCE_SIZES='1,3,6'
 ```
 
 Each command prints paired baseline and scenario rows with `Win %`, `Rounds`,
-`Deaths`, and `HP left`, matching the ordinary balance report. In the tables,
-enter the scenario values as slash-separated `1 / 3 / 6 player` results. Copy
-the baseline from any run; paired runs use the same seeds. `Deaths` is the
-report's count of party members down at combat end.
+`Deaths`, and `HP left`, matching the ordinary balance report. The tables give
+each value as `1 / 3 / 6 player` results; paired runs use the same seeds, so
+the baseline row is the same in every run. `Deaths` is the report's count of
+party members down at combat end.
 
 ## Findings (measured 2026-10-02, 80 trials per party size)
 
-- The 70-85% win band is not reachable in the three early fights with any single mild lever. The simulated party wins 100% of trials in 32 of the 36 scenario rows; only the Quarry Gate at HP +40% (three and six players) and two solo rows (the extra blade in The Cutting, the extra thug at the Quarry Gate) dip below.
+- The 70-85% win band is not reachable in the three early fights with any single mild lever. The simulated party wins 100% of trials in 32 of the 36 scenario rows; only the Quarry Gate at HP +40% (three and six players) and two solo rows (the extra-enemy rows in The Cutting and at the Quarry Gate) dip below. Read the extra-enemy rows with the two cautions noted under their tables.
 - Win rate is therefore the wrong gauge here. HP left and members down show the real differences: the Quarry Gate is already tense (six players: 48% HP left, 2.2 down), while the Forest Road and The Cutting are gentle.
-- Recommendation: leave the Forest Road (tutorial) and the Quarry Gate as shipped. If anything changes, give The Cutting's enemies 40% more HP so the third fight is not easier than the second. Confirm with a family playtest before shipping; see the last section.
+- Recommendation: leave the Forest Road (tutorial) and the Quarry Gate as shipped. If anything changes, give The Cutting's enemies 40% more HP so the third fight asks more than it does now (it would still leave the party more HP than the Quarry Gate at one and six players). Confirm with a family playtest before shipping; see the last section.
 
 ## Ambush on the Forest Road (`enc_forest_road`)
 
@@ -61,7 +61,7 @@ npm run balance -- --scenario scripts/balance/scenarios/early/forest-road-power-
 npm run balance -- --scenario scripts/balance/scenarios/early/forest-road-extra-thug.json
 ```
 
-Measured (80 trials): no single lever moves the win rate; the party wins every trial in every row. The fight lasts about three rounds and the party keeps 77-94% of its HP. As the tutorial it can stay as it is.
+Measured (80 trials): no single lever moves the win rate; the party wins every trial in every row. The extra-thug row understates its lever: each trial draws one of this encounter's roster variants, a variant replaces the authored roster, and the added thug is only in the authored one, so it is present in roughly half the trials. The fight lasts about three rounds and the party keeps 77-94% of its HP. As the tutorial it can stay as it is.
 
 ## The Quarry Gate (`enc_quarry_gate`)
 
@@ -88,7 +88,7 @@ npm run balance -- --scenario scripts/balance/scenarios/early/quarry-gate-power-
 npm run balance -- --scenario scripts/balance/scenarios/early/quarry-gate-extra-thug.json
 ```
 
-Measured (80 trials): this fight already costs something. At six players the shipped fight leaves the party 48% of its HP with 2.2 members down. HP +40% is the only stat row that dents the win rate (98.8% at three players, 96.3% at six) and it leaves a six-player party at 28% HP with 3.4 down; the extra thug leaves 30% with 3.3 down. Recommendation: leave it as shipped. These commands measure the ordinary unflagged roster; scenario mode cannot yet pin the bluffed roster, so measure that branch before shipping any change here.
+Measured (80 trials): this fight already costs something. At six players the shipped fight leaves the party 48% of its HP with 2.2 members down. HP +40% is the only stat row that dents the win rate (98.8% at three players, 96.3% at six) and it leaves a six-player party at 28% HP with 3.4 down; the extra thug leaves 30% with 3.3 down (at one player the small-table rule trims the added thug and the authored thug at (17,6) returns, which is the same kind of enemy). Recommendation: leave it as shipped. These commands measure the ordinary unflagged roster; scenario mode cannot yet pin the bluffed roster, so measure that branch before shipping any change here.
 
 ## The Cutting (`enc_ambush`)
 
@@ -115,7 +115,7 @@ npm run balance -- --scenario scripts/balance/scenarios/early/cutting-power-plus
 npm run balance -- --scenario scripts/balance/scenarios/early/cutting-extra-blade.json
 ```
 
-Measured (80 trials): this is the soft spot. It is the third fight, at level 3, yet the party keeps 80-96% of its HP, more than at the Quarry Gate before it. HP +40% keeps every party size at 100% wins while making it a four-round fight: HP left 80.5 / 58.5 / 69.8% and 0.0 / 1.0 / 1.5 members down. The extra blade is too sharp for a solo player (86.3% wins, 41% HP left). Power +1 does almost nothing. Recommendation: HP +40% here, and nothing else, if the owner wants the third fight to ask more than the second.
+Measured (80 trials): this is the soft spot. It is the third fight, at level 3, yet the party keeps 80-96% of its HP, more than at the Quarry Gate before it. HP +40% keeps every party size at 100% wins while making it a four-round fight: HP left 80.5 / 58.5 / 69.8% and 0.0 / 1.0 / 1.5 members down. The solo cell of the extra-blade row is not an extra blade: with one player the small-table rule trims the last enemy, so the added blade is dropped and the authored crossbow returns. That cell (86.3% wins, 41% HP left) measures the crossbow coming back, and it is too sharp for a solo player. At three and six players the row is what it says. Power +1 does almost nothing. Recommendation: HP +40% here, and nothing else, if the owner wants the third fight to ask more than the second.
 
 ## What this does not measure
 
