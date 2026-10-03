@@ -2,6 +2,7 @@ import { createRequire } from 'node:module';
 import { readFileSync } from 'node:fs';
 import decode, { init } from '@jsquash/webp/decode.js';
 import { beforeAll, expect, it } from 'vitest';
+import { ENCOUNTERS } from '../encounters';
 import { BA_DAN_VILLAGE } from '../maps/village';
 import {
   BA_DAN_CANAL,
@@ -252,6 +253,13 @@ it('uses transparent localized canal banks while the grid owns permanent water',
   const canal = BA_DAN_SCENE.ground.find((piece) => piece.url.endsWith('/canal-banks.webp'));
   expect(canal).toMatchObject(BA_DAN_CANAL_BANKS);
   expect(BA_DAN_SCENE.paintedWater).toBeUndefined();
+  // The plates carry the pools: the scene declares exactly the map's permanent water.
+  const liveWater = BA_DAN_VILLAGE.rows.flatMap((row, y) =>
+    [...row].flatMap((ch, x) => (ch === '~' ? [{ x, y }] : [])),
+  );
+  expect(liveWater.length).toBeGreaterThan(0);
+  expect(BA_DAN_SCENE.paintedWaterCells).toEqual(liveWater);
+  expect(BA_DAN_SCENE.paintedWaterCells).toEqual(BA_DAN_WATER_CELLS);
   expect(BA_DAN_SCENE.ground.some((piece) => piece.url.endsWith('/canal.webp'))).toBe(false);
   expect(BA_DAN_SCENE.ground.some((piece) => piece.url.endsWith('/pond.webp'))).toBe(false);
 });
@@ -490,4 +498,10 @@ it('raises chimney smoke from the painted roof of a dwelling', async () => {
     const [r = 0, g = 0] = [roof.data[at4], roof.data[at4 + 1]];
     expect(r - g, `${house.id} roof tile`).toBeGreaterThan(40);
   }
+});
+
+it('keeps the village an explore-only map, so its painted pools are not changed by a fight today', () => {
+  // The renderer still covers a declared pool that goes dry (`paintedWaterIsDry`);
+  // this records why nothing reaches that path now: no encounter is staged here.
+  expect(ENCOUNTERS.filter((encounter) => encounter.mapId === BA_DAN_VILLAGE.id)).toEqual([]);
 });

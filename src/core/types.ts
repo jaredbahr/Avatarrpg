@@ -936,6 +936,13 @@ export interface MapScene {
   readonly paintedWater?: boolean;
   /** Partial ground art does not claim coverage of any permanent surface. */
   readonly groundMode?: 'partial';
+  /**
+   * Exact cells whose permanent water is already painted into registered art.
+   * Only a partial scene reads it: the renderer's film is suppressed on these
+   * cells while the water is still the permanent surface, so ice, charge, fire
+   * or a drained pool draw their own overlay on top.
+   */
+  readonly paintedWaterCells?: readonly Vec2[];
   /** Exact cells whose permanent rubble is already represented by registered art. */
   readonly paintedRubble?: readonly Vec2[];
   /**

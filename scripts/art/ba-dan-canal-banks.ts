@@ -1,4 +1,8 @@
 /**
+ * The geometric reference for the Ba Dan canal. The shipped plate is now the
+ * painted master (`ba-dan-water.ts`); this module keeps the diamond metric, the
+ * kerb radius and the paving-derived pack the registration is measured against.
+ *
  * Pack the Ba Dan canal: the bed its water sits on, the laid stone kerb around
  * it, and a wet rim where the two meet.
  *
@@ -18,7 +22,7 @@
  *
  * npx tsx scripts/art/ba-dan-canal-banks.ts
  */
-import { mkdirSync, readFileSync, writeFileSync } from 'node:fs';
+import { mkdirSync, readFileSync } from 'node:fs';
 import { createRequire } from 'node:module';
 import decode, { init } from '@jsquash/webp/decode.js';
 import {
@@ -28,7 +32,6 @@ import {
 } from '../../src/content/scenes/baDan';
 import { newImage, pixelAt, setPixel, writePng } from './lib/image';
 import type { Image } from './lib/image';
-import { encodeWebp } from './lib/webp';
 
 /** The tracked courtyard painting this plate's material is cut from. */
 export const SOURCE = 'public/art/maps/ba-dan-scene/courtyard-ground.webp';
@@ -281,9 +284,10 @@ export async function main() {
     height: courtyard.height,
     data: new Uint8Array(courtyard.data),
   });
-  mkdirSync('public/art/maps/ba-dan-scene', { recursive: true });
-  writeFileSync(OUTPUT, await encodeWebp(result.image, 88, true));
-  if (process.argv.includes('--audit')) writePng('.shots/canal/packed.png', result.image);
+  mkdirSync('.shots/canal', { recursive: true });
+  // The shipped plate is the painted master (`ba-dan-water.ts`); this packer is the
+  // geometric reference only, so it writes an audit PNG and never the shipped file.
+  writePng('.shots/canal/packed.png', result.image);
   console.log({
     width: result.image.width,
     height: result.image.height,
