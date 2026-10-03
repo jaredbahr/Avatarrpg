@@ -9,6 +9,7 @@ import {
   actorSilhouetteGeometry,
   actorShadowDensity,
   healthBarCap,
+  staggerHealthBars,
 } from './actorSilhouette';
 import { FOOT_LINE, headroomFromPixels } from '../sheets/bake';
 
@@ -104,12 +105,37 @@ describe('upright actor health bar', () => {
     }
   });
 
-  it('keeps the two-cell boss bar centered and clear without treating width as height', () => {
+  it('keeps a two-cell boss bar near head width rather than footprint width', () => {
     const solo = actorHealthBar(50, 200, 96, 96, 1, 0.5);
     const boss = actorHealthBar(50, 200, 192, 96, 1, 0.5);
     expect(boss.x + boss.width / 2).toBe(146);
-    expect(boss.width).toBe(solo.width * 2);
+    expect(boss.width).toBe(solo.width);
     expect(boss.y).toBe(solo.y);
+  });
+
+  it('uses a readable viewport minimum while staying inside actor bounds', () => {
+    const bar = actorHealthBar(10, 100, 96, 48, 0.8, 0, 28);
+    expect(bar.width).toBe(28);
+    const narrowActor = actorHealthBar(10, 100, 24, 48, 0.8, 0, 28);
+    expect(narrowActor.width).toBe(19.2);
+  });
+
+  it('stagger overlapping bars upward in place and leaves clear bars untouched', () => {
+    const first = actorHealthBar(0, 100, 96, 96, 1);
+    const overlapping = actorHealthBar(30, 100, 96, 96, 1);
+    const distant = actorHealthBar(160, 100, 96, 96, 1);
+    const placed = staggerHealthBars([
+      { id: 'first', bar: first },
+      { id: 'near', bar: overlapping },
+      { id: 'far', bar: distant },
+    ]);
+    const near = placed.get('near');
+    const far = placed.get('far');
+    expect(near?.x).toBe(overlapping.x);
+    expect(near?.y).toBeLessThan(overlapping.y);
+    expect(near?.y).toBeGreaterThanOrEqual(overlapping.y - overlapping.height * 0.8 * 4);
+    expect(far).toEqual(distant);
+    expect(near && near.x + near.width / 2).toBe(overlapping.x + overlapping.width / 2);
   });
 
   it('clears scaled painter fallback bounds and moves exactly with the upright pose', () => {

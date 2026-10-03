@@ -24,7 +24,9 @@ import {
   actorSilhouetteGeometry,
   actorShadowDensity,
   healthBarCap,
+  staggerHealthBars,
 } from '../geometry/actorSilhouette';
+import type { HealthBarPlacement } from '../geometry/actorSilhouette';
 import { resolveActorEmitters } from '../geometry/actorAttachments';
 import { liftAlong, liftAt } from '../geometry/elevation';
 import { contourLoops } from '../geometry/contour';
@@ -108,6 +110,11 @@ export class Canvas2DBackend implements RenderBackend {
   readonly capabilities: BackendCapabilities = { name: 'canvas', shaders: false, particles: false };
 
   private ctx: CanvasRenderingContext2D;
+  private pendingHealthBars: (HealthBarPlacement & {
+    readonly unit: RenderUnit;
+    readonly actorX: number;
+    readonly hatch: boolean;
+  })[] = [];
   /**
    * Contours per overlay layer and the curve per path, keyed by identity: the
    * scene memoises its overlays, so the same objects come back frame after
@@ -160,6 +167,7 @@ export class Canvas2DBackend implements RenderBackend {
 
   draw(view: MapView, camera: Camera): void {
     const { ctx } = this;
+    this.pendingHealthBars = [];
     const dpr = camera.viewport.dpr;
     view = {
       ...view,
@@ -393,6 +401,7 @@ export class Canvas2DBackend implements RenderBackend {
         })),
       ].sort((a, b) => camera.groundPoint(a.pos).y - camera.groundPoint(b.pos).y);
       for (const occupant of occupants) occupant.draw();
+      this.flushHealthBars();
       this.drawTargetReticle(view, camera);
       this.drawFlock(view, camera);
       drawBendFx(ctx, view.bendFx ?? [], camera, true);
@@ -418,6 +427,7 @@ export class Canvas2DBackend implements RenderBackend {
       this.drawNpcs(view, camera);
       this.drawProps(view, camera);
       this.drawUnits(view, camera);
+      this.flushHealthBars();
       this.drawTargetReticle(view, camera);
       drawBendFx(ctx, view.bendFx ?? [], camera, true);
       this.drawFxLayer(view, camera, 'over');
@@ -1750,6 +1760,7 @@ export class Canvas2DBackend implements RenderBackend {
         heightTiles,
         frame?.headroom ?? null,
         scale,
+        26,
       );
       if (frame) {
         const ax = box.x + width / 2;
@@ -1790,7 +1801,13 @@ export class Canvas2DBackend implements RenderBackend {
 
       if (!unit.fallen) {
         if (unit.showHealth !== false) {
-          this.drawHealthBar(unit, silhouette.bar, box.x, view.hatch);
+          this.pendingHealthBars.push({
+            id: unit.id,
+            unit,
+            bar: silhouette.bar,
+            actorX: box.x,
+            hatch: view.hatch,
+          });
         }
         this.drawStatusBadges(unit, box.x, width, box.size, silhouette.badgeY);
       } else {
@@ -1838,6 +1855,15 @@ export class Canvas2DBackend implements RenderBackend {
     ctx.fillStyle = hpFill(unit.faction, 1, hatch);
     ctx.fill();
     ctx.stroke();
+  }
+
+  private flushHealthBars(): void {
+    const placements = staggerHealthBars(this.pendingHealthBars);
+    for (const candidate of this.pendingHealthBars) {
+      const bar = placements.get(candidate.id);
+      if (bar) this.drawHealthBar(candidate.unit, bar, candidate.actorX, candidate.hatch);
+    }
+    this.pendingHealthBars = [];
   }
 
   private drawStatusBadges(
