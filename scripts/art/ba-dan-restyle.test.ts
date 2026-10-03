@@ -1,6 +1,6 @@
 import { createHash } from 'node:crypto';
 import { readFileSync } from 'node:fs';
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 import { BA_DAN_TEXTURES } from '../../src/content/scenes/baDan';
 import { readImage } from './lib/image';
 import { decodeWebp } from './lib/webp';
@@ -16,6 +16,10 @@ import {
   packAsset,
   restyle,
 } from './ba-dan-restyle';
+
+// Decoding WebP plates is cheap alone and slow on a busy machine; ci:local timed out the
+// 5 s default once. Headroom here, not a raised global timeout.
+vi.setConfig({ testTimeout: 30_000, hookTimeout: 30_000 });
 
 interface Pins {
   pixellab: { assets: Record<string, { sha256: string }> };

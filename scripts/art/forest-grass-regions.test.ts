@@ -1,4 +1,4 @@
-import { expect, it } from 'vitest';
+import { expect, it, vi } from 'vitest';
 import { FOREST_ROAD } from '../../src/content/maps/combat';
 import { FOREST_WATER_CELLS } from '../../src/content/scenes/forestRoad';
 import { FOREST_GRASS_REGIONS } from '../../src/content/scenes/forestRoadGround';
@@ -11,6 +11,10 @@ import {
   packGrassRegion,
   withinGrassRegion,
 } from './forest-grass-regions';
+
+// Decoding WebP plates is cheap alone and slow on a busy machine; ci:local timed out the
+// 5 s default once. Headroom here, not a raised global timeout.
+vi.setConfig({ testTimeout: 30_000, hookTimeout: 30_000 });
 
 /** Generated 2026-10-03 (see docs/art/forest-ground-composition.md); not packer output. */
 const GRASS_PINS: Record<string, { bytes: number; sha256: string }> = {

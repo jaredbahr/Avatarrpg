@@ -1,4 +1,4 @@
-import { expect, it } from 'vitest';
+import { expect, it, vi } from 'vitest';
 import { FOREST_GROUND_ROWS, FOREST_ROAD } from '../../src/content/maps/combat';
 import { FOREST_WATER_CELLS } from '../../src/content/scenes/forestRoad';
 import { pixelAt, toHex } from './lib/image';
@@ -21,6 +21,10 @@ import {
   shorePosition,
   shoreDistance,
 } from './forest-shoreline';
+
+// Decoding WebP plates is cheap alone and slow on a busy machine; ci:local timed out the
+// 5 s default once. Headroom here, not a raised global timeout.
+vi.setConfig({ testTimeout: 30_000, hookTimeout: 30_000 });
 
 const luminance = (pixel: readonly number[]): number =>
   0.299 * (pixel[0] ?? 0) + 0.587 * (pixel[1] ?? 0) + 0.114 * (pixel[2] ?? 0);

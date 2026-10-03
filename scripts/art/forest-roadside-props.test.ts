@@ -1,5 +1,5 @@
 import { readFileSync } from 'node:fs';
-import { expect, it } from 'vitest';
+import { expect, it, vi } from 'vitest';
 import { FOREST_ROADSIDE_PROPS, ROADSIDE_ART_SIZE } from '../../src/content/scenes/forestRoad';
 import { encodeWebp } from './lib/webp';
 import {
@@ -8,6 +8,10 @@ import {
   packRoadside,
   roadsideOutput,
 } from './forest-roadside-props';
+
+// Decoding WebP plates is cheap alone and slow on a busy machine; ci:local timed out the
+// 5 s default once. Headroom here, not a raised global timeout.
+vi.setConfig({ testTimeout: 30_000, hookTimeout: 30_000 });
 
 it('ships eight reproducible alpha-trimmed roadside sprites at the registered sizes', async () => {
   expect([...ROADSIDE_ART].sort()).toEqual(Object.keys(ROADSIDE_ART_SIZE).sort());

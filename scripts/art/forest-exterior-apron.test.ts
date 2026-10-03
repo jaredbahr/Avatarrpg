@@ -1,5 +1,5 @@
 import { readFileSync } from 'node:fs';
-import { expect, it } from 'vitest';
+import { expect, it, vi } from 'vitest';
 import { FOREST_GROUND_ROWS, FOREST_ROAD } from '../../src/content/maps/combat';
 import {
   FOREST_APRON_BANDS,
@@ -29,6 +29,10 @@ import {
   packApron,
 } from './forest-exterior-apron';
 import { pixelAt, type Image } from './lib/image';
+
+// Decoding WebP plates is cheap alone and slow on a busy machine; ci:local timed out the
+// 5 s default once. Headroom here, not a raised global timeout.
+vi.setConfig({ testTimeout: 30_000, hookTimeout: 30_000 });
 
 const plates = await loadBasePlates();
 const field = baseField(plates);

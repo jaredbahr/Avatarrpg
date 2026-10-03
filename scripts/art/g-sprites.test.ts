@@ -1,7 +1,7 @@
 import { copyFileSync, mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
-import { beforeAll, describe, expect, it } from 'vitest';
+import { beforeAll, describe, expect, it, vi } from 'vitest';
 import { ASSETS } from '../../src/content/assets/manifest';
 import type { SheetEntry } from '../../src/content/assets/manifest';
 import { parseAtlasJson } from '../../src/render/sheets/atlasJson';
@@ -12,6 +12,10 @@ import { CHARACTERS, STANCE_CELS, checkSources, sha256, sourceFiles } from './g-
 import type { GCharacter, GPins } from './g-sprites';
 import { MARGIN } from './lib/align';
 import { validateSheets, WEBP_SHEET_PINS } from './validate';
+
+// Decoding WebP plates is cheap alone and slow on a busy machine; ci:local timed out the
+// 5 s default once. Headroom here, not a raised global timeout.
+vi.setConfig({ testTimeout: 30_000, hookTimeout: 30_000 });
 
 const PARTY = Object.values(CHARACTERS);
 

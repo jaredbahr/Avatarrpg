@@ -1,4 +1,4 @@
-import { expect, it } from 'vitest';
+import { expect, it, vi } from 'vitest';
 import { FOREST_GROUND_ROWS, FOREST_ROAD } from '../../src/content/maps/combat';
 import { FOREST_WATER_CELLS } from '../../src/content/scenes/forestRoad';
 import { pixelAt } from './lib/image';
@@ -10,6 +10,10 @@ import {
   packRouteGround,
 } from './forest-route-ground';
 import { WINDOW, luma, measure } from './forest-ground-measure';
+
+// Decoding WebP plates is cheap alone and slow on a busy machine; ci:local timed out the
+// 5 s default once. Headroom here, not a raised global timeout.
+vi.setConfig({ testTimeout: 30_000, hookTimeout: 30_000 });
 
 /** DL-2 §3: no 128 px window inside a packed plate may span more than this. */
 const MAX_WINDOW_SPAN = 1.25;

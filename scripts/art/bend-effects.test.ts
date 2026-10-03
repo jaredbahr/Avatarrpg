@@ -1,7 +1,7 @@
 import { existsSync, mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { dirname, join } from 'node:path';
-import { afterEach, describe, expect, it } from 'vitest';
+import { afterEach, describe, expect, it, vi } from 'vitest';
 import type { BendEffectDef, BendSetDef } from '../../src/content/bends';
 import { BEND_FX } from '../../src/content/fxCels';
 import {
@@ -29,6 +29,10 @@ import { newImage, pixelAt, setPixel, writePng } from './lib/image';
 import { MARGIN } from './lib/align';
 import { alphaBounds } from './lib/trim';
 import { BEND_FX_PINS, validateBendFx } from './validate';
+
+// Decoding WebP plates is cheap alone and slow on a busy machine; ci:local timed out the
+// 5 s default once. Headroom here, not a raised global timeout.
+vi.setConfig({ testTimeout: 30_000, hookTimeout: 30_000 });
 
 const TEMP: string[] = [];
 function temp(prefix: string): string {

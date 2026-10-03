@@ -1,5 +1,5 @@
 import { readFileSync } from 'node:fs';
-import { expect, it } from 'vitest';
+import { expect, it, vi } from 'vitest';
 import { FOREST_ROAD } from '../../src/content/maps/combat';
 import {
   BANK_REED_ART,
@@ -9,6 +9,10 @@ import {
 } from '../../src/content/scenes/forestRoad';
 import { encodeWebp } from './lib/webp';
 import { BANK_REED_COUNT, bankReedOutput, packBankReed } from './forest-bank-reeds';
+
+// Decoding WebP plates is cheap alone and slow on a busy machine; ci:local timed out the
+// 5 s default once. Headroom here, not a raised global timeout.
+vi.setConfig({ testTimeout: 30_000, hookTimeout: 30_000 });
 
 it('ships four reproducible alpha-trimmed bank reeds', async () => {
   expect(BANK_REED_ART).toHaveLength(BANK_REED_COUNT);

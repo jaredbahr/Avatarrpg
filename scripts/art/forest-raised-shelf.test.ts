@@ -1,7 +1,7 @@
 import { readFileSync } from 'node:fs';
 import { createRequire } from 'node:module';
 import decode, { init } from '@jsquash/webp/decode.js';
-import { expect, it } from 'vitest';
+import { expect, it, vi } from 'vitest';
 import {
   FOREST_PERCH_CELLS,
   FOREST_RAISED_SHELF,
@@ -16,6 +16,10 @@ import {
   packRaisedShelf,
   shelfTiers,
 } from './forest-raised-shelf';
+
+// Decoding WebP plates is cheap alone and slow on a busy machine; ci:local timed out the
+// 5 s default once. Headroom here, not a raised global timeout.
+vi.setConfig({ testTimeout: 30_000, hookTimeout: 30_000 });
 
 const LIP_STEP = 15;
 const OUTPUT = FOREST_RAISED_SHELF_OUTPUT;
