@@ -86,8 +86,8 @@ function barsCollide(
  * Each bar's rise is a whole number of steps carried from the previous frame.
  * A measured sprite top changes with every idle/walk pose, so a bar sitting on
  * the collision boundary would otherwise flip by a step on alternate frames.
- * With hysteresis a bar rises only once it overlaps by more than one step, and
- * drops back only once it clears by more than one step.
+ * A bar rises on any real overlap, and with hysteresis drops back only once it
+ * clears by more than one step.
  */
 export class HealthBarStagger {
   private levels = new Map<string, number>();
@@ -104,21 +104,14 @@ export class HealthBarStagger {
       });
       const known = this.levels.get(candidate.id);
       let level = known ?? 0;
-      if (known === undefined) {
-        while (
-          level < STAGGER_MAX_STEPS &&
-          placed.some((other) => barsCollide(at(level), other, 0))
-        )
-          level++;
-      } else {
-        while (level > 0 && !placed.some((other) => barsCollide(at(level - 1), other, -step)))
-          level--;
-        while (
-          level < STAGGER_MAX_STEPS &&
-          placed.some((other) => barsCollide(at(level), other, step))
-        )
-          level++;
-      }
+      // Hysteresis applies to dropping only: a raised bar goes back down once
+      // the lower slot is clear by a full step of margin.
+      while (level > 0 && !placed.some((other) => barsCollide(at(level - 1), other, -step)))
+        level--;
+      // Rising uses the plain collision test, so any real overlap staggers on
+      // the frame it first appears.
+      while (level < STAGGER_MAX_STEPS && placed.some((other) => barsCollide(at(level), other, 0)))
+        level++;
       const bar = at(level);
       placed.push(bar);
       next.set(candidate.id, level);

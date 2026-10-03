@@ -161,6 +161,22 @@ describe('upright actor health bar', () => {
     expect(staggerHealthBars([{ id: 'a', bar: other }]).get('a')).toEqual(other);
   });
 
+  it('staggers on the frame two previously clear units first overlap', () => {
+    const stagger = new HealthBarStagger();
+    const a = actorHealthBar(0, 100, 96, 96, 1);
+    const apart = stagger.place([
+      { id: 'a', bar: a },
+      { id: 'b', bar: actorHealthBar(300, 100, 96, 96, 1) },
+    ]);
+    expect(apart.get('b')?.y).toBe(a.y);
+    const together = actorHealthBar(30, 100, 96, 96, 1);
+    const placed = stagger.place([
+      { id: 'a', bar: a },
+      { id: 'b', bar: together },
+    ]);
+    expect(placed.get('b')?.y).toBeLessThan(together.y);
+  });
+
   it('drops a raised bar back once its neighbour truly clears it', () => {
     const other = actorHealthBar(0, 100, 96, 96, 1);
     const stagger = new HealthBarStagger();
