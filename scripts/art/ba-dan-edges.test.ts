@@ -4,8 +4,9 @@ import { BA_DAN_EDGE_WATER, BA_DAN_FORD_STONES } from '../../src/content/scenes/
 import { BA_DAN_VILLAGE } from '../../src/content/maps/village';
 import { pixelAt } from './lib/image';
 import { decodeWebp } from './lib/webp';
+import { packWater, shippedPath } from './ba-dan-water';
 import { APRON_FADE, apronAlpha, apronDepth } from './ba-dan-exterior-apron';
-import { EDGE_WATER_PATH, FILM, packEdgePage, waterMetric } from './ba-dan-edges';
+import { FILM, packEdgePage, waterMetric } from './ba-dan-edges';
 
 const page = packEdgePage();
 const pieces = new Map(BA_DAN_EDGE_WATER.map((piece) => [piece.id, piece]));
@@ -26,14 +27,42 @@ const luma = (c: readonly number[]): number =>
 /** Blue over red: the film's cast. The paving it lies on is warm. */
 const cool = (c: readonly number[]): number => (c[2] ?? 0) - (c[0] ?? 0);
 
-describe('Ba Dan edge water', () => {
-  it('ships the deterministic page byte-for-pixel', async () => {
-    const shipped = await decodeWebp(readFileSync(EDGE_WATER_PATH));
+describe('Ba Dan edge water (reference footprint and shipped page)', () => {
+  it('ships the painted page on exactly the reference footprint, with no baked film', async () => {
+    const shipped = await decodeWebp(readFileSync(shippedPath('edge-water')));
     expect({ width: shipped.width, height: shipped.height }).toEqual({
       width: page.width,
       height: page.height,
     });
-    expect(Buffer.from(shipped.data).equals(Buffer.from(page.data))).toBe(true);
+    // The master is packed by encode alone; the shipped file is that encode.
+    expect(Buffer.from(await packWater('edge-water'))).toEqual(
+      readFileSync(shippedPath('edge-water')),
+    );
+    let alphaMismatch = 0;
+    let filmed = 0;
+    let water = 0;
+    for (const piece of BA_DAN_EDGE_WATER)
+      for (let py = 0; py < piece.height; py++)
+        for (let px = 0; px < piece.width; px++) {
+          const sx = piece.source.x + px;
+          const sy = piece.source.y + py;
+          const want = pixelAt(page, sx, sy);
+          const got = pixelAt(shipped, sx, sy);
+          if (want[3] !== got[3]) alphaMismatch++;
+          // Where the reference holds film over water, the painted page must not be
+          // the flat film colour: #3e8fb0 within a few levels is the old wash.
+          if (want[3] === 255 && cool(want) > 0) {
+            water++;
+            if (
+              Math.abs((got[0] ?? 0) - FILM.colour[0]) < 6 &&
+              Math.abs((got[1] ?? 0) - FILM.colour[1]) < 6 &&
+              Math.abs((got[2] ?? 0) - FILM.colour[2]) < 6
+            )
+              filmed++;
+          }
+        }
+    expect(water).toBeGreaterThan(40_000);
+    expect({ alphaMismatch, filmed }).toEqual({ alphaMismatch: 0, filmed: 0 });
   });
 
   it('floods the two ford cells, where the road now ends', () => {

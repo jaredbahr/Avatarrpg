@@ -110,8 +110,11 @@ export const BA_DAN_APRON_PIECES: readonly SceneImage[] = BA_DAN_APRON_BANDS.map
  *   never stands in front of anyone.
  *
  * Neither is runtime water: the ford is a blocked tile and the canal is off
- * the board, so the film the renderer lays over `~` is baked in instead.
- * Both pieces are painted after the apron, and fade with it past the rim.
+ * the board, so no renderer film reaches them; both are the painted fieldstone
+ * water (`scripts/art/ba-dan-water.ts`) with nothing baked over it. The
+ * courtyard pools are the same material, and `paintedWaterCells` keeps the
+ * film off their permanent `~` cells. Both edge pieces are painted after the
+ * apron, and fade with it past the rim.
  */
 export const BA_DAN_FORD_CELLS: readonly Vec2[] = [-2, -1, 0].flatMap((x) => [
   { x, y: 7 },
@@ -517,6 +520,8 @@ export const BA_DAN_CHIMNEYS: readonly Vec2[] = [
 export const BA_DAN_SCENE: MapScene = {
   chimneys: BA_DAN_CHIMNEYS,
   groundMode: 'partial',
+  // The plates carry the pools, so the film stays off them; ice or charge still draw.
+  paintedWaterCells: BA_DAN_WATER_CELLS,
   ground: [
     ...BA_DAN_GARDEN_PLATES.map((plate, index) => ({
       url: `${root}garden-${index}.webp`,

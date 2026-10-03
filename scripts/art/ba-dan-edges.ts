@@ -13,6 +13,10 @@
  * texel in flat steps, like the garden and apron they sit among, rather than
  * as a smooth ramp.
  *
+ * This module is now the footprint reference: the shipped page is the painted
+ * fieldstone master (`ba-dan-water.ts`) cut to the same alpha, with no film.
+ * What follows describes the reference pack the footprint is measured against.
+ *
  * The renderer's water film only covers a `~` tile, and neither of these is
  * one — the ford is blocked `W`, the canal is off the board — so the film is
  * baked in: the same colour at the strength its two coats add up to. The ford
@@ -218,7 +222,9 @@ export function packEdgePage(): Image {
 }
 
 if (process.argv[1]?.replace(/\\/g, '/').endsWith('scripts/art/ba-dan-edges.ts')) {
-  mkdirSync(DIRECTORY, { recursive: true });
-  writeFileSync(EDGE_WATER_PATH, await encodeWebpLossless(packEdgePage()));
-  console.log(EDGE_WATER_PATH);
+  // The shipped page is the painted master (`ba-dan-water.ts`); this packer is the
+  // geometric reference (footprint and apron fade), so it writes an audit copy only.
+  mkdirSync('.shots/edges', { recursive: true });
+  writeFileSync('.shots/edges/edge-water.webp', await encodeWebpLossless(packEdgePage()));
+  console.log('.shots/edges/edge-water.webp');
 }

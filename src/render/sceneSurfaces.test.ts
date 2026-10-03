@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { CONTENT } from '../content';
 import { FOREST_ROAD } from '../content/maps/combat';
 import { BA_DAN_VILLAGE } from '../content/maps/village';
+import { BA_DAN_WATER_CELLS } from '../content/scenes/baDan';
 import { buildGrid, tileAt, withSurface } from '../core/rules/grid';
 import { applyImpact, paintSurface } from '../core/rules/surfaces';
 import type { Grid, Vec2 } from '../core/types';
@@ -36,7 +37,7 @@ it('replaces only registered permanent rubble and restores all dynamic/accessibi
   expect(surfaceIsPainted(view, true, { ...tile, surface: null }, pos)).toBe(false);
 });
 
-it('keeps Ba Dan permanent water painted only in legacy complete mode', () => {
+it('keeps Ba Dan permanent water painted by declaration only', () => {
   const pos = { x: 10, y: 6 };
   const tile = tileAt(buildGrid(BA_DAN_VILLAGE), pos);
   if (!tile || !BA_DAN_VILLAGE.scene) throw new Error('Missing Ba Dan pond');
@@ -45,7 +46,12 @@ it('keeps Ba Dan permanent water painted only in legacy complete mode', () => {
   expect(tile.surface?.id).toBe('water');
   expect(surfaceIsPainted(view, true, tile, pos)).toBe(true);
   expect(
-    surfaceIsPainted({ ...view, scene: { ...view.scene, groundMode: 'partial' } }, true, tile, pos),
+    surfaceIsPainted(
+      { ...view, scene: { ...view.scene, groundMode: 'partial', paintedWaterCells: undefined } },
+      true,
+      tile,
+      pos,
+    ),
   ).toBe(false);
   expect(
     surfaceIsPainted(
@@ -55,6 +61,49 @@ it('keeps Ba Dan permanent water painted only in legacy complete mode', () => {
       pos,
     ),
   ).toBe(false);
+});
+
+it('suppresses the film on Ba Dan water cells the scene declares, and nowhere else', () => {
+  const grid = buildGrid(BA_DAN_VILLAGE);
+  const scene = BA_DAN_VILLAGE.scene;
+  if (!scene) throw new Error('Missing Ba Dan scene');
+  const view = { scene, hatch: false, crispOverlays: false };
+  expect(scene.groundMode).toBe('partial');
+  for (const pos of BA_DAN_WATER_CELLS) {
+    const tile = tileAt(grid, pos);
+    if (!tile) throw new Error('Missing water cell');
+    expect(tile.surface?.id).toBe('water');
+    expect(surfaceIsPainted(view, true, tile, pos), `${pos.x},${pos.y}`).toBe(true);
+    // WebGL keeps the water slot at zero strength, so the shader draws nothing there.
+    expect(surfaceTexel(tile, true)).toEqual([SURFACE_INDEX.water, 0]);
+    // Art not yet decoded, accessibility overlays and an undeclared cell keep the film.
+    expect(surfaceIsPainted(view, false, tile, pos)).toBe(false);
+    expect(surfaceIsPainted({ ...view, hatch: true }, true, tile, pos)).toBe(false);
+    expect(surfaceIsPainted({ ...view, crispOverlays: true }, true, tile, pos)).toBe(false);
+    expect(
+      surfaceIsPainted({ ...view, scene: { ...scene, paintedWaterCells: [] } }, true, tile, pos),
+    ).toBe(false);
+    // Rule-driven states over the water stay visible: frozen, burning, muddied.
+    for (const id of ['ice', 'fire', 'mud', 'steam', 'oil'] as const)
+      expect(
+        surfaceIsPainted(view, true, { ...tile, surface: { id, duration: 2, spread: 0 } }, pos),
+      ).toBe(false);
+    // Temporary water (a spill) is not the painted pool.
+    expect(
+      surfaceIsPainted(
+        view,
+        true,
+        { ...tile, surface: { id: 'water', duration: 2, spread: 0 } },
+        pos,
+      ),
+    ).toBe(false);
+  }
+  // Permanent water on a cell the scene did not declare keeps its film.
+  const elsewhere = { x: 3, y: 3 };
+  const spill = tileAt(grid, elsewhere);
+  if (!spill) throw new Error('Missing tile');
+  const undeclared = { ...spill, surface: { id: 'water' as const, duration: -1, spread: 0 } };
+  expect(surfaceIsPainted(view, true, undeclared, elsewhere)).toBe(false);
 });
 
 describe('ability rubble beside a registered heap', () => {

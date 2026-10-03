@@ -1,6 +1,4 @@
 import { readFileSync } from 'node:fs';
-import { createRequire } from 'node:module';
-import decode, { init } from '@jsquash/webp/decode.js';
 import { expect, it } from 'vitest';
 import {
   BA_DAN_CANAL_BANK_RADIUS,
@@ -8,40 +6,11 @@ import {
   BA_DAN_WATER_CELLS,
 } from '../../src/content/scenes/baDan';
 import { pixelAt } from './lib/image';
-import type { Image } from './lib/image';
-import { encodeWebp } from './lib/webp';
-import {
-  BED_MOTTLE,
-  BED_SHADE,
-  BED_SHELF,
-  bedShade,
-  canalInset,
-  canalMetric,
-  canalPosition,
-  kerbShade,
-  packCanalBanks,
-  pavingAt,
-  OUTPUT,
-  SOURCE,
-  WET_RIM,
-} from './ba-dan-canal-banks';
+import { decodeWebp } from './lib/webp';
+import { bedShade, canalInset, canalMetric, canalPosition, kerbShade } from './ba-dan-canal-banks';
+import { packWater, readMaster, shippedPath } from './ba-dan-water';
 
 const cells = BA_DAN_CANAL_BANKS;
-
-async function decodeWebp(bytes: Buffer): Promise<Image> {
-  const require = createRequire(import.meta.url);
-  await init(
-    await WebAssembly.compile(
-      readFileSync(require.resolve('@jsquash/webp/codec/dec/webp_dec.wasm')),
-    ),
-  );
-  // A copy, so the decoder is handed a plain `ArrayBuffer` instead of a view of
-  // the file buffer, which the type system can only call `ArrayBufferLike`.
-  const view = new Uint8Array(bytes.byteLength);
-  view.set(bytes);
-  const decoded = await decode(view.buffer);
-  return { width: decoded.width, height: decoded.height, data: new Uint8Array(decoded.data) };
-}
 
 /** World pixel of a water cell's diamond centre inside this plate. */
 function cellCentre(cell: { x: number; y: number }): { px: number; py: number } {
@@ -53,10 +22,6 @@ function cellCentre(cell: { x: number; y: number }): { px: number; py: number } 
 
 function luma(pixel: readonly number[]): number {
   return (pixel[0] ?? 0) * 0.3 + (pixel[1] ?? 0) * 0.55 + (pixel[2] ?? 0) * 0.15;
-}
-
-function chroma(pixel: readonly number[]): number {
-  return Math.max(...pixel.slice(0, 3)) - Math.min(...pixel.slice(0, 3));
 }
 
 it('reads a water cell as one tile diamond, not its screen-space bounding box', () => {
@@ -91,78 +56,51 @@ it('reads a water cell as one tile diamond, not its screen-space bounding box', 
   }
 });
 
-it('packs the canal bed and kerb reproducibly from the tracked courtyard paving', async () => {
-  const source = await decodeWebp(readFileSync(SOURCE));
-  const { image, bedPixels, kerbPixels, wetRimPixels, deepestShade } = packCanalBanks(source);
-  expect(image.width).toBe(cells.width);
-  expect(image.height).toBe(cells.height);
-  const packed = readFileSync(OUTPUT);
-  expect(Buffer.from(await encodeWebp(image, 88, true))).toEqual(packed);
+it('ships the painted canal plate: the master, encoded, with the geometric footprint', async () => {
+  const master = readMaster('canal-banks');
+  expect(master.width).toBe(cells.width);
+  expect(master.height).toBe(cells.height);
+  const packed = readFileSync(shippedPath('canal-banks'));
+  expect(Buffer.from(await packWater('canal-banks'))).toEqual(packed);
 
-  /*
-   * The plate's own file has to carry the same bed: decode what ships rather
-   * than trusting the in-memory pack, because the runtime reads the file.
-   */
+  // The runtime reads the file, so hold the decoded pixels to the metric.
   const shipped = await decodeWebp(packed);
   let clearWater = 0;
   let leaksOutside = 0;
-  let shadeMismatch = 0;
-  let sampled = 0;
+  let shorelineBand = 0;
+  let bedPixels = 0;
   for (let py = 0; py < cells.height; py++)
     for (let px = 0; px < cells.width; px++) {
       const { x, y } = canalPosition(px, py);
       const metric = canalMetric(x, y);
       const alpha = pixelAt(shipped, px, py)[3];
       if (metric <= 1) {
+        bedPixels++;
         if (alpha !== 255) clearWater++;
         continue;
       }
       if (metric > BA_DAN_CANAL_BANK_RADIUS && alpha !== 0) leaksOutside++;
+      if (metric <= BA_DAN_CANAL_BANK_RADIUS && alpha === 255) shorelineBand++;
     }
   expect({ clearWater, leaksOutside }).toEqual({ clearWater: 0, leaksOutside: 0 });
-
-  /*
-   * Nothing on the bed is a new colour: every channel pixel is the courtyard's
-   * own paving pixel scaled by one shade and the water's own red/blue shift, so
-   * the shades implied by its channels have to agree.
-   */
-  for (let py = 0; py < cells.height; py += 3)
-    for (let px = 0; px < cells.width; px += 3) {
-      const { x, y } = canalPosition(px, py);
-      if (canalMetric(x, y) > 1) continue;
-      const paving = pavingAt(source, x, y);
-      const bed = pixelAt(image, px, py);
-      if ((paving[1] ?? 0) < 64 || (paving[0] ?? 0) < 64) continue;
-      const fromGreen = (bed[1] ?? 0) / (paving[1] ?? 1);
-      // `BED_COOL` red ×0.88, blue ×1.12: the same shade read off each channel
-      // has to land together once those shifts are divided back out.
-      const fromRed = (bed[0] ?? 0) / ((paving[0] ?? 1) * 0.88);
-      const fromBlue = (bed[2] ?? 0) / ((paving[2] ?? 1) * 1.12);
-      sampled++;
-      if (
-        Math.abs(fromGreen - fromRed) > 0.05 ||
-        Math.abs(fromGreen - fromBlue) > 0.05 ||
-        fromGreen < 0.2 ||
-        fromGreen > 1
-      )
-        shadeMismatch++;
-    }
-  expect(sampled).toBeGreaterThan(500);
-  expect(shadeMismatch).toBe(0);
-
-  // Every permanent water cell is opaque bed; the six diamonds are the whole bed.
+  // Every permanent water cell is opaque painted water; the six diamonds are the whole bed.
   expect(bedPixels).toBe(BA_DAN_WATER_CELLS.length * 4096);
-  expect(kerbPixels).toBeGreaterThan(bedPixels * 0.5);
-  expect(wetRimPixels).toBeGreaterThan(0);
-  // The deepest point of the channel is the shelf minus its full shade, plus or
-  // minus the seeded mottle — never some other value the shading never reaches.
-  expect(deepestShade).toBeGreaterThan(BED_SHELF - BED_SHADE - BED_MOTTLE - 0.02);
-  expect(deepestShade).toBeLessThan(BED_SHELF - BED_SHADE + BED_MOTTLE + 0.02);
+  expect(shorelineBand).toBeGreaterThan(bedPixels * 0.5);
+});
+
+it('paints water, not paving: each cell centre is cool and the shoreline band is not', async () => {
+  const shipped = await decodeWebp(readFileSync(shippedPath('canal-banks')));
+  for (const cell of BA_DAN_WATER_CELLS) {
+    const { px, py } = cellCentre(cell);
+    const water = pixelAt(shipped, px, py);
+    // Blue over red: a flat blue-green wash on warm paving reads the other way.
+    expect((water[2] ?? 0) - (water[0] ?? 0)).toBeGreaterThan(30);
+  }
 });
 
 it('shades the middle of the channel deeper than its shelf under the kerb', async () => {
   const inset = canalInset(cells.width, cells.height);
-  const shipped = await decodeWebp(readFileSync(OUTPUT));
+  const shipped = await decodeWebp(readFileSync(shippedPath('canal-banks')));
   for (const cell of BA_DAN_WATER_CELLS) {
     const { px, py } = cellCentre(cell);
     const middle = inset[py * cells.width + px] ?? 0;
@@ -193,40 +131,4 @@ it('dresses the kerb as its own wet stone and keeps the outer edge dry', () => {
     expect(shade).toBeGreaterThanOrEqual(previous);
     previous = shade;
   }
-});
-
-it('dresses the coping as its own stone: greyer than the paving, darker when wet', async () => {
-  const shipped = await decodeWebp(readFileSync(OUTPUT));
-  const source = await decodeWebp(readFileSync(SOURCE));
-  let dressed = 0;
-  let samples = 0;
-  let wetLuma = 0;
-  let dryLuma = 0;
-  let wetCount = 0;
-  let dryCount = 0;
-  for (let py = 0; py < cells.height; py++)
-    for (let px = 0; px < cells.width; px++) {
-      const { x, y } = canalPosition(px, py);
-      const edge = canalMetric(x, y) - 1;
-      if (edge <= 0) continue;
-      const plate = pixelAt(shipped, px, py);
-      if (plate[3] !== 255) continue;
-      // `pavingAt` is the plate's own source position, so a kerb pixel has to be
-      // that pixel with its saturation pulled toward grey.
-      const from = pavingAt(source, x, y);
-      samples++;
-      if (chroma(plate) < chroma(from) * 0.95) dressed++;
-      if (edge <= WET_RIM) {
-        wetLuma += luma(plate);
-        wetCount++;
-      } else if (edge > BA_DAN_CANAL_BANK_RADIUS - 1 - WET_RIM) {
-        dryLuma += luma(plate);
-        dryCount++;
-      }
-    }
-  expect(samples).toBeGreaterThan(1000);
-  expect(dressed).toBeGreaterThan(samples * 0.6);
-  expect(wetCount).toBeGreaterThan(0);
-  expect(dryCount).toBeGreaterThan(0);
-  expect(wetLuma / wetCount).toBeLessThan(dryLuma / dryCount);
 });
