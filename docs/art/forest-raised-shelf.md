@@ -35,3 +35,38 @@ showing through without smearing transparent edges. The existing
 `assets/source/forest-material-v2/material-sheet.png` supplied the
 forest's olive/ochre vocabulary. Quarry limestone was inspected as a style
 reference only; no quarry asset is reused by the forest scene.
+
+## Generated shelf and rubble heaps, shipped 3 October 2026
+
+`raised-shelf.webp` and the three rubble heaps (`rubble.webp`, `rubble-1.webp`,
+`rubble-2.webp`) are generated art, not packer output. Candidate A of the review
+was accepted on 3 October 2026. The heaps are also drawn on the Cutting and the
+Driller floor (`quarryProjected.ts` reuses `rubbleHeap` from `forestRoad.ts`), so
+they change there too.
+
+- **Generator:** built-in image generation (output terms:
+  https://openai.com/policies/row-terms-of-use/). No exclusive copyright in
+  generated output is claimed.
+- **Prompts, in summary:** the shelf as an old quarried limestone outcrop with
+  broad warm top planes, darker away-facing faces, substantial edge stones,
+  restrained moss-filled cracks and sparse base grass, keeping the canvas,
+  tiers, projection and silhouette; three separated low, wide rubble-cover
+  variants of five to eight large angular stones and one short dark timber each,
+  lit from the upper left, with selective ink. Both asked for a transparent
+  background and no ground plane, cast shadow, people or text.
+- **Mechanical steps only:** generated alpha bounds were cropped, box-filtered
+  down to the shipped alpha bounds, given the exact decoded alpha of the
+  corresponding previous file, and encoded as lossy WebP at quality 88 with
+  alpha. Candidate index N maps to `rubble` / `rubble-1` / `rubble-2` for
+  N = 0, 1, 2 (confirmed by alpha). Registration is unchanged: shelf 400 x 336
+  world pixels, heaps 384 x 128 plate pixels into 128 x 42.667 world boxes. No
+  pixel was repainted.
+- **Sizes:** 23,442 (shelf), 6,798 / 6,162 / 7,032 (rubble, rubble-1, rubble-2)
+  bytes.
+- **Tests:** `forest-raised-shelf.test.ts` and `forest-rubble.test.ts` pin each
+  file's size and SHA-256, hold its decoded alpha to the packer's footprint, and
+  run the raised-face and contact-shade checks on the shipped pixels. Both
+  packers keep the registration and refuse to overwrite the generated files
+  unless `FOREST_REPACK_PROCEDURAL=1` is set.
+- **Source of record:** the review notes, prompts and process script were kept in
+  `.review/ship/` on the working branch and are not shipped.
