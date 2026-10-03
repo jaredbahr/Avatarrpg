@@ -1,4 +1,9 @@
-/** Generated from authoritative map rows by quarry-route-ground.ts. */
+/**
+ * Registration generated from authoritative map rows by quarry-route-ground.ts.
+ * Since 2026-10-03 the `bytes` of the Driller and Cutting ground pages pin the
+ * shipped floor-filled art (docs/art/quarry-floor-fill.md), not the packer's own
+ * encode: re-running the packer overwrites the pages and the pins.
+ */
 export const DRILLER_GROUND_REGIONS = [
   {
     name: 'dirt-west',
@@ -6,7 +11,7 @@ export const DRILLER_GROUND_REGIONS = [
     y: 94,
     width: 1154,
     height: 580,
-    bytes: 29412,
+    bytes: 29084,
   },
   {
     name: 'dirt-east',
@@ -14,7 +19,7 @@ export const DRILLER_GROUND_REGIONS = [
     y: 364,
     width: 1128,
     height: 566,
-    bytes: 28198,
+    bytes: 26446,
   },
   {
     name: 'road',
@@ -22,7 +27,7 @@ export const DRILLER_GROUND_REGIONS = [
     y: 158,
     width: 322,
     height: 164,
-    bytes: 3164,
+    bytes: 2798,
   },
   {
     name: 'stone',
@@ -30,7 +35,7 @@ export const DRILLER_GROUND_REGIONS = [
     y: -2,
     width: 2050,
     height: 1028,
-    bytes: 66670,
+    bytes: 67486,
   },
 ] as const;
 
@@ -41,7 +46,7 @@ export const CUTTING_GROUND_REGIONS = [
     y: 94,
     width: 962,
     height: 484,
-    bytes: 21018,
+    bytes: 18340,
   },
   {
     name: 'dirt-east',
@@ -49,7 +54,7 @@ export const CUTTING_GROUND_REGIONS = [
     y: 446,
     width: 898,
     height: 484,
-    bytes: 21444,
+    bytes: 18166,
   },
   {
     name: 'road',
@@ -57,7 +62,7 @@ export const CUTTING_GROUND_REGIONS = [
     y: 126,
     width: 1538,
     height: 772,
-    bytes: 28588,
+    bytes: 25874,
   },
   {
     name: 'stone',
@@ -65,7 +70,7 @@ export const CUTTING_GROUND_REGIONS = [
     y: -2,
     width: 2050,
     height: 1028,
-    bytes: 64232,
+    bytes: 61940,
   },
 ] as const;
 

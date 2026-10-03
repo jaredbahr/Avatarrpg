@@ -1,3 +1,4 @@
+import { createHash } from 'node:crypto';
 import { readFileSync, statSync } from 'node:fs';
 import { expect, it } from 'vitest';
 import { AMBUSH_ROAD, QUARRY_FLOOR, QUARRY_GATE } from '../../src/content/maps/combat';
@@ -429,6 +430,33 @@ it("tells the Cutting's ledge tops from its rock tops", () => {
   expect(rock).toBeLessThan(ledge / 2);
 });
 
+/**
+ * Generated art, 2026-10-03: the floor-level interiors of these twelve pages
+ * (the walkable `.`, `=`, `,` and oil/shaft cells of the Driller and Cutting,
+ * and the gate's flag cells) are generated paving, luminance-matched per cell
+ * and filled mechanically into the packer's pages; raised tops, faces and ink
+ * are the packer's own. The packer cannot reproduce them, so the shipped bytes
+ * are pinned here. Provenance: docs/art/quarry-floor-fill.md.
+ */
+const SHIPPED_FLOOR_FILL: Record<string, string> = {
+  'quarry-gate-scene/earth-west':
+    'd8897d112d88bc51eb3c4ee4ffcdf206580284f74355180c776c06194bb104ec',
+  'quarry-gate-scene/earth-east':
+    'e0f987c4dea1d36cae3f25549f92d03f0beb8dd4bceb5deb770fc52c7f703583',
+  'quarry-gate-scene/road': 'bc93b7c0d73deca16b076294d9a9f848477217ac521088c95a76e194dd9b7c6e',
+  'quarry-gate-scene/limestone': '1b572149d852fae047b4cc8a78d01f0d14ef1a79bad2faebbb50b04292c67571',
+  'cutting-scene/dirt-west': 'e7ca53824fe35a590b44e73f3f282c0c3e45648514a16e6c14df434e8b8d8e8e',
+  'cutting-scene/dirt-east': '95105f6ec73dcf0cb6df47505215046156f6d086cabf7348240fa0098945e8a7',
+  'cutting-scene/road': '4b831e47ba90f004d48d58e18953ac1b735d6c022e1e9437342112b636f3e3db',
+  'cutting-scene/stone': '3204887476443dc026f2bc576fedf129d1a4925a3360aee511ebaf2941ad3fcd',
+  'driller-floor-scene/dirt-west':
+    '44912dfd1f6d3aad75120f6615f069d68a901888d5ced1fb3e3f134e897af742',
+  'driller-floor-scene/dirt-east':
+    'e68fe1146cba7a24f1e4a6b20c10b33858ade29c4deb717bb838e4ba8f1b5c15',
+  'driller-floor-scene/road': 'c648a618c5c344e1f810440eb7f22813b530b93631de685251a5bdc315a90b1e',
+  'driller-floor-scene/stone': '217d69d72cc8e586a62bc1bee5246078227d382765a5bd82449c82b9553752a0',
+};
+
 it('ships the plates the packers build, inside the registered page', async () => {
   for (const [root, built, regions] of [
     ['driller-floor-scene', driller, DRILLER_GROUND_REGIONS],
@@ -441,10 +469,15 @@ it('ships the plates the packers build, inside the registered page', async () =>
       // pages; nothing here may grow a plate past them.
       expect(Math.max(image.width, image.height), `${region.name} size`).toBeLessThanOrEqual(2050);
       expect(image.width).toBeLessThanOrEqual(QUARRY_PAGE.width);
+      // The pages are the packer's plates with their floor-level interiors
+      // replaced by generated floor material (docs/art/quarry-floor-fill.md),
+      // so they are pinned by hash rather than rebuilt: see SHIPPED_FLOOR_FILL.
       expect(
-        Buffer.from(await encodeWebp(image, QUARRY_GROUND_QUALITY, true)),
+        createHash('sha256')
+          .update(readFileSync(`public/art/maps/${root}/${region.name}.webp`))
+          .digest('hex'),
         `${root}/${region.name}.webp`,
-      ).toEqual(readFileSync(`public/art/maps/${root}/${region.name}.webp`));
+      ).toBe(SHIPPED_FLOOR_FILL[`${root}/${region.name}`]);
     }
   expect(Math.max(pool.width, pool.height), 'pool-bank size').toBeLessThanOrEqual(2048);
   expect(
@@ -464,10 +497,10 @@ it('ships the plates the packers build, inside the registered page', async () =>
  * budget, so its pins live here rather than as a `bytes` field on each region.
  */
 const QUARRY_GATE_GROUND_BYTES = [
-  { name: 'earth-west', bytes: 46_294 },
-  { name: 'earth-east', bytes: 46_054 },
-  { name: 'road', bytes: 18_076 },
-  { name: 'limestone', bytes: 34_340 },
+  { name: 'earth-west', bytes: 42_362 },
+  { name: 'earth-east', bytes: 43_016 },
+  { name: 'road', bytes: 19_502 },
+  { name: 'limestone', bytes: 36_966 },
 ] as const;
 
 it('pins a size for every gate page', () => {
