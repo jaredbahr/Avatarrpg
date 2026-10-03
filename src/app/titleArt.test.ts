@@ -1,5 +1,31 @@
 import { describe, expect, it } from 'vitest';
-import { TITLE_ART, pickTitleArt, titleArtById } from './titleArt';
+import { TITLE_ART, parseTitleArtHold, pickTitleArt, titleArtById } from './titleArt';
+
+describe('title art hold hook', () => {
+  it('accepts 0 and values of 3000 ms or more', () => {
+    expect(parseTitleArtHold('0')).toBe(0);
+    expect(parseTitleArtHold('3000')).toBe(3000);
+    expect(parseTitleArtHold('20000')).toBe(20000);
+  });
+
+  it('falls back to the default for anything shorter or malformed', () => {
+    for (const raw of [
+      null,
+      '',
+      ' ',
+      '1',
+      '999',
+      '2999',
+      '-5',
+      '-3000',
+      'abc',
+      'NaN',
+      'Infinity',
+    ]) {
+      expect(parseTitleArtHold(raw)).toBeUndefined();
+    }
+  });
+});
 
 describe('title art rotation', () => {
   it('never repeats the previous painting, whatever the roll', () => {

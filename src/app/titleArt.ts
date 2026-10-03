@@ -57,6 +57,21 @@ export const TITLE_ART: readonly TitleArtDef[] = [
   },
 ];
 
+/** The shortest idle time `?titleArtHold=` may set; a URL cannot start a fast swap loop. */
+export const MIN_TITLE_ART_HOLD_MS = 3000;
+
+/**
+ * `?titleArtHold=` clamped: exactly 0 stops the rotation, 3000 ms or more is
+ * taken as given, anything else (absent, malformed, too short) is `undefined`,
+ * which the rotator reads as its default.
+ */
+export function parseTitleArtHold(raw: string | null): number | undefined {
+  if (raw === null || raw.trim() === '') return undefined;
+  const ms = Number(raw);
+  if (ms === 0) return 0;
+  return Number.isFinite(ms) && ms >= MIN_TITLE_ART_HOLD_MS ? ms : undefined;
+}
+
 export function titleArtById(id: string | null | undefined): TitleArtDef | undefined {
   return TITLE_ART.find((art) => art.id === id);
 }

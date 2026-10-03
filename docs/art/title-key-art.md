@@ -64,12 +64,13 @@ WebP encode only; nothing is repainted). For each painting:
      market and the pond.
    - C: x 1080 to 1920 (840x1080) scaled to 700x900: the party and the gate.
 
-The lossless source PNGs are production inputs and are not shipped. Because the
-paintings are generated, the packer cannot reproduce the files from this
-repository's tracked sources; `scripts/art/title-art.test.ts` pins each file's
-size and SHA-256 instead, and holds the packer's declared sizes and file names
-to the scene's. Re-running the packer on the review sources reproduces the
-pinned bytes exactly (checked for all six files).
+The lossless source PNGs are not in this repository. The shipped outputs are
+hash-pinned: `scripts/art/title-art.test.ts` pins each file's size and SHA-256,
+and holds the packer's declared sizes and file names to the scene's. The
+downscale and encode were done from the generator masters, which are kept
+outside the repository (the supervisor's art store). The packer is therefore
+documentation of the method, not something that can be re-run from the
+repository to reproduce the files.
 
 | File                    | Pixels   | Bytes   |
 | ----------------------- | -------- | ------- |
@@ -111,7 +112,8 @@ image.
 - **Reduce motion** (the setting or the OS preference): the per-visit pick
   stays, nothing cross-fades, and the next painting is never fetched.
 - **Test hooks.** `?titleArt=a|b|c` forces the first painting and
-  `?titleArtHold=<ms>` sets the idle time (`0` stops the rotation). The gallery's
+  `?titleArtHold=<ms>` sets the idle time (`0` stops the rotation; values under
+  3000 are ignored and the 12 s default applies). The gallery's
   `01-title` beat uses both so its captures are deterministic.
 
 ## Plate contrast

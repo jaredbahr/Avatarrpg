@@ -15,7 +15,7 @@ import { SettingsPanel } from '../ui/SettingsPanel';
 import { sprites } from '../../render/spriteCache';
 import { GAME_TITLE } from '../gameTitle';
 import { TitleArtRotator } from '../ui/TitleArtRotator';
-import type { TitleArtDef } from '../titleArt';
+import { parseTitleArtHold, type TitleArtDef } from '../titleArt';
 
 export class TitleScene implements Scene {
   readonly name = 'title';
@@ -28,13 +28,12 @@ export class TitleScene implements Scene {
 
   mount(host: HTMLElement): void {
     this.host = host;
-    // `?titleArt=a|b|c` forces the painting and `?titleArtHold=<ms>` sets (0 stops) the
-    // rotation: hooks for the e2e suite and the gallery, never a player setting.
+    // `?titleArt=a|b|c` forces the painting and `?titleArtHold=<ms>` sets (0 stops, under
+    // 3000 is ignored) the rotation: hooks for the e2e suite and the gallery, never a player setting.
     const query = new URLSearchParams(window.location.search);
-    const hold = Number(query.get('titleArtHold'));
     this.art = new TitleArtRotator({
       force: query.get('titleArt'),
-      holdMs: query.has('titleArtHold') && Number.isFinite(hold) ? hold : undefined,
+      holdMs: parseTitleArtHold(query.get('titleArtHold')),
       onChange: (next, _previous, fadeMs) => this.moveCard(next, fadeMs),
     });
     this.render();
