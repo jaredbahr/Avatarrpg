@@ -435,7 +435,8 @@ export function liftCells(input: LiftInput): { x: number; y: number; ops: LiftOp
     const p = project({ x: gx, y: gy });
     return { x: p.x, y: p.y - up * tilePx };
   };
-  const ink = Math.max(1, tilePx * 0.022);
+  // A painted silhouette hairline, not the old two-pixel technical drawing.
+  const ink = Math.max(0.75, tilePx * 0.012);
 
   const cells: { x: number; y: number }[] = [];
   for (let y = 0; y < grid.height; y++) for (let x = 0; x < grid.width; x++) cells.push({ x, y });
@@ -482,7 +483,31 @@ export function liftCells(input: LiftInput): { x: number; y: number; ops: LiftOp
       continue;
     }
     if (mine > 0) {
-      ops.push({ kind: 'top', poly: top, shift: (mine - art) * tilePx });
+      // Authored ground pages deliberately carry transparent cells. Give a
+      // lifted slab an opaque stone body before sampling that painting, or
+      // the lower dirt remains visible through the top and its risers.
+      ops.push({ kind: 'fill', poly: top, color: ELEVATION.topBase, alpha: 1 });
+      // The quarry pages bake a ledge's own faces and two-pixel ink round each
+      // cell's edge. Sampled whole, that lands on the lifted top as a second,
+      // translucent-looking ledge outline, so the painting is taken only
+      // inside a margin and the procedural silhouette draws the edge.
+      const [c0, c1, c2, c3] = top as [Pt, Pt, Pt, Pt];
+      const mid = { x: (c0.x + c2.x) / 2, y: (c0.y + c2.y) / 2 };
+      // A deck painted a whole tier up (the Driller's gantry) is an object with
+      // its own outline, so it keeps its painting as drawn.
+      const authored = art >= TIER_LIFT;
+      // topMargin is the share cut from each edge, so the sampled width is 1 - 2 * margin.
+      const keep = authored ? 1 : 1 - 2 * ELEVATION.topMargin;
+      const inner = [c0, c1, c2, c3].map((c) => ({
+        x: mid.x + (c.x - mid.x) * keep,
+        y: mid.y + (c.y - mid.y) * keep,
+      }));
+      ops.push({ kind: 'top', poly: inner, shift: (mine - art) * tilePx });
+      // What the margin cannot reach (ink between paving regions, stepped courses
+      // painted for a flatter board) is knocked back toward the stone body, so
+      // the painting texture stone rather than outline it.
+      if (!authored)
+        ops.push({ kind: 'fill', poly: inner, color: ELEVATION.topBase, alpha: ELEVATION.topWash });
       ops.push({
         kind: 'fill',
         poly: top,
@@ -552,9 +577,9 @@ export function liftCells(input: LiftInput): { x: number; y: number; ops: LiftOp
           alpha: contrast ? 0.9 : 0.6,
           width: ink,
         });
-        const inset = 0.05;
-        const ia = point(x + ax + (side.dx ? inset : 0), y + ay + (side.dy ? inset : 0), mine);
-        const ib = point(x + bx + (side.dx ? inset : 0), y + by + (side.dy ? inset : 0), mine);
+        const inset = 0.04;
+        const ia = point(x + ax - side.dx * inset, y + ay - side.dy * inset, mine);
+        const ib = point(x + bx - side.dx * inset, y + by - side.dy * inset, mine);
         ops.push({ kind: 'line', a: ia, b: ib, color: ELEVATION.rim, alpha: 0.55, width: ink });
         continue;
       }
@@ -580,13 +605,25 @@ export function liftCells(input: LiftInput): { x: number; y: number; ops: LiftOp
       // gantry joists) is lifted with its top, face and all, and left unshaded.
       const painted = art >= mine - below;
       ops.push({
-        kind: 'face',
+        kind: 'fill',
         poly: band(0, 1),
-        shift: ((painted ? mine : below) - art) * tilePx,
+        // A painted face is a gantry's open undercroft, not stone: dark, but solid.
+        color: painted
+          ? ELEVATION.undercroft
+          : side.dy === 1
+            ? ELEVATION.southBase
+            : ELEVATION.eastBase,
+        alpha: 1,
       });
-      const shade = side.dy === 1 ? ELEVATION.southShade : ELEVATION.eastShade;
+      if (painted)
+        ops.push({
+          kind: 'face',
+          poly: band(0, 1),
+          shift: (mine - art) * tilePx,
+        });
       if (!painted) {
-        ops.push({ kind: 'fill', poly: band(0, 1), color: ELEVATION.shadow, alpha: shade });
+        // The base already is the key-lit face tone. A tight foot glaze gives
+        // it weight without projecting the top texture down at another scale.
         ops.push({ kind: 'fill', poly: band(0, 0.4), color: ELEVATION.shadow, alpha: 0.16 });
       }
       const steps = painted ? 0 : tile.ramp ? 3 : 1;
@@ -614,7 +651,8 @@ export function liftCells(input: LiftInput): { x: number; y: number; ops: LiftOp
           alpha,
         });
       }
-      ops.push({ kind: 'line', a: footA, b: footB, color: ELEVATION.ink, alpha: 0.7, width: ink });
+      // The face foot is seated by occlusion, not another ruled edge. Ink is
+      // reserved for the block silhouette at the top lip.
       ops.push({
         kind: 'line',
         a: lipA,
@@ -623,6 +661,10 @@ export function liftCells(input: LiftInput): { x: number; y: number; ops: LiftOp
         alpha: contrast ? 1 : 0.85,
         width: ink,
       });
+      const lipInset = 0.035;
+      const rimA = point(x + ax - side.dx * lipInset, y + ay - side.dy * lipInset, mine);
+      const rimB = point(x + bx - side.dx * lipInset, y + by - side.dy * lipInset, mine);
+      ops.push({ kind: 'line', a: rimA, b: rimB, color: ELEVATION.rim, alpha: 0.6, width: ink });
     }
   }
   return out.filter((cell) => cell.ops.length > 0);

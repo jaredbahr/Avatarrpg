@@ -215,6 +215,16 @@ export const ELEVATION = {
     [0.07, 0.5],
     [0.15, 0.24],
   ] as readonly (readonly [number, number])[],
+  /** Opaque quarry limestone under translucent authored pixels on lifted tops and faces. */
+  topBase: '#cfc2a6',
+  /** Share of a lifted top left unsampled at each edge, clear of the page's baked edge ink: 0.15 samples the inner 70%. */
+  topMargin: 0.15,
+  /** How far the sampled painting is washed back toward the stone body. */
+  topWash: 0.55,
+  southBase: '#b3a488',
+  eastBase: '#8f826c',
+  /** The solid dark behind a painted gantry face, so its hollow never shows the ground. */
+  undercroft: '#3a2c20',
   ink: '#1b1410',
   rim: '#fff6e0',
   tint: '#ffe9c2',
