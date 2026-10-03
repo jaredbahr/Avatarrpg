@@ -153,10 +153,29 @@ async function openWaterFight(page: Page): Promise<{ id: string; pos: Point }> {
       const tile = battle.grid.tiles[index(p)];
       return tile !== undefined && !tile.blocked;
     };
-    const spot = open({ x: actor.pos.x + 3, y: actor.pos.y })
-      ? { x: actor.pos.x + 3, y: actor.pos.y }
-      : { x: actor.pos.x - 3, y: actor.pos.y };
-    if (!open(spot)) return null;
+    // Three tiles out, east first, then west, then the diagonals: a roadside
+    // prop or the map edge can close the straight-line cells, and a prop's cell
+    // is blocked ground, so the stage has to find one a unit may really stand on.
+    const offsets = [
+      [3, 0],
+      [-3, 0],
+      [2, 1],
+      [2, -1],
+      [-2, 1],
+      [-2, -1],
+      [1, 2],
+      [1, -2],
+      [-1, 2],
+      [-1, -2],
+      [0, 3],
+      [0, -3],
+    ] as const;
+    const spot = offsets
+      .map(([dx, dy]) => ({ x: actor.pos.x + dx, y: actor.pos.y + dy }))
+      .find(
+        (p) => open(p) && !battle.units.some((u) => u.hp > 0 && u.pos.x === p.x && u.pos.y === p.y),
+      );
+    if (!spot) return null;
 
     const victim = battle.units.find((u) => u.faction === 'enemy' && u.hp > 0);
     if (!victim) return null;
