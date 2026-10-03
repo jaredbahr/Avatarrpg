@@ -28,9 +28,14 @@ export function expectShippedPin(path: string, pin: ShippedPin): void {
   ).toEqual(pin);
 }
 
+/** The pixels a browser draws for the shipped file: what visual checks must measure. */
+export async function readShipped(path: string): Promise<Image> {
+  return decodeWebp(readFileSync(path));
+}
+
 /** The shipped plate has the packer's size and decoded alpha, pixel for pixel. */
 export async function expectPackerAlpha(path: string, packed: Image): Promise<void> {
-  const shipped = await decodeWebp(readFileSync(path));
+  const shipped = await readShipped(path);
   expect({ width: shipped.width, height: shipped.height }, path).toEqual({
     width: packed.width,
     height: packed.height,

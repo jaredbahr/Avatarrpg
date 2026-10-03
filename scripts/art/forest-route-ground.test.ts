@@ -1,14 +1,9 @@
 import { expect, it } from 'vitest';
-import { FOREST_ROAD } from '../../src/content/maps/combat';
+import { FOREST_GROUND_ROWS, FOREST_ROAD } from '../../src/content/maps/combat';
 import { FOREST_WATER_CELLS } from '../../src/content/scenes/forestRoad';
-import { pixelAt, toHex } from './lib/image';
-import { expectPackerAlpha, expectShippedPin } from './lib/shipped-pin';
-import {
-  FOREST_GROUND_TONES,
-  FOREST_PIECE_TONES,
-  loadForestMaterial,
-} from './forest-village-material';
-import { SPILL, spillDepth } from './forest-rubble';
+import { pixelAt } from './lib/image';
+import { expectPackerAlpha, expectShippedPin, readShipped } from './lib/shipped-pin';
+import { loadForestMaterial } from './forest-village-material';
 import {
   FOREST_ROUTE_GROUND,
   FOREST_ROUTE_GROUND_OUTPUT,
@@ -21,6 +16,7 @@ const MAX_WINDOW_SPAN = 1.25;
 
 const material = await loadForestMaterial();
 const image = packRouteGround(material);
+const shipped = await readShipped(FOREST_ROUTE_GROUND_OUTPUT);
 
 /** Generated 2026-10-03 (see docs/art/forest-ground-composition.md); not packer output. */
 const ROUTE_PIN = {
@@ -38,46 +34,43 @@ it('ships the generated route plate on the packer footprint, inside the texture 
   await expectPackerAlpha(FOREST_ROUTE_GROUND_OUTPUT, image);
 });
 
-it('paints only the three named materials, the heap spill and their rims', () => {
-  const allowed = new Set<string>();
-  for (const tone of Object.values(FOREST_GROUND_TONES))
-    for (const hex of Object.values(tone)) allowed.add(hex);
-  const spill = new Set<string>(Object.values(FOREST_PIECE_TONES.spill));
-  const seen = new Set<string>();
-  let strayed = 0;
-  for (let py = 0; py < image.height; py++)
-    for (let px = 0; px < image.width; px++) {
-      const i = (py * image.width + px) * 4;
-      if ((image.data[i + 3] ?? 0) === 0) continue;
-      const hex = toHex([image.data[i] ?? 0, image.data[i + 1] ?? 0, image.data[i + 2] ?? 0]);
-      seen.add(hex);
-      if (!spill.has(hex) || allowed.has(hex)) continue;
-      // The spill is the rubble heaps' own ground and lies only round them.
-      const wx = FOREST_ROUTE_GROUND.x + px + 0.5,
-        wy = FOREST_ROUTE_GROUND.y + py + 0.5;
-      const dx = (wx - 768) / 64,
-        dy = wy / 32;
-      if (spillDepth((dx + dy) / 2, (dy - dx) / 2) <= -SPILL.feather) strayed++;
+/** The logical cell a plate pixel lies in. */
+function cellOf(px: number, py: number): { x: number; y: number } {
+  const dx = (FOREST_ROUTE_GROUND.x + px + 0.5 - 768) / 64,
+    dy = (FOREST_ROUTE_GROUND.y + py + 0.5) / 32;
+  return { x: Math.floor((dx + dy) / 2), y: Math.floor((dy - dx) / 2) };
+}
+
+/**
+ * Every check below reads the decoded shipped plate, which is generated art, so
+ * none of them can ask for the packer's flat tones. Measured on the shipped file
+ * 2026-10-03: verge cells 0.933 green, road cells 0.010 green, 3 near-black
+ * pixels in 474,442 opaque, window span 1.236, mean luma 124.4.
+ */
+it('shows a green verge and an unmistakably non-green road, not one swatch', () => {
+  const share = { ',': { n: 0, green: 0 }, '=': { n: 0, green: 0 } };
+  for (let py = 0; py < shipped.height; py++)
+    for (let px = 0; px < shipped.width; px++) {
+      const [r, g, b, a] = pixelAt(shipped, px, py);
+      if (a < 200) continue;
+      const { x, y } = cellOf(px, py);
+      const key = FOREST_GROUND_ROWS[y]?.[x];
+      if (key !== ',' && key !== '=') continue;
+      share[key].n++;
+      if (g > r + 6 && g > b + 12) share[key].green++;
     }
-  // Flat tones only: a colour outside the table would be the continuous tone a
-  // gradient or a distance haze needs in order to exist.
-  expect([...seen].filter((hex) => !allowed.has(hex) && !spill.has(hex))).toEqual([]);
-  expect(strayed, 'spill painted away from a heap').toBe(0);
-  // All three materials are actually used, so the plane is not one swatch.
-  for (const hex of [
-    FOREST_GROUND_TONES.road.base,
-    FOREST_GROUND_TONES.wear.base,
-    FOREST_GROUND_TONES.verge.base,
-    FOREST_PIECE_TONES.spill.base,
-  ])
-    expect(seen, `${hex} is painted`).toContain(hex);
+  expect(share[','].n).toBeGreaterThan(100_000);
+  expect(share['='].n).toBeGreaterThan(100_000);
+  // The Earth family reaches the verges; the old atlas had no green at all.
+  expect(share[','].green / share[','].n, 'verge cells are green').toBeGreaterThan(0.9);
+  // The road is stone and earth: the green that remains is moss and edge grass.
+  expect(share['='].green / share['='].n, 'road cells are not green').toBeLessThan(0.05);
 });
 
 it('carries no baked gradient and stays in the village tone band', () => {
-  const m = measure(image);
+  const m = measure(shipped);
   expect(m.span).toBeLessThan(MAX_WINDOW_SPAN);
   expect(m.span).toBeGreaterThan(0);
-  // The Earth family reaches the verges; the old atlas had no green at all.
   expect(m.greenShare).toBeGreaterThan(0.2);
   // `docs/coordination/handoffs/village-ground-tone.md` measured the village's
   // authored ground at `#8d9557`; DL-2 asks the route to sit inside 1.3x of it.
@@ -86,27 +79,31 @@ it('carries no baked gradient and stays in the village tone band', () => {
 });
 
 it('leaves plain road/verge boundaries uninked and the holes clear', () => {
-  const ink = toHex([0x1b, 0x14, 0x10]);
-  let inked = 0;
+  // The old procedural plate held exactly zero `#1b1410` ink. Lossy generated
+  // art cannot, so the bar is "no ink line": near-black pixels stay a rounding
+  // error (3 of 474,442 measured), far under one in two thousand.
+  let dark = 0,
+    opaque = 0;
+  for (let i = 0; i < shipped.data.length; i += 4) {
+    if ((shipped.data[i + 3] ?? 0) < 200) continue;
+    opaque++;
+    if (luma(shipped.data[i] ?? 0, shipped.data[i + 1] ?? 0, shipped.data[i + 2] ?? 0) < 40) dark++;
+  }
+  expect(dark / opaque, 'near-black ink pixels').toBeLessThan(0.0005);
+
   const centre = (x: number, y: number) => ({
     px: Math.floor(768 + (x - y) * 64 - FOREST_ROUTE_GROUND.x),
     py: Math.floor((x + y + 1) * 32 - FOREST_ROUTE_GROUND.y),
   });
-  for (let i = 0; i < image.data.length; i += 4)
-    if (toHex([image.data[i] ?? 0, image.data[i + 1] ?? 0, image.data[i + 2] ?? 0]) === ink)
-      inked++;
-  // The pond, shelf and rubble carry their own gameplay-boundary art.
-  expect(inked).toBe(0);
-
   for (const cell of FOREST_WATER_CELLS) {
     const { px, py } = centre(cell.x, cell.y);
-    expect(pixelAt(image, px, py)[3], `water ${cell.x},${cell.y} stays clear`).toBe(0);
+    expect(pixelAt(shipped, px, py)[3], `water ${cell.x},${cell.y} stays clear`).toBe(0);
   }
   for (let y = 4; y <= 8; y++)
     for (let x = 0; x < FOREST_ROAD.width; x++) {
       if (FOREST_ROAD.rows[y]?.[x] !== '=') continue;
       const { px, py } = centre(x, y);
-      expect(pixelAt(image, px, py)[3], `road ${x},${y} is opaque`).toBe(255);
+      expect(pixelAt(shipped, px, py)[3], `road ${x},${y} is opaque`).toBe(255);
     }
 });
 

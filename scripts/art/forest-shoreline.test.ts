@@ -2,7 +2,7 @@ import { expect, it } from 'vitest';
 import { FOREST_GROUND_ROWS, FOREST_ROAD } from '../../src/content/maps/combat';
 import { FOREST_WATER_CELLS } from '../../src/content/scenes/forestRoad';
 import { pixelAt, toHex } from './lib/image';
-import { expectPackerAlpha, expectShippedPin } from './lib/shipped-pin';
+import { expectPackerAlpha, expectShippedPin, readShipped } from './lib/shipped-pin';
 import { FOREST_INK, FOREST_PIECE_TONES, loadForestMaterial } from './forest-village-material';
 import {
   BED_DEEP_AT,
@@ -39,6 +39,79 @@ const POND_PIN = {
 it('ships the generated pond plate on the packer footprint', async () => {
   expectShippedPin(SHORE_OUTPUT, POND_PIN);
   await expectPackerAlpha(SHORE_OUTPUT, image);
+});
+
+/**
+ * The shipped pond is generated art, so the flat-tone and band tests below
+ * describe the procedural packer's own plate (what `FOREST_REPACK_PROCEDURAL=1`
+ * rebuilds), not the shipped one. These read the decoded shipped file.
+ *
+ * Measured on `pond-bank.webp` 2026-10-03: every water-cell centre patch (25x25
+ * px) mean blue-minus-red 77 to 97, 0.93 to 1.00 of its pixels above 20, luma
+ * 62 to 89; over all pixels inside the water mean blue-minus-red 73.6 with 0.91
+ * above 20; dry bank (opaque, beyond 0.1 cell, y < 12) luma 130. The art carries
+ * a shallow-water lip just outside the packer's shore line (0.31 of the opaque
+ * bank pixels beyond 0.1 cell are water-keyed: blue and green both over red by
+ * 5), so the dry-bank check starts at 0.2 cell, where the 205 opaque samples
+ * measure 0 water-keyed.
+ */
+it('shows blue, darker water at every water cell and a dry bank beyond the shore', async () => {
+  const shipped = await readShipped(SHORE_OUTPUT);
+  const shippedInset = pondInset(shipped.width, shipped.height);
+  const water = { n: 0, blue: 0, sum: 0 };
+  const bank = { n: 0, luma: 0 };
+  const far = { n: 0, wet: 0 };
+  for (let py = 0; py < shipped.height; py++)
+    for (let px = 0; px < shipped.width; px++) {
+      const [r, g, b, a] = pixelAt(shipped, px, py);
+      if ((shippedInset[py * shipped.width + px] ?? 0) > 0) {
+        water.n++;
+        water.sum += b - r;
+        if (b - r > 20) water.blue++;
+        continue;
+      }
+      if (a < 200) continue;
+      const { x, y } = shorePosition(px, py);
+      const distance = shoreDistance(x, y);
+      if (distance > 0.1) {
+        bank.n++;
+        bank.luma += luminance([r, g, b]);
+      }
+      if (distance > 0.2) {
+        far.n++;
+        if (b > r + 5 && g > r + 5) far.wet++;
+      }
+    }
+  expect(water.sum / water.n, 'mean blue minus red inside the water').toBeGreaterThan(40);
+  expect(water.blue / water.n, 'share of water pixels clearly blue').toBeGreaterThan(0.85);
+  expect(far.n, 'bank samples beyond the shore').toBeGreaterThan(100);
+  expect(far.wet / far.n, 'water-keyed share of the bank 0.2 cell and out').toBeLessThan(0.01);
+
+  for (const { x, y } of FOREST_WATER_CELLS) {
+    const px = Math.round((768 + (x - y) * 64 - 560) * 2);
+    const py = Math.round(((x + y + 1) * 32 - 304) * 2);
+    let n = 0,
+      blueMinusRed = 0,
+      blue = 0,
+      clear = 0,
+      light = 0;
+    for (let oy = -12; oy <= 12; oy++)
+      for (let ox = -12; ox <= 12; ox++) {
+        const sample = pixelAt(shipped, px + ox, py + oy);
+        n++;
+        blueMinusRed += sample[2] - sample[0];
+        if (sample[2] - sample[0] > 20) blue++;
+        if (sample[3] === 0) clear++;
+        light += luminance(sample);
+      }
+    expect(clear, `water at ${x},${y} is opaque bed`).toBe(0);
+    // `e2e/renderer.spec.ts` wants blue minus red above 20 where the rules say water.
+    expect(blueMinusRed / n, `water at ${x},${y} blue minus red`).toBeGreaterThan(50);
+    expect(blue / n, `water at ${x},${y} blue share`).toBeGreaterThan(0.85);
+    expect(light / n, `water at ${x},${y} is darker than the bank`).toBeLessThan(
+      (bank.luma / bank.n) * 0.8,
+    );
+  }
 });
 
 it('paints only the damp margin, the bed and the ink', () => {
