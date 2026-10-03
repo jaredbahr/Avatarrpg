@@ -668,18 +668,40 @@ function windowScan(
 /**
  * A 1-2 px ink line is too thin for the window bound to be sure of (a diagonal
  * line leaves ~8 pixels in a window, diluted by the divisor), so ink is checked
- * on its own: each pixel the packer paints in the ink colour, outside the fill's
- * interior, must stay within INK_MAX_DELTA levels of it in every channel. Measured
- * over those pixels, a re-encode alone moves a channel by at most 58 and the
- * shipped pages by at most 66, so the bound is 70; an ink pixel repainted to
- * channel 100 moves 73 or more and fails.
+ * on its own, pixel by pixel, against what the codec does to that very pixel.
+ * Each pixel the packer paints in the ink colour, outside the fill's interior,
+ * has a baseline delta per channel: how far a pure re-encode of the packer's page
+ * (q34, exact, the settings the shipped pages use) moves it. The shipped pixel
+ * may move INK_MARGIN levels past that baseline and no further, in every channel.
+ * One global tolerance had to cover the worst codec pixel (a few off-floor ink
+ * pixels move ~70 from noise alone), which let an ink pixel repainted to gray 80
+ * (moves 53/60/64) through. Measured over the twelve shipped pages, a shipped
+ * ink pixel sits at most 44 levels past its own re-encode delta (the shipped
+ * encode saw a different neighbourhood, so a 14-16 margin cannot hold them: the
+ * composite of packer page plus shipped fill re-encoded as a baseline was worse,
+ * 60), so INK_MARGIN is 46. A pixel the codec barely moves is therefore held to
+ * ~46 and a gray 80 repaint (64 in blue) fails wherever the baseline is under 18;
+ * INK_CAP, 70, still bounds the absolute move (the shipped pages reach 66).
  */
-const INK_MAX_DELTA = 72;
+const INK_MARGIN = 46;
+const INK_CAP = 70;
+
+const reencodeCache = new Map<string, Promise<Image>>();
+/** The packer's page through the shipped encoder settings, decoded; encoded once per page. */
+function reencoded(key: string, image: Image): Promise<Image> {
+  let hit = reencodeCache.get(key);
+  if (!hit) {
+    hit = encodeWebp(image, QUARRY_GROUND_QUALITY, true).then(decodeWebp);
+    reencodeCache.set(key, hit);
+  }
+  return hit;
+}
 
 function inkViolations(
   map: MapDef,
   page: { image: Image; x: number; y: number },
   shipped: Image,
+  baseline: Image,
 ): string[] {
   const { data } = page.image;
   let bright = 0;
@@ -689,13 +711,18 @@ function inkViolations(
       if (data[i + 3] !== 255 || data[i] !== 0x1b || data[i + 1] !== 0x14) continue;
       if (data[i + 2] !== 0x10) continue;
       if (inFloorInterior(footprintAt(map, page.x, page.y, px, py).distPx)) continue;
-      for (let c = 0; c < 3; c++)
-        if (Math.abs((shipped.data[i + c] ?? 0) - (data[i + c] ?? 0)) > INK_MAX_DELTA) {
+      for (let c = 0; c < 3; c++) {
+        const base = Math.abs((baseline.data[i + c] ?? 0) - (data[i + c] ?? 0));
+        const moved = Math.abs((shipped.data[i + c] ?? 0) - (data[i + c] ?? 0));
+        if (moved > INK_CAP || moved > base + INK_MARGIN) {
           bright++;
           break;
         }
+      }
     }
-  return bright ? [`${bright} ink pixels moved more than ${INK_MAX_DELTA} levels`] : [];
+  return bright
+    ? [`${bright} ink pixels moved past their re-encode by ${INK_MARGIN} or over ${INK_CAP}`]
+    : [];
 }
 
 function windowViolations(
@@ -731,7 +758,8 @@ it.each([
       const page = plate(built(), region.name);
       expect(footprintViolations(map, page, shipped), region.name).toEqual([]);
       expect(windowViolations(map, page, shipped), `${root}/${region.name} windows`).toEqual([]);
-      expect(inkViolations(map, page, shipped), `${root}/${region.name} ink`).toEqual([]);
+      const baseline = await reencoded(`${root}/${region.name}`, page.image);
+      expect(inkViolations(map, page, shipped, baseline), `${root}/${region.name} ink`).toEqual([]);
     }
   },
 );
@@ -744,11 +772,10 @@ it('holds the window bound above the encoder noise of an unchanged page', async 
   ] as const)
     for (const region of regions) {
       const page = plate(built, region.name);
-      const reencoded = await decodeWebp(await encodeWebp(page.image, QUARRY_GROUND_QUALITY, true));
-      const { max, over } = windowScan(map, page, reencoded);
+      const again = await decodeWebp(await encodeWebp(page.image, QUARRY_GROUND_QUALITY, true));
+      const { max, over } = windowScan(map, page, again);
       expect(over, `${region.name} re-encode (worst ${max.toFixed(1)})`).toBe(0);
-      expect(windowScan(map, page, reencoded, inFeather).max).toBeLessThan(FEATHER_MAX_ERROR);
-      expect(inkViolations(map, page, reencoded), `${region.name} re-encode ink`).toEqual([]);
+      expect(windowScan(map, page, again, inFeather).max).toBeLessThan(FEATHER_MAX_ERROR);
     }
 });
 
