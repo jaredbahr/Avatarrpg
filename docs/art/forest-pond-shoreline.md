@@ -172,3 +172,32 @@ pond. These were there before this pass.
 
 Sizes: `pond-bank.webp` 19,892 → 23,654 B, `creek-west.webp` 13,942 → 17,208 B,
 `creek-east.webp` 10,628 → 14,432 B.
+
+## Generated pond and creek water, shipped 3 October 2026
+
+`pond-bank.webp`, `creek-west.webp` and `creek-east.webp` are generated art, not
+packer output. The owner approved candidate A, pass 2, on 3 October 2026.
+
+- **Generator:** built-in image generation (output terms:
+  https://openai.com/policies/row-terms-of-use/). No exclusive copyright in
+  generated output is claimed.
+- **Prompts, in summary:** a clear blue pond with readable depth steps, stones
+  and lily pads; a pass that interrupts the west and north-west rim with narrow
+  soil and smaller pebble groups and removes two prop-scale boulders at the
+  south-west knot; and one medium cobalt and teal water-only swatch for both
+  creeks, with the darkest value held to a narrow centre and few short current
+  marks.
+- **Mechanical steps only:** the generated water was resized through the live
+  masks to the packed canvases (pond 832 x 384, creeks 1472 x 832) and encoded
+  as lossy WebP at quality 74 with alpha. Decoded alpha matches the previous
+  plates on every pixel, so the registered footprints (pond (560,304) 416 x 192,
+  west creek (-48,304) and east creek (592,624), each 736 x 416 in world pixels)
+  are unchanged. No pixel was repainted.
+- **Sizes:** 53,422 (pond), 47,174 (west creek) and 46,462 (east creek) bytes.
+- **Tests:** `forest-shoreline.test.ts` and `forest-creek.test.ts` pin each
+  file's size and SHA-256 and hold its alpha to the packer's footprint. The
+  packers keep the registration and the shore, bed and ink rules for the
+  procedural plate, and refuse to overwrite the generated files unless
+  `FOREST_REPACK_PROCEDURAL=1` is set.
+- **Source of record:** the review process script and notes were kept in
+  `.review/ship/water/` on the working branch and are not shipped.

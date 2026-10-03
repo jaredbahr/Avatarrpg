@@ -1,6 +1,6 @@
 /** Register painted material swatches to the existing forest cells, without rule changes. */
 import { mkdirSync, writeFileSync } from 'node:fs';
-import { FOREST_ROAD } from '../../src/content/maps/combat';
+import { FOREST_GROUND_ROWS } from '../../src/content/maps/combat';
 import { newImage, readImage } from './lib/image';
 import { encodeWebp } from './lib/webp';
 
@@ -24,7 +24,7 @@ for (let chunk = 0; chunk < 2; chunk++) {
       const dy = (py - 192 + 0.5) / 32;
       const x = (dx + dy) / 2,
         y = (dy - dx) / 2;
-      const cell = FOREST_ROAD.rows[Math.floor(y)]?.[Math.floor(x)] ?? ',';
+      const cell = FOREST_GROUND_ROWS[Math.floor(y)]?.[Math.floor(x)] ?? ',';
       const material = cell === '~' ? 2 : cell === '^' || cell === 'r' ? 3 : cell === '=' ? 0 : 1;
       const sx = sample(x * 192) + (material % 2) * swatch;
       const sy = sample(y * 192) + Math.floor(material / 2) * swatch;

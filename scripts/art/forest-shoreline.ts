@@ -40,6 +40,7 @@ import { mkdirSync, writeFileSync } from 'node:fs';
 import { FOREST_POND_PATCH, FOREST_WATER_CELLS } from '../../src/content/scenes/forestRoad';
 import type { Vec2 } from '../../src/core/types';
 import { newImage, parseHex, setPixel, writePng } from './lib/image';
+import { refuseToOverwriteGenerated } from './lib/shipped-pin';
 import { encodeWebp } from './lib/webp';
 import {
   FOREST_GROUND_QUALITY,
@@ -516,6 +517,7 @@ export function packShoreline(
 }
 
 export async function main() {
+  refuseToOverwriteGenerated('forest-shoreline');
   const result = packShoreline(await loadForestMaterial());
   mkdirSync('public/art/maps/forest-scene', { recursive: true });
   const bytes = await encodeWebp(result.image, FOREST_GROUND_QUALITY, true);

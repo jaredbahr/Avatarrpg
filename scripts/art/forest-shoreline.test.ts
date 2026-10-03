@@ -1,15 +1,9 @@
-import { readFileSync } from 'node:fs';
 import { expect, it } from 'vitest';
-import { FOREST_ROAD } from '../../src/content/maps/combat';
+import { FOREST_GROUND_ROWS, FOREST_ROAD } from '../../src/content/maps/combat';
 import { FOREST_WATER_CELLS } from '../../src/content/scenes/forestRoad';
 import { pixelAt, toHex } from './lib/image';
-import { encodeWebp } from './lib/webp';
-import {
-  FOREST_GROUND_QUALITY,
-  FOREST_INK,
-  FOREST_PIECE_TONES,
-  loadForestMaterial,
-} from './forest-village-material';
+import { expectPackerAlpha, expectShippedPin } from './lib/shipped-pin';
+import { FOREST_INK, FOREST_PIECE_TONES, loadForestMaterial } from './forest-village-material';
 import {
   BED_DEEP_AT,
   BED_DEEP_BAND,
@@ -36,10 +30,15 @@ const { image, bedPixels, bitePixels } = packShoreline(material);
 const inset = pondInset(image.width, image.height);
 const BED_HEXES = new Set<string>(Object.values(FOREST_PIECE_TONES.bed));
 
-it('ships the pond plate the packer builds', async () => {
-  expect(Buffer.from(await encodeWebp(image, FOREST_GROUND_QUALITY, true))).toEqual(
-    readFileSync(SHORE_OUTPUT),
-  );
+/** Generated 2026-10-03 (see docs/art/forest-pond-shoreline.md); not packer output. */
+const POND_PIN = {
+  bytes: 53422,
+  sha256: '5c9c9772389e1aef7fd54e09fdd56ecfc4312d8a5be75b8a7b2d07bb0dc59d80',
+};
+
+it('ships the generated pond plate on the packer footprint', async () => {
+  expectShippedPin(SHORE_OUTPUT, POND_PIN);
+  await expectPackerAlpha(SHORE_OUTPUT, image);
 });
 
 it('paints only the damp margin, the bed and the ink', () => {
@@ -221,7 +220,7 @@ it('keeps the bed blue enough for the authored-water gate', () => {
 });
 
 it('preserves all nine permanent walkable water cells without adding shore collision', () => {
-  const actual = FOREST_ROAD.rows.flatMap((row, y) =>
+  const actual = FOREST_GROUND_ROWS.flatMap((row, y) =>
     [...row].flatMap((key, x) => (key === '~' ? [{ x, y }] : [])),
   );
   expect(actual).toEqual(FOREST_WATER_CELLS);

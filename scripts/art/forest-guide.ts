@@ -1,6 +1,6 @@
 /** Technical registration guides only; these diagrams are not shipped artwork. */
 import { mkdirSync, writeFileSync } from 'node:fs';
-import { FOREST_ROAD } from '../../src/content/maps/combat';
+import { FOREST_GROUND_ROWS, FOREST_ROAD } from '../../src/content/maps/combat';
 
 const project = (x: number, y: number) => ({ x: 768 + (x - y) * 64, y: (x + y) * 32 });
 const point = (x: number, y: number) => `${x},${y}`;
@@ -16,7 +16,7 @@ const colors: Record<string, string> = {
 };
 for (let y = 0; y < FOREST_ROAD.height; y++) {
   for (let x = 0; x < FOREST_ROAD.width; x++) {
-    const key = FOREST_ROAD.rows[y]?.[x] ?? ',';
+    const key = FOREST_GROUND_ROWS[y]?.[x] ?? ',';
     const corners = [
       [x, y],
       [x + 1, y],

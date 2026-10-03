@@ -1,6 +1,6 @@
 /** Alpha-register authored puddle art to the exact permanent-water mask. No painted pixels are invented. */
 import { mkdirSync, writeFileSync } from 'node:fs';
-import { FOREST_ROAD } from '../../src/content/maps/combat';
+import { FOREST_GROUND_ROWS } from '../../src/content/maps/combat';
 import { readImage, newImage, pixelAt, setPixel } from './lib/image';
 import { alphaBounds, crop } from './lib/trim';
 import { scaleBy } from './lib/scale';
@@ -29,7 +29,7 @@ for (let py = 0; py < out.height; py++) {
       sy = py - offsetY;
     if (sx < 0 || sy < 0 || sx >= scaled.width || sy >= scaled.height) continue;
     const pixel = pixelAt(scaled, sx, sy);
-    if (FOREST_ROAD.rows[y]?.[x] === '~') setPixel(out, px, py, pixel);
+    if (FOREST_GROUND_ROWS[y]?.[x] === '~') setPixel(out, px, py, pixel);
     else if (pixel[3] > 0) clipped++;
   }
 }

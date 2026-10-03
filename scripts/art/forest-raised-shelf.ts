@@ -41,7 +41,7 @@
  * rock above trodden earth — and the (19,4) road exit stays clear.
  */
 import { mkdirSync, writeFileSync } from 'node:fs';
-import { FOREST_ROAD } from '../../src/content/maps/combat';
+import { FOREST_GROUND_ROWS, FOREST_ROAD } from '../../src/content/maps/combat';
 import {
   FOREST_PERCH_CELLS,
   FOREST_RAISED_SHELF,
@@ -128,7 +128,7 @@ function lowerEdge(
 
 /** Flat cells the perch may stand over: blocked ones, and ground past the rim. */
 function overhangs(x: number, y: number): boolean {
-  const key = FOREST_ROAD.rows[y]?.[x];
+  const key = FOREST_GROUND_ROWS[y]?.[x];
   if (key === undefined) return true;
   return FOREST_ROAD.legend[key]?.blocked === true;
 }

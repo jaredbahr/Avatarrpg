@@ -1,6 +1,6 @@
 /** Pack one authored ground plate; retain registered substrate at rule-sensitive boundaries. */
 import { mkdirSync, writeFileSync } from 'node:fs';
-import { FOREST_ROAD } from '../../src/content/maps/combat';
+import { FOREST_GROUND_ROWS } from '../../src/content/maps/combat';
 import { readImage, newImage, pixelAt, setPixel, writePng } from './lib/image';
 import { scaleTo } from './lib/scale';
 import { crop } from './lib/trim';
@@ -23,7 +23,7 @@ function sample(value: number): number {
   const wrapped = ((value % (period * 2)) + period * 2) % (period * 2);
   return edge + Math.min(period - 1, Math.floor(wrapped < period ? wrapped : period * 2 - wrapped));
 }
-const critical = FOREST_ROAD.rows.flatMap((row, y) =>
+const critical = FOREST_GROUND_ROWS.flatMap((row, y) =>
   [...row].flatMap((key, x) => (key === '~' || key === '^' ? [{ x, y }] : [])),
 );
 const output = newImage(plate.width, plate.height);
@@ -46,7 +46,7 @@ for (let py = 0; py < plate.height; py++) {
     }
     // Only copy existing authored swatch pixels. The actual row chooses the
     // material, so guide-placeholder drift cannot enlarge water or elevation.
-    const cell = FOREST_ROAD.rows[Math.floor(y)]?.[Math.floor(x)] ?? ',';
+    const cell = FOREST_GROUND_ROWS[Math.floor(y)]?.[Math.floor(x)] ?? ',';
     const material = cell === '~' ? 2 : cell === '^' ? 3 : cell === '=' ? 0 : 1;
     const sx = sample(x * 192) + (material % 2) * swatch;
     const sy = sample(y * 192) + Math.floor(material / 2) * swatch;
@@ -56,7 +56,7 @@ for (let py = 0; py < plate.height; py++) {
 }
 const directory = 'public/art/maps/forest-scene';
 const prior = { ...output, data: output.data.slice() };
-const elevated = critical.filter(({ x, y }) => FOREST_ROAD.rows[y]?.[x] === '^');
+const elevated = critical.filter(({ x, y }) => FOREST_GROUND_ROWS[y]?.[x] === '^');
 const logical = (px: number, py: number) => {
   const dx = (((px + 0.5) * 2304) / plate.width - 896) / 64;
   const dy = (((py + 0.5) * 1280) / plate.height - 192) / 32;
@@ -64,7 +64,7 @@ const logical = (px: number, py: number) => {
 };
 const elevationDistance = (x: number, y: number) =>
   Math.min(...elevated.map((c) => Math.max(c.x - x, x - c.x - 1, c.y - y, y - c.y - 1, 0)));
-const terrain = (x: number, y: number) => FOREST_ROAD.rows[Math.floor(y)]?.[Math.floor(x)] ?? ',';
+const terrain = (x: number, y: number) => FOREST_GROUND_ROWS[Math.floor(y)]?.[Math.floor(x)] ?? ',';
 let mattePixels = 0;
 for (let py = 0; py < plate.height; py++) {
   for (let px = 0; px < plate.width; px++) {
@@ -137,7 +137,7 @@ for (let py = 0; py < output.height; py++) {
     const wy = ((py + 0.5) * 1280) / output.height - 192;
     const cellX = Math.floor(wx / 128 + wy / 64);
     const cellY = Math.floor(wy / 64 - wx / 128);
-    if (FOREST_ROAD.rows[cellY]?.[cellX] === '~') continue;
+    if (FOREST_GROUND_ROWS[cellY]?.[cellX] === '~') continue;
     if (teal(pixelAt(plate, px, py))) sourceWaterSpill++;
     if (teal(pixelAt(output, px, py))) packedWaterSpill++;
   }

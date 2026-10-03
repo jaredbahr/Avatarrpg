@@ -1,11 +1,10 @@
-import { readFileSync } from 'node:fs';
 import { expect, it } from 'vitest';
 import { FOREST_ROAD } from '../../src/content/maps/combat';
 import { FOREST_WATER_CELLS } from '../../src/content/scenes/forestRoad';
 import { FOREST_GRASS_REGIONS } from '../../src/content/scenes/forestRoadGround';
 import { pixelAt } from './lib/image';
-import { encodeWebp } from './lib/webp';
-import { FOREST_GROUND_QUALITY, loadForestMaterial } from './forest-village-material';
+import { expectPackerAlpha, expectShippedPin } from './lib/shipped-pin';
+import { loadForestMaterial } from './forest-village-material';
 import { measure } from './forest-ground-measure';
 import {
   FOREST_GRASS_PACKS,
@@ -14,13 +13,26 @@ import {
   withinGrassRegion,
 } from './forest-grass-regions';
 
-it('ships reproducible sparse grass packs with fully covered eligible centers', async () => {
+/** Generated 2026-10-03 (see docs/art/forest-ground-composition.md); not packer output. */
+const GRASS_PINS: Record<string, { bytes: number; sha256: string }> = {
+  north: {
+    bytes: 37046,
+    sha256: '42723d7694c81b57ca9ac27b295d8058e340b8e2b4d9e4a852f61dba4daa690e',
+  },
+  south: {
+    bytes: 30314,
+    sha256: '291abe5e896816e5c69cf84e8d43bc6a7446fa0e15671004f399c066598c51d2',
+  },
+};
+
+it('ships generated sparse grass packs on the packer footprint with fully covered eligible centers', async () => {
   const material = await loadForestMaterial();
   for (const pack of FOREST_GRASS_PACKS) {
     const image = packGrassRegion(material, pack.rows, pack.region);
-    expect(Buffer.from(await encodeWebp(image, FOREST_GROUND_QUALITY, true))).toEqual(
-      readFileSync(pack.output),
-    );
+    const pin = GRASS_PINS[pack.name];
+    expect(pin, `${pack.name} has a recorded pin`).toBeDefined();
+    if (pin) expectShippedPin(pack.output, pin);
+    await expectPackerAlpha(pack.output, image);
     let opaque = 0,
       feather = 0,
       waterLeaks = 0,

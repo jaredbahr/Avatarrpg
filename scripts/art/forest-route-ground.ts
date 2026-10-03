@@ -19,12 +19,13 @@
  * road and verge feather together without ink; gameplay objects own their edges.
  */
 import { mkdirSync, writeFileSync } from 'node:fs';
-import { FOREST_ROAD } from '../../src/content/maps/combat';
+import { FOREST_GROUND_ROWS } from '../../src/content/maps/combat';
 import { newImage, setPixel } from './lib/image';
 import type { Image } from './lib/image';
 import { FOREST_GROUND_QUALITY, loadForestMaterial } from './forest-village-material';
 import type { ForestMaterial, ToneName } from './forest-village-material';
 import { tileNoise } from '../../src/render/painters/shapes';
+import { refuseToOverwriteGenerated } from './lib/shipped-pin';
 import { encodeWebp } from './lib/webp';
 import { spillAt } from './forest-rubble';
 import { REED_WEAR_RGB, reedWear } from './forest-reed-wear';
@@ -59,7 +60,7 @@ export function packRouteGround(material: ForestMaterial): Image {
       const y = (dy - dx) / 2;
       const ix = Math.floor(x),
         iy = Math.floor(y);
-      const key = ground(FOREST_ROAD.rows[iy]?.[ix]);
+      const key = ground(FOREST_GROUND_ROWS[iy]?.[ix]);
       // The local route has only road and its grass shoulders. Water, ledges and
       // cover remain transparent so the real grid and runtime materials show.
       if (!painted(key) || ix < 0 || ix >= 20 || iy < 3 || iy > 9) continue;
@@ -74,7 +75,7 @@ export function packRouteGround(material: ForestMaterial): Image {
         [0, -1],
         [0, 1],
       ] as const) {
-        const neighbour = ground(FOREST_ROAD.rows[iy + oy]?.[ix + ox]);
+        const neighbour = ground(FOREST_GROUND_ROWS[iy + oy]?.[ix + ox]);
         // Only mix across the walkable road/shoulder boundary. A pond, ledge or
         // prop stays transparent, so runtime water and independent scenery retain
         // their real footprint, and their own authored art keeps its own edge.
@@ -117,6 +118,7 @@ export function packRouteGround(material: ForestMaterial): Image {
 export const FOREST_ROUTE_GROUND_OUTPUT = 'public/art/maps/forest-scene/route-ground.webp';
 
 export async function main(): Promise<void> {
+  refuseToOverwriteGenerated('forest-route-ground');
   const image = packRouteGround(await loadForestMaterial());
   mkdirSync('public/art/maps/forest-scene', { recursive: true });
   writeFileSync(FOREST_ROUTE_GROUND_OUTPUT, await encodeWebp(image, FOREST_GROUND_QUALITY, true));

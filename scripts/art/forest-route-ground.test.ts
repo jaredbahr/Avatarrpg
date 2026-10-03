@@ -1,11 +1,9 @@
-import { readFileSync } from 'node:fs';
 import { expect, it } from 'vitest';
 import { FOREST_ROAD } from '../../src/content/maps/combat';
 import { FOREST_WATER_CELLS } from '../../src/content/scenes/forestRoad';
 import { pixelAt, toHex } from './lib/image';
-import { encodeWebp } from './lib/webp';
+import { expectPackerAlpha, expectShippedPin } from './lib/shipped-pin';
 import {
-  FOREST_GROUND_QUALITY,
   FOREST_GROUND_TONES,
   FOREST_PIECE_TONES,
   loadForestMaterial,
@@ -24,15 +22,20 @@ const MAX_WINDOW_SPAN = 1.25;
 const material = await loadForestMaterial();
 const image = packRouteGround(material);
 
-it('ships the route plate the packer builds, inside the texture cap', async () => {
+/** Generated 2026-10-03 (see docs/art/forest-ground-composition.md); not packer output. */
+const ROUTE_PIN = {
+  bytes: 80928,
+  sha256: '8b58560d83532a66092ebeabd9476d7a64be60de820f8a2ab7b6e4de6a2a92be',
+};
+
+it('ships the generated route plate on the packer footprint, inside the texture cap', async () => {
   expect({ width: image.width, height: image.height }).toEqual({
     width: FOREST_ROUTE_GROUND.width,
     height: FOREST_ROUTE_GROUND.height,
   });
   expect(Math.max(image.width, image.height)).toBeLessThanOrEqual(2048);
-  expect(Buffer.from(await encodeWebp(image, FOREST_GROUND_QUALITY, true))).toEqual(
-    readFileSync(FOREST_ROUTE_GROUND_OUTPUT),
-  );
+  expectShippedPin(FOREST_ROUTE_GROUND_OUTPUT, ROUTE_PIN);
+  await expectPackerAlpha(FOREST_ROUTE_GROUND_OUTPUT, image);
 });
 
 it('paints only the three named materials, the heap spill and their rims', () => {

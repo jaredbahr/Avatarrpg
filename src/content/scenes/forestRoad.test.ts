@@ -1,5 +1,5 @@
 import { expect, it } from 'vitest';
-import { FOREST_ROAD } from '../maps/combat';
+import { FOREST_GROUND_ROWS, FOREST_ROAD } from '../maps/combat';
 import {
   FOREST_APRON_FADE,
   FOREST_APRON_PAINTED_EXTENTS_TILES,
@@ -24,7 +24,7 @@ import {
 import { FOREST_GRASS_REGIONS } from './forestRoadGround';
 
 const cells = (key: string) =>
-  FOREST_ROAD.rows.flatMap((row, y) =>
+  FOREST_GROUND_ROWS.flatMap((row, y) =>
     [...row].flatMap((value, x) => (value === key ? [{ x, y }] : [])),
   );
 
@@ -59,7 +59,7 @@ it('registers forest art only to the existing water, cover and blocked tree cell
   expect(FOREST_RAISED_SHELF_CELLS).toEqual(cells('^'));
   expect(FOREST_PERCH_CELLS).toEqual(cells('A'));
   expect(cells('A')).toEqual([{ x: 19, y: 2 }]);
-  expect(FOREST_ROAD.legend[FOREST_ROAD.rows[2]?.[19] ?? '']?.elevation).toBe(2);
+  expect(FOREST_ROAD.legend[FOREST_GROUND_ROWS[2]?.[19] ?? '']?.elevation).toBe(2);
   expect(FOREST_RAISED_SHELF_CELLS).not.toContainEqual({ x: 19, y: 4 });
   expect(FOREST_ROAD_SCENE.ground).toContainEqual({
     url: 'art/maps/forest-scene/raised-shelf.webp',
@@ -76,7 +76,7 @@ it('registers forest art only to the existing water, cover and blocked tree cell
   expect(FOREST_LODGE.footprint).toEqual(FOREST_LODGE_CELLS);
   // Exterior trees stand past the rim, never on the board.
   for (const cell of FOREST_THICKET_CELLS)
-    expect(FOREST_ROAD.rows[cell.y]?.[cell.x], `${cell.x},${cell.y}`).toBeUndefined();
+    expect(FOREST_GROUND_ROWS[cell.y]?.[cell.x], `${cell.x},${cell.y}`).toBeUndefined();
   for (const cell of FOREST_THICKET_CELLS) {
     const foot = { x: cell.x + 0.5, y: cell.y + 0.5 };
     const depth = Math.max(
@@ -145,7 +145,7 @@ it('registers the passable flood-bank nest reeds at their authored depth', () =>
     footprint: [{ x: 6, y: 9 }],
     depth: { x: 6.1, y: 9.08 },
   });
-  expect(FOREST_ROAD.rows[9]?.[6]).toBe(',');
+  expect(FOREST_GROUND_ROWS[9]?.[6]).toBe(',');
   expect(FOREST_BANK_NEST_REEDS.fadeWhenOccluding).toBeUndefined();
   expect(FOREST_BANK_NEST_REEDS.wall).toBeUndefined();
   expect(FOREST_ROAD_SCENE.scenery).toContainEqual(FOREST_BANK_NEST_REEDS);

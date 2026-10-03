@@ -26,7 +26,7 @@ import {
   DRILLER_FLOOR_SCENE,
   QUARRY_SURROUND_EXTENTS_TILES,
 } from '../scenes/quarryProjected';
-import { FOREST_APRON_PAINTED_EXTENTS_TILES } from '../scenes/forestRoad';
+import { FOREST_APRON_PAINTED_EXTENTS_TILES, FOREST_ROADSIDE_PROPS } from '../scenes/forestRoad';
 
 /** Painted surroundings available to the combat camera beyond the full grid. */
 export const COMBAT_CAMERA_RING_TILES = {
@@ -59,6 +59,41 @@ const propAt = (propId: string, x: number, y: number): PropPlacement => ({
   pos: { x, y },
 });
 
+/**
+ * The authored ground. Art, packers and ground tests read this; the rules read
+ * `FOREST_ROAD.rows`, which closes the roadside props' cells on top of it.
+ */
+export const FOREST_GROUND_ROWS: readonly string[] = [
+  'TTTT,,TTTTTTTT,TTTTT',
+  'TT,,,,,TTT,,,,,,^^TT',
+  'T,,,,,,,,,,,,,,^^^^A',
+  ',,,,,,,r,,,,,,,,^^^^',
+  '====================',
+  ',====~~~====,,,,,,^^',
+  ',,==~~~~====,,,,,,,^',
+  ',,===~~=====,,,,,,,,',
+  ',,================,,',
+  ',,,,,,,,r,,,,,,,,,,,',
+  'T,,,WW,,,,,,,,,T,,,T',
+  'TTWWWWWTTTTTWWWWWTTT',
+];
+/**
+ * A roadside prop's cell keeps its ground but stops feet, not eyes, and gives no
+ * cover: `f` is blocked grass and `b` is blocked tier-1 bank. Nothing else about
+ * the tile changes, so the prop stays decoration until the rules adopt it.
+ */
+export const ROADSIDE_BLOCKING_KEYS: Readonly<Record<string, string>> = { ',': 'f', '^': 'b' };
+const FOREST_ROADSIDE_BLOCKERS = new Set(
+  FOREST_ROADSIDE_PROPS.map(({ cell }) => `${cell.x},${cell.y}`),
+);
+const FOREST_RULE_ROWS: readonly string[] = FOREST_GROUND_ROWS.map((row, y) =>
+  [...row]
+    .map((key, x) =>
+      FOREST_ROADSIDE_BLOCKERS.has(`${x},${y}`) ? (ROADSIDE_BLOCKING_KEYS[key] ?? key) : key,
+    )
+    .join(''),
+);
+
 export const FOREST_ROAD: MapDef = {
   id: 'forest_road',
   projection: 'oblique',
@@ -69,7 +104,11 @@ export const FOREST_ROAD: MapDef = {
   width: 20,
   height: 12,
   ambience: 'forest',
-  legend: LEGEND,
+  legend: {
+    ...LEGEND,
+    f: { terrain: 'grass', blocked: true, blocksSight: false },
+    b: { terrain: 'stone', elevation: 1, blocked: true, blocksSight: false },
+  },
   /*
    * The road's footprint is shaped inside the 20x12 grid (M3): a pine wall with
    * three clearings closes the north, the through-road leaves through rows 4-8
@@ -82,20 +121,7 @@ export const FOREST_ROAD: MapDef = {
    * the two rubble heaps at (7,3) and (8,9) are cover. The four props below
    * are the only other interactables.
    */
-  rows: [
-    'TTTT,,TTTTTTTT,TTTTT',
-    'TT,,,,,TTT,,,,,,^^TT',
-    'T,,,,,,,,,,,,,,^^^^A',
-    ',,,,,,,r,,,,,,,,^^^^',
-    '====================',
-    ',====~~~====,,,,,,^^',
-    ',,==~~~~====,,,,,,,^',
-    ',,===~~=====,,,,,,,,',
-    ',,================,,',
-    ',,,,,,,,r,,,,,,,,,,,',
-    'T,,,WW,,,,,,,,,T,,,T',
-    'TTWWWWWTTTTTWWWWWTTT',
-  ],
+  rows: FOREST_RULE_ROWS,
   partySpawns: COMBAT_PARTY_SPAWNS,
   npcs: [],
   /*

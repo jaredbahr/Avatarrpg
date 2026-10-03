@@ -1,13 +1,8 @@
-import { readFileSync } from 'node:fs';
 import { expect, it } from 'vitest';
 import { FOREST_CREEK_POOLS } from '../../src/content/scenes/forestRoad';
 import { pixelAt, toHex } from './lib/image';
-import { encodeWebp } from './lib/webp';
-import {
-  FOREST_GROUND_QUALITY,
-  FOREST_PIECE_TONES,
-  loadForestMaterial,
-} from './forest-village-material';
+import { expectPackerAlpha, expectShippedPin } from './lib/shipped-pin';
+import { FOREST_PIECE_TONES, loadForestMaterial } from './forest-village-material';
 import { creekOutput, packCreekPool } from './forest-creek';
 import { apronDepth, forestApronAlpha } from './forest-exterior-apron';
 import { shoreDistance, shorePosition } from './forest-shoreline';
@@ -16,11 +11,25 @@ const material = await loadForestMaterial();
 const packed = FOREST_CREEK_POOLS.map((pool) => ({ pool, ...packCreekPool(material, pool) }));
 const BED = new Set<string>(Object.values(FOREST_PIECE_TONES.bed));
 
-it('ships the creek plates the packer builds', async () => {
-  for (const { pool, image } of packed)
-    expect(Buffer.from(await encodeWebp(image, FOREST_GROUND_QUALITY, true)), pool.name).toEqual(
-      readFileSync(creekOutput(pool.name)),
-    );
+/** Generated 2026-10-03 (see docs/art/forest-pond-shoreline.md); not packer output. */
+const CREEK_PINS: Record<string, { bytes: number; sha256: string }> = {
+  west: {
+    bytes: 47174,
+    sha256: '5bf397bd4fa1ccec0cca0e8503fd5c7e495f27863ee1486b54a20be6029ab6f5',
+  },
+  east: {
+    bytes: 46462,
+    sha256: '157119dc31c7196c19b3efc27d2d9699b129dcd8725ccc9031a4537e0094585b',
+  },
+};
+
+it('ships the generated creek plates on the packer footprint', async () => {
+  for (const { pool, image } of packed) {
+    const pin = CREEK_PINS[pool.name];
+    expect(pin, `${pool.name} has a recorded pin`).toBeDefined();
+    if (pin) expectShippedPin(creekOutput(pool.name), pin);
+    await expectPackerAlpha(creekOutput(pool.name), image);
+  }
 });
 
 it('clips every exterior creek pixel to the apron contour before every plate crop', () => {

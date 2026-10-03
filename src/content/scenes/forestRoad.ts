@@ -262,6 +262,102 @@ export const FOREST_DEADFALL: SceneScenery = (() => {
   };
 })();
 
+/**
+ * Roadside dressing (`docs/art/forest-roadside-props.md`): eight sprites in ten
+ * placements, each on one live cell. The cell is closed to movement in combat and
+ * exploration alike by `combat.ts`, which writes the cell's blocking key
+ * (`ROADSIDE_BLOCKING_KEYS`) into the rows; the dressing grants no cover and
+ * answers no tap. Sprites were reviewed on a 96 px tile, so each is drawn at
+ * 64/96 of its packed size (1 px of art = 2/3 world px, the 1:1 screen scale of a 96 px tile), standing on the cell centre.
+ */
+export const ROADSIDE_SCALE = 64 / 96;
+/** Alpha-trimmed sizes emitted by `scripts/art/forest-roadside-props.ts`. */
+export const ROADSIDE_ART_SIZE = {
+  'broken-cart-wheel': { width: 88, height: 80 },
+  'lantern-post': { width: 58, height: 146 },
+  milestone: { width: 68, height: 58 },
+  'mushroom-fallen-log': { width: 140, height: 68 },
+  'rope-bound-quarry-blocks': { width: 88, height: 78 },
+  signpost: { width: 86, height: 130 },
+  'split-rail-fence': { width: 103, height: 74 },
+  'woodpile-stump': { width: 144, height: 68 },
+} as const;
+export interface RoadsideProp {
+  readonly id: string;
+  readonly art: keyof typeof ROADSIDE_ART_SIZE;
+  readonly cell: Vec2;
+  /** Trim to the reviewed size against a party figure (default 1). */
+  readonly fit?: number;
+  /** Turn a long side from the y axis to the x axis (ADR 0058). */
+  readonly flip?: true;
+  readonly castShadow?: 'reduced';
+  readonly fadeWhenOccluding?: true;
+}
+/*
+ * Fence B stands at (1,2), not the proposed (3,2): with the woodpile, fences A and
+ * B and the signpost on (2,1), (2,2), (3,2) and (4,2), Dema's only open
+ * neighbours lay on column 4, inside the one-shot `road_depart` crossing, so a
+ * walk to her was stopped by that story node. The gap at (3,2) is the way to her.
+ */
+export const FOREST_ROADSIDE_PROPS: readonly RoadsideProp[] = [
+  { id: 'signpost', art: 'signpost', fit: 0.87, cell: { x: 4, y: 2 }, fadeWhenOccluding: true },
+  {
+    id: 'fence-a',
+    art: 'split-rail-fence',
+    cell: { x: 2, y: 2 },
+    flip: true,
+    castShadow: 'reduced',
+  },
+  {
+    id: 'fence-b',
+    art: 'split-rail-fence',
+    cell: { x: 1, y: 2 },
+    flip: true,
+    castShadow: 'reduced',
+  },
+  { id: 'fence-c', art: 'split-rail-fence', cell: { x: 4, y: 3 }, castShadow: 'reduced' },
+  { id: 'woodpile', art: 'woodpile-stump', fit: 0.75, cell: { x: 2, y: 1 } },
+  { id: 'cart-wheel', art: 'broken-cart-wheel', cell: { x: 12, y: 2 } },
+  { id: 'milestone', art: 'milestone', fit: 0.7, cell: { x: 14, y: 2 } },
+  { id: 'lantern', art: 'lantern-post', cell: { x: 14, y: 3 }, fadeWhenOccluding: true },
+  { id: 'quarry-blocks', art: 'rope-bound-quarry-blocks', fit: 0.8, cell: { x: 17, y: 3 } },
+  {
+    id: 'mushroom-log',
+    art: 'mushroom-fallen-log',
+    fit: 0.75,
+    cell: { x: 2, y: 10 },
+    castShadow: 'reduced',
+  },
+];
+/** The tier-1 bank is painted at the full tier lift: 16 of 64 pixels (`reliefLift`). */
+const BANK_LIFT_PX = 16;
+function roadsideProp(prop: RoadsideProp, bankKeys: ReadonlySet<string>): SceneScenery {
+  const size = ROADSIDE_ART_SIZE[prop.art];
+  const scale = ROADSIDE_SCALE * (prop.fit ?? 1);
+  const width = size.width * scale,
+    height = size.height * scale;
+  const { x, y } = prop.cell;
+  const lift = bankKeys.has(`${x},${y}`) ? BANK_LIFT_PX : 0;
+  return {
+    id: `forest-roadside-${prop.id}`,
+    url: `${root}roadside-${prop.art}.webp`,
+    x: 768 + (x - y) * 64 - width / 2,
+    y: (x + y + 1) * 32 - height * 0.94 - lift,
+    width,
+    height,
+    footprint: [{ x, y }],
+    depth: { x: x + 0.5, y: y + 0.5 },
+    ...(prop.flip ? { flip: true } : {}),
+    ...(prop.castShadow ? { castShadow: prop.castShadow } : {}),
+    ...(prop.fadeWhenOccluding ? { fadeWhenOccluding: true } : {}),
+  };
+}
+/** Raised-bank cells that carry a prop, so the piece stands on the lifted top. */
+const BANK_PROP_CELLS = new Set(FOREST_RAISED_SHELF_CELLS.map(({ x, y }) => `${x},${y}`));
+export const FOREST_ROADSIDE_SCENERY: readonly SceneScenery[] = FOREST_ROADSIDE_PROPS.map((prop) =>
+  roadsideProp(prop, BANK_PROP_CELLS),
+);
+
 /** Songbirds that burst out of the pines as the ambush opens (docs/art/forest-birds.md). */
 export const FOREST_FLOCK = {
   url: `${root}bird-flap.webp`,
@@ -465,6 +561,7 @@ export const FOREST_ROAD_SCENE: MapScene = {
     FOREST_BANK_NEST_REEDS,
     ...FOREST_POND_REEDS,
     ...FOREST_CREEK_REEDS,
+    ...FOREST_ROADSIDE_SCENERY,
   ],
   flock: FOREST_FLOCK,
 };

@@ -86,3 +86,32 @@ Before WebPs and pre-encoding before/after PNGs are preserved locally under
 `gallery/scene-audit/elevation-packing/`. Directly inspected boundary crops show
 the old grain/dark rim replaced by quieter warm stone. Final acceptance still
 requires the combined actual-96px review with gameplay's permanent-rubble fix.
+
+## Generated ground, shipped 3 October 2026
+
+The route and grass plates are no longer the procedural packer's output. The
+owner approved candidate A, an old stone road, on 3 October 2026, and it ships
+over `grass-north.webp`, `grass-south.webp` and `route-ground.webp`.
+
+- **Generator:** built-in image generation (output terms:
+  https://openai.com/policies/row-terms-of-use/). No exclusive copyright in
+  generated output is claimed.
+- **Prompts, in summary:** a top-down-oblique stone road with large pale slabs
+  that stay legible through dark joints, warm lit faces, broad directional wear,
+  moss and buried-earth breaks and edge stones, with grass shoulders. Pond,
+  creek and heap cells were restored to the neutral plate, so no generated
+  water colour reaches the cuts.
+- **Mechanical steps only:** the master was normalised to the native
+  2240 x 1088 plate and cut to the shipped rectangles (grass north 1536 x 768,
+  grass south 1472 x 736, route ground 1984 x 960), then encoded as lossy WebP
+  at quality 74 with alpha. Each cut inherits the previous plate's decoded
+  alpha, so registration drift is 0 px. No pixel was repainted.
+- **Sizes:** 37,046, 30,314 and 80,928 bytes (148,288 in all).
+- **Tests:** `forest-route-ground.test.ts` and `forest-grass-regions.test.ts`
+  now pin each shipped file's size and SHA-256 (`scripts/art/lib/shipped-pin.ts`)
+  and hold its decoded alpha to the packer's footprint. The packers
+  (`forest-route-ground.ts`, `forest-grass-regions.ts`) still describe that
+  footprint and refuse to overwrite the generated files unless
+  `FOREST_REPACK_PROCEDURAL=1` is set.
+- **Source of record:** the review build (build script and report) was kept in
+  `.review/ship/road/` on the working branch and is not shipped.

@@ -23,9 +23,11 @@ import { PAINTED_FACE_SHADE, SHADOW_RGB } from './lighting';
  *
  * The decoded cost is small next to the paintings' (a plate is 300-900 px
  * wide): the widest scene here holds 27 distinct images, about 23 MB, against
- * the ~35 MB a quarry scene already keeps resident under the old cap.
+ * the ~35 MB a quarry scene already keeps resident under the old cap. ADR 0072
+ * raised the cap from 32 to 40 for the Forest Road's eight roadside sprites,
+ * which together decode to well under 1 MB.
  */
-export const SCENE_IMAGE_CAP = 32;
+export const SCENE_IMAGE_CAP = 40;
 
 /** Separate bounded cache: multi-piece scenes must not evict their own ground each frame. */
 export const sceneImages = new BackdropStore(SCENE_IMAGE_CAP);

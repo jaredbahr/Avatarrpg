@@ -13,12 +13,13 @@
  * cannot drift across the overlap even when they are run separately.
  */
 import { mkdirSync, writeFileSync } from 'node:fs';
-import { FOREST_ROAD } from '../../src/content/maps/combat';
+import { FOREST_GROUND_ROWS } from '../../src/content/maps/combat';
 import { FOREST_GRASS_REGIONS } from '../../src/content/scenes/forestRoadGround';
 import { newImage, setPixel } from './lib/image';
 import type { Image } from './lib/image';
 import { FOREST_GROUND_QUALITY, loadForestMaterial } from './forest-village-material';
 import type { ForestMaterial } from './forest-village-material';
+import { refuseToOverwriteGenerated } from './lib/shipped-pin';
 import { encodeWebp } from './lib/webp';
 import { spillAt } from './forest-rubble';
 import { REED_WEAR_RGB, reedWear } from './forest-reed-wear';
@@ -55,7 +56,7 @@ export function grassPosition(
 }
 
 export function withinGrassRegion(x: number, y: number, rows: readonly number[]): boolean {
-  const key = FOREST_ROAD.rows[y]?.[x];
+  const key = FOREST_GROUND_ROWS[y]?.[x];
   // Grass continues beneath a pine without changing its footprint, and the
   // verge runs on under a rubble heap, where it gives way to the heap's spill
   // (`forest-rubble.ts`), so no bare terrain diamond shows round it. It never
@@ -102,6 +103,7 @@ export function packGrassRegion(
 }
 
 export async function main() {
+  refuseToOverwriteGenerated('forest-grass-regions');
   const material = await loadForestMaterial();
   mkdirSync('public/art/maps/forest-scene', { recursive: true });
   for (const pack of FOREST_GRASS_PACKS) {
