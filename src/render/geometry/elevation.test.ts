@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { buildGrid } from '../../core/rules/grid';
 import { QUARRY_FLOOR } from '../../content/maps/combat';
 import { Camera, TILE } from '../camera';
+import { ELEVATION } from '../palettes';
 import { TIER_LIFT, liftAlong, liftAt, pickCell } from './elevation';
 import { clusters, liftOps, liftPlan, markedCells, marksSchedule } from './lift';
 import type { LiveMarks } from './lift';
@@ -197,10 +198,61 @@ describe('liftOps', () => {
       });
     const ramp = one('S');
     const ledge = one('^');
-    const faces = (list: typeof ramp) => list.filter((op) => op.kind === 'face').length;
-    expect(faces(ramp)).toBe(2);
-    expect(faces(ledge)).toBe(2);
+    const stoneFaces = (list: typeof ramp) =>
+      list.filter(
+        (op) =>
+          op.kind === 'fill' &&
+          (op.color === ELEVATION.southBase || op.color === ELEVATION.eastBase),
+      ).length;
+    expect(stoneFaces(ramp)).toBe(2);
+    expect(stoneFaces(ledge)).toBe(2);
     expect(ramp.length).toBeGreaterThan(ledge.length + 5);
+  });
+
+  it('samples a lifted top only inside a margin and washes it toward the stone body', () => {
+    const list = ops();
+    const sampled = list.filter((op) => op.kind === 'top');
+    const bodies = list.filter(
+      (op) => op.kind === 'fill' && op.color === ELEVATION.topBase && op.alpha === 1,
+    );
+    expect(sampled.length).toBeGreaterThan(0);
+    for (const op of sampled) {
+      if (op.kind !== 'top') continue;
+      const body = bodies.find(
+        (b) => b.kind === 'fill' && b.poly.length === 4 && b.poly[0] && op.poly[0],
+      );
+      const width = (poly: readonly { x: number }[]) =>
+        Math.max(...poly.map((p) => p.x)) - Math.min(...poly.map((p) => p.x));
+      if (body?.kind === 'fill') expect(width(op.poly)).toBeLessThanOrEqual(width(body.poly));
+    }
+    expect(
+      list.some(
+        (op) =>
+          op.kind === 'fill' && op.color === ELEVATION.topBase && op.alpha === ELEVATION.topWash,
+      ),
+    ).toBe(true);
+  });
+
+  it('backs lifted stone with opaque material and uses hairline silhouette ink', () => {
+    const list = ops();
+    const stoneFaces = list.filter(
+      (op) =>
+        op.kind === 'fill' && (op.color === ELEVATION.southBase || op.color === ELEVATION.eastBase),
+    );
+    const opaqueStone = list.filter(
+      (op) =>
+        op.kind === 'fill' &&
+        op.alpha === 1 &&
+        new Set<string>([ELEVATION.topBase, ELEVATION.southBase, ELEVATION.eastBase]).has(op.color),
+    );
+    expect(stoneFaces.length).toBeGreaterThan(0);
+    expect(opaqueStone.length).toBeGreaterThan(stoneFaces.length);
+    expect(list.some((op) => op.kind === 'line' && op.color === ELEVATION.ink)).toBe(true);
+    expect(
+      list.some(
+        (op) => op.kind === 'line' && op.color === ELEVATION.ink && op.width > tilePx * 0.015,
+      ),
+    ).toBe(false);
   });
 });
 
