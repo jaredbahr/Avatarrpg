@@ -491,22 +491,9 @@ export function liftCells(input: LiftInput): { x: number; y: number; ops: LiftOp
       });
     }
 
-    // A higher block to the north or west shades this cell's top along that side.
-    for (const side of [SIDES[0], SIDES[3]]) {
-      const other = at(grid, x + side.dx, y + side.dy);
-      const drop = other && !other.blocked ? lift(x + side.dx, y + side.dy) - mine : 0;
-      if (drop <= 0) continue;
-      const depth = Math.min(0.45, 0.3 * (drop / TIER_LIFT));
-      for (const k of [1, 0.66, 0.33]) {
-        const d = depth * k;
-        ops.push({
-          kind: 'fill',
-          poly: side.dx === 0 ? quad(0, 0, 1, d, mine) : quad(0, 0, d, 1, mine),
-          color: ELEVATION.shadow,
-          alpha: 0.11,
-        });
-      }
-    }
+    // A higher block shades this cell's top through the shared cast shadow
+    // (lighting.ts structureShadowPolygons), not a second band drawn here: two
+    // darkenings of one shadow, and three stacked steps that read as stripes.
     if (mine <= 0) continue;
 
     // A wall stands no lift of its own, but its painted rock is at least as
@@ -519,10 +506,10 @@ export function liftCells(input: LiftInput): { x: number; y: number; ops: LiftOp
       return { side, other, below };
     });
 
-    // A ramp is a few broad steps down to its low side (the front one first,
-    // so a corner reads one way): two treads a tile, each a dark riser and a
-    // lit nosing, stopped short of the tile's ends and nudged per tile so a
-    // bench of ramps breaks into steps rather than ruling one long stripe.
+    // A ramp tilts toward its low side (the front one first, so a corner reads
+    // one way): it takes a graded darkening toward that edge, in steps too small
+    // to see. Ruled treads were tried; across a bench of ramps they ran as one
+    // long stripe the length of the wall, the fault the owner flagged.
     const stair = tile.ramp
       ? [2, 1, 0, 3]
           .map((i) => down[i])
@@ -533,18 +520,18 @@ export function liftCells(input: LiftInput): { x: number; y: number; ops: LiftOp
       const along = side.dx === 0;
       // Distance from the low edge, in the cell's own coordinate.
       const at = (u: number) => (side.dx + side.dy > 0 ? 1 - u : u);
-      const hash = (((x * 73856093) ^ (y * 19349663)) >>> 0) % 997;
-      const jitter = (k: number) => (((hash * (k + 3)) % 97) / 97 - 0.5) * 0.16;
-      for (const [i, k] of [0.34, 0.72].entries()) {
-        const e0 = 0.07 + Math.abs(jitter(i + 1));
-        const e1 = 0.93 - Math.abs(jitter(i + 5));
-        const band = (u0: number, u1: number) => {
-          const [p, q] = [at(u0), at(u1)].sort((m, n) => m - n) as [number, number];
-          return along ? quad(e0, p, e1, q, mine) : quad(p, e0, q, e1, mine);
-        };
-        const u = k + jitter(i);
-        ops.push({ kind: 'fill', poly: band(u - 0.13, u), color: ELEVATION.shadow, alpha: 0.2 });
-        ops.push({ kind: 'fill', poly: band(u, u + 0.06), color: ELEVATION.rim, alpha: 0.32 });
+      const slope = ELEVATION.rampSlope;
+      for (let i = 1; i <= slope.steps; i++) {
+        const [p, q] = [at(0), at((i / slope.steps) * slope.reach)].sort((m, n) => m - n) as [
+          number,
+          number,
+        ];
+        ops.push({
+          kind: 'fill',
+          poly: along ? quad(0, p, 1, q, mine) : quad(p, 0, q, 1, mine),
+          color: ELEVATION.shadow,
+          alpha: slope.alpha,
+        });
       }
     }
     ops.push(marks);
@@ -610,6 +597,22 @@ export function liftCells(input: LiftInput): { x: number; y: number; ops: LiftOp
         if (i === steps) continue;
         const dark = band(u - 0.3 / steps, u - 0.14 / steps);
         ops.push({ kind: 'fill', poly: dark, color: ELEVATION.shadow, alpha: 0.14 });
+      }
+      // Base occlusion: a dark band on the lower ground where the face lands,
+      // tight and then soft, so the block is seated rather than laid on it.
+      for (const [reach, alpha] of ELEVATION.footBands) {
+        const drop = reach * tilePx;
+        ops.push({
+          kind: 'fill',
+          poly: [
+            footA,
+            footB,
+            { x: footB.x, y: footB.y + drop },
+            { x: footA.x, y: footA.y + drop },
+          ],
+          color: ELEVATION.shadow,
+          alpha,
+        });
       }
       ops.push({ kind: 'line', a: footA, b: footB, color: ELEVATION.ink, alpha: 0.7, width: ink });
       ops.push({

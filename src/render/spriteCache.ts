@@ -18,7 +18,7 @@
  */
 
 import { resolveAsset } from '../content/assets/manifest';
-import { FALLBACK_SHADOW_WIDTH, measureArtWidth } from './propFootprint';
+import { FALLBACK_SHADOW_WIDTH, measureArt } from './propFootprint';
 import { resolvePainter } from './painters/registry';
 import { groundShadow } from './painters/shapes';
 import type { PainterOptions } from './painters/units';
@@ -49,6 +49,12 @@ export const MAX_SPRITE_PX = 256;
 /** 128 entries at the cap is 32 MB of canvas: comfortably under the iOS limit. */
 const MAX_ENTRIES = 128;
 
+/**
+ * A prop is all pool and no body above it, so it takes less of the figure's
+ * density: measured under the rubble heap against the reference's crates.
+ */
+const PROP_SHADOW_DENSITY = 0.55;
+
 export class SpriteCache {
   private entries = new Map<string, CacheEntry>();
   private images = new Map<string, HTMLImageElement | null>();
@@ -56,6 +62,8 @@ export class SpriteCache {
   private failed = new Set<string>();
   /** Measured contact-shadow width per prop key; art does not change at runtime. */
   private propWidths = new Map<string, number>();
+  /** Where each prop's art ends, so a heap that sits high is not shadowed below it. */
+  private propFoot = new Map<string, number>();
 
   /** Painted sprites are cheap to rebuild; drop them all on a big resize. */
   clear(): void {
@@ -104,7 +112,13 @@ export class SpriteCache {
         // around the base, which is what stops a crate or a stone pile from
         // meeting the ground on a bare line.
         if (key.startsWith('prop.'))
-          groundShadow(ctx, { x: 0, y: 0, size: bucketed }, this.propWidth(key, image));
+          groundShadow(
+            ctx,
+            { x: 0, y: 0, size: bucketed },
+            this.propWidth(key, image),
+            PROP_SHADOW_DENSITY,
+            this.propFoot.get(key),
+          );
         ctx.drawImage(image, 0, 0, canvas.width, canvas.height);
       } else {
         const painter = resolvePainter(key);
@@ -152,11 +166,12 @@ export class SpriteCache {
   private propWidth(key: string, image: HTMLImageElement): number {
     const known = this.propWidths.get(key);
     if (known !== undefined) return known;
-    const measured = measureArtWidth(image);
+    const measured = measureArt(image);
     // An image that is still decoding is not cached: the next frame measures it.
     if (measured === null) return FALLBACK_SHADOW_WIDTH;
-    this.propWidths.set(key, measured);
-    return measured;
+    this.propWidths.set(key, measured.width);
+    if (measured.foot !== null) this.propFoot.set(key, measured.foot);
+    return measured.width;
   }
 
   /**

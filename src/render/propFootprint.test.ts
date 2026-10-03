@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest';
 import {
   FALLBACK_SHADOW_WIDTH,
   SHADOW_MARGIN,
+  footFromArt,
   measureArtWidth,
   shadowWidthFromArt,
 } from './propFootprint';
@@ -54,5 +55,21 @@ describe('prop shadow footprint', () => {
   it('does not measure an image that has not decoded yet', () => {
     const pending = { complete: false, naturalWidth: 0, naturalHeight: 0 } as HTMLImageElement;
     expect(measureArtWidth(pending)).toBeNull();
+  });
+});
+
+describe('prop shadow foot line', () => {
+  it('answers the lowest opaque row, so a heap that sits high is not shadowed below it', () => {
+    // Opaque rows 2-6 of a 10-row image: the art ends at the end of row 6.
+    const data = art(8, 10, [
+      [1, 6, 2],
+      [0, 7, 6],
+    ]);
+    expect(footFromArt(data, 8, 10)).toBeCloseTo(0.7, 6);
+  });
+
+  it('has no answer for empty or unreadable art', () => {
+    expect(footFromArt(new Uint8ClampedArray(8 * 10 * 4), 8, 10)).toBeNull();
+    expect(footFromArt(new Uint8ClampedArray(4), 8, 10)).toBeNull();
   });
 });

@@ -621,6 +621,7 @@ export const mapSchema = z
                 fadeGroup: id.optional(),
                 flip: z.boolean().optional(),
                 contactShadow: z.literal(false).optional(),
+                castShadow: z.union([z.literal(false), z.literal('reduced')]).optional(),
               })
               .superRefine(validateSceneFeather)
               .superRefine((piece, ctx) => {

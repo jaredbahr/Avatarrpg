@@ -927,6 +927,8 @@ export interface SceneScenery extends SceneImage {
    * at its painted foot.
    */
   readonly contactShadow?: false;
+  /** Runtime cast-shadow policy for art that already contains ground shade. */
+  readonly castShadow?: false | 'reduced';
 }
 
 export interface MapScene {

@@ -31,6 +31,8 @@ export interface RenderUnit {
   readonly showHealth?: boolean;
   /** A contact shadow on the ground under the figure and its bob (explore maps, ADR 0015). */
   readonly shadow?: boolean;
+  /** Runtime cast-shadow policy for a frame with painted-in ground shade. */
+  readonly castShadow?: false | 'reduced';
   /** Which way the sprite faces: 1 is screen-right. Defaults to the faction's side. */
   readonly facing?: 1 | -1;
   /**
@@ -293,6 +295,8 @@ export interface RenderProp {
   readonly maxHp: number;
   /** Fuel rounds remaining; present only while this prop is burning. */
   readonly burning?: number;
+  /** Suppress a baked shadow, or keep only a faint runtime extension. */
+  readonly castShadow?: false | 'reduced';
 }
 
 /**

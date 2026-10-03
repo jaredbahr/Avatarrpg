@@ -76,6 +76,15 @@ import {
 } from '../view';
 import type { BackendCapabilities, RenderBackend } from './backend';
 import { renderFoot } from '../renderFoot';
+import {
+  CAST_SHADOW_ALPHA,
+  FALLEN_SHADOW_ALPHA,
+  SHADOW_COLOR,
+  castShadowStrength,
+  structureShadowPolygons,
+  tileShadowCell,
+  silhouetteProjection,
+} from '../lighting';
 
 /** The rounded square a hovered tile gets, in tile units from its corner. */
 const HOVER_LOOP = contourLoops([{ x: 0, y: 0 }])[0] ?? [];
@@ -111,6 +120,8 @@ export class Canvas2DBackend implements RenderBackend {
   private fx = new CanvasFxLayer();
   /** White silhouettes of unit art, for the hit flash; forgotten with the source. */
   private masks = new WeakMap<HTMLCanvasElement | HTMLImageElement, HTMLCanvasElement>();
+  /** One union mask, rebuilt each frame from every upright silhouette. */
+  private shadowLayer: HTMLCanvasElement | null = null;
   /** Cliffs, rims and wall outlines, rebuilt only when a tile's footing changes. */
   private relief: ReadonlyMap<number, TileRelief> = new Map();
   private reliefSignature = '';
@@ -315,6 +326,7 @@ export class Canvas2DBackend implements RenderBackend {
       if (layer && plan.bounds) this.drawLift(view, camera, plan, layer, () => onGround(liveMarks));
       this.drawSteamPuffs(view, camera);
       this.drawClimbMarkers(view, camera);
+      this.drawCastShadows(view, camera);
       this.drawUnitRings(view, camera);
       drawBendFx(ctx, view.bendFx ?? [], camera, false);
       // All upright occupants share depth order, including NPCs and props.
@@ -400,6 +412,7 @@ export class Canvas2DBackend implements RenderBackend {
       this.drawFxLayer(view, camera, 'under');
       this.drawExit(view, camera);
       this.drawClimbMarkers(view, camera);
+      this.drawCastShadows(view, camera);
       this.drawUnitRings(view, camera);
       drawBendFx(ctx, view.bendFx ?? [], camera, false);
       this.drawNpcs(view, camera);
@@ -1287,6 +1300,283 @@ export class Canvas2DBackend implements RenderBackend {
       ctx.fillStyle = '#d9a441';
       ctx.fillRect(x, y, (w * prop.hp) / prop.maxHp, Math.max(2, box.size * 0.05));
       ctx.restore();
+    }
+  }
+
+  /** Cast every upright alpha silhouette into one mask, then tint once. */
+  private drawCastShadows(view: MapView, camera: Camera): void {
+    const width = Math.ceil(camera.viewport.width);
+    const height = Math.ceil(camera.viewport.height);
+    if (
+      !this.shadowLayer ||
+      this.shadowLayer.width !== width ||
+      this.shadowLayer.height !== height
+    ) {
+      this.shadowLayer = document.createElement('canvas');
+      this.shadowLayer.width = width;
+      this.shadowLayer.height = height;
+    }
+    const layer = this.shadowLayer.getContext('2d');
+    if (!layer) return;
+    layer.clearRect(0, 0, width, height);
+    this.drawStructureShadowMask(layer, view, camera);
+
+    // Scenery and still props are drawn straight into the union each frame:
+    // a cached mask only covered the viewport it was built for (so a pan lost
+    // pieces) and was frozen before streamed scene art had arrived.
+    if (view.scene && camera.projection === 'oblique') {
+      this.drawSceneryShadowMask(layer, view, camera);
+      this.drawPropShadowMask(
+        layer,
+        view.props.filter((prop) => !prop.burning),
+        view,
+        camera,
+      );
+    }
+    this.drawLiveShadowMask(layer, view, camera);
+    layer.globalCompositeOperation = 'source-in';
+    layer.fillStyle = SHADOW_COLOR;
+    layer.fillRect(0, 0, width, height);
+    layer.globalCompositeOperation = 'source-over';
+    this.ctx.save();
+    this.ctx.globalAlpha = CAST_SHADOW_ALPHA;
+    this.clipShadowGround(this.ctx, view, camera);
+    this.ctx.drawImage(this.shadowLayer, 0, 0);
+    this.ctx.restore();
+  }
+
+  /** Procedural wall blocks and raised tiers have no bitmap silhouette. */
+  private drawStructureShadowMask(
+    target: CanvasRenderingContext2D,
+    view: MapView,
+    camera: Camera,
+  ): void {
+    if (camera.projection !== 'oblique') return;
+    target.save();
+    target.fillStyle = '#ffffff';
+    const authored = new Set(
+      (view.scene?.scenery ?? []).flatMap((piece) =>
+        (piece.footprint ?? []).map((cell) => `${cell.x},${cell.y}`),
+      ),
+    );
+    for (const prop of view.props) authored.add(`${prop.pos.x},${prop.pos.y}`);
+    for (const { points } of structureShadowPolygons(
+      view.grid.width,
+      view.grid.height,
+      (x, y) => tileShadowCell(view.grid.tiles[y * view.grid.width + x]),
+      (point) => camera.project(point),
+      authored,
+      TILE * camera.scale,
+    )) {
+      target.beginPath();
+      points.forEach((point, index) =>
+        index ? target.lineTo(point.x, point.y) : target.moveTo(point.x, point.y),
+      );
+      target.closePath();
+      target.fill();
+    }
+    target.restore();
+  }
+
+  private clipShadowGround(ctx: CanvasRenderingContext2D, view: MapView, camera: Camera): void {
+    const ring = camera.clampRingTiles;
+    const corners = [
+      { x: -ring.left, y: -ring.top },
+      { x: view.grid.width + ring.right, y: -ring.top },
+      { x: view.grid.width + ring.right, y: view.grid.height + ring.bottom },
+      { x: -ring.left, y: view.grid.height + ring.bottom },
+    ].map((point) => camera.project(point));
+    ctx.beginPath();
+    corners.forEach((point, index) => {
+      if (index === 0) ctx.moveTo(point.x, point.y);
+      else ctx.lineTo(point.x, point.y);
+    });
+    ctx.closePath();
+    ctx.clip();
+  }
+
+  private projectMask(
+    target: CanvasRenderingContext2D,
+    source: CanvasImageSource,
+    src: { x: number; y: number; w: number; h: number } | null,
+    dest: { x: number; y: number; w: number; h: number },
+    foot: { x: number; y: number },
+    alpha = 1,
+    flip = false,
+  ): void {
+    const m = silhouetteProjection(foot.x, foot.y);
+    target.save();
+    target.globalAlpha = alpha;
+    target.transform(m.a, m.b, m.c, m.d, m.e, m.f);
+    if (flip) {
+      target.translate(foot.x * 2, 0);
+      target.scale(-1, 1);
+    }
+    if (src) target.drawImage(source, src.x, src.y, src.w, src.h, dest.x, dest.y, dest.w, dest.h);
+    else target.drawImage(source, dest.x, dest.y, dest.w, dest.h);
+    target.restore();
+  }
+
+  private drawSceneryShadowMask(
+    target: CanvasRenderingContext2D,
+    view: MapView,
+    camera: Camera,
+  ): void {
+    for (const piece of view.scene?.scenery ?? []) {
+      if (piece.castShadow === false) continue;
+      const image = sceneImage(piece);
+      if (!image) continue;
+      const x = piece.x * camera.scale - camera.offsetX;
+      const y = piece.y * camera.scale - camera.offsetY;
+      const w = piece.width * camera.scale;
+      const h = piece.height * camera.scale;
+      const foot = { x: x + w / 2, y: y + h };
+      const m = silhouetteProjection(foot.x, foot.y);
+      target.save();
+      target.globalAlpha = castShadowStrength(piece.castShadow);
+      target.transform(m.a, m.b, m.c, m.d, m.e, m.f);
+      if (piece.flip) {
+        target.translate(x + w, 0);
+        target.scale(-1, 1);
+        target.translate(-x, 0);
+      }
+      drawSceneImage(target, image, piece, x, y, w, h);
+      target.restore();
+    }
+  }
+
+  private drawLiveShadowMask(
+    target: CanvasRenderingContext2D,
+    view: MapView,
+    camera: Camera,
+  ): void {
+    const dpr = camera.viewport.dpr;
+    for (const npc of view.npcs) {
+      const at = npc.renderPos ?? npc.pos;
+      const width = this.npcWidth(npc.sprite);
+      const box = camera.spriteBox(at, width, false);
+      box.y -= liftAlong(view.grid, at, camera.projection) * box.size;
+      const scale = npc.scale ?? 1;
+      const foot = { x: box.x + (width * box.size) / 2, y: box.y + FOOT_LINE * box.size };
+      const frame = sheets.frame(
+        npc.sprite,
+        npc.walking ? 'walk' : 'idle',
+        npc.clipTime ?? 0,
+        undefined,
+        box.size * dpr * scale,
+        width,
+      );
+      if (frame) {
+        const placed = placeFrame(frame, foot.x, foot.y, box.size * scale);
+        this.projectMask(target, frame.source, frame.frame, placed, foot, npc.alpha ?? 1);
+      } else {
+        const sprite = sprites.get(npc.sprite, box.size * dpr * scale, npcPose(npc), width);
+        this.projectMask(
+          target,
+          sprite,
+          null,
+          { x: box.x, y: box.y, w: box.size * width, h: box.size },
+          foot,
+          npc.alpha ?? 1,
+        );
+      }
+    }
+    this.drawPropShadowMask(
+      target,
+      camera.projection === 'oblique' && view.scene
+        ? view.props.filter((prop) => Boolean(prop.burning))
+        : view.props,
+      view,
+      camera,
+    );
+    for (const unit of view.units) {
+      if (unit.castShadow === false) continue;
+      const pos = unit.renderPos ?? unit.pos;
+      const box = camera.spriteBox(pos, unit.size, this.squareFootprints);
+      if (unit.offset) {
+        box.x += unit.offset.x * box.size;
+        box.y += unit.offset.y * box.size;
+      }
+      box.y -= liftAlong(view.grid, pos, camera.projection) * box.size;
+      const scale = unit.scale ?? 1;
+      const heightTiles = this.squareFootprints ? unit.size : 1;
+      const width = unit.size === 2 ? box.size * 2 : box.size;
+      const foot = { x: box.x + width / 2, y: box.y + FOOT_LINE * box.size };
+      const bend = unit.bend && sheets.bendFrame(unit.sprite, unit.bend.heading, unit.bend.index);
+      const frame =
+        bend ||
+        sheets.frame(
+          unit.sprite,
+          unit.clip ?? 'idle',
+          unit.clipTime ?? view.time + idlePhase(unit.id),
+          unit.clipFrame,
+          box.size * dpr * scale,
+          unit.size,
+          unit.meleeDirection,
+          heightTiles,
+        );
+      if (frame) {
+        const placed = placeFrame(frame, foot.x, foot.y, box.size * scale);
+        const f = frame.frame;
+        this.projectMask(
+          target,
+          frame.source,
+          f,
+          placed,
+          foot,
+          (unit.alpha ?? 1) *
+            (unit.fallen ? FALLEN_SHADOW_ALPHA : 1) *
+            castShadowStrength(unit.castShadow),
+          !bend && (unit.facing ?? (unit.faction === 'enemy' ? -1 : 1)) === -1,
+        );
+      } else {
+        const sprite = sprites.get(
+          unit.sprite,
+          box.size * dpr * scale,
+          { facing: unit.facing ?? (unit.faction === 'enemy' ? -1 : 1) },
+          unit.size,
+          heightTiles,
+        );
+        const dest = {
+          x: box.x + (width - width * scale) / 2,
+          y: box.y + FOOT_LINE * (box.size - box.size * heightTiles * scale),
+          w: width * scale,
+          h: box.size * heightTiles * scale,
+        };
+        this.projectMask(
+          target,
+          sprite,
+          null,
+          dest,
+          foot,
+          (unit.alpha ?? 1) *
+            (unit.fallen ? FALLEN_SHADOW_ALPHA : 1) *
+            castShadowStrength(unit.castShadow),
+        );
+      }
+    }
+  }
+
+  private drawPropShadowMask(
+    target: CanvasRenderingContext2D,
+    props: MapView['props'],
+    view: MapView,
+    camera: Camera,
+  ): void {
+    const dpr = camera.viewport.dpr;
+    for (const prop of props) {
+      if (prop.castShadow === false) continue;
+      const box = camera.spriteBox(prop.pos);
+      box.y -= liftAt(view.grid, prop.pos, camera.projection) * box.size;
+      const sprite = sprites.get(prop.sprite, box.size * dpr, { facing: 1 });
+      this.projectMask(
+        target,
+        sprite,
+        null,
+        { x: box.x, y: box.y, w: box.size, h: box.size },
+        { x: box.x + box.size / 2, y: box.y + FOOT_LINE * box.size },
+        castShadowStrength(prop.castShadow),
+      );
     }
   }
 

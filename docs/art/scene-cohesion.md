@@ -59,6 +59,14 @@ or oversized tools. Ground shadows stay close under planted feet, with the
 cast direction consistent with walls. Foreground roofs and foliage must overlap
 figures in both backends, while fading preserves target/path readability.
 
+Contact and cast shadows have separate owners. Contact pools stay close under
+every planted actor on every terrain. Art never paints a cast shadow: both
+renderers project each current upright silhouette down-right from the shared
+upper-left key, union all coverage, and tint the result once with bible ink.
+Static scenery projection is cached; actors and moving or burning props follow
+their current frame. Low growth may opt out, and legacy art with a baked pool
+uses a reduced cast so it is grounded without receiving a second dark patch.
+
 ## Motion and listening acceptance
 
 Static screenshots cannot establish motion or sound quality. Capture an actual

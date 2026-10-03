@@ -411,13 +411,18 @@ for (const renderer of ['canvas', 'webgl'] as const) {
     const wet = (await samples(page, { raised })).raised;
     // Real water's cool tint must be visible over the existing raised-base
     // sample; a hidden surface leaves this identical to `bare`. Measured as a
-    // cool shift rather than an absolute green rise: the shelf top is the
-    // ground contract's warm packed earth (`FOREST_PIECE_TONES.trodden`, base
-    // `#b39064`, ~179,148,101 on screen), already greener than the water
-    // fill's g=143, so no film can raise green over it.
-    expect(wet.b - bare.b, `water blue shift: ${JSON.stringify({ bare, wet })}`).toBeGreaterThan(
-      12,
+    // cool shift (red falls, blue overtakes red), never as an absolute blue
+    // rise: the perch top is lit stone (~207,193,166 in the open) whose blue is
+    // already the water fill's own, so with the single-key lighting (ADR 0071)
+    // the film moves red and green but blue by only ~3, wherever the pine's
+    // shadow falls. That shadow is a multiply over the whole perch on both
+    // backends, so it scales `bare` and `wet` alike and the differences below
+    // survive it; the old +12 blue test only passed while a soft dark blob sat
+    // on the perch and held `bare.b` near 103.
+    expect(bare.b, `bare perch is not already cool: ${JSON.stringify({ bare, wet })}`).toBeLessThan(
+      bare.r,
     );
+    expect(wet.b, `water is cool: ${JSON.stringify({ bare, wet })}`).toBeGreaterThan(wet.r);
     expect(wet.r, `water red drop: ${JSON.stringify({ bare, wet })}`).toBeLessThan(bare.r - 12);
     expect(
       wet.b - wet.r - (bare.b - bare.r),
@@ -438,7 +443,6 @@ for (const renderer of ['canvas', 'webgl'] as const) {
         { timeout: readbackTimeout },
       )
       .toBe(true);
-    expect(wet.b).toBeGreaterThan(bare.b + 12);
 
     // Exercise the shared chunk cache across a complete partial map and an
     // accessibility toggle before returning to forest's elevation base.

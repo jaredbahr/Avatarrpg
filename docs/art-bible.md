@@ -40,6 +40,11 @@ approved look. Checkable rules, cross-referenced to where each is decided:
 - **Shading.** Exactly two flat tones per material (base and shadow) plus one
   thin pale rim light on the lit edge. No gradients, no photographic texture,
   no lens effects.
+- **One light and renderer-owned shadows.** The warm key is always upper-left.
+  Art contains material shading but never a ground or cast shadow. The renderer
+  seats every actor with a close contact pool and projects every upright alpha
+  silhouette down-right into one ink-coloured cast-shadow layer; overlaps are
+  composited once and cannot double-darken. See ADR 0071.
 - **Palette.** Every colour traces to `src/render/palettes.ts` and
   `src/styles/base.css`. A colour not in those files is drift, not a variant.
 - **Baseline and scale.** Feet sit on the 85% baseline within 2 px. Every
@@ -67,7 +72,7 @@ survive being 40 pixels tall.
 | View       | Three-quarter top-down, about 30° above horizontal, character facing screen-right                                                     |
 | Frame      | One-tile unit: 128×192 px (1 tile wide, 1.5 tall). Boss: 256×192. Generate at 4× (512×768) and downscale                              |
 | Baseline   | Feet on a line at 85% of frame height; the runtime stands that line 85% of the way down the tile, so the head overlaps the tile above |
-| Background | Flat `#00ff00`, no ground shadow, no cast shadow. The game draws its own ground shadow under every unit                               |
+| Background | Flat `#00ff00`, no ground shadow, no cast shadow. The renderer draws contact and projected cast shadows for every unit                |
 | Facing     | One facing only. Enemies are mirrored, so no lettering or asymmetric emblems that would read wrong flipped                            |
 | Margins    | At least 8 px of empty frame on every side after trim; effects that extend past the frame belong to the FX layer                      |
 
