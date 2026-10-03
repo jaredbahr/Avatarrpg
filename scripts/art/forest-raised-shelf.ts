@@ -51,6 +51,7 @@ import type { Vec2 } from '../../src/core/types';
 import { tileNoise } from '../../src/render/painters/shapes';
 import { newImage, parseHex, setPixel } from './lib/image';
 import type { Image } from './lib/image';
+import { refuseToOverwriteGenerated } from './lib/shipped-pin';
 import { encodeWebp } from './lib/webp';
 import {
   FOREST_GROUND_QUALITY,
@@ -244,6 +245,7 @@ export function packRaisedShelf(material: ForestMaterial): Image {
 }
 
 export async function main(): Promise<void> {
+  refuseToOverwriteGenerated('forest-raised-shelf');
   const image = packRaisedShelf(await loadForestMaterial());
   mkdirSync('public/art/maps/forest-scene', { recursive: true });
   const bytes = await encodeWebp(image, FOREST_GROUND_QUALITY, true);

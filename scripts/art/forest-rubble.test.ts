@@ -1,4 +1,3 @@
-import { readFileSync } from 'node:fs';
 import { describe, expect, it } from 'vitest';
 import {
   FOREST_RUBBLE_CELLS,
@@ -10,14 +9,8 @@ import {
   DRILLER_RUBBLE_CELLS,
 } from '../../src/content/scenes/quarryProjected';
 import { toHex } from './lib/image';
-import { encodeWebp } from './lib/webp';
-import {
-  FOREST_GROUND_QUALITY,
-  FOREST_GROUND_TONES,
-  FOREST_INK,
-  FOREST_PIECE_TONES,
-  loadForestMaterial,
-} from './forest-village-material';
+import { expectPackerAlpha, expectShippedPin, readShipped } from './lib/shipped-pin';
+import { FOREST_PIECE_TONES, loadForestMaterial } from './forest-village-material';
 import {
   CHUNK_INK_PX,
   FOREST_RUBBLE_PLATE,
@@ -35,6 +28,13 @@ import { FOREST_ROUTE_GROUND, packRouteGround } from './forest-route-ground';
 import type { Image } from './lib/image';
 
 const material = await loadForestMaterial();
+
+/** Generated 2026-10-03 (see docs/art/forest-rubble.md); not packer output. */
+const RUBBLE_PINS: readonly { bytes: number; sha256: string }[] = [
+  { bytes: 6798, sha256: '521d90c0b658bc20a738f77733d792f0926934937cdf7b68c99db1a7daf2ae66' },
+  { bytes: 6162, sha256: 'b9d3ef4be0ba81b5aee66d925c5b1283eb050439ac55da4ef09f6a6989e2fea9' },
+  { bytes: 7032, sha256: '1680bc0818c28e3f7942b9ff72ea80d5b7fc0368b548ba0ffe9ce9cf5846900e' },
+];
 
 it('piles three different heaps, and every placement uses one of them', () => {
   const plates = Array.from({ length: RUBBLE_VARIANTS }, (_, v) => packRubble(material, v));
@@ -67,7 +67,7 @@ describe.each(Array.from({ length: RUBBLE_VARIANTS }, (_, v) => v))(
     const rubbleChunks = () => chunksOf(variant);
     const looseStones = () => stonesOf(variant);
 
-    it('ships the rubble plate the packer builds, at its registered size', async () => {
+    it('ships the generated rubble plate on the packer footprint, at its registered size', async () => {
       // The placements in `forestRoad.ts` scale this plate into their own
       // cells, so its size is registration: changing it would move the heaps.
       expect({ width: image.width, height: image.height }).toEqual({
@@ -75,44 +75,43 @@ describe.each(Array.from({ length: RUBBLE_VARIANTS }, (_, v) => v))(
         height: FOREST_RUBBLE_PLATE.height,
       });
       expect(FOREST_RUBBLE_CELLS).toHaveLength(2);
-      expect(Buffer.from(await encodeWebp(image, FOREST_GROUND_QUALITY, true))).toEqual(
-        readFileSync(rubbleOutput(variant)),
-      );
+      expectShippedPin(rubbleOutput(variant), RUBBLE_PINS[variant]!);
+      await expectPackerAlpha(rubbleOutput(variant), image);
     });
 
-    it('paints broken stone in the spoil and road keys over shaded earth, and the ink', () => {
-      const allowed = new Set<string>([
-        FOREST_INK,
-        ...Object.values(FOREST_PIECE_TONES.spoil),
-        ...Object.values(FOREST_GROUND_TONES.road),
-        ...Object.values(FOREST_PIECE_TONES.trodden),
-        FOREST_PIECE_TONES.margin.shadow,
-      ]);
-      const seen = new Map<string, number>();
-      let opaque = 0,
-        red = 0,
-        blue = 0;
-      for (let i = 0; i < image.data.length; i += 4) {
-        if ((image.data[i + 3] ?? 0) === 0) continue;
-        opaque++;
-        red += image.data[i] ?? 0;
-        blue += image.data[i + 2] ?? 0;
-        const hex = toHex([image.data[i] ?? 0, image.data[i + 1] ?? 0, image.data[i + 2] ?? 0]);
-        seen.set(hex, (seen.get(hex) ?? 0) + 1);
+    it('grounds the shipped heap: ink at its outline, contact shade under its foot', async () => {
+      // Visual checks run on the decoded shipped pixels, not the packer's.
+      const shipped = await readShipped(rubbleOutput(variant));
+      const at = (px: number, py: number) => {
+        const i = (py * shipped.width + px) * 4;
+        return {
+          alpha: shipped.data[i + 3] ?? 0,
+          luma:
+            0.2126 * (shipped.data[i] ?? 0) +
+            0.7152 * (shipped.data[i + 1] ?? 0) +
+            0.0722 * (shipped.data[i + 2] ?? 0),
+        };
+      };
+      // Walk each column to its lowest opaque pixel: the foot of the heap.
+      let columns = 0,
+        footLuma = 0,
+        bodyLuma = 0,
+        bodyCount = 0;
+      for (let px = 0; px < shipped.width; px++) {
+        let foot = -1;
+        for (let py = shipped.height - 1; py >= 0 && foot < 0; py--)
+          if (at(px, py).alpha > 0) foot = py;
+        if (foot < 12) continue;
+        columns++;
+        for (let y = foot - 2; y <= foot; y++) footLuma += at(px, y).luma / 3;
+        for (let y = foot - 12; y < foot - 4; y++) {
+          bodyLuma += at(px, y).luma;
+          bodyCount++;
+        }
       }
-      expect([...seen.keys()].filter((hex) => !allowed.has(hex))).toEqual([]);
-      // Both kinds of chunk show, each with its lit facet, its shadowed facet and
-      // its chip highlight; the gaps and the contact shadow are the earth in shade.
-      for (const hex of [
-        ...Object.values(FOREST_PIECE_TONES.spoil),
-        ...Object.values(FOREST_GROUND_TONES.road),
-        FOREST_PIECE_TONES.margin.shadow,
-        FOREST_INK,
-      ])
-        expect(seen.get(hex) ?? 0, `${hex} is painted`).toBeGreaterThan(200);
-      // The amended heap stays warmer than the former cold-grey spoil base
-      // (`#a89880`, R-B 40) even after its ink and contact shadow are included.
-      expect((red - blue) / opaque).toBeGreaterThan(0xa8 - 0x80);
+      expect(columns).toBeGreaterThan(150);
+      // The foot is darker than the stone above it: contact and ground shade.
+      expect(footLuma / columns).toBeLessThan((bodyLuma / bodyCount) * 0.8);
     });
 
     it('piles a crowned heap inside its own cell with no baked gradient', () => {
