@@ -23,8 +23,8 @@ the exact 20 x 12 playable polygon, with a conservative 0.02-cell filter guard.
 The existing board projection, floor and hit testing are untouched.
 
 Output world bounds are x=-320, y=-560, width=2688, height=1664. Each page is
-672 x 832 pixels displayed over 1344 x 1664 world pixels. These distant painted
-surroundings use fewer pixels than the interactive floor. There is no requirement
+1344 x 1664 pixels drawn 1:1 (the first pass shipped 672 x 832 pages drawn at
+2x). There is no requirement
 to fit their complete outer rectangle into the viewport.
 
 The source uses a magenta guide hole and variable alpha outside it. The importer
@@ -38,19 +38,40 @@ pixel by `quarrySurround.test.ts`. No inside-floor alpha survives encoding.
 
 ## Source and reproduction
 
-Built-in imagegen produced `art/raw/terraces/surround-source-v1.png`, preserved
-locally with the original technical guide and terrace inputs. Source SHA-256:
-`48c7481370b05d8c6d96bf0ba816261187762dace9feb6187518b261cf86d556`.
-Source files are ignored intake, not runtime downloads.
+**Superseded 2026-10-03: the shipped pages are a crisp re-cut, not this packer's
+output.** The pages the first pass produced (672 x 832, drawn at 2x, which read
+soft) were replaced by two 1344 x 1664 pages drawn 1:1, `west.webp` (192,872
+bytes, SHA-256 `7d024677...ea906`) and `east.webp` (193,788 bytes, SHA-256
+`512d602a...79bf6`; full hashes in `scripts/art/quarry-surround.test.ts`).
+
+Provenance of the re-cut, honestly: the painting is the same generated surround
+(the prompt below, Built-in imagegen, intake source
+`art/raw/terraces/surround-source-v1.png`, SHA-256
+`48c7481370b05d8c6d96bf0ba816261187762dace9feb6187518b261cf86d556`),
+re-registered at full resolution in two further generated revisions ("v3b",
+"v3c") by an agent session on 2026-10-03, then cleaned mechanically. The v3b
+master had an opaque near-black cut-out band (about 7-12 px, up to 17 px on the
+front edges), defect-coloured debris and a 3 px partial-alpha fringe at the hole.
+The clean-up made the alpha binary on the exact floor polygon (0 iff the pixel
+centre lies inside the 20 x 12 diamond, else 255), found the dark band by a
+per-edge luminance scan, and refilled the band, every defect-coloured pixel
+within 30 px of the hole and every partial-alpha exterior pixel from the nearest
+trusted pixel mirrored across the band boundary (plain edge extension where none
+exists), extended 12 px of exterior RGB under the hole so filtering never
+samples the board, and encoded lossy at quality 84 with `exact=1`. Nothing was
+repainted. The generator revisions and the clean-up script are not part of this
+repository (they live in ignored intake), so `quarry-surround-pack.ts` no longer
+builds the pages: it verifies them instead, and `quarry-surround.test.ts` pins
+the bytes and holds the alpha to the polygon.
 
 ```text
-node --import tsx scripts/art/quarry-surround-pack.ts art/raw/terraces/surround-source-v1.png
+node --import tsx scripts/art/quarry-surround-pack.ts
 ```
 
-Both output hashes reproduce byte-for-byte. West is 94,178 bytes and east is
-93,940 bytes at WebP quality 84 (188,118 bytes together). This uses existing map
-family headroom: 3.84 MiB of 4 MiB; total precache is 16.70 MiB of 25 MiB. No asset
-budget increase, image-format extension or ADR change is required.
+The pair is 386,660 bytes (it was 188,118), inside the map family's budget
+(`npm run check:assets`; see the handoff for the totals). The earlier paragraphs
+about 672 x 832 pages, the 0.02-cell guard and the 9,912 repaired samples
+describe the superseded first pass.
 
 ## Generation prompt
 
