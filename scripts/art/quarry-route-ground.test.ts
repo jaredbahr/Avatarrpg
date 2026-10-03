@@ -441,10 +441,10 @@ it("tells the Cutting's ledge tops from its rock tops", () => {
  */
 const SHIPPED_FLOOR_FILL: Record<string, string> = {
   'quarry-gate-scene/earth-west':
-    'd8897d112d88bc51eb3c4ee4ffcdf206580284f74355180c776c06194bb104ec',
+    'bf5d9007bcc0027fa78df29a6a0b72b713b617f712a37ea986ee70bca7e058ea',
   'quarry-gate-scene/earth-east':
-    'e0f987c4dea1d36cae3f25549f92d03f0beb8dd4bceb5deb770fc52c7f703583',
-  'quarry-gate-scene/road': 'bc93b7c0d73deca16b076294d9a9f848477217ac521088c95a76e194dd9b7c6e',
+    '33746b02f2aebc8a0571eee74009c194924a264041a36b5a5b1ef82186229d0b',
+  'quarry-gate-scene/road': '065a0c29c4e51033551547ba2ee4ecd5c400452a7943fb084e5e38e7952b8c4d',
   'quarry-gate-scene/limestone': '1b572149d852fae047b4cc8a78d01f0d14ef1a79bad2faebbb50b04292c67571',
   'cutting-scene/dirt-west': 'e7ca53824fe35a590b44e73f3f282c0c3e45648514a16e6c14df434e8b8d8e8e',
   'cutting-scene/dirt-east': '95105f6ec73dcf0cb6df47505215046156f6d086cabf7348240fa0098945e8a7',
@@ -555,21 +555,16 @@ function footprintViolations(
  *
  * Measured with the packer's plate re-encoded at q34 with `exact=1` and decoded
  * (the noise a faithful page carries): max window error 19.0 on every page.
- * The shipped pages measure 18.3 to 22.4, except the Gate's earth-west and
- * earth-east (below). The bound is 26. A 100 px repaint of an ink line or a face
- * sliver by 70 levels scores about 70 in its window.
+ * The shipped pages measure 18.3 to 22.4. The bound is 26. A 100 px repaint of
+ * an ink line or a face sliver by 70 levels scores about 70 in its window.
  *
- * Known: on the Gate's two earth pages the fill's colour under alpha 0 leaks
- * across the lossy blocks into 1-2 px ink pixels along the plate's outer edge,
- * which come out near-white (253,236,224 for 27,20,16). That is a flaw of the
- * shipped art, not noise, so those windows are pinned by count: it may not grow.
+ * The Gate's earth and road pages are encoded with the packer's colour under
+ * alpha 0, not the fill's: the fill's colour once leaked across the lossy blocks
+ * into the 1-2 px ink pixels of the plate's outer edge and turned them
+ * near-white (253,236,224 for 27,20,16). No window may exceed the bound.
  */
 const WINDOW_PX = 8;
 const WINDOW_MAX_ERROR = 26;
-const KNOWN_EDGE_BLEED_WINDOWS: Record<string, number> = {
-  'quarry-gate-scene/earth-west': 8116,
-  'quarry-gate-scene/earth-east': 7631,
-};
 
 function windowScan(
   map: MapDef,
@@ -632,17 +627,11 @@ function windowScan(
  * line leaves ~8 pixels in a window, diluted by the divisor), so ink is checked
  * on its own: each pixel the packer paints in the ink colour must still come out
  * dark. A re-encode alone leaves the brightest ink pixel at max channel 97 on
- * every page (ink is 27), so the bound is 110; the count over it is pinned per
- * page, 0 except where the Gate's alpha-0 fill leaks (see above).
+ * every page (ink is 27), so the bound is 110, and no pixel may exceed it.
  */
 const INK_MAX_CHANNEL = 110;
-const KNOWN_BRIGHT_INK: Record<string, number> = {
-  'quarry-gate-scene/earth-west': 934,
-  'quarry-gate-scene/earth-east': 1373,
-  'quarry-gate-scene/road': 380,
-};
 
-function inkViolations(key: string, page: { image: Image }, shipped: Image): string[] {
+function inkViolations(page: { image: Image }, shipped: Image): string[] {
   const { data } = page.image;
   let bright = 0;
   for (let i = 0; i < shipped.width * shipped.height; i++) {
@@ -657,25 +646,16 @@ function inkViolations(key: string, page: { image: Image }, shipped: Image): str
     )
       bright++;
   }
-  const allowed = KNOWN_BRIGHT_INK[key] ?? 0;
-  return bright > allowed
-    ? [`${bright} ink pixels brighter than ${INK_MAX_CHANNEL} (${allowed} allowed)`]
-    : [];
+  return bright ? [`${bright} ink pixels brighter than ${INK_MAX_CHANNEL}`] : [];
 }
 
 function windowViolations(
-  key: string,
   map: MapDef,
   page: { image: Image; x: number; y: number },
   shipped: Image,
 ): string[] {
   const { max, over, at } = windowScan(map, page, shipped);
-  const allowed = KNOWN_EDGE_BLEED_WINDOWS[key] ?? 0;
-  return over > allowed
-    ? [
-        `${over} windows over ${WINDOW_MAX_ERROR} (${allowed} allowed); worst ${max.toFixed(1)} at ${at}`,
-      ]
-    : [];
+  return over ? [`${over} windows over ${WINDOW_MAX_ERROR}; worst ${max.toFixed(1)} at ${at}`] : [];
 }
 
 it.each([
@@ -691,14 +671,8 @@ it.each([
       );
       const page = plate(built(), region.name);
       expect(footprintViolations(map, page, shipped), region.name).toEqual([]);
-      expect(
-        windowViolations(`${root}/${region.name}`, map, page, shipped),
-        `${root}/${region.name} windows`,
-      ).toEqual([]);
-      expect(
-        inkViolations(`${root}/${region.name}`, page, shipped),
-        `${root}/${region.name} ink`,
-      ).toEqual([]);
+      expect(windowViolations(map, page, shipped), `${root}/${region.name} windows`).toEqual([]);
+      expect(inkViolations(page, shipped), `${root}/${region.name} ink`).toEqual([]);
     }
   },
 );
@@ -757,9 +731,9 @@ it('ships the plates the packers build, inside the registered page', async () =>
  * budget, so its pins live here rather than as a `bytes` field on each region.
  */
 const QUARRY_GATE_GROUND_BYTES = [
-  { name: 'earth-west', bytes: 42_362 },
-  { name: 'earth-east', bytes: 43_016 },
-  { name: 'road', bytes: 19_502 },
+  { name: 'earth-west', bytes: 40_864 },
+  { name: 'earth-east', bytes: 41_264 },
+  { name: 'road', bytes: 16_010 },
   { name: 'limestone', bytes: 36_966 },
 ] as const;
 

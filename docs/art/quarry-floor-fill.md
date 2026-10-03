@@ -9,7 +9,7 @@ floor-level walkable cell is unchanged.
 
 | Scene                 | Pages replaced                          | Bytes (was)                                                  |
 | --------------------- | --------------------------------------- | ------------------------------------------------------------ |
-| `quarry-gate-scene`   | earth-west, earth-east, road, limestone | 42,362 / 43,016 / 19,502 / 36,966 (144,764 -> 141,846 total) |
+| `quarry-gate-scene`   | earth-west, earth-east, road, limestone | 40,864 / 41,264 / 16,010 / 36,966 (144,764 -> 135,104 total) |
 | `cutting-scene`       | dirt-west, dirt-east, road, stone       | 18,340 / 18,166 / 25,874 / 61,940                            |
 | `driller-floor-scene` | dirt-west, dirt-east, road, stone       | 29,084 / 26,446 / 2,798 / 67,486                             |
 
@@ -73,6 +73,19 @@ plate: alpha identical, and outside the floor masks (every walkable elevation-0
 cell, 4 px inset) each whole cell within lossy-encode tolerance, so a fill that
 paints a raised top, a face or ink fails even if its hash is re-pinned. Measured
 bounds are in the test.
+
+## Gate edge-ink re-encode
+
+The first Gate encode of earth-west, earth-east and road left the fill's colour
+under alpha 0, which bled across the lossy blocks into the 1-2 px ink pixels at
+the plate's outer edge (253,236,224 for 27,20,16: 934 / 1,373 / 380 bright ink
+pixels). The three pages were rebuilt mechanically: the previous shipped page's
+RGB inside the floor masks (floor-level walkable cell, 4 px inset), the packer's
+plate everywhere else, including the packer's RGB under alpha 0 and the whole
+rim and ink ring, then re-encoded at quality 34 with `exact=1`. Bright ink is
+now 0 and no 8 x 8 window exceeds the bound on any page; the pins in the test
+carry no known-bleed allowance. Bytes: 42,362 -> 40,864, 43,016 -> 41,264,
+19,502 -> 16,010. Limestone is unchanged.
 
 ## Known remaining
 
