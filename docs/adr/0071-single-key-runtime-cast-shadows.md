@@ -22,9 +22,9 @@ above the foot line. It applies unchanged to orthographic and oblique cameras:
 both keep upright art vertical in screen space and only their ground mapping
 differs.
 
-Each backend builds one alpha-mask layer. Static scenery is cached by scene and
-camera scale. Current actor frames, NPCs and props are added dynamically. The
-mask is unioned before a single `#1b1410` tint at fixed alpha, so overlaps do not
+Each backend builds one viewport-sized alpha-mask layer every frame. Scenery
+silhouettes are redrawn into it each frame, together with still props, current
+actor frames and NPCs; nothing is cached across frames. The mask is unioned before a single `#1b1410` tint at fixed alpha, so overlaps do not
 double-darken. Water receives shadows like other ground; this keeps a bridge,
 bank or figure from losing the light direction at a shoreline. Contact pools
 remain separate and now appear under combat actors on every terrain, with grass
@@ -58,11 +58,27 @@ contribute their alpha silhouettes.
 
 ## Consequences
 
-Canvas adds one viewport-sized temporary canvas and one cached static canvas.
-WebGL adds one render texture for the union mask and one cached static texture;
-the visible scene still receives one shadow composite. Static extraction occurs
-only when the scene or scale changes. Per frame, cost is one silhouette draw per
-actor and moving/burning prop plus one composite. Shadows are always enabled;
+Canvas adds one viewport-sized temporary canvas. WebGL adds one half-resolution
+render texture for the union mask; the visible scene still receives one shadow
+composite.
+
+Scenery shadows are a per-frame pass, not a cache. An earlier design extracted
+static scenery into a cached world-space mask, rebuilt only when the scene or
+scale changed. It was dropped for two reasons: it was frozen before streamed
+scene art had finished loading, so pieces that arrived later never cast, and it
+only covered the viewport it was built for, so panning lost pieces. Redrawing
+each frame needs no size, offset or invalidation bookkeeping and always matches
+the art currently on screen.
+
+The cost is one affine-projected silhouette draw per scenery piece per frame, on
+top of one per actor and moving/burning prop plus the composite. The largest
+shipped scene, Ba Dan, has 69 scenery pieces (the quarry gate has 54, the forest
+road 52 of which 45 cast, the quarry scenes 5 and 6). Off-screen pieces are
+**not** culled: Canvas and WebGL both skip only pieces whose image or texture has
+not loaded, or that set `castShadow: false`, and leave clipping to the
+viewport-sized mask target. That is tens of cheap draws per frame, which was
+judged acceptable; viewport culling can be added later if a scene grows to
+hundreds of pieces. Shadows are always enabled;
 the project has motion and contrast settings but no quality/reduce-detail
 setting, and neither existing setting warrants removing a stationary lighting
 cue.

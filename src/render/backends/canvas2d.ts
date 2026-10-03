@@ -1524,7 +1524,9 @@ export class Canvas2DBackend implements RenderBackend {
           f,
           placed,
           foot,
-          (unit.fallen ? FALLEN_SHADOW_ALPHA : 1) * castShadowStrength(unit.castShadow),
+          (unit.alpha ?? 1) *
+            (unit.fallen ? FALLEN_SHADOW_ALPHA : 1) *
+            castShadowStrength(unit.castShadow),
           !bend && (unit.facing ?? (unit.faction === 'enemy' ? -1 : 1)) === -1,
         );
       } else {
@@ -1547,7 +1549,9 @@ export class Canvas2DBackend implements RenderBackend {
           null,
           dest,
           foot,
-          (unit.fallen ? FALLEN_SHADOW_ALPHA : 1) * castShadowStrength(unit.castShadow),
+          (unit.alpha ?? 1) *
+            (unit.fallen ? FALLEN_SHADOW_ALPHA : 1) *
+            castShadowStrength(unit.castShadow),
         );
       }
     }
