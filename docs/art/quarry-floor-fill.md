@@ -49,11 +49,30 @@ only the pixels and byte counts moved.
 `scripts/art/quarry-route-ground.ts` and `quarry-modular-ground.ts` still build
 the underlying plates (ink, rims, faces, raised tops), and the tests that read
 their output still hold. They cannot reproduce the shipped pages, which are those
-plates with the generated floor filled in and re-encoded: running either packer
-overwrites the shipped art and its `bytes` pins. The shipped pages are pinned by
-SHA-256 in `scripts/art/quarry-route-ground.test.ts` (`SHIPPED_FLOOR_FILL`), and
-on-disk sizes by the region tables in `src/content/scenes/quarryRouteGround.ts`
-and the gate pins in the same test.
+plates with the generated floor filled in and re-encoded, so both packers are a
+**dry run by default**: they build the plates, print the packer's byte count next
+to the shipped file's, and write nothing (no pages, no registration file, no
+`bytes` pins).
+
+```bash
+node --import tsx scripts/art/quarry-route-ground.ts cutting|driller   # dry run
+node --import tsx scripts/art/quarry-modular-ground.ts                 # dry run
+... --overwrite-shipped-art   # really writes; replaces the generated floors
+```
+
+Only pass `--overwrite-shipped-art` when deliberately replacing the generated
+floors with plain packer plates (or after a new fill is composed), then re-pin
+the hashes. The surround packer (`quarry-surround-pack.ts`) only verifies; it has
+no write path.
+
+The shipped pages are pinned by SHA-256 in `scripts/art/quarry-route-ground.test.ts`
+(`SHIPPED_FLOOR_FILL`), and on-disk sizes by the region tables in
+`src/content/scenes/quarryRouteGround.ts` and the gate pins in the same test. The
+same test also decodes each shipped page and holds its footprint to the packer's
+plate: alpha identical, and outside the floor masks (every walkable elevation-0
+cell, 4 px inset) each whole cell within lossy-encode tolerance, so a fill that
+paints a raised top, a face or ink fails even if its hash is re-pinned. Measured
+bounds are in the test.
 
 ## Known remaining
 

@@ -4,6 +4,10 @@
  *   node --import tsx scripts/art/quarry-route-ground.ts driller
  *   node --import tsx scripts/art/quarry-route-ground.ts cutting
  *
+ * Both are a dry run unless given `--overwrite-shipped-art`: the shipped pages
+ * carry generated floor paving this packer cannot reproduce
+ * (docs/art/quarry-floor-fill.md).
+ *
  * This used to tile a generated six-panel quarry material sheet by continuous
  * repeat, with three fields and three painted transitions. Three things came
  * with that sheet and none of them are wanted: a neutral cracked grey that is a
@@ -38,7 +42,7 @@
  * Page origin and cell keys are untouched. Saves, collision and the runtime
  * surfaces above the page are unaffected.
  */
-import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs';
+import { existsSync, mkdirSync, readFileSync, statSync, writeFileSync } from 'node:fs';
 import { AMBUSH_ROAD, QUARRY_FLOOR } from '../../src/content/maps/combat';
 import { CUTTING_POOL_PATCH, CUTTING_WATER_CELLS } from '../../src/content/scenes/quarryProjected';
 import type { MapDef, Vec2 } from '../../src/core/types';
@@ -47,6 +51,7 @@ import type { Image } from './lib/image';
 import { tileNoise } from '../../src/render/painters/shapes';
 import { alphaBounds, crop } from './lib/trim';
 import { encodeWebp } from './lib/webp';
+import { dryRunNotice, wantsOverwrite } from './lib/shipped-art-guard';
 import { spillDepth, spillWins } from './forest-rubble';
 import { packShoreline } from './forest-shoreline';
 import { heapFits, loadQuarryMaterial, QUARRY_GROUND_QUALITY } from './quarry-village-material';
@@ -480,11 +485,31 @@ export async function buildQuarryGround(
   return built;
 }
 
+/** What a write would produce, sized against the pages on disk; touches nothing. */
+async function dryRunQuarryGround(
+  root: string,
+  built: Awaited<ReturnType<typeof buildQuarryGround>>,
+): Promise<{ regions: PackedRegion[]; total: number }> {
+  const regions: PackedRegion[] = [];
+  let total = 0;
+  for (const [name, { image, x, y }] of built) {
+    const bytes = (await encodeWebp(image, QUARRY_GROUND_QUALITY, true)).length;
+    total += bytes;
+    regions.push({ name, x, y, width: image.width, height: image.height, bytes });
+    console.log(
+      `${root}/${name}: packer ${bytes} bytes, shipped ${statSync(`public/art/maps/${root}/${name}.webp`).size}`,
+    );
+  }
+  return { regions, total };
+}
+
 export async function writeQuarryGround(
   mapId: 'cutting' | 'driller',
+  overwrite: boolean,
 ): Promise<{ regions: PackedRegion[]; total: number }> {
   const built = await buildQuarryGround(mapId);
   const root = mapId === 'cutting' ? 'cutting-scene' : 'driller-floor-scene';
+  if (!overwrite) return dryRunQuarryGround(root, built);
   mkdirSync(`public/art/maps/${root}`, { recursive: true });
   const regions: PackedRegion[] = [];
   let total = 0;
@@ -567,6 +592,8 @@ export async function writeQuarryGround(
 if (process.argv[1]?.endsWith('quarry-route-ground.ts')) {
   const mapId = process.argv[2];
   if (mapId !== 'cutting' && mapId !== 'driller')
-    throw new Error('Usage: quarry-route-ground.ts <cutting|driller>');
-  console.log({ mapId, ...(await writeQuarryGround(mapId)) });
+    throw new Error('Usage: quarry-route-ground.ts <cutting|driller> [--overwrite-shipped-art]');
+  const overwrite = wantsOverwrite(process.argv);
+  if (!overwrite) console.log(dryRunNotice(`quarry-route-ground.ts ${mapId}`));
+  console.log({ mapId, ...(await writeQuarryGround(mapId, overwrite)) });
 }

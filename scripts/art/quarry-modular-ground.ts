@@ -1,7 +1,10 @@
 /**
  * Build the quarry gate's local ground from the village's accepted plates.
  *
- *   node --import tsx scripts/art/quarry-modular-ground.ts
+ *   node --import tsx scripts/art/quarry-modular-ground.ts [--overwrite-shipped-art]
+ *
+ * A dry run unless given the flag: the shipped pages carry generated floor
+ * paving this packer cannot reproduce (docs/art/quarry-floor-fill.md).
  *
  * This used to tile the same generated six-panel quarry sheet the Driller floor
  * did, with three fields and three painted transitions and no ink anywhere, and
@@ -30,13 +33,14 @@
  * Region routing, page origin and cell keys are untouched, so the registered
  * geometry is unchanged and only the bytes move.
  */
-import { mkdirSync, writeFileSync } from 'node:fs';
+import { mkdirSync, statSync, writeFileSync } from 'node:fs';
 import { QUARRY_GATE } from '../../src/content/maps/combat';
 import { newImage, setPixel } from './lib/image';
 import type { Image } from './lib/image';
 import { tileNoise } from '../../src/render/painters/shapes';
 import { alphaBounds, crop } from './lib/trim';
 import { encodeWebp } from './lib/webp';
+import { dryRunNotice, wantsOverwrite } from './lib/shipped-art-guard';
 import { heapFits, loadQuarryMaterial, QUARRY_GROUND_QUALITY } from './quarry-village-material';
 import { rockPainter } from './quarry-rock';
 import type { QuarryMaterial, QuarryTone, Rgb } from './quarry-village-material';
@@ -219,7 +223,7 @@ export async function buildGateGround(): Promise<
   return built;
 }
 
-export async function writeGateGround(): Promise<{
+export async function writeGateGround(overwrite: boolean): Promise<{
   regions: {
     name: string;
     url: string;
@@ -233,12 +237,16 @@ export async function writeGateGround(): Promise<{
 }> {
   const built = await buildGateGround();
   const outDir = 'public/art/maps/quarry-gate-scene';
-  mkdirSync(outDir, { recursive: true });
+  if (overwrite) mkdirSync(outDir, { recursive: true });
   const regions = [];
   let totalBytes = 0;
   for (const [name, { image, x, y }] of built) {
     const bytes = await encodeWebp(image, QUARRY_GROUND_QUALITY, true);
-    writeFileSync(`${outDir}/${name}.webp`, bytes);
+    if (overwrite) writeFileSync(`${outDir}/${name}.webp`, bytes);
+    else
+      console.log(
+        `${name}: packer ${bytes.length} bytes, shipped ${statSync(`${outDir}/${name}.webp`).size}`,
+      );
     totalBytes += bytes.length;
     regions.push({
       name,
@@ -252,6 +260,7 @@ export async function writeGateGround(): Promise<{
   }
   if (totalBytes > 240 * 1024)
     throw new Error(`Modular quarry ground exceeds 240KiB: ${totalBytes}.`);
+  if (!overwrite) return { regions, totalBytes };
   mkdirSync('art/raw/quarry-gate', { recursive: true });
   writeFileSync(
     'art/raw/quarry-gate/modular-ground-registration.json',
@@ -273,5 +282,7 @@ export async function writeGateGround(): Promise<{
 }
 
 if (process.argv[1]?.endsWith('quarry-modular-ground.ts')) {
-  console.log(await writeGateGround());
+  const overwrite = wantsOverwrite(process.argv);
+  if (!overwrite) console.log(dryRunNotice('quarry-modular-ground.ts'));
+  console.log(await writeGateGround(overwrite));
 }

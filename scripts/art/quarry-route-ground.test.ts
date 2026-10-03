@@ -10,8 +10,9 @@ import {
 } from '../../src/content/scenes/quarryRouteGround';
 import { QUARRY_GATE_GROUND_REGIONS } from '../../src/content/scenes/quarryGate';
 import type { Image } from './lib/image';
+import type { MapDef } from '../../src/core/types';
 import { pixelAt, toHex } from './lib/image';
-import { encodeWebp } from './lib/webp';
+import { decodeWebp, encodeWebp } from './lib/webp';
 import { FOREST_INK } from './forest-village-material';
 import {
   QUARRY_GROUND_QUALITY,
@@ -456,6 +457,108 @@ const SHIPPED_FLOOR_FILL: Record<string, string> = {
   'driller-floor-scene/road': 'c648a618c5c344e1f810440eb7f22813b530b93631de685251a5bdc315a90b1e',
   'driller-floor-scene/stone': '217d69d72cc8e586a62bc1bee5246078227d382765a5bd82449c82b9553752a0',
 };
+
+/**
+ * The hash above pins the bytes; this pins what the bytes may contain. The
+ * shipped pages are the packer's plates with generated paving filled into the
+ * floor-level walkable cells (docs/art/quarry-floor-fill.md), so against the
+ * packer's page:
+ *
+ * - alpha is identical;
+ * - outside the fill masks (every walkable elevation-0 cell, inset 4 px from
+ *   each edge, so its rim and ink stay out) the colour is the packer's, up to
+ *   the lossy q34 encode. Measured per whole cell (>= 1000 px of the page,
+ *   which drops the 2 px alpha-bleed slivers whose hard ink lines the encoder
+ *   moves by a pixel), a re-encode alone moves a raised top, face or ink cell
+ *   by <= 7.7 mean abs / 2.3 signed per channel, and the shipped pages by
+ *   <= 11.3 / 4.3. Bounds are 14 / 8: a repaint of a raised top or face
+ *   with paving moves it by tens (the limestone and block tones sit 60-100
+ *   from the paving), far past them;
+ * - the walkable cells' own outside-mask ring (rim, ink, 3 px feather) may
+ *   move more, since the fill feathers into it: measured <= 37.4 / 21.6
+ *   against a re-encode's 10.5 / 4.9, bounded at 42 / 28.
+ */
+const OUTSIDE_MASK_CELL = { minPixels: 1000, abs: 14, signed: 8, ringAbs: 42, ringSigned: 28 };
+const MASK_INSET_PX = 4;
+const TILE_FACE_PX = 4096 / Math.hypot(64, 32);
+
+function footprintViolations(
+  map: MapDef,
+  page: { image: Image; x: number; y: number },
+  shipped: Image,
+): string[] {
+  const { image, x: originX, y: originY } = page;
+  const problems: string[] = [];
+  if (shipped.width !== image.width || shipped.height !== image.height)
+    return [`size ${shipped.width}x${shipped.height} != ${image.width}x${image.height}`];
+  const floor = (key: string | undefined): boolean => {
+    const tile = key === undefined ? undefined : map.legend[key];
+    return !!tile && !tile.blocked && !(tile.elevation ?? 0) && key !== 'r' && key !== '~';
+  };
+  const inset = MASK_INSET_PX / TILE_FACE_PX;
+  const cells = new Map<string, { abs: number; signed: number[]; n: number; ring: boolean }>();
+  let alphaDiffs = 0;
+  for (let py = 0; py < image.height; py++)
+    for (let px = 0; px < image.width; px++) {
+      const i = (py * image.width + px) * 4;
+      if (image.data[i + 3] !== shipped.data[i + 3]) alphaDiffs++;
+      if (!image.data[i + 3]) continue;
+      const wx = originX + px + 0.5,
+        wy = originY + py + 0.5;
+      const gx = ((wx - 768) / 64 + wy / 32) / 2,
+        gy = (wy / 32 - (wx - 768) / 64) / 2;
+      const cx = Math.floor(gx),
+        cy = Math.floor(gy);
+      const isFloor = floor(map.rows[cy]?.[cx]);
+      if (isFloor && Math.min(gx - cx, cx + 1 - gx, gy - cy, cy + 1 - gy) >= inset) continue;
+      const cell = cells.get(`${cx},${cy}`) ?? {
+        abs: 0,
+        signed: [0, 0, 0],
+        n: 0,
+        ring: isFloor,
+      };
+      for (let c = 0; c < 3; c++) {
+        const d = (shipped.data[i + c] ?? 0) - (image.data[i + c] ?? 0);
+        cell.abs += Math.abs(d) / 3;
+        cell.signed[c] = (cell.signed[c] ?? 0) + d;
+      }
+      cell.n++;
+      cells.set(`${cx},${cy}`, cell);
+    }
+  if (alphaDiffs) problems.push(`${alphaDiffs} alpha pixels differ`);
+  const bounds = OUTSIDE_MASK_CELL;
+  for (const [at, cell] of cells) {
+    if (cell.n < bounds.minPixels) continue;
+    const abs = cell.abs / cell.n,
+      signed = Math.max(...cell.signed.map((s) => Math.abs(s / cell.n)));
+    const [maxAbs, maxSigned] = cell.ring
+      ? [bounds.ringAbs, bounds.ringSigned]
+      : [bounds.abs, bounds.signed];
+    if (abs > maxAbs || signed > maxSigned)
+      problems.push(
+        `${cell.ring ? 'floor ring' : 'raised/face/ink'} cell ${at} (${map.rows[Number(at.split(',')[1])]?.[Number(at.split(',')[0])]}) moved ${abs.toFixed(1)} abs / ${signed.toFixed(1)} signed`,
+      );
+  }
+  return problems;
+}
+
+it.each([
+  ['driller-floor-scene', QUARRY_FLOOR, () => driller, DRILLER_GROUND_REGIONS],
+  ['cutting-scene', AMBUSH_ROAD, () => cutting, CUTTING_GROUND_REGIONS],
+  ['quarry-gate-scene', QUARRY_GATE, () => gate, QUARRY_GATE_GROUND_REGIONS],
+] as const)(
+  "ships %s pages that keep the packer's alpha and everything outside the floor fill",
+  async (root, map, built, regions) => {
+    for (const region of regions) {
+      const shipped = await decodeWebp(
+        new Uint8Array(readFileSync(`public/art/maps/${root}/${region.name}.webp`)),
+      );
+      expect(footprintViolations(map, plate(built(), region.name), shipped), region.name).toEqual(
+        [],
+      );
+    }
+  },
+);
 
 it('ships the plates the packers build, inside the registered page', async () => {
   for (const [root, built, regions] of [
