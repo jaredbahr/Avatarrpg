@@ -50,7 +50,13 @@ import { renderFoot } from '../renderFoot';
 import type { GroundingCanvas } from '../groundingLayer';
 import { sceneGrounding } from '../groundingLayer';
 import { GROUNDING_GRAIN } from '../grounding';
-import { SURFACE_INDEX, surfaceIsPainted, surfaceTexel } from '../sceneSurfaces';
+import {
+  DRY_PATCH_TERRAIN_OFFSET,
+  SURFACE_INDEX,
+  paintedWaterIsDry,
+  surfaceIsPainted,
+  surfaceTexel,
+} from '../sceneSurfaces';
 import { TILE } from '../camera';
 import type { Camera, Viewport } from '../camera';
 import { DecorSheets } from '../decorSheets';
@@ -1654,7 +1660,11 @@ export class PixiBackend implements RenderBackend {
         y: Math.floor(i / grid.width),
       }),
     );
-    let signature = `${grid.width}x${grid.height}:${baked.map((value) => (value ? '1' : '0')).join('')}`;
+    const dry = grid.tiles.map((tile, i) =>
+      paintedWaterIsDry(view, painted, tile, { x: i % grid.width, y: Math.floor(i / grid.width) }),
+    );
+    const bits = (flags: boolean[]) => flags.map((value) => (value ? '1' : '0')).join('');
+    let signature = `${grid.width}x${grid.height}:${bits(baked)}:${bits(dry)}`;
     for (const tile of grid.tiles) {
       signature += `|${tile.terrain}:${tile.surface?.id ?? ''}:${tile.surface?.duration ?? 0}`;
     }
@@ -1677,7 +1687,9 @@ export class PixiBackend implements RenderBackend {
       intensities[i] = surface === SURFACE_INDEX.fire ? intensity : 0;
 
       const o = i * 4;
-      image.data[o] = (TERRAIN_INDEX[tile.terrain] ?? 0) * 8 + surface;
+      image.data[o] =
+        ((TERRAIN_INDEX[tile.terrain] ?? 0) + (dry[i] ? DRY_PATCH_TERRAIN_OFFSET : 0)) * 8 +
+        surface;
       image.data[o + 1] = Math.round(255 * intensity);
       image.data[o + 3] = 255;
     }

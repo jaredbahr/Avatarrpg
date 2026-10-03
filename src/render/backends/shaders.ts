@@ -171,6 +171,9 @@ void main(void) {
   int packed = int(data.r * 255.0 + 0.5);
   int terrain = packed / 8;
   int surface = packed - terrain * 8;
+  ${/* A declared painted pool the rules no longer hold as water: terrain + 16, drawn over the art. */ ''}
+  bool dryPatch = terrain >= 16;
+  if (dryPatch) terrain -= 16;
   float intensity = data.g;
   float firelight = data.b;
 
@@ -178,7 +181,7 @@ void main(void) {
   vec2 w = (cell + f) * 0.5;
 
   vec4 acc = vec4(0.0);
-  if (uBackdrop < 0.5) {
+  if (uBackdrop < 0.5 || dryPatch) {
     ${/* One fbm and one cheap octave, reused by every terrain branch below. Each */ ''}
     ${/* extra call here is paid on every pixel of the board. */ ''}
     vec3 col = terrainBase(terrain);

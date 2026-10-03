@@ -2,6 +2,7 @@ import { createRequire } from 'node:module';
 import { readFileSync } from 'node:fs';
 import decode, { init } from '@jsquash/webp/decode.js';
 import { beforeAll, expect, it } from 'vitest';
+import { ENCOUNTERS } from '../encounters';
 import { BA_DAN_VILLAGE } from '../maps/village';
 import {
   BA_DAN_CANAL,
@@ -497,4 +498,10 @@ it('raises chimney smoke from the painted roof of a dwelling', async () => {
     const [r = 0, g = 0] = [roof.data[at4], roof.data[at4 + 1]];
     expect(r - g, `${house.id} roof tile`).toBeGreaterThan(40);
   }
+});
+
+it('keeps the village an explore-only map, so its painted pools are not changed by a fight today', () => {
+  // The renderer still covers a declared pool that goes dry (`paintedWaterIsDry`);
+  // this records why nothing reaches that path now: no encounter is staged here.
+  expect(ENCOUNTERS.filter((encounter) => encounter.mapId === BA_DAN_VILLAGE.id)).toEqual([]);
 });

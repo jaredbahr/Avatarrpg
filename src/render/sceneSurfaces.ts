@@ -30,6 +30,27 @@ export function surfaceIsPainted(
   );
 }
 
+/**
+ * A declared painted-water cell whose rules surface is no longer water (steam,
+ * ice, a drained or burnt-off pool). The baked plate still shows the pool, so
+ * both backends cover the cell with its procedural terrain; whatever surface
+ * the cell now holds draws over that. Needs ready art, as the plate does.
+ */
+export function paintedWaterIsDry(
+  view: Pick<MapView, 'scene'>,
+  ready: boolean,
+  tile: Tile,
+  pos: Vec2,
+): boolean {
+  if (!ready || view.scene?.groundMode !== 'partial' || tile.surface?.id === 'water') return false;
+  return (
+    view.scene.paintedWaterCells?.some((cell) => cell.x === pos.x && cell.y === pos.y) ?? false
+  );
+}
+
+/** WebGL packs a dry-patch cell's terrain as terrain + this, so the shader draws it over the art. */
+export const DRY_PATCH_TERRAIN_OFFSET = 16;
+
 /** A surface's slot in WebGL's map texel, packed as terrain * 8 + slot. */
 export const SURFACE_INDEX: Record<SurfaceId, number> = {
   water: 1,

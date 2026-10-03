@@ -8,7 +8,13 @@ import { applyImpact, paintSurface } from '../core/rules/surfaces';
 import type { Grid, Vec2 } from '../core/types';
 import { surfaceEdges, type Edges } from './geometry/board';
 import { GROUND_FRAGMENT } from './backends/shaders';
-import { SURFACE_INDEX, surfaceIsPainted, surfaceTexel } from './sceneSurfaces';
+import {
+  DRY_PATCH_TERRAIN_OFFSET,
+  SURFACE_INDEX,
+  paintedWaterIsDry,
+  surfaceIsPainted,
+  surfaceTexel,
+} from './sceneSurfaces';
 
 it('replaces only registered permanent rubble and restores all dynamic/accessibility/fallback overlays', () => {
   const pos = { x: 7, y: 3 };
@@ -104,6 +110,63 @@ it('suppresses the film on Ba Dan water cells the scene declares, and nowhere el
   if (!spill) throw new Error('Missing tile');
   const undeclared = { ...spill, surface: { id: 'water' as const, duration: -1, spread: 0 } };
   expect(surfaceIsPainted(view, true, undeclared, elsewhere)).toBe(false);
+});
+
+it('covers a declared Ba Dan pool the rules no longer hold as water, on both backends', () => {
+  const grid = buildGrid(BA_DAN_VILLAGE);
+  const scene = BA_DAN_VILLAGE.scene;
+  if (!scene) throw new Error('Missing Ba Dan scene');
+  const view = { scene, hatch: false, crispOverlays: false };
+  for (const pos of BA_DAN_WATER_CELLS) {
+    const tile = tileAt(grid, pos);
+    if (!tile) throw new Error('Missing water cell');
+    // Live permanent water (and a spill over it) keeps the plate: nothing to hide.
+    expect(paintedWaterIsDry(view, true, tile, pos)).toBe(false);
+    expect(
+      paintedWaterIsDry(
+        view,
+        true,
+        { ...tile, surface: { id: 'water', duration: 3, spread: 0 } },
+        pos,
+      ),
+    ).toBe(false);
+    // Steam, ice, fire or a drained cell: the plate's water must be covered.
+    const states = [
+      null,
+      ...(['steam', 'ice', 'fire', 'mud', 'oil'] as const).map((id) => ({
+        id,
+        duration: 2,
+        spread: 0,
+      })),
+    ];
+    for (const surface of states) {
+      const changed = { ...tile, surface };
+      expect(paintedWaterIsDry(view, true, changed, pos), `${pos.x},${pos.y}`).toBe(true);
+      // The film is not suppressed there, so ice/fire/steam still draw over the cover.
+      expect(surfaceIsPainted(view, true, changed, pos)).toBe(false);
+    }
+    // Art not decoded yet: no plate on screen, so no cover.
+    expect(paintedWaterIsDry(view, false, { ...tile, surface: null }, pos)).toBe(false);
+    // An undeclared cell and a scene that is not partial never cover.
+    expect(
+      paintedWaterIsDry(
+        { scene: { ...scene, paintedWaterCells: [] } },
+        true,
+        { ...tile, surface: null },
+        pos,
+      ),
+    ).toBe(false);
+    expect(
+      paintedWaterIsDry(
+        { scene: { ...scene, groundMode: undefined } },
+        true,
+        { ...tile, surface: null },
+        pos,
+      ),
+    ).toBe(false);
+  }
+  // WebGL packs terrain + offset into one byte, so the biggest terrain index must still fit.
+  expect((8 + DRY_PATCH_TERRAIN_OFFSET) * 8 + 7).toBeLessThanOrEqual(255);
 });
 
 describe('ability rubble beside a registered heap', () => {

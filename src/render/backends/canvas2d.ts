@@ -49,7 +49,7 @@ import type { GroundingCanvas } from '../groundingLayer';
 import { sceneGrounding } from '../groundingLayer';
 import { GROUNDING_GRAIN } from '../grounding';
 import { flockAt, flockFrame, flushElapsed, sway } from '../living/wind';
-import { surfaceIsPainted } from '../sceneSurfaces';
+import { paintedWaterIsDry, surfaceIsPainted } from '../sceneSurfaces';
 import { HP_CAP, HP_COLORS, OVERLAY, STATUS_BADGE, hpFill } from '../palettes';
 import { paintElevationBase, paintTileDecor, paintTileSeams } from '../painters/board';
 import { paintFloatingNumber, paintPathArrow, paintPathDot } from '../painters/fx';
@@ -470,6 +470,9 @@ export class Canvas2DBackend implements RenderBackend {
         const pos = { x, y };
         const box = camera.toScreen(pos);
         if (drawTerrain && !painted) paintTerrain(ctx, box, tile, pos);
+        // A declared pool the rules no longer hold as water: hide the baked plate's water.
+        else if (drawSurfaces && paintedWaterIsDry(view, painted, tile, pos))
+          paintTerrain(ctx, box, tile, pos);
         if (drawSurfaces && !surfaceIsPainted(view, painted, tile, pos))
           paintSurface(
             ctx,
