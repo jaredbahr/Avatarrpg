@@ -217,8 +217,8 @@ export const ELEVATION = {
   ] as readonly (readonly [number, number])[],
   /** Opaque quarry limestone under translucent authored pixels on lifted tops and faces. */
   topBase: '#cfc2a6',
-  /** Share of a lifted top's half-width left unsampled, clear of the page's baked edge ink. */
-  topMargin: 0.1,
+  /** Share of a lifted top left unsampled at each edge, clear of the page's baked edge ink: 0.15 samples the inner 70%. */
+  topMargin: 0.15,
   /** How far the sampled painting is washed back toward the stone body. */
   topWash: 0.55,
   southBase: '#b3a488',

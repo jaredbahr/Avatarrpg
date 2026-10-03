@@ -496,7 +496,8 @@ export function liftCells(input: LiftInput): { x: number; y: number; ops: LiftOp
       // A deck painted a whole tier up (the Driller's gantry) is an object with
       // its own outline, so it keeps its painting as drawn.
       const authored = art >= TIER_LIFT;
-      const keep = authored ? 1 : 1 - ELEVATION.topMargin;
+      // topMargin is the share cut from each edge, so the sampled width is 1 - 2 * margin.
+      const keep = authored ? 1 : 1 - 2 * ELEVATION.topMargin;
       const inner = [c0, c1, c2, c3].map((c) => ({
         x: mid.x + (c.x - mid.x) * keep,
         y: mid.y + (c.y - mid.y) * keep,

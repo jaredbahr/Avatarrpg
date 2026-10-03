@@ -216,6 +216,7 @@ describe('liftOps', () => {
       (op) => op.kind === 'fill' && op.color === ELEVATION.topBase && op.alpha === 1,
     );
     expect(sampled.length).toBeGreaterThan(0);
+    expect(1 - 2 * ELEVATION.topMargin).toBeCloseTo(0.7, 5);
     for (const op of sampled) {
       if (op.kind !== 'top') continue;
       const body = bodies.find(
@@ -223,7 +224,8 @@ describe('liftOps', () => {
       );
       const width = (poly: readonly { x: number }[]) =>
         Math.max(...poly.map((p) => p.x)) - Math.min(...poly.map((p) => p.x));
-      if (body?.kind === 'fill') expect(width(op.poly)).toBeLessThanOrEqual(width(body.poly));
+      if (body?.kind === 'fill')
+        expect(width(op.poly) / width(body.poly)).toBeCloseTo(1 - 2 * ELEVATION.topMargin, 5);
     }
     expect(
       list.some(
