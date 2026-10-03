@@ -9,6 +9,8 @@ import {
   actorSilhouetteGeometry,
   actorShadowDensity,
   healthBarCap,
+  HealthBarStagger,
+  staggerHealthBars,
 } from './actorSilhouette';
 import { FOOT_LINE, headroomFromPixels } from '../sheets/bake';
 
@@ -98,18 +100,98 @@ describe('upright actor health bar', () => {
           const bar = actorHealthBar(100, y, tile, tile, scale, headroom);
           expect(bar.silhouetteTop).toBeCloseTo(top, 8);
           expect(bar.y + bar.height + 1).toBeLessThan(top);
-          expect(top - (bar.y + bar.height + 1)).toBeCloseTo(Math.max(1.4, tile * 0.028), 8);
+          expect(top - (bar.y + bar.height + 1)).toBeCloseTo(Math.max(1.8, tile * 0.028), 8);
         }
       }
     }
   });
 
-  it('keeps the two-cell boss bar centered and clear without treating width as height', () => {
+  it('keeps a two-cell boss bar near head width rather than footprint width', () => {
     const solo = actorHealthBar(50, 200, 96, 96, 1, 0.5);
     const boss = actorHealthBar(50, 200, 192, 96, 1, 0.5);
     expect(boss.x + boss.width / 2).toBe(146);
-    expect(boss.width).toBe(solo.width * 2);
+    expect(boss.width).toBe(solo.width);
     expect(boss.y).toBe(solo.y);
+  });
+
+  it('uses a readable viewport minimum while staying inside actor bounds', () => {
+    const bar = actorHealthBar(10, 100, 96, 48, 0.8, 0, 28);
+    expect(bar.width).toBe(28);
+    const narrowActor = actorHealthBar(10, 100, 24, 48, 0.8, 0, 28);
+    expect(narrowActor.width).toBeCloseTo(19.2, 8);
+  });
+
+  it('stagger overlapping bars upward in place and leaves clear bars untouched', () => {
+    const first = actorHealthBar(0, 100, 96, 96, 1);
+    const overlapping = actorHealthBar(30, 100, 96, 96, 1);
+    const distant = actorHealthBar(160, 100, 96, 96, 1);
+    const placed = staggerHealthBars([
+      { id: 'first', bar: first },
+      { id: 'near', bar: overlapping },
+      { id: 'far', bar: distant },
+    ]);
+    const near = placed.get('near');
+    const far = placed.get('far');
+    expect(near?.x).toBe(overlapping.x);
+    expect(near?.y).toBeLessThan(overlapping.y);
+    expect(near?.y).toBeGreaterThanOrEqual(overlapping.y - overlapping.height * 0.8 * 4);
+    expect(far).toEqual(distant);
+    expect(near && near.x + near.width / 2).toBe(overlapping.x + overlapping.width / 2);
+  });
+
+  it('does not flip a bar by a step while a pose moves a neighbour across the boundary', () => {
+    const other = actorHealthBar(0, 100, 96, 96, 1);
+    const step = Math.max(2, other.height * 0.8);
+    const stagger = new HealthBarStagger();
+    const offsets: number[] = [];
+    // The second unit stands still; only its measured sprite top wobbles by
+    // about a step either side of the point where the bars just touch.
+    const touching = other.y - other.height - 1;
+    for (let frame = 0; frame < 40; frame++) {
+      const wobble = (frame % 2 === 0 ? 1 : -1) * step * 0.6;
+      const mine = { ...actorHealthBar(30, 100, 96, 96, 1), y: touching + wobble };
+      const placed = stagger.place([
+        { id: 'a', bar: other },
+        { id: 'b', bar: mine },
+      ]);
+      offsets.push((placed.get('b')?.y ?? 0) - mine.y);
+    }
+    expect(new Set(offsets.map((o) => Math.round(o))).size).toBe(1);
+    // The stateless form is still deterministic for a single frame.
+    expect(staggerHealthBars([{ id: 'a', bar: other }]).get('a')).toEqual(other);
+  });
+
+  it('staggers on the frame two previously clear units first overlap', () => {
+    const stagger = new HealthBarStagger();
+    const a = actorHealthBar(0, 100, 96, 96, 1);
+    const apart = stagger.place([
+      { id: 'a', bar: a },
+      { id: 'b', bar: actorHealthBar(300, 100, 96, 96, 1) },
+    ]);
+    expect(apart.get('b')?.y).toBe(a.y);
+    const together = actorHealthBar(30, 100, 96, 96, 1);
+    const placed = stagger.place([
+      { id: 'a', bar: a },
+      { id: 'b', bar: together },
+    ]);
+    expect(placed.get('b')?.y).toBeLessThan(together.y);
+  });
+
+  it('drops a raised bar back once its neighbour truly clears it', () => {
+    const other = actorHealthBar(0, 100, 96, 96, 1);
+    const stagger = new HealthBarStagger();
+    const mine = actorHealthBar(30, 100, 96, 96, 1);
+    const raised = stagger.place([
+      { id: 'a', bar: other },
+      { id: 'b', bar: mine },
+    ]);
+    expect(raised.get('b')?.y).toBeLessThan(mine.y);
+    const away = actorHealthBar(300, 100, 96, 96, 1);
+    const cleared = stagger.place([
+      { id: 'a', bar: other },
+      { id: 'b', bar: { ...away, y: mine.y } },
+    ]);
+    expect(cleared.get('b')?.y).toBe(mine.y);
   });
 
   it('clears scaled painter fallback bounds and moves exactly with the upright pose', () => {
@@ -117,8 +199,8 @@ describe('upright actor health bar', () => {
     const shifted = actorHealthBar(12, 83, 96, 96, 1.25);
     const fallbackTop = 100 + FOOT_LINE * 96 * (1 - 1.25);
     expect(base.y + base.height + 1).toBeLessThan(fallbackTop);
-    expect(shifted.y - base.y).toBe(-17);
-    expect(shifted.x - base.x).toBe(12);
+    expect(shifted.y - base.y).toBeCloseTo(-17, 8);
+    expect(shifted.x - base.x).toBeCloseTo(12, 8);
   });
 });
 

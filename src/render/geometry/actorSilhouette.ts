@@ -22,13 +22,19 @@ export function actorHealthBar(
   tileSize: number,
   scale: number,
   headroom = 0,
+  minimumWidth = 0,
 ) {
   // Headroom is measured relative to an unscaled tile top. Scale the entire
   // foot-to-head distance, not just the portion above that tile.
   const silhouetteTop = y + FOOT_LINE * tileSize - (FOOT_LINE + headroom) * tileSize * scale;
-  const barWidth = width * 0.72;
-  const barHeight = Math.max(3, tileSize * 0.075);
-  const gap = Math.max(1.4, tileSize * 0.028);
+  // A footprint is not a head: especially on a two-cell boss, sizing from
+  // `width` alone made the bar span scenery several tiles from its owner.
+  // Keep a near-head width, but let small phone viewports request a readable
+  // floor. Both are in the same (world) units as the geometry.
+  const headWidth = tileSize * scale * 0.32;
+  const barWidth = Math.min(width * scale, Math.max(headWidth, minimumWidth));
+  const barHeight = Math.max(3, tileSize * 0.06);
+  const gap = Math.max(1.8, tileSize * 0.028);
   return {
     x: x + (width - barWidth) / 2,
     // The extra pixel is the bar's ink frame.
@@ -50,6 +56,77 @@ export interface ActorSilhouetteGeometry {
   readonly bar: ReturnType<typeof actorHealthBar>;
   readonly badgeY: number;
   readonly reticleY: number;
+}
+
+export interface HealthBarPlacement {
+  readonly id: string;
+  readonly bar: ReturnType<typeof actorHealthBar>;
+}
+
+const STAGGER_MAX_STEPS = 4;
+
+function barsCollide(
+  a: HealthBarPlacement['bar'],
+  b: HealthBarPlacement['bar'],
+  margin: number,
+): boolean {
+  return (
+    a.x < b.x + b.width - margin &&
+    a.x + a.width > b.x + margin &&
+    a.y < b.y + b.height + 1 - margin &&
+    a.y + a.height + 1 > b.y + margin
+  );
+}
+
+/**
+ * Stagger only colliding bars, keeping each bar centered over its own actor.
+ * The bounded rise is small enough to retain that association while avoiding
+ * the old side-by-side pileup. Input order is the renderer's depth order.
+ *
+ * Each bar's rise is a whole number of steps carried from the previous frame.
+ * A measured sprite top changes with every idle/walk pose, so a bar sitting on
+ * the collision boundary would otherwise flip by a step on alternate frames.
+ * A bar rises on any real overlap, and with hysteresis drops back only once it
+ * clears by more than one step.
+ */
+export class HealthBarStagger {
+  private levels = new Map<string, number>();
+
+  place<T extends HealthBarPlacement>(bars: readonly T[]): Map<string, T['bar']> {
+    const placed: T['bar'][] = [];
+    const result = new Map<string, T['bar']>();
+    const next = new Map<string, number>();
+    for (const candidate of bars) {
+      const step = Math.max(2, candidate.bar.height * 0.8);
+      const at = (level: number): T['bar'] => ({
+        ...candidate.bar,
+        y: candidate.bar.y - step * level,
+      });
+      const known = this.levels.get(candidate.id);
+      let level = known ?? 0;
+      // Hysteresis applies to dropping only: a raised bar goes back down once
+      // the lower slot is clear by a full step of margin.
+      while (level > 0 && !placed.some((other) => barsCollide(at(level - 1), other, -step)))
+        level--;
+      // Rising uses the plain collision test, so any real overlap staggers on
+      // the frame it first appears.
+      while (level < STAGGER_MAX_STEPS && placed.some((other) => barsCollide(at(level), other, 0)))
+        level++;
+      const bar = at(level);
+      placed.push(bar);
+      next.set(candidate.id, level);
+      result.set(candidate.id, bar);
+    }
+    this.levels = next;
+    return result;
+  }
+}
+
+/** One-shot placement with no frame memory; renderers keep a `HealthBarStagger`. */
+export function staggerHealthBars<T extends HealthBarPlacement>(
+  bars: readonly T[],
+): Map<string, T['bar']> {
+  return new HealthBarStagger().place(bars);
 }
 
 export interface ActorBodyBounds {
@@ -95,6 +172,7 @@ export function actorSilhouetteGeometry(
   heightTiles: 1 | 2,
   frameHeadroom: number | null,
   scale: number,
+  minimumBarWidth = 0,
 ): ActorSilhouetteGeometry {
   const bar = actorHealthBar(
     box.x,
@@ -103,6 +181,7 @@ export function actorSilhouetteGeometry(
     box.size,
     scale,
     actorHeadroom(frameHeadroom, heightTiles),
+    minimumBarWidth,
   );
   const radius = Math.max(4, box.size * 0.09);
   return {

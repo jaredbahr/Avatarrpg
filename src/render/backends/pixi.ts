@@ -70,7 +70,9 @@ import {
   actorSilhouetteGeometry,
   actorShadowDensity,
   healthBarCap,
+  HealthBarStagger,
 } from '../geometry/actorSilhouette';
+import type { HealthBarPlacement } from '../geometry/actorSilhouette';
 import { DECOR_CHUNK, decorChunks } from '../geometry/board';
 import {
   clip,
@@ -413,6 +415,7 @@ export class PixiBackend implements RenderBackend {
   private mapSignature = '';
 
   /** Sprite pools, keyed so a unit keeps its object across frames. */
+  private healthBarStagger = new HealthBarStagger();
   private unitSprites = new Map<string, Sprite>();
   private textureCache = new Map<HTMLCanvasElement | HTMLImageElement, Texture>();
   private frameTextures = new Map<string, Texture>();
@@ -2410,6 +2413,10 @@ export class PixiBackend implements RenderBackend {
     };
 
     let badgeIndex = 0;
+    const pendingHealthBars: (HealthBarPlacement & {
+      readonly unit: RenderUnit;
+      readonly actorX: number;
+    })[] = [];
 
     for (const npc of view.npcs) {
       // Keyed by who, not where: a walking resident keeps one sprite (ADR 0047 §7).
@@ -2612,6 +2619,7 @@ export class PixiBackend implements RenderBackend {
         heightTiles,
         frame?.headroom ?? null,
         scale,
+        26 / camera.scale,
       );
       if (frame) {
         sprite.texture = this.frameTexture(frame);
@@ -2700,7 +2708,7 @@ export class PixiBackend implements RenderBackend {
       }
 
       if (unit.showHealth !== false)
-        this.drawHealthBar(g, unit, silhouette.bar, x, view.hatch, camera.scale);
+        pendingHealthBars.push({ id: unit.id, unit, bar: silhouette.bar, actorX: x });
       badgeIndex = this.drawStatusBadges(g, unit, x, width, badgeIndex, silhouette.badgeY);
     }
 
@@ -2710,6 +2718,12 @@ export class PixiBackend implements RenderBackend {
     for (let i = badgeIndex; i < this.badgeText.length; i++) {
       const text = this.badgeText[i];
       if (text) text.visible = false;
+    }
+    const placements = this.healthBarStagger.place(pendingHealthBars);
+    for (const candidate of pendingHealthBars) {
+      const bar = placements.get(candidate.id);
+      if (bar)
+        this.drawHealthBar(g, candidate.unit, bar, candidate.actorX, view.hatch, camera.scale);
     }
   }
 
