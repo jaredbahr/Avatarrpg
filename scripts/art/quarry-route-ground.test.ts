@@ -482,6 +482,35 @@ const OUTSIDE_MASK_CELL = { minPixels: 1000, abs: 14, signed: 8, ringAbs: 42, ri
 const MASK_INSET_PX = 4;
 const TILE_FACE_PX = 4096 / Math.hypot(64, 32);
 
+/**
+ * Where a page pixel sits relative to the fill: the floor-level walkable cell it
+ * falls in and its distance in px to that cell's nearest edge, or `distPx` of
+ * `Infinity` outside any such cell. The fill's interior is `floor` with
+ * `distPx >= MASK_INSET_PX`; everything else is the packer's.
+ */
+function footprintAt(
+  map: MapDef,
+  originX: number,
+  originY: number,
+  px: number,
+  py: number,
+): { floor: boolean; distPx: number } {
+  const key = (gx: number, gy: number) => map.rows[Math.floor(gy)]?.[Math.floor(gx)];
+  const wx = originX + px + 0.5,
+    wy = originY + py + 0.5;
+  const gx = ((wx - 768) / 64 + wy / 32) / 2,
+    gy = (wy / 32 - (wx - 768) / 64) / 2;
+  const k = key(gx, gy);
+  const tile = k === undefined ? undefined : map.legend[k];
+  const floor = !!tile && !tile.blocked && !(tile.elevation ?? 0) && k !== 'r' && k !== '~';
+  const cx = Math.floor(gx),
+    cy = Math.floor(gy);
+  const distPx = floor
+    ? Math.min(gx - cx, cx + 1 - gx, gy - cy, cy + 1 - gy) * TILE_FACE_PX
+    : Number.POSITIVE_INFINITY;
+  return { floor, distPx };
+}
+
 function footprintViolations(
   map: MapDef,
   page: { image: Image; x: number; y: number },
@@ -546,17 +575,27 @@ function footprintViolations(
  * The cell means above cannot see a repaint confined to an ink line or a small
  * face section: 100 px moved by 70 levels is under 2 of mean abs in a ~4000 px
  * cell, and fragments under `minPixels` are skipped outright. So every 8 x 8
- * window of the page that holds a protected pixel (alpha > 0 and not inside a
- * walkable elevation-0 cell, so raised tops, faces, ink lines and the small
- * fragments all count; the fill's own cells are not protected) is scored too:
+ * window of the page that holds a protected pixel (alpha > 0 and not inside the
+ * fill's interior mask, the same inset-aware mask `footprintViolations` uses, so
+ * raised tops, faces, ink lines, the small fragments and every floor cell's own
+ * rim, face sliver and ink line all count) is scored too:
  * the sum of per-pixel mean abs channel error over the window's protected
  * pixels, divided by the larger of their count and 16 (so a 2 px ink line, which
  * fills at most 16 pixels of a window, is not diluted by the empty rest).
  *
  * Measured with the packer's plate re-encoded at q34 with `exact=1` and decoded
  * (the noise a faithful page carries): max window error 19.0 on every page.
- * The shipped pages measure 18.3 to 22.4. The bound is 26. A 100 px repaint of
- * an ink line or a face sliver by 70 levels scores about 70 in its window.
+ * The shipped pages measure 18.3 to 22.4 outside the feather band. The bound is
+ * 26. A 100 px repaint of an ink line, a face sliver or a floor cell's rim by 70
+ * levels scores about 70 in its window.
+ *
+ * The one band that legitimately changed is the fill's 3 px feather, which
+ * blends into the cell just outside the mask (`MASK_INSET_PX - 3` to
+ * `MASK_INSET_PX` px from the cell edge). It is scored on its own with a looser
+ * bound: the shipped pages measure up to 66.1 there (the re-encode alone, 19.0),
+ * so the bound is 70. The band is 3 px wide, so a repaint reaching past it into
+ * the rim proper (under 1 px from the edge) or the ink still lands in the strict
+ * scan above.
  *
  * The Gate's earth and road pages are encoded with the packer's colour under
  * alpha 0, not the fill's: the fill's colour once leaked across the lossy blocks
@@ -565,18 +604,21 @@ function footprintViolations(
  */
 const WINDOW_PX = 8;
 const WINDOW_MAX_ERROR = 26;
+const FEATHER_PX = 3;
+const FEATHER_MAX_ERROR = 70;
+const inFeather = (distPx: number): boolean =>
+  distPx >= MASK_INSET_PX - FEATHER_PX && distPx < MASK_INSET_PX;
+const inStrictRim = (distPx: number): boolean => distPx < MASK_INSET_PX - FEATHER_PX;
 
 function windowScan(
   map: MapDef,
   page: { image: Image; x: number; y: number },
   other: Image,
+  /** Which pixels count, by distance in px to their floor cell's edge (Infinity off the floor). */
+  counts: (distPx: number) => boolean = inStrictRim,
 ): { max: number; over: number; at: string } {
   const { image, x: originX, y: originY } = page;
   const { width: w, height: h } = image;
-  const floor = (key: string | undefined): boolean => {
-    const tile = key === undefined ? undefined : map.legend[key];
-    return !!tile && !tile.blocked && !(tile.elevation ?? 0) && key !== 'r' && key !== '~';
-  };
   const stride = w + 1;
   const err = new Float64Array(stride * (h + 1));
   const count = new Float64Array(stride * (h + 1));
@@ -586,11 +628,7 @@ function windowScan(
       let e = 0,
         n = 0;
       if (image.data[i + 3]) {
-        const wx = originX + px + 0.5,
-          wy = originY + py + 0.5;
-        const gx = ((wx - 768) / 64 + wy / 32) / 2,
-          gy = (wy / 32 - (wx - 768) / 64) / 2;
-        if (!floor(map.rows[Math.floor(gy)]?.[Math.floor(gx)])) {
+        if (counts(footprintAt(map, originX, originY, px, py).distPx)) {
           n = 1;
           for (let c = 0; c < 3; c++)
             e += Math.abs((other.data[i + c] ?? 0) - (image.data[i + c] ?? 0)) / 3;
@@ -625,28 +663,34 @@ function windowScan(
 /**
  * A 1-2 px ink line is too thin for the window bound to be sure of (a diagonal
  * line leaves ~8 pixels in a window, diluted by the divisor), so ink is checked
- * on its own: each pixel the packer paints in the ink colour must still come out
- * dark. A re-encode alone leaves the brightest ink pixel at max channel 97 on
- * every page (ink is 27), so the bound is 110, and no pixel may exceed it.
+ * on its own: each pixel the packer paints in the ink colour, outside the fill's
+ * interior, must stay within INK_MAX_DELTA levels of it in every channel. Measured
+ * over those pixels, a re-encode alone moves a channel by at most 58 and the
+ * shipped pages by at most 66, so the bound is 70; an ink pixel repainted to
+ * channel 100 moves 73 or more and fails.
  */
-const INK_MAX_CHANNEL = 110;
+const INK_MAX_DELTA = 70;
 
-function inkViolations(page: { image: Image }, shipped: Image): string[] {
+function inkViolations(
+  map: MapDef,
+  page: { image: Image; x: number; y: number },
+  shipped: Image,
+): string[] {
   const { data } = page.image;
   let bright = 0;
-  for (let i = 0; i < shipped.width * shipped.height; i++) {
-    if (data[i * 4 + 3] !== 255 || data[i * 4] !== 0x1b || data[i * 4 + 1] !== 0x14) continue;
-    if (data[i * 4 + 2] !== 0x10) continue;
-    if (
-      Math.max(
-        shipped.data[i * 4] ?? 0,
-        shipped.data[i * 4 + 1] ?? 0,
-        shipped.data[i * 4 + 2] ?? 0,
-      ) > INK_MAX_CHANNEL
-    )
-      bright++;
-  }
-  return bright ? [`${bright} ink pixels brighter than ${INK_MAX_CHANNEL}`] : [];
+  for (let py = 0; py < shipped.height; py++)
+    for (let px = 0; px < shipped.width; px++) {
+      const i = (py * shipped.width + px) * 4;
+      if (data[i + 3] !== 255 || data[i] !== 0x1b || data[i + 1] !== 0x14) continue;
+      if (data[i + 2] !== 0x10) continue;
+      if (footprintAt(map, page.x, page.y, px, py).distPx >= MASK_INSET_PX) continue;
+      for (let c = 0; c < 3; c++)
+        if (Math.abs((shipped.data[i + c] ?? 0) - (data[i + c] ?? 0)) > INK_MAX_DELTA) {
+          bright++;
+          break;
+        }
+    }
+  return bright ? [`${bright} ink pixels moved more than ${INK_MAX_DELTA} levels`] : [];
 }
 
 function windowViolations(
@@ -654,8 +698,18 @@ function windowViolations(
   page: { image: Image; x: number; y: number },
   shipped: Image,
 ): string[] {
-  const { max, over, at } = windowScan(map, page, shipped);
-  return over ? [`${over} windows over ${WINDOW_MAX_ERROR}; worst ${max.toFixed(1)} at ${at}`] : [];
+  const strict = windowScan(map, page, shipped);
+  const feather = windowScan(map, page, shipped, inFeather);
+  const problems: string[] = [];
+  if (strict.over)
+    problems.push(
+      `${strict.over} windows over ${WINDOW_MAX_ERROR}; worst ${strict.max.toFixed(1)} at ${strict.at}`,
+    );
+  if (feather.max > FEATHER_MAX_ERROR)
+    problems.push(
+      `feather windows over ${FEATHER_MAX_ERROR}; worst ${feather.max.toFixed(1)} at ${feather.at}`,
+    );
+  return problems;
 }
 
 it.each([
@@ -672,7 +726,7 @@ it.each([
       const page = plate(built(), region.name);
       expect(footprintViolations(map, page, shipped), region.name).toEqual([]);
       expect(windowViolations(map, page, shipped), `${root}/${region.name} windows`).toEqual([]);
-      expect(inkViolations(page, shipped), `${root}/${region.name} ink`).toEqual([]);
+      expect(inkViolations(map, page, shipped), `${root}/${region.name} ink`).toEqual([]);
     }
   },
 );
@@ -688,6 +742,8 @@ it('holds the window bound above the encoder noise of an unchanged page', async 
       const reencoded = await decodeWebp(await encodeWebp(page.image, QUARRY_GROUND_QUALITY, true));
       const { max, over } = windowScan(map, page, reencoded);
       expect(over, `${region.name} re-encode (worst ${max.toFixed(1)})`).toBe(0);
+      expect(windowScan(map, page, reencoded, inFeather).max).toBeLessThan(FEATHER_MAX_ERROR);
+      expect(inkViolations(map, page, reencoded), `${region.name} re-encode ink`).toEqual([]);
     }
 });
 
