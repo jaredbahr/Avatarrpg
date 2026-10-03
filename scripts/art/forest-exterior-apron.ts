@@ -95,6 +95,8 @@ const BASE_PLATES = [
   'creek-west.webp',
   'creek-east.webp',
 ] as const;
+/** The plates that carry their own water past the rim. */
+const WATERCOURSE_PLATES = ['creek-west.webp', 'creek-east.webp'] as const;
 /** Every ground plate, in draw order, for the overpaint guard. */
 const GUARD_PLATES = [
   'grass-north.webp',
@@ -306,7 +308,13 @@ function groundEdge(
   return null;
 }
 
-export function packApron(plates: readonly ApronPlate[], guard: Image): Image {
+/**
+ * `watercourse` is the creek plates alone. They run out past the south rim on
+ * their own (the far bank's stones, then the plate's own fade), so any exterior
+ * pixel they paint is left clear: the apron is drawn last and would otherwise
+ * cover that bank and fade with a second, banked meadow.
+ */
+export function packApron(plates: readonly ApronPlate[], guard: Image, watercourse?: Image): Image {
   const field = baseField(plates);
   const image = newImage(FOREST_EXTERIOR_APRON.width, FOREST_EXTERIOR_APRON.height);
   for (let py = 0; py < image.height; py++) {
@@ -327,6 +335,10 @@ export function packApron(plates: readonly ApronPlate[], guard: Image): Image {
       };
       if (inside ? depth <= -APRON_SEAM : depth >= APRON_FADE) {
         if (depth > -APRON_SEAM - RIM_BLEED && depth < APRON_FADE + RIM_BLEED) bleed();
+        continue;
+      }
+      if (!inside && watercourse && (pixelAt(watercourse, px, py)[3] ?? 0) > 0) {
+        bleed();
         continue;
       }
       // Inside the board this plate only closes what the scene left open.
@@ -363,6 +375,34 @@ export async function loadGuardField(): Promise<Image> {
   return baseField(await loadPlates(GUARD_PLATES));
 }
 
+/**
+ * Pond, creek and rubble art is packed at 2x or 3x the world pixels the scene
+ * registers it into. The field is in world pixels, so such a plate is averaged
+ * down (premultiplied) to the size it is drawn at; plates already drawn 1:1 pass
+ * through untouched.
+ */
+function fitToPiece(image: Image, width: number, height: number): Image {
+  const factor = Math.round(image.width / width);
+  if (factor <= 1 || Math.abs(image.height / factor - height) > 1) return image;
+  const out = newImage(Math.round(image.width / factor), Math.round(image.height / factor));
+  for (let y = 0; y < out.height; y++) {
+    for (let x = 0; x < out.width; x++) {
+      let a = 0;
+      const sum = [0, 0, 0];
+      for (let dy = 0; dy < factor; dy++) {
+        for (let dx = 0; dx < factor; dx++) {
+          const p = pixelAt(image, x * factor + dx, y * factor + dy);
+          a += p[3] ?? 0;
+          for (let c = 0; c < 3; c++) sum[c] = (sum[c] ?? 0) + (p[c] ?? 0) * (p[3] ?? 0);
+        }
+      }
+      const channel = (c: number): number => (a === 0 ? 0 : Math.round((sum[c] ?? 0) / a));
+      setPixel(out, x, y, [channel(0), channel(1), channel(2), Math.round(a / factor ** 2)]);
+    }
+  }
+  return out;
+}
+
 async function loadPlates(names: readonly string[]): Promise<ApronPlate[]> {
   const plates: ApronPlate[] = [];
   const found = new Set<string>();
@@ -374,16 +414,25 @@ async function loadPlates(names: readonly string[]): Promise<ApronPlate[]> {
     const name = names.find((candidate) => url.endsWith(candidate));
     if (!name) continue;
     found.add(name);
-    plates.push({ image: await readWebp(`public/${piece.url}`), x: piece.x, y: piece.y });
+    plates.push({
+      image: fitToPiece(await readWebp(`public/${piece.url}`), piece.width, piece.height),
+      x: piece.x,
+      y: piece.y,
+    });
   }
   for (const name of names)
     if (!found.has(name)) throw new Error(`${name} is not registered in the forest scene`);
   return plates;
 }
 
+/** The creek plates alone, composited, for the apron to leave clear. */
+export async function loadWatercourseField(): Promise<Image> {
+  return baseField(await loadPlates(WATERCOURSE_PLATES));
+}
+
 /** The apron plate for the scene as registered, decoded from the shipped art. */
 export async function packSceneApron(): Promise<Image> {
-  return packApron(await loadBasePlates(), await loadGuardField());
+  return packApron(await loadBasePlates(), await loadGuardField(), await loadWatercourseField());
 }
 
 async function main(): Promise<void> {

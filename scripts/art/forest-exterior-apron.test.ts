@@ -1,6 +1,6 @@
 import { readFileSync } from 'node:fs';
 import { expect, it } from 'vitest';
-import { FOREST_ROAD } from '../../src/content/maps/combat';
+import { FOREST_GROUND_ROWS, FOREST_ROAD } from '../../src/content/maps/combat';
 import {
   FOREST_APRON_BANDS,
   FOREST_APRON_MAP,
@@ -25,6 +25,7 @@ import {
   baseField,
   loadBasePlates,
   loadGuardField,
+  loadWatercourseField,
   packApron,
 } from './forest-exterior-apron';
 import { pixelAt, type Image } from './lib/image';
@@ -32,7 +33,8 @@ import { pixelAt, type Image } from './lib/image';
 const plates = await loadBasePlates();
 const field = baseField(plates);
 const guard = await loadGuardField();
-const apron = packApron(plates, guard);
+const watercourse = await loadWatercourseField();
+const apron = packApron(plates, guard, watercourse);
 
 /** The apron pixel for a logical point; the forward projection. */
 function apronPixel(x: number, y: number): { x: number; y: number } {
@@ -158,7 +160,6 @@ it('carries the material of the cell it leaves, and fades with the page', () => 
     { x: 10.5, y: -0.3 },
     { x: -0.3, y: 4.5 },
     { x: 20.3, y: 5.5 },
-    { x: 9.5, y: 12.3 },
     { x: 0.5, y: -0.3 },
     { x: -0.3, y: 10.5 },
   ] as const) {
@@ -167,9 +168,21 @@ it('carries the material of the cell it leaves, and fades with the page', () => 
     );
   }
 
+  // The south rim: the apron is painted wherever a creek plate is not, and
+  // clear wherever one is, so the creek's far bank and fade are not covered.
+  for (const x of [1.5, 3.5, 5.5, 9.5, 11.5, 13.5, 15.5]) {
+    const painted = (apronAt(apron, x, 12.3)[3] ?? 0) > 150;
+    const creek = (apronAt(watercourse, x, 12.3)[3] ?? 0) > 0;
+    expect(painted, `${x},12.3 is painted exactly where no creek plate is`).toBe(!creek);
+  }
+  expect(
+    (apronAt(watercourse, 4.5, 12.3)[3] ?? 0) > 0,
+    'the west creek runs out past the rim',
+  ).toBe(true);
+
   // Mean authored colour for each material, measured inside the board.
   const mean = (key: string): readonly number[] => {
-    const cells = FOREST_ROAD.rows.flatMap((row, y) =>
+    const cells = FOREST_GROUND_ROWS.flatMap((row, y) =>
       [...row].flatMap((value, x) => (value === key ? [{ x, y }] : [])),
     );
     const total = [0, 0, 0];
@@ -197,7 +210,11 @@ it('carries the material of the cell it leaves, and fades with the page', () => 
     );
   }
   const grass = leaves(-1.5, 1.5);
-  expect(distance(grass, meadow), 'the meadow is carried out').toBeLessThan(distance(grass, road));
+  // The generated verge is textured and shaded under the lodge, so a flank's
+  // meadow is judged by staying green where the road is earth, not by a mean.
+  expect(grass[1], 'the meadow is carried out green').toBeGreaterThan(grass[0] ?? 0);
+  expect(grass[1], 'the meadow is carried out green').toBeGreaterThan(grass[2] ?? 0);
+  expect(road[0], 'the road is earth, not green').toBeGreaterThan(road[1] ?? 0);
 
   // The authored packs feather to 0 across the rim, so the plate fills that
   // band; with it, nothing along the rim reads as page showing through.

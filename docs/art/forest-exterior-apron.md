@@ -106,3 +106,26 @@ the encounter camera and again at zoom 40 centred on the west exit and the north
 rim. In those frames the road and its grass run out of the board under the
 combat HUD exactly as they do in exploration, and the two renders agree — the
 board edge the fight sits against is not a bare page.
+
+## Regenerated for the generated ground (3 October 2026)
+
+The apron derives from `grass-north`, `grass-south`, `route-ground` and the
+creek plates, so the twelve `exterior-apron-N.webp` bands were rebuilt with
+`npx tsx scripts/art/forest-exterior-apron.ts` once those plates were replaced
+(`docs/art/forest-ground-composition.md`). Nothing in the packer changed, and
+`apron-plates.test.ts` still holds the shipped bands byte-for-byte to the packed
+ring. The textured verge made one proxy in `forest-exterior-apron.test.ts`
+obsolete: it compared the carried-out meadow's distance to a board-wide mean,
+which no longer describes ground that varies along the road. It now asserts that
+the meadow leaves green and the road leaves as earth.
+
+## The creek plates run out past the south rim (3 October 2026)
+
+The pass-2 creek plates carry their own water, far bank (stones) and fade beyond
+the south rim, and they are packed at 2x the world pixels they are drawn at. The
+packer read them 1:1, so the continuation was sampled from the wrong pixels, and
+it painted its opaque meadow over the plates' far bank and fade, which left the
+creek a thin navy strip with a blocky green edge. `loadPlates` now averages
+2x/3x-packed plates (creek, pond, rubble) down to their registered size, and
+`packApron` takes the creek plates as `watercourse`: any exterior pixel they paint
+is left clear. Six bands changed (3, 5, 7, 9, 10, 11); mechanical only.

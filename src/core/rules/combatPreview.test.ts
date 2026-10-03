@@ -812,7 +812,7 @@ describe('bounded combat outcome previews', () => {
     const source = battleFor('enc_forest_road');
     const enemyId = source.units.find((unit) => unit.faction === 'enemy')?.id;
     if (!enemyId) throw new Error('lethal contact fixture has no enemy');
-    const base = placed(source, { p0: { x: 1, y: 3 }, [enemyId]: { x: 4, y: 3 } }, ['p0', enemyId]);
+    const base = placed(source, { p0: { x: 1, y: 3 }, [enemyId]: { x: 3, y: 3 } }, ['p0', enemyId]);
     const battle = {
       ...base,
       units: base.units.map((unit) => (unit.id === enemyId ? { ...unit, hp: 1 } : unit)),
@@ -838,7 +838,7 @@ describe('bounded combat outcome previews', () => {
 
   it('does not mark a harmless friendly surface contact as damage warning', () => {
     const source = battleFor('enc_forest_road', ['nilak', 'kaya']);
-    const battle = placed(source, { p0: { x: 1, y: 3 }, p1: { x: 4, y: 3 } }, ['p0', 'p1']);
+    const battle = placed(source, { p0: { x: 1, y: 3 }, p1: { x: 3, y: 3 } }, ['p0', 'p1']);
     const caster = battle.units.find((unit) => unit.id === 'p0');
     const ally = battle.units.find((unit) => unit.id === 'p1');
     if (!caster || !ally) throw new Error('harmless surface fixture missing a unit');

@@ -17,6 +17,7 @@ import { FOREST_APRON_MAP, FOREST_CREEK_POOLS } from '../../src/content/scenes/f
 import type { ForestCreekPool } from '../../src/content/scenes/forestRoad';
 import { apronDepth, forestApronAlpha } from './forest-exterior-apron';
 import { pixelAt, setPixel } from './lib/image';
+import { refuseToOverwriteGenerated } from './lib/shipped-pin';
 import { encodeWebp } from './lib/webp';
 import { FOREST_GROUND_QUALITY, loadForestMaterial } from './forest-village-material';
 import type { ForestMaterial } from './forest-village-material';
@@ -65,6 +66,7 @@ export function packCreekPool(material: ForestMaterial, pool: ForestCreekPool) {
 }
 
 export async function main(): Promise<void> {
+  refuseToOverwriteGenerated('forest-creek');
   const material = await loadForestMaterial();
   mkdirSync('public/art/maps/forest-scene', { recursive: true });
   for (const pool of FOREST_CREEK_POOLS) {

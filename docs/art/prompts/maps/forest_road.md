@@ -32,20 +32,20 @@ The rows as the rules read them:
 
 ```
 TTTT,,TTTTTTTT,TTTTT
-TT,,,,,TTT,,,,,,^^TT
-T,,,,,,,,,,,,,,^^^^A
-,,,,,,,r,,,,,,,,^^^^
+TTf,,,,TTT,,,,,,^^TT
+Tff,f,,,,,,,f,f^^^^A
+,,,,f,,r,,,,,,f,^b^^
 ====================
 ,====~~~====,,,,,,^^
 ,,==~~~~====,,,,,,,^
 ,,===~~=====,,,,,,,,
 ,,================,,
 ,,,,,,,,r,,,,,,,,,,,
-T,,,WW,,,,,,,,,T,,,T
+T,f,WW,,,,,,,,,T,,,T
 TTWWWWWTTTTTWWWWWTTT
 ```
 
-Legend: `T` trees; `,` grass; `^` ledges, one step up; `A` high ledges, two steps up; `r` heaps of tumbled rock; `=` road; `~` still water; `W` stone walls.
+Legend: `T` trees; `,` grass; `f` grass; `^` ledges, one step up; `A` high ledges, two steps up; `r` heaps of tumbled rock; `b` ledges, one step up; `=` road; `~` still water; `W` stone walls.
 
 ## Prompt
 

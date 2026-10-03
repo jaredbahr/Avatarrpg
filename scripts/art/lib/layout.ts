@@ -52,7 +52,14 @@ const GROUND: readonly TileClassId[] = ['grass', 'dirt', 'stone'];
  * `G` is a barred gate and `B` a timber building, both opaque impassable wood.
  * Only the key tells them apart, so only the key can.
  */
-const KEY_CLASSES: Readonly<Partial<Record<string, TileClassId>>> = { G: 'gate' };
+const KEY_CLASSES: Readonly<Partial<Record<string, TileClassId>>> = {
+  G: 'gate',
+  // The Forest Road's roadside props close a cell to movement (`f` on grass, `b`
+  // on the tier-1 bank) but are decoration: the painting brief still wants the
+  // ground there, not a stand of trees or a wall.
+  f: 'grass',
+  b: 'ledge',
+};
 
 /** Which class a legend entry belongs to: what blocks, what stands up, what lies on top. */
 export function classify(tile: TileTemplate, key?: string): TileClassId {
