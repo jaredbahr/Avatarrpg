@@ -8,6 +8,7 @@
  */
 
 import type { ElementId, Faction, StatusId, SurfaceId, TerrainId } from '../core/types';
+import { FACE_SHADE } from './lighting';
 
 export interface Palette {
   readonly base: string;
@@ -201,12 +202,23 @@ export const RUBBLE_CHIP = TERRAIN_STYLES.sand.detail;
  * tier's top a little lighter and warmer (twice as much under High contrast).
  */
 export const ELEVATION = {
-  southShade: 0.26,
-  eastShade: 0.44,
+  /**
+   * Form shading, from the quarry reference: against a block's lit top its
+   * face toward the key's grazing side is ~0.75 and its far face ~0.53.
+   */
+  southShade: FACE_SHADE.south,
+  eastShade: FACE_SHADE.east,
+  /** [depth in tiles, alpha] of the dark bands where a face meets lower ground. */
+  /** A ramp's tilt: `steps` nested bands of `alpha`, `reach` tiles in from its low edge. */
+  rampSlope: { steps: 6, reach: 0.9, alpha: 0.028 },
+  footBands: [
+    [0.07, 0.5],
+    [0.15, 0.24],
+  ] as readonly (readonly [number, number])[],
   ink: '#1b1410',
   rim: '#fff6e0',
   tint: '#ffe9c2',
-  tintPerTier: 0.06,
+  tintPerTier: 0.12,
   shadow: '#1b1410',
 } as const;
 

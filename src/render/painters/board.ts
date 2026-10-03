@@ -260,11 +260,11 @@ export function paintCliffFace(ctx: Ctx, box: Box, drop: number, pos: Vec2): voi
   ctx.fillRect(x, y + h - Math.max(1, s * 0.03), s + 1, Math.max(1, s * 0.03));
   ctx.globalAlpha = 1;
 
-  const shadow = ctx.createLinearGradient(0, y + h, 0, y + h + s * 0.3);
-  shadow.addColorStop(0, 'rgba(0,0,0,0.36)');
-  shadow.addColorStop(1, 'rgba(0,0,0,0)');
-  ctx.fillStyle = shadow;
-  ctx.fillRect(x, y + h, s + 1, s * 0.3);
+  // Short base occlusion on the lower-ground side: two flat bible-ink bands.
+  ctx.fillStyle = 'rgba(27,20,16,0.3)';
+  ctx.fillRect(x, y + h, s + 1, s * 0.08);
+  ctx.fillStyle = 'rgba(27,20,16,0.14)';
+  ctx.fillRect(x, y + h + s * 0.08, s + 1, s * 0.08);
   ctx.restore();
 }
 
@@ -273,11 +273,10 @@ export function paintLedgeSide(ctx: Ctx, box: Box, side: 'w' | 'e'): void {
   const s = box.size;
   ctx.save();
   if (side === 'w') {
-    const g = ctx.createLinearGradient(box.x, 0, box.x + s * 0.26, 0);
-    g.addColorStop(0, 'rgba(0,0,0,0.32)');
-    g.addColorStop(1, 'rgba(0,0,0,0)');
-    ctx.fillStyle = g;
-    ctx.fillRect(box.x, box.y, s * 0.26, s + 1);
+    ctx.fillStyle = 'rgba(27,20,16,0.28)';
+    ctx.fillRect(box.x, box.y, s * 0.1, s + 1);
+    ctx.fillStyle = 'rgba(27,20,16,0.12)';
+    ctx.fillRect(box.x + s * 0.1, box.y, s * 0.1, s + 1);
     ctx.globalAlpha = 0.7;
     ctx.fillStyle = INK;
     ctx.fillRect(box.x, box.y, Math.max(1, s * 0.03), s + 1);

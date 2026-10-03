@@ -258,6 +258,7 @@ export const FOREST_DEADFALL: SceneScenery = (() => {
     height,
     footprint: [{ x: 5, y: 10 }],
     depth: { x: 5.5, y: 10.5 },
+    castShadow: false,
   };
 })();
 
@@ -282,6 +283,7 @@ export const FOREST_BANK_NEST_REEDS: SceneScenery = {
   depth: { x: 6.1, y: 9.08 },
   // Seated by the wear `forest-route-ground.ts` lays at its painted foot.
   contactShadow: false,
+  castShadow: false,
 };
 
 /** Alpha-trimmed sizes emitted by `scripts/art/forest-bank-reeds.ts`. */
@@ -318,6 +320,7 @@ function bankReed(water: string, { x, y, art, height, foot }: ReedPlacement): Sc
     depth: { x: Math.min(fx, x + 0.5), y: Math.min(fy, y + 0.5) },
     // The mound and route wear provide contact. A cell-wide runtime diamond is too broad.
     contactShadow: false,
+    castShadow: false,
   };
 }
 export const FOREST_POND_REEDS: readonly SceneScenery[] = (

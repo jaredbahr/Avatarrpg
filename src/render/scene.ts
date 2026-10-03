@@ -7,6 +7,7 @@ import type { MapView } from './view';
 import { renderFoot } from './renderFoot';
 import { BackdropStore } from './backdrops';
 import { featherAlpha } from './geometry/feather';
+import { PAINTED_FACE_SHADE, SHADOW_RGB } from './lighting';
 
 /**
  * How many distinct scene images stay decoded at once.
@@ -88,12 +89,62 @@ export function sceneImage(piece: SceneImage): HTMLImageElement | null {
 
 const featheredImages = new WeakMap<HTMLImageElement, WeakMap<object, HTMLCanvasElement>>();
 
+/**
+ * Where the three visible planes of a painted stone block meet, as fractions
+ * of its art: the left and right edges of the front faces start this far down,
+ * and the near corner this far (the quarry wall cubes, 256x352; read off the
+ * course lines, where the faces' top edge runs at the 2:1 slope).
+ */
+const BLOCK_SIDE_CORNER = 106 / 352;
+const BLOCK_NEAR_CORNER = 172 / 352;
+
+/** The quarry's painted stone cubes, every one drawn on the same 256x352 cube. */
+const BLOCK_CUBE_ART = /\/wall-(?:end|interior|corner)\.webp$/;
+
+export function sceneIsBlock(piece: SceneImage): boolean {
+  return BLOCK_CUBE_ART.test(piece.url);
+}
+
+/** Art that is prepared before it is drawn: a feathered rim, or a block given form. */
+export function sceneNeedsPrepare(piece: SceneImage): boolean {
+  return Boolean(piece.feather) || sceneIsBlock(piece);
+}
+
+/**
+ * The painted block cubes are lit evenly, so against the reference they read
+ * as flat cut-outs. Planes are shaded in place, alpha untouched, so both
+ * backends and the cast-shadow silhouette see the same piece.
+ */
+function shadeBlockFaces(context: CanvasRenderingContext2D, width: number, height: number): void {
+  const mid = width / 2;
+  const side = BLOCK_SIDE_CORNER * height;
+  const near = BLOCK_NEAR_CORNER * height;
+  context.save();
+  context.globalCompositeOperation = 'source-atop';
+  const face = (shade: number, outer: number) => {
+    const gradient = context.createLinearGradient(0, near, 0, height);
+    gradient.addColorStop(0, `rgba(${SHADOW_RGB.join(',')},${shade})`);
+    gradient.addColorStop(1, `rgba(${SHADOW_RGB.join(',')},${shade + PAINTED_FACE_SHADE.foot})`);
+    context.fillStyle = gradient;
+    context.beginPath();
+    context.moveTo(outer, side);
+    context.lineTo(mid, near);
+    context.lineTo(mid, height);
+    context.lineTo(outer, height);
+    context.closePath();
+    context.fill();
+  };
+  face(PAINTED_FACE_SHADE.south, 0);
+  face(PAINTED_FACE_SHADE.east, width);
+  context.restore();
+}
+
 /** Alpha-only preparation. Weak image keys release canvases with evicted decoded pages. */
 export function sceneDrawable(
   piece: SceneImage,
   image = sceneImage(piece),
 ): HTMLImageElement | HTMLCanvasElement | null {
-  if (!image || !piece.feather) return image;
+  if (!image || !sceneNeedsPrepare(piece)) return image;
   const cached = featheredImages.get(image)?.get(piece);
   if (cached) return cached;
   const rect = sceneSourceRect(piece, image);
@@ -113,6 +164,7 @@ export function sceneDrawable(
       );
     }
   context.putImageData(pixels, 0, 0);
+  if (sceneIsBlock(piece)) shadeBlockFaces(context, rect.width, rect.height);
   let pieces = featheredImages.get(image);
   if (!pieces) {
     pieces = new WeakMap();

@@ -52,7 +52,7 @@ const BOX: Box = { x: 40, y: 24, size: 64 };
 
 /** Alpha of an `rgba(...)` stop, as a plain number. */
 function alphaOf(color: string): number {
-  const match = /^rgba\(\s*0\s*,\s*0\s*,\s*0\s*,\s*([\d.]+)\s*\)$/.exec(color);
+  const match = /^rgba\(\s*27\s*,\s*20\s*,\s*16\s*,\s*([\d.]+)\s*\)$/.exec(color);
   if (!match?.[1]) throw new Error(`not a shadow stop: ${color}`);
   return Number(match[1]);
 }
@@ -66,7 +66,7 @@ describe('contact shadow', () => {
     expect(stops[0]?.[0]).toBe(0);
     expect(stops.at(-1)?.[0]).toBe(1);
     const alphas = stops.map(([, color]) => alphaOf(color));
-    expect(alphas[0]).toBeCloseTo(0.34, 3);
+    expect(alphas[0]).toBeCloseTo(0.74, 3);
     expect(alphas.at(-1)).toBe(0);
     for (let i = 1; i < alphas.length; i++) expect(alphas[i]!).toBeLessThan(alphas[i - 1]!);
   });

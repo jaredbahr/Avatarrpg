@@ -71,18 +71,21 @@ const SHADOW_FALL = 0.025;
  * box it was given. `density` scales the whole pool, for ground busy enough
  * to swallow the standard one (see `actorShadowDensity`).
  */
-export function groundShadow(ctx: Ctx, box: Box, width = 0.46, density = 1): void {
+export function groundShadow(ctx: Ctx, box: Box, width = 0.46, density = 1, foot = 0.86): void {
   const rx = (box.size * width) / 2;
   const ry = box.size * 0.09;
   if (!(rx > 0) || !(ry > 0)) return;
 
   ctx.save();
-  ctx.translate(box.x + box.size / 2, box.y + box.size * (0.86 + SHADOW_FALL));
+  ctx.translate(box.x + box.size / 2, box.y + box.size * (Math.min(foot, 0.9) + SHADOW_FALL));
   ctx.scale(1, ry / rx);
+  // Bible ink, dense at the heel and gone by the rim: the reference's pool
+  // under a figure's feet is ~0.63 of the lit ground beside it.
   const shade = ctx.createRadialGradient(0, 0, 0, 0, 0, rx);
-  shade.addColorStop(0, `rgba(0,0,0,${Math.min(1, 0.34 * density)})`);
-  shade.addColorStop(0.5, `rgba(0,0,0,${Math.min(1, 0.26 * density)})`);
-  shade.addColorStop(1, 'rgba(0,0,0,0)');
+  shade.addColorStop(0, `rgba(27,20,16,${Math.min(1, 0.74 * density)})`);
+  shade.addColorStop(0.45, `rgba(27,20,16,${Math.min(1, 0.56 * density)})`);
+  shade.addColorStop(0.8, `rgba(27,20,16,${Math.min(1, 0.22 * density)})`);
+  shade.addColorStop(1, 'rgba(27,20,16,0)');
   ctx.fillStyle = shade;
   circle(ctx, 0, 0, rx);
   ctx.fill();

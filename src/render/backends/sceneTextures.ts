@@ -1,6 +1,12 @@
 import { Rectangle, Texture } from 'pixi.js';
 import type { SceneImage } from '../../core/types';
-import { sceneDrawable, sceneImage, sceneSourceRect } from '../scene';
+import {
+  sceneDrawable,
+  sceneImage,
+  sceneIsBlock,
+  sceneNeedsPrepare,
+  sceneSourceRect,
+} from '../scene';
 
 interface Page {
   image: HTMLImageElement;
@@ -22,13 +28,13 @@ export class SceneTextures {
     if (!image) return null;
     const rect = sceneSourceRect(piece, image);
     if (!rect) return null;
-    if (piece.feather) {
+    if (sceneNeedsPrepare(piece)) {
       const source = sceneDrawable(piece, image);
       if (!source) return null;
       // Canvas allocation can fail under iOS memory pressure. In that case
       // use the ordinary atlas slice below: unfeathered, but still the right art.
       if (source !== image) {
-        const featherKey = `${piece.feather.left ?? 0},${piece.feather.right ?? 0},${'flip' in piece && piece.flip ? 1 : 0}`;
+        const featherKey = `${piece.feather?.left ?? 0},${piece.feather?.right ?? 0},${'flip' in piece && piece.flip ? 1 : 0}|${sceneIsBlock(piece) ? 'form' : ''}`;
         const key = `${piece.url}|${piece.x},${piece.y},${piece.width},${piece.height}|${rect.x},${rect.y},${rect.width},${rect.height}|${featherKey}`;
         let page = this.pages.get(key);
         if (!page || page.image !== image) {

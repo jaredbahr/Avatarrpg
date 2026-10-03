@@ -102,6 +102,15 @@ import type { BackendCapabilities, RenderBackend } from './backend';
 import { EDGE_SHADE_ALPHA, EDGE_SHADE_TILES, VIGNETTE_ALPHA, overlayColors } from './canvas2d';
 import { liftAlong, liftAt } from '../geometry/elevation';
 import { FILTER_VERTEX, GROUND_FRAGMENT } from './shaders';
+import {
+  CAST_SHADOW_ALPHA,
+  FALLEN_SHADOW_ALPHA,
+  SHADOW_RGB,
+  castShadowStrength,
+  structureShadowPolygons,
+  tileShadowCell,
+  silhouetteProjection,
+} from '../lighting';
 
 /** Must match terrainBase() in shaders.ts. */
 const TERRAIN_INDEX: Record<TerrainId, number> = {
@@ -118,6 +127,24 @@ const TERRAIN_INDEX: Record<TerrainId, number> = {
 
 /** The ground pass renders at this fraction of device resolution. */
 const GROUND_RESOLUTION = 0.5;
+
+/** Cast silhouettes need edges, not full sprite colour; half device resolution is sufficient. */
+const SHADOW_RESOLUTION = 0.5;
+
+const SHADOW_RGB_GLSL = SHADOW_RGB.map((channel) => (channel / 255).toFixed(5)).join(', ');
+
+/** The mask's max-unioned coverage is tinted once, so overlaps cannot darken twice. */
+const CAST_SHADOW_FRAGMENT = `#version 300 es
+precision highp float;
+
+in vec2 vTextureCoord;
+uniform sampler2D uTexture;
+out vec4 fragColor;
+
+void main(void) {
+  float alpha = texture(uTexture, vTextureCoord).a * ${CAST_SHADOW_ALPHA.toFixed(5)};
+  fragColor = vec4(vec3(${SHADOW_RGB_GLSL}) * alpha, alpha);
+}`;
 
 /**
  * How far round it a surface the ground shader animates keeps moving: water
@@ -317,6 +344,17 @@ export class PixiBackend implements RenderBackend {
   private decorGfx = new Graphics();
   private groundRings = new Graphics();
   private unitLayer = new Container();
+  /** World-space projected silhouettes; rendered to one viewport union mask per frame. */
+  private shadowMaskSources = new Container();
+  private structureShadowGfx = new Graphics();
+  private shadowComposite = new Sprite(Texture.EMPTY);
+  /** Everything outside the board; erased from the union mask (no Pixi mask: its pipe is not in the production build). */
+  private shadowOutside = new Graphics();
+  private shadowOutsideRoot = new Container();
+  private shadowMask: RenderTexture | null = null;
+  private shadowFilter: Filter | null = null;
+  private castSprites = new Map<string, Sprite>();
+  private castLive = new Set<string>();
   /** Painted bend effects under and over the actors (ADR 0055). */
   private bendUnder = new Container();
   private bendOver = new Container();
@@ -467,6 +505,10 @@ export class PixiBackend implements RenderBackend {
       padding: 0,
       resolution: GROUND_RESOLUTION,
     });
+    this.shadowFilter = new Filter({
+      glProgram: GlProgram.from({ vertex: FILTER_VERTEX, fragment: CAST_SHADOW_FRAGMENT }),
+      padding: 0,
+    });
     this.sceneGround.addChild(this.breeze);
     this.groundSprite.filters = [this.groundFilter];
     this.groundOverlaySprite.filters = [this.groundOverlayFilter];
@@ -505,6 +547,15 @@ export class PixiBackend implements RenderBackend {
       this.decorGfx,
     );
     this.unitLayer.sortableChildren = true;
+    // Opaque structure polygons need no advanced blend equation: ordinary
+    // source-over is already an opaque union. Keep the `max` path confined to
+    // translucent silhouette sprites, where it is semantically required.
+    this.structureShadowGfx.blendMode = 'normal';
+    this.shadowMaskSources.addChild(this.structureShadowGfx);
+    this.shadowComposite.visible = false;
+    this.shadowComposite.filters = [this.shadowFilter];
+    this.shadowOutside.blendMode = 'erase';
+    this.shadowOutsideRoot.addChild(this.shadowOutside);
     this.upright.addChild(
       this.steamLayer,
       this.groundRings,
@@ -521,6 +572,7 @@ export class PixiBackend implements RenderBackend {
       this.groundStack,
       this.liftSprite,
       this.marksGfx,
+      this.shadowComposite,
       this.climbCues,
       this.upright,
       this.fxOver.container,
@@ -537,6 +589,9 @@ export class PixiBackend implements RenderBackend {
   resize(viewport: Viewport): void {
     sprites.clear();
     sheets.clear();
+    // Cast sprites retain cached texture sources. Detach them before those
+    // sources and the renderer backing store are invalidated by a resize.
+    this.dropCastShadows();
     this.dropTextures();
     this.decor.clear();
     this.decorPx = 0;
@@ -572,6 +627,10 @@ export class PixiBackend implements RenderBackend {
     // the renderer own the shared GPU program and release only filter state.
     this.groundFilter?.destroy();
     this.groundOverlayFilter?.destroy();
+    this.shadowComposite.filters = null;
+    this.shadowOutsideRoot.destroy({ children: true });
+    this.shadowFilter?.destroy();
+    this.dropCastShadows();
     this.dropLift();
     this.liftBuild.destroy();
     this.app?.stage.destroy({ children: true });
@@ -579,6 +638,7 @@ export class PixiBackend implements RenderBackend {
     this.app = null;
     this.groundFilter = null;
     this.groundOverlayFilter = null;
+    this.shadowFilter = null;
     this.dropTextures();
     this.unitSprites.clear();
     this.breezePools.clear();
@@ -619,7 +679,13 @@ export class PixiBackend implements RenderBackend {
     this.root.setFromMatrix(this.groundTransform);
     this.elevationBaseLayer.setFromMatrix(this.groundTransform);
     this.fxOver.container.setFromMatrix(this.groundTransform);
-    for (const layer of [this.sceneGround, this.climbCues, this.upright, this.labels]) {
+    for (const layer of [
+      this.sceneGround,
+      this.shadowMaskSources,
+      this.climbCues,
+      this.upright,
+      this.labels,
+    ]) {
       layer.position.set(
         -camera.offsetX + view.cameraNudge.x * nudge,
         -camera.offsetY + view.cameraNudge.y * nudge,
@@ -657,6 +723,14 @@ export class PixiBackend implements RenderBackend {
     this.drawDecor(view);
     this.drawClimbMarkers(view, camera);
     this.drawUnits(view, camera);
+    try {
+      this.syncCastShadows(view, camera);
+    } catch {
+      // A supplementary mask must never prevent the already-built map frame
+      // from reaching the stage (notably while a WebGL context is resizing).
+      this.shadowComposite.visible = false;
+      this.shadowComposite.texture = Texture.EMPTY;
+    }
     this.drawSteamPuffs(view, camera);
     this.drawTargetReticle(view, camera);
     const bendFx = view.bendFx ?? [];
@@ -1000,6 +1074,208 @@ export class PixiBackend implements RenderBackend {
       (sum, t) => sum + (t ? t.source.pixelWidth * t.source.pixelHeight : 0),
       0,
     );
+  }
+
+  /* ---------------------------------------------------------------- */
+  /* Cast shadows                                                      */
+  /* ---------------------------------------------------------------- */
+
+  /**
+   * Copies an upright sprite's current alpha silhouette through the shared
+   * foot-anchored projection. `max` blending makes the render target a union
+   * mask: overlap retains the stronger coverage instead of accumulating it.
+   */
+  private projectSilhouette(
+    target: Sprite,
+    source: Sprite,
+    foot: { x: number; y: number },
+    strength: number,
+  ): void {
+    target.texture = source.texture;
+    target.anchor.copyFrom(source.anchor);
+    const s = source.localTransform;
+    const p = silhouetteProjection(foot.x, foot.y);
+    target.setFromMatrix(
+      new Matrix(
+        p.a * s.a + p.c * s.b,
+        p.b * s.a + p.d * s.b,
+        p.a * s.c + p.c * s.d,
+        p.b * s.c + p.d * s.d,
+        p.a * s.tx + p.c * s.ty + p.e,
+        p.b * s.tx + p.d * s.ty + p.f,
+      ),
+    );
+    target.alpha = Math.max(0, Math.min(1, strength));
+    target.blendMode = 'max';
+    target.visible = source.visible && target.alpha > 0;
+  }
+
+  /** Adds this frame's actor or moving-prop silhouette to the dynamic union. */
+  private projectDynamicShadow(
+    key: string,
+    source: Sprite,
+    foot: { x: number; y: number },
+    strength: number,
+  ): void {
+    this.castLive.add(key);
+    let shadow = this.castSprites.get(key);
+    if (!shadow) {
+      shadow = new Sprite();
+      this.castSprites.set(key, shadow);
+      this.shadowMaskSources.addChild(shadow);
+    }
+    this.projectSilhouette(shadow, source, foot, strength);
+  }
+
+  /**
+   * Adds scenery and still-prop silhouettes to the frame's union. They are
+   * drawn straight into the viewport mask each frame: a few dozen sprites into
+   * a half-resolution target costs less than a cached world-space texture, and
+   * the cache's size and offset bookkeeping drew the wrong region once the
+   * scene finished loading.
+   */
+  private syncSceneryShadows(view: MapView): void {
+    for (const item of view.scene?.scenery ?? []) {
+      if (item.castShadow === false) continue;
+      const source = this.scenerySprites.get(item.id);
+      if (!source?.visible) continue;
+      this.projectDynamicShadow(
+        `scene:${item.id}`,
+        source,
+        { x: item.x + item.width / 2, y: item.y + item.height },
+        castShadowStrength(item.castShadow),
+      );
+    }
+    for (const prop of view.props) {
+      if (prop.burning || prop.castShadow === false) continue;
+      const source = this.unitSprites.get(`prop:${prop.id}`);
+      if (!source?.visible) continue;
+      this.projectDynamicShadow(
+        `prop:${prop.id}`,
+        source,
+        { x: source.x + TILE / 2, y: source.y + FOOT_LINE * TILE },
+        castShadowStrength(prop.castShadow),
+      );
+    }
+  }
+
+  /** Unions cached static and current-frame silhouettes, then exposes one tinted layer. */
+  private syncCastShadows(view: MapView, camera: Camera): void {
+    const app = this.app;
+    if (!app) return;
+    const hasStructure = this.syncStructureShadows(view, camera);
+    if (camera.projection === 'oblique') this.syncSceneryShadows(view);
+    for (const [key, sprite] of this.castSprites)
+      if (!this.castLive.has(key)) sprite.visible = false;
+    const hasDynamic = [...this.castSprites.values()].some((sprite) => sprite.visible);
+    this.castLive.clear();
+    if (!hasDynamic && !hasStructure) {
+      this.shadowComposite.visible = false;
+      return;
+    }
+
+    const resolution = Math.max(0.5, this.viewport.dpr * SHADOW_RESOLUTION);
+    this.shadowMask = (this.shadowMask ?? RenderTexture.create({ dynamic: true })).resize(
+      this.viewport.width,
+      this.viewport.height,
+      resolution,
+    ) as RenderTexture;
+    const ring = camera.clampRingTiles;
+    const nx = view.cameraNudge.x * TILE * camera.scale;
+    const ny = view.cameraNudge.y * TILE * camera.scale;
+    const corners = [
+      { x: -ring.left, y: -ring.top },
+      { x: view.grid.width + ring.right, y: -ring.top },
+      { x: view.grid.width + ring.right, y: view.grid.height + ring.bottom },
+      { x: -ring.left, y: view.grid.height + ring.bottom },
+    ].map((point) => {
+      const screen = camera.project(point);
+      return [screen.x + nx, screen.y + ny];
+    });
+    app.renderer.render({
+      container: this.shadowMaskSources,
+      target: this.shadowMask,
+      clear: true,
+    });
+    // The complement of the (convex) board quad, as one outward slab per edge.
+    // Graphics holes (`cut`) erased the whole mask here, so none are used.
+    const out = this.shadowOutside.clear();
+    const cx = corners.reduce((sum, c) => sum + (c[0] ?? 0), 0) / corners.length;
+    const cy = corners.reduce((sum, c) => sum + (c[1] ?? 0), 0) / corners.length;
+    const reach = 8000;
+    corners.forEach((from, index) => {
+      const to = corners[(index + 1) % corners.length];
+      if (!from || !to) return;
+      const ex = (to[0] ?? 0) - (from[0] ?? 0);
+      const ey = (to[1] ?? 0) - (from[1] ?? 0);
+      const length = Math.hypot(ex, ey) || 1;
+      let ox = ey / length;
+      let oy = -ex / length;
+      if (((from[0] ?? 0) - cx) * ox + ((from[1] ?? 0) - cy) * oy < 0) {
+        ox = -ox;
+        oy = -oy;
+      }
+      out
+        .poly([
+          from[0] ?? 0,
+          from[1] ?? 0,
+          to[0] ?? 0,
+          to[1] ?? 0,
+          (to[0] ?? 0) + ox * reach,
+          (to[1] ?? 0) + oy * reach,
+          (from[0] ?? 0) + ox * reach,
+          (from[1] ?? 0) + oy * reach,
+        ])
+        .fill({ color: 0xffffff });
+    });
+    app.renderer.render({
+      container: this.shadowOutsideRoot,
+      target: this.shadowMask,
+      clear: false,
+    });
+    this.shadowComposite.texture = this.shadowMask;
+    this.shadowComposite.anchor.set(0, 0);
+    this.shadowComposite.position.set(0, 0);
+    this.shadowComposite.width = this.viewport.width;
+    this.shadowComposite.height = this.viewport.height;
+    this.shadowComposite.visible = true;
+  }
+
+  /** Procedural wall blocks and raised tiers have no bitmap silhouette. */
+  private syncStructureShadows(view: MapView, camera: Camera): boolean {
+    const g = this.structureShadowGfx;
+    g.clear();
+    if (camera.projection !== 'oblique') return false;
+    const flat = (poly: readonly { x: number; y: number }[]) => poly.flatMap((p) => [p.x, p.y]);
+    const local = (point: { x: number; y: number }) => ({
+      x: (point.x + camera.offsetX) / camera.scale,
+      y: (point.y + camera.offsetY) / camera.scale,
+    });
+    const authored = new Set(
+      (view.scene?.scenery ?? []).flatMap((piece) =>
+        (piece.footprint ?? []).map((cell) => `${cell.x},${cell.y}`),
+      ),
+    );
+    for (const prop of view.props) authored.add(`${prop.pos.x},${prop.pos.y}`);
+    const polygons = structureShadowPolygons(
+      view.grid.width,
+      view.grid.height,
+      (x, y) => tileShadowCell(view.grid.tiles[y * view.grid.width + x]),
+      (point) => local(camera.project(point)),
+      authored,
+    );
+    for (const { points } of polygons) g.poly(flat(points)).fill({ color: 0xffffff });
+    return polygons.length > 0;
+  }
+
+  private dropCastShadows(): void {
+    this.shadowComposite.visible = false;
+    this.shadowComposite.texture = Texture.EMPTY;
+    this.shadowMask?.destroy(true);
+    this.shadowMask = null;
+    for (const sprite of this.castSprites.values()) sprite.destroy();
+    this.castSprites.clear();
+    this.castLive.clear();
   }
 
   /* ---------------------------------------------------------------- */
@@ -2177,6 +2453,12 @@ export class PixiBackend implements RenderBackend {
       sprite.rotation = npc.lean ?? 0;
       sprite.alpha = alpha;
       sprite.visible = true;
+      this.projectDynamicShadow(
+        `npc:${npc.id}`,
+        sprite,
+        { x: footX, y: y + FOOT_LINE * TILE },
+        alpha,
+      );
       if (entry.kind === 'image') {
         const shadowKey = `shadow:${npc.id}`;
         live.add(shadowKey);
@@ -2219,6 +2501,13 @@ export class PixiBackend implements RenderBackend {
       sprite.height = TILE;
       sprite.alpha = 1;
       sprite.visible = true;
+      if (prop.burning && castShadowStrength(prop.castShadow) > 0)
+        this.projectDynamicShadow(
+          `prop:${prop.id}`,
+          sprite,
+          { x: anchor.x + TILE / 2, y: sprite.y + FOOT_LINE * TILE },
+          castShadowStrength(prop.castShadow),
+        );
 
       /*
        * A damage bar only once it has been hit. A full bar on every barrel
@@ -2335,6 +2624,14 @@ export class PixiBackend implements RenderBackend {
       sprite.alpha = alpha;
       sprite.visible = true;
       sprite.zIndex = depth(pos, unit.size);
+      const castStrength = castShadowStrength(unit.castShadow);
+      if (castStrength > 0)
+        this.projectDynamicShadow(
+          `unit:${unit.id}`,
+          sprite,
+          { x: x + width / 2, y: y + FOOT_LINE * TILE },
+          castStrength * (unit.alpha ?? 1) * (unit.fallen ? FALLEN_SHADOW_ALPHA : 1),
+        );
 
       // The hit flash: the same sprite again, white and additive, over the top.
       const flash = unit.flash ?? 0;

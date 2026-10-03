@@ -74,11 +74,37 @@ export function shadowWidthFromArt(
 }
 
 /**
+ * Where an image's lowest opaque row sits, as a fraction of its height: the
+ * line a prop's contact shadow has to be centred on. Art that stands on the
+ * tile's own foot line answers about 0.86; a heap that sits higher answers
+ * less, and a shadow left on the tile's line floats beneath it.
+ */
+export function footFromArt(
+  data: Uint8ClampedArray | Uint8Array,
+  width: number,
+  height: number,
+): number | null {
+  if (!(width > 0) || !(height > 0) || data.length < width * height * 4) return null;
+  for (let y = height - 1; y >= 0; y--)
+    for (let x = 0; x < width; x++)
+      if (data[(y * width + x) * 4 + 3]! > ALPHA_FLOOR) return (y + 1) / height;
+  return null;
+}
+
+/**
  * Measures a loaded image on a small scratch canvas. Returns null while the
  * bitmap is still loading, or when the canvas refuses pixels, so the caller
  * can fall back rather than cache a wrong width.
  */
 export function measureArtWidth(image: HTMLImageElement, sample = 64): number | null {
+  return measureArt(image, sample)?.width ?? null;
+}
+
+/** Width (see `shadowWidthFromArt`) and foot line (see `footFromArt`) in one read of the art. */
+export function measureArt(
+  image: HTMLImageElement,
+  sample = 64,
+): { width: number; foot: number | null } | null {
   if (!image.complete || image.naturalWidth <= 0 || image.naturalHeight <= 0) return null;
   const side = Math.max(8, Math.round(sample));
   const canvas = document.createElement('canvas');
@@ -90,7 +116,7 @@ export function measureArtWidth(image: HTMLImageElement, sample = 64): number | 
     ctx.clearRect(0, 0, side, side);
     ctx.drawImage(image, 0, 0, side, side);
     const { data } = ctx.getImageData(0, 0, side, side);
-    return shadowWidthFromArt(data, side, side);
+    return { width: shadowWidthFromArt(data, side, side), foot: footFromArt(data, side, side) };
   } catch {
     return null;
   }

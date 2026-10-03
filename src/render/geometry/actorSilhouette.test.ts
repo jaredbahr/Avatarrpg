@@ -138,7 +138,7 @@ describe('upright actor contact shadow', () => {
     expect(actorShadowDensity(grid, { x: 0, y: 0 }, true)).toBe(GRASS_SHADOW_DENSITY);
     expect(GRASS_SHADOW_DENSITY).toBeGreaterThan(1);
     // Off grass a combat figure keeps no pool and an explore figure the standard one.
-    expect(actorShadowDensity(grid, { x: 1, y: 0 }, false)).toBe(0);
+    expect(actorShadowDensity(grid, { x: 1, y: 0 }, false)).toBe(1);
     expect(actorShadowDensity(grid, { x: 1, y: 0 }, true)).toBe(1);
     expect(actorShadowDensity(grid, { x: 5, y: 0 }, true)).toBe(1);
   });
@@ -156,12 +156,14 @@ describe('contact shadow sampling', () => {
   const grid: Grid = { width: 3, height: 1, tiles: [tile('road'), tile('road'), tile('grass')] };
 
   it('reads the tile under a walking figure, not the one it set out from', () => {
-    expect(actorShadowDensity(grid, { x: 1.4, y: 0 }, false)).toBe(0);
+    expect(actorShadowDensity(grid, { x: 1.4, y: 0 }, false)).toBe(1);
     expect(actorShadowDensity(grid, { x: 1.6, y: 0 }, false)).toBe(GRASS_SHADOW_DENSITY);
   });
 
   it('seats a two-wide figure on grass under either half', () => {
-    expect(actorShadowDensity(grid, { x: 0, y: 0 }, false, 2)).toBe(0);
+    // Every material seats the footprint; either half touching grass upgrades
+    // the whole two-wide pool to the denser grass treatment.
+    expect(actorShadowDensity(grid, { x: 0, y: 0 }, false, 2)).toBe(1);
     expect(actorShadowDensity(grid, { x: 1, y: 0 }, false, 2)).toBe(GRASS_SHADOW_DENSITY);
     expect(actorShadowDensity(grid, { x: 2, y: 0 }, true, 2)).toBe(GRASS_SHADOW_DENSITY);
   });
@@ -172,7 +174,7 @@ describe('contact shadow sampling', () => {
       height: 2,
       tiles: [tile('road'), tile('road'), tile('road'), tile('grass')],
     };
-    expect(actorShadowDensity(square, { x: 0, y: 0 }, false, 2, false)).toBe(0);
+    expect(actorShadowDensity(square, { x: 0, y: 0 }, false, 2, false)).toBe(1);
     expect(actorShadowDensity(square, { x: 0, y: 0 }, false, 2)).toBe(GRASS_SHADOW_DENSITY);
     expect(actorShadowDensity(square, { x: 0, y: 0 }, false, 2, true)).toBe(GRASS_SHADOW_DENSITY);
   });

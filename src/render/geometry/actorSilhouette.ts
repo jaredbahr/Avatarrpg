@@ -162,10 +162,11 @@ const GRASS_FAMILY: ReadonlySet<TerrainId> = new Set<TerrainId>(['grass']);
 
 /** How much denser the pool is on grass: enough to seat a figure, short of a sticker. */
 export const GRASS_SHADOW_DENSITY = 1.4;
+/** A visible contact pool on every other terrain. */
+export const BASE_SHADOW_DENSITY = 1;
 
 /**
- * The contact-shadow density under an upright actor at `pos`, 0 for none.
- * Explore figures always carry the standard pool (ADR 0015). On grass every
+ * The contact-shadow density under an upright actor at `pos`. On grass every
  * figure gets a denser one, combat included, because there the standard pool
  * vanishes into the tufts and the figure floats; on paving and rock it does
  * not, so nothing changes there.
@@ -188,5 +189,8 @@ export function actorShadowDensity(
     const terrain = inside ? grid.tiles[cell.y * grid.width + cell.x]?.terrain : undefined;
     if (terrain && GRASS_FAMILY.has(terrain)) return GRASS_SHADOW_DENSITY;
   }
-  return always ? 1 : 0;
+  // `always` remains in the signature for view-model compatibility; lighting
+  // v1 makes the renderer responsible for seating every actor on every ground.
+  void always;
+  return BASE_SHADOW_DENSITY;
 }

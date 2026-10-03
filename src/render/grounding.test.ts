@@ -30,7 +30,7 @@ const opaqueTexels = (data: Uint8ClampedArray): number => {
 };
 
 describe('scene grounding rasters', () => {
-  it('combines footprint contact, occlusion and grass wear deterministically', () => {
+  it('combines footprint contact and occlusion deterministically', () => {
     const first = contactRaster([piece], affine);
     const second = contactRaster([piece], affine);
     expect(first).not.toBeNull();
@@ -40,7 +40,7 @@ describe('scene grounding rasters', () => {
     expect(contactRaster([], affine)).toBeNull();
   });
 
-  it('steps the shadow in flat bands, with no ordered screen at its edge', () => {
+  it('steps the contact in flat bands, with no ordered screen at its edge', () => {
     const raster = contactRaster([piece], affine);
     if (!raster) throw new Error('no raster');
     const { width, height, data } = raster;
