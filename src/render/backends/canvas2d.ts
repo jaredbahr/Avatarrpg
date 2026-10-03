@@ -24,7 +24,7 @@ import {
   actorSilhouetteGeometry,
   actorShadowDensity,
   healthBarCap,
-  staggerHealthBars,
+  HealthBarStagger,
 } from '../geometry/actorSilhouette';
 import type { HealthBarPlacement } from '../geometry/actorSilhouette';
 import { resolveActorEmitters } from '../geometry/actorAttachments';
@@ -110,6 +110,7 @@ export class Canvas2DBackend implements RenderBackend {
   readonly capabilities: BackendCapabilities = { name: 'canvas', shaders: false, particles: false };
 
   private ctx: CanvasRenderingContext2D;
+  private healthBarStagger = new HealthBarStagger();
   private pendingHealthBars: (HealthBarPlacement & {
     readonly unit: RenderUnit;
     readonly actorX: number;
@@ -1858,7 +1859,7 @@ export class Canvas2DBackend implements RenderBackend {
   }
 
   private flushHealthBars(): void {
-    const placements = staggerHealthBars(this.pendingHealthBars);
+    const placements = this.healthBarStagger.place(this.pendingHealthBars);
     for (const candidate of this.pendingHealthBars) {
       const bar = placements.get(candidate.id);
       if (bar) this.drawHealthBar(candidate.unit, bar, candidate.actorX, candidate.hatch);

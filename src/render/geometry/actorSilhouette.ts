@@ -63,36 +63,77 @@ export interface HealthBarPlacement {
   readonly bar: ReturnType<typeof actorHealthBar>;
 }
 
+const STAGGER_MAX_STEPS = 4;
+
+function barsCollide(
+  a: HealthBarPlacement['bar'],
+  b: HealthBarPlacement['bar'],
+  margin: number,
+): boolean {
+  return (
+    a.x < b.x + b.width - margin &&
+    a.x + a.width > b.x + margin &&
+    a.y < b.y + b.height + 1 - margin &&
+    a.y + a.height + 1 > b.y + margin
+  );
+}
+
 /**
  * Stagger only colliding bars, keeping each bar centered over its own actor.
  * The bounded rise is small enough to retain that association while avoiding
  * the old side-by-side pileup. Input order is the renderer's depth order.
+ *
+ * Each bar's rise is a whole number of steps carried from the previous frame.
+ * A measured sprite top changes with every idle/walk pose, so a bar sitting on
+ * the collision boundary would otherwise flip by a step on alternate frames.
+ * With hysteresis a bar rises only once it overlaps by more than one step, and
+ * drops back only once it clears by more than one step.
  */
+export class HealthBarStagger {
+  private levels = new Map<string, number>();
+
+  place<T extends HealthBarPlacement>(bars: readonly T[]): Map<string, T['bar']> {
+    const placed: T['bar'][] = [];
+    const result = new Map<string, T['bar']>();
+    const next = new Map<string, number>();
+    for (const candidate of bars) {
+      const step = Math.max(2, candidate.bar.height * 0.8);
+      const at = (level: number): T['bar'] => ({
+        ...candidate.bar,
+        y: candidate.bar.y - step * level,
+      });
+      const known = this.levels.get(candidate.id);
+      let level = known ?? 0;
+      if (known === undefined) {
+        while (
+          level < STAGGER_MAX_STEPS &&
+          placed.some((other) => barsCollide(at(level), other, 0))
+        )
+          level++;
+      } else {
+        while (level > 0 && !placed.some((other) => barsCollide(at(level - 1), other, -step)))
+          level--;
+        while (
+          level < STAGGER_MAX_STEPS &&
+          placed.some((other) => barsCollide(at(level), other, step))
+        )
+          level++;
+      }
+      const bar = at(level);
+      placed.push(bar);
+      next.set(candidate.id, level);
+      result.set(candidate.id, bar);
+    }
+    this.levels = next;
+    return result;
+  }
+}
+
+/** One-shot placement with no frame memory; renderers keep a `HealthBarStagger`. */
 export function staggerHealthBars<T extends HealthBarPlacement>(
   bars: readonly T[],
 ): Map<string, T['bar']> {
-  const placed: T[] = [];
-  const result = new Map<string, T['bar']>();
-  for (const candidate of bars) {
-    const step = Math.max(2, candidate.bar.height * 0.8);
-    const maxSteps = 4;
-    let bar = candidate.bar;
-    for (let count = 0; count < maxSteps; count++) {
-      const collides = placed.some(
-        ({ bar: other }) =>
-          bar.x < other.x + other.width &&
-          bar.x + bar.width > other.x &&
-          bar.y < other.y + other.height + 1 &&
-          bar.y + bar.height + 1 > other.y,
-      );
-      if (!collides) break;
-      bar = { ...bar, y: bar.y - step };
-    }
-    const resolved = { ...candidate, bar } as T;
-    placed.push(resolved);
-    result.set(candidate.id, bar);
-  }
-  return result;
+  return new HealthBarStagger().place(bars);
 }
 
 export interface ActorBodyBounds {

@@ -70,7 +70,7 @@ import {
   actorSilhouetteGeometry,
   actorShadowDensity,
   healthBarCap,
-  staggerHealthBars,
+  HealthBarStagger,
 } from '../geometry/actorSilhouette';
 import type { HealthBarPlacement } from '../geometry/actorSilhouette';
 import { DECOR_CHUNK, decorChunks } from '../geometry/board';
@@ -415,6 +415,7 @@ export class PixiBackend implements RenderBackend {
   private mapSignature = '';
 
   /** Sprite pools, keyed so a unit keeps its object across frames. */
+  private healthBarStagger = new HealthBarStagger();
   private unitSprites = new Map<string, Sprite>();
   private textureCache = new Map<HTMLCanvasElement | HTMLImageElement, Texture>();
   private frameTextures = new Map<string, Texture>();
@@ -2718,7 +2719,7 @@ export class PixiBackend implements RenderBackend {
       const text = this.badgeText[i];
       if (text) text.visible = false;
     }
-    const placements = staggerHealthBars(pendingHealthBars);
+    const placements = this.healthBarStagger.place(pendingHealthBars);
     for (const candidate of pendingHealthBars) {
       const bar = placements.get(candidate.id);
       if (bar)
