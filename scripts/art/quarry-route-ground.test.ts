@@ -542,6 +542,142 @@ function footprintViolations(
   return problems;
 }
 
+/**
+ * The cell means above cannot see a repaint confined to an ink line or a small
+ * face section: 100 px moved by 70 levels is under 2 of mean abs in a ~4000 px
+ * cell, and fragments under `minPixels` are skipped outright. So every 8 x 8
+ * window of the page that holds a protected pixel (alpha > 0 and not inside a
+ * walkable elevation-0 cell, so raised tops, faces, ink lines and the small
+ * fragments all count; the fill's own cells are not protected) is scored too:
+ * the sum of per-pixel mean abs channel error over the window's protected
+ * pixels, divided by the larger of their count and 16 (so a 2 px ink line, which
+ * fills at most 16 pixels of a window, is not diluted by the empty rest).
+ *
+ * Measured with the packer's plate re-encoded at q34 with `exact=1` and decoded
+ * (the noise a faithful page carries): max window error 19.0 on every page.
+ * The shipped pages measure 18.3 to 22.4, except the Gate's earth-west and
+ * earth-east (below). The bound is 26. A 100 px repaint of an ink line or a face
+ * sliver by 70 levels scores about 70 in its window.
+ *
+ * Known: on the Gate's two earth pages the fill's colour under alpha 0 leaks
+ * across the lossy blocks into 1-2 px ink pixels along the plate's outer edge,
+ * which come out near-white (253,236,224 for 27,20,16). That is a flaw of the
+ * shipped art, not noise, so those windows are pinned by count: it may not grow.
+ */
+const WINDOW_PX = 8;
+const WINDOW_MAX_ERROR = 26;
+const KNOWN_EDGE_BLEED_WINDOWS: Record<string, number> = {
+  'quarry-gate-scene/earth-west': 8116,
+  'quarry-gate-scene/earth-east': 7631,
+};
+
+function windowScan(
+  map: MapDef,
+  page: { image: Image; x: number; y: number },
+  other: Image,
+): { max: number; over: number; at: string } {
+  const { image, x: originX, y: originY } = page;
+  const { width: w, height: h } = image;
+  const floor = (key: string | undefined): boolean => {
+    const tile = key === undefined ? undefined : map.legend[key];
+    return !!tile && !tile.blocked && !(tile.elevation ?? 0) && key !== 'r' && key !== '~';
+  };
+  const stride = w + 1;
+  const err = new Float64Array(stride * (h + 1));
+  const count = new Float64Array(stride * (h + 1));
+  for (let py = 0; py < h; py++)
+    for (let px = 0; px < w; px++) {
+      const i = (py * w + px) * 4;
+      let e = 0,
+        n = 0;
+      if (image.data[i + 3]) {
+        const wx = originX + px + 0.5,
+          wy = originY + py + 0.5;
+        const gx = ((wx - 768) / 64 + wy / 32) / 2,
+          gy = (wy / 32 - (wx - 768) / 64) / 2;
+        if (!floor(map.rows[Math.floor(gy)]?.[Math.floor(gx)])) {
+          n = 1;
+          for (let c = 0; c < 3; c++)
+            e += Math.abs((other.data[i + c] ?? 0) - (image.data[i + c] ?? 0)) / 3;
+        }
+      }
+      const k = (py + 1) * stride + px + 1;
+      err[k] = e + (err[k - 1] ?? 0) + (err[k - stride] ?? 0) - (err[k - stride - 1] ?? 0);
+      count[k] = n + (count[k - 1] ?? 0) + (count[k - stride] ?? 0) - (count[k - stride - 1] ?? 0);
+    }
+  const box = (sum: Float64Array, x: number, y: number): number =>
+    (sum[(y + WINDOW_PX) * stride + x + WINDOW_PX] ?? 0) -
+    (sum[y * stride + x + WINDOW_PX] ?? 0) -
+    (sum[(y + WINDOW_PX) * stride + x] ?? 0) +
+    (sum[y * stride + x] ?? 0);
+  let max = 0,
+    over = 0,
+    at = '';
+  for (let y = 0; y + WINDOW_PX <= h; y++)
+    for (let x = 0; x + WINDOW_PX <= w; x++) {
+      const n = box(count, x, y);
+      if (!n) continue;
+      const score = box(err, x, y) / Math.max(n, 16);
+      if (score > WINDOW_MAX_ERROR) over++;
+      if (score > max) {
+        max = score;
+        at = `${x},${y}`;
+      }
+    }
+  return { max, over, at };
+}
+
+/**
+ * A 1-2 px ink line is too thin for the window bound to be sure of (a diagonal
+ * line leaves ~8 pixels in a window, diluted by the divisor), so ink is checked
+ * on its own: each pixel the packer paints in the ink colour must still come out
+ * dark. A re-encode alone leaves the brightest ink pixel at max channel 97 on
+ * every page (ink is 27), so the bound is 110; the count over it is pinned per
+ * page, 0 except where the Gate's alpha-0 fill leaks (see above).
+ */
+const INK_MAX_CHANNEL = 110;
+const KNOWN_BRIGHT_INK: Record<string, number> = {
+  'quarry-gate-scene/earth-west': 934,
+  'quarry-gate-scene/earth-east': 1373,
+  'quarry-gate-scene/road': 380,
+};
+
+function inkViolations(key: string, page: { image: Image }, shipped: Image): string[] {
+  const { data } = page.image;
+  let bright = 0;
+  for (let i = 0; i < shipped.width * shipped.height; i++) {
+    if (data[i * 4 + 3] !== 255 || data[i * 4] !== 0x1b || data[i * 4 + 1] !== 0x14) continue;
+    if (data[i * 4 + 2] !== 0x10) continue;
+    if (
+      Math.max(
+        shipped.data[i * 4] ?? 0,
+        shipped.data[i * 4 + 1] ?? 0,
+        shipped.data[i * 4 + 2] ?? 0,
+      ) > INK_MAX_CHANNEL
+    )
+      bright++;
+  }
+  const allowed = KNOWN_BRIGHT_INK[key] ?? 0;
+  return bright > allowed
+    ? [`${bright} ink pixels brighter than ${INK_MAX_CHANNEL} (${allowed} allowed)`]
+    : [];
+}
+
+function windowViolations(
+  key: string,
+  map: MapDef,
+  page: { image: Image; x: number; y: number },
+  shipped: Image,
+): string[] {
+  const { max, over, at } = windowScan(map, page, shipped);
+  const allowed = KNOWN_EDGE_BLEED_WINDOWS[key] ?? 0;
+  return over > allowed
+    ? [
+        `${over} windows over ${WINDOW_MAX_ERROR} (${allowed} allowed); worst ${max.toFixed(1)} at ${at}`,
+      ]
+    : [];
+}
+
 it.each([
   ['driller-floor-scene', QUARRY_FLOOR, () => driller, DRILLER_GROUND_REGIONS],
   ['cutting-scene', AMBUSH_ROAD, () => cutting, CUTTING_GROUND_REGIONS],
@@ -553,12 +689,33 @@ it.each([
       const shipped = await decodeWebp(
         new Uint8Array(readFileSync(`public/art/maps/${root}/${region.name}.webp`)),
       );
-      expect(footprintViolations(map, plate(built(), region.name), shipped), region.name).toEqual(
-        [],
-      );
+      const page = plate(built(), region.name);
+      expect(footprintViolations(map, page, shipped), region.name).toEqual([]);
+      expect(
+        windowViolations(`${root}/${region.name}`, map, page, shipped),
+        `${root}/${region.name} windows`,
+      ).toEqual([]);
+      expect(
+        inkViolations(`${root}/${region.name}`, page, shipped),
+        `${root}/${region.name} ink`,
+      ).toEqual([]);
     }
   },
 );
+
+it('holds the window bound above the encoder noise of an unchanged page', async () => {
+  for (const [map, built, regions] of [
+    [QUARRY_FLOOR, driller, DRILLER_GROUND_REGIONS],
+    [AMBUSH_ROAD, cutting, CUTTING_GROUND_REGIONS],
+    [QUARRY_GATE, gate, QUARRY_GATE_GROUND_REGIONS],
+  ] as const)
+    for (const region of regions) {
+      const page = plate(built, region.name);
+      const reencoded = await decodeWebp(await encodeWebp(page.image, QUARRY_GROUND_QUALITY, true));
+      const { max, over } = windowScan(map, page, reencoded);
+      expect(over, `${region.name} re-encode (worst ${max.toFixed(1)})`).toBe(0);
+    }
+});
 
 it('ships the plates the packers build, inside the registered page', async () => {
   for (const [root, built, regions] of [
