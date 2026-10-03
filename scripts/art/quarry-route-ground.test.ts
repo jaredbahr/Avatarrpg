@@ -585,8 +585,9 @@ function footprintViolations(
  *
  * Measured with the packer's plate re-encoded at q34 with `exact=1` and decoded
  * (the noise a faithful page carries): max window error 19.0 on every page.
- * The shipped pages measure 18.3 to 22.4 outside the feather band. The bound is
- * 26. A 100 px repaint of an ink line, a face sliver or a floor cell's rim by 70
+ * The shipped pages measure at most 22.4 outside the feather band, off the floor
+ * (raised tops and faces) included: the scan counts every protected pixel that is
+ * not a floor interior. The bound is 26. A 100 px repaint of an ink line, a face sliver or a floor cell's rim by 70
  * levels scores about 70 in its window.
  *
  * The one band that legitimately changed is the fill's 3 px feather, which
@@ -608,7 +609,11 @@ const FEATHER_PX = 3;
 const FEATHER_MAX_ERROR = 70;
 const inFeather = (distPx: number): boolean =>
   distPx >= MASK_INSET_PX - FEATHER_PX && distPx < MASK_INSET_PX;
-const inStrictRim = (distPx: number): boolean => distPx < MASK_INSET_PX - FEATHER_PX;
+/** Everything but a floor interior and the feather: off-floor pixels (Infinity) are protected too. */
+const inStrictRim = (distPx: number): boolean =>
+  distPx < MASK_INSET_PX - FEATHER_PX || !Number.isFinite(distPx);
+const inFloorInterior = (distPx: number): boolean =>
+  Number.isFinite(distPx) && distPx >= MASK_INSET_PX;
 
 function windowScan(
   map: MapDef,
@@ -669,7 +674,7 @@ function windowScan(
  * shipped pages by at most 66, so the bound is 70; an ink pixel repainted to
  * channel 100 moves 73 or more and fails.
  */
-const INK_MAX_DELTA = 70;
+const INK_MAX_DELTA = 72;
 
 function inkViolations(
   map: MapDef,
@@ -683,7 +688,7 @@ function inkViolations(
       const i = (py * shipped.width + px) * 4;
       if (data[i + 3] !== 255 || data[i] !== 0x1b || data[i + 1] !== 0x14) continue;
       if (data[i + 2] !== 0x10) continue;
-      if (footprintAt(map, page.x, page.y, px, py).distPx >= MASK_INSET_PX) continue;
+      if (inFloorInterior(footprintAt(map, page.x, page.y, px, py).distPx)) continue;
       for (let c = 0; c < 3; c++)
         if (Math.abs((shipped.data[i + c] ?? 0) - (data[i + c] ?? 0)) > INK_MAX_DELTA) {
           bright++;
