@@ -333,6 +333,29 @@ export function saveSettings(settings: Settings): void {
   }
 }
 
+/* ------------------------------------------------------------------ */
+/* Title art                                                           */
+/* ------------------------------------------------------------------ */
+
+const TITLE_ART_KEY = 'fnt.titleArt';
+
+/** The painting the title screen showed last on this device, so the next visit can pick another. */
+export function loadLastTitleArt(): string | null {
+  try {
+    return storage()?.getItem(TITLE_ART_KEY) ?? null;
+  } catch {
+    return null;
+  }
+}
+
+export function saveLastTitleArt(id: string): void {
+  try {
+    storage()?.setItem(TITLE_ART_KEY, id);
+  } catch {
+    // A convenience: a full or blocked store only means the next pick may repeat.
+  }
+}
+
 /** Applies settings to the document root, where the CSS picks them up. */
 export function applySettings(settings: Settings): void {
   const root = document.documentElement;

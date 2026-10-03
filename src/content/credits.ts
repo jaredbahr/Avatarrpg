@@ -165,6 +165,15 @@ export const CREDITS: readonly CreditEntry[] = [
     note: 'Stationary cutscene paintings generated for this project. Prompts and provenance: docs/art/interludes.md. Output terms: https://openai.com/policies/terms-of-use/. No exclusive copyright in generated output is claimed.',
   },
   {
+    what: 'The title screen key art',
+    work: 'Three title paintings: the Forest Road, the Ba Dan market and the bridge to the quarry gate',
+    authors: 'This project, generated with OpenAI image generation',
+    licence: 'own work',
+    source: '',
+    covers: ['art/title'],
+    note: 'Rotating key art generated for this project from the approved portraits. Prompt summary, processing and pinned hashes: docs/art/title-key-art.md. Output terms: https://openai.com/policies/terms-of-use/. No exclusive copyright in generated output is claimed.',
+  },
+  {
     what: 'The character art',
     work: 'Hero and NPC portraits, hero motion sheets, quarry bandit and mercenary combat sheets',
     authors: 'This project, generated with OpenAI image generation',

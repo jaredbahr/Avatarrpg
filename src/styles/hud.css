@@ -476,33 +476,88 @@
 
 .title-scene {
   display: grid;
-  place-items: center;
-  padding: var(--sp-4);
+  align-items: center;
+  justify-items: start;
+  padding: var(--sp-4) clamp(var(--sp-4), 6vw, 6rem);
   overflow-y: auto;
 }
 
-/* Not a panel: the title sits straight on the backdrop, on a soft plate of
-   shadow so the type holds against the wash. */
+/* The key art: full-bleed behind the scene, cover-fitted so the party stays in
+   frame on 16:9, on an iPad's 4:3 and, from each painting's portrait crop, on a
+   phone held upright. Each painting sets its own focal point in --art-focus.
+   It is decoration: the title is live text and the art carries no meaning.
+   Two layers cross-fade while the title sits idle (TitleArtRotator). */
+.title-art {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  background: var(--c-ink);
+}
+
+.title-art-layer {
+  position: absolute;
+  inset: 0;
+  opacity: 0;
+  transition: opacity var(--dur-title-fade) var(--ease-ink);
+}
+
+.title-art-layer[data-active='true'] {
+  opacity: 1;
+}
+
+.title-art-layer picture {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
+.title-art-layer img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: var(--art-focus, 85% 50%);
+}
+
+/* The plate sits on the side the painting leaves quiet, and fades across when
+   the art changes sides rather than sliding. */
+.title-scene[data-side='right'] {
+  justify-items: end;
+}
+
 .title-card {
-  max-width: 34rem;
-  text-align: center;
+  transition: opacity calc(var(--dur-title-fade) / 2) var(--ease-ink);
+}
+
+.title-scene[data-swap='out'] .title-card {
+  opacity: 0;
+  pointer-events: none;
+}
+
+/* A dark parchment plate over the sky and forest on the left, where the
+   painting is quiet. Translucent, but dark enough that paper-coloured type
+   holds 4.5:1 against the brightest sky behind it. */
+.title-card {
+  position: relative;
+  width: min(100%, 25rem);
+  text-align: left;
   display: flex;
   flex-direction: column;
-  align-items: center;
+  align-items: stretch;
   gap: var(--sp-3);
-  padding: var(--sp-5) var(--sp-4);
+  padding: var(--sp-5);
   border-radius: var(--radius-lg);
-  background: radial-gradient(
-    ellipse closest-side at 50% 42%,
-    color-mix(in srgb, var(--c-bg-deep) 75%, transparent),
-    transparent
-  );
+  border: var(--hairline) solid var(--c-gold-soft);
+  background: color-mix(in srgb, var(--c-ink) 82%, transparent);
+  color: var(--c-paper-light);
+  box-shadow: 0 0.5rem 2rem color-mix(in srgb, var(--c-ink) 55%, transparent);
+  backdrop-filter: blur(0.25rem);
 }
 
 .title-mark {
   position: relative;
-  width: 11rem;
-  height: 11rem;
+  width: 4rem;
+  height: 4rem;
   /* The glow is a pseudo-element behind the wheel; isolating keeps its
      negative z-index inside the mark instead of under the backdrop. */
   isolation: isolate;
@@ -528,22 +583,39 @@
 }
 
 .title-card h1 {
-  font-size: var(--fs-3xl);
-  line-height: 1.05;
+  font-size: var(--fs-2xl);
+  line-height: 1.1;
   margin: 0;
-  text-shadow: 0 2px 0 rgb(0 0 0 / 45%);
+  color: var(--c-paper-light);
+  text-wrap: balance;
 }
 
-.tagline {
-  max-width: 26rem;
+.title-card .tagline {
+  max-width: none;
   margin: 0;
+  color: var(--c-air);
+  line-height: 1.4;
 }
 
 .title-actions {
   width: 100%;
-  max-width: 20rem;
   gap: var(--sp-2);
   margin-top: var(--sp-2);
+}
+
+/* Buttons inherit their colour, and the plate's is paper: put their ink back. */
+.title-card button:not(.btn-primary) {
+  color: var(--c-ink);
+}
+
+/* Over the dark plate the page's brown ring has nothing to stand on. */
+.title-card button:focus-visible {
+  outline: 3px solid var(--c-gold-hi);
+  outline-offset: 3px;
+}
+
+.title-card .muted {
+  color: var(--c-air);
 }
 
 .btn-large {
@@ -551,10 +623,76 @@
   font-size: var(--fs-lg);
 }
 
-.legal {
-  max-width: 28rem;
-  opacity: 0.7;
+.title-fineprint {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-1);
+  padding-top: var(--sp-3);
+  border-top: var(--hairline) solid color-mix(in srgb, var(--c-gold-soft) 45%, transparent);
+  text-align: left;
+}
+
+.title-fineprint p {
+  margin: 0;
   font-size: var(--fs-xs);
+  line-height: 1.4;
+  text-align: left;
+}
+
+html[data-contrast='high'] .title-card {
+  background: var(--c-ink);
+  backdrop-filter: none;
+  border-width: 2px;
+}
+
+html[data-contrast='high'] .title-card .muted,
+html[data-contrast='high'] .title-card .tagline {
+  color: var(--c-paper-light);
+}
+
+/* A phone held upright: the portrait crop sits under the plate at the bottom
+   and fades up into the ink, so the party is never behind the buttons. */
+@media (max-aspect-ratio: 9/10) {
+  .title-scene {
+    align-items: start;
+    justify-items: center;
+    padding: var(--sp-4);
+  }
+
+  .title-art-layer img {
+    position: absolute;
+    top: auto;
+    bottom: 0;
+    height: 68%;
+    object-position: var(--art-portrait-focus, 80% 62%);
+    mask-image: linear-gradient(180deg, transparent, var(--c-ink) 22%);
+  }
+
+  /* The plate is the tallest thing on a phone: the mark gives its room to the art. */
+  .title-mark {
+    display: none;
+  }
+
+  .title-card {
+    width: min(100%, 28rem);
+  }
+
+  /* The plate is centred up here, whichever side the painting prefers. */
+  .title-scene[data-side='right'] {
+    justify-items: center;
+  }
+}
+
+/* Short screens (a phone on its side): the plate keeps its size and the scene
+   scrolls, but the mark goes so the buttons come up the screen. */
+@media (max-height: 34rem) {
+  .title-mark {
+    display: none;
+  }
+
+  .title-scene {
+    align-items: start;
+  }
 }
 
 /* ------------------------------------------------------------------ */
