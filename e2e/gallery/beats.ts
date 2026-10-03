@@ -283,11 +283,20 @@ export const BEATS: readonly Beat[] = [
   {
     id: '01-title',
     title: 'Title screen',
-    note: 'The first thing anyone sees: the wheel, the display face, the ink-and-parchment shell.',
+    projects: PORTRAIT_TOO,
+    note: 'The first thing anyone sees: the title screen over one of three rotating key paintings (this still forces one, with the rotation held), with the title and four buttons on a dark parchment plate on the side that painting leaves quiet.',
     async run(ctx) {
-      await resetStorage(ctx.page, ctx.query());
-      await ctx.page.getByRole('button', { name: /new game/i }).waitFor();
-      await ctx.shoot(this.note);
+      for (const id of ['a', 'b', 'c']) {
+        await resetStorage(ctx.page, ctx.query({ titleArt: id, titleArtHold: '0' }));
+        await ctx.page.getByRole('button', { name: /new game/i }).waitFor();
+        await ctx.page.waitForFunction(() => {
+          const art = document.querySelector<HTMLImageElement>(
+            '.title-art-layer[data-active="true"] img',
+          );
+          return !!art && art.complete && art.naturalWidth > 0;
+        });
+        await ctx.shoot(this.note, id);
+      }
     },
   },
   {

@@ -140,6 +140,8 @@
   --dur-base: 200ms;
   --dur-slow: 320ms;
   --dur-drift: 48s;
+  /* The title art's cross-fade: slow on purpose, and read by TitleArtRotator. */
+  --dur-title-fade: 1500ms;
   --ease-out: cubic-bezier(0.2, 0.7, 0.2, 1);
   --ease-ink: cubic-bezier(0.65, 0, 0.35, 1);
 

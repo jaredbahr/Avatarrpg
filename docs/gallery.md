@@ -55,7 +55,7 @@ runner without a GPU sees, and whether the board is still correct there.
 
 | Beat                  | What it is for                                                                     |
 | --------------------- | ---------------------------------------------------------------------------------- |
-| `01-title`            | The shell: the wheel, the display face, ink and parchment                          |
+| `01-title`            | The three rotating key paintings, each with the plate on its quiet side            |
 | `02-village`          | Explore: the village as a place, the party as a line in it, the roster and hotbar  |
 | `02b-village-walk`    | A six-tile village walk, the whole party through its playback                      |
 | `03-dialogue`         | The stage: portrait medallion, name plate, mood tint. Where portraits land         |
