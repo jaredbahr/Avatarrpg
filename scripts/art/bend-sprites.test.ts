@@ -9,7 +9,7 @@ import {
 } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
-import { afterEach, describe, expect, it } from 'vitest';
+import { afterEach, describe, expect, it, vi } from 'vitest';
 import { HEADINGS, headingClip } from '../../src/content/assets/clips';
 import type { Heading } from '../../src/content/assets/clips';
 import { ASSETS } from '../../src/content/assets/manifest';
@@ -38,6 +38,10 @@ import { FRAME_H, FRAME_W } from './g-sprites';
 import type { Image } from './lib/image';
 import { newImage, pixelAt, setPixel, writePng } from './lib/image';
 import { BEND_SHEETS, readBendEffects, validateBends } from './validate';
+
+// Decoding WebP plates is cheap alone and slow on a busy machine; ci:local timed out the
+// 5 s default once. Headroom here, not a raised global timeout.
+vi.setConfig({ testTimeout: 30_000, hookTimeout: 30_000 });
 
 /* ------------------------------------------------------------------ */
 /* A synthetic three-cel bend in eight headings                         */

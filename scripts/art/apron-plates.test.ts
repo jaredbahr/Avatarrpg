@@ -4,7 +4,7 @@
  * matrix promises, and are the exact rectangles the packed art was cut into.
  */
 import { readFileSync } from 'node:fs';
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 import {
   BA_DAN_APRON_BANDS,
   BA_DAN_APRON_DEPTH,
@@ -35,6 +35,10 @@ import { apronPlatePath } from './lib/apron-plates';
 import { crop } from './lib/trim';
 import { encodeWebp } from './lib/webp';
 import type { Image } from './lib/image';
+
+// Decoding WebP plates is cheap alone and slow on a busy machine; ci:local timed out the
+// 5 s default once. Headroom here, not a raised global timeout.
+vi.setConfig({ testTimeout: 30_000, hookTimeout: 30_000 });
 
 /** The device matrix's promise: every iPad takes a 2048-pixel texture. */
 const TEXTURE_CAP = 2048;

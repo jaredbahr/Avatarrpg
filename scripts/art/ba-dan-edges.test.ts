@@ -1,5 +1,5 @@
 import { readFileSync } from 'node:fs';
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 import { BA_DAN_EDGE_WATER, BA_DAN_FORD_STONES } from '../../src/content/scenes/baDan';
 import { BA_DAN_VILLAGE } from '../../src/content/maps/village';
 import { pixelAt } from './lib/image';
@@ -7,6 +7,10 @@ import { decodeWebp } from './lib/webp';
 import { packWater, shippedPath } from './ba-dan-water';
 import { APRON_FADE, apronAlpha, apronDepth } from './ba-dan-exterior-apron';
 import { FILM, packEdgePage, waterMetric } from './ba-dan-edges';
+
+// Decoding WebP plates is cheap alone and slow on a busy machine; ci:local timed out the
+// 5 s default once. Headroom here, not a raised global timeout.
+vi.setConfig({ testTimeout: 30_000, hookTimeout: 30_000 });
 
 const page = packEdgePage();
 const pieces = new Map(BA_DAN_EDGE_WATER.map((piece) => [piece.id, piece]));

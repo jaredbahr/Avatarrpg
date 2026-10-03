@@ -1,5 +1,5 @@
 import { readFileSync } from 'node:fs';
-import { expect, it } from 'vitest';
+import { expect, it, vi } from 'vitest';
 import {
   BA_DAN_CANAL_BANK_RADIUS,
   BA_DAN_CANAL_BANKS,
@@ -9,6 +9,10 @@ import { pixelAt } from './lib/image';
 import { decodeWebp } from './lib/webp';
 import { bedShade, canalInset, canalMetric, canalPosition, kerbShade } from './ba-dan-canal-banks';
 import { packWater, readMaster, shippedPath } from './ba-dan-water';
+
+// Decoding WebP plates is cheap alone and slow on a busy machine; ci:local timed out the
+// 5 s default once. Headroom here, not a raised global timeout.
+vi.setConfig({ testTimeout: 30_000, hookTimeout: 30_000 });
 
 const cells = BA_DAN_CANAL_BANKS;
 

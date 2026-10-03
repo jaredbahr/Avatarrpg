@@ -1,5 +1,5 @@
 import { readFileSync } from 'node:fs';
-import { expect, it } from 'vitest';
+import { expect, it, vi } from 'vitest';
 import { BA_DAN_APRON_BANDS } from '../../src/content/scenes/baDan';
 import { apronPlatePath } from './lib/apron-plates';
 import { pixelAt } from './lib/image';
@@ -16,6 +16,10 @@ import {
   apronPixel,
   packApron,
 } from './ba-dan-exterior-apron';
+
+// Decoding WebP plates is cheap alone and slow on a busy machine; ci:local timed out the
+// 5 s default once. Headroom here, not a raised global timeout.
+vi.setConfig({ testTimeout: 30_000, hookTimeout: 30_000 });
 
 const grassTones = new Set(Object.values(GARDEN_TONES).map((tone) => tone.join(',')));
 

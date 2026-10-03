@@ -1,7 +1,11 @@
 import { createHash } from 'node:crypto';
 import { readFileSync, statSync } from 'node:fs';
-import { expect, it } from 'vitest';
+import { expect, it, vi } from 'vitest';
 import { checkSurround, SURROUND_PAGES, SURROUND_SIZE } from './quarry-surround-pack';
+
+// Decoding WebP plates is cheap alone and slow on a busy machine; ci:local timed out the
+// 5 s default once. Headroom here, not a raised global timeout.
+vi.setConfig({ testTimeout: 30_000, hookTimeout: 30_000 });
 
 /**
  * Generated art, 2026-10-03: the crisp quarry surround. The packer cannot

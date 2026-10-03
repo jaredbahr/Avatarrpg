@@ -1,5 +1,5 @@
 import { readFileSync } from 'node:fs';
-import { expect, it } from 'vitest';
+import { expect, it, vi } from 'vitest';
 import { ASSETS } from '../../src/content/assets/manifest';
 import { parseAtlasJson } from '../../src/render/sheets/atlasJson';
 import { pixelAt, readPng } from './lib/image';
@@ -15,6 +15,10 @@ import {
   drillerSource,
   packDriller,
 } from './driller-2x2';
+
+// Decoding WebP plates is cheap alone and slow on a busy machine; ci:local timed out the
+// 5 s default once. Headroom here, not a raised global timeout.
+vi.setConfig({ testTimeout: 30_000, hookTimeout: 30_000 });
 
 it('keeps every Driller source at the approved 160x160 size', () => {
   expect(readPng('media/art-sources/driller-2x2-v1/base.png')).toMatchObject({

@@ -1,4 +1,4 @@
-import { expect, it } from 'vitest';
+import { expect, it, vi } from 'vitest';
 import { FOREST_CREEK_POOLS } from '../../src/content/scenes/forestRoad';
 import { pixelAt } from './lib/image';
 import { expectPackerAlpha, expectShippedPin, readShipped } from './lib/shipped-pin';
@@ -6,6 +6,10 @@ import { loadForestMaterial } from './forest-village-material';
 import { creekOutput, packCreekPool } from './forest-creek';
 import { apronDepth, forestApronAlpha } from './forest-exterior-apron';
 import { shoreDistance, shorePosition } from './forest-shoreline';
+
+// Decoding WebP plates is cheap alone and slow on a busy machine; ci:local timed out the
+// 5 s default once. Headroom here, not a raised global timeout.
+vi.setConfig({ testTimeout: 30_000, hookTimeout: 30_000 });
 
 const material = await loadForestMaterial();
 const packed = FOREST_CREEK_POOLS.map((pool) => ({ pool, ...packCreekPool(material, pool) }));

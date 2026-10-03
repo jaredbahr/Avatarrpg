@@ -1,6 +1,6 @@
 import { createHash } from 'node:crypto';
 import { readFileSync, statSync } from 'node:fs';
-import { expect, it } from 'vitest';
+import { expect, it, vi } from 'vitest';
 import { AMBUSH_ROAD, QUARRY_FLOOR, QUARRY_GATE } from '../../src/content/maps/combat';
 import {
   CUTTING_GROUND_REGIONS,
@@ -34,6 +34,10 @@ import { buildDrillerGantry, buildDrillerShaft, DRILLER_GANTRY_CELLS } from './d
 import type { Plate } from './driller-shaft';
 import { TERRAIN_STYLES } from '../../src/render/palettes';
 import { luma, measure, readPlate } from './forest-ground-measure';
+
+// Decoding WebP plates is cheap alone and slow on a busy machine; ci:local timed out the
+// 5 s default once. Headroom here, not a raised global timeout.
+vi.setConfig({ testTimeout: 30_000, hookTimeout: 30_000 });
 
 /** DL-2 §3: no 128 px window inside a packed plate may span more than this. */
 const MAX_WINDOW_SPAN = 1.25;

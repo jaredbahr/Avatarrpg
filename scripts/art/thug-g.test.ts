@@ -1,7 +1,7 @@
 import { mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
-import { afterEach, describe, expect, it } from 'vitest';
+import { afterEach, describe, expect, it, vi } from 'vitest';
 import { HEADINGS, headingClip } from '../../src/content/assets/clips';
 import { ASSETS } from '../../src/content/assets/manifest';
 import { checkSources, sha256 } from './g-sprites';
@@ -19,6 +19,10 @@ import {
   thugSourceFiles,
 } from './thug-g';
 import type { ThugPins } from './thug-g';
+
+// Decoding WebP plates is cheap alone and slow on a busy machine; ci:local timed out the
+// 5 s default once. Headroom here, not a raised global timeout.
+vi.setConfig({ testTimeout: 30_000, hookTimeout: 30_000 });
 
 const TEMP: string[] = [];
 afterEach(() => {

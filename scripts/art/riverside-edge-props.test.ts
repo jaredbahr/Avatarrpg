@@ -1,5 +1,5 @@
 import { readFileSync } from 'node:fs';
-import { expect, it } from 'vitest';
+import { expect, it, vi } from 'vitest';
 import { RIVERSIDE } from '../../src/content/maps/riverside';
 import { buildGrid, tileAt } from '../../src/core/rules/grid';
 import { pixelAt, readImage } from './lib/image';
@@ -22,6 +22,10 @@ import {
   stopSprite,
 } from './riverside-edge-props';
 import type { CutoutId, Cutouts } from './riverside-edge-props';
+
+// Decoding WebP plates is cheap alone and slow on a busy machine; ci:local timed out the
+// 5 s default once. Headroom here, not a raised global timeout.
+vi.setConfig({ testTimeout: 30_000, hookTimeout: 30_000 });
 
 const grid = buildGrid(RIVERSIDE);
 const walkable = (x: number, y: number) => tileAt(grid, { x, y })?.blocked === false;

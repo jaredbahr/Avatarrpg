@@ -1,7 +1,7 @@
 import { createRequire } from 'node:module';
 import { readFileSync } from 'node:fs';
 import decode, { init } from '@jsquash/webp/decode.js';
-import { beforeAll, expect, it } from 'vitest';
+import { beforeAll, expect, it, vi } from 'vitest';
 import { ENCOUNTERS } from '../encounters';
 import { BA_DAN_VILLAGE } from '../maps/village';
 import {
@@ -26,6 +26,10 @@ import {
 import { buildGrid, reachable, posKey, tileAt } from '../../core/rules/grid';
 import { CONTENT_BUNDLE } from '../index';
 import { npcStandTiles } from '../schemas';
+
+// Decoding WebP plates is cheap alone and slow on a busy machine; ci:local timed out the
+// 5 s default once. Headroom here, not a raised global timeout.
+vi.setConfig({ testTimeout: 30_000, hookTimeout: 30_000 });
 
 it('carries the village ground outside the rim, painted after every local piece', () => {
   expect(BA_DAN_APRON_MAP).toEqual({ width: BA_DAN_VILLAGE.width, height: BA_DAN_VILLAGE.height });
