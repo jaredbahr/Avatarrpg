@@ -55,7 +55,7 @@ test.describe('title screen', () => {
     const localEntries = Object.fromEntries(
       Object.entries(storage).filter(([key]) => key !== 'fnt.titleArt'),
     );
-    await page.addInitScript((entries) => {
+    await page.evaluate((entries) => {
       sessionStorage.clear();
       for (const [key, value] of Object.entries(entries)) sessionStorage.setItem(key, value);
     }, sessionEntries);
