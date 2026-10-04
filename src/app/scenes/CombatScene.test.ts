@@ -278,3 +278,23 @@ describe('battlefield inspect selection', () => {
     expect(inspectTargetAt([], [], tile, true)).toBeUndefined();
   });
 });
+
+describe('battle opening input hand-off', () => {
+  it('lets any battlefield tap skip the establishing frame before normal input checks', () => {
+    const scene = Object.create(CombatScene.prototype) as {
+      renderer: object;
+      battleOpening: object;
+      battle: () => object;
+      skipBattleOpening: ReturnType<typeof vi.fn>;
+      onTap: (x: number, y: number) => void;
+    };
+    scene.renderer = {};
+    scene.battle = () => ({}) as object;
+    scene.battleOpening = {};
+    scene.skipBattleOpening = vi.fn(() => true);
+
+    scene.onTap(10, 10);
+
+    expect(scene.skipBattleOpening).toHaveBeenCalledOnce();
+  });
+});

@@ -4,6 +4,35 @@ import { enterNode, resetStorage, setLargeText, startGame, takeTurn, waitForIdle
 import { paintedTileCentre } from './projection';
 import type { MapView } from '../src/render/view';
 
+test('a fresh battle establishes the full formation before the acting-unit hand-off', async ({
+  page,
+}) => {
+  test.setTimeout(20_000);
+  await resetStorage(page, '?renderer=canvas');
+  await startGame(page, ['Kaya'], ['kaya'], 'battle-opening-camera', { reduceMotion: false });
+  await enterNode(page, 'battle_forest_road');
+
+  await expect
+    .poll(() => page.locator('.combat-scene').getAttribute('data-battle-opening'))
+    .toBe('hold');
+  const formation = await page.evaluate(() => window.fnt!.app.rendererCamera());
+  await page.waitForTimeout(300);
+  await expect
+    .poll(async () => {
+      const phase = await page.locator('.combat-scene').getAttribute('data-battle-opening');
+      if (phase !== 'hold') return false;
+      const camera = await page.evaluate(() => window.fnt!.app.rendererCamera());
+      return JSON.stringify(camera) === JSON.stringify(formation);
+    })
+    .toBe(true);
+
+  await expect
+    .poll(() => page.locator('.combat-scene').getAttribute('data-battle-opening'))
+    .toBeNull();
+  const actor = await page.evaluate(() => window.fnt!.app.rendererCamera());
+  expect(actor).not.toEqual(formation);
+});
+
 test('camera follows the moving boss and returns to the next actor with motion on', async ({
   page,
 }) => {

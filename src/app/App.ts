@@ -184,6 +184,7 @@ export class App {
   private sceneHost: HTMLElement;
   private overlayHost: HTMLElement;
   private scene: Scene | null = null;
+  private currentSceneIsInterlude = false;
   /** Keep the last live map/battle canvas mounted under story dialogue. */
   private dialogueBackdrop: Scene | null = null;
   /** The state identity of the retained world; scene name alone cannot detect a map change. */
@@ -195,10 +196,27 @@ export class App {
   readonly audio: AudioBus;
   /** Set while a battle is being resolved, so it cannot double-fire. */
   private resolving = false;
+  /** Presentation-only provenance for the next newly mounted combat scene. */
+  private freshCombatEntry = false;
   private resizeQueued = false;
   private routeTimer: number | null = null;
   private bendFx: BendFxIndex | undefined;
   private bendFxLoading = false;
+
+  /**
+   * Consumed by CombatScene at mount. This is intentionally ephemeral: a
+   * loaded mid-battle state and a retained scene returning from dialogue must
+   * never replay the fresh-battle establishing view.
+   */
+  consumeFreshCombatEntry(): boolean {
+    const fresh = this.freshCombatEntry;
+    this.freshCombatEntry = false;
+    return fresh;
+  }
+
+  get curtainBusy(): boolean {
+    return this.curtain.busy;
+  }
 
   /**
    * Combat warms the painted bend effects at its start: the data, then every
@@ -330,6 +348,11 @@ export class App {
 
   showScene(scene: Scene, replaceRetained = false): void {
     this.cancelRoute();
+    const previousInterlude = this.currentSceneIsInterlude;
+    const nextInterlude =
+      scene.name === 'dialogue' && Boolean(INTERLUDES[this.state?.story.nodeId ?? '']);
+    this.currentSceneIsInterlude = nextInterlude;
+    const curtain = this.scene === null ? null : this.curtain;
     // This is the sole ownership decision. It runs even when routing keeps the
     // same DialogueScene, because advancing a story node can enter or leave an
     // interlude without changing the screen or scene name.
@@ -341,8 +364,10 @@ export class App {
       scene === this.scene &&
       ((wantedBackdrop === null && this.dialogueBackdrop === null) || ownsWantedBackdrop)
     ) {
+      if (previousInterlude !== nextInterlude) curtain?.coverCurrent();
       this.setMood(this.defaultMood());
       scene.sync();
+      if (previousInterlude !== nextInterlude) curtain?.reveal(scene.firstFrameSheetKeys?.() ?? []);
       return;
     }
     const replaceDialogue =
@@ -354,6 +379,7 @@ export class App {
       ownsWantedBackdrop &&
       this.dialogueHost !== null;
     if (replaceDialogue && this.dialogueHost) {
+      curtain?.coverCurrent();
       this.scene?.unmount();
       clear(this.dialogueHost);
       this.scene = scene;
@@ -361,7 +387,7 @@ export class App {
       this.setMood(this.defaultMood());
       scene.mount(this.dialogueHost);
       scene.sync();
-      this.curtain.reveal(scene.firstFrameSheetKeys?.() ?? []);
+      curtain?.reveal(scene.firstFrameSheetKeys?.() ?? []);
       return;
     }
     const returningOwner: DialogueBackdropOwner | null =
@@ -376,6 +402,7 @@ export class App {
       sameDialogueBackdropOwner(this.dialogueBackdropOwner, returningOwner) &&
       scene.name !== 'dialogue';
     if (restoreBackdrop && this.dialogueBackdrop) {
+      curtain?.coverCurrent();
       this.scene?.unmount();
       this.dialogueHost?.remove();
       this.dialogueHost = null;
@@ -393,7 +420,7 @@ export class App {
       this.setMood(this.defaultMood());
       restored.resume?.();
       restored.sync();
-      this.curtain.reveal(restored.firstFrameSheetKeys?.() ?? []);
+      curtain?.reveal(restored.firstFrameSheetKeys?.() ?? []);
       return;
     }
     const keepWorld =
@@ -420,6 +447,7 @@ export class App {
       this.dialogueHost = el('div', { class: 'dialogue-layer' });
       this.sceneHost.appendChild(this.dialogueHost);
     } else {
+      curtain?.coverCurrent();
       this.scene?.unmount();
       if (this.dialogueBackdrop) {
         this.dialogueBackdrop.unmount();
@@ -454,7 +482,7 @@ export class App {
     scene.mount(this.dialogueHost ?? this.sceneHost);
     scene.sync();
     // After the swap, never instead of it: see Curtain.
-    this.curtain.reveal(scene.firstFrameSheetKeys?.() ?? []);
+    if (!keepWorld) curtain?.reveal(scene.firstFrameSheetKeys?.() ?? []);
   }
 
   /** Tints the backdrop. Scenes call it when they know better than the map does. */
@@ -563,6 +591,7 @@ export class App {
   newGame(players: readonly Player[], slots: readonly PartySlot[], seed?: string): void {
     if (this.previewActive) this.endVillagePreview();
     this.cancelRoute();
+    this.freshCombatEntry = false;
     const state = createGame(this.content, {
       seed: seed ?? `${Date.now()}-${players.map((p) => p.name).join('-')}`,
       party: slots,
@@ -586,6 +615,7 @@ export class App {
   adoptSave(state: GameState, session: SessionMeta | undefined): void {
     if (this.previewActive) this.endVillagePreview();
     this.cancelRoute();
+    this.freshCombatEntry = false;
     // A save can predate a discipline gate the kits have since gained; this
     // hands back any pick the party is owed rather than swallowing it.
     // ADR 0047 §5: also clears a stale conversation pin and steps the
@@ -619,6 +649,7 @@ export class App {
     const unitsBefore = state.battle?.units ?? [];
     const result = apply(this.content, state, command);
     this.state = result.state;
+    if (result.events.some((event) => event.type === 'battleStarted')) this.freshCombatEntry = true;
 
     const now = performance.now();
     if (result.events.length > 0) {
