@@ -25,7 +25,6 @@ import type { PartySlot } from '../core/state/createGame';
 import { backdrops } from '../render/backdrops';
 import { sheets } from '../render/sheets/store';
 import { Animator } from './animator';
-import { waitForBendLoad } from './anim/bendLoad';
 import { Session } from './session';
 import type { Player } from './session';
 import type { Settings, SlotId } from './storage/localSaves';
@@ -160,7 +159,7 @@ export class App {
   private resizeQueued = false;
   private routeTimer: number | null = null;
   private bendFx: BendFxIndex | undefined;
-  private bendFxLoading: Promise<void> | null = null;
+  private bendFxLoading = false;
 
   /**
    * Combat warms the painted bend effects at its start: the data, then every
@@ -169,25 +168,13 @@ export class App {
    */
   preloadBendFx(): void {
     if (this.bendFx || this.bendFxLoading) return;
-    this.bendFxLoading = loadBendFx(BEND_FX, import.meta.env.BASE_URL)
+    this.bendFxLoading = true;
+    void loadBendFx(BEND_FX, import.meta.env.BASE_URL)
       .then(async (fx) => {
         const pages = await Promise.all(fx.images.map((url) => bendFxPages.whenLoaded(url)));
         if (pages.every(Boolean)) this.bendFx = fx;
       })
       .catch(() => undefined);
-  }
-
-  /** Waits only for an already-requested first bend; reduced motion never calls this. */
-  async waitForBend(sprite: string): Promise<boolean> {
-    sheets.preloadBend(sprite);
-    this.preloadBendFx();
-    return waitForBendLoad(
-      false,
-      () => Boolean(this.bendFx && sheets.bendState(sprite) === 'loaded'),
-      () => sheets.bendState(sprite) === 'failed',
-      () => performance.now(),
-      () => new Promise<void>((resolve) => window.setTimeout(resolve, 16)),
-    );
   }
 
   private cancelRoute(): void {
