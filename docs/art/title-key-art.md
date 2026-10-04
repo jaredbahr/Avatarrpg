@@ -98,9 +98,9 @@ text. The title is live text from `src/app/gameTitle.ts`, never part of the
 image.
 
 - **Per visit.** Each visit to the title picks a painting at random, never the
-  one shown last. The last one is remembered per device under the
-  `fnt.titleArt` key in localStorage, read and written inside try/catch (a
-  blocked or full store only means the next pick may repeat).
+  one shown last. The last one is remembered for the browser tab's session under
+  the `fnt.titleArt` key in sessionStorage, read and written inside try/catch (a
+  blocked store falls back to memory and simply permits a repeat on a new visit).
 - **Idle rotation.** While the title sits idle it cross-fades to a different
   painting every 12 seconds; the fade is `--dur-title-fade` (1.5 s). When the
   next painting sits on the other side, the plate fades out as the cross-fade
