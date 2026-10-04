@@ -25,6 +25,9 @@ const BENDER_LABEL: Record<ElementId, string> = {
   nonbender: 'Someone who does not bend',
 };
 
+/** Large enough to remain crisp when the world-conversation frame expands it. */
+const COMPACT_PORTRAIT_REM = 9;
+
 export interface ResolvedConversation {
   readonly speaker: string;
   readonly portrait: string;
@@ -101,13 +104,16 @@ function compactHeader(
           text: lineIndex + 1 + ' of ' + speaker.lines.length,
         })
       : null;
+  const portrait = assetCanvas(speaker.portrait, COMPACT_PORTRAIT_REM);
+  portrait.style.width = '100%';
+  portrait.style.height = '100%';
   return el(
     'div',
     { class: 'conversation-compact-head' },
     el(
       'div',
       { class: 'conversation-compact-portrait element-' + mood, attrs: { 'aria-hidden': 'true' } },
-      assetCanvas(speaker.portrait, 4),
+      portrait,
     ),
     el(
       'div',

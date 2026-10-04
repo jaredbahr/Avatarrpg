@@ -150,6 +150,9 @@ export class App {
   private sceneHost: HTMLElement;
   private overlayHost: HTMLElement;
   private scene: Scene | null = null;
+  /** Keep the last live map/battle canvas mounted under story dialogue. */
+  private dialogueBackdrop: Scene | null = null;
+  private dialogueHost: HTMLElement | null = null;
   private pause: PauseMenu | null = null;
   private levelUp: LevelUpDialog | DisciplineDialog | null = null;
   /** Sound. Opens no context until a gesture unlocks it (ADR 0012). */
@@ -287,12 +290,35 @@ export class App {
 
   showScene(scene: Scene): void {
     this.cancelRoute();
-    this.scene?.unmount();
-    clear(this.sceneHost);
+    const keepWorld =
+      scene.name === 'dialogue' &&
+      !this.dialogueBackdrop &&
+      (this.scene?.name === 'explore' || this.scene?.name === 'combat');
+
+    if (keepWorld && this.scene) {
+      this.dialogueBackdrop = this.scene;
+      this.sceneHost.classList.add('has-dialogue-backdrop');
+      const background = this.sceneHost.firstElementChild;
+      if (background instanceof HTMLElement) {
+        background.inert = true;
+        background.setAttribute('aria-hidden', 'true');
+      }
+      this.dialogueHost = el('div', { class: 'dialogue-layer' });
+      this.sceneHost.appendChild(this.dialogueHost);
+    } else {
+      this.scene?.unmount();
+      if (this.dialogueBackdrop) {
+        this.dialogueBackdrop.unmount();
+        this.dialogueBackdrop = null;
+      }
+      this.dialogueHost = null;
+      this.sceneHost.classList.remove('has-dialogue-backdrop');
+      clear(this.sceneHost);
+    }
     this.scene = scene;
     this.host.dataset.scene = scene.name;
     this.setMood(this.defaultMood());
-    scene.mount(this.sceneHost);
+    scene.mount(this.dialogueHost ?? this.sceneHost);
     scene.sync();
     // After the swap, never instead of it: see Curtain.
     this.curtain.reveal(scene.firstFrameSheetKeys?.() ?? []);

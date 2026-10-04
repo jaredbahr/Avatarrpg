@@ -13,6 +13,16 @@
   inset: 0;
 }
 
+.scene-host.has-dialogue-backdrop > .scene:not(.dialogue-scene) {
+  pointer-events: none;
+}
+
+.dialogue-layer {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+}
+
 .overlay-host {
   pointer-events: none;
   z-index: var(--z-overlay-host);
@@ -848,6 +858,7 @@ html[data-contrast='high'] .title-card .tagline {
 .dialogue-scene {
   display: flex;
   flex-direction: column;
+  background: color-mix(in srgb, var(--c-ink) 42%, transparent);
 }
 
 /*
@@ -859,28 +870,35 @@ html[data-contrast='high'] .title-card .tagline {
 .stage {
   flex: 1 1 auto;
   min-height: 0;
-  display: flex;
-  flex-direction: column;
-  justify-content: flex-end;
-  align-items: center;
-  padding: var(--sp-4) var(--sp-4) calc(var(--sp-5) + env(safe-area-inset-bottom, 0px));
+  display: grid;
+  grid-template-columns: minmax(11rem, 16rem) minmax(0, 1fr);
+  align-items: end;
+  gap: clamp(var(--sp-3), 3vw, var(--sp-5));
+  padding: var(--sp-4) clamp(var(--sp-3), 4vw, var(--sp-6))
+    calc(var(--sp-5) + env(safe-area-inset-bottom, 0px));
 }
 
 .stage-head {
   flex: 0 0 auto;
   position: relative;
   z-index: 1;
-  width: min(56rem, 100%);
+  width: 100%;
   display: flex;
-  align-items: flex-end;
-  gap: var(--sp-3);
-  padding: 0 var(--sp-3);
-  margin-bottom: calc(-1 * var(--sp-3));
+  flex-direction: column;
+  align-items: flex-start;
+  gap: var(--sp-2);
+  padding: 0;
+  margin: 0;
 }
 
 .stage-portrait {
   position: relative;
   flex: 0 0 auto;
+  padding: 0.35rem;
+  border-radius: var(--radius-lg);
+  background: color-mix(in srgb, var(--c-panel-raised) 94%, transparent);
+  border: var(--hairline) solid var(--c-ink-line);
+  box-shadow: var(--inset-edge), var(--shadow-2);
 }
 
 /* The element class brings an accent bar; the medallion draws its own ring. */
@@ -903,9 +921,11 @@ html[data-contrast='high'] .title-card .tagline {
 
 .stage-portrait .painter {
   position: relative;
+  display: block;
+  border-radius: var(--radius);
   box-shadow:
-    0 0 0 2px var(--c-ink-line),
-    0 0 0 4px color-mix(in srgb, var(--el) 70%, transparent),
+    0 0 0 1px var(--c-ink-line),
+    0 0 0 3px color-mix(in srgb, var(--el) 70%, transparent),
     var(--shadow-2);
 }
 
@@ -930,7 +950,8 @@ html[data-contrast='high'] .title-card .tagline {
 
 /* Takes whatever height the head leaves, and only then scrolls inside. */
 .dialogue-panel {
-  width: min(56rem, 100%);
+  width: 100%;
+  max-height: min(66vh, 34rem);
   margin: 0;
   flex: 0 1 auto;
   min-height: 0;
@@ -940,6 +961,10 @@ html[data-contrast='high'] .title-card .tagline {
   gap: var(--sp-3);
   padding: var(--sp-5) var(--sp-5) var(--sp-4);
   cursor: pointer;
+  background-color: color-mix(in srgb, var(--c-panel-raised) 91%, transparent);
+  background-image: var(--tex-grain);
+  background-size: var(--tex-grain-size);
+  border-color: color-mix(in srgb, var(--c-gold-deep) 78%, var(--c-ink-line));
 }
 
 .dialogue-line {
@@ -1115,6 +1140,14 @@ html[data-contrast='high'] .map-wrap {
   pointer-events: none;
 }
 
+.explore-conversation::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: color-mix(in srgb, var(--c-ink) 48%, transparent);
+  backdrop-filter: blur(0.08rem);
+}
+
 .explore-conversation[hidden] {
   display: none;
 }
@@ -1137,19 +1170,31 @@ html[data-contrast='high'] .map-wrap {
 }
 
 .explore-conversation .conversation-panel {
+  position: relative;
+  display: grid;
+  grid-template-columns: var(--conversation-portrait) minmax(0, 1fr);
+  grid-auto-flow: row;
+  column-gap: var(--sp-4);
   width: min(var(--conversation-panel-max), 100%);
-  max-height: min(62%, 25rem);
+  max-height: min(68%, 28rem);
   overflow-y: auto;
   cursor: pointer;
-  gap: var(--sp-2);
-  padding: var(--sp-3) var(--sp-4);
-  background-color: color-mix(in srgb, var(--c-panel-raised) 95%, transparent);
-  backdrop-filter: blur(0.2rem);
+  row-gap: var(--sp-2);
+  padding: var(--sp-4);
+  background-color: color-mix(in srgb, var(--c-panel-raised) 90%, transparent);
+  background-image: var(--tex-grain);
+  background-size: var(--tex-grain-size);
+  border-color: color-mix(in srgb, var(--c-gold-deep) 78%, var(--c-ink-line));
+  backdrop-filter: blur(0.14rem);
 }
 
 .conversation-compact-head {
+  grid-column: 1;
+  grid-row: 1 / span 4;
   display: flex;
+  flex-direction: column;
   align-items: center;
+  align-self: end;
   gap: var(--sp-3);
 }
 
@@ -1158,6 +1203,11 @@ html[data-contrast='high'] .map-wrap {
   flex: 0 0 var(--conversation-portrait);
   width: var(--conversation-portrait);
   height: var(--conversation-portrait);
+  padding: var(--sp-1);
+  border: var(--hairline) solid var(--c-ink-line);
+  border-radius: var(--radius-lg);
+  background: color-mix(in srgb, var(--c-panel-raised) 94%, transparent);
+  box-shadow: var(--inset-edge), var(--shadow-2);
 }
 
 .conversation-compact-portrait::before {
@@ -1176,7 +1226,7 @@ html[data-contrast='high'] .map-wrap {
   position: relative;
   width: var(--conversation-portrait);
   height: var(--conversation-portrait);
-  border-radius: 50%;
+  border-radius: var(--radius);
   box-shadow:
     0 0 0 1px var(--c-ink-line),
     0 0 0 2px color-mix(in srgb, var(--el) 60%, transparent);
@@ -1187,6 +1237,8 @@ html[data-contrast='high'] .map-wrap {
   display: flex;
   flex-direction: column;
   gap: var(--sp-1);
+  width: 100%;
+  text-align: center;
 }
 
 .conversation-compact-speaker strong {
@@ -1197,16 +1249,22 @@ html[data-contrast='high'] .map-wrap {
 }
 
 .explore-conversation .conversation-panel .dialogue-line {
+  grid-column: 2;
   font-size: var(--fs-md);
   line-height: 1.45;
 }
 
 .explore-conversation .conversation-panel .conversation-controls {
+  grid-column: 2;
   margin-top: var(--sp-1);
 }
 
 .explore-conversation .choice-panel {
   cursor: default;
+}
+
+.explore-conversation .choice-panel > :not(.conversation-compact-head) {
+  grid-column: 2;
 }
 
 .explore-conversation .choice-options {
@@ -1219,8 +1277,43 @@ html[data-contrast='high'] .map-wrap {
   }
 
   .explore-conversation .conversation-panel {
-    max-height: 58%;
+    --conversation-portrait: 6rem;
+    max-height: 64%;
   }
+}
+
+@media (max-width: 42rem), (max-height: 34rem) {
+  .explore-conversation .conversation-panel {
+    --conversation-portrait: 5rem;
+    grid-template-columns: minmax(0, 1fr);
+    max-height: 72%;
+    padding: var(--sp-3);
+  }
+
+  .conversation-compact-head {
+    grid-column: 1;
+    grid-row: auto;
+    width: 100%;
+    flex-direction: row;
+    align-self: auto;
+    text-align: left;
+  }
+
+  .conversation-compact-speaker {
+    flex: 1 1 auto;
+    width: auto;
+    text-align: left;
+  }
+
+  .explore-conversation .conversation-panel .dialogue-line,
+  .explore-conversation .conversation-panel .conversation-controls,
+  .explore-conversation .choice-panel > :not(.conversation-compact-head) {
+    grid-column: 1;
+  }
+}
+
+html[data-contrast='high'] .explore-conversation::before {
+  backdrop-filter: none;
 }
 
 .combat-overlays {
@@ -2296,13 +2389,24 @@ html[data-contrast='high'] .hud-panel::after {
   }
 }
 
-/* Keep the speaker visible beside their name when the full stage portrait
-   would crowd out dialogue. The text panel retains its own scroll area. */
-@media (max-width: 52rem), (max-height: 34rem) {
+/* Narrow and upright layouts put the portrait above the dock. */
+@media (max-width: 55rem), (max-height: 34rem) {
+  .stage {
+    grid-template-columns: minmax(0, 1fr);
+    grid-template-rows: auto minmax(0, 1fr);
+    align-items: end;
+    gap: var(--sp-2);
+  }
+
   .stage-head {
+    flex-direction: row;
     align-items: center;
     padding: 0;
-    margin-bottom: var(--sp-3);
+    gap: var(--sp-3);
+  }
+
+  .stage-portrait {
+    padding: 0.2rem;
   }
 
   .stage-portrait .painter {
@@ -2320,6 +2424,11 @@ html[data-contrast='high'] .hud-panel::after {
 
   .stage-head .name-plate h2 {
     font-size: var(--fs-lg);
+  }
+
+  .dialogue-panel {
+    max-height: min(58vh, 34rem);
+    padding: var(--sp-3) var(--sp-4);
   }
 }
 

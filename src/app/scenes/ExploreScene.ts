@@ -890,7 +890,7 @@ export class ExploreScene implements Scene {
   }
 
   private onKeyDown = (event: KeyboardEvent): void => {
-    if (this.conversationMode) return;
+    if (this.conversationMode || this.app.state?.screen !== 'explore') return;
     if (event.key === 'Escape' && !document.querySelector('[role="dialog"]')) this.clearNextWalk();
   };
 

@@ -57,6 +57,14 @@ export class DialogueScene implements Scene {
     this.host = host;
     document.addEventListener('visibilitychange', this.onVisibility);
     this.render();
+    if (host.classList.contains('dialogue-layer')) {
+      const target =
+        host.querySelector<HTMLElement>('[data-conversation-control="next"]') ??
+        host.querySelector<HTMLElement>('.choice-option:not([disabled])') ??
+        host.querySelector<HTMLElement>('[data-interlude-control="next"]') ??
+        host.querySelector<HTMLElement>('.end-panel button');
+      target?.focus({ preventScroll: true });
+    }
   }
 
   unmount(): void {
