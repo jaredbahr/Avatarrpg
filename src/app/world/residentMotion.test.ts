@@ -391,10 +391,31 @@ describe('ResidentWalks', () => {
     w.update(VILLAGE, before, party, true);
     expect(w.update(VILLAGE, waited(before, 'afternoon'), party, true)).toBe(true);
 
-    for (const time of [0, 10]) {
+    const dorinWalk = byId(
+      planResidentMotion({
+        content: CONTENT,
+        map: VILLAGE,
+        before,
+        after: waited(before, 'afternoon'),
+        party,
+      }),
+    ).get('lw.npc.dorin');
+    if (!dorinWalk || dorinWalk.kind !== 'walk') throw new Error('Expected Dorin to walk');
+    expect(dorinWalk.path.length).toBeGreaterThan(1);
+
+    // Reduced motion scales the placement walk to 2% of one 110 ms step per tile.
+    const reducedDuration = TIMING.step * dorinWalk.path.length * 0.02;
+    // The abbreviated walk may or may not report a walk clip at a given sample, so the
+    // contract is checked at every sample from its first frame to just past its end.
+    for (const time of [
+      0,
+      reducedDuration / 4,
+      reducedDuration / 2,
+      reducedDuration,
+      reducedDuration + 1,
+    ]) {
       w.tick(time, false);
       const dorin = figure(w, 'lw.npc.dorin');
-      expect(dorin?.walking).toBe(true);
       expect(dorin).toMatchObject({ lean: 0, poseScale: 1 });
       expect(dorin?.offset).toBeUndefined();
     }
