@@ -2,6 +2,7 @@ import { afterEach, describe, expect, it, vi } from 'vitest';
 import { CombatScene } from './CombatScene';
 import { ExploreScene } from './ExploreScene';
 import { App, type Scene } from '../App';
+import type { GameState, StoryNode } from '../../core/types';
 
 interface LifecycleHarness {
   frame: number;
@@ -165,12 +166,50 @@ function appHarness(initial: ReturnType<typeof fakeScene>) {
   return { app, sceneHost };
 }
 
+function routeState(nodeId: string, screen: GameState['screen'] = 'dialogue'): GameState {
+  return {
+    screen,
+    story: { nodeId },
+    location: { mapId: 'forest_road' },
+    battle: null,
+  } as unknown as GameState;
+}
+
+function setRoute(app: App, node: StoryNode, screen: GameState['screen'] = 'dialogue'): void {
+  Object.assign(app as unknown as Record<string, unknown>, {
+    state: routeState(node.id, screen),
+    content: {
+      maps: new Map([['forest_road', {}]]),
+      story: new Map([[node.id, node]]),
+    },
+  });
+}
+
+const ordinaryDialogue = {
+  id: 'ordinary_dialogue',
+  kind: 'dialogue',
+  speaker: 'Guide',
+  portrait: 'portrait.guide',
+  lines: ['Keep walking.'],
+  next: 'forest_explore',
+} as StoryNode;
+
+const roadInterlude = {
+  id: 'road_depart',
+  kind: 'dialogue',
+  speaker: 'Narrator',
+  portrait: 'portrait.guide',
+  lines: ['The road opens ahead.'],
+  next: 'forest_explore',
+} as StoryNode;
+
 describe('dialogue layer ownership', () => {
   it('replaces dialogue in one layer while retaining one refreshed world scene', () => {
     const world = fakeScene('explore');
     const first = fakeScene('dialogue');
     const second = fakeScene('dialogue');
     const { app, sceneHost } = appHarness(world);
+    setRoute(app, ordinaryDialogue);
 
     app.showScene(first as unknown as Scene);
     app.showScene(second as unknown as Scene);
@@ -188,6 +227,7 @@ describe('dialogue layer ownership', () => {
     const world = fakeScene(kind);
     const dialogue = fakeScene('dialogue');
     const { app, sceneHost } = appHarness(world);
+    setRoute(app, ordinaryDialogue);
 
     app.showScene(dialogue as unknown as Scene);
     app.showScene(world as unknown as Scene);
@@ -211,5 +251,57 @@ describe('dialogue layer ownership', () => {
     expect(world.unmount).toHaveBeenCalledOnce();
     expect(sceneHost.children).toEqual([loaded.stage]);
     expect(sceneHost.children.some((child) => child.className === 'dialogue-layer')).toBe(false);
+  });
+
+  it('does not retain or dim the world when exploration enters an interlude', () => {
+    const world = fakeScene('explore');
+    const interlude = fakeScene('dialogue');
+    const { app, sceneHost } = appHarness(world);
+    setRoute(app, roadInterlude);
+
+    app.showScene(interlude as unknown as Scene);
+
+    expect(world.unmount).toHaveBeenCalledOnce();
+    expect(world.suspend).not.toHaveBeenCalled();
+    expect(sceneHost.classList.contains('has-dialogue-backdrop')).toBe(false);
+    expect(sceneHost.children).toEqual([interlude.stage]);
+  });
+
+  it('releases a retained world when dialogue advances into an interlude', () => {
+    const world = fakeScene('explore');
+    const dialogue = fakeScene('dialogue');
+    const interlude = fakeScene('dialogue');
+    const { app, sceneHost } = appHarness(world);
+    setRoute(app, ordinaryDialogue);
+    app.showScene(dialogue as unknown as Scene);
+
+    setRoute(app, roadInterlude);
+    app.showScene(interlude as unknown as Scene);
+
+    expect(world.suspend).toHaveBeenCalledOnce();
+    expect(world.unmount).toHaveBeenCalledOnce();
+    expect(dialogue.unmount).toHaveBeenCalledOnce();
+    expect(sceneHost.classList.contains('has-dialogue-backdrop')).toBe(false);
+    expect(sceneHost.children).toEqual([interlude.stage]);
+  });
+
+  it('mounts and starts one world loop when an interlude advances to exploration', () => {
+    const interlude = fakeScene('dialogue');
+    const world = fakeScene('explore');
+    const loop = vi.fn();
+    world.mount.mockImplementation((host: FakeElement) => {
+      loop();
+      return host.appendChild(world.stage);
+    });
+    const { app, sceneHost } = appHarness(interlude);
+    setRoute(app, roadInterlude);
+
+    app.showScene(world as unknown as Scene);
+
+    expect(interlude.unmount).toHaveBeenCalledOnce();
+    expect(world.mount).toHaveBeenCalledOnce();
+    expect(world.resume).not.toHaveBeenCalled();
+    expect(loop).toHaveBeenCalledOnce();
+    expect(sceneHost.children).toEqual([world.stage]);
   });
 });

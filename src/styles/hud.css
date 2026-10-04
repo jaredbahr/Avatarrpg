@@ -1145,7 +1145,6 @@ html[data-contrast='high'] .map-wrap {
   position: absolute;
   inset: 0;
   background: color-mix(in srgb, var(--c-ink) 48%, transparent);
-  backdrop-filter: blur(0.08rem);
 }
 
 .explore-conversation[hidden] {

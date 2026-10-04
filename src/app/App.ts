@@ -309,10 +309,13 @@ export class App {
 
   showScene(scene: Scene, replaceRetained = false): void {
     this.cancelRoute();
+    const wantedBackdrop =
+      scene.name === 'dialogue' ? dialogueBackdropKind(this.content, this.state) : null;
     const replaceDialogue =
       !replaceRetained &&
       this.scene?.name === 'dialogue' &&
       scene.name === 'dialogue' &&
+      wantedBackdrop !== null &&
       this.dialogueBackdrop !== null &&
       this.dialogueHost !== null;
     if (replaceDialogue && this.dialogueHost) {
@@ -352,6 +355,7 @@ export class App {
     }
     const keepWorld =
       scene.name === 'dialogue' &&
+      wantedBackdrop !== null &&
       !this.dialogueBackdrop &&
       (this.scene?.name === 'explore' || this.scene?.name === 'combat');
 
@@ -380,10 +384,11 @@ export class App {
       this.dialogueHost = null;
       this.sceneHost.classList.remove('has-dialogue-backdrop');
       clear(this.sceneHost);
-      const kind =
-        scene.name === 'dialogue' ? dialogueBackdropKind(this.content, this.state) : null;
-      if (kind) {
-        const backdrop = kind === 'combat' ? new CombatScene(this) : new ExploreScene(this);
+      // A dialogue reached from an interlude owns the full stage unless the
+      // current state still identifies a real map that can be reconstructed.
+      if (wantedBackdrop) {
+        const backdrop =
+          wantedBackdrop === 'combat' ? new CombatScene(this) : new ExploreScene(this);
         this.dialogueBackdrop = backdrop;
         this.sceneHost.classList.add('has-dialogue-backdrop');
         backdrop.mount(this.sceneHost);
