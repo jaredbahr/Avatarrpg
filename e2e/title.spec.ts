@@ -49,10 +49,20 @@ test.describe('title screen', () => {
   async function boot(page: Page, query: string, storage: Record<string, string> = {}) {
     // A static file on the same origin: storage can be set without loading the app first.
     await page.goto('/robots.txt');
+    const sessionEntries = Object.fromEntries(
+      Object.entries(storage).filter(([key]) => key === 'fnt.titleArt'),
+    );
+    const localEntries = Object.fromEntries(
+      Object.entries(storage).filter(([key]) => key !== 'fnt.titleArt'),
+    );
+    await page.addInitScript((entries) => {
+      sessionStorage.clear();
+      for (const [key, value] of Object.entries(entries)) sessionStorage.setItem(key, value);
+    }, sessionEntries);
     await page.evaluate((entries) => {
       localStorage.clear();
       for (const [key, value] of Object.entries(entries)) localStorage.setItem(key, value);
-    }, storage);
+    }, localEntries);
     await page.goto(`/${query}`);
     await expect.poll(() => page.evaluate(() => Boolean(window.fnt?.app))).toBe(true);
   }
@@ -79,7 +89,7 @@ test.describe('title screen', () => {
     }
   });
 
-  test('each visit picks a painting other than the one remembered for the device', async ({
+  test('each visit picks a painting other than the one remembered for the tab', async ({
     page,
   }) => {
     for (const previous of ['a', 'b', 'c']) {
@@ -87,13 +97,13 @@ test.describe('title screen', () => {
       const now = await shown(page);
       expect(['a', 'b', 'c']).toContain(now);
       expect(now).not.toBe(previous);
-      expect(await page.evaluate(() => localStorage.getItem('fnt.titleArt'))).toBe(now);
+      expect(await page.evaluate(() => sessionStorage.getItem('fnt.titleArt'))).toBe(now);
     }
   });
 
   test('still shows a painting when storage throws', async ({ page }) => {
     await page.addInitScript(() => {
-      Object.defineProperty(window, 'localStorage', {
+      Object.defineProperty(window, 'sessionStorage', {
         get() {
           throw new Error('blocked');
         },
@@ -136,7 +146,7 @@ test.describe('title screen', () => {
       'true',
     );
     await expect(page.locator('.title-art-layer[data-active="true"]')).toHaveCount(1);
-    expect(await page.evaluate(() => localStorage.getItem('fnt.titleArt'))).toBe(next);
+    expect(await page.evaluate(() => sessionStorage.getItem('fnt.titleArt'))).toBe(next);
     // The plate has followed the painting to its side by the end of the fade.
     await page.clock.runFor(1600);
     await expect(page.locator('.title-scene')).toHaveAttribute(

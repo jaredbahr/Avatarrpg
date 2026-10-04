@@ -338,19 +338,21 @@ export function saveSettings(settings: Settings): void {
 /* ------------------------------------------------------------------ */
 
 const TITLE_ART_KEY = 'fnt.titleArt';
+let lastTitleArt: string | null = null;
 
-/** The painting the title screen showed last on this device, so the next visit can pick another. */
+/** The painting the title screen showed last in this browser tab's session. */
 export function loadLastTitleArt(): string | null {
   try {
-    return storage()?.getItem(TITLE_ART_KEY) ?? null;
+    return window.sessionStorage?.getItem(TITLE_ART_KEY) ?? lastTitleArt;
   } catch {
-    return null;
+    return lastTitleArt;
   }
 }
 
 export function saveLastTitleArt(id: string): void {
+  lastTitleArt = id;
   try {
-    storage()?.setItem(TITLE_ART_KEY, id);
+    window.sessionStorage?.setItem(TITLE_ART_KEY, id);
   } catch {
     // A convenience: a full or blocked store only means the next pick may repeat.
   }
