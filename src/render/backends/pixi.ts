@@ -679,7 +679,7 @@ export class PixiBackend implements RenderBackend {
     this.lifted = camera.projection === 'oblique';
     this.marginGfx.clear();
     const marginTone = view.scene?.marginTone;
-    if (marginTone) {
+    if (marginTone && !view.crispOverlays) {
       this.marginGfx
         .rect(0, 0, camera.viewport.width, camera.viewport.height)
         .fill({ color: MAP_MARGIN_COLORS[marginTone] });

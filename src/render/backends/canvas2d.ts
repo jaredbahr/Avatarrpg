@@ -187,7 +187,7 @@ export class Canvas2DBackend implements RenderBackend {
     ctx.imageSmoothingEnabled = true;
     ctx.clearRect(0, 0, camera.viewport.width, camera.viewport.height);
     const marginTone = view.scene?.marginTone;
-    if (marginTone) {
+    if (marginTone && !view.crispOverlays) {
       ctx.fillStyle = MAP_MARGIN_COLORS[marginTone];
       ctx.fillRect(0, 0, camera.viewport.width, camera.viewport.height);
     }
