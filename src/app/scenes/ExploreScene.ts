@@ -1050,8 +1050,8 @@ export class ExploreScene implements Scene {
         alpha: who.alpha,
         clipTime: who.clipTime,
         walking: who.walking,
+        poseScale: who.poseScale,
         lean: who.lean,
-        squash: who.squash,
         quiet: !who.npcId || !who.pos,
       })),
       ...activeTriggers(map, state).flatMap((trigger) => {
