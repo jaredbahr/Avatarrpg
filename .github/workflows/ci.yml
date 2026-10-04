@@ -1,8 +1,9 @@
 # CI cost rule (Jared, 2026-09-21) — read before editing the triggers below.
 #
-# One full run of this workflow fans out to about 13 ubuntu jobs (verify, four
-# Playwright e2e shards, seven gallery shards), bills roughly 250 runner-minutes
-# (about $2), and it ran 172 times on 2026-09-18. Billed Actions went from $0 a
+# One full run of this workflow fans out to about 14 ubuntu jobs (verify, five
+# Playwright e2e shards, seven gallery shards), bills roughly 255 runner-minutes
+# (about $2; the second WebKit shard added on 2026-10-04 repeats about five
+# minutes of checkout, install and build), and it ran 172 times on 2026-09-18. Billed Actions went from $0 a
 # day to $67 a day. That cannot be sustained, so:
 #
 #   - `pull_request` runs ONLY the `verify` job (typecheck, lint, format, unit
