@@ -1,8 +1,9 @@
 # CI cost rule (Jared, 2026-09-21) — read before editing the triggers below.
 #
-# One full run of this workflow fans out to about 13 ubuntu jobs (verify, four
-# Playwright e2e shards, seven gallery shards), bills roughly 250 runner-minutes
-# (about $2), and it ran 172 times on 2026-09-18. Billed Actions went from $0 a
+# One full run of this workflow fans out to about 14 ubuntu jobs (verify, five
+# Playwright e2e shards, seven gallery shards), bills roughly 255 runner-minutes
+# (about $2; the second WebKit shard added on 2026-10-04 repeats about five
+# minutes of checkout, install and build), and it ran 172 times on 2026-09-18. Billed Actions went from $0 a
 # day to $67 a day. That cannot be sustained, so:
 #
 #   - `pull_request` runs ONLY the `verify` job (typecheck, lint, format, unit
@@ -137,12 +138,19 @@ jobs:
             browser: chromium
             artifact: chromium-3
             projects: --project=surface-touch --shard=3/3
-          - label: WebKit iPad
+          # The WebKit suite (266 cases, one worker) took 50.5 minutes on run
+          # 37145320243 and was cancelled at the 60-minute limit on run
+          # 37177952609 with about 230 cases done, so two shards keep each
+          # runner well inside the limit while covering each case exactly once.
+          - label: WebKit iPad 1/2
             browser: webkit
-            artifact: webkit
-            projects: --project=ipad-landscape --project=ipad-portrait
-    # Each runner executes one shard, or the complete WebKit coverage, on a
-    # machine of its own.
+            artifact: webkit-1
+            projects: --project=ipad-landscape --project=ipad-portrait --shard=1/2
+          - label: WebKit iPad 2/2
+            browser: webkit
+            artifact: webkit-2
+            projects: --project=ipad-landscape --project=ipad-portrait --shard=2/2
+    # Each runner executes one shard on a machine of its own.
     timeout-minutes: 60
     steps:
       - uses: actions/checkout@v4
