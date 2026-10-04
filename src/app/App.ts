@@ -10,6 +10,7 @@
  */
 
 import type {
+  BattleState,
   Command,
   ContentIndex,
   ElementId,
@@ -115,9 +116,18 @@ export interface Scene {
   onEvents?(events: readonly GameEvent[], now: number): boolean | void;
 }
 
-export interface DialogueBackdropOwner {
-  readonly kind: 'explore' | 'combat';
-  readonly mapId: string;
+export type DialogueBackdropOwner =
+  | { readonly kind: 'explore'; readonly mapId: string }
+  | { readonly kind: 'combat'; readonly battle: BattleState };
+
+function sameDialogueBackdropOwner(
+  left: DialogueBackdropOwner | null,
+  right: DialogueBackdropOwner | null,
+): boolean {
+  if (!left || !right || left.kind !== right.kind) return false;
+  return left.kind === 'combat'
+    ? left.battle === (right as Extract<DialogueBackdropOwner, { kind: 'combat' }>).battle
+    : left.mapId === (right as Extract<DialogueBackdropOwner, { kind: 'explore' }>).mapId;
 }
 
 /** The live world, if any, that can safely sit behind a loaded staged conversation. */
@@ -128,9 +138,7 @@ export function dialogueBackdropOwner(
   if (!state || (state.screen !== 'dialogue' && state.screen !== 'ended')) return null;
   const node = state.story.nodeId ? content.story.get(state.story.nodeId) : undefined;
   if (!node || INTERLUDES[node.id]) return null;
-  if (state.battle && content.maps.has(state.battle.mapId)) {
-    return { kind: 'combat', mapId: state.battle.mapId };
-  }
+  if (state.battle) return { kind: 'combat', battle: state.battle };
   return state.location.mapId && content.maps.has(state.location.mapId)
     ? { kind: 'explore', mapId: state.location.mapId }
     : null;
@@ -328,10 +336,7 @@ export class App {
     const wantedBackdrop =
       scene.name === 'dialogue' ? dialogueBackdropOwner(this.content, this.state) : null;
     const retainedOwner = this.dialogueBackdropOwner;
-    const ownsWantedBackdrop =
-      wantedBackdrop !== null &&
-      retainedOwner?.kind === wantedBackdrop.kind &&
-      retainedOwner.mapId === wantedBackdrop.mapId;
+    const ownsWantedBackdrop = sameDialogueBackdropOwner(retainedOwner, wantedBackdrop);
     if (
       scene === this.scene &&
       ((wantedBackdrop === null && this.dialogueBackdrop === null) || ownsWantedBackdrop)
@@ -359,11 +364,16 @@ export class App {
       this.curtain.reveal(scene.firstFrameSheetKeys?.() ?? []);
       return;
     }
+    const returningOwner: DialogueBackdropOwner | null =
+      scene.name === 'combat' && this.state?.battle
+        ? { kind: 'combat', battle: this.state.battle }
+        : scene.name === 'explore' && this.state?.location.mapId
+          ? { kind: 'explore', mapId: this.state.location.mapId }
+          : null;
     const restoreBackdrop =
       this.scene?.name === 'dialogue' &&
       this.dialogueBackdrop?.name === scene.name &&
-      this.dialogueBackdropOwner?.mapId ===
-        (scene.name === 'combat' ? this.state?.battle?.mapId : this.state?.location.mapId) &&
+      sameDialogueBackdropOwner(this.dialogueBackdropOwner, returningOwner) &&
       scene.name !== 'dialogue';
     if (restoreBackdrop && this.dialogueBackdrop) {
       this.scene?.unmount();

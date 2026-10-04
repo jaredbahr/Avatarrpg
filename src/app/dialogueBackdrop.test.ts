@@ -22,12 +22,11 @@ describe('loaded dialogue backdrop', () => {
 
   it('rebuilds a retained battle when the save still owns one', () => {
     const state = dialogueState('mira_intro', 'ba_dan_village');
-    expect(
-      dialogueBackdropOwner(CONTENT, {
-        ...state,
-        battle: { mapId: 'forest_road' } as GameState['battle'],
-      }),
-    ).toEqual({ kind: 'combat', mapId: 'forest_road' });
+    const battle = { mapId: 'forest_road' } as GameState['battle'];
+    const owner = dialogueBackdropOwner(CONTENT, { ...state, battle });
+    // A suspended fight belongs to the exact battle, not to its map.
+    expect(owner).toEqual({ kind: 'combat', battle });
+    expect(owner && 'battle' in owner ? owner.battle : null).toBe(battle);
   });
 
   it('uses the parchment stage for interludes and worldless story nodes', () => {

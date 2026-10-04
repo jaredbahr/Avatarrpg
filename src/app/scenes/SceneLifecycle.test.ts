@@ -2,7 +2,7 @@ import { afterEach, describe, expect, it, vi } from 'vitest';
 import { CombatScene } from './CombatScene';
 import { ExploreScene } from './ExploreScene';
 import { App, type Scene } from '../App';
-import type { GameState, StoryNode } from '../../core/types';
+import type { BattleState, GameState, StoryNode } from '../../core/types';
 import { CONTENT } from '../../content';
 import { createGame } from '../../core/state/createGame';
 import { apply } from '../../core/state/reducer';
@@ -179,9 +179,14 @@ function routeState(nodeId: string, screen: GameState['screen'] = 'dialogue'): G
   } as unknown as GameState;
 }
 
-function setRoute(app: App, node: StoryNode, screen: GameState['screen'] = 'dialogue'): void {
+function setRoute(
+  app: App,
+  node: StoryNode,
+  screen: GameState['screen'] = 'dialogue',
+  battle: BattleState | null = null,
+): void {
   Object.assign(app as unknown as Record<string, unknown>, {
-    state: routeState(node.id, screen),
+    state: { ...routeState(node.id, screen), battle },
     content: {
       maps: new Map([['forest_road', {}]]),
       story: new Map([[node.id, node]]),
@@ -361,12 +366,35 @@ describe('dialogue layer ownership', () => {
     const world = fakeScene(kind);
     const dialogue = fakeScene('dialogue');
     const { app, sceneHost } = appHarness(world);
-    setRoute(app, ordinaryDialogue);
+    const battle = kind === 'combat' ? ({ encounterId: 'enc_forest_road' } as BattleState) : null;
+    setRoute(app, ordinaryDialogue, 'dialogue', battle);
 
     app.showScene(dialogue as unknown as Scene);
+    setRoute(app, ordinaryDialogue, kind as GameState['screen'], battle);
     app.showScene(world as unknown as Scene);
 
     expect(dialogue.unmount).toHaveBeenCalledOnce();
+    expect(world.resume).toHaveBeenCalledOnce();
+    expect(world.unmount).not.toHaveBeenCalled();
+    expect(sceneHost.children).toEqual([world.stage]);
+  });
+
+  it('keeps one combat owner across consecutive conversations and resumes it once', () => {
+    const world = fakeScene('combat');
+    const first = fakeScene('dialogue');
+    const second = fakeScene('dialogue');
+    const { app, sceneHost } = appHarness(world);
+    const battle = { encounterId: 'enc_forest_road' } as BattleState;
+    setRoute(app, ordinaryDialogue, 'dialogue', battle);
+
+    app.showScene(first as unknown as Scene);
+    setRoute(app, afterInterlude, 'dialogue', battle);
+    app.showScene(second as unknown as Scene);
+    setRoute(app, afterInterlude, 'combat', battle);
+    app.showScene(world as unknown as Scene);
+
+    expect(first.unmount).toHaveBeenCalledOnce();
+    expect(second.unmount).toHaveBeenCalledOnce();
     expect(world.resume).toHaveBeenCalledOnce();
     expect(world.unmount).not.toHaveBeenCalled();
     expect(sceneHost.children).toEqual([world.stage]);
