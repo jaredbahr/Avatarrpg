@@ -147,8 +147,8 @@ export const SURFACE_STYLES: Record<SurfaceId, SurfaceStyle> = {
     label: 'Fire',
   },
   mud: {
-    fill: '#5a4326',
-    alpha: 0.34,
+    fill: '#4a3620',
+    alpha: 0.62,
     edge: '#987647',
     detail: '#453321',
     hatch: 'dots',
@@ -162,10 +162,17 @@ export const SURFACE_STYLES: Record<SurfaceId, SurfaceStyle> = {
     hatch: 'cross',
     label: 'Steam',
   },
+  /*
+   * Oil and mud are heavy: a pool is dark and the pale paving under it must not
+   * show through. The wash is scaled by the coat (SURFACE_RIM.coat: 0.42 at an
+   * open edge, 0.78 inside), so these alphas land near 0.3 at the bank and 0.5
+   * within. At 0.42 the oil read as grey glass over limestone, a see-through
+   * raised square.
+   */
   oil: {
-    fill: '#2c3532',
-    alpha: 0.42,
-    edge: '#8a9a8e',
+    fill: '#2a2218',
+    alpha: 0.64,
+    edge: '#6b604d',
     detail: '#151a18',
     hatch: 'diagonal',
     label: 'Oil',
