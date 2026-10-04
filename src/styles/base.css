@@ -83,6 +83,7 @@
   --surface-sunken: rgb(0 0 0 / 8%);
   --scrim: rgb(35 24 14 / 55%);
   --scrim-strong: rgb(35 24 14 / 78%);
+  --scrim-setup: rgb(35 24 14 / 68%);
 
   /* The two hairlines drawn inside every panel edge: a gilt line and a lit
      paper edge. Together with the ink outline they are what makes a panel
@@ -146,6 +147,7 @@
   --ease-ink: cubic-bezier(0.65, 0, 0.35, 1);
 
   /* Stacking, bottom to top. */
+  --z-panel-footer: 1;
   --z-banner: 20;
   /* Under the dialog overlay: a toast never covers an open sheet. */
   --z-toast: 30;
@@ -167,6 +169,7 @@
   --shadow-2: 0 0.5rem 1.5rem rgb(40 25 10 / 25%);
   --shadow-3: 0 1.25rem 3rem rgb(40 25 10 / 30%);
   --shadow-panel: var(--shadow-2);
+  --shadow-title-plate: 0 0.5rem 2rem color-mix(in srgb, var(--c-ink) 55%, transparent);
 
   /* Paper grain: a 160px tile of fractal noise at up to 5% brown ink, laid
      over every panel. An SVG data URI because a bitmap tile is rasterised once
