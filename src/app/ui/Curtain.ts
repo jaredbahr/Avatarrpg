@@ -1,20 +1,26 @@
 /**
- * The scene curtain: a reveal from ink on every scene change.
+ * The scene curtain: an ink cover followed by a reveal.
  *
  * `App.showScene` swaps scenes synchronously and everything downstream relies
  * on that: the level-up flow that opens a dialog in the same dispatch, the
  * e2e helpers that read `state.screen` right after a tap, the map camera
  * measured from the canvas the moment it mounts. So the curtain never delays
- * the swap. It drops opaque over the *new* scene in the same frame and lifts
- * over --dur-slow; the old scene is simply gone.
+ * the swap: ink is put above the old DOM synchronously, then lifts from the
+ * newly mounted scene over --dur-slow.
  *
- * It lives in the overlay host above dialogs and toasts, and takes no
- * pointer events, so a tap during the lift lands on the scene underneath
- * exactly as it would without it. Under reduce motion it does nothing.
+ * It lives in the overlay host above dialogs and toasts and takes no pointer
+ * events. Under reduce motion it does nothing.
  */
 
 import { el, motionReduced } from './dom';
 import { sheets, type SheetLoadState } from '../../render/sheets/store';
+
+export type CurtainSceneKind = 'title' | 'setup' | 'interlude' | 'dialogue' | 'explore' | 'combat';
+
+/** Retained-world conversations do not call this: they have no curtain. */
+export function curtainToneFor(from: CurtainSceneKind | null, to: CurtainSceneKind | null) {
+  return from && to ? 'ink' : 'none';
+}
 
 /**
  * A transition that never ends would leave the curtain down: a tab in the
@@ -48,20 +54,37 @@ export class Curtain {
   constructor(host: HTMLElement) {
     this.node = el('div', { class: 'curtain', attrs: { 'aria-hidden': 'true' } });
     host.appendChild(this.node);
-    this.node.addEventListener('transitionend', () => this.settle());
+    this.node.addEventListener('transitionend', () => this.cancel());
+  }
+
+  /** Cover synchronously, before App changes any painted scene nodes. */
+  coverCurrent(): void {
+    this.cancel();
+    if (!motionReduced()) this.node.classList.add('is-down');
   }
 
   /** Covers the scene and lifts. Call after the new scene has rendered. */
   reveal(firstFrameSheetKeys: readonly string[] = []): void {
-    this.settle();
-    if (motionReduced()) return;
+    this.cancelTimers();
+    if (motionReduced()) {
+      this.node.classList.remove('is-down', 'is-lifting');
+      return;
+    }
 
     const generation = ++this.revealGeneration;
     const node = this.node;
-    node.classList.add('is-down');
     // Commit the covered frame before starting the lift, or the browser
     // coalesces both class changes and nothing fades.
     void node.offsetWidth;
+    this.lift(firstFrameSheetKeys, generation);
+  }
+
+  get busy(): boolean {
+    return this.node.classList.contains('is-down');
+  }
+
+  private lift(firstFrameSheetKeys: readonly string[], generation: number): void {
+    const node = this.node;
     const keys = [...new Set(firstFrameSheetKeys)];
     const states = new Map<string, SheetLoadState>(
       keys.map((key): [string, SheetLoadState] => [key, sheets.loadState(key)]),
@@ -76,7 +99,7 @@ export class Curtain {
       // The bound may still be pending when the sheets arrive early.
       if (this.timer !== null) window.clearTimeout(this.timer);
       node.classList.add('is-lifting');
-      this.timer = window.setTimeout(() => this.settle(), FALLBACK_MS);
+      this.timer = window.setTimeout(() => this.cancel(), FALLBACK_MS);
     };
     if (curtainSheetDecision(states, 0) === 'lift') {
       lift();
@@ -92,11 +115,16 @@ export class Curtain {
     this.timer = window.setTimeout(lift, FIRST_FRAME_SHEET_WAIT_MS);
   }
 
-  private settle(): void {
+  private cancelTimers(): void {
     if (this.timer !== null) {
       window.clearTimeout(this.timer);
       this.timer = null;
     }
+    this.revealGeneration += 1;
+  }
+
+  private cancel(): void {
+    this.cancelTimers();
     this.node.classList.remove('is-down', 'is-lifting');
   }
 }

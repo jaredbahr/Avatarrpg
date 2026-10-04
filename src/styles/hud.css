@@ -46,7 +46,7 @@
 .overlay-host > .curtain {
   position: absolute;
   inset: 0;
-  background: var(--c-bg-deep);
+  background: var(--c-ink);
   opacity: 0;
   z-index: var(--z-curtain);
   pointer-events: none;

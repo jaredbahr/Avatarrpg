@@ -89,10 +89,29 @@ import {
   type CombatCameraFollowState,
 } from './combatCameraFollow';
 
+const COMBAT_OPENING_HOLD_MS = 700;
+const COMBAT_OPENING_FOCUS_MS = 320;
+
+type CameraFrame = readonly [scale: number, offsetX: number, offsetY: number];
+
 type Mode =
   | { readonly kind: 'idle' }
   | { readonly kind: 'move' }
   | { readonly kind: 'aim'; readonly abilityId: string };
+
+type BattleOpeningState =
+  | {
+      readonly kind: 'hold';
+      readonly startedAt: number | null;
+      readonly frame: CameraFrame;
+      readonly focus: CameraFrame;
+    }
+  | {
+      readonly kind: 'focus';
+      readonly startedAt: number;
+      readonly frame: CameraFrame;
+      readonly focus: CameraFrame;
+    };
 
 /** Inputs which decide which movement/target tiles the overlay memo contains. */
 export function overlayMemoInputKey(mode: Mode, pending: Vec2 | null, unitId: string): string {
@@ -202,6 +221,10 @@ export class CombatScene implements Scene {
   private lastActiveId: string | null = null;
   private recentreButton: HTMLButtonElement | null = null;
   private actorButton: HTMLButtonElement | null = null;
+  /** Set by App only for a newly-created battle; saves never carry this. */
+  private freshBattleEntry = false;
+  /** One presentation-only formation frame before the first hand-off. */
+  private battleOpening: BattleOpeningState | null = null;
   /** True after a user zoom/pan; HUD reflows must preserve that manual framing. */
   private manualCamera = false;
   /**
@@ -271,6 +294,8 @@ export class CombatScene implements Scene {
   mount(host: HTMLElement): void {
     this.suspended = false;
     this.host = host;
+    this.freshBattleEntry = this.app.consumeFreshCombatEntry?.() ?? false;
+    this.battleOpening = null;
     this.layoutMeasuredAfterSync = false;
     this.flushedAt = null;
     clear(host);
@@ -287,8 +312,8 @@ export class CombatScene implements Scene {
     host.appendChild(scene);
 
     this.setupRenderer();
-    this.loop();
     this.sync();
+    this.loop();
   }
 
   unmount(): void {
@@ -296,6 +321,8 @@ export class CombatScene implements Scene {
     if (this.frame) cancelAnimationFrame(this.frame);
     this.frame = 0;
     this.suspended = false;
+    this.battleOpening = null;
+    this.freshBattleEntry = false;
     this.recentreButton = null;
     this.actorButton = null;
     this.moreDismiss?.();
@@ -316,6 +343,10 @@ export class CombatScene implements Scene {
 
   suspend(): void {
     if (this.suspended) return;
+    // A retained combat scene may be covered by a conversation before its
+    // opening hold completes. Resolve it now so returning to that same scene
+    // never replays a fresh-battle introduction.
+    if (this.battleOpening) this.skipBattleOpening();
     if (this.frame) cancelAnimationFrame(this.frame);
     this.frame = 0;
     this.paintingStill = true;
@@ -385,6 +416,15 @@ export class CombatScene implements Scene {
   private refit(): void {
     const camera = this.renderer?.camera;
     if (!camera) return;
+    if (this.battleOpening) {
+      // A HUD reflow during the hold must not snap the formation back to the
+      // actor. Keep the opening's frame intact and let the normal clamp absorb
+      // the small viewport change; the first settled frame was measured after
+      // the hand-off dock existed.
+      camera.clamp();
+      this.syncRecentre();
+      return;
+    }
     if (!this.manualCamera) this.recentre();
     else {
       camera.scale = Math.max(camera.scale, camera.fitScale());
@@ -500,6 +540,7 @@ export class CombatScene implements Scene {
   private zoomBy(factor: number, at: { x: number; y: number }): void {
     const camera = this.renderer?.camera;
     if (!camera) return;
+    if (this.battleOpening) this.skipBattleOpening();
     const before = camera.scale;
     camera.zoomAt(at, factor);
     if (camera.scale !== before) {
@@ -512,6 +553,7 @@ export class CombatScene implements Scene {
   private pan(dx: number, dy: number): void {
     const camera = this.renderer?.camera;
     if (!camera) return;
+    if (this.battleOpening) this.skipBattleOpening();
     const before = { x: camera.offsetX, y: camera.offsetY };
     camera.panBy(dx, dy);
     if (camera.offsetX !== before.x || camera.offsetY !== before.y) {
@@ -522,6 +564,7 @@ export class CombatScene implements Scene {
 
   /** Camera navigation never selects a target or spends an action. */
   private focusUnit(id: string): void {
+    if (this.battleOpening) this.skipBattleOpening();
     const unit = this.battle()?.units.find(
       (candidate) => candidate.id === id && isAlive(candidate),
     );
@@ -793,6 +836,7 @@ export class CombatScene implements Scene {
     const renderer = this.renderer;
     const battle = this.battle();
     if (!renderer || !battle) return;
+    if (this.skipBattleOpening()) return;
     if (this.app.animator.busy(performance.now())) return;
     if (!this.isPlayerTurn()) return;
     if (this.needsHandoff()) return;
@@ -820,6 +864,7 @@ export class CombatScene implements Scene {
     const renderer = this.renderer;
     const battle = this.battle();
     if (!renderer || !battle) return;
+    if (this.skipBattleOpening()) return;
     const resolved = this.resolvePointer(x, y, 'inspect');
     if (!resolved) return;
     const target = resolved.unit
@@ -851,6 +896,96 @@ export class CombatScene implements Scene {
   /* Turn flow                                                         */
   /* ---------------------------------------------------------------- */
 
+  private openingFrame(camera: Renderer['camera']): CameraFrame {
+    return [camera.scale, camera.offsetX, camera.offsetY];
+  }
+
+  private setBattleOpeningMarker(phase: BattleOpeningState['kind'] | null): void {
+    const scene = this.host!.querySelector<HTMLElement>('.combat-scene')!;
+    if (phase) scene.dataset.battleOpening = phase;
+    else delete scene.dataset.battleOpening;
+  }
+
+  /**
+   * Start the one-shot formation frame after the first settled HUD measurement.
+   * The marker comes from App's ephemeral battle-entry event; a loaded state
+   * never claims it, and a retained scene does not mount again on conversation
+   * return.
+   */
+  private maybeStartBattleOpening(): void {
+    if (!this.freshBattleEntry || this.battleOpening) return;
+    this.freshBattleEntry = false;
+    const camera = this.renderer!.camera;
+    // A board already wholly in view has nothing to establish.
+    if (motionReduced() || camera.fitted) return;
+
+    // `centreOn` is the same focus path used by turn changes and the Acting
+    // unit button. Capture its result as the eased destination, then restore
+    // the formation frame for the hold.
+    const active = this.active()!;
+    camera.centreOn(active.pos, active.size);
+    const focus = this.openingFrame(camera);
+    camera.scale = Math.max(0.35, Math.min(camera.scale, camera.fitScale(32)));
+    camera.centre();
+    this.cameraFollow = { kind: 'idle' };
+    this.battleOpening = {
+      kind: 'hold',
+      startedAt: null,
+      frame: this.openingFrame(camera),
+      focus,
+    };
+    this.setBattleOpeningMarker('hold');
+  }
+
+  private skipBattleOpening(): boolean {
+    if (!this.battleOpening) return false;
+    this.battleOpening = null;
+    this.setBattleOpeningMarker(null);
+    this.cameraFollow = { kind: 'idle' };
+    this.followSuspended = false;
+    this.centreOnActiveUnit(this.active());
+    this.renderHud();
+    this.maybeRunAi();
+    return true;
+  }
+
+  private updateBattleOpening(now: number): void {
+    const opening = this.battleOpening;
+    const camera = this.renderer?.camera;
+    if (!opening || !camera) return;
+    if (opening.kind === 'hold') {
+      if (opening.startedAt === null) {
+        if (this.app.curtainBusy) return;
+        this.battleOpening = { ...opening, startedAt: now };
+        return;
+      }
+      if (now - opening.startedAt < COMBAT_OPENING_HOLD_MS) return;
+      this.battleOpening = {
+        kind: 'focus',
+        startedAt: now,
+        frame: this.openingFrame(camera),
+        focus: opening.focus,
+      };
+      this.setBattleOpeningMarker('focus');
+      return;
+    }
+
+    const fraction = (now - opening.startedAt) / COMBAT_OPENING_FOCUS_MS;
+    const t = Math.max(0, Math.min(1, fraction));
+    const eased = t * t * (3 - 2 * t);
+    camera.scale = opening.frame[0] + (opening.focus[0] - opening.frame[0]) * eased;
+    camera.offsetX = opening.frame[1] + (opening.focus[1] - opening.frame[1]) * eased;
+    camera.offsetY = opening.frame[2] + (opening.focus[2] - opening.frame[2]) * eased;
+    camera.clamp();
+    if (fraction >= 1) {
+      this.battleOpening = null;
+      this.setBattleOpeningMarker(null);
+      this.followSuspended = false;
+      this.renderHud();
+      this.maybeRunAi();
+    }
+  }
+
   private needsHandoff(): boolean {
     const unit = this.active();
     if (!unit || unit.faction !== 'party') return false;
@@ -876,6 +1011,7 @@ export class CombatScene implements Scene {
     const activeId = unit?.id ?? null;
 
     if (activeId !== this.lastActiveId) {
+      if (this.battleOpening) this.skipBattleOpening();
       this.lastActiveId = activeId;
       this.mode = { kind: 'idle' };
       this.clearPending();
@@ -909,12 +1045,19 @@ export class CombatScene implements Scene {
     this.renderTopBar();
     this.renderTurnStrip();
     this.renderHud();
-    this.maybeRunAi();
     // The first ResizeObserver delivery can happen before this sync fills the
     // turn strip and decision dock. Measure after those panels exist so a
     // short tablet chooses its compact readable frame; later identical syncs
     // leave the backend alone.
     this.resizeAfterHud();
+    this.maybeStartBattleOpening();
+    // Do not let the first hand-off card cover the establishing view. This
+    // rerender happens in the same sync, before the first RAF can paint it.
+    if (this.battleOpening) this.renderHud();
+    // A fresh opening owns the first enemy turn too; later turns use the
+    // unchanged scheduling path below. This keeps the first formation frame
+    // visible instead of letting a 260 ms AI timer cut it short.
+    this.maybeRunAi();
   }
 
   /**
@@ -926,6 +1069,7 @@ export class CombatScene implements Scene {
     const battle = this.battle();
     const unit = this.active();
     if (!battle || battle.phase !== 'active' || !unit) return;
+    if (this.suspended || this.battleOpening) return;
     if (unit.faction === 'party' || this.aiScheduled) return;
 
     this.aiScheduled = true;
@@ -1205,6 +1349,8 @@ export class CombatScene implements Scene {
       overlays.appendChild(this.resultPanel(battle));
       return;
     }
+
+    if (this.battleOpening) return;
 
     if (this.needsHandoff()) {
       overlays.appendChild(this.handoffBanner());
@@ -1959,6 +2105,7 @@ export class CombatScene implements Scene {
     const now = performance.now();
     this.app.stats?.frame(now);
     this.app.animator.prune(now);
+    this.updateBattleOpening(now);
     this.keepAnimatedLargeActorInView(now, battle);
 
     const unit = this.active();
@@ -2141,6 +2288,7 @@ export class CombatScene implements Scene {
   private keepAnimatedLargeActorInView(now: number, battle: BattleState): void {
     const renderer = this.renderer;
     if (!renderer) return;
+    if (this.battleOpening) return;
     const camera = renderer.camera;
     const projection = camera.projection;
 

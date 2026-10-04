@@ -352,8 +352,9 @@ export async function tileCentre(page: Page, pos: Vec2): Promise<{ x: number; y:
 /**
  * Waits for the scene curtain to finish lifting.
  *
- * `App.showScene` drops an opaque curtain over the new scene and lifts it over
- * a CSS transition; a still taken during the lift is mostly ink. The curtain
+ * `App.showScene` first holds the outgoing scene under its 140 ms dissolve,
+ * then drops an opaque curtain over the new scene and lifts it over a CSS
+ * transition; a still taken during either phase is mostly curtain. The curtain
  * also holds for first-frame actor sheets, with a bounded production timeout,
  * then drops its classes on `transitionend` (or a fallback timer), so wait for
  * that whole observable state. Only while the page clock is running: under a

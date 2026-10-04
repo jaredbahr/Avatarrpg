@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { FIRST_FRAME_SHEET_WAIT_MS, curtainSheetDecision } from './Curtain';
+import { FIRST_FRAME_SHEET_WAIT_MS, curtainSheetDecision, curtainToneFor } from './Curtain';
 import type { SheetLoadState } from '../../render/sheets/store';
 
 const states = (...entries: readonly (readonly [string, SheetLoadState])[]) => new Map(entries);
@@ -40,5 +40,21 @@ describe('the first-frame sheet curtain decision', () => {
     expect(curtainSheetDecision(states(['unit.kaya', 'loading']), FIRST_FRAME_SHEET_WAIT_MS)).toBe(
       'lift',
     );
+  });
+});
+
+describe('scene curtain table', () => {
+  it.each([
+    ['title', 'setup', 'ink'],
+    ['setup', 'interlude', 'ink'],
+    ['interlude', 'explore', 'ink'],
+    ['dialogue', 'combat', 'ink'],
+  ] as const)('%s to %s uses %s', (from, to, tone) => {
+    expect(curtainToneFor(from, to)).toBe(tone);
+  });
+
+  it('uses ink for setup and omits unowned transitions', () => {
+    expect(curtainToneFor('setup', 'setup')).toBe('ink');
+    expect(curtainToneFor(null, 'title')).toBe('none');
   });
 });
