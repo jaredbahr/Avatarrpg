@@ -152,12 +152,13 @@ export async function takeTurn(
 
   const ready = page.getByRole('button', { name: /I'm ready/i });
   // A fresh fight may hold its formation before exposing the first hand-off
-  // card. Solo turns have no card, so wait on the scene marker in that case;
-  // reduced motion never sets it and continues immediately.
+  // card. Solo turns have no card, so wait on the scene marker in that case.
+  // Software WebGL can deliver frames seconds apart, so use the turn wait's
+  // budget; reduced motion never sets the marker and continues immediately.
   await page.waitForFunction(
     () => !document.querySelector('.combat-scene[data-battle-opening]'),
     undefined,
-    { timeout: 5_000 },
+    { timeout: 25_000 },
   );
   if (await ready.count()) await ready.click();
   await settleLayout(page, options.settleTimeout);
