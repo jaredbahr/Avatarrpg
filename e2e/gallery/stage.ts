@@ -378,10 +378,20 @@ export async function tileCentre(page: Page, pos: Vec2): Promise<{ x: number; y:
  */
 export async function settleCurtain(page: Page, timeout = 30_000): Promise<void> {
   await page.waitForFunction(
-    () => document.querySelector('.curtain.is-down, .curtain.is-lifting') === null,
+    () => {
+      const curtain = document.querySelector<HTMLElement>('.curtain');
+      return (
+        curtain !== null &&
+        !curtain.classList.contains('is-down') &&
+        !curtain.classList.contains('is-lifting') &&
+        Number.parseFloat(getComputedStyle(curtain).opacity) === 0
+      );
+    },
     undefined,
     { timeout, polling: 250 },
   );
+  // Confirm one painted frame after the observable curtain state has settled.
+  await page.evaluate(() => new Promise<void>((resolve) => requestAnimationFrame(() => resolve())));
 }
 
 /** Use the real focus control before inspecting an actor on a pannable board. */

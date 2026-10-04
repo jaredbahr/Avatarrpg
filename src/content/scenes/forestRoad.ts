@@ -537,6 +537,7 @@ export const rubbleHeap = ({ x, y }: Vec2): SceneImage => ({
 
 /** Already projected ground; gameplay opts the map into the matching projection. */
 export const FOREST_ROAD_SCENE: MapScene = {
+  marginTone: 'verdant',
   groundMode: 'partial',
   paintedRubble: FOREST_RUBBLE_CELLS,
   // The shelf plate is painted at the full tier lift: `SHELF_RISE`, 16 of 64.

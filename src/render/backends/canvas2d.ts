@@ -52,7 +52,7 @@ import { sceneGrounding } from '../groundingLayer';
 import { GROUNDING_GRAIN } from '../grounding';
 import { flockAt, flockFrame, flushElapsed, sway } from '../living/wind';
 import { paintedWaterIsDry, surfaceIsPainted } from '../sceneSurfaces';
-import { HP_CAP, HP_COLORS, OVERLAY, STATUS_BADGE, hpFill } from '../palettes';
+import { HP_CAP, HP_COLORS, MAP_MARGIN_COLORS, OVERLAY, STATUS_BADGE, hpFill } from '../palettes';
 import { paintElevationBase, paintTileDecor, paintTileSeams } from '../painters/board';
 import { paintFloatingNumber, paintPathArrow, paintPathDot } from '../painters/fx';
 import { FOOT_LINE } from '../sheets/bake';
@@ -186,6 +186,11 @@ export class Canvas2DBackend implements RenderBackend {
     ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
     ctx.imageSmoothingEnabled = true;
     ctx.clearRect(0, 0, camera.viewport.width, camera.viewport.height);
+    const marginTone = view.scene?.marginTone;
+    if (marginTone && !view.crispOverlays) {
+      ctx.fillStyle = MAP_MARGIN_COLORS[marginTone];
+      ctx.fillRect(0, 0, camera.viewport.width, camera.viewport.height);
+    }
 
     // The shake moves the world, not the clear: a knocked camera shows the
     // same margin at its edge that the fit leaves anyway.

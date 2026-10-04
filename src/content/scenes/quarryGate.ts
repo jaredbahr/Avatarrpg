@@ -107,6 +107,7 @@ const curtain = (top: number): SceneScenery[] =>
 
 /** Registered gate art only. Gameplay owns projection opt-in and live surfaces/props. */
 export const QUARRY_GATE_SCENE: MapScene = {
+  marginTone: 'quarry',
   // Each local region is sampled from reusable material panels against the
   // authoritative rows. The partial renderer keeps the mutable oil/props and
   // collision fallback beneath it; upright walls remain separate scenery.
