@@ -3,7 +3,7 @@ import { describe, expect, it } from 'vitest';
 import type { Ability, ContentIndex, GameEvent, Unit } from '../../core/types';
 import { resolveFx } from '../../content/fx';
 import type { SheetClips } from '../../render/sheets/store';
-import { TIMING, choreograph, hitSpan, knockoutSpan } from './choreography';
+import { HIT_SETTLE_MS, TIMING, choreograph, hitSpan, knockoutSpan } from './choreography';
 import { HEADINGS, hitClip } from '../../content/assets/clips';
 import { attackMotion } from './attackMotion';
 import { enemyScale } from './actorScale';
@@ -1358,6 +1358,166 @@ describe('G hit timing', () => {
     expect(full).toBeGreaterThan(0);
     expect(reduced).toBeCloseTo(full * 0.02, 7);
     expect(reduced).toBeLessThanOrEqual(10);
+  });
+
+  it('shows a plain melee hit for at least 100 ms on each G party sheet', () => {
+    const partySheets = [
+      ['unit.fire.kaya', 'public/art/units/kaya-g-clips.json'],
+      ['unit.water.sura', 'public/art/units/sura-g-clips.json'],
+      ['unit.earth.bo', 'public/art/units/bo-g-clips.json'],
+    ] as const;
+
+    for (const [sprite, path] of partySheets) {
+      const clips = JSON.parse(readFileSync(path, 'utf8')) as SheetClips;
+      const victim = {
+        ...unit(sprite, 5, 3),
+        sprite,
+        hp: 20,
+        base: { maxHp: 20 },
+      } as Unit;
+      const loaded = (requested: string) => (requested === sprite ? clips : undefined);
+      const blow: GameEvent = {
+        type: 'damaged',
+        unitId: victim.id,
+        amount: 4,
+        crit: false,
+        damageType: 'physical',
+        sourceId: attacker.id,
+      };
+      const out = choreograph({
+        content,
+        events: [blow],
+        unitsBefore: [victim, attacker],
+        cursor: 1000,
+        rate: 1,
+        pushIndex: 0,
+        clipsOf: loaded,
+      });
+      const track = out.tracks.find(
+        (candidate): candidate is PoseTrack =>
+          candidate.kind === 'pose' && candidate.unitId === victim.id && candidate.clip === 'hit',
+      );
+      expect(track?.duration, `${sprite} plain hit track`).toBeGreaterThanOrEqual(100);
+
+      const animator = new Animator(content, {
+        motionReduced: () => false,
+        sheetClips: loaded,
+      });
+      animator.push(1000, [blow], [victim, attacker]);
+      const at100ms = animator.unitPose(1100, victim.id, sprite);
+      expect(at100ms?.clip, `${sprite} reaction clip`).toBe('hitEast');
+      const clip = resolveClip(clips, at100ms?.clip ?? 'hit');
+      expect(clip).toBeDefined();
+      expect(frameIndex(clip!, at100ms?.clipTime ?? 0, at100ms?.frame)).toBeGreaterThan(0);
+    }
+  });
+});
+
+describe('one-cel hit settle', () => {
+  const staticHits = { hit: { frames: ['hit/0'], fps: 8, loop: false } } as unknown as SheetClips;
+  const victim = {
+    ...unit('victim', 5, 3),
+    faction: 'enemy' as const,
+    sprite: 'unit.enemy.static',
+    hp: 20,
+    base: { maxHp: 20 },
+  } as Unit;
+  const attacker = { ...unit('attacker', 1, 3), hp: 20, base: { maxHp: 20 } } as Unit;
+  const events = (lethal = false): GameEvent[] => [
+    {
+      type: 'abilityUsed',
+      unitId: attacker.id,
+      abilityId: 'fire_jab',
+      target: victim.pos,
+      tiles: [victim.pos],
+    },
+    {
+      type: 'damaged',
+      unitId: victim.id,
+      amount: lethal ? 20 : 4,
+      crit: false,
+      damageType: 'fire',
+      sourceId: attacker.id,
+    },
+    ...(lethal ? ([{ type: 'unitDied', unitId: victim.id }] as GameEvent[]) : []),
+  ];
+  const play = (rate = 1, lethal = false) =>
+    choreograph({
+      content,
+      events: events(lethal),
+      unitsBefore: [attacker, victim],
+      cursor: 1000,
+      rate,
+      pushIndex: 0,
+      clipsOf: (sprite) => (sprite === victim.sprite ? staticHits : undefined),
+    });
+
+  it('holds after recoil only inside existing recovery and does not lengthen the batch', () => {
+    const baseline = choreograph({
+      content,
+      events: events(),
+      unitsBefore: [attacker, victim],
+      cursor: 1000,
+      rate: 1,
+      pushIndex: 0,
+    });
+    const out = play();
+    const hits = out.tracks.filter(
+      (track): track is PoseTrack =>
+        track.kind === 'pose' && track.unitId === victim.id && track.clip === 'hit',
+    );
+    const settle = hits.find(
+      (track) => track.offset.from.x === 0 && track.start > (hits[1]?.start ?? Infinity),
+    );
+    expect(settle?.duration).toBeLessThanOrEqual(HIT_SETTLE_MS);
+    expect(settle?.duration).toBeGreaterThan(0);
+    expect(out.cursor).toBe(baseline.cursor);
+    expect(Math.max(...out.tracks.map((track) => track.start + track.duration))).toBe(
+      Math.max(...baseline.tracks.map((track) => track.start + track.duration)),
+    );
+  });
+
+  it('adds no settle to a sheet with authored directional hit cels', () => {
+    const directional = Object.fromEntries([
+      ['hit', { frames: ['hit/0'], fps: 8, loop: false }],
+      ...HEADINGS.map((heading) => [
+        hitClip(heading),
+        { frames: ['a', 'b', 'c'], fps: 8, loop: false },
+      ]),
+    ]) as unknown as SheetClips;
+    const run = (clipsOf?: (sprite: string) => SheetClips | undefined) =>
+      choreograph({
+        content,
+        events: events(),
+        unitsBefore: [attacker, victim],
+        cursor: 1000,
+        rate: 1,
+        pushIndex: 0,
+        ...(clipsOf ? { clipsOf } : {}),
+      }).tracks.length;
+    expect(run(() => directional)).toBe(run());
+    expect(run((sprite) => (sprite === victim.sprite ? staticHits : undefined))).toBe(run() + 1);
+  });
+
+  it('adds no settle for reduced motion or a lethal hit', () => {
+    const hasPostRecoilSettle = (tracks: readonly AnyTrack[]) => {
+      const hits = tracks.filter(
+        (track): track is PoseTrack =>
+          track.kind === 'pose' && track.unitId === victim.id && track.clip === 'hit',
+      );
+      return hits.some(
+        (track) =>
+          track.frame === 0 &&
+          track.offset.from.x === 0 &&
+          track.offset.from.y === 0 &&
+          track.offset.to.x === 0 &&
+          track.offset.to.y === 0 &&
+          track.start > (hits[1]?.start ?? Infinity),
+      );
+    };
+
+    expect(hasPostRecoilSettle(play(0.02).tracks)).toBe(false);
+    expect(hasPostRecoilSettle(play(1, true).tracks)).toBe(false);
   });
 });
 

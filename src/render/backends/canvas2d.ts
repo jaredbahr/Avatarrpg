@@ -1231,7 +1231,7 @@ export class Canvas2DBackend implements RenderBackend {
       const footX = box.x + (width * box.size) / 2;
       const footY = box.y + FOOT_LINE * box.size;
       // The walk bob lifts the figure; its contact shadow stays on the ground.
-      const lift = (npc.offset?.y ?? 0) * box.size;
+      const lift = Math.round((npc.offset?.y ?? 0) * box.size * dpr) / dpr;
       ctx.save();
       ctx.globalAlpha = alpha;
       if (entry.kind === 'image') {
@@ -1239,10 +1239,10 @@ export class Canvas2DBackend implements RenderBackend {
         const density = actorShadowDensity(view.grid, at, true, width, false);
         ctx.drawImage(sprites.shadow(s * dpr, density), footX - s / 2, footY - 0.86 * s, s, s);
       }
-      const squash = npc.squash ?? 0;
       ctx.translate(footX, footY + lift);
       ctx.rotate(npc.lean ?? 0);
-      ctx.scale(scale * (npc.facing ?? 1) * (1 + 0.02 * squash), scale * (1 - 0.03 * squash));
+      const poseScale = npc.poseScale ?? 1;
+      ctx.scale(scale * poseScale * (npc.facing ?? 1), scale * poseScale);
       ctx.translate(-footX, -footY);
       const frame =
         entry.kind === 'sheet'

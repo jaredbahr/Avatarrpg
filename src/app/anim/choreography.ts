@@ -55,6 +55,9 @@ export const TIMING = {
   travelMax: 600,
 } as const;
 
+/** A one-cel hit stays planted briefly after recoil, inside existing recovery time. */
+export const HIT_SETTLE_MS = 90;
+
 /** Distances in tiles. */
 const LEAN_BACK = 0.12;
 const LUNGE = 0.24;
@@ -182,6 +185,11 @@ function hitLead(clips: SheetClips | undefined): number {
     if (first !== undefined) lead = Math.max(lead, first);
   }
   return lead;
+}
+
+/** A sheet whose only reaction is a single plain `hit` cel (the shipped enemy sheets). */
+function hasSingleCelHit(clips: SheetClips | undefined): boolean {
+  return clips?.hit?.frames.length === 1 && !HEADINGS.some((heading) => clips[hitClip(heading)]);
 }
 
 function timedSpan(clips: SheetClips | undefined, names: readonly ClipName[]): number {
@@ -939,6 +947,17 @@ export function choreograph(input: ChoreographyInput): Choreography {
               easeInOutSine,
               { frame: 0 },
             );
+            const sprite = unitsBefore.find((unit) => unit.id === event.unitId)?.sprite;
+            const recoilEnd = recoilAt + (TIMING.recoilOut + TIMING.recoilBack) * rate;
+            const lethal = before !== undefined && before.hp - event.amount <= 0;
+            const settle = Math.min(HIT_SETTLE_MS * rate, Math.max(0, cursor - recoilEnd));
+            if (
+              !lethal &&
+              rate >= 1 &&
+              settle > 0 &&
+              hasSingleCelHit(input.clipsOf?.(sprite ?? ''))
+            )
+              pose(event.unitId, 'hit', recoilEnd, settle, still, still, easeOutQuad, { frame: 0 });
           }
           floater(
             unitFloaterPos(event.unitId, pos),

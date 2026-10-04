@@ -20,6 +20,7 @@ const content = { abilities: new Map() } as unknown as ContentIndex;
 
 /** Where playback starts in every case, so the numbers read as offsets. */
 const START = 1000;
+const KAYA = 'unit.fire.kaya';
 
 const hero = (id: string, x: number, y: number): Unit =>
   ({
@@ -29,7 +30,7 @@ const hero = (id: string, x: number, y: number): Unit =>
     size: 1,
     hp: 20,
     base: { maxHp: 20 },
-    sprite: 'unit.fire.kaya',
+    sprite: KAYA,
   }) as unknown as Unit;
 
 const moved = (unitId: string, ...path: [number, number][]): GameEvent => ({
@@ -60,8 +61,8 @@ interface Drawn {
  * `walkNorth` from the distance-phased clock.
  */
 function drawn(animator: Animator, now: number, unitId: string, rest: Vec2): Drawn {
-  const pose = animator.unitPose(now, unitId);
-  const movement = animator.locomotion(now, unitId);
+  const pose = animator.unitPose(now, unitId, KAYA);
+  const movement = animator.locomotion(now, unitId, 'idle', KAYA);
   return {
     pos: animator.renderPos(now, unitId) ?? rest,
     clip: pose && pose.clip !== 'walk' ? pose.clip : movement.clip,
@@ -141,11 +142,11 @@ describe('combat move gait', () => {
 
     // Still walking on the last frame of the route...
     expect(at(end - 1).clip).toBe('walk');
-    // ...and holding a settled stance on the next one, not the guard.
-    expect(at(end + 1).clip).toBe('rest');
+    // ...and holding the snapped planted walk cel on the next one, not the guard.
+    expect(at(end + 1).clip).toBe('walk');
     expect(at(end + 1).pos).toEqual(rest);
     // A real dwell, not a single frame: it is still settled 100 ms later.
-    expect(at(end + 100).clip).toBe('rest');
+    expect(at(end + 100).clip).toBe('walk');
     expect(at(end + 100).pos).toEqual(rest);
 
     const ready = readyStanceAt(a, end, rest) - end;
@@ -158,8 +159,8 @@ describe('combat move gait', () => {
     expect(at(end - 1).facing).toBe(1);
     expect(at(end + 1).facing).toBe(1);
     expect(at(end + ready).facing).toBe(1);
-    expect(a.unitPose(end + 1, 'p0')).toBeUndefined();
-    expect(a.offset(end + 1, 'p0')).toBeUndefined();
+    expect(a.unitPose(end + 1, 'p0', KAYA)?.clip).toBe('walk');
+    expect(a.offset(end + 1, 'p0', KAYA)).toBeUndefined();
   });
 
   it('turns through a longer route and settles facing the last leg', () => {
@@ -176,8 +177,8 @@ describe('combat move gait', () => {
     expect(max).toBeLessThanOrEqual(16 / TIMING.combatWalkStep + 1e-9);
     expect(max).toBeCloseTo(16 / TIMING.combatWalkStep, 9);
     expect(drawn(a, end - 1, 'p0', rest)).toMatchObject({ clip: 'walk', facing: 1 });
-    // The stop holds the settled east-facing pose, then the ready stance.
-    expect(drawn(a, end + 1, 'p0', rest)).toMatchObject({ clip: 'rest', facing: 1 });
+    // The stop holds the planted east-facing walk cel, then the ready stance.
+    expect(drawn(a, end + 1, 'p0', rest)).toMatchObject({ clip: 'walk', facing: 1 });
     expect(drawn(a, end + 300, 'p0', rest)).toMatchObject({ clip: 'idle', facing: 1 });
     expect(drawn(a, end + 300, 'p0', rest).pos).toEqual(rest);
   });
