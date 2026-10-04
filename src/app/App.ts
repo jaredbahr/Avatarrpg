@@ -307,8 +307,25 @@ export class App {
     this.showScene(new TitleScene(this));
   }
 
-  showScene(scene: Scene): void {
+  showScene(scene: Scene, replaceRetained = false): void {
     this.cancelRoute();
+    const replaceDialogue =
+      !replaceRetained &&
+      this.scene?.name === 'dialogue' &&
+      scene.name === 'dialogue' &&
+      this.dialogueBackdrop !== null &&
+      this.dialogueHost !== null;
+    if (replaceDialogue && this.dialogueHost) {
+      this.scene?.unmount();
+      clear(this.dialogueHost);
+      this.scene = scene;
+      this.host.dataset.scene = scene.name;
+      this.setMood(this.defaultMood());
+      scene.mount(this.dialogueHost);
+      scene.sync();
+      this.curtain.reveal(scene.firstFrameSheetKeys?.() ?? []);
+      return;
+    }
     const restoreBackdrop =
       this.scene?.name === 'dialogue' &&
       this.dialogueBackdrop?.name === scene.name &&
@@ -340,6 +357,11 @@ export class App {
 
     if (keepWorld && this.scene) {
       this.dialogueBackdrop = this.scene;
+      // A world conversation is rendered by ExploreScene itself. Its command
+      // can hand directly to a staged conversation, so refresh the retained
+      // world against the new node before freezing its final frame. Otherwise
+      // the old conversation remains visible and can cover the new layer.
+      this.dialogueBackdrop.sync();
       this.dialogueBackdrop.suspend?.();
       this.sceneHost.classList.add('has-dialogue-backdrop');
       const background = this.sceneHost.firstElementChild;
@@ -437,16 +459,16 @@ export class App {
 
     switch (wanted) {
       case 'combat':
-        this.showScene(new CombatScene(this));
+        this.showScene(new CombatScene(this), force);
         break;
       case 'explore':
-        this.showScene(new ExploreScene(this));
+        this.showScene(new ExploreScene(this), force);
         break;
       case 'dialogue':
-        this.showScene(new DialogueScene(this));
+        this.showScene(new DialogueScene(this), force);
         break;
       default:
-        this.showScene(new TitleScene(this));
+        this.showScene(new TitleScene(this), force);
         break;
     }
   }

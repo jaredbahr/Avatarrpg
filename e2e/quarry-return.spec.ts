@@ -140,7 +140,13 @@ async function continueStory(page: Page, custody: 'escort' | 'trade' = 'trade'):
       await page.locator('.choice-option').nth(2).click(); // Bo speaks to the earthbender.
       continue;
     }
+    if (state.story.nodeId === 'gate_kinship') {
+      await expect(page.locator('.stage[data-kind="dialogue"]')).toHaveCount(1);
+    }
     if (state.story.nodeId === 'ruon_choice') {
+      await expect(
+        page.locator('.stage[data-kind="dialogue"], .stage[data-kind="choice"]'),
+      ).toHaveCount(1);
       await page
         .locator('.choice-option')
         .nth(custody === 'trade' ? 1 : 0)
