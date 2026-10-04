@@ -154,6 +154,62 @@ export function actorBodyBounds(
   };
 }
 
+/** Font size of a floating number at `size` (a tile, in the caller's units) and `textScale`. */
+export function floaterFontPx(size: number, textScale: number): number {
+  return Math.round(size * 0.34 * textScale);
+}
+
+/** The clear space between a floating number's glyph bottom and the bar's top edge. */
+export function floaterBarGap(size: number): number {
+  return Math.max(3, size * 0.06);
+}
+
+/**
+ * Where a floating number's vertical centre starts: its glyphs end a small gap
+ * above `barTop`, the top of the target's health bar, so a number and a bar
+ * from the same `actorSilhouetteGeometry` can never disagree. Both backends
+ * draw from this; the rise and fade are applied on top.
+ */
+export function floaterStartY(barTop: number, size: number, textScale: number): number {
+  return barTop - floaterBarGap(size) - floaterFontPx(size, textScale) / 2;
+}
+
+/**
+ * Keeps a number on the board: a tall figure standing against the top edge has
+ * its bar (and so the number above it) outside the canvas, where the number is
+ * clipped away unseen. `top` is the visible top edge in the caller's units; the
+ * number rests just inside it, over the figure, rather than vanishing.
+ */
+export function floaterVisibleY(y: number, top: number, fontPx: number): number {
+  return Math.max(y, top + fontPx / 2 + 2);
+}
+
+/**
+ * The unit a floating number belongs to: the one whose centre it was spawned
+ * on (`unitFloaterPos` is the centre less half a tile, so a 2x2 unit's number
+ * sits half a tile in from its origin under square footprints).
+ */
+export function floaterOwner<T extends { readonly pos: Vec2; readonly size: 1 | 2 }>(
+  units: readonly T[],
+  pos: Vec2,
+  square: boolean,
+): T | undefined {
+  const near = (a: number, b: number) => Math.abs(a - b) < 1e-6;
+  return units.find((unit) => {
+    const inset = square && unit.size === 2 ? 0.5 : 0;
+    return near(unit.pos.x + inset, pos.x) && near(unit.pos.y + inset, pos.y);
+  });
+}
+
+/**
+ * The bar top a number with no drawn owner anchors to: the same geometry a
+ * one-tile painter-fallback unit standing on `box` would get, so a target that
+ * has already left the view model still reads from the same rule.
+ */
+export function fallbackBarTop(box: ActorSpriteBox, scale = 1): number {
+  return actorSilhouetteGeometry(box, 1, null, scale).bar.y;
+}
+
 /** The target cue sits just beyond the scaled silhouette's right edge. */
 export function actorReticleX(box: ActorSpriteBox, scale: number, size: 1 | 2 = 1): number {
   const width = box.width ?? box.size;

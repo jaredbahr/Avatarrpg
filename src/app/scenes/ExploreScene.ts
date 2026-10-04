@@ -26,6 +26,8 @@ import type { GameEvent, GameState, Grid, MapDef, Unit, Vec2 } from '../../core/
 import { buildGrid, distance, samePos } from '../../core/rules/grid';
 import { Renderer, TILE } from '../../render/renderer';
 import type { MapView, NpcMarker, RenderUnit } from '../../render/renderer';
+import { createRoutePreview, displayedRoute, updateRoutePreview } from '../../render/routePreview';
+import type { RoutePreview } from '../../render/routePreview';
 import { attachPointer, wheelZoomFactor } from '../input/pointer';
 import { ambienceFx } from '../../content/fx';
 import { ambientEmitters } from '../anim/ambience';
@@ -86,6 +88,7 @@ export class ExploreScene implements Scene {
   private departing: GameState | null = null;
   private nextWalk = new NextWalk();
   private walking: WalkPreview | null = null;
+  private routePreview: RoutePreview | null = null;
   private feedback: HTMLElement | null = null;
   private feedbackText: HTMLElement | null = null;
   private cancelNext: HTMLButtonElement | null = null;
@@ -992,6 +995,8 @@ export class ExploreScene implements Scene {
       if (!this.conversationMode) {
         if (this.walking) {
           this.walking = null;
+          this.routePreview = null;
+          this.hover = null;
           this.updateWalkFeedback();
         }
         const queued = this.nextWalk.target(state);
@@ -1120,7 +1125,21 @@ export class ExploreScene implements Scene {
       !renderer.capabilities.shaders || motionReduced(),
     );
 
-    const cue = this.nextWalk.preview(state) ?? this.walking;
+    // Finish the legal route already in flight before previewing queued intent.
+    const cue = displayedRoute(this.walking, this.nextWalk.preview(state));
+    if (
+      cue &&
+      (!this.routePreview ||
+        this.routePreview.from !== cue.from ||
+        this.routePreview.path !== cue.path)
+    ) {
+      this.routePreview = createRoutePreview(cue.from, cue.path);
+    } else if (!cue) {
+      this.routePreview = null;
+    }
+    const route = this.routePreview
+      ? updateRoutePreview(this.routePreview, walking ?? cue?.from ?? this.routePreview.from)
+      : null;
     const view: MapView = {
       grid,
       units: this.life ? [] : units,
@@ -1129,8 +1148,11 @@ export class ExploreScene implements Scene {
       // and there is no battle out here on the village map.
       props: [],
       overlays: [],
-      path: cue?.path ?? [],
-      pathFrom: motionReduced() ? null : (cue?.from ?? null),
+      path: route?.path ?? [],
+      pathFrom: route?.from ?? null,
+      pathOrigin: route?.origin ?? null,
+      pathStart: route?.startIndex ?? 0,
+      calmPath: true,
       aimArc: null,
       emitters: ambient,
       floaters: [],

@@ -43,7 +43,7 @@ import { encounterText } from '../../core/story/encounterText';
 import { Renderer, TILE } from '../../render/renderer';
 import { renderFoot } from '../../render/renderFoot';
 import type { AimArc, MapView, OverlayLayer, RenderProp, RenderUnit } from '../../render/renderer';
-import { cliffEdgesFor, type TargetReticleCue } from '../../render/view';
+import { cliffEdgesFor, placeFloaters, type TargetReticleCue } from '../../render/view';
 import { weatherAt } from '../../core/rules/obscurement';
 import {
   obscuringTiles,
@@ -1162,6 +1162,12 @@ export class CombatScene implements Scene {
     for (const unit of upcomingOrder(battle, battle.units.length).filter(isAlive)) {
       const isActive = unit.id === this.active()?.id;
       const player = this.app.session.playerFor(unit.id);
+      const definition = unit.enemyId
+        ? this.app.content.enemies.get(unit.enemyId)
+        : unit.characterId
+          ? this.app.content.characters.get(unit.characterId)
+          : undefined;
+      const chipName = definition?.shortName ?? unit.name;
 
       // The element class puts the unit's colour in --el, for the party's ring.
       const chip = el(
@@ -1172,7 +1178,7 @@ export class CombatScene implements Scene {
           onClick: () => this.focusUnit(unit.id),
         },
         assetCanvas(portraitKeyFor(this.app.content, unit), 2.4),
-        el('span', { class: 'tiny', text: player?.name ?? unit.name }),
+        el('span', { class: 'tiny', text: chipName }),
       );
       // A phone shows the waiting chips as faces alone and a long name
       // ellipses anywhere, so the full name always rides on the chip itself.
@@ -2046,6 +2052,15 @@ export class CombatScene implements Scene {
         ),
       };
     });
+    const floaters = placeFloaters(
+      this.app.animator.floaters(now),
+      undefined,
+      this.app.settings.largeText === 'huge'
+        ? 1.5
+        : this.app.settings.largeText === 'on'
+          ? 1.25
+          : 1,
+    );
 
     // Resolved here, not in the renderer: the renderer never reads content.
     const props: RenderProp[] = battle.props.map((p) => {
@@ -2095,7 +2110,7 @@ export class CombatScene implements Scene {
         ...ambient,
       ],
       bendFx: this.app.animator.bendFx(now),
-      floaters: this.app.animator.floaters(now),
+      floaters,
       cameraNudge: this.app.animator.cameraNudge(now),
       activeUnitId: unit?.id ?? null,
       selectedUnitId: null,

@@ -69,6 +69,11 @@ import {
   actorReticleX,
   actorSilhouetteGeometry,
   actorShadowDensity,
+  fallbackBarTop,
+  floaterFontPx,
+  floaterOwner,
+  floaterStartY,
+  floaterVisibleY,
   healthBarCap,
   HealthBarStagger,
 } from '../geometry/actorSilhouette';
@@ -88,8 +93,16 @@ import {
 import type { LiftPlan, Pt, Rect } from '../geometry/lift';
 import { contourLoops, isHole } from '../geometry/contour';
 import type { Curve } from '../geometry/curve';
-import { sampleAt, smoothPath } from '../geometry/curve';
-import { HP_CAP, HP_COLORS, MAP_MARGIN_COLORS, OVERLAY, STATUS_BADGE, hpFill } from '../palettes';
+import { nearestDistanceAlong, sampleAt, smoothPath } from '../geometry/curve';
+import {
+  FLOATING_NUMBER,
+  HP_CAP,
+  HP_COLORS,
+  MAP_MARGIN_COLORS,
+  OVERLAY,
+  STATUS_BADGE,
+  hpFill,
+} from '../palettes';
 import { FOOT_LINE } from '../sheets/bake';
 import { resolveActorEmitters } from '../geometry/actorAttachments';
 import type { ResolvedFrame } from '../sheets/store';
@@ -97,7 +110,9 @@ import { placeFrame } from '../sheets/placement';
 import { idlePhase, sheets } from '../sheets/store';
 import { MAX_SPRITE_PX, npcPose, sprites } from '../spriteCache';
 import {
+  FLOATER_TEXT_SCALE,
   fallenAlpha,
+  floaterOutlineWidth,
   floaterScale,
   unitMarkerGroundPoint,
   type AimArc,
@@ -418,11 +433,14 @@ export class PixiBackend implements RenderBackend {
 
   /** Sprite pools, keyed so a unit keeps its object across frames. */
   private healthBarStagger = new HealthBarStagger();
+  /** Top edge of each unit's bar this frame (as drawn, staggered): floating numbers start above it. */
+  private barTops = new Map<string, number>();
   private unitSprites = new Map<string, Sprite>();
   private textureCache = new Map<HTMLCanvasElement | HTMLImageElement, Texture>();
   private frameTextures = new Map<string, Texture>();
   private climbLabels: Text[] = [];
   private floaters: Text[] = [];
+  private floaterStrokeWidths = new WeakMap<Text, number>();
   private badgeText: Text[] = [];
 
   /**
@@ -2220,10 +2238,16 @@ export class PixiBackend implements RenderBackend {
 
     if (view.hoverTile) {
       const { x, y } = view.hoverTile;
-      g.poly(
-        HOVER_LOOP.flatMap((p) => [(x + p.x) * TILE, (y + p.y) * TILE]),
-        true,
-      ).fill({ color: OVERLAY.hover });
+      const loop = HOVER_LOOP.flatMap((p) => [(x + p.x) * TILE, (y + p.y) * TILE]);
+      if (view.calmPath && view.path.length > 0) {
+        g.poly(loop, true).stroke({
+          width: Math.max(1, TILE * OVERLAY.calmPathWidth),
+          color: OVERLAY.calmPath,
+          alpha: 0.45,
+        });
+      } else {
+        g.poly(loop, true).fill({ color: OVERLAY.hover });
+      }
     }
   }
 
@@ -2232,7 +2256,7 @@ export class PixiBackend implements RenderBackend {
     g.clear();
 
     if (view.path.length > 0) {
-      if (view.pathFrom && !view.crispOverlays) {
+      if (view.pathFrom && (!view.crispOverlays || view.calmPath)) {
         this.drawCurvedPath(view, view.pathFrom);
       } else {
         view.path.forEach((pos: Vec2, index: number) => {
@@ -2284,26 +2308,44 @@ export class PixiBackend implements RenderBackend {
       this.curve = { path: view.path, from, curve: smoothPath(from, view.path) };
     }
     const curve = this.curve.curve;
-    const points = flatten(curve.points);
+    const start = view.pathOrigin
+      ? nearestDistanceAlong(curve, view.pathOrigin, view.pathStart, view.path.length)
+      : 0;
+    const first = sampleAt(curve, start).pos;
 
-    g.poly(points, false).stroke({
-      width: Math.max(2, TILE * OVERLAY.pathUnderWidth),
-      color: OVERLAY.pathUnder,
-      cap: 'round',
-      join: 'round',
-    });
-    g.poly(points, false).stroke({
-      width: Math.max(1, TILE * OVERLAY.pathWidth),
-      color: OVERLAY.path,
-      cap: 'round',
-      join: 'round',
-    });
+    const trace = (width: number, color: string): void => {
+      g.moveTo(first.x * TILE, first.y * TILE);
+      curve.points.forEach((point, index) => {
+        if ((curve.cumulative[index] ?? 0) > start) g.lineTo(point.x * TILE, point.y * TILE);
+      });
+      g.stroke({ width, color, cap: 'round', join: 'round' });
+    };
+
+    trace(
+      Math.max(1, TILE * (view.calmPath ? OVERLAY.calmPathUnderWidth : OVERLAY.pathUnderWidth)),
+      view.calmPath ? OVERLAY.calmPathUnder : OVERLAY.pathUnder,
+    );
+    trace(
+      Math.max(1, TILE * (view.calmPath ? OVERLAY.calmPathWidth : OVERLAY.pathWidth)),
+      view.calmPath && view.crispOverlays
+        ? OVERLAY.calmPathContrast
+        : view.calmPath
+          ? OVERLAY.calmPath
+          : OVERLAY.path,
+    );
 
     const end = sampleAt(curve, curve.length);
     const tip = { x: end.pos.x * TILE, y: end.pos.y * TILE };
-    g.poly(arrowheadPolygon(tip, end.tangent, TILE * OVERLAY.pathArrowScale), true).fill({
-      color: OVERLAY.path,
-    });
+    if (view.calmPath) {
+      g.circle(tip.x, tip.y, TILE * OVERLAY.calmPathMarkerScale).stroke({
+        width: Math.max(1, TILE * OVERLAY.calmPathWidth),
+        color: view.crispOverlays ? OVERLAY.calmPathContrast : OVERLAY.calmPath,
+      });
+    } else {
+      g.poly(arrowheadPolygon(tip, end.tangent, TILE * OVERLAY.pathArrowScale), true).fill({
+        color: OVERLAY.path,
+      });
+    }
   }
 
   private drawDecor(view: MapView): void {
@@ -2408,6 +2450,7 @@ export class PixiBackend implements RenderBackend {
     const px = this.spritePx(camera);
 
     const live = new Set<string>();
+    this.barTops.clear();
     // Back to front, so a unit lower on the map overlaps one above it.
     const depth = (pos: Vec2, footprint: 1 | 2 = 1, square = this.squareFootprints) =>
       pixiActorDepth(camera, pos, footprint, square);
@@ -2631,6 +2674,7 @@ export class PixiBackend implements RenderBackend {
         scale,
         26 / camera.scale,
       );
+      this.barTops.set(unit.id, silhouette.bar.y);
       if (frame) {
         sprite.texture = this.frameTexture(frame);
         sprite.anchor.set(frame.anchor.x, frame.anchor.y);
@@ -2732,8 +2776,9 @@ export class PixiBackend implements RenderBackend {
     const placements = this.healthBarStagger.place(pendingHealthBars);
     for (const candidate of pendingHealthBars) {
       const bar = placements.get(candidate.id);
-      if (bar)
-        this.drawHealthBar(g, candidate.unit, bar, candidate.actorX, view.hatch, camera.scale);
+      if (!bar) continue;
+      this.barTops.set(candidate.id, bar.y);
+      this.drawHealthBar(g, candidate.unit, bar, candidate.actorX, view.hatch, camera.scale);
     }
   }
 
@@ -2842,9 +2887,9 @@ export class PixiBackend implements RenderBackend {
           style: new TextStyle({
             fontFamily: 'system-ui, sans-serif',
             fontWeight: '700',
-            fontSize: Math.round(TILE * 0.3),
+            fontSize: Math.round(TILE * 0.34 * FLOATER_TEXT_SCALE),
             fill: 0xffffff,
-            stroke: { color: '#120d0a', width: 4 },
+            stroke: { color: FLOATING_NUMBER.outline, width: 2 },
           }),
         });
         this.floaters[index] = text;
@@ -2854,10 +2899,34 @@ export class PixiBackend implements RenderBackend {
       text.style.fill = floater.color;
       text.anchor.set(0.5);
       const center = camera.groundPoint({ x: floater.pos.x + 0.5, y: floater.pos.y + 0.5 });
-      text.position.set(center.x, center.y - TILE * 0.1 - floater.progress * TILE * 0.7);
+      const textScale =
+        FLOATER_TEXT_SCALE *
+        (floater.textScale ?? 1) *
+        floaterScale(floater.progress, floater.emphasis);
+      // The owner's bar top as drawn this frame; a target that is gone from the
+      // view reads from the painter-fallback geometry on its own tile.
+      const owner = floaterOwner(view.units, floater.pos, this.squareFootprints);
+      const barTop =
+        (owner && this.barTops.get(owner.id)) ??
+        fallbackBarTop({ x: center.x - TILE / 2, y: center.y - TILE / 2, size: TILE });
+      text.position.set(
+        center.x + (floater.offsetX ?? 0) * TILE,
+        floaterVisibleY(
+          floaterStartY(barTop, TILE, textScale) - floater.progress * TILE * 0.7,
+          camera.offsetY / camera.scale,
+          floaterFontPx(TILE, textScale),
+        ),
+      );
       text.alpha = 1 - floater.progress;
-      // Scaled rather than re-sized, so the pop never rebuilds the glyphs.
-      text.scale.set(floaterScale(floater.progress, floater.emphasis));
+      // Resize the glyphs so Pixi's 2px outline stays 2px, matching Canvas at
+      // every pop, crit emphasis and accessibility text size.
+      text.style.fontSize = floaterFontPx(TILE, textScale);
+      text.scale.set(1);
+      const strokeWidth = floaterOutlineWidth(camera.scale, text.scale.x);
+      if (this.floatersStrokeWidth(text) !== strokeWidth) {
+        text.style.stroke = { color: FLOATING_NUMBER.outline, width: strokeWidth };
+        this.floaterStrokeWidths.set(text, strokeWidth);
+      }
       text.visible = true;
     });
 
@@ -2865,5 +2934,9 @@ export class PixiBackend implements RenderBackend {
       const text = this.floaters[i];
       if (text) text.visible = false;
     }
+  }
+
+  private floatersStrokeWidth(text: Text): number | undefined {
+    return this.floaterStrokeWidths.get(text);
   }
 }
