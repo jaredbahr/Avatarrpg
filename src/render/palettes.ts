@@ -264,6 +264,12 @@ export const OVERLAY = {
   pathWidth: 0.08,
   pathUnderWidth: 0.14,
   pathArrowScale: 0.65,
+  calmPath: 'rgba(240, 198, 116, 0.6)',
+  calmPathContrast: 'rgba(240, 198, 116, 0.9)',
+  calmPathUnder: 'rgba(27, 20, 16, 0.3)',
+  calmPathWidth: 0.06,
+  calmPathUnderWidth: 0.1,
+  calmPathMarkerScale: 0.22,
   hover: 'rgba(255, 255, 255, 0.18)',
   climb: '#fff6e0',
   cliffHatch: '#4b3326',
@@ -280,6 +286,11 @@ export const OVERLAY = {
   softWidth: 0.3,
   softAlpha: 0.28,
   edgeWidth: 0.05,
+} as const;
+
+export const FLOATING_NUMBER = {
+  damage: ELEVATION.rim,
+  outline: ELEVATION.ink,
 } as const;
 
 /** Short badges drawn under a unit so statuses are visible without a tooltip. */

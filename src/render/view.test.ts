@@ -6,11 +6,20 @@ import {
   FALLEN_KNOCKOUT_ALPHA,
   cliffEdgesFor,
   fallenAlpha,
+  floaterOutlineWidth,
   floaterScale,
+  placeFloaters,
   unitMarkerGroundPoint,
 } from './view';
 
 describe('floating number pop', () => {
+  it.each([0.5, 1, 2])(
+    'keeps the Pixi outline at two screen pixels at camera scale %s',
+    (scale) => {
+      expect(floaterOutlineWidth(scale) * scale).toBeCloseTo(2, 9);
+    },
+  );
+
   it('pops in past full size, settles, and holds for the rise', () => {
     expect(floaterScale(0)).toBeCloseTo(0.6, 9);
     expect(floaterScale(0.1)).toBeCloseTo(1.3, 9);
@@ -19,6 +28,27 @@ describe('floating number pop', () => {
     // Emphasis scales the whole curve: a crit is bigger throughout.
     expect(floaterScale(0.7, 1.35)).toBe(1.35);
     expect(floaterScale(0.1, 1.35)).toBeCloseTo(1.3 * 1.35, 9);
+  });
+
+  it('offsets two close numbers sideways', () => {
+    const placed = placeFloaters(
+      [
+        { pos: { x: 2, y: 3 }, text: '-8', color: '#fff', progress: 0.2 },
+        { pos: { x: 2, y: 3 }, text: '-4', color: '#fff', progress: 0.35 },
+      ],
+      undefined,
+      1.5,
+    );
+    expect(placed.map((floater) => floater.offsetX)).toEqual([-0.22, 0.22]);
+    expect(placed.map((floater) => floater.textScale)).toEqual([1.5, 1.5]);
+  });
+
+  it('does not separate numbers outside the 250ms window', () => {
+    const placed = placeFloaters([
+      { pos: { x: 2, y: 3 }, text: '-8', color: '#fff', progress: 0.1 },
+      { pos: { x: 2, y: 3 }, text: '-4', color: '#fff', progress: 0.5 },
+    ]);
+    expect(placed.map((floater) => floater.offsetX)).toEqual([0, 0]);
   });
 });
 

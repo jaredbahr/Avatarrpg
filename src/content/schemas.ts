@@ -358,6 +358,7 @@ export const disciplineSchema = z.object({
 export const characterSchema = z.object({
   id,
   name: z.string().min(1),
+  shortName: z.string().min(1).max(12).optional(),
   element: elementId,
   blurb: z.string().min(1),
   bio: z.string().min(1),
@@ -370,6 +371,7 @@ export const characterSchema = z.object({
 export const enemySchema = z.object({
   id,
   name: z.string().min(1),
+  shortName: z.string().min(1).max(12).optional(),
   element: elementId,
   size: z.union([z.literal(1), z.literal(2)]),
   stats: unitStats,

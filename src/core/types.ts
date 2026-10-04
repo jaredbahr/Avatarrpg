@@ -381,6 +381,7 @@ export interface DisciplineDef {
 export interface CharacterDef {
   readonly id: string;
   readonly name: string;
+  readonly shortName?: string;
   readonly element: ElementId;
   /** One-line hook shown on the pick card. */
   readonly blurb: string;
@@ -395,6 +396,7 @@ export interface CharacterDef {
 export interface EnemyDef {
   readonly id: string;
   readonly name: string;
+  readonly shortName?: string;
   readonly element: ElementId;
   /** Side length in tiles: 2 is a 2x2 block (subject to the A-6 gate). */
   readonly size: UnitSize;

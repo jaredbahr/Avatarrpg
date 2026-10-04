@@ -84,6 +84,41 @@ export function sampleAt(curve: Curve, s: number): CurveSample {
   };
 }
 
+/** Arc position nearest a moving origin, constrained past completed raw route segments. */
+export function nearestDistanceAlong(
+  curve: Curve,
+  origin: Vec2,
+  startIndex = 0,
+  routeLength = 1,
+): number {
+  const start = Math.max(
+    0,
+    Math.floor((startIndex / Math.max(1, routeLength)) * (curve.points.length - 1)) - 2,
+  );
+  const target = centre(origin);
+  let nearest = curve.cumulative[start] ?? 0;
+  let nearestSq = Infinity;
+  for (let i = start; i < curve.points.length - 1; i++) {
+    const a = curve.points[i];
+    const b = curve.points[i + 1];
+    if (!a || !b) continue;
+    const dx = b.x - a.x;
+    const dy = b.y - a.y;
+    const lengthSq = dx * dx + dy * dy;
+    const t = lengthSq
+      ? Math.max(0, Math.min(1, ((target.x - a.x) * dx + (target.y - a.y) * dy) / lengthSq))
+      : 0;
+    const px = a.x + dx * t;
+    const py = a.y + dy * t;
+    const distanceSq = (target.x - px) ** 2 + (target.y - py) ** 2;
+    if (distanceSq <= nearestSq) {
+      nearestSq = distanceSq;
+      nearest = (curve.cumulative[i] ?? 0) + Math.sqrt(lengthSq) * t;
+    }
+  }
+  return nearest;
+}
+
 /**
  * The integral of `rate(tangent)` over the first `s` of the curve's arc
  * length, clamped to its ends: each straight segment contributes its length,
