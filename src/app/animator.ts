@@ -35,8 +35,8 @@ import {
   screenDirection,
 } from './anim/direction';
 import type { WalkDirection } from './anim/direction';
-import { headingClip, hitClip, koClip } from '../content/assets/clips';
-import type { Heading, MeleeDirection } from '../content/assets/clips';
+import { headingClip, HEADINGS, hitClip, koClip } from '../content/assets/clips';
+import type { Heading, LocomotionDef, MeleeDirection } from '../content/assets/clips';
 import { sheetLocomotion } from '../content/assets/manifest';
 import type { SheetClips } from '../render/sheets/store';
 import type { BendSources } from './anim/bendHandoff';
@@ -62,6 +62,14 @@ export const WALK_MS_PER_TILE = TIMING.strollStep * 0.95;
  * straight from mid-stride to idle on the frame the route ends.
  */
 export const STOP_SETTLE_MS = 140;
+
+/** A hard turn briefly plants the new facing while the route keeps moving. */
+export const TURN_PLANT_MS = 80;
+
+/** Cycle fraction for the party member at `index` (0 leads): a golden-ratio spread, so no two stride in step. */
+export function partyWalkPhase(index: number): number {
+  return (index * 0.618034) % 1;
+}
 
 /** How far off dead vertical the travel has to lean before the sprite turns. */
 const TURN_THRESHOLD = 0.2;
@@ -157,7 +165,18 @@ export class Animator {
    */
   private headings = new Map<string, Heading>();
   /** When each unit's last voluntary walk ended, and when its stop settles. */
-  private stops = new Map<string, { readonly from: number; readonly to: number }>();
+  private stops = new Map<
+    string,
+    {
+      readonly from: number;
+      readonly to: number;
+      readonly track: MoveTrack;
+      settled?: { from: number; to: number };
+    }
+  >();
+  /** Distances along a route where the facing turns by 90 degrees or more. */
+  private hardTurns = new WeakMap<MoveTrack, readonly number[]>();
+  private walkPhaseFractions = new Map<string, number>();
   private pendingHeadings: HeadingCue[] = [];
   /** Health events wait beside the tracks which make their impact visible. */
   private healthCues: HealthCue[] = [];
@@ -178,6 +197,7 @@ export class Animator {
     this.directions.clear();
     this.headings.clear();
     this.stops.clear();
+    this.walkPhaseFractions.clear();
     this.pendingHeadings = [];
     this.healthCues = [];
     this.settledHealth.clear();
@@ -213,6 +233,8 @@ export class Animator {
       silentSteps?: boolean;
       /** Delay from the shared batch anchor, in normal-motion milliseconds. */
       delayMs?: number;
+      /** Stable fraction of the authored walk loop; presentation only. */
+      walkPhase?: number;
     } = {},
   ): void {
     const base = options.alongside
@@ -236,6 +258,10 @@ export class Animator {
       ...(bends ? { bends } : {}),
       ...(this.options.liftOf ? { liftOf: this.options.liftOf } : {}),
     });
+    for (const event of events) {
+      if (event.type === 'partyWalked')
+        this.walkPhaseFractions.set(event.unitId, options.walkPhase ?? 0);
+    }
     const affected = new Set(result.health.map((change) => change.unitId));
     // State is already the reducer's final result. Seed each affected unit at
     // this queued batch's start so the view keeps its prior health until the
@@ -274,7 +300,7 @@ export class Animator {
           this.stops.delete(track.unitId);
         } else {
           const ended = track.start + track.duration;
-          this.stops.set(track.unitId, { from: ended, to: ended + STOP_SETTLE_MS * rate });
+          this.stops.set(track.unitId, { from: ended, to: ended + STOP_SETTLE_MS * rate, track });
           this.pendingHeadings.push({
             unitId: track.unitId,
             at: ended,
@@ -331,9 +357,6 @@ export class Animator {
   prune(now: number): void {
     this.settleHeadings(now);
     this.settleHealth(now);
-    for (const [unitId, stop] of this.stops) {
-      if (now >= stop.to) this.stops.delete(unitId);
-    }
     this.timeline.prune(now);
   }
 
@@ -420,18 +443,92 @@ export class Animator {
     const travel = this.walkTravel(now, unitId);
     if (travel)
       this.rememberDirection(unitId, sampleAt(travel.track.curve, travel.distance).tangent);
-    const stop = !travel && this.settling(now, unitId);
     const gait = sheetLocomotion(sprite);
+    const stop = !travel && this.settling(now, unitId);
+    // Only eight-way sheets plant a cel on a turn or on the stop; the legacy
+    // four-way walk keeps its authored rest.
+    const plant = gait && travel && this.turnPlant(now, travel);
+    const planted = plant || (gait && stop && this.stopTrack(unitId));
     // G rests are sampled mid-stride. Settle those sheets onto the planted
     // idle for the last heading; legacy sheets retain their authored rest.
     const standing = gait && resting === 'rest' ? 'idle' : resting;
-    const base = travel ? 'walk' : stop ? (gait ? 'idle' : 'rest') : standing;
+    const base = plant
+      ? 'idle'
+      : travel || planted
+        ? 'walk'
+        : stop
+          ? gait
+            ? 'idle'
+            : 'rest'
+          : standing;
     const heading = this.heading(unitId, restFacing);
     const clip =
       gait?.headings === 8 && heading
         ? headingClip(base, heading)
         : directionalClip(base, this.directions.get(unitId));
     return { clip, facing: verticalClip(clip) ? 1 : (this.facings.get(unitId) ?? restFacing) };
+  }
+
+  /** Snap forward to the next planted half-cycle for the existing stop dwell. */
+  private settledWalkClipTime(
+    stop: { track: MoveTrack; from: number; to: number; settled?: { from: number; to: number } },
+    gait: LocomotionDef,
+    now: number,
+    sprite?: string,
+  ): number {
+    if (!stop.settled) {
+      const end = this.walkClipTime(
+        { track: stop.track, distance: stop.track.curve.length },
+        sprite,
+      );
+      const plantStep = gait.walkCycleMs / 2;
+      const to = gait.walkStartMs + Math.ceil((end - gait.walkStartMs) / plantStep) * plantStep;
+      stop.settled = { from: end, to };
+    }
+    const { from, to } = stop.settled;
+    const t = Math.min(1, Math.max(0, (now - stop.from) / (stop.to - stop.from)));
+    return from + (to - from) * t;
+  }
+
+  /** The stop being held, if its route went anywhere: a zero-length one has no stride to plant. */
+  private stopTrack(unitId: string) {
+    const stop = this.stops.get(unitId);
+    return stop && stop.track.curve.length > 0 ? stop : undefined;
+  }
+
+  /** Distances (tiles) where the route turns 90 degrees or more from its last anchor heading. */
+  private hardTurnsOf(track: MoveTrack): readonly number[] {
+    const cached = this.hardTurns.get(track);
+    if (cached) return cached;
+    const curve = track.curve;
+    const turns: number[] = [];
+    let anchor = walkHeading(screenDirection(sampleAt(curve, 0).tangent, this.projection));
+    for (let i = 1; i < curve.points.length; i++) {
+      const at = curve.cumulative[i - 1] ?? 0;
+      const heading = walkHeading(
+        screenDirection(sampleAt(curve, at + 1e-6).tangent, this.projection),
+      );
+      const steps = Math.abs(HEADINGS.indexOf(anchor) - HEADINGS.indexOf(heading));
+      if (Math.min(steps, 8 - steps) < 2) continue;
+      turns.push(at);
+      anchor = heading;
+    }
+    this.hardTurns.set(track, turns);
+    return turns;
+  }
+
+  /** True for TURN_PLANT_MS after the unit passes a hard turn; the root keeps moving. */
+  private turnPlant(now: number, travel: { track: MoveTrack; distance: number }): boolean {
+    const track = travel.track;
+    if (this.rate < 1 || now - track.start >= track.duration || now <= track.start) return false;
+    let latest = -1;
+    for (const at of this.hardTurnsOf(track)) {
+      if (at > travel.distance) break;
+      latest = at;
+    }
+    if (latest < 0) return false;
+    const before = this.travel(Math.max(track.start, now - TURN_PLANT_MS), track.unitId);
+    return before?.track === track && before.distance <= latest;
   }
 
   /** The eight-way heading a unit last turned to, or west for one that has not and faces left. */
@@ -474,9 +571,13 @@ export class Animator {
   private walkClipTime(travel: { track: MoveTrack; distance: number }, sprite?: string): number {
     const gait = sheetLocomotion(sprite);
     if (!gait) return travel.distance * WALK_MS_PER_TILE;
-    return integrateAlong(travel.track.curve, travel.distance, (tangent) => {
-      return gait.walkMsPerTile[walkHeading(screenDirection(tangent, this.projection))];
-    });
+    return (
+      gait.walkStartMs +
+      (this.walkPhaseFractions.get(travel.track.unitId) ?? 0) * gait.walkCycleMs +
+      integrateAlong(travel.track.curve, travel.distance, (tangent) => {
+        return gait.walkMsPerTile[walkHeading(screenDirection(tangent, this.projection))];
+      })
+    );
   }
 
   /** Fade the lift at each end so a fractional final stride settles onto the path. */
@@ -524,9 +625,10 @@ export class Animator {
    * The walk bob: a small lift once per tile of travel, in tile units. Drawn
    * as an offset so it never changes the order units are painted in.
    */
-  offset(now: number, unitId: string): Vec2 | undefined {
+  offset(now: number, unitId: string, sprite?: string): Vec2 | undefined {
     const travel = this.walkTravel(now, unitId);
     if (!travel || travel.track.curve.length <= 0) return undefined;
+    if (sheetLocomotion(sprite)?.authoredBob) return undefined;
     return this.walkBob(now, travel);
   }
 
@@ -547,13 +649,20 @@ export class Animator {
       if (track.unitId === unitId && (!pose || track.start >= pose.start)) pose = track;
     }
     const travel = this.walkTravel(now, unitId);
-    const bob = travel && travel.track.curve.length > 0 ? this.walkBob(now, travel) : undefined;
+    const walking = travel !== null && travel.track.curve.length > 0;
+    const bob =
+      travel && walking && !sheetLocomotion(sprite)?.authoredBob
+        ? this.walkBob(now, travel)
+        : undefined;
     let flash = 0;
     for (const track of this.timeline.active(now, 'flash')) {
       if (track.unitId !== unitId) continue;
       flash = Math.max(flash, track.strength * (1 - Timeline.progress(track, now)));
     }
-    if (!pose && !bob && flash === 0) return undefined;
+    const gait = sheetLocomotion(sprite);
+    const stop = this.stopTrack(unitId);
+    const settled = Boolean(!pose && !travel && gait && stop && this.settling(now, unitId));
+    if (!pose && !walking && !bob && flash === 0 && !settled) return undefined;
 
     const t = pose ? pose.ease(Timeline.progress(pose, now)) : 0;
     const offset = pose
@@ -567,12 +676,18 @@ export class Animator {
     const facing = pose?.facing;
     const frame = pose?.frame;
     return {
-      clip: pose ? this.reactionClip(pose.clip, unitId, sprite) : bob ? 'walk' : 'idle',
+      clip: pose
+        ? this.reactionClip(pose.clip, unitId, sprite)
+        : walking || settled
+          ? 'walk'
+          : 'idle',
       clipTime: pose
         ? now - pose.start + (pose.clipTimeOffset ?? 0)
         : travel
           ? this.walkClipTime(travel, sprite)
-          : 0,
+          : settled && stop && gait
+            ? this.settledWalkClipTime(stop, gait, now, sprite)
+            : 0,
       offset,
       scale,
       alpha,

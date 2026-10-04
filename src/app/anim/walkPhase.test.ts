@@ -115,7 +115,7 @@ describe('eight-way walk phase across a turn', () => {
     for (const sample of trace(a, KAYA)) {
       const x = sample.pos.x - FROM.x;
       if (x > 2) break;
-      expect(sample.clipTime).toBeCloseTo(x * gait().east, 6);
+      expect(sample.clipTime).toBeCloseTo(3 * CEL_MS + x * gait().east, 6);
     }
   });
 
@@ -132,10 +132,10 @@ describe('eight-way walk phase across a turn', () => {
       const rate = kayaRate({ x: tangent.x / length, y: tangent.y / length }, projection);
       for (const t of [50, 150, 300, a.finishesAt - 1]) {
         const legacy = a.unitPose(t, 'p', FOUR_WAY)?.clipTime ?? -1;
-        expect(a.unitPose(t, 'p', KAYA)?.clipTime, `${projection} ${t}`).toBeCloseTo(
-          (legacy / WALK_MS_PER_TILE) * rate,
-          6,
-        );
+        expect(
+          (a.unitPose(t, 'p', KAYA)?.clipTime ?? 0) - 3 * CEL_MS,
+          `${projection} ${t}`,
+        ).toBeCloseTo((legacy / WALK_MS_PER_TILE) * rate, 6);
       }
     }
   });
