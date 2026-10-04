@@ -3,7 +3,12 @@
   position: absolute;
   inset: 0 0 auto;
   z-index: 2;
+  color: var(--c-paper-light);
   background: linear-gradient(180deg, var(--scrim-strong), transparent);
+}
+
+.interlude-scene > .top-bar .muted {
+  color: var(--c-paper-light);
 }
 
 .interlude-stage {
@@ -57,6 +62,40 @@
   color: color-mix(in srgb, var(--c-paper-light) 78%, transparent);
 }
 
+.interlude-scene > .top-bar .btn-ghost,
+.interlude-caption .btn-ghost {
+  color: var(--c-paper-light);
+  border-color: color-mix(in srgb, var(--c-paper-light) 55%, transparent);
+}
+
+.interlude-scene > .top-bar .btn-ghost:hover:not(:disabled),
+.interlude-caption .btn-ghost:hover:not(:disabled) {
+  color: var(--c-paper-light);
+  background-color: color-mix(in srgb, var(--c-paper-light) 14%, transparent);
+  border-color: var(--c-paper-light);
+}
+
+.interlude-scene > .top-bar .btn-ghost:focus-visible,
+.interlude-caption .btn-ghost:focus-visible {
+  color: var(--c-paper-light);
+  border-color: var(--c-paper-light);
+  outline-color: var(--c-gold-hi);
+}
+
+.interlude-scene > .top-bar .btn-ghost:active:not(:disabled),
+.interlude-caption .btn-ghost:active:not(:disabled) {
+  color: var(--c-paper-light);
+  background-color: color-mix(in srgb, var(--c-paper-light) 22%, transparent);
+  border-color: var(--c-paper-light);
+}
+
+.interlude-scene > .top-bar .btn-ghost:disabled,
+.interlude-caption .btn-ghost:disabled {
+  color: color-mix(in srgb, var(--c-paper-light) 65%, transparent);
+  border-color: color-mix(in srgb, var(--c-paper-light) 55%, transparent);
+  opacity: 1;
+}
+
 .interlude-controls {
   display: flex;
   flex-wrap: wrap;
@@ -69,6 +108,44 @@ html[data-contrast='high'] .interlude-caption {
   background: var(--c-ink);
   border-color: var(--c-paper-light);
   forced-color-adjust: none;
+}
+
+html[data-contrast='high'] .interlude-scene > .top-bar {
+  color: var(--c-paper-light);
+  background: var(--c-ink);
+  forced-color-adjust: none;
+}
+
+html[data-contrast='high'] .interlude-scene > .top-bar .muted {
+  color: var(--c-paper-light);
+}
+
+html[data-contrast='high'] .interlude-scene > .top-bar .btn-ghost,
+html[data-contrast='high'] .interlude-caption .btn-ghost {
+  color: var(--c-paper-light);
+  border-color: var(--c-paper-light);
+}
+
+html[data-contrast='high'] .interlude-scene > .top-bar .btn-ghost:hover:not(:disabled),
+html[data-contrast='high'] .interlude-caption .btn-ghost:hover:not(:disabled),
+html[data-contrast='high'] .interlude-scene > .top-bar .btn-ghost:active:not(:disabled),
+html[data-contrast='high'] .interlude-caption .btn-ghost:active:not(:disabled) {
+  color: var(--c-paper-light);
+  border-color: var(--c-paper-light);
+}
+
+html[data-contrast='high'] .interlude-scene > .top-bar .btn-ghost:focus-visible,
+html[data-contrast='high'] .interlude-caption .btn-ghost:focus-visible {
+  color: var(--c-paper-light);
+  border-color: var(--c-paper-light);
+  outline-color: var(--c-gold-hi);
+}
+
+html[data-contrast='high'] .interlude-scene > .top-bar .btn-ghost:disabled,
+html[data-contrast='high'] .interlude-caption .btn-ghost:disabled {
+  color: var(--c-air);
+  border-color: var(--c-paper-light);
+  opacity: 1;
 }
 
 @media (orientation: portrait) {
