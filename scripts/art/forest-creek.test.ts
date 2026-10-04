@@ -14,15 +14,18 @@ vi.setConfig({ testTimeout: 30_000, hookTimeout: 30_000 });
 const material = await loadForestMaterial();
 const packed = FOREST_CREEK_POOLS.map((pool) => ({ pool, ...packCreekPool(material, pool) }));
 
-/** Generated 2026-10-03 (see docs/art/forest-pond-shoreline.md); not packer output. */
+/**
+ * Generated 2026-10-03 (see docs/art/forest-pond-shoreline.md); not packer output.
+ * Repainted 2026-10-04 to the pond's turquoise on the same alpha footprint.
+ */
 const CREEK_PINS: Record<string, { bytes: number; sha256: string }> = {
   west: {
-    bytes: 47174,
-    sha256: '5bf397bd4fa1ccec0cca0e8503fd5c7e495f27863ee1486b54a20be6029ab6f5',
+    bytes: 46064,
+    sha256: '8c617ee037e792d5ec787d5a61ef3ecb6dbbbace6624d620f79c2cccc9f5253e',
   },
   east: {
-    bytes: 46462,
-    sha256: '157119dc31c7196c19b3efc27d2d9699b129dcd8725ccc9031a4537e0094585b',
+    bytes: 44370,
+    sha256: 'bf2bd10d89202aad66f6f7bf762c547216729f675b3ca1d12213106b392829c9',
   },
 };
 

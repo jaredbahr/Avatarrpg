@@ -278,6 +278,15 @@ export const CREDITS: readonly CreditEntry[] = [
     note: 'Original transparent discovery illustration. Source image, exact prompt and resize provenance: assets/source/forest-nest/. Output terms: https://openai.com/policies/row-terms-of-use/. No exclusive copyright in generated output is claimed.',
   },
   {
+    what: 'The forest road runoff waystone',
+    work: 'Carved waystone discovery prop',
+    authors: 'This project, generated with OpenAI image generation',
+    licence: 'own work',
+    source: '',
+    covers: ['art/world/runoff-marker.png'],
+    note: 'Original pixel-painted prop with a four-colour locked palette and binary alpha, replacing the drawn placeholder. Output terms: https://openai.com/policies/row-terms-of-use/. No exclusive copyright in generated output is claimed.',
+  },
+  {
     what: 'The forest flood-bank nest reeds',
     work: 'Low washed-up reeds and an empty silted nest scenery prop',
     authors: 'This project, generated with OpenAI image generation',
