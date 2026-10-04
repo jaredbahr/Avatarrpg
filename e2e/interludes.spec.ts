@@ -194,7 +194,7 @@ for (const [node, title, art] of [
   });
 }
 
-test('portrait large text keeps the complete painting above reachable captions', async ({
+test('portrait large text keeps the painting full bleed behind reachable captions', async ({
   page,
 }) => {
   await page.setViewportSize({ width: 600, height: 900 });
@@ -203,9 +203,28 @@ test('portrait large text keeps the complete painting above reachable captions',
   await expect
     .poll(() => image.evaluate((img) => img instanceof HTMLImageElement && img.naturalWidth > 0))
     .toBe(true);
-  const art = await image.boundingBox();
-  const caption = await page.locator('.interlude-caption').boundingBox();
-  expect(art && caption && art.y + art.height <= caption.y).toBe(true);
+  const viewport = page.viewportSize();
+  await expect(async () => {
+    const [art, caption] = await Promise.all([
+      image.boundingBox(),
+      page.locator('.interlude-caption').boundingBox(),
+    ]);
+    const measured = { art, caption, viewport };
+    expect(
+      viewport &&
+        art &&
+        caption &&
+        art.x <= 1 &&
+        art.y <= 1 &&
+        art.x + art.width >= viewport.width - 1 &&
+        art.y + art.height >= viewport.height - 1 &&
+        caption.y >= art.y &&
+        caption.y + caption.height <= art.y + art.height &&
+        caption.height <= art.height * 0.58 + 1,
+      `interlude layout measurements: ${JSON.stringify(measured)}`,
+    ).toBe(true);
+  }).toPass({ timeout: 5000 });
+  await expect(page.getByRole('button', { name: 'Next', exact: true })).toBeVisible();
   await page.getByRole('button', { name: 'Skip scene' }).click();
   await expect(page.locator('.explore-scene')).toBeVisible();
 });

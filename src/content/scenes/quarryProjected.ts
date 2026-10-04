@@ -206,6 +206,7 @@ export const CUTTING_POOL_PATCH = { x: 688, y: 336, width: 416, height: 224 } as
 export const CUTTING_BAND_TOPS = [2, 8] as const;
 
 export const CUTTING_SCENE: MapScene = {
+  marginTone: 'quarry',
   groundMode: 'partial',
   paintedRubble: CUTTING_RUBBLE_CELLS,
   reliefLift: 0.06,
@@ -227,6 +228,7 @@ export const CUTTING_SCENE: MapScene = {
 
 /** The same scene contract for the Driller floor, including its intentional rear gap. */
 export const DRILLER_FLOOR_SCENE: MapScene = {
+  marginTone: 'quarry',
   groundMode: 'partial',
   paintedRubble: DRILLER_RUBBLE_CELLS,
   // The pages stand each bench at the old actor lift, 0.06 of a tile; the

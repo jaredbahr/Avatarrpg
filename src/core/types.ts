@@ -932,6 +932,8 @@ export interface SceneScenery extends SceneImage {
 }
 
 export interface MapScene {
+  /** Scene-coloured continuation beneath feathered exterior art; never UI parchment. */
+  readonly marginTone?: 'verdant' | 'quarry';
   /** Ground art includes the permanent water cells and their banks. Dynamic surfaces still draw. */
   readonly paintedWater?: boolean;
   /** Partial ground art does not claim coverage of any permanent surface. */

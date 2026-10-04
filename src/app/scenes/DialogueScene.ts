@@ -125,6 +125,7 @@ export class DialogueScene implements Scene {
     }
     const interlude = INTERLUDES[node.id];
     if (interlude && (node.kind === 'dialogue' || (node.kind === 'end' && !this.endSummary))) {
+      scene.classList.add('interlude-scene');
       scene.appendChild(this.interludeStage(node, interlude));
       host.appendChild(scene);
       if (focusTarget)
@@ -280,6 +281,8 @@ export class DialogueScene implements Scene {
         height: '720',
       },
     });
+    picture.style.setProperty('--interlude-focus', art.focus);
+    picture.style.setProperty('--interlude-portrait-focus', art.portraitFocus);
     // Slow or unavailable art must never strand the story or spend its reading time unseen.
     const schedule = () => {
       if (!this.playing || !this.host?.contains(picture) || document.hidden) return;
