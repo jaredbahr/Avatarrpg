@@ -67,6 +67,7 @@ import { loadBendFx } from '../render/fx/bendFx';
 import type { BendFxIndex } from '../render/fx/bendFx';
 import { bendFxPages } from '../render/fx/bendFxDraw';
 import { liftAt } from '../render/geometry/elevation';
+import { INTERLUDES } from '../content/story/interludes';
 
 /** What `rendererCamera()` reports: tile size and offset in CSS px, and whether the whole board is on screen. */
 export interface CameraInfo {
@@ -102,12 +103,30 @@ export interface Scene {
   /** Sprite sheets needed by actors already present in the first map frame. */
   firstFrameSheetKeys?(): readonly string[];
   resize?(): void;
+  /** Stop background work while retaining the scene's last painted frame. */
+  suspend?(): void;
+  /** Restart work after a retained scene becomes current again. */
+  resume?(): void;
   /**
    * The events a command produced, before the scene may be swapped for the
    * one the new state calls for. Return true when the scene schedules the
    * full playback itself (including the leader and its sound cues).
    */
   onEvents?(events: readonly GameEvent[], now: number): boolean | void;
+}
+
+export type DialogueBackdropKind = 'explore' | 'combat' | null;
+
+/** The live world, if any, that can safely sit behind a loaded staged conversation. */
+export function dialogueBackdropKind(
+  content: ContentIndex,
+  state: GameState | null | undefined,
+): DialogueBackdropKind {
+  if (!state || (state.screen !== 'dialogue' && state.screen !== 'ended')) return null;
+  const node = state.story.nodeId ? content.story.get(state.story.nodeId) : undefined;
+  if (!node || INTERLUDES[node.id]) return null;
+  if (state.battle && content.maps.has(state.battle.mapId)) return 'combat';
+  return state.location.mapId && content.maps.has(state.location.mapId) ? 'explore' : null;
 }
 
 export class App {
@@ -290,6 +309,30 @@ export class App {
 
   showScene(scene: Scene): void {
     this.cancelRoute();
+    const restoreBackdrop =
+      this.scene?.name === 'dialogue' &&
+      this.dialogueBackdrop?.name === scene.name &&
+      scene.name !== 'dialogue';
+    if (restoreBackdrop && this.dialogueBackdrop) {
+      this.scene?.unmount();
+      this.dialogueHost?.remove();
+      this.dialogueHost = null;
+      this.sceneHost.classList.remove('has-dialogue-backdrop');
+      const restored = this.dialogueBackdrop;
+      this.dialogueBackdrop = null;
+      const background = this.sceneHost.firstElementChild;
+      if (background instanceof HTMLElement) {
+        background.inert = false;
+        background.removeAttribute('aria-hidden');
+      }
+      this.scene = restored;
+      this.host.dataset.scene = restored.name;
+      this.setMood(this.defaultMood());
+      restored.resume?.();
+      restored.sync();
+      this.curtain.reveal(restored.firstFrameSheetKeys?.() ?? []);
+      return;
+    }
     const keepWorld =
       scene.name === 'dialogue' &&
       !this.dialogueBackdrop &&
@@ -297,6 +340,7 @@ export class App {
 
     if (keepWorld && this.scene) {
       this.dialogueBackdrop = this.scene;
+      this.dialogueBackdrop.suspend?.();
       this.sceneHost.classList.add('has-dialogue-backdrop');
       const background = this.sceneHost.firstElementChild;
       if (background instanceof HTMLElement) {
@@ -314,6 +358,23 @@ export class App {
       this.dialogueHost = null;
       this.sceneHost.classList.remove('has-dialogue-backdrop');
       clear(this.sceneHost);
+      const kind =
+        scene.name === 'dialogue' ? dialogueBackdropKind(this.content, this.state) : null;
+      if (kind) {
+        const backdrop = kind === 'combat' ? new CombatScene(this) : new ExploreScene(this);
+        this.dialogueBackdrop = backdrop;
+        this.sceneHost.classList.add('has-dialogue-backdrop');
+        backdrop.mount(this.sceneHost);
+        backdrop.sync();
+        backdrop.suspend?.();
+        const background = this.sceneHost.firstElementChild;
+        if (background instanceof HTMLElement) {
+          background.inert = true;
+          background.setAttribute('aria-hidden', 'true');
+        }
+        this.dialogueHost = el('div', { class: 'dialogue-layer' });
+        this.sceneHost.appendChild(this.dialogueHost);
+      }
     }
     this.scene = scene;
     this.host.dataset.scene = scene.name;
@@ -355,7 +416,7 @@ export class App {
   }
 
   /** Picks the scene the current state calls for. Idempotent. */
-  private routeToState(): void {
+  private routeToState(force = false): void {
     const state = this.state;
     if (!state) return;
 
@@ -368,7 +429,7 @@ export class App {
             ? 'dialogue'
             : 'title';
 
-    if (this.scene?.name === wanted) {
+    if (!force && this.scene?.name === wanted) {
       this.setMood(this.defaultMood());
       this.scene.sync();
       return;
@@ -463,7 +524,9 @@ export class App {
     this.animator.clear();
     this.residents.reset();
     this.closePause();
-    this.routeToState();
+    // Loading is replacement, even when the screen name happens to match.
+    // In particular, a second dialogue save must not retain the first save's world.
+    this.routeToState(true);
     this.toasts.show('Game loaded.');
   }
 

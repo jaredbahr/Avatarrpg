@@ -184,6 +184,9 @@ export class CombatScene implements Scene {
   private renderer: Renderer | null = null;
   private detach: (() => void) | null = null;
   private frame = 0;
+  private suspended = false;
+  private paintingStill = false;
+  private aiTimer: number | null = null;
 
   private mode: Mode = { kind: 'idle' };
   private pending: Vec2 | null = null;
@@ -266,6 +269,7 @@ export class CombatScene implements Scene {
   /* ---------------------------------------------------------------- */
 
   mount(host: HTMLElement): void {
+    this.suspended = false;
     this.host = host;
     this.layoutMeasuredAfterSync = false;
     this.flushedAt = null;
@@ -288,8 +292,10 @@ export class CombatScene implements Scene {
   }
 
   unmount(): void {
+    this.stopAiTimer();
     if (this.frame) cancelAnimationFrame(this.frame);
     this.frame = 0;
+    this.suspended = false;
     this.recentreButton = null;
     this.actorButton = null;
     this.moreDismiss?.();
@@ -306,6 +312,30 @@ export class CombatScene implements Scene {
     this.host = null;
     // Nothing outside combat bends: let the decoded bend pages go (ADR 0055).
     sheets.releaseBends();
+  }
+
+  suspend(): void {
+    if (this.suspended) return;
+    if (this.frame) cancelAnimationFrame(this.frame);
+    this.frame = 0;
+    this.paintingStill = true;
+    this.loop();
+    this.paintingStill = false;
+    this.suspended = true;
+    this.stopAiTimer();
+  }
+
+  resume(): void {
+    if (!this.suspended) return;
+    this.suspended = false;
+    this.loop();
+    this.maybeRunAi();
+  }
+
+  private stopAiTimer(): void {
+    if (this.aiTimer !== null) window.clearTimeout(this.aiTimer);
+    this.aiTimer = null;
+    this.aiScheduled = false;
   }
 
   resize(): void {
@@ -900,7 +930,8 @@ export class CombatScene implements Scene {
 
     this.aiScheduled = true;
     const delay = Math.max(0, this.app.animator.finishesAt - performance.now()) + 260;
-    window.setTimeout(() => {
+    this.aiTimer = window.setTimeout(() => {
+      this.aiTimer = null;
       if (this.app.state?.battle?.phase !== 'active') return;
       if (activeUnit(this.app.state.battle)?.id !== unit.id) return;
       this.app.dispatch({ type: 'runAiTurn' });
@@ -1913,7 +1944,8 @@ export class CombatScene implements Scene {
   /* ---------------------------------------------------------------- */
 
   private loop = (): void => {
-    this.frame = requestAnimationFrame(this.loop);
+    if (this.suspended) return;
+    if (!this.paintingStill) this.frame = requestAnimationFrame(this.loop);
     const renderer = this.renderer;
     const battle = this.battle();
     if (!renderer || !battle) return;
