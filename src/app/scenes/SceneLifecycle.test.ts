@@ -145,6 +145,8 @@ function fakeScene(name: string) {
 
 function appHarness(initial: ReturnType<typeof fakeScene>) {
   vi.stubGlobal('HTMLElement', FakeElement);
+  vi.stubGlobal('HTMLInputElement', FakeElement);
+  vi.stubGlobal('HTMLButtonElement', FakeElement);
   vi.stubGlobal('document', { createElement: () => new FakeElement() });
   const sceneHost = new FakeElement();
   sceneHost.appendChild(initial.stage);
