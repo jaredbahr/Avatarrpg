@@ -61,6 +61,7 @@ export const ENEMIES: readonly EnemyDef[] = [
   {
     id: 'bandit_earthbender',
     name: 'Quarry Bender',
+    shortName: 'Bender',
     element: 'earth',
     size: 1,
     stats: { maxHp: 36, maxAp: 4, maxMove: 3, power: 6, defense: 3, speed: 4, focus: 5 },
@@ -74,6 +75,7 @@ export const ENEMIES: readonly EnemyDef[] = [
   {
     id: 'fire_deserter',
     name: 'Fire Nation Deserter',
+    shortName: 'Deserter',
     element: 'fire',
     size: 1,
     stats: { maxHp: 34, maxAp: 4, maxMove: 4, power: 6, defense: 2, speed: 6, focus: 10 },
@@ -107,6 +109,7 @@ export const ENEMIES: readonly EnemyDef[] = [
   {
     id: 'merc_crossbow',
     name: 'Mercenary Crossbow',
+    shortName: 'Crossbow',
     element: 'nonbender',
     size: 1,
     stats: { maxHp: 39, maxAp: 4, maxMove: 4, power: 5, defense: 1, speed: 7, focus: 15 },
@@ -120,6 +123,7 @@ export const ENEMIES: readonly EnemyDef[] = [
   {
     id: 'merc_sergeant',
     name: 'Mercenary Sergeant',
+    shortName: 'Sergeant',
     element: 'nonbender',
     size: 1,
     stats: { maxHp: 62, maxAp: 5, maxMove: 4, power: 6, defense: 3, speed: 6, focus: 10 },

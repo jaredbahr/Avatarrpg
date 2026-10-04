@@ -10,6 +10,7 @@ import type { Grid, MapBackdrop, MapScene, StatusId, Vec2 } from '../core/types'
 import { tileAt } from '../core/rules/grid';
 import type { ClipName, Heading, MeleeDirection } from '../content/assets/clips';
 import type { EmitterDef } from '../content/fx';
+import { FLOATING_NUMBER } from './palettes';
 
 /** The pose vocabulary from ADR 0003; the sheet runtime maps these to frames. */
 export type { ClipName };
@@ -237,6 +238,8 @@ export interface Floater {
   readonly text: string;
   readonly color: string;
   readonly progress: number;
+  readonly offsetX?: number;
+  readonly textScale?: number;
   /** Size over the normal number, 1 when absent: a crit lands bigger. */
   readonly emphasis?: number;
 }
@@ -251,6 +254,48 @@ export function floaterScale(progress: number, emphasis = 1): number {
   const t = Math.max(0, Math.min(1, progress));
   const pop = t < 0.1 ? 0.6 + 0.7 * (t / 0.1) : t < 0.22 ? 1.3 - 0.3 * ((t - 0.1) / 0.12) : 1;
   return pop * emphasis;
+}
+
+export const FLOATER_TEXT_SCALE = 1.4;
+
+/** Local stroke width needed for a floater to render at two screen pixels. */
+export function floaterOutlineWidth(cameraScale: number, inheritedScale = 1): number {
+  return 2 / (cameraScale * inheritedScale);
+}
+
+/**
+ * Separate close hits on one target and colour the damage. The vertical anchor
+ * is not decided here: each backend starts a number just above the target's
+ * health bar (`floaterStartY`), from the geometry it draws the bar with.
+ */
+export function placeFloaters(
+  floaters: readonly Floater[],
+  closeProgress = 250 / 900,
+  textScale = 1,
+): Floater[] {
+  return floaters.map((floater, index) => {
+    const nearby = floaters.find(
+      (other, otherIndex) =>
+        otherIndex !== index &&
+        other.pos.x === floater.pos.x &&
+        other.pos.y === floater.pos.y &&
+        Math.abs(other.progress - floater.progress) <= closeProgress,
+    );
+    return {
+      ...floater,
+      color:
+        /^\d/.test(floater.text) && !floater.text.endsWith('!')
+          ? FLOATING_NUMBER.damage
+          : floater.color,
+      offsetX: nearby
+        ? floater.progress < nearby.progress ||
+          (floater.progress === nearby.progress && index < floaters.indexOf(nearby))
+          ? -0.22
+          : 0.22
+        : 0,
+      textScale,
+    };
+  });
 }
 
 export interface NpcMarker {
@@ -333,6 +378,11 @@ export interface MapView {
   readonly path: readonly Vec2[];
   /** Where `path` starts (the walker's tile), so it can be drawn as one curve. */
   readonly pathFrom: Vec2 | null;
+  /** Current feet and raw segment index; the route structure itself stays cache-stable. */
+  readonly pathOrigin?: Vec2 | null;
+  readonly pathStart?: number;
+  /** Exploration's restrained continuous route, rather than a combat move preview. */
+  readonly calmPath?: boolean;
   /** The throw being aimed, or null. */
   readonly aimArc: AimArc | null;
   readonly emitters: readonly EmitterInstance[];

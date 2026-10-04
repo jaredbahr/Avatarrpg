@@ -10,7 +10,8 @@
  * fade rather than pop.
  */
 
-import type { Palette } from '../palettes';
+import { floaterFontPx, floaterVisibleY } from '../geometry/actorSilhouette';
+import { FLOATING_NUMBER, type Palette } from '../palettes';
 import type { Box, Ctx } from './shapes';
 import { circle, polygon } from './shapes';
 
@@ -118,26 +119,32 @@ export function paintImpact(ctx: Ctx, box: Box, palette: Palette, options: FxOpt
   ctx.restore();
 }
 
-/** Floating damage / healing number, drawn above a unit during playback. */
+/**
+ * Floating damage / healing number, drawn above a unit during playback.
+ * `startY` is its vertical centre at progress 0 (`floaterStartY`: just above
+ * the target's health bar); it rises from there, never above the canvas top.
+ */
 export function paintFloatingNumber(
   ctx: Ctx,
   box: Box,
   text: string,
   color: string,
   progress: number,
-  scale = 1,
+  scale: number,
+  startY: number,
 ): void {
   const t = Math.max(0, Math.min(1, progress));
   const s = box.size;
   ctx.save();
   ctx.globalAlpha = 1 - t * t;
-  ctx.font = `700 ${Math.round(s * 0.34 * scale)}px 'Trebuchet MS', system-ui, sans-serif`;
+  const fontPx = floaterFontPx(s, scale);
+  ctx.font = `700 ${fontPx}px 'Trebuchet MS', system-ui, sans-serif`;
   ctx.textAlign = 'center';
   ctx.textBaseline = 'middle';
   const x = box.x + s / 2;
-  const y = box.y + s * (0.32 - t * 0.35);
-  ctx.lineWidth = Math.max(2, s * 0.06);
-  ctx.strokeStyle = 'rgba(0,0,0,0.85)';
+  const y = floaterVisibleY(startY - t * s * 0.35, 0, fontPx);
+  ctx.lineWidth = 2;
+  ctx.strokeStyle = FLOATING_NUMBER.outline;
   ctx.strokeText(text, x, y);
   ctx.fillStyle = color;
   ctx.fillText(text, x, y);

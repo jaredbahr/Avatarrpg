@@ -45,6 +45,15 @@ describe('content', () => {
     expect(problems, `\n${problems.join('\n')}\n`).toEqual([]);
   });
 
+  it('gives every initiative chip a label of at most 12 characters', () => {
+    const combatants = [...CONTENT_BUNDLE.characters, ...CONTENT_BUNDLE.enemies];
+    for (const combatant of combatants) {
+      const label = combatant.shortName ?? combatant.name;
+      expect(label.length, `${combatant.id} uses ${JSON.stringify(label)}`).toBeLessThanOrEqual(12);
+      if (combatant.name.length > 12) expect(combatant.shortName).toBeTruthy();
+    }
+  });
+
   it('ships the approved B-4 placements legally and keeps hay as the only fuel prop', () => {
     const placements = (mapId: string) =>
       CONTENT.maps.get(mapId)?.props.map(({ propId, pos }) => `${propId}@${pos.x},${pos.y}`) ?? [];

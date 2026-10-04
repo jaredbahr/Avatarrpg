@@ -23,6 +23,9 @@ import {
   actorReticleX,
   actorSilhouetteGeometry,
   actorShadowDensity,
+  fallbackBarTop,
+  floaterOwner,
+  floaterStartY,
   healthBarCap,
   HealthBarStagger,
 } from '../geometry/actorSilhouette';
@@ -41,7 +44,7 @@ import {
   polyBounds,
 } from '../geometry/lift';
 import type { LiftPlan, Pt, Rect } from '../geometry/lift';
-import { sampleAt, smoothPath } from '../geometry/curve';
+import { nearestDistanceAlong, sampleAt, smoothPath } from '../geometry/curve';
 import { CanvasFxLayer } from '../fx/canvasFx';
 import { steamPuffCanvas, steamSeed } from '../fx/steamPuff';
 import { drawBendFx } from '../fx/bendFxDraw';
@@ -67,6 +70,7 @@ import {
 } from '../painters/tiles';
 import { npcPose, sprites } from '../spriteCache';
 import {
+  FLOATER_TEXT_SCALE,
   fallenAlpha,
   floaterScale,
   unitMarkerGroundPoint,
@@ -111,6 +115,8 @@ export class Canvas2DBackend implements RenderBackend {
 
   private ctx: CanvasRenderingContext2D;
   private healthBarStagger = new HealthBarStagger();
+  /** Top edge of each unit's bar this frame (as drawn, staggered): floating numbers start above it. */
+  private barTops = new Map<string, number>();
   private pendingHealthBars: (HealthBarPlacement & {
     readonly unit: RenderUnit;
     readonly actorX: number;
@@ -169,6 +175,7 @@ export class Canvas2DBackend implements RenderBackend {
   draw(view: MapView, camera: Camera): void {
     const { ctx } = this;
     this.pendingHealthBars = [];
+    this.barTops.clear();
     const dpr = camera.viewport.dpr;
     view = {
       ...view,
@@ -1094,7 +1101,24 @@ export class Canvas2DBackend implements RenderBackend {
 
     if (view.hoverTile) {
       const box = camera.toScreen(view.hoverTile);
-      paintOverlay(ctx, box, OVERLAY.hover, null, null);
+      if (view.calmPath && view.path.length > 0) {
+        ctx.save();
+        ctx.globalAlpha = 0.45;
+        ctx.strokeStyle = OVERLAY.calmPath;
+        ctx.lineWidth = Math.max(1, box.size * OVERLAY.calmPathWidth);
+        ctx.beginPath();
+        HOVER_LOOP.forEach((point, index) => {
+          const x = box.x + point.x * box.size;
+          const y = box.y + point.y * box.size;
+          if (index === 0) ctx.moveTo(x, y);
+          else ctx.lineTo(x, y);
+        });
+        ctx.closePath();
+        ctx.stroke();
+        ctx.restore();
+      } else {
+        paintOverlay(ctx, box, OVERLAY.hover, null, null);
+      }
     }
   }
 
@@ -1102,7 +1126,7 @@ export class Canvas2DBackend implements RenderBackend {
     if (view.path.length === 0) return;
     const { ctx } = this;
 
-    if (!view.pathFrom || view.crispOverlays) {
+    if (!view.pathFrom || (view.crispOverlays && !view.calmPath)) {
       view.path.forEach((pos: Vec2, index: number) => {
         const box = camera.toScreen(pos);
         if (index === view.path.length - 1) paintPathArrow(ctx, box, OVERLAY.path);
@@ -1116,6 +1140,10 @@ export class Canvas2DBackend implements RenderBackend {
       this.curve = { path: view.path, from, curve: smoothPath(from, view.path) };
     }
     const curve = this.curve.curve;
+    const start = view.pathOrigin
+      ? nearestDistanceAlong(curve, view.pathOrigin, view.pathStart, view.path.length)
+      : 0;
+    const first = sampleAt(curve, start).pos;
     const origin = camera.toScreen({ x: 0, y: 0 });
     const size = origin.size;
 
@@ -1123,30 +1151,47 @@ export class Canvas2DBackend implements RenderBackend {
     ctx.lineCap = 'round';
     ctx.lineJoin = 'round';
     ctx.beginPath();
+    ctx.moveTo(origin.x + first.x * size, origin.y + first.y * size);
     curve.points.forEach((p, index) => {
+      if ((curve.cumulative[index] ?? 0) <= start) return;
       const x = origin.x + p.x * size;
       const y = origin.y + p.y * size;
-      if (index === 0) ctx.moveTo(x, y);
-      else ctx.lineTo(x, y);
+      ctx.lineTo(x, y);
     });
-    ctx.strokeStyle = OVERLAY.pathUnder;
-    ctx.lineWidth = Math.max(2, size * OVERLAY.pathUnderWidth);
+    ctx.strokeStyle = view.calmPath ? OVERLAY.calmPathUnder : OVERLAY.pathUnder;
+    ctx.lineWidth = Math.max(
+      1,
+      size * (view.calmPath ? OVERLAY.calmPathUnderWidth : OVERLAY.pathUnderWidth),
+    );
     ctx.stroke();
-    ctx.strokeStyle = OVERLAY.path;
-    ctx.lineWidth = Math.max(1, size * OVERLAY.pathWidth);
-    // A slow crawl along the route, so the line reads as a direction of travel.
-    ctx.setLineDash([size * 0.22, size * 0.16]);
-    ctx.lineDashOffset = -((view.time / 30) % (size * 0.38));
+    ctx.strokeStyle =
+      view.calmPath && view.crispOverlays
+        ? OVERLAY.calmPathContrast
+        : view.calmPath
+          ? OVERLAY.calmPath
+          : OVERLAY.path;
+    ctx.lineWidth = Math.max(1, size * (view.calmPath ? OVERLAY.calmPathWidth : OVERLAY.pathWidth));
+    if (!view.calmPath) {
+      // A slow crawl along a combat move route, so it reads as a direction of travel.
+      ctx.setLineDash([size * 0.22, size * 0.16]);
+      ctx.lineDashOffset = -((view.time / 30) % (size * 0.38));
+    }
     ctx.stroke();
     ctx.setLineDash([]);
 
     // The arrowhead sits on the last tangent, pointing the way the walk ends.
     const end = sampleAt(curve, curve.length);
     const tip = { x: origin.x + end.pos.x * size, y: origin.y + end.pos.y * size };
-    this.fillPolygon(
-      arrowheadPolygon(tip, end.tangent, size * OVERLAY.pathArrowScale),
-      OVERLAY.path,
-    );
+    if (view.calmPath) {
+      ctx.beginPath();
+      ctx.arc(tip.x, tip.y, size * OVERLAY.calmPathMarkerScale, 0, Math.PI * 2);
+      ctx.stroke();
+    } else {
+      this.fillPolygon(
+        arrowheadPolygon(tip, end.tangent, size * OVERLAY.pathArrowScale),
+        OVERLAY.path,
+      );
+    }
     ctx.restore();
   }
 
@@ -1768,6 +1813,7 @@ export class Canvas2DBackend implements RenderBackend {
         scale,
         26,
       );
+      this.barTops.set(unit.id, silhouette.bar.y);
       if (frame) {
         const ax = box.x + width / 2;
         const ay = box.y + FOOT_LINE * box.size;
@@ -1867,7 +1913,9 @@ export class Canvas2DBackend implements RenderBackend {
     const placements = this.healthBarStagger.place(this.pendingHealthBars);
     for (const candidate of this.pendingHealthBars) {
       const bar = placements.get(candidate.id);
-      if (bar) this.drawHealthBar(candidate.unit, bar, candidate.actorX, candidate.hatch);
+      if (!bar) continue;
+      this.barTops.set(candidate.id, bar.y);
+      this.drawHealthBar(candidate.unit, bar, candidate.actorX, candidate.hatch);
     }
     this.pendingHealthBars = [];
   }
@@ -1940,13 +1988,25 @@ export class Canvas2DBackend implements RenderBackend {
     const { ctx } = this;
     for (const floater of view.floaters) {
       const box = camera.toScreen(floater.pos);
+      box.x += (floater.offsetX ?? 0) * box.size;
+      const textScale =
+        FLOATER_TEXT_SCALE *
+        (floater.textScale ?? 1) *
+        floaterScale(floater.progress, floater.emphasis);
+      // The owner's bar top as drawn this frame; a target that is gone from the
+      // view reads from the painter-fallback geometry on its own tile.
+      const owner = floaterOwner(view.units, floater.pos, this.squareFootprints);
+      const barTop =
+        (owner && this.barTops.get(owner.id)) ??
+        fallbackBarTop({ x: box.x, y: box.y, size: box.size });
       paintFloatingNumber(
         ctx,
         box,
         floater.text,
         floater.color,
         floater.progress,
-        floaterScale(floater.progress, floater.emphasis),
+        textScale,
+        floaterStartY(barTop, box.size, textScale),
       );
     }
   }
