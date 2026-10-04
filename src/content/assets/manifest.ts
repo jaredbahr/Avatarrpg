@@ -227,7 +227,14 @@ function gSheet(key: string, name: 'kaya' | 'sura' | 'bo', palette: string): She
     footprint: { w: 1, h: 1 },
     anchor: { x: 0.5, y: 0.85 },
     facing: 'both',
-    locomotion: { headings: 8, walkMsPerTile: gWalkMsPerTile(12) },
+    // Cel 3 is the first planted passing pose after the wide opening stride.
+    locomotion: {
+      headings: 8,
+      walkMsPerTile: gWalkMsPerTile(12),
+      walkStartMs: 3 * 114,
+      walkCycleMs: 12 * 114,
+      authoredBob: true,
+    },
     palette,
     clips,
   };
@@ -275,7 +282,14 @@ function enemyGSheet(name: EnemyGName, palette: string): SheetEntry {
     footprint: { w: 1, h: 1 },
     anchor: { x: 0.5, y: 0.85 },
     facing: 'both',
-    locomotion: { headings: 8, walkMsPerTile: gWalkMsPerTile(8) },
+    // Cel 2 is the equivalent quarter-cycle passing pose in the eight-cel family.
+    locomotion: {
+      headings: 8,
+      walkMsPerTile: gWalkMsPerTile(8),
+      walkStartMs: 2 * 114,
+      walkCycleMs: 8 * 114,
+      authoredBob: true,
+    },
     palette,
     clips,
   };

@@ -3,7 +3,13 @@ import { describe, expect, it } from 'vitest';
 import type { ContentIndex, GameEvent, Unit } from '../core/types';
 import { clipDurationMs } from '../content/assets/clips';
 import type { SheetClips } from '../render/sheets/store';
-import { Animator, STOP_SETTLE_MS, WALK_MS_PER_TILE } from './animator';
+import {
+  Animator,
+  partyWalkPhase,
+  STOP_SETTLE_MS,
+  TURN_PLANT_MS,
+  WALK_MS_PER_TILE,
+} from './animator';
 import { CONTENT } from '../content';
 import { sampleParticles, PARTICLE_STRIDE } from '../render/fx/simulate';
 import { choreograph, TIMING } from './anim/choreography';
@@ -50,6 +56,104 @@ const airBlast: GameEvent = {
 };
 
 describe('Animator', () => {
+  it('does not carry a stale stagger into a later walk pushed without one', () => {
+    const sprite = 'unit.fire.kaya';
+    const a = animator();
+    const at = (t: number) => a.unitPose(t, 'alpha', sprite)?.clipTime;
+    const walk = [{ ...unit('alpha', 1, 1), sprite } as Unit];
+    a.push(
+      0,
+      [{ type: 'partyWalked', unitId: 'alpha', from: { x: 1, y: 1 }, path: [{ x: 2, y: 1 }] }],
+      walk,
+      {
+        walkPhase: 0.5,
+      },
+    );
+    const staggered = at(1);
+    const later = a.finishesAt + 1000;
+    a.push(
+      later,
+      [{ type: 'partyWalked', unitId: 'alpha', from: { x: 2, y: 1 }, path: [{ x: 3, y: 1 }] }],
+      walk,
+    );
+    expect(at(later + 1)).toBeLessThan((staggered ?? 0) - 1);
+  });
+
+  it('plants a 90-degree turn without stopping travel, but not a 45-degree turn', () => {
+    const ninety = animator();
+    ninety.push(0, [moved('p0', [2, 1], [2, 0], [2, -1])], [unit('p0', 1, 1)]);
+    let plantedAt = -1;
+    for (let at = 1; at < ninety.finishesAt; at++) {
+      if (ninety.locomotion(at, 'p0', 'idle', 'unit.fire.kaya').clip.startsWith('idle')) {
+        plantedAt = at;
+        break;
+      }
+    }
+    expect(plantedAt).toBeGreaterThan(0);
+    expect(ninety.renderPos(plantedAt + TURN_PLANT_MS / 2, 'p0')).not.toEqual(
+      ninety.renderPos(plantedAt, 'p0'),
+    );
+
+    const diagonal = animator();
+    diagonal.push(0, [moved('p0', [2, 1], [3, 0], [4, -1])], [unit('p0', 1, 1)]);
+    for (let at = 1; at < diagonal.finishesAt; at++)
+      expect(diagonal.locomotion(at, 'p0', 'idle', 'unit.fire.kaya').clip).toMatch(/^walk/);
+  });
+
+  it('adds no turn plant under reduced motion', () => {
+    const a = animator(true);
+    a.push(0, [moved('p0', [2, 1], [2, 0])], [unit('p0', 1, 1)]);
+    for (let at = 0; at < a.finishesAt; at += 0.1)
+      expect(a.locomotion(at, 'p0', 'idle', 'unit.fire.kaya').clip).toMatch(/^walk/);
+  });
+
+  it('starts authored walks planted, staggers followers, and keeps the shadow ground anchor level', () => {
+    const move = (id: string): GameEvent => ({
+      type: 'partyWalked',
+      unitId: id,
+      from: { x: 1, y: 1 },
+      path: [{ x: 4, y: 1 }],
+    });
+    const a = animator();
+    const ids = ['leader', 'sura', 'bo'];
+    ids.forEach((id, index) => {
+      a.push(0, [move(id)], [], { alongside: index > 0, walkPhase: partyWalkPhase(index) });
+    });
+    const start = a.unitPose(0.01, 'leader', 'unit.fire.kaya');
+    expect(Math.floor((start?.clipTime ?? -1) / 114) % 12).toBe(3);
+    const phases = ids.map((id) => a.unitPose(400, id, 'unit.fire.kaya')?.clipTime ?? -1);
+    // No two members within two cels of each other on the 12-cel loop.
+    for (let i = 0; i < phases.length; i++)
+      for (let j = i + 1; j < phases.length; j++) {
+        const gap = Math.abs((phases[i] ?? 0) - (phases[j] ?? 0)) % (12 * 114);
+        expect(Math.min(gap, 12 * 114 - gap), `${i}/${j}`).toBeGreaterThan(2 * 114);
+      }
+    for (const at of [1, 200, 400, 600]) {
+      expect(a.offset(at, 'leader', 'unit.fire.kaya')).toBeUndefined();
+      expect(a.renderPos(at, 'leader')?.y).toBe(1);
+    }
+  });
+
+  it('advances a finished authored stride to a planted cel across the 140 ms settle', () => {
+    const a = animator();
+    a.push(
+      0,
+      [moved('p0', [2, 1], [3, 1])],
+      [{ ...unit('p0', 1, 1), sprite: 'unit.fire.kaya' } as Unit],
+    );
+    const end = a.finishesAt;
+    const at = (t: number) => a.unitPose(t, 'p0', 'unit.fire.kaya');
+    let last = at(end - 0.01)?.clipTime ?? -1;
+    for (const t of [end + 1, end + 35, end + 70, end + 105, end + STOP_SETTLE_MS - 0.01]) {
+      const pose = at(t);
+      expect(pose?.clip).toBe('walk');
+      expect(pose?.clipTime ?? -1).toBeGreaterThanOrEqual(last);
+      last = pose?.clipTime ?? -1;
+    }
+    // The window closes on a planted passing cel (3 or 9 of 12).
+    expect([3, 9]).toContain(Math.round(last / 114) % 12);
+    expect(at(end + STOP_SETTLE_MS)).toBeUndefined();
+  });
   it.each([false, true])('holds damage feedback until Air Blast impact, reduced=%s', (reduced) => {
     const before = [combatUnit('p0', 1, 3, 20), combatUnit('e0', 5, 3, 20)];
     const events: GameEvent[] = [

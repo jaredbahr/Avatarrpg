@@ -74,7 +74,7 @@ import {
 import { UnitInspector } from '../ui/UnitInspector';
 import { PropInspector } from '../ui/PropInspector';
 import { enemyScale, partyScale } from '../anim/actorScale';
-import { partyBendSprites } from '../anim/bendHandoff';
+import { isBendingAttack, partyBendSprites } from '../anim/bendHandoff';
 import { sheetLocomotion } from '../../content/assets/manifest';
 import { idlePhase, sheets } from '../../render/sheets/store';
 import { createMovementThreatQuery } from '../ui/movementThreats';
@@ -256,6 +256,7 @@ export class CombatScene implements Scene {
   private layoutMeasuredAfterSync = false;
   /** When the scene's birds burst out of the trees: once, as a fresh fight is first seen. */
   private flushedAt: number | null = null;
+  private waitingForBend = false;
 
   constructor(private app: App) {
     this.movementThreatQuery = createMovementThreatQuery(app.content);
@@ -1714,7 +1715,16 @@ export class CombatScene implements Scene {
       );
     }
 
-    return this.confirmShell(body, () => {
+    return this.confirmShell(body, async () => {
+      if (this.waitingForBend) return;
+      if (!motionReduced() && isBendingAttack(unit, ability)) {
+        this.waitingForBend = true;
+        try {
+          await this.app.waitForBend(unit.sprite);
+        } finally {
+          this.waitingForBend = false;
+        }
+      }
       this.app.dispatch({
         type: 'useAbility',
         unitId: unit.id,

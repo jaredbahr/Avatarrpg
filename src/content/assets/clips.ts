@@ -80,6 +80,12 @@ export type Heading = (typeof HEADINGS)[number];
 export interface LocomotionDef {
   readonly headings: 8;
   readonly walkMsPerTile: Readonly<Record<Heading, number>>;
+  /** Start on a planted passing pose instead of the loop's widest stride. */
+  readonly walkStartMs: number;
+  /** Full authored loop, used only to stagger companions without changing pace. */
+  readonly walkCycleMs: number;
+  /** These cels already carry their own vertical body motion. */
+  readonly authoredBob: true;
 }
 
 /** The clip families an eight-way sheet authors per heading. */

@@ -152,9 +152,11 @@ for (const renderer of ['canvas', 'webgl'] as const) {
           );
           expect(paces.length).toBeGreaterThan(0);
           for (const { travelled, clipTime } of paces)
-            expect(Math.abs(clipTime - msPerTile * travelled), `${travelled} tiles`).toBeLessThan(
-              40,
-            );
+            // The stride opens on the sheet's planted passing cel, then advances by distance.
+            expect(
+              Math.abs(clipTime - sheet.locomotion.walkStartMs - msPerTile * travelled),
+              `${travelled} tiles`,
+            ).toBeLessThan(40);
         }
         // One frame finishes the walk rather than a second's worth of them.
         await page.clock.fastForward(strollTiming(Math.abs(dy), TIMING.strollStep).duration);

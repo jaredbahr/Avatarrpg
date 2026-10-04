@@ -42,6 +42,7 @@ import { showGridLines } from '../storage/localSaves';
 import { NextWalk, previewWalk } from '../world/walking';
 import type { WalkPreview } from '../world/walking';
 import { nearbyExits, nearbyExploreTarget } from '../world/guidance';
+import { partyWalkPhase } from '../animator';
 import { handoverBark } from '../world/barks';
 import { seatHere } from '../world/waiting';
 import { phaseLabel } from '../world/journal';
@@ -257,7 +258,10 @@ export class ExploreScene implements Scene {
           from: before[route.index] ?? event.from,
           path: route.path,
         };
-        this.app.animator.push(now, [move], unitsBefore, { alongside: true });
+        this.app.animator.push(now, [move], unitsBefore, {
+          alongside: true,
+          walkPhase: partyWalkPhase(route.index),
+        });
       }
     }
     this.app.animator.push(
@@ -288,7 +292,12 @@ export class ExploreScene implements Scene {
             },
           ],
           [],
-          { alongside: index > 0, silentSteps: route.index !== 0, delayMs: route.delayMs },
+          {
+            alongside: index > 0,
+            silentSteps: route.index !== 0,
+            delayMs: route.delayMs,
+            walkPhase: partyWalkPhase(route.index),
+          },
         );
       }
     }
@@ -1020,7 +1029,7 @@ export class ExploreScene implements Scene {
       shadow: true,
       scale: partyScale(map.projection),
       renderPos: index === 0 ? walking : this.app.animator.renderPos(now, member.id),
-      offset: this.app.animator.offset(now, member.id),
+      offset: this.app.animator.offset(now, member.id, member.sprite),
       clipTime: this.app.animator.unitPose(now, member.id, member.sprite)?.clipTime,
       ...this.app.animator.locomotion(now, member.id, 'rest', member.sprite),
     }));

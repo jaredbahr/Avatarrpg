@@ -335,7 +335,7 @@ describe('heading vocabulary is a declared sheet capability', () => {
       );
       const pose = a.unitPose(300, 'u', sprite);
       const legacy = a.unitPose(300, 'u', FOUR_WAY);
-      expect(pose?.clipTime).toBeCloseTo(
+      expect((pose?.clipTime ?? 0) - sheet.locomotion.walkStartMs).toBeCloseTo(
         ((legacy?.clipTime ?? 0) / WALK_MS_PER_TILE) * sheet.locomotion.walkMsPerTile.south,
       );
     });
@@ -355,7 +355,9 @@ describe('heading vocabulary is a declared sheet capability', () => {
         a.push(0, [{ type: 'partyWalked', unitId: 'u', from: { x: 4, y: 4 }, path: [to] }], []);
         const pose = a.unitPose(300, 'u', sprite);
         const legacy = a.unitPose(300, 'u', FOUR_WAY);
-        expect(pose?.clipTime).toBeCloseTo(((legacy?.clipTime ?? 0) / WALK_MS_PER_TILE) * expected);
+        expect((pose?.clipTime ?? 0) - sheet.locomotion.walkStartMs).toBeCloseTo(
+          ((legacy?.clipTime ?? 0) / WALK_MS_PER_TILE) * expected,
+        );
       }
     });
   }
@@ -397,7 +399,9 @@ describe('the fighting stance (ADR 0052)', () => {
         expect(a.locomotion(a.finishesAt / 2, 'p', 'stance', sprite).clip).toBe(`walk${heading}`);
         const done = a.finishesAt + 1;
         a.prune(done);
-        expect(a.locomotion(done, 'p', 'stance', sprite).clip).toBe(`idle${heading}`);
+        // The stop holds a planted walk cel for the settle window (not a stride
+        // frame, not the guard); the guard follows once it ends.
+        expect(a.locomotion(done, 'p', 'stance', sprite).clip).toBe(`walk${heading}`);
         const guard = a.locomotion(done + 300, 'p', 'stance', sprite);
         // Authored for each side, so drawn unflipped whichever way she faces.
         expect(guard.clip).toBe(`stance${heading}`);
@@ -450,7 +454,8 @@ describe('eight-way oblique headings for a declaring sheet', () => {
       expect(a.locomotion(a.finishesAt / 2, 'p', 'idle', kaya).clip).toBe(`walk${clip}`);
       const done = a.finishesAt + 1;
       a.prune(done);
-      expect(a.locomotion(done, 'p', 'idle', kaya).clip).toBe(`idle${clip}`);
+      // The stop holds a planted walk cel for its settle window, then idles.
+      expect(a.locomotion(done, 'p', 'idle', kaya).clip).toBe(`walk${clip}`);
       expect(a.locomotion(done + 300, 'p', 'idle', kaya).clip).toBe(`idle${clip}`);
       // Explore requests the legacy rest family; a G sheet substitutes its
       // planted directional idle instead of holding the mid-stride rest cel.
