@@ -5,6 +5,10 @@ import { ExploreScene } from './ExploreScene';
 interface LifecycleHarness {
   frame: number;
   suspended: boolean;
+  paintingStill: boolean;
+  loop: ReturnType<typeof vi.fn>;
+  aiTimer: number | null;
+  aiScheduled: boolean;
   renderer: null;
   life: null;
   app: {
@@ -21,6 +25,9 @@ function harness(kind: 'explore' | 'combat'): LifecycleHarness {
   const scene = Object.create(prototype) as LifecycleHarness;
   scene.frame = 41;
   scene.suspended = false;
+  scene.paintingStill = false;
+  scene.aiTimer = null;
+  scene.aiScheduled = false;
   scene.renderer = null;
   scene.life = null;
   scene.app = {
@@ -40,15 +47,26 @@ describe.each(['explore', 'combat'] as const)('%s retained-scene lifecycle', (ki
     vi.stubGlobal('requestAnimationFrame', request);
     vi.stubGlobal('cancelAnimationFrame', cancel);
     const scene = harness(kind);
+    let stillPaints = 0;
+    scene.loop = vi.fn(() => {
+      if (scene.paintingStill) {
+        stillPaints += 1;
+        return;
+      }
+      scene.frame = request();
+    });
 
     scene.suspend();
     scene.suspend();
     expect(cancel).toHaveBeenCalledOnce();
     expect(cancel).toHaveBeenCalledWith(41);
     expect(request).not.toHaveBeenCalled();
+    expect(stillPaints).toBe(1);
+    expect(scene.loop).toHaveBeenCalledOnce();
 
     scene.resume();
     scene.resume();
+    expect(scene.loop).toHaveBeenCalledTimes(2);
     expect(request).toHaveBeenCalledOnce();
     expect(scene.frame).toBe(42);
   });
