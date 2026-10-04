@@ -18,6 +18,8 @@ import type { CharacterDef, ElementId } from '../../core/types';
 import { button, clear, el } from '../ui/dom';
 import { assetCanvas } from '../ui/assetCanvas';
 import { defaultPlayerName } from '../session';
+import { loadLastTitleArt } from '../storage/localSaves';
+import { titleArtById, type TitleArtDef } from '../titleArt';
 
 type Step = 'count' | 'handoff' | 'name' | 'element' | 'character' | 'summary';
 
@@ -97,8 +99,48 @@ export class PartySetupScene implements Scene {
         break;
     }
 
+    const art = titleArtById(loadLastTitleArt());
+    if (art) scene.appendChild(this.backdrop(art));
     scene.appendChild(panel);
     host.appendChild(scene);
+  }
+
+  /** The title's last painting, held still beneath an ink scrim throughout setup. */
+  private backdrop(art: TitleArtDef): HTMLElement {
+    const base = `${import.meta.env.BASE_URL}art/title/`;
+    const picture = el(
+      'picture',
+      {},
+      el('source', {
+        attrs: {
+          media: '(max-aspect-ratio: 9/10)',
+          srcset: `${base}${art.portrait.file}`,
+          width: String(art.portrait.width),
+          height: String(art.portrait.height),
+        },
+      }),
+      el('img', {
+        attrs: {
+          src: `${base}${art.wide.file}`,
+          alt: '',
+          width: String(art.wide.width),
+          height: String(art.wide.height),
+          decoding: 'async',
+        },
+      }),
+    );
+    const backdrop = el(
+      'div',
+      {
+        class: 'setup-art',
+        attrs: { 'aria-hidden': 'true' },
+        dataset: { art: art.id },
+      },
+      picture,
+    );
+    backdrop.style.setProperty('--art-focus', art.focus);
+    backdrop.style.setProperty('--art-portrait-focus', art.portraitFocus);
+    return backdrop;
   }
 
   /* ---------------------------------------------------------------- */
@@ -348,10 +390,17 @@ export class PartySetupScene implements Scene {
         },
       },
       assetCanvas(character.portrait, 5),
-      el('h3', { text: character.name }),
-      el('p', { class: 'tagline', text: character.blurb }),
-      el('p', { class: 'tiny muted', text: character.bio }),
-      taken ? el('span', { class: 'chip chip-warn', text: 'Already taken' }) : null,
+      el(
+        'div',
+        { class: 'character-copy' },
+        el('h3', { text: character.name }),
+        el('p', { class: 'tagline', text: character.blurb }),
+        el('p', { class: 'tiny muted', text: character.bio }),
+        taken ? el('span', { class: 'chip chip-warn', text: 'Already taken' }) : null,
+      ),
+      selected
+        ? el('span', { class: 'selection-check', text: '✓', attrs: { 'aria-hidden': 'true' } })
+        : null,
     );
     return card;
   }
@@ -416,10 +465,15 @@ export class PartySetupScene implements Scene {
       list.appendChild(
         el(
           'div',
-          { class: `pick-card element-${character.element}` },
+          { class: `pick-card party-summary-card element-${character.element}` },
           assetCanvas(character.portrait, 4),
-          el('h3', { text: character.name }),
-          el('p', { class: 'tagline', text: draft.name }),
+          el(
+            'div',
+            { class: 'character-copy' },
+            el('h3', { text: character.name }),
+            el('p', { class: 'tagline', text: draft.name }),
+            el('span', { class: 'chip element-chip', text: character.element }),
+          ),
         ),
       );
     }
