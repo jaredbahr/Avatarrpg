@@ -702,13 +702,14 @@ export class ResidentWalks {
     const facing = animator?.facing(who.id) ?? this.facings.get(who.id) ?? 1;
     const clipTime = animator?.unitPose(c, who.id, who.sprite)?.clipTime ?? 0;
     const walking = clip.startsWith('walk');
+    const posedWalking = walking && !this.reduced();
     // A full first and last step ease the restrained lean and stepped bob in and out.
     const from = start + (motion.enter ? fade : 0);
-    const into = walking ? ease(Math.min(c - from, walkEnd - c) / RESIDENT_WALK_EASE_MS) : 0;
+    const into = posedWalking ? ease(Math.min(c - from, walkEnd - c) / RESIDENT_WALK_EASE_MS) : 0;
     return {
       ...base,
       drawPos,
-      ...(walking ? { offset: walkOffset(clipTime, into) } : {}),
+      ...(posedWalking ? { offset: walkOffset(clipTime, into) } : {}),
       facing,
       walking,
       clipTime,

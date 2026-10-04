@@ -384,6 +384,22 @@ describe('ResidentWalks', () => {
     expect(figure(w, 'lw.npc.dorin')?.drawPos).toEqual({ x: 17, y: 6 });
   });
 
+  it('keeps a reduced-motion multi-tile placement walk neutral while sampled', () => {
+    const w = walks(true);
+    const before = at('midday');
+    w.tick(0, false);
+    w.update(VILLAGE, before, party, true);
+    expect(w.update(VILLAGE, waited(before, 'afternoon'), party, true)).toBe(true);
+
+    for (const time of [0, 10]) {
+      w.tick(time, false);
+      const dorin = figure(w, 'lw.npc.dorin');
+      expect(dorin?.walking).toBe(true);
+      expect(dorin).toMatchObject({ lean: 0, poseScale: 1 });
+      expect(dorin?.offset).toBeUndefined();
+    }
+  });
+
   it('forgets everything on reset: the next state is placed, not walked', () => {
     const w = walks();
     const before = at('midday');
