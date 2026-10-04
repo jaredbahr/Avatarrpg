@@ -518,6 +518,7 @@ export const BA_DAN_CHIMNEYS: readonly Vec2[] = [
 
 /** Calibrated projected pixels; textures are already painted in the target camera. */
 export const BA_DAN_SCENE: MapScene = {
+  marginTone: 'verdant',
   chimneys: BA_DAN_CHIMNEYS,
   groundMode: 'partial',
   // The plates carry the pools, so the film stays off them; ice or charge still draw.

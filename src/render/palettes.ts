@@ -81,6 +81,12 @@ export const TERRAIN_STYLES: Record<TerrainId, TerrainStyle> = {
   pit: { fill: '#14100c', edge: '#0b0906', detail: '#1d1813' },
 };
 
+/** Dark, desaturated ground carried beneath a scene's feathered exterior apron. */
+export const MAP_MARGIN_COLORS = {
+  verdant: '#465b40',
+  quarry: '#655d4e',
+} as const;
+
 /**
  * What lies under standing water on procedural ground.
  *
