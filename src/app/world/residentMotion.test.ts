@@ -5,7 +5,14 @@ import { createGame } from '../../core/state/createGame';
 import { apply } from '../../core/state/reducer';
 import { buildGrid, posKey, samePos, tileAt } from '../../core/rules/grid';
 import type { DayPhase, GameState, MapDef, Vec2 } from '../../core/types';
-import { ResidentWalks, planResidentMotion, standingOn } from './residentMotion';
+import {
+  RESIDENT_BOB_PX,
+  RESIDENT_WALK_LEAN_RAD,
+  ResidentWalks,
+  planResidentMotion,
+  residentPhase,
+  standingOn,
+} from './residentMotion';
 import type { ResidentMotion } from './residentMotion';
 import { previewWalk } from './walking';
 import { TIMING } from '../anim/choreography';
@@ -462,8 +469,10 @@ describe('routines (Working Ba Dan)', () => {
     // A tap still finds him at his shop: the rules never see the errand.
     expect(gao.every((f) => f.pos && samePos(f.pos, SHOP))).toBe(true);
     expect(gao.some((f) => f.walking)).toBe(true);
-    // A work beat at the display: he reaches in and back.
-    expect(gao.some((f) => key(f.drawPos) === '8,5' && (f.squash ?? 0) > 0.3)).toBe(true);
+    // A work beat at the display: he leans in, holds, straightens and holds.
+    const work = gao.filter((f) => key(f.drawPos) === '8,5' && !f.walking);
+    expect(work.some((f) => Math.abs(f.lean ?? 0) >= 0.029)).toBe(true);
+    expect(work.some((f) => (f.lean ?? 0) === 0)).toBe(true);
     // No errand leg is a placement walk: nothing waits on any leg of it.
     expect(frames.every((frame) => !frame.moving)).toBe(true);
   });
@@ -493,6 +502,41 @@ describe('routines (Working Ba Dan)', () => {
     // Both routines ran in that afternoon (Pella kept from the river keeps her household home).
     expect(new Set(of(a, GAO).map((f) => key(f.drawPos))).size).toBeGreaterThan(1);
     expect(new Set(of(a, CARRIER).map((f) => key(f.drawPos))).size).toBeGreaterThan(1);
+  });
+
+  it('keeps resident poses rigid and every vertical offset on the 1x pixel grid', () => {
+    const frames = play(walks(), at('morning', AWAY[0]), 0, 30_000);
+    const figures = frames.flatMap((frame) => frame.figures);
+    expect(figures.every((figure) => figure.poseScale === 1)).toBe(true);
+    expect(figures.every((figure) => !('squash' in figure))).toBe(true);
+    expect(figures.every((figure) => Number.isInteger((figure.offset?.y ?? 0) * 64))).toBe(true);
+    expect(
+      Math.max(...figures.map((figure) => Math.abs((figure.offset?.y ?? 0) * 64))),
+    ).toBeLessThanOrEqual(RESIDENT_BOB_PX);
+    expect(figures.every((figure) => Math.abs(figure.lean ?? 0) <= RESIDENT_WALK_LEAN_RAD)).toBe(
+      true,
+    );
+  });
+
+  it('uses planted step contacts and eases the first and last walking step', () => {
+    const gao = of(play(walks(), at('morning', AWAY[0]), 0, 12_000), GAO);
+    const first = gao.findIndex((figure) => figure.walking);
+    const after = gao.findIndex((figure, index) => index > first && !figure.walking);
+    if (first < 0 || after < 0) throw new Error('Gao completes a walk in the sample');
+    const walk = gao.slice(first, after);
+    const leans = walk.map((figure) => Math.abs(figure.lean ?? 0));
+    const bobs = walk.map((figure) => Math.abs((figure.offset?.y ?? 0) * 64));
+    expect(walk.length).toBeGreaterThan(4);
+    expect(leans[0]).toBeLessThan(Math.max(...leans));
+    expect(leans.at(-1)).toBeLessThan(Math.max(...leans));
+    expect(bobs.filter((bob) => bob === 0).length).toBeGreaterThan(1);
+    expect(bobs).toContain(0);
+    expect(bobs).toContain(1);
+  });
+
+  it('derives a stable, resident-specific idle phase from the id', () => {
+    expect(residentPhase(GAO, 4800)).toBe(residentPhase(GAO, 4800));
+    expect(residentPhase(GAO, 4800)).not.toBe(residentPhase(CARRIER, 4800));
   });
 
   it('never steps onto anyone’s tile, and the two errands never share one', () => {
@@ -650,7 +694,9 @@ describe('routines (Working Ba Dan)', () => {
     const frames = play(w, at('afternoon', AWAY[0], []), 0, 40_000);
     for (const f of of(frames, GAO)) expect(f).toMatchObject({ drawPos: SHOP, walking: false });
     for (const f of of(frames, CARRIER)) expect(f).toMatchObject({ drawPos: YARD, walking: false });
-    expect(of(frames, GAO).every((f) => !f.lean && !f.squash)).toBe(true);
+    expect(
+      of(frames, GAO).every((f) => !f.lean && !f.offset && f.poseScale === 1 && !('squash' in f)),
+    ).toBe(true);
   });
 
   it('stands still through a conversation: the errand clock is the walk clock', () => {

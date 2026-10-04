@@ -230,18 +230,78 @@ export interface ResidentFigure {
   /** Ms into the walk clip, by distance, as the party's is. */
   readonly clipTime: number;
   readonly alpha: number;
+  /** Procedural motion never deforms the painted body. */
+  readonly poseScale: 1;
   /** Radians about the feet: a lean into the walk, eased in and out with it. */
   readonly lean?: number;
-  /** 0..1: how far the figure settles onto a foot, strongest at each footfall. */
-  readonly squash?: number;
 }
 
 const clamp01 = (n: number) => Math.max(0, Math.min(1, n));
+const ease = (n: number) => {
+  const t = clamp01(n);
+  return t * t * (3 - 2 * t);
+};
 
 /** Tiles either way the party keeps an errand from setting off. */
 const YIELD = 2;
-/** One reach into the work while an errand holds, in ms. */
-const WORK_MS = 1600;
+export const WORK_LEAN_IN_MS = 240;
+export const WORK_LEAN_HOLD_MS = 400;
+export const WORK_STRAIGHTEN_MS = 240;
+export const WORK_STRAIGHT_HOLD_MS = 720;
+/** One complete held work beat. Kept at 1.6 s to align with the authored routine timing. */
+export const WORK_CYCLE_MS =
+  WORK_LEAN_IN_MS + WORK_LEAN_HOLD_MS + WORK_STRAIGHTEN_MS + WORK_STRAIGHT_HOLD_MS;
+const WORK_LEAN_RAD = 0.03;
+
+/** A resident stride has two planted contacts and never lifts more than two pixels at 1x. */
+export const RESIDENT_STRIDE_MS = 500;
+export const RESIDENT_STEP_MS = RESIDENT_STRIDE_MS / 2;
+export const RESIDENT_CONTACT_MS = 60;
+export const RESIDENT_BOB_PX = 2;
+export const RESIDENT_WALK_LEAN_RAD = 0.035;
+const RESIDENT_WALK_EASE_MS = RESIDENT_STEP_MS;
+const RESIDENT_IDLE_CYCLE_MS = 4800;
+const TILE_PX = 64;
+
+/** Stable phase without runtime randomness, including for background-role ids. */
+export function residentPhase(id: string, cycleMs: number): number {
+  let hash = 2166136261;
+  for (let i = 0; i < id.length; i++) {
+    hash ^= id.charCodeAt(i);
+    hash = Math.imul(hash, 16777619);
+  }
+  return (hash >>> 0) % cycleMs;
+}
+
+/** Whole-pixel, mostly-held idle breath: either grounded or one pixel lifted. */
+function idleOffset(id: string, clock: number): Vec2 {
+  const phase =
+    ((clock + residentPhase(id, RESIDENT_IDLE_CYCLE_MS)) % RESIDENT_IDLE_CYCLE_MS) /
+    RESIDENT_IDLE_CYCLE_MS;
+  return { x: 0, y: phase >= 0.38 && phase < 0.62 ? -1 / TILE_PX : 0 };
+}
+
+/** Two short flat contacts per stride, with a rounded lift between them. */
+function walkOffset(clipTime: number, amount: number): Vec2 {
+  const stepTime = ((clipTime % RESIDENT_STEP_MS) + RESIDENT_STEP_MS) % RESIDENT_STEP_MS;
+  const edge = RESIDENT_CONTACT_MS / 2;
+  let lift = 0;
+  if (stepTime > edge && stepTime < RESIDENT_STEP_MS - edge) {
+    const travel = (stepTime - edge) / (RESIDENT_STEP_MS - RESIDENT_CONTACT_MS);
+    lift = Math.sin(Math.PI * travel) * RESIDENT_BOB_PX * amount;
+  }
+  return { x: 0, y: -Math.round(lift) / TILE_PX };
+}
+
+function workLean(elapsed: number): number {
+  const t = ((elapsed % WORK_CYCLE_MS) + WORK_CYCLE_MS) % WORK_CYCLE_MS;
+  if (t < WORK_LEAN_IN_MS) return ease(t / WORK_LEAN_IN_MS);
+  if (t < WORK_LEAN_IN_MS + WORK_LEAN_HOLD_MS) return 1;
+  const straightenAt = WORK_LEAN_IN_MS + WORK_LEAN_HOLD_MS;
+  if (t < straightenAt + WORK_STRAIGHTEN_MS)
+    return 1 - ease((t - straightenAt) / WORK_STRAIGHTEN_MS);
+  return 0;
+}
 
 const within = (a: Vec2, b: Vec2, tiles: number) =>
   Math.max(Math.abs(a.x - b.x), Math.abs(a.y - b.y)) <= tiles;
@@ -577,10 +637,12 @@ export class ResidentWalks {
               : {
                   ...who,
                   drawPos: who.pos,
+                  ...(this.reduced() ? {} : { offset: idleOffset(who.id, this.clock) }),
                   facing: this.facings.get(who.id) ?? 1,
                   walking: false,
                   clipTime: 0,
                   alpha: 1,
+                  poseScale: 1,
                 },
       );
     }
@@ -592,25 +654,32 @@ export class ResidentWalks {
   /** Someone holding at an errand's stop; at a work stop, reaching into the work and back. */
   private holding(who: Standing, errand: Errand): ResidentFigure {
     const work = errand.routine.legs[errand.leg]?.work;
-    const reach = work
-      ? 0.5 - 0.5 * Math.cos((2 * Math.PI * (this.clock - errand.since)) / WORK_MS)
-      : 0;
+    const reduced = this.reduced();
+    const reach = work && !reduced ? workLean(this.clock - errand.since) : 0;
     return {
       ...who,
       drawPos: errand.at,
+      ...(work || reduced ? {} : { offset: idleOffset(who.id, this.clock) }),
       facing: errand.facing,
       walking: false,
       clipTime: 0,
       alpha: 1,
-      lean: 0.05 * errand.facing * reach,
-      squash: 0.4 * reach,
+      poseScale: 1,
+      lean: WORK_LEAN_RAD * errand.facing * reach,
     };
   }
 
   private sample(who: Standing, track: Track, pos: Vec2 | null): ResidentFigure {
     const { motion, start, walkEnd, fade } = track;
     const c = this.clock;
-    const base = { id: who.id, npcId: who.npcId, sprite: who.sprite, name: who.name, pos };
+    const base = {
+      id: who.id,
+      npcId: who.npcId,
+      sprite: who.sprite,
+      name: who.name,
+      pos,
+      poseScale: 1 as const,
+    };
     if (motion.kind === 'fade') {
       const out = motion.from !== null && c < walkEnd;
       return {
@@ -630,26 +699,20 @@ export class ResidentWalks {
     const end = motion.path.at(-1) ?? motion.from;
     const drawPos = animator?.renderPos(c, who.id) ?? (c < walkEnd ? motion.from : end);
     const clip = animator?.locomotion(c, who.id, 'rest', who.sprite).clip ?? 'rest';
-    const offset = animator?.offset(c, who.id);
     const facing = animator?.facing(who.id) ?? this.facings.get(who.id) ?? 1;
     const clipTime = animator?.unitPose(c, who.id, who.sprite)?.clipTime ?? 0;
     const walking = clip.startsWith('walk');
-    // The lean and the footfalls ease in and out over the stroll's 120 ms ramps.
+    // A full first and last step ease the restrained lean and stepped bob in and out.
     const from = start + (motion.enter ? fade : 0);
-    const into = walking ? clamp01(Math.min(c - from, walkEnd - c) / ((120 * fade) / FADE_MS)) : 0;
+    const into = walking ? ease(Math.min(c - from, walkEnd - c) / RESIDENT_WALK_EASE_MS) : 0;
     return {
       ...base,
       drawPos,
-      ...(offset ? { offset } : {}),
+      ...(walking ? { offset: walkOffset(clipTime, into) } : {}),
       facing,
       walking,
       clipTime,
-      lean: 0.06 * facing * into,
-      // A tile of travel is 500 ms of clip, one stride: a footfall where the bob touches down.
-      // That is the four-way gait. An eight-way sheet (ADR 0050, ADR 0051) plays
-      // its declared `walkMsPerTile` instead, so this bob would drift from its
-      // feet; no resident uses one today. Read the sheet's rate before one does.
-      squash: (1 - Math.abs(Math.sin((Math.PI * clipTime) / 500))) * into,
+      lean: RESIDENT_WALK_LEAN_RAD * facing * into,
       alpha:
         motion.enter && c < start + fade
           ? clamp01((c - start) / fade)

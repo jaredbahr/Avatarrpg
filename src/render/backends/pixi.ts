@@ -2428,6 +2428,7 @@ export class PixiBackend implements RenderBackend {
       const entry = resolveAsset(npc.sprite);
       const width = entry.kind === 'sheet' && entry.footprint.w === 2 ? 2 : 1;
       const scale = npc.scale ?? 1;
+      const poseScale = npc.poseScale ?? 1;
       const facing = npc.facing ?? 1;
       const at = npc.renderPos ?? npc.pos;
       const frame =
@@ -2449,25 +2450,24 @@ export class PixiBackend implements RenderBackend {
       const x = anchor.x;
       const ground = anchor.y - liftAlong(view.grid, at, camera.projection) * TILE;
       // The walk bob lifts the figure; its contact shadow stays on the ground.
-      const y = ground + (npc.offset?.y ?? 0) * TILE;
+      const rawLift = (npc.offset?.y ?? 0) * TILE;
+      const liftScale = camera.scale * this.viewport.dpr;
+      const y = ground + Math.round(rawLift * liftScale) / liftScale;
       const footX = x + (width * TILE) / 2;
       sprite.zIndex = depth(at, width, false);
       if (frame) {
         sprite.texture = this.frameTexture(frame);
         sprite.anchor.set(frame.anchor.x, frame.anchor.y);
         sprite.position.set(footX, y + FOOT_LINE * TILE);
-        sprite.width = (frame.frame.w / frame.pixelsPerTile) * TILE * scale;
-        sprite.height = (frame.frame.h / frame.pixelsPerTile) * TILE * scale;
+        sprite.width = (frame.frame.w / frame.pixelsPerTile) * TILE * scale * poseScale;
+        sprite.height = (frame.frame.h / frame.pixelsPerTile) * TILE * scale * poseScale;
       } else {
         sprite.texture = this.texture(sprites.get(npc.sprite, px * scale, npcPose(npc), width));
         sprite.anchor.set(0.5, FOOT_LINE);
         sprite.position.set(footX, y + FOOT_LINE * TILE);
-        sprite.width = width * TILE * scale;
-        sprite.height = TILE * scale;
+        sprite.width = width * TILE * scale * poseScale;
+        sprite.height = TILE * scale * poseScale;
       }
-      const squash = npc.squash ?? 0;
-      sprite.width *= 1 + 0.02 * squash;
-      sprite.height *= 1 - 0.03 * squash;
       sprite.scale.x = Math.abs(sprite.scale.x) * facing;
       sprite.rotation = npc.lean ?? 0;
       sprite.alpha = alpha;

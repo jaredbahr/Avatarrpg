@@ -272,10 +272,10 @@ export interface NpcMarker {
   /** Ms into the walk clip while walking; a painted figure strides with it. */
   readonly clipTime?: number;
   readonly walking?: boolean;
+  /** Procedural resident motion keeps this at one; authored presentation scale is separate. */
+  readonly poseScale?: 1;
   /** Radians about the feet, into the walk. */
   readonly lean?: number;
-  /** 0..1 settle onto a foot at each footfall: a touch wider and shorter. */
-  readonly squash?: number;
   /** No talk pip: a background role, or someone walking off the map. */
   readonly quiet?: boolean;
 }
