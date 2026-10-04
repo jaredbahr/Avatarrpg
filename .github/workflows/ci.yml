@@ -137,12 +137,19 @@ jobs:
             browser: chromium
             artifact: chromium-3
             projects: --project=surface-touch --shard=3/3
-          - label: WebKit iPad
+          # The WebKit suite (266 cases, one worker) took 50.5 minutes on run
+          # 37145320243 and was cancelled at the 60-minute limit on run
+          # 37177952609 with about 230 cases done, so two shards keep each
+          # runner well inside the limit while covering each case exactly once.
+          - label: WebKit iPad 1/2
             browser: webkit
-            artifact: webkit
-            projects: --project=ipad-landscape --project=ipad-portrait
-    # Each runner executes one shard, or the complete WebKit coverage, on a
-    # machine of its own.
+            artifact: webkit-1
+            projects: --project=ipad-landscape --project=ipad-portrait --shard=1/2
+          - label: WebKit iPad 2/2
+            browser: webkit
+            artifact: webkit-2
+            projects: --project=ipad-landscape --project=ipad-portrait --shard=2/2
+    # Each runner executes one shard on a machine of its own.
     timeout-minutes: 60
     steps:
       - uses: actions/checkout@v4
