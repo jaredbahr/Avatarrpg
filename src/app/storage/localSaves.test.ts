@@ -2,7 +2,15 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { CONTENT } from '../../content';
 import { createGame } from '../../core/state/createGame';
 import { SAVE_FORMAT_VERSION, serialize } from '../../core/save/serialize';
-import { clearSlot, listSlots, loadFromSlot, saveToSlot, storageAvailable } from './localSaves';
+import {
+  clearSlot,
+  listSlots,
+  loadFromSlot,
+  loadLastTitleArt,
+  saveLastTitleArt,
+  saveToSlot,
+  storageAvailable,
+} from './localSaves';
 
 const state = createGame(CONTENT, {
   seed: 'storage-regression',
@@ -19,6 +27,8 @@ const meta = {
 describe('browser save slots', () => {
   let entries: Map<string, string>;
   let store: Pick<Storage, 'getItem' | 'setItem' | 'removeItem'>;
+  let sessionEntries: Map<string, string>;
+  let sessionStore: Pick<Storage, 'getItem' | 'setItem' | 'removeItem'>;
 
   beforeEach(() => {
     entries = new Map([['fnt.save.slot1', serialize(state, meta)]]);
@@ -31,7 +41,17 @@ describe('browser save slots', () => {
         entries.delete(key);
       }),
     };
-    vi.stubGlobal('window', { localStorage: store });
+    sessionEntries = new Map();
+    sessionStore = {
+      getItem: vi.fn((key: string) => sessionEntries.get(key) ?? null),
+      setItem: vi.fn((key: string, value: string) => {
+        sessionEntries.set(key, value);
+      }),
+      removeItem: vi.fn((key: string) => {
+        sessionEntries.delete(key);
+      }),
+    };
+    vi.stubGlobal('window', { localStorage: store, sessionStorage: sessionStore });
   });
 
   afterEach(() => vi.unstubAllGlobals());
@@ -118,5 +138,29 @@ describe('browser save slots', () => {
     expect(slots[2]?.error).toContain('newer version');
     expect(slots[2]?.summary).not.toContain('Damaged');
     expect(slots[3]).toMatchObject({ occupied: false, summary: 'Empty' });
+  });
+
+  it('stores the last title art in sessionStorage without touching localStorage', () => {
+    saveLastTitleArt('b');
+
+    expect(loadLastTitleArt()).toBe('b');
+    expect(sessionStore.setItem).toHaveBeenCalledWith('fnt.titleArt', 'b');
+    expect(store.getItem).not.toHaveBeenCalledWith('fnt.titleArt');
+    expect(store.setItem).not.toHaveBeenCalledWith('fnt.titleArt', 'b');
+  });
+
+  it('keeps the last title art in memory when sessionStorage is blocked', () => {
+    vi.mocked(sessionStore.setItem).mockImplementation(() => {
+      throw new DOMException('Blocked', 'SecurityError');
+    });
+    vi.mocked(sessionStore.getItem).mockImplementation(() => {
+      throw new DOMException('Blocked', 'SecurityError');
+    });
+
+    saveLastTitleArt('c');
+
+    expect(loadLastTitleArt()).toBe('c');
+    expect(store.getItem).not.toHaveBeenCalledWith('fnt.titleArt');
+    expect(store.setItem).not.toHaveBeenCalledWith('fnt.titleArt', 'c');
   });
 });
