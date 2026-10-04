@@ -214,8 +214,10 @@ test('portrait large text keeps the painting full bleed behind reachable caption
       viewport &&
         art &&
         caption &&
-        art.width >= viewport.width - 1 &&
-        art.height >= viewport.height - 1 &&
+        art.x <= 1 &&
+        art.y <= 1 &&
+        art.x + art.width >= viewport.width - 1 &&
+        art.y + art.height >= viewport.height - 1 &&
         caption.y >= art.y &&
         caption.y + caption.height <= art.y + art.height &&
         caption.height <= art.height * 0.58 + 1,
