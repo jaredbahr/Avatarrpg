@@ -194,7 +194,7 @@ for (const [node, title, art] of [
   });
 }
 
-test('portrait large text keeps the complete painting above reachable captions', async ({
+test('portrait large text keeps the painting full bleed behind reachable captions', async ({
   page,
 }) => {
   await page.setViewportSize({ width: 600, height: 900 });
@@ -205,7 +205,15 @@ test('portrait large text keeps the complete painting above reachable captions',
     .toBe(true);
   const art = await image.boundingBox();
   const caption = await page.locator('.interlude-caption').boundingBox();
-  expect(art && caption && art.y + art.height <= caption.y).toBe(true);
+  expect(art && art.width >= 600 && art.height >= 900).toBe(true);
+  expect(
+    art &&
+      caption &&
+      caption.y >= art.y &&
+      caption.y + caption.height <= art.y + art.height &&
+      caption.height <= art.height * 0.58 + 1,
+  ).toBe(true);
+  await expect(page.getByRole('button', { name: 'Next', exact: true })).toBeVisible();
   await page.getByRole('button', { name: 'Skip scene' }).click();
   await expect(page.locator('.explore-scene')).toBeVisible();
 });

@@ -1,31 +1,48 @@
-/* Still paintings, hard cuts, readable text below. Never animate the artwork. */
+/* Still paintings, hard cuts and an ink plate over the lower third. */
+.interlude-scene > .top-bar {
+  position: absolute;
+  inset: 0 0 auto;
+  z-index: 2;
+  background: linear-gradient(180deg, var(--scrim-strong), transparent);
+}
+
 .interlude-stage {
   flex: 1 1 auto;
   min-height: 0;
-  overflow-y: auto;
-  padding: var(--sp-3) var(--sp-4) calc(var(--sp-4) + env(safe-area-inset-bottom, 0rem));
+  overflow: hidden;
 }
 
 .interlude-content {
-  width: min(72rem, 100%);
-  margin: 0 auto;
-  display: flex;
-  flex-direction: column;
-  gap: var(--sp-3);
+  position: relative;
+  width: 100%;
+  height: 100%;
+  min-height: 0;
+  background: var(--c-bg-deep);
 }
 
 .interlude-art {
   display: block;
   width: 100%;
-  height: auto;
-  max-height: 52dvh;
-  aspect-ratio: 16 / 9;
-  object-fit: contain;
+  height: 100%;
+  object-fit: cover;
+  object-position: var(--interlude-focus, 50% 50%);
   background: var(--c-bg-deep);
-  border-radius: var(--radius);
 }
 
 .interlude-caption {
+  position: absolute;
+  z-index: 1;
+  inset: auto max(var(--sp-4), env(safe-area-inset-right, 0rem))
+    max(var(--sp-4), env(safe-area-inset-bottom, 0rem))
+    max(var(--sp-4), env(safe-area-inset-left, 0rem));
+  max-width: 58rem;
+  max-height: min(54%, 27rem);
+  overflow-y: auto;
+  color: var(--c-paper-light);
+  background: var(--scrim-strong);
+  background-image: none;
+  border-color: color-mix(in srgb, var(--c-paper-light) 35%, transparent);
+  box-shadow: var(--shadow-3);
   display: flex;
   flex-direction: column;
   gap: var(--sp-3);
@@ -36,9 +53,30 @@
   margin: 0;
 }
 
+.interlude-caption .muted {
+  color: color-mix(in srgb, var(--c-paper-light) 78%, transparent);
+}
+
 .interlude-controls {
   display: flex;
   flex-wrap: wrap;
   gap: var(--sp-2);
   align-items: center;
+}
+
+html[data-contrast='high'] .interlude-caption {
+  color: var(--c-paper-light);
+  background: var(--c-ink);
+  border-color: var(--c-paper-light);
+  forced-color-adjust: none;
+}
+
+@media (orientation: portrait) {
+  .interlude-art {
+    object-position: var(--interlude-portrait-focus, 50% 50%);
+  }
+
+  .interlude-caption {
+    max-height: 58%;
+  }
 }
