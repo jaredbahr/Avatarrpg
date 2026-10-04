@@ -65,6 +65,8 @@ export class ExploreScene implements Scene {
   private renderer: Renderer | null = null;
   private detach: (() => void) | null = null;
   private frame = 0;
+  private suspended = false;
+  private paintingStill = false;
 
   /**
    * The units of the last published frame, so a resize can repaint the life
@@ -113,6 +115,7 @@ export class ExploreScene implements Scene {
   }
 
   mount(host: HTMLElement): void {
+    this.suspended = false;
     this.host = host;
     clear(host);
     this.conversationMode = Boolean(worldConversationFor(this.app.content, this.app.state));
@@ -175,12 +178,34 @@ export class ExploreScene implements Scene {
     this.lastLife = null;
     if (this.frame) cancelAnimationFrame(this.frame);
     this.frame = 0;
+    this.suspended = false;
     this.detach?.();
     this.detach = null;
     this.renderer?.destroy();
     this.renderer = null;
     this.canvas = null;
     this.host = null;
+  }
+
+  suspend(): void {
+    if (this.suspended) return;
+    if (this.frame) cancelAnimationFrame(this.frame);
+    this.frame = 0;
+    // Publish the state that opened dialogue, but do not queue another frame.
+    this.paintingStill = true;
+    this.loop();
+    this.paintingStill = false;
+    this.suspended = true;
+    this.app.audio.clearEnvironment();
+  }
+
+  resume(): void {
+    if (!this.suspended) return;
+    this.suspended = false;
+    const now = performance.now();
+    this.app.residents.tick(now, true);
+    this.life?.resync(now);
+    this.loop();
   }
 
   sync(): void {
@@ -902,7 +927,7 @@ export class ExploreScene implements Scene {
   }
 
   private onKeyDown = (event: KeyboardEvent): void => {
-    if (this.conversationMode) return;
+    if (this.conversationMode || this.app.state?.screen !== 'explore') return;
     if (event.key === 'Escape' && !document.querySelector('[role="dialog"]')) this.clearNextWalk();
   };
 
@@ -935,7 +960,8 @@ export class ExploreScene implements Scene {
   /* ---------------------------------------------------------------- */
 
   private loop = (): void => {
-    this.frame = requestAnimationFrame(this.loop);
+    if (this.suspended) return;
+    if (!this.paintingStill) this.frame = requestAnimationFrame(this.loop);
     const renderer = this.renderer;
     const state = this.departing ?? this.app.state;
     const map = this.map;

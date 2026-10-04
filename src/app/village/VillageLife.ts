@@ -60,6 +60,10 @@ export class VillageLife {
   destroy(): void {
     this.stage.destroy();
   }
+  /** Rebase delta-driven presentation after the owning scene was suspended. */
+  resync(now: number): void {
+    this.lastFrame = now;
+  }
   busy(now: number): boolean {
     return (
       this.activity !== null &&

@@ -329,10 +329,9 @@ export const BEATS: readonly Beat[] = [
     note: 'The visual-novel stage: portrait medallion, name plate, mood-tinted backdrop. This is where generated portraits land.',
     projects: PORTRAIT_TOO,
     async run(ctx) {
-      await resetStorage(ctx.page, ctx.query());
-      await startGame(ctx.page, PLAYERS, PARTY, SEED, { reduceMotion: false });
+      await openVillage(ctx);
       await enterNode(ctx.page, 'mira_intro');
-      await ctx.page.locator('.stage').waitFor();
+      await ctx.page.locator('.conversation-panel-compact').waitFor();
       await ctx.shoot(this.note);
     },
   },
