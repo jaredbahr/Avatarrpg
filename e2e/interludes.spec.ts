@@ -203,16 +203,25 @@ test('portrait large text keeps the painting full bleed behind reachable caption
   await expect
     .poll(() => image.evaluate((img) => img instanceof HTMLImageElement && img.naturalWidth > 0))
     .toBe(true);
-  const art = await image.boundingBox();
-  const caption = await page.locator('.interlude-caption').boundingBox();
-  expect(art && art.width >= 600 && art.height >= 900).toBe(true);
-  expect(
-    art &&
-      caption &&
-      caption.y >= art.y &&
-      caption.y + caption.height <= art.y + art.height &&
-      caption.height <= art.height * 0.58 + 1,
-  ).toBe(true);
+  const viewport = page.viewportSize();
+  await expect(async () => {
+    const [art, caption] = await Promise.all([
+      image.boundingBox(),
+      page.locator('.interlude-caption').boundingBox(),
+    ]);
+    const measured = { art, caption, viewport };
+    expect(
+      viewport &&
+        art &&
+        caption &&
+        art.width >= viewport.width - 1 &&
+        art.height >= viewport.height - 1 &&
+        caption.y >= art.y &&
+        caption.y + caption.height <= art.y + art.height &&
+        caption.height <= art.height * 0.58 + 1,
+      `interlude layout measurements: ${JSON.stringify(measured)}`,
+    ).toBe(true);
+  }).toPass({ timeout: 5000 });
   await expect(page.getByRole('button', { name: 'Next', exact: true })).toBeVisible();
   await page.getByRole('button', { name: 'Skip scene' }).click();
   await expect(page.locator('.explore-scene')).toBeVisible();
