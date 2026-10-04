@@ -89,7 +89,7 @@ import type { LiftPlan, Pt, Rect } from '../geometry/lift';
 import { contourLoops, isHole } from '../geometry/contour';
 import type { Curve } from '../geometry/curve';
 import { sampleAt, smoothPath } from '../geometry/curve';
-import { HP_CAP, HP_COLORS, OVERLAY, STATUS_BADGE, hpFill } from '../palettes';
+import { HP_CAP, HP_COLORS, MAP_MARGIN_COLORS, OVERLAY, STATUS_BADGE, hpFill } from '../palettes';
 import { FOOT_LINE } from '../sheets/bake';
 import { resolveActorEmitters } from '../geometry/actorAttachments';
 import type { ResolvedFrame } from '../sheets/store';
@@ -279,6 +279,8 @@ export class PixiBackend implements RenderBackend {
    * (ADR 0065) renders parts of it, cropped, into targets of its own.
    */
   private groundStack = new Container();
+  /** Screen-space ground continuation under feathered scene art. */
+  private marginGfx = new Graphics();
   /**
    * The raised blocks, rendered once into a target cropped to them and shown
    * over the flat ground until the plan or the ground under them changes.
@@ -578,6 +580,7 @@ export class PixiBackend implements RenderBackend {
     this.groundStack.addChild(this.root);
     this.liftSprite.visible = false;
     app.stage.addChild(
+      this.marginGfx,
       this.groundStack,
       this.liftSprite,
       this.marksGfx,
@@ -674,6 +677,13 @@ export class PixiBackend implements RenderBackend {
     }
 
     this.lifted = camera.projection === 'oblique';
+    this.marginGfx.clear();
+    const marginTone = view.scene?.marginTone;
+    if (marginTone) {
+      this.marginGfx
+        .rect(0, 0, camera.viewport.width, camera.viewport.height)
+        .fill({ color: MAP_MARGIN_COLORS[marginTone] });
+    }
     // The shake moves the world: a knocked camera shows the margin, as a fit does.
     const nudge = TILE * camera.scale;
     const m = camera.groundMatrix();
