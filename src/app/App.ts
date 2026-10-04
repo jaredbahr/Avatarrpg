@@ -115,18 +115,25 @@ export interface Scene {
   onEvents?(events: readonly GameEvent[], now: number): boolean | void;
 }
 
-export type DialogueBackdropKind = 'explore' | 'combat' | null;
+export interface DialogueBackdropOwner {
+  readonly kind: 'explore' | 'combat';
+  readonly mapId: string;
+}
 
 /** The live world, if any, that can safely sit behind a loaded staged conversation. */
-export function dialogueBackdropKind(
+export function dialogueBackdropOwner(
   content: ContentIndex,
   state: GameState | null | undefined,
-): DialogueBackdropKind {
+): DialogueBackdropOwner | null {
   if (!state || (state.screen !== 'dialogue' && state.screen !== 'ended')) return null;
   const node = state.story.nodeId ? content.story.get(state.story.nodeId) : undefined;
   if (!node || INTERLUDES[node.id]) return null;
-  if (state.battle && content.maps.has(state.battle.mapId)) return 'combat';
-  return state.location.mapId && content.maps.has(state.location.mapId) ? 'explore' : null;
+  if (state.battle && content.maps.has(state.battle.mapId)) {
+    return { kind: 'combat', mapId: state.battle.mapId };
+  }
+  return state.location.mapId && content.maps.has(state.location.mapId)
+    ? { kind: 'explore', mapId: state.location.mapId }
+    : null;
 }
 
 export class App {
@@ -171,6 +178,8 @@ export class App {
   private scene: Scene | null = null;
   /** Keep the last live map/battle canvas mounted under story dialogue. */
   private dialogueBackdrop: Scene | null = null;
+  /** The state identity of the retained world; scene name alone cannot detect a map change. */
+  private dialogueBackdropOwner: DialogueBackdropOwner | null = null;
   private dialogueHost: HTMLElement | null = null;
   private pause: PauseMenu | null = null;
   private levelUp: LevelUpDialog | DisciplineDialog | null = null;
@@ -291,6 +300,10 @@ export class App {
   /* Scenes                                                            */
   /* ---------------------------------------------------------------- */
 
+  private createDialogueBackdrop(owner: DialogueBackdropOwner): Scene {
+    return owner.kind === 'combat' ? new CombatScene(this) : new ExploreScene(this);
+  }
+
   start(): void {
     // The real icon set, if it is there; every mark falls back to the drawn one.
     loadIcons();
@@ -309,14 +322,31 @@ export class App {
 
   showScene(scene: Scene, replaceRetained = false): void {
     this.cancelRoute();
+    // This is the sole ownership decision. It runs even when routing keeps the
+    // same DialogueScene, because advancing a story node can enter or leave an
+    // interlude without changing the screen or scene name.
     const wantedBackdrop =
-      scene.name === 'dialogue' ? dialogueBackdropKind(this.content, this.state) : null;
+      scene.name === 'dialogue' ? dialogueBackdropOwner(this.content, this.state) : null;
+    const retainedOwner = this.dialogueBackdropOwner;
+    const ownsWantedBackdrop =
+      wantedBackdrop !== null &&
+      retainedOwner?.kind === wantedBackdrop.kind &&
+      retainedOwner.mapId === wantedBackdrop.mapId;
+    if (
+      scene === this.scene &&
+      ((wantedBackdrop === null && this.dialogueBackdrop === null) || ownsWantedBackdrop)
+    ) {
+      this.setMood(this.defaultMood());
+      scene.sync();
+      return;
+    }
     const replaceDialogue =
       !replaceRetained &&
       this.scene?.name === 'dialogue' &&
       scene.name === 'dialogue' &&
       wantedBackdrop !== null &&
       this.dialogueBackdrop !== null &&
+      ownsWantedBackdrop &&
       this.dialogueHost !== null;
     if (replaceDialogue && this.dialogueHost) {
       this.scene?.unmount();
@@ -332,6 +362,8 @@ export class App {
     const restoreBackdrop =
       this.scene?.name === 'dialogue' &&
       this.dialogueBackdrop?.name === scene.name &&
+      this.dialogueBackdropOwner?.mapId ===
+        (scene.name === 'combat' ? this.state?.battle?.mapId : this.state?.location.mapId) &&
       scene.name !== 'dialogue';
     if (restoreBackdrop && this.dialogueBackdrop) {
       this.scene?.unmount();
@@ -340,6 +372,7 @@ export class App {
       this.sceneHost.classList.remove('has-dialogue-backdrop');
       const restored = this.dialogueBackdrop;
       this.dialogueBackdrop = null;
+      this.dialogueBackdropOwner = null;
       const background = this.sceneHost.firstElementChild;
       if (background instanceof HTMLElement) {
         background.inert = false;
@@ -361,6 +394,7 @@ export class App {
 
     if (keepWorld && this.scene) {
       this.dialogueBackdrop = this.scene;
+      this.dialogueBackdropOwner = wantedBackdrop;
       // A world conversation is rendered by ExploreScene itself. Its command
       // can hand directly to a staged conversation, so refresh the retained
       // world against the new node before freezing its final frame. Otherwise
@@ -381,15 +415,16 @@ export class App {
         this.dialogueBackdrop.unmount();
         this.dialogueBackdrop = null;
       }
+      this.dialogueBackdropOwner = null;
       this.dialogueHost = null;
       this.sceneHost.classList.remove('has-dialogue-backdrop');
       clear(this.sceneHost);
       // A dialogue reached from an interlude owns the full stage unless the
       // current state still identifies a real map that can be reconstructed.
       if (wantedBackdrop) {
-        const backdrop =
-          wantedBackdrop === 'combat' ? new CombatScene(this) : new ExploreScene(this);
+        const backdrop = this.createDialogueBackdrop(wantedBackdrop);
         this.dialogueBackdrop = backdrop;
+        this.dialogueBackdropOwner = wantedBackdrop;
         this.sceneHost.classList.add('has-dialogue-backdrop');
         backdrop.mount(this.sceneHost);
         backdrop.sync();
@@ -457,8 +492,11 @@ export class App {
             : 'title';
 
     if (!force && this.scene?.name === wanted) {
-      this.setMood(this.defaultMood());
-      this.scene.sync();
+      if (wanted === 'dialogue') this.showScene(this.scene);
+      else {
+        this.setMood(this.defaultMood());
+        this.scene.sync();
+      }
       return;
     }
 

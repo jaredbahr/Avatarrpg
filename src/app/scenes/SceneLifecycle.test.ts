@@ -3,6 +3,9 @@ import { CombatScene } from './CombatScene';
 import { ExploreScene } from './ExploreScene';
 import { App, type Scene } from '../App';
 import type { GameState, StoryNode } from '../../core/types';
+import { CONTENT } from '../../content';
+import { createGame } from '../../core/state/createGame';
+import { apply } from '../../core/state/reducer';
 
 interface LifecycleHarness {
   frame: number;
@@ -157,6 +160,7 @@ function appHarness(initial: ReturnType<typeof fakeScene>) {
     sceneHost,
     scene: initial,
     dialogueBackdrop: null,
+    dialogueBackdropOwner: null,
     dialogueHost: null,
     routeTimer: null,
     state: null,
@@ -185,6 +189,34 @@ function setRoute(app: App, node: StoryNode, screen: GameState['screen'] = 'dial
   });
 }
 
+function routedApp(
+  initial: ReturnType<typeof fakeScene>,
+  nodeId: string,
+  nodes: readonly StoryNode[],
+  mapId = 'forest_road',
+) {
+  const { app, sceneHost } = appHarness(initial);
+  const story = new Map(CONTENT.story);
+  for (const node of nodes) story.set(node.id, node);
+  const content = { ...CONTENT, story };
+  const fresh = createGame(content, {
+    seed: 'dialogue-lifecycle',
+    party: [{ characterId: 'kaya' }],
+    startNode: nodeId,
+  });
+  const state = apply(content, fresh, { type: 'enterNode', nodeId }).state;
+  Object.assign(app as unknown as Record<string, unknown>, {
+    state: { ...state, location: { ...state.location, mapId } },
+    content,
+    animator: { busy: vi.fn(() => false), push: vi.fn() },
+    residents: { reset: vi.fn() },
+    toasts: { show: vi.fn() },
+    saveTo: vi.fn(() => true),
+    offerLevelUpIfPending: vi.fn(),
+  });
+  return { app, sceneHost };
+}
+
 const ordinaryDialogue = {
   id: 'ordinary_dialogue',
   kind: 'dialogue',
@@ -203,7 +235,109 @@ const roadInterlude = {
   next: 'forest_explore',
 } as StoryNode;
 
+const beforeInterlude = {
+  ...ordinaryDialogue,
+  id: 'before_interlude',
+  lines: ['Look east.'],
+  next: 'road_depart',
+} as StoryNode;
+
+const afterInterlude = {
+  ...ordinaryDialogue,
+  id: 'after_interlude',
+  lines: ['We made it.'],
+} as StoryNode;
+
+const returnToExplore = {
+  id: 'return_to_explore',
+  kind: 'explore',
+  mapId: 'forest_road',
+  objective: 'Keep walking.',
+  next: 'after_interlude',
+} as StoryNode;
+
 describe('dialogue layer ownership', () => {
+  it('reconciles dialogue to interlude ownership through a dispatched story advance', () => {
+    const world = fakeScene('explore');
+    const dialogue = fakeScene('dialogue');
+    const { app, sceneHost } = routedApp(world, beforeInterlude.id, [
+      beforeInterlude,
+      roadInterlude,
+    ]);
+    app.showScene(dialogue as unknown as Scene);
+
+    app.dispatch({ type: 'advanceDialogue' });
+
+    expect(app.state?.story.nodeId).toBe(roadInterlude.id);
+    expect(world.unmount).toHaveBeenCalledOnce();
+    expect(sceneHost.classList.contains('has-dialogue-backdrop')).toBe(false);
+    expect(sceneHost.children).toEqual([dialogue.stage]);
+  });
+
+  it.each([
+    ['forest_road', true],
+    ['', false],
+  ] as const)(
+    'reconciles interlude to dialogue through dispatch with map %s',
+    (mapId, expectsBackdrop) => {
+      const interlude = fakeScene('dialogue');
+      const world = fakeScene('explore');
+      const { app, sceneHost } = routedApp(
+        interlude,
+        roadInterlude.id,
+        [roadInterlude, afterInterlude],
+        mapId,
+      );
+      Object.assign(app as unknown as Record<string, unknown>, {
+        createDialogueBackdrop: vi.fn(() => world),
+      });
+
+      app.dispatch({ type: 'enterNode', nodeId: afterInterlude.id });
+
+      expect(app.state?.story.nodeId).toBe(afterInterlude.id);
+      expect(world.mount).toHaveBeenCalledTimes(expectsBackdrop ? 1 : 0);
+      expect(world.suspend).toHaveBeenCalledTimes(expectsBackdrop ? 1 : 0);
+      expect(sceneHost.classList.contains('has-dialogue-backdrop')).toBe(expectsBackdrop);
+      expect(sceneHost.children).toHaveLength(expectsBackdrop ? 2 : 1);
+    },
+  );
+
+  it('keeps one world and one dialogue stage across a dispatched dialogue advance', () => {
+    const world = fakeScene('explore');
+    const dialogue = fakeScene('dialogue');
+    const first = { ...beforeInterlude, next: afterInterlude.id } as StoryNode;
+    const { app, sceneHost } = routedApp(world, first.id, [first, afterInterlude]);
+    app.showScene(dialogue as unknown as Scene);
+
+    app.dispatch({ type: 'advanceDialogue' });
+
+    expect(app.state?.story.nodeId).toBe(afterInterlude.id);
+    expect(world.suspend).toHaveBeenCalledOnce();
+    expect(world.unmount).not.toHaveBeenCalled();
+    expect(sceneHost.children).toHaveLength(2);
+    expect(sceneHost.children[0]).toBe(world.stage);
+    expect(sceneHost.children[1]?.className).toBe('dialogue-layer');
+  });
+
+  it('hands the retained world back once through a dispatched explore transition', () => {
+    const world = fakeScene('explore');
+    const dialogue = fakeScene('dialogue');
+    const lastDialogue = {
+      ...beforeInterlude,
+      id: 'last_dialogue',
+      next: returnToExplore.id,
+    } as StoryNode;
+    const { app, sceneHost } = routedApp(world, lastDialogue.id, [lastDialogue, returnToExplore]);
+    app.showScene(dialogue as unknown as Scene);
+
+    app.dispatch({ type: 'advanceDialogue' });
+
+    expect(app.state?.story.nodeId).toBe(returnToExplore.id);
+    expect(world.resume).toHaveBeenCalledOnce();
+    expect(world.unmount).not.toHaveBeenCalled();
+    expect(sceneHost.children).toEqual([world.stage]);
+  });
+
   it('replaces dialogue in one layer while retaining one refreshed world scene', () => {
     const world = fakeScene('explore');
     const first = fakeScene('dialogue');
