@@ -210,7 +210,10 @@ export interface LevelGain {
 }
 
 /** Events and deferred picks shared by every source of a level gain. */
-export function levelUpOutcome(unitId: string, gain: LevelGain) {
+export function levelUpOutcome(
+  unitId: string,
+  gain: LevelGain,
+): { readonly events: readonly GameEvent[]; readonly pendingChoices: readonly PendingChoice[] } {
   const events: GameEvent[] = [];
   const pendingChoices: PendingChoice[] = [];
   if (gain.levelsGained > 0) {

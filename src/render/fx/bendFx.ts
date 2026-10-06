@@ -9,7 +9,7 @@
  * its pivot, and whether the runtime turns it toward the travel direction,
  * turns it by a fixed angle, or stretches it between two points.
  *
- * Nothing draws from it yet (steps 5 and 6); it is the lookup those steps use.
+ * Consumers draw from it now; it is the lookup those steps use.
  */
 
 import type { BendEffectDef, BendEffectLayer } from '../../content/bends';
