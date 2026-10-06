@@ -184,6 +184,12 @@ test.describe('renderer backends', () => {
         if (map) Object.defineProperty(map, 'scene', { value: undefined, configurable: true });
         return app?.overrideBackdrop('forest_road', null);
       });
+      // Ordering, not readiness: the fixture swap must reach a frame before the
+      // first capture, or the painted scene it replaced could satisfy the poll.
+      await page.evaluate(
+        () => new Promise((done) => requestAnimationFrame(() => requestAnimationFrame(done))),
+      );
+
       // The forest road's puddle is authored at (5, 6); the top-left corner is grass.
       const canvas = page.locator('.map-canvas');
       let drawn:

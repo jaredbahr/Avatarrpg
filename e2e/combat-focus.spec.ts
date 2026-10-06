@@ -30,7 +30,7 @@ test('a fresh battle establishes the full formation before the acting-unit hand-
         await page.clock.runFor(50);
         return page.locator('.combat-scene').getAttribute('data-battle-opening');
       },
-      { timeout: 25_000 },
+      { timeout: 25_000, intervals: [50] },
     )
     .toBe('hold');
   const formation = await page.evaluate(() => window.fnt!.app.rendererCamera());
@@ -46,7 +46,7 @@ test('a fresh battle establishes the full formation before the acting-unit hand-
         await page.clock.runFor(100);
         return page.locator('.combat-scene').getAttribute('data-battle-opening');
       },
-      { timeout: 25_000 },
+      { timeout: 25_000, intervals: [50] },
     )
     .toBeNull();
   const actor = await page.evaluate(() => window.fnt!.app.rendererCamera());
