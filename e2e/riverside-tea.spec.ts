@@ -343,7 +343,19 @@ for (const backend of ['canvas', 'webgl']) {
     // Two cels at 0.25 fps: one more interval returns the held cup drawing.
     await page.clock.fastForward(4000);
     await page.clock.runFor(17);
-    expect(await teaCel()).toBe(hold);
+    let returned = await teaCel();
+    for (let attempt = 0; attempt < 24 && returned !== hold; attempt++) {
+      // `fastForward` advances the animation clock, but a slow WebKit
+      // compositor can leave the life layer on the frame presented before
+      // the jump. Publish bounded frames until the overlay itself contains
+      // the held cel again; the paused clock keeps unrelated actor motion at
+      // the same phase, and the illustrated-actor readiness above guarantees
+      // that the crop is not changing because a sheet loaded between reads.
+      await page.clock.runFor(17);
+      await page.waitForTimeout(40);
+      returned = await teaCel();
+    }
+    expect(returned).toBe(hold);
     await expect(stage).toHaveAttribute('data-tea-actors', '2');
     await test.info().attach(`tea-${backend}-sip`, {
       body: png(sip),

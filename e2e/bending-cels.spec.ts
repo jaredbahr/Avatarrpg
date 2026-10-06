@@ -2,7 +2,15 @@ import { expect, test } from '@playwright/test';
 import { ALL_ABILITIES } from '../src/content/abilities';
 import { FX_CELS } from '../src/content/fxCels';
 import { allowSoftwareWebgl } from './budget';
-import { enterNode, resetStorage, settleLayout, startGame, takeTurn, waitForIdle } from './helpers';
+import {
+  enterNode,
+  pauseClock,
+  resetStorage,
+  settleLayout,
+  startGame,
+  takeTurn,
+  waitForIdle,
+} from './helpers';
 import { stageMotionTransition } from './motion-stage';
 
 for (const renderer of ['canvas', 'webgl'] as const) {
@@ -64,6 +72,7 @@ for (const renderer of ['canvas', 'webgl'] as const) {
   test(`missing cel images keep bending playable on ${renderer}`, async ({ page }) => {
     test.setTimeout(120_000);
     allowSoftwareWebgl(test, renderer);
+    await page.clock.install();
     await page.route('**/art/fx/*-cels.png', (route) => route.abort());
     const errors: string[] = [];
     page.on('pageerror', (error) => errors.push(error.message));
@@ -73,7 +82,15 @@ for (const renderer of ['canvas', 'webgl'] as const) {
     await takeTurn(page);
     await waitForIdle(page);
     expect(await page.evaluate(() => window.fnt!.loadedFxCels())).toEqual([]);
-    await stageMotionTransition(page, 'cast', 'fire_jab');
+    // Freeze before the cast begins. On a loaded software-WebGL runner the
+    // effect could otherwise expire in performance time before the first
+    // fallback frame was presented, leaving `waitForIdle` racing a render.
+    // The missing-cel contract is that the cast completes without an error;
+    // emitter counts do not expose whether the fallback was painted.
+    await pauseClock(page);
+    const transition = await stageMotionTransition(page, 'cast', 'fire_jab');
+    await page.clock.fastForward(transition.duration);
+    await page.clock.runFor(17);
     await waitForIdle(page);
     expect(errors).toEqual([]);
   });
