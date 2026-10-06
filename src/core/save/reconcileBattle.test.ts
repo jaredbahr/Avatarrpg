@@ -1,9 +1,11 @@
 import { describe, expect, it } from 'vitest';
 import { CONTENT } from '../../content';
-import { buildGrid, reachable, tileAt, withSurface, withTile } from '../rules/grid';
+import { buildGrid, enterCost, reachable, tileAt, withSurface, withTile } from '../rules/grid';
+import { isAlive } from '../rules/stats';
+import { activeUnit } from '../rules/turnOrder';
 import { RngCursor } from '../rng';
 import { createBattle, createGame } from '../state/createGame';
-import type { BattleState, ContentIndex, GameState, MapDef } from '../types';
+import type { BattleState, ContentIndex, GameState, Grid, MapDef } from '../types';
 import { reconcileBattle, reconcileBattleResult, type ReconcileBattleOptions } from './reconcile';
 import { deserialize, serialize, stateFromBlob } from './serialize';
 
@@ -134,6 +136,13 @@ function load(state: GameState, options: ReconcileBattleOptions = {}): GameState
   const parsed = deserialize(serialize(state, META));
   if (!parsed.ok) throw new Error(parsed.error);
   return reconcileBattle(CONTENT, stateFromBlob(parsed.blob), options);
+}
+
+/** The same real load path, but reconciled against injected content. */
+function loadWith(content: ContentIndex, state: GameState): GameState {
+  const parsed = deserialize(serialize(state, META));
+  if (!parsed.ok) throw new Error(parsed.error);
+  return reconcileBattle(content, stateFromBlob(parsed.blob));
 }
 
 /**
@@ -964,5 +973,173 @@ describe('reconcileBattle', () => {
       unitId: boss.id,
       pos: { x: 10, y: 2 },
     });
+  });
+});
+
+describe('ramp reconciliation', () => {
+  const floor = CONTENT.maps.get('quarry_floor');
+  if (!floor) throw new Error('missing the quarry floor map');
+  const floorRows = floor.rows;
+
+  /** (3,1) is the authored slope; (3,2) is the tier-0 floor that steps onto it. */
+  const RAMP = { x: 3, y: 1 };
+  const BELOW = { x: 3, y: 2 };
+
+  /** Move cost of stepping from the floor up onto the slope. */
+  function rampStepCost(grid: Grid): number | null {
+    return enterCost(
+      {
+        grid,
+        blocked: new Set<string>(),
+        surfaces: CONTENT.surfaces,
+        size: 1,
+        climbCost: CONTENT.tuning.climbCost,
+      },
+      BELOW,
+      RAMP,
+    );
+  }
+
+  function savedFloor(): GameState {
+    const state = battleState('quarry_floor', floorRows);
+    if (!state.battle) throw new Error('fixture did not create a battle');
+    return state;
+  }
+
+  /** The authored save with the ramp flag set (or dropped) at (3,1). */
+  function withRampFlag(state: GameState, ramp: boolean | undefined): GameState {
+    if (!state.battle) throw new Error('fixture did not create a battle');
+    const tile = tileAt(state.battle.grid, RAMP);
+    if (!tile) throw new Error('the ramp fixture is off-grid');
+    return {
+      ...state,
+      battle: { ...state.battle, grid: withTile(state.battle.grid, RAMP, { ...tile, ramp }) },
+    };
+  }
+
+  it('rebuilds a ramp the map has added, waiving the climb', () => {
+    const loaded = load(withRampFlag(savedFloor(), false));
+    expect(tileAt(loaded.battle?.grid ?? buildGrid(floor), RAMP)).toMatchObject({
+      terrain: 'stone',
+      elevation: 1,
+      ramp: true,
+    });
+    if (!loaded.battle) throw new Error('the reconciled save lost its battle');
+    expect(rampStepCost(loaded.battle.grid)).toBe(1);
+  });
+
+  it('rebuilds a legacy save whose ramp property is simply absent', () => {
+    const loaded = load(withRampFlag(savedFloor(), undefined));
+    expect(tileAt(loaded.battle?.grid ?? buildGrid(floor), RAMP)).toMatchObject({
+      terrain: 'stone',
+      elevation: 1,
+      ramp: true,
+    });
+    if (!loaded.battle) throw new Error('the reconciled save lost its battle');
+    expect(rampStepCost(loaded.battle.grid)).toBe(1);
+  });
+
+  it('rebuilds when the map has removed a ramp the save still carried', () => {
+    // The current floor flattened (3,1) to bare tier-1 stone; the save predates it.
+    const rows = floor.rows.map((row, y) => (y === 1 ? `${row.slice(0, 3)}^${row.slice(4)}` : row));
+    const loaded = loadWith(contentWithMap({ ...floor, rows }), savedFloor());
+    const tile = tileAt(loaded.battle?.grid ?? buildGrid(floor), RAMP);
+    expect(tile).toMatchObject({ terrain: 'stone', elevation: 1 });
+    expect(tile?.ramp ?? false).toBe(false);
+    if (!loaded.battle) throw new Error('the reconciled save lost its battle');
+    expect(rampStepCost(loaded.battle.grid)).toBe(2);
+  });
+
+  it('treats a missing ramp on a non-ramp tile as false and rebuilds nothing', () => {
+    const state = savedFloor();
+    const battle = state.battle;
+    if (!battle) throw new Error('fixture did not create a battle');
+    const flat = tileAt(battle.grid, BELOW);
+    if (!flat) throw new Error('the flat fixture is off-grid');
+    const dropped: GameState = {
+      ...state,
+      battle: { ...battle, grid: withTile(battle.grid, BELOW, { ...flat, ramp: undefined }) },
+    };
+
+    const parsed = deserialize(serialize(dropped, META));
+    if (!parsed.ok) throw new Error(parsed.error);
+    const loaded = stateFromBlob(parsed.blob);
+    const reconciled = reconcileBattle(CONTENT, loaded);
+
+    // No static difference anywhere, so the save is handed straight back.
+    expect(reconciled).toBe(loaded);
+    expect(tileAt(reconciled.battle?.grid ?? buildGrid(floor), BELOW)?.ramp ?? false).toBe(false);
+  });
+
+  it('keeps temporary terrain journals when a ramp change forces a rebuild', () => {
+    const state = savedFloor();
+    const battle = state.battle;
+    if (!battle) throw new Error('fixture did not create a battle');
+    const rampTile = tileAt(battle.grid, RAMP);
+    if (!rampTile) throw new Error('the ramp fixture is off-grid');
+
+    const surfacePos = { x: 5, y: 3 };
+    const wallPos = { x: 5, y: 2 };
+    let grid = withTile(battle.grid, RAMP, { ...rampTile, ramp: false });
+    grid = withSurface(grid, surfacePos, { id: 'fire', duration: 2, spread: 0 });
+    const wallPrevious = tileAt(grid, wallPos);
+    if (!wallPrevious) throw new Error('the wall fixture is off-grid');
+    grid = withTile(grid, wallPos, {
+      ...wallPrevious,
+      terrain: 'wall',
+      blocked: true,
+      blocksSight: true,
+      cover: false,
+      surface: null,
+    });
+
+    const loaded = load({
+      ...state,
+      battle: {
+        ...battle,
+        grid,
+        temporaryWalls: [{ pos: wallPos, untilRound: 3, previous: wallPrevious }],
+      },
+    });
+    const out = loaded.battle;
+    if (!out) throw new Error('the reconciled save lost its battle');
+
+    // The ramp rebuild ran...
+    expect(tileAt(out.grid, RAMP)).toMatchObject({ terrain: 'stone', elevation: 1, ramp: true });
+    // ...without dropping the live surface or the wall's restore journal.
+    expect(tileAt(out.grid, surfacePos)?.surface).toEqual({ id: 'fire', duration: 2, spread: 0 });
+    expect(tileAt(out.grid, wallPos)).toMatchObject({ terrain: 'wall', blocked: true });
+    const wall = out.temporaryWalls.find(
+      (item) => item.pos.x === wallPos.x && item.pos.y === wallPos.y,
+    );
+    expect(wall?.untilRound).toBe(3);
+    expect(wall?.previous).toMatchObject({ terrain: 'dirt', elevation: 0, blocked: false });
+    expect(out.props.length).toBe(battle.props.length);
+    for (const prop of out.props) expect(prop.previous).toBeDefined();
+  });
+});
+
+describe('dead active pointer recovery', () => {
+  it('advances a loaded battle whose active pointer is a dead unit', () => {
+    const state = currentBattleState('quarry_floor');
+    if (!state.battle) throw new Error('fixture did not create a battle');
+    const dead = activeUnit(state.battle);
+    if (!dead) throw new Error('fixture has no active unit');
+    const wounded: GameState = {
+      ...state,
+      battle: {
+        ...state.battle,
+        units: state.battle.units.map((unit) => (unit.id === dead.id ? { ...unit, hp: 0 } : unit)),
+      },
+    };
+
+    const loaded = load(wounded);
+    const battle = loaded.battle;
+    if (!battle) throw new Error('the recovered battle is missing');
+    const active = activeUnit(battle);
+    expect(active?.id).not.toBe(dead.id);
+    expect(active !== undefined && isAlive(active)).toBe(true);
+    // A repair, not a ritual: a second load leaves the living pointer alone.
+    expect(reconcileBattle(CONTENT, loaded)).toEqual(loaded);
   });
 });
