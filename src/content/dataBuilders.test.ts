@@ -186,6 +186,7 @@ describe('content builders preserve their authored values', () => {
       ['world.tea_station', 'art/props/tea-station.png', 'earth'],
       ['npc.kid', 'art/npcs/pella.png', 'air'],
       ['npc.dorin', 'art/npcs/dorin.png', 'earth'],
+      ['world.route_sign', 'art/world/route-sign.png', 'neutral'],
       ['prop.barrel', 'art/props/barrel.png', 'water'],
       ['prop.flask', 'art/props/flask.png', 'earth'],
       ['prop.brazier', 'art/props/brazier.png', 'fire'],

@@ -287,6 +287,15 @@ export const CREDITS: readonly CreditEntry[] = [
     note: 'Original pixel-painted prop with a four-colour locked palette and binary alpha, replacing the drawn placeholder. Output terms: https://openai.com/policies/row-terms-of-use/. No exclusive copyright in generated output is claimed.',
   },
   {
+    what: 'The Ba Dan wayside route sign',
+    work: 'Painted wooden route sign prop',
+    authors: 'This project, generated with OpenAI image generation',
+    licence: 'own work',
+    source: '',
+    covers: ['art/world/route-sign.png'],
+    note: 'Original pixel-painted prop with a compact indexed palette and binary alpha, replacing the drawn placeholder. Output terms: https://openai.com/policies/row-terms-of-use/. No exclusive copyright in generated output is claimed.',
+  },
+  {
     what: 'The forest flood-bank nest reeds',
     work: 'Low washed-up reeds and an empty silted nest scenery prop',
     authors: 'This project, generated with OpenAI image generation',
