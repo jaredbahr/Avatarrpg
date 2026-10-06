@@ -97,6 +97,8 @@ const FOREST_RULE_ROWS: readonly string[] = FOREST_GROUND_ROWS.map((row, y) =>
 export const FOREST_ROAD: MapDef = {
   id: 'forest_road',
   projection: 'oblique',
+  // The 390px viewport at maximum zoom leaves exactly one diamond visible at either side.
+  cameraCentreMargin: -0.609375,
   scene: FOREST_ROAD_SCENE,
   backdrop: { url: 'art/maps/forest_road.webp', pixelsPerTile: 80 },
   name: 'The Forest Road',
