@@ -184,16 +184,69 @@ test.describe('renderer backends', () => {
         if (map) Object.defineProperty(map, 'scene', { value: undefined, configurable: true });
         return app?.overrideBackdrop('forest_road', null);
       });
+      // Ordering, not readiness: the fixture swap must reach a frame before the
+      // first capture, or the painted scene it replaced could satisfy the poll.
       await page.evaluate(
         () => new Promise((done) => requestAnimationFrame(() => requestAnimationFrame(done))),
       );
 
       // The forest road's puddle is authored at (5, 6); the top-left corner is grass.
-      const water = await tileCentre(page, { x: 5, y: 6 });
-      const grass = await tileCentre(page, { x: 3, y: 1 });
-      const pixels = await screenshotPixels(page.locator('.map-canvas'));
-      const wet = average(pixels, water.x, water.y, 3);
-      const green = average(pixels, grass.x, grass.y, 3);
+      const canvas = page.locator('.map-canvas');
+      let drawn:
+        | {
+            wet: ReturnType<typeof average>;
+            green: ReturnType<typeof average>;
+            water: { x: number; y: number };
+            grass: { x: number; y: number };
+          }
+        | undefined;
+      await expect
+        .poll(
+          async () => {
+            const captured = await stablePixelProbe(
+              page,
+              canvas,
+              () =>
+                page.evaluate(() => {
+                  const camera = window.fnt?.app.rendererCamera?.();
+                  if (!camera) return null;
+                  const m = camera.groundTransform;
+                  const centre = (x: number, y: number) => ({
+                    x: m.a * (x + 0.5) * 64 + m.c * (y + 0.5) * 64 + m.tx,
+                    y: m.b * (x + 0.5) * 64 + m.d * (y + 0.5) * 64 + m.ty,
+                  });
+                  return {
+                    camera: {
+                      a: m.a,
+                      b: m.b,
+                      c: m.c,
+                      d: m.d,
+                      tx: m.tx,
+                      ty: m.ty,
+                      tilePx: camera.tilePx,
+                    },
+                    probe: { water: centre(5, 6), grass: centre(3, 1) },
+                  };
+                }),
+              `procedural ground pixel probe (${renderer})`,
+            );
+            if (!captured) return false;
+            const wet = average(captured.pixels, captured.probe.water.x, captured.probe.water.y, 3);
+            const green = average(
+              captured.pixels,
+              captured.probe.grass.x,
+              captured.probe.grass.y,
+              3,
+            );
+            const ready = wet.b > wet.r + 20 && green.g > green.b + 10 && green.g > green.r;
+            if (ready) drawn = { wet, green, ...captured.probe };
+            return ready;
+          },
+          { timeout: renderer === 'webgl' ? 60_000 : 10_000 },
+        )
+        .toBe(true);
+      if (!drawn) throw new Error(`procedural ground was not presented on ${renderer}`);
+      const { wet, green, water, grass } = drawn;
 
       expect(
         wet.b,
@@ -478,11 +531,21 @@ test.describe('renderer backends', () => {
           before.aim.y + before.aim.centre.y,
         );
         await expect.poll(hover).toEqual(cell);
-        await frame();
-        const after = await read();
 
         const gap = (a: typeof before.face, b: typeof before.face) =>
           Math.abs(a.r - b.r) + Math.abs(a.g - b.g) + Math.abs(a.b - b.b);
+        let after: Awaited<ReturnType<typeof read>> | undefined;
+        await expect
+          .poll(
+            async () => {
+              const captured = await read();
+              if (gap(captured.corner, before.corner) > 24) after = captured;
+              return gap(captured.corner, before.corner);
+            },
+            { timeout: renderer === 'webgl' ? 60_000 : 10_000 },
+          )
+          .toBeGreaterThan(24);
+        if (!after) throw new Error(`raised tile mark was not presented on ${node} (${renderer})`);
         const seen = JSON.stringify({ cell, before, after });
         expect(
           gap(after.corner, before.corner),

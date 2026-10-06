@@ -405,10 +405,24 @@ for (const renderer of ['canvas', 'webgl'] as const) {
       )
       .toBe(2);
 
-    const bare = (await samples(page, { raised })).raised;
+    const bare = (
+      await waitForSamples(
+        page,
+        { raised },
+        ({ raised: pixel }) => pixel.r + pixel.g + pixel.b > 0,
+        readbackTimeout,
+      )
+    ).raised;
     await setBattleWater(page, raised, true);
-    await page.waitForTimeout(250);
-    const wet = (await samples(page, { raised })).raised;
+    const wet = (
+      await waitForSamples(
+        page,
+        { raised },
+        ({ raised: pixel }) =>
+          pixel.b > pixel.r && pixel.r < bare.r - 12 && pixel.b - pixel.r - (bare.b - bare.r) > 25,
+        readbackTimeout,
+      )
+    ).raised;
     // Real water's cool tint must be visible over the existing raised-base
     // sample; a hidden surface leaves this identical to `bare`. Measured as a
     // cool shift (red falls, blue overtakes red), never as an absolute blue
@@ -456,8 +470,17 @@ for (const renderer of ['canvas', 'webgl'] as const) {
     await waitForIdle(page);
     await focusTile(page, raised);
     await page.evaluate(() => window.fnt?.app.updateSettings({ highContrast: false }));
-    await page.waitForTimeout(150);
-    const reentered = (await samples(page, { raised })).raised;
+    const reentered = (
+      await waitForSamples(
+        page,
+        { raised },
+        ({ raised: pixel }) =>
+          Math.abs(pixel.r - bare.r) < 14 &&
+          Math.abs(pixel.g - bare.g) < 14 &&
+          Math.abs(pixel.b - bare.b) < 14,
+        readbackTimeout,
+      )
+    ).raised;
     expect(Math.abs(reentered.r - bare.r)).toBeLessThan(14);
     expect(Math.abs(reentered.g - bare.g)).toBeLessThan(14);
     expect(Math.abs(reentered.b - bare.b)).toBeLessThan(14);
