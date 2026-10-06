@@ -1,6 +1,14 @@
 import { expect, test } from '@playwright/test';
 import { allowSoftwareWebgl } from './budget';
-import { enterNode, resetStorage, setLargeText, startGame, takeTurn, waitForIdle } from './helpers';
+import {
+  enterNode,
+  pauseClock,
+  resetStorage,
+  setLargeText,
+  startGame,
+  takeTurn,
+  waitForIdle,
+} from './helpers';
 import { paintedTileCentre } from './projection';
 import type { MapView } from '../src/render/view';
 
@@ -8,33 +16,38 @@ test('a fresh battle establishes the full formation before the acting-unit hand-
   page,
 }) => {
   test.setTimeout(40_000);
+  // Keep the 700 ms formation hold from elapsing between two host-side polls
+  // when a loaded software renderer delivers its next frame seconds later.
+  await page.clock.install();
   await resetStorage(page, '?renderer=canvas');
   await startGame(page, ['Kaya'], ['kaya'], 'battle-opening-camera', { reduceMotion: false });
+  await pauseClock(page);
   await enterNode(page, 'battle_forest_road');
 
   await expect
-    .poll(() => page.locator('.combat-scene').getAttribute('data-battle-opening'), {
-      timeout: 25_000,
-    })
-    .toBe('hold');
-  const formation = await page.evaluate(() => window.fnt!.app.rendererCamera());
-  await page.waitForTimeout(300);
-  await expect
     .poll(
       async () => {
-        const phase = await page.locator('.combat-scene').getAttribute('data-battle-opening');
-        if (phase !== 'hold') return false;
-        const camera = await page.evaluate(() => window.fnt!.app.rendererCamera());
-        return JSON.stringify(camera) === JSON.stringify(formation);
+        await page.clock.runFor(50);
+        return page.locator('.combat-scene').getAttribute('data-battle-opening');
       },
       { timeout: 25_000 },
     )
-    .toBe(true);
+    .toBe('hold');
+  const formation = await page.evaluate(() => window.fnt!.app.rendererCamera());
+  // Advance deterministic application time inside the authored hold, rather
+  // than guessing how much wall time a frame took on the runner.
+  await page.clock.runFor(300);
+  expect(await page.locator('.combat-scene').getAttribute('data-battle-opening')).toBe('hold');
+  expect(await page.evaluate(() => window.fnt!.app.rendererCamera())).toEqual(formation);
 
   await expect
-    .poll(() => page.locator('.combat-scene').getAttribute('data-battle-opening'), {
-      timeout: 25_000,
-    })
+    .poll(
+      async () => {
+        await page.clock.runFor(100);
+        return page.locator('.combat-scene').getAttribute('data-battle-opening');
+      },
+      { timeout: 25_000 },
+    )
     .toBeNull();
   const actor = await page.evaluate(() => window.fnt!.app.rendererCamera());
   expect(actor).not.toEqual(formation);
