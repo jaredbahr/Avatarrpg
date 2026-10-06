@@ -103,6 +103,9 @@ const painter = (painterName: string, palette: string, variant?: string): AssetE
     ? { kind: 'painter', painter: painterName, palette, variant }
     : { kind: 'painter', painter: painterName, palette };
 
+const image = (url: string, palette?: string): AssetEntry =>
+  palette ? { kind: 'image', url, palette } : { kind: 'image', url };
+
 /** Original combat poses plus idle and walking cels in every direction. */
 const heroSheet = (key: string, palette: string): SheetEntry => {
   const name = key.slice(key.lastIndexOf('.') + 1);
@@ -363,38 +366,7 @@ export const ASSETS: Readonly<Record<string, AssetEntry>> = {
   'unit.enemy.quarrybender': enemyGSheet('quarrybender', 'earth'),
   'unit.enemy.deserter': quarryEnemySheet('deserter', 'fire'),
   'unit.enemy.merc': cuttingSheet('merc', 'enemy'),
-  'unit.enemy.crossbow': {
-    kind: 'sheet',
-    atlas: 'art/units/crossbow.json',
-    pixelsPerTile: 128,
-    footprint: { w: 1, h: 1 },
-    anchor: { x: 0.5, y: 0.85 },
-    facing: 'mirror',
-    palette: 'enemy',
-    clips: {
-      idle: {
-        frames: ['unit.enemy.crossbow/idle/0', 'unit.enemy.crossbow/idle/1'],
-        fps: 1,
-        loop: true,
-      },
-      walk: {
-        frames: ['unit.enemy.crossbow/walk/0', 'unit.enemy.crossbow/walk/1'],
-        fps: 4,
-        loop: true,
-      },
-      cast: {
-        frames: [
-          'unit.enemy.crossbow/cast/0',
-          'unit.enemy.crossbow/cast/1',
-          'unit.enemy.crossbow/cast/2',
-        ],
-        fps: 8,
-        loop: false,
-      },
-      hit: { frames: ['unit.enemy.crossbow/hit/0'], fps: 1, loop: false },
-      ko: { frames: ['unit.enemy.crossbow/ko/0'], fps: 1, loop: false },
-    },
-  },
+  'unit.enemy.crossbow': quarryEnemySheet('crossbow', 'enemy'),
   'unit.enemy.sergeant': cuttingSheet('sergeant', 'enemy'),
   'unit.enemy.driller': {
     kind: 'sheet',
@@ -442,21 +414,13 @@ export const ASSETS: Readonly<Record<string, AssetEntry>> = {
   'unit.ally.ruon': cuttingSheet('ruon', 'neutral'),
 
   /* --------------------------------------------------------------- NPCs */
-  'npc.elder': { kind: 'image', url: 'art/npcs/mira.png', palette: 'neutral' },
-  'npc.shopkeeper': { kind: 'image', url: 'art/npcs/gao.png', palette: 'earth' },
-  'world.turtle_ducks': {
-    kind: 'image',
-    url: 'art/world/turtle-ducks-nest.webp',
-    palette: 'earth',
-  },
-  'world.runoff_marker': {
-    kind: 'image',
-    url: 'art/world/runoff-marker.png',
-    palette: 'neutral',
-  },
-  'world.tea_station': { kind: 'image', url: 'art/props/tea-station.png', palette: 'earth' },
-  'npc.kid': { kind: 'image', url: 'art/npcs/pella.png', palette: 'air' },
-  'npc.dorin': { kind: 'image', url: 'art/npcs/dorin.png', palette: 'earth' },
+  'npc.elder': image('art/npcs/mira.png', 'neutral'),
+  'npc.shopkeeper': image('art/npcs/gao.png', 'earth'),
+  'world.turtle_ducks': image('art/world/turtle-ducks-nest.webp', 'earth'),
+  'world.runoff_marker': image('art/world/runoff-marker.png', 'neutral'),
+  'world.tea_station': image('art/props/tea-station.png', 'earth'),
+  'npc.kid': image('art/npcs/pella.png', 'air'),
+  'npc.dorin': image('art/npcs/dorin.png', 'earth'),
   'npc.guard': painter('villager', 'earth', 'guard'),
   // ADR 0047 placeholders until A1's art: Hanru, distinct from both of
   // Dorin's sprites (D7), and an adult of Pella's household who is no named person.
@@ -468,63 +432,39 @@ export const ASSETS: Readonly<Record<string, AssetEntry>> = {
   'world.route_sign': painter('discovery', 'neutral', 'marker'),
 
   /* --------------------------------------------------------------- Props */
-  'prop.barrel': { kind: 'image', url: 'art/props/barrel.png', palette: 'water' },
-  'prop.flask': { kind: 'image', url: 'art/props/flask.png', palette: 'earth' },
-  'prop.brazier': { kind: 'image', url: 'art/props/brazier.png', palette: 'fire' },
-  'prop.hay': { kind: 'image', url: 'art/props/hay.png', palette: 'air' },
-  'prop.rubble': { kind: 'image', url: 'art/props/rubble.png', palette: 'earth' },
-  'prop.cart': { kind: 'image', url: 'art/props/cart.png', palette: 'air' },
+  'prop.barrel': image('art/props/barrel.png', 'water'),
+  'prop.flask': image('art/props/flask.png', 'earth'),
+  'prop.brazier': image('art/props/brazier.png', 'fire'),
+  'prop.hay': image('art/props/hay.png', 'air'),
+  'prop.rubble': image('art/props/rubble.png', 'earth'),
+  'prop.cart': image('art/props/cart.png', 'air'),
 
   /* ---------------------------------------------------------- Portraits */
-  'portrait.enemy.slinger': {
-    kind: 'image',
-    url: 'art/portraits/enemy.slinger.png',
-    palette: 'enemy',
-  },
-  'portrait.enemy.bruiser': {
-    kind: 'image',
-    url: 'art/portraits/enemy.bruiser.png',
-    palette: 'enemy',
-  },
-  'portrait.enemy.quarrybender': {
-    kind: 'image',
-    url: 'art/portraits/enemy.quarrybender.png',
-    palette: 'earth',
-  },
-  'portrait.enemy.crossbow': {
-    kind: 'image',
-    url: 'art/portraits/enemy.crossbow.png',
-    palette: 'enemy',
-  },
-  'portrait.enemy.thug': { kind: 'image', url: 'art/portraits/enemy.thug.png', palette: 'enemy' },
-  'portrait.enemy.deserter': {
-    kind: 'image',
-    url: 'art/portraits/enemy.deserter.webp',
-    palette: 'fire',
-  },
-  'portrait.enemy.driller': {
-    kind: 'image',
-    url: 'art/portraits/enemy.grumbler.png',
-    palette: 'enemy',
-  },
-  'portrait.kaya': { kind: 'image', url: 'art/portraits/kaya.png', palette: 'fire' },
-  'portrait.tenzo': { kind: 'image', url: 'art/portraits/tenzo.png', palette: 'fire' },
-  'portrait.nilak': { kind: 'image', url: 'art/portraits/nilak.png', palette: 'water' },
-  'portrait.sura': { kind: 'image', url: 'art/portraits/sura.png', palette: 'water' },
-  'portrait.bo': { kind: 'image', url: 'art/portraits/bo.png', palette: 'earth' },
-  'portrait.linmei': { kind: 'image', url: 'art/portraits/linmei.png', palette: 'earth' },
-  'portrait.nima': { kind: 'image', url: 'art/portraits/nima.png', palette: 'air' },
-  'portrait.jinu': { kind: 'image', url: 'art/portraits/jinu.png', palette: 'air' },
-  'portrait.riko': { kind: 'image', url: 'art/portraits/riko.png', palette: 'nonbender' },
-  'portrait.wen': { kind: 'image', url: 'art/portraits/wen.png', palette: 'nonbender' },
+  'portrait.enemy.slinger': image('art/portraits/enemy.slinger.png', 'enemy'),
+  'portrait.enemy.bruiser': image('art/portraits/enemy.bruiser.png', 'enemy'),
+  'portrait.enemy.quarrybender': image('art/portraits/enemy.quarrybender.png', 'earth'),
+  'portrait.enemy.crossbow': image('art/portraits/enemy.crossbow.png', 'enemy'),
+  'portrait.enemy.thug': image('art/portraits/enemy.thug.png', 'enemy'),
+  'portrait.enemy.deserter': image('art/portraits/enemy.deserter.webp', 'fire'),
+  'portrait.enemy.driller': image('art/portraits/enemy.grumbler.png', 'enemy'),
+  'portrait.kaya': image('art/portraits/kaya.png', 'fire'),
+  'portrait.tenzo': image('art/portraits/tenzo.png', 'fire'),
+  'portrait.nilak': image('art/portraits/nilak.png', 'water'),
+  'portrait.sura': image('art/portraits/sura.png', 'water'),
+  'portrait.bo': image('art/portraits/bo.png', 'earth'),
+  'portrait.linmei': image('art/portraits/linmei.png', 'earth'),
+  'portrait.nima': image('art/portraits/nima.png', 'air'),
+  'portrait.jinu': image('art/portraits/jinu.png', 'air'),
+  'portrait.riko': image('art/portraits/riko.png', 'nonbender'),
+  'portrait.wen': image('art/portraits/wen.png', 'nonbender'),
 
   'portrait.narrator': painter('portrait', 'neutral', 'narrator'),
-  'portrait.mira': { kind: 'image', url: 'art/portraits/mira.png', palette: 'earth' },
-  'portrait.gao': { kind: 'image', url: 'art/portraits/gao.png', palette: 'earth' },
-  'portrait.pella': { kind: 'image', url: 'art/portraits/pella.png', palette: 'air' },
-  'portrait.dorin': { kind: 'image', url: 'art/portraits/dorin.png', palette: 'earth' },
-  'portrait.ruon': { kind: 'image', url: 'art/portraits/ruon.png', palette: 'neutral' },
-  'portrait.jin': { kind: 'image', url: 'art/portraits/jin.png', palette: 'nonbender' },
+  'portrait.mira': image('art/portraits/mira.png', 'earth'),
+  'portrait.gao': image('art/portraits/gao.png', 'earth'),
+  'portrait.pella': image('art/portraits/pella.png', 'air'),
+  'portrait.dorin': image('art/portraits/dorin.png', 'earth'),
+  'portrait.ruon': image('art/portraits/ruon.png', 'neutral'),
+  'portrait.jin': image('art/portraits/jin.png', 'nonbender'),
 
   /* ------------------------------------------------------------ Probe */
   /*

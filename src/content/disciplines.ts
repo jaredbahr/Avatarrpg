@@ -26,7 +26,17 @@
  * through `setFlags`, a test fixture, or the balance simulator.
  */
 
-import type { DisciplineDef } from '../core/types';
+import type { DisciplineDef, KitEntry } from '../core/types';
+
+const ladder = (
+  fifth: string,
+  seventh: string | readonly [string, string],
+  tenth: string,
+): readonly KitEntry[] => [
+  { level: 5, ability: fifth },
+  typeof seventh === 'string' ? { level: 7, ability: seventh } : { level: 7, choose: seventh },
+  { level: 10, ability: tenth },
+];
 
 /** Story flags that open a rare path. Act 2 beats will set these. */
 export const DISCIPLINE_FLAGS = {
@@ -50,11 +60,7 @@ export const DISCIPLINES: readonly DisciplineDef[] = [
     requiresFlag: null,
     lockedHint: '',
     statMods: { defense: 1 },
-    kit: [
-      { level: 5, ability: 'fire_wall' },
-      { level: 7, ability: 'heat_shield' },
-      { level: 10, ability: 'dragon_breath' },
-    ],
+    kit: ladder('fire_wall', 'heat_shield', 'dragon_breath'),
     icon: 'fx.fire.wall',
   },
   {
@@ -68,11 +74,7 @@ export const DISCIPLINES: readonly DisciplineDef[] = [
     requiresFlag: DISCIPLINE_FLAGS.lightning,
     lockedHint: 'Find someone willing to teach the separation. Very few are.',
     statMods: { power: 1, maxHp: -2 },
-    kit: [
-      { level: 5, ability: 'lightning' },
-      { level: 7, ability: 'lightning_arc' },
-      { level: 10, ability: 'lightning_storm' },
-    ],
+    kit: ladder('lightning', 'lightning_arc', 'lightning_storm'),
     icon: 'fx.fire.lightning',
   },
 
@@ -88,11 +90,7 @@ export const DISCIPLINES: readonly DisciplineDef[] = [
     requiresFlag: null,
     lockedHint: '',
     statMods: { power: 1 },
-    kit: [
-      { level: 5, ability: 'ice_spikes' },
-      { level: 7, choose: ['tidal_wave', 'ice_shield'] },
-      { level: 10, ability: 'octopus_form' },
-    ],
+    kit: ladder('ice_spikes', ['tidal_wave', 'ice_shield'], 'octopus_form'),
     icon: 'fx.water.spikes',
   },
   {
@@ -106,11 +104,7 @@ export const DISCIPLINES: readonly DisciplineDef[] = [
     requiresFlag: DISCIPLINE_FLAGS.healing,
     lockedHint: 'A healing house has to take you in. Ask at the northern water tribes.',
     statMods: { focus: 5, power: -1 },
-    kit: [
-      { level: 5, ability: 'healing_hands' },
-      { level: 7, ability: 'purifying_mist' },
-      { level: 10, ability: 'life_tide' },
-    ],
+    kit: ladder('healing_hands', 'purifying_mist', 'life_tide'),
     icon: 'fx.water.heal',
   },
 
@@ -126,11 +120,7 @@ export const DISCIPLINES: readonly DisciplineDef[] = [
     requiresFlag: null,
     lockedHint: '',
     statMods: { maxHp: 2 },
-    kit: [
-      { level: 5, ability: 'mudslide' },
-      { level: 7, choose: ['seismic_sense', 'boulder'] },
-      { level: 10, ability: 'fissure' },
-    ],
+    kit: ladder('mudslide', ['seismic_sense', 'boulder'], 'fissure'),
     icon: 'fx.earth.mudslide',
   },
   {
@@ -144,11 +134,7 @@ export const DISCIPLINES: readonly DisciplineDef[] = [
     requiresFlag: DISCIPLINE_FLAGS.metalbending,
     lockedHint: 'Someone has to show you the earth still in the ore. Try the rail towns.',
     statMods: { defense: 1, speed: -1 },
-    kit: [
-      { level: 5, ability: 'metal_cable' },
-      { level: 7, ability: 'metal_armor' },
-      { level: 10, ability: 'metalbending' },
-    ],
+    kit: ladder('metal_cable', 'metal_armor', 'metalbending'),
     icon: 'fx.earth.metal',
   },
 
@@ -164,11 +150,7 @@ export const DISCIPLINES: readonly DisciplineDef[] = [
     requiresFlag: null,
     lockedHint: '',
     statMods: { maxMove: 1 },
-    kit: [
-      { level: 5, ability: 'cyclone' },
-      { level: 7, ability: 'air_cushion' },
-      { level: 10, ability: 'tornado' },
-    ],
+    kit: ladder('cyclone', 'air_cushion', 'tornado'),
     icon: 'fx.air.cyclone',
   },
   {
@@ -182,11 +164,7 @@ export const DISCIPLINES: readonly DisciplineDef[] = [
     requiresFlag: DISCIPLINE_FLAGS.sound,
     lockedHint: 'The temples do not teach it. Somebody outside them does.',
     statMods: { power: 1, focus: 3 },
-    kit: [
-      { level: 5, ability: 'sonic_boom' },
-      { level: 7, ability: 'deafening_shout' },
-      { level: 10, ability: 'shatterpoint' },
-    ],
+    kit: ladder('sonic_boom', 'deafening_shout', 'shatterpoint'),
     icon: 'fx.air.sonic',
   },
 
@@ -202,11 +180,7 @@ export const DISCIPLINES: readonly DisciplineDef[] = [
     requiresFlag: null,
     lockedHint: '',
     statMods: { maxHp: 2 },
-    kit: [
-      { level: 5, ability: 'smoke_bomb' },
-      { level: 7, choose: ['shield_bash', 'rally'] },
-      { level: 10, ability: 'pressure_points' },
-    ],
+    kit: ladder('smoke_bomb', ['shield_bash', 'rally'], 'pressure_points'),
     icon: 'fx.non.smoke',
   },
   {
@@ -220,11 +194,7 @@ export const DISCIPLINES: readonly DisciplineDef[] = [
     requiresFlag: DISCIPLINE_FLAGS.engineering,
     lockedHint: 'You need a workshop, a schematic, and somebody who owes you a favour.',
     statMods: { focus: 5, maxMove: -1 },
-    kit: [
-      { level: 5, ability: 'electrified_glove' },
-      { level: 7, ability: 'shock_mine' },
-      { level: 10, ability: 'disruptor_array' },
-    ],
+    kit: ladder('electrified_glove', 'shock_mine', 'disruptor_array'),
     icon: 'fx.non.glove',
   },
 ];

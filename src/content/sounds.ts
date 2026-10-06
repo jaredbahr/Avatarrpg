@@ -124,12 +124,11 @@ const voice = (
  */
 export const SOUND_FAMILIES: Readonly<Record<string, SoundDefInput>> = {
   // A rush of air catching, falling away as the flame lets go.
-  fire: voice(2600, 320, { noise: 'white', q: 1.1, attack: 18, decay: 420, gain: 0.9 }),
+  fire: voice(2600, 320, { q: 1.1, attack: 18, decay: 420, gain: 0.9 }),
   // Lower and rounder, bending down the way a body of water moves.
   water: voice(1500, 240, { noise: 'brown', q: 2.2, attack: 30, decay: 380, gain: 0.85 }),
   // Brittle and high: the sound lives at the top where ice cracks.
   ice: voice(5200, 1800, {
-    noise: 'white',
     filter: 'highpass',
     q: 3,
     attack: 6,
@@ -147,10 +146,9 @@ export const SOUND_FAMILIES: Readonly<Record<string, SoundDefInput>> = {
     crack: true,
   }),
   // Wide and breathy, rising then gone.
-  air: voice(900, 3200, { noise: 'white', q: 0.8, attack: 60, decay: 340, gain: 0.75 }),
+  air: voice(900, 3200, { q: 0.8, attack: 60, decay: 340, gain: 0.75 }),
   // Almost no attack, a crack, and a short bright tail.
   lightning: voice(7000, 2200, {
-    noise: 'white',
     q: 4,
     attack: 2,
     decay: 240,
@@ -158,11 +156,11 @@ export const SOUND_FAMILIES: Readonly<Record<string, SoundDefInput>> = {
     crack: true,
   }),
   // A chi strike: no element, just the snap of the blow.
-  non: voice(1800, 600, { noise: 'white', q: 2.5, attack: 4, decay: 150, gain: 0.7, crack: true }),
+  non: voice(1800, 600, { q: 2.5, attack: 4, decay: 150, gain: 0.7, crack: true }),
   // Enemy techniques read as effort, not element.
   enemy: voice(1200, 400, { noise: 'brown', q: 1.6, attack: 10, decay: 220, gain: 0.7 }),
   // Rising and soft: the one voice that goes up and stays.
-  heal: voice(600, 2400, { noise: 'white', q: 5, attack: 80, decay: 520, gain: 0.5 }),
+  heal: voice(600, 2400, { q: 5, attack: 80, decay: 520, gain: 0.5 }),
   // A shell closing.
   shield: voice(900, 300, { noise: 'brown', q: 3.5, attack: 12, decay: 340, gain: 0.6 }),
   // A status taking hold: a thin shimmer under the hit, never over it.
@@ -228,14 +226,12 @@ export const SOUND_CUES: Readonly<Record<string, SoundDefInput>> = {
   // These play at release. A club's swish must not claim a hit before the
   // separately scheduled hit/miss cue; only the crossbow's mechanism cracks.
   'fx.enemy.club': voice(780, 190, {
-    noise: 'white',
     q: 0.7,
     attack: 28,
     decay: 190,
     gain: 0.55,
   }),
   'fx.enemy.sling': voice(3200, 850, {
-    noise: 'white',
     q: 1.4,
     attack: 10,
     decay: 135,
@@ -245,7 +241,6 @@ export const SOUND_CUES: Readonly<Record<string, SoundDefInput>> = {
     noise: 'brown',
     q: 0.7,
     attack: 65,
-    decay: 260,
     gain: 0.7,
   }),
   'fx.enemy.oil': voice(1100, 210, {
@@ -257,21 +252,18 @@ export const SOUND_CUES: Readonly<Record<string, SoundDefInput>> = {
   }),
   // A burning torch keeps the fire material even though its key says enemy.
   'fx.enemy.torch': voice(2300, 380, {
-    noise: 'white',
     q: 1.1,
     attack: 18,
     decay: 310,
     gain: 0.65,
   }),
   'fx.enemy.blade': voice(4200, 950, {
-    noise: 'white',
     q: 1.8,
     attack: 8,
     decay: 165,
     gain: 0.4,
   }),
   'fx.enemy.crossbow': voice(2600, 650, {
-    noise: 'white',
     q: 2.4,
     attack: 2,
     decay: 115,
@@ -284,10 +276,8 @@ export const SOUND_CUES: Readonly<Record<string, SoundDefInput>> = {
     q: 1.8,
     attack: 14,
     decay: 650,
-    gain: 1,
   }),
   'fx.enemy.spray': voice(1800, 800, {
-    noise: 'white',
     q: 0.6,
     attack: 45,
     decay: 460,
@@ -310,7 +300,6 @@ export const SOUND_CUES: Readonly<Record<string, SoundDefInput>> = {
     gain: 0.85,
   }),
   'fx.enemy.sabre': voice(3400, 700, {
-    noise: 'white',
     q: 1.6,
     attack: 12,
     decay: 210,
@@ -334,7 +323,7 @@ export const SOUND_CUES: Readonly<Record<string, SoundDefInput>> = {
   // Damage landing on a body, under whatever voice threw it.
   hit: sample('audio/hit-a.ogg', { variants: ['audio/hit-b.ogg'], gain: 0.8 }),
   // A blow that connects with nothing.
-  miss: voice(2200, 700, { noise: 'white', q: 0.9, attack: 20, decay: 180, gain: 0.35 }),
+  miss: voice(2200, 700, { q: 0.9, attack: 20, decay: 180, gain: 0.35 }),
   // Going down.
   ko: sample('audio/ko.ogg', { gain: 0.9, rate: 0.9 }),
   // A prop taking a hit, and a prop coming apart.
@@ -346,7 +335,6 @@ export const SOUND_CUES: Readonly<Record<string, SoundDefInput>> = {
     filter: 'lowpass',
     q: 1.2,
     attack: 3,
-    decay: 260,
     gain: 0.8,
     crack: true,
   }),
@@ -364,7 +352,7 @@ export const SOUND_CUES: Readonly<Record<string, SoundDefInput>> = {
   },
   // Water on fire, or steam rising: a hiss.
   'fx.surface.steam': voice(6000, 3500, { filter: 'highpass', attack: 25, decay: 520, gain: 0.3 }),
-  'fx.surface.doused': voice(5200, 3000, { filter: 'highpass', attack: 15, decay: 420, gain: 0.3 }),
+  'fx.surface.doused': voice(5200, 3000, { filter: 'highpass', decay: 420, gain: 0.3 }),
   'fx.surface.ice': voice(6200, 2600, {
     filter: 'highpass',
     q: 3,
@@ -377,7 +365,6 @@ export const SOUND_CUES: Readonly<Record<string, SoundDefInput>> = {
     noise: 'brown',
     q: 1.5,
     attack: 6,
-    decay: 260,
     gain: 0.4,
   }),
   'fx.status.burning': voice(2400, 600, { attack: 10, decay: 300, gain: 0.35 }),
@@ -385,7 +372,6 @@ export const SOUND_CUES: Readonly<Record<string, SoundDefInput>> = {
     filter: 'highpass',
     q: 3,
     attack: 2,
-    decay: 260,
     gain: 0.4,
     crack: true,
   }),

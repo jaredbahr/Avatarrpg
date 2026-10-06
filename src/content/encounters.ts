@@ -19,7 +19,12 @@
  * before this existed.
  */
 
-import type { EncounterDef } from '../core/types';
+import type { EncounterDef, EncounterPlacement } from '../core/types';
+
+const at = (x: number, y: number, enemyId: string): EncounterPlacement => ({
+  enemyId,
+  pos: { x, y },
+});
 
 export const ENCOUNTERS: readonly EncounterDef[] = [
   {
@@ -27,11 +32,7 @@ export const ENCOUNTERS: readonly EncounterDef[] = [
     name: 'Ambush on the Forest Road',
     mapId: 'forest_road',
     expectedLevel: 1,
-    enemies: [
-      { enemyId: 'bandit_thug', pos: { x: 17, y: 5 } },
-      { enemyId: 'bandit_thug', pos: { x: 17, y: 7 } },
-      { enemyId: 'bandit_slinger', pos: { x: 18, y: 3 } },
-    ],
+    enemies: [at(17, 5, 'bandit_thug'), at(17, 7, 'bandit_thug'), at(18, 3, 'bandit_slinger')],
     allies: [],
     conditionalEnemies: [],
     baselinePartySize: 3,
@@ -58,9 +59,9 @@ export const ENCOUNTERS: readonly EncounterDef[] = [
         id: 'slingers',
         weight: 1,
         enemies: [
-          { enemyId: 'bandit_slinger', pos: { x: 17, y: 5 } },
-          { enemyId: 'bandit_slinger', pos: { x: 18, y: 3 } },
-          { enemyId: 'bandit_slinger', pos: { x: 18, y: 7 } },
+          at(17, 5, 'bandit_slinger'),
+          at(18, 3, 'bandit_slinger'),
+          at(18, 7, 'bandit_slinger'),
         ],
         intro:
           'Stones whip out of the pines before anyone shows a face. Whoever is throwing them means to stay out of reach.',
@@ -69,10 +70,7 @@ export const ENCOUNTERS: readonly EncounterDef[] = [
       {
         id: 'bruisers',
         weight: 1,
-        enemies: [
-          { enemyId: 'bandit_bruiser', pos: { x: 17, y: 5 } },
-          { enemyId: 'bandit_bruiser', pos: { x: 17, y: 7 } },
-        ],
+        enemies: [at(17, 5, 'bandit_bruiser'), at(17, 7, 'bandit_bruiser')],
         intro:
           'Heavy boots thud onto the road at the bend. Whoever wears them is big, slow, and in no hurry to step aside.',
         tip: 'Bruisers are heavy and slow, but Rush lets one lunge four tiles now and then. Focus one at a time: a bruiser at half health swings as hard as a fresh one.',
@@ -80,10 +78,7 @@ export const ENCOUNTERS: readonly EncounterDef[] = [
     ],
     // Deliberately short. This is the tutorial fight: a full table should be
     // able to make mistakes here and still walk away.
-    reinforcements: [
-      { enemyId: 'bandit_thug', pos: { x: 18, y: 6 } },
-      { enemyId: 'bandit_slinger', pos: { x: 16, y: 2 } },
-    ],
+    reinforcements: [at(18, 6, 'bandit_thug'), at(16, 2, 'bandit_slinger')],
     intro:
       'Figures step out from the pines at the bend, clubs in hand. They have been waiting here for somebody.',
     tip: 'Anyone standing in the puddle gets Wet: lightning does double damage and cold hits harder. Cold on the water can freeze whoever is in it. Shove a bandit in first.',
@@ -93,11 +88,7 @@ export const ENCOUNTERS: readonly EncounterDef[] = [
     name: 'The Quarry Gate',
     mapId: 'quarry_gate',
     expectedLevel: 2,
-    enemies: [
-      { enemyId: 'fire_deserter', pos: { x: 16, y: 3 } },
-      { enemyId: 'bandit_thug', pos: { x: 17, y: 6 } },
-      { enemyId: 'bandit_bruiser', pos: { x: 16, y: 8 } },
-    ],
+    enemies: [at(16, 3, 'fire_deserter'), at(17, 6, 'bandit_thug'), at(16, 8, 'bandit_bruiser')],
     allies: [],
     conditionalEnemies: [],
     baselinePartySize: 3,
@@ -117,9 +108,9 @@ export const ENCOUNTERS: readonly EncounterDef[] = [
         weight: 1,
         when: { kind: 'flag', key: 'gate_fire_bluff', op: 'set' },
         enemies: [
-          { enemyId: 'bandit_bruiser', pos: { x: 16, y: 3 } },
-          { enemyId: 'bandit_earthbender', pos: { x: 17, y: 6 } },
-          { enemyId: 'bandit_bruiser', pos: { x: 16, y: 8 } },
+          at(16, 3, 'bandit_bruiser'),
+          at(17, 6, 'bandit_earthbender'),
+          at(16, 8, 'bandit_bruiser'),
         ],
         intro:
           'The deserter looks at your firebender, then at the ground, and steps back from the gate. The quarry crew comes forward anyway.',
@@ -149,10 +140,7 @@ export const ENCOUNTERS: readonly EncounterDef[] = [
      * Every other encounter in the act already leads with a melee body; this
      * one was the odd one out rather than the deliberate exception.
      */
-    reinforcements: [
-      { enemyId: 'bandit_thug', pos: { x: 17, y: 4 } },
-      { enemyId: 'bandit_slinger', pos: { x: 17, y: 9 } },
-    ],
+    reinforcements: [at(17, 4, 'bandit_thug'), at(17, 9, 'bandit_slinger')],
     intro:
       'Barrels stand against the gatehouse, and a dark stripe of spilled oil runs through the gate. Someone on the far side has a lit torch.',
     /*
@@ -171,20 +159,16 @@ export const ENCOUNTERS: readonly EncounterDef[] = [
     name: 'The Cutting',
     mapId: 'ambush_road',
     expectedLevel: 3,
-    enemies: [
-      { enemyId: 'merc_blade', pos: { x: 17, y: 5 } },
-      { enemyId: 'merc_blade', pos: { x: 17, y: 6 } },
-      { enemyId: 'merc_crossbow', pos: { x: 16, y: 3 } },
-    ],
-    allies: [{ enemyId: 'ruon_ally', pos: { x: 5, y: 5 } }],
+    enemies: [at(17, 5, 'merc_blade'), at(17, 6, 'merc_blade'), at(16, 3, 'merc_crossbow')],
+    allies: [at(5, 5, 'ruon_ally')],
     conditionalEnemies: [],
     baselinePartySize: 3,
     variants: [],
     reinforcements: [
-      { enemyId: 'merc_blade', pos: { x: 16, y: 7 } },
-      { enemyId: 'merc_crossbow', pos: { x: 18, y: 8 } },
-      { enemyId: 'merc_blade', pos: { x: 15, y: 8 } },
-      { enemyId: 'merc_sergeant', pos: { x: 17, y: 9 } },
+      at(16, 7, 'merc_blade'),
+      at(18, 8, 'merc_crossbow'),
+      at(15, 8, 'merc_blade'),
+      at(17, 9, 'merc_sergeant'),
     ],
     intro:
       "Jin's people are already in the cutting. They knew which road you would take, and they have come for Ruon.",
@@ -195,10 +179,7 @@ export const ENCOUNTERS: readonly EncounterDef[] = [
     name: 'Grumbler',
     mapId: 'quarry_floor',
     expectedLevel: 3,
-    enemies: [
-      { enemyId: 'grumbler', pos: { x: 15, y: 5 } },
-      { enemyId: 'bandit_earthbender', pos: { x: 16, y: 2 } },
-    ],
+    enemies: [at(15, 5, 'grumbler'), at(16, 2, 'bandit_earthbender')],
     allies: [],
     /*
      * Empty on purpose, and it is worth saying why rather than leaving a bare
@@ -248,20 +229,17 @@ export const ENCOUNTERS: readonly EncounterDef[] = [
         id: 'jins_people',
         weight: 1,
         when: { kind: 'flag', key: 'ruon_traded', op: 'set' },
-        enemies: [
-          { enemyId: 'grumbler', pos: { x: 15, y: 5 } },
-          { enemyId: 'merc_crossbow', pos: { x: 16, y: 2 } },
-        ],
+        enemies: [at(15, 5, 'grumbler'), at(16, 2, 'merc_crossbow')],
         intro:
           'The driller grinds forward on its treads, oil dripping from a split hose. Somewhere on the rim above, Jin’s people may already be waiting.',
         tip: 'No quarry bender raising cover this time. If a crossbow is braced on the rim, it reaches eight tiles: close on it or break its line of sight. Avoid the drill’s two-tile slam.',
       },
     ],
     reinforcements: [
-      { enemyId: 'bandit_thug', pos: { x: 14, y: 3 } },
-      { enemyId: 'bandit_thug', pos: { x: 14, y: 8 } },
-      { enemyId: 'bandit_slinger', pos: { x: 17, y: 9 } },
-      { enemyId: 'bandit_earthbender', pos: { x: 13, y: 10 } },
+      at(14, 3, 'bandit_thug'),
+      at(14, 8, 'bandit_thug'),
+      at(17, 9, 'bandit_slinger'),
+      at(13, 10, 'bandit_earthbender'),
     ],
     intro:
       'The driller grinds forward on its treads, oil dripping from a split hose. Grumbler hauls on a lever, and the drill arm swings towards you.',

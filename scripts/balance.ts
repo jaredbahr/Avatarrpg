@@ -18,7 +18,7 @@
  */
 import { readFileSync, writeFileSync } from 'node:fs';
 import { CONTENT } from '../src/content';
-import { combatTuningOverrideSchema, combatTuningSchema } from '../src/content/tuning';
+import { combatTuningOverrideSchema, combatTuningSchema } from '../src/content/tuning.schema';
 import { runDisciplineSweep, runTableSizeSweep } from '../src/core/sim/balance';
 import type { ContentIndex } from '../src/core/types';
 import { applyScenario, readScenario, unsupportedKnobs } from './balance/scenario';

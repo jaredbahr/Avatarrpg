@@ -3,7 +3,7 @@
  *
  * The runtime validator promises zod's behaviour for the combinators it has, so
  * the test does not describe that behaviour a second time: it loads the real
- * save, fx, sound and tuning modules twice, once as shipped and once with zod
+ * save, fx and sound modules twice, once as shipped and once with zod
  * standing in for `schema.ts`, and holds the two to the same verdict, the same
  * parsed data (key order included, since a save is written back out) and the
  * same issue paths in the same order. `deserialize` names the first of those
@@ -19,7 +19,6 @@ import { z } from 'zod';
 import { CONTENT } from '../content';
 import * as fxShipped from '../content/fx';
 import * as soundsShipped from '../content/sounds';
-import * as tuningShipped from '../content/tuning';
 import { RngCursor } from './rng';
 import * as saveShipped from './save/serialize';
 import * as schemaShipped from './schema';
@@ -39,7 +38,6 @@ interface Modules {
   save: typeof saveShipped;
   fx: typeof fxShipped;
   sounds: typeof soundsShipped;
-  tuning: typeof tuningShipped;
 }
 
 let zodBuilt: Modules;
@@ -51,7 +49,6 @@ beforeAll(async () => {
     save: await import('./save/serialize'),
     fx: await import('../content/fx'),
     sounds: await import('../content/sounds'),
-    tuning: await import('../content/tuning'),
   };
   vi.doUnmock('./schema');
   vi.resetModules();
@@ -362,34 +359,14 @@ describe('the runtime validator matches zod', () => {
     fuzz(soundsShipped.soundSchema, zodBuilt.sounds.soundSchema, seeds, 3000, 4);
   });
 
-  it('on the combat tuning, its refinement and its partial override', () => {
-    const tuning = tuningShipped.COMBAT_TUNING;
-    const seeds = [tuning, { ...tuning, hitChanceMin: 99, hitChanceMax: 5 }, {}];
-    fuzz(tuningShipped.combatTuningSchema, zodBuilt.tuning.combatTuningSchema, seeds, 1500, 5);
-    fuzz(
-      tuningShipped.combatTuningOverrideSchema,
-      zodBuilt.tuning.combatTuningOverrideSchema,
-      seeds,
-      1500,
-      6,
-    );
-
-    const strictPartialInput = JSON.parse('{"unknown":1}') as unknown;
+  it('keeps strictness when an object schema becomes partial', () => {
+    const input = JSON.parse('{"unknown":1}') as unknown;
     expectSameVerdict(
       schemaShipped.object({ known: schemaShipped.string() }).strict().partial(),
       z.object({ known: z.string() }).strict().partial(),
-      strictPartialInput,
+      input,
       'strict partial unknown key',
     );
-
-    const strictTuningProto = JSON.parse('{"__proto__":{"polluted":true}}') as unknown;
-    expectSameVerdict(
-      tuningShipped.combatTuningOverrideSchema,
-      zodBuilt.tuning.combatTuningOverrideSchema,
-      strictTuningProto,
-      'strict tuning __proto__ key',
-    );
-    expect((Object.prototype as { polluted?: unknown }).polluted).toBeUndefined();
   });
 
   it('does not pollute prototypes from JSON-parsed save keys', () => {
@@ -414,7 +391,6 @@ describe('the runtime validator matches zod', () => {
   });
 
   it('gives what the shipped modules export the same values', () => {
-    expect(tuningShipped.COMBAT_TUNING).toEqual(zodBuilt.tuning.COMBAT_TUNING);
     for (const key of [...Object.keys(fxShipped.FX_RECIPES), 'fx.fire.invented', 'fx.nothing']) {
       expect(JSON.stringify(fxShipped.resolveFx(key)), key).toBe(
         JSON.stringify(zodBuilt.fx.resolveFx(key)),

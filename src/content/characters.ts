@@ -13,6 +13,18 @@
 
 import type { CharacterDef, KitEntry } from '../core/types';
 
+const ladder = (
+  first: string,
+  second: string,
+  choices: readonly [string, string],
+  specializations: readonly [string, string],
+): readonly KitEntry[] => [
+  { level: 1, ability: first },
+  { level: 2, ability: second },
+  { level: 3, choose: choices },
+  { level: 5, specialize: specializations },
+];
+
 /*
  * A kit runs to the discipline gate and stops.
  *
@@ -28,75 +40,75 @@ import type { CharacterDef, KitEntry } from '../core/types';
  * None of these options repeats a discipline unlock.
  */
 
-const KAYA_KIT: readonly KitEntry[] = [
-  { level: 1, ability: 'fire_jab' },
-  { level: 2, ability: 'flame_arc' },
-  { level: 3, choose: ['fire_blast', 'fire_step'] },
-  { level: 5, specialize: ['flame_shaping', 'lightning_path'] },
-];
+const KAYA_KIT = ladder(
+  'fire_jab',
+  'flame_arc',
+  ['fire_blast', 'fire_step'],
+  ['flame_shaping', 'lightning_path'],
+);
 
-const TENZO_KIT: readonly KitEntry[] = [
-  { level: 1, ability: 'fire_jab' },
-  { level: 2, ability: 'fire_blast' },
-  { level: 3, choose: ['fire_step', 'flame_arc'] },
-  { level: 5, specialize: ['flame_shaping', 'lightning_path'] },
-];
+const TENZO_KIT = ladder(
+  'fire_jab',
+  'fire_blast',
+  ['fire_step', 'flame_arc'],
+  ['flame_shaping', 'lightning_path'],
+);
 
-const NILAK_KIT: readonly KitEntry[] = [
-  { level: 1, ability: 'water_whip' },
-  { level: 2, ability: 'healing_stream' },
-  { level: 3, choose: ['water_pull', 'ice_path'] },
-  { level: 5, specialize: ['ice_shaping', 'healing_path'] },
-];
+const NILAK_KIT = ladder(
+  'water_whip',
+  'healing_stream',
+  ['water_pull', 'ice_path'],
+  ['ice_shaping', 'healing_path'],
+);
 
-const SURA_KIT: readonly KitEntry[] = [
-  { level: 1, ability: 'water_whip' },
-  { level: 2, ability: 'ice_path' },
-  { level: 3, choose: ['healing_stream', 'water_pull'] },
-  { level: 5, specialize: ['ice_shaping', 'healing_path'] },
-];
+const SURA_KIT = ladder(
+  'water_whip',
+  'ice_path',
+  ['healing_stream', 'water_pull'],
+  ['ice_shaping', 'healing_path'],
+);
 
-const BO_KIT: readonly KitEntry[] = [
-  { level: 1, ability: 'rock_throw' },
-  { level: 2, ability: 'stone_stance' },
-  { level: 3, choose: ['earth_wall', 'shockwave'] },
-  { level: 5, specialize: ['earth_shaping', 'metalbending_path'] },
-];
+const BO_KIT = ladder(
+  'rock_throw',
+  'stone_stance',
+  ['earth_wall', 'shockwave'],
+  ['earth_shaping', 'metalbending_path'],
+);
 
-const LIN_MEI_KIT: readonly KitEntry[] = [
-  { level: 1, ability: 'rock_throw' },
-  { level: 2, ability: 'shockwave' },
-  { level: 3, choose: ['earth_wall', 'raise_rubble'] },
-  { level: 5, specialize: ['earth_shaping', 'metalbending_path'] },
-];
+const LIN_MEI_KIT = ladder(
+  'rock_throw',
+  'shockwave',
+  ['earth_wall', 'raise_rubble'],
+  ['earth_shaping', 'metalbending_path'],
+);
 
-const NIMA_KIT: readonly KitEntry[] = [
-  { level: 1, ability: 'air_blast' },
-  { level: 2, ability: 'air_scooter' },
-  { level: 3, choose: ['air_shield', 'gust'] },
-  { level: 5, specialize: ['air_shaping', 'sound_bending'] },
-];
+const NIMA_KIT = ladder(
+  'air_blast',
+  'air_scooter',
+  ['air_shield', 'gust'],
+  ['air_shaping', 'sound_bending'],
+);
 
-const JINU_KIT: readonly KitEntry[] = [
-  { level: 1, ability: 'air_blast' },
-  { level: 2, ability: 'gust' },
-  { level: 3, choose: ['air_shield', 'air_scooter'] },
-  { level: 5, specialize: ['air_shaping', 'sound_bending'] },
-];
+const JINU_KIT = ladder(
+  'air_blast',
+  'gust',
+  ['air_shield', 'air_scooter'],
+  ['air_shaping', 'sound_bending'],
+);
 
-const RIKO_KIT: readonly KitEntry[] = [
-  { level: 1, ability: 'strike' },
-  { level: 2, ability: 'chi_block' },
-  { level: 3, choose: ['take_cover', 'bolas'] },
-  { level: 5, specialize: ['field_craft', 'engineering'] },
-];
+const RIKO_KIT = ladder(
+  'strike',
+  'chi_block',
+  ['take_cover', 'bolas'],
+  ['field_craft', 'engineering'],
+);
 
-const WEN_KIT: readonly KitEntry[] = [
-  { level: 1, ability: 'strike' },
-  { level: 2, ability: 'gauntlet_spark' },
-  { level: 3, choose: ['take_cover', 'bolas'] },
-  { level: 5, specialize: ['field_craft', 'engineering'] },
-];
+const WEN_KIT = ladder(
+  'strike',
+  'gauntlet_spark',
+  ['take_cover', 'bolas'],
+  ['field_craft', 'engineering'],
+);
 
 export const CHARACTERS: readonly CharacterDef[] = [
   /* ---------------------------------------------------------------- Fire */
