@@ -169,10 +169,15 @@ function aspectHeight(image: BaDanTexture, width: number): number {
   return (width * natural.height) / natural.width;
 }
 
-/** Two canopy wings frame the market court; only their trunks block walking. */
+/**
+ * Two canopy wings frame the market court; only their trunks block walking.
+ * The east tree stands out on the lawn toward the wooded rim: at (17,5) its
+ * broad crown covered the north-market display, the south-east house front,
+ * and both gate-watch anchors at (16,6)/(17,6).
+ */
 export const BA_DAN_COURT_TREES = [
   { x: 5, y: 5 },
-  { x: 17, y: 5 },
+  { x: 21, y: 2 },
 ] as const;
 
 /** Gameplay applies these same footprints as low, solid courtyard boundaries. */
@@ -224,11 +229,12 @@ function courtyardProp({ id, image, x, y }: CourtyardProp): SceneScenery {
  * The north edge band (`BA_DAN_VILLAGE.edges`): the lawn along row 0 ends at a
  * dry-stone tea terrace just outside the rim, the courtyard's own planter —
  * laid stone round a bed of bushes — set end to end in a row one cell out, so
- * the open rim x4..17 meets a wall rather than a stretch of lawn that stops.
+ * the planter-backed rim x4..15 meets a wall rather than a stretch of lawn
+ * that stops. Tiles (16,-1) and (17,-1) deliberately show bare apron lawn.
  * It is the back edge: everyone on the board stands in front of it.
  */
 export const BA_DAN_NORTH_TERRACE: readonly CourtyardProp[] = Array.from(
-  { length: 7 },
+  { length: 6 },
   (_, index) => ({ id: `north-terrace-${index}`, image: 'low-planter', x: 4 + 2 * index, y: -1 }),
 );
 
@@ -421,13 +427,16 @@ function tree(x: number, y: number, size = 360, flip = false): SceneScenery {
     footprint: [{ x, y }],
     depth: { x, y },
     fadeWhenOccluding: true,
+    ...(x < 0 || y < 0 || x >= BA_DAN_APRON_MAP.width || y >= BA_DAN_APRON_MAP.height
+      ? { exterior: true }
+      : {}),
     ...(flip ? { flip: true } : {}),
   };
 }
 
 /**
  * The full canopies the rim had before every trunk cell was drawn, less the
- * one at (18,15): that cell is now the river path's mouth, open ground.
+ * road-mouth crowns at (18,15) and (21,15).
  */
 export const BA_DAN_RIM_CANOPIES = [
   { x: 0, y: 3, size: 360 },
@@ -435,10 +444,15 @@ export const BA_DAN_RIM_CANOPIES = [
   { x: 0, y: 10, size: 420 },
   { x: 0, y: 13, size: 380 },
   { x: 3, y: 15, size: 400 },
-  { x: 21, y: 15, size: 420 },
-  { x: 23, y: 12, size: 390 },
-  { x: 23, y: 9, size: 420 },
-  { x: 23, y: 5, size: 400 },
+  // The old (21,15) crown stood directly over the river-path mouth and is
+  // deliberately absent. The smaller rim trunks still frame both shoulders.
+  // Push the east-corner crowns into the exterior apron: at the old x=23
+  // anchors their broad left wings buried the south-east frontage and sign.
+  // In this projection a crown south-east of the east road draws over it, so
+  // the two that stood in front of the road's last tiles are gone from there:
+  // one closes the south-east corner instead, clear of the road's column.
+  { x: 26, y: 16, size: 360 },
+  { x: 27, y: 5, size: 400 },
   { x: 22, y: 1, size: 360 },
   { x: 19, y: 0, size: 380 },
 ] as const;
@@ -477,9 +491,12 @@ export const BA_DAN_RIM_TRUNKS = [
   { x: 23, y: 2, size: 170 },
   { x: 23, y: 3, size: 150 },
   { x: 23, y: 4, size: 170 },
+  { x: 23, y: 5, size: 150 },
   { x: 23, y: 6, size: 160 },
+  { x: 23, y: 9, size: 150 },
   { x: 23, y: 10, size: 160 },
   { x: 23, y: 11, size: 170 },
+  { x: 23, y: 12, size: 150 },
   { x: 23, y: 13, size: 150 },
   // South, rows 14 and 15: its west corner is a side, its east end the front.
   // (18..20,15) is the river path's mouth, so no tree stands there.
@@ -490,6 +507,7 @@ export const BA_DAN_RIM_TRUNKS = [
   { x: 0, y: 15, size: 260 },
   { x: 1, y: 15, size: 230 },
   { x: 2, y: 15, size: 260 },
+  { x: 21, y: 15, size: 150 },
   { x: 22, y: 15, size: 160 },
   { x: 23, y: 15, size: 150 },
 ] as const;
