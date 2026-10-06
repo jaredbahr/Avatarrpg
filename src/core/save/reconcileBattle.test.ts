@@ -1167,16 +1167,26 @@ describe('dead active pointer recovery', () => {
   });
 
   it('settles defeat when the dead active unit was the last living party member', () => {
-    const loaded = load(deadActiveState('defeat'));
+    const saved = deadActiveState('defeat');
+    const loaded = load(saved);
 
     expect(loaded.battle?.phase).toBe('defeat');
+    // Already decided: no hand-off, no round upkeep, no RNG drawn on the way.
+    expect(loaded.battle?.round).toBe(saved.battle?.round);
+    expect(loaded.battle?.turnIndex).toBe(saved.battle?.turnIndex);
+    expect(loaded.rng).toEqual(saved.rng);
     expect(reconcileBattle(CONTENT, loaded)).toBe(loaded);
   });
 
   it('settles victory when a dead active unit has no living enemies', () => {
-    const loaded = load(deadActiveState('victory'));
+    const saved = deadActiveState('victory');
+    const loaded = load(saved);
 
     expect(loaded.battle?.phase).toBe('victory');
+    // Already decided: no hand-off, no round upkeep, no RNG drawn on the way.
+    expect(loaded.battle?.round).toBe(saved.battle?.round);
+    expect(loaded.battle?.turnIndex).toBe(saved.battle?.turnIndex);
+    expect(loaded.rng).toEqual(saved.rng);
     expect(reconcileBattle(CONTENT, loaded)).toBe(loaded);
   });
 });

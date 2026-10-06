@@ -175,8 +175,13 @@ function recoverDeadActive(content: ContentIndex, state: GameState): GameState {
   if (!active || isAlive(active)) return state;
   const rng = new RngCursor(state.rng);
   const draft = new BattleDraft(content, battle, rng);
-  advanceToNextTurn(draft);
+  // Settle first, as the reducer does: a fight that is already decided must
+  // not run a round of upkeep or draw RNG on its way to the result.
   settleOutcome(draft);
+  if (draft.phase === 'active') {
+    advanceToNextTurn(draft);
+    settleOutcome(draft);
+  }
   return { ...state, rng: rng.state, battle: draft.toBattle() };
 }
 
