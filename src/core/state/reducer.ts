@@ -32,7 +32,7 @@ import type {
 } from '../types';
 import { BattleDraft } from './battleDraft';
 import { appendLog } from './log';
-import { advanceToNextTurn } from './turnFlow';
+import { advanceToNextTurn, settleOutcome } from './turnFlow';
 import { absorbBattleResults, restAfterVictory, reviveParty, xpRoster } from './createGame';
 import { canUseAbility, isValidTarget, resolveAbility } from '../rules/abilities';
 import {
@@ -46,7 +46,6 @@ import {
   tileAt,
 } from '../rules/grid';
 import { adoptDiscipline, awardXp, disciplineUnlocked } from '../rules/leveling';
-import { battleOutcome, endedOnTimeLimit } from '../rules/turnOrder';
 import { canMove, isAlive } from '../rules/stats';
 import { planAiTurn } from '../rules/ai';
 import {
@@ -100,19 +99,6 @@ function finish(
     },
     events,
   };
-}
-
-/** Seals the battle if one side has fallen. Idempotent. */
-function settleOutcome(draft: BattleDraft): void {
-  if (draft.phase !== 'active') return;
-  const battle = draft.toBattle();
-  const outcome = battleOutcome(battle);
-  if (outcome === 'active') return;
-  if (endedOnTimeLimit(battle)) {
-    draft.message('The fight has gone on too long — the party pulls back to regroup.');
-  }
-  draft.phase = outcome;
-  draft.emit({ type: 'battleEnded', outcome });
 }
 
 /**

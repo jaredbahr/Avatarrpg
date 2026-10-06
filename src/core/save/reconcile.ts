@@ -44,7 +44,7 @@ import { settle } from '../story/settle';
 import { npcResident } from '../story/residents';
 import { RngCursor } from '../rng';
 import { BattleDraft } from '../state/battleDraft';
-import { advanceToNextTurn } from '../state/turnFlow';
+import { advanceToNextTurn, settleOutcome } from '../state/turnFlow';
 
 export function reconcileDisciplines(content: ContentIndex, state: GameState): GameState {
   const owed: PendingChoice[] = [];
@@ -164,7 +164,7 @@ export function reconcileBattleResult(
  * pointer through the reducer's own turn-start/upkeep/skip path, so a loaded
  * battle never starts on a corpse. Idempotent: a living pointer is returned
  * untouched, and running it twice cannot skip twice because the second pass
- * sees a living unit.
+ * sees either a living unit or a settled phase.
  */
 function recoverDeadActive(content: ContentIndex, state: GameState): GameState {
   const battle = state.battle;
@@ -176,6 +176,7 @@ function recoverDeadActive(content: ContentIndex, state: GameState): GameState {
   const rng = new RngCursor(state.rng);
   const draft = new BattleDraft(content, battle, rng);
   advanceToNextTurn(draft);
+  settleOutcome(draft);
   return { ...state, rng: rng.state, battle: draft.toBattle() };
 }
 

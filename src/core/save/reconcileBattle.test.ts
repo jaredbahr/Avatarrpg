@@ -1120,6 +1120,28 @@ describe('ramp reconciliation', () => {
 });
 
 describe('dead active pointer recovery', () => {
+  function deadActiveState(outcome: 'defeat' | 'victory'): GameState {
+    const state = currentBattleState('quarry_floor');
+    if (!state.battle) throw new Error('fixture did not create a battle');
+    const dead = activeUnit(state.battle);
+    if (!dead || dead.faction !== 'party') throw new Error('fixture active unit is not party');
+    return {
+      ...state,
+      battle: {
+        ...state.battle,
+        units: state.battle.units.map((unit) => ({
+          ...unit,
+          hp:
+            unit.id === dead.id ||
+            (outcome === 'defeat' && unit.faction === 'party') ||
+            (outcome === 'victory' && unit.faction === 'enemy')
+              ? 0
+              : unit.hp,
+        })),
+      },
+    };
+  }
+
   it('advances a loaded battle whose active pointer is a dead unit', () => {
     const state = currentBattleState('quarry_floor');
     if (!state.battle) throw new Error('fixture did not create a battle');
@@ -1139,7 +1161,23 @@ describe('dead active pointer recovery', () => {
     const active = activeUnit(battle);
     expect(active?.id).not.toBe(dead.id);
     expect(active !== undefined && isAlive(active)).toBe(true);
+    expect(active?.faction).toBe('party');
+    expect(battle.phase).toBe('active');
     // A repair, not a ritual: a second load leaves the living pointer alone.
-    expect(reconcileBattle(CONTENT, loaded)).toEqual(loaded);
+    expect(reconcileBattle(CONTENT, loaded)).toBe(loaded);
+  });
+
+  it('settles defeat when the dead active unit was the last living party member', () => {
+    const loaded = load(deadActiveState('defeat'));
+
+    expect(loaded.battle?.phase).toBe('defeat');
+    expect(reconcileBattle(CONTENT, loaded)).toBe(loaded);
+  });
+
+  it('settles victory when a dead active unit has no living enemies', () => {
+    const loaded = load(deadActiveState('victory'));
+
+    expect(loaded.battle?.phase).toBe('victory');
+    expect(reconcileBattle(CONTENT, loaded)).toBe(loaded);
   });
 });

@@ -8,9 +8,22 @@
  * upkeep/skip path instead of a second, drifting copy.
  */
 
-import { advanceTurn, battleOutcome } from '../rules/turnOrder';
+import { advanceTurn, battleOutcome, endedOnTimeLimit } from '../rules/turnOrder';
 import { isAlive } from '../rules/stats';
 import type { BattleDraft } from './battleDraft';
+
+/** Seals the battle if one side has fallen. Idempotent. */
+export function settleOutcome(draft: BattleDraft): void {
+  if (draft.phase !== 'active') return;
+  const battle = draft.toBattle();
+  const outcome = battleOutcome(battle);
+  if (outcome === 'active') return;
+  if (endedOnTimeLimit(battle)) {
+    draft.message('The fight has gone on too long — the party pulls back to regroup.');
+  }
+  draft.phase = outcome;
+  draft.emit({ type: 'battleEnded', outcome });
+}
 
 export function advanceToNextTurn(draft: BattleDraft): void {
   for (let guard = 0; guard <= draft.order.length + 1; guard++) {
