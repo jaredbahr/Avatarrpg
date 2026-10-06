@@ -1076,6 +1076,9 @@ export class CombatScene implements Scene {
     const delay = Math.max(0, this.app.animator.finishesAt - performance.now()) + 260;
     this.aiTimer = window.setTimeout(() => {
       this.aiTimer = null;
+      // The pause menu can suspend the scene between scheduling and this
+      // callback; a frozen fight must not advance behind the menu.
+      if (this.suspended) return;
       if (this.app.state?.battle?.phase !== 'active') return;
       if (activeUnit(this.app.state.battle)?.id !== unit.id) return;
       this.app.dispatch({ type: 'runAiTurn' });
