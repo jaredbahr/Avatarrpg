@@ -38,8 +38,13 @@ import {
 } from '../rules/grid';
 import { SQUARE_FOOTPRINTS } from '../rules/footprint';
 import { specializationsUpTo } from '../rules/leveling';
+import { isAlive } from '../rules/stats';
+import { activeUnit } from '../rules/turnOrder';
 import { settle } from '../story/settle';
 import { npcResident } from '../story/residents';
+import { RngCursor } from '../rng';
+import { BattleDraft } from '../state/battleDraft';
+import { advanceToNextTurn, settleOutcome } from '../state/turnFlow';
 
 export function reconcileDisciplines(content: ContentIndex, state: GameState): GameState {
   const owed: PendingChoice[] = [];
@@ -143,6 +148,44 @@ export function reconcileBattle(
 
 /** Detailed form used by the load path so an unsafe repair is never silent. */
 export function reconcileBattleResult(
+  content: ContentIndex,
+  state: GameState,
+  options: ReconcileBattleOptions = {},
+): BattleReconcileResult {
+  const result = reconcileBattleTerrain(content, state, options);
+  const recovered = recoverDeadActive(content, result.state);
+  return recovered === result.state ? result : { ...result, state: recovered };
+}
+
+/**
+ * A save can point its turn marker at a unit that died to its own action (F1):
+ * the move settles the outcome, but a still-running fight never hands the turn
+ * on, so presentation would offer no control and schedule no AI. Advance the
+ * pointer through the reducer's own turn-start/upkeep/skip path, so a loaded
+ * battle never starts on a corpse. Idempotent: a living pointer is returned
+ * untouched, and running it twice cannot skip twice because the second pass
+ * sees either a living unit or a settled phase.
+ */
+function recoverDeadActive(content: ContentIndex, state: GameState): GameState {
+  const battle = state.battle;
+  if (!battle || battle.phase !== 'active') return state;
+  const active = activeUnit(battle);
+  // Only a *known* unit that died needs repair. A pointer at a missing id is a
+  // different corruption that this repair must not silently reinterpret.
+  if (!active || isAlive(active)) return state;
+  const rng = new RngCursor(state.rng);
+  const draft = new BattleDraft(content, battle, rng);
+  // Settle first, as the reducer does: a fight that is already decided must
+  // not run a round of upkeep or draw RNG on its way to the result.
+  settleOutcome(draft);
+  if (draft.phase === 'active') {
+    advanceToNextTurn(draft);
+    settleOutcome(draft);
+  }
+  return { ...state, rng: rng.state, battle: draft.toBattle() };
+}
+
+function reconcileBattleTerrain(
   content: ContentIndex,
   state: GameState,
   options: ReconcileBattleOptions = {},
@@ -269,7 +312,12 @@ function staticTileMatches(current: Grid['tiles'][number], saved: Grid['tiles'][
     current.elevation === saved.elevation &&
     current.blocked === saved.blocked &&
     current.blocksSight === saved.blocksSight &&
-    current.cover === saved.cover
+    current.cover === saved.cover &&
+    // Legacy saves predate `ramp`, so a missing flag is a false one. A
+    // ramp-only difference still rebuilds from authored terrain: otherwise a
+    // save that lost the Driller floor slope at (3,1) would load with a
+    // one-tier climb surcharge the map does not have.
+    (current.ramp ?? false) === (saved.ramp ?? false)
   );
 }
 

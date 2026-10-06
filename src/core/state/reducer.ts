@@ -32,6 +32,7 @@ import type {
 } from '../types';
 import { BattleDraft } from './battleDraft';
 import { appendLog } from './log';
+import { advanceToNextTurn, settleOutcome } from './turnFlow';
 import { absorbBattleResults, restAfterVictory, reviveParty, xpRoster } from './createGame';
 import { canUseAbility, isValidTarget, resolveAbility } from '../rules/abilities';
 import {
@@ -45,7 +46,6 @@ import {
   tileAt,
 } from '../rules/grid';
 import { adoptDiscipline, awardXp, disciplineUnlocked } from '../rules/leveling';
-import { advanceTurn, battleOutcome, endedOnTimeLimit } from '../rules/turnOrder';
 import { canMove, isAlive } from '../rules/stats';
 import { planAiTurn } from '../rules/ai';
 import {
@@ -102,53 +102,24 @@ function finish(
 }
 
 /**
- * Moves the turn pointer on, runs round upkeep when it wraps, and starts the
- * next unit's turn — skipping anyone who is Frozen or Stunned, which can chain
- * through several units in a row.
+ * Shared tail for the move and ability handlers.
+ *
+ * Settle the terminal outcome first, so a defeat or victory from the action
+ * itself is never disturbed. If the fight is still running but the acting unit
+ * died to its own action (walked into fire, dashed into its own flames), finish
+ * that activation and hand the turn on through the normal turn-start/upkeep/
+ * skip path, then settle again for any upkeep death. A living actor returns
+ * untouched, so nonlethal actions emit exactly the events and draw exactly the
+ * RNG they did before.
  */
-function advanceToNextTurn(draft: BattleDraft): void {
-  for (let guard = 0; guard <= draft.order.length + 1; guard++) {
-    const advance = advanceTurn(draft.toBattle());
-    draft.turnIndex = advance.turnIndex;
-
-    if (advance.roundAdvanced) {
-      draft.round = advance.round;
-      draft.expireWalls();
-      draft.tickTerrain();
-      draft.emit({ type: 'roundStarted', round: draft.round });
-    }
-
-    if (!advance.unitId) return;
-    if (battleOutcome(draft.toBattle()) !== 'active') return;
-
-    const skipped = draft.beginTurn(advance.unitId);
-    const unit = draft.unit(advance.unitId);
-
-    // Upkeep can kill (Burning, standing in fire) — move straight on if so.
-    if (!unit || !isAlive(unit)) continue;
-
-    if (skipped) {
-      draft.message(`${unit.name} cannot act this turn.`);
-      draft.emit({ type: 'turnEnded', unitId: unit.id });
-      continue;
-    }
-
-    draft.emit({ type: 'turnStarted', unitId: advance.unitId, round: draft.round });
-    return;
-  }
-}
-
-/** Seals the battle if one side has fallen. Idempotent. */
-function settleOutcome(draft: BattleDraft): void {
+function finishAction(draft: BattleDraft, actingUnitId: string): void {
+  settleOutcome(draft);
   if (draft.phase !== 'active') return;
-  const battle = draft.toBattle();
-  const outcome = battleOutcome(battle);
-  if (outcome === 'active') return;
-  if (endedOnTimeLimit(battle)) {
-    draft.message('The fight has gone on too long — the party pulls back to regroup.');
-  }
-  draft.phase = outcome;
-  draft.emit({ type: 'battleEnded', outcome });
+  const actor = draft.unit(actingUnitId);
+  if (actor && isAlive(actor)) return;
+  draft.endTurn(actingUnitId);
+  advanceToNextTurn(draft);
+  settleOutcome(draft);
 }
 
 /* ------------------------------------------------------------------ */
@@ -191,7 +162,7 @@ function handleMove(
   if (moved) draft.replace({ ...moved, move: Math.max(0, moved.move - cost) });
   draft.emit({ type: 'unitMoved', unitId, path: walked, cost });
 
-  settleOutcome(draft);
+  finishAction(draft, unitId);
   return finish(content, state, draft.toBattle(), rng, draft.events);
 }
 
@@ -229,7 +200,7 @@ function handleUseAbility(
   if (!caster) return refuse(state, 'No such unit.');
   resolveAbility(draft, caster, ability, target, rng);
 
-  settleOutcome(draft);
+  finishAction(draft, unitId);
   return finish(content, state, draft.toBattle(), rng, draft.events);
 }
 
