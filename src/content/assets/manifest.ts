@@ -449,7 +449,11 @@ export const ASSETS: Readonly<Record<string, AssetEntry>> = {
     url: 'art/world/turtle-ducks-nest.webp',
     palette: 'earth',
   },
-  'world.runoff_marker': painter('discovery', 'neutral', 'marker'),
+  'world.runoff_marker': {
+    kind: 'image',
+    url: 'art/world/runoff-marker.png',
+    palette: 'neutral',
+  },
   'world.tea_station': { kind: 'image', url: 'art/props/tea-station.png', palette: 'earth' },
   'npc.kid': { kind: 'image', url: 'art/npcs/pella.png', palette: 'air' },
   'npc.dorin': { kind: 'image', url: 'art/npcs/dorin.png', palette: 'earth' },
