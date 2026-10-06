@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { CONTENT } from './index';
-import { COMBAT_TUNING, combatTuningOverrideSchema, combatTuningSchema } from './tuning';
+import { COMBAT_TUNING } from './tuning';
+import { combatTuningOverrideSchema, combatTuningSchema } from './tuning.schema';
 
 /**
  * The shape guard for the combat tuning block. The authored numbers are pinned
@@ -10,7 +11,9 @@ import { COMBAT_TUNING, combatTuningOverrideSchema, combatTuningSchema } from '.
  */
 describe('combat tuning', () => {
   it('validates the authored block and indexes it through CONTENT', () => {
-    expect(combatTuningSchema.safeParse(COMBAT_TUNING).success).toBe(true);
+    const parsed = combatTuningSchema.parse(COMBAT_TUNING);
+    expect(parsed).toEqual(COMBAT_TUNING);
+    expect(JSON.stringify(parsed)).toBe(JSON.stringify(COMBAT_TUNING));
     expect(CONTENT.tuning).toBe(COMBAT_TUNING);
   });
 
