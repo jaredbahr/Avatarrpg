@@ -23,6 +23,27 @@ import { createGame } from '../core/state/createGame';
  * misspelled ability id fails here rather than stranding a family mid-session.
  */
 describe('content', () => {
+  it('validates the camera centre margin against each map size', () => {
+    const village = CONTENT_BUNDLE.maps.find((map) => map.id === 'ba_dan_village');
+    if (!village) throw new Error('Missing the village map');
+    const limit = -Math.min(village.width, village.height) / 2;
+    const parse = (cameraCentreMargin: unknown) =>
+      mapSchema.safeParse({ ...village, cameraCentreMargin });
+    const issueNames = (cameraCentreMargin: unknown) => {
+      const result = parse(cameraCentreMargin);
+      if (result.success) throw new Error('Expected cameraCentreMargin to be rejected');
+      return result.error.issues.map((issue) => issue.path.join('.'));
+    };
+
+    expect(mapSchema.safeParse(village).success).toBe(true);
+    expect(parse(village.cameraCentreMargin).success).toBe(true);
+    expect(parse(1.5).success).toBe(true);
+    expect(issueNames(-Infinity)).toContain('cameraCentreMargin');
+    expect(issueNames(Number.NaN)).toContain('cameraCentreMargin');
+    expect(issueNames(limit - 0.5)).toContain('cameraCentreMargin');
+    expect(parse(limit).success).toBe(true);
+  });
+
   it('accepts partial ground mode and rejects other ground modes', () => {
     const source = CONTENT_BUNDLE.maps.find((map) => map.scene);
     if (!source?.scene) throw new Error('Missing scene map');

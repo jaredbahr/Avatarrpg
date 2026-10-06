@@ -218,6 +218,137 @@ describe('Camera.clamp painted ring', () => {
   });
 });
 
+describe('Camera centre clamp', () => {
+  const village = { width: 24, height: 16 };
+  const inwardMargin = 0.609375;
+  const viewports = [
+    { width: 1368, height: 912, dpr: 1 },
+    { width: 834, height: 1194, dpr: 1 },
+    { width: 390, height: 844, dpr: 1 },
+  ];
+  const directions = [
+    [-1, -1],
+    [0, -1],
+    [1, -1],
+    [-1, 0],
+    [1, 0],
+    [-1, 1],
+    [0, 1],
+    [1, 1],
+  ] as const;
+
+  const cameraFor = (viewport: Viewport) => {
+    const camera = new Camera(viewport, village, 'oblique');
+    camera.centreMargin = -inwardMargin;
+    camera.fitExplore(96);
+    return camera;
+  };
+  const expectCentreInside = (camera: Camera) => {
+    const centre = camera.unproject({
+      x: camera.viewport.width / 2,
+      y: camera.viewport.height / 2,
+    });
+    expect(centre.x).toBeGreaterThanOrEqual(inwardMargin - 1e-9);
+    expect(centre.x).toBeLessThanOrEqual(village.width - inwardMargin + 1e-9);
+    expect(centre.y).toBeGreaterThanOrEqual(inwardMargin - 1e-9);
+    expect(centre.y).toBeLessThanOrEqual(village.height - inwardMargin + 1e-9);
+  };
+
+  it.each(viewports)('keeps the viewport centre on the village at $width×$height', (viewport) => {
+    for (const [x, y] of directions) {
+      const dragged = cameraFor(viewport);
+      dragged.panBy(x * 1e6, y * 1e6);
+      expectCentreInside(dragged);
+
+      const zoomedOut = cameraFor(viewport);
+      zoomedOut.panBy(x * 1e6, y * 1e6);
+      zoomedOut.zoomAt({ x: viewport.width / 3, y: viewport.height / 3 }, 0);
+      expectCentreInside(zoomedOut);
+      zoomedOut.panBy(x * 1e6, y * 1e6);
+      expectCentreInside(zoomedOut);
+
+      const resized = cameraFor(viewport);
+      resized.panBy(x * 1e6, y * 1e6);
+      resized.viewport = {
+        ...viewport,
+        width: viewport.width + 77,
+        height: viewport.height - 53,
+      };
+      resized.clampToPanBounds();
+      expectCentreInside(resized);
+    }
+  });
+
+  it.each(viewports)('centres interior village tiles at $width×$height', (viewport) => {
+    const camera = cameraFor(viewport);
+    for (const tile of [
+      { x: 1, y: 1 },
+      { x: 22, y: 1 },
+      { x: 22, y: 14 },
+      { x: 1, y: 14 },
+      { x: 12, y: 8 },
+    ]) {
+      camera.centreOn(tile);
+      const screen = camera.project({ x: tile.x + 0.5, y: tile.y + 0.5 });
+      expect(screen.x).toBeCloseTo(viewport.width / 2, 9);
+      expect(screen.y).toBeCloseTo(viewport.height / 2, 9);
+    }
+  });
+
+  it.each(viewports)(
+    'keeps followed corner diamonds and one tile of headroom visible at $width×$height',
+    (viewport) => {
+      for (const scale of [1.5, 2.5]) {
+        const camera = cameraFor(viewport);
+        camera.scale = scale;
+        for (const tile of [
+          { x: 0, y: 0 },
+          { x: 23, y: 0 },
+          { x: 23, y: 15 },
+          { x: 0, y: 15 },
+        ]) {
+          camera.centreOn(tile);
+          const foot = camera.project({ x: tile.x + 0.5, y: tile.y + 0.5 });
+          const points = [
+            camera.project({ x: tile.x, y: tile.y }),
+            camera.project({ x: tile.x + 1, y: tile.y }),
+            camera.project({ x: tile.x + 1, y: tile.y + 1 }),
+            camera.project({ x: tile.x, y: tile.y + 1 }),
+            { x: foot.x, y: foot.y - TILE * scale },
+          ];
+          for (const point of points) {
+            expect(point.x).toBeGreaterThanOrEqual(-1e-9);
+            expect(point.x).toBeLessThanOrEqual(viewport.width + 1e-9);
+            expect(point.y).toBeGreaterThanOrEqual(-1e-9);
+            expect(point.y).toBeLessThanOrEqual(viewport.height + 1e-9);
+          }
+        }
+      }
+    },
+  );
+
+  it('leaves maps without the field on the existing rectangular clamp path', () => {
+    const camera = new Camera(viewports[0]!, village, 'oblique');
+    camera.fitExplore(96);
+    let expectedX = camera.offsetX;
+    let expectedY = camera.offsetY;
+    const slackX = camera.worldWidth - camera.viewport.width;
+    const slackY = camera.worldHeight - camera.viewport.height;
+    for (const [dx, dy] of [
+      [500, -300],
+      [-5000, 80],
+      [40, 5000],
+      [120, -75],
+    ] as const) {
+      camera.panBy(dx, dy);
+      expectedX = Math.max(0, Math.min(slackX, expectedX - dx));
+      expectedY = Math.max(0, Math.min(slackY, expectedY - dy));
+      expect(camera.offsetX).toBeCloseTo(expectedX, 12);
+      expect(camera.offsetY).toBeCloseTo(expectedY, 12);
+    }
+  });
+});
+
 const HULL_VIEWPORTS = [
   { width: 1194, height: 455, dpr: 1 },
   { width: 1194, height: 540, dpr: 1 },
