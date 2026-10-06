@@ -419,9 +419,7 @@ for (const renderer of ['canvas', 'webgl'] as const) {
         page,
         { raised },
         ({ raised: pixel }) =>
-          pixel.b > pixel.r &&
-          pixel.r < bare.r - 12 &&
-          pixel.b - pixel.r - (bare.b - bare.r) > 25,
+          pixel.b > pixel.r && pixel.r < bare.r - 12 && pixel.b - pixel.r - (bare.b - bare.r) > 25,
         readbackTimeout,
       )
     ).raised;

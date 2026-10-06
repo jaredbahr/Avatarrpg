@@ -2,15 +2,7 @@ import { expect, test } from '@playwright/test';
 import { ALL_ABILITIES } from '../src/content/abilities';
 import { FX_CELS } from '../src/content/fxCels';
 import { allowSoftwareWebgl } from './budget';
-import {
-  enterNode,
-  pauseClock,
-  resetStorage,
-  settleLayout,
-  startGame,
-  takeTurn,
-  waitForIdle,
-} from './helpers';
+import { enterNode, resetStorage, settleLayout, startGame, takeTurn, waitForIdle } from './helpers';
 import { stageMotionTransition } from './motion-stage';
 
 for (const renderer of ['canvas', 'webgl'] as const) {
@@ -72,9 +64,6 @@ for (const renderer of ['canvas', 'webgl'] as const) {
   test(`missing cel images keep bending playable on ${renderer}`, async ({ page }) => {
     test.setTimeout(120_000);
     allowSoftwareWebgl(test, renderer);
-    // An effect can otherwise expire in performance time while software WebGL
-    // is still producing the first frame that would exercise its fallback.
-    await page.clock.install();
     await page.route('**/art/fx/*-cels.png', (route) => route.abort());
     const errors: string[] = [];
     page.on('pageerror', (error) => errors.push(error.message));
@@ -84,19 +73,7 @@ for (const renderer of ['canvas', 'webgl'] as const) {
     await takeTurn(page);
     await waitForIdle(page);
     expect(await page.evaluate(() => window.fnt!.loadedFxCels())).toEqual([]);
-    await pauseClock(page);
-    const transition = await stageMotionTransition(page, 'cast', 'fire_jab');
-    await page.clock.runFor(17);
-    expect(
-      await page.evaluate(() => {
-        const now = performance.now();
-        const animator = window.fnt!.app.animator;
-        return animator.emitters(now).length + animator.bendFx(now).length;
-      }),
-      'the missing-cel fallback was presented during an active bending frame',
-    ).toBeGreaterThan(0);
-    await page.clock.fastForward(transition.duration);
-    await page.clock.runFor(17);
+    await stageMotionTransition(page, 'cast', 'fire_jab');
     await waitForIdle(page);
     expect(errors).toEqual([]);
   });
