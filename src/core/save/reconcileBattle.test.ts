@@ -1162,8 +1162,12 @@ describe('dead active pointer recovery', () => {
     expect(active?.id).not.toBe(dead.id);
     expect(active !== undefined && isAlive(active)).toBe(true);
     expect(battle.phase).toBe('active');
+    // The hand-off explains itself: the log names the unit that takes over.
+    expect(loaded.log.some((line) => line.endsWith("'s turn."))).toBe(true);
     // A repair, not a ritual: a second load leaves the living pointer alone.
-    expect(reconcileBattle(CONTENT, loaded)).toBe(loaded);
+    const again = reconcileBattle(CONTENT, loaded);
+    expect(again).toBe(loaded);
+    expect(again.log).toEqual(loaded.log);
   });
 
   it('settles defeat when the dead active unit was the last living party member', () => {
@@ -1175,6 +1179,8 @@ describe('dead active pointer recovery', () => {
     expect(loaded.battle?.round).toBe(saved.battle?.round);
     expect(loaded.battle?.turnIndex).toBe(saved.battle?.turnIndex);
     expect(loaded.rng).toEqual(saved.rng);
+    // Settling on load is explained, not silent.
+    expect(loaded.log).toContain('The party is overwhelmed.');
     expect(reconcileBattle(CONTENT, loaded)).toBe(loaded);
   });
 
@@ -1187,6 +1193,19 @@ describe('dead active pointer recovery', () => {
     expect(loaded.battle?.round).toBe(saved.battle?.round);
     expect(loaded.battle?.turnIndex).toBe(saved.battle?.turnIndex);
     expect(loaded.rng).toEqual(saved.rng);
+    expect(loaded.log).toContain('The fight is won.');
     expect(reconcileBattle(CONTENT, loaded)).toBe(loaded);
+  });
+
+  it('leaves a healthy save untouched: same state object, same log', () => {
+    const loaded = load(currentBattleState('quarry_floor'));
+    const battle = loaded.battle;
+    const active = battle ? activeUnit(battle) : undefined;
+    expect(active !== undefined && isAlive(active)).toBe(true);
+    expect(loaded.log).toEqual([]);
+    // Nothing to repair, so reconcile hands the exact save back.
+    const again = reconcileBattle(CONTENT, loaded);
+    expect(again).toBe(loaded);
+    expect(again.log).toEqual(loaded.log);
   });
 });

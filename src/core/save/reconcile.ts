@@ -44,6 +44,7 @@ import { settle } from '../story/settle';
 import { npcResident } from '../story/residents';
 import { RngCursor } from '../rng';
 import { BattleDraft } from '../state/battleDraft';
+import { appendLog } from '../state/log';
 import { advanceToNextTurn, settleOutcome } from '../state/turnFlow';
 
 export function reconcileDisciplines(content: ContentIndex, state: GameState): GameState {
@@ -162,7 +163,9 @@ export function reconcileBattleResult(
  * the move settles the outcome, but a still-running fight never hands the turn
  * on, so presentation would offer no control and schedule no AI. Advance the
  * pointer through the reducer's own turn-start/upkeep/skip path, so a loaded
- * battle never starts on a corpse. Idempotent: a living pointer is returned
+ * battle never starts on a corpse. The hand-off's own events are formatted
+ * into the log, so a load that deals turn-start damage, wraps the round, or
+ * settles the fight explains itself. Idempotent: a living pointer is returned
  * untouched, and running it twice cannot skip twice because the second pass
  * sees either a living unit or a settled phase.
  */
@@ -182,7 +185,13 @@ function recoverDeadActive(content: ContentIndex, state: GameState): GameState {
     advanceToNextTurn(draft);
     settleOutcome(draft);
   }
-  return { ...state, rng: rng.state, battle: draft.toBattle() };
+  const recovered = draft.toBattle();
+  return {
+    ...state,
+    rng: rng.state,
+    battle: recovered,
+    log: appendLog(content, recovered, state.log, draft.events),
+  };
 }
 
 function reconcileBattleTerrain(

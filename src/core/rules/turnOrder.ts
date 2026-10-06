@@ -46,7 +46,12 @@ export function rollInitiative(
     .map((u) => u.id);
 }
 
-/** The unit whose turn it currently is, or undefined if it is dead/missing. */
+/**
+ * The unit the turn pointer names, or undefined when it names nobody.
+ *
+ * A dead unit is returned as-is, not hidden: recovery paths (a loaded save
+ * whose pointer is stuck on a corpse) need to see it to hand the turn on.
+ */
 export function activeUnit(battle: BattleState): Unit | undefined {
   const id = battle.order[battle.turnIndex];
   if (!id) return undefined;

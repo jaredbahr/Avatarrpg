@@ -9,8 +9,9 @@
 
 import { describe as suite, expect, it } from 'vitest';
 import { CONTENT, RETURNEE_IDS } from '../../content';
+import { RngCursor } from '../rng';
 import { apply } from '../state/reducer';
-import { createGame } from '../state/createGame';
+import { createBattle, createGame } from '../state/createGame';
 import type { ContentIndex, DayPhase, GameState, StoryNode } from '../types';
 import { enterStoryNode } from './storyEngine';
 
@@ -59,27 +60,83 @@ suite('an authored phase node', () => {
     // an authored phase node (a direct enterNode, a dialogue choice, a
     // walked trigger or exit, or a battle's story chain) must log it.
     const result = apply(CONTENT, game('midday'), { type: 'enterNode', nodeId: 'act1_victory' });
-    expect(result.state.log).toContain('Evening falls.');
+    // The phase-change path has exactly one logging owner: entering the node
+    // logs the line once, and nothing else repeats it.
+    expect(result.state.log.filter((line) => line === 'Evening falls.')).toHaveLength(1);
   });
 
-  it('logs only the phase change, not an XP/level-up or a battle start on the same enterNode path', () => {
-    // Regression for 8f5b47c: withLog formatted every event, not just
-    // phaseChanged, so entering a flags node that also grants XP logged a
-    // bare unit id ("p0 reaches level 2!" - describeEvent has no battle
-    // roster here to resolve a name from), and entering a battle node
-    // logged its intro text and "— Round 1 —" before the battle's own,
-    // properly-rostered logging ever runs.
+  it('logs a story level-up and a battle start with real names, once each', () => {
+    // A direct enterNode has no other logging owner for these: the reward is
+    // granted inside enterStoryNode, and the battle's first round banner is
+    // emitted when it opens. withLog formats them against the roster that
+    // produced them, so the level-up line carries a name, not a raw id.
     const xp = apply(CONTENT, game('midday'), { type: 'enterNode', nodeId: 'lost_forest_road' });
-    expect(xp.state.log).toEqual([]);
-    // The events still fire - only the log line is suppressed.
     expect(xp.events.some((event) => event.type === 'leveledUp')).toBe(true);
+    const levelLines = xp.state.log.filter((line) => line.includes('reaches level'));
+    expect(levelLines.length).toBeGreaterThan(0);
+    expect(levelLines.every((line) => !/^p\d+ /.test(line))).toBe(true);
+    // The leader's line appears exactly once, and the xpGained event stays quiet.
+    expect(levelLines.filter((line) => line.startsWith('Kaya reaches level 2!'))).toHaveLength(1);
 
     const battle = apply(CONTENT, game('midday'), {
       type: 'enterNode',
       nodeId: 'battle_forest_road',
     });
-    expect(battle.state.log).toEqual([]);
     expect(battle.events.some((event) => event.type === 'roundStarted')).toBe(true);
+    // The banner appears once; the raw intro message still does not enter the log.
+    expect(battle.state.log).toEqual(['— Round 1 —']);
+
+    // The startBattle command reaches the same node, so it logs it the same way.
+    const started = apply(CONTENT, game('midday'), {
+      type: 'startBattle',
+      encounterId: 'enc_forest_road',
+    });
+    expect(started.state.log).toEqual(['— Round 1 —']);
+  });
+
+  it('logs the shipped trade reward’s named level-up exactly once', () => {
+    const base = game('midday');
+    const ready: GameState = {
+      ...base,
+      // The repro: a level-2 leader sitting exactly at the level-2 threshold.
+      party: base.party.map((member) =>
+        member.id === 'p0' ? { ...member, level: 2, xp: 100 } : member,
+      ),
+      story: { ...base.story, nodeId: 'ruon_choice', lineIndex: 0 },
+    };
+
+    const result = apply(CONTENT, ready, { type: 'chooseOption', optionIndex: 1 });
+
+    // trade_payment grants 150: 100 XP -> 250, the level-3 threshold.
+    expect(result.state.party[0]).toMatchObject({ level: 3, xp: 250 });
+    expect(result.state.log.filter((line) => line === 'Kaya reaches level 3!')).toHaveLength(1);
+    expect(
+      result.state.log.filter((line) => line === 'Kaya has a new technique to choose.'),
+    ).toHaveLength(1);
+    expect(result.state.log.some((line) => /^p\d+ /.test(line))).toBe(false);
+  });
+
+  it('logs a won fight’s level-up exactly once', () => {
+    const base = game('midday');
+    const ready: GameState = {
+      ...base,
+      party: base.party.map((member) =>
+        member.id === 'p0' ? { ...member, level: 2, xp: 100 } : member,
+      ),
+    };
+    const rng = new RngCursor(ready.rng);
+    const battle = createBattle(CONTENT, ready, 'enc_quarry_gate', rng);
+    const resolved: GameState = {
+      ...ready,
+      screen: 'combat',
+      rng: rng.state,
+      battle: { ...battle, phase: 'victory' },
+    };
+
+    const result = apply(CONTENT, resolved, { type: 'resolveBattle' });
+
+    // 450 XP over a baseline of three is 150 each: the same level-3 threshold.
+    expect(result.state.log.filter((line) => line === 'Kaya reaches level 3!')).toHaveLength(1);
   });
 
   it('applies flags, resident profiles, XP and phase at one authored node', () => {
