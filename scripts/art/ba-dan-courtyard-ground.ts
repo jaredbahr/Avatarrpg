@@ -44,6 +44,9 @@ for (let py = 0; py < height; py++) {
     const x = (dx + dy) / 2;
     const y = (dy - dx) / 2;
     const cell = BA_DAN_VILLAGE.rows[Math.floor(y)]?.[Math.floor(x)] ?? ',';
+    // Permanent water is supplied by edge-water.webp. Every material plate
+    // beneath it stays clear so paving can never show through its shoreline.
+    if (cell === '~') continue;
     // Fade at the authored court's logical boundary so this local region
     // dissolves into procedural terrain instead of ending as a screen-space
     // rectangle. The half-tile feather stays wide enough to hide compression

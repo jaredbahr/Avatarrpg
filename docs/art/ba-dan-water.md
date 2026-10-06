@@ -1,10 +1,12 @@
 # Ba Dan painted water
 
-Shipped 2026-10-03. The courtyard canal's two pools (`canal-banks.webp`) and the
-south canal and west ford (`edge-water.webp`) are one fieldstone water material,
-the Forest Road pond's family: stone-edged, clear shallows into a darker
-channel, a few ripples, lily pads only in the ford. The renderer lays no film
-over the declared pool cells (`paintedWaterCells`), and none is baked in.
+Shipped 2026-10-03. The connected courtyard canal and west ford
+(`edge-water.webp`) use one fieldstone water material from the Forest Road
+pond's family: stone-edged, clear shallows into a darker channel, a few ripples,
+and lily pads only in the ford. The earlier short-canal source remains packed as
+`canal-banks.webp`, but the active scene no longer registers it. The renderer
+lays no film over the declared canal cells (`paintedWaterCells`), and none is
+baked in.
 
 ## Provenance
 
@@ -23,12 +25,13 @@ over the declared pool cells (`paintedWaterCells`), and none is baked in.
   `edge-water.png` (421,139 bytes), the generator's accepted output with its
   alpha equal to the shipped footprint (the cells' diamonds plus the shoreline
   band).
-- Mechanical steps: none beyond the encode. `scripts/art/ba-dan-water.ts` reads
-  each master PNG and writes the lossless-alpha WebP at quality 82 into
-  `public/art/maps/ba-dan-scene/`; `scripts/art/ba-dan-water.test.ts` holds the
-  shipped files to the footprint geometry. `ba-dan-canal-banks.ts` and
-  `ba-dan-edges.ts` stay as the geometric reference the footprint is measured
-  against and no longer write shipped files.
+- Mechanical steps: `scripts/art/ba-dan-water.ts` derives the current row-6
+  canal from the accepted long-channel field in `edge-water.png`, scales it to
+  `BA_DAN_CANAL_BANKS`, and applies `ba-dan-edges.ts`'s current alpha footprint
+  to the ford while retaining the accepted painted RGB. It then writes the two
+  lossless-alpha WebPs at quality 82 into `public/art/maps/ba-dan-scene/`.
+  `ba-dan-canal-banks.ts` and `ba-dan-edges.ts` remain the geometric references;
+  their direct commands write audit images only.
 
 ## Water that stops being water
 

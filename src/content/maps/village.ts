@@ -40,7 +40,7 @@ export const BA_DAN_VILLAGE: MapDef = {
     'T,,,,,BBB=,,=BBB,,,,,,,T',
     'T,,,,,,,,=,,=,,,,,,,,,,T',
     'T,,,,,,,,=====,,,,,,,,,T',
-    'T,,,,,~~~=~~~=,,,,,,,,,T',
+    '~~~~~~~~~=~~~=,,,,,,,,,T',
     'W=====================..',
     'W=====================..',
     'T,,,,,,,,=====,,,,,,,,,T',
@@ -64,9 +64,9 @@ export const BA_DAN_VILLAGE: MapDef = {
   partySpawns: [{ x: 3, y: 7 }],
   exit: { pos: { x: 23, y: 7 }, label: 'The east road, toward the quarry' },
   /*
-   * The only walkable rim is the lawn along the north and south edges, and
-   * both are bands drawn just outside it: north, a dry-stone tea terrace
-   * (`BA_DAN_NORTH_TERRACE`); south, the canal's low kerb and water. Every
+   * The walkable north rim ends at a dry-stone tea terrace
+   * (`BA_DAN_NORTH_TERRACE`); the south lawn continues into the exterior
+   * meadow band without a second, unrelated canal. Every
    * other rim cell is a tree, the ford, or an exit mouth: the east road's two
    * cells, and the river path's three at (18..20,15), which run on south off
    * the board as flagstone like the east road does.
@@ -74,6 +74,7 @@ export const BA_DAN_VILLAGE: MapDef = {
   edges: [
     { side: 'north', span: [4, 17], treatment: 'band' },
     { side: 'south', span: [4, 17], treatment: 'band' },
+    { side: 'west', span: [6, 6], treatment: 'band' },
   ],
   edgeContract: 'enforce',
   restSpots: [{ pos: { x: 10, y: 5 }, label: "Mira's table" }],

@@ -56,10 +56,6 @@ for (let py = 0; py < height; py++) {
     const y = (dy - dx) / 2;
     if (x < 0 || x >= 7 || y < 6 || y >= 10) continue;
     const cell = BA_DAN_VILLAGE.rows[Math.floor(y)]?.[Math.floor(x)] ?? ',';
-    // The canal remains a runtime-owned transparent surface. Trees and the
-    // blocked map edge retain their grass/stone underlayers so no procedural
-    // corner shows through around their transparent scenery.
-    if (cell === '~') continue;
     // Feather only toward the procedural exterior. The eastern edge sits under
     // the courtyard region, whose matching sampling already supplies the join.
     const alpha = Math.round(255 * smoothstep(0, 0.4, Math.min(x, y - 6, 10 - y)));
@@ -83,10 +79,17 @@ for (let py = 0; py < height; py++) {
     image.data[to] = rgba[0] ?? 0;
     image.data[to + 1] = rgba[1] ?? 0;
     image.data[to + 2] = rgba[2] ?? 0;
+    // Cut the new canal only after the unchanged material sample has supplied
+    // RGB. Keeping the boundary correction out of the source lookup preserves
+    // every dry texel (especially the quarry/forest calibration crop at
+    // x1..5,y7..8). The half-source-pixel inset classifies an exact projected
+    // boundary by the cell on whose centre side it falls, so row 7 stays road.
+    // Trees and blocked edges still retain their grass/stone underlayers.
+    const maskCell = BA_DAN_VILLAGE.rows[Math.floor(y + 1 / 128)]?.[Math.floor(x + 1 / 128)] ?? ',';
     // Courtyard alpha is a feather for its outer silhouette, never opacity
     // authority for this region's interior. Reuse its RGB, then apply only
     // the western exterior feather so overlapping road cells remain opaque.
-    image.data[to + 3] = alpha;
+    image.data[to + 3] = maskCell === '~' ? 0 : alpha;
   }
 }
 

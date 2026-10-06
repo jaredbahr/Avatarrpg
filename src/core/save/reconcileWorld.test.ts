@@ -415,12 +415,13 @@ suite('reconcileWorld: the Ba Dan edge rebuild (A5)', () => {
   }
 
   it('moves a party saved on the old west road end off the flooded ford', () => {
-    // (0,7) was the road's last cell and is the ford now. Its first ring
-    // holds (1,6) grass and (1,7), (1,8) road; row-major takes the topmost.
+    // (0,7) was the road's last cell and is the ford now. The expanded canal
+    // makes (0,6) and (1,6) permanent water, so the first safe cell in the
+    // first ring is the road at (1,7).
     expect(tileAt(grid, { x: 0, y: 7 })?.blocked).toBe(true);
     const reconciled = loadOldVillageSave({ x: 0, y: 7 });
 
-    expect(reconciled.location).toEqual({ mapId: 'ba_dan_village', pos: { x: 1, y: 6 } });
+    expect(reconciled.location).toEqual({ mapId: 'ba_dan_village', pos: { x: 1, y: 7 } });
     expect(tileAt(grid, reconciled.location.pos)?.blocked).toBe(false);
     expect(reconcileWorld(CONTENT, reconciled).location).toEqual(reconciled.location);
   });

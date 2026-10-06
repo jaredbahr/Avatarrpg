@@ -16,7 +16,7 @@ const page = packEdgePage();
 const pieces = new Map(BA_DAN_EDGE_WATER.map((piece) => [piece.id, piece]));
 
 /** The packed page's pixel at a logical ground point of one edge piece. */
-function at(id: 'west-ford' | 'south-canal', x: number, y: number): number[] {
+function at(id: 'west-ford', x: number, y: number): number[] {
   const piece = pieces.get(id);
   if (!piece) throw new Error(`Missing ${id}`);
   const wx = Math.floor(1024 + (x - y) * 64) - piece.x;
@@ -65,7 +65,11 @@ describe('Ba Dan edge water (reference footprint and shipped page)', () => {
               filmed++;
           }
         }
-    expect(water).toBeGreaterThan(40_000);
+    // This loop measures the registered west-ford piece only. The accepted
+    // long channel occupies the page's separate upper sourceRect and is held
+    // byte-for-byte by packWater above; 40k described that retired combined
+    // footprint, not this piece's geometric reference.
+    expect(water).toBe(13_500);
     expect({ alphaMismatch, filmed }).toEqual({ alphaMismatch: 0, filmed: 0 });
   });
 
@@ -112,28 +116,6 @@ describe('Ba Dan edge water (reference footprint and shipped page)', () => {
           if (apronDepth((dx + dy) / 2, (dy - dx) / 2) >= APRON_FADE) beyond++;
         }
     expect(beyond).toBe(0);
-  });
-
-  it('lays the south canal just outside the open lawn, kerbed at both ends', () => {
-    const canal = pieces.get('south-canal');
-    if (!canal) throw new Error('Missing the south canal');
-    // Its water row is off the board, below the lawn x4..17 the edge band covers.
-    expect(canal.cells.every((cell) => cell.y === BA_DAN_VILLAGE.height)).toBe(true);
-    expect(canal.cells.map((cell) => cell.x)).toEqual(Array.from({ length: 14 }, (_, i) => 4 + i));
-    for (const x of [4.5, 10.5, 17.5]) {
-      const water = at('south-canal', x, 16.3);
-      expect(water[3], `canal at ${x}`).toBeGreaterThan(0);
-      expect(cool(water), `canal at ${x} carries the film`).toBeGreaterThan(0);
-      // The lawn cell's middle stays the garden's: only the kerb's lip reaches in.
-      expect(at('south-canal', x, 15.5)[3]).toBe(0);
-    }
-    // The kerb is on the rim, and dry stone, not water.
-    const kerb = at('south-canal', 10.5, 15.93);
-    expect(kerb[3]).toBe(255);
-    expect(cool(kerb)).toBeLessThan(0);
-    // Nothing reaches the rim trees' cells beyond either end.
-    expect(at('south-canal', 3.3, 16.5)[3]).toBe(0);
-    expect(at('south-canal', 18.7, 16.5)[3]).toBe(0);
   });
 
   it('measures water with the courtyard canal metric', () => {

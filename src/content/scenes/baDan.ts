@@ -1,10 +1,16 @@
 import type { MapScene, SceneImage, SceneScenery, Vec2 } from '../../core/types';
 
 const root = 'art/maps/ba-dan-scene/';
-/** The registered projected envelope for the central short canal. */
-export const BA_DAN_CANAL = { x: 6, y: 6, width: 7, height: 1 } as const;
-/** Permanent water cells; the paved bridge at x9 breaks the visual envelope. */
+/** The registered projected envelope for the canal from the west pond to the courtyard. */
+export const BA_DAN_CANAL = { x: 0, y: 6, width: 13, height: 1 } as const;
+/** Permanent water cells; the bridge deck at x9 carries the paved crossing over the flow. */
 export const BA_DAN_WATER_CELLS = [
+  { x: 0, y: 6 },
+  { x: 1, y: 6 },
+  { x: 2, y: 6 },
+  { x: 3, y: 6 },
+  { x: 4, y: 6 },
+  { x: 5, y: 6 },
   { x: 6, y: 6 },
   { x: 7, y: 6 },
   { x: 8, y: 6 },
@@ -49,8 +55,8 @@ export const BA_DAN_GARDEN_PLATES = [
 ] as const;
 /** Outer metric radius of the transparent coping around runtime water. */
 export const BA_DAN_CANAL_BANK_RADIUS = 1.42;
-/** Transparent coping envelope around all six runtime water diamonds. */
-export const BA_DAN_CANAL_BANKS = { x: 928, y: 368, width: 576, height: 288 } as const;
+/** Transparent coping envelope around the west-fed runtime watercourse. */
+export const BA_DAN_CANAL_BANKS = { x: 544, y: 176, width: 960, height: 480 } as const;
 
 /**
  * The village does not end where the rules stop. This apron carries the ground
@@ -99,31 +105,21 @@ export const BA_DAN_APRON_PIECES: readonly SceneImage[] = BA_DAN_APRON_BANDS.map
 }));
 
 /**
- * The edge water (`scripts/art/ba-dan-edges.ts`): the same kerbed channel as
- * the courtyard canal, cut to logical cells and painted in the garden's grain.
+ * The edge pond (`scripts/art/ba-dan-edges.ts`) uses the same fieldstone and
+ * water vocabulary as the courtyard canal.
  *
  * - **The west ford.** The road's last two cells, (0,7) and (0,8), are `W`:
  *   the road runs down into standing water that carries on west past the rim
  *   into the apron's fade, over a line of drowned stepping stones.
- * - **The south canal.** The south edge band: one row of water just outside
- *   the open lawn x4..17, its near kerb at the lawn's edge. It is ground, so it
- *   never stands in front of anyone.
- *
- * Neither is runtime water: the ford is a blocked tile and the canal is off
- * the board, so no renderer film reaches them; both are the painted fieldstone
- * water (`scripts/art/ba-dan-water.ts`) with nothing baked over it. The
- * courtyard pools are the same material, and `paintedWaterCells` keeps the
- * film off their permanent `~` cells. Both edge pieces are painted after the
- * apron, and fade with it past the rim.
+ * The pond is painted fieldstone water (`scripts/art/ba-dan-water.ts`) with
+ * nothing baked over it. It is painted after the apron and fades with it past
+ * the rim. The connected canal reuses the page's continuous channel artwork;
+ * `paintedWaterCells` keeps the runtime film off its permanent `~` cells.
  */
 export const BA_DAN_FORD_CELLS: readonly Vec2[] = [-2, -1, 0].flatMap((x) => [
   { x, y: 7 },
   { x, y: 8 },
 ]);
-export const BA_DAN_SOUTH_CANAL_CELLS: readonly Vec2[] = Array.from({ length: 14 }, (_, i) => ({
-  x: 4 + i,
-  y: 16,
-}));
 /** Ground-plane centres of the ford's drowned stepping stones, west from the road's end. */
 export const BA_DAN_FORD_STONES: readonly Vec2[] = [
   { x: 0.6, y: 7.55 },
@@ -138,15 +134,6 @@ export const BA_DAN_FORD_STONES: readonly Vec2[] = [
  * village already asks for all but two of `SCENE_IMAGE_CAP`'s images.
  */
 export const BA_DAN_EDGE_WATER = [
-  {
-    id: 'south-canal',
-    cells: BA_DAN_SOUTH_CANAL_CELLS,
-    x: 164,
-    y: 626,
-    width: 1016,
-    height: 508,
-    source: { x: 0, y: 0 },
-  },
   {
     id: 'west-ford',
     cells: BA_DAN_FORD_CELLS,
@@ -190,7 +177,7 @@ export const BA_DAN_COURT_TREES = [
 
 /** Gameplay applies these same footprints as low, solid courtyard boundaries. */
 export const BA_DAN_COURTYARD_PROPS = [
-  { id: 'west-planter', image: 'low-planter', x: 6, y: 5 },
+  { id: 'west-planter', image: 'low-planter', x: 10, y: 10 },
   { id: 'east-planter', image: 'low-planter', x: 14, y: 9 },
   { id: 'gao-display', image: 'merchant-display', x: 7, y: 4 },
   { id: 'north-garden', image: 'low-planter', x: 16, y: 4 },
@@ -375,7 +362,19 @@ function neighborhoodGround({
 
 function canalBanks(): SceneImage {
   return {
-    url: `${root}canal-banks.webp`,
+    // Reuse the continuous fieldstone channel already packed on the edge-water
+    // page. The bridge paints over its centre; unlike the old two-pool plate,
+    // the water itself continues beneath the deck.
+    url: `${root}edge-water.webp`,
+    // Use the whole authored channel so both stone-coped ends remain intact;
+    // the modest fit from 1016x508 to this 13-cell envelope preserves its 2:1
+    // ground projection.
+    sourceRect: {
+      x: 0,
+      y: 0,
+      width: 1016,
+      height: 508,
+    },
     ...BA_DAN_CANAL_BANKS,
   };
 }
@@ -541,7 +540,7 @@ export const BA_DAN_SCENE: MapScene = {
     canalBanks(),
     // Painted last: transparent everywhere the board can be walked.
     ...BA_DAN_APRON_PIECES,
-    // Over the apron, since both run on past the rim into its fade.
+    // Over the apron, since the pond runs on past the rim into its fade.
     ...BA_DAN_EDGE_WATER.map(({ x, y, width, height, source }) => ({
       url: `${root}edge-water.webp`,
       sourceRect: { ...source, width, height },

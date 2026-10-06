@@ -10,6 +10,7 @@ import {
   BA_DAN_CANAL_BRIDGE,
   BA_DAN_CANAL_BANKS,
   BA_DAN_COURTYARD_GROUND,
+  BA_DAN_COURTYARD_PROPS,
   BA_DAN_WESTERN_APPROACH_GROUND,
   BA_DAN_NEIGHBORHOOD_GROUNDS,
   BA_DAN_COURTYARD_FOOTPRINTS,
@@ -151,6 +152,31 @@ it('keeps painted low boundaries solid while preserving every village destinatio
     expect(paths.has(posKey(p)), `Unreachable village destination ${posKey(p)}`).toBe(true);
 });
 
+it("keeps Gao's display by his shopfront and the moved west planter in open court", () => {
+  expect(BA_DAN_COURTYARD_PROPS.find(({ id }) => id === 'gao-display')).toMatchObject({
+    x: 7,
+    y: 4,
+  });
+  expect(BA_DAN_COURTYARD_PROPS.find(({ id }) => id === 'west-planter')).toMatchObject({
+    x: 10,
+    y: 10,
+  });
+  const reserved = [
+    ...BA_DAN_COURT_TREES,
+    ...BA_DAN_VILLAGE.npcs.flatMap((npc) => npcStandTiles(CONTENT_BUNDLE, BA_DAN_VILLAGE.id, npc)),
+  ];
+  for (const prop of BA_DAN_COURTYARD_PROPS.filter(({ id }) =>
+    ['gao-display', 'west-planter'].includes(id),
+  ))
+    for (const cell of [
+      { x: prop.x, y: prop.y },
+      { x: prop.x + 1, y: prop.y },
+    ])
+      expect(reserved, `${prop.id} overlaps reserved cell ${cell.x},${cell.y}`).not.toContainEqual(
+        cell,
+      );
+});
+
 it("stands the courtyard planter, turned, on the south-east house's blocked strip", () => {
   const grid = buildGrid(BA_DAN_VILLAGE);
   const scenery = BA_DAN_SCENE.scenery;
@@ -212,7 +238,7 @@ it('registers the painted canal to every actual permanent-water cell', () => {
     ),
   );
   expect(painted).toEqual(actual);
-  expect(BA_DAN_CANAL).toMatchObject({ x: 6, y: 6, width: 7, height: 1 });
+  expect(BA_DAN_CANAL).toMatchObject({ x: 0, y: 6, width: 13, height: 1 });
   expect(BA_DAN_VILLAGE.rows[BA_DAN_CANAL_BRIDGE.y]?.[BA_DAN_CANAL_BRIDGE.x]).toBe('=');
 });
 
@@ -254,8 +280,11 @@ it('uses transparent localized canal banks while the grid owns permanent water',
   });
   expect(BA_DAN_SCENE.ground.some((piece) => piece.url.endsWith('/ground-west.webp'))).toBe(false);
   expect(BA_DAN_SCENE.ground.some((piece) => piece.url.endsWith('/ground-east.webp'))).toBe(false);
-  const canal = BA_DAN_SCENE.ground.find((piece) => piece.url.endsWith('/canal-banks.webp'));
+  const canal = BA_DAN_SCENE.ground.find(
+    (piece) => piece.url.endsWith('/edge-water.webp') && piece.x === BA_DAN_CANAL_BANKS.x,
+  );
   expect(canal).toMatchObject(BA_DAN_CANAL_BANKS);
+  expect(canal?.url).toBe('art/maps/ba-dan-scene/edge-water.webp');
   expect(BA_DAN_SCENE.paintedWater).toBeUndefined();
   // The plates carry the pools: the scene declares exactly the map's permanent water.
   const liveWater = BA_DAN_VILLAGE.rows.flatMap((row, y) =>
@@ -352,7 +381,7 @@ it('covers the remaining connected village courts with opaque decoded material j
     'northwest-lawn': [
       { x: 1, y: 4 },
       { x: 3, y: 5 },
-      { x: 5, y: 6 },
+      { x: 5, y: 5 },
     ],
     'north-house-court': [
       { x: 5, y: 2 },
@@ -388,7 +417,6 @@ it('covers the remaining connected village courts with opaque decoded material j
       expect(alphaAt(piece, pos), `${frame.id} ${pos.x},${pos.y}`).toBeGreaterThan(240);
   }
   const joins = [
-    ['northwest-lawn', { x: 1.25, y: 6.5 }, 'western-approach'],
     ['northwest-lawn', { x: 5.5, y: 4.5 }, 'courtyard'],
     ['north-house-court', { x: 10.5, y: 3.5 }, 'courtyard'],
     ['east-gate-approach', { x: 14.5, y: 7.5 }, 'courtyard'],

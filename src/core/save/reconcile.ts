@@ -526,10 +526,15 @@ function snapExplore(content: ContentIndex, state: GameState): GameState {
   return { ...state, location: { ...state.location, pos } };
 }
 
-/** Explore movement's walkability: an in-bounds tile that is not blocked. */
+/** A safe explore resting cell: in bounds, unblocked, and not permanent water. */
 function walkable(grid: Grid, p: Vec2): boolean {
   const tile = tileAt(grid, p);
-  return tile !== undefined && !tile.blocked;
+  return (
+    tile !== undefined &&
+    !tile.blocked &&
+    tile.terrain !== 'water_deep' &&
+    !(tile.surface?.id === 'water' && tile.surface.duration === -1)
+  );
 }
 
 /** The party's entry cell on an explore map, matching `enterStoryNode`'s `exploreStart`. */
