@@ -31,8 +31,16 @@ import type {
 import { RngCursor } from '../rng';
 import { BattleDraft } from '../state/battleDraft';
 import type { SurfaceContactRecord } from '../state/battleDraft';
-import { isAreaShove } from './abilities';
-import { allowsCasterTarget, blastTiles, occupiedCells, posKey, tileAt } from './grid';
+import { isAreaShove, sameSide } from './abilities';
+import {
+  allowsCasterTarget,
+  blastTiles,
+  occupiedCells,
+  posKey,
+  samePos,
+  tileAt,
+  unitAt,
+} from './grid';
 import { SQUARE_FOOTPRINTS, footprintCells, shoveStep } from './footprint';
 import { applyStatus, removeStatuses } from './status';
 import { contactEffects } from './surfaces';
@@ -209,12 +217,6 @@ const EMPTY: ReactionForecast = {
   surfaceContacts: [],
 };
 
-/** The two sides the game actually cares about; allies count as party. */
-function friendlyTo(caster: Unit, other: Unit): boolean {
-  const side = (u: Unit) => (u.faction === 'enemy' ? 'enemy' : 'friendly');
-  return side(caster) === side(other);
-}
-
 /**
  * Replays the ability's terrain-touching effects against a throwaway
  * `BattleDraft`. Effects run in authored order because that is what
@@ -260,7 +262,7 @@ export function forecastReactions(
       ),
   );
   const hitIds = struck.map((unit) => unit.id);
-  const friendlyIds = struck.filter((unit) => friendlyTo(caster, unit)).map((unit) => unit.id);
+  const friendlyIds = struck.filter((unit) => sameSide(caster, unit)).map((unit) => unit.id);
   const statusForecasts: StatusForecast[] = [];
   const shoves: ShoveForecast[] = [];
 
@@ -360,7 +362,7 @@ export function forecastReactions(
             statusForecasts.push({
               unitId: unit.id,
               name: unit.name,
-              friendly: friendlyTo(caster, unit),
+              friendly: sameSide(caster, unit),
               kind: 'cleanse',
               requestedStatus: null,
               appliedStatus: null,
@@ -382,7 +384,7 @@ export function forecastReactions(
   const statusHits = reactions.flatMap((reaction) => reaction.statusHits);
   const chainHits = reactions.flatMap((reaction) => reaction.chainHits);
   const reactionStatuses = statusHits.flatMap((hit) => {
-    const unit = unitStandingAt(draft.units, hit.pos);
+    const unit = unitAt(draft.units, hit.pos);
     if (!unit) return [];
     return [previewStatus(content, unit, caster, hit.status, undefined, hit.chance, 'apply')];
   });
@@ -410,7 +412,7 @@ export function forecastReactions(
         cause: 'propBreak',
         id: event.unitId,
         name: unit.name,
-        friendly: friendlyTo(caster, unit),
+        friendly: sameSide(caster, unit),
         from,
         to: event.to,
         distance: movedDistance,
@@ -482,7 +484,7 @@ export function previewStatus(
   return {
     unitId: unit.id,
     name: unit.name,
-    friendly: friendlyTo(caster, unit),
+    friendly: sameSide(caster, unit),
     kind,
     requestedStatus,
     appliedStatus: result.applied,
@@ -502,7 +504,7 @@ function surfaceContactForecasts(
     // has a stable name and faction here.
     const unit = battle.units.find((candidate) => candidate.id === record.unitId);
     if (!unit) return [];
-    const friendly = friendlyTo(caster, unit);
+    const friendly = sameSide(caster, unit);
     const status = record.status
       ? {
           unitId: record.unitId,
@@ -614,7 +616,7 @@ function shoveUnitForecast(
     cause: 'ability',
     id: before.id,
     name: before.name,
-    friendly: friendlyTo(caster, before),
+    friendly: sameSide(caster, before),
     from: before.pos,
     to: after.pos,
     distance,
@@ -704,7 +706,7 @@ function shovePropForecast(
         event.type === 'propPushed' && event.propId === propId,
     );
   const to = after?.pos ?? pushed?.to ?? before.pos;
-  const moved = !samePosition(to, before.pos);
+  const moved = !samePos(to, before.pos);
   const movedDistance = Math.max(Math.abs(to.x - before.pos.x), Math.abs(to.y - before.pos.y));
   const unitLike = moved
     ? ({
@@ -766,13 +768,9 @@ function displayStopReason(
   const casterCells = new Set(caster ? occupiedCells(caster, square).map(posKey) : []);
   for (const offset of footprintCells({ x: 0, y: 0 }, size, square)) {
     const cell = { x: next.x + offset.x, y: next.y + offset.y };
-    if (samePosition(cell, origin) || casterCells.has(posKey(cell))) return 'adjacent';
+    if (samePos(cell, origin) || casterCells.has(posKey(cell))) return 'adjacent';
   }
   return 'obstacle';
-}
-
-function samePosition(a: Vec2, b: Vec2): boolean {
-  return a.x === b.x && a.y === b.y;
 }
 
 function propForecasts(
@@ -868,7 +866,7 @@ function propAffectedUnits(
     byUnit.set(unit.id, {
       unitId: unit.id,
       name: unit.name,
-      friendly: friendlyTo(caster, unit),
+      friendly: sameSide(caster, unit),
       statuses,
     });
   };
@@ -997,7 +995,7 @@ function assemble(
   ) => {
     const entry = byCombo.get(comboId);
     if (!entry) return;
-    const unit = unitStandingAt(battle.units, pos);
+    const unit = unitAt(battle.units, pos);
     if (!unit) return;
     let caught = entry.caught.get(unit.id);
     if (!caught) {
@@ -1023,7 +1021,7 @@ function assemble(
   for (const hit of statusHits) {
     noteReach(hit.comboId, hit.pos);
     catchUnit(hit.comboId, hit.pos, (into) => {
-      const unit = unitStandingAt(battle.units, hit.pos);
+      const unit = unitAt(battle.units, hit.pos);
       if (!unit) return;
       const application = previewStatus(content, unit, caster, hit.status, undefined, hit.chance);
       // Two rules landing the same status on one unit is not additive; show
@@ -1048,7 +1046,7 @@ function assemble(
     for (const [unitId, hit] of entry.caught) {
       const unit = battle.units.find((u) => u.id === unitId);
       if (!unit) continue;
-      const friendly = friendlyTo(caster, unit);
+      const friendly = sameSide(caster, unit);
       if (friendly) catchesFriendly = true;
       caught.push({
         unitId,
@@ -1077,12 +1075,6 @@ function assemble(
   }
 
   return { entries, catchesFriendly };
-}
-
-/** The living unit occupying `pos`, counting the boss's second cell. */
-function unitStandingAt(units: readonly Unit[], pos: Vec2): Unit | undefined {
-  const key = posKey(pos);
-  return units.find((u) => isAlive(u) && occupiedCells(u).some((c) => posKey(c) === key));
 }
 
 /**

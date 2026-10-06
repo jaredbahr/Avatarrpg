@@ -21,7 +21,7 @@ import type {
   StoryNode,
   StoryOption,
 } from '../types';
-import { awardXp } from '../rules/leveling';
+import { awardXp, levelUpOutcome } from '../rules/leveling';
 import { createBattle } from '../state/createGame';
 import { adjustStanding, evaluate, getStanding } from './conditions';
 import { buildGrid, tileAt } from '../rules/grid';
@@ -49,32 +49,9 @@ function grantPartyXp(
       : undefined;
     const gain = awardXp(content, member, amount, character, discipline);
     events.push({ type: 'xpGained', unitId: member.id, amount });
-    if (gain.levelsGained > 0) {
-      events.push({
-        type: 'leveledUp',
-        unitId: member.id,
-        level: gain.unit.level,
-        unlocked: gain.granted,
-      });
-      for (const options of gain.pendingChoices) {
-        pendingChoices.push({
-          unitId: member.id,
-          level: gain.unit.level,
-          kind: 'ability',
-          options,
-        });
-        events.push({ type: 'levelChoiceOffered', unitId: member.id, options });
-      }
-      for (const options of gain.pendingSpecializations) {
-        pendingChoices.push({
-          unitId: member.id,
-          level: gain.unit.level,
-          kind: 'discipline',
-          options,
-        });
-        events.push({ type: 'disciplineOffered', unitId: member.id, options });
-      }
-    }
+    const outcome = levelUpOutcome(member.id, gain);
+    events.push(...outcome.events);
+    pendingChoices.push(...outcome.pendingChoices);
     return gain.unit;
   });
 

@@ -4,7 +4,7 @@ import { CONTENT } from '../../content';
 import { DISCIPLINE_FLAGS } from '../../content/disciplines';
 import { createGame, createPartyUnit } from './createGame';
 import { apply } from './reducer';
-import { awardXp, combinedKit, xpForLevel } from '../rules/leveling';
+import { awardXp, combinedKit, levelUpOutcome, xpForLevel } from '../rules/leveling';
 import { migrate, deserialize, serialize } from '../save/serialize';
 import { reconcileDisciplines } from '../save/reconcile';
 import type { GameState, PendingChoice, Unit } from '../types';
@@ -53,6 +53,31 @@ function member(state: GameState): Unit {
 }
 
 describe('the discipline gate', () => {
+  it('builds the shared level-up events and pending picks in their original order', () => {
+    const state = gameAt(4);
+    const unit = member(state);
+    const gain = awardXp(CONTENT, unit, xpForLevel(5) - unit.xp, CONTENT.characters.get(EARTH));
+
+    expect(levelUpOutcome(unit.id, gain)).toEqual({
+      events: [
+        { type: 'leveledUp', unitId: unit.id, level: 5, unlocked: [] },
+        {
+          type: 'disciplineOffered',
+          unitId: unit.id,
+          options: ['earth_shaping', 'metalbending_path'],
+        },
+      ],
+      pendingChoices: [
+        {
+          unitId: unit.id,
+          level: 5,
+          kind: 'discipline',
+          options: ['earth_shaping', 'metalbending_path'],
+        },
+      ],
+    });
+  });
+
   it('queues a path choice on reaching level 5, locked options included', () => {
     const state = gameAt(4);
     const character = CONTENT.characters.get(EARTH);
