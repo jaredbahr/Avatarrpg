@@ -15,6 +15,8 @@ import {
   BA_DAN_NEIGHBORHOOD_GROUNDS,
   BA_DAN_COURTYARD_FOOTPRINTS,
   BA_DAN_COURT_TREES,
+  BA_DAN_NORTH_TERRACE,
+  BA_DAN_RIM_CANOPIES,
   BA_DAN_APRON_MAP,
   BA_DAN_APRON_PIECES,
   BA_DAN_EDGE_WATER,
@@ -150,6 +152,19 @@ it('keeps painted low boundaries solid while preserving every village destinatio
     { x: 23, y: 7 },
   ])
     expect(paths.has(posKey(p)), `Unreachable village destination ${posKey(p)}`).toBe(true);
+});
+
+it('covers every blocked tree cell with a scenery footprint', () => {
+  for (const [y, row] of BA_DAN_VILLAGE.rows.entries())
+    for (const [x, tile] of [...row].entries()) {
+      if (tile !== 'T') continue;
+      expect(
+        BA_DAN_VILLAGE.scene?.scenery.some((piece) =>
+          piece.footprint.some((cell) => cell.x === x && cell.y === y),
+        ),
+        `Blocked tree cell ${x},${y} has no scenery footprint`,
+      ).toBe(true);
+    }
 });
 
 it("keeps Gao's display by his shopfront and the moved west planter in open court", () => {
@@ -497,6 +512,136 @@ it('keeps court trunks solid and both shop doors and village routes reachable', 
     expect(tileAt(grid, { x: 0, y })).toMatchObject({ terrain: 'water_deep', blocked: true });
     for (let x = 1; x < map.width; x++) expect(tileAt(grid, { x, y })?.blocked).not.toBe(true);
   }
+});
+
+it('keeps the east court canopy clear of the market frontage and gate watch', () => {
+  expect(BA_DAN_COURT_TREES).toContainEqual({ x: 21, y: 2 });
+  expect(BA_DAN_COURT_TREES).not.toContainEqual({ x: 17, y: 5 });
+  const east = BA_DAN_SCENE.scenery.find((piece) => piece.id === 'tree-21-2');
+  expect(east).toMatchObject({
+    footprint: [{ x: 21, y: 2 }],
+    depth: { x: 21, y: 2 },
+    width: 320,
+    fadeWhenOccluding: true,
+  });
+  const house = BA_DAN_SCENE.scenery.find((piece) => piece.id === 'north-house');
+  const stall = BA_DAN_SCENE.scenery.find((piece) => piece.id === 'north-market-display');
+  if (!east || !house || !stall) throw new Error('Missing east court frontage');
+  expect(east.x).toBeGreaterThanOrEqual(house.x + house.width);
+  expect(east.x).toBeGreaterThanOrEqual(stall.x + stall.width);
+  for (const anchor of [
+    { x: 16, y: 6 },
+    { x: 17, y: 6 },
+  ]) {
+    const anchorRight = 1024 + (anchor.x - anchor.y) * 64 + 64;
+    expect(east.x).toBeGreaterThanOrEqual(anchorRight);
+  }
+  const reserved = [
+    ...BA_DAN_COURTYARD_PROPS.flatMap(({ x, y }) => [
+      { x, y },
+      { x: x + 1, y },
+    ]),
+    ...BA_DAN_VILLAGE.npcs.flatMap((npc) => npcStandTiles(CONTENT_BUNDLE, BA_DAN_VILLAGE.id, npc)),
+  ];
+  expect(reserved).not.toContainEqual({ x: 21, y: 2 });
+});
+
+it('keeps the south-east grove beyond the frontage and river-path mouth', () => {
+  expect(BA_DAN_NORTH_TERRACE.at(-1)).toMatchObject({ x: 14, y: -1 });
+  expect(BA_DAN_RIM_CANOPIES).not.toContainEqual(expect.objectContaining({ x: 21, y: 15 }));
+  expect(BA_DAN_RIM_CANOPIES).not.toContainEqual(expect.objectContaining({ x: 23, y: 12 }));
+  expect(BA_DAN_RIM_CANOPIES).not.toContainEqual(expect.objectContaining({ x: 23, y: 9 }));
+  expect(BA_DAN_RIM_CANOPIES).not.toContainEqual(expect.objectContaining({ x: 23, y: 5 }));
+
+  const grove = [
+    BA_DAN_SCENE.scenery.find((piece) => piece.id === 'tree-26-16'),
+    BA_DAN_SCENE.scenery.find((piece) => piece.id === 'tree-27-5'),
+  ];
+  for (const piece of grove) expect(piece).toMatchObject({ exterior: true });
+
+  const southeastHouse = BA_DAN_SCENE.scenery.find((piece) => piece.id === 'southeast-house');
+  const southeastPlanter = BA_DAN_SCENE.scenery.find((piece) => piece.id === 'southeast-planter');
+  if (!southeastHouse || !southeastPlanter || grove.some((piece) => !piece))
+    throw new Error('Missing south-east scenery');
+
+  // Upright sprites use this calibrated scene-pixel coordinate space. Buildings
+  // remain rectangles, but a ground tile is its actual diamond: a crown's
+  // transparent rectangular corner may cross the tile's box without crossing
+  // any diamond edge.
+  const overlapsRectangle = (
+    a: { x: number; y: number; width: number; height: number },
+    b: { x: number; y: number; width: number; height: number },
+  ) => a.x < b.x + b.width && a.x + a.width > b.x && a.y < b.y + b.height && a.y + a.height > b.y;
+  const rectangle = ({
+    x,
+    y,
+    width,
+    height,
+  }: {
+    x: number;
+    y: number;
+    width: number;
+    height: number;
+  }) => [
+    { x, y },
+    { x: x + width, y },
+    { x: x + width, y: y + height },
+    { x, y: y + height },
+  ];
+  const tileDiamond = (x: number, y: number) => {
+    const centerX = 1024 + (x - y) * 64;
+    const topY = (x + y) * 32;
+    return [
+      { x: centerX, y: topY },
+      { x: centerX + 64, y: topY + 32 },
+      { x: centerX, y: topY + 64 },
+      { x: centerX - 64, y: topY + 32 },
+    ];
+  };
+  const polygonsOverlap = (
+    a: readonly { x: number; y: number }[],
+    b: readonly { x: number; y: number }[],
+  ) => {
+    for (const polygon of [a, b])
+      for (let index = 0; index < polygon.length; index += 1) {
+        const start = polygon[index];
+        const end = polygon[(index + 1) % polygon.length];
+        if (!start || !end) continue;
+        const axis = { x: start.y - end.y, y: end.x - start.x };
+        const project = (point: { x: number; y: number }) => point.x * axis.x + point.y * axis.y;
+        const projectedA = a.map(project);
+        const projectedB = b.map(project);
+        if (
+          Math.max(...projectedA) <= Math.min(...projectedB) ||
+          Math.max(...projectedB) <= Math.min(...projectedA)
+        )
+          return false;
+      }
+    return true;
+  };
+  const reservedDiamonds = [
+    tileDiamond(18, 12), // riverside sign and pickup marker
+    tileDiamond(17, 6), // gate-watch anchor
+    ...[18, 19, 20].map((x) => tileDiamond(x, 15)), // south road mouth
+    // Both east-road rows, tile by tile from the court through the exit.
+    ...[7, 8].flatMap((y) => Array.from({ length: 7 }, (_, i) => tileDiamond(17 + i, y))),
+  ];
+  for (const piece of grove) {
+    if (!piece) throw new Error('Missing moved south-east tree');
+    for (const box of [southeastHouse, southeastPlanter])
+      expect(overlapsRectangle(piece, box)).toBe(false);
+    for (const diamond of reservedDiamonds)
+      expect(polygonsOverlap(rectangle(piece), diamond)).toBe(false);
+  }
+
+  // The remaining small trees are the two shoulders, not the road itself.
+  const exitMarkerRight = 1024 + (19 - 15 + 1) * 64;
+  const eastShoulder = BA_DAN_SCENE.scenery.find((piece) => piece.id === 'tree-22-15');
+  expect(eastShoulder?.x).toBeGreaterThanOrEqual(exitMarkerRight);
+  expect(BA_DAN_SCENE.scenery.find((piece) => piece.id === 'tree-21-15')).toMatchObject({
+    width: 150,
+    footprint: [{ x: 21, y: 15 }],
+  });
 });
 
 it('raises chimney smoke from the painted roof of a dwelling', async () => {

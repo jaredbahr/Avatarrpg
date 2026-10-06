@@ -81,7 +81,7 @@ export function connectAct1(map: MapDef): MapDef {
             { x: 10, y: 19 },
             'River path → Riverside',
             // The path's mouth on the rim, between the canal's end and the
-            // tree at (21,15): the walkable border cells are the exit.
+            // small trees on both shoulders: the walkable border cells are the exit.
             [18, 19, 20].map((x) => ({ x, y: 15 })),
           ),
         ],
