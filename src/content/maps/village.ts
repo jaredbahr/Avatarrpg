@@ -17,6 +17,8 @@ import { RETURNEE_PRESENTATIONS } from '../residents/returnees';
 export const BA_DAN_VILLAGE: MapDef = {
   id: 'ba_dan_village',
   projection: 'oblique',
+  // The 390px viewport at maximum zoom leaves exactly one diamond visible at either side.
+  cameraCentreMargin: -0.609375,
   scene: BA_DAN_SCENE,
   backdrop: { url: 'art/maps/ba_dan_village.webp', pixelsPerTile: 64 },
   name: 'Ba Dan Village',

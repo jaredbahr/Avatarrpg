@@ -166,6 +166,8 @@ export class Camera {
 
   /** Opts irregular maps into the manual-pan hull reachable by programmatic centring. */
   clampToProgrammaticReachableSet = false;
+  /** When present, keeps the viewport centre inside the map plus this tile margin. */
+  centreMargin?: number;
 
   private get bounds() {
     return groundBounds(this.grid.width, this.grid.height, this.projection);
@@ -230,6 +232,7 @@ export class Camera {
 
   /** Keeps the grid inside the frame; centres a smaller board. */
   clamp(): void {
+    if (this.clampCentre()) return;
     const slackX = this.worldWidth - this.viewport.width;
     const slackY = this.worldHeight - this.viewport.height;
     this.offsetX = clampOffset(this.offsetX, slackX);
@@ -238,6 +241,7 @@ export class Camera {
 
   /** Manual gestures may expose authored paint, but only on an overflowing axis. */
   clampToPanBounds(): void {
+    if (this.clampCentre()) return;
     const slackX = this.worldWidth - this.viewport.width;
     const slackY = this.worldHeight - this.viewport.height;
     if (this.clampToProgrammaticReachableSet) {
@@ -259,6 +263,20 @@ export class Camera {
             -pixels(this.clampRingTiles.top),
             Math.min(slackY + pixels(this.clampRingTiles.bottom), this.offsetY),
           );
+  }
+
+  private clampCentre(): boolean {
+    const margin = this.centreMargin;
+    if (margin === undefined) return false;
+    const screen = { x: this.viewport.width / 2, y: this.viewport.height / 2 };
+    const centre = this.unproject(screen);
+    const clamped = this.project({
+      x: Math.max(-margin, Math.min(this.grid.width + margin, centre.x)),
+      y: Math.max(-margin, Math.min(this.grid.height + margin, centre.y)),
+    });
+    this.offsetX += clamped.x - screen.x;
+    this.offsetY += clamped.y - screen.y;
+    return true;
   }
 
   /** Exact convex hull of offsets reachable by programmatic focus within F. */

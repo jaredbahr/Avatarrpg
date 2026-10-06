@@ -586,6 +586,7 @@ export const mapSchema = z
       )
       .optional(),
     edgeContract: z.literal('enforce').optional(),
+    cameraCentreMargin: z.number().finite().optional(),
     // A painting under the grid (ADR 0009). Between 32 px a tile (the probe) and
     // 256, so a 24-wide map stays inside the 2048 px texture every iPad takes.
     projection: z.literal('oblique').optional(),
@@ -675,6 +676,17 @@ export const mapSchema = z
       .optional(),
   })
   .superRefine((map, ctx) => {
+    if (
+      map.cameraCentreMargin !== undefined &&
+      Number.isFinite(map.cameraCentreMargin) &&
+      map.cameraCentreMargin < -Math.min(map.width, map.height) / 2
+    ) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        path: ['cameraCentreMargin'],
+        message: `cameraCentreMargin must be at least -min(width, height) / 2 for map "${map.id}"`,
+      });
+    }
     if (map.rows.length !== map.height) {
       ctx.addIssue({
         code: z.ZodIssueCode.custom,

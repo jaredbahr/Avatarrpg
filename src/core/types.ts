@@ -840,6 +840,8 @@ export interface MapDef {
     readonly kind: 'convex-hull';
     readonly points: readonly Vec2[];
   };
+  /** Keep the viewport centre within the map, optionally grown by this many tiles. */
+  readonly cameraCentreMargin?: number;
 }
 
 /**
