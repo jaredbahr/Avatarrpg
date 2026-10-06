@@ -240,7 +240,7 @@ test.describe('renderer backends', () => {
         )
         .toBe(true);
       if (!drawn) throw new Error(`procedural ground was not presented on ${renderer}`);
-      const { wet, green, water } = drawn;
+      const { wet, green, water, grass } = drawn;
 
       expect(
         wet.b,
