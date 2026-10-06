@@ -11,7 +11,7 @@ import { Session } from './session';
  * These tests run in the node environment, where the reward dialogs and the
  * pause menu have no DOM to open into. Capturing their construction and open
  * calls is enough to assert the App's wiring: which pick is offered, when, and
- * whether the scene is suspended.
+ * whether the scene is held.
  */
 interface ChoiceLike {
   readonly unitId: string;
@@ -327,47 +327,47 @@ describe('pause owns combat progression (F5)', () => {
   });
 
   function combatScene() {
-    return { name: 'combat', suspend: vi.fn(), resume: vi.fn() };
+    return { name: 'combat', holdAi: vi.fn(), releaseAi: vi.fn() };
   }
 
-  it('suspends a fight on pause and resumes it once the pause is gone', () => {
+  it('holds a fight on pause and releases it once the pause is gone', () => {
     const scene = combatScene();
     const app = makeApp({ scene, state: freshExplore() });
 
     app.openPause();
-    expect(scene.suspend).toHaveBeenCalledOnce();
-    expect(scene.resume).not.toHaveBeenCalled();
+    expect(scene.holdAi).toHaveBeenCalledOnce();
+    expect(scene.releaseAi).not.toHaveBeenCalled();
 
     // A nested Save or Settings dialog does not close the pause, so reopening
-    // is a no-op and the fight stays frozen.
+    // is a no-op and the fight stays held.
     app.openPause();
-    expect(scene.suspend).toHaveBeenCalledOnce();
-    expect(scene.resume).not.toHaveBeenCalled();
+    expect(scene.holdAi).toHaveBeenCalledOnce();
+    expect(scene.releaseAi).not.toHaveBeenCalled();
 
     pauseMenus.at(-1)?.close();
-    expect(scene.resume).toHaveBeenCalledOnce();
+    expect(scene.releaseAi).toHaveBeenCalledOnce();
   });
 
   it('leaves an explore scene running', () => {
-    const scene = { name: 'explore', suspend: vi.fn(), resume: vi.fn() };
+    const scene = { name: 'explore', holdAi: vi.fn(), releaseAi: vi.fn() };
     const app = makeApp({ scene, state: freshExplore() });
 
     app.openPause();
-    expect(scene.suspend).not.toHaveBeenCalled();
+    expect(scene.holdAi).not.toHaveBeenCalled();
 
     pauseMenus.at(-1)?.close();
-    expect(scene.resume).not.toHaveBeenCalled();
+    expect(scene.releaseAi).not.toHaveBeenCalled();
   });
 
-  it('closes the pause and force-routes on a load, dropping the frozen scene', () => {
+  it('closes the pause and force-routes on a load, dropping the held scene', () => {
     const scene = combatScene();
     const app = makeApp({ scene, state: freshExplore() });
     app.openPause();
-    expect(scene.suspend).toHaveBeenCalledOnce();
+    expect(scene.holdAi).toHaveBeenCalledOnce();
 
     app.adoptSave(abilityDebt(freshExplore(), 'flame_arc'), undefined);
 
-    expect(scene.resume).toHaveBeenCalledOnce();
+    expect(scene.releaseAi).toHaveBeenCalledOnce();
     expect(internals(app).routeToState).toHaveBeenCalledWith(true);
   });
 });
