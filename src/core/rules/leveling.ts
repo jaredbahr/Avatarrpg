@@ -22,7 +22,9 @@ import type {
   DisciplineDef,
   ElementId,
   FlagValue,
+  GameEvent,
   KitEntry,
+  PendingChoice,
   Unit,
   UnitStats,
 } from '../types';
@@ -205,6 +207,24 @@ export interface LevelGain {
   readonly pendingChoices: readonly (readonly [string, string])[];
   /** Discipline gates crossed on the way up, each a list of path ids. */
   readonly pendingSpecializations: readonly (readonly string[])[];
+}
+
+/** Events and deferred picks shared by every source of a level gain. */
+export function levelUpOutcome(unitId: string, gain: LevelGain) {
+  const events: GameEvent[] = [];
+  const pendingChoices: PendingChoice[] = [];
+  if (gain.levelsGained > 0) {
+    events.push({ type: 'leveledUp', unitId, level: gain.unit.level, unlocked: gain.granted });
+    for (const options of gain.pendingChoices) {
+      pendingChoices.push({ unitId, level: gain.unit.level, kind: 'ability', options });
+      events.push({ type: 'levelChoiceOffered', unitId, options });
+    }
+    for (const options of gain.pendingSpecializations) {
+      pendingChoices.push({ unitId, level: gain.unit.level, kind: 'discipline', options });
+      events.push({ type: 'disciplineOffered', unitId, options });
+    }
+  }
+  return { events, pendingChoices };
 }
 
 /**

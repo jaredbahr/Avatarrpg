@@ -45,7 +45,7 @@ import {
   samePos,
   tileAt,
 } from '../rules/grid';
-import { adoptDiscipline, awardXp, disciplineUnlocked } from '../rules/leveling';
+import { adoptDiscipline, awardXp, disciplineUnlocked, levelUpOutcome } from '../rules/leveling';
 import { canMove, isAlive } from '../rules/stats';
 import { planAiTurn } from '../rules/ai';
 import {
@@ -313,32 +313,9 @@ function handleResolveBattle(content: ContentIndex, state: GameState): StepResul
       if ((shares[index] ?? 0) > 0) {
         events.push({ type: 'xpGained', unitId: member.id, amount: shares[index] ?? 0 });
       }
-      if (gain.levelsGained > 0) {
-        events.push({
-          type: 'leveledUp',
-          unitId: member.id,
-          level: gain.unit.level,
-          unlocked: gain.granted,
-        });
-        for (const options of gain.pendingChoices) {
-          pendingChoices.push({
-            unitId: member.id,
-            level: gain.unit.level,
-            kind: 'ability',
-            options,
-          });
-          events.push({ type: 'levelChoiceOffered', unitId: member.id, options });
-        }
-        for (const options of gain.pendingSpecializations) {
-          pendingChoices.push({
-            unitId: member.id,
-            level: gain.unit.level,
-            kind: 'discipline',
-            options,
-          });
-          events.push({ type: 'disciplineOffered', unitId: member.id, options });
-        }
-      }
+      const outcome = levelUpOutcome(member.id, gain);
+      events.push(...outcome.events);
+      pendingChoices.push(...outcome.pendingChoices);
       return gain.unit;
     });
 
