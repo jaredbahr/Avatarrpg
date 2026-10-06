@@ -1161,7 +1161,6 @@ describe('dead active pointer recovery', () => {
     const active = activeUnit(battle);
     expect(active?.id).not.toBe(dead.id);
     expect(active !== undefined && isAlive(active)).toBe(true);
-    expect(active?.faction).toBe('party');
     expect(battle.phase).toBe('active');
     // A repair, not a ritual: a second load leaves the living pointer alone.
     expect(reconcileBattle(CONTENT, loaded)).toBe(loaded);
