@@ -63,22 +63,36 @@ function refuse(state: GameState, text: string): StepResult {
 }
 
 /**
- * Formats a phase change out of `result`'s events into the log, the same
- * way `handleWait` does, appending onto `base.log`. Only `phaseChanged` -
- * not every event. `enterStoryNode`'s 'flags' node kind can also grant XP
- * or start a battle on the same node that changes the phase (e.g. an
- * authored node chaining into a `grantXp` node or straight into a
- * `battle` node), and those events need the mid-battle/post-battle unit
- * roster `describeEvent` resolves names from - which `finish` and
- * `handleResolveBattle` already log correctly, with that roster in hand.
- * Logging them again here, with no roster, is how a bare unit id like
- * "p0" or a battle's round banner ended up in the log; every path that
- * calls this is explore/dialogue only, so battle is always null.
+ * Formats the story path's loggable events into the log, appending onto
+ * `base.log`.
+ *
+ * Direct story traversal (`enterNode`, a dialogue choice, a walked trigger
+ * or exit, `startBattle`) runs through `enterStoryNode`, which can grant XP -
+ * levelling a unit up - and open a battle, emitting the same `leveledUp` /
+ * `levelChoiceOffered` / `disciplineOffered` and `roundStarted` events a won
+ * fight or a round wrap emits. Those have no other logging owner on this
+ * path, so they are formatted here against the roster that produced them:
+ * the battle when the node opened one, the party otherwise. The roster
+ * matters - with none, `describeEvent` prints a bare id like "p0".
+ * `phaseChanged` rides along for the same reason. Events a battle logs for
+ * itself (`finish`'s mid-battle rounds, `handleResolveBattle`'s reward
+ * block) never pass through here, so nothing is logged twice.
  */
 function withLog(content: ContentIndex, base: GameState, result: StepResult): StepResult {
-  const phaseChanges = result.events.filter((event) => event.type === 'phaseChanged');
+  const loggable = result.events.filter(
+    (event) =>
+      event.type === 'phaseChanged' ||
+      event.type === 'leveledUp' ||
+      event.type === 'levelChoiceOffered' ||
+      event.type === 'disciplineOffered' ||
+      event.type === 'roundStarted',
+  );
+  const units = result.state.battle?.units ?? result.state.party;
   return {
-    state: { ...result.state, log: appendLog(content, null, base.log, phaseChanges) },
+    state: {
+      ...result.state,
+      log: appendLog(content, result.state.battle, base.log, loggable, units),
+    },
     events: result.events,
   };
 }

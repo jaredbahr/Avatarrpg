@@ -16,14 +16,19 @@ function nameOf(units: readonly Unit[] | undefined, id: string | null): string {
   return units?.find((u) => u.id === id)?.name ?? id;
 }
 
-/** One log line, or null for events the log should stay quiet about. */
+/**
+ * One log line, or null for events the log should stay quiet about.
+ *
+ * `units` is the roster names resolve against. It defaults to the battle's
+ * own units, but a story reward is granted outside a battle (there is no
+ * `BattleState` to read a roster from), so a caller can hand in the party.
+ */
 export function describeEvent(
   content: ContentIndex,
   battle: BattleState | null,
   event: GameEvent,
+  units: readonly Unit[] | undefined = battle?.units,
 ): string | null {
-  const units = battle?.units;
-
   switch (event.type) {
     case 'message':
       return event.text;
@@ -171,10 +176,11 @@ export function appendLog(
   battle: BattleState | null,
   log: readonly string[],
   events: readonly GameEvent[],
+  units?: readonly Unit[],
 ): string[] {
   const lines: string[] = [];
   for (const event of events) {
-    const line = describeEvent(content, battle, event);
+    const line = describeEvent(content, battle, event, units);
     if (line) lines.push(line);
   }
   if (lines.length === 0) return [...log];

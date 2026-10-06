@@ -13,7 +13,7 @@
 
 import { describe, expect, it } from 'vitest';
 import { CONTENT } from '../../content';
-import { RngCursor } from '../rng';
+import { RngCursor, nextChance } from '../rng';
 import { withSurface } from '../rules/grid';
 import { isAlive } from '../rules/stats';
 import { activeUnit } from '../rules/turnOrder';
@@ -91,9 +91,9 @@ describe('a lethal action by the active unit', () => {
     const active = activeUnit(battle);
     expect(active?.id).not.toBe(kayaId);
     expect(active !== undefined && isAlive(active)).toBe(true);
-    // The turn was genuinely handed on, not just abandoned.
-    expect(result.events.some((event) => event.type === 'turnEnded')).toBe(true);
-    expect(result.events.some((event) => event.type === 'turnStarted')).toBe(true);
+    // The turn was genuinely handed on exactly once, not abandoned or repeated.
+    expect(result.events.filter((event) => event.type === 'turnEnded')).toHaveLength(1);
+    expect(result.events.filter((event) => event.type === 'turnStarted')).toHaveLength(1);
   });
 
   it('keeps the same actor active after a nonlethal move', () => {
@@ -102,7 +102,8 @@ describe('a lethal action by the active unit', () => {
       { characterId: 'bo', level: 3 },
     ]);
 
-    const result = apply(CONTENT, withFire(state, kayaId, 20), {
+    const before = withFire(state, kayaId, 20);
+    const result = apply(CONTENT, before, {
       type: 'move',
       unitId: kayaId,
       path: [INTO_FIRE],
@@ -117,6 +118,11 @@ describe('a lethal action by the active unit', () => {
     expect(activeUnit(battle)?.id).toBe(kayaId);
     expect(result.events.some((event) => event.type === 'turnEnded')).toBe(false);
     expect(result.events.some((event) => event.type === 'turnStarted')).toBe(false);
+    // No spurious hand-off means no extra draws: the move's only draw is the
+    // fire tile's Burning contact chance, so the cursor advances by exactly
+    // that one step and a control run of the same move lands on the same value.
+    const expected = nextChance(before.rng, 1).rng;
+    expect(result.state.rng).toBe(expected);
   });
 
   it('ends in defeat when the last party member dies to its own move', () => {
