@@ -2,12 +2,14 @@ import { SAVE_FORMAT_VERSION } from '../save/serialize';
 import { describe, expect, it } from 'vitest';
 import { CONTENT } from '../../content';
 import { DISCIPLINE_FLAGS } from '../../content/disciplines';
-import { createGame, createPartyUnit } from './createGame';
+import { createBattle, createGame, createPartyUnit } from './createGame';
 import { apply } from './reducer';
 import { awardXp, combinedKit, levelUpOutcome, xpForLevel } from '../rules/leveling';
 import { migrate, deserialize, serialize } from '../save/serialize';
 import { reconcileDisciplines } from '../save/reconcile';
-import type { GameState, PendingChoice, Unit } from '../types';
+import { RngCursor } from '../rng';
+import type { LevelGain } from '../rules/leveling';
+import type { GameEvent, GameState, PendingChoice, Unit } from '../types';
 
 /**
  * The discipline gate, end to end.
@@ -53,6 +55,73 @@ function member(state: GameState): Unit {
 }
 
 describe('the discipline gate', () => {
+  it('emits every level-up choice in gain order', () => {
+    const unit = member(gameAt(4));
+    const gain: LevelGain = {
+      unit,
+      levelsGained: 2,
+      granted: ['stone_guard', 'iron_skin'],
+      pendingChoices: [
+        ['ability_a', 'ability_b'],
+        ['ability_c', 'ability_d'],
+      ],
+      pendingSpecializations: [['path_a', 'path_b']],
+    };
+
+    expect(levelUpOutcome(unit.id, gain)).toEqual({
+      events: [
+        { type: 'leveledUp', unitId: unit.id, level: unit.level, unlocked: gain.granted },
+        { type: 'levelChoiceOffered', unitId: unit.id, options: gain.pendingChoices[0] },
+        { type: 'levelChoiceOffered', unitId: unit.id, options: gain.pendingChoices[1] },
+        { type: 'disciplineOffered', unitId: unit.id, options: gain.pendingSpecializations[0] },
+      ],
+      pendingChoices: [
+        { unitId: unit.id, level: unit.level, kind: 'ability', options: gain.pendingChoices[0] },
+        { unitId: unit.id, level: unit.level, kind: 'ability', options: gain.pendingChoices[1] },
+        {
+          unitId: unit.id,
+          level: unit.level,
+          kind: 'discipline',
+          options: gain.pendingSpecializations[0],
+        },
+      ],
+    });
+  });
+
+  it('emits no outcome for a gain with no levels', () => {
+    const unit = member(gameAt(4));
+    const gain: LevelGain = {
+      unit,
+      levelsGained: 0,
+      granted: ['ignored'],
+      pendingChoices: [['ignored_a', 'ignored_b']],
+      pendingSpecializations: [['ignored_path']],
+    };
+
+    expect(levelUpOutcome(unit.id, gain)).toEqual({ events: [], pendingChoices: [] });
+  });
+
+  it('emits XP before the level-up when resolving a victorious battle', () => {
+    const state = gameAt(4);
+    const unit = member(state);
+    const nearLevel = { ...unit, xp: xpForLevel(5) - 1 };
+    const battle = createBattle(
+      CONTENT,
+      { ...state, party: [nearLevel] },
+      'enc_grumbler',
+      new RngCursor(state.rng),
+    );
+    const result = apply(
+      CONTENT,
+      { ...state, party: [nearLevel], battle: { ...battle, phase: 'victory' } },
+      { type: 'resolveBattle' },
+    );
+    const eventTypes = result.events.map((event: GameEvent) => event.type);
+
+    expect(eventTypes.indexOf('xpGained')).toBeGreaterThanOrEqual(0);
+    expect(eventTypes.indexOf('leveledUp')).toBeGreaterThan(eventTypes.indexOf('xpGained'));
+  });
+
   it('builds the shared level-up events and pending picks in their original order', () => {
     const state = gameAt(4);
     const unit = member(state);

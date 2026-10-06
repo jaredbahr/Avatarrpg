@@ -871,7 +871,7 @@ function propAffectedUnits(
     });
   };
 
-  const unitAt = (pos: Vec2): Unit | undefined => {
+  const unitAtBreak = (pos: Vec2): Unit | undefined => {
     const key = posKey(pos);
     return battle.units.find(
       (unit) =>
@@ -884,7 +884,7 @@ function propAffectedUnits(
   for (const effect of def.onBreak) {
     const cells = blastTiles(battle.grid, prop.pos, effect.radius);
     for (const cell of cells) {
-      const unit = unitAt(cell);
+      const unit = unitAtBreak(cell);
       if (!unit) continue;
       if (effect.kind === 'status') {
         add(unit, [
