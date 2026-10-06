@@ -359,16 +359,6 @@ describe('the runtime validator matches zod', () => {
     fuzz(soundsShipped.soundSchema, zodBuilt.sounds.soundSchema, seeds, 3000, 4);
   });
 
-  it('keeps strictness when an object schema becomes partial', () => {
-    const input = JSON.parse('{"unknown":1}') as unknown;
-    expectSameVerdict(
-      schemaShipped.object({ known: schemaShipped.string() }).strict().partial(),
-      z.object({ known: z.string() }).strict().partial(),
-      input,
-      'strict partial unknown key',
-    );
-  });
-
   it('does not pollute prototypes from JSON-parsed save keys', () => {
     const battle = saveShipped.toBlob(midBattleState(), META);
     const serialized = JSON.stringify(battle);

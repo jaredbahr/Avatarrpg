@@ -1,17 +1,17 @@
 /**
  * The runtime validator: the slice of zod's v3 API that the shipped modules use.
  *
- * Save files, fx recipes, sounds and the combat tuning parse at runtime, and
- * zod cost about 10 KB gzipped of the then 320 KB JavaScript gate (350 KB since
- * ADR 0066) for the dozen
+ * Save files, fx recipes and sounds parse at runtime, and zod cost about 10 KB
+ * gzipped of the then 320 KB JavaScript gate (350 KB since ADR 0066) for the
  * combinators they need (ADR 0060). Everything validated only in CI and dev —
- * `content/schemas.ts`, the bend packer's schemas — stays on real zod.
+ * `content/schemas.ts`, combat tuning, the bend packer's schemas — stays on
+ * real zod.
  *
  * The contract is zod's own, for every combinator here: what passes, the data
  * that comes out (unknown keys stripped, defaults filled, key order), and the
  * order and paths of the issues, because `deserialize` names the first issue's
  * path to the player. `schema.test.ts` holds that line by running the real
- * save, fx, sound and tuning schemas through both this module and zod. Issue
+ * save, fx and sound schemas through both this module and zod. Issue
  * messages are plainer than zod's; nothing shows them to a player.
  *
  * A parse returns `ABORT` where zod's result is aborted (the value is not even
@@ -90,19 +90,6 @@ export class Schema<O, I = O> {
   default(value: Exclude<I, undefined>): Schema<Exclude<O, undefined>, I | undefined> {
     return new Schema((v, p, i) => this._parse(v === undefined ? value : v, p, i));
   }
-
-  refine(
-    ok: (value: O) => boolean,
-    options: { readonly message: string; readonly path?: Path },
-  ): Schema<O, I> {
-    return new Schema((v, p, i) => {
-      const out = this._parse(v, p, i);
-      if (out !== ABORT && !ok(out as O)) {
-        i.push({ path: [...p, ...(options.path ?? [])], message: options.message });
-      }
-      return out;
-    });
-  }
 }
 
 type AnySchema = Schema<unknown, unknown>;
@@ -132,20 +119,14 @@ class NumberSchema extends Schema<number> {
   int(): NumberSchema {
     return this.check((n) => !Number.isInteger(n), 'Expected an integer');
   }
-  finite(): NumberSchema {
-    return this.check((n) => !Number.isFinite(n), 'Expected a finite number');
-  }
   min(bound: number): NumberSchema {
     return this.check((n) => n < bound, `Expected at least ${bound}`);
   }
   max(bound: number): NumberSchema {
     return this.check((n) => n > bound, `Expected at most ${bound}`);
   }
-  gt(bound: number): NumberSchema {
-    return this.check((n) => n <= bound, `Expected more than ${bound}`);
-  }
   positive(): NumberSchema {
-    return this.gt(0);
+    return this.check((n) => n <= 0, 'Expected more than 0');
   }
 }
 
@@ -155,9 +136,6 @@ class StringSchema extends Schema<string> {
   }
   min(length: number): StringSchema {
     return new StringSchema([...this.checks, [(s) => s.length < length, `Too short`]]);
-  }
-  max(length: number): StringSchema {
-    return new StringSchema([...this.checks, [(s) => s.length > length, `Too long`]]);
   }
 }
 
@@ -196,17 +174,9 @@ type Keyed<T> = Flatten<
 >;
 type ObjectOutput<S extends Shape> = Keyed<{ [K in keyof S]: S[K]['_output'] }>;
 type ObjectInput<S extends Shape> = Keyed<{ [K in keyof S]: S[K]['_input'] }>;
-type AllOptional<S extends Shape> = {
-  [K in keyof S]: Schema<S[K]['_output'] | undefined, S[K]['_input'] | undefined>;
-};
-
 class ObjectSchema<S extends Shape> extends Schema<ObjectOutput<S>, ObjectInput<S>> {
-  constructor(
-    readonly shape: S,
-    private readonly isStrict = false,
-  ) {
+  constructor(readonly shape: S) {
     const fields = Object.entries(shape);
-    const keys = Object.keys(shape);
     super((v, p, i) => {
       if (!isObject(v)) return abort(i, p, 'Expected object');
       const out: Record<string, unknown> = {};
@@ -217,22 +187,8 @@ class ObjectSchema<S extends Shape> extends Schema<ObjectOutput<S>, ObjectInput<
         // As zod: an undefined result is kept only when the input had the key.
         else if (r !== undefined || key in v) out[key] = r;
       }
-      if (isStrict) {
-        const extra: string[] = [];
-        for (const key in v) if (!keys.includes(key)) extra.push(key);
-        if (extra.length > 0)
-          i.push({ path: p, message: `Unrecognized keys: ${extra.join(', ')}` });
-      }
       return aborted ? ABORT : out;
     });
-  }
-  strict(): ObjectSchema<S> {
-    return new ObjectSchema(this.shape, true);
-  }
-  partial(): ObjectSchema<AllOptional<S>> {
-    const shape: Record<string, AnySchema> = {};
-    for (const [key, schema] of Object.entries(this.shape)) shape[key] = schema.optional();
-    return new ObjectSchema(shape as AllOptional<S>, this.isStrict);
   }
 }
 
