@@ -8,7 +8,7 @@ import {
 import { pixelAt } from './lib/image';
 import { decodeWebp } from './lib/webp';
 import { bedShade, canalInset, canalMetric, canalPosition, kerbShade } from './ba-dan-canal-banks';
-import { packWater, readMaster, shippedPath } from './ba-dan-water';
+import { shippedPath } from './ba-dan-water';
 
 // Decoding WebP plates is cheap alone and slow on a busy machine; ci:local timed out the
 // 5 s default once. Headroom here, not a raised global timeout.
@@ -24,8 +24,12 @@ function cellCentre(cell: { x: number; y: number }): { px: number; py: number } 
   };
 }
 
-function luma(pixel: readonly number[]): number {
-  return (pixel[0] ?? 0) * 0.3 + (pixel[1] ?? 0) * 0.55 + (pixel[2] ?? 0) * 0.15;
+/** Map the registered 960x480 canal envelope through its real scene sourceRect. */
+function sourcePixel(px: number, py: number): { px: number; py: number } {
+  return {
+    px: Math.floor((px * 1016) / cells.width),
+    py: Math.floor((py * 508) / cells.height),
+  };
 }
 
 it('reads a water cell as one tile diamond, not its screen-space bounding box', () => {
@@ -60,51 +64,34 @@ it('reads a water cell as one tile diamond, not its screen-space bounding box', 
   }
 });
 
-it('ships the painted canal plate: the master, encoded, with the geometric footprint', async () => {
-  const master = readMaster('canal-banks');
-  expect(master.width).toBe(cells.width);
-  expect(master.height).toBe(cells.height);
-  const packed = readFileSync(shippedPath('canal-banks'));
-  expect(Buffer.from(await packWater('canal-banks'))).toEqual(packed);
-
-  // The runtime reads the file, so hold the decoded pixels to the metric.
-  const shipped = await decodeWebp(packed);
-  let clearWater = 0;
-  let leaksOutside = 0;
-  let shorelineBand = 0;
-  let bedPixels = 0;
-  for (let py = 0; py < cells.height; py++)
-    for (let px = 0; px < cells.width; px++) {
-      const { x, y } = canalPosition(px, py);
-      const metric = canalMetric(x, y);
-      const alpha = pixelAt(shipped, px, py)[3];
-      if (metric <= 1) {
-        bedPixels++;
-        if (alpha !== 255) clearWater++;
-        continue;
-      }
-      if (metric > BA_DAN_CANAL_BANK_RADIUS && alpha !== 0) leaksOutside++;
-      if (metric <= BA_DAN_CANAL_BANK_RADIUS && alpha === 255) shorelineBand++;
-    }
-  expect({ clearWater, leaksOutside }).toEqual({ clearWater: 0, leaksOutside: 0 });
-  // Every permanent water cell is opaque painted water; the six diamonds are the whole bed.
-  expect(bedPixels).toBe(BA_DAN_WATER_CELLS.length * 4096);
-  expect(shorelineBand).toBeGreaterThan(bedPixels * 0.5);
-});
-
-it('paints water, not paving: each cell centre is cool and the shoreline band is not', async () => {
-  const shipped = await decodeWebp(readFileSync(shippedPath('canal-banks')));
+it('ships the painted canal on the edge-water page with the geometric footprint', async () => {
+  const shipped = await decodeWebp(readFileSync(shippedPath('edge-water')));
+  expect({ width: shipped.width, height: shipped.height }).toEqual({ width: 1016, height: 700 });
   for (const cell of BA_DAN_WATER_CELLS) {
-    const { px, py } = cellCentre(cell);
-    const water = pixelAt(shipped, px, py);
-    // Blue over red: a flat blue-green wash on warm paving reads the other way.
-    expect((water[2] ?? 0) - (water[0] ?? 0)).toBeGreaterThan(30);
+    const centre = cellCentre(cell);
+    const source = sourcePixel(centre.px, centre.py);
+    expect(pixelAt(shipped, source.px, source.py)[3], `water ${cell.x},${cell.y}`).toBe(255);
   }
 });
 
-it('shades the middle of the channel deeper than its shelf under the kerb', async () => {
+it('paints opaque blue water at every registered canal-cell centre', async () => {
+  const shipped = await decodeWebp(readFileSync(shippedPath('edge-water')));
+  for (const cell of BA_DAN_WATER_CELLS) {
+    const centre = cellCentre(cell);
+    const { px, py } = sourcePixel(centre.px, centre.py);
+    const water = pixelAt(shipped, px, py);
+    expect(water[3], `water ${cell.x},${cell.y} is opaque`).toBe(255);
+    // The accepted fieldstone painting has pale shallows at its ends, so the
+    // useful contract is a blue cast, not an arbitrary 30-level saturation.
+    expect((water[2] ?? 0) - (water[0] ?? 0), `water ${cell.x},${cell.y} is blue`).toBeGreaterThan(
+      0,
+    );
+  }
+});
+
+it('keeps the registered water opaque and its fieldstone banks non-blue', async () => {
   const inset = canalInset(cells.width, cells.height);
-  const shipped = await decodeWebp(readFileSync(shippedPath('canal-banks')));
+  const shipped = await decodeWebp(readFileSync(shippedPath('edge-water')));
   for (const cell of BA_DAN_WATER_CELLS) {
     const { px, py } = cellCentre(cell);
     const middle = inset[py * cells.width + px] ?? 0;
@@ -114,12 +101,20 @@ it('shades the middle of the channel deeper than its shelf under the kerb', asyn
     expect(bedShade(cell.x + 0.5, cell.y + 0.5, middle)).toBeLessThan(
       bedShade(cell.x + 0.5, cell.y + 0.5, edge),
     );
-    // And the packed plate carries that gradient through to the pixels.
-    const shelf = pixelAt(shipped, px, py - 26);
-    const deepest = pixelAt(shipped, px, py);
-    expect(shelf[3]).toBe(255);
+    const deepAt = sourcePixel(px, py);
+    const deepest = pixelAt(shipped, deepAt.px, deepAt.py);
     expect(deepest[3]).toBe(255);
-    expect(luma(shelf)).toBeGreaterThan(luma(deepest) + 15);
+  }
+  // These points are the north-bank side of the real 1016x508 sourceRect,
+  // away from its end caps. The bank is warm fieldstone rather than water.
+  for (const cell of BA_DAN_WATER_CELLS.filter(({ x }) => [2, 6, 10].includes(x))) {
+    const centre = cellCentre(cell);
+    const bankAt = sourcePixel(centre.px + 38, centre.py - 19);
+    const bank = pixelAt(shipped, bankAt.px, bankAt.py);
+    expect(bank[3], `bank ${cell.x},${cell.y} is opaque`).toBe(255);
+    expect((bank[2] ?? 0) - (bank[0] ?? 0), `bank ${cell.x},${cell.y} is fieldstone`).toBeLessThan(
+      0,
+    );
   }
 });
 

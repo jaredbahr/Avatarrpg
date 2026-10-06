@@ -65,7 +65,7 @@ export function placeParty(
 
 function free(grid: Grid, pos: Vec2, taken: ReadonlySet<string>): boolean {
   const tile = tileAt(grid, pos);
-  return tile !== undefined && !tile.blocked && !taken.has(posKey(pos));
+  return tile !== undefined && !tile.blocked && drySeat(grid, pos) && !taken.has(posKey(pos));
 }
 
 /** The free tile beside `tail` furthest from `awayFrom`; straight beats diagonal, then grid order. */
@@ -99,7 +99,7 @@ function nearestFree(grid: Grid, tail: Vec2, taken: ReadonlySet<string>): Vec2 |
       if (seen.has(key)) continue;
       seen.add(key);
       const tile = tileAt(grid, next);
-      if (!tile || tile.blocked) continue;
+      if (!tile || tile.blocked || !drySeat(grid, next)) continue;
       if (!taken.has(key)) return next;
       queue.push(next);
     }

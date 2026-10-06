@@ -4,7 +4,9 @@
  * DL-2 asks the four scenes to read as one game. The village is the only place
  * in the pipeline where an *accepted* painting is the source of the next one —
  * `ba-dan-neighborhood-ground.ts` decodes `courtyard-ground.webp` and
- * `western-approach-ground.webp` and samples their verified opaque interiors.
+ * the frozen accepted western-approach material sample and samples its verified
+ * opaque interior. The shipped western page may change independently when its
+ * village-only silhouette changes.
  * This module does the same for the forest, and is shared by
  * `forest-route-ground.ts` and `forest-grass-regions.ts` so the route plate and
  * the two grass packs cannot drift from each other across their overlap rows.
@@ -248,10 +250,12 @@ export function structure(crop: Crop, x: number, y: number, salt: number): Struc
  */
 export async function loadVillageCrops(): Promise<Record<CropName, Crop>> {
   const courtyard = await readWebp('public/art/maps/ba-dan-scene/courtyard-ground.webp');
-  const western = await readWebp('public/art/maps/ba-dan-scene/western-approach-ground.webp');
+  const western = await readWebp('art/material-samples/ba-dan-western-approach-ground.webp');
   // Both interiors are the ones the village's own packer certifies: broad
-  // paving on the western approach's road, and the quiet lawn at x10..11,y4 of
-  // the courtyard. Neither holds a prop, a water cell or a feather.
+  // paving from the accepted western approach and the quiet lawn at x10..11,y4
+  // of the courtyard. The paving source is frozen because re-encoding the
+  // shipped lossy WebP after a village-only alpha edit changes decoded RGB in
+  // otherwise untouched pixels. Neither crop holds a prop, water or a feather.
   const paving: Crop = {
     image: western,
     origin: BA_DAN_WESTERN_APPROACH_GROUND,

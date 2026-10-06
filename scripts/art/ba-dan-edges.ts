@@ -1,6 +1,7 @@
 /**
- * Ba Dan's edge water: the flooded west ford where the road ends, and the low
- * canal outside the south lawn (`BA_DAN_EDGE_WATER` in `scenes/baDan.ts`).
+ * Ba Dan's edge water source page. The active edge piece is the flooded west
+ * pond (`BA_DAN_EDGE_WATER` in `scenes/baDan.ts`); the page's long channel is
+ * reused by the connected courtyard canal.
  *
  * Both are the courtyard canal's construction, not a new material: the same
  * diamond metric around each water cell (`canalMetric`), the same channel bed
@@ -52,7 +53,7 @@ import {
   texelTouchesBoard,
   worldLogical,
 } from './ba-dan-garden';
-import { newImage, pixelAt, setPixel } from './lib/image';
+import { newImage, pixelAt, readPng, setPixel } from './lib/image';
 import type { Image } from './lib/image';
 import { encodeWebpLossless } from './lib/webp';
 
@@ -208,6 +209,15 @@ export const EDGE_WATER_PATH = `${DIRECTORY}/edge-water.webp`;
 /** Every edge piece, packed at its `source` on the one shipped page. */
 export function packEdgePage(): Image {
   const page = newImage(BA_DAN_EDGE_WATER_PAGE.width, BA_DAN_EDGE_WATER_PAGE.height);
+  // The accepted page's upper field is the row-6 channel registered by
+  // `canalBanks()`. It is existing painted source, not an edge piece whose
+  // footprint should be regenerated from the west-ford table.
+  const master = readPng('art/source/ba-dan-water/edge-water.png');
+  for (let py = 0; py < 508; py++)
+    for (let px = 0; px < 1016; px++) {
+      const source = pixelAt(master, px, py);
+      if ((source[3] ?? 0) > 0) setPixel(page, px, py, source);
+    }
   for (const piece of BA_DAN_EDGE_WATER) {
     const image = packEdgeWater(
       piece,

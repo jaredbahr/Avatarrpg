@@ -78,10 +78,13 @@ for (const renderer of ['canvas', 'webgl'] as const) {
           };
         }
       });
-      for (const [direction, dy] of [
+      // South first: on the village map the canal closes the lawn north of the
+      // spawn, so the northward leg is the walk back up to the road.
+      const legs = [
         ['North', -4],
         ['South', 4],
-      ] as const) {
+      ] as const;
+      for (const [direction, dy] of riverside ? legs : [legs[1], legs[0]]) {
         // Logical north/south projects diagonally on Ba Dan's oblique basis;
         // riverside retains its orthographic front/back poses.
         const projectedDirection = riverside ? direction : dy < 0 ? 'NorthEast' : 'SouthWest';

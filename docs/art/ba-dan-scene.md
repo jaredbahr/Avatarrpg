@@ -50,20 +50,12 @@ source interiors from the tracked accepted courtyard asset; it copies exact
 decoded RGB through existing overlaps and gives every new piece its own exterior
 feather.
 
-The canal's water is runtime-owned, but its ground layer is authored.
-`canal-banks.webp` is a 576×288 piece at `(928,368)`, generated from the six
-exact water-cell centres and the shared 64/32 projected diamond. It carries the
-**bed** the water sits on — the tracked courtyard painting's own flagstone,
-sampled one and a half cells nearer the viewer with that plate's world mapping,
-shaded darker and cooler with distance inside the water so the middle of the
-channel is its deepest point — and the **kerb** around it: the same paving moved
-24% toward its own grey, shaded from wet stone at the waterline to the paving's
-own brightness at the outer edge. Both are opaque; only the ground beyond the
-coping radius is left clear. Permanent water remains the walkable `~` surface at
-`(6..8,6)` and `(10..12,6)`, the dry road crossing is `(9,6)`, and the coping adds
-no collision wall. The old water-bearing `canal.webp` candidate is superseded and
-is kept only in ignored local evidence; it is not referenced or shipped. The
-reasoning is [ADR 0046](../adr/0046-canal-bed.md).
+The accepted upper field of `edge-water.webp` is the single painted source for
+the connected row-6 canal. It is registered across `(0..12,6)`, with permanent
+water at `(0..8,6)` and `(10..12,6)` and the dry bridge crossing at `(9,6)`.
+`canal-banks.webp` is retired and unregistered; the water packer does not rewrite
+it. `ba-dan-canal-banks.ts` remains only as the geometric metric/audit helper used
+to verify the registered edge-water source. The coping adds no collision wall.
 
 The bridge is a transparent scenery layer registered to `(9,6)` with a single
 logical footprint. `canal-bridge.webp` is the deck/back layer and
@@ -80,7 +72,7 @@ The deterministic material and coping generators are:
 npx tsx scripts/art/ba-dan-courtyard-ground.ts art/raw/scenes/ground-materials.png
 npx tsx scripts/art/ba-dan-western-approach-ground.ts
 npx tsx scripts/art/ba-dan-neighborhood-ground.ts
-npx tsx scripts/art/ba-dan-canal-banks.ts
+npx tsx scripts/art/ba-dan-water.ts
 npx tsx scripts/art/ba-dan-restyle.ts
 ```
 
@@ -239,19 +231,18 @@ texture placed again, or ground packed from the garden's flagstone.
   outside the rim: seven courtyard `low-planter` pieces end to end
   (`BA_DAN_NORTH_TERRACE`, `exterior`). It is the back edge, so everyone on
   the board stands in front of it.
-- **South band and west ford.** `scripts/art/ba-dan-edges.ts` packs one page,
-  `edge-water.webp`, cut by `sourceRect` into two ground pieces painted after
-  the apron. Both reuse the courtyard canal's construction — its diamond
+- **West ford and connected canal.** `edge-water.webp` carries the west pond
+  plus the continuous courtyard channel reused by `canalBanks()`. The pond is
+  cut by `sourceRect` and painted after the apron. Both reuse the courtyard
+  canal's construction — its diamond
   metric and kerb radius, `bedShade`, `BED_COOL`, `kerbShade` — over the
   garden's `flagstoneTexel`, in flat steps at the garden's two-pixel grain. The
   bed's depth is the distance to the shore, not to each cell's centre, so the
-  joins between cells leave no ridges. Neither is runtime water (the ford is
-  blocked `W`, the canal is off the board), so the renderer's film is baked in
-  at the strength its two coats add up to. Past the rim both take the apron's
-  own stepped fade. The south canal is one row of water under the lawn x4..17,
-  its near kerb at the lawn's edge; the ford floods (0,7) and (0,8) and runs
-  on west into the fade over five drowned stepping stones. A route-sign marker
-  on the ford's south bank, (1,9), says why the road stops there.
+  joins between cells leave no ridges. The connected canal occupies the map's
+  permanent-water cells; the ford is blocked `W`. The pond runs past the rim
+  into the apron fade, flooding (0,7) and (0,8) over five drowned stepping
+  stones. A route-sign marker on its south bank, (1,9), says why the road stops
+  there.
 
 The village declares both lawn edges as `band` and sets
 `edgeContract: 'enforce'`. Every other walkable rim cell is an exit mouth: the
@@ -260,16 +251,14 @@ rim cells themselves, (18..20,15), walkable dirt with no tree on them; like the
 east road's, the garden base paints them flagstone and the apron carries it on
 south off the board. The riverside arrives at (19,14), one step inside.
 
-The canal packer takes no arguments: unlike the courtyard and the historical
-ground page, its material source is the tracked
-`public/art/maps/ba-dan-scene/courtyard-ground.webp`, so the shipped
-`canal-banks.webp` can be re-packed and byte-compared from a clean checkout.
-`scripts/art/ba-dan-canal-banks.test.ts` holds that contract, the diamond metric
-the bed is cut to, the depth gradient, and the kerb's dress and wet band.
+The water packer takes no arguments. It combines the tracked painted
+`art/source/ba-dan-water/edge-water.png` with the current channel/ford footprint
+and rewrites only the shipped `edge-water.webp` page. The canal-banks tests hold
+the registered upper field to the diamond metric, depth gradient, and kerb
+contract without producing a second runtime plate.
 
 The western pack derives from the tracked accepted local material source
-`public/art/maps/ba-dan-scene/courtyard-ground.webp` (1152×576 WebP,
-SHA-256 `691cadc6a8fd3a981aeafb18181eab0580ef62f89b51422c45165527367aac6a`).
+`public/art/maps/ba-dan-scene/courtyard-ground.webp` (1152×576 WebP).
 It decodes that already material-composed region, copies its actual pixels in
 the x5–6 overlap, and repeats only verified interior quiet-grass (`x10..11,y4`)
 and broad-flagstone (`x5..9,y7..8`) swatches for the western cells. Courtyard

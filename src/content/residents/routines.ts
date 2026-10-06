@@ -55,9 +55,10 @@ export const BA_DAN_ROUTINES: readonly ResidentRoutine[] = [
  */
 export const PARKED_ROUTINES: readonly ResidentRoutine[] = [
   {
-    // Pella's household carries a basket up to the square and back: along
-    // the front of the house, a pause at the kerb, over the bridge, a pause
-    // on the far side to set it down, and home again the same way.
+    // Pella's household carries a basket up to the square and back. The
+    // eight-leg schema cap sends it round the west end of the south court,
+    // clear of the house and planters, then along the road and over the canal
+    // bridge.
     id: 'bg.pella_household',
     mapId: VILLAGE,
     anchor: 'bd04.yard',
@@ -65,12 +66,39 @@ export const PARKED_ROUTINES: readonly ResidentRoutine[] = [
     legs: [
       {
         path: [
-          { x: 10, y: 12 },
-          { x: 10, y: 11 },
-          { x: 10, y: 10 },
+          { x: 10, y: 14 },
+          { x: 9, y: 14 },
+          { x: 8, y: 14 },
+          { x: 7, y: 14 },
+          { x: 6, y: 14 },
+          { x: 5, y: 14 },
+          { x: 4, y: 14 },
+          { x: 3, y: 14 },
+        ],
+        hold: 1500,
+      },
+      {
+        path: [
+          { x: 3, y: 13 },
+          { x: 3, y: 12 },
+          { x: 3, y: 11 },
+          { x: 3, y: 10 },
+          { x: 3, y: 9 },
+          { x: 3, y: 8 },
+          { x: 4, y: 8 },
+          { x: 5, y: 8 },
+        ],
+        hold: 1500,
+      },
+      {
+        path: [
+          { x: 6, y: 8 },
+          { x: 7, y: 8 },
+          { x: 8, y: 8 },
+          { x: 9, y: 8 },
           { x: 9, y: 9 },
         ],
-        hold: 2000,
+        hold: 1500,
       },
       {
         path: [
@@ -93,13 +121,39 @@ export const PARKED_ROUTINES: readonly ResidentRoutine[] = [
       },
       {
         path: [
-          { x: 10, y: 10 },
-          { x: 10, y: 11 },
-          { x: 10, y: 12 },
+          { x: 9, y: 8 },
+          { x: 8, y: 8 },
+          { x: 7, y: 8 },
+          { x: 6, y: 8 },
+          { x: 5, y: 8 },
+        ],
+        hold: 1500,
+      },
+      {
+        path: [
+          { x: 4, y: 8 },
+          { x: 3, y: 8 },
+          { x: 3, y: 9 },
+          { x: 3, y: 10 },
+          { x: 3, y: 11 },
+          { x: 3, y: 12 },
+          { x: 3, y: 13 },
+          { x: 3, y: 14 },
+        ],
+        hold: 1500,
+      },
+      {
+        path: [
+          { x: 4, y: 14 },
+          { x: 5, y: 14 },
+          { x: 6, y: 14 },
+          { x: 7, y: 14 },
+          { x: 8, y: 14 },
+          { x: 9, y: 14 },
+          { x: 10, y: 14 },
           { x: 11, y: 13 },
         ],
         hold: 9000,
-        work: true,
       },
     ],
   },
