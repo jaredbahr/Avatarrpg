@@ -204,6 +204,8 @@ export class CombatScene implements Scene {
   private detach: (() => void) | null = null;
   private frame = 0;
   private suspended = false;
+  /** Pause menu hold: dispatch stays parked without touching presentation. */
+  private aiHeld = false;
   private paintingStill = false;
   private aiTimer: number | null = null;
 
@@ -293,6 +295,7 @@ export class CombatScene implements Scene {
 
   mount(host: HTMLElement): void {
     this.suspended = false;
+    this.aiHeld = false;
     this.host = host;
     this.freshBattleEntry = this.app.consumeFreshCombatEntry?.() ?? false;
     this.battleOpening = null;
@@ -321,6 +324,7 @@ export class CombatScene implements Scene {
     if (this.frame) cancelAnimationFrame(this.frame);
     this.frame = 0;
     this.suspended = false;
+    this.aiHeld = false;
     this.battleOpening = null;
     this.freshBattleEntry = false;
     this.recentreButton = null;
@@ -360,6 +364,24 @@ export class CombatScene implements Scene {
     if (!this.suspended) return;
     this.suspended = false;
     this.loop();
+    this.maybeRunAi();
+  }
+
+  /**
+   * The pause menu's own hold. Unlike `suspend` it changes no presentation:
+   * the establishing view, camera, selection and preview all stay put, only
+   * enemy dispatch is parked.
+   */
+  holdAi(): void {
+    if (this.aiHeld) return;
+    this.aiHeld = true;
+    this.stopAiTimer();
+  }
+
+  /** Releases the pause hold and re-arms one enemy turn if the scene still wants one. */
+  releaseAi(): void {
+    if (!this.aiHeld) return;
+    this.aiHeld = false;
     this.maybeRunAi();
   }
 
@@ -1069,13 +1091,16 @@ export class CombatScene implements Scene {
     const battle = this.battle();
     const unit = this.active();
     if (!battle || battle.phase !== 'active' || !unit) return;
-    if (this.suspended || this.battleOpening) return;
+    if (this.suspended || this.aiHeld || this.battleOpening) return;
     if (unit.faction === 'party' || this.aiScheduled) return;
 
     this.aiScheduled = true;
     const delay = Math.max(0, this.app.animator.finishesAt - performance.now()) + 260;
     this.aiTimer = window.setTimeout(() => {
       this.aiTimer = null;
+      // The pause menu can freeze or hold the scene between scheduling and
+      // this callback; a parked fight must not advance behind the menu.
+      if (this.suspended || this.aiHeld) return;
       if (this.app.state?.battle?.phase !== 'active') return;
       if (activeUnit(this.app.state.battle)?.id !== unit.id) return;
       this.app.dispatch({ type: 'runAiTurn' });

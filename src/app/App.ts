@@ -108,6 +108,10 @@ export interface Scene {
   suspend?(): void;
   /** Restart work after a retained scene becomes current again. */
   resume?(): void;
+  /** Park a combat scene's enemy dispatch without its dialogue suspension. */
+  holdAi?(): void;
+  /** Drop the pause hold; re-arm one pending enemy turn if still current. */
+  releaseAi?(): void;
   /**
    * The events a command produced, before the scene may be swapped for the
    * one the new state calls for. Return true when the scene schedules the
@@ -142,6 +146,30 @@ export function dialogueBackdropOwner(
   return state.location.mapId && content.maps.has(state.location.mapId)
     ? { kind: 'explore', mapId: state.location.mapId }
     : null;
+}
+
+/**
+ * The moments a family would be upset to lose. Not every command — writing
+ * localStorage on every tile step would be wasteful and janky — but a fight
+ * resolving, a story beat starting, and a reward actually taken.
+ *
+ * A reward pick is only a checkpoint when the reducer consumed a pending
+ * choice; a refused pick leaves `pendingChoices` untouched and must not save.
+ */
+export function isAutosaveCheckpoint(
+  command: Command,
+  events: readonly GameEvent[],
+  choiceConsumed: boolean,
+): boolean {
+  if (command.type === 'resolveBattle') return true;
+  if (command.type === 'chooseLevelUp' || command.type === 'chooseDiscipline')
+    return choiceConsumed;
+  return events.some(
+    (event) =>
+      event.type === 'storyNodeEntered' ||
+      event.type === 'battleEnded' ||
+      (event.type === 'screenChanged' && event.screen === 'explore'),
+  );
 }
 
 export class App {
@@ -575,8 +603,7 @@ export class App {
     this.animator.clear();
     this.residents.reset();
     this.closePause();
-    this.levelUp?.close();
-    this.levelUp = null;
+    this.dismissRewardDialog();
     this.showScene(new TitleScene(this));
   }
 
@@ -616,6 +643,9 @@ export class App {
     if (this.previewActive) this.endVillagePreview();
     this.cancelRoute();
     this.freshCombatEntry = false;
+    // A reward dialog belongs to the state being replaced. Drop it before the
+    // swap so its close callback cannot offer a pick against the new save.
+    this.dismissRewardDialog();
     // A save can predate a discipline gate the kits have since gained; this
     // hands back any pick the party is owed rather than swallowing it.
     // ADR 0047 §5: also clears a stale conversation pin and steps the
@@ -632,6 +662,9 @@ export class App {
     // Loading is replacement, even when the screen name happens to match.
     // In particular, a second dialogue save must not retain the first save's world.
     this.routeToState(true);
+    // The save can hold debt, or reconciliation can add it; offer the pick now
+    // rather than waiting for the next non-combat dispatch. Combat still defers.
+    this.offerLevelUpIfPending();
     this.toasts.show('Game loaded.');
   }
 
@@ -649,6 +682,11 @@ export class App {
     const unitsBefore = state.battle?.units ?? [];
     const result = apply(this.content, state, command);
     this.state = result.state;
+    // A reward pick only counts when it consumed a pending choice; a refusal
+    // returns the same list, untouched.
+    const choiceConsumed =
+      (command.type === 'chooseLevelUp' || command.type === 'chooseDiscipline') &&
+      result.state.pendingChoices !== state.pendingChoices;
     if (result.events.some((event) => event.type === 'battleStarted')) this.freshCombatEntry = true;
 
     const now = performance.now();
@@ -677,7 +715,7 @@ export class App {
       this.routeToState();
     }
     this.offerLevelUpIfPending();
-    this.autosaveIfWorthIt(command, result.events);
+    this.autosaveIfWorthIt(command, result.events, choiceConsumed);
 
     return result.events;
   }
@@ -714,6 +752,9 @@ export class App {
     if (!choice) return;
 
     const done = () => {
+      // The App may have dropped this dialog for a load or a preview change;
+      // it must not answer for state it was never built for.
+      if (!this.levelUp) return;
       this.levelUp = null;
       // More than one member may have levelled in the same fight.
       this.offerLevelUpIfPending();
@@ -727,14 +768,30 @@ export class App {
     this.audio.play([{ key: 'levelUp', at: 0, seed: 0 }], 0);
   }
 
+  /**
+   * Closes any reward dialog without letting its close callback act on the
+   * state that is about to replace it.
+   */
+  private dismissRewardDialog(): void {
+    const dialog = this.levelUp;
+    this.levelUp = null;
+    dialog?.close();
+  }
+
   /* ---------------------------------------------------------------- */
   /* Pause and settings                                                */
   /* ---------------------------------------------------------------- */
 
   openPause(): void {
     if (this.pause || !this.state) return;
+    // The pause owns combat progress: hold enemy dispatch behind the menu
+    // without disturbing the establishing view or the rest of the board. Only
+    // a fight advances itself; explore keeps running, and a nested Save menu
+    // keeps `this.pause` set so it stays held.
+    if (this.scene?.name === 'combat') this.scene.holdAi?.();
     this.pause = new PauseMenu(this, () => {
       this.pause = null;
+      this.resumeAfterPause();
     });
     this.pause.open(this.overlayHost);
   }
@@ -742,6 +799,12 @@ export class App {
   closePause(): void {
     this.pause?.close();
     this.pause = null;
+  }
+
+  /** Restarts enemy dispatch held by the pause menu, once the pause is gone. */
+  private resumeAfterPause(): void {
+    if (this.pause) return;
+    if (this.scene?.name === 'combat') this.scene.releaseAi?.();
   }
 
   updateSettings(next: Partial<Settings>): void {
@@ -800,20 +863,15 @@ export class App {
 
   /**
    * Autosaves at the moments a family would be upset to lose: after a fight
-   * resolves, and on entering a new story node. Not every command — writing
-   * localStorage on every tile step would be wasteful and janky.
+   * resolves, on entering a new story node, and when a reward is taken.
    */
-  private autosaveIfWorthIt(command: Command, events: readonly GameEvent[]): void {
+  private autosaveIfWorthIt(
+    command: Command,
+    events: readonly GameEvent[],
+    choiceConsumed: boolean,
+  ): void {
     if (!this.state || this.previewActive) return;
-    const worthwhile =
-      command.type === 'resolveBattle' ||
-      events.some(
-        (e) =>
-          e.type === 'storyNodeEntered' ||
-          e.type === 'battleEnded' ||
-          (e.type === 'screenChanged' && e.screen === 'explore'),
-      );
-    if (!worthwhile) return;
+    if (!isAutosaveCheckpoint(command, events, choiceConsumed)) return;
     this.saveTo(AUTOSAVE_ID, `Autosave — ${this.placeLabel()}`);
   }
 
