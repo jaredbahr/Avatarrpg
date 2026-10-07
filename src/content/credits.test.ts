@@ -2,8 +2,9 @@ import { readdirSync, statSync } from 'node:fs';
 import { join, relative, resolve } from 'node:path';
 import { describe, expect, it } from 'vitest';
 import { noticeText, sameNotice } from '../../scripts/credits';
-import type { CreditEntry } from './credits';
-import { CREDITS, needsAttribution, thirdParty, THIRD_PARTY_CREDITS } from './credits';
+import { THIRD_PARTY_CREDITS } from './credits';
+import type { CreditEntry } from './credits.notice';
+import { CREDITS, needsAttribution, thirdParty } from './credits.notice';
 import { readFileSync } from 'node:fs';
 
 const PUBLIC = resolve('public');
@@ -46,7 +47,14 @@ describe('credits', () => {
   });
 
   it('keeps every third-party attribution in the runtime list', () => {
-    expect(THIRD_PARTY_CREDITS).toEqual(thirdParty(CREDITS));
+    expect(THIRD_PARTY_CREDITS).toEqual(
+      thirdParty(CREDITS).map(({ what, work, authors, licence }) => ({
+        what,
+        work,
+        authors,
+        licence,
+      })),
+    );
   });
 
   it('name an author for every work whose licence asks for one', () => {
@@ -62,7 +70,7 @@ describe('credits', () => {
       // Loose files at the root of public/ are configuration, not art.
       .filter((path) => path.includes('/'))
       .filter((path) => !coverFor(path, CREDITS));
-    expect(uncovered, 'add an entry to src/content/credits.ts for these').toEqual([]);
+    expect(uncovered, 'add an entry to src/content/credits.notice.ts for these').toEqual([]);
   });
 
   it('keep NOTICE.md the same as the list the game shows', () => {

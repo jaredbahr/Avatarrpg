@@ -14,8 +14,8 @@
 
 import { readFileSync, writeFileSync } from 'node:fs';
 import { resolve } from 'node:path';
-import type { CreditEntry } from '../src/content/credits';
-import { CREDITS, needsAttribution, thirdParty } from '../src/content/credits';
+import type { CreditEntry } from '../src/content/credits.notice';
+import { CREDITS, needsAttribution, thirdParty } from '../src/content/credits.notice';
 
 const HEADER = `# Notice
 
