@@ -79,13 +79,19 @@ edges. Over a band about a quarter of a cell wide it breaks up into the grass,
 in clumps and round the lawn's own painted tufts, so its edge never runs along
 the cell's diamond. It feathers into the road without an ink line.
 
-`rubble.webp` now carries only what stands on that ground: the pile and its
-contact shadow. Loose stones may only sit at the front of the pile, well away
-from the cell's side corners, because a stone in a corner reads as a rivet
-marking the cell's outline. None has room there today, so none is drawn. The pile's courses
-are pulled in from the cell's side corners, because courses that ran out to
-the cell's edges gave the pile the cell's diamond for a silhouette. Placement,
-plate size and the scene's image count are unchanged.
+The procedural heap was replaced on 6 October 2026 by three accepted
+fine-painted transparent heaps in
+`media/art-sources/forest-rubble-fine-v1/`. `forest-rubble.ts` now validates and
+packs those tracked masters at the unchanged 384×128 registration. Each plate
+carries only the pile and its contact treatment; the existing ground packers
+still call the retained deterministic `spillAt` contract. Placement, three-way
+cell-hash selection, plate size and the scene's image count are unchanged.
+
+The fine paintings retain soft alpha and substantially more native-scale tone
+variation than the flat procedural predecessor. The packer test records their
+opaque bounds and foot rows, performs a byte-identical repack, and holds the
+painted-tone score above 100 (accepted sources: 232, 210 and 205; procedural
+reference: 6).
 
 | File                        | Before (B) | After (B) | Delta (B) |
 | --------------------------- | ---------: | --------: | --------: |

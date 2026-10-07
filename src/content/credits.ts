@@ -307,7 +307,7 @@ export const CREDITS: readonly CreditEntry[] = [
   {
     what: 'The forest pond and creek bank reeds',
     work: 'Four varied reed, sedge and water-edge clumps with painted root mounds',
-    authors: 'This project, generated with PixelLab',
+    authors: 'This project, generated with PixelLab and OpenAI image generation',
     licence: 'own work',
     source: '',
     covers: [
@@ -316,7 +316,7 @@ export const CREDITS: readonly CreditEntry[] = [
       'art/maps/forest-scene/bank-reed-2.webp',
       'art/maps/forest-scene/bank-reed-3.webp',
     ],
-    note: 'Generated with PixelLab; provenance in docs/art/forest-bank-reeds.md; sources in media/art-sources/forest-bank-reeds-v1/, alpha-trimmed without resampling by scripts/art/forest-bank-reeds.ts. No exclusive copyright in generated output is claimed.',
+    note: 'Generated with PixelLab, repainted with OpenAI image generation; provenance in docs/art/forest-bank-reeds.md; sources in media/art-sources/forest-bank-reeds-fine-v1/, alpha-trimmed without resampling by scripts/art/forest-bank-reeds.ts. No exclusive copyright in generated output is claimed.',
   },
   {
     what: 'The registered quarry gate art',
