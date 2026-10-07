@@ -1,20 +1,13 @@
 /**
- * Pack the forest road's two rubble heaps.
+ * Pack the route's three approved fine-painted rubble heaps.
  *
  *   node --import tsx scripts/art/forest-rubble.ts
  *
- * `rubble.webp` had no packer at all: it was committed straight out of the
- * generation pass that dressed the forest road (`bd70d2d`), and it kept that
- * pass's cold grey slabs over desert ochre grit. Once W2 re-keyed the route and
- * its verges to the village's hand, the two cells this plate is drawn into —
- * (7,3) and (8,9) — were the coldest thing on the board.
- *
- * The plate is a heap of broken stone, not a floor: a pile of separate chunks,
- * the higher ones further back, each in the DL-2 §3 **quarry spoil / rubble**
- * key — a lit top facet in `#c7a87d` with the `#d8cbb0` chip highlight along
- * its upper edge, a front facet in the `#8e7049` shadow — and each outlined in
- * the bible's `#1b1410` ink. Between the chunks lies packed earth in shade,
- * and under the heap's foot its contact shadow in §3's cart-rut `#7a5f3e`.
+ * The three reviewed 384x128 PNG masters are tracked under
+ * `media/art-sources/forest-rubble-fine-v1`. Packing validates their registered
+ * canvas and encodes them without resampling. The procedural predecessor stays
+ * below as a regression reference and because the shared spill functions are
+ * still the authority for the ground beneath every heap.
  *
  * **The heap sits in the grass.** It used to lie on a hole: the route and grass
  * plates left both rubble cells clear, so the bare terrain showed round the
@@ -40,10 +33,10 @@ import { mkdirSync, writeFileSync } from 'node:fs';
 import { FOREST_RUBBLE_CELLS } from '../../src/content/scenes/forestRoad';
 import type { Vec2 } from '../../src/core/types';
 import { tileNoise } from '../../src/render/painters/shapes';
-import { newImage, parseHex, setPixel } from './lib/image';
+import { newImage, parseHex, readImage, setPixel } from './lib/image';
 import type { Image } from './lib/image';
-import { refuseToOverwriteGenerated } from './lib/shipped-pin';
 import { encodeWebp } from './lib/webp';
+import { alphaBounds, lowestOpaqueRow } from './lib/trim';
 import {
   FOREST_GROUND_QUALITY,
   FOREST_GROUND_TONES,
@@ -75,6 +68,14 @@ const CHIP_PX = SCALE;
  * same heaps every time it is shown.
  */
 export const RUBBLE_VARIANTS = 3;
+export const RUBBLE_SOURCE_BOUNDS = [
+  { x: 67, y: 10, width: 251, height: 102, foot: 111 },
+  { x: 71, y: 15, width: 240, height: 100, foot: 114 },
+  { x: 67, y: 8, width: 247, height: 108, foot: 115 },
+] as const;
+export const FOREST_RUBBLE_DIRECTORY = 'media/art-sources/forest-rubble-fine-v1';
+export const rubbleSource = (variant: number): string =>
+  `${FOREST_RUBBLE_DIRECTORY}/rubble${variant === 0 ? '' : `-${variant}`}.png`;
 export const rubbleOutput = (variant: number): string =>
   `public/art/maps/forest-scene/rubble${variant === 0 ? '' : `-${variant}`}.webp`;
 export const FOREST_RUBBLE_OUTPUT = rubbleOutput(0);
@@ -381,6 +382,38 @@ export function spillWins(depth: number, x: number, y: number, tuft: () => boole
 }
 
 export function packRubble(material: ForestMaterial, variant = 0): Image {
+  // Keep the material argument for the ground packers/tests that share this
+  // generator contract; the approved painting, rather than code, owns colour.
+  void material;
+  if (!Number.isInteger(variant) || variant < 0 || variant >= RUBBLE_VARIANTS)
+    throw new Error(`Unknown rubble variant ${variant}.`);
+  const image = readImage(rubbleSource(variant));
+  if (image.width !== FOREST_RUBBLE_PLATE.width || image.height !== FOREST_RUBBLE_PLATE.height)
+    throw new Error(
+      `Rubble ${variant} is ${image.width}x${image.height}; expected ${FOREST_RUBBLE_PLATE.width}x${FOREST_RUBBLE_PLATE.height}.`,
+    );
+  const expected = RUBBLE_SOURCE_BOUNDS[variant]!;
+  const bounds = alphaBounds(image);
+  if (
+    !bounds ||
+    bounds.x !== expected.x ||
+    bounds.y !== expected.y ||
+    bounds.width !== expected.width ||
+    bounds.height !== expected.height ||
+    lowestOpaqueRow(image) !== expected.foot
+  )
+    throw new Error(`Rubble ${variant} changed its approved opaque bounds or foot line.`);
+  let soft = 0;
+  for (let i = 3; i < image.data.length; i += 4) {
+    const alpha = image.data[i] ?? 0;
+    if (alpha > 0 && alpha < 255) soft++;
+  }
+  if (soft < 15_000) throw new Error(`Rubble ${variant} lost its soft painted alpha edge.`);
+  return image;
+}
+
+/** Retained as the procedural predecessor's reference implementation. */
+export function packProceduralRubble(material: ForestMaterial, variant = 0): Image {
   const { width, height } = FOREST_RUBBLE_PLATE;
   const image = newImage(width, height);
   const chunks = rubbleChunks(variant);
@@ -484,7 +517,6 @@ export function packRubble(material: ForestMaterial, variant = 0): Image {
 }
 
 export async function main(): Promise<void> {
-  refuseToOverwriteGenerated('forest-rubble');
   const material = await loadForestMaterial();
   mkdirSync('public/art/maps/forest-scene', { recursive: true });
   for (let variant = 0; variant < RUBBLE_VARIANTS; variant++) {

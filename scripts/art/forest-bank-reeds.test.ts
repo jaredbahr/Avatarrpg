@@ -8,18 +8,40 @@ import {
   FOREST_ROAD_SCENE,
 } from '../../src/content/scenes/forestRoad';
 import { encodeWebp } from './lib/webp';
-import { BANK_REED_COUNT, bankReedOutput, packBankReed } from './forest-bank-reeds';
+import { alphaBounds, lowestOpaqueRow } from './lib/trim';
+import {
+  BANK_REED_COUNT,
+  BANK_REED_QUALITY,
+  BANK_REED_SIZE,
+  bankReedOutput,
+  packBankReed,
+} from './forest-bank-reeds';
 
 // Decoding WebP plates is cheap alone and slow on a busy machine; ci:local timed out the
 // 5 s default once. Headroom here, not a raised global timeout.
 vi.setConfig({ testTimeout: 30_000, hookTimeout: 30_000 });
 
-it('ships four reproducible alpha-trimmed bank reeds', async () => {
+it('ships four reproducible full-bound painted bank reeds', async () => {
   expect(BANK_REED_ART).toHaveLength(BANK_REED_COUNT);
   for (let index = 0; index < BANK_REED_COUNT; index++) {
     const { image } = packBankReed(index);
     expect({ width: image.width, height: image.height }).toEqual(BANK_REED_ART[index]);
-    expect(Buffer.from(await encodeWebp(image, 88, true))).toEqual(
+    expect({ width: image.width, height: image.height }).toEqual(BANK_REED_SIZE[index]);
+    expect(alphaBounds(image)).toEqual({ x: 0, y: 0, width: image.width, height: image.height });
+    expect(lowestOpaqueRow(image)).toBe(image.height - 1);
+    let soft = 0;
+    const tones = new Set<number>();
+    for (let i = 0; i < image.data.length; i += 4) {
+      const alpha = image.data[i + 3] ?? 0;
+      if (alpha > 0 && alpha < 255) soft++;
+      if (alpha >= 8)
+        tones.add(
+          ((image.data[i] ?? 0) << 16) | ((image.data[i + 1] ?? 0) << 8) | (image.data[i + 2] ?? 0),
+        );
+    }
+    expect(soft, `reed ${index} soft alpha`).toBeGreaterThan(1_000);
+    expect(tones.size, `reed ${index} painted tones`).toBeGreaterThan(100);
+    expect(Buffer.from(await encodeWebp(image, BANK_REED_QUALITY, true))).toEqual(
       readFileSync(bankReedOutput(index)),
     );
   }
